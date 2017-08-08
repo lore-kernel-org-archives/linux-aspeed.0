@@ -1,27 +1,37 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Date: Wed, 2 Aug 2017 10:38:55 +0200
-Subject: [PATCH v2 4/4] pinctrl: aspeed: g5: Add USB device and host
- support
-In-Reply-To: <20170718052453.14316-5-andrew@aj.id.au>
-References: <20170718052453.14316-1-andrew@aj.id.au>
- <20170718052453.14316-5-andrew@aj.id.au>
-Message-ID: <CACRpkda1ER+4PEC_9zZhzA2o3Eb32eyec6mNYVW8c_8A+oX0mQ@mail.gmail.com>
+From: Andrew Jeffery <andrew@aj.id.au>
+Date: Tue,  8 Aug 2017 15:37:35 +0930
+Subject: [PATCH 1/2] dt-bindings: gpio: aspeed: Remove reference to clock name
+In-Reply-To: <20170808060736.1917-1-andrew@aj.id.au>
+References: <20170808060736.1917-1-andrew@aj.id.au>
+Message-ID: <20170808060736.1917-2-andrew@aj.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Jul 18, 2017 at 7:24 AM, Andrew Jeffery <andrew@aj.id.au> wrote:
+HPLL is in fact not the clock we need. Remove prescription of which clock to
+avoid further error. Please refer to your datasheet and double check like I
+should have.
 
-> Implement the AST2500 USB functions as described by the devicetree
-> bindings. The AST2500 exposes five USB controllers through two USB
-> ports. Similar to the AST2400, the pins exposing USB are outliers with
-> respect to the rest of the pinmux as they not capable of GPIO.
->
-> Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
+Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
+---
+ Documentation/devicetree/bindings/gpio/gpio-aspeed.txt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Patch applied.
+diff --git a/Documentation/devicetree/bindings/gpio/gpio-aspeed.txt b/Documentation/devicetree/bindings/gpio/gpio-aspeed.txt
+index c756afa88cc6..fc6378c778c5 100644
+--- a/Documentation/devicetree/bindings/gpio/gpio-aspeed.txt
++++ b/Documentation/devicetree/bindings/gpio/gpio-aspeed.txt
+@@ -18,7 +18,7 @@ Required properties:
+ Optional properties:
+ 
+ - interrupt-parent      : The parent interrupt controller, optional if inherited
+-- clocks                : A phandle to the HPLL clock node for debounce timings
++- clocks                : A phandle to the clock to use for debounce timings
+ 
+ The gpio and interrupt properties are further described in their respective
+ bindings documentation:
+-- 
+2.11.0
 
-Yours,
-Linus Walleij
