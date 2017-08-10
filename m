@@ -1,37 +1,26 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Tue,  8 Aug 2017 15:46:34 +0930
-Subject: [RESEND PATCH 2/2] gpio: aspeed: Remove reference to clock name in
- debounce warning message
-In-Reply-To: <20170808061634.11857-1-andrew@aj.id.au>
-References: <20170808061634.11857-1-andrew@aj.id.au>
-Message-ID: <20170808061634.11857-3-andrew@aj.id.au>
+From: Rob Herring <robh@kernel.org>
+Date: Thu, 10 Aug 2017 10:45:22 -0500
+Subject: [PATCH 1/2] dt-bindings: watchdog: aspeed: External reset signal
+ properties
+In-Reply-To: <20170802044529.30032-2-andrew@aj.id.au>
+References: <20170802044529.30032-1-andrew@aj.id.au>
+ <20170802044529.30032-2-andrew@aj.id.au>
+Message-ID: <20170810154522.7br6ta3f6plf7ytm@rob-hp-laptop>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-HPLL was in fact not the clock we need. Remove description of which
-clock to avoid any further error.
+On Wed, Aug 02, 2017 at 02:15:28PM +0930, Andrew Jeffery wrote:
+> For the AST2500 and compatible watchdog controllers the external reset
+> signal can be configured for push-pull or open-drain drive types, and in
+> the case of push-pull driving, active low or high.
+> 
+> Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
+> ---
+>  Documentation/devicetree/bindings/watchdog/aspeed-wdt.txt | 10 +++++++++-
+>  1 file changed, 9 insertions(+), 1 deletion(-)
 
-Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
----
- drivers/gpio/gpio-aspeed.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/gpio/gpio-aspeed.c b/drivers/gpio/gpio-aspeed.c
-index 4ca436e66bdb..bfc53995064a 100644
---- a/drivers/gpio/gpio-aspeed.c
-+++ b/drivers/gpio/gpio-aspeed.c
-@@ -834,7 +834,7 @@ static int __init aspeed_gpio_probe(struct platform_device *pdev)
- 	gpio->clk = of_clk_get(pdev->dev.of_node, 0);
- 	if (IS_ERR(gpio->clk)) {
- 		dev_warn(&pdev->dev,
--				"No HPLL clock phandle provided, debouncing disabled\n");
-+				"Failed to get clock from devicetree, debouncing disabled\n");
- 		gpio->clk = NULL;
- 	}
- 
--- 
-2.11.0
+Acked-by: Rob Herring <robh@kernel.org>
 
