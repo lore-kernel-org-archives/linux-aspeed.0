@@ -1,26 +1,25 @@
 From: Rob Herring <robh@kernel.org>
-Date: Thu, 10 Aug 2017 10:45:22 -0500
-Subject: [PATCH 1/2] dt-bindings: watchdog: aspeed: External reset signal
- properties
-In-Reply-To: <20170802044529.30032-2-andrew@aj.id.au>
-References: <20170802044529.30032-1-andrew@aj.id.au>
- <20170802044529.30032-2-andrew@aj.id.au>
-Message-ID: <20170810154522.7br6ta3f6plf7ytm@rob-hp-laptop>
+Date: Thu, 10 Aug 2017 21:56:57 -0500
+Subject: [RESEND PATCH 1/2] dt-bindings: gpio: aspeed: Remove reference
+ to clock name
+In-Reply-To: <20170808061634.11857-2-andrew@aj.id.au>
+References: <20170808061634.11857-1-andrew@aj.id.au>
+ <20170808061634.11857-2-andrew@aj.id.au>
+Message-ID: <20170811025657.bw7kngklmnz7vpf3@rob-hp-laptop>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Aug 02, 2017 at 02:15:28PM +0930, Andrew Jeffery wrote:
-> For the AST2500 and compatible watchdog controllers the external reset
-> signal can be configured for push-pull or open-drain drive types, and in
-> the case of push-pull driving, active low or high.
+On Tue, Aug 08, 2017 at 03:46:33PM +0930, Andrew Jeffery wrote:
+> HPLL was in fact not the clock we need. Remove prescription of which
+> clock to avoid further error. Please refer to your datasheet and double
+> check like I should have.
 > 
 > Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
 > ---
->  Documentation/devicetree/bindings/watchdog/aspeed-wdt.txt | 10 +++++++++-
->  1 file changed, 9 insertions(+), 1 deletion(-)
+>  Documentation/devicetree/bindings/gpio/gpio-aspeed.txt | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
 Acked-by: Rob Herring <robh@kernel.org>
-
