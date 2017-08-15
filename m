@@ -1,11 +1,11 @@
 From: Linus Walleij <linus.walleij@linaro.org>
-Date: Tue, 15 Aug 2017 11:25:31 +0200
-Subject: [RESEND PATCH 1/2] dt-bindings: gpio: aspeed: Remove reference to
- clock name
-In-Reply-To: <20170808061634.11857-2-andrew@aj.id.au>
+Date: Tue, 15 Aug 2017 11:26:44 +0200
+Subject: [RESEND PATCH 2/2] gpio: aspeed: Remove reference to clock name
+ in debounce warning message
+In-Reply-To: <20170808061634.11857-3-andrew@aj.id.au>
 References: <20170808061634.11857-1-andrew@aj.id.au>
- <20170808061634.11857-2-andrew@aj.id.au>
-Message-ID: <CACRpkdbzU2=-ny962gZ+-3+Gdme3ohewfaqozkfk6q1Wy1dHKg@mail.gmail.com>
+ <20170808061634.11857-3-andrew@aj.id.au>
+Message-ID: <CACRpkdZB47CVqTLrAAb==uNOujxK0BFOJ2Yro+g7Jj3MROn+bw@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -14,13 +14,12 @@ Content-Transfer-Encoding: 7bit
 
 On Tue, Aug 8, 2017 at 8:16 AM, Andrew Jeffery <andrew@aj.id.au> wrote:
 
-> HPLL was in fact not the clock we need. Remove prescription of which
-> clock to avoid further error. Please refer to your datasheet and double
-> check like I should have.
+> HPLL was in fact not the clock we need. Remove description of which
+> clock to avoid any further error.
 >
 > Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
 
-Patch applied with the ACKs.
+Patch applied with Joel's ACK.
 
 Yours,
 Linus Walleij
