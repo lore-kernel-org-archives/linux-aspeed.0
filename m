@@ -1,17 +1,17 @@
-From: Brendan Higgins <brendanhiggins@google.com>
-Date: Wed, 16 Aug 2017 09:30:18 +0300
+From: Joel Stanley <joel@jms.id.au>
+Date: Wed, 16 Aug 2017 16:19:57 +0930
 Subject: [PATCH] i2c: aspeed: Retain delay/setup/hold values when
  configuring bus frequency
 In-Reply-To: <20170815072102.23067-1-andrew@aj.id.au>
 References: <20170815072102.23067-1-andrew@aj.id.au>
-Message-ID: <CAFd5g45r+YAz706Uhwj9_Gf6iJy8P92K_JZmo22skDWNOXf8rw@mail.gmail.com>
+Message-ID: <CACPK8XeNDxo14KRsAqo3a0Rs26h-1vRsLyqSX+bt2jfZHq=5yA@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Aug 15, 2017 at 10:21 AM, Andrew Jeffery <andrew@aj.id.au> wrote:
+On Tue, Aug 15, 2017 at 4:51 PM, Andrew Jeffery <andrew@aj.id.au> wrote:
 > In addition to the base, low and high clock configuration, the AC timing
 > register #1 on the AST2400 houses fields controlling:
 >
@@ -59,13 +59,10 @@ On Tue, Aug 15, 2017 at 10:21 AM, Andrew Jeffery <andrew@aj.id.au> wrote:
 > +       clk_reg_val &= (ASPEED_I2CD_TIME_TBUF_MASK |
 > +                       ASPEED_I2CD_TIME_THDSTA_MASK |
 > +                       ASPEED_I2CD_TIME_TACST_MASK);
-> +       clk_reg_val |= bus->get_clk_reg_val(divisor);
->         writel(clk_reg_val, bus->base + ASPEED_I2C_AC_TIMING_REG1);
->         writel(ASPEED_NO_TIMEOUT_CTRL, bus->base + ASPEED_I2C_AC_TIMING_REG2);
->
-> --
-> 2.11.0
->
 
-Awesome! I think this might fix an issue we saw on one of our boards.
-I am out of the country right now, so I cannot test this myself, until Monday.
+Instead of keeping the u-boot values (which appear to be hard-coded),
+should we instead put the known working values in the register?
+
+Cheers,
+
+Joel
