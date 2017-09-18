@@ -1,28 +1,59 @@
-From: Changming Liu <liu.changm@northeastern.edu>
-Date: Sun, 29 Mar 2020 19:37:37 +0000
-Subject: [Bug Report] soc/aspeed: integer error in aspeed_p2a_region_acquire
-Message-ID: <BL0PR06MB45481A385F546CF5B6855C16E5CA0@BL0PR06MB4548.namprd06.prod.outlook.com>
+From: Andrew Jeffery <andrew@aj.id.au>
+Date: Mon, 18 Sep 2017 15:19:01 +0930
+Subject: [PATCH 0/4] watchdog: aspeed: Retain enabled state and move to
+Message-ID: <20170918054905.16470-1-andrew@aj.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Joel and Andrew,
+Hello,
 
-Greetings, I'm a first year PhD student who is interested in the usage of UBSan in the linux kernel, and with some experiments I found that in 
-drivers/soc/aspeed/aspeed-p2a-ctrl.c function aspeed_p2a_region_acquire, there is an unsigned integer error which might cause unexpected behavior.
+We had reports of Aspeed BMC systems entering a reboot loop, each time
+attempting and failing to probe some PMBus devices. For whatever reason the
+PMBus devices weren't appearing on the I2C bus, and several factors came into
+play:
 
-More specifically, the map structure, after the execution of copy_from_user at line 180 in function aspeed_p2a_ioctl, is filled with data from user space.  So the code at line 136 that is
+1. i2c-aspeed's transfer timeout is set to 5 seconds
+2. The kernel's pmbus core now tests for the presence of the status
+   word, then the status byte. Not all devices support the status word,
+   therefore on error we fall back to probing the status byte. This leads to
+   back-to-back uninterruptible transfers, totalling 10 seconds of delay if the
+   device is not present before propagating a probe error back up the call
+   chain
+3. The BMC watchdogs are enabled by u-boot to catch a kernel hang
+4. The hardware's default watchdog counter value equates to a 22 second period
+5. The watchdog driver is probed after the I2C subsystem iterates all the
+   described devices.
 
-end = map->addr + (map->length - 1);
+Thus as it stands nearly 50% of the watchdog period can be spent dealing with
+one missing PMBus device. Arguably the I2C timeout value is too large, but as
+the watchdog driver is not probed until after the I2C busses are iterated, the
+work to ping the watchdog cannot even be scheduled to take place between
+transfers.
 
-the subtraction could underflow when map->length equals zero, also, this sum could overflow. As a consequence, the check at line 149 could be bypassed and the following code could be executed.
+Patch 4 shifts aspeed_wdt to arch_initcall so the watchdog can be pinged as
+needed. Patch 1 fixes an oversight that lead to the watchdogs being disabled
+until userspace opened the chardev. The remaining two patches are minor fixes
+to the Kconfig.
 
-Although the fact that map->addr is a 64-bit unsigned integer and map->length is 32-bit makes the overflow less likely to happen, it seems doesn't eliminate the possibility entirely. I guess a access_ok could do?
+Please review!
 
-Due to the lack of knowledge of the interaction between this module and the user space, I'm not able to assess if this is security-related problem. I'd appreciate it very much to hear your valuable opinion on why this could not cause any trouble if it's indeed the case, this will help me under linux and UBSAN a lot! and I'm more than happy to provide more information if needed.
+Cheers,
 
-Looking forward to your valued response!
+Andrew
 
-Changming Liu
+Andrew Jeffery (4):
+  watchdog: aspeed: Retain watchdog enabled state
+  watchdog: aspeed: Fix 'Apseed' typo in Kconfig
+  watchdog: aspeed: Remove specific reference to AST2400 in Kconfig
+  watchdog: aspeed: Move init to arch_initcall
+
+ drivers/watchdog/Kconfig      |  8 +++-----
+ drivers/watchdog/aspeed_wdt.c | 16 +++++++++++-----
+ 2 files changed, 14 insertions(+), 10 deletions(-)
+
+-- 
+2.11.0
+
