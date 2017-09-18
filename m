@@ -1,59 +1,55 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Mon, 18 Sep 2017 15:19:01 +0930
-Subject: [PATCH 0/4] watchdog: aspeed: Retain enabled state and move to
-Message-ID: <20170918054905.16470-1-andrew@aj.id.au>
+Date: Mon, 18 Sep 2017 15:19:02 +0930
+Subject: [PATCH 1/4] watchdog: aspeed: Retain watchdog enabled state
+In-Reply-To: <20170918054905.16470-1-andrew@aj.id.au>
+References: <20170918054905.16470-1-andrew@aj.id.au>
+Message-ID: <20170918054905.16470-2-andrew@aj.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello,
+An unintended post-condition of probe() is that the watchdog is
+disabled. Rework probe() such that we retain the value of the "enabled"
+bit from the control register, and take the appropriate actions with
+respect to the watchdog core if so. Otherwise, just configure the
+watchdog as directed.
 
-We had reports of Aspeed BMC systems entering a reboot loop, each time
-attempting and failing to probe some PMBus devices. For whatever reason the
-PMBus devices weren't appearing on the I2C bus, and several factors came into
-play:
+Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
+---
+ drivers/watchdog/aspeed_wdt.c | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
 
-1. i2c-aspeed's transfer timeout is set to 5 seconds
-2. The kernel's pmbus core now tests for the presence of the status
-   word, then the status byte. Not all devices support the status word,
-   therefore on error we fall back to probing the status byte. This leads to
-   back-to-back uninterruptible transfers, totalling 10 seconds of delay if the
-   device is not present before propagating a probe error back up the call
-   chain
-3. The BMC watchdogs are enabled by u-boot to catch a kernel hang
-4. The hardware's default watchdog counter value equates to a 22 second period
-5. The watchdog driver is probed after the I2C subsystem iterates all the
-   described devices.
-
-Thus as it stands nearly 50% of the watchdog period can be spent dealing with
-one missing PMBus device. Arguably the I2C timeout value is too large, but as
-the watchdog driver is not probed until after the I2C busses are iterated, the
-work to ping the watchdog cannot even be scheduled to take place between
-transfers.
-
-Patch 4 shifts aspeed_wdt to arch_initcall so the watchdog can be pinged as
-needed. Patch 1 fixes an oversight that lead to the watchdogs being disabled
-until userspace opened the chardev. The remaining two patches are minor fixes
-to the Kconfig.
-
-Please review!
-
-Cheers,
-
-Andrew
-
-Andrew Jeffery (4):
-  watchdog: aspeed: Retain watchdog enabled state
-  watchdog: aspeed: Fix 'Apseed' typo in Kconfig
-  watchdog: aspeed: Remove specific reference to AST2400 in Kconfig
-  watchdog: aspeed: Move init to arch_initcall
-
- drivers/watchdog/Kconfig      |  8 +++-----
- drivers/watchdog/aspeed_wdt.c | 16 +++++++++++-----
- 2 files changed, 14 insertions(+), 10 deletions(-)
-
+diff --git a/drivers/watchdog/aspeed_wdt.c b/drivers/watchdog/aspeed_wdt.c
+index 79cc766cd30f..99bc6fbd8852 100644
+--- a/drivers/watchdog/aspeed_wdt.c
++++ b/drivers/watchdog/aspeed_wdt.c
+@@ -221,7 +221,8 @@ static int aspeed_wdt_probe(struct platform_device *pdev)
+ 		return -EINVAL;
+ 	config = ofdid->data;
+ 
+-	wdt->ctrl = WDT_CTRL_1MHZ_CLK;
++	wdt->ctrl |= readl(wdt->base + WDT_CTRL) & WDT_CTRL_ENABLE;
++	wdt->ctrl |= WDT_CTRL_1MHZ_CLK;
+ 
+ 	/*
+ 	 * Control reset on a per-device basis to ensure the
+@@ -243,11 +244,11 @@ static int aspeed_wdt_probe(struct platform_device *pdev)
+ 	if (of_property_read_bool(np, "aspeed,external-signal"))
+ 		wdt->ctrl |= WDT_CTRL_WDT_EXT;
+ 
+-	writel(wdt->ctrl, wdt->base + WDT_CTRL);
+-
+-	if (readl(wdt->base + WDT_CTRL) & WDT_CTRL_ENABLE)  {
++	if (wdt->ctrl & WDT_CTRL_ENABLE) {
+ 		aspeed_wdt_start(&wdt->wdd);
+ 		set_bit(WDOG_HW_RUNNING, &wdt->wdd.status);
++	} else {
++		writel(wdt->ctrl, wdt->base + WDT_CTRL);
+ 	}
+ 
+ 	if (of_device_is_compatible(np, "aspeed,ast2500-wdt")) {
 -- 
 2.11.0
 
