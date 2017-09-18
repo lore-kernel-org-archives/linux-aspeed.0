@@ -1,55 +1,36 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Mon, 18 Sep 2017 15:19:02 +0930
-Subject: [PATCH 1/4] watchdog: aspeed: Retain watchdog enabled state
+Date: Mon, 18 Sep 2017 15:19:03 +0930
+Subject: [PATCH 2/4] watchdog: aspeed: Fix 'Apseed' typo in Kconfig
 In-Reply-To: <20170918054905.16470-1-andrew@aj.id.au>
 References: <20170918054905.16470-1-andrew@aj.id.au>
-Message-ID: <20170918054905.16470-2-andrew@aj.id.au>
+Message-ID: <20170918054905.16470-3-andrew@aj.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-An unintended post-condition of probe() is that the watchdog is
-disabled. Rework probe() such that we retain the value of the "enabled"
-bit from the control register, and take the appropriate actions with
-respect to the watchdog core if so. Otherwise, just configure the
-watchdog as directed.
+Apseed sounds like a good name for a web/mobile start-up incubator, but
+isn't a reflection of Aspeed themselves.
 
 Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
 ---
- drivers/watchdog/aspeed_wdt.c | 9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
+ drivers/watchdog/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/watchdog/aspeed_wdt.c b/drivers/watchdog/aspeed_wdt.c
-index 79cc766cd30f..99bc6fbd8852 100644
---- a/drivers/watchdog/aspeed_wdt.c
-+++ b/drivers/watchdog/aspeed_wdt.c
-@@ -221,7 +221,8 @@ static int aspeed_wdt_probe(struct platform_device *pdev)
- 		return -EINVAL;
- 	config = ofdid->data;
+diff --git a/drivers/watchdog/Kconfig b/drivers/watchdog/Kconfig
+index c722cbfdc7e6..b562d2e03eb9 100644
+--- a/drivers/watchdog/Kconfig
++++ b/drivers/watchdog/Kconfig
+@@ -746,7 +746,7 @@ config ASPEED_WATCHDOG
+ 	select WATCHDOG_CORE
+ 	help
+ 	  Say Y here to include support for the watchdog timer
+-	  in Apseed BMC SoCs.
++	  in Aspeed BMC SoCs.
  
--	wdt->ctrl = WDT_CTRL_1MHZ_CLK;
-+	wdt->ctrl |= readl(wdt->base + WDT_CTRL) & WDT_CTRL_ENABLE;
-+	wdt->ctrl |= WDT_CTRL_1MHZ_CLK;
+ 	  This driver is required to reboot the SoC.
  
- 	/*
- 	 * Control reset on a per-device basis to ensure the
-@@ -243,11 +244,11 @@ static int aspeed_wdt_probe(struct platform_device *pdev)
- 	if (of_property_read_bool(np, "aspeed,external-signal"))
- 		wdt->ctrl |= WDT_CTRL_WDT_EXT;
- 
--	writel(wdt->ctrl, wdt->base + WDT_CTRL);
--
--	if (readl(wdt->base + WDT_CTRL) & WDT_CTRL_ENABLE)  {
-+	if (wdt->ctrl & WDT_CTRL_ENABLE) {
- 		aspeed_wdt_start(&wdt->wdd);
- 		set_bit(WDOG_HW_RUNNING, &wdt->wdd.status);
-+	} else {
-+		writel(wdt->ctrl, wdt->base + WDT_CTRL);
- 	}
- 
- 	if (of_device_is_compatible(np, "aspeed,ast2500-wdt")) {
 -- 
 2.11.0
 
