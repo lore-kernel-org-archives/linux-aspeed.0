@@ -1,52 +1,32 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Wed, 20 Sep 2017 15:00:20 +0930
-Subject: [PATCH v2 4/4] watchdog: aspeed: Move init to arch_initcall
-In-Reply-To: <20170920053020.6860-1-andrew@aj.id.au>
+From: Joel Stanley <joel@jms.id.au>
+Date: Wed, 20 Sep 2017 15:37:13 +0930
+Subject: [PATCH v2 1/4] watchdog: aspeed: Retain watchdog enabled state
+In-Reply-To: <20170920053020.6860-2-andrew@aj.id.au>
 References: <20170920053020.6860-1-andrew@aj.id.au>
-Message-ID: <20170920053020.6860-5-andrew@aj.id.au>
+ <20170920053020.6860-2-andrew@aj.id.au>
+Message-ID: <CACPK8XfK8voWhPoYg0kG-OhQoTH_B+=ES8BqbT26bdPYf39d1A@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Probing at device_initcall time lead to perverse cases where the
-watchdog was probed after, say, I2C devices, which then leaves a
-potentially running watchdog at the mercy of I2C device behaviour and
-bus conditions.
+On Wed, Sep 20, 2017 at 3:00 PM, Andrew Jeffery <andrew@aj.id.au> wrote:
+> An unintended post-condition of probe() is that the watchdog is
+> disabled. This behaviour was introduced by an unnecessary write to the
+> control register to configure the hardware based on the devicetree. The
+> write is unnecessary because the cached control value that is
+> manipulated by the code parsing the devicetree is eventually written by
+> aspeed_wdt_enable(), which is when we care how the control register
+> should be configured.
+>
+> Remove the write to restore expected behaviour.
+>
+> Fixes: b7f0b8ad25f3 ("drivers/watchdog: ASPEED reference dev tree properties for config")
+> Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
 
-Load the watchdog driver early to ensure that the kernel is patting it
-well before initialising peripherals.
+Reviewed-by: Joel Stanley <joel@jms.id.au>
 
-Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
----
- drivers/watchdog/aspeed_wdt.c | 13 ++++++++++++-
- 1 file changed, 12 insertions(+), 1 deletion(-)
+Thanks,
 
-diff --git a/drivers/watchdog/aspeed_wdt.c b/drivers/watchdog/aspeed_wdt.c
-index 6c6dd3f4c48d..ca5b91e2eb92 100644
---- a/drivers/watchdog/aspeed_wdt.c
-+++ b/drivers/watchdog/aspeed_wdt.c
-@@ -316,7 +316,18 @@ static struct platform_driver aspeed_watchdog_driver = {
- 		.of_match_table = of_match_ptr(aspeed_wdt_of_table),
- 	},
- };
--module_platform_driver(aspeed_watchdog_driver);
-+
-+static int __init aspeed_wdt_init(void)
-+{
-+	return platform_driver_register(&aspeed_watchdog_driver);
-+}
-+arch_initcall(aspeed_wdt_init);
-+
-+static void __exit aspeed_wdt_exit(void)
-+{
-+	platform_driver_unregister(&aspeed_watchdog_driver);
-+}
-+module_exit(aspeed_wdt_exit);
- 
- MODULE_DESCRIPTION("Aspeed Watchdog Driver");
- MODULE_LICENSE("GPL");
--- 
-2.11.0
-
+Joel
