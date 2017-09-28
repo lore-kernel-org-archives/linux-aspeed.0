@@ -1,31 +1,43 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Wed, 20 Sep 2017 15:43:41 +0930
-Subject: [PATCH v2 4/4] watchdog: aspeed: Move init to arch_initcall
-In-Reply-To: <20170920053020.6860-5-andrew@aj.id.au>
-References: <20170920053020.6860-1-andrew@aj.id.au>
- <20170920053020.6860-5-andrew@aj.id.au>
-Message-ID: <CACPK8Xdz1iK-4bqZfmfTUYw3zDLxCniwt6LupJq5mo-CCca3XQ@mail.gmail.com>
+Date: Thu, 28 Sep 2017 17:21:41 +0930
+Subject: [PATCH 0/8] ARM: dts: aspeed: Device tree updates
+Message-ID: <20170928075149.8154-1-joel@jms.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Sep 20, 2017 at 3:00 PM, Andrew Jeffery <andrew@aj.id.au> wrote:
-> Probing at device_initcall time lead to perverse cases where the
-> watchdog was probed after, say, I2C devices, which then leaves a
-> potentially running watchdog at the mercy of I2C device behaviour and
-> bus conditions.
->
-> Load the watchdog driver early to ensure that the kernel is patting it
-> well before initialising peripherals.
->
-> Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
+This series adds support for the i2c buses and vuart in the ASPEED device
+trees, as well as making a few cleanups.
 
-I agree that we need to make sure the watchdog driver is loaded
-earlier. I think this is the correct method, but I'll defer to Guenter
-on this one.
+I will merge these into my Aspeed devicetree tree once they have some acks.
+
+I have a second series ready to go as soon as our clk driver is merged.
 
 Cheers,
 
 Joel
+
+Andrew Jeffery (1):
+  ARM: dts: aspeed: Move pinctrl subnodes to improve readability
+
+Joel Stanley (7):
+  ARM: dts: aspeed: Reorder ADC node
+  ARM: dts: aspeed: Add I2C buses
+  ARM: dts: aspeed-romulus: Add I2C devices
+  ARM: dts: aspeed-palmetto: Add I2C devices
+  ARM: dts: aspeed-ast2500: Add I2C devices
+  ARM: dts: aspeed: Add aliases for UARTs
+  ARM: dts: aspeed: Clean up UART nodes
+
+ arch/arm/boot/dts/aspeed-ast2500-evb.dts      |   19 +
+ arch/arm/boot/dts/aspeed-bmc-opp-palmetto.dts |   52 +-
+ arch/arm/boot/dts/aspeed-bmc-opp-romulus.dts  |   54 +
+ arch/arm/boot/dts/aspeed-g4.dtsi              | 1773 +++++++++++++-----------
+ arch/arm/boot/dts/aspeed-g5.dtsi              | 1810 ++++++++++++++-----------
+ 5 files changed, 2176 insertions(+), 1532 deletions(-)
+
+-- 
+2.14.1
+
