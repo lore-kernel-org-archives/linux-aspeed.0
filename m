@@ -1,55 +1,50 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Wed, 4 Oct 2017 15:30:10 +0930
-Subject: [PATCH 8/8] ARM: dts: aspeed: Clean up UART nodes
-In-Reply-To: <1507094931.5452.20.camel@aj.id.au>
-References: <20170928075149.8154-1-joel@jms.id.au>
- <20170928075149.8154-9-joel@jms.id.au>
- <1507094931.5452.20.camel@aj.id.au>
-Message-ID: <CACPK8Xe6eftZvZzuXChUr3+Nd+Hj5nDB723d-9QwrMszxto6-A@mail.gmail.com>
+Date: Wed,  4 Oct 2017 17:19:08 +1030
+Subject: [PATCH v2 0/9] ARM: dts: aspeed: Device tree updates
+Message-ID: <20171004064917.2498-1-joel@jms.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Oct 4, 2017 at 2:58 PM, Andrew Jeffery <andrew@aj.id.au> wrote:
-> On Thu, 2017-09-28 at 17:21 +0930, Joel Stanley wrote:
+This series adds support for the i2c buses and vuart in the ASPEED device
+trees, as well as making a few cleanups.
 
->> -                     uart6: serial at 1e787000 {
->> -                             compatible = "ns16550a";
->> -                             reg = <0x1e787000 0x1000>;
->> +                     vuart: vuart at 1e787000 {
->
-> Bit of a nit, but arguably this should be `vuart: serial at ...`?
+v2 fixes issues pointed out by Andrew's reivew, and adds Brendan's acks. Thanks
+for the review both of you!
 
-Yep, that makes sense.
+There's one more patch than v1 to seperate out fixing the UARTs from changing
+their oder. I also used --diff-algorithm=patience for a nicer diff in patch 1.
 
->
->> +                             compatible = "aspeed,ast2400-vuart";
->> +                             reg = <0x1e787000 0x40>;
->>                               reg-shift = <2>;
->>                               interrupts = <10>;
->>                               clocks = <&clk_uart>;
->> diff --git a/arch/arm/boot/dts/aspeed-g5.dtsi b/arch/arm/boot/dts/aspeed-g5.dtsi
->> index 251fc9f4637e..0b793305120a 100644
->> --- a/arch/arm/boot/dts/aspeed-g5.dtsi
->> +++ b/arch/arm/boot/dts/aspeed-g5.dtsi
+I will merge these into my Aspeed devicetree tree once they have some acks.
 
->> @@ -287,9 +278,19 @@
->>                               };
->>                       };
->>
->> +                     uart1: serial at 1e783000 {
->
-> Earlier in the series you had a patch moving the ADC node to be in
-> address-order with respect to the rest of the nodes but this change puts uart1
-> out of address-order. As it turns out the uarts blocks are sprayed around in
-> the address-space: uart1 and uart5 are together, the vuart is elsewhere, then
-> uarts 2-4 are lumped together in another spot. I think it makes sense to
-> consolidate them, but it is inconsistent. Thoughts?
-
-Yeah. I'll move them to where they should be.
+I have a second series ready to go as soon as our clk driver is merged.
 
 Cheers,
 
 Joel
+
+Andrew Jeffery (1):
+  ARM: dts: aspeed: Move pinctrl subnodes to improve readability
+
+Joel Stanley (8):
+  ARM: dts: aspeed: Reorder ADC node
+  ARM: dts: aspeed: Add I2C buses
+  ARM: dts: aspeed-romulus: Add I2C devices
+  ARM: dts: aspeed-palmetto: Add I2C devices
+  ARM: dts: aspeed-ast2500: Add I2C devices
+  ARM: dts: aspeed: Add aliases for UARTs
+  ARM: dts: aspeed: Correctly order UART nodes
+  ARM: dts: aspeed: Clean up UART nodes
+
+ arch/arm/boot/dts/aspeed-ast2500-evb.dts      |   19 +
+ arch/arm/boot/dts/aspeed-bmc-opp-palmetto.dts |   52 +-
+ arch/arm/boot/dts/aspeed-bmc-opp-romulus.dts  |   54 +
+ arch/arm/boot/dts/aspeed-g4.dtsi              | 1812 +++++++++++++----------
+ arch/arm/boot/dts/aspeed-g5.dtsi              | 1951 ++++++++++++++-----------
+ 5 files changed, 2265 insertions(+), 1623 deletions(-)
+
+-- 
+2.14.1
+
