@@ -1,37 +1,24 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Wed, 4 Oct 2017 16:22:28 +0930
-Subject: [PATCH v2 9/9] ARM: dts: aspeed: Clean up UART nodes
-In-Reply-To: <20171004064917.2498-10-joel@jms.id.au>
-References: <20171004064917.2498-1-joel@jms.id.au>
- <20171004064917.2498-10-joel@jms.id.au>
-Message-ID: <CACPK8XcQB6PQhGxESV0owo_sAg2+4KV7hsyT-TJOpuOCXmTcdw@mail.gmail.com>
+Date: Wed,  4 Oct 2017 19:46:33 +1030
+Subject: [PATCH 0/2] ARM: dts: aspeed: Watchdog fixes
+Message-ID: <20171004091635.12499-1-joel@jms.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Oct 4, 2017 at 4:19 PM, Joel Stanley <joel@jms.id.au> wrote:
+A cleanup and a change in the default behaviour for the watchdog nodes to match
+what is required to boot with commonly shipped u-boots.
 
-> diff --git a/arch/arm/boot/dts/aspeed-g5.dtsi b/arch/arm/boot/dts/aspeed-g5.dtsi
-> index 61cc2d25143a..cef51dcc1002 100644
-> --- a/arch/arm/boot/dts/aspeed-g5.dtsi
-> +++ b/arch/arm/boot/dts/aspeed-g5.dtsi
+Joel Stanley (2):
+  ARM: dts: aspeed: Remove undocumented wdt properties
+  ARM: dts: aspeed: Enable watchdog two
 
-> @@ -297,9 +297,9 @@
->                                 };
->                         };
->
-> -                       uart6: serial at 1e787000 {
-> -                               compatible = "ns16550a";
-> -                               reg = <0x1e787000 0x1000>;
-> +                       vuart: vuart at 1e787000 {
+ arch/arm/boot/dts/aspeed-g4.dtsi | 8 ++------
+ arch/arm/boot/dts/aspeed-g5.dtsi | 9 +++------
+ 2 files changed, 5 insertions(+), 12 deletions(-)
 
-Doh. I'll fix this up when I apply, assuming I don't need to send a v3.
+-- 
+2.14.1
 
-
-> +                               compatible = "aspeed,ast2500-vuart";
-> +                               reg = <0x1e787000 0x40>;
->                                 reg-shift = <2>;
->                                 interrupts = <10>;
->                                 clocks = <&clk_uart>;
