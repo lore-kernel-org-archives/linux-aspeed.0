@@ -1,50 +1,96 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Wed,  4 Oct 2017 17:19:08 +1030
-Subject: [PATCH v2 0/9] ARM: dts: aspeed: Device tree updates
-Message-ID: <20171004064917.2498-1-joel@jms.id.au>
+Date: Wed,  4 Oct 2017 17:19:10 +1030
+Subject: [PATCH v2 2/9] ARM: dts: aspeed: Reorder ADC node
+In-Reply-To: <20171004064917.2498-1-joel@jms.id.au>
+References: <20171004064917.2498-1-joel@jms.id.au>
+Message-ID: <20171004064917.2498-3-joel@jms.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This series adds support for the i2c buses and vuart in the ASPEED device
-trees, as well as making a few cleanups.
+We try to keep the nodes in address order. The ADC node was out of
+place.
 
-v2 fixes issues pointed out by Andrew's reivew, and adds Brendan's acks. Thanks
-for the review both of you!
+Signed-off-by: Joel Stanley <joel@jms.id.au>
 
-There's one more patch than v1 to seperate out fixing the UARTs from changing
-their oder. I also used --diff-algorithm=patience for a nicer diff in patch 1.
+---
+v2:
+ - Don't introduce new clk bindings
+---
+ arch/arm/boot/dts/aspeed-g4.dtsi | 16 ++++++++--------
+ arch/arm/boot/dts/aspeed-g5.dtsi | 16 ++++++++--------
+ 2 files changed, 16 insertions(+), 16 deletions(-)
 
-I will merge these into my Aspeed devicetree tree once they have some acks.
-
-I have a second series ready to go as soon as our clk driver is merged.
-
-Cheers,
-
-Joel
-
-Andrew Jeffery (1):
-  ARM: dts: aspeed: Move pinctrl subnodes to improve readability
-
-Joel Stanley (8):
-  ARM: dts: aspeed: Reorder ADC node
-  ARM: dts: aspeed: Add I2C buses
-  ARM: dts: aspeed-romulus: Add I2C devices
-  ARM: dts: aspeed-palmetto: Add I2C devices
-  ARM: dts: aspeed-ast2500: Add I2C devices
-  ARM: dts: aspeed: Add aliases for UARTs
-  ARM: dts: aspeed: Correctly order UART nodes
-  ARM: dts: aspeed: Clean up UART nodes
-
- arch/arm/boot/dts/aspeed-ast2500-evb.dts      |   19 +
- arch/arm/boot/dts/aspeed-bmc-opp-palmetto.dts |   52 +-
- arch/arm/boot/dts/aspeed-bmc-opp-romulus.dts  |   54 +
- arch/arm/boot/dts/aspeed-g4.dtsi              | 1812 +++++++++++++----------
- arch/arm/boot/dts/aspeed-g5.dtsi              | 1951 ++++++++++++++-----------
- 5 files changed, 2265 insertions(+), 1623 deletions(-)
-
+diff --git a/arch/arm/boot/dts/aspeed-g4.dtsi b/arch/arm/boot/dts/aspeed-g4.dtsi
+index 1edd0cee6221..c2d96b8a5065 100644
+--- a/arch/arm/boot/dts/aspeed-g4.dtsi
++++ b/arch/arm/boot/dts/aspeed-g4.dtsi
+@@ -129,6 +129,14 @@
+ 				};
+ 			};
+ 
++			adc: adc at 1e6e9000 {
++				compatible = "aspeed,ast2400-adc";
++				reg = <0x1e6e9000 0xb0>;
++				clocks = <&clk_apb>;
++				#io-channel-cells = <1>;
++				status = "disabled";
++			};
++
+ 			sram at 1e720000 {
+ 				compatible = "mmio-sram";
+ 				reg = <0x1e720000 0x8000>;	// 32K
+@@ -227,14 +235,6 @@
+ 				no-loopback-test;
+ 				status = "disabled";
+ 			};
+-
+-			adc: adc at 1e6e9000 {
+-				compatible = "aspeed,ast2400-adc";
+-				reg = <0x1e6e9000 0xb0>;
+-				clocks = <&clk_apb>;
+-				#io-channel-cells = <1>;
+-				status = "disabled";
+-			};
+ 		};
+ 	};
+ };
+diff --git a/arch/arm/boot/dts/aspeed-g5.dtsi b/arch/arm/boot/dts/aspeed-g5.dtsi
+index f56dd67efa50..9e71c2dac0ba 100644
+--- a/arch/arm/boot/dts/aspeed-g5.dtsi
++++ b/arch/arm/boot/dts/aspeed-g5.dtsi
+@@ -173,6 +173,14 @@
+ 				reg-io-width = <4>;
+ 			};
+ 
++			adc: adc at 1e6e9000 {
++				compatible = "aspeed,ast2500-adc";
++				reg = <0x1e6e9000 0xb0>;
++				clocks = <&clk_apb>;
++				#io-channel-cells = <1>;
++				status = "disabled";
++			};
++
+ 			sram at 1e720000 {
+ 				compatible = "mmio-sram";
+ 				reg = <0x1e720000 0x9000>;	// 36K
+@@ -307,14 +315,6 @@
+ 				no-loopback-test;
+ 				status = "disabled";
+ 			};
+-
+-			adc: adc at 1e6e9000 {
+-				compatible = "aspeed,ast2500-adc";
+-				reg = <0x1e6e9000 0xb0>;
+-				clocks = <&clk_apb>;
+-				#io-channel-cells = <1>;
+-				status = "disabled";
+-			};
+ 		};
+ 	};
+ };
 -- 
 2.14.1
 
