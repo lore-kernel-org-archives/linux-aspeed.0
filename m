@@ -1,58 +1,105 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Wed, 04 Oct 2017 21:45:39 +1030
-Subject: [PATCH 2/2] ARM: dts: aspeed: Enable watchdog two
-In-Reply-To: <20171004091635.12499-3-joel@jms.id.au>
-References: <20171004091635.12499-1-joel@jms.id.au>
- <20171004091635.12499-3-joel@jms.id.au>
-Message-ID: <1507115739.5452.33.camel@aj.id.au>
+Date: Thu, 05 Oct 2017 10:01:50 +1030
+Subject: [PATCH v2 2/9] ARM: dts: aspeed: Reorder ADC node
+In-Reply-To: <20171004064917.2498-3-joel@jms.id.au>
+References: <20171004064917.2498-1-joel@jms.id.au>
+ <20171004064917.2498-3-joel@jms.id.au>
+Message-ID: <1507159910.5452.34.camel@aj.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 
-On Wed, 2017-10-04 at 19:46 +1030, Joel Stanley wrote:
-> The second watchdog is left running by u-boot in the common
-> configurations of the firmware shipped on ASPEED boards. Ensure a driver
-> is loaded so the system can succcessfully boot.
+On Wed, 2017-10-04 at 17:19 +1030, Joel Stanley wrote:
+> We try to keep the nodes in address order. The ADC node was out of
+> place.
 > 
 > Signed-off-by: Joel Stanley <joel@jms.id.au>
 
 Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
 
+> 
 > ---
->  arch/arm/boot/dts/aspeed-g4.dtsi | 1 -
->  arch/arm/boot/dts/aspeed-g5.dtsi | 1 -
->  2 files changed, 2 deletions(-)
+> v2:
+>  - Don't introduce new clk bindings
+> ---
+>  arch/arm/boot/dts/aspeed-g4.dtsi | 16 ++++++++--------
+>  arch/arm/boot/dts/aspeed-g5.dtsi | 16 ++++++++--------
+>  2 files changed, 16 insertions(+), 16 deletions(-)
 > 
 > diff --git a/arch/arm/boot/dts/aspeed-g4.dtsi b/arch/arm/boot/dts/aspeed-g4.dtsi
-> index 5be2e6a39917..9bf84d2ba038 100644
+> index 1edd0cee6221..c2d96b8a5065 100644
 > --- a/arch/arm/boot/dts/aspeed-g4.dtsi
 > +++ b/arch/arm/boot/dts/aspeed-g4.dtsi
-> @@ -212,7 +212,6 @@
->  			wdt2: watchdog at 1e785020 {
->  				compatible = "aspeed,ast2400-wdt";
->  				reg = <0x1e785020 0x1c>;
-> -				status = "disabled";
+> @@ -129,6 +129,14 @@
+>  				};
 >  			};
 >  
->  			vuart: serial at 1e787000 {
+> +			adc: adc at 1e6e9000 {
+> +				compatible = "aspeed,ast2400-adc";
+> +				reg = <0x1e6e9000 0xb0>;
+> +				clocks = <&clk_apb>;
+> +				#io-channel-cells = <1>;
+> +				status = "disabled";
+> +			};
+> +
+>  			sram at 1e720000 {
+>  				compatible = "mmio-sram";
+>  				reg = <0x1e720000 0x8000>;	// 32K
+> @@ -227,14 +235,6 @@
+>  				no-loopback-test;
+>  				status = "disabled";
+>  			};
+> -
+> -			adc: adc at 1e6e9000 {
+> -				compatible = "aspeed,ast2400-adc";
+> -				reg = <0x1e6e9000 0xb0>;
+> -				clocks = <&clk_apb>;
+> -				#io-channel-cells = <1>;
+> -				status = "disabled";
+> -			};
+>  		};
+>  	};
+>  };
 > diff --git a/arch/arm/boot/dts/aspeed-g5.dtsi b/arch/arm/boot/dts/aspeed-g5.dtsi
-> index 71e1264b81aa..ca023e9ab0b8 100644
+> index f56dd67efa50..9e71c2dac0ba 100644
 > --- a/arch/arm/boot/dts/aspeed-g5.dtsi
 > +++ b/arch/arm/boot/dts/aspeed-g5.dtsi
-> @@ -256,7 +256,6 @@
->  			wdt2: watchdog at 1e785020 {
->  				compatible = "aspeed,ast2500-wdt";
->  				reg = <0x1e785020 0x20>;
-> -				status = "disabled";
+> @@ -173,6 +173,14 @@
+>  				reg-io-width = <4>;
 >  			};
 >  
->  			wdt3: watchdog at 1e785040 {
+> +			adc: adc at 1e6e9000 {
+> +				compatible = "aspeed,ast2500-adc";
+> +				reg = <0x1e6e9000 0xb0>;
+> +				clocks = <&clk_apb>;
+> +				#io-channel-cells = <1>;
+> +				status = "disabled";
+> +			};
+> +
+>  			sram at 1e720000 {
+>  				compatible = "mmio-sram";
+>  				reg = <0x1e720000 0x9000>;	// 36K
+> @@ -307,14 +315,6 @@
+>  				no-loopback-test;
+>  				status = "disabled";
+>  			};
+> -
+> -			adc: adc at 1e6e9000 {
+> -				compatible = "aspeed,ast2500-adc";
+> -				reg = <0x1e6e9000 0xb0>;
+> -				clocks = <&clk_apb>;
+> -				#io-channel-cells = <1>;
+> -				status = "disabled";
+> -			};
+>  		};
+>  	};
+>  };
 -------------- next part --------------
 A non-text attachment was scrubbed...
 Name: signature.asc
 Type: application/pgp-signature
 Size: 801 bytes
 Desc: This is a digitally signed message part
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20171004/e9d5f527/attachment-0001.sig>
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20171005/39023557/attachment.sig>
