@@ -1,50 +1,43 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Thu, 05 Oct 2017 10:09:10 +1030
-Subject: [PATCH v2 9/9] ARM: dts: aspeed: Clean up UART nodes
-In-Reply-To: <CACPK8XcQB6PQhGxESV0owo_sAg2+4KV7hsyT-TJOpuOCXmTcdw@mail.gmail.com>
-References: <20171004064917.2498-1-joel@jms.id.au>
- <20171004064917.2498-10-joel@jms.id.au>
- <CACPK8XcQB6PQhGxESV0owo_sAg2+4KV7hsyT-TJOpuOCXmTcdw@mail.gmail.com>
-Message-ID: <1507160350.5452.37.camel@aj.id.au>
+Date: Tue, 17 Oct 2017 22:05:58 +1030
+Subject: [PATCH v2 4/4] watchdog: aspeed: Move init to arch_initcall
+In-Reply-To: <CACPK8Xdz1iK-4bqZfmfTUYw3zDLxCniwt6LupJq5mo-CCca3XQ@mail.gmail.com>
+References: <20170920053020.6860-1-andrew@aj.id.au>
+ <20170920053020.6860-5-andrew@aj.id.au>
+ <CACPK8Xdz1iK-4bqZfmfTUYw3zDLxCniwt6LupJq5mo-CCca3XQ@mail.gmail.com>
+Message-ID: <1508240158.24322.16.camel@aj.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 
-On Wed, 2017-10-04 at 16:22 +0930, Joel Stanley wrote:
-> > On Wed, Oct 4, 2017 at 4:19 PM, Joel Stanley <joel@jms.id.au> wrote:
-> 
-> > diff --git a/arch/arm/boot/dts/aspeed-g5.dtsi b/arch/arm/boot/dts/aspeed-g5.dtsi
-> > index 61cc2d25143a..cef51dcc1002 100644
-> > --- a/arch/arm/boot/dts/aspeed-g5.dtsi
-> > +++ b/arch/arm/boot/dts/aspeed-g5.dtsi
-> > @@ -297,9 +297,9 @@
-> >                                 };
-> >                         };
+On Wed, 2017-09-20 at 15:43 +0930, Joel Stanley wrote:
+> > On Wed, Sep 20, 2017 at 3:00 PM, Andrew Jeffery <andrew@aj.id.au> wrote:
+> > Probing at device_initcall time lead to perverse cases where the
+> > watchdog was probed after, say, I2C devices, which then leaves a
+> > potentially running watchdog at the mercy of I2C device behaviour and
+> > bus conditions.
 > > 
-> > -                       uart6: serial at 1e787000 {
-> > -                               compatible = "ns16550a";
-> > -                               reg = <0x1e787000 0x1000>;
-> > +                       vuart: vuart at 1e787000 {
+> > Load the watchdog driver early to ensure that the kernel is patting it
+> > well before initialising peripherals.
+> > 
+> > Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
 > 
-> Doh. I'll fix this up when I apply, assuming I don't need to send a v3.
+> I agree that we need to make sure the watchdog driver is loaded
+> earlier. I think this is the correct method, but I'll defer to Guenter
+> on this one.
 
-In that case:
+Just following up on Joel's comments: Is there anything else I need to
+address?
 
-Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
+Cheers,
 
-> 
-> 
-> > +                               compatible = "aspeed,ast2500-vuart";
-> > +                               reg = <0x1e787000 0x40>;
-> >                                 reg-shift = <2>;
-> >                                 interrupts = <10>;
-> >                                 clocks = <&clk_uart>;
+Andrew
 -------------- next part --------------
 A non-text attachment was scrubbed...
 Name: signature.asc
 Type: application/pgp-signature
 Size: 801 bytes
 Desc: This is a digitally signed message part
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20171005/b69c0c02/attachment-0001.sig>
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20171017/ba995a0c/attachment.sig>
