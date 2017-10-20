@@ -1,43 +1,65 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Tue, 17 Oct 2017 22:05:58 +1030
-Subject: [PATCH v2 4/4] watchdog: aspeed: Move init to arch_initcall
-In-Reply-To: <CACPK8Xdz1iK-4bqZfmfTUYw3zDLxCniwt6LupJq5mo-CCca3XQ@mail.gmail.com>
-References: <20170920053020.6860-1-andrew@aj.id.au>
- <20170920053020.6860-5-andrew@aj.id.au>
- <CACPK8Xdz1iK-4bqZfmfTUYw3zDLxCniwt6LupJq5mo-CCca3XQ@mail.gmail.com>
-Message-ID: <1508240158.24322.16.camel@aj.id.au>
+Date: Fri, 20 Oct 2017 14:07:22 +1030
+Subject: [RFC PATCH 0/5] gpio: Expose reset tolerance capability
+Message-ID: <20171020033727.21557-1-andrew@aj.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 2017-09-20 at 15:43 +0930, Joel Stanley wrote:
-> > On Wed, Sep 20, 2017 at 3:00 PM, Andrew Jeffery <andrew@aj.id.au> wrote:
-> > Probing at device_initcall time lead to perverse cases where the
-> > watchdog was probed after, say, I2C devices, which then leaves a
-> > potentially running watchdog at the mercy of I2C device behaviour and
-> > bus conditions.
-> > 
-> > Load the watchdog driver early to ensure that the kernel is patting it
-> > well before initialising peripherals.
-> > 
-> > Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
-> 
-> I agree that we need to make sure the watchdog driver is loaded
-> earlier. I think this is the correct method, but I'll defer to Guenter
-> on this one.
+Hello,
 
-Just following up on Joel's comments: Is there anything else I need to
-address?
+This series exposes a "reset tolerant" property for GPIOs. For example, the
+controller implemented in Aspeed BMCs provides such a feature to allow the BMC
+to be reset whilst maintaining necessary state to keep host systems alive or
+status LEDs in-tact.
+
+I'm sending it as an RFC because I'm not sure using pinconf is the right way
+to go about it, or that expanding the sysfs interface is a good idea, or that
+the approach taken is right in the context of the existing suspend support.
+pinconf just ended up being a convenient abstraction whilst supporting the
+sysfs change, and didn't feel unreasonable to use for devicetree or the chardev
+interface either. My concern with using pinconf is that the reset-tolerant
+property is (currently) GPIO-centric, but maybe that's not a worry.
+
+So the patches in the series support configuring the property via devicetree,
+the chardev interface and the sysfs interface. The sysfs interface also exposes
+the ability to configure the suspend tolerance, though there are some ordering
+requirements with respect to setting the direction (the suspend tolerance will
+only take if configured before setting the pin direction on the Arizona
+controller).
+
+Please review!
 
 Cheers,
 
 Andrew
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 801 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20171017/ba995a0c/attachment.sig>
+
+Andrew Jeffery (5):
+  gpio: gpiolib: Add core support for maintaining GPIO values on reset
+  gpio: gpiolib: Add OF support for maintaining GPIO values on reset
+  gpio: gpiolib: Add chardev support for maintaining GPIO values on
+    reset
+  gpio: gpiolib: Add sysfs support for maintaining GPIO values on reset
+  gpio: aspeed: Add support for reset tolerance
+
+ Documentation/gpio/sysfs.txt            |  9 ++++
+ drivers/gpio/gpio-arizona.c             |  4 +-
+ drivers/gpio/gpio-aspeed.c              | 39 ++++++++++++++-
+ drivers/gpio/gpiolib-of.c               |  2 +
+ drivers/gpio/gpiolib-sysfs.c            | 88 +++++++++++++++++++++++++++++++--
+ drivers/gpio/gpiolib.c                  | 74 +++++++++++++++++++++++++--
+ drivers/gpio/gpiolib.h                  |  1 +
+ include/dt-bindings/gpio/gpio.h         |  4 ++
+ include/linux/gpio/consumer.h           |  9 ++++
+ include/linux/gpio/driver.h             |  5 +-
+ include/linux/gpio/machine.h            |  2 +
+ include/linux/of_gpio.h                 |  1 +
+ include/linux/pinctrl/pinconf-generic.h |  2 +
+ include/uapi/linux/gpio.h               | 11 +++--
+ 14 files changed, 234 insertions(+), 17 deletions(-)
+
+-- 
+2.11.0
+
