@@ -1,48 +1,46 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Fri, 20 Oct 2017 18:10:08 +1030
-Subject: [RFC PATCH 4/5] gpio: gpiolib: Add sysfs support for
- maintaining GPIO values on reset
-In-Reply-To: <CACRpkdZ9HpXXuauRtVjA9n1dwF3sUQ4gJL-FOUMcMBDCL9oxYw@mail.gmail.com>
+From: Linus Walleij <linus.walleij@linaro.org>
+Date: Fri, 20 Oct 2017 09:43:29 +0200
+Subject: [RFC PATCH 1/5] gpio: gpiolib: Add core support for maintaining
+ GPIO values on reset
+In-Reply-To: <CACRpkda-7-uM5x4kbNXkx3F7F4VTZtTvXfys5VPFb1YiVDo1+g@mail.gmail.com>
 References: <20171020033727.21557-1-andrew@aj.id.au>
- <20171020033727.21557-5-andrew@aj.id.au>
- <CACRpkdZ9HpXXuauRtVjA9n1dwF3sUQ4gJL-FOUMcMBDCL9oxYw@mail.gmail.com>
-Message-ID: <1508485208.24322.46.camel@aj.id.au>
+ <20171020033727.21557-2-andrew@aj.id.au>
+ <CACRpkda-7-uM5x4kbNXkx3F7F4VTZtTvXfys5VPFb1YiVDo1+g@mail.gmail.com>
+Message-ID: <CACRpkdaW5jMEh_OR2oiy_Bc-6Cb+GM1Uap+1u2T2hw85CwBh3g@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, 2017-10-20 at 09:29 +0200, Linus Walleij wrote:
-> On Fri, Oct 20, 2017 at 5:37 AM, Andrew Jeffery <andrew@aj.id.au>
-> wrote:
-> 
-> > Expose a new 'maintain' sysfs attribute to control both suspend and
-> > reset tolerance.
-> > 
-> > Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
-> 
-> NAK. You will find the actual ABI documentation in
-> Documentation/ABI/obsolete/sysfs-gpio
+On Fri, Oct 20, 2017 at 9:17 AM, Linus Walleij <linus.walleij@linaro.org> wrote:
+> On Fri, Oct 20, 2017 at 5:37 AM, Andrew Jeffery <andrew@aj.id.au> wrote:
+>
+>> GPIO state reset tolerance is implemented in gpiolib through the
+>> addition of a new pinconf parameter. With that, some renaming of helpers
+>> is done to clarify the scope of the already existing
+>> gpiochip_line_is_persistent(), as it's now ambiguous as to whether that
+>> means on suspend, reset or both.
+>
+> Isn't it most reasonable to say persistance covers both cases, reset
+> and/or sleep? This seems a bit like overdefined.
 
-Right, I did a quick grep to find an attribute description in order to
-judge what documentation to change. Unfortunately my grep didn't pick
-up this file.
+I should also add: right now persistance is defined in negative terms,
+you can supply the flag "may lose value", which means the subsystem
+by default, and driver by default, will try to keep values persistent across
+sleep.
 
-> that's why. This is being phased out and should not be extended.
-> Everyone should use the character device, especially for new
-> functionality.
+Then it is possible to opt in for not doing so. (Usually to save power I
+think.)
 
-Yeah, I expected this (and the NAK) would be the response but figured I
-should ask the question.
+I think that especially for userspace use cases, saving power should
+not really be the concern, but correct me if I'm wrong. I am thinking
+of a box with a DC plug wired up to a factory line here.
 
-Thanks,
+What we have in the Arizona driver is an opt-in where the DT can
+say "don't preserve the value  this line during system sleep" i.e. "lay lose
+value" and we can extend that flag to mean "don't preserve this line
+during reset either" but by default assume that we should.
 
-Andrew
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 801 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20171020/b94683c8/attachment.sig>
+Yours,
+Linus Walleij
