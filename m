@@ -1,134 +1,43 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Fri, 20 Oct 2017 14:07:27 +1030
-Subject: [RFC PATCH 5/5] gpio: aspeed: Add support for reset tolerance
-In-Reply-To: <20171020033727.21557-1-andrew@aj.id.au>
+From: Linus Walleij <linus.walleij@linaro.org>
+Date: Fri, 20 Oct 2017 09:17:15 +0200
+Subject: [RFC PATCH 1/5] gpio: gpiolib: Add core support for maintaining
+ GPIO values on reset
+In-Reply-To: <20171020033727.21557-2-andrew@aj.id.au>
 References: <20171020033727.21557-1-andrew@aj.id.au>
-Message-ID: <20171020033727.21557-6-andrew@aj.id.au>
+ <20171020033727.21557-2-andrew@aj.id.au>
+Message-ID: <CACRpkda-7-uM5x4kbNXkx3F7F4VTZtTvXfys5VPFb1YiVDo1+g@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Use the new pinconf parameter for reset tolerance to expose the
-associated capability of the Aspeed GPIO controller.
+On Fri, Oct 20, 2017 at 5:37 AM, Andrew Jeffery <andrew@aj.id.au> wrote:
 
-Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
----
- drivers/gpio/gpio-aspeed.c | 39 +++++++++++++++++++++++++++++++++++++--
- 1 file changed, 37 insertions(+), 2 deletions(-)
+> GPIO state reset tolerance is implemented in gpiolib through the
+> addition of a new pinconf parameter. With that, some renaming of helpers
+> is done to clarify the scope of the already existing
+> gpiochip_line_is_persistent(), as it's now ambiguous as to whether that
+> means on suspend, reset or both.
 
-diff --git a/drivers/gpio/gpio-aspeed.c b/drivers/gpio/gpio-aspeed.c
-index bfc53995064a..0492cd917178 100644
---- a/drivers/gpio/gpio-aspeed.c
-+++ b/drivers/gpio/gpio-aspeed.c
-@@ -60,6 +60,7 @@ struct aspeed_gpio_bank {
- 	uint16_t	val_regs;
- 	uint16_t	irq_regs;
- 	uint16_t	debounce_regs;
-+	uint16_t	tolerance_regs;
- 	const char	names[4][3];
- };
- 
-@@ -70,48 +71,56 @@ static const struct aspeed_gpio_bank aspeed_gpio_banks[] = {
- 		.val_regs = 0x0000,
- 		.irq_regs = 0x0008,
- 		.debounce_regs = 0x0040,
-+		.tolerance_regs = 0x001c,
- 		.names = { "A", "B", "C", "D" },
- 	},
- 	{
- 		.val_regs = 0x0020,
- 		.irq_regs = 0x0028,
- 		.debounce_regs = 0x0048,
-+		.tolerance_regs = 0x003c,
- 		.names = { "E", "F", "G", "H" },
- 	},
- 	{
- 		.val_regs = 0x0070,
- 		.irq_regs = 0x0098,
- 		.debounce_regs = 0x00b0,
-+		.tolerance_regs = 0x00ac,
- 		.names = { "I", "J", "K", "L" },
- 	},
- 	{
- 		.val_regs = 0x0078,
- 		.irq_regs = 0x00e8,
- 		.debounce_regs = 0x0100,
-+		.tolerance_regs = 0x00fc,
- 		.names = { "M", "N", "O", "P" },
- 	},
- 	{
- 		.val_regs = 0x0080,
- 		.irq_regs = 0x0118,
- 		.debounce_regs = 0x0130,
-+		.tolerance_regs = 0x012c,
- 		.names = { "Q", "R", "S", "T" },
- 	},
- 	{
- 		.val_regs = 0x0088,
- 		.irq_regs = 0x0148,
- 		.debounce_regs = 0x0160,
-+		.tolerance_regs = 0x015c,
- 		.names = { "U", "V", "W", "X" },
- 	},
- 	{
- 		.val_regs = 0x01E0,
- 		.irq_regs = 0x0178,
- 		.debounce_regs = 0x0190,
-+		.tolerance_regs = 0x018c,
- 		.names = { "Y", "Z", "AA", "AB" },
- 	},
- 	{
--		.val_regs = 0x01E8,
--		.irq_regs = 0x01A8,
-+		.val_regs = 0x01e8,
-+		.irq_regs = 0x01a8,
- 		.debounce_regs = 0x01c0,
-+		.tolerance_regs = 0x01bc,
- 		.names = { "AC", "", "", "" },
- 	},
- };
-@@ -531,6 +540,30 @@ static int aspeed_gpio_setup_irqs(struct aspeed_gpio *gpio,
- 	return 0;
- }
- 
-+static int aspeed_gpio_reset_tolerance(struct gpio_chip *chip,
-+					unsigned int offset, bool enable)
-+{
-+	struct aspeed_gpio *gpio = gpiochip_get_data(chip);
-+	const struct aspeed_gpio_bank *bank;
-+	unsigned long flags;
-+	u32 val;
-+
-+	bank = to_bank(offset);
-+
-+	spin_lock_irqsave(&gpio->lock, flags);
-+	val = readl(gpio->base + bank->tolerance_regs);
-+
-+	if (enable)
-+		val |= GPIO_BIT(offset);
-+	else
-+		val &= ~GPIO_BIT(offset);
-+
-+	writel(val, gpio->base + bank->tolerance_regs);
-+	spin_unlock_irqrestore(&gpio->lock, flags);
-+
-+	return 0;
-+}
-+
- static int aspeed_gpio_request(struct gpio_chip *chip, unsigned int offset)
- {
- 	if (!have_gpio(gpiochip_get_data(chip), offset))
-@@ -768,6 +801,8 @@ static int aspeed_gpio_set_config(struct gpio_chip *chip, unsigned int offset,
- 			param == PIN_CONFIG_DRIVE_OPEN_SOURCE)
- 		/* Return -ENOTSUPP to trigger emulation, as per datasheet */
- 		return -ENOTSUPP;
-+	else if (param == PIN_CONFIG_RESET_TOLERANT)
-+		return aspeed_gpio_reset_tolerance(chip, offset, arg);
- 
- 	return -ENOTSUPP;
- }
--- 
-2.11.0
+Isn't it most reasonable to say persistance covers both cases, reset
+and/or sleep? This seems a bit like overdefined.
 
+So can we say that is this flag is set, the hardware and driver should
+do its best to preserve the value across any system disruptions.
+
+We can change the wording of course, patches welcome for that.
+
+But do we really need to distinguish the cases of disruption and
+whether we cover up for them or not?
+
+I would say we can deal with that the day we have a system with
+two register bits (or similar) where you can select to preserve across
+sleep, reset, one or the other, AND there is also a usecase such that
+a user wants to preserve the value across reset but not suspend or
+vice versa.
+
+I suspect that will not happen.
+
+Yours,
+Linus Walleij
