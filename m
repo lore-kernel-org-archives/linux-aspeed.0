@@ -1,57 +1,60 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Fri, 20 Oct 2017 18:54:15 +1030
+Date: Fri, 20 Oct 2017 19:02:27 +1030
 Subject: [RFC PATCH 1/5] gpio: gpiolib: Add core support for maintaining
  GPIO values on reset
-In-Reply-To: <CACRpkda-7-uM5x4kbNXkx3F7F4VTZtTvXfys5VPFb1YiVDo1+g@mail.gmail.com>
+In-Reply-To: <CACRpkdaW5jMEh_OR2oiy_Bc-6Cb+GM1Uap+1u2T2hw85CwBh3g@mail.gmail.com>
 References: <20171020033727.21557-1-andrew@aj.id.au>
  <20171020033727.21557-2-andrew@aj.id.au>
  <CACRpkda-7-uM5x4kbNXkx3F7F4VTZtTvXfys5VPFb1YiVDo1+g@mail.gmail.com>
-Message-ID: <1508487855.24322.49.camel@aj.id.au>
+ <CACRpkdaW5jMEh_OR2oiy_Bc-6Cb+GM1Uap+1u2T2hw85CwBh3g@mail.gmail.com>
+Message-ID: <1508488347.24322.51.camel@aj.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 
-On Fri, 2017-10-20 at 09:17 +0200, Linus Walleij wrote:
-> > On Fri, Oct 20, 2017 at 5:37 AM, Andrew Jeffery <andrew@aj.id.au> wrote:
-> 
-> > GPIO state reset tolerance is implemented in gpiolib through the
-> > addition of a new pinconf parameter. With that, some renaming of helpers
-> > is done to clarify the scope of the already existing
-> > gpiochip_line_is_persistent(), as it's now ambiguous as to whether that
-> > means on suspend, reset or both.
-> 
-> Isn't it most reasonable to say persistance covers both cases, reset
-> and/or sleep? This seems a bit like overdefined.
+On Fri, 2017-10-20 at 09:43 +0200, Linus Walleij wrote:
+> On Fri, Oct 20, 2017 at 9:17 AM, Linus Walleij <linus.walleij@linaro.org> wrote:
+> > > > On Fri, Oct 20, 2017 at 5:37 AM, Andrew Jeffery <andrew@aj.id.au> wrote:
+> > 
+> > > GPIO state reset tolerance is implemented in gpiolib through the
+> > > addition of a new pinconf parameter. With that, some renaming of helpers
+> > > is done to clarify the scope of the already existing
+> > > gpiochip_line_is_persistent(), as it's now ambiguous as to whether that
+> > > means on suspend, reset or both.
+> > 
+> > Isn't it most reasonable to say persistance covers both cases, reset
+> > and/or sleep? This seems a bit like overdefined.
+> 
+> I should also add: right now persistance is defined in negative terms,
+> you can supply the flag "may lose value", which means the subsystem
+> by default, and driver by default, will try to keep values persistent across
+> sleep.
+> 
+> Then it is possible to opt in for not doing so. (Usually to save power I
+> think.)
+> 
+> I think that especially for userspace use cases, saving power should
+> not really be the concern, but correct me if I'm wrong. I am thinking
+> of a box with a DC plug wired up to a factory line here.
+> 
+> What we have in the Arizona driver is an opt-in where the DT can
+> say "don't preserve the value  this line during system sleep" i.e. "lay lose
+> value" and we can extend that flag to mean "don't preserve this line
+> during reset either" but by default assume that we should.
 
-I definitely had some internal debate about that. I erred on the side of
-avoiding potential change in expectations for the arizona. If you consider that
-overdefined then I'm happy to go the other way.
+Yeah, the preserve polarity was another thing I debated given the
+current example with the Arizona driver. Not preserving is the default
+for the Aspeed hardware, so that ended up influencing my choice. Not
+that implementation details should necessarily influence interface
+design, but it was at least more than a coin toss.
 
-> 
-> So can we say that is this flag is set, the hardware and driver should
-> do its best to preserve the value across any system disruptions.
-> 
-> We can change the wording of course, patches welcome for that.
+I don't have anything specific against preserving by default, just my
+gut instinct and the hardware went the other way. As long as we expose
+the option to opt out, which the additions for the Arizona already do.
 
-Yep.
-
-> 
-> But do we really need to distinguish the cases of disruption and
-> whether we cover up for them or not?
-> 
-> I would say we can deal with that the day we have a system with
-> two register bits (or similar) where you can select to preserve across
-> sleep, reset, one or the other, AND there is also a usecase such that
-> a user wants to preserve the value across reset but not suspend or
-> vice versa.
-> 
-> I suspect that will not happen.
-
-A very reasonable approach.
-
-Cheers for the feedback.
+Cheers,
 
 Andrew
 -------------- next part --------------
@@ -60,4 +63,4 @@ Name: signature.asc
 Type: application/pgp-signature
 Size: 801 bytes
 Desc: This is a digitally signed message part
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20171020/c21d9259/attachment.sig>
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20171020/f127d7b5/attachment-0001.sig>
