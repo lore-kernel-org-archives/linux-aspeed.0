@@ -1,40 +1,66 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Date: Sun, 22 Oct 2017 09:22:05 -0700
-Subject: [PATCH v2 4/4] watchdog: aspeed: Move init to arch_initcall
-In-Reply-To: <1508240158.24322.16.camel@aj.id.au>
-References: <20170920053020.6860-1-andrew@aj.id.au>
- <20170920053020.6860-5-andrew@aj.id.au>
- <CACPK8Xdz1iK-4bqZfmfTUYw3zDLxCniwt6LupJq5mo-CCca3XQ@mail.gmail.com>
- <1508240158.24322.16.camel@aj.id.au>
-Message-ID: <c3f1b8d1-fe4d-c68f-5f05-c4cb75912e2c@roeck-us.net>
+From: Andrew Jeffery <andrew@aj.id.au>
+Date: Wed, 25 Oct 2017 15:34:15 +1030
+Subject: [PATCH 0/2] gpio: Expose reset tolerance capability
+Message-ID: <20171025050417.27992-1-andrew@aj.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 10/17/2017 04:35 AM, Andrew Jeffery wrote:
-> On Wed, 2017-09-20 at 15:43 +0930, Joel Stanley wrote:
->>> On Wed, Sep 20, 2017 at 3:00 PM, Andrew Jeffery <andrew@aj.id.au> wrote:
->>> Probing at device_initcall time lead to perverse cases where the
->>> watchdog was probed after, say, I2C devices, which then leaves a
->>> potentially running watchdog at the mercy of I2C device behaviour and
->>> bus conditions.
->>>
->>> Load the watchdog driver early to ensure that the kernel is patting it
->>> well before initialising peripherals.
->>>
->>> Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
->>
->> I agree that we need to make sure the watchdog driver is loaded
->> earlier. I think this is the correct method, but I'll defer to Guenter
->> on this one.
-> 
-> Just following up on Joel's comments: Is there anything else I need to
-> address?
-> 
+Hello,
 
-No. Sorry, I have been terribly busy. Digging through patch backlog today.
+This short series enables GPIO state persistence across controller resets,
+modifying gpiolib to expose control of the behaviour and providing an initial
+implementation in the Aspeed GPIO controller.
 
-Guenter
+This is a follow-up to the initial RFC series[1], which had some undesirable
+features (and bugs).
+
+From the RFC, I've:
+
+1. Dropped the idea of distinguishing between sleep and reset cases[2]
+2. Changed the default behaviour from transitory to persistent (must explicitly
+   request transitory behaviour for controllers supporting reset tolerance)[3]
+3. Dropped the ability for userspace to configure whether or not the exported
+   GPIO is persistent[4][5]
+
+On point 2, whilst the patch modifying the sysfs interface ABI no-longer lives,
+gpiolib-sysfs still requires modification to provide consistent behaviour with
+the chardev interface in providing a default-persistent GPIO on export.
+
+Regarding point 3, I figured this is something we can add later once there's
+been some discussion on how much of a good idea it is.
+
+As some of the capabilities in the RFC have been dropped, I've squashed the
+gpiolib support into a single patch as it's not really that complex.
+
+Hopefully that addresses the feedback on the RFC. Please review!
+
+Andrew
+
+[1] https://www.spinics.net/lists/devicetree/msg199559.html
+[2] https://www.spinics.net/lists/devicetree/msg199566.html
+[3] https://www.spinics.net/lists/devicetree/msg199574.html
+[4] https://www.spinics.net/lists/devicetree/msg199568.html
+[5] https://www.spinics.net/lists/devicetree/msg199569.html 
+
+Andrew Jeffery (2):
+  gpio: gpiolib: Expand sleep tolerance to include controller reset
+  gpio: aspeed: Add support for reset tolerance
+
+ drivers/gpio/gpio-aspeed.c              | 39 ++++++++++++++++++++--
+ drivers/gpio/gpiolib-of.c               |  6 ++--
+ drivers/gpio/gpiolib-sysfs.c            | 14 +++++---
+ drivers/gpio/gpiolib.c                  | 58 ++++++++++++++++++++++++++++++---
+ drivers/gpio/gpiolib.h                  |  2 +-
+ include/dt-bindings/gpio/gpio.h         |  6 ++--
+ include/linux/gpio/consumer.h           |  8 +++++
+ include/linux/gpio/machine.h            |  4 +--
+ include/linux/of_gpio.h                 |  2 +-
+ include/linux/pinctrl/pinconf-generic.h |  2 ++
+ 10 files changed, 121 insertions(+), 20 deletions(-)
+
+-- 
+2.11.0
 
