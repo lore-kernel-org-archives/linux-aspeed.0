@@ -1,11 +1,11 @@
-From: Charles Keepax <ckeepax@opensource.cirrus.com>
-Date: Wed, 1 Nov 2017 10:09:53 +0000
+From: Rob Herring <robh@kernel.org>
+Date: Wed, 1 Nov 2017 19:15:31 -0500
 Subject: [PATCH v3 1/2] gpio: gpiolib: Generalise state persistence
  beyond sleep
 In-Reply-To: <20171101040457.1200-2-andrew@aj.id.au>
 References: <20171101040457.1200-1-andrew@aj.id.au>
  <20171101040457.1200-2-andrew@aj.id.au>
-Message-ID: <20171101100953.ye5fp33vxuol5z5a@localhost.localdomain>
+Message-ID: <20171102001531.6j7isyrcwjjwovho@rob-hp-laptop>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -31,8 +31,17 @@ On Wed, Nov 01, 2017 at 03:04:56PM +1100, Andrew Jeffery wrote:
 > 
 > Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
 > ---
+>  drivers/gpio/gpiolib-of.c               |  6 ++--
+>  drivers/gpio/gpiolib-sysfs.c            | 14 +++++---
+>  drivers/gpio/gpiolib.c                  | 61 ++++++++++++++++++++++++++++++---
+>  drivers/gpio/gpiolib.h                  |  2 +-
 
-Reviewed-by: Charles Keepax <ckeepax@opensource.cirrus.com>
+>  include/dt-bindings/gpio/gpio.h         |  6 ++--
 
-Thanks,
-Charles
+Acked-by: Rob Herring <robh@kernel.org>
+
+>  include/linux/gpio/consumer.h           |  8 +++++
+>  include/linux/gpio/machine.h            |  4 +--
+>  include/linux/of_gpio.h                 |  2 +-
+>  include/linux/pinctrl/pinconf-generic.h |  2 ++
+>  9 files changed, 87 insertions(+), 18 deletions(-)
