@@ -1,7 +1,7 @@
 From: Haiyue Wang <haiyue.wang@linux.intel.com>
-Date: Fri,  8 Dec 2017 22:31:38 +0800
+Date: Sun, 10 Dec 2017 14:08:26 +0800
 Subject: [PATCH linux dev-4.10 1/2] ipmi: add an Aspeed KCS IPMI BMC driver
-Message-ID: <1512743499-26590-1-git-send-email-haiyue.wang@linux.intel.com>
+Message-ID: <1512886107-10948-1-git-send-email-haiyue.wang@linux.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -23,9 +23,9 @@ Signed-off-by: Haiyue Wang <haiyue.wang@linux.intel.com>
  .../devicetree/bindings/mfd/aspeed-lpc.txt         |  31 +-
  drivers/char/ipmi/Kconfig                          |   9 +
  drivers/char/ipmi/Makefile                         |   1 +
- drivers/char/ipmi/kcs-bmc.c                        | 797 +++++++++++++++++++++
- include/uapi/linux/kcs-bmc.h                       |  14 +
- 5 files changed, 849 insertions(+), 3 deletions(-)
+ drivers/char/ipmi/kcs-bmc.c                        | 759 +++++++++++++++++++++
+ include/uapi/linux/kcs-bmc.h                       |  13 +
+ 5 files changed, 810 insertions(+), 3 deletions(-)
  create mode 100644 drivers/char/ipmi/kcs-bmc.c
  create mode 100644 include/uapi/linux/kcs-bmc.h
 
@@ -113,10 +113,10 @@ index 0d98cd9..35272a7 100644
 \ No newline at end of file
 diff --git a/drivers/char/ipmi/kcs-bmc.c b/drivers/char/ipmi/kcs-bmc.c
 new file mode 100644
-index 0000000..331b563
+index 0000000..bcbd2d6
 --- /dev/null
 +++ b/drivers/char/ipmi/kcs-bmc.c
-@@ -0,0 +1,797 @@
+@@ -0,0 +1,759 @@
 +// SPDX-License-Identifier: GPL-2.0
 +// Copyright (c) 2015-2017, Intel Corporation.
 +
@@ -239,16 +239,16 @@ index 0000000..331b563
 +
 +/* IPMI 2.0 - 9.5, KCS Interface Registers */
 +struct kcs_ioreg {
-+	u32 idr;
-+	u32 odr;
-+	u32 str;
++	u32 idr; /* Input Data Register */
++	u32 odr; /* Output Data Register */
++	u32 str; /* Status Register */
 +};
 +
 +static const struct kcs_ioreg kcs_channel_ioregs[KCS_CHANNEL_MAX] = {
-+	{ .idr = LPC_IDR1, .odr = LPC_ODR1, .str =  LPC_STR1 },
-+	{ .idr = LPC_IDR2, .odr = LPC_ODR2, .str =  LPC_STR2 },
-+	{ .idr = LPC_IDR3, .odr = LPC_ODR3, .str =  LPC_STR3 },
-+	{ .idr = LPC_IDR4, .odr = LPC_ODR4, .str =  LPC_STR4 },
++	{ .idr = LPC_IDR1, .odr = LPC_ODR1, .str = LPC_STR1 },
++	{ .idr = LPC_IDR2, .odr = LPC_ODR2, .str = LPC_STR2 },
++	{ .idr = LPC_IDR3, .odr = LPC_ODR3, .str = LPC_STR3 },
++	{ .idr = LPC_IDR4, .odr = LPC_ODR4, .str = LPC_STR4 },
 +};
 +
 +struct kcs_bmc {
@@ -259,13 +259,13 @@ index 0000000..331b563
 +	u32 chan;
 +	int running;
 +
-+	u32  idr; /* Input Data Register */
-+	u32  odr; /* Output Data Register */
-+	u32  str; /* Status Register */
++	u32 idr;
++	u32 odr;
++	u32 str;
 +
-+	int  kcs_phase;
-+	u8   abort_phase;
-+	u8   kcs_error;
++	int kcs_phase;
++	u8  abort_phase;
++	u8  kcs_error;
 +
 +	wait_queue_head_t queue;
 +	int  data_in_avail;
@@ -769,12 +769,6 @@ index 0000000..331b563
 +	.unlocked_ioctl = kcs_bmc_ioctl,
 +};
 +
-+static const struct regmap_config kcs_regmap_cfg = {
-+	.reg_bits = 32,
-+	.val_bits = 32,
-+	.reg_stride = 4,
-+};
-+
 +static int kcs_bmc_probe(struct platform_device *pdev)
 +{
 +	struct kcs_bmc *kcs_bmc;
@@ -785,49 +779,26 @@ index 0000000..331b563
 +
 +	dev = &pdev->dev;
 +
-+	rc = of_property_read_u32(dev->of_node, "kcs_chan", &chan);
-+	if (rc) {
-+		dev_err(dev, "no 'kcs_chan' configured\n");
-+		return -ENODEV;
-+	}
++	kcs_bmc = devm_kzalloc(dev, sizeof(*kcs_bmc), GFP_KERNEL);
++	if (!kcs_bmc)
++		return -ENOMEM;
 +
-+	if (chan == 0 || chan > KCS_CHANNEL_MAX) {
-+		dev_err(dev, "invalid 'kcs_chan' = '%u' is configured\n", chan);
++	rc = of_property_read_u32(dev->of_node, "kcs_chan", &chan);
++	if ((rc != 0) || (chan == 0 || chan > KCS_CHANNEL_MAX)) {
++		dev_err(dev, "no valid 'kcs_chan' configured\n");
 +		return -ENODEV;
 +	}
 +
 +	rc = of_property_read_u32(dev->of_node, "kcs_addr", &addr);
 +	if (rc) {
-+		dev_err(dev, "no 'kcs_addr' configured\n");
++		dev_err(dev, "no valid 'kcs_addr' configured\n");
 +		return -ENODEV;
 +	}
 +
-+	kcs_bmc = devm_kzalloc(dev, sizeof(*kcs_bmc), GFP_KERNEL);
-+	if (!kcs_bmc)
-+		return -ENOMEM;
-+
 +	kcs_bmc->map = syscon_node_to_regmap(dev->parent->of_node);
 +	if (IS_ERR(kcs_bmc->map)) {
-+		struct resource *res;
-+		void __iomem *base;
-+
-+		/*
-+		 * Assume it's not the MFD-based devicetree description, in
-+		 * which case generate a regmap ourselves
-+		 */
-+		res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+		base = devm_ioremap_resource(&pdev->dev, res);
-+		if (IS_ERR(base)) {
-+			dev_err(dev, "ioremap error\n");
-+			return PTR_ERR(base);
-+		}
-+
-+		kcs_bmc->map = devm_regmap_init_mmio(dev, base,
-+					&kcs_regmap_cfg);
-+		if (IS_ERR(kcs_bmc->map)) {
-+			dev_err(dev, "regmap init error\n");
-+			return PTR_ERR(base);
-+		}
++		dev_err(dev, "Couldn't get regmap\n");
++		return -ENODEV;
 +	}
 +
 +	spin_lock_init(&kcs_bmc->lock);
@@ -842,10 +813,7 @@ index 0000000..331b563
 +	kcs_bmc->data_in  = devm_kmalloc(dev, KCS_MSG_BUFSIZ, GFP_KERNEL);
 +	kcs_bmc->data_out = devm_kmalloc(dev, KCS_MSG_BUFSIZ, GFP_KERNEL);
 +	if (kcs_bmc->data_in == NULL || kcs_bmc->data_out == NULL) {
-+		dev_err(dev, "KCS%u failed data_in=%p, data_out=%p\n",
-+			     kcs_bmc->chan,
-+			     kcs_bmc->data_in,
-+			     kcs_bmc->data_out);
++		dev_err(dev, "Failed to allocate data buffers\n");
 +		return -ENOMEM;
 +	}
 +
@@ -869,11 +837,11 @@ index 0000000..331b563
 +		return rc;
 +	}
 +
++	dev_set_drvdata(&pdev->dev, kcs_bmc);
++
 +	dev_info(dev, "addr=0x%x, idr=0x%x, odr=0x%x, str=0x%x\n",
 +			addr,
 +			kcs_bmc->idr, kcs_bmc->odr, kcs_bmc->str);
-+
-+	dev_set_drvdata(&pdev->dev, kcs_bmc);
 +
 +	return 0;
 +}
@@ -881,11 +849,6 @@ index 0000000..331b563
 +static int kcs_bmc_remove(struct platform_device *pdev)
 +{
 +	struct kcs_bmc *kcs_bmc = dev_get_drvdata(&pdev->dev);
-+
-+	if (kcs_bmc == NULL)
-+		return 0;
-+
-+	platform_set_drvdata(pdev, NULL);
 +
 +	misc_deregister(&kcs_bmc->miscdev);
 +
@@ -913,13 +876,12 @@ index 0000000..331b563
 +MODULE_LICENSE("GPL");
 +MODULE_AUTHOR("Haiyue Wang <haiyue.wang@linux.intel.com>");
 +MODULE_DESCRIPTION("Linux device interface to the IPMI KCS interface");
-+
 diff --git a/include/uapi/linux/kcs-bmc.h b/include/uapi/linux/kcs-bmc.h
 new file mode 100644
-index 0000000..4bbf669
+index 0000000..f0c3ff60
 --- /dev/null
 +++ b/include/uapi/linux/kcs-bmc.h
-@@ -0,0 +1,14 @@
+@@ -0,0 +1,13 @@
 +// SPDX-License-Identifier: GPL-2.0
 +// Copyright (c) 2015-2017, Intel Corporation.
 +
@@ -933,7 +895,6 @@ index 0000000..4bbf669
 +#define KCS_BMC_IOCTL_FORCE_ABORT  _IO(__KCS_BMC_IOCTL_MAGIC, 2)
 +
 +#endif /* _UAPI_LINUX_KCS_BMC_H */
-+
 -- 
 2.7.4
 
