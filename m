@@ -1,63 +1,67 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Mon, 11 Dec 2017 15:37:00 +1030
-Subject: [PATCH 16/20] ARM: dts: aspeed: Add Witherspoon BMC machine
+Date: Mon, 11 Dec 2017 15:37:01 +1030
+Subject: [PATCH 17/20] ARM: dts: aspeed: Add Ingrasys Zaius BMC machine
 In-Reply-To: <20171211050704.20621-1-joel@jms.id.au>
 References: <20171211050704.20621-1-joel@jms.id.au>
-Message-ID: <20171211050704.20621-17-joel@jms.id.au>
+Message-ID: <20171211050704.20621-18-joel@jms.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 
-The Witherspoon BMC is an ASPEED ast2500 based BMC that is part of an
-OpenPower Power9 server.
+From: Xo Wang <xow@google.com>
+
+Zaius is a POWER9 platform announced at OpenPOWER Summit 2016. This adds
+basic DTS support for its AST2500 BMC.
 
 This adds the device tree description for most upstream components. It
-is a squashed commit from the OpenBMC kernel tree.
+is a squashed commit of all of the patches from the OpenBMC kernel tree.
 
-Signed-off-by: Brandon Wyman <bjwyman@gmail.com>
-Signed-off-by: Matt Spinler <spinler@us.ibm.com>
-Signed-off-by: Brad Bishop <bradleyb@fuzziesquirrel.com>
-Signed-off-by: Edward A. James <eajames@us.ibm.com>
+Signed-off-by: Xo Wang <xow@google.com>
+Signed-off-by: Patrick Venture <venture@google.com>
+Signed-off-by: Robert Lippert <rlippert@google.com>
+Signed-off-by: Peter Hanson <peterh@google.com>
+Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
 Signed-off-by: C=C3=A9dric Le Goater <clg@kaod.org>
-Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
+Signed-off-by: Rick Altherr <raltherr@google.com>
 Signed-off-by: Joel Stanley <joel@jms.id.au>
 ---
- arch/arm/boot/dts/Makefile                       |   4 +-
- arch/arm/boot/dts/aspeed-bmc-opp-witherspoon.dts | 547 +++++++++++++++++++=
+ arch/arm/boot/dts/Makefile                 |   4 +-
+ arch/arm/boot/dts/aspeed-bmc-opp-zaius.dts | 427 +++++++++++++++++++++++++=
 ++++
- 2 files changed, 550 insertions(+), 1 deletion(-)
- create mode 100644 arch/arm/boot/dts/aspeed-bmc-opp-witherspoon.dts
+ 2 files changed, 429 insertions(+), 2 deletions(-)
+ create mode 100644 arch/arm/boot/dts/aspeed-bmc-opp-zaius.dts
 
 diff --git a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
-index 5d1e9d37bf3a..15a9207319c1 100644
+index 15a9207319c1..48c55f307aa9 100644
 --- a/arch/arm/boot/dts/Makefile
 +++ b/arch/arm/boot/dts/Makefile
-@@ -1104,5 +1104,7 @@ dtb-$(CONFIG_ARCH_ZX) +=3D zx296702-ad1.dtb
- dtb-$(CONFIG_ARCH_ASPEED) +=3D \
+@@ -1105,6 +1105,6 @@ dtb-$(CONFIG_ARCH_ASPEED) +=3D \
  	aspeed-ast2500-evb.dtb \
  	aspeed-bmc-opp-palmetto.dtb \
--	aspeed-bmc-opp-romulus.dtb
-+	aspeed-bmc-opp-romulus.dtb \
-+	aspeed-bmc-opp-witherspoon.dtb
-+
+ 	aspeed-bmc-opp-romulus.dtb \
+-	aspeed-bmc-opp-witherspoon.dtb
+-
++	aspeed-bmc-opp-witherspoon.dtb \
++	aspeed-bmc-opp-zaius.dtb
  endif
-diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-witherspoon.dts b/arch/arm/bo=
-ot/dts/aspeed-bmc-opp-witherspoon.dts
+diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-zaius.dts b/arch/arm/boot/dts=
+/aspeed-bmc-opp-zaius.dts
 new file mode 100644
-index 000000000000..9a0937512e5b
+index 000000000000..90d77012495d
 --- /dev/null
-+++ b/arch/arm/boot/dts/aspeed-bmc-opp-witherspoon.dts
-@@ -0,0 +1,547 @@
-+// SPDX-License-Identifier: GPL-2.0+
++++ b/arch/arm/boot/dts/aspeed-bmc-opp-zaius.dts
+@@ -0,0 +1,427 @@
++// SPDX-License-Identifier: GPL-2.0
 +/dts-v1/;
++
 +#include "aspeed-g5.dtsi"
-+#include <dt-bindings/leds/leds-pca955x.h>
++#include <dt-bindings/gpio/aspeed-gpio.h>
 +
 +/ {
-+	model =3D "Witherspoon BMC";
-+	compatible =3D "ibm,witherspoon-bmc", "aspeed,ast2500";
++	model =3D "Zaius BMC";
++	compatible =3D "ingrasys,zaius-bmc", "aspeed,ast2500";
 +
 +	chosen {
 +		stdout-path =3D &uart5;
@@ -65,7 +69,7 @@ index 000000000000..9a0937512e5b
 +	};
 +
 +	memory {
-+		reg =3D <0x80000000 0x20000000>;
++		reg =3D <0x80000000 0x40000000>;
 +	};
 +
 +	reserved-memory {
@@ -79,96 +83,57 @@ index 000000000000..9a0937512e5b
 +		};
 +	};
 +
-+	gpio-keys-polled {
-+		compatible =3D "gpio-keys-polled";
-+		#address-cells =3D <1>;
-+		#size-cells =3D <0>;
-+		poll-interval =3D <1000>;
++	onewire0 {
++		compatible =3D "w1-gpio";
++		gpios =3D <&gpio ASPEED_GPIO(H, 0) GPIO_ACTIVE_HIGH>;
++	};
 +
-+		fan0-presence {
-+			label =3D "fan0-presence";
-+			gpios =3D <&pca0 4 GPIO_ACTIVE_LOW>;
-+			linux,code =3D <4>;
-+		};
++	onewire1 {
++		compatible =3D "w1-gpio";
++		gpios =3D <&gpio ASPEED_GPIO(H, 1) GPIO_ACTIVE_HIGH>;
++	};
 +
-+		fan1-presence {
-+			label =3D "fan1-presence";
-+			gpios =3D <&pca0 5 GPIO_ACTIVE_LOW>;
-+			linux,code =3D <5>;
-+		};
++	onewire2 {
++		compatible =3D "w1-gpio";
++		gpios =3D <&gpio ASPEED_GPIO(H, 2) GPIO_ACTIVE_HIGH>;
++	};
 +
-+		fan2-presence {
-+			label =3D "fan2-presence";
-+			gpios =3D <&pca0 6 GPIO_ACTIVE_LOW>;
-+			linux,code =3D <6>;
-+		};
++	onewire3 {
++		compatible =3D "w1-gpio";
++		gpios =3D <&gpio ASPEED_GPIO(H, 3) GPIO_ACTIVE_HIGH>;
++	};
 +
-+		fan3-presence {
-+			label =3D "fan3-presence";
-+			gpios =3D <&pca0 7 GPIO_ACTIVE_LOW>;
-+			linux,code =3D <7>;
++	gpio-keys {
++		compatible =3D "gpio-keys";
++
++		checkstop {
++			label =3D "checkstop";
++			gpios =3D <&gpio ASPEED_GPIO(F, 7) GPIO_ACTIVE_LOW>;
++			linux,code =3D <ASPEED_GPIO(F, 7)>;
 +		};
 +	};
 +
 +	leds {
 +		compatible =3D "gpio-leds";
 +
-+		fan0 {
-+			retain-state-shutdown;
-+			default-state =3D "keep";
-+			gpios =3D <&pca0 0 GPIO_ACTIVE_LOW>;
++		sys_boot_status {
++			label =3D "System boot status";
++			gpios =3D <&gpio ASPEED_GPIO(D, 5) GPIO_ACTIVE_LOW>;
 +		};
 +
-+		fan1 {
-+			retain-state-shutdown;
-+			default-state =3D "keep";
-+			gpios =3D <&pca0 1 GPIO_ACTIVE_LOW>;
++		attention {
++			label =3D "Attention";
++			gpios =3D <&gpio ASPEED_GPIO(D, 6) GPIO_ACTIVE_LOW>;
 +		};
 +
-+		fan2 {
-+			retain-state-shutdown;
-+			default-state =3D "keep";
-+			gpios =3D <&pca0 2 GPIO_ACTIVE_LOW>;
++		plt_fault {
++			label =3D "Platform fault";
++			gpios =3D <&gpio ASPEED_GPIO(D, 7) GPIO_ACTIVE_LOW>;
 +		};
 +
-+		fan3 {
-+			retain-state-shutdown;
-+			default-state =3D "keep";
-+			gpios =3D <&pca0 3 GPIO_ACTIVE_LOW>;
-+		};
-+
-+		front-fault {
-+			retain-state-shutdown;
-+			default-state =3D "keep";
-+			gpios =3D <&pca0 13 GPIO_ACTIVE_LOW>;
-+		};
-+
-+		front-power {
-+			retain-state-shutdown;
-+			default-state =3D "keep";
-+			gpios =3D <&pca0 14 GPIO_ACTIVE_LOW>;
-+		};
-+
-+		front-id {
-+			retain-state-shutdown;
-+			default-state =3D "keep";
-+			gpios =3D <&pca0 15 GPIO_ACTIVE_LOW>;
-+		};
-+
-+		rear-fault {
-+			gpios =3D <&gpio ASPEED_GPIO(N, 2) GPIO_ACTIVE_LOW>;
-+		};
-+
-+		rear-id {
-+			gpios =3D <&gpio ASPEED_GPIO(N, 4) GPIO_ACTIVE_LOW>;
-+		};
-+
-+		rear-power {
-+			gpios =3D <&gpio ASPEED_GPIO(N, 3) GPIO_ACTIVE_LOW>;
-+		};
-+
-+		power-button {
-+			gpios =3D <&gpio ASPEED_GPIO(R, 5) GPIO_ACTIVE_LOW>;
++		hdd_fault {
++			label =3D "Onboard drive fault";
++			gpios =3D <&gpio ASPEED_GPIO(AA, 2) GPIO_ACTIVE_LOW>;
 +		};
 +	};
 +
@@ -177,21 +142,24 @@ index 000000000000..9a0937512e5b
 +		#address-cells =3D <2>;
 +		#size-cells =3D <0>;
 +
-+		clock-gpios =3D <&gpio ASPEED_GPIO(AA, 0) GPIO_ACTIVE_HIGH>;
-+		data-gpios =3D <&gpio ASPEED_GPIO(E, 0) GPIO_ACTIVE_HIGH>;
-+		mux-gpios =3D <&gpio ASPEED_GPIO(A, 6) GPIO_ACTIVE_HIGH>;
++		trans-gpios =3D <&gpio ASPEED_GPIO(O, 6) GPIO_ACTIVE_HIGH>;
 +		enable-gpios =3D <&gpio ASPEED_GPIO(D, 0) GPIO_ACTIVE_HIGH>;
-+		trans-gpios =3D <&gpio ASPEED_GPIO(R, 2) GPIO_ACTIVE_HIGH>;
++		clock-gpios =3D <&gpio ASPEED_GPIO(G, 0) GPIO_ACTIVE_HIGH>;
++		data-gpios =3D <&gpio ASPEED_GPIO(G, 1) GPIO_ACTIVE_HIGH>;
++		mux-gpios =3D <&gpio ASPEED_GPIO(P, 6) GPIO_ACTIVE_HIGH>;
 +	};
 +
-+	iio-hwmon-dps310 {
++	iio-hwmon {
 +		compatible =3D "iio-hwmon";
-+		io-channels =3D <&dps 0>;
++		io-channels =3D <&adc 0>, <&adc 1>, <&adc 2>, <&adc 3>,
++			<&adc 4>, <&adc 5>, <&adc 6>, <&adc 7>,
++			<&adc 8>, <&adc 9>, <&adc 10>, <&adc 11>,
++			<&adc 13>, <&adc 14>, <&adc 15>;
 +	};
 +
-+	iio-hwmon-bmp280 {
++	iio-hwmon-battery {
 +		compatible =3D "iio-hwmon";
-+		io-channels =3D <&bmp 1>;
++		io-channels =3D <&adc 12>;
 +	};
 +
 +};
@@ -204,12 +172,6 @@ index 000000000000..9a0937512e5b
 +		label =3D "bmc";
 +		m25p,fast-read;
 +#include "openbmc-flash-layout.dtsi"
-+	};
-+
-+	flash at 1 {
-+		status =3D "okay";
-+		label =3D "alt";
-+		m25p,fast-read;
 +	};
 +};
 +
@@ -225,35 +187,41 @@ index 000000000000..9a0937512e5b
 +	};
 +};
 +
++&spi2 {
++	status =3D "okay";
++	pinctrl-names =3D "default";
++	pinctrl-0 =3D <&pinctrl_spi2ck_default
++		     &pinctrl_spi2cs0_default
++		     &pinctrl_spi2cs1_default
++		     &pinctrl_spi2miso_default
++		     &pinctrl_spi2mosi_default>;
++
++	flash at 0 {
++		status =3D "okay";
++	};
++};
++
 +&uart1 {
-+	/* Rear RS-232 connector */
 +	status =3D "okay";
 +	pinctrl-names =3D "default";
 +	pinctrl-0 =3D <&pinctrl_txd1_default
-+			&pinctrl_rxd1_default
-+			&pinctrl_nrts1_default
-+			&pinctrl_ndtr1_default
-+			&pinctrl_ndsr1_default
-+			&pinctrl_ncts1_default
-+			&pinctrl_ndcd1_default
-+			&pinctrl_nri1_default>;
-+};
-+
-+&uart2 {
-+	/* APSS */
-+	status =3D "okay";
-+	pinctrl-names =3D "default";
-+	pinctrl-0 =3D <&pinctrl_txd2_default &pinctrl_rxd2_default>;
-+};
-+
-+&uart5 {
-+	status =3D "okay";
++		     &pinctrl_rxd1_default>;
 +};
 +
 +&lpc_ctrl {
 +	status =3D "okay";
 +	memory-region =3D <&flash_memory>;
 +	flash =3D <&spi1>;
++};
++
++&lpc_snoop {
++	status =3D "okay";
++	snoop-ports =3D <0x80>;
++};
++
++
++&uart5 {
++	status =3D "okay";
 +};
 +
 +&mac0 {
@@ -263,317 +231,219 @@ index 000000000000..9a0937512e5b
 +	use-ncsi;
 +};
 +
-+&i2c2 {
++&mac1 {
 +	status =3D "okay";
 +
-+	/* MUX ->
-+	 *    Samtec 1
-+	 *    Samtec 2
-+	 */
++	pinctrl-names =3D "default";
++	pinctrl-0 =3D <&pinctrl_rgmii2_default &pinctrl_mdio2_default>;
 +};
 +
-+&i2c3 {
++&i2c0 {
 +	status =3D "okay";
 +
-+	bmp: bmp280 at 77 {
-+		compatible =3D "bosch,bmp280";
-+		reg =3D <0x77>;
-+		#io-channel-cells =3D <1>;
-+	};
-+
-+	max31785 at 52 {
-+		compatible =3D "maxim,max31785a";
-+		reg =3D <0x52>;
-+		#address-cells =3D <1>;
-+		#size-cells =3D <0>;
-+	};
-+
-+	dps: dps310 at 76 {
-+		compatible =3D "infineon,dps310";
-+		reg =3D <0x76>;
-+		#io-channel-cells =3D <0>;
-+	};
-+
-+	pca0: pca9552 at 60 {
-+		compatible =3D "nxp,pca9552";
-+		reg =3D <0x60>;
-+		#address-cells =3D <1>;
-+		#size-cells =3D <0>;
-+
-+		gpio-controller;
-+		#gpio-cells =3D <2>;
-+
-+		gpio at 0 {
-+			reg =3D <0>;
-+			type =3D <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 1 {
-+			reg =3D <1>;
-+			type =3D <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 2 {
-+			reg =3D <2>;
-+			type =3D <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 3 {
-+			reg =3D <3>;
-+			type =3D <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 4 {
-+			reg =3D <4>;
-+			type =3D <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 5 {
-+			reg =3D <5>;
-+			type =3D <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 6 {
-+			reg =3D <6>;
-+			type =3D <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 7 {
-+			reg =3D <7>;
-+			type =3D <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 8 {
-+			reg =3D <8>;
-+			type =3D <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 9 {
-+			reg =3D <9>;
-+			type =3D <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 10 {
-+			reg =3D <10>;
-+			type =3D <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 11 {
-+			reg =3D <11>;
-+			type =3D <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 12 {
-+			reg =3D <12>;
-+			type =3D <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 13 {
-+			reg =3D <13>;
-+			type =3D <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 14 {
-+			reg =3D <14>;
-+			type =3D <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 15 {
-+			reg =3D <15>;
-+			type =3D <PCA955X_TYPE_GPIO>;
-+		};
-+	};
-+
-+	power-supply at 68 {
-+		compatible =3D "ibm,cffps1";
-+		reg =3D <0x68>;
-+	};
-+
-+	power-supply at 69 {
-+		compatible =3D "ibm,cffps1";
-+		reg =3D <0x69>;
-+	};
-+};
-+
-+&i2c4 {
-+	status =3D "okay";
-+
-+	tmp423a at 4c {
-+		compatible =3D "ti,tmp423";
-+		reg =3D <0x4c>;
-+	};
-+
-+	ir35221 at 70 {
-+		compatible =3D "infineon,ir35221";
-+		reg =3D <0x70>;
-+	};
-+
-+	ir35221 at 71 {
-+		compatible =3D "infineon,ir35221";
-+		reg =3D <0x71>;
-+	};
-+};
-+
-+
-+&i2c5 {
-+	status =3D "okay";
-+
-+	tmp423a at 4c {
-+		compatible =3D "ti,tmp423";
-+		reg =3D <0x4c>;
-+	};
-+
-+	ir35221 at 70 {
-+		compatible =3D "infineon,ir35221";
-+		reg =3D <0x70>;
-+	};
-+
-+	ir35221 at 71 {
-+		compatible =3D "infineon,ir35221";
-+		reg =3D <0x71>;
-+	};
-+};
-+
-+&i2c9 {
-+	status =3D "okay";
-+
-+	tmp275 at 4a {
-+		compatible =3D "ti,tmp275";
-+		reg =3D <0x4a>;
-+	};
-+};
-+
-+&i2c10 {
-+	/* MUX
-+	 *   -> PCIe Slot 3
-+	 *   -> PCIe Slot 4
-+	 */
-+	status =3D "okay";
-+};
-+
-+&i2c11 {
-+	status =3D "okay";
-+
-+	pca9552: pca9552 at 60 {
-+		compatible =3D "nxp,pca9552";
-+		reg =3D <0x60>;
-+		#address-cells =3D <1>;
-+		#size-cells =3D <0>;
-+		gpio-controller;
-+		#gpio-cells =3D <2>;
-+
-+		gpio-line-names =3D "PS_SMBUS_RESET_N", "APSS_RESET_N",
-+			"GPU0_TH_OVERT_N_BUFF",	"GPU1_TH_OVERT_N_BUFF",
-+			"GPU2_TH_OVERT_N_BUFF", "GPU3_TH_OVERT_N_BUFF",
-+			"GPU4_TH_OVERT_N_BUFF",	"GPU5_TH_OVERT_N_BUFF",
-+			"GPU0_PWR_GOOD_BUFF", "GPU1_PWR_GOOD_BUFF",
-+			"GPU2_PWR_GOOD_BUFF", "GPU3_PWR_GOOD_BUFF",
-+			"GPU4_PWR_GOOD_BUFF", "GPU5_PWR_GOOD_BUFF",
-+			"12V_BREAKER_FLT_N", "THROTTLE_UNLATCHED_N";
-+
-+		gpio at 0 {
-+			reg =3D <0>;
-+			type =3D <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 1 {
-+			reg =3D <1>;
-+			type =3D <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 2 {
-+			reg =3D <2>;
-+			type =3D <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 3 {
-+			reg =3D <3>;
-+			type =3D <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 4 {
-+			reg =3D <4>;
-+			type =3D <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 5 {
-+			reg =3D <5>;
-+			type =3D <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 6 {
-+			reg =3D <6>;
-+			type =3D <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 7 {
-+			reg =3D <7>;
-+			type =3D <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 8 {
-+			reg =3D <8>;
-+			type =3D <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 9 {
-+			reg =3D <9>;
-+			type =3D <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 10 {
-+			reg =3D <10>;
-+			type =3D <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 11 {
-+			reg =3D <11>;
-+			type =3D <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 12 {
-+			reg =3D <12>;
-+			type =3D <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 13 {
-+			reg =3D <13>;
-+			type =3D <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 14 {
-+			reg =3D <14>;
-+			type =3D <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 15 {
-+			reg =3D <15>;
-+			type =3D <PCA955X_TYPE_GPIO>;
-+		};
-+	};
-+
-+	rtc at 32 {
-+		compatible =3D "epson,rx8900";
-+		reg =3D <0x32>;
-+	};
-+
-+	eeprom at 51 {
++	eeprom at 50 {
 +		compatible =3D "atmel,24c64";
-+		reg =3D <0x51>;
++		reg =3D <0x50>;
++		pagesize =3D <32>;
++	};
++
++	rtc at 68 {
++		compatible =3D "nxp,pcf8523";
++		reg =3D <0x68>;
 +	};
 +
 +	ucd90160 at 64 {
 +		compatible =3D "ti,ucd90160";
 +		reg =3D <0x64>;
 +	};
++
++	/* Power sequencer UCD90160 PMBUS @64h
++	 * FRU AT24C64D @50h
++	 * RTC PCF8523 @68h
++	 * Clock buffer 9DBL04 @6dh
++	 */
++};
++
++&i2c1 {
++	status =3D "okay";
++
++	i2c-switch at 71 {
++		compatible =3D "nxp,pca9546";
++		reg =3D <0x71>;
++		#address-cells =3D <1>;
++		#size-cells =3D <0>;
++	};
++
++	/* MUX1 PCA9546A @71h
++	 *   PCIe 0
++	 *   PCIe 1
++	 *   PCIe 2
++	 *   TPM header
++	 */
++};
++
++&i2c2 {
++	status =3D "disabled";
++
++	/* OCP Mezz Connector A (OOB SMBUS) */
++};
++
++&i2c3 {
++	status =3D "disabled";
++
++	/* OCP Mezz Connector A (PCIe slot SMBUS) */
++};
++
++&i2c4 {
++	status =3D "okay";
++
++	i2c-switch at 71 {
++		compatible =3D "nxp,pca9546";
++		reg =3D <0x71>;
++		#address-cells =3D <1>;
++		#size-cells =3D <0>;
++	};
++
++	/* MUX1 PCA9546A @71h
++	 *   PCIe 3
++	 *   PCIe 4
++	 */
++};
++
++
++&i2c5 {
++	status =3D "disabled";
++
++	/* CPU0 PRM 0.7V */
++	/* CPU0 PRM 1.2V CH03 */
++	/* CPU0 PRM 0.8V */
++	/* CPU0 PRM 1.2V CH47 */
++};
++
++&i2c6 {
++	status =3D "disabled";
++
++	/* CPU1 PRM 0.7V */
++	/* CPU1 PRM 1.2V CH03 */
++	/* CPU1 PRM 0.8V */
++	/* CPU1 PRM 1.2V CH47 */
++};
++
++&i2c7 {
++	status =3D "okay";
++
++	pca9541a at 70 {
++		compatible =3D "nxp,pca9541";
++		reg =3D <0x70>;
++
++		i2c-arb {
++			#address-cells =3D <1>;
++			#size-cells =3D <0>;
++
++			hotswap at 54 {
++				compatible =3D "ti,lm5066i";
++				reg =3D <0x54>;
++			};
++		};
++	};
++
++	/* Master selector PCA9541A @70h (other master: CPU0)
++	 *   LM5066I PMBUS @10h
++	 */
++
++	/* 12V Quarter Brick DC/DC Converter Q54SJ12050 @61h */
++	power-brick at 61 {
++		compatible =3D "delta,dps800";
++		reg =3D <0x61>;
++	};
++
++	/* CPU0 VR ISL68137 0.7V, 0.96V PMBUS @64h */
++	/* CPU0 VR ISL68137 1.2V CH03 PMBUS @40h */
++	/* CPU0 VR ISL68137 0.8V PMBUS @60h */
++	/* CPU0 VR 1.0V IR38064 I2C @11h, PMBUS @41h */
++	/* CPU0 VR ISL68137 1.2V CH47 PMBUS @41h */
++};
++
++&i2c8 {
++	status =3D "okay";
++
++	/* CPU1 VR ISL68137 0.7V, 0.96V PMBUS @65h */
++	/* CPU1 VR ISL68137 1.2V CH03 PMBUS @44h */
++	/* CPU1 VR ISL68137 0.8V PMBUS @61h */
++	/* CPU1 VR 1.0V IR38064 I2C @12h, PMBUS @42h */
++	/* CPU0 VR ISL68137 1.2V CH47 PMBUS @45h */
++};
++
++
++&i2c9 {
++	status =3D "disabled";
++
++	/* Fan board */
++};
++
++&i2c10 {
++	status =3D "disabled";
++};
++
++&i2c11 {
++	status =3D "disabled";
++
++	/* GPU sideband */
 +};
 +
 +&i2c12 {
-+	status =3D "okay";
++	status =3D "disabled";
 +};
 +
 +&i2c13 {
-+	status =3D "okay";
++	status =3D "disabled";
++
++	/* MUX PI3USB102
++	 *   CPU0 debug
++	 *   CPU1 debug
++	 */
++};
++
++&pinctrl {
++	aspeed,external-nodes =3D <&gfx &lhc>;
++
++	pinctrl_gpioh_unbiased: gpioi_unbiased {
++		pins =3D "A8", "C7", "B7", "A7", "D7", "B6", "A6", "E7";
++		bias-disable;
++	};
++};
++
++&gpio {
++	pinctrl-names =3D "default";
++	pinctrl-0 =3D <&pinctrl_gpioh_unbiased>;
++
++	line_iso_u146_en {
++		gpio-hog;
++		gpios =3D <ASPEED_GPIO(O, 4) GPIO_ACTIVE_HIGH>;
++		output-high;
++		line-name =3D "iso_u164_en";
++	};
++
++	ncsi_mux_en_n {
++		gpio-hog;
++		gpios =3D <ASPEED_GPIO(P, 0) GPIO_ACTIVE_HIGH>;
++		output-low;
++		line-name =3D "ncsi_mux_en_n";
++	};
++
++	line_bmc_i2c2_sw_rst_n {
++		gpio-hog;
++		gpios =3D <ASPEED_GPIO(P, 1) GPIO_ACTIVE_HIGH>;
++		output-high;
++		line-name =3D "bmc_i2c2_sw_rst_n";
++	};
++
++	line_bmc_i2c5_sw_rst_n {
++		gpio-hog;
++		gpios =3D <ASPEED_GPIO(P, 3) GPIO_ACTIVE_HIGH>;
++		output-high;
++		line-name =3D "bmc_i2c5_sw_rst_n";
++	};
 +};
 +
 +&vuart {
@@ -584,18 +454,31 @@ index 000000000000..9a0937512e5b
 +	status =3D "okay";
 +};
 +
-+&pinctrl {
-+	aspeed,external-nodes =3D <&gfx &lhc>;
-+};
-+
-+&wdt1 {
-+	aspeed,reset-type =3D "none";
-+	aspeed,external-signal;
-+	aspeed,ext-push-pull;
-+	aspeed,ext-active-high;
-+
++&pwm_tacho {
++	status =3D "okay";
 +	pinctrl-names =3D "default";
-+	pinctrl-0 =3D <&pinctrl_wdtrst1_default>;
++	pinctrl-0 =3D <&pinctrl_pwm0_default &pinctrl_pwm1_default
++		&pinctrl_pwm2_default &pinctrl_pwm3_default>;
++
++	fan at 0 {
++		reg =3D <0x00>;
++		aspeed,fan-tach-ch =3D /bits/ 8 <0x00>;
++	};
++
++	fan at 1 {
++		reg =3D <0x01>;
++		aspeed,fan-tach-ch =3D /bits/ 8 <0x01>;
++	};
++
++	fan at 2 {
++		reg =3D <0x02>;
++		aspeed,fan-tach-ch =3D /bits/ 8 <0x02>;
++	};
++
++	fan at 3 {
++		reg =3D <0x03>;
++		aspeed,fan-tach-ch =3D /bits/ 8 <0x03>;
++	};
 +};
 --=20
 2.14.1
