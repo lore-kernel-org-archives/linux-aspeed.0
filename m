@@ -1,38 +1,61 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Mon, 11 Dec 2017 21:14:18 +1030
-Subject: [PATCH 03/20] ARM: dts: aspeed-g4: Correct VUART IRQ number
-In-Reply-To: <CAK8P3a2psgOYZEgO8O3H_xxpDTNd=ESJpSf4bs9kf0nPvKYqtQ@mail.gmail.com>
+Date: Mon, 11 Dec 2017 21:14:23 +1030
+Subject: [PATCH 05/20] ARM: dts: aspeed: Add proper clock references
+In-Reply-To: <CAK8P3a10wjXvFpE5zbwCfQNC-UiRCzKE+9-ENg-Sr577ZCF+Xw@mail.gmail.com>
 References: <20171211050704.20621-1-joel@jms.id.au>
- <20171211050704.20621-4-joel@jms.id.au>
- <CAK8P3a2psgOYZEgO8O3H_xxpDTNd=ESJpSf4bs9kf0nPvKYqtQ@mail.gmail.com>
-Message-ID: <CACPK8XfSxxVFT7y6M17LZhVO0GHuL1L=6KET75Qojg8rpgD9iw@mail.gmail.com>
+ <20171211050704.20621-6-joel@jms.id.au>
+ <CAK8P3a10wjXvFpE5zbwCfQNC-UiRCzKE+9-ENg-Sr577ZCF+Xw@mail.gmail.com>
+Message-ID: <CACPK8XeTtiejw1SyDHNn5w6be-FqCQFuT5PT-yeRho2Hhs2K8g@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Dec 11, 2017 at 6:28 PM, Arnd Bergmann <arnd@arndb.de> wrote:
+On Mon, Dec 11, 2017 at 6:39 PM, Arnd Bergmann <arnd@arndb.de> wrote:
 > On Mon, Dec 11, 2017 at 6:06 AM, Joel Stanley <joel@jms.id.au> wrote:
->> This should have always been 8.
+>> The existing device trees use fixed-clocks in order to boot without a
+>> clk driver. The newly added clk driver provides proper clock support,
+>> including gating, so we move the device trees over to properly request
+>> clocks.
 >>
 >> Signed-off-by: Joel Stanley <joel@jms.id.au>
 >
-> As this is a bugfix, should we backport it to stable kernels? When you
-> fix a bug,
-> I generally recommend including a 'Fixes' tag with the commit ID of the patch
-> that introduced the problem, and either a 'Cc: stable at vger.kernel.org' tag
-> if you want it backported, or an explanation in the changelog why it should
-> not get backported. This really helps Greg and the other stable maintainers
-> trying to make a decision what to backport and what not.
+> Can you clarify here whether this will break running old kernels with
+> new DT files or vice versa, and why this is ok here?
 
-We could do this, and I generally follow the practice of adding Fixes
-tags. I hadn't because without an upstream clock driver, the Aspeed
-port is not usable by anyone without making modifications. We're
-really depending on getting that code merged.
+This device tree will break kernels that do not have the clk patches
+applied (no clocksource, as we don't know the speed of the APB clock.
+You can boot if you pass a lpj value on the command line, but won't
+have a uart).
 
-I will send it as a fix to 4.15. Do you mind taking individual patches
-for the arm dt tree, or would you prefer a pull request?
+Older device trees running with the newer kernel will function as well
+as pre-4.16 kernels. That is, that some IP blocks (i2c, pwm/tach, adc)
+will not work as the kernel lacks reset controller and clock enabling.
+
+> I assume you have thought about it carefully, but I'd still like to document
+> every time we intentionally break compatibility like this. It looks like
+> you too care to merge the driver changes and the DT binding change first,
+> so we don't get any bisection problems.
+
+Thanks for calling it out. I will modify the commit message to say
+that this device tree change depends on the newer driver, and it will
+not boot with kernels that lack the driver.
+
+>
+> What I'm not completely clear about is the difference between the
+> "aspeed,g4-scu" binding and the "aspeed,ast2400-scu" binding.
+> They are listed as equal in
+> Documentation/devicetree/bindings/mfd/aspeed-scu.txt, so why do you
+> change it here?
+
+The g4-scu string made it into the tree before we had decided that we
+would settle on aspeed,astX000-<ip> as the format for the strings. We
+list both in the docs, but I would like to deprecate the old one.
+
+If I was doing this again, I would make sure we had the clock driver
+upstream before completing the other driver. It's caused a lot of
+pain. Thanks for your help getting us there.
 
 Cheers,
 
