@@ -1,85 +1,75 @@
-From: Haiyue Wang <haiyue.wang@linux.intel.com>
-Date: Sun, 10 Dec 2017 14:08:27 +0800
-Subject: [PATCH linux dev-4.10 2/2] ipmi: add the KCS nodes into AST2500
- device tree
-In-Reply-To: <1512886107-10948-1-git-send-email-haiyue.wang@linux.intel.com>
-References: <1512886107-10948-1-git-send-email-haiyue.wang@linux.intel.com>
-Message-ID: <1512886107-10948-2-git-send-email-haiyue.wang@linux.intel.com>
+From: Joel Stanley <joel@jms.id.au>
+Date: Mon, 11 Dec 2017 15:36:44 +1030
+Subject: [PATCH 00/20] ARM: dts: aspeed: updates and new machines
+Message-ID: <20171211050704.20621-1-joel@jms.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add kcs1, kcs2, kcs3 into mfd node 'lpc-bmc at 0', and
-add kcs4 into mfd node 'lpc-host at 80'.
+This series of device tree patches for the ASPEED BMC machines
+moves all systems to use the soon to be merged clk driver, and
+updates machines to use all of the drivers we have upstream.
 
-Signed-off-by: Haiyue Wang <haiyue.wang@linux.intel.com>
----
- arch/arm/boot/dts/aspeed-g5.dtsi | 42 ++++++++++++++++++++++++++++++++++++----
- 1 file changed, 38 insertions(+), 4 deletions(-)
+In addition it adds three new OpenBMC systems that have been developed
+in the OpenBMC kernel tree over the past year: two Power9 OpenPower
+systems, and a port by Google to a Quanta x86 server.
 
-diff --git a/arch/arm/boot/dts/aspeed-g5.dtsi b/arch/arm/boot/dts/aspeed-g5.dtsi
-index ba3607c..5d67f55 100644
---- a/arch/arm/boot/dts/aspeed-g5.dtsi
-+++ b/arch/arm/boot/dts/aspeed-g5.dtsi
-@@ -135,8 +135,39 @@
- 			ranges = <0x0 0x1e789000 0x1000>;
- 
- 			lpc_bmc: lpc-bmc at 0 {
--				compatible = "aspeed,ast2500-lpc-bmc";
-+				compatible = "aspeed,ast2500-lpc-bmc", "simple-mfd", "syscon";
- 				reg = <0x0 0x80>;
-+
-+				#address-cells = <1>;
-+				#size-cells = <1>;
-+				ranges = <0x0 0x0 0x80>;
-+
-+				kcs1: kcs1 at 0 {
-+					compatible = "aspeed,ast2500-kcs-bmc";
-+					reg = <0x0 0x80>;
-+					interrupts = <8>;
-+					kcs_chan = <1>;
-+					kcs_addr = <0x0>;
-+					status = "disabled";
-+				};
-+
-+				kcs2: kcs2 at 0 {
-+					compatible = "aspeed,ast2500-kcs-bmc";
-+					reg = <0x0 0x80>;
-+					interrupts = <8>;
-+					kcs_chan = <2>;
-+					kcs_addr = <0x0>;
-+					status = "disabled";
-+				};
-+
-+				kcs3: kcs3 at 0 {
-+					compatible = "aspeed,ast2500-kcs-bmc";
-+					reg = <0x0 0x80>;
-+					interrupts = <8>;
-+					kcs_chan = <3>;
-+					kcs_addr = <0x0>;
-+					status = "disabled";
-+				};
- 			};
- 
- 			lpc_host: lpc-host at 80 {
-@@ -148,9 +179,12 @@
- 				#size-cells = <1>;
- 				ranges = <0x0 0x80 0x1e0>;
- 
--				lpc_ctrl: lpc-ctrl at 0 {
--					compatible = "aspeed,ast2500-lpc-ctrl";
--					reg = <0x0 0x80>;
-+				kcs4: kcs4 at 0 {
-+					compatible = "aspeed,ast2500-kcs-bmc";
-+					reg = <0x0 0xa0>;
-+					interrupts = <8>;
-+					kcs_chan = <4>;
-+					kcs_addr = <0x0>;
- 					status = "disabled";
- 				};
- 
+I have boot tested these on Romulus and Palmetto, as well as boot tested
+all device trees in Qemu.
+
+Please review the boards you are familiar with. I will merge these in to
+the ASPEED ARM SoC tree for inclusion in 4.16.
+
+Andrew Jeffery (1):
+  ARM: dts: aspeed: Add LPC and child devices
+
+Joel Stanley (17):
+  dt-bindings: clock: Add ASPEED constants
+  dt-bindings: gpio: Add ASPEED constants
+  ARM: dts: aspeed-g4: Correct VUART IRQ number
+  ARM: dts: aspeed: Add proper clock references
+  ARM: dts: aspeed: Add MAC clocks
+  ARM: dts: aspeed: Add watchdog clocks
+  ARM: dts: aspeed: Add flash controller clocks
+  ARM: dts: aspeed: Add clock phandle to GPIO
+  ARM: dts: aspeed: Add PWM and tachometer node
+  ARM: dts: aspeed: Add LPC Snoop device
+  ARM: dts: aspeed: Remove skeleton.dtsi
+  ARM: dts: aspeed: Update license headers
+  ARM: dts: Add OpenBMC flash layout
+  ARM: dts: aspeed: Sort ASPEED entries in makefile
+  ARM: dts: aspeed: Add Witherspoon BMC machine
+  ARM: dts: aspeed-romulus: Update Romulus system
+  ARM: dts: aspeed-plametto: Add flash layout
+
+Rick Altherr (1):
+  ARM: dts: aspeed: Add Qanta Q71L BMC machine
+
+Xo Wang (1):
+  ARM: dts: aspeed: Add Ingrasys Zaius BMC machine
+
+ arch/arm/boot/dts/Makefile                       |   8 +-
+ arch/arm/boot/dts/aspeed-ast2500-evb.dts         |   2 +-
+ arch/arm/boot/dts/aspeed-bmc-opp-palmetto.dts    |   3 +-
+ arch/arm/boot/dts/aspeed-bmc-opp-romulus.dts     | 155 ++++++-
+ arch/arm/boot/dts/aspeed-bmc-opp-witherspoon.dts | 547 +++++++++++++++++++++++
+ arch/arm/boot/dts/aspeed-bmc-opp-zaius.dts       | 427 ++++++++++++++++++
+ arch/arm/boot/dts/aspeed-bmc-quanta-q71l.dts     | 458 +++++++++++++++++++
+ arch/arm/boot/dts/aspeed-g4.dtsi                 | 164 ++++---
+ arch/arm/boot/dts/aspeed-g5.dtsi                 | 155 ++++---
+ arch/arm/boot/dts/openbmc-flash-layout.dtsi      |  32 ++
+ include/dt-bindings/clock/aspeed-clock.h         |  54 +++
+ include/dt-bindings/gpio/aspeed-gpio.h           |  49 ++
+ 12 files changed, 1908 insertions(+), 146 deletions(-)
+ create mode 100644 arch/arm/boot/dts/aspeed-bmc-opp-witherspoon.dts
+ create mode 100644 arch/arm/boot/dts/aspeed-bmc-opp-zaius.dts
+ create mode 100644 arch/arm/boot/dts/aspeed-bmc-quanta-q71l.dts
+ create mode 100644 arch/arm/boot/dts/openbmc-flash-layout.dtsi
+ create mode 100644 include/dt-bindings/clock/aspeed-clock.h
+ create mode 100644 include/dt-bindings/gpio/aspeed-gpio.h
+
 -- 
-2.7.4
+2.14.1
 
