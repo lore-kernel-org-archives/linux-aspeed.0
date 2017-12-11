@@ -1,59 +1,43 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Mon, 11 Dec 2017 15:36:55 +1030
-Subject: [PATCH 11/20] ARM: dts: aspeed: Add LPC Snoop device
+Date: Mon, 11 Dec 2017 15:36:56 +1030
+Subject: [PATCH 12/20] ARM: dts: aspeed: Remove skeleton.dtsi
 In-Reply-To: <20171211050704.20621-1-joel@jms.id.au>
 References: <20171211050704.20621-1-joel@jms.id.au>
-Message-ID: <20171211050704.20621-12-joel@jms.id.au>
+Message-ID: <20171211050704.20621-13-joel@jms.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-LPC snoop hardware on the ASPEED BMC, used for monitoring
-host I/O port activity.
+We don't require it for any of the ASPEED systems.
 
 Signed-off-by: Joel Stanley <joel@jms.id.au>
 ---
- arch/arm/boot/dts/aspeed-g4.dtsi | 7 +++++++
- arch/arm/boot/dts/aspeed-g5.dtsi | 6 ++++++
- 2 files changed, 13 insertions(+)
+ arch/arm/boot/dts/aspeed-g4.dtsi | 1 -
+ arch/arm/boot/dts/aspeed-g5.dtsi | 1 -
+ 2 files changed, 2 deletions(-)
 
 diff --git a/arch/arm/boot/dts/aspeed-g4.dtsi b/arch/arm/boot/dts/aspeed-g4.dtsi
-index f6fee40c04c0..b3580f37f507 100644
+index b3580f37f507..2d7ac577d6b5 100644
 --- a/arch/arm/boot/dts/aspeed-g4.dtsi
 +++ b/arch/arm/boot/dts/aspeed-g4.dtsi
-@@ -236,6 +236,13 @@
- 						status = "disabled";
- 					};
+@@ -1,5 +1,4 @@
+ // SPDX-License-Identifier: GPL-2.0
+-#include "skeleton.dtsi"
+ #include <dt-bindings/clock/aspeed-clock.h>
+ #include <dt-bindings/gpio/aspeed-gpio.h>
  
-+					lpc_snoop: lpc-snoop at 0 {
-+						compatible = "aspeed,ast2500-lpc-snoop";
-+						reg = <0x0 0x80>;
-+						interrupts = <8>;
-+						status = "disabled";
-+					};
-+
- 					lhc: lhc at 20 {
- 						compatible = "aspeed,ast2500-lhc";
- 						reg = <0x20 0x24 0x48 0x8>;
 diff --git a/arch/arm/boot/dts/aspeed-g5.dtsi b/arch/arm/boot/dts/aspeed-g5.dtsi
-index 96a9d2fe3f0d..50766f0629f8 100644
+index 50766f0629f8..030a760696fd 100644
 --- a/arch/arm/boot/dts/aspeed-g5.dtsi
 +++ b/arch/arm/boot/dts/aspeed-g5.dtsi
-@@ -287,6 +287,12 @@
- 						status = "disabled";
- 					};
+@@ -1,5 +1,4 @@
+ // SPDX-License-Identifier: GPL-2.0
+-#include "skeleton.dtsi"
+ #include <dt-bindings/clock/aspeed-clock.h>
+ #include <dt-bindings/gpio/aspeed-gpio.h>
  
-+					lpc_snoop: lpc-snoop at 0 {
-+						compatible = "aspeed,ast2500-lpc-snoop";
-+						reg = <0x0 0x80>;
-+						interrupts = <8>;
-+						status = "disabled";
-+					};
- 
- 					lhc: lhc at 20 {
- 						compatible = "aspeed,ast2500-lhc";
 -- 
 2.14.1
 
