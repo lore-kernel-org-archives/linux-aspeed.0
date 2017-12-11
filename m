@@ -1,61 +1,59 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Mon, 11 Dec 2017 15:36:54 +1030
-Subject: [PATCH 10/20] ARM: dts: aspeed: Add PWM and tachometer node
+Date: Mon, 11 Dec 2017 15:36:55 +1030
+Subject: [PATCH 11/20] ARM: dts: aspeed: Add LPC Snoop device
 In-Reply-To: <20171211050704.20621-1-joel@jms.id.au>
 References: <20171211050704.20621-1-joel@jms.id.au>
-Message-ID: <20171211050704.20621-11-joel@jms.id.au>
+Message-ID: <20171211050704.20621-12-joel@jms.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+LPC snoop hardware on the ASPEED BMC, used for monitoring
+host I/O port activity.
+
 Signed-off-by: Joel Stanley <joel@jms.id.au>
 ---
- arch/arm/boot/dts/aspeed-g4.dtsi | 9 +++++++++
- arch/arm/boot/dts/aspeed-g5.dtsi | 9 +++++++++
- 2 files changed, 18 insertions(+)
+ arch/arm/boot/dts/aspeed-g4.dtsi | 7 +++++++
+ arch/arm/boot/dts/aspeed-g5.dtsi | 6 ++++++
+ 2 files changed, 13 insertions(+)
 
 diff --git a/arch/arm/boot/dts/aspeed-g4.dtsi b/arch/arm/boot/dts/aspeed-g4.dtsi
-index fa52a01f50b5..f6fee40c04c0 100644
+index f6fee40c04c0..b3580f37f507 100644
 --- a/arch/arm/boot/dts/aspeed-g4.dtsi
 +++ b/arch/arm/boot/dts/aspeed-g4.dtsi
-@@ -189,6 +189,15 @@
- 				clocks = <&syscon ASPEED_CLK_APB>;
- 			};
+@@ -236,6 +236,13 @@
+ 						status = "disabled";
+ 					};
  
-+			pwm_tacho: pwm-tacho-controller at 1e786000 {
-+				compatible = "aspeed,ast2400-pwm-tacho";
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				reg = <0x1e786000 0x1000>;
-+				clocks = <&syscon ASPEED_CLK_APB>;
-+				status = "disabled";
-+			};
++					lpc_snoop: lpc-snoop at 0 {
++						compatible = "aspeed,ast2500-lpc-snoop";
++						reg = <0x0 0x80>;
++						interrupts = <8>;
++						status = "disabled";
++					};
 +
- 			vuart: serial at 1e787000 {
- 				compatible = "aspeed,ast2400-vuart";
- 				reg = <0x1e787000 0x40>;
+ 					lhc: lhc at 20 {
+ 						compatible = "aspeed,ast2500-lhc";
+ 						reg = <0x20 0x24 0x48 0x8>;
 diff --git a/arch/arm/boot/dts/aspeed-g5.dtsi b/arch/arm/boot/dts/aspeed-g5.dtsi
-index 5e6db2aa5c23..96a9d2fe3f0d 100644
+index 96a9d2fe3f0d..50766f0629f8 100644
 --- a/arch/arm/boot/dts/aspeed-g5.dtsi
 +++ b/arch/arm/boot/dts/aspeed-g5.dtsi
-@@ -239,6 +239,15 @@
- 				status = "disabled";
- 			};
+@@ -287,6 +287,12 @@
+ 						status = "disabled";
+ 					};
  
-+			pwm_tacho: pwm-tacho-controller at 1e786000 {
-+				compatible = "aspeed,ast2500-pwm-tacho";
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				reg = <0x1e786000 0x1000>;
-+				clocks = <&syscon ASPEED_CLK_APB>;
-+				status = "disabled";
-+			};
-+
- 			vuart: serial at 1e787000 {
- 				compatible = "aspeed,ast2500-vuart";
- 				reg = <0x1e787000 0x40>;
++					lpc_snoop: lpc-snoop at 0 {
++						compatible = "aspeed,ast2500-lpc-snoop";
++						reg = <0x0 0x80>;
++						interrupts = <8>;
++						status = "disabled";
++					};
+ 
+ 					lhc: lhc at 20 {
+ 						compatible = "aspeed,ast2500-lhc";
 -- 
 2.14.1
 
