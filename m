@@ -1,485 +1,510 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Fri, 15 Dec 2017 16:54:40 +1030
-Subject: [PATCH v2 16/19] ARM: dts: aspeed: Add Ingrasys Zaius BMC machine
+Date: Fri, 15 Dec 2017 16:54:41 +1030
+Subject: [PATCH v2 17/19] ARM: dts: aspeed: Add Qanta Q71L BMC machine
 In-Reply-To: <20171215062443.23059-1-joel@jms.id.au>
 References: <20171215062443.23059-1-joel@jms.id.au>
-Message-ID: <20171215062443.23059-17-joel@jms.id.au>
+Message-ID: <20171215062443.23059-18-joel@jms.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 
-From: Xo Wang <xow@google.com>
+From: Rick Altherr <raltherr@google.com>
 
-Zaius is a POWER9 platform announced at OpenPOWER Summit 2016. This adds
-basic DTS support for its AST2500 BMC.
+The Qanta Q71L BMC is an ASPEED ast2400 based BMC that is part of a
+Qanta x86 server.
 
 This adds the device tree description for most upstream components. It
-is a squashed commit of all of the patches from the OpenBMC kernel tree.
+is a squashed commit from the OpenBMC kernel tree.
 
-Signed-off-by: Xo Wang <xow@google.com>
-Signed-off-by: Patrick Venture <venture@google.com>
-Signed-off-by: Robert Lippert <rlippert@google.com>
 Signed-off-by: Peter Hanson <peterh@google.com>
-Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
-Signed-off-by: C=C3=A9dric Le Goater <clg@kaod.org>
+Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
+Signed-off-by: Patrick Venture <venture@google.com>
 Signed-off-by: Rick Altherr <raltherr@google.com>
 Signed-off-by: Joel Stanley <joel@jms.id.au>
 ---
- arch/arm/boot/dts/Makefile                 |   4 +-
- arch/arm/boot/dts/aspeed-bmc-opp-zaius.dts | 427 +++++++++++++++++++++++++=
-++++
- 2 files changed, 429 insertions(+), 2 deletions(-)
- create mode 100644 arch/arm/boot/dts/aspeed-bmc-opp-zaius.dts
+ arch/arm/boot/dts/Makefile                   |   3 +-
+ arch/arm/boot/dts/aspeed-bmc-quanta-q71l.dts | 458 +++++++++++++++++++++++++++
+ 2 files changed, 460 insertions(+), 1 deletion(-)
+ create mode 100644 arch/arm/boot/dts/aspeed-bmc-quanta-q71l.dts
 
 diff --git a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
-index 15a9207319c1..48c55f307aa9 100644
+index 48c55f307aa9..5ab5d9169511 100644
 --- a/arch/arm/boot/dts/Makefile
 +++ b/arch/arm/boot/dts/Makefile
-@@ -1105,6 +1105,6 @@ dtb-$(CONFIG_ARCH_ASPEED) +=3D \
- 	aspeed-ast2500-evb.dtb \
+@@ -1106,5 +1106,6 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
  	aspeed-bmc-opp-palmetto.dtb \
  	aspeed-bmc-opp-romulus.dtb \
--	aspeed-bmc-opp-witherspoon.dtb
--
-+	aspeed-bmc-opp-witherspoon.dtb \
-+	aspeed-bmc-opp-zaius.dtb
+ 	aspeed-bmc-opp-witherspoon.dtb \
+-	aspeed-bmc-opp-zaius.dtb
++	aspeed-bmc-opp-zaius.dtb \
++	aspeed-bmc-quanta-q71l.dtb
  endif
-diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-zaius.dts b/arch/arm/boot/dts=
-/aspeed-bmc-opp-zaius.dts
+diff --git a/arch/arm/boot/dts/aspeed-bmc-quanta-q71l.dts b/arch/arm/boot/dts/aspeed-bmc-quanta-q71l.dts
 new file mode 100644
-index 000000000000..90d77012495d
+index 000000000000..2f40bab63149
 --- /dev/null
-+++ b/arch/arm/boot/dts/aspeed-bmc-opp-zaius.dts
-@@ -0,0 +1,427 @@
++++ b/arch/arm/boot/dts/aspeed-bmc-quanta-q71l.dts
+@@ -0,0 +1,458 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/dts-v1/;
 +
-+#include "aspeed-g5.dtsi"
-+#include <dt-bindings/gpio/aspeed-gpio.h>
++#include "aspeed-g4.dtsi"
 +
 +/ {
-+	model =3D "Zaius BMC";
-+	compatible =3D "ingrasys,zaius-bmc", "aspeed,ast2500";
++	model = "Quanta Q71L BMC";
++	compatible = "quanta,q71l-bmc", "aspeed,ast2400";
 +
 +	chosen {
-+		stdout-path =3D &uart5;
-+		bootargs =3D "console=3DttyS4,115200 earlyprintk";
++		stdout-path = &uart5;
++		bootargs = "console=ttyS4,115200 earlyprintk";
 +	};
 +
 +	memory {
-+		reg =3D <0x80000000 0x40000000>;
++		reg = <0x40000000 0x8000000>;
 +	};
 +
 +	reserved-memory {
-+		#address-cells =3D <1>;
-+		#size-cells =3D <1>;
++		#address-cells = <1>;
++		#size-cells = <1>;
 +		ranges;
 +
-+		flash_memory: region at 98000000 {
++		vga_memory: framebuffer at 47800000 {
 +			no-map;
-+			reg =3D <0x98000000 0x04000000>; /* 64M */
-+		};
-+	};
-+
-+	onewire0 {
-+		compatible =3D "w1-gpio";
-+		gpios =3D <&gpio ASPEED_GPIO(H, 0) GPIO_ACTIVE_HIGH>;
-+	};
-+
-+	onewire1 {
-+		compatible =3D "w1-gpio";
-+		gpios =3D <&gpio ASPEED_GPIO(H, 1) GPIO_ACTIVE_HIGH>;
-+	};
-+
-+	onewire2 {
-+		compatible =3D "w1-gpio";
-+		gpios =3D <&gpio ASPEED_GPIO(H, 2) GPIO_ACTIVE_HIGH>;
-+	};
-+
-+	onewire3 {
-+		compatible =3D "w1-gpio";
-+		gpios =3D <&gpio ASPEED_GPIO(H, 3) GPIO_ACTIVE_HIGH>;
-+	};
-+
-+	gpio-keys {
-+		compatible =3D "gpio-keys";
-+
-+		checkstop {
-+			label =3D "checkstop";
-+			gpios =3D <&gpio ASPEED_GPIO(F, 7) GPIO_ACTIVE_LOW>;
-+			linux,code =3D <ASPEED_GPIO(F, 7)>;
++			reg = <0x47800000 0x00800000>; /* 8MB */
 +		};
 +	};
 +
 +	leds {
-+		compatible =3D "gpio-leds";
++		compatible = "gpio-leds";
 +
-+		sys_boot_status {
-+			label =3D "System boot status";
-+			gpios =3D <&gpio ASPEED_GPIO(D, 5) GPIO_ACTIVE_LOW>;
++		heartbeat {
++			gpios = <&gpio ASPEED_GPIO(B, 0) GPIO_ACTIVE_LOW>;
 +		};
 +
-+		attention {
-+			label =3D "Attention";
-+			gpios =3D <&gpio ASPEED_GPIO(D, 6) GPIO_ACTIVE_LOW>;
++		power {
++			gpios = <&gpio ASPEED_GPIO(B, 2) GPIO_ACTIVE_LOW>;
 +		};
 +
-+		plt_fault {
-+			label =3D "Platform fault";
-+			gpios =3D <&gpio ASPEED_GPIO(D, 7) GPIO_ACTIVE_LOW>;
++		identify {
++			gpios = <&gpio ASPEED_GPIO(B, 3) GPIO_ACTIVE_LOW>;
 +		};
-+
-+		hdd_fault {
-+			label =3D "Onboard drive fault";
-+			gpios =3D <&gpio ASPEED_GPIO(AA, 2) GPIO_ACTIVE_LOW>;
-+		};
-+	};
-+
-+	fsi: gpio-fsi {
-+		compatible =3D "fsi-master-gpio", "fsi-master";
-+		#address-cells =3D <2>;
-+		#size-cells =3D <0>;
-+
-+		trans-gpios =3D <&gpio ASPEED_GPIO(O, 6) GPIO_ACTIVE_HIGH>;
-+		enable-gpios =3D <&gpio ASPEED_GPIO(D, 0) GPIO_ACTIVE_HIGH>;
-+		clock-gpios =3D <&gpio ASPEED_GPIO(G, 0) GPIO_ACTIVE_HIGH>;
-+		data-gpios =3D <&gpio ASPEED_GPIO(G, 1) GPIO_ACTIVE_HIGH>;
-+		mux-gpios =3D <&gpio ASPEED_GPIO(P, 6) GPIO_ACTIVE_HIGH>;
 +	};
 +
 +	iio-hwmon {
-+		compatible =3D "iio-hwmon";
-+		io-channels =3D <&adc 0>, <&adc 1>, <&adc 2>, <&adc 3>,
++		compatible = "iio-hwmon";
++		io-channels = <&adc 0>, <&adc 1>, <&adc 2>, <&adc 3>,
 +			<&adc 4>, <&adc 5>, <&adc 6>, <&adc 7>,
-+			<&adc 8>, <&adc 9>, <&adc 10>, <&adc 11>,
-+			<&adc 13>, <&adc 14>, <&adc 15>;
++			<&adc 8>, <&adc 9>, <&adc 10>;
 +	};
 +
 +	iio-hwmon-battery {
-+		compatible =3D "iio-hwmon";
-+		io-channels =3D <&adc 12>;
++		compatible = "iio-hwmon";
++		io-channels = <&adc 11>;
 +	};
 +
++	i2c1mux: i2cmux {
++		compatible = "i2c-mux-gpio";
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		/* mux-gpios = <&sgpio 10 GPIO_ACTIVE_HIGH> */
++		i2c-parent = <&i2c1>;
++	};
 +};
 +
 +&fmc {
-+	status =3D "okay";
-+
++	status = "okay";
 +	flash at 0 {
-+		status =3D "okay";
-+		label =3D "bmc";
++		status = "okay";
++		label = "bmc";
 +		m25p,fast-read;
 +#include "openbmc-flash-layout.dtsi"
 +	};
 +};
 +
-+&spi1 {
-+	status =3D "okay";
-+	pinctrl-names =3D "default";
-+	pinctrl-0 =3D <&pinctrl_spi1_default>;
++&spi {
++	status = "okay";
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_spi1_default>;
 +
 +	flash at 0 {
-+		status =3D "okay";
-+		label =3D "pnor";
++		status = "okay";
 +		m25p,fast-read;
++		label = "pnor";
 +	};
 +};
 +
-+&spi2 {
-+	status =3D "okay";
-+	pinctrl-names =3D "default";
-+	pinctrl-0 =3D <&pinctrl_spi2ck_default
-+		     &pinctrl_spi2cs0_default
-+		     &pinctrl_spi2cs1_default
-+		     &pinctrl_spi2miso_default
-+		     &pinctrl_spi2mosi_default>;
-+
-+	flash at 0 {
-+		status =3D "okay";
-+	};
-+};
-+
-+&uart1 {
-+	status =3D "okay";
-+	pinctrl-names =3D "default";
-+	pinctrl-0 =3D <&pinctrl_txd1_default
-+		     &pinctrl_rxd1_default>;
-+};
-+
-+&lpc_ctrl {
-+	status =3D "okay";
-+	memory-region =3D <&flash_memory>;
-+	flash =3D <&spi1>;
++&pinctrl {
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_vgahs_default &pinctrl_vgavs_default
++			&pinctrl_ddcclk_default &pinctrl_ddcdat_default>;
 +};
 +
 +&lpc_snoop {
-+	status =3D "okay";
-+	snoop-ports =3D <0x80>;
-+};
-+
-+
-+&uart5 {
-+	status =3D "okay";
++	status = "okay";
++	snoop-ports = <0x80>;
 +};
 +
 +&mac0 {
-+	status =3D "okay";
-+	pinctrl-names =3D "default";
-+	pinctrl-0 =3D <&pinctrl_rmii1_default>;
++	status = "okay";
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_rmii1_default>;
 +	use-ncsi;
 +};
 +
 +&mac1 {
-+	status =3D "okay";
++	status = "okay";
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_rgmii2_default &pinctrl_mdio2_default>;
++};
 +
-+	pinctrl-names =3D "default";
-+	pinctrl-0 =3D <&pinctrl_rgmii2_default &pinctrl_mdio2_default>;
++&uart5 {
++	status = "okay";
 +};
 +
 +&i2c0 {
-+	status =3D "okay";
-+
-+	eeprom at 50 {
-+		compatible =3D "atmel,24c64";
-+		reg =3D <0x50>;
-+		pagesize =3D <32>;
-+	};
-+
-+	rtc at 68 {
-+		compatible =3D "nxp,pcf8523";
-+		reg =3D <0x68>;
-+	};
-+
-+	ucd90160 at 64 {
-+		compatible =3D "ti,ucd90160";
-+		reg =3D <0x64>;
-+	};
-+
-+	/* Power sequencer UCD90160 PMBUS @64h
-+	 * FRU AT24C64D @50h
-+	 * RTC PCF8523 @68h
-+	 * Clock buffer 9DBL04 @6dh
-+	 */
++	status = "okay";
 +};
 +
 +&i2c1 {
-+	status =3D "okay";
++	status = "okay";
 +
-+	i2c-switch at 71 {
-+		compatible =3D "nxp,pca9546";
-+		reg =3D <0x71>;
-+		#address-cells =3D <1>;
-+		#size-cells =3D <0>;
++	/* temp2 inlet */
++	tmp75 at 4c {
++		compatible = "ti,tmp75";
++		reg = <0x4c>;
 +	};
 +
-+	/* MUX1 PCA9546A @71h
-+	 *   PCIe 0
-+	 *   PCIe 1
-+	 *   PCIe 2
-+	 *   TPM header
-+	 */
++	/* temp3 */
++	tmp75 at 4e {
++		compatible = "ti,tmp75";
++		reg = <0x4e>;
++	};
++
++	/* temp1 */
++	tmp75 at 4f {
++		compatible = "ti,tmp75";
++		reg = <0x4f>;
++	};
++
++	/* Baseboard FRU */
++	eeprom at 54 {
++		compatible = "atmel,24c64";
++		reg = <0x54>;
++	};
++
++	/* FP FRU */
++	eeprom at 57 {
++		compatible = "atmel,24c64";
++		reg = <0x57>;
++	};
 +};
 +
 +&i2c2 {
-+	status =3D "disabled";
++	status = "okay";
 +
-+	/* OCP Mezz Connector A (OOB SMBUS) */
-+};
-+
-+&i2c3 {
-+	status =3D "disabled";
-+
-+	/* OCP Mezz Connector A (PCIe slot SMBUS) */
-+};
-+
-+&i2c4 {
-+	status =3D "okay";
-+
-+	i2c-switch at 71 {
-+		compatible =3D "nxp,pca9546";
-+		reg =3D <0x71>;
-+		#address-cells =3D <1>;
-+		#size-cells =3D <0>;
-+	};
-+
-+	/* MUX1 PCA9546A @71h
-+	 *   PCIe 3
-+	 *   PCIe 4
++	/* 0: PCIe Slot 2,
++	 *    Slot 3,
++	 *    Slot 6,
++	 *    Slot 7
 +	 */
-+};
++	i2c-switch at 74 {
++		compatible = "nxp,pca9546";
++		reg = <0x74>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++		i2c-mux-idle-disconnect;  /* may use mux at 77 next. */
 +
++		i2c_pcie2: i2c at 0 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0>;
++		};
 +
-+&i2c5 {
-+	status =3D "disabled";
++		i2c_pcie3: i2c at 1 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <1>;
++		};
 +
-+	/* CPU0 PRM 0.7V */
-+	/* CPU0 PRM 1.2V CH03 */
-+	/* CPU0 PRM 0.8V */
-+	/* CPU0 PRM 1.2V CH47 */
-+};
++		i2c_pcie6: i2c at 2 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <2>;
++		};
 +
-+&i2c6 {
-+	status =3D "disabled";
-+
-+	/* CPU1 PRM 0.7V */
-+	/* CPU1 PRM 1.2V CH03 */
-+	/* CPU1 PRM 0.8V */
-+	/* CPU1 PRM 1.2V CH47 */
-+};
-+
-+&i2c7 {
-+	status =3D "okay";
-+
-+	pca9541a at 70 {
-+		compatible =3D "nxp,pca9541";
-+		reg =3D <0x70>;
-+
-+		i2c-arb {
-+			#address-cells =3D <1>;
-+			#size-cells =3D <0>;
-+
-+			hotswap at 54 {
-+				compatible =3D "ti,lm5066i";
-+				reg =3D <0x54>;
-+			};
++		i2c_pcie7: i2c at 3 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <3>;
 +		};
 +	};
 +
-+	/* Master selector PCA9541A @70h (other master: CPU0)
-+	 *   LM5066I PMBUS @10h
++	/* 0: PCIe Slot 1,
++	 *    Slot 4,
++	 *    Slot 5,
++	 *    Slot 8,
++	 *    Slot 9,
++	 *    Slot 10,
++	 *    SSD 1,
++	 *    SSD 2
 +	 */
++	i2c-switch at 77 {
++		compatible = "nxp,pca9548";
++		#address-cells = <1>;
++		#size-cells = <0>;
++		reg = <0x77>;
++		i2c-mux-idle-disconnect;  /* may use mux at 74 next. */
 +
-+	/* 12V Quarter Brick DC/DC Converter Q54SJ12050 @61h */
-+	power-brick at 61 {
-+		compatible =3D "delta,dps800";
-+		reg =3D <0x61>;
++		i2c_pcie1: i2c at 0 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0>;
++		};
++
++		i2c_pcie4: i2c at 1 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <1>;
++		};
++
++		i2c_pcie5: i2c at 2 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <2>;
++		};
++
++		i2c_pcie8: i2c at 3 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <3>;
++		};
++
++		i2c_pcie9: i2c at 4 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <4>;
++		};
++
++		i2c_pcie10: i2c at 5 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <5>;
++		};
++
++		i2c_ssd1: i2c at 6 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <6>;
++		};
++
++		i2c_ssd2: i2c at 7 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <7>;
++		};
++	};
++};
++
++&i2c3 {
++	status = "okay";
++
++	/* BIOS FRU */
++	eeprom at 56 {
++		compatible = "atmel,24c64";
++		reg = <0x56>;
++	};
++};
++
++&i2c4 {
++	status = "okay";
++};
++
++&i2c5 {
++	status = "okay";
++};
++
++&i2c6 {
++	status = "okay";
++};
++
++&i2c7 {
++	status = "okay";
++
++	/* 0: PSU4
++	 *    PSU1
++	 *    PSU3
++	 *    PSU2
++	 */
++	i2c-switch at 70 {
++		compatible = "nxp,pca9546";
++		reg = <0x70>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		i2c_psu4: i2c at 0 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0>;
++		};
++
++		i2c_psu1: i2c at 1 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <1>;
++		};
++
++		i2c_psu3: i2c at 2 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <2>;
++		};
++
++		i2c_psu2: i2c at 3 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <3>;
++		};
 +	};
 +
-+	/* CPU0 VR ISL68137 0.7V, 0.96V PMBUS @64h */
-+	/* CPU0 VR ISL68137 1.2V CH03 PMBUS @40h */
-+	/* CPU0 VR ISL68137 0.8V PMBUS @60h */
-+	/* CPU0 VR 1.0V IR38064 I2C @11h, PMBUS @41h */
-+	/* CPU0 VR ISL68137 1.2V CH47 PMBUS @41h */
++	/* PDB FRU */
++	eeprom at 52 {
++		compatible = "atmel,24c64";
++		reg = <0x52>;
++	};
 +};
 +
 +&i2c8 {
-+	status =3D "okay";
++	status = "okay";
 +
-+	/* CPU1 VR ISL68137 0.7V, 0.96V PMBUS @65h */
-+	/* CPU1 VR ISL68137 1.2V CH03 PMBUS @44h */
-+	/* CPU1 VR ISL68137 0.8V PMBUS @61h */
-+	/* CPU1 VR 1.0V IR38064 I2C @12h, PMBUS @42h */
-+	/* CPU0 VR ISL68137 1.2V CH47 PMBUS @45h */
-+};
-+
-+
-+&i2c9 {
-+	status =3D "disabled";
-+
-+	/* Fan board */
-+};
-+
-+&i2c10 {
-+	status =3D "disabled";
-+};
-+
-+&i2c11 {
-+	status =3D "disabled";
-+
-+	/* GPU sideband */
-+};
-+
-+&i2c12 {
-+	status =3D "disabled";
-+};
-+
-+&i2c13 {
-+	status =3D "disabled";
-+
-+	/* MUX PI3USB102
-+	 *   CPU0 debug
-+	 *   CPU1 debug
-+	 */
-+};
-+
-+&pinctrl {
-+	aspeed,external-nodes =3D <&gfx &lhc>;
-+
-+	pinctrl_gpioh_unbiased: gpioi_unbiased {
-+		pins =3D "A8", "C7", "B7", "A7", "D7", "B6", "A6", "E7";
-+		bias-disable;
-+	};
-+};
-+
-+&gpio {
-+	pinctrl-names =3D "default";
-+	pinctrl-0 =3D <&pinctrl_gpioh_unbiased>;
-+
-+	line_iso_u146_en {
-+		gpio-hog;
-+		gpios =3D <ASPEED_GPIO(O, 4) GPIO_ACTIVE_HIGH>;
-+		output-high;
-+		line-name =3D "iso_u164_en";
-+	};
-+
-+	ncsi_mux_en_n {
-+		gpio-hog;
-+		gpios =3D <ASPEED_GPIO(P, 0) GPIO_ACTIVE_HIGH>;
-+		output-low;
-+		line-name =3D "ncsi_mux_en_n";
-+	};
-+
-+	line_bmc_i2c2_sw_rst_n {
-+		gpio-hog;
-+		gpios =3D <ASPEED_GPIO(P, 1) GPIO_ACTIVE_HIGH>;
-+		output-high;
-+		line-name =3D "bmc_i2c2_sw_rst_n";
-+	};
-+
-+	line_bmc_i2c5_sw_rst_n {
-+		gpio-hog;
-+		gpios =3D <ASPEED_GPIO(P, 3) GPIO_ACTIVE_HIGH>;
-+		output-high;
-+		line-name =3D "bmc_i2c5_sw_rst_n";
++	/* BMC FRU */
++	eeprom at 50 {
++		compatible = "atmel,24c64";
++		reg = <0x50>;
 +	};
 +};
 +
 +&vuart {
-+	status =3D "okay";
++	status = "okay";
 +};
 +
-+&gfx {
-+	status =3D "okay";
++&wdt2 {
++	status = "okay";
 +};
 +
 +&pwm_tacho {
-+	status =3D "okay";
-+	pinctrl-names =3D "default";
-+	pinctrl-0 =3D <&pinctrl_pwm0_default &pinctrl_pwm1_default
-+		&pinctrl_pwm2_default &pinctrl_pwm3_default>;
++	status = "okay";
++
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_pwm0_default
++		&pinctrl_pwm1_default
++		&pinctrl_pwm2_default
++		&pinctrl_pwm3_default>;
 +
 +	fan at 0 {
-+		reg =3D <0x00>;
-+		aspeed,fan-tach-ch =3D /bits/ 8 <0x00>;
++		reg = <0x00>;
++		aspeed,fan-tach-ch = /bits/ 8 <0x00>;
 +	};
 +
 +	fan at 1 {
-+		reg =3D <0x01>;
-+		aspeed,fan-tach-ch =3D /bits/ 8 <0x01>;
++		reg = <0x01>;
++		aspeed,fan-tach-ch = /bits/ 8 <0x01>;
 +	};
 +
 +	fan at 2 {
-+		reg =3D <0x02>;
-+		aspeed,fan-tach-ch =3D /bits/ 8 <0x02>;
++		reg = <0x02>;
++		aspeed,fan-tach-ch = /bits/ 8 <0x02>;
 +	};
 +
 +	fan at 3 {
-+		reg =3D <0x03>;
-+		aspeed,fan-tach-ch =3D /bits/ 8 <0x03>;
++		reg = <0x03>;
++		aspeed,fan-tach-ch = /bits/ 8 <0x03>;
++	};
++
++	fan at 4 {
++		reg = <0x00>;
++		aspeed,fan-tach-ch = /bits/ 8 <0x04>;
++	};
++
++	fan at 5 {
++		reg = <0x01>;
++		aspeed,fan-tach-ch = /bits/ 8 <0x05>;
++	};
++
++	fan at 6 {
++		reg = <0x02>;
++		aspeed,fan-tach-ch = /bits/ 8 <0x06>;
++	};
++
++	fan at 7 {
++		reg = <0x03>;
++		aspeed,fan-tach-ch = /bits/ 8 <0x07>;
 +	};
 +};
---=20
++
++&i2c1mux {
++	i2c at 0 {
++		reg = <0>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		/* Memory Riser 1 FRU */
++		eeprom at 50 {
++			compatible = "atmel,24c02";
++			reg = <0x50>;
++		};
++
++		/* Memory Riser 2 FRU */
++		eeprom at 51 {
++			compatible = "atmel,24c02";
++			reg = <0x51>;
++		};
++
++		/* Memory Riser 3 FRU */
++		eeprom at 52 {
++			compatible = "atmel,24c02";
++			reg = <0x52>;
++		};
++
++		/* Memory Riser 4 FRU */
++		eeprom at 53 {
++			compatible = "atmel,24c02";
++			reg = <0x53>;
++		};
++	};
++
++	i2c at 1 {
++		reg = <1>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		/* Memory Riser 5 FRU */
++		eeprom at 50 {
++			compatible = "atmel,24c02";
++			reg = <0x50>;
++		};
++
++		/* Memory Riser 6 FRU */
++		eeprom at 51 {
++			compatible = "atmel,24c02";
++			reg = <0x51>;
++		};
++
++		/* Memory Riser 7 FRU */
++		eeprom at 52 {
++			compatible = "atmel,24c02";
++			reg = <0x52>;
++		};
++
++		/* Memory Riser 8 FRU */
++		eeprom at 53 {
++			compatible = "atmel,24c02";
++			reg = <0x53>;
++		};
++	};
++};
+-- 
 2.14.1
 
