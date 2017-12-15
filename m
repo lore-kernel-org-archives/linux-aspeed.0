@@ -1,62 +1,38 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Fri, 15 Dec 2017 16:54:37 +1030
-Subject: [PATCH v2 13/19] ARM: dts: Add OpenBMC flash layout
+Date: Fri, 15 Dec 2017 16:54:38 +1030
+Subject: [PATCH v2 14/19] ARM: dts: aspeed: Sort ASPEED entries in makefile
 In-Reply-To: <20171215062443.23059-1-joel@jms.id.au>
 References: <20171215062443.23059-1-joel@jms.id.au>
-Message-ID: <20171215062443.23059-14-joel@jms.id.au>
+Message-ID: <20171215062443.23059-15-joel@jms.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This is a layout used by OpenBMC systems. It describes the fixed flash
-layout of a 32MB mtd device.
+In preperation for adding more boards.
 
 Signed-off-by: Joel Stanley <joel@jms.id.au>
 ---
- arch/arm/boot/dts/openbmc-flash-layout.dtsi | 32 +++++++++++++++++++++++++++++
- 1 file changed, 32 insertions(+)
- create mode 100644 arch/arm/boot/dts/openbmc-flash-layout.dtsi
+ arch/arm/boot/dts/Makefile | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/arch/arm/boot/dts/openbmc-flash-layout.dtsi b/arch/arm/boot/dts/openbmc-flash-layout.dtsi
-new file mode 100644
-index 000000000000..63ad8db7a431
---- /dev/null
-+++ b/arch/arm/boot/dts/openbmc-flash-layout.dtsi
-@@ -0,0 +1,32 @@
-+// SPDX-License-Identifier: GPL-2.0+
-+
-+partitions {
-+	compatible = "fixed-partitions";
-+	#address-cells = <1>;
-+	#size-cells = <1>;
-+
-+	u-boot at 0 {
-+		reg = <0x0 0x60000>;
-+		label = "u-boot";
-+	};
-+
-+	u-boot-env at 60000 {
-+		reg = <0x60000 0x20000>;
-+		label = "u-boot-env";
-+	};
-+
-+	kernel at 80000 {
-+		reg = <0x80000 0x440000>;
-+		label = "kernel";
-+	};
-+
-+	rofs at 0c0000 {
-+		reg = <0x4c0000 0x1740000>;
-+		label = "rofs";
-+	};
-+
-+	rwfs at 1c00000 {
-+		reg = <0x1c00000 0x400000>;
-+		label = "rwfs";
-+	};
-+};
+diff --git a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
+index d0381e9caf21..5d1e9d37bf3a 100644
+--- a/arch/arm/boot/dts/Makefile
++++ b/arch/arm/boot/dts/Makefile
+@@ -1101,7 +1101,8 @@ dtb-$(CONFIG_ARCH_MEDIATEK) += \
+ 	mt8127-moose.dtb \
+ 	mt8135-evbp1.dtb
+ dtb-$(CONFIG_ARCH_ZX) += zx296702-ad1.dtb
+-dtb-$(CONFIG_ARCH_ASPEED) += aspeed-bmc-opp-palmetto.dtb \
+-	aspeed-bmc-opp-romulus.dtb \
+-	aspeed-ast2500-evb.dtb
++dtb-$(CONFIG_ARCH_ASPEED) += \
++	aspeed-ast2500-evb.dtb \
++	aspeed-bmc-opp-palmetto.dtb \
++	aspeed-bmc-opp-romulus.dtb
+ endif
 -- 
 2.14.1
 
