@@ -1,34 +1,27 @@
-From: Joel Stanley <joel@jms.id.au>
-Date: Fri, 15 Dec 2017 16:54:43 +1030
-Subject: [PATCH v2 19/19] ARM: dts: aspeed-plametto: Add flash layout
-In-Reply-To: <20171215062443.23059-1-joel@jms.id.au>
+From: Rob Herring <robh@kernel.org>
+Date: Sat, 16 Dec 2017 12:09:36 -0600
+Subject: [PATCH v2 01/19] dt-bindings: clock: Add ASPEED constants
+In-Reply-To: <20171215062443.23059-2-joel@jms.id.au>
 References: <20171215062443.23059-1-joel@jms.id.au>
-Message-ID: <20171215062443.23059-20-joel@jms.id.au>
+ <20171215062443.23059-2-joel@jms.id.au>
+Message-ID: <20171216180936.tpzd4zbbabp5s2oq@rob-hp-laptop>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The OpenBMC flash layout is used by Palmetto systems.
+On Fri, Dec 15, 2017 at 04:54:25PM +1030, Joel Stanley wrote:
+> These will be merged as part of the clock driver. This commit is
+> included so the tree will build without the clock series being applied.
+> 
+> Signed-off-by: Joel Stanley <joel@jms.id.au>
+> ---
+>  v2:
+>   - remove NUM_CLKS define. There's no need for it to be part of ABI
+> ---
+>  include/dt-bindings/clock/aspeed-clock.h | 52 ++++++++++++++++++++++++++++++++
+>  1 file changed, 52 insertions(+)
+>  create mode 100644 include/dt-bindings/clock/aspeed-clock.h
 
-Signed-off-by: Joel Stanley <joel@jms.id.au>
----
- arch/arm/boot/dts/aspeed-bmc-opp-palmetto.dts | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-palmetto.dts b/arch/arm/boot/dts/aspeed-bmc-opp-palmetto.dts
-index a8f0c046e83e..cc18137386f2 100644
---- a/arch/arm/boot/dts/aspeed-bmc-opp-palmetto.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-opp-palmetto.dts
-@@ -34,6 +34,7 @@
- 		status = "okay";
- 		m25p,fast-read;
- 		label = "bmc";
-+#include "openbmc-flash-layout.dtsi"
- 	};
- };
- 
--- 
-2.14.1
-
+Reviewed-by: Rob Herring <robh@kernel.org>
