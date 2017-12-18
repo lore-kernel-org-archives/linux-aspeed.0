@@ -1,243 +1,140 @@
 From: Cédric Le Goater <clg@kaod.org>
-Date: Mon, 18 Dec 2017 10:32:36 +0100
-Subject: [PATCH v2 18/19] ARM: dts: aspeed-romulus: Update Romulus system
-In-Reply-To: <20171215062443.23059-19-joel@jms.id.au>
+Date: Mon, 18 Dec 2017 10:25:31 +0100
+Subject: [PATCH v2 03/19] ARM: dts: aspeed: Add LPC and child devices
+In-Reply-To: <20171215062443.23059-4-joel@jms.id.au>
 References: <20171215062443.23059-1-joel@jms.id.au>
- <20171215062443.23059-19-joel@jms.id.au>
-Message-ID: <b8e80861-88c4-da87-a201-ca2eefaa5a94@kaod.org>
+ <20171215062443.23059-4-joel@jms.id.au>
+Message-ID: <f08188a0-a6dd-a445-340c-eee1ca335865@kaod.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-
-Some comments below,
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
 On 12/15/2017 07:24 AM, Joel Stanley wrote:
->  - Fix incorrect RAM size
->  - Remove alias; these are now specified in the dtsi
->  - Add newly upstreamed devices
->  - Include OpenBMC flash layout
-> 
+> From: Andrew Jeffery <andrew@aj.id.au>
+>=20
+> Ensure the ordering is correct and add all of the children in the SoC
+> device trees for the ast2400 and ast2500.
+>=20
+> Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
 > Signed-off-by: Joel Stanley <joel@jms.id.au>
 > ---
->  arch/arm/boot/dts/aspeed-bmc-opp-romulus.dts | 153 ++++++++++++++++++++++++++-
->  1 file changed, 148 insertions(+), 5 deletions(-)
-> 
-> diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-romulus.dts b/arch/arm/boot/dts/aspeed-bmc-opp-romulus.dts
-> index a7a9386f964d..bfdf643584df 100644
-> --- a/arch/arm/boot/dts/aspeed-bmc-opp-romulus.dts
-> +++ b/arch/arm/boot/dts/aspeed-bmc-opp-romulus.dts
-> @@ -7,17 +7,13 @@
->  	model = "Romulus BMC";
->  	compatible = "ibm,romulus-bmc", "aspeed,ast2500";
->  
-> -	aliases {
-> -		serial4 = &uart5;
-> -	};
+>  arch/arm/boot/dts/aspeed-g4.dtsi | 35 +++++++++++++++++++++++++++++++++++
+>  arch/arm/boot/dts/aspeed-g5.dtsi | 27 +++++++++++++++++----------
+>  2 files changed, 52 insertions(+), 10 deletions(-)
+>=20
+> diff --git a/arch/arm/boot/dts/aspeed-g4.dtsi b/arch/arm/boot/dts/aspeed-=
+g4.dtsi
+> index 100d092e6c07..a3bc5da7d42c 100644
+> --- a/arch/arm/boot/dts/aspeed-g4.dtsi
+> +++ b/arch/arm/boot/dts/aspeed-g4.dtsi
+> @@ -226,6 +226,41 @@
+>  				status =3D "disabled";
+>  			};
+> =20
+> +			lpc: lpc at 1e789000 {
+> +				compatible =3D "aspeed,ast2400-lpc", "simple-mfd";
+> +				reg =3D <0x1e789000 0x1000>;
+> +
+> +				#address-cells =3D <1>;
+> +				#size-cells =3D <1>;
+> +				ranges =3D <0x0 0x1e789000 0x1000>;
+> +
+> +				lpc_bmc: lpc-bmc at 0 {
+> +					compatible =3D "aspeed,ast2400-lpc-bmc";
+> +					reg =3D <0x0 0x80>;
+> +				};
+> +
+> +				lpc_host: lpc-host at 80 {
+> +					compatible =3D "aspeed,ast2400-lpc-host", "simple-mfd", "syscon";
+> +					reg =3D <0x80 0x1e0>;
+> +					reg-io-width =3D <4>;
+> +
+> +					#address-cells =3D <1>;
+> +					#size-cells =3D <1>;
+> +					ranges =3D <0x0 0x80 0x1e0>;
+> +
+> +					lpc_ctrl: lpc-ctrl at 0 {
+> +						compatible =3D "aspeed,ast2400-lpc-ctrl";
+> +						reg =3D <0x0 0x80>;
+> +						status =3D "disabled";
+> +					};
+> +
+> +					lhc: lhc at 20 {
+> +						compatible =3D "aspeed,ast2500-lhc";
+
+aspeed,ast2400-lhc
+
+The layout of the registers are the same but there a couple of differences
+in the bit definitions between the two SoCs.
+
+a part from that :
+
+Reviewed-by: C=C3=A9dric Le Goater <clg@kaod.org>
+
+C.=20
+
+> +						reg =3D <0x20 0x24 0x48 0x8>;
+> +					};
+> +				};
+> +			};
+> +
+>  			uart2: serial at 1e78d000 {
+>  				compatible =3D "ns16550a";
+>  				reg =3D <0x1e78d000 0x20>;
+> diff --git a/arch/arm/boot/dts/aspeed-g5.dtsi b/arch/arm/boot/dts/aspeed-=
+g5.dtsi
+> index 1f9d28313f82..7861631940fe 100644
+> --- a/arch/arm/boot/dts/aspeed-g5.dtsi
+> +++ b/arch/arm/boot/dts/aspeed-g5.dtsi
+> @@ -266,6 +266,16 @@
+>  				status =3D "disabled";
+>  			};
+> =20
+> +			vuart: serial at 1e787000 {
+> +				compatible =3D "aspeed,ast2500-vuart";
+> +				reg =3D <0x1e787000 0x40>;
+> +				reg-shift =3D <2>;
+> +				interrupts =3D <10>;
+> +				clocks =3D <&clk_uart>;
+> +				no-loopback-test;
+> +				status =3D "disabled";
+> +			};
+> +
+>  			lpc: lpc at 1e789000 {
+>  				compatible =3D "aspeed,ast2500-lpc", "simple-mfd";
+>  				reg =3D <0x1e789000 0x1000>;
+> @@ -289,6 +299,13 @@
+> =20
+>  					reg-io-width =3D <4>;
+> =20
+> +					lpc_ctrl: lpc-ctrl at 0 {
+> +						compatible =3D "aspeed,ast2500-lpc-ctrl";
+> +						reg =3D <0x0 0x80>;
+> +						status =3D "disabled";
+> +					};
+> +
+> +
+>  					lhc: lhc at 20 {
+>  						compatible =3D "aspeed,ast2500-lhc";
+>  						reg =3D <0x20 0x24 0x48 0x8>;
+> @@ -296,16 +313,6 @@
+>  				};
+>  			};
+> =20
+> -			vuart: serial at 1e787000 {
+> -				compatible =3D "aspeed,ast2500-vuart";
+> -				reg =3D <0x1e787000 0x40>;
+> -				reg-shift =3D <2>;
+> -				interrupts =3D <10>;
+> -				clocks =3D <&clk_uart>;
+> -				no-loopback-test;
+> -				status =3D "disabled";
+> -			};
 > -
->  	chosen {
->  		stdout-path = &uart5;
->  		bootargs = "console=ttyS4,115200 earlyprintk";
->  	};
->  
->  	memory {
-> -		reg = <0x80000000 0x40000000>;
-> +		reg = <0x80000000 0x20000000>;
->  	};
->  
->  	reserved-memory {
-> @@ -29,6 +25,73 @@
->  			no-map;
->  			reg = <0xbf000000 0x01000000>; /* 16M */
->  		};
-> +
-> +		flash_memory: region at 98000000 {
-> +			no-map;
-> +			reg = <0x98000000 0x04000000>; /* 64M */
-> +		};
-> +	};
-> +
-> +	leds {
-> +		compatible = "gpio-leds";
-> +
-> +		fault {
-> +			gpios = <&gpio ASPEED_GPIO(N, 2) GPIO_ACTIVE_LOW>;
-> +		};
-> +
-> +		identify {
-> +			gpios = <&gpio ASPEED_GPIO(N, 4) GPIO_ACTIVE_HIGH>;
-> +		};
-> +
-> +		power {
-> +			gpios = <&gpio ASPEED_GPIO(R, 5) GPIO_ACTIVE_LOW>;
-> +		};
-> +	};
-> +
-> +	fsi: gpio-fsi {
-> +		compatible = "fsi-master-gpio", "fsi-master";
-> +		#address-cells = <2>;
-> +		#size-cells = <0>;
-> +
-> +		clock-gpios = <&gpio ASPEED_GPIO(AA, 0) GPIO_ACTIVE_HIGH>;
-> +		data-gpios = <&gpio ASPEED_GPIO(AA, 2) GPIO_ACTIVE_HIGH>;
-> +		mux-gpios = <&gpio ASPEED_GPIO(A, 6) GPIO_ACTIVE_HIGH>;
-> +		enable-gpios = <&gpio ASPEED_GPIO(D, 0) GPIO_ACTIVE_HIGH>;
-> +		trans-gpios = <&gpio ASPEED_GPIO(R, 2) GPIO_ACTIVE_HIGH>;
-> +	};
-> +
-> +	gpio-keys {
-> +		compatible = "gpio-keys";
-> +
-> +		checkstop {
-> +			label = "checkstop";
-> +			gpios = <&gpio ASPEED_GPIO(J, 2) GPIO_ACTIVE_LOW>;
-> +			linux,code = <ASPEED_GPIO(J, 2)>;
-> +		};
-> +	};
-> +};
-> +
-> +&fmc {
-> +	status = "okay";
-> +
-> +	flash at 0 {
-> +		status = "okay";
-> +		label = "pnor";
-> +		m25p,fast-read;
-> +#include "openbmc-flash-layout.dtsi"
-> +	};
-> +};
-> +
-> +&spi1 {
-> +	status = "okay";
-> +
-> +	pinctrl-names = "default";
-> +	pinctrl-0 = <&pinctrl_spi1_default>;
-> +
-> +	flash at 0 {
-> +		status = "okay";
-> +		label = "pnor";
-> +		m25p,fast-read;
->  	};
->  };
-
-
-hmm, the fmc and spi1 bindings were already added in commit 1142aea9ff9d.
-
-
-> @@ -38,6 +101,7 @@
->  		status = "okay";
->  		m25p,fast-read;
->  		label = "bmc";
-> +#include "openbmc-flash-layout.dtsi"
-
-
-This looks like an extra "fmc" node ? 
-
->  	};
->  };
->  
-> @@ -53,6 +117,12 @@
->  	};
->  };
->  
-> +&lpc_ctrl {
-> +	status = "okay";
-> +	memory-region = <&flash_memory>;
-> +	flash = <&spi1>;
-> +};
-> +
->  &uart1 {
->  	/* Rear RS-232 connector */
->  	status = "okay";
-> @@ -81,6 +151,10 @@
->  	pinctrl-0 = <&pinctrl_rmii1_default>;
->  };
->  
-> +&i2c1 {
-> +	status = "okay";
-> +};
-> +
->  &i2c2 {
->  	status = "okay";
->  };
-> @@ -133,8 +207,77 @@
->  
->  &i2c12 {
->  	status = "okay";
-> +
-> +	max31785 at 52 {
-> +		compatible = "maxim,max31785";
-> +		reg = <0x52>;
-> +	};
-> +};
-> +
-> +&gpio {
-> +	nic_func_mode0 {
-> +		gpio-hog;
-> +		gpios = <ASPEED_GPIO(D, 3) GPIO_ACTIVE_HIGH>;
-> +		output-low;
-> +		line-name = "nic_func_mode0";
-> +	};
-> +	nic_func_mode1 {
-> +		gpio-hog;
-> +		gpios = <ASPEED_GPIO(D, 4) GPIO_ACTIVE_HIGH>;
-> +		output-low;
-> +		line-name = "nic_func_mode1";
-> +	};
->  };
->  
->  &vuart {
->  	status = "okay";
->  };
-> +
-> +&gfx {
-> +	status = "okay";
-> +};
-> +
-> +&pinctrl {
-> +	aspeed,external-nodes = <&gfx &lhc>;
-> +};
-> +
-> +&pwm_tacho {
-> +	status = "okay";
-> +	pinctrl-names = "default";
-> +	pinctrl-0 = <&pinctrl_pwm0_default &pinctrl_pwm1_default>;
-> +
-> +	fan at 0 {
-> +		reg = <0x00>;
-> +		aspeed,fan-tach-ch = /bits/ 8 <0x08>;
-> +	};
-> +
-> +	fan at 1 {
-> +		reg = <0x00>;
-> +		aspeed,fan-tach-ch = /bits/ 8 <0x09>;
-> +	};
-> +
-> +	fan at 2 {
-> +		reg = <0x01>;
-> +		aspeed,fan-tach-ch = /bits/ 8 <0x0a>;
-> +	};
-> +
-> +	fan at 3 {
-> +		reg = <0x01>;
-> +		aspeed,fan-tach-ch = /bits/ 8 <0x0b>;
-> +	};
-> +
-> +	fan at 4 {
-> +		reg = <0x00>;
-> +		aspeed,fan-tach-ch = /bits/ 8 <0x0c>;
-> +	};
-> +
-> +	fan at 5 {
-> +		reg = <0x00>;
-> +		aspeed,fan-tach-ch = /bits/ 8 <0x0d>;
-> +	};
-> +
-> +	fan at 6 {
-> +		reg = <0x01>;
-> +		aspeed,fan-tach-ch = /bits/ 8 <0x0e>;
-> +	};
-> +};
-> 
+>  			uart2: serial at 1e78d000 {
+>  				compatible =3D "ns16550a";
+>  				reg =3D <0x1e78d000 0x20>;
+>=20
 
