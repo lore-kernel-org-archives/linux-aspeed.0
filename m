@@ -1,37 +1,35 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Wed, 20 Dec 2017 13:53:28 +1030
-Subject: [PATCH v3 20/20] ARM: dts: aspeed-evb: Add unit name to memory node
+Date: Wed, 20 Dec 2017 14:07:30 +1030
+Subject: [PATCH v3 00/19] ARM: dts: aspeed: updates and new machines
 In-Reply-To: <20171220032328.30584-1-joel@jms.id.au>
 References: <20171220032328.30584-1-joel@jms.id.au>
-Message-ID: <20171220032328.30584-21-joel@jms.id.au>
+Message-ID: <CACPK8Xdf3__yuMEvD0NiZXihU-8F1R15aEwwJueHLZ6Jfs82oQ@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Fixes a warning when building with W=1.
+On Wed, Dec 20, 2017 at 1:53 PM, Joel Stanley <joel@jms.id.au> wrote:
+> This series of device tree patches for the ASPEED BMC machines
+> moves all systems to use the soon to be merged clk driver, and
+> updates machines to use all of the drivers we have upstream.
+>
+>  v3: Address review from Rob and Cedric
+>   - Move aspeed-gpio.h usage out into the patches where use of the GPIO
+>     is added
+>   - Clarify that the aspeed-clock.h patch will be merged as part of
+>     the device tree tree. This is to ensure we don't depend on the clk
+>     tree for building.
 
-All of the ASPEED device trees build without warnings now.
+Arnd, Michael, Stephen; how do we resolve this? We need the
+dt-bindings header to be present for both the clk driver and the
+device tree to build.
 
-Signed-off-by: Joel Stanley <joel@jms.id.au>
----
- arch/arm/boot/dts/aspeed-ast2500-evb.dts | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+The clk driver is not (yet - soon I hope?) merged by Michael and
+Stephen. I am about to commit the device tree changes that will go
+through the ARM SoC tree.
 
-diff --git a/arch/arm/boot/dts/aspeed-ast2500-evb.dts b/arch/arm/boot/dts/aspeed-ast2500-evb.dts
-index 3e6f38e5d5d0..91a36c1f029b 100644
---- a/arch/arm/boot/dts/aspeed-ast2500-evb.dts
-+++ b/arch/arm/boot/dts/aspeed-ast2500-evb.dts
-@@ -16,7 +16,7 @@
- 		bootargs = "console=ttyS4,115200 earlyprintk";
- 	};
- 
--	memory {
-+	memory at 80000000 {
- 		reg = <0x80000000 0x20000000>;
- 	};
- };
--- 
-2.15.1
+Cheers,
 
+Joel
