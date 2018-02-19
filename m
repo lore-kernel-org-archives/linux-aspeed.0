@@ -1,51 +1,66 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Mon, 19 Feb 2018 17:24:36 +1030
-Subject: [PATCH 1/3] dt-bindings: aspeed-lpc: Add reset controller
+Date: Mon, 19 Feb 2018 17:24:37 +1030
+Subject: [PATCH 2/3] reset: simple: Enable for ASPEED systems
 In-Reply-To: <20180219065438.19933-1-joel@jms.id.au>
 References: <20180219065438.19933-1-joel@jms.id.au>
-Message-ID: <20180219065438.19933-2-joel@jms.id.au>
+Message-ID: <20180219065438.19933-3-joel@jms.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This describes the reset controller present in the LPC address space.
+ASPEED BMC SoCs have a reset controller in the LPC IP that can be
+controlled using this driver to release the UARTs from reset.
+
+No special configuration is required, so only the compatible string is
+added.
 
 Signed-off-by: Joel Stanley <joel@jms.id.au>
 ---
- .../devicetree/bindings/mfd/aspeed-lpc.txt          | 21 +++++++++++++++++++++
- 1 file changed, 21 insertions(+)
+ drivers/reset/Kconfig        | 10 +++++++---
+ drivers/reset/reset-simple.c |  2 ++
+ 2 files changed, 9 insertions(+), 3 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/mfd/aspeed-lpc.txt b/Documentation/devicetree/bindings/mfd/aspeed-lpc.txt
-index 514d82ced95b..721a2b1eb40f 100644
---- a/Documentation/devicetree/bindings/mfd/aspeed-lpc.txt
-+++ b/Documentation/devicetree/bindings/mfd/aspeed-lpc.txt
-@@ -135,3 +135,24 @@ lhc: lhc at 20 {
- 	compatible = "aspeed,ast2500-lhc";
- 	reg = <0x20 0x24 0x48 0x8>;
+diff --git a/drivers/reset/Kconfig b/drivers/reset/Kconfig
+index 7fc77696bb1e..18f152d251d7 100644
+--- a/drivers/reset/Kconfig
++++ b/drivers/reset/Kconfig
+@@ -83,14 +83,18 @@ config RESET_PISTACHIO
+ 
+ config RESET_SIMPLE
+ 	bool "Simple Reset Controller Driver" if COMPILE_TEST
+-	default ARCH_SOCFPGA || ARCH_STM32 || ARCH_STRATIX10 || ARCH_SUNXI || ARCH_ZX
++	default ARCH_SOCFPGA || ARCH_STM32 || ARCH_STRATIX10 || ARCH_SUNXI || ARCH_ZX || ARCH_ASPEED
+ 	help
+ 	  This enables a simple reset controller driver for reset lines that
+ 	  that can be asserted and deasserted by toggling bits in a contiguous,
+ 	  exclusive register space.
+ 
+-	  Currently this driver supports Altera SoCFPGAs, the RCC reset
+-	  controller in STM32 MCUs, Allwinner SoCs, and ZTE's zx2967 family.
++	  Currently this driver supports:
++	   - Altera SoCFPGAs
++	   - ASPEED BMC SoCs
++	   - RCC reset controller in STM32 MCUs
++	   - Allwinner SoCs
++	   - ZTE's zx2967 family
+ 
+ config RESET_SUNXI
+ 	bool "Allwinner SoCs Reset Driver" if COMPILE_TEST && !ARCH_SUNXI
+diff --git a/drivers/reset/reset-simple.c b/drivers/reset/reset-simple.c
+index 2d4f362ef025..f7ce8910a392 100644
+--- a/drivers/reset/reset-simple.c
++++ b/drivers/reset/reset-simple.c
+@@ -125,6 +125,8 @@ static const struct of_device_id reset_simple_dt_ids[] = {
+ 		.data = &reset_simple_active_low },
+ 	{ .compatible = "zte,zx296718-reset",
+ 		.data = &reset_simple_active_low },
++	{ .compatible = "aspeed,ast2400-lpc-reset" },
++	{ .compatible = "aspeed,ast2500-lpc-reset" },
+ 	{ /* sentinel */ },
  };
-+
-+LPC reset control
-+-----------------
-+
-+The UARTs present in the ASPEED SoC can have their resets tied to the reset
-+state of the LPC bus. Some systems may chose to modify this configuration.
-+
-+Required properties:
-+
-+ - comaptible:		"aspeed,ast2500-lpc-reset" or
-+ 			"aspeed,ast2400-lpc-reset"
-+ - reg:			offset and length of the IP in the LHC memory region
-+ - #reset-controller	indacates the number of reset cells excepted
-+
-+Example:
-+
-+lpc_reset: reset-controller at 18 {
-+        compatible = "aspeed,ast2500-lpc-reset";
-+        reg = <0x18 0x4>;
-+        #reset-cells = <1>;
-+};
+ 
 -- 
 2.15.1
 
