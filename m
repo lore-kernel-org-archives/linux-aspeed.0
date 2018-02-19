@@ -1,62 +1,28 @@
 From: Philipp Zabel <p.zabel@pengutronix.de>
-Date: Mon, 19 Feb 2018 12:46:15 +0100
-Subject: [PATCH 1/3] dt-bindings: aspeed-lpc: Add reset controller
-In-Reply-To: <20180219065438.19933-2-joel@jms.id.au>
+Date: Mon, 19 Feb 2018 12:46:10 +0100
+Subject: [PATCH 0/3] reset: simple: enable for ASPEED SoCs
+In-Reply-To: <20180219065438.19933-1-joel@jms.id.au>
 References: <20180219065438.19933-1-joel@jms.id.au>
- <20180219065438.19933-2-joel@jms.id.au>
-Message-ID: <1519040775.3408.6.camel@pengutronix.de>
+Message-ID: <1519040770.3408.5.camel@pengutronix.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+Hi Joel,
+
 On Mon, 2018-02-19 at 17:24 +1030, Joel Stanley wrote:
-> This describes the reset controller present in the LPC address space.
+> Hello Philip,
 > 
-> Signed-off-by: Joel Stanley <joel@jms.id.au>
-> ---
->  .../devicetree/bindings/mfd/aspeed-lpc.txt          | 21 +++++++++++++++++++++
->  1 file changed, 21 insertions(+)
-> 
-> diff --git a/Documentation/devicetree/bindings/mfd/aspeed-lpc.txt b/Documentation/devicetree/bindings/mfd/aspeed-lpc.txt
-> index 514d82ced95b..721a2b1eb40f 100644
-> --- a/Documentation/devicetree/bindings/mfd/aspeed-lpc.txt
-> +++ b/Documentation/devicetree/bindings/mfd/aspeed-lpc.txt
-> @@ -135,3 +135,24 @@ lhc: lhc at 20 {
->  	compatible = "aspeed,ast2500-lhc";
->  	reg = <0x20 0x24 0x48 0x8>;
->  };
-> +
-> +LPC reset control
-> +-----------------
-> +
-> +The UARTs present in the ASPEED SoC can have their resets tied to the reset
-> +state of the LPC bus. Some systems may chose to modify this configuration.
-> +
-> +Required properties:
-> +
-> + - comaptible:		"aspeed,ast2500-lpc-reset" or
+> Here is a series that enables the simple reset driver for the ASPEED
+> SoCs. You may recall I posted a patch back in May 2017 with a
+> similar idea[1]. I was happy to see that you merged a driver that solves
+> the problem, and suits our purpose for the ASPEED. Thanks!
 
-"compatible"
-
-> + 			"aspeed,ast2400-lpc-reset"
-> + - reg:			offset and length of the IP in the LHC memory region
-> + - #reset-controller	indacates the number of reset cells excepted
-
-"indicates", "expected"
-
-> +
-> +Example:
-> +
-> +lpc_reset: reset-controller at 18 {
-> +        compatible = "aspeed,ast2500-lpc-reset";
-> +        reg = <0x18 0x4>;
-> +        #reset-cells = <1>;
-> +};
-
-Should this mention or indicate in the example that the reset-controller 
-node must be child of (a subnode of) the lpc node?
+Yes, sometimes it takes a few drivers to see what the common patterns
+are. When it came to unify them, starting from one of the preexisting
+drivers seemed like the straightforward thing to do.
 
 regards
 Philipp
