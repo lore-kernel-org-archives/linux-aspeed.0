@@ -1,28 +1,22 @@
-From: Philipp Zabel <p.zabel@pengutronix.de>
-Date: Mon, 19 Feb 2018 12:46:10 +0100
-Subject: [PATCH 0/3] reset: simple: enable for ASPEED SoCs
-In-Reply-To: <20180219065438.19933-1-joel@jms.id.au>
+From: Rob Herring <robh@kernel.org>
+Date: Mon, 19 Feb 2018 14:41:25 -0600
+Subject: [PATCH 1/3] dt-bindings: aspeed-lpc: Add reset controller
+In-Reply-To: <20180219065438.19933-2-joel@jms.id.au>
 References: <20180219065438.19933-1-joel@jms.id.au>
-Message-ID: <1519040770.3408.5.camel@pengutronix.de>
+ <20180219065438.19933-2-joel@jms.id.au>
+Message-ID: <20180219204125.ralfeo6rm7wzkcnq@rob-hp-laptop>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Joel,
-
-On Mon, 2018-02-19 at 17:24 +1030, Joel Stanley wrote:
-> Hello Philip,
+On Mon, Feb 19, 2018 at 05:24:36PM +1030, Joel Stanley wrote:
+> This describes the reset controller present in the LPC address space.
 > 
-> Here is a series that enables the simple reset driver for the ASPEED
-> SoCs. You may recall I posted a patch back in May 2017 with a
-> similar idea[1]. I was happy to see that you merged a driver that solves
-> the problem, and suits our purpose for the ASPEED. Thanks!
+> Signed-off-by: Joel Stanley <joel@jms.id.au>
+> ---
+>  .../devicetree/bindings/mfd/aspeed-lpc.txt          | 21 +++++++++++++++++++++
+>  1 file changed, 21 insertions(+)
 
-Yes, sometimes it takes a few drivers to see what the common patterns
-are. When it came to unify them, starting from one of the preexisting
-drivers seemed like the straightforward thing to do.
-
-regards
-Philipp
+Reviewed-by: Rob Herring <robh@kernel.org>
