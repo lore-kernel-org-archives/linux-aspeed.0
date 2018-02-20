@@ -1,66 +1,37 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Tue, 20 Feb 2018 12:13:29 +1030
-Subject: [PATCH v2 2/3] reset: simple: Enable for ASPEED systems
+Date: Tue, 20 Feb 2018 12:13:30 +1030
+Subject: [PATCH v2 3/3] reset: simple: Allow user selection of driver
 In-Reply-To: <20180220014330.23425-1-joel@jms.id.au>
 References: <20180220014330.23425-1-joel@jms.id.au>
-Message-ID: <20180220014330.23425-3-joel@jms.id.au>
+Message-ID: <20180220014330.23425-4-joel@jms.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-ASPEED BMC SoCs have a reset controller in the LPC IP that can be
-controlled using this driver to release the UARTs from reset.
-
-No special configuration is required, so only the compatible string is
-added.
+Currently this driver is only user selectable if COMPILE_TEST is turned
+on. Users may wish to select (and deselect) it, so remove this
+restriction.
 
 Signed-off-by: Joel Stanley <joel@jms.id.au>
 ---
- drivers/reset/Kconfig        | 10 +++++++---
- drivers/reset/reset-simple.c |  2 ++
- 2 files changed, 9 insertions(+), 3 deletions(-)
+ drivers/reset/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/reset/Kconfig b/drivers/reset/Kconfig
-index 7fc77696bb1e..18f152d251d7 100644
+index 18f152d251d7..7490a4370900 100644
 --- a/drivers/reset/Kconfig
 +++ b/drivers/reset/Kconfig
-@@ -83,14 +83,18 @@ config RESET_PISTACHIO
+@@ -82,7 +82,7 @@ config RESET_PISTACHIO
+ 	  This enables the reset driver for ImgTec Pistachio SoCs.
  
  config RESET_SIMPLE
- 	bool "Simple Reset Controller Driver" if COMPILE_TEST
--	default ARCH_SOCFPGA || ARCH_STM32 || ARCH_STRATIX10 || ARCH_SUNXI || ARCH_ZX
-+	default ARCH_SOCFPGA || ARCH_STM32 || ARCH_STRATIX10 || ARCH_SUNXI || ARCH_ZX || ARCH_ASPEED
+-	bool "Simple Reset Controller Driver" if COMPILE_TEST
++	bool "Simple Reset Controller Driver"
+ 	default ARCH_SOCFPGA || ARCH_STM32 || ARCH_STRATIX10 || ARCH_SUNXI || ARCH_ZX || ARCH_ASPEED
  	help
  	  This enables a simple reset controller driver for reset lines that
- 	  that can be asserted and deasserted by toggling bits in a contiguous,
- 	  exclusive register space.
- 
--	  Currently this driver supports Altera SoCFPGAs, the RCC reset
--	  controller in STM32 MCUs, Allwinner SoCs, and ZTE's zx2967 family.
-+	  Currently this driver supports:
-+	   - Altera SoCFPGAs
-+	   - ASPEED BMC SoCs
-+	   - RCC reset controller in STM32 MCUs
-+	   - Allwinner SoCs
-+	   - ZTE's zx2967 family
- 
- config RESET_SUNXI
- 	bool "Allwinner SoCs Reset Driver" if COMPILE_TEST && !ARCH_SUNXI
-diff --git a/drivers/reset/reset-simple.c b/drivers/reset/reset-simple.c
-index 2d4f362ef025..f7ce8910a392 100644
---- a/drivers/reset/reset-simple.c
-+++ b/drivers/reset/reset-simple.c
-@@ -125,6 +125,8 @@ static const struct of_device_id reset_simple_dt_ids[] = {
- 		.data = &reset_simple_active_low },
- 	{ .compatible = "zte,zx296718-reset",
- 		.data = &reset_simple_active_low },
-+	{ .compatible = "aspeed,ast2400-lpc-reset" },
-+	{ .compatible = "aspeed,ast2500-lpc-reset" },
- 	{ /* sentinel */ },
- };
- 
 -- 
 2.15.1
 
