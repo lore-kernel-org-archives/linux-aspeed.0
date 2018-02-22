@@ -1,27 +1,48 @@
-From: Philipp Zabel <p.zabel@pengutronix.de>
-Date: Tue, 20 Feb 2018 17:47:12 +0100
-Subject: [PATCH v2 0/3] reset: simple: enable for ASPEED SoCs
-In-Reply-To: <20180220014330.23425-1-joel@jms.id.au>
-References: <20180220014330.23425-1-joel@jms.id.au>
-Message-ID: <1519145232.3470.13.camel@pengutronix.de>
+From: Joel Stanley <joel@jms.id.au>
+Date: Thu, 22 Feb 2018 14:45:24 +1030
+Subject: [PATCH] ARM: dts: aspeed-palmetto: Enable rear UART
+Message-ID: <20180222041524.17867-1-joel@jms.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Joel,
+The Palmetto BMC has a UART connected to a RS-232 transceiver designed
+to be used as a serial console for the host processor. It appears as a
+D-sub connector on the back of the chassis.
 
-On Tue, 2018-02-20 at 12:13 +1030, Joel Stanley wrote:
-> v2: Fix typos in bindings document, add Rob's ack
-> 
-> This series that enables the simple reset driver for the ASPEED SoCs.
+Signed-off-by: Joel Stanley <joel@jms.id.au>
+---
+ arch/arm/boot/dts/aspeed-bmc-opp-palmetto.dts | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
 
-Thanks, I have applied patches 1 (with fixup for a whitespace issue that
-git complained about) and 2 to the reset/next branch.
-I have dropped patch 3 for now because it doesn't seem necessary, but if
-there is an actual user that wants to disable reset-simple and UART on
-small ASPEED systems, I'll be happy to add it with an explanation.
+diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-palmetto.dts b/arch/arm/boot/dts/aspeed-bmc-opp-palmetto.dts
+index bbddfe1d1cc8..b7d3d1825b93 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-opp-palmetto.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-opp-palmetto.dts
+@@ -82,6 +82,21 @@
+ 			&pinctrl_ddcclk_default &pinctrl_ddcdat_default>;
+ };
+ 
++&uart1 {
++	/* Rear RS-232 connector */
++	status = "okay";
++
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_txd1_default
++			&pinctrl_rxd1_default
++			&pinctrl_nrts1_default
++			&pinctrl_ndtr1_default
++			&pinctrl_ndsr1_default
++			&pinctrl_ncts1_default
++			&pinctrl_ndcd1_default
++			&pinctrl_nri1_default>;
++};
++
+ &uart5 {
+ 	status = "okay";
+ };
+-- 
+2.15.1
 
-regards
-Philipp
