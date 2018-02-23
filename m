@@ -1,53 +1,60 @@
-From: Wang, Haiyue <haiyue.wang@linux.intel.com>
-Date: Thu, 22 Feb 2018 16:50:17 +0800
-Subject: [PATCH] MAINTAINERS: Update ASPEED entry with details
-In-Reply-To: <1519288786.101739.1279390200.1CD3EC51@webmail.messagingengine.com>
-References: <20180222050324.21531-1-joel@jms.id.au>
- <1519288786.101739.1279390200.1CD3EC51@webmail.messagingengine.com>
-Message-ID: <23b668f1-ab4b-7ef3-ba1e-f252fbba4d1b@linux.intel.com>
+From: Andrew Jeffery <andrew@aj.id.au>
+Date: Fri, 23 Feb 2018 10:34:08 +1030
+Subject: [PATCH] ARM: dts: aspeed-palmetto: Enable rear UART
+In-Reply-To: <20180222041524.17867-1-joel@jms.id.au>
+References: <20180222041524.17867-1-joel@jms.id.au>
+Message-ID: <1519344248.1020764.1280338600.18324066@webmail.messagingengine.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 
-Dear Andrew & Joel,
+On Thu, 22 Feb 2018, at 14:45, Joel Stanley wrote:
+> The Palmetto BMC has a UART connected to a RS-232 transceiver designed
+> to be used as a serial console for the host processor. It appears as a
+> D-sub connector on the back of the chassis.
+> 
+> Signed-off-by: Joel Stanley <joel@jms.id.au>
 
-Since you are ASPEED BMC experts, any time and interest in eSPI code=20
-review ? I've sent
+Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
 
-it before, but no more response. Intel recommends eSPI bus than LPC as I=20
-know. I just kept
+> ---
+>  arch/arm/boot/dts/aspeed-bmc-opp-palmetto.dts | 15 +++++++++++++++
+>  1 file changed, 15 insertions(+)
+> 
+> diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-palmetto.dts b/arch/arm/
+> boot/dts/aspeed-bmc-opp-palmetto.dts
+> index bbddfe1d1cc8..b7d3d1825b93 100644
+> --- a/arch/arm/boot/dts/aspeed-bmc-opp-palmetto.dts
+> +++ b/arch/arm/boot/dts/aspeed-bmc-opp-palmetto.dts
+> @@ -82,6 +82,21 @@
+>  			&pinctrl_ddcclk_default &pinctrl_ddcdat_default>;
+>  };
+>  
+> +&uart1 {
+> +	/* Rear RS-232 connector */
+> +	status = "okay";
+> +
+> +	pinctrl-names = "default";
+> +	pinctrl-0 = <&pinctrl_txd1_default
+> +			&pinctrl_rxd1_default
+> +			&pinctrl_nrts1_default
+> +			&pinctrl_ndtr1_default
+> +			&pinctrl_ndsr1_default
+> +			&pinctrl_ncts1_default
+> +			&pinctrl_ndcd1_default
+> +			&pinctrl_nri1_default>;
+> +};
+> +
+>  &uart5 {
+>  	status = "okay";
+>  };
+> -- 
+> 2.15.1
+> 
 
-the minimal eSPI code which is approved to work well in our real server=20
-boards for two more
 
-years. Other part of eSPI driver from ASPEED's SDK=C2=A0 has been removed, =
-
-because ePSI is a new
-
-thing, we only use a small feature set like booting host.
-
-We Intel submit this eSPI patch for openbmc upstreaming, hope for your=20
-response. :-)
-
-https://patchwork.kernel.org/patch/10166577/
-
-
-
-On 2018-02-22 16:39, Andrew Jeffery wrote:
->
-> On Thu, 22 Feb 2018, at 15:33, Joel Stanley wrote:
->> I am interested in all ASPEED drivers, and the previous match wasn't
->> grabbing files in nested directories. Use N instead.
->>
->> Add the arm kernel mailing list so that patches get reviewed there, and
->> the linux-aspeed list which exists only so I can use patchwork to track
->> patches.
->>
->> Add Andrew as a reviewer, because he is involved in reviewing ASPEED
->> stuff.
->>
->> Signed-off-by: Joel Stanley <joel@jms.id.au>
-> Acked-by: Andrew Jeffery <andrew@aj.id.au>
-
+-- 
+  Andrew Jeffery
+  andrew at aj.id.au
