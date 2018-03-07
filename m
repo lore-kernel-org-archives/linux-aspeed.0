@@ -1,27 +1,83 @@
 From: Haiyue Wang <haiyue.wang@linux.intel.com>
-Date: Tue, 29 Dec 2020 22:53:42 +0800
-Subject: [PATCH v4 3/5] ipmi: kcs: aspeed: Adapt to new LPC DTS layout
-In-Reply-To: <20201229063157.3587-4-chiawei_wang@aspeedtech.com>
-References: <20201229063157.3587-1-chiawei_wang@aspeedtech.com>
- <20201229063157.3587-4-chiawei_wang@aspeedtech.com>
-Message-ID: <d436cf38-7ce2-3bea-4d0e-03003e36af42@linux.intel.com>
+Date: Wed,  7 Mar 2018 13:04:50 +0800
+Subject: [PATCH dts/arm/aspeed-g5 v1] ARM: dts: aspeed-g5: Add IPMI KCS node
+Message-ID: <1520399090-2455-1-git-send-email-haiyue.wang@linux.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 12/29/2020 14:31, Chia-Wei, Wang wrote:
-> Add check against LPC device v2 compatible string to
-> ensure that the fixed device tree layout is adopted.
-> The LPC register offsets are also fixed accordingly.
->
-> Signed-off-by: Chia-Wei, Wang<chiawei_wang@aspeedtech.com>
-> ---
->   drivers/char/ipmi/kcs_bmc_aspeed.c | 27 ++++++++++++++++-----------
->   1 file changed, 16 insertions(+), 11 deletions(-)
+The IPMI KCS device part of the LPC interface and is used for
+communication with the host processor.
 
-Acked-by: Haiyue Wang <haiyue.wang@linux.intel.com>
+Signed-off-by: Haiyue Wang <haiyue.wang@linux.intel.com>
+---
+ arch/arm/boot/dts/aspeed-g5.dtsi | 43 +++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 42 insertions(+), 1 deletion(-)
 
-
+diff --git a/arch/arm/boot/dts/aspeed-g5.dtsi b/arch/arm/boot/dts/aspeed-g5.dtsi
+index 8eac57c..f443169 100644
+--- a/arch/arm/boot/dts/aspeed-g5.dtsi
++++ b/arch/arm/boot/dts/aspeed-g5.dtsi
+@@ -267,8 +267,40 @@
+ 				ranges = <0x0 0x1e789000 0x1000>;
+ 
+ 				lpc_bmc: lpc-bmc at 0 {
+-					compatible = "aspeed,ast2500-lpc-bmc";
++					compatible = "aspeed,ast2500-lpc-bmc", "simple-mfd", "syscon";
+ 					reg = <0x0 0x80>;
++					reg-io-width = <4>;
++
++					#address-cells = <1>;
++					#size-cells = <1>;
++					ranges = <0x0 0x0 0x80>;
++
++					kcs1: kcs1 at 0 {
++						compatible = "aspeed,ast2500-kcs-bmc";
++						reg = <0x0 0x80>;
++						interrupts = <8>;
++						kcs_chan = <1>;
++						kcs_addr = <0x0>;
++						status = "disabled";
++					};
++
++					kcs2: kcs2 at 0 {
++						compatible = "aspeed,ast2500-kcs-bmc";
++						reg = <0x0 0x80>;
++						interrupts = <8>;
++						kcs_chan = <2>;
++						kcs_addr = <0x0>;
++						status = "disabled";
++					};
++
++					kcs3: kcs3 at 0 {
++						compatible = "aspeed,ast2500-kcs-bmc";
++						reg = <0x0 0x80>;
++						interrupts = <8>;
++						kcs_chan = <3>;
++						kcs_addr = <0x0>;
++						status = "disabled";
++					};
+ 				};
+ 
+ 				lpc_host: lpc-host at 80 {
+@@ -294,6 +326,15 @@
+ 						status = "disabled";
+ 					};
+ 
++					kcs4: kcs4 at 0 {
++						compatible = "aspeed,ast2500-kcs-bmc";
++						reg = <0x0 0xa0>;
++						interrupts = <8>;
++						kcs_chan = <4>;
++						kcs_addr = <0x0>;
++						status = "disabled";
++					};
++
+ 					lhc: lhc at 20 {
+ 						compatible = "aspeed,ast2500-lhc";
+ 						reg = <0x20 0x24 0x48 0x8>;
+-- 
+2.7.4
 
