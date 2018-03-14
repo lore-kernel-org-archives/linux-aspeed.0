@@ -1,83 +1,67 @@
-From: Haiyue Wang <haiyue.wang@linux.intel.com>
-Date: Wed,  7 Mar 2018 13:04:50 +0800
-Subject: [PATCH dts/arm/aspeed-g5 v1] ARM: dts: aspeed-g5: Add IPMI KCS node
-Message-ID: <1520399090-2455-1-git-send-email-haiyue.wang@linux.intel.com>
+From: Joel Stanley <joel@jms.id.au>
+Date: Wed, 14 Mar 2018 17:43:12 +1030
+Subject: [PATCH] ARM: dts: aspeed: Add default memory node
+Message-ID: <20180314071312.17492-1-joel@jms.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The IPMI KCS device part of the LPC interface and is used for
-communication with the host processor.
+When we removed the inclusion of skeleton.dtsi from the device trees, we
+broke booting for systems with bootloaders that aren't device tre aware.
+This can be seen, for example, when appending the device tree blob to
+the kernel image.
 
-Signed-off-by: Haiyue Wang <haiyue.wang@linux.intel.com>
+The reason booting broke was that the kernel lacked the device_type
+label in the memory node. Add in a default memory node wth the
+device_type. It can contain the memory address as the location is fixed
+for each SoC generation, but the size needs to be added by the
+bootloader or the board specific dts.
+
+Fixes: 73102d6fdc32 ("ARM: dts: aspeed: Remove skeleton.dtsi")
+Cc: <stable@vger.kernel.org>
+Reported-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Joel Stanley <joel@jms.id.au>
 ---
- arch/arm/boot/dts/aspeed-g5.dtsi | 43 +++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 42 insertions(+), 1 deletion(-)
+Arnd, can you please merge this as a fix for 4.16?
 
+ arch/arm/boot/dts/aspeed-g4.dtsi | 5 +++++
+ arch/arm/boot/dts/aspeed-g5.dtsi | 5 +++++
+ 2 files changed, 10 insertions(+)
+
+diff --git a/arch/arm/boot/dts/aspeed-g4.dtsi b/arch/arm/boot/dts/aspeed-g4.dtsi
+index 36ae23aa3b48..518d2bc7c7fc 100644
+--- a/arch/arm/boot/dts/aspeed-g4.dtsi
++++ b/arch/arm/boot/dts/aspeed-g4.dtsi
+@@ -42,6 +42,11 @@
+ 		};
+ 	};
+ 
++	memory at 40000000 {
++		device_type = "memory";
++		reg = <0x40000000 0>;
++	};
++
+ 	ahb {
+ 		compatible = "simple-bus";
+ 		#address-cells = <1>;
 diff --git a/arch/arm/boot/dts/aspeed-g5.dtsi b/arch/arm/boot/dts/aspeed-g5.dtsi
-index 8eac57c..f443169 100644
+index 17ee0fa33a14..f9917717dd08 100644
 --- a/arch/arm/boot/dts/aspeed-g5.dtsi
 +++ b/arch/arm/boot/dts/aspeed-g5.dtsi
-@@ -267,8 +267,40 @@
- 				ranges = <0x0 0x1e789000 0x1000>;
+@@ -42,6 +42,11 @@
+ 		};
+ 	};
  
- 				lpc_bmc: lpc-bmc at 0 {
--					compatible = "aspeed,ast2500-lpc-bmc";
-+					compatible = "aspeed,ast2500-lpc-bmc", "simple-mfd", "syscon";
- 					reg = <0x0 0x80>;
-+					reg-io-width = <4>;
++	memory at 80000000 {
++		device_type = "memory";
++		reg = <0x80000000 0>;
++	};
 +
-+					#address-cells = <1>;
-+					#size-cells = <1>;
-+					ranges = <0x0 0x0 0x80>;
-+
-+					kcs1: kcs1 at 0 {
-+						compatible = "aspeed,ast2500-kcs-bmc";
-+						reg = <0x0 0x80>;
-+						interrupts = <8>;
-+						kcs_chan = <1>;
-+						kcs_addr = <0x0>;
-+						status = "disabled";
-+					};
-+
-+					kcs2: kcs2 at 0 {
-+						compatible = "aspeed,ast2500-kcs-bmc";
-+						reg = <0x0 0x80>;
-+						interrupts = <8>;
-+						kcs_chan = <2>;
-+						kcs_addr = <0x0>;
-+						status = "disabled";
-+					};
-+
-+					kcs3: kcs3 at 0 {
-+						compatible = "aspeed,ast2500-kcs-bmc";
-+						reg = <0x0 0x80>;
-+						interrupts = <8>;
-+						kcs_chan = <3>;
-+						kcs_addr = <0x0>;
-+						status = "disabled";
-+					};
- 				};
- 
- 				lpc_host: lpc-host at 80 {
-@@ -294,6 +326,15 @@
- 						status = "disabled";
- 					};
- 
-+					kcs4: kcs4 at 0 {
-+						compatible = "aspeed,ast2500-kcs-bmc";
-+						reg = <0x0 0xa0>;
-+						interrupts = <8>;
-+						kcs_chan = <4>;
-+						kcs_addr = <0x0>;
-+						status = "disabled";
-+					};
-+
- 					lhc: lhc at 20 {
- 						compatible = "aspeed,ast2500-lhc";
- 						reg = <0x20 0x24 0x48 0x8>;
+ 	ahb {
+ 		compatible = "simple-bus";
+ 		#address-cells = <1>;
 -- 
-2.7.4
+2.15.1
 
