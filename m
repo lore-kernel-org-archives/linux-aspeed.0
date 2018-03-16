@@ -1,32 +1,92 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Thu, 15 Mar 2018 15:56:28 +0100
-Subject: [GIT PULL] ARM: aspeed: dts changes for 4.17
-In-Reply-To: <CACPK8Xfv2XnhGo9cmJC69suOu9+caOp5QoXuD5Xw-gznGP61Og@mail.gmail.com>
-References: <CACPK8Xfv2XnhGo9cmJC69suOu9+caOp5QoXuD5Xw-gznGP61Og@mail.gmail.com>
-Message-ID: <CAK8P3a1DiNgdLhAYKf2gjHCzW_6v8Kv9FNHXZ8KeBti8hycVuA@mail.gmail.com>
+From: Wang, Haiyue <haiyue.wang@linux.intel.com>
+Date: Fri, 16 Mar 2018 08:47:51 +0800
+Subject: [PATCH dts/arm/aspeed-g5 v1] ARM: dts: aspeed-g5: Add IPMI KCS
+ node
+In-Reply-To: <1520399090-2455-1-git-send-email-haiyue.wang@linux.intel.com>
+References: <1520399090-2455-1-git-send-email-haiyue.wang@linux.intel.com>
+Message-ID: <9231baaf-e77c-c517-bca2-083070a53342@linux.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Mar 15, 2018 at 7:42 AM, Joel Stanley <joel@jms.id.au> wrote:
-> ASPEED device tree updates for 4.17
->
-> Updates to OpenPower BMC systems:
->
->  A number of updates to use recently merged drivers, including moving to
->  upstreamed IPMI BT nodes, a temp sensor for Romulus, and adding
->  simple-reset for UARTs.
->
->  This includes more of Palmetto's device tree, so that it's ever so
->  close to booting the host with an upstream kernel.
->
-> New machines:
->
->  Add Qualcomm Centriq ARM64 server reference platform, which will run
->  OpenBMC on an AST2500.
+Hi Joel and Andrew,
 
-Pulled into next/dt, thanks!
+Have time to review this patch ? Hope for your comments. :-)
 
-        Arnd
+BR,
+Haiyue
+
+On 2018-03-07 13:04, Haiyue Wang wrote:
+> The IPMI KCS device part of the LPC interface and is used for
+> communication with the host processor.
+>
+> Signed-off-by: Haiyue Wang <haiyue.wang@linux.intel.com>
+> ---
+>   arch/arm/boot/dts/aspeed-g5.dtsi | 43 +++++++++++++++++++++++++++++++++++++++-
+>   1 file changed, 42 insertions(+), 1 deletion(-)
+>
+> diff --git a/arch/arm/boot/dts/aspeed-g5.dtsi b/arch/arm/boot/dts/aspeed-g5.dtsi
+> index 8eac57c..f443169 100644
+> --- a/arch/arm/boot/dts/aspeed-g5.dtsi
+> +++ b/arch/arm/boot/dts/aspeed-g5.dtsi
+> @@ -267,8 +267,40 @@
+>   				ranges = <0x0 0x1e789000 0x1000>;
+>   
+>   				lpc_bmc: lpc-bmc at 0 {
+> -					compatible = "aspeed,ast2500-lpc-bmc";
+> +					compatible = "aspeed,ast2500-lpc-bmc", "simple-mfd", "syscon";
+>   					reg = <0x0 0x80>;
+> +					reg-io-width = <4>;
+> +
+> +					#address-cells = <1>;
+> +					#size-cells = <1>;
+> +					ranges = <0x0 0x0 0x80>;
+> +
+> +					kcs1: kcs1 at 0 {
+> +						compatible = "aspeed,ast2500-kcs-bmc";
+> +						reg = <0x0 0x80>;
+> +						interrupts = <8>;
+> +						kcs_chan = <1>;
+> +						kcs_addr = <0x0>;
+> +						status = "disabled";
+> +					};
+> +
+> +					kcs2: kcs2 at 0 {
+> +						compatible = "aspeed,ast2500-kcs-bmc";
+> +						reg = <0x0 0x80>;
+> +						interrupts = <8>;
+> +						kcs_chan = <2>;
+> +						kcs_addr = <0x0>;
+> +						status = "disabled";
+> +					};
+> +
+> +					kcs3: kcs3 at 0 {
+> +						compatible = "aspeed,ast2500-kcs-bmc";
+> +						reg = <0x0 0x80>;
+> +						interrupts = <8>;
+> +						kcs_chan = <3>;
+> +						kcs_addr = <0x0>;
+> +						status = "disabled";
+> +					};
+>   				};
+>   
+>   				lpc_host: lpc-host at 80 {
+> @@ -294,6 +326,15 @@
+>   						status = "disabled";
+>   					};
+>   
+> +					kcs4: kcs4 at 0 {
+> +						compatible = "aspeed,ast2500-kcs-bmc";
+> +						reg = <0x0 0xa0>;
+> +						interrupts = <8>;
+> +						kcs_chan = <4>;
+> +						kcs_addr = <0x0>;
+> +						status = "disabled";
+> +					};
+> +
+>   					lhc: lhc at 20 {
+>   						compatible = "aspeed,ast2500-lhc";
+>   						reg = <0x20 0x24 0x48 0x8>;
+
