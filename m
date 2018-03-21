@@ -1,64 +1,84 @@
-From: Jeremy Kerr <jk@ozlabs.org>
-Date: Wed, 21 Mar 2018 10:52:39 +0800
-Subject: [PATCH 3/5] serial/8250: export serial8250_read_char
-In-Reply-To: <20180321025241.19785-1-jk@ozlabs.org>
+From: Joel Stanley <joel@jms.id.au>
+Date: Wed, 21 Mar 2018 13:56:57 +1030
+Subject: [PATCH 5/5] serial/aspeed-vuart: Implement quick throttle
+ mechanism
+In-Reply-To: <20180321025241.19785-6-jk@ozlabs.org>
 References: <20180321025241.19785-1-jk@ozlabs.org>
-Message-ID: <20180321025241.19785-4-jk@ozlabs.org>
+ <20180321025241.19785-6-jk@ozlabs.org>
+Message-ID: <CACPK8Xc+BhX+8o3-z1tVWCc81rCnf5EBaFA8VqU64ywvJg6aZw@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Currently, we export serial8250_rx_chars, which does a whole bunch of
-reads from the 8250 data register, without any form of flow control
-between reads.
+Hi Jeremy,
 
-An upcoming change to the aspeed vuart driver implements more
-fine-grained flow control in the interrupt handler, requiring
-character-at-a-time control over the rx path.
+On Wed, Mar 21, 2018 at 1:22 PM, Jeremy Kerr <jk@ozlabs.org> wrote:
+> Although we populate the ->throttle and ->unthrottle UART operations,
+> these may not be called until the ldisc has had a chance to schedule and
+> check buffer space. This means that we may overflow the flip buffers
+> without ever hitting the ldisc's throttle threshold.
+>
+> This change implements an interrupt-based throttle, where we check for
+> space in the flip buffers before reading characters from the UART's
+> FIFO. If there's no space available, we disable the RX interrupt and
+> schedule a timer to check for space later.
+>
+> This prevents a case where we drop characters under heavy RX load.
+>
+> Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
+> ---
+>  drivers/tty/serial/8250/8250_aspeed_vuart.c | 103 ++++++++++++++++++++++++++--
+>  1 file changed, 99 insertions(+), 4 deletions(-)
+>
+> diff --git a/drivers/tty/serial/8250/8250_aspeed_vuart.c b/drivers/tty/serial/8250/8250_aspeed_vuart.c
+> index 50c082b4a1ac..bc2b63578e58 100644
+> --- a/drivers/tty/serial/8250/8250_aspeed_vuart.c
+> +++ b/drivers/tty/serial/8250/8250_aspeed_vuart.c
+> @@ -14,6 +14,8 @@
+>  #include <linux/of_address.h>
+>  #include <linux/of_irq.h>
+>  #include <linux/of_platform.h>
+> +#include <linux/tty.h>
+> +#include <linux/tty_flip.h>
+>  #include <linux/clk.h>
+>
+>  #include "8250.h"
+> @@ -32,8 +34,16 @@ struct aspeed_vuart {
+>         void __iomem            *regs;
+>         struct clk              *clk;
+>         int                     line;
+> +       struct timer_list       unthrottle_timer;
+>  };
+>
+> +/*
+> + * If we fill the tty flip buffers, we throttle the data ready interrupt
+> + * to prevent dropped characters. This timeout defines how long we wait
+> + * to (conditionally, depending on buffer state) unthrottle.
+> + */
+> +static const int unthrottle_timeout = HZ/10;
+> +
+>  /*
+>   * The VUART is basically two UART 'front ends' connected by their FIFO
+>   * (no actual serial line in between). One is on the BMC side (management
+> @@ -183,17 +193,23 @@ static void aspeed_vuart_shutdown(struct uart_port *uart_port)
+>         serial8250_do_shutdown(uart_port);
+>  }
+>
+> -static void aspeed_vuart_set_throttle(struct uart_port *port, bool throttle)
+> +static void __aspeed_vuart_set_throttle(struct uart_8250_port *up,
+> +               bool throttle)
+>  {
+>         unsigned char irqs = UART_IER_RLSI | UART_IER_RDI;
+> -       struct uart_8250_port *up = up_to_u8250p(port);
+> -       unsigned long flags;
+>
+> -       spin_lock_irqsave(&port->lock, flags);
 
-This change exports serial8250_read_char to allow this.
+The diff is a bit confusing, considering you just added these
+functions. Can you explain why you did it that way?
 
-Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
----
- drivers/tty/serial/8250/8250_port.c | 3 ++-
- include/linux/serial_8250.h         | 1 +
- 2 files changed, 3 insertions(+), 1 deletion(-)
+Cheers,
 
-diff --git a/drivers/tty/serial/8250/8250_port.c b/drivers/tty/serial/8250/8250_port.c
-index a5fe0e66c607..ea435406936c 100644
---- a/drivers/tty/serial/8250/8250_port.c
-+++ b/drivers/tty/serial/8250/8250_port.c
-@@ -1650,7 +1650,7 @@ static void serial8250_enable_ms(struct uart_port *port)
- 	serial8250_rpm_put(up);
- }
- 
--static void serial8250_read_char(struct uart_8250_port *up, unsigned char lsr)
-+void serial8250_read_char(struct uart_8250_port *up, unsigned char lsr)
- {
- 	struct uart_port *port = &up->port;
- 	unsigned char ch;
-@@ -1710,6 +1710,7 @@ static void serial8250_read_char(struct uart_8250_port *up, unsigned char lsr)
- 
- 	uart_insert_char(port, lsr, UART_LSR_OE, ch, flag);
- }
-+EXPORT_SYMBOL_GPL(serial8250_read_char);
- 
- /*
-  * serial8250_rx_chars: processes according to the passed in LSR
-diff --git a/include/linux/serial_8250.h b/include/linux/serial_8250.h
-index 61fbb440449c..4639a3608614 100644
---- a/include/linux/serial_8250.h
-+++ b/include/linux/serial_8250.h
-@@ -162,6 +162,7 @@ extern void serial8250_do_set_mctrl(struct uart_port *port, unsigned int mctrl);
- extern int fsl8250_handle_irq(struct uart_port *port);
- int serial8250_handle_irq(struct uart_port *port, unsigned int iir);
- unsigned char serial8250_rx_chars(struct uart_8250_port *up, unsigned char lsr);
-+void serial8250_read_char(struct uart_8250_port *up, unsigned char lsr);
- void serial8250_tx_chars(struct uart_8250_port *up);
- unsigned int serial8250_modem_status(struct uart_8250_port *up);
- void serial8250_init_port(struct uart_8250_port *up);
--- 
-2.14.1
-
+Joel
