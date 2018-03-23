@@ -1,11 +1,10 @@
 From: Eddie James <eajames@linux.vnet.ibm.com>
-Date: Fri, 23 Mar 2018 10:50:48 -0500
-Subject: [PATCH 2/5] serial: expose buf_overrun count through proc
- interface
-In-Reply-To: <20180321025241.19785-3-jk@ozlabs.org>
+Date: Fri, 23 Mar 2018 10:51:07 -0500
+Subject: [PATCH 3/5] serial/8250: export serial8250_read_char
+In-Reply-To: <20180321025241.19785-4-jk@ozlabs.org>
 References: <20180321025241.19785-1-jk@ozlabs.org>
- <20180321025241.19785-3-jk@ozlabs.org>
-Message-ID: <65bc5bf8-af35-055b-5c9d-d983977dc510@linux.vnet.ibm.com>
+ <20180321025241.19785-4-jk@ozlabs.org>
+Message-ID: <bc1b7b27-4ed0-b6c3-92bf-7e73a43b2b40@linux.vnet.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -15,33 +14,56 @@ Content-Transfer-Encoding: 7bit
 
 
 On 03/20/2018 09:52 PM, Jeremy Kerr wrote:
-> The buf_overrun count is only every written, and not exposed to
-> userspace anywhere. This means that dropped characters due to flip
-> buffer overruns are never visible to userspace.
+> Currently, we export serial8250_rx_chars, which does a whole bunch of
+> reads from the 8250 data register, without any form of flow control
+> between reads.
 >
-> The /proc/tty/driver/serial file exports a bunch of metrics (including
-> hardware overruns) already, so add the buf_overrun (as "bo:") to this
-> file.
+> An upcoming change to the aspeed vuart driver implements more
+> fine-grained flow control in the interrupt handler, requiring
+> character-at-a-time control over the rx path.
+>
+> This change exports serial8250_read_char to allow this.
 
 Tested-by: Eddie James <eajames@linux.vnet.ibm.com>
 
 >
 > Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
 > ---
->   drivers/tty/serial/serial_core.c | 2 ++
->   1 file changed, 2 insertions(+)
+>   drivers/tty/serial/8250/8250_port.c | 3 ++-
+>   include/linux/serial_8250.h         | 1 +
+>   2 files changed, 3 insertions(+), 1 deletion(-)
 >
-> diff --git a/drivers/tty/serial/serial_core.c b/drivers/tty/serial/serial_core.c
-> index 8f3dfc8b5307..fc677534b510 100644
-> --- a/drivers/tty/serial/serial_core.c
-> +++ b/drivers/tty/serial/serial_core.c
-> @@ -1780,6 +1780,8 @@ static void uart_line_info(struct seq_file *m, struct uart_driver *drv, int i)
->   			seq_printf(m, " brk:%d", uport->icount.brk);
->   		if (uport->icount.overrun)
->   			seq_printf(m, " oe:%d", uport->icount.overrun);
-> +		if (uport->icount.buf_overrun)
-> +			seq_printf(m, " bo:%d", uport->icount.buf_overrun);
+> diff --git a/drivers/tty/serial/8250/8250_port.c b/drivers/tty/serial/8250/8250_port.c
+> index a5fe0e66c607..ea435406936c 100644
+> --- a/drivers/tty/serial/8250/8250_port.c
+> +++ b/drivers/tty/serial/8250/8250_port.c
+> @@ -1650,7 +1650,7 @@ static void serial8250_enable_ms(struct uart_port *port)
+>   	serial8250_rpm_put(up);
+>   }
 >
->   #define INFOBIT(bit, str) \
->   	if (uport->mctrl & (bit)) \
+> -static void serial8250_read_char(struct uart_8250_port *up, unsigned char lsr)
+> +void serial8250_read_char(struct uart_8250_port *up, unsigned char lsr)
+>   {
+>   	struct uart_port *port = &up->port;
+>   	unsigned char ch;
+> @@ -1710,6 +1710,7 @@ static void serial8250_read_char(struct uart_8250_port *up, unsigned char lsr)
+>
+>   	uart_insert_char(port, lsr, UART_LSR_OE, ch, flag);
+>   }
+> +EXPORT_SYMBOL_GPL(serial8250_read_char);
+>
+>   /*
+>    * serial8250_rx_chars: processes according to the passed in LSR
+> diff --git a/include/linux/serial_8250.h b/include/linux/serial_8250.h
+> index 61fbb440449c..4639a3608614 100644
+> --- a/include/linux/serial_8250.h
+> +++ b/include/linux/serial_8250.h
+> @@ -162,6 +162,7 @@ extern void serial8250_do_set_mctrl(struct uart_port *port, unsigned int mctrl);
+>   extern int fsl8250_handle_irq(struct uart_port *port);
+>   int serial8250_handle_irq(struct uart_port *port, unsigned int iir);
+>   unsigned char serial8250_rx_chars(struct uart_8250_port *up, unsigned char lsr);
+> +void serial8250_read_char(struct uart_8250_port *up, unsigned char lsr);
+>   void serial8250_tx_chars(struct uart_8250_port *up);
+>   unsigned int serial8250_modem_status(struct uart_8250_port *up);
+>   void serial8250_init_port(struct uart_8250_port *up);
 
