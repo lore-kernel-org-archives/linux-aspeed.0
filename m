@@ -1,42 +1,58 @@
 From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Fri, 23 Mar 2018 16:29:31 +0100
-Subject: [PATCH 2/5] serial: expose buf_overrun count through proc
- interface
-In-Reply-To: <20180321025241.19785-3-jk@ozlabs.org>
+Date: Fri, 23 Mar 2018 16:33:50 +0100
+Subject: [PATCH 1/5] serial: Introduce UPSTAT_SYNC_FIFO for synchronised
+ FIFOs
+In-Reply-To: <20180321025241.19785-2-jk@ozlabs.org>
 References: <20180321025241.19785-1-jk@ozlabs.org>
- <20180321025241.19785-3-jk@ozlabs.org>
-Message-ID: <20180323152931.GB25972@kroah.com>
+ <20180321025241.19785-2-jk@ozlabs.org>
+Message-ID: <20180323153350.GC25972@kroah.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Mar 21, 2018 at 10:52:38AM +0800, Jeremy Kerr wrote:
-> The buf_overrun count is only every written, and not exposed to
-> userspace anywhere. This means that dropped characters due to flip
-> buffer overruns are never visible to userspace.
+On Wed, Mar 21, 2018 at 10:52:37AM +0800, Jeremy Kerr wrote:
+> This change adds a flag to indicate that a UART is has an external means
+> of synchronising its FIFO, without needing CTSRTS or XON/XOFF.
 > 
-> The /proc/tty/driver/serial file exports a bunch of metrics (including
-> hardware overruns) already, so add the buf_overrun (as "bo:") to this
-> file.
+> This allows us to use the throttle/unthrottle callbacks, without having
+> to claim other methods of flow control.
 > 
 > Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
 > ---
->  drivers/tty/serial/serial_core.c | 2 ++
->  1 file changed, 2 insertions(+)
+>  drivers/tty/serial/serial_core.c | 4 ++--
+>  include/linux/serial_core.h      | 1 +
+>  2 files changed, 3 insertions(+), 2 deletions(-)
 > 
 > diff --git a/drivers/tty/serial/serial_core.c b/drivers/tty/serial/serial_core.c
-> index 8f3dfc8b5307..fc677534b510 100644
+> index f534a40aebde..8f3dfc8b5307 100644
 > --- a/drivers/tty/serial/serial_core.c
 > +++ b/drivers/tty/serial/serial_core.c
-> @@ -1780,6 +1780,8 @@ static void uart_line_info(struct seq_file *m, struct uart_driver *drv, int i)
->  			seq_printf(m, " brk:%d", uport->icount.brk);
->  		if (uport->icount.overrun)
->  			seq_printf(m, " oe:%d", uport->icount.overrun);
-> +		if (uport->icount.buf_overrun)
-> +			seq_printf(m, " bo:%d", uport->icount.buf_overrun);
+> @@ -678,7 +678,7 @@ static void uart_throttle(struct tty_struct *tty)
+>  	if (C_CRTSCTS(tty))
+>  		mask |= UPSTAT_AUTORTS;
+>  
+> -	if (port->status & mask) {
+> +	if (port->status & (mask | UPSTAT_SYNC_FIFO)) {
+>  		port->ops->throttle(port);
+>  		mask &= ~port->status;
+>  	}
 
-Hopefully this doesn't break any tools that might want to parse this
-file :)
+Why not just set mask to UPSTAT_SYNC_FIFO at the top of this function?
 
+> @@ -707,7 +707,7 @@ static void uart_unthrottle(struct tty_struct *tty)
+>  	if (C_CRTSCTS(tty))
+>  		mask |= UPSTAT_AUTORTS;
+>  
+> -	if (port->status & mask) {
+> +	if (port->status & (mask | UPSTAT_SYNC_FIFO)) {
+>  		port->ops->unthrottle(port);
+>  		mask &= ~port->status;
+>  	}
+
+Same here.  Would make it a bit more obvious (at least to me...)
+
+thanks,
+
+greg k-h
