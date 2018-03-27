@@ -1,70 +1,76 @@
 From: Jeremy Kerr <jk@ozlabs.org>
-Date: Tue, 27 Mar 2018 11:48:24 +0800
-Subject: [PATCH v2 1/4] serial: Introduce UPSTAT_SYNC_FIFO for synchronised
- FIFOs
+Date: Tue, 27 Mar 2018 11:48:26 +0800
+Subject: [PATCH v2 3/4] serial/aspeed-vuart: Implement rx throttling
 In-Reply-To: <20180327034827.20773-1-jk@ozlabs.org>
 References: <20180323155116.GA31423@kroah.com>
  <20180327034827.20773-1-jk@ozlabs.org>
-Message-ID: <20180327034827.20773-2-jk@ozlabs.org>
+Message-ID: <20180327034827.20773-4-jk@ozlabs.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This change adds a flag to indicate that a UART is has an external means
-of synchronising its FIFO, without needing CTSRTS or XON/XOFF.
+The aspeed VUART runs at LPC bus frequency, rather than being restricted
+to a typical UART baud rate. This means that the VUART can receive a lot
+of data, which can overrun tty flip buffers, and/or cause a large amount
+of interrupt traffic.
 
-This allows us to use the throttle/unthrottle callbacks, without having
-to claim other methods of flow control.
+This change implements the uart_port->throttle & unthrottle callbacks,
+implemented by disabling the receiver line status & received data
+available IRQs.
 
 Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
 Tested-by: Eddie James <eajames@linux.vnet.ibm.com>
-
---
-v2:
- - simplify status mask checks
 ---
- drivers/tty/serial/serial_core.c | 4 ++--
- include/linux/serial_core.h      | 1 +
- 2 files changed, 3 insertions(+), 2 deletions(-)
+ drivers/tty/serial/8250/8250_aspeed_vuart.c | 27 +++++++++++++++++++++++++++
+ 1 file changed, 27 insertions(+)
 
-diff --git a/drivers/tty/serial/serial_core.c b/drivers/tty/serial/serial_core.c
-index 0466f9f08a91..c47158c93202 100644
---- a/drivers/tty/serial/serial_core.c
-+++ b/drivers/tty/serial/serial_core.c
-@@ -674,8 +674,8 @@ static void uart_send_xchar(struct tty_struct *tty, char ch)
- static void uart_throttle(struct tty_struct *tty)
+diff --git a/drivers/tty/serial/8250/8250_aspeed_vuart.c b/drivers/tty/serial/8250/8250_aspeed_vuart.c
+index 74a408d9db24..cd1bb49dadfe 100644
+--- a/drivers/tty/serial/8250/8250_aspeed_vuart.c
++++ b/drivers/tty/serial/8250/8250_aspeed_vuart.c
+@@ -179,6 +179,30 @@ static void aspeed_vuart_shutdown(struct uart_port *uart_port)
+ 	serial8250_do_shutdown(uart_port);
+ }
+ 
++static void aspeed_vuart_set_throttle(struct uart_port *port, bool throttle)
++{
++	unsigned char irqs = UART_IER_RLSI | UART_IER_RDI;
++	struct uart_8250_port *up = up_to_u8250p(port);
++	unsigned long flags;
++
++	spin_lock_irqsave(&port->lock, flags);
++	up->ier &= ~irqs;
++	if (!throttle)
++		up->ier |= irqs;
++	serial_out(up, UART_IER, up->ier);
++	spin_unlock_irqrestore(&port->lock, flags);
++}
++
++static void aspeed_vuart_throttle(struct uart_port *port)
++{
++	aspeed_vuart_set_throttle(port, true);
++}
++
++static void aspeed_vuart_unthrottle(struct uart_port *port)
++{
++	aspeed_vuart_set_throttle(port, false);
++}
++
+ static int aspeed_vuart_probe(struct platform_device *pdev)
  {
- 	struct uart_state *state = tty->driver_data;
-+	upstat_t mask = UPSTAT_SYNC_FIFO;
- 	struct uart_port *port;
--	upstat_t mask = 0;
+ 	struct uart_8250_port port;
+@@ -208,6 +232,9 @@ static int aspeed_vuart_probe(struct platform_device *pdev)
+ 	port.port.mapsize = resource_size(res);
+ 	port.port.startup = aspeed_vuart_startup;
+ 	port.port.shutdown = aspeed_vuart_shutdown;
++	port.port.throttle = aspeed_vuart_throttle;
++	port.port.unthrottle = aspeed_vuart_unthrottle;
++	port.port.status = UPSTAT_SYNC_FIFO;
+ 	port.port.dev = &pdev->dev;
  
- 	port = uart_port_ref(state);
- 	if (!port)
-@@ -703,8 +703,8 @@ static void uart_throttle(struct tty_struct *tty)
- static void uart_unthrottle(struct tty_struct *tty)
- {
- 	struct uart_state *state = tty->driver_data;
-+	upstat_t mask = UPSTAT_SYNC_FIFO;
- 	struct uart_port *port;
--	upstat_t mask = 0;
- 
- 	port = uart_port_ref(state);
- 	if (!port)
-diff --git a/include/linux/serial_core.h b/include/linux/serial_core.h
-index 1d356105f25a..d224961e1346 100644
---- a/include/linux/serial_core.h
-+++ b/include/linux/serial_core.h
-@@ -233,6 +233,7 @@ struct uart_port {
- #define UPSTAT_AUTORTS		((__force upstat_t) (1 << 2))
- #define UPSTAT_AUTOCTS		((__force upstat_t) (1 << 3))
- #define UPSTAT_AUTOXOFF		((__force upstat_t) (1 << 4))
-+#define UPSTAT_SYNC_FIFO	((__force upstat_t) (1 << 5))
- 
- 	int			hw_stopped;		/* sw-assisted CTS flow state */
- 	unsigned int		mctrl;			/* current modem ctrl settings */
+ 	rc = sysfs_create_group(&vuart->dev->kobj, &aspeed_vuart_attr_group);
 -- 
 2.14.1
 
