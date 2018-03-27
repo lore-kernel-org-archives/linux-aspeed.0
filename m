@@ -1,35 +1,41 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Fri, 23 Mar 2018 16:51:16 +0100
-Subject: [PATCH 0/5] serial: implement flow control for ASPEED VUART driver
-In-Reply-To: <20180321025241.19785-1-jk@ozlabs.org>
+From: Jeremy Kerr <jk@ozlabs.org>
+Date: Tue, 27 Mar 2018 09:38:04 +0800
+Subject: [PATCH 1/5] serial: Introduce UPSTAT_SYNC_FIFO for synchronised
+ FIFOs
+In-Reply-To: <20180323153350.GC25972@kroah.com>
 References: <20180321025241.19785-1-jk@ozlabs.org>
-Message-ID: <20180323155116.GA31423@kroah.com>
+ <20180321025241.19785-2-jk@ozlabs.org> <20180323153350.GC25972@kroah.com>
+Message-ID: <004a2d60-5eae-040f-a944-308a8cf69af8@ozlabs.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Mar 21, 2018 at 10:52:36AM +0800, Jeremy Kerr wrote:
-> This series implements flow control for the ASPEED VUART driver. This
-> hardware is slightly unusual in that the RX data rate can quickly
-> overwhelm the flip buffer code, so the ldisc-driven throttle/unthrottle
-> mechanisms don't entirely solve the problem.
-> 
-> To do this, we have a couple of minor changes to the tty core, as well
-> as an update to the tty proc interface to display buffer overrun metrics
-> (entirely optional, but does allow us to see the problem).
-> 
-> Then, we implement the standard throttle mechanism, and augment it with
-> a fast-path to throttle if we overrun the flip buffers before the ldisc
-> has had a chance to run.
-> 
-> Questions and comments most welcome; I'm fairly new to the tty layer.
+Hi Greg,
 
-I've applied patch 2 here, can you redo the series again after fixing up
-the first one and include the v2 of patch 5 so it's easier for me to
-figure out what to really apply here?
+>> --- a/drivers/tty/serial/serial_core.c
+>> +++ b/drivers/tty/serial/serial_core.c
+>> @@ -678,7 +678,7 @@ static void uart_throttle(struct tty_struct *tty)
+>>  	if (C_CRTSCTS(tty))
+>>  		mask |= UPSTAT_AUTORTS;
+>>  
+>> -	if (port->status & mask) {
+>> +	if (port->status & (mask | UPSTAT_SYNC_FIFO)) {
+>>  		port->ops->throttle(port);
+>>  		mask &= ~port->status;
+>>  	}
+> 
+> Why not just set mask to UPSTAT_SYNC_FIFO at the top of this function?
 
-thanks,
+That was a bit of a line call - my thinking was that SYNC_FIFO is a
+little different from the calculated bit values in mask, hence keeping
+it separate and adding it explicitly at the check
 
-greg k-h
+However, adding it to the declaration of mask is a little simpler, so
+I'll redo that in v2.
+
+Cheers,
+
+
+Jeremy
