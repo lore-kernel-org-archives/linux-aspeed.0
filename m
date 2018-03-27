@@ -1,54 +1,66 @@
 From: Jeremy Kerr <jk@ozlabs.org>
-Date: Tue, 27 Mar 2018 11:48:23 +0800
-Subject: [PATCH v2 0/4] serial: implement flow control for ASPEED VUART driver
-In-Reply-To: <20180323155116.GA31423@kroah.com>
+Date: Tue, 27 Mar 2018 11:48:25 +0800
+Subject: [PATCH v2 2/4] serial/8250: export serial8250_read_char
+In-Reply-To: <20180327034827.20773-1-jk@ozlabs.org>
 References: <20180323155116.GA31423@kroah.com>
-Message-ID: <20180327034827.20773-1-jk@ozlabs.org>
+ <20180327034827.20773-1-jk@ozlabs.org>
+Message-ID: <20180327034827.20773-3-jk@ozlabs.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This series implements flow control for the ASPEED VUART driver. This
-hardware is slightly unusual in that the RX data rate can quickly
-overwhelm the flip buffer code, so the ldisc-driven throttle/unthrottle
-mechanisms don't entirely solve the problem.
+Currently, we export serial8250_rx_chars, which does a whole bunch of
+reads from the 8250 data register, without any form of flow control
+between reads.
 
-To do this, we have a couple of minor changes to the tty core to allow
-tty drivers to do more explicit flow control.
+An upcoming change to the aspeed vuart driver implements more
+fine-grained flow control in the interrupt handler, requiring
+character-at-a-time control over the rx path.
 
-Then, we implement the standard throttle mechanism, and augment it with
-a fast-path to throttle if we overrun the flip buffers before the ldisc
-has had a chance to run.
+This change exports serial8250_read_char to allow this.
 
-Questions and comments most welcome; I'm fairly new to the tty layer.
+Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
+Tested-by: Eddie James <eajames@linux.vnet.ibm.com>
+---
+ drivers/tty/serial/8250/8250_port.c | 3 ++-
+ include/linux/serial_8250.h         | 1 +
+ 2 files changed, 3 insertions(+), 1 deletion(-)
 
-Cheers,
-
-
-Jeremy
-
---
-v2:
- - rebase onto tty-next, dropping applied proc patch
- - 1/4 simplify status mask checks
- - 4/4 Use updated timer API, fix text wrap
-
-
-Jeremy Kerr (4):
-  serial: Introduce UPSTAT_SYNC_FIFO for synchronised FIFOs
-  serial/8250: export serial8250_read_char
-  serial/aspeed-vuart: Implement rx throttling
-  serial/aspeed-vuart: Implement quick throttle mechanism
-
- drivers/tty/serial/8250/8250_aspeed_vuart.c | 124 ++++++++++++++++++++++++++++
- drivers/tty/serial/8250/8250_port.c         |   3 +-
- drivers/tty/serial/serial_core.c            |   4 +-
- include/linux/serial_8250.h                 |   1 +
- include/linux/serial_core.h                 |   1 +
- 5 files changed, 130 insertions(+), 3 deletions(-)
-
+diff --git a/drivers/tty/serial/8250/8250_port.c b/drivers/tty/serial/8250/8250_port.c
+index 95833cbc4338..8fbd5fbeb318 100644
+--- a/drivers/tty/serial/8250/8250_port.c
++++ b/drivers/tty/serial/8250/8250_port.c
+@@ -1680,7 +1680,7 @@ static void serial8250_enable_ms(struct uart_port *port)
+ 	serial8250_rpm_put(up);
+ }
+ 
+-static void serial8250_read_char(struct uart_8250_port *up, unsigned char lsr)
++void serial8250_read_char(struct uart_8250_port *up, unsigned char lsr)
+ {
+ 	struct uart_port *port = &up->port;
+ 	unsigned char ch;
+@@ -1740,6 +1740,7 @@ static void serial8250_read_char(struct uart_8250_port *up, unsigned char lsr)
+ 
+ 	uart_insert_char(port, lsr, UART_LSR_OE, ch, flag);
+ }
++EXPORT_SYMBOL_GPL(serial8250_read_char);
+ 
+ /*
+  * serial8250_rx_chars: processes according to the passed in LSR
+diff --git a/include/linux/serial_8250.h b/include/linux/serial_8250.h
+index a27ef5f56431..76b9db71e489 100644
+--- a/include/linux/serial_8250.h
++++ b/include/linux/serial_8250.h
+@@ -163,6 +163,7 @@ extern void serial8250_do_set_mctrl(struct uart_port *port, unsigned int mctrl);
+ extern int fsl8250_handle_irq(struct uart_port *port);
+ int serial8250_handle_irq(struct uart_port *port, unsigned int iir);
+ unsigned char serial8250_rx_chars(struct uart_8250_port *up, unsigned char lsr);
++void serial8250_read_char(struct uart_8250_port *up, unsigned char lsr);
+ void serial8250_tx_chars(struct uart_8250_port *up);
+ unsigned int serial8250_modem_status(struct uart_8250_port *up);
+ void serial8250_init_port(struct uart_8250_port *up);
 -- 
 2.14.1
 
