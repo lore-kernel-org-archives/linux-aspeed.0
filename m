@@ -1,60 +1,64 @@
-From: Pratyush Yadav <p.yadav@ti.com>
-Date: Fri, 31 Dec 2021 15:56:25 +0530
-Subject: [PATCH] mtd: aspeed-smc: improve probe resilience
-In-Reply-To: <Yc3Qav+ULNdF5zRT@heinlein>
-References: <20211229143334.297305-1-patrick@stwcx.xyz>
- <20211229173411.l2bipmi4x3arqjoo@ti.com>
- <Yc3Qav+ULNdF5zRT@heinlein>
-Message-ID: <20211231102623.izaqlzjvracbbgmp@ti.com>
+From: Joel Stanley <joel@jms.id.au>
+Date: Wed, 11 Apr 2018 13:36:17 +0930
+Subject: [PATCH] MAINTAINERS: Update ASPEED entry with details
+In-Reply-To: <20180222050324.21531-1-joel@jms.id.au>
+References: <20180222050324.21531-1-joel@jms.id.au>
+Message-ID: <CACPK8XeD354AGXVunToR=RGQuSKWZ8vKSXH+DZey+udEE-Am_A@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Patrick,
+Hey Arnd,
 
-On 30/12/21 09:29AM, Patrick Williams wrote:
-> On Wed, Dec 29, 2021 at 11:04:13PM +0530, Pratyush Yadav wrote:
-> > Hi,
-> > 
-> > On 29/12/21 08:33AM, Patrick Williams wrote:
->  
-> > The patch itself looks fine to me but we no longer want to maintain 
-> > drivers under drivers/mtd/spi-nor/controllers/. They should be moved to 
-> > implement the SPI MEM API (under drivers/spi/).
-> 
-> Is the linux-aspeed community aware of this?  Are you saying you don't want to
-> take fixes for their driver into the MTD tree?  Can it be pulled into the Aspeed
-> tree?
+On 22 February 2018 at 15:33, Joel Stanley <joel@jms.id.au> wrote:
+> I am interested in all ASPEED drivers, and the previous match wasn't
+> grabbing files in nested directories. Use N instead.
+>
+> Add the arm kernel mailing list so that patches get reviewed there, and
+> the linux-aspeed list which exists only so I can use patchwork to track
+> patches.
+>
+> Add Andrew as a reviewer, because he is involved in reviewing ASPEED
+> stuff.
+>
+> Signed-off-by: Joel Stanley <joel@jms.id.au>
 
-I am fine with taking in bug fixes but no longer want to take in any new 
-features. My main intention was to nudge you to convert it to SPI MEM 
-regardless of whether this is a bug fix or a new feature, because 
-eventually we want to get rid of drivers/mtd/spi-nor/controllers/ and 
-the API that comes along with it.
+can you please pick this one up? It would be great to get it into
+fixes as Andrew and I have been missing being cc'd on stuff we would
+have like to review.
 
-As for your patch, I certainly don't want it to go via the aspeed tree. 
-It should go via the MTD tree or not at all. I am not quite sure if this 
-counts as a bug fix or a new feature though.
+Cheers,
 
-> 
-> > Could you please volunteer to do the conversion for this driver?
-> 
-> I'm not personally going to be able to get to it for at least the next 3 months.
-> 
-> It looks like we don't have a dedicated maintainer for this driver other than
-> Joel by nature of him being listed as the maintainer of "ARM/ASPEED MACHINE
-> SUPPORT".  I'm not sure if Aspeed themselves are planning on doing the necessary
-> refactoring here.
-> 
-> 
-> Joel, are you aware of this driver using a deprecated implementation?  Were
-> there anyone planning to do the reworks that you are aware of?  I'd like to get
-> this fix at least into the OpenBMC kernel tree because I'm seeing this fail in
-> the real world.
+Joel
 
--- 
-Regards,
-Pratyush Yadav
-Texas Instruments Inc.
+> ---
+>  MAINTAINERS | 9 +++++++--
+>  1 file changed, 7 insertions(+), 2 deletions(-)
+>
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 9a7f76eadae9..1ebf49797175 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -1226,10 +1226,15 @@ F:      Documentation/devicetree/bindings/i2c/i2c-aspeed.txt
+>
+>  ARM/ASPEED MACHINE SUPPORT
+>  M:     Joel Stanley <joel@jms.id.au>
+> -S:     Maintained
+> +R:     Andrew Jeffery <andrew@aj.id.au>
+> +L:     linux-arm-kernel at lists.infradead.org (moderated for non-subscribers)
+> +L:     linux-aspeed at lists.ozlabs.org (moderated for non-subscribers)
+> +Q:     https://patchwork.ozlabs.org/project/linux-aspeed/list/
+> +S:     Supported
+> +T:     git git://git.kernel.org/pub/scm/linux/kernel/git/joel/aspeed.git
+>  F:     arch/arm/mach-aspeed/
+>  F:     arch/arm/boot/dts/aspeed-*
+> -F:     drivers/*/*aspeed*
+> +N:     aspeed
+>
+>  ARM/ATMEL AT91 Clock Support
+>  M:     Boris Brezillon <boris.brezillon@free-electrons.com>
+> --
+> 2.15.1
+>
