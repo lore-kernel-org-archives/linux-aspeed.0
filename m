@@ -1,64 +1,41 @@
-From: Joel Stanley <joel@jms.id.au>
-Date: Wed, 11 Apr 2018 13:36:17 +0930
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Wed, 11 Apr 2018 10:51:29 +0200
 Subject: [PATCH] MAINTAINERS: Update ASPEED entry with details
-In-Reply-To: <20180222050324.21531-1-joel@jms.id.au>
+In-Reply-To: <CACPK8XeD354AGXVunToR=RGQuSKWZ8vKSXH+DZey+udEE-Am_A@mail.gmail.com>
 References: <20180222050324.21531-1-joel@jms.id.au>
-Message-ID: <CACPK8XeD354AGXVunToR=RGQuSKWZ8vKSXH+DZey+udEE-Am_A@mail.gmail.com>
+ <CACPK8XeD354AGXVunToR=RGQuSKWZ8vKSXH+DZey+udEE-Am_A@mail.gmail.com>
+Message-ID: <CAK8P3a146q8+Y0XKsPUD7ZW4qHoUetpkupfqVOWPxBi6ruwQSw@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hey Arnd,
+On Wed, Apr 11, 2018 at 6:06 AM, Joel Stanley <joel@jms.id.au> wrote:
+> Hey Arnd,
+>
+> On 22 February 2018 at 15:33, Joel Stanley <joel@jms.id.au> wrote:
+>> I am interested in all ASPEED drivers, and the previous match wasn't
+>> grabbing files in nested directories. Use N instead.
+>>
+>> Add the arm kernel mailing list so that patches get reviewed there, and
+>> the linux-aspeed list which exists only so I can use patchwork to track
+>> patches.
+>>
+>> Add Andrew as a reviewer, because he is involved in reviewing ASPEED
+>> stuff.
+>>
+>> Signed-off-by: Joel Stanley <joel@jms.id.au>
+>
+> can you please pick this one up? It would be great to get it into
+> fixes as Andrew and I have been missing being cc'd on stuff we would
+> have like to review.
 
-On 22 February 2018 at 15:33, Joel Stanley <joel@jms.id.au> wrote:
-> I am interested in all ASPEED drivers, and the previous match wasn't
-> grabbing files in nested directories. Use N instead.
->
-> Add the arm kernel mailing list so that patches get reviewed there, and
-> the linux-aspeed list which exists only so I can use patchwork to track
-> patches.
->
-> Add Andrew as a reviewer, because he is involved in reviewing ASPEED
-> stuff.
->
-> Signed-off-by: Joel Stanley <joel@jms.id.au>
+Sure, applied to the fixes branch now.
 
-can you please pick this one up? It would be great to get it into
-fixes as Andrew and I have been missing being cc'd on stuff we would
-have like to review.
+In general, when you want a patch to be applied, please send it to
+arm at kernel.org so we know it's for us. As a rule, I don't pick up patches
+otherwise but assume that you are asking for feedback and/or Acks
+but will resend it once everyone is happy with the change.
 
-Cheers,
-
-Joel
-
-> ---
->  MAINTAINERS | 9 +++++++--
->  1 file changed, 7 insertions(+), 2 deletions(-)
->
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 9a7f76eadae9..1ebf49797175 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -1226,10 +1226,15 @@ F:      Documentation/devicetree/bindings/i2c/i2c-aspeed.txt
->
->  ARM/ASPEED MACHINE SUPPORT
->  M:     Joel Stanley <joel@jms.id.au>
-> -S:     Maintained
-> +R:     Andrew Jeffery <andrew@aj.id.au>
-> +L:     linux-arm-kernel at lists.infradead.org (moderated for non-subscribers)
-> +L:     linux-aspeed at lists.ozlabs.org (moderated for non-subscribers)
-> +Q:     https://patchwork.ozlabs.org/project/linux-aspeed/list/
-> +S:     Supported
-> +T:     git git://git.kernel.org/pub/scm/linux/kernel/git/joel/aspeed.git
->  F:     arch/arm/mach-aspeed/
->  F:     arch/arm/boot/dts/aspeed-*
-> -F:     drivers/*/*aspeed*
-> +N:     aspeed
->
->  ARM/ATMEL AT91 Clock Support
->  M:     Boris Brezillon <boris.brezillon@free-electrons.com>
-> --
-> 2.15.1
->
+      Arnd
