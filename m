@@ -1,123 +1,135 @@
-From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-Date: Wed, 11 Apr 2018 19:11:22 -0700
-Subject: [PATCH v3 04/10] Documentations: dt-bindings: Add a document of
- PECI adapter driver for Aspeed AST24xx/25xx SoCs
-In-Reply-To: <CACPK8XcfrheC+UDB7mLPkgPRCuk8f+P830NG+cy2v6F_PJvUTw@mail.gmail.com>
-References: <20180410183212.16787-1-jae.hyun.yoo@linux.intel.com>
- <20180410183212.16787-5-jae.hyun.yoo@linux.intel.com>
- <CACPK8XcfrheC+UDB7mLPkgPRCuk8f+P830NG+cy2v6F_PJvUTw@mail.gmail.com>
-Message-ID: <2c5f7636-169c-f58f-1c45-2e9950be72f3@linux.intel.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Fri, 13 Apr 2018 14:40:38 +1000
+Subject: [PATCH 1/2] ARM: dts: Add Aspeed SoC USB controllers to device-tree
+Message-ID: <20180413044039.11345-1-benh@kernel.crashing.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Joel,
+This adds the USB controllers to the DT template of the
+AST24xx and AST25xx SoCs.
 
-On 4/11/2018 4:52 AM, Joel Stanley wrote:
-> On 11 April 2018 at 04:02, Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com> wrote:
->> This commit adds a dt-bindings document of PECI adapter driver for Aspeed
-> 
-> We try to capitalise ASPEED.
-> 
+This patch doesn't enable them by default on any board specific
+.dts yet. This will be done when we have the necessary clock/reset
+and pinmux support. In the meantime though, this will work if
+u-boot configures things properly.
 
-Got it. Will capitalize all Aspeed words.
+For the AST2400 I only added pinmux definition for port 1
+which is dual USB1/USB2. There are additional USB1 only ports
+that might require more work but I don't have HW to test at
+hand so I'm leaving that to whoever cares.
 
->> AST24xx/25xx SoCs.
->> ---
->>   .../devicetree/bindings/peci/peci-aspeed.txt       | 60 ++++++++++++++++++++++
->>   1 file changed, 60 insertions(+)
->>   create mode 100644 Documentation/devicetree/bindings/peci/peci-aspeed.txt
->>
->> diff --git a/Documentation/devicetree/bindings/peci/peci-aspeed.txt b/Documentation/devicetree/bindings/peci/peci-aspeed.txt
->> new file mode 100644
->> index 000000000000..4598bb8c20fa
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/peci/peci-aspeed.txt
->> @@ -0,0 +1,60 @@
->> +Device tree configuration for PECI buses on the AST24XX and AST25XX SoCs.
->> +
->> +Required properties:
->> +- compatible        : Should be "aspeed,ast2400-peci" or "aspeed,ast2500-peci"
->> +                     - aspeed,ast2400-peci: Aspeed AST2400 family PECI
->> +                                            controller
->> +                     - aspeed,ast2500-peci: Aspeed AST2500 family PECI
->> +                                            controller
->> +- reg               : Should contain PECI controller registers location and
->> +                     length.
->> +- #address-cells    : Should be <1>.
->> +- #size-cells       : Should be <0>.
->> +- interrupts        : Should contain PECI controller interrupt.
->> +- clocks            : Should contain clock source for PECI controller.
->> +                     Should reference clkin.
-> 
-> Are you sure that this is driven by clkin? Most peripherals on the
-> Aspeed are attached to the apb, so should reference that clock.
-> 
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+ arch/arm/boot/dts/aspeed-g4.dtsi | 27 +++++++++++++++++++++++++++
+ arch/arm/boot/dts/aspeed-g5.dtsi | 40 ++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 67 insertions(+)
 
-According to the datasheet, PECI controller module is attached to apb 
-but its clock source is the 24MHz external clock.
+diff --git a/arch/arm/boot/dts/aspeed-g4.dtsi b/arch/arm/boot/dts/aspeed-g4.dtsi
+index ae2b8c952e80..c318e481db78 100644
+--- a/arch/arm/boot/dts/aspeed-g4.dtsi
++++ b/arch/arm/boot/dts/aspeed-g4.dtsi
+@@ -108,6 +108,23 @@
+ 			status = "disabled";
+ 		};
+ 
++		ehci0: usb at 1e6a1000 {
++			compatible = "aspeed,ast2400-ehci", "generic-ehci";
++			reg = <0x1e6a1000 0x100>;
++			interrupts = <5>;
++			clocks = <&syscon ASPEED_CLK_GATE_USBPORT1CLK>;
++			status = "disabled";
++		};
++
++		uhci: usb at 1e6b0000 {
++			compatible = "aspeed,ast2400-uhci", "generic-uhci";
++			reg = <0x1e6b0000 0x100>;
++			interrupts = <14>;
++			#ports = <3>;
++			clocks = <&syscon ASPEED_CLK_GATE_USBUHCICLK>;
++			status = "disabled";
++		};
++
+ 		apb {
+ 			compatible = "simple-bus";
+ 			#address-cells = <1>;
+@@ -1232,6 +1249,16 @@
+ 		groups = "USBCKI";
+ 	};
+ 
++	pinctrl_usb2h_default: usb2h_default {
++		function = "USB2H1";
++		groups = "USB2H1";
++	};
++
++	pinctrl_usb2d_default: usb2d_default {
++		function = "USB2D1";
++		groups = "USB2D1";
++	};
++
+ 	pinctrl_vgabios_rom_default: vgabios_rom_default {
+ 		function = "VGABIOS_ROM";
+ 		groups = "VGABIOS_ROM";
+diff --git a/arch/arm/boot/dts/aspeed-g5.dtsi b/arch/arm/boot/dts/aspeed-g5.dtsi
+index 2477ebc11d9d..cebc19809174 100644
+--- a/arch/arm/boot/dts/aspeed-g5.dtsi
++++ b/arch/arm/boot/dts/aspeed-g5.dtsi
+@@ -143,6 +143,31 @@
+ 			status = "disabled";
+ 		};
+ 
++		ehci0: usb at 1e6a1000 {
++			compatible = "aspeed,ast2500-ehci", "generic-ehci";
++			reg = <0x1e6a1000 0x100>;
++			interrupts = <5>;
++			clocks = <&syscon ASPEED_CLK_GATE_USBPORT1CLK>;
++			status = "disabled";
++		};
++
++		ehci1: usb at 1e6a3000 {
++			compatible = "aspeed,ast2500-ehci", "generic-ehci";
++			reg = <0x1e6a3000 0x100>;
++			interrupts = <13>;
++			clocks = <&syscon ASPEED_CLK_GATE_USBPORT2CLK>;
++			status = "disabled";
++		};
++
++		uhci: usb at 1e6b0000 {
++			compatible = "aspeed,ast2500-uhci", "generic-uhci";
++			reg = <0x1e6b0000 0x100>;
++			interrupts = <14>;
++			#ports = <2>;
++			clocks = <&syscon ASPEED_CLK_GATE_USBUHCICLK>;
++			status = "disabled";
++		};
++
+ 		apb {
+ 			compatible = "simple-bus";
+ 			#address-cells = <1>;
+@@ -1363,6 +1388,21 @@
+ 		groups = "USBCKI";
+ 	};
+ 
++	pinctrl_usb2ah_default: usb2ah_default {
++		function = "USB2AH";
++		groups = "USB2AH";
++	};
++
++	pinctrl_usb11bhid_default: usb11bhid_default {
++		function = "USB11BHID";
++		groups = "USB11BHID";
++	};
++
++	pinctrl_usb2bh_default: usb2bh_default {
++		function = "USB2BH";
++		groups = "USB2BH";
++	};
++
+ 	pinctrl_vgabiosrom_default: vgabiosrom_default {
+ 		function = "VGABIOSROM";
+ 		groups = "VGABIOSROM";
+-- 
+2.14.3
 
->> +- clock_frequency   : Should contain the operation frequency of PECI controller
->> +                     in units of Hz.
->> +                     187500 ~ 24000000
-> 
-> Can you explain why you need both the parent clock and this frequency
-> to be specified?
-> 
-
-Based on this setting, driver code makes clock divisor value to set 
-operation clock of PECI controller which is adjustable.
-
->> +
->> +Optional properties:
->> +- msg-timing-nego   : Message timing negotiation period. This value will
-> 
-> Perhaps msg-timing-period? Or just msg-timing?
-> 
-
-Will use msg-timing instead.
-
->> +                     determine the period of message timing negotiation to be
->> +                     issued by PECI controller. The unit of the programmed
->> +                     value is four times of PECI clock period.
->> +                     0 ~ 255 (default: 1)
->> +- addr-timing-nego  : Address timing negotiation period. This value will
->> +                     determine the period of address timing negotiation to be
->> +                     issued by PECI controller. The unit of the programmed
->> +                     value is four times of PECI clock period.
->> +                     0 ~ 255 (default: 1)
->> +- rd-sampling-point : Read sampling point selection. The whole period of a bit
->> +                     time will be divided into 16 time frames. This value will
->> +                     determine the time frame in which the controller will
->> +                     sample PECI signal for data read back. Usually in the
->> +                     middle of a bit time is the best.
->> +                     0 ~ 15 (default: 8)
->> +- cmd_timeout_ms    : Command timeout in units of ms.
->> +                     1 ~ 60000 (default: 1000)
->> +
->> +Example:
->> +       peci: peci at 1e78b000 {
->> +               compatible = "simple-bus";
->> +               #address-cells = <1>;
->> +               #size-cells = <1>;
->> +               ranges = <0x0 0x1e78b000 0x60>;
->> +
->> +               peci0: peci-bus at 0 {
->> +                       compatible = "aspeed,ast2500-peci";
->> +                       reg = <0x0 0x60>;
->> +                       #address-cells = <1>;
->> +                       #size-cells = <0>;
->> +                       interrupts = <15>;
->> +                       clocks = <&clk_clkin>;
->> +                       clock-frequency = <24000000>;
->> +                       msg-timing-nego = <1>;
->> +                       addr-timing-nego = <1>;
->> +                       rd-sampling-point = <8>;
->> +                       cmd-timeout-ms = <1000>;
->> +               };
->> +       };
->> --
->> 2.16.2
->>
