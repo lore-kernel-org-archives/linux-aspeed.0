@@ -1,20 +1,18 @@
-From: Julia Lawall <julia.lawall@lip6.fr>
-Date: Mon, 16 Apr 2018 14:24:19 +0200 (CEST)
-Subject: [PATCH] drm: fix drm-get-put.cocci warnings
+From: Li, Philip <philip.li@intel.com>
+Date: Mon, 16 Apr 2018 12:30:08 +0000
+Subject: [kbuild-all] [PATCH] drm: fix drm-get-put.cocci warnings
 In-Reply-To: <20180416074535.GH31310@phenom.ffwll.local>
 References: <alpine.DEB.2.20.1804120752280.3559@hadrien>
  <20180416074535.GH31310@phenom.ffwll.local>
-Message-ID: <alpine.DEB.2.20.1804161422490.2686@hadrien>
+Message-ID: <831EE4E5E37DCC428EB295A351E662494CABCEEB@SHSMSX103.ccr.corp.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-
-
-On Mon, 16 Apr 2018, Daniel Vetter wrote:
-
+> Subject: Re: [kbuild-all] [PATCH] drm: fix drm-get-put.cocci warnings
+> 
 > On Thu, Apr 12, 2018 at 07:54:10AM +0200, Julia Lawall wrote:
 > > From: Fengguang Wu <fengguang.wu@intel.com>
 > >
@@ -29,26 +27,20 @@ On Mon, 16 Apr 2018, Daniel Vetter wrote:
 > > ---
 > >
 > > tree:   https://github.com/shenki/linux drm-v1
->
+> 
 > This isn't an upstream tree (and the aspeed driver isn't in upstream
 > afaict), so no need for spamming mailing lists I think.
+thanks for feedback Daniel, we will mark this repo as private one to avoid
+reporting to larger mailing list.
 
-Perhaps you can contact Fengguang about this?  I just forward to whoever
-the automatically generated message says to forward to.  And I don't
-always remember to include the information about the tree, which comes to
-me in another message, so it can indeed be confusing.
-
->
+> 
 > But thanks for doing all this, great motivation to put more of the drm
 > refactorings into cocci files.
-
-Most welcome :)
-
-julia
-
+> 
 > Cheers, Daniel
 > > head:   9680ed7979d5d403c6bde36271a048d62c048180
-> > commit: 6784ac15bc6889280522b04b97f1fb1208ee45e7 [23/27] drm: Add ASPEED
+> > commit: 6784ac15bc6889280522b04b97f1fb1208ee45e7 [23/27] drm: Add
+> ASPEED
 > > GFX
 > > driver
 > >
@@ -79,9 +71,12 @@ julia
 > > dri-devel mailing list
 > > dri-devel at lists.freedesktop.org
 > > https://lists.freedesktop.org/mailman/listinfo/dri-devel
->
+> 
 > --
 > Daniel Vetter
 > Software Engineer, Intel Corporation
 > http://blog.ffwll.ch
->
+> _______________________________________________
+> kbuild-all mailing list
+> kbuild-all at lists.01.org
+> https://lists.01.org/mailman/listinfo/kbuild-all
