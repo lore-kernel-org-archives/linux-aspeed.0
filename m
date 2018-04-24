@@ -1,143 +1,63 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Thu, 19 Apr 2018 13:37:31 +0930
-Subject: [PATCH] clk: aspeed: Support second reset register
-In-Reply-To: <20180419025240.10101-1-joel@jms.id.au>
-References: <20180419025240.10101-1-joel@jms.id.au>
-Message-ID: <1524110851.2427206.1343190576.35A8A2AA@webmail.messagingengine.com>
+From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+Date: Tue, 24 Apr 2018 15:40:56 -0700
+Subject: [PATCH linux dev-4.13] clk:aspeed: Fix reset bits for PCI/VGA and PECI
+Message-ID: <20180424224056.23384-1-jae.hyun.yoo@linux.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, 19 Apr 2018, at 12:22, Joel Stanley wrote:
-> The ast2500 has an additional reset register that contains resets not
-> present in the ast2400. This enables support for this register, and adds
-> the one reset line that is controlled by it.
-> 
-> Signed-off-by: Joel Stanley <joel@jms.id.au>
+This commit fixes incorrect setting of reset bits for PCI/VGA and
+PECI modules.
 
-The duplication is a bit unfortunate, but all the same:
+1. Reset bit for PCI/VGA is 8.
+2. PECI reset logic is missing so added bit 10 as its reset bit.
 
-Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
+Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+---
+ drivers/clk/clk-aspeed.c                 | 4 ++--
+ include/dt-bindings/clock/aspeed-clock.h | 4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
-> ---
->  drivers/clk/clk-aspeed.c                 | 44 +++++++++++++++++++-----
->  include/dt-bindings/clock/aspeed-clock.h |  1 +
->  2 files changed, 37 insertions(+), 8 deletions(-)
-> 
-> diff --git a/drivers/clk/clk-aspeed.c b/drivers/clk/clk-aspeed.c
-> index 5eb50c31e455..93d1dae96624 100644
-> --- a/drivers/clk/clk-aspeed.c
-> +++ b/drivers/clk/clk-aspeed.c
-> @@ -16,6 +16,8 @@
->  
->  #define ASPEED_NUM_CLKS		35
->  
-> +#define ASPEED_RESET2_OFFSET	32
-> +
->  #define ASPEED_RESET_CTRL	0x04
->  #define ASPEED_CLK_SELECTION	0x08
->  #define ASPEED_CLK_STOP_CTRL	0x0c
-> @@ -30,6 +32,7 @@
->  #define  CLKIN_25MHZ_EN		BIT(23)
->  #define  AST2400_CLK_SOURCE_SEL	BIT(18)
->  #define ASPEED_CLK_SELECTION_2	0xd8
-> +#define ASPEED_RESET_CTRL2	0xd4
->  
->  /* Globally visible clocks */
->  static DEFINE_SPINLOCK(aspeed_clk_lock);
-> @@ -291,6 +294,7 @@ struct aspeed_reset {
->  #define to_aspeed_reset(p) container_of((p), struct aspeed_reset, rcdev)
->  
->  static const u8 aspeed_resets[] = {
-> +	/* SCU04 resets */
->  	[ASPEED_RESET_XDMA]	= 25,
->  	[ASPEED_RESET_MCTP]	= 24,
->  	[ASPEED_RESET_ADC]	= 23,
-> @@ -300,38 +304,62 @@ static const u8 aspeed_resets[] = {
->  	[ASPEED_RESET_PCIVGA]	=  8,
->  	[ASPEED_RESET_I2C]	=  2,
->  	[ASPEED_RESET_AHB]	=  1,
-> +
-> +	/*
-> +	 * SCUD4 resets start at an offset to separate them from
-> +	 * the SCU04 resets.
-> +	 */
-> +	[ASPEED_RESET_CRT1]	= ASPEED_RESET2_OFFSET + 5,
->  };
->  
->  static int aspeed_reset_deassert(struct reset_controller_dev *rcdev,
->  				 unsigned long id)
->  {
->  	struct aspeed_reset *ar = to_aspeed_reset(rcdev);
-> -	u32 rst = BIT(aspeed_resets[id]);
-> +	u32 reg = ASPEED_RESET_CTRL;
-> +	u32 bit = aspeed_resets[id];
-> +
-> +	if (bit >= ASPEED_RESET2_OFFSET) {
-> +		bit -= ASPEED_RESET2_OFFSET;
-> +		reg = ASPEED_RESET_CTRL2;
-> +	}
->  
-> -	return regmap_update_bits(ar->map, ASPEED_RESET_CTRL, rst, 0);
-> +	return regmap_update_bits(ar->map, reg, BIT(bit), 0);
->  }
->  
->  static int aspeed_reset_assert(struct reset_controller_dev *rcdev,
->  			       unsigned long id)
->  {
->  	struct aspeed_reset *ar = to_aspeed_reset(rcdev);
-> -	u32 rst = BIT(aspeed_resets[id]);
-> +	u32 reg = ASPEED_RESET_CTRL;
-> +	u32 bit = aspeed_resets[id];
->  
-> -	return regmap_update_bits(ar->map, ASPEED_RESET_CTRL, rst, rst);
-> +	if (bit >= ASPEED_RESET_CTRL2) {
-> +		bit -= ASPEED_RESET2_OFFSET;
-> +		reg = ASPEED_RESET_CTRL2;
-> +	}
-> +
-> +	return regmap_update_bits(ar->map, reg, BIT(bit), BIT(bit));
->  }
->  
->  static int aspeed_reset_status(struct reset_controller_dev *rcdev,
->  			       unsigned long id)
->  {
->  	struct aspeed_reset *ar = to_aspeed_reset(rcdev);
-> -	u32 val, rst = BIT(aspeed_resets[id]);
-> -	int ret;
-> +	u32 reg = ASPEED_RESET_CTRL;
-> +	u32 bit = aspeed_resets[id];
-> +	int ret, val;
-> +
-> +	if (bit >= ASPEED_RESET2_OFFSET) {
-> +		bit -= ASPEED_RESET2_OFFSET;
-> +		reg = ASPEED_RESET_CTRL2;
-> +	}
->  
-> -	ret = regmap_read(ar->map, ASPEED_RESET_CTRL, &val);
-> +	ret = regmap_read(ar->map, reg, &val);
->  	if (ret)
->  		return ret;
->  
-> -	return !!(val & rst);
-> +	return !!(val & BIT(bit));
->  }
->  
->  static const struct reset_control_ops aspeed_reset_ops = {
-> diff --git a/include/dt-bindings/clock/aspeed-clock.h b/include/dt-
-> bindings/clock/aspeed-clock.h
-> index d3558d897a4d..513c1b4af7a8 100644
-> --- a/include/dt-bindings/clock/aspeed-clock.h
-> +++ b/include/dt-bindings/clock/aspeed-clock.h
-> @@ -48,5 +48,6 @@
->  #define ASPEED_RESET_PCIVGA		6
->  #define ASPEED_RESET_I2C		7
->  #define ASPEED_RESET_AHB		8
-> +#define ASPEED_RESET_CRT1		9
->  
->  #endif
-> -- 
-> 2.17.0
-> 
+diff --git a/drivers/clk/clk-aspeed.c b/drivers/clk/clk-aspeed.c
+index de8e1db..71404a2 100644
+--- a/drivers/clk/clk-aspeed.c
++++ b/drivers/clk/clk-aspeed.c
+@@ -100,7 +100,7 @@ static const struct aspeed_gate_data aspeed_gates[] = {
+ 	[ASPEED_CLK_GATE_GCLK] =	{  1,  7, "gclk-gate",		NULL,	0 }, /* 2D engine */
+ 	[ASPEED_CLK_GATE_MCLK] =	{  2, -1, "mclk-gate",		"mpll",	CLK_IS_CRITICAL }, /* SDRAM */
+ 	[ASPEED_CLK_GATE_VCLK] =	{  3,  6, "vclk-gate",		NULL,	0 }, /* Video Capture */
+-	[ASPEED_CLK_GATE_BCLK] =	{  4, 10, "bclk-gate",		"bclk",	CLK_IS_CRITICAL }, /* PCIe/PCI */
++	[ASPEED_CLK_GATE_BCLK] =	{  4,  8, "bclk-gate",		"bclk",	CLK_IS_CRITICAL }, /* PCIe/PCI */
+ 	[ASPEED_CLK_GATE_DCLK] =	{  5, -1, "dclk-gate",		NULL,	CLK_IS_CRITICAL }, /* DAC */
+ 	[ASPEED_CLK_GATE_REFCLK] =	{  6, -1, "refclk-gate",	"clkin", CLK_IS_CRITICAL },
+ 	[ASPEED_CLK_GATE_USBPORT2CLK] =	{  7,  3, "usb-port2-gate",	NULL,	0 }, /* USB2.0 Host port 2 */
+@@ -315,8 +315,8 @@ static const u8 aspeed_resets[] = {
+ 	[ASPEED_RESET_ADC]	= 23,
+ 	[ASPEED_RESET_JTAG_MASTER] = 22,
+ 	[ASPEED_RESET_MIC]	= 18,
++	[ASPEED_RESET_PECI]	= 10,
+ 	[ASPEED_RESET_PWM]	=  9,
+-	[ASPEED_RESET_PCIVGA]	=  8,
+ 	[ASPEED_RESET_I2C]	=  2,
+ 	[ASPEED_RESET_AHB]	=  1,
+ 
+diff --git a/include/dt-bindings/clock/aspeed-clock.h b/include/dt-bindings/clock/aspeed-clock.h
+index e983d17..379f727 100644
+--- a/include/dt-bindings/clock/aspeed-clock.h
++++ b/include/dt-bindings/clock/aspeed-clock.h
+@@ -43,8 +43,8 @@
+ #define ASPEED_RESET_ADC		2
+ #define ASPEED_RESET_JTAG_MASTER	3
+ #define ASPEED_RESET_MIC		4
+-#define ASPEED_RESET_PWM		5
+-#define ASPEED_RESET_PCIVGA		6
++#define ASPEED_RESET_PECI		5
++#define ASPEED_RESET_PWM		6
+ #define ASPEED_RESET_I2C		7
+ #define ASPEED_RESET_AHB		8
+ #define ASPEED_RESET_CRT1		9
+-- 
+2.7.4
+
