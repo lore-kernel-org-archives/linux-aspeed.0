@@ -1,60 +1,39 @@
-From: Joel Stanley <joel@jms.id.au>
-Date: Thu, 26 Apr 2018 11:25:33 +0930
-Subject: [PATCH linux dev-4.13] clk:aspeed: Fix reset bits for PCI/VGA and
- PECI
-In-Reply-To: <20180424224056.23384-1-jae.hyun.yoo@linux.intel.com>
-References: <20180424224056.23384-1-jae.hyun.yoo@linux.intel.com>
-Message-ID: <CACPK8Xe99zZ9Q0Y2HqoaGDXigBaZpkTcbfRe=gvsR5x6XMWzYA@mail.gmail.com>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Thu, 26 Apr 2018 08:50:55 +0300
+Subject: [PATCH] serial/aspeed-vuart: fix a couple mod_timer() calls
+Message-ID: <20180426055055.GA9742@mwanda>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello Jae,
+The "unthrottle_timeout" is HZ/10 but mod_timer() takes a the actual
+jiffie where you want it to timeout, not an offset.
 
-On 25 April 2018 at 08:10, Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com> wrote:
-> This commit fixes incorrect setting of reset bits for PCI/VGA and
-> PECI modules.
->
-> 1. Reset bit for PCI/VGA is 8.
-> 2. PECI reset logic is missing so added bit 10 as its reset bit.
+Fixes: 5909c0bf9c7a ("serial/aspeed-vuart: Implement quick throttle mechanism")
+Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
 
-Great find!
-
-Can you please send these upstream as a fix? Apply to 4.17-rc2, and
-use get_maintainers.pl to identify the lists to send it to.
-
-Also add:
-
-Fixes: 15ed8ce5f84e ("clk: aspeed: Register gated clocks")
-Cc: stable <stable@vger.kernel.org>
-
-> +++ b/include/dt-bindings/clock/aspeed-clock.h
-> @@ -43,8 +43,8 @@
->  #define ASPEED_RESET_ADC               2
->  #define ASPEED_RESET_JTAG_MASTER       3
->  #define ASPEED_RESET_MIC               4
-> -#define ASPEED_RESET_PWM               5
-> -#define ASPEED_RESET_PCIVGA            6
-> +#define ASPEED_RESET_PECI              5
-> +#define ASPEED_RESET_PWM               6
-
-This numbers form the kernel ABI, so we shouldn't be changing them.
-However, none of the mainline device trees use PCIVGA, so we can
-rename that without breaking any one.
-
-If we leave PWM as 5, and rename PCIVGA to PECI, we won't break any
-existing device trees.
-
-Cheers,
-
-Joel
-
-
->  #define ASPEED_RESET_I2C               7
->  #define ASPEED_RESET_AHB               8
->  #define ASPEED_RESET_CRT1              9
-> --
-> 2.7.4
->
+diff --git a/drivers/tty/serial/8250/8250_aspeed_vuart.c b/drivers/tty/serial/8250/8250_aspeed_vuart.c
+index 023db3266757..435bec40dee6 100644
+--- a/drivers/tty/serial/8250/8250_aspeed_vuart.c
++++ b/drivers/tty/serial/8250/8250_aspeed_vuart.c
+@@ -226,7 +226,8 @@ static void aspeed_vuart_unthrottle_exp(struct timer_list *timer)
+ 	struct uart_8250_port *up = vuart->port;
+ 
+ 	if (!tty_buffer_space_avail(&up->port.state->port)) {
+-		mod_timer(&vuart->unthrottle_timer, unthrottle_timeout);
++		mod_timer(&vuart->unthrottle_timer,
++			  jiffies + unthrottle_timeout);
+ 		return;
+ 	}
+ 
+@@ -271,7 +272,7 @@ static int aspeed_vuart_handle_irq(struct uart_port *port)
+ 			if (!timer_pending(&vuart->unthrottle_timer)) {
+ 				vuart->port = up;
+ 				mod_timer(&vuart->unthrottle_timer,
+-						unthrottle_timeout);
++					  jiffies + unthrottle_timeout);
+ 			}
+ 
+ 		} else {
