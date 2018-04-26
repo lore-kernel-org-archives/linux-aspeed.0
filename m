@@ -1,74 +1,62 @@
 From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-Date: Thu, 26 Apr 2018 09:23:31 -0700
-Subject: [PATCH linux dev-4.13] clk:aspeed: Fix reset bits for PCI/VGA and
- PECI
-In-Reply-To: <CACPK8Xe99zZ9Q0Y2HqoaGDXigBaZpkTcbfRe=gvsR5x6XMWzYA@mail.gmail.com>
-References: <20180424224056.23384-1-jae.hyun.yoo@linux.intel.com>
- <CACPK8Xe99zZ9Q0Y2HqoaGDXigBaZpkTcbfRe=gvsR5x6XMWzYA@mail.gmail.com>
-Message-ID: <5d5faa4a-bffe-5a3f-39e6-b45eebcbb4db@linux.intel.com>
+Date: Thu, 26 Apr 2018 10:22:32 -0700
+Subject: [PATCH] clk:aspeed: Fix reset bits for PCI/VGA and PECI
+Message-ID: <20180426172232.12535-1-jae.hyun.yoo@linux.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello Joel,
+This commit fixes incorrect setting of reset bits for PCI/VGA and
+PECI modules.
 
-On 4/25/2018 6:55 PM, Joel Stanley wrote:
-> Hello Jae,
-> 
-> On 25 April 2018 at 08:10, Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com> wrote:
->> This commit fixes incorrect setting of reset bits for PCI/VGA and
->> PECI modules.
->>
->> 1. Reset bit for PCI/VGA is 8.
->> 2. PECI reset logic is missing so added bit 10 as its reset bit.
-> 
-> Great find!
-> 
-> Can you please send these upstream as a fix? Apply to 4.17-rc2, and
-> use get_maintainers.pl to identify the lists to send it to.
-> 
-> Also add:
-> 
-> Fixes: 15ed8ce5f84e ("clk: aspeed: Register gated clocks")
-> Cc: stable <stable@vger.kernel.org>
-> 
+1. Reset bit for PCI/VGA is 8.
+2. PECI reset bit is missing so added bit 10 as its reset bit.
 
-Thanks! I'll send it to upstream maintainers after adding the tags.
+Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+Fixes: 15ed8ce5f84e ("clk: aspeed: Register gated clocks")
+Cc: stable <stable@vger.kernel.org>
+---
+ drivers/clk/clk-aspeed.c                 | 4 ++--
+ include/dt-bindings/clock/aspeed-clock.h | 2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
->> +++ b/include/dt-bindings/clock/aspeed-clock.h
->> @@ -43,8 +43,8 @@
->>   #define ASPEED_RESET_ADC               2
->>   #define ASPEED_RESET_JTAG_MASTER       3
->>   #define ASPEED_RESET_MIC               4
->> -#define ASPEED_RESET_PWM               5
->> -#define ASPEED_RESET_PCIVGA            6
->> +#define ASPEED_RESET_PECI              5
->> +#define ASPEED_RESET_PWM               6
-> 
-> This numbers form the kernel ABI, so we shouldn't be changing them.
-> However, none of the mainline device trees use PCIVGA, so we can
-> rename that without breaking any one.
-> 
-> If we leave PWM as 5, and rename PCIVGA to PECI, we won't break any
-> existing device trees.
-> 
-> Cheers,
-> 
-> Joel
-> 
+diff --git a/drivers/clk/clk-aspeed.c b/drivers/clk/clk-aspeed.c
+index 5eb50c31e455..2c23e7d7ba28 100644
+--- a/drivers/clk/clk-aspeed.c
++++ b/drivers/clk/clk-aspeed.c
+@@ -88,7 +88,7 @@ static const struct aspeed_gate_data aspeed_gates[] = {
+ 	[ASPEED_CLK_GATE_GCLK] =	{  1,  7, "gclk-gate",		NULL,	0 }, /* 2D engine */
+ 	[ASPEED_CLK_GATE_MCLK] =	{  2, -1, "mclk-gate",		"mpll",	CLK_IS_CRITICAL }, /* SDRAM */
+ 	[ASPEED_CLK_GATE_VCLK] =	{  3,  6, "vclk-gate",		NULL,	0 }, /* Video Capture */
+-	[ASPEED_CLK_GATE_BCLK] =	{  4, 10, "bclk-gate",		"bclk",	0 }, /* PCIe/PCI */
++	[ASPEED_CLK_GATE_BCLK] =	{  4,  8, "bclk-gate",		"bclk",	0 }, /* PCIe/PCI */
+ 	[ASPEED_CLK_GATE_DCLK] =	{  5, -1, "dclk-gate",		NULL,	0 }, /* DAC */
+ 	[ASPEED_CLK_GATE_REFCLK] =	{  6, -1, "refclk-gate",	"clkin", CLK_IS_CRITICAL },
+ 	[ASPEED_CLK_GATE_USBPORT2CLK] =	{  7,  3, "usb-port2-gate",	NULL,	0 }, /* USB2.0 Host port 2 */
+@@ -297,7 +297,7 @@ static const u8 aspeed_resets[] = {
+ 	[ASPEED_RESET_JTAG_MASTER] = 22,
+ 	[ASPEED_RESET_MIC]	= 18,
+ 	[ASPEED_RESET_PWM]	=  9,
+-	[ASPEED_RESET_PCIVGA]	=  8,
++	[ASPEED_RESET_PECI]	= 10,
+ 	[ASPEED_RESET_I2C]	=  2,
+ 	[ASPEED_RESET_AHB]	=  1,
+ };
+diff --git a/include/dt-bindings/clock/aspeed-clock.h b/include/dt-bindings/clock/aspeed-clock.h
+index d3558d897a4d..8d69b9134bef 100644
+--- a/include/dt-bindings/clock/aspeed-clock.h
++++ b/include/dt-bindings/clock/aspeed-clock.h
+@@ -45,7 +45,7 @@
+ #define ASPEED_RESET_JTAG_MASTER	3
+ #define ASPEED_RESET_MIC		4
+ #define ASPEED_RESET_PWM		5
+-#define ASPEED_RESET_PCIVGA		6
++#define ASPEED_RESET_PECI		6
+ #define ASPEED_RESET_I2C		7
+ #define ASPEED_RESET_AHB		8
+ 
+-- 
+2.17.0
 
-Got it. I'll rename the PCIVGA to PECI with Keeping the PWM.
-
-Thanks,
-
-Jae
-
-> 
->>   #define ASPEED_RESET_I2C               7
->>   #define ASPEED_RESET_AHB               8
->>   #define ASPEED_RESET_CRT1              9
->> --
->> 2.7.4
->>
