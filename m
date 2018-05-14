@@ -1,33 +1,70 @@
-From: Joe Perches <joe@perches.com>
-Date: Mon, 14 May 2018 09:11:57 -0700
+From: Peter Rosin <peda@axentia.se>
+Date: Mon, 14 May 2018 16:53:09 +0200
 Subject: [PATCH 00/21] i2c: make use of i2c_8bit_addr_from_msg
-In-Reply-To: <20180514145330.4857-1-peda@axentia.se>
-References: <20180514145330.4857-1-peda@axentia.se>
-Message-ID: <c83bb5ddf36b419c4c01e20384c7b532c9a48cd4.camel@perches.com>
+Message-ID: <20180514145330.4857-1-peda@axentia.se>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, 2018-05-14 at 16:53 +0200, Peter Rosin wrote:
-> Hi!
-> 
-> The nice little inline i2c_8bit_addr_from_msg is not getting
-> enough use. This series improves the situation and drops a
-> bunch of lines in the process.
+Hi!
 
-Perhaps the inline should test for I2C_M_REV_DIR_ADDR
-as there is at least one use like
+The nice little inline i2c_8bit_addr_from_msg is not getting
+enough use. This series improves the situation and drops a
+bunch of lines in the process.
 
--               addr = msg->addr << 1;
--               if (flags & I2C_M_RD)
--                       addr |= 1;
-+               addr = i2c_8bit_addr_from_msg(msg);
-                if (flags & I2C_M_REV_DIR_ADDR)
-                        addr ^= 1;
+I have only compile-tested (that part fine, at least over here).
 
-which look odd
+Cheers,
+Peter
 
-Do any of these changes now no longer need
-the temporary flags variable?
+Peter Rosin (21):
+  i2c: algo: bit: make use of i2c_8bit_addr_from_msg
+  i2c: algo: pca: make use of i2c_8bit_addr_from_msg
+  i2c: algo: pcf: make use of i2c_8bit_addr_from_msg
+  i2c: aspeed: make use of i2c_8bit_addr_from_msg
+  i2c: axxia: make use of i2c_8bit_addr_from_msg
+  i2c: diolan: make use of i2c_8bit_addr_from_msg
+  i2c: efm32: make use of i2c_8bit_addr_from_msg
+  i2c: eg20t: make use of i2c_8bit_addr_from_msg
+  i2c: emev2: make use of i2c_8bit_addr_from_msg
+  i2c: hix5hd2: make use of i2c_8bit_addr_from_msg
+  i2c: imx-lpi2c: make use of i2c_8bit_addr_from_msg
+  i2c: imx: make use of i2c_8bit_addr_from_msg
+  i2c: kempld: make use of i2c_8bit_addr_from_msg
+  i2c: mxs: make use of i2c_8bit_addr_from_msg
+  i2c: ocores: make use of i2c_8bit_addr_from_msg
+  i2c: pasemi: make use of i2c_8bit_addr_from_msg
+  i2c: qup: make use of i2c_8bit_addr_from_msg
+  i2c: rcar: make use of i2c_8bit_addr_from_msg
+  i2c: riic: make use of i2c_8bit_addr_from_msg
+  i2c: stu300: make use of i2c_8bit_addr_from_msg
+  i2c: xiic: make use of i2c_8bit_addr_from_msg
+
+ drivers/i2c/algos/i2c-algo-bit.c    |  4 +---
+ drivers/i2c/algos/i2c-algo-pca.c    |  5 +----
+ drivers/i2c/algos/i2c-algo-pcf.c    |  5 +----
+ drivers/i2c/busses/i2c-aspeed.c     |  3 +--
+ drivers/i2c/busses/i2c-axxia.c      |  5 +++--
+ drivers/i2c/busses/i2c-diolan-u2c.c | 11 ++++-------
+ drivers/i2c/busses/i2c-efm32.c      |  3 +--
+ drivers/i2c/busses/i2c-eg20t.c      |  5 ++---
+ drivers/i2c/busses/i2c-emev2.c      |  2 +-
+ drivers/i2c/busses/i2c-hix5hd2.c    |  9 ++-------
+ drivers/i2c/busses/i2c-imx-lpi2c.c  |  4 +---
+ drivers/i2c/busses/i2c-imx.c        | 10 +++++-----
+ drivers/i2c/busses/i2c-kempld.c     |  7 +++----
+ drivers/i2c/busses/i2c-mxs.c        |  9 +++------
+ drivers/i2c/busses/i2c-ocores.c     |  5 +----
+ drivers/i2c/busses/i2c-pasemi.c     |  2 +-
+ drivers/i2c/busses/i2c-qup.c        |  2 +-
+ drivers/i2c/busses/i2c-rcar.c       |  2 +-
+ drivers/i2c/busses/i2c-riic.c       |  5 ++---
+ drivers/i2c/busses/i2c-stu300.c     | 22 +++++++++++++---------
+ drivers/i2c/busses/i2c-xiic.c       | 11 ++---------
+ 21 files changed, 50 insertions(+), 81 deletions(-)
+
+-- 
+2.11.0
+
