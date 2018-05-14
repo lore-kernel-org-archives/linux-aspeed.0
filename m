@@ -1,41 +1,41 @@
-From: Stephen Boyd <sboyd@kernel.org>
-Date: Tue, 15 May 2018 15:02:14 -0700
-Subject: [PATCH] clk:aspeed: Fix reset bits for PCI/VGA and PECI
-In-Reply-To: <5a449d93-eef0-4243-9889-bd13786edde1@linux.intel.com>
-References: <20180426172232.12535-1-jae.hyun.yoo@linux.intel.com>
- <20180501150236.GA15330@rob-hp-laptop>
- <5a449d93-eef0-4243-9889-bd13786edde1@linux.intel.com>
-Message-ID: <152642173468.237094.11026813184254392663@swboyd.mtv.corp.google.com>
+From: Peter Rosin <peda@axentia.se>
+Date: Mon, 14 May 2018 16:53:13 +0200
+Subject: [PATCH 04/21] i2c: aspeed: make use of i2c_8bit_addr_from_msg
+In-Reply-To: <20180514145330.4857-1-peda@axentia.se>
+References: <20180514145330.4857-1-peda@axentia.se>
+Message-ID: <20180514145330.4857-5-peda@axentia.se>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Quoting Jae Hyun Yoo (2018-05-01 09:27:32)
-> On 5/1/2018 8:02 AM, Rob Herring wrote:
-> > On Thu, Apr 26, 2018 at 10:22:32AM -0700, Jae Hyun Yoo wrote:
-> >> diff --git a/include/dt-bindings/clock/aspeed-clock.h b/include/dt-bindings/clock/aspeed-clock.h
-> >> index d3558d897a4d..8d69b9134bef 100644
-> >> --- a/include/dt-bindings/clock/aspeed-clock.h
-> >> +++ b/include/dt-bindings/clock/aspeed-clock.h
-> >> @@ -45,7 +45,7 @@
-> >>   #define ASPEED_RESET_JTAG_MASTER   3
-> >>   #define ASPEED_RESET_MIC           4
-> >>   #define ASPEED_RESET_PWM           5
-> >> -#define ASPEED_RESET_PCIVGA         6
-> >> +#define ASPEED_RESET_PECI           6
-> > 
-> > You can't really be changing these as they represent an ABI.
-> > 
-> > Is there no PCIVGA reset?
-> > 
-> 
-> This is a bug fixing. Previously, PCI/VGA used PECI reset bit so this
-> patch corrects the reset bit for PCI/VGA from bit '10' to bit '8', and
-> it adds PECI reset bit '10' here as it can't be combined with a clock
-> gate bit.
-> 
+Because it looks neater.
 
-Presumably nobody is using the #define because it's wrong, so this is OK
-for me. I'll apply to clk-next and yank it if Rob objects.
+Signed-off-by: Peter Rosin <peda@axentia.se>
+---
+ drivers/i2c/busses/i2c-aspeed.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
+index 7d4aeb4465b3..60e4d0e939a3 100644
+--- a/drivers/i2c/busses/i2c-aspeed.c
++++ b/drivers/i2c/busses/i2c-aspeed.c
+@@ -335,13 +335,12 @@ static void aspeed_i2c_do_start(struct aspeed_i2c_bus *bus)
+ {
+ 	u32 command = ASPEED_I2CD_M_START_CMD | ASPEED_I2CD_M_TX_CMD;
+ 	struct i2c_msg *msg = &bus->msgs[bus->msgs_index];
+-	u8 slave_addr = msg->addr << 1;
++	u8 slave_addr = i2c_8bit_addr_from_msg(msg);
+ 
+ 	bus->master_state = ASPEED_I2C_MASTER_START;
+ 	bus->buf_index = 0;
+ 
+ 	if (msg->flags & I2C_M_RD) {
+-		slave_addr |= 1;
+ 		command |= ASPEED_I2CD_M_RX_CMD;
+ 		/* Need to let the hardware know to NACK after RX. */
+ 		if (msg->len == 1 && !(msg->flags & I2C_M_RECV_LEN))
+-- 
+2.11.0
+
