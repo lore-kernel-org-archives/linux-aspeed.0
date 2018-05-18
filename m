@@ -1,26 +1,61 @@
-From: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Date: Wed, 16 May 2018 09:33:51 +0200
-Subject: [PATCH v2 2/2] i2c: busses: make use of i2c_8bit_addr_from_msg
-In-Reply-To: <20180516071647.29277-3-peda@axentia.se>
-References: <20180516071647.29277-1-peda@axentia.se>
- <20180516071647.29277-3-peda@axentia.se>
-Message-ID: <20180516073351.y5avitvaj5ouu6m3@pengutronix.de>
+From: Lei YU <mine260309@gmail.com>
+Date: Fri, 18 May 2018 16:57:02 +0800
+Subject: [PATCH] clk: aspeed: Add 24MHz fixed clock
+Message-ID: <1526633822-17138-1-git-send-email-mine260309@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 
-Hello Peter,
+Add a 24MHz fixed clock.
+This clock will be used for certain devices, e.g. pwm.
 
-On Wed, May 16, 2018 at 09:16:47AM +0200, Peter Rosin wrote:
-> Acked-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de> [emf32 and imx]
+Signed-off-by: Lei YU <mine260309@gmail.com>
+---
+ drivers/clk/clk-aspeed.c                 | 9 ++++++++-
+ include/dt-bindings/clock/aspeed-clock.h | 1 +
+ 2 files changed, 9 insertions(+), 1 deletion(-)
 
-s/emf/efm/
-
-Best regards
-Uwe
-
+diff --git a/drivers/clk/clk-aspeed.c b/drivers/clk/clk-aspeed.c
+index 5eb50c3..4664088 100644
+--- a/drivers/clk/clk-aspeed.c
++++ b/drivers/clk/clk-aspeed.c
+@@ -14,7 +14,7 @@
+ 
+ #include <dt-bindings/clock/aspeed-clock.h>
+ 
+-#define ASPEED_NUM_CLKS		35
++#define ASPEED_NUM_CLKS		36
+ 
+ #define ASPEED_RESET_CTRL	0x04
+ #define ASPEED_CLK_SELECTION	0x08
+@@ -474,6 +474,13 @@ static int aspeed_clk_probe(struct platform_device *pdev)
+ 		return PTR_ERR(hw);
+ 	aspeed_clk_data->hws[ASPEED_CLK_BCLK] = hw;
+ 
++	/* Fixed 24MHz clock */
++	hw = clk_hw_register_fixed_rate(NULL, "fixed-24m", "clkin",
++					0, 24000000);
++	if (IS_ERR(hw))
++		return PTR_ERR(hw);
++	aspeed_clk_data->hws[ASPEED_CLK_24M] = hw;
++
+ 	/*
+ 	 * TODO: There are a number of clocks that not included in this driver
+ 	 * as more information is required:
+diff --git a/include/dt-bindings/clock/aspeed-clock.h b/include/dt-bindings/clock/aspeed-clock.h
+index d3558d8..ff29d8e 100644
+--- a/include/dt-bindings/clock/aspeed-clock.h
++++ b/include/dt-bindings/clock/aspeed-clock.h
+@@ -38,6 +38,7 @@
+ #define ASPEED_CLK_MAC			32
+ #define ASPEED_CLK_BCLK			33
+ #define ASPEED_CLK_MPLL			34
++#define ASPEED_CLK_24M			35
+ 
+ #define ASPEED_RESET_XDMA		0
+ #define ASPEED_RESET_MCTP		1
 -- 
-Pengutronix e.K.                           | Uwe Kleine-König            |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+2.7.4
+
