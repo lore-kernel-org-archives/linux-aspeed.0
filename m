@@ -1,47 +1,114 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Wed, 23 May 2018 03:28:03 +0800
-Subject: [v4 05/11] ARM: dts: aspeed: peci: Add PECI node
-In-Reply-To: <20180521195846.27894-1-jae.hyun.yoo@linux.intel.com>
-References: <20180521195846.27894-1-jae.hyun.yoo@linux.intel.com>
-Message-ID: <201805230247.9v9rdyqS%fengguang.wu@intel.com>
+From: Joel Stanley <joel@jms.id.au>
+Date: Fri, 25 May 2018 14:04:11 +0930
+Subject: [PATCH dts/arm/aspeed-g5 v1] ARM: dts: aspeed-g5: Add IPMI KCS
+ node
+In-Reply-To: <9231baaf-e77c-c517-bca2-083070a53342@linux.intel.com>
+References: <1520399090-2455-1-git-send-email-haiyue.wang@linux.intel.com>
+ <9231baaf-e77c-c517-bca2-083070a53342@linux.intel.com>
+Message-ID: <CACPK8Xdhmrwfj6tGZ_o_JeoxdOii_5OD5oz80FJFRasvGd1L9w@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Jae,
+Hello Andrew,
 
-Thank you for the patch! Yet something to improve:
+On 16 March 2018 at 11:17, Wang, Haiyue <haiyue.wang@linux.intel.com> wrote:
+> Hi Joel and Andrew,
+>
+> Have time to review this patch ? Hope for your comments. :-)
+>
+> BR,
+> Haiyue
+>
+>
+> On 2018-03-07 13:04, Haiyue Wang wrote:
+>>
+>> The IPMI KCS device part of the LPC interface and is used for
+>> communication with the host processor.
+>>
+>> Signed-off-by: Haiyue Wang <haiyue.wang@linux.intel.com>
 
-[auto build test ERROR on linus/master]
-[also build test ERROR on v4.17-rc6]
-[if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
+Do you have time to take a look at these? The device tree doesn't make
+sense to me.
 
-url:    https://github.com/0day-ci/linux/commits/Jae-Hyun-Yoo/dt-bindings-Add-a-document-of-PECI-subsystem/20180522-204411
-config: arm-allyesconfig (attached as .config)
-compiler: arm-linux-gnueabi-gcc (Debian 7.2.0-11) 7.2.0
-reproduce:
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        # save the attached .config to linux build tree
-        make.cross ARCH=arm 
+Cheers,
 
-All errors (new ones prefixed by >>):
+Joel
 
->> Error: arch/arm/boot/dts/aspeed-g5.dtsi:382.21-22 syntax error
-   FATAL ERROR: Unable to parse input tree
---
->> Error: arch/arm/boot/dts/aspeed-g4.dtsi:332.21-22 syntax error
-   FATAL ERROR: Unable to parse input tree
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: .config.gz
-Type: application/gzip
-Size: 64516 bytes
-Desc: not available
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20180523/8f62f1c8/attachment-0001.gz>
+>> ---
+>>   arch/arm/boot/dts/aspeed-g5.dtsi | 43
+>> +++++++++++++++++++++++++++++++++++++++-
+>>   1 file changed, 42 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/arch/arm/boot/dts/aspeed-g5.dtsi
+>> b/arch/arm/boot/dts/aspeed-g5.dtsi
+>> index 8eac57c..f443169 100644
+>> --- a/arch/arm/boot/dts/aspeed-g5.dtsi
+>> +++ b/arch/arm/boot/dts/aspeed-g5.dtsi
+>> @@ -267,8 +267,40 @@
+>>                                 ranges = <0x0 0x1e789000 0x1000>;
+>>                                 lpc_bmc: lpc-bmc at 0 {
+>> -                                       compatible =
+>> "aspeed,ast2500-lpc-bmc";
+>> +                                       compatible =
+>> "aspeed,ast2500-lpc-bmc", "simple-mfd", "syscon";
+>>                                         reg = <0x0 0x80>;
+>> +                                       reg-io-width = <4>;
+>> +
+>> +                                       #address-cells = <1>;
+>> +                                       #size-cells = <1>;
+>> +                                       ranges = <0x0 0x0 0x80>;
+>> +
+>> +                                       kcs1: kcs1 at 0 {
+>> +                                               compatible =
+>> "aspeed,ast2500-kcs-bmc";
+>> +                                               reg = <0x0 0x80>;
+>> +                                               interrupts = <8>;
+>> +                                               kcs_chan = <1>;
+>> +                                               kcs_addr = <0x0>;
+>> +                                               status = "disabled";
+>> +                                       };
+>> +
+>> +                                       kcs2: kcs2 at 0 {
+>> +                                               compatible =
+>> "aspeed,ast2500-kcs-bmc";
+>> +                                               reg = <0x0 0x80>;
+>> +                                               interrupts = <8>;
+>> +                                               kcs_chan = <2>;
+>> +                                               kcs_addr = <0x0>;
+>> +                                               status = "disabled";
+>> +                                       };
+>> +
+>> +                                       kcs3: kcs3 at 0 {
+>> +                                               compatible =
+>> "aspeed,ast2500-kcs-bmc";
+>> +                                               reg = <0x0 0x80>;
+>> +                                               interrupts = <8>;
+>> +                                               kcs_chan = <3>;
+>> +                                               kcs_addr = <0x0>;
+>> +                                               status = "disabled";
+>> +                                       };
+>>                                 };
+>>                                 lpc_host: lpc-host at 80 {
+>> @@ -294,6 +326,15 @@
+>>                                                 status = "disabled";
+>>                                         };
+>>   +                                     kcs4: kcs4 at 0 {
+>> +                                               compatible =
+>> "aspeed,ast2500-kcs-bmc";
+>> +                                               reg = <0x0 0xa0>;
+>> +                                               interrupts = <8>;
+>> +                                               kcs_chan = <4>;
+>> +                                               kcs_addr = <0x0>;
+>> +                                               status = "disabled";
+>> +                                       };
+>> +
+>>                                         lhc: lhc at 20 {
+>>                                                 compatible =
+>> "aspeed,ast2500-lhc";
+>>                                                 reg = <0x20 0x24 0x48
+>> 0x8>;
+>
+>
