@@ -1,121 +1,36 @@
-From: Wang, Haiyue <haiyue.wang@linux.intel.com>
-Date: Fri, 25 May 2018 19:33:42 +0800
-Subject: [PATCH dts/arm/aspeed-g5 v1] ARM: dts: aspeed-g5: Add IPMI KCS
- node
-In-Reply-To: <CACPK8Xdhmrwfj6tGZ_o_JeoxdOii_5OD5oz80FJFRasvGd1L9w@mail.gmail.com>
-References: <1520399090-2455-1-git-send-email-haiyue.wang@linux.intel.com>
- <9231baaf-e77c-c517-bca2-083070a53342@linux.intel.com>
- <CACPK8Xdhmrwfj6tGZ_o_JeoxdOii_5OD5oz80FJFRasvGd1L9w@mail.gmail.com>
-Message-ID: <d9f9bd48-7b2c-9f48-0515-50e0a5e55259@linux.intel.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Fri, 25 May 2018 18:07:15 +0200
+Subject: [PATCH] usb/gadget: aspeed-vhub: add USB_LIBCOMPOSITE dependency
+Message-ID: <20180525160729.92026-1-arnd@arndb.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Joel & Andrew
+Without that option, we run into a link failure:
 
-This patch is out of date. ;-)
+drivers/usb/gadget/udc/aspeed-vhub/hub.o: In function `ast_vhub_std_hub_request':
+hub.c:(.text+0x5b0): undefined reference to `usb_gadget_get_string'
 
-New: https://patchwork.ozlabs.org/patch/893720/
+Fixes: 7ecca2a4080c ("usb/gadget: Add driver for Aspeed SoC virtual hub")
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+ drivers/usb/gadget/udc/aspeed-vhub/Kconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
-
-On 2018-05-25 12:34, Joel Stanley wrote:
-> Hello Andrew,
->
-> On 16 March 2018 at 11:17, Wang, Haiyue <haiyue.wang@linux.intel.com> wrote:
->> Hi Joel and Andrew,
->>
->> Have time to review this patch ? Hope for your comments. :-)
->>
->> BR,
->> Haiyue
->>
->>
->> On 2018-03-07 13:04, Haiyue Wang wrote:
->>> The IPMI KCS device part of the LPC interface and is used for
->>> communication with the host processor.
->>>
->>> Signed-off-by: Haiyue Wang <haiyue.wang@linux.intel.com>
-> Do you have time to take a look at these? The device tree doesn't make
-> sense to me.
->
-> Cheers,
->
-> Joel
->
->>> ---
->>>    arch/arm/boot/dts/aspeed-g5.dtsi | 43
->>> +++++++++++++++++++++++++++++++++++++++-
->>>    1 file changed, 42 insertions(+), 1 deletion(-)
->>>
->>> diff --git a/arch/arm/boot/dts/aspeed-g5.dtsi
->>> b/arch/arm/boot/dts/aspeed-g5.dtsi
->>> index 8eac57c..f443169 100644
->>> --- a/arch/arm/boot/dts/aspeed-g5.dtsi
->>> +++ b/arch/arm/boot/dts/aspeed-g5.dtsi
->>> @@ -267,8 +267,40 @@
->>>                                  ranges = <0x0 0x1e789000 0x1000>;
->>>                                  lpc_bmc: lpc-bmc at 0 {
->>> -                                       compatible =
->>> "aspeed,ast2500-lpc-bmc";
->>> +                                       compatible =
->>> "aspeed,ast2500-lpc-bmc", "simple-mfd", "syscon";
->>>                                          reg = <0x0 0x80>;
->>> +                                       reg-io-width = <4>;
->>> +
->>> +                                       #address-cells = <1>;
->>> +                                       #size-cells = <1>;
->>> +                                       ranges = <0x0 0x0 0x80>;
->>> +
->>> +                                       kcs1: kcs1 at 0 {
->>> +                                               compatible =
->>> "aspeed,ast2500-kcs-bmc";
->>> +                                               reg = <0x0 0x80>;
->>> +                                               interrupts = <8>;
->>> +                                               kcs_chan = <1>;
->>> +                                               kcs_addr = <0x0>;
->>> +                                               status = "disabled";
->>> +                                       };
->>> +
->>> +                                       kcs2: kcs2 at 0 {
->>> +                                               compatible =
->>> "aspeed,ast2500-kcs-bmc";
->>> +                                               reg = <0x0 0x80>;
->>> +                                               interrupts = <8>;
->>> +                                               kcs_chan = <2>;
->>> +                                               kcs_addr = <0x0>;
->>> +                                               status = "disabled";
->>> +                                       };
->>> +
->>> +                                       kcs3: kcs3 at 0 {
->>> +                                               compatible =
->>> "aspeed,ast2500-kcs-bmc";
->>> +                                               reg = <0x0 0x80>;
->>> +                                               interrupts = <8>;
->>> +                                               kcs_chan = <3>;
->>> +                                               kcs_addr = <0x0>;
->>> +                                               status = "disabled";
->>> +                                       };
->>>                                  };
->>>                                  lpc_host: lpc-host at 80 {
->>> @@ -294,6 +326,15 @@
->>>                                                  status = "disabled";
->>>                                          };
->>>    +                                     kcs4: kcs4 at 0 {
->>> +                                               compatible =
->>> "aspeed,ast2500-kcs-bmc";
->>> +                                               reg = <0x0 0xa0>;
->>> +                                               interrupts = <8>;
->>> +                                               kcs_chan = <4>;
->>> +                                               kcs_addr = <0x0>;
->>> +                                               status = "disabled";
->>> +                                       };
->>> +
->>>                                          lhc: lhc at 20 {
->>>                                                  compatible =
->>> "aspeed,ast2500-lhc";
->>>                                                  reg = <0x20 0x24 0x48
->>> 0x8>;
->>
+diff --git a/drivers/usb/gadget/udc/aspeed-vhub/Kconfig b/drivers/usb/gadget/udc/aspeed-vhub/Kconfig
+index f0cdf89b8503..83ba8a2eb6af 100644
+--- a/drivers/usb/gadget/udc/aspeed-vhub/Kconfig
++++ b/drivers/usb/gadget/udc/aspeed-vhub/Kconfig
+@@ -2,6 +2,7 @@
+ config USB_ASPEED_VHUB
+ 	tristate "Aspeed vHub UDC driver"
+ 	depends on ARCH_ASPEED || COMPILE_TEST
++	depends on USB_LIBCOMPOSITE
+ 	help
+ 	  USB peripheral controller for the Aspeed AST2500 family
+ 	  SoCs supporting the "vHub" functionality and USB2.0
+-- 
+2.9.0
 
