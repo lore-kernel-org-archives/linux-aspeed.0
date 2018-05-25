@@ -1,114 +1,96 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Fri, 25 May 2018 14:04:11 +0930
-Subject: [PATCH dts/arm/aspeed-g5 v1] ARM: dts: aspeed-g5: Add IPMI KCS
- node
-In-Reply-To: <9231baaf-e77c-c517-bca2-083070a53342@linux.intel.com>
-References: <1520399090-2455-1-git-send-email-haiyue.wang@linux.intel.com>
- <9231baaf-e77c-c517-bca2-083070a53342@linux.intel.com>
-Message-ID: <CACPK8Xdhmrwfj6tGZ_o_JeoxdOii_5OD5oz80FJFRasvGd1L9w@mail.gmail.com>
+Date: Fri, 25 May 2018 14:48:15 +0930
+Subject: [GIT PULL] ARM: aspeed: dts changes for 4.18
+Message-ID: <CACPK8XeAPDem7NnbmbrnxfXvsCPU3K0zTi2r9goqaeBqFgk_Gg@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello Andrew,
+Hello ARM maintainers,
 
-On 16 March 2018 at 11:17, Wang, Haiyue <haiyue.wang@linux.intel.com> wrote:
-> Hi Joel and Andrew,
->
-> Have time to review this patch ? Hope for your comments. :-)
->
-> BR,
-> Haiyue
->
->
-> On 2018-03-07 13:04, Haiyue Wang wrote:
->>
->> The IPMI KCS device part of the LPC interface and is used for
->> communication with the host processor.
->>
->> Signed-off-by: Haiyue Wang <haiyue.wang@linux.intel.com>
+Here are the ASPEED device tree updates for 4.18.
 
-Do you have time to take a look at these? The device tree doesn't make
-sense to me.
+Cheers!
 
-Cheers,
+The following changes since commit 6d08b06e67cd117f6992c46611dfb4ce267cd71e:
 
-Joel
+  Linux 4.17-rc2 (2018-04-22 19:20:09 -0700)
 
->> ---
->>   arch/arm/boot/dts/aspeed-g5.dtsi | 43
->> +++++++++++++++++++++++++++++++++++++++-
->>   1 file changed, 42 insertions(+), 1 deletion(-)
->>
->> diff --git a/arch/arm/boot/dts/aspeed-g5.dtsi
->> b/arch/arm/boot/dts/aspeed-g5.dtsi
->> index 8eac57c..f443169 100644
->> --- a/arch/arm/boot/dts/aspeed-g5.dtsi
->> +++ b/arch/arm/boot/dts/aspeed-g5.dtsi
->> @@ -267,8 +267,40 @@
->>                                 ranges = <0x0 0x1e789000 0x1000>;
->>                                 lpc_bmc: lpc-bmc at 0 {
->> -                                       compatible =
->> "aspeed,ast2500-lpc-bmc";
->> +                                       compatible =
->> "aspeed,ast2500-lpc-bmc", "simple-mfd", "syscon";
->>                                         reg = <0x0 0x80>;
->> +                                       reg-io-width = <4>;
->> +
->> +                                       #address-cells = <1>;
->> +                                       #size-cells = <1>;
->> +                                       ranges = <0x0 0x0 0x80>;
->> +
->> +                                       kcs1: kcs1 at 0 {
->> +                                               compatible =
->> "aspeed,ast2500-kcs-bmc";
->> +                                               reg = <0x0 0x80>;
->> +                                               interrupts = <8>;
->> +                                               kcs_chan = <1>;
->> +                                               kcs_addr = <0x0>;
->> +                                               status = "disabled";
->> +                                       };
->> +
->> +                                       kcs2: kcs2 at 0 {
->> +                                               compatible =
->> "aspeed,ast2500-kcs-bmc";
->> +                                               reg = <0x0 0x80>;
->> +                                               interrupts = <8>;
->> +                                               kcs_chan = <2>;
->> +                                               kcs_addr = <0x0>;
->> +                                               status = "disabled";
->> +                                       };
->> +
->> +                                       kcs3: kcs3 at 0 {
->> +                                               compatible =
->> "aspeed,ast2500-kcs-bmc";
->> +                                               reg = <0x0 0x80>;
->> +                                               interrupts = <8>;
->> +                                               kcs_chan = <3>;
->> +                                               kcs_addr = <0x0>;
->> +                                               status = "disabled";
->> +                                       };
->>                                 };
->>                                 lpc_host: lpc-host at 80 {
->> @@ -294,6 +326,15 @@
->>                                                 status = "disabled";
->>                                         };
->>   +                                     kcs4: kcs4 at 0 {
->> +                                               compatible =
->> "aspeed,ast2500-kcs-bmc";
->> +                                               reg = <0x0 0xa0>;
->> +                                               interrupts = <8>;
->> +                                               kcs_chan = <4>;
->> +                                               kcs_addr = <0x0>;
->> +                                               status = "disabled";
->> +                                       };
->> +
->>                                         lhc: lhc at 20 {
->>                                                 compatible =
->> "aspeed,ast2500-lhc";
->>                                                 reg = <0x20 0x24 0x48
->> 0x8>;
->
->
+are available in the Git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/joel/aspeed.git
+tags/aspeed-4.18-devicetree
+
+for you to fetch changes up to 5b1d4fa9885108cb769c5f3a8a2c9fa082fbcbe2:
+
+  ARM: dts: Aspeed: Enable USB ports on eval board. (2018-05-25 13:57:37 +0930)
+
+----------------------------------------------------------------
+ASPEED device tree updates for 4.18
+
+New hardware support added:
+
+  USB controllers for AST2400 and AST2500 which have drivers
+  merged in 4.18.
+
+  Hardware random number generator which we made enhancements to many
+  releases ago, but never added the device tree parts.
+
+  Misc changes to support watchdog and gpio-keys features used by
+  OpenBMC systems.
+
+New machines:
+
+ Intel S2600WF, an Intel platform family with an ASPEED AST2500 BMC.
+
+ Inventec Lanyang, a Power 9 platform with AST2500.
+
+ Portwell Neptune, a x86 server development kit with an AST2500.
+
+----------------------------------------------------------------
+Amithash Prasad (1):
+      ARM: dts: aspeed: Add Portwell Neptune machine
+
+Benjamin Herrenschmidt (2):
+      ARM: dts: Add Aspeed SoC USB controllers to device-tree
+      ARM: dts: Aspeed: Enable USB ports on eval board.
+
+Brad Bishop (1):
+      ARM: dts: aspeed: witherspoon: Enable checkstop and cooling gpio keys
+
+Brian Yang (1):
+      ARM: dts: aspeed: Add Inventec Lanyang BMC
+
+Christopher Bostic (1):
+      ARM: dts: aspeed: witherspoon: Add gpio keys for power supply presence
+
+Eddie James (1):
+      ARM: dts: aspeed: witherspoon: Set alternate boot
+
+James Feist (1):
+      ARM: dts: aspeed: Add S2600WF BMC Machine
+
+Joel Stanley (1):
+      ARM: dts: aspeed: Describe random number device
+
+Lei YU (2):
+      ARM: dts: aspeed: romulus: Add id-button gpio key
+      ARM: dts: aspeed: zaius: Add pcie-e2b-present gpio key
+
+ .../devicetree/bindings/vendor-prefixes.txt        |   1 +
+ arch/arm/boot/dts/Makefile                         |   3 +
+ arch/arm/boot/dts/aspeed-ast2500-evb.dts           |  18 ++
+ arch/arm/boot/dts/aspeed-bmc-intel-s2600wf.dts     | 129 ++++++++
+ arch/arm/boot/dts/aspeed-bmc-opp-lanyang.dts       | 325 +++++++++++++++++++++
+ arch/arm/boot/dts/aspeed-bmc-opp-romulus.dts       |   6 +
+ arch/arm/boot/dts/aspeed-bmc-opp-witherspoon.dts   |  32 ++
+ arch/arm/boot/dts/aspeed-bmc-opp-zaius.dts         |   6 +
+ arch/arm/boot/dts/aspeed-bmc-portwell-neptune.dts  | 159 ++++++++++
+ arch/arm/boot/dts/aspeed-g4.dtsi                   |  35 +++
+ arch/arm/boot/dts/aspeed-g5.dtsi                   |  47 +++
+ 11 files changed, 761 insertions(+)
+ create mode 100644 arch/arm/boot/dts/aspeed-bmc-intel-s2600wf.dts
+ create mode 100644 arch/arm/boot/dts/aspeed-bmc-opp-lanyang.dts
+ create mode 100644 arch/arm/boot/dts/aspeed-bmc-portwell-neptune.dts
