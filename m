@@ -1,47 +1,48 @@
-From: Wolfram Sang <wsa@the-dreams.de>
-Date: Tue, 29 May 2018 20:31:43 +0200
-Subject: [PATCH v2 2/2] i2c: busses: make use of i2c_8bit_addr_from_msg
-In-Reply-To: <20180516071647.29277-3-peda@axentia.se>
-References: <20180516071647.29277-1-peda@axentia.se>
- <20180516071647.29277-3-peda@axentia.se>
-Message-ID: <20180529183143.ker46to34gr5hx3w@ninjato>
+From: Paul Menzel <pmenzel@molgen.mpg.de>
+Date: Tue, 29 May 2018 16:53:04 +0200
+Subject: Status of aspeed-bmc-opp-firestone (IBM S822LC)
+Message-ID: <287c6a85-65ba-5782-e532-d17d517614f5@molgen.mpg.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 
-On Wed, May 16, 2018 at 09:16:47AM +0200, Peter Rosin wrote:
-> Because it looks neater.
->=20
-> For diolan, this allows factoring out some code that is now common
-> between if and else.
->=20
-> For eg20t, pch_i2c_writebytes is always called with a write in
-> msgs->flags, and pch_i2c_readbytes with a read.
->=20
-> For imx, i2c_imx_dma_write and i2c_imx_write are always called with a
-> write in msgs->flags, and i2c_imx_read with a read.
->=20
-> For qup, qup_i2c_write_tx_fifo_v1 is always called with a write in
-> qup->msg->flags.
->=20
-> For stu300, also restructure debug output for resends, since that
-> code as a result is only handling debug output.
->=20
-> Reviewed-by: Guenter Roeck <linux@roeck-us.net> [diolan]
-> Acked-by: Uwe Kleine-K=C3=B6nig <u.kleine-koenig@pengutronix.de> [emf32 a=
-nd imx]
-> Acked-by: Linus Walleij <linus.walleij@linaro.org> [stu300]
-> Signed-off-by: Peter Rosin <peda@axentia.se>
+Dear Joel, dear Linux folks,
 
-Applied to for-next, thanks!
+
+We have an IBM S822LC system (Firestone(?)). Building of OpenBMC 
+currently fails, as the not everything was ported from dev-4.10 to 
+dev-4.13 [1], and therefore a file cannot be found.
+
+Looking at upstream Linux, there are BMCs for Power 8 systems, like 
+Palmetto, included.
+
+```
+$ ls arch/arm/boot/dts/aspeed-bmc-opp-*
+arch/arm/boot/dts/aspeed-bmc-opp-palmetto.dts
+arch/arm/boot/dts/aspeed-bmc-opp-romulus.dts
+arch/arm/boot/dts/aspeed-bmc-opp-witherspoon.dts
+arch/arm/boot/dts/aspeed-bmc-opp-zaius.dts
+```
+
+Does somebody know, why Firestone was not upstreamed? Is somebody 
+working on upstreaming it? If not, do you have scripts to port such 
+work? Manually cherry-picking stuff in this case is hard, as there are a 
+lot of conflicts.
+
+
+Kind regards,
+
+Paul
+
+
+[1]: https://github.com/openbmc/openbmc/issues/3206
 
 -------------- next part --------------
 A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 833 bytes
-Desc: not available
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20180529/6=
-1fb0766/attachment.sig>
+Name: smime.p7s
+Type: application/pkcs7-signature
+Size: 5174 bytes
+Desc: S/MIME Cryptographic Signature
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20180529/85b5f96e/attachment.bin>
