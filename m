@@ -1,42 +1,27 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Tue, 29 May 2018 09:49:06 +1000
-Subject: [PATCH] usb/gadget: aspeed-vhub: add USB_LIBCOMPOSITE dependency
-In-Reply-To: <20180525160729.92026-1-arnd@arndb.de>
-References: <20180525160729.92026-1-arnd@arndb.de>
-Message-ID: <bfc6394b14a70f2be55a736963b2e167f66b93d6.camel@kernel.crashing.org>
+From: Wolfram Sang <wsa@the-dreams.de>
+Date: Tue, 29 May 2018 20:31:38 +0200
+Subject: [PATCH v2 1/2] i2c: algos: make use of i2c_8bit_addr_from_msg
+In-Reply-To: <20180516071647.29277-2-peda@axentia.se>
+References: <20180516071647.29277-1-peda@axentia.se>
+ <20180516071647.29277-2-peda@axentia.se>
+Message-ID: <20180529183137.vsl7cuh2zjlplzfj@ninjato>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, 2018-05-25 at 18:07 +0200, Arnd Bergmann wrote:
-> Without that option, we run into a link failure:
+On Wed, May 16, 2018 at 09:16:46AM +0200, Peter Rosin wrote:
+> Because it looks neater.
 > 
-> drivers/usb/gadget/udc/aspeed-vhub/hub.o: In function `ast_vhub_std_hub_request':
-> hub.c:(.text+0x5b0): undefined reference to `usb_gadget_get_string'
+> Signed-off-by: Peter Rosin <peda@axentia.se>
 
-Thanks ! I hadn't realized these functions were part of an optional
-library.
+Applied to for-next, thanks!
 
-> Fixes: 7ecca2a4080c ("usb/gadget: Add driver for Aspeed SoC virtual hub")
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-
-> ---
->  drivers/usb/gadget/udc/aspeed-vhub/Kconfig | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/drivers/usb/gadget/udc/aspeed-vhub/Kconfig b/drivers/usb/gadget/udc/aspeed-vhub/Kconfig
-> index f0cdf89b8503..83ba8a2eb6af 100644
-> --- a/drivers/usb/gadget/udc/aspeed-vhub/Kconfig
-> +++ b/drivers/usb/gadget/udc/aspeed-vhub/Kconfig
-> @@ -2,6 +2,7 @@
->  config USB_ASPEED_VHUB
->  	tristate "Aspeed vHub UDC driver"
->  	depends on ARCH_ASPEED || COMPILE_TEST
-> +	depends on USB_LIBCOMPOSITE
->  	help
->  	  USB peripheral controller for the Aspeed AST2500 family
->  	  SoCs supporting the "vHub" functionality and USB2.0
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 833 bytes
+Desc: not available
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20180529/3f485ede/attachment.sig>
