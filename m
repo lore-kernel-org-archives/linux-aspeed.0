@@ -1,64 +1,35 @@
-From: Joel Stanley <joel@jms.id.au>
-Date: Wed, 30 May 2018 15:47:40 +0930
-Subject: [PATCH] ARM: dts: aspeed: Fix hwrng register address
-Message-ID: <20180530061740.31547-1-joel@jms.id.au>
+From: Felipe Balbi <balbi@kernel.org>
+Date: Wed, 30 May 2018 15:29:31 +0300
+Subject: [PATCH] usb/gadget: aspeed-vhub: add USB_LIBCOMPOSITE dependency
+In-Reply-To: <20180525160729.92026-1-arnd@arndb.de>
+References: <20180525160729.92026-1-arnd@arndb.de>
+Message-ID: <87o9gxcono.fsf@linux.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The register address should be the full address of the rng, not the
-offset from the start of the SCU.
 
-Fixes: 5daa8212c08e ("ARM: dts: aspeed: Describe random number device")
-Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
-Signed-off-by: Joel Stanley <joel@jms.id.au>
----
-Hi ARM maintainers, this was found when testing next-20180529 after the
-merge of the aspeed 4.18 pull request.  Can you please apply this one to
-your -next tree?
+Hi,
 
-I'll also send a PR with some defconfig updates so the rng driver is
-enabled by default.
----
+Arnd Bergmann <arnd@arndb.de> writes:
+> Without that option, we run into a link failure:
+>
+> drivers/usb/gadget/udc/aspeed-vhub/hub.o: In function `ast_vhub_std_hub_request':
+> hub.c:(.text+0x5b0): undefined reference to `usb_gadget_get_string'
+>
+> Fixes: 7ecca2a4080c ("usb/gadget: Add driver for Aspeed SoC virtual hub")
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
- arch/arm/boot/dts/aspeed-g4.dtsi | 4 ++--
- arch/arm/boot/dts/aspeed-g5.dtsi | 4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
+Acked-by: Felipe Balbi <felipe.balbi@linux.intel.com>
 
-diff --git a/arch/arm/boot/dts/aspeed-g4.dtsi b/arch/arm/boot/dts/aspeed-g4.dtsi
-index 5e947ed496c2..75df1573380e 100644
---- a/arch/arm/boot/dts/aspeed-g4.dtsi
-+++ b/arch/arm/boot/dts/aspeed-g4.dtsi
-@@ -145,9 +145,9 @@
- 
- 			};
- 
--			rng: hwrng at 78 {
-+			rng: hwrng at 1e6e2078 {
- 				compatible = "timeriomem_rng";
--				reg = <0x78 0x4>;
-+				reg = <0x1e6e2078 0x4>;
- 				period = <1>;
- 				quality = <100>;
- 			};
-diff --git a/arch/arm/boot/dts/aspeed-g5.dtsi b/arch/arm/boot/dts/aspeed-g5.dtsi
-index 24eec00c4a95..17f2714d18a7 100644
---- a/arch/arm/boot/dts/aspeed-g5.dtsi
-+++ b/arch/arm/boot/dts/aspeed-g5.dtsi
-@@ -189,9 +189,9 @@
- 				};
- 			};
- 
--			rng: hwrng at 78 {
-+			rng: hwrng at 1e6e2078 {
- 				compatible = "timeriomem_rng";
--				reg = <0x78 0x4>;
-+				reg = <0x1e6e2078 0x4>;
- 				period = <1>;
- 				quality = <100>;
- 			};
 -- 
-2.17.0
-
+balbi
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 832 bytes
+Desc: not available
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20180530/7fc655b2/attachment.sig>
