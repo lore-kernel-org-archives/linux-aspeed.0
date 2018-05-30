@@ -1,47 +1,64 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Wed, 30 May 2018 13:36:59 +0930
-Subject: Status of aspeed-bmc-opp-firestone (IBM S822LC)
-In-Reply-To: <287c6a85-65ba-5782-e532-d17d517614f5@molgen.mpg.de>
-References: <287c6a85-65ba-5782-e532-d17d517614f5@molgen.mpg.de>
-Message-ID: <1527653219.1600524.1389969792.6D07B793@webmail.messagingengine.com>
+From: Joel Stanley <joel@jms.id.au>
+Date: Wed, 30 May 2018 15:47:40 +0930
+Subject: [PATCH] ARM: dts: aspeed: Fix hwrng register address
+Message-ID: <20180530061740.31547-1-joel@jms.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Paul,
+The register address should be the full address of the rng, not the
+offset from the start of the SCU.
 
-On Wed, 30 May 2018, at 00:23, Paul Menzel wrote:
-> Dear Joel, dear Linux folks,
-> 
-> 
-> We have an IBM S822LC system (Firestone(?)). Building of OpenBMC 
-> currently fails, as the not everything was ported from dev-4.10 to 
-> dev-4.13 [1], and therefore a file cannot be found.
-> 
-> Looking at upstream Linux, there are BMCs for Power 8 systems, like 
-> Palmetto, included.
-> 
-> ```
-> $ ls arch/arm/boot/dts/aspeed-bmc-opp-*
-> arch/arm/boot/dts/aspeed-bmc-opp-palmetto.dts
-> arch/arm/boot/dts/aspeed-bmc-opp-romulus.dts
-> arch/arm/boot/dts/aspeed-bmc-opp-witherspoon.dts
-> arch/arm/boot/dts/aspeed-bmc-opp-zaius.dts
-> ```
-> 
-> Does somebody know, why Firestone was not upstreamed? Is somebody 
-> working on upstreaming it? If not, do you have scripts to port such 
-> work? Manually cherry-picking stuff in this case is hard, as there are a 
-> lot of conflicts.
+Fixes: 5daa8212c08e ("ARM: dts: aspeed: Describe random number device")
+Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
+Signed-off-by: Joel Stanley <joel@jms.id.au>
+---
+Hi ARM maintainers, this was found when testing next-20180529 after the
+merge of the aspeed 4.18 pull request.  Can you please apply this one to
+your -next tree?
 
-Firestone was never really maintained. We hacked around with it for a bit, but nothing concrete really came of it. As far as I'm aware, no-one is working on upstreaming it.
+I'll also send a PR with some defconfig updates so the rng driver is
+enabled by default.
+---
 
-Also, I don't think there were any scripts used in the process, so it's going to be some drudge work to get things running.
+ arch/arm/boot/dts/aspeed-g4.dtsi | 4 ++--
+ arch/arm/boot/dts/aspeed-g5.dtsi | 4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
-Sorry that I don't have a more positive answer. Maybe someone else knows better.
+diff --git a/arch/arm/boot/dts/aspeed-g4.dtsi b/arch/arm/boot/dts/aspeed-g4.dtsi
+index 5e947ed496c2..75df1573380e 100644
+--- a/arch/arm/boot/dts/aspeed-g4.dtsi
++++ b/arch/arm/boot/dts/aspeed-g4.dtsi
+@@ -145,9 +145,9 @@
+ 
+ 			};
+ 
+-			rng: hwrng at 78 {
++			rng: hwrng at 1e6e2078 {
+ 				compatible = "timeriomem_rng";
+-				reg = <0x78 0x4>;
++				reg = <0x1e6e2078 0x4>;
+ 				period = <1>;
+ 				quality = <100>;
+ 			};
+diff --git a/arch/arm/boot/dts/aspeed-g5.dtsi b/arch/arm/boot/dts/aspeed-g5.dtsi
+index 24eec00c4a95..17f2714d18a7 100644
+--- a/arch/arm/boot/dts/aspeed-g5.dtsi
++++ b/arch/arm/boot/dts/aspeed-g5.dtsi
+@@ -189,9 +189,9 @@
+ 				};
+ 			};
+ 
+-			rng: hwrng at 78 {
++			rng: hwrng at 1e6e2078 {
+ 				compatible = "timeriomem_rng";
+-				reg = <0x78 0x4>;
++				reg = <0x1e6e2078 0x4>;
+ 				period = <1>;
+ 				quality = <100>;
+ 			};
+-- 
+2.17.0
 
-Cheers,
-
-Andrew
