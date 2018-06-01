@@ -1,56 +1,96 @@
-From: Bjorn Andersson <andersson@kernel.org>
-Date: Wed, 27 Sep 2023 16:01:58 -0700
-Subject: [PATCH 00/40] soc: Convert to platform remove callback returning
- void
-In-Reply-To: <1b2fddf8-c0a6-4afa-8ad0-f280dea1607f@app.fastmail.com>
-References: <20230925095532.1984344-1-u.kleine-koenig@pengutronix.de>
- <CACPK8XeROYz_XaB3TvUhdXm7Vm8fjC8yU+mfvA58=_FiDrBy-g@mail.gmail.com>
- <1b2fddf8-c0a6-4afa-8ad0-f280dea1607f@app.fastmail.com>
-Message-ID: <f4hvrslynlgmxu4a2gogc5idvumskhaalxgwildy56yqk2wz7d@lkh4swkv52mi>
+From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+Date: Fri,  1 Jun 2018 11:21:36 -0700
+Subject: [PATCH linux-next v5 04/13] dt-bindings: Add a document of PECI
+ adapter driver for ASPEED AST24xx/25xx SoCs
+Message-ID: <20180601182136.23762-1-jae.hyun.yoo@linux.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Sep 27, 2023 at 10:43:16AM +0200, Arnd Bergmann wrote:
-> On Wed, Sep 27, 2023, at 04:25, Joel Stanley wrote:
-> > On Mon, 25 Sept 2023 at 09:55, Uwe Kleine-K?nig <u.kleine-koenig@pengutronix.de> wrote:
-> >>
-> >> this series converts all platform drivers below drivers/soc to use
-> >> .remove_new(). The motivation is to get rid of an integer return code
-> >> that is (mostly) ignored by the platform driver core and error prone on
-> >> the driver side.
-> >>
-> >> See commit 5c5a7680e67b ("platform: Provide a remove callback that
-> >> returns no value") for an extended explanation and the eventual goal.
-> >>
-> >> As there is no single maintainer team for drivers/soc, I suggest the
-> >> individual maintainers to pick up "their" patches.
-> >
-> > I'd be happy if Arnd merged the lot at once. Arnd, what do you think?
-> >
-> > If that will be too messy then I understand. I have queued the aspeed
-> > ones locally and will push that out if we decide that's the best way
-> > to go.
-> 
-> The main downside of merging it all at once through the soc tree
-> is that there may be patches that conflict with other work going on
-> in individual drivers.
-> 
-> What I'd suggest doing here is:
-> 
-> - have platform maintainers pick up patches for their drivers
->   if that is their preference for any reason
-> 
+This commit adds a dt-bindings document of PECI adapter driver for ASPEED
+AST24xx/25xx SoCs.
 
-I'd prefer this for the qcom drivers at least, please let me know if you
-would like me to proceed.
+Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+Reviewed-by: Haiyue Wang <haiyue.wang@linux.intel.com>
+Reviewed-by: James Feist <james.feist@linux.intel.com>
+Reviewed-by: Vernon Mauery <vernon.mauery@linux.intel.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Greg KH <gregkh@linuxfoundation.org>
+Cc: Jason M Biils <jason.m.bills@linux.intel.com>
+Cc: Milton Miller II <miltonm@us.ibm.com>
+Cc: Pavel Machek <pavel@ucw.cz>
+Cc: Robin Murphy <robin.murphy@arm.com>
+Cc: Ryan Chen <ryan_chen@aspeedtech.com>
+---
+ .../devicetree/bindings/peci/peci-aspeed.txt  | 57 +++++++++++++++++++
+ 1 file changed, 57 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/peci/peci-aspeed.txt
 
-Regards,
-Bjorn
+diff --git a/Documentation/devicetree/bindings/peci/peci-aspeed.txt b/Documentation/devicetree/bindings/peci/peci-aspeed.txt
+new file mode 100644
+index 000000000000..8c35f905589d
+--- /dev/null
++++ b/Documentation/devicetree/bindings/peci/peci-aspeed.txt
+@@ -0,0 +1,57 @@
++Device tree configuration for PECI buses on the AST24XX and AST25XX SoCs.
++
++Required properties:
++- compatible        : Should be "aspeed,ast2400-peci" or "aspeed,ast2500-peci"
++		      - aspeed,ast2400-peci: ASPEED AST2400 family PECI
++					     controller
++		      - aspeed,ast2500-peci: ASPEED AST2500 family PECI
++					     controller
++- reg               : Should contain PECI controller registers location and
++		      length.
++- #address-cells    : Should be <1> required to define a client address.
++- #size-cells       : Should be <0> required to define a client address.
++- interrupts        : Should contain PECI controller interrupt.
++- clocks            : Should contain clock source for PECI controller. Should
++		      reference the external oscillator clock in the second
++		      cell.
++- resets            : Should contain phandle to reset controller with the reset
++		      number in the second cell.
++- clock-frequency   : Should contain the operation frequency of PECI controller
++		      in units of Hz.
++		      187500 ~ 24000000
++
++Optional properties:
++- msg-timing        : Message timing negotiation period. This value will
++		      determine the period of message timing negotiation to be
++		      issued by PECI controller. The unit of the programmed
++		      value is four times of PECI clock period.
++		      0 ~ 255 (default: 1)
++- addr-timing       : Address timing negotiation period. This value will
++		      determine the period of address timing negotiation to be
++		      issued by PECI controller. The unit of the programmed
++		      value is four times of PECI clock period.
++		      0 ~ 255 (default: 1)
++- rd-sampling-point : Read sampling point selection. The whole period of a bit
++		      time will be divided into 16 time frames. This value will
++		      determine the time frame in which the controller will
++		      sample PECI signal for data read back. Usually in the
++		      middle of a bit time is the best.
++		      0 ~ 15 (default: 8)
++- cmd-timeout-ms    : Command timeout in units of ms.
++		      1 ~ 60000 (default: 1000)
++
++Example:
++	peci0: peci-bus at 0 {
++		compatible = "aspeed,ast2500-peci";
++		reg = <0x0 0x60>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++		interrupts = <15>;
++		clocks = <&syscon ASPEED_CLK_GATE_REFCLK>;
++		resets = <&syscon ASPEED_RESET_PECI>;
++		clock-frequency = <24000000>;
++		msg-timing = <1>;
++		addr-timing = <1>;
++		rd-sampling-point = <8>;
++		cmd-timeout-ms = <1000>;
++	};
+-- 
+2.17.0
 
-> - get a pull request from Uwe for the soc tree for anything that has
->   not been picked up in one or two weeks from now
-> 
->       Arnd
