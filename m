@@ -1,11 +1,11 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Tue, 12 Jun 2018 15:07:52 +0930
-Subject: [PATCH 4/4] gpio: aspeed: Add interfaces for co-processor to grab
- GPIOs
-In-Reply-To: <20180612001043.9327-5-benh@kernel.crashing.org>
+Date: Tue, 12 Jun 2018 15:08:03 +0930
+Subject: [PATCH 2/4] gpio: aspeed: Add "Read Data" register to read the
+ write latch
+In-Reply-To: <20180612001043.9327-3-benh@kernel.crashing.org>
 References: <20180612001043.9327-1-benh@kernel.crashing.org>
- <20180612001043.9327-5-benh@kernel.crashing.org>
-Message-ID: <CACPK8XcPdf-=Xr0LRDR9=VjUHgOmTujG1TYsNEoAS31ZUP4+EQ@mail.gmail.com>
+ <20180612001043.9327-3-benh@kernel.crashing.org>
+Message-ID: <CACPK8Xf6Z8AVxt8gHnjvD+hemzq-P5nZ0C30Q+biqZtUWFO1_A@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -14,81 +14,82 @@ Content-Transfer-Encoding: 7bit
 
 On 12 June 2018 at 09:40, Benjamin Herrenschmidt
 <benh@kernel.crashing.org> wrote:
-> On the Aspeed chip, the GPIOs can be under control of the ARM
-> chip or of the ColdFire coprocessor. (There's a third command
-> source, the LPC bus, which we don't use or support yet).
+> The Aspeed GPIO hardware has a quirk: the value register, for an
+> output GPIO, doesn't contain the last value written (the write
+> latch content) but the sampled input value.
 >
-> The control of which master is allowed to modify a given
-> GPIO is per-bank (8 GPIOs).
+> This means that when reading back shortly after writing, you can
+> get an incorrect value as the input value is delayed by a few
+> synchronizers.
 >
-> Unfortunately, systems already exist for which we want to
-> use GPIOs of both sources in the same bank.
+> The HW supports a separate read-only register "Data Read Register"
+> which allows you to read the write latch instead.
 >
-> This provides an API exported by the gpio-aspeed driver
-> that an aspeed coprocessor driver can use to "grab" some
-> GPIOs for use by the coprocessor, and allow the coprocessor
-> driver to provide callbacks for arbitrating access.
->
-> Once at least one GPIO of a given bank has been "grabbed"
-> by the coprocessor, the entire bank is marked as being
-> under coprocessor control. It's command source is switched
-> to the coprocessor.
->
-> If the ARM then tries to write to a GPIO in such a marked bank,
-> the provided callbacks are used to request access from the
-> coprocessor driver, which is responsible to doing whatever
-> is necessary to "pause" the coprocessor or prevent it from
-> trying to use the GPIOs while the ARM is doing its accesses.
->
-> During that time, the command source for the bank is temporarily
-> switched back to the ARM.
+> This adds the definition for it, and uses it for the initial
+> population of the GPIO value cache. It will be used more in
+> subsequent patches.
+> can be
 >
 > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> ---
+>  drivers/gpio/gpio-aspeed.c | 17 +++++++++++++++--
+>  1 file changed, 15 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/gpio/gpio-aspeed.c b/drivers/gpio/gpio-aspeed.c
+> index 42aadd52f77d..210c3fcc7a40 100644
+> --- a/drivers/gpio/gpio-aspeed.c
+> +++ b/drivers/gpio/gpio-aspeed.c
+> @@ -59,7 +59,10 @@ struct aspeed_gpio {
+>  };
+>
+>  struct aspeed_gpio_bank {
+> -       uint16_t        val_regs;
+> +       uint16_t        val_regs;       /* 0: Wr: set write latch, Rd: read input value (*)
+> +                                        * 4: Direction (0=in, 1=out)
+> +                                        */
+> +       uint16_t        rdata_reg;      /* Wr: <none> Rd: read write latch */
 
-Looks okay to me. Just need to deal with the memory allocated.
+The numbers weren't immediately obvious to me.
 
-> +
-> +/**
-> + * aspeed_gpio_copro_grab_gpio - Mark a GPIO used by the coprocessor. The entire
-> + *                               bank gets marked and any access from the ARM will
-> + *                               result in handshaking via callbacks.
-> + * @desc: The GPIO to be marked
-> + */
-> +int aspeed_gpio_copro_grab_gpio(struct gpio_desc *desc)
-> +{
-> +       struct gpio_chip *chip = gpiod_to_chip(desc);
-> +       struct aspeed_gpio *gpio = gpiochip_get_data(chip);
-> +       int rc = 0, bindex, offset = gpio_chip_hwgpio(desc);
-> +       const struct aspeed_gpio_bank *bank = to_bank(offset);
-> +       unsigned long flags;
-> +
-> +       if (!gpio->cf_copro_bankmap)
-> +               gpio->cf_copro_bankmap = kzalloc(gpio->config->nr_gpios >> 3, GFP_KERNEL);
+>         uint16_t        irq_regs;
+>         uint16_t        debounce_regs;
+>         uint16_t        tolerance_regs;
+> @@ -71,6 +74,7 @@ static const int debounce_timers[4] = { 0x00, 0x50, 0x54, 0x58 };
+>  static const struct aspeed_gpio_bank aspeed_gpio_banks[] = {
+>         {
+>                 .val_regs = 0x0000,
+> +               .rdata_reg = 0x00c0,
+>                 .irq_regs = 0x0008,
+>                 .debounce_regs = 0x0040,
+>                 .tolerance_regs = 0x001c,
+> @@ -78,6 +82,7 @@ static const struct aspeed_gpio_bank aspeed_gpio_banks[] = {
+>         },
+>         {
+>                 .val_regs = 0x0020,
+> +               .rdata_reg = 0x00c4,
+>                 .irq_regs = 0x0028,
+>                 .debounce_regs = 0x0048,
+>                 .tolerance_regs = 0x003c,
+> @@ -85,6 +90,7 @@ static const struct aspeed_gpio_bank aspeed_gpio_banks[] = {
+>         },
+>         {
+>                 .val_regs = 0x0070,
+> +               .rdata_reg = 0x00c8,
+>                 .irq_regs = 0x0098,
+>                 .debounce_regs = 0x00b0,
+>                 .tolerance_regs = 0x00ac,
+> @@ -92,6 +98,7 @@ static const struct aspeed_gpio_bank aspeed_gpio_banks[] = {
+>         },
+>         {
+>                 .val_regs = 0x0078,
+> +               .rdata_reg = 0x00d0,
 
-Someone should free this.
+0x00cc?
 
-> +       if (!gpio->cf_copro_bankmap)
-> +               return -ENOMEM;
-> +       if (offset < 0 || offset > gpio->config->nr_gpios)
-> +               return -EINVAL;
-> +       bindex = offset >> 3;
-> +
-> +       spin_lock_irqsave(&gpio->lock, flags);
-> +
-> +       /* Sanity check, this shouldn't happen */
-> +       if (gpio->cf_copro_bankmap[bindex] == 0xff) {
-> +               rc = -EIO;
-> +               goto bail;
-> +       }
-> +       gpio->cf_copro_bankmap[bindex]++;
-> +
-> +       /* Switch command source */
-> +       if (gpio->cf_copro_bankmap[bindex] == 1)
-> +               aspeed_gpio_change_cmd_source(gpio, bank, bindex,
-> +                                             GPIO_CMDSRC_COLDFIRE);
-> +
-> + bail:
-> +       spin_unlock_irqrestore(&gpio->lock, flags);
-> +       return rc;
-> +}
-> +EXPORT_SYMBOL_GPL(aspeed_gpio_copro_grab_gpio);
+I was really confused for a second, as I'd applied the series to my
+tree for testing, and my source as correct. It looks like you fixed
+these in patch 3.
+
+>                 .irq_regs = 0x00e8,
+>                 .debounce_regs = 0x0100,
+>                 .tolerance_regs = 0x00fc,
