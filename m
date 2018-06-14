@@ -1,40 +1,40 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Fri, 15 Jun 2018 16:04:14 +1000
-Subject: [PATCH 4/4] gpio: aspeed: Add interfaces for co-processor to
- grab GPIOs
-In-Reply-To: <CACPK8XcPdf-=Xr0LRDR9=VjUHgOmTujG1TYsNEoAS31ZUP4+EQ@mail.gmail.com>
-References: <20180612001043.9327-1-benh@kernel.crashing.org>
- <20180612001043.9327-5-benh@kernel.crashing.org>
- <CACPK8XcPdf-=Xr0LRDR9=VjUHgOmTujG1TYsNEoAS31ZUP4+EQ@mail.gmail.com>
-Message-ID: <ac48488f1e92b7dabffa38977151b6c457565f0e.camel@kernel.crashing.org>
+From: Randy Dunlap <rdunlap@infradead.org>
+Date: Thu, 14 Jun 2018 13:20:04 -0700
+Subject: [PATCH] usb/gadget: aspeed-vhub: add USB_LIBCOMPOSITE dependency
+In-Reply-To: <71cfc192be06d07e79bfdfe43a566d3260e19cd6.camel@kernel.crashing.org>
+References: <20180525160729.92026-1-arnd@arndb.de>
+ <87o9gxcono.fsf@linux.intel.com>
+ <71cfc192be06d07e79bfdfe43a566d3260e19cd6.camel@kernel.crashing.org>
+Message-ID: <db22cad5-c25f-1b34-1784-5df5ed1ac0b2@infradead.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-
-> > +
-> > +/**
-> > + * aspeed_gpio_copro_grab_gpio - Mark a GPIO used by the coprocessor. The entire
-> > + *                               bank gets marked and any access from the ARM will
-> > + *                               result in handshaking via callbacks.
-> > + * @desc: The GPIO to be marked
-> > + */
-> > +int aspeed_gpio_copro_grab_gpio(struct gpio_desc *desc)
-> > +{
-> > +       struct gpio_chip *chip = gpiod_to_chip(desc);
-> > +       struct aspeed_gpio *gpio = gpiochip_get_data(chip);
-> > +       int rc = 0, bindex, offset = gpio_chip_hwgpio(desc);
-> > +       const struct aspeed_gpio_bank *bank = to_bank(offset);
-> > +       unsigned long flags;
-> > +
-> > +       if (!gpio->cf_copro_bankmap)
-> > +               gpio->cf_copro_bankmap = kzalloc(gpio->config->nr_gpios >> 3, GFP_KERNEL);
+On 06/11/2018 09:29 PM, Benjamin Herrenschmidt wrote:
+> On Wed, 2018-05-30 at 15:29 +0300, Felipe Balbi wrote:
+>> Hi,
+>>
+>> Arnd Bergmann <arnd@arndb.de> writes:
+>>> Without that option, we run into a link failure:
+>>>
+>>> drivers/usb/gadget/udc/aspeed-vhub/hub.o: In function `ast_vhub_std_hub_request':
+>>> hub.c:(.text+0x5b0): undefined reference to `usb_gadget_get_string'
+>>>
+>>> Fixes: 7ecca2a4080c ("usb/gadget: Add driver for Aspeed SoC virtual hub")
+>>> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+>>
+>> Acked-by: Felipe Balbi <felipe.balbi@linux.intel.com>
 > 
-> Someone should free this.
+> Greg, can you send this to Linus asap ? Some people are hitting build
+> breakages upstream because of this.
 
-Actually no. The driver doesn't have a remove(), so it doesn't.
+Agreed.
 
-Cheers,
-Ben.
+> Thanks !
+
+ditto.
+
+-- 
+~Randy
