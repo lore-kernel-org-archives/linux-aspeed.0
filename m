@@ -1,40 +1,23 @@
-From: Randy Dunlap <rdunlap@infradead.org>
-Date: Thu, 14 Jun 2018 13:20:04 -0700
-Subject: [PATCH] usb/gadget: aspeed-vhub: add USB_LIBCOMPOSITE dependency
-In-Reply-To: <71cfc192be06d07e79bfdfe43a566d3260e19cd6.camel@kernel.crashing.org>
-References: <20180525160729.92026-1-arnd@arndb.de>
- <87o9gxcono.fsf@linux.intel.com>
- <71cfc192be06d07e79bfdfe43a566d3260e19cd6.camel@kernel.crashing.org>
-Message-ID: <db22cad5-c25f-1b34-1784-5df5ed1ac0b2@infradead.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Mon, 18 Jun 2018 14:53:48 +1000
+Subject: [PATCH v2 0/4] gpio: aspeed: Fixes and support for sharing with
+ co-processor
+Message-ID: <20180618045352.9489-1-benh@kernel.crashing.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 06/11/2018 09:29 PM, Benjamin Herrenschmidt wrote:
-> On Wed, 2018-05-30 at 15:29 +0300, Felipe Balbi wrote:
->> Hi,
->>
->> Arnd Bergmann <arnd@arndb.de> writes:
->>> Without that option, we run into a link failure:
->>>
->>> drivers/usb/gadget/udc/aspeed-vhub/hub.o: In function `ast_vhub_std_hub_request':
->>> hub.c:(.text+0x5b0): undefined reference to `usb_gadget_get_string'
->>>
->>> Fixes: 7ecca2a4080c ("usb/gadget: Add driver for Aspeed SoC virtual hub")
->>> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
->>
->> Acked-by: Felipe Balbi <felipe.balbi@linux.intel.com>
-> 
-> Greg, can you send this to Linus asap ? Some people are hitting build
-> breakages upstream because of this.
+This series cleans up the register accessors a bit, adds missing ones,
+fixes the access to the write latch and finally adds an interface
+that a co-processor driver can use to change the owner of some of
+the GPIO lines and arbitrate access to shared GPIO banks.
 
-Agreed.
+v2: - Address Joel comments
 
-> Thanks !
+NOTE: I haven't changed the inclusion of gpio/consumer.h and gpiolib.h
+      as, according to my replies, I do actually need them. I'm happy
+      to use an alternative if somebody can suggest a reasonable one.
 
-ditto.
 
--- 
-~Randy
