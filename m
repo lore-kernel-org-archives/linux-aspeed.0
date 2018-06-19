@@ -1,45 +1,74 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Tue, 19 Jun 2018 10:08:30 +0930
-Subject: [PATCH v2 4/4] gpio: aspeed: Add interfaces for co-processor to
- grab GPIOs
-In-Reply-To: <f0cf23fe554f2ab75ab07b164cfc6abc3b08fcfc.camel@kernel.crashing.org>
-References: <20180618045352.9489-1-benh@kernel.crashing.org>
- <20180618045352.9489-5-benh@kernel.crashing.org>
- <1529331800.1957459.1411835160.214215C7@webmail.messagingengine.com>
- <f330ef1074ba7a22ff06cc0dbcddd7455f238905.camel@kernel.crashing.org>
- <f0cf23fe554f2ab75ab07b164cfc6abc3b08fcfc.camel@kernel.crashing.org>
-Message-ID: <1529368710.3796157.1412500456.3B6BEC0C@webmail.messagingengine.com>
+From: Joel Stanley <joel@jms.id.au>
+Date: Tue, 19 Jun 2018 16:26:25 +0930
+Subject: [PATCH v2 2/4] dt-bindings: misc: Aspeed coprocessor interrupt
+ controller
+In-Reply-To: <20180618045902.11453-3-benh@kernel.crashing.org>
+References: <20180618045902.11453-1-benh@kernel.crashing.org>
+ <20180618045902.11453-3-benh@kernel.crashing.org>
+Message-ID: <CACPK8XfCZA7m++KeJ1GyPAbBXPmyhebEkvb+R41Xy1iuGvkbLw@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, 19 Jun 2018, at 10:06, Benjamin Herrenschmidt wrote:
-> On Tue, 2018-06-19 at 00:38 +1000, Benjamin Herrenschmidt wrote:
-> > On Mon, 2018-06-18 at 23:53 +0930, Andrew Jeffery wrote:
-> > > 
-> > > >   static inline int irqd_to_aspeed_gpio_data(struct irq_data *d,
-> > > > -           struct aspeed_gpio **gpio,
-> > > > -           const struct aspeed_gpio_bank **bank,
-> > > > -           u32 *bit)
-> > > > +                                      struct aspeed_gpio **gpio,
-> > > > +                                      const struct aspeed_gpio_bank **bank,
-> > > > +                                      u32 *bit, int *offset)
-> > > >   {
-> > > > -   int offset;
-> > > >      struct aspeed_gpio *internal;
-> > > >   
-> > > > -   offset = irqd_to_hwirq(d);
-> > > > +   *offset = irqd_to_hwirq(d);
-> > > 
-> > > Nit: Did you intend to set this out parameter before potentially returning an error? I had tried to avoid that up until now.
-> > 
-> > Yeah it's constant-ish, I don't see why not
-> 
-> I mean it's a pure function of the input, it's not like there's any
-> special side effect that one may want to avoid in case of error.
+On 18 June 2018 at 14:29, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+> Add the device-tree binding definition for the AST2400
+> and AST2500 coprocessor interrupt controller
+>
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> ---
+>  .../devicetree/bindings/misc/aspeed,cvic.txt  | 35 +++++++++++++++++++
+>  1 file changed, 35 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/misc/aspeed,cvic.txt
+>
+> diff --git a/Documentation/devicetree/bindings/misc/aspeed,cvic.txt b/Documentation/devicetree/bindings/misc/aspeed,cvic.txt
+> new file mode 100644
+> index 000000000000..2562e2991e4d
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/misc/aspeed,cvic.txt
 
-Right. Thanks for clarifying. Seems reasonable.
+Is there a reason you didn't put this in bindings/interrupt-controller?
 
-Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
+Aside from that this looks good.
+
+> @@ -0,0 +1,35 @@
+> +* Aspeed AST2400 and AST2500 coprocessor interrupt controller
+> +
+> +This file describes the bindings for the interrupt controller present
+> +in the AST2400 and AST2500 BMC SoCs which provides interrupt to the
+> +ColdFire coprocessor.
+> +
+> +It is not a normal interrupt controller and it would be rather
+> +inconvenient to create an interrupt tree for it as it somewhat shares
+> +some of the same sources as the main ARM interrupt controller but with
+> +different numbers.
+> +
+> +The AST2500 supports a SW generated interrupt
+> +
+> +Required properties:
+> +- reg: address and length of the register for the device.
+> +- compatible: "aspeed,cvic" and one of:
+> +               "aspeed,ast2400-cvic"
+> +             or
+> +               "aspeed,ast2500-cvic"
+> +
+> +- valid-sources: One cell, bitmap of supported sources for the implementation
+> +
+> +Optional properties;
+> +- copro-sw-interrupts: List of interrupt numbers that can be used as
+> +                      SW interrupts from the ARM to the coprocessor.
+> +                      (AST2500 only)
+> +
+> +Example:
+> +
+> +       cvic: copro-interrupt-controller at 1e6c2000 {
+> +               compatible = "aspeed,ast2500-cvic";
+> +               valid-sources = <0xffffffff>;
+> +               copro-sw-interrupts = <1>;
+> +               reg = <0x1e6c2000 0x80>;
+> +       };
+> --
+> 2.17.1
+>
