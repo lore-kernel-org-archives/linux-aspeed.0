@@ -1,88 +1,98 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Thu, 21 Jun 2018 09:05:17 +1000
-Subject: [PATCH v2 2/4] dt-bindings: misc: Aspeed coprocessor interrupt
- controller
-In-Reply-To: <20180620194937.GA5088@rob-hp-laptop>
-References: <20180618045902.11453-1-benh@kernel.crashing.org>
- <20180618045902.11453-3-benh@kernel.crashing.org>
- <20180620194937.GA5088@rob-hp-laptop>
-Message-ID: <6ee0bd705178a4db464c3d2ef22fedc44b7d66b0.camel@kernel.crashing.org>
+From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+Date: Thu, 21 Jun 2018 12:40:24 -0700
+Subject: [PATCH linux-next v6 04/13] dt-bindings: Add a document of PECI
+ adapter driver for ASPEED AST24xx/25xx SoCs
+In-Reply-To: <20180621193721.20588-1-jae.hyun.yoo@linux.intel.com>
+References: <20180621193721.20588-1-jae.hyun.yoo@linux.intel.com>
+Message-ID: <20180621194024.20771-1-jae.hyun.yoo@linux.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 2018-06-20 at 13:49 -0600, Rob Herring wrote:
-> On Mon, Jun 18, 2018 at 02:59:00PM +1000, Benjamin Herrenschmidt wrote:
-> > Add the device-tree binding definition for the AST2400
-> > and AST2500 coprocessor interrupt controller
-> > 
-> > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> > ---
-> >  .../devicetree/bindings/misc/aspeed,cvic.txt  | 35 +++++++++++++++++++
-> >  1 file changed, 35 insertions(+)
-> >  create mode 100644 Documentation/devicetree/bindings/misc/aspeed,cvic.txt
-> > 
-> > diff --git a/Documentation/devicetree/bindings/misc/aspeed,cvic.txt b/Documentation/devicetree/bindings/misc/aspeed,cvic.txt
-> > new file mode 100644
-> > index 000000000000..2562e2991e4d
-> > --- /dev/null
-> > +++ b/Documentation/devicetree/bindings/misc/aspeed,cvic.txt
-> > @@ -0,0 +1,35 @@
-> > +* Aspeed AST2400 and AST2500 coprocessor interrupt controller
-> > +
-> > +This file describes the bindings for the interrupt controller present
-> > +in the AST2400 and AST2500 BMC SoCs which provides interrupt to the
-> > +ColdFire coprocessor.
-> > +
-> > +It is not a normal interrupt controller and it would be rather
-> > +inconvenient to create an interrupt tree for it as it somewhat shares
-> > +some of the same sources as the main ARM interrupt controller but with
-> > +different numbers.
-> > +
-> > +The AST2500 supports a SW generated interrupt
-> > +
-> > +Required properties:
-> > +- reg: address and length of the register for the device.
-> > +- compatible: "aspeed,cvic" and one of:
-> > +		"aspeed,ast2400-cvic"
-> > +	      or
-> > +		"aspeed,ast2500-cvic"
-> > +
-> > +- valid-sources: One cell, bitmap of supported sources for the implementation
-> 
-> aspeed,valid-sources
-> 
-> This could use a better description. I thought this was which bits to 
-> use for s/w irq, but then I read the next property...
-> 
-> Alternatively, why can't this be implied by the compatible?
+This commit adds a dt-bindings document of PECI adapter driver for ASPEED
+AST24xx/25xx SoCs.
 
-It could, I'm happy to drop it, I don't actually use it in SW.
+Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+Reviewed-by: Haiyue Wang <haiyue.wang@linux.intel.com>
+Reviewed-by: James Feist <james.feist@linux.intel.com>
+Reviewed-by: Vernon Mauery <vernon.mauery@linux.intel.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Greg KH <gregkh@linuxfoundation.org>
+Cc: Jason M Biils <jason.m.bills@linux.intel.com>
+Cc: Milton Miller II <miltonm@us.ibm.com>
+Cc: Pavel Machek <pavel@ucw.cz>
+Cc: Robin Murphy <robin.murphy@arm.com>
+Cc: Ryan Chen <ryan_chen@aspeedtech.com>
+---
+ .../devicetree/bindings/peci/peci-aspeed.txt  | 57 +++++++++++++++++++
+ 1 file changed, 57 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/peci/peci-aspeed.txt
 
-Cheers,
-Ben.
+diff --git a/Documentation/devicetree/bindings/peci/peci-aspeed.txt b/Documentation/devicetree/bindings/peci/peci-aspeed.txt
+new file mode 100644
+index 000000000000..8c35f905589d
+--- /dev/null
++++ b/Documentation/devicetree/bindings/peci/peci-aspeed.txt
+@@ -0,0 +1,57 @@
++Device tree configuration for PECI buses on the AST24XX and AST25XX SoCs.
++
++Required properties:
++- compatible        : Should be "aspeed,ast2400-peci" or "aspeed,ast2500-peci"
++		      - aspeed,ast2400-peci: ASPEED AST2400 family PECI
++					     controller
++		      - aspeed,ast2500-peci: ASPEED AST2500 family PECI
++					     controller
++- reg               : Should contain PECI controller registers location and
++		      length.
++- #address-cells    : Should be <1> required to define a client address.
++- #size-cells       : Should be <0> required to define a client address.
++- interrupts        : Should contain PECI controller interrupt.
++- clocks            : Should contain clock source for PECI controller. Should
++		      reference the external oscillator clock in the second
++		      cell.
++- resets            : Should contain phandle to reset controller with the reset
++		      number in the second cell.
++- clock-frequency   : Should contain the operation frequency of PECI controller
++		      in units of Hz.
++		      187500 ~ 24000000
++
++Optional properties:
++- msg-timing        : Message timing negotiation period. This value will
++		      determine the period of message timing negotiation to be
++		      issued by PECI controller. The unit of the programmed
++		      value is four times of PECI clock period.
++		      0 ~ 255 (default: 1)
++- addr-timing       : Address timing negotiation period. This value will
++		      determine the period of address timing negotiation to be
++		      issued by PECI controller. The unit of the programmed
++		      value is four times of PECI clock period.
++		      0 ~ 255 (default: 1)
++- rd-sampling-point : Read sampling point selection. The whole period of a bit
++		      time will be divided into 16 time frames. This value will
++		      determine the time frame in which the controller will
++		      sample PECI signal for data read back. Usually in the
++		      middle of a bit time is the best.
++		      0 ~ 15 (default: 8)
++- cmd-timeout-ms    : Command timeout in units of ms.
++		      1 ~ 60000 (default: 1000)
++
++Example:
++	peci0: peci-bus at 0 {
++		compatible = "aspeed,ast2500-peci";
++		reg = <0x0 0x60>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++		interrupts = <15>;
++		clocks = <&syscon ASPEED_CLK_GATE_REFCLK>;
++		resets = <&syscon ASPEED_RESET_PECI>;
++		clock-frequency = <24000000>;
++		msg-timing = <1>;
++		addr-timing = <1>;
++		rd-sampling-point = <8>;
++		cmd-timeout-ms = <1000>;
++	};
+-- 
+2.17.1
 
-> > +
-> > +Optional properties;
-> > +- copro-sw-interrupts: List of interrupt numbers that can be used as
-> > +		       SW interrupts from the ARM to the coprocessor.
-> > +		       (AST2500 only)
-> > +
-> > +Example:
-> > +
-> > +	cvic: copro-interrupt-controller at 1e6c2000 {
-> > +		compatible = "aspeed,ast2500-cvic";
-> > +		valid-sources = <0xffffffff>;
-> > +		copro-sw-interrupts = <1>;
-> > +		reg = <0x1e6c2000 0x80>;
-> > +	};
-> > -- 
-> > 2.17.1
-> > 
-> > 
-> > _______________________________________________
-> > linux-arm-kernel mailing list
-> > linux-arm-kernel at lists.infradead.org
-> > http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
