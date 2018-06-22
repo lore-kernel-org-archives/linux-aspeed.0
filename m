@@ -1,159 +1,178 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Fri, 22 Jun 2018 12:04:46 +1000
-Subject: [PATCH v3 2/4] gpio: aspeed: Add "Read Data" register to read the
- write latch
+Date: Fri, 22 Jun 2018 12:04:47 +1000
+Subject: [PATCH v3 3/4] gpio: aspeed: Add command source registers
 In-Reply-To: <20180622020448.6102-1-benh@kernel.crashing.org>
 References: <20180622020448.6102-1-benh@kernel.crashing.org>
-Message-ID: <20180622020448.6102-3-benh@kernel.crashing.org>
+Message-ID: <20180622020448.6102-4-benh@kernel.crashing.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The Aspeed GPIO hardware has a quirk: the value register, for an
-output GPIO, doesn't contain the last value written (the write
-latch content) but the sampled input value.
+This adds the definitions for the command source registers
+and a helper to set them.
 
-This means that when reading back shortly after writing, you can
-get an incorrect value as the input value is delayed by a few
-synchronizers.
-
-The HW supports a separate read-only register "Data Read Register"
-which allows you to read the write latch instead.
-
-This adds the definition for it, and uses it for the initial
-population of the GPIO value cache. It will be used more in
-subsequent patches.
+Those registers allow to control which bus master on the
+SoC is allowed to modify a given bank of GPIOs and will
+be used by subsequent patches.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Reviewed-by: Joel Stanley <joel@jms.id.au>
 Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
 ---
- drivers/gpio/gpio-aspeed.c | 29 +++++++++++++++++++++++++++--
- 1 file changed, 27 insertions(+), 2 deletions(-)
+ drivers/gpio/gpio-aspeed.c | 54 ++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 54 insertions(+)
 
 diff --git a/drivers/gpio/gpio-aspeed.c b/drivers/gpio/gpio-aspeed.c
-index c9baeeb7f0cc..a5ded50c6db0 100644
+index a5ded50c6db0..b3968f66b1d2 100644
 --- a/drivers/gpio/gpio-aspeed.c
 +++ b/drivers/gpio/gpio-aspeed.c
-@@ -59,18 +59,33 @@ struct aspeed_gpio {
- };
- 
- struct aspeed_gpio_bank {
--	uint16_t	val_regs;
-+	uint16_t	val_regs;	/* +0: Rd: read input value, Wr: set write latch
-+					 * +4: Rd/Wr: Direction (0=in, 1=out)
-+					 */
-+	uint16_t	rdata_reg;	/*     Rd: read write latch, Wr: <none>  */
+@@ -66,6 +66,7 @@ struct aspeed_gpio_bank {
  	uint16_t	irq_regs;
  	uint16_t	debounce_regs;
  	uint16_t	tolerance_regs;
++	uint16_t	cmdsrc_regs;
  	const char	names[4][3];
  };
  
-+/*
-+ * Note: The "value" register returns the input value sampled on the
-+ *       line even when the GPIO is configured as an output. Since
-+ *       that input goes through synchronizers, writing, then reading
-+ *       back may not return the written value right away.
-+ *
-+ *       The "rdata" register returns the content of the write latch
-+ *       and thus can be used to read back what was last written
-+ *       reliably.
-+ */
-+
- static const int debounce_timers[4] = { 0x00, 0x50, 0x54, 0x58 };
- 
- static const struct aspeed_gpio_bank aspeed_gpio_banks[] = {
- 	{
- 		.val_regs = 0x0000,
-+		.rdata_reg = 0x00c0,
+@@ -89,6 +90,7 @@ static const struct aspeed_gpio_bank aspeed_gpio_banks[] = {
  		.irq_regs = 0x0008,
  		.debounce_regs = 0x0040,
  		.tolerance_regs = 0x001c,
-@@ -78,6 +93,7 @@ static const struct aspeed_gpio_bank aspeed_gpio_banks[] = {
++		.cmdsrc_regs = 0x0060,
+ 		.names = { "A", "B", "C", "D" },
  	},
  	{
- 		.val_regs = 0x0020,
-+		.rdata_reg = 0x00c4,
+@@ -97,6 +99,7 @@ static const struct aspeed_gpio_bank aspeed_gpio_banks[] = {
  		.irq_regs = 0x0028,
  		.debounce_regs = 0x0048,
  		.tolerance_regs = 0x003c,
-@@ -85,6 +101,7 @@ static const struct aspeed_gpio_bank aspeed_gpio_banks[] = {
++		.cmdsrc_regs = 0x0068,
+ 		.names = { "E", "F", "G", "H" },
  	},
  	{
- 		.val_regs = 0x0070,
-+		.rdata_reg = 0x00c8,
+@@ -105,6 +108,7 @@ static const struct aspeed_gpio_bank aspeed_gpio_banks[] = {
  		.irq_regs = 0x0098,
  		.debounce_regs = 0x00b0,
  		.tolerance_regs = 0x00ac,
-@@ -92,6 +109,7 @@ static const struct aspeed_gpio_bank aspeed_gpio_banks[] = {
++		.cmdsrc_regs = 0x0090,
+ 		.names = { "I", "J", "K", "L" },
  	},
  	{
- 		.val_regs = 0x0078,
-+		.rdata_reg = 0x00cc,
+@@ -113,6 +117,7 @@ static const struct aspeed_gpio_bank aspeed_gpio_banks[] = {
  		.irq_regs = 0x00e8,
  		.debounce_regs = 0x0100,
  		.tolerance_regs = 0x00fc,
-@@ -99,6 +117,7 @@ static const struct aspeed_gpio_bank aspeed_gpio_banks[] = {
++		.cmdsrc_regs = 0x00e0,
+ 		.names = { "M", "N", "O", "P" },
  	},
  	{
- 		.val_regs = 0x0080,
-+		.rdata_reg = 0x00d0,
+@@ -121,6 +126,7 @@ static const struct aspeed_gpio_bank aspeed_gpio_banks[] = {
  		.irq_regs = 0x0118,
  		.debounce_regs = 0x0130,
  		.tolerance_regs = 0x012c,
-@@ -106,6 +125,7 @@ static const struct aspeed_gpio_bank aspeed_gpio_banks[] = {
++		.cmdsrc_regs = 0x0110,
+ 		.names = { "Q", "R", "S", "T" },
  	},
  	{
- 		.val_regs = 0x0088,
-+		.rdata_reg = 0x00d4,
+@@ -129,6 +135,7 @@ static const struct aspeed_gpio_bank aspeed_gpio_banks[] = {
  		.irq_regs = 0x0148,
  		.debounce_regs = 0x0160,
  		.tolerance_regs = 0x015c,
-@@ -113,6 +133,7 @@ static const struct aspeed_gpio_bank aspeed_gpio_banks[] = {
++		.cmdsrc_regs = 0x0140,
+ 		.names = { "U", "V", "W", "X" },
  	},
  	{
- 		.val_regs = 0x01E0,
-+		.rdata_reg = 0x00d8,
+@@ -137,6 +144,7 @@ static const struct aspeed_gpio_bank aspeed_gpio_banks[] = {
  		.irq_regs = 0x0178,
  		.debounce_regs = 0x0190,
  		.tolerance_regs = 0x018c,
-@@ -120,6 +141,7 @@ static const struct aspeed_gpio_bank aspeed_gpio_banks[] = {
++		.cmdsrc_regs = 0x0170,
+ 		.names = { "Y", "Z", "AA", "AB" },
  	},
  	{
- 		.val_regs = 0x01e8,
-+		.rdata_reg = 0x00dc,
+@@ -145,6 +153,7 @@ static const struct aspeed_gpio_bank aspeed_gpio_banks[] = {
  		.irq_regs = 0x01a8,
  		.debounce_regs = 0x01c0,
  		.tolerance_regs = 0x01bc,
-@@ -129,6 +151,7 @@ static const struct aspeed_gpio_bank aspeed_gpio_banks[] = {
++		.cmdsrc_regs = 0x01a0,
+ 		.names = { "AC", "", "", "" },
+ 	},
+ };
+@@ -161,6 +170,8 @@ enum aspeed_gpio_reg {
+ 	reg_debounce_sel1,
+ 	reg_debounce_sel2,
+ 	reg_tolerance,
++	reg_cmdsrc0,
++	reg_cmdsrc1,
+ };
  
- enum aspeed_gpio_reg {
- 	reg_val,
-+	reg_rdata,
- 	reg_dir,
- 	reg_irq_enable,
- 	reg_irq_type0,
-@@ -160,6 +183,8 @@ static inline void __iomem *bank_reg(struct aspeed_gpio *gpio,
- 	switch (reg) {
- 	case reg_val:
- 		return gpio->base + bank->val_regs + GPIO_VAL_VALUE;
-+	case reg_rdata:
-+		return gpio->base + bank->rdata_reg;
- 	case reg_dir:
- 		return gpio->base + bank->val_regs + GPIO_VAL_DIR;
- 	case reg_irq_enable:
-@@ -925,7 +950,7 @@ static int __init aspeed_gpio_probe(struct platform_device *pdev)
+ #define GPIO_VAL_VALUE	0x00
+@@ -175,6 +186,13 @@ enum aspeed_gpio_reg {
+ #define GPIO_DEBOUNCE_SEL1 0x00
+ #define GPIO_DEBOUNCE_SEL2 0x04
  
- 	/* Populate it with initial values read from the HW */
- 	for (i = 0; i < banks; i++) {
--		void __iomem *addr = bank_reg(gpio, &aspeed_gpio_banks[i], reg_val);
-+		void __iomem *addr = bank_reg(gpio, &aspeed_gpio_banks[i], reg_rdata);
- 		gpio->dcache[i] = ioread32(addr);
++#define GPIO_CMDSRC_0	0x00
++#define GPIO_CMDSRC_1	0x04
++#define  GPIO_CMDSRC_ARM		0
++#define  GPIO_CMDSRC_LPC		1
++#define  GPIO_CMDSRC_COLDFIRE		2
++#define  GPIO_CMDSRC_RESERVED		3
++
+ /* This will be resolved at compile time */
+ static inline void __iomem *bank_reg(struct aspeed_gpio *gpio,
+ 				     const struct aspeed_gpio_bank *bank,
+@@ -203,6 +221,10 @@ static inline void __iomem *bank_reg(struct aspeed_gpio *gpio,
+ 		return gpio->base + bank->debounce_regs + GPIO_DEBOUNCE_SEL2;
+ 	case reg_tolerance:
+ 		return gpio->base + bank->tolerance_regs;
++	case reg_cmdsrc0:
++		return gpio->base + bank->cmdsrc_regs + GPIO_CMDSRC_0;
++	case reg_cmdsrc1:
++		return gpio->base + bank->cmdsrc_regs + GPIO_CMDSRC_1;
  	}
+ 	BUG_ON(1);
+ }
+@@ -269,6 +291,38 @@ static inline bool have_output(struct aspeed_gpio *gpio, unsigned int offset)
+ 	return !props || (props->output & GPIO_BIT(offset));
+ }
  
++static void aspeed_gpio_change_cmd_source(struct aspeed_gpio *gpio,
++					  const struct aspeed_gpio_bank *bank,
++					  int bindex, int cmdsrc)
++{
++	void __iomem *c0 = bank_reg(gpio, bank, reg_cmdsrc0);
++	void __iomem *c1 = bank_reg(gpio, bank, reg_cmdsrc1);
++	u32 bit, reg;
++
++	/*
++	 * Each register controls 4 banks, so take the bottom 2
++	 * bits of the bank index, and use them to select the
++	 * right control bit (0, 8, 16 or 24).
++	 */
++	bit = BIT((bindex & 3) << 3);
++
++	/* Source 1 first to avoid illegal 11 combination */
++	reg = ioread32(c1);
++	if (cmdsrc & 2)
++		reg |= bit;
++	else
++		reg &= ~bit;
++	iowrite32(reg, c1);
++
++	/* Then Source 0 */
++	reg = ioread32(c0);
++	if (cmdsrc & 1)
++		reg |= bit;
++	else
++		reg &= ~bit;
++	iowrite32(reg, c0);
++}
++
+ static int aspeed_gpio_get(struct gpio_chip *gc, unsigned int offset)
+ {
+ 	struct aspeed_gpio *gpio = gpiochip_get_data(gc);
 -- 
 2.17.1
 
