@@ -1,135 +1,140 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Fri, 22 Jun 2018 14:31:22 +1000
-Subject: [RFC PATCH 02/14] fsi: Move code around to avoid forward declaration
-In-Reply-To: <20180622043134.18238-1-benh@kernel.crashing.org>
-References: <20180622043134.18238-1-benh@kernel.crashing.org>
-Message-ID: <20180622043134.18238-3-benh@kernel.crashing.org>
+From: Cédric Le Goater <clg@kaod.org>
+Date: Fri, 22 Jun 2018 14:14:15 +0200
+Subject: [PATCH 2/4] mtd: spi-nor: aspeed: add support for SPI dual IO read
+ mode
+In-Reply-To: <20180622121417.6762-1-clg@kaod.org>
+References: <20180622121417.6762-1-clg@kaod.org>
+Message-ID: <20180622121417.6762-3-clg@kaod.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-Move fsi_slave_set_smode() and its helpers to before it's
-first user and remove the corresponding forward declaration.
+Implements support for the dual IO read mode on aspeed SMC/FMC
+controllers which uses both MISO and MOSI lines for data during a read
+to double the read bandwidth.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Still to be done SNOR_PROTO_1_2_2
+
+Based on work from Robert Lippert <roblip@gmail.com>
+
+Signed-off-by: C=C3=A9dric Le Goater <clg@kaod.org>
 ---
- drivers/fsi/fsi-core.c | 94 +++++++++++++++++++++---------------------
- 1 file changed, 46 insertions(+), 48 deletions(-)
+ drivers/mtd/spi-nor/aspeed-smc.c | 56 +++++++++++++++++++++++++++++++-----=
+----
+ 1 file changed, 44 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/fsi/fsi-core.c b/drivers/fsi/fsi-core.c
-index 565218872635..2f6f9b8c75e4 100644
---- a/drivers/fsi/fsi-core.c
-+++ b/drivers/fsi/fsi-core.c
-@@ -215,7 +215,52 @@ static int fsi_slave_report_and_clear_errors(struct fsi_slave *slave)
- 			&irq, sizeof(irq));
+diff --git a/drivers/mtd/spi-nor/aspeed-smc.c b/drivers/mtd/spi-nor/aspeed-=
+smc.c
+index af84a6fa2360..054614f34698 100644
+--- a/drivers/mtd/spi-nor/aspeed-smc.c
++++ b/drivers/mtd/spi-nor/aspeed-smc.c
+@@ -373,18 +373,49 @@ static void aspeed_smc_send_cmd_addr(struct spi_nor *=
+nor, u8 cmd, u32 addr)
+ 	}
  }
- 
--static int fsi_slave_set_smode(struct fsi_master *master, int link, int id);
-+/* Encode slave local bus echo delay */
-+static inline uint32_t fsi_smode_echodly(int x)
+=20
++static int aspeed_smc_get_io_mode(struct aspeed_smc_chip *chip)
 +{
-+	return (x & FSI_SMODE_ED_MASK) << FSI_SMODE_ED_SHIFT;
++	switch (chip->nor.read_proto) {
++	case SNOR_PROTO_1_1_1:
++		return 0;
++	case SNOR_PROTO_1_1_2:
++		return CONTROL_IO_DUAL_DATA;
++	case SNOR_PROTO_1_2_2:
++		return CONTROL_IO_DUAL_ADDR_DATA;
++	default:
++		dev_err(chip->nor.dev, "unsupported SPI read mode\n");
++		return -EINVAL;
++	}
 +}
 +
-+/* Encode slave local bus send delay */
-+static inline uint32_t fsi_smode_senddly(int x)
++static void aspeed_smc_set_io_mode(struct aspeed_smc_chip *chip, u32 io_mo=
+de)
 +{
-+	return (x & FSI_SMODE_SD_MASK) << FSI_SMODE_SD_SHIFT;
++	u32 ctl;
++
++	if (io_mode > 0) {
++		ctl =3D readl(chip->ctl) & ~CONTROL_IO_MODE_MASK;
++		ctl |=3D io_mode;
++		writel(ctl, chip->ctl);
++	}
 +}
 +
-+/* Encode slave local bus clock rate ratio */
-+static inline uint32_t fsi_smode_lbcrr(int x)
-+{
-+	return (x & FSI_SMODE_LBCRR_MASK) << FSI_SMODE_LBCRR_SHIFT;
-+}
-+
-+/* Encode slave ID */
-+static inline uint32_t fsi_smode_sid(int x)
-+{
-+	return (x & FSI_SMODE_SID_MASK) << FSI_SMODE_SID_SHIFT;
-+}
-+
-+static uint32_t fsi_slave_smode(int id)
-+{
-+	return FSI_SMODE_WSC | FSI_SMODE_ECRC
-+		| fsi_smode_sid(id)
-+		| fsi_smode_echodly(0xf) | fsi_smode_senddly(0xf)
-+		| fsi_smode_lbcrr(0x8);
-+}
-+
-+static int fsi_slave_set_smode(struct fsi_master *master, int link, int id)
-+{
-+	uint32_t smode;
-+	__be32 data;
-+
-+	/* set our smode register with the slave ID field to 0; this enables
-+	 * extended slave addressing
-+	 */
-+	smode = fsi_slave_smode(id);
-+	data = cpu_to_be32(smode);
-+
-+	return fsi_master_write(master, link, id, FSI_SLAVE_BASE + FSI_SMODE,
-+			&data, sizeof(data));
-+}
- 
- static int fsi_slave_handle_error(struct fsi_slave *slave, bool write,
- 				  uint32_t addr, size_t size)
-@@ -569,53 +614,6 @@ static const struct bin_attribute fsi_slave_term_attr = {
- 	.write = fsi_slave_sysfs_term_write,
- };
- 
--/* Encode slave local bus echo delay */
--static inline uint32_t fsi_smode_echodly(int x)
--{
--	return (x & FSI_SMODE_ED_MASK) << FSI_SMODE_ED_SHIFT;
--}
--
--/* Encode slave local bus send delay */
--static inline uint32_t fsi_smode_senddly(int x)
--{
--	return (x & FSI_SMODE_SD_MASK) << FSI_SMODE_SD_SHIFT;
--}
--
--/* Encode slave local bus clock rate ratio */
--static inline uint32_t fsi_smode_lbcrr(int x)
--{
--	return (x & FSI_SMODE_LBCRR_MASK) << FSI_SMODE_LBCRR_SHIFT;
--}
--
--/* Encode slave ID */
--static inline uint32_t fsi_smode_sid(int x)
--{
--	return (x & FSI_SMODE_SID_MASK) << FSI_SMODE_SID_SHIFT;
--}
--
--static uint32_t fsi_slave_smode(int id)
--{
--	return FSI_SMODE_WSC | FSI_SMODE_ECRC
--		| fsi_smode_sid(id)
--		| fsi_smode_echodly(0xf) | fsi_smode_senddly(0xf)
--		| fsi_smode_lbcrr(0x8);
--}
--
--static int fsi_slave_set_smode(struct fsi_master *master, int link, int id)
--{
--	uint32_t smode;
--	__be32 data;
--
--	/* set our smode register with the slave ID field to 0; this enables
--	 * extended slave addressing
--	 */
--	smode = fsi_slave_smode(id);
--	data = cpu_to_be32(smode);
--
--	return fsi_master_write(master, link, id, FSI_SLAVE_BASE + FSI_SMODE,
--			&data, sizeof(data));
--}
--
- static void fsi_slave_release(struct device *dev)
+ static ssize_t aspeed_smc_read_user(struct spi_nor *nor, loff_t from,
+ 				    size_t len, u_char *read_buf)
  {
- 	struct fsi_slave *slave = to_fsi_slave(dev);
--- 
-2.17.1
+ 	struct aspeed_smc_chip *chip =3D nor->priv;
+ 	int i;
+ 	u8 dummy =3D 0xFF;
++	int io_mode =3D aspeed_smc_get_io_mode(chip);
+=20
+ 	aspeed_smc_start_user(nor);
+ 	aspeed_smc_send_cmd_addr(nor, nor->read_opcode, from);
+ 	for (i =3D 0; i < chip->nor.read_dummy / 8; i++)
+ 		aspeed_smc_write_to_ahb(chip->ahb_base, &dummy, sizeof(dummy));
+=20
++	/* Set IO mode only for data */
++	if (io_mode =3D=3D CONTROL_IO_DUAL_DATA)
++		aspeed_smc_set_io_mode(chip, io_mode);
++
+ 	aspeed_smc_read_from_ahb(read_buf, chip->ahb_base, len);
+ 	aspeed_smc_stop_user(nor);
+ 	return len;
+@@ -735,6 +766,7 @@ static int aspeed_smc_chip_setup_finish(struct aspeed_s=
+mc_chip *chip)
+ {
+ 	struct aspeed_smc_controller *controller =3D chip->controller;
+ 	const struct aspeed_smc_info *info =3D controller->info;
++	int io_mode;
+ 	u32 cmd;
+=20
+ 	if (chip->nor.addr_width =3D=3D 4 && info->set_4b)
+@@ -757,22 +789,21 @@ static int aspeed_smc_chip_setup_finish(struct aspeed=
+_smc_chip *chip)
+ 	 * TODO: Adjust clocks if fast read is supported and interpret
+ 	 * SPI-NOR flags to adjust controller settings.
+ 	 */
+-	if (chip->nor.read_proto =3D=3D SNOR_PROTO_1_1_1) {
+-		if (chip->nor.read_dummy =3D=3D 0)
+-			cmd =3D CONTROL_COMMAND_MODE_NORMAL;
+-		else
+-			cmd =3D CONTROL_COMMAND_MODE_FREAD;
+-	} else {
+-		dev_err(chip->nor.dev, "unsupported SPI read mode\n");
+-		return -EINVAL;
+-	}
++	io_mode =3D aspeed_smc_get_io_mode(chip);
++	if (io_mode < 0)
++		return io_mode;
+=20
+-	chip->ctl_val[smc_read] |=3D cmd |
++	if (chip->nor.read_dummy =3D=3D 0)
++		cmd =3D CONTROL_COMMAND_MODE_NORMAL;
++	else
++		cmd =3D CONTROL_COMMAND_MODE_FREAD;
++
++	chip->ctl_val[smc_read] |=3D cmd | io_mode |
+ 		chip->nor.read_opcode << CONTROL_COMMAND_SHIFT |
+ 		CONTROL_IO_DUMMY_SET(chip->nor.read_dummy / 8);
+=20
+-	dev_dbg(controller->dev, "base control register: %08x\n",
+-		chip->ctl_val[smc_read]);
++	dev_info(controller->dev, "read control register: %08x\n",
++		 chip->ctl_val[smc_read]);
+ 	return 0;
+ }
+=20
+@@ -782,6 +813,7 @@ static int aspeed_smc_setup_flash(struct aspeed_smc_con=
+troller *controller,
+ 	const struct spi_nor_hwcaps hwcaps =3D {
+ 		.mask =3D SNOR_HWCAPS_READ |
+ 			SNOR_HWCAPS_READ_FAST |
++			SNOR_HWCAPS_READ_1_1_2 |
+ 			SNOR_HWCAPS_PP,
+ 	};
+ 	const struct aspeed_smc_info *info =3D controller->info;
+--=20
+2.13.6
 
