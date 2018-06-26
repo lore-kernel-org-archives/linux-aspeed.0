@@ -1,69 +1,48 @@
-From: Cédric Le Goater <clg@kaod.org>
-Date: Fri, 22 Jun 2018 14:14:16 +0200
-Subject: [PATCH 3/4] mtd: spi-nor: aspeed: retrieve the ABH clock frequency
-In-Reply-To: <20180622121417.6762-1-clg@kaod.org>
-References: <20180622121417.6762-1-clg@kaod.org>
-Message-ID: <20180622121417.6762-4-clg@kaod.org>
+From: Lei YU <mine260309@gmail.com>
+Date: Tue, 26 Jun 2018 09:55:25 +0800
+Subject: [PATCH] clk: aspeed: Fix SDCLK name
+Message-ID: <1529978125-28712-1-git-send-email-mine260309@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 
-We will need the AHB frequency to set the SPI clock frequency to
-perform the SPI calibration sequence and optimize the controller
-settings for the fast reads.
+The SDCLK was named SDCLKCLK, and no one has used this yet.
+Fix it.
 
-Signed-off-by: C=C3=A9dric Le Goater <clg@kaod.org>
+Signed-off-by: Lei YU <mine260309@gmail.com>
 ---
- drivers/mtd/spi-nor/aspeed-smc.c | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+ drivers/clk/clk-aspeed.c                 | 2 +-
+ include/dt-bindings/clock/aspeed-clock.h | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/mtd/spi-nor/aspeed-smc.c b/drivers/mtd/spi-nor/aspeed-=
-smc.c
-index 054614f34698..0251724eeecb 100644
---- a/drivers/mtd/spi-nor/aspeed-smc.c
-+++ b/drivers/mtd/spi-nor/aspeed-smc.c
-@@ -10,6 +10,7 @@
-  */
-=20
- #include <linux/bug.h>
-+#include <linux/clk.h>
- #include <linux/device.h>
- #include <linux/io.h>
- #include <linux/module.h>
-@@ -113,6 +114,8 @@ struct aspeed_smc_controller {
- 	void __iomem *ahb_base;			/* per-chip windows resource */
- 	u32 ahb_window_size;			/* full mapping window size */
-=20
-+	unsigned long	clk_frequency;
-+
- 	struct aspeed_smc_chip *chips[0];	/* pointers to attached chips */
+diff --git a/drivers/clk/clk-aspeed.c b/drivers/clk/clk-aspeed.c
+index 38b366b..f49c684 100644
+--- a/drivers/clk/clk-aspeed.c
++++ b/drivers/clk/clk-aspeed.c
+@@ -109,7 +109,7 @@ struct aspeed_clk_gate {
+ 	[ASPEED_CLK_GATE_RSACLK] =	{ 24, -1, "rsaclk-gate",	NULL,	0 }, /* RSA */
+ 	[ASPEED_CLK_GATE_UART3CLK] =	{ 25, -1, "uart3clk-gate",	"uart",	0 }, /* UART3 */
+ 	[ASPEED_CLK_GATE_UART4CLK] =	{ 26, -1, "uart4clk-gate",	"uart",	0 }, /* UART4 */
+-	[ASPEED_CLK_GATE_SDCLKCLK] =	{ 27, 16, "sdclk-gate",		NULL,	0 }, /* SDIO/SD */
++	[ASPEED_CLK_GATE_SDCLK] =	{ 27, 16, "sdclk-gate",		NULL,	0 }, /* SDIO/SD */
+ 	[ASPEED_CLK_GATE_LHCCLK] =	{ 28, -1, "lhclk-gate",		"lhclk", 0 }, /* LPC master/LPC+ */
  };
-=20
-@@ -911,6 +914,7 @@ static int aspeed_smc_probe(struct platform_device *pde=
-v)
- 	struct aspeed_smc_controller *controller;
- 	const struct of_device_id *match;
- 	const struct aspeed_smc_info *info;
-+	struct clk *clk;
- 	struct resource *res;
- 	int ret;
-=20
-@@ -942,6 +946,12 @@ static int aspeed_smc_probe(struct platform_device *pd=
-ev)
-=20
- 	controller->ahb_window_size =3D resource_size(res);
-=20
-+	clk =3D devm_clk_get(&pdev->dev, NULL);
-+	if (IS_ERR(clk))
-+		return PTR_ERR(clk);
-+	controller->clk_frequency =3D clk_get_rate(clk);
-+	devm_clk_put(&pdev->dev, clk);
-+
- 	ret =3D aspeed_smc_setup_flash(controller, np, res);
- 	if (ret)
- 		dev_err(dev, "Aspeed SMC probe failed %d\n", ret);
---=20
-2.13.6
+ 
+diff --git a/include/dt-bindings/clock/aspeed-clock.h b/include/dt-bindings/clock/aspeed-clock.h
+index 4476184..f437386 100644
+--- a/include/dt-bindings/clock/aspeed-clock.h
++++ b/include/dt-bindings/clock/aspeed-clock.h
+@@ -25,7 +25,7 @@
+ #define ASPEED_CLK_GATE_RSACLK		19
+ #define ASPEED_CLK_GATE_UART3CLK	20
+ #define ASPEED_CLK_GATE_UART4CLK	21
+-#define ASPEED_CLK_GATE_SDCLKCLK	22
++#define ASPEED_CLK_GATE_SDCLK		22
+ #define ASPEED_CLK_GATE_LHCCLK		23
+ #define ASPEED_CLK_HPLL			24
+ #define ASPEED_CLK_AHB			25
+-- 
+1.9.1
 
