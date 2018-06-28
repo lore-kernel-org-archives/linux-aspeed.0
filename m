@@ -1,38 +1,57 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Thu, 28 Jun 2018 16:33:18 +1000
-Subject: [PATCH v3 4/4] gpio: aspeed: Add interfaces for co-processor to
- grab GPIOs
-In-Reply-To: <20180622020448.6102-5-benh@kernel.crashing.org>
-References: <20180622020448.6102-1-benh@kernel.crashing.org>
- <20180622020448.6102-5-benh@kernel.crashing.org>
-Message-ID: <c8a71b3f23b2039fa1a7b28d5f1f91cb6c6870f8.camel@kernel.crashing.org>
+From: Linus Walleij <linus.walleij@linaro.org>
+Date: Thu, 28 Jun 2018 15:42:38 +0200
+Subject: [PATCH 4/4] gpio: aspeed: Add interfaces for co-processor to grab
+ GPIOs
+In-Reply-To: <480dd5a586acfaaeddcd099e3f1854f27fa44522.camel@kernel.crashing.org>
+References: <20180612001043.9327-1-benh@kernel.crashing.org>
+ <20180612001043.9327-5-benh@kernel.crashing.org>
+ <CACRpkdbup=bx3rnZbWBMD_p2+8EHkY9Mxc2UEOwHzZE10=VeQA@mail.gmail.com>
+ <480dd5a586acfaaeddcd099e3f1854f27fa44522.camel@kernel.crashing.org>
+Message-ID: <CACRpkdYjUX4JtEW0+0Gxjfp5gSNKp8PM7CPY_nf=nQb=rfHRBQ@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, 2018-06-22 at 12:04 +1000, Benjamin Herrenschmidt wrote:
-> On the Aspeed chip, the GPIOs can be under control of the ARM
-> chip or of the ColdFire coprocessor. (There's a third command
-> source, the LPC bus, which we don't use or support yet).
+On Fri, Jun 15, 2018 at 1:41 AM Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+> On Thu, 2018-06-14 at 10:59 +0200, Linus Walleij wrote:
+> >
+> > Overall looks fine!
+> >
+> > You definately need something like this for handling this special case.
+> >
+> > > +#include <linux/gpio/consumer.h>
+> >
+> > Why do you need this?
+> >
+> > I don't see that you use any functions from it.
+> >
+> > > +#include "gpiolib.h"
+> >
+> > I'm not so happy about this either, what is this needed for?
+> >
+> > It seems to me you can remove both includes, but admittedly I miss
+> > fine details all the time.
+>
+> I wish I could :-) This is the main wart in there to be honest.
+>
+> consumer.h is needed to build gpiolib.h
+>
+> gpiolib.h is needed for gpio_chip_hwgpio() which needs the definition
+> of gpio_desc, etc...
 
-At the risk of offending people even more, I'm going to respin
-this with another extra Aspeed specific interface to retrieve
-a given GPIO registers and bit number.
+Aha I see, you need that because while normally the gpiolib
+does the conversion of desc -> offset this is needed here
+in a driver.
 
-So far, I've made the corprocessor code system specific, effectively
-hard wiring in the binary the above. But I found a way to make it
-more flexible without losing too much performance, thus drastically
-simplifying deployment for us since every machine out there seems
-to be wiring these things differently.
+Maybe we should just name it gpiod_to_offset() or something
+and make it a public API.
 
-However, for that to work, after "grabbing" the GPIOs, the coprocessor
-driver will need to give the data and write data latch registers and
-bit numbers to the microcode.
+But this is actually OK, you definately need it here, toss in some
+comment or so about what is going on and why this is included
+so we know in the future.
 
-I'll respin a v4 with that added interface in the form of a separate
-patch at the end of the series.
-
-Cheers,
-Ben.
+Yours,
+Linus Walleij
