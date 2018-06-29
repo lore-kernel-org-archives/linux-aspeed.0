@@ -1,44 +1,27 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Fri, 29 Jun 2018 13:51:02 +1000
-Subject: [PATCH 3/7] arm: dts: aspeed: Add Aspeed G4 USB Virtual Hub
-In-Reply-To: <20180629035106.27181-1-benh@kernel.crashing.org>
-References: <20180629035106.27181-1-benh@kernel.crashing.org>
-Message-ID: <20180629035106.27181-4-benh@kernel.crashing.org>
+Date: Fri, 29 Jun 2018 14:11:15 +1000
+Subject: [PATCH v4 0/4] gpio: aspeed: Fixes and support for sharing with
+ co-processor
+Message-ID: <20180629041119.5132-1-benh@kernel.crashing.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This adds the (disabled by default) device node for the
-Aspeed virtual hub,a long with clocks and pinmux.
+This series cleans up the register accessors a bit, adds missing ones,
+fixes the access to the write latch and finally adds an interface
+that a co-processor driver can use to change the owner of some of
+the GPIO lines and arbitrate access to shared GPIO banks.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
- arch/arm/boot/dts/aspeed-g4.dtsi | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+v2: - Address Joel comments
+v3: - Adds Reviewed-by tags
+v4: - Document the reason for including gpiolob.h
+    - Expose GPIO offsets & bit number so coprocessor firmware doesn't
+      have to hard-code them (allows multi-system generic firwmare
+      that gets "configure" by the copro driver)
 
-diff --git a/arch/arm/boot/dts/aspeed-g4.dtsi b/arch/arm/boot/dts/aspeed-g4.dtsi
-index 1d7ffa9fdb11..54524564037c 100644
---- a/arch/arm/boot/dts/aspeed-g4.dtsi
-+++ b/arch/arm/boot/dts/aspeed-g4.dtsi
-@@ -131,6 +131,16 @@
- 			 */
- 		};
- 
-+		vhub: usb-vhub at 1e6a0000 {
-+			compatible = "aspeed,ast2400-usb-vhub";
-+			reg = <0x1e6a0000 0x300>;
-+			interrupts = <5>;
-+			clocks = <&syscon ASPEED_CLK_GATE_USBPORT1CLK>;
-+			pinctrl-names = "default";
-+			pinctrl-0 = <&pinctrl_usb2d_default>;
-+			status = "disabled";
-+		};
-+
- 		apb {
- 			compatible = "simple-bus";
- 			#address-cells = <1>;
--- 
-2.17.1
+Please consider putting this in a topic branch so I can pull it
+back into dependent series and point the reviewers to dependencies
+
 
