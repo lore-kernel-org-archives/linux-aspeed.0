@@ -1,159 +1,528 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Fri, 29 Jun 2018 14:11:17 +1000
-Subject: [PATCH v4 2/4] gpio: aspeed: Add "Read Data" register to read the
- write latch
+Date: Fri, 29 Jun 2018 14:11:19 +1000
+Subject: [PATCH v4 4/4] gpio: aspeed: Add interfaces for co-processor to grab
+ GPIOs
 In-Reply-To: <20180629041119.5132-1-benh@kernel.crashing.org>
 References: <20180629041119.5132-1-benh@kernel.crashing.org>
-Message-ID: <20180629041119.5132-3-benh@kernel.crashing.org>
+Message-ID: <20180629041119.5132-5-benh@kernel.crashing.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The Aspeed GPIO hardware has a quirk: the value register, for an
-output GPIO, doesn't contain the last value written (the write
-latch content) but the sampled input value.
+On the Aspeed chip, the GPIOs can be under control of the ARM
+chip or of the ColdFire coprocessor. (There's a third command
+source, the LPC bus, which we don't use or support yet).
 
-This means that when reading back shortly after writing, you can
-get an incorrect value as the input value is delayed by a few
-synchronizers.
+The control of which master is allowed to modify a given
+GPIO is per-bank (8 GPIOs).
 
-The HW supports a separate read-only register "Data Read Register"
-which allows you to read the write latch instead.
+Unfortunately, systems already exist for which we want to
+use GPIOs of both sources in the same bank.
 
-This adds the definition for it, and uses it for the initial
-population of the GPIO value cache. It will be used more in
-subsequent patches.
+This provides an API exported by the gpio-aspeed driver
+that an aspeed coprocessor driver can use to "grab" some
+GPIOs for use by the coprocessor, and allow the coprocessor
+driver to provide callbacks for arbitrating access.
+
+Once at least one GPIO of a given bank has been "grabbed"
+by the coprocessor, the entire bank is marked as being
+under coprocessor control. It's command source is switched
+to the coprocessor.
+
+If the ARM then tries to write to a GPIO in such a marked bank,
+the provided callbacks are used to request access from the
+coprocessor driver, which is responsible to doing whatever
+is necessary to "pause" the coprocessor or prevent it from
+trying to use the GPIOs while the ARM is doing its accesses.
+
+During that time, the command source for the bank is temporarily
+switched back to the ARM.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Reviewed-by: Joel Stanley <joel@jms.id.au>
 Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
 ---
- drivers/gpio/gpio-aspeed.c | 29 +++++++++++++++++++++++++++--
- 1 file changed, 27 insertions(+), 2 deletions(-)
+---
+ drivers/gpio/gpio-aspeed.c  | 251 +++++++++++++++++++++++++++++++++---
+ include/linux/gpio/aspeed.h |  15 +++
+ 2 files changed, 246 insertions(+), 20 deletions(-)
+ create mode 100644 include/linux/gpio/aspeed.h
 
 diff --git a/drivers/gpio/gpio-aspeed.c b/drivers/gpio/gpio-aspeed.c
-index c9baeeb7f0cc..a5ded50c6db0 100644
+index b3968f66b1d2..1e00f4045f9d 100644
 --- a/drivers/gpio/gpio-aspeed.c
 +++ b/drivers/gpio/gpio-aspeed.c
-@@ -59,18 +59,33 @@ struct aspeed_gpio {
+@@ -12,6 +12,7 @@
+ #include <asm/div64.h>
+ #include <linux/clk.h>
+ #include <linux/gpio/driver.h>
++#include <linux/gpio/aspeed.h>
+ #include <linux/hashtable.h>
+ #include <linux/init.h>
+ #include <linux/io.h>
+@@ -22,6 +23,15 @@
+ #include <linux/spinlock.h>
+ #include <linux/string.h>
+ 
++/*
++ * These two headers aren't meant to be used by GPIO drivers. We need
++ * them in order to access gpio_chip_hwgpio() which we need to implement
++ * the aspeed specific API which allows the coprocessor to request
++ * access to some GPIOs and to arbitrate between coprocessor and ARM.
++ */
++#include <linux/gpio/consumer.h>
++#include "gpiolib.h"
++
+ struct aspeed_bank_props {
+ 	unsigned int bank;
+ 	u32 input;
+@@ -56,6 +66,7 @@ struct aspeed_gpio {
+ 	struct clk *clk;
+ 
+ 	u32 *dcache;
++	u8 *cf_copro_bankmap;
  };
  
  struct aspeed_gpio_bank {
--	uint16_t	val_regs;
-+	uint16_t	val_regs;	/* +0: Rd: read input value, Wr: set write latch
-+					 * +4: Rd/Wr: Direction (0=in, 1=out)
-+					 */
-+	uint16_t	rdata_reg;	/*     Rd: read write latch, Wr: <none>  */
- 	uint16_t	irq_regs;
- 	uint16_t	debounce_regs;
- 	uint16_t	tolerance_regs;
- 	const char	names[4][3];
- };
+@@ -83,6 +94,9 @@ struct aspeed_gpio_bank {
  
-+/*
-+ * Note: The "value" register returns the input value sampled on the
-+ *       line even when the GPIO is configured as an output. Since
-+ *       that input goes through synchronizers, writing, then reading
-+ *       back may not return the written value right away.
-+ *
-+ *       The "rdata" register returns the content of the write latch
-+ *       and thus can be used to read back what was last written
-+ *       reliably.
-+ */
-+
  static const int debounce_timers[4] = { 0x00, 0x50, 0x54, 0x58 };
  
++static const struct aspeed_gpio_copro_ops *copro_ops;
++static void *copro_data;
++
  static const struct aspeed_gpio_bank aspeed_gpio_banks[] = {
  	{
  		.val_regs = 0x0000,
-+		.rdata_reg = 0x00c0,
- 		.irq_regs = 0x0008,
- 		.debounce_regs = 0x0040,
- 		.tolerance_regs = 0x001c,
-@@ -78,6 +93,7 @@ static const struct aspeed_gpio_bank aspeed_gpio_banks[] = {
- 	},
- 	{
- 		.val_regs = 0x0020,
-+		.rdata_reg = 0x00c4,
- 		.irq_regs = 0x0028,
- 		.debounce_regs = 0x0048,
- 		.tolerance_regs = 0x003c,
-@@ -85,6 +101,7 @@ static const struct aspeed_gpio_bank aspeed_gpio_banks[] = {
- 	},
- 	{
- 		.val_regs = 0x0070,
-+		.rdata_reg = 0x00c8,
- 		.irq_regs = 0x0098,
- 		.debounce_regs = 0x00b0,
- 		.tolerance_regs = 0x00ac,
-@@ -92,6 +109,7 @@ static const struct aspeed_gpio_bank aspeed_gpio_banks[] = {
- 	},
- 	{
- 		.val_regs = 0x0078,
-+		.rdata_reg = 0x00cc,
- 		.irq_regs = 0x00e8,
- 		.debounce_regs = 0x0100,
- 		.tolerance_regs = 0x00fc,
-@@ -99,6 +117,7 @@ static const struct aspeed_gpio_bank aspeed_gpio_banks[] = {
- 	},
- 	{
- 		.val_regs = 0x0080,
-+		.rdata_reg = 0x00d0,
- 		.irq_regs = 0x0118,
- 		.debounce_regs = 0x0130,
- 		.tolerance_regs = 0x012c,
-@@ -106,6 +125,7 @@ static const struct aspeed_gpio_bank aspeed_gpio_banks[] = {
- 	},
- 	{
- 		.val_regs = 0x0088,
-+		.rdata_reg = 0x00d4,
- 		.irq_regs = 0x0148,
- 		.debounce_regs = 0x0160,
- 		.tolerance_regs = 0x015c,
-@@ -113,6 +133,7 @@ static const struct aspeed_gpio_bank aspeed_gpio_banks[] = {
- 	},
- 	{
- 		.val_regs = 0x01E0,
-+		.rdata_reg = 0x00d8,
- 		.irq_regs = 0x0178,
- 		.debounce_regs = 0x0190,
- 		.tolerance_regs = 0x018c,
-@@ -120,6 +141,7 @@ static const struct aspeed_gpio_bank aspeed_gpio_banks[] = {
- 	},
- 	{
- 		.val_regs = 0x01e8,
-+		.rdata_reg = 0x00dc,
- 		.irq_regs = 0x01a8,
- 		.debounce_regs = 0x01c0,
- 		.tolerance_regs = 0x01bc,
-@@ -129,6 +151,7 @@ static const struct aspeed_gpio_bank aspeed_gpio_banks[] = {
+@@ -323,6 +337,50 @@ static void aspeed_gpio_change_cmd_source(struct aspeed_gpio *gpio,
+ 	iowrite32(reg, c0);
+ }
  
- enum aspeed_gpio_reg {
- 	reg_val,
-+	reg_rdata,
- 	reg_dir,
- 	reg_irq_enable,
- 	reg_irq_type0,
-@@ -160,6 +183,8 @@ static inline void __iomem *bank_reg(struct aspeed_gpio *gpio,
- 	switch (reg) {
- 	case reg_val:
- 		return gpio->base + bank->val_regs + GPIO_VAL_VALUE;
-+	case reg_rdata:
-+		return gpio->base + bank->rdata_reg;
- 	case reg_dir:
- 		return gpio->base + bank->val_regs + GPIO_VAL_DIR;
- 	case reg_irq_enable:
-@@ -925,7 +950,7 @@ static int __init aspeed_gpio_probe(struct platform_device *pdev)
++static bool aspeed_gpio_copro_request(struct aspeed_gpio *gpio,
++				      unsigned int offset)
++{
++	const struct aspeed_gpio_bank *bank = to_bank(offset);
++
++	if (!copro_ops || !gpio->cf_copro_bankmap)
++		return false;
++	if (!gpio->cf_copro_bankmap[offset >> 3])
++		return false;
++	if (!copro_ops->request_access)
++		return false;
++
++	/* Pause the coprocessor */
++	copro_ops->request_access(copro_data);
++
++	/* Change command source back to ARM */
++	aspeed_gpio_change_cmd_source(gpio, bank, offset >> 3, GPIO_CMDSRC_ARM);
++
++	/* Update cache */
++	gpio->dcache[GPIO_BANK(offset)] = ioread32(bank_reg(gpio, bank, reg_rdata));
++
++	return true;
++}
++
++static void aspeed_gpio_copro_release(struct aspeed_gpio *gpio,
++				      unsigned int offset)
++{
++	const struct aspeed_gpio_bank *bank = to_bank(offset);
++
++	if (!copro_ops || !gpio->cf_copro_bankmap)
++		return;
++	if (!gpio->cf_copro_bankmap[offset >> 3])
++		return;
++	if (!copro_ops->release_access)
++		return;
++
++	/* Change command source back to ColdFire */
++	aspeed_gpio_change_cmd_source(gpio, bank, offset >> 3,
++				      GPIO_CMDSRC_COLDFIRE);
++
++	/* Restart the coprocessor */
++	copro_ops->release_access(copro_data);
++}
++
+ static int aspeed_gpio_get(struct gpio_chip *gc, unsigned int offset)
+ {
+ 	struct aspeed_gpio *gpio = gpiochip_get_data(gc);
+@@ -356,11 +414,15 @@ static void aspeed_gpio_set(struct gpio_chip *gc, unsigned int offset,
+ {
+ 	struct aspeed_gpio *gpio = gpiochip_get_data(gc);
+ 	unsigned long flags;
++	bool copro;
  
- 	/* Populate it with initial values read from the HW */
- 	for (i = 0; i < banks; i++) {
--		void __iomem *addr = bank_reg(gpio, &aspeed_gpio_banks[i], reg_val);
-+		void __iomem *addr = bank_reg(gpio, &aspeed_gpio_banks[i], reg_rdata);
- 		gpio->dcache[i] = ioread32(addr);
+ 	spin_lock_irqsave(&gpio->lock, flags);
++	copro = aspeed_gpio_copro_request(gpio, offset);
+ 
+ 	__aspeed_gpio_set(gc, offset, val);
+ 
++	if (copro)
++		aspeed_gpio_copro_release(gpio, offset);
+ 	spin_unlock_irqrestore(&gpio->lock, flags);
+ }
+ 
+@@ -368,7 +430,9 @@ static int aspeed_gpio_dir_in(struct gpio_chip *gc, unsigned int offset)
+ {
+ 	struct aspeed_gpio *gpio = gpiochip_get_data(gc);
+ 	const struct aspeed_gpio_bank *bank = to_bank(offset);
++	void __iomem *addr = bank_reg(gpio, bank, reg_dir);
+ 	unsigned long flags;
++	bool copro;
+ 	u32 reg;
+ 
+ 	if (!have_input(gpio, offset))
+@@ -376,8 +440,13 @@ static int aspeed_gpio_dir_in(struct gpio_chip *gc, unsigned int offset)
+ 
+ 	spin_lock_irqsave(&gpio->lock, flags);
+ 
+-	reg = ioread32(bank_reg(gpio, bank, reg_dir));
+-	iowrite32(reg & ~GPIO_BIT(offset), bank_reg(gpio, bank, reg_dir));
++	reg = ioread32(addr);
++	reg &= ~GPIO_BIT(offset);
++
++	copro = aspeed_gpio_copro_request(gpio, offset);
++	iowrite32(reg, addr);
++	if (copro)
++		aspeed_gpio_copro_release(gpio, offset);
+ 
+ 	spin_unlock_irqrestore(&gpio->lock, flags);
+ 
+@@ -389,7 +458,9 @@ static int aspeed_gpio_dir_out(struct gpio_chip *gc,
+ {
+ 	struct aspeed_gpio *gpio = gpiochip_get_data(gc);
+ 	const struct aspeed_gpio_bank *bank = to_bank(offset);
++	void __iomem *addr = bank_reg(gpio, bank, reg_dir);
+ 	unsigned long flags;
++	bool copro;
+ 	u32 reg;
+ 
+ 	if (!have_output(gpio, offset))
+@@ -397,10 +468,15 @@ static int aspeed_gpio_dir_out(struct gpio_chip *gc,
+ 
+ 	spin_lock_irqsave(&gpio->lock, flags);
+ 
++	reg = ioread32(addr);
++	reg |= GPIO_BIT(offset);
++
++	copro = aspeed_gpio_copro_request(gpio, offset);
+ 	__aspeed_gpio_set(gc, offset, val);
+-	reg = ioread32(bank_reg(gpio, bank, reg_dir));
+-	iowrite32(reg | GPIO_BIT(offset), bank_reg(gpio, bank, reg_dir));
++	iowrite32(reg, addr);
+ 
++	if (copro)
++		aspeed_gpio_copro_release(gpio, offset);
+ 	spin_unlock_irqrestore(&gpio->lock, flags);
+ 
+ 	return 0;
+@@ -430,24 +506,23 @@ static int aspeed_gpio_get_direction(struct gpio_chip *gc, unsigned int offset)
+ }
+ 
+ static inline int irqd_to_aspeed_gpio_data(struct irq_data *d,
+-		struct aspeed_gpio **gpio,
+-		const struct aspeed_gpio_bank **bank,
+-		u32 *bit)
++					   struct aspeed_gpio **gpio,
++					   const struct aspeed_gpio_bank **bank,
++					   u32 *bit, int *offset)
+ {
+-	int offset;
+ 	struct aspeed_gpio *internal;
+ 
+-	offset = irqd_to_hwirq(d);
++	*offset = irqd_to_hwirq(d);
+ 
+ 	internal = irq_data_get_irq_chip_data(d);
+ 
+ 	/* This might be a bit of a questionable place to check */
+-	if (!have_irq(internal, offset))
++	if (!have_irq(internal, *offset))
+ 		return -ENOTSUPP;
+ 
+ 	*gpio = internal;
+-	*bank = to_bank(offset);
+-	*bit = GPIO_BIT(offset);
++	*bank = to_bank(*offset);
++	*bit = GPIO_BIT(*offset);
+ 
+ 	return 0;
+ }
+@@ -458,17 +533,23 @@ static void aspeed_gpio_irq_ack(struct irq_data *d)
+ 	struct aspeed_gpio *gpio;
+ 	unsigned long flags;
+ 	void __iomem *status_addr;
++	int rc, offset;
++	bool copro;
+ 	u32 bit;
+-	int rc;
+ 
+-	rc = irqd_to_aspeed_gpio_data(d, &gpio, &bank, &bit);
++	rc = irqd_to_aspeed_gpio_data(d, &gpio, &bank, &bit, &offset);
+ 	if (rc)
+ 		return;
+ 
+ 	status_addr = bank_reg(gpio, bank, reg_irq_status);
+ 
+ 	spin_lock_irqsave(&gpio->lock, flags);
++	copro = aspeed_gpio_copro_request(gpio, offset);
++
+ 	iowrite32(bit, status_addr);
++
++	if (copro)
++		aspeed_gpio_copro_release(gpio, offset);
+ 	spin_unlock_irqrestore(&gpio->lock, flags);
+ }
+ 
+@@ -479,15 +560,17 @@ static void aspeed_gpio_irq_set_mask(struct irq_data *d, bool set)
+ 	unsigned long flags;
+ 	u32 reg, bit;
+ 	void __iomem *addr;
+-	int rc;
++	int rc, offset;
++	bool copro;
+ 
+-	rc = irqd_to_aspeed_gpio_data(d, &gpio, &bank, &bit);
++	rc = irqd_to_aspeed_gpio_data(d, &gpio, &bank, &bit, &offset);
+ 	if (rc)
+ 		return;
+ 
+ 	addr = bank_reg(gpio, bank, reg_irq_enable);
+ 
+ 	spin_lock_irqsave(&gpio->lock, flags);
++	copro = aspeed_gpio_copro_request(gpio, offset);
+ 
+ 	reg = ioread32(addr);
+ 	if (set)
+@@ -496,6 +579,8 @@ static void aspeed_gpio_irq_set_mask(struct irq_data *d, bool set)
+ 		reg &= ~bit;
+ 	iowrite32(reg, addr);
+ 
++	if (copro)
++		aspeed_gpio_copro_release(gpio, offset);
+ 	spin_unlock_irqrestore(&gpio->lock, flags);
+ }
+ 
+@@ -520,9 +605,10 @@ static int aspeed_gpio_set_type(struct irq_data *d, unsigned int type)
+ 	struct aspeed_gpio *gpio;
+ 	unsigned long flags;
+ 	void __iomem *addr;
+-	int rc;
++	int rc, offset;
++	bool copro;
+ 
+-	rc = irqd_to_aspeed_gpio_data(d, &gpio, &bank, &bit);
++	rc = irqd_to_aspeed_gpio_data(d, &gpio, &bank, &bit, &offset);
+ 	if (rc)
+ 		return -EINVAL;
+ 
+@@ -548,6 +634,7 @@ static int aspeed_gpio_set_type(struct irq_data *d, unsigned int type)
  	}
  
+ 	spin_lock_irqsave(&gpio->lock, flags);
++	copro = aspeed_gpio_copro_request(gpio, offset);
+ 
+ 	addr = bank_reg(gpio, bank, reg_irq_type0);
+ 	reg = ioread32(addr);
+@@ -564,6 +651,8 @@ static int aspeed_gpio_set_type(struct irq_data *d, unsigned int type)
+ 	reg = (reg & ~bit) | type2;
+ 	iowrite32(reg, addr);
+ 
++	if (copro)
++		aspeed_gpio_copro_release(gpio, offset);
+ 	spin_unlock_irqrestore(&gpio->lock, flags);
+ 
+ 	irq_set_handler_locked(d, handler);
+@@ -658,11 +747,14 @@ static int aspeed_gpio_reset_tolerance(struct gpio_chip *chip,
+ 	struct aspeed_gpio *gpio = gpiochip_get_data(chip);
+ 	unsigned long flags;
+ 	void __iomem *treg;
++	bool copro;
+ 	u32 val;
+ 
+ 	treg = bank_reg(gpio, to_bank(offset), reg_tolerance);
+ 
+ 	spin_lock_irqsave(&gpio->lock, flags);
++	copro = aspeed_gpio_copro_request(gpio, offset);
++
+ 	val = readl(treg);
+ 
+ 	if (enable)
+@@ -671,6 +763,9 @@ static int aspeed_gpio_reset_tolerance(struct gpio_chip *chip,
+ 		val &= ~GPIO_BIT(offset);
+ 
+ 	writel(val, treg);
++
++	if (copro)
++		aspeed_gpio_copro_release(gpio, offset);
+ 	spin_unlock_irqrestore(&gpio->lock, flags);
+ 
+ 	return 0;
+@@ -766,6 +861,9 @@ static void configure_timer(struct aspeed_gpio *gpio, unsigned int offset,
+ 	void __iomem *addr;
+ 	u32 val;
+ 
++	/* Note: Debounce timer isn't under control of the command
++	 * source registers, so no need to sync with the coprocessor
++	 */
+ 	addr = bank_reg(gpio, bank, reg_debounce_sel1);
+ 	val = ioread32(addr);
+ 	iowrite32((val & ~mask) | GPIO_SET_DEBOUNCE1(timer, offset), addr);
+@@ -912,6 +1010,111 @@ static int aspeed_gpio_set_config(struct gpio_chip *chip, unsigned int offset,
+ 	return -ENOTSUPP;
+ }
+ 
++/**
++ * aspeed_gpio_copro_set_ops - Sets the callbacks used for handhsaking with
++ *                             the coprocessor for shared GPIO banks
++ * @ops: The callbacks
++ * @data: Pointer passed back to the callbacks
++ */
++int aspeed_gpio_copro_set_ops(const struct aspeed_gpio_copro_ops *ops, void *data)
++{
++	copro_data = data;
++	copro_ops = ops;
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(aspeed_gpio_copro_set_ops);
++
++/**
++ * aspeed_gpio_copro_grab_gpio - Mark a GPIO used by the coprocessor. The entire
++ *                               bank gets marked and any access from the ARM will
++ *                               result in handshaking via callbacks.
++ * @desc: The GPIO to be marked
++ * @vreg_offset: If non-NULL, returns the value register offset in the GPIO space
++ * @dreg_offset: If non-NULL, returns the data latch register offset in the GPIO space
++ * @bit: If non-NULL, returns the bit number of the GPIO in the registers
++ */
++int aspeed_gpio_copro_grab_gpio(struct gpio_desc *desc,
++				u16 *vreg_offset, u16 *dreg_offset, u8 *bit)
++{
++	struct gpio_chip *chip = gpiod_to_chip(desc);
++	struct aspeed_gpio *gpio = gpiochip_get_data(chip);
++	int rc = 0, bindex, offset = gpio_chip_hwgpio(desc);
++	const struct aspeed_gpio_bank *bank = to_bank(offset);
++	unsigned long flags;
++
++	if (!gpio->cf_copro_bankmap)
++		gpio->cf_copro_bankmap = kzalloc(gpio->config->nr_gpios >> 3, GFP_KERNEL);
++	if (!gpio->cf_copro_bankmap)
++		return -ENOMEM;
++	if (offset < 0 || offset > gpio->config->nr_gpios)
++		return -EINVAL;
++	bindex = offset >> 3;
++
++	spin_lock_irqsave(&gpio->lock, flags);
++
++	/* Sanity check, this shouldn't happen */
++	if (gpio->cf_copro_bankmap[bindex] == 0xff) {
++		rc = -EIO;
++		goto bail;
++	}
++	gpio->cf_copro_bankmap[bindex]++;
++
++	/* Switch command source */
++	if (gpio->cf_copro_bankmap[bindex] == 1)
++		aspeed_gpio_change_cmd_source(gpio, bank, bindex,
++					      GPIO_CMDSRC_COLDFIRE);
++
++	if (vreg_offset)
++		*vreg_offset = bank->val_regs;
++	if (dreg_offset)
++		*dreg_offset = bank->rdata_reg;
++	if (bit)
++		*bit = GPIO_OFFSET(offset);
++ bail:
++	spin_unlock_irqrestore(&gpio->lock, flags);
++	return rc;
++}
++EXPORT_SYMBOL_GPL(aspeed_gpio_copro_grab_gpio);
++
++/**
++ * aspeed_gpio_copro_release_gpio - Unmark a GPIO used by the coprocessor.
++ * @desc: The GPIO to be marked
++ */
++int aspeed_gpio_copro_release_gpio(struct gpio_desc *desc)
++{
++	struct gpio_chip *chip = gpiod_to_chip(desc);
++	struct aspeed_gpio *gpio = gpiochip_get_data(chip);
++	int rc = 0, bindex, offset = gpio_chip_hwgpio(desc);
++	const struct aspeed_gpio_bank *bank = to_bank(offset);
++	unsigned long flags;
++
++	if (!gpio->cf_copro_bankmap)
++		return -ENXIO;
++
++	if (offset < 0 || offset > gpio->config->nr_gpios)
++		return -EINVAL;
++	bindex = offset >> 3;
++
++	spin_lock_irqsave(&gpio->lock, flags);
++
++	/* Sanity check, this shouldn't happen */
++	if (gpio->cf_copro_bankmap[bindex] == 0) {
++		rc = -EIO;
++		goto bail;
++	}
++	gpio->cf_copro_bankmap[bindex]--;
++
++	/* Switch command source */
++	if (gpio->cf_copro_bankmap[bindex] == 0)
++		aspeed_gpio_change_cmd_source(gpio, bank, bindex,
++					      GPIO_CMDSRC_ARM);
++ bail:
++	spin_unlock_irqrestore(&gpio->lock, flags);
++	return rc;
++}
++EXPORT_SYMBOL_GPL(aspeed_gpio_copro_release_gpio);
++
+ /*
+  * Any banks not specified in a struct aspeed_bank_props array are assumed to
+  * have the properties:
+@@ -1002,10 +1205,18 @@ static int __init aspeed_gpio_probe(struct platform_device *pdev)
+ 	if (!gpio->dcache)
+ 		return -ENOMEM;
+ 
+-	/* Populate it with initial values read from the HW */
++	/*
++	 * Populate it with initial values read from the HW and switch
++	 * all command sources to the ARM by default
++	 */
+ 	for (i = 0; i < banks; i++) {
+-		void __iomem *addr = bank_reg(gpio, &aspeed_gpio_banks[i], reg_rdata);
++		const struct aspeed_gpio_bank *bank = &aspeed_gpio_banks[i];
++		void __iomem *addr = bank_reg(gpio, bank, reg_rdata);
+ 		gpio->dcache[i] = ioread32(addr);
++		aspeed_gpio_change_cmd_source(gpio, bank, 0, GPIO_CMDSRC_ARM);
++		aspeed_gpio_change_cmd_source(gpio, bank, 1, GPIO_CMDSRC_ARM);
++		aspeed_gpio_change_cmd_source(gpio, bank, 2, GPIO_CMDSRC_ARM);
++		aspeed_gpio_change_cmd_source(gpio, bank, 3, GPIO_CMDSRC_ARM);
+ 	}
+ 
+ 	rc = devm_gpiochip_add_data(&pdev->dev, &gpio->chip, gpio);
+diff --git a/include/linux/gpio/aspeed.h b/include/linux/gpio/aspeed.h
+new file mode 100644
+index 000000000000..1bfb3cdc86d0
+--- /dev/null
++++ b/include/linux/gpio/aspeed.h
+@@ -0,0 +1,15 @@
++#ifndef __GPIO_ASPEED_H
++#define __GPIO_ASPEED_H
++
++struct aspeed_gpio_copro_ops {
++	int (*request_access)(void *data);
++	int (*release_access)(void *data);
++};
++
++int aspeed_gpio_copro_grab_gpio(struct gpio_desc *desc,
++				u16 *vreg_offset, u16 *dreg_offset, u8 *bit);
++int aspeed_gpio_copro_release_gpio(struct gpio_desc *desc);
++int aspeed_gpio_copro_set_ops(const struct aspeed_gpio_copro_ops *ops, void *data);
++
++
++#endif /* __GPIO_ASPEED_H */
 -- 
 2.17.1
 
