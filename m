@@ -1,34 +1,32 @@
 From: Stephen Boyd <sboyd@kernel.org>
-Date: Fri, 06 Jul 2018 10:53:33 -0700
-Subject: [PATCH] clk: aspeed: Treat a gate in reset as disabled
-In-Reply-To: <c31c3652829e8e7064f750d219237c4eb32773e4.camel@linux.vnet.ibm.com>
-References: <c31c3652829e8e7064f750d219237c4eb32773e4.camel@linux.vnet.ibm.com>
-Message-ID: <153089961364.143105.3583653247951877648@swboyd.mtv.corp.google.com>
+Date: Fri, 06 Jul 2018 10:55:07 -0700
+Subject: [PATCH] clk: aspeed: Support HPLL strapping on ast2400
+In-Reply-To: <20180628231540.26633-1-joel@jms.id.au>
+References: <20180628231540.26633-1-joel@jms.id.au>
+Message-ID: <153089970720.143105.7005759760140367907@swboyd.mtv.corp.google.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Quoting Benjamin Herrenschmidt (2018-07-03 00:24:47)
-> On some systems, we come out of the bootloader with some
-> gates set with the clock "enabled" but the reset also
-> asserted.
+Quoting Joel Stanley (2018-06-28 16:15:40)
+> The HPLL can be configured through a register (SCU24), however some
+> platforms chose to configure it through the strapping settings and do
+> not use the register. This was not noticed as the logic for bit 18 in
+> SCU24 was confused: set means programmed, but the driver read it as set
+> means strapped.
 > 
-> Since 8a53fc511c5e "clk: aspeed: Prevent reset if clock is enabled"
-> we check that enabled bit in aspeed_clk_enabled(), and do
-> nothing if already set.
+> This gives us the correct HPLL value on Palmetto systems, from which
+> most of the peripheral clocks are generated.
 > 
-> This breaks when the above scenario occurs, as the clock
-> is enabled, but the reset still needs to be lifted.
-> 
-> This patch fixes it by also checking the reset bit (if any)
-> and treating a gate in "reset" as being disabled.
-> 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Fixes: 8a53fc511c5e "clk: aspeed: Prevent reset if clock is enabled"
-> CC: Eddie James <eajames@linux.vnet.ibm.com>
+> Fixes: 5eda5d79e4be ("clk: Add clock driver for ASPEED BMC SoCs")
+> Cc: stable at vger.kernel.org # v4.15
+> Reviewed-by: C?dric Le Goater <clg@kaod.org>
+> Signed-off-by: Joel Stanley <joel@jms.id.au>
 > ---
 
-Applied to clk-fixes
+Do you want this merged for -rc5? It sounds like on some systems this is
+a problem, but I don't know if these systems are supposed to work yet or
+not, so priority of this fix is not easy for me to understand.
 
