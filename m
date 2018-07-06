@@ -1,43 +1,34 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Fri,  6 Jul 2018 15:58:10 +0200
-Subject: [PATCH] [RESEND] usb/gadget: aspeed-vhub: add USB_LIBCOMPOSITE
- dependency
-Message-ID: <20180706135840.908258-1-arnd@arndb.de>
+From: Stephen Boyd <sboyd@kernel.org>
+Date: Fri, 06 Jul 2018 10:53:33 -0700
+Subject: [PATCH] clk: aspeed: Treat a gate in reset as disabled
+In-Reply-To: <c31c3652829e8e7064f750d219237c4eb32773e4.camel@linux.vnet.ibm.com>
+References: <c31c3652829e8e7064f750d219237c4eb32773e4.camel@linux.vnet.ibm.com>
+Message-ID: <153089961364.143105.3583653247951877648@swboyd.mtv.corp.google.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Without that option, we run into a link failure:
+Quoting Benjamin Herrenschmidt (2018-07-03 00:24:47)
+> On some systems, we come out of the bootloader with some
+> gates set with the clock "enabled" but the reset also
+> asserted.
+> 
+> Since 8a53fc511c5e "clk: aspeed: Prevent reset if clock is enabled"
+> we check that enabled bit in aspeed_clk_enabled(), and do
+> nothing if already set.
+> 
+> This breaks when the above scenario occurs, as the clock
+> is enabled, but the reset still needs to be lifted.
+> 
+> This patch fixes it by also checking the reset bit (if any)
+> and treating a gate in "reset" as being disabled.
+> 
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Fixes: 8a53fc511c5e "clk: aspeed: Prevent reset if clock is enabled"
+> CC: Eddie James <eajames@linux.vnet.ibm.com>
+> ---
 
-drivers/usb/gadget/udc/aspeed-vhub/hub.o: In function `ast_vhub_std_hub_request':
-hub.c:(.text+0x5b0): undefined reference to `usb_gadget_get_string'
-
-Fixes: 7ecca2a4080c ("usb/gadget: Add driver for Aspeed SoC virtual hub")
-Acked-by: Felipe Balbi <felipe.balbi@linux.intel.com>
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
----
-Greg, as discussed in https://patchwork.kernel.org/patch/10427921/,
-please apply this as a bugfix for 4.18.
-
-     Arnd
----
- drivers/usb/gadget/udc/aspeed-vhub/Kconfig | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/drivers/usb/gadget/udc/aspeed-vhub/Kconfig b/drivers/usb/gadget/udc/aspeed-vhub/Kconfig
-index f0cdf89b8503..83ba8a2eb6af 100644
---- a/drivers/usb/gadget/udc/aspeed-vhub/Kconfig
-+++ b/drivers/usb/gadget/udc/aspeed-vhub/Kconfig
-@@ -2,6 +2,7 @@
- config USB_ASPEED_VHUB
- 	tristate "Aspeed vHub UDC driver"
- 	depends on ARCH_ASPEED || COMPILE_TEST
-+	depends on USB_LIBCOMPOSITE
- 	help
- 	  USB peripheral controller for the Aspeed AST2500 family
- 	  SoCs supporting the "vHub" functionality and USB2.0
--- 
-2.9.0
+Applied to clk-fixes
 
