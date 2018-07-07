@@ -1,21 +1,50 @@
-From: Stephen Boyd <sboyd@kernel.org>
-Date: Fri, 06 Jul 2018 13:57:10 -0700
-Subject: [PATCH] clk: aspeed: Fix SDCLK name
-In-Reply-To: <1529978125-28712-1-git-send-email-mine260309@gmail.com>
-References: <1529978125-28712-1-git-send-email-mine260309@gmail.com>
-Message-ID: <153091063090.143105.8837363425750284918@swboyd.mtv.corp.google.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Sat, 07 Jul 2018 11:47:07 +1000
+Subject: [PATCH] [RESEND] usb/gadget: aspeed-vhub: add USB_LIBCOMPOSITE
+ dependency
+In-Reply-To: <20180706135840.908258-1-arnd@arndb.de>
+References: <20180706135840.908258-1-arnd@arndb.de>
+Message-ID: <05d4a75389d4143bcb53a730ad2e9ceddc99ceb3.camel@kernel.crashing.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Quoting Lei YU (2018-06-25 18:55:25)
-> The SDCLK was named SDCLKCLK, and no one has used this yet.
-> Fix it.
+On Fri, 2018-07-06 at 15:58 +0200, Arnd Bergmann wrote:
+> Without that option, we run into a link failure:
 > 
-> Signed-off-by: Lei YU <mine260309@gmail.com>
+> drivers/usb/gadget/udc/aspeed-vhub/hub.o: In function `ast_vhub_std_hub_request':
+> hub.c:(.text+0x5b0): undefined reference to `usb_gadget_get_string'
+> 
+> Fixes: 7ecca2a4080c ("usb/gadget: Add driver for Aspeed SoC virtual hub")
+> Acked-by: Felipe Balbi <felipe.balbi@linux.intel.com>
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 > ---
+> Greg, as discussed in https://patchwork.kernel.org/patch/10427921/,
+> please apply this as a bugfix for 4.18.
 
-Applied to clk-next
+Which I acked too though on second thoughts, shouldn't the driver
+select USB_LIBCOMPOSITE ? No biggie, either way and that patch
+can/should go in, we can change things later if we change our mind.
 
+Cheers,
+Ben.
+
+>      Arnd
+> ---
+>  drivers/usb/gadget/udc/aspeed-vhub/Kconfig | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/drivers/usb/gadget/udc/aspeed-vhub/Kconfig b/drivers/usb/gadget/udc/aspeed-vhub/Kconfig
+> index f0cdf89b8503..83ba8a2eb6af 100644
+> --- a/drivers/usb/gadget/udc/aspeed-vhub/Kconfig
+> +++ b/drivers/usb/gadget/udc/aspeed-vhub/Kconfig
+> @@ -2,6 +2,7 @@
+>  config USB_ASPEED_VHUB
+>  	tristate "Aspeed vHub UDC driver"
+>  	depends on ARCH_ASPEED || COMPILE_TEST
+> +	depends on USB_LIBCOMPOSITE
+>  	help
+>  	  USB peripheral controller for the Aspeed AST2500 family
+>  	  SoCs supporting the "vHub" functionality and USB2.0
