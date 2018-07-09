@@ -1,25 +1,40 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Mon, 9 Jul 2018 09:52:33 +0200
-Subject: [PATCH] drivers/misc: Aspeed LPC snoop output using misc chardev
-In-Reply-To: <20180706182531.137362-1-benjaminfair@google.com>
-References: <20180706182531.137362-1-benjaminfair@google.com>
-Message-ID: <20180709075233.GF13479@kroah.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Mon,  9 Jul 2018 16:56:03 +0200
+Subject: [PATCH] gpio: aspeed: fix compile testing warning
+Message-ID: <20180709145612.4166409-1-arnd@arndb.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Jul 06, 2018 at 11:25:32AM -0700, Benjamin Fair wrote:
-> From: Robert Lippert <rlippert@google.com>
-> 
-> Provides the data bytes snooped over the LPC snoop bus to userspace
-> as a (blocking) misc character device.
+Gcc cannot always see that BUG_ON(1) is guaranteed to not
+return, so we get a warning message in some configurations:
 
-If this is a debugging thing, why not just use debugfs instead of a char
-device?  That should make this code simpler overall, and you can do
-whatever you want with debugfs.
+drivers/gpio/gpio-aspeed.c: In function 'bank_reg':
+drivers/gpio/gpio-aspeed.c:244:1: error: control reaches end of non-void function [-Werror=return-type]
 
-thanks,
+Using a plain BUG() is easier here and avoids the problem.
 
-greg k-h
+Fixes: 44ddf559d579 ("gpio: aspeed: Rework register type accessors")
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+ drivers/gpio/gpio-aspeed.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/gpio/gpio-aspeed.c b/drivers/gpio/gpio-aspeed.c
+index 1e00f4045f9d..2342e154029b 100644
+--- a/drivers/gpio/gpio-aspeed.c
++++ b/drivers/gpio/gpio-aspeed.c
+@@ -240,7 +240,7 @@ static inline void __iomem *bank_reg(struct aspeed_gpio *gpio,
+ 	case reg_cmdsrc1:
+ 		return gpio->base + bank->cmdsrc_regs + GPIO_CMDSRC_1;
+ 	}
+-	BUG_ON(1);
++	BUG();
+ }
+ 
+ #define GPIO_BANK(x)	((x) >> 5)
+-- 
+2.9.0
+
