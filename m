@@ -1,60 +1,51 @@
-From: Joel Stanley <joel@jms.id.au>
-Date: Thu, 12 Jul 2018 17:53:17 +1000
-Subject: [PATCH v3 3/5] fsi: master-ast-cf: Add new FSI master using
- Aspeed ColdFire
-In-Reply-To: <20180712034847.12878-4-benh@kernel.crashing.org>
-References: <20180712034847.12878-1-benh@kernel.crashing.org>
- <20180712034847.12878-4-benh@kernel.crashing.org>
-Message-ID: <CACPK8XdZKbh2NLQaiZOx66FAo+3csS_D9-BXjJKeppKm8aEM6w@mail.gmail.com>
+From: Brendan Higgins <brendanhiggins@google.com>
+Date: Thu, 12 Jul 2018 01:38:00 -0700
+Subject: [PATCH] i2c: aspeed: Add newline characters into message
+ printings.
+In-Reply-To: <c13fc12e859f7bdb300f08ad805cdf6d7ec09f52.camel@perches.com>
+References: <20180702211359.30585-1-jae.hyun.yoo@linux.intel.com>
+ <CAFd5g443wTQJ+0hrprOV949Sr_nRnBGpNo3Wd01xFN4GW4K2Ng@mail.gmail.com>
+ <2d2f2b2b-394a-506f-c870-33520335250b@linux.intel.com>
+ <c13fc12e859f7bdb300f08ad805cdf6d7ec09f52.camel@perches.com>
+Message-ID: <CAFd5g47-Bq_wUkL4vP93si+urDs-A0j26ukZ+Riy24HWi5AuuA@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 12 July 2018 at 13:48, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
-> The Aspeed AST2x00 can contain a ColdFire v1 coprocessor which
-> is currently unused on OpenPower systems.
+On Wed, Jul 11, 2018 at 10:10 AM Joe Perches <joe@perches.com> wrote:
 >
-> This adds an alternative to the fsi-master-gpio driver that
-> uses that coprocessor instead of bit banging from the ARM
-> core itself. The end result is about 4 times faster.
+> On Wed, 2018-07-11 at 09:53 -0700, Jae Hyun Yoo wrote:
+> > On 7/10/2018 10:42 PM, Brendan Higgins wrote:
+> > > On Mon, Jul 2, 2018 at 2:14 PM Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com> wrote:
+> > > > There are some log printing without a newline character. This
+> > > > patch adds the missing newline characters.
+> []
+> > > > diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
+> []
+> > > > @@ -431,7 +431,7 @@ static bool aspeed_i2c_master_irq(struct aspeed_i2c_bus *bus)
+> > > >           */
+> > > >          if (bus->master_state == ASPEED_I2C_MASTER_START) {
+> > > >                  if (unlikely(!(irq_status & ASPEED_I2CD_INTR_TX_ACK))) {
+> > > > -                       pr_devel("no slave present at %02x", msg->addr);
+> > > > +                       pr_devel("no slave present at %02x\n", msg->addr);
+> > >
+> > > Unless something changed in the last couple versions of the kernel, this is the
+> > > only line that actually changes anything. dev_* inserts a newline for every
+> > > call.
 >
-> The firmware for the coprocessor and its source code can be
-> found at https://github.com/ozbenh/cf-fsi and is system specific.
+> Not true.
 >
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> ---
->  drivers/fsi/Kconfig                      |    9 +
->  drivers/fsi/Makefile                     |    1 +
->  drivers/fsi/cf-fsi-fw.h                  |  157 +++
->  drivers/fsi/fsi-master-ast-cf.c          | 1438 ++++++++++++++++++++++
->  include/trace/events/fsi_master_ast_cf.h |  150 +++
->  5 files changed, 1755 insertions(+)
->  create mode 100644 drivers/fsi/cf-fsi-fw.h
->  create mode 100644 drivers/fsi/fsi-master-ast-cf.c
->  create mode 100644 include/trace/events/fsi_master_ast_cf.h
+> Any printk without KERN_CONT inserts a newline
+> if the last character
+> emitted is not a newline.
 >
-> diff --git a/drivers/fsi/Kconfig b/drivers/fsi/Kconfig
-> index 322cec393cf2..e0220d1e1357 100644
-> --- a/drivers/fsi/Kconfig
-> +++ b/drivers/fsi/Kconfig
-> @@ -27,6 +27,15 @@ config FSI_MASTER_HUB
->         allow chaining of FSI links to an arbitrary depth.  This allows for
->         a high target device fanout.
+> dev_<level> uses can also be followed by pr_cont.
 >
-> +config FSI_MASTER_AST_CF
-> +       tristate "FSI master based on Aspeed ColdFire coprocessor"
-> +       depends on GPIOLIB
-> +       depends on GPIO_ASPEED
-> +       ---help---
-> +       This option enables a FSI master using the AST2400 and AST2500 GPIO
-> +       lines driven by the internal ColdFire coprocessor. This requires
-> +       the corresponding machine specific ColdFire firmware to be available.
+> So this patch does reduce the possibility of
+> interleaved messages from multiple processes.
 
-The "machine specific" part isn't true anymore, is it?
+My mistake. Thanks for pointing that out.
 
-I gave this a spin on a palmetto and it appeared to work fine for me.
-
-Tested-by: Joel Stanley <joel@jms.id.au>
+Jae, forget what I said earlier. This looks good to me.
