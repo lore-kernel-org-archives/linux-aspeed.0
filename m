@@ -1,49 +1,74 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Thu, 12 Jul 2018 13:48:42 +1000
-Subject: [PATCH 0/5] fsi: Coldfire coprocessor offload
-Message-ID: <20180712034847.12878-1-benh@kernel.crashing.org>
+Date: Thu, 12 Jul 2018 13:48:43 +1000
+Subject: [PATCH v3 1/5] dt-bindings: fsi: Document binding for the
+ fsi-master-ast-cf "device"
+In-Reply-To: <20180712034847.12878-1-benh@kernel.crashing.org>
+References: <20180712034847.12878-1-benh@kernel.crashing.org>
+Message-ID: <20180712034847.12878-2-benh@kernel.crashing.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This series implements support for offloading the FSI protocol bitbanging
-to the ColdFire secondary core of the Aspeed SoCs. The result increases
-FSI performance by a factor of 4, and on systems that don't support async
-FSI clock, provide much more regular and continuous clocking which helps
-reliability.
+This isn't per-se a real device, it's a pseudo-device that
+represents the use of the Aspeed built-in ColdFire to
+implement the FSI protocol by bitbanging the GPIOs instead
+of doing it from the ARM core.
 
-This series is much smaller than the previous submissions as I already
-merged all the "preparatory" work into the FSI tree. This is now strictly
-the coldfire support and is now only waiting for ack of the DT bindings
-(and whatever other review comments might come my way) before I put it
-into the FSI tree and sends it to Greg.
+Thus it's a drop-in replacement for the existing
+fsi-master-gpio pseudo-device for use on systems based
+on the Aspeed chips. It has most of the same properties,
+plus some more needed to operate the coprocessor.
 
-There are two dependencies to be able to build/use this. The above
-prep work:
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+ .../bindings/fsi/fsi-master-ast-cf.txt        | 36 +++++++++++++++++++
+ 1 file changed, 36 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/fsi/fsi-master-ast-cf.txt
 
-      https://git.kernel.org/pub/scm/linux/kernel/git/benh/linux-fsi.git/log/
-
-And the Aspeed GPIO driver changes for handling with GPIO lines ownership and
-handshaking. The patches have been merged into the GPIO tree and a dedicated
-immutable topic branch and can be found here:
-
-      https://git.kernel.org/pub/scm/linux/kernel/git/linusw/linux-gpio.git/log/?h=ib-aspeed
-
-Finally, the driver needs a machine specific firmware file. The firwmare
-is open source and available at:
-
-	https://github.com/ozbenh/cf-fsi
-
-I will submit it to linux-firmware if there's enough popular demand ;-)
-
-v2. Fix misuse of devm_kzalloc for objects containing a struct device
-    in fsi-master-gpio and fsi-master-ast-cf (similar fixes for the
-    various FSI drivers will come later a part of rework to move away
-    from misc devs).
-
-v3. Sparse fix and updated DT bindings as per Rob's comments.
-
-
+diff --git a/Documentation/devicetree/bindings/fsi/fsi-master-ast-cf.txt b/Documentation/devicetree/bindings/fsi/fsi-master-ast-cf.txt
+new file mode 100644
+index 000000000000..431bf8a423ce
+--- /dev/null
++++ b/Documentation/devicetree/bindings/fsi/fsi-master-ast-cf.txt
+@@ -0,0 +1,36 @@
++Device-tree bindings for ColdFire offloaded gpio-based FSI master driver
++------------------------------------------------------------------------
++
++Required properties:
++ - compatible =
++	"aspeed,ast2400-cf-fsi-master" for an AST2400 based system
++   or
++	"aspeed,ast2500-cf-fsi-master" for an AST2500 based system
++
++ - clock-gpios = <gpio-descriptor>;	: GPIO for FSI clock
++ - data-gpios = <gpio-descriptor>;	: GPIO for FSI data signal
++ - enable-gpios = <gpio-descriptor>;	: GPIO for enable signal
++ - trans-gpios = <gpio-descriptor>;	: GPIO for voltage translator enable
++ - mux-gpios = <gpio-descriptor>;	: GPIO for pin multiplexing with other
++                                          functions (eg, external FSI masters)
++ - memory-region = <phandle>;		: Reference to the reserved memory for
++                                          the ColdFire. Must be 2M aligned on
++					  AST2400 and 1M aligned on AST2500
++ - aspeed,sram = <phandle>;		: Reference to the SRAM node.
++ - aspeed,cvic = <phandle>;		: Reference to the CVIC node.
++
++Examples:
++
++    fsi-master {
++        compatible = "aspeed,ast2500-cf-fsi-master", "fsi-master";
++
++	clock-gpios = <&gpio 0>;
++        data-gpios = <&gpio 1>;
++        enable-gpios = <&gpio 2>;
++        trans-gpios = <&gpio 3>;
++        mux-gpios = <&gpio 4>;
++
++	memory-region = <&coldfire_memory>;
++	sram = <&sram>;
++	cvic = <&cvic>;
++    }
+-- 
+2.17.1
 
