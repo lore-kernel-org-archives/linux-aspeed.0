@@ -1,129 +1,60 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Thu, 12 Jul 2018 15:05:02 +1000
-Subject: [PATCH] usb: gadget: aspeed: Workaround memory ordering issue
-Message-ID: <1d5c1d9b3ad5fe030e7ef6363e69e56dcba7c5bc.camel@kernel.crashing.org>
+From: Joel Stanley <joel@jms.id.au>
+Date: Thu, 12 Jul 2018 17:53:17 +1000
+Subject: [PATCH v3 3/5] fsi: master-ast-cf: Add new FSI master using
+ Aspeed ColdFire
+In-Reply-To: <20180712034847.12878-4-benh@kernel.crashing.org>
+References: <20180712034847.12878-1-benh@kernel.crashing.org>
+ <20180712034847.12878-4-benh@kernel.crashing.org>
+Message-ID: <CACPK8XdZKbh2NLQaiZOx66FAo+3csS_D9-BXjJKeppKm8aEM6w@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The Aspeed SoC has a memory ordering issue that (thankfully)
-only affects the USB gadget device. A read back is necessary
-after writing to memory and before letting the device DMA
-from it.
+On 12 July 2018 at 13:48, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+> The Aspeed AST2x00 can contain a ColdFire v1 coprocessor which
+> is currently unused on OpenPower systems.
+>
+> This adds an alternative to the fsi-master-gpio driver that
+> uses that coprocessor instead of bit banging from the ARM
+> core itself. The end result is about 4 times faster.
+>
+> The firmware for the coprocessor and its source code can be
+> found at https://github.com/ozbenh/cf-fsi and is system specific.
+>
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> ---
+>  drivers/fsi/Kconfig                      |    9 +
+>  drivers/fsi/Makefile                     |    1 +
+>  drivers/fsi/cf-fsi-fw.h                  |  157 +++
+>  drivers/fsi/fsi-master-ast-cf.c          | 1438 ++++++++++++++++++++++
+>  include/trace/events/fsi_master_ast_cf.h |  150 +++
+>  5 files changed, 1755 insertions(+)
+>  create mode 100644 drivers/fsi/cf-fsi-fw.h
+>  create mode 100644 drivers/fsi/fsi-master-ast-cf.c
+>  create mode 100644 include/trace/events/fsi_master_ast_cf.h
+>
+> diff --git a/drivers/fsi/Kconfig b/drivers/fsi/Kconfig
+> index 322cec393cf2..e0220d1e1357 100644
+> --- a/drivers/fsi/Kconfig
+> +++ b/drivers/fsi/Kconfig
+> @@ -27,6 +27,15 @@ config FSI_MASTER_HUB
+>         allow chaining of FSI links to an arbitrary depth.  This allows for
+>         a high target device fanout.
+>
+> +config FSI_MASTER_AST_CF
+> +       tristate "FSI master based on Aspeed ColdFire coprocessor"
+> +       depends on GPIOLIB
+> +       depends on GPIO_ASPEED
+> +       ---help---
+> +       This option enables a FSI master using the AST2400 and AST2500 GPIO
+> +       lines driven by the internal ColdFire coprocessor. This requires
+> +       the corresponding machine specific ColdFire firmware to be available.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
- drivers/usb/gadget/udc/aspeed-vhub/ep0.c  |  2 ++
- drivers/usb/gadget/udc/aspeed-vhub/epn.c  | 14 +++++++---
- drivers/usb/gadget/udc/aspeed-vhub/vhub.h | 33 +++++++++++++++++++++++
- 3 files changed, 46 insertions(+), 3 deletions(-)
+The "machine specific" part isn't true anymore, is it?
 
-diff --git a/drivers/usb/gadget/udc/aspeed-vhub/ep0.c b/drivers/usb/gadget/udc/aspeed-vhub/ep0.c
-index 44f2b3b53b2f..e2927fb083cf 100644
---- a/drivers/usb/gadget/udc/aspeed-vhub/ep0.c
-+++ b/drivers/usb/gadget/udc/aspeed-vhub/ep0.c
-@@ -219,6 +219,8 @@ static void ast_vhub_ep0_do_send(struct ast_vhub_ep *ep,
- 	if (chunk && req->req.buf)
- 		memcpy(ep->buf, req->req.buf + req->req.actual, chunk);
- 
-+	vhub_dma_workaround(ep->buf);
-+
- 	/* Remember chunk size and trigger send */
- 	reg = VHUB_EP0_SET_TX_LEN(chunk);
- 	writel(reg, ep->ep0.ctlstat);
-diff --git a/drivers/usb/gadget/udc/aspeed-vhub/epn.c b/drivers/usb/gadget/udc/aspeed-vhub/epn.c
-index 80c9feac5147..5939eb1e97f2 100644
---- a/drivers/usb/gadget/udc/aspeed-vhub/epn.c
-+++ b/drivers/usb/gadget/udc/aspeed-vhub/epn.c
-@@ -66,11 +66,16 @@ static void ast_vhub_epn_kick(struct ast_vhub_ep *ep, struct ast_vhub_req *req)
- 	if (!req->req.dma) {
- 
- 		/* For IN transfers, copy data over first */
--		if (ep->epn.is_in)
-+		if (ep->epn.is_in) {
- 			memcpy(ep->buf, req->req.buf + act, chunk);
-+			vhub_dma_workaround(ep->buf);
-+		}
- 		writel(ep->buf_dma, ep->epn.regs + AST_VHUB_EP_DESC_BASE);
--	} else
-+	} else {
-+		if (ep->epn.is_in)
-+			vhub_dma_workaround(req->req.buf);
- 		writel(req->req.dma + act, ep->epn.regs + AST_VHUB_EP_DESC_BASE);
-+	}
- 
- 	/* Start DMA */
- 	req->active = true;
-@@ -161,6 +166,7 @@ static inline unsigned int ast_vhub_count_free_descs(struct ast_vhub_ep *ep)
- static void ast_vhub_epn_kick_desc(struct ast_vhub_ep *ep,
- 				   struct ast_vhub_req *req)
- {
-+	struct ast_vhub_desc *desc = NULL;
- 	unsigned int act = req->act_count;
- 	unsigned int len = req->req.length;
- 	unsigned int chunk;
-@@ -177,7 +183,6 @@ static void ast_vhub_epn_kick_desc(struct ast_vhub_ep *ep,
- 
- 	/* While we can create descriptors */
- 	while (ast_vhub_count_free_descs(ep) && req->last_desc < 0) {
--		struct ast_vhub_desc *desc;
- 		unsigned int d_num;
- 
- 		/* Grab next free descriptor */
-@@ -227,6 +232,9 @@ static void ast_vhub_epn_kick_desc(struct ast_vhub_ep *ep,
- 		req->act_count = act = act + chunk;
- 	}
- 
-+	if (likely(desc))
-+		vhub_dma_workaround(desc);
-+
- 	/* Tell HW about new descriptors */
- 	writel(VHUB_EP_DMA_SET_CPU_WPTR(ep->epn.d_next),
- 	       ep->epn.regs + AST_VHUB_EP_DESC_STATUS);
-diff --git a/drivers/usb/gadget/udc/aspeed-vhub/vhub.h b/drivers/usb/gadget/udc/aspeed-vhub/vhub.h
-index 2b040257bc1f..4ed03d33a5a9 100644
---- a/drivers/usb/gadget/udc/aspeed-vhub/vhub.h
-+++ b/drivers/usb/gadget/udc/aspeed-vhub/vhub.h
-@@ -462,6 +462,39 @@ enum std_req_rc {
- #define DDBG(d, fmt, ...)	do { } while(0)
- #endif
- 
-+static inline void vhub_dma_workaround(void *addr)
-+{
-+	/*
-+	 * This works around a confirmed HW issue with the Aspeed chip.
-+	 *
-+	 * The core uses a different bus to memory than the AHB going to
-+	 * the USB device controller. Due to the latter having a higher
-+	 * priority than the core for arbitration on that bus, it's
-+	 * possible for an MMIO to the device, followed by a DMA by the
-+	 * device from memory to all be performed and services before
-+	 * a previous store to memory gets completed.
-+	 *
-+	 * This the following scenario can happen:
-+	 *
-+	 *    - Driver writes to a DMA descriptor (Mbus)
-+	 *    - Driver writes to the MMIO register to start the DMA (AHB)
-+	 *    - The gadget sees the second write and sends a read of the
-+	 *      descriptor to the memory controller (Mbus)
-+	 *    - The gadget hits memory before the descriptor write
-+	 *      causing it to read an obsolete value.
-+	 *
-+	 * Thankfully the problem is limited to the USB gadget device, other
-+	 * masters in the SoC all have a lower priority than the core, thus
-+	 * ensuring that the store by the core arrives first.
-+	 *
-+	 * The workaround consists of using a dummy read of the memory before
-+	 * doing the MMIO writes. This will ensure that the previous writes
-+	 * have been "pushed out".
-+	 */
-+	mb();
-+	(void)__raw_readl((void __iomem *)addr);
-+}
-+
- /* core.c */
- void ast_vhub_done(struct ast_vhub_ep *ep, struct ast_vhub_req *req,
- 		   int status);
+I gave this a spin on a palmetto and it appeared to work fine for me.
 
+Tested-by: Joel Stanley <joel@jms.id.au>
