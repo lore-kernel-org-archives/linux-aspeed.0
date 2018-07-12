@@ -1,53 +1,103 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Thu, 12 Jul 2018 13:48:46 +1000
-Subject: [PATCH v3 4/5] arm: dts: OpenPower Romulus system can use coprocessor
- for FSI
+Date: Thu, 12 Jul 2018 13:48:44 +1000
+Subject: [PATCH v3 2/5] devres: Add devm_of_iomap()
 In-Reply-To: <20180712034847.12878-1-benh@kernel.crashing.org>
 References: <20180712034847.12878-1-benh@kernel.crashing.org>
-Message-ID: <20180712034847.12878-5-benh@kernel.crashing.org>
+Message-ID: <20180712034847.12878-3-benh@kernel.crashing.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
- arch/arm/boot/dts/aspeed-bmc-opp-romulus.dts | 12 ++++++++++--
- 1 file changed, 10 insertions(+), 2 deletions(-)
+There are still quite a few cases where a device might want
+to get to a different node of the device-tree, obtain the
+resources and map them.
 
-diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-romulus.dts b/arch/arm/boot/dts/aspeed-bmc-opp-romulus.dts
-index 347938673c83..4f4e42e47e3f 100644
---- a/arch/arm/boot/dts/aspeed-bmc-opp-romulus.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-opp-romulus.dts
-@@ -37,6 +37,11 @@
- 			compatible = "shared-dma-pool";
- 			reusable;
- 		};
+We have of_iomap() and of_io_request_and_map() but they both
+have shortcomings, such as not returning the size of the
+resource found (which can be useful) and not being "managed".
+
+This adds a devm_of_iomap() that provides all of these and
+should probably replace uses of the above in most drivers.
+
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+Reviewed-by: Joel Stanley <joel@jms.id.au>
+---
+ include/linux/device.h |  4 ++++
+ lib/devres.c           | 36 ++++++++++++++++++++++++++++++++++++
+ 2 files changed, 40 insertions(+)
+
+diff --git a/include/linux/device.h b/include/linux/device.h
+index 477956990f5e..96249d790374 100644
+--- a/include/linux/device.h
++++ b/include/linux/device.h
+@@ -688,6 +688,10 @@ extern void devm_free_pages(struct device *dev, unsigned long addr);
+ 
+ void __iomem *devm_ioremap_resource(struct device *dev, struct resource *res);
+ 
++void __iomem *devm_of_iomap(struct device *dev,
++			    struct device_node *node, int index,
++			    resource_size_t *size);
 +
-+		coldfire_memory: codefire_memory at 9ef00000 {
-+			reg = <0x9ef00000 0x00100000>;
-+			no-map;
-+		};
- 	};
+ /* allows to add/remove a custom action to devres stack */
+ int devm_add_action(struct device *dev, void (*action)(void *), void *data);
+ void devm_remove_action(struct device *dev, void (*action)(void *), void *data);
+diff --git a/lib/devres.c b/lib/devres.c
+index 5bec1120b392..faccf1a037d0 100644
+--- a/lib/devres.c
++++ b/lib/devres.c
+@@ -4,6 +4,7 @@
+ #include <linux/io.h>
+ #include <linux/gfp.h>
+ #include <linux/export.h>
++#include <linux/of_address.h>
  
- 	leds {
-@@ -56,10 +61,13 @@
- 	};
+ enum devm_ioremap_type {
+ 	DEVM_IOREMAP = 0,
+@@ -162,6 +163,41 @@ void __iomem *devm_ioremap_resource(struct device *dev, struct resource *res)
+ }
+ EXPORT_SYMBOL(devm_ioremap_resource);
  
- 	fsi: gpio-fsi {
--		compatible = "fsi-master-gpio", "fsi-master";
-+		compatible = "aspeed,ast2500-cf-fsi-master", "fsi-master";
- 		#address-cells = <2>;
- 		#size-cells = <0>;
--		no-gpio-delays;
++/*
++ * devm_of_iomap - Requests a resource and maps the memory mapped IO
++ *		   for a given device_node managed by a given device
++ *
++ * Checks that a resource is a valid memory region, requests the memory
++ * region and ioremaps it. All operations are managed and will be undone
++ * on driver detach of the device.
++ *
++ * This is to be used when a device requests/maps resources described
++ * by other device tree nodes (children or otherwise).
++ *
++ * @dev:	The device "managing" the resource
++ * @node:       The device-tree node where the resource resides
++ * @index:	index of the MMIO range in the "reg" property
++ * @size:	Returns the size of the resource (pass NULL if not needed)
++ * Returns a pointer to the requested and mapped memory or an ERR_PTR() encoded
++ * error code on failure. Usage example:
++ *
++ *	base = devm_of_iomap(&pdev->dev, node, 0, NULL);
++ *	if (IS_ERR(base))
++ *		return PTR_ERR(base);
++ */
++void __iomem *devm_of_iomap(struct device *dev, struct device_node *node, int index,
++			    resource_size_t *size)
++{
++	struct resource res;
 +
-+		memory-region = <&coldfire_memory>;
-+		aspeed,sram = <&sram>;
-+		aspeed,cvic = <&cvic>;
- 
- 		clock-gpios = <&gpio ASPEED_GPIO(AA, 0) GPIO_ACTIVE_HIGH>;
- 		data-gpios = <&gpio ASPEED_GPIO(AA, 2) GPIO_ACTIVE_HIGH>;
++	if (of_address_to_resource(node, index, &res))
++		return IOMEM_ERR_PTR(-EINVAL);
++	if (size)
++		*size = resource_size(&res);
++	return devm_ioremap_resource(dev, &res);
++}
++EXPORT_SYMBOL(devm_of_iomap);
++
+ #ifdef CONFIG_HAS_IOPORT_MAP
+ /*
+  * Generic iomap devres
 -- 
 2.17.1
 
