@@ -1,95 +1,104 @@
 From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-Date: Fri, 13 Jul 2018 11:54:24 -0700
-Subject: [PATCH] i2c: aspeed: Improve driver to support multi-master use
- cases stably
-In-Reply-To: <CAFd5g47zdPdqqjVJtNHtFk+jKgciKbMcEH9M-W9rL4DgLM5hkg@mail.gmail.com>
-References: <20180626165812.4141-1-jae.hyun.yoo@linux.intel.com>
- <CAFd5g45z--ucXf-So517tgrayZT6x2TGvaUvaDF7zeRNn7CPXw@mail.gmail.com>
- <e51471e6-0f8a-bffc-34c8-1e74239fdbcf@linux.intel.com>
- <CAFd5g47j_h4ZrT8Eg1FZ8sAj5ekCUH20jUVub75ozdkg8_YW7Q@mail.gmail.com>
- <921b1ab7-9c9f-0aeb-da89-5a1a27d009f0@linux.intel.com>
- <d3f10fc1-635b-3a5d-a967-2816eac005fc@linux.intel.com>
- <CAFd5g47zdPdqqjVJtNHtFk+jKgciKbMcEH9M-W9rL4DgLM5hkg@mail.gmail.com>
-Message-ID: <b8232faa-58f5-f3a5-d12a-3f326cf1d03d@linux.intel.com>
+Date: Fri, 13 Jul 2018 12:21:35 -0700
+Subject: [PATCH] i2c: aspeed: Adjust spinlock scope in the irq handler
+In-Reply-To: <CAFd5g47nBCbF0mcYqEnQkDpz0Dhh0F0S1-wEL_yBHgs1b3yE5w@mail.gmail.com>
+References: <20180702214011.16071-1-jae.hyun.yoo@linux.intel.com>
+ <CAFd5g47nBCbF0mcYqEnQkDpz0Dhh0F0S1-wEL_yBHgs1b3yE5w@mail.gmail.com>
+Message-ID: <59538d26-f025-28da-63df-f675e80fd68b@linux.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 7/13/2018 11:12 AM, Brendan Higgins wrote:
-> On Fri, Jul 13, 2018 at 10:22 AM Jae Hyun Yoo
+On 7/12/2018 1:41 AM, Brendan Higgins wrote:
+> On Mon, Jul 2, 2018 at 2:40 PM Jae Hyun Yoo
 > <jae.hyun.yoo@linux.intel.com> wrote:
 >>
->> On 7/12/2018 11:21 AM, Jae Hyun Yoo wrote:
->>> On 7/12/2018 2:33 AM, Brendan Higgins wrote:
->>>> On Wed, Jun 27, 2018 at 10:55 AM Jae Hyun Yoo
->>>> <jae.hyun.yoo@linux.intel.com> wrote:
-> <snip>
->>>> <snip>
->>>>>>> +       for (;;) {
->>>>>>> +               if (!(readl(bus->base + ASPEED_I2C_CMD_REG) &
->>>>>>> +                     (ASPEED_I2CD_BUS_BUSY_STS |
->>>>>>> +                      ASPEED_I2CD_XFER_MODE_STS_MASK)))
->>>>>>
->>>>>> Is using the Transfer Mode State Machine bits necessary? The
->>>>>> documentation marks it as "for debugging purpose only," so relying on
->>>>>> it makes me nervous.
->>>>>>
->>>>>
->>>>> As you said, the documentation marks it as "for debugging purpose only."
->>>>> but ASPEED also uses this way in their SDK code because it's the best
->>>>> way for checking bus busy status which can cover both single and
->>>>> multi-master use cases.
->>>>>
->>>>
->>>> Well, it would also be really nice to have access to this bit if
->>>> someone wants
->>>> to implement MCTP. Could we maybe check with Aspeed what them meant by
->>>> "for
->>>> debugging purposes only" and document it here? It makes me nervous to
->>>> rely on
->>>> debugging functionality for normal usage.
->>>>
->>>
->>> Okay, I'll check it with Aspeed. Will let you know their response.
->>>
+>> This patch adjusts spinlock scope to make it wrap the whole irq
+>> handler using a single lock/unlock which covers both master and
+>> slave handlers.
 >>
->> I've checked it with Gary Hsu <gary_hsu@aspeedtech.com> and he confirmed
->> that the bits reflect real information and good to be used in practical
->> code.
+>> Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+>> ---
+>>   drivers/i2c/busses/i2c-aspeed.c | 16 ++++++++++------
+>>   1 file changed, 10 insertions(+), 6 deletions(-)
+>>
+>> diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
+>> index 60e4d0e939a3..9f02aa959a3e 100644
+>> --- a/drivers/i2c/busses/i2c-aspeed.c
+>> +++ b/drivers/i2c/busses/i2c-aspeed.c
+>> @@ -234,7 +234,6 @@ static bool aspeed_i2c_slave_irq(struct aspeed_i2c_bus *bus)
+>>          bool irq_handled = true;
+>>          u8 value;
+>>
+>> -       spin_lock(&bus->lock);
+>>          if (!slave) {
+>>                  irq_handled = false;
+>>                  goto out;
+>> @@ -325,7 +324,6 @@ static bool aspeed_i2c_slave_irq(struct aspeed_i2c_bus *bus)
+>>          writel(status_ack, bus->base + ASPEED_I2C_INTR_STS_REG);
+>>
+>>   out:
+>> -       spin_unlock(&bus->lock);
+>>          return irq_handled;
+>>   }
+>>   #endif /* CONFIG_I2C_SLAVE */
+>> @@ -389,7 +387,6 @@ static bool aspeed_i2c_master_irq(struct aspeed_i2c_bus *bus)
+>>          u8 recv_byte;
+>>          int ret;
+>>
+>> -       spin_lock(&bus->lock);
+>>          irq_status = readl(bus->base + ASPEED_I2C_INTR_STS_REG);
+>>          /* Ack all interrupt bits. */
+>>          writel(irq_status, bus->base + ASPEED_I2C_INTR_STS_REG);
+>> @@ -547,22 +544,29 @@ static bool aspeed_i2c_master_irq(struct aspeed_i2c_bus *bus)
+>>                  dev_err(bus->dev,
+>>                          "irq handled != irq. expected 0x%08x, but was 0x%08x\n",
+>>                          irq_status, status_ack);
+>> -       spin_unlock(&bus->lock);
+>>          return !!irq_status;
+>>   }
+>>
+>>   static irqreturn_t aspeed_i2c_bus_irq(int irq, void *dev_id)
+>>   {
+>>          struct aspeed_i2c_bus *bus = dev_id;
+>> +       bool ret;
+>> +
+>> +       spin_lock(&bus->lock);
+>>
+>>   #if IS_ENABLED(CONFIG_I2C_SLAVE)
+>>          if (aspeed_i2c_slave_irq(bus)) {
+>>                  dev_dbg(bus->dev, "irq handled by slave.\n");
+>> -               return IRQ_HANDLED;
+>> +               ret = true;
+>> +               goto out;
+>>          }
+>>   #endif /* CONFIG_I2C_SLAVE */
+>>
+>> -       return aspeed_i2c_master_irq(bus) ? IRQ_HANDLED : IRQ_NONE;
+>> +       ret = aspeed_i2c_master_irq(bus);
+>> +
+>> +out:
+>> +       spin_unlock(&bus->lock);
+>> +       return ret ? IRQ_HANDLED : IRQ_NONE;
+>>   }
+>>
+>>   static int aspeed_i2c_master_xfer(struct i2c_adapter *adap,
+>> --
+>> 2.17.1
+>>
 > 
-> Huh. For my own edification, could you ask them why they said "for debugging
-> purpose only" in the documentation? I am just really curious what they meant by
-> that. I would be satisfied if you just CC'ed me on your email thread with Gary,
-> and I can ask him myself.
+> Reviewed-by: Brendan Higgins <brendanhiggins@google.com>
+> 
+> Thanks!
 > 
 
-I've already CC'ed Gary and Ryan in this thread.
+Thanks Brendan!
 
-Hi Gary,
-
-Can you explain why the documentation says that the bit field is 'for
-debugging purpose only'? Any plan to change the description?
+BTW, to whom should I ask applying this patch? Should I send v2 after
+adding your reviewed-by tag?
 
 Thanks,
 
 Jae
-
->>
->> I'll add a comment like below:
->>
->> /*
->>    * This is marked as 'for debugging purpose only' in datasheet but
->>    * ASPEED confirmed that this reflects real information and good
->>    * to be used in practical code.
->>    */
->>
->> Is it acceptable then?
-> 
-> Yeah, that's fine.
-> 
-> <snip>
-> 
-> Cheers
-> 
