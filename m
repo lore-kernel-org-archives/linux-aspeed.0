@@ -1,104 +1,26 @@
 From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-Date: Fri, 13 Jul 2018 12:21:35 -0700
+Date: Fri, 13 Jul 2018 13:37:17 -0700
 Subject: [PATCH] i2c: aspeed: Adjust spinlock scope in the irq handler
-In-Reply-To: <CAFd5g47nBCbF0mcYqEnQkDpz0Dhh0F0S1-wEL_yBHgs1b3yE5w@mail.gmail.com>
+In-Reply-To: <20180713203327.47yq4gucidbzn2hd@katana>
 References: <20180702214011.16071-1-jae.hyun.yoo@linux.intel.com>
  <CAFd5g47nBCbF0mcYqEnQkDpz0Dhh0F0S1-wEL_yBHgs1b3yE5w@mail.gmail.com>
-Message-ID: <59538d26-f025-28da-63df-f675e80fd68b@linux.intel.com>
+ <59538d26-f025-28da-63df-f675e80fd68b@linux.intel.com>
+ <20180713203327.47yq4gucidbzn2hd@katana>
+Message-ID: <0840cfe8-e18a-ae7c-5593-fc43b9b47291@linux.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 7/12/2018 1:41 AM, Brendan Higgins wrote:
-> On Mon, Jul 2, 2018 at 2:40 PM Jae Hyun Yoo
-> <jae.hyun.yoo@linux.intel.com> wrote:
->>
->> This patch adjusts spinlock scope to make it wrap the whole irq
->> handler using a single lock/unlock which covers both master and
->> slave handlers.
->>
->> Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
->> ---
->>   drivers/i2c/busses/i2c-aspeed.c | 16 ++++++++++------
->>   1 file changed, 10 insertions(+), 6 deletions(-)
->>
->> diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
->> index 60e4d0e939a3..9f02aa959a3e 100644
->> --- a/drivers/i2c/busses/i2c-aspeed.c
->> +++ b/drivers/i2c/busses/i2c-aspeed.c
->> @@ -234,7 +234,6 @@ static bool aspeed_i2c_slave_irq(struct aspeed_i2c_bus *bus)
->>          bool irq_handled = true;
->>          u8 value;
->>
->> -       spin_lock(&bus->lock);
->>          if (!slave) {
->>                  irq_handled = false;
->>                  goto out;
->> @@ -325,7 +324,6 @@ static bool aspeed_i2c_slave_irq(struct aspeed_i2c_bus *bus)
->>          writel(status_ack, bus->base + ASPEED_I2C_INTR_STS_REG);
->>
->>   out:
->> -       spin_unlock(&bus->lock);
->>          return irq_handled;
->>   }
->>   #endif /* CONFIG_I2C_SLAVE */
->> @@ -389,7 +387,6 @@ static bool aspeed_i2c_master_irq(struct aspeed_i2c_bus *bus)
->>          u8 recv_byte;
->>          int ret;
->>
->> -       spin_lock(&bus->lock);
->>          irq_status = readl(bus->base + ASPEED_I2C_INTR_STS_REG);
->>          /* Ack all interrupt bits. */
->>          writel(irq_status, bus->base + ASPEED_I2C_INTR_STS_REG);
->> @@ -547,22 +544,29 @@ static bool aspeed_i2c_master_irq(struct aspeed_i2c_bus *bus)
->>                  dev_err(bus->dev,
->>                          "irq handled != irq. expected 0x%08x, but was 0x%08x\n",
->>                          irq_status, status_ack);
->> -       spin_unlock(&bus->lock);
->>          return !!irq_status;
->>   }
->>
->>   static irqreturn_t aspeed_i2c_bus_irq(int irq, void *dev_id)
->>   {
->>          struct aspeed_i2c_bus *bus = dev_id;
->> +       bool ret;
->> +
->> +       spin_lock(&bus->lock);
->>
->>   #if IS_ENABLED(CONFIG_I2C_SLAVE)
->>          if (aspeed_i2c_slave_irq(bus)) {
->>                  dev_dbg(bus->dev, "irq handled by slave.\n");
->> -               return IRQ_HANDLED;
->> +               ret = true;
->> +               goto out;
->>          }
->>   #endif /* CONFIG_I2C_SLAVE */
->>
->> -       return aspeed_i2c_master_irq(bus) ? IRQ_HANDLED : IRQ_NONE;
->> +       ret = aspeed_i2c_master_irq(bus);
->> +
->> +out:
->> +       spin_unlock(&bus->lock);
->> +       return ret ? IRQ_HANDLED : IRQ_NONE;
->>   }
->>
->>   static int aspeed_i2c_master_xfer(struct i2c_adapter *adap,
->> --
->> 2.17.1
->>
+On 7/13/2018 1:33 PM, Wolfram Sang wrote:
 > 
-> Reviewed-by: Brendan Higgins <brendanhiggins@google.com>
+>> BTW, to whom should I ask applying this patch? Should I send v2 after
+>> adding your reviewed-by tag?
 > 
-> Thanks!
+> Not needed, thanks. I use 'patchwork' and this tool collects all the
+> tags for me. If I see a patch reviewed by a driver maintainer, I'll pick
+> it up in the next queue.
 > 
 
-Thanks Brendan!
-
-BTW, to whom should I ask applying this patch? Should I send v2 after
-adding your reviewed-by tag?
-
-Thanks,
-
-Jae
+Oh, I see. Thanks a lot Wolfram!
