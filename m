@@ -1,126 +1,66 @@
-From: Gary Hsu <gary_hsu@aspeedtech.com>
-Date: Mon, 16 Jul 2018 03:05:50 +0000
-Subject: [PATCH] i2c: aspeed: Improve driver to support multi-master use
- cases stably
-In-Reply-To: <b8232faa-58f5-f3a5-d12a-3f326cf1d03d@linux.intel.com>
-References: <20180626165812.4141-1-jae.hyun.yoo@linux.intel.com>
- <CAFd5g45z--ucXf-So517tgrayZT6x2TGvaUvaDF7zeRNn7CPXw@mail.gmail.com>
- <e51471e6-0f8a-bffc-34c8-1e74239fdbcf@linux.intel.com>
- <CAFd5g47j_h4ZrT8Eg1FZ8sAj5ekCUH20jUVub75ozdkg8_YW7Q@mail.gmail.com>
- <921b1ab7-9c9f-0aeb-da89-5a1a27d009f0@linux.intel.com>
- <d3f10fc1-635b-3a5d-a967-2816eac005fc@linux.intel.com>
- <CAFd5g47zdPdqqjVJtNHtFk+jKgciKbMcEH9M-W9rL4DgLM5hkg@mail.gmail.com>
- <b8232faa-58f5-f3a5-d12a-3f326cf1d03d@linux.intel.com>
-Message-ID: <a84da5d076924f40b1c836fe8b9d0844@TWMBX01.aspeed.com>
+From: Andrew Jeffery <andrew@aj.id.au>
+Date: Mon, 16 Jul 2018 14:47:12 +0930
+Subject: [PATCH 1/7] arm: dts: aspeed: Add aspeed G4 USB pinmux
+In-Reply-To: <20180629035106.27181-2-benh@kernel.crashing.org>
+References: <20180629035106.27181-1-benh@kernel.crashing.org>
+ <20180629035106.27181-2-benh@kernel.crashing.org>
+Message-ID: <1531718232.1112143.1441811576.1A98A0F8@webmail.messagingengine.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Jae,
-
-In originally, we reserved these register bits for debug purpose. But for some error handling case, we found it is also useful to help to clarify some error conditions. So driver also can use these fields information to check something.
-As for how driver use these information in their code, I have no comment. I don?t understand the driver. But these information is the real controller state, it had no problem to use information.
-
-Best Regards,
-
-??? Gary Hsu
-
-??????????
-ASPEED Technology Inc.
-
-2F,No.15,Industry East Road 4.,Hsinchu Science Park, Hsinchu City 30077, Taiwan
-??????????? 15 ? 2F
-
-Tel : 886-3-5789568 ext:807
-Fax : 886-3-5789586
-Web : http://www.aspeedtech.com
-
-************* Email Confidentiality Notice ********************
-????:
-???????????,???(????)????????????????? ???????????????????????????, ??????????????????????????????!
-
-DISCLAIMER:
-This message (and any attachments) may contain legally privileged and/or other confidential information. If you have received it in error, please notify the sender by reply e-mail and immediately delete the e-mail and any attachments without copying or disclosing the contents. Thank you.
-
------Original Message-----
-From: Jae Hyun Yoo [mailto:jae.hyun.yoo at linux.intel.com] 
-Sent: Saturday, July 14, 2018 2:54 AM
-To: Brendan Higgins <brendanhiggins@google.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>; Joel Stanley <joel@jms.id.au>; Andrew Jeffery <andrew@aj.id.au>; linux-i2c at vger.kernel.org; OpenBMC Maillist <openbmc@lists.ozlabs.org>; Linux ARM <linux-arm-kernel@lists.infradead.org>; linux-aspeed at lists.ozlabs.org; Linux Kernel Mailing List <linux-kernel@vger.kernel.org>; james.feist at linux.intel.com; vernon.mauery at linux.intel.com; Benjamin Fair <benjaminfair@google.com>; Patrick Venture <venture@google.com>; Gary Hsu <gary_hsu@aspeedtech.com>; Ryan Chen <ryan_chen@aspeedtech.com>
-Subject: Re: [PATCH] i2c: aspeed: Improve driver to support multi-master use cases stably
-
-On 7/13/2018 11:12 AM, Brendan Higgins wrote:
-> On Fri, Jul 13, 2018 at 10:22 AM Jae Hyun Yoo 
-> <jae.hyun.yoo@linux.intel.com> wrote:
->>
->> On 7/12/2018 11:21 AM, Jae Hyun Yoo wrote:
->>> On 7/12/2018 2:33 AM, Brendan Higgins wrote:
->>>> On Wed, Jun 27, 2018 at 10:55 AM Jae Hyun Yoo 
->>>> <jae.hyun.yoo@linux.intel.com> wrote:
-> <snip>
->>>> <snip>
->>>>>>> +       for (;;) {
->>>>>>> +               if (!(readl(bus->base + ASPEED_I2C_CMD_REG) &
->>>>>>> +                     (ASPEED_I2CD_BUS_BUSY_STS |
->>>>>>> +                      ASPEED_I2CD_XFER_MODE_STS_MASK)))
->>>>>>
->>>>>> Is using the Transfer Mode State Machine bits necessary? The 
->>>>>> documentation marks it as "for debugging purpose only," so 
->>>>>> relying on it makes me nervous.
->>>>>>
->>>>>
->>>>> As you said, the documentation marks it as "for debugging purpose only."
->>>>> but ASPEED also uses this way in their SDK code because it's the 
->>>>> best way for checking bus busy status which can cover both single 
->>>>> and multi-master use cases.
->>>>>
->>>>
->>>> Well, it would also be really nice to have access to this bit if 
->>>> someone wants to implement MCTP. Could we maybe check with Aspeed 
->>>> what them meant by "for debugging purposes only" and document it 
->>>> here? It makes me nervous to rely on debugging functionality for 
->>>> normal usage.
->>>>
->>>
->>> Okay, I'll check it with Aspeed. Will let you know their response.
->>>
->>
->> I've checked it with Gary Hsu <gary_hsu@aspeedtech.com> and he 
->> confirmed that the bits reflect real information and good to be used 
->> in practical code.
+On Fri, 29 Jun 2018, at 13:21, Benjamin Herrenschmidt wrote:
+> Set the default pinmux for EHCI so boards don't have to do
+> it an document why it is not set for UHCI.
 > 
-> Huh. For my own edification, could you ask them why they said "for 
-> debugging purpose only" in the documentation? I am just really curious 
-> what they meant by that. I would be satisfied if you just CC'ed me on 
-> your email thread with Gary, and I can ask him myself.
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> ---
+>  arch/arm/boot/dts/aspeed-g4.dtsi | 6 ++++++
+>  1 file changed, 6 insertions(+)
 > 
+> diff --git a/arch/arm/boot/dts/aspeed-g4.dtsi b/arch/arm/boot/dts/aspeed-g4.dtsi
+> index 75df1573380e..1d7ffa9fdb11 100644
+> --- a/arch/arm/boot/dts/aspeed-g4.dtsi
+> +++ b/arch/arm/boot/dts/aspeed-g4.dtsi
+> @@ -113,6 +113,8 @@
+>  			reg = <0x1e6a1000 0x100>;
+>  			interrupts = <5>;
+>  			clocks = <&syscon ASPEED_CLK_GATE_USBPORT1CLK>;
+> +			pinctrl-names = "default";
+> +			pinctrl-0 = <&pinctrl_usb2h_default>;
+>  			status = "disabled";
+>  		};
+>  
+> @@ -123,6 +125,10 @@
+>  			#ports = <3>;
+>  			clocks = <&syscon ASPEED_CLK_GATE_USBUHCICLK>;
+>  			status = "disabled";
+> +			/*
+> +			 * No default pinmux, it will follow EHCI, use an explicit pinmux
+> +			 * override if you don't enable EHCI
+> +			 */
 
-I've already CC'ed Gary and Ryan in this thread.
+This is only part of the story on the AST2400 which has 3 USB ports:
 
-Hi Gary,
+* Port 1 is fixed-function UHCI
+* Port 2 can be muxed to the UHCI (host) or HID (device) controllers
+* Port 3 can be muxed to the EHCI or vHub controllers
 
-Can you explain why the documentation says that the bit field is 'for debugging purpose only'? Any plan to change the description?
+I assume if we plug a USB 1.1 device into port 3 it gets rate matched and dealt with (therefore UHCI follows EHCI as suggested in your comment). But given port 2, which *may* route to UHCI *specifically* (not EHCI), UHCI *doesn't* always follow EHCI.
 
-Thanks,
+However, port 2 has its other function, HID, and HID is only available on port 2. So, if we had a HID devicetree node, we would put the pinmux for port 2 in there and leave it to the board to configure the HID controller as enabled or not. However, given this conflict, the UHCI node still shouldn't have any pinmux properties as your comment suggests, as it's up to the board whether HID or UHCI mode should be selected for port 2, but we'll need to enable the UHCI controller for port 1 (or 3) and we don't want to force the mux state of port 2 (or 3).
 
-Jae
+So whilst partially correct, the comment is a bit misleading in that it suggests muxing EHCI is enough in general, which isn't really true. Maybe say instead that due to flexible configuration, UHCI pinmux should be overridden in the platform dts explicitly?
 
->>
->> I'll add a comment like below:
->>
->> /*
->>    * This is marked as 'for debugging purpose only' in datasheet but
->>    * ASPEED confirmed that this reflects real information and good
->>    * to be used in practical code.
->>    */
->>
->> Is it acceptable then?
-> 
-> Yeah, that's fine.
-> 
-> <snip>
-> 
-> Cheers
+Cheers,
+
+Andrew
+
+>  		};
+>  
+>  		apb {
+> -- 
+> 2.17.1
 > 
