@@ -1,69 +1,41 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Mon, 16 Jul 2018 16:13:52 +0930
-Subject: [PATCH 3/7] arm: dts: aspeed: Add Aspeed G4 USB Virtual Hub
-In-Reply-To: <de7411c67c0cd31e16de49642e78a5a3d5f3bedc.camel@kernel.crashing.org>
-References: <20180629035106.27181-1-benh@kernel.crashing.org>
- <20180629035106.27181-4-benh@kernel.crashing.org>
- <1531719253.1117720.1441834824.43621FCB@webmail.messagingengine.com>
- <de7411c67c0cd31e16de49642e78a5a3d5f3bedc.camel@kernel.crashing.org>
-Message-ID: <1531723432.1140807.1441877376.5CC2AA4C@webmail.messagingengine.com>
+From: Rob Herring <robh@kernel.org>
+Date: Mon, 16 Jul 2018 08:13:10 -0600
+Subject: [PATCH 1/2] dt-bindings: fsi: Add optional chip-id to CFAMs
+In-Reply-To: <c37eeb656151831123ec53bfc4e3c6caf718a060.camel@kernel.crashing.org>
+References: <20180622043756.21158-1-benh@kernel.crashing.org>
+ <20180703193017.GA23230@rob-hp-laptop>
+ <23be30ebb2c661ef304c78a85cff591c515ba65b.camel@kernel.crashing.org>
+ <CAL_JsqKZunLyRJQJgQrcBvv2s=HEd=E2ZG1ZgkgwTQkzJ88mcA@mail.gmail.com>
+ <a6331cdbababea893bcde5f8ca9529dd89dafd67.camel@kernel.crashing.org>
+ <c37eeb656151831123ec53bfc4e3c6caf718a060.camel@kernel.crashing.org>
+Message-ID: <CAL_JsqJ6rEZzj+CJok1feGEFcM2DUxiYXig=h4hpJgyAOc4X5g@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, 16 Jul 2018, at 16:10, Benjamin Herrenschmidt wrote:
-> On Mon, 2018-07-16 at 15:04 +0930, Andrew Jeffery wrote:
-> > On Fri, 29 Jun 2018, at 13:21, Benjamin Herrenschmidt wrote:
-> > > This adds the (disabled by default) device node for the
-> > > Aspeed virtual hub,a long with clocks and pinmux.
-> > > 
-> > > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> > > ---
-> > >  arch/arm/boot/dts/aspeed-g4.dtsi | 10 ++++++++++
-> > >  1 file changed, 10 insertions(+)
-> > > 
-> > > diff --git a/arch/arm/boot/dts/aspeed-g4.dtsi b/arch/arm/boot/dts/aspeed-g4.dtsi
-> > > index 1d7ffa9fdb11..54524564037c 100644
-> > > --- a/arch/arm/boot/dts/aspeed-g4.dtsi
-> > > +++ b/arch/arm/boot/dts/aspeed-g4.dtsi
-> > > @@ -131,6 +131,16 @@
-> > >  			 */
-> > >  		};
-> > >  
-> > > +		vhub: usb-vhub at 1e6a0000 {
-> > > +			compatible = "aspeed,ast2400-usb-vhub";
-> > > +			reg = <0x1e6a0000 0x300>;
-> > > +			interrupts = <5>;
-> > > +			clocks = <&syscon ASPEED_CLK_GATE_USBPORT1CLK>;
-> > > +			pinctrl-names = "default";
-> > > +			pinctrl-0 = <&pinctrl_usb2d_default>;
-> > > +			status = "disabled";
-> > > +		};
-> > > +
-> > 
-> > These are all generic properties, so it's pretty clear what's going
-> > on, but it seems there's no bindings document capturing the
-> > compatible string? Not wanting to be a pain, but shouldn't we have
-> > documented it?
-> 
-> The driver went in at a time when I hadn't realized we documented
-> bindings for devices using only standard properties these days. We can
-> send a binding to Rob later.
+On Wed, Jul 11, 2018 at 8:07 PM Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+>
+> On Fri, 2018-07-06 at 11:48 +1000, Benjamin Herrenschmidt wrote:
+> > > We've generally standardized around "label" for things like slots,
+> > > ports, connectors, etc. that need to be physically identified.
+> >
+> > Yes, label would be an option too, probably a better one that aliases.
+> >
+> > > "slot-names" it seems hasn't gotten used for FDT. Since there aren't
+> > > DT's published for OF based systems nor any documentation, newbies
+> > > like me (that only have 8 years of DT experience) don't have any
+> > > insight into how things used to be done.
+> >
+> > In a pretty much ad-hoc way :-) In this case, though, chip-id is a
+> > simple solution and works well (and I have the code already written and
+> > tested :-)
+>
+> I want to try to get that stuff upstream. Do you still object to the
+> chip-id's after our discussion ? The labels aren't that great really...
 
-Yep, I can't see it being controversial.
+No.
 
-Acked-by: Andrew Jeffery <andrew@aj.id.au>
-
-> 
-> Cheers,
-> Ben.
-> 
-> > 
-> > >  		apb {
-> > >  			compatible = "simple-bus";
-> > >  			#address-cells = <1>;
-> > > -- 
-> > > 2.17.1
-> > > 
+Acked-by: Rob Herring <robh@kernel.org>
