@@ -1,81 +1,138 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Tue, 17 Jul 2018 14:12:15 +1000
-Subject: [PATCH v3 1/5] dt-bindings: fsi: Document binding for the
- fsi-master-ast-cf "device"
-In-Reply-To: <20180716153308.GA13044@rob-hp-laptop>
-References: <20180712034847.12878-1-benh@kernel.crashing.org>
- <20180712034847.12878-2-benh@kernel.crashing.org>
- <20180716153308.GA13044@rob-hp-laptop>
-Message-ID: <7125cc74b640b941ea6f86e1f719cc25eeae9f78.camel@kernel.crashing.org>
+From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+Date: Tue, 17 Jul 2018 09:18:14 -0700
+Subject: [PATCH] i2c: aspeed: Improve driver to support multi-master use
+ cases stably
+In-Reply-To: <a84da5d076924f40b1c836fe8b9d0844@TWMBX01.aspeed.com>
+References: <20180626165812.4141-1-jae.hyun.yoo@linux.intel.com>
+ <CAFd5g45z--ucXf-So517tgrayZT6x2TGvaUvaDF7zeRNn7CPXw@mail.gmail.com>
+ <e51471e6-0f8a-bffc-34c8-1e74239fdbcf@linux.intel.com>
+ <CAFd5g47j_h4ZrT8Eg1FZ8sAj5ekCUH20jUVub75ozdkg8_YW7Q@mail.gmail.com>
+ <921b1ab7-9c9f-0aeb-da89-5a1a27d009f0@linux.intel.com>
+ <d3f10fc1-635b-3a5d-a967-2816eac005fc@linux.intel.com>
+ <CAFd5g47zdPdqqjVJtNHtFk+jKgciKbMcEH9M-W9rL4DgLM5hkg@mail.gmail.com>
+ <b8232faa-58f5-f3a5-d12a-3f326cf1d03d@linux.intel.com>
+ <a84da5d076924f40b1c836fe8b9d0844@TWMBX01.aspeed.com>
+Message-ID: <26400cb7-972e-7be9-81ba-8e08d42abd4e@linux.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, 2018-07-16 at 09:33 -0600, Rob Herring wrote:
-> On Thu, Jul 12, 2018 at 01:48:43PM +1000, Benjamin Herrenschmidt wrote:
-> > This isn't per-se a real device, it's a pseudo-device that
-> > represents the use of the Aspeed built-in ColdFire to
-> > implement the FSI protocol by bitbanging the GPIOs instead
-> > of doing it from the ARM core.
-> > 
-> > Thus it's a drop-in replacement for the existing
-> > fsi-master-gpio pseudo-device for use on systems based
-> > on the Aspeed chips. It has most of the same properties,
-> > plus some more needed to operate the coprocessor.
-> > 
-> > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> > ---
-> >  .../bindings/fsi/fsi-master-ast-cf.txt        | 36 +++++++++++++++++++
-> >  1 file changed, 36 insertions(+)
-> >  create mode 100644 Documentation/devicetree/bindings/fsi/fsi-master-ast-cf.txt
-> > 
-> > diff --git a/Documentation/devicetree/bindings/fsi/fsi-master-ast-cf.txt b/Documentation/devicetree/bindings/fsi/fsi-master-ast-cf.txt
-> > new file mode 100644
-> > index 000000000000..431bf8a423ce
-> > --- /dev/null
-> > +++ b/Documentation/devicetree/bindings/fsi/fsi-master-ast-cf.txt
-> > @@ -0,0 +1,36 @@
-> > +Device-tree bindings for ColdFire offloaded gpio-based FSI master driver
-> > +------------------------------------------------------------------------
-> > +
-> > +Required properties:
-> > + - compatible =
-> > +	"aspeed,ast2400-cf-fsi-master" for an AST2400 based system
-> > +   or
-> > +	"aspeed,ast2500-cf-fsi-master" for an AST2500 based system
-> > +
-> > + - clock-gpios = <gpio-descriptor>;	: GPIO for FSI clock
-> > + - data-gpios = <gpio-descriptor>;	: GPIO for FSI data signal
-> > + - enable-gpios = <gpio-descriptor>;	: GPIO for enable signal
-> > + - trans-gpios = <gpio-descriptor>;	: GPIO for voltage translator enable
-> > + - mux-gpios = <gpio-descriptor>;	: GPIO for pin multiplexing with other
-> > +                                          functions (eg, external FSI masters)
-> > + - memory-region = <phandle>;		: Reference to the reserved memory for
-> > +                                          the ColdFire. Must be 2M aligned on
-> > +					  AST2400 and 1M aligned on AST2500
-> > + - aspeed,sram = <phandle>;		: Reference to the SRAM node.
-> > + - aspeed,cvic = <phandle>;		: Reference to the CVIC node.
-> > +
-> > +Examples:
-> > +
-> > +    fsi-master {
-> > +        compatible = "aspeed,ast2500-cf-fsi-master", "fsi-master";
-> > +
-> > +	clock-gpios = <&gpio 0>;
-> > +        data-gpios = <&gpio 1>;
-> > +        enable-gpios = <&gpio 2>;
-> > +        trans-gpios = <&gpio 3>;
-> > +        mux-gpios = <&gpio 4>;
-> > +
-> > +	memory-region = <&coldfire_memory>;
-> > +	sram = <&sram>;
-> > +	cvic = <&cvic>;
+
+On 7/15/2018 8:05 PM, Gary Hsu wrote:
+> Hi Jae,
 > 
-> Need to update the example. With that
+> In originally, we reserved these register bits for debug purpose. But for some error handling case, we found it is also useful to help to clarify some error conditions. So driver also can use these fields information to check something.
+> As for how driver use these information in their code, I have no comment. I don?t understand the driver. But these information is the real controller state, it had no problem to use information.
+> 
 
-Ah right, thanks. The next spin will have that fixed and will go into
-the fsi tree.
+Thanks Gary!
 
-> Reviewed-by: Rob Herring <robh@kernel.org>
+Hi Brendan,
+Is it acceptable now if I add this as a comment like below?
+
+Thanks,
+Jae
+
+> Best Regards,
+> 
+> ??? Gary Hsu
+> 
+> ??????????
+> ASPEED Technology Inc.
+> 
+> 2F,No.15,Industry East Road 4.,Hsinchu Science Park, Hsinchu City 30077, Taiwan
+> ??????????? 15 ? 2F
+> 
+> Tel : 886-3-5789568 ext:807
+> Fax : 886-3-5789586
+> Web : http://www.aspeedtech.com
+> 
+> ************* Email Confidentiality Notice ********************
+> ????:
+> ???????????,???(????)????????????????? ???????????????????????????, ??????????????????????????????!
+> 
+> DISCLAIMER:
+> This message (and any attachments) may contain legally privileged and/or other confidential information. If you have received it in error, please notify the sender by reply e-mail and immediately delete the e-mail and any attachments without copying or disclosing the contents. Thank you.
+> 
+> -----Original Message-----
+> From: Jae Hyun Yoo [mailto:jae.hyun.yoo at linux.intel.com]
+> Sent: Saturday, July 14, 2018 2:54 AM
+> To: Brendan Higgins <brendanhiggins@google.com>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>; Joel Stanley <joel@jms.id.au>; Andrew Jeffery <andrew@aj.id.au>; linux-i2c at vger.kernel.org; OpenBMC Maillist <openbmc@lists.ozlabs.org>; Linux ARM <linux-arm-kernel@lists.infradead.org>; linux-aspeed at lists.ozlabs.org; Linux Kernel Mailing List <linux-kernel@vger.kernel.org>; james.feist at linux.intel.com; vernon.mauery at linux.intel.com; Benjamin Fair <benjaminfair@google.com>; Patrick Venture <venture@google.com>; Gary Hsu <gary_hsu@aspeedtech.com>; Ryan Chen <ryan_chen@aspeedtech.com>
+> Subject: Re: [PATCH] i2c: aspeed: Improve driver to support multi-master use cases stably
+> 
+> On 7/13/2018 11:12 AM, Brendan Higgins wrote:
+>> On Fri, Jul 13, 2018 at 10:22 AM Jae Hyun Yoo
+>> <jae.hyun.yoo@linux.intel.com> wrote:
+>>>
+>>> On 7/12/2018 11:21 AM, Jae Hyun Yoo wrote:
+>>>> On 7/12/2018 2:33 AM, Brendan Higgins wrote:
+>>>>> On Wed, Jun 27, 2018 at 10:55 AM Jae Hyun Yoo
+>>>>> <jae.hyun.yoo@linux.intel.com> wrote:
+>> <snip>
+>>>>> <snip>
+>>>>>>>> +       for (;;) {
+>>>>>>>> +               if (!(readl(bus->base + ASPEED_I2C_CMD_REG) &
+>>>>>>>> +                     (ASPEED_I2CD_BUS_BUSY_STS |
+>>>>>>>> +                      ASPEED_I2CD_XFER_MODE_STS_MASK)))
+>>>>>>>
+>>>>>>> Is using the Transfer Mode State Machine bits necessary? The
+>>>>>>> documentation marks it as "for debugging purpose only," so
+>>>>>>> relying on it makes me nervous.
+>>>>>>>
+>>>>>>
+>>>>>> As you said, the documentation marks it as "for debugging purpose only."
+>>>>>> but ASPEED also uses this way in their SDK code because it's the
+>>>>>> best way for checking bus busy status which can cover both single
+>>>>>> and multi-master use cases.
+>>>>>>
+>>>>>
+>>>>> Well, it would also be really nice to have access to this bit if
+>>>>> someone wants to implement MCTP. Could we maybe check with Aspeed
+>>>>> what them meant by "for debugging purposes only" and document it
+>>>>> here? It makes me nervous to rely on debugging functionality for
+>>>>> normal usage.
+>>>>>
+>>>>
+>>>> Okay, I'll check it with Aspeed. Will let you know their response.
+>>>>
+>>>
+>>> I've checked it with Gary Hsu <gary_hsu@aspeedtech.com> and he
+>>> confirmed that the bits reflect real information and good to be used
+>>> in practical code.
+>>
+>> Huh. For my own edification, could you ask them why they said "for
+>> debugging purpose only" in the documentation? I am just really curious
+>> what they meant by that. I would be satisfied if you just CC'ed me on
+>> your email thread with Gary, and I can ask him myself.
+>>
+> 
+> I've already CC'ed Gary and Ryan in this thread.
+> 
+> Hi Gary,
+> 
+> Can you explain why the documentation says that the bit field is 'for debugging purpose only'? Any plan to change the description?
+> 
+> Thanks,
+> 
+> Jae
+> 
+>>>
+>>> I'll add a comment like below:
+>>>
+>>> /*
+>>>     * This is marked as 'for debugging purpose only' in datasheet but
+>>>     * ASPEED confirmed that this reflects real information and good
+>>>     * to be used in practical code.
+>>>     */
+>>>
+>>> Is it acceptable then?
+>>
+>> Yeah, that's fine.
+>>
+>> <snip>
+>>
+>> Cheers
+>>
