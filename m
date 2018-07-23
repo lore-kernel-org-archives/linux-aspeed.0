@@ -1,71 +1,66 @@
-From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-Date: Mon, 23 Jul 2018 14:47:51 -0700
-Subject: [PATCH v7 12/12] Add maintainers for the PECI subsystem
-In-Reply-To: <20180723214751.1733-1-jae.hyun.yoo@linux.intel.com>
+From: Randy Dunlap <rdunlap@infradead.org>
+Date: Mon, 23 Jul 2018 15:21:46 -0700
+Subject: [PATCH v7 08/12] mfd: intel-peci-client: Add PECI client MFD
+ driver
+In-Reply-To: <20180723214751.1733-9-jae.hyun.yoo@linux.intel.com>
 References: <20180723214751.1733-1-jae.hyun.yoo@linux.intel.com>
-Message-ID: <20180723214751.1733-13-jae.hyun.yoo@linux.intel.com>
+ <20180723214751.1733-9-jae.hyun.yoo@linux.intel.com>
+Message-ID: <c1abe3ec-fc26-d8b0-c769-e9295577ac05@infradead.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This commit adds maintainer information for the PECI subsystem.
+On 07/23/2018 02:47 PM, Jae Hyun Yoo wrote:
+> This commit adds PECI client MFD driver.
+> 
+> Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+> Cc: Lee Jones <lee.jones@linaro.org>
+> Cc: Rob Herring <robh+dt@kernel.org>
+> Cc: Andrew Jeffery <andrew@aj.id.au>
+> Cc: James Feist <james.feist@linux.intel.com>
+> Cc: Jason M Biils <jason.m.bills@linux.intel.com>
+> Cc: Joel Stanley <joel@jms.id.au>
+> Cc: Vernon Mauery <vernon.mauery@linux.intel.com>
+> ---
+>  drivers/mfd/Kconfig                   |  14 ++
+>  drivers/mfd/Makefile                  |   1 +
+>  drivers/mfd/intel-peci-client.c       | 182 ++++++++++++++++++++++++++
+>  include/linux/mfd/intel-peci-client.h |  81 ++++++++++++
+>  4 files changed, 278 insertions(+)
+>  create mode 100644 drivers/mfd/intel-peci-client.c
+>  create mode 100644 include/linux/mfd/intel-peci-client.h
+> 
+> diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
+> index f3fa516011ec..e38b591479d4 100644
+> --- a/drivers/mfd/Kconfig
+> +++ b/drivers/mfd/Kconfig
+> @@ -595,6 +595,20 @@ config MFD_INTEL_MSIC
+>  	  Passage) chip. This chip embeds audio, battery, GPIO, etc.
+>  	  devices used in Intel Medfield platforms.
+>  
+> +config MFD_INTEL_PECI_CLIENT
+> +	bool "Intel PECI client"
+> +	depends on (PECI || COMPILE_TEST)
+> +	select MFD_CORE
+> +	help
+> +	  If you say yes to this option, support will be included for the
+> +	  multi-funtional Intel PECI (Platform Environment Control Interface)
 
-Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-Reviewed-by: Haiyue Wang <haiyue.wang@linux.intel.com>
-Reviewed-by: James Feist <james.feist@linux.intel.com>
-Reviewed-by: Vernon Mauery <vernon.mauery@linux.intel.com>
-Cc: David S. Miller <davem@davemloft.net>
-Cc: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linus Walleij <linus.walleij@linaro.org>
-Cc: Randy Dunlap <rdunlap@infradead.org>
-Cc: Jason M Biils <jason.m.bills@linux.intel.com>
----
- MAINTAINERS | 21 +++++++++++++++++++++
- 1 file changed, 21 insertions(+)
+	  multi-functional
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 7afb9ad5a85c..28a87cb77723 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -1266,6 +1266,14 @@ F:	arch/arm/mach-aspeed/
- F:	arch/arm/boot/dts/aspeed-*
- N:	aspeed
- 
-+ARM/ASPEED PECI DRIVER
-+M:	Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-+M:	Jason M Biils <jason.m.bills@linux.intel.com>
-+L:	linux-aspeed at lists.ozlabs.org (moderated for non-subscribers)
-+S:	Maintained
-+F:	Documentation/devicetree/bindings/peci/peci-aspeed.txt
-+F:	drivers/peci/peci-aspeed.c
-+
- ARM/CALXEDA HIGHBANK ARCHITECTURE
- M:	Rob Herring <robh@kernel.org>
- L:	linux-arm-kernel at lists.infradead.org (moderated for non-subscribers)
-@@ -11254,6 +11262,19 @@ L:	platform-driver-x86 at vger.kernel.org
- S:	Maintained
- F:	drivers/platform/x86/peaq-wmi.c
- 
-+PECI SUBSYSTEM
-+M:	Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-+M:	Jason M Biils <jason.m.bills@linux.intel.com>
-+L:	openbmc at lists.ozlabs.org (moderated for non-subscribers)
-+S:	Maintained
-+F:	Documentation/devicetree/bindings/peci/
-+F:	drivers/mfd/intel-peci-client.c
-+F:	drivers/peci/
-+F:	drivers/hwmon/peci-*.c
-+F:	include/linux/mfd/intel-peci-client.h
-+F:	include/linux/peci.h
-+F:	include/uapi/linux/peci-ioctl.h
-+
- PER-CPU MEMORY ALLOCATOR
- M:	Tejun Heo <tj@kernel.org>
- M:	Christoph Lameter <cl@linux.com>
+> +	  client. PECI is a one-wire bus interface that provides a communication
+> +	  channel from PECI clients in Intel processors and chipset components
+> +	  to external monitoring or control devices.
+> +
+> +	  Additional drivers must be enabled in order to use the functionality
+> +	  of the device.
+> +
+>  config MFD_IPAQ_MICRO
+>  	bool "Atmel Micro ASIC (iPAQ h3100/h3600/h3700) Support"
+>  	depends on SA1100_H3100 || SA1100_H3600
+
+
 -- 
-2.18.0
-
+~Randy
