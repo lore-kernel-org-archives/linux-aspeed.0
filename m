@@ -1,213 +1,402 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Tue, 24 Jul 2018 15:05:16 +1000
-Subject: [PATCH 2/5] fsi: sbefifo: Convert to use the new chardev
+Date: Tue, 24 Jul 2018 15:05:18 +1000
+Subject: [PATCH 4/5] fsi: Add cfam char devices
 In-Reply-To: <20180724050519.31920-1-benh@kernel.crashing.org>
 References: <20180724050519.31920-1-benh@kernel.crashing.org>
-Message-ID: <20180724050519.31920-3-benh@kernel.crashing.org>
+Message-ID: <20180724050519.31920-5-benh@kernel.crashing.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This converts FSI sbefifo to use the new fsi-core controlled
-chardev allocator and use a real cdev instead of a miscdev.
+This aims to deprecate the "raw" sysfs file used for directly
+accessing the CFAM and instead use a char device like the
+other sub drivers.
 
-One side effect is to fix the object lifetime by removing
-the use of devm_kzalloc() for something that contains kobjects,
-and using proper reference counting.
+Since it reworks the slave creation code and adds a cfam device
+type, we also use the opportunity to convert the attributes
+to attribute groups and add a couple more.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- drivers/fsi/fsi-sbefifo.c | 84 +++++++++++++++++++++++++--------------
- 1 file changed, 55 insertions(+), 29 deletions(-)
+ drivers/fsi/fsi-core.c | 264 +++++++++++++++++++++++++++++++++--------
+ 1 file changed, 213 insertions(+), 51 deletions(-)
 
-diff --git a/drivers/fsi/fsi-sbefifo.c b/drivers/fsi/fsi-sbefifo.c
-index 33a5d9a43a07..8a185f53c9d8 100644
---- a/drivers/fsi/fsi-sbefifo.c
-+++ b/drivers/fsi/fsi-sbefifo.c
-@@ -17,9 +17,8 @@
- #include <linux/fs.h>
- #include <linux/fsi.h>
- #include <linux/fsi-sbefifo.h>
--#include <linux/idr.h>
- #include <linux/kernel.h>
--#include <linux/miscdevice.h>
-+#include <linux/cdev.h>
- #include <linux/module.h>
- #include <linux/mutex.h>
- #include <linux/of.h>
-@@ -118,11 +117,11 @@ struct sbefifo {
- 	uint32_t		magic;
- #define SBEFIFO_MAGIC		0x53424546 /* "SBEF" */
- 	struct fsi_device	*fsi_dev;
--	struct miscdevice	mdev;
-+	struct device		dev;
-+	struct cdev		cdev;
- 	struct mutex		lock;
--	char			name[32];
--	int			idx;
- 	bool			broken;
-+	bool			dead;
- 	bool			async_ffdc;
- };
- 
-@@ -133,9 +132,9 @@ struct sbefifo_user {
- 	size_t			pending_len;
- };
- 
--static DEFINE_IDA(sbefifo_ida);
- static DEFINE_MUTEX(sbefifo_ffdc_mutex);
- 
-+
- static void __sbefifo_dump_ffdc(struct device *dev, const __be32 *ffdc,
- 				size_t ffdc_sz, bool internal)
- {
-@@ -667,6 +666,9 @@ static int __sbefifo_submit(struct sbefifo *sbefifo,
- 	struct device *dev = &sbefifo->fsi_dev->dev;
- 	int rc;
- 
-+	if (sbefifo->dead)
-+		return -ENODEV;
-+
- 	if (cmd_len < 2 || be32_to_cpu(command[0]) != cmd_len) {
- 		dev_vdbg(dev, "Invalid command len %zd (header: %d)\n",
- 			 cmd_len, be32_to_cpu(command[0]));
-@@ -751,8 +753,7 @@ EXPORT_SYMBOL_GPL(sbefifo_submit);
+diff --git a/drivers/fsi/fsi-core.c b/drivers/fsi/fsi-core.c
+index faa1760a5a40..dea5bd48acc5 100644
+--- a/drivers/fsi/fsi-core.c
++++ b/drivers/fsi/fsi-core.c
+@@ -11,6 +11,11 @@
+  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  * GNU General Public License for more details.
++ *
++ * TODO:
++ *  - Rework topology
++ *  - s/chip_id/chip_loc
++ *  - s/cfam/chip (cfam_id -> chip_id etc...)
   */
- static int sbefifo_user_open(struct inode *inode, struct file *file)
- {
--	struct sbefifo *sbefifo = container_of(file->private_data,
--					       struct sbefifo, mdev);
-+	struct sbefifo *sbefifo = container_of(inode->i_cdev, struct sbefifo, cdev);
- 	struct sbefifo_user *user;
  
- 	user = kzalloc(sizeof(struct sbefifo_user), GFP_KERNEL);
-@@ -889,6 +890,14 @@ static const struct file_operations sbefifo_fops = {
- 	.release	= sbefifo_user_release,
+ #include <linux/crc4.h>
+@@ -21,6 +26,9 @@
+ #include <linux/of.h>
+ #include <linux/slab.h>
+ #include <linux/bitops.h>
++#include <linux/cdev.h>
++#include <linux/fs.h>
++#include <linux/uaccess.h>
+ 
+ #include "fsi-master.h"
+ 
+@@ -78,8 +86,11 @@ static DEFINE_IDA(master_ida);
+ struct fsi_slave {
+ 	struct device		dev;
+ 	struct fsi_master	*master;
+-	int			id;
+-	int			link;
++	struct cdev		cdev;
++	int			cdev_idx;
++	int			id;	/* FSI address */
++	int			link;	/* FSI link# */
++	u32			cfam_id;
+ 	int			chip_id;
+ 	uint32_t		size;	/* size of slave address space */
+ 	u8			t_send_delay;
+@@ -607,29 +618,6 @@ static const struct bin_attribute fsi_slave_raw_attr = {
+ 	.write = fsi_slave_sysfs_raw_write,
  };
  
-+static void sbefifo_free(struct device *dev)
+-static ssize_t fsi_slave_sysfs_term_write(struct file *file,
+-		struct kobject *kobj, struct bin_attribute *attr,
+-		char *buf, loff_t off, size_t count)
+-{
+-	struct fsi_slave *slave = to_fsi_slave(kobj_to_dev(kobj));
+-	struct fsi_master *master = slave->master;
+-
+-	if (!master->term)
+-		return -ENODEV;
+-
+-	master->term(master, slave->link, slave->id);
+-	return count;
+-}
+-
+-static const struct bin_attribute fsi_slave_term_attr = {
+-	.attr = {
+-		.name = "term",
+-		.mode = 0200,
+-	},
+-	.size = 0,
+-	.write = fsi_slave_sysfs_term_write,
+-};
+-
+ static void fsi_slave_release(struct device *dev)
+ {
+ 	struct fsi_slave *slave = to_fsi_slave(dev);
+@@ -682,6 +670,127 @@ static struct device_node *fsi_slave_find_of_node(struct fsi_master *master,
+ 	return NULL;
+ }
+ 
++static ssize_t cfam_read(struct file *filep, char __user *buf, size_t count,
++			 loff_t *offset)
 +{
-+	struct sbefifo *sbefifo = container_of(dev, struct sbefifo, dev);
++	struct fsi_slave *slave = filep->private_data;
++	size_t total_len, read_len;
++	loff_t off = *offset;
++	ssize_t rc;
 +
-+	put_device(&sbefifo->fsi_dev->dev);
-+	kfree(sbefifo);
++	if (off < 0)
++		return -EINVAL;
++
++	if (off > 0xffffffff || count > 0xffffffff || off + count > 0xffffffff)
++		return -EINVAL;
++
++	for (total_len = 0; total_len < count; total_len += read_len) {
++		__be32 data;
++
++		read_len = min_t(size_t, count, 4);
++		read_len -= off & 0x3;
++
++		rc = fsi_slave_read(slave, off, &data, read_len);
++		if (rc)
++			goto fail;
++		rc = copy_to_user(buf + total_len, &data, read_len);
++		if (rc) {
++			rc = -EFAULT;
++			goto fail;
++		}
++		off += read_len;
++	}
++	rc = count;
++ fail:
++	*offset = off;
++	return count;
 +}
 +
- /*
-  * Probe/remove
-  */
-@@ -900,15 +909,23 @@ static int sbefifo_probe(struct device *dev)
- 	struct device_node *np;
- 	struct platform_device *child;
- 	char child_name[32];
--	int rc, child_idx = 0;
-+	int rc, didx, child_idx = 0;
- 
- 	dev_dbg(dev, "Found sbefifo device\n");
- 
--	sbefifo = devm_kzalloc(dev, sizeof(*sbefifo), GFP_KERNEL);
-+	sbefifo = kzalloc(sizeof(*sbefifo), GFP_KERNEL);
- 	if (!sbefifo)
- 		return -ENOMEM;
++static ssize_t cfam_write(struct file *filep, const char __user *buf,
++			  size_t count, loff_t *offset)
++{
++	struct fsi_slave *slave = filep->private_data;
++	size_t total_len, write_len;
++	loff_t off = *offset;
++	ssize_t rc;
 +
-+	/* Grab a reference to the device (parent of our cdev), we'll drop it later */
-+	if (!get_device(dev)) {
-+		return -ENODEV;
-+		kfree(sbefifo);
++
++	if (off < 0)
++		return -EINVAL;
++
++	if (off > 0xffffffff || count > 0xffffffff || off + count > 0xffffffff)
++		return -EINVAL;
++
++	for (total_len = 0; total_len < count; total_len += write_len) {
++		__be32 data;
++
++		write_len = min_t(size_t, count, 4);
++		write_len -= off & 0x3;
++
++		rc = copy_from_user(&data, buf + total_len, write_len);
++		if (rc) {
++			rc = -EFAULT;
++			goto fail;
++		}
++		rc = fsi_slave_write(slave, off, &data, write_len);
++		if (rc)
++			goto fail;
++		off += write_len;
++	}
++	rc = count;
++ fail:
++	*offset = off;
++	return count;
++}
++
++static loff_t cfam_llseek(struct file *file, loff_t offset, int whence)
++{
++	switch (whence) {
++	case SEEK_CUR:
++		break;
++	case SEEK_SET:
++		file->f_pos = offset;
++		break;
++	default:
++		return -EINVAL;
 +	}
 +
- 	sbefifo->magic = SBEFIFO_MAGIC;
- 	sbefifo->fsi_dev = fsi_dev;
-+	dev_set_drvdata(dev, sbefifo);
- 	mutex_init(&sbefifo->lock);
++	return offset;
++}
++
++static int cfam_open(struct inode *inode, struct file *file)
++{
++	struct fsi_slave *slave = container_of(inode->i_cdev, struct fsi_slave, cdev);
++
++	file->private_data = slave;
++
++	return 0;
++}
++
++static const struct file_operations cfam_fops = {
++	.owner		= THIS_MODULE,
++	.open		= cfam_open,
++	.llseek		= cfam_llseek,
++	.read		= cfam_read,
++	.write		= cfam_write,
++};
++
++static ssize_t send_term_store(struct device *dev,
++			       struct device_attribute *attr,
++			       const char *buf, size_t count)
++{
++	struct fsi_slave *slave = to_fsi_slave(dev);
++	struct fsi_master *master = slave->master;
++
++	if (!master->term)
++		return -ENODEV;
++
++	master->term(master, slave->link, slave->id);
++	return count;
++}
++
++static DEVICE_ATTR_WO(send_term);
++
+ static ssize_t slave_send_echo_show(struct device *dev,
+ 				    struct device_attribute *attr,
+ 				    char *buf)
+@@ -737,6 +846,52 @@ static ssize_t chip_id_show(struct device *dev,
  
- 	/*
-@@ -919,28 +936,30 @@ static int sbefifo_probe(struct device *dev)
- 	if (rc && rc != -ESHUTDOWN)
- 		dev_err(dev, "Initial HW cleanup failed, will retry later\n");
+ static DEVICE_ATTR_RO(chip_id);
  
--	sbefifo->idx = ida_simple_get(&sbefifo_ida, 1, INT_MAX, GFP_KERNEL);
--	snprintf(sbefifo->name, sizeof(sbefifo->name), "sbefifo%d",
--		 sbefifo->idx);
-+	/* Create chardev for userspace access */
-+	sbefifo->dev.type = &fsi_cdev_type;
-+	sbefifo->dev.parent = dev;
-+	sbefifo->dev.release = sbefifo_free;
-+	device_initialize(&sbefifo->dev);
++static ssize_t cfam_id_show(struct device *dev,
++			    struct device_attribute *attr,
++			    char *buf)
++{
++	struct fsi_slave *slave = to_fsi_slave(dev);
++
++	return sprintf(buf, "0x%x\n", slave->cfam_id);
++}
++
++static DEVICE_ATTR_RO(cfam_id);
++
++static struct attribute *cfam_attr[] = {
++	&dev_attr_send_echo_delays.attr,
++	&dev_attr_chip_id.attr,
++	&dev_attr_cfam_id.attr,
++	&dev_attr_send_term.attr,
++	NULL,
++};
++
++static const struct attribute_group cfam_attr_group = {
++	.attrs = cfam_attr,
++};
++
++static const struct attribute_group *cfam_attr_groups[] = {
++	&cfam_attr_group,
++	NULL,
++};
++
++static char *cfam_devnode(struct device *dev, umode_t *mode,
++			  kuid_t *uid, kgid_t *gid)
++{
++	struct fsi_slave *slave = to_fsi_slave(dev);
++
++#ifdef CONFIG_FSI_NEW_DEV_NODE
++	return kasprintf(GFP_KERNEL, "fsi/cfam%d", slave->cdev_idx);
++#else
++	return kasprintf(GFP_KERNEL, "cfam%d", slave->cdev_idx);
++#endif
++}
++
++static const struct device_type cfam_type = {
++	.name = "cfam",
++	.devnode = cfam_devnode,
++	.groups = cfam_attr_groups
++};
++
+ static char *fsi_cdev_devnode(struct device *dev, umode_t *mode,
+ 			      kuid_t *uid, kgid_t *gid)
+ {
+@@ -808,7 +963,7 @@ EXPORT_SYMBOL_GPL(fsi_free_minor);
  
--	dev_set_drvdata(dev, sbefifo);
+ static int fsi_slave_init(struct fsi_master *master, int link, uint8_t id)
+ {
+-	uint32_t chip_id;
++	uint32_t cfam_id;
+ 	struct fsi_slave *slave;
+ 	uint8_t crc;
+ 	__be32 data, llmode;
+@@ -826,17 +981,17 @@ static int fsi_slave_init(struct fsi_master *master, int link, uint8_t id)
+ 				link, id, rc);
+ 		return -ENODEV;
+ 	}
+-	chip_id = be32_to_cpu(data);
++	cfam_id = be32_to_cpu(data);
+ 
+-	crc = crc4(0, chip_id, 32);
++	crc = crc4(0, cfam_id, 32);
+ 	if (crc) {
+-		dev_warn(&master->dev, "slave %02x:%02x invalid chip id CRC!\n",
++		dev_warn(&master->dev, "slave %02x:%02x invalid cfam id CRC!\n",
+ 				link, id);
+ 		return -EIO;
+ 	}
+ 
+ 	dev_dbg(&master->dev, "fsi: found chip %08x at %02x:%02x:%02x\n",
+-			chip_id, master->idx, link, id);
++			cfam_id, master->idx, link, id);
+ 
+ 	/* If we're behind a master that doesn't provide a self-running bus
+ 	 * clock, put the slave into async mode
+@@ -859,10 +1014,14 @@ static int fsi_slave_init(struct fsi_master *master, int link, uint8_t id)
+ 	if (!slave)
+ 		return -ENOMEM;
+ 
+-	slave->master = master;
++	dev_set_name(&slave->dev, "slave@%02x:%02x", link, id);
++	slave->dev.type = &cfam_type;
+ 	slave->dev.parent = &master->dev;
+ 	slave->dev.of_node = fsi_slave_find_of_node(master, link, id);
+ 	slave->dev.release = fsi_slave_release;
++	device_initialize(&slave->dev);
++	slave->cfam_id = cfam_id;
++	slave->master = master;
+ 	slave->link = link;
+ 	slave->id = id;
+ 	slave->size = FSI_SLAVE_SIZE_23b;
+@@ -877,6 +1036,21 @@ static int fsi_slave_init(struct fsi_master *master, int link, uint8_t id)
+ 			slave->chip_id = prop;
+ 
+ 	}
++
 +	/* Allocate a minor in the FSI space */
-+	rc = fsi_get_new_minor(fsi_dev, fsi_dev_sbefifo, &sbefifo->dev.devt, &didx);
++	rc = __fsi_get_new_minor(slave, fsi_dev_cfam, &slave->dev.devt,
++				 &slave->cdev_idx);
 +	if (rc)
-+		goto err;
- 
--	/* Create misc chardev for userspace access */
--	sbefifo->mdev.minor = MISC_DYNAMIC_MINOR;
--	sbefifo->mdev.fops = &sbefifo_fops;
--	sbefifo->mdev.name = sbefifo->name;
--	sbefifo->mdev.parent = dev;
--	rc = misc_register(&sbefifo->mdev);
-+	dev_set_name(&sbefifo->dev, "sbefifo%d", didx);
-+	cdev_init(&sbefifo->cdev, &sbefifo_fops);
-+	rc = cdev_device_add(&sbefifo->cdev, &sbefifo->dev);
++		goto err_free;
++
++	/* Create chardev for userspace access */
++	cdev_init(&slave->cdev, &cfam_fops);
++	rc = cdev_device_add(&slave->cdev, &slave->dev);
++	if (rc) {
++		dev_err(&slave->dev, "Error %d creating slave device\n", rc);
++		goto err_free;
++	}
++
+ 	rc = fsi_slave_set_smode(slave);
  	if (rc) {
--		dev_err(dev, "Failed to register miscdevice: %d\n", rc);
--		ida_simple_remove(&sbefifo_ida, sbefifo->idx);
+ 		dev_warn(&master->dev,
+@@ -890,30 +1064,11 @@ static int fsi_slave_init(struct fsi_master *master, int link, uint8_t id)
+ 				    slave->t_send_delay,
+ 				    slave->t_echo_delay);
+ 
+-	dev_set_name(&slave->dev, "slave@%02x:%02x", link, id);
+-	rc = device_register(&slave->dev);
+-	if (rc < 0) {
+-		dev_warn(&master->dev, "failed to create slave device: %d\n",
+-				rc);
+-		put_device(&slave->dev);
 -		return rc;
-+		dev_err(dev, "Error %d creating char device %s\n",
-+			rc, dev_name(&sbefifo->dev));
-+		goto err_free_minor;
- 	}
+-	}
+-
++	/* Legacy raw file -> to be removed */
+ 	rc = device_create_bin_file(&slave->dev, &fsi_slave_raw_attr);
+ 	if (rc)
+ 		dev_warn(&slave->dev, "failed to create raw attr: %d\n", rc);
  
- 	/* Create platform devs for dts child nodes (occ, etc) */
- 	for_each_available_child_of_node(dev->of_node, np) {
- 		snprintf(child_name, sizeof(child_name), "%s-dev%d",
--			 sbefifo->name, child_idx++);
-+			 dev_name(&sbefifo->dev), child_idx++);
- 		child = of_platform_device_create(np, child_name, dev);
- 		if (!child)
- 			dev_warn(dev, "failed to create child %s dev\n",
-@@ -948,6 +967,11 @@ static int sbefifo_probe(struct device *dev)
- 	}
+-	rc = device_create_bin_file(&slave->dev, &fsi_slave_term_attr);
+-	if (rc)
+-		dev_warn(&slave->dev, "failed to create term attr: %d\n", rc);
+-
+-	rc = device_create_file(&slave->dev, &dev_attr_send_echo_delays);
+-	if (rc)
+-		dev_warn(&slave->dev, "failed to create delay attr: %d\n", rc);
+-
+-	rc = device_create_file(&slave->dev, &dev_attr_chip_id);
+-	if (rc)
+-		dev_warn(&slave->dev, "failed to create chip id: %d\n", rc);
  
- 	return 0;
-+ err_free_minor:
-+	fsi_free_minor(sbefifo->dev.devt);
-+ err:
-+	put_device(&sbefifo->dev);
+ 	rc = fsi_slave_scan(slave);
+ 	if (rc)
+@@ -921,6 +1076,10 @@ static int fsi_slave_init(struct fsi_master *master, int link, uint8_t id)
+ 				rc);
+ 
+ 	return rc;
++
++ err_free:
++	put_device(&slave->dev);
 +	return rc;
  }
  
- static int sbefifo_unregister_child(struct device *dev, void *data)
-@@ -967,10 +991,14 @@ static int sbefifo_remove(struct device *dev)
+ /* FSI master support */
+@@ -1029,7 +1188,10 @@ static int fsi_slave_remove_device(struct device *dev, void *arg)
  
- 	dev_dbg(dev, "Removing sbefifo device...\n");
- 
--	misc_deregister(&sbefifo->mdev);
--	device_for_each_child(dev, NULL, sbefifo_unregister_child);
-+	mutex_lock(&sbefifo->lock);
-+	sbefifo->dead = true;
-+	mutex_unlock(&sbefifo->lock);
- 
--	ida_simple_remove(&sbefifo_ida, sbefifo->idx);
-+	cdev_device_del(&sbefifo->cdev, &sbefifo->dev);
-+	fsi_free_minor(sbefifo->dev.devt);
-+	device_for_each_child(dev, NULL, sbefifo_unregister_child);
-+	put_device(&sbefifo->dev);
- 
+ static int fsi_master_remove_slave(struct device *dev, void *arg)
+ {
++	struct fsi_slave *slave = to_fsi_slave(dev);
++
+ 	device_for_each_child(dev, NULL, fsi_slave_remove_device);
++	cdev_device_del(&slave->cdev, &slave->dev);
+ 	put_device(dev);
  	return 0;
  }
-@@ -1001,8 +1029,6 @@ static int sbefifo_init(void)
- static void sbefifo_exit(void)
- {
- 	fsi_driver_unregister(&sbefifo_drv);
--
--	ida_destroy(&sbefifo_ida);
- }
- 
- module_init(sbefifo_init);
 -- 
 2.17.1
 
