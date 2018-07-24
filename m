@@ -1,254 +1,235 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Tue, 24 Jul 2018 15:05:17 +1000
-Subject: [PATCH 3/5] fsi: scom: Convert to use the new chardev
+Date: Tue, 24 Jul 2018 15:05:15 +1000
+Subject: [PATCH 1/5] fsi: Add new central chardev support
 In-Reply-To: <20180724050519.31920-1-benh@kernel.crashing.org>
 References: <20180724050519.31920-1-benh@kernel.crashing.org>
-Message-ID: <20180724050519.31920-4-benh@kernel.crashing.org>
+Message-ID: <20180724050519.31920-2-benh@kernel.crashing.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This converts FSI scom to use the new fsi-core controlled
-chardev allocator and use a real cdev instead of a miscdev.
+The various FSI devices (sbefifo, occ, scom, more to come)
+currently use misc devices.
+
+This is problematic as the minor device space for misc is
+limited and there can be a lot of them. Also it limits our
+ability to move them to a dedicated /dev/fsi directory or
+to be smart about device naming and numbering.
+
+It also means we have IDAs on every single of these drivers
+
+This creates a common fsi "device_type" for the optional
+/dev/fsi grouping and a dev_t allocator for all FSI devices.
+
+"Legacy" devices get to use a backward compatible numbering
+scheme (as long as chip id <16 and there's only one copy
+of a given unit type per chip).
+
+A single major number and a single IDA are shared for all
+FSI devices.
+
+This doesn't convert the FSI device drivers to use the new
+scheme yet, they will be converted individually.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- drivers/fsi/fsi-scom.c | 130 +++++++++++++++++++++++++----------------
- 1 file changed, 80 insertions(+), 50 deletions(-)
+ drivers/fsi/Kconfig    | 15 +++++++
+ drivers/fsi/fsi-core.c | 95 +++++++++++++++++++++++++++++++++++++++++-
+ include/linux/fsi.h    | 12 +++++-
+ 3 files changed, 119 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/fsi/fsi-scom.c b/drivers/fsi/fsi-scom.c
-index 39c74351f1bf..0f303a700f69 100644
---- a/drivers/fsi/fsi-scom.c
-+++ b/drivers/fsi/fsi-scom.c
-@@ -20,9 +20,8 @@
- #include <linux/fs.h>
- #include <linux/uaccess.h>
- #include <linux/slab.h>
--#include <linux/miscdevice.h>
-+#include <linux/cdev.h>
- #include <linux/list.h>
--#include <linux/idr.h>
+diff --git a/drivers/fsi/Kconfig b/drivers/fsi/Kconfig
+index 8d82b1e60514..af3a20dd5aa4 100644
+--- a/drivers/fsi/Kconfig
++++ b/drivers/fsi/Kconfig
+@@ -12,6 +12,21 @@ menuconfig FSI
  
- #include <uapi/linux/fsi.h>
+ if FSI
  
-@@ -77,18 +76,12 @@
- struct scom_device {
- 	struct list_head link;
- 	struct fsi_device *fsi_dev;
--	struct miscdevice mdev;
-+	struct device dev;
-+	struct cdev cdev;
- 	struct mutex lock;
--	char	name[32];
--	int	idx;
-+	bool dead;
- };
++config FSI_NEW_DEV_NODE
++	bool "Create '/dev/fsi' directory for char devices"
++	default n
++	---help---
++	This option causes char devices created for FSI devices to be
++	located under a common /dev/fsi/ directory. Set to N unless your
++	userspace has been updated to handle the new location.
++
++	Additionally, it also causes the char device names to be offset
++	by one so that chip 0 will have /dev/scom1 and chip1 /dev/scom2
++	to match old userspace expectations.
++
++	New userspace will use udev rules to generate predictable access
++	symlinks in /dev/fsi/by-path when this option is enabled.
++
+ config FSI_MASTER_GPIO
+ 	tristate "GPIO-based FSI master"
+ 	depends on GPIOLIB
+diff --git a/drivers/fsi/fsi-core.c b/drivers/fsi/fsi-core.c
+index eab6c5c4990e..faa1760a5a40 100644
+--- a/drivers/fsi/fsi-core.c
++++ b/drivers/fsi/fsi-core.c
+@@ -92,6 +92,13 @@ struct fsi_slave {
+ static const int slave_retries = 2;
+ static int discard_errors;
  
--#define to_scom_dev(x)		container_of((x), struct scom_device, mdev)
--
--static struct list_head scom_devices;
--
--static DEFINE_IDA(scom_ida);
--
- static int __put_scom(struct scom_device *scom_dev, uint64_t value,
- 		      uint32_t addr, uint32_t *status)
++static dev_t fsi_base_dev;
++static DEFINE_IDA(fsi_minor_ida);
++#define FSI_CHAR_MAX_DEVICES	0x1000
++
++/* Legacy /dev numbering: 4 devices per chip, 16 chips */
++#define FSI_CHAR_LEGACY_TOP	64
++
+ static int fsi_master_read(struct fsi_master *master, int link,
+ 		uint8_t slave_id, uint32_t addr, void *val, size_t size);
+ static int fsi_master_write(struct fsi_master *master, int link,
+@@ -627,6 +634,7 @@ static void fsi_slave_release(struct device *dev)
  {
-@@ -374,9 +367,7 @@ static int get_scom(struct scom_device *scom, uint64_t *value,
- static ssize_t scom_read(struct file *filep, char __user *buf, size_t len,
- 			 loff_t *offset)
- {
--	struct miscdevice *mdev =
--				(struct miscdevice *)filep->private_data;
--	struct scom_device *scom = to_scom_dev(mdev);
-+	struct scom_device *scom = filep->private_data;
- 	struct device *dev = &scom->fsi_dev->dev;
- 	uint64_t val;
- 	int rc;
-@@ -385,7 +376,10 @@ static ssize_t scom_read(struct file *filep, char __user *buf, size_t len,
- 		return -EINVAL;
+ 	struct fsi_slave *slave = to_fsi_slave(dev);
  
- 	mutex_lock(&scom->lock);
--	rc = get_scom(scom, &val, *offset);
-+	if (scom->dead)
-+		rc = -ENODEV;
-+	else
-+		rc = get_scom(scom, &val, *offset);
- 	mutex_unlock(&scom->lock);
- 	if (rc) {
- 		dev_dbg(dev, "get_scom fail:%d\n", rc);
-@@ -403,8 +397,7 @@ static ssize_t scom_write(struct file *filep, const char __user *buf,
- 			  size_t len, loff_t *offset)
- {
- 	int rc;
--	struct miscdevice *mdev = filep->private_data;
--	struct scom_device *scom = to_scom_dev(mdev);
-+	struct scom_device *scom = filep->private_data;
- 	struct device *dev = &scom->fsi_dev->dev;
- 	uint64_t val;
- 
-@@ -418,7 +411,10 @@ static ssize_t scom_write(struct file *filep, const char __user *buf,
- 	}
- 
- 	mutex_lock(&scom->lock);
--	rc = put_scom(scom, val, *offset);
-+	if (scom->dead)
-+		rc = -ENODEV;
-+	else
-+		rc = put_scom(scom, val, *offset);
- 	mutex_unlock(&scom->lock);
- 	if (rc) {
- 		dev_dbg(dev, "put_scom failed with:%d\n", rc);
-@@ -532,12 +528,15 @@ static int scom_check(struct scom_device *scom, void __user *argp)
- 
- static long scom_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
- {
--	struct miscdevice *mdev = file->private_data;
--	struct scom_device *scom = to_scom_dev(mdev);
-+	struct scom_device *scom = file->private_data;
- 	void __user *argp = (void __user *)arg;
- 	int rc = -ENOTTY;
- 
- 	mutex_lock(&scom->lock);
-+	if (scom->dead) {
-+		mutex_unlock(&scom->lock);
-+		return -ENODEV;
-+	}
- 	switch(cmd) {
- 	case FSI_SCOM_CHECK:
- 		rc = scom_check(scom, argp);
-@@ -556,48 +555,88 @@ static long scom_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
- 	return rc;
++	fsi_free_minor(slave->dev.devt);
+ 	of_node_put(dev->of_node);
+ 	kfree(slave);
  }
+@@ -729,6 +737,75 @@ static ssize_t chip_id_show(struct device *dev,
  
-+static int scom_open(struct inode *inode, struct file *file)
+ static DEVICE_ATTR_RO(chip_id);
+ 
++static char *fsi_cdev_devnode(struct device *dev, umode_t *mode,
++			      kuid_t *uid, kgid_t *gid)
 +{
-+	struct scom_device *scom = container_of(inode->i_cdev, struct scom_device, cdev);
++#ifdef CONFIG_FSI_NEW_DEV_NODE
++	return kasprintf(GFP_KERNEL, "fsi/%s", dev_name(dev));
++#else
++	return kasprintf(GFP_KERNEL, "%s", dev_name(dev));
++#endif
++}
 +
-+	file->private_data = scom;
++const struct device_type fsi_cdev_type = {
++	.name = "fsi-cdev",
++	.devnode = fsi_cdev_devnode,
++};
++EXPORT_SYMBOL_GPL(fsi_cdev_type);
 +
++/* Backward compatible /dev/ numbering in "old style" mode */
++static int fsi_adjust_index(int index)
++{
++#ifdef CONFIG_FSI_NEW_DEV_NODE
++	return index;
++#else
++	return index + 1;
++#endif
++}
++
++static int __fsi_get_new_minor(struct fsi_slave *slave, enum fsi_dev_type type,
++			       dev_t *out_dev, int *out_index)
++{
++	int cid = slave->chip_id;
++	int id;
++
++	/* Check if we qualify for legacy numbering */
++	if (cid >= 0 && cid < 16 && type < 4) {
++		/* Try reserving the legacy number */
++		id = (cid << 4) | type;
++		id = ida_simple_get(&fsi_minor_ida, id, id + 1, GFP_KERNEL);
++		if (id >= 0) {
++			*out_index = fsi_adjust_index(cid);
++			*out_dev = fsi_base_dev + id;
++			return 0;
++		}
++		/* Other failure */
++		if (id != -ENOSPC)
++			return id;
++		/* Fallback to non-legacy allocation */
++	}
++	id = ida_simple_get(&fsi_minor_ida, FSI_CHAR_LEGACY_TOP,
++			    FSI_CHAR_MAX_DEVICES, GFP_KERNEL);
++	if (id < 0)
++		return id;
++	*out_index = fsi_adjust_index(id);
++	*out_dev = fsi_base_dev + id;
 +	return 0;
 +}
 +
- static const struct file_operations scom_fops = {
- 	.owner		= THIS_MODULE,
-+	.open		= scom_open,
- 	.llseek		= scom_llseek,
- 	.read		= scom_read,
- 	.write		= scom_write,
- 	.unlocked_ioctl	= scom_ioctl,
- };
- 
-+static void scom_free(struct device *dev)
++int fsi_get_new_minor(struct fsi_device *fdev, enum fsi_dev_type type,
++		      dev_t *out_dev, int *out_index)
 +{
-+	struct scom_device *scom = container_of(dev, struct scom_device, dev);
-+
-+	put_device(&scom->fsi_dev->dev);
-+	kfree(scom);
++	return __fsi_get_new_minor(fdev->slave, type, out_dev, out_index);
 +}
++EXPORT_SYMBOL_GPL(fsi_get_new_minor);
 +
- static int scom_probe(struct device *dev)
++void fsi_free_minor(dev_t dev)
++{
++	ida_simple_remove(&fsi_minor_ida, MINOR(dev));
++}
++EXPORT_SYMBOL_GPL(fsi_free_minor);
++
+ static int fsi_slave_init(struct fsi_master *master, int link, uint8_t id)
  {
- 	struct fsi_device *fsi_dev = to_fsi_dev(dev);
- 	struct scom_device *scom;
-+	int rc, didx;
- 
--	scom = devm_kzalloc(dev, sizeof(*scom), GFP_KERNEL);
-+	scom = kzalloc(sizeof(*scom), GFP_KERNEL);
- 	if (!scom)
- 		return -ENOMEM;
--
-+	dev_set_drvdata(dev, scom);
- 	mutex_init(&scom->lock);
--	scom->idx = ida_simple_get(&scom_ida, 1, INT_MAX, GFP_KERNEL);
--	snprintf(scom->name, sizeof(scom->name), "scom%d", scom->idx);
--	scom->fsi_dev = fsi_dev;
--	scom->mdev.minor = MISC_DYNAMIC_MINOR;
--	scom->mdev.fops = &scom_fops;
--	scom->mdev.name = scom->name;
--	scom->mdev.parent = dev;
--	list_add(&scom->link, &scom_devices);
--
--	return misc_register(&scom->mdev);
-+
-+	/* Grab a reference to the device (parent of our cdev), we'll drop it later */
-+	if (!get_device(dev)) {
-+		kfree(scom);
-+		return -ENODEV;
-+	}
-+
-+	/* Create chardev for userspace access */
-+	scom->dev.type = &fsi_cdev_type;
-+	scom->dev.parent = dev;
-+	scom->dev.release = scom_free;
-+	device_initialize(&scom->dev);
-+
-+	/* Allocate a minor in the FSI space */
-+	rc = fsi_get_new_minor(fsi_dev, fsi_dev_scom, &scom->dev.devt, &didx);
-+	if (rc)
-+		goto err;
-+
-+	dev_set_name(&scom->dev, "scom%d", didx);
-+	cdev_init(&scom->cdev, &scom_fops);
-+	rc = cdev_device_add(&scom->cdev, &scom->dev);
-+	if (rc) {
-+		dev_err(dev, "Error %d creating char device %s\n",
-+			rc, dev_name(&scom->dev));
-+		goto err_free_minor;
-+	}
-+
-+	return 0;
-+ err_free_minor:
-+	fsi_free_minor(scom->dev.devt);
-+ err:
-+	put_device(&scom->dev);
-+	return rc;
- }
- 
- static int scom_remove(struct device *dev)
+ 	uint32_t chip_id;
+@@ -953,7 +1030,7 @@ static int fsi_slave_remove_device(struct device *dev, void *arg)
+ static int fsi_master_remove_slave(struct device *dev, void *arg)
  {
--	struct scom_device *scom, *scom_tmp;
--	struct fsi_device *fsi_dev = to_fsi_dev(dev);
-+	struct scom_device *scom = dev_get_drvdata(dev);
- 
--	list_for_each_entry_safe(scom, scom_tmp, &scom_devices, link) {
--		if (scom->fsi_dev == fsi_dev) {
--			list_del(&scom->link);
--			ida_simple_remove(&scom_ida, scom->idx);
--			misc_deregister(&scom->mdev);
--		}
--	}
-+	mutex_lock(&scom->lock);
-+	scom->dead = true;
-+	mutex_unlock(&scom->lock);
-+	cdev_device_del(&scom->cdev, &scom->dev);
-+	fsi_free_minor(scom->dev.devt);
-+	put_device(&scom->dev);
- 
+ 	device_for_each_child(dev, NULL, fsi_slave_remove_device);
+-	device_unregister(dev);
++	put_device(dev);
  	return 0;
  }
-@@ -622,20 +661,11 @@ static struct fsi_driver scom_drv = {
  
- static int scom_init(void)
+@@ -1091,13 +1168,27 @@ EXPORT_SYMBOL_GPL(fsi_bus_type);
+ 
+ static int __init fsi_init(void)
  {
--	INIT_LIST_HEAD(&scom_devices);
- 	return fsi_driver_register(&scom_drv);
+-	return bus_register(&fsi_bus_type);
++	int rc;
++
++	rc = alloc_chrdev_region(&fsi_base_dev, 0, FSI_CHAR_MAX_DEVICES, "fsi");
++	if (rc)
++		return rc;
++	rc = bus_register(&fsi_bus_type);
++	if (rc)
++		goto fail_bus;
++	return 0;
++
++ fail_bus:
++	unregister_chrdev_region(fsi_base_dev, FSI_CHAR_MAX_DEVICES);
++	return rc;
  }
+ postcore_initcall(fsi_init);
  
- static void scom_exit(void)
+ static void fsi_exit(void)
  {
--	struct list_head *pos;
--	struct scom_device *scom;
--
--	list_for_each(pos, &scom_devices) {
--		scom = list_entry(pos, struct scom_device, link);
--		misc_deregister(&scom->mdev);
--		devm_kfree(&scom->fsi_dev->dev, scom);
--	}
- 	fsi_driver_unregister(&scom_drv);
+ 	bus_unregister(&fsi_bus_type);
++	unregister_chrdev_region(fsi_base_dev, FSI_CHAR_MAX_DEVICES);
++	ida_destroy(&fsi_minor_ida);
  }
+ module_exit(fsi_exit);
+ module_param(discard_errors, int, 0664);
+diff --git a/include/linux/fsi.h b/include/linux/fsi.h
+index 141fd38d061f..ec3be0d5b786 100644
+--- a/include/linux/fsi.h
++++ b/include/linux/fsi.h
+@@ -76,8 +76,18 @@ extern int fsi_slave_read(struct fsi_slave *slave, uint32_t addr,
+ extern int fsi_slave_write(struct fsi_slave *slave, uint32_t addr,
+ 		const void *val, size_t size);
  
++extern struct bus_type fsi_bus_type;
++extern const struct device_type fsi_cdev_type;
+ 
++enum fsi_dev_type {
++	fsi_dev_cfam,
++	fsi_dev_sbefifo,
++	fsi_dev_scom,
++	fsi_dev_occ
++};
+ 
+-extern struct bus_type fsi_bus_type;
++extern int fsi_get_new_minor(struct fsi_device *fdev, enum fsi_dev_type type,
++			     dev_t *out_dev, int *out_index);
++extern void fsi_free_minor(dev_t dev);
+ 
+ #endif /* LINUX_FSI_H */
 -- 
 2.17.1
 
