@@ -1,235 +1,213 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Tue, 24 Jul 2018 15:05:15 +1000
-Subject: [PATCH 1/5] fsi: Add new central chardev support
+Date: Tue, 24 Jul 2018 15:05:16 +1000
+Subject: [PATCH 2/5] fsi: sbefifo: Convert to use the new chardev
 In-Reply-To: <20180724050519.31920-1-benh@kernel.crashing.org>
 References: <20180724050519.31920-1-benh@kernel.crashing.org>
-Message-ID: <20180724050519.31920-2-benh@kernel.crashing.org>
+Message-ID: <20180724050519.31920-3-benh@kernel.crashing.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The various FSI devices (sbefifo, occ, scom, more to come)
-currently use misc devices.
+This converts FSI sbefifo to use the new fsi-core controlled
+chardev allocator and use a real cdev instead of a miscdev.
 
-This is problematic as the minor device space for misc is
-limited and there can be a lot of them. Also it limits our
-ability to move them to a dedicated /dev/fsi directory or
-to be smart about device naming and numbering.
-
-It also means we have IDAs on every single of these drivers
-
-This creates a common fsi "device_type" for the optional
-/dev/fsi grouping and a dev_t allocator for all FSI devices.
-
-"Legacy" devices get to use a backward compatible numbering
-scheme (as long as chip id <16 and there's only one copy
-of a given unit type per chip).
-
-A single major number and a single IDA are shared for all
-FSI devices.
-
-This doesn't convert the FSI device drivers to use the new
-scheme yet, they will be converted individually.
+One side effect is to fix the object lifetime by removing
+the use of devm_kzalloc() for something that contains kobjects,
+and using proper reference counting.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- drivers/fsi/Kconfig    | 15 +++++++
- drivers/fsi/fsi-core.c | 95 +++++++++++++++++++++++++++++++++++++++++-
- include/linux/fsi.h    | 12 +++++-
- 3 files changed, 119 insertions(+), 3 deletions(-)
+ drivers/fsi/fsi-sbefifo.c | 84 +++++++++++++++++++++++++--------------
+ 1 file changed, 55 insertions(+), 29 deletions(-)
 
-diff --git a/drivers/fsi/Kconfig b/drivers/fsi/Kconfig
-index 8d82b1e60514..af3a20dd5aa4 100644
---- a/drivers/fsi/Kconfig
-+++ b/drivers/fsi/Kconfig
-@@ -12,6 +12,21 @@ menuconfig FSI
+diff --git a/drivers/fsi/fsi-sbefifo.c b/drivers/fsi/fsi-sbefifo.c
+index 33a5d9a43a07..8a185f53c9d8 100644
+--- a/drivers/fsi/fsi-sbefifo.c
++++ b/drivers/fsi/fsi-sbefifo.c
+@@ -17,9 +17,8 @@
+ #include <linux/fs.h>
+ #include <linux/fsi.h>
+ #include <linux/fsi-sbefifo.h>
+-#include <linux/idr.h>
+ #include <linux/kernel.h>
+-#include <linux/miscdevice.h>
++#include <linux/cdev.h>
+ #include <linux/module.h>
+ #include <linux/mutex.h>
+ #include <linux/of.h>
+@@ -118,11 +117,11 @@ struct sbefifo {
+ 	uint32_t		magic;
+ #define SBEFIFO_MAGIC		0x53424546 /* "SBEF" */
+ 	struct fsi_device	*fsi_dev;
+-	struct miscdevice	mdev;
++	struct device		dev;
++	struct cdev		cdev;
+ 	struct mutex		lock;
+-	char			name[32];
+-	int			idx;
+ 	bool			broken;
++	bool			dead;
+ 	bool			async_ffdc;
+ };
  
- if FSI
+@@ -133,9 +132,9 @@ struct sbefifo_user {
+ 	size_t			pending_len;
+ };
  
-+config FSI_NEW_DEV_NODE
-+	bool "Create '/dev/fsi' directory for char devices"
-+	default n
-+	---help---
-+	This option causes char devices created for FSI devices to be
-+	located under a common /dev/fsi/ directory. Set to N unless your
-+	userspace has been updated to handle the new location.
-+
-+	Additionally, it also causes the char device names to be offset
-+	by one so that chip 0 will have /dev/scom1 and chip1 /dev/scom2
-+	to match old userspace expectations.
-+
-+	New userspace will use udev rules to generate predictable access
-+	symlinks in /dev/fsi/by-path when this option is enabled.
-+
- config FSI_MASTER_GPIO
- 	tristate "GPIO-based FSI master"
- 	depends on GPIOLIB
-diff --git a/drivers/fsi/fsi-core.c b/drivers/fsi/fsi-core.c
-index eab6c5c4990e..faa1760a5a40 100644
---- a/drivers/fsi/fsi-core.c
-+++ b/drivers/fsi/fsi-core.c
-@@ -92,6 +92,13 @@ struct fsi_slave {
- static const int slave_retries = 2;
- static int discard_errors;
+-static DEFINE_IDA(sbefifo_ida);
+ static DEFINE_MUTEX(sbefifo_ffdc_mutex);
  
-+static dev_t fsi_base_dev;
-+static DEFINE_IDA(fsi_minor_ida);
-+#define FSI_CHAR_MAX_DEVICES	0x1000
 +
-+/* Legacy /dev numbering: 4 devices per chip, 16 chips */
-+#define FSI_CHAR_LEGACY_TOP	64
-+
- static int fsi_master_read(struct fsi_master *master, int link,
- 		uint8_t slave_id, uint32_t addr, void *val, size_t size);
- static int fsi_master_write(struct fsi_master *master, int link,
-@@ -627,6 +634,7 @@ static void fsi_slave_release(struct device *dev)
+ static void __sbefifo_dump_ffdc(struct device *dev, const __be32 *ffdc,
+ 				size_t ffdc_sz, bool internal)
  {
- 	struct fsi_slave *slave = to_fsi_slave(dev);
+@@ -667,6 +666,9 @@ static int __sbefifo_submit(struct sbefifo *sbefifo,
+ 	struct device *dev = &sbefifo->fsi_dev->dev;
+ 	int rc;
  
-+	fsi_free_minor(slave->dev.devt);
- 	of_node_put(dev->of_node);
- 	kfree(slave);
- }
-@@ -729,6 +737,75 @@ static ssize_t chip_id_show(struct device *dev,
++	if (sbefifo->dead)
++		return -ENODEV;
++
+ 	if (cmd_len < 2 || be32_to_cpu(command[0]) != cmd_len) {
+ 		dev_vdbg(dev, "Invalid command len %zd (header: %d)\n",
+ 			 cmd_len, be32_to_cpu(command[0]));
+@@ -751,8 +753,7 @@ EXPORT_SYMBOL_GPL(sbefifo_submit);
+  */
+ static int sbefifo_user_open(struct inode *inode, struct file *file)
+ {
+-	struct sbefifo *sbefifo = container_of(file->private_data,
+-					       struct sbefifo, mdev);
++	struct sbefifo *sbefifo = container_of(inode->i_cdev, struct sbefifo, cdev);
+ 	struct sbefifo_user *user;
  
- static DEVICE_ATTR_RO(chip_id);
+ 	user = kzalloc(sizeof(struct sbefifo_user), GFP_KERNEL);
+@@ -889,6 +890,14 @@ static const struct file_operations sbefifo_fops = {
+ 	.release	= sbefifo_user_release,
+ };
  
-+static char *fsi_cdev_devnode(struct device *dev, umode_t *mode,
-+			      kuid_t *uid, kgid_t *gid)
++static void sbefifo_free(struct device *dev)
 +{
-+#ifdef CONFIG_FSI_NEW_DEV_NODE
-+	return kasprintf(GFP_KERNEL, "fsi/%s", dev_name(dev));
-+#else
-+	return kasprintf(GFP_KERNEL, "%s", dev_name(dev));
-+#endif
++	struct sbefifo *sbefifo = container_of(dev, struct sbefifo, dev);
++
++	put_device(&sbefifo->fsi_dev->dev);
++	kfree(sbefifo);
 +}
 +
-+const struct device_type fsi_cdev_type = {
-+	.name = "fsi-cdev",
-+	.devnode = fsi_cdev_devnode,
-+};
-+EXPORT_SYMBOL_GPL(fsi_cdev_type);
+ /*
+  * Probe/remove
+  */
+@@ -900,15 +909,23 @@ static int sbefifo_probe(struct device *dev)
+ 	struct device_node *np;
+ 	struct platform_device *child;
+ 	char child_name[32];
+-	int rc, child_idx = 0;
++	int rc, didx, child_idx = 0;
+ 
+ 	dev_dbg(dev, "Found sbefifo device\n");
+ 
+-	sbefifo = devm_kzalloc(dev, sizeof(*sbefifo), GFP_KERNEL);
++	sbefifo = kzalloc(sizeof(*sbefifo), GFP_KERNEL);
+ 	if (!sbefifo)
+ 		return -ENOMEM;
 +
-+/* Backward compatible /dev/ numbering in "old style" mode */
-+static int fsi_adjust_index(int index)
-+{
-+#ifdef CONFIG_FSI_NEW_DEV_NODE
-+	return index;
-+#else
-+	return index + 1;
-+#endif
-+}
-+
-+static int __fsi_get_new_minor(struct fsi_slave *slave, enum fsi_dev_type type,
-+			       dev_t *out_dev, int *out_index)
-+{
-+	int cid = slave->chip_id;
-+	int id;
-+
-+	/* Check if we qualify for legacy numbering */
-+	if (cid >= 0 && cid < 16 && type < 4) {
-+		/* Try reserving the legacy number */
-+		id = (cid << 4) | type;
-+		id = ida_simple_get(&fsi_minor_ida, id, id + 1, GFP_KERNEL);
-+		if (id >= 0) {
-+			*out_index = fsi_adjust_index(cid);
-+			*out_dev = fsi_base_dev + id;
-+			return 0;
-+		}
-+		/* Other failure */
-+		if (id != -ENOSPC)
-+			return id;
-+		/* Fallback to non-legacy allocation */
++	/* Grab a reference to the device (parent of our cdev), we'll drop it later */
++	if (!get_device(dev)) {
++		return -ENODEV;
++		kfree(sbefifo);
 +	}
-+	id = ida_simple_get(&fsi_minor_ida, FSI_CHAR_LEGACY_TOP,
-+			    FSI_CHAR_MAX_DEVICES, GFP_KERNEL);
-+	if (id < 0)
-+		return id;
-+	*out_index = fsi_adjust_index(id);
-+	*out_dev = fsi_base_dev + id;
-+	return 0;
-+}
 +
-+int fsi_get_new_minor(struct fsi_device *fdev, enum fsi_dev_type type,
-+		      dev_t *out_dev, int *out_index)
-+{
-+	return __fsi_get_new_minor(fdev->slave, type, out_dev, out_index);
-+}
-+EXPORT_SYMBOL_GPL(fsi_get_new_minor);
-+
-+void fsi_free_minor(dev_t dev)
-+{
-+	ida_simple_remove(&fsi_minor_ida, MINOR(dev));
-+}
-+EXPORT_SYMBOL_GPL(fsi_free_minor);
-+
- static int fsi_slave_init(struct fsi_master *master, int link, uint8_t id)
- {
- 	uint32_t chip_id;
-@@ -953,7 +1030,7 @@ static int fsi_slave_remove_device(struct device *dev, void *arg)
- static int fsi_master_remove_slave(struct device *dev, void *arg)
- {
- 	device_for_each_child(dev, NULL, fsi_slave_remove_device);
--	device_unregister(dev);
-+	put_device(dev);
+ 	sbefifo->magic = SBEFIFO_MAGIC;
+ 	sbefifo->fsi_dev = fsi_dev;
++	dev_set_drvdata(dev, sbefifo);
+ 	mutex_init(&sbefifo->lock);
+ 
+ 	/*
+@@ -919,28 +936,30 @@ static int sbefifo_probe(struct device *dev)
+ 	if (rc && rc != -ESHUTDOWN)
+ 		dev_err(dev, "Initial HW cleanup failed, will retry later\n");
+ 
+-	sbefifo->idx = ida_simple_get(&sbefifo_ida, 1, INT_MAX, GFP_KERNEL);
+-	snprintf(sbefifo->name, sizeof(sbefifo->name), "sbefifo%d",
+-		 sbefifo->idx);
++	/* Create chardev for userspace access */
++	sbefifo->dev.type = &fsi_cdev_type;
++	sbefifo->dev.parent = dev;
++	sbefifo->dev.release = sbefifo_free;
++	device_initialize(&sbefifo->dev);
+ 
+-	dev_set_drvdata(dev, sbefifo);
++	/* Allocate a minor in the FSI space */
++	rc = fsi_get_new_minor(fsi_dev, fsi_dev_sbefifo, &sbefifo->dev.devt, &didx);
++	if (rc)
++		goto err;
+ 
+-	/* Create misc chardev for userspace access */
+-	sbefifo->mdev.minor = MISC_DYNAMIC_MINOR;
+-	sbefifo->mdev.fops = &sbefifo_fops;
+-	sbefifo->mdev.name = sbefifo->name;
+-	sbefifo->mdev.parent = dev;
+-	rc = misc_register(&sbefifo->mdev);
++	dev_set_name(&sbefifo->dev, "sbefifo%d", didx);
++	cdev_init(&sbefifo->cdev, &sbefifo_fops);
++	rc = cdev_device_add(&sbefifo->cdev, &sbefifo->dev);
+ 	if (rc) {
+-		dev_err(dev, "Failed to register miscdevice: %d\n", rc);
+-		ida_simple_remove(&sbefifo_ida, sbefifo->idx);
+-		return rc;
++		dev_err(dev, "Error %d creating char device %s\n",
++			rc, dev_name(&sbefifo->dev));
++		goto err_free_minor;
+ 	}
+ 
+ 	/* Create platform devs for dts child nodes (occ, etc) */
+ 	for_each_available_child_of_node(dev->of_node, np) {
+ 		snprintf(child_name, sizeof(child_name), "%s-dev%d",
+-			 sbefifo->name, child_idx++);
++			 dev_name(&sbefifo->dev), child_idx++);
+ 		child = of_platform_device_create(np, child_name, dev);
+ 		if (!child)
+ 			dev_warn(dev, "failed to create child %s dev\n",
+@@ -948,6 +967,11 @@ static int sbefifo_probe(struct device *dev)
+ 	}
+ 
  	return 0;
- }
- 
-@@ -1091,13 +1168,27 @@ EXPORT_SYMBOL_GPL(fsi_bus_type);
- 
- static int __init fsi_init(void)
- {
--	return bus_register(&fsi_bus_type);
-+	int rc;
-+
-+	rc = alloc_chrdev_region(&fsi_base_dev, 0, FSI_CHAR_MAX_DEVICES, "fsi");
-+	if (rc)
-+		return rc;
-+	rc = bus_register(&fsi_bus_type);
-+	if (rc)
-+		goto fail_bus;
-+	return 0;
-+
-+ fail_bus:
-+	unregister_chrdev_region(fsi_base_dev, FSI_CHAR_MAX_DEVICES);
++ err_free_minor:
++	fsi_free_minor(sbefifo->dev.devt);
++ err:
++	put_device(&sbefifo->dev);
 +	return rc;
  }
- postcore_initcall(fsi_init);
  
- static void fsi_exit(void)
- {
- 	bus_unregister(&fsi_bus_type);
-+	unregister_chrdev_region(fsi_base_dev, FSI_CHAR_MAX_DEVICES);
-+	ida_destroy(&fsi_minor_ida);
+ static int sbefifo_unregister_child(struct device *dev, void *data)
+@@ -967,10 +991,14 @@ static int sbefifo_remove(struct device *dev)
+ 
+ 	dev_dbg(dev, "Removing sbefifo device...\n");
+ 
+-	misc_deregister(&sbefifo->mdev);
+-	device_for_each_child(dev, NULL, sbefifo_unregister_child);
++	mutex_lock(&sbefifo->lock);
++	sbefifo->dead = true;
++	mutex_unlock(&sbefifo->lock);
+ 
+-	ida_simple_remove(&sbefifo_ida, sbefifo->idx);
++	cdev_device_del(&sbefifo->cdev, &sbefifo->dev);
++	fsi_free_minor(sbefifo->dev.devt);
++	device_for_each_child(dev, NULL, sbefifo_unregister_child);
++	put_device(&sbefifo->dev);
+ 
+ 	return 0;
  }
- module_exit(fsi_exit);
- module_param(discard_errors, int, 0664);
-diff --git a/include/linux/fsi.h b/include/linux/fsi.h
-index 141fd38d061f..ec3be0d5b786 100644
---- a/include/linux/fsi.h
-+++ b/include/linux/fsi.h
-@@ -76,8 +76,18 @@ extern int fsi_slave_read(struct fsi_slave *slave, uint32_t addr,
- extern int fsi_slave_write(struct fsi_slave *slave, uint32_t addr,
- 		const void *val, size_t size);
+@@ -1001,8 +1029,6 @@ static int sbefifo_init(void)
+ static void sbefifo_exit(void)
+ {
+ 	fsi_driver_unregister(&sbefifo_drv);
+-
+-	ida_destroy(&sbefifo_ida);
+ }
  
-+extern struct bus_type fsi_bus_type;
-+extern const struct device_type fsi_cdev_type;
- 
-+enum fsi_dev_type {
-+	fsi_dev_cfam,
-+	fsi_dev_sbefifo,
-+	fsi_dev_scom,
-+	fsi_dev_occ
-+};
- 
--extern struct bus_type fsi_bus_type;
-+extern int fsi_get_new_minor(struct fsi_device *fdev, enum fsi_dev_type type,
-+			     dev_t *out_dev, int *out_index);
-+extern void fsi_free_minor(dev_t dev);
- 
- #endif /* LINUX_FSI_H */
+ module_init(sbefifo_init);
 -- 
 2.17.1
 
