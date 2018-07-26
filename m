@@ -1,59 +1,116 @@
 From: Olof Johansson <olof@lixom.net>
-Date: Thu, 26 Jul 2018 12:25:32 -0700
-Subject: [GIT PULL] ARM: aspeed: defconfig changes for 4.19
-In-Reply-To: <CACPK8XdcAANiSwsvCnu249W8QcFfjP616ce-YOW=UohgpTHtVw@mail.gmail.com>
-References: <CACPK8XdcAANiSwsvCnu249W8QcFfjP616ce-YOW=UohgpTHtVw@mail.gmail.com>
-Message-ID: <20180726192532.emdjzyaekz74ldqf@localhost>
+Date: Thu, 26 Jul 2018 21:50:05 +0200
+Subject: [PATCH 5/5] arm: dts: aspeed: Add power9 CFAM dtsi and use it on
+ OpenPower P9 machines
+In-Reply-To: <20180724042406.15374-6-benh@kernel.crashing.org>
+References: <20180724042406.15374-1-benh@kernel.crashing.org>
+ <20180724042406.15374-6-benh@kernel.crashing.org>
+Message-ID: <CAOesGMjAGb7T-89C3eYPf7zsPYSp=7CVx756PNngs73ue27Jhw@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Jul 26, 2018 at 02:03:11PM +0930, Joel Stanley wrote:
-> Hello ARM Maintainers,
-> 
-> Here are the ASPEED defconfig updates for 4.19. It's been a while since I sent
-> one, so this contains a lot of goodies.
-> 
-> The following changes since commit 021c91791a5e7e85c567452f1be3e4c2c6cb6063:
-> 
->   Linux 4.18-rc3 (2018-07-01 16:04:53 -0700)
-> 
-> are available in the Git repository at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/joel/aspeed.git
-> tags/aspeed-4.19-defconfig
-> 
-> for you to fetch changes up to 90708adcd3ead258d4c2185da6acbe748eb0cc32:
-> 
->   ARM: config: aspeed: Enable new FSI drivers (2018-07-26 13:27:27 +0930)
-> 
-> ----------------------------------------------------------------
-> ASPEED defconfig updates for 4.19
-> 
->  - Refresh the multi ARMv5 defconfig, and add AST2400 related drivers
-> 
->  - Enable new ASPEED hardware that we've merged in the past few cycles.
->  There are about 14 different drivers since we last refreshed the
->  defconfig
-> 
->  - Turn on features required by systemd, and other bits of OpenBMC
->  userspace
-> 
->  - Enable security related options
+Hi,
 
-Merged, two minor pieces of feedback:
+I came across this patch as part of Joel's pull request, so this is
+somewhat high latency review that I guess nobody else cared to do:
 
-1) I think you've cut-and-pasted the pull request into a mailer that line
-   breaks between the URL and the tag. That's fine, but it means two copy and
-   pastes at my end. Feel free to add a " \" at the end of the first line when
-   you remember. We usually don't ask people to do it, it's purely for extra
-   credit. :)
 
-2) Please try to get these merge requests in before -rc6, or send what you have
-   at that time even if you end up following up with just a few more patches
-   later.
+On Tue, Jul 24, 2018 at 6:24 AM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+> This provides proper chip IDs but also adds the various sub-devices
+> necessary for the future OCC driver among other. All the added nodes
+> comply with the existing upstream FSI bindings.
+>
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> ---
+>  arch/arm/boot/dts/aspeed-bmc-opp-lanyang.dts  |   1 +
+>  arch/arm/boot/dts/aspeed-bmc-opp-romulus.dts  |   2 +
+>  .../boot/dts/aspeed-bmc-opp-witherspoon.dts   |   2 +
+>  arch/arm/boot/dts/aspeed-bmc-opp-zaius.dts    |   2 +
+>  arch/arm/boot/dts/ibm-power9-cfam.dtsi        | 104 ++++++++++++++++++
+>  arch/arm/boot/dts/ibm-power9-dual.dtsi        |  58 ++++++++++
+>  6 files changed, 169 insertions(+)
+>  create mode 100644 arch/arm/boot/dts/ibm-power9-cfam.dtsi
+>  create mode 100644 arch/arm/boot/dts/ibm-power9-dual.dtsi
+>
+
+> diff --git a/arch/arm/boot/dts/ibm-power9-cfam.dtsi b/arch/arm/boot/dts/ibm-power9-cfam.dtsi
+> new file mode 100644
+> index 000000000000..5bda517f93cc
+> --- /dev/null
+> +++ b/arch/arm/boot/dts/ibm-power9-cfam.dtsi
+> @@ -0,0 +1,104 @@
+> +// SPDX-License-Identifier: GPL-2.0+
+> +// Copyright 2018 IBM Corp
+> +
+> +#define __MAKE_LABEL(p,i)      p##i
+> +#define _MAKE_LABEL(p,i)       __MAKE_LABEL(p,i)
+> +#define HUB_LABEL              _MAKE_LABEL(fsi_hub,CFAM_CHIP_ID)
+> +#define I2C_LABEL(n)           _MAKE_LABEL(_MAKE_LABEL(cfam,CFAM_CHIP_ID),_i2c##n)
+
+This is a red flag with respect to obscurity. It's a magic dtsi file
+that has to be included at the right spot in the dts file or things
+will break horribly -- we really try to avoid those kind of
+constructs.
+
+Also, you use it by passing in a predefined CHIP_ID, so you have
+#define / #include / #undef. And on top of that you have open-coded
+actual stable naming references to nodes that can't be found because
+they're created by macros.
+
+I know you want this to instantiate a bunch of boilerplate, so if you
+want to do that, maybe you'd be better off having this file just
+define a couple of macros, and then instantiate the actual subtrees
+with that macro (the macro can then take the chipid). That way you can
+still expose the same label-making macros in the locations where you
+setup the stable naming. Much less cognitive load on someone trying to
+read it and figure out just what's being instantiated where, and what
+nodes the i2c<#> aliases are referring to.
+
+Also:
+
+> +/ {
+> +       aliases {
+> +               i2c100 = &cfam0_i2c0;
+> +               i2c101 = &cfam0_i2c1;
+> +               i2c102 = &cfam0_i2c2;
+> +               i2c103 = &cfam0_i2c3;
+> +               i2c104 = &cfam0_i2c4;
+> +               i2c105 = &cfam0_i2c5;
+> +               i2c106 = &cfam0_i2c6;
+> +               i2c107 = &cfam0_i2c7;
+> +               i2c108 = &cfam0_i2c8;
+> +               i2c109 = &cfam0_i2c9;
+> +               i2c110 = &cfam0_i2c10;
+> +               i2c111 = &cfam0_i2c11;
+> +               i2c112 = &cfam0_i2c12;
+> +               i2c113 = &cfam0_i2c13;
+> +               i2c114 = &cfam0_i2c14;
+> +               i2c200 = &cfam1_i2c0;
+> +               i2c201 = &cfam1_i2c1;
+> +               i2c202 = &cfam1_i2c2;
+> +               i2c203 = &cfam1_i2c3;
+> +               i2c204 = &cfam1_i2c4;
+> +               i2c205 = &cfam1_i2c5;
+> +               i2c206 = &cfam1_i2c6;
+> +               i2c207 = &cfam1_i2c7;
+> +               i2c208 = &cfam1_i2c8;
+> +               i2c209 = &cfam1_i2c9;
+> +               i2c210 = &cfam1_i2c10;
+> +               i2c211 = &cfam1_i2c11;
+> +               i2c212 = &cfam1_i2c12;
+> +               i2c213 = &cfam1_i2c13;
+> +               i2c214 = &cfam1_i2c14;
+
+This is... unconventional. Fixed mapping but up at a high bus range
+such that it won't conflict with other SoC busses?
+
+Just make your tools figure out what bus to use with sysfs or DT
+entries instead, much less of a hack. We've done these things to IRQs
+and GPIOs in the past, and it's a pain to clean up later.
 
 
 -Olof
