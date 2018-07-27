@@ -1,63 +1,60 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Fri, 27 Jul 2018 10:47:10 +0930
-Subject: [GIT PULL] ARM: aspeed: defconfig changes for 4.19
-In-Reply-To: <20180726192532.emdjzyaekz74ldqf@localhost>
-References: <CACPK8XdcAANiSwsvCnu249W8QcFfjP616ce-YOW=UohgpTHtVw@mail.gmail.com>
- <20180726192532.emdjzyaekz74ldqf@localhost>
-Message-ID: <CACPK8XfkmRRvx=FtYkEAB9kj_+3DbZ8Zde-7ZLL18cJdrA2W2g@mail.gmail.com>
+Date: Fri, 27 Jul 2018 10:52:24 +0930
+Subject: [GIT PULL] ARM: aspeed: dts changes for 4.19
+In-Reply-To: <20180726195127.jukxvbydddlwui4k@localhost>
+References: <CACPK8Xeu2JAVBTyiUtyso1egbe3X+r5a--Cx30YDJV-JmK==DQ@mail.gmail.com>
+ <20180726195127.jukxvbydddlwui4k@localhost>
+Message-ID: <CACPK8Xc6qvtooRbMfXO84Uq_90OQ81QjEthMS6DBgtdmYOQpmw@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 27 July 2018 at 04:55, Olof Johansson <olof@lixom.net> wrote:
-> On Thu, Jul 26, 2018 at 02:03:11PM +0930, Joel Stanley wrote:
+On 27 July 2018 at 05:21, Olof Johansson <olof@lixom.net> wrote:
+> Hi,
+>
+> On Thu, Jul 26, 2018 at 02:00:49PM +0930, Joel Stanley wrote:
 >> Hello ARM Maintainers,
 >>
->> Here are the ASPEED defconfig updates for 4.19. It's been a while since I sent
->> one, so this contains a lot of goodies.
+>> Here are the ASPEED device tree updates for 4.19. No new machines this time
+>> around, but we now have some FSI (the bus between the BMC and the PowerPC host)
+>> descriptions, and USB support.
 >>
->> The following changes since commit 021c91791a5e7e85c567452f1be3e4c2c6cb6063:
+>> The following changes since commit 7daf201d7fe8334e2d2364d4e8ed3394ec9af819:
 >>
->>   Linux 4.18-rc3 (2018-07-01 16:04:53 -0700)
+>>   Linux 4.18-rc2 (2018-06-24 20:54:29 +0800)
 >>
 >> are available in the Git repository at:
 >>
 >>   git://git.kernel.org/pub/scm/linux/kernel/git/joel/aspeed.git
->> tags/aspeed-4.19-defconfig
+>> tags/aspeed-4.19-devicetree
 >>
->> for you to fetch changes up to 90708adcd3ead258d4c2185da6acbe748eb0cc32:
+>> for you to fetch changes up to 19617a35b08379b3e6da0a4ee0d2d62645bf1b9e:
 >>
->>   ARM: config: aspeed: Enable new FSI drivers (2018-07-26 13:27:27 +0930)
+>>   ARM: dts: aspeed: Add Power9 CFAM description (2018-07-25 17:43:36 +0930)
 >>
 >> ----------------------------------------------------------------
->> ASPEED defconfig updates for 4.19
+>> ASPEED device tree updates for 4.19
 >>
->>  - Refresh the multi ARMv5 defconfig, and add AST2400 related drivers
+>>  - New support for the ASPEED USB host controller and USB vhub (device)
+>>  support
 >>
->>  - Enable new ASPEED hardware that we've merged in the past few cycles.
->>  There are about 14 different drivers since we last refreshed the
->>  defconfig
->>
->>  - Turn on features required by systemd, and other bits of OpenBMC
->>  userspace
->>
->>  - Enable security related options
+>>  - Descriptions for the FSI bus and hardware inside the Power8/Power9
+>>  processors that are accessed over this bus. This includes the ColdFire
+>>  processor that is part of the ASPEED SoC and is used to offload the FSI
+>>  bit-banging
 >
-> Merged, two minor pieces of feedback:
+> I had some feedback on one of these patches, it should be reworked before we
+> merge it. See separate email as reply to the actual patch.
 >
-> 1) I think you've cut-and-pasted the pull request into a mailer that line
->    breaks between the URL and the tag. That's fine, but it means two copy and
->    pastes at my end. Feel free to add a " \" at the end of the first line when
->    you remember. We usually don't ask people to do it, it's purely for extra
->    credit. :)
+> If you prefer, you can send a branch without that contents for merging now, so
+> the rest of it isn't held up.
 
-Ah, sorry! I'll try to sort that out in the future.
+No worries. I have sent a pull request without the FSI changes.
 
->
-> 2) Please try to get these merge requests in before -rc6, or send what you have
->    at that time even if you end up following up with just a few more patches
->    later.
+Thanks for taking a close look!
 
-Thanks for the reminder. This was a little later than I intended.
+Cheers,
+
+Joel
