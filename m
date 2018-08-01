@@ -1,47 +1,58 @@
-From: Brendan Higgins <brendanhiggins@google.com>
-Date: Tue, 31 Jul 2018 23:56:48 -0700
-Subject: [PATCH i2c-next v2] i2c: aspeed: Add an explicit type casting for
- *get_clk_reg_val
-In-Reply-To: <20180724203615.5770-1-jae.hyun.yoo@linux.intel.com>
-References: <20180724203615.5770-1-jae.hyun.yoo@linux.intel.com>
-Message-ID: <CAFd5g44L+-6wtV4+Kn5-j8zRXA1aNamR2pV0EaFpcoshgQ4bTQ@mail.gmail.com>
+From: Cédric Le Goater <clg@kaod.org>
+Date: Wed, 1 Aug 2018 09:43:49 +0200
+Subject: [PATCH 4/4] mtd: spi-nor: aspeed: introduce optimized settings
+ for fast reads
+In-Reply-To: <CACPK8Xd0KeTpP+hbHXUDnu5-XzywX_ngCx_N-1Qcokavk5cw7w@mail.gmail.com>
+References: <20180622121417.6762-1-clg@kaod.org>
+ <20180622121417.6762-5-clg@kaod.org>
+ <CACPK8Xd0KeTpP+hbHXUDnu5-XzywX_ngCx_N-1Qcokavk5cw7w@mail.gmail.com>
+Message-ID: <0fe14cf3-b499-b20c-398d-01b5fad04646@kaod.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Jul 24, 2018 at 1:39 PM Jae Hyun Yoo
-<jae.hyun.yoo@linux.intel.com> wrote:
->
-> This commit fixes this sparse warning:
-> drivers/i2c/busses/i2c-aspeed.c:875:38: warning: incorrect type in assignment (different modifiers)
-> drivers/i2c/busses/i2c-aspeed.c:875:38:    expected unsigned int ( *get_clk_reg_val )( ... )
-> drivers/i2c/busses/i2c-aspeed.c:875:38:    got void const *const data
->
-> Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-> ---
-> Changes since v1:
-> - Fixed title and added Reported-by tag.
->
->  drivers/i2c/busses/i2c-aspeed.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
-> index efb89422d496..a4f956c6d567 100644
-> --- a/drivers/i2c/busses/i2c-aspeed.c
-> +++ b/drivers/i2c/busses/i2c-aspeed.c
-> @@ -872,7 +872,7 @@ static int aspeed_i2c_probe_bus(struct platform_device *pdev)
->         if (!match)
->                 bus->get_clk_reg_val = aspeed_i2c_24xx_get_clk_reg_val;
->         else
-> -               bus->get_clk_reg_val = match->data;
-> +               bus->get_clk_reg_val = (u32 (*)(u32))match->data;
->
->         /* Initialize the I2C adapter */
->         spin_lock_init(&bus->lock);
-> --
-> 2.18.0
->
+On 07/23/2018 02:16 PM, Joel Stanley wrote:
+> On 22 June 2018 at 21:44, C?dric Le Goater <clg@kaod.org> wrote:
+>> Better settings for fast reads are looked for by implementing a SPI
+>> timing calibration sequence described in the Aspeed SoC specification
+>> document. The code is based on the OpenPOWER pflash tool and a similar
+>> sequence using DMAs can be found in the SDK U-Boot.
+>>
+>> The SPI calibration performs a loop on different SPI clock rates
+>> (dividers of the AHB clock rates) and on different input delay cycles
+>> for each SPI clock rates. The successive read results are compared to
+>> a golden buffer, read at low speed, to select the safest and fastest
+>> read settings for the chip.
+>>
+>> The "spi-max-frequency" property is used to cap the optimize read
+>> algorithm on some devices or controllers for which we want a "really"
+>> safe setting, on the FMC controller chips for instance.
+>>
+>> It can also be deactivated at boot time with a kernel parameter
+>> 'optimize_read', but that was never used on the field.
+>>
+>> Signed-off-by: C?dric Le Goater <clg@kaod.org>
+> 
+> Reviewed-by: Joel Stanley <joel@jms.id.au>
+> 
+> I have also been running these applied to a 4.17 base on ast2400 and
+> ast2500 systems for the past few months. This week I gave them a spin
+> on top of linux-next too.
+> 
+> They have looked good so far, so I would encourage the series to me
+> merged for 4.19 so we can reduce the number of out of tree we use in
+> OpenBMC systems.
+> 
+> For the series:
+> 
+> Tested-by: Joel Stanley <joel@jms.id.au>
 
-Reviewed-by: Brendan Higgins <brendanhiggins@google.com>
+The first 3 patches should not be too much of a problem. What about 
+patch 4/4 ? It is not the usual way of setting the freq but the Aspeed
+controller has its own mean for tuning it. 
+
+Thanks,
+
+C.
