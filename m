@@ -1,43 +1,55 @@
 From: Eddie James <eajames@linux.vnet.ibm.com>
-Date: Thu, 16 Aug 2018 14:43:19 -0500
-Subject: [RFC 0/2] media: platform: Add Aspeed Video Engine driver
-Message-ID: <1534448601-74120-1-git-send-email-eajames@linux.vnet.ibm.com>
+Date: Thu, 16 Aug 2018 14:43:20 -0500
+Subject: [RFC 1/2] dt-bindings: media: Add Aspeed Video Engine binding
+ documentation
+In-Reply-To: <1534448601-74120-1-git-send-email-eajames@linux.vnet.ibm.com>
+References: <1534448601-74120-1-git-send-email-eajames@linux.vnet.ibm.com>
+Message-ID: <1534448601-74120-2-git-send-email-eajames@linux.vnet.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The Video Engine (VE) embedded in the Aspeed AST2400 and AST2500 SOCs
-can capture and compress video data from digital or analog sources. With
-the Aspeed chip acting as a service processor, the Video Engine can
-capture the host processor graphics output.
+Document the bindings.
 
-This series adds a V4L2 driver for the VE, providing a read() interface
-only. The driver triggers the hardware to capture the host graphics output
-and compress it to JPEG format.
-
-Testing on an AST2500 determined that the videobuf/streaming/mmap interface
-was significantly slower than the simple read() interface, so I have not
-included the streaming part.
-
-It's also possible to use an automatic mode for the VE such that
-re-triggering the HW every frame isn't necessary. However this wasn't
-reliable on the AST2400, and probably used more CPU anyway due to excessive
-interrupts. It was approximately 15% faster.
-
-Eddie James (2):
-  dt-bindings: media: Add Aspeed Video Engine binding documentation
-  media: platform: Add Aspeed Video Engine driver
-
- .../devicetree/bindings/media/aspeed-video.txt     |   25 +
- drivers/media/platform/Kconfig                     |    8 +
- drivers/media/platform/Makefile                    |    1 +
- drivers/media/platform/aspeed-video.c              | 1307 ++++++++++++++++++++
- 4 files changed, 1341 insertions(+)
+Signed-off-by: Eddie James <eajames@linux.vnet.ibm.com>
+---
+ .../devicetree/bindings/media/aspeed-video.txt     | 25 ++++++++++++++++++++++
+ 1 file changed, 25 insertions(+)
  create mode 100644 Documentation/devicetree/bindings/media/aspeed-video.txt
- create mode 100644 drivers/media/platform/aspeed-video.c
 
+diff --git a/Documentation/devicetree/bindings/media/aspeed-video.txt b/Documentation/devicetree/bindings/media/aspeed-video.txt
+new file mode 100644
+index 0000000..91a494e
+--- /dev/null
++++ b/Documentation/devicetree/bindings/media/aspeed-video.txt
+@@ -0,0 +1,25 @@
++* Device tree bindings for Aspeed Video Engine
++
++The Video Engine (VE) embedded in the Aspeed AST2400 and AST2500 SOCs can
++capture and compress video data from digital or analog sources.
++
++Required properties:
++ - compatible:		"aspeed,ast2400-video" or "aspeed,ast2500-video"
++ - reg:			contains the offset and length of the VE memory region
++ - clocks:		pointers to the the "vclk" and "eclk" of the syscon
++ - clock-names:		"vclk-gate", "eclk-gate"
++ - resets:		pointer to the VE reset of the syscon
++ - interrupts:		the interrupt associated with the VE on this platform
++ - reg-scu:		pointer to the syscon itself
++
++Example:
++
++video: video at 1e700000 {
++        compatible = "aspeed,ast2500-video";
++        reg = <0x1e700000 0x20000>;
++        clocks = <&syscon ASPEED_CLK_GATE_VCLK>, <&syscon ASPEED_CLK_GATE_ECLK>;
++        clock-names = "vclk-gate", "eclk-gate";
++        resets = <&syscon ASPEED_RESET_VIDEO>;
++        interrupts = <7>;
++        reg-scu = <&syscon>;
++};
 -- 
 1.8.3.1
 
