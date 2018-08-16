@@ -1,30 +1,43 @@
-From: Wolfram Sang <wsa@the-dreams.de>
-Date: Sat, 4 Aug 2018 23:13:52 +0200
-Subject: [PATCH i2c-next v2] i2c: aspeed: Add an explicit type casting
- for *get_clk_reg_val
-In-Reply-To: <20180724203615.5770-1-jae.hyun.yoo@linux.intel.com>
-References: <20180724203615.5770-1-jae.hyun.yoo@linux.intel.com>
-Message-ID: <20180804211352.h7ctrfw7qzmmxfzu@ninjato>
+From: Eddie James <eajames@linux.vnet.ibm.com>
+Date: Thu, 16 Aug 2018 14:43:19 -0500
+Subject: [RFC 0/2] media: platform: Add Aspeed Video Engine driver
+Message-ID: <1534448601-74120-1-git-send-email-eajames@linux.vnet.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Jul 24, 2018 at 01:36:15PM -0700, Jae Hyun Yoo wrote:
-> This commit fixes this sparse warning:
-> drivers/i2c/busses/i2c-aspeed.c:875:38: warning: incorrect type in assignment (different modifiers)
-> drivers/i2c/busses/i2c-aspeed.c:875:38:    expected unsigned int ( *get_clk_reg_val )( ... )
-> drivers/i2c/busses/i2c-aspeed.c:875:38:    got void const *const data
-> 
-> Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+The Video Engine (VE) embedded in the Aspeed AST2400 and AST2500 SOCs
+can capture and compress video data from digital or analog sources. With
+the Aspeed chip acting as a service processor, the Video Engine can
+capture the host processor graphics output.
 
-Added the 'Reported-tag' and applied to for-next, thanks!
+This series adds a V4L2 driver for the VE, providing a read() interface
+only. The driver triggers the hardware to capture the host graphics output
+and compress it to JPEG format.
 
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 833 bytes
-Desc: not available
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20180804/01f720dc/attachment.sig>
+Testing on an AST2500 determined that the videobuf/streaming/mmap interface
+was significantly slower than the simple read() interface, so I have not
+included the streaming part.
+
+It's also possible to use an automatic mode for the VE such that
+re-triggering the HW every frame isn't necessary. However this wasn't
+reliable on the AST2400, and probably used more CPU anyway due to excessive
+interrupts. It was approximately 15% faster.
+
+Eddie James (2):
+  dt-bindings: media: Add Aspeed Video Engine binding documentation
+  media: platform: Add Aspeed Video Engine driver
+
+ .../devicetree/bindings/media/aspeed-video.txt     |   25 +
+ drivers/media/platform/Kconfig                     |    8 +
+ drivers/media/platform/Makefile                    |    1 +
+ drivers/media/platform/aspeed-video.c              | 1307 ++++++++++++++++++++
+ 4 files changed, 1341 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/media/aspeed-video.txt
+ create mode 100644 drivers/media/platform/aspeed-video.c
+
+-- 
+1.8.3.1
+
