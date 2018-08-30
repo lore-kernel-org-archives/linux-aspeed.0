@@ -1,53 +1,71 @@
 From: Eddie James <eajames@linux.vnet.ibm.com>
-Date: Wed, 29 Aug 2018 16:09:32 -0500
-Subject: [PATCH 3/4] dt-bindings: media: Add Aspeed Video Engine binding
- documentation
-In-Reply-To: <1535576973-8067-1-git-send-email-eajames@linux.vnet.ibm.com>
+Date: Thu, 30 Aug 2018 10:40:21 -0500
+Subject: [PATCH 4/4] media: platform: Add Aspeed Video Engine driver
+In-Reply-To: <CAAEAJfBpmFPLTMAr+Azc-53JXHPkCU4bjtwqE6nDWUvm=J_x-A@mail.gmail.com>
 References: <1535576973-8067-1-git-send-email-eajames@linux.vnet.ibm.com>
-Message-ID: <1535576973-8067-4-git-send-email-eajames@linux.vnet.ibm.com>
+ <1535576973-8067-5-git-send-email-eajames@linux.vnet.ibm.com>
+ <CAAEAJfBpmFPLTMAr+Azc-53JXHPkCU4bjtwqE6nDWUvm=J_x-A@mail.gmail.com>
+Message-ID: <7cb0c2f0-cc12-81a6-a858-40776ec5904c@linux.vnet.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Document the bindings.
 
-Signed-off-by: Eddie James <eajames@linux.vnet.ibm.com>
----
- .../devicetree/bindings/media/aspeed-video.txt     | 23 ++++++++++++++++++++++
- 1 file changed, 23 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/media/aspeed-video.txt
 
-diff --git a/Documentation/devicetree/bindings/media/aspeed-video.txt b/Documentation/devicetree/bindings/media/aspeed-video.txt
-new file mode 100644
-index 0000000..58c056a
---- /dev/null
-+++ b/Documentation/devicetree/bindings/media/aspeed-video.txt
-@@ -0,0 +1,23 @@
-+* Device tree bindings for Aspeed Video Engine
-+
-+The Video Engine (VE) embedded in the Aspeed AST2400 and AST2500 SOCs can
-+capture and compress video data from digital or analog sources.
-+
-+Required properties:
-+ - compatible:		"aspeed,ast2400-video" or "aspeed,ast2500-video"
-+ - reg:			contains the offset and length of the VE memory region
-+ - clocks:		pointers to the the "vclk" and "eclk" of the syscon
-+ - clock-names:		"vclk-gate", "eclk-gate"
-+ - resets:		pointer to the VE reset of the syscon
-+ - interrupts:		the interrupt associated with the VE on this platform
-+
-+Example:
-+
-+video: video at 1e700000 {
-+    compatible = "aspeed,ast2500-video";
-+    reg = <0x1e700000 0x20000>;
-+    clocks = <&syscon ASPEED_CLK_GATE_VCLK>, <&syscon ASPEED_CLK_GATE_ECLK>;
-+    clock-names = "vclk-gate", "eclk-gate";
-+    resets = <&syscon ASPEED_RESET_VIDEO>;
-+    interrupts = <7>;
-+};
--- 
-1.8.3.1
+On 08/29/2018 07:52 PM, Ezequiel Garcia wrote:
+> Hi Eddie,
+>
+> On 29 August 2018 at 18:09, Eddie James <eajames@linux.vnet.ibm.com> wrote:
+>> The Video Engine (VE) embedded in the Aspeed AST2400 and AST2500 SOCs
+>> can capture and compress video data from digital or analog sources. With
+>> the Aspeed chip acting a service processor, the Video Engine can capture
+>> the host processor graphics output.
+>>
+>> Add a V4L2 driver to capture video data and compress it to JPEG images,
+>> making the data available through a standard read interface.
+>>
+>> Signed-off-by: Eddie James <eajames@linux.vnet.ibm.com>
+>> ---
+>>   drivers/media/platform/Kconfig        |    8 +
+>>   drivers/media/platform/Makefile       |    1 +
+>>   drivers/media/platform/aspeed-video.c | 1307 +++++++++++++++++++++++++++++++++
+>>   3 files changed, 1316 insertions(+)
+>>   create mode 100644 drivers/media/platform/aspeed-video.c
+>>
+>> diff --git a/drivers/media/platform/Kconfig b/drivers/media/platform/Kconfig
+>> index 94c1fe0..e599245 100644
+>> --- a/drivers/media/platform/Kconfig
+>> +++ b/drivers/media/platform/Kconfig
+>> @@ -32,6 +32,14 @@ source "drivers/media/platform/davinci/Kconfig"
+>>
+>>   source "drivers/media/platform/omap/Kconfig"
+>>
+>> +config VIDEO_ASPEED
+>> +       tristate "Aspeed AST2400 and AST2500 Video Engine driver"
+>> +       depends on VIDEO_V4L2
+> It seems you are not using videobuf2. I think it should simplify the read
+> I/O part and at the same time expose the other capture methods.
+
+Hi,
+
+Well I'm not sure it would simplify the read interface; it's quite 
+simple as it is, both in the driver and to set up in user-space.
+
+I did get streaming I/O working but found the performance significantly 
+worse than simple read calls, and therefore not worth the additional 
+complexity.
+
+Is it required that I support streaming?
+
+Thanks,
+Eddie
+
+>
+> There are plenty of examples to follow.
+>
+> Regards,
+> Eze
+>
 
