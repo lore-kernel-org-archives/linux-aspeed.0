@@ -1,50 +1,36 @@
-From: Patrick Venture <venture@google.com>
-Date: Tue,  4 Sep 2018 08:53:29 -0700
-Subject: [PATCH] arm: dts: aspeed: quanta-q71l: Enable adc & ibt nodes
-Message-ID: <20180904155329.258447-1-venture@google.com>
+From: Linus Walleij <linus.walleij@linaro.org>
+Date: Tue, 4 Sep 2018 23:55:50 +0200
+Subject: [PATCH 1/2] misc: aspeed: Add Aspeed UART routing control driver.
+In-Reply-To: <20180904202018.198707-2-osk@google.com>
+References: <20180904202018.198707-1-osk@google.com>
+ <20180904202018.198707-2-osk@google.com>
+Message-ID: <CACRpkdamHdGH9bANugQchYLWFS_mde6MmcbvBgcG-hrhvGVFWQ@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-ADC node is disabled by default in 4.13 tree onward and
-needs to be enabled explicitly in separate device trees.
+On Tue, Sep 4, 2018 at 10:20 PM Oskar Senft <osk@google.com> wrote:
 
-ibt(ipmi-bt-host) node is disabled by default in 4.13 tree onward and
-needs to be enabled explicitly in separate device trees.
+> This driver adds sysfs files that allow the BMC userspace to configure
+> how UARTs and physical serial I/O ports are routed.
+>
+> Tested: Checked correct behavior (both read & write) on TYAN S7106
+> board by manually changing routing settings and confirming that bits
+> flow as expected. Tested for UART1 and UART3 as this board doesn't have
+> the other UARTs wired up in a testable way.
+>
+> Signed-off-by: Oskar Senft <osk@google.com>
 
-Signed-off-by: Patrick Venture <venture@google.com>
----
- arch/arm/boot/dts/aspeed-bmc-quanta-q71l.dts | 8 ++++++++
- 1 file changed, 8 insertions(+)
+After reading some other messages about this I realize it's not very
+much you can do with the standard frameworks and you definately
+need something like this. Not like I have any better idea.
 
-diff --git a/arch/arm/boot/dts/aspeed-bmc-quanta-q71l.dts b/arch/arm/boot/dts/aspeed-bmc-quanta-q71l.dts
-index c655564e6c6d..385c0f4b69ee 100644
---- a/arch/arm/boot/dts/aspeed-bmc-quanta-q71l.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-quanta-q71l.dts
-@@ -112,6 +112,10 @@
- 			&pinctrl_ddcclk_default &pinctrl_ddcdat_default>;
- };
- 
-+&ibt {
-+	status = "okay";
-+};
-+
- &lpc_snoop {
- 	status = "okay";
- 	snoop-ports = <0x80>;
-@@ -384,6 +388,10 @@
- 	status = "okay";
- };
- 
-+&adc {
-+	status = "okay";
-+};
-+
- &pwm_tacho {
- 	status = "okay";
- 
--- 
-2.19.0.rc1.350.ge57e33dbd1-goog
+Arnd and Greg are misc maintainers so not you will need to
+talk to them.
 
+I would opt to put it in drivers/soc/aspeed though.
+
+Yours,
+Linus Walleij
