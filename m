@@ -1,70 +1,50 @@
-From: Rob Herring <robh@kernel.org>
-Date: Mon, 3 Sep 2018 19:50:18 -0500
-Subject: [PATCH 3/4] dt-bindings: media: Add Aspeed Video Engine binding
- documentation
-In-Reply-To: <1535576973-8067-4-git-send-email-eajames@linux.vnet.ibm.com>
-References: <1535576973-8067-1-git-send-email-eajames@linux.vnet.ibm.com>
- <1535576973-8067-4-git-send-email-eajames@linux.vnet.ibm.com>
-Message-ID: <20180904005015.GA5214@bogus>
+From: Patrick Venture <venture@google.com>
+Date: Tue,  4 Sep 2018 08:53:29 -0700
+Subject: [PATCH] arm: dts: aspeed: quanta-q71l: Enable adc & ibt nodes
+Message-ID: <20180904155329.258447-1-venture@google.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Aug 29, 2018 at 04:09:32PM -0500, Eddie James wrote:
-> Document the bindings.
-> 
-> Signed-off-by: Eddie James <eajames@linux.vnet.ibm.com>
-> ---
->  .../devicetree/bindings/media/aspeed-video.txt     | 23 ++++++++++++++++++++++
->  1 file changed, 23 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/media/aspeed-video.txt
-> 
-> diff --git a/Documentation/devicetree/bindings/media/aspeed-video.txt b/Documentation/devicetree/bindings/media/aspeed-video.txt
-> new file mode 100644
-> index 0000000..58c056a
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/media/aspeed-video.txt
-> @@ -0,0 +1,23 @@
-> +* Device tree bindings for Aspeed Video Engine
-> +
-> +The Video Engine (VE) embedded in the Aspeed AST2400 and AST2500 SOCs can
-> +capture and compress video data from digital or analog sources.
-> +
-> +Required properties:
-> + - compatible:		"aspeed,ast2400-video" or "aspeed,ast2500-video"
+ADC node is disabled by default in 4.13 tree onward and
+needs to be enabled explicitly in separate device trees.
 
-Maybe "video-engine" or "ve" would be more specific than just "video". 
-Use what is closest to the name of the block.
+ibt(ipmi-bt-host) node is disabled by default in 4.13 tree onward and
+needs to be enabled explicitly in separate device trees.
 
-> + - reg:			contains the offset and length of the VE memory region
-> + - clocks:		pointers to the the "vclk" and "eclk" of the syscon
+Signed-off-by: Patrick Venture <venture@google.com>
+---
+ arch/arm/boot/dts/aspeed-bmc-quanta-q71l.dts | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-No pointers in DT. "Clock specifier"
-
-> + - clock-names:		"vclk-gate", "eclk-gate"
-
-Is that the name at or in the module? The fact that it is gated is 
-really outside the block and a property of the clock controller.
-
-> + - resets:		pointer to the VE reset of the syscon
-> + - interrupts:		the interrupt associated with the VE on this platform
-> +
-> +Example:
-> +
-> +video: video at 1e700000 {
-
-video-codec at ...
-
-> +    compatible = "aspeed,ast2500-video";
-> +    reg = <0x1e700000 0x20000>;
-> +    clocks = <&syscon ASPEED_CLK_GATE_VCLK>, <&syscon ASPEED_CLK_GATE_ECLK>;
-> +    clock-names = "vclk-gate", "eclk-gate";
-> +    resets = <&syscon ASPEED_RESET_VIDEO>;
-> +    interrupts = <7>;
-> +};
-> -- 
-> 1.8.3.1
-> 
+diff --git a/arch/arm/boot/dts/aspeed-bmc-quanta-q71l.dts b/arch/arm/boot/dts/aspeed-bmc-quanta-q71l.dts
+index c655564e6c6d..385c0f4b69ee 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-quanta-q71l.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-quanta-q71l.dts
+@@ -112,6 +112,10 @@
+ 			&pinctrl_ddcclk_default &pinctrl_ddcdat_default>;
+ };
+ 
++&ibt {
++	status = "okay";
++};
++
+ &lpc_snoop {
+ 	status = "okay";
+ 	snoop-ports = <0x80>;
+@@ -384,6 +388,10 @@
+ 	status = "okay";
+ };
+ 
++&adc {
++	status = "okay";
++};
++
+ &pwm_tacho {
+ 	status = "okay";
+ 
+-- 
+2.19.0.rc1.350.ge57e33dbd1-goog
 
