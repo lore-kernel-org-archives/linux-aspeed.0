@@ -1,32 +1,25 @@
-From: Stephen Boyd <sboyd@kernel.org>
-Date: Fri, 31 Aug 2018 19:46:54 -0700
-Subject: [PATCH 0/4] media: platform: Add Aspeed Video Engine driver
-In-Reply-To: <a959a032-6817-dcb4-2c5f-b4bd17fc1c8b@linux.vnet.ibm.com>
+From: Rob Herring <robh@kernel.org>
+Date: Tue, 04 Sep 2018 08:36:33 -0500
+Subject: [PATCH 1/4] clock: aspeed: Add VIDEO reset index definition
+In-Reply-To: <1535576973-8067-2-git-send-email-eajames@linux.vnet.ibm.com>
 References: <1535576973-8067-1-git-send-email-eajames@linux.vnet.ibm.com>
- <153573819126.93865.1884182656081956202@swboyd.mtv.corp.google.com>
- <a959a032-6817-dcb4-2c5f-b4bd17fc1c8b@linux.vnet.ibm.com>
-Message-ID: <153577001451.19113.16924655760277630355@swboyd.mtv.corp.google.com>
+ <1535576973-8067-2-git-send-email-eajames@linux.vnet.ibm.com>
+Message-ID: <5b8e8a62.1c69fb81.6801.2c0d@mx.google.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Quoting Eddie James (2018-08-31 12:30:02)
+On Wed, 29 Aug 2018 16:09:30 -0500, Eddie James wrote:
+> Add an index into the array of resets kept in the Aspeed clock driver.
+> This isn't a HW bit definition.
 > 
-> 
-> On 08/31/2018 12:56 PM, Stephen Boyd wrote:
-> > Quoting Eddie James (2018-08-29 14:09:29)
-> > Please let me know your merge strategy here. I can ack the clk patches
-> > because they look fine from high-level clk driver perspective (maybe
-> > Joel can take a closer look) or I can merge the patches into clk-next
-> > and get them into next release while the video driver gets reviewed.
-> 
-> Thanks for taking a look! Probably preferable to get the clk patches 
-> into clk-next first (though Joel reviewing would be great). I just put 
-> everything in the same set for the sake of explaining the necessity of 
-> the clk changes.
+> Signed-off-by: Eddie James <eajames@linux.vnet.ibm.com>
+> ---
+>  include/dt-bindings/clock/aspeed-clock.h | 1 +
+>  1 file changed, 1 insertion(+)
 > 
 
-Ok. If Joel is able to review then I can easily merge it into clk-next.
+Reviewed-by: Rob Herring <robh@kernel.org>
 
