@@ -1,38 +1,45 @@
 From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-Date: Mon, 10 Sep 2018 14:45:17 -0700
-Subject: [RFC PATCH i2c-next 0/2] i2c: aspeed: Add bus idle waiting logic for
- multi-master use cases
-Message-ID: <20180910214519.14126-1-jae.hyun.yoo@linux.intel.com>
+Date: Mon, 10 Sep 2018 14:45:18 -0700
+Subject: [RFC PATCH i2c-next 1/2] dt-bindings: i2c: aspeed: Add
+ 'idle-wait-timeout-ms' setting
+In-Reply-To: <20180910214519.14126-1-jae.hyun.yoo@linux.intel.com>
+References: <20180910214519.14126-1-jae.hyun.yoo@linux.intel.com>
+Message-ID: <20180910214519.14126-2-jae.hyun.yoo@linux.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-In multi-master environment, this driver side master cannot know
-exactly when peer master sends data to this side master so a case
-can be happened that this master tries to send data through the
-master_xfer function but slave data from peer master is still
-being processed by this driver.
+This commit adds 'idle-wait-timeout-ms' setting which can be used
+for bus idle waiting logic in multi-master environment.
 
-To prevent state corruption in the case, this patch adds checking
-if any slave operation is ongoing and it wait up to the timeout
-duration before starting a master_xfer operation.
+Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+---
+ Documentation/devicetree/bindings/i2c/i2c-aspeed.txt | 10 +++++++---
+ 1 file changed, 7 insertions(+), 3 deletions(-)
 
-Please review this patch set.
-
-Thanks,
-
--Jae
-
-Jae Hyun Yoo (2):
-  dt-bindings: i2c: aspeed: Add 'idle-wait-timeout-ms' setting
-  i2c: aspeed: Add bus idle waiting logic for multi-master use cases
-
- .../devicetree/bindings/i2c/i2c-aspeed.txt    | 10 ++-
- drivers/i2c/busses/i2c-aspeed.c               | 70 +++++++++++++++----
- 2 files changed, 62 insertions(+), 18 deletions(-)
-
+diff --git a/Documentation/devicetree/bindings/i2c/i2c-aspeed.txt b/Documentation/devicetree/bindings/i2c/i2c-aspeed.txt
+index 8fbd8633a387..42ecaaf67172 100644
+--- a/Documentation/devicetree/bindings/i2c/i2c-aspeed.txt
++++ b/Documentation/devicetree/bindings/i2c/i2c-aspeed.txt
+@@ -13,9 +13,13 @@ Required Properties:
+ - interrupts		: interrupt number
+ 
+ Optional Properties:
+-- bus-frequency	: frequency of the bus clock in Hz defaults to 100 kHz when not
+-		  specified
+-- multi-master	: states that there is another master active on this bus.
++- bus-frequency		: frequency of the bus clock in Hz defaults to 100 kHz
++			  when not specified
++- multi-master		: states that there is another master active on this
++			  bus.
++- idle-wait-timeout-ms	: bus idle waiting timeout in milliseconds when
++			  multi-master is set, defaults to 100 ms when not
++			  specified.
+ 
+ Example:
+ 
 -- 
 2.18.0
 
