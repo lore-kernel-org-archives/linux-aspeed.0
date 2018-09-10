@@ -1,39 +1,38 @@
-From: Wolfram Sang <wsa@the-dreams.de>
-Date: Thu, 6 Sep 2018 20:40:49 +0200
-Subject: [PATCH i2c-next v6] i2c: aspeed: Handle master/slave combined
- irq events properly
-In-Reply-To: <20180823225731.19063-1-jae.hyun.yoo@linux.intel.com>
-References: <20180823225731.19063-1-jae.hyun.yoo@linux.intel.com>
-Message-ID: <20180906184049.GF8607@kunai>
+From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+Date: Mon, 10 Sep 2018 14:45:17 -0700
+Subject: [RFC PATCH i2c-next 0/2] i2c: aspeed: Add bus idle waiting logic for
+ multi-master use cases
+Message-ID: <20180910214519.14126-1-jae.hyun.yoo@linux.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Aug 23, 2018 at 03:57:31PM -0700, Jae Hyun Yoo wrote:
-> In most of cases, interrupt bits are set one by one but there are
-> also a lot of other cases that Aspeed I2C IP sends multiple
-> interrupt bits with combining master and slave events using a
-> single interrupt call. It happens much more in multi-master
-> environment than single-master. For an example, when master is
-> waiting for a NORMAL_STOP interrupt in its MASTER_STOP state,
-> SLAVE_MATCH and RX_DONE interrupts could come along with the
-> NORMAL_STOP in case of an another master immediately sends data
-> just after acquiring the bus. In this case, the NORMAL_STOP
-> interrupt should be handled by master_irq and the SLAVE_MATCH and
-> RX_DONE interrupts should be handled by slave_irq. This commit
-> modifies irq hadling logic to handle the master/slave combined
-> events properly.
-> 
-> Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+In multi-master environment, this driver side master cannot know
+exactly when peer master sends data to this side master so a case
+can be happened that this master tries to send data through the
+master_xfer function but slave data from peer master is still
+being processed by this driver.
 
-Applied to for-next, thanks!
+To prevent state corruption in the case, this patch adds checking
+if any slave operation is ongoing and it wait up to the timeout
+duration before starting a master_xfer operation.
 
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 833 bytes
-Desc: not available
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20180906/e639f9f3/attachment.sig>
+Please review this patch set.
+
+Thanks,
+
+-Jae
+
+Jae Hyun Yoo (2):
+  dt-bindings: i2c: aspeed: Add 'idle-wait-timeout-ms' setting
+  i2c: aspeed: Add bus idle waiting logic for multi-master use cases
+
+ .../devicetree/bindings/i2c/i2c-aspeed.txt    | 10 ++-
+ drivers/i2c/busses/i2c-aspeed.c               | 70 +++++++++++++++----
+ 2 files changed, 62 insertions(+), 18 deletions(-)
+
+-- 
+2.18.0
+
