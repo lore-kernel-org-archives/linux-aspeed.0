@@ -1,155 +1,74 @@
-From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-Date: Mon, 10 Sep 2018 14:45:19 -0700
-Subject: [RFC PATCH i2c-next 2/2] i2c: aspeed: Add bus idle waiting logic for
- multi-master use cases
-In-Reply-To: <20180910214519.14126-1-jae.hyun.yoo@linux.intel.com>
-References: <20180910214519.14126-1-jae.hyun.yoo@linux.intel.com>
-Message-ID: <20180910214519.14126-3-jae.hyun.yoo@linux.intel.com>
+From: Guenter Roeck <linux@roeck-us.net>
+Date: Tue, 11 Sep 2018 11:37:34 -0700
+Subject: [PATCH i2c-next v6] i2c: aspeed: Handle master/slave combined
+ irq events properly
+In-Reply-To: <20180823225731.19063-1-jae.hyun.yoo@linux.intel.com>
+References: <20180823225731.19063-1-jae.hyun.yoo@linux.intel.com>
+Message-ID: <20180911183734.GA21976@roeck-us.net>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-In multi-master environment, this driver side master cannot know
-exactly when peer master sends data to this side master so a case
-can be happened that this master tries to send data through the
-master_xfer function but slave data from peer master is still
-being processed by this driver.
+Hi,
 
-To prevent state corruption in the case, this patch adds checking
-if any slave operation is ongoing and it wait up to the timeout
-duration before starting a master_xfer operation.
+On Thu, Aug 23, 2018 at 03:57:31PM -0700, Jae Hyun Yoo wrote:
+> In most of cases, interrupt bits are set one by one but there are
+> also a lot of other cases that Aspeed I2C IP sends multiple
+> interrupt bits with combining master and slave events using a
+> single interrupt call. It happens much more in multi-master
+> environment than single-master. For an example, when master is
+> waiting for a NORMAL_STOP interrupt in its MASTER_STOP state,
+> SLAVE_MATCH and RX_DONE interrupts could come along with the
+> NORMAL_STOP in case of an another master immediately sends data
+> just after acquiring the bus. In this case, the NORMAL_STOP
+> interrupt should be handled by master_irq and the SLAVE_MATCH and
+> RX_DONE interrupts should be handled by slave_irq. This commit
+> modifies irq hadling logic to handle the master/slave combined
+> events properly.
+> 
+> Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+> Reviewed-by: Brendan Higgins <brendanhiggins@google.com>
 
-Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+This patch causes a boot stall when booting witherspoon-bmc with
+qemu v3.0, and all i2c device probes fail with error -110 (timeout).
+Bisect log is attached for reference.
+
+With the same kernel configuration (aspeed_g5_defconfig),
+ast2500-evb and romulus-bmc are still able to boot.
+palmetto-bmc with aspeed_g4_defconfig also appears to work.
+
+Is this a problem with qemu ? Should I drop the qemu test
+for witherspoon-bmc starting with the next kernel release ?
+
+Thanks,
+Guenter
+
 ---
- drivers/i2c/busses/i2c-aspeed.c | 70 ++++++++++++++++++++++++++-------
- 1 file changed, 55 insertions(+), 15 deletions(-)
-
-diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
-index c258c4d9a4c0..73359eda98be 100644
---- a/drivers/i2c/busses/i2c-aspeed.c
-+++ b/drivers/i2c/busses/i2c-aspeed.c
-@@ -12,6 +12,7 @@
- 
- #include <linux/clk.h>
- #include <linux/completion.h>
-+#include <linux/delay.h>
- #include <linux/err.h>
- #include <linux/errno.h>
- #include <linux/i2c.h>
-@@ -99,6 +100,7 @@
- 		 ASPEED_I2CD_INTR_TX_ACK)
- 
- /* 0x14 : I2CD Command/Status Register   */
-+#define ASPEED_I2CD_XFER_MODE_STS_MASK			GENMASK(22, 19)
- #define ASPEED_I2CD_SCL_LINE_STS			BIT(18)
- #define ASPEED_I2CD_SDA_LINE_STS			BIT(17)
- #define ASPEED_I2CD_BUS_BUSY_STS			BIT(16)
-@@ -115,6 +117,10 @@
- /* 0x18 : I2CD Slave Device Address Register   */
- #define ASPEED_I2CD_DEV_ADDR_MASK			GENMASK(6, 0)
- 
-+/* Timeout for bus busy checking */
-+#define ASPEED_I2CD_IDLE_WAIT_TIMEOUT_MS_DEFAULT	100   /* 100 ms */
-+#define ASPEED_I2CD_BUS_BUSY_CHECK_INTERVAL_US		10000 /* 10 ms */
-+
- enum aspeed_i2c_master_state {
- 	ASPEED_I2C_MASTER_INACTIVE,
- 	ASPEED_I2C_MASTER_START,
-@@ -155,6 +161,9 @@ struct aspeed_i2c_bus {
- 	int				cmd_err;
- 	/* Protected only by i2c_lock_bus */
- 	int				master_xfer_result;
-+	/* Multi-master */
-+	bool				multi_master;
-+	u32				idle_wait_timeout_ms;
- #if IS_ENABLED(CONFIG_I2C_SLAVE)
- 	struct i2c_client		*slave;
- 	enum aspeed_i2c_slave_state	slave_state;
-@@ -590,27 +599,49 @@ static irqreturn_t aspeed_i2c_bus_irq(int irq, void *dev_id)
- 	return irq_remaining ? IRQ_NONE : IRQ_HANDLED;
- }
- 
-+static int aspeed_i2c_check_bus_busy(struct aspeed_i2c_bus *bus)
-+{
-+	u32 status_check_mask = ASPEED_I2CD_BUS_BUSY_STS;
-+	ktime_t timeout;
-+
-+	if (bus->multi_master) {
-+		might_sleep();
-+		timeout = ktime_add_ms(ktime_get(), bus->idle_wait_timeout_ms);
-+		/*
-+		 * ASPEED_I2CD_XFER_MODE_STS_MASK is marked as
-+		 * 'for debugging purpose only' in datasheet but ASPEED
-+		 * confirmed that this reflects real information and good to be
-+		 * used in practical code. It will be used only in multi-master
-+		 * use cases.
-+		 */
-+		status_check_mask |= ASPEED_I2CD_XFER_MODE_STS_MASK;
-+	}
-+
-+	for (;;) {
-+		if (!(readl(bus->base + ASPEED_I2C_CMD_REG) &
-+		      status_check_mask))
-+			return 0;
-+		if (!bus->multi_master)
-+			break;
-+		if (ktime_compare(ktime_get(), timeout) > 0)
-+			break;
-+		usleep_range((ASPEED_I2CD_BUS_BUSY_CHECK_INTERVAL_US >> 2) + 1,
-+			     ASPEED_I2CD_BUS_BUSY_CHECK_INTERVAL_US);
-+	}
-+
-+	return aspeed_i2c_recover_bus(bus);
-+}
-+
- static int aspeed_i2c_master_xfer(struct i2c_adapter *adap,
- 				  struct i2c_msg *msgs, int num)
- {
- 	struct aspeed_i2c_bus *bus = i2c_get_adapdata(adap);
- 	unsigned long time_left, flags;
--	int ret = 0;
--
--	spin_lock_irqsave(&bus->lock, flags);
--	bus->cmd_err = 0;
- 
--	/* If bus is busy, attempt recovery. We assume a single master
--	 * environment.
--	 */
--	if (readl(bus->base + ASPEED_I2C_CMD_REG) & ASPEED_I2CD_BUS_BUSY_STS) {
--		spin_unlock_irqrestore(&bus->lock, flags);
--		ret = aspeed_i2c_recover_bus(bus);
--		if (ret)
--			return ret;
--		spin_lock_irqsave(&bus->lock, flags);
--	}
-+	if (aspeed_i2c_check_bus_busy(bus))
-+		return -EAGAIN;
- 
-+	spin_lock_irqsave(&bus->lock, flags);
- 	bus->cmd_err = 0;
- 	bus->msgs = msgs;
- 	bus->msgs_index = 0;
-@@ -798,8 +829,17 @@ static int aspeed_i2c_init(struct aspeed_i2c_bus *bus,
- 	if (ret < 0)
- 		return ret;
- 
--	if (!of_property_read_bool(pdev->dev.of_node, "multi-master"))
-+	if (of_property_read_bool(pdev->dev.of_node, "multi-master")) {
-+		bus->multi_master = true;
-+		ret = of_property_read_u32(pdev->dev.of_node,
-+					   "idle-wait-timeout-ms",
-+					   &bus->idle_wait_timeout_ms);
-+		if (ret)
-+			bus->idle_wait_timeout_ms =
-+				ASPEED_I2CD_IDLE_WAIT_TIMEOUT_MS_DEFAULT;
-+	} else {
- 		fun_ctrl_reg |= ASPEED_I2CD_MULTI_MASTER_DIS;
-+	}
- 
- 	/* Enable Master Mode */
- 	writel(readl(bus->base + ASPEED_I2C_FUN_CTRL_REG) | fun_ctrl_reg,
--- 
-2.18.0
-
+# bad: [09c0888767529cdb382f34452819e42d1a66a114] Add linux-next specific files for 20180911
+# good: [11da3a7f84f19c26da6f86af878298694ede0804] Linux 4.19-rc3
+git bisect start 'HEAD' 'v4.19-rc3'
+# bad: [a2ebc71cf97bed9b453318418e4a281434565e8b] Merge remote-tracking branch 'nfc-next/master'
+git bisect bad a2ebc71cf97bed9b453318418e4a281434565e8b
+# good: [6fde463b32bf4105c28c0a297a5b66aca5d6ecd4] Merge remote-tracking branch 's390/features'
+git bisect good 6fde463b32bf4105c28c0a297a5b66aca5d6ecd4
+# bad: [136fd6d530a3ae0dd003984f683345cfe88c01f3] Merge remote-tracking branch 'v4l-dvb/master'
+git bisect bad 136fd6d530a3ae0dd003984f683345cfe88c01f3
+# good: [c7ae95368af43c08f5f615b00f2f7bf2e9c45788] Merge remote-tracking branch 'v9fs/9p-next'
+git bisect good c7ae95368af43c08f5f615b00f2f7bf2e9c45788
+# good: [4c640c41381e47b328c6507bcf534812761256cd] Merge branch 'for-4.19/fixes' into for-next
+git bisect good 4c640c41381e47b328c6507bcf534812761256cd
+# good: [5bc91f70c5ecc2bc5967b98ce7fa4e55ad230d99] Merge remote-tracking branch 'hid/for-next'
+git bisect good 5bc91f70c5ecc2bc5967b98ce7fa4e55ad230d99
+# bad: [657b9d37406ed1625d469db0fd356e364dc75dd8] Merge remote-tracking branch 'hwmon-staging/hwmon-next'
+git bisect bad 657b9d37406ed1625d469db0fd356e364dc75dd8
+# bad: [fc9f90ddace238716cfcbd00d51428ee8baa12c7] Merge branch 'i2c/for-current' into i2c/for-next
+git bisect bad fc9f90ddace238716cfcbd00d51428ee8baa12c7
+# good: [34b7be301d4c5d85d1d093d2faf856f3d727416f] Merge branch 'i2c/for-current' into i2c/for-next
+git bisect good 34b7be301d4c5d85d1d093d2faf856f3d727416f
+# bad: [3e9efc3299dd78a0fa96515f0a453fab1ed4a1bd] i2c: aspeed: Handle master/slave combined irq events properly
+git bisect bad 3e9efc3299dd78a0fa96515f0a453fab1ed4a1bd
+# good: [fc66b39fe36acfd06f716e338de7cd8f9550fad2] i2c: mediatek: Use DMA safe buffers for i2c transactions
+git bisect good fc66b39fe36acfd06f716e338de7cd8f9550fad2
+# first bad commit: [3e9efc3299dd78a0fa96515f0a453fab1ed4a1bd] i2c: aspeed: Handle master/slave combined irq events properly
