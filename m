@@ -1,18 +1,18 @@
-From: Cédric Le Goater <clg@kaod.org>
-Date: Tue, 11 Sep 2018 20:45:23 +0200
+From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+Date: Tue, 11 Sep 2018 13:30:41 -0700
 Subject: [PATCH i2c-next v6] i2c: aspeed: Handle master/slave combined irq
  events properly
 In-Reply-To: <20180911183734.GA21976@roeck-us.net>
 References: <20180823225731.19063-1-jae.hyun.yoo@linux.intel.com>
  <20180911183734.GA21976@roeck-us.net>
-Message-ID: <e16aadd4-09ee-19bf-f7ea-10dc1e491112@kaod.org>
+Message-ID: <1f34fe8c-69ef-5f2d-25dc-d5f6037cc558@linux.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 09/11/2018 08:37 PM, Guenter Roeck wrote:
+On 9/11/2018 11:37 AM, Guenter Roeck wrote:
 > Hi,
 > 
 > On Thu, Aug 23, 2018 at 03:57:31PM -0700, Jae Hyun Yoo wrote:
@@ -43,13 +43,18 @@ On 09/11/2018 08:37 PM, Guenter Roeck wrote:
 > 
 > Is this a problem with qemu ? Should I drop the qemu test
 > for witherspoon-bmc starting with the next kernel release ?
+> 
+> Thanks,
+> Guenter
+> 
 
-The QEMU model for the Aspeed I2C controller does not support 
-slave mode or DMA registers. That might be the issue. 
+Hi Guenter,
 
-I will check what this patch does when I have sometime. 
+Thanks for your report.
 
-Thanks, 
+I checked this patch again but it doesn't have any change that could
+affect to the probing flow. I'll debug the issue on qemu 3.0 environment
+and will share if I find something.
 
-
-C.
+Thanks,
+Jae
