@@ -1,56 +1,25 @@
-From: Eddie James <eajames@linux.vnet.ibm.com>
-Date: Thu, 13 Sep 2018 14:29:23 -0500
-Subject: [PATCH v2 1/2] dt-bindings: media: Add Aspeed Video Engine binding
- documentation
-In-Reply-To: <1536866964-71593-1-git-send-email-eajames@linux.vnet.ibm.com>
-References: <1536866964-71593-1-git-send-email-eajames@linux.vnet.ibm.com>
-Message-ID: <1536866964-71593-2-git-send-email-eajames@linux.vnet.ibm.com>
+From: Joel Stanley <joel@jms.id.au>
+Date: Fri, 14 Sep 2018 08:19:34 +0930
+Subject: [PATCH] ARM: dts: aspeed: Fix I2C bus warnings
+In-Reply-To: <20180913181245.25484-3-robh@kernel.org>
+References: <20180913181245.25484-3-robh@kernel.org>
+Message-ID: <CACPK8XcqwW93OU88UvovuzXG1h=u9y1708axdABhX+WruKnrOw@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Document the bindings.
+On Fri, 14 Sep 2018 at 03:42, Rob Herring <robh@kernel.org> wrote:
+>
+> dtc has new checks for I2C buses. The ASpeed dts files have a node named
+> 'i2c' which causes a false positive warning. As the node is a 'simple-bus',
+> correct the node name to be 'bus' to fix the warnings.
 
-Signed-off-by: Eddie James <eajames@linux.vnet.ibm.com>
----
- .../devicetree/bindings/media/aspeed-video.txt     | 26 ++++++++++++++++++++++
- 1 file changed, 26 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/media/aspeed-video.txt
+> ---
+> Please apply to the sub-arch tree. The dtc changes haven't landed, but
+> will for 4.20.
 
-diff --git a/Documentation/devicetree/bindings/media/aspeed-video.txt b/Documentation/devicetree/bindings/media/aspeed-video.txt
-new file mode 100644
-index 0000000..f1af528
---- /dev/null
-+++ b/Documentation/devicetree/bindings/media/aspeed-video.txt
-@@ -0,0 +1,26 @@
-+* Device tree bindings for Aspeed Video Engine
-+
-+The Video Engine (VE) embedded in the Aspeed AST2400 and AST2500 SOCs can
-+capture and compress video data from digital or analog sources.
-+
-+Required properties:
-+ - compatible:		"aspeed,ast2400-video-engine" or
-+			"aspeed,ast2500-video-engine"
-+ - reg:			contains the offset and length of the VE memory region
-+ - clocks:		clock specifiers for the syscon clocks associated with
-+			the VE (ordering must match the clock-names property)
-+ - clock-names:		"vclk" and "eclk"
-+ - resets:		reset specifier for the syscon reset associaated with
-+			the VE
-+ - interrupts:		the interrupt associated with the VE on this platform
-+
-+Example:
-+
-+video-engine at 1e700000 {
-+    compatible = "aspeed,ast2500-video-engine";
-+    reg = <0x1e700000 0x20000>;
-+    clocks = <&syscon ASPEED_CLK_GATE_VCLK>, <&syscon ASPEED_CLK_GATE_ECLK>;
-+    clock-names = "vclk", "eclk";
-+    resets = <&syscon ASPEED_RESET_VIDEO>;
-+    interrupts = <7>;
-+};
--- 
-1.8.3.1
+Applied to aspeed's dt-for-v4.20.
 
+Thanks Rob.
