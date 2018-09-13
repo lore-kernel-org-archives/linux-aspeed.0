@@ -1,286 +1,108 @@
-From: Yao Yuan <yao.yuan@linaro.org>
-Date: Thu, 13 Sep 2018 14:06:11 +0800
-Subject: [PATCH] ARM: dts: aspeed: Add HXT StarDragon 4800 REP2 BMC
-In-Reply-To: <CACPK8Xc6g9R9SyaJT3XzgKrxzZiV0ccTwAddf5Ot2tzQ0bmeag@mail.gmail.com>
-References: <1536805516-21484-1-git-send-email-yao.yuan@linaro.org>
- <CACPK8Xc6g9R9SyaJT3XzgKrxzZiV0ccTwAddf5Ot2tzQ0bmeag@mail.gmail.com>
-Message-ID: <CA+eB3Aw_K-zSf16eOvf7FDnhppPpJH5FLrmOOiJY+_GDE99ctA@mail.gmail.com>
+From: Cédric Le Goater <clg@kaod.org>
+Date: Thu, 13 Sep 2018 07:47:34 +0200
+Subject: [PATCH i2c-next v6] i2c: aspeed: Handle master/slave combined irq
+ events properly
+In-Reply-To: <7fd98646-fb5a-be4d-ce37-84b74e0fa8b3@linux.intel.com>
+References: <20180823225731.19063-1-jae.hyun.yoo@linux.intel.com>
+ <20180911183734.GA21976@roeck-us.net>
+ <1f34fe8c-69ef-5f2d-25dc-d5f6037cc558@linux.intel.com>
+ <20180911204107.GA26017@roeck-us.net>
+ <e5135af4-9105-214f-5de2-65cc03804222@linux.intel.com>
+ <CACPK8Xdv3aP_zOHAL0WMgwvkpBHAUesU7OdhW==jgvXjRmt-Zw@mail.gmail.com>
+ <20180911233302.GA18799@roeck-us.net>
+ <5698ca34-14c9-8d05-c4e6-5acf85ff9d14@linux.intel.com>
+ <20180912013449.GA12612@roeck-us.net>
+ <7fd98646-fb5a-be4d-ce37-84b74e0fa8b3@linux.intel.com>
+Message-ID: <285ea914-5407-7fde-036d-95978f95a430@kaod.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 13 September 2018 at 11:01, Joel Stanley <joel@jms.id.au> wrote:
-> On Thu, 13 Sep 2018 at 11:55, Yuan Yao <yao.yuan@linaro.org> wrote:
+On 09/12/2018 06:54 PM, Jae Hyun Yoo wrote:
+> On 9/11/2018 6:34 PM, Guenter Roeck wrote:
+>> On Tue, Sep 11, 2018 at 04:58:44PM -0700, Jae Hyun Yoo wrote:
+>>> On 9/11/2018 4:33 PM, Guenter Roeck wrote:
+>>>> Looking into the patch, clearing the interrupt status at the end of an
+>>>> interrupt handler is always suspicious and tends to result in race
+>>>> conditions (because additional interrupts may have arrived while handling
+>>>> the existing interrupts, or because interrupt handling itself may trigger
+>>>> another interrupt). With that in mind, the following patch fixes the
+>>>> problem for me.
+>>>>
+>>>> Guenter
+>>>>
+>>>> ---
+>>>>
+>>>> diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
+>>>> index c258c4d9a4c0..c488e6950b7c 100644
+>>>> --- a/drivers/i2c/busses/i2c-aspeed.c
+>>>> +++ b/drivers/i2c/busses/i2c-aspeed.c
+>>>> @@ -552,6 +552,8 @@ static irqreturn_t aspeed_i2c_bus_irq(int irq, void *dev_id)
+>>>> ????? spin_lock(&bus->lock);
+>>>> ????? irq_received = readl(bus->base + ASPEED_I2C_INTR_STS_REG);
+>>>> +??? /* Ack all interrupt bits. */
+>>>> +??? writel(irq_received, bus->base + ASPEED_I2C_INTR_STS_REG);
+>>>> ????? irq_remaining = irq_received;
+>>>> ? #if IS_ENABLED(CONFIG_I2C_SLAVE)
+>>>> @@ -584,8 +586,6 @@ static irqreturn_t aspeed_i2c_bus_irq(int irq, void *dev_id)
+>>>> ????????????? "irq handled != irq. expected 0x%08x, but was 0x%08x\n",
+>>>> ????????????? irq_received, irq_handled);
+>>>> -??? /* Ack all interrupt bits. */
+>>>> -??? writel(irq_received, bus->base + ASPEED_I2C_INTR_STS_REG);
+>>>> ????? spin_unlock(&bus->lock);
+>>>> ????? return irq_remaining ? IRQ_NONE : IRQ_HANDLED;
+>>>> ? }
+>>>>
+>>>
+>>> My intention of putting the code at the end of interrupt handler was,
+>>> to reduce possibility of combined irq calls which is explained in this
+>>> patch. But YES, I agree with you. It could make a potential race
 >>
->> The HXT StarDragon 4800 REP2 (Reference Evaluation Platform) is
->> an aarch64 ARMv8 server platform with an ast2520 BMC.
+>> Hmm, yes, but that doesn't explain why it would make sense to acknowledge
+>> the interrupt late. The interrupt ack only means "I am going to handle these
+>> interrupts". If additional interrupts arrive while the interrupt handler
+>> is active, those will have to be acknowledged separately.
 >>
->> Signed-off-by: Yuan Yao <yao.yuan@linaro.org>
->
-> Looks good. I will apply it to the Aspeed tree in a few days, after
-> giving others a chance to review.
->
-> Out of interest, are you planning on running OpenBMC on this platform?
+>> Sure, there is a risk that an interrupt arrives while the handler is
+>> running, and that it is handled but not acknowledged. That can happen
+>> with pretty much all interrupt handlers, and there are mitigations to
+>> limit the impact (for example, read the interrupt status register in
+>> a loop until no more interrupts are pending). But acknowledging
+>> an interrupt that was possibly not handled is always bad idea.
+> 
+> Well, that's generally right but not always. Sometimes that depends on
+> hardware and Aspeed I2C is the case.
+> 
+> This is a description from Aspeed AST2500 datasheet:
+> ? I2CD10 Interrupt Status Register
+> ? bit 2 Receive Done Interrupt status
+> ??????? S/W needs to clear this status bit to allow next data receiving.
+> 
+> It means, driver should hold this bit to prevent transition of hardware
+> state machine until the driver handles received data, so the bit should
+> be cleared at the end of interrupt handler.
+> 
+> Let me share my test result. Your code change works on 100KHz bus speed
+> but doesn't work well on 1MHz bus speed. Investigated that interrupt
+> handling is fast enough in 100KHz test but in 1MHz, most of data is
+> corrupted because the bit is cleared at the beginning of interrupt
+> handler so it allows receiving of the next data but the interrupt
+> handler isn't fast enough to read the data buffer on time. I checked
+> this problem on BMC-ME channel which ME sends lots of IPMB packets to
+> BMC at 1MHz speed. You could simply check the data corruption problem on
+> the BMC-ME channel.
 
-Hi Joel,
+OK.
+ 
+> My thought is, the current code is right for real Aspeed I2C hardware.
+> It seems that QEMU 3.0 model for witherspoon-bmc doesn't simulate the
+> actual Aspeed I2C hardware correctly.
 
-Thanks for your work.
+That might be very well possible yes. it also misses support for the slave 
+mode and the DMA registers.
 
-Yes, I will running OpenBMC on this platform.
-And In fact, the OpenBMC basic startup is already running on REP2.
-I'm also trying to push the OpenBMC patch for this platform.
+Thanks for the info,
 
-
-> Cheers,
->
-> Joel
->
->> ---
->>  .../devicetree/bindings/vendor-prefixes.txt        |   1 +
->>  arch/arm/boot/dts/Makefile                         |   1 +
->>  .../dts/aspeed-bmc-arm-stardragon4800-rep2.dts     | 207 +++++++++++++++++++++
->>  3 files changed, 209 insertions(+)
->>  create mode 100644 arch/arm/boot/dts/aspeed-bmc-arm-stardragon4800-rep2.dts
->>
->> diff --git a/Documentation/devicetree/bindings/vendor-prefixes.txt b/Documentation/devicetree/bindings/vendor-prefixes.txt
->> index 2c3fc51..c65c0c1 100644
->> --- a/Documentation/devicetree/bindings/vendor-prefixes.txt
->> +++ b/Documentation/devicetree/bindings/vendor-prefixes.txt
->> @@ -165,6 +165,7 @@ honeywell   Honeywell
->>  hp     Hewlett Packard
->>  holtek Holtek Semiconductor, Inc.
->>  hwacom HwaCom Systems Inc.
->> +hxt            Huaxintong Semiconductor Technology Co., Ltd.
->>  i2se   I2SE GmbH
->>  ibm    International Business Machines (IBM)
->>  idt    Integrated Device Technologies, Inc.
->> diff --git a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
->> index b5bd3de..a1b8816 100644
->> --- a/arch/arm/boot/dts/Makefile
->> +++ b/arch/arm/boot/dts/Makefile
->> @@ -1199,6 +1199,7 @@ dtb-$(CONFIG_ARCH_ZX) += zx296702-ad1.dtb
->>  dtb-$(CONFIG_ARCH_ASPEED) += \
->>         aspeed-ast2500-evb.dtb \
->>         aspeed-bmc-arm-centriq2400-rep.dtb \
->> +       aspeed-bmc-arm-stardragon4800-rep2.dtb \
->>         aspeed-bmc-intel-s2600wf.dtb \
->>         aspeed-bmc-opp-lanyang.dtb \
->>         aspeed-bmc-opp-palmetto.dtb \
->> diff --git a/arch/arm/boot/dts/aspeed-bmc-arm-stardragon4800-rep2.dts b/arch/arm/boot/dts/aspeed-bmc-arm-stardragon4800-rep2.dts
->> new file mode 100644
->> index 0000000..83335c0
->> --- /dev/null
->> +++ b/arch/arm/boot/dts/aspeed-bmc-arm-stardragon4800-rep2.dts
->> @@ -0,0 +1,207 @@
->> +// SPDX-License-Identifier: GPL-2.0+
->> +/dts-v1/;
->> +
->> +#include "aspeed-g5.dtsi"
->> +#include <dt-bindings/gpio/aspeed-gpio.h>
->> +
->> +/ {
->> +       model = "HXT StarDragon 4800 REP2 AST2520";
->> +       compatible = "hxt,stardragon4800-rep2-bmc", "aspeed,ast2500";
->> +
->> +       chosen {
->> +               stdout-path = &uart5;
->> +               bootargs = "console=ttyS4,115200 earlyprintk";
->> +       };
->> +
->> +       memory {
->> +               reg = <0x80000000 0x40000000>;
->> +       };
->> +
->> +       iio-hwmon {
->> +               compatible = "iio-hwmon";
->> +               io-channels = <&adc 0>, <&adc 1>, <&adc 2>, <&adc 3>,
->> +                                               <&adc 4>, <&adc 5>, <&adc 6>, <&adc 8>;
->> +       };
->> +
->> +       iio-hwmon-battery {
->> +               compatible = "iio-hwmon";
->> +               io-channels = <&adc 7>;
->> +       };
->> +
->> +       leds {
->> +               compatible = "gpio-leds";
->> +
->> +               system_fault1 {
->> +                       label = "System_fault1";
->> +                       gpios = <&gpio ASPEED_GPIO(I, 3) GPIO_ACTIVE_LOW>;
->> +               };
->> +
->> +               system_fault2 {
->> +                       label = "System_fault2";
->> +                       gpios = <&gpio ASPEED_GPIO(I, 2) GPIO_ACTIVE_LOW>;
->> +               };
->> +       };
->> +};
->> +
->> +&fmc {
->> +       status = "okay";
->> +       flash at 0 {
->> +               status = "okay";
->> +               m25p,fast-read;
->> +               label = "bmc";
->> +#include "openbmc-flash-layout.dtsi"
->> +       };
->> +};
->> +
->> +&spi1 {
->> +       status = "okay";
->> +       pinctrl-names = "default";
->> +       pinctrl-0 = <&pinctrl_spi1_default>;
->> +       flash at 0 {
->> +               status = "okay";
->> +       };
->> +};
->> +
->> +&spi2 {
->> +       pinctrl-names = "default";
->> +       pinctrl-0 = <&pinctrl_spi2ck_default
->> +                       &pinctrl_spi2miso_default
->> +                       &pinctrl_spi2mosi_default
->> +                       &pinctrl_spi2cs0_default>;
->> +};
->> +
->> +&uart3 {
->> +       status = "okay";
->> +
->> +       pinctrl-names = "default";
->> +       pinctrl-0 = <&pinctrl_txd3_default &pinctrl_rxd3_default>;
->> +       current-speed = <115200>;
->> +};
->> +
->> +&uart5 {
->> +       status = "okay";
->> +};
->> +
->> +&mac0 {
->> +       status = "okay";
->> +       pinctrl-names = "default";
->> +       pinctrl-0 = <&pinctrl_rgmii1_default &pinctrl_mdio1_default>;
->> +};
->> +
->> +&mac1 {
->> +       status = "okay";
->> +       pinctrl-names = "default";
->> +       pinctrl-0 = <&pinctrl_rmii2_default>;
->> +       use-ncsi;
->> +};
->> +
->> +&i2c0 {
->> +       status = "okay";
->> +};
->> +
->> +&i2c1 {
->> +       status = "okay";
->> +
->> +       tmp421 at 1e {
->> +               compatible = "ti,tmp421";
->> +               reg = <0x1e>;
->> +       };
->> +       tmp421 at 2a {
->> +               compatible = "ti,tmp421";
->> +               reg = <0x2a>;
->> +       };
->> +       tmp421 at 1c {
->> +               compatible = "ti,tmp421";
->> +               reg = <0x1c>;
->> +       };
->> +};
->> +
->> +&i2c2 {
->> +       status = "okay";
->> +};
->> +
->> +&i2c3 {
->> +       status = "okay";
->> +};
->> +
->> +&i2c4 {
->> +       status = "okay";
->> +};
->> +
->> +&i2c5 {
->> +       status = "okay";
->> +};
->> +
->> +&i2c6 {
->> +       status = "okay";
->> +
->> +       tmp421 at 1f {
->> +               compatible = "ti,tmp421";
->> +               reg = <0x1f>;
->> +       };
->> +       nvt210 at 4c {
->> +               compatible = "nvt210";
->> +               reg = <0x4c>;
->> +       };
->> +       eeprom at 50 {
->> +               compatible = "atmel,24c128";
->> +               reg = <0x50>;
->> +               pagesize = <128>;
->> +       };
->> +};
->> +
->> +&i2c7 {
->> +       status = "okay";
->> +};
->> +
->> +&i2c8 {
->> +       status = "okay";
->> +
->> +       pca9641 at 70 {
->> +               compatible = "nxp,pca9641";
->> +               reg = <0x70>;
->> +               i2c-arb {
->> +                       #address-cells = <1>;
->> +                       #size-cells = <0>;
->> +                       eeprom at 50 {
->> +                               compatible = "atmel,24c02";
->> +                               reg = <0x50>;
->> +                       };
->> +                       dps650ab at 58 {
->> +                               compatible = "dps650ab";
->> +                               reg = <0x58>;
->> +                       };
->> +               };
->> +       };
->> +};
->> +
->> +&i2c9 {
->> +       status = "okay";
->> +};
->> +
->> +&vuart {
->> +       status = "okay";
->> +};
->> +
->> +&gfx {
->> +       status = "okay";
->> +};
->> +
->> +&pinctrl {
->> +       aspeed,external-nodes = <&gfx &lhc>;
->> +};
->> +
->> +&gpio {
->> +       pin_gpio_c7 {
->> +               gpio-hog;
->> +               gpios = <ASPEED_GPIO(C, 7) GPIO_ACTIVE_HIGH>;
->> +               output-low;
->> +               line-name = "BIOS_SPI_MUX_S";
->> +       };
->> +       pin_gpio_d1 {
->> +               gpio-hog;
->> +               gpios = <ASPEED_GPIO(D, 1) GPIO_ACTIVE_HIGH>;
->> +               output-high;
->> +               line-name = "PHY2_RESET_N";
->> +       };
->> +};
->> --
->> 1.8.3.1
->>
+C.
