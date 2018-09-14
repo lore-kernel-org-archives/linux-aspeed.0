@@ -1,157 +1,61 @@
-From: Hans Verkuil <hverkuil@xs4all.nl>
-Date: Fri, 14 Sep 2018 08:59:23 +0200
-Subject: [PATCH v2 0/2] media: platform: Add Aspeed Video Engine Driver
-In-Reply-To: <1536866964-71593-1-git-send-email-eajames@linux.vnet.ibm.com>
-References: <1536866964-71593-1-git-send-email-eajames@linux.vnet.ibm.com>
-Message-ID: <3fe3a367-5e63-446b-faba-fa6ac7a007cd@xs4all.nl>
+From: Guenter Roeck <linux@roeck-us.net>
+Date: Fri, 14 Sep 2018 06:23:05 -0700
+Subject: [PATCH i2c-next v6] i2c: aspeed: Handle master/slave combined irq
+ events properly
+In-Reply-To: <ccbf7059-77fd-44e8-daee-516582814cb3@kaod.org>
+References: <20180911233302.GA18799@roeck-us.net>
+ <5698ca34-14c9-8d05-c4e6-5acf85ff9d14@linux.intel.com>
+ <20180912013449.GA12612@roeck-us.net>
+ <7fd98646-fb5a-be4d-ce37-84b74e0fa8b3@linux.intel.com>
+ <20180912195844.GA6893@roeck-us.net>
+ <da7f4691-7428-3114-32bb-e0171f6c7228@linux.intel.com>
+ <20180912203059.GA18201@roeck-us.net>
+ <fb185839-3ae0-01dc-09e8-f22db55ecb04@kaod.org>
+ <3f86e75f-1502-eae8-0633-d087937111c8@roeck-us.net>
+ <f47b3050-3abd-caa4-cc71-4b13ef60e2c0@kaod.org>
+ <20180913155703.GA22605@roeck-us.net>
+ <2c481986-7ee0-4887-5c9b-64e2cd9d8c04@kaod.org>
+ <b4da2b68-e6e3-e068-cd6e-9e638aa67889@roeck-us.net>
+ <ccbf7059-77fd-44e8-daee-516582814cb3@kaod.org>
+Message-ID: <94a2aa4e-69ac-7042-92d9-1ada46d5fc33@roeck-us.net>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 09/13/2018 09:29 PM, Eddie James wrote:
-> The Video Engine (VE) embedded in the Aspeed AST2400 and AST2500 SOCs
-> can capture and compress video data from digital or analog sources. With
-> the Aspeed chip acting as a service processor, the Video Engine can
-> capture the host processor graphics output.
+On 09/13/2018 10:38 PM, C?dric Le Goater wrote:
+>>>> That seems to suggest that none of the status bits auto-clears, and that
+>>>> the above code clearing intr_status should be removed entirely.
+>>>> Am I missing something ?
+>>>
+>>> You are right. I just pushed another version of the previous patch with this
+>>> new hunk :
+>>>
+>>> @@ -188,7 +200,6 @@ static void aspeed_i2c_bus_handle_cmd(As
+>>>  ? {
+>>>  ????? bus->cmd &= ~0xFFFF;
+>>>  ????? bus->cmd |= value & 0xFFFF;
+>>> -??? bus->intr_status = 0;
+>>>  ? ????? if (bus->cmd & I2CD_M_START_CMD) {
+>>>  ????????? uint8_t state = aspeed_i2c_get_state(bus) & I2CD_MACTIVE ?
+>>>
+>>>
+>>> The QEMU palmetto and witherspoon machines seem to behave fine. Can you give
+>>> it a try ?
+>>>
+>>
+>> Works fine for me for all affected qemu platforms.
+>>
+>> How do you want to proceed with the qemu patches ? I attached my patches
+>> for reference. Maybe you can add them to your tree if they are ok and submit
+>> the entire series together to the qemu mailing list ?
 > 
-> This series adds a V4L2 driver for the VE, providing a read() interface
-> only. The driver triggers the hardware to capture the host graphics output
-> and compress it to JPEG format.
+> yes. They are pushed in my aspeed-3.1 branch. I will send the series
+> on the list.
 > 
-> 
-> v4l2-compliance output:
-> 
-> v4l2-compliance SHA   : not available
 
-There should be a SHA here. "not available" indicates that you didn't compile
-from the git repository directly, and now I do not know how old this compliance
-test is. Always compile from the latest git repo, never use a version from e.g.
-a distro as they tend to be old and missing tests.
+Excellent. Thanks a lot!
 
-It would be great if you can do this and reply with the new compliance output.
-
-Thanks!
-
-	Hans
-
-> 
-> Driver Info:
-> 	Driver name   : aspeed-video
-> 	Card type     : Aspeed Video Engine
-> 	Bus info      : platform:aspeed-video
-> 	Driver version: 4.18.7
-> 	Capabilities  : 0x81200001
-> 		Video Capture
-> 		Read/Write
-> 		Extended Pix Format
-> 		Device Capabilities
-> 	Device Caps   : 0x01200001
-> 		Video Capture
-> 		Read/Write
-> 		Extended Pix Format
-> 
-> Compliance test for device /dev/video0 (not using libv4l2):
-> 
-> Required ioctls:
-> 	test VIDIOC_QUERYCAP: OK
-> 
-> Allow for multiple opens:
-> 	test second video open: OK
-> 	test VIDIOC_QUERYCAP: OK
-> 	test VIDIOC_G/S_PRIORITY: OK
-> 	test for unlimited opens: OK
-> 
-> Debug ioctls:
-> 	test VIDIOC_DBG_G/S_REGISTER: OK (Not Supported)
-> 	test VIDIOC_LOG_STATUS: OK (Not Supported)
-> 
-> Input ioctls:
-> 	test VIDIOC_G/S_TUNER/ENUM_FREQ_BANDS: OK (Not Supported)
-> 	test VIDIOC_G/S_FREQUENCY: OK (Not Supported)
-> 	test VIDIOC_S_HW_FREQ_SEEK: OK (Not Supported)
-> 	test VIDIOC_ENUMAUDIO: OK (Not Supported)
-> 	test VIDIOC_G/S/ENUMINPUT: OK
-> 	test VIDIOC_G/S_AUDIO: OK (Not Supported)
-> 	Inputs: 1 Audio Inputs: 0 Tuners: 0
-> 
-> Output ioctls:
-> 	test VIDIOC_G/S_MODULATOR: OK (Not Supported)
-> 	test VIDIOC_G/S_FREQUENCY: OK (Not Supported)
-> 	test VIDIOC_ENUMAUDOUT: OK (Not Supported)
-> 	test VIDIOC_G/S/ENUMOUTPUT: OK (Not Supported)
-> 	test VIDIOC_G/S_AUDOUT: OK (Not Supported)
-> 	Outputs: 0 Audio Outputs: 0 Modulators: 0
-> 
-> Input/Output configuration ioctls:
-> 	test VIDIOC_ENUM/G/S/QUERY_STD: OK (Not Supported)
-> 	test VIDIOC_ENUM/G/S/QUERY_DV_TIMINGS: OK (Not Supported)
-> 	test VIDIOC_DV_TIMINGS_CAP: OK (Not Supported)
-> 	test VIDIOC_G/S_EDID: OK (Not Supported)
-> 
-> Test input 0:
-> 
-> 	Control ioctls:
-> 		test VIDIOC_QUERY_EXT_CTRL/QUERYMENU: OK
-> 		test VIDIOC_QUERYCTRL: OK
-> 		test VIDIOC_G/S_CTRL: OK
-> 		test VIDIOC_G/S/TRY_EXT_CTRLS: OK
-> 		test VIDIOC_(UN)SUBSCRIBE_EVENT/DQEVENT: OK
-> 		test VIDIOC_G/S_JPEGCOMP: OK (Not Supported)
-> 		Standard Controls: 3 Private Controls: 0
-> 
-> 	Format ioctls:
-> 		test VIDIOC_ENUM_FMT/FRAMESIZES/FRAMEINTERVALS: OK
-> 		test VIDIOC_G/S_PARM: OK
-> 		test VIDIOC_G_FBUF: OK (Not Supported)
-> 		test VIDIOC_G_FMT: OK
-> 		test VIDIOC_TRY_FMT: OK
-> 		test VIDIOC_S_FMT: OK
-> 		test VIDIOC_G_SLICED_VBI_CAP: OK (Not Supported)
-> 		test Cropping: OK (Not Supported)
-> 		test Composing: OK (Not Supported)
-> 		test Scaling: OK (Not Supported)
-> 
-> 	Codec ioctls:
-> 		test VIDIOC_(TRY_)ENCODER_CMD: OK (Not Supported)
-> 		test VIDIOC_G_ENC_INDEX: OK (Not Supported)
-> 		test VIDIOC_(TRY_)DECODER_CMD: OK (Not Supported)
-> 
-> 	Buffer ioctls:
-> 		test VIDIOC_REQBUFS/CREATE_BUFS/QUERYBUF: OK (Not Supported)
-> 		test VIDIOC_EXPBUF: OK (Not Supported)
-> 
-> Test input 0:
-> 
-> Streaming ioctls:
-> 	test read/write: OK
-> 	test MMAP: OK (Not Supported)
-> 	test USERPTR: OK (Not Supported)
-> 	test DMABUF: OK (Not Supported)
-> 
-> 
-> Total: 47, Succeeded: 47, Failed: 0, Warnings: 0
-> 
-> 
-> Changes since v1:
->  - Removed le32_to_cpu calls for JPEG header data
->  - Reworked v4l2 ioctls to be compliant.
->  - Added JPEG controls
->  - Updated devicetree docs according to Rob's suggestions.
->  - Added myself to MAINTAINERS
-> 
-> Eddie James (2):
->   dt-bindings: media: Add Aspeed Video Engine binding documentation
->   media: platform: Add Aspeed Video Engine driver
-> 
->  .../devicetree/bindings/media/aspeed-video.txt     |   26 +
->  MAINTAINERS                                        |    8 +
->  drivers/media/platform/Kconfig                     |    8 +
->  drivers/media/platform/Makefile                    |    1 +
->  drivers/media/platform/aspeed-video.c              | 1469 ++++++++++++++++++++
->  5 files changed, 1512 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/media/aspeed-video.txt
->  create mode 100644 drivers/media/platform/aspeed-video.c
-> 
+Guenter
 
