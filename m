@@ -1,69 +1,92 @@
 From: Guenter Roeck <linux@roeck-us.net>
-Date: Thu, 13 Sep 2018 20:30:10 -0700
-Subject: [PATCH] i2c: aspeed: Acknowledge most interrupts early in interrupt
- handler
-Message-ID: <1536895810-28903-1-git-send-email-linux@roeck-us.net>
+Date: Thu, 13 Sep 2018 20:48:09 -0700
+Subject: [PATCH i2c-next v6] i2c: aspeed: Handle master/slave combined irq
+ events properly
+In-Reply-To: <2c481986-7ee0-4887-5c9b-64e2cd9d8c04@kaod.org>
+References: <20180911233302.GA18799@roeck-us.net>
+ <5698ca34-14c9-8d05-c4e6-5acf85ff9d14@linux.intel.com>
+ <20180912013449.GA12612@roeck-us.net>
+ <7fd98646-fb5a-be4d-ce37-84b74e0fa8b3@linux.intel.com>
+ <20180912195844.GA6893@roeck-us.net>
+ <da7f4691-7428-3114-32bb-e0171f6c7228@linux.intel.com>
+ <20180912203059.GA18201@roeck-us.net>
+ <fb185839-3ae0-01dc-09e8-f22db55ecb04@kaod.org>
+ <3f86e75f-1502-eae8-0633-d087937111c8@roeck-us.net>
+ <f47b3050-3abd-caa4-cc71-4b13ef60e2c0@kaod.org>
+ <20180913155703.GA22605@roeck-us.net>
+ <2c481986-7ee0-4887-5c9b-64e2cd9d8c04@kaod.org>
+Message-ID: <b4da2b68-e6e3-e068-cd6e-9e638aa67889@roeck-us.net>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Commit 3e9efc3299dd ("i2c: aspeed: Handle master/slave combined irq events
-properly") moved interrupt acknowledgment to the end of the interrupt
-handler. In part this was done because the AST2500 datasheet says:
+On 09/13/2018 09:35 AM, C?dric Le Goater wrote:
+> On 09/13/2018 05:57 PM, Guenter Roeck wrote:
+>> On Thu, Sep 13, 2018 at 05:48:59PM +0200, C?dric Le Goater wrote:
+>>> On 09/13/2018 03:33 PM, Guenter Roeck wrote:
+>> [ ... ]
+>>>>>>  ? /*
+>>>>>>  ?? * The state machine needs some refinement. It is only used to track
+>>>>>>  ?? * invalid STOP commands for the moment.
+>>>>>> @@ -188,7 +215,7 @@ static void aspeed_i2c_bus_handle_cmd(AspeedI2CBus *bus, uint64_t value)
+>>>>>>  ? {
+>>>>>>  ????? bus->cmd &= ~0xFFFF;
+>>>>>>  ????? bus->cmd |= value & 0xFFFF;
+>>>>>> -??? bus->intr_status = 0;> +??? bus->intr_status &= I2CD_INTR_RX_DONE;
+>>>>>
+>>>>> it deserves a comment to understand which scenario we are trying to handle.
+>>>>>     
+>>>>
+>>>> Ok. FWIW, I wonder if intr_status should be touched here in the first place,
+>>>> but I neither have the hardware nor a datasheet, so I don't know if any bits
+>>>> are auto-cleared.
+>>>
+>>> I just pushed a patch on my branch with some more explanation :
+>>>
+>>> 	https://github.com/legoater/qemu/commits/aspeed-3.1
+>>>
+>> That seems to suggest that none of the status bits auto-clears, and that
+>> the above code clearing intr_status should be removed entirely.
+>> Am I missing something ?
+> 
+> You are right. I just pushed another version of the previous patch with this
+> new hunk :
+> 
+> @@ -188,7 +200,6 @@ static void aspeed_i2c_bus_handle_cmd(As
+>   {
+>       bus->cmd &= ~0xFFFF;
+>       bus->cmd |= value & 0xFFFF;
+> -    bus->intr_status = 0;
+>   
+>       if (bus->cmd & I2CD_M_START_CMD) {
+>           uint8_t state = aspeed_i2c_get_state(bus) & I2CD_MACTIVE ?
+> 
+> 
+> The QEMU palmetto and witherspoon machines seem to behave fine. Can you give
+> it a try ?
+> 
 
- I2CD10 Interrupt Status Register
-   bit 2 Receive Done Interrupt status
-         S/W needs to clear this status bit to allow next data receiving.
+Works fine for me for all affected qemu platforms.
 
-Acknowledging Receive Done before receive data was handled resulted in
-receive errors on high speed I2C busses.
+How do you want to proceed with the qemu patches ? I attached my patches
+for reference. Maybe you can add them to your tree if they are ok and submit
+the entire series together to the qemu mailing list ?
 
-However, interrupt acknowledgment was not only moved to the end of the
-interrupt handler for Receive Done Interrupt status, but for all interrupt
-status bits. This could result in race conditions if a second interrupt was
-received during interrupt handling and not handled but still acknowledged
-at the end of the interrupt handler.
-
-Acknowledge only "Receive Done Interrupt status" late in the interrupt
-handler to solve the problem.
-
-Fixes: 3e9efc3299dd ("i2c: aspeed: Handle master/slave combined irq events properly")
-Cc: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-Cc: Joel Stanley <joel@jms.id.au>
-Signed-off-by: Guenter Roeck <linux@roeck-us.net>
----
- drivers/i2c/busses/i2c-aspeed.c | 9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
-index c258c4d9a4c0..3d518e09369f 100644
---- a/drivers/i2c/busses/i2c-aspeed.c
-+++ b/drivers/i2c/busses/i2c-aspeed.c
-@@ -552,6 +552,9 @@ static irqreturn_t aspeed_i2c_bus_irq(int irq, void *dev_id)
- 
- 	spin_lock(&bus->lock);
- 	irq_received = readl(bus->base + ASPEED_I2C_INTR_STS_REG);
-+	/* Ack all interrupts except for Rx done */
-+	writel(irq_received & ~ASPEED_I2CD_INTR_RX_DONE,
-+	       bus->base + ASPEED_I2C_INTR_STS_REG);
- 	irq_remaining = irq_received;
- 
- #if IS_ENABLED(CONFIG_I2C_SLAVE)
-@@ -584,8 +587,10 @@ static irqreturn_t aspeed_i2c_bus_irq(int irq, void *dev_id)
- 			"irq handled != irq. expected 0x%08x, but was 0x%08x\n",
- 			irq_received, irq_handled);
- 
--	/* Ack all interrupt bits. */
--	writel(irq_received, bus->base + ASPEED_I2C_INTR_STS_REG);
-+	/* Ack Rx done */
-+	if (irq_received & ASPEED_I2CD_INTR_RX_DONE)
-+		writel(ASPEED_I2CD_INTR_RX_DONE,
-+		       bus->base + ASPEED_I2C_INTR_STS_REG);
- 	spin_unlock(&bus->lock);
- 	return irq_remaining ? IRQ_NONE : IRQ_HANDLED;
- }
--- 
-2.7.4
-
+Thanks,
+Guenter
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: 0001-aspeed-i2c-Handle-receive-command-in-separate-functi.patch
+Type: text/x-patch
+Size: 2454 bytes
+Desc: not available
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20180913/57727d84/attachment.bin>
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: 0002-aspeed-i2c-Fix-receive-done-interrupt-handling.patch
+Type: text/x-patch
+Size: 2348 bytes
+Desc: not available
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20180913/57727d84/attachment-0001.bin>
