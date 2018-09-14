@@ -1,74 +1,72 @@
 From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-Date: Fri, 14 Sep 2018 09:28:43 -0700
-Subject: [PATCH] i2c: aspeed: Acknowledge most interrupts early in
- interrupt handler
-In-Reply-To: <1536895810-28903-1-git-send-email-linux@roeck-us.net>
-References: <1536895810-28903-1-git-send-email-linux@roeck-us.net>
-Message-ID: <fbf54ca6-16b3-5e35-eac8-b3dab8118543@linux.intel.com>
+Date: Fri, 14 Sep 2018 09:52:35 -0700
+Subject: [PATCH i2c-next v6] i2c: aspeed: Handle master/slave combined irq
+ events properly
+In-Reply-To: <94a2aa4e-69ac-7042-92d9-1ada46d5fc33@roeck-us.net>
+References: <20180911233302.GA18799@roeck-us.net>
+ <5698ca34-14c9-8d05-c4e6-5acf85ff9d14@linux.intel.com>
+ <20180912013449.GA12612@roeck-us.net>
+ <7fd98646-fb5a-be4d-ce37-84b74e0fa8b3@linux.intel.com>
+ <20180912195844.GA6893@roeck-us.net>
+ <da7f4691-7428-3114-32bb-e0171f6c7228@linux.intel.com>
+ <20180912203059.GA18201@roeck-us.net>
+ <fb185839-3ae0-01dc-09e8-f22db55ecb04@kaod.org>
+ <3f86e75f-1502-eae8-0633-d087937111c8@roeck-us.net>
+ <f47b3050-3abd-caa4-cc71-4b13ef60e2c0@kaod.org>
+ <20180913155703.GA22605@roeck-us.net>
+ <2c481986-7ee0-4887-5c9b-64e2cd9d8c04@kaod.org>
+ <b4da2b68-e6e3-e068-cd6e-9e638aa67889@roeck-us.net>
+ <ccbf7059-77fd-44e8-daee-516582814cb3@kaod.org>
+ <94a2aa4e-69ac-7042-92d9-1ada46d5fc33@roeck-us.net>
+Message-ID: <3e319dd0-17e6-679d-18fd-43ed59f7075d@linux.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 9/13/2018 8:30 PM, Guenter Roeck wrote:
-> Commit 3e9efc3299dd ("i2c: aspeed: Handle master/slave combined irq events
-> properly") moved interrupt acknowledgment to the end of the interrupt
-> handler. In part this was done because the AST2500 datasheet says:
+On 9/14/2018 6:23 AM, Guenter Roeck wrote:
+> On 09/13/2018 10:38 PM, C?dric Le Goater wrote:
+>>>>> That seems to suggest that none of the status bits auto-clears, and 
+>>>>> that
+>>>>> the above code clearing intr_status should be removed entirely.
+>>>>> Am I missing something ?
+>>>>
+>>>> You are right. I just pushed another version of the previous patch 
+>>>> with this
+>>>> new hunk :
+>>>>
+>>>> @@ -188,7 +200,6 @@ static void aspeed_i2c_bus_handle_cmd(As
+>>>> ?? {
+>>>> ?????? bus->cmd &= ~0xFFFF;
+>>>> ?????? bus->cmd |= value & 0xFFFF;
+>>>> -??? bus->intr_status = 0;
+>>>> ?? ????? if (bus->cmd & I2CD_M_START_CMD) {
+>>>> ?????????? uint8_t state = aspeed_i2c_get_state(bus) & I2CD_MACTIVE ?
+>>>>
+>>>>
+>>>> The QEMU palmetto and witherspoon machines seem to behave fine. Can 
+>>>> you give
+>>>> it a try ?
+>>>>
+>>>
+>>> Works fine for me for all affected qemu platforms.
+>>>
+>>> How do you want to proceed with the qemu patches ? I attached my patches
+>>> for reference. Maybe you can add them to your tree if they are ok and 
+>>> submit
+>>> the entire series together to the qemu mailing list ?
+>>
+>> yes. They are pushed in my aspeed-3.1 branch. I will send the series
+>> on the list.
+>>
 > 
->   I2CD10 Interrupt Status Register
->     bit 2 Receive Done Interrupt status
->           S/W needs to clear this status bit to allow next data receiving.
+> Excellent. Thanks a lot!
 > 
-> Acknowledging Receive Done before receive data was handled resulted in
-> receive errors on high speed I2C busses.
-> 
-> However, interrupt acknowledgment was not only moved to the end of the
-> interrupt handler for Receive Done Interrupt status, but for all interrupt
-> status bits. This could result in race conditions if a second interrupt was
-> received during interrupt handling and not handled but still acknowledged
-> at the end of the interrupt handler.
-> 
-> Acknowledge only "Receive Done Interrupt status" late in the interrupt
-> handler to solve the problem.
-> 
-> Fixes: 3e9efc3299dd ("i2c: aspeed: Handle master/slave combined irq events properly")
-> Cc: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-> Cc: Joel Stanley <joel@jms.id.au>
-> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
-> ---
->   drivers/i2c/busses/i2c-aspeed.c | 9 +++++++--
->   1 file changed, 7 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
-> index c258c4d9a4c0..3d518e09369f 100644
-> --- a/drivers/i2c/busses/i2c-aspeed.c
-> +++ b/drivers/i2c/busses/i2c-aspeed.c
-> @@ -552,6 +552,9 @@ static irqreturn_t aspeed_i2c_bus_irq(int irq, void *dev_id)
->   
->   	spin_lock(&bus->lock);
->   	irq_received = readl(bus->base + ASPEED_I2C_INTR_STS_REG);
-> +	/* Ack all interrupts except for Rx done */
-> +	writel(irq_received & ~ASPEED_I2CD_INTR_RX_DONE,
-> +	       bus->base + ASPEED_I2C_INTR_STS_REG);
->   	irq_remaining = irq_received;
->   
->   #if IS_ENABLED(CONFIG_I2C_SLAVE)
-> @@ -584,8 +587,10 @@ static irqreturn_t aspeed_i2c_bus_irq(int irq, void *dev_id)
->   			"irq handled != irq. expected 0x%08x, but was 0x%08x\n",
->   			irq_received, irq_handled);
->   
-> -	/* Ack all interrupt bits. */
-> -	writel(irq_received, bus->base + ASPEED_I2C_INTR_STS_REG);
-> +	/* Ack Rx done */
-> +	if (irq_received & ASPEED_I2CD_INTR_RX_DONE)
-> +		writel(ASPEED_I2CD_INTR_RX_DONE,
-> +		       bus->base + ASPEED_I2C_INTR_STS_REG);
->   	spin_unlock(&bus->lock);
->   	return irq_remaining ? IRQ_NONE : IRQ_HANDLED;
->   }
+> Guenter
 > 
 
-Looks good to me. Thanks! :)
+Awesome! Many thanks to Guenter, C?dric and Joel. I really appreciate
+it.
 
-Acked-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+Jae
