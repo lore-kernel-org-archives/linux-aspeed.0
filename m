@@ -1,23 +1,192 @@
-From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-Date: Tue, 18 Sep 2018 11:02:54 -0700
-Subject: [RFC PATCH i2c-next 1/2] dt-bindings: i2c: aspeed: Add
- 'idle-wait-timeout-ms' setting
-In-Reply-To: <20180910214519.14126-2-jae.hyun.yoo@linux.intel.com>
-References: <20180910214519.14126-1-jae.hyun.yoo@linux.intel.com>
- <20180910214519.14126-2-jae.hyun.yoo@linux.intel.com>
-Message-ID: <a81a6092-a9d0-78d5-3596-cddc5d6a0713@linux.intel.com>
+From: Vijay Khemka <vijaykhemka@fb.com>
+Date: Tue, 18 Sep 2018 16:41:08 -0700
+Subject: [PATCH v3] ARM: dts: aspeed: Adding Facebook TiogaPass BMC
+Message-ID: <20180918234110.1908926-1-vijaykhemka@fb.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 9/10/2018 2:45 PM, Jae Hyun Yoo wrote:
-> +- idle-wait-timeout-ms	: bus idle waiting timeout in milliseconds when
-> +			  multi-master is set, defaults to 100 ms when not
-> +			  specified.
+Initial introduction of Facebook TiogaPass family equipped with
+Aspeed 2500 BMC SoC. TiogaPass is a x86 server development kit
+with a ASPEED ast2500 BMC manufactured by Facebook.
+Specifically, This adds the tiogapass platform device tree file
+including the flash layout used by the tiogapass BMC machines.
 
-Will change it to 'aspeed,idle-wait-timeout-ms' as it's a non standard
-property.
+This also adds an entry of tiogapass device tree file in Makefile
 
-Jae
+Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
+---
+ arch/arm/boot/dts/Makefile                    |   1 +
+ .../dts/aspeed-bmc-facebook-tiogapass.dts     | 146 ++++++++++++++++++
+ 2 files changed, 147 insertions(+)
+ create mode 100644 arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
+
+diff --git a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
+index b5bd3de87c33..1a2db605185a 100644
+--- a/arch/arm/boot/dts/Makefile
++++ b/arch/arm/boot/dts/Makefile
+@@ -1199,6 +1199,7 @@ dtb-$(CONFIG_ARCH_ZX) += zx296702-ad1.dtb
+ dtb-$(CONFIG_ARCH_ASPEED) += \
+ 	aspeed-ast2500-evb.dtb \
+ 	aspeed-bmc-arm-centriq2400-rep.dtb \
++	aspeed-bmc-facebook-tiogapass.dtb \
+ 	aspeed-bmc-intel-s2600wf.dtb \
+ 	aspeed-bmc-opp-lanyang.dtb \
+ 	aspeed-bmc-opp-palmetto.dtb \
+diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
+new file mode 100644
+index 000000000000..050e72df8683
+--- /dev/null
++++ b/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
+@@ -0,0 +1,146 @@
++// SPDX-License-Identifier: GPL-2.0+
++// Copyright (c) 2018 Facebook Inc.
++// Author: Vijay Khemka <vijaykhemka@fb.com>
++/dts-v1/;
++
++#include "aspeed-g5.dtsi"
++#include <dt-bindings/gpio/aspeed-gpio.h>
++
++/ {
++	model = "Facebook TiogaPass BMC";
++	compatible = "facebook,tiogapass-bmc", "aspeed,ast2500";
++	aliases {
++		serial0 = &uart1;
++		serial4 = &uart5;
++	};
++	chosen {
++		stdout-path = &uart5;
++		bootargs = "console=ttyS4,115200 earlyprintk";
++	};
++
++	memory at 80000000 {
++		reg = <0x80000000 0x20000000>;
++	};
++};
++
++&fmc {
++	status = "okay";
++	flash at 0 {
++		status = "okay";
++		m25p,fast-read;
++#include "openbmc-flash-layout.dtsi"
++	};
++};
++
++&spi1 {
++	status = "okay";
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_spi1_default>;
++	flash at 0 {
++		status = "okay";
++		m25p,fast-read;
++		label = "pnor";
++	};
++};
++
++&uart1 {
++	// Host Console
++	status = "okay";
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_txd1_default
++		     &pinctrl_rxd1_default>;
++};
++
++&uart5 {
++	// BMC Console
++	status = "okay";
++};
++
++&mac0 {
++	status = "okay";
++
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_rmii1_default>;
++	use-ncsi;
++};
++
++&i2c0 {
++	status = "okay";
++	//Airmax Conn B, CPU0 PIROM, CPU1 PIROM
++};
++
++&i2c1 {
++	status = "okay";
++	//X24 Riser
++};
++
++&i2c2 {
++	status = "okay";
++	// Mezz Management SMBus
++};
++
++&i2c3 {
++	status = "okay";
++	// SMBus to Board ID EEPROM
++};
++
++&i2c4 {
++	status = "okay";
++	// BMC Debug Header
++};
++
++&i2c5 {
++	status = "okay";
++  //CPU Voltage regulators
++};
++
++&i2c6 {
++	status = "okay";
++	tpm at 20 {
++		compatible = "infineon,slb9645tt";
++		reg = <0x20>;
++	};
++	tmp421 at 4e {
++		compatible = "ti,tmp421";
++		reg = <0x4e>;
++	};
++	tmp421 at 4f {
++		compatible = "ti,tmp421";
++		reg = <0x4f>;
++	};
++	eeprom at 54 {
++		compatible = "atmel,24c64";
++		reg = <0x54>;
++		pagesize = <32>;
++	};
++};
++
++&i2c7 {
++	status = "okay";
++  //HSC, AirMax Conn A
++};
++
++&i2c8 {
++	status = "okay";
++  //Mezz Sensor SMBus
++};
++
++&i2c9 {
++	status = "okay";
++  //USB Debug Connector
++};
++
++&pwm_tacho {
++	status = "okay";
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_pwm0_default &pinctrl_pwm1_default>;
++	fan at 0 {
++		reg = <0x00>;
++		aspeed,fan-tach-ch = /bits/ 8 <0x00>;
++	};
++
++	fan at 1 {
++		reg = <0x00>;
++		aspeed,fan-tach-ch = /bits/ 8 <0x01>;
++	};
++};
+-- 
+2.17.1
+
