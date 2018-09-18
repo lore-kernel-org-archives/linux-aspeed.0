@@ -1,7 +1,7 @@
 From: Vijay Khemka <vijaykhemka@fb.com>
-Date: Tue, 18 Sep 2018 16:41:08 -0700
-Subject: [PATCH v3] ARM: dts: aspeed: Adding Facebook TiogaPass BMC
-Message-ID: <20180918234110.1908926-1-vijaykhemka@fb.com>
+Date: Tue, 18 Sep 2018 16:39:02 -0700
+Subject: [PATCH] ARM: dts: aspeed: Adding Facebook TiogaPass BMC
+Message-ID: <20180918233904.1904859-1-vijaykhemka@fb.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
