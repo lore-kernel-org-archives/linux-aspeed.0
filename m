@@ -1,48 +1,96 @@
-From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-Date: Fri, 21 Sep 2018 10:46:34 -0700
-Subject: [PATCH] i2c: aspeed: fixed invalid clock parameters for very
- large divisors
-In-Reply-To: <20180920232820.243734-1-brendanhiggins@google.com>
-References: <20180920232820.243734-1-brendanhiggins@google.com>
-Message-ID: <07af0253-1efc-2ae1-93fb-ebcc1996d768@linux.intel.com>
+From: Eddie James <eajames@linux.vnet.ibm.com>
+Date: Fri, 21 Sep 2018 14:39:42 -0500
+Subject: [PATCH v2 2/2] media: platform: Add Aspeed Video Engine driver
+In-Reply-To: <66a5fbcf-2b41-ffd5-ad32-f26af47f3cea@xs4all.nl>
+References: <1536866964-71593-1-git-send-email-eajames@linux.vnet.ibm.com>
+ <1536866964-71593-3-git-send-email-eajames@linux.vnet.ibm.com>
+ <d1d58122-976b-b1dd-e4b4-bcc475219925@xs4all.nl>
+ <cf333297-cc02-51c7-14a0-4d35bc1f8f07@linux.vnet.ibm.com>
+ <66a5fbcf-2b41-ffd5-ad32-f26af47f3cea@xs4all.nl>
+Message-ID: <f1847a48-ca7c-e9e9-c85c-860166cebcbc@linux.vnet.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Brendan,
 
-nit:
-Title in imperative mood. I'd put 'fix' instead of 'fixed'.
 
-On 9/20/2018 4:28 PM, Brendan Higgins wrote:
-> The function that computes clock parameters from divisors did not
-> respect the maximum size of the bitfields that the parameters were
-> written to. This fixes the bug.
-> 
-> This bug can be reproduced with (and this fix verified with) the test
-> at: https://kunit-review.googlesource.com/c/linux/+/1035/
-> 
-> Discovered-by-KUnit: https://kunit-review.googlesource.com/c/linux/+/1035/
-> Signed-off-by: Brendan Higgins <brendanhiggins@google.com>
+On 09/14/2018 12:31 PM, Hans Verkuil wrote:
+> On 09/14/2018 05:22 PM, Eddie James wrote:
+>>>> +static int aspeed_video_allocate_cma(struct aspeed_video *video)
+>>>>
+<snip>
+>>>> +	if (rc) {
+>>>> +		v4l2_device_unregister(v4l2_dev);
+>>>> +		dev_err(video->dev, "Failed to register video device\n");
+>>>> +		return rc;
+>>>> +	}
+>>>> +
+>>>> +	video->v4l2_fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+>>>> +	video->v4l2_fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_JPEG;
+>>>> +	video->v4l2_fmt.fmt.pix.field = V4L2_FIELD_NONE;
+>>>> +	video->v4l2_fmt.fmt.pix.colorspace = V4L2_COLORSPACE_JPEG;
+>>> COLORSPACE_JPEG is deprecated. Use V4L2_COLORSPACE_SRGB for pix.colorspace
+>>> and set pix.quantization to V4L2_QUANTIZATION_FULL_RANGE.
 
-[....]
+FYI I'm getting a v4l2-compliance failure using your suggestion:
 
-> +	if (base_clk > ASPEED_I2CD_TIME_BASE_DIVISOR_MASK) {
-> +		base_clk = ASPEED_I2CD_TIME_BASE_DIVISOR_MASK;
-> +		clk_low = clk_high_low_mask;
-> +		clk_high = clk_high_low_mask;
+Format ioctls:
+ ??? ??? test VIDIOC_ENUM_FMT/FRAMESIZES/FRAMEINTERVALS: OK
+ ??? ??? test VIDIOC_G/S_PARM: OK
+ ??? ??? test VIDIOC_G_FBUF: OK (Not Supported)
+ ??? ??? fail: 
+../../../v4l-utils-1.12.3/utils/v4l2-compliance/v4l2-test-formats.cpp(331): 
+pixelformat == V4L2_PIX_FMT_JPEG && colorspace != V4L2_COLORSPACE_JPEG
+ ??? ??? fail: 
+../../../v4l-utils-1.12.3/utils/v4l2-compliance/v4l2-test-formats.cpp(436): 
+testColorspace(pix.pixelformat, pix.colorspace, pix.ycbcr_enc, 
+pix.quantization)
+ ??????? test VIDIOC_G_FMT: FAIL
 
-Yes, it fixes these parameters to the lowest bus speed setting with the
-maximum base clock divisor value and the maximum SCL timing cycle value
-when a low bus-frequency is requested which exceeds the range of this
-H/W supports. This exceptional case handling is needed to prevent making
-invalid settings on it. Nice fix!
+This is with v4l-utils commit d977e20a45a03543c4bdfeb3aef5211446de7398.
 
-One minor issue is, 'base_clk_divisor' instead of 'base_clk' could avoid
-misreading on this code.
+>>>
+>>>> +
+>>>> +	/* Don't fail the probe if controls init fails */
+>>>> +	v4l2_ctrl_handler_init(&video->v4l2_ctrl, 2);
+>>>> +
+<snip>
+>>>> ve,
+>>>> +};
+>>>> +
+>>>> +module_platform_driver(aspeed_video_driver);
+>>>> +
+>>>> +MODULE_DESCRIPTION("ASPEED Video Engine Driver");
+>>>> +MODULE_AUTHOR("Eddie James");
+>>>> +MODULE_LICENSE("GPL v2");
+>>>>
+>>> I don't like the read() API here. It is not a real read() either since it assumes
+>>> userspace reads full frames at a time. But if you read e.g. one byte at a time,
+>>> then each byte is just the first byte of a different frame.
+>> Yea...
+>>
+>>> I think we need to figure out how to make the stream I/O version just as fast
+>>> if not faster as the read() API.
 
-With that, it looks nice to me. Thanks!
+I do have the streaming API working with good performance now. Will get 
+another patch set up soon.
 
-Reviewed-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+Thanks,
+Eddie
+
+>> OK, I'll see what I can do.
+>>
+>> Thanks for the review!
+>> Eddie
+>>
+>>> Regards,
+>>>
+>>> 	Hans
+>>>
+> Regards,
+>
+> 	Hans
+>
+
