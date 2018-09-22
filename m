@@ -1,474 +1,148 @@
-From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-Date: Tue, 18 Sep 2018 14:51:22 -0700
-Subject: [PATCH v8 10/12] hwmon: Add PECI cputemp driver
-In-Reply-To: <20180918215124.14003-1-jae.hyun.yoo@linux.intel.com>
-References: <20180918215124.14003-1-jae.hyun.yoo@linux.intel.com>
-Message-ID: <20180918215124.14003-11-jae.hyun.yoo@linux.intel.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Sat, 22 Sep 2018 14:58:40 +0800
+Subject: [PATCH v3] i2c: aspeed: fix invalid clock parameters for very
+ large divisors
+In-Reply-To: <20180921223446.82685-1-brendanhiggins@google.com>
+References: <20180921223446.82685-1-brendanhiggins@google.com>
+Message-ID: <201809221423.ZqIJEhvq%fengguang.wu@intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This commit adds PECI cputemp hwmon driver.
+Hi Brendan,
 
-Cc: Jean Delvare <jdelvare@suse.com>
-Cc: Alan Cox <alan@linux.intel.com>
-Cc: Andrew Jeffery <andrew@aj.id.au>
-Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Cc: Arnd Bergmann <arnd@arndb.de>
-Cc: Jason M Biils <jason.m.bills@linux.intel.com>
-Cc: Joel Stanley <joel@jms.id.au>
-Cc: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
-Cc: Andrew Lunn <andrew@lunn.ch>
-Cc: Stef van Os <stef.van.os@prodrive-technologies.com>
-Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-Reviewed-by: Haiyue Wang <haiyue.wang@linux.intel.com>
-Reviewed-by: James Feist <james.feist@linux.intel.com>
-Reviewed-by: Vernon Mauery <vernon.mauery@linux.intel.com>
-Acked-by: Guenter Roeck <linux@roeck-us.net>
+I love your patch! Yet something to improve:
+
+[auto build test ERROR on wsa/i2c/for-next]
+[also build test ERROR on v4.19-rc4 next-20180921]
+[if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
+
+url:    https://github.com/0day-ci/linux/commits/Brendan-Higgins/i2c-aspeed-fix-invalid-clock-parameters-for-very-large-divisors/20180922-134643
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/wsa/linux.git i2c/for-next
+config: arm-allmodconfig (attached as .config)
+compiler: arm-linux-gnueabi-gcc (Debian 7.2.0-11) 7.2.0
+reproduce:
+        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        # save the attached .config to linux build tree
+        GCC_VERSION=7.2.0 make.cross ARCH=arm 
+
+All errors (new ones prefixed by >>):
+
+   drivers/i2c/busses/i2c-aspeed.c: In function 'aspeed_i2c_probe_bus':
+>> drivers/i2c/busses/i2c-aspeed.c:920:24: error: assignment from incompatible pointer type [-Werror=incompatible-pointer-types]
+      bus->get_clk_reg_val = (u32 (*)(u32))match->data;
+                           ^
+   cc1: some warnings being treated as errors
+
+vim +920 drivers/i2c/busses/i2c-aspeed.c
+
+87b59ff8d Brendan Higgins 2017-07-28  875  
+f327c686d Brendan Higgins 2017-06-20  876  static int aspeed_i2c_probe_bus(struct platform_device *pdev)
+f327c686d Brendan Higgins 2017-06-20  877  {
+87b59ff8d Brendan Higgins 2017-07-28  878  	const struct of_device_id *match;
+f327c686d Brendan Higgins 2017-06-20  879  	struct aspeed_i2c_bus *bus;
+f327c686d Brendan Higgins 2017-06-20  880  	struct clk *parent_clk;
+f327c686d Brendan Higgins 2017-06-20  881  	struct resource *res;
+f327c686d Brendan Higgins 2017-06-20  882  	int irq, ret;
+f327c686d Brendan Higgins 2017-06-20  883  
+f327c686d Brendan Higgins 2017-06-20  884  	bus = devm_kzalloc(&pdev->dev, sizeof(*bus), GFP_KERNEL);
+f327c686d Brendan Higgins 2017-06-20  885  	if (!bus)
+f327c686d Brendan Higgins 2017-06-20  886  		return -ENOMEM;
+f327c686d Brendan Higgins 2017-06-20  887  
+f327c686d Brendan Higgins 2017-06-20  888  	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+f327c686d Brendan Higgins 2017-06-20  889  	bus->base = devm_ioremap_resource(&pdev->dev, res);
+f327c686d Brendan Higgins 2017-06-20  890  	if (IS_ERR(bus->base))
+f327c686d Brendan Higgins 2017-06-20  891  		return PTR_ERR(bus->base);
+f327c686d Brendan Higgins 2017-06-20  892  
+f327c686d Brendan Higgins 2017-06-20  893  	parent_clk = devm_clk_get(&pdev->dev, NULL);
+f327c686d Brendan Higgins 2017-06-20  894  	if (IS_ERR(parent_clk))
+f327c686d Brendan Higgins 2017-06-20  895  		return PTR_ERR(parent_clk);
+f327c686d Brendan Higgins 2017-06-20  896  	bus->parent_clk_frequency = clk_get_rate(parent_clk);
+f327c686d Brendan Higgins 2017-06-20  897  	/* We just need the clock rate, we don't actually use the clk object. */
+f327c686d Brendan Higgins 2017-06-20  898  	devm_clk_put(&pdev->dev, parent_clk);
+f327c686d Brendan Higgins 2017-06-20  899  
+edd20e95b Joel Stanley    2017-11-01  900  	bus->rst = devm_reset_control_get_shared(&pdev->dev, NULL);
+edd20e95b Joel Stanley    2017-11-01  901  	if (IS_ERR(bus->rst)) {
+edd20e95b Joel Stanley    2017-11-01  902  		dev_err(&pdev->dev,
+6bc33c519 Jae Hyun Yoo    2018-07-02  903  			"missing or invalid reset controller device tree entry\n");
+edd20e95b Joel Stanley    2017-11-01  904  		return PTR_ERR(bus->rst);
+edd20e95b Joel Stanley    2017-11-01  905  	}
+edd20e95b Joel Stanley    2017-11-01  906  	reset_control_deassert(bus->rst);
+edd20e95b Joel Stanley    2017-11-01  907  
+f327c686d Brendan Higgins 2017-06-20  908  	ret = of_property_read_u32(pdev->dev.of_node,
+f327c686d Brendan Higgins 2017-06-20  909  				   "bus-frequency", &bus->bus_frequency);
+f327c686d Brendan Higgins 2017-06-20  910  	if (ret < 0) {
+f327c686d Brendan Higgins 2017-06-20  911  		dev_err(&pdev->dev,
+f327c686d Brendan Higgins 2017-06-20  912  			"Could not read bus-frequency property\n");
+f327c686d Brendan Higgins 2017-06-20  913  		bus->bus_frequency = 100000;
+f327c686d Brendan Higgins 2017-06-20  914  	}
+f327c686d Brendan Higgins 2017-06-20  915  
+87b59ff8d Brendan Higgins 2017-07-28  916  	match = of_match_node(aspeed_i2c_bus_of_table, pdev->dev.of_node);
+87b59ff8d Brendan Higgins 2017-07-28  917  	if (!match)
+87b59ff8d Brendan Higgins 2017-07-28  918  		bus->get_clk_reg_val = aspeed_i2c_24xx_get_clk_reg_val;
+87b59ff8d Brendan Higgins 2017-07-28  919  	else
+5799c4b2f Jae Hyun Yoo    2018-07-24 @920  		bus->get_clk_reg_val = (u32 (*)(u32))match->data;
+87b59ff8d Brendan Higgins 2017-07-28  921  
+f327c686d Brendan Higgins 2017-06-20  922  	/* Initialize the I2C adapter */
+f327c686d Brendan Higgins 2017-06-20  923  	spin_lock_init(&bus->lock);
+f327c686d Brendan Higgins 2017-06-20  924  	init_completion(&bus->cmd_complete);
+f327c686d Brendan Higgins 2017-06-20  925  	bus->adap.owner = THIS_MODULE;
+f327c686d Brendan Higgins 2017-06-20  926  	bus->adap.retries = 0;
+f327c686d Brendan Higgins 2017-06-20  927  	bus->adap.timeout = 5 * HZ;
+f327c686d Brendan Higgins 2017-06-20  928  	bus->adap.algo = &aspeed_i2c_algo;
+f327c686d Brendan Higgins 2017-06-20  929  	bus->adap.dev.parent = &pdev->dev;
+f327c686d Brendan Higgins 2017-06-20  930  	bus->adap.dev.of_node = pdev->dev.of_node;
+f327c686d Brendan Higgins 2017-06-20  931  	strlcpy(bus->adap.name, pdev->name, sizeof(bus->adap.name));
+f327c686d Brendan Higgins 2017-06-20  932  	i2c_set_adapdata(&bus->adap, bus);
+f327c686d Brendan Higgins 2017-06-20  933  
+f327c686d Brendan Higgins 2017-06-20  934  	bus->dev = &pdev->dev;
+f327c686d Brendan Higgins 2017-06-20  935  
+f327c686d Brendan Higgins 2017-06-20  936  	/* Clean up any left over interrupt state. */
+f327c686d Brendan Higgins 2017-06-20  937  	writel(0, bus->base + ASPEED_I2C_INTR_CTRL_REG);
+f327c686d Brendan Higgins 2017-06-20  938  	writel(0xffffffff, bus->base + ASPEED_I2C_INTR_STS_REG);
+f327c686d Brendan Higgins 2017-06-20  939  	/*
+f327c686d Brendan Higgins 2017-06-20  940  	 * bus.lock does not need to be held because the interrupt handler has
+f327c686d Brendan Higgins 2017-06-20  941  	 * not been enabled yet.
+f327c686d Brendan Higgins 2017-06-20  942  	 */
+f327c686d Brendan Higgins 2017-06-20  943  	ret = aspeed_i2c_init(bus, pdev);
+f327c686d Brendan Higgins 2017-06-20  944  	if (ret < 0)
+f327c686d Brendan Higgins 2017-06-20  945  		return ret;
+f327c686d Brendan Higgins 2017-06-20  946  
+f327c686d Brendan Higgins 2017-06-20  947  	irq = irq_of_parse_and_map(pdev->dev.of_node, 0);
+f327c686d Brendan Higgins 2017-06-20  948  	ret = devm_request_irq(&pdev->dev, irq, aspeed_i2c_bus_irq,
+f327c686d Brendan Higgins 2017-06-20  949  			       0, dev_name(&pdev->dev), bus);
+f327c686d Brendan Higgins 2017-06-20  950  	if (ret < 0)
+f327c686d Brendan Higgins 2017-06-20  951  		return ret;
+f327c686d Brendan Higgins 2017-06-20  952  
+f327c686d Brendan Higgins 2017-06-20  953  	ret = i2c_add_adapter(&bus->adap);
+f327c686d Brendan Higgins 2017-06-20  954  	if (ret < 0)
+f327c686d Brendan Higgins 2017-06-20  955  		return ret;
+f327c686d Brendan Higgins 2017-06-20  956  
+f327c686d Brendan Higgins 2017-06-20  957  	platform_set_drvdata(pdev, bus);
+f327c686d Brendan Higgins 2017-06-20  958  
+f327c686d Brendan Higgins 2017-06-20  959  	dev_info(bus->dev, "i2c bus %d registered, irq %d\n",
+f327c686d Brendan Higgins 2017-06-20  960  		 bus->adap.nr, irq);
+f327c686d Brendan Higgins 2017-06-20  961  
+f327c686d Brendan Higgins 2017-06-20  962  	return 0;
+f327c686d Brendan Higgins 2017-06-20  963  }
+f327c686d Brendan Higgins 2017-06-20  964  
+
+:::::: The code at line 920 was first introduced by commit
+:::::: 5799c4b2f1dbc0166d9b1d94443deaafc6e7a070 i2c: aspeed: Add an explicit type casting for *get_clk_reg_val
+
+:::::: TO: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+:::::: CC: Wolfram Sang <wsa@the-dreams.de>
+
 ---
- drivers/hwmon/Kconfig        |  14 ++
- drivers/hwmon/Makefile       |   1 +
- drivers/hwmon/peci-cputemp.c | 392 +++++++++++++++++++++++++++++++++++
- 3 files changed, 407 insertions(+)
- create mode 100644 drivers/hwmon/peci-cputemp.c
-
-diff --git a/drivers/hwmon/Kconfig b/drivers/hwmon/Kconfig
-index 81da17a42dc9..f08b4a670ac5 100644
---- a/drivers/hwmon/Kconfig
-+++ b/drivers/hwmon/Kconfig
-@@ -1306,6 +1306,20 @@ config SENSORS_PCF8591
- 	  These devices are hard to detect and rarely found on mainstream
- 	  hardware.  If unsure, say N.
- 
-+config SENSORS_PECI_CPUTEMP
-+	tristate "PECI CPU temperature monitoring support"
-+	depends on PECI
-+	select MFD_INTEL_PECI_CLIENT
-+	help
-+	  If you say yes here you get support for the generic Intel PECI
-+	  cputemp driver which provides Digital Thermal Sensor (DTS) thermal
-+	  readings of the CPU package and CPU cores that are accessible using
-+	  the PECI Client Command Suite via the processor PECI client.
-+	  Check Documentation/hwmon/peci-cputemp for details.
-+
-+	  This driver can also be built as a module.  If so, the module
-+	  will be called peci-cputemp.
-+
- source drivers/hwmon/pmbus/Kconfig
- 
- config SENSORS_PWM_FAN
-diff --git a/drivers/hwmon/Makefile b/drivers/hwmon/Makefile
-index 93f7f41ea4ad..13ebde089ad5 100644
---- a/drivers/hwmon/Makefile
-+++ b/drivers/hwmon/Makefile
-@@ -141,6 +141,7 @@ obj-$(CONFIG_SENSORS_NTC_THERMISTOR)	+= ntc_thermistor.o
- obj-$(CONFIG_SENSORS_PC87360)	+= pc87360.o
- obj-$(CONFIG_SENSORS_PC87427)	+= pc87427.o
- obj-$(CONFIG_SENSORS_PCF8591)	+= pcf8591.o
-+obj-$(CONFIG_SENSORS_PECI_CPUTEMP)	+= peci-cputemp.o
- obj-$(CONFIG_SENSORS_POWR1220)  += powr1220.o
- obj-$(CONFIG_SENSORS_PWM_FAN)	+= pwm-fan.o
- obj-$(CONFIG_SENSORS_RASPBERRYPI_HWMON)	+= raspberrypi-hwmon.o
-diff --git a/drivers/hwmon/peci-cputemp.c b/drivers/hwmon/peci-cputemp.c
-new file mode 100644
-index 000000000000..20a48200c786
---- /dev/null
-+++ b/drivers/hwmon/peci-cputemp.c
-@@ -0,0 +1,392 @@
-+// SPDX-License-Identifier: GPL-2.0
-+// Copyright (c) 2018 Intel Corporation
-+
-+#include <linux/hwmon.h>
-+#include <linux/jiffies.h>
-+#include <linux/mfd/intel-peci-client.h>
-+#include <linux/module.h>
-+#include <linux/of_device.h>
-+#include <linux/platform_device.h>
-+
-+#define DEFAULT_CHANNEL_NUMS   4
-+#define CORETEMP_CHANNEL_NUMS  CORE_NUMS_MAX
-+#define CPUTEMP_CHANNEL_NUMS   (DEFAULT_CHANNEL_NUMS + CORETEMP_CHANNEL_NUMS)
-+
-+/* The RESOLVED_CORES register in PCU of a client CPU */
-+#define REG_RESOLVED_CORES_BUS      1
-+#define REG_RESOLVED_CORES_DEVICE   30
-+#define REG_RESOLVED_CORES_FUNCTION 3
-+#define REG_RESOLVED_CORES_OFFSET   0xB4
-+
-+struct temp_group {
-+	struct temp_data die;
-+	struct temp_data tcontrol;
-+	struct temp_data tthrottle;
-+	struct temp_data tjmax;
-+	struct temp_data core[CORETEMP_CHANNEL_NUMS];
-+};
-+
-+struct peci_cputemp {
-+	struct peci_mfd *mfd;
-+	struct device *dev;
-+	char name[PECI_NAME_SIZE];
-+	u8 addr;
-+	const struct cpu_gen_info *gen_info;
-+	struct temp_group temp;
-+	u32 core_mask;
-+	u32 temp_config[CPUTEMP_CHANNEL_NUMS + 1];
-+	uint config_idx;
-+	struct hwmon_channel_info temp_info;
-+	const struct hwmon_channel_info *info[2];
-+	struct hwmon_chip_info chip;
-+};
-+
-+enum cputemp_channels {
-+	channel_die,
-+	channel_tcontrol,
-+	channel_tthrottle,
-+	channel_tjmax,
-+	channel_core,
-+};
-+
-+static const u32 config_table[DEFAULT_CHANNEL_NUMS + 1] = {
-+	/* Die temperature */
-+	HWMON_T_LABEL | HWMON_T_INPUT | HWMON_T_MAX | HWMON_T_CRIT |
-+	HWMON_T_CRIT_HYST,
-+
-+	/* Tcontrol temperature */
-+	HWMON_T_LABEL | HWMON_T_INPUT | HWMON_T_CRIT,
-+
-+	/* Tthrottle temperature */
-+	HWMON_T_LABEL | HWMON_T_INPUT,
-+
-+	/* Tjmax temperature */
-+	HWMON_T_LABEL | HWMON_T_INPUT,
-+
-+	/* Core temperature - for all core channels */
-+	HWMON_T_LABEL | HWMON_T_INPUT | HWMON_T_MAX | HWMON_T_CRIT |
-+	HWMON_T_CRIT_HYST,
-+};
-+
-+static const char *cputemp_label[CPUTEMP_CHANNEL_NUMS] = {
-+	"Die",
-+	"Tcontrol",
-+	"Tthrottle",
-+	"Tjmax",
-+	"Core 0", "Core 1", "Core 2", "Core 3",
-+	"Core 4", "Core 5", "Core 6", "Core 7",
-+	"Core 8", "Core 9", "Core 10", "Core 11",
-+	"Core 12", "Core 13", "Core 14", "Core 15",
-+	"Core 16", "Core 17", "Core 18", "Core 19",
-+	"Core 20", "Core 21", "Core 22", "Core 23",
-+};
-+
-+static s32 ten_dot_six_to_millidegree(s32 val)
-+{
-+	return ((val ^ 0x8000) - 0x8000) * 1000 / 64;
-+}
-+
-+static int get_temp_targets(struct peci_cputemp *priv)
-+{
-+	s32 tthrottle_offset;
-+	s32 tcontrol_margin;
-+	u8  pkg_cfg[4];
-+	int rc;
-+
-+	/**
-+	 * Just use only the tcontrol marker to determine if target values need
-+	 * update.
-+	 */
-+	if (!peci_temp_need_update(&priv->temp.tcontrol))
-+		return 0;
-+
-+	rc = peci_client_rd_pkg_cfg_cmd(priv->mfd, MBX_INDEX_TEMP_TARGET,
-+					0, pkg_cfg);
-+	if (rc)
-+		return rc;
-+
-+	priv->temp.tjmax.value = pkg_cfg[2] * 1000;
-+
-+	tcontrol_margin = pkg_cfg[1];
-+	tcontrol_margin = ((tcontrol_margin ^ 0x80) - 0x80) * 1000;
-+	priv->temp.tcontrol.value = priv->temp.tjmax.value - tcontrol_margin;
-+
-+	tthrottle_offset = (pkg_cfg[3] & 0x2f) * 1000;
-+	priv->temp.tthrottle.value = priv->temp.tjmax.value - tthrottle_offset;
-+
-+	peci_temp_mark_updated(&priv->temp.tcontrol);
-+
-+	return 0;
-+}
-+
-+static int get_die_temp(struct peci_cputemp *priv)
-+{
-+	struct peci_get_temp_msg msg;
-+	int rc;
-+
-+	if (!peci_temp_need_update(&priv->temp.die))
-+		return 0;
-+
-+	msg.addr = priv->addr;
-+
-+	rc = peci_client_command(priv->mfd, PECI_CMD_GET_TEMP, &msg);
-+	if (rc)
-+		return rc;
-+
-+	/* Note that the tjmax should be available before calling it */
-+	priv->temp.die.value = priv->temp.tjmax.value +
-+			       (msg.temp_raw * 1000 / 64);
-+
-+	peci_temp_mark_updated(&priv->temp.die);
-+
-+	return 0;
-+}
-+
-+static int get_core_temp(struct peci_cputemp *priv, int core_index)
-+{
-+	s32 core_dts_margin;
-+	u8  pkg_cfg[4];
-+	int rc;
-+
-+	if (!peci_temp_need_update(&priv->temp.core[core_index]))
-+		return 0;
-+
-+	rc = peci_client_rd_pkg_cfg_cmd(priv->mfd, MBX_INDEX_PER_CORE_DTS_TEMP,
-+					core_index, pkg_cfg);
-+	if (rc)
-+		return rc;
-+
-+	core_dts_margin = le16_to_cpup((__le16 *)pkg_cfg);
-+
-+	/**
-+	 * Processors return a value of the core DTS reading in 10.6 format
-+	 * (10 bits signed decimal, 6 bits fractional).
-+	 * Error codes:
-+	 *   0x8000: General sensor error
-+	 *   0x8001: Reserved
-+	 *   0x8002: Underflow on reading value
-+	 *   0x8003-0x81ff: Reserved
-+	 */
-+	if (core_dts_margin >= 0x8000 && core_dts_margin <= 0x81ff)
-+		return -EIO;
-+
-+	core_dts_margin = ten_dot_six_to_millidegree(core_dts_margin);
-+
-+	/* Note that the tjmax should be available before calling it */
-+	priv->temp.core[core_index].value = priv->temp.tjmax.value +
-+					    core_dts_margin;
-+
-+	peci_temp_mark_updated(&priv->temp.core[core_index]);
-+
-+	return 0;
-+}
-+
-+static int cputemp_read_string(struct device *dev,
-+			       enum hwmon_sensor_types type,
-+			       u32 attr, int channel, const char **str)
-+{
-+	if (attr != hwmon_temp_label)
-+		return -EOPNOTSUPP;
-+
-+	*str = cputemp_label[channel];
-+	return 0;
-+}
-+
-+static int cputemp_read(struct device *dev,
-+			enum hwmon_sensor_types type,
-+			u32 attr, int channel, long *val)
-+{
-+	struct peci_cputemp *priv = dev_get_drvdata(dev);
-+	int rc, core_index;
-+
-+	if (channel >= CPUTEMP_CHANNEL_NUMS ||
-+	    !(priv->temp_config[channel] & BIT(attr)))
-+		return -EOPNOTSUPP;
-+
-+	rc = get_temp_targets(priv);
-+	if (rc)
-+		return rc;
-+
-+	switch (attr) {
-+	case hwmon_temp_input:
-+		switch (channel) {
-+		case channel_die:
-+			rc = get_die_temp(priv);
-+			if (rc)
-+				break;
-+
-+			*val = priv->temp.die.value;
-+			break;
-+		case channel_tcontrol:
-+			*val = priv->temp.tcontrol.value;
-+			break;
-+		case channel_tthrottle:
-+			*val = priv->temp.tthrottle.value;
-+			break;
-+		case channel_tjmax:
-+			*val = priv->temp.tjmax.value;
-+			break;
-+		default:
-+			core_index = channel - DEFAULT_CHANNEL_NUMS;
-+			rc = get_core_temp(priv, core_index);
-+			if (rc)
-+				break;
-+
-+			*val = priv->temp.core[core_index].value;
-+			break;
-+		}
-+		break;
-+	case hwmon_temp_max:
-+		*val = priv->temp.tcontrol.value;
-+		break;
-+	case hwmon_temp_crit:
-+		*val = priv->temp.tjmax.value;
-+		break;
-+	case hwmon_temp_crit_hyst:
-+		*val = priv->temp.tjmax.value - priv->temp.tcontrol.value;
-+		break;
-+	default:
-+		rc = -EOPNOTSUPP;
-+		break;
-+	}
-+
-+	return rc;
-+}
-+
-+static umode_t cputemp_is_visible(const void *data,
-+				  enum hwmon_sensor_types type,
-+				  u32 attr, int channel)
-+{
-+	const struct peci_cputemp *priv = data;
-+
-+	if (priv->temp_config[channel] & BIT(attr))
-+		if (channel < DEFAULT_CHANNEL_NUMS ||
-+		    (channel >= DEFAULT_CHANNEL_NUMS &&
-+		     (priv->core_mask & BIT(channel - DEFAULT_CHANNEL_NUMS))))
-+			return 0444;
-+
-+	return 0;
-+}
-+
-+static const struct hwmon_ops cputemp_ops = {
-+	.is_visible = cputemp_is_visible,
-+	.read_string = cputemp_read_string,
-+	.read = cputemp_read,
-+};
-+
-+static int check_resolved_cores(struct peci_cputemp *priv)
-+{
-+	struct peci_rd_pci_cfg_local_msg msg;
-+	int rc;
-+
-+	/* Get the RESOLVED_CORES register value */
-+	msg.addr = priv->addr;
-+	msg.bus = REG_RESOLVED_CORES_BUS;
-+	msg.device = REG_RESOLVED_CORES_DEVICE;
-+	msg.function = REG_RESOLVED_CORES_FUNCTION;
-+	msg.reg = REG_RESOLVED_CORES_OFFSET;
-+	msg.rx_len = 4;
-+
-+	rc = peci_client_command(priv->mfd, PECI_CMD_RD_PCI_CFG_LOCAL, &msg);
-+	if (rc)
-+		return rc;
-+
-+	priv->core_mask = le32_to_cpup((__le32 *)msg.pci_config);
-+	if (!priv->core_mask)
-+		return -EAGAIN;
-+
-+	dev_dbg(priv->dev, "Scanned resolved cores: 0x%x\n", priv->core_mask);
-+	return 0;
-+}
-+
-+static int create_core_temp_info(struct peci_cputemp *priv)
-+{
-+	int rc, i;
-+
-+	rc = check_resolved_cores(priv);
-+	if (rc)
-+		return rc;
-+
-+	for (i = 0; i < priv->gen_info->core_max; i++)
-+		if (priv->core_mask & BIT(i))
-+			while (i + DEFAULT_CHANNEL_NUMS >= priv->config_idx)
-+				priv->temp_config[priv->config_idx++] =
-+					config_table[channel_core];
-+
-+	return 0;
-+}
-+
-+static int peci_cputemp_probe(struct platform_device *pdev)
-+{
-+	struct peci_mfd *mfd = dev_get_drvdata(pdev->dev.parent);
-+	struct device *dev = &pdev->dev;
-+	struct peci_cputemp *priv;
-+	struct device *hwmon_dev;
-+	int rc;
-+
-+	if ((mfd->adapter->cmd_mask &
-+	    (BIT(PECI_CMD_GET_TEMP) | BIT(PECI_CMD_RD_PKG_CFG))) !=
-+	    (BIT(PECI_CMD_GET_TEMP) | BIT(PECI_CMD_RD_PKG_CFG)))
-+		return -ENODEV;
-+
-+	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
-+	if (!priv)
-+		return -ENOMEM;
-+
-+	dev_set_drvdata(dev, priv);
-+	priv->mfd = mfd;
-+	priv->dev = dev;
-+	priv->addr = mfd->addr;
-+	priv->gen_info = mfd->gen_info;
-+
-+	snprintf(priv->name, PECI_NAME_SIZE, "peci_cputemp.cpu%d", mfd->cpu_no);
-+
-+	priv->temp_config[priv->config_idx++] = config_table[channel_die];
-+	priv->temp_config[priv->config_idx++] = config_table[channel_tcontrol];
-+	priv->temp_config[priv->config_idx++] = config_table[channel_tthrottle];
-+	priv->temp_config[priv->config_idx++] = config_table[channel_tjmax];
-+
-+	rc = create_core_temp_info(priv);
-+	if (rc)
-+		dev_dbg(dev, "Skipped creating core temp info\n");
-+
-+	priv->chip.ops = &cputemp_ops;
-+	priv->chip.info = priv->info;
-+
-+	priv->info[0] = &priv->temp_info;
-+
-+	priv->temp_info.type = hwmon_temp;
-+	priv->temp_info.config = priv->temp_config;
-+
-+	hwmon_dev = devm_hwmon_device_register_with_info(priv->dev,
-+							 priv->name,
-+							 priv,
-+							 &priv->chip,
-+							 NULL);
-+
-+	if (IS_ERR(hwmon_dev))
-+		return PTR_ERR(hwmon_dev);
-+
-+	dev_dbg(dev, "%s: sensor '%s'\n", dev_name(hwmon_dev), priv->name);
-+
-+	return 0;
-+}
-+
-+static const struct platform_device_id peci_cputemp_ids[] = {
-+	{ .name = "peci-cputemp", .driver_data = 0 },
-+	{ }
-+};
-+MODULE_DEVICE_TABLE(platform, peci_cputemp_ids);
-+
-+static struct platform_driver peci_cputemp_driver = {
-+	.probe    = peci_cputemp_probe,
-+	.id_table = peci_cputemp_ids,
-+	.driver   = {
-+			.name           = "peci-cputemp",
-+	},
-+};
-+module_platform_driver(peci_cputemp_driver);
-+
-+MODULE_AUTHOR("Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>");
-+MODULE_DESCRIPTION("PECI cputemp driver");
-+MODULE_LICENSE("GPL v2");
--- 
-2.18.0
-
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: .config.gz
+Type: application/gzip
+Size: 67088 bytes
+Desc: not available
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20180922/44a1c0f8/attachment-0001.gz>
