@@ -1,30 +1,50 @@
-From: Joe Perches <joe@perches.com>
-Date: Sat, 22 Sep 2018 07:16:58 -0700
-Subject: [PATCH v2] i2c: aspeed: fix invalid clock parameters for very
- large divisors
-In-Reply-To: <CAFd5g46==5HG2stvuVfOUtsSW37SvLN6cCmOhRSxibrUpxb8aA@mail.gmail.com>
-References: <20180921221025.75003-1-brendanhiggins@google.com>
- <f5943177-6f1b-9344-3821-2aac001ff45d@linux.intel.com>
- <CAFd5g46==5HG2stvuVfOUtsSW37SvLN6cCmOhRSxibrUpxb8aA@mail.gmail.com>
-Message-ID: <a31b639d4415d6edd4174b3d4b71528ec94ad10a.camel@perches.com>
+From: Olof Johansson <olof@lixom.net>
+Date: Sun, 23 Sep 2018 06:33:12 -0700
+Subject: [GIT PULL] ARM: aspeed: dts changes for 4.20
+In-Reply-To: <CACPK8XfwK85_os-Kjqvkwp-V8YqV3JDPZEepdgXNA+6ievOLSQ@mail.gmail.com>
+References: <CACPK8XfwK85_os-Kjqvkwp-V8YqV3JDPZEepdgXNA+6ievOLSQ@mail.gmail.com>
+Message-ID: <20180923133312.jdxydkcmyxa5h3tf@localhost>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, 2018-09-21 at 15:30 -0700, Brendan Higgins wrote:
-> On Fri, Sep 21, 2018 at 3:26 PM Jae Hyun Yoo
-[]
-> > > +             dev_err(dev,
-> > > +                     "clamping clock divider: divider requested, %u, is greater than largest possible divider, %u.",
-> > 
-> > Please put a newline character at the end of the string.
-> 
-> I always forget to do that. I wonder if anyone has considered adding a
-> warning for this to checkpatch?
+Hi,
 
-Yes, but it's not possible to know when there
-a pr_cont that follows so any checkpatch test
-would be a false positive generator too.
+On Thu, Sep 20, 2018 at 06:18:09PM +0930, Joel Stanley wrote:
+> Hello ARM Maintainers,
+> 
+> Here's the ASPEED device tree changes for 4.20. Please pull if they
+> look good. Thanks!
+> 
+> The following changes since commit 5b394b2ddf0347bef56e50c69a58773c94343ff3:
+> 
+>   Linux 4.19-rc1 (2018-08-26 14:11:59 -0700)
+> 
+> are available in the Git repository at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/joel/aspeed.git \
+>     tags/aspeed-4.20-devicetree
+> 
+> for you to fetch changes up to 3368e06e2a91a65cff59e520acc51b9adf4900bf:
+> 
+>   ARM: dts: aspeed: Adding Facebook TiogaPass BMC (2018-09-20 17:25:48 +0930)
+> 
+> ----------------------------------------------------------------
+> ASPEED device tree updates for 4.20
+> 
+>  - Two new ast2500-based machines:
+> 
+>    * Facebook TiogaPass (x86 server)
+
+\o/ :-)
+
+>    * HXT StarDragon 4800 Reference Evaluation Platform 2 (arm64 server)
+> 
+>  - Updates for the Quanta q71l system
+> 
+>  - i2c device tree cleanups
+
+Merged, thanks!
 
