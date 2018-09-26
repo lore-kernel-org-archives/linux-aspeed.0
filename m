@@ -1,24 +1,47 @@
-From: Amithash Prasad <amithash@fb.com>
-Date: Wed, 26 Sep 2018 18:07:54 +0000
-Subject: [PATCH] net/ncsi: Add NCSI OEM command for FB Tiogapass
-In-Reply-To: <FC2694E0-2F55-4089-8544-668243C6ECA2@fb.com>
-References: <20180925000840.4111212-1-vijaykhemka@fb.com>
- <CACPK8XcDExGvCNBcFqOOP+1zQFFs6pMao+7rsZrJFqxPgcY+1Q@mail.gmail.com>
- <F570466E-4F6C-4AE1-91E0-0B4ECC193BE0@fb.com>
- <7cd8a49a057f1032e126b1e104fcf61e4956e06d.camel@mendozajonas.com>,
- <FC2694E0-2F55-4089-8544-668243C6ECA2@fb.com>
-Message-ID: <MWHPR15MB14861AED8F8AF652CE5E62B3B2150@MWHPR15MB1486.namprd15.prod.outlook.com>
+From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+Date: Wed, 26 Sep 2018 14:58:39 -0700
+Subject: [PATCH i2c-next v3 0/3] i2c: aspeed: Add bus idle waiting logic for
+ multi-master use cases
+Message-ID: <20180926215842.23125-1-jae.hyun.yoo@linux.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
- >  As I understand Justin's version adds a generic handler, using the NCSI
+In multi-master environment, this driver's master cannot know
+exactly when peer master sends data to this driver's slave so a
+case can be happened that this master tries to send data through
+the master_xfer function but slave data from peer master is still
+being processed by this driver.
 
- >  Netlink interface to pass OEM commands and responses to and from
- >  userspace, which does the actual packet handling.
-Thanks for the direction Sam! Justin, if you don't mind, can you share the patches you have to add the support? This actually would solve a few other things we are trying to accomplish.
--------------- next part --------------
-An HTML attachment was scrubbed...
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20180926/69622785/attachment.html>
+To prevent state corruption in the case, this patch adds checking
+code if any slave operation is ongoing and it waits up to the
+timeout duration before starting a master_xfer operation.
+
+Please review this patch set.
+
+Thanks,
+
+-Jae
+
+Changes since v2:
+- Changed the property name to 'aspeed,timeout' and made it to
+  update the adapter's timeout configuration.
+
+Changes since v1:
+- Changed define names of timeout related.
+
+Jae Hyun Yoo (3):
+  dt-bindings: i2c: aspeed: Add 'timeout' property as an optional
+    property
+  i2c: aspeed: Add 'aspeed,timeout' DT property reading code
+  i2c: aspeed: Add bus idle waiting logic for multi-master use cases
+
+ .../devicetree/bindings/i2c/i2c-aspeed.txt    |  3 +
+ drivers/i2c/busses/i2c-aspeed.c               | 71 ++++++++++++++-----
+ 2 files changed, 58 insertions(+), 16 deletions(-)
+
+-- 
+2.19.0
+
