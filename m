@@ -1,32 +1,33 @@
-From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-Date: Wed, 26 Sep 2018 09:32:48 -0700
-Subject: [RFC PATCH i2c-next 1/2] dt-bindings: i2c: aspeed: Add
- 'idle-wait-timeout-ms' setting
-In-Reply-To: <20180926162701.GB2736@kunai>
-References: <20180910214519.14126-1-jae.hyun.yoo@linux.intel.com>
- <20180910214519.14126-2-jae.hyun.yoo@linux.intel.com>
- <a81a6092-a9d0-78d5-3596-cddc5d6a0713@linux.intel.com>
- <20180924215850.GD18592@kunai>
- <2c8563fd-0641-5237-0026-f559c480ad91@linux.intel.com>
- <20180925082717.GB2270@kunai>
- <7b4e5715-3a87-8f77-8d0d-4647f02c87a8@linux.intel.com>
- <f20a2e1d-e1db-1e63-3df8-ad650b931f7d@linux.intel.com>
- <20180926162701.GB2736@kunai>
-Message-ID: <3b5c4322-291a-c11b-a2ee-6256ba7441df@linux.intel.com>
+From: Vijay Khemka <vijaykhemka@fb.com>
+Date: Wed, 26 Sep 2018 17:07:43 +0000
+Subject: [PATCH] net/ncsi: Add NCSI OEM command for FB Tiogapass
+In-Reply-To: <7cd8a49a057f1032e126b1e104fcf61e4956e06d.camel@mendozajonas.com>
+References: <20180925000840.4111212-1-vijaykhemka@fb.com>
+ <CACPK8XcDExGvCNBcFqOOP+1zQFFs6pMao+7rsZrJFqxPgcY+1Q@mail.gmail.com>
+ <F570466E-4F6C-4AE1-91E0-0B4ECC193BE0@fb.com>
+ <7cd8a49a057f1032e126b1e104fcf61e4956e06d.camel@mendozajonas.com>
+Message-ID: <FC2694E0-2F55-4089-8544-668243C6ECA2@fb.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 9/26/2018 9:27 AM, Wolfram Sang wrote:
-> 
->> Should I use timeout in struct i2c_adapter instead just like i2c-mpc
->> does?
-> 
-> I would accept that.
-> 
+>    Hi Vijay,
+    
+ >  Thanks for the patch; before I get too into a review though I'd like to
+ >  loop in Justin (cc'd) who I know is also working on an OEM command patch.
+ >  The changes here are very specific (eg. a command specific config option
+ >  "CONFIG_NCSI_OEM_CMD_GET_MAC"), which is ok on a small scale but if we
+ >  start to add an increasing amount of commands could get out of hand.
+ >  As I understand Justin's version adds a generic handler, using the NCSI
+ >  Netlink interface to pass OEM commands and responses to and from
+ >  userspace, which does the actual packet handling.
+ >  It would be good to compare these two approaches first before committing
+ >  to any one path
+    
+Hi Sam,
+My oem command handler is generic and can be used for any oem commands and oem response handler can be made more generic. We can certainly write a wrapper to support netlink oem command to receive form user space. There are Mellanox specific functions which sends Mellanox specific request. These needed as a part of initial configuration. We can remove Kconfig option with more generic approach.
 
-Okay, I will submit a new patch set. Thanks!
+-Vijay 
 
-Jae
