@@ -1,38 +1,57 @@
 From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-Date: Thu, 27 Sep 2018 09:28:06 -0700
-Subject: [PATCH v8 07/12] dt-bindings: mfd: Add a document for PECI client
- MFD
-In-Reply-To: <20180927151524.GA16798@bogus>
-References: <20180918215124.14003-1-jae.hyun.yoo@linux.intel.com>
- <20180918215124.14003-8-jae.hyun.yoo@linux.intel.com>
- <20180927151524.GA16798@bogus>
-Message-ID: <68edf927-a39a-dc54-9766-507e4fa789a5@linux.intel.com>
+Date: Thu, 27 Sep 2018 10:41:16 -0700
+Subject: [PATCH i2c-next v3 2/3] i2c: aspeed: Add 'aspeed,timeout' DT
+ property reading code
+In-Reply-To: <CACPK8XcKms88EcpT3soE6wLyAmvyiLfVkNeOQT0FgmY4eZoDrw@mail.gmail.com>
+References: <20180926215842.23125-1-jae.hyun.yoo@linux.intel.com>
+ <20180926215842.23125-3-jae.hyun.yoo@linux.intel.com>
+ <CACPK8XcKms88EcpT3soE6wLyAmvyiLfVkNeOQT0FgmY4eZoDrw@mail.gmail.com>
+Message-ID: <37ae7a11-44b6-88e5-0f4d-c97c70334ad4@linux.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 9/27/2018 8:15 AM, Rob Herring wrote:
-> On Tue, 18 Sep 2018 14:51:19 -0700, Jae Hyun Yoo wrote:
->> This commit adds a dt-bindings document for PECI client MFD.
+Hi Joel,
+
+On 9/26/2018 8:11 PM, Joel Stanley wrote:
+> On Thu, 27 Sep 2018 at 01:58, Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com> wrote:
 >>
->> Cc: Lee Jones <lee.jones@linaro.org>
->> Cc: Rob Herring <robh+dt@kernel.org>
->> Cc: Mark Rutland <mark.rutland@arm.com>
->> Cc: Andrew Jeffery <andrew@aj.id.au>
->> Cc: James Feist <james.feist@linux.intel.com>
->> Cc: Jason M Biils <jason.m.bills@linux.intel.com>
->> Cc: Joel Stanley <joel@jms.id.au>
->> Cc: Vernon Mauery <vernon.mauery@linux.intel.com>
->> Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
->> ---
->>   .../bindings/mfd/intel-peci-client.txt        | 34 +++++++++++++++++++
->>   1 file changed, 34 insertions(+)
->>   create mode 100644 Documentation/devicetree/bindings/mfd/intel-peci-client.txt
->>
+>> +/* Timeout */
+>> +#define ASPEED_I2C_BUS_TIMEOUT_US_DEFAULT              (5 * 1000 * 1000)
 > 
-> Reviewed-by: Rob Herring <robh@kernel.org>
+> The 5 seconds time out is way too long. On a system that doesn't have
+> functional i2c, this holds up boot for a long time as most i2c client
+> drivers try to initialise their device and fail. I realise you're not
+> changing the value, but we should pick a better default. 1 second?
+> Half a second?
 > 
 
-Thanks for the review, Rob!
+I agree with you. We could probably use 1 second as default which can
+cover the most of general cases. If so, we don't need to make the
+default setting in this driver because i2c-core-base will default
+adap->timeout to 1 second if the value is 0 when a driver registers an
+adapter. Will fix this code.
+
+>>
+>> +       ret = of_property_read_u32(pdev->dev.of_node, "aspeed,timeout",
+>> +                                  &timeout_us);
+> 
+> Can we make this binding generic? It's not specific to aspeed's
+> hardware. Getting the value could even part of the i2c core.
+> 
+> I read the previous thread with Wolfram. I think this would still fit
+> with what Wolfram suggested, but please forgive my jetlagged brain if
+> I've missed something.
+> 
+
+It followed the way of the existing i2c-mpc driver uses 'fsl,timeout'
+for the same purpose. Though, I also want to make it as a generic as you
+suggested like 'timeout' in milliseconds unit, not in microseconds unit.
+If making it a generic property is acceptable, I'll fix it too.
+
+Wolfram, can you please share your thought on it?
+
+Thanks,
+Jae
