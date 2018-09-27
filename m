@@ -1,25 +1,50 @@
 From: Rob Herring <robh@kernel.org>
-Date: Thu, 27 Sep 2018 14:54:49 -0500
-Subject: [PATCH v3 1/2] dt-bindings: media: Add Aspeed Video Engine
- binding documentation
-In-Reply-To: <1537903629-14003-2-git-send-email-eajames@linux.ibm.com>
-References: <1537903629-14003-1-git-send-email-eajames@linux.ibm.com>
- <1537903629-14003-2-git-send-email-eajames@linux.ibm.com>
-Message-ID: <20180927195449.GA25789@bogus>
+Date: Thu, 27 Sep 2018 15:56:10 -0500
+Subject: [PATCH i2c-next v3 1/3] dt-bindings: i2c: aspeed: Add 'timeout'
+ property as an optional property
+In-Reply-To: <20180926215842.23125-2-jae.hyun.yoo@linux.intel.com>
+References: <20180926215842.23125-1-jae.hyun.yoo@linux.intel.com>
+ <20180926215842.23125-2-jae.hyun.yoo@linux.intel.com>
+Message-ID: <20180927205610.GA29022@bogus>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, 25 Sep 2018 14:27:08 -0500, Eddie James wrote:
-> Document the bindings.
-> 
-> Signed-off-by: Eddie James <eajames@linux.ibm.com>
-> ---
->  .../devicetree/bindings/media/aspeed-video.txt     | 26 ++++++++++++++++++++++
->  1 file changed, 26 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/media/aspeed-video.txt
-> 
+On Wed, Sep 26, 2018 at 02:58:40PM -0700, Jae Hyun Yoo wrote:
+> This commit adds 'aspeed,timeout' property as an optional property
+> which can be used for setting 'timeout' value of
+> 'struct i2c_adapter'. With this patch, the timeout value can be
+> set through an I2C_TIMEOUT ioctl on cdev, or through this optional
+> DT property.
 
-Reviewed-by: Rob Herring <robh@kernel.org>
+Isn't controlling this from userspace or relying on a default 
+sufficient?  I can't see this needing to be highly tuned for each 
+platform.
+
+However, if we do have a property, it should be common.
+
+> 
+> Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+> ---
+>  Documentation/devicetree/bindings/i2c/i2c-aspeed.txt | 3 +++
+>  1 file changed, 3 insertions(+)
+> 
+> diff --git a/Documentation/devicetree/bindings/i2c/i2c-aspeed.txt b/Documentation/devicetree/bindings/i2c/i2c-aspeed.txt
+> index 8fbd8633a387..d6965b360fbc 100644
+> --- a/Documentation/devicetree/bindings/i2c/i2c-aspeed.txt
+> +++ b/Documentation/devicetree/bindings/i2c/i2c-aspeed.txt
+> @@ -17,6 +17,9 @@ Optional Properties:
+>  		  specified
+>  - multi-master	: states that there is another master active on this bus.
+>  
+> +- aspeed,timeout : I2C bus timeout in microseconds defaults to 5 seconds when
+> +		   not specified.
+> +
+>  Example:
+>  
+>  i2c {
+> -- 
+> 2.19.0
+> 
