@@ -1,147 +1,89 @@
-From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-Date: Wed, 26 Sep 2018 14:58:42 -0700
-Subject: [PATCH i2c-next v3 3/3] i2c: aspeed: Add bus idle waiting logic for
- multi-master use cases
-In-Reply-To: <20180926215842.23125-1-jae.hyun.yoo@linux.intel.com>
+From: Joel Stanley <joel@jms.id.au>
+Date: Thu, 27 Sep 2018 07:11:59 +0400
+Subject: [PATCH i2c-next v3 2/3] i2c: aspeed: Add 'aspeed,timeout' DT
+ property reading code
+In-Reply-To: <20180926215842.23125-3-jae.hyun.yoo@linux.intel.com>
 References: <20180926215842.23125-1-jae.hyun.yoo@linux.intel.com>
-Message-ID: <20180926215842.23125-4-jae.hyun.yoo@linux.intel.com>
+ <20180926215842.23125-3-jae.hyun.yoo@linux.intel.com>
+Message-ID: <CACPK8XcKms88EcpT3soE6wLyAmvyiLfVkNeOQT0FgmY4eZoDrw@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-In multi-master environment, this driver's master cannot know
-exactly when peer master sends data to this driver's slave so a
-case can be happened that this master tries to send data through
-the master_xfer function but slave data from peer master is still
-being processed by this driver.
+On Thu, 27 Sep 2018 at 01:58, Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com> wrote:
+>
+> This commit adds reading code of the 'aspeed,timeout' DT property
+> to set 'timeout' value in adapter configuration. This value still
+> case be configured through an I2C_TIMEOUT ioctl on cdev too.
+>
+> Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+> ---
+>  drivers/i2c/busses/i2c-aspeed.c | 11 ++++++++++-
+>  1 file changed, 10 insertions(+), 1 deletion(-)
+>
+> diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
+> index 8dc9161ced38..0d934ce0c028 100644
+> --- a/drivers/i2c/busses/i2c-aspeed.c
+> +++ b/drivers/i2c/busses/i2c-aspeed.c
+> @@ -115,6 +115,9 @@
+>  /* 0x18 : I2CD Slave Device Address Register   */
+>  #define ASPEED_I2CD_DEV_ADDR_MASK                      GENMASK(6, 0)
+>
+> +/* Timeout */
+> +#define ASPEED_I2C_BUS_TIMEOUT_US_DEFAULT              (5 * 1000 * 1000)
 
-To prevent state corruption in the case, this patch adds checking
-code if any slave operation is ongoing and it waits up to the
-timeout duration before starting a master_xfer operation.
+The 5 seconds time out is way too long. On a system that doesn't have
+functional i2c, this holds up boot for a long time as most i2c client
+drivers try to initialise their device and fail. I realise you're not
+changing the value, but we should pick a better default. 1 second?
+Half a second?
 
-Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
----
- drivers/i2c/busses/i2c-aspeed.c | 62 ++++++++++++++++++++++++---------
- 1 file changed, 46 insertions(+), 16 deletions(-)
+> +
+>  enum aspeed_i2c_master_state {
+>         ASPEED_I2C_MASTER_INACTIVE,
+>         ASPEED_I2C_MASTER_START,
+> @@ -885,6 +888,7 @@ static int aspeed_i2c_probe_bus(struct platform_device *pdev)
+>         struct clk *parent_clk;
+>         struct resource *res;
+>         int irq, ret;
+> +       u32 timeout_us;
+>
+>         bus = devm_kzalloc(&pdev->dev, sizeof(*bus), GFP_KERNEL);
+>         if (!bus)
+> @@ -918,6 +922,11 @@ static int aspeed_i2c_probe_bus(struct platform_device *pdev)
+>                 bus->bus_frequency = 100000;
+>         }
+>
+> +       ret = of_property_read_u32(pdev->dev.of_node, "aspeed,timeout",
+> +                                  &timeout_us);
 
-diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
-index 0d934ce0c028..957649009b53 100644
---- a/drivers/i2c/busses/i2c-aspeed.c
-+++ b/drivers/i2c/busses/i2c-aspeed.c
-@@ -12,6 +12,7 @@
- 
- #include <linux/clk.h>
- #include <linux/completion.h>
-+#include <linux/delay.h>
- #include <linux/err.h>
- #include <linux/errno.h>
- #include <linux/i2c.h>
-@@ -99,6 +100,7 @@
- 		 ASPEED_I2CD_INTR_TX_ACK)
- 
- /* 0x14 : I2CD Command/Status Register   */
-+#define ASPEED_I2CD_XFER_MODE_STS_MASK			GENMASK(22, 19)
- #define ASPEED_I2CD_SCL_LINE_STS			BIT(18)
- #define ASPEED_I2CD_SDA_LINE_STS			BIT(17)
- #define ASPEED_I2CD_BUS_BUSY_STS			BIT(16)
-@@ -115,8 +117,9 @@
- /* 0x18 : I2CD Slave Device Address Register   */
- #define ASPEED_I2CD_DEV_ADDR_MASK			GENMASK(6, 0)
- 
--/* Timeout */
-+/* Timeout & Busy checking */
- #define ASPEED_I2C_BUS_TIMEOUT_US_DEFAULT		(5 * 1000 * 1000)
-+#define ASPEED_I2C_BUS_BUSY_CHECK_INTERVAL_US		(10 * 1000)
- 
- enum aspeed_i2c_master_state {
- 	ASPEED_I2C_MASTER_INACTIVE,
-@@ -159,6 +162,8 @@ struct aspeed_i2c_bus {
- 	int				cmd_err;
- 	/* Protected only by i2c_lock_bus */
- 	int				master_xfer_result;
-+	/* Multi-master */
-+	bool				multi_master;
- #if IS_ENABLED(CONFIG_I2C_SLAVE)
- 	struct i2c_client		*slave;
- 	enum aspeed_i2c_slave_state	slave_state;
-@@ -599,27 +604,50 @@ static irqreturn_t aspeed_i2c_bus_irq(int irq, void *dev_id)
- 	return irq_remaining ? IRQ_NONE : IRQ_HANDLED;
- }
- 
-+static int aspeed_i2c_check_bus_busy(struct aspeed_i2c_bus *bus)
-+{
-+	u32 status_check_mask = ASPEED_I2CD_BUS_BUSY_STS;
-+	ktime_t timeout;
-+
-+	if (bus->multi_master) {
-+		might_sleep();
-+		timeout = ktime_add_us(ktime_get(),
-+				       jiffies_to_usecs(bus->adap.timeout));
-+		/*
-+		 * ASPEED_I2CD_XFER_MODE_STS_MASK is marked as
-+		 * 'for debugging purpose only' in datasheet but ASPEED
-+		 * confirmed that this reflects real information and good to be
-+		 * used in practical code. It will be used only in multi-master
-+		 * use cases.
-+		 */
-+		status_check_mask |= ASPEED_I2CD_XFER_MODE_STS_MASK;
-+	}
-+
-+	for (;;) {
-+		if (!(readl(bus->base + ASPEED_I2C_CMD_REG) &
-+		      status_check_mask))
-+			return 0;
-+		if (!bus->multi_master)
-+			break;
-+		if (ktime_compare(ktime_get(), timeout) > 0)
-+			break;
-+		usleep_range((ASPEED_I2C_BUS_BUSY_CHECK_INTERVAL_US >> 2) + 1,
-+			     ASPEED_I2C_BUS_BUSY_CHECK_INTERVAL_US);
-+	}
-+
-+	return aspeed_i2c_recover_bus(bus);
-+}
-+
- static int aspeed_i2c_master_xfer(struct i2c_adapter *adap,
- 				  struct i2c_msg *msgs, int num)
- {
- 	struct aspeed_i2c_bus *bus = i2c_get_adapdata(adap);
- 	unsigned long time_left, flags;
--	int ret = 0;
--
--	spin_lock_irqsave(&bus->lock, flags);
--	bus->cmd_err = 0;
- 
--	/* If bus is busy, attempt recovery. We assume a single master
--	 * environment.
--	 */
--	if (readl(bus->base + ASPEED_I2C_CMD_REG) & ASPEED_I2CD_BUS_BUSY_STS) {
--		spin_unlock_irqrestore(&bus->lock, flags);
--		ret = aspeed_i2c_recover_bus(bus);
--		if (ret)
--			return ret;
--		spin_lock_irqsave(&bus->lock, flags);
--	}
-+	if (aspeed_i2c_check_bus_busy(bus))
-+		return -EAGAIN;
- 
-+	spin_lock_irqsave(&bus->lock, flags);
- 	bus->cmd_err = 0;
- 	bus->msgs = msgs;
- 	bus->msgs_index = 0;
-@@ -830,7 +858,9 @@ static int aspeed_i2c_init(struct aspeed_i2c_bus *bus,
- 	if (ret < 0)
- 		return ret;
- 
--	if (!of_property_read_bool(pdev->dev.of_node, "multi-master"))
-+	if (of_property_read_bool(pdev->dev.of_node, "multi-master"))
-+		bus->multi_master = true;
-+	else
- 		fun_ctrl_reg |= ASPEED_I2CD_MULTI_MASTER_DIS;
- 
- 	/* Enable Master Mode */
--- 
-2.19.0
+Can we make this binding generic? It's not specific to aspeed's
+hardware. Getting the value could even part of the i2c core.
 
+I read the previous thread with Wolfram. I think this would still fit
+with what Wolfram suggested, but please forgive my jetlagged brain if
+I've missed something.
+
+Cheers,
+
+Joel
+> +       if (ret)
+> +               timeout_us = ASPEED_I2C_BUS_TIMEOUT_US_DEFAULT;
+> +
+>         match = of_match_node(aspeed_i2c_bus_of_table, pdev->dev.of_node);
+>         if (!match)
+>                 bus->get_clk_reg_val = aspeed_i2c_24xx_get_clk_reg_val;
+> @@ -930,7 +939,7 @@ static int aspeed_i2c_probe_bus(struct platform_device *pdev)
+>         init_completion(&bus->cmd_complete);
+>         bus->adap.owner = THIS_MODULE;
+>         bus->adap.retries = 0;
+> -       bus->adap.timeout = 5 * HZ;
+> +       bus->adap.timeout = usecs_to_jiffies(timeout_us);
+>         bus->adap.algo = &aspeed_i2c_algo;
+>         bus->adap.dev.parent = &pdev->dev;
+>         bus->adap.dev.of_node = pdev->dev.of_node;
+> --
+> 2.19.0
+>
