@@ -1,10 +1,10 @@
-From: Eddie James <eajames@linux.vnet.ibm.com>
-Date: Fri, 28 Sep 2018 11:09:14 -0500
-Subject: [PATCH v3 0/2] media: platform: Add Aspeed Video Engine Driver
-In-Reply-To: <71bf665e-6d9b-a8f9-8e8f-7354dd095cc9@xs4all.nl>
-References: <1537903629-14003-1-git-send-email-eajames@linux.ibm.com>
- <71bf665e-6d9b-a8f9-8e8f-7354dd095cc9@xs4all.nl>
-Message-ID: <89e848d2-8155-85be-18a8-11da4614c6c2@linux.vnet.ibm.com>
+From: Vijay Khemka <vijaykhemka@fb.com>
+Date: Fri, 28 Sep 2018 22:26:10 +0000
+Subject: [PATCH] net/ncsi: Add NCSI OEM command for FB Tiogapass
+In-Reply-To: <81718e3fd6c883917aca540c032a7065fd00e79a.camel@mendozajonas.com>
+References: <20180925000840.4111212-1-vijaykhemka@fb.com>
+ <81718e3fd6c883917aca540c032a7065fd00e79a.camel@mendozajonas.com>
+Message-ID: <CCAE5C01-3623-4B3E-BAEF-1C853F4D22B9@fb.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -13,171 +13,358 @@ Content-Transfer-Encoding: 7bit
 
 
 
-On 09/28/2018 06:45 AM, Hans Verkuil wrote:
-> Hi Eddie,
->
-> On 09/25/2018 09:27 PM, Eddie James wrote:
->> The Video Engine (VE) embedded in the Aspeed AST2400 and AST2500 SOCs
->> can capture and compress video data from digital or analog sources. With
->> the Aspeed chip acting as a service processor, the Video Engine can
->> capture the host processor graphics output.
->>
->> This series adds a V4L2 driver for the VE, providing the usual V4L2 streaming
->> interface by way of videobuf2. Each frame, the driver triggers the hardware to
->> capture the host graphics output and compress it to JPEG format.
-> This is starting to look really nice. Are the performance issues you had originally
-> with the streaming API now solved?
+?On 9/26/18, 8:44 PM, "Samuel Mendoza-Jonas" <sam@mendozajonas.com> wrote:
 
-Yes, I haven't had the time to properly benchmark it now, but it is at 
-least as responsive as before, and using less memory now, so we're happy 
-with it :)
+>    Hi Vijay,
+    
+>    Having had a chance to take a closer look, there is probably room for
+>   both this patchset and Justin's potential changes to coexist; while
+>  Justin's is a more general solution for sending arbitrary commands, the
+>    approach of this patch is also useful for handling commands we want
+>    included in the configure process (such as get-mac-address).
 
->
-> I reviewed patch 2/2 and I think it is best if you incorporate my comments and post
-> a v4. At that point I will take a closer look at the DV_TIMINGS implementation in the
-> driver, esp. enum_dv_timings and dv_timings_cap.
->
-> In any case, I am much happier about this v3, this was a big step forward.
+Hi Sam,
+I have created a more generic approach based patch, will send you after clean up. I agree we need both Justin patch as well as mine to handle OEM specific command. I am creating 2 patches one for generic OEM command and response handling and another is OEM vendor specific command handling. Please see my responses to your comments below.
+    
+    Some comments below:
+    
+    > ---
+    >  net/ncsi/Kconfig       |  3 ++
+    >  net/ncsi/internal.h    | 11 +++++--
+    >  net/ncsi/ncsi-cmd.c    | 24 +++++++++++++--
+    >  net/ncsi/ncsi-manage.c | 68 ++++++++++++++++++++++++++++++++++++++++++
+    >  net/ncsi/ncsi-pkt.h    | 16 ++++++++++
+    >  net/ncsi/ncsi-rsp.c    | 33 +++++++++++++++++++-
+    >  6 files changed, 149 insertions(+), 6 deletions(-)
+    > 
+    > diff --git a/net/ncsi/Kconfig b/net/ncsi/Kconfig
+    > index 08a8a6031fd7..b8bf89fea7c8 100644
+    > --- a/net/ncsi/Kconfig
+    > +++ b/net/ncsi/Kconfig
+    > @@ -10,3 +10,6 @@ config NET_NCSI
+    >  	  support. Enable this only if your system connects to a network
+    >  	  device via NCSI and the ethernet driver you're using supports
+    >  	  the protocol explicitly.
+    > +config NCSI_OEM_CMD_GET_MAC
+    > +	bool "Get NCSI OEM MAC Address"
+    > +	depends on NET_NCSI
+    
+        For the moment this isn't too bad but I wonder if in the future it would
+        be more flexible to have something like NCSI_OEM_CMD_MELLANOX etc, so we
+        could selectively enable a class of OEM commands based on vendor rather
+        than per-command.
+    Certainly, we can have like that and will be an addition to above config. 
+    Above config is to enable retrieving and setting mac address from device 
+    during channel configuration. And then we can have vendor selection like 
+    MELLANOX, Broadcom etc. But I will rather check GV ID under this config 
+    and see if there is available function for specific vendor. This can be revised
+    and made more generic based on vendor.
 
-Thanks! I will address your comments for v4.
+    > diff --git a/net/ncsi/internal.h b/net/ncsi/internal.h
+    > index 8055e3965cef..da17958e6a4b 100644
+    > --- a/net/ncsi/internal.h
+    > +++ b/net/ncsi/internal.h
+    > @@ -68,6 +68,10 @@ enum {
+    >  	NCSI_MODE_MAX
+    >  };
+    >  
+    > +#define NCSI_OEM_MFR_MLX_ID             0x8119
+    > +#define NCSI_OEM_MLX_CMD_GET_MAC        0x1b00
+    > +#define NCSI_OEM_MLX_CMD_SET_AFFINITY   0x010700
+    
+        I gather this is part of the OEM command but it would be good to describe
+        what these bits mean. Is this command documented anywhere by Mellanox?
+    I will add more description here, please see in next patch. Yes Mellanox 
+    specification describes these commands.
 
-Thanks for the detailed review!
-Eddie
+    > +
+    >  struct ncsi_channel_version {
+    >  	u32 version;		/* Supported BCD encoded NCSI version */
+    >  	u32 alpha2;		/* Supported BCD encoded NCSI version */
+    > @@ -236,6 +240,7 @@ enum {
+    >  	ncsi_dev_state_probe_dp,
+    >  	ncsi_dev_state_config_sp	= 0x0301,
+    >  	ncsi_dev_state_config_cis,
+    > +	ncsi_dev_state_config_oem_gma,
+    >  	ncsi_dev_state_config_clear_vids,
+    >  	ncsi_dev_state_config_svf,
+    >  	ncsi_dev_state_config_ev,
+    > @@ -301,9 +306,9 @@ struct ncsi_cmd_arg {
+    >  	unsigned short       payload;     /* Command packet payload length */
+    >  	unsigned int         req_flags;   /* NCSI request properties       */
+    >  	union {
+    > -		unsigned char  bytes[16]; /* Command packet specific data  */
+    > -		unsigned short words[8];
+    > -		unsigned int   dwords[4];
+    > +		unsigned char  bytes[64]; /* Command packet specific data  */
+    > +		unsigned short words[32];
+    > +		unsigned int   dwords[16];
+    >  	};
+    >  };
+    >  
+    > diff --git a/net/ncsi/ncsi-cmd.c b/net/ncsi/ncsi-cmd.c
+    > index 7567ca63aae2..3205e22c1734 100644
+    > --- a/net/ncsi/ncsi-cmd.c
+    > +++ b/net/ncsi/ncsi-cmd.c
+    > @@ -211,6 +211,25 @@ static int ncsi_cmd_handler_snfc(struct sk_buff *skb,
+    >  	return 0;
+    >  }
+    >  
+    > +static int ncsi_cmd_handler_oem(struct sk_buff *skb,
+    > +				struct ncsi_cmd_arg *nca)
+    > +{
+    > +	struct ncsi_cmd_oem_pkt *cmd;
+    > +	unsigned int len;
+    > +
+    > +	len = sizeof(struct ncsi_cmd_pkt_hdr) + 4;
+    > +	if (nca->payload < 26)
+    > +		len += 26;
+    
+        This will have already happened in ncsi_alloc_command(), is this check
+        needed?
+    Yes it is needed to find length for skbuff data to initialize. 
+    ncsi_alloc_command() does the same and allocate skbuff.  
 
->
-> Thank you for all your work!
->
-> 	Hans
->
->> I was unable to cross compile v4l2-compliance for ARM with our OpenBMC
->> toolchain. Although bootstrap, configure, and make were successful, no binaries
->> were generated... I was able to build v4l-utils 1.12.3 from the OpenEmbedded
->> project, with the output below:
->>
->> v4l2-compliance SHA   : not available
->>
->> Driver Info:
->> 	Driver name   : aspeed-video
->> 	Card type     : Aspeed Video Engine
->> 	Bus info      : platform:aspeed-video
->> 	Driver version: 4.18.8
->> 	Capabilities  : 0x85200001
->> 		Video Capture
->> 		Read/Write
->> 		Streaming
->> 		Extended Pix Format
->> 		Device Capabilities
->> 	Device Caps   : 0x05200001
->> 		Video Capture
->> 		Read/Write
->> 		Streaming
->> 		Extended Pix Format
->>
->> Compliance test for device /dev/video0 (not using libv4l2):
->>
->> Required ioctls:
->> 	test VIDIOC_QUERYCAP: OK
->>
->> Allow for multiple opens:
->> 	test second video open: OK
->> 	test VIDIOC_QUERYCAP: OK
->> 	test VIDIOC_G/S_PRIORITY: OK
->> 	test for unlimited opens: OK
->>
->> Debug ioctls:
->> 	test VIDIOC_DBG_G/S_REGISTER: OK (Not Supported)
->> 	test VIDIOC_LOG_STATUS: OK (Not Supported)
->>
->> Input ioctls:
->> 	test VIDIOC_G/S_TUNER/ENUM_FREQ_BANDS: OK (Not Supported)
->> 	test VIDIOC_G/S_FREQUENCY: OK (Not Supported)
->> 	test VIDIOC_S_HW_FREQ_SEEK: OK (Not Supported)
->> 	test VIDIOC_ENUMAUDIO: OK (Not Supported)
->> 	test VIDIOC_G/S/ENUMINPUT: OK
->> 	test VIDIOC_G/S_AUDIO: OK (Not Supported)
->> 	Inputs: 1 Audio Inputs: 0 Tuners: 0
->>
->> Output ioctls:
->> 	test VIDIOC_G/S_MODULATOR: OK (Not Supported)
->> 	test VIDIOC_G/S_FREQUENCY: OK (Not Supported)
->> 	test VIDIOC_ENUMAUDOUT: OK (Not Supported)
->> 	test VIDIOC_G/S/ENUMOUTPUT: OK (Not Supported)
->> 	test VIDIOC_G/S_AUDOUT: OK (Not Supported)
->> 	Outputs: 0 Audio Outputs: 0 Modulators: 0
->>
->> Input/Output configuration ioctls:
->> 	test VIDIOC_ENUM/G/S/QUERY_STD: OK (Not Supported)
->> 	test VIDIOC_ENUM/G/S/QUERY_DV_TIMINGS: OK
->> 	test VIDIOC_DV_TIMINGS_CAP: OK
->> 	test VIDIOC_G/S_EDID: OK
->>
->> Test input 0:
->>
->> 	Control ioctls:
->> 		test VIDIOC_QUERY_EXT_CTRL/QUERYMENU: OK
->> 		test VIDIOC_QUERYCTRL: OK
->> 		test VIDIOC_G/S_CTRL: OK
->> 		test VIDIOC_G/S/TRY_EXT_CTRLS: OK
->> 		warn: ../../../v4l-utils-1.12.3/utils/v4l2-compliance/v4l2-test-controls.cpp(811): V4L2_CID_DV_RX_POWER_PRESENT not found for input 0
->> 		test VIDIOC_(UN)SUBSCRIBE_EVENT/DQEVENT: OK
->> 		test VIDIOC_G/S_JPEGCOMP: OK (Not Supported)
->> 		Standard Controls: 3 Private Controls: 0
->>
->> 	Format ioctls:
->> 		test VIDIOC_ENUM_FMT/FRAMESIZES/FRAMEINTERVALS: OK
->> 		test VIDIOC_G/S_PARM: OK
->> 		test VIDIOC_G_FBUF: OK (Not Supported)
->> 		test VIDIOC_G_FMT: OK
->> 		test VIDIOC_TRY_FMT: OK
->> 		test VIDIOC_S_FMT: OK
->> 		test VIDIOC_G_SLICED_VBI_CAP: OK (Not Supported)
->> 		test Cropping: OK (Not Supported)
->> 		test Composing: OK (Not Supported)
->> 		test Scaling: OK (Not Supported)
->>
->> 	Codec ioctls:
->> 		test VIDIOC_(TRY_)ENCODER_CMD: OK (Not Supported)
->> 		test VIDIOC_G_ENC_INDEX: OK (Not Supported)
->> 		test VIDIOC_(TRY_)DECODER_CMD: OK (Not Supported)
->>
->> 	Buffer ioctls:
->> 		test VIDIOC_REQBUFS/CREATE_BUFS/QUERYBUF: OK
->> 		test VIDIOC_EXPBUF: OK (Not Supported)
->>
->> Test input 0:
->>
->> Streaming ioctls:
->> 	test read/write: OK
->> 	test MMAP: OK
->> 	test USERPTR: OK (Not Supported)
->> 	test DMABUF: OK (Not Supported)
->>
->>
->> Total: 47, Succeeded: 47, Failed: 0, Warnings: 1
->>
->> Changes since v2:
->>   - Switch to streaming interface. This involved a lot of changes.
->>   - Rework memory allocation due to using videobuf2 buffers, but also only
->>     allocate the necessary size of source buffer rather than the max size
->>
->> Changes since v1:
->>   - Removed le32_to_cpu calls for JPEG header data
->>   - Reworked v4l2 ioctls to be compliant.
->>   - Added JPEG controls
->>   - Updated devicetree docs according to Rob's suggestions.
->>   - Added myself to MAINTAINERS
->>
->> Eddie James (2):
->>    dt-bindings: media: Add Aspeed Video Engine binding documentation
->>    media: platform: Add Aspeed Video Engine driver
->>
->>   .../devicetree/bindings/media/aspeed-video.txt     |   26 +
->>   MAINTAINERS                                        |    8 +
->>   drivers/media/platform/Kconfig                     |    8 +
->>   drivers/media/platform/Makefile                    |    1 +
->>   drivers/media/platform/aspeed-video.c              | 1645 ++++++++++++++++++++
->>   5 files changed, 1688 insertions(+)
->>   create mode 100644 Documentation/devicetree/bindings/media/aspeed-video.txt
->>   create mode 100644 drivers/media/platform/aspeed-video.c
->>
+    > +	else
+    > +		len += nca->payload;
+    > +
+    > +	cmd = skb_put_zero(skb, len);
+    > +	memcpy(cmd->data, nca->bytes, nca->payload);
+    > +	ncsi_cmd_build_header(&cmd->cmd.common, nca);
+    > +
+    > +	return 0;
+    > +}
+    > +
+    >  static struct ncsi_cmd_handler {
+    >  	unsigned char type;
+    >  	int           payload;
+    > @@ -244,7 +263,7 @@ static struct ncsi_cmd_handler {
+    >  	{ NCSI_PKT_CMD_GNS,    0, ncsi_cmd_handler_default },
+    >  	{ NCSI_PKT_CMD_GNPTS,  0, ncsi_cmd_handler_default },
+    >  	{ NCSI_PKT_CMD_GPS,    0, ncsi_cmd_handler_default },
+    > -	{ NCSI_PKT_CMD_OEM,    0, NULL                     },
+    > +	{ NCSI_PKT_CMD_OEM,   -1, ncsi_cmd_handler_oem     },
+    >  	{ NCSI_PKT_CMD_PLDM,   0, NULL                     },
+    >  	{ NCSI_PKT_CMD_GPUUID, 0, ncsi_cmd_handler_default }
+    >  };
+    > @@ -317,7 +336,8 @@ int ncsi_xmit_cmd(struct ncsi_cmd_arg *nca)
+    >  	}
+    >  
+    >  	/* Get packet payload length and allocate the request */
+    > -	nca->payload = nch->payload;
+    > +	if (nch->payload >= 0)
+    > +		nca->payload = nch->payload;
+    
+        I think with this there is a chance of nca->payload being uninitialised
+        and then used in ncsi_alloc_command(). Can you describe what the aim here
+        is?
+    I will add more description here.
+
+    >  	nr = ncsi_alloc_command(nca);
+    >  	if (!nr)
+    >  		return -ENOMEM;
+    > diff --git a/net/ncsi/ncsi-manage.c b/net/ncsi/ncsi-manage.c
+    > index 091284760d21..3b2b86560cc8 100644
+    > --- a/net/ncsi/ncsi-manage.c
+    > +++ b/net/ncsi/ncsi-manage.c
+    > @@ -635,6 +635,58 @@ static int set_one_vid(struct ncsi_dev_priv *ndp, struct ncsi_channel *nc,
+    >  	return 0;
+    >  }
+    >  
+    > +#if IS_ENABLED(CONFIG_NCSI_OEM_CMD_GET_MAC)
+    > +/* NCSI Facebook OEM APIs */
+    
+        Are these Facebook OEM commands or Mellanox OEM commands?
+    Will be taken care in next patch
+
+    > +static void get_mac_address_oem_mlx(struct ncsi_dev_priv *ndp)
+    > +{
+    > +	struct ncsi_cmd_arg nca;
+    > +	int ret = 0;
+    > +
+    > +	memset(&nca, 0, sizeof(struct ncsi_cmd_arg));
+    > +	nca.ndp = ndp;
+    > +	nca.channel = ndp->active_channel->id;
+    > +	nca.package = ndp->active_package->id;
+    > +	nca.req_flags = NCSI_REQ_FLAG_EVENT_DRIVEN;
+    > +	nca.type = NCSI_PKT_CMD_OEM;
+    > +	nca.payload = 8;
+    > +
+    > +	nca.dwords[0] = ntohl(NCSI_OEM_MFR_MLX_ID);
+    > +	nca.dwords[1] = ntohl(NCSI_OEM_MLX_CMD_GET_MAC);
+    > +
+    > +	ret = ncsi_xmit_cmd(&nca);
+    > +	if (ret)
+    > +		netdev_err(ndp->ndev.dev,
+    > +			   "NCSI: Failed to transmit cmd 0x%x during probe\n",
+    > +			   nca.type);
+    > +}
+    > +
+    > +static void set_mac_affinity_mlx(struct ncsi_dev_priv *ndp)
+    > +{
+    > +	struct ncsi_cmd_arg nca;
+    > +	int ret = 0;
+    > +
+    > +	memset(&nca, 0, sizeof(struct ncsi_cmd_arg));
+    
+        Ah I see we initialise nca, and thus payload here - the path between
+        these two points in the driver isn't super obvious (not this patch's
+        fault :) ), it might be better to explicitly mention/handle this where we
+        use payload later on.
+    Yes, I agree, will add more details.
+
+    > +	nca.ndp = ndp;
+    > +	nca.channel = ndp->active_channel->id;
+    > +	nca.package = ndp->active_package->id;
+    
+        These should probably be set in ncsi_configure_channel (eg. see the CIS
+        state before these are called).
+    These functions are being called from ncsi_configure_channel() only. We 
+    can either initialize nca there in ncsi_configure_channel() function and pass 
+    nca as function parameter or initialize nca inside function and populate 
+    required field.
+
+    > +	nca.req_flags = NCSI_REQ_FLAG_EVENT_DRIVEN;
+    > +	nca.type = NCSI_PKT_CMD_OEM;
+    > +	nca.payload = 60;
+    > +
+    > +	nca.dwords[0] = ntohl(NCSI_OEM_MFR_MLX_ID);
+    > +	nca.dwords[1] = ntohl(NCSI_OEM_MLX_CMD_SET_AFFINITY);
+    > +
+    > +	memcpy(&(nca.bytes[8]), ndp->ndev.dev->dev_addr, ETH_ALEN);
+    > +	nca.bytes[14] = 0x09;
+    > +
+    > +	ret = ncsi_xmit_cmd(&nca);
+    > +	if (ret)
+    > +		netdev_err(ndp->ndev.dev,
+    > +			   "NCSI: Failed to transmit cmd 0x%x during probe\n",
+    > +				   nca.type);
+    > +}
+    > +#endif /* CONFIG_NCSI_OEM_CMD_GET_MAC */
+    > +
+    >  static void ncsi_configure_channel(struct ncsi_dev_priv *ndp)
+    >  {
+    >  	struct ncsi_dev *nd = &ndp->ndev;
+    > @@ -685,6 +737,22 @@ static void ncsi_configure_channel(struct ncsi_dev_priv *ndp)
+    >  			goto error;
+    >  		}
+    >  
+    > +#if IS_ENABLED(CONFIG_NCSI_OEM_CMD_GET_MAC)
+    > +		/* Check Manufacture id if it is Mellanox then
+    > +		 * get and set mac address. To Do: Add code for
+    > +		 * other types of card if required
+    > +		 */
+    > +		if (nc->version.mf_id == NCSI_OEM_MFR_MLX_ID)
+    > +			nd->state = ncsi_dev_state_config_oem_gma;
+    > +		else
+    > +			nd->state = ncsi_dev_state_config_clear_vids;
+    > +		break;
+    > +	case ncsi_dev_state_config_oem_gma:
+    > +		ndp->pending_req_num = 2;
+    > +		get_mac_address_oem_mlx(ndp);
+    > +		msleep(500);
+    
+        Is this msleep() required?
+    It is required to make sure previous command completed. 
+    Will try to handle it differently
+
+    > +		set_mac_affinity_mlx(ndp);
+    
+        Since this *sets* the MAC address, should we name the state and config
+        option more accurately? How does this OEM command interact with the NCSI
+        set-mac-address command?
+        Does this command depend on the previous get_mac_address_oem_mlx()
+        command succeeding?
+    It is independent of Set_mac_address. Yes it depends on succession 
+    of get_mac_address_oem_mlx() that's why msleep was put there.
+    
+    > +#endif /* CONFIG_NCSI_OEM_CMD_GET_MAC */
+    >  		nd->state = ncsi_dev_state_config_clear_vids;
+    >  		break;
+    >  	case ncsi_dev_state_config_clear_vids:
+    > diff --git a/net/ncsi/ncsi-pkt.h b/net/ncsi/ncsi-pkt.h
+    > index 91b4b66438df..0653a893eb12 100644
+    > --- a/net/ncsi/ncsi-pkt.h
+    > +++ b/net/ncsi/ncsi-pkt.h
+    > @@ -151,6 +151,22 @@ struct ncsi_cmd_snfc_pkt {
+    >  	unsigned char           pad[22];
+    >  };
+    >  
+    > +/* Oem Request Command */
+    
+        In general, s/Oem/OEM
+    Sure, will be done.
+
+    > +struct ncsi_cmd_oem_pkt {
+    > +	struct ncsi_cmd_pkt_hdr cmd;         /* Command header    */
+    > +	unsigned char           data[64];    /* OEM Payload Data  */
+    > +	__be32                  checksum;    /* Checksum          */
+    > +};
+    > +
+    > +/* Oem Response Packet */
+    > +struct ncsi_rsp_oem_pkt {
+    > +	struct ncsi_rsp_pkt_hdr rsp;         /* Command header    */
+    > +	__be32                  mfr_id;      /* Manufacture ID    */
+    > +	__be32                  oem_cmd;     /* oem command       */
+    > +	unsigned char           data[32];    /* Payload data      */
+    > +	__be32                  checksum;    /* Checksum          */
+    > +};
+    > +
+    >  /* Get Link Status */
+    >  struct ncsi_rsp_gls_pkt {
+    >  	struct ncsi_rsp_pkt_hdr rsp;        /* Response header   */
+    > diff --git a/net/ncsi/ncsi-rsp.c b/net/ncsi/ncsi-rsp.c
+    > index 930c1d3796f0..3b94c96b9c7f 100644
+    > --- a/net/ncsi/ncsi-rsp.c
+    > +++ b/net/ncsi/ncsi-rsp.c
+    > @@ -596,6 +596,37 @@ static int ncsi_rsp_handler_snfc(struct ncsi_request *nr)
+    >  	return 0;
+    >  }
+    >  
+    > +static int ncsi_rsp_handler_oem(struct ncsi_request *nr)
+    > +{
+    > +	struct ncsi_rsp_oem_pkt *rsp;
+    > +	struct ncsi_dev_priv *ndp = nr->ndp;
+    > +	struct net_device *ndev = ndp->ndev.dev;
+    > +	int ret = 0;
+    > +	unsigned int oem_cmd, mfr_id;
+    > +	const struct net_device_ops *ops = ndev->netdev_ops;
+    > +	struct sockaddr saddr;
+    > +
+    > +	/* Get the response header */
+    > +	rsp = (struct ncsi_rsp_oem_pkt *)skb_network_header(nr->rsp);
+    > +
+    > +	oem_cmd = ntohl(rsp->oem_cmd);
+    > +	mfr_id = ntohl(rsp->mfr_id);
+    > +
+    > +	/* Check for Mellanox manufacturer id */
+    > +	if (mfr_id != NCSI_OEM_MFR_MLX_ID)
+    > +		return 0;
+    > +
+    > +	if (oem_cmd == NCSI_OEM_MLX_CMD_GET_MAC) {
+    > +		saddr.sa_family = ndev->type;
+    > +		ndev->priv_flags |= IFF_LIVE_ADDR_CHANGE;
+    > +		memcpy(saddr.sa_data, &(rsp->data[4]), ETH_ALEN);
+    > +		ret = ops->ndo_set_mac_address(ndev, &saddr);
+    > +		if (ret < 0)
+    > +			netdev_warn(ndev, "NCSI: 'Writing mac address to device failed\n");
+    > +	}
+    > +	return ret;
+    > +}
+    > +
+    >  static int ncsi_rsp_handler_gvi(struct ncsi_request *nr)
+    >  {
+    >  	struct ncsi_rsp_gvi_pkt *rsp;
+    > @@ -932,7 +963,7 @@ static struct ncsi_rsp_handler {
+    >  	{ NCSI_PKT_RSP_GNS,   172, ncsi_rsp_handler_gns     },
+    >  	{ NCSI_PKT_RSP_GNPTS, 172, ncsi_rsp_handler_gnpts   },
+    >  	{ NCSI_PKT_RSP_GPS,     8, ncsi_rsp_handler_gps     },
+    > -	{ NCSI_PKT_RSP_OEM,     0, NULL                     },
+    > +	{ NCSI_PKT_RSP_OEM,    -1, ncsi_rsp_handler_oem     },
+    >  	{ NCSI_PKT_RSP_PLDM,    0, NULL                     },
+    >  	{ NCSI_PKT_RSP_GPUUID, 20, ncsi_rsp_handler_gpuuid  }
+    >  };
+    
+    
+    
 
