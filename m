@@ -1,1008 +1,1863 @@
-From: Justin.Lee1@Dell.com <Justin.Lee1@Dell.com>
-Date: Fri, 28 Sep 2018 16:06:46 +0000
-Subject: [PATCH net] net/ncsi: Extend NC-SI Netlink interface to allow
- user space to send NC-SI command
-In-Reply-To: <6e0a46384c10d380c16b07c0bed3a4f30f53f0cc.camel@mendozajonas.com>
-References: <a2f68c5eb785436ea248cb46b73ea246@AUSX13MPS306.AMER.DELL.COM>
- <6e0a46384c10d380c16b07c0bed3a4f30f53f0cc.camel@mendozajonas.com>
-Message-ID: <ce04a3467a584e8e96bed902fd0e55a3@AUSX13MPS306.AMER.DELL.COM>
+From: Eddie James <eajames@linux.vnet.ibm.com>
+Date: Fri, 28 Sep 2018 11:06:40 -0500
+Subject: [PATCH v3 2/2] media: platform: Add Aspeed Video Engine driver
+In-Reply-To: <a78d4c7a-ac58-c23d-a683-23dce54be993@xs4all.nl>
+References: <1537903629-14003-1-git-send-email-eajames@linux.ibm.com>
+ <1537903629-14003-3-git-send-email-eajames@linux.ibm.com>
+ <a78d4c7a-ac58-c23d-a683-23dce54be993@xs4all.nl>
+Message-ID: <b5ca3675-b27c-684b-559e-5dbd6876fd08@linux.vnet.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Samuel,
-
-Please see my comment below.
-
-Thanks,
-Justin
 
 
-> On Thu, 2018-09-27 at 21:08 +0000, Justin.Lee1 at Dell.com wrote:
-> > The new command (NCSI_CMD_SEND_CMD) is added to allow user space application 
-> > to send NC-SI command to the network card.
-> > Also, add a new attribute (NCSI_ATTR_DATA) for transferring request and response.
-> > 
-> > The work flow is as below. 
-> > 
-> > Request:
-> > User space application -> Netlink interface (msg)
-> >                                               -> new Netlink handler - ncsi_send_cmd_nl()
-> >                                               -> ncsi_xmit_cmd()
-> > Response:
-> > Response received - ncsi_rcv_rsp() -> internal response handler - ncsi_rsp_handler_xxx()
-> >                                                                         -> ncsi_rsp_handler_netlink()
-> >                                                                         -> ncsi_send_netlink_rsp ()
-> >                                                                         -> Netlink interface (msg)
-> >                                                                         -> user space application
-> > Command timeout - ncsi_request_timeout() -> ncsi_send_netlink_timeout ()
-> >                                                                                             -> Netlink interface (msg with zero data length)
-> >                                                                                             -> user space application
-> > Error:
-> > Error detected -> ncsi_send_netlink_err () -> Netlink interface (err msg)
-> >                                                                                        -> user space application
-> > 
-> > 
-> > Signed-off-by: Justin Lee <justin.lee1@dell.com>
-> > 
-> 
-> Hi Justin,
-> 
-> Thanks for posting this on the list! The overall design looks good and so
-> far looks like it should fit relatively well with the other OEM command
-> patch. I'll try and run some OEM commands against my machine.
-> Some comments below:
-> 
-> > 
-> > ---
-> >  include/uapi/linux/ncsi.h |   3 +
-> >  net/ncsi/internal.h       |  12 ++-
-> >  net/ncsi/ncsi-aen.c       |  10 ++-
-> >  net/ncsi/ncsi-cmd.c       | 106 ++++++++++++++++--------
-> >  net/ncsi/ncsi-manage.c    |  74 ++++++++++++++---
-> >  net/ncsi/ncsi-netlink.c   | 199 +++++++++++++++++++++++++++++++++++++++++++++-
-> >  net/ncsi/ncsi-netlink.h   |   4 +
-> >  net/ncsi/ncsi-rsp.c       |  70 ++++++++++++++--
-> >  8 files changed, 420 insertions(+), 58 deletions(-)
-> > 
-> > diff --git a/include/uapi/linux/ncsi.h b/include/uapi/linux/ncsi.h
-> > index 4c292ec..4992bfc 100644
-> > --- a/include/uapi/linux/ncsi.h
-> > +++ b/include/uapi/linux/ncsi.h
-> > @@ -30,6 +30,7 @@ enum ncsi_nl_commands {
-> >  	NCSI_CMD_PKG_INFO,
-> >  	NCSI_CMD_SET_INTERFACE,
-> >  	NCSI_CMD_CLEAR_INTERFACE,
-> > +	NCSI_CMD_SEND_CMD,
-> >  
-> >  	__NCSI_CMD_AFTER_LAST,
-> >  	NCSI_CMD_MAX = __NCSI_CMD_AFTER_LAST - 1
-> > @@ -43,6 +44,7 @@ enum ncsi_nl_commands {
-> >   * @NCSI_ATTR_PACKAGE_LIST: nested array of NCSI_PKG_ATTR attributes
-> >   * @NCSI_ATTR_PACKAGE_ID: package ID
-> >   * @NCSI_ATTR_CHANNEL_ID: channel ID
-> > + * @NCSI_ATTR_DATA: command payload
-> >   * @NCSI_ATTR_MAX: highest attribute number
-> >   */
-> >  enum ncsi_nl_attrs {
-> > @@ -51,6 +53,7 @@ enum ncsi_nl_attrs {
-> >  	NCSI_ATTR_PACKAGE_LIST,
-> >  	NCSI_ATTR_PACKAGE_ID,
-> >  	NCSI_ATTR_CHANNEL_ID,
-> > +	NCSI_ATTR_DATA,
-> >  
-> >  	__NCSI_ATTR_AFTER_LAST,
-> >  	NCSI_ATTR_MAX = __NCSI_ATTR_AFTER_LAST - 1
-> > diff --git a/net/ncsi/internal.h b/net/ncsi/internal.h
-> > index 8055e39..20ce735 100644
-> > --- a/net/ncsi/internal.h
-> > +++ b/net/ncsi/internal.h
-> > @@ -215,12 +215,17 @@ struct ncsi_request {
-> >  	unsigned char        id;      /* Request ID - 0 to 255           */
-> >  	bool                 used;    /* Request that has been assigned  */
-> >  	unsigned int         flags;   /* NCSI request property           */
-> > -#define NCSI_REQ_FLAG_EVENT_DRIVEN	1
-> > +#define NCSI_REQ_FLAG_EVENT_DRIVEN		1
-> > +#define NCSI_REQ_FLAG_NETLINK_DRIVEN	2
-> >  	struct ncsi_dev_priv *ndp;    /* Associated NCSI device          */
-> >  	struct sk_buff       *cmd;    /* Associated NCSI command packet  */
-> >  	struct sk_buff       *rsp;    /* Associated NCSI response packet */
-> >  	struct timer_list    timer;   /* Timer on waiting for response   */
-> >  	bool                 enabled; /* Time has been enabled or not    */
-> > +
-> > +	u32                  snd_seq;     /* netlink sending sequence number */
-> > +	u32                  snd_portid;  /* netlink portid of sender        */
-> > +	struct nlmsghdr      nlhdr;       /* netlink message header          */
-> >  };
-> >  
-> >  enum {
-> > @@ -301,10 +306,13 @@ struct ncsi_cmd_arg {
-> >  	unsigned short       payload;     /* Command packet payload length */
-> >  	unsigned int         req_flags;   /* NCSI request properties       */
-> >  	union {
-> > -		unsigned char  bytes[16]; /* Command packet specific data  */
-> > +		unsigned char  bytes[16];     /* Command packet specific data  */
-> >  		unsigned short words[8];
-> >  		unsigned int   dwords[4];
-> >  	};
-> > +
-> > +	unsigned char        *data;       /* Netlink data                  */
-> > +	struct genl_info     *info;       /* Netlink information           */
-> >  };
-> >  
-> >  extern struct list_head ncsi_dev_list;
-> > diff --git a/net/ncsi/ncsi-aen.c b/net/ncsi/ncsi-aen.c
-> > index 25e483e..b5ec193 100644
-> > --- a/net/ncsi/ncsi-aen.c
-> > +++ b/net/ncsi/ncsi-aen.c
-> > @@ -16,6 +16,7 @@
-> >  #include <net/ncsi.h>
-> >  #include <net/net_namespace.h>
-> >  #include <net/sock.h>
-> > +#include <net/genetlink.h>
-> >  
-> >  #include "internal.h"
-> >  #include "ncsi-pkt.h"
-> > @@ -73,8 +74,8 @@ static int ncsi_aen_handler_lsc(struct ncsi_dev_priv *ndp,
-> >  	ncm->data[2] = data;
-> >  	ncm->data[4] = ntohl(lsc->oem_status);
-> >  
-> > -	netdev_dbg(ndp->ndev.dev, "NCSI: LSC AEN - channel %u state %s\n",
-> > -		   nc->id, data & 0x1 ? "up" : "down");
-> > +	netdev_dbg(ndp->ndev.dev, "NCSI: LSC AEN - pkg %u ch %u state %s\n",
-> > +		   nc->package->id, nc->id, data & 0x1 ? "up" : "down");
-> 
-> There's a few places where you've changed or added some debug statements;
-> these are good but could probably be in a separate patch since not all of
-> them are related to the OEM command handling.
-> 
+On 09/28/2018 06:30 AM, Hans Verkuil wrote:
+> On 09/25/2018 09:27 PM, Eddie James wrote:
+>> The Video Engine (VE) embedded in the Aspeed AST2400 and AST2500 SOCs
+>> can capture and compress video data from digital or analog sources. With
+>> the Aspeed chip acting a service processor, the Video Engine can capture
+>> the host processor graphics output.
+>>
+>> Add a V4L2 driver to capture video data and compress it to JPEG images.
+>> Make the video frames available through the V4L2 streaming interface.
+>>
+>> Signed-off-by: Eddie James <eajames@linux.ibm.com>
+>> ---
+>>   MAINTAINERS                           |    8 +
+>>   drivers/media/platform/Kconfig        |    8 +
+>>   drivers/media/platform/Makefile       |    1 +
+>>   drivers/media/platform/aspeed-video.c | 1645 +++++++++++++++++++++++++++++++++
+>>   4 files changed, 1662 insertions(+)
+>>   create mode 100644 drivers/media/platform/aspeed-video.c
+>>
+>> diff --git a/MAINTAINERS b/MAINTAINERS
+>> index 903d647..a9945af 100644
+>> --- a/MAINTAINERS
+>> +++ b/MAINTAINERS
+>> @@ -2367,6 +2367,14 @@ S:	Maintained
+>>   F:	Documentation/hwmon/asc7621
+>>   F:	drivers/hwmon/asc7621.c
+>>   
+>> +ASPEED VIDEO ENGINE DRIVER
+>> +M:	Eddie James <eajames@linux.ibm.com>
+>> +L:	linux-media at vger.kernel.org
+>> +L:	openbmc at lists.ozlabs.org (moderated for non-subscribers)
+>> +S:	Maintained
+>> +F:	drivers/media/platform/aspeed-video.c
+>> +F:	Documentation/devicetree/bindings/media/aspeed-video.txt
+>> +
+>>   ASUS NOTEBOOKS AND EEEPC ACPI/WMI EXTRAS DRIVERS
+>>   M:	Corentin Chary <corentin.chary@gmail.com>
+>>   L:	acpi4asus-user at lists.sourceforge.net
+>> diff --git a/drivers/media/platform/Kconfig b/drivers/media/platform/Kconfig
+>> index 936675d..f211253 100644
+>> --- a/drivers/media/platform/Kconfig
+>> +++ b/drivers/media/platform/Kconfig
+>> @@ -32,6 +32,14 @@ source "drivers/media/platform/davinci/Kconfig"
+>>   
+>>   source "drivers/media/platform/omap/Kconfig"
+>>   
+>> +config VIDEO_ASPEED
+>> +	tristate "Aspeed AST2400 and AST2500 Video Engine driver"
+>> +	depends on VIDEO_V4L2
+>> +	help
+>> +	  Support for the Aspeed Video Engine (VE) embedded in the Aspeed
+>> +	  AST2400 and AST2500 SOCs. The VE can capture and compress video data
+>> +	  from digital or analog sources.
+>> +
+>>   config VIDEO_SH_VOU
+>>   	tristate "SuperH VOU video output driver"
+>>   	depends on MEDIA_CAMERA_SUPPORT
+>> diff --git a/drivers/media/platform/Makefile b/drivers/media/platform/Makefile
+>> index 6ab6200..2973953 100644
+>> --- a/drivers/media/platform/Makefile
+>> +++ b/drivers/media/platform/Makefile
+>> @@ -3,6 +3,7 @@
+>>   # Makefile for the video capture/playback device drivers.
+>>   #
+>>   
+>> +obj-$(CONFIG_VIDEO_ASPEED)		+= aspeed-video.o
+>>   obj-$(CONFIG_VIDEO_CADENCE)		+= cadence/
+>>   obj-$(CONFIG_VIDEO_VIA_CAMERA) += via-camera.o
+>>   obj-$(CONFIG_VIDEO_CAFE_CCIC) += marvell-ccic/
+>> diff --git a/drivers/media/platform/aspeed-video.c b/drivers/media/platform/aspeed-video.c
+>> new file mode 100644
+>> index 0000000..ad82cf3
+>> --- /dev/null
+>> +++ b/drivers/media/platform/aspeed-video.c
+>> @@ -0,0 +1,1645 @@
+>> +// SPDX-License-Identifier: GPL-2.0+
+>> +
+>> +#include <linux/atomic.h>
+>> +#include <linux/bitfield.h>
+>> +#include <linux/clk.h>
+>> +#include <linux/delay.h>
+>> +#include <linux/device.h>
+>> +#include <linux/dma-mapping.h>
+>> +#include <linux/interrupt.h>
+>> +#include <linux/jiffies.h>
+>> +#include <linux/module.h>
+>> +#include <linux/mutex.h>
+>> +#include <linux/of.h>
+>> +#include <linux/of_irq.h>
+>> +#include <linux/of_reserved_mem.h>
+>> +#include <linux/platform_device.h>
+>> +#include <linux/reset.h>
+>> +#include <linux/sched.h>
+>> +#include <linux/spinlock.h>
+>> +#include <linux/string.h>
+>> +#include <linux/v4l2-controls.h>
+>> +#include <linux/videodev2.h>
+>> +#include <linux/wait.h>
+>> +#include <linux/workqueue.h>
+>> +#include <media/v4l2-ctrls.h>
+>> +#include <media/v4l2-dev.h>
+>> +#include <media/v4l2-device.h>
+>> +#include <media/v4l2-event.h>
+>> +#include <media/v4l2-ioctl.h>
+>> +#include <media/videobuf2-core.h>
+> You can drop this header
+>
+>> +#include <media/videobuf2-dma-contig.h>
+>> +#include <media/videobuf2-v4l2.h>
+> and this header since videobuf2-dma-contig.h is sufficient.
+>
+>> +
+>> +#define DEVICE_NAME			"aspeed-video"
+>> +
+>> +#define ASPEED_VIDEO_JPEG_NUM_QUALITIES	12
+>> +#define ASPEED_VIDEO_JPEG_HEADER_SIZE	10
+>> +#define ASPEED_VIDEO_JPEG_QUANT_SIZE	116
+>> +#define ASPEED_VIDEO_JPEG_DCT_SIZE	34
+>> +
+>> +#define MAX_FRAME_RATE			60
+>> +#define MAX_HEIGHT			1200
+>> +#define MAX_WIDTH			1920
+>> +
+>> +#define NUM_POLARITY_CHECKS		10
+>> +#define INVALID_RESOLUTION_RETRIES	2
+>> +#define INVALID_RESOLUTION_DELAY	msecs_to_jiffies(250)
+>> +#define RESOLUTION_CHANGE_DELAY		msecs_to_jiffies(500)
+>> +#define MODE_DETECT_TIMEOUT		msecs_to_jiffies(500)
+>> +#define STOP_TIMEOUT			msecs_to_jiffies(250)
+>> +#define DIRECT_FETCH_THRESHOLD		0x0c0000 /* 1024 * 768 */
+>> +
+>> +#define VE_MAX_SRC_BUFFER_SIZE		0x8ca000 /* 1920 * 1200, 32bpp */
+>> +#define VE_JPEG_HEADER_SIZE		0x006000 /* 512 * 12 * 4 */
+>> +
+>> +#define VE_PROTECTION_KEY		0x000
+>> +#define  VE_PROTECTION_KEY_UNLOCK	0x1a038aa8
+>> +
+>> +#define VE_SEQ_CTRL			0x004
+>> +#define  VE_SEQ_CTRL_TRIG_MODE_DET	BIT(0)
+>> +#define  VE_SEQ_CTRL_TRIG_CAPTURE	BIT(1)
+>> +#define  VE_SEQ_CTRL_FORCE_IDLE		BIT(2)
+>> +#define  VE_SEQ_CTRL_MULT_FRAME		BIT(3)
+>> +#define  VE_SEQ_CTRL_TRIG_COMP		BIT(4)
+>> +#define  VE_SEQ_CTRL_AUTO_COMP		BIT(5)
+>> +#define  VE_SEQ_CTRL_EN_WATCHDOG	BIT(7)
+>> +#define  VE_SEQ_CTRL_YUV420		BIT(10)
+>> +#define  VE_SEQ_CTRL_COMP_FMT		GENMASK(11, 10)
+>> +#define  VE_SEQ_CTRL_HALT		BIT(12)
+>> +#define  VE_SEQ_CTRL_EN_WATCHDOG_COMP	BIT(14)
+>> +#define  VE_SEQ_CTRL_TRIG_JPG		BIT(15)
+>> +#define  VE_SEQ_CTRL_CAP_BUSY		BIT(16)
+>> +#define  VE_SEQ_CTRL_COMP_BUSY		BIT(18)
+>> +
+>> +#ifdef CONFIG_MACH_ASPEED_G5
+>> +#define  VE_SEQ_CTRL_JPEG_MODE		BIT(13)	/* AST2500 */
+>> +#else
+>> +#define  VE_SEQ_CTRL_JPEG_MODE		BIT(8)	/* AST2400 */
+>> +#endif /* CONFIG_MACH_ASPEED_G5 */
+>> +
+>> +#define VE_CTRL				0x008
+>> +#define  VE_CTRL_HSYNC_POL		BIT(0)
+>> +#define  VE_CTRL_VSYNC_POL		BIT(1)
+>> +#define  VE_CTRL_SOURCE			BIT(2)
+>> +#define  VE_CTRL_INT_DE			BIT(4)
+>> +#define  VE_CTRL_DIRECT_FETCH		BIT(5)
+>> +#define  VE_CTRL_YUV			BIT(6)
+>> +#define  VE_CTRL_RGB			BIT(7)
+>> +#define  VE_CTRL_CAPTURE_FMT		GENMASK(7, 6)
+>> +#define  VE_CTRL_AUTO_OR_CURSOR		BIT(8)
+>> +#define  VE_CTRL_CLK_INVERSE		BIT(11)
+>> +#define  VE_CTRL_CLK_DELAY		GENMASK(11, 9)
+>> +#define  VE_CTRL_INTERLACE		BIT(14)
+>> +#define  VE_CTRL_HSYNC_POL_CTRL		BIT(15)
+>> +#define  VE_CTRL_FRC			GENMASK(23, 16)
+>> +
+>> +#define VE_TGS_0			0x00c
+>> +#define VE_TGS_1			0x010
+>> +#define  VE_TGS_FIRST			GENMASK(28, 16)
+>> +#define  VE_TGS_LAST			GENMASK(12, 0)
+>> +
+>> +#define VE_SCALING_FACTOR		0x014
+>> +#define VE_SCALING_FILTER0		0x018
+>> +#define VE_SCALING_FILTER1		0x01c
+>> +#define VE_SCALING_FILTER2		0x020
+>> +#define VE_SCALING_FILTER3		0x024
+>> +
+>> +#define VE_CAP_WINDOW			0x030
+>> +#define VE_COMP_WINDOW			0x034
+>> +#define VE_COMP_PROC_OFFSET		0x038
+>> +#define VE_COMP_OFFSET			0x03c
+>> +#define VE_JPEG_ADDR			0x040
+>> +#define VE_SRC0_ADDR			0x044
+>> +#define VE_SRC_SCANLINE_OFFSET		0x048
+>> +#define VE_SRC1_ADDR			0x04c
+>> +#define VE_COMP_ADDR			0x054
+>> +
+>> +#define VE_STREAM_BUF_SIZE		0x058
+>> +#define  VE_STREAM_BUF_SIZE_N_PACKETS	GENMASK(5, 3)
+>> +#define  VE_STREAM_BUF_SIZE_P_SIZE	GENMASK(2, 0)
+>> +
+>> +#define VE_COMP_CTRL			0x060
+>> +#define  VE_COMP_CTRL_VQ_DCT_ONLY	BIT(0)
+>> +#define  VE_COMP_CTRL_VQ_4COLOR		BIT(1)
+>> +#define  VE_COMP_CTRL_QUANTIZE		BIT(2)
+>> +#define  VE_COMP_CTRL_EN_BQ		BIT(4)
+>> +#define  VE_COMP_CTRL_EN_CRYPTO		BIT(5)
+>> +#define  VE_COMP_CTRL_DCT_CHR		GENMASK(10, 6)
+>> +#define  VE_COMP_CTRL_DCT_LUM		GENMASK(15, 11)
+>> +#define  VE_COMP_CTRL_EN_HQ		BIT(16)
+>> +#define  VE_COMP_CTRL_RSVD		BIT(19)
+>> +#define  VE_COMP_CTRL_ENCODE		GENMASK(21, 20)
+>> +#define  VE_COMP_CTRL_HQ_DCT_CHR	GENMASK(26, 22)
+>> +#define  VE_COMP_CTRL_HQ_DCT_LUM	GENMASK(31, 27)
+>> +
+>> +#define VE_OFFSET_COMP_STREAM		0x078
+>> +
+>> +#define VE_SRC_LR_EDGE_DET		0x090
+>> +#define  VE_SRC_LR_EDGE_DET_LEFT	GENMASK(11, 0)
+>> +#define  VE_SRC_LR_EDGE_DET_NO_V	BIT(12)
+>> +#define  VE_SRC_LR_EDGE_DET_NO_H	BIT(13)
+>> +#define  VE_SRC_LR_EDGE_DET_NO_DISP	BIT(14)
+>> +#define  VE_SRC_LR_EDGE_DET_NO_CLK	BIT(15)
+>> +#define  VE_SRC_LR_EDGE_DET_RT_SHF	16
+>> +#define  VE_SRC_LR_EDGE_DET_RT		GENMASK(27, VE_SRC_LR_EDGE_DET_RT_SHF)
+>> +#define  VE_SRC_LR_EDGE_DET_INTERLACE	BIT(31)
+>> +
+>> +#define VE_SRC_TB_EDGE_DET		0x094
+>> +#define  VE_SRC_TB_EDGE_DET_TOP		GENMASK(12, 0)
+>> +#define  VE_SRC_TB_EDGE_DET_BOT_SHF	16
+>> +#define  VE_SRC_TB_EDGE_DET_BOT		GENMASK(28, VE_SRC_TB_EDGE_DET_BOT_SHF)
+>> +
+>> +#define VE_MODE_DETECT_STATUS		0x098
+>> +#define  VE_MODE_DETECT_STATUS_VSYNC	BIT(28)
+>> +#define  VE_MODE_DETECT_STATUS_HSYNC	BIT(29)
+>> +
+>> +#define VE_INTERRUPT_CTRL		0x304
+>> +#define VE_INTERRUPT_STATUS		0x308
+>> +#define  VE_INTERRUPT_MODE_DETECT_WD	BIT(0)
+>> +#define  VE_INTERRUPT_CAPTURE_COMPLETE	BIT(1)
+>> +#define  VE_INTERRUPT_COMP_READY	BIT(2)
+>> +#define  VE_INTERRUPT_COMP_COMPLETE	BIT(3)
+>> +#define  VE_INTERRUPT_MODE_DETECT	BIT(4)
+>> +#define  VE_INTERRUPT_FRAME_COMPLETE	BIT(5)
+>> +#define  VE_INTERRUPT_DECODE_ERR	BIT(6)
+>> +#define  VE_INTERRUPT_HALT_READY	BIT(8)
+>> +#define  VE_INTERRUPT_HANG_WD		BIT(9)
+>> +#define  VE_INTERRUPT_STREAM_DESC	BIT(10)
+>> +#define  VE_INTERRUPT_VSYNC_DESC	BIT(11)
+>> +
+>> +#define VE_MODE_DETECT			0x30c
+>> +#define VE_MEM_RESTRICT_START		0x310
+>> +#define VE_MEM_RESTRICT_END		0x314
+>> +
+>> +enum {
+>> +	VIDEO_MODE_DETECT_DONE,
+>> +	VIDEO_RES_CHANGE,
+>> +	VIDEO_STREAMING,
+>> +	VIDEO_FRAME_INPRG,
+>> +};
+>> +
+>> +struct aspeed_video_addr {
+>> +	unsigned int size;
+>> +	dma_addr_t dma;
+>> +	void *virt;
+>> +};
+>> +
+>> +struct aspeed_video_buffer {
+>> +	struct vb2_v4l2_buffer vb;
+>> +	struct list_head link;
+>> +};
+>> +
+>> +#define to_aspeed_video_buffer(x) \
+>> +	container_of((x), struct aspeed_video_buffer, vb)
+>> +
+>> +struct aspeed_video {
+>> +	void __iomem *base;
+>> +	struct clk *eclk;
+>> +	struct clk *vclk;
+>> +	struct reset_control *rst;
+>> +
+>> +	struct device *dev;
+>> +	struct v4l2_ctrl_handler ctrl_handler;
+>> +	struct v4l2_device v4l2_dev;
+>> +	struct v4l2_pix_format v4l2_fmt;
+> Nitpick: I'd rename v4l2_fmt to pix_fmt. v4l2_fmt suggests that it is a v4l2_format
+> struct, which it no longer is.
+>
+>> +	struct vb2_queue queue;
+>> +	struct video_device vdev;
+>> +	struct mutex video_lock;
+>> +
+>> +	atomic_t clients;
+>> +	wait_queue_head_t wait;
+>> +	spinlock_t lock;
+>> +	struct delayed_work res_work;
+>> +	struct list_head buffers;
+>> +	unsigned long flags;
+>> +	unsigned int sequence;
+>> +
+>> +	unsigned int max_compressed_size;
+>> +	struct aspeed_video_addr srcs[2];
+>> +	struct aspeed_video_addr jpeg;
+>> +
+>> +	bool yuv420;
+>> +	unsigned int frame_rate;
+>> +	unsigned int jpeg_quality;
+>> +	unsigned int height;
+>> +	unsigned int width;
+>> +};
+>> +
+>> +#define to_aspeed_video(x) container_of((x), struct aspeed_video, v4l2_dev)
+>> +
+>> +static const u32 aspeed_video_jpeg_header[ASPEED_VIDEO_JPEG_HEADER_SIZE] = {
+>> +	0xE0FFD8FF, 0x464A1000, 0x01004649, 0x60000101, 0x00006000, 0x0F00FEFF,
+>> +	0x00002D05, 0x00000000, 0x00000000, 0x00DBFF00
+>> +};
+>> +
+>> +static const u32 aspeed_video_jpeg_quant[ASPEED_VIDEO_JPEG_QUANT_SIZE] = {
+>> +	0x081100C0, 0x00000000, 0x00110103, 0x03011102, 0xC4FF0111, 0x00001F00,
+>> +	0x01010501, 0x01010101, 0x00000000, 0x00000000, 0x04030201, 0x08070605,
+>> +	0xFF0B0A09, 0x10B500C4, 0x03010200, 0x03040203, 0x04040505, 0x7D010000,
+>> +	0x00030201, 0x12051104, 0x06413121, 0x07615113, 0x32147122, 0x08A19181,
+>> +	0xC1B14223, 0xF0D15215, 0x72623324, 0x160A0982, 0x1A191817, 0x28272625,
+>> +	0x35342A29, 0x39383736, 0x4544433A, 0x49484746, 0x5554534A, 0x59585756,
+>> +	0x6564635A, 0x69686766, 0x7574736A, 0x79787776, 0x8584837A, 0x89888786,
+>> +	0x9493928A, 0x98979695, 0xA3A29A99, 0xA7A6A5A4, 0xB2AAA9A8, 0xB6B5B4B3,
+>> +	0xBAB9B8B7, 0xC5C4C3C2, 0xC9C8C7C6, 0xD4D3D2CA, 0xD8D7D6D5, 0xE2E1DAD9,
+>> +	0xE6E5E4E3, 0xEAE9E8E7, 0xF4F3F2F1, 0xF8F7F6F5, 0xC4FFFAF9, 0x00011F00,
+>> +	0x01010103, 0x01010101, 0x00000101, 0x00000000, 0x04030201, 0x08070605,
+>> +	0xFF0B0A09, 0x11B500C4, 0x02010200, 0x04030404, 0x04040507, 0x77020100,
+>> +	0x03020100, 0x21050411, 0x41120631, 0x71610751, 0x81322213, 0x91421408,
+>> +	0x09C1B1A1, 0xF0523323, 0xD1726215, 0x3424160A, 0x17F125E1, 0x261A1918,
+>> +	0x2A292827, 0x38373635, 0x44433A39, 0x48474645, 0x54534A49, 0x58575655,
+>> +	0x64635A59, 0x68676665, 0x74736A69, 0x78777675, 0x83827A79, 0x87868584,
+>> +	0x928A8988, 0x96959493, 0x9A999897, 0xA5A4A3A2, 0xA9A8A7A6, 0xB4B3B2AA,
+>> +	0xB8B7B6B5, 0xC3C2BAB9, 0xC7C6C5C4, 0xD2CAC9C8, 0xD6D5D4D3, 0xDAD9D8D7,
+>> +	0xE5E4E3E2, 0xE9E8E7E6, 0xF4F3F2EA, 0xF8F7F6F5, 0xDAFFFAF9, 0x01030C00,
+>> +	0x03110200, 0x003F0011
+>> +};
+>> +
+>> +static const u32 aspeed_video_jpeg_dct[ASPEED_VIDEO_JPEG_NUM_QUALITIES]
+>> +				      [ASPEED_VIDEO_JPEG_DCT_SIZE] = {
+>> +	{ 0x0D140043, 0x0C0F110F, 0x11101114, 0x17141516, 0x1E20321E,
+>> +	  0x3D1E1B1B, 0x32242E2B, 0x4B4C3F48, 0x44463F47, 0x61735A50,
+>> +	  0x566C5550, 0x88644644, 0x7A766C65, 0x4D808280, 0x8C978D60,
+>> +	  0x7E73967D, 0xDBFF7B80, 0x1F014300, 0x272D2121, 0x3030582D,
+>> +	  0x697BB958, 0xB8B9B97B, 0xB9B8A6A6, 0xB9B9B9B9, 0xB9B9B9B9,
+>> +	  0xB9B9B9B9, 0xB9B9B9B9, 0xB9B9B9B9, 0xB9B9B9B9, 0xB9B9B9B9,
+>> +	  0xB9B9B9B9, 0xB9B9B9B9, 0xB9B9B9B9, 0xFFB9B9B9 },
+>> +	{ 0x0C110043, 0x0A0D0F0D, 0x0F0E0F11, 0x14111213, 0x1A1C2B1A,
+>> +	  0x351A1818, 0x2B1F2826, 0x4142373F, 0x3C3D373E, 0x55644E46,
+>> +	  0x4B5F4A46, 0x77573D3C, 0x6B675F58, 0x43707170, 0x7A847B54,
+>> +	  0x6E64836D, 0xDBFF6C70, 0x1B014300, 0x22271D1D, 0x2A2A4C27,
+>> +	  0x5B6BA04C, 0xA0A0A06B, 0xA0A0A0A0, 0xA0A0A0A0, 0xA0A0A0A0,
+>> +	  0xA0A0A0A0, 0xA0A0A0A0, 0xA0A0A0A0, 0xA0A0A0A0, 0xA0A0A0A0,
+>> +	  0xA0A0A0A0, 0xA0A0A0A0, 0xA0A0A0A0, 0xFFA0A0A0 },
+>> +	{ 0x090E0043, 0x090A0C0A, 0x0C0B0C0E, 0x110E0F10, 0x15172415,
+>> +	  0x2C151313, 0x241A211F, 0x36372E34, 0x31322E33, 0x4653413A,
+>> +	  0x3E4E3D3A, 0x62483231, 0x58564E49, 0x385D5E5D, 0x656D6645,
+>> +	  0x5B536C5A, 0xDBFF595D, 0x16014300, 0x1C201818, 0x22223F20,
+>> +	  0x4B58853F, 0x85858558, 0x85858585, 0x85858585, 0x85858585,
+>> +	  0x85858585, 0x85858585, 0x85858585, 0x85858585, 0x85858585,
+>> +	  0x85858585, 0x85858585, 0x85858585, 0xFF858585 },
+>> +	{ 0x070B0043, 0x07080A08, 0x0A090A0B, 0x0D0B0C0C, 0x11121C11,
+>> +	  0x23110F0F, 0x1C141A19, 0x2B2B2429, 0x27282428, 0x3842332E,
+>> +	  0x313E302E, 0x4E392827, 0x46443E3A, 0x2C4A4A4A, 0x50565137,
+>> +	  0x48425647, 0xDBFF474A, 0x12014300, 0x161A1313, 0x1C1C331A,
+>> +	  0x3D486C33, 0x6C6C6C48, 0x6C6C6C6C, 0x6C6C6C6C, 0x6C6C6C6C,
+>> +	  0x6C6C6C6C, 0x6C6C6C6C, 0x6C6C6C6C, 0x6C6C6C6C, 0x6C6C6C6C,
+>> +	  0x6C6C6C6C, 0x6C6C6C6C, 0x6C6C6C6C, 0xFF6C6C6C },
+>> +	{ 0x06090043, 0x05060706, 0x07070709, 0x0A09090A, 0x0D0E160D,
+>> +	  0x1B0D0C0C, 0x16101413, 0x21221C20, 0x1E1F1C20, 0x2B332824,
+>> +	  0x26302624, 0x3D2D1F1E, 0x3735302D, 0x22393A39, 0x3F443F2B,
+>> +	  0x38334338, 0xDBFF3739, 0x0D014300, 0x11130E0E, 0x15152613,
+>> +	  0x2D355026, 0x50505035, 0x50505050, 0x50505050, 0x50505050,
+>> +	  0x50505050, 0x50505050, 0x50505050, 0x50505050, 0x50505050,
+>> +	  0x50505050, 0x50505050, 0x50505050, 0xFF505050 },
+>> +	{ 0x04060043, 0x03040504, 0x05040506, 0x07060606, 0x09090F09,
+>> +	  0x12090808, 0x0F0A0D0D, 0x16161315, 0x14151315, 0x1D221B18,
+>> +	  0x19201918, 0x281E1514, 0x2423201E, 0x17262726, 0x2A2D2A1C,
+>> +	  0x25222D25, 0xDBFF2526, 0x09014300, 0x0B0D0A0A, 0x0E0E1A0D,
+>> +	  0x1F25371A, 0x37373725, 0x37373737, 0x37373737, 0x37373737,
+>> +	  0x37373737, 0x37373737, 0x37373737, 0x37373737, 0x37373737,
+>> +	  0x37373737, 0x37373737, 0x37373737, 0xFF373737 },
+>> +	{ 0x02030043, 0x01020202, 0x02020203, 0x03030303, 0x04040704,
+>> +	  0x09040404, 0x07050606, 0x0B0B090A, 0x0A0A090A, 0x0E110D0C,
+>> +	  0x0C100C0C, 0x140F0A0A, 0x1211100F, 0x0B131313, 0x1516150E,
+>> +	  0x12111612, 0xDBFF1213, 0x04014300, 0x05060505, 0x07070D06,
+>> +	  0x0F121B0D, 0x1B1B1B12, 0x1B1B1B1B, 0x1B1B1B1B, 0x1B1B1B1B,
+>> +	  0x1B1B1B1B, 0x1B1B1B1B, 0x1B1B1B1B, 0x1B1B1B1B, 0x1B1B1B1B,
+>> +	  0x1B1B1B1B, 0x1B1B1B1B, 0x1B1B1B1B, 0xFF1B1B1B },
+>> +	{ 0x01020043, 0x01010101, 0x01010102, 0x02020202, 0x03030503,
+>> +	  0x06030202, 0x05030404, 0x07070607, 0x06070607, 0x090B0908,
+>> +	  0x080A0808, 0x0D0A0706, 0x0C0B0A0A, 0x070C0D0C, 0x0E0F0E09,
+>> +	  0x0C0B0F0C, 0xDBFF0C0C, 0x03014300, 0x03040303, 0x04040804,
+>> +	  0x0A0C1208, 0x1212120C, 0x12121212, 0x12121212, 0x12121212,
+>> +	  0x12121212, 0x12121212, 0x12121212, 0x12121212, 0x12121212,
+>> +	  0x12121212, 0x12121212, 0x12121212, 0xFF121212 },
+>> +	{ 0x01020043, 0x01010101, 0x01010102, 0x02020202, 0x03030503,
+>> +	  0x06030202, 0x05030404, 0x07070607, 0x06070607, 0x090B0908,
+>> +	  0x080A0808, 0x0D0A0706, 0x0C0B0A0A, 0x070C0D0C, 0x0E0F0E09,
+>> +	  0x0C0B0F0C, 0xDBFF0C0C, 0x02014300, 0x03030202, 0x04040703,
+>> +	  0x080A0F07, 0x0F0F0F0A, 0x0F0F0F0F, 0x0F0F0F0F, 0x0F0F0F0F,
+>> +	  0x0F0F0F0F, 0x0F0F0F0F, 0x0F0F0F0F, 0x0F0F0F0F, 0x0F0F0F0F,
+>> +	  0x0F0F0F0F, 0x0F0F0F0F, 0x0F0F0F0F, 0xFF0F0F0F },
+>> +	{ 0x01010043, 0x01010101, 0x01010101, 0x01010101, 0x02020302,
+>> +	  0x04020202, 0x03020303, 0x05050405, 0x05050405, 0x07080606,
+>> +	  0x06080606, 0x0A070505, 0x09080807, 0x05090909, 0x0A0B0A07,
+>> +	  0x09080B09, 0xDBFF0909, 0x02014300, 0x02030202, 0x03030503,
+>> +	  0x07080C05, 0x0C0C0C08, 0x0C0C0C0C, 0x0C0C0C0C, 0x0C0C0C0C,
+>> +	  0x0C0C0C0C, 0x0C0C0C0C, 0x0C0C0C0C, 0x0C0C0C0C, 0x0C0C0C0C,
+>> +	  0x0C0C0C0C, 0x0C0C0C0C, 0x0C0C0C0C, 0xFF0C0C0C },
+>> +	{ 0x01010043, 0x01010101, 0x01010101, 0x01010101, 0x01010201,
+>> +	  0x03010101, 0x02010202, 0x03030303, 0x03030303, 0x04050404,
+>> +	  0x04050404, 0x06050303, 0x06050505, 0x03060606, 0x07070704,
+>> +	  0x06050706, 0xDBFF0606, 0x01014300, 0x01020101, 0x02020402,
+>> +	  0x05060904, 0x09090906, 0x09090909, 0x09090909, 0x09090909,
+>> +	  0x09090909, 0x09090909, 0x09090909, 0x09090909, 0x09090909,
+>> +	  0x09090909, 0x09090909, 0x09090909, 0xFF090909 },
+>> +	{ 0x01010043, 0x01010101, 0x01010101, 0x01010101, 0x01010101,
+>> +	  0x01010101, 0x01010101, 0x01010101, 0x01010101, 0x02020202,
+>> +	  0x02020202, 0x03020101, 0x03020202, 0x01030303, 0x03030302,
+>> +	  0x03020303, 0xDBFF0403, 0x01014300, 0x01010101, 0x01010201,
+>> +	  0x03040602, 0x06060604, 0x06060606, 0x06060606, 0x06060606,
+>> +	  0x06060606, 0x06060606, 0x06060606, 0x06060606, 0x06060606,
+>> +	  0x06060606, 0x06060606, 0x06060606, 0xFF060606 }
+>> +};
+> Please lower case the A-F values in these arrays.
+>
+>> +
+>> +static void aspeed_video_init_jpeg_table(u32 *table, bool yuv420)
+>> +{
+>> +	int i;
+>> +	unsigned int base;
+>> +
+>> +	for (i = 0; i < ASPEED_VIDEO_JPEG_NUM_QUALITIES; i++) {
+>> +		base = 256 * i;	/* AST HW requires this header spacing */
+>> +		memcpy(&table[base], aspeed_video_jpeg_header,
+>> +		       sizeof(aspeed_video_jpeg_header));
+>> +
+>> +		base += ASPEED_VIDEO_JPEG_HEADER_SIZE;
+>> +		memcpy(&table[base], aspeed_video_jpeg_dct[i],
+>> +		       sizeof(aspeed_video_jpeg_dct[i]));
+>> +
+>> +		base += ASPEED_VIDEO_JPEG_DCT_SIZE;
+>> +		memcpy(&table[base], aspeed_video_jpeg_quant,
+>> +		       sizeof(aspeed_video_jpeg_quant));
+>> +
+>> +		if (yuv420)
+>> +			table[base + 2] = 0x00220103;
+>> +	}
+>> +}
+>> +
+>> +static void aspeed_video_update(struct aspeed_video *video, u32 reg,
+>> +				unsigned long mask, u32 bits)
+> You probably want to use u32 for the mask.
+>
+>> +{
+>> +	u32 t = readl(video->base + reg);
+>> +	u32 before = t;
+>> +
+>> +	t &= mask;
+>> +	t |= bits;
+>> +	writel(t, video->base + reg);
+>> +	dev_dbg(video->dev, "update %03x[%08x -> %08x]\n", reg, before,
+>> +		readl(video->base + reg));
+>> +}
+>> +
+>> +static u32 aspeed_video_read(struct aspeed_video *video, u32 reg)
+>> +{
+>> +	u32 t = readl(video->base + reg);
+>> +
+>> +	dev_dbg(video->dev, "read %03x[%08x]\n", reg, t);
+>> +	return t;
+>> +}
+>> +
+>> +static void aspeed_video_write(struct aspeed_video *video, u32 reg, u32 val)
+>> +{
+>> +	writel(val, video->base + reg);
+>> +	dev_dbg(video->dev, "write %03x[%08x]\n", reg,
+>> +		readl(video->base + reg));
+>> +}
+>> +
+>> +static bool aspeed_video_engine_busy(struct aspeed_video *video)
+>> +{
+>> +	u32 seq_ctrl = aspeed_video_read(video, VE_SEQ_CTRL);
+>> +
+>> +	if (!(seq_ctrl & VE_SEQ_CTRL_COMP_BUSY) ||
+>> +	    !(seq_ctrl & VE_SEQ_CTRL_CAP_BUSY)) {
+>> +		dev_info(video->dev, "video engine busy\n");
+> Would dev_dbg be better to avoid spamming the kernel log?
 
-Sure, I will remove those.
+Really this is an error condition where the engine hasn't stopped after 
+it's completed the frame, or hasn't stopped after we've asked it to. So 
+maybe I should use dev_err instead. It shouldn't happen in normal operation.
 
-> >  
-> >  	chained = !list_empty(&nc->link);
-> >  	state = nc->state;
-> > @@ -148,9 +149,10 @@ static int ncsi_aen_handler_hncdsc(struct ncsi_dev_priv *ndp,
-> >  	hncdsc = (struct ncsi_aen_hncdsc_pkt *)h;
-> >  	ncm->data[3] = ntohl(hncdsc->status);
-> >  	spin_unlock_irqrestore(&nc->lock, flags);
-> > +
-> >  	netdev_dbg(ndp->ndev.dev,
-> > -		   "NCSI: host driver %srunning on channel %u\n",
-> > -		   ncm->data[3] & 0x1 ? "" : "not ", nc->id);
-> > +		   "NCSI: host driver %srunning on pkg %u ch %u\n",
-> > +		   ncm->data[3] & 0x1 ? "" : "not ", nc->package->id, nc->id);
-> >  
-> >  	return 0;
-> >  }
-> > diff --git a/net/ncsi/ncsi-cmd.c b/net/ncsi/ncsi-cmd.c
-> > index 7567ca63..b291297 100644
-> > --- a/net/ncsi/ncsi-cmd.c
-> > +++ b/net/ncsi/ncsi-cmd.c
-> > @@ -17,6 +17,7 @@
-> >  #include <net/ncsi.h>
-> >  #include <net/net_namespace.h>
-> >  #include <net/sock.h>
-> > +#include <net/genetlink.h>
-> >  
-> >  #include "internal.h"
-> >  #include "ncsi-pkt.h"
-> > @@ -211,42 +212,75 @@ static int ncsi_cmd_handler_snfc(struct sk_buff *skb,
-> >  	return 0;
-> >  }
-> >  
-> > +static int ncsi_cmd_handler_oem(struct sk_buff *skb,
-> > +								struct ncsi_cmd_arg *nca)
-> > +{
-> > +	struct ncsi_cmd_pkt *cmd;
-> > +	unsigned char *dest, *source;
-> > +	unsigned short len;
-> > +
-> > +	/* struct ncsi_cmd_pkt = minimum length
-> > +	 *                       - frame checksum
-> > +	 *                       - Ethernet header
-> > +	 *                     = 64 - 4 - 14 = 46
-> > +	 * minimum payload = 46 - ncsi header - ncsi checksum
-> > +	 *                 = 46 - 16 - 4 = 26
-> > +	 */
-> > +	len = nca->payload;
-> > +
-> > +	/* minimum payload length is 26 bytes to meet minimum packet
-> > +	 * length 64
-> > +	 */
-> > +	if (len < 26)
-> > +		cmd = skb_put_zero(skb, sizeof(*cmd));
-> > +	else
-> > +		cmd = skb_put_zero(skb, len + sizeof(struct ncsi_pkt_hdr) + 4);
-> > +
-> > +	dest = (unsigned char *)cmd + sizeof(struct ncsi_pkt_hdr);
-> > +	source = (unsigned char *)nca->data + sizeof(struct ncsi_pkt_hdr);
-> > +	memcpy(dest, source, len);
-> > +
-> > +	ncsi_cmd_build_header(&cmd->cmd.common, nca);
-> > +
-> > +	return 0;
-> > +}
-> 
-> This is quite similar to the other patch which is good, they shouldn't
-> conflict much.
-> 
-> > +
-> >  static struct ncsi_cmd_handler {
-> >  	unsigned char type;
-> >  	int           payload;
-> >  	int           (*handler)(struct sk_buff *skb,
-> >  				 struct ncsi_cmd_arg *nca);
-> >  } ncsi_cmd_handlers[] = {
-> > -	{ NCSI_PKT_CMD_CIS,    0, ncsi_cmd_handler_default },
-> > -	{ NCSI_PKT_CMD_SP,     4, ncsi_cmd_handler_sp      },
-> > -	{ NCSI_PKT_CMD_DP,     0, ncsi_cmd_handler_default },
-> > -	{ NCSI_PKT_CMD_EC,     0, ncsi_cmd_handler_default },
-> > -	{ NCSI_PKT_CMD_DC,     4, ncsi_cmd_handler_dc      },
-> > -	{ NCSI_PKT_CMD_RC,     4, ncsi_cmd_handler_rc      },
-> > -	{ NCSI_PKT_CMD_ECNT,   0, ncsi_cmd_handler_default },
-> > -	{ NCSI_PKT_CMD_DCNT,   0, ncsi_cmd_handler_default },
-> > -	{ NCSI_PKT_CMD_AE,     8, ncsi_cmd_handler_ae      },
-> > -	{ NCSI_PKT_CMD_SL,     8, ncsi_cmd_handler_sl      },
-> > -	{ NCSI_PKT_CMD_GLS,    0, ncsi_cmd_handler_default },
-> > -	{ NCSI_PKT_CMD_SVF,    8, ncsi_cmd_handler_svf     },
-> > -	{ NCSI_PKT_CMD_EV,     4, ncsi_cmd_handler_ev      },
-> > -	{ NCSI_PKT_CMD_DV,     0, ncsi_cmd_handler_default },
-> > -	{ NCSI_PKT_CMD_SMA,    8, ncsi_cmd_handler_sma     },
-> > -	{ NCSI_PKT_CMD_EBF,    4, ncsi_cmd_handler_ebf     },
-> > -	{ NCSI_PKT_CMD_DBF,    0, ncsi_cmd_handler_default },
-> > -	{ NCSI_PKT_CMD_EGMF,   4, ncsi_cmd_handler_egmf    },
-> > -	{ NCSI_PKT_CMD_DGMF,   0, ncsi_cmd_handler_default },
-> > -	{ NCSI_PKT_CMD_SNFC,   4, ncsi_cmd_handler_snfc    },
-> > -	{ NCSI_PKT_CMD_GVI,    0, ncsi_cmd_handler_default },
-> > -	{ NCSI_PKT_CMD_GC,     0, ncsi_cmd_handler_default },
-> > -	{ NCSI_PKT_CMD_GP,     0, ncsi_cmd_handler_default },
-> > -	{ NCSI_PKT_CMD_GCPS,   0, ncsi_cmd_handler_default },
-> > -	{ NCSI_PKT_CMD_GNS,    0, ncsi_cmd_handler_default },
-> > -	{ NCSI_PKT_CMD_GNPTS,  0, ncsi_cmd_handler_default },
-> > -	{ NCSI_PKT_CMD_GPS,    0, ncsi_cmd_handler_default },
-> > -	{ NCSI_PKT_CMD_OEM,    0, NULL                     },
-> > -	{ NCSI_PKT_CMD_PLDM,   0, NULL                     },
-> > -	{ NCSI_PKT_CMD_GPUUID, 0, ncsi_cmd_handler_default }
-> > +	{ NCSI_PKT_CMD_CIS,     0, ncsi_cmd_handler_default },
-> > +	{ NCSI_PKT_CMD_SP,      4, ncsi_cmd_handler_sp      },
-> > +	{ NCSI_PKT_CMD_DP,      0, ncsi_cmd_handler_default },
-> > +	{ NCSI_PKT_CMD_EC,      0, ncsi_cmd_handler_default },
-> > +	{ NCSI_PKT_CMD_DC,      4, ncsi_cmd_handler_dc      },
-> > +	{ NCSI_PKT_CMD_RC,      4, ncsi_cmd_handler_rc      },
-> > +	{ NCSI_PKT_CMD_ECNT,    0, ncsi_cmd_handler_default },
-> > +	{ NCSI_PKT_CMD_DCNT,    0, ncsi_cmd_handler_default },
-> > +	{ NCSI_PKT_CMD_AE,      8, ncsi_cmd_handler_ae      },
-> > +	{ NCSI_PKT_CMD_SL,      8, ncsi_cmd_handler_sl      },
-> > +	{ NCSI_PKT_CMD_GLS,     0, ncsi_cmd_handler_default },
-> > +	{ NCSI_PKT_CMD_SVF,     8, ncsi_cmd_handler_svf     },
-> > +	{ NCSI_PKT_CMD_EV,      4, ncsi_cmd_handler_ev      },
-> > +	{ NCSI_PKT_CMD_DV,      0, ncsi_cmd_handler_default },
-> > +	{ NCSI_PKT_CMD_SMA,     8, ncsi_cmd_handler_sma     },
-> > +	{ NCSI_PKT_CMD_EBF,     4, ncsi_cmd_handler_ebf     },
-> > +	{ NCSI_PKT_CMD_DBF,     0, ncsi_cmd_handler_default },
-> > +	{ NCSI_PKT_CMD_EGMF,    4, ncsi_cmd_handler_egmf    },
-> > +	{ NCSI_PKT_CMD_DGMF,    0, ncsi_cmd_handler_default },
-> > +	{ NCSI_PKT_CMD_SNFC,    4, ncsi_cmd_handler_snfc    },
-> > +	{ NCSI_PKT_CMD_GVI,     0, ncsi_cmd_handler_default },
-> > +	{ NCSI_PKT_CMD_GC,      0, ncsi_cmd_handler_default },
-> > +	{ NCSI_PKT_CMD_GP,      0, ncsi_cmd_handler_default },
-> > +	{ NCSI_PKT_CMD_GCPS,    0, ncsi_cmd_handler_default },
-> > +	{ NCSI_PKT_CMD_GNS,     0, ncsi_cmd_handler_default },
-> > +	{ NCSI_PKT_CMD_GNPTS,   0, ncsi_cmd_handler_default },
-> > +	{ NCSI_PKT_CMD_GPS,     0, ncsi_cmd_handler_default },
-> > +	{ NCSI_PKT_CMD_OEM,    -1, ncsi_cmd_handler_oem     },
-> > +	{ NCSI_PKT_CMD_PLDM,    0, NULL                     },
-> > +	{ NCSI_PKT_CMD_GPUUID,  0, ncsi_cmd_handler_default }
-> >  };
-> 
-> You've changed the whitespace here which has made the diff unnecessarily
-> large; please just change the single _OEM line and keep the whitespace
-> the same.
-> 
+>
+>> +		return true;
+>> +	}
+>> +
+>> +	return false;
+>> +}
+>> +
+>> +static int aspeed_video_start_frame(struct aspeed_video *video)
+>> +{
+>> +	dma_addr_t addr;
+>> +	unsigned long flags;
+>> +	struct aspeed_video_buffer *buf;
+>> +
+>> +	if (aspeed_video_engine_busy(video))
+>> +		return -EBUSY;
+>> +
+>> +	spin_lock_irqsave(&video->lock, flags);
+>> +	buf = list_first_entry_or_null(&video->buffers,
+>> +				       struct aspeed_video_buffer, link);
+>> +	if (!buf) {
+>> +		spin_unlock_irqrestore(&video->lock, flags);
+>> +		return -EPROTO;
+>> +	}
+>> +
+>> +	set_bit(VIDEO_FRAME_INPRG, &video->flags);
+>> +	addr = vb2_dma_contig_plane_dma_addr(&buf->vb.vb2_buf, 0);
+>> +	spin_unlock_irqrestore(&video->lock, flags);
+>> +
+>> +	aspeed_video_write(video, VE_COMP_PROC_OFFSET, 0);
+>> +	aspeed_video_write(video, VE_COMP_OFFSET, 0);
+>> +	aspeed_video_write(video, VE_COMP_ADDR, addr);
+>> +
+>> +	aspeed_video_update(video, VE_INTERRUPT_CTRL, 0xffffffff,
+>> +			    VE_INTERRUPT_COMP_COMPLETE |
+>> +			    VE_INTERRUPT_CAPTURE_COMPLETE);
+>> +
+>> +	aspeed_video_update(video, VE_SEQ_CTRL, 0xffffffff,
+>> +			    VE_SEQ_CTRL_TRIG_CAPTURE | VE_SEQ_CTRL_TRIG_COMP);
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +static void aspeed_video_start_mode_detect(struct aspeed_video *video)
+>> +{
+>> +	/* Enable mode detect interrupts */
+>> +	aspeed_video_update(video, VE_INTERRUPT_CTRL, 0xffffffff,
+>> +			    VE_INTERRUPT_MODE_DETECT);
+>> +
+>> +	/* Trigger mode detect */
+>> +	aspeed_video_update(video, VE_SEQ_CTRL, 0xffffffff,
+>> +			    VE_SEQ_CTRL_TRIG_MODE_DET);
+>> +}
+>> +
+>> +static void aspeed_video_disable_mode_detect(struct aspeed_video *video)
+>> +{
+>> +	/* Disable mode detect interrupts */
+>> +	aspeed_video_update(video, VE_INTERRUPT_CTRL,
+>> +			    ~VE_INTERRUPT_MODE_DETECT, 0);
+>> +
+>> +	/* Disable mode detect */
+>> +	aspeed_video_update(video, VE_SEQ_CTRL, ~VE_SEQ_CTRL_TRIG_MODE_DET, 0);
+>> +}
+>> +
+>> +static void aspeed_video_off(struct aspeed_video *video)
+>> +{
+>> +	/* Reset the engine */
+>> +	reset_control_assert(video->rst);
+>> +	udelay(100);
+>> +	reset_control_deassert(video->rst);
+>> +
+>> +	/* Turn off the relevant clocks */
+>> +	clk_disable_unprepare(video->vclk);
+>> +	clk_disable_unprepare(video->eclk);
+>> +}
+>> +
+>> +static void aspeed_video_on(struct aspeed_video *video)
+>> +{
+>> +	/* Turn on the relevant clocks */
+>> +	clk_prepare_enable(video->eclk);
+>> +	clk_prepare_enable(video->vclk);
+>> +
+>> +	/* Reset the engine */
+>> +	reset_control_assert(video->rst);
+>> +	udelay(100);
+>> +	reset_control_deassert(video->rst);
+>> +}
+>> +
+>> +static void aspeed_video_buf_err(struct aspeed_video *video)
+>> +{
+>> +	unsigned long flags;
+>> +	struct aspeed_video_buffer *buf;
+>> +
+>> +	spin_lock_irqsave(&video->lock, flags);
+>> +	list_for_each_entry(buf, &video->buffers, link) {
+>> +		if (list_is_last(&buf->link, &video->buffers))
+>> +			buf->vb.flags |= V4L2_BUF_FLAG_LAST;
+> There is no need to set the LAST flag. That's meant for MPEG/H264/etc codecs
+> and it is not needed for MJPEG.
 
-I will remove the whitespace for alignment.
+Ah, I did actually need this for my streaming application to work 
+properly. In an error condition, my dequeue call waited forever unless I 
+set this flag... The other option was to set the videobuf queue error 
+state, but then that isn't recoverable as far as I could tell.
 
-> >  
-> >  static struct ncsi_request *ncsi_alloc_command(struct ncsi_cmd_arg *nca)
-> > @@ -317,11 +351,20 @@ int ncsi_xmit_cmd(struct ncsi_cmd_arg *nca)
-> >  	}
-> >  
-> >  	/* Get packet payload length and allocate the request */
-> > -	nca->payload = nch->payload;
-> > +	if (nch->payload >= 0)
-> > +		nca->payload = nch->payload;
-> > +
-> >  	nr = ncsi_alloc_command(nca);
-> >  	if (!nr)
-> >  		return -ENOMEM;
-> >  
-> > +	/* track netlink information */
-> > +	if (nca->req_flags == NCSI_REQ_FLAG_NETLINK_DRIVEN) {
-> > +		nr->snd_seq = nca->info->snd_seq;
-> > +		nr->snd_portid = nca->info->snd_portid;
-> > +		nr->nlhdr = *nca->info->nlhdr;
-> > +	}
-> > +
-> >  	/* Prepare the packet */
-> >  	nca->id = nr->id;
-> >  	ret = nch->handler(nr->cmd, nca);
-> > @@ -341,6 +384,7 @@ int ncsi_xmit_cmd(struct ncsi_cmd_arg *nca)
-> >  	 * connection a 1 second delay should be sufficient.
-> >  	 */
-> >  	nr->enabled = true;
-> > +
-> >  	mod_timer(&nr->timer, jiffies + 1 * HZ);
-> >  
-> >  	/* Send NCSI packet */
-> > diff --git a/net/ncsi/ncsi-manage.c b/net/ncsi/ncsi-manage.c
-> > index 0912847..6629103 100644
-> > --- a/net/ncsi/ncsi-manage.c
-> > +++ b/net/ncsi/ncsi-manage.c
-> > @@ -19,6 +19,7 @@
-> >  #include <net/addrconf.h>
-> >  #include <net/ipv6.h>
-> >  #include <net/if_inet6.h>
-> > +#include <net/genetlink.h>
-> >  
-> >  #include "internal.h"
-> >  #include "ncsi-pkt.h"
-> > @@ -110,8 +111,9 @@ static void ncsi_channel_monitor(struct timer_list *t)
-> >  	case NCSI_CHANNEL_MONITOR_WAIT ... NCSI_CHANNEL_MONITOR_WAIT_MAX:
-> >  		break;
-> >  	default:
-> > -		netdev_err(ndp->ndev.dev, "NCSI Channel %d timed out!\n",
-> > -			   nc->id);
-> > +		netdev_err(ndp->ndev.dev, "NCSI: pkg %u ch %u timed out!\n",
-> > +			   np->id, nc->id);
-> > +
-> >  		if (!(ndp->flags & NCSI_DEV_HWA)) {
-> >  			ncsi_report_link(ndp, true);
-> >  			ndp->flags |= NCSI_DEV_RESHUFFLE;
-> > @@ -143,6 +145,10 @@ void ncsi_start_channel_monitor(struct ncsi_channel *nc)
-> >  {
-> >  	unsigned long flags;
-> >  
-> > +	netdev_dbg(nc->package->ndp->ndev.dev,
-> > +			   "NCSI: %s pkg %u ch %u\n",
-> > +			   __func__, nc->package->id, nc->id);
-> > +
-> >  	spin_lock_irqsave(&nc->lock, flags);
-> >  	WARN_ON_ONCE(nc->monitor.enabled);
-> >  	nc->monitor.enabled = true;
-> > @@ -156,6 +162,10 @@ void ncsi_stop_channel_monitor(struct ncsi_channel *nc)
-> >  {
-> >  	unsigned long flags;
-> >  
-> > +	netdev_dbg(nc->package->ndp->ndev.dev,
-> > +			   "NCSI: %s pkg %u ch %u\n",
-> > +			   __func__, nc->package->id, nc->id);
-> > +
-> >  	spin_lock_irqsave(&nc->lock, flags);
-> >  	if (!nc->monitor.enabled) {
-> >  		spin_unlock_irqrestore(&nc->lock, flags);
-> > @@ -406,8 +416,13 @@ static void ncsi_request_timeout(struct timer_list *t)
-> >  {
-> >  	struct ncsi_request *nr = from_timer(nr, t, timer);
-> >  	struct ncsi_dev_priv *ndp = nr->ndp;
-> > +	struct ncsi_package *np;
-> > +	struct ncsi_channel *nc;
-> > +	struct ncsi_cmd_pkt *cmd;
-> >  	unsigned long flags;
-> >  
-> > +	netdev_dbg(ndp->ndev.dev, "NCSI: %s\n", __func__);
-> > +
-> >  	/* If the request already had associated response,
-> >  	 * let the response handler to release it.
-> >  	 */
-> > @@ -415,10 +430,23 @@ static void ncsi_request_timeout(struct timer_list *t)
-> >  	nr->enabled = false;
-> >  	if (nr->rsp || !nr->cmd) {
-> >  		spin_unlock_irqrestore(&ndp->lock, flags);
-> > +
-> > +		netdev_dbg(ndp->ndev.dev, "NCSI: %s - early return\n", __func__);
-> > +
-> >  		return;
-> >  	}
-> >  	spin_unlock_irqrestore(&ndp->lock, flags);
-> >  
-> > +	if (nr->flags == NCSI_REQ_FLAG_NETLINK_DRIVEN) {
-> > +		if (nr->cmd) {
-> > +			/* Find the package */
-> > +			cmd = (struct ncsi_cmd_pkt *)skb_network_header(nr->cmd);
-> > +			ncsi_find_package_and_channel(ndp, cmd->cmd.common.channel,
-> > +									      &np, &nc);
-> > +			ncsi_send_netlink_timeout(nr, np, nc);
-> > +		}
-> > +	}
-> > +
-> >  	/* Release the request */
-> >  	ncsi_free_request(nr);
-> >  }
-> > @@ -432,6 +460,10 @@ static void ncsi_suspend_channel(struct ncsi_dev_priv *ndp)
-> >  	unsigned long flags;
-> >  	int ret;
-> >  
-> > +	netdev_dbg(ndp->ndev.dev,
-> > +			   "NCSI: %s pkg %u ch %u state %04x\n",
-> > +			   __func__, np->id, nc->id, nd->state);
-> > +
-> >  	nca.ndp = ndp;
-> >  	nca.req_flags = NCSI_REQ_FLAG_EVENT_DRIVEN;
-> >  	switch (nd->state) {
-> > @@ -647,6 +679,10 @@ static void ncsi_configure_channel(struct ncsi_dev_priv *ndp)
-> >  	unsigned long flags;
-> >  	int ret;
-> >  
-> > +	netdev_dbg(ndp->ndev.dev,
-> > +			   "NCSI: %s pkg %u ch %u state %04x\n",
-> > +			   __func__, np->id, nc->id, nd->state);
-> > +
-> >  	nca.ndp = ndp;
-> >  	nca.req_flags = NCSI_REQ_FLAG_EVENT_DRIVEN;
-> >  	switch (nd->state) {
-> > @@ -788,8 +824,9 @@ static void ncsi_configure_channel(struct ncsi_dev_priv *ndp)
-> >  		}
-> >  		break;
-> >  	case ncsi_dev_state_config_done:
-> > -		netdev_dbg(ndp->ndev.dev, "NCSI: channel %u config done\n",
-> > -			   nc->id);
-> > +		netdev_dbg(ndp->ndev.dev,
-> > +				   "NCSI: pkg %u ch %u config done\n",
-> > +				   nc->package->id, nc->id);
-> >  		spin_lock_irqsave(&nc->lock, flags);
-> >  		if (nc->reconfigure_needed) {
-> >  			/* This channel's configuration has been updated
-> > @@ -815,9 +852,10 @@ static void ncsi_configure_channel(struct ncsi_dev_priv *ndp)
-> >  		} else {
-> >  			hot_nc = NULL;
-> >  			nc->state = NCSI_CHANNEL_INACTIVE;
-> > +
-> >  			netdev_dbg(ndp->ndev.dev,
-> > -				   "NCSI: channel %u link down after config\n",
-> > -				   nc->id);
-> > +					   "NCSI: pkg %u ch %u link down after config\n",
-> > +					   nc->package->id, nc->id);
-> >  		}
-> >  		spin_unlock_irqrestore(&nc->lock, flags);
-> >  
-> > @@ -853,6 +891,8 @@ static int ncsi_choose_active_channel(struct ncsi_dev_priv *ndp)
-> >  	force_package = ndp->force_package;
-> >  	spin_unlock_irqrestore(&ndp->lock, flags);
-> >  
-> > +	netdev_dbg(ndp->ndev.dev, "NCSI: %s\n", __func__);
-> > +
-> >  	/* Force a specific channel whether or not it has link if we have been
-> >  	 * configured to do so
-> >  	 */
-> > @@ -861,8 +901,8 @@ static int ncsi_choose_active_channel(struct ncsi_dev_priv *ndp)
-> >  		ncm = &found->modes[NCSI_MODE_LINK];
-> >  		if (!(ncm->data[2] & 0x1))
-> >  			netdev_info(ndp->ndev.dev,
-> > -				    "NCSI: Channel %u forced, but it is link down\n",
-> > -				    found->id);
-> > +					   "NCSI: pkg %u ch %u forced, but it is link down\n",
-> > +					   found->package->id, found->id);
-> >  		goto out;
-> >  	}
-> >  
-> > @@ -914,6 +954,7 @@ static int ncsi_choose_active_channel(struct ncsi_dev_priv *ndp)
-> >  out:
-> >  	spin_lock_irqsave(&ndp->lock, flags);
-> >  	list_add_tail_rcu(&found->link, &ndp->channel_queue);
-> > +
-> >  	spin_unlock_irqrestore(&ndp->lock, flags);
-> >  
-> >  	return ncsi_process_next_channel(ndp);
-> > @@ -1154,6 +1195,8 @@ static void ncsi_dev_work(struct work_struct *work)
-> >  			struct ncsi_dev_priv, work);
-> >  	struct ncsi_dev *nd = &ndp->ndev;
-> >  
-> > +	netdev_dbg(ndp->ndev.dev, "NCSI: %s\n", __func__);
-> > +
-> >  	switch (nd->state & ncsi_dev_state_major) {
-> >  	case ncsi_dev_state_probe:
-> >  		ncsi_probe_channel(ndp);
-> > @@ -1176,6 +1219,8 @@ int ncsi_process_next_channel(struct ncsi_dev_priv *ndp)
-> >  	int old_state;
-> >  	unsigned long flags;
-> >  
-> > +	netdev_dbg(ndp->ndev.dev, "NCSI: %s\n", __func__);
-> > +
-> >  	spin_lock_irqsave(&ndp->lock, flags);
-> >  	nc = list_first_or_null_rcu(&ndp->channel_queue,
-> >  				    struct ncsi_channel, link);
-> > @@ -1198,14 +1243,14 @@ int ncsi_process_next_channel(struct ncsi_dev_priv *ndp)
-> >  	switch (old_state) {
-> >  	case NCSI_CHANNEL_INACTIVE:
-> >  		ndp->ndev.state = ncsi_dev_state_config;
-> > -		netdev_dbg(ndp->ndev.dev, "NCSI: configuring channel %u\n",
-> > -	                   nc->id);
-> > +		netdev_dbg(ndp->ndev.dev, "NCSI: configuring pkg %u ch %u\n",
-> > +				   nc->package->id, nc->id);
-> >  		ncsi_configure_channel(ndp);
-> >  		break;
-> >  	case NCSI_CHANNEL_ACTIVE:
-> >  		ndp->ndev.state = ncsi_dev_state_suspend;
-> > -		netdev_dbg(ndp->ndev.dev, "NCSI: suspending channel %u\n",
-> > -			   nc->id);
-> > +		netdev_dbg(ndp->ndev.dev, "NCSI: suspending pkg %u ch %u\n",
-> > +				   nc->package->id, nc->id);
-> >  		ncsi_suspend_channel(ndp);
-> >  		break;
-> >  	default:
-> > @@ -1225,6 +1270,9 @@ int ncsi_process_next_channel(struct ncsi_dev_priv *ndp)
-> >  		return ncsi_choose_active_channel(ndp);
-> >  	}
-> >  
-> > +	netdev_dbg(ndp->ndev.dev,
-> > +			   "NCSI: No more channels to process\n");
-> > +
-> >  	ncsi_report_link(ndp, false);
-> >  	return -ENODEV;
-> >  }
-> > @@ -1475,6 +1523,7 @@ struct ncsi_dev *ncsi_register_dev(struct net_device *dev,
-> >  	if (list_empty(&ncsi_dev_list))
-> >  		register_inet6addr_notifier(&ncsi_inet6addr_notifier);
-> >  #endif
-> > +
-> >  	list_add_tail_rcu(&ndp->node, &ncsi_dev_list);
-> >  	spin_unlock_irqrestore(&ncsi_dev_lock, flags);
-> >  
-> > @@ -1564,6 +1613,7 @@ void ncsi_unregister_dev(struct ncsi_dev *nd)
-> >  	if (list_empty(&ncsi_dev_list))
-> >  		unregister_inet6addr_notifier(&ncsi_inet6addr_notifier);
-> >  #endif
-> > +
-> >  	spin_unlock_irqrestore(&ncsi_dev_lock, flags);
-> >  
-> >  	ncsi_unregister_netlink(nd->dev);
-> > diff --git a/net/ncsi/ncsi-netlink.c b/net/ncsi/ncsi-netlink.c
-> > index 45f33d6..ab1a959 100644
-> > --- a/net/ncsi/ncsi-netlink.c
-> > +++ b/net/ncsi/ncsi-netlink.c
-> > @@ -20,6 +20,7 @@
-> >  #include <uapi/linux/ncsi.h>
-> >  
-> >  #include "internal.h"
-> > +#include "ncsi-pkt.h"
-> >  #include "ncsi-netlink.h"
-> >  
-> >  static struct genl_family ncsi_genl_family;
-> > @@ -29,6 +30,7 @@ static const struct nla_policy ncsi_genl_policy[NCSI_ATTR_MAX + 1] = {
-> >  	[NCSI_ATTR_PACKAGE_LIST] =	{ .type = NLA_NESTED },
-> >  	[NCSI_ATTR_PACKAGE_ID] =	{ .type = NLA_U32 },
-> >  	[NCSI_ATTR_CHANNEL_ID] =	{ .type = NLA_U32 },
-> > +	[NCSI_ATTR_DATA] =			{ .type = NLA_BINARY, .len = 2048 },
-> >  };
-> 
-> Is there a particular reason for setting len to 2048, or just a decent
-> buffer?
-> 
+>
+>> +		vb2_buffer_done(&buf->vb.vb2_buf, VB2_BUF_STATE_ERROR);
+> See my comment in start_streaming: VB2_BUF_STATE_ERROR should be an argument to
+> this function.
+>
+>> +	}
+>> +	INIT_LIST_HEAD(&video->buffers);
+>> +	spin_unlock_irqrestore(&video->lock, flags);
+>> +}
+>> +
+>> +static irqreturn_t aspeed_video_irq(int irq, void *arg)
+>> +{
+>> +	struct aspeed_video *video = arg;
+>> +	u32 sts = aspeed_video_read(video, VE_INTERRUPT_STATUS);
+>> +
+>> +	if (atomic_read(&video->clients) == 0) {
+>> +		dev_info(video->dev, "irq with no client; disabling irqs\n");
+>> +
+>> +		aspeed_video_write(video, VE_INTERRUPT_CTRL, 0);
+>> +		aspeed_video_write(video, VE_INTERRUPT_STATUS, 0xffffffff);
+>> +		return IRQ_HANDLED;
+>> +	}
+>> +
+>> +	/* Resolution changed; reset entire engine and reinitialize */
+>> +	if (sts & VE_INTERRUPT_MODE_DETECT_WD) {
+>> +		dev_info(video->dev, "resolution changed; resetting\n");
+>> +		set_bit(VIDEO_RES_CHANGE, &video->flags);
+>> +		clear_bit(VIDEO_FRAME_INPRG, &video->flags);
+>> +
+>> +		aspeed_video_off(video);
+>> +		aspeed_video_buf_err(video);
+>> +
+>> +		schedule_delayed_work(&video->res_work,
+>> +				      RESOLUTION_CHANGE_DELAY);
+>> +		return IRQ_HANDLED;
+>> +	}
+>> +
+>> +	if (sts & VE_INTERRUPT_MODE_DETECT) {
+>> +		aspeed_video_update(video, VE_INTERRUPT_CTRL,
+>> +				    ~VE_INTERRUPT_MODE_DETECT, 0);
+>> +		aspeed_video_write(video, VE_INTERRUPT_STATUS,
+>> +				   VE_INTERRUPT_MODE_DETECT);
+>> +
+>> +		set_bit(VIDEO_MODE_DETECT_DONE, &video->flags);
+>> +		wake_up_interruptible_all(&video->wait);
+>> +	}
+>> +
+>> +	if ((sts & VE_INTERRUPT_COMP_COMPLETE) &&
+>> +	    (sts & VE_INTERRUPT_CAPTURE_COMPLETE)) {
+>> +		struct aspeed_video_buffer *buf;
+>> +		u32 frame_size = aspeed_video_read(video,
+>> +						   VE_OFFSET_COMP_STREAM);
+>> +
+>> +		spin_lock(&video->lock);
+>> +		clear_bit(VIDEO_FRAME_INPRG, &video->flags);
+>> +		buf = list_first_entry_or_null(&video->buffers,
+>> +					       struct aspeed_video_buffer,
+>> +					       link);
+>> +		if (buf) {
+>> +			vb2_set_plane_payload(&buf->vb.vb2_buf, 0, frame_size);
+>> +
+>> +			if (!list_is_last(&buf->link, &video->buffers)) {
+>> +				buf->vb.vb2_buf.timestamp = ktime_get_ns();
+>> +				buf->vb.sequence = video->sequence++;
+>> +				buf->vb.field = V4L2_FIELD_NONE;
+>> +				vb2_buffer_done(&buf->vb.vb2_buf,
+>> +						VB2_BUF_STATE_DONE);
+>> +				list_del(&buf->link);
+>> +			}
+>> +		}
+>> +		spin_unlock(&video->lock);
+>> +
+>> +		aspeed_video_update(video, VE_SEQ_CTRL,
+>> +				    ~(VE_SEQ_CTRL_TRIG_CAPTURE |
+>> +				      VE_SEQ_CTRL_FORCE_IDLE |
+>> +				      VE_SEQ_CTRL_TRIG_COMP), 0);
+>> +		aspeed_video_update(video, VE_INTERRUPT_CTRL,
+>> +				    ~(VE_INTERRUPT_COMP_COMPLETE |
+>> +				      VE_INTERRUPT_CAPTURE_COMPLETE), 0);
+>> +		aspeed_video_write(video, VE_INTERRUPT_STATUS,
+>> +				   VE_INTERRUPT_COMP_COMPLETE |
+>> +				   VE_INTERRUPT_CAPTURE_COMPLETE);
+>> +
+>> +		if (test_bit(VIDEO_STREAMING, &video->flags) && buf)
+>> +			aspeed_video_start_frame(video);
+>> +	}
+>> +
+>> +	return IRQ_HANDLED;
+>> +}
+>> +
+>> +static void aspeed_video_check_polarity(struct aspeed_video *video)
+>> +{
+>> +	int i;
+>> +	int hsync_counter = 0;
+>> +	int vsync_counter = 0;
+>> +	u32 sts;
+>> +
+>> +	for (i = 0; i < NUM_POLARITY_CHECKS; ++i) {
+>> +		sts = aspeed_video_read(video, VE_MODE_DETECT_STATUS);
+>> +		if (sts & VE_MODE_DETECT_STATUS_VSYNC)
+>> +			vsync_counter--;
+>> +		else
+>> +			vsync_counter++;
+>> +
+>> +		if (sts & VE_MODE_DETECT_STATUS_HSYNC)
+>> +			hsync_counter--;
+>> +		else
+>> +			hsync_counter++;
+>> +	}
+>> +
+>> +	if (hsync_counter < 0 || vsync_counter < 0) {
+>> +		u32 ctrl;
+>> +
+>> +		if (hsync_counter < 0)
+>> +			ctrl = VE_CTRL_HSYNC_POL;
+>> +
+>> +		if (vsync_counter < 0)
+>> +			ctrl = VE_CTRL_VSYNC_POL;
+>> +
+>> +		aspeed_video_update(video, VE_CTRL, 0xffffffff, ctrl);
+>> +	}
+> If you can read this information, then it would be nice to return it
+> in QUERY_DV_TIMINGS.
+>
+>> +}
+>> +
+>> +static bool aspeed_video_alloc_buf(struct aspeed_video *video,
+>> +				   struct aspeed_video_addr *addr,
+>> +				   unsigned int size)
+>> +{
+>> +	addr->virt = dma_alloc_coherent(video->dev, size, &addr->dma,
+>> +					GFP_KERNEL);
+>> +	if (!addr->virt)
+>> +		return false;
+>> +
+>> +	addr->size = size;
+>> +	return true;
+>> +}
+>> +
+>> +static void aspeed_video_free_buf(struct aspeed_video *video,
+>> +				  struct aspeed_video_addr *addr)
+>> +{
+>> +	dma_free_coherent(video->dev, addr->size, addr->virt, addr->dma);
+>> +	addr->size = 0;
+>> +	addr->dma = 0ULL;
+>> +	addr->virt = NULL;
+>> +}
+>> +
+>> +/*
+>> + * Get the minimum HW-supported compression buffer size for the frame size.
+>> + * Assume worst-case JPEG compression size is 1/8 raw size. This should be
+>> + * plenty even for maximum quality; any worse and the engine will simply return
+>> + * incomplete JPEGs.
+>> + */
+> Ah, nice that you could figure out how the compression algorithm worked.
+>
+>> +static void aspeed_video_calc_compressed_size(struct aspeed_video *video)
+>> +{
+>> +	int i, j;
+>> +	u32 compression_buffer_size_reg = 0;
+>> +	unsigned int size;
+>> +	const unsigned int num_compression_packets = 4;
+>> +	const unsigned int compression_packet_size = 1024;
+>> +	const unsigned int max_compressed_size =
+>> +		video->width * video->height / 2;	/* 4 Bpp / 8 */
+>> +
+>> +	video->max_compressed_size = UINT_MAX;
+>> +
+>> +	for (i = 0; i < 6; ++i) {
+>> +		for (j = 0; j < 8; ++j) {
+>> +			size = (num_compression_packets << i) *
+>> +				(compression_packet_size << j);
+>> +			if (size < max_compressed_size)
+>> +				continue;
+>> +
+>> +			if (size < video->max_compressed_size) {
+>> +				compression_buffer_size_reg = (i << 3) | j;
+>> +				video->max_compressed_size = size;
+>> +			}
+>> +		}
+>> +	}
+>> +
+>> +	aspeed_video_write(video, VE_STREAM_BUF_SIZE,
+>> +			   compression_buffer_size_reg);
+>> +
+>> +	dev_dbg(video->dev, "max compressed size: %x\n",
+>> +		video->max_compressed_size);
+>> +}
+>> +
+>> +#define res_check(v) test_and_clear_bit(VIDEO_MODE_DETECT_DONE, &(v)->flags)
+>> +
+>> +static int aspeed_video_get_resolution(struct aspeed_video *video)
+>> +{
+>> +	bool invalid_resolution = true;
+>> +	int rc;
+>> +	int tries = 0;
+>> +	unsigned int bottom;
+>> +	unsigned int left;
+>> +	unsigned int right;
+>> +	unsigned int size;
+>> +	unsigned int top;
+>> +	u32 src_lr_edge;
+>> +	u32 src_tb_edge;
+>> +	struct aspeed_video_addr src;
+>> +
+>> +	if (video->srcs[1].size)
+>> +		aspeed_video_free_buf(video, &video->srcs[1]);
+>> +
+>> +	if (video->srcs[0].size >= VE_MAX_SRC_BUFFER_SIZE) {
+>> +		src = video->srcs[0];
+>> +	} else {
+>> +		if (video->srcs[0].size)
+>> +			aspeed_video_free_buf(video, &video->srcs[0]);
+>> +
+>> +		if (!aspeed_video_alloc_buf(video, &src,
+>> +					    VE_MAX_SRC_BUFFER_SIZE))
+>> +			goto err_mem;
+>> +	}
+>> +
+>> +	aspeed_video_write(video, VE_SRC0_ADDR, src.dma);
+>> +
+>> +	video->width = 0;
+>> +	video->height = 0;
+>> +
+>> +	do {
+>> +		if (tries) {
+>> +			set_current_state(TASK_INTERRUPTIBLE);
+>> +			if (schedule_timeout(INVALID_RESOLUTION_DELAY))
+>> +				return -EINTR;
+>> +		}
+>> +
+>> +		aspeed_video_start_mode_detect(video);
+>> +
+>> +		rc = wait_event_interruptible_timeout(video->wait,
+>> +						      res_check(video),
+>> +						      MODE_DETECT_TIMEOUT);
+>> +		if (!rc) {
+>> +			dev_err(video->dev, "timed out on 1st mode detect\n");
+>> +			aspeed_video_disable_mode_detect(video);
+>> +			return -ETIME;
+> That should be ETIMEDOUT.
+>
+>> +		}
+>> +
+>> +		/* Disable mode detect in order to re-trigger */
+>> +		aspeed_video_update(video, VE_SEQ_CTRL,
+>> +				    ~VE_SEQ_CTRL_TRIG_MODE_DET, 0);
+>> +
+>> +		aspeed_video_check_polarity(video);
+>> +
+>> +		aspeed_video_start_mode_detect(video);
+>> +
+>> +		rc = wait_event_interruptible_timeout(video->wait,
+>> +						      res_check(video),
+>> +						      MODE_DETECT_TIMEOUT);
+>> +		if (!rc) {
+>> +			dev_err(video->dev, "timed out on 2nd mode detect\n");
+>> +			aspeed_video_disable_mode_detect(video);
+>> +			return -ETIME;
+> Ditto.
+>
+>> +		}
+>> +
+>> +		src_lr_edge = aspeed_video_read(video, VE_SRC_LR_EDGE_DET);
+>> +		src_tb_edge = aspeed_video_read(video, VE_SRC_TB_EDGE_DET);
+>> +
+>> +		bottom = (src_tb_edge & VE_SRC_TB_EDGE_DET_BOT) >>
+>> +			VE_SRC_TB_EDGE_DET_BOT_SHF;
+>> +		top = src_tb_edge & VE_SRC_TB_EDGE_DET_TOP;
+>> +		if (top > bottom)
+>> +			continue;
+>> +
+>> +		right = (src_lr_edge & VE_SRC_LR_EDGE_DET_RT) >>
+>> +			VE_SRC_LR_EDGE_DET_RT_SHF;
+>> +		left = src_lr_edge & VE_SRC_LR_EDGE_DET_LEFT;
+>> +		if (left > right)
+>> +			continue;
+>> +
+>> +		invalid_resolution = false;
+>> +	} while (invalid_resolution && (tries++ < INVALID_RESOLUTION_RETRIES));
+>> +
+>> +	if (invalid_resolution) {
+>> +		dev_err(video->dev, "invalid resolution detected\n");
+>> +		return -EMSGSIZE;
+> Hmm, weird error.
+>
+> Check https://hverkuil.home.xs4all.nl/spec/uapi/v4l/vidioc-query-dv-timings.html
+> for common error codes that relate to this.
 
-It is a decent buffer size as it can contain the whole network packet and also have the room to grow
-if we want to extend the usage.
+Thanks!
 
-> >  
-> >  static struct ncsi_dev_priv *ndp_from_ifindex(struct net *net, u32 ifindex)
-> > @@ -240,7 +242,7 @@ static int ncsi_pkg_info_all_nl(struct sk_buff *skb,
-> >  		return 0; /* done */
-> >  
-> >  	hdr = genlmsg_put(skb, NETLINK_CB(cb->skb).portid, cb->nlh->nlmsg_seq,
-> > -			  &ncsi_genl_family, NLM_F_MULTI,  NCSI_CMD_PKG_INFO);
-> > +			  &ncsi_genl_family, NLM_F_MULTI, NCSI_CMD_PKG_INFO);
-> >  	if (!hdr) {
-> >  		rc = -EMSGSIZE;
-> >  		goto err;
-> > @@ -316,8 +318,8 @@ static int ncsi_set_interface_nl(struct sk_buff *msg, struct genl_info *info)
-> >  		 * package
-> >  		 */
-> >  		spin_unlock_irqrestore(&ndp->lock, flags);
-> > -		netdev_info(ndp->ndev.dev, "NCSI: Channel %u does not exist!\n",
-> > -			    channel_id);
-> > +		netdev_info(ndp->ndev.dev, "NCSI: pkg %u ch %u does not exist!\n",
-> > +					package_id, channel_id);
-> >  		return -ERANGE;
-> >  	}
-> >  
-> > @@ -366,6 +368,191 @@ static int ncsi_clear_interface_nl(struct sk_buff *msg, struct genl_info *info)
-> >  	return 0;
-> >  }
-> >  
-> > +static int ncsi_send_cmd_nl(struct sk_buff *msg, struct genl_info *info)
-> > +{
-> > +	struct ncsi_dev_priv *ndp;
-> > +
-> > +	struct ncsi_cmd_arg nca;
-> > +	struct ncsi_pkt_hdr *hdr;
-> > +
-> > +	u32 package_id, channel_id;
-> > +	unsigned char *data;
-> > +	void *head;
-> > +	int len, ret;
-> > +
-> > +	if (!info || !info->attrs) {
-> > +		ret = -EINVAL;
-> > +		goto out;
-> > +	}
-> > +
-> > +	if (!info->attrs[NCSI_ATTR_IFINDEX]) {
-> > +		ret = -EINVAL;
-> > +		goto out;
-> > +	}
-> > +
-> > +	if (!info->attrs[NCSI_ATTR_PACKAGE_ID]) {
-> > +		ret = -EINVAL;
-> > +		goto out;
-> > +	}
-> > +
-> > +	if (!info->attrs[NCSI_ATTR_CHANNEL_ID]) {
-> > +		ret = -EINVAL;
-> > +		goto out;
-> > +	}
-> > +
-> > +	ndp = ndp_from_ifindex(get_net(sock_net(msg->sk)),
-> > +						   nla_get_u32(info->attrs[NCSI_ATTR_IFINDEX]));
-> > +	if (!ndp) {
-> > +		ret = -ENODEV;
-> > +		goto out;
-> > +	}
-> > +
-> > +	package_id = nla_get_u32(info->attrs[NCSI_ATTR_PACKAGE_ID]);
-> > +	channel_id = nla_get_u32(info->attrs[NCSI_ATTR_CHANNEL_ID]);
-> > +
-> > +	if ((package_id & ~0x07) || (channel_id & ~0x1f)) {
-> > +		ret = -ERANGE;
-> > +		goto out_netlink;
-> > +	}
-> 
-> This is correct but hard to read; we could instead just have
-> 	if ((package_id >= 8) ...
-> which is easier to interpret.
-> (Probably we should also define the max packages/channels somewhere too)
-> 
+>
+> Note that ENUMINPUT also returns status information.
+>
+>> +	}
+>> +
+>> +	video->height = (bottom - top) + 1;
+>> +	video->width = (right - left) + 1;
+>> +	size = video->height * video->width;
+> It looks like you can actually determine the blanking width/height and
+> possibly even more detailed information that would be very useful to
+> show with the DV_TIMINGS ioctls.
+>
+>> +
+>> +	/* Don't use direct mode below 1024 x 768 (irqs don't fire) */
+>> +	if (size < DIRECT_FETCH_THRESHOLD) {
+>> +		aspeed_video_write(video, VE_TGS_0,
+>> +				   FIELD_PREP(VE_TGS_FIRST, left - 1) |
+>> +				   FIELD_PREP(VE_TGS_LAST, right));
+>> +		aspeed_video_write(video, VE_TGS_1,
+>> +				   FIELD_PREP(VE_TGS_FIRST, top) |
+>> +				   FIELD_PREP(VE_TGS_LAST, bottom + 1));
+>> +		aspeed_video_update(video, VE_CTRL, 0xffffffff,
+>> +				    VE_CTRL_INT_DE);
+>> +	} else {
+>> +		aspeed_video_update(video, VE_CTRL, 0xffffffff,
+>> +				    VE_CTRL_DIRECT_FETCH);
+>> +	}
+>> +
+>> +	aspeed_video_write(video, VE_CAP_WINDOW,
+>> +			   video->width << 16 | video->height);
+>> +	aspeed_video_write(video, VE_COMP_WINDOW,
+>> +			   video->width << 16 | video->height);
+>> +	aspeed_video_write(video, VE_SRC_SCANLINE_OFFSET, video->width * 4);
+>> +
+>> +	aspeed_video_update(video, VE_INTERRUPT_CTRL, 0xffffffff,
+>> +			    VE_INTERRUPT_MODE_DETECT_WD);
+>> +	aspeed_video_update(video, VE_SEQ_CTRL, 0xffffffff,
+>> +			    VE_SEQ_CTRL_AUTO_COMP | VE_SEQ_CTRL_EN_WATCHDOG);
+>> +
+>> +	dev_dbg(video->dev, "got resolution[%dx%d]\n", video->width,
+>> +		video->height);
+>> +
+>> +	size *= 4;
+>> +	if (size == src.size / 2) {
+>> +		aspeed_video_write(video, VE_SRC1_ADDR, src.dma + size);
+>> +		video->srcs[0] = src;
+>> +	} else if (size == src.size) {
+>> +		video->srcs[0] = src;
+>> +
+>> +		if (!aspeed_video_alloc_buf(video, &video->srcs[1], size))
+>> +			goto err_mem;
+>> +
+>> +		aspeed_video_write(video, VE_SRC1_ADDR, video->srcs[1].dma);
+>> +	} else {
+>> +		aspeed_video_free_buf(video, &src);
+>> +
+>> +		if (!aspeed_video_alloc_buf(video, &video->srcs[0], size))
+>> +			goto err_mem;
+>> +
+>> +		if (!aspeed_video_alloc_buf(video, &video->srcs[1], size))
+>> +			goto err_mem;
+>> +
+>> +		aspeed_video_write(video, VE_SRC0_ADDR, video->srcs[0].dma);
+>> +		aspeed_video_write(video, VE_SRC1_ADDR, video->srcs[1].dma);
+>> +	}
+>> +
+>> +	aspeed_video_calc_compressed_size(video);
+>> +
+>> +	return 0;
+>> +
+>> +err_mem:
+>> +	dev_err(video->dev, "failed to allocate source buffers\n");
+>> +
+>> +	if (video->srcs[0].size)
+>> +		aspeed_video_free_buf(video, &video->srcs[0]);
+>> +
+>> +	return -ENOMEM;
+>> +}
+>> +
+>> +static void aspeed_video_init_regs(struct aspeed_video *video)
+>> +{
+>> +	u32 comp_ctrl = VE_COMP_CTRL_RSVD |
+>> +		FIELD_PREP(VE_COMP_CTRL_DCT_LUM, video->jpeg_quality) |
+>> +		FIELD_PREP(VE_COMP_CTRL_DCT_CHR, video->jpeg_quality | 0x10);
+>> +	u32 ctrl = VE_CTRL_AUTO_OR_CURSOR;
+>> +	u32 seq_ctrl = VE_SEQ_CTRL_JPEG_MODE;
+>> +
+>> +	if (video->frame_rate)
+>> +		ctrl |= FIELD_PREP(VE_CTRL_FRC, video->frame_rate);
+>> +
+>> +	if (video->yuv420)
+>> +		seq_ctrl |= VE_SEQ_CTRL_YUV420;
+>> +
+>> +	/* Unlock VE registers */
+>> +	aspeed_video_write(video, VE_PROTECTION_KEY, VE_PROTECTION_KEY_UNLOCK);
+>> +
+>> +	/* Disable interrupts */
+>> +	aspeed_video_write(video, VE_INTERRUPT_CTRL, 0);
+>> +	aspeed_video_write(video, VE_INTERRUPT_STATUS, 0xffffffff);
+>> +
+>> +	/* Clear the offset */
+>> +	aspeed_video_write(video, VE_COMP_PROC_OFFSET, 0);
+>> +	aspeed_video_write(video, VE_COMP_OFFSET, 0);
+>> +
+>> +	aspeed_video_write(video, VE_JPEG_ADDR, video->jpeg.dma);
+>> +
+>> +	/* Set control registers */
+>> +	aspeed_video_write(video, VE_SEQ_CTRL, seq_ctrl);
+>> +	aspeed_video_write(video, VE_CTRL, ctrl);
+>> +	aspeed_video_write(video, VE_COMP_CTRL, comp_ctrl);
+>> +
+>> +	/* Don't downscale */
+>> +	aspeed_video_write(video, VE_SCALING_FACTOR, 0x10001000);
+>> +	aspeed_video_write(video, VE_SCALING_FILTER0, 0x00200000);
+>> +	aspeed_video_write(video, VE_SCALING_FILTER1, 0x00200000);
+>> +	aspeed_video_write(video, VE_SCALING_FILTER2, 0x00200000);
+>> +	aspeed_video_write(video, VE_SCALING_FILTER3, 0x00200000);
+>> +
+>> +	/* Set mode detection defaults */
+>> +	aspeed_video_write(video, VE_MODE_DETECT, 0x22666500);
+>> +}
+>> +
+>> +static int aspeed_video_start(struct aspeed_video *video)
+>> +{
+>> +	int rc;
+>> +
+>> +	aspeed_video_on(video);
+>> +
+>> +	aspeed_video_init_regs(video);
+>> +
+>> +	rc = aspeed_video_get_resolution(video);
+>> +	if (rc)
+>> +		return rc;
+>> +
+>> +	video->v4l2_fmt.width = video->width;
+>> +	video->v4l2_fmt.height = video->height;
+>> +	video->v4l2_fmt.sizeimage = video->max_compressed_size;
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +static void aspeed_video_stop(struct aspeed_video *video)
+>> +{
+>> +	cancel_delayed_work_sync(&video->res_work);
+>> +
+>> +	aspeed_video_off(video);
+>> +
+>> +	if (video->srcs[0].size)
+>> +		aspeed_video_free_buf(video, &video->srcs[0]);
+>> +
+>> +	if (video->srcs[1].size)
+>> +		aspeed_video_free_buf(video, &video->srcs[1]);
+>> +
+>> +	video->flags = 0;
+>> +}
+>> +
+>> +static int aspeed_video_querycap(struct file *file, void *fh,
+>> +				 struct v4l2_capability *cap)
+>> +{
+>> +	strscpy(cap->driver, DEVICE_NAME, sizeof(cap->driver));
+>> +	strscpy(cap->card, "Aspeed Video Engine", sizeof(cap->card));
+>> +	snprintf(cap->bus_info, sizeof(cap->bus_info), "platform:%s",
+>> +		 DEVICE_NAME);
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +static int aspeed_video_enum_format(struct file *file, void *fh,
+>> +				    struct v4l2_fmtdesc *f)
+>> +{
+>> +	if (f->index)
+>> +		return -EINVAL;
+>> +
+>> +	f->pixelformat = V4L2_PIX_FMT_JPEG;
+>> +	f->type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+> No need to set the type, it's already checked in the core.
+>
+>> +	f->flags = V4L2_FMT_FLAG_COMPRESSED;
+> No need to set this flag, it will be set for you.
+>
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +static int aspeed_video_get_format(struct file *file, void *fh,
+>> +				   struct v4l2_format *f)
+>> +{
+>> +	struct aspeed_video *video = video_drvdata(file);
+>> +
+>> +	f->type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+> No need to set type.
+>
+>> +	f->fmt.pix = video->v4l2_fmt;
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +static int aspeed_video_enum_input(struct file *file, void *fh,
+>> +				   struct v4l2_input *inp)
+>> +{
+>> +	if (inp->index)
+>> +		return -EINVAL;
+>> +
+>> +	strscpy(inp->name, "Host VGA capture", sizeof(inp->name));
+>> +	inp->type = V4L2_INPUT_TYPE_CAMERA;
+>> +	inp->capabilities = V4L2_IN_CAP_DV_TIMINGS;
+> Update status information. Typically V4L2_IN_ST_NO_SIGNAL is set and V4L2_IN_ST_NO_SYNC.
+>
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +static int aspeed_video_get_input(struct file *file, void *fh, unsigned int *i)
+>> +{
+>> +	*i = 0;
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +static int aspeed_video_set_input(struct file *file, void *fh, unsigned int i)
+>> +{
+>> +	if (i)
+>> +		return -EINVAL;
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +static int aspeed_video_get_parm(struct file *file, void *fh,
+>> +				 struct v4l2_streamparm *a)
+>> +{
+>> +	struct aspeed_video *video = video_drvdata(file);
+>> +
+>> +	a->parm.capture.capability = V4L2_CAP_TIMEPERFRAME;
+>> +	a->parm.capture.readbuffers = 3;
+>> +	a->parm.capture.timeperframe.numerator = 1;
+>> +	if (!video->frame_rate)
+>> +		a->parm.capture.timeperframe.denominator = MAX_FRAME_RATE + 1;
+>> +	else
+>> +		a->parm.capture.timeperframe.denominator = video->frame_rate;
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +static int aspeed_video_set_parm(struct file *file, void *fh,
+>> +				 struct v4l2_streamparm *a)
+>> +{
+>> +	unsigned int frame_rate = 0;
+>> +	struct aspeed_video *video = video_drvdata(file);
+>> +
+>> +	a->parm.capture.capability = V4L2_CAP_TIMEPERFRAME;
+>> +	a->parm.capture.readbuffers = 3;
+>> +
+>> +	if (a->parm.capture.timeperframe.numerator)
+>> +		frame_rate = a->parm.capture.timeperframe.denominator /
+>> +			a->parm.capture.timeperframe.numerator;
+>> +
+>> +	if (!frame_rate || frame_rate > MAX_FRAME_RATE) {
+>> +		frame_rate = 0;
+>> +
+>> +		/*
+>> +		 * Set to max + 1 to differentiate between max and 0, which
+>> +		 * means "don't care".
+>> +		 */
+>> +		a->parm.capture.timeperframe.denominator = MAX_FRAME_RATE + 1;
+>> +		a->parm.capture.timeperframe.numerator = 1;
+>> +	}
+>> +
+>> +	if (video->frame_rate != frame_rate) {
+>> +		video->frame_rate = frame_rate;
+>> +		aspeed_video_update(video, VE_CTRL, ~VE_CTRL_FRC,
+>> +				    FIELD_PREP(VE_CTRL_FRC, frame_rate));
+>> +	}
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +static int aspeed_video_enum_framesizes(struct file *file, void *fh,
+>> +					struct v4l2_frmsizeenum *fsize)
+>> +{
+>> +	struct aspeed_video *video = video_drvdata(file);
+>> +
+>> +	if (fsize->pixel_format != V4L2_PIX_FMT_JPEG)
+>> +		return -EINVAL;
+>> +
+>> +	switch (fsize->index) {
+>> +	case 0:
+>> +		fsize->discrete.width = video->v4l2_fmt.width;
+>> +		fsize->discrete.height = video->v4l2_fmt.height;
+>> +		break;
+>> +	case 1:
+>> +		if (video->width == video->v4l2_fmt.width &&
+>> +		    video->height == video->v4l2_fmt.height)
+>> +			return -EINVAL;
+>> +
+>> +		fsize->discrete.width = video->width;
+>> +		fsize->discrete.height = video->height;
+> This looks weird. What's the reason for this case 1?
 
-I will add the definition for the max packages/channels and use it instead.
+I suppose this is leftover from my incorrect implementation of get/set 
+format, as I wanted the detected size to be enumerated if it wasn't the 
+one that was set. I can probably drop it.
 
-> > +
-> > +	len = nla_len(info->attrs[NCSI_ATTR_DATA]);
-> > +	if (len < sizeof(struct ncsi_pkt_hdr)) {
-> > +		netdev_info(ndp->ndev.dev, "NCSI: no OEM command to send %u\n",
-> > +					package_id);
-> 
-> For statements like these follow the netdev format, eg:
-> 		netdev_info(ndp->ndev.dev, "NCSI: no OEM command to send %u\n",
-> 			    package_id);
-> 
-> > +		ret = -EINVAL;
-> > +		goto out_netlink;
-> > +	} else {
-> > +		head = nla_data(info->attrs[NCSI_ATTR_DATA]);
-> > +		data = (unsigned char *)head;
-> > +	}
-> > +
-> > +	hdr = (struct ncsi_pkt_hdr *)data;
-> > +
-> > +	nca.ndp = ndp;
-> > +	nca.package = (unsigned char)package_id;
-> > +	nca.channel = (unsigned char)channel_id;
-> > +	nca.type = hdr->type;
-> > +	nca.req_flags = NCSI_REQ_FLAG_NETLINK_DRIVEN;
-> > +	nca.info = info;
-> > +	nca.payload = ntohs(hdr->length);
-> > +	nca.data = data;
-> > +
-> > +	ret = ncsi_xmit_cmd(&nca);
-> > +out_netlink:
-> > +	if (ret != 0) {
-> > +		netdev_err(ndp->ndev.dev, "Error %d sending OEM command\n", ret);
-> > +		ncsi_send_netlink_err(ndp->ndev.dev,
-> > +							  info->snd_seq, info->snd_portid, info->nlhdr,
-> > +							  ret);
-> > +	}
-> > +out:
-> > +	return ret;
-> > +}
-> > +
-> > +int ncsi_send_netlink_rsp(struct ncsi_request *nr, struct ncsi_package *np, struct ncsi_channel *nc)
-> > +{
-> > +	struct sk_buff *skb;
-> > +	struct net *net;
-> > +	void *hdr;
-> > +	int rc;
-> > +
-> > +	netdev_dbg(nr->ndp->ndev.dev, "NCSI: %s\n", __func__);
-> > +
-> > +	net = dev_net(nr->rsp->dev);
-> > +
-> > +	skb = genlmsg_new(NLMSG_DEFAULT_SIZE, GFP_ATOMIC);
-> > +	if (!skb)
-> > +		return -ENOMEM;
-> > +
-> > +	hdr = genlmsg_put(skb, nr->snd_portid, nr->snd_seq,
-> > +			  &ncsi_genl_family, 0, NCSI_CMD_SEND_CMD);
-> > +	if (!hdr) {
-> > +		kfree_skb(skb);
-> > +		return -EMSGSIZE;
-> > +	}
-> > +
-> > +	nla_put_u32(skb, NCSI_ATTR_IFINDEX, nr->rsp->dev->ifindex);
-> > +	if (np)
-> > +		nla_put_u32(skb, NCSI_ATTR_PACKAGE_ID, np->id);
-> > +	if (nc)
-> > +		nla_put_u32(skb, NCSI_ATTR_CHANNEL_ID, nc->id);
-> > +	else
-> > +		nla_put_u32(skb, NCSI_ATTR_CHANNEL_ID, NCSI_RESERVED_CHANNEL);
-> > +
-> > +	rc = nla_put(skb, NCSI_ATTR_DATA, nr->rsp->len, (void *)nr->rsp->data);
-> > +	if (rc)
-> > +		goto err;
-> > +
-> > +	genlmsg_end(skb, hdr);
-> > +	return genlmsg_unicast(net, skb, nr->snd_portid);
-> > +
-> > +err:
-> > +	kfree_skb(skb);
-> > +	return rc;
-> > +}
-> > +
-> > +int ncsi_send_netlink_timeout(struct ncsi_request *nr, struct ncsi_package *np, struct ncsi_channel *nc)
-> > +{
-> > +	struct sk_buff *skb;
-> > +	struct net *net;
-> > +	void *hdr;
-> > +
-> > +	netdev_dbg(nr->ndp->ndev.dev, "NCSI: %s\n", __func__);
-> > +
-> > +	skb = genlmsg_new(NLMSG_DEFAULT_SIZE, GFP_ATOMIC);
-> > +	if (!skb)
-> > +		return -ENOMEM;
-> > +
-> > +	hdr = genlmsg_put(skb, nr->snd_portid, nr->snd_seq,
-> > +			  &ncsi_genl_family, 0, NCSI_CMD_SEND_CMD);
-> > +	if (!hdr) {
-> > +		kfree_skb(skb);
-> > +		return -EMSGSIZE;
-> > +	}
-> > +
-> > +	net = dev_net(nr->cmd->dev);
-> > +
-> > +	nla_put_u32(skb, NCSI_ATTR_IFINDEX, nr->cmd->dev->ifindex);
-> > +
-> > +	if (np)
-> > +		nla_put_u32(skb, NCSI_ATTR_PACKAGE_ID, np->id);
-> > +	else
-> > +		nla_put_u32(skb, NCSI_ATTR_PACKAGE_ID,
-> > +					NCSI_PACKAGE_INDEX((((struct ncsi_pkt_hdr *)nr->cmd->data)->channel)));
-> > +
-> > +	if (nc)
-> > +		nla_put_u32(skb, NCSI_ATTR_CHANNEL_ID, nc->id);
-> > +	else
-> > +		nla_put_u32(skb, NCSI_ATTR_CHANNEL_ID, NCSI_RESERVED_CHANNEL);
-> > +
-> > +	genlmsg_end(skb, hdr);
-> > +	return genlmsg_unicast(net, skb, nr->snd_portid);
-> 
-> How does the receiver of this message know it represents a timeout? Just that
-> it's missing the NCSI_ATTR_DATA attribute?
-> 
+>
+>> +		break;
+>> +	default:
+>> +		return -EINVAL;
+>> +	}
+>> +
+>> +	fsize->type = V4L2_FRMSIZE_TYPE_DISCRETE;
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +static int aspeed_video_enum_frameintervals(struct file *file, void *fh,
+>> +					    struct v4l2_frmivalenum *fival)
+>> +{
+>> +	struct aspeed_video *video = video_drvdata(file);
+>> +
+>> +	if (fival->index)
+>> +		return -EINVAL;
+>> +
+>> +	if (fival->width != video->width || fival->height != video->height)
+>> +		return -EINVAL;
+>> +
+>> +	if (fival->pixel_format != V4L2_PIX_FMT_JPEG)
+>> +		return -EINVAL;
+>> +
+>> +	fival->type = V4L2_FRMIVAL_TYPE_CONTINUOUS;
+>> +
+>> +	fival->stepwise.min.denominator = MAX_FRAME_RATE;
+>> +	fival->stepwise.min.numerator = 1;
+>> +	fival->stepwise.max.denominator = 1;
+>> +	fival->stepwise.max.numerator = 1;
+>> +	fival->stepwise.step = fival->stepwise.max;
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +static int aspeed_video_set_dv_timings(struct file *file, void *fh,
+>> +				       struct v4l2_dv_timings *timings)
+>> +{
+>> +	struct aspeed_video *video = video_drvdata(file);
+>> +
+>> +	if (video->width != timings->bt.width ||
+>> +	    video->height != timings->bt.height)
+>> +		return -EINVAL;
+>> +
+>> +	video->v4l2_fmt.width = timings->bt.width;
+>> +	video->v4l2_fmt.height = timings->bt.height;
+>> +	video->v4l2_fmt.sizeimage = video->max_compressed_size;
+>> +
+>> +	timings->type = V4L2_DV_BT_656_1120;
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +static int aspeed_video_get_dv_timings(struct file *file, void *fh,
+>> +				       struct v4l2_dv_timings *timings)
+>> +{
+>> +	int rc;
+>> +	struct aspeed_video *video = video_drvdata(file);
+>> +
+>> +	if (file->f_flags & O_NONBLOCK) {
+>> +		if (test_bit(VIDEO_RES_CHANGE, &video->flags))
+>> +			return -EAGAIN;
+>> +	} else {
+>> +		rc = wait_event_interruptible(video->wait,
+>> +					      !test_bit(VIDEO_RES_CHANGE,
+>> +							&video->flags));
+>> +		if (rc)
+>> +			return -EINTR;
+>> +	}
+> This is wrong. get_dv_timings should return what set_dv_timings set,
+> regardless of what the actual detected timings are.
+>
+> What you are actually implementing here is query_dv_timings :-)
 
-That is correct. The missing NCSI_ATTR_DATA attribute indicates that there is no data received.
+OK, understood. Just to clarify, the correct order of operations during 
+a detected frame size change would be:
 
-> > +}
-> > +
-> > +int ncsi_send_netlink_err(struct net_device *dev, u32 snd_seq, u32 snd_portid, struct nlmsghdr *nlhdr, int err)
-> > +{
-> > +	struct sk_buff *skb;
-> > +	struct nlmsghdr *nlh;
-> > +	struct nlmsgerr *nle;
-> > +	struct net *net;
-> > +
-> > +	skb = nlmsg_new(NLMSG_DEFAULT_SIZE, GFP_ATOMIC);
-> > +	if (!skb)
-> > +		return -ENOMEM;
-> > +
-> > +	net = dev_net(dev);
-> > +
-> > +	nlh = nlmsg_put(skb, snd_portid, snd_seq,
-> > +					NLMSG_ERROR, sizeof(*nle), 0);
-> > +	nle = (struct nlmsgerr *)nlmsg_data(nlh);
-> > +	nle->error = err;
-> > +	memcpy(&nle->msg, nlhdr, sizeof(*nlh));
-> > +
-> > +	nlmsg_end(skb, nlh);
-> > +
-> > +	return nlmsg_unicast(net->genl_sock, skb, snd_portid);
-> > +}
-> > +
-> >  static const struct genl_ops ncsi_ops[] = {
-> >  	{
-> >  		.cmd = NCSI_CMD_PKG_INFO,
-> > @@ -386,6 +573,12 @@ static const struct genl_ops ncsi_ops[] = {
-> >  		.doit = ncsi_clear_interface_nl,
-> >  		.flags = GENL_ADMIN_PERM,
-> >  	},
-> > +	{
-> > +		.cmd = NCSI_CMD_SEND_CMD,
-> > +		.policy = ncsi_genl_policy,
-> > +		.doit = ncsi_send_cmd_nl,
-> > +		.flags = GENL_ADMIN_PERM,
-> > +	},
-> >  };
-> >  
-> >  static struct genl_family ncsi_genl_family __ro_after_init = {
-> > diff --git a/net/ncsi/ncsi-netlink.h b/net/ncsi/ncsi-netlink.h
-> > index 91a5c25..dadaf32 100644
-> > --- a/net/ncsi/ncsi-netlink.h
-> > +++ b/net/ncsi/ncsi-netlink.h
-> > @@ -14,6 +14,10 @@
-> >  
-> >  #include "internal.h"
-> >  
-> > +int ncsi_send_netlink_rsp(struct ncsi_request *nr, struct ncsi_package *np, struct ncsi_channel *nc);
-> > +int ncsi_send_netlink_timeout(struct ncsi_request *nr, struct ncsi_package *np, struct ncsi_channel *nc);
-> > +int ncsi_send_netlink_err(struct net_device *dev, u32 snd_seq, u32 snd_portid, struct nlmsghdr *nlhdr, int err);
-> > +
-> >  int ncsi_init_netlink(struct net_device *dev);
-> >  int ncsi_unregister_netlink(struct net_device *dev);
-> >  
-> > diff --git a/net/ncsi/ncsi-rsp.c b/net/ncsi/ncsi-rsp.c
-> > index 930c1d3..bdf9519 100644
-> > --- a/net/ncsi/ncsi-rsp.c
-> > +++ b/net/ncsi/ncsi-rsp.c
-> > @@ -16,9 +16,11 @@
-> >  #include <net/ncsi.h>
-> >  #include <net/net_namespace.h>
-> >  #include <net/sock.h>
-> > +#include <net/genetlink.h>
-> >  
-> >  #include "internal.h"
-> >  #include "ncsi-pkt.h"
-> > +#include "ncsi-netlink.h"
-> >  
-> >  static int ncsi_validate_rsp_pkt(struct ncsi_request *nr,
-> >  				 unsigned short payload)
-> > @@ -32,15 +34,22 @@ static int ncsi_validate_rsp_pkt(struct ncsi_request *nr,
-> >  	 * before calling this function.
-> >  	 */
-> >  	h = (struct ncsi_rsp_pkt_hdr *)skb_network_header(nr->rsp);
-> > -	if (h->common.revision != NCSI_PKT_REVISION)
-> > +
-> > +	if (h->common.revision != NCSI_PKT_REVISION) {
-> > +		netdev_dbg(nr->ndp->ndev.dev, "NCSI: unsupported header revision\n");
-> >  		return -EINVAL;
-> > -	if (ntohs(h->common.length) != payload)
-> > +	}
-> > +	if (ntohs(h->common.length) != payload) {
-> > +		netdev_dbg(nr->ndp->ndev.dev, "NCSI: payload length mismatched\n");
-> >  		return -EINVAL;
-> > +	}
-> >  
-> >  	/* Check on code and reason */
-> >  	if (ntohs(h->code) != NCSI_PKT_RSP_C_COMPLETED ||
-> > -	    ntohs(h->reason) != NCSI_PKT_RSP_R_NO_ERROR)
-> > -		return -EINVAL;
-> > +	    ntohs(h->reason) != NCSI_PKT_RSP_R_NO_ERROR) {
-> > +		netdev_dbg(nr->ndp->ndev.dev, "NCSI: non zero response/reason code\n");
-> > +		return -EPERM;
-> > +	}
-> 
-> Why the change to EPERM?
-> 
+driver sets V4L2_EVENT_SOURCE_CHANGE
+application calls query_dv_timings
+application calls set_dv_timings to actually change the stored pix format?
 
-We need to return the response/reason code to the caller. If this function returns -EPERM, 
-ncsi_rsp_handler() will call ncsi_rsp_handler_netlink(nr) to send back the.
+>
+>> +
+>> +	memset(timings, 0, sizeof(*timings));
+>> +
+>> +	timings->type = V4L2_DV_BT_656_1120;
+>> +	timings->bt.width = video->width;
+>> +	timings->bt.height = video->height;
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +static int aspeed_video_enum_dv_timings(struct file *file, void *fh,
+>> +					struct v4l2_enum_dv_timings *timings)
+>> +{
+>> +	if (timings->index)
+>> +		return -EINVAL;
+>> +
+>> +	return aspeed_video_get_dv_timings(file, fh, &timings->timings);
+>> +}
+>> +
+>> +static int aspeed_video_dv_timings_cap(struct file *file, void *fh,
+>> +				       struct v4l2_dv_timings_cap *cap)
+>> +{
+>> +	struct aspeed_video *video = video_drvdata(file);
+>> +
+>> +	cap->type = V4L2_DV_BT_656_1120;
+>> +	cap->bt.capabilities = V4L2_DV_BT_CAP_PROGRESSIVE;
+>> +	cap->bt.min_width = video->width;
+>> +	cap->bt.max_width = video->width;
+>> +	cap->bt.min_height = video->height;
+>> +	cap->bt.max_height = video->height;
+>> +
+>> +	return 0;
+>> +}
+> Hmm. I need to think about enum_dv_timings and dv_timings_cap a bit more. This is
+> a somewhat odd situation and it needs some thought to decide what these functions
+> should do.
+>
+>> +
+>> +static int aspeed_video_sub_event(struct v4l2_fh *fh,
+>> +				  const struct v4l2_event_subscription *sub)
+>> +{
+>> +	switch (sub->type) {
+>> +	case V4L2_EVENT_SOURCE_CHANGE:
+>> +		return v4l2_src_change_event_subscribe(fh, sub);
+>> +	}
+>> +
+>> +	return v4l2_ctrl_subscribe_event(fh, sub);
+>> +}
+>> +
+>> +static const struct v4l2_ioctl_ops aspeed_video_ioctl_ops = {
+>> +	.vidioc_querycap = aspeed_video_querycap,
+>> +
+>> +	.vidioc_enum_fmt_vid_cap = aspeed_video_enum_format,
+>> +	.vidioc_g_fmt_vid_cap = aspeed_video_get_format,
+>> +	.vidioc_s_fmt_vid_cap = aspeed_video_get_format,
+>> +	.vidioc_try_fmt_vid_cap = aspeed_video_get_format,
+>> +
+>> +	.vidioc_reqbufs = vb2_ioctl_reqbufs,
+>> +	.vidioc_querybuf = vb2_ioctl_querybuf,
+>> +	.vidioc_qbuf = vb2_ioctl_qbuf,
+>> +	.vidioc_dqbuf = vb2_ioctl_dqbuf,
+>> +	.vidioc_create_bufs = vb2_ioctl_create_bufs,
+>> +	.vidioc_prepare_buf = vb2_ioctl_prepare_buf,
+>> +	.vidioc_streamon = vb2_ioctl_streamon,
+>> +	.vidioc_streamoff = vb2_ioctl_streamoff,
+>> +
+>> +	.vidioc_enum_input = aspeed_video_enum_input,
+>> +	.vidioc_g_input = aspeed_video_get_input,
+>> +	.vidioc_s_input = aspeed_video_set_input,
+>> +
+>> +	.vidioc_g_parm = aspeed_video_get_parm,
+>> +	.vidioc_s_parm = aspeed_video_set_parm,
+>> +	.vidioc_enum_framesizes = aspeed_video_enum_framesizes,
+>> +	.vidioc_enum_frameintervals = aspeed_video_enum_frameintervals,
+>> +
+>> +	.vidioc_s_dv_timings = aspeed_video_set_dv_timings,
+>> +	.vidioc_g_dv_timings = aspeed_video_get_dv_timings,
+>> +	.vidioc_query_dv_timings = aspeed_video_get_dv_timings,
+>> +	.vidioc_enum_dv_timings = aspeed_video_enum_dv_timings,
+>> +	.vidioc_dv_timings_cap = aspeed_video_dv_timings_cap,
+>> +
+>> +	.vidioc_subscribe_event = aspeed_video_sub_event,
+>> +	.vidioc_unsubscribe_event = v4l2_event_unsubscribe,
+>> +};
+>> +
+>> +static void aspeed_video_update_jpeg_quality(struct aspeed_video *video)
+>> +{
+>> +	u32 comp_ctrl = FIELD_PREP(VE_COMP_CTRL_DCT_LUM, video->jpeg_quality) |
+>> +		FIELD_PREP(VE_COMP_CTRL_DCT_CHR, video->jpeg_quality | 0x10);
+>> +
+>> +	aspeed_video_update(video, VE_COMP_CTRL,
+>> +			    ~(VE_COMP_CTRL_DCT_LUM | VE_COMP_CTRL_DCT_CHR),
+>> +			    comp_ctrl);
+>> +}
+>> +
+>> +static void aspeed_video_update_subsampling(struct aspeed_video *video)
+>> +{
+>> +	if (video->jpeg.virt)
+>> +		aspeed_video_init_jpeg_table(video->jpeg.virt, video->yuv420);
+>> +
+>> +	if (video->yuv420)
+>> +		aspeed_video_update(video, VE_SEQ_CTRL, 0xffffffff,
+>> +				    VE_SEQ_CTRL_YUV420);
+>> +	else
+>> +		aspeed_video_update(video, VE_SEQ_CTRL, ~VE_SEQ_CTRL_YUV420,
+>> +				    0);
+>> +}
+>> +
+>> +static int aspeed_video_set_ctrl(struct v4l2_ctrl *ctrl)
+>> +{
+>> +	struct aspeed_video *video = container_of(ctrl->handler,
+>> +						  struct aspeed_video,
+>> +						  ctrl_handler);
+>> +
+>> +	switch (ctrl->id) {
+>> +	case V4L2_CID_JPEG_COMPRESSION_QUALITY:
+>> +		if (video->jpeg_quality != ctrl->val) {
+> No need to check. This function is only called if the new value if different
+> from the old.
+>
+>> +			video->jpeg_quality = ctrl->val;
+>> +			aspeed_video_update_jpeg_quality(video);
+>> +		}
+>> +		break;
+>> +	case V4L2_CID_JPEG_CHROMA_SUBSAMPLING:
+>> +		if (ctrl->val == V4L2_JPEG_CHROMA_SUBSAMPLING_420) {
+>> +			video->yuv420 = true;
+>> +			aspeed_video_update_subsampling(video);
+>> +		} else {
+>> +			video->yuv420 = false;
+>> +			aspeed_video_update_subsampling(video);
+>> +		}
+>> +		break;
+>> +	default:
+>> +		return -EINVAL;
+>> +	}
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +static const struct v4l2_ctrl_ops aspeed_video_ctrl_ops = {
+>> +	.s_ctrl = aspeed_video_set_ctrl,
+>> +};
+>> +
+>> +static void aspeed_video_resolution_work(struct work_struct *work)
+>> +{
+>> +	int rc;
+>> +	struct delayed_work *dwork = to_delayed_work(work);
+>> +	struct aspeed_video *video = container_of(dwork, struct aspeed_video,
+>> +						  res_work);
+>> +
+>> +	/* No clients remaining after delay */
+>> +	if (atomic_read(&video->clients) == 0)
+>> +		goto done;
+>> +
+>> +	aspeed_video_on(video);
+>> +
+>> +	aspeed_video_init_regs(video);
+>> +
+>> +	rc = aspeed_video_get_resolution(video);
+>> +	if (rc) {
+>> +		dev_err(video->dev,
+>> +			"resolution changed; couldn't get new resolution\n");
+> You also need to send the event if there is no resolution.
+>
+> You need to keep track of the current state (found resolution or not) and only
+> send this event when you transition from one state to another.
 
-> >  
-> >  	/* Validate checksum, which might be zeroes if the
-> >  	 * sender doesn't support checksum according to NCSI
-> > @@ -52,8 +61,11 @@ static int ncsi_validate_rsp_pkt(struct ncsi_request *nr,
-> >  
-> >  	checksum = ncsi_calculate_checksum((unsigned char *)h,
-> >  					   sizeof(*h) + payload - 4);
-> > -	if (*pchecksum != htonl(checksum))
-> > +
-> > +	if (*pchecksum != htonl(checksum)) {
-> > +		netdev_dbg(nr->ndp->ndev.dev, "NCSI: checksum mismatched\n");
-> >  		return -EINVAL;
-> > +	}
-> >  
-> >  	return 0;
-> >  }
-> > @@ -900,6 +912,31 @@ static int ncsi_rsp_handler_gpuuid(struct ncsi_request *nr)
-> >  	return 0;
-> >  }
-> >  
-> > +static int ncsi_rsp_handler_oem(struct ncsi_request *nr)
-> > +{
-> > +	return 0;
-> > +}
-> > +
-> > +static int ncsi_rsp_handler_netlink(struct ncsi_request *nr)
-> > +{
-> > +	struct ncsi_rsp_pkt *rsp;
-> > +	struct ncsi_dev_priv *ndp = nr->ndp;
-> > +	struct ncsi_package *np;
-> > +	struct ncsi_channel *nc;
-> > +	int ret;
-> > +
-> > +	/* Find the package */
-> > +	rsp = (struct ncsi_rsp_pkt *)skb_network_header(nr->rsp);
-> > +	ncsi_find_package_and_channel(ndp, rsp->rsp.common.channel,
-> > +				      &np, &nc);
-> > +	if (!np)
-> > +		return -ENODEV;
-> > +
-> > +	ret = ncsi_send_netlink_rsp(nr, np, nc);
-> > +
-> > +	return ret;
-> > +}
-> > +
-> >  static struct ncsi_rsp_handler {
-> >  	unsigned char	type;
-> >  	int             payload;
-> > @@ -932,7 +969,7 @@ static struct ncsi_rsp_handler {
-> >  	{ NCSI_PKT_RSP_GNS,   172, ncsi_rsp_handler_gns     },
-> >  	{ NCSI_PKT_RSP_GNPTS, 172, ncsi_rsp_handler_gnpts   },
-> >  	{ NCSI_PKT_RSP_GPS,     8, ncsi_rsp_handler_gps     },
-> > -	{ NCSI_PKT_RSP_OEM,     0, NULL                     },
-> > +	{ NCSI_PKT_RSP_OEM,    -1, ncsi_rsp_handler_oem     },
-> >  	{ NCSI_PKT_RSP_PLDM,    0, NULL                     },
-> >  	{ NCSI_PKT_RSP_GPUUID, 20, ncsi_rsp_handler_gpuuid  }
-> >  };
-> > @@ -950,6 +987,7 @@ int ncsi_rcv_rsp(struct sk_buff *skb, struct net_device *dev,
-> >  
-> >  	/* Find the NCSI device */
-> >  	nd = ncsi_find_dev(dev);
-> > +
-> >  	ndp = nd ? TO_NCSI_DEV_PRIV(nd) : NULL;
-> 
-> There's a few spots around where you've added or changed whitespace,
-> please clean these bits up.
-> 
-> >  	if (!ndp)
-> >  		return -ENODEV;
-> > @@ -1002,6 +1040,15 @@ int ncsi_rcv_rsp(struct sk_buff *skb, struct net_device *dev,
-> >  		netdev_warn(ndp->ndev.dev,
-> >  			    "NCSI: 'bad' packet ignored for type 0x%x\n",
-> >  			    hdr->type);
-> > +
-> > +		if (nr->flags == NCSI_REQ_FLAG_NETLINK_DRIVEN) {
-> > +			if (ret == -EPERM)
-> > +				goto out_netlink;
-> > +			else
-> > +				ncsi_send_netlink_err(ndp->ndev.dev,
-> > +									  nr->snd_seq, nr->snd_portid, &nr->nlhdr,
-> > +									  ret);
-> > +		}
-> 
-> More netdev formatting, multi-line statements should be like:
-> 
-> 				ncsi_send_netlink_err(ndp->ndev.dev,
-> 						      nr->snd_seq, nr->snd_portid, &nr->nlhdr,
-> 						      ret);
-> 
-> >  		goto out;
-> >  	}
-> >  
-> > @@ -1011,6 +1058,17 @@ int ncsi_rcv_rsp(struct sk_buff *skb, struct net_device *dev,
-> >  		netdev_err(ndp->ndev.dev,
-> >  			   "NCSI: Handler for packet type 0x%x returned %d\n",
-> >  			   hdr->type, ret);
-> > +
-> > +out_netlink:
-> > +	if (nr->flags == NCSI_REQ_FLAG_NETLINK_DRIVEN) {
-> > +		ret = ncsi_rsp_handler_netlink(nr);
-> > +		if (ret) {
-> > +			netdev_err(ndp->ndev.dev,
-> > +					   "NCSI: Netlink handler for packet type 0x%x returned %d\n",
-> > +					   hdr->type, ret);
-> > +		}
-> > +	}
-> > +
-> >  out:
-> >  	ncsi_free_request(nr);
-> >  	return ret;
+OK, yep that makes sense.
+
+>
+>> +	} else {
+>> +		static const struct v4l2_event ev = {
+>> +			.type = V4L2_EVENT_SOURCE_CHANGE,
+>> +			.u.src_change.changes = V4L2_EVENT_SRC_CH_RESOLUTION,
+>> +		};
+>> +
+>> +		v4l2_event_queue(&video->vdev, &ev);
+>> +
+>> +		if (test_bit(VIDEO_STREAMING, &video->flags))
+>> +			aspeed_video_start_frame(video);
+>> +	}
+>> +
+>> +done:
+>> +	clear_bit(VIDEO_RES_CHANGE, &video->flags);
+>> +	wake_up_interruptible_all(&video->wait);
+>> +}
+>> +
+>> +static int aspeed_video_open(struct file *file)
+>> +{
+>> +	int rc;
+>> +	struct aspeed_video *video = video_drvdata(file);
+>> +
+>> +	if (atomic_inc_return(&video->clients) == 1) {
+>> +		rc = aspeed_video_start(video);
+>> +		if (rc) {
+>> +			dev_err(video->dev, "Failed to start video engine\n");
+>> +			atomic_dec(&video->clients);
+>> +			return rc;
+>> +		}
+>> +	}
+>> +
+>> +	return v4l2_fh_open(file);
+>> +}
+>> +
+>> +static int aspeed_video_release(struct file *file)
+>> +{
+>> +	int rc;
+>> +	struct aspeed_video *video = video_drvdata(file);
+>> +
+>> +	rc = vb2_fop_release(file);
+>> +
+> You need to lock video->video_lock here. Otherwise an open can occur while
+> you are in aspeed_video_stop. You also need to take this lock for the same
+> reason in aspeed_video_open above.
+>
+>> +	if (atomic_dec_return(&video->clients) == 0)
+>> +		aspeed_video_stop(video);
+>> +
+>> +	return rc;
+>> +}
+>> +
+>> +static const struct v4l2_file_operations aspeed_video_v4l2_fops = {
+>> +	.owner = THIS_MODULE,
+>> +	.read = vb2_fop_read,
+>> +	.poll = vb2_fop_poll,
+>> +	.unlocked_ioctl = video_ioctl2,
+>> +	.mmap = vb2_fop_mmap,
+>> +	.open = aspeed_video_open,
+>> +	.release = aspeed_video_release,
+>> +};
+>> +
+>> +static int aspeed_video_queue_setup(struct vb2_queue *q,
+>> +				    unsigned int *num_buffers,
+>> +				    unsigned int *num_planes,
+>> +				    unsigned int sizes[],
+>> +				    struct device *alloc_devs[])
+>> +{
+>> +	struct aspeed_video *video = vb2_get_drv_priv(q);
+>> +
+>> +	if (*num_planes) {
+>> +		if (sizes[0] < video->max_compressed_size)
+>> +			return -EINVAL;
+>> +
+>> +		return 0;
+>> +	}
+>> +
+>> +	*num_planes = 1;
+>> +	sizes[0] = video->max_compressed_size;
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +static int aspeed_video_buf_prepare(struct vb2_buffer *vb)
+>> +{
+>> +	struct aspeed_video *video = vb2_get_drv_priv(vb->vb2_queue);
+>> +
+>> +	if (vb2_plane_size(vb, 0) < video->max_compressed_size)
+>> +		return -EINVAL;
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +static int aspeed_video_start_streaming(struct vb2_queue *q,
+>> +					unsigned int count)
+>> +{
+>> +	int rc;
+>> +	struct aspeed_video *video = vb2_get_drv_priv(q);
+>> +
+>> +	rc = aspeed_video_start_frame(video);
+>> +	if (rc) {
+>> +		aspeed_video_buf_err(video);
+> If start_streaming fails, then the buffers should be returned to state
+> QUEUED, not ERROR. Most drivers have a similar function to aspeed_video_buf_err,
+> but the state is an argument.
+>
+>> +		return rc;
+>> +	}
+>> +
+>> +	video->sequence = 0;
+>> +	set_bit(VIDEO_STREAMING, &video->flags);
+>> +	return 0;
+>> +}
+>> +
+>> +static void aspeed_video_stop_streaming(struct vb2_queue *q)
+>> +{
+>> +	int rc;
+>> +	struct aspeed_video *video = vb2_get_drv_priv(q);
+>> +
+>> +	clear_bit(VIDEO_STREAMING, &video->flags);
+>> +
+>> +	rc = wait_event_timeout(video->wait,
+>> +				!test_bit(VIDEO_FRAME_INPRG, &video->flags),
+>> +				STOP_TIMEOUT);
+>> +	if (!rc) {
+>> +		dev_err(video->dev, "Timed out when stopping streaming\n");
+>> +		aspeed_video_stop(video);
+>> +	}
+>> +
+>> +	aspeed_video_buf_err(video);
+>> +}
+>> +
+>> +static void aspeed_video_buf_queue(struct vb2_buffer *vb)
+>> +{
+>> +	unsigned long flags;
+> Move this to below the avb declaration.
+>
+>> +	struct aspeed_video *video = vb2_get_drv_priv(vb->vb2_queue);
+>> +	struct vb2_v4l2_buffer *vbuf = to_vb2_v4l2_buffer(vb);
+>> +	struct aspeed_video_buffer *avb = to_aspeed_video_buffer(vbuf);
+>> +
+>> +	spin_lock_irqsave(&video->lock, flags);
+>> +	list_add_tail(&avb->link, &video->buffers);
+>> +	spin_unlock_irqrestore(&video->lock, flags);
+>> +}
+>> +
+>> +static const struct vb2_ops aspeed_video_vb2_ops = {
+>> +	.queue_setup = aspeed_video_queue_setup,
+>> +	.buf_prepare = aspeed_video_buf_prepare,
+>> +	.start_streaming = aspeed_video_start_streaming,
+>> +	.stop_streaming = aspeed_video_stop_streaming,
+>> +	.buf_queue =  aspeed_video_buf_queue,
+> Add this:
+>
+>          .wait_prepare           = vb2_ops_wait_prepare,
+>          .wait_finish            = vb2_ops_wait_finish,
+>
+> That should fix the streaming v4l2-compliance fail.
+>
+>> +};
+>> +
+>> +static int aspeed_video_setup_video(struct aspeed_video *video)
+>> +{
+>> +	int rc;
+> Move this to below the vdev declaration.
+>
+>> +	u64 mask = ~(BIT(V4L2_JPEG_CHROMA_SUBSAMPLING_444) |
+>> +		     BIT(V4L2_JPEG_CHROMA_SUBSAMPLING_420));
+> Can be const.
+>
+>> +	struct v4l2_device *v4l2_dev = &video->v4l2_dev;
+>> +	struct vb2_queue *vbq = &video->queue;
+>> +	struct video_device *vdev = &video->vdev;
+>> +
+>> +	video->v4l2_fmt.pixelformat = V4L2_PIX_FMT_JPEG;
+>> +	video->v4l2_fmt.field = V4L2_FIELD_NONE;
+>> +	video->v4l2_fmt.colorspace = V4L2_COLORSPACE_SRGB;
+>> +	video->v4l2_fmt.quantization = V4L2_QUANTIZATION_FULL_RANGE;
+>> +
+>> +	rc = v4l2_device_register(video->dev, v4l2_dev);
+>> +	if (rc) {
+>> +		dev_err(video->dev, "Failed to register v4l2 device\n");
+>> +		return rc;
+>> +	}
+>> +
+>> +	v4l2_ctrl_handler_init(&video->ctrl_handler, 2);
+>> +	v4l2_ctrl_new_std(&video->ctrl_handler, &aspeed_video_ctrl_ops,
+>> +			  V4L2_CID_JPEG_COMPRESSION_QUALITY, 0,
+>> +			  ASPEED_VIDEO_JPEG_NUM_QUALITIES - 1, 1, 0);
+>> +	v4l2_ctrl_new_std_menu(&video->ctrl_handler, &aspeed_video_ctrl_ops,
+>> +			       V4L2_CID_JPEG_CHROMA_SUBSAMPLING,
+>> +			       V4L2_JPEG_CHROMA_SUBSAMPLING_420, mask,
+>> +			       V4L2_JPEG_CHROMA_SUBSAMPLING_444);
+>> +
+>> +	if (video->ctrl_handler.error) {
+>> +		v4l2_ctrl_handler_free(&video->ctrl_handler);
+>> +		v4l2_device_unregister(v4l2_dev);
+>> +
+>> +		dev_err(video->dev, "Failed to init controls: %d\n",
+>> +			video->ctrl_handler.error);
+>> +		return rc;
+>> +	}
+>> +
+>> +	v4l2_dev->ctrl_handler = &video->ctrl_handler;
+>> +	vdev->ctrl_handler = &video->ctrl_handler;
+> Not necessary. Setting it in v4l2_dev is sufficient.
+>
+>> +
+>> +	vbq->type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+>> +	vbq->io_modes = VB2_MMAP | VB2_READ;
+> Add VB2_DMABUF.
+>
+>> +	vbq->dev = v4l2_dev->dev;
+>> +	vbq->lock = &video->video_lock;
+>> +	vbq->ops = &aspeed_video_vb2_ops;
+>> +	vbq->mem_ops = &vb2_dma_contig_memops;
+>> +	vbq->drv_priv = video;
+>> +	vbq->buf_struct_size = sizeof(struct aspeed_video_buffer);
+>> +	vbq->timestamp_flags = V4L2_BUF_FLAG_TIMESTAMP_MONOTONIC;
+>> +	vbq->min_buffers_needed = 3;
+>> +
+>> +	rc = vb2_queue_init(vbq);
+>> +	if (rc) {
+>> +		v4l2_ctrl_handler_free(&video->ctrl_handler);
+>> +		v4l2_device_unregister(v4l2_dev);
+>> +
+>> +		dev_err(video->dev, "Failed to init vb2 queue\n");
+>> +		return rc;
+>> +	}
+>> +
+>> +	vdev->queue = vbq;
+>> +	vdev->fops = &aspeed_video_v4l2_fops;
+>> +	vdev->device_caps = V4L2_CAP_VIDEO_CAPTURE | V4L2_CAP_READWRITE |
+>> +		V4L2_CAP_STREAMING;
+>> +	vdev->v4l2_dev = v4l2_dev;
+>> +	strscpy(vdev->name, DEVICE_NAME, sizeof(vdev->name));
+>> +	vdev->vfl_type = VFL_TYPE_GRABBER;
+>> +	vdev->vfl_dir = VFL_DIR_RX;
+>> +	vdev->release = video_device_release_empty;
+>> +	vdev->ioctl_ops = &aspeed_video_ioctl_ops;
+>> +	vdev->lock = &video->video_lock;
+>> +
+>> +	video_set_drvdata(vdev, video);
+>> +	rc = video_register_device(vdev, VFL_TYPE_GRABBER, 0);
+>> +	if (rc) {
+>> +		vb2_queue_release(vbq);
+>> +		v4l2_ctrl_handler_free(&video->ctrl_handler);
+>> +		v4l2_device_unregister(v4l2_dev);
+>> +
+>> +		dev_err(video->dev, "Failed to register video device\n");
+>> +		return rc;
+>> +	}
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +static int aspeed_video_init(struct aspeed_video *video)
+>> +{
+>> +	int irq;
+>> +	int rc;
+>> +	struct device *dev = video->dev;
+>> +
+>> +	irq = irq_of_parse_and_map(dev->of_node, 0);
+>> +	if (!irq) {
+>> +		dev_err(dev, "Unable to find IRQ\n");
+>> +		return -ENODEV;
+>> +	}
+>> +
+>> +	rc = devm_request_irq(dev, irq, aspeed_video_irq, IRQF_SHARED,
+>> +			      DEVICE_NAME, video);
+>> +	if (rc < 0) {
+>> +		dev_err(dev, "Unable to request IRQ %d\n", irq);
+>> +		return rc;
+>> +	}
+>> +
+>> +	video->eclk = devm_clk_get(dev, "eclk");
+>> +	if (IS_ERR(video->eclk)) {
+>> +		dev_err(dev, "Unable to get ECLK\n");
+>> +		return PTR_ERR(video->eclk);
+>> +	}
+>> +
+>> +	video->vclk = devm_clk_get(dev, "vclk");
+>> +	if (IS_ERR(video->vclk)) {
+>> +		dev_err(dev, "Unable to get VCLK\n");
+>> +		return PTR_ERR(video->vclk);
+>> +	}
+>> +
+>> +	video->rst = devm_reset_control_get_exclusive(dev, NULL);
+>> +	if (IS_ERR(video->rst)) {
+>> +		dev_err(dev, "Unable to get VE reset\n");
+>> +		return PTR_ERR(video->rst);
+>> +	}
+>> +
+>> +	rc = of_reserved_mem_device_init(dev);
+>> +	if (rc) {
+>> +		dev_err(dev, "Unable to reserve memory\n");
+>> +		return rc;
+>> +	}
+>> +
+>> +	rc = dma_set_mask_and_coherent(dev, DMA_BIT_MASK(32));
+>> +	if (rc) {
+>> +		dev_err(dev, "Failed to set DMA mask\n");
+>> +		of_reserved_mem_device_release(dev);
+>> +		return rc;
+>> +	}
+>> +
+>> +	if (!aspeed_video_alloc_buf(video, &video->jpeg,
+>> +				    VE_JPEG_HEADER_SIZE)) {
+>> +		dev_err(dev, "Failed to allocate DMA for JPEG header\n");
+>> +		of_reserved_mem_device_release(dev);
+>> +		return rc;
+>> +	}
+>> +
+>> +	aspeed_video_init_jpeg_table(video->jpeg.virt, video->yuv420);
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +static int aspeed_video_probe(struct platform_device *pdev)
+>> +{
+>> +	int rc;
+>> +	struct resource *res;
+>> +	struct aspeed_video *video = kzalloc(sizeof(*video), GFP_KERNEL);
+>> +
+>> +	if (!video)
+>> +		return -ENOMEM;
+>> +
+>> +	video->frame_rate = 30;
+>> +	video->dev = &pdev->dev;
+>> +	mutex_init(&video->video_lock);
+>> +	init_waitqueue_head(&video->wait);
+>> +	INIT_DELAYED_WORK(&video->res_work, aspeed_video_resolution_work);
+>> +	INIT_LIST_HEAD(&video->buffers);
+>> +
+>> +	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+>> +
+>> +	video->base = devm_ioremap_resource(video->dev, res);
+>> +
+>> +	if (IS_ERR(video->base))
+>> +		return PTR_ERR(video->base);
+>> +
+>> +	rc = aspeed_video_init(video);
+>> +	if (rc)
+>> +		return rc;
+>> +
+>> +	rc = aspeed_video_setup_video(video);
+>> +	if (rc)
+>> +		return rc;
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +static int aspeed_video_remove(struct platform_device *pdev)
+>> +{
+>> +	struct device *dev = &pdev->dev;
+>> +	struct v4l2_device *v4l2_dev = dev_get_drvdata(dev);
+>> +	struct aspeed_video *video = to_aspeed_video(v4l2_dev);
+>> +
+>> +	video_unregister_device(&video->vdev);
+>> +
+>> +	vb2_queue_release(&video->queue);
+>> +
+>> +	v4l2_ctrl_handler_free(&video->ctrl_handler);
+>> +
+>> +	v4l2_device_unregister(v4l2_dev);
+>> +
+>> +	dma_free_coherent(video->dev, VE_JPEG_HEADER_SIZE, video->jpeg.virt,
+>> +			  video->jpeg.dma);
+>> +
+>> +	of_reserved_mem_device_release(dev);
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +static const struct of_device_id aspeed_video_of_match[] = {
+>> +	{ .compatible = "aspeed,ast2400-video-engine" },
+>> +	{ .compatible = "aspeed,ast2500-video-engine" },
+>> +	{}
+>> +};
+>> +MODULE_DEVICE_TABLE(of, aspeed_video_of_match);
+>> +
+>> +static struct platform_driver aspeed_video_driver = {
+>> +	.driver = {
+>> +		.name = DEVICE_NAME,
+>> +		.of_match_table = aspeed_video_of_match,
+>> +	},
+>> +	.probe = aspeed_video_probe,
+>> +	.remove = aspeed_video_remove,
+>> +};
+>> +
+>> +module_platform_driver(aspeed_video_driver);
+>> +
+>> +MODULE_DESCRIPTION("ASPEED Video Engine Driver");
+>> +MODULE_AUTHOR("Eddie James");
+>> +MODULE_LICENSE("GPL v2");
+>>
+> Regards,
+>
+> 	Hans
+>
 
