@@ -1,349 +1,50 @@
-From: Tao Ren <taoren@fb.com>
-Date: Fri, 28 Sep 2018 13:55:43 -0700
-Subject: [PATCH 2/2] ARM: dts: aspeed: Add Facebook Backpack-CMM BMC
-Message-ID: <20180928205543.369310-1-taoren@fb.com>
+From: Colin King <colin.king@canonical.com>
+Date: Sat, 29 Sep 2018 12:43:13 +0100
+Subject: [PATCH] usb: gadget: fix spelling mistakeis "[En]queing" ->
+ "[En]queuing"
+Message-ID: <20180929114313.10557-1-colin.king@canonical.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add initial version of device tree file for Facebook Backpack CMM
-(Chasis Management Module) ast2500 BMC.
+From: Colin Ian King <colin.king@canonical.com>
 
-Note: I2C devices on Backpack Line Cards and Fabric Cards are not
-listed in the device tree file because Line/Fabric Cards may be
-unplugged.
+Trivial fix to spelling mistakes in debug warning messages
 
-Signed-off-by: Tao Ren <taoren@fb.com>
+Signed-off-by: Colin Ian King <colin.king@canonical.com>
 ---
- arch/arm/boot/dts/aspeed-bmc-facebook-cmm.dts | 317 ++++++++++++++++++
- 1 file changed, 317 insertions(+)
- create mode 100644 arch/arm/boot/dts/aspeed-bmc-facebook-cmm.dts
+ drivers/usb/gadget/udc/aspeed-vhub/epn.c | 2 +-
+ drivers/usb/gadget/udc/udc-xilinx.c      | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-cmm.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-cmm.dts
-new file mode 100644
-index 000000000000..a259d8a2426a
---- /dev/null
-+++ b/arch/arm/boot/dts/aspeed-bmc-facebook-cmm.dts
-@@ -0,0 +1,317 @@
-+// SPDX-License-Identifier: GPL-2.0+
-+// Copyright (c) 2018 Facebook Inc.
-+/dts-v1/;
-+
-+#include "aspeed-g5.dtsi"
-+
-+/ {
-+	model = "Facebook Backpack CMM BMC";
-+	compatible = "facebook,cmm-bmc", "aspeed,ast2500";
-+
-+	aliases {
-+		/*
-+		 * Override the default uart aliases to avoid breaking
-+		 * the legacy applications.
-+		 */
-+		serial0 = &uart5;
-+		serial1 = &uart1;
-+		serial2 = &uart3;
-+		serial3 = &uart4;
-+
-+		/*
-+		 * Hardcode the bus number of i2c switches' channels to
-+		 * avoid breaking the legacy applications.
-+		 */
-+		i2c16 = &imux16;
-+		i2c17 = &imux17;
-+		i2c18 = &imux18;
-+		i2c19 = &imux19;
-+		i2c20 = &imux20;
-+		i2c21 = &imux21;
-+		i2c22 = &imux22;
-+		i2c23 = &imux23;
-+		i2c24 = &imux24;
-+		i2c25 = &imux25;
-+		i2c26 = &imux26;
-+		i2c27 = &imux27;
-+		i2c28 = &imux28;
-+		i2c29 = &imux29;
-+		i2c30 = &imux30;
-+		i2c31 = &imux31;
-+		i2c32 = &imux32;
-+		i2c33 = &imux33;
-+		i2c34 = &imux34;
-+		i2c35 = &imux35;
-+		i2c36 = &imux36;
-+		i2c37 = &imux37;
-+		i2c38 = &imux38;
-+		i2c39 = &imux39;
-+	};
-+
-+	chosen {
-+		stdout-path = &uart1;
-+		bootargs = "console=ttyS1,9600n8 root=/dev/ram rw earlyprintk";
-+	};
-+
-+	memory at 80000000 {
-+		reg = <0x80000000 0x20000000>;
-+	};
-+};
-+
-+/*
-+ * Update reset type to "system" (full chip) to fix warm reboot hang issue
-+ * when reset type is set to default ("soc", gated by reset mask registers).
-+ */
-+&wdt1 {
-+	status = "okay";
-+	aspeed,reset-type = "system";
-+};
-+
-+/*
-+ * wdt2 is not used by Backpack CMM.
-+ */
-+&wdt2 {
-+	status = "disabled";
-+};
-+
-+&fmc {
-+	status = "okay";
-+	flash at 0 {
-+		status = "okay";
-+		m25p,fast-read;
-+		label = "bmc";
-+#include "facebook-bmc-flash-layout.dtsi"
-+	};
-+};
-+
-+&uart1 {
-+	status = "okay";
-+};
-+
-+&uart3 {
-+	status = "okay";
-+};
-+
-+&uart4 {
-+	status = "okay";
-+};
-+
-+&uart5 {
-+	status = "okay";
-+};
-+
-+&mac1 {
-+	status = "okay";
-+	no-hw-checksum;
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pinctrl_rgmii2_default &pinctrl_mdio2_default>;
-+};
-+
-+&i2c0 {
-+	status = "okay";
-+};
-+
-+&i2c1 {
-+	status = "okay";
-+
-+	i2c-switch at 77 {
-+		compatible = "nxp,pca9548";
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+		reg = <0x77>;
-+
-+		imux16: i2c at 0 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <0>;
-+		};
-+
-+		imux17: i2c at 1 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <1>;
-+		};
-+
-+		imux18: i2c at 2 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <2>;
-+		};
-+
-+		imux19: i2c at 3 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <3>;
-+		};
-+
-+		imux20: i2c at 4 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <4>;
-+		};
-+
-+		imux21: i2c at 5 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <5>;
-+		};
-+
-+		imux22: i2c at 6 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <6>;
-+		};
-+
-+		imux23: i2c at 7 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <7>;
-+		};
-+	};
-+};
-+
-+&i2c2 {
-+	status = "okay";
-+
-+	i2c-switch at 71 {
-+		compatible = "nxp,pca9548";
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+		reg = <0x71>;
-+
-+		imux24: i2c at 0 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <0>;
-+		};
-+
-+		imux25: i2c at 1 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <1>;
-+		};
-+
-+		imux26: i2c at 2 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <2>;
-+		};
-+
-+		imux27: i2c at 3 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <3>;
-+		};
-+
-+		imux28: i2c at 4 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <4>;
-+		};
-+
-+		imux29: i2c at 5 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <5>;
-+		};
-+
-+		imux30: i2c at 6 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <6>;
-+		};
-+
-+		imux31: i2c at 7 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <7>;
-+		};
-+	};
-+};
-+
-+&i2c3 {
-+	status = "okay";
-+};
-+
-+&i2c4 {
-+	status = "okay";
-+};
-+
-+&i2c5 {
-+	status = "okay";
-+};
-+
-+&i2c6 {
-+	status = "okay";
-+};
-+
-+&i2c7 {
-+	status = "okay";
-+};
-+
-+&i2c8 {
-+	status = "okay";
-+
-+	i2c-switch at 77 {
-+		compatible = "nxp,pca9548";
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+		reg = <0x77>;
-+
-+		imux32: i2c at 0 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <0>;
-+		};
-+
-+		imux33: i2c at 1 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <1>;
-+		};
-+
-+		imux34: i2c at 2 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <2>;
-+		};
-+
-+		imux35: i2c at 3 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <3>;
-+		};
-+
-+		imux36: i2c at 4 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <4>;
-+		};
-+
-+		imux37: i2c at 5 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <5>;
-+		};
-+
-+		imux38: i2c at 6 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <6>;
-+		};
-+
-+		imux39: i2c at 7 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <7>;
-+		};
-+	};
-+};
-+
-+&i2c13 {
-+	status = "okay";
-+};
-+
-+&adc {
-+	status = "okay";
-+};
+diff --git a/drivers/usb/gadget/udc/aspeed-vhub/epn.c b/drivers/usb/gadget/udc/aspeed-vhub/epn.c
+index 5939eb1e97f2..e9ee2b72af19 100644
+--- a/drivers/usb/gadget/udc/aspeed-vhub/epn.c
++++ b/drivers/usb/gadget/udc/aspeed-vhub/epn.c
+@@ -353,7 +353,7 @@ static int ast_vhub_epn_queue(struct usb_ep* u_ep, struct usb_request *u_req,
+ 	/* Endpoint enabled ? */
+ 	if (!ep->epn.enabled || !u_ep->desc || !ep->dev || !ep->d_idx ||
+ 	    !ep->dev->enabled || ep->dev->suspended) {
+-		EPDBG(ep,"Enqueing request on wrong or disabled EP\n");
++		EPDBG(ep, "Enqueuing request on wrong or disabled EP\n");
+ 		return -ESHUTDOWN;
+ 	}
+ 
+diff --git a/drivers/usb/gadget/udc/udc-xilinx.c b/drivers/usb/gadget/udc/udc-xilinx.c
+index 6407e433bc78..b1f4104d1283 100644
+--- a/drivers/usb/gadget/udc/udc-xilinx.c
++++ b/drivers/usb/gadget/udc/udc-xilinx.c
+@@ -1078,7 +1078,7 @@ static int xudc_ep_queue(struct usb_ep *_ep, struct usb_request *_req,
+ 	unsigned long flags;
+ 
+ 	if (!ep->desc) {
+-		dev_dbg(udc->dev, "%s:queing request to disabled %s\n",
++		dev_dbg(udc->dev, "%s: queuing request to disabled %s\n",
+ 			__func__, ep->name);
+ 		return -ESHUTDOWN;
+ 	}
 -- 
 2.17.1
 
