@@ -1,42 +1,58 @@
 From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-Date: Mon,  1 Oct 2018 13:27:46 -0700
-Subject: [PATCH i2c-next v4 1/3] dt-bindings: i2c: aspeed: Add 'timeout'
- property as an optional property
+Date: Mon,  1 Oct 2018 13:27:47 -0700
+Subject: [PATCH i2c-next v4 2/3] i2c: aspeed: Add 'timeout' DT property
+ reading code
 In-Reply-To: <20181001202748.8030-1-jae.hyun.yoo@linux.intel.com>
 References: <20181001202748.8030-1-jae.hyun.yoo@linux.intel.com>
-Message-ID: <20181001202748.8030-2-jae.hyun.yoo@linux.intel.com>
+Message-ID: <20181001202748.8030-3-jae.hyun.yoo@linux.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This commit adds 'timeout' property as an optional property which
-can be used for setting 'timeout' value of 'struct i2c_adapter'.
-With this patch, the bus timeout value can be set through this
-DT property from the probing time of the module. Still the bus
-timeout value can be set by an I2C_TIMEOUT ioctl on cdev at
-runtime too.
+This commit adds reading code of the 'timeout' DT property to set
+bus timeout value in adapter configuration. This value still
+can be configured through an I2C_TIMEOUT ioctl on cdev too.
 
 Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
 ---
- Documentation/devicetree/bindings/i2c/i2c-aspeed.txt | 3 +++
- 1 file changed, 3 insertions(+)
+ drivers/i2c/busses/i2c-aspeed.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
-diff --git a/Documentation/devicetree/bindings/i2c/i2c-aspeed.txt b/Documentation/devicetree/bindings/i2c/i2c-aspeed.txt
-index 8fbd8633a387..1789502818c2 100644
---- a/Documentation/devicetree/bindings/i2c/i2c-aspeed.txt
-+++ b/Documentation/devicetree/bindings/i2c/i2c-aspeed.txt
-@@ -17,6 +17,9 @@ Optional Properties:
- 		  specified
- - multi-master	: states that there is another master active on this bus.
+diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
+index 8dc9161ced38..6d31f54a6653 100644
+--- a/drivers/i2c/busses/i2c-aspeed.c
++++ b/drivers/i2c/busses/i2c-aspeed.c
+@@ -885,6 +885,7 @@ static int aspeed_i2c_probe_bus(struct platform_device *pdev)
+ 	struct clk *parent_clk;
+ 	struct resource *res;
+ 	int irq, ret;
++	u32 timeout_ms;
  
-+- timeout	: I2C bus timeout in milliseconds defaults to 1 second when not
-+		  specified.
+ 	bus = devm_kzalloc(&pdev->dev, sizeof(*bus), GFP_KERNEL);
+ 	if (!bus)
+@@ -918,6 +919,11 @@ static int aspeed_i2c_probe_bus(struct platform_device *pdev)
+ 		bus->bus_frequency = 100000;
+ 	}
+ 
++	ret = of_property_read_u32(pdev->dev.of_node, "timeout",
++				   &timeout_ms);
++	if (ret)
++		timeout_ms = 0; /* then adap.timeout will be set by i2c-core */
 +
- Example:
- 
- i2c {
+ 	match = of_match_node(aspeed_i2c_bus_of_table, pdev->dev.of_node);
+ 	if (!match)
+ 		bus->get_clk_reg_val = aspeed_i2c_24xx_get_clk_reg_val;
+@@ -930,7 +936,7 @@ static int aspeed_i2c_probe_bus(struct platform_device *pdev)
+ 	init_completion(&bus->cmd_complete);
+ 	bus->adap.owner = THIS_MODULE;
+ 	bus->adap.retries = 0;
+-	bus->adap.timeout = 5 * HZ;
++	bus->adap.timeout = timeout_ms ? msecs_to_jiffies(timeout_ms) : 0;
+ 	bus->adap.algo = &aspeed_i2c_algo;
+ 	bus->adap.dev.parent = &pdev->dev;
+ 	bus->adap.dev.of_node = pdev->dev.of_node;
 -- 
 2.19.0
 
