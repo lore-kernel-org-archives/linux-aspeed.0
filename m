@@ -1,61 +1,97 @@
-From: Justin.Lee1@Dell.com <Justin.Lee1@Dell.com>
-Date: Tue, 2 Oct 2018 17:36:55 +0000
-Subject: [PATCH net v2] net/ncsi: Extend NC-SI Netlink interface to allow
- user space to send NC-SI command
-In-Reply-To: <18e571bb7c5879a12754b1df20f51fd87ea48712.camel@mendozajonas.com>
-References: <58fff61ffd8d4038b59f32b696e76bbc@AUSX13MPS306.AMER.DELL.COM>
- <18e571bb7c5879a12754b1df20f51fd87ea48712.camel@mendozajonas.com>
-Message-ID: <89f75d6666e7489ab011cb71090646e5@AUSX13MPS306.AMER.DELL.COM>
+From: Vijay Khemka <vijaykhemka@fb.com>
+Date: Tue, 2 Oct 2018 18:56:18 +0000
+Subject: [PATCH v2] net/ncsi: Add NCSI OEM command support
+In-Reply-To: <4876838166d140bab331280efcfd771d@AUSX13MPS306.AMER.DELL.COM>
+References: <20180929010602.1025909-1-vijaykhemka@fb.com>
+ <1004987ef0ab138e772ed5740a0d839bffe39910.camel@mendozajonas.com>
+ <4876838166d140bab331280efcfd771d@AUSX13MPS306.AMER.DELL.COM>
+Message-ID: <F932552B-5751-48E9-BC8B-6F9D7841C7FA@fb.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Sam,
+Hi Justin,
+Thanks for response. Please see my comments below.
 
-Sure, I will generate v3 after Vijay's patch is approved.
+-Vijay
+    > > diff --git a/net/ncsi/ncsi-cmd.c b/net/ncsi/ncsi-cmd.c
+    > > index 7567ca63aae2..2f98533eba46 100644
+    > > --- a/net/ncsi/ncsi-cmd.c
+    > > +++ b/net/ncsi/ncsi-cmd.c
+    > > @@ -211,6 +211,26 @@ static int ncsi_cmd_handler_snfc(struct sk_buff *skb,
+    > >  	return 0;
+    > >  }
+    > >  
+    > > +static int ncsi_cmd_handler_oem(struct sk_buff *skb,
+    > > +				struct ncsi_cmd_arg *nca)
+    > > +{
+    > > +	struct ncsi_cmd_oem_pkt *cmd;
+    
+    >OEM command doesn't not have the fixed data size. Should we use pointer instead?
+    >struct ncsi_cmd_oem_pkt {
+    >	struct ncsi_cmd_pkt_hdr cmd;         /* Command header    */
+    >	__be32                  mfr_id;      /* Manufacture ID    */
+    >	unsigned char           *data;       /* OEM Payload Data  */
+    >};
+    Yes, I agree that OEM command doesn't have fixed data but to map to skbuff structure, 
+    I have defined above structure as per NCSI spec, We can certainly have a MAX_DATA_LEN define.
 
-Thanks,
-Justin
+    > > +	unsigned int len;
+    > > +
+    > > +	len = sizeof(struct ncsi_cmd_pkt_hdr) + 4;
+    > > +	if (nca->payload < 26)
+    > > +		len += 26;
+    
+    >Why does it add 26? I knew the other place in ncsi_alloc_command() is also add 26.
+    >If it is less than 26, then it should be a fixed size of structure ncsi_cmd_pkt (46), right?
+    It adds 26 because It has already assigned len to hdr+4 which is 16+4 = 20 bytes. By 
+    adding 26 it makes it to 46. I am just being consistent with other portion of code.
 
+    > > +	else
+    > > +		len += nca->payload;
+    > > +
+    > > +	cmd = skb_put_zero(skb, len);
+    > > +	cmd->mfr_id = nca->dwords[0];
+    > > +	memcpy(cmd->data, &nca->dwords[1], nca->payload - 4);
+    
+    >Netlink request is using the new nca->data pointer to pass the data as the request payload
+    >is not the same size and some command payload is bigger than 16 bytes.
+    >Will you consider to use the same data pointer? So, we don't need to have a checking here.
+    >If the command is used less than 16 bytes, we can simply assigned &nca->bytes[0] to it.
+    To keep original structure, we can change 16 bytes to MAX_DATA_LEN. Or I don't see any issue in 
+    Copying data from data pointer from nca but user needs to be aware if it is less than 16 bytes then 
+    use bytes or use data pointer. To keep it simple, we should simply define MAX_LEN.
+    
+    > > diff --git a/net/ncsi/ncsi-pkt.h b/net/ncsi/ncsi-pkt.h
+    > > index 91b4b66438df..1f338386810d 100644
+    > > --- a/net/ncsi/ncsi-pkt.h
+    > > +++ b/net/ncsi/ncsi-pkt.h
+    > > @@ -151,6 +151,22 @@ struct ncsi_cmd_snfc_pkt {
+    > >  	unsigned char           pad[22];
+    > >  };
+    > >  
+    > > +/* OEM Request Command as per NCSI Specification */
+    > > +struct ncsi_cmd_oem_pkt {
+    > > +	struct ncsi_cmd_pkt_hdr cmd;         /* Command header    */
+    > > +	__be32                  mfr_id;      /* Manufacture ID    */
+    > > +	unsigned char           data[64];    /* OEM Payload Data  */
+    > > +	__be32                  checksum;    /* Checksum          */
+    > > +};
+    > > +
+    > > +/* OEM Response Packet as per NCSI Specification */
+    > > +struct ncsi_rsp_oem_pkt {
+    > > +	struct ncsi_rsp_pkt_hdr rsp;         /* Command header    */
+    > > +	__be32                  mfr_id;      /* Manufacture ID    */
+    > > +	unsigned char           data[64];    /* Payload data      */
+    > > +	__be32                  checksum;    /* Checksum          */
+    > > +};
+    > > +
+    
+    >OEM command doesn't not have the fixed response data size too.
+    >Should we use pointer instead?
 
-> On Fri, 2018-09-28 at 18:15 +0000, Justin.Lee1 at Dell.com wrote:
-> > The new command (NCSI_CMD_SEND_CMD) is added to allow user space application 
-> > to send NC-SI command to the network card.
-> > Also, add a new attribute (NCSI_ATTR_DATA) for transferring request and response.
-> > 
-> > The work flow is as below. 
-> > 
-> > Request:
-> > User space application -> Netlink interface (msg)
-> >                                               -> new Netlink handler - ncsi_send_cmd_nl()
-> >                                               -> ncsi_xmit_cmd()
-> > Response:
-> > Response received - ncsi_rcv_rsp() -> internal response handler - ncsi_rsp_handler_xxx()
-> >                                                                         -> ncsi_rsp_handler_netlink()
-> >                                                                         -> ncsi_send_netlink_rsp ()
-> >                                                                         -> Netlink interface (msg)
-> >                                                                         -> user space application
-> > Command timeout - ncsi_request_timeout() -> ncsi_send_netlink_timeout ()
-> >                                                                                             -> Netlink interface (msg with zero data length)
-> >                                                                                             -> user space application
-> > Error:
-> > Error detected -> ncsi_send_netlink_err () -> Netlink interface (err msg)
-> >                                                                                        -> user space application
-> > 
-> > 
-> > Signed-off-by: Justin Lee <justin.lee1@dell.com>
-> 
-> Hi Justin,
-> 
-> This is looking pretty good, combined with Vijay's base patch the two
-> approaches should fit together nicely (
-> http://patchwork.ozlabs.org/patch/976510/).
-> 
-> A good merge order would probably be the above patch first, then this
-> patch and Vijay's further OEM patches based on top of that to reduce
-> conflicts.
-> 
-> Cheers,
-> Sam
+    Here also we can define MAX_DATA_LEN because data pointer won't map to skb directly.
+    
+
