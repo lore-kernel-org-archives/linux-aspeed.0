@@ -1,47 +1,39 @@
-From: Joel Stanley <joel@jms.id.au>
-Date: Wed,  3 Oct 2018 15:31:55 +0200
-Subject: [PATCH 2/2] dt-bindings: rtc: Add ASPEED description
-In-Reply-To: <20181003133155.27494-1-joel@jms.id.au>
-References: <20181003133155.27494-1-joel@jms.id.au>
-Message-ID: <20181003133155.27494-3-joel@jms.id.au>
+From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+Date: Wed, 3 Oct 2018 10:10:23 -0700
+Subject: [PATCH i2c-next v4 2/3] i2c: aspeed: Add 'timeout' DT property
+ reading code
+In-Reply-To: <CACPK8XeuFm_GYFhe-KimOHV7y7PBdFjhMGG+QAmfNrfOcb488A@mail.gmail.com>
+References: <20181001202748.8030-1-jae.hyun.yoo@linux.intel.com>
+ <20181001202748.8030-3-jae.hyun.yoo@linux.intel.com>
+ <CACPK8XeuFm_GYFhe-KimOHV7y7PBdFjhMGG+QAmfNrfOcb488A@mail.gmail.com>
+Message-ID: <9951c217-70c1-81cf-a43d-baf6bb02beb9@linux.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Describe the RTC as used in the ASPEED ast2400 and ast2500 SoCs.
+Hi Joel,
 
-Signed-off-by: Joel Stanley <joel@jms.id.au>
----
- .../devicetree/bindings/rtc/rtc-aspeed.txt     | 18 ++++++++++++++++++
- 1 file changed, 18 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/rtc/rtc-aspeed.txt
+On 10/3/2018 12:49 AM, Joel Stanley wrote:
+> Hello Jae,
+> 
+> On Mon, 1 Oct 2018 at 22:28, Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com> wrote:
+>> @@ -918,6 +919,11 @@ static int aspeed_i2c_probe_bus(struct platform_device *pdev)
+>>                  bus->bus_frequency = 100000;
+>>          }
+>>
+>> +       ret = of_property_read_u32(pdev->dev.of_node, "timeout",
+>> +                                  &timeout_ms);
+>> +       if (ret)
+>> +               timeout_ms = 0; /* then adap.timeout will be set by i2c-core */
+> 
+> Is it possible to implement the parsing of this property in the i2c
+> core instead?
+> 
 
-diff --git a/Documentation/devicetree/bindings/rtc/rtc-aspeed.txt b/Documentation/devicetree/bindings/rtc/rtc-aspeed.txt
-new file mode 100644
-index 000000000000..d31a4d24c75f
---- /dev/null
-+++ b/Documentation/devicetree/bindings/rtc/rtc-aspeed.txt
-@@ -0,0 +1,18 @@
-+ASPEED BMC RTC
-+==============
-+
-+Required properties:
-+ - compatible: should be one of the following
-+   * aspeed,ast2400-rtc for the ast2400
-+   * aspeed,ast2500-rtc for the ast2500
-+
-+ - reg: physical base address of the controller and length of memory mapped
-+   region
-+
-+Example:
-+
-+   rtc at 1e781000 {
-+           compatible = "aspeed,ast2400-rtc";
-+           reg = <0x1e781000 0x18>;
-+           status = "disabled";
-+   };
--- 
-2.17.1
+Yes, that's possible but I'm not sure that could be acceptable or not.
+Let me try.
 
+Thanks,
+Jae
