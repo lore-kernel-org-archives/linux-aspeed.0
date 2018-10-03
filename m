@@ -1,130 +1,193 @@
-From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-Date: Wed,  3 Oct 2018 15:31:07 -0700
-Subject: [PATCH i2c-next v5 5/5] i2c: aspeed: Add bus idle waiting logic for
- multi-master use cases
-In-Reply-To: <20181003223107.16133-1-jae.hyun.yoo@linux.intel.com>
-References: <20181003223107.16133-1-jae.hyun.yoo@linux.intel.com>
-Message-ID: <20181003223107.16133-6-jae.hyun.yoo@linux.intel.com>
+From: Vijay Khemka <vijaykhemka@fb.com>
+Date: Wed, 3 Oct 2018 16:32:22 -0700
+Subject: [PATCH v3] net/ncsi: Add NCSI OEM command support
+Message-ID: <20181003233222.3909359-1-vijaykhemka@fb.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-In multi-master environment, this driver's master cannot know
-exactly when peer master sends data to this driver's slave so a
-case can be happened that this master tries to send data through
-the master_xfer function but slave data from peer master is still
-being processed by this driver.
+This patch adds OEM commands and response handling. It also defines OEM
+command and response structure as per NCSI specification along with its
+handlers.
 
-To prevent any state corruption in the case, this patch adds
-checking code if any slave operation is ongoing and it waits up to
-the bus timeout duration before starting a master_xfer operation.
+ncsi_cmd_handler_oem: This is a generic command request handler for OEM
+commands
+ncsi_rsp_handler_oem: This is a generic response handler for OEM commands
 
-Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
 ---
- drivers/i2c/busses/i2c-aspeed.c | 53 +++++++++++++++++++++++----------
- 1 file changed, 38 insertions(+), 15 deletions(-)
+ net/ncsi/internal.h |  5 +++++
+ net/ncsi/ncsi-cmd.c | 30 +++++++++++++++++++++++++++---
+ net/ncsi/ncsi-pkt.h | 14 ++++++++++++++
+ net/ncsi/ncsi-rsp.c | 43 ++++++++++++++++++++++++++++++++++++++++++-
+ 4 files changed, 88 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
-index 833b6b6a4c7e..8d60d7e5b323 100644
---- a/drivers/i2c/busses/i2c-aspeed.c
-+++ b/drivers/i2c/busses/i2c-aspeed.c
-@@ -12,6 +12,7 @@
+diff --git a/net/ncsi/internal.h b/net/ncsi/internal.h
+index 8055e3965cef..3d0a33b874f5 100644
+--- a/net/ncsi/internal.h
++++ b/net/ncsi/internal.h
+@@ -68,6 +68,10 @@ enum {
+ 	NCSI_MODE_MAX
+ };
  
- #include <linux/clk.h>
- #include <linux/completion.h>
-+#include <linux/delay.h>
- #include <linux/err.h>
- #include <linux/errno.h>
- #include <linux/i2c.h>
-@@ -115,6 +116,9 @@
- /* 0x18 : I2CD Slave Device Address Register   */
- #define ASPEED_I2CD_DEV_ADDR_MASK			GENMASK(6, 0)
- 
-+/* Busy checking */
-+#define ASPEED_I2C_BUS_BUSY_CHECK_INTERVAL_US		(10 * 1000)
++/* OEM Vendor Manufacture ID */
++#define NCSI_OEM_MFR_MLX_ID             0x8119
++#define NCSI_OEM_MFR_BCM_ID             0x113d
 +
- enum aspeed_i2c_master_state {
- 	ASPEED_I2C_MASTER_INACTIVE,
- 	ASPEED_I2C_MASTER_START,
-@@ -156,6 +160,8 @@ struct aspeed_i2c_bus {
- 	int				cmd_err;
- 	/* Protected only by i2c_lock_bus */
- 	int				master_xfer_result;
-+	/* Multi-master */
-+	bool				multi_master;
- #if IS_ENABLED(CONFIG_I2C_SLAVE)
- 	struct i2c_client		*slave;
- 	enum aspeed_i2c_slave_state	slave_state;
-@@ -596,27 +602,42 @@ static irqreturn_t aspeed_i2c_bus_irq(int irq, void *dev_id)
- 	return irq_remaining ? IRQ_NONE : IRQ_HANDLED;
+ struct ncsi_channel_version {
+ 	u32 version;		/* Supported BCD encoded NCSI version */
+ 	u32 alpha2;		/* Supported BCD encoded NCSI version */
+@@ -305,6 +309,7 @@ struct ncsi_cmd_arg {
+ 		unsigned short words[8];
+ 		unsigned int   dwords[4];
+ 	};
++	unsigned char        *data;       /* NCSI OEM data                 */
+ };
+ 
+ extern struct list_head ncsi_dev_list;
+diff --git a/net/ncsi/ncsi-cmd.c b/net/ncsi/ncsi-cmd.c
+index 7567ca63aae2..82b7d9201db8 100644
+--- a/net/ncsi/ncsi-cmd.c
++++ b/net/ncsi/ncsi-cmd.c
+@@ -211,6 +211,25 @@ static int ncsi_cmd_handler_snfc(struct sk_buff *skb,
+ 	return 0;
  }
  
-+static int aspeed_i2c_check_bus_busy(struct aspeed_i2c_bus *bus)
++static int ncsi_cmd_handler_oem(struct sk_buff *skb,
++				struct ncsi_cmd_arg *nca)
 +{
-+	ktime_t timeout;
++	struct ncsi_cmd_oem_pkt *cmd;
++	unsigned int len;
 +
-+	if (bus->multi_master) {
-+		might_sleep();
-+		timeout = ktime_add_ms(ktime_get(),
-+				       jiffies_to_msecs(bus->adap.timeout));
-+	}
++	len = sizeof(struct ncsi_cmd_pkt_hdr) + 4;
++	if (nca->payload < 26)
++		len += 26;
++	else
++		len += nca->payload;
 +
-+	for (;;) {
-+		if (!(readl(bus->base + ASPEED_I2C_CMD_REG) &
-+		      ASPEED_I2CD_BUS_BUSY_STS) &&
-+		    bus->slave_state == ASPEED_I2C_SLAVE_STOP)
-+			return 0;
-+		if (!bus->multi_master)
-+			break;
-+		if (ktime_compare(ktime_get(), timeout) > 0)
-+			break;
-+		usleep_range((ASPEED_I2C_BUS_BUSY_CHECK_INTERVAL_US >> 2) + 1,
-+			     ASPEED_I2C_BUS_BUSY_CHECK_INTERVAL_US);
-+	}
++	cmd = skb_put_zero(skb, len);
++	memcpy(&cmd->mfr_id, nca->data, nca->payload);
++	ncsi_cmd_build_header(&cmd->cmd.common, nca);
 +
-+	return aspeed_i2c_recover_bus(bus);
++	return 0;
 +}
 +
- static int aspeed_i2c_master_xfer(struct i2c_adapter *adap,
- 				  struct i2c_msg *msgs, int num)
+ static struct ncsi_cmd_handler {
+ 	unsigned char type;
+ 	int           payload;
+@@ -244,7 +263,7 @@ static struct ncsi_cmd_handler {
+ 	{ NCSI_PKT_CMD_GNS,    0, ncsi_cmd_handler_default },
+ 	{ NCSI_PKT_CMD_GNPTS,  0, ncsi_cmd_handler_default },
+ 	{ NCSI_PKT_CMD_GPS,    0, ncsi_cmd_handler_default },
+-	{ NCSI_PKT_CMD_OEM,    0, NULL                     },
++	{ NCSI_PKT_CMD_OEM,   -1, ncsi_cmd_handler_oem     },
+ 	{ NCSI_PKT_CMD_PLDM,   0, NULL                     },
+ 	{ NCSI_PKT_CMD_GPUUID, 0, ncsi_cmd_handler_default }
+ };
+@@ -316,8 +335,13 @@ int ncsi_xmit_cmd(struct ncsi_cmd_arg *nca)
+ 		return -ENOENT;
+ 	}
+ 
+-	/* Get packet payload length and allocate the request */
+-	nca->payload = nch->payload;
++	/* Get packet payload length and allocate the request
++	 * It is expected that if length set as negative in
++	 * handler structure means caller is initializing it
++	 * and setting length in nca before calling xmit function
++	 */
++	if (nch->payload >= 0)
++		nca->payload = nch->payload;
+ 	nr = ncsi_alloc_command(nca);
+ 	if (!nr)
+ 		return -ENOMEM;
+diff --git a/net/ncsi/ncsi-pkt.h b/net/ncsi/ncsi-pkt.h
+index 91b4b66438df..0f2087c8d42a 100644
+--- a/net/ncsi/ncsi-pkt.h
++++ b/net/ncsi/ncsi-pkt.h
+@@ -151,6 +151,20 @@ struct ncsi_cmd_snfc_pkt {
+ 	unsigned char           pad[22];
+ };
+ 
++/* OEM Request Command as per NCSI Specification */
++struct ncsi_cmd_oem_pkt {
++	struct ncsi_cmd_pkt_hdr cmd;         /* Command header    */
++	__be32                  mfr_id;      /* Manufacture ID    */
++	unsigned char           data[];      /* OEM Payload Data  */
++};
++
++/* OEM Response Packet as per NCSI Specification */
++struct ncsi_rsp_oem_pkt {
++	struct ncsi_rsp_pkt_hdr rsp;         /* Command header    */
++	__be32                  mfr_id;      /* Manufacture ID    */
++	unsigned char           data[];      /* Payload data      */
++};
++
+ /* Get Link Status */
+ struct ncsi_rsp_gls_pkt {
+ 	struct ncsi_rsp_pkt_hdr rsp;        /* Response header   */
+diff --git a/net/ncsi/ncsi-rsp.c b/net/ncsi/ncsi-rsp.c
+index 930c1d3796f0..d66b34749027 100644
+--- a/net/ncsi/ncsi-rsp.c
++++ b/net/ncsi/ncsi-rsp.c
+@@ -596,6 +596,47 @@ static int ncsi_rsp_handler_snfc(struct ncsi_request *nr)
+ 	return 0;
+ }
+ 
++static struct ncsi_rsp_oem_handler {
++	unsigned int	mfr_id;
++	int		(*handler)(struct ncsi_request *nr);
++} ncsi_rsp_oem_handlers[] = {
++	{ NCSI_OEM_MFR_MLX_ID, NULL },
++	{ NCSI_OEM_MFR_BCM_ID, NULL }
++};
++
++/* Response handler for OEM command */
++static int ncsi_rsp_handler_oem(struct ncsi_request *nr)
++{
++	struct ncsi_rsp_oem_pkt *rsp;
++	struct ncsi_rsp_oem_handler *nrh = NULL;
++	unsigned int mfr_id, i;
++
++	/* Get the response header */
++	rsp = (struct ncsi_rsp_oem_pkt *)skb_network_header(nr->rsp);
++	mfr_id = ntohl(rsp->mfr_id);
++
++	/* Check for manufacturer id and Find the handler */
++	for (i = 0; i < ARRAY_SIZE(ncsi_rsp_oem_handlers); i++) {
++		if (ncsi_rsp_oem_handlers[i].mfr_id == mfr_id) {
++			if (ncsi_rsp_oem_handlers[i].handler)
++				nrh = &ncsi_rsp_oem_handlers[i];
++			else
++				nrh = NULL;
++
++			break;
++		}
++	}
++
++	if (!nrh) {
++		netdev_err(nr->ndp->ndev.dev, "Received unrecognized OEM packet with MFR-ID (0x%x)\n",
++			   mfr_id);
++		return -ENOENT;
++	}
++
++	/* Process the packet */
++	return nrh->handler(nr);
++}
++
+ static int ncsi_rsp_handler_gvi(struct ncsi_request *nr)
  {
- 	struct aspeed_i2c_bus *bus = i2c_get_adapdata(adap);
- 	unsigned long time_left, flags;
--	int ret = 0;
- 
--	spin_lock_irqsave(&bus->lock, flags);
--	bus->cmd_err = 0;
--
--	/* If bus is busy, attempt recovery. We assume a single master
--	 * environment.
--	 */
--	if (readl(bus->base + ASPEED_I2C_CMD_REG) & ASPEED_I2CD_BUS_BUSY_STS) {
--		spin_unlock_irqrestore(&bus->lock, flags);
--		ret = aspeed_i2c_recover_bus(bus);
--		if (ret)
--			return ret;
--		spin_lock_irqsave(&bus->lock, flags);
--	}
-+	if (aspeed_i2c_check_bus_busy(bus))
-+		return -EAGAIN;
- 
-+	spin_lock_irqsave(&bus->lock, flags);
- 	bus->cmd_err = 0;
- 	bus->msgs = msgs;
- 	bus->msgs_index = 0;
-@@ -827,7 +848,9 @@ static int aspeed_i2c_init(struct aspeed_i2c_bus *bus,
- 	if (ret < 0)
- 		return ret;
- 
--	if (!of_property_read_bool(pdev->dev.of_node, "multi-master"))
-+	if (of_property_read_bool(pdev->dev.of_node, "multi-master"))
-+		bus->multi_master = true;
-+	else
- 		fun_ctrl_reg |= ASPEED_I2CD_MULTI_MASTER_DIS;
- 
- 	/* Enable Master Mode */
+ 	struct ncsi_rsp_gvi_pkt *rsp;
+@@ -932,7 +973,7 @@ static struct ncsi_rsp_handler {
+ 	{ NCSI_PKT_RSP_GNS,   172, ncsi_rsp_handler_gns     },
+ 	{ NCSI_PKT_RSP_GNPTS, 172, ncsi_rsp_handler_gnpts   },
+ 	{ NCSI_PKT_RSP_GPS,     8, ncsi_rsp_handler_gps     },
+-	{ NCSI_PKT_RSP_OEM,     0, NULL                     },
++	{ NCSI_PKT_RSP_OEM,    -1, ncsi_rsp_handler_oem     },
+ 	{ NCSI_PKT_RSP_PLDM,    0, NULL                     },
+ 	{ NCSI_PKT_RSP_GPUUID, 20, ncsi_rsp_handler_gpuuid  }
+ };
 -- 
-2.19.0
+2.17.1
 
