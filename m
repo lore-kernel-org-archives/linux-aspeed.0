@@ -1,59 +1,50 @@
 From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-Date: Wed,  3 Oct 2018 15:31:02 -0700
-Subject: [PATCH i2c-next v5 0/5] i2c: aspeed: Add bus idle waiting logic for
- multi-master use cases
-Message-ID: <20181003223107.16133-1-jae.hyun.yoo@linux.intel.com>
+Date: Wed,  3 Oct 2018 15:31:03 -0700
+Subject: [PATCH i2c-next v5 1/5] dt-bindings: i2c: Add 'timeout-ms' and
+ '#retries' properties as common optional
+In-Reply-To: <20181003223107.16133-1-jae.hyun.yoo@linux.intel.com>
+References: <20181003223107.16133-1-jae.hyun.yoo@linux.intel.com>
+Message-ID: <20181003223107.16133-2-jae.hyun.yoo@linux.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-In multi-master environment, this driver's master cannot know
-exactly when peer master sends data to this driver's slave so a
-case can be happened that this master tries to send data through
-the master_xfer function but slave data from peer master is still
-being processed by this driver. To prevent state corruption in the
-case, this patch adds checking code if any slave operation is
-ongoing and it waits up to the bus timeout duration before starting
-a master_xfer operation.
+This commit adds 'timeout-ms' and '#retries' properties as common
+optional properties that can be used for setting 'timeout' and
+'retries' values of 'struct i2c_adapter'. With this patch, the bus
+timeout value and the master transfer retries count can be set
+through these DT properties at the registration time of an adapter.
+Still the values can be set by I2C_TIMEOUT and I2C_RETRIES ioctls
+on cdev at runtime too.
 
-To support this change, it introduces changes on i2c-core-base to
-make that able to read the bus timeout and master transfer retries
-count values from device tree properties.
+These properties may not be supported by all drivers. However, if
+a driver wants to support one of them, it should adapt the
+bindings in this document.
 
-Please review this patch set.
+Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+---
+ Documentation/devicetree/bindings/i2c/i2c.txt | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-Thanks,
-
--Jae
-
-Changes since v3:
-- Changed the property name to 'timeout' and made it use the
-  default setting in i2c-core when not specified.
-
-Changes since v2:
-- Changed the property name to 'aspeed,timeout' and made it to
-  update the adapter's timeout configuration.
-
-Changes since v1:
-- Changed define names of timeout related.
-
-Jae Hyun Yoo (5):
-  dt-bindings: i2c: Add 'timeout-ms' and '#retries' properties as common
-    optional
-  i2c: Add support for 'timeout-ms' and '#retries' OF properties
-  dt-bindings: i2c: aspeed: Add 'timeout-ms' property as an optional
-    property
-  i2c: aspeed: Remove hard-coded bus timeout value setting
-  i2c: aspeed: Add bus idle waiting logic for multi-master use cases
-
- .../devicetree/bindings/i2c/i2c-aspeed.txt    |  3 ++
- Documentation/devicetree/bindings/i2c/i2c.txt |  6 +++
- drivers/i2c/busses/i2c-aspeed.c               | 54 +++++++++++++------
- drivers/i2c/i2c-core-base.c                   | 18 ++++++-
- 4 files changed, 63 insertions(+), 18 deletions(-)
-
+diff --git a/Documentation/devicetree/bindings/i2c/i2c.txt b/Documentation/devicetree/bindings/i2c/i2c.txt
+index 11263982470e..6d7a6e919cf8 100644
+--- a/Documentation/devicetree/bindings/i2c/i2c.txt
++++ b/Documentation/devicetree/bindings/i2c/i2c.txt
+@@ -80,6 +80,12 @@ wants to support one of the below features, it should adapt the bindings below.
+ 	Names of map programmable addresses.
+ 	It can contain any map needing another address than default one.
+ 
++- timeout-ms
++	Bus timeout in milliseconds.
++
++- #retries
++	Number of retries for master transfer.
++
+ Binding may contain optional "interrupts" property, describing interrupts
+ used by the device. I2C core will assign "irq" interrupt (or the very first
+ interrupt if not using interrupt names) as primary interrupt for the slave.
 -- 
 2.19.0
 
