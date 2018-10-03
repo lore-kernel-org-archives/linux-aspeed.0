@@ -1,27 +1,50 @@
-From: Tao Ren <taoren@fb.com>
-Date: Wed, 3 Oct 2018 07:46:00 +0000
-Subject: [PATCH] clocksource/drivers/fttmr010: fix invalid interrupt
- register access
-In-Reply-To: <CACRpkdZXum+bQg1FO+EHhKWpxtPYXfeRhoAKkFXeMQh1Jng3Ww@mail.gmail.com>
-References: <20181002041437.2493192-1-taoren@fb.com>
- <CACRpkdY4VaH2Yoob2gWwAk11P1NTDdza262zKGs=gju0NH9skQ@mail.gmail.com>
- <3a294c92-bcc6-b42e-b3af-72bc5f607fd9@fb.com>
- <CACRpkdZXum+bQg1FO+EHhKWpxtPYXfeRhoAKkFXeMQh1Jng3Ww@mail.gmail.com>
-Message-ID: <966C48A9-98F7-4B2B-BCD0-FAF3066C5794@fb.com>
+From: Joel Stanley <joel@jms.id.au>
+Date: Wed, 3 Oct 2018 09:49:41 +0200
+Subject: [PATCH i2c-next v4 2/3] i2c: aspeed: Add 'timeout' DT property
+ reading code
+In-Reply-To: <20181001202748.8030-3-jae.hyun.yoo@linux.intel.com>
+References: <20181001202748.8030-1-jae.hyun.yoo@linux.intel.com>
+ <20181001202748.8030-3-jae.hyun.yoo@linux.intel.com>
+Message-ID: <CACPK8XeuFm_GYFhe-KimOHV7y7PBdFjhMGG+QAmfNrfOcb488A@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 10/2/18, 11:57 PM, "Linus Walleij" <linus.walleij@linaro.org> wrote:
+Hello Jae,
 
-> My thought is go for (2) and do all changes in one patch :)
+On Mon, 1 Oct 2018 at 22:28, Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com> wrote:
+>
+> This commit adds reading code of the 'timeout' DT property to set
+> bus timeout value in adapter configuration. This value still
+> can be configured through an I2C_TIMEOUT ioctl on cdev too.
+>
+> Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+> ---
+>  drivers/i2c/busses/i2c-aspeed.c | 8 +++++++-
+>  1 file changed, 7 insertions(+), 1 deletion(-)
+>
+> diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
+> index 8dc9161ced38..6d31f54a6653 100644
+> --- a/drivers/i2c/busses/i2c-aspeed.c
+> +++ b/drivers/i2c/busses/i2c-aspeed.c
+> @@ -885,6 +885,7 @@ static int aspeed_i2c_probe_bus(struct platform_device *pdev)
+>         struct clk *parent_clk;
+>         struct resource *res;
+>         int irq, ret;
+> +       u32 timeout_ms;
+>
+>         bus = devm_kzalloc(&pdev->dev, sizeof(*bus), GFP_KERNEL);
+>         if (!bus)
+> @@ -918,6 +919,11 @@ static int aspeed_i2c_probe_bus(struct platform_device *pdev)
+>                 bus->bus_frequency = 100000;
+>         }
+>
+> +       ret = of_property_read_u32(pdev->dev.of_node, "timeout",
+> +                                  &timeout_ms);
+> +       if (ret)
+> +               timeout_ms = 0; /* then adap.timeout will be set by i2c-core */
 
-No problem, Linus.
-One more question: looks like my first patch 4451d3f59f2a (fix set_next_event handler) is not merged back to "timers/core". Should I generate this patch on top of the first patch or on top of the current "timers/core"? Which one would be easier for you (or Daniel/Thomas)? Sorry I'm pretty new to the community..
-
-Thanks,
-Tao Ren
-
-
+Is it possible to implement the parsing of this property in the i2c
+core instead?
