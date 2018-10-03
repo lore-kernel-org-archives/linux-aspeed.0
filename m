@@ -1,11 +1,11 @@
 From: Eddie James <eajames@linux.vnet.ibm.com>
-Date: Wed, 3 Oct 2018 15:26:53 -0500
+Date: Wed, 3 Oct 2018 15:43:08 -0500
 Subject: [PATCH v3 2/2] media: platform: Add Aspeed Video Engine driver
 In-Reply-To: <a78d4c7a-ac58-c23d-a683-23dce54be993@xs4all.nl>
 References: <1537903629-14003-1-git-send-email-eajames@linux.ibm.com>
  <1537903629-14003-3-git-send-email-eajames@linux.ibm.com>
  <a78d4c7a-ac58-c23d-a683-23dce54be993@xs4all.nl>
-Message-ID: <8ca47483-5347-c40d-0d01-4f13e88f8cde@linux.vnet.ibm.com>
+Message-ID: <ca4757b9-0825-bbbf-b388-0295fd13bad7@linux.vnet.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -24,51 +24,36 @@ On 09/28/2018 06:30 AM, Hans Verkuil wrote:
 >> Add a V4L2 driver to capture video data and compress it to JPEG images.
 >> Make the video frames available through the V4L2 streaming interface.
 >>
->> +		memcpy(&table[base], aspeed_video_jpeg_dct[i],
->> +		       sizeof(aspeed_video_jpeg_dct[i]));
->> +
->> +		base += ASPEED_VIDEO_JPEG_DCT_SIZE;
->> +		memcpy(&table[base], aspeed_video_jpeg_quant,
->> +		       sizeof(aspeed_video_jpeg_quant));
->> +
->> +		if (yuv420)
->> +			table[base + 2] = 0x00220103;
+>> Signed-off-by: Eddie James <eajames@linux.ibm.com>
+
 >> +	}
->> +}
 >> +
->> +static void aspeed_video_update(struct aspeed_video *video, u32 reg,
->> +				unsigned long mask, u32 bits)
-> You probably want to use u32 for the mask.
+>> +	video->height = (bottom - top) + 1;
+>> +	video->width = (right - left) + 1;
+>> +	size = video->height * video->width;
+> It looks like you can actually determine the blanking width/height and
+> possibly even more detailed information that would be very useful to
+> show with the DV_TIMINGS ioctls.
 
-Using a u32 there results in:
+Hmm. This information is related to the video signal captured from the 
+host. That information has nothing to do with the buffer that is 
+compressed and grabbed by the driver and ultimately provided to 
+userspace. Isn't the timing information meaningless for JPEG frames?
 
-warning: large integer implicitly truncated to unsigned type [-Woverflow]
-
-everywhere I call aspeed_video_update. Not sure what the deal is. Any 
-suggestions?
+Forgot to include this question in my previous reply, sorry for the 
+additional mail.
 
 Thanks,
 Eddie
 
 >
->> +{
->> +	u32 t = readl(video->base + reg);
->> +	u32 before = t;
 >> +
->> +	t &= mask;
->> +	t |= bits;
->> +	writel(t, video->base + reg);
->> +	dev_dbg(video->dev, "update %03x[%08x -> %08x]\n", reg, before,
+>> +	/* Don't use direct mode below 1024 x 768 (irqs don't fire) */
+>> +	if (size < DIRECT_FETCH_THRESHOLD) {
+>> +		aspeed_video_write(video, VE_TGS_0,
+>> +				   FIELD_PREP(VE_TGS_FIRST, left - 1) |
+>> +				   FIELD_PREP(VE_TGS_LAST, right));
+>> +		aspeed_video_write(video, VE_TGS_1,
+>> +				   FIELD_PREP(VE_TGS_FIRST, top) |
 >>
->> +
->> +module_platform_driver(aspeed_video_driver);
->> +
->> +MODULE_DESCRIPTION("ASPEED Video Engine Driver");
->> +MODULE_AUTHOR("Eddie James");
->> +MODULE_LICENSE("GPL v2");
->>
-> Regards,
->
-> 	Hans
->
 
