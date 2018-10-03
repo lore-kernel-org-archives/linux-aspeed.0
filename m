@@ -1,39 +1,74 @@
-From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-Date: Wed, 3 Oct 2018 10:10:23 -0700
-Subject: [PATCH i2c-next v4 2/3] i2c: aspeed: Add 'timeout' DT property
- reading code
-In-Reply-To: <CACPK8XeuFm_GYFhe-KimOHV7y7PBdFjhMGG+QAmfNrfOcb488A@mail.gmail.com>
-References: <20181001202748.8030-1-jae.hyun.yoo@linux.intel.com>
- <20181001202748.8030-3-jae.hyun.yoo@linux.intel.com>
- <CACPK8XeuFm_GYFhe-KimOHV7y7PBdFjhMGG+QAmfNrfOcb488A@mail.gmail.com>
-Message-ID: <9951c217-70c1-81cf-a43d-baf6bb02beb9@linux.intel.com>
+From: Eddie James <eajames@linux.vnet.ibm.com>
+Date: Wed, 3 Oct 2018 15:26:53 -0500
+Subject: [PATCH v3 2/2] media: platform: Add Aspeed Video Engine driver
+In-Reply-To: <a78d4c7a-ac58-c23d-a683-23dce54be993@xs4all.nl>
+References: <1537903629-14003-1-git-send-email-eajames@linux.ibm.com>
+ <1537903629-14003-3-git-send-email-eajames@linux.ibm.com>
+ <a78d4c7a-ac58-c23d-a683-23dce54be993@xs4all.nl>
+Message-ID: <8ca47483-5347-c40d-0d01-4f13e88f8cde@linux.vnet.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Joel,
 
-On 10/3/2018 12:49 AM, Joel Stanley wrote:
-> Hello Jae,
-> 
-> On Mon, 1 Oct 2018 at 22:28, Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com> wrote:
->> @@ -918,6 +919,11 @@ static int aspeed_i2c_probe_bus(struct platform_device *pdev)
->>                  bus->bus_frequency = 100000;
->>          }
+
+On 09/28/2018 06:30 AM, Hans Verkuil wrote:
+> On 09/25/2018 09:27 PM, Eddie James wrote:
+>> The Video Engine (VE) embedded in the Aspeed AST2400 and AST2500 SOCs
+>> can capture and compress video data from digital or analog sources. With
+>> the Aspeed chip acting a service processor, the Video Engine can capture
+>> the host processor graphics output.
 >>
->> +       ret = of_property_read_u32(pdev->dev.of_node, "timeout",
->> +                                  &timeout_ms);
->> +       if (ret)
->> +               timeout_ms = 0; /* then adap.timeout will be set by i2c-core */
-> 
-> Is it possible to implement the parsing of this property in the i2c
-> core instead?
-> 
+>> Add a V4L2 driver to capture video data and compress it to JPEG images.
+>> Make the video frames available through the V4L2 streaming interface.
+>>
+>> +		memcpy(&table[base], aspeed_video_jpeg_dct[i],
+>> +		       sizeof(aspeed_video_jpeg_dct[i]));
+>> +
+>> +		base += ASPEED_VIDEO_JPEG_DCT_SIZE;
+>> +		memcpy(&table[base], aspeed_video_jpeg_quant,
+>> +		       sizeof(aspeed_video_jpeg_quant));
+>> +
+>> +		if (yuv420)
+>> +			table[base + 2] = 0x00220103;
+>> +	}
+>> +}
+>> +
+>> +static void aspeed_video_update(struct aspeed_video *video, u32 reg,
+>> +				unsigned long mask, u32 bits)
+> You probably want to use u32 for the mask.
 
-Yes, that's possible but I'm not sure that could be acceptable or not.
-Let me try.
+Using a u32 there results in:
+
+warning: large integer implicitly truncated to unsigned type [-Woverflow]
+
+everywhere I call aspeed_video_update. Not sure what the deal is. Any 
+suggestions?
 
 Thanks,
-Jae
+Eddie
+
+>
+>> +{
+>> +	u32 t = readl(video->base + reg);
+>> +	u32 before = t;
+>> +
+>> +	t &= mask;
+>> +	t |= bits;
+>> +	writel(t, video->base + reg);
+>> +	dev_dbg(video->dev, "update %03x[%08x -> %08x]\n", reg, before,
+>>
+>> +
+>> +module_platform_driver(aspeed_video_driver);
+>> +
+>> +MODULE_DESCRIPTION("ASPEED Video Engine Driver");
+>> +MODULE_AUTHOR("Eddie James");
+>> +MODULE_LICENSE("GPL v2");
+>>
+> Regards,
+>
+> 	Hans
+>
+
