@@ -1,27 +1,65 @@
 From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-Date: Thu, 4 Oct 2018 09:11:47 -0700
-Subject: [PATCH i2c-next v5 4/5] i2c: aspeed: Remove hard-coded bus
- timeout value setting
-In-Reply-To: <CACPK8XdTMfdw1Tu97oD7R7MXQKGHnA5A+SVfAA3RDkiTd_bawA@mail.gmail.com>
+Date: Thu, 4 Oct 2018 09:26:02 -0700
+Subject: [PATCH i2c-next v5 2/5] i2c: Add support for 'timeout-ms' and
+ '#retries' OF properties
+In-Reply-To: <20181003223107.16133-3-jae.hyun.yoo@linux.intel.com>
 References: <20181003223107.16133-1-jae.hyun.yoo@linux.intel.com>
- <20181003223107.16133-5-jae.hyun.yoo@linux.intel.com>
- <CACPK8XdTMfdw1Tu97oD7R7MXQKGHnA5A+SVfAA3RDkiTd_bawA@mail.gmail.com>
-Message-ID: <185b73f1-ad5f-eedb-7c56-2a2e266f5960@linux.intel.com>
+ <20181003223107.16133-3-jae.hyun.yoo@linux.intel.com>
+Message-ID: <1832adbf-fa95-ccfc-00e5-63568059bcd1@linux.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 10/4/2018 1:32 AM, Joel Stanley wrote:
-> On Thu, 4 Oct 2018 at 00:31, Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com> wrote:
->>
->> This commit removes hard-coded bus timeout value setting so that
->> it can be set by i2c-core-base.
->>
->> Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-> 
-> Reviewed-by: Joel Stanley <joel@jms.id.au>
-> 
+> +++ b/drivers/i2c/i2c-core-base.c
+> @@ -1214,6 +1214,7 @@ EXPORT_SYMBOL_GPL(i2c_handle_smbus_host_notify);
+>   static int i2c_register_adapter(struct i2c_adapter *adap)
+>   {
+>   	int res = -EINVAL;
+> +	u32 timeout_ms;
 
-Thanks for the review, Joel!
+Will change it to:
+
+u32 timeout_ms = 0;
+
+>   
+>   	/* Can't register until after driver model init */
+>   	if (WARN_ON(!is_registered)) {
+> @@ -1239,8 +1240,21 @@ static int i2c_register_adapter(struct i2c_adapter *adap)
+>   	INIT_LIST_HEAD(&adap->userspace_clients);
+>   
+>   	/* Set default timeout to 1 second if not already set */
+> -	if (adap->timeout == 0)
+> -		adap->timeout = HZ;
+> +	if (adap->timeout == 0) {
+> +		if (adap->dev.of_node)
+> +			res = of_property_read_u32(adap->dev.of_node,
+> +						   "timeout-ms",
+> +						   &timeout_ms);
+> +		if (res)
+> +			timeout_ms = 0;
+> +
+
+Also, it should be:
+
+if (adap->dev.of_node)
+	of_property_read_u32(adap->dev.of_node, "timeout-ms",
+			     &timeout_ms);
+
+Will submit a new patch set.
+
+Thanks,
+Jae
+
+> +		adap->timeout = timeout_ms ? msecs_to_jiffies(timeout_ms) : HZ;
+> +	}
+> +
+> +	/* Set retries value if it has the OF property */
+> +	if (adap->dev.of_node)
+> +		of_property_read_u32(adap->dev.of_node, "#retries",
+> +				     &adap->retries);
+>   
+>   	/* register soft irqs for Host Notify */
+>   	res = i2c_setup_host_notify_irq_domain(adap);
+> 
