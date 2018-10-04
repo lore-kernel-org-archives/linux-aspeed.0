@@ -1,65 +1,30 @@
-From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-Date: Thu, 4 Oct 2018 09:26:02 -0700
-Subject: [PATCH i2c-next v5 2/5] i2c: Add support for 'timeout-ms' and
- '#retries' OF properties
-In-Reply-To: <20181003223107.16133-3-jae.hyun.yoo@linux.intel.com>
-References: <20181003223107.16133-1-jae.hyun.yoo@linux.intel.com>
- <20181003223107.16133-3-jae.hyun.yoo@linux.intel.com>
-Message-ID: <1832adbf-fa95-ccfc-00e5-63568059bcd1@linux.intel.com>
+From: Tao Ren <taoren@fb.com>
+Date: Thu, 4 Oct 2018 17:58:14 +0000
+Subject: [PATCH 2/2] ARM: dts: aspeed: Add Facebook Backpack-CMM BMC
+In-Reply-To: <20180928205543.369310-1-taoren@fb.com>
+References: <20180928205543.369310-1-taoren@fb.com>
+Message-ID: <D4DB54D3-D7BF-48B3-A10B-76EA5A403237@fb.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-> +++ b/drivers/i2c/i2c-core-base.c
-> @@ -1214,6 +1214,7 @@ EXPORT_SYMBOL_GPL(i2c_handle_smbus_host_notify);
->   static int i2c_register_adapter(struct i2c_adapter *adap)
->   {
->   	int res = -EINVAL;
-> +	u32 timeout_ms;
+Hi Joel / Andrew,
 
-Will change it to:
+?On 9/28/18, 1:56 PM, "Tao Ren" <taoren@fb.com> wrote:
 
-u32 timeout_ms = 0;
+> Add initial version of device tree file for Facebook Backpack CMM
+> (Chasis Management Module) ast2500 BMC.
+> Note: I2C devices on Backpack Line Cards and Fabric Cards are not
+> listed in the device tree file because Line/Fabric Cards may be
+> unplugged.
+>
+> Signed-off-by: Tao Ren <taoren@fb.com>
 
->   
->   	/* Can't register until after driver model init */
->   	if (WARN_ON(!is_registered)) {
-> @@ -1239,8 +1240,21 @@ static int i2c_register_adapter(struct i2c_adapter *adap)
->   	INIT_LIST_HEAD(&adap->userspace_clients);
->   
->   	/* Set default timeout to 1 second if not already set */
-> -	if (adap->timeout == 0)
-> -		adap->timeout = HZ;
-> +	if (adap->timeout == 0) {
-> +		if (adap->dev.of_node)
-> +			res = of_property_read_u32(adap->dev.of_node,
-> +						   "timeout-ms",
-> +						   &timeout_ms);
-> +		if (res)
-> +			timeout_ms = 0;
-> +
+A kinder reminder just in case you missed the email. Any comments/suggestions on the patches?
 
-Also, it should be:
-
-if (adap->dev.of_node)
-	of_property_read_u32(adap->dev.of_node, "timeout-ms",
-			     &timeout_ms);
-
-Will submit a new patch set.
 
 Thanks,
-Jae
+Tao Ren
 
-> +		adap->timeout = timeout_ms ? msecs_to_jiffies(timeout_ms) : HZ;
-> +	}
-> +
-> +	/* Set retries value if it has the OF property */
-> +	if (adap->dev.of_node)
-> +		of_property_read_u32(adap->dev.of_node, "#retries",
-> +				     &adap->retries);
->   
->   	/* register soft irqs for Host Notify */
->   	res = i2c_setup_host_notify_irq_domain(adap);
-> 
