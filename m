@@ -1,578 +1,244 @@
-From: Justin.Lee1@Dell.com <Justin.Lee1@Dell.com>
-Date: Mon, 8 Oct 2018 23:13:13 +0000
-Subject: [PATCH net-next v3] net/ncsi: Extend NC-SI Netlink interface to allow
- user space to send NC-SI command
-Message-ID: <e32d218b9e514cc58eeb916bf0f29a52@AUSX13MPS302.AMER.DELL.COM>
+From: Vijay Khemka <vijaykhemka@fb.com>
+Date: Tue, 9 Oct 2018 10:48:05 -0700
+Subject: [PATCH v2 1/2] net/ncsi: Add NCSI Broadcom OEM command
+Message-ID: <20181009174806.404791-1-vijaykhemka@fb.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The new command (NCSI_CMD_SEND_CMD) is added to allow user space 
-application to send NC-SI command to the network card.
-Also, add a new attribute (NCSI_ATTR_DATA) for transferring request and response.
+This patch adds OEM Broadcom commands and response handling. It also
+defines OEM Get MAC Address handler to get and configure the device.
 
-The work flow is as below. 
+ncsi_oem_gma_handler_bcm: This handler send NCSI broadcom command for
+getting mac address.
+ncsi_rsp_handler_oem_bcm: This handles response received for all
+broadcom OEM commands.
+ncsi_rsp_handler_oem_bcm_gma: This handles get mac address response and
+set it to device.
 
-Request:
-User space application
-	-> Netlink interface (msg)
-	-> new Netlink handler - ncsi_send_cmd_nl()
-	-> ncsi_xmit_cmd()
-
-Response:
-Response received - ncsi_rcv_rsp()
-	-> internal response handler - ncsi_rsp_handler_xxx()
-	-> ncsi_rsp_handler_netlink()
-	-> ncsi_send_netlink_rsp ()
-	-> Netlink interface (msg)
-	-> user space application
-
-Command timeout - ncsi_request_timeout()
-	-> ncsi_send_netlink_timeout ()
-	-> Netlink interface (msg with zero data length)
-	-> user space application
-
-Error:
-Error detected
-	-> ncsi_send_netlink_err ()
-	-> Netlink interface (err msg)
-	-> user space application
-
-V3: Based on http://patchwork.ozlabs.org/patch/979688/ to remove the duplicated code.
-V2: Remove non-related debug message and clean up the code.
-
-
-Signed-off-by: Justin Lee <justin.lee1@dell.com> 
-
-
+Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
 ---
- include/uapi/linux/ncsi.h |   3 +
- net/ncsi/internal.h       |  10 ++-
- net/ncsi/ncsi-cmd.c       |   8 ++
- net/ncsi/ncsi-manage.c    |  16 ++++
- net/ncsi/ncsi-netlink.c   | 204 ++++++++++++++++++++++++++++++++++++++++++++++
- net/ncsi/ncsi-netlink.h   |  12 +++
- net/ncsi/ncsi-rsp.c       |  67 +++++++++++++--
- 7 files changed, 314 insertions(+), 6 deletions(-)
+ net/ncsi/Kconfig       |  6 ++++
+ net/ncsi/internal.h    |  8 +++++
+ net/ncsi/ncsi-manage.c | 70 +++++++++++++++++++++++++++++++++++++++++-
+ net/ncsi/ncsi-pkt.h    |  8 +++++
+ net/ncsi/ncsi-rsp.c    | 40 +++++++++++++++++++++++-
+ 5 files changed, 130 insertions(+), 2 deletions(-)
 
-diff --git a/include/uapi/linux/ncsi.h b/include/uapi/linux/ncsi.h
-index 4c292ec..4992bfc 100644
---- a/include/uapi/linux/ncsi.h
-+++ b/include/uapi/linux/ncsi.h
-@@ -30,6 +30,7 @@ enum ncsi_nl_commands {
- 	NCSI_CMD_PKG_INFO,
- 	NCSI_CMD_SET_INTERFACE,
- 	NCSI_CMD_CLEAR_INTERFACE,
-+	NCSI_CMD_SEND_CMD,
- 
- 	__NCSI_CMD_AFTER_LAST,
- 	NCSI_CMD_MAX = __NCSI_CMD_AFTER_LAST - 1
-@@ -43,6 +44,7 @@ enum ncsi_nl_commands {
-  * @NCSI_ATTR_PACKAGE_LIST: nested array of NCSI_PKG_ATTR attributes
-  * @NCSI_ATTR_PACKAGE_ID: package ID
-  * @NCSI_ATTR_CHANNEL_ID: channel ID
-+ * @NCSI_ATTR_DATA: command payload
-  * @NCSI_ATTR_MAX: highest attribute number
-  */
- enum ncsi_nl_attrs {
-@@ -51,6 +53,7 @@ enum ncsi_nl_attrs {
- 	NCSI_ATTR_PACKAGE_LIST,
- 	NCSI_ATTR_PACKAGE_ID,
- 	NCSI_ATTR_CHANNEL_ID,
-+	NCSI_ATTR_DATA,
- 
- 	__NCSI_ATTR_AFTER_LAST,
- 	NCSI_ATTR_MAX = __NCSI_ATTR_AFTER_LAST - 1
+diff --git a/net/ncsi/Kconfig b/net/ncsi/Kconfig
+index 08a8a6031fd7..7f2b46108a24 100644
+--- a/net/ncsi/Kconfig
++++ b/net/ncsi/Kconfig
+@@ -10,3 +10,9 @@ config NET_NCSI
+ 	  support. Enable this only if your system connects to a network
+ 	  device via NCSI and the ethernet driver you're using supports
+ 	  the protocol explicitly.
++config NCSI_OEM_CMD_GET_MAC
++	bool "Get NCSI OEM MAC Address"
++	depends on NET_NCSI
++	---help---
++	  This allows to get MAC address from NCSI firmware and set them back to
++		controller.
 diff --git a/net/ncsi/internal.h b/net/ncsi/internal.h
-index 3d0a33b..e9db100 100644
+index 3d0a33b874f5..45883b32790e 100644
 --- a/net/ncsi/internal.h
 +++ b/net/ncsi/internal.h
-@@ -175,6 +175,8 @@ struct ncsi_package;
- #define NCSI_RESERVED_CHANNEL	0x1f
- #define NCSI_CHANNEL_INDEX(c)	((c) & ((1 << NCSI_PACKAGE_SHIFT) - 1))
- #define NCSI_TO_CHANNEL(p, c)	(((p) << NCSI_PACKAGE_SHIFT) | (c))
-+#define NCSI_MAX_PACKAGE	8
-+#define NCSI_MAX_CHANNEL	32
- 
- struct ncsi_channel {
- 	unsigned char               id;
-@@ -219,12 +221,17 @@ struct ncsi_request {
- 	unsigned char        id;      /* Request ID - 0 to 255           */
- 	bool                 used;    /* Request that has been assigned  */
- 	unsigned int         flags;   /* NCSI request property           */
--#define NCSI_REQ_FLAG_EVENT_DRIVEN	1
-+#define NCSI_REQ_FLAG_EVENT_DRIVEN		1
-+#define NCSI_REQ_FLAG_NETLINK_DRIVEN	2
- 	struct ncsi_dev_priv *ndp;    /* Associated NCSI device          */
- 	struct sk_buff       *cmd;    /* Associated NCSI command packet  */
- 	struct sk_buff       *rsp;    /* Associated NCSI response packet */
- 	struct timer_list    timer;   /* Timer on waiting for response   */
- 	bool                 enabled; /* Time has been enabled or not    */
+@@ -71,6 +71,13 @@ enum {
+ /* OEM Vendor Manufacture ID */
+ #define NCSI_OEM_MFR_MLX_ID             0x8119
+ #define NCSI_OEM_MFR_BCM_ID             0x113d
++/* Broadcom specific OEM Command */
++#define NCSI_OEM_BCM_CMD_GMA            0x01   /* CMD ID for Get MAC */
++/* OEM Command payload lengths*/
++#define NCSI_OEM_BCM_CMD_GMA_LEN        12
++/* Mac address offset in OEM response */
++#define BCM_MAC_ADDR_OFFSET             28
 +
-+	u32                  snd_seq;     /* netlink sending sequence number */
-+	u32                  snd_portid;  /* netlink portid of sender        */
-+	struct nlmsghdr      nlhdr;       /* netlink message header          */
- };
  
- enum {
-@@ -310,6 +317,7 @@ struct ncsi_cmd_arg {
- 		unsigned int   dwords[4];
- 	};
- 	unsigned char        *data;       /* NCSI OEM data                 */
-+	struct genl_info     *info;       /* Netlink information           */
- };
- 
- extern struct list_head ncsi_dev_list;
-diff --git a/net/ncsi/ncsi-cmd.c b/net/ncsi/ncsi-cmd.c
-index 82b7d92..356af47 100644
---- a/net/ncsi/ncsi-cmd.c
-+++ b/net/ncsi/ncsi-cmd.c
-@@ -17,6 +17,7 @@
- #include <net/ncsi.h>
- #include <net/net_namespace.h>
- #include <net/sock.h>
-+#include <net/genetlink.h>
- 
- #include "internal.h"
- #include "ncsi-pkt.h"
-@@ -346,6 +347,13 @@ int ncsi_xmit_cmd(struct ncsi_cmd_arg *nca)
- 	if (!nr)
- 		return -ENOMEM;
- 
-+	/* track netlink information */
-+	if (nca->req_flags == NCSI_REQ_FLAG_NETLINK_DRIVEN) {
-+		nr->snd_seq = nca->info->snd_seq;
-+		nr->snd_portid = nca->info->snd_portid;
-+		nr->nlhdr = *nca->info->nlhdr;
-+	}
-+
- 	/* Prepare the packet */
- 	nca->id = nr->id;
- 	ret = nch->handler(nr->cmd, nca);
+ struct ncsi_channel_version {
+ 	u32 version;		/* Supported BCD encoded NCSI version */
+@@ -240,6 +247,7 @@ enum {
+ 	ncsi_dev_state_probe_dp,
+ 	ncsi_dev_state_config_sp	= 0x0301,
+ 	ncsi_dev_state_config_cis,
++	ncsi_dev_state_config_oem_gma,
+ 	ncsi_dev_state_config_clear_vids,
+ 	ncsi_dev_state_config_svf,
+ 	ncsi_dev_state_config_ev,
 diff --git a/net/ncsi/ncsi-manage.c b/net/ncsi/ncsi-manage.c
-index 0912847..76a4bcb 100644
+index 091284760d21..e5bfd9245b5d 100644
 --- a/net/ncsi/ncsi-manage.c
 +++ b/net/ncsi/ncsi-manage.c
-@@ -19,6 +19,7 @@
- #include <net/addrconf.h>
- #include <net/ipv6.h>
- #include <net/if_inet6.h>
-+#include <net/genetlink.h>
- 
- #include "internal.h"
- #include "ncsi-pkt.h"
-@@ -406,6 +407,9 @@ static void ncsi_request_timeout(struct timer_list *t)
- {
- 	struct ncsi_request *nr = from_timer(nr, t, timer);
- 	struct ncsi_dev_priv *ndp = nr->ndp;
-+	struct ncsi_package *np;
-+	struct ncsi_channel *nc;
-+	struct ncsi_cmd_pkt *cmd;
- 	unsigned long flags;
- 
- 	/* If the request already had associated response,
-@@ -419,6 +423,18 @@ static void ncsi_request_timeout(struct timer_list *t)
- 	}
- 	spin_unlock_irqrestore(&ndp->lock, flags);
- 
-+	if (nr->flags == NCSI_REQ_FLAG_NETLINK_DRIVEN) {
-+		if (nr->cmd) {
-+			/* Find the package */
-+			cmd = (struct ncsi_cmd_pkt *)
-+			      skb_network_header(nr->cmd);
-+			ncsi_find_package_and_channel(ndp,
-+						      cmd->cmd.common.channel,
-+						      &np, &nc);
-+			ncsi_send_netlink_timeout(nr, np, nc);
-+		}
-+	}
-+
- 	/* Release the request */
- 	ncsi_free_request(nr);
- }
-diff --git a/net/ncsi/ncsi-netlink.c b/net/ncsi/ncsi-netlink.c
-index 45f33d6..3941bf6 100644
---- a/net/ncsi/ncsi-netlink.c
-+++ b/net/ncsi/ncsi-netlink.c
-@@ -20,6 +20,7 @@
- #include <uapi/linux/ncsi.h>
- 
- #include "internal.h"
-+#include "ncsi-pkt.h"
- #include "ncsi-netlink.h"
- 
- static struct genl_family ncsi_genl_family;
-@@ -29,6 +30,7 @@ static const struct nla_policy ncsi_genl_policy[NCSI_ATTR_MAX + 1] = {
- 	[NCSI_ATTR_PACKAGE_LIST] =	{ .type = NLA_NESTED },
- 	[NCSI_ATTR_PACKAGE_ID] =	{ .type = NLA_U32 },
- 	[NCSI_ATTR_CHANNEL_ID] =	{ .type = NLA_U32 },
-+	[NCSI_ATTR_DATA] =		{ .type = NLA_BINARY, .len = 2048 },
- };
- 
- static struct ncsi_dev_priv *ndp_from_ifindex(struct net *net, u32 ifindex)
-@@ -366,6 +368,202 @@ static int ncsi_clear_interface_nl(struct sk_buff *msg, struct genl_info *info)
+@@ -635,6 +635,39 @@ static int set_one_vid(struct ncsi_dev_priv *ndp, struct ncsi_channel *nc,
  	return 0;
  }
  
-+static int ncsi_send_cmd_nl(struct sk_buff *msg, struct genl_info *info)
++#if IS_ENABLED(CONFIG_NCSI_OEM_CMD_GET_MAC)
++
++/* NCSI OEM Command APIs */
++static void ncsi_oem_gma_handler_bcm(struct ncsi_cmd_arg *nca)
 +{
-+	struct ncsi_dev_priv *ndp;
++	int ret = 0;
++	unsigned char data[NCSI_OEM_BCM_CMD_GMA_LEN];
 +
-+	struct ncsi_cmd_arg nca;
-+	struct ncsi_pkt_hdr *hdr;
++	nca->payload = NCSI_OEM_BCM_CMD_GMA_LEN;
 +
-+	u32 package_id, channel_id;
-+	unsigned char *data;
-+	int len, ret;
++	memset(data, 0, NCSI_OEM_BCM_CMD_GMA_LEN);
++	*(unsigned int *)data = ntohl(NCSI_OEM_MFR_BCM_ID);
++	data[5] = NCSI_OEM_BCM_CMD_GMA;
 +
-+	if (!info || !info->attrs) {
-+		ret = -EINVAL;
-+		goto out;
-+	}
++	nca->data = data;
 +
-+	if (!info->attrs[NCSI_ATTR_IFINDEX]) {
-+		ret = -EINVAL;
-+		goto out;
-+	}
-+
-+	if (!info->attrs[NCSI_ATTR_PACKAGE_ID]) {
-+		ret = -EINVAL;
-+		goto out;
-+	}
-+
-+	if (!info->attrs[NCSI_ATTR_CHANNEL_ID]) {
-+		ret = -EINVAL;
-+		goto out;
-+	}
-+
-+	ndp = ndp_from_ifindex(get_net(sock_net(msg->sk)),
-+			       nla_get_u32(info->attrs[NCSI_ATTR_IFINDEX]));
-+	if (!ndp) {
-+		ret = -ENODEV;
-+		goto out;
-+	}
-+
-+	package_id = nla_get_u32(info->attrs[NCSI_ATTR_PACKAGE_ID]);
-+	channel_id = nla_get_u32(info->attrs[NCSI_ATTR_CHANNEL_ID]);
-+
-+	if (package_id >= NCSI_MAX_PACKAGE || channel_id >= NCSI_MAX_CHANNEL) {
-+		ret = -ERANGE;
-+		goto out_netlink;
-+	}
-+
-+	len = nla_len(info->attrs[NCSI_ATTR_DATA]);
-+	if (len < sizeof(struct ncsi_pkt_hdr)) {
-+		netdev_info(ndp->ndev.dev, "NCSI: no OEM command to send %u\n",
-+			    package_id);
-+		ret = -EINVAL;
-+		goto out_netlink;
-+	} else {
-+		data = (unsigned char *)nla_data(info->attrs[NCSI_ATTR_DATA]);
-+	}
-+
-+	hdr = (struct ncsi_pkt_hdr *)data;
-+
-+	nca.ndp = ndp;
-+	nca.package = (unsigned char)package_id;
-+	nca.channel = (unsigned char)channel_id;
-+	nca.type = hdr->type;
-+	nca.req_flags = NCSI_REQ_FLAG_NETLINK_DRIVEN;
-+	nca.info = info;
-+	nca.payload = ntohs(hdr->length);
-+	nca.data = data + sizeof(*hdr);
-+
-+	ret = ncsi_xmit_cmd(&nca);
-+out_netlink:
-+	if (ret != 0) {
-+		netdev_err(ndp->ndev.dev,
-+			   "NCSI: Error %d sending OEM command\n",
-+			   ret);
-+		ncsi_send_netlink_err(ndp->ndev.dev,
-+				      info->snd_seq,
-+				      info->snd_portid,
-+				      info->nlhdr,
-+				      ret);
-+	}
-+out:
-+	return ret;
++	ret = ncsi_xmit_cmd(nca);
++	if (ret)
++		netdev_err(nca->ndp->ndev.dev,
++			   "NCSI: Failed to transmit cmd 0x%x during configure\n",
++			   nca->type);
 +}
 +
-+int ncsi_send_netlink_rsp(struct ncsi_request *nr,
-+			  struct ncsi_package *np,
-+			  struct ncsi_channel *nc)
-+{
-+	struct sk_buff *skb;
-+	struct net *net;
-+	void *hdr;
-+	int rc;
++/* OEM Command handlers initialization */
++static struct ncsi_oem_gma_handler {
++	unsigned int	mfr_id;
++	void		(*handler)(struct ncsi_cmd_arg *nca);
++} ncsi_oem_gma_handlers[] = {
++	{ NCSI_OEM_MFR_BCM_ID, ncsi_oem_gma_handler_bcm }
++};
 +
-+	netdev_dbg(nr->ndp->ndev.dev, "NCSI: %s\n", __func__);
++#endif /* CONFIG_NCSI_OEM_CMD_GET_MAC */
 +
-+	net = dev_net(nr->rsp->dev);
+ static void ncsi_configure_channel(struct ncsi_dev_priv *ndp)
+ {
+ 	struct ncsi_dev *nd = &ndp->ndev;
+@@ -643,9 +676,10 @@ static void ncsi_configure_channel(struct ncsi_dev_priv *ndp)
+ 	struct ncsi_channel *nc = ndp->active_channel;
+ 	struct ncsi_channel *hot_nc = NULL;
+ 	struct ncsi_cmd_arg nca;
++	struct ncsi_oem_gma_handler *nch = NULL;
+ 	unsigned char index;
+ 	unsigned long flags;
+-	int ret;
++	int ret, i;
+ 
+ 	nca.ndp = ndp;
+ 	nca.req_flags = NCSI_REQ_FLAG_EVENT_DRIVEN;
+@@ -685,6 +719,40 @@ static void ncsi_configure_channel(struct ncsi_dev_priv *ndp)
+ 			goto error;
+ 		}
+ 
++#if IS_ENABLED(CONFIG_NCSI_OEM_CMD_GET_MAC)
++		nd->state = ncsi_dev_state_config_oem_gma;
++		break;
++	case ncsi_dev_state_config_oem_gma:
++		nca.type = NCSI_PKT_CMD_OEM;
++		nca.package = np->id;
++		nca.channel = nc->id;
++		ndp->pending_req_num = 1;
 +
-+	skb = genlmsg_new(NLMSG_DEFAULT_SIZE, GFP_ATOMIC);
-+	if (!skb)
-+		return -ENOMEM;
++		/* Check for manufacturer id and Find the handler */
++		for (i = 0; i < ARRAY_SIZE(ncsi_oem_gma_handlers); i++) {
++			if (ncsi_oem_gma_handlers[i].mfr_id ==
++					nc->version.mf_id) {
++				if (ncsi_oem_gma_handlers[i].handler)
++					nch = &ncsi_oem_gma_handlers[i];
++				else
++					nch = NULL;
 +
-+	hdr = genlmsg_put(skb, nr->snd_portid, nr->snd_seq,
-+			  &ncsi_genl_family, 0, NCSI_CMD_SEND_CMD);
-+	if (!hdr) {
-+		kfree_skb(skb);
-+		return -EMSGSIZE;
-+	}
++				break;
++			}
++		}
 +
-+	nla_put_u32(skb, NCSI_ATTR_IFINDEX, nr->rsp->dev->ifindex);
-+	if (np)
-+		nla_put_u32(skb, NCSI_ATTR_PACKAGE_ID, np->id);
-+	if (nc)
-+		nla_put_u32(skb, NCSI_ATTR_CHANNEL_ID, nc->id);
-+	else
-+		nla_put_u32(skb, NCSI_ATTR_CHANNEL_ID, NCSI_RESERVED_CHANNEL);
++		if (!nch) {
++			netdev_err(ndp->ndev.dev, "No handler available for GMA with MFR-ID (0x%x)\n",
++				   nc->version.mf_id);
++			nd->state = ncsi_dev_state_config_clear_vids;
++			schedule_work(&ndp->work);
++			break;
++		}
 +
-+	rc = nla_put(skb, NCSI_ATTR_DATA, nr->rsp->len, (void *)nr->rsp->data);
-+	if (rc)
-+		goto err;
++		/* Get Mac address from NCSI device */
++		nch->handler(&nca);
++#endif /* CONFIG_NCSI_OEM_CMD_GET_MAC */
 +
-+	genlmsg_end(skb, hdr);
-+	return genlmsg_unicast(net, skb, nr->snd_portid);
-+
-+err:
-+	kfree_skb(skb);
-+	return rc;
-+}
-+
-+int ncsi_send_netlink_timeout(struct ncsi_request *nr,
-+			      struct ncsi_package *np,
-+			      struct ncsi_channel *nc)
-+{
-+	struct sk_buff *skb;
-+	struct net *net;
-+	void *hdr;
-+
-+	netdev_dbg(nr->ndp->ndev.dev, "NCSI: %s\n", __func__);
-+
-+	skb = genlmsg_new(NLMSG_DEFAULT_SIZE, GFP_ATOMIC);
-+	if (!skb)
-+		return -ENOMEM;
-+
-+	hdr = genlmsg_put(skb, nr->snd_portid, nr->snd_seq,
-+			  &ncsi_genl_family, 0, NCSI_CMD_SEND_CMD);
-+	if (!hdr) {
-+		kfree_skb(skb);
-+		return -EMSGSIZE;
-+	}
-+
-+	net = dev_net(nr->cmd->dev);
-+
-+	nla_put_u32(skb, NCSI_ATTR_IFINDEX, nr->cmd->dev->ifindex);
-+
-+	if (np)
-+		nla_put_u32(skb, NCSI_ATTR_PACKAGE_ID, np->id);
-+	else
-+		nla_put_u32(skb, NCSI_ATTR_PACKAGE_ID,
-+			    NCSI_PACKAGE_INDEX((((struct ncsi_pkt_hdr *)
-+						 nr->cmd->data)->channel)));
-+
-+	if (nc)
-+		nla_put_u32(skb, NCSI_ATTR_CHANNEL_ID, nc->id);
-+	else
-+		nla_put_u32(skb, NCSI_ATTR_CHANNEL_ID, NCSI_RESERVED_CHANNEL);
-+
-+	genlmsg_end(skb, hdr);
-+	return genlmsg_unicast(net, skb, nr->snd_portid);
-+}
-+
-+int ncsi_send_netlink_err(struct net_device *dev,
-+			  u32 snd_seq,
-+			  u32 snd_portid,
-+			  struct nlmsghdr *nlhdr,
-+			  int err)
-+{
-+	struct sk_buff *skb;
-+	struct nlmsghdr *nlh;
-+	struct nlmsgerr *nle;
-+	struct net *net;
-+
-+	skb = nlmsg_new(NLMSG_DEFAULT_SIZE, GFP_ATOMIC);
-+	if (!skb)
-+		return -ENOMEM;
-+
-+	net = dev_net(dev);
-+
-+	nlh = nlmsg_put(skb, snd_portid, snd_seq,
-+			NLMSG_ERROR, sizeof(*nle), 0);
-+	nle = (struct nlmsgerr *)nlmsg_data(nlh);
-+	nle->error = err;
-+	memcpy(&nle->msg, nlhdr, sizeof(*nlh));
-+
-+	nlmsg_end(skb, nlh);
-+
-+	return nlmsg_unicast(net->genl_sock, skb, snd_portid);
-+}
-+
- static const struct genl_ops ncsi_ops[] = {
- 	{
- 		.cmd = NCSI_CMD_PKG_INFO,
-@@ -386,6 +584,12 @@ static const struct genl_ops ncsi_ops[] = {
- 		.doit = ncsi_clear_interface_nl,
- 		.flags = GENL_ADMIN_PERM,
- 	},
-+	{
-+		.cmd = NCSI_CMD_SEND_CMD,
-+		.policy = ncsi_genl_policy,
-+		.doit = ncsi_send_cmd_nl,
-+		.flags = GENL_ADMIN_PERM,
-+	},
+ 		nd->state = ncsi_dev_state_config_clear_vids;
+ 		break;
+ 	case ncsi_dev_state_config_clear_vids:
+diff --git a/net/ncsi/ncsi-pkt.h b/net/ncsi/ncsi-pkt.h
+index 0f2087c8d42a..4d3f06be38bd 100644
+--- a/net/ncsi/ncsi-pkt.h
++++ b/net/ncsi/ncsi-pkt.h
+@@ -165,6 +165,14 @@ struct ncsi_rsp_oem_pkt {
+ 	unsigned char           data[];      /* Payload data      */
  };
  
- static struct genl_family ncsi_genl_family __ro_after_init = {
-diff --git a/net/ncsi/ncsi-netlink.h b/net/ncsi/ncsi-netlink.h
-index 91a5c25..c4a4688 100644
---- a/net/ncsi/ncsi-netlink.h
-+++ b/net/ncsi/ncsi-netlink.h
-@@ -14,6 +14,18 @@
- 
- #include "internal.h"
- 
-+int ncsi_send_netlink_rsp(struct ncsi_request *nr,
-+			  struct ncsi_package *np,
-+			  struct ncsi_channel *nc);
-+int ncsi_send_netlink_timeout(struct ncsi_request *nr,
-+			      struct ncsi_package *np,
-+			      struct ncsi_channel *nc);
-+int ncsi_send_netlink_err(struct net_device *dev,
-+			  u32 snd_seq,
-+			  u32 snd_portid,
-+			  struct nlmsghdr *nlhdr,
-+			  int err);
++/* Broadcom Response Data */
++struct ncsi_rsp_oem_bcm_pkt {
++	unsigned char           ver;         /* Payload Version   */
++	unsigned char           type;        /* OEM Command type  */
++	__be16                  len;         /* Payload Length    */
++	unsigned char           data[];      /* Cmd specific Data */
++};
 +
- int ncsi_init_netlink(struct net_device *dev);
- int ncsi_unregister_netlink(struct net_device *dev);
- 
+ /* Get Link Status */
+ struct ncsi_rsp_gls_pkt {
+ 	struct ncsi_rsp_pkt_hdr rsp;        /* Response header   */
 diff --git a/net/ncsi/ncsi-rsp.c b/net/ncsi/ncsi-rsp.c
-index d66b347..dd931d2 100644
+index d66b34749027..31672e967db2 100644
 --- a/net/ncsi/ncsi-rsp.c
 +++ b/net/ncsi/ncsi-rsp.c
-@@ -16,9 +16,11 @@
- #include <net/ncsi.h>
- #include <net/net_namespace.h>
- #include <net/sock.h>
-+#include <net/genetlink.h>
- 
- #include "internal.h"
- #include "ncsi-pkt.h"
-+#include "ncsi-netlink.h"
- 
- static int ncsi_validate_rsp_pkt(struct ncsi_request *nr,
- 				 unsigned short payload)
-@@ -32,15 +34,25 @@ static int ncsi_validate_rsp_pkt(struct ncsi_request *nr,
- 	 * before calling this function.
- 	 */
- 	h = (struct ncsi_rsp_pkt_hdr *)skb_network_header(nr->rsp);
--	if (h->common.revision != NCSI_PKT_REVISION)
-+
-+	if (h->common.revision != NCSI_PKT_REVISION) {
-+		netdev_dbg(nr->ndp->ndev.dev,
-+			   "NCSI: unsupported header revision\n");
- 		return -EINVAL;
--	if (ntohs(h->common.length) != payload)
-+	}
-+	if (ntohs(h->common.length) != payload) {
-+		netdev_dbg(nr->ndp->ndev.dev,
-+			   "NCSI: payload length mismatched\n");
- 		return -EINVAL;
-+	}
- 
- 	/* Check on code and reason */
- 	if (ntohs(h->code) != NCSI_PKT_RSP_C_COMPLETED ||
--	    ntohs(h->reason) != NCSI_PKT_RSP_R_NO_ERROR)
--		return -EINVAL;
-+	    ntohs(h->reason) != NCSI_PKT_RSP_R_NO_ERROR) {
-+		netdev_dbg(nr->ndp->ndev.dev,
-+			   "NCSI: non zero response/reason code\n");
-+		return -EPERM;
-+	}
- 
- 	/* Validate checksum, which might be zeroes if the
- 	 * sender doesn't support checksum according to NCSI
-@@ -52,8 +64,11 @@ static int ncsi_validate_rsp_pkt(struct ncsi_request *nr,
- 
- 	checksum = ncsi_calculate_checksum((unsigned char *)h,
- 					   sizeof(*h) + payload - 4);
--	if (*pchecksum != htonl(checksum))
-+
-+	if (*pchecksum != htonl(checksum)) {
-+		netdev_dbg(nr->ndp->ndev.dev, "NCSI: checksum mismatched\n");
- 		return -EINVAL;
-+	}
- 
- 	return 0;
- }
-@@ -941,6 +956,26 @@ static int ncsi_rsp_handler_gpuuid(struct ncsi_request *nr)
+@@ -596,12 +596,50 @@ static int ncsi_rsp_handler_snfc(struct ncsi_request *nr)
  	return 0;
  }
  
-+static int ncsi_rsp_handler_netlink(struct ncsi_request *nr)
++/* Response handler for Broadcom command Get Mac Address */
++static int ncsi_rsp_handler_oem_bcm_gma(struct ncsi_request *nr)
 +{
-+	struct ncsi_rsp_pkt *rsp;
++	struct ncsi_rsp_oem_pkt *rsp;
 +	struct ncsi_dev_priv *ndp = nr->ndp;
-+	struct ncsi_package *np;
-+	struct ncsi_channel *nc;
-+	int ret;
++	struct net_device *ndev = ndp->ndev.dev;
++	int ret = 0;
++	const struct net_device_ops *ops = ndev->netdev_ops;
++	struct sockaddr saddr;
 +
-+	/* Find the package */
-+	rsp = (struct ncsi_rsp_pkt *)skb_network_header(nr->rsp);
-+	ncsi_find_package_and_channel(ndp, rsp->rsp.common.channel,
-+				      &np, &nc);
-+	if (!np)
-+		return -ENODEV;
++	/* Get the response header */
++	rsp = (struct ncsi_rsp_oem_pkt *)skb_network_header(nr->rsp);
 +
-+	ret = ncsi_send_netlink_rsp(nr, np, nc);
++	saddr.sa_family = ndev->type;
++	ndev->priv_flags |= IFF_LIVE_ADDR_CHANGE;
++	memcpy(saddr.sa_data, &rsp->data[BCM_MAC_ADDR_OFFSET], ETH_ALEN);
++	ret = ops->ndo_set_mac_address(ndev, &saddr);
++	if (ret < 0)
++		netdev_warn(ndev, "NCSI: Writing mac address to device failed\n");
 +
 +	return ret;
 +}
 +
- static struct ncsi_rsp_handler {
- 	unsigned char	type;
- 	int             payload;
-@@ -1043,6 +1078,17 @@ int ncsi_rcv_rsp(struct sk_buff *skb, struct net_device *dev,
- 		netdev_warn(ndp->ndev.dev,
- 			    "NCSI: 'bad' packet ignored for type 0x%x\n",
- 			    hdr->type);
++/* Response handler for Broadcom card */
++static int ncsi_rsp_handler_oem_bcm(struct ncsi_request *nr)
++{
++	struct ncsi_rsp_oem_pkt *rsp;
++	struct ncsi_rsp_oem_bcm_pkt *bcm;
 +
-+		if (nr->flags == NCSI_REQ_FLAG_NETLINK_DRIVEN) {
-+			if (ret == -EPERM)
-+				goto out_netlink;
-+			else
-+				ncsi_send_netlink_err(ndp->ndev.dev,
-+						      nr->snd_seq,
-+						      nr->snd_portid,
-+						      &nr->nlhdr,
-+						      ret);
-+		}
- 		goto out;
- 	}
++	/* Get the response header */
++	rsp = (struct ncsi_rsp_oem_pkt *)skb_network_header(nr->rsp);
++	bcm = (struct ncsi_rsp_oem_bcm_pkt *)(rsp->data);
++
++	if (bcm->type == NCSI_OEM_BCM_CMD_GMA)
++		return ncsi_rsp_handler_oem_bcm_gma(nr);
++	return 0;
++}
++
+ static struct ncsi_rsp_oem_handler {
+ 	unsigned int	mfr_id;
+ 	int		(*handler)(struct ncsi_request *nr);
+ } ncsi_rsp_oem_handlers[] = {
+ 	{ NCSI_OEM_MFR_MLX_ID, NULL },
+-	{ NCSI_OEM_MFR_BCM_ID, NULL }
++	{ NCSI_OEM_MFR_BCM_ID, ncsi_rsp_handler_oem_bcm }
+ };
  
-@@ -1052,6 +1098,17 @@ int ncsi_rcv_rsp(struct sk_buff *skb, struct net_device *dev,
- 		netdev_err(ndp->ndev.dev,
- 			   "NCSI: Handler for packet type 0x%x returned %d\n",
- 			   hdr->type, ret);
-+
-+out_netlink:
-+	if (nr->flags == NCSI_REQ_FLAG_NETLINK_DRIVEN) {
-+		ret = ncsi_rsp_handler_netlink(nr);
-+		if (ret) {
-+			netdev_err(ndp->ndev.dev,
-+				   "NCSI: Netlink handler for packet type 0x%x returned %d\n",
-+				   hdr->type, ret);
-+		}
-+	}
-+
- out:
- 	ncsi_free_request(nr);
- 	return ret;
+ /* Response handler for OEM command */
 -- 
-2.9.3
+2.17.1
 
