@@ -1,172 +1,28 @@
-From: Vijay Khemka <vijaykhemka@fb.com>
-Date: Tue, 9 Oct 2018 10:48:06 -0700
-Subject: [PATCH v2 2/2] net/ncsi: Add NCSI Mellanox OEM command
-In-Reply-To: <20181009174806.404791-1-vijaykhemka@fb.com>
-References: <20181009174806.404791-1-vijaykhemka@fb.com>
-Message-ID: <20181009174806.404791-2-vijaykhemka@fb.com>
+From: Brendan Higgins <brendanhiggins@google.com>
+Date: Tue, 9 Oct 2018 17:00:03 -0700
+Subject: [PATCH i2c-next v7 3/5] dt-bindings: i2c: aspeed: Add
+ 'bus-timeout-ms' property as an optional property
+In-Reply-To: <20181005214507.26315-4-jae.hyun.yoo@linux.intel.com>
+References: <20181005214507.26315-1-jae.hyun.yoo@linux.intel.com>
+ <20181005214507.26315-4-jae.hyun.yoo@linux.intel.com>
+Message-ID: <CAFd5g44WcAE5oJCmRQKsRmbrfYPx55kdaT6xW1hzCoYAR5YQNg@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This patch adds OEM Mellanox commands and response handling. It also
-defines OEM Get MAC Address handler to get and configure the device.
+On Fri, Oct 5, 2018 at 2:45 PM Jae Hyun Yoo
+<jae.hyun.yoo@linux.intel.com> wrote:
+>
+> This commit adds 'bus-timeout-ms' property as an optional property
+> which can be used for setting the bus timeout value of an adapter.
+> With this patch, the bus timeout value can be set through this
+> property at the probing time of this module. Still the bus timeout
+> value can be set by an I2C_TIMEOUT ioctl on cdev at runtime too.
+>
+> Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
 
-ncsi_oem_gma_handler_mlx: This handler send NCSI mellanox command for
-getting mac address.
-ncsi_rsp_handler_oem_mlx: This handles response received for all
-mellanox OEM commands.
-ncsi_rsp_handler_oem_mlx_gma: This handles get mac address response and
-set it to device.
+Reviewed-by: Brendan Higgins <brendanhiggins@google.com>
 
-Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
----
- net/ncsi/internal.h    |  5 +++++
- net/ncsi/ncsi-manage.c | 24 +++++++++++++++++++++++-
- net/ncsi/ncsi-pkt.h    |  9 +++++++++
- net/ncsi/ncsi-rsp.c    | 41 ++++++++++++++++++++++++++++++++++++++++-
- 4 files changed, 77 insertions(+), 2 deletions(-)
-
-diff --git a/net/ncsi/internal.h b/net/ncsi/internal.h
-index 45883b32790e..d4558628a991 100644
---- a/net/ncsi/internal.h
-+++ b/net/ncsi/internal.h
-@@ -73,10 +73,15 @@ enum {
- #define NCSI_OEM_MFR_BCM_ID             0x113d
- /* Broadcom specific OEM Command */
- #define NCSI_OEM_BCM_CMD_GMA            0x01   /* CMD ID for Get MAC */
-+/* Mellanox specific OEM Command */
-+#define NCSI_OEM_MLX_CMD_GMA            0x00   /* CMD ID for Get MAC */
-+#define NCSI_OEM_MLX_CMD_GMA_PARAM      0x1b   /* Parameter for GMA  */
- /* OEM Command payload lengths*/
- #define NCSI_OEM_BCM_CMD_GMA_LEN        12
-+#define NCSI_OEM_MLX_CMD_GMA_LEN        8
- /* Mac address offset in OEM response */
- #define BCM_MAC_ADDR_OFFSET             28
-+#define MLX_MAC_ADDR_OFFSET             8
- 
- 
- struct ncsi_channel_version {
-diff --git a/net/ncsi/ncsi-manage.c b/net/ncsi/ncsi-manage.c
-index e5bfd9245b5d..38aef27d2e67 100644
---- a/net/ncsi/ncsi-manage.c
-+++ b/net/ncsi/ncsi-manage.c
-@@ -658,12 +658,34 @@ static void ncsi_oem_gma_handler_bcm(struct ncsi_cmd_arg *nca)
- 			   nca->type);
- }
- 
-+static void ncsi_oem_gma_handler_mlx(struct ncsi_cmd_arg *nca)
-+{
-+	int ret = 0;
-+	unsigned char data[NCSI_OEM_MLX_CMD_GMA_LEN];
-+
-+	nca->payload = NCSI_OEM_MLX_CMD_GMA_LEN;
-+
-+	memset(data, 0, NCSI_OEM_MLX_CMD_GMA_LEN);
-+	*(unsigned int *)data = ntohl(NCSI_OEM_MFR_MLX_ID);
-+	data[5] = NCSI_OEM_MLX_CMD_GMA;
-+	data[6] = NCSI_OEM_MLX_CMD_GMA_PARAM;
-+
-+	nca->data = data;
-+
-+	ret = ncsi_xmit_cmd(nca);
-+	if (ret)
-+		netdev_err(nca->ndp->ndev.dev,
-+			   "NCSI: Failed to transmit cmd 0x%x during configure\n",
-+			   nca->type);
-+}
-+
- /* OEM Command handlers initialization */
- static struct ncsi_oem_gma_handler {
- 	unsigned int	mfr_id;
- 	void		(*handler)(struct ncsi_cmd_arg *nca);
- } ncsi_oem_gma_handlers[] = {
--	{ NCSI_OEM_MFR_BCM_ID, ncsi_oem_gma_handler_bcm }
-+	{ NCSI_OEM_MFR_BCM_ID, ncsi_oem_gma_handler_bcm },
-+	{ NCSI_OEM_MFR_MLX_ID, ncsi_oem_gma_handler_mlx }
- };
- 
- #endif /* CONFIG_NCSI_OEM_CMD_GET_MAC */
-diff --git a/net/ncsi/ncsi-pkt.h b/net/ncsi/ncsi-pkt.h
-index 4d3f06be38bd..2a6d83a596c9 100644
---- a/net/ncsi/ncsi-pkt.h
-+++ b/net/ncsi/ncsi-pkt.h
-@@ -165,6 +165,15 @@ struct ncsi_rsp_oem_pkt {
- 	unsigned char           data[];      /* Payload data      */
- };
- 
-+/* Mellanox Response Data */
-+struct ncsi_rsp_oem_mlx_pkt {
-+	unsigned char           cmd_rev;     /* Command Revision  */
-+	unsigned char           cmd;         /* Command ID        */
-+	unsigned char           param;       /* Parameter         */
-+	unsigned char           optional;    /* Optional data     */
-+	unsigned char           data[];      /* Data              */
-+};
-+
- /* Broadcom Response Data */
- struct ncsi_rsp_oem_bcm_pkt {
- 	unsigned char           ver;         /* Payload Version   */
-diff --git a/net/ncsi/ncsi-rsp.c b/net/ncsi/ncsi-rsp.c
-index 31672e967db2..b18efa23faa2 100644
---- a/net/ncsi/ncsi-rsp.c
-+++ b/net/ncsi/ncsi-rsp.c
-@@ -596,6 +596,45 @@ static int ncsi_rsp_handler_snfc(struct ncsi_request *nr)
- 	return 0;
- }
- 
-+/* Response handler for Mellanox command Get Mac Address */
-+static int ncsi_rsp_handler_oem_mlx_gma(struct ncsi_request *nr)
-+{
-+	struct ncsi_rsp_oem_pkt *rsp;
-+	struct ncsi_dev_priv *ndp = nr->ndp;
-+	struct net_device *ndev = ndp->ndev.dev;
-+	int ret = 0;
-+	const struct net_device_ops *ops = ndev->netdev_ops;
-+	struct sockaddr saddr;
-+
-+	/* Get the response header */
-+	rsp = (struct ncsi_rsp_oem_pkt *)skb_network_header(nr->rsp);
-+
-+	saddr.sa_family = ndev->type;
-+	ndev->priv_flags |= IFF_LIVE_ADDR_CHANGE;
-+	memcpy(saddr.sa_data, &rsp->data[MLX_MAC_ADDR_OFFSET], ETH_ALEN);
-+	ret = ops->ndo_set_mac_address(ndev, &saddr);
-+	if (ret < 0)
-+		netdev_warn(ndev, "NCSI: 'Writing mac address to device failed\n");
-+
-+	return ret;
-+}
-+
-+/* Response handler for Mellanox card */
-+static int ncsi_rsp_handler_oem_mlx(struct ncsi_request *nr)
-+{
-+	struct ncsi_rsp_oem_pkt *rsp;
-+	struct ncsi_rsp_oem_mlx_pkt *mlx;
-+
-+	/* Get the response header */
-+	rsp = (struct ncsi_rsp_oem_pkt *)skb_network_header(nr->rsp);
-+	mlx = (struct ncsi_rsp_oem_mlx_pkt *)(rsp->data);
-+
-+	if (mlx->cmd == NCSI_OEM_MLX_CMD_GMA &&
-+	    mlx->param == NCSI_OEM_MLX_CMD_GMA_PARAM)
-+		return ncsi_rsp_handler_oem_mlx_gma(nr);
-+	return 0;
-+}
-+
- /* Response handler for Broadcom command Get Mac Address */
- static int ncsi_rsp_handler_oem_bcm_gma(struct ncsi_request *nr)
- {
-@@ -638,7 +677,7 @@ static struct ncsi_rsp_oem_handler {
- 	unsigned int	mfr_id;
- 	int		(*handler)(struct ncsi_request *nr);
- } ncsi_rsp_oem_handlers[] = {
--	{ NCSI_OEM_MFR_MLX_ID, NULL },
-+	{ NCSI_OEM_MFR_MLX_ID, ncsi_rsp_handler_oem_mlx },
- 	{ NCSI_OEM_MFR_BCM_ID, ncsi_rsp_handler_oem_bcm }
- };
- 
--- 
-2.17.1
-
+Thanks for putting all the work in to do it this way!
