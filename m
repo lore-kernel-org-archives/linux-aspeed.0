@@ -1,21 +1,23 @@
 From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-Date: Thu, 11 Oct 2018 15:46:10 -0700
-Subject: [PATCH i2c-next v7 1/5] dt-bindings: i2c: Add 'bus-timeout-ms'
- and '#retries' properties as common optional
-In-Reply-To: <20181011221148.GA31195@bogus>
+Date: Thu, 11 Oct 2018 15:47:27 -0700
+Subject: [PATCH i2c-next v7 3/5] dt-bindings: i2c: aspeed: Add
+ 'bus-timeout-ms' property as an optional property
+In-Reply-To: <20181011221219.GA31991@bogus>
 References: <20181005214507.26315-1-jae.hyun.yoo@linux.intel.com>
- <20181005214507.26315-2-jae.hyun.yoo@linux.intel.com>
- <20181011221148.GA31195@bogus>
-Message-ID: <3a8ee259-d219-aeea-a4c8-98bb379433fc@linux.intel.com>
+ <20181005214507.26315-4-jae.hyun.yoo@linux.intel.com>
+ <20181011221219.GA31991@bogus>
+Message-ID: <071f5e0d-5a9b-fc48-4a65-e53cbd123f01@linux.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 10/11/2018 3:11 PM, Rob Herring wrote:
+On 10/11/2018 3:12 PM, Rob Herring wrote:
 > 
 > Reviewed-by: Rob Herring <robh@kernel.org>
 > 
 
-Thanks for the review, Rob!
+Thanks much for your review, Rob!
+
+-Jae
