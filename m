@@ -1,103 +1,266 @@
-From: Samuel Mendoza-Jonas <sam@mendozajonas.com>
-Date: Tue, 16 Oct 2018 16:46:01 +1100
-Subject: [Potential Spoof] Re: [PATCH net-next v4] net/ncsi: Add NCSI
- Broadcom OEM command
-In-Reply-To: <E82A7C2E-6DBF-437D-B571-5376F0122176@fb.com>
-References: <E82A7C2E-6DBF-437D-B571-5376F0122176@fb.com>
-Message-ID: <337567b2936725686459bdba7ef76dc46dea748a.camel@mendozajonas.com>
+From: Vijay Khemka <vijaykhemka@fb.com>
+Date: Tue, 16 Oct 2018 12:13:19 -0700
+Subject: [PATCH net-next v5] net/ncsi: Add NCSI Broadcom OEM command
+Message-ID: <20181016191319.1909502-1-vijaykhemka@fb.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, 2018-10-15 at 17:38 +0000, Vijay Khemka wrote:
-> 
-> ?On 10/15/18, 10:27 AM, "Linux-aspeed on behalf of Vijay Khemka" <linux-aspeed-bounces+vijaykhemka=fb.com at lists.ozlabs.org on behalf of vijaykhemka@fb.com> wrote:
-> 
->     
->     
->     On 10/14/18, 8:51 PM, "Samuel Mendoza-Jonas" <sam@mendozajonas.com> wrote:
->     
->         On Mon, 2018-10-15 at 13:08 +1100, Samuel Mendoza-Jonas wrote:
->         > On Fri, 2018-10-12 at 11:20 -0700, Vijay Khemka wrote:
->         > > This patch adds OEM Broadcom commands and response handling. It also
->         > > defines OEM Get MAC Address handler to get and configure the device.
->         > > 
->         > > ncsi_oem_gma_handler_bcm: This handler send NCSI broadcom command for
->         > > getting mac address.
->         > > ncsi_rsp_handler_oem_bcm: This handles response received for all
->         > > broadcom OEM commands.
->         > > ncsi_rsp_handler_oem_bcm_gma: This handles get mac address response and
->         > > set it to device.
->         > > 
->         > > Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
->         > > ---
->         > >  v4: updated as per comment from Sam, I was just wondering if I can remove
->         > >  NCSI_OEM_CMD_GET_MAC config option and let this code be valid always and
->         > >  it will configure mac address if there is get mac address handler for given 
->         > >  manufacture id.
->         > 
->         > Hi Vijay,
->         > 
->         > We can look at handling this a different way, but I don't think we want
->         > to unconditionally set the system's MAC address based on the OEM GMA
->         > command. If the user wants to set a custom MAC address, or in the case of
->         > OpenBMC for example who have their MAC address saved in flash, this will
->         > override that value with whatever the Network Controller has saved. In
->         > particular as it is set up it will override any MAC address every time a
->         > channel is configured, such as during a failover event.
->         > 
->         > We *could* always send the GMA command if it is available and move the
->         > decision whether to use the resulting address or not into the response
->         > handler. That would simplify the ncsi_configure_channel() logic a bit.
->         > Another idea may be to have a Netlink command to tell NCSI to ignore the
->         > GMA result; then we could drop the config option and the system can
->         > safely change the address if desired.
->         > 
->         > Any thoughts? I'll also ping some of the OpenBMC people and see what
->         > their expectations are.
->         
->         After a bit of a think and an ask around, to quote a colleague:
->         > I think we'd want it handled (overall) like any other net device; the MAC
->         > address in the device's ROM provides a default, and is overridden by anything
->         > specified by userspace 
->         
->         Which describes what I was thinking pretty well.
->         So if we can have it such that the NCSI driver only sets the MAC address
->         _once_, and then after then does not update it again, we should be able to call
->         the OEM GMA command without hiding it behind a config option. So the first time
->         a channel was configured we store and set the MAC address given, but then on
->         later configure events we don't continue to update it. What do you think?
->         
->         Cheers,
->         Sam
->     
->       I agree with you setting it only once. I gave a thought about config option and realize that 
->       we should allow user to configure it. If user wants to set mac address through device tree 
->       and not through ROM then we must not override mac set by device tree. So my proposal is 
->       setting of mac address in response should be hidden under config option. Getting mac address 
->       can still go without config option. Your thought?
->         
->   or simply guard following block under config and no other function declaration guard required. 
->   And set static variable flag in function " ncsi_oem_handler" for calling this only once.
-> 
->   #if IS_ENABLED(CONFIG_NCSI_OEM_CMD_GET_MAC)
->     nca.type = NCSI_PKT_CMD_OEM;
->     nca.package = np->id;
->     nca.channel = nc->id;
->     ndp->pending_req_num = 1;
->     ret = ncsi_oem_handler(&nca, nc->version.mf_id);
-> #endif /* CONFIG_NCSI_OEM_CMD_GET_MAC */
-> 
+This patch adds OEM Broadcom commands and response handling. It also
+defines OEM Get MAC Address handler to get and configure the device.
 
-Hi Vijay,
+ncsi_oem_gma_handler_bcm: This handler send NCSI broadcom command for
+getting mac address.
+ncsi_rsp_handler_oem_bcm: This handles response received for all
+broadcom OEM commands.
+ncsi_rsp_handler_oem_bcm_gma: This handles get mac address response and
+set it to device.
 
-Either way is likely fine; although you might need to take care you don't
-get an unused function warning depending on how you guard
-ncsi_oem_handler(). Also a flag in the ncsi_dev_priv struct could be
-easier to keep track of than having a static variable in the handler
-function.
+Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
+---
+ net/ncsi/Kconfig       |  6 ++++
+ net/ncsi/internal.h    |  9 +++++
+ net/ncsi/ncsi-manage.c | 82 ++++++++++++++++++++++++++++++++++++++++++
+ net/ncsi/ncsi-pkt.h    |  8 +++++
+ net/ncsi/ncsi-rsp.c    | 44 +++++++++++++++++++++--
+ 5 files changed, 147 insertions(+), 2 deletions(-)
 
-Sam
+diff --git a/net/ncsi/Kconfig b/net/ncsi/Kconfig
+index 08a8a6031fd7..7f2b46108a24 100644
+--- a/net/ncsi/Kconfig
++++ b/net/ncsi/Kconfig
+@@ -10,3 +10,9 @@ config NET_NCSI
+ 	  support. Enable this only if your system connects to a network
+ 	  device via NCSI and the ethernet driver you're using supports
+ 	  the protocol explicitly.
++config NCSI_OEM_CMD_GET_MAC
++	bool "Get NCSI OEM MAC Address"
++	depends on NET_NCSI
++	---help---
++	  This allows to get MAC address from NCSI firmware and set them back to
++		controller.
+diff --git a/net/ncsi/internal.h b/net/ncsi/internal.h
+index 13c9b5eeb3b7..1dae77c54009 100644
+--- a/net/ncsi/internal.h
++++ b/net/ncsi/internal.h
+@@ -71,6 +71,13 @@ enum {
+ /* OEM Vendor Manufacture ID */
+ #define NCSI_OEM_MFR_MLX_ID             0x8119
+ #define NCSI_OEM_MFR_BCM_ID             0x113d
++/* Broadcom specific OEM Command */
++#define NCSI_OEM_BCM_CMD_GMA            0x01   /* CMD ID for Get MAC */
++/* OEM Command payload lengths*/
++#define NCSI_OEM_BCM_CMD_GMA_LEN        12
++/* Mac address offset in OEM response */
++#define BCM_MAC_ADDR_OFFSET             28
++
+ 
+ struct ncsi_channel_version {
+ 	u32 version;		/* Supported BCD encoded NCSI version */
+@@ -246,6 +253,7 @@ enum {
+ 	ncsi_dev_state_probe_dp,
+ 	ncsi_dev_state_config_sp	= 0x0301,
+ 	ncsi_dev_state_config_cis,
++	ncsi_dev_state_config_oem_gma,
+ 	ncsi_dev_state_config_clear_vids,
+ 	ncsi_dev_state_config_svf,
+ 	ncsi_dev_state_config_ev,
+@@ -279,6 +287,7 @@ struct ncsi_dev_priv {
+ #define NCSI_DEV_PROBED		1            /* Finalized NCSI topology    */
+ #define NCSI_DEV_HWA		2            /* Enabled HW arbitration     */
+ #define NCSI_DEV_RESHUFFLE	4
++	unsigned int        gma_flag;        /* OEM GMA flag               */
+ 	spinlock_t          lock;            /* Protect the NCSI device    */
+ #if IS_ENABLED(CONFIG_IPV6)
+ 	unsigned int        inet6_addr_num;  /* Number of IPv6 addresses   */
+diff --git a/net/ncsi/ncsi-manage.c b/net/ncsi/ncsi-manage.c
+index 6aa0614d2d28..bfc43b28c7a6 100644
+--- a/net/ncsi/ncsi-manage.c
++++ b/net/ncsi/ncsi-manage.c
+@@ -651,6 +651,72 @@ static int set_one_vid(struct ncsi_dev_priv *ndp, struct ncsi_channel *nc,
+ 	return 0;
+ }
+ 
++#if IS_ENABLED(CONFIG_NCSI_OEM_CMD_GET_MAC)
++
++/* NCSI OEM Command APIs */
++static int ncsi_oem_gma_handler_bcm(struct ncsi_cmd_arg *nca)
++{
++	unsigned char data[NCSI_OEM_BCM_CMD_GMA_LEN];
++	int ret = 0;
++
++	nca->payload = NCSI_OEM_BCM_CMD_GMA_LEN;
++
++	memset(data, 0, NCSI_OEM_BCM_CMD_GMA_LEN);
++	*(unsigned int *)data = ntohl(NCSI_OEM_MFR_BCM_ID);
++	data[5] = NCSI_OEM_BCM_CMD_GMA;
++
++	nca->data = data;
++
++	ret = ncsi_xmit_cmd(nca);
++	if (ret)
++		netdev_err(nca->ndp->ndev.dev,
++			   "NCSI: Failed to transmit cmd 0x%x during configure\n",
++			   nca->type);
++	return ret;
++}
++
++/* OEM Command handlers initialization */
++static struct ncsi_oem_gma_handler {
++	unsigned int	mfr_id;
++	int		(*handler)(struct ncsi_cmd_arg *nca);
++} ncsi_oem_gma_handlers[] = {
++	{ NCSI_OEM_MFR_BCM_ID, ncsi_oem_gma_handler_bcm }
++};
++
++static int ncsi_gma_handler(struct ncsi_cmd_arg *nca, unsigned int mf_id)
++{
++	struct ncsi_oem_gma_handler *nch = NULL;
++	int i;
++
++	/* This function should only be called once, return if flag set */
++	if (nca->ndp->gma_flag == 1)
++		return -1;
++
++	/* Find gma handler for given manufacturer id */
++	for (i = 0; i < ARRAY_SIZE(ncsi_oem_gma_handlers); i++) {
++		if (ncsi_oem_gma_handlers[i].mfr_id == mf_id) {
++			if (ncsi_oem_gma_handlers[i].handler)
++				nch = &ncsi_oem_gma_handlers[i];
++			break;
++			}
++	}
++
++	if (!nch) {
++		netdev_err(nca->ndp->ndev.dev,
++			   "NCSI: No GMA handler available for MFR-ID (0x%x)\n",
++			   mf_id);
++		return -1;
++	}
++
++	/* Set the flag for GMA command which should only be called once */
++	nca->ndp->gma_flag = 1;
++
++	/* Get Mac address from NCSI device */
++	return nch->handler(nca);
++}
++
++#endif /* CONFIG_NCSI_OEM_CMD_GET_MAC */
++
+ static void ncsi_configure_channel(struct ncsi_dev_priv *ndp)
+ {
+ 	struct ncsi_dev *nd = &ndp->ndev;
+@@ -701,7 +767,23 @@ static void ncsi_configure_channel(struct ncsi_dev_priv *ndp)
+ 			goto error;
+ 		}
+ 
++		nd->state = ncsi_dev_state_config_oem_gma;
++		break;
++	case ncsi_dev_state_config_oem_gma:
+ 		nd->state = ncsi_dev_state_config_clear_vids;
++		ret = -1;
++
++#if IS_ENABLED(CONFIG_NCSI_OEM_CMD_GET_MAC)
++		nca.type = NCSI_PKT_CMD_OEM;
++		nca.package = np->id;
++		nca.channel = nc->id;
++		ndp->pending_req_num = 1;
++		ret = ncsi_gma_handler(&nca, nc->version.mf_id);
++#endif /* CONFIG_NCSI_OEM_CMD_GET_MAC */
++
++		if (ret < 0)
++			schedule_work(&ndp->work);
++
+ 		break;
+ 	case ncsi_dev_state_config_clear_vids:
+ 	case ncsi_dev_state_config_svf:
+diff --git a/net/ncsi/ncsi-pkt.h b/net/ncsi/ncsi-pkt.h
+index 0f2087c8d42a..4d3f06be38bd 100644
+--- a/net/ncsi/ncsi-pkt.h
++++ b/net/ncsi/ncsi-pkt.h
+@@ -165,6 +165,14 @@ struct ncsi_rsp_oem_pkt {
+ 	unsigned char           data[];      /* Payload data      */
+ };
+ 
++/* Broadcom Response Data */
++struct ncsi_rsp_oem_bcm_pkt {
++	unsigned char           ver;         /* Payload Version   */
++	unsigned char           type;        /* OEM Command type  */
++	__be16                  len;         /* Payload Length    */
++	unsigned char           data[];      /* Cmd specific Data */
++};
++
+ /* Get Link Status */
+ struct ncsi_rsp_gls_pkt {
+ 	struct ncsi_rsp_pkt_hdr rsp;        /* Response header   */
+diff --git a/net/ncsi/ncsi-rsp.c b/net/ncsi/ncsi-rsp.c
+index 85fa59afae34..77e07ba3f493 100644
+--- a/net/ncsi/ncsi-rsp.c
++++ b/net/ncsi/ncsi-rsp.c
+@@ -611,19 +611,59 @@ static int ncsi_rsp_handler_snfc(struct ncsi_request *nr)
+ 	return 0;
+ }
+ 
++/* Response handler for Broadcom command Get Mac Address */
++static int ncsi_rsp_handler_oem_bcm_gma(struct ncsi_request *nr)
++{
++	struct ncsi_dev_priv *ndp = nr->ndp;
++	struct net_device *ndev = ndp->ndev.dev;
++	const struct net_device_ops *ops = ndev->netdev_ops;
++	struct ncsi_rsp_oem_pkt *rsp;
++	struct sockaddr saddr;
++	int ret = 0;
++
++	/* Get the response header */
++	rsp = (struct ncsi_rsp_oem_pkt *)skb_network_header(nr->rsp);
++
++	saddr.sa_family = ndev->type;
++	ndev->priv_flags |= IFF_LIVE_ADDR_CHANGE;
++	memcpy(saddr.sa_data, &rsp->data[BCM_MAC_ADDR_OFFSET], ETH_ALEN);
++	/* Increase mac address by 1 for BMC's address */
++	saddr.sa_data[ETH_ALEN - 1]++;
++	ret = ops->ndo_set_mac_address(ndev, &saddr);
++	if (ret < 0)
++		netdev_warn(ndev, "NCSI: 'Writing mac address to device failed\n");
++
++	return ret;
++}
++
++/* Response handler for Broadcom card */
++static int ncsi_rsp_handler_oem_bcm(struct ncsi_request *nr)
++{
++	struct ncsi_rsp_oem_bcm_pkt *bcm;
++	struct ncsi_rsp_oem_pkt *rsp;
++
++	/* Get the response header */
++	rsp = (struct ncsi_rsp_oem_pkt *)skb_network_header(nr->rsp);
++	bcm = (struct ncsi_rsp_oem_bcm_pkt *)(rsp->data);
++
++	if (bcm->type == NCSI_OEM_BCM_CMD_GMA)
++		return ncsi_rsp_handler_oem_bcm_gma(nr);
++	return 0;
++}
++
+ static struct ncsi_rsp_oem_handler {
+ 	unsigned int	mfr_id;
+ 	int		(*handler)(struct ncsi_request *nr);
+ } ncsi_rsp_oem_handlers[] = {
+ 	{ NCSI_OEM_MFR_MLX_ID, NULL },
+-	{ NCSI_OEM_MFR_BCM_ID, NULL }
++	{ NCSI_OEM_MFR_BCM_ID, ncsi_rsp_handler_oem_bcm }
+ };
+ 
+ /* Response handler for OEM command */
+ static int ncsi_rsp_handler_oem(struct ncsi_request *nr)
+ {
+-	struct ncsi_rsp_oem_pkt *rsp;
+ 	struct ncsi_rsp_oem_handler *nrh = NULL;
++	struct ncsi_rsp_oem_pkt *rsp;
+ 	unsigned int mfr_id, i;
+ 
+ 	/* Get the response header */
+-- 
+2.17.1
 
