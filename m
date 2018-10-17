@@ -1,27 +1,44 @@
-From: Samuel Mendoza-Jonas <sam@mendozajonas.com>
-Date: Wed, 17 Oct 2018 13:50:57 +1100
-Subject: [PATCH net-next v5] net/ncsi: Add NCSI Broadcom OEM command
-In-Reply-To: <20181016191319.1909502-1-vijaykhemka@fb.com>
-References: <20181016191319.1909502-1-vijaykhemka@fb.com>
-Message-ID: <ef5233889f290ec62d0f371c8e05689535740d87.camel@mendozajonas.com>
+From: sudheer.v <open.sudheer@gmail.com>
+Date: Wed, 17 Oct 2018 09:40:57 +0530
+Subject: [[PATCH] 0/9] *** DMA support for UART in ASPEED's AST2500  ***
+Message-ID: <1539749466-3912-1-git-send-email-open.sudheer@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, 2018-10-16 at 12:13 -0700, Vijay Khemka wrote:
-> This patch adds OEM Broadcom commands and response handling. It also
-> defines OEM Get MAC Address handler to get and configure the device.
-> 
-> ncsi_oem_gma_handler_bcm: This handler send NCSI broadcom command for
-> getting mac address.
-> ncsi_rsp_handler_oem_bcm: This handles response received for all
-> broadcom OEM commands.
-> ncsi_rsp_handler_oem_bcm_gma: This handles get mac address response and
-> set it to device.
-> 
-> Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
+DMA controller driver  and UART dma client driver for aspeed's AST2500
 
-Reviewed-by: Samuel Mendoza-Jonas <sam@mendozajonas.com>
+sudheer.v (9):
+  DT-changes-for-DMA-UART-of-AST2500
+  Defconfig-changes-for-DMA-UART-of-AST2500
+  configuration-for-DMA-of-AST2500
+  Documentation-DTbindings-DMA-controller-of-AST2500
+  DMA-driver-for-AST2500
+  configuration-for-DMA-UART-of-AST2500
+  Documentation-DTbindings-DMA-UART-of-AST2500
+  DMA-UART-Driver-for-AST2500
+  updating MAINTAINERS for DMA and DMA-UART drivers of AST2500
+
+ .../devicetree/bindings/dma/ast-uart-sdma.txt      |   23 +
+ .../devicetree/bindings/serial/ast-sdma-uart.txt   |   34 +
+ MAINTAINERS                                        |   26 +
+ arch/arm/boot/dts/aspeed-ast2500-evb.dts           |   20 +
+ arch/arm/boot/dts/aspeed-g5.dtsi                   |   85 ++
+ arch/arm/configs/aspeed_g5_defconfig               |    6 +-
+ drivers/dma/Kconfig                                |    9 +
+ drivers/dma/Makefile                               |    1 +
+ drivers/dma/aspeed_uart_sdma.c                     |  810 ++++++++++
+ drivers/tty/serial/8250/8250_aspeed_uart_dma.c     | 1594 ++++++++++++++++++++
+ drivers/tty/serial/8250/Kconfig                    |   34 +
+ drivers/tty/serial/8250/Makefile                   |    1 +
+ 12 files changed, 2641 insertions(+), 2 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/dma/ast-uart-sdma.txt
+ create mode 100644 Documentation/devicetree/bindings/serial/ast-sdma-uart.txt
+ create mode 100644 drivers/dma/aspeed_uart_sdma.c
+ create mode 100644 drivers/tty/serial/8250/8250_aspeed_uart_dma.c
+
+-- 
+1.9.1
 
