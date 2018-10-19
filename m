@@ -1,11 +1,11 @@
 From: Eddie James <eajames@linux.vnet.ibm.com>
-Date: Fri, 19 Oct 2018 11:39:57 -0500
+Date: Fri, 19 Oct 2018 15:26:27 -0500
 Subject: [PATCH v4 2/2] media: platform: Add Aspeed Video Engine driver
 In-Reply-To: <bf07eb1f-bc17-ac59-d341-f19e2ab0c2e2@xs4all.nl>
 References: <1538769466-14860-1-git-send-email-eajames@linux.ibm.com>
  <1538769466-14860-3-git-send-email-eajames@linux.ibm.com>
  <bf07eb1f-bc17-ac59-d341-f19e2ab0c2e2@xs4all.nl>
-Message-ID: <274386b8-6bb0-8538-61fa-66b002a9f1e9@linux.vnet.ibm.com>
+Message-ID: <b64d0a4b-f74a-e887-366d-c242ac3f0d1c@linux.vnet.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -48,9 +48,6 @@ On 10/12/2018 07:22 AM, Hans Verkuil wrote:
 > This can't be right. If there is a valid signal, then status should be 0.
 > And ideally you can tell the difference between no signal and no sync
 > as well.
-
-Ah, yes I misunderstood the status, thanks.
-
 >
 >> +
 >> +	return 0;
@@ -176,6 +173,31 @@ Ah, yes I misunderstood the status, thanks.
 >> +
 > If vb2_is_busy() returns true, then return -EBUSY here. It is not allowed to
 > set the timings while vb2 is busy.
+
+Buffer ioctls (Input 0):
+ ??? ??? fail: v4l2-test-buffers.cpp(344): node->s_dv_timings(timings)
+ ??? ??? fail: v4l2-test-buffers.cpp(452): testCanSetSameTimings(node)
+ ??? test VIDIOC_REQBUFS/CREATE_BUFS/QUERYBUF: FAIL
+
+Streaming ioctls:
+ ??? test read/write: OK
+ ??? test blocking wait: OK
+ ??? ??? fail: v4l2-test-buffers.cpp(344): node->s_dv_timings(timings)
+ ??? ??? fail: v4l2-test-buffers.cpp(637): testCanSetSameTimings(node)
+ ??? ??? fail: v4l2-test-buffers.cpp(952): captureBufs(node, q, m2m_q, 
+frame_count, false)
+ ??? test MMAP: FAIL
+
+Built from v4l-utils c36dbbdfa8b30b2badd4f893b59d0bd4f0bd12aa
+
+Adding this causes some of the v4l2-compliance streaming tests to fail, 
+and prevents my own application from being able to call S_DV_TIMINGS 
+after detecting a resolution change, despite calling streamoff and 
+unmapping all the buffers first.
+
+Thanks,
+Eddie
+
 >
 >> +	if (video->width != timings->bt.width ||
 >> +	    video->height != timings->bt.height)
@@ -252,11 +274,6 @@ Ah, yes I misunderstood the status, thanks.
 > guess that the max width/height is 1920x1080 (or perhaps 1200).
 >
 > The minimum is probably the VGA resolution.
-
-OK that works, but keep in mind a call to s_dv_timings must return 
-EINVAL if the timings resolution doesn't match the detected 
-resolution... driver can't change the capture resolution.
-
 >
 >> +
 >> +	return 0;
@@ -600,14 +617,6 @@ resolution... driver can't change the capture resolution.
 >> +	vdev->device_caps = V4L2_CAP_VIDEO_CAPTURE | V4L2_CAP_READWRITE |
 > READWRITE doesn't work for JPEG since there is no clear end of a frame. Just drop
 > this and the read op in aspeed_video_v4l2_fops.
-
-I don't follow. The buffer will have the payload set correctly, defining 
-the end of the frame, right? I haven't tested the read interface now but 
-looking at the vb2_fop_read I think it would work?
-
-Thanks,
-Eddie
-
 >
 >> +		V4L2_CAP_STREAMING;
 >> +	vdev->v4l2_dev = v4l2_dev;
