@@ -1,69 +1,84 @@
-From: Vinod <vkoul@kernel.org>
-Date: Sat, 20 Oct 2018 21:56:24 +0530
-Subject: [[PATCH] 8/9] DMA-UART-Driver-for-AST2500
-In-Reply-To: <20181019071154.GE13642@Pilot130>
-References: <1539749466-3912-1-git-send-email-open.sudheer@gmail.com>
- <1539749466-3912-9-git-send-email-open.sudheer@gmail.com>
- <20181017060531.GU2400@vkoul-mobl>
- <351eecd5b1b21893e94f76b34c058c6257b7f837.camel@kernel.crashing.org>
- <20181018095507.GC2400@vkoul-mobl>
- <a3fecf7913d6a85a6294afbc5a1a18b7714d6756.camel@kernel.crashing.org>
- <20181019071154.GE13642@Pilot130>
-Message-ID: <20181020162624.GC2894@vkoul-mobl>
+From: Lee Jones <lee.jones@linaro.org>
+Date: Wed, 24 Oct 2018 08:25:40 +0100
+Subject: [PATCH v8 07/12] dt-bindings: mfd: Add a document for PECI
+ client MFD
+In-Reply-To: <20180918215124.14003-8-jae.hyun.yoo@linux.intel.com>
+References: <20180918215124.14003-1-jae.hyun.yoo@linux.intel.com>
+ <20180918215124.14003-8-jae.hyun.yoo@linux.intel.com>
+Message-ID: <20181024072540.GA4939@dell>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 19-10-18, 12:41, sudheer.v wrote:
-> On Fri, Oct 19, 2018 at 10:32:24AM +1100, Benjamin Herrenschmidt wrote:
-> > On Thu, 2018-10-18 at 15:25 +0530, Vinod wrote:
-> > > 
-> > > > It's not a dmaengine driver. It's a serial UART driver that happens to
-> > > > use a dedicated DMA engine.
-> > > 
-> > > Then I see no reason for it to use dmaengine APIs. The framework allows
-> > > people to share a controller for many clients, but if you have dedicated
-> > > one then you may use it directly
-> > 
-> > Well... the engine is shared by a few UARTs, they have dedicated rings
-> > but there's a common set of regs for interrupt handling etc.
-> > 
-> > That said, I still think it could be contained within a UART driver,
-> > there's little benefit in adding the framework overhead, esp since
-> > these are really weak cores, any overhead will be felt.
-> > 
-> > Ben.
-> > 
-> > > > It's unclear whether it should be split into two drivers, or just have
-> > > > the serial driver directly use the dma engine since that engine is
-> > > > dedicated in HW to only work on those UARTs and nothing else...
-> > > > 
-> > > > Cheers,
-> > > > Ben.
+On Tue, 18 Sep 2018, Jae Hyun Yoo wrote:
+
+> This commit adds a dt-bindings document for PECI client MFD.
 > 
-> Initially we wanted to have  a single driver,
-> however we had an informal discussion with one of the maintainer 
-> and based on the feedback, followed the Linux DMA and UART architecture.
+> Cc: Lee Jones <lee.jones@linaro.org>
+> Cc: Rob Herring <robh+dt@kernel.org>
+> Cc: Mark Rutland <mark.rutland@arm.com>
+> Cc: Andrew Jeffery <andrew@aj.id.au>
+> Cc: James Feist <james.feist@linux.intel.com>
+> Cc: Jason M Biils <jason.m.bills@linux.intel.com>
+> Cc: Joel Stanley <joel@jms.id.au>
+> Cc: Vernon Mauery <vernon.mauery@linux.intel.com>
+> Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+> ---
+>  .../bindings/mfd/intel-peci-client.txt        | 34 +++++++++++++++++++
+>  1 file changed, 34 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/mfd/intel-peci-client.txt
 > 
-> If this seperate DMA-engine driver adds more overhead than benifit,
-> we will merge them into a single UART driver and resubmitt the patches.
-> Vinod,
->       can this dma-controller driver sit under dma subsystem?.
->       or better to move it under UART framework.
+> diff --git a/Documentation/devicetree/bindings/mfd/intel-peci-client.txt b/Documentation/devicetree/bindings/mfd/intel-peci-client.txt
+> new file mode 100644
+> index 000000000000..cb341e363add
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/mfd/intel-peci-client.txt
+> @@ -0,0 +1,34 @@
+> +* Intel PECI client bindings
+> +
+> +PECI (Platform Environment Control Interface) is a one-wire bus interface that
+> +provides a communication channel from PECI clients in Intel processors and
+> +chipset components to external monitoring or control devices. PECI is designed
+> +to support the following sideband functions:
+> +
+> +- Processor and DRAM thermal management
+> +- Platform Manageability
+> +- Processor Interface Tuning and Diagnostics
+> +- Failure Analysis
+> +
+> +Required properties:
+> +- compatible : Should be "intel,peci-client".
+> +- reg        : Should contain address of a client CPU. Address range of CPU
+> +	       clients starts from 0x30 based on PECI specification.
 
+Nit: "start"
 
-My advise would be to see what you can do with the DMA IP block. If this
-can/would be used in different places then it would make sense to do a
-dmaengine driver and solve the problem for everyone.
+Would be better worded:
 
-If this is always going to be hidden behind serial then maybe it makes
-sense to be inside serial driver and not use dmaengine APIs
+"According to the PECI specification client addresses start from 0x30."
 
-If you decide to prefer the former case, please move it to dmaengine and
-resubmit :)
+> +Example:
+> +	peci-bus at 0 {
+> +		compatible = "vendor,soc-peci";
+> +		reg = <0x0 0x1000>;
+> +		#address-cells = <1>;
+> +		#size-cells = <0>;
+> +
+> +		peci-client at 30 {
+> +			compatible = "intel,peci-client";
+> +			reg = <0x30>;
+> +		};
+> +
+> +		peci-client at 31 {
+> +			compatible = "intel,peci-client";
+> +			reg = <0x31>;
+> +		};
+> +	};
 
-HTH
 -- 
-~Vinod
+Lee Jones [???]
+Linaro Services Technical Lead
+Linaro.org ? Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog
