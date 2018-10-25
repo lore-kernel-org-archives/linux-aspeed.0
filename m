@@ -1,35 +1,171 @@
-From: Rob Herring <robh@kernel.org>
-Date: Thu, 25 Oct 2018 09:48:41 -0500
-Subject: [[PATCH] 0/9] *** DMA support for UART in ASPEED's AST2500  ***
-In-Reply-To: <1539749466-3912-1-git-send-email-open.sudheer@gmail.com>
-References: <1539749466-3912-1-git-send-email-open.sudheer@gmail.com>
-Message-ID: <20181025144841.GA21004@bogus>
+From: Vijay Khemka <vijaykhemka@fb.com>
+Date: Thu, 25 Oct 2018 15:04:13 -0700
+Subject: [PATCH net-next] net/ncsi: Add NCSI Mellanox OEM command
+Message-ID: <20181025220413.2936698-1-vijaykhemka@fb.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Oct 17, 2018 at 09:40:57AM +0530, sudheer.v wrote:
-> DMA controller driver  and UART dma client driver for aspeed's AST2500
-> 
-> sudheer.v (9):
+This patch adds OEM Mellanox commands and response handling. It also
+defines OEM Get MAC Address handler to get and configure the device.
 
-We need a full name for author and Signed-off-by.
+ncsi_oem_gma_handler_mlx: This handler send NCSI mellanox command for
+getting mac address.
+ncsi_rsp_handler_oem_mlx: This handles response received for all
+mellanox OEM commands.
+ncsi_rsp_handler_oem_mlx_gma: This handles get mac address response and
+set it to device.
 
->   DT-changes-for-DMA-UART-of-AST2500
->   Defconfig-changes-for-DMA-UART-of-AST2500
->   configuration-for-DMA-of-AST2500
->   Documentation-DTbindings-DMA-controller-of-AST2500
->   DMA-driver-for-AST2500
->   configuration-for-DMA-UART-of-AST2500
->   Documentation-DTbindings-DMA-UART-of-AST2500
->   DMA-UART-Driver-for-AST2500
->   updating MAINTAINERS for DMA and DMA-UART drivers of AST2500
+Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
+---
+ net/ncsi/internal.h    |  5 +++++
+ net/ncsi/ncsi-manage.c | 25 ++++++++++++++++++++++++-
+ net/ncsi/ncsi-pkt.h    |  9 +++++++++
+ net/ncsi/ncsi-rsp.c    | 41 ++++++++++++++++++++++++++++++++++++++++-
+ 4 files changed, 78 insertions(+), 2 deletions(-)
 
-Your commit messages need some work. Use 'git log --oneline <dir>' on 
-each directory for inspiration as to what the subject should be.
+diff --git a/net/ncsi/internal.h b/net/ncsi/internal.h
+index 1dae77c54009..7f3eb1360b9b 100644
+--- a/net/ncsi/internal.h
++++ b/net/ncsi/internal.h
+@@ -73,10 +73,15 @@ enum {
+ #define NCSI_OEM_MFR_BCM_ID             0x113d
+ /* Broadcom specific OEM Command */
+ #define NCSI_OEM_BCM_CMD_GMA            0x01   /* CMD ID for Get MAC */
++/* Mellanox specific OEM Command */
++#define NCSI_OEM_MLX_CMD_GMA            0x00   /* CMD ID for Get MAC */
++#define NCSI_OEM_MLX_CMD_GMA_PARAM      0x1b   /* Parameter for GMA  */
+ /* OEM Command payload lengths*/
+ #define NCSI_OEM_BCM_CMD_GMA_LEN        12
++#define NCSI_OEM_MLX_CMD_GMA_LEN        8
+ /* Mac address offset in OEM response */
+ #define BCM_MAC_ADDR_OFFSET             28
++#define MLX_MAC_ADDR_OFFSET             8
+ 
+ 
+ struct ncsi_channel_version {
+diff --git a/net/ncsi/ncsi-manage.c b/net/ncsi/ncsi-manage.c
+index bfc43b28c7a6..eacb653ff987 100644
+--- a/net/ncsi/ncsi-manage.c
++++ b/net/ncsi/ncsi-manage.c
+@@ -675,12 +675,35 @@ static int ncsi_oem_gma_handler_bcm(struct ncsi_cmd_arg *nca)
+ 	return ret;
+ }
+ 
++static int ncsi_oem_gma_handler_mlx(struct ncsi_cmd_arg *nca)
++{
++	unsigned char data[NCSI_OEM_MLX_CMD_GMA_LEN];
++	int ret = 0;
++
++	nca->payload = NCSI_OEM_MLX_CMD_GMA_LEN;
++
++	memset(data, 0, NCSI_OEM_MLX_CMD_GMA_LEN);
++	*(unsigned int *)data = ntohl(NCSI_OEM_MFR_MLX_ID);
++	data[5] = NCSI_OEM_MLX_CMD_GMA;
++	data[6] = NCSI_OEM_MLX_CMD_GMA_PARAM;
++
++	nca->data = data;
++
++	ret = ncsi_xmit_cmd(nca);
++	if (ret)
++		netdev_err(nca->ndp->ndev.dev,
++			   "NCSI: Failed to transmit cmd 0x%x during configure\n",
++			   nca->type);
++	return ret;
++}
++
+ /* OEM Command handlers initialization */
+ static struct ncsi_oem_gma_handler {
+ 	unsigned int	mfr_id;
+ 	int		(*handler)(struct ncsi_cmd_arg *nca);
+ } ncsi_oem_gma_handlers[] = {
+-	{ NCSI_OEM_MFR_BCM_ID, ncsi_oem_gma_handler_bcm }
++	{ NCSI_OEM_MFR_BCM_ID, ncsi_oem_gma_handler_bcm },
++	{ NCSI_OEM_MFR_MLX_ID, ncsi_oem_gma_handler_mlx }
+ };
+ 
+ static int ncsi_gma_handler(struct ncsi_cmd_arg *nca, unsigned int mf_id)
+diff --git a/net/ncsi/ncsi-pkt.h b/net/ncsi/ncsi-pkt.h
+index 4d3f06be38bd..2a6d83a596c9 100644
+--- a/net/ncsi/ncsi-pkt.h
++++ b/net/ncsi/ncsi-pkt.h
+@@ -165,6 +165,15 @@ struct ncsi_rsp_oem_pkt {
+ 	unsigned char           data[];      /* Payload data      */
+ };
+ 
++/* Mellanox Response Data */
++struct ncsi_rsp_oem_mlx_pkt {
++	unsigned char           cmd_rev;     /* Command Revision  */
++	unsigned char           cmd;         /* Command ID        */
++	unsigned char           param;       /* Parameter         */
++	unsigned char           optional;    /* Optional data     */
++	unsigned char           data[];      /* Data              */
++};
++
+ /* Broadcom Response Data */
+ struct ncsi_rsp_oem_bcm_pkt {
+ 	unsigned char           ver;         /* Payload Version   */
+diff --git a/net/ncsi/ncsi-rsp.c b/net/ncsi/ncsi-rsp.c
+index 77e07ba3f493..ba9a4ba97c64 100644
+--- a/net/ncsi/ncsi-rsp.c
++++ b/net/ncsi/ncsi-rsp.c
+@@ -611,6 +611,45 @@ static int ncsi_rsp_handler_snfc(struct ncsi_request *nr)
+ 	return 0;
+ }
+ 
++/* Response handler for Mellanox command Get Mac Address */
++static int ncsi_rsp_handler_oem_mlx_gma(struct ncsi_request *nr)
++{
++	struct ncsi_dev_priv *ndp = nr->ndp;
++	struct net_device *ndev = ndp->ndev.dev;
++	const struct net_device_ops *ops = ndev->netdev_ops;
++	struct ncsi_rsp_oem_pkt *rsp;
++	struct sockaddr saddr;
++	int ret = 0;
++
++	/* Get the response header */
++	rsp = (struct ncsi_rsp_oem_pkt *)skb_network_header(nr->rsp);
++
++	saddr.sa_family = ndev->type;
++	ndev->priv_flags |= IFF_LIVE_ADDR_CHANGE;
++	memcpy(saddr.sa_data, &rsp->data[MLX_MAC_ADDR_OFFSET], ETH_ALEN);
++	ret = ops->ndo_set_mac_address(ndev, &saddr);
++	if (ret < 0)
++		netdev_warn(ndev, "NCSI: 'Writing mac address to device failed\n");
++
++	return ret;
++}
++
++/* Response handler for Mellanox card */
++static int ncsi_rsp_handler_oem_mlx(struct ncsi_request *nr)
++{
++	struct ncsi_rsp_oem_mlx_pkt *mlx;
++	struct ncsi_rsp_oem_pkt *rsp;
++
++	/* Get the response header */
++	rsp = (struct ncsi_rsp_oem_pkt *)skb_network_header(nr->rsp);
++	mlx = (struct ncsi_rsp_oem_mlx_pkt *)(rsp->data);
++
++	if (mlx->cmd == NCSI_OEM_MLX_CMD_GMA &&
++	    mlx->param == NCSI_OEM_MLX_CMD_GMA_PARAM)
++		return ncsi_rsp_handler_oem_mlx_gma(nr);
++	return 0;
++}
++
+ /* Response handler for Broadcom command Get Mac Address */
+ static int ncsi_rsp_handler_oem_bcm_gma(struct ncsi_request *nr)
+ {
+@@ -655,7 +694,7 @@ static struct ncsi_rsp_oem_handler {
+ 	unsigned int	mfr_id;
+ 	int		(*handler)(struct ncsi_request *nr);
+ } ncsi_rsp_oem_handlers[] = {
+-	{ NCSI_OEM_MFR_MLX_ID, NULL },
++	{ NCSI_OEM_MFR_MLX_ID, ncsi_rsp_handler_oem_mlx },
+ 	{ NCSI_OEM_MFR_BCM_ID, ncsi_rsp_handler_oem_bcm }
+ };
+ 
+-- 
+2.17.1
 
-DT bindings specifically are "dt-bindings: <binding dir>: ..."
-
-Rob
