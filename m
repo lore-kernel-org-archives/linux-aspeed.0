@@ -1,72 +1,35 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Thu, 25 Oct 2018 06:30:30 +0100
-Subject: [PATCH v8 08/12] mfd: intel-peci-client: Add PECI client MFD
- driver
-In-Reply-To: <db7570cb-8f63-b551-d119-c54270ce6139@linux.intel.com>
-References: <20180918215124.14003-1-jae.hyun.yoo@linux.intel.com>
- <20180918215124.14003-9-jae.hyun.yoo@linux.intel.com>
- <20181024105903.GB4939@dell>
- <db7570cb-8f63-b551-d119-c54270ce6139@linux.intel.com>
-Message-ID: <20181025053030.GD4939@dell>
+From: Rob Herring <robh@kernel.org>
+Date: Thu, 25 Oct 2018 09:48:41 -0500
+Subject: [[PATCH] 0/9] *** DMA support for UART in ASPEED's AST2500  ***
+In-Reply-To: <1539749466-3912-1-git-send-email-open.sudheer@gmail.com>
+References: <1539749466-3912-1-git-send-email-open.sudheer@gmail.com>
+Message-ID: <20181025144841.GA21004@bogus>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 24 Oct 2018, Jae Hyun Yoo wrote:
-> On 10/24/2018 3:59 AM, Lee Jones wrote:
-> > On Tue, 18 Sep 2018, Jae Hyun Yoo wrote:
-> > 
-> > > This commit adds PECI client MFD driver.
-> > > 
+On Wed, Oct 17, 2018 at 09:40:57AM +0530, sudheer.v wrote:
+> DMA controller driver  and UART dma client driver for aspeed's AST2500
 > 
-> <snip>
+> sudheer.v (9):
 
-[...]
+We need a full name for author and Signed-off-by.
 
-> > > +bool peci_temp_need_update(struct temp_data *temp)
-> > > +{
-> > > +	if (temp->valid &&
-> > > +	    time_before(jiffies, temp->last_updated + UPDATE_INTERVAL))
-> > > +		return false;
-> > > +
-> > > +	return true;
-> > > +}
-> > > +EXPORT_SYMBOL_GPL(peci_temp_need_update);
-> > > +
-> > > +void peci_temp_mark_updated(struct temp_data *temp)
-> > > +{
-> > > +	temp->valid = 1;
-> > > +	temp->last_updated = jiffies;
-> > > +}
-> > > +EXPORT_SYMBOL_GPL(peci_temp_mark_updated);
-> > 
-> > These are probably better suited as inline functions to be placed in
-> > a header file.  No need to export them, since they only use their own
-> > data.
+>   DT-changes-for-DMA-UART-of-AST2500
+>   Defconfig-changes-for-DMA-UART-of-AST2500
+>   configuration-for-DMA-of-AST2500
+>   Documentation-DTbindings-DMA-controller-of-AST2500
+>   DMA-driver-for-AST2500
+>   configuration-for-DMA-UART-of-AST2500
+>   Documentation-DTbindings-DMA-UART-of-AST2500
+>   DMA-UART-Driver-for-AST2500
+>   updating MAINTAINERS for DMA and DMA-UART drivers of AST2500
 
-Also move them into the HWMON header file.
+Your commit messages need some work. Use 'git log --oneline <dir>' on 
+each directory for inspiration as to what the subject should be.
 
-They have no business in MFD.
+DT bindings specifically are "dt-bindings: <binding dir>: ..."
 
-[...]
-
-> > > +int peci_client_rd_pkg_cfg_cmd(struct peci_mfd *priv, u8 mbx_idx,
-> > 
-> > This is gobbledegook.  What's rd?  Read?
-> > 
-> 
-> Yes, the 'rd' means 'read'. I intended to keep command names as listed
-> in the PECI specification such as RdPkgConfig, WrPkgConfig and so on.
-> Should I change it to 'peci_client_read_package_config_command' ?
-
-I looks/reads a lot nicer, don't you think?
-
-[...]
-
--- 
-Lee Jones [???]
-Linaro Services Technical Lead
-Linaro.org ? Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+Rob
