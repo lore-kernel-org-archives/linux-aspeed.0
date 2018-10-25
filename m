@@ -1,130 +1,79 @@
 From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-Date: Mon, 29 Oct 2018 14:14:14 -0700
-Subject: [PATCH i2c-next v8 5/5] i2c: aspeed: Add bus idle waiting logic for
- multi-master use cases
-In-Reply-To: <20181029211414.20771-1-jae.hyun.yoo@linux.intel.com>
-References: <20181029211414.20771-1-jae.hyun.yoo@linux.intel.com>
-Message-ID: <20181029211414.20771-6-jae.hyun.yoo@linux.intel.com>
+Date: Thu, 25 Oct 2018 09:16:01 -0700
+Subject: [PATCH v8 08/12] mfd: intel-peci-client: Add PECI client MFD
+ driver
+In-Reply-To: <20181025053030.GD4939@dell>
+References: <20180918215124.14003-1-jae.hyun.yoo@linux.intel.com>
+ <20180918215124.14003-9-jae.hyun.yoo@linux.intel.com>
+ <20181024105903.GB4939@dell>
+ <db7570cb-8f63-b551-d119-c54270ce6139@linux.intel.com>
+ <20181025053030.GD4939@dell>
+Message-ID: <509c4c0e-eabb-2276-3ffd-3fc675801142@linux.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-In multi-master environment, this driver's master cannot know
-exactly when a peer master sends data to this driver's slave so a
-case can be happened that this master tries to send data through
-the master_xfer function but slave data from peer master is still
-being processed by this driver.
+On 10/24/2018 10:30 PM, Lee Jones wrote:
+> On Wed, 24 Oct 2018, Jae Hyun Yoo wrote:
+>> On 10/24/2018 3:59 AM, Lee Jones wrote:
+>>> On Tue, 18 Sep 2018, Jae Hyun Yoo wrote:
+>>>
+>>>> This commit adds PECI client MFD driver.
+>>>>
+>>
+>> <snip>
+> 
+> [...]
+> 
+>>>> +bool peci_temp_need_update(struct temp_data *temp)
+>>>> +{
+>>>> +	if (temp->valid &&
+>>>> +	    time_before(jiffies, temp->last_updated + UPDATE_INTERVAL))
+>>>> +		return false;
+>>>> +
+>>>> +	return true;
+>>>> +}
+>>>> +EXPORT_SYMBOL_GPL(peci_temp_need_update);
+>>>> +
+>>>> +void peci_temp_mark_updated(struct temp_data *temp)
+>>>> +{
+>>>> +	temp->valid = 1;
+>>>> +	temp->last_updated = jiffies;
+>>>> +}
+>>>> +EXPORT_SYMBOL_GPL(peci_temp_mark_updated);
+>>>
+>>> These are probably better suited as inline functions to be placed in
+>>> a header file.  No need to export them, since they only use their own
+>>> data.
+> 
+> Also move them into the HWMON header file.
+> 
+> They have no business in MFD.
+> 
 
-To prevent any state corruption in the case, this patch adds
-checking code if any slave operation is ongoing and it waits up to
-the bus timeout duration before starting a master_xfer operation.
+Agreed. I'll move them into the HWMON header.
 
-Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-Reviewed-by: Brendan Higgins <brendanhiggins@google.com>
----
- drivers/i2c/busses/i2c-aspeed.c | 52 +++++++++++++++++++++++----------
- 1 file changed, 37 insertions(+), 15 deletions(-)
+> [...]
+> 
+>>>> +int peci_client_rd_pkg_cfg_cmd(struct peci_mfd *priv, u8 mbx_idx,
+>>>
+>>> This is gobbledegook.  What's rd?  Read?
+>>>
+>>
+>> Yes, the 'rd' means 'read'. I intended to keep command names as listed
+>> in the PECI specification such as RdPkgConfig, WrPkgConfig and so on.
+>> Should I change it to 'peci_client_read_package_config_command' ?
+> 
+> I looks/reads a lot nicer, don't you think?
+> 
 
-diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
-index 833b6b6a4c7e..4e92a405210b 100644
---- a/drivers/i2c/busses/i2c-aspeed.c
-+++ b/drivers/i2c/busses/i2c-aspeed.c
-@@ -12,6 +12,7 @@
- 
- #include <linux/clk.h>
- #include <linux/completion.h>
-+#include <linux/delay.h>
- #include <linux/err.h>
- #include <linux/errno.h>
- #include <linux/i2c.h>
-@@ -115,6 +116,9 @@
- /* 0x18 : I2CD Slave Device Address Register   */
- #define ASPEED_I2CD_DEV_ADDR_MASK			GENMASK(6, 0)
- 
-+/* Busy checking */
-+#define ASPEED_I2C_BUS_BUSY_CHECK_INTERVAL_US		(10 * 1000)
-+
- enum aspeed_i2c_master_state {
- 	ASPEED_I2C_MASTER_INACTIVE,
- 	ASPEED_I2C_MASTER_START,
-@@ -156,6 +160,8 @@ struct aspeed_i2c_bus {
- 	int				cmd_err;
- 	/* Protected only by i2c_lock_bus */
- 	int				master_xfer_result;
-+	/* Multi-master */
-+	bool				multi_master;
- #if IS_ENABLED(CONFIG_I2C_SLAVE)
- 	struct i2c_client		*slave;
- 	enum aspeed_i2c_slave_state	slave_state;
-@@ -596,27 +602,41 @@ static irqreturn_t aspeed_i2c_bus_irq(int irq, void *dev_id)
- 	return irq_remaining ? IRQ_NONE : IRQ_HANDLED;
- }
- 
-+static int aspeed_i2c_check_bus_busy(struct aspeed_i2c_bus *bus)
-+{
-+	unsigned long check_started;
-+
-+	if (bus->multi_master) {
-+		might_sleep();
-+		check_started = jiffies;
-+	}
-+
-+	for (;;) {
-+		if (!(readl(bus->base + ASPEED_I2C_CMD_REG) &
-+		      ASPEED_I2CD_BUS_BUSY_STS) &&
-+		    bus->slave_state == ASPEED_I2C_SLAVE_STOP)
-+			return 0;
-+		if (!bus->multi_master)
-+			break;
-+		if (time_after(jiffies, check_started + bus->adap.timeout))
-+			break;
-+		usleep_range((ASPEED_I2C_BUS_BUSY_CHECK_INTERVAL_US >> 2) + 1,
-+			     ASPEED_I2C_BUS_BUSY_CHECK_INTERVAL_US);
-+	}
-+
-+	return aspeed_i2c_recover_bus(bus);
-+}
-+
- static int aspeed_i2c_master_xfer(struct i2c_adapter *adap,
- 				  struct i2c_msg *msgs, int num)
- {
- 	struct aspeed_i2c_bus *bus = i2c_get_adapdata(adap);
- 	unsigned long time_left, flags;
--	int ret = 0;
- 
--	spin_lock_irqsave(&bus->lock, flags);
--	bus->cmd_err = 0;
--
--	/* If bus is busy, attempt recovery. We assume a single master
--	 * environment.
--	 */
--	if (readl(bus->base + ASPEED_I2C_CMD_REG) & ASPEED_I2CD_BUS_BUSY_STS) {
--		spin_unlock_irqrestore(&bus->lock, flags);
--		ret = aspeed_i2c_recover_bus(bus);
--		if (ret)
--			return ret;
--		spin_lock_irqsave(&bus->lock, flags);
--	}
-+	if (aspeed_i2c_check_bus_busy(bus))
-+		return -EAGAIN;
- 
-+	spin_lock_irqsave(&bus->lock, flags);
- 	bus->cmd_err = 0;
- 	bus->msgs = msgs;
- 	bus->msgs_index = 0;
-@@ -827,7 +847,9 @@ static int aspeed_i2c_init(struct aspeed_i2c_bus *bus,
- 	if (ret < 0)
- 		return ret;
- 
--	if (!of_property_read_bool(pdev->dev.of_node, "multi-master"))
-+	if (of_property_read_bool(pdev->dev.of_node, "multi-master"))
-+		bus->multi_master = true;
-+	else
- 		fun_ctrl_reg |= ASPEED_I2CD_MULTI_MASTER_DIS;
- 
- 	/* Enable Master Mode */
--- 
-2.19.1
+Okay. I'll change it too.
 
+Thanks again for your review, Lee!
+
+Jae
+
+> [...]
+> 
