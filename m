@@ -1,45 +1,42 @@
-From: sudheer.v <open.sudheer@gmail.com>
-Date: Fri, 26 Oct 2018 12:53:16 +0530
-Subject: [[PATCH] 0/9] *** DMA support for UART in ASPEED's AST2500  ***
-In-Reply-To: <20181025144841.GA21004@bogus>
-References: <1539749466-3912-1-git-send-email-open.sudheer@gmail.com>
- <20181025144841.GA21004@bogus>
-Message-ID: <20181026072314.GB30088@Pilot130>
+From: Vijay Khemka <vijaykhemka@fb.com>
+Date: Fri, 26 Oct 2018 17:19:49 +0000
+Subject: [PATCH net-next] net/ncsi: Add NCSI Mellanox OEM command
+In-Reply-To: <20181025.155335.2132843393553452471.davem@davemloft.net>
+References: <20181025220413.2936698-1-vijaykhemka@fb.com>
+ <20181025.155335.2132843393553452471.davem@davemloft.net>
+Message-ID: <F0024535-93C3-4470-98A6-F57426587474@fb.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Oct 25, 2018 at 09:48:41AM -0500, Rob Herring wrote:
-> On Wed, Oct 17, 2018 at 09:40:57AM +0530, sudheer.v wrote:
-> > DMA controller driver  and UART dma client driver for aspeed's AST2500
-> > 
-> > sudheer.v (9):
-> 
-> We need a full name for author and Signed-off-by.
-> 
-> >   DT-changes-for-DMA-UART-of-AST2500
-> >   Defconfig-changes-for-DMA-UART-of-AST2500
-> >   configuration-for-DMA-of-AST2500
-> >   Documentation-DTbindings-DMA-controller-of-AST2500
-> >   DMA-driver-for-AST2500
-> >   configuration-for-DMA-UART-of-AST2500
-> >   Documentation-DTbindings-DMA-UART-of-AST2500
-> >   DMA-UART-Driver-for-AST2500
-> >   updating MAINTAINERS for DMA and DMA-UART drivers of AST2500
-> 
-> Your commit messages need some work. Use 'git log --oneline <dir>' on 
-> each directory for inspiration as to what the subject should be.
-> 
-> DT bindings specifically are "dt-bindings: <binding dir>: ..."
-> 
-> Rob
-Hi Rob,
-As per the comments given by vinod and Ben,
-we are planning to resubmit the patches, after merging these 
-two drivers (dma and uart) into single driver.
-While resubmitting, will ensure patches are formatted with
-proper messages, following the convention.
+Thanks David,
+Do you have any timeline when it is going to open next or how do I know.
+
 Regards
-Sudheer
+-Vijay
+
+?On 10/25/18, 3:54 PM, "David Miller" <davem@davemloft.net> wrote:
+
+    From: Vijay Khemka <vijaykhemka@fb.com>
+    Date: Thu, 25 Oct 2018 15:04:13 -0700
+    
+    > This patch adds OEM Mellanox commands and response handling. It also
+    > defines OEM Get MAC Address handler to get and configure the device.
+    > 
+    > ncsi_oem_gma_handler_mlx: This handler send NCSI mellanox command for
+    > getting mac address.
+    > ncsi_rsp_handler_oem_mlx: This handles response received for all
+    > mellanox OEM commands.
+    > ncsi_rsp_handler_oem_mlx_gma: This handles get mac address response and
+    > set it to device.
+    > 
+    > Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
+    
+    net-next is closed, please resubmit this when the net-next tree opens
+    back up.
+    
+    Thank you.
+    
+
