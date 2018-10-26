@@ -1,31 +1,82 @@
-From: David Miller <davem@davemloft.net>
-Date: Thu, 25 Oct 2018 15:53:35 -0700 (PDT)
-Subject: [PATCH net-next] net/ncsi: Add NCSI Mellanox OEM command
-In-Reply-To: <20181025220413.2936698-1-vijaykhemka@fb.com>
-References: <20181025220413.2936698-1-vijaykhemka@fb.com>
-Message-ID: <20181025.155335.2132843393553452471.davem@davemloft.net>
+From: sudheer.v <open.sudheer@gmail.com>
+Date: Fri, 26 Oct 2018 12:37:28 +0530
+Subject: [[PATCH] 8/9] DMA-UART-Driver-for-AST2500
+In-Reply-To: <20181020162624.GC2894@vkoul-mobl>
+References: <1539749466-3912-1-git-send-email-open.sudheer@gmail.com>
+ <1539749466-3912-9-git-send-email-open.sudheer@gmail.com>
+ <20181017060531.GU2400@vkoul-mobl>
+ <351eecd5b1b21893e94f76b34c058c6257b7f837.camel@kernel.crashing.org>
+ <20181018095507.GC2400@vkoul-mobl>
+ <a3fecf7913d6a85a6294afbc5a1a18b7714d6756.camel@kernel.crashing.org>
+ <20181019071154.GE13642@Pilot130>
+ <20181020162624.GC2894@vkoul-mobl>
+Message-ID: <20181026070726.GA30088@Pilot130>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Vijay Khemka <vijaykhemka@fb.com>
-Date: Thu, 25 Oct 2018 15:04:13 -0700
-
-> This patch adds OEM Mellanox commands and response handling. It also
-> defines OEM Get MAC Address handler to get and configure the device.
+On Sat, Oct 20, 2018 at 09:56:24PM +0530, Vinod wrote:
+> On 19-10-18, 12:41, sudheer.v wrote:
+> > On Fri, Oct 19, 2018 at 10:32:24AM +1100, Benjamin Herrenschmidt wrote:
+> > > On Thu, 2018-10-18 at 15:25 +0530, Vinod wrote:
+> > > > 
+> > > > > It's not a dmaengine driver. It's a serial UART driver that happens to
+> > > > > use a dedicated DMA engine.
+> > > > 
+> > > > Then I see no reason for it to use dmaengine APIs. The framework allows
+> > > > people to share a controller for many clients, but if you have dedicated
+> > > > one then you may use it directly
+> > > 
+> > > Well... the engine is shared by a few UARTs, they have dedicated rings
+> > > but there's a common set of regs for interrupt handling etc.
+> > > 
+> > > That said, I still think it could be contained within a UART driver,
+> > > there's little benefit in adding the framework overhead, esp since
+> > > these are really weak cores, any overhead will be felt.
+> > > 
+> > > Ben.
+> > > 
+> > > > > It's unclear whether it should be split into two drivers, or just have
+> > > > > the serial driver directly use the dma engine since that engine is
+> > > > > dedicated in HW to only work on those UARTs and nothing else...
+> > > > > 
+> > > > > Cheers,
+> > > > > Ben.
+> > 
+> > Initially we wanted to have  a single driver,
+> > however we had an informal discussion with one of the maintainer 
+> > and based on the feedback, followed the Linux DMA and UART architecture.
+> > 
+> > If this seperate DMA-engine driver adds more overhead than benifit,
+> > we will merge them into a single UART driver and resubmitt the patches.
+> > Vinod,
+> >       can this dma-controller driver sit under dma subsystem?.
+> >       or better to move it under UART framework.
 > 
-> ncsi_oem_gma_handler_mlx: This handler send NCSI mellanox command for
-> getting mac address.
-> ncsi_rsp_handler_oem_mlx: This handles response received for all
-> mellanox OEM commands.
-> ncsi_rsp_handler_oem_mlx_gma: This handles get mac address response and
-> set it to device.
 > 
-> Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
+> My advise would be to see what you can do with the DMA IP block. If this
+> can/would be used in different places then it would make sense to do a
+> dmaengine driver and solve the problem for everyone.
+> 
+> If this is always going to be hidden behind serial then maybe it makes
+> sense to be inside serial driver and not use dmaengine APIs
+> 
+> If you decide to prefer the former case, please move it to dmaengine and
+> resubmit :)
+> 
+> HTH
+> -- 
+> ~Vinod
 
-net-next is closed, please resubmit this when the net-next tree opens
-back up.
+Hi All,
+ As the DMA engine is dedicated only to UART,we have decided 
+ to rewrite the driver so that no code will come under 
+ drivers/dma.
+ 
+ I will resubmitt the patches after merging dma controller
+ code and uart driver code.
+Regards
+-sudheer
 
-Thank you.
