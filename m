@@ -1,86 +1,134 @@
 From: Douglas Anderson <dianders@chromium.org>
-Date: Mon, 29 Oct 2018 11:07:00 -0700
-Subject: [PATCH 0/7] serial: Finish kgdb on qcom_geni;
- fix many lockdep splats w/ kgdb
-Message-ID: <20181029180707.207546-1-dianders@chromium.org>
+Date: Mon, 29 Oct 2018 11:07:05 -0700
+Subject: [PATCH 5/7] serial: 8250: Process sysrq at port unlock time
+In-Reply-To: <20181029180707.207546-1-dianders@chromium.org>
+References: <20181029180707.207546-1-dianders@chromium.org>
+Message-ID: <20181029180707.207546-6-dianders@chromium.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-I started out this series trying to make sysrq work over the serial
-console on qcom_geni_serial, then fell into a rat's nest.
+Let's take advantage of the new ("serial: core: Allow processing sysrq
+at port unlock time") to handle sysrqs more cleanly.
 
-To solve the deadlock I faced when enabling sysrq I tried to borrow
-code from '8250_port.c' which avoided grabbing the port lock in
-console_write().  ...but since these days I try to run with lockdep on
-all the time, I found it caused an annoying lockdep splat (which I
-also reproduced on my rk3399 board).  ...so I instead changed my
-qcom_geni_serial solution to borrow code from 'msm_serial.c'
+Signed-off-by: Douglas Anderson <dianders@chromium.org>
+---
+I don't have a great way to test all 8250 variants, but I've at least
+tested rk3288 / rk3399 and they seem to work.  Hopefully I got the
+aspeed_vuart / fsl / omap variants right (I only compile tested
+those).
 
-I wasn't super happy with the solution in 'msm_serial.c' though.  I
-don't like releasing the spinlock there.  Not only is it ugly but it
-means we are unlocking / re-locking _all the time_ even though sysrq
-characters are rare.  ...so I came up with what I think is a better
-solution and then implemented it for qcom_geni_serial.
+ drivers/tty/serial/8250/8250_aspeed_vuart.c | 6 +++++-
+ drivers/tty/serial/8250/8250_fsl.c          | 6 +++++-
+ drivers/tty/serial/8250/8250_omap.c         | 6 +++++-
+ drivers/tty/serial/8250/8250_port.c         | 8 +++-----
+ 4 files changed, 18 insertions(+), 8 deletions(-)
 
-Since I had a good way to test 8250-based UARTs, I also fixed that
-driver to use my new method.  When doing so, I ran into a missing
-msm_serial.c at all, so I didn't switch that (or all other serial
-drivers for that matter) to the new method.
-
-After fixing all the above issues, I found the next lockdep splat in
-kgdb and I think I've worked around it in a good-enough way, but I'm
-much less confident about this.  Hopefully folks can take a look at
-it.
-
-In general, patches earlier in this series should be "less
-controversial" and hopefully can land even if people don't like
-patches later in the series.  ;-)
-
-Looking back, this is pretty much two series squashed that could be
-treated indepdently.  The first is a serial series and the second is a
-kgdb series.
-
-For all serial patches I'd expect them to go through the tty tree once
-they've been reviewed.
-
-If folks are OK w/ the 'smp' patch it probably should go in some core
-kernel tree.  The kgdb patch won't work without it, though, so to land
-that we'd need coordination between the folks landing that and the
-folks landing the 'smp' patch.
-
-
-Douglas Anderson (7):
-  serial: qcom_geni_serial: Finish supporting sysrq
-  serial: core: Allow processing sysrq at port unlock time
-  serial: qcom_geni_serial: Process sysrq at port unlock time
-  serial: core: Include console.h from serial_core.h
-  serial: 8250: Process sysrq at port unlock time
-  smp: Don't yell about IRQs disabled in kgdb_roundup_cpus()
-  kgdb: Remove irq flags and local_irq_enable/disable from roundup
-
- arch/arc/kernel/kgdb.c                      |  4 +--
- arch/arm/kernel/kgdb.c                      |  4 +--
- arch/arm64/kernel/kgdb.c                    |  4 +--
- arch/hexagon/kernel/kgdb.c                  | 11 ++----
- arch/mips/kernel/kgdb.c                     |  4 +--
- arch/powerpc/kernel/kgdb.c                  |  2 +-
- arch/sh/kernel/kgdb.c                       |  4 +--
- arch/sparc/kernel/smp_64.c                  |  2 +-
- arch/x86/kernel/kgdb.c                      |  9 ++---
- drivers/tty/serial/8250/8250_aspeed_vuart.c |  6 +++-
- drivers/tty/serial/8250/8250_fsl.c          |  6 +++-
- drivers/tty/serial/8250/8250_omap.c         |  6 +++-
- drivers/tty/serial/8250/8250_port.c         |  8 ++---
- drivers/tty/serial/qcom_geni_serial.c       | 10 ++++--
- include/linux/kgdb.h                        |  9 ++---
- include/linux/serial_core.h                 | 38 ++++++++++++++++++++-
- kernel/debug/debug_core.c                   |  2 +-
- kernel/smp.c                                |  4 ++-
- 18 files changed, 80 insertions(+), 53 deletions(-)
-
+diff --git a/drivers/tty/serial/8250/8250_aspeed_vuart.c b/drivers/tty/serial/8250/8250_aspeed_vuart.c
+index 435bec40dee6..0438d9a905ce 100644
+--- a/drivers/tty/serial/8250/8250_aspeed_vuart.c
++++ b/drivers/tty/serial/8250/8250_aspeed_vuart.c
+@@ -5,6 +5,10 @@
+  *    Copyright (C) 2016 Jeremy Kerr <jk@ozlabs.org>, IBM Corp.
+  *    Copyright (C) 2006 Arnd Bergmann <arnd@arndb.de>, IBM Corp.
+  */
++#if defined(CONFIG_SERIAL_8250_CONSOLE) && defined(CONFIG_MAGIC_SYSRQ)
++#define SUPPORT_SYSRQ
++#endif
++
+ #include <linux/device.h>
+ #include <linux/module.h>
+ #include <linux/of_address.h>
+@@ -293,7 +297,7 @@ static int aspeed_vuart_handle_irq(struct uart_port *port)
+ 	if (lsr & UART_LSR_THRE)
+ 		serial8250_tx_chars(up);
+ 
+-	spin_unlock_irqrestore(&port->lock, flags);
++	uart_unlock_and_check_sysrq(port, flags);
+ 
+ 	return 1;
+ }
+diff --git a/drivers/tty/serial/8250/8250_fsl.c b/drivers/tty/serial/8250/8250_fsl.c
+index 6640a4c7ddd1..ff3dcaea5d93 100644
+--- a/drivers/tty/serial/8250/8250_fsl.c
++++ b/drivers/tty/serial/8250/8250_fsl.c
+@@ -1,4 +1,8 @@
+ // SPDX-License-Identifier: GPL-2.0
++#if defined(CONFIG_SERIAL_8250_CONSOLE) && defined(CONFIG_MAGIC_SYSRQ)
++#define SUPPORT_SYSRQ
++#endif
++
+ #include <linux/serial_reg.h>
+ #include <linux/serial_8250.h>
+ 
+@@ -54,7 +58,7 @@ int fsl8250_handle_irq(struct uart_port *port)
+ 		serial8250_tx_chars(up);
+ 
+ 	up->lsr_saved_flags = orig_lsr;
+-	spin_unlock_irqrestore(&up->port.lock, flags);
++	uart_unlock_and_check_sysrq(&up->port, flags);
+ 	return 1;
+ }
+ EXPORT_SYMBOL_GPL(fsl8250_handle_irq);
+diff --git a/drivers/tty/serial/8250/8250_omap.c b/drivers/tty/serial/8250/8250_omap.c
+index a019286f8bb6..ad7ba7d0f28d 100644
+--- a/drivers/tty/serial/8250/8250_omap.c
++++ b/drivers/tty/serial/8250/8250_omap.c
+@@ -8,6 +8,10 @@
+  *
+  */
+ 
++#if defined(CONFIG_SERIAL_8250_CONSOLE) && defined(CONFIG_MAGIC_SYSRQ)
++#define SUPPORT_SYSRQ
++#endif
++
+ #include <linux/device.h>
+ #include <linux/io.h>
+ #include <linux/module.h>
+@@ -1085,7 +1089,7 @@ static int omap_8250_dma_handle_irq(struct uart_port *port)
+ 		}
+ 	}
+ 
+-	spin_unlock_irqrestore(&port->lock, flags);
++	uart_unlock_and_check_sysrq(port, flags);
+ 	serial8250_rpm_put(up);
+ 	return 1;
+ }
+diff --git a/drivers/tty/serial/8250/8250_port.c b/drivers/tty/serial/8250/8250_port.c
+index f776b3eafb96..c39482b96111 100644
+--- a/drivers/tty/serial/8250/8250_port.c
++++ b/drivers/tty/serial/8250/8250_port.c
+@@ -1755,7 +1755,7 @@ void serial8250_read_char(struct uart_8250_port *up, unsigned char lsr)
+ 		else if (lsr & UART_LSR_FE)
+ 			flag = TTY_FRAME;
+ 	}
+-	if (uart_handle_sysrq_char(port, ch))
++	if (uart_prepare_sysrq_char(port, ch))
+ 		return;
+ 
+ 	uart_insert_char(port, lsr, UART_LSR_OE, ch, flag);
+@@ -1897,7 +1897,7 @@ int serial8250_handle_irq(struct uart_port *port, unsigned int iir)
+ 	if ((!up->dma || up->dma->tx_err) && (status & UART_LSR_THRE))
+ 		serial8250_tx_chars(up);
+ 
+-	spin_unlock_irqrestore(&port->lock, flags);
++	uart_unlock_and_check_sysrq(port, flags);
+ 	return 1;
+ }
+ EXPORT_SYMBOL_GPL(serial8250_handle_irq);
+@@ -3258,9 +3258,7 @@ void serial8250_console_write(struct uart_8250_port *up, const char *s,
+ 
+ 	serial8250_rpm_get(up);
+ 
+-	if (port->sysrq)
+-		locked = 0;
+-	else if (oops_in_progress)
++	if (oops_in_progress)
+ 		locked = spin_trylock_irqsave(&port->lock, flags);
+ 	else
+ 		spin_lock_irqsave(&port->lock, flags);
 -- 
 2.19.1.568.g152ad8e336-goog
 
