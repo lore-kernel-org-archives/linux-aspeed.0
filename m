@@ -1,134 +1,105 @@
-From: Douglas Anderson <dianders@chromium.org>
-Date: Mon, 29 Oct 2018 11:07:05 -0700
-Subject: [PATCH 5/7] serial: 8250: Process sysrq at port unlock time
-In-Reply-To: <20181029180707.207546-1-dianders@chromium.org>
-References: <20181029180707.207546-1-dianders@chromium.org>
-Message-ID: <20181029180707.207546-6-dianders@chromium.org>
+From: kbuild test robot <lkp@intel.com>
+Date: Tue, 30 Oct 2018 06:49:39 +0800
+Subject: [PATCH i2c-next v8 5/5] i2c: aspeed: Add bus idle waiting logic
+ for multi-master use cases
+In-Reply-To: <20181029211414.20771-6-jae.hyun.yoo@linux.intel.com>
+References: <20181029211414.20771-6-jae.hyun.yoo@linux.intel.com>
+Message-ID: <201810300628.VVJxhkq6%fengguang.wu@intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Let's take advantage of the new ("serial: core: Allow processing sysrq
-at port unlock time") to handle sysrqs more cleanly.
+Hi Jae,
 
-Signed-off-by: Douglas Anderson <dianders@chromium.org>
+Thank you for the patch! Perhaps something to improve:
+
+[auto build test WARNING on wsa/i2c/for-next]
+[also build test WARNING on v4.19 next-20181029]
+[if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
+
+url:    https://github.com/0day-ci/linux/commits/Jae-Hyun-Yoo/i2c-aspeed-Add-bus-idle-waiting-logic-for-multi-master-use-cases/20181030-051719
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/wsa/linux.git i2c/for-next
+config: xtensa-allyesconfig (attached as .config)
+compiler: xtensa-linux-gcc (GCC) 8.1.0
+reproduce:
+        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        # save the attached .config to linux build tree
+        GCC_VERSION=8.1.0 make.cross ARCH=xtensa 
+
+Note: it may well be a FALSE warning. FWIW you are at least aware of it now.
+http://gcc.gnu.org/wiki/Better_Uninitialized_Warnings
+
+All warnings (new ones prefixed by >>):
+
+   In file included from include/linux/ktime.h:25,
+                    from include/linux/rcutiny.h:28,
+                    from include/linux/rcupdate.h:209,
+                    from include/linux/srcu.h:33,
+                    from include/linux/notifier.h:16,
+                    from include/linux/clk.h:17,
+                    from drivers/i2c/busses/i2c-aspeed.c:13:
+   drivers/i2c/busses/i2c-aspeed.c: In function 'aspeed_i2c_master_xfer':
+>> include/linux/jiffies.h:108:15: warning: 'check_started' may be used uninitialized in this function [-Wmaybe-uninitialized]
+      ((long)((b) - (a)) < 0))
+                  ^
+   drivers/i2c/busses/i2c-aspeed.c:607:16: note: 'check_started' was declared here
+     unsigned long check_started;
+                   ^~~~~~~~~~~~~
+--
+   In file included from include/linux/ktime.h:25,
+                    from include/linux/rcutiny.h:28,
+                    from include/linux/rcupdate.h:209,
+                    from include/linux/srcu.h:33,
+                    from include/linux/notifier.h:16,
+                    from include/linux/clk.h:17,
+                    from drivers/i2c//busses/i2c-aspeed.c:13:
+   drivers/i2c//busses/i2c-aspeed.c: In function 'aspeed_i2c_master_xfer':
+>> include/linux/jiffies.h:108:15: warning: 'check_started' may be used uninitialized in this function [-Wmaybe-uninitialized]
+      ((long)((b) - (a)) < 0))
+                  ^
+   drivers/i2c//busses/i2c-aspeed.c:607:16: note: 'check_started' was declared here
+     unsigned long check_started;
+                   ^~~~~~~~~~~~~
+
+vim +/check_started +108 include/linux/jiffies.h
+
+^1da177e Linus Torvalds   2005-04-16   91  
+^1da177e Linus Torvalds   2005-04-16   92  /*
+^1da177e Linus Torvalds   2005-04-16   93   *	These inlines deal with timer wrapping correctly. You are 
+^1da177e Linus Torvalds   2005-04-16   94   *	strongly encouraged to use them
+^1da177e Linus Torvalds   2005-04-16   95   *	1. Because people otherwise forget
+^1da177e Linus Torvalds   2005-04-16   96   *	2. Because if the timer wrap changes in future you won't have to
+^1da177e Linus Torvalds   2005-04-16   97   *	   alter your driver code.
+^1da177e Linus Torvalds   2005-04-16   98   *
+^1da177e Linus Torvalds   2005-04-16   99   * time_after(a,b) returns true if the time a is after time b.
+^1da177e Linus Torvalds   2005-04-16  100   *
+^1da177e Linus Torvalds   2005-04-16  101   * Do this with "<0" and ">=0" to only test the sign of the result. A
+^1da177e Linus Torvalds   2005-04-16  102   * good compiler would generate better code (and a really good compiler
+^1da177e Linus Torvalds   2005-04-16  103   * wouldn't care). Gcc is currently neither.
+^1da177e Linus Torvalds   2005-04-16  104   */
+^1da177e Linus Torvalds   2005-04-16  105  #define time_after(a,b)		\
+^1da177e Linus Torvalds   2005-04-16  106  	(typecheck(unsigned long, a) && \
+^1da177e Linus Torvalds   2005-04-16  107  	 typecheck(unsigned long, b) && \
+5a581b36 Paul E. McKenney 2013-07-27 @108  	 ((long)((b) - (a)) < 0))
+^1da177e Linus Torvalds   2005-04-16  109  #define time_before(a,b)	time_after(b,a)
+^1da177e Linus Torvalds   2005-04-16  110  
+
+:::::: The code at line 108 was first introduced by commit
+:::::: 5a581b367b5df0531265311fc681c2abd377e5e6 jiffies: Avoid undefined behavior from signed overflow
+
+:::::: TO: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+:::::: CC: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+
 ---
-I don't have a great way to test all 8250 variants, but I've at least
-tested rk3288 / rk3399 and they seem to work.  Hopefully I got the
-aspeed_vuart / fsl / omap variants right (I only compile tested
-those).
-
- drivers/tty/serial/8250/8250_aspeed_vuart.c | 6 +++++-
- drivers/tty/serial/8250/8250_fsl.c          | 6 +++++-
- drivers/tty/serial/8250/8250_omap.c         | 6 +++++-
- drivers/tty/serial/8250/8250_port.c         | 8 +++-----
- 4 files changed, 18 insertions(+), 8 deletions(-)
-
-diff --git a/drivers/tty/serial/8250/8250_aspeed_vuart.c b/drivers/tty/serial/8250/8250_aspeed_vuart.c
-index 435bec40dee6..0438d9a905ce 100644
---- a/drivers/tty/serial/8250/8250_aspeed_vuart.c
-+++ b/drivers/tty/serial/8250/8250_aspeed_vuart.c
-@@ -5,6 +5,10 @@
-  *    Copyright (C) 2016 Jeremy Kerr <jk@ozlabs.org>, IBM Corp.
-  *    Copyright (C) 2006 Arnd Bergmann <arnd@arndb.de>, IBM Corp.
-  */
-+#if defined(CONFIG_SERIAL_8250_CONSOLE) && defined(CONFIG_MAGIC_SYSRQ)
-+#define SUPPORT_SYSRQ
-+#endif
-+
- #include <linux/device.h>
- #include <linux/module.h>
- #include <linux/of_address.h>
-@@ -293,7 +297,7 @@ static int aspeed_vuart_handle_irq(struct uart_port *port)
- 	if (lsr & UART_LSR_THRE)
- 		serial8250_tx_chars(up);
- 
--	spin_unlock_irqrestore(&port->lock, flags);
-+	uart_unlock_and_check_sysrq(port, flags);
- 
- 	return 1;
- }
-diff --git a/drivers/tty/serial/8250/8250_fsl.c b/drivers/tty/serial/8250/8250_fsl.c
-index 6640a4c7ddd1..ff3dcaea5d93 100644
---- a/drivers/tty/serial/8250/8250_fsl.c
-+++ b/drivers/tty/serial/8250/8250_fsl.c
-@@ -1,4 +1,8 @@
- // SPDX-License-Identifier: GPL-2.0
-+#if defined(CONFIG_SERIAL_8250_CONSOLE) && defined(CONFIG_MAGIC_SYSRQ)
-+#define SUPPORT_SYSRQ
-+#endif
-+
- #include <linux/serial_reg.h>
- #include <linux/serial_8250.h>
- 
-@@ -54,7 +58,7 @@ int fsl8250_handle_irq(struct uart_port *port)
- 		serial8250_tx_chars(up);
- 
- 	up->lsr_saved_flags = orig_lsr;
--	spin_unlock_irqrestore(&up->port.lock, flags);
-+	uart_unlock_and_check_sysrq(&up->port, flags);
- 	return 1;
- }
- EXPORT_SYMBOL_GPL(fsl8250_handle_irq);
-diff --git a/drivers/tty/serial/8250/8250_omap.c b/drivers/tty/serial/8250/8250_omap.c
-index a019286f8bb6..ad7ba7d0f28d 100644
---- a/drivers/tty/serial/8250/8250_omap.c
-+++ b/drivers/tty/serial/8250/8250_omap.c
-@@ -8,6 +8,10 @@
-  *
-  */
- 
-+#if defined(CONFIG_SERIAL_8250_CONSOLE) && defined(CONFIG_MAGIC_SYSRQ)
-+#define SUPPORT_SYSRQ
-+#endif
-+
- #include <linux/device.h>
- #include <linux/io.h>
- #include <linux/module.h>
-@@ -1085,7 +1089,7 @@ static int omap_8250_dma_handle_irq(struct uart_port *port)
- 		}
- 	}
- 
--	spin_unlock_irqrestore(&port->lock, flags);
-+	uart_unlock_and_check_sysrq(port, flags);
- 	serial8250_rpm_put(up);
- 	return 1;
- }
-diff --git a/drivers/tty/serial/8250/8250_port.c b/drivers/tty/serial/8250/8250_port.c
-index f776b3eafb96..c39482b96111 100644
---- a/drivers/tty/serial/8250/8250_port.c
-+++ b/drivers/tty/serial/8250/8250_port.c
-@@ -1755,7 +1755,7 @@ void serial8250_read_char(struct uart_8250_port *up, unsigned char lsr)
- 		else if (lsr & UART_LSR_FE)
- 			flag = TTY_FRAME;
- 	}
--	if (uart_handle_sysrq_char(port, ch))
-+	if (uart_prepare_sysrq_char(port, ch))
- 		return;
- 
- 	uart_insert_char(port, lsr, UART_LSR_OE, ch, flag);
-@@ -1897,7 +1897,7 @@ int serial8250_handle_irq(struct uart_port *port, unsigned int iir)
- 	if ((!up->dma || up->dma->tx_err) && (status & UART_LSR_THRE))
- 		serial8250_tx_chars(up);
- 
--	spin_unlock_irqrestore(&port->lock, flags);
-+	uart_unlock_and_check_sysrq(port, flags);
- 	return 1;
- }
- EXPORT_SYMBOL_GPL(serial8250_handle_irq);
-@@ -3258,9 +3258,7 @@ void serial8250_console_write(struct uart_8250_port *up, const char *s,
- 
- 	serial8250_rpm_get(up);
- 
--	if (port->sysrq)
--		locked = 0;
--	else if (oops_in_progress)
-+	if (oops_in_progress)
- 		locked = spin_trylock_irqsave(&port->lock, flags);
- 	else
- 		spin_lock_irqsave(&port->lock, flags);
--- 
-2.19.1.568.g152ad8e336-goog
-
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: .config.gz
+Type: application/gzip
+Size: 55213 bytes
+Desc: not available
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20181030/29fa56c7/attachment-0001.gz>
