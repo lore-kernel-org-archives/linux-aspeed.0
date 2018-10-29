@@ -1,34 +1,76 @@
-From: Vijay Khemka <vijaykhemka@fb.com>
-Date: Fri, 26 Oct 2018 22:40:44 +0000
-Subject: [PATCH net-next] net/ncsi: Add NCSI Mellanox OEM command
-In-Reply-To: <20181026.103617.373827980255084988.davem@davemloft.net>
-References: <20181025220413.2936698-1-vijaykhemka@fb.com>
- <20181025.155335.2132843393553452471.davem@davemloft.net>
- <F0024535-93C3-4470-98A6-F57426587474@fb.com>
- <20181026.103617.373827980255084988.davem@davemloft.net>
-Message-ID: <14BB7E55-C835-409E-97DE-D3F4CDA6E7E8@fb.com>
+From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+Date: Mon, 29 Oct 2018 14:14:09 -0700
+Subject: [PATCH i2c-next v8 0/5] i2c: aspeed: Add bus idle waiting logic for
+ multi-master use cases
+Message-ID: <20181029211414.20771-1-jae.hyun.yoo@linux.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Thanks David
+In multi-master environment, this driver's master cannot know
+exactly when a peer master sends data to this driver's slave so a
+case can be happened that this master tries to send data through
+the master_xfer function but slave data from peer master is still
+being processed by this driver. To prevent state corruption in the
+case, this patch adds checking code if any slave operation is
+ongoing and it waits up to the bus timeout duration before starting
+a master_xfer operation.
 
-?On 10/26/18, 10:36 AM, "David Miller" <davem@davemloft.net> wrote:
+To support this change, it introduces changes on i2c-core-base to
+make that able to read the bus timeout and master transfer retries
+count values from device tree properties.
 
-    From: Vijay Khemka <vijaykhemka@fb.com>
-    Date: Fri, 26 Oct 2018 17:19:49 +0000
-    
-    > Do you have any timeline when it is going to open next or how do I
-    > know.
-    
-    I always announce net-next openning and closing here on the list.
-    
-    There is also a web site:
-    
-    	http://vger.kernel.org/~davem/net-next.html
-    
-    Thanks.
-    
+Please review this patch set.
+
+Thanks,
+
+-Jae
+
+Changes since v7:
+- Simplified the bus idle waiting logic using jiffy based timer APIs.
+
+Changes since v6:
+- Changed the 'timeout-ms' property name to 'bus-timeout-ms'.
+
+Changes since v5:
+- Changed using of property reading API to device_property_read_u32.
+
+Changes since v4:
+- Moved the property reading code into i2c-base-core and changed the
+  property name to 'timeout-ms'. Also, added '#retries' property reading
+  code.
+- Changed bus busy checking logic to make that check slave_state instead
+  of 'Transfer Mode State Machine' reg value.
+
+Changes since v3:
+- Changed the property name to 'timeout' and made it use the
+  default setting in i2c-core when not specified.
+
+Changes since v2:
+- Changed the property name to 'aspeed,timeout' and made it to
+  update the adapter's timeout configuration.
+
+Changes since v1:
+- Changed define names of timeout related.
+
+Jae Hyun Yoo (5):
+  dt-bindings: i2c: Add 'bus-timeout-ms' and '#retries' properties as
+    common optional
+  i2c: core: Add support reading of 'bus-timeout-ms' and '#retries'
+    properties
+  dt-bindings: i2c: aspeed: Add 'bus-timeout-ms' property as an optional
+    property
+  i2c: aspeed: Remove hard-coded bus timeout value setting
+  i2c: aspeed: Add bus idle waiting logic for multi-master use cases
+
+ .../devicetree/bindings/i2c/i2c-aspeed.txt    |  3 ++
+ Documentation/devicetree/bindings/i2c/i2c.txt |  6 +++
+ drivers/i2c/busses/i2c-aspeed.c               | 53 +++++++++++++------
+ drivers/i2c/i2c-core-base.c                   | 12 ++++-
+ 4 files changed, 56 insertions(+), 18 deletions(-)
+
+-- 
+2.19.1
 
