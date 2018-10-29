@@ -1,79 +1,86 @@
-From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-Date: Thu, 25 Oct 2018 09:16:01 -0700
-Subject: [PATCH v8 08/12] mfd: intel-peci-client: Add PECI client MFD
- driver
-In-Reply-To: <20181025053030.GD4939@dell>
-References: <20180918215124.14003-1-jae.hyun.yoo@linux.intel.com>
- <20180918215124.14003-9-jae.hyun.yoo@linux.intel.com>
- <20181024105903.GB4939@dell>
- <db7570cb-8f63-b551-d119-c54270ce6139@linux.intel.com>
- <20181025053030.GD4939@dell>
-Message-ID: <509c4c0e-eabb-2276-3ffd-3fc675801142@linux.intel.com>
+From: Douglas Anderson <dianders@chromium.org>
+Date: Mon, 29 Oct 2018 11:07:00 -0700
+Subject: [PATCH 0/7] serial: Finish kgdb on qcom_geni;
+ fix many lockdep splats w/ kgdb
+Message-ID: <20181029180707.207546-1-dianders@chromium.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 10/24/2018 10:30 PM, Lee Jones wrote:
-> On Wed, 24 Oct 2018, Jae Hyun Yoo wrote:
->> On 10/24/2018 3:59 AM, Lee Jones wrote:
->>> On Tue, 18 Sep 2018, Jae Hyun Yoo wrote:
->>>
->>>> This commit adds PECI client MFD driver.
->>>>
->>
->> <snip>
-> 
-> [...]
-> 
->>>> +bool peci_temp_need_update(struct temp_data *temp)
->>>> +{
->>>> +	if (temp->valid &&
->>>> +	    time_before(jiffies, temp->last_updated + UPDATE_INTERVAL))
->>>> +		return false;
->>>> +
->>>> +	return true;
->>>> +}
->>>> +EXPORT_SYMBOL_GPL(peci_temp_need_update);
->>>> +
->>>> +void peci_temp_mark_updated(struct temp_data *temp)
->>>> +{
->>>> +	temp->valid = 1;
->>>> +	temp->last_updated = jiffies;
->>>> +}
->>>> +EXPORT_SYMBOL_GPL(peci_temp_mark_updated);
->>>
->>> These are probably better suited as inline functions to be placed in
->>> a header file.  No need to export them, since they only use their own
->>> data.
-> 
-> Also move them into the HWMON header file.
-> 
-> They have no business in MFD.
-> 
+I started out this series trying to make sysrq work over the serial
+console on qcom_geni_serial, then fell into a rat's nest.
 
-Agreed. I'll move them into the HWMON header.
+To solve the deadlock I faced when enabling sysrq I tried to borrow
+code from '8250_port.c' which avoided grabbing the port lock in
+console_write().  ...but since these days I try to run with lockdep on
+all the time, I found it caused an annoying lockdep splat (which I
+also reproduced on my rk3399 board).  ...so I instead changed my
+qcom_geni_serial solution to borrow code from 'msm_serial.c'
 
-> [...]
-> 
->>>> +int peci_client_rd_pkg_cfg_cmd(struct peci_mfd *priv, u8 mbx_idx,
->>>
->>> This is gobbledegook.  What's rd?  Read?
->>>
->>
->> Yes, the 'rd' means 'read'. I intended to keep command names as listed
->> in the PECI specification such as RdPkgConfig, WrPkgConfig and so on.
->> Should I change it to 'peci_client_read_package_config_command' ?
-> 
-> I looks/reads a lot nicer, don't you think?
-> 
+I wasn't super happy with the solution in 'msm_serial.c' though.  I
+don't like releasing the spinlock there.  Not only is it ugly but it
+means we are unlocking / re-locking _all the time_ even though sysrq
+characters are rare.  ...so I came up with what I think is a better
+solution and then implemented it for qcom_geni_serial.
 
-Okay. I'll change it too.
+Since I had a good way to test 8250-based UARTs, I also fixed that
+driver to use my new method.  When doing so, I ran into a missing
+msm_serial.c at all, so I didn't switch that (or all other serial
+drivers for that matter) to the new method.
 
-Thanks again for your review, Lee!
+After fixing all the above issues, I found the next lockdep splat in
+kgdb and I think I've worked around it in a good-enough way, but I'm
+much less confident about this.  Hopefully folks can take a look at
+it.
 
-Jae
+In general, patches earlier in this series should be "less
+controversial" and hopefully can land even if people don't like
+patches later in the series.  ;-)
 
-> [...]
-> 
+Looking back, this is pretty much two series squashed that could be
+treated indepdently.  The first is a serial series and the second is a
+kgdb series.
+
+For all serial patches I'd expect them to go through the tty tree once
+they've been reviewed.
+
+If folks are OK w/ the 'smp' patch it probably should go in some core
+kernel tree.  The kgdb patch won't work without it, though, so to land
+that we'd need coordination between the folks landing that and the
+folks landing the 'smp' patch.
+
+
+Douglas Anderson (7):
+  serial: qcom_geni_serial: Finish supporting sysrq
+  serial: core: Allow processing sysrq at port unlock time
+  serial: qcom_geni_serial: Process sysrq at port unlock time
+  serial: core: Include console.h from serial_core.h
+  serial: 8250: Process sysrq at port unlock time
+  smp: Don't yell about IRQs disabled in kgdb_roundup_cpus()
+  kgdb: Remove irq flags and local_irq_enable/disable from roundup
+
+ arch/arc/kernel/kgdb.c                      |  4 +--
+ arch/arm/kernel/kgdb.c                      |  4 +--
+ arch/arm64/kernel/kgdb.c                    |  4 +--
+ arch/hexagon/kernel/kgdb.c                  | 11 ++----
+ arch/mips/kernel/kgdb.c                     |  4 +--
+ arch/powerpc/kernel/kgdb.c                  |  2 +-
+ arch/sh/kernel/kgdb.c                       |  4 +--
+ arch/sparc/kernel/smp_64.c                  |  2 +-
+ arch/x86/kernel/kgdb.c                      |  9 ++---
+ drivers/tty/serial/8250/8250_aspeed_vuart.c |  6 +++-
+ drivers/tty/serial/8250/8250_fsl.c          |  6 +++-
+ drivers/tty/serial/8250/8250_omap.c         |  6 +++-
+ drivers/tty/serial/8250/8250_port.c         |  8 ++---
+ drivers/tty/serial/qcom_geni_serial.c       | 10 ++++--
+ include/linux/kgdb.h                        |  9 ++---
+ include/linux/serial_core.h                 | 38 ++++++++++++++++++++-
+ kernel/debug/debug_core.c                   |  2 +-
+ kernel/smp.c                                |  4 ++-
+ 18 files changed, 80 insertions(+), 53 deletions(-)
+
+-- 
+2.19.1.568.g152ad8e336-goog
+
