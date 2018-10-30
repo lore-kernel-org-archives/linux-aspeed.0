@@ -1,133 +1,73 @@
-From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-Date: Tue, 30 Oct 2018 14:09:16 -0700
-Subject: [PATCH i2c-next v9 5/5] i2c: aspeed: Add bus idle waiting logic for
- multi-master use cases
-In-Reply-To: <20181030210917.32711-1-jae.hyun.yoo@linux.intel.com>
-References: <20181030210917.32711-1-jae.hyun.yoo@linux.intel.com>
-Message-ID: <20181030210917.32711-6-jae.hyun.yoo@linux.intel.com>
+From: Daniel Thompson <daniel.thompson@linaro.org>
+Date: Tue, 30 Oct 2018 11:56:28 +0000
+Subject: [PATCH 0/7] serial: Finish kgdb on qcom_geni; fix many lockdep
+ splats w/ kgdb
+In-Reply-To: <20181029180707.207546-1-dianders@chromium.org>
+References: <20181029180707.207546-1-dianders@chromium.org>
+Message-ID: <20181030115628.eqtyqdugkpkxvyr2@holly.lan>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-In multi-master environment, this driver's master cannot know
-exactly when a peer master sends data to this driver's slave so a
-case can be happened that this master tries to send data through
-the master_xfer function but slave data from peer master is still
-being processed by this driver.
+On Mon, Oct 29, 2018 at 11:07:00AM -0700, Douglas Anderson wrote:
+> Looking back, this is pretty much two series squashed that could be
+> treated indepdently.  The first is a serial series and the second is a
+> kgdb series.
 
-To prevent any state corruption in the case, this patch adds
-checking code if any slave operation is ongoing and it waits up to
-the bus timeout duration before starting a master_xfer operation.
+Indeed.
 
-Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-Reviewed-by: Brendan Higgins <brendanhiggins@google.com>
----
- drivers/i2c/busses/i2c-aspeed.c | 55 ++++++++++++++++++++++++---------
- 1 file changed, 40 insertions(+), 15 deletions(-)
+I couldn't work out the link between the first 5 patches and the last 2
+until I read this...
 
-diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
-index 833b6b6a4c7e..30c3ab3a4844 100644
---- a/drivers/i2c/busses/i2c-aspeed.c
-+++ b/drivers/i2c/busses/i2c-aspeed.c
-@@ -12,6 +12,7 @@
- 
- #include <linux/clk.h>
- #include <linux/completion.h>
-+#include <linux/delay.h>
- #include <linux/err.h>
- #include <linux/errno.h>
- #include <linux/i2c.h>
-@@ -115,6 +116,9 @@
- /* 0x18 : I2CD Slave Device Address Register   */
- #define ASPEED_I2CD_DEV_ADDR_MASK			GENMASK(6, 0)
- 
-+/* Busy checking */
-+#define ASPEED_I2C_BUS_BUSY_CHECK_INTERVAL_US		(10 * 1000)
-+
- enum aspeed_i2c_master_state {
- 	ASPEED_I2C_MASTER_INACTIVE,
- 	ASPEED_I2C_MASTER_START,
-@@ -156,6 +160,8 @@ struct aspeed_i2c_bus {
- 	int				cmd_err;
- 	/* Protected only by i2c_lock_bus */
- 	int				master_xfer_result;
-+	/* Multi-master */
-+	bool				multi_master;
- #if IS_ENABLED(CONFIG_I2C_SLAVE)
- 	struct i2c_client		*slave;
- 	enum aspeed_i2c_slave_state	slave_state;
-@@ -596,27 +602,44 @@ static irqreturn_t aspeed_i2c_bus_irq(int irq, void *dev_id)
- 	return irq_remaining ? IRQ_NONE : IRQ_HANDLED;
- }
- 
-+static int aspeed_i2c_check_bus_busy(struct aspeed_i2c_bus *bus)
-+{
-+	unsigned long timeout;
-+
-+	if (bus->multi_master) {
-+		might_sleep();
-+		/* Initialize it only when multi_master is set */
-+		timeout = jiffies + bus->adap.timeout;
-+	}
-+
-+	for (;;) {
-+		if (!(readl(bus->base + ASPEED_I2C_CMD_REG) &
-+		      ASPEED_I2CD_BUS_BUSY_STS))
-+#if IS_ENABLED(CONFIG_I2C_SLAVE)
-+			if (bus->slave_state == ASPEED_I2C_SLAVE_STOP)
-+#endif
-+				return 0;
-+		if (!bus->multi_master)
-+			break;
-+		if (time_after(jiffies, timeout))
-+			break;
-+		usleep_range((ASPEED_I2C_BUS_BUSY_CHECK_INTERVAL_US >> 2) + 1,
-+			     ASPEED_I2C_BUS_BUSY_CHECK_INTERVAL_US);
-+	}
-+
-+	return aspeed_i2c_recover_bus(bus);
-+}
-+
- static int aspeed_i2c_master_xfer(struct i2c_adapter *adap,
- 				  struct i2c_msg *msgs, int num)
- {
- 	struct aspeed_i2c_bus *bus = i2c_get_adapdata(adap);
- 	unsigned long time_left, flags;
--	int ret = 0;
- 
--	spin_lock_irqsave(&bus->lock, flags);
--	bus->cmd_err = 0;
--
--	/* If bus is busy, attempt recovery. We assume a single master
--	 * environment.
--	 */
--	if (readl(bus->base + ASPEED_I2C_CMD_REG) & ASPEED_I2CD_BUS_BUSY_STS) {
--		spin_unlock_irqrestore(&bus->lock, flags);
--		ret = aspeed_i2c_recover_bus(bus);
--		if (ret)
--			return ret;
--		spin_lock_irqsave(&bus->lock, flags);
--	}
-+	if (aspeed_i2c_check_bus_busy(bus))
-+		return -EAGAIN;
- 
-+	spin_lock_irqsave(&bus->lock, flags);
- 	bus->cmd_err = 0;
- 	bus->msgs = msgs;
- 	bus->msgs_index = 0;
-@@ -827,7 +850,9 @@ static int aspeed_i2c_init(struct aspeed_i2c_bus *bus,
- 	if (ret < 0)
- 		return ret;
- 
--	if (!of_property_read_bool(pdev->dev.of_node, "multi-master"))
-+	if (of_property_read_bool(pdev->dev.of_node, "multi-master"))
-+		bus->multi_master = true;
-+	else
- 		fun_ctrl_reg |= ASPEED_I2CD_MULTI_MASTER_DIS;
- 
- 	/* Enable Master Mode */
--- 
-2.19.1
+Is anything in the 01->05 patch set even related to kgdb? From the stack
+traces it looks to me like the lock dep warning would trigger for any
+sysrq. I think separating into two threads for v2 would be sensible.
 
+
+Daniel.
+
+
+> 
+> For all serial patches I'd expect them to go through the tty tree once
+> they've been reviewed.
+> 
+> If folks are OK w/ the 'smp' patch it probably should go in some core
+> kernel tree.  The kgdb patch won't work without it, though, so to land
+> that we'd need coordination between the folks landing that and the
+> folks landing the 'smp' patch.
+> 
+> 
+> Douglas Anderson (7):
+>   serial: qcom_geni_serial: Finish supporting sysrq
+>   serial: core: Allow processing sysrq at port unlock time
+>   serial: qcom_geni_serial: Process sysrq at port unlock time
+>   serial: core: Include console.h from serial_core.h
+>   serial: 8250: Process sysrq at port unlock time
+>   smp: Don't yell about IRQs disabled in kgdb_roundup_cpus()
+>   kgdb: Remove irq flags and local_irq_enable/disable from roundup
+> 
+>  arch/arc/kernel/kgdb.c                      |  4 +--
+>  arch/arm/kernel/kgdb.c                      |  4 +--
+>  arch/arm64/kernel/kgdb.c                    |  4 +--
+>  arch/hexagon/kernel/kgdb.c                  | 11 ++----
+>  arch/mips/kernel/kgdb.c                     |  4 +--
+>  arch/powerpc/kernel/kgdb.c                  |  2 +-
+>  arch/sh/kernel/kgdb.c                       |  4 +--
+>  arch/sparc/kernel/smp_64.c                  |  2 +-
+>  arch/x86/kernel/kgdb.c                      |  9 ++---
+>  drivers/tty/serial/8250/8250_aspeed_vuart.c |  6 +++-
+>  drivers/tty/serial/8250/8250_fsl.c          |  6 +++-
+>  drivers/tty/serial/8250/8250_omap.c         |  6 +++-
+>  drivers/tty/serial/8250/8250_port.c         |  8 ++---
+>  drivers/tty/serial/qcom_geni_serial.c       | 10 ++++--
+>  include/linux/kgdb.h                        |  9 ++---
+>  include/linux/serial_core.h                 | 38 ++++++++++++++++++++-
+>  kernel/debug/debug_core.c                   |  2 +-
+>  kernel/smp.c                                |  4 ++-
+>  18 files changed, 80 insertions(+), 53 deletions(-)
+> 
+> -- 
+> 2.19.1.568.g152ad8e336-goog
+> 
