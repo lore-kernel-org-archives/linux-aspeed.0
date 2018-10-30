@@ -1,10 +1,10 @@
-From: Daniel Thompson <daniel.thompson@linaro.org>
-Date: Tue, 30 Oct 2018 11:56:28 +0000
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Date: Tue, 30 Oct 2018 14:36:27 +0200
 Subject: [PATCH 0/7] serial: Finish kgdb on qcom_geni; fix many lockdep
  splats w/ kgdb
 In-Reply-To: <20181029180707.207546-1-dianders@chromium.org>
 References: <20181029180707.207546-1-dianders@chromium.org>
-Message-ID: <20181030115628.eqtyqdugkpkxvyr2@holly.lan>
+Message-ID: <20181030123627.GS10650@smile.fi.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -12,23 +12,39 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 On Mon, Oct 29, 2018 at 11:07:00AM -0700, Douglas Anderson wrote:
+> I started out this series trying to make sysrq work over the serial
+> console on qcom_geni_serial, then fell into a rat's nest.
+> 
+> To solve the deadlock I faced when enabling sysrq I tried to borrow
+> code from '8250_port.c' which avoided grabbing the port lock in
+> console_write().  ...but since these days I try to run with lockdep on
+> all the time, I found it caused an annoying lockdep splat (which I
+> also reproduced on my rk3399 board).  ...so I instead changed my
+> qcom_geni_serial solution to borrow code from 'msm_serial.c'
+> 
+> I wasn't super happy with the solution in 'msm_serial.c' though.  I
+> don't like releasing the spinlock there.  Not only is it ugly but it
+> means we are unlocking / re-locking _all the time_ even though sysrq
+> characters are rare.  ...so I came up with what I think is a better
+> solution and then implemented it for qcom_geni_serial.
+> 
+> Since I had a good way to test 8250-based UARTs, I also fixed that
+> driver to use my new method.  When doing so, I ran into a missing
+> msm_serial.c at all, so I didn't switch that (or all other serial
+> drivers for that matter) to the new method.
+> 
+> After fixing all the above issues, I found the next lockdep splat in
+> kgdb and I think I've worked around it in a good-enough way, but I'm
+> much less confident about this.  Hopefully folks can take a look at
+> it.
+> 
+> In general, patches earlier in this series should be "less
+> controversial" and hopefully can land even if people don't like
+> patches later in the series.  ;-)
+> 
 > Looking back, this is pretty much two series squashed that could be
 > treated indepdently.  The first is a serial series and the second is a
 > kgdb series.
-
-Indeed.
-
-I couldn't work out the link between the first 5 patches and the last 2
-until I read this...
-
-Is anything in the 01->05 patch set even related to kgdb? From the stack
-traces it looks to me like the lock dep warning would trigger for any
-sysrq. I think separating into two threads for v2 would be sensible.
-
-
-Daniel.
-
-
 > 
 > For all serial patches I'd expect them to go through the tty tree once
 > they've been reviewed.
@@ -37,6 +53,9 @@ Daniel.
 > kernel tree.  The kgdb patch won't work without it, though, so to land
 > that we'd need coordination between the folks landing that and the
 > folks landing the 'smp' patch.
+
+I have got only 0/7 and 5/7, everything okay with your mail client and other tools?
+
 > 
 > 
 > Douglas Anderson (7):
@@ -71,3 +90,9 @@ Daniel.
 > -- 
 > 2.19.1.568.g152ad8e336-goog
 > 
+
+-- 
+With Best Regards,
+Andy Shevchenko
+
+
