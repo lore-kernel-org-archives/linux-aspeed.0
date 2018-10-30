@@ -1,43 +1,105 @@
-From: Doug Anderson <dianders@chromium.org>
-Date: Tue, 30 Oct 2018 15:20:13 -0700
-Subject: [PATCH 0/7] serial: Finish kgdb on qcom_geni; fix many lockdep
- splats w/ kgdb
-In-Reply-To: <20181030115628.eqtyqdugkpkxvyr2@holly.lan>
-References: <20181029180707.207546-1-dianders@chromium.org>
- <20181030115628.eqtyqdugkpkxvyr2@holly.lan>
-Message-ID: <CAD=FV=URwUFep2UA7Xs1TxK6cZst+W-pfY2_BfKMZnGECHPZqw@mail.gmail.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Wed, 31 Oct 2018 06:22:21 +0800
+Subject: [PATCH i2c-next v9 5/5] i2c: aspeed: Add bus idle waiting logic
+ for multi-master use cases
+In-Reply-To: <20181030210917.32711-6-jae.hyun.yoo@linux.intel.com>
+References: <20181030210917.32711-6-jae.hyun.yoo@linux.intel.com>
+Message-ID: <201810310601.Odxb7qSY%fengguang.wu@intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi,
+Hi Jae,
 
-On Tue, Oct 30, 2018 at 4:56 AM Daniel Thompson
-<daniel.thompson@linaro.org> wrote:
->
-> On Mon, Oct 29, 2018 at 11:07:00AM -0700, Douglas Anderson wrote:
-> > Looking back, this is pretty much two series squashed that could be
-> > treated indepdently.  The first is a serial series and the second is a
-> > kgdb series.
->
-> Indeed.
->
-> I couldn't work out the link between the first 5 patches and the last 2
-> until I read this...
->
-> Is anything in the 01->05 patch set even related to kgdb? From the stack
-> traces it looks to me like the lock dep warning would trigger for any
-> sysrq. I think separating into two threads for v2 would be sensible.
+Thank you for the patch! Perhaps something to improve:
 
-Yes, sorry about the mess.  Splitting this into two series makes the
-most sense.  Then I can focus more on trying to get the CCs right and
-people can just get the patches that matter to them.
+[auto build test WARNING on wsa/i2c/for-next]
+[also build test WARNING on v4.19 next-20181030]
+[if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
 
-OK, I've sent v2 of both series out now.  Please yell if you can't
-find them for whatever reason.
+url:    https://github.com/0day-ci/linux/commits/Jae-Hyun-Yoo/dt-bindings-i2c-Add-bus-timeout-ms-and-retries-properties-as-common-optional/20181031-051152
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/wsa/linux.git i2c/for-next
+config: xtensa-allyesconfig (attached as .config)
+compiler: xtensa-linux-gcc (GCC) 8.1.0
+reproduce:
+        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        # save the attached .config to linux build tree
+        GCC_VERSION=8.1.0 make.cross ARCH=xtensa 
 
--Doug
+Note: it may well be a FALSE warning. FWIW you are at least aware of it now.
+http://gcc.gnu.org/wiki/Better_Uninitialized_Warnings
 
--Doug
+All warnings (new ones prefixed by >>):
+
+   In file included from include/linux/ktime.h:25,
+                    from include/linux/rcutiny.h:28,
+                    from include/linux/rcupdate.h:209,
+                    from include/linux/srcu.h:33,
+                    from include/linux/notifier.h:16,
+                    from include/linux/clk.h:17,
+                    from drivers/i2c/busses/i2c-aspeed.c:13:
+   drivers/i2c/busses/i2c-aspeed.c: In function 'aspeed_i2c_master_xfer':
+>> include/linux/jiffies.h:108:15: warning: 'timeout' may be used uninitialized in this function [-Wmaybe-uninitialized]
+      ((long)((b) - (a)) < 0))
+                  ^
+   drivers/i2c/busses/i2c-aspeed.c:607:16: note: 'timeout' was declared here
+     unsigned long timeout;
+                   ^~~~~~~
+--
+   In file included from include/linux/ktime.h:25,
+                    from include/linux/rcutiny.h:28,
+                    from include/linux/rcupdate.h:209,
+                    from include/linux/srcu.h:33,
+                    from include/linux/notifier.h:16,
+                    from include/linux/clk.h:17,
+                    from drivers/i2c//busses/i2c-aspeed.c:13:
+   drivers/i2c//busses/i2c-aspeed.c: In function 'aspeed_i2c_master_xfer':
+>> include/linux/jiffies.h:108:15: warning: 'timeout' may be used uninitialized in this function [-Wmaybe-uninitialized]
+      ((long)((b) - (a)) < 0))
+                  ^
+   drivers/i2c//busses/i2c-aspeed.c:607:16: note: 'timeout' was declared here
+     unsigned long timeout;
+                   ^~~~~~~
+
+vim +/timeout +108 include/linux/jiffies.h
+
+^1da177e Linus Torvalds   2005-04-16   91  
+^1da177e Linus Torvalds   2005-04-16   92  /*
+^1da177e Linus Torvalds   2005-04-16   93   *	These inlines deal with timer wrapping correctly. You are 
+^1da177e Linus Torvalds   2005-04-16   94   *	strongly encouraged to use them
+^1da177e Linus Torvalds   2005-04-16   95   *	1. Because people otherwise forget
+^1da177e Linus Torvalds   2005-04-16   96   *	2. Because if the timer wrap changes in future you won't have to
+^1da177e Linus Torvalds   2005-04-16   97   *	   alter your driver code.
+^1da177e Linus Torvalds   2005-04-16   98   *
+^1da177e Linus Torvalds   2005-04-16   99   * time_after(a,b) returns true if the time a is after time b.
+^1da177e Linus Torvalds   2005-04-16  100   *
+^1da177e Linus Torvalds   2005-04-16  101   * Do this with "<0" and ">=0" to only test the sign of the result. A
+^1da177e Linus Torvalds   2005-04-16  102   * good compiler would generate better code (and a really good compiler
+^1da177e Linus Torvalds   2005-04-16  103   * wouldn't care). Gcc is currently neither.
+^1da177e Linus Torvalds   2005-04-16  104   */
+^1da177e Linus Torvalds   2005-04-16  105  #define time_after(a,b)		\
+^1da177e Linus Torvalds   2005-04-16  106  	(typecheck(unsigned long, a) && \
+^1da177e Linus Torvalds   2005-04-16  107  	 typecheck(unsigned long, b) && \
+5a581b36 Paul E. McKenney 2013-07-27 @108  	 ((long)((b) - (a)) < 0))
+^1da177e Linus Torvalds   2005-04-16  109  #define time_before(a,b)	time_after(b,a)
+^1da177e Linus Torvalds   2005-04-16  110  
+
+:::::: The code at line 108 was first introduced by commit
+:::::: 5a581b367b5df0531265311fc681c2abd377e5e6 jiffies: Avoid undefined behavior from signed overflow
+
+:::::: TO: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+:::::: CC: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: .config.gz
+Type: application/gzip
+Size: 55213 bytes
+Desc: not available
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20181031/ce27fe2c/attachment-0001.gz>
