@@ -1,51 +1,57 @@
-From: Russell King - ARM Linux <linux@armlinux.org.uk>
-Date: Tue, 30 Oct 2018 12:31:03 +0000
-Subject: [PATCH 0/7] serial: Finish kgdb on qcom_geni; fix many lockdep
- splats w/ kgdb
-In-Reply-To: <20181030115628.eqtyqdugkpkxvyr2@holly.lan>
-References: <20181029180707.207546-1-dianders@chromium.org>
- <20181030115628.eqtyqdugkpkxvyr2@holly.lan>
-Message-ID: <20181030123103.GL30658@n2100.armlinux.org.uk>
+From: Douglas Anderson <dianders@chromium.org>
+Date: Tue, 30 Oct 2018 15:11:02 -0700
+Subject: [PATCH v2 0/5] serial: Finish sysrq on qcom_geni;
+ fix sysrq vs. lockdep on 8250
+Message-ID: <20181030221107.79758-1-dianders@chromium.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Oct 30, 2018 at 11:56:28AM +0000, Daniel Thompson wrote:
-> On Mon, Oct 29, 2018 at 11:07:00AM -0700, Douglas Anderson wrote:
-> > Looking back, this is pretty much two series squashed that could be
-> > treated indepdently.  The first is a serial series and the second is a
-> > kgdb series.
-> 
-> Indeed.
-> 
-> I couldn't work out the link between the first 5 patches and the last 2
-> until I read this...
-> 
-> Is anything in the 01->05 patch set even related to kgdb? From the stack
-> traces it looks to me like the lock dep warning would trigger for any
-> sysrq. I think separating into two threads for v2 would be sensible.
+I started out this series trying to make sysrq work over the serial
+console on qcom_geni_serial, then fell into a rat's nest.
 
-I'm concerned about calling smp_call_function() from IRQ context with
-IRQs disabled - that will block the ability of the _calling_ CPU to
-process IPIs from other CPUs in the system.  If we have other CPUs
-waiting on their IPIs to complete on _this_ CPU, we could end up
-deadlocking while trying to grab the CSD lock.
+To solve the deadlock I faced when enabling sysrq I tried to borrow
+code from '8250_port.c' which avoided grabbing the port lock in
+console_write().  ...but since these days I try to run with lockdep on
+all the time, I found it caused an annoying lockdep splat (which I
+also reproduced on my rk3399 board).  ...so I instead changed my
+qcom_geni_serial solution to borrow code from 'msm_serial.c'
 
-This is the intention of warnings in smp_call_function*() - to catch
-cases where deadlocks _can_ occur, but do not reliably show up.
+I wasn't super happy with the solution in 'msm_serial.c' though.  I
+don't like releasing the spinlock there.  Not only is it ugly but it
+means we are unlocking / re-locking _all the time_ even though sysrq
+characters are rare.  ...so I came up with what I think is a better
+solution and then implemented it for qcom_geni_serial.
 
-The exceptions to the warning (disregarding oops_in_progress) are
-chosen to allow IRQs-disabled calls when we're sure that the rest of
-the system isn't going to be sending the calling CPU an IPI (eg,
-because the CPU isn't marked online, and we only send IPIs to online
-CPUs, or if we're still early in the kernel boot and hence have no
-other CPUs running.)  The exception is oops_in_progress, which can
-occur at any time - even with the current CPU already holding some
-CSD locks (eg, oops while trying to send an IPI.)
+Since I had a good way to test 8250-based UARTs, I also fixed that
+driver to use my new method.  When doing so, I ran into a missing
+include in serial_core.h.  NOTE: I didn't have a way to test
+msm_serial.c at all, so I didn't switch that (or all other serial
+drivers for that matter) to the new method.
+
+NOTE: from a serial point of view v2 is the same as v1 but I've
+removed the extra kgdb-related patches and made it obvious that this
+is really for all sysrq, not just kgdb.  I've also generally tried to
+curate the CCs more properly.
+
+
+Douglas Anderson (5):
+  serial: qcom_geni_serial: Finish supporting sysrq
+  serial: core: Allow processing sysrq at port unlock time
+  serial: qcom_geni_serial: Process sysrq at port unlock time
+  serial: core: Include console.h from serial_core.h
+  serial: 8250: Process sysrq at port unlock time
+
+ drivers/tty/serial/8250/8250_aspeed_vuart.c |  6 +++-
+ drivers/tty/serial/8250/8250_fsl.c          |  6 +++-
+ drivers/tty/serial/8250/8250_omap.c         |  6 +++-
+ drivers/tty/serial/8250/8250_port.c         |  8 ++---
+ drivers/tty/serial/qcom_geni_serial.c       | 10 ++++--
+ include/linux/serial_core.h                 | 38 ++++++++++++++++++++-
+ 6 files changed, 63 insertions(+), 11 deletions(-)
 
 -- 
-RMK's Patch system: http://www.armlinux.org.uk/developer/patches/
-FTTC broadband for 0.8mile line in suburbia: sync at 12.1Mbps down 622kbps up
-According to speedtest.net: 11.9Mbps down 500kbps up
+2.19.1.568.g152ad8e336-goog
+
