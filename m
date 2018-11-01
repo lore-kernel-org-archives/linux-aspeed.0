@@ -1,74 +1,46 @@
-From: Ardelean, Alexandru <alexandru.Ardelean@analog.com>
-Date: Fri, 29 May 2020 11:08:38 +0000
-Subject: [PATCH 4/5] iio: light: lm3533-als: remove explicit parent
- assignment
-In-Reply-To: <20200529101608.GC19480@localhost>
-References: <20200522082208.383631-1-alexandru.ardelean@analog.com>
- <20200522082208.383631-4-alexandru.ardelean@analog.com>
- <20200529101608.GC19480@localhost>
-Message-ID: <05500c815f4881a6aa86c809c5ac53e8af3f3e91.camel@analog.com>
+From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+Date: Thu,  1 Nov 2018 10:46:21 -0700
+Subject: [PATCH] i2c: aspeed: Fix an incorrect error log printing
+Message-ID: <20181101174621.8266-1-jae.hyun.yoo@linux.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, 2020-05-29 at 12:16 +0200, Johan Hovold wrote:
-> [External]
-> 
-> On Fri, May 22, 2020 at 11:22:07AM +0300, Alexandru Ardelean wrote:
-> > This assignment is the more peculiar of the bunch as it assigns the parent
-> > of the platform-device's device (i.e. pdev->dev.parent) as the IIO device's
-> > parent.
-> > 
-> > It's unclear whether this is intentional or not.
-> > Hence it is in it's own patch.
-> 
-> Yeah, we have a few mfd drivers whose child drivers registers their
-> class devices directly under the parent mfd device rather than the
-> corresponding child platform device.
-> 
-> Since it's done consistently I think you need to update them all if you
-> really want to change this. 
-> 
-> And it may not be worth it since at least in theory someone could now be
-> relying on this topology.
+Usually a SLAVE_MATCH and an RX_DONE intterupts come together at
+the same time in most cases but rarely these come separately like
+SLAVE_MATCH first and then RX_DONE right after that.
 
-Thanks for the feedback.
-I guess, it could make sense to do here:
-      devm_iio_device_alloc(pdev->dev.parent, ...)
+Current slave irq handler prints out an error message if the
+latter case happens but this is not an actual error, so this commit
+fixes the incorrect error log printing and makes the handler
+initialize slave state if an incorrect state actually happens.
 
-Currently it's:
-      devm_iio_device_alloc(&pdev->dev, ...)
+Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+---
+ drivers/i2c/busses/i2c-aspeed.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
-That would make it slightly more consistent.
-i.e. the life-time of the object would be attached to the parent of the platform
-device, versus the platform-device.
+diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
+index 8dc9161ced38..e9312d90ff7d 100644
+--- a/drivers/i2c/busses/i2c-aspeed.c
++++ b/drivers/i2c/busses/i2c-aspeed.c
+@@ -311,9 +311,13 @@ static u32 aspeed_i2c_slave_irq(struct aspeed_i2c_bus *bus, u32 irq_status)
+ 	case ASPEED_I2C_SLAVE_STOP:
+ 		i2c_slave_event(slave, I2C_SLAVE_STOP, &value);
+ 		break;
++	case ASPEED_I2C_SLAVE_START:
++		/* Slave was just started. Waiting for the next irq. */;
++		break;
+ 	default:
+-		dev_err(bus->dev, "unhandled slave_state: %d\n",
++		dev_err(bus->dev, "unknown slave_state: %d\n",
+ 			bus->slave_state);
++		bus->slave_state = ASPEED_I2C_SLAVE_STOP;
+ 		break;
+ 	}
+ 
+-- 
+2.19.1
 
-Currently, as it is, the allocation [of the IIO device] is tied the platform-
-device, and the IIO registration to the parent (of the platform-device).
-I'm not super-familiar with the internals here, but does this sound a bit wrong?
-Is there a chance where the IIO device could be de-allocated, while registered?
-
-
-> 
-> > Signed-off-by: Alexandru Ardelean <alexandru.ardelean@analog.com>
-> > ---
-> >  drivers/iio/light/lm3533-als.c | 1 -
-> >  1 file changed, 1 deletion(-)
-> > 
-> > diff --git a/drivers/iio/light/lm3533-als.c b/drivers/iio/light/lm3533-als.c
-> > index bc196c212881..0f380ec8d30c 100644
-> > --- a/drivers/iio/light/lm3533-als.c
-> > +++ b/drivers/iio/light/lm3533-als.c
-> > @@ -852,7 +852,6 @@ static int lm3533_als_probe(struct platform_device
-> > *pdev)
-> >  	indio_dev->channels = lm3533_als_channels;
-> >  	indio_dev->num_channels = ARRAY_SIZE(lm3533_als_channels);
-> >  	indio_dev->name = dev_name(&pdev->dev);
-> > -	indio_dev->dev.parent = pdev->dev.parent;
-> >  	indio_dev->modes = INDIO_DIRECT_MODE;
-> >  
-> >  	als = iio_priv(indio_dev);
-> 
-> Johan
