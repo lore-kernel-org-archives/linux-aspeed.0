@@ -1,94 +1,47 @@
-From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-Date: Thu, 1 Nov 2018 11:09:20 -0700
-Subject: [PATCH i2c-next v9 5/5] i2c: aspeed: Add bus idle waiting logic
- for multi-master use cases
-In-Reply-To: <201811020154.eziM0emr%fengguang.wu@intel.com>
-References: <20181030210917.32711-6-jae.hyun.yoo@linux.intel.com>
- <201811020154.eziM0emr%fengguang.wu@intel.com>
-Message-ID: <a126e4ca-69a7-ee23-4e87-e8bc4a3657ac@linux.intel.com>
+From: Tao Ren <taoren@fb.com>
+Date: Mon, 5 Nov 2018 18:43:43 +0000
+Subject: [PATCH v2] clocksource/drivers/fttmr010: fix invalid interrupt
+ register access
+In-Reply-To: <CACRpkdbbUO9_VOtnZL+Xf_0nTTgSruaaPOLnvZ4M+NQfPLzvWQ@mail.gmail.com>
+References: <20181003215350.3550926-1-taoren@fb.com>
+ <CACRpkdbbUO9_VOtnZL+Xf_0nTTgSruaaPOLnvZ4M+NQfPLzvWQ@mail.gmail.com>
+Message-ID: <BC1ADE3F-F31F-4E1E-A6EE-3BD83C5F2634@fb.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 11/1/2018 10:44 AM, kbuild test robot wrote:
-> Hi Jae,
-> 
-> Thank you for the patch! Perhaps something to improve:
-> 
-> [auto build test WARNING on wsa/i2c/for-next]
-> [also build test WARNING on v4.19 next-20181101]
-> [if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
-> 
-> url:    https://github.com/0day-ci/linux/commits/Jae-Hyun-Yoo/dt-bindings-i2c-Add-bus-timeout-ms-and-retries-properties-as-common-optional/20181031-051152
-> base:   https://git.kernel.org/pub/scm/linux/kernel/git/wsa/linux.git i2c/for-next
-> config: i386-allyesconfig (attached as .config)
-> compiler: gcc-7 (Debian 7.3.0-1) 7.3.0
-> reproduce:
->          # save the attached .config to linux build tree
->          make ARCH=i386
-> 
-> Note: it may well be a FALSE warning. FWIW you are at least aware of it now.
-> http://gcc.gnu.org/wiki/Better_Uninitialized_Warnings
-> 
-> All warnings (new ones prefixed by >>):
-> 
->     drivers/i2c/busses/i2c-aspeed.c: In function 'aspeed_i2c_master_xfer':
->>> drivers/i2c/busses/i2c-aspeed.c:624:210: warning: 'timeout' may be used uninitialized in this function [-Wmaybe-uninitialized]
->        if (time_after(jiffies, timeout))
->                                                                                                                                                                                                                       ^
->     drivers/i2c/busses/i2c-aspeed.c:607:16: note: 'timeout' was declared here
->       unsigned long timeout;
->                     ^~~~~~~
-> 
-> vim +/timeout +624 drivers/i2c/busses/i2c-aspeed.c
-> 
->     604	
->     605	static int aspeed_i2c_check_bus_busy(struct aspeed_i2c_bus *bus)
->     606	{
->     607		unsigned long timeout;
->     608	
->     609		if (bus->multi_master) {
->     610			might_sleep();
->     611			/* Initialize it only when multi_master is set */
->     612			timeout = jiffies + bus->adap.timeout;
+On 10/7/18, 2:03 PM, "Linus Walleij" <linus.walleij@linaro.org> wrote:
+>
+> On Wed, Oct 3, 2018 at 11:54 PM Tao Ren <taoren@fb.com> wrote:
+>
+>> TIMER_INTR_MASK register (Base Address of Timer + 0x38) is not designed
+>> for masking interrupts on ast2500 chips, and it's not even listed in
+>> ast2400 datasheet, so it's not safe to access TIMER_INTR_MASK on aspeed
+>> chips.
+>>
+>> Similarly, TIMER_INTR_STATE register (Base Address of Timer + 0x34) is
+>> not interrupt status register on ast2400 and ast2500 chips. Although
+>> there is no side effect to reset the register in fttmr010_common_init(),
+>> it's just misleading to do so.
+>>
+>> Besides, "count_down" is renamed to "is_aspeed" in "fttmr010" structure,
+>> and more comments are added so the code is more readble.
+>>
+>> Signed-off-by: Tao Ren <taoren@fb.com>
+>> ---
+>> Changes in v2:
+>>   - "count_down" is renamed to "is_aspeed" in "fttmr010" structure.
+>>   - more comments are added to make the code more readable.
+>  
+> Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
 
-The 'timeout' variable will be initialized only when bus->multi_master
-is true to save some OPs in case this variable isn't used. The saved OPs
-are not expensive but it makes a meaning because this function is called
-very frequently on every master transfer.
+Hi Daniel / Thomas,
 
->     613		}
->     614	
->     615		for (;;) {
->     616			if (!(readl(bus->base + ASPEED_I2C_CMD_REG) &
->     617			      ASPEED_I2CD_BUS_BUSY_STS))
->     618	#if IS_ENABLED(CONFIG_I2C_SLAVE)
->     619				if (bus->slave_state == ASPEED_I2C_SLAVE_STOP)
->     620	#endif
->     621					return 0;
->     622			if (!bus->multi_master)
->     623				break;
+Any further comments on the patch? Or is there anything needed from my side?
 
-If bus->multi_master is false then it doesn't fall through so the
-'timeout' variable in below will not be used when itself is
-uninitialized. Also, bus->multi_master is fixed at probing time and it
-doesn't change at runtime so the warning case never happens.
+Thanks,
+Tao Ren
+ 
 
--Jae
-
->   > 624			if (time_after(jiffies, timeout))
->     625				break;
->     626			usleep_range((ASPEED_I2C_BUS_BUSY_CHECK_INTERVAL_US >> 2) + 1,
->     627				     ASPEED_I2C_BUS_BUSY_CHECK_INTERVAL_US);
->     628		}
->     629	
->     630		return aspeed_i2c_recover_bus(bus);
->     631	}
->     632	
-> 
-> ---
-> 0-DAY kernel test infrastructure                Open Source Technology Center
-> https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
-> 
