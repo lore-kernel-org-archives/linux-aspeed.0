@@ -1,64 +1,69 @@
-From: Tao Ren <taoren@fb.com>
-Date: Mon, 5 Nov 2018 20:28:29 -0800
-Subject: [PATCH v2 1/2] ARM: dts: Add Facebook BMC flash layout
-Message-ID: <20181106042829.2771226-1-taoren@fb.com>
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Date: Wed, 7 Nov 2018 20:23:49 +0200
+Subject: [PATCH v2 0/5] serial: Finish sysrq on qcom_geni; fix sysrq vs.
+ lockdep on 8250
+In-Reply-To: <20181030221107.79758-1-dianders@chromium.org>
+References: <20181030221107.79758-1-dianders@chromium.org>
+Message-ID: <20181107182349.GP10650@smile.fi.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This is the layout used by Facebook BMC systems. It describes the fixed
-flash layout of a 32MB mtd device.
+On Tue, Oct 30, 2018 at 03:11:02PM -0700, Douglas Anderson wrote:
+> I started out this series trying to make sysrq work over the serial
+> console on qcom_geni_serial, then fell into a rat's nest.
+> 
+> To solve the deadlock I faced when enabling sysrq I tried to borrow
+> code from '8250_port.c' which avoided grabbing the port lock in
+> console_write().  ...but since these days I try to run with lockdep on
+> all the time, I found it caused an annoying lockdep splat (which I
+> also reproduced on my rk3399 board).  ...so I instead changed my
+> qcom_geni_serial solution to borrow code from 'msm_serial.c'
+> 
+> I wasn't super happy with the solution in 'msm_serial.c' though.  I
+> don't like releasing the spinlock there.  Not only is it ugly but it
+> means we are unlocking / re-locking _all the time_ even though sysrq
+> characters are rare.  ...so I came up with what I think is a better
+> solution and then implemented it for qcom_geni_serial.
+> 
+> Since I had a good way to test 8250-based UARTs, I also fixed that
+> driver to use my new method.  When doing so, I ran into a missing
+> include in serial_core.h.  NOTE: I didn't have a way to test
+> msm_serial.c at all, so I didn't switch that (or all other serial
+> drivers for that matter) to the new method.
+> 
+> NOTE: from a serial point of view v2 is the same as v1 but I've
+> removed the extra kgdb-related patches and made it obvious that this
+> is really for all sysrq, not just kgdb.  I've also generally tried to
+> curate the CCs more properly.
 
-Signed-off-by: Tao Ren <taoren@fb.com>
----
- Changes since v1:
-  - adding facebook copyright.
+It seems your forgot console people to Cc.
 
- .../boot/dts/facebook-bmc-flash-layout.dtsi   | 33 +++++++++++++++++++
- 1 file changed, 33 insertions(+)
- create mode 100644 arch/arm/boot/dts/facebook-bmc-flash-layout.dtsi
+> 
+> 
+> Douglas Anderson (5):
+>   serial: qcom_geni_serial: Finish supporting sysrq
+>   serial: core: Allow processing sysrq at port unlock time
+>   serial: qcom_geni_serial: Process sysrq at port unlock time
+>   serial: core: Include console.h from serial_core.h
+>   serial: 8250: Process sysrq at port unlock time
+> 
+>  drivers/tty/serial/8250/8250_aspeed_vuart.c |  6 +++-
+>  drivers/tty/serial/8250/8250_fsl.c          |  6 +++-
+>  drivers/tty/serial/8250/8250_omap.c         |  6 +++-
+>  drivers/tty/serial/8250/8250_port.c         |  8 ++---
+>  drivers/tty/serial/qcom_geni_serial.c       | 10 ++++--
+>  include/linux/serial_core.h                 | 38 ++++++++++++++++++++-
+>  6 files changed, 63 insertions(+), 11 deletions(-)
+> 
+> -- 
+> 2.19.1.568.g152ad8e336-goog
+> 
 
-diff --git a/arch/arm/boot/dts/facebook-bmc-flash-layout.dtsi b/arch/arm/boot/dts/facebook-bmc-flash-layout.dtsi
-new file mode 100644
-index 000000000000..94039d7b7de5
---- /dev/null
-+++ b/arch/arm/boot/dts/facebook-bmc-flash-layout.dtsi
-@@ -0,0 +1,33 @@
-+// SPDX-License-Identifier: GPL-2.0+
-+// Copyright (c) 2018 Facebook Inc.
-+
-+partitions {
-+	compatible = "fixed-partitions";
-+	#address-cells = <1>;
-+	#size-cells = <1>;
-+
-+	u-boot at 0 {
-+		reg = <0x0 0x60000>;
-+		label = "u-boot";
-+	};
-+
-+	u-boot-env at 60000 {
-+		reg = <0x60000 0x20000>;
-+		label = "env";
-+	};
-+
-+	fit at 80000 {
-+		reg = <0x80000 0x1b80000>;
-+		label = "fit";
-+	};
-+
-+	data0 at 1c00000 {
-+		reg = <0x1c00000 0x400000>;
-+		label = "data0";
-+	};
-+
-+	flash0 at 0 {
-+		reg = <0x0 0x2000000>;
-+		label = "flash0";
-+	};
-+};
 -- 
-2.17.1
+With Best Regards,
+Andy Shevchenko
+
 
