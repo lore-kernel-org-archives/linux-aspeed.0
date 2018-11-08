@@ -1,84 +1,61 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Fri, 2 Nov 2018 01:44:58 +0800
-Subject: [PATCH i2c-next v9 5/5] i2c: aspeed: Add bus idle waiting logic
- for multi-master use cases
-In-Reply-To: <20181030210917.32711-6-jae.hyun.yoo@linux.intel.com>
-References: <20181030210917.32711-6-jae.hyun.yoo@linux.intel.com>
-Message-ID: <201811020154.eziM0emr%fengguang.wu@intel.com>
+From: Petr Mladek <pmladek@suse.com>
+Date: Thu, 8 Nov 2018 10:41:47 +0100
+Subject: [PATCH v2 0/5] serial: Finish sysrq on qcom_geni; fix sysrq vs.
+ lockdep on 8250
+In-Reply-To: <CAD=FV=Xyra4+cLB0J64+SWqCF=YKdEJpAuybQboYxOcfrdTeQg@mail.gmail.com>
+References: <20181030221107.79758-1-dianders@chromium.org>
+ <20181107182349.GP10650@smile.fi.intel.com>
+ <CAD=FV=Xyra4+cLB0J64+SWqCF=YKdEJpAuybQboYxOcfrdTeQg@mail.gmail.com>
+Message-ID: <20181108094147.clr2nntiqvqkh5q2@pathway.suse.cz>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Jae,
+On Wed 2018-11-07 11:26:56, Doug Anderson wrote:
+> On Wed, Nov 7, 2018 at 10:23 AM Andy Shevchenko
+> Ah!  Based on who you added to the CC list I guess you meant to CC
+> "printk" folks?
+> 
+> PRINTK
+> M:      Petr Mladek <pmladek@suse.com>
+> M:      Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+> R:      Steven Rostedt <rostedt@goodmis.org>
+> S:      Maintained
+> F:      kernel/printk/
+> F:      include/linux/printk.h
+> 
+> 
+> I'd be happy to CC those folks on future spins (if there are any).
+> I'm not convinced that these patches are directly relevant to the
+> printk subsystem, but I'm always happy for more people to have a
+> chance to review patches.
 
-Thank you for the patch! Perhaps something to improve:
+I, as a printk maintainer, am not completely familiar with all
+the console driver problems. But we, printk maintainers, come
+to similar deadlocks from the printk side, so we are definitely
+interested into this kind of patches.
 
-[auto build test WARNING on wsa/i2c/for-next]
-[also build test WARNING on v4.19 next-20181101]
-[if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
+BTW: There was an attempt to avoid the console_unlock() related
+deadlocks a more generic way, see
+https://lore.kernel.org/lkml/20181016050428.17966-1-sergey.senozhatsky at gmail.com
+Unfortunately, there is some push back against introducing a new
+printk-related-locking API.
 
-url:    https://github.com/0day-ci/linux/commits/Jae-Hyun-Yoo/dt-bindings-i2c-Add-bus-timeout-ms-and-retries-properties-as-common-optional/20181031-051152
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/wsa/linux.git i2c/for-next
-config: i386-allyesconfig (attached as .config)
-compiler: gcc-7 (Debian 7.3.0-1) 7.3.0
-reproduce:
-        # save the attached .config to linux build tree
-        make ARCH=i386 
 
-Note: it may well be a FALSE warning. FWIW you are at least aware of it now.
-http://gcc.gnu.org/wiki/Better_Uninitialized_Warnings
+> Hopefully anyone who needs this patch can find it on one of the
+> relevant mailing lists.  I screwed up and missed LKML this time
+> around, but there are plenty of other mailing lists here that it could
+> be found on.  If requested I'm also happy to re-post the same series
+> adding those 3 people if that's what everyone wants.
 
-All warnings (new ones prefixed by >>):
+I have glanced over the patches via
+https://www.spinics.net/lists/linux-arm-msm/msg44083.html
+I still have to think about it. I will be traveling next week
+so it might take some time.
 
-   drivers/i2c/busses/i2c-aspeed.c: In function 'aspeed_i2c_master_xfer':
->> drivers/i2c/busses/i2c-aspeed.c:624:210: warning: 'timeout' may be used uninitialized in this function [-Wmaybe-uninitialized]
-      if (time_after(jiffies, timeout))
-                                                                                                                                                                                                                     ^           
-   drivers/i2c/busses/i2c-aspeed.c:607:16: note: 'timeout' was declared here
-     unsigned long timeout;
-                   ^~~~~~~
+Anyway, please CC printk people into v2 if any.
 
-vim +/timeout +624 drivers/i2c/busses/i2c-aspeed.c
-
-   604	
-   605	static int aspeed_i2c_check_bus_busy(struct aspeed_i2c_bus *bus)
-   606	{
-   607		unsigned long timeout;
-   608	
-   609		if (bus->multi_master) {
-   610			might_sleep();
-   611			/* Initialize it only when multi_master is set */
-   612			timeout = jiffies + bus->adap.timeout;
-   613		}
-   614	
-   615		for (;;) {
-   616			if (!(readl(bus->base + ASPEED_I2C_CMD_REG) &
-   617			      ASPEED_I2CD_BUS_BUSY_STS))
-   618	#if IS_ENABLED(CONFIG_I2C_SLAVE)
-   619				if (bus->slave_state == ASPEED_I2C_SLAVE_STOP)
-   620	#endif
-   621					return 0;
-   622			if (!bus->multi_master)
-   623				break;
- > 624			if (time_after(jiffies, timeout))
-   625				break;
-   626			usleep_range((ASPEED_I2C_BUS_BUSY_CHECK_INTERVAL_US >> 2) + 1,
-   627				     ASPEED_I2C_BUS_BUSY_CHECK_INTERVAL_US);
-   628		}
-   629	
-   630		return aspeed_i2c_recover_bus(bus);
-   631	}
-   632	
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: .config.gz
-Type: application/gzip
-Size: 64563 bytes
-Desc: not available
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20181102/9bc6f6c4/attachment-0001.gz>
+Best Reagards,
+Petr
