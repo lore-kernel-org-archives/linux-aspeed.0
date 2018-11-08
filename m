@@ -1,44 +1,65 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Thu, 08 Nov 2018 11:05:16 +1030
-Subject: [PATCH] usb: gadget: aspeed-vhub: constify usb_gadget_ops
- structure
-In-Reply-To: <1540916399-22426-1-git-send-email-Julia.Lawall@lip6.fr>
-References: <1540916399-22426-1-git-send-email-Julia.Lawall@lip6.fr>
-Message-ID: <1541637316.1471870.1569457840.5A56DC54@webmail.messagingengine.com>
+Date: Thu, 08 Nov 2018 12:15:56 +1030
+Subject: [PATCH v2 1/2] ARM: dts: Add Facebook BMC flash layout
+In-Reply-To: <c5e56fc4-397f-a38b-6378-99eecce1180b@fb.com>
+References: <20181106042829.2771226-1-taoren@fb.com>
+ <1541635320.1462459.1569430616.0F5E4C4D@webmail.messagingengine.com>
+ <c5e56fc4-397f-a38b-6378-99eecce1180b@fb.com>
+Message-ID: <1541641556.1495362.1569509568.7BE039CA@webmail.messagingengine.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 31 Oct 2018, at 02:49, Julia Lawall wrote:
-> The usb_gadget_ops structure can be const as it is only stored in
-> the ops field of a usb_gadget structure and this field is const.
+On Thu, 8 Nov 2018, at 10:48, Tao Ren wrote:
+> On 11/7/18 4:02 PM, Andrew Jeffery wrote:
+> >> +partitions {
+> >> +	compatible = "fixed-partitions";
+> >> +	#address-cells = <1>;
+> >> +	#size-cells = <1>;
+> >> +
+> >> +	u-boot at 0 {
+> >> +		reg = <0x0 0x60000>;
+> >> +		label = "u-boot";
+> >> +	};
+> >> +
+> >> +	u-boot-env at 60000 {
+> >> +		reg = <0x60000 0x20000>;
+> >> +		label = "env";
+> >> +	};
+> >> +
+> >> +	fit at 80000 {
+> >> +		reg = <0x80000 0x1b80000>;
+> >> +		label = "fit";
+> >> +	};
+> >> +
+> >> +	data0 at 1c00000 {
+> >> +		reg = <0x1c00000 0x400000>;
+> >> +		label = "data0";
+> >> +	};
+> >> +
+> >> +	flash0 at 0 {
+> >> +		reg = <0x0 0x2000000>;
+> >> +		label = "flash0";
+> >> +	};
+> > 
+> > Is this necessary? Isn't the same thing achieved with the /dev/mtd0 device?
 > 
-> Done with the help of Coccinelle.
+> Hi Andrew,
 > 
-> Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
+> Thank you for the review! The new layout file is needed mainly because 
+> of "data0" partition: several facebook platforms use the partition as 
+> "persistent" storage.
+> 
+> As for "flash0", technically it's not needed (as you pointed out, /dev/
+> mtd0 covers the entire flash if master_partition is enabled). It's still 
+> here to avoid breaking some legacy applications.
 
-Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
+This is what I expected. I think it might be worth adding a comment, given
+you are respinning the series to address my comments on the board
+devicetree patch.
 
-> 
-> ---
->  drivers/usb/gadget/udc/aspeed-vhub/dev.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/usb/gadget/udc/aspeed-vhub/dev.c b/drivers/usb/
-> gadget/udc/aspeed-vhub/dev.c
-> index f0233912bace..6b1b16b17d7d 100644
-> --- a/drivers/usb/gadget/udc/aspeed-vhub/dev.c
-> +++ b/drivers/usb/gadget/udc/aspeed-vhub/dev.c
-> @@ -438,7 +438,7 @@ static int ast_vhub_udc_stop(struct usb_gadget 
-> *gadget)
->  	return 0;
->  }
->  
-> -static struct usb_gadget_ops ast_vhub_udc_ops = {
-> +static const struct usb_gadget_ops ast_vhub_udc_ops = {
->  	.get_frame	= ast_vhub_udc_get_frame,
->  	.wakeup		= ast_vhub_udc_wakeup,
->  	.pullup		= ast_vhub_udc_pullup,
-> 
+Anyway, thanks for the clarification.
+
+Andrew
