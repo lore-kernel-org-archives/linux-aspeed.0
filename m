@@ -1,61 +1,26 @@
-From: Petr Mladek <pmladek@suse.com>
-Date: Thu, 8 Nov 2018 10:41:47 +0100
-Subject: [PATCH v2 0/5] serial: Finish sysrq on qcom_geni; fix sysrq vs.
- lockdep on 8250
-In-Reply-To: <CAD=FV=Xyra4+cLB0J64+SWqCF=YKdEJpAuybQboYxOcfrdTeQg@mail.gmail.com>
-References: <20181030221107.79758-1-dianders@chromium.org>
- <20181107182349.GP10650@smile.fi.intel.com>
- <CAD=FV=Xyra4+cLB0J64+SWqCF=YKdEJpAuybQboYxOcfrdTeQg@mail.gmail.com>
-Message-ID: <20181108094147.clr2nntiqvqkh5q2@pathway.suse.cz>
+From: David Laight <David.Laight@ACULAB.COM>
+Date: Thu, 8 Nov 2018 14:19:27 +0000
+Subject: [PATCH] usb: gadget: fix spelling mistakeis "[En]queing" ->
+ "[En]queuing"
+In-Reply-To: <1541642122.1498358.1569514624.6EA70C69@webmail.messagingengine.com>
+References: <20180929114313.10557-1-colin.king@canonical.com>
+ <1541642122.1498358.1569514624.6EA70C69@webmail.messagingengine.com>
+Message-ID: <66d0fa13f6b6409bbc6b080ae58273ff@AcuMS.aculab.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed 2018-11-07 11:26:56, Doug Anderson wrote:
-> On Wed, Nov 7, 2018 at 10:23 AM Andy Shevchenko
-> Ah!  Based on who you added to the CC list I guess you meant to CC
-> "printk" folks?
-> 
-> PRINTK
-> M:      Petr Mladek <pmladek@suse.com>
-> M:      Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
-> R:      Steven Rostedt <rostedt@goodmis.org>
-> S:      Maintained
-> F:      kernel/printk/
-> F:      include/linux/printk.h
-> 
-> 
-> I'd be happy to CC those folks on future spins (if there are any).
-> I'm not convinced that these patches are directly relevant to the
-> printk subsystem, but I'm always happy for more people to have a
-> chance to review patches.
+From: Andrew Jeffery
+> Sent: 08 November 2018 01:55
+> > -		EPDBG(ep,"Enqueing request on wrong or disabled EP\n");
+> > +		EPDBG(ep, "Enqueuing request on wrong or disabled EP\n");
 
-I, as a printk maintainer, am not completely familiar with all
-the console driver problems. But we, printk maintainers, come
-to similar deadlocks from the printk side, so we are definitely
-interested into this kind of patches.
+Shouldn't it be Enqueueing ?
 
-BTW: There was an attempt to avoid the console_unlock() related
-deadlocks a more generic way, see
-https://lore.kernel.org/lkml/20181016050428.17966-1-sergey.senozhatsky at gmail.com
-Unfortunately, there is some push back against introducing a new
-printk-related-locking API.
+	David
 
-
-> Hopefully anyone who needs this patch can find it on one of the
-> relevant mailing lists.  I screwed up and missed LKML this time
-> around, but there are plenty of other mailing lists here that it could
-> be found on.  If requested I'm also happy to re-post the same series
-> adding those 3 people if that's what everyone wants.
-
-I have glanced over the patches via
-https://www.spinics.net/lists/linux-arm-msm/msg44083.html
-I still have to think about it. I will be traveling next week
-so it might take some time.
-
-Anyway, please CC printk people into v2 if any.
-
-Best Reagards,
-Petr
+-
+Registered Address Lakeside, Bramley Road, Mount Farm, Milton Keynes, MK1 1PT, UK
+Registration No: 1397386 (Wales)
