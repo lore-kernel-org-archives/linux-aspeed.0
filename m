@@ -1,65 +1,60 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Thu, 08 Nov 2018 12:15:56 +1030
-Subject: [PATCH v2 1/2] ARM: dts: Add Facebook BMC flash layout
-In-Reply-To: <c5e56fc4-397f-a38b-6378-99eecce1180b@fb.com>
-References: <20181106042829.2771226-1-taoren@fb.com>
- <1541635320.1462459.1569430616.0F5E4C4D@webmail.messagingengine.com>
- <c5e56fc4-397f-a38b-6378-99eecce1180b@fb.com>
-Message-ID: <1541641556.1495362.1569509568.7BE039CA@webmail.messagingengine.com>
+Date: Thu, 08 Nov 2018 12:25:22 +1030
+Subject: [PATCH] usb: gadget: fix spelling mistakeis "[En]queing" ->
+ "[En]queuing"
+In-Reply-To: <20180929114313.10557-1-colin.king@canonical.com>
+References: <20180929114313.10557-1-colin.king@canonical.com>
+Message-ID: <1541642122.1498358.1569514624.6EA70C69@webmail.messagingengine.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, 8 Nov 2018, at 10:48, Tao Ren wrote:
-> On 11/7/18 4:02 PM, Andrew Jeffery wrote:
-> >> +partitions {
-> >> +	compatible = "fixed-partitions";
-> >> +	#address-cells = <1>;
-> >> +	#size-cells = <1>;
-> >> +
-> >> +	u-boot at 0 {
-> >> +		reg = <0x0 0x60000>;
-> >> +		label = "u-boot";
-> >> +	};
-> >> +
-> >> +	u-boot-env at 60000 {
-> >> +		reg = <0x60000 0x20000>;
-> >> +		label = "env";
-> >> +	};
-> >> +
-> >> +	fit at 80000 {
-> >> +		reg = <0x80000 0x1b80000>;
-> >> +		label = "fit";
-> >> +	};
-> >> +
-> >> +	data0 at 1c00000 {
-> >> +		reg = <0x1c00000 0x400000>;
-> >> +		label = "data0";
-> >> +	};
-> >> +
-> >> +	flash0 at 0 {
-> >> +		reg = <0x0 0x2000000>;
-> >> +		label = "flash0";
-> >> +	};
-> > 
-> > Is this necessary? Isn't the same thing achieved with the /dev/mtd0 device?
+On Sat, 29 Sep 2018, at 22:13, Colin King wrote:
+> From: Colin Ian King <colin.king@canonical.com>
 > 
-> Hi Andrew,
+> Trivial fix to spelling mistakes in debug warning messages
 > 
-> Thank you for the review! The new layout file is needed mainly because 
-> of "data0" partition: several facebook platforms use the partition as 
-> "persistent" storage.
+> Signed-off-by: Colin Ian King <colin.king@canonical.com>
+
+Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
+
+> ---
+>  drivers/usb/gadget/udc/aspeed-vhub/epn.c | 2 +-
+>  drivers/usb/gadget/udc/udc-xilinx.c      | 2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
 > 
-> As for "flash0", technically it's not needed (as you pointed out, /dev/
-> mtd0 covers the entire flash if master_partition is enabled). It's still 
-> here to avoid breaking some legacy applications.
-
-This is what I expected. I think it might be worth adding a comment, given
-you are respinning the series to address my comments on the board
-devicetree patch.
-
-Anyway, thanks for the clarification.
-
-Andrew
+> diff --git a/drivers/usb/gadget/udc/aspeed-vhub/epn.c b/drivers/usb/
+> gadget/udc/aspeed-vhub/epn.c
+> index 5939eb1e97f2..e9ee2b72af19 100644
+> --- a/drivers/usb/gadget/udc/aspeed-vhub/epn.c
+> +++ b/drivers/usb/gadget/udc/aspeed-vhub/epn.c
+> @@ -353,7 +353,7 @@ static int ast_vhub_epn_queue(struct usb_ep* u_ep, 
+> struct usb_request *u_req,
+>  	/* Endpoint enabled ? */
+>  	if (!ep->epn.enabled || !u_ep->desc || !ep->dev || !ep->d_idx ||
+>  	    !ep->dev->enabled || ep->dev->suspended) {
+> -		EPDBG(ep,"Enqueing request on wrong or disabled EP\n");
+> +		EPDBG(ep, "Enqueuing request on wrong or disabled EP\n");
+>  		return -ESHUTDOWN;
+>  	}
+>  
+> diff --git a/drivers/usb/gadget/udc/udc-xilinx.c b/drivers/usb/gadget/
+> udc/udc-xilinx.c
+> index 6407e433bc78..b1f4104d1283 100644
+> --- a/drivers/usb/gadget/udc/udc-xilinx.c
+> +++ b/drivers/usb/gadget/udc/udc-xilinx.c
+> @@ -1078,7 +1078,7 @@ static int xudc_ep_queue(struct usb_ep *_ep, 
+> struct usb_request *_req,
+>  	unsigned long flags;
+>  
+>  	if (!ep->desc) {
+> -		dev_dbg(udc->dev, "%s:queing request to disabled %s\n",
+> +		dev_dbg(udc->dev, "%s: queuing request to disabled %s\n",
+>  			__func__, ep->name);
+>  		return -ESHUTDOWN;
+>  	}
+> -- 
+> 2.17.1
+> 
