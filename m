@@ -1,26 +1,76 @@
-From: David Laight <David.Laight@ACULAB.COM>
-Date: Thu, 8 Nov 2018 14:19:27 +0000
-Subject: [PATCH] usb: gadget: fix spelling mistakeis "[En]queing" ->
- "[En]queuing"
-In-Reply-To: <1541642122.1498358.1569514624.6EA70C69@webmail.messagingengine.com>
-References: <20180929114313.10557-1-colin.king@canonical.com>
- <1541642122.1498358.1569514624.6EA70C69@webmail.messagingengine.com>
-Message-ID: <66d0fa13f6b6409bbc6b080ae58273ff@AcuMS.aculab.com>
+From: Tao Ren <taoren@fb.com>
+Date: Thu, 8 Nov 2018 16:50:34 -0800
+Subject: [PATCH v3 1/2] ARM: dts: Add Facebook BMC flash layout
+Message-ID: <20181109005034.210138-1-taoren@fb.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Andrew Jeffery
-> Sent: 08 November 2018 01:55
-> > -		EPDBG(ep,"Enqueing request on wrong or disabled EP\n");
-> > +		EPDBG(ep, "Enqueuing request on wrong or disabled EP\n");
+This is the layout used by Facebook BMC systems. It describes the fixed
+flash layout of a 32MB mtd device.
 
-Shouldn't it be Enqueueing ?
+Signed-off-by: Tao Ren <taoren@fb.com>
+---
+ Changes in v3:
+   - adding comments explaining why "data0" and "flash0" partitions are
+     needed.
+ Changes in v2:
+   - adding facebook copyright.
 
-	David
+ .../boot/dts/facebook-bmc-flash-layout.dtsi   | 42 +++++++++++++++++++
+ 1 file changed, 42 insertions(+)
+ create mode 100644 arch/arm/boot/dts/facebook-bmc-flash-layout.dtsi
 
--
-Registered Address Lakeside, Bramley Road, Mount Farm, Milton Keynes, MK1 1PT, UK
-Registration No: 1397386 (Wales)
+diff --git a/arch/arm/boot/dts/facebook-bmc-flash-layout.dtsi b/arch/arm/boot/dts/facebook-bmc-flash-layout.dtsi
+new file mode 100644
+index 000000000000..87bb8b576250
+--- /dev/null
++++ b/arch/arm/boot/dts/facebook-bmc-flash-layout.dtsi
+@@ -0,0 +1,42 @@
++// SPDX-License-Identifier: GPL-2.0+
++// Copyright (c) 2018 Facebook Inc.
++
++partitions {
++	compatible = "fixed-partitions";
++	#address-cells = <1>;
++	#size-cells = <1>;
++
++	u-boot at 0 {
++		reg = <0x0 0x60000>;
++		label = "u-boot";
++	};
++
++	u-boot-env at 60000 {
++		reg = <0x60000 0x20000>;
++		label = "env";
++	};
++
++	fit at 80000 {
++		reg = <0x80000 0x1b80000>;
++		label = "fit";
++	};
++
++	/*
++	 * "data0" partition is used by several Facebook BMC platforms
++	 * as persistent data store.
++	 */
++	data0 at 1c00000 {
++		reg = <0x1c00000 0x400000>;
++		label = "data0";
++	};
++
++	/*
++	 * Although the master partition can be created by enabling
++	 * MTD_PARTITIONED_MASTER option, below "flash0" partition is
++	 * explicitly created to avoid breaking legacy applications.
++	 */
++	flash0 at 0 {
++		reg = <0x0 0x2000000>;
++		label = "flash0";
++	};
++};
+-- 
+2.17.1
+
