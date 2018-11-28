@@ -1,28 +1,161 @@
-From: David Miller <davem@davemloft.net>
-Date: Tue, 27 Nov 2018 16:37:35 -0800 (PST)
-Subject: [PATCH net-next v2] net/ncsi: Add NCSI Mellanox OEM command
-In-Reply-To: <20181126214905.3703229-1-vijaykhemka@fb.com>
-References: <20181126214905.3703229-1-vijaykhemka@fb.com>
-Message-ID: <20181127.163735.780394807984803791.davem@davemloft.net>
+From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+Date: Wed, 28 Nov 2018 16:30:03 -0600
+Subject: [PATCH i2c-next v9 5/5] i2c: aspeed: Add bus idle waiting logic
+ for multi-master use cases
+In-Reply-To: <20181128215434.GA1666@kunai>
+References: <20181030210917.32711-1-jae.hyun.yoo@linux.intel.com>
+ <20181030210917.32711-6-jae.hyun.yoo@linux.intel.com>
+ <20181128215434.GA1666@kunai>
+Message-ID: <2772b86e-6ffb-e289-40f2-f96d11b82349@linux.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Vijay Khemka <vijaykhemka@fb.com>
-Date: Mon, 26 Nov 2018 13:49:04 -0800
-
-> This patch adds OEM Mellanox commands and response handling. It also
-> defines OEM Get MAC Address handler to get and configure the device.
+On 11/28/2018 3:54 PM, Wolfram Sang wrote:
+> On Tue, Oct 30, 2018 at 02:09:16PM -0700, Jae Hyun Yoo wrote:
+>> In multi-master environment, this driver's master cannot know
+>> exactly when a peer master sends data to this driver's slave so a
+>> case can be happened that this master tries to send data through
+>> the master_xfer function but slave data from peer master is still
+>> being processed by this driver.
 > 
-> ncsi_oem_gma_handler_mlx: This handler send NCSI mellanox command for
-> getting mac address.
-> ncsi_rsp_handler_oem_mlx: This handles response received for all
-> mellanox OEM commands.
-> ncsi_rsp_handler_oem_mlx_gma: This handles get mac address response and
-> set it to device.
+> So, that I get this correct: your IP core cannot detect a bus busy state
+> when its own slave address is acessed? Well, I know HW can have bugs,
+> but I still wonder because a bus is busy as soon as another START has
+> been detected, independent of which device is going to be accessed.
 > 
-> Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
+> Even if so, why can't you use a mutex to prevent any master_xfer while
+> slave_xfer is ongoing?
+> 
+> Shouldn't that be enough according to the above description? Why do you
+> need the delay? I might be missing something...
+> 
 
-Applied.
+This IP has a bus busy state bit which can cover master and slave
+operations but in case of slave operation, the bit is cleared little
+bit earlier than its actual completion so it's the reason why I made
+this patch. I agree with you that it still has a weak point since
+the bus can be changed to busy state immediately just after finishing
+the busy waiting delay.
+
+As you suggested, I'll try to implement it using a mutex instead of
+using delay. Thanks a lot for your comment.
+
+Jae
+
+>> To prevent any state corruption in the case, this patch adds
+>> checking code if any slave operation is ongoing and it waits up to
+>> the bus timeout duration before starting a master_xfer operation.
+>>
+>> Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+>> Reviewed-by: Brendan Higgins <brendanhiggins@google.com>
+>> ---
+>>   drivers/i2c/busses/i2c-aspeed.c | 55 ++++++++++++++++++++++++---------
+>>   1 file changed, 40 insertions(+), 15 deletions(-)
+>>
+>> diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
+>> index 833b6b6a4c7e..30c3ab3a4844 100644
+>> --- a/drivers/i2c/busses/i2c-aspeed.c
+>> +++ b/drivers/i2c/busses/i2c-aspeed.c
+>> @@ -12,6 +12,7 @@
+>>   
+>>   #include <linux/clk.h>
+>>   #include <linux/completion.h>
+>> +#include <linux/delay.h>
+>>   #include <linux/err.h>
+>>   #include <linux/errno.h>
+>>   #include <linux/i2c.h>
+>> @@ -115,6 +116,9 @@
+>>   /* 0x18 : I2CD Slave Device Address Register   */
+>>   #define ASPEED_I2CD_DEV_ADDR_MASK			GENMASK(6, 0)
+>>   
+>> +/* Busy checking */
+>> +#define ASPEED_I2C_BUS_BUSY_CHECK_INTERVAL_US		(10 * 1000)
+>> +
+>>   enum aspeed_i2c_master_state {
+>>   	ASPEED_I2C_MASTER_INACTIVE,
+>>   	ASPEED_I2C_MASTER_START,
+>> @@ -156,6 +160,8 @@ struct aspeed_i2c_bus {
+>>   	int				cmd_err;
+>>   	/* Protected only by i2c_lock_bus */
+>>   	int				master_xfer_result;
+>> +	/* Multi-master */
+>> +	bool				multi_master;
+>>   #if IS_ENABLED(CONFIG_I2C_SLAVE)
+>>   	struct i2c_client		*slave;
+>>   	enum aspeed_i2c_slave_state	slave_state;
+>> @@ -596,27 +602,44 @@ static irqreturn_t aspeed_i2c_bus_irq(int irq, void *dev_id)
+>>   	return irq_remaining ? IRQ_NONE : IRQ_HANDLED;
+>>   }
+>>   
+>> +static int aspeed_i2c_check_bus_busy(struct aspeed_i2c_bus *bus)
+>> +{
+>> +	unsigned long timeout;
+>> +
+>> +	if (bus->multi_master) {
+>> +		might_sleep();
+>> +		/* Initialize it only when multi_master is set */
+>> +		timeout = jiffies + bus->adap.timeout;
+>> +	}
+>> +
+>> +	for (;;) {
+>> +		if (!(readl(bus->base + ASPEED_I2C_CMD_REG) &
+>> +		      ASPEED_I2CD_BUS_BUSY_STS))
+>> +#if IS_ENABLED(CONFIG_I2C_SLAVE)
+>> +			if (bus->slave_state == ASPEED_I2C_SLAVE_STOP)
+>> +#endif
+>> +				return 0;
+>> +		if (!bus->multi_master)
+>> +			break;
+>> +		if (time_after(jiffies, timeout))
+>> +			break;
+>> +		usleep_range((ASPEED_I2C_BUS_BUSY_CHECK_INTERVAL_US >> 2) + 1,
+>> +			     ASPEED_I2C_BUS_BUSY_CHECK_INTERVAL_US);
+>> +	}
+>> +
+>> +	return aspeed_i2c_recover_bus(bus);
+>> +}
+>> +
+>>   static int aspeed_i2c_master_xfer(struct i2c_adapter *adap,
+>>   				  struct i2c_msg *msgs, int num)
+>>   {
+>>   	struct aspeed_i2c_bus *bus = i2c_get_adapdata(adap);
+>>   	unsigned long time_left, flags;
+>> -	int ret = 0;
+>>   
+>> -	spin_lock_irqsave(&bus->lock, flags);
+>> -	bus->cmd_err = 0;
+>> -
+>> -	/* If bus is busy, attempt recovery. We assume a single master
+>> -	 * environment.
+>> -	 */
+>> -	if (readl(bus->base + ASPEED_I2C_CMD_REG) & ASPEED_I2CD_BUS_BUSY_STS) {
+>> -		spin_unlock_irqrestore(&bus->lock, flags);
+>> -		ret = aspeed_i2c_recover_bus(bus);
+>> -		if (ret)
+>> -			return ret;
+>> -		spin_lock_irqsave(&bus->lock, flags);
+>> -	}
+>> +	if (aspeed_i2c_check_bus_busy(bus))
+>> +		return -EAGAIN;
+>>   
+>> +	spin_lock_irqsave(&bus->lock, flags);
+>>   	bus->cmd_err = 0;
+>>   	bus->msgs = msgs;
+>>   	bus->msgs_index = 0;
+>> @@ -827,7 +850,9 @@ static int aspeed_i2c_init(struct aspeed_i2c_bus *bus,
+>>   	if (ret < 0)
+>>   		return ret;
+>>   
+>> -	if (!of_property_read_bool(pdev->dev.of_node, "multi-master"))
+>> +	if (of_property_read_bool(pdev->dev.of_node, "multi-master"))
+>> +		bus->multi_master = true;
+>> +	else
+>>   		fun_ctrl_reg |= ASPEED_I2CD_MULTI_MASTER_DIS;
+>>   
+>>   	/* Enable Master Mode */
+>> -- 
+>> 2.19.1
+>>
