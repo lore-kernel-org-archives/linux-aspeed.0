@@ -1,62 +1,94 @@
-From: Wolfram Sang <wsa@the-dreams.de>
-Date: Wed, 28 Nov 2018 22:54:59 +0100
-Subject: [PATCH i2c-next v9 1/5] dt-bindings: i2c: Add 'bus-timeout-ms'
- and '#retries' properties as common optional
-In-Reply-To: <20181030210917.32711-2-jae.hyun.yoo@linux.intel.com>
-References: <20181030210917.32711-1-jae.hyun.yoo@linux.intel.com>
- <20181030210917.32711-2-jae.hyun.yoo@linux.intel.com>
-Message-ID: <20181128215458.GB1666@kunai>
+From: Rob Herring <robh@kernel.org>
+Date: Thu, 29 Nov 2018 19:52:51 -0600
+Subject: [PATCH] ARM: dts: aspeed: add missing memory unit-address
+Message-ID: <20181130015251.20754-1-robh@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Oct 30, 2018 at 02:09:12PM -0700, Jae Hyun Yoo wrote:
-> This commit adds 'bus-timeout-ms' and '#retries' properties as
-> common optional properties that can be used for setting 'timeout'
-> and 'retries' values of 'struct i2c_adapter'. With this patch, the
-> bus timeout value and the master transfer retries count can be set
-> through these properties at the registration time of an adapter.
-> Still the values can be set by I2C_TIMEOUT and I2C_RETRIES ioctls
-> on cdev at runtime too.
-> 
-> These properties may not be supported by all drivers. However, if
-> a driver wants to support one of them, it should adapt the
-> bindings in this document.
-> 
-> Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-> Reviewed-by: Rob Herring <robh@kernel.org>
+The base aspeed-g5.dtsi already defines a '/memory at 80000000' node, so
+'/memory' in the board files create a duplicate node. We're probably
+getting lucky that the bootloader fixes up the memory node that the
+kernel ends up using. Add the unit-address so it's merged with the base
+node.
 
-Definately NACK on the #retries part. This is purely a configuration
-thing. Besides that it is kind of ancient cruft, too. I don't recommend
-it, at all.
+Found with DT json-schema checks.
 
-On the timeout thing, I am still not fully convinced that this is a HW
-description. I said that before. But maybe I need to understand your
-problem case better.
+Cc: Joel Stanley <joel@jms.id.au>
+Cc: Andrew Jeffery <andrew@aj.id.au>
+Cc: devicetree at vger.kernel.org
+Cc: linux-arm-kernel at lists.infradead.org
+Cc: linux-aspeed at lists.ozlabs.org
+Signed-off-by: Rob Herring <robh@kernel.org>
+---
+Might be better to just remove the node altogether from the SoC dtsi 
+file. It's only saving the device_type definition.
 
-> ---
->  Documentation/devicetree/bindings/i2c/i2c.txt | 6 ++++++
->  1 file changed, 6 insertions(+)
-> 
-> diff --git a/Documentation/devicetree/bindings/i2c/i2c.txt b/Documentation/devicetree/bindings/i2c/i2c.txt
-> index 11263982470e..bdead91f82a4 100644
-> --- a/Documentation/devicetree/bindings/i2c/i2c.txt
-> +++ b/Documentation/devicetree/bindings/i2c/i2c.txt
-> @@ -80,6 +80,12 @@ wants to support one of the below features, it should adapt the bindings below.
->  	Names of map programmable addresses.
->  	It can contain any map needing another address than default one.
->  
-> +- bus-timeout-ms
-> +	Bus timeout in milliseconds.
-> +
-> +- #retries
-> +	Number of retries for master transfer.
-> +
->  Binding may contain optional "interrupts" property, describing interrupts
->  used by the device. I2C core will assign "irq" interrupt (or the very first
->  interrupt if not using interrupt names) as primary interrupt for the slave.
-> -- 
-> 2.19.1
-> 
+ arch/arm/boot/dts/aspeed-bmc-arm-centriq2400-rep.dts | 2 +-
+ arch/arm/boot/dts/aspeed-bmc-intel-s2600wf.dts       | 2 +-
+ arch/arm/boot/dts/aspeed-bmc-opp-lanyang.dts         | 3 +--
+ arch/arm/boot/dts/aspeed-bmc-portwell-neptune.dts    | 2 +-
+ 4 files changed, 4 insertions(+), 5 deletions(-)
+
+diff --git a/arch/arm/boot/dts/aspeed-bmc-arm-centriq2400-rep.dts b/arch/arm/boot/dts/aspeed-bmc-arm-centriq2400-rep.dts
+index df1227613d48..c2ece0b91885 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-arm-centriq2400-rep.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-arm-centriq2400-rep.dts
+@@ -13,7 +13,7 @@
+ 		bootargs = "console=ttyS4,115200 earlyprintk";
+ 	};
+ 
+-	memory {
++	memory at 80000000 {
+ 		reg = <0x80000000 0x40000000>;
+ 	};
+ 
+diff --git a/arch/arm/boot/dts/aspeed-bmc-intel-s2600wf.dts b/arch/arm/boot/dts/aspeed-bmc-intel-s2600wf.dts
+index 7a291de02543..22dade6393d0 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-intel-s2600wf.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-intel-s2600wf.dts
+@@ -13,7 +13,7 @@
+ 		bootargs = "earlyprintk";
+ 	};
+ 
+-	memory {
++	memory at 80000000 {
+ 		reg = <0x80000000 0x20000000>;
+ 	};
+ 
+diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-lanyang.dts b/arch/arm/boot/dts/aspeed-bmc-opp-lanyang.dts
+index d598b6391362..024e52a6cd0f 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-opp-lanyang.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-opp-lanyang.dts
+@@ -14,7 +14,7 @@
+ 		bootargs = "console=ttyS4,115200 earlyprintk";
+ 	};
+ 
+-	memory {
++	memory at 80000000 {
+ 		reg = <0x80000000 0x40000000>;
+ 	};
+ 
+@@ -322,4 +322,3 @@
+ &adc {
+ 	status = "okay";
+ };
+-
+diff --git a/arch/arm/boot/dts/aspeed-bmc-portwell-neptune.dts b/arch/arm/boot/dts/aspeed-bmc-portwell-neptune.dts
+index 43ed13963d35..33d704541de6 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-portwell-neptune.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-portwell-neptune.dts
+@@ -17,7 +17,7 @@
+ 		bootargs = "console=ttyS4,115200 earlyprintk";
+ 	};
+ 
+-	memory {
++	memory at 80000000 {
+ 		reg = <0x80000000 0x20000000>;
+ 	};
+ 
+-- 
+2.19.1
+
