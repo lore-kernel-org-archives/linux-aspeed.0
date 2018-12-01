@@ -1,48 +1,35 @@
-From: Stephen Boyd <sboyd@kernel.org>
-Date: Tue, 04 Dec 2018 12:54:34 -0800
-Subject: [PATCH v2] clk: aspeed: Mark lclk (LPC) and espiclk (eSPI) as
- critical
-In-Reply-To: <CACPK8XcwMMoxG6vhDhUU8RYGABx7rtBoxJvp2yDhHeD-PemdqA@mail.gmail.com>
-References: <20181204185054.24053-1-jae.hyun.yoo@linux.intel.com>
- <CACPK8XcwMMoxG6vhDhUU8RYGABx7rtBoxJvp2yDhHeD-PemdqA@mail.gmail.com>
-Message-ID: <154395687459.88331.13570416457347078441@swboyd.mtv.corp.google.com>
+From: Matheus Tavares Bernardino <matheus.bernardino@usp.br>
+Date: Sat, 1 Dec 2018 13:54:39 -0200
+Subject: [PATCH] iio: adc: Replace license text w/ SPDX identifier
+In-Reply-To: <9ea19805-de34-9286-e540-98b75e49f574@broadcom.com>
+References: <20181128175312.9634-1-matheus.bernardino@usp.br>
+ <9ea19805-de34-9286-e540-98b75e49f574@broadcom.com>
+Message-ID: <CAHd-oW4XyMkJaRaQcO+7+qRf1Lm+D2aQ54-YRqSE-TFump8q7A@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Quoting Joel Stanley (2018-12-04 12:51:43)
-> Hi Jae,
-> 
-> On Wed, 5 Dec 2018 at 05:20, Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com> wrote:
-> >
-> > These interfaces are used by host to talk to BMC, and the clock
-> > source is from the host, usually from PCH. So this commit marks
-> > the lclk as critical to make it able to be enabled. Also, it marks
-> > espiclk too because eSPI is sharing the same interface with LPC.
-> 
-> While this is true on the platform you have in mind, on other
-> platforms this is not the case. They do not use eSPI, and LCLK is
-> enabled by the driver that is used to configure LPC
-> (drivers/misc/aspeed-lpc-ctrl.c):
-> 
->  lpc_ctrl: lpc-ctrl at 0 {
->      compatible = "aspeed,ast2400-lpc-ctrl";
->      reg = <0x0 0x80>;
->      clocks = <&syscon ASPEED_CLK_GATE_LCLK>;
->  }
-> 
-> I wonder if we need a device tree binding to describe which clocks are critical.
+On Wed, Nov 28, 2018 at 4:54 PM Scott Branden
+<scott.branden@broadcom.com> wrote:
+>>
+>>
+>> On 2018-11-28 9:53 a.m., Matheus Tavares wrote:
+>>
+>> From: Lucas Santos <ilucas.ms@gmail.com>
+>>
+>> This patch removes all license boilerplate texts from the .c and .h
+>>
+> I know other people don't follow the patch guidelines,
+>
+> but more info on proper commit message format in link.
+>
+> (Don't say "this patch" or "this commit" or "I changed") - use imperative present tense.
+>
+> https://www.kernel.org/doc/html/latest/process/submitting-patches.html
+>
 
-A binding to describe critical clks has been rejected in the past. I
-don't think we need to have it here either? More information on why
-things are being marked critical will be helpful to see if we need to
-re-open that discussion again.
+Ok, thanks for the review. I'll correct that in v2.
 
-> 
-> Stephen, please don't merge this patch yet.
-> 
-
-Sure.
-
+Matheus
