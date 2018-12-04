@@ -1,69 +1,49 @@
-From: Hans Verkuil <hverkuil@xs4all.nl>
-Date: Mon, 3 Dec 2018 22:09:35 +0100
-Subject: [PATCH v6 2/2] media: platform: Add Aspeed Video Engine driver
-In-Reply-To: <6c92cb5c-2134-e5d8-1a6b-2d311731cef3@linux.ibm.com>
-References: <1543347457-59224-1-git-send-email-eajames@linux.ibm.com>
- <1543347457-59224-3-git-send-email-eajames@linux.ibm.com>
- <1d5f3260-2d95-32b2-090e-2f57ae9e6833@xs4all.nl>
- <52cae852-5a2b-ee37-3829-73de7a47df1c@linux.ibm.com>
- <0c5dbd34-a10c-04ce-43bb-646e712f0e99@xs4all.nl>
- <6c92cb5c-2134-e5d8-1a6b-2d311731cef3@linux.ibm.com>
-Message-ID: <8b1b1f60-d21c-c0a2-2597-8bdb77f5f7c9@xs4all.nl>
+From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+Date: Tue,  4 Dec 2018 09:23:57 -0800
+Subject: [PATCH] clk: aspeed: Mark lclk (LPC) and espiclk (eSPI) as critical
+Message-ID: <20181204172357.23665-1-jae.hyun.yoo@linux.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 12/03/2018 09:37 PM, Eddie James wrote:
+These interfaces are used by host to talk to BMC, and the clock
+source is from the host, usually from PCH. So this commit marks
+the lclk as critical to make it able to be enabled. Also, it marks
+espiclk too because eSPI is sharing the same interface with LPC.
 
-<snip>
+Fixes: 15ed8ce5f84e ("clk: aspeed: Register gated clocks")
+Cc: stable at vger.kernel.org
+Cc: Joel Stanley <joel@jms.id.au>
+Cc: Andrew Jeffery <andrew@aj.id.au>
+Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+---
+ drivers/clk/clk-aspeed.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
->>>>> +static int aspeed_video_start(struct aspeed_video *video)
->>>>> +{
->>>>> +	int rc;
->>>>> +
->>>>> +	aspeed_video_on(video);
->>>>> +
->>>>> +	aspeed_video_init_regs(video);
->>>>> +
->>>>> +	rc = aspeed_video_get_resolution(video);
->>>>> +	if (rc)
->>>>> +		return rc;
->>>>> +
->>>>> +	/*
->>>>> +	 * Set the timings here since the device was just opened for the first
->>>>> +	 * time.
->>>>> +	 */
->>>>> +	video->active_timings = video->detected_timings;
->>>> What happens if no valid signal was detected?
->>>>
->>>> My recommendation is to fallback to some default timings (VGA?) if no valid
->>>> initial timings were found.
->>>>
->>>> The expectation is that applications will always call QUERY_DV_TIMINGS first,
->>>> so it is really not all that important what the initial active_timings are,
->>>> as long as they are valid timings (valid as in: something that the hardware
->>>> can support).
->>> See just above, this call returns with a failure if no signal is
->>> detected, meaning the device cannot be opened. The only valid timings
->>> are the detected timings.
->> That's wrong. You must ALWAYS be able to open the device. If not valid
->> resolution is detected, just fallback to some default.
-> 
-> Why must open always succeed? What use is a video device that cannot 
-> provide any video?
-You always must be able to open the video device so applications can call
-QUERYCAP. In fact, any ioctl that returns state information (G_FMT, G_CTRL,
-G_INPUT, ENUM_*, etc) can always be called, regardless of whether there is
-a video signal or if video streaming is in progress.
+diff --git a/drivers/clk/clk-aspeed.c b/drivers/clk/clk-aspeed.c
+index 596136793fc4..01633ad85683 100644
+--- a/drivers/clk/clk-aspeed.c
++++ b/drivers/clk/clk-aspeed.c
+@@ -95,7 +95,7 @@ static const struct aspeed_gate_data aspeed_gates[] = {
+ 	[ASPEED_CLK_GATE_DCLK] =	{  5, -1, "dclk-gate",		NULL,	CLK_IS_CRITICAL }, /* DAC */
+ 	[ASPEED_CLK_GATE_REFCLK] =	{  6, -1, "refclk-gate",	"clkin", CLK_IS_CRITICAL },
+ 	[ASPEED_CLK_GATE_USBPORT2CLK] =	{  7,  3, "usb-port2-gate",	NULL,	0 }, /* USB2.0 Host port 2 */
+-	[ASPEED_CLK_GATE_LCLK] =	{  8,  5, "lclk-gate",		NULL,	0 }, /* LPC */
++	[ASPEED_CLK_GATE_LCLK] =	{  8,  5, "lclk-gate",		NULL,	CLK_IS_CRITICAL }, /* LPC */
+ 	[ASPEED_CLK_GATE_USBUHCICLK] =	{  9, 15, "usb-uhci-gate",	NULL,	0 }, /* USB1.1 (requires port 2 enabled) */
+ 	[ASPEED_CLK_GATE_D1CLK] =	{ 10, 13, "d1clk-gate",		NULL,	0 }, /* GFX CRT */
+ 	[ASPEED_CLK_GATE_YCLK] =	{ 13,  4, "yclk-gate",		NULL,	0 }, /* HAC */
+@@ -103,7 +103,7 @@ static const struct aspeed_gate_data aspeed_gates[] = {
+ 	[ASPEED_CLK_GATE_UART1CLK] =	{ 15, -1, "uart1clk-gate",	"uart",	0 }, /* UART1 */
+ 	[ASPEED_CLK_GATE_UART2CLK] =	{ 16, -1, "uart2clk-gate",	"uart",	0 }, /* UART2 */
+ 	[ASPEED_CLK_GATE_UART5CLK] =	{ 17, -1, "uart5clk-gate",	"uart",	0 }, /* UART5 */
+-	[ASPEED_CLK_GATE_ESPICLK] =	{ 19, -1, "espiclk-gate",	NULL,	0 }, /* eSPI */
++	[ASPEED_CLK_GATE_ESPICLK] =	{ 19, -1, "espiclk-gate",	NULL,	CLK_IS_CRITICAL }, /* eSPI */
+ 	[ASPEED_CLK_GATE_MAC1CLK] =	{ 20, 11, "mac1clk-gate",	"mac",	0 }, /* MAC1 */
+ 	[ASPEED_CLK_GATE_MAC2CLK] =	{ 21, 12, "mac2clk-gate",	"mac",	0 }, /* MAC2 */
+ 	[ASPEED_CLK_GATE_RSACLK] =	{ 24, -1, "rsaclk-gate",	NULL,	0 }, /* RSA */
+-- 
+2.7.4
 
-With this restriction I cannot even run an application that waits for the
-SOURCE_CHANGE event to start streaming, such as 'v4l2-ctl --stream-mmap'
-does because the open() will fail immediately.
-
-Sorry, this is really wrong.
-
-Regards,
-
-	Hans
