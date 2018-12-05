@@ -1,67 +1,59 @@
-From: Joel Stanley <joel@jms.id.au>
-Date: Wed, 5 Dec 2018 10:21:08 +1030
-Subject: [GIT PULL] ARM: aspeed: dts changes for 4.21
-Message-ID: <CACPK8XcioxMDmJpKxdA7xfSmvEy++LUtELGOxRaoBFB0cT0RSA@mail.gmail.com>
+From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+Date: Wed, 5 Dec 2018 09:04:30 -0600
+Subject: [PATCH v2] clk: aspeed: Mark lclk (LPC) and espiclk (eSPI) as
+ critical
+In-Reply-To: <154395687459.88331.13570416457347078441@swboyd.mtv.corp.google.com>
+References: <20181204185054.24053-1-jae.hyun.yoo@linux.intel.com>
+ <CACPK8XcwMMoxG6vhDhUU8RYGABx7rtBoxJvp2yDhHeD-PemdqA@mail.gmail.com>
+ <154395687459.88331.13570416457347078441@swboyd.mtv.corp.google.com>
+Message-ID: <697a184b-ef99-a46e-bf98-4d339b3aafd8@linux.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello ARM maintainers,
+On 12/4/2018 2:54 PM, Stephen Boyd wrote:
+> Quoting Joel Stanley (2018-12-04 12:51:43)
+>> Hi Jae,
+>>
+>> On Wed, 5 Dec 2018 at 05:20, Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com> wrote:
+>>>
+>>> These interfaces are used by host to talk to BMC, and the clock
+>>> source is from the host, usually from PCH. So this commit marks
+>>> the lclk as critical to make it able to be enabled. Also, it marks
+>>> espiclk too because eSPI is sharing the same interface with LPC.
+>>
+>> While this is true on the platform you have in mind, on other
+>> platforms this is not the case. They do not use eSPI, and LCLK is
+>> enabled by the driver that is used to configure LPC
+>> (drivers/misc/aspeed-lpc-ctrl.c):
+>>
+>>   lpc_ctrl: lpc-ctrl at 0 {
+>>       compatible = "aspeed,ast2400-lpc-ctrl";
+>>       reg = <0x0 0x80>;
+>>       clocks = <&syscon ASPEED_CLK_GATE_LCLK>;
+>>   }
+>>
+>> I wonder if we need a device tree binding to describe which clocks are critical.
+> 
+> A binding to describe critical clks has been rejected in the past. I
+> don't think we need to have it here either? More information on why
+> things are being marked critical will be helpful to see if we need to
+> re-open that discussion again.
+> 
+>>
+>> Stephen, please don't merge this patch yet.
+>>
+> 
+> Sure.
+> 
 
-Here's the ASPEED pull request. A new system from Facebook and some
-small updates that were being carried in the OpenBMC kernel tree.
-Thanks!
+Hi Stephen and Joel,
 
-The following changes since commit 651022382c7f8da46cb4872a545ee1da6d097d2a:
+Thanks for blocking this patch. We checked that LCLK gate can be opened
+by enabling lpc-ctrl node without using this change. Please drop this
+patch.
 
-  Linux 4.20-rc1 (2018-11-04 15:37:52 -0800)
-
-are available in the Git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/joel/aspeed.git \
-    tags/aspeed-4.21-devicetree
-
-for you to fetch changes up to 76d0bbd8a4ef1b1256d49e082a61a33eb0b004c7:
-
-  ARM: dts: aspeed: Add Facebook Backpack-CMM BMC (2018-12-03 09:17:15 +1030)
-
-----------------------------------------------------------------
-ASPEED device tree updates for 4.20
-
- - New machine: Facebook Backpack-CMM BMC and flash layout
-
- - OpenPower reference systems (Palmetto P8, Romulus P9) move to the
-   ColdFire based FSI driver
-
- - Misc device tree updates from the OpenBMC project
-
-----------------------------------------------------------------
-Benjamin Herrenschmidt (2):
-      ARM: dts: aspeed: Romulus system can use coprocessor for FSI
-      ARM: dts: aspeed: Palmetto system can use coprocessor for FSI
-
-Joel Stanley (2):
-      ARM: dts: aspeed-palmetto: Add LPC control node
-      ARM: dts: aspeed: Enable VHUB on Romulus
-
-Lei YU (1):
-      ARM: dts: aspeed: romulus: Enable iio-hwmon-battery
-
-Matt Spinler (1):
-      ARM: dts: aspeed: wspoon: Enable iio-hwmon battery
-
-Tao Ren (2):
-      ARM: dts: Add Facebook BMC flash layout
-      ARM: dts: aspeed: Add Facebook Backpack-CMM BMC
-
- arch/arm/boot/dts/Makefile                       |   1 +
- arch/arm/boot/dts/aspeed-bmc-facebook-cmm.dts    | 368 +++++++++++++++++++++++
- arch/arm/boot/dts/aspeed-bmc-opp-palmetto.dts    |  39 ++-
- arch/arm/boot/dts/aspeed-bmc-opp-romulus.dts     |  24 +-
- arch/arm/boot/dts/aspeed-bmc-opp-witherspoon.dts |   9 +
- arch/arm/boot/dts/facebook-bmc-flash-layout.dtsi |  42 +++
- 6 files changed, 475 insertions(+), 8 deletions(-)
- create mode 100644 arch/arm/boot/dts/aspeed-bmc-facebook-cmm.dts
- create mode 100644 arch/arm/boot/dts/facebook-bmc-flash-layout.dtsi
+Thanks,
+Jae
