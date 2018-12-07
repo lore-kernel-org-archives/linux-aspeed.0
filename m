@@ -1,76 +1,22 @@
-From: Vijay Khemka <vijaykhemka@fb.com>
-Date: Mon, 10 Dec 2018 12:07:51 -0800
-Subject: [PATCH 1/2] ARM: dts: aspeed: Add KCS & lpc ctrl for Facebook
-Message-ID: <20181210200753.3018124-1-vijaykhemka@fb.com>
+From: Linus Walleij <linus.walleij@linaro.org>
+Date: Fri, 7 Dec 2018 11:16:51 +0100
+Subject: [PATCH] iio: adc: Replace license text w/ SPDX identifier
+In-Reply-To: <20181201165550.51a78366@archlinux>
+References: <20181128175312.9634-1-matheus.bernardino@usp.br>
+ <20181201165550.51a78366@archlinux>
+Message-ID: <CACRpkdaHSZ-WSGo+CcCrMPc=z4Ofy6oG3kxhTGxQJABEw2DF0w@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Added kcs device and lpc ctrl device to enable LPC clock in Facebook
-Tiogapass device tree.
+On Sat, Dec 1, 2018 at 5:56 PM Jonathan Cameron <jic23@kernel.org> wrote:
 
-Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
----
- .../dts/aspeed-bmc-facebook-tiogapass.dts     | 30 +++++++++++++++++++
- 1 file changed, 30 insertions(+)
+> +CC Linus Walleij as one of his files doesn't have a license...
 
-diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
-index d9d7f208788a..9544fa2c1822 100644
---- a/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
-@@ -21,6 +21,18 @@
- 	memory at 80000000 {
- 		reg = <0x80000000 0x20000000>;
- 	};
-+
-+	reserved-memory {
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		ranges;
-+
-+		flash_memory: region at 98000000 {
-+			no-map;
-+			reg = <0x98000000 0x04000000>; /* 64M */
-+		};
-+	};
-+
- 	iio-hwmon {
- 		compatible = "iio-hwmon";
- 		oemname0 = "MB_P3V3";
-@@ -62,6 +74,12 @@
- 	};
- };
- 
-+&lpc_ctrl {
-+	status = "okay";
-+	memory-region = <&flash_memory>;
-+	flash = <&spi1>;
-+};
-+
- &uart1 {
- 	// Host Console
- 	status = "okay";
-@@ -75,6 +93,18 @@
- 	status = "okay";
- };
- 
-+&kcs2 {
-+	// BMC KCS channel 2
-+	status = "okay";
-+	kcs_addr = <0xca8>;
-+};
-+
-+&kcs3 {
-+	// BMC KCS channel 3
-+	status = "okay";
-+	kcs_addr = <0xca2>;
-+};
-+
- &mac0 {
- 	status = "okay";
- 
--- 
-2.17.1
+Sorry about that. I am fine with GPL-2.0 or GPL-2.0+ on
+any of "my" files. Feel free to add it with my Acked-by.
 
+Yours,
+Linus Walleij
