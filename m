@@ -1,70 +1,90 @@
 From: Vijay Khemka <vijaykhemka@fb.com>
-Date: Mon, 10 Dec 2018 22:39:50 +0000
-Subject: [PATCH] ARM: dts: aspeed: Add KCS support for LPC BMC
-In-Reply-To: <20181210200753.3018124-2-vijaykhemka@fb.com>
-References: <20181210200753.3018124-1-vijaykhemka@fb.com>
- <20181210200753.3018124-2-vijaykhemka@fb.com>
-Message-ID: <6061E60A-78CD-4C4C-A35C-0AD90BFC4286@fb.com>
+Date: Mon, 10 Dec 2018 14:41:16 -0800
+Subject: [PATCH] ARM: dts: aspeed: Add sensors devices for Facebook
+Message-ID: <20181210224116.3396252-1-vijaykhemka@fb.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Please ignore this patch as it is duplicate. It is included in list of 2 patches I have sent just before.
+Added ADC and other sensor devices in Facebook Tiogapass device tree.
 
-?On 12/10/18, 12:08 PM, "Vijay Khemka" <vijaykhemka@fb.com> wrote:
+Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
+---
+ .../dts/aspeed-bmc-facebook-tiogapass.dts     | 33 +++++++++++++++++--
+ 1 file changed, 31 insertions(+), 2 deletions(-)
 
-    Added kcs device support for lpc BMC.
-    
-    Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
-    ---
-     arch/arm/boot/dts/aspeed-g5.dtsi | 29 ++++++++++++++++++++++++++++-
-     1 file changed, 28 insertions(+), 1 deletion(-)
-    
-    diff --git a/arch/arm/boot/dts/aspeed-g5.dtsi b/arch/arm/boot/dts/aspeed-g5.dtsi
-    index d107459fc0f8..1bd48655bacb 100644
-    --- a/arch/arm/boot/dts/aspeed-g5.dtsi
-    +++ b/arch/arm/boot/dts/aspeed-g5.dtsi
-    @@ -330,8 +330,35 @@
-     				ranges = <0x0 0x1e789000 0x1000>;
-     
-     				lpc_bmc: lpc-bmc at 0 {
-    -					compatible = "aspeed,ast2500-lpc-bmc";
-    +					compatible = "aspeed,ast2500-lpc-bmc, "simple-mfd", "syscon"";
-     					reg = <0x0 0x80>;
-    +					reg-io-width = <4>;
-    +
-    +					#address-cells = <1>;
-    +					#size-cells = <1>;
-    +					ranges = <0x0 0x0 0x80>;
-    +
-    +					kcs1: kcs1 at 0 {
-    +						compatible = "aspeed,ast2500-kcs-bmc";
-    +						reg = <0x0 0x80>;
-    +						interrupts = <8>;
-    +						kcs_chan = <1>;
-    +						status = "disabled";
-    +					};
-    +					kcs2: kcs2 at 0 {
-    +						compatible = "aspeed,ast2500-kcs-bmc";
-    +						reg = <0x0 0x80>;
-    +						interrupts = <8>;
-    +						kcs_chan = <2>;
-    +						status = "disabled";
-    +					};
-    +					kcs3: kcs3 at 0 {
-    +						compatible = "aspeed,ast2500-kcs-bmc";
-    +						reg = <0x0 0x80>;
-    +						interrupts = <8>;
-    +						kcs_chan = <3>;
-    +						status = "disabled";
-    +					};
-     				};
-     
-     				lpc_host: lpc-host at 80 {
-    -- 
-    2.17.1
-    
-    
+diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
+index f8e7b71af7e6..d9d7f208788a 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
+@@ -21,6 +21,25 @@
+ 	memory at 80000000 {
+ 		reg = <0x80000000 0x20000000>;
+ 	};
++	iio-hwmon {
++		compatible = "iio-hwmon";
++		oemname0 = "MB_P3V3";
++		oemname1 = "MB_P5V";
++		oemname2 = "MB_P12V";
++		oemname3 = "MB_P1V05";
++		oemname4 = "MB_PVNN_PCH_STBY";
++		oemname5 = "MB_P3V3_STBY";
++		oemname6 = "MB_P5V_STBY";
++		io-channels = <&adc 0>, <&adc 1>, <&adc 2>, <&adc 3>,
++					<&adc 4>, <&adc 5>, <&adc 6>;
++	};
++
++	iio-hwmon-battery {
++		oemname0 = "MB_P3V_BAT";
++		compatible = "iio-hwmon";
++		io-channels = <&adc 7>;
++	};
++
+ };
+ 
+ &fmc {
+@@ -64,6 +83,10 @@
+ 	use-ncsi;
+ };
+ 
++&adc {
++	status = "okay";
++};
++
+ &i2c0 {
+ 	status = "okay";
+ 	//Airmax Conn B, CPU0 PIROM, CPU1 PIROM
+@@ -122,6 +145,10 @@
+ 
+ &i2c8 {
+ 	status = "okay";
++	tmp421 at 1f {
++		compatible = "ti,tmp421";
++		reg = <0x1f>;
++	};
+ 	//Mezz Sensor SMBus
+ };
+ 
+@@ -134,13 +161,15 @@
+ 	status = "okay";
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&pinctrl_pwm0_default &pinctrl_pwm1_default>;
++	oemname0 = "System_Fan_Connector_1";
++	oemname1 = "System_Fan_Connector_3";
+ 	fan at 0 {
+ 		reg = <0x00>;
+ 		aspeed,fan-tach-ch = /bits/ 8 <0x00>;
+ 	};
+ 
+ 	fan at 1 {
+-		reg = <0x00>;
+-		aspeed,fan-tach-ch = /bits/ 8 <0x01>;
++		reg = <0x01>;
++		aspeed,fan-tach-ch = /bits/ 8 <0x02>;
+ 	};
+ };
+-- 
+2.17.1
 
