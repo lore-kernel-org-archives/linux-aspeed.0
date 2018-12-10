@@ -1,9 +1,9 @@
 From: Vijay Khemka <vijaykhemka@fb.com>
-Date: Mon, 10 Dec 2018 12:07:52 -0800
-Subject: [PATCH] ARM: dts: aspeed: Add KCS support for LPC BMC
+Date: Mon, 10 Dec 2018 12:07:53 -0800
+Subject: [PATCH 2/2] ARM: dts: aspeed: Add KCS support for LPC BMC
 In-Reply-To: <20181210200753.3018124-1-vijaykhemka@fb.com>
 References: <20181210200753.3018124-1-vijaykhemka@fb.com>
-Message-ID: <20181210200753.3018124-2-vijaykhemka@fb.com>
+Message-ID: <20181210200753.3018124-3-vijaykhemka@fb.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
