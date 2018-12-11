@@ -1,90 +1,44 @@
-From: Vijay Khemka <vijaykhemka@fb.com>
-Date: Mon, 10 Dec 2018 14:41:16 -0800
-Subject: [PATCH] ARM: dts: aspeed: Add sensors devices for Facebook
-Message-ID: <20181210224116.3396252-1-vijaykhemka@fb.com>
+From: Andrew Jeffery <andrew@aj.id.au>
+Date: Tue, 11 Dec 2018 10:40:06 +1030
+Subject: [PATCH] pinctrl: aspeed: Wrap -Woverride-init with cc-option
+In-Reply-To: <20181211000506.7559-1-natechancellor@gmail.com>
+References: <20181211000506.7559-1-natechancellor@gmail.com>
+Message-ID: <1544487006.3301683.1605247720.567E9685@webmail.messagingengine.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Added ADC and other sensor devices in Facebook Tiogapass device tree.
 
-Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
----
- .../dts/aspeed-bmc-facebook-tiogapass.dts     | 33 +++++++++++++++++--
- 1 file changed, 31 insertions(+), 2 deletions(-)
 
-diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
-index f8e7b71af7e6..d9d7f208788a 100644
---- a/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
-@@ -21,6 +21,25 @@
- 	memory at 80000000 {
- 		reg = <0x80000000 0x20000000>;
- 	};
-+	iio-hwmon {
-+		compatible = "iio-hwmon";
-+		oemname0 = "MB_P3V3";
-+		oemname1 = "MB_P5V";
-+		oemname2 = "MB_P12V";
-+		oemname3 = "MB_P1V05";
-+		oemname4 = "MB_PVNN_PCH_STBY";
-+		oemname5 = "MB_P3V3_STBY";
-+		oemname6 = "MB_P5V_STBY";
-+		io-channels = <&adc 0>, <&adc 1>, <&adc 2>, <&adc 3>,
-+					<&adc 4>, <&adc 5>, <&adc 6>;
-+	};
-+
-+	iio-hwmon-battery {
-+		oemname0 = "MB_P3V_BAT";
-+		compatible = "iio-hwmon";
-+		io-channels = <&adc 7>;
-+	};
-+
- };
- 
- &fmc {
-@@ -64,6 +83,10 @@
- 	use-ncsi;
- };
- 
-+&adc {
-+	status = "okay";
-+};
-+
- &i2c0 {
- 	status = "okay";
- 	//Airmax Conn B, CPU0 PIROM, CPU1 PIROM
-@@ -122,6 +145,10 @@
- 
- &i2c8 {
- 	status = "okay";
-+	tmp421 at 1f {
-+		compatible = "ti,tmp421";
-+		reg = <0x1f>;
-+	};
- 	//Mezz Sensor SMBus
- };
- 
-@@ -134,13 +161,15 @@
- 	status = "okay";
- 	pinctrl-names = "default";
- 	pinctrl-0 = <&pinctrl_pwm0_default &pinctrl_pwm1_default>;
-+	oemname0 = "System_Fan_Connector_1";
-+	oemname1 = "System_Fan_Connector_3";
- 	fan at 0 {
- 		reg = <0x00>;
- 		aspeed,fan-tach-ch = /bits/ 8 <0x00>;
- 	};
- 
- 	fan at 1 {
--		reg = <0x00>;
--		aspeed,fan-tach-ch = /bits/ 8 <0x01>;
-+		reg = <0x01>;
-+		aspeed,fan-tach-ch = /bits/ 8 <0x02>;
- 	};
- };
--- 
-2.17.1
+On Tue, 11 Dec 2018, at 10:35, Nathan Chancellor wrote:
+> Clang does not support this option:
+> 
+> warning: unknown warning option '-Woverride-init'; did you mean
+> '-Woverride-module'? [-Wunknown-warning-option]
+> 1 warning generated.
+> 
+> Signed-off-by: Nathan Chancellor <natechancellor@gmail.com>
 
+Acked-by: Andrew Jeffery <andrew@aj.id.au>
+
+> ---
+>  drivers/pinctrl/aspeed/Makefile | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/pinctrl/aspeed/Makefile b/drivers/pinctrl/aspeed/Makefile
+> index 191ed0fc1804..790b406aae19 100644
+> --- a/drivers/pinctrl/aspeed/Makefile
+> +++ b/drivers/pinctrl/aspeed/Makefile
+> @@ -1,6 +1,6 @@
+>  # Aspeed pinctrl support
+>  
+> -ccflags-y += -Woverride-init
+> +ccflags-y += $(call cc-option,-Woverride-init)
+>  obj-$(CONFIG_PINCTRL_ASPEED)	+= pinctrl-aspeed.o
+>  obj-$(CONFIG_PINCTRL_ASPEED_G4)	+= pinctrl-aspeed-g4.o
+>  obj-$(CONFIG_PINCTRL_ASPEED_G5)	+= pinctrl-aspeed-g5.o
+> -- 
+> 2.20.0
+> 
