@@ -1,102 +1,76 @@
 From: Vijay Khemka <vijaykhemka@fb.com>
-Date: Tue, 11 Dec 2018 18:55:40 +0000
-Subject: [PATCH 2/2] ARM: dts: aspeed: Add KCS support for LPC BMC
-In-Reply-To: <584ddf6f-2e0c-5c1c-df06-bdd37ecd2489@linux.intel.com>
-References: <20181210200753.3018124-1-vijaykhemka@fb.com>
- <20181210200753.3018124-3-vijaykhemka@fb.com>
- <584ddf6f-2e0c-5c1c-df06-bdd37ecd2489@linux.intel.com>
-Message-ID: <CA2566BA-428C-4D5A-8B37-835638252B0C@fb.com>
+Date: Tue, 11 Dec 2018 11:02:45 -0800
+Subject: [PATCH v2 1/2] ARM: dts: aspeed: Add KCS & lpc ctrl for Facebook
+Message-ID: <20181211190246.2134590-1-vijaykhemka@fb.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Thanks Jay,
-I will take care of your comments and send next version.
+Added kcs device and lpc ctrl device to enable LPC clock in Facebook
+Tiogapass device tree.
 
-Regards
--Vijay
+Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
+---
+ .../dts/aspeed-bmc-facebook-tiogapass.dts     | 30 +++++++++++++++++++
+ 1 file changed, 30 insertions(+)
 
-?On 12/11/18, 10:40 AM, "Jae Hyun Yoo" <jae.hyun.yoo@linux.intel.com> wrote:
-
-    Hi Vijay,
-    
-    On 12/10/2018 12:07 PM, Vijay Khemka wrote:
-    > Added kcs device support for lpc BMC.
-    > 
-    > Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
-    > ---
-    >   arch/arm/boot/dts/aspeed-g5.dtsi | 29 ++++++++++++++++++++++++++++-
-    >   1 file changed, 28 insertions(+), 1 deletion(-)
-    > 
-    > diff --git a/arch/arm/boot/dts/aspeed-g5.dtsi b/arch/arm/boot/dts/aspeed-g5.dtsi
-    > index d107459fc0f8..1bd48655bacb 100644
-    > --- a/arch/arm/boot/dts/aspeed-g5.dtsi
-    > +++ b/arch/arm/boot/dts/aspeed-g5.dtsi
-    > @@ -330,8 +330,35 @@
-    >   				ranges = <0x0 0x1e789000 0x1000>;
-    >   
-    >   				lpc_bmc: lpc-bmc at 0 {
-    > -					compatible = "aspeed,ast2500-lpc-bmc";
-    > +					compatible = "aspeed,ast2500-lpc-bmc, "simple-mfd", "syscon"";
-    >   					reg = <0x0 0x80>;
-    > +					reg-io-width = <4>;
-    > +
-    > +					#address-cells = <1>;
-    > +					#size-cells = <1>;
-    > +					ranges = <0x0 0x0 0x80>;
-    > +
-    > +					kcs1: kcs1 at 0 {
-    > +						compatible = "aspeed,ast2500-kcs-bmc";
-    > +						reg = <0x0 0x80>;
-    
-    This reg property isn't needed at here because kcs_bmc_aspeed module
-    reads regmap from the parent node. Please check below code in the
-    driver code.
-    
-    priv->map = syscon_node_to_regmap(dev->parent->of_node);
-    
-    > +						interrupts = <8>;
-    > +						kcs_chan = <1>;
-    > +						status = "disabled";
-    > +					};
-    > +					kcs2: kcs2 at 0 {
-    > +						compatible = "aspeed,ast2500-kcs-bmc";
-    > +						reg = <0x0 0x80>;
-    
-    ditto.
-    
-    > +						interrupts = <8>;
-    > +						kcs_chan = <2>;
-    > +						status = "disabled";
-    > +					};
-    > +					kcs3: kcs3 at 0 {
-    > +						compatible = "aspeed,ast2500-kcs-bmc";
-    > +						reg = <0x0 0x80>;
-    
-    ditto.
-    
-    > +						interrupts = <8>;
-    > +						kcs_chan = <3>;
-    > +						status = "disabled";
-    > +					};
-    >   				};
-    >   
-    >   				lpc_host: lpc-host at 80 {
-    > 
-    
-    You might need to add kcs4 as a sub-node under lpc_host like below:
-    
-    kcs4: kcs4 at 0 {
-    	compatible = "aspeed,ast2500-kcs-bmc";
-    	interrupts = <8>;
-    	kcs_chan = <4>;
-    	status = "disabled";
-    };
-    
-    This would be uses as an SMM channel.
-    
-    -Jae
-    
+diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
+index d9d7f208788a..9544fa2c1822 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
+@@ -21,6 +21,18 @@
+ 	memory at 80000000 {
+ 		reg = <0x80000000 0x20000000>;
+ 	};
++
++	reserved-memory {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		ranges;
++
++		flash_memory: region at 98000000 {
++			no-map;
++			reg = <0x98000000 0x04000000>; /* 64M */
++		};
++	};
++
+ 	iio-hwmon {
+ 		compatible = "iio-hwmon";
+ 		oemname0 = "MB_P3V3";
+@@ -62,6 +74,12 @@
+ 	};
+ };
+ 
++&lpc_ctrl {
++	status = "okay";
++	memory-region = <&flash_memory>;
++	flash = <&spi1>;
++};
++
+ &uart1 {
+ 	// Host Console
+ 	status = "okay";
+@@ -75,6 +93,18 @@
+ 	status = "okay";
+ };
+ 
++&kcs2 {
++	// BMC KCS channel 2
++	status = "okay";
++	kcs_addr = <0xca8>;
++};
++
++&kcs3 {
++	// BMC KCS channel 3
++	status = "okay";
++	kcs_addr = <0xca2>;
++};
++
+ &mac0 {
+ 	status = "okay";
+ 
+-- 
+2.17.1
 
