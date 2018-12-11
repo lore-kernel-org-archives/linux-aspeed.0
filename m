@@ -1,74 +1,27 @@
-From: Vijay Khemka <vijaykhemka@fb.com>
-Date: Tue, 11 Dec 2018 11:37:19 -0800
-Subject: [PATCH v3 2/2] ARM: dts: aspeed: Add KCS support for LPC BMC
-In-Reply-To: <20181211193719.2232084-1-vijaykhemka@fb.com>
-References: <20181211193719.2232084-1-vijaykhemka@fb.com>
-Message-ID: <20181211193719.2232084-2-vijaykhemka@fb.com>
+From: Eddie James <eajames@linux.ibm.com>
+Date: Tue, 11 Dec 2018 14:12:39 -0600
+Subject: [PATCH 0/2] clk: aspeed: Setup video engine clocking
+Message-ID: <1544559161-21468-1-git-send-email-eajames@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Added kcs device support for lpc BMC.
+This series adds the parent clock definitions and muxing for the AST2xxx
+video engine.
 
-Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
----
- arch/arm/boot/dts/aspeed-g5.dtsi | 33 +++++++++++++++++++++++++++++++-
- 1 file changed, 32 insertions(+), 1 deletion(-)
+I sent this series before as part of my first patch set for the video engine,
+but probably better to send it separately.
 
-diff --git a/arch/arm/boot/dts/aspeed-g5.dtsi b/arch/arm/boot/dts/aspeed-g5.dtsi
-index d107459fc0f8..53e6ce4092dd 100644
---- a/arch/arm/boot/dts/aspeed-g5.dtsi
-+++ b/arch/arm/boot/dts/aspeed-g5.dtsi
-@@ -330,8 +330,32 @@
- 				ranges = <0x0 0x1e789000 0x1000>;
- 
- 				lpc_bmc: lpc-bmc at 0 {
--					compatible = "aspeed,ast2500-lpc-bmc";
-+					compatible = "aspeed,ast2500-lpc-bmc, "simple-mfd", "syscon"";
- 					reg = <0x0 0x80>;
-+					reg-io-width = <4>;
-+
-+					#address-cells = <1>;
-+					#size-cells = <1>;
-+					ranges = <0x0 0x0 0x80>;
-+
-+					kcs1: kcs1 at 0 {
-+						compatible = "aspeed,ast2500-kcs-bmc";
-+						interrupts = <8>;
-+						kcs_chan = <1>;
-+						status = "disabled";
-+					};
-+					kcs2: kcs2 at 0 {
-+						compatible = "aspeed,ast2500-kcs-bmc";
-+						interrupts = <8>;
-+						kcs_chan = <2>;
-+						status = "disabled";
-+					};
-+					kcs3: kcs3 at 0 {
-+						compatible = "aspeed,ast2500-kcs-bmc";
-+						interrupts = <8>;
-+						kcs_chan = <3>;
-+						status = "disabled";
-+					};
- 				};
- 
- 				lpc_host: lpc-host at 80 {
-@@ -343,6 +367,13 @@
- 					#size-cells = <1>;
- 					ranges = <0x0 0x80 0x1e0>;
- 
-+					kcs4: kcs4 at 0 {
-+						compatible = "aspeed,ast2500-kcs-bmc";
-+						interrupts = <8>;
-+						kcs_chan = <4>;
-+						status = "disabled";
-+					};
-+
- 					lpc_ctrl: lpc-ctrl at 0 {
- 						compatible = "aspeed,ast2500-lpc-ctrl";
- 						reg = <0x0 0x80>;
+Eddie James (2):
+  clk: aspeed: Add video engine reset index definition
+  clk: aspeed: Setup video engine clocking
+
+ drivers/clk/clk-aspeed.c                 | 41 ++++++++++++++++++++++++++++++--
+ include/dt-bindings/clock/aspeed-clock.h |  1 +
+ 2 files changed, 40 insertions(+), 2 deletions(-)
+
 -- 
-2.17.1
+1.8.3.1
 
