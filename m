@@ -1,27 +1,36 @@
 From: Eddie James <eajames@linux.ibm.com>
-Date: Tue, 11 Dec 2018 14:12:39 -0600
-Subject: [PATCH 0/2] clk: aspeed: Setup video engine clocking
-Message-ID: <1544559161-21468-1-git-send-email-eajames@linux.ibm.com>
+Date: Tue, 11 Dec 2018 14:12:40 -0600
+Subject: [PATCH 1/2] clk: aspeed: Add video engine reset index definition
+In-Reply-To: <1544559161-21468-1-git-send-email-eajames@linux.ibm.com>
+References: <1544559161-21468-1-git-send-email-eajames@linux.ibm.com>
+Message-ID: <1544559161-21468-2-git-send-email-eajames@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This series adds the parent clock definitions and muxing for the AST2xxx
-video engine.
+Add an index into the array of resets kept in the Aspeed clock driver
+for the video engine. This isn't a HW bit definition.
 
-I sent this series before as part of my first patch set for the video engine,
-but probably better to send it separately.
+Signed-off-by: Eddie James <eajames@linux.ibm.com>
+Acked-by: Stephen Boyd <sboyd@kernel.org>
+Reviewed-by: Rob Herring <robh@kernel.org>
+---
+ include/dt-bindings/clock/aspeed-clock.h | 1 +
+ 1 file changed, 1 insertion(+)
 
-Eddie James (2):
-  clk: aspeed: Add video engine reset index definition
-  clk: aspeed: Setup video engine clocking
-
- drivers/clk/clk-aspeed.c                 | 41 ++++++++++++++++++++++++++++++--
- include/dt-bindings/clock/aspeed-clock.h |  1 +
- 2 files changed, 40 insertions(+), 2 deletions(-)
-
+diff --git a/include/dt-bindings/clock/aspeed-clock.h b/include/dt-bindings/clock/aspeed-clock.h
+index f437386..15a9059 100644
+--- a/include/dt-bindings/clock/aspeed-clock.h
++++ b/include/dt-bindings/clock/aspeed-clock.h
+@@ -50,5 +50,6 @@
+ #define ASPEED_RESET_I2C		7
+ #define ASPEED_RESET_AHB		8
+ #define ASPEED_RESET_CRT1		9
++#define ASPEED_RESET_VIDEO		10
+ 
+ #endif
 -- 
 1.8.3.1
 
