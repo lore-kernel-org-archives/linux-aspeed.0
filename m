@@ -1,76 +1,32 @@
-From: Vijay Khemka <vijaykhemka@fb.com>
-Date: Wed, 12 Dec 2018 13:03:51 -0800
-Subject: [PATCH v4 1/2] ARM: dts: aspeed: Add KCS & lpc ctrl for Facebook
-Message-ID: <20181212210352.1717617-1-vijaykhemka@fb.com>
+From: Tao Ren <taoren@fb.com>
+Date: Wed, 12 Dec 2018 13:53:05 -0800
+Subject: [PATCH] gpio: aspeed: remove duplicated statement
+Message-ID: <20181212215305.3852170-1-taoren@fb.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Added kcs device and lpc ctrl device to enable LPC clock in Facebook
-Tiogapass device tree.
+Remove duplicated assignment statement from aspeed_gpio_probe() function.
 
-Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
+Signed-off-by: Tao Ren <taoren@fb.com>
 ---
- .../dts/aspeed-bmc-facebook-tiogapass.dts     | 30 +++++++++++++++++++
- 1 file changed, 30 insertions(+)
+ drivers/gpio/gpio-aspeed.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
-index d9d7f208788a..9544fa2c1822 100644
---- a/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
-@@ -21,6 +21,18 @@
- 	memory at 80000000 {
- 		reg = <0x80000000 0x20000000>;
- 	};
-+
-+	reserved-memory {
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		ranges;
-+
-+		flash_memory: region at 98000000 {
-+			no-map;
-+			reg = <0x98000000 0x04000000>; /* 64M */
-+		};
-+	};
-+
- 	iio-hwmon {
- 		compatible = "iio-hwmon";
- 		oemname0 = "MB_P3V3";
-@@ -62,6 +74,12 @@
- 	};
- };
+diff --git a/drivers/gpio/gpio-aspeed.c b/drivers/gpio/gpio-aspeed.c
+index 2342e154029b..854bce4fb9e7 100644
+--- a/drivers/gpio/gpio-aspeed.c
++++ b/drivers/gpio/gpio-aspeed.c
+@@ -1185,7 +1185,6 @@ static int __init aspeed_gpio_probe(struct platform_device *pdev)
  
-+&lpc_ctrl {
-+	status = "okay";
-+	memory-region = <&flash_memory>;
-+	flash = <&spi1>;
-+};
-+
- &uart1 {
- 	// Host Console
- 	status = "okay";
-@@ -75,6 +93,18 @@
- 	status = "okay";
- };
- 
-+&kcs2 {
-+	// BMC KCS channel 2
-+	status = "okay";
-+	kcs_addr = <0xca8>;
-+};
-+
-+&kcs3 {
-+	// BMC KCS channel 3
-+	status = "okay";
-+	kcs_addr = <0xca2>;
-+};
-+
- &mac0 {
- 	status = "okay";
- 
+ 	gpio->chip.parent = &pdev->dev;
+ 	gpio->chip.ngpio = gpio->config->nr_gpios;
+-	gpio->chip.parent = &pdev->dev;
+ 	gpio->chip.direction_input = aspeed_gpio_dir_in;
+ 	gpio->chip.direction_output = aspeed_gpio_dir_out;
+ 	gpio->chip.get_direction = aspeed_gpio_get_direction;
 -- 
 2.17.1
 
