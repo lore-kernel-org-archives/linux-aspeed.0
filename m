@@ -1,74 +1,58 @@
 From: Vijay Khemka <vijaykhemka@fb.com>
-Date: Thu, 13 Dec 2018 11:53:17 -0800
-Subject: [PATCH 2/4] ARM: dts: aspeed: Add KCS support for LPC BMC
+Date: Thu, 13 Dec 2018 11:53:19 -0800
+Subject: [PATCH 4/4] ARM: dts: aspeed: Add lpc ctrl for Facebook
 In-Reply-To: <20181213195319.1333402-1-vijaykhemka@fb.com>
 References: <20181213195319.1333402-1-vijaykhemka@fb.com>
-Message-ID: <20181213195319.1333402-2-vijaykhemka@fb.com>
+Message-ID: <20181213195319.1333402-4-vijaykhemka@fb.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Added kcs device support for lpc BMC.
+Added lpc ctrl device to enable LPC clock in Facebook
+Tiogapass device tree.
 
 Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
 ---
- arch/arm/boot/dts/aspeed-g5.dtsi | 33 +++++++++++++++++++++++++++++++-
- 1 file changed, 32 insertions(+), 1 deletion(-)
+ .../boot/dts/aspeed-bmc-facebook-tiogapass.dts  | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
 
-diff --git a/arch/arm/boot/dts/aspeed-g5.dtsi b/arch/arm/boot/dts/aspeed-g5.dtsi
-index d107459fc0f8..2743f400aa29 100644
---- a/arch/arm/boot/dts/aspeed-g5.dtsi
-+++ b/arch/arm/boot/dts/aspeed-g5.dtsi
-@@ -330,8 +330,32 @@
- 				ranges = <0x0 0x1e789000 0x1000>;
+diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
+index b99751b3e080..084110007f5d 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
+@@ -22,6 +22,17 @@
+ 		reg = <0x80000000 0x20000000>;
+ 	};
  
- 				lpc_bmc: lpc-bmc at 0 {
--					compatible = "aspeed,ast2500-lpc-bmc";
-+					compatible = "aspeed,ast2500-lpc-bmc", "simple-mfd", "syscon";
- 					reg = <0x0 0x80>;
-+					reg-io-width = <4>;
++	reserved-memory {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		ranges;
 +
-+					#address-cells = <1>;
-+					#size-cells = <1>;
-+					ranges = <0x0 0x0 0x80>;
++		flash_memory: region at 98000000 {
++			no-map;
++			reg = <0x98000000 0x00001000>; /* 4K */
++		};
++	};
 +
-+					kcs1: kcs1 at 0 {
-+						compatible = "aspeed,ast2500-kcs-bmc";
-+						interrupts = <8>;
-+						kcs_chan = <1>;
-+						status = "disabled";
-+					};
-+					kcs2: kcs2 at 0 {
-+						compatible = "aspeed,ast2500-kcs-bmc";
-+						interrupts = <8>;
-+						kcs_chan = <2>;
-+						status = "disabled";
-+					};
-+					kcs3: kcs3 at 0 {
-+						compatible = "aspeed,ast2500-kcs-bmc";
-+						interrupts = <8>;
-+						kcs_chan = <3>;
-+						status = "disabled";
-+					};
- 				};
+ 	iio-hwmon {
+ 		compatible = "iio-hwmon";
+ 		oemname0 = "MB_P3V3";
+@@ -62,6 +73,12 @@
+ 	};
+ };
  
- 				lpc_host: lpc-host at 80 {
-@@ -343,6 +367,13 @@
- 					#size-cells = <1>;
- 					ranges = <0x0 0x80 0x1e0>;
- 
-+					kcs4: kcs4 at 0 {
-+						compatible = "aspeed,ast2500-kcs-bmc";
-+						interrupts = <8>;
-+						kcs_chan = <4>;
-+						status = "disabled";
-+					};
++&lpc_ctrl {
++	status = "okay";
++	memory-region = <&flash_memory>;
++	flash = <&spi1>;
++};
 +
- 					lpc_ctrl: lpc-ctrl at 0 {
- 						compatible = "aspeed,ast2500-lpc-ctrl";
- 						reg = <0x0 0x80>;
+ &uart1 {
+ 	// Host Console
+ 	status = "okay";
 -- 
 2.17.1
 
