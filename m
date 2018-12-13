@@ -1,107 +1,90 @@
 From: Vijay Khemka <vijaykhemka@fb.com>
-Date: Thu, 13 Dec 2018 19:18:27 +0000
-Subject: [PATCH v4 1/2] ARM: dts: aspeed: Add KCS & lpc ctrl for Facebook
-In-Reply-To: <CACPK8Xea5Q1c9ygvT+WtbwJN9p2Nn-bLo8Ea6U4KuFvFZXvkNg@mail.gmail.com>
-References: <20181212210352.1717617-1-vijaykhemka@fb.com>
- <CACPK8Xea5Q1c9ygvT+WtbwJN9p2Nn-bLo8Ea6U4KuFvFZXvkNg@mail.gmail.com>
-Message-ID: <017219A7-E5A7-41B8-869C-B54FABF401A7@fb.com>
+Date: Thu, 13 Dec 2018 11:53:16 -0800
+Subject: [PATCH 1/4] ARM: dts: aspeed: Add sensors devices for Facebook
+Message-ID: <20181213195319.1333402-1-vijaykhemka@fb.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+Added ADC and other sensor devices in Facebook Tiogapass device tree.
 
+Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
+---
+ .../dts/aspeed-bmc-facebook-tiogapass.dts     | 33 +++++++++++++++++--
+ 1 file changed, 31 insertions(+), 2 deletions(-)
 
-?On 12/12/18, 5:04 PM, "Joel Stanley" <joel@jms.id.au> wrote:
-
-    On Thu, 13 Dec 2018 at 07:34, Vijay Khemka <vijaykhemka@fb.com> wrote:
-    >
-    > Added kcs device and lpc ctrl device to enable LPC clock in Facebook
-    > Tiogapass device tree.
-    
-    As we're going to re-spin, it's a good idea to have the KCS and LPC
-    changes in separate patches. I will take the KCS one straight away,
-    but the LPC one might need more work (see my comments below).
-
-Thanks Joel,
-I will create different patches and resubmit again.
-    
-    >
-    > Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
-    > ---
-    >  .../dts/aspeed-bmc-facebook-tiogapass.dts     | 30 +++++++++++++++++++
-    >  1 file changed, 30 insertions(+)
-    >
-    > diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
-    > index d9d7f208788a..9544fa2c1822 100644
-    > --- a/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
-    > +++ b/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
-    > @@ -21,6 +21,18 @@
-    >         memory at 80000000 {
-    >                 reg = <0x80000000 0x20000000>;
-    >         };
-    > +
-    > +       reserved-memory {
-    > +               #address-cells = <1>;
-    > +               #size-cells = <1>;
-    > +               ranges;
-    > +
-    > +               flash_memory: region at 98000000 {
-    > +                       no-map;
-    > +                       reg = <0x98000000 0x04000000>; /* 64M */
-    > +               };
-    
-    Are you using this to expose some RAM over LPC? If not, we don't want this here.
-No, we are not using currently.
-    
-    It is a flaw in the design of the driver that the reserved memory
-    region is required. We should change the driver to make it optional.
-I agree with you we should make this change in driver.
-    
-    As a workaround, we could add this patch to the tiogapass device tree
-    but make it smaller so you're not losing 64MB of RAM.
-I will make it to 4K.
-    
-    > +       };
-    > +
-    >         iio-hwmon {
-    >                 compatible = "iio-hwmon";
-    >                 oemname0 = "MB_P3V3";
-    > @@ -62,6 +74,12 @@
-    >         };
-    >  };
-    >
-    > +&lpc_ctrl {
-    > +       status = "okay";
-    > +       memory-region = <&flash_memory>;
-    > +       flash = <&spi1>;
-    > +};
-    > +
-    >  &uart1 {
-    >         // Host Console
-    >         status = "okay";
-    > @@ -75,6 +93,18 @@
-    >         status = "okay";
-    >  };
-    >
-    > +&kcs2 {
-    > +       // BMC KCS channel 2
-    > +       status = "okay";
-    > +       kcs_addr = <0xca8>;
-    > +};
-    > +
-    > +&kcs3 {
-    > +       // BMC KCS channel 3
-    > +       status = "okay";
-    > +       kcs_addr = <0xca2>;
-    > +};
-    > +
-    >  &mac0 {
-    >         status = "okay";
-    >
-    > --
-    > 2.17.1
-    >
-    
+diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
+index f8e7b71af7e6..58bbe08d3ba7 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
+@@ -21,6 +21,25 @@
+ 	memory at 80000000 {
+ 		reg = <0x80000000 0x20000000>;
+ 	};
++
++	iio-hwmon {
++		compatible = "iio-hwmon";
++		oemname0 = "MB_P3V3";
++		oemname1 = "MB_P5V";
++		oemname2 = "MB_P12V";
++		oemname3 = "MB_P1V05";
++		oemname4 = "MB_PVNN_PCH_STBY";
++		oemname5 = "MB_P3V3_STBY";
++		oemname6 = "MB_P5V_STBY";
++		io-channels = <&adc 0>, <&adc 1>, <&adc 2>, <&adc 3>,
++					<&adc 4>, <&adc 5>, <&adc 6>;
++	};
++
++	iio-hwmon-battery {
++		oemname0 = "MB_P3V_BAT";
++		compatible = "iio-hwmon";
++		io-channels = <&adc 7>;
++	};
+ };
+ 
+ &fmc {
+@@ -64,6 +83,10 @@
+ 	use-ncsi;
+ };
+ 
++&adc {
++	status = "okay";
++};
++
+ &i2c0 {
+ 	status = "okay";
+ 	//Airmax Conn B, CPU0 PIROM, CPU1 PIROM
+@@ -122,6 +145,10 @@
+ 
+ &i2c8 {
+ 	status = "okay";
++	tmp421 at 1f {
++		compatible = "ti,tmp421";
++		reg = <0x1f>;
++	};
+ 	//Mezz Sensor SMBus
+ };
+ 
+@@ -134,13 +161,15 @@
+ 	status = "okay";
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&pinctrl_pwm0_default &pinctrl_pwm1_default>;
++	oemname0 = "System_Fan_Connector_1";
++	oemname1 = "System_Fan_Connector_3";
+ 	fan at 0 {
+ 		reg = <0x00>;
+ 		aspeed,fan-tach-ch = /bits/ 8 <0x00>;
+ 	};
+ 
+ 	fan at 1 {
+-		reg = <0x00>;
+-		aspeed,fan-tach-ch = /bits/ 8 <0x01>;
++		reg = <0x01>;
++		aspeed,fan-tach-ch = /bits/ 8 <0x02>;
+ 	};
+ };
+-- 
+2.17.1
 
