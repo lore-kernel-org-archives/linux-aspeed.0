@@ -1,135 +1,50 @@
-From: Eddie James <eajames@linux.ibm.com>
-Date: Fri, 14 Dec 2018 09:47:53 -0600
-Subject: [PATCH 2/2] clk: aspeed: Setup video engine clocking
-In-Reply-To: <CACPK8XcY_c9NzNv-WyZcz+mZ5c2jixyCzEQAK-+t0QvQ_uJXwg@mail.gmail.com>
-References: <1544559161-21468-1-git-send-email-eajames@linux.ibm.com>
- <1544559161-21468-3-git-send-email-eajames@linux.ibm.com>
- <CACPK8XcY_c9NzNv-WyZcz+mZ5c2jixyCzEQAK-+t0QvQ_uJXwg@mail.gmail.com>
-Message-ID: <81b100b7-252e-3145-fb34-17a9c0cdd91e@linux.ibm.com>
+From: Vijay Khemka <vijaykhemka@fb.com>
+Date: Fri, 14 Dec 2018 18:11:21 +0000
+Subject: [PATCH 1/4] ARM: dts: aspeed: Add sensors devices for Facebook
+In-Reply-To: <CACPK8XfAXDHqWcD=OKm4UhCh-+-7GBxL02Fi9_jgdmo2ZQZSjg@mail.gmail.com>
+References: <20181213195319.1333402-1-vijaykhemka@fb.com>
+ <CACPK8XfAXDHqWcD=OKm4UhCh-+-7GBxL02Fi9_jgdmo2ZQZSjg@mail.gmail.com>
+Message-ID: <B6C3C92D-1F9E-4425-ABF5-718D1A6755EB@fb.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+On 12/13/18, 2:56 PM, "Joel Stanley" <joel@jms.id.au> wrote:
 
+    On Fri, 14 Dec 2018 at 06:23, Vijay Khemka <vijaykhemka@fb.com> wrote:
+    >
+    > Added ADC and other sensor devices in Facebook Tiogapass device tree.
+    >
+    > Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
+    > ---
+    >  .../dts/aspeed-bmc-facebook-tiogapass.dts     | 33 +++++++++++++++++--
+    >  1 file changed, 31 insertions(+), 2 deletions(-)
+    >
+    > diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
+    > index f8e7b71af7e6..58bbe08d3ba7 100644
+    > --- a/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
+    > +++ b/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
+    > @@ -21,6 +21,25 @@
+    >         memory at 80000000 {
+    >                 reg = <0x80000000 0x20000000>;
+    >         };
+    > +
+    > +       iio-hwmon {
+    > +               compatible = "iio-hwmon";
+    > +               oemname0 = "MB_P3V3";
+    > +               oemname1 = "MB_P5V";
+    > +               oemname2 = "MB_P12V";
+    > +               oemname3 = "MB_P1V05";
+    > +               oemname4 = "MB_PVNN_PCH_STBY";
+    > +               oemname5 = "MB_P3V3_STBY";
+    > +               oemname6 = "MB_P5V_STBY";
+    
+    "oemname" isn't part of the upstream bindings. Is this something you
+    have patches for?
+This is a workaround field used by dbus-sensors application to avoid overlay for dynamic detection of devices based on json file definition.
 
-On 12/13/2018 07:02 PM, Joel Stanley wrote:
-> Hi Eddie,
->
-> On Wed, 12 Dec 2018 at 06:42, Eddie James <eajames@linux.ibm.com> wrote:
->> Add the video engine reset bit. Add eclk mux and clock divider table.
->>
->> Signed-off-by: Eddie James <eajames@linux.ibm.com>
->> Acked-by: Stephen Boyd <sboyd@kernel.org>
->> ---
->>   drivers/clk/clk-aspeed.c | 41 +++++++++++++++++++++++++++++++++++++++--
->>   1 file changed, 39 insertions(+), 2 deletions(-)
->>
->> diff --git a/drivers/clk/clk-aspeed.c b/drivers/clk/clk-aspeed.c
->> index 5961367..f16ce7d 100644
->> --- a/drivers/clk/clk-aspeed.c
->> +++ b/drivers/clk/clk-aspeed.c
->> @@ -87,7 +87,7 @@ struct aspeed_clk_gate {
->>   /* TODO: ask Aspeed about the actual parent data */
->>   static const struct aspeed_gate_data aspeed_gates[] = {
->>          /*                               clk rst   name                 parent  flags */
->> -       [ASPEED_CLK_GATE_ECLK] =        {  0, -1, "eclk-gate",          "eclk", 0 }, /* Video Engine */
->> +       [ASPEED_CLK_GATE_ECLK] =        {  0,  6, "eclk-gate",          "eclk", 0 }, /* Video Engine */
->
->>          [ASPEED_CLK_GATE_GCLK] =        {  1,  7, "gclk-gate",          NULL,   0 }, /* 2D engine */
->>          [ASPEED_CLK_GATE_MCLK] =        {  2, -1, "mclk-gate",          "mpll", CLK_IS_CRITICAL }, /* SDRAM */
->>          [ASPEED_CLK_GATE_VCLK] =        {  3,  6, "vclk-gate",          NULL,   0 }, /* Video Capture */
->> @@ -113,6 +113,24 @@ struct aspeed_clk_gate {
->>          [ASPEED_CLK_GATE_LHCCLK] =      { 28, -1, "lhclk-gate",         "lhclk", 0 }, /* LPC master/LPC+ */
->>   };
->>
->> +static const char * const eclk_parent_names[] = {
->> +       "mpll",
-> Is the mpll really an input to the eclk?
-
-Yep, it's the default.
-
->
->> +       "hpll",
->> +       "dpll",
-> We don't have a dpll in the driver that I can see.
-
-True... I supposed I would just add the parent here now in case the dpll 
-clock is ever added.
-
->
->> +};
->> +
->> +static const struct clk_div_table ast2500_eclk_div_table[] = {
-> Is the clocking setup different on the ast2400?
-
-Yes, the dividers are the default ast2400 ones.
-
->
->> +       { 0x0, 2 },
->> +       { 0x1, 2 },
->> +       { 0x2, 3 },
->> +       { 0x3, 4 },
->> +       { 0x4, 5 },
->> +       { 0x5, 6 },
->> +       { 0x6, 7 },
->> +       { 0x7, 8 },
->> +       { 0 }
->> +};
->> @@ -317,6 +338,7 @@ struct aspeed_reset {
->>          [ASPEED_RESET_PECI]     = 10,
->>          [ASPEED_RESET_I2C]      =  2,
->>          [ASPEED_RESET_AHB]      =  1,
->> +       [ASPEED_RESET_VIDEO]    =  6,
-> You've added the reset line to the ASPEED_CLK_GATE_ECLK clock so you
-> do not need to separately expose the reset controller. Instead
-> enabling the clock will deassert the rest line for you.
->
-> This means you should drop the change from the header too, and it
-> affects the bindings document for the video engine.
-
-I want that reset available separately for use in the video engine 
-actually. I could do without it, but it's somewhat useful.
-
-Thanks,
-Eddie
-
->
->>          /*
->>           * SCUD4 resets start at an offset to separate them from
->> @@ -522,6 +544,22 @@ static int aspeed_clk_probe(struct platform_device *pdev)
->>                  return PTR_ERR(hw);
->>          aspeed_clk_data->hws[ASPEED_CLK_24M] = hw;
->>
->> +       hw = clk_hw_register_mux(dev, "eclk-mux", eclk_parent_names,
->> +                                ARRAY_SIZE(eclk_parent_names), 0,
->> +                                scu_base + ASPEED_CLK_SELECTION, 2, 0x3, 0,
->> +                                &aspeed_clk_lock);
->> +       if (IS_ERR(hw))
->> +               return PTR_ERR(hw);
->> +       aspeed_clk_data->hws[ASPEED_CLK_ECLK_MUX] = hw;
->> +
->> +       hw = clk_hw_register_divider_table(dev, "eclk", "eclk-mux", 0,
->> +                                          scu_base + ASPEED_CLK_SELECTION, 28,
->> +                                          3, 0, soc_data->eclk_div_table,
->> +                                          &aspeed_clk_lock);
->> +       if (IS_ERR(hw))
->> +               return PTR_ERR(hw);
->> +       aspeed_clk_data->hws[ASPEED_CLK_ECLK] = hw;
->> +
->>          /*
->>           * TODO: There are a number of clocks that not included in this driver
->>           * as more information is required:
->> @@ -531,7 +569,6 @@ static int aspeed_clk_probe(struct platform_device *pdev)
->>           *   RGMII
->>           *   RMII
->>           *   UART[1..5] clock source mux
->> -        *   Video Engine (ECLK) mux and clock divider
->>           */
->>
->>          for (i = 0; i < ARRAY_SIZE(aspeed_gates); i++) {
->> --
->> 1.8.3.1
->>
+Can you please also review other 3 patches in this series.
+    
 
