@@ -1,53 +1,55 @@
-From: Vijay Khemka <vijaykhemka@fb.com>
-Date: Fri, 14 Dec 2018 20:41:26 +0000
-Subject: [PATCH 1/4] ARM: dts: aspeed: Add sensors devices for Facebook
-In-Reply-To: <c1e35845-cb07-048f-bcf7-d7239a387027@linux.intel.com>
-References: <20181213195319.1333402-1-vijaykhemka@fb.com>
- <CACPK8XfAXDHqWcD=OKm4UhCh-+-7GBxL02Fi9_jgdmo2ZQZSjg@mail.gmail.com>
- <B6C3C92D-1F9E-4425-ABF5-718D1A6755EB@fb.com>
- <c1e35845-cb07-048f-bcf7-d7239a387027@linux.intel.com>
-Message-ID: <C3FBCA5F-210A-4817-AA08-331E82319909@fb.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Fri, 14 Dec 2018 23:10:10 +0100
+Subject: [PATCH 5/7] [stable-4.19] i2c: aspeed: fix build warning
+In-Reply-To: <20181214221023.3878670-1-arnd@arndb.de>
+References: <20181214221023.3878670-1-arnd@arndb.de>
+Message-ID: <20181214221023.3878670-6-arnd@arndb.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+Upstream commit 3e9efc3299dd ("i2c: aspeed: Handle master/slave combined irq events
+properly") reworked the interrupt handling and fixed a warning in the process:
 
+drivers/i2c/busses/i2c-aspeed.c: In function 'aspeed_i2c_bus_irq':
+drivers/i2c/busses/i2c-aspeed.c:567:1: error: label 'out' defined but not used [-Werror=unused-label]
 
-?On 12/14/18, 11:22 AM, "openbmc on behalf of Jae Hyun Yoo" <openbmc-bounces+vijaykhemka=fb.com at lists.ozlabs.org on behalf of jae.hyun.yoo@linux.intel.com> wrote:
+The warning is still present in v4.19.8 and can be fixed either by applying
+that original patch, or by adding a simple #ifdef.
 
-    Hi Vijay,
-    
-    On 12/14/2018 10:11 AM, Vijay Khemka wrote:
-    > On 12/13/18, 2:56 PM, "Joel Stanley" <joel@jms.id.au> wrote:
-    
-    <snip>
-    
-    >      > +               oemname0 = "MB_P3V3";
-    >      > +               oemname1 = "MB_P5V";
-    >      > +               oemname2 = "MB_P12V";
-    >      > +               oemname3 = "MB_P1V05";
-    >      > +               oemname4 = "MB_PVNN_PCH_STBY";
-    >      > +               oemname5 = "MB_P3V3_STBY";
-    >      > +               oemname6 = "MB_P5V_STBY";
-    >      
-    >      "oemname" isn't part of the upstream bindings. Is this something you
-    >      have patches for?
-    > This is a workaround field used by dbus-sensors application to avoid overlay for dynamic detection of devices based on json file definition.
-    > 
-    > Can you please also review other 3 patches in this series.
-    >      
-    > 
-    
-    These oemname settings should not be added into here. You can add these
-    information into configuration of entity manager which uses overlay
-    templates for dbus-sensors. Also, as Joel said, "oemname" isn't part of
-    the upstream bindings.
+Here, I choose the second simpler option as the original patch seems too
+invasive for a stable backport.
 
-Overlay templates from entity manager is not working for fan and adc sensors that's why it is a workaround suggested by James Feist (Author of dbus-sensors).
-    
-    Cheers,
-    Jae
-    
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+ drivers/i2c/busses/i2c-aspeed.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
+index a4f956c6d567..a19fbff16861 100644
+--- a/drivers/i2c/busses/i2c-aspeed.c
++++ b/drivers/i2c/busses/i2c-aspeed.c
+@@ -555,7 +555,7 @@ static irqreturn_t aspeed_i2c_bus_irq(int irq, void *dev_id)
+ 	spin_lock(&bus->lock);
+ 
+ #if IS_ENABLED(CONFIG_I2C_SLAVE)
+-	if (aspeed_i2c_slave_irq(bus)) {
++	if (IS_ENABLED(CONFIG_I2C_SLAVE) && aspeed_i2c_slave_irq(bus)) {
+ 		dev_dbg(bus->dev, "irq handled by slave.\n");
+ 		ret = true;
+ 		goto out;
+@@ -564,7 +564,9 @@ static irqreturn_t aspeed_i2c_bus_irq(int irq, void *dev_id)
+ 
+ 	ret = aspeed_i2c_master_irq(bus);
+ 
++#if IS_ENABLED(CONFIG_I2C_SLAVE)
+ out:
++#endif
+ 	spin_unlock(&bus->lock);
+ 	return ret ? IRQ_HANDLED : IRQ_NONE;
+ }
+-- 
+2.20.0
 
