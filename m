@@ -1,55 +1,101 @@
 From: Arnd Bergmann <arnd@arndb.de>
-Date: Fri, 14 Dec 2018 23:10:10 +0100
-Subject: [PATCH 5/7] [stable-4.19] i2c: aspeed: fix build warning
-In-Reply-To: <20181214221023.3878670-1-arnd@arndb.de>
-References: <20181214221023.3878670-1-arnd@arndb.de>
-Message-ID: <20181214221023.3878670-6-arnd@arndb.de>
+Date: Fri, 14 Dec 2018 23:10:05 +0100
+Subject: [PATCH 0/7] v4.19-stable randconfig fixes
+Message-ID: <20181214221023.3878670-1-arnd@arndb.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Upstream commit 3e9efc3299dd ("i2c: aspeed: Handle master/slave combined irq events
-properly") reworked the interrupt handling and fixed a warning in the process:
+Hi Greg,
 
-drivers/i2c/busses/i2c-aspeed.c: In function 'aspeed_i2c_bus_irq':
-drivers/i2c/busses/i2c-aspeed.c:567:1: error: label 'out' defined but not used [-Werror=unused-label]
+I did some randconfig testing on linux-4.19 arm/arm64/x86. So far I needed
+27 patches, most of which are also still needed in mainline Linux. I
+had submitted some before, and others were not submitted previously
+for some reason. I'll try to get those fixed in mainline and then
+make sure we get them into 4.19 as well.
 
-The warning is still present in v4.19.8 and can be fixed either by applying
-that original patch, or by adding a simple #ifdef.
+This series for now contains four patches that did make it into mainline:
 
-Here, I choose the second simpler option as the original patch seems too
-invasive for a stable backport.
+2e6ae11dd0d1 ("slimbus: ngd: mark PM functions as __maybe_unused")
+33f49571d750 ("staging: olpc_dcon: add a missing dependency")
+0eeec01488da ("scsi: raid_attrs: fix unused variable warning")
+11d4afd4ff66 ("sched/pelt: Fix warning and clean up IRQ PELT config")
 
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
----
- drivers/i2c/busses/i2c-aspeed.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+Feel free to either cherry-pick those from mainline or apply the
+patch from this series, whichever works best for you.
 
-diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
-index a4f956c6d567..a19fbff16861 100644
---- a/drivers/i2c/busses/i2c-aspeed.c
-+++ b/drivers/i2c/busses/i2c-aspeed.c
-@@ -555,7 +555,7 @@ static irqreturn_t aspeed_i2c_bus_irq(int irq, void *dev_id)
- 	spin_lock(&bus->lock);
- 
- #if IS_ENABLED(CONFIG_I2C_SLAVE)
--	if (aspeed_i2c_slave_irq(bus)) {
-+	if (IS_ENABLED(CONFIG_I2C_SLAVE) && aspeed_i2c_slave_irq(bus)) {
- 		dev_dbg(bus->dev, "irq handled by slave.\n");
- 		ret = true;
- 		goto out;
-@@ -564,7 +564,9 @@ static irqreturn_t aspeed_i2c_bus_irq(int irq, void *dev_id)
- 
- 	ret = aspeed_i2c_master_irq(bus);
- 
-+#if IS_ENABLED(CONFIG_I2C_SLAVE)
- out:
-+#endif
- 	spin_unlock(&bus->lock);
- 	return ret ? IRQ_HANDLED : IRQ_NONE;
- }
+The other three patches are for warnings in code that got removed in
+mainline kernels:
+
+3e9efc3299dd ("i2c: aspeed: Handle master/slave combined irq events properly")
+972910948fb6 ("ARM: dts: qcom: Remove Arrow SD600 eval board")
+effec874792f ("drm/msm/dpu: Remove dpu_dbg")
+
+My feeling was that it's safer to just address the warning by fixing
+the code correctly in each of these cases, but if you disagree,
+applying the mainline change should work equally well, so decide
+for yourself.
+
+      Arnd
+
+Arnd Bergmann (5):
+  scsi: raid_attrs: fix unused variable warning
+  slimbus: ngd: mark PM functions as __maybe_unused
+  [stable-4.19] i2c: aspeed: fix build warning
+  [stable-4.19] ARM: dts: qcom-apq8064-arrow-sd-600eval fix
+    graph_endpoint warning
+  [stable-4.19] drm/msm:  fix address space warning
+
+Lubomir Rintel (1):
+  staging: olpc_dcon: add a missing dependency
+
+Vincent Guittot (1):
+  sched/pelt: Fix warning and clean up IRQ PELT config
+
+ arch/arm/boot/dts/qcom-apq8064-arrow-sd-600eval.dts | 5 +++++
+ drivers/gpu/drm/msm/disp/dpu1/dpu_dbg.c             | 8 ++++----
+ drivers/i2c/busses/i2c-aspeed.c                     | 4 +++-
+ drivers/scsi/raid_class.c                           | 4 +---
+ drivers/slimbus/qcom-ngd-ctrl.c                     | 6 ++----
+ drivers/staging/olpc_dcon/Kconfig                   | 1 +
+ init/Kconfig                                        | 5 +++++
+ kernel/sched/core.c                                 | 7 +++----
+ kernel/sched/fair.c                                 | 2 +-
+ kernel/sched/pelt.c                                 | 2 +-
+ kernel/sched/pelt.h                                 | 2 +-
+ kernel/sched/sched.h                                | 5 ++---
+ 12 files changed, 29 insertions(+), 22 deletions(-)
+
+Cc: Andrew Jeffery <andrew@aj.id.au>
+Cc: Andy Gross <andy.gross@linaro.org>
+Cc: bp at alien8.de
+Cc: Daniel Drake <dsd@laptop.org>
+Cc: David Brown <david.brown@linaro.org>
+Cc: dou_liyang at 163.com
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>
+Cc: Jens Frederich <jfrederich@gmail.com>
+Cc: Lubomir Rintel <lkundrak@v3.sk>
+Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: "Martin K. Petersen" <martin.petersen@oracle.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Rob Clark <robdclark@gmail.com>
+Cc: Rob Herring <robh+dt@kernel.org>
+Cc: Srinivas Kandagatla <srinivas.kandagatla@linaro.org>
+Cc: Vincent Guittot <vincent.guittot@linaro.org>
+Cc: linux-arm-msm at vger.kernel.org
+Cc: devicetree at vger.kernel.org
+Cc: linux-kernel at vger.kernel.org
+Cc: freedreno at lists.freedesktop.org
+Cc: linux-i2c at vger.kernel.org
+Cc: openbmc at lists.ozlabs.org
+Cc: linux-arm-kernel at lists.infradead.org
+Cc: linux-aspeed at lists.ozlabs.org
+Cc: linux-scsi at vger.kernel.org
+
+
 -- 
 2.20.0
 
