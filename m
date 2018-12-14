@@ -1,121 +1,145 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Fri, 14 Dec 2018 11:32:33 +1030
-Subject: [PATCH 2/2] clk: aspeed: Setup video engine clocking
-In-Reply-To: <1544559161-21468-3-git-send-email-eajames@linux.ibm.com>
-References: <1544559161-21468-1-git-send-email-eajames@linux.ibm.com>
- <1544559161-21468-3-git-send-email-eajames@linux.ibm.com>
-Message-ID: <CACPK8XcY_c9NzNv-WyZcz+mZ5c2jixyCzEQAK-+t0QvQ_uJXwg@mail.gmail.com>
+Date: Fri, 14 Dec 2018 11:39:14 +1030
+Subject: [PATCH v8 2/2] media: platform: Add Aspeed Video Engine driver
+In-Reply-To: <1544547421-25724-3-git-send-email-eajames@linux.ibm.com>
+References: <1544547421-25724-1-git-send-email-eajames@linux.ibm.com>
+ <1544547421-25724-3-git-send-email-eajames@linux.ibm.com>
+Message-ID: <CACPK8XdQbq-9MbP7uMemyp0=Q+t1qnWNREdZRiyEcrART9vRig@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Eddie,
-
-On Wed, 12 Dec 2018 at 06:42, Eddie James <eajames@linux.ibm.com> wrote:
+On Wed, 12 Dec 2018 at 04:09, Eddie James <eajames@linux.ibm.com> wrote:
 >
-> Add the video engine reset bit. Add eclk mux and clock divider table.
+> The Video Engine (VE) embedded in the Aspeed AST2400 and AST2500 SOCs
+> can capture and compress video data from digital or analog sources. With
+> the Aspeed chip acting a service processor, the Video Engine can capture
+> the host processor graphics output.
+
+> +ASPEED VIDEO ENGINE DRIVER
+> +M:     Eddie James <eajames@linux.ibm.com>
+> +L:     linux-media at vger.kernel.org
+> +L:     openbmc at lists.ozlabs.org (moderated for non-subscribers)
+
+We tend to use the linux-aspeed list for upstream kernel discussions.
+Up to you if you want to use the openbmc list though.
+
+>  source "drivers/media/platform/omap/Kconfig"
 >
-> Signed-off-by: Eddie James <eajames@linux.ibm.com>
-> Acked-by: Stephen Boyd <sboyd@kernel.org>
-> ---
->  drivers/clk/clk-aspeed.c | 41 +++++++++++++++++++++++++++++++++++++++--
->  1 file changed, 39 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/clk/clk-aspeed.c b/drivers/clk/clk-aspeed.c
-> index 5961367..f16ce7d 100644
-> --- a/drivers/clk/clk-aspeed.c
-> +++ b/drivers/clk/clk-aspeed.c
-> @@ -87,7 +87,7 @@ struct aspeed_clk_gate {
->  /* TODO: ask Aspeed about the actual parent data */
->  static const struct aspeed_gate_data aspeed_gates[] = {
->         /*                               clk rst   name                 parent  flags */
-> -       [ASPEED_CLK_GATE_ECLK] =        {  0, -1, "eclk-gate",          "eclk", 0 }, /* Video Engine */
-> +       [ASPEED_CLK_GATE_ECLK] =        {  0,  6, "eclk-gate",          "eclk", 0 }, /* Video Engine */
+> +config VIDEO_ASPEED
+> +       tristate "Aspeed AST2400 and AST2500 Video Engine driver"
+> +       depends on VIDEO_V4L2
+> +       select VIDEOBUF2_DMA_CONTIG
+> +       help
+> +         Support for the Aspeed Video Engine (VE) embedded in the Aspeed
+> +         AST2400 and AST2500 SOCs. The VE can capture and compress video data
+> +         from digital or analog sources.
+
+This might need updating in response to my questions below about
+ast2400 testing.
+
+> +++ b/drivers/media/platform/aspeed-video.c
+> @@ -0,0 +1,1729 @@
+> +// SPDX-License-Identifier: GPL-2.0+
+
+You need to put this there as well:
+
+// Copyright 2018 IBM Corp
 
 
->         [ASPEED_CLK_GATE_GCLK] =        {  1,  7, "gclk-gate",          NULL,   0 }, /* 2D engine */
->         [ASPEED_CLK_GATE_MCLK] =        {  2, -1, "mclk-gate",          "mpll", CLK_IS_CRITICAL }, /* SDRAM */
->         [ASPEED_CLK_GATE_VCLK] =        {  3,  6, "vclk-gate",          NULL,   0 }, /* Video Capture */
-> @@ -113,6 +113,24 @@ struct aspeed_clk_gate {
->         [ASPEED_CLK_GATE_LHCCLK] =      { 28, -1, "lhclk-gate",         "lhclk", 0 }, /* LPC master/LPC+ */
->  };
->
-> +static const char * const eclk_parent_names[] = {
-> +       "mpll",
+> +static int aspeed_video_init(struct aspeed_video *video)
+> +{
+> +       int irq;
+> +       int rc;
+> +       struct device *dev = video->dev;
+> +
+> +       irq = irq_of_parse_and_map(dev->of_node, 0);
+> +       if (!irq) {
+> +               dev_err(dev, "Unable to find IRQ\n");
+> +               return -ENODEV;
+> +       }
+> +
+> +       rc = devm_request_irq(dev, irq, aspeed_video_irq, IRQF_SHARED,
 
-Is the mpll really an input to the eclk?
+The datasheet indicates this IRQ is for the video engline only, so I
+don't think you want IRQF_SHARED.
 
-> +       "hpll",
-> +       "dpll",
+> +                             DEVICE_NAME, video);
+> +       if (rc < 0) {
+> +               dev_err(dev, "Unable to request IRQ %d\n", irq);
+> +               return rc;
+> +       }
+> +
+> +       video->eclk = devm_clk_get(dev, "eclk");
+> +       if (IS_ERR(video->eclk)) {
+> +               dev_err(dev, "Unable to get ECLK\n");
+> +               return PTR_ERR(video->eclk);
+> +       }
+> +
+> +       video->vclk = devm_clk_get(dev, "vclk");
+> +       if (IS_ERR(video->vclk)) {
+> +               dev_err(dev, "Unable to get VCLK\n");
+> +               return PTR_ERR(video->vclk);
+> +       }
+> +
+> +       video->rst = devm_reset_control_get_exclusive(dev, NULL);
+> +       if (IS_ERR(video->rst)) {
+> +               dev_err(dev, "Unable to get VE reset\n");
+> +               return PTR_ERR(video->rst);
+> +       }
 
-We don't have a dpll in the driver that I can see.
+As discussed in the clock driver, this can go as you've already
+released the reset when enabling the eclk.
 
+However, you're requesting the clock without enabling it. You need to
+do a clk_prepare_enable().
+
+> +
+> +       rc = of_reserved_mem_device_init(dev);
+> +       if (rc) {
+> +               dev_err(dev, "Unable to reserve memory\n");
+> +               return rc;
+> +       }
+> +
+> +       rc = dma_set_mask_and_coherent(dev, DMA_BIT_MASK(32));
+> +       if (rc) {
+> +               dev_err(dev, "Failed to set DMA mask\n");
+> +               of_reserved_mem_device_release(dev);
+> +               return rc;
+> +       }
+> +
+> +       if (!aspeed_video_alloc_buf(video, &video->jpeg,
+> +                                   VE_JPEG_HEADER_SIZE)) {
+> +               dev_err(dev, "Failed to allocate DMA for JPEG header\n");
+> +               of_reserved_mem_device_release(dev);
+> +               return rc;
+> +       }
+> +
+> +       aspeed_video_init_jpeg_table(video->jpeg.virt, video->yuv420);
+> +
+> +       return 0;
+> +}
+
+> +
+> +static const struct of_device_id aspeed_video_of_match[] = {
+> +       { .compatible = "aspeed,ast2400-video-engine" },
+
+I noticed the clock driver did not have the changed required for the
+2400. Have you tested this on the ast2400?
+
+
+> +       { .compatible = "aspeed,ast2500-video-engine" },
+> +       {}
 > +};
+> +MODULE_DEVICE_TABLE(of, aspeed_video_of_match);
 > +
-> +static const struct clk_div_table ast2500_eclk_div_table[] = {
-
-Is the clocking setup different on the ast2400?
-
-> +       { 0x0, 2 },
-> +       { 0x1, 2 },
-> +       { 0x2, 3 },
-> +       { 0x3, 4 },
-> +       { 0x4, 5 },
-> +       { 0x5, 6 },
-> +       { 0x6, 7 },
-> +       { 0x7, 8 },
-> +       { 0 }
+> +static struct platform_driver aspeed_video_driver = {
+> +       .driver = {
+> +               .name = DEVICE_NAME,
+> +               .of_match_table = aspeed_video_of_match,
+> +       },
+> +       .probe = aspeed_video_probe,
+> +       .remove = aspeed_video_remove,
 > +};
-
-> @@ -317,6 +338,7 @@ struct aspeed_reset {
->         [ASPEED_RESET_PECI]     = 10,
->         [ASPEED_RESET_I2C]      =  2,
->         [ASPEED_RESET_AHB]      =  1,
-> +       [ASPEED_RESET_VIDEO]    =  6,
-
-You've added the reset line to the ASPEED_CLK_GATE_ECLK clock so you
-do not need to separately expose the reset controller. Instead
-enabling the clock will deassert the rest line for you.
-
-This means you should drop the change from the header too, and it
-affects the bindings document for the video engine.
-
->
->         /*
->          * SCUD4 resets start at an offset to separate them from
-> @@ -522,6 +544,22 @@ static int aspeed_clk_probe(struct platform_device *pdev)
->                 return PTR_ERR(hw);
->         aspeed_clk_data->hws[ASPEED_CLK_24M] = hw;
->
-> +       hw = clk_hw_register_mux(dev, "eclk-mux", eclk_parent_names,
-> +                                ARRAY_SIZE(eclk_parent_names), 0,
-> +                                scu_base + ASPEED_CLK_SELECTION, 2, 0x3, 0,
-> +                                &aspeed_clk_lock);
-> +       if (IS_ERR(hw))
-> +               return PTR_ERR(hw);
-> +       aspeed_clk_data->hws[ASPEED_CLK_ECLK_MUX] = hw;
-> +
-> +       hw = clk_hw_register_divider_table(dev, "eclk", "eclk-mux", 0,
-> +                                          scu_base + ASPEED_CLK_SELECTION, 28,
-> +                                          3, 0, soc_data->eclk_div_table,
-> +                                          &aspeed_clk_lock);
-> +       if (IS_ERR(hw))
-> +               return PTR_ERR(hw);
-> +       aspeed_clk_data->hws[ASPEED_CLK_ECLK] = hw;
-> +
->         /*
->          * TODO: There are a number of clocks that not included in this driver
->          * as more information is required:
-> @@ -531,7 +569,6 @@ static int aspeed_clk_probe(struct platform_device *pdev)
->          *   RGMII
->          *   RMII
->          *   UART[1..5] clock source mux
-> -        *   Video Engine (ECLK) mux and clock divider
->          */
->
->         for (i = 0; i < ARRAY_SIZE(aspeed_gates); i++) {
-> --
-> 1.8.3.1
->
