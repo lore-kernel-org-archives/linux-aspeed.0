@@ -1,71 +1,74 @@
-From: James Feist <james.feist@linux.intel.com>
-Date: Mon, 17 Dec 2018 11:50:00 -0800
-Subject: [Potential Spoof] Re: [PATCH 1/4] ARM: dts: aspeed: Add sensors
- devices for Facebook
-In-Reply-To: <E3F1FFD7-1C5A-43DE-BCA6-5B50EEEF577F@fb.com>
-References: <E3F1FFD7-1C5A-43DE-BCA6-5B50EEEF577F@fb.com>
-Message-ID: <024aee07-0444-cdaf-d274-b07244aec7b2@linux.intel.com>
+From: Vijay Khemka <vijaykhemka@fb.com>
+Date: Mon, 17 Dec 2018 12:04:02 -0800
+Subject: [PATCH v2 1/4] ARM: dts: aspeed: Add sensors devices for Facebook
+Message-ID: <20181217200405.2904551-1-vijaykhemka@fb.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 12/17/18 11:39 AM, Vijay Khemka wrote:
-> 
-> 
-> ?On 12/14/18, 12:42 PM, "Linux-aspeed on behalf of Vijay Khemka" <linux-aspeed-bounces+vijaykhemka=fb.com at lists.ozlabs.org on behalf of vijaykhemka@fb.com> wrote:
-> 
->      
->      
->      On 12/14/18, 11:22 AM, "openbmc on behalf of Jae Hyun Yoo" <openbmc-bounces+vijaykhemka=fb.com at lists.ozlabs.org on behalf of jae.hyun.yoo@linux.intel.com> wrote:
->      
->          Hi Vijay,
->          
->          On 12/14/2018 10:11 AM, Vijay Khemka wrote:
->          > On 12/13/18, 2:56 PM, "Joel Stanley" <joel@jms.id.au> wrote:
->          
->          <snip>
->          
->          >      > +               oemname0 = "MB_P3V3";
->          >      > +               oemname1 = "MB_P5V";
->          >      > +               oemname2 = "MB_P12V";
->          >      > +               oemname3 = "MB_P1V05";
->          >      > +               oemname4 = "MB_PVNN_PCH_STBY";
->          >      > +               oemname5 = "MB_P3V3_STBY";
->          >      > +               oemname6 = "MB_P5V_STBY";
->          >
->          >      "oemname" isn't part of the upstream bindings. Is this something you
->          >      have patches for?
->          > This is a workaround field used by dbus-sensors application to avoid overlay for dynamic detection of devices based on json file definition.
->          >
->          > Can you please also review other 3 patches in this series.
->          >
->          >
->          
->          These oemname settings should not be added into here. You can add these
->          information into configuration of entity manager which uses overlay
->          templates for dbus-sensors. Also, as Joel said, "oemname" isn't part of
->          the upstream bindings.
->      
->      Overlay templates from entity manager is not working for fan and adc sensors that's why it is a workaround suggested by James Feist (Author of dbus-sensors).
-> 
-> @james.feist at linux.intel.com,
-> Please comment on above patch, please advise if I need to fix this.
+Added ADC and other sensor devices in Facebook Tiogapass device tree.
 
-Yes, this is a workaround. It should not be added to your device tree. 
-This has already been fixed for the fans, someone just needs to spend a 
-little bit of time to fix the ADCs then it won't be needed.
+Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
+---
+ .../dts/aspeed-bmc-facebook-tiogapass.dts     | 23 +++++++++++++++++--
+ 1 file changed, 21 insertions(+), 2 deletions(-)
 
-Thanks,
+diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
+index f8e7b71af7e6..64039dddd853 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
+@@ -21,6 +21,17 @@
+ 	memory at 80000000 {
+ 		reg = <0x80000000 0x20000000>;
+ 	};
++
++	iio-hwmon {
++		compatible = "iio-hwmon";
++		io-channels = <&adc 0>, <&adc 1>, <&adc 2>, <&adc 3>,
++					<&adc 4>, <&adc 5>, <&adc 6>;
++	};
++
++	iio-hwmon-battery {
++		compatible = "iio-hwmon";
++		io-channels = <&adc 7>;
++	};
+ };
+ 
+ &fmc {
+@@ -64,6 +75,10 @@
+ 	use-ncsi;
+ };
+ 
++&adc {
++	status = "okay";
++};
++
+ &i2c0 {
+ 	status = "okay";
+ 	//Airmax Conn B, CPU0 PIROM, CPU1 PIROM
+@@ -122,6 +137,10 @@
+ 
+ &i2c8 {
+ 	status = "okay";
++	tmp421 at 1f {
++		compatible = "ti,tmp421";
++		reg = <0x1f>;
++	};
+ 	//Mezz Sensor SMBus
+ };
+ 
+@@ -140,7 +159,7 @@
+ 	};
+ 
+ 	fan at 1 {
+-		reg = <0x00>;
+-		aspeed,fan-tach-ch = /bits/ 8 <0x01>;
++		reg = <0x01>;
++		aspeed,fan-tach-ch = /bits/ 8 <0x02>;
+ 	};
+ };
+-- 
+2.17.1
 
-James
-
-
->          
->          Cheers,
->          Jae
->          
->      
->      
-> 
