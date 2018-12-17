@@ -1,36 +1,58 @@
-From: Wei Yongjun <weiyongjun1@huawei.com>
-Date: Mon, 17 Dec 2018 12:14:35 +0000
-Subject: [PATCH -next] media: platform: Fix missing spin_lock_init()
-Message-ID: <1545048875-157403-1-git-send-email-weiyongjun1@huawei.com>
+From: Vijay Khemka <vijaykhemka@fb.com>
+Date: Mon, 17 Dec 2018 19:39:38 +0000
+Subject: [Potential Spoof] Re: [PATCH 1/4] ARM: dts: aspeed: Add sensors
+ devices for Facebook
+Message-ID: <E3F1FFD7-1C5A-43DE-BCA6-5B50EEEF577F@fb.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The driver allocates the spinlock but not initialize it.
-Use spin_lock_init() on it to initialize it correctly.
-
-This is detected by Coccinelle semantic patch.
-
-Fixes: d2b4387f3bdf ("media: platform: Add Aspeed Video Engine driver")
-Signed-off-by: Wei Yongjun <weiyongjun1@huawei.com>
----
- drivers/media/platform/aspeed-video.c | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/drivers/media/platform/aspeed-video.c b/drivers/media/platform/aspeed-video.c
-index dfec813..692e08e 100644
---- a/drivers/media/platform/aspeed-video.c
-+++ b/drivers/media/platform/aspeed-video.c
-@@ -1661,6 +1661,7 @@ static int aspeed_video_probe(struct platform_device *pdev)
- 
- 	video->frame_rate = 30;
- 	video->dev = &pdev->dev;
-+	spin_lock_init(&video->lock);
- 	mutex_init(&video->video_lock);
- 	init_waitqueue_head(&video->wait);
- 	INIT_DELAYED_WORK(&video->res_work, aspeed_video_resolution_work);
 
 
+?On 12/14/18, 12:42 PM, "Linux-aspeed on behalf of Vijay Khemka" <linux-aspeed-bounces+vijaykhemka=fb.com at lists.ozlabs.org on behalf of vijaykhemka@fb.com> wrote:
+
+    
+    
+    On 12/14/18, 11:22 AM, "openbmc on behalf of Jae Hyun Yoo" <openbmc-bounces+vijaykhemka=fb.com at lists.ozlabs.org on behalf of jae.hyun.yoo@linux.intel.com> wrote:
+    
+        Hi Vijay,
+        
+        On 12/14/2018 10:11 AM, Vijay Khemka wrote:
+        > On 12/13/18, 2:56 PM, "Joel Stanley" <joel@jms.id.au> wrote:
+        
+        <snip>
+        
+        >      > +               oemname0 = "MB_P3V3";
+        >      > +               oemname1 = "MB_P5V";
+        >      > +               oemname2 = "MB_P12V";
+        >      > +               oemname3 = "MB_P1V05";
+        >      > +               oemname4 = "MB_PVNN_PCH_STBY";
+        >      > +               oemname5 = "MB_P3V3_STBY";
+        >      > +               oemname6 = "MB_P5V_STBY";
+        >      
+        >      "oemname" isn't part of the upstream bindings. Is this something you
+        >      have patches for?
+        > This is a workaround field used by dbus-sensors application to avoid overlay for dynamic detection of devices based on json file definition.
+        > 
+        > Can you please also review other 3 patches in this series.
+        >      
+        > 
+        
+        These oemname settings should not be added into here. You can add these
+        information into configuration of entity manager which uses overlay
+        templates for dbus-sensors. Also, as Joel said, "oemname" isn't part of
+        the upstream bindings.
+    
+    Overlay templates from entity manager is not working for fan and adc sensors that's why it is a workaround suggested by James Feist (Author of dbus-sensors).
+
+@james.feist at linux.intel.com,
+Please comment on above patch, please advise if I need to fix this.
+        
+        Cheers,
+        Jae
+        
+    
+    
 
