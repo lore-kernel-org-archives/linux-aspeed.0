@@ -1,87 +1,53 @@
-From: Rob Herring <robh@kernel.org>
-Date: Thu, 27 Dec 2018 16:09:06 -0600
-Subject: [PATCH 2/2] dt-bindings: edac: Aspeed AST2500
-In-Reply-To: <1545026517-64069-3-git-send-email-schaecsn@gmx.net>
-References: <1545026517-64069-1-git-send-email-schaecsn@gmx.net>
- <1545026517-64069-3-git-send-email-schaecsn@gmx.net>
-Message-ID: <20181227220906.GA14320@bogus>
+From: Sasha Levin <sashal@kernel.org>
+Date: Mon, 17 Dec 2018 19:20:28 -0500
+Subject: [PATCH 0/7] v4.19-stable randconfig fixes
+In-Reply-To: <20181214221023.3878670-1-arnd@arndb.de>
+References: <20181214221023.3878670-1-arnd@arndb.de>
+Message-ID: <20181218002028.GX2746@sasha-vm>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sun, Dec 16, 2018 at 10:01:57PM -0800, Stefan Schaeckeler wrote:
-> From: Stefan M Schaeckeler <sschaeck@cisco.com>
-> 
-> Add support for the Aspeed AST2500 SoC EDAC driver.
-> 
-> Signed-off-by: Stefan M Schaeckeler <sschaeck@cisco.com>
-> ---
->  .../bindings/edac/aspeed-sdram-edac.txt       | 34 +++++++++++++++++++
->  1 file changed, 34 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/edac/aspeed-sdram-edac.txt
-> 
-> diff --git a/Documentation/devicetree/bindings/edac/aspeed-sdram-edac.txt b/Documentation/devicetree/bindings/edac/aspeed-sdram-edac.txt
-> new file mode 100644
-> index 000000000000..57ba852883c7
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/edac/aspeed-sdram-edac.txt
-> @@ -0,0 +1,34 @@
-> +Aspeed AST2500 SoC EDAC device driver
+On Fri, Dec 14, 2018 at 11:10:05PM +0100, Arnd Bergmann wrote:
+>Hi Greg,
+>
+>I did some randconfig testing on linux-4.19 arm/arm64/x86. So far I needed
+>27 patches, most of which are also still needed in mainline Linux. I
+>had submitted some before, and others were not submitted previously
+>for some reason. I'll try to get those fixed in mainline and then
+>make sure we get them into 4.19 as well.
+>
+>This series for now contains four patches that did make it into mainline:
+>
+>2e6ae11dd0d1 ("slimbus: ngd: mark PM functions as __maybe_unused")
+>33f49571d750 ("staging: olpc_dcon: add a missing dependency")
+>0eeec01488da ("scsi: raid_attrs: fix unused variable warning")
+>11d4afd4ff66 ("sched/pelt: Fix warning and clean up IRQ PELT config")
+>
+>Feel free to either cherry-pick those from mainline or apply the
+>patch from this series, whichever works best for you.
+>
+>The other three patches are for warnings in code that got removed in
+>mainline kernels:
+>
+>3e9efc3299dd ("i2c: aspeed: Handle master/slave combined irq events properly")
+>972910948fb6 ("ARM: dts: qcom: Remove Arrow SD600 eval board")
+>effec874792f ("drm/msm/dpu: Remove dpu_dbg")
+>
+>My feeling was that it's safer to just address the warning by fixing
+>the code correctly in each of these cases, but if you disagree,
+>applying the mainline change should work equally well, so decide
+>for yourself.
 
-Bindings are for h/w, not drivers
+Thanks Arnd, I took the series as is.
 
-> +
-> +The Aspeed AST2500 SoC supports DDR3 and DDR4 memory with and without ECC (error
-> +correction check).
-> +
-> +The memory controller supports SECDED (single bit error correction, double bit
-> +error detection) and single bit error auto scrubbing by reserving 8 bits for
-> +every 64 bit word (effectively reducing available memory to 8/9).
-> +
-> +First, ECC must be configured in u-boot. Then, this driver will expose error
-> +counters via the edac kernel framework.
+We really need to discuss how -stable deals with removed code upstream.
+For some cases, we should probably follow suit and remove it from
+-stable as well (I'm mostly thinking dodgy code with potential security
+issues).
 
-Please reword this to not be u-boot or kernel specific.
-
-Maybe this node is enabled in the bootloader or the OS can just read the 
-registers to see if ECC is enabled. The latter is more future proof if 
-you need to access the DDR ctrl registers for other reasons.
-
-> +
-> +A note on memory organization in ECC mode: every 512 bytes are followed by 64
-> +bytes of ECC codes. 
-
-That sounds strange. Normally, the memory would be 72-bits wide to hold 
-the ECC byte for each 64-bit chunk. It would be inefficient to access 
-the ECC byte in a discontiguous location. In any case, none of this is 
-really important for the binding.
-
-> The address remapping is done in hardware and is fully
-> +transparent to firmware and software. Because of this, ECC mode must be
-> +configured in u-boot as part of the memory initialization as one can not switch
-> +from one mode to another when executing in memory.
-> +
-> +
-> +
-> +Required properties:
-> +- compatible: should be "aspeed,ast2500-sdram-edac"
-> +- reg:        sdram controller register set should be <0x1e6e0000 0x174>
-> +- interrupts: should be AVIC interrupt #0
-> +
-> +
-> +Example:
-> +
-> +	edac: sdram at 1e6e0000 {
-> +		compatible = "aspeed,ast2500-sdram-edac";
-> +		reg = <0x1e6e0000 0x174>;
-> +		interrupts = <0>;
-> +		status = "okay";
-
-Don't show status in examples.
-
-> +	};
-> -- 
-> 2.19.1
-> 
+--
+Thanks,
+Sasha
