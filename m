@@ -1,59 +1,65 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Tue, 18 Dec 2018 16:12:30 +0100
-Subject: [PATCH 0/7] v4.19-stable randconfig fixes
-In-Reply-To: <20181218002028.GX2746@sasha-vm>
-References: <20181214221023.3878670-1-arnd@arndb.de>
- <20181218002028.GX2746@sasha-vm>
-Message-ID: <20181218151230.GA30844@kroah.com>
+From: Vijay Khemka <vijaykhemka@fb.com>
+Date: Thu, 20 Dec 2018 18:05:41 +0000
+Subject: [PATCH v2 4/4] ARM: dts: aspeed: Add lpc ctrl for Facebook
+In-Reply-To: <20181217200405.2904551-4-vijaykhemka@fb.com>
+References: <20181217200405.2904551-1-vijaykhemka@fb.com>
+ <20181217200405.2904551-4-vijaykhemka@fb.com>
+Message-ID: <F23E6426-F6FE-4F10-A88A-D5862D5407B4@fb.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Dec 17, 2018 at 07:20:28PM -0500, Sasha Levin wrote:
-> On Fri, Dec 14, 2018 at 11:10:05PM +0100, Arnd Bergmann wrote:
-> > Hi Greg,
-> > 
-> > I did some randconfig testing on linux-4.19 arm/arm64/x86. So far I needed
-> > 27 patches, most of which are also still needed in mainline Linux. I
-> > had submitted some before, and others were not submitted previously
-> > for some reason. I'll try to get those fixed in mainline and then
-> > make sure we get them into 4.19 as well.
-> > 
-> > This series for now contains four patches that did make it into mainline:
-> > 
-> > 2e6ae11dd0d1 ("slimbus: ngd: mark PM functions as __maybe_unused")
-> > 33f49571d750 ("staging: olpc_dcon: add a missing dependency")
-> > 0eeec01488da ("scsi: raid_attrs: fix unused variable warning")
-> > 11d4afd4ff66 ("sched/pelt: Fix warning and clean up IRQ PELT config")
-> > 
-> > Feel free to either cherry-pick those from mainline or apply the
-> > patch from this series, whichever works best for you.
-> > 
-> > The other three patches are for warnings in code that got removed in
-> > mainline kernels:
-> > 
-> > 3e9efc3299dd ("i2c: aspeed: Handle master/slave combined irq events properly")
-> > 972910948fb6 ("ARM: dts: qcom: Remove Arrow SD600 eval board")
-> > effec874792f ("drm/msm/dpu: Remove dpu_dbg")
-> > 
-> > My feeling was that it's safer to just address the warning by fixing
-> > the code correctly in each of these cases, but if you disagree,
-> > applying the mainline change should work equally well, so decide
-> > for yourself.
-> 
-> Thanks Arnd, I took the series as is.
-> 
-> We really need to discuss how -stable deals with removed code upstream.
-> For some cases, we should probably follow suit and remove it from
-> -stable as well (I'm mostly thinking dodgy code with potential security
-> issues).
+Joel, Can you please take care of these patches merge.
 
-It would be nice to do that at times (like lustre and ipx), but it's
-good to keep that code around as maybe someone is using it?  I don't
-know, it's a tough call...
+?On 12/17/18, 12:04 PM, "Vijay Khemka" <vijaykhemka@fb.com> wrote:
 
-thanks,
+    Added lpc ctrl device to enable LPC clock in Facebook
+    Tiogapass device tree.
+    
+    Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
+    ---
+     .../boot/dts/aspeed-bmc-facebook-tiogapass.dts  | 17 +++++++++++++++++
+     1 file changed, 17 insertions(+)
+    
+    diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
+    index 73e58a821613..ef7875b54562 100644
+    --- a/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
+    +++ b/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
+    @@ -22,6 +22,17 @@
+     		reg = <0x80000000 0x20000000>;
+     	};
+     
+    +	reserved-memory {
+    +		#address-cells = <1>;
+    +		#size-cells = <1>;
+    +		ranges;
+    +
+    +		flash_memory: region at 98000000 {
+    +			no-map;
+    +			reg = <0x98000000 0x00001000>; /* 4K */
+    +		};
+    +	};
+    +
+     	iio-hwmon {
+     		compatible = "iio-hwmon";
+     		io-channels = <&adc 0>, <&adc 1>, <&adc 2>, <&adc 3>,
+    @@ -54,6 +65,12 @@
+     	};
+     };
+     
+    +&lpc_ctrl {
+    +	status = "okay";
+    +	memory-region = <&flash_memory>;
+    +	flash = <&spi1>;
+    +};
+    +
+     &uart1 {
+     	// Host Console
+     	status = "okay";
+    -- 
+    2.17.1
+    
+    
 
-greg k-h
