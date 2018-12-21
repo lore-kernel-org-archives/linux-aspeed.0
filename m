@@ -1,65 +1,22 @@
-From: Vijay Khemka <vijaykhemka@fb.com>
-Date: Thu, 20 Dec 2018 18:05:41 +0000
-Subject: [PATCH v2 4/4] ARM: dts: aspeed: Add lpc ctrl for Facebook
-In-Reply-To: <20181217200405.2904551-4-vijaykhemka@fb.com>
-References: <20181217200405.2904551-1-vijaykhemka@fb.com>
- <20181217200405.2904551-4-vijaykhemka@fb.com>
-Message-ID: <F23E6426-F6FE-4F10-A88A-D5862D5407B4@fb.com>
+From: Linus Walleij <linus.walleij@linaro.org>
+Date: Fri, 21 Dec 2018 11:14:48 +0100
+Subject: [PATCH] gpio: aspeed: remove duplicated statement
+In-Reply-To: <20181212215305.3852170-1-taoren@fb.com>
+References: <20181212215305.3852170-1-taoren@fb.com>
+Message-ID: <CACRpkdZr7zX2cvk-T93Ahj3Q2cE7-ey+T4Kr0n_==jae3KGr0Q@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Joel, Can you please take care of these patches merge.
+On Wed, Dec 12, 2018 at 10:53 PM Tao Ren <taoren@fb.com> wrote:
 
-?On 12/17/18, 12:04 PM, "Vijay Khemka" <vijaykhemka@fb.com> wrote:
+> Remove duplicated assignment statement from aspeed_gpio_probe() function.
+>
+> Signed-off-by: Tao Ren <taoren@fb.com>
 
-    Added lpc ctrl device to enable LPC clock in Facebook
-    Tiogapass device tree.
-    
-    Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
-    ---
-     .../boot/dts/aspeed-bmc-facebook-tiogapass.dts  | 17 +++++++++++++++++
-     1 file changed, 17 insertions(+)
-    
-    diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
-    index 73e58a821613..ef7875b54562 100644
-    --- a/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
-    +++ b/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
-    @@ -22,6 +22,17 @@
-     		reg = <0x80000000 0x20000000>;
-     	};
-     
-    +	reserved-memory {
-    +		#address-cells = <1>;
-    +		#size-cells = <1>;
-    +		ranges;
-    +
-    +		flash_memory: region at 98000000 {
-    +			no-map;
-    +			reg = <0x98000000 0x00001000>; /* 4K */
-    +		};
-    +	};
-    +
-     	iio-hwmon {
-     		compatible = "iio-hwmon";
-     		io-channels = <&adc 0>, <&adc 1>, <&adc 2>, <&adc 3>,
-    @@ -54,6 +65,12 @@
-     	};
-     };
-     
-    +&lpc_ctrl {
-    +	status = "okay";
-    +	memory-region = <&flash_memory>;
-    +	flash = <&spi1>;
-    +};
-    +
-     &uart1 {
-     	// Host Console
-     	status = "okay";
-    -- 
-    2.17.1
-    
-    
+Patch applied with Joel's ACK.
 
+Yours,
+Linus Walleij
