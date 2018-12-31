@@ -1,49 +1,22 @@
-From: Xiaoting Liu <xiaoting.liu@hxt-semitech.com>
-Date: Fri, 4 Jan 2019 17:03:49 +0800
-Subject: [PATCH 3/4] dts: dps650ab: add dps650ab device tree
-In-Reply-To: <cover.1546591275.git.xiaoting.liu@hxt-semitech.com>
-References: <cover.1546591275.git.xiaoting.liu@hxt-semitech.com>
-Message-ID: <9d928198965a0de4207582d7008c8a9916543445.1546591275.git.xiaoting.liu@hxt-semitech.com>
+From: Boris Petkov <bp@alien8.de>
+Date: Mon, 31 Dec 2018 15:53:20 +0200
+Subject: [PATCH 1/2] EDAC: Add Aspeed AST2500 EDAC driver
+In-Reply-To: <20181231132000.3894E6E85603@corona.crabdance.com>
+References: <1545026517-64069-1-git-send-email-schaecsn@gmx.net>
+ <1545026517-64069-2-git-send-email-schaecsn@gmx.net>
+ <20181231132000.3894E6E85603@corona.crabdance.com>
+Message-ID: <107B9625-83E8-4791-AE21-F7D089DA6D97@alien8.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add dps650ab device tree to support power supply dps650ab driver.
+On December 31, 2018 3:20:00 PM GMT+02:00, Stefan Schaeckeler <schaecsn@gmx.net> wrote:
+>Let me start with reviewing my own driver. Perhaps someone could review
+>it as well, please?
 
-Signed-off-by: Xiaoting Liu <xiaoting.liu@hxt-semitech.com>
----
- arch/arm/boot/dts/aspeed-bmc-arm-stardragon4800-rep2.dts | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+Someone will review it when the merge window and vacations are over.
 
-diff --git a/arch/arm/boot/dts/aspeed-bmc-arm-stardragon4800-rep2.dts b/arch/arm/boot/dts/aspeed-bmc-arm-stardragon4800-rep2.dts
-index bdfd8c9f3a7c..e7e59da6c9ae 100644
---- a/arch/arm/boot/dts/aspeed-bmc-arm-stardragon4800-rep2.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-arm-stardragon4800-rep2.dts
-@@ -173,6 +173,16 @@
-                        };
-                };
-        };
-+
-+       dps650ab at 58 {
-+               compatible = "dps650ab";
-+               reg = <0x58>;
-+       };
-+
-+       dps650ab at 59 {
-+               compatible = "dps650ab";
-+               reg = <0x59>;
-+       };
- };
-
- &i2c9 {
---
-1.8.3.1
-
-
-
-
-This email is intended only for the named addressee. It may contain information that is confidential/private, legally privileged, or copyright-protected, and you should handle it accordingly. If you are not the intended recipient, you do not have legal rights to retain, copy, or distribute this email or its contents, and should promptly delete the email and all electronic copies in your system; do not retain copies in any media. If you have received this email in error, please notify the sender promptly. Thank you.
-
-
+-- 
+Sent from a small device: formatting sux and brevity is inevitable. 
