@@ -1,20 +1,49 @@
-From: Vijay Khemka <vijaykhemka@fb.com>
-Date: Wed, 9 Jan 2019 18:42:31 +0000
-Subject: phosphor-ipmi-host.service broken
-Message-ID: <F7A6D855-479B-48FD-98C0-FEAAB372B52A@fb.com>
+From: Xiaoting Liu <xiaoting.liu@hxt-semitech.com>
+Date: Fri, 4 Jan 2019 17:03:49 +0800
+Subject: [PATCH 3/4] dts: dps650ab: add dps650ab device tree
+In-Reply-To: <cover.1546591275.git.xiaoting.liu@hxt-semitech.com>
+References: <cover.1546591275.git.xiaoting.liu@hxt-semitech.com>
+Message-ID: <9d928198965a0de4207582d7008c8a9916543445.1546591275.git.xiaoting.liu@hxt-semitech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-I see new changes in this phosphor-ipmi-host.service file where it needs org.openbmc.HostIpmi.service service to be running and this org.openbmc.HostIpmi.service service depends on phosphor-ipmi-host.service file. So it is cyclic dependency which in turn not letting run any of these service.
+Add dps650ab device tree to support power supply dps650ab driver.
+
+Signed-off-by: Xiaoting Liu <xiaoting.liu@hxt-semitech.com>
+---
+ arch/arm/boot/dts/aspeed-bmc-arm-stardragon4800-rep2.dts | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/arch/arm/boot/dts/aspeed-bmc-arm-stardragon4800-rep2.dts b/arch/arm/boot/dts/aspeed-bmc-arm-stardragon4800-rep2.dts
+index bdfd8c9f3a7c..e7e59da6c9ae 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-arm-stardragon4800-rep2.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-arm-stardragon4800-rep2.dts
+@@ -173,6 +173,16 @@
+                        };
+                };
+        };
++
++       dps650ab at 58 {
++               compatible = "dps650ab";
++               reg = <0x58>;
++       };
++
++       dps650ab at 59 {
++               compatible = "dps650ab";
++               reg = <0x59>;
++       };
+ };
+
+ &i2c9 {
+--
+1.8.3.1
 
 
 
-Regards
 
--Vijay
--------------- next part --------------
-An HTML attachment was scrubbed...
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20190109/36a4d397/attachment.html>
+This email is intended only for the named addressee. It may contain information that is confidential/private, legally privileged, or copyright-protected, and you should handle it accordingly. If you are not the intended recipient, you do not have legal rights to retain, copy, or distribute this email or its contents, and should promptly delete the email and all electronic copies in your system; do not retain copies in any media. If you have received this email in error, please notify the sender promptly. Thank you.
+
+
