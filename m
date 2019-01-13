@@ -1,82 +1,29 @@
-From: Vijay Khemka <vijaykhemka@fb.com>
-Date: Sat, 12 Jan 2019 00:33:08 +0000
-Subject: [Potential Spoof] Re: [Potential Spoof] Re: [PATCH v2 4/4] ARM:
- dts: aspeed: Add lpc ctrl for Facebook
-Message-ID: <5972B57A-23D5-43F4-9476-229379B96C7C@fb.com>
+From: Andrew Jeffery <andrew@aj.id.au>
+Date: Mon, 14 Jan 2019 08:41:40 +1030
+Subject: phosphor-ipmi-host.service broken
+In-Reply-To: <F7A6D855-479B-48FD-98C0-FEAAB372B52A@fb.com>
+References: <F7A6D855-479B-48FD-98C0-FEAAB372B52A@fb.com>
+Message-ID: <1547417500.2307798.1633547288.3FA0702E@webmail.messagingengine.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Joel,
-Please merge these patches as it is required by facebook platform.
+Hi Vijay,
 
-Regards
--Vijay
+The linux-aspeed at lists.ozlabs.org list is for kernel patches going upstream - Joel uses it as a way to track relevant patches in patchwork. For openbmc discussions (i.e. userspace questions like this) please use openbmc at lists.ozlabs.org
 
-?On 1/7/19, 11:25 AM, "Linux-aspeed on behalf of Vijay Khemka" <linux-aspeed-bounces+vijaykhemka=fb.com at lists.ozlabs.org on behalf of vijaykhemka@fb.com> wrote:
 
-    Please merge these patches in upstream kernel.
-    
-    Regards
-    -Vijay
-    
-    On 12/20/18, 10:06 AM, "Linux-aspeed on behalf of Vijay Khemka" <linux-aspeed-bounces+vijaykhemka=fb.com at lists.ozlabs.org on behalf of vijaykhemka@fb.com> wrote:
-    
-        Joel, Can you please take care of these patches merge.
-        
-        On 12/17/18, 12:04 PM, "Vijay Khemka" <vijaykhemka@fb.com> wrote:
-        
-            Added lpc ctrl device to enable LPC clock in Facebook
-            Tiogapass device tree.
-            
-            Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
-            ---
-             .../boot/dts/aspeed-bmc-facebook-tiogapass.dts  | 17 +++++++++++++++++
-             1 file changed, 17 insertions(+)
-            
-            diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
-            index 73e58a821613..ef7875b54562 100644
-            --- a/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
-            +++ b/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
-            @@ -22,6 +22,17 @@
-             		reg = <0x80000000 0x20000000>;
-             	};
-             
-            +	reserved-memory {
-            +		#address-cells = <1>;
-            +		#size-cells = <1>;
-            +		ranges;
-            +
-            +		flash_memory: region at 98000000 {
-            +			no-map;
-            +			reg = <0x98000000 0x00001000>; /* 4K */
-            +		};
-            +	};
-            +
-             	iio-hwmon {
-             		compatible = "iio-hwmon";
-             		io-channels = <&adc 0>, <&adc 1>, <&adc 2>, <&adc 3>,
-            @@ -54,6 +65,12 @@
-             	};
-             };
-             
-            +&lpc_ctrl {
-            +	status = "okay";
-            +	memory-region = <&flash_memory>;
-            +	flash = <&spi1>;
-            +};
-            +
-             &uart1 {
-             	// Host Console
-             	status = "okay";
-            -- 
-            2.17.1
-            
-            
-        
-        
-    
-    
+On Thu, 10 Jan 2019, at 05:12, Vijay Khemka wrote:
+> I see new changes in this phosphor-ipmi-host.service file where it needs 
+> org.openbmc.HostIpmi.service service to be running and this 
+> org.openbmc.HostIpmi.service service depends on phosphor-ipmi-
+> host.service file. So it is cyclic dependency which in turn not letting 
+> run any of these service.
 
+We've fixed this: https://gerrit.openbmc-project.xyz/#/c/openbmc/meta-phosphor/+/16856/
+
+Sorry for breaking things - I had forgotten about the KCS backend.
+
+Andrew
