@@ -1,106 +1,80 @@
 From: Vijay Khemka <vijaykhemka@fb.com>
-Date: Mon, 14 Jan 2019 19:28:41 +0000
-Subject: [Potential Spoof] Re: [Potential Spoof] Re: [PATCH v2 4/4] ARM:
- dts: aspeed: Add lpc ctrl for Facebook
-In-Reply-To: <1547419180.2315773.1633559160.3F7D29CF@webmail.messagingengine.com>
-References: <5972B57A-23D5-43F4-9476-229379B96C7C@fb.com>
- <1547419180.2315773.1633559160.3F7D29CF@webmail.messagingengine.com>
-Message-ID: <B36B9550-0E17-442C-974A-908736EB2980@fb.com>
+Date: Mon, 14 Jan 2019 17:51:46 -0800
+Subject: [PATCH] misc: aspeed-lpc-ctrl: make memory-region optional
+Message-ID: <20190115015146.2412785-1-vijaykhemka@fb.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+Makiing memory-region as optional parameter in device tree if
+user needs to use memory-region then define in devicetree.
 
+Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
+---
+ drivers/misc/aspeed-lpc-ctrl.c | 30 ++++++++++++++++++------------
+ 1 file changed, 18 insertions(+), 12 deletions(-)
 
-?On 1/13/19, 2:39 PM, "Andrew Jeffery" <andrew@aj.id.au> wrote:
-
-    Hi Vijay,
-    
-    Sorry for providing an opinion so late, however:
-    
-    On Sat, 12 Jan 2019, at 11:03, Vijay Khemka wrote:
-    > Joel,
-    > Please merge these patches as it is required by facebook platform.
-    > 
-    > Regards
-    > -Vijay
-    > 
-    > On 1/7/19, 11:25 AM, "Linux-aspeed on behalf of Vijay Khemka" <linux-
-    > aspeed-bounces+vijaykhemka=fb.com at lists.ozlabs.org on behalf of 
-    > vijaykhemka at fb.com> wrote:
-    > 
-    >     Please merge these patches in upstream kernel.
-    >     
-    >     Regards
-    >     -Vijay
-    >     
-    >     On 12/20/18, 10:06 AM, "Linux-aspeed on behalf of Vijay Khemka" 
-    > <linux-aspeed-bounces+vijaykhemka=fb.com@lists.ozlabs.org on behalf of 
-    > vijaykhemka at fb.com> wrote:
-    >     
-    >         Joel, Can you please take care of these patches merge.
-    >         
-    >         On 12/17/18, 12:04 PM, "Vijay Khemka" <vijaykhemka@fb.com> wrote:
-    >         
-    >             Added lpc ctrl device to enable LPC clock in Facebook
-    >             Tiogapass device tree.
-    >             
-    >             Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
-    >             ---
-    >              .../boot/dts/aspeed-bmc-facebook-tiogapass.dts  | 17 ++++++
-    > +++++++++++
-    >              1 file changed, 17 insertions(+)
-    >             
-    >             diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-
-    > tiogapass.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
-    >             index 73e58a821613..ef7875b54562 100644
-    >             --- a/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
-    >             +++ b/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
-    >             @@ -22,6 +22,17 @@
-    >              		reg = <0x80000000 0x20000000>;
-    >              	};
-    >              
-    >             +	reserved-memory {
-    >             +		#address-cells = <1>;
-    >             +		#size-cells = <1>;
-    >             +		ranges;
-    >             +
-    >             +		flash_memory: region at 98000000 {
-    >             +			no-map;
-    >             +			reg = <0x98000000 0x00001000>; /* 4K */
-    >             +		};
-    >             +	};
-    >             +
-    >              	iio-hwmon {
-    >              		compatible = "iio-hwmon";
-    >              		io-channels = <&adc 0>, <&adc 1>, <&adc 2>, <&adc 3>,
-    >             @@ -54,6 +65,12 @@
-    >              	};
-    >              };
-    >              
-    >             +&lpc_ctrl {
-    >             +	status = "okay";
-    >             +	memory-region = <&flash_memory>;
-    >             +	flash = <&spi1>;
-    >             +};
-    >             +
-    >              &uart1 {
-    >              	// Host Console
-    >              	status = "okay";
-    >             -- 
-    >             2.17.1
-    
-    I understand you just want to make your system work, but this is a
-    broken way to do it. And that's not your fault - we should really fix
-    the driver. I think the memory-region phandle should be optional
-    and the driver should simply limit the options available to the ioctl
-    to just the flash region if the memory node is not present (i.e. return
-    an error if the memory region is requested but not described in the
-    devicetree).
-Let me fix driver itself first.
-    
-    Andrew
-    
+diff --git a/drivers/misc/aspeed-lpc-ctrl.c b/drivers/misc/aspeed-lpc-ctrl.c
+index a024f8042259..20507f0764fb 100644
+--- a/drivers/misc/aspeed-lpc-ctrl.c
++++ b/drivers/misc/aspeed-lpc-ctrl.c
+@@ -90,6 +90,10 @@ static long aspeed_lpc_ctrl_ioctl(struct file *file, unsigned int cmd,
+ 		if (map.window_id != 0)
+ 			return -EINVAL;
+ 
++		/* If memory-region is not described in device tree */
++		if (!lpc_ctrl->mem_size)
++			return -EINVAL;
++
+ 		map.size = lpc_ctrl->mem_size;
+ 
+ 		return copy_to_user(p, &map, sizeof(map)) ? -EFAULT : 0;
+@@ -129,6 +133,10 @@ static long aspeed_lpc_ctrl_ioctl(struct file *file, unsigned int cmd,
+ 			addr = lpc_ctrl->pnor_base;
+ 			size = lpc_ctrl->pnor_size;
+ 		} else if (map.window_type == ASPEED_LPC_CTRL_WINDOW_MEMORY) {
++			/* If memory-region is not described in device tree */
++			if (!lpc_ctrl->mem_size)
++				return -EINVAL;
++
+ 			addr = lpc_ctrl->mem_base;
+ 			size = lpc_ctrl->mem_size;
+ 		} else {
+@@ -214,22 +222,20 @@ static int aspeed_lpc_ctrl_probe(struct platform_device *pdev)
+ 
+ 	dev_set_drvdata(&pdev->dev, lpc_ctrl);
+ 
++	/* If memory-region is described in device tree then store */
+ 	node = of_parse_phandle(dev->of_node, "memory-region", 0);
+-	if (!node) {
+-		dev_err(dev, "Didn't find reserved memory\n");
+-		return -EINVAL;
+-	}
++	if (node) {
++		rc = of_address_to_resource(node, 0, &resm);
++		of_node_put(node);
++		if (rc) {
++			dev_err(dev, "Couldn't address to resource for reserved memory\n");
++			return -ENOMEM;
++		}
+ 
+-	rc = of_address_to_resource(node, 0, &resm);
+-	of_node_put(node);
+-	if (rc) {
+-		dev_err(dev, "Couldn't address to resource for reserved memory\n");
+-		return -ENOMEM;
++		lpc_ctrl->mem_size = resource_size(&resm);
++		lpc_ctrl->mem_base = resm.start;
+ 	}
+ 
+-	lpc_ctrl->mem_size = resource_size(&resm);
+-	lpc_ctrl->mem_base = resm.start;
+-
+ 	lpc_ctrl->regmap = syscon_node_to_regmap(
+ 			pdev->dev.parent->of_node);
+ 	if (IS_ERR(lpc_ctrl->regmap)) {
+-- 
+2.17.1
 
