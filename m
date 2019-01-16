@@ -1,123 +1,35 @@
-From: Vijay Khemka <vijaykhemka@fb.com>
-Date: Wed, 16 Jan 2019 19:16:53 +0000
-Subject: [PATCH] misc: aspeed-lpc-ctrl: make memory-region optional
-In-Reply-To: <CACPK8Xesi2tQzH1d=Ow6VucO3qo6ptosKb-WDi-Cw1vg5FXGzg@mail.gmail.com>
-References: <20190115015146.2412785-1-vijaykhemka@fb.com>
- <CACPK8Xesi2tQzH1d=Ow6VucO3qo6ptosKb-WDi-Cw1vg5FXGzg@mail.gmail.com>
-Message-ID: <6C0EA492-D9D4-481F-BF8B-5EBD8B38390B@fb.com>
+From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+Date: Wed, 16 Jan 2019 11:39:43 -0800
+Subject: [PATCH] i2c: aspeed: Remove hard-coded bus timeout value setting
+Message-ID: <20190116193943.6004-1-jae.hyun.yoo@linux.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Sure Joel,
-I will do v2 and submit for review today.
+This commit removes hard-coded bus timeout value setting so that
+it can be set by i2c-core-base.
 
-Regards
--Vijay
+Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+Reviewed-by: Joel Stanley <joel@jms.id.au>
+Reviewed-by: Brendan Higgins <brendanhiggins@google.com>
+---
+ drivers/i2c/busses/i2c-aspeed.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-?On 1/15/19, 4:11 PM, "Joel Stanley" <joel@jms.id.au> wrote:
-
-    Hi Vijay,
-    
-    On Tue, 15 Jan 2019 at 12:51, Vijay Khemka <vijaykhemka@fb.com> wrote:
-    >
-    > Makiing memory-region as optional parameter in device tree if
-    > user needs to use memory-region then define in devicetree.
-    
-    Thank you for finding the time to do this work. You're not the first
-    to be blocked by this limitation, but you are the first who found the
-    time to propose a patch.
-    
-    I think we should complete the rework to make the flash device
-    optional too. Can you do a v2 with a proposal for that?
-    
-    >
-    > Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
-    > ---
-    >  drivers/misc/aspeed-lpc-ctrl.c | 30 ++++++++++++++++++------------
-    >  1 file changed, 18 insertions(+), 12 deletions(-)
-    >
-    > diff --git a/drivers/misc/aspeed-lpc-ctrl.c b/drivers/misc/aspeed-lpc-ctrl.c
-    > index a024f8042259..20507f0764fb 100644
-    > --- a/drivers/misc/aspeed-lpc-ctrl.c
-    > +++ b/drivers/misc/aspeed-lpc-ctrl.c
-    > @@ -90,6 +90,10 @@ static long aspeed_lpc_ctrl_ioctl(struct file *file, unsigned int cmd,
-    >                 if (map.window_id != 0)
-    >                         return -EINVAL;
-    >
-    > +               /* If memory-region is not described in device tree */
-    > +               if (!lpc_ctrl->mem_size)
-    > +                       return -EINVAL;
-    > +
-    >                 map.size = lpc_ctrl->mem_size;
-    >
-    >                 return copy_to_user(p, &map, sizeof(map)) ? -EFAULT : 0;
-    > @@ -129,6 +133,10 @@ static long aspeed_lpc_ctrl_ioctl(struct file *file, unsigned int cmd,
-    >                         addr = lpc_ctrl->pnor_base;
-    >                         size = lpc_ctrl->pnor_size;
-    >                 } else if (map.window_type == ASPEED_LPC_CTRL_WINDOW_MEMORY) {
-    > +                       /* If memory-region is not described in device tree */
-    > +                       if (!lpc_ctrl->mem_size)
-    
-    Should it print a message here? I think a dev_dbg makes sense.
-    
-    > +                               return -EINVAL;
-    > +
-    >                         addr = lpc_ctrl->mem_base;
-    >                         size = lpc_ctrl->mem_size;
-    >                 } else {
-    > @@ -214,22 +222,20 @@ static int aspeed_lpc_ctrl_probe(struct platform_device *pdev)
-    >
-    >         dev_set_drvdata(&pdev->dev, lpc_ctrl);
-    >
-    > +       /* If memory-region is described in device tree then store */
-    >         node = of_parse_phandle(dev->of_node, "memory-region", 0);
-    > -       if (!node) {
-    > -               dev_err(dev, "Didn't find reserved memory\n");
-    > -               return -EINVAL;
-    > -       }
-    > +       if (node) {
-    
-    Print a debug message when we didn't find the node.
-    
-    > +               rc = of_address_to_resource(node, 0, &resm);
-    > +               of_node_put(node);
-    > +               if (rc) {
-    > +                       dev_err(dev, "Couldn't address to resource for reserved memory\n");
-    > +                       return -ENOMEM;
-    > +               }
-    >
-    > -       rc = of_address_to_resource(node, 0, &resm);
-    > -       of_node_put(node);
-    > -       if (rc) {
-    > -               dev_err(dev, "Couldn't address to resource for reserved memory\n");
-    > -               return -ENOMEM;
-    > +               lpc_ctrl->mem_size = resource_size(&resm);
-    > +               lpc_ctrl->mem_base = resm.start;
-    >         }
-    >
-    > -       lpc_ctrl->mem_size = resource_size(&resm);
-    > -       lpc_ctrl->mem_base = resm.start;
-    > -
-    >         lpc_ctrl->regmap = syscon_node_to_regmap(
-    >                         pdev->dev.parent->of_node);
-    >         if (IS_ERR(lpc_ctrl->regmap)) {
-    
-    Down below here is this line:
-    
-    >        dev_info(dev, "Loaded at %pr\n", &resm);
-    
-    As resm is first used for the flash resource and then the memory
-    region, it will display the location of the flash when the memory
-    region is not present. This is confusing. You should either print out
-    the regions separately, or consider removing this dev_info completely.
-
-Yes it did confuse me too and I also thought of removing it. I was waiting for your opinion __
-    
-    > --
-    > 2.17.1
-    >
-    
+diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
+index 8dc9161ced38..833b6b6a4c7e 100644
+--- a/drivers/i2c/busses/i2c-aspeed.c
++++ b/drivers/i2c/busses/i2c-aspeed.c
+@@ -930,7 +930,6 @@ static int aspeed_i2c_probe_bus(struct platform_device *pdev)
+ 	init_completion(&bus->cmd_complete);
+ 	bus->adap.owner = THIS_MODULE;
+ 	bus->adap.retries = 0;
+-	bus->adap.timeout = 5 * HZ;
+ 	bus->adap.algo = &aspeed_i2c_algo;
+ 	bus->adap.dev.parent = &pdev->dev;
+ 	bus->adap.dev.of_node = pdev->dev.of_node;
+-- 
+2.20.1
 
