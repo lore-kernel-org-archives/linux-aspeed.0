@@ -1,185 +1,56 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Thu, 17 Jan 2019 21:21:04 +1030
-Subject: [PATCH v3] ARM:dts:aspeed Add Inspur on5263m5 BMC
-In-Reply-To: <1547717562-17778-1-git-send-email-wangzqbj@inspur.com>
-References: <1547717562-17778-1-git-send-email-wangzqbj@inspur.com>
-Message-ID: <1547722264.3333955.1636977176.3F135DC4@webmail.messagingengine.com>
+From: Stefan Schaeckeler <schaecsn@gmx.net>
+Date: Thu, 17 Jan 2019 08:38:17 -0800
+Subject: [PATCH v2 2/2] dt-bindings: edac: Aspeed AST2500
+In-Reply-To: <1547743097-5236-1-git-send-email-schaecsn@gmx.net>
+References: <1547743097-5236-1-git-send-email-schaecsn@gmx.net>
+Message-ID: <1547743097-5236-3-git-send-email-schaecsn@gmx.net>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+From: Stefan M Schaeckeler <sschaeck@cisco.com>
 
+Add support for EDAC on the Aspeed AST2500 SoC.
 
-On Thu, 17 Jan 2019, at 20:02, John Wang wrote:
-> Add initial version of device tree file for on5263m5 ast2500bmc
-> 
-> Signed-off-by: John Wang <wangzqbj@inspur.com>
+Signed-off-by: Stefan M Schaeckeler <sschaeck@cisco.com>
+---
+ .../bindings/edac/aspeed-sdram-edac.txt       | 25 +++++++++++++++++++
+ 1 file changed, 25 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/edac/aspeed-sdram-edac.txt
 
-Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
+diff --git a/Documentation/devicetree/bindings/edac/aspeed-sdram-edac.txt b/Documentation/devicetree/bindings/edac/aspeed-sdram-edac.txt
+new file mode 100644
+index 000000000000..6a0f3d90d682
+--- /dev/null
++++ b/Documentation/devicetree/bindings/edac/aspeed-sdram-edac.txt
+@@ -0,0 +1,25 @@
++Aspeed AST2500 SoC EDAC node
++
++The Aspeed AST2500 SoC supports DDR3 and DDR4 memory with and without ECC (error
++correction check).
++
++The memory controller supports SECDED (single bit error correction, double bit
++error detection) and single bit error auto scrubbing by reserving 8 bits for
++every 64 bit word (effectively reducing available memory to 8/9).
++
++Note, the bootloader must configure ECC mode in the memory controller.
++
++
++Required properties:
++- compatible: should be "aspeed,ast2500-sdram-edac"
++- reg:        sdram controller register set should be <0x1e6e0000 0x174>
++- interrupts: should be AVIC interrupt #0
++
++
++Example:
++
++	edac: sdram at 1e6e0000 {
++		compatible = "aspeed,ast2500-sdram-edac";
++		reg = <0x1e6e0000 0x174>;
++		interrupts = <0>;
++	};
+-- 
+2.19.1
 
-> ---
-> v3: Fix some style problems like trailing whitespace,space before tabs.
-> ---
-> v2: FIx reserved memory address and correct copyright
-> ---
->  arch/arm/boot/dts/aspeed-bmc-inspur-on5263m5.dts | 145 +++++++++++++++++++++++
->  1 file changed, 145 insertions(+)
->  create mode 100644 arch/arm/boot/dts/aspeed-bmc-inspur-on5263m5.dts
-> 
-> diff --git a/arch/arm/boot/dts/aspeed-bmc-inspur-on5263m5.dts b/arch/
-> arm/boot/dts/aspeed-bmc-inspur-on5263m5.dts
-> new file mode 100644
-> index 0000000..2337ee2
-> --- /dev/null
-> +++ b/arch/arm/boot/dts/aspeed-bmc-inspur-on5263m5.dts
-> @@ -0,0 +1,145 @@
-> +// SPDX-License-Identifier: GPL-2.0
-> +// Copyright (c) 2018 Inspur Corporation
-> +/dts-v1/;
-> +
-> +#include "aspeed-g5.dtsi"
-> +#include <dt-bindings/gpio/aspeed-gpio.h>
-> +
-> +/ {
-> +	model = "ON5263M5 BMC";
-> +	compatible = "inspur,on5263m5-bmc", "aspeed,ast2500";
-> +
-> +	chosen {
-> +		stdout-path = &uart5;
-> +		bootargs = "earlyprintk";
-> +	};
-> +
-> +	memory {
-> +		reg = <0x80000000 0x20000000>;
-> +	};
-> +
-> +	reserved-memory {
-> +		#address-cells = <1>;
-> +		#size-cells = <1>;
-> +		ranges;
-> +
-> +		vga_memory: framebuffer at 9f000000 {
-> +			no-map;
-> +			reg = <0x9f000000 0x01000000>;
-> +		};
-> +	};
-> +
-> +	leds {
-> +	    compatible = "gpio-leds";
-> +	    bmc_alive {
-> +		label = "bmc_alive";
-> +		gpios = <&gpio ASPEED_GPIO(I, 1) GPIO_ACTIVE_LOW>;
-> +		linux,default-trigger = "timer";
-> +	    };
-> +	};
-> +
-> +	iio-hwmon {
-> +		compatible = "iio-hwmon";
-> +		io-channels = <&adc 0>, <&adc 1>, <&adc 2>, <&adc 3>,
-> +			<&adc 4>, <&adc 5>, <&adc 6>, <&adc 7>;
-> +	};
-> +
-> +};
-> +
-> +&fmc {
-> +	status = "okay";
-> +	flash at 0 {
-> +		status = "okay";
-> +		m25p,fast-read;
-> +		label = "bmc";
-> +#include "openbmc-flash-layout.dtsi"
-> +	};
-> +};
-> +
-> +&spi1 {
-> +	status = "okay";
-> +	pinctrl-names = "default";
-> +	pinctrl-0 = <&pinctrl_spi1_default>;
-> +
-> +	flash at 0 {
-> +		status = "okay";
-> +		m25p,fast-read;
-> +		label = "pnor";
-> +	};
-> +};
-> +
-> +&uart5 {
-> +	status = "okay";
-> +};
-> +
-> +&mac0 {
-> +	status = "okay";
-> +
-> +	pinctrl-names = "default";
-> +	pinctrl-0 = <&pinctrl_rmii1_default>;
-> +	use-ncsi;
-> +};
-> +
-> +&mac1 {
-> +	status = "okay";
-> +
-> +	pinctrl-names = "default";
-> +	pinctrl-0 = <&pinctrl_rgmii2_default &pinctrl_mdio2_default>;
-> +};
-> +
-> +&i2c6 {
-> +	status = "okay";
-> +
-> +	tmp421 at 4e {
-> +		compatible = "ti,tmp421";
-> +		reg = <0x4e>;
-> +	};
-> +
-> +	tmp112 at 48 {
-> +		compatible = "ti,tmp112";
-> +		reg = <0x48>;
-> +	};
-> +
-> +	eeprom at 54 {
-> +		compatible = "atmel,24c64";
-> +		reg = <0x54>;
-> +		pagesize = <32>;
-> +	};
-> +};
-> +
-> +&i2c7 {
-> +	status = "okay";
-> +
-> +	adm1278 at 11 {
-> +		  compatible = "adi,adm1278";
-> +		  reg = <0x11>;
-> +	};
-> +};
-> +
-> +&gfx {
-> +	status = "okay";
-> +};
-> +
-> +&pinctrl {
-> +	aspeed,external-nodes = <&gfx &lhc>;
-> +};
-> +
-> +&pwm_tacho {
-> +	status = "okay";
-> +	pinctrl-names = "default";
-> +	pinctrl-0 = <&pinctrl_pwm0_default &pinctrl_pwm1_default>;
-> +
-> +	fan at 0 {
-> +		reg = <0x00>;
-> +		aspeed,fan-tach-ch = /bits/ 8 <0x00 0x01>;
-> +	};
-> +
-> +	fan at 1 {
-> +		reg = <0x01>;
-> +		aspeed,fan-tach-ch = /bits/ 8 <0x02 0x03>;
-> +	};
-> +};
-> +
-> +&adc {
-> +	status = "okay";
-> +};
-> -- 
-> 2.7.4
-> 
