@@ -1,155 +1,218 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Thu, 17 Jan 2019 17:17:16 +1100
-Subject: [PATCH v2] misc: aspeed-lpc-ctrl: make parameter optional
-In-Reply-To: <20190116220154.1026171-1-vijaykhemka@fb.com>
-References: <20190116220154.1026171-1-vijaykhemka@fb.com>
-Message-ID: <CACPK8XdCVvUaCFsMXdEkc9KG0TQCGpYV55u-X7pY7vBLLHuQtw@mail.gmail.com>
+Date: Thu, 17 Jan 2019 18:34:34 +1100
+Subject: [PATCH] ARM:dts:aspeed Add Inspur on5263m5 BMC
+In-Reply-To: <1547708191-8721-1-git-send-email-wangzqbj@inspur.com>
+References: <1547708191-8721-1-git-send-email-wangzqbj@inspur.com>
+Message-ID: <CACPK8XeL0N59CkBKyaBek19X_fmUNZCqQkOM+2i=g60LMJexfg@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, 17 Jan 2019 at 09:02, Vijay Khemka <vijaykhemka@fb.com> wrote:
+On Thu, 17 Jan 2019 at 17:56, John Wang <wangzqbj@inspur.com> wrote:
 >
-> Makiing memory-region and flash as optional parameter in device
-> tree if user needs to use these parameter through ioctl then
-> need to define in devicetree.
+> Add initial version of device tree file for on5263m5 ast2500bmc
 >
-> Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
+> Signed-off-by: John Wang <wangzqbj@inspur.com>
 
-Thanks! This looks okay to me. I tested it on one of our systems which
-uses both flash and reserved memory and it was fine.
+The changes look good. It's convention to add a changelog to your
+patch when you resend it, just below the ---. For example:
 
-Reviewed-by: Joel Stanley <joel@jms.id.au>
+---
+v2: FIx reserved memory address and correct copyright
 
-Can you also send a patch to update the bindings at
-Documentation/devicetree/bindings/mfd/aspeed-lpc.txt ? I think the
-only change you need to make is to move the memory region and flash
-properties to optional (instead of required).
+You should also send the patch with v2 (or v3, or v4, etc) in the
+subject line. Git format-patch can do this for you with the -v flag:
 
-Cheers,
+ git format-patch -v 2 --to=openbmc at lists.ozlabs.org -1
+
+Keep this in mind for next time.
+
+Your patch has some bad whitespace. I get this warnings when applying:
+
+Applying: ARM:dts:aspeed Add Inspur on5263m5 BMC
+.git/rebase-apply/patch:42: trailing whitespace.
+
+.git/rebase-apply/patch:45: trailing whitespace.
+
+.git/rebase-apply/patch:114: trailing whitespace.
+
+.git/rebase-apply/patch:117: trailing whitespace, space before tab in indent.
+            reg = <0x54>;
+.git/rebase-apply/patch:145: space before tab in indent.
+           reg = <0x00>;
+warning: squelched 6 whitespace errors
+warning: 11 lines add whitespace errors.
+
+You can use a tool called checkpatch.pl to check that your patches are
+okay before sending:
+
+./scripts/checkpatch.pl 0001-ARM-dts-aspeed-Add-Inspur-on5263m5-BMC.patch
+
+Can you please do that and send a v3?
+
+Thanks!
 
 Joel
 
-> ---
->  drivers/misc/aspeed-lpc-ctrl.c | 58 +++++++++++++++++++++-------------
->  1 file changed, 36 insertions(+), 22 deletions(-)
+
+>  arch/arm/boot/dts/aspeed-bmc-inspur-on5263m5.dts | 146 +++++++++++++++++++++++
+>  1 file changed, 146 insertions(+)
+>  create mode 100644 arch/arm/boot/dts/aspeed-bmc-inspur-on5263m5.dts
 >
-> diff --git a/drivers/misc/aspeed-lpc-ctrl.c b/drivers/misc/aspeed-lpc-ctrl.c
-> index a024f8042259..332210e06e98 100644
-> --- a/drivers/misc/aspeed-lpc-ctrl.c
-> +++ b/drivers/misc/aspeed-lpc-ctrl.c
-> @@ -68,6 +68,7 @@ static long aspeed_lpc_ctrl_ioctl(struct file *file, unsigned int cmd,
->                 unsigned long param)
->  {
->         struct aspeed_lpc_ctrl *lpc_ctrl = file_aspeed_lpc_ctrl(file);
-> +       struct device *dev = file->private_data;
->         void __user *p = (void __user *)param;
->         struct aspeed_lpc_ctrl_mapping map;
->         u32 addr;
-> @@ -90,6 +91,12 @@ static long aspeed_lpc_ctrl_ioctl(struct file *file, unsigned int cmd,
->                 if (map.window_id != 0)
->                         return -EINVAL;
->
-> +               /* If memory-region is not described in device tree */
-> +               if (!lpc_ctrl->mem_size) {
-> +                       dev_err(dev, "Didn't find reserved memory\n");
-> +                       return -EINVAL;
-> +               }
+> diff --git a/arch/arm/boot/dts/aspeed-bmc-inspur-on5263m5.dts b/arch/arm/boot/dts/aspeed-bmc-inspur-on5263m5.dts
+> new file mode 100644
+> index 0000000..064ae30
+> --- /dev/null
+> +++ b/arch/arm/boot/dts/aspeed-bmc-inspur-on5263m5.dts
+> @@ -0,0 +1,146 @@
+> +// SPDX-License-Identifier: GPL-2.0
+> +// Copyright (c) 2018 Inspur Corporation
+> +/dts-v1/;
 > +
->                 map.size = lpc_ctrl->mem_size;
->
->                 return copy_to_user(p, &map, sizeof(map)) ? -EFAULT : 0;
-> @@ -126,9 +133,18 @@ static long aspeed_lpc_ctrl_ioctl(struct file *file, unsigned int cmd,
->                         return -EINVAL;
->
->                 if (map.window_type == ASPEED_LPC_CTRL_WINDOW_FLASH) {
-> +                       if (!lpc_ctrl->pnor_size) {
-> +                               dev_err(dev, "Didn't find host pnor flash\n");
-> +                               return -EINVAL;
-> +                       }
->                         addr = lpc_ctrl->pnor_base;
->                         size = lpc_ctrl->pnor_size;
->                 } else if (map.window_type == ASPEED_LPC_CTRL_WINDOW_MEMORY) {
-> +                       /* If memory-region is not described in device tree */
-> +                       if (!lpc_ctrl->mem_size) {
-> +                               dev_err(dev, "Didn't find reserved memory\n");
-> +                               return -EINVAL;
-> +                       }
->                         addr = lpc_ctrl->mem_base;
->                         size = lpc_ctrl->mem_size;
->                 } else {
-> @@ -196,17 +212,17 @@ static int aspeed_lpc_ctrl_probe(struct platform_device *pdev)
->         if (!lpc_ctrl)
->                 return -ENOMEM;
->
-> +       /* If flash is described in device tree then store */
->         node = of_parse_phandle(dev->of_node, "flash", 0);
->         if (!node) {
-> -               dev_err(dev, "Didn't find host pnor flash node\n");
-> -               return -ENODEV;
-> -       }
-> -
-> -       rc = of_address_to_resource(node, 1, &resm);
-> -       of_node_put(node);
-> -       if (rc) {
-> -               dev_err(dev, "Couldn't address to resource for flash\n");
-> -               return rc;
-> +               dev_dbg(dev, "Didn't find host pnor flash node\n");
-> +       } else {
-> +               rc = of_address_to_resource(node, 1, &resm);
-> +               of_node_put(node);
-> +               if (rc) {
-> +                       dev_err(dev, "Couldn't address to resource for flash\n");
-> +                       return rc;
-> +               }
->         }
->
->         lpc_ctrl->pnor_size = resource_size(&resm);
-> @@ -214,22 +230,22 @@ static int aspeed_lpc_ctrl_probe(struct platform_device *pdev)
->
->         dev_set_drvdata(&pdev->dev, lpc_ctrl);
->
-> +       /* If memory-region is described in device tree then store */
->         node = of_parse_phandle(dev->of_node, "memory-region", 0);
->         if (!node) {
-> -               dev_err(dev, "Didn't find reserved memory\n");
-> -               return -EINVAL;
-> -       }
-> +               dev_dbg(dev, "Didn't find reserved memory\n");
-> +       } else {
-> +               rc = of_address_to_resource(node, 0, &resm);
-> +               of_node_put(node);
-> +               if (rc) {
-> +                       dev_err(dev, "Couldn't address to resource for reserved memory\n");
-> +                       return -ENOMEM;
-> +               }
->
-> -       rc = of_address_to_resource(node, 0, &resm);
-> -       of_node_put(node);
-> -       if (rc) {
-> -               dev_err(dev, "Couldn't address to resource for reserved memory\n");
-> -               return -ENOMEM;
-> +               lpc_ctrl->mem_size = resource_size(&resm);
-> +               lpc_ctrl->mem_base = resm.start;
->         }
->
-> -       lpc_ctrl->mem_size = resource_size(&resm);
-> -       lpc_ctrl->mem_base = resm.start;
-> -
->         lpc_ctrl->regmap = syscon_node_to_regmap(
->                         pdev->dev.parent->of_node);
->         if (IS_ERR(lpc_ctrl->regmap)) {
-> @@ -258,8 +274,6 @@ static int aspeed_lpc_ctrl_probe(struct platform_device *pdev)
->                 goto err;
->         }
->
-> -       dev_info(dev, "Loaded at %pr\n", &resm);
-> -
->         return 0;
->
->  err:
+> +#include "aspeed-g5.dtsi"
+> +#include <dt-bindings/gpio/aspeed-gpio.h>
+> +
+> +/ {
+> +       model = "ON5263M5 BMC";
+> +       compatible = "inspur,on5263m5-bmc", "aspeed,ast2500";
+> +
+> +       chosen {
+> +               stdout-path = &uart5;
+> +               bootargs = "earlyprintk";
+> +       };
+> +
+> +       memory {
+> +               reg = <0x80000000 0x20000000>;
+> +       };
+> +
+> +       reserved-memory {
+> +               #address-cells = <1>;
+> +               #size-cells = <1>;
+> +               ranges;
+> +
+> +               vga_memory: framebuffer at 9f000000 {
+> +                       no-map;
+> +                       reg = <0x9f000000 0x01000000>;
+> +               };
+> +       };
+> +
+> +       leds {
+> +           compatible = "gpio-leds";
+> +
+> +           bmc_alive {
+> +               label = "bmc_alive";
+> +               gpios = <&gpio ASPEED_GPIO(I, 1) GPIO_ACTIVE_LOW>;
+> +               linux,default-trigger = "timer";
+> +           };
+> +       };
+> +
+> +       iio-hwmon {
+> +               compatible = "iio-hwmon";
+> +               io-channels = <&adc 0>, <&adc 1>, <&adc 2>, <&adc 3>,
+> +                       <&adc 4>, <&adc 5>, <&adc 6>, <&adc 7>;
+> +       };
+> +
+> +};
+> +
+> +&fmc {
+> +       status = "okay";
+> +       flash at 0 {
+> +               status = "okay";
+> +               m25p,fast-read;
+> +               label = "bmc";
+> +#include "openbmc-flash-layout.dtsi"
+> +       };
+> +};
+> +
+> +&spi1 {
+> +       status = "okay";
+> +       pinctrl-names = "default";
+> +       pinctrl-0 = <&pinctrl_spi1_default>;
+> +
+> +       flash at 0 {
+> +               status = "okay";
+> +               m25p,fast-read;
+> +               label = "pnor";
+> +       };
+> +};
+> +
+> +&uart5 {
+> +       status = "okay";
+> +};
+> +
+> +&mac0 {
+> +       status = "okay";
+> +
+> +       pinctrl-names = "default";
+> +       pinctrl-0 = <&pinctrl_rmii1_default>;
+> +       use-ncsi;
+> +};
+> +
+> +&mac1 {
+> +       status = "okay";
+> +
+> +       pinctrl-names = "default";
+> +       pinctrl-0 = <&pinctrl_rgmii2_default &pinctrl_mdio2_default>;
+> +};
+> +
+> +&i2c6 {
+> +       status = "okay";
+> +
+> +       tmp421 at 4e {
+> +               compatible = "ti,tmp421";
+> +               reg = <0x4e>;
+> +       };
+> +
+> +       tmp112 at 48 {
+> +               compatible = "ti,tmp112";
+> +               reg = <0x48>;
+> +       };
+> +
+> +       eeprom at 54 {
+> +               compatible = "atmel,24c64";
+> +               reg = <0x54>;
+> +               pagesize = <32>;
+> +       };
+> +};
+> +
+> +&i2c7 {
+> +       status = "okay";
+> +
+> +       adm1278 at 11 {
+> +                 compatible = "adi,adm1278";
+> +                 reg = <0x11>;
+> +       };
+> +};
+> +
+> +&gfx {
+> +       status = "okay";
+> +};
+> +
+> +&pinctrl {
+> +       aspeed,external-nodes = <&gfx &lhc>;
+> +};
+> +
+> +&pwm_tacho {
+> +       status = "okay";
+> +       pinctrl-names = "default";
+> +       pinctrl-0 = <&pinctrl_pwm0_default &pinctrl_pwm1_default>;
+> +
+> +       fan at 0 {
+> +               reg = <0x00>;
+> +               aspeed,fan-tach-ch = /bits/ 8 <0x00 0x01>;
+> +       };
+> +
+> +       fan at 1 {
+> +               reg = <0x01>;
+> +               aspeed,fan-tach-ch = /bits/ 8 <0x02 0x03>;
+> +       };
+> +};
+> +
+> +&adc {
+> +       status = "okay";
+> +};
 > --
-> 2.17.1
+> 2.7.4
 >
