@@ -1,17 +1,36 @@
 From: Vijay Khemka <vijaykhemka@fb.com>
-Date: Thu, 17 Jan 2019 18:56:30 +0000
-Subject: Simple patch revision question
-Message-ID: <CAB018F3-1E79-46CF-B129-73E2D54EA06F@fb.com>
+Date: Thu, 17 Jan 2019 11:08:30 -0800
+Subject: [PATCH] dt-bindings: aspeed-lpc: Make parameter optional
+Message-ID: <20190117190830.824013-1-vijaykhemka@fb.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-I use send-mail command to send patches to group, I just wanted to know how can we add comments for v2 or v3 if we are revising.
+Memory-region and flash phandle is not a required parameter, it is
+optional to describe in device tree and needed only use basis.
 
-Regards
--Vijay
--------------- next part --------------
-An HTML attachment was scrubbed...
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20190117/93a95aef/attachment-0001.html>
+Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
+---
+ Documentation/devicetree/bindings/mfd/aspeed-lpc.txt | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/mfd/aspeed-lpc.txt b/Documentation/devicetree/bindings/mfd/aspeed-lpc.txt
+index 34dd89087cff..ff0cb28903dd 100644
+--- a/Documentation/devicetree/bindings/mfd/aspeed-lpc.txt
++++ b/Documentation/devicetree/bindings/mfd/aspeed-lpc.txt
+@@ -135,6 +135,10 @@ Required properties:
+ - clocks:	contains a phandle to the syscon node describing the clocks.
+ 		There should then be one cell representing the clock to use
+ 
++Optional properties:
++These below properties are optional and required only if one need to use it
++through ioctl.
++
+ - memory-region: A phandle to a reserved_memory region to be used for the LPC
+ 		to AHB mapping
+ 
+-- 
+2.17.1
+
