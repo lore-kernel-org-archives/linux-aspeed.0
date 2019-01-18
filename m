@@ -1,66 +1,47 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Fri, 18 Jan 2019 15:43:54 +1030
-Subject: [PATCH v2 2/2] dt-bindings: edac: Aspeed AST2500
-In-Reply-To: <1547743097-5236-3-git-send-email-schaecsn@gmx.net>
+From: Borislav Petkov <bp@alien8.de>
+Date: Fri, 18 Jan 2019 15:28:31 +0100
+Subject: [PATCH v2 0/2] Add support for the Aspeed AST2500 SoC EDAC driver
+In-Reply-To: <1547743097-5236-1-git-send-email-schaecsn@gmx.net>
 References: <1547743097-5236-1-git-send-email-schaecsn@gmx.net>
- <1547743097-5236-3-git-send-email-schaecsn@gmx.net>
-Message-ID: <1547788434.2065387.1637728584.1098F843@webmail.messagingengine.com>
+Message-ID: <20190118142831.GD622@zn.tnic>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, 18 Jan 2019, at 03:08, Stefan Schaeckeler wrote:
+On Thu, Jan 17, 2019 at 08:38:15AM -0800, Stefan Schaeckeler wrote:
 > From: Stefan M Schaeckeler <sschaeck@cisco.com>
 > 
-> Add support for EDAC on the Aspeed AST2500 SoC.
+> Add support for the Aspeed AST2500 SoC EDAC driver.
 > 
-> Signed-off-by: Stefan M Schaeckeler <sschaeck@cisco.com>
-
-Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
-
-> ---
->  .../bindings/edac/aspeed-sdram-edac.txt       | 25 +++++++++++++++++++
->  1 file changed, 25 insertions(+)
+> Changes since v1:
+> - Addressed all cosmetic issues
+> - Fixed (un-)recoverable address calculation in reg58 and reg5c
+> - Removed status field from the example device tree binding
+> - Added little more text to Kconfig
+> 
+> 
+> Stefan M Schaeckeler (2):
+>   EDAC: Add Aspeed AST2500 EDAC driver
+>   dt-bindings: edac: Aspeed AST2500
+> 
+>  .../bindings/edac/aspeed-sdram-edac.txt       |  25 ++
+>  MAINTAINERS                                   |   6 +
+>  arch/arm/boot/dts/aspeed-g5.dtsi              |   7 +
+>  drivers/edac/Kconfig                          |   8 +
+>  drivers/edac/Makefile                         |   1 +
+>  drivers/edac/aspeed_edac.c                    | 421 ++++++++++++++++++
+>  6 files changed, 468 insertions(+)
 >  create mode 100644 Documentation/devicetree/bindings/edac/aspeed-sdram-edac.txt
+>  create mode 100644 drivers/edac/aspeed_edac.c
 > 
-> diff --git a/Documentation/devicetree/bindings/edac/aspeed-sdram-
-> edac.txt b/Documentation/devicetree/bindings/edac/aspeed-sdram-edac.txt
-> new file mode 100644
-> index 000000000000..6a0f3d90d682
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/edac/aspeed-sdram-edac.txt
-> @@ -0,0 +1,25 @@
-> +Aspeed AST2500 SoC EDAC node
-> +
-> +The Aspeed AST2500 SoC supports DDR3 and DDR4 memory with and without 
-> ECC (error
-> +correction check).
-> +
-> +The memory controller supports SECDED (single bit error correction, 
-> double bit
-> +error detection) and single bit error auto scrubbing by reserving 8 
-> bits for
-> +every 64 bit word (effectively reducing available memory to 8/9).
-> +
-> +Note, the bootloader must configure ECC mode in the memory controller.
-> +
-> +
-> +Required properties:
-> +- compatible: should be "aspeed,ast2500-sdram-edac"
-> +- reg:        sdram controller register set should be <0x1e6e0000 
-> 0x174>
-> +- interrupts: should be AVIC interrupt #0
-> +
-> +
-> +Example:
-> +
-> +	edac: sdram at 1e6e0000 {
-> +		compatible = "aspeed,ast2500-sdram-edac";
-> +		reg = <0x1e6e0000 0x174>;
-> +		interrupts = <0>;
-> +	};
 > -- 
-> 2.19.1
-> 
+
+Queued, thanks.
+
+-- 
+Regards/Gruss,
+    Boris.
+
+Good mailing practices for 400: avoid top-posting and trim the reply.
