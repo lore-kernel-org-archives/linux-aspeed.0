@@ -1,33 +1,48 @@
-From: Vijay Khemka <vijaykhemka@fb.com>
-Date: Thu, 17 Jan 2019 19:54:08 +0000
-Subject: Simple patch revision question
-In-Reply-To: <2dceed02-7275-978f-e3c0-99d3ded4d3f9@fb.com>
-References: <CAB018F3-1E79-46CF-B129-73E2D54EA06F@fb.com>
- <2dceed02-7275-978f-e3c0-99d3ded4d3f9@fb.com>
-Message-ID: <8577CBA8-4E84-4207-8E3A-04D1567DAD62@fb.com>
+From: Andrew Jeffery <andrew@aj.id.au>
+Date: Fri, 18 Jan 2019 14:51:12 +1030
+Subject: [PATCH] dt-bindings: aspeed-lpc: Make parameter optional
+In-Reply-To: <20190117190830.824013-1-vijaykhemka@fb.com>
+References: <20190117190830.824013-1-vijaykhemka@fb.com>
+Message-ID: <1547785272.2051152.1637704704.1926B2B5@webmail.messagingengine.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Thanks Tao
+Hi Vijay,
 
-?On 1/17/19, 11:21 AM, "Tao Ren" <taoren@fb.com> wrote:
+On Fri, 18 Jan 2019, at 05:38, Vijay Khemka wrote:
+> Memory-region and flash phandle is not a required parameter, it is
+> optional to describe in device tree and needed only use basis.
+> 
+> Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
+> ---
+>  Documentation/devicetree/bindings/mfd/aspeed-lpc.txt | 4 ++++
+>  1 file changed, 4 insertions(+)
+> 
+> diff --git a/Documentation/devicetree/bindings/mfd/aspeed-lpc.txt b/
+> Documentation/devicetree/bindings/mfd/aspeed-lpc.txt
+> index 34dd89087cff..ff0cb28903dd 100644
+> --- a/Documentation/devicetree/bindings/mfd/aspeed-lpc.txt
+> +++ b/Documentation/devicetree/bindings/mfd/aspeed-lpc.txt
+> @@ -135,6 +135,10 @@ Required properties:
+>  - clocks:	contains a phandle to the syscon node describing the clocks.
+>  		There should then be one cell representing the clock to use
+>  
+> +Optional properties:
+> +These below properties are optional and required only if one need to use it
+> +through ioctl.
 
-    On 1/17/19 10:56 AM, Vijay Khemka wrote:
-    > I use send-mail command to send patches to group, I just wanted to know how can we add comments for v2 or v3 if we are revising.
-    > 
-    > Regards
-    > -Vijay
-    
-    Vijay,
-    
-    You should be able to find answer in below page, "Revising your patches" section:
-    
-    https://kernelnewbies.org/FirstKernelPatch
-    
-    
-    - Tao
-    
+I'd just say "Optional properties". Leave the description off, as we probably
+shouldn't be talking about ioctls and such in the bindings.
 
+Andrew
+
+> +
+>  - memory-region: A phandle to a reserved_memory region to be used for the LPC
+>  		to AHB mapping
+>  
+> -- 
+> 2.17.1
+> 
