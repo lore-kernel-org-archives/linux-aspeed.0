@@ -1,73 +1,53 @@
 From: Vijay Khemka <vijaykhemka@fb.com>
-Date: Wed, 23 Jan 2019 15:06:34 -0800
-Subject: [PATCH] misc: aspeed-lpc-ctrl: Correct return values
-Message-ID: <20190123230634.1815021-1-vijaykhemka@fb.com>
+Date: Wed, 23 Jan 2019 15:07:32 -0800
+Subject: [PATCH 1/2] ARM: dts: aspeed: Add peci and lpc for Facebook
+Message-ID: <20190123230733.1821501-1-vijaykhemka@fb.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Corrected some of return values with appropriate meanings.
+Added lpc control for enabling lpc clock, peci for cpu sensors and lpc
+snoop devices to Facebook Tiogapass device tree.
 
 Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
 ---
- drivers/misc/aspeed-lpc-ctrl.c | 15 +++++++--------
- 1 file changed, 7 insertions(+), 8 deletions(-)
+ .../arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
 
-diff --git a/drivers/misc/aspeed-lpc-ctrl.c b/drivers/misc/aspeed-lpc-ctrl.c
-index 332210e06e98..97ae341109d5 100644
---- a/drivers/misc/aspeed-lpc-ctrl.c
-+++ b/drivers/misc/aspeed-lpc-ctrl.c
-@@ -68,7 +68,6 @@ static long aspeed_lpc_ctrl_ioctl(struct file *file, unsigned int cmd,
- 		unsigned long param)
- {
- 	struct aspeed_lpc_ctrl *lpc_ctrl = file_aspeed_lpc_ctrl(file);
--	struct device *dev = file->private_data;
- 	void __user *p = (void __user *)param;
- 	struct aspeed_lpc_ctrl_mapping map;
- 	u32 addr;
-@@ -93,8 +92,8 @@ static long aspeed_lpc_ctrl_ioctl(struct file *file, unsigned int cmd,
+diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
+index 73e58a821613..d60dbb019f82 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
+@@ -54,6 +54,16 @@
+ 	};
+ };
  
- 		/* If memory-region is not described in device tree */
- 		if (!lpc_ctrl->mem_size) {
--			dev_err(dev, "Didn't find reserved memory\n");
--			return -EINVAL;
-+			pr_err("aspeed_lpc_ctrl: ioctl: Didn't find reserved memory\n");
-+			return -ENXIO;
- 		}
++&lpc_snoop {
++	status = "okay";
++	snoop-ports = <0x80>;
++};
++
++&lpc_ctrl {
++	// Enable lpc clock
++	status = "okay";
++};
++
+ &uart1 {
+ 	// Host Console
+ 	status = "okay";
+@@ -67,6 +77,10 @@
+ 	status = "okay";
+ };
  
- 		map.size = lpc_ctrl->mem_size;
-@@ -134,16 +133,16 @@ static long aspeed_lpc_ctrl_ioctl(struct file *file, unsigned int cmd,
- 
- 		if (map.window_type == ASPEED_LPC_CTRL_WINDOW_FLASH) {
- 			if (!lpc_ctrl->pnor_size) {
--				dev_err(dev, "Didn't find host pnor flash\n");
--				return -EINVAL;
-+				pr_err("aspeed_lpc_ctrl: ioctl: Didn't find host pnor flash\n");
-+				return -ENXIO;
- 			}
- 			addr = lpc_ctrl->pnor_base;
- 			size = lpc_ctrl->pnor_size;
- 		} else if (map.window_type == ASPEED_LPC_CTRL_WINDOW_MEMORY) {
- 			/* If memory-region is not described in device tree */
- 			if (!lpc_ctrl->mem_size) {
--				dev_err(dev, "Didn't find reserved memory\n");
--				return -EINVAL;
-+				pr_err("aspeed_lpc_ctrl: ioctl: Didn't find reserved memory\n");
-+				return -ENXIO;
- 			}
- 			addr = lpc_ctrl->mem_base;
- 			size = lpc_ctrl->mem_size;
-@@ -239,7 +238,7 @@ static int aspeed_lpc_ctrl_probe(struct platform_device *pdev)
- 		of_node_put(node);
- 		if (rc) {
- 			dev_err(dev, "Couldn't address to resource for reserved memory\n");
--			return -ENOMEM;
-+			return -ENXIO;
- 		}
- 
- 		lpc_ctrl->mem_size = resource_size(&resm);
++&peci0 {
++	status = "okay";
++};
++
+ &kcs2 {
+ 	// BMC KCS channel 2
+ 	status = "okay";
 -- 
 2.17.1
 
