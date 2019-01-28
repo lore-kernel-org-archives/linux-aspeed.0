@@ -1,10 +1,10 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Mon, 28 Jan 2019 10:40:28 -0500
-Subject: [PATCH AUTOSEL 4.20 111/304] ARM: dts: aspeed: add missing memory
+Date: Mon, 28 Jan 2019 10:56:42 -0500
+Subject: [PATCH AUTOSEL 4.19 096/258] ARM: dts: aspeed: add missing memory
  unit-address
-In-Reply-To: <20190128154341.47195-1-sashal@kernel.org>
-References: <20190128154341.47195-1-sashal@kernel.org>
-Message-ID: <20190128154341.47195-111-sashal@kernel.org>
+In-Reply-To: <20190128155924.51521-1-sashal@kernel.org>
+References: <20190128155924.51521-1-sashal@kernel.org>
+Message-ID: <20190128155924.51521-96-sashal@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
