@@ -1,71 +1,100 @@
-From: Vijay Khemka <vijaykhemka@fb.com>
-Date: Thu, 24 Jan 2019 19:29:16 +0000
-Subject: [PATCH] misc: aspeed-lpc-ctrl: Correct return values
-In-Reply-To: <20190124081544.GA1649@kroah.com>
-References: <20190123230634.1815021-1-vijaykhemka@fb.com>
- <20190124081544.GA1649@kroah.com>
-Message-ID: <13C13AE8-63A4-4002-9E0D-70276C529448@fb.com>
+From: Sasha Levin <sashal@kernel.org>
+Date: Mon, 28 Jan 2019 10:40:28 -0500
+Subject: [PATCH AUTOSEL 4.20 111/304] ARM: dts: aspeed: add missing memory
+ unit-address
+In-Reply-To: <20190128154341.47195-1-sashal@kernel.org>
+References: <20190128154341.47195-1-sashal@kernel.org>
+Message-ID: <20190128154341.47195-111-sashal@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+From: Rob Herring <robh@kernel.org>
 
+[ Upstream commit 8ef86955fe59f7912a40d57ae4c6d511f0187b4d ]
 
-?On 1/24/19, 12:16 AM, "Greg Kroah-Hartman" <gregkh@linuxfoundation.org> wrote:
+The base aspeed-g5.dtsi already defines a '/memory at 80000000' node, so
+'/memory' in the board files create a duplicate node. We're probably
+getting lucky that the bootloader fixes up the memory node that the
+kernel ends up using. Add the unit-address so it's merged with the base
+node.
 
-    On Wed, Jan 23, 2019 at 03:06:34PM -0800, Vijay Khemka wrote:
-    > Corrected some of return values with appropriate meanings.
-    > 
-    > Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
-    > ---
-    >  drivers/misc/aspeed-lpc-ctrl.c | 15 +++++++--------
-    >  1 file changed, 7 insertions(+), 8 deletions(-)
-    > 
-    > diff --git a/drivers/misc/aspeed-lpc-ctrl.c b/drivers/misc/aspeed-lpc-ctrl.c
-    > index 332210e06e98..97ae341109d5 100644
-    > --- a/drivers/misc/aspeed-lpc-ctrl.c
-    > +++ b/drivers/misc/aspeed-lpc-ctrl.c
-    > @@ -68,7 +68,6 @@ static long aspeed_lpc_ctrl_ioctl(struct file *file, unsigned int cmd,
-    >  		unsigned long param)
-    >  {
-    >  	struct aspeed_lpc_ctrl *lpc_ctrl = file_aspeed_lpc_ctrl(file);
-    > -	struct device *dev = file->private_data;
-    >  	void __user *p = (void __user *)param;
-    >  	struct aspeed_lpc_ctrl_mapping map;
-    >  	u32 addr;
-    > @@ -93,8 +92,8 @@ static long aspeed_lpc_ctrl_ioctl(struct file *file, unsigned int cmd,
-    >  
-    >  		/* If memory-region is not described in device tree */
-    >  		if (!lpc_ctrl->mem_size) {
-    > -			dev_err(dev, "Didn't find reserved memory\n");
-    > -			return -EINVAL;
-    > +			pr_err("aspeed_lpc_ctrl: ioctl: Didn't find reserved memory\n");
-    
-    Why did you change from dev_err() to pr_err()?  You just lost a lot of
-    information that the user previously was getting from dev_err() :(
+Found with DT json-schema checks.
 
-I did this as per review comment from Andrew Jeffery, as we don't want to put this error for driver. It has to be handled by userspace. But I am still reporting some error here.
-    
-    
-    
-    > +			return -ENXIO;
-    >  		}
-    >  
-    >  		map.size = lpc_ctrl->mem_size;
-    > @@ -134,16 +133,16 @@ static long aspeed_lpc_ctrl_ioctl(struct file *file, unsigned int cmd,
-    >  
-    >  		if (map.window_type == ASPEED_LPC_CTRL_WINDOW_FLASH) {
-    >  			if (!lpc_ctrl->pnor_size) {
-    > -				dev_err(dev, "Didn't find host pnor flash\n");
-    > -				return -EINVAL;
-    > +				pr_err("aspeed_lpc_ctrl: ioctl: Didn't find host pnor flash\n");
-    
-    Again, don't do that :(
-    
-    thanks,
-    
-    greg k-h
-    
+Cc: Joel Stanley <joel@jms.id.au>
+Cc: Andrew Jeffery <andrew@aj.id.au>
+Cc: devicetree at vger.kernel.org
+Cc: linux-arm-kernel at lists.infradead.org
+Cc: linux-aspeed at lists.ozlabs.org
+Signed-off-by: Rob Herring <robh@kernel.org>
+Signed-off-by: Olof Johansson <olof@lixom.net>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ arch/arm/boot/dts/aspeed-bmc-arm-centriq2400-rep.dts | 2 +-
+ arch/arm/boot/dts/aspeed-bmc-intel-s2600wf.dts       | 2 +-
+ arch/arm/boot/dts/aspeed-bmc-opp-lanyang.dts         | 3 +--
+ arch/arm/boot/dts/aspeed-bmc-portwell-neptune.dts    | 2 +-
+ 4 files changed, 4 insertions(+), 5 deletions(-)
+
+diff --git a/arch/arm/boot/dts/aspeed-bmc-arm-centriq2400-rep.dts b/arch/arm/boot/dts/aspeed-bmc-arm-centriq2400-rep.dts
+index df1227613d48..c2ece0b91885 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-arm-centriq2400-rep.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-arm-centriq2400-rep.dts
+@@ -13,7 +13,7 @@
+ 		bootargs = "console=ttyS4,115200 earlyprintk";
+ 	};
+ 
+-	memory {
++	memory at 80000000 {
+ 		reg = <0x80000000 0x40000000>;
+ 	};
+ 
+diff --git a/arch/arm/boot/dts/aspeed-bmc-intel-s2600wf.dts b/arch/arm/boot/dts/aspeed-bmc-intel-s2600wf.dts
+index 7a291de02543..22dade6393d0 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-intel-s2600wf.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-intel-s2600wf.dts
+@@ -13,7 +13,7 @@
+ 		bootargs = "earlyprintk";
+ 	};
+ 
+-	memory {
++	memory at 80000000 {
+ 		reg = <0x80000000 0x20000000>;
+ 	};
+ 
+diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-lanyang.dts b/arch/arm/boot/dts/aspeed-bmc-opp-lanyang.dts
+index d598b6391362..024e52a6cd0f 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-opp-lanyang.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-opp-lanyang.dts
+@@ -14,7 +14,7 @@
+ 		bootargs = "console=ttyS4,115200 earlyprintk";
+ 	};
+ 
+-	memory {
++	memory at 80000000 {
+ 		reg = <0x80000000 0x40000000>;
+ 	};
+ 
+@@ -322,4 +322,3 @@
+ &adc {
+ 	status = "okay";
+ };
+-
+diff --git a/arch/arm/boot/dts/aspeed-bmc-portwell-neptune.dts b/arch/arm/boot/dts/aspeed-bmc-portwell-neptune.dts
+index 43ed13963d35..33d704541de6 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-portwell-neptune.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-portwell-neptune.dts
+@@ -17,7 +17,7 @@
+ 		bootargs = "console=ttyS4,115200 earlyprintk";
+ 	};
+ 
+-	memory {
++	memory at 80000000 {
+ 		reg = <0x80000000 0x20000000>;
+ 	};
+ 
+-- 
+2.19.1
 
