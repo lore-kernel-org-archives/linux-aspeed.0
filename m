@@ -1,100 +1,45 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Mon, 28 Jan 2019 10:56:42 -0500
-Subject: [PATCH AUTOSEL 4.19 096/258] ARM: dts: aspeed: add missing memory
- unit-address
-In-Reply-To: <20190128155924.51521-1-sashal@kernel.org>
-References: <20190128155924.51521-1-sashal@kernel.org>
-Message-ID: <20190128155924.51521-96-sashal@kernel.org>
+From: Lee Jones <lee.jones@linaro.org>
+Date: Tue, 29 Jan 2019 12:30:08 +0000
+Subject: [PATCH v2] dt-bindings: aspeed-lpc: Make parameter optional
+In-Reply-To: <20190118201547.640173-1-vijaykhemka@fb.com>
+References: <20190118201547.640173-1-vijaykhemka@fb.com>
+Message-ID: <20190129123008.GC24070@dell>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Rob Herring <robh@kernel.org>
+On Fri, 18 Jan 2019, Vijay Khemka wrote:
 
-[ Upstream commit 8ef86955fe59f7912a40d57ae4c6d511f0187b4d ]
+> Memory-region and flash phandle is not a required parameter, it is
+> optional to describe in device tree and needed only use basis.
+> 
+> Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
+> ---
+>  Documentation/devicetree/bindings/mfd/aspeed-lpc.txt | 3 +++
+>  1 file changed, 3 insertions(+)
+> 
+> diff --git a/Documentation/devicetree/bindings/mfd/aspeed-lpc.txt b/Documentation/devicetree/bindings/mfd/aspeed-lpc.txt
+> index 34dd89087cff..d28c4e117611 100644
+> --- a/Documentation/devicetree/bindings/mfd/aspeed-lpc.txt
+> +++ b/Documentation/devicetree/bindings/mfd/aspeed-lpc.txt
+> @@ -135,6 +135,9 @@ Required properties:
+>  - clocks:	contains a phandle to the syscon node describing the clocks.
+>  		There should then be one cell representing the clock to use
+>  
+> +Optional properties:
+> +These below properties are optional to define.
 
-The base aspeed-g5.dtsi already defines a '/memory at 80000000' node, so
-'/memory' in the board files create a duplicate node. We're probably
-getting lucky that the bootloader fixes up the memory node that the
-kernel ends up using. Add the unit-address so it's merged with the base
-node.
+This line is superfluous.  Please remove it.
 
-Found with DT json-schema checks.
+> +
+>  - memory-region: A phandle to a reserved_memory region to be used for the LPC
+>  		to AHB mapping
+>  
 
-Cc: Joel Stanley <joel@jms.id.au>
-Cc: Andrew Jeffery <andrew@aj.id.au>
-Cc: devicetree at vger.kernel.org
-Cc: linux-arm-kernel at lists.infradead.org
-Cc: linux-aspeed at lists.ozlabs.org
-Signed-off-by: Rob Herring <robh@kernel.org>
-Signed-off-by: Olof Johansson <olof@lixom.net>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- arch/arm/boot/dts/aspeed-bmc-arm-centriq2400-rep.dts | 2 +-
- arch/arm/boot/dts/aspeed-bmc-intel-s2600wf.dts       | 2 +-
- arch/arm/boot/dts/aspeed-bmc-opp-lanyang.dts         | 3 +--
- arch/arm/boot/dts/aspeed-bmc-portwell-neptune.dts    | 2 +-
- 4 files changed, 4 insertions(+), 5 deletions(-)
-
-diff --git a/arch/arm/boot/dts/aspeed-bmc-arm-centriq2400-rep.dts b/arch/arm/boot/dts/aspeed-bmc-arm-centriq2400-rep.dts
-index df1227613d48..c2ece0b91885 100644
---- a/arch/arm/boot/dts/aspeed-bmc-arm-centriq2400-rep.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-arm-centriq2400-rep.dts
-@@ -13,7 +13,7 @@
- 		bootargs = "console=ttyS4,115200 earlyprintk";
- 	};
- 
--	memory {
-+	memory at 80000000 {
- 		reg = <0x80000000 0x40000000>;
- 	};
- 
-diff --git a/arch/arm/boot/dts/aspeed-bmc-intel-s2600wf.dts b/arch/arm/boot/dts/aspeed-bmc-intel-s2600wf.dts
-index 7a291de02543..22dade6393d0 100644
---- a/arch/arm/boot/dts/aspeed-bmc-intel-s2600wf.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-intel-s2600wf.dts
-@@ -13,7 +13,7 @@
- 		bootargs = "earlyprintk";
- 	};
- 
--	memory {
-+	memory at 80000000 {
- 		reg = <0x80000000 0x20000000>;
- 	};
- 
-diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-lanyang.dts b/arch/arm/boot/dts/aspeed-bmc-opp-lanyang.dts
-index d598b6391362..024e52a6cd0f 100644
---- a/arch/arm/boot/dts/aspeed-bmc-opp-lanyang.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-opp-lanyang.dts
-@@ -14,7 +14,7 @@
- 		bootargs = "console=ttyS4,115200 earlyprintk";
- 	};
- 
--	memory {
-+	memory at 80000000 {
- 		reg = <0x80000000 0x40000000>;
- 	};
- 
-@@ -322,4 +322,3 @@
- &adc {
- 	status = "okay";
- };
--
-diff --git a/arch/arm/boot/dts/aspeed-bmc-portwell-neptune.dts b/arch/arm/boot/dts/aspeed-bmc-portwell-neptune.dts
-index 43ed13963d35..33d704541de6 100644
---- a/arch/arm/boot/dts/aspeed-bmc-portwell-neptune.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-portwell-neptune.dts
-@@ -17,7 +17,7 @@
- 		bootargs = "console=ttyS4,115200 earlyprintk";
- 	};
- 
--	memory {
-+	memory at 80000000 {
- 		reg = <0x80000000 0x20000000>;
- 	};
- 
 -- 
-2.19.1
-
+Lee Jones [???]
+Linaro Services Technical Lead
+Linaro.org ? Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog
