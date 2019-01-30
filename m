@@ -1,34 +1,32 @@
-From: Vijay Khemka <vijaykhemka@fb.com>
-Date: Tue, 29 Jan 2019 15:05:38 -0800
-Subject: [PATCH v3] dt-bindings: aspeed-lpc: Make parameter optional
-Message-ID: <20190129230538.1044378-1-vijaykhemka@fb.com>
+From: Joel Stanley <joel@jms.id.au>
+Date: Wed, 30 Jan 2019 14:27:00 +1100
+Subject: [PATCH 1/2] ARM: dts: aspeed: Add peci and lpc for Facebook
+In-Reply-To: <20190123230733.1821501-1-vijaykhemka@fb.com>
+References: <20190123230733.1821501-1-vijaykhemka@fb.com>
+Message-ID: <CACPK8Xc91m9TWoRSgDCT7bVJC=C=w7mse8xbdCgw5vMVgMXM=Q@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Memory-region and flash phandle is not a required parameter, it is
-optional to describe in device tree and needed only use basis.
+On Thu, 24 Jan 2019 at 10:07, Vijay Khemka <vijaykhemka@fb.com> wrote:
 
-Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
----
- Documentation/devicetree/bindings/mfd/aspeed-lpc.txt | 2 ++
- 1 file changed, 2 insertions(+)
+> index 73e58a821613..d60dbb019f82 100644
+> --- a/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
+> +++ b/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
 
-diff --git a/Documentation/devicetree/bindings/mfd/aspeed-lpc.txt b/Documentation/devicetree/bindings/mfd/aspeed-lpc.txt
-index 34dd89087cff..86446074e206 100644
---- a/Documentation/devicetree/bindings/mfd/aspeed-lpc.txt
-+++ b/Documentation/devicetree/bindings/mfd/aspeed-lpc.txt
-@@ -135,6 +135,8 @@ Required properties:
- - clocks:	contains a phandle to the syscon node describing the clocks.
- 		There should then be one cell representing the clock to use
- 
-+Optional properties:
-+
- - memory-region: A phandle to a reserved_memory region to be used for the LPC
- 		to AHB mapping
- 
--- 
-2.17.1
+>
+> +&peci0 {
+> +       status = "okay";
+> +};
 
+I don't think we have an upstream tree that contains a node called
+peci0. Therefore this does not build.
+
+I have dropped this hunk from your patch. Please make sure you test
+before sending patches.
+
+Cheers,
+
+Joel
