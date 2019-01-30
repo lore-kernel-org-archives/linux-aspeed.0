@@ -1,22 +1,24 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Wed, 30 Jan 2019 14:30:29 +1100
-Subject: [PATCH v3] dt-bindings: aspeed-lpc: Make parameter optional
-In-Reply-To: <20190129230538.1044378-1-vijaykhemka@fb.com>
-References: <20190129230538.1044378-1-vijaykhemka@fb.com>
-Message-ID: <CACPK8Xdg+mjqL-qnNGUnRPw03sqBJGf_ckcsFnw6_F7HA96o6Q@mail.gmail.com>
+Date: Wed, 30 Jan 2019 14:37:58 +1100
+Subject: [PATCH] ARM: dts: aspeed: quanta-q71l: enable lpc_ctrl node
+In-Reply-To: <20190129214624.119330-1-venture@google.com>
+References: <20190129214624.119330-1-venture@google.com>
+Message-ID: <CACPK8XeSoOkOqVtc7Xhov7Zrj8sMc28q1-BQ_t-d5FTYXMkggg@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 30 Jan 2019 at 10:05, Vijay Khemka <vijaykhemka@fb.com> wrote:
+On Wed, 30 Jan 2019 at 08:46, Patrick Venture <venture@google.com> wrote:
 >
-> Memory-region and flash phandle is not a required parameter, it is
-> optional to describe in device tree and needed only use basis.
+> Enable the lpc_ctrl node in the quanta-q71l dts such that the LPC_CLK is
+> enabled.
 >
-> Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
+> Signed-off-by: Patrick Venture <venture@google.com>
 
-Acked-by: Joel Stanley <joel@jms.id.au>
+Applied to the aspeed tree for 5.1.
 
-Thanks for following this up Vijay.
+Cheers,
+
+Joel
