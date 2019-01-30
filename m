@@ -1,23 +1,40 @@
-From: Joel Stanley <joel@jms.id.au>
-Date: Wed, 30 Jan 2019 14:38:17 +1100
-Subject: [PATCH] ARM: dts: aspeed: quanta-q71l: enable uart1
-In-Reply-To: <20190129214703.119694-1-venture@google.com>
-References: <20190129214703.119694-1-venture@google.com>
-Message-ID: <CACPK8Xfz5m6++SWoN-E_sT-n6y68vvrcvunhso4nD5Yq3vN6+A@mail.gmail.com>
+From: Vijay Khemka <vijaykhemka@fb.com>
+Date: Wed, 30 Jan 2019 18:01:22 +0000
+Subject: [PATCH 1/2] ARM: dts: aspeed: Add peci and lpc for Facebook
+In-Reply-To: <CACPK8Xc91m9TWoRSgDCT7bVJC=C=w7mse8xbdCgw5vMVgMXM=Q@mail.gmail.com>
+References: <20190123230733.1821501-1-vijaykhemka@fb.com>
+ <CACPK8Xc91m9TWoRSgDCT7bVJC=C=w7mse8xbdCgw5vMVgMXM=Q@mail.gmail.com>
+Message-ID: <B6DFDA82-F72C-4979-B988-05C292E61228@fb.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 30 Jan 2019 at 08:47, Patrick Venture <venture@google.com> wrote:
->
-> Enable the uart1 node such that the clock will be enabled.
->
-> Signed-off-by: Patrick Venture <venture@google.com>
 
-Applied to the aspeed tree for 5.1.
 
-Cheers,
+?On 1/29/19, 7:27 PM, "Joel Stanley" <joel@jms.id.au> wrote:
 
-Joel
+    On Thu, 24 Jan 2019 at 10:07, Vijay Khemka <vijaykhemka@fb.com> wrote:
+    
+    > index 73e58a821613..d60dbb019f82 100644
+    > --- a/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
+    > +++ b/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
+    
+    >
+    > +&peci0 {
+    > +       status = "okay";
+    > +};
+    
+    I don't think we have an upstream tree that contains a node called
+    peci0. Therefore this does not build.
+    
+    I have dropped this hunk from your patch. Please make sure you test
+    before sending patches.
+Thanks Joel, I will be careful.
+    
+    Cheers,
+    
+    Joel
+    
+
