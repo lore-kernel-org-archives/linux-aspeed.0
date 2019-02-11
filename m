@@ -1,103 +1,77 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Mon, 11 Feb 2019 15:16:09 +0100
-Subject: [PATCH 4.19 089/313] ARM: dts: aspeed: add missing memory unit-address
-In-Reply-To: <20190211141852.749630980@linuxfoundation.org>
-References: <20190211141852.749630980@linuxfoundation.org>
-Message-ID: <20190211141859.802233380@linuxfoundation.org>
+From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+Date: Mon, 11 Feb 2019 10:09:53 -0800
+Subject: [PATCH] i2c: aspeed: Add multi-master use case support
+In-Reply-To: <20190208214849.GH12451@kunai>
+References: <20190116193958.6049-1-jae.hyun.yoo@linux.intel.com>
+ <20190208214849.GH12451@kunai>
+Message-ID: <d26a95ac-41ab-91eb-bbae-e4143235e531@linux.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-4.19-stable review patch.  If anyone has any objections, please let me know.
+> Hmmm, the #ifdeffery quite increases with this patch. Maybe it is easier
+> to select I2C_SLAVE in Kconfig? I'll let you decide.
+> 
+> My code checkers found this:
+> 
+>      CPPCHECK
+> drivers/i2c/busses/i2c-aspeed.c:694:10: warning: Variable 'ret' is assigned a value that is never used. [unreadVariable]
+> 
 
-------------------
+Hi Wolfram,
 
-[ Upstream commit 8ef86955fe59f7912a40d57ae4c6d511f0187b4d ]
+Yes, cppcheck pointed it out correctly. The assignment on the variable
+'ret' is not needed at there. Actually, the code should not be wrapped
+using I2C_SLAVE because a bus can also be in multi-master environment
+even when slave is not enabled. So the warning can be removed by below
+fix.
 
-The base aspeed-g5.dtsi already defines a '/memory at 80000000' node, so
-'/memory' in the board files create a duplicate node. We're probably
-getting lucky that the bootloader fixes up the memory node that the
-kernel ends up using. Add the unit-address so it's merged with the base
-node.
-
-Found with DT json-schema checks.
-
-Cc: Joel Stanley <joel@jms.id.au>
-Cc: Andrew Jeffery <andrew@aj.id.au>
-Cc: devicetree at vger.kernel.org
-Cc: linux-arm-kernel at lists.infradead.org
-Cc: linux-aspeed at lists.ozlabs.org
-Signed-off-by: Rob Herring <robh@kernel.org>
-Signed-off-by: Olof Johansson <olof@lixom.net>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- arch/arm/boot/dts/aspeed-bmc-arm-centriq2400-rep.dts | 2 +-
- arch/arm/boot/dts/aspeed-bmc-intel-s2600wf.dts       | 2 +-
- arch/arm/boot/dts/aspeed-bmc-opp-lanyang.dts         | 3 +--
- arch/arm/boot/dts/aspeed-bmc-portwell-neptune.dts    | 2 +-
- 4 files changed, 4 insertions(+), 5 deletions(-)
+diff --git a/drivers/i2c/busses/i2c-aspeed.c 
+b/drivers/i2c/busses/i2c-aspeed.c
+index 9253ebccb008..882c4ab1d18a 100644
+--- a/drivers/i2c/busses/i2c-aspeed.c
++++ b/drivers/i2c/busses/i2c-aspeed.c
+@@ -655,7 +655,6 @@ static int aspeed_i2c_master_xfer(struct i2c_adapter 
+*adap,
+  {
+         struct aspeed_i2c_bus *bus = i2c_get_adapdata(adap);
+         unsigned long time_left, flags;
+-       int ret;
 
-diff --git a/arch/arm/boot/dts/aspeed-bmc-arm-centriq2400-rep.dts b/arch/arm/boot/dts/aspeed-bmc-arm-centriq2400-rep.dts
-index df1227613d48..c2ece0b91885 100644
---- a/arch/arm/boot/dts/aspeed-bmc-arm-centriq2400-rep.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-arm-centriq2400-rep.dts
-@@ -13,7 +13,7 @@
- 		bootargs = "console=ttyS4,115200 earlyprintk";
- 	};
- 
--	memory {
-+	memory at 80000000 {
- 		reg = <0x80000000 0x40000000>;
- 	};
- 
-diff --git a/arch/arm/boot/dts/aspeed-bmc-intel-s2600wf.dts b/arch/arm/boot/dts/aspeed-bmc-intel-s2600wf.dts
-index 7a291de02543..22dade6393d0 100644
---- a/arch/arm/boot/dts/aspeed-bmc-intel-s2600wf.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-intel-s2600wf.dts
-@@ -13,7 +13,7 @@
- 		bootargs = "earlyprintk";
- 	};
- 
--	memory {
-+	memory at 80000000 {
- 		reg = <0x80000000 0x20000000>;
- 	};
- 
-diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-lanyang.dts b/arch/arm/boot/dts/aspeed-bmc-opp-lanyang.dts
-index d598b6391362..024e52a6cd0f 100644
---- a/arch/arm/boot/dts/aspeed-bmc-opp-lanyang.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-opp-lanyang.dts
-@@ -14,7 +14,7 @@
- 		bootargs = "console=ttyS4,115200 earlyprintk";
- 	};
- 
--	memory {
-+	memory at 80000000 {
- 		reg = <0x80000000 0x40000000>;
- 	};
- 
-@@ -322,4 +322,3 @@
- &adc {
- 	status = "okay";
- };
--
-diff --git a/arch/arm/boot/dts/aspeed-bmc-portwell-neptune.dts b/arch/arm/boot/dts/aspeed-bmc-portwell-neptune.dts
-index 43ed13963d35..33d704541de6 100644
---- a/arch/arm/boot/dts/aspeed-bmc-portwell-neptune.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-portwell-neptune.dts
-@@ -17,7 +17,7 @@
- 		bootargs = "console=ttyS4,115200 earlyprintk";
- 	};
- 
--	memory {
-+	memory at 80000000 {
- 		reg = <0x80000000 0x20000000>;
- 	};
- 
--- 
-2.19.1
+         spin_lock_irqsave(&bus->lock, flags);
+         bus->cmd_err = 0;
+@@ -664,6 +663,8 @@ static int aspeed_i2c_master_xfer(struct i2c_adapter 
+*adap,
+         if (!bus->multi_master &&
+             (readl(bus->base + ASPEED_I2C_CMD_REG) &
+              ASPEED_I2CD_BUS_BUSY_STS)) {
++               int ret;
++
+                 spin_unlock_irqrestore(&bus->lock, flags);
+                 ret = aspeed_i2c_recover_bus(bus);
+                 if (ret)
+@@ -691,7 +692,7 @@ static int aspeed_i2c_master_xfer(struct i2c_adapter 
+*adap,
+                 if (bus->multi_master &&
+                     (readl(bus->base + ASPEED_I2C_CMD_REG) &
+                      ASPEED_I2CD_BUS_BUSY_STS))
+-                       ret = aspeed_i2c_recover_bus(bus);
++                       aspeed_i2c_recover_bus(bus);
 
+                 return -ETIMEDOUT;
+---
 
+The reason of adding changes at line 658 and 667 is to remove below
+cppcheck warning when the change at 694 is applied.
 
+[drivers/i2c/busses/i2c-aspeed.c:670]: (style) The scope of the variable 
+'ret' can be reduced.
+
+Can you please apply above changes on top of this patch? Or I can submit
+v2 with it.
+
+Thanks,
+Jae
