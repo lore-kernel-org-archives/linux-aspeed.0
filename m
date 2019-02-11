@@ -1,297 +1,69 @@
-From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-Date: Mon, 11 Feb 2019 10:54:44 -0800
-Subject: [PATCH v2] i2c: aspeed: Add multi-master use case support
-Message-ID: <20190211185444.4965-1-jae.hyun.yoo@linux.intel.com>
+From: Vijay Khemka <vijaykhemka@fb.com>
+Date: Mon, 11 Feb 2019 20:13:15 +0000
+Subject: [PATCH] misc: aspeed-lpc-ctrl: Correct return values
+In-Reply-To: <1549862567.1175306.1655243744.11AFF30D@webmail.messagingengine.com>
+References: <20190123230634.1815021-1-vijaykhemka@fb.com>
+ <20190124081544.GA1649@kroah.com>
+ <13C13AE8-63A4-4002-9E0D-70276C529448@fb.com>
+ <1549862567.1175306.1655243744.11AFF30D@webmail.messagingengine.com>
+Message-ID: <F4D4C25B-5E76-4E50-97E7-5A3548BBA1C4@fb.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-In multi-master environment, this driver's master cannot know
-exactly when a peer master sends data to this driver's slave so
-cases can be happened that this master tries sending data through
-the master_xfer function but slave data from a peer master is still
-being processed or slave xfer is started by a peer immediately
-after it queues a master command. To support multi-master use cases
-properly, this H/W provides arbitration in physical level and it
-provides priority based command handling too to avoid conflicts in
-multi-master environment, means that if a master and a slave events
-happen at the same time, H/W will handle a higher priority event
-first and a pending event will be handled when bus comes back to
-the idle state.
 
-To support this H/W feature properly, this patch adds the 'pending'
-state of master and its handling code so that the pending master
-xfer can be continued after slave operation properly.
 
-Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-Reviewed-by: Brendan Higgins <brendanhiggins@google.com>
----
-Changes since v9:
-* Removed cppcheck warnings.
+?On 2/10/19, 9:22 PM, "Andrew Jeffery" <andrew@aj.id.au> wrote:
 
- drivers/i2c/busses/i2c-aspeed.c | 119 +++++++++++++++++++++++++-------
- 1 file changed, 93 insertions(+), 26 deletions(-)
-
-diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
-index 8dc9161ced38..882c4ab1d18a 100644
---- a/drivers/i2c/busses/i2c-aspeed.c
-+++ b/drivers/i2c/busses/i2c-aspeed.c
-@@ -117,6 +117,7 @@
- 
- enum aspeed_i2c_master_state {
- 	ASPEED_I2C_MASTER_INACTIVE,
-+	ASPEED_I2C_MASTER_PENDING,
- 	ASPEED_I2C_MASTER_START,
- 	ASPEED_I2C_MASTER_TX_FIRST,
- 	ASPEED_I2C_MASTER_TX,
-@@ -126,12 +127,13 @@ enum aspeed_i2c_master_state {
- };
- 
- enum aspeed_i2c_slave_state {
--	ASPEED_I2C_SLAVE_STOP,
-+	ASPEED_I2C_SLAVE_INACTIVE,
- 	ASPEED_I2C_SLAVE_START,
- 	ASPEED_I2C_SLAVE_READ_REQUESTED,
- 	ASPEED_I2C_SLAVE_READ_PROCESSED,
- 	ASPEED_I2C_SLAVE_WRITE_REQUESTED,
- 	ASPEED_I2C_SLAVE_WRITE_RECEIVED,
-+	ASPEED_I2C_SLAVE_STOP,
- };
- 
- struct aspeed_i2c_bus {
-@@ -156,6 +158,8 @@ struct aspeed_i2c_bus {
- 	int				cmd_err;
- 	/* Protected only by i2c_lock_bus */
- 	int				master_xfer_result;
-+	/* Multi-master */
-+	bool				multi_master;
- #if IS_ENABLED(CONFIG_I2C_SLAVE)
- 	struct i2c_client		*slave;
- 	enum aspeed_i2c_slave_state	slave_state;
-@@ -251,7 +255,7 @@ static u32 aspeed_i2c_slave_irq(struct aspeed_i2c_bus *bus, u32 irq_status)
- 	}
- 
- 	/* Slave is not currently active, irq was for someone else. */
--	if (bus->slave_state == ASPEED_I2C_SLAVE_STOP)
-+	if (bus->slave_state == ASPEED_I2C_SLAVE_INACTIVE)
- 		return irq_handled;
- 
- 	dev_dbg(bus->dev, "slave irq status 0x%08x, cmd 0x%08x\n",
-@@ -277,16 +281,15 @@ static u32 aspeed_i2c_slave_irq(struct aspeed_i2c_bus *bus, u32 irq_status)
- 		irq_handled |= ASPEED_I2CD_INTR_NORMAL_STOP;
- 		bus->slave_state = ASPEED_I2C_SLAVE_STOP;
- 	}
--	if (irq_status & ASPEED_I2CD_INTR_TX_NAK) {
-+	if (irq_status & ASPEED_I2CD_INTR_TX_NAK &&
-+	    bus->slave_state == ASPEED_I2C_SLAVE_READ_PROCESSED) {
- 		irq_handled |= ASPEED_I2CD_INTR_TX_NAK;
- 		bus->slave_state = ASPEED_I2C_SLAVE_STOP;
- 	}
--	if (irq_status & ASPEED_I2CD_INTR_TX_ACK)
--		irq_handled |= ASPEED_I2CD_INTR_TX_ACK;
- 
- 	switch (bus->slave_state) {
- 	case ASPEED_I2C_SLAVE_READ_REQUESTED:
--		if (irq_status & ASPEED_I2CD_INTR_TX_ACK)
-+		if (unlikely(irq_status & ASPEED_I2CD_INTR_TX_ACK))
- 			dev_err(bus->dev, "Unexpected ACK on read request.\n");
- 		bus->slave_state = ASPEED_I2C_SLAVE_READ_PROCESSED;
- 		i2c_slave_event(slave, I2C_SLAVE_READ_REQUESTED, &value);
-@@ -294,9 +297,12 @@ static u32 aspeed_i2c_slave_irq(struct aspeed_i2c_bus *bus, u32 irq_status)
- 		writel(ASPEED_I2CD_S_TX_CMD, bus->base + ASPEED_I2C_CMD_REG);
- 		break;
- 	case ASPEED_I2C_SLAVE_READ_PROCESSED:
--		if (!(irq_status & ASPEED_I2CD_INTR_TX_ACK))
-+		if (unlikely(!(irq_status & ASPEED_I2CD_INTR_TX_ACK))) {
- 			dev_err(bus->dev,
- 				"Expected ACK after processed read.\n");
-+			break;
-+		}
-+		irq_handled |= ASPEED_I2CD_INTR_TX_ACK;
- 		i2c_slave_event(slave, I2C_SLAVE_READ_PROCESSED, &value);
- 		writel(value, bus->base + ASPEED_I2C_BYTE_BUF_REG);
- 		writel(ASPEED_I2CD_S_TX_CMD, bus->base + ASPEED_I2C_CMD_REG);
-@@ -310,10 +316,15 @@ static u32 aspeed_i2c_slave_irq(struct aspeed_i2c_bus *bus, u32 irq_status)
- 		break;
- 	case ASPEED_I2C_SLAVE_STOP:
- 		i2c_slave_event(slave, I2C_SLAVE_STOP, &value);
-+		bus->slave_state = ASPEED_I2C_SLAVE_INACTIVE;
-+		break;
-+	case ASPEED_I2C_SLAVE_START:
-+		/* Slave was just started. Waiting for the next event. */;
- 		break;
- 	default:
--		dev_err(bus->dev, "unhandled slave_state: %d\n",
-+		dev_err(bus->dev, "unknown slave_state: %d\n",
- 			bus->slave_state);
-+		bus->slave_state = ASPEED_I2C_SLAVE_INACTIVE;
- 		break;
- 	}
- 
-@@ -329,6 +340,17 @@ static void aspeed_i2c_do_start(struct aspeed_i2c_bus *bus)
- 	u8 slave_addr = i2c_8bit_addr_from_msg(msg);
- 
- 	bus->master_state = ASPEED_I2C_MASTER_START;
-+
-+#if IS_ENABLED(CONFIG_I2C_SLAVE)
-+	/*
-+	 * If it's requested in the middle of a slave session, set the master
-+	 * state to 'pending' then H/W will continue handling this master
-+	 * command when the bus comes back to the idle state.
-+	 */
-+	if (bus->slave_state != ASPEED_I2C_SLAVE_INACTIVE)
-+		bus->master_state = ASPEED_I2C_MASTER_PENDING;
-+#endif /* CONFIG_I2C_SLAVE */
-+
- 	bus->buf_index = 0;
- 
- 	if (msg->flags & I2C_M_RD) {
-@@ -384,10 +406,6 @@ static u32 aspeed_i2c_master_irq(struct aspeed_i2c_bus *bus, u32 irq_status)
- 		bus->master_state = ASPEED_I2C_MASTER_INACTIVE;
- 		irq_handled |= ASPEED_I2CD_INTR_BUS_RECOVER_DONE;
- 		goto out_complete;
--	} else {
--		/* Master is not currently active, irq was for someone else. */
--		if (bus->master_state == ASPEED_I2C_MASTER_INACTIVE)
--			goto out_no_complete;
- 	}
- 
- 	/*
-@@ -399,11 +417,32 @@ static u32 aspeed_i2c_master_irq(struct aspeed_i2c_bus *bus, u32 irq_status)
- 	if (ret) {
- 		dev_dbg(bus->dev, "received error interrupt: 0x%08x\n",
- 			irq_status);
--		bus->cmd_err = ret;
--		bus->master_state = ASPEED_I2C_MASTER_INACTIVE;
- 		irq_handled |= (irq_status & ASPEED_I2CD_INTR_MASTER_ERRORS);
--		goto out_complete;
-+		if (bus->master_state != ASPEED_I2C_MASTER_INACTIVE) {
-+			bus->cmd_err = ret;
-+			bus->master_state = ASPEED_I2C_MASTER_INACTIVE;
-+			goto out_complete;
-+		}
-+	}
-+
-+#if IS_ENABLED(CONFIG_I2C_SLAVE)
-+	/*
-+	 * A pending master command will be started by H/W when the bus comes
-+	 * back to idle state after completing a slave operation so change the
-+	 * master state from 'pending' to 'start' at here if slave is inactive.
-+	 */
-+	if (bus->master_state == ASPEED_I2C_MASTER_PENDING) {
-+		if (bus->slave_state != ASPEED_I2C_SLAVE_INACTIVE)
-+			goto out_no_complete;
-+
-+		bus->master_state = ASPEED_I2C_MASTER_START;
- 	}
-+#endif /* CONFIG_I2C_SLAVE */
-+
-+	/* Master is not currently active, irq was for someone else. */
-+	if (bus->master_state == ASPEED_I2C_MASTER_INACTIVE ||
-+	    bus->master_state == ASPEED_I2C_MASTER_PENDING)
-+		goto out_no_complete;
- 
- 	/* We are in an invalid state; reset bus to a known state. */
- 	if (!bus->msgs) {
-@@ -423,6 +462,20 @@ static u32 aspeed_i2c_master_irq(struct aspeed_i2c_bus *bus, u32 irq_status)
- 	 * then update the state and handle the new state below.
- 	 */
- 	if (bus->master_state == ASPEED_I2C_MASTER_START) {
-+#if IS_ENABLED(CONFIG_I2C_SLAVE)
-+		/*
-+		 * If a peer master starts a xfer immediately after it queues a
-+		 * master command, change its state to 'pending' then H/W will
-+		 * continue the queued master xfer just after completing the
-+		 * slave mode session.
-+		 */
-+		if (unlikely(irq_status & ASPEED_I2CD_INTR_SLAVE_MATCH)) {
-+			bus->master_state = ASPEED_I2C_MASTER_PENDING;
-+			dev_dbg(bus->dev,
-+				"master goes pending due to a slave start\n");
-+			goto out_no_complete;
-+		}
-+#endif /* CONFIG_I2C_SLAVE */
- 		if (unlikely(!(irq_status & ASPEED_I2CD_INTR_TX_ACK))) {
- 			if (unlikely(!(irq_status & ASPEED_I2CD_INTR_TX_NAK))) {
- 				bus->cmd_err = -ENXIO;
-@@ -566,7 +619,8 @@ static irqreturn_t aspeed_i2c_bus_irq(int irq, void *dev_id)
- 	 * interrupt bits. Each case needs to be handled using corresponding
- 	 * handlers depending on the current state.
- 	 */
--	if (bus->master_state != ASPEED_I2C_MASTER_INACTIVE) {
-+	if (bus->master_state != ASPEED_I2C_MASTER_INACTIVE &&
-+	    bus->master_state != ASPEED_I2C_MASTER_PENDING) {
- 		irq_handled = aspeed_i2c_master_irq(bus, irq_remaining);
- 		irq_remaining &= ~irq_handled;
- 		if (irq_remaining)
-@@ -601,15 +655,16 @@ static int aspeed_i2c_master_xfer(struct i2c_adapter *adap,
- {
- 	struct aspeed_i2c_bus *bus = i2c_get_adapdata(adap);
- 	unsigned long time_left, flags;
--	int ret = 0;
- 
- 	spin_lock_irqsave(&bus->lock, flags);
- 	bus->cmd_err = 0;
- 
--	/* If bus is busy, attempt recovery. We assume a single master
--	 * environment.
--	 */
--	if (readl(bus->base + ASPEED_I2C_CMD_REG) & ASPEED_I2CD_BUS_BUSY_STS) {
-+	/* If bus is busy in a single master environment, attempt recovery. */
-+	if (!bus->multi_master &&
-+	    (readl(bus->base + ASPEED_I2C_CMD_REG) &
-+	     ASPEED_I2CD_BUS_BUSY_STS)) {
-+		int ret;
-+
- 		spin_unlock_irqrestore(&bus->lock, flags);
- 		ret = aspeed_i2c_recover_bus(bus);
- 		if (ret)
-@@ -629,10 +684,20 @@ static int aspeed_i2c_master_xfer(struct i2c_adapter *adap,
- 	time_left = wait_for_completion_timeout(&bus->cmd_complete,
- 						bus->adap.timeout);
- 
--	if (time_left == 0)
-+	if (time_left == 0) {
-+		/*
-+		 * If timed out and bus is still busy in a multi master
-+		 * environment, attempt recovery at here.
-+		 */
-+		if (bus->multi_master &&
-+		    (readl(bus->base + ASPEED_I2C_CMD_REG) &
-+		     ASPEED_I2CD_BUS_BUSY_STS))
-+			aspeed_i2c_recover_bus(bus);
-+
- 		return -ETIMEDOUT;
--	else
--		return bus->master_xfer_result;
-+	}
-+
-+	return bus->master_xfer_result;
- }
- 
- static u32 aspeed_i2c_functionality(struct i2c_adapter *adap)
-@@ -672,7 +737,7 @@ static int aspeed_i2c_reg_slave(struct i2c_client *client)
- 	__aspeed_i2c_reg_slave(bus, client->addr);
- 
- 	bus->slave = client;
--	bus->slave_state = ASPEED_I2C_SLAVE_STOP;
-+	bus->slave_state = ASPEED_I2C_SLAVE_INACTIVE;
- 	spin_unlock_irqrestore(&bus->lock, flags);
- 
- 	return 0;
-@@ -827,7 +892,9 @@ static int aspeed_i2c_init(struct aspeed_i2c_bus *bus,
- 	if (ret < 0)
- 		return ret;
- 
--	if (!of_property_read_bool(pdev->dev.of_node, "multi-master"))
-+	if (of_property_read_bool(pdev->dev.of_node, "multi-master"))
-+		bus->multi_master = true;
-+	else
- 		fun_ctrl_reg |= ASPEED_I2CD_MULTI_MASTER_DIS;
- 
- 	/* Enable Master Mode */
--- 
-2.20.1
+    On Fri, 25 Jan 2019, at 05:59, Vijay Khemka wrote:
+    > 
+    > 
+    > On 1/24/19, 12:16 AM, "Greg Kroah-Hartman" <gregkh@linuxfoundation.org> wrote:
+    > 
+    >     On Wed, Jan 23, 2019 at 03:06:34PM -0800, Vijay Khemka wrote:
+    >     > Corrected some of return values with appropriate meanings.
+    >     > 
+    >     > Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
+    >     > ---
+    >     >  drivers/misc/aspeed-lpc-ctrl.c | 15 +++++++--------
+    >     >  1 file changed, 7 insertions(+), 8 deletions(-)
+    >     > 
+    >     > diff --git a/drivers/misc/aspeed-lpc-ctrl.c b/drivers/misc/aspeed-
+    > lpc-ctrl.c
+    >     > index 332210e06e98..97ae341109d5 100644
+    >     > --- a/drivers/misc/aspeed-lpc-ctrl.c
+    >     > +++ b/drivers/misc/aspeed-lpc-ctrl.c
+    >     > @@ -68,7 +68,6 @@ static long aspeed_lpc_ctrl_ioctl(struct file 
+    > *file, unsigned int cmd,
+    >     >  		unsigned long param)
+    >     >  {
+    >     >  	struct aspeed_lpc_ctrl *lpc_ctrl = file_aspeed_lpc_ctrl(file);
+    >     > -	struct device *dev = file->private_data;
+    >     >  	void __user *p = (void __user *)param;
+    >     >  	struct aspeed_lpc_ctrl_mapping map;
+    >     >  	u32 addr;
+    >     > @@ -93,8 +92,8 @@ static long aspeed_lpc_ctrl_ioctl(struct file 
+    > *file, unsigned int cmd,
+    >     >  
+    >     >  		/* If memory-region is not described in device tree */
+    >     >  		if (!lpc_ctrl->mem_size) {
+    >     > -			dev_err(dev, "Didn't find reserved memory\n");
+    >     > -			return -EINVAL;
+    >     > +			pr_err("aspeed_lpc_ctrl: ioctl: Didn't find reserved memory\n");
+    >     
+    >     Why did you change from dev_err() to pr_err()?  You just lost a lot of
+    >     information that the user previously was getting from dev_err() :(
+    > 
+    > I did this as per review comment from Andrew Jeffery, as we don't want 
+    > to put this error for driver. It has to be handled by userspace. But I 
+    > am still reporting some error here.
+    
+    Sorry? What I was trying to suggest was removing the logging altogether and
+    just returning the error code. Not simply changing how the logging is done.
+No issue, I can remove logging, will just return error code. Will send new patch with update.
+    
+    Andrew
+    
 
