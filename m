@@ -1,16 +1,16 @@
 From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Mon, 11 Feb 2019 15:15:29 +0100
-Subject: [PATCH 4.20 102/352] ARM: dts: aspeed: add missing memory unit-address
-In-Reply-To: <20190211141846.543045703@linuxfoundation.org>
-References: <20190211141846.543045703@linuxfoundation.org>
-Message-ID: <20190211141852.287329265@linuxfoundation.org>
+Date: Mon, 11 Feb 2019 15:16:09 +0100
+Subject: [PATCH 4.19 089/313] ARM: dts: aspeed: add missing memory unit-address
+In-Reply-To: <20190211141852.749630980@linuxfoundation.org>
+References: <20190211141852.749630980@linuxfoundation.org>
+Message-ID: <20190211141859.802233380@linuxfoundation.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-4.20-stable review patch.  If anyone has any objections, please let me know.
+4.19-stable review patch.  If anyone has any objections, please let me know.
 
 ------------------
 
