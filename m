@@ -1,12 +1,9 @@
 From: Vijay Khemka <vijaykhemka@fb.com>
-Date: Mon, 11 Feb 2019 20:13:15 +0000
-Subject: [PATCH] misc: aspeed-lpc-ctrl: Correct return values
-In-Reply-To: <1549862567.1175306.1655243744.11AFF30D@webmail.messagingengine.com>
-References: <20190123230634.1815021-1-vijaykhemka@fb.com>
- <20190124081544.GA1649@kroah.com>
- <13C13AE8-63A4-4002-9E0D-70276C529448@fb.com>
- <1549862567.1175306.1655243744.11AFF30D@webmail.messagingengine.com>
-Message-ID: <F4D4C25B-5E76-4E50-97E7-5A3548BBA1C4@fb.com>
+Date: Tue, 12 Feb 2019 22:07:38 +0000
+Subject: [PATCH] ARM:dts:aspeed Add Inspur on5263m5 BMC
+In-Reply-To: <1547708191-8721-1-git-send-email-wangzqbj@inspur.com>
+References: <1547708191-8721-1-git-send-email-wangzqbj@inspur.com>
+Message-ID: <4C4C6975-CA11-4609-BF8D-6246A1C5F193@fb.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -15,55 +12,171 @@ Content-Transfer-Encoding: 7bit
 
 
 
-?On 2/10/19, 9:22 PM, "Andrew Jeffery" <andrew@aj.id.au> wrote:
+?On 2/12/19, 1:58 PM, "Linux-aspeed on behalf of John Wang" <linux-aspeed-bounces+vijaykhemka=fb.com at lists.ozlabs.org on behalf of wangzqbj@inspur.com> wrote:
 
-    On Fri, 25 Jan 2019, at 05:59, Vijay Khemka wrote:
-    > 
-    > 
-    > On 1/24/19, 12:16 AM, "Greg Kroah-Hartman" <gregkh@linuxfoundation.org> wrote:
-    > 
-    >     On Wed, Jan 23, 2019 at 03:06:34PM -0800, Vijay Khemka wrote:
-    >     > Corrected some of return values with appropriate meanings.
-    >     > 
-    >     > Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
-    >     > ---
-    >     >  drivers/misc/aspeed-lpc-ctrl.c | 15 +++++++--------
-    >     >  1 file changed, 7 insertions(+), 8 deletions(-)
-    >     > 
-    >     > diff --git a/drivers/misc/aspeed-lpc-ctrl.c b/drivers/misc/aspeed-
-    > lpc-ctrl.c
-    >     > index 332210e06e98..97ae341109d5 100644
-    >     > --- a/drivers/misc/aspeed-lpc-ctrl.c
-    >     > +++ b/drivers/misc/aspeed-lpc-ctrl.c
-    >     > @@ -68,7 +68,6 @@ static long aspeed_lpc_ctrl_ioctl(struct file 
-    > *file, unsigned int cmd,
-    >     >  		unsigned long param)
-    >     >  {
-    >     >  	struct aspeed_lpc_ctrl *lpc_ctrl = file_aspeed_lpc_ctrl(file);
-    >     > -	struct device *dev = file->private_data;
-    >     >  	void __user *p = (void __user *)param;
-    >     >  	struct aspeed_lpc_ctrl_mapping map;
-    >     >  	u32 addr;
-    >     > @@ -93,8 +92,8 @@ static long aspeed_lpc_ctrl_ioctl(struct file 
-    > *file, unsigned int cmd,
-    >     >  
-    >     >  		/* If memory-region is not described in device tree */
-    >     >  		if (!lpc_ctrl->mem_size) {
-    >     > -			dev_err(dev, "Didn't find reserved memory\n");
-    >     > -			return -EINVAL;
-    >     > +			pr_err("aspeed_lpc_ctrl: ioctl: Didn't find reserved memory\n");
-    >     
-    >     Why did you change from dev_err() to pr_err()?  You just lost a lot of
-    >     information that the user previously was getting from dev_err() :(
-    > 
-    > I did this as per review comment from Andrew Jeffery, as we don't want 
-    > to put this error for driver. It has to be handled by userspace. But I 
-    > am still reporting some error here.
+    Add initial version of device tree file for on5263m5 ast2500bmc
     
-    Sorry? What I was trying to suggest was removing the logging altogether and
-    just returning the error code. Not simply changing how the logging is done.
-No issue, I can remove logging, will just return error code. Will send new patch with update.
+    Signed-off-by: John Wang <wangzqbj@inspur.com>
+    ---
+     arch/arm/boot/dts/aspeed-bmc-inspur-on5263m5.dts | 146 +++++++++++++++++++++++
+     1 file changed, 146 insertions(+)
+     create mode 100644 arch/arm/boot/dts/aspeed-bmc-inspur-on5263m5.dts
     
-    Andrew
+    diff --git a/arch/arm/boot/dts/aspeed-bmc-inspur-on5263m5.dts b/arch/arm/boot/dts/aspeed-bmc-inspur-on5263m5.dts
+    new file mode 100644
+    index 0000000..064ae30
+    --- /dev/null
+    +++ b/arch/arm/boot/dts/aspeed-bmc-inspur-on5263m5.dts
+    @@ -0,0 +1,146 @@
+    +// SPDX-License-Identifier: GPL-2.0
+    +// Copyright (c) 2018 Inspur Corporation
+    +/dts-v1/;
+    +
+    +#include "aspeed-g5.dtsi"
+    +#include <dt-bindings/gpio/aspeed-gpio.h>
+    +
+    +/ {
+    +	model = "ON5263M5 BMC";
+    +	compatible = "inspur,on5263m5-bmc", "aspeed,ast2500";
+    +
+    +	chosen {
+    +		stdout-path = &uart5;
+    +		bootargs = "earlyprintk";
+    +	};
+    +
+    +	memory {
+    +		reg = <0x80000000 0x20000000>;
+    +	};
+    +
+    +	reserved-memory {
+    +		#address-cells = <1>;
+    +		#size-cells = <1>;
+    +		ranges;
+    +
+    +		vga_memory: framebuffer at 9f000000 {
+    +			no-map;
+    +			reg = <0x9f000000 0x01000000>;
+    +		};
+    +	};
+    +	
+    +	leds {
+    +	    compatible = "gpio-leds";
+    +	    
+    +	    bmc_alive {
+    +	        label = "bmc_alive";
+    +		gpios = <&gpio ASPEED_GPIO(I, 1) GPIO_ACTIVE_LOW>;
+    +		linux,default-trigger = "timer";
+    +	    };
+    +	};
+    +
+    +	iio-hwmon {
+    +		compatible = "iio-hwmon";
+    +		io-channels = <&adc 0>, <&adc 1>, <&adc 2>, <&adc 3>,
+    +			<&adc 4>, <&adc 5>, <&adc 6>, <&adc 7>;
+    +	};
+    +
+    +};
+    +
+    +&fmc {
+    +	status = "okay";
+    +	flash at 0 {
+    +		status = "okay";
+    +		m25p,fast-read;
+    +		label = "bmc";
+    +#include "openbmc-flash-layout.dtsi"
+    +	};
+    +};
+    +
+    +&spi1 {
+    +	status = "okay";
+    +	pinctrl-names = "default";
+    +	pinctrl-0 = <&pinctrl_spi1_default>;
+    +
+    +	flash at 0 {
+    +		status = "okay";
+    +		m25p,fast-read;
+    +		label = "pnor";
+    +	};
+    +};
+    +
+    +&uart5 {
+    +	status = "okay";
+    +};
+    +
+    +&mac0 {
+    +	status = "okay";
+    +
+    +	pinctrl-names = "default";
+    +	pinctrl-0 = <&pinctrl_rmii1_default>;
+    +	use-ncsi;
+    +};
+    +
+    +&mac1 {
+    +	status = "okay";
+    +
+    +	pinctrl-names = "default";
+    +	pinctrl-0 = <&pinctrl_rgmii2_default &pinctrl_mdio2_default>;
+    +};
+    +
+    +&i2c6 {
+    +	status = "okay";
+    +
+    +	tmp421 at 4e {
+    +	        compatible = "ti,tmp421";
+    +		reg = <0x4e>;
+    +	};
+    +
+    +	tmp112 at 48 {
+    +		compatible = "ti,tmp112";
+    +		reg = <0x48>;
+    +	};
+    +	
+    +	eeprom at 54 {
+    +		compatible = "atmel,24c64";
+    +    		reg = <0x54>; 
+    +		pagesize = <32>;
+    +	};
+    +};
+    +
+    +&i2c7 {
+    +	status = "okay";
+    +
+    +	adm1278 at 11 {
+    +		  compatible = "adi,adm1278";
+    +		  reg = <0x11>;
+    +	};
+    +};
+    +
+    +&gfx {
+    +	status = "okay";
+    +};
+    +
+    +&pinctrl {
+    +	aspeed,external-nodes = <&gfx &lhc>;
+    +};
+This pinctrl definition is not required as it is already defined in aspeed-g5.dtsi.
+    +
+    +&pwm_tacho {
+    +	status = "okay";
+    +	pinctrl-names = "default";
+    +	pinctrl-0 = <&pinctrl_pwm0_default &pinctrl_pwm1_default>;
+    +
+    +	fan at 0 {
+    +   		reg = <0x00>;
+    +   		aspeed,fan-tach-ch = /bits/ 8 <0x00 0x01>;  
+    + 	};
+    +
+    + 	fan at 1 {
+    +   		reg = <0x01>;
+    +   		aspeed,fan-tach-ch = /bits/ 8 <0x02 0x03>;
+    + 	};
+    +};
+    +
+    +&adc {
+    +	status = "okay";
+    +};
+    -- 
+    2.7.4
+    
     
 
