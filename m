@@ -1,42 +1,60 @@
-From: Wolfram Sang <wsa@the-dreams.de>
-Date: Fri, 15 Feb 2019 09:52:39 +0100
-Subject: [PATCH v2] i2c: aspeed: Add multi-master use case support
-In-Reply-To: <20190211185444.4965-1-jae.hyun.yoo@linux.intel.com>
-References: <20190211185444.4965-1-jae.hyun.yoo@linux.intel.com>
-Message-ID: <20190215085239.v5cjmcef2q62xiyl@ninjato>
+From: Patrick Venture <venture@google.com>
+Date: Thu, 21 Feb 2019 14:25:23 -0800
+Subject: [PATCH 1/2] dt-bindings: misc: aspeed-p2a-ctrl: add support
+Message-ID: <20190221222523.136829-1-venture@google.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Feb 11, 2019 at 10:54:44AM -0800, Jae Hyun Yoo wrote:
-> In multi-master environment, this driver's master cannot know
-> exactly when a peer master sends data to this driver's slave so
-> cases can be happened that this master tries sending data through
-> the master_xfer function but slave data from a peer master is still
-> being processed or slave xfer is started by a peer immediately
-> after it queues a master command. To support multi-master use cases
-> properly, this H/W provides arbitration in physical level and it
-> provides priority based command handling too to avoid conflicts in
-> multi-master environment, means that if a master and a slave events
-> happen at the same time, H/W will handle a higher priority event
-> first and a pending event will be handled when bus comes back to
-> the idle state.
-> 
-> To support this H/W feature properly, this patch adds the 'pending'
-> state of master and its handling code so that the pending master
-> xfer can be continued after slave operation properly.
-> 
-> Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-> Reviewed-by: Brendan Higgins <brendanhiggins@google.com>
+Document the ast2400, ast2500 PCI-to-AHB bridge control driver bindings.
 
-Applied to for-next, thanks!
+Signed-off-by: Patrick Venture <venture@google.com>
+---
+ .../bindings/misc/aspeed-p2a-ctrl.txt         | 33 +++++++++++++++++++
+ 1 file changed, 33 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/misc/aspeed-p2a-ctrl.txt
 
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 833 bytes
-Desc: not available
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20190215/6cd05b22/attachment.sig>
+diff --git a/Documentation/devicetree/bindings/misc/aspeed-p2a-ctrl.txt b/Documentation/devicetree/bindings/misc/aspeed-p2a-ctrl.txt
+new file mode 100644
+index 000000000000..9c4d036ad5f5
+--- /dev/null
++++ b/Documentation/devicetree/bindings/misc/aspeed-p2a-ctrl.txt
+@@ -0,0 +1,33 @@
++======================================================================
++Device tree bindings for Aspeed AST2400/AST2500 PCI-to-AHB Bridge Control Driver
++======================================================================
++
++The bridge is available on platforms with the VGA enabled on the Aspeed device.
++In this case, the host has access to a 64KiB window into all of the BMC's
++memory.  The BMC can disable this bridge.  If the bridge is enabled, the host
++has read access to all the regions of memory, however the host only has read
++and write access depending on a register controlled by the BMC.
++
++Required properties:
++===================
++
++ - compatible: must be one of:
++	- "aspeed,ast2400-p2a-ctrl"
++	- "aspeed,ast2500-p2a-ctrl"
++
++ - reg: physical address of SCU2C followed by SCU180
++
++Optional properties:
++===================
++
++- memory-region: A phandle to a reserved_memory region to be used for the PCI
++		to AHB mapping
++
++Example:
++
++p2a: p2a-control at 1e6e2000 {
++	compatible = "aspeed,ast2400-p2a-ctrl";
++	reg = <0x1e6e202C 4
++	       0x1e6e2180 4>;
++	memory-region = <&reserved_memory>;
++};
+-- 
+2.21.0.rc0.258.g878e2cd30e-goog
+
