@@ -1,46 +1,63 @@
 From: Patrick Venture <venture@google.com>
-Date: Tue, 26 Feb 2019 14:32:24 -0800
-Subject: [PATCH 2/2] drivers/misc: Add Aspeed P2A control driver
-In-Reply-To: <578fe6cd-cc7c-4f6d-8f7e-39c9f183a8e4@www.fastmail.com>
-References: <20190221222537.137331-1-venture@google.com>
- <692c6c5d-9090-4e1f-9324-a03da381b003@www.fastmail.com>
- <CAO=notx+p5PQ1UXW7XKD=5Lb23RvC5+1R+LcJLxXYEnT6vvgkQ@mail.gmail.com>
- <CAO=notx1OTWbxg5EhgqDUcrpfBpgez3LXXrNKHX5VpOark3GvA@mail.gmail.com>
- <578fe6cd-cc7c-4f6d-8f7e-39c9f183a8e4@www.fastmail.com>
-Message-ID: <CAO=notzjZQYeNo8nFmDfj+cw=hAMEmQ7GX-5ccY5786rMC_NEA@mail.gmail.com>
+Date: Tue, 26 Feb 2019 15:36:00 -0800
+Subject: [PATCH v2 1/2] dt-bindings: misc: aspeed-p2a-ctrl: add support
+Message-ID: <20190226233600.140153-1-venture@google.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Feb 26, 2019 at 2:20 PM Andrew Jeffery <andrew@aj.id.au> wrote:
->
->
->
-> On Wed, 27 Feb 2019, at 08:26, Patrick Venture wrote:
-> > On Tue, Feb 26, 2019 at 1:42 PM Patrick Venture <venture@google.com> wrote:
-> > >
-> > > On Sun, Feb 24, 2019 at 5:26 PM Andrew Jeffery <andrew@aj.id.au> wrote:
-> > > >
-> > >
-> > > >
-> > > > > +
-> > > > > +     /* Access to these needs to be locked, held via probe, mapping ioctl,
-> > > > > +      * and release, remove.
-> > > > > +      */
-> > > > > +     struct mutex tracking;
-> > > > > +     u32 readers;
-> > > > > +     u32 readerwriters[P2A_REGION_COUNT];
-> > > >
-> > > > Might be better to use refcount_t here instead of u32?
-> > >
-> > > Ack
-> >
-> > refcount requires atomic, is that something we have with the ast2400, 2500?
->
-> Ah, we do on the 2500 (armv6) but not the 2400 (armv5)
+Document the ast2400, ast2500 PCI-to-AHB bridge control driver bindings.
 
-Ok, so to avoid that complexity I'm not going to swap in refcounts.
-but good to know for future reference since it's basically what I was
-doing manually.
+Signed-off-by: Patrick Venture <venture@google.com>
+Change-Id: Ic89a2df0f555dee10598f87537ee004e82d13acd
+---
+Changes for v2:
+- Added comment about syscon required parameter.
+---
+ .../bindings/misc/aspeed-p2a-ctrl.txt         | 32 +++++++++++++++++++
+ 1 file changed, 32 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/misc/aspeed-p2a-ctrl.txt
+
+diff --git a/Documentation/devicetree/bindings/misc/aspeed-p2a-ctrl.txt b/Documentation/devicetree/bindings/misc/aspeed-p2a-ctrl.txt
+new file mode 100644
+index 000000000000..1092d62d1c92
+--- /dev/null
++++ b/Documentation/devicetree/bindings/misc/aspeed-p2a-ctrl.txt
+@@ -0,0 +1,32 @@
++======================================================================
++Device tree bindings for Aspeed AST2400/AST2500 PCI-to-AHB Bridge Control Driver
++======================================================================
++
++The bridge is available on platforms with the VGA enabled on the Aspeed device.
++In this case, the host has access to a 64KiB window into all of the BMC's
++memory.  The BMC can disable this bridge.  If the bridge is enabled, the host
++has read access to all the regions of memory, however the host only has read
++and write access depending on a register controlled by the BMC.
++
++Required properties:
++===================
++
++ - compatible: must be one of:
++	- "aspeed,ast2400-p2a-ctrl"
++	- "aspeed,ast2500-p2a-ctrl"
++
++ - syscon: handle to syscon device node controlling PCI.
++
++Optional properties:
++===================
++
++- memory-region: A phandle to a reserved_memory region to be used for the PCI
++		to AHB mapping
++
++Example:
++
++p2a: p2a-control at 1e6e2000 {
++	compatible = "aspeed,ast2400-p2a-ctrl";
++	memory-region = <&reserved_memory>;
++	syscon = <&syscon>;
++};
+-- 
+2.21.0.rc2.261.ga7da99ff1b-goog
+
