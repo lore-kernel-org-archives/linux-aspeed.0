@@ -1,940 +1,263 @@
-From: Winiarska, Iwona <iwona.winiarska@intel.com>
-Date: Fri, 30 Jul 2021 21:21:48 +0000
-Subject: [PATCH 10/14] peci: Add peci-cpu driver
-In-Reply-To: <20210727213357.GT8018@packtop>
-References: <20210712220447.957418-1-iwona.winiarska@intel.com>
- <20210712220447.957418-11-iwona.winiarska@intel.com>
- <20210727213357.GT8018@packtop>
-Message-ID: <3e71604fec4a3674ff2f2eafe948e43a3f271fec.camel@intel.com>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Date: Fri, 1 Mar 2019 17:21:41 +0100
+Subject: [PATCH] usb: introduce usb_ep_type_string() function
+In-Reply-To: <e2ff70a3608dce315b52aea710398ba79d0f6f93.1551422947.git.chunfeng.yun@mediatek.com>
+References: <e2ff70a3608dce315b52aea710398ba79d0f6f93.1551422947.git.chunfeng.yun@mediatek.com>
+Message-ID: <20190301162141.GB19937@kroah.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, 2021-07-27 at 21:33 +0000, Zev Weiss wrote:
-> On Mon, Jul 12, 2021 at 05:04:43PM CDT, Iwona Winiarska wrote:
-> > PECI is an interface that may be used by different types of devices.
-> > Here we're adding a peci-cpu driver compatible with Intel processors.
-> > The driver is responsible for handling auxiliary devices that can
-> > subsequently be used by other drivers (e.g. hwmons).
-> > 
-> > Signed-off-by: Iwona Winiarska <iwona.winiarska@intel.com>
-> > Reviewed-by: Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>
-> > ---
-> > MAINTAINERS????????????? |?? 1 +
-> > drivers/peci/Kconfig???? |? 15 ++
-> > drivers/peci/Makefile??? |?? 2 +
-> > drivers/peci/cpu.c?????? | 347 +++++++++++++++++++++++++++++++++++++++
-> > drivers/peci/device.c??? |?? 1 +
-> > drivers/peci/internal.h? |? 27 +++
-> > drivers/peci/request.c?? | 211 ++++++++++++++++++++++++
-> > include/linux/peci-cpu.h |? 38 +++++
-> > include/linux/peci.h???? |?? 8 -
-> > 9 files changed, 642 insertions(+), 8 deletions(-)
-> > create mode 100644 drivers/peci/cpu.c
-> > create mode 100644 include/linux/peci-cpu.h
-> > 
-> > diff --git a/MAINTAINERS b/MAINTAINERS
-> > index 4ba874afa2fa..f47b5f634293 100644
-> > --- a/MAINTAINERS
-> > +++ b/MAINTAINERS
-> > @@ -14511,6 +14511,7 @@ L:??????openbmc at lists.ozlabs.org?(moderated for non-
-> > subscribers)
-> > S:??????Supported
-> > F:??????Documentation/devicetree/bindings/peci/
-> > F:??????drivers/peci/
-> > +F:?????include/linux/peci-cpu.h
-> > F:??????include/linux/peci.h
-> > 
-> > PENSANDO ETHERNET DRIVERS
-> > diff --git a/drivers/peci/Kconfig b/drivers/peci/Kconfig
-> > index 27c31535843c..9e17e06fda90 100644
-> > --- a/drivers/peci/Kconfig
-> > +++ b/drivers/peci/Kconfig
-> > @@ -16,6 +16,21 @@ menuconfig PECI
-> > 
-> > if PECI
-> > 
-> > +config PECI_CPU
-> > +???????tristate "PECI CPU"
-> > +???????select AUXILIARY_BUS
-> > +???????help
-> > +???????? This option enables peci-cpu driver for Intel processors. It is
-> > +???????? responsible for creating auxiliary devices that can subsequently
-> > +???????? be used by other drivers in order to perform various
-> > +???????? functionalities such as e.g. temperature monitoring.
-> > +
-> > +???????? Additional drivers must be enabled in order to use the
-> > functionality
-> > +???????? of the device.
-> > +
-> > +???????? This driver can also be built as a module. If so, the module
-> > +???????? will be called peci-cpu.
-> > +
-> > source "drivers/peci/controller/Kconfig"
-> > 
-> > endif # PECI
-> > diff --git a/drivers/peci/Makefile b/drivers/peci/Makefile
-> > index 917f689e147a..7de18137e738 100644
-> > --- a/drivers/peci/Makefile
-> > +++ b/drivers/peci/Makefile
-> > @@ -3,6 +3,8 @@
-> > # Core functionality
-> > peci-y := core.o request.o device.o sysfs.o
-> > obj-$(CONFIG_PECI) += peci.o
-> > +peci-cpu-y := cpu.o
-> > +obj-$(CONFIG_PECI_CPU) += peci-cpu.o
-> > 
-> > # Hardware specific bus drivers
-> > obj-y += controller/
-> > diff --git a/drivers/peci/cpu.c b/drivers/peci/cpu.c
-> > new file mode 100644
-> > index 000000000000..8d130a9a71ad
-> > --- /dev/null
-> > +++ b/drivers/peci/cpu.c
-> > @@ -0,0 +1,347 @@
-> > +// SPDX-License-Identifier: GPL-2.0-only
-> > +// Copyright (c) 2021 Intel Corporation
-> > +
-> > +#include <linux/auxiliary_bus.h>
-> > +#include <linux/module.h>
-> > +#include <linux/peci.h>
-> > +#include <linux/peci-cpu.h>
-> > +#include <linux/slab.h>
-> > +#include <linux/x86/intel-family.h>
-> > +
-> > +#include "internal.h"
-> > +
-> > +/**
-> > + * peci_temp_read() - read the maximum die temperature from PECI target
-> > device
-> > + * @device: PECI device to which request is going to be sent
-> > + * @temp_raw: where to store the read temperature
-> > + *
-> > + * It uses GetTemp PECI command.
-> > + *
-> > + * Return: 0 if succeeded, other values in case errors.
-> > + */
-> > +int peci_temp_read(struct peci_device *device, s16 *temp_raw)
-> > +{
-> > +???????struct peci_request *req;
-> > +
-> > +???????req = peci_get_temp(device);
-> > +???????if (IS_ERR(req))
-> > +???????????????return PTR_ERR(req);
-> > +
-> > +???????*temp_raw = peci_request_data_temp(req);
-> > +
-> > +???????peci_request_free(req);
-> > +
-> > +???????return 0;
-> > +}
-> > +EXPORT_SYMBOL_NS_GPL(peci_temp_read, PECI_CPU);
-> > +
-> > +/**
-> > + * peci_pcs_read() - read PCS register
-> > + * @device: PECI device to which request is going to be sent
-> > + * @index: PCS index
-> > + * @param: PCS parameter
-> > + * @data: where to store the read data
-> > + *
-> > + * It uses RdPkgConfig PECI command.
-> > + *
-> > + * Return: 0 if succeeded, other values in case errors.
-> > + */
-> > +int peci_pcs_read(struct peci_device *device, u8 index, u16 param, u32
-> > *data)
-> > +{
-> > +???????struct peci_request *req;
-> > +???????int ret;
-> > +
-> > +???????req = peci_pkg_cfg_readl(device, index, param);
-> > +???????if (IS_ERR(req))
-> > +???????????????return PTR_ERR(req);
-> > +
-> > +???????ret = peci_request_status(req);
-> > +???????if (ret)
-> > +???????????????goto out_req_free;
-> > +
-> > +???????*data = peci_request_data_readl(req);
-> > +out_req_free:
+On Fri, Mar 01, 2019 at 02:58:23PM +0800, Chunfeng Yun wrote:
+> In some places, the code prints a human-readable USB endpoint
+> transfer type (e.g. "bulk"). This involves a switch statement
+> sometimes wrapped around in ({ ... }) block leading to code
+> repetition.
+> To make this scenario easier, here introduces usb_ep_type_string()
+> function, which returns a human-readable name of provided
+> endpoint type.
+> It also changes a few places switch was used to use this
+> new function.
 > 
-> As in patch 9, this control flow could be rewritten as just
+> Signed-off-by: Chunfeng Yun <chunfeng.yun@mediatek.com>
+> ---
+>  drivers/usb/common/common.c              | 16 ++++++++++++++++
+>  drivers/usb/core/endpoint.c              | 18 ++----------------
+>  drivers/usb/core/hcd.c                   | 17 ++---------------
+>  drivers/usb/dwc3/debugfs.c               | 23 ++++-------------------
+>  drivers/usb/gadget/udc/aspeed-vhub/epn.c |  6 +-----
+>  drivers/usb/gadget/udc/dummy_hcd.c       | 16 +---------------
+>  drivers/usb/host/xhci-trace.h            | 19 ++-----------------
+>  include/linux/usb/ch9.h                  |  8 ++++++++
+>  8 files changed, 36 insertions(+), 87 deletions(-)
 > 
-> ????????if (!ret)
-> ????????????????*data = peci_request_data_readl(req);
-> 
-> and avoid the goto.
+> diff --git a/drivers/usb/common/common.c b/drivers/usb/common/common.c
+> index 48277bbc15e4..2174dd9ec176 100644
+> --- a/drivers/usb/common/common.c
+> +++ b/drivers/usb/common/common.c
+> @@ -16,6 +16,22 @@
+>  #include <linux/usb/otg.h>
+>  #include <linux/of_platform.h>
+>  
+> +static const char *const ep_type_names[] = {
+> +	[USB_ENDPOINT_XFER_CONTROL] = "ctrl",
+> +	[USB_ENDPOINT_XFER_ISOC] = "isoc",
+> +	[USB_ENDPOINT_XFER_BULK] = "bulk",
+> +	[USB_ENDPOINT_XFER_INT] = "intr",
+> +};
+> +
+> +const char *usb_ep_type_string(int ep_type)
+> +{
+> +	if (ep_type < 0 || ep_type >= ARRAY_SIZE(ep_type_names))
+> +		return "unknown";
+> +
+> +	return ep_type_names[ep_type];
+> +}
+> +EXPORT_SYMBOL_GPL(usb_ep_type_string);
+> +
+>  const char *usb_otg_state_string(enum usb_otg_state state)
+>  {
+>  	static const char *const names[] = {
+> diff --git a/drivers/usb/core/endpoint.c b/drivers/usb/core/endpoint.c
+> index 1c2c04079676..afa43f9a47b2 100644
+> --- a/drivers/usb/core/endpoint.c
+> +++ b/drivers/usb/core/endpoint.c
+> @@ -60,23 +60,9 @@ static ssize_t type_show(struct device *dev, struct device_attribute *attr,
+>  			 char *buf)
+>  {
+>  	struct ep_device *ep = to_ep_device(dev);
+> -	char *type = "unknown";
+> +	int ep_type = usb_endpoint_type(ep->desc);
+>  
+> -	switch (usb_endpoint_type(ep->desc)) {
+> -	case USB_ENDPOINT_XFER_CONTROL:
+> -		type = "Control";
+> -		break;
+> -	case USB_ENDPOINT_XFER_ISOC:
+> -		type = "Isoc";
+> -		break;
+> -	case USB_ENDPOINT_XFER_BULK:
+> -		type = "Bulk";
+> -		break;
+> -	case USB_ENDPOINT_XFER_INT:
+> -		type = "Interrupt";
+> -		break;
+> -	}
+> -	return sprintf(buf, "%s\n", type);
+> +	return sprintf(buf, "%s\n", usb_ep_type_string(ep_type));
 
-I think explicit error handling just reads better (and is a more common pattern
-in kernel code).
+You just changed a user/kernel API here, the strings are now different
+from what they used to be :(
 
-In order to save a single line of code, doing:
-if (non-error)
-   do-the-regular-flow
+That's not ok, odds are you will break tools if you do this.
 
-where readers are used to the inverse:
-if (error)
-   handle-error
+>  }
+>  static DEVICE_ATTR_RO(type);
+>  
+> diff --git a/drivers/usb/core/hcd.c b/drivers/usb/core/hcd.c
+> index 015b126ce455..193ee92b2fdb 100644
+> --- a/drivers/usb/core/hcd.c
+> +++ b/drivers/usb/core/hcd.c
+> @@ -1875,23 +1875,10 @@ void usb_hcd_flush_endpoint(struct usb_device *udev,
+>  		/* kick hcd */
+>  		unlink1(hcd, urb, -ESHUTDOWN);
+>  		dev_dbg (hcd->self.controller,
+> -			"shutdown urb %pK ep%d%s%s\n",
+> +			"shutdown urb %pK ep%d%s-%s\n",
+>  			urb, usb_endpoint_num(&ep->desc),
+>  			is_in ? "in" : "out",
+> -			({	char *s;
+> -
+> -				 switch (usb_endpoint_type(&ep->desc)) {
+> -				 case USB_ENDPOINT_XFER_CONTROL:
+> -					s = ""; break;
+> -				 case USB_ENDPOINT_XFER_BULK:
+> -					s = "-bulk"; break;
+> -				 case USB_ENDPOINT_XFER_INT:
+> -					s = "-intr"; break;
+> -				 default:
+> -					s = "-iso"; break;
+> -				};
+> -				s;
+> -			}));
+> +			usb_ep_type_string(usb_endpoint_type(&ep->desc)));
 
-do-the-regular-flow
+You also changed the message here for control endpoints, but that's not
+a big deal, it's ok.
 
-may make the reader confused (it's easy to mix up error handling with regular
-flow).
+>  		usb_put_urb (urb);
+>  
+>  		/* list contents may have changed */
+> diff --git a/drivers/usb/dwc3/debugfs.c b/drivers/usb/dwc3/debugfs.c
+> index 1c792710348f..d9e2a63835fe 100644
+> --- a/drivers/usb/dwc3/debugfs.c
+> +++ b/drivers/usb/dwc3/debugfs.c
+> @@ -750,28 +750,13 @@ static int dwc3_transfer_type_show(struct seq_file *s, void *unused)
+>  	unsigned long		flags;
+>  
+>  	spin_lock_irqsave(&dwc->lock, flags);
+> -	if (!(dep->flags & DWC3_EP_ENABLED) ||
+> -			!dep->endpoint.desc) {
+> -		seq_printf(s, "--\n");
+> +	if (!(dep->flags & DWC3_EP_ENABLED) || !dep->endpoint.desc) {
+> +		seq_puts(s, "unknown\n");
+>  		goto out;
+>  	}
+>  
+> -	switch (usb_endpoint_type(dep->endpoint.desc)) {
+> -	case USB_ENDPOINT_XFER_CONTROL:
+> -		seq_printf(s, "control\n");
+> -		break;
+> -	case USB_ENDPOINT_XFER_ISOC:
+> -		seq_printf(s, "isochronous\n");
+> -		break;
+> -	case USB_ENDPOINT_XFER_BULK:
+> -		seq_printf(s, "bulk\n");
+> -		break;
+> -	case USB_ENDPOINT_XFER_INT:
+> -		seq_printf(s, "interrupt\n");
+> -		break;
+> -	default:
+> -		seq_printf(s, "--\n");
+> -	}
+> +	seq_printf(s, "%s\n",
+> +		   usb_ep_type_string(usb_endpoint_type(dep->endpoint.desc)));
 
-> 
-> > +???????peci_request_free(req);
-> > +
-> > +???????return ret;
-> > +}
-> > +EXPORT_SYMBOL_NS_GPL(peci_pcs_read, PECI_CPU);
-> > +
-> > +/**
-> > + * peci_pci_local_read() - read 32-bit memory location using raw address
-> > + * @device: PECI device to which request is going to be sent
-> > + * @bus: bus
-> > + * @dev: device
-> > + * @func: function
-> > + * @reg: register
-> > + * @data: where to store the read data
-> > + *
-> > + * It uses RdPCIConfigLocal PECI command.
-> > + *
-> > + * Return: 0 if succeeded, other values in case errors.
-> > + */
-> > +int peci_pci_local_read(struct peci_device *device, u8 bus, u8 dev, u8
-> > func,
-> > +???????????????????????u16 reg, u32 *data)
-> > +{
-> > +???????struct peci_request *req;
-> > +???????int ret;
-> > +
-> > +???????req = peci_pci_cfg_local_readl(device, bus, dev, func, reg);
-> > +???????if (IS_ERR(req))
-> > +???????????????return PTR_ERR(req);
-> > +
-> > +???????ret = peci_request_status(req);
-> > +???????if (ret)
-> > +???????????????goto out_req_free;
-> > +
-> > +???????*data = peci_request_data_readl(req);
-> > +out_req_free:
-> > +???????peci_request_free(req);
-> > +
-> > +???????return ret;
-> > +}
-> > +EXPORT_SYMBOL_NS_GPL(peci_pci_local_read, PECI_CPU);
-> > +
-> > +/**
-> > + * peci_ep_pci_local_read() - read 32-bit memory location using raw address
-> > + * @device: PECI device to which request is going to be sent
-> > + * @seg: PCI segment
-> > + * @bus: bus
-> > + * @dev: device
-> > + * @func: function
-> > + * @reg: register
-> > + * @data: where to store the read data
-> > + *
-> > + * Like &peci_pci_local_read, but it uses RdEndpointConfig PECI command.
-> > + *
-> > + * Return: 0 if succeeded, other values in case errors.
-> > + */
-> > +int peci_ep_pci_local_read(struct peci_device *device, u8 seg,
-> > +????????????????????????? u8 bus, u8 dev, u8 func, u16 reg, u32 *data)
-> > +{
-> > +???????struct peci_request *req;
-> > +???????int ret;
-> > +
-> > +???????req = peci_ep_pci_cfg_local_readl(device, seg, bus, dev, func, reg);
-> > +???????if (IS_ERR(req))
-> > +???????????????return PTR_ERR(req);
-> > +
-> > +???????ret = peci_request_status(req);
-> > +???????if (ret)
-> > +???????????????goto out_req_free;
-> > +
-> > +???????*data = peci_request_data_readl(req);
-> > +out_req_free:
-> > +???????peci_request_free(req);
-> > +
-> > +???????return ret;
-> > +}
-> > +EXPORT_SYMBOL_NS_GPL(peci_ep_pci_local_read, PECI_CPU);
-> > +
-> > +/**
-> > + * peci_mmio_read() - read 32-bit memory location using 64-bit bar offset
-> > address
-> > + * @device: PECI device to which request is going to be sent
-> > + * @bar: PCI bar
-> > + * @seg: PCI segment
-> > + * @bus: bus
-> > + * @dev: device
-> > + * @func: function
-> > + * @address: 64-bit MMIO address
-> > + * @data: where to store the read data
-> > + *
-> > + * It uses RdEndpointConfig PECI command.
-> > + *
-> > + * Return: 0 if succeeded, other values in case errors.
-> > + */
-> > +int peci_mmio_read(struct peci_device *device, u8 bar, u8 seg,
-> > +????????????????? u8 bus, u8 dev, u8 func, u64 address, u32 *data)
-> > +{
-> > +???????struct peci_request *req;
-> > +???????int ret;
-> > +
-> > +???????req = peci_ep_mmio64_readl(device, bar, seg, bus, dev, func,
-> > address);
-> > +???????if (IS_ERR(req))
-> > +???????????????return PTR_ERR(req);
-> > +
-> > +???????ret = peci_request_status(req);
-> > +???????if (ret)
-> > +???????????????goto out_req_free;
-> > +
-> > +???????*data = peci_request_data_readl(req);
-> > +out_req_free:
-> > +???????peci_request_free(req);
-> > +
-> > +???????return ret;
-> > +}
-> > +EXPORT_SYMBOL_NS_GPL(peci_mmio_read, PECI_CPU);
-> > +
-> > +struct peci_cpu {
-> > +???????struct peci_device *device;
-> > +???????const struct peci_device_id *id;
-> > +???????struct auxiliary_device **aux_devices;
-> 
-> Given that the size for this allocation is a compile-time constant,
-> should we just inline this as 'struct auxiliary_device
-> *aux_devices[ARRAY_SIZE(type)]' and avoid some kmalloc work in
-> peci_cpu_add_adevices()?
+It is debugfs, so no real API guarantees at all, but you did change the
+output format, and that's not always good.
 
-Ack.
+>  
+>  out:
+>  	spin_unlock_irqrestore(&dwc->lock, flags);
+> diff --git a/drivers/usb/gadget/udc/aspeed-vhub/epn.c b/drivers/usb/gadget/udc/aspeed-vhub/epn.c
+> index 4a28e3fbeb0b..165b0a43670e 100644
+> --- a/drivers/usb/gadget/udc/aspeed-vhub/epn.c
+> +++ b/drivers/usb/gadget/udc/aspeed-vhub/epn.c
+> @@ -593,10 +593,6 @@ static int ast_vhub_epn_disable(struct usb_ep* u_ep)
+>  static int ast_vhub_epn_enable(struct usb_ep* u_ep,
+>  			       const struct usb_endpoint_descriptor *desc)
+>  {
+> -	static const char *ep_type_string[] __maybe_unused = { "ctrl",
+> -							       "isoc",
+> -							       "bulk",
+> -							       "intr" };
+>  	struct ast_vhub_ep *ep = to_ast_ep(u_ep);
+>  	struct ast_vhub_dev *dev;
+>  	struct ast_vhub *vhub;
+> @@ -646,7 +642,7 @@ static int ast_vhub_epn_enable(struct usb_ep* u_ep,
+>  	ep->epn.wedged = false;
+>  
+>  	EPDBG(ep, "Enabling [%s] %s num %d maxpacket=%d\n",
+> -	      ep->epn.is_in ? "in" : "out", ep_type_string[type],
+> +	      ep->epn.is_in ? "in" : "out", usb_ep_type_string(type),
+>  	      usb_endpoint_num(desc), maxpacket);
+>  
+>  	/* Can we use DMA descriptor mode ? */
+> diff --git a/drivers/usb/gadget/udc/dummy_hcd.c b/drivers/usb/gadget/udc/dummy_hcd.c
+> index baf72f95f0f1..40c6a484e232 100644
+> --- a/drivers/usb/gadget/udc/dummy_hcd.c
+> +++ b/drivers/usb/gadget/udc/dummy_hcd.c
+> @@ -617,21 +617,7 @@ static int dummy_enable(struct usb_ep *_ep,
+>  		_ep->name,
+>  		desc->bEndpointAddress & 0x0f,
+>  		(desc->bEndpointAddress & USB_DIR_IN) ? "in" : "out",
+> -		({ char *val;
+> -		 switch (usb_endpoint_type(desc)) {
+> -		 case USB_ENDPOINT_XFER_BULK:
+> -			 val = "bulk";
+> -			 break;
+> -		 case USB_ENDPOINT_XFER_ISOC:
+> -			 val = "iso";
+> -			 break;
+> -		 case USB_ENDPOINT_XFER_INT:
+> -			 val = "intr";
+> -			 break;
+> -		 default:
+> -			 val = "ctrl";
+> -			 break;
+> -		 } val; }),
+> +		usb_ep_type_string(usb_endpoint_type(desc)),
+>  		max, ep->stream_en ? "enabled" : "disabled");
+>  
+>  	/* at this point real hardware should be NAKing transfers
+> diff --git a/drivers/usb/host/xhci-trace.h b/drivers/usb/host/xhci-trace.h
+> index 88b427434bd8..bac73d688f11 100644
+> --- a/drivers/usb/host/xhci-trace.h
+> +++ b/drivers/usb/host/xhci-trace.h
+> @@ -289,23 +289,8 @@ DECLARE_EVENT_CLASS(xhci_log_urb,
+>  	),
+>  	TP_printk("ep%d%s-%s: urb %p pipe %u slot %d length %d/%d sgs %d/%d stream %d flags %08x",
+>  			__entry->epnum, __entry->dir_in ? "in" : "out",
+> -			({ char *s;
+> -			switch (__entry->type) {
+> -			case USB_ENDPOINT_XFER_INT:
+> -				s = "intr";
+> -				break;
+> -			case USB_ENDPOINT_XFER_CONTROL:
+> -				s = "control";
+> -				break;
+> -			case USB_ENDPOINT_XFER_BULK:
+> -				s = "bulk";
+> -				break;
+> -			case USB_ENDPOINT_XFER_ISOC:
+> -				s = "isoc";
+> -				break;
+> -			default:
+> -				s = "UNKNOWN";
+> -			} s; }), __entry->urb, __entry->pipe, __entry->slot_id,
+> +			usb_ep_type_string(__entry->type),
+> +			__entry->urb, __entry->pipe, __entry->slot_id,
+>  			__entry->actual, __entry->length, __entry->num_mapped_sgs,
+>  			__entry->num_sgs, __entry->stream, __entry->flags
+>  		)
 
-> 
-> > +};
-> > +
-> > +static const char * const type[] = {
-> 
-> A slightly more descriptive name might be good -- maybe something like
-> 'peci_adevice_types'?
+Another api change with "control" :(
 
-I'll rename it to something more descriptive.
+I like the idea, but you can not break user/kernel apis like this
+without knowing the affects that could happen.
 
-> 
-> > +???????"cputemp",
-> > +???????"dimmtemp",
-> > +};
-> > +
-> > +static void adev_release(struct device *dev)
-> > +{
-> > +???????struct auxiliary_device *adev = to_auxiliary_dev(dev);
-> > +
-> > +???????kfree(adev->name);
-> > +???????kfree(adev);
-> > +}
-> > +
-> > +static struct auxiliary_device *add_adev(struct peci_cpu *priv, int idx)
-> > +{
-> > +???????struct peci_controller *controller = priv->device->controller;
-> > +???????struct auxiliary_device *adev;
-> > +???????const char *name;
-> > +???????int ret;
-> > +
-> > +???????adev = kzalloc(sizeof(*adev), GFP_KERNEL);
-> > +???????if (!adev)
-> > +???????????????return ERR_PTR(-ENOMEM);
-> > +
-> > +???????name = kasprintf(GFP_KERNEL, "%s.%s", type[idx], (const char *)priv-
-> > >id->data);
-> > +???????if (!name) {
-> > +???????????????ret = -ENOMEM;
-> > +???????????????goto free_adev;
-> > +???????}
-> > +
-> > +???????adev->name = name;
-> > +???????adev->dev.parent = &priv->device->dev;
-> > +???????adev->dev.release = adev_release;
-> > +???????adev->id = (controller->id << 16) | (priv->device->addr);
-> > +
-> > +???????ret = auxiliary_device_init(adev);
-> > +???????if (ret)
-> > +???????????????goto free_name;
-> > +
-> > +???????ret = auxiliary_device_add(adev);
-> > +???????if (ret) {
-> > +???????????????auxiliary_device_uninit(adev);
-> > +???????????????return ERR_PTR(ret);
-> > +???????}
-> > +
-> > +???????return adev;
-> > +
-> > +free_name:
-> > +???????kfree(name);
-> > +free_adev:
-> > +???????kfree(adev);
-> > +???????return ERR_PTR(ret);
-> > +}
-> > +
-> > +static void del_adev(struct auxiliary_device *adev)
-> > +{
-> > +???????auxiliary_device_delete(adev);
-> > +???????auxiliary_device_uninit(adev);
-> > +}
-> > +
-> > +static int peci_cpu_add_adevices(struct peci_cpu *priv)
-> > +{
-> > +???????struct device *dev = &priv->device->dev;
-> > +???????struct auxiliary_device *adev;
-> > +???????int i;
-> > +
-> > +???????priv->aux_devices = devm_kcalloc(dev, ARRAY_SIZE(type),
-> > +??????????????????????????????????????? sizeof(*priv->aux_devices),
-> > +??????????????????????????????????????? GFP_KERNEL);
-> > +???????if (!priv->aux_devices)
-> > +???????????????return -ENOMEM;
-> > +
-> > +???????for (i = 0; i < ARRAY_SIZE(type); i++) {
-> > +???????????????adev = add_adev(priv, i);
-> > +???????????????if (IS_ERR(adev)) {
-> > +???????????????????????dev_warn(dev, "Failed to add PECI auxiliary: %s, ret
-> > = %ld\n",
-> > +??????????????????????????????? type[i], PTR_ERR(adev));
-> > +???????????????????????continue;
-> > +???????????????}
-> > +
-> > +???????????????priv->aux_devices[i] = adev;
-> > +???????}
-> > +???????return 0;
-> > +}
-> > +
-> > +static int
-> > +peci_cpu_probe(struct peci_device *device, const struct peci_device_id *id)
-> > +{
-> > +???????struct device *dev = &device->dev;
-> > +???????struct peci_cpu *priv;
-> > +
-> > +???????priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
-> > +???????if (!priv)
-> > +???????????????return -ENOMEM;
-> > +
-> > +???????dev_set_drvdata(dev, priv);
-> > +???????priv->device = device;
-> > +???????priv->id = id;
-> > +
-> > +???????return peci_cpu_add_adevices(priv);
-> > +}
-> > +
-> > +static void peci_cpu_remove(struct peci_device *device)
-> > +{
-> > +???????struct peci_cpu *priv = dev_get_drvdata(&device->dev);
-> > +???????int i;
-> > +
-> > +???????for (i = 0; i < ARRAY_SIZE(type); i++) {
-> > +???????????????struct auxiliary_device *adev = priv->aux_devices[i];
-> > +
-> > +???????????????if (adev)
-> > +???????????????????????del_adev(adev);
-> > +???????}
-> > +}
-> > +
-> > +static const struct peci_device_id peci_cpu_device_ids[] = {
-> > +???????{ /* Haswell Xeon */
-> > +???????????????.family?= 6,
-> > +???????????????.model??= INTEL_FAM6_HASWELL_X,
-> > +???????????????.data???= "hsx",
-> > +???????},
-> > +???????{ /* Broadwell Xeon */
-> > +???????????????.family?= 6,
-> > +???????????????.model??= INTEL_FAM6_BROADWELL_X,
-> > +???????????????.data???= "bdx",
-> > +???????},
-> > +???????{ /* Broadwell Xeon D */
-> > +???????????????.family?= 6,
-> > +???????????????.model??= INTEL_FAM6_BROADWELL_D,
-> > +???????????????.data???= "skxd",
-> > +???????},
-> > +???????{ /* Skylake Xeon */
-> > +???????????????.family?= 6,
-> > +???????????????.model??= INTEL_FAM6_SKYLAKE_X,
-> > +???????????????.data???= "skx",
-> > +???????},
-> > +???????{ /* Icelake Xeon */
-> > +???????????????.family?= 6,
-> > +???????????????.model??= INTEL_FAM6_ICELAKE_X,
-> > +???????????????.data???= "icx",
-> > +???????},
-> > +???????{ /* Icelake Xeon D */
-> > +???????????????.family?= 6,
-> > +???????????????.model??= INTEL_FAM6_ICELAKE_D,
-> > +???????????????.data???= "icxd",
-> > +???????},
-> > +???????{ }
-> > +};
-> > +MODULE_DEVICE_TABLE(peci, peci_cpu_device_ids);
-> > +
-> > +static struct peci_driver peci_cpu_driver = {
-> > +???????.probe??????????= peci_cpu_probe,
-> > +???????.remove?????????= peci_cpu_remove,
-> > +???????.id_table???????= peci_cpu_device_ids,
-> > +???????.driver?????????= {
-> > +???????????????.name???????????= "peci-cpu",
-> > +???????},
-> > +};
-> > +module_peci_driver(peci_cpu_driver);
-> > +
-> > +MODULE_AUTHOR("Iwona Winiarska <iwona.winiarska@intel.com>");
-> > +MODULE_DESCRIPTION("PECI CPU driver");
-> > +MODULE_LICENSE("GPL");
-> > +MODULE_IMPORT_NS(PECI);
-> > diff --git a/drivers/peci/device.c b/drivers/peci/device.c
-> > index 8c4bd1ebbc29..c278c9ea166c 100644
-> > --- a/drivers/peci/device.c
-> > +++ b/drivers/peci/device.c
-> > @@ -3,6 +3,7 @@
-> > 
-> > #include <linux/bitfield.h>
-> > #include <linux/peci.h>
-> > +#include <linux/peci-cpu.h>
-> > #include <linux/slab.h>
-> > #include <linux/x86/cpu.h>
-> > 
-> > diff --git a/drivers/peci/internal.h b/drivers/peci/internal.h
-> > index c891c93e077a..1d39483a8acf 100644
-> > --- a/drivers/peci/internal.h
-> > +++ b/drivers/peci/internal.h
-> > @@ -21,6 +21,7 @@ void peci_request_free(struct peci_request *req);
-> > 
-> > int peci_request_status(struct peci_request *req);
-> > u64 peci_request_data_dib(struct peci_request *req);
-> > +s16 peci_request_data_temp(struct peci_request *req);
-> > 
-> > u8 peci_request_data_readb(struct peci_request *req);
-> > u16 peci_request_data_readw(struct peci_request *req);
-> > @@ -35,6 +36,32 @@ struct peci_request *peci_pkg_cfg_readw(struct
-> > peci_device *device, u8 index, u1
-> > struct peci_request *peci_pkg_cfg_readl(struct peci_device *device, u8
-> > index, u16 param);
-> > struct peci_request *peci_pkg_cfg_readq(struct peci_device *device, u8
-> > index, u16 param);
-> > 
-> > +struct peci_request *peci_pci_cfg_local_readb(struct peci_device *device,
-> > +???????????????????????????????????????????? u8 bus, u8 dev, u8 func, u16
-> > reg);
-> > +struct peci_request *peci_pci_cfg_local_readw(struct peci_device *device,
-> > +???????????????????????????????????????????? u8 bus, u8 dev, u8 func, u16
-> > reg);
-> > +struct peci_request *peci_pci_cfg_local_readl(struct peci_device *device,
-> > +???????????????????????????????????????????? u8 bus, u8 dev, u8 func, u16
-> > reg);
-> > +
-> > +struct peci_request *peci_ep_pci_cfg_local_readb(struct peci_device
-> > *device, u8 seg,
-> > +??????????????????????????????????????????????? u8 bus, u8 dev, u8 func,
-> > u16 reg);
-> > +struct peci_request *peci_ep_pci_cfg_local_readw(struct peci_device
-> > *device, u8 seg,
-> > +??????????????????????????????????????????????? u8 bus, u8 dev, u8 func,
-> > u16 reg);
-> > +struct peci_request *peci_ep_pci_cfg_local_readl(struct peci_device
-> > *device, u8 seg,
-> > +??????????????????????????????????????????????? u8 bus, u8 dev, u8 func,
-> > u16 reg);
-> > +
-> > +struct peci_request *peci_ep_pci_cfg_readb(struct peci_device *device, u8
-> > seg,
-> > +????????????????????????????????????????? u8 bus, u8 dev, u8 func, u16
-> > reg);
-> > +struct peci_request *peci_ep_pci_cfg_readw(struct peci_device *device, u8
-> > seg,
-> > +????????????????????????????????????????? u8 bus, u8 dev, u8 func, u16
-> > reg);
-> > +struct peci_request *peci_ep_pci_cfg_readl(struct peci_device *device, u8
-> > seg,
-> > +????????????????????????????????????????? u8 bus, u8 dev, u8 func, u16
-> > reg);
-> > +
-> > +struct peci_request *peci_ep_mmio32_readl(struct peci_device *device, u8
-> > bar, u8 seg,
-> > +???????????????????????????????????????? u8 bus, u8 dev, u8 func, u64
-> > offset);
-> > +
-> > +struct peci_request *peci_ep_mmio64_readl(struct peci_device *device, u8
-> > bar, u8 seg,
-> > +???????????????????????????????????????? u8 bus, u8 dev, u8 func, u64
-> > offset);
-> > /**
-> > ?* struct peci_device_id - PECI device data to match
-> > ?* @data: pointer to driver private data specific to device
-> > diff --git a/drivers/peci/request.c b/drivers/peci/request.c
-> > index 48354455b554..c5d39f7e8142 100644
-> > --- a/drivers/peci/request.c
-> > +++ b/drivers/peci/request.c
-> > @@ -3,6 +3,7 @@
-> > 
-> > #include <linux/bug.h>
-> > #include <linux/export.h>
-> > +#include <linux/pci.h>
-> > #include <linux/peci.h>
-> > #include <linux/slab.h>
-> > #include <linux/types.h>
-> > @@ -15,6 +16,10 @@
-> > #define? PECI_GET_DIB_WR_LEN????????????1
-> > #define? PECI_GET_DIB_RD_LEN????????????8
-> > 
-> > +#define PECI_GET_TEMP_CMD??????????????0x01
-> > +#define? PECI_GET_TEMP_WR_LEN??????????1
-> > +#define? PECI_GET_TEMP_RD_LEN??????????2
-> > +
-> > #define PECI_RDPKGCFG_CMD???????????????0xa1
-> > #define? PECI_RDPKGCFG_WRITE_LEN????????5
-> > #define? PECI_RDPKGCFG_READ_LEN_BASE????1
-> > @@ -22,6 +27,44 @@
-> > #define? PECI_WRPKGCFG_WRITE_LEN_BASE???6
-> > #define? PECI_WRPKGCFG_READ_LEN?????????1
-> > 
-> > +#define PECI_RDIAMSR_CMD???????????????0xb1
-> > +#define? PECI_RDIAMSR_WRITE_LEN????????????????5
-> > +#define? PECI_RDIAMSR_READ_LEN?????????9
-> > +#define PECI_WRIAMSR_CMD???????????????0xb5
-> > +#define PECI_RDIAMSREX_CMD?????????????0xd1
-> > +#define? PECI_RDIAMSREX_WRITE_LEN??????6
-> > +#define? PECI_RDIAMSREX_READ_LEN???????9
-> > +
-> > +#define PECI_RDPCICFG_CMD??????????????0x61
-> > +#define? PECI_RDPCICFG_WRITE_LEN???????6
-> > +#define? PECI_RDPCICFG_READ_LEN????????????????5
-> > +#define? PECI_RDPCICFG_READ_LEN_MAX????24
-> > +#define PECI_WRPCICFG_CMD??????????????0x65
-> > +
-> > +#define PECI_RDPCICFGLOCAL_CMD?????????????????0xe1
-> > +#define? PECI_RDPCICFGLOCAL_WRITE_LEN??????????5
-> > +#define? PECI_RDPCICFGLOCAL_READ_LEN_BASE??????1
-> > +#define PECI_WRPCICFGLOCAL_CMD?????????????????0xe5
-> > +#define? PECI_WRPCICFGLOCAL_WRITE_LEN_BASE?????6
-> > +#define? PECI_WRPCICFGLOCAL_READ_LEN???????????1
-> > +
-> > +#define PECI_ENDPTCFG_TYPE_LOCAL_PCI???????????0x03
-> > +#define PECI_ENDPTCFG_TYPE_PCI?????????????????0x04
-> > +#define PECI_ENDPTCFG_TYPE_MMIO????????????????????????0x05
-> > +#define PECI_ENDPTCFG_ADDR_TYPE_PCI????????????0x04
-> > +#define PECI_ENDPTCFG_ADDR_TYPE_MMIO_D?????????0x05
-> > +#define PECI_ENDPTCFG_ADDR_TYPE_MMIO_Q?????????0x06
-> > +#define PECI_RDENDPTCFG_CMD????????????????????0xc1
-> > +#define? PECI_RDENDPTCFG_PCI_WRITE_LEN?????????12
-> > +#define? PECI_RDENDPTCFG_MMIO_D_WRITE_LEN??????14
-> > +#define? PECI_RDENDPTCFG_MMIO_Q_WRITE_LEN??????18
-> > +#define? PECI_RDENDPTCFG_READ_LEN_BASE?????????1
-> > +#define PECI_WRENDPTCFG_CMD????????????????????0xc5
-> > +#define? PECI_WRENDPTCFG_PCI_WRITE_LEN_BASE????13
-> > +#define? PECI_WRENDPTCFG_MMIO_D_WRITE_LEN_BASE?15
-> > +#define? PECI_WRENDPTCFG_MMIO_Q_WRITE_LEN_BASE?19
-> > +#define? PECI_WRENDPTCFG_READ_LEN??????????????1
-> > +
-> > /* Device Specific Completion Code (CC) Definition */
-> > #define PECI_CC_SUCCESS?????????????????????????0x40
-> > #define PECI_CC_NEED_RETRY??????????????????????0x80
-> > @@ -223,6 +266,27 @@ struct peci_request *peci_get_dib(struct peci_device
-> > *device)
-> > }
-> > EXPORT_SYMBOL_NS_GPL(peci_get_dib, PECI);
-> > 
-> > +struct peci_request *peci_get_temp(struct peci_device *device)
-> > +{
-> > +???????struct peci_request *req;
-> > +???????int ret;
-> > +
-> > +???????req = peci_request_alloc(device, PECI_GET_TEMP_WR_LEN,
-> > PECI_GET_TEMP_RD_LEN);
-> > +???????if (!req)
-> > +???????????????return ERR_PTR(-ENOMEM);
-> > +
-> > +???????req->tx.buf[0] = PECI_GET_TEMP_CMD;
-> > +
-> > +???????ret = peci_request_xfer(req);
-> > +???????if (ret) {
-> > +???????????????peci_request_free(req);
-> > +???????????????return ERR_PTR(ret);
-> > +???????}
-> > +
-> > +???????return req;
-> > +}
-> > +EXPORT_SYMBOL_NS_GPL(peci_get_temp, PECI);
-> > +
-> > static struct peci_request *
-> > __pkg_cfg_read(struct peci_device *device, u8 index, u16 param, u8 len)
-> > {
-> > @@ -248,6 +312,108 @@ __pkg_cfg_read(struct peci_device *device, u8 index,
-> > u16 param, u8 len)
-> > ????????return req;
-> > }
-> > 
-> > +static u32 __get_pci_addr(u8 bus, u8 dev, u8 func, u16 reg)
-> > +{
-> > +???????return reg | PCI_DEVID(bus, PCI_DEVFN(dev, func)) << 12;
-> > +}
-> > +
-> > +static struct peci_request *
-> > +__pci_cfg_local_read(struct peci_device *device, u8 bus, u8 dev, u8 func,
-> > u16 reg, u8 len)
-> > +{
-> > +???????struct peci_request *req;
-> > +???????u32 pci_addr;
-> > +???????int ret;
-> > +
-> > +???????req = peci_request_alloc(device, PECI_RDPCICFGLOCAL_WRITE_LEN,
-> > +??????????????????????????????? PECI_RDPCICFGLOCAL_READ_LEN_BASE + len);
-> > +???????if (!req)
-> > +???????????????return ERR_PTR(-ENOMEM);
-> > +
-> > +???????pci_addr = __get_pci_addr(bus, dev, func, reg);
-> > +
-> > +???????req->tx.buf[0] = PECI_RDPCICFGLOCAL_CMD;
-> > +???????req->tx.buf[1] = 0;
-> > +???????put_unaligned_le24(pci_addr, &req->tx.buf[2]);
-> > +
-> > +???????ret = peci_request_xfer_retry(req);
-> > +???????if (ret) {
-> > +???????????????peci_request_free(req);
-> > +???????????????return ERR_PTR(ret);
-> > +???????}
-> > +
-> > +???????return req;
-> > +}
-> > +
-> > +static struct peci_request *
-> > +__ep_pci_cfg_read(struct peci_device *device, u8 msg_type, u8 seg,
-> > +???????????????? u8 bus, u8 dev, u8 func, u16 reg, u8 len)
-> > +{
-> > +???????struct peci_request *req;
-> > +???????u32 pci_addr;
-> > +???????int ret;
-> > +
-> > +???????req = peci_request_alloc(device, PECI_RDENDPTCFG_PCI_WRITE_LEN,
-> > +??????????????????????????????? PECI_RDENDPTCFG_READ_LEN_BASE + len);
-> > +???????if (!req)
-> > +???????????????return ERR_PTR(-ENOMEM);
-> > +
-> > +???????pci_addr = __get_pci_addr(bus, dev, func, reg);
-> > +
-> > +???????req->tx.buf[0] = PECI_RDENDPTCFG_CMD;
-> > +???????req->tx.buf[1] = 0;
-> > +???????req->tx.buf[2] = msg_type;
-> > +???????req->tx.buf[3] = 0;
-> > +???????req->tx.buf[4] = 0;
-> > +???????req->tx.buf[5] = 0;
-> > +???????req->tx.buf[6] = PECI_ENDPTCFG_ADDR_TYPE_PCI;
-> > +???????req->tx.buf[7] = seg; /* PCI Segment */
-> > +???????put_unaligned_le32(pci_addr, &req->tx.buf[8]);
-> > +
-> > +???????ret = peci_request_xfer_retry(req);
-> > +???????if (ret) {
-> > +???????????????peci_request_free(req);
-> > +???????????????return ERR_PTR(ret);
-> > +???????}
-> > +
-> > +???????return req;
-> > +}
-> > +
-> > +static struct peci_request *
-> > +__ep_mmio_read(struct peci_device *device, u8 bar, u8 addr_type, u8 seg,
-> > +????????????? u8 bus, u8 dev, u8 func, u64 offset, u8 tx_len, u8 len)
-> > +{
-> > +???????struct peci_request *req;
-> > +???????int ret;
-> > +
-> > +???????req = peci_request_alloc(device, tx_len,
-> > PECI_RDENDPTCFG_READ_LEN_BASE + len);
-> > +???????if (!req)
-> > +???????????????return ERR_PTR(-ENOMEM);
-> > +
-> > +???????req->tx.buf[0] = PECI_RDENDPTCFG_CMD;
-> > +???????req->tx.buf[1] = 0;
-> > +???????req->tx.buf[2] = PECI_ENDPTCFG_TYPE_MMIO;
-> > +???????req->tx.buf[3] = 0; /* Endpoint ID */
-> > +???????req->tx.buf[4] = 0; /* Reserved */
-> > +???????req->tx.buf[5] = bar;
-> > +???????req->tx.buf[6] = addr_type;
-> > +???????req->tx.buf[7] = seg; /* PCI Segment */
-> > +???????req->tx.buf[8] = PCI_DEVFN(dev, func);
-> > +???????req->tx.buf[9] = bus; /* PCI Bus */
-> > +
-> > +???????if (addr_type == PECI_ENDPTCFG_ADDR_TYPE_MMIO_D)
-> > +???????????????put_unaligned_le32(offset, &req->tx.buf[10]);
-> > +???????else
-> > +???????????????put_unaligned_le64(offset, &req->tx.buf[10]);
-> > +
-> > +???????ret = peci_request_xfer_retry(req);
-> > +???????if (ret) {
-> > +???????????????peci_request_free(req);
-> > +???????????????return ERR_PTR(ret);
-> > +???????}
-> > +
-> > +???????return req;
-> > +}
-> > +
-> > u8 peci_request_data_readb(struct peci_request *req)
-> > {
-> > ????????return req->rx.buf[1];
-> > @@ -278,6 +444,12 @@ u64 peci_request_data_dib(struct peci_request *req)
-> > }
-> > EXPORT_SYMBOL_NS_GPL(peci_request_data_dib, PECI);
-> > 
-> > +s16 peci_request_data_temp(struct peci_request *req)
-> > +{
-> > +???????return get_unaligned_le16(&req->rx.buf[0]);
-> > +}
-> > +EXPORT_SYMBOL_NS_GPL(peci_request_data_temp, PECI);
-> > +
-> > #define __read_pkg_config(x, type) \
-> > struct peci_request *peci_pkg_cfg_##x(struct peci_device *device, u8 index,
-> > u16 param) \
-> > { \
-> > @@ -289,3 +461,42 @@ __read_pkg_config(readb, u8);
-> > __read_pkg_config(readw, u16);
-> > __read_pkg_config(readl, u32);
-> > __read_pkg_config(readq, u64);
-> > +
-> > +#define __read_pci_config_local(x, type) \
-> > +struct peci_request * \
-> > +peci_pci_cfg_local_##x(struct peci_device *device, u8 bus, u8 dev, u8 func,
-> > u16 reg) \
-> > +{ \
-> > +???????return __pci_cfg_local_read(device, bus, dev, func, reg,
-> > sizeof(type)); \
-> > +} \
-> 
-> As with peci_pkg_cfg_*() in patch 9, it seems like this could relieve
-> callers of some busy-work by returning a status int and writing the data
-> to a 'type*' pointer instead of returning a struct peci_request*.
+thanks,
 
-The callers that expect such behavior (getting the data directly without
-bothering with requests, peci completion codes, and so on) are supposed to use
-the API exposed by their "parent" driver (e.g. peci_pci_local_read).
-
-> 
-> > +EXPORT_SYMBOL_NS_GPL(peci_pci_cfg_local_##x, PECI)
-> > +
-> > +__read_pci_config_local(readb, u8);
-> > +__read_pci_config_local(readw, u16);
-> > +__read_pci_config_local(readl, u32);
-> > +
-> > +#define __read_ep_pci_config(x, msg_type, type) \
-> > +struct peci_request * \
-> > +peci_ep_pci_cfg_##x(struct peci_device *device, u8 seg, u8 bus, u8 dev, u8
-> > func, u16 reg) \
-> > +{ \
-> > +???????return __ep_pci_cfg_read(device, msg_type, seg, bus, dev, func, reg,
-> > sizeof(type)); \
-> > +} \
-> 
-> Likewise here.
-> 
-> > +EXPORT_SYMBOL_NS_GPL(peci_ep_pci_cfg_##x, PECI)
-> > +
-> > +__read_ep_pci_config(local_readb, PECI_ENDPTCFG_TYPE_LOCAL_PCI, u8);
-> > +__read_ep_pci_config(local_readw, PECI_ENDPTCFG_TYPE_LOCAL_PCI, u16);
-> > +__read_ep_pci_config(local_readl, PECI_ENDPTCFG_TYPE_LOCAL_PCI, u32);
-> > +__read_ep_pci_config(readb, PECI_ENDPTCFG_TYPE_PCI, u8);
-> > +__read_ep_pci_config(readw, PECI_ENDPTCFG_TYPE_PCI, u16);
-> > +__read_ep_pci_config(readl, PECI_ENDPTCFG_TYPE_PCI, u32);
-> > +
-> > +#define __read_ep_mmio(x, y, addr_type, type1, type2) \
-> > +struct peci_request *peci_ep_mmio##y##_##x(struct peci_device *device, u8
-> > bar, u8 seg, \
-> > +????????????????????????????????????????? u8 bus, u8 dev, u8 func, u64
-> > offset) \
-> > +{ \
-> > +???????return __ep_mmio_read(device, bar, addr_type, seg, bus, dev, func, \
-> > +???????????????????????????? offset, 10 + sizeof(type1), sizeof(type2)); \
-> > +} \
-> 
-> And here (I think).
-> 
-> Also, the '10 +' looks a bit magical/mysterious.? Could that be
-> clarified a bit with a macro or something?
-
-Makes sense - I'll define it.
-
-Thank you
--Iwona
-
-> 
-> > +EXPORT_SYMBOL_NS_GPL(peci_ep_mmio##y##_##x, PECI)
-> > +
-> > +__read_ep_mmio(readl, 32, PECI_ENDPTCFG_ADDR_TYPE_MMIO_D, u32, u32);
-> > +__read_ep_mmio(readl, 64, PECI_ENDPTCFG_ADDR_TYPE_MMIO_Q, u64, u32);
-> > diff --git a/include/linux/peci-cpu.h b/include/linux/peci-cpu.h
-> > new file mode 100644
-> > index 000000000000..d1b307ec2429
-> > --- /dev/null
-> > +++ b/include/linux/peci-cpu.h
-> > @@ -0,0 +1,38 @@
-> > +/* SPDX-License-Identifier: GPL-2.0-only */
-> > +/* Copyright (c) 2021 Intel Corporation */
-> > +
-> > +#ifndef __LINUX_PECI_CPU_H
-> > +#define __LINUX_PECI_CPU_H
-> > +
-> > +#include <linux/types.h>
-> > +
-> > +#define PECI_PCS_PKG_ID????????????????????????0? /* Package Identifier
-> > Read */
-> > +#define? PECI_PKG_ID_CPU_ID????????????0x0000? /* CPUID Info */
-> > +#define? PECI_PKG_ID_PLATFORM_ID???????0x0001? /* Platform ID */
-> > +#define? PECI_PKG_ID_DEVICE_ID?????????0x0002? /* Uncore Device ID */
-> > +#define? PECI_PKG_ID_MAX_THREAD_ID?????0x0003? /* Max Thread ID */
-> > +#define? PECI_PKG_ID_MICROCODE_REV?????0x0004? /* CPU Microcode Update
-> > Revision */
-> > +#define? PECI_PKG_ID_MCA_ERROR_LOG?????0x0005? /* Machine Check Status */
-> > +#define PECI_PCS_MODULE_TEMP???????????9? /* Per Core DTS Temperature Read
-> > */
-> > +#define PECI_PCS_THERMAL_MARGIN????????????????10 /* DTS thermal margin */
-> > +#define PECI_PCS_DDR_DIMM_TEMP?????????14 /* DDR DIMM Temperature */
-> > +#define PECI_PCS_TEMP_TARGET???????????16 /* Temperature Target Read */
-> > +#define PECI_PCS_TDP_UNITS?????????????30 /* Units for power/energy
-> > registers */
-> > +
-> > +struct peci_device;
-> > +
-> > +int peci_temp_read(struct peci_device *device, s16 *temp_raw);
-> > +
-> > +int peci_pcs_read(struct peci_device *device, u8 index,
-> > +???????????????? u16 param, u32 *data);
-> > +
-> > +int peci_pci_local_read(struct peci_device *device, u8 bus, u8 dev,
-> > +???????????????????????u8 func, u16 reg, u32 *data);
-> > +
-> > +int peci_ep_pci_local_read(struct peci_device *device, u8 seg,
-> > +????????????????????????? u8 bus, u8 dev, u8 func, u16 reg, u32 *data);
-> > +
-> > +int peci_mmio_read(struct peci_device *device, u8 bar, u8 seg,
-> > +????????????????? u8 bus, u8 dev, u8 func, u64 address, u32 *data);
-> > +
-> > +#endif /* __LINUX_PECI_CPU_H */
-> > diff --git a/include/linux/peci.h b/include/linux/peci.h
-> > index f9f37b874011..31f9e628fd11 100644
-> > --- a/include/linux/peci.h
-> > +++ b/include/linux/peci.h
-> > @@ -9,14 +9,6 @@
-> > #include <linux/mutex.h>
-> > #include <linux/types.h>
-> > 
-> > -#define PECI_PCS_PKG_ID????????????????????????0? /* Package Identifier
-> > Read */
-> > -#define? PECI_PKG_ID_CPU_ID????????????0x0000? /* CPUID Info */
-> > -#define? PECI_PKG_ID_PLATFORM_ID???????0x0001? /* Platform ID */
-> > -#define? PECI_PKG_ID_DEVICE_ID?????????0x0002? /* Uncore Device ID */
-> > -#define? PECI_PKG_ID_MAX_THREAD_ID?????0x0003? /* Max Thread ID */
-> > -#define? PECI_PKG_ID_MICROCODE_REV?????0x0004? /* CPU Microcode Update
-> > Revision */
-> > -#define? PECI_PKG_ID_MCA_ERROR_LOG?????0x0005? /* Machine Check Status */
-> > -
-> > struct peci_request;
-> > 
-> > /**
-> > -- 
-> > 2.31.1
-
+greg k-h
