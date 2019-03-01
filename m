@@ -1,183 +1,259 @@
-From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-Date: Fri, 29 Mar 2019 14:27:10 -0700
-Subject: [PATCH v2] media: platform: fix a kernel warning on clk control
-Message-ID: <20190329212710.5378-1-jae.hyun.yoo@linux.intel.com>
+From: Chunfeng Yun <chunfeng.yun@mediatek.com>
+Date: Fri, 01 Mar 2019 07:04:05 -0000
+Subject: [PATCH] usb: introduce usb_ep_type_string() function
+Message-ID: <e2ff70a3608dce315b52aea710398ba79d0f6f93.1551422947.git.chunfeng.yun@mediatek.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-video_on and video_off functions in the Aspeed video engine driver are
-being called from multiple contexts without any protection so video clocks
-can be disabled twice and eventually it causes a kernel warning with stack
-dump printing out like below:
+In some places, the code prints a human-readable USB endpoint
+transfer type (e.g. "bulk"). This involves a switch statement
+sometimes wrapped around in ({ ... }) block leading to code
+repetition.
+To make this scenario easier, here introduces usb_ep_type_string()
+function, which returns a human-readable name of provided
+endpoint type.
+It also changes a few places switch was used to use this
+new function.
 
-[  120.034729] WARNING: CPU: 0 PID: 1334 at drivers/clk/clk.c:684 clk_core_unprepare+0x13c/0x170
-[  120.043252] eclk-gate already unprepared
-[  120.047283] CPU: 0 PID: 1334 Comm: obmc-ikvm Tainted: G        W         5.0.3-b94b74e8b52db91fe4e99e0bb481ec8bf2b5b47c #1
-[  120.058417] Hardware name: Generic DT based system
-[  120.063219] Backtrace:
-[  120.065787] [<80107cdc>] (dump_backtrace) from [<80107f10>] (show_stack+0x20/0x24)
-[  120.073371]  r7:803a4ff0 r6:00000009 r5:00000000 r4:96197e1c
-[  120.079152] [<80107ef0>] (show_stack) from [<8068f7d8>] (dump_stack+0x20/0x28)
-[  120.086479] [<8068f7b8>] (dump_stack) from [<8011604c>] (__warn.part.3+0xb4/0xdc)
-[  120.094068] [<80115f98>] (__warn.part.3) from [<801160e0>] (warn_slowpath_fmt+0x6c/0x90)
-[  120.102164]  r6:000002ac r5:8080c0b8 r4:80a07008
-[  120.106893] [<80116078>] (warn_slowpath_fmt) from [<803a4ff0>] (clk_core_unprepare+0x13c/0x170)
-[  120.115686]  r3:8080cf8c r2:8080c17c
-[  120.119276]  r7:97d68e58 r6:9df23200 r5:9668c260 r4:96459260
-[  120.125046] [<803a4eb4>] (clk_core_unprepare) from [<803a707c>] (clk_unprepare+0x34/0x3c)
-[  120.133226]  r5:9668c260 r4:96459260
-[  120.136932] [<803a7048>] (clk_unprepare) from [<804f34bc>] (aspeed_video_off+0x44/0x48)
-[  120.145031]  r5:9668c260 r4:9668cbc0
-[  120.148647] [<804f3478>] (aspeed_video_off) from [<804f3fd0>] (aspeed_video_release+0x94/0x118)
-[  120.157435]  r5:966a0cb8 r4:966a0800
-[  120.161049] [<804f3f3c>] (aspeed_video_release) from [<804d2c58>] (v4l2_release+0xd4/0xe8)
-[  120.169404]  r7:97d68e58 r6:9d087810 r5:9df23200 r4:966a0b20
-[  120.175168] [<804d2b84>] (v4l2_release) from [<80236224>] (__fput+0x98/0x1c4)
-[  120.182316]  r5:96698e78 r4:9df23200
-[  120.185994] [<8023618c>] (__fput) from [<802363b8>] (____fput+0x18/0x1c)
-[  120.192712]  r9:80a0700c r8:801011e4 r7:00000000 r6:80a64bbc r5:961dd560 r4:961dd89c
-[  120.200562] [<802363a0>] (____fput) from [<80131c08>] (task_work_run+0x7c/0xa4)
-[  120.207994] [<80131b8c>] (task_work_run) from [<80106884>] (do_work_pending+0x4a8/0x578)
-[  120.216163]  r7:801011e4 r6:80a07008 r5:96197fb0 r4:ffffe000
-[  120.221856] [<801063dc>] (do_work_pending) from [<8010106c>] (slow_work_pending+0xc/0x20)
-[  120.230116] Exception stack(0x96197fb0 to 0x96197ff8)
-[  120.235254] 7fa0:                                     00000000 76ccf094 00000000 00000000
-[  120.243438] 7fc0: 00000008 00a11978 7eab3c30 00000006 00000000 00000000 475b0fa4 00000000
-[  120.251692] 7fe0: 00000002 7eab3a40 00000000 47720e38 80000010 00000008
-[  120.258396]  r10:00000000 r9:96196000 r8:801011e4 r7:00000006 r6:7eab3c30 r5:00a11978
-[  120.266291]  r4:00000008
-
-To prevent this issue, this commit adds spinlock protection and clock
-status checking logic into the Aspeed video engine driver.
-
-Fixes: d2b4387f3bdf ("media: platform: Add Aspeed Video Engine driver")
-Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-Cc: Eddie James <eajames@linux.ibm.com>
-Cc: Mauro Carvalho Chehab <mchehab@kernel.org>
-Cc: Joel Stanley <joel@jms.id.au>
-Cc: Andrew Jeffery <andrew@aj.id.au>
+Signed-off-by: Chunfeng Yun <chunfeng.yun@mediatek.com>
 ---
- drivers/media/platform/aspeed-video.c | 32 ++++++++++++++++++++++++---
- 1 file changed, 29 insertions(+), 3 deletions(-)
+ drivers/usb/common/common.c              | 16 ++++++++++++++++
+ drivers/usb/core/endpoint.c              | 18 ++----------------
+ drivers/usb/core/hcd.c                   | 17 ++---------------
+ drivers/usb/dwc3/debugfs.c               | 23 ++++-------------------
+ drivers/usb/gadget/udc/aspeed-vhub/epn.c |  6 +-----
+ drivers/usb/gadget/udc/dummy_hcd.c       | 16 +---------------
+ drivers/usb/host/xhci-trace.h            | 19 ++-----------------
+ include/linux/usb/ch9.h                  |  8 ++++++++
+ 8 files changed, 36 insertions(+), 87 deletions(-)
 
-diff --git a/drivers/media/platform/aspeed-video.c b/drivers/media/platform/aspeed-video.c
-index 692e08ef38c0..744d22ecc620 100644
---- a/drivers/media/platform/aspeed-video.c
-+++ b/drivers/media/platform/aspeed-video.c
-@@ -188,6 +188,7 @@ enum {
- 	VIDEO_STREAMING,
- 	VIDEO_FRAME_INPRG,
- 	VIDEO_STOPPED,
-+	VIDEO_CLOCKS_ON,
- };
+diff --git a/drivers/usb/common/common.c b/drivers/usb/common/common.c
+index 48277bbc15e4..2174dd9ec176 100644
+--- a/drivers/usb/common/common.c
++++ b/drivers/usb/common/common.c
+@@ -16,6 +16,22 @@
+ #include <linux/usb/otg.h>
+ #include <linux/of_platform.h>
  
- struct aspeed_video_addr {
-@@ -495,20 +496,30 @@ static void aspeed_video_reset(struct aspeed_video *video)
- 
- static void aspeed_video_off(struct aspeed_video *video)
++static const char *const ep_type_names[] = {
++	[USB_ENDPOINT_XFER_CONTROL] = "ctrl",
++	[USB_ENDPOINT_XFER_ISOC] = "isoc",
++	[USB_ENDPOINT_XFER_BULK] = "bulk",
++	[USB_ENDPOINT_XFER_INT] = "intr",
++};
++
++const char *usb_ep_type_string(int ep_type)
++{
++	if (ep_type < 0 || ep_type >= ARRAY_SIZE(ep_type_names))
++		return "unknown";
++
++	return ep_type_names[ep_type];
++}
++EXPORT_SYMBOL_GPL(usb_ep_type_string);
++
+ const char *usb_otg_state_string(enum usb_otg_state state)
  {
-+	if (!test_bit(VIDEO_CLOCKS_ON, &video->flags))
-+		return;
-+
- 	aspeed_video_reset(video);
+ 	static const char *const names[] = {
+diff --git a/drivers/usb/core/endpoint.c b/drivers/usb/core/endpoint.c
+index 1c2c04079676..afa43f9a47b2 100644
+--- a/drivers/usb/core/endpoint.c
++++ b/drivers/usb/core/endpoint.c
+@@ -60,23 +60,9 @@ static ssize_t type_show(struct device *dev, struct device_attribute *attr,
+ 			 char *buf)
+ {
+ 	struct ep_device *ep = to_ep_device(dev);
+-	char *type = "unknown";
++	int ep_type = usb_endpoint_type(ep->desc);
  
- 	/* Turn off the relevant clocks */
- 	clk_disable_unprepare(video->vclk);
- 	clk_disable_unprepare(video->eclk);
-+
-+	clear_bit(VIDEO_CLOCKS_ON, &video->flags);
+-	switch (usb_endpoint_type(ep->desc)) {
+-	case USB_ENDPOINT_XFER_CONTROL:
+-		type = "Control";
+-		break;
+-	case USB_ENDPOINT_XFER_ISOC:
+-		type = "Isoc";
+-		break;
+-	case USB_ENDPOINT_XFER_BULK:
+-		type = "Bulk";
+-		break;
+-	case USB_ENDPOINT_XFER_INT:
+-		type = "Interrupt";
+-		break;
+-	}
+-	return sprintf(buf, "%s\n", type);
++	return sprintf(buf, "%s\n", usb_ep_type_string(ep_type));
  }
+ static DEVICE_ATTR_RO(type);
  
- static void aspeed_video_on(struct aspeed_video *video)
- {
-+	if (test_bit(VIDEO_CLOCKS_ON, &video->flags))
-+		return;
-+
- 	/* Turn on the relevant clocks */
- 	clk_prepare_enable(video->eclk);
- 	clk_prepare_enable(video->vclk);
- 
- 	aspeed_video_reset(video);
-+
-+	set_bit(VIDEO_CLOCKS_ON, &video->flags);
- }
- 
- static void aspeed_video_bufs_done(struct aspeed_video *video,
-@@ -526,12 +537,14 @@ static void aspeed_video_bufs_done(struct aspeed_video *video,
- 
- static void aspeed_video_irq_res_change(struct aspeed_video *video)
- {
-+	spin_lock(&video->lock);
- 	dev_dbg(video->dev, "Resolution changed; resetting\n");
- 
- 	set_bit(VIDEO_RES_CHANGE, &video->flags);
- 	clear_bit(VIDEO_FRAME_INPRG, &video->flags);
- 
- 	aspeed_video_off(video);
-+	spin_unlock(&video->lock);
- 	aspeed_video_bufs_done(video, VB2_BUF_STATE_ERROR);
- 
- 	schedule_delayed_work(&video->res_work, RESOLUTION_CHANGE_DELAY);
-@@ -951,9 +964,13 @@ static void aspeed_video_init_regs(struct aspeed_video *video)
- 
- static void aspeed_video_start(struct aspeed_video *video)
- {
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&video->lock, flags);
- 	aspeed_video_on(video);
- 
- 	aspeed_video_init_regs(video);
-+	spin_unlock_irqrestore(&video->lock, flags);
- 
- 	/* Resolution set to 640x480 if no signal found */
- 	aspeed_video_get_resolution(video);
-@@ -969,6 +986,9 @@ static void aspeed_video_start(struct aspeed_video *video)
- 
- static void aspeed_video_stop(struct aspeed_video *video)
- {
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&video->lock, flags);
- 	set_bit(VIDEO_STOPPED, &video->flags);
- 	cancel_delayed_work_sync(&video->res_work);
- 
-@@ -982,6 +1002,7 @@ static void aspeed_video_stop(struct aspeed_video *video)
- 
- 	video->v4l2_input_status = V4L2_IN_ST_NO_SIGNAL;
- 	video->flags = 0;
-+	spin_unlock_irqrestore(&video->lock, flags);
- }
- 
- static int aspeed_video_querycap(struct file *file, void *fh,
-@@ -1319,16 +1340,21 @@ static void aspeed_video_resolution_work(struct work_struct *work)
- 	struct delayed_work *dwork = to_delayed_work(work);
- 	struct aspeed_video *video = container_of(dwork, struct aspeed_video,
- 						  res_work);
--	u32 input_status = video->v4l2_input_status;
-+	unsigned long flags;
-+	u32 input_status;
- 
-+	spin_lock_irqsave(&video->lock, flags);
-+	input_status = video->v4l2_input_status;
- 	aspeed_video_on(video);
- 
- 	/* Exit early in case no clients remain */
--	if (test_bit(VIDEO_STOPPED, &video->flags))
-+	if (test_bit(VIDEO_STOPPED, &video->flags)) {
-+		spin_unlock_irqrestore(&video->lock, flags);
- 		goto done;
-+	}
- 
- 	aspeed_video_init_regs(video);
+diff --git a/drivers/usb/core/hcd.c b/drivers/usb/core/hcd.c
+index 015b126ce455..193ee92b2fdb 100644
+--- a/drivers/usb/core/hcd.c
++++ b/drivers/usb/core/hcd.c
+@@ -1875,23 +1875,10 @@ void usb_hcd_flush_endpoint(struct usb_device *udev,
+ 		/* kick hcd */
+ 		unlink1(hcd, urb, -ESHUTDOWN);
+ 		dev_dbg (hcd->self.controller,
+-			"shutdown urb %pK ep%d%s%s\n",
++			"shutdown urb %pK ep%d%s-%s\n",
+ 			urb, usb_endpoint_num(&ep->desc),
+ 			is_in ? "in" : "out",
+-			({	char *s;
 -
-+	spin_unlock_irqrestore(&video->lock, flags);
- 	aspeed_video_get_resolution(video);
+-				 switch (usb_endpoint_type(&ep->desc)) {
+-				 case USB_ENDPOINT_XFER_CONTROL:
+-					s = ""; break;
+-				 case USB_ENDPOINT_XFER_BULK:
+-					s = "-bulk"; break;
+-				 case USB_ENDPOINT_XFER_INT:
+-					s = "-intr"; break;
+-				 default:
+-					s = "-iso"; break;
+-				};
+-				s;
+-			}));
++			usb_ep_type_string(usb_endpoint_type(&ep->desc)));
+ 		usb_put_urb (urb);
  
- 	if (video->detected_timings.width != video->active_timings.width ||
+ 		/* list contents may have changed */
+diff --git a/drivers/usb/dwc3/debugfs.c b/drivers/usb/dwc3/debugfs.c
+index 1c792710348f..d9e2a63835fe 100644
+--- a/drivers/usb/dwc3/debugfs.c
++++ b/drivers/usb/dwc3/debugfs.c
+@@ -750,28 +750,13 @@ static int dwc3_transfer_type_show(struct seq_file *s, void *unused)
+ 	unsigned long		flags;
+ 
+ 	spin_lock_irqsave(&dwc->lock, flags);
+-	if (!(dep->flags & DWC3_EP_ENABLED) ||
+-			!dep->endpoint.desc) {
+-		seq_printf(s, "--\n");
++	if (!(dep->flags & DWC3_EP_ENABLED) || !dep->endpoint.desc) {
++		seq_puts(s, "unknown\n");
+ 		goto out;
+ 	}
+ 
+-	switch (usb_endpoint_type(dep->endpoint.desc)) {
+-	case USB_ENDPOINT_XFER_CONTROL:
+-		seq_printf(s, "control\n");
+-		break;
+-	case USB_ENDPOINT_XFER_ISOC:
+-		seq_printf(s, "isochronous\n");
+-		break;
+-	case USB_ENDPOINT_XFER_BULK:
+-		seq_printf(s, "bulk\n");
+-		break;
+-	case USB_ENDPOINT_XFER_INT:
+-		seq_printf(s, "interrupt\n");
+-		break;
+-	default:
+-		seq_printf(s, "--\n");
+-	}
++	seq_printf(s, "%s\n",
++		   usb_ep_type_string(usb_endpoint_type(dep->endpoint.desc)));
+ 
+ out:
+ 	spin_unlock_irqrestore(&dwc->lock, flags);
+diff --git a/drivers/usb/gadget/udc/aspeed-vhub/epn.c b/drivers/usb/gadget/udc/aspeed-vhub/epn.c
+index 4a28e3fbeb0b..165b0a43670e 100644
+--- a/drivers/usb/gadget/udc/aspeed-vhub/epn.c
++++ b/drivers/usb/gadget/udc/aspeed-vhub/epn.c
+@@ -593,10 +593,6 @@ static int ast_vhub_epn_disable(struct usb_ep* u_ep)
+ static int ast_vhub_epn_enable(struct usb_ep* u_ep,
+ 			       const struct usb_endpoint_descriptor *desc)
+ {
+-	static const char *ep_type_string[] __maybe_unused = { "ctrl",
+-							       "isoc",
+-							       "bulk",
+-							       "intr" };
+ 	struct ast_vhub_ep *ep = to_ast_ep(u_ep);
+ 	struct ast_vhub_dev *dev;
+ 	struct ast_vhub *vhub;
+@@ -646,7 +642,7 @@ static int ast_vhub_epn_enable(struct usb_ep* u_ep,
+ 	ep->epn.wedged = false;
+ 
+ 	EPDBG(ep, "Enabling [%s] %s num %d maxpacket=%d\n",
+-	      ep->epn.is_in ? "in" : "out", ep_type_string[type],
++	      ep->epn.is_in ? "in" : "out", usb_ep_type_string(type),
+ 	      usb_endpoint_num(desc), maxpacket);
+ 
+ 	/* Can we use DMA descriptor mode ? */
+diff --git a/drivers/usb/gadget/udc/dummy_hcd.c b/drivers/usb/gadget/udc/dummy_hcd.c
+index baf72f95f0f1..40c6a484e232 100644
+--- a/drivers/usb/gadget/udc/dummy_hcd.c
++++ b/drivers/usb/gadget/udc/dummy_hcd.c
+@@ -617,21 +617,7 @@ static int dummy_enable(struct usb_ep *_ep,
+ 		_ep->name,
+ 		desc->bEndpointAddress & 0x0f,
+ 		(desc->bEndpointAddress & USB_DIR_IN) ? "in" : "out",
+-		({ char *val;
+-		 switch (usb_endpoint_type(desc)) {
+-		 case USB_ENDPOINT_XFER_BULK:
+-			 val = "bulk";
+-			 break;
+-		 case USB_ENDPOINT_XFER_ISOC:
+-			 val = "iso";
+-			 break;
+-		 case USB_ENDPOINT_XFER_INT:
+-			 val = "intr";
+-			 break;
+-		 default:
+-			 val = "ctrl";
+-			 break;
+-		 } val; }),
++		usb_ep_type_string(usb_endpoint_type(desc)),
+ 		max, ep->stream_en ? "enabled" : "disabled");
+ 
+ 	/* at this point real hardware should be NAKing transfers
+diff --git a/drivers/usb/host/xhci-trace.h b/drivers/usb/host/xhci-trace.h
+index 88b427434bd8..bac73d688f11 100644
+--- a/drivers/usb/host/xhci-trace.h
++++ b/drivers/usb/host/xhci-trace.h
+@@ -289,23 +289,8 @@ DECLARE_EVENT_CLASS(xhci_log_urb,
+ 	),
+ 	TP_printk("ep%d%s-%s: urb %p pipe %u slot %d length %d/%d sgs %d/%d stream %d flags %08x",
+ 			__entry->epnum, __entry->dir_in ? "in" : "out",
+-			({ char *s;
+-			switch (__entry->type) {
+-			case USB_ENDPOINT_XFER_INT:
+-				s = "intr";
+-				break;
+-			case USB_ENDPOINT_XFER_CONTROL:
+-				s = "control";
+-				break;
+-			case USB_ENDPOINT_XFER_BULK:
+-				s = "bulk";
+-				break;
+-			case USB_ENDPOINT_XFER_ISOC:
+-				s = "isoc";
+-				break;
+-			default:
+-				s = "UNKNOWN";
+-			} s; }), __entry->urb, __entry->pipe, __entry->slot_id,
++			usb_ep_type_string(__entry->type),
++			__entry->urb, __entry->pipe, __entry->slot_id,
+ 			__entry->actual, __entry->length, __entry->num_mapped_sgs,
+ 			__entry->num_sgs, __entry->stream, __entry->flags
+ 		)
+diff --git a/include/linux/usb/ch9.h b/include/linux/usb/ch9.h
+index 523aa088f6ab..da82606be605 100644
+--- a/include/linux/usb/ch9.h
++++ b/include/linux/usb/ch9.h
+@@ -36,6 +36,14 @@
+ #include <linux/device.h>
+ #include <uapi/linux/usb/ch9.h>
+ 
++/**
++ * usb_ep_type_string() - Returns human readable-name of the endpoint type.
++ * @ep_type: The endpoint type to return human-readable name for.  If it's not
++ *   any of the types: USB_ENDPOINT_XFER_{CONTROL, ISOC, BULK, INT},
++ *   usually got by usb_endpoint_type(), the string 'unknown' will be returned.
++ */
++extern const char *usb_ep_type_string(int ep_type);
++
+ /**
+  * usb_speed_string() - Returns human readable-name of the speed.
+  * @speed: The speed to return human-readable name for.  If it's not
 -- 
-2.21.0
+2.20.1
 
