@@ -1,112 +1,93 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Tue, 12 Mar 2019 19:21:13 -0400
-Subject: [PATCH] ARM: dts: Aspeed: Witherspoon: Update BMC partitioning
-In-Reply-To: <1552409402-15881-1-git-send-email-anoo@linux.ibm.com>
-References: <1552409402-15881-1-git-send-email-anoo@linux.ibm.com>
-Message-ID: <34738643-a98f-480b-8a76-afdc9cb478e5@www.fastmail.com>
+From: Rob Herring <robh+dt@kernel.org>
+Date: Wed, 13 Mar 2019 14:54:36 -0500
+Subject: [PATCH v7 1/2] dt-bindings: misc: aspeed-p2a-ctrl: add support
+In-Reply-To: <20190312163051.155405-1-venture@google.com>
+References: <20190312163051.155405-1-venture@google.com>
+Message-ID: <CAL_JsqLRO8m+voL_6mSpcrGmAT-SPwXhXDSOMEgQW6wmmTxZfQ@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-
-
-On Wed, 13 Mar 2019, at 03:21, Adriana Kobylak wrote:
-> From: "Edward A. James" <eajames@us.ibm.com>
-> 
-> Add simplified partitions for BMC and alternate flash. Include these by
-> default in Witherspoon.
-> 
-> Signed-off-by: Edward A. James <eajames@us.ibm.com>
-> Signed-off-by: Joel Stanley <joel@jms.id.au>
-
-Acked-by: Andrew Jeffery <andrew@aj.id.au>
-
-Yes please! Lets apply this so I can stop bashing my head against the desk when doing
-kernel work on a Witherspoon.
-
-> ---
->  .../boot/dts/aspeed-bmc-alt-opp-flash-layout-ubi.dtsi  | 18 ++++++++++++++++++
->  arch/arm/boot/dts/aspeed-bmc-opp-flash-layout-ubi.dtsi | 18 ++++++++++++++++++
->  arch/arm/boot/dts/aspeed-bmc-opp-witherspoon.dts       |  3 ++-
->  3 files changed, 38 insertions(+), 1 deletion(-)
->  create mode 100644 arch/arm/boot/dts/aspeed-bmc-alt-opp-flash-layout-ubi.dtsi
->  create mode 100644 arch/arm/boot/dts/aspeed-bmc-opp-flash-layout-ubi.dtsi
-> 
-> diff --git a/arch/arm/boot/dts/aspeed-bmc-alt-opp-flash-layout-ubi.dtsi 
-> b/arch/arm/boot/dts/aspeed-bmc-alt-opp-flash-layout-ubi.dtsi
-> new file mode 100644
-> index 0000000..9277599
-> --- /dev/null
-> +++ b/arch/arm/boot/dts/aspeed-bmc-alt-opp-flash-layout-ubi.dtsi
-> @@ -0,0 +1,18 @@
-> +		label = "alt-bmc";
-> +		partitions {
-> +				#address-cells = < 1 >;
-> +				#size-cells = < 1 >;
-> +				compatible = "fixed-partitions";
-> +				u-boot at 0 {
-> +					reg = < 0 0x60000 >;
-> +					label = "alt-u-boot";
-> +				};
-> +				u-boot-env at 60000 {
-> +					reg = < 0x60000 0x20000 >;
-> +					label = "alt-u-boot-env";
-> +				};
-> +				obmc-ubi at 80000 {
-> +					reg = < 0x80000 0x1F80000 >;
-> +					label = "alt-obmc-ubi";
-> +				};
-> +		};
-> diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-flash-layout-ubi.dtsi 
-> b/arch/arm/boot/dts/aspeed-bmc-opp-flash-layout-ubi.dtsi
-> new file mode 100644
-> index 0000000..0059ad1
-> --- /dev/null
-> +++ b/arch/arm/boot/dts/aspeed-bmc-opp-flash-layout-ubi.dtsi
-> @@ -0,0 +1,18 @@
-> +		label = "bmc";
-> +		partitions {
-> +				#address-cells = < 1 >;
-> +				#size-cells = < 1 >;
-> +				compatible = "fixed-partitions";
-> +				u-boot at 0 {
-> +					reg = < 0 0x60000 >;
-> +					label = "u-boot";
-> +				};
-> +				u-boot-env at 60000 {
-> +					reg = < 0x60000 0x20000 >;
-> +					label = "u-boot-env";
-> +				};
-> +				obmc-ubi at 80000 {
-> +					reg = < 0x80000 0x1F80000 >;
-> +					label = "obmc-ubi";
-> +				};
-> +		};
-> diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-witherspoon.dts 
-> b/arch/arm/boot/dts/aspeed-bmc-opp-witherspoon.dts
-> index c51e3e8..058b9b7 100644
-> --- a/arch/arm/boot/dts/aspeed-bmc-opp-witherspoon.dts
-> +++ b/arch/arm/boot/dts/aspeed-bmc-opp-witherspoon.dts
-> @@ -191,7 +191,7 @@
->  		label = "bmc";
->  		m25p,fast-read;
->  		spi-max-frequency = <50000000>;
-> -#include "openbmc-flash-layout.dtsi"
-> +#include "aspeed-bmc-opp-flash-layout-ubi.dtsi"
->  	};
->  
->  	flash at 1 {
-> @@ -199,6 +199,7 @@
->  		label = "alt";
->  		m25p,fast-read;
->  		spi-max-frequency = <50000000>;
-> +#include "aspeed-bmc-alt-opp-flash-layout-ubi.dtsi"
->  	};
->  };
->  
-> -- 
-> 1.8.3.1
-> 
+On Tue, Mar 12, 2019 at 11:30 AM Patrick Venture <venture@google.com> wrote:
 >
+> Document the ast2400, ast2500 PCI-to-AHB bridge control driver bindings.
+>
+> Signed-off-by: Patrick Venture <venture@google.com>
+> ---
+> Changes for v7:
+> - Moved node under the syscon node it requires
+> Changes for v6:
+> - None
+> Changes for v5:
+> - None
+> Changes for v4:
+> - None
+> Changes for v3:
+> - None
+> Changes for v2:
+> - Added comment about syscon required parameter.
+> ---
+>  .../bindings/misc/aspeed-p2a-ctrl.txt         | 48 +++++++++++++++++++
+>  1 file changed, 48 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/misc/aspeed-p2a-ctrl.txt
+>
+> diff --git a/Documentation/devicetree/bindings/misc/aspeed-p2a-ctrl.txt b/Documentation/devicetree/bindings/misc/aspeed-p2a-ctrl.txt
+> new file mode 100644
+> index 000000000000..088cc4e3dc54
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/misc/aspeed-p2a-ctrl.txt
+> @@ -0,0 +1,48 @@
+> +======================================================================
+> +Device tree bindings for Aspeed AST2400/AST2500 PCI-to-AHB Bridge Control Driver
+> +======================================================================
+> +
+> +The bridge is available on platforms with the VGA enabled on the Aspeed device.
+> +In this case, the host has access to a 64KiB window into all of the BMC's
+> +memory.  The BMC can disable this bridge.  If the bridge is enabled, the host
+> +has read access to all the regions of memory, however the host only has read
+> +and write access depending on a register controlled by the BMC.
+> +
+> +Required properties:
+> +===================
+> +
+> + - compatible: must be one of:
+> +       - "aspeed,ast2400-p2a-ctrl"
+> +       - "aspeed,ast2500-p2a-ctrl"
+> +
+> + - syscon: handle to syscon device node controlling PCI.
+> +
+> +Optional properties:
+> +===================
+> +
+> +- memory-region: A phandle to a reserved_memory region to be used for the PCI
+> +               to AHB mapping
+> +
+> +The p2a-control node should be the child of a syscon node with the required
+> +property:
+> +
+> +- compatible : Should be one of the following:
+> +               "aspeed,ast2400-scu", "syscon", "simple-mfd"
+> +               "aspeed,g4-scu", "syscon", "simple-mfd"
+> +               "aspeed,ast2500-scu", "syscon", "simple-mfd"
+> +               "aspeed,g5-scu", "syscon", "simple-mfd"
+> +
+> +Example:
+> +
+> +g4 Example
+> +----------
+> +
+> +syscon: scu at 1e6e2000 {
+> +       compatible = "aspeed,ast2400-scu", "syscon", "simple-mfd";
+> +       reg = <0x1e6e2000 0x1a8>;
+> +
+> +       p2a: p2a-control {
+> +               compatible = "aspeed,ast2400-p2a-ctrl";
+
+If there's a defined register range, then you could add a reg property
+(even though Linux doesn't use it).
+
+Either way,
+
+Reviewed-by: Rob Herring <robh@kernel.org>
