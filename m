@@ -1,56 +1,26 @@
-From: Vijay Khemka <vijaykhemka@fb.com>
-Date: Mon, 18 Mar 2019 19:44:51 +0000
-Subject: [Potential Spoof] Re: [PATCH] ARM: dts: aspeed: tiogapass: Enable
- VUART
-Message-ID: <34F58DD7-2C58-4074-AA86-212E639274F0@fb.com>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Date: Tue, 19 Mar 2019 10:23:31 +0100
+Subject: [PATCH v2] usb: introduce usb_ep_type_string() function
+In-Reply-To: <1552982059.10179.143.camel@mhfsdcap03>
+References: <28a8e9f1518e47c35e4563706cbe592b972a7f9d.1552977710.git.chunfeng.yun@mediatek.com>
+ <1552982059.10179.143.camel@mhfsdcap03>
+Message-ID: <20190319092331.GA21652@kroah.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Joel,
-Please apply this patch.
+On Tue, Mar 19, 2019 at 03:54:19PM +0800, Chunfeng Yun wrote:
+> 
+> Hi Felipe & Mathias,
+> 
+> Could you please comment this patch, if there is some-effect on dwc3 and
+> xhci, I'll remove its change.
 
-Regards
--Vijay
+To be specific, you are changing the string values for things that might
+care about it and are seen by userspace.
 
-?On 3/5/19, 12:06 PM, "openbmc on behalf of Vijay Khemka" <openbmc-bounces+vijaykhemka=fb.com at lists.ozlabs.org on behalf of vijaykhemka@fb.com> wrote:
+Please be explicit about this, as it could cause problems.
 
-    Please review below patch.
-    
-    Regards
-    -Vijay
-    
-    On 1/30/19, 10:14 AM, "Vijay Khemka" <vijaykhemka@fb.com> wrote:
-    
-        Enabling vuart for Facebook tiogapass
-        
-        Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
-        ---
-         arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts | 5 +++++
-         1 file changed, 5 insertions(+)
-        
-        diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
-        index 42e0d7a8e8d0..a058fb2985f7 100644
-        --- a/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
-        +++ b/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
-        @@ -64,6 +64,11 @@
-         	status = "okay";
-         };
-         
-        +&vuart {
-        +	// VUART Host Console
-        +	status = "okay";
-        +};
-        +
-         &uart1 {
-         	// Host Console
-         	status = "okay";
-        -- 
-        2.17.1
-        
-        
-    
-    
-
+greg k-h
