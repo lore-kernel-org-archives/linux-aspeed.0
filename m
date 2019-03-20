@@ -1,26 +1,43 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Tue, 19 Mar 2019 10:23:31 +0100
+From: Felipe Balbi <balbi@kernel.org>
+Date: Wed, 20 Mar 2019 08:55:11 +0200
 Subject: [PATCH v2] usb: introduce usb_ep_type_string() function
-In-Reply-To: <1552982059.10179.143.camel@mhfsdcap03>
+In-Reply-To: <1553044567.10179.148.camel@mhfsdcap03>
 References: <28a8e9f1518e47c35e4563706cbe592b972a7f9d.1552977710.git.chunfeng.yun@mediatek.com>
- <1552982059.10179.143.camel@mhfsdcap03>
-Message-ID: <20190319092331.GA21652@kroah.com>
+ <1552982059.10179.143.camel@mhfsdcap03> <20190319092331.GA21652@kroah.com>
+ <1553044567.10179.148.camel@mhfsdcap03>
+Message-ID: <87r2b2ujao.fsf@linux.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Mar 19, 2019 at 03:54:19PM +0800, Chunfeng Yun wrote:
-> 
-> Hi Felipe & Mathias,
-> 
-> Could you please comment this patch, if there is some-effect on dwc3 and
-> xhci, I'll remove its change.
+Chunfeng Yun <chunfeng.yun@mediatek.com> writes:
 
-To be specific, you are changing the string values for things that might
-care about it and are seen by userspace.
+> Hi Greg,
+>
+> On Tue, 2019-03-19 at 10:23 +0100, Greg Kroah-Hartman wrote:
+>> On Tue, Mar 19, 2019 at 03:54:19PM +0800, Chunfeng Yun wrote:
+>> > 
+>> > Hi Felipe & Mathias,
+>> > 
+>> > Could you please comment this patch, if there is some-effect on dwc3 and
+>> > xhci, I'll remove its change.
+> typo: some-effect/side-effect
 
-Please be explicit about this, as it could cause problems.
+well, we don't really know if there are tools parsing the output. The
+side-effect _does_ exist (i.e. you change the string :-), what we don't
+know is if this will cause problems to possibly existing tools.
 
-greg k-h
+Personally, I don't mind the patch, but if it breaks existing parsers,
+that would be a little annoying.
+
+-- 
+balbi
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 832 bytes
+Desc: not available
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20190320/7719f1d8/attachment.sig>
