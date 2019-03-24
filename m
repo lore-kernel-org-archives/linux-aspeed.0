@@ -1,43 +1,44 @@
-From: Felipe Balbi <balbi@kernel.org>
-Date: Wed, 20 Mar 2019 08:55:11 +0200
-Subject: [PATCH v2] usb: introduce usb_ep_type_string() function
-In-Reply-To: <1553044567.10179.148.camel@mhfsdcap03>
-References: <28a8e9f1518e47c35e4563706cbe592b972a7f9d.1552977710.git.chunfeng.yun@mediatek.com>
- <1552982059.10179.143.camel@mhfsdcap03> <20190319092331.GA21652@kroah.com>
- <1553044567.10179.148.camel@mhfsdcap03>
-Message-ID: <87r2b2ujao.fsf@linux.intel.com>
+From: Andrew Jeffery <andrew@aj.id.au>
+Date: Sun, 24 Mar 2019 19:12:06 -0400
+Subject: [PATCH] gpio: fix a potential NULL pointer dereference
+In-Reply-To: <20190324231002.2106-1-kjlu@umn.edu>
+References: <20190324231002.2106-1-kjlu@umn.edu>
+Message-ID: <f4d27985-376a-42bb-b781-bdc96c0cef21@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Chunfeng Yun <chunfeng.yun@mediatek.com> writes:
 
-> Hi Greg,
+
+On Mon, 25 Mar 2019, at 09:40, Kangjie Lu wrote:
+> In case devm_kzalloc, the patch returns ENOMEM to avoid potential
+> NULL pointer dereference.
+> 
+> Signed-off-by: Kangjie Lu <kjlu@umn.edu>
+
+Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
+
+> ---
+>  drivers/gpio/gpio-aspeed.c | 2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> diff --git a/drivers/gpio/gpio-aspeed.c b/drivers/gpio/gpio-aspeed.c
+> index 854bce4fb9e7..217507002dbc 100644
+> --- a/drivers/gpio/gpio-aspeed.c
+> +++ b/drivers/gpio/gpio-aspeed.c
+> @@ -1224,6 +1224,8 @@ static int __init aspeed_gpio_probe(struct 
+> platform_device *pdev)
+>  
+>  	gpio->offset_timer =
+>  		devm_kzalloc(&pdev->dev, gpio->chip.ngpio, GFP_KERNEL);
+> +	if (!gpio->offset_timer)
+> +		return -ENOMEM;
+>  
+>  	return aspeed_gpio_setup_irqs(gpio, pdev);
+>  }
+> -- 
+> 2.17.1
+> 
 >
-> On Tue, 2019-03-19 at 10:23 +0100, Greg Kroah-Hartman wrote:
->> On Tue, Mar 19, 2019 at 03:54:19PM +0800, Chunfeng Yun wrote:
->> > 
->> > Hi Felipe & Mathias,
->> > 
->> > Could you please comment this patch, if there is some-effect on dwc3 and
->> > xhci, I'll remove its change.
-> typo: some-effect/side-effect
-
-well, we don't really know if there are tools parsing the output. The
-side-effect _does_ exist (i.e. you change the string :-), what we don't
-know is if this will cause problems to possibly existing tools.
-
-Personally, I don't mind the patch, but if it breaks existing parsers,
-that would be a little annoying.
-
--- 
-balbi
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 832 bytes
-Desc: not available
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20190320/7719f1d8/attachment.sig>
