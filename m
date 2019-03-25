@@ -1,44 +1,30 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Sun, 24 Mar 2019 19:12:06 -0400
-Subject: [PATCH] gpio: fix a potential NULL pointer dereference
-In-Reply-To: <20190324231002.2106-1-kjlu@umn.edu>
-References: <20190324231002.2106-1-kjlu@umn.edu>
-Message-ID: <f4d27985-376a-42bb-b781-bdc96c0cef21@www.fastmail.com>
+From: Joel Stanley <joel@jms.id.au>
+Date: Tue, 26 Mar 2019 00:01:57 +1030
+Subject: [PATCH v2 0/2] rtc: Add ASPEED RTC driver
+Message-ID: <20190325133159.10653-1-joel@jms.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+I finally found some time to send a v2 for this one. Thanks Alexandre
+for the review back in October.
 
+v2: Address review from Alexandre
 
-On Mon, 25 Mar 2019, at 09:40, Kangjie Lu wrote:
-> In case devm_kzalloc, the patch returns ENOMEM to avoid potential
-> NULL pointer dereference.
-> 
-> Signed-off-by: Kangjie Lu <kjlu@umn.edu>
+Joel Stanley (2):
+  dt-bindings: rtc: Add on-chip ASPEED RTC documentation
+  rtc: Add ASPEED RTC driver
 
-Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
+ .../devicetree/bindings/rtc/rtc-aspeed.txt    |  19 +++
+ drivers/rtc/Kconfig                           |  10 ++
+ drivers/rtc/Makefile                          |   1 +
+ drivers/rtc/rtc-aspeed.c                      | 152 ++++++++++++++++++
+ 4 files changed, 182 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/rtc/rtc-aspeed.txt
+ create mode 100644 drivers/rtc/rtc-aspeed.c
 
-> ---
->  drivers/gpio/gpio-aspeed.c | 2 ++
->  1 file changed, 2 insertions(+)
-> 
-> diff --git a/drivers/gpio/gpio-aspeed.c b/drivers/gpio/gpio-aspeed.c
-> index 854bce4fb9e7..217507002dbc 100644
-> --- a/drivers/gpio/gpio-aspeed.c
-> +++ b/drivers/gpio/gpio-aspeed.c
-> @@ -1224,6 +1224,8 @@ static int __init aspeed_gpio_probe(struct 
-> platform_device *pdev)
->  
->  	gpio->offset_timer =
->  		devm_kzalloc(&pdev->dev, gpio->chip.ngpio, GFP_KERNEL);
-> +	if (!gpio->offset_timer)
-> +		return -ENOMEM;
->  
->  	return aspeed_gpio_setup_irqs(gpio, pdev);
->  }
-> -- 
-> 2.17.1
-> 
->
+-- 
+2.20.1
+
