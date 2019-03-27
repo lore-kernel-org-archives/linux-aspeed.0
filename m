@@ -1,66 +1,34 @@
-From: Vijay Khemka <vijaykhemka@fb.com>
-Date: Wed, 27 Mar 2019 17:45:21 +0000
-Subject: [Potential Spoof] Re: [Potential Spoof] Re: [PATCH] ARM: dts:
- aspeed: tiogapass: Enable VUART
-Message-ID: <24375A52-CC8E-4CFE-A683-0720B60D1201@fb.com>
+From: Greg KH <gregkh@linuxfoundation.org>
+Date: Thu, 28 Mar 2019 01:45:42 +0900
+Subject: [PATCH v7 2/2] drivers/misc: Add Aspeed P2A control driver
+In-Reply-To: <20190312163101.155910-1-venture@google.com>
+References: <20190312163101.155910-1-venture@google.com>
+Message-ID: <20190327164542.GC11712@kroah.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Joel,
-Please apply this patch.
+On Tue, Mar 12, 2019 at 09:31:01AM -0700, Patrick Venture wrote:
+> +	phys_addr_t mem_base;
 
-Regards
--Vijay
+Is this really a 32bit value?
 
-?On 3/18/19, 12:46 PM, "openbmc on behalf of Vijay Khemka" <openbmc-bounces+vijaykhemka=fb.com at lists.ozlabs.org on behalf of vijaykhemka@fb.com> wrote:
+Your ioctl thinks it is:
 
-    Hi Joel,
-    Please apply this patch.
-    
-    Regards
-    -Vijay
-    
-    On 3/5/19, 12:06 PM, "openbmc on behalf of Vijay Khemka" <openbmc-bounces+vijaykhemka=fb.com at lists.ozlabs.org on behalf of vijaykhemka@fb.com> wrote:
-    
-        Please review below patch.
-        
-        Regards
-        -Vijay
-        
-        On 1/30/19, 10:14 AM, "Vijay Khemka" <vijaykhemka@fb.com> wrote:
-        
-            Enabling vuart for Facebook tiogapass
-            
-            Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
-            ---
-             arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts | 5 +++++
-             1 file changed, 5 insertions(+)
-            
-            diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
-            index 42e0d7a8e8d0..a058fb2985f7 100644
-            --- a/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
-            +++ b/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
-            @@ -64,6 +64,11 @@
-             	status = "okay";
-             };
-             
-            +&vuart {
-            +	// VUART Host Console
-            +	status = "okay";
-            +};
-            +
-             &uart1 {
-             	// Host Console
-             	status = "okay";
-            -- 
-            2.17.1
-            
-            
-        
-        
-    
-    
+> +struct aspeed_p2a_ctrl_mapping {
+> +	__u32 addr;
 
+Does this driver not work on a 64bit kernel?
+
+> +	__u32 length;
+> +	__u32 flags;
+> +};
+
+addr really should be __u32 here so you don't have to mess with 32/64
+bit user/kernel issues, right?
+
+thanks,
+
+greg k-h
