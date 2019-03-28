@@ -1,94 +1,42 @@
-From: Patrick Venture <venture@google.com>
-Date: Thu, 28 Mar 2019 07:13:49 -0700
-Subject: [PATCH v7 2/2] drivers/misc: Add Aspeed P2A control driver
-In-Reply-To: <20190328065231.GB20312@kroah.com>
-References: <20190312163101.155910-1-venture@google.com>
- <20190327164542.GC11712@kroah.com>
- <CAO=notxFvvOmpjMyXvt5PyuWsB92eraN+=8mWk8_aY2w3sK-eQ@mail.gmail.com>
- <20190327185410.GA14828@kroah.com>
- <CAO=notzwnDtJ9jmEUDsy_tqVKH-+4rO9gd8rpVjKKvQqJsODTQ@mail.gmail.com>
- <20190328065231.GB20312@kroah.com>
-Message-ID: <CAO=notwW=9=DyG-hkzsSJbwC3f3swkrAenYCjHGmqEj8D4F2YA@mail.gmail.com>
+From: Rob Herring <robh@kernel.org>
+Date: Thu, 28 Mar 2019 11:50:09 -0500
+Subject: [PATCH v8 1/2] dt-bindings: misc: aspeed-p2a-ctrl: add support
+In-Reply-To: <20190327212155.80730-1-venture@google.com>
+References: <20190327212155.80730-1-venture@google.com>
+Message-ID: <20190328165009.GA25705@bogus>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Mar 27, 2019 at 11:52 PM Greg KH <gregkh@linuxfoundation.org> wrote:
->
-> On Wed, Mar 27, 2019 at 12:01:50PM -0700, Patrick Venture wrote:
-> > On Wed, Mar 27, 2019 at 11:54 AM Greg KH <gregkh@linuxfoundation.org> wrote:
-> > >
-> > > On Wed, Mar 27, 2019 at 11:44:36AM -0700, Patrick Venture wrote:
-> > > > On Wed, Mar 27, 2019 at 11:28 AM Greg KH <gregkh@linuxfoundation.org> wrote:
-> > > > >
-> > > > > On Tue, Mar 12, 2019 at 09:31:01AM -0700, Patrick Venture wrote:
-> > > > > > +     phys_addr_t mem_base;
-> > > > >
-> > > > > Is this really a 32bit value?
-> > > >
-> > > > It's going to be a 32-bit value if this is in the dts for one of the
-> > > > correspondingly supported aspeed models.
-> > > >
-> > > > >
-> > > > > Your ioctl thinks it is:
-> > > > >
-> > > > > > +struct aspeed_p2a_ctrl_mapping {
-> > > > > > +     __u32 addr;
-> > > > >
-> > > > > Does this driver not work on a 64bit kernel?
-> > > >
-> > > > This driver is aimed at only 32-bit hardware (ast2400/2500).  I
-> > > > modeled the approach after the aspeed-lpc-ctrl driver as it's
-> > > > providing similar functionality.
-> > > >
-> > > > >
-> > > > > > +     __u32 length;
-> > > > > > +     __u32 flags;
-> > > > > > +};
-> > > > >
-> > > > > addr really should be __u32 here so you don't have to mess with 32/64
-> > > > > bit user/kernel issues, right?
-> > > >
-> > > > Add is __u32 there.  Are you suggesting it shouldn't be?
-> > >
-> > > Ugh, yes, sorry, I meant to say "__u64".
-> > >
-> > > If you all insist that this is all that is ever going to be needed, ok,
-> > > but I reserve the right to complain in 4 years when this needs to be
-> > > changed :)
-> >
-> > In the event the ast2600 comes out and is 64-bit -- I can't imagine
-> > that's likely to happen.  I can take solace that this won't be the
-> > only thing that needs retrofitting.  But it wouldn't kill me to just
-> > make the change.  I'll just have to tweak it to return failure in the
-> > event the address provided isn't found in any region...
-> >
-> > Is that all that needs to change for 64-bit addressing support - given
-> > your read of the driver?
->
-> That's all that I noticed at first glance, yes.
+On Wed, 27 Mar 2019 14:21:55 -0700, Patrick Venture wrote:
+> Document the ast2400, ast2500 PCI-to-AHB bridge control driver bindings.
+> 
+> Signed-off-by: Patrick Venture <venture@google.com>
+> ---
+> Changes for v8:
+> - None
+> Changes for v7:
+> - Moved node under the syscon node it requires
+> Changes for v6:
+> - None
+> Changes for v5:
+> - None
+> Changes for v4:
+> - None
+> Changes for v3:
+> - None
+> Changes for v2:
+> - Added comment about syscon required parameter.
+> ---
+>  .../bindings/misc/aspeed-p2a-ctrl.txt         | 48 +++++++++++++++++++
+>  1 file changed, 48 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/misc/aspeed-p2a-ctrl.txt
+> 
 
-Thanks, that's addressed in v8.
+Please add Acked-by/Reviewed-by tags when posting new versions. However,
+there's no need to repost patches *only* to add the tags. The upstream
+maintainer will do that for acks received on the version they apply.
 
-> I do dislike having
-> custom user/kernel apis for random chips like this, but I don't know of
-> a way to have a generic api for them at the moment as I really do not
-> know what these chips do :(
->
-> One would think that the firmware api would work for you, but given the
-> complexity here, it does not seem that it would match up.
-
-Yeah, this driver is basically just allowing control over a bridge and
-allows for a convenient common use-case for such bridges.  I don't
-have enough exposure to see if there's some commonality for
-configuration and control of bridges across different chips, and I
-would imagine they're very distinct.
-
->
-> thanks,
->
-> greg k-h
-
-Thanks
+If a tag was not added on purpose, please state why and what changed.
