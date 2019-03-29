@@ -1,77 +1,91 @@
 From: Patrick Venture <venture@google.com>
-Date: Fri, 29 Mar 2019 07:59:31 -0700
+Date: Fri, 29 Mar 2019 08:10:25 -0700
 Subject: [PATCH v8 1/2] dt-bindings: misc: aspeed-p2a-ctrl: add support
-In-Reply-To: <CAO=notx6K7xTW1VG6BGJFBM5k8EQsWXn3WoWSPSrZRsxkwueSA@mail.gmail.com>
-References: <20190327212155.80730-1-venture@google.com>
- <20190328165009.GA25705@bogus>
- <CAO=notxxYF4noXbR1BeVrwqCBHaVCaXy+jPV4OVbex=w=fV+Rg@mail.gmail.com>
- <CAL_JsqJSvzOQbJSgz7z2wZj9-z=bfhzF_C+662Gnf68TgAPFaA@mail.gmail.com>
- <CAO=notx6K7xTW1VG6BGJFBM5k8EQsWXn3WoWSPSrZRsxkwueSA@mail.gmail.com>
-Message-ID: <CAO=notxD=5pa5sT15a+VrA7qVNPBoJoTo=5sLxibBxc+HWcG4g@mail.gmail.com>
+Message-ID: <20190329151025.204094-1-venture@google.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Mar 29, 2019 at 7:56 AM Patrick Venture <venture@google.com> wrote:
->
-> On Fri, Mar 29, 2019 at 6:38 AM Rob Herring <robh@kernel.org> wrote:
-> >
-> > On Thu, Mar 28, 2019 at 12:03 PM Patrick Venture <venture@google.com> wrote:
-> > >
-> > > On Thu, Mar 28, 2019 at 9:50 AM Rob Herring <robh@kernel.org> wrote:
-> > > >
-> > > > On Wed, 27 Mar 2019 14:21:55 -0700, Patrick Venture wrote:
-> > > > > Document the ast2400, ast2500 PCI-to-AHB bridge control driver bindings.
-> > > > >
-> > > > > Signed-off-by: Patrick Venture <venture@google.com>
-> > > > > ---
-> > > > > Changes for v8:
-> > > > > - None
-> > > > > Changes for v7:
-> > > > > - Moved node under the syscon node it requires
-> > > > > Changes for v6:
-> > > > > - None
-> > > > > Changes for v5:
-> > > > > - None
-> > > > > Changes for v4:
-> > > > > - None
-> > > > > Changes for v3:
-> > > > > - None
-> > > > > Changes for v2:
-> > > > > - Added comment about syscon required parameter.
-> > > > > ---
-> > > > >  .../bindings/misc/aspeed-p2a-ctrl.txt         | 48 +++++++++++++++++++
-> > > > >  1 file changed, 48 insertions(+)
-> > > > >  create mode 100644 Documentation/devicetree/bindings/misc/aspeed-p2a-ctrl.txt
-> > > > >
-> > > >
-> > > > Please add Acked-by/Reviewed-by tags when posting new versions. However,
-> > > > there's no need to repost patches *only* to add the tags. The upstream
-> > > > maintainer will do that for acks received on the version they apply.
-> > > >
-> > > > If a tag was not added on purpose, please state why and what changed.
-> > >
-> > > Adding tags in this case is adding a change version?  I was doing this
-> > > to keep the two patches version-synced.  I thought that was required.
-> > > There was a version change in the other patch in this set.
-> >
-> > Adding tags is not considered a change. I gave a Reviewed-by in v7.
-> > Subsequent versions should carry that tag if there's no change (or
-> > only minor changes) in this patch. What happens in the other patches
-> > is not really important. Maintainers are not going to go searching
-> > thru the versions to find all the ack/review tags. And if I've already
-> > reviewed this, I don't want to look at it again.
->
-> Thank you, I didn't realize that had happened.
+Document the ast2400, ast2500 PCI-to-AHB bridge control driver bindings.
 
-I went back through my email and found the line of your email that
-included it.  I apologize.
+Signed-off-by: Patrick Venture <venture@google.com>
+Reviewed-by: Rob Herring <robh@kernel.org>
+---
+Changes for v8:
+- None
+Changes for v7:
+- Moved node under the syscon node it requires
+Changes for v6:
+- None
+Changes for v5:
+- None
+Changes for v4:
+- None
+Changes for v3:
+- None
+Changes for v2:
+- Added comment about syscon required parameter.
+---
+ .../bindings/misc/aspeed-p2a-ctrl.txt         | 48 +++++++++++++++++++
+ 1 file changed, 48 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/misc/aspeed-p2a-ctrl.txt
 
-So, before I send the updated patch with your ack -- do I need to send
-a v9? or is this just me sending v8 again?
+diff --git a/Documentation/devicetree/bindings/misc/aspeed-p2a-ctrl.txt b/Documentation/devicetree/bindings/misc/aspeed-p2a-ctrl.txt
+new file mode 100644
+index 0000000000000..088cc4e3dc54b
+--- /dev/null
++++ b/Documentation/devicetree/bindings/misc/aspeed-p2a-ctrl.txt
+@@ -0,0 +1,48 @@
++======================================================================
++Device tree bindings for Aspeed AST2400/AST2500 PCI-to-AHB Bridge Control Driver
++======================================================================
++
++The bridge is available on platforms with the VGA enabled on the Aspeed device.
++In this case, the host has access to a 64KiB window into all of the BMC's
++memory.  The BMC can disable this bridge.  If the bridge is enabled, the host
++has read access to all the regions of memory, however the host only has read
++and write access depending on a register controlled by the BMC.
++
++Required properties:
++===================
++
++ - compatible: must be one of:
++	- "aspeed,ast2400-p2a-ctrl"
++	- "aspeed,ast2500-p2a-ctrl"
++
++ - syscon: handle to syscon device node controlling PCI.
++
++Optional properties:
++===================
++
++- memory-region: A phandle to a reserved_memory region to be used for the PCI
++		to AHB mapping
++
++The p2a-control node should be the child of a syscon node with the required
++property:
++
++- compatible : Should be one of the following:
++		"aspeed,ast2400-scu", "syscon", "simple-mfd"
++		"aspeed,g4-scu", "syscon", "simple-mfd"
++		"aspeed,ast2500-scu", "syscon", "simple-mfd"
++		"aspeed,g5-scu", "syscon", "simple-mfd"
++
++Example:
++
++g4 Example
++----------
++
++syscon: scu at 1e6e2000 {
++	compatible = "aspeed,ast2400-scu", "syscon", "simple-mfd";
++	reg = <0x1e6e2000 0x1a8>;
++
++	p2a: p2a-control {
++		compatible = "aspeed,ast2400-p2a-ctrl";
++		memory-region = <&reserved_memory>;
++	};
++};
+-- 
+2.21.0.392.gf8f6787159e-goog
 
->
-> >
-> > Rob
