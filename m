@@ -1,43 +1,50 @@
-From: Eddie James <eajames@linux.ibm.com>
-Date: Tue,  2 Apr 2019 18:25:04 +0000
-Subject: [PATCH 5/5] ARM: dts: aspeed-g5: Add video engine
-In-Reply-To: <1554229504-5661-1-git-send-email-eajames@linux.ibm.com>
+From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+Date: Tue, 2 Apr 2019 14:05:49 -0700
+Subject: [PATCH 3/5] media: dt-bindings: aspeed-video: Add missing
+ memory-region property
+In-Reply-To: <1554229504-5661-4-git-send-email-eajames@linux.ibm.com>
 References: <1554229504-5661-1-git-send-email-eajames@linux.ibm.com>
-Message-ID: <1554229504-5661-6-git-send-email-eajames@linux.ibm.com>
+ <1554229504-5661-4-git-send-email-eajames@linux.ibm.com>
+Message-ID: <c715fe6d-d443-c9b4-0a58-29941e0ed539@linux.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add a node to describe the video engine on the AST2500.
+Hi Eddie,
 
-Signed-off-by: Eddie James <eajames@linux.ibm.com>
----
- arch/arm/boot/dts/aspeed-g5.dtsi | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+On 4/2/2019 11:25 AM, Eddie James wrote:
+> Missed documenting this property in the initial commit.
+> 
+> Signed-off-by: Eddie James <eajames@linux.ibm.com>
+> ---
+>   Documentation/devicetree/bindings/media/aspeed-video.txt | 6 ++++++
+>   1 file changed, 6 insertions(+)
+> 
+> diff --git a/Documentation/devicetree/bindings/media/aspeed-video.txt b/Documentation/devicetree/bindings/media/aspeed-video.txt
+> index 78b464a..346c2d3 100644
+> --- a/Documentation/devicetree/bindings/media/aspeed-video.txt
+> +++ b/Documentation/devicetree/bindings/media/aspeed-video.txt
+> @@ -14,6 +14,11 @@ Required properties:
+>   			the VE
+>    - interrupts:		the interrupt associated with the VE on this platform
+>   
+> +Optional properties:
+> + - memory-region:
+> +	phandle to a memory region to allocate from, as defined in
+> +	Documentation/devicetree/bindings/reserved-memory/reserved-memory.txt
+> +
+>   Example:
+>   
+>   video-engine at 1e700000 {
+> @@ -23,4 +28,5 @@ video-engine at 1e700000 {
+>       clock-names = "vclk", "eclk";
+>       resets = <&syscon ASPEED_RESET_VIDEO>;
+>       interrupts = <7>;
+> +    memory-region = <&video_engine_memory>
 
-diff --git a/arch/arm/boot/dts/aspeed-g5.dtsi b/arch/arm/boot/dts/aspeed-g5.dtsi
-index 85ed9db..c6d5edc 100644
---- a/arch/arm/boot/dts/aspeed-g5.dtsi
-+++ b/arch/arm/boot/dts/aspeed-g5.dtsi
-@@ -243,6 +243,16 @@
- 				status = "disabled";
- 			};
- 
-+			video: video at 1e700000 {
-+				compatible = "aspeed,ast2500-video-engine";
-+				reg = <0x1e700000 0x1000>;
-+				clocks = <&syscon ASPEED_CLK_GATE_VCLK>,
-+					 <&syscon ASPEED_CLK_GATE_ECLK>;
-+				clock-names = "vclk", "eclk";
-+				interrupts = <7>;
-+				status = "disabled";
-+			};
-+
- 			sram: sram at 1e720000 {
- 				compatible = "mmio-sram";
- 				reg = <0x1e720000 0x9000>;	// 36K
--- 
-1.8.3.1
+nit: a semicolon at the end of the line.
 
+>   };
+> 
