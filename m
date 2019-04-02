@@ -1,37 +1,35 @@
-From: Sam Ravnborg <sam@ravnborg.org>
-Date: Tue, 2 Apr 2019 08:25:55 +0200
-Subject: [PATCH v2 2/3] drm: Add ASPEED GFX driver
-In-Reply-To: <20190402021933.13071-3-joel@jms.id.au>
-References: <20190402021933.13071-1-joel@jms.id.au>
- <20190402021933.13071-3-joel@jms.id.au>
-Message-ID: <20190402062555.GA14723@ravnborg.org>
+From: Eddie James <eajames@linux.ibm.com>
+Date: Tue,  2 Apr 2019 18:24:33 +0000
+Subject: [PATCH 0/5] Aspeed: Enable video engine
+Message-ID: <1554229478-5621-1-git-send-email-eajames@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Joel
+This series enables the video engine on Aspeed BMC platforms. The video engine
+clocking is added to the Aspeed clock driver. The use of the video engine reset
+line, originally planned to be made externally available in the clock driver,
+is removed from the video engine driver. Finally a node for the video engine is
+added to the AST2500 devicetree.
+The series also includes a missing property for reserved memory in the
+devicetree documentation, and a small change to make the video engine driver
+start without reserved memory.
 
-> index 000000000000..fb56e425bd48
-> --- /dev/null
-> +++ b/drivers/gpu/drm/aspeed/aspeed_gfx.h
-> @@ -0,0 +1,104 @@
-> +// SPDX-License-Identifier: GPL-2.0+
-> +// Copyright 2018 IBM Corporation
-> +
-> +#include <drm/drmP.h>
-> +#include <drm/drm_simple_kms_helper.h>
+Eddie James (5):
+  media: platform: Aspeed: Remove use of reset line
+  media: platform: Aspeed: Make reserved memory optional
+  media: dt-bindings: aspeed-video: Add missing memory-region property
+  clk: Aspeed: Setup video engine clocking
+  ARM: dts: aspeed-g5: Add video engine
 
-A drmP.h include was left here, can we have this removed too.
+ .../devicetree/bindings/media/aspeed-video.txt     |  6 ++++
+ arch/arm/boot/dts/aspeed-g5.dtsi                   | 10 ++++++
+ drivers/clk/clk-aspeed.c                           | 42 ++++++++++++++++++++--
+ drivers/media/platform/aspeed-video.c              | 33 ++++-------------
+ 4 files changed, 61 insertions(+), 30 deletions(-)
 
-> +
-> +static struct drm_driver aspeed_gfx_driver = {
-> +	.driver_features        = DRIVER_GEM | DRIVER_MODESET |
-> +				DRIVER_PRIME | DRIVER_ATOMIC |
-> +				DRIVER_HAVE_IRQ,
-DRIVER_HAVE_IRQ is obsolete and not needed anymore.
-See drm_drv.h for details.
+-- 
+1.8.3.1
 
-With these few things fixed:
-Reviewed-by: Sam Ravnborg <sam@ravnborg.org>
