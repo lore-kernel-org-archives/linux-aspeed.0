@@ -1,42 +1,87 @@
-From: Joel Stanley <joel@jms.id.au>
-Date: Tue,  2 Apr 2019 12:49:33 +1030
-Subject: [PATCH v2 3/3] MAINTAINERS: Add ASPEED BMC GFX DRM driver entry
-In-Reply-To: <20190402021933.13071-1-joel@jms.id.au>
+From: Andrew Jeffery <andrew@aj.id.au>
+Date: Mon, 01 Apr 2019 23:08:04 -0400
+Subject: [PATCH v2 1/3] dt-bindings: gpu: Add ASPEED GFX bindings document
+In-Reply-To: <20190402021933.13071-2-joel@jms.id.au>
 References: <20190402021933.13071-1-joel@jms.id.au>
-Message-ID: <20190402021933.13071-4-joel@jms.id.au>
+ <20190402021933.13071-2-joel@jms.id.au>
+Message-ID: <d67700c0-c302-403b-b765-555484e85eca@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This hardware is found inside ASPEED Baseboard Management Controller
-(BMC) system on chips. It is called the 'SOC Display Controller' or 'GFX'.
 
-Signed-off-by: Joel Stanley <joel@jms.id.au>
----
- MAINTAINERS | 8 ++++++++
- 1 file changed, 8 insertions(+)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index c18f5f10cf91..c3ad730e26f3 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -4909,6 +4909,14 @@ M:	Dave Airlie <airlied@redhat.com>
- S:	Odd Fixes
- F:	drivers/gpu/drm/ast/
- 
-+DRM DRIVER FOR ASPEED BMC GFX
-+M: 	Joel Stanley <joel@jms.id.au>
-+L:	linux-aspeed at lists.ozlabs.org
-+T:	git git://anongit.freedesktop.org/drm/drm-misc
-+S:	Supported
-+F:	drivers/gpu/drm/aspeed/
-+F:	Documentation/devicetree/bindings/gpu/aspeed-gfx.txt
-+
- DRM DRIVER FOR BOCHS VIRTUAL GPU
- M:	Gerd Hoffmann <kraxel@redhat.com>
- L:	virtualization at lists.linux-foundation.org
--- 
-2.20.1
+On Tue, 2 Apr 2019, at 12:49, Joel Stanley wrote:
+> This describes the ASPEED BMC SoC's display controller.
+> 
+> Signed-off-by: Joel Stanley <joel@jms.id.au>
+> ---
+>  .../devicetree/bindings/gpu/aspeed-gfx.txt    | 41 +++++++++++++++++++
+>  1 file changed, 41 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/gpu/aspeed-gfx.txt
+> 
+> diff --git a/Documentation/devicetree/bindings/gpu/aspeed-gfx.txt 
+> b/Documentation/devicetree/bindings/gpu/aspeed-gfx.txt
+> new file mode 100644
+> index 000000000000..a74033332668
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/gpu/aspeed-gfx.txt
+> @@ -0,0 +1,41 @@
+> +Device tree configuration for the GFX display deivce on the AST2500 
+> SoCs.
+> +
+> +Required properties:
+> +  - compatible
+> +    * Must be one of the following:
+> +      + aspeed,ast2500-gfx
+> +      + aspeed,ast2400-gfx
+> +    * In addition, the ASPEED pinctrl bindings require the 'syscon' 
+> property to
+> +      be present
 
+Lets remove [1] now that we have this document as what you've described
+here is a super-set. Happy for that to be a follow-up patch, so:
+
+Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
+
+[1] Documentation/devicetree/bindings/mfd/aspeed-gfx.txt
+
+> +
+> +  - reg: Physical base address and length of the GFX registers
+> +
+> +  - interrupts: interrupt number for the GFX device
+> +
+> +  - clocks: clock number used to generate the pixel clock
+> +
+> +  - resets: reset line that must be released to use the GFX device
+> +
+> +  - memory-region:
+> +    Phandle to a memory region to allocate from, as defined in
+> +    
+> Documentation/devicetree/bindings/reserved-memory/reserved-memory.txt
+> +
+> +
+> +Example:
+> +
+> +gfx: display at 1e6e6000 {
+> +	compatible = "aspeed,ast2500-gfx", "syscon";
+> +	reg = <0x1e6e6000 0x1000>;
+> +	reg-io-width = <4>;
+> +	clocks = <&syscon ASPEED_CLK_GATE_D1CLK>;
+> +	resets = <&syscon ASPEED_RESET_CRT1>;
+> +	interrupts = <0x19>;
+> +	memory-region = <&gfx_memory>;
+> +};
+> +
+> +gfx_memory: framebuffer {
+> +	size = <0x01000000>;
+> +	alignment = <0x01000000>;
+> +	compatible = "shared-dma-pool";
+> +	reusable;
+> +};
+> -- 
+> 2.20.1
+> 
+>
