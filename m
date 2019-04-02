@@ -1,50 +1,127 @@
-From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-Date: Tue, 2 Apr 2019 14:05:49 -0700
-Subject: [PATCH 3/5] media: dt-bindings: aspeed-video: Add missing
- memory-region property
-In-Reply-To: <1554229504-5661-4-git-send-email-eajames@linux.ibm.com>
-References: <1554229504-5661-1-git-send-email-eajames@linux.ibm.com>
- <1554229504-5661-4-git-send-email-eajames@linux.ibm.com>
-Message-ID: <c715fe6d-d443-c9b4-0a58-29941e0ed539@linux.intel.com>
+From: Patrick Venture <venture@google.com>
+Date: Tue, 2 Apr 2019 14:24:29 -0700
+Subject: [PATCH v8 1/2] dt-bindings: misc: aspeed-p2a-ctrl: add support
+In-Reply-To: <e33bc539-2350-4b7d-9833-df270383b062@www.fastmail.com>
+References: <20190329151025.204094-1-venture@google.com>
+ <e33bc539-2350-4b7d-9833-df270383b062@www.fastmail.com>
+Message-ID: <CAO=noty_jSMLatu5Z-h03hrQ=uozd1eX8SSG=iGNeB+D4W6LQw@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Eddie,
+On Mon, Apr 1, 2019 at 8:42 PM Andrew Jeffery <andrew@aj.id.au> wrote:
+>
+> Hi Patrick,
+>
+> I held off on reviewing this until we'd hashed out what we needed in the driver.
+>
+> I have some comments below.
+>
+> On Sat, 30 Mar 2019, at 01:40, Patrick Venture wrote:
+> > Document the ast2400, ast2500 PCI-to-AHB bridge control driver bindings.
+> >
+> > Signed-off-by: Patrick Venture <venture@google.com>
+> > Reviewed-by: Rob Herring <robh@kernel.org>
+> > ---
+> > Changes for v8:
+> > - None
+> > Changes for v7:
+> > - Moved node under the syscon node it requires
+> > Changes for v6:
+> > - None
+> > Changes for v5:
+> > - None
+> > Changes for v4:
+> > - None
+> > Changes for v3:
+> > - None
+> > Changes for v2:
+> > - Added comment about syscon required parameter.
+> > ---
+> >  .../bindings/misc/aspeed-p2a-ctrl.txt         | 48 +++++++++++++++++++
+> >  1 file changed, 48 insertions(+)
+> >  create mode 100644 Documentation/devicetree/bindings/misc/aspeed-p2a-ctrl.txt
+> >
+> > diff --git a/Documentation/devicetree/bindings/misc/aspeed-p2a-ctrl.txt
+> > b/Documentation/devicetree/bindings/misc/aspeed-p2a-ctrl.txt
+> > new file mode 100644
+> > index 0000000000000..088cc4e3dc54b
+> > --- /dev/null
+> > +++ b/Documentation/devicetree/bindings/misc/aspeed-p2a-ctrl.txt
+> > @@ -0,0 +1,48 @@
+> > +======================================================================
+> > +Device tree bindings for Aspeed AST2400/AST2500 PCI-to-AHB Bridge
+> > Control Driver
+> > +======================================================================
+> > +
+> > +The bridge is available on platforms with the VGA enabled on the
+> > Aspeed device.
+> > +In this case, the host has access to a 64KiB window into all of the
+> > BMC's
+> > +memory.  The BMC can disable this bridge.  If the bridge is enabled,
+> > the host
+> > +has read access to all the regions of memory, however the host only
+> > has read
+> > +and write access depending on a register controlled by the BMC.
+> > +
+> > +Required properties:
+> > +===================
+> > +
+> > + - compatible: must be one of:
+> > +     - "aspeed,ast2400-p2a-ctrl"
+> > +     - "aspeed,ast2500-p2a-ctrl"
+> > +
+> > + - syscon: handle to syscon device node controlling PCI.
+>
+> The p2a-ctrl node is meant to be a child of the syscon. I noted this in my review
+> of the associated driver - you need to remove the description of the syscon
+> property.
 
-On 4/2/2019 11:25 AM, Eddie James wrote:
-> Missed documenting this property in the initial commit.
-> 
-> Signed-off-by: Eddie James <eajames@linux.ibm.com>
-> ---
->   Documentation/devicetree/bindings/media/aspeed-video.txt | 6 ++++++
->   1 file changed, 6 insertions(+)
-> 
-> diff --git a/Documentation/devicetree/bindings/media/aspeed-video.txt b/Documentation/devicetree/bindings/media/aspeed-video.txt
-> index 78b464a..346c2d3 100644
-> --- a/Documentation/devicetree/bindings/media/aspeed-video.txt
-> +++ b/Documentation/devicetree/bindings/media/aspeed-video.txt
-> @@ -14,6 +14,11 @@ Required properties:
->   			the VE
->    - interrupts:		the interrupt associated with the VE on this platform
->   
-> +Optional properties:
-> + - memory-region:
-> +	phandle to a memory region to allocate from, as defined in
-> +	Documentation/devicetree/bindings/reserved-memory/reserved-memory.txt
-> +
->   Example:
->   
->   video-engine at 1e700000 {
-> @@ -23,4 +28,5 @@ video-engine at 1e700000 {
->       clock-names = "vclk", "eclk";
->       resets = <&syscon ASPEED_RESET_VIDEO>;
->       interrupts = <7>;
-> +    memory-region = <&video_engine_memory>
+Roger that, I'll take a hack at cleaning this up later this week (I'm OOO).
 
-nit: a semicolon at the end of the line.
-
->   };
-> 
+>
+> > +
+> > +Optional properties:
+> > +===================
+> > +
+> > +- memory-region: A phandle to a reserved_memory region to be used for
+> > the PCI
+> > +             to AHB mapping
+> > +
+> > +The p2a-control node should be the child of a syscon node with the
+> > required
+> > +property:
+> > +
+> > +- compatible : Should be one of the following:
+> > +             "aspeed,ast2400-scu", "syscon", "simple-mfd"
+> > +             "aspeed,g4-scu", "syscon", "simple-mfd"
+> > +             "aspeed,ast2500-scu", "syscon", "simple-mfd"
+> > +             "aspeed,g5-scu", "syscon", "simple-mfd"
+>
+> The note above should go where you've described the syscon property above.
+>
+> Cheers,
+>
+> Andrew
+>
+> > +
+> > +Example:
+> > +
+> > +g4 Example
+> > +----------
+> > +
+> > +syscon: scu at 1e6e2000 {
+> > +     compatible = "aspeed,ast2400-scu", "syscon", "simple-mfd";
+> > +     reg = <0x1e6e2000 0x1a8>;
+> > +
+> > +     p2a: p2a-control {
+> > +             compatible = "aspeed,ast2400-p2a-ctrl";
+> > +             memory-region = <&reserved_memory>;
+> > +     };
+> > +};
+> > --
+> > 2.21.0.392.gf8f6787159e-goog
+> >
+> >
