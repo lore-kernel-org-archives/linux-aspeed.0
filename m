@@ -1,63 +1,45 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Tue, 2 Apr 2019 02:09:19 +0000
-Subject: [PATCH 2/2] drm: Add ASPEED GFX driver
-In-Reply-To: <20190328075317.GR2665@phenom.ffwll.local>
-References: <20190328054316.17939-1-joel@jms.id.au>
- <20190328054316.17939-3-joel@jms.id.au>
- <20190328075317.GR2665@phenom.ffwll.local>
-Message-ID: <CACPK8Xf8Vz+pfJd1jo4Mzce9=vNoKk_Osvi3Tbdu3KSTmgmBkA@mail.gmail.com>
+Date: Tue,  2 Apr 2019 12:49:30 +1030
+Subject: [PATCH v2 0/3] drm: Add ASPEED BMC 'GFX' driver
+Message-ID: <20190402021933.13071-1-joel@jms.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, 28 Mar 2019 at 07:53, Daniel Vetter <daniel@ffwll.ch> wrote:
+v2: Address review from Noralf and Daniel, add maintainers patch
 
-> > +static int aspeed_gfx_get_modes(struct drm_connector *connector)
-> > +{
-> > +     return drm_add_modes_noedid(connector, 800, 600);
->
-> Is this the only mode you do, or just a default? Iirc if you report
-> "connected", you'll get this as one of the fallback modes already.
+This driver is for the ASPEED BMC SoC's GFX display hardware. This
+driver runs on the ARM based BMC systems, unlike the ast driver which
+runs on a host CPU and is is for a PCIe graphics device that happens to
+live in the BMC's silicon, but is otherwise available for use by the
+BMC.
 
-I this is the only mode we can do with the clock that we have available.
+Joel Stanley (3):
+  dt-bindings: gpu: Add ASPEED GFX bindings document
+  drm: Add ASPEED GFX driver
+  MAINTAINERS: Add ASPEED BMC GFX DRM driver entry
 
-> Very nice driver!
->
-> Acked-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+ .../devicetree/bindings/gpu/aspeed-gfx.txt    |  41 +++
+ MAINTAINERS                                   |   8 +
+ drivers/gpu/drm/Kconfig                       |   2 +
+ drivers/gpu/drm/Makefile                      |   1 +
+ drivers/gpu/drm/aspeed/Kconfig                |  14 +
+ drivers/gpu/drm/aspeed/Makefile               |   3 +
+ drivers/gpu/drm/aspeed/aspeed_gfx.h           | 104 +++++++
+ drivers/gpu/drm/aspeed/aspeed_gfx_crtc.c      | 239 ++++++++++++++++
+ drivers/gpu/drm/aspeed/aspeed_gfx_drv.c       | 266 ++++++++++++++++++
+ drivers/gpu/drm/aspeed/aspeed_gfx_out.c       |  42 +++
+ 10 files changed, 720 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/gpu/aspeed-gfx.txt
+ create mode 100644 drivers/gpu/drm/aspeed/Kconfig
+ create mode 100644 drivers/gpu/drm/aspeed/Makefile
+ create mode 100644 drivers/gpu/drm/aspeed/aspeed_gfx.h
+ create mode 100644 drivers/gpu/drm/aspeed/aspeed_gfx_crtc.c
+ create mode 100644 drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
+ create mode 100644 drivers/gpu/drm/aspeed/aspeed_gfx_out.c
 
-Thanks!
+-- 
+2.20.1
 
-> For merging/maintenance, do you want to put this into drm-misc?
->
-> https://drm.pages.freedesktop.org/maintainer-tools/committer-drm-misc.html#small-drivers
-
-That makes sense. I'll send out a v2 with the changes you and Noralf
-suggested, and a maintainers patch, once I've given it a spin on
-hardware.
-
-> We could also officially put drm/ast in there, if you want to maintain
-> that too.
-
-I haven't had much to do with that driver (it's physically inside the
-BMC, but a different piece of hardware). I can probably be included so
-I'm on cc for changes.
-
-Cheers,
-
-Joel
-
-
->
-> Either way, patch also needs a MAINTAINERS entry.
-> -Daniel
-> --
-> Daniel Vetter
-> Software Engineer, Intel Corporation
-> http://blog.ffwll.ch
->
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel at lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
