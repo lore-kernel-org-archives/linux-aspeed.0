@@ -1,40 +1,45 @@
 From: Eddie James <eajames@linux.ibm.com>
-Date: Tue,  2 Apr 2019 18:25:01 +0000
-Subject: [PATCH 2/5] media: platform: Aspeed: Make reserved memory optional
+Date: Tue,  2 Apr 2019 18:25:02 +0000
+Subject: [PATCH 3/5] media: dt-bindings: aspeed-video: Add missing
+ memory-region property
 In-Reply-To: <1554229504-5661-1-git-send-email-eajames@linux.ibm.com>
 References: <1554229504-5661-1-git-send-email-eajames@linux.ibm.com>
-Message-ID: <1554229504-5661-3-git-send-email-eajames@linux.ibm.com>
+Message-ID: <1554229504-5661-4-git-send-email-eajames@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Reserved memory doesn't need to be required; system memory would work
-fine.
+Missed documenting this property in the initial commit.
 
 Signed-off-by: Eddie James <eajames@linux.ibm.com>
 ---
- drivers/media/platform/aspeed-video.c | 6 +-----
- 1 file changed, 1 insertion(+), 5 deletions(-)
+ Documentation/devicetree/bindings/media/aspeed-video.txt | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/drivers/media/platform/aspeed-video.c b/drivers/media/platform/aspeed-video.c
-index 55c55a6..8144fe3 100644
---- a/drivers/media/platform/aspeed-video.c
-+++ b/drivers/media/platform/aspeed-video.c
-@@ -1608,11 +1608,7 @@ static int aspeed_video_init(struct aspeed_video *video)
- 		return PTR_ERR(video->vclk);
- 	}
+diff --git a/Documentation/devicetree/bindings/media/aspeed-video.txt b/Documentation/devicetree/bindings/media/aspeed-video.txt
+index 78b464a..346c2d3 100644
+--- a/Documentation/devicetree/bindings/media/aspeed-video.txt
++++ b/Documentation/devicetree/bindings/media/aspeed-video.txt
+@@ -14,6 +14,11 @@ Required properties:
+ 			the VE
+  - interrupts:		the interrupt associated with the VE on this platform
  
--	rc = of_reserved_mem_device_init(dev);
--	if (rc) {
--		dev_err(dev, "Unable to reserve memory\n");
--		return rc;
--	}
-+	of_reserved_mem_device_init(dev);
++Optional properties:
++ - memory-region:
++	phandle to a memory region to allocate from, as defined in
++	Documentation/devicetree/bindings/reserved-memory/reserved-memory.txt
++
+ Example:
  
- 	rc = dma_set_mask_and_coherent(dev, DMA_BIT_MASK(32));
- 	if (rc) {
+ video-engine at 1e700000 {
+@@ -23,4 +28,5 @@ video-engine at 1e700000 {
+     clock-names = "vclk", "eclk";
+     resets = <&syscon ASPEED_RESET_VIDEO>;
+     interrupts = <7>;
++    memory-region = <&video_engine_memory>
+ };
 -- 
 1.8.3.1
 
