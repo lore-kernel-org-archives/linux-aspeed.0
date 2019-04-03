@@ -1,125 +1,81 @@
 From: Adriana Kobylak <anoo@linux.ibm.com>
-Date: Wed, 03 Apr 2019 10:51:48 -0500
-Subject: [PATCH] ARM: dts: Aspeed: Witherspoon: Update BMC partitioning
-In-Reply-To: <cd769312-732d-fb7a-ca50-e5b29eac235b@linux.ibm.com>
-References: <1552409402-15881-1-git-send-email-anoo@linux.ibm.com>
- <CACPK8Xer53amWbQ-6dvEaXfHu=grk3ZWsH9NKCa_Xi_JKUnCMg@mail.gmail.com>
- <cd769312-732d-fb7a-ca50-e5b29eac235b@linux.ibm.com>
-Message-ID: <962b866599ac4dfd866d7433b7ddb276@linux.vnet.ibm.com>
+Date: Wed,  3 Apr 2019 11:59:11 -0500
+Subject: [PATCH v2] ARM: dts: Aspeed: Witherspoon: Update BMC partitioning
+In-Reply-To: <962b866599ac4dfd866d7433b7ddb276@linux.vnet.ibm.com>
+References: <962b866599ac4dfd866d7433b7ddb276@linux.vnet.ibm.com>
+Message-ID: <1554310751-52446-1-git-send-email-anoo@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 2019-03-27 10:10, Eddie James wrote:
-> On 3/27/19 1:20 AM, Joel Stanley wrote:
->> On Tue, 12 Mar 2019 at 16:50, Adriana Kobylak <anoo@linux.ibm.com> 
->> wrote:
->>> From: "Edward A. James" <eajames@us.ibm.com>
->>> 
->>> Add simplified partitions for BMC and alternate flash. Include these 
->>> by
->>> default in Witherspoon.
->>> 
->>> Signed-off-by: Edward A. James <eajames@us.ibm.com>
->>> Signed-off-by: Joel Stanley <joel@jms.id.au>
->>> ---
->>>   .../boot/dts/aspeed-bmc-alt-opp-flash-layout-ubi.dtsi  | 18 
->>> ++++++++++++++++++
->>>   arch/arm/boot/dts/aspeed-bmc-opp-flash-layout-ubi.dtsi | 18 
->>> ++++++++++++++++++
->>>   arch/arm/boot/dts/aspeed-bmc-opp-witherspoon.dts       |  3 ++-
->>>   3 files changed, 38 insertions(+), 1 deletion(-)
->>>   create mode 100644 
->>> arch/arm/boot/dts/aspeed-bmc-alt-opp-flash-layout-ubi.dtsi
->>>   create mode 100644 
->>> arch/arm/boot/dts/aspeed-bmc-opp-flash-layout-ubi.dtsi
->>> 
->>> diff --git 
->>> a/arch/arm/boot/dts/aspeed-bmc-alt-opp-flash-layout-ubi.dtsi 
->>> b/arch/arm/boot/dts/aspeed-bmc-alt-opp-flash-layout-ubi.dtsi
->>> new file mode 100644
->>> index 0000000..9277599
->>> --- /dev/null
->>> +++ b/arch/arm/boot/dts/aspeed-bmc-alt-opp-flash-layout-ubi.dtsi
->> As there are no other machines that use this layout, I think you
->> should have the layout in the dts file.
-> 
-> I think the idea was we might have more machines that use this layout
-> in the future...
-> 
-Yeah that was the idea. Although since Witherspoon is the only machine
-using this layout I can move it to its dts file, and the layout can be
-moved out if/when another machine needs it. Will re-submit a v2.
->> 
->>> @@ -0,0 +1,18 @@
->>> +               label = "alt-bmc";
->>> +               partitions {
->>> +                               #address-cells = < 1 >;
->>> +                               #size-cells = < 1 >;
->>> +                               compatible = "fixed-partitions";
->>> +                               u-boot at 0 {
->>> +                                       reg = < 0 0x60000 >;
->>> +                                       label = "alt-u-boot";
->>> +                               };
->>> +                               u-boot-env at 60000 {
->>> +                                       reg = < 0x60000 0x20000 >;
->>> +                                       label = "alt-u-boot-env";
->>> +                               };
->>> +                               obmc-ubi at 80000 {
->>> +                                       reg = < 0x80000 0x1F80000 >;
->>> +                                       label = "alt-obmc-ubi";
->>> +                               };
->>> +               };
->>> diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-flash-layout-ubi.dtsi 
->>> b/arch/arm/boot/dts/aspeed-bmc-opp-flash-layout-ubi.dtsi
->>> new file mode 100644
->>> index 0000000..0059ad1
->>> --- /dev/null
->>> +++ b/arch/arm/boot/dts/aspeed-bmc-opp-flash-layout-ubi.dtsi
->>> @@ -0,0 +1,18 @@
->>> +               label = "bmc";
->>> +               partitions {
->>> +                               #address-cells = < 1 >;
->>> +                               #size-cells = < 1 >;
->>> +                               compatible = "fixed-partitions";
->>> +                               u-boot at 0 {
->>> +                                       reg = < 0 0x60000 >;
->>> +                                       label = "u-boot";
->>> +                               };
->>> +                               u-boot-env at 60000 {
->>> +                                       reg = < 0x60000 0x20000 >;
->>> +                                       label = "u-boot-env";
->>> +                               };
->>> +                               obmc-ubi at 80000 {
->>> +                                       reg = < 0x80000 0x1F80000 >;
->>> +                                       label = "obmc-ubi";
->>> +                               };
->>> +               };
->>> diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-witherspoon.dts 
->>> b/arch/arm/boot/dts/aspeed-bmc-opp-witherspoon.dts
->>> index c51e3e8..058b9b7 100644
->>> --- a/arch/arm/boot/dts/aspeed-bmc-opp-witherspoon.dts
->>> +++ b/arch/arm/boot/dts/aspeed-bmc-opp-witherspoon.dts
->>> @@ -191,7 +191,7 @@
->>>                  label = "bmc";
->>>                  m25p,fast-read;
->>>                  spi-max-frequency = <50000000>;
->>> -#include "openbmc-flash-layout.dtsi"
->>> +#include "aspeed-bmc-opp-flash-layout-ubi.dtsi"
->>>          };
->>> 
->>>          flash at 1 {
->>> @@ -199,6 +199,7 @@
->>>                  label = "alt";
->>>                  m25p,fast-read;
->>>                  spi-max-frequency = <50000000>;
->>> +#include "aspeed-bmc-alt-opp-flash-layout-ubi.dtsi"
->>>          };
->>>   };
->>> 
->>> --
->>> 1.8.3.1
->>> 
+From: "Edward A. James" <eajames@us.ibm.com>
+
+Add simplified partitions for BMC and alternate flash. Include these by
+default in Witherspoon.
+
+Signed-off-by: Edward A. James <eajames@us.ibm.com>
+Signed-off-by: Joel Stanley <joel@jms.id.au>
+Signed-off-by: Adriana Kobylak <anoo@us.ibm.com>
+---
+ arch/arm/boot/dts/aspeed-bmc-opp-witherspoon.dts | 37 ++++++++++++++++++++++--
+ 1 file changed, 35 insertions(+), 2 deletions(-)
+
+diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-witherspoon.dts b/arch/arm/boot/dts/aspeed-bmc-opp-witherspoon.dts
+index 1cdc96d..82f63aa 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-opp-witherspoon.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-opp-witherspoon.dts
+@@ -194,14 +194,47 @@
+ 		label = "bmc";
+ 		m25p,fast-read;
+ 		spi-max-frequency = <50000000>;
+-#include "openbmc-flash-layout.dtsi"
++		partitions {
++			#address-cells = < 1 >;
++			#size-cells = < 1 >;
++			compatible = "fixed-partitions";
++			u-boot at 0 {
++				reg = < 0 0x60000 >;
++				label = "u-boot";
++			};
++			u-boot-env at 60000 {
++				reg = < 0x60000 0x20000 >;
++				label = "u-boot-env";
++			};
++			obmc-ubi at 80000 {
++				reg = < 0x80000 0x1F80000 >;
++				label = "obmc-ubi";
++			};
++		};
+ 	};
+ 
+ 	flash at 1 {
+ 		status = "okay";
+-		label = "alt";
++		label = "alt-bmc";
+ 		m25p,fast-read;
+ 		spi-max-frequency = <50000000>;
++		partitions {
++			#address-cells = < 1 >;
++			#size-cells = < 1 >;
++			compatible = "fixed-partitions";
++			u-boot at 0 {
++				reg = < 0 0x60000 >;
++				label = "alt-u-boot";
++			};
++			u-boot-env at 60000 {
++				reg = < 0x60000 0x20000 >;
++				label = "alt-u-boot-env";
++			};
++			obmc-ubi at 80000 {
++				reg = < 0x80000 0x1F80000 >;
++				label = "alt-obmc-ubi";
++			};
++		};
+ 	};
+ };
+ 
+-- 
+1.8.3.1
 
