@@ -1,48 +1,71 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Wed, 03 Apr 2019 21:04:44 -0400
-Subject: [PATCH v3 3/3] MAINTAINERS: Add ASPEED BMC GFX DRM driver entry
-In-Reply-To: <20190403001909.31637-4-joel@jms.id.au>
-References: <20190403001909.31637-1-joel@jms.id.au>
- <20190403001909.31637-4-joel@jms.id.au>
-Message-ID: <3c142c1e-e863-4f21-b313-3564e3a9d5d6@www.fastmail.com>
+Date: Wed, 03 Apr 2019 22:16:34 -0400
+Subject: =?UTF-8?Q?Re:_[PATCH_2/5]_media:_platform:_Aspeed:_Make_reserved_memory_?=
+ =?UTF-8?Q?optional?=
+In-Reply-To: <dd017f44-5d1d-d657-b159-c9dbaadd795f@linux.vnet.ibm.com>
+References: <1554229504-5661-1-git-send-email-eajames@linux.ibm.com>
+ <1554229504-5661-3-git-send-email-eajames@linux.ibm.com>
+ <7effb2de-cc91-47af-88a2-a0075262e9c4@www.fastmail.com>
+ <dd017f44-5d1d-d657-b159-c9dbaadd795f@linux.vnet.ibm.com>
+Message-ID: <e6bfc462-da83-4c2e-9f33-24727e5afd00@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 3 Apr 2019, at 10:49, Joel Stanley wrote:
-> This hardware is found inside ASPEED Baseboard Management Controller
-> (BMC) system on chips. It is called the 'SOC Display Controller' or 'GFX'.
-> 
-> Signed-off-by: Joel Stanley <joel@jms.id.au>
 
-Acked-by: Andrew Jeffery <andrew@aj.id.au>
 
-> ---
->  MAINTAINERS | 8 ++++++++
->  1 file changed, 8 insertions(+)
+On Thu, 4 Apr 2019, at 01:05, Eddie James wrote:
 > 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index c18f5f10cf91..c3ad730e26f3 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -4909,6 +4909,14 @@ M:	Dave Airlie <airlied@redhat.com>
->  S:	Odd Fixes
->  F:	drivers/gpu/drm/ast/
->  
-> +DRM DRIVER FOR ASPEED BMC GFX
-> +M: 	Joel Stanley <joel@jms.id.au>
-> +L:	linux-aspeed at lists.ozlabs.org
-> +T:	git git://anongit.freedesktop.org/drm/drm-misc
-> +S:	Supported
-> +F:	drivers/gpu/drm/aspeed/
-> +F:	Documentation/devicetree/bindings/gpu/aspeed-gfx.txt
-> +
->  DRM DRIVER FOR BOCHS VIRTUAL GPU
->  M:	Gerd Hoffmann <kraxel@redhat.com>
->  L:	virtualization at lists.linux-foundation.org
-> -- 
-> 2.20.1
+> On 4/3/19 1:01 AM, Andrew Jeffery wrote:
+> >
+> > On Wed, 3 Apr 2019, at 04:55, Eddie James wrote:
+> >> Reserved memory doesn't need to be required; system memory would work
+> >> fine.
+> > I had to do a bit of legwork to understand what you were doing here. My
+> > understanding is that we allocate out of the default CMA region if the
+> > memory-region property isn't specified. Is that what you're expecting?
+> > Could be helpful to be a little less terse in the commit message.
 > 
->
+> 
+> Correct.
+> 
+> 
+> >
+> >> Signed-off-by: Eddie James <eajames@linux.ibm.com>
+> >> ---
+> >>   drivers/media/platform/aspeed-video.c | 6 +-----
+> >>   1 file changed, 1 insertion(+), 5 deletions(-)
+> >>
+> >> diff --git a/drivers/media/platform/aspeed-video.c
+> >> b/drivers/media/platform/aspeed-video.c
+> >> index 55c55a6..8144fe3 100644
+> >> --- a/drivers/media/platform/aspeed-video.c
+> >> +++ b/drivers/media/platform/aspeed-video.c
+> >> @@ -1608,11 +1608,7 @@ static int aspeed_video_init(struct aspeed_video
+> >> *video)
+> >>   		return PTR_ERR(video->vclk);
+> >>   	}
+> >>   
+> >> -	rc = of_reserved_mem_device_init(dev);
+> >> -	if (rc) {
+> >> -		dev_err(dev, "Unable to reserve memory\n");
+> >> -		return rc;
+> >> -	}
+> >> +	of_reserved_mem_device_init(dev);
+> > You're ignoring *all* errors here with the expectation that the cause is the
+> > missing memory-region property. However, other errors can propagate
+> > out of of_reserved_mem_device_init() - e.g. ENOMEM. Rather than remove
+> > error checking, I think you should explicitly test for ENODEV, which is what is
+> > returned if the memory-region property is absent.
+> 
+> 
+> But it doesn't matter if it fails for any reason, any DMA allocation 
+> should fall back to default CMA memory. In the case of ENOMEM or other 
+> errors, then the later calls to allocate DMA may fail and we can deal 
+> with it then.
+
+Fair enough then. I think it deserves a comment, but up to you.
+
+Andrew
