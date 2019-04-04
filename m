@@ -1,70 +1,101 @@
-From: Vijay Khemka <vijaykhemka@fb.com>
-Date: Wed, 3 Apr 2019 22:32:04 +0000
-Subject: [PATCH] ARM: dts: aspeed: tiogapass: Enable VUART
-In-Reply-To: <24375A52-CC8E-4CFE-A683-0720B60D1201@fb.com>
-References: <24375A52-CC8E-4CFE-A683-0720B60D1201@fb.com>
-Message-ID: <CY4PR15MB1269927DE5C991C43BAF025CDD570@CY4PR15MB1269.namprd15.prod.outlook.com>
+From: Andrew Jeffery <andrew@aj.id.au>
+Date: Wed, 03 Apr 2019 20:34:37 -0400
+Subject: [PATCH v2] ARM: dts: Aspeed: Witherspoon: Update BMC partitioning
+In-Reply-To: <599ff977-9e23-d1de-24c9-a5f0f1585495@kaod.org>
+References: <962b866599ac4dfd866d7433b7ddb276@linux.vnet.ibm.com>
+ <1554310751-52446-1-git-send-email-anoo@linux.ibm.com>
+ <599ff977-9e23-d1de-24c9-a5f0f1585495@kaod.org>
+Message-ID: <afa93732-2a36-498f-8bf3-285192626a44@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Joel,
-Please apply this patch to kernel 5.0.
-
-Regards
--Vijay
-
-?On 3/18/19, 12:46 PM, "openbmc on behalf of Vijay Khemka" <openbmc-bounces+vijaykhemka=fb.com at lists.ozlabs.org on behalf of vijaykhemka@fb.com> wrote:
-
-    Hi Joel,
-    Please apply this patch.
-
-    Regards
-    -Vijay
-
-    On 3/5/19, 12:06 PM, "openbmc on behalf of Vijay Khemka" <openbmc-bounces+vijaykhemka=fb.com at lists.ozlabs.org on behalf of vijaykhemka@fb.com> wrote:
-
-        Please review below patch.
-
-        Regards
-        -Vijay
-
-        On 1/30/19, 10:14 AM, "Vijay Khemka" <vijaykhemka@fb.com> wrote:
-
-            Enabling vuart for Facebook tiogapass
-
-            Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
-            ---
-             arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts | 5 +++++
-             1 file changed, 5 insertions(+)
-
-            diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
-            index 42e0d7a8e8d0..a058fb2985f7 100644
-            --- a/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
-            +++ b/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
-            @@ -64,6 +64,11 @@
-                status = "okay";
-             };
-
-            +&vuart {
-            +   // VUART Host Console
-            +   status = "okay";
-            +};
-            +
-             &uart1 {
-                // Host Console
-                status = "okay";
-            --
-            2.17.1
 
 
+On Thu, 4 Apr 2019, at 04:09, C?dric Le Goater wrote:
+> On 4/3/19 6:59 PM, Adriana Kobylak wrote:
+> > From: "Edward A. James" <eajames@us.ibm.com>
+> > 
+> > Add simplified partitions for BMC and alternate flash. Include these by
+> > default in Witherspoon.
+> 
+> at last ! :
+> 
+> Reviewed-by: C?dric Le Goater <clg@kaod.org>
 
+Piling on:
 
+Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
 
-
-
--------------- next part --------------
-An HTML attachment was scrubbed...
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20190403/4f4dbf0a/attachment.htm>
+> 
+> Thanks,
+> 
+> C.
+> 
+> > 
+> > Signed-off-by: Edward A. James <eajames@us.ibm.com>
+> > Signed-off-by: Joel Stanley <joel@jms.id.au>
+> > Signed-off-by: Adriana Kobylak <anoo@us.ibm.com>
+> > ---
+> >  arch/arm/boot/dts/aspeed-bmc-opp-witherspoon.dts | 37 ++++++++++++++++++++++--
+> >  1 file changed, 35 insertions(+), 2 deletions(-)
+> > 
+> > diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-witherspoon.dts b/arch/arm/boot/dts/aspeed-bmc-opp-witherspoon.dts
+> > index 1cdc96d..82f63aa 100644
+> > --- a/arch/arm/boot/dts/aspeed-bmc-opp-witherspoon.dts
+> > +++ b/arch/arm/boot/dts/aspeed-bmc-opp-witherspoon.dts
+> > @@ -194,14 +194,47 @@
+> >  		label = "bmc";
+> >  		m25p,fast-read;
+> >  		spi-max-frequency = <50000000>;
+> > -#include "openbmc-flash-layout.dtsi"
+> > +		partitions {
+> > +			#address-cells = < 1 >;
+> > +			#size-cells = < 1 >;
+> > +			compatible = "fixed-partitions";
+> > +			u-boot at 0 {
+> > +				reg = < 0 0x60000 >;
+> > +				label = "u-boot";
+> > +			};
+> > +			u-boot-env at 60000 {
+> > +				reg = < 0x60000 0x20000 >;
+> > +				label = "u-boot-env";
+> > +			};
+> > +			obmc-ubi at 80000 {
+> > +				reg = < 0x80000 0x1F80000 >;
+> > +				label = "obmc-ubi";
+> > +			};
+> > +		};
+> >  	};
+> >  
+> >  	flash at 1 {
+> >  		status = "okay";
+> > -		label = "alt";
+> > +		label = "alt-bmc";
+> >  		m25p,fast-read;
+> >  		spi-max-frequency = <50000000>;
+> > +		partitions {
+> > +			#address-cells = < 1 >;
+> > +			#size-cells = < 1 >;
+> > +			compatible = "fixed-partitions";
+> > +			u-boot at 0 {
+> > +				reg = < 0 0x60000 >;
+> > +				label = "alt-u-boot";
+> > +			};
+> > +			u-boot-env at 60000 {
+> > +				reg = < 0x60000 0x20000 >;
+> > +				label = "alt-u-boot-env";
+> > +			};
+> > +			obmc-ubi at 80000 {
+> > +				reg = < 0x80000 0x1F80000 >;
+> > +				label = "alt-obmc-ubi";
+> > +			};
+> > +		};
+> >  	};
+> >  };
+> >  
+> > 
+> 
+>
