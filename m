@@ -1,67 +1,90 @@
-From: Joel Stanley <joel@jms.id.au>
-Date: Fri, 5 Apr 2019 03:47:38 +0000
-Subject: [GIT PULL] ARM: aspeed: dts changes for 5.2
-Message-ID: <CACPK8XdevZ9LHtVVu=fHbTxSKfDugym3jT0ueKEpa9qhLYbFnw@mail.gmail.com>
+From: Cédric Le Goater <clg@kaod.org>
+Date: Fri, 5 Apr 2019 07:51:02 +0200
+Subject: [PATCH] ARM: dts: aspeed: Rename flash-controller nodes
+In-Reply-To: <20190405033230.8150-1-joel@jms.id.au>
+References: <20190405033230.8150-1-joel@jms.id.au>
+Message-ID: <11ecb207-0e6e-04a9-2f74-66256c85bbc6@kaod.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello ARM Maintainers,
+On 4/5/19 5:32 AM, Joel Stanley wrote:
+> The device tree compiler has started spitting out warnings about these
+> names, insisting they be called 'spi':
+> 
+>  ../arch/arm/boot/dts/aspeed-g5.dtsi:108.35-128.5: Warning
+>  (spi_bus_bridge): /ahb/flash-controller at 1e631000: node name for SPI
+>  buses should be 'spi'
+> 
+> Signed-off-by: Joel Stanley <joel@jms.id.au>
 
-Here's the first ASPEED device tree pull request for 5.2. There might be a
-second one later as I pushed out a pair of patches for review today.
 
-The following changes since commit 9e98c678c2d6ae3a17cb2de55d17f69dddaa231b:
 
-  Linux 5.1-rc1 (2019-03-17 14:22:26 -0700)
+Reviewed-by: C?dric Le Goater <clg@kaod.org>
 
-are available in the Git repository at:
+Thanks,
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/joel/aspeed.git \
-    tags/aspeed-5.2-devicetree
+C.
 
-for you to fetch changes up to 6d00c6f8d2e781e3c821fc9c614f404cc981804d:
+> ---
+>  arch/arm/boot/dts/aspeed-g4.dtsi | 4 ++--
+>  arch/arm/boot/dts/aspeed-g5.dtsi | 6 +++---
+>  2 files changed, 5 insertions(+), 5 deletions(-)
+> 
+> diff --git a/arch/arm/boot/dts/aspeed-g4.dtsi b/arch/arm/boot/dts/aspeed-g4.dtsi
+> index 9549f867aa1e..5156afccc8ed 100644
+> --- a/arch/arm/boot/dts/aspeed-g4.dtsi
+> +++ b/arch/arm/boot/dts/aspeed-g4.dtsi
+> @@ -53,7 +53,7 @@
+>  		#size-cells = <1>;
+>  		ranges;
+>  
+> -		fmc: flash-controller at 1e620000 {
+> +		fmc: spi at 1e620000 {
+>  			reg = < 0x1e620000 0x94
+>  				0x20000000 0x10000000 >;
+>  			#address-cells = <1>;
+> @@ -69,7 +69,7 @@
+>  			};
+>  		};
+>  
+> -		spi: flash-controller at 1e630000 {
+> +		spi: spi at 1e630000 {
+>  			reg = < 0x1e630000 0x18
+>  				0x30000000 0x10000000 >;
+>  			#address-cells = <1>;
+> diff --git a/arch/arm/boot/dts/aspeed-g5.dtsi b/arch/arm/boot/dts/aspeed-g5.dtsi
+> index 85ed9dbec196..551528ccb7b8 100644
+> --- a/arch/arm/boot/dts/aspeed-g5.dtsi
+> +++ b/arch/arm/boot/dts/aspeed-g5.dtsi
+> @@ -60,7 +60,7 @@
+>  		#size-cells = <1>;
+>  		ranges;
+>  
+> -		fmc: flash-controller at 1e620000 {
+> +		fmc: spi at 1e620000 {
+>  			reg = < 0x1e620000 0xc4
+>  				0x20000000 0x10000000 >;
+>  			#address-cells = <1>;
+> @@ -86,7 +86,7 @@
+>  			};
+>  		};
+>  
+> -		spi1: flash-controller at 1e630000 {
+> +		spi1: spi at 1e630000 {
+>  			reg = < 0x1e630000 0xc4
+>  				0x30000000 0x08000000 >;
+>  			#address-cells = <1>;
+> @@ -106,7 +106,7 @@
+>  			};
+>  		};
+>  
+> -		spi2: flash-controller at 1e631000 {
+> +		spi2: spi at 1e631000 {
+>  			reg = < 0x1e631000 0xc4
+>  				0x38000000 0x08000000 >;
+>  			#address-cells = <1>;
+> 
 
-  ARM: dts: aspeed: Add RTC node (2019-04-05 14:08:20 +1030)
-
-----------------------------------------------------------------
-ASPEED device tree updates for 5.2
-
- - RTC and GFX DRM driver went upstream this cycle
-
- - Miscellaneous board updates for Facebook and IBM BMCs
-
-----------------------------------------------------------------
-Eddie James (2):
-      ARM: dts: aspeed: witherspoon: Enable vhub
-      ARM: dts: aspeed-g5: Add video engine
-
-Edward A. James (1):
-      ARM: dts: aspeed: witherspoon: Update BMC partitioning
-
-Joel Stanley (4):
-      ARM: dts: aspeed: ast2500: Update flash layout
-      ARM: dts: aspeed-g5: Add resets and clocks to GFX node
-      ARM: dts: aspeed: Enable the GFX IP
-      ARM: dts: aspeed: Add RTC node
-
-Lei YU (1):
-      ARM: dts: aspeed: palmetto: Fix flash_memory region
-
-Tao Ren (1):
-      ARM: dts: aspeed: cmm: enable iio-hwmon-adc
-
-Vijay Khemka (1):
-      ARM: dts: aspeed: tiogapass: Enable VUART
-
- arch/arm/boot/dts/aspeed-ast2500-evb.dts           | 21 ++++++++-
- arch/arm/boot/dts/aspeed-bmc-facebook-cmm.dts      |  6 +++
- .../arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts |  5 +++
- arch/arm/boot/dts/aspeed-bmc-opp-palmetto.dts      |  4 +-
- arch/arm/boot/dts/aspeed-bmc-opp-romulus.dts       |  8 ++++
- arch/arm/boot/dts/aspeed-bmc-opp-witherspoon.dts   | 52 +++++++++++++++++++++-
- arch/arm/boot/dts/aspeed-g4.dtsi                   |  6 +++
- arch/arm/boot/dts/aspeed-g5.dtsi                   | 20 +++++++++
- 8 files changed, 117 insertions(+), 5 deletions(-)
