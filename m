@@ -1,25 +1,83 @@
 From: Rob Herring <robh@kernel.org>
-Date: Sat, 06 Apr 2019 01:06:46 -0500
-Subject: [PATCH 3/5] media: dt-bindings: aspeed-video: Add missing
- memory-region property
-In-Reply-To: <1554229504-5661-4-git-send-email-eajames@linux.ibm.com>
-References: <1554229504-5661-1-git-send-email-eajames@linux.ibm.com>
- <1554229504-5661-4-git-send-email-eajames@linux.ibm.com>
-Message-ID: <5ca841f9.1c69fb81.70acb.c159@mx.google.com>
+Date: Sat, 06 Apr 2019 01:06:49 -0500
+Subject: [PATCH v3 1/3] dt-bindings: gpu: Add ASPEED GFX bindings document
+In-Reply-To: <20190403001909.31637-2-joel@jms.id.au>
+References: <20190403001909.31637-1-joel@jms.id.au>
+ <20190403001909.31637-2-joel@jms.id.au>
+Message-ID: <5ca841fb.1c69fb81.58fe6.fabd@mx.google.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue,  2 Apr 2019 18:25:02 +0000, Eddie James wrote:
-> Missed documenting this property in the initial commit.
+On Wed, Apr 03, 2019 at 10:49:07AM +1030, Joel Stanley wrote:
+> This describes the ASPEED BMC SoC's display controller.
 > 
-> Signed-off-by: Eddie James <eajames@linux.ibm.com>
+> Signed-off-by: Joel Stanley <joel@jms.id.au>
+> Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
 > ---
->  Documentation/devicetree/bindings/media/aspeed-video.txt | 6 ++++++
->  1 file changed, 6 insertions(+)
+> v3:
+>  Add Andrew's reviewed-by
 > 
+>  .../devicetree/bindings/gpu/aspeed-gfx.txt    | 41 +++++++++++++++++++
+>  1 file changed, 41 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/gpu/aspeed-gfx.txt
+> 
+> diff --git a/Documentation/devicetree/bindings/gpu/aspeed-gfx.txt b/Documentation/devicetree/bindings/gpu/aspeed-gfx.txt
+> new file mode 100644
+> index 000000000000..a74033332668
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/gpu/aspeed-gfx.txt
+> @@ -0,0 +1,41 @@
+> +Device tree configuration for the GFX display deivce on the AST2500 SoCs.
+> +
+> +Required properties:
+> +  - compatible
+> +    * Must be one of the following:
+> +      + aspeed,ast2500-gfx
+> +      + aspeed,ast2400-gfx
+> +    * In addition, the ASPEED pinctrl bindings require the 'syscon' property to
+> +      be present
+> +
+> +  - reg: Physical base address and length of the GFX registers
+> +
+> +  - interrupts: interrupt number for the GFX device
+> +
+> +  - clocks: clock number used to generate the pixel clock
+> +
+> +  - resets: reset line that must be released to use the GFX device
+> +
+> +  - memory-region:
+> +    Phandle to a memory region to allocate from, as defined in
+> +    Documentation/devicetree/bindings/reserved-memory/reserved-memory.txt
 
-Reviewed-by: Rob Herring <robh@kernel.org>
+If required, does that mean the h/w can only use certain memory? Why?
+
+> +
+> +
+> +Example:
+> +
+> +gfx: display at 1e6e6000 {
+> +	compatible = "aspeed,ast2500-gfx", "syscon";
+> +	reg = <0x1e6e6000 0x1000>;
+> +	reg-io-width = <4>;
+
+Not documented as used. This should be implied by the compatible though.
+
+> +	clocks = <&syscon ASPEED_CLK_GATE_D1CLK>;
+> +	resets = <&syscon ASPEED_RESET_CRT1>;
+> +	interrupts = <0x19>;
+> +	memory-region = <&gfx_memory>;
+> +};
+> +
+> +gfx_memory: framebuffer {
+> +	size = <0x01000000>;
+> +	alignment = <0x01000000>;
+> +	compatible = "shared-dma-pool";
+> +	reusable;
+> +};
+> -- 
+> 2.20.1
+> 
 
