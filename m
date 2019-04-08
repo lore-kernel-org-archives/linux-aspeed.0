@@ -1,10 +1,9 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Sun, 07 Apr 2019 21:23:28 -0400
-Subject: =?UTF-8?Q?Re:_[PATCH_v2]_ARM:_dts:_aspeed:_Add_Power9_and_Power9_CFAM_de?=
- =?UTF-8?Q?scription?=
-In-Reply-To: <20190405031416.10084-1-joel@jms.id.au>
-References: <20190405031416.10084-1-joel@jms.id.au>
-Message-ID: <43ac232f-d6a7-475b-ad41-ed7dc462ef86@www.fastmail.com>
+Date: Sun, 07 Apr 2019 22:03:16 -0400
+Subject: [PATCH v9 1/2] dt-bindings: misc: aspeed-p2a-ctrl: add support
+In-Reply-To: <20190404152544.214988-1-venture@google.com>
+References: <20190404152544.214988-1-venture@google.com>
+Message-ID: <8c412bc4-6528-4496-a912-f098604e707b@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -13,380 +12,115 @@ Content-Transfer-Encoding: 7bit
 
 
 
-On Fri, 5 Apr 2019, at 13:44, Joel Stanley wrote:
-> From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+On Fri, 5 Apr 2019, at 01:55, Patrick Venture wrote:
+> Document the ast2400, ast2500 PCI-to-AHB bridge control driver bindings.
 > 
-> To be used by the OpenPower BMC machines.
-> 
-> This provides proper chip IDs but also adds the various sub-devices
-> necessary for the future OCC driver among other. All the added nodes
-> comply with the existing upstream FSI bindings.
-> 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Signed-off-by: Joel Stanley <joel@jms.id.au>
+> Signed-off-by: Patrick Venture <venture@google.com>
+> Reviewed-by: Rob Herring <robh@kernel.org>
 > ---
-> v2: The first version of this used a bit more magic and was nak'd by
-> Olof. I've reworked it to not use macros. It still needs to be included
-> in the parent device tree after the fsi node is created.
+> Changes for v9:
+>  - Added missing details about syscon parent
+> Changes for v8:
+> - None
+> Changes for v7:
+> - Moved node under the syscon node it requires
+> Changes for v6:
+> - None
+> Changes for v5:
+> - None
+> Changes for v4:
+> - None
+> Changes for v3:
+> - None
+> Changes for v2:
+> - Added comment about syscon required parameter.
+> ---
+>  .../bindings/misc/aspeed-p2a-ctrl.txt         | 56 +++++++++++++++++++
+>  1 file changed, 56 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/misc/aspeed-p2a-ctrl.txt
 > 
->  arch/arm/boot/dts/aspeed-bmc-opp-lanyang.dts  |   2 +
->  arch/arm/boot/dts/aspeed-bmc-opp-palmetto.dts |  22 ++
->  arch/arm/boot/dts/aspeed-bmc-opp-romulus.dts  |   8 +
->  .../boot/dts/aspeed-bmc-opp-witherspoon.dts   |   2 +
->  arch/arm/boot/dts/aspeed-bmc-opp-zaius.dts    |   2 +
->  arch/arm/boot/dts/ibm-power9-dual.dtsi        | 248 ++++++++++++++++++
->  6 files changed, 284 insertions(+)
->  create mode 100644 arch/arm/boot/dts/ibm-power9-dual.dtsi
-> 
-> diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-lanyang.dts 
-> b/arch/arm/boot/dts/aspeed-bmc-opp-lanyang.dts
-> index 024e52a6cd0f..de95112e2a04 100644
-> --- a/arch/arm/boot/dts/aspeed-bmc-opp-lanyang.dts
-> +++ b/arch/arm/boot/dts/aspeed-bmc-opp-lanyang.dts
-> @@ -322,3 +322,5 @@
->  &adc {
->  	status = "okay";
->  };
-> +
-> +#include "ibm-power9-dual.dtsi"
-> diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-palmetto.dts 
-> b/arch/arm/boot/dts/aspeed-bmc-opp-palmetto.dts
-> index b249da80fb83..b0cb34ccb135 100644
-> --- a/arch/arm/boot/dts/aspeed-bmc-opp-palmetto.dts
-> +++ b/arch/arm/boot/dts/aspeed-bmc-opp-palmetto.dts
-> @@ -347,3 +347,25 @@
->  		line-name = "BMC_TPM_INT_N";
->  	};
->  };
-> +
-> +&fsi {
-> +	cfam at 0,0 {
-> +		reg = <0 0>;
-> +		#address-cells = <1>;
-> +		#size-cells = <1>;
-> +		chip-id = <0>;
-> +
-> +		scom at 1000 {
-> +			compatible = "ibm,fsi2pib";
-> +			reg = <0x1000 0x400>;
-> +		};
-> +
-> +		fsi_hub0: hub at 3400 {
-> +			compatible = "ibm,fsi-master-hub";
-> +			reg = <0x3400 0x400>;
-
-Maybe I'll learn something here: the workbook suggests the size is 0x1000,
-however, that would mean it's not naturally aligned, so that feels wrong.
-But where did 0x400 come from?
-
-> +			#address-cells = <2>;
-> +			#size-cells = <0>;
-> +			no-scan-on-init;
-> +		};
-> +	};
-> +};
-> diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-romulus.dts 
-> b/arch/arm/boot/dts/aspeed-bmc-opp-romulus.dts
-> index 76fe994f2ba4..5a6bbb3b6640 100644
-> --- a/arch/arm/boot/dts/aspeed-bmc-opp-romulus.dts
-> +++ b/arch/arm/boot/dts/aspeed-bmc-opp-romulus.dts
-> @@ -296,3 +296,11 @@
->  &adc {
->  	status = "okay";
->  };
-> +
-> +&gfx {
-> +     status = "okay";
-> +     memory-region = <&gfx_memory>;
-> +};
-
-Unrelated?
-
-Otherwise:
-
-Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
-
-> +
-> +#include "ibm-power9-dual.dtsi"
-> +
-> diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-witherspoon.dts 
-> b/arch/arm/boot/dts/aspeed-bmc-opp-witherspoon.dts
-> index ad54117c075e..a0a4a0c6bc2a 100644
-> --- a/arch/arm/boot/dts/aspeed-bmc-opp-witherspoon.dts
-> +++ b/arch/arm/boot/dts/aspeed-bmc-opp-witherspoon.dts
-> @@ -592,3 +592,5 @@
->  &adc {
->  	status = "okay";
->  };
-> +
-> +#include "ibm-power9-dual.dtsi"
-> diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-zaius.dts 
-> b/arch/arm/boot/dts/aspeed-bmc-opp-zaius.dts
-> index 2c5aa90a546d..05df11cacb21 100644
-> --- a/arch/arm/boot/dts/aspeed-bmc-opp-zaius.dts
-> +++ b/arch/arm/boot/dts/aspeed-bmc-opp-zaius.dts
-> @@ -435,3 +435,5 @@
->  &ibt {
->  	status = "okay";
->  };
-> +
-> +#include "ibm-power9-dual.dtsi"
-> diff --git a/arch/arm/boot/dts/ibm-power9-dual.dtsi 
-> b/arch/arm/boot/dts/ibm-power9-dual.dtsi
+> diff --git a/Documentation/devicetree/bindings/misc/aspeed-p2a-ctrl.txt 
+> b/Documentation/devicetree/bindings/misc/aspeed-p2a-ctrl.txt
 > new file mode 100644
-> index 000000000000..2abc42eda7b0
+> index 0000000000000..05ed654848b60
 > --- /dev/null
-> +++ b/arch/arm/boot/dts/ibm-power9-dual.dtsi
-> @@ -0,0 +1,248 @@
-> +// SPDX-License-Identifier: GPL-2.0+
-> +// Copyright 2018 IBM Corp
+> +++ b/Documentation/devicetree/bindings/misc/aspeed-p2a-ctrl.txt
+> @@ -0,0 +1,56 @@
+> +======================================================================
+> +Device tree bindings for Aspeed AST2400/AST2500 PCI-to-AHB Bridge 
+> Control Driver
+> +======================================================================
 > +
-> +&fsi {
-> +	cfam at 0,0 {
-> +		reg = <0 0>;
-> +		#address-cells = <1>;
-> +		#size-cells = <1>;
-> +		chip-id = <0>;
+> +The bridge is available on platforms with the VGA enabled on the 
+> Aspeed device.
+> +In this case, the host has access to a 64KiB window into all of the 
+> BMC's
+> +memory.  The BMC can disable this bridge.  If the bridge is enabled, 
+> the host
+> +has read access to all the regions of memory, however the host only 
+> has read
+> +and write access depending on a register controlled by the BMC.
 > +
-> +		scom at 1000 {
-> +			compatible = "ibm,fsi2pib";
-> +			reg = <0x1000 0x400>;
-> +		};
+> +Required properties:
+> +===================
 > +
-> +		i2c at 1800 {
-> +			compatible = "ibm,fsi-i2c-master";
-> +			reg = <0x1800 0x400>;
-> +			#address-cells = <1>;
-> +			#size-cells = <0>;
+> + - compatible: must be one of:
+> +	- "aspeed,ast2400-p2a-ctrl"
+> +	- "aspeed,ast2500-p2a-ctrl"
 > +
-> +			cfam0_i2c0: i2c-bus at 0 {
-> +				reg = <0>;
-> +			};
+> +Optional properties:
+> +===================
 > +
-> +			cfam0_i2c1: i2c-bus at 1 {
-> +				reg = <1>;
-> +			};
+> +- memory-region: A phandle to a reserved_memory region to be used for 
+> the PCI
+> +		to AHB mapping
 > +
-> +			cfam0_i2c2: i2c-bus at 2 {
-> +				reg = <2>;
-> +			};
+> +The p2a-control node should be the child of a syscon node with the 
+> required
+> +property:
 > +
-> +			cfam0_i2c3: i2c-bus at 3 {
-> +				reg = <3>;
-> +			};
+> +- compatible : Should be one of the following:
+> +		"aspeed,ast2400-scu", "syscon", "simple-mfd"
+> +		"aspeed,g4-scu", "syscon", "simple-mfd"
+> +		"aspeed,ast2500-scu", "syscon", "simple-mfd"
+> +		"aspeed,g5-scu", "syscon", "simple-mfd"
 > +
-> +			cfam0_i2c4: i2c-bus at 4 {
-> +				reg = <4>;
-> +			};
+> +The aspeed-p2a-ctrl node should be the child of a syscon node with the 
+> required
+> +property:
 > +
-> +			cfam0_i2c5: i2c-bus at 5 {
-> +				reg = <5>;
-> +			};
+> +- compatible : Should be one of the following:
+> +		"aspeed,ast2400-scu", "syscon", "simple-mfd"
+> +		"aspeed,g4-scu", "syscon", "simple-mfd"
+> +		"aspeed,ast2500-scu", "syscon", "simple-mfd"
+> +		"aspeed,g5-scu", "syscon", "simple-mfd"
+
+Agh, now the info's here twice!
+
+Next time, surely :D
+
+Unless Greg or Rob want to chop one out as they apply it? It looks good to
+me otherwise.
+
+Andrew
+
 > +
-> +			cfam0_i2c6: i2c-bus at 6 {
-> +				reg = <6>;
-> +			};
+> +Example
+> +===================
 > +
-> +			cfam0_i2c7: i2c-bus at 7 {
-> +				reg = <7>;
-> +			};
+> +g4 Example
+> +----------
 > +
-> +			cfam0_i2c8: i2c-bus at 8 {
-> +				reg = <8>;
-> +			};
+> +syscon: scu at 1e6e2000 {
+> +	compatible = "aspeed,ast2400-scu", "syscon", "simple-mfd";
+> +	reg = <0x1e6e2000 0x1a8>;
 > +
-> +			cfam0_i2c9: i2c-bus at 9 {
-> +				reg = <9>;
-> +			};
-> +
-> +			cfam0_i2c10: i2c-bus at a {
-> +				reg = <10>;
-> +			};
-> +
-> +			cfam0_i2c11: i2c-bus at b {
-> +				reg = <11>;
-> +			};
-> +
-> +			cfam0_i2c12: i2c-bus at c {
-> +				reg = <12>;
-> +			};
-> +
-> +			cfam0_i2c13: i2c-bus at d {
-> +				reg = <13>;
-> +			};
-> +
-> +			cfam0_i2c14: i2c-bus at e {
-> +				reg = <14>;
-> +			};
-> +		};
-> +
-> +		sbefifo at 2400 {
-> +			compatible = "ibm,p9-sbefifo";
-> +			reg = <0x2400 0x400>;
-> +			#address-cells = <1>;
-> +			#size-cells = <0>;
-> +
-> +			fsi_occ0: occ {
-> +				compatible = "ibm,p9-occ";
-> +			};
-> +		};
-> +
-> +		fsi_hub0: hub at 3400 {
-> +			compatible = "fsi-master-hub";
-> +			reg = <0x3400 0x400>;
-> +			#address-cells = <2>;
-> +			#size-cells = <0>;
-> +
-> +			no-scan-on-init;
-> +		};
-> +	};
-> +};
-> +
-> +&fsi_hub0 {
-> +	cfam at 1,0 {
-> +		reg = <1 0>;
-> +		#address-cells = <1>;
-> +		#size-cells = <1>;
-> +		chip-id = <1>;
-> +
-> +		scom at 1000 {
-> +			compatible = "ibm,fsi2pib";
-> +			reg = <0x1000 0x400>;
-> +		};
-> +
-> +		i2c at 1800 {
-> +			compatible = "ibm,fsi-i2c-master";
-> +			reg = <0x1800 0x400>;
-> +			#address-cells = <1>;
-> +			#size-cells = <0>;
-> +
-> +			cfam1_i2c0: i2c-bus at 0 {
-> +				reg = <0>;
-> +			};
-> +
-> +			cfam1_i2c1: i2c-bus at 1 {
-> +				reg = <1>;
-> +			};
-> +
-> +			cfam1_i2c2: i2c-bus at 2 {
-> +				reg = <2>;
-> +			};
-> +
-> +			cfam1_i2c3: i2c-bus at 3 {
-> +				reg = <3>;
-> +			};
-> +
-> +			cfam1_i2c4: i2c-bus at 4 {
-> +				reg = <4>;
-> +			};
-> +
-> +			cfam1_i2c5: i2c-bus at 5 {
-> +				reg = <5>;
-> +			};
-> +
-> +			cfam1_i2c6: i2c-bus at 6 {
-> +				reg = <6>;
-> +			};
-> +
-> +			cfam1_i2c7: i2c-bus at 7 {
-> +				reg = <7>;
-> +			};
-> +
-> +			cfam1_i2c8: i2c-bus at 8 {
-> +				reg = <8>;
-> +			};
-> +
-> +			cfam1_i2c9: i2c-bus at 9 {
-> +				reg = <9>;
-> +			};
-> +
-> +			cfam1_i2c10: i2c-bus at a {
-> +				reg = <10>;
-> +			};
-> +
-> +			cfam1_i2c11: i2c-bus at b {
-> +				reg = <11>;
-> +			};
-> +
-> +			cfam1_i2c12: i2c-bus at c {
-> +				reg = <12>;
-> +			};
-> +
-> +			cfam1_i2c13: i2c-bus at d {
-> +				reg = <13>;
-> +			};
-> +
-> +			cfam1_i2c14: i2c-bus at e {
-> +				reg = <14>;
-> +			};
-> +		};
-> +
-> +		sbefifo at 2400 {
-> +			compatible = "ibm,p9-sbefifo";
-> +			reg = <0x2400 0x400>;
-> +			#address-cells = <1>;
-> +			#size-cells = <0>;
-> +
-> +			fsi_occ1: occ {
-> +				compatible = "ibm,p9-occ";
-> +			};
-> +		};
-> +
-> +		fsi_hub1: hub at 3400 {
-> +			compatible = "fsi-master-hub";
-> +			reg = <0x3400 0x400>;
-> +			#address-cells = <2>;
-> +			#size-cells = <0>;
-> +
-> +			no-scan-on-init;
-> +		};
-> +	};
-> +};
-> +
-> +/* Legacy OCC numbering (to get rid of when userspace is fixed) */
-> +&fsi_occ0 {
-> +	reg = <1>;
-> +};
-> +
-> +&fsi_occ1 {
-> +	reg = <2>;
-> +};
-> +
-> +/ {
-> +	aliases {
-> +		i2c100 = &cfam0_i2c0;
-> +		i2c101 = &cfam0_i2c1;
-> +		i2c102 = &cfam0_i2c2;
-> +		i2c103 = &cfam0_i2c3;
-> +		i2c104 = &cfam0_i2c4;
-> +		i2c105 = &cfam0_i2c5;
-> +		i2c106 = &cfam0_i2c6;
-> +		i2c107 = &cfam0_i2c7;
-> +		i2c108 = &cfam0_i2c8;
-> +		i2c109 = &cfam0_i2c9;
-> +		i2c110 = &cfam0_i2c10;
-> +		i2c111 = &cfam0_i2c11;
-> +		i2c112 = &cfam0_i2c12;
-> +		i2c113 = &cfam0_i2c13;
-> +		i2c114 = &cfam0_i2c14;
-> +		i2c200 = &cfam1_i2c0;
-> +		i2c201 = &cfam1_i2c1;
-> +		i2c202 = &cfam1_i2c2;
-> +		i2c203 = &cfam1_i2c3;
-> +		i2c204 = &cfam1_i2c4;
-> +		i2c205 = &cfam1_i2c5;
-> +		i2c206 = &cfam1_i2c6;
-> +		i2c207 = &cfam1_i2c7;
-> +		i2c208 = &cfam1_i2c8;
-> +		i2c209 = &cfam1_i2c9;
-> +		i2c210 = &cfam1_i2c10;
-> +		i2c211 = &cfam1_i2c11;
-> +		i2c212 = &cfam1_i2c12;
-> +		i2c213 = &cfam1_i2c13;
-> +		i2c214 = &cfam1_i2c14;
+> +	p2a: p2a-control {
+> +		compatible = "aspeed,ast2400-p2a-ctrl";
+> +		memory-region = <&reserved_memory>;
 > +	};
 > +};
 > -- 
-> 2.20.1
+> 2.21.0.392.gf8f6787159e-goog
 > 
 >
