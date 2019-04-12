@@ -1,874 +1,245 @@
-From: Adriana Kobylak <anoo@linux.ibm.com>
-Date: Mon, 29 Apr 2019 16:08:48 -0500
-Subject: [PATCH dev-5.0 v3] ARM: dts: aspeed: Add Swift BMC machine
-In-Reply-To: <5bbc8649-5a38-fe38-9a97-9c4ec582b511@linux.ibm.com>
-References: <5bbc8649-5a38-fe38-9a97-9c4ec582b511@linux.ibm.com>
-Message-ID: <1556572128-20917-1-git-send-email-anoo@linux.ibm.com>
+From: Herrenschmidt, Benjamin <benh@amazon.com>
+Date: Fri, 12 Apr 2019 12:18:47 -0000
+Subject: [PATCH v2] media: platform: fix a kernel warning on clk control
+In-Reply-To: <09113211-ef61-2168-cf78-37c76f21edba@xs4all.nl>
+References: <20190329212710.5378-1-jae.hyun.yoo@linux.intel.com>
+ <09113211-ef61-2168-cf78-37c76f21edba@xs4all.nl>
+Message-ID: <9aa895a5184ddd30eb5750e4ec223fd5a5df4a54.camel@amazon.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Adriana Kobylak <anoo@us.ibm.com>
+On Fri, 2019-04-12 at 13:00 +0200, Hans Verkuil wrote:
+> Eddie, can you review this?
+> 
+> Jae Hyun Yoo, for future reference: please add the driver name in the
+> subject.
+> I.e. something like this: [PATCH v2] media: aspeed: fix a kernel
+> warning on clk control
+> 
+> That helps maintainers figuring out who should look at which patch.
 
-The Swift BMC is an ASPEED ast2500 based BMC that is part of
-a Power9 server. This adds the device tree description for
-most upstream components.
+test_bit/clear_bit/set_bit are atomic. The way they are used here is
+either a waste of cycles (there's already a lock) or racy. Not too sure
+:)
 
-Signed-off-by: Adriana Kobylak <anoo@us.ibm.com>
----
- arch/arm/boot/dts/Makefile                 |   1 +
- arch/arm/boot/dts/aspeed-bmc-opp-swift.dts | 828 +++++++++++++++++++++++++++++
- 2 files changed, 829 insertions(+)
- create mode 100644 arch/arm/boot/dts/aspeed-bmc-opp-swift.dts
+Cheers,
+Ben.
 
-diff --git a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
-index bd40148..b82a24d 100644
---- a/arch/arm/boot/dts/Makefile
-+++ b/arch/arm/boot/dts/Makefile
-@@ -1244,6 +1244,7 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
- 	aspeed-bmc-opp-lanyang.dtb \
- 	aspeed-bmc-opp-palmetto.dtb \
- 	aspeed-bmc-opp-romulus.dtb \
-+	aspeed-bmc-opp-swift.dtb \
- 	aspeed-bmc-opp-witherspoon.dtb \
- 	aspeed-bmc-opp-zaius.dtb \
- 	aspeed-bmc-portwell-neptune.dtb \
-diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-swift.dts b/arch/arm/boot/dts/aspeed-bmc-opp-swift.dts
-new file mode 100644
-index 0000000..8d44e3c
---- /dev/null
-+++ b/arch/arm/boot/dts/aspeed-bmc-opp-swift.dts
-@@ -0,0 +1,828 @@
-+// SPDX-License-Identifier: GPL-2.0+
-+/dts-v1/;
-+#include "aspeed-g5.dtsi"
-+#include <dt-bindings/gpio/aspeed-gpio.h>
-+#include <dt-bindings/leds/leds-pca955x.h>
-+
-+/ {
-+	model = "Swift BMC";
-+	compatible = "ibm,swift-bmc", "aspeed,ast2500";
-+
-+	chosen {
-+		stdout-path = &uart5;
-+		bootargs = "console=ttyS4,115200 earlyprintk";
-+	};
-+
-+	memory at 80000000 {
-+		reg = <0x80000000 0x20000000>;
-+	};
-+
-+	reserved-memory {
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		ranges;
-+
-+		flash_memory: region at 98000000 {
-+			no-map;
-+			reg = <0x98000000 0x04000000>; /* 64M */
-+		};
-+
-+		gfx_memory: framebuffer {
-+			size = <0x01000000>;
-+			alignment = <0x01000000>;
-+			compatible = "shared-dma-pool";
-+			reusable;
-+		};
-+	};
-+
-+	gpio-keys {
-+		compatible = "gpio-keys";
-+
-+		air-water {
-+			label = "air-water";
-+			gpios = <&gpio ASPEED_GPIO(B, 5) GPIO_ACTIVE_LOW>;
-+			linux,code = <ASPEED_GPIO(B, 5)>;
-+		};
-+
-+		checkstop {
-+			label = "checkstop";
-+			gpios = <&gpio ASPEED_GPIO(J, 2) GPIO_ACTIVE_LOW>;
-+			linux,code = <ASPEED_GPIO(J, 2)>;
-+		};
-+
-+		ps0-presence {
-+			label = "ps0-presence";
-+			gpios = <&gpio ASPEED_GPIO(R, 7) GPIO_ACTIVE_LOW>;
-+			linux,code = <ASPEED_GPIO(R, 7)>;
-+		};
-+
-+		ps1-presence {
-+			label = "ps1-presence";
-+			gpios = <&gpio ASPEED_GPIO(N, 0) GPIO_ACTIVE_LOW>;
-+			linux,code = <ASPEED_GPIO(N, 0)>;
-+		};
-+
-+		oppanel-presence {
-+			label = "oppanel-presence";
-+			gpios = <&gpio ASPEED_GPIO(A, 7) GPIO_ACTIVE_LOW>;
-+			linux,code = <ASPEED_GPIO(A, 7)>;
-+		};
-+
-+		opencapi-riser-presence {
-+			label = "opencapi-riser-presence";
-+			gpios = <&gpio ASPEED_GPIO(I, 0) GPIO_ACTIVE_LOW>;
-+			linux,code = <ASPEED_GPIO(I, 0)>;
-+		};
-+	};
-+
-+	iio-hwmon-battery {
-+		compatible = "iio-hwmon";
-+		io-channels = <&adc 12>;
-+	};
-+
-+	gpio-keys-polled {
-+		compatible = "gpio-keys-polled";
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+		poll-interval = <1000>;
-+
-+		scm0-presence {
-+			label = "scm0-presence";
-+			gpios = <&pca9552 6 GPIO_ACTIVE_LOW>;
-+			linux,code = <6>;
-+		};
-+
-+		scm1-presence {
-+			label = "scm1-presence";
-+			gpios = <&pca9552 7 GPIO_ACTIVE_LOW>;
-+			linux,code = <7>;
-+		};
-+
-+		cpu0vrm-presence {
-+			label = "cpu0vrm-presence";
-+			gpios = <&pca9552 12 GPIO_ACTIVE_LOW>;
-+			linux,code = <12>;
-+		};
-+
-+		cpu1vrm-presence {
-+			label = "cpu1vrm-presence";
-+			gpios = <&pca9552 13 GPIO_ACTIVE_LOW>;
-+			linux,code = <13>;
-+		};
-+
-+		fan0-presence {
-+			label = "fan0-presence";
-+			gpios = <&pca0 5 GPIO_ACTIVE_LOW>;
-+			linux,code = <5>;
-+		};
-+
-+		fan1-presence {
-+			label = "fan1-presence";
-+			gpios = <&pca0 6 GPIO_ACTIVE_LOW>;
-+			linux,code = <6>;
-+		};
-+
-+		fan2-presence {
-+			label = "fan2-presence";
-+			gpios = <&pca0 7 GPIO_ACTIVE_LOW>;
-+			linux,code = <7>;
-+		};
-+
-+		fan3-presence {
-+			label = "fan3-presence";
-+			gpios = <&pca0 8 GPIO_ACTIVE_LOW>;
-+			linux,code = <8>;
-+		};
-+
-+		fanboost-presence {
-+			label = "fanboost-presence";
-+			gpios = <&pca0 9 GPIO_ACTIVE_LOW>;
-+			linux,code = <9>;
-+		};
-+	};
-+
-+	leds {
-+		compatible = "gpio-leds";
-+
-+		fan0 {
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			gpios = <&pca0 0 GPIO_ACTIVE_LOW>;
-+		};
-+
-+		fan1 {
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			gpios = <&pca0 1 GPIO_ACTIVE_LOW>;
-+		};
-+
-+		fan2 {
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			gpios = <&pca0 2 GPIO_ACTIVE_LOW>;
-+		};
-+
-+		fan3 {
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			gpios = <&pca0 3 GPIO_ACTIVE_LOW>;
-+		};
-+
-+		fanboost {
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			gpios = <&pca0 4 GPIO_ACTIVE_LOW>;
-+		};
-+
-+		front-fault {
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			gpios = <&pca1 2 GPIO_ACTIVE_LOW>;
-+		};
-+
-+		front-power {
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			gpios = <&pca1 3 GPIO_ACTIVE_LOW>;
-+		};
-+
-+		front-id {
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			gpios = <&pca1 0 GPIO_ACTIVE_LOW>;
-+		};
-+
-+		rear-fault {
-+			gpios = <&gpio ASPEED_GPIO(N, 2) GPIO_ACTIVE_LOW>;
-+		};
-+
-+		rear-id {
-+			gpios = <&gpio ASPEED_GPIO(N, 4) GPIO_ACTIVE_LOW>;
-+		};
-+
-+		rear-power {
-+			gpios = <&gpio ASPEED_GPIO(N, 3) GPIO_ACTIVE_LOW>;
-+		};
-+	};
-+
-+	fsi: gpio-fsi {
-+		compatible = "fsi-master-gpio", "fsi-master";
-+		#address-cells = <2>;
-+		#size-cells = <0>;
-+		no-gpio-delays;
-+
-+		clock-gpios = <&gpio ASPEED_GPIO(AA, 0) GPIO_ACTIVE_HIGH>;
-+		data-gpios = <&gpio ASPEED_GPIO(E, 0) GPIO_ACTIVE_HIGH>;
-+		mux-gpios = <&gpio ASPEED_GPIO(P, 4) GPIO_ACTIVE_HIGH>;
-+		enable-gpios = <&gpio ASPEED_GPIO(P, 0) GPIO_ACTIVE_HIGH>;
-+		trans-gpios = <&gpio ASPEED_GPIO(P, 3) GPIO_ACTIVE_HIGH>;
-+	};
-+
-+	iio-hwmon-dps310 {
-+		compatible = "iio-hwmon";
-+		io-channels = <&dps 0>;
-+	};
-+
-+};
-+
-+&fmc {
-+	status = "okay";
-+
-+	flash at 0 {
-+		status = "okay";
-+		label = "bmc";
-+		m25p,fast-read;
-+		spi-max-frequency = <100000000>;
-+		partitions {
-+			#address-cells = < 1 >;
-+			#size-cells = < 1 >;
-+			compatible = "fixed-partitions";
-+			u-boot at 0 {
-+				reg = < 0 0x60000 >;
-+				label = "u-boot";
-+			};
-+			u-boot-env at 60000 {
-+				reg = < 0x60000 0x20000 >;
-+				label = "u-boot-env";
-+			};
-+			obmc-ubi at 80000 {
-+				reg = < 0x80000 0x7F80000>;
-+				label = "obmc-ubi";
-+			};
-+		};
-+	};
-+
-+	flash at 1 {
-+		status = "okay";
-+		label = "alt-bmc";
-+		m25p,fast-read;
-+		spi-max-frequency = <100000000>;
-+		partitions {
-+			#address-cells = < 1 >;
-+			#size-cells = < 1 >;
-+			compatible = "fixed-partitions";
-+			u-boot at 0 {
-+				reg = < 0 0x60000 >;
-+				label = "alt-u-boot";
-+			};
-+			u-boot-env at 60000 {
-+				reg = < 0x60000 0x20000 >;
-+				label = "alt-u-boot-env";
-+			};
-+			obmc-ubi at 80000 {
-+				reg = < 0x80000 0x7F80000>;
-+				label = "alt-obmc-ubi";
-+			};
-+		};
-+	};
-+};
-+
-+&spi1 {
-+	status = "okay";
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pinctrl_spi1_default>;
-+
-+	flash at 0 {
-+		status = "okay";
-+		label = "pnor";
-+		m25p,fast-read;
-+		spi-max-frequency = <100000000>;
-+	};
-+};
-+
-+&uart1 {
-+	/* Rear RS-232 connector */
-+	status = "okay";
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pinctrl_txd1_default
-+			&pinctrl_rxd1_default
-+			&pinctrl_nrts1_default
-+			&pinctrl_ndtr1_default
-+			&pinctrl_ndsr1_default
-+			&pinctrl_ncts1_default
-+			&pinctrl_ndcd1_default
-+			&pinctrl_nri1_default>;
-+};
-+
-+&uart2 {
-+	/* APSS */
-+	status = "okay";
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pinctrl_txd2_default &pinctrl_rxd2_default>;
-+};
-+
-+&uart5 {
-+	status = "okay";
-+};
-+
-+&lpc_ctrl {
-+	status = "okay";
-+	memory-region = <&flash_memory>;
-+	flash = <&spi1>;
-+};
-+
-+&mbox {
-+	status = "okay";
-+};
-+
-+&mac0 {
-+	status = "okay";
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pinctrl_rmii1_default>;
-+	use-ncsi;
-+};
-+
-+&i2c2 {
-+	status = "okay";
-+
-+	/* MUX ->
-+	 *    Samtec 1
-+	 *    Samtec 2
-+	 */
-+};
-+
-+&i2c3 {
-+	status = "okay";
-+
-+	max31785 at 52 {
-+		compatible = "maxim,max31785a";
-+		reg = <0x52>;
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		fan at 0 {
-+			compatible = "pmbus-fan";
-+			reg = <0>;
-+			tach-pulses = <2>;
-+			maxim,fan-rotor-input = "tach";
-+			maxim,fan-pwm-freq = <25000>;
-+			maxim,fan-no-watchdog;
-+			maxim,fan-no-fault-ramp;
-+			maxim,fan-ramp = <2>;
-+			maxim,fan-fault-pin-mon;
-+		};
-+
-+		fan at 1 {
-+			compatible = "pmbus-fan";
-+			reg = <1>;
-+			tach-pulses = <2>;
-+			maxim,fan-rotor-input = "tach";
-+			maxim,fan-pwm-freq = <25000>;
-+			maxim,fan-no-watchdog;
-+			maxim,fan-no-fault-ramp;
-+			maxim,fan-ramp = <2>;
-+			maxim,fan-fault-pin-mon;
-+		};
-+
-+		fan at 2 {
-+			compatible = "pmbus-fan";
-+			reg = <2>;
-+			tach-pulses = <2>;
-+			maxim,fan-rotor-input = "tach";
-+			maxim,fan-pwm-freq = <25000>;
-+			maxim,fan-no-watchdog;
-+			maxim,fan-no-fault-ramp;
-+			maxim,fan-ramp = <2>;
-+			maxim,fan-fault-pin-mon;
-+		};
-+
-+		fan at 3 {
-+			compatible = "pmbus-fan";
-+			reg = <3>;
-+			tach-pulses = <2>;
-+			maxim,fan-rotor-input = "tach";
-+			maxim,fan-pwm-freq = <25000>;
-+			maxim,fan-no-watchdog;
-+			maxim,fan-no-fault-ramp;
-+			maxim,fan-ramp = <2>;
-+			maxim,fan-fault-pin-mon;
-+		};
-+
-+		fan at 4 {
-+			compatible = "pmbus-fan";
-+			reg = <4>;
-+			tach-pulses = <2>;
-+			maxim,fan-rotor-input = "tach";
-+			maxim,fan-pwm-freq = <25000>;
-+			maxim,fan-no-watchdog;
-+			maxim,fan-no-fault-ramp;
-+			maxim,fan-ramp = <2>;
-+			maxim,fan-fault-pin-mon;
-+		};
-+	};
-+
-+	pca0: pca9552 at 60 {
-+		compatible = "nxp,pca9552";
-+		reg = <0x60>;
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+
-+		gpio at 0 {
-+			reg = <0>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 1 {
-+			reg = <1>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 2 {
-+			reg = <2>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 3 {
-+			reg = <3>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 4 {
-+			reg = <4>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 5 {
-+			reg = <5>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 6 {
-+			reg = <6>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 7 {
-+			reg = <7>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 8 {
-+			reg = <8>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 9 {
-+			reg = <9>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 10 {
-+			reg = <10>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 11 {
-+			reg = <11>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 12 {
-+			reg = <12>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 13 {
-+			reg = <13>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 14 {
-+			reg = <14>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 15 {
-+			reg = <15>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+	};
-+
-+	power-supply at 68 {
-+		compatible = "ibm,cffps1";
-+		reg = <0x68>;
-+	};
-+
-+	eeprom at 50 {
-+		compatible = "atmel,24c64";
-+		reg = <0x50>;
-+	};
-+
-+	power-supply at 69 {
-+		compatible = "ibm,cffps1";
-+		reg = <0x69>;
-+	};
-+
-+	eeprom at 51 {
-+		compatible = "atmel,24c64";
-+		reg = <0x51>;
-+	};
-+};
-+
-+&i2c7 {
-+	status = "okay";
-+
-+	dps: dps310 at 76 {
-+		compatible = "infineon,dps310";
-+		reg = <0x76>;
-+		#io-channel-cells = <0>;
-+	};
-+
-+	tmp275 at 48 {
-+		compatible = "ti,tmp275";
-+		reg = <0x48>;
-+	};
-+
-+	si7021a20 at 20 {
-+		compatible = "si,si7021a20";
-+		reg = <0x20>;
-+	};
-+
-+	eeprom at 50 {
-+		compatible = "atmel,24c64";
-+		reg = <0x50>;
-+	};
-+
-+	pca1: pca9551 at 60 {
-+		compatible = "nxp,pca9551";
-+		reg = <0x60>;
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+
-+		gpio at 0 {
-+			reg = <0>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 1 {
-+			reg = <1>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 2 {
-+			reg = <2>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 3 {
-+			reg = <3>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 4 {
-+			reg = <4>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 5 {
-+			reg = <5>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 6 {
-+			reg = <6>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 7 {
-+			reg = <7>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+	};
-+};
-+
-+&i2c8 {
-+	status = "okay";
-+
-+	pca9552: pca9552 at 60 {
-+		compatible = "nxp,pca9552";
-+		reg = <0x60>;
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+
-+		gpio-line-names = "PS_SMBUS_RESET_N", "APSS_RESET_N",
-+			"GPU0_TH_OVERT_N_BUFF",	"GPU1_TH_OVERT_N_BUFF",
-+			"GPU2_TH_OVERT_N_BUFF", "GPU3_TH_OVERT_N_BUFF",
-+			"P9_SCM0_PRES",	"P9_SCM1_PRES",
-+			"GPU0_PWR_GOOD_BUFF", "GPU1_PWR_GOOD_BUFF",
-+			"GPU2_PWR_GOOD_BUFF", "GPU3_PWR_GOOD_BUFF",
-+			"PRESENT_VRM_CP0_N", "PRESENT_VRM_CP1_N",
-+			"12V_BREAKER_FLT_N", "THROTTLE_UNLATCHED_N";
-+
-+		gpio at 0 {
-+			reg = <0>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 1 {
-+			reg = <1>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 2 {
-+			reg = <2>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 3 {
-+			reg = <3>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 4 {
-+			reg = <4>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 5 {
-+			reg = <5>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 6 {
-+			reg = <6>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 7 {
-+			reg = <7>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 8 {
-+			reg = <8>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 9 {
-+			reg = <9>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 10 {
-+			reg = <10>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 11 {
-+			reg = <11>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 12 {
-+			reg = <12>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 13 {
-+			reg = <13>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 14 {
-+			reg = <14>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 15 {
-+			reg = <15>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+	};
-+
-+	rtc at 32 {
-+		compatible = "epson,rx8900";
-+		reg = <0x32>;
-+	};
-+
-+	eeprom at 51 {
-+		compatible = "atmel,24c64";
-+		reg = <0x51>;
-+	};
-+
-+	ucd90160 at 64 {
-+		compatible = "ti,ucd90160";
-+		reg = <0x64>;
-+	};
-+};
-+
-+&i2c9 {
-+	status = "okay";
-+
-+	eeprom at 50 {
-+		compatible = "atmel,24c64";
-+		reg = <0x50>;
-+	};
-+
-+	tmp423a at 4c {
-+		compatible = "ti,tmp423";
-+		reg = <0x4c>;
-+	};
-+
-+	ir35221 at 71 {
-+		compatible = "infineon,ir35221";
-+		reg = <0x71>;
-+	};
-+
-+	ir35221 at 72 {
-+		compatible = "infineon,ir35221";
-+		reg = <0x72>;
-+	};
-+};
-+
-+&i2c10 {
-+	status = "okay";
-+
-+	eeprom at 50 {
-+		compatible = "atmel,24c64";
-+		reg = <0x50>;
-+	};
-+
-+	tmp423a at 4c {
-+		compatible = "ti,tmp423";
-+		reg = <0x4c>;
-+	};
-+
-+	ir35221 at 71 {
-+		compatible = "infineon,ir35221";
-+		reg = <0x71>;
-+	};
-+
-+	ir35221 at 72 {
-+		compatible = "infineon,ir35221";
-+		reg = <0x72>;
-+	};
-+};
-+
-+&i2c11 {
-+	/* MUX
-+	 *   -> PCIe Slot 0
-+	 *   -> PCIe Slot 1
-+	 *   -> PCIe Slot 2
-+	 *   -> PCIe Slot 3
-+	 */
-+	status = "okay";
-+};
-+
-+&i2c12 {
-+	status = "okay";
-+
-+	tmp275 at 48 {
-+		compatible = "ti,tmp275";
-+		reg = <0x48>;
-+	};
-+
-+	tmp275 at 4a {
-+		compatible = "ti,tmp275";
-+		reg = <0x4a>;
-+	};
-+};
-+
-+&i2c13 {
-+	status = "okay";
-+};
-+
-+&vuart {
-+	status = "okay";
-+};
-+
-+&gfx {
-+	status = "okay";
-+	memory-region = <&gfx_memory>;
-+};
-+
-+&pinctrl {
-+	aspeed,external-nodes = <&gfx &lhc>;
-+};
-+
-+&wdt1 {
-+	aspeed,reset-type = "none";
-+	aspeed,external-signal;
-+	aspeed,ext-push-pull;
-+	aspeed,ext-active-high;
-+
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pinctrl_wdtrst1_default>;
-+};
-+
-+&wdt2 {
-+	aspeed,alt-boot;
-+};
-+
-+&ibt {
-+	status = "okay";
-+};
-+
-+&adc {
-+	status = "okay";
-+};
-+
-+#include "ibm-power9-dual.dtsi"
--- 
-1.8.3.1
-
+> Regards,
+> 
+> 	Hans
+> 
+> On 3/29/19 10:27 PM, Jae Hyun Yoo wrote:
+> > video_on and video_off functions in the Aspeed video engine driver
+> > are
+> > being called from multiple contexts without any protection so video
+> > clocks
+> > can be disabled twice and eventually it causes a kernel warning
+> > with stack
+> > dump printing out like below:
+> > 
+> > [  120.034729] WARNING: CPU: 0 PID: 1334 at drivers/clk/clk.c:684
+> > clk_core_unprepare+0x13c/0x170
+> > [  120.043252] eclk-gate already unprepared
+> > [  120.047283] CPU: 0 PID: 1334 Comm: obmc-ikvm Tainted:
+> > G        W         5.0.3-b94b74e8b52db91fe4e99e0bb481ec8bf2b5b47c
+> > #1
+> > [  120.058417] Hardware name: Generic DT based system
+> > [  120.063219] Backtrace:
+> > [  120.065787] [<80107cdc>] (dump_backtrace) from [<80107f10>]
+> > (show_stack+0x20/0x24)
+> > [  120.073371]  r7:803a4ff0 r6:00000009 r5:00000000 r4:96197e1c
+> > [  120.079152] [<80107ef0>] (show_stack) from [<8068f7d8>]
+> > (dump_stack+0x20/0x28)
+> > [  120.086479] [<8068f7b8>] (dump_stack) from [<8011604c>]
+> > (__warn.part.3+0xb4/0xdc)
+> > [  120.094068] [<80115f98>] (__warn.part.3) from [<801160e0>]
+> > (warn_slowpath_fmt+0x6c/0x90)
+> > [  120.102164]  r6:000002ac r5:8080c0b8 r4:80a07008
+> > [  120.106893] [<80116078>] (warn_slowpath_fmt) from [<803a4ff0>]
+> > (clk_core_unprepare+0x13c/0x170)
+> > [  120.115686]  r3:8080cf8c r2:8080c17c
+> > [  120.119276]  r7:97d68e58 r6:9df23200 r5:9668c260 r4:96459260
+> > [  120.125046] [<803a4eb4>] (clk_core_unprepare) from [<803a707c>]
+> > (clk_unprepare+0x34/0x3c)
+> > [  120.133226]  r5:9668c260 r4:96459260
+> > [  120.136932] [<803a7048>] (clk_unprepare) from [<804f34bc>]
+> > (aspeed_video_off+0x44/0x48)
+> > [  120.145031]  r5:9668c260 r4:9668cbc0
+> > [  120.148647] [<804f3478>] (aspeed_video_off) from [<804f3fd0>]
+> > (aspeed_video_release+0x94/0x118)
+> > [  120.157435]  r5:966a0cb8 r4:966a0800
+> > [  120.161049] [<804f3f3c>] (aspeed_video_release) from
+> > [<804d2c58>] (v4l2_release+0xd4/0xe8)
+> > [  120.169404]  r7:97d68e58 r6:9d087810 r5:9df23200 r4:966a0b20
+> > [  120.175168] [<804d2b84>] (v4l2_release) from [<80236224>]
+> > (__fput+0x98/0x1c4)
+> > [  120.182316]  r5:96698e78 r4:9df23200
+> > [  120.185994] [<8023618c>] (__fput) from [<802363b8>]
+> > (____fput+0x18/0x1c)
+> > [  120.192712]  r9:80a0700c r8:801011e4 r7:00000000 r6:80a64bbc
+> > r5:961dd560 r4:961dd89c
+> > [  120.200562] [<802363a0>] (____fput) from [<80131c08>]
+> > (task_work_run+0x7c/0xa4)
+> > [  120.207994] [<80131b8c>] (task_work_run) from [<80106884>]
+> > (do_work_pending+0x4a8/0x578)
+> > [  120.216163]  r7:801011e4 r6:80a07008 r5:96197fb0 r4:ffffe000
+> > [  120.221856] [<801063dc>] (do_work_pending) from [<8010106c>]
+> > (slow_work_pending+0xc/0x20)
+> > [  120.230116] Exception stack(0x96197fb0 to 0x96197ff8)
+> > [  120.235254] 7fa0:                                     00000000
+> > 76ccf094 00000000 00000000
+> > [  120.243438] 7fc0: 00000008 00a11978 7eab3c30 00000006 00000000
+> > 00000000 475b0fa4 00000000
+> > [  120.251692] 7fe0: 00000002 7eab3a40 00000000 47720e38 80000010
+> > 00000008
+> > [  120.258396]  r10:00000000 r9:96196000 r8:801011e4 r7:00000006
+> > r6:7eab3c30 r5:00a11978
+> > [  120.266291]  r4:00000008
+> > 
+> > To prevent this issue, this commit adds spinlock protection and
+> > clock
+> > status checking logic into the Aspeed video engine driver.
+> > 
+> > Fixes: d2b4387f3bdf ("media: platform: Add Aspeed Video Engine
+> > driver")
+> > Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+> > Cc: Eddie James <eajames@linux.ibm.com>
+> > Cc: Mauro Carvalho Chehab <mchehab@kernel.org>
+> > Cc: Joel Stanley <joel@jms.id.au>
+> > Cc: Andrew Jeffery <andrew@aj.id.au>
+> > ---
+> >  drivers/media/platform/aspeed-video.c | 32
+> > ++++++++++++++++++++++++---
+> >  1 file changed, 29 insertions(+), 3 deletions(-)
+> > 
+> > diff --git a/drivers/media/platform/aspeed-video.c
+> > b/drivers/media/platform/aspeed-video.c
+> > index 692e08ef38c0..744d22ecc620 100644
+> > --- a/drivers/media/platform/aspeed-video.c
+> > +++ b/drivers/media/platform/aspeed-video.c
+> > @@ -188,6 +188,7 @@ enum {
+> >  	VIDEO_STREAMING,
+> >  	VIDEO_FRAME_INPRG,
+> >  	VIDEO_STOPPED,
+> > +	VIDEO_CLOCKS_ON,
+> >  };
+> >  
+> >  struct aspeed_video_addr {
+> > @@ -495,20 +496,30 @@ static void aspeed_video_reset(struct
+> > aspeed_video *video)
+> >  
+> >  static void aspeed_video_off(struct aspeed_video *video)
+> >  {
+> > +	if (!test_bit(VIDEO_CLOCKS_ON, &video->flags))
+> > +		return;
+> > +
+> >  	aspeed_video_reset(video);
+> >  
+> >  	/* Turn off the relevant clocks */
+> >  	clk_disable_unprepare(video->vclk);
+> >  	clk_disable_unprepare(video->eclk);
+> > +
+> > +	clear_bit(VIDEO_CLOCKS_ON, &video->flags);
+> >  }
+> >  
+> >  static void aspeed_video_on(struct aspeed_video *video)
+> >  {
+> > +	if (test_bit(VIDEO_CLOCKS_ON, &video->flags))
+> > +		return;
+> > +
+> >  	/* Turn on the relevant clocks */
+> >  	clk_prepare_enable(video->eclk);
+> >  	clk_prepare_enable(video->vclk);
+> >  
+> >  	aspeed_video_reset(video);
+> > +
+> > +	set_bit(VIDEO_CLOCKS_ON, &video->flags);
+> >  }
+> >  
+> >  static void aspeed_video_bufs_done(struct aspeed_video *video,
+> > @@ -526,12 +537,14 @@ static void aspeed_video_bufs_done(struct
+> > aspeed_video *video,
+> >  
+> >  static void aspeed_video_irq_res_change(struct aspeed_video
+> > *video)
+> >  {
+> > +	spin_lock(&video->lock);
+> >  	dev_dbg(video->dev, "Resolution changed; resetting\n");
+> >  
+> >  	set_bit(VIDEO_RES_CHANGE, &video->flags);
+> >  	clear_bit(VIDEO_FRAME_INPRG, &video->flags);
+> >  
+> >  	aspeed_video_off(video);
+> > +	spin_unlock(&video->lock);
+> >  	aspeed_video_bufs_done(video, VB2_BUF_STATE_ERROR);
+> >  
+> >  	schedule_delayed_work(&video->res_work,
+> > RESOLUTION_CHANGE_DELAY);
+> > @@ -951,9 +964,13 @@ static void aspeed_video_init_regs(struct
+> > aspeed_video *video)
+> >  
+> >  static void aspeed_video_start(struct aspeed_video *video)
+> >  {
+> > +	unsigned long flags;
+> > +
+> > +	spin_lock_irqsave(&video->lock, flags);
+> >  	aspeed_video_on(video);
+> >  
+> >  	aspeed_video_init_regs(video);
+> > +	spin_unlock_irqrestore(&video->lock, flags);
+> >  
+> >  	/* Resolution set to 640x480 if no signal found */
+> >  	aspeed_video_get_resolution(video);
+> > @@ -969,6 +986,9 @@ static void aspeed_video_start(struct
+> > aspeed_video *video)
+> >  
+> >  static void aspeed_video_stop(struct aspeed_video *video)
+> >  {
+> > +	unsigned long flags;
+> > +
+> > +	spin_lock_irqsave(&video->lock, flags);
+> >  	set_bit(VIDEO_STOPPED, &video->flags);
+> >  	cancel_delayed_work_sync(&video->res_work);
+> >  
+> > @@ -982,6 +1002,7 @@ static void aspeed_video_stop(struct
+> > aspeed_video *video)
+> >  
+> >  	video->v4l2_input_status = V4L2_IN_ST_NO_SIGNAL;
+> >  	video->flags = 0;
+> > +	spin_unlock_irqrestore(&video->lock, flags);
+> >  }
+> >  
+> >  static int aspeed_video_querycap(struct file *file, void *fh,
+> > @@ -1319,16 +1340,21 @@ static void
+> > aspeed_video_resolution_work(struct work_struct *work)
+> >  	struct delayed_work *dwork = to_delayed_work(work);
+> >  	struct aspeed_video *video = container_of(dwork, struct
+> > aspeed_video,
+> >  						  res_work);
+> > -	u32 input_status = video->v4l2_input_status;
+> > +	unsigned long flags;
+> > +	u32 input_status;
+> >  
+> > +	spin_lock_irqsave(&video->lock, flags);
+> > +	input_status = video->v4l2_input_status;
+> >  	aspeed_video_on(video);
+> >  
+> >  	/* Exit early in case no clients remain */
+> > -	if (test_bit(VIDEO_STOPPED, &video->flags))
+> > +	if (test_bit(VIDEO_STOPPED, &video->flags)) {
+> > +		spin_unlock_irqrestore(&video->lock, flags);
+> >  		goto done;
+> > +	}
+> >  
+> >  	aspeed_video_init_regs(video);
+> > -
+> > +	spin_unlock_irqrestore(&video->lock, flags);
+> >  	aspeed_video_get_resolution(video);
+> >  
+> >  	if (video->detected_timings.width != video-
+> > >active_timings.width ||
+> > 
