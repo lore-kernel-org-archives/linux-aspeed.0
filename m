@@ -1,47 +1,33 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Date: Fri, 12 Apr 2019 09:12:52 -0700
-Subject: [PATCH v2 00/21] Convert hwmon documentation to ReST
-In-Reply-To: <20190412100451.6fe49de7@lwn.net>
-References: <cover.1554923967.git.mchehab+samsung@kernel.org>
- <20190411124324.3ed62fad@lwn.net> <20190411174357.251904f5@coco.lan>
- <20190411210731.GA29378@roeck-us.net> <20190412100451.6fe49de7@lwn.net>
-Message-ID: <8514ff97-3167-3c89-3468-e247d14c5086@roeck-us.net>
+From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+Date: Fri, 12 Apr 2019 09:13:46 -0700
+Subject: [PATCH v2] media: platform: fix a kernel warning on clk control
+In-Reply-To: <09113211-ef61-2168-cf78-37c76f21edba@xs4all.nl>
+References: <20190329212710.5378-1-jae.hyun.yoo@linux.intel.com>
+ <09113211-ef61-2168-cf78-37c76f21edba@xs4all.nl>
+Message-ID: <e921f245-5a8b-58ce-411f-f4142aeb67c1@linux.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 4/12/19 9:04 AM, Jonathan Corbet wrote:
-> On Thu, 11 Apr 2019 14:07:31 -0700
-> Guenter Roeck <linux@roeck-us.net> wrote:
+On 4/12/2019 4:00 AM, Hans Verkuil wrote:
+> Eddie, can you review this?
 > 
->>> While nobody does such split, IMHO, the best would be to keep the
->>> information outside Documentation/admin-guide. But hey! You're
->>> the Doc maintainer. If you prefer to move, I'm perfectly fine
->>> with that.
->>>    
->>
->> Same here, but please don't move the files which are kernel facing only.
+> Jae Hyun Yoo, for future reference: please add the driver name in the subject.
+> I.e. something like this: [PATCH v2] media: aspeed: fix a kernel warning on clk control
 > 
-> Well, let's step back and think about this.  Who is the audience for
-> these documents?  That will tell us a lot about where they should really
-> be.
-> 
+> That helps maintainers figuring out who should look at which patch.
 
-Most of them are for users, some of them are for driver developers. A few
-are for both, though that is generally not the intention (and one may argue
-that driver internal documentation should be moved into the respective
-driver source).
+Hi Hans,
 
-> What I would prefer to avoid is the status quo where *everything* is in
-> the top-level directory, and where documents are organized for the
-> convenience of their maintainers rather than of their readers.  But
-> sometimes I feel like I'm alone in that desire...:)
+I see. I'll change the subject like you suggested. Thanks for your
+comments.
+
+Regards,
+
+Jae
+
+> Regards,
 > 
-I am fine with separating user pointing from kernel API/driver developer
-guides, and I agree that it would make a lot of sense. As I said, please
-just make sure that kernel facing files don't end up in the wrong directory.
-
-Thanks,
-Guenter
+> 	Hans
