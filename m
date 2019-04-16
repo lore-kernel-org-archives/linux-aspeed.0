@@ -1,9 +1,10 @@
 From: Patrick Venture <venture@google.com>
-Date: Tue, 16 Apr 2019 09:21:50 -0700
-Subject: [PATCH 2/3] ARM: dts: aspeed: zaius: update 12V brick I2C address
+Date: Tue, 16 Apr 2019 09:21:51 -0700
+Subject: [PATCH 3/3] ARM: dts: aspeed: zaius: fixed I2C bus numbers for pcie
+ slots
 In-Reply-To: <20190416162150.150154-1-venture@google.com>
 References: <20190416162150.150154-1-venture@google.com>
-Message-ID: <20190416162150.150154-3-venture@google.com>
+Message-ID: <20190416162150.150154-4-venture@google.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -12,53 +13,84 @@ Content-Transfer-Encoding: 7bit
 
 From: Robert Lippert <rlippert@google.com>
 
-The I2C address of the brick is different depending on the board SKU.
+The change to include ibm-power9-cfam.dtsi resulted in a renumbering
+of all of the I2C bus numbers behind the on-board muxes.  This breaks
+some tools which have hardcoded the bus numbers.
 
-Update the values to instantiate addresses which work for most boards.
+Add device tree aliases for the I2C buses routed through the PCIe slots
+so that they return to their former numbers before the cfam change.
 
 Signed-off-by: Robert Lippert <rlippert@google.com>
 Signed-off-by: Patrick Venture <venture@google.com>
 ---
- arch/arm/boot/dts/aspeed-bmc-opp-zaius.dts | 18 ++++++++++++++----
- 1 file changed, 14 insertions(+), 4 deletions(-)
+ arch/arm/boot/dts/aspeed-bmc-opp-zaius.dts | 40 ++++++++++++++++++++++
+ 1 file changed, 40 insertions(+)
 
 diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-zaius.dts b/arch/arm/boot/dts/aspeed-bmc-opp-zaius.dts
-index 63e892f16d050..51265af622574 100644
+index 51265af622574..c12f89e042efc 100644
 --- a/arch/arm/boot/dts/aspeed-bmc-opp-zaius.dts
 +++ b/arch/arm/boot/dts/aspeed-bmc-opp-zaius.dts
-@@ -328,10 +328,21 @@
- 	 *   LM5066I PMBUS @10h
- 	 */
+@@ -7,6 +7,14 @@
+ 	model = "Zaius BMC";
+ 	compatible = "ingrasys,zaius-bmc", "aspeed,ast2500";
  
--	/* 12V Quarter Brick DC/DC Converter Q54SJ12050 @61h */
--	power-brick at 61 {
-+	/*
-+	 * Brick will be one of these types/addresses.  Depending
-+	 * on the board SKU only one is actually present and will successfully
-+	 * instantiate while the others will fail the probe operation.
-+	 * These are the PVT (and presumably beyond) addresses:
-+	 *    12V Quarter Brick DC/DC Converter Q54SJ12050 @6Ah
-+	 *    12V Quarter Brick DC/DC Converter Q54SH12050 @30h
-+	 */
-+	power-brick at 6a {
-+		compatible = "delta,dps800";
-+		reg = <0x6a>;
++	aliases {
++		i2c15 = &i2cpcie0;
++		i2c16 = &i2cpcie1;
++		i2c17 = &i2cpcie2;
++		i2c19 = &i2cpcie3;
++		i2c20 = &i2cpcie4;
 +	};
-+	power-brick at 30 {
- 		compatible = "delta,dps800";
--		reg = <0x61>;
-+		reg = <0x30>;
++
+ 	chosen {
+ 		stdout-path = &uart5;
+ 		bootargs = "console=ttyS4,115200 earlyprintk";
+@@ -223,6 +231,27 @@
+ 		reg = <0x71>;
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
++
++		i2cpcie0: i2c at 0 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0>;
++		};
++		i2cpcie1: i2c at 1 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <1>;
++		};
++		i2cpcie2: i2c at 2 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <2>;
++		};
++		i2ctpm: i2c at 3 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <3>;
++		};
  	};
  
- 	/* CPU0 VR ISL68137 0.7V, 0.96V PMBUS @64h */
-@@ -342,7 +353,6 @@
- 	/* Master selector PCA9541A @70h (other master: CPU0)
- 	 *   LM5066I PMBUS @10h
- 	 */
--	/* 12V SMPS Q54SH12050NNDH @61h */
- };
+ 	/* MUX1 PCA9546A @71h
+@@ -253,6 +282,17 @@
+ 		reg = <0x71>;
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
++
++		i2cpcie3: i2c at 0 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0>;
++		};
++		i2cpcie4: i2c at 1 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <1>;
++		};
+ 	};
  
- &i2c8 {
+ 	/* MUX1 PCA9546A @71h
 -- 
 2.21.0.392.gf8f6787159e-goog
 
