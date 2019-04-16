@@ -1,40 +1,120 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Date: Fri, 12 Apr 2019 20:09:16 -0700
-Subject: [PATCH v2 00/21] Convert hwmon documentation to ReST
-In-Reply-To: <20190412100451.6fe49de7@lwn.net>
-References: <cover.1554923967.git.mchehab+samsung@kernel.org>
- <20190411124324.3ed62fad@lwn.net> <20190411174357.251904f5@coco.lan>
- <20190411210731.GA29378@roeck-us.net> <20190412100451.6fe49de7@lwn.net>
-Message-ID: <f900adea-d231-c00d-847c-33e66e79ea30@roeck-us.net>
+From: Patrick Venture <venture@google.com>
+Date: Tue, 16 Apr 2019 07:27:34 -0700
+Subject: [PATCH v10 1/2] dt-bindings: misc: aspeed-p2a-ctrl: add support
+In-Reply-To: <998d869d-de1d-4ac9-b4e6-8942945912dd@www.fastmail.com>
+References: <20190408144216.160082-1-venture@google.com>
+ <998d869d-de1d-4ac9-b4e6-8942945912dd@www.fastmail.com>
+Message-ID: <CAO=notza3Tz55_dRoTpenY+yP=J=TmvpMoWE58VQG=nvQ_Rpow@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 4/12/19 9:04 AM, Jonathan Corbet wrote:
-> On Thu, 11 Apr 2019 14:07:31 -0700
-> Guenter Roeck <linux@roeck-us.net> wrote:
-> 
->>> While nobody does such split, IMHO, the best would be to keep the
->>> information outside Documentation/admin-guide. But hey! You're
->>> the Doc maintainer. If you prefer to move, I'm perfectly fine
->>> with that.
->>>    
->>
->> Same here, but please don't move the files which are kernel facing only.
-> 
-> Well, let's step back and think about this.  Who is the audience for
-> these documents?  That will tell us a lot about where they should really
-> be.
-> 
-> What I would prefer to avoid is the status quo where *everything* is in
-> the top-level directory, and where documents are organized for the
-> convenience of their maintainers rather than of their readers.  But
-> sometimes I feel like I'm alone in that desire...:)
-> 
+On Mon, Apr 8, 2019 at 5:48 PM Andrew Jeffery <andrew@aj.id.au> wrote:
+>
+>
+>
+> On Tue, 9 Apr 2019, at 00:12, Patrick Venture wrote:
+> > Document the ast2400, ast2500 PCI-to-AHB bridge control driver bindings.
+> >
+> > Signed-off-by: Patrick Venture <venture@google.com>
+> > Reviewed-by: Rob Herring <robh@kernel.org>
+>
+> Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
+>
+> > ---
+> > Changes for v10:
+> >  - Chopped out nearly identical information.
+> > Changes for v9:
+> >  - Added missing details about syscon parent
+> > Changes for v8:
+> > - None
+> > Changes for v7:
+> > - Moved node under the syscon node it requires
+> > Changes for v6:
+> > - None
+> > Changes for v5:
+> > - None
+> > Changes for v4:
+> > - None
+> > Changes for v3:
+> > - None
+> > Changes for v2:
+> > - Added comment about syscon required parameter.
+> > ---
+> >  .../bindings/misc/aspeed-p2a-ctrl.txt         | 47 +++++++++++++++++++
+> >  1 file changed, 47 insertions(+)
+> >  create mode 100644 Documentation/devicetree/bindings/misc/aspeed-p2a-ctrl.txt
+> >
+> > diff --git a/Documentation/devicetree/bindings/misc/aspeed-p2a-ctrl.txt
+> > b/Documentation/devicetree/bindings/misc/aspeed-p2a-ctrl.txt
+> > new file mode 100644
+> > index 0000000000000..854bd67ffec68
+> > --- /dev/null
+> > +++ b/Documentation/devicetree/bindings/misc/aspeed-p2a-ctrl.txt
+> > @@ -0,0 +1,47 @@
+> > +======================================================================
+> > +Device tree bindings for Aspeed AST2400/AST2500 PCI-to-AHB Bridge
+> > Control Driver
+> > +======================================================================
+> > +
+> > +The bridge is available on platforms with the VGA enabled on the
+> > Aspeed device.
+> > +In this case, the host has access to a 64KiB window into all of the
+> > BMC's
+> > +memory.  The BMC can disable this bridge.  If the bridge is enabled,
+> > the host
+> > +has read access to all the regions of memory, however the host only
+> > has read
+> > +and write access depending on a register controlled by the BMC.
+> > +
+> > +Required properties:
+> > +===================
+> > +
+> > + - compatible: must be one of:
+> > +     - "aspeed,ast2400-p2a-ctrl"
+> > +     - "aspeed,ast2500-p2a-ctrl"
+> > +
+> > +Optional properties:
+> > +===================
+> > +
+> > +- memory-region: A phandle to a reserved_memory region to be used for
+> > the PCI
+> > +             to AHB mapping
+> > +
+> > +The p2a-control node should be the child of a syscon node with the
+> > required
+> > +property:
+> > +
+> > +- compatible : Should be one of the following:
+> > +             "aspeed,ast2400-scu", "syscon", "simple-mfd"
+> > +             "aspeed,g4-scu", "syscon", "simple-mfd"
+> > +             "aspeed,ast2500-scu", "syscon", "simple-mfd"
+> > +             "aspeed,g5-scu", "syscon", "simple-mfd"
+> > +
+> > +Example
+> > +===================
+> > +
+> > +g4 Example
+> > +----------
+> > +
+> > +syscon: scu at 1e6e2000 {
+> > +     compatible = "aspeed,ast2400-scu", "syscon", "simple-mfd";
+> > +     reg = <0x1e6e2000 0x1a8>;
+> > +
+> > +     p2a: p2a-control {
+> > +             compatible = "aspeed,ast2400-p2a-ctrl";
+> > +             memory-region = <&reserved_memory>;
+> > +     };
+> > +};
+> > --
+> > 2.21.0.392.gf8f6787159e-goog
+> >
+> >
 
-The big real-world question is: Is the series good enough for you to accept,
-or do you expect some level of user/kernel separation ?
+I'm sorry, is there something more I need to do with the patch series?
+ Sometimes I miss emails.
 
-Guenter
+Thanks,
+Patrick
