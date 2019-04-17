@@ -1,11 +1,11 @@
-From: Liviu Dudau <liviu.dudau@arm.com>
-Date: Wed, 17 Apr 2019 11:31:11 -0000
+From: Guenter Roeck <linux@roeck-us.net>
+Date: Wed, 17 Apr 2019 16:47:50 -0000
 Subject: [PATCH v3 21/21] docs: hwmon: Add an index file and rename docs
  to *.rst
 In-Reply-To: <efbe0a2b5be35026c3a2dbdb9090c4fbd932c9a2.1555494108.git.mchehab+samsung@kernel.org>
 References: <cover.1555494108.git.mchehab+samsung@kernel.org>
  <efbe0a2b5be35026c3a2dbdb9090c4fbd932c9a2.1555494108.git.mchehab+samsung@kernel.org>
-Message-ID: <20190417113104.GW15144@e110455-lin.cambridge.arm.com>
+Message-ID: <20190417164741.GA12147@roeck-us.net>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -17,6 +17,17 @@ On Wed, Apr 17, 2019 at 06:46:29AM -0300, Mauro Carvalho Chehab wrote:
 > and add an index.
 > 
 > Signed-off-by: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
+> Acked-by: Liviu Dudau <liviu.dudau@arm.com>
+
+I applied all patches except this one, which fails due to a conflict in
+ab8500. I also notice that this file has not been touched by your series,
+which is odd. At the same time, patch 20/21 is missing from your series,
+and has been missing all along. Does the missing patch possibly touch
+Documentation/hwmon/ab8500 ?
+
+Thanks,
+Guenter
+
 > ---
 >  .../devicetree/bindings/hwmon/g762.txt        |   2 +-
 >  Documentation/hwmon/{ab8500 => ab8500.rst}    |   2 +-
@@ -163,14 +174,6 @@ On Wed, Apr 17, 2019 at 06:46:29AM -0300, Mauro Carvalho Chehab wrote:
 >  Documentation/hwmon/{ucd9200 => ucd9200.rst}  |   4 +-
 >  .../{userspace-tools => userspace-tools.rst}  |   0
 >  .../hwmon/{vexpress => vexpress.rst}          |   0
-
-For the vexpress part:
-
-Acked-by: Liviu Dudau <liviu.dudau@arm.com>
-
-Best regards,
-Liviu
-
 >  Documentation/hwmon/{via686a => via686a.rst}  |   0
 >  Documentation/hwmon/{vt1211 => vt1211.rst}    |   0
 >  .../hwmon/{w83627ehf => w83627ehf.rst}        |   0
@@ -2086,21 +2089,3 @@ Liviu
 >  	 *
 >  	 * pullup/down_ohm: 0 for infinite / not-connected
 >  	 *
-> -- 
-> 2.20.1
-> 
-> 
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel at lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
-
--- 
-====================
-| I would like to |
-| fix the world,  |
-| but they're not |
-| giving me the   |
- \ source code!  /
-  ---------------
-    ?\_(?)_/?
