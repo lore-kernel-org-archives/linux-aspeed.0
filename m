@@ -1,45 +1,44 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Date: Wed, 17 Apr 2019 16:54:23 -0000
+From: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
+Date: Wed, 17 Apr 2019 17:15:06 -0000
 Subject: [PATCH v3 21/21] docs: hwmon: Add an index file and rename docs
  to *.rst
 In-Reply-To: <20190417164741.GA12147@roeck-us.net>
 References: <cover.1555494108.git.mchehab+samsung@kernel.org>
  <efbe0a2b5be35026c3a2dbdb9090c4fbd932c9a2.1555494108.git.mchehab+samsung@kernel.org>
  <20190417164741.GA12147@roeck-us.net>
-Message-ID: <20190417165414.GA14872@roeck-us.net>
+Message-ID: <20190417141352.3225bbb3@coco.lan>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Apr 17, 2019 at 09:47:41AM -0700, Guenter Roeck wrote:
+Em Wed, 17 Apr 2019 09:47:41 -0700
+Guenter Roeck <linux@roeck-us.net> escreveu:
+
 > On Wed, Apr 17, 2019 at 06:46:29AM -0300, Mauro Carvalho Chehab wrote:
 > > Now that all files were converted to ReST format, rename them
 > > and add an index.
 > > 
 > > Signed-off-by: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
-> > Acked-by: Liviu Dudau <liviu.dudau@arm.com>
+> > Acked-by: Liviu Dudau <liviu.dudau@arm.com>  
 > 
 > I applied all patches except this one, which fails due to a conflict in
 > ab8500. I also notice that this file has not been touched by your series,
 > which is odd. At the same time, patch 20/21 is missing from your series,
 > and has been missing all along. Does the missing patch possibly touch
 > Documentation/hwmon/ab8500 ?
+
+Patch 20/21 is the biggest one. Maybe vger rejected it either due to
+its size or due to the number of c/c.
+
+Just bounced it to you. Please let me know if you didn't receive it
+yet.
+
+Regards,
+Mauro
+
 > 
-Actually, the conflicts are in those files:
-
-patching file Documentation/hwmon/amc6821.rst (renamed from Documentation/hwmon/amc6821)
-Hunk #1 FAILED at 106.
-1 out of 1 hunk FAILED -- saving rejects to file Documentation/hwmon/amc6821.rst.rej
-patching file Documentation/hwmon/asb100.rst (renamed from Documentation/hwmon/asb100)
-Hunk #1 FAILED at 71.
-1 out of 1 hunk FAILED -- saving rejects to file Documentation/hwmon/asb100.rst.rej
-
-Both were not touched by your series.
-
-Guenter
-
 > Thanks,
 > Guenter
 > 
@@ -2103,4 +2102,9 @@ Guenter
 > > +	 * described at Documentation/hwmon/ntc_thermistor.rst
 > >  	 *
 > >  	 * pullup/down_ohm: 0 for infinite / not-connected
-> >  	 *
+> >  	 *  
+
+
+
+Thanks,
+Mauro
