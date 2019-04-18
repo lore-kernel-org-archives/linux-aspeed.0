@@ -1,26 +1,45 @@
 From: Guenter Roeck <linux@roeck-us.net>
-Date: Thu, 18 Apr 2019 12:58:14 -0700
-Subject: [PATCH 0/6] thermal: Introduce devm_thermal_of_cooling_device_register
-Message-ID: <1555617500-10862-1-git-send-email-linux@roeck-us.net>
+Date: Thu, 18 Apr 2019 12:58:16 -0700
+Subject: [PATCH 2/6] hwmon: (aspeed-pwm-tacho) Use
+ devm_thermal_of_cooling_device_register
+In-Reply-To: <1555617500-10862-1-git-send-email-linux@roeck-us.net>
+References: <1555617500-10862-1-git-send-email-linux@roeck-us.net>
+Message-ID: <1555617500-10862-3-git-send-email-linux@roeck-us.net>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-thermal_of_cooling_device_register() and thermal_cooling_device_register()
-are typically called from driver probe functions, and
-thermal_cooling_device_unregister() is called from remove functions. This
-makes both a perfect candidate for device managed functions.
+Use devm_thermal_of_cooling_device_register() to register the cooling
+device. As a side effect, this fixes a driver bug:
+thermal_cooling_device_unregister() was not called on removal.
 
-Introduce devm_thermal_of_cooling_device_register(). This function can
-also be used to replace thermal_cooling_device_register() by passing a NULL
-pointer as device node. The new function requires both struct device *
-and struct device_node * as parameters since the struct device_node *
-parameter is not always identical to dev->of_node.
+Fixes: f198907d2ff6d ("hwmon: (aspeed-pwm-tacho) cooling device support.")
+Cc: Mykola Kostenok <c_mykolak@mellanox.com>
+Cc: Joel Stanley <joel@jms.id.au>
+Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+---
+ drivers/hwmon/aspeed-pwm-tacho.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-Don't introduce a device managed remove function since it is not needed
-at this point.
+diff --git a/drivers/hwmon/aspeed-pwm-tacho.c b/drivers/hwmon/aspeed-pwm-tacho.c
+index c4dd6301e7c8..0daf0b32aa4a 100644
+--- a/drivers/hwmon/aspeed-pwm-tacho.c
++++ b/drivers/hwmon/aspeed-pwm-tacho.c
+@@ -830,10 +830,8 @@ static int aspeed_create_pwm_cooling(struct device *dev,
+ 	}
+ 	snprintf(cdev->name, MAX_CDEV_NAME_LEN, "%pOFn%d", child, pwm_port);
+ 
+-	cdev->tcdev = thermal_of_cooling_device_register(child,
+-							 cdev->name,
+-							 cdev,
+-							 &aspeed_pwm_cool_ops);
++	cdev->tcdev = devm_thermal_of_cooling_device_register(dev, child,
++					cdev->name, cdev, &aspeed_pwm_cool_ops);
+ 	if (IS_ERR(cdev->tcdev))
+ 		return PTR_ERR(cdev->tcdev);
+ 
+-- 
+2.7.4
 
-The patch series introduces the new function and then converts various
-hwmon drivers to use it.
