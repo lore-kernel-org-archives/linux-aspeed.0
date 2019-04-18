@@ -1,72 +1,828 @@
-From: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
-Date: Wed, 17 Apr 2019 06:47:56 -0300
-Subject: [PATCH v2 00/21] Convert hwmon documentation to ReST
-In-Reply-To: <1d8a4410-4a8c-7b7a-141d-d2495cc66749@roeck-us.net>
-References: <cover.1554923967.git.mchehab+samsung@kernel.org>
- <20190411124324.3ed62fad@lwn.net>
- <20190411174357.251904f5@coco.lan>
- <20190411210731.GA29378@roeck-us.net>
- <20190412100451.6fe49de7@lwn.net>
- <f900adea-d231-c00d-847c-33e66e79ea30@roeck-us.net>
- <20190416141949.09b48789@lwn.net>
- <20190416203114.GB25517@roeck-us.net>
- <20190416225836.1d5953bc@coco.lan>
- <1d8a4410-4a8c-7b7a-141d-d2495cc66749@roeck-us.net>
-Message-ID: <20190417064745.46385036@coco.lan>
+From: Adriana Kobylak <anoo@linux.ibm.com>
+Date: Thu, 18 Apr 2019 11:43:35 -0500
+Subject: [PATCH dev-5.0 v2] ARM: dts: aspeed: Add Swift BMC machine
+In-Reply-To: <02b66794-19bf-a042-66a9-00fc712355f5@linux.ibm.com>
+References: <02b66794-19bf-a042-66a9-00fc712355f5@linux.ibm.com>
+Message-ID: <1555605815-31386-1-git-send-email-anoo@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Em Tue, 16 Apr 2019 20:49:31 -0700
-Guenter Roeck <linux@roeck-us.net> escreveu:
+From: Adriana Kobylak <anoo@us.ibm.com>
 
-> On 4/16/19 6:58 PM, Mauro Carvalho Chehab wrote:
-> > Em Tue, 16 Apr 2019 13:31:14 -0700
-> > Guenter Roeck <linux@roeck-us.net> escreveu:
-> >   
-> >> On Tue, Apr 16, 2019 at 02:19:49PM -0600, Jonathan Corbet wrote:  
-> >>> On Fri, 12 Apr 2019 20:09:16 -0700
-> >>> Guenter Roeck <linux@roeck-us.net> wrote:
-> >>>      
-> >>>> The big real-world question is: Is the series good enough for you to accept,
-> >>>> or do you expect some level of user/kernel separation ?  
-> >>>
-> >>> I guess it can go in; it's forward progress, even if it doesn't make the
-> >>> improvements I would like to see.
-> >>>
-> >>> The real question, I guess, is who should take it.  I've been seeing a
-> >>> fair amount of activity on hwmon, so I suspect that the potential for
-> >>> conflicts is real.  Perhaps things would go smoother if it went through
-> >>> your tree?
-> >>>      
-> >> We'll see a number of conflicts, yes. In terms of timing, this is probably
-> >> the worst release in the last few years to make such a change. I currently
-> >> have 9 patches queued in hwmon-next which touch Documentation/hwmon.
-> >> Of course the changes made in those are all not ReST compatible, and I have
-> >> no idea what to look out for to make it compatible. So this is going to be
-> >> fun (in a negative sense) either way.
-> >>
-> >> I don't really have a recommendation at this point; I think the best I could
-> >> do to take the patches which don't generate conflicts and leave the rest
-> >> alone. But that would also be bad, since the new index file would not match
-> >> reality. No idea, really, what the best or even a useful approach would be.
-> >>
-> >> Maybe automated changes like this (assuming they are indeed automated)
-> >> can be generated and pushed right after a commit window closes. Would
-> >> that by any chance be possible ?  
-> > 
-> > No, those patches are hand-maid, but I can surely rebase it on the top of
-> > your tree. Is your tree already merged at linux-next, or should I use some
-> > other branch/tree for rebase?
-> >   
-> 
-> linux-next merges hwmon-next. next-20190416 is missing one patch which touches
-> Documentation/hwmon, but that should be easy to deal with.
+The Swift BMC is an ASPEED ast2500 based BMC that is part of
+a Power9 server. This adds the device tree description for
+most upstream components.
 
-Ok, did a rebase on the top of next-20190417. While re-reading the output
-of the html files, I noticed a few minor issues on some tables and fixed.
+Signed-off-by: Adriana Kobylak <anoo@us.ibm.com>
+---
+ arch/arm/boot/dts/Makefile                 |   1 +
+ arch/arm/boot/dts/aspeed-bmc-opp-swift.dts | 782 +++++++++++++++++++++++++++++
+ 2 files changed, 783 insertions(+)
+ create mode 100644 arch/arm/boot/dts/aspeed-bmc-opp-swift.dts
 
-Thanks,
-Mauro
+diff --git a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
+index bd40148..b82a24d 100644
+--- a/arch/arm/boot/dts/Makefile
++++ b/arch/arm/boot/dts/Makefile
+@@ -1244,6 +1244,7 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
+ 	aspeed-bmc-opp-lanyang.dtb \
+ 	aspeed-bmc-opp-palmetto.dtb \
+ 	aspeed-bmc-opp-romulus.dtb \
++	aspeed-bmc-opp-swift.dtb \
+ 	aspeed-bmc-opp-witherspoon.dtb \
+ 	aspeed-bmc-opp-zaius.dtb \
+ 	aspeed-bmc-portwell-neptune.dtb \
+diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-swift.dts b/arch/arm/boot/dts/aspeed-bmc-opp-swift.dts
+new file mode 100644
+index 0000000..1921a50
+--- /dev/null
++++ b/arch/arm/boot/dts/aspeed-bmc-opp-swift.dts
+@@ -0,0 +1,782 @@
++// SPDX-License-Identifier: GPL-2.0+
++/dts-v1/;
++#include "aspeed-g5.dtsi"
++#include <dt-bindings/gpio/aspeed-gpio.h>
++#include <dt-bindings/leds/leds-pca955x.h>
++
++/ {
++	model = "Swift BMC";
++	compatible = "ibm,swift-bmc", "aspeed,ast2500";
++
++	chosen {
++		stdout-path = &uart5;
++		bootargs = "console=ttyS4,115200 earlyprintk";
++	};
++
++	memory at 80000000 {
++		reg = <0x80000000 0x20000000>;
++	};
++
++	reserved-memory {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		ranges;
++
++		flash_memory: region at 98000000 {
++			no-map;
++			reg = <0x98000000 0x04000000>; /* 64M */
++		};
++
++		gfx_memory: framebuffer {
++			size = <0x01000000>;
++			alignment = <0x01000000>;
++			compatible = "shared-dma-pool";
++			reusable;
++		};
++	};
++
++	gpio-keys {
++		compatible = "gpio-keys";
++
++		air-water {
++			label = "air-water";
++			gpios = <&gpio ASPEED_GPIO(B, 5) GPIO_ACTIVE_LOW>;
++			linux,code = <ASPEED_GPIO(B, 5)>;
++		};
++
++		checkstop {
++			label = "checkstop";
++			gpios = <&gpio ASPEED_GPIO(J, 2) GPIO_ACTIVE_LOW>;
++			linux,code = <ASPEED_GPIO(J, 2)>;
++		};
++
++		ps0-presence {
++			label = "ps0-presence";
++			gpios = <&gpio ASPEED_GPIO(R, 7) GPIO_ACTIVE_LOW>;
++			linux,code = <ASPEED_GPIO(R, 7)>;
++		};
++
++		ps1-presence {
++			label = "ps1-presence";
++			gpios = <&gpio ASPEED_GPIO(N, 0) GPIO_ACTIVE_LOW>;
++			linux,code = <ASPEED_GPIO(N, 0)>;
++		};
++	};
++
++	iio-hwmon-battery {
++		compatible = "iio-hwmon";
++		io-channels = <&adc 12>;
++	};
++
++	gpio-keys-polled {
++		compatible = "gpio-keys-polled";
++		#address-cells = <1>;
++		#size-cells = <0>;
++		poll-interval = <1000>;
++
++		fan0-presence {
++			label = "fan0-presence";
++			gpios = <&pca0 5 GPIO_ACTIVE_LOW>;
++			linux,code = <5>;
++		};
++
++		fan1-presence {
++			label = "fan1-presence";
++			gpios = <&pca0 6 GPIO_ACTIVE_LOW>;
++			linux,code = <6>;
++		};
++
++		fan2-presence {
++			label = "fan2-presence";
++			gpios = <&pca0 7 GPIO_ACTIVE_LOW>;
++			linux,code = <7>;
++		};
++
++		fan3-presence {
++			label = "fan3-presence";
++			gpios = <&pca0 8 GPIO_ACTIVE_LOW>;
++			linux,code = <8>;
++		};
++
++		fanboost-presence {
++			label = "fanboost-presence";
++			gpios = <&pca0 9 GPIO_ACTIVE_LOW>;
++			linux,code = <9>;
++		};
++	};
++
++	leds {
++		compatible = "gpio-leds";
++
++		fan0 {
++			retain-state-shutdown;
++			default-state = "keep";
++			gpios = <&pca0 0 GPIO_ACTIVE_LOW>;
++		};
++
++		fan1 {
++			retain-state-shutdown;
++			default-state = "keep";
++			gpios = <&pca0 1 GPIO_ACTIVE_LOW>;
++		};
++
++		fan2 {
++			retain-state-shutdown;
++			default-state = "keep";
++			gpios = <&pca0 2 GPIO_ACTIVE_LOW>;
++		};
++
++		fan3 {
++			retain-state-shutdown;
++			default-state = "keep";
++			gpios = <&pca0 3 GPIO_ACTIVE_LOW>;
++		};
++
++		fanboost {
++			retain-state-shutdown;
++			default-state = "keep";
++			gpios = <&pca0 4 GPIO_ACTIVE_LOW>;
++		};
++
++		front-fault {
++			retain-state-shutdown;
++			default-state = "keep";
++			gpios = <&pca1 2 GPIO_ACTIVE_LOW>;
++		};
++
++		front-power {
++			retain-state-shutdown;
++			default-state = "keep";
++			gpios = <&pca1 3 GPIO_ACTIVE_LOW>;
++		};
++
++		front-id {
++			retain-state-shutdown;
++			default-state = "keep";
++			gpios = <&pca1 0 GPIO_ACTIVE_LOW>;
++		};
++
++		rear-fault {
++			gpios = <&gpio ASPEED_GPIO(N, 2) GPIO_ACTIVE_LOW>;
++		};
++
++		rear-id {
++			gpios = <&gpio ASPEED_GPIO(N, 4) GPIO_ACTIVE_LOW>;
++		};
++
++		rear-power {
++			gpios = <&gpio ASPEED_GPIO(N, 3) GPIO_ACTIVE_LOW>;
++		};
++	};
++
++	fsi: gpio-fsi {
++		compatible = "fsi-master-gpio", "fsi-master";
++		#address-cells = <2>;
++		#size-cells = <0>;
++		no-gpio-delays;
++
++		clock-gpios = <&gpio ASPEED_GPIO(AA, 0) GPIO_ACTIVE_HIGH>;
++		data-gpios = <&gpio ASPEED_GPIO(E, 0) GPIO_ACTIVE_HIGH>;
++		mux-gpios = <&gpio ASPEED_GPIO(P, 4) GPIO_ACTIVE_HIGH>;
++		enable-gpios = <&gpio ASPEED_GPIO(P, 0) GPIO_ACTIVE_HIGH>;
++		trans-gpios = <&gpio ASPEED_GPIO(P, 3) GPIO_ACTIVE_HIGH>;
++	};
++
++	iio-hwmon-dps310 {
++		compatible = "iio-hwmon";
++		io-channels = <&dps 0>;
++	};
++
++};
++
++&fmc {
++	status = "okay";
++
++	flash at 0 {
++		status = "okay";
++		label = "bmc";
++		m25p,fast-read;
++		spi-max-frequency = <100000000>;
++		partitions {
++			#address-cells = < 1 >;
++			#size-cells = < 1 >;
++			compatible = "fixed-partitions";
++			u-boot at 0 {
++				reg = < 0 0x60000 >;
++				label = "u-boot";
++			};
++			u-boot-env at 60000 {
++				reg = < 0x60000 0x20000 >;
++				label = "u-boot-env";
++			};
++			obmc-ubi at 80000 {
++				reg = < 0x80000 0x7F80000>;
++				label = "obmc-ubi";
++			};
++		};
++	};
++
++	flash at 1 {
++		status = "okay";
++		label = "alt-bmc";
++		m25p,fast-read;
++		spi-max-frequency = <100000000>;
++		partitions {
++			#address-cells = < 1 >;
++			#size-cells = < 1 >;
++			compatible = "fixed-partitions";
++			u-boot at 0 {
++				reg = < 0 0x60000 >;
++				label = "alt-u-boot";
++			};
++			u-boot-env at 60000 {
++				reg = < 0x60000 0x20000 >;
++				label = "alt-u-boot-env";
++			};
++			obmc-ubi at 80000 {
++				reg = < 0x80000 0x7F80000>;
++				label = "alt-obmc-ubi";
++			};
++		};
++	};
++};
++
++&spi1 {
++	status = "okay";
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_spi1_default>;
++
++	flash at 0 {
++		status = "okay";
++		label = "pnor";
++		m25p,fast-read;
++		spi-max-frequency = <100000000>;
++	};
++};
++
++&uart1 {
++	/* Rear RS-232 connector */
++	status = "okay";
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_txd1_default
++			&pinctrl_rxd1_default
++			&pinctrl_nrts1_default
++			&pinctrl_ndtr1_default
++			&pinctrl_ndsr1_default
++			&pinctrl_ncts1_default
++			&pinctrl_ndcd1_default
++			&pinctrl_nri1_default>;
++};
++
++&uart2 {
++	/* APSS */
++	status = "okay";
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_txd2_default &pinctrl_rxd2_default>;
++};
++
++&uart5 {
++	status = "okay";
++};
++
++&lpc_ctrl {
++	status = "okay";
++	memory-region = <&flash_memory>;
++	flash = <&spi1>;
++};
++
++&mbox {
++	status = "okay";
++};
++
++&mac0 {
++	status = "okay";
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_rmii1_default>;
++	use-ncsi;
++};
++
++&i2c2 {
++	status = "okay";
++
++	/* MUX ->
++	 *    Samtec 1
++	 *    Samtec 2
++	 */
++};
++
++&i2c3 {
++	status = "okay";
++
++	max31785 at 52 {
++		compatible = "maxim,max31785a";
++		reg = <0x52>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		fan at 0 {
++			compatible = "pmbus-fan";
++			reg = <0>;
++			tach-pulses = <2>;
++			maxim,fan-rotor-input = "tach";
++			maxim,fan-pwm-freq = <25000>;
++			maxim,fan-no-watchdog;
++			maxim,fan-no-fault-ramp;
++			maxim,fan-ramp = <2>;
++			maxim,fan-fault-pin-mon;
++		};
++
++		fan at 1 {
++			compatible = "pmbus-fan";
++			reg = <1>;
++			tach-pulses = <2>;
++			maxim,fan-rotor-input = "tach";
++			maxim,fan-pwm-freq = <25000>;
++			maxim,fan-no-watchdog;
++			maxim,fan-no-fault-ramp;
++			maxim,fan-ramp = <2>;
++			maxim,fan-fault-pin-mon;
++		};
++
++		fan at 2 {
++			compatible = "pmbus-fan";
++			reg = <2>;
++			tach-pulses = <2>;
++			maxim,fan-rotor-input = "tach";
++			maxim,fan-pwm-freq = <25000>;
++			maxim,fan-no-watchdog;
++			maxim,fan-no-fault-ramp;
++			maxim,fan-ramp = <2>;
++			maxim,fan-fault-pin-mon;
++		};
++
++		fan at 3 {
++			compatible = "pmbus-fan";
++			reg = <3>;
++			tach-pulses = <2>;
++			maxim,fan-rotor-input = "tach";
++			maxim,fan-pwm-freq = <25000>;
++			maxim,fan-no-watchdog;
++			maxim,fan-no-fault-ramp;
++			maxim,fan-ramp = <2>;
++			maxim,fan-fault-pin-mon;
++		};
++
++		fan at 4 {
++			compatible = "pmbus-fan";
++			reg = <4>;
++			tach-pulses = <2>;
++			maxim,fan-rotor-input = "tach";
++			maxim,fan-pwm-freq = <25000>;
++			maxim,fan-no-watchdog;
++			maxim,fan-no-fault-ramp;
++			maxim,fan-ramp = <2>;
++			maxim,fan-fault-pin-mon;
++		};
++	};
++
++	pca0: pca9552 at 60 {
++		compatible = "nxp,pca9552";
++		reg = <0x60>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		gpio-controller;
++		#gpio-cells = <2>;
++
++		gpio at 0 {
++			reg = <0>;
++			type = <PCA955X_TYPE_GPIO>;
++		};
++
++		gpio at 1 {
++			reg = <1>;
++			type = <PCA955X_TYPE_GPIO>;
++		};
++
++		gpio at 2 {
++			reg = <2>;
++			type = <PCA955X_TYPE_GPIO>;
++		};
++
++		gpio at 3 {
++			reg = <3>;
++			type = <PCA955X_TYPE_GPIO>;
++		};
++
++		gpio at 4 {
++			reg = <4>;
++			type = <PCA955X_TYPE_GPIO>;
++		};
++
++		gpio at 5 {
++			reg = <5>;
++			type = <PCA955X_TYPE_GPIO>;
++		};
++
++		gpio at 6 {
++			reg = <6>;
++			type = <PCA955X_TYPE_GPIO>;
++		};
++
++		gpio at 7 {
++			reg = <7>;
++			type = <PCA955X_TYPE_GPIO>;
++		};
++
++		gpio at 8 {
++			reg = <8>;
++			type = <PCA955X_TYPE_GPIO>;
++		};
++
++		gpio at 9 {
++			reg = <9>;
++			type = <PCA955X_TYPE_GPIO>;
++		};
++
++		gpio at 10 {
++			reg = <10>;
++			type = <PCA955X_TYPE_GPIO>;
++		};
++
++		gpio at 11 {
++			reg = <11>;
++			type = <PCA955X_TYPE_GPIO>;
++		};
++
++		gpio at 12 {
++			reg = <12>;
++			type = <PCA955X_TYPE_GPIO>;
++		};
++
++		gpio at 13 {
++			reg = <13>;
++			type = <PCA955X_TYPE_GPIO>;
++		};
++
++		gpio at 14 {
++			reg = <14>;
++			type = <PCA955X_TYPE_GPIO>;
++		};
++
++		gpio at 15 {
++			reg = <15>;
++			type = <PCA955X_TYPE_GPIO>;
++		};
++	};
++
++	power-supply at 68 {
++		compatible = "ibm,cffps1";
++		reg = <0x68>;
++	};
++
++	eeprom at 50 {
++		compatible = "atmel,24c64";
++		reg = <0x50>;
++	};
++
++	power-supply at 69 {
++		compatible = "ibm,cffps1";
++		reg = <0x69>;
++	};
++
++	eeprom at 51 {
++		compatible = "atmel,24c64";
++		reg = <0x51>;
++	};
++};
++
++&i2c7 {
++	status = "okay";
++
++	dps: dps310 at 76 {
++		compatible = "infineon,dps310";
++		reg = <0x76>;
++		#io-channel-cells = <0>;
++	};
++
++	tmp275 at 48 {
++		compatible = "ti,tmp275";
++		reg = <0x48>;
++	};
++
++	si7021a20 at 20 {
++		compatible = "si,si7021a20";
++		reg = <0x20>;
++	};
++
++	eeprom at 50 {
++		compatible = "atmel,24c64";
++		reg = <0x50>;
++	};
++
++	pca1: pca9551 at 60 {
++		compatible = "nxp,pca9551";
++		reg = <0x60>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		gpio-controller;
++		#gpio-cells = <2>;
++
++		gpio at 0 {
++			reg = <0>;
++			type = <PCA955X_TYPE_GPIO>;
++		};
++
++		gpio at 1 {
++			reg = <1>;
++			type = <PCA955X_TYPE_GPIO>;
++		};
++
++		gpio at 2 {
++			reg = <2>;
++			type = <PCA955X_TYPE_GPIO>;
++		};
++
++		gpio at 3 {
++			reg = <3>;
++			type = <PCA955X_TYPE_GPIO>;
++		};
++
++		gpio at 4 {
++			reg = <4>;
++			type = <PCA955X_TYPE_GPIO>;
++		};
++
++		gpio at 5 {
++			reg = <5>;
++			type = <PCA955X_TYPE_GPIO>;
++		};
++
++		gpio at 6 {
++			reg = <6>;
++			type = <PCA955X_TYPE_GPIO>;
++		};
++
++		gpio at 7 {
++			reg = <7>;
++			type = <PCA955X_TYPE_GPIO>;
++		};
++	};
++};
++
++&i2c8 {
++	status = "okay";
++
++	pca9552: pca9552 at 60 {
++		compatible = "nxp,pca9552";
++		reg = <0x60>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++		gpio-controller;
++		#gpio-cells = <2>;
++
++		gpio-line-names = "PS_SMBUS_RESET_N", "APSS_RESET_N",
++			"GPU0_TH_OVERT_N_BUFF",	"GPU1_TH_OVERT_N_BUFF",
++			"GPU2_TH_OVERT_N_BUFF", "GPU3_TH_OVERT_N_BUFF",
++			"P9_SCM0_PRES",	"P9_SCM1_PRES",
++			"GPU0_PWR_GOOD_BUFF", "GPU1_PWR_GOOD_BUFF",
++			"GPU2_PWR_GOOD_BUFF", "GPU3_PWR_GOOD_BUFF",
++			"PRESENT_VRM_CP0_N", "PRESENT_VRM_CP1_N",
++			"12V_BREAKER_FLT_N", "THROTTLE_UNLATCHED_N";
++
++		gpio at 0 {
++			reg = <0>;
++			type = <PCA955X_TYPE_GPIO>;
++		};
++
++		gpio at 1 {
++			reg = <1>;
++			type = <PCA955X_TYPE_GPIO>;
++		};
++
++		gpio at 2 {
++			reg = <2>;
++			type = <PCA955X_TYPE_GPIO>;
++		};
++
++		gpio at 3 {
++			reg = <3>;
++			type = <PCA955X_TYPE_GPIO>;
++		};
++
++		gpio at 4 {
++			reg = <4>;
++			type = <PCA955X_TYPE_GPIO>;
++		};
++
++		gpio at 5 {
++			reg = <5>;
++			type = <PCA955X_TYPE_GPIO>;
++		};
++
++		gpio at 6 {
++			reg = <6>;
++			type = <PCA955X_TYPE_GPIO>;
++		};
++
++		gpio at 7 {
++			reg = <7>;
++			type = <PCA955X_TYPE_GPIO>;
++		};
++
++		gpio at 8 {
++			reg = <8>;
++			type = <PCA955X_TYPE_GPIO>;
++		};
++
++		gpio at 9 {
++			reg = <9>;
++			type = <PCA955X_TYPE_GPIO>;
++		};
++
++		gpio at 10 {
++			reg = <10>;
++			type = <PCA955X_TYPE_GPIO>;
++		};
++
++		gpio at 11 {
++			reg = <11>;
++			type = <PCA955X_TYPE_GPIO>;
++		};
++
++		gpio at 12 {
++			reg = <12>;
++			type = <PCA955X_TYPE_GPIO>;
++		};
++
++		gpio at 13 {
++			reg = <13>;
++			type = <PCA955X_TYPE_GPIO>;
++		};
++
++		gpio at 14 {
++			reg = <14>;
++			type = <PCA955X_TYPE_GPIO>;
++		};
++
++		gpio at 15 {
++			reg = <15>;
++			type = <PCA955X_TYPE_GPIO>;
++		};
++	};
++
++	rtc at 32 {
++		compatible = "epson,rx8900";
++		reg = <0x32>;
++	};
++
++	eeprom at 51 {
++		compatible = "atmel,24c64";
++		reg = <0x51>;
++	};
++
++	ucd90160 at 64 {
++		compatible = "ti,ucd90160";
++		reg = <0x64>;
++	};
++};
++
++&i2c9 {
++	status = "okay";
++
++	tmp423a at 4c {
++		compatible = "ti,tmp423";
++		reg = <0x4c>;
++	};
++
++	ir35221 at 71 {
++		compatible = "infineon,ir35221";
++		reg = <0x71>;
++	};
++
++	ir35221 at 72 {
++		compatible = "infineon,ir35221";
++		reg = <0x72>;
++	};
++};
++
++&i2c10 {
++	status = "okay";
++
++	tmp423a at 4c {
++		compatible = "ti,tmp423";
++		reg = <0x4c>;
++	};
++
++	ir35221 at 71 {
++		compatible = "infineon,ir35221";
++		reg = <0x71>;
++	};
++
++	ir35221 at 72 {
++		compatible = "infineon,ir35221";
++		reg = <0x72>;
++	};
++};
++
++&i2c11 {
++	/* MUX
++	 *   -> PCIe Slot 0
++	 *   -> PCIe Slot 1
++	 *   -> PCIe Slot 2
++	 *   -> PCIe Slot 3
++	 */
++	status = "okay";
++};
++
++&i2c12 {
++	status = "okay";
++
++	tmp275 at 48 {
++		compatible = "ti,tmp275";
++		reg = <0x48>;
++	};
++
++	tmp275 at 4a {
++		compatible = "ti,tmp275";
++		reg = <0x4a>;
++	};
++};
++
++&i2c13 {
++	status = "okay";
++};
++
++&vuart {
++	status = "okay";
++};
++
++&gfx {
++	status = "okay";
++	memory-region = <&gfx_memory>;
++};
++
++&pinctrl {
++	aspeed,external-nodes = <&gfx &lhc>;
++};
++
++&wdt1 {
++	aspeed,reset-type = "none";
++	aspeed,external-signal;
++	aspeed,ext-push-pull;
++	aspeed,ext-active-high;
++
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_wdtrst1_default>;
++};
++
++&wdt2 {
++	aspeed,alt-boot;
++};
++
++&ibt {
++	status = "okay";
++};
++
++&adc {
++	status = "okay";
++};
++
++#include "ibm-power9-dual.dtsi"
+-- 
+1.8.3.1
+
