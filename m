@@ -1,10 +1,10 @@
 From: Guenter Roeck <linux@roeck-us.net>
-Date: Thu, 18 Apr 2019 12:58:17 -0700
-Subject: [PATCH 3/6] hwmon: (gpio-fan) Use
+Date: Thu, 18 Apr 2019 12:58:18 -0700
+Subject: [PATCH 4/6] hwmon: (mlxreg-fan) Use
  devm_thermal_of_cooling_device_register
 In-Reply-To: <1555617500-10862-1-git-send-email-linux@roeck-us.net>
 References: <1555617500-10862-1-git-send-email-linux@roeck-us.net>
-Message-ID: <1555617500-10862-4-git-send-email-linux@roeck-us.net>
+Message-ID: <1555617500-10862-5-git-send-email-linux@roeck-us.net>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -12,83 +12,94 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 Call devm_thermal_of_cooling_device_register() to register the cooling
-device. Also use devm_add_action_or_reset() to stop the fan on device
-removal. This fixes a race condition since the fan was stopped before
-the hwmon device was removed.
+device. Also introduce struct device *dev = &pdev->dev; to make the code
+easier to read.
 
 Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 ---
- drivers/hwmon/gpio-fan.c | 25 +++++++++----------------
- 1 file changed, 9 insertions(+), 16 deletions(-)
+ drivers/hwmon/mlxreg-fan.c | 31 ++++++++++---------------------
+ 1 file changed, 10 insertions(+), 21 deletions(-)
 
-diff --git a/drivers/hwmon/gpio-fan.c b/drivers/hwmon/gpio-fan.c
-index f1bf67aca9e8..3f6e5b4e3997 100644
---- a/drivers/hwmon/gpio-fan.c
-+++ b/drivers/hwmon/gpio-fan.c
-@@ -498,6 +498,11 @@ static const struct of_device_id of_gpio_fan_match[] = {
- };
- MODULE_DEVICE_TABLE(of, of_gpio_fan_match);
- 
-+static void gpio_fan_stop(void *data)
-+{
-+	set_fan_speed(data, 0);
-+}
-+
- static int gpio_fan_probe(struct platform_device *pdev)
+diff --git a/drivers/hwmon/mlxreg-fan.c b/drivers/hwmon/mlxreg-fan.c
+index db8c6de0b6a0..a14347ea0d77 100644
+--- a/drivers/hwmon/mlxreg-fan.c
++++ b/drivers/hwmon/mlxreg-fan.c
+@@ -420,42 +420,42 @@ static int mlxreg_fan_config(struct mlxreg_fan *fan,
+ static int mlxreg_fan_probe(struct platform_device *pdev)
  {
+ 	struct mlxreg_core_platform_data *pdata;
++	struct device *dev = &pdev->dev;
+ 	struct mlxreg_fan *fan;
+ 	struct device *hwm;
  	int err;
-@@ -532,6 +537,7 @@ static int gpio_fan_probe(struct platform_device *pdev)
- 		err = fan_ctrl_init(fan_data);
- 		if (err)
- 			return err;
-+		devm_add_action_or_reset(dev, gpio_fan_stop, fan_data);
+ 
+-	pdata = dev_get_platdata(&pdev->dev);
++	pdata = dev_get_platdata(dev);
+ 	if (!pdata) {
+-		dev_err(&pdev->dev, "Failed to get platform data.\n");
++		dev_err(dev, "Failed to get platform data.\n");
+ 		return -EINVAL;
  	}
  
- 	/* Make this driver part of hwmon class. */
-@@ -543,32 +549,20 @@ static int gpio_fan_probe(struct platform_device *pdev)
- 		return PTR_ERR(fan_data->hwmon_dev);
+-	fan = devm_kzalloc(&pdev->dev, sizeof(*fan), GFP_KERNEL);
++	fan = devm_kzalloc(dev, sizeof(*fan), GFP_KERNEL);
+ 	if (!fan)
+ 		return -ENOMEM;
  
- 	/* Optional cooling device register for Device tree platforms */
--	fan_data->cdev = thermal_of_cooling_device_register(np,
--							    "gpio-fan",
--							    fan_data,
--							    &gpio_fan_cool_ops);
-+	fan_data->cdev = devm_thermal_of_cooling_device_register(dev, np,
-+				"gpio-fan", fan_data, &gpio_fan_cool_ops);
+-	fan->dev = &pdev->dev;
++	fan->dev = dev;
+ 	fan->regmap = pdata->regmap;
+-	platform_set_drvdata(pdev, fan);
  
- 	dev_info(dev, "GPIO fan initialized\n");
+ 	err = mlxreg_fan_config(fan, pdata);
+ 	if (err)
+ 		return err;
  
+-	hwm = devm_hwmon_device_register_with_info(&pdev->dev, "mlxreg_fan",
++	hwm = devm_hwmon_device_register_with_info(dev, "mlxreg_fan",
+ 						   fan,
+ 						   &mlxreg_fan_hwmon_chip_info,
+ 						   NULL);
+ 	if (IS_ERR(hwm)) {
+-		dev_err(&pdev->dev, "Failed to register hwmon device\n");
++		dev_err(dev, "Failed to register hwmon device\n");
+ 		return PTR_ERR(hwm);
+ 	}
+ 
+ 	if (IS_REACHABLE(CONFIG_THERMAL)) {
+-		fan->cdev = thermal_cooling_device_register("mlxreg_fan", fan,
+-						&mlxreg_fan_cooling_ops);
++		fan->cdev = devm_thermal_of_cooling_device_register(dev,
++			NULL, "mlxreg_fan", fan, &mlxreg_fan_cooling_ops);
+ 		if (IS_ERR(fan->cdev)) {
+-			dev_err(&pdev->dev, "Failed to register cooling device\n");
++			dev_err(dev, "Failed to register cooling device\n");
+ 			return PTR_ERR(fan->cdev);
+ 		}
+ 	}
+@@ -463,22 +463,11 @@ static int mlxreg_fan_probe(struct platform_device *pdev)
  	return 0;
  }
  
--static int gpio_fan_remove(struct platform_device *pdev)
-+static void gpio_fan_shutdown(struct platform_device *pdev)
- {
- 	struct gpio_fan_data *fan_data = platform_get_drvdata(pdev);
- 
--	if (!IS_ERR(fan_data->cdev))
--		thermal_cooling_device_unregister(fan_data->cdev);
+-static int mlxreg_fan_remove(struct platform_device *pdev)
+-{
+-	struct mlxreg_fan *fan = platform_get_drvdata(pdev);
 -
- 	if (fan_data->gpios)
- 		set_fan_speed(fan_data, 0);
+-	if (IS_REACHABLE(CONFIG_THERMAL))
+-		thermal_cooling_device_unregister(fan->cdev);
 -
 -	return 0;
 -}
 -
--static void gpio_fan_shutdown(struct platform_device *pdev)
--{
--	gpio_fan_remove(pdev);
- }
+ static struct platform_driver mlxreg_fan_driver = {
+ 	.driver = {
+ 	    .name = "mlxreg-fan",
+ 	},
+ 	.probe = mlxreg_fan_probe,
+-	.remove = mlxreg_fan_remove,
+ };
  
- #ifdef CONFIG_PM_SLEEP
-@@ -602,7 +596,6 @@ static SIMPLE_DEV_PM_OPS(gpio_fan_pm, gpio_fan_suspend, gpio_fan_resume);
- 
- static struct platform_driver gpio_fan_driver = {
- 	.probe		= gpio_fan_probe,
--	.remove		= gpio_fan_remove,
- 	.shutdown	= gpio_fan_shutdown,
- 	.driver	= {
- 		.name	= "gpio-fan",
+ module_platform_driver(mlxreg_fan_driver);
 -- 
 2.7.4
 
