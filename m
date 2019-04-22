@@ -1,7 +1,7 @@
 From: Patrick Venture <venture@google.com>
-Date: Mon, 22 Apr 2019 10:38:38 -0700
-Subject: [PATCH] soc: add aspeed folder and misc drivers
-Message-ID: <20190422173838.182736-1-venture@google.com>
+Date: Mon, 22 Apr 2019 10:54:19 -0700
+Subject: [PATCH v2] soc: add aspeed folder and misc drivers
+Message-ID: <20190422175419.189895-1-venture@google.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -13,6 +13,9 @@ currently present into this folder.  These drivers are not generic part
 drivers, but rather only apply to the ASPEED SoCs.
 
 Signed-off-by: Patrick Venture <venture@google.com>
+---
+v2:
+ Added configuration option for ASPEED to soc/Makefile
 ---
  drivers/misc/Kconfig                          | 16 ----------------
  drivers/misc/Makefile                         |  2 --
@@ -81,14 +84,14 @@ index c07b4a85253f..b750a88547c7 100644
  source "drivers/soc/bcm/Kconfig"
  source "drivers/soc/fsl/Kconfig"
 diff --git a/drivers/soc/Makefile b/drivers/soc/Makefile
-index 90b686e586c6..83a032db3e44 100644
+index 90b686e586c6..814128fe479f 100644
 --- a/drivers/soc/Makefile
 +++ b/drivers/soc/Makefile
 @@ -4,6 +4,7 @@
  #
  
  obj-$(CONFIG_ARCH_ACTIONS)	+= actions/
-+obj-y				+= aspeed/
++obj-$(CONFIG_ARCH_ASPEED)	+= aspeed/
  obj-$(CONFIG_ARCH_AT91)		+= atmel/
  obj-y				+= bcm/
  obj-$(CONFIG_ARCH_DOVE)		+= dove/
