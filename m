@@ -1,25 +1,33 @@
-From: Patrick Venture <venture@google.com>
-Date: Mon, 22 Apr 2019 12:24:28 -0700
-Subject: [PATCH v2] soc: add aspeed folder and misc drivers
-In-Reply-To: <20190422175419.189895-1-venture@google.com>
-References: <20190422175419.189895-1-venture@google.com>
-Message-ID: <CAO=notxpGXLBPwsHAJdt8CwQMdNcCE=EeFymgxez_goaqnGoHQ@mail.gmail.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Tue, 23 Apr 2019 10:08:11 +0200
+Subject: [PATCH] soc: add aspeed folder and misc drivers
+In-Reply-To: <20190422173838.182736-1-venture@google.com>
+References: <20190422173838.182736-1-venture@google.com>
+Message-ID: <CAK8P3a0k_8+R9FeyZsL6Egvi1Z-G0VrvR0TWXzGHryqxTr6thg@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Apr 22, 2019 at 10:54 AM Patrick Venture <venture@google.com> wrote:
+On Mon, Apr 22, 2019 at 7:38 PM Patrick Venture <venture@google.com> wrote:
 >
 > Create a SoC folder for the ASPEED parts and place the misc drivers
 > currently present into this folder.  These drivers are not generic part
 > drivers, but rather only apply to the ASPEED SoCs.
 >
 > Signed-off-by: Patrick Venture <venture@google.com>
-> ---
-> v2:
->  Added configuration option for ASPEED to soc/Makefile
+
+Looks ok, but please resend to arm at kernel.org or soc at kernel.org
+so we can track the submission and make sure it gets applied if
+you want this to go through the arm-soc tree.
+
+If Greg wants to pick it up, that's fine too.
+
+Either way,
+
+Acked-by: Arnd Bergmann <arnd@arndb.de>
+
 > ---
 >  drivers/misc/Kconfig                          | 16 ----------------
 >  drivers/misc/Makefile                         |  2 --
@@ -88,14 +96,14 @@ On Mon, Apr 22, 2019 at 10:54 AM Patrick Venture <venture@google.com> wrote:
 >  source "drivers/soc/bcm/Kconfig"
 >  source "drivers/soc/fsl/Kconfig"
 > diff --git a/drivers/soc/Makefile b/drivers/soc/Makefile
-> index 90b686e586c6..814128fe479f 100644
+> index 90b686e586c6..83a032db3e44 100644
 > --- a/drivers/soc/Makefile
 > +++ b/drivers/soc/Makefile
 > @@ -4,6 +4,7 @@
 >  #
 >
 >  obj-$(CONFIG_ARCH_ACTIONS)     += actions/
-> +obj-$(CONFIG_ARCH_ASPEED)      += aspeed/
+> +obj-y                          += aspeed/
 >  obj-$(CONFIG_ARCH_AT91)                += atmel/
 >  obj-y                          += bcm/
 >  obj-$(CONFIG_ARCH_DOVE)                += dove/
@@ -143,13 +151,3 @@ On Mon, Apr 22, 2019 at 10:54 AM Patrick Venture <venture@google.com> wrote:
 > --
 > 2.21.0.593.g511ec345e18-goog
 >
-
-Fixed CC on this reply (Gmail button didn't behave as expected) and
-replied to the v2 patchset instead of accidentally the first.
-
-Given this patchset, I have several patches that move the drivers into
-the folder, and thought about writing it up as a series.  I wanted to
-see how this patchset would do before I staged the rest -- my question
-is, should this patchset create the folder with the empty Kconfig and
-Makefile, and then have follow-on patches that provide content to
-split out the process into multiple logical steps?
