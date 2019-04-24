@@ -1,7 +1,7 @@
 From: Andrew Peng <pengms1@lenovo.com>
-Date: Tue, 23 Apr 2019 11:55:07 -0000
-Subject: [PATCH v2] ARM: dts: aspeed: Adding Lenovo Hr630 BMC
-Message-ID: <1556020484-440225-1-git-send-email-pengms1@lenovo.com>
+Date: Wed, 24 Apr 2019 12:29:05 -0000
+Subject: [PATCH v3] ARM: dts: aspeed: Adding Lenovo Hr630 BMC
+Message-ID: <1556108926-233682-1-git-send-email-pengms1@lenovo.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -20,6 +20,13 @@ Signed-off-by: Andrew Peng <pengms1@lenovo.com>
 Signed-off-by: Yonghui Liu <liuyh21@lenovo.com>
 Signed-off-by: Lisa Liu <liuyj19@lenovo.com>
 ---
+Changes in v3:
+ - revise i2c switch aliases name.
+Changes in v2:
+ - add i2c switch aliases name.
+ - remove the unused eeprom device from DT file.
+ - remove "Licensed under..." sentence.
+
  arch/arm/boot/dts/Makefile                    |   3 +-
  arch/arm/boot/dts/aspeed-bmc-lenovo-hr630.dts | 886 ++++++++++++++++++++++++++
  2 files changed, 888 insertions(+), 1 deletion(-)
@@ -38,7 +45,7 @@ index f4f5aea..375e53b 100644
 +	aspeed-bmc-lenovo-hr630.dtb
 diff --git a/arch/arm/boot/dts/aspeed-bmc-lenovo-hr630.dts b/arch/arm/boot/dts/aspeed-bmc-lenovo-hr630.dts
 new file mode 100644
-index 0000000..3322f83
+index 0000000..5c45523
 --- /dev/null
 +++ b/arch/arm/boot/dts/aspeed-bmc-lenovo-hr630.dts
 @@ -0,0 +1,886 @@
@@ -59,10 +66,10 @@ index 0000000..3322f83
 +	compatible = "lenovo,hr630-bmc", "aspeed,ast2500";
 +
 +	aliases {
-+		i2c_rbp = &i2c_rbp;
-+		i2c_fbp1 = &i2c_fbp1;
-+		i2c_fbp2 = &i2c_fbp2;
-+		i2c_fbp3 = &i2c_fbp3;
++		pca9545_i2c0 = &i2c_rbp;
++		pca9545_i2c1 = &i2c_fbp1;
++		pca9545_i2c2 = &i2c_fbp2;
++		pca9545_i2c3 = &i2c_fbp3;
 +	};
 +
 +	chosen {
