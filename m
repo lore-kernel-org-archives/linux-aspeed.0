@@ -1,7 +1,7 @@
 From: Andrew Peng <pengms1@lenovo.com>
-Date: Wed, 24 Apr 2019 12:29:05 -0000
-Subject: [PATCH v3] ARM: dts: aspeed: Adding Lenovo Hr630 BMC
-Message-ID: <1556108926-233682-1-git-send-email-pengms1@lenovo.com>
+Date: Wed, 24 Apr 2019 17:39:33 -0000
+Subject: [PATCH v4] ARM: dts: aspeed: Adding Lenovo Hr630 BMC
+Message-ID: <1556127550-234791-1-git-send-email-pengms1@lenovo.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -20,6 +20,8 @@ Signed-off-by: Andrew Peng <pengms1@lenovo.com>
 Signed-off-by: Yonghui Liu <liuyh21@lenovo.com>
 Signed-off-by: Lisa Liu <liuyj19@lenovo.com>
 ---
+Changes in v4:
+ - add pca9546 switch aliases name.
 Changes in v3:
  - revise i2c switch aliases name.
 Changes in v2:
@@ -28,8 +30,8 @@ Changes in v2:
  - remove "Licensed under..." sentence.
 
  arch/arm/boot/dts/Makefile                    |   3 +-
- arch/arm/boot/dts/aspeed-bmc-lenovo-hr630.dts | 886 ++++++++++++++++++++++++++
- 2 files changed, 888 insertions(+), 1 deletion(-)
+ arch/arm/boot/dts/aspeed-bmc-lenovo-hr630.dts | 890 ++++++++++++++++++++++++++
+ 2 files changed, 892 insertions(+), 1 deletion(-)
  create mode 100644 arch/arm/boot/dts/aspeed-bmc-lenovo-hr630.dts
 
 diff --git a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
@@ -45,10 +47,10 @@ index f4f5aea..375e53b 100644
 +	aspeed-bmc-lenovo-hr630.dtb
 diff --git a/arch/arm/boot/dts/aspeed-bmc-lenovo-hr630.dts b/arch/arm/boot/dts/aspeed-bmc-lenovo-hr630.dts
 new file mode 100644
-index 0000000..5c45523
+index 0000000..41d5689
 --- /dev/null
 +++ b/arch/arm/boot/dts/aspeed-bmc-lenovo-hr630.dts
-@@ -0,0 +1,886 @@
+@@ -0,0 +1,890 @@
 +// SPDX-License-Identifier: GPL-2.0+
 +/*
 + * Device Tree file for Lenovo Hr630 platform
@@ -70,6 +72,10 @@ index 0000000..5c45523
 +		pca9545_i2c1 = &i2c_fbp1;
 +		pca9545_i2c2 = &i2c_fbp2;
 +		pca9545_i2c3 = &i2c_fbp3;
++		pca9546_i2c0 = &i2c_riser2;
++		pca9546_i2c1 = &i2c_pcie4;
++		pca9546_i2c2 = &i2c_riser1;
++		pca9546_i2c3 = &i2c_ocp;
 +	};
 +
 +	chosen {
