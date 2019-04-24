@@ -1,40 +1,41 @@
 From: Eddie James <eajames@linux.ibm.com>
-Date: Wed, 24 Apr 2019 10:16:58 -0500
-Subject: [PATCH v2 2/4] media: platform: Aspeed: Make reserved memory optional
-In-Reply-To: <1556119020-7609-1-git-send-email-eajames@linux.ibm.com>
-References: <1556119020-7609-1-git-send-email-eajames@linux.ibm.com>
-Message-ID: <1556119020-7609-3-git-send-email-eajames@linux.ibm.com>
+Date: Wed, 24 Apr 2019 10:19:54 -0500
+Subject: [PATCH v2 4/4] ARM: dts: aspeed-g5: Add video engine
+Message-ID: <1556119194-10917-1-git-send-email-eajames@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Reserved memory doesn't need to be required; system memory would work
-fine.
+Add a node to describe the video engine on the AST2500.
 
 Signed-off-by: Eddie James <eajames@linux.ibm.com>
 ---
- drivers/media/platform/aspeed-video.c | 6 +-----
- 1 file changed, 1 insertion(+), 5 deletions(-)
+ arch/arm/boot/dts/aspeed-g5.dtsi | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-diff --git a/drivers/media/platform/aspeed-video.c b/drivers/media/platform/aspeed-video.c
-index 55c55a6..8144fe3 100644
---- a/drivers/media/platform/aspeed-video.c
-+++ b/drivers/media/platform/aspeed-video.c
-@@ -1608,11 +1608,7 @@ static int aspeed_video_init(struct aspeed_video *video)
- 		return PTR_ERR(video->vclk);
- 	}
+diff --git a/arch/arm/boot/dts/aspeed-g5.dtsi b/arch/arm/boot/dts/aspeed-g5.dtsi
+index 85ed9db..c6d5edc 100644
+--- a/arch/arm/boot/dts/aspeed-g5.dtsi
++++ b/arch/arm/boot/dts/aspeed-g5.dtsi
+@@ -243,6 +243,16 @@
+ 				status = "disabled";
+ 			};
  
--	rc = of_reserved_mem_device_init(dev);
--	if (rc) {
--		dev_err(dev, "Unable to reserve memory\n");
--		return rc;
--	}
-+	of_reserved_mem_device_init(dev);
- 
- 	rc = dma_set_mask_and_coherent(dev, DMA_BIT_MASK(32));
- 	if (rc) {
++			video: video at 1e700000 {
++				compatible = "aspeed,ast2500-video-engine";
++				reg = <0x1e700000 0x1000>;
++				clocks = <&syscon ASPEED_CLK_GATE_VCLK>,
++					 <&syscon ASPEED_CLK_GATE_ECLK>;
++				clock-names = "vclk", "eclk";
++				interrupts = <7>;
++				status = "disabled";
++			};
++
+ 			sram: sram at 1e720000 {
+ 				compatible = "mmio-sram";
+ 				reg = <0x1e720000 0x9000>;	// 36K
 -- 
 1.8.3.1
 
