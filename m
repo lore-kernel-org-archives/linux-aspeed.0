@@ -1,7 +1,7 @@
 From: Andrew Peng <pengms1@lenovo.com>
-Date: Wed, 24 Apr 2019 17:39:33 -0000
-Subject: [PATCH v4] ARM: dts: aspeed: Adding Lenovo Hr630 BMC
-Message-ID: <1556127550-234791-1-git-send-email-pengms1@lenovo.com>
+Date: Thu, 25 Apr 2019 06:48:43 -0000
+Subject: [PATCH v5] ARM: dts: aspeed: Adding Lenovo Hr630 BMC
+Message-ID: <1556174895-137132-1-git-send-email-pengms1@lenovo.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -20,6 +20,8 @@ Signed-off-by: Andrew Peng <pengms1@lenovo.com>
 Signed-off-by: Yonghui Liu <liuyh21@lenovo.com>
 Signed-off-by: Lisa Liu <liuyj19@lenovo.com>
 ---
+Changes in v5:
+ - revise pca9545 and pca9546 switch aliases name.
 Changes in v4:
  - add pca9546 switch aliases name.
 Changes in v3:
@@ -47,7 +49,7 @@ index f4f5aea..375e53b 100644
 +	aspeed-bmc-lenovo-hr630.dtb
 diff --git a/arch/arm/boot/dts/aspeed-bmc-lenovo-hr630.dts b/arch/arm/boot/dts/aspeed-bmc-lenovo-hr630.dts
 new file mode 100644
-index 0000000..41d5689
+index 0000000..4f18f4d
 --- /dev/null
 +++ b/arch/arm/boot/dts/aspeed-bmc-lenovo-hr630.dts
 @@ -0,0 +1,890 @@
@@ -68,14 +70,14 @@ index 0000000..41d5689
 +	compatible = "lenovo,hr630-bmc", "aspeed,ast2500";
 +
 +	aliases {
-+		pca9545_i2c0 = &i2c_rbp;
-+		pca9545_i2c1 = &i2c_fbp1;
-+		pca9545_i2c2 = &i2c_fbp2;
-+		pca9545_i2c3 = &i2c_fbp3;
-+		pca9546_i2c0 = &i2c_riser2;
-+		pca9546_i2c1 = &i2c_pcie4;
-+		pca9546_i2c2 = &i2c_riser1;
-+		pca9546_i2c3 = &i2c_ocp;
++		i2c14 = &i2c_rbp;
++		i2c15 = &i2c_fbp1;
++		i2c16 = &i2c_fbp2;
++		i2c17 = &i2c_fbp3;
++		i2c18 = &i2c_riser2;
++		i2c19 = &i2c_pcie4;
++		i2c20 = &i2c_riser1;
++		i2c21 = &i2c_ocp;
 +	};
 +
 +	chosen {
