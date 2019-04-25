@@ -1,44 +1,36 @@
-From: Hans Verkuil <hverkuil@xs4all.nl>
-Date: Thu, 25 Apr 2019 09:19:05 +0200
-Subject: [PATCH v2 3/4] media: dt-bindings: aspeed-video: Add missing
- memory-region property
-In-Reply-To: <20190424211732.GA18914@bogus>
-References: <1556119020-7609-1-git-send-email-eajames@linux.ibm.com>
- <1556119020-7609-4-git-send-email-eajames@linux.ibm.com>
- <20190424211732.GA18914@bogus>
-Message-ID: <6a8601d6-ad30-132c-f47a-adc3b4d39958@xs4all.nl>
+From: Greg KH <gregkh@linuxfoundation.org>
+Date: Thu, 25 Apr 2019 19:25:49 +0200
+Subject: [PATCH v2] soc: add aspeed folder and misc drivers
+In-Reply-To: <CAO=notz9QVoqKLrhJ3kx9FHja5+Mh68f36O36+1ewLG+SanmOA@mail.gmail.com>
+References: <20190423142629.120717-1-venture@google.com>
+ <CAO=notzjzpt0WHfJEWXMGgkoJU8UiLnqZnrGrPs-dRH5GNdJyQ@mail.gmail.com>
+ <CAO=notz9QVoqKLrhJ3kx9FHja5+Mh68f36O36+1ewLG+SanmOA@mail.gmail.com>
+Message-ID: <20190425172549.GA12376@kroah.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 4/24/19 11:17 PM, Rob Herring wrote:
-> On Wed, 24 Apr 2019 10:16:59 -0500, Eddie James wrote:
->> Missed documenting this property in the initial commit.
->>
->> Signed-off-by: Eddie James <eajames@linux.ibm.com>
->> ---
->> Changes since v1:
->>  - Add missing semi-colon
->>
->>  Documentation/devicetree/bindings/media/aspeed-video.txt | 6 ++++++
->>  1 file changed, 6 insertions(+)
->>
+On Tue, Apr 23, 2019 at 08:28:14AM -0700, Patrick Venture wrote:
+> On Tue, Apr 23, 2019 at 8:22 AM Patrick Venture <venture@google.com> wrote:
+> >
+> > On Tue, Apr 23, 2019 at 7:26 AM Patrick Venture <venture@google.com> wrote:
+> > >
+> > > Create a SoC folder for the ASPEED parts and place the misc drivers
+> > > currently present into this folder.  These drivers are not generic part
+> > > drivers, but rather only apply to the ASPEED SoCs.
+> > >
+> > > Signed-off-by: Patrick Venture <venture@google.com>
+> >
+> > Accidentally lost the Acked-by when re-sending this patchset as I
+> > didn't see it on v1 before re-sending v2 to the larger audience.
 > 
-> Please add Acked-by/Reviewed-by tags when posting new versions. However,
-> there's no need to repost patches *only* to add the tags. The upstream
-> maintainer will do that for acks received on the version they apply.
-> 
-> If a tag was not added on purpose, please state why and what changed.
-> 
+> Since there was a change between v1 and v2, Arnd, I'd appreciate you
+> Ack this version of the patchset since it changes when the soc/aspeed
+> Makefile is followed.
 
-I noticed the same when I was processing this patch. I've added back your
-'Reviewed-by' tag.
+I have no objection for moving stuff out of drivers/misc/ so the SOC
+maintainers are free to take this.
 
-So there is no need to repost, Eddie. Just remember this for the next
-time :-)
-
-Regards,
-
-	Hans
+Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
