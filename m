@@ -1,36 +1,54 @@
-From: Greg KH <gregkh@linuxfoundation.org>
-Date: Thu, 25 Apr 2019 19:25:49 +0200
-Subject: [PATCH v2] soc: add aspeed folder and misc drivers
-In-Reply-To: <CAO=notz9QVoqKLrhJ3kx9FHja5+Mh68f36O36+1ewLG+SanmOA@mail.gmail.com>
-References: <20190423142629.120717-1-venture@google.com>
- <CAO=notzjzpt0WHfJEWXMGgkoJU8UiLnqZnrGrPs-dRH5GNdJyQ@mail.gmail.com>
- <CAO=notz9QVoqKLrhJ3kx9FHja5+Mh68f36O36+1ewLG+SanmOA@mail.gmail.com>
-Message-ID: <20190425172549.GA12376@kroah.com>
+From: Patrick Venture <venture@google.com>
+Date: Thu, 25 Apr 2019 12:48:53 -0700
+Subject: [PATCH 1/2] ARM: dts: aspeed: Add aspeed-p2a-ctrl node
+Message-ID: <20190425194853.140617-1-venture@google.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Apr 23, 2019 at 08:28:14AM -0700, Patrick Venture wrote:
-> On Tue, Apr 23, 2019 at 8:22 AM Patrick Venture <venture@google.com> wrote:
-> >
-> > On Tue, Apr 23, 2019 at 7:26 AM Patrick Venture <venture@google.com> wrote:
-> > >
-> > > Create a SoC folder for the ASPEED parts and place the misc drivers
-> > > currently present into this folder.  These drivers are not generic part
-> > > drivers, but rather only apply to the ASPEED SoCs.
-> > >
-> > > Signed-off-by: Patrick Venture <venture@google.com>
-> >
-> > Accidentally lost the Acked-by when re-sending this patchset as I
-> > didn't see it on v1 before re-sending v2 to the larger audience.
-> 
-> Since there was a change between v1 and v2, Arnd, I'd appreciate you
-> Ack this version of the patchset since it changes when the soc/aspeed
-> Makefile is followed.
+Add a node for the aspeed-p2a-ctrl module.  This node, when enabled will
+disable the PCI-to-AHB bridge and then allow control of this bridge via
+ioctls, and access via mmap.
 
-I have no objection for moving stuff out of drivers/misc/ so the SOC
-maintainers are free to take this.
+Signed-off-by: Patrick Venture <venture@google.com>
+---
+ arch/arm/boot/dts/aspeed-g4.dtsi | 4 ++++
+ arch/arm/boot/dts/aspeed-g5.dtsi | 5 +++++
+ 2 files changed, 9 insertions(+)
 
-Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+diff --git a/arch/arm/boot/dts/aspeed-g4.dtsi b/arch/arm/boot/dts/aspeed-g4.dtsi
+index 9549f867aa1ef..0b7bc6072aed0 100644
+--- a/arch/arm/boot/dts/aspeed-g4.dtsi
++++ b/arch/arm/boot/dts/aspeed-g4.dtsi
+@@ -165,6 +165,10 @@
+ 					compatible = "aspeed,g4-pinctrl";
+ 				};
+ 
++				p2a: p2a-control {
++					compatible = "aspeed,ast2400-p2a-ctrl";
++					status = "disabled";
++				};
+ 			};
+ 
+ 			rng: hwrng at 1e6e2078 {
+diff --git a/arch/arm/boot/dts/aspeed-g5.dtsi b/arch/arm/boot/dts/aspeed-g5.dtsi
+index 3e4ed081505cc..5f01befcca1e2 100644
+--- a/arch/arm/boot/dts/aspeed-g5.dtsi
++++ b/arch/arm/boot/dts/aspeed-g5.dtsi
+@@ -212,6 +212,11 @@
+ 					aspeed,external-nodes = <&gfx &lhc>;
+ 
+ 				};
++
++				p2a: p2a-control {
++					compatible = "aspeed,ast2500-p2a-ctrl";
++					status = "disabled";
++				};
+ 			};
+ 
+ 			rng: hwrng at 1e6e2078 {
+-- 
+2.21.0.593.g511ec345e18-goog
+
