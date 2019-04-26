@@ -1,45 +1,46 @@
-From: Eddie James <eajames@linux.ibm.com>
-Date: Fri, 26 Apr 2019 09:11:31 -0500
-Subject: [PATCH v2 3/4] media: dt-bindings: aspeed-video: Add missing
- memory-region property
-In-Reply-To: <20190424211732.GA18914@bogus>
-References: <1556119020-7609-1-git-send-email-eajames@linux.ibm.com>
- <1556119020-7609-4-git-send-email-eajames@linux.ibm.com>
- <20190424211732.GA18914@bogus>
-Message-ID: <6fd356ba-815b-aa34-abd4-d3709daf453a@linux.ibm.com>
+From: Patrick Venture <venture@google.com>
+Date: Fri, 26 Apr 2019 09:56:55 -0700
+Subject: [PATCH] misc: aspeed-p2a-ctrl: fix mixed declarations
+Message-ID: <20190426165655.218228-1-venture@google.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+Fix up mixed declarations and code in aspeed_p2a_mmap.
 
-On 4/24/19 4:17 PM, Rob Herring wrote:
-> On Wed, 24 Apr 2019 10:16:59 -0500, Eddie James wrote:
->> Missed documenting this property in the initial commit.
->>
->> Signed-off-by: Eddie James <eajames@linux.ibm.com>
->> ---
->> Changes since v1:
->>   - Add missing semi-colon
->>
->>   Documentation/devicetree/bindings/media/aspeed-video.txt | 6 ++++++
->>   1 file changed, 6 insertions(+)
->>
-> Please add Acked-by/Reviewed-by tags when posting new versions. However,
-> there's no need to repost patches *only* to add the tags. The upstream
-> maintainer will do that for acks received on the version they apply.
->
-> If a tag was not added on purpose, please state why and what changed.
+Tested: Verified the build had the error and that this patch resolved it
+and there were no other warnings or build errors associated with
+compilation of this driver.
 
+Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Signed-off-by: Patrick Venture <venture@google.com>
+---
+ drivers/misc/aspeed-p2a-ctrl.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-Yes, I left it off because I added a semi-colon (trivial, I know, but it 
-did change). The change log is there below the commit message.
-
-Thanks,
-
-Eddie
-
-
->
+diff --git a/drivers/misc/aspeed-p2a-ctrl.c b/drivers/misc/aspeed-p2a-ctrl.c
+index 9736821972ef..b60fbeaffcbd 100644
+--- a/drivers/misc/aspeed-p2a-ctrl.c
++++ b/drivers/misc/aspeed-p2a-ctrl.c
+@@ -100,6 +100,7 @@ static void aspeed_p2a_disable_bridge(struct aspeed_p2a_ctrl *p2a_ctrl)
+ static int aspeed_p2a_mmap(struct file *file, struct vm_area_struct *vma)
+ {
+ 	unsigned long vsize;
++	pgprot_t prot;
+ 	struct aspeed_p2a_user *priv = file->private_data;
+ 	struct aspeed_p2a_ctrl *ctrl = priv->parent;
+ 
+@@ -107,7 +108,7 @@ static int aspeed_p2a_mmap(struct file *file, struct vm_area_struct *vma)
+ 		return -EINVAL;
+ 
+ 	vsize = vma->vm_end - vma->vm_start;
+-	pgprot_t prot = vma->vm_page_prot;
++	prot = vma->vm_page_prot;
+ 
+ 	if (vma->vm_pgoff + vsize > ctrl->mem_base + ctrl->mem_size)
+ 		return -EINVAL;
+-- 
+2.21.0.593.g511ec345e18-goog
 
