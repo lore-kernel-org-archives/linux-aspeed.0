@@ -1,12 +1,12 @@
-From: Patrick Venture <venture@google.com>
-Date: Mon, 29 Apr 2019 10:12:06 -0700
+From: Olof Johansson <olof@lixom.net>
+Date: Mon, 29 Apr 2019 10:12:48 -0700
 Subject: [PATCH v2] soc: add aspeed folder and misc drivers
 In-Reply-To: <20190429165137.mwj4ehhwerunbef4@localhost>
 References: <20190423142629.120717-1-venture@google.com>
  <CAO=notzjzpt0WHfJEWXMGgkoJU8UiLnqZnrGrPs-dRH5GNdJyQ@mail.gmail.com>
  <CAO=notz9QVoqKLrhJ3kx9FHja5+Mh68f36O36+1ewLG+SanmOA@mail.gmail.com>
  <20190425172549.GA12376@kroah.com> <20190429165137.mwj4ehhwerunbef4@localhost>
-Message-ID: <CAO=notwewAeeLz=LsOcSj=DakLGW0KjeDHALP5Nv2ckgkRqnFA@mail.gmail.com>
+Message-ID: <CAOesGMg49z4Gip-bLK-h7+LSLa4Fu68r11gT2EV8E8xMCPGDxg@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -41,24 +41,20 @@ On Mon, Apr 29, 2019 at 10:08 AM Olof Johansson <olof@lixom.net> wrote:
 >
 > I'm totally confused. This is the second "PATCH v2" of this patch that I came
 > across, I already applied the first.
-
-I think the issue here was that I added to the CC list another email
-and so you may see the v2  without that mailing list, and a v2 with it
---
-
-Does this require a v3?  I honestly didn't think so, but this was the
-first time I had to add more people without needing other changes.
-
 >
 > Patrick: Follow up with incremental patch in case there's any difference.
 > Meanwhile, please keep in mind that you're adding a lot of work for people when
 > you respin patches without following up on the previous version. Thanks!
 
-w.r.t this patch series.  I found an issue with v1, and released a v2
-with the detail of what changed.  I thought that was the correct
-approach.  I apologize for creating extra work, that's something
-nobody needs.
+Not only that, but subthreads were cc:d to arm at kernel.org and some
+were not, so I missed the overnight conversation on the topic.
 
->
->
-> -Olof
+If this email thread is any indication of how the code will be
+flowing, there's definitely need for more structure. Joel, I'm hoping
+you'll coordinate.
+
+I'm with Arnd on whether the code should be in drivers/soc or not --
+most of it likely should not.
+
+
+-Olof
