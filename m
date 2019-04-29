@@ -1,76 +1,90 @@
-From: Patrick Venture <venture@google.com>
-Date: Mon, 29 Apr 2019 10:16:14 -0700
+From: Olof Johansson <olof@lixom.net>
+Date: Mon, 29 Apr 2019 10:19:04 -0700
 Subject: [PATCH v2] soc: add aspeed folder and misc drivers
-In-Reply-To: <CAOesGMg49z4Gip-bLK-h7+LSLa4Fu68r11gT2EV8E8xMCPGDxg@mail.gmail.com>
+In-Reply-To: <CAO=notwVyTqvxfYRU1XJTwzSNCUAMgYCVpXVvqaN62uSiWyYCQ@mail.gmail.com>
 References: <20190423142629.120717-1-venture@google.com>
  <CAO=notzjzpt0WHfJEWXMGgkoJU8UiLnqZnrGrPs-dRH5GNdJyQ@mail.gmail.com>
  <CAO=notz9QVoqKLrhJ3kx9FHja5+Mh68f36O36+1ewLG+SanmOA@mail.gmail.com>
  <20190425172549.GA12376@kroah.com> <20190429165137.mwj4ehhwerunbef4@localhost>
  <CAOesGMg49z4Gip-bLK-h7+LSLa4Fu68r11gT2EV8E8xMCPGDxg@mail.gmail.com>
-Message-ID: <CAO=notwVyTqvxfYRU1XJTwzSNCUAMgYCVpXVvqaN62uSiWyYCQ@mail.gmail.com>
+ <CAO=notwVyTqvxfYRU1XJTwzSNCUAMgYCVpXVvqaN62uSiWyYCQ@mail.gmail.com>
+Message-ID: <CAOesGMjShorZmVeLL1nJNPVOP+vNTVzcA=arU3qW8ZUDYCtjaQ@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Apr 29, 2019 at 10:13 AM Olof Johansson <olof@lixom.net> wrote:
+On Mon, Apr 29, 2019 at 10:16 AM Patrick Venture <venture@google.com> wrote:
 >
-> On Mon, Apr 29, 2019 at 10:08 AM Olof Johansson <olof@lixom.net> wrote:
+> On Mon, Apr 29, 2019 at 10:13 AM Olof Johansson <olof@lixom.net> wrote:
 > >
-> > On Thu, Apr 25, 2019 at 07:25:49PM +0200, Greg KH wrote:
-> > > On Tue, Apr 23, 2019 at 08:28:14AM -0700, Patrick Venture wrote:
-> > > > On Tue, Apr 23, 2019 at 8:22 AM Patrick Venture <venture@google.com> wrote:
-> > > > >
-> > > > > On Tue, Apr 23, 2019 at 7:26 AM Patrick Venture <venture@google.com> wrote:
+> > On Mon, Apr 29, 2019 at 10:08 AM Olof Johansson <olof@lixom.net> wrote:
+> > >
+> > > On Thu, Apr 25, 2019 at 07:25:49PM +0200, Greg KH wrote:
+> > > > On Tue, Apr 23, 2019 at 08:28:14AM -0700, Patrick Venture wrote:
+> > > > > On Tue, Apr 23, 2019 at 8:22 AM Patrick Venture <venture@google.com> wrote:
 > > > > > >
-> > > > > > Create a SoC folder for the ASPEED parts and place the misc drivers
-> > > > > > currently present into this folder.  These drivers are not generic part
-> > > > > > drivers, but rather only apply to the ASPEED SoCs.
+> > > > > > On Tue, Apr 23, 2019 at 7:26 AM Patrick Venture <venture@google.com> wrote:
+> > > > > > >
+> > > > > > > Create a SoC folder for the ASPEED parts and place the misc drivers
+> > > > > > > currently present into this folder.  These drivers are not generic part
+> > > > > > > drivers, but rather only apply to the ASPEED SoCs.
+> > > > > > >
+> > > > > > > Signed-off-by: Patrick Venture <venture@google.com>
 > > > > > >
-> > > > > > Signed-off-by: Patrick Venture <venture@google.com>
+> > > > > > Accidentally lost the Acked-by when re-sending this patchset as I
+> > > > > > didn't see it on v1 before re-sending v2 to the larger audience.
 > > > > >
-> > > > > Accidentally lost the Acked-by when re-sending this patchset as I
-> > > > > didn't see it on v1 before re-sending v2 to the larger audience.
+> > > > > Since there was a change between v1 and v2, Arnd, I'd appreciate you
+> > > > > Ack this version of the patchset since it changes when the soc/aspeed
+> > > > > Makefile is followed.
 > > > >
-> > > > Since there was a change between v1 and v2, Arnd, I'd appreciate you
-> > > > Ack this version of the patchset since it changes when the soc/aspeed
-> > > > Makefile is followed.
+> > > > I have no objection for moving stuff out of drivers/misc/ so the SOC
+> > > > maintainers are free to take this.
+> > > >
+> > > > Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 > > >
-> > > I have no objection for moving stuff out of drivers/misc/ so the SOC
-> > > maintainers are free to take this.
+> > > I'm totally confused. This is the second "PATCH v2" of this patch that I came
+> > > across, I already applied the first.
 > > >
-> > > Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> > > Patrick: Follow up with incremental patch in case there's any difference.
+> > > Meanwhile, please keep in mind that you're adding a lot of work for people when
+> > > you respin patches without following up on the previous version. Thanks!
 > >
-> > I'm totally confused. This is the second "PATCH v2" of this patch that I came
-> > across, I already applied the first.
+> > Not only that, but subthreads were cc:d to arm at kernel.org and some
+> > were not, so I missed the overnight conversation on the topic.
 > >
-> > Patrick: Follow up with incremental patch in case there's any difference.
-> > Meanwhile, please keep in mind that you're adding a lot of work for people when
-> > you respin patches without following up on the previous version. Thanks!
+> > If this email thread is any indication of how the code will be
+> > flowing, there's definitely need for more structure. Joel, I'm hoping
+> > you'll coordinate.
 >
-> Not only that, but subthreads were cc:d to arm at kernel.org and some
-> were not, so I missed the overnight conversation on the topic.
->
-> If this email thread is any indication of how the code will be
-> flowing, there's definitely need for more structure. Joel, I'm hoping
-> you'll coordinate.
+> To be honest, this patchset thread was a bit less clear than anyone
+> prefers.  I use get_maintainers to get the initial list, and so adding
+> arm@ or soc@ per a request tells me that perhaps those should be
+> output via that script.
 
-To be honest, this patchset thread was a bit less clear than anyone
-prefers.  I use get_maintainers to get the initial list, and so adding
-arm@ or soc@ per a request tells me that perhaps those should be
-output via that script.
+The tools are working as expected, we normally don't take patches
+directly to arm at kernel.org, we let them go in through platform
+maintainers who then send it on to us.
 
+> >
+> > I'm with Arnd on whether the code should be in drivers/soc or not --
+> > most of it likely should not.
 >
-> I'm with Arnd on whether the code should be in drivers/soc or not --
-> most of it likely should not.
+> I think the misc drivers for a SoC that are a single user interface
+> that is focused on the use-case that belongs to that SoC only belong
+> in soc/, while if there is something we can do in common -- different
+> story.  If it makes sense to just have misc/aspeed/ instead of
+> soc/aspeed -- would that align more?
 
-I think the misc drivers for a SoC that are a single user interface
-that is focused on the use-case that belongs to that SoC only belong
-in soc/, while if there is something we can do in common -- different
-story.  If it makes sense to just have misc/aspeed/ instead of
-soc/aspeed -- would that align more?
+Those views are how the "board file hell" started on 32-bit ARM too,
+so we're definitely hesitant to jump to that conclusion without
+knowing more about what's actually anticipated.
 
->
->
-> -Olof
+
+Do you happen to have an estimate on what kind of drivers are
+needed/anticipated?
+
+
+-Olof
