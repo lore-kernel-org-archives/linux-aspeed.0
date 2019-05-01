@@ -1,71 +1,80 @@
 From: Timothy Pearson <tpearson@raptorengineering.com>
-Date: Wed, 1 May 2019 17:49:46 -0500 (CDT)
-Subject: [PATCH 2/3] aspeed/pinctrl: Fix simultaneous RS-232 / PWM and DVO
- outputs on AST2500 devices
-Message-ID: <1890791123.3393899.1556750986902.JavaMail.zimbra@raptorengineeringinc.com>
+Date: Wed, 1 May 2019 17:50:09 -0500 (CDT)
+Subject: [PATCH 3/3] aspeed/pinctrl: Fix simultaneous DVO and serial outputs
+ on AST2500 devices
+Message-ID: <236762130.3394112.1556751009128.JavaMail.zimbra@raptorengineeringinc.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-There appears to be a small error in the pinmux table on pages 130 and
-131 of the AST2500 datasheet v1.6.  Specifically, the COND2 requirement
-used to mux the surrounding pins to DVI was inadvertently replicated to
-pins V1, W1, V2, and W2 in the table, which do not incorporate DVI
-functionality.
+There appears to be a significant error in the pinmux table starting on
+page 127 of the AST2500 datasheet v1.6.  Specifically, the COND2 (DVO)
+requirement is incorrectly applied to multiple digital video input (DVI)
+muxed pins, and no DVI-specific condition is provided.  This results in
+the serial devices incorrectly overriding the DVO pinmuxes and disabling
+the DVO pins.
 
-As a result of this error, both serial TX lines and the PWM 0/1 outputs
-were overriding the VPO pinmux settings when VPO was enabled in the
-pinmux hogs.
-
-This patch has been verified to function on Blackbird hardware.  Both
-serial TXD pins and PWM0/PWM1 were functionally tested with SCU94[1:0]
-set to 0x1.
+Create a new condition code (COND6) for DVI enable, and update the most
+seriously affected pins to use the new condition code.
 
 Signed-off-by: Timothy Pearson <tpearson@raptorengineering.com>
 ---
- drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c | 17 +++++++++--------
+ 1 file changed, 9 insertions(+), 8 deletions(-)
 
 diff --git a/drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c b/drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c
-index 187abd7693cf..6f357a11e89a 100644
+index 6f357a11e89a..676f90d3c5f3 100644
 --- a/drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c
 +++ b/drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c
-@@ -696,14 +696,14 @@ FUNC_GROUP_DECL(NRTS1, P3);
- #define V1 94
- #define V1_DESC		SIG_DESC_SET(SCU84, 22)
- SIG_EXPR_LIST_DECL_SINGLE(DASHV1, DASHV1, VPIRSVD_DESC, V1_DESC);
--SIG_EXPR_LIST_DECL_SINGLE(TXD1, TXD1, V1_DESC, COND2);
-+SIG_EXPR_LIST_DECL_SINGLE(TXD1, TXD1, V1_DESC);
- MS_PIN_DECL(V1, GPIOL6, DASHV1, TXD1);
- FUNC_GROUP_DECL(TXD1, V1);
+@@ -29,6 +29,7 @@
  
- #define W1 95
- #define W1_DESC		SIG_DESC_SET(SCU84, 23)
- SIG_EXPR_LIST_DECL_SINGLE(DASHW1, DASHW1, VPIRSVD_DESC, W1_DESC);
--SIG_EXPR_LIST_DECL_SINGLE(RXD1, RXD1, W1_DESC, COND2);
-+SIG_EXPR_LIST_DECL_SINGLE(RXD1, RXD1, W1_DESC);
- MS_PIN_DECL(W1, GPIOL7, DASHW1, RXD1);
- FUNC_GROUP_DECL(RXD1, W1);
+ #define COND1		{ ASPEED_IP_SCU, SCU90, BIT(6), 0, 0 }
+ #define COND2		{ ASPEED_IP_SCU, SCU94, GENMASK(1, 0), 0, 0 }
++#define COND6		{ ASPEED_IP_SCU, SCU90, GENMASK(5, 4), 0, 0 }
  
-@@ -766,14 +766,14 @@ FUNC_GROUP_DECL(RXD2, T5);
- #define V2 104
- #define V2_DESC         SIG_DESC_SET(SCU88, 0)
- SIG_EXPR_LIST_DECL_SINGLE(DASHN0, DASHN0, VPIRSVD_DESC, V2_DESC);
--SIG_EXPR_LIST_DECL_SINGLE(PWM0, PWM0, V2_DESC, COND2);
-+SIG_EXPR_LIST_DECL_SINGLE(PWM0, PWM0, V2_DESC);
- MS_PIN_DECL(V2, GPION0, DASHN0, PWM0);
- FUNC_GROUP_DECL(PWM0, V2);
+ /* LHCR0 is offset from the end of the H8S/2168-compatible registers */
+ #define LHCR0		0x20
+@@ -660,8 +661,8 @@ SSSF_PIN_DECL(T2, GPIOL0, NCTS1, SIG_DESC_SET(SCU84, 16));
  
- #define W2 105
- #define W2_DESC         SIG_DESC_SET(SCU88, 1)
- SIG_EXPR_LIST_DECL_SINGLE(DASHN1, DASHN1, VPIRSVD_DESC, W2_DESC);
--SIG_EXPR_LIST_DECL_SINGLE(PWM1, PWM1, W2_DESC, COND2);
-+SIG_EXPR_LIST_DECL_SINGLE(PWM1, PWM1, W2_DESC);
- MS_PIN_DECL(W2, GPION1, DASHN1, PWM1);
- FUNC_GROUP_DECL(PWM1, W2);
+ #define T1 89
+ #define T1_DESC		SIG_DESC_SET(SCU84, 17)
+-SIG_EXPR_LIST_DECL_SINGLE(VPIDE, VPI24, VPI_24_RSVD_DESC, T1_DESC, COND2);
+-SIG_EXPR_LIST_DECL_SINGLE(NDCD1, NDCD1, T1_DESC, COND2);
++SIG_EXPR_LIST_DECL_SINGLE(VPIDE, VPI24, VPI_24_RSVD_DESC, T1_DESC, COND6);
++SIG_EXPR_LIST_DECL_SINGLE(NDCD1, NDCD1, T1_DESC, COND6);
+ MS_PIN_DECL(T1, GPIOL1, VPIDE, NDCD1);
+ FUNC_GROUP_DECL(NDCD1, T1);
+ 
+@@ -674,22 +675,22 @@ FUNC_GROUP_DECL(NDSR1, U1);
+ 
+ #define U2 91
+ #define U2_DESC		SIG_DESC_SET(SCU84, 19)
+-SIG_EXPR_LIST_DECL_SINGLE(VPIHS, VPI24, VPI_24_RSVD_DESC, U2_DESC, COND2);
+-SIG_EXPR_LIST_DECL_SINGLE(NRI1, NRI1, U2_DESC, COND2);
++SIG_EXPR_LIST_DECL_SINGLE(VPIHS, VPI24, VPI_24_RSVD_DESC, U2_DESC, COND6);
++SIG_EXPR_LIST_DECL_SINGLE(NRI1, NRI1, U2_DESC, COND6);
+ MS_PIN_DECL(U2, GPIOL3, VPIHS, NRI1);
+ FUNC_GROUP_DECL(NRI1, U2);
+ 
+ #define P4 92
+ #define P4_DESC		SIG_DESC_SET(SCU84, 20)
+-SIG_EXPR_LIST_DECL_SINGLE(VPIVS, VPI24, VPI_24_RSVD_DESC, P4_DESC, COND2);
+-SIG_EXPR_LIST_DECL_SINGLE(NDTR1, NDTR1, P4_DESC, COND2);
++SIG_EXPR_LIST_DECL_SINGLE(VPIVS, VPI24, VPI_24_RSVD_DESC, P4_DESC, COND6);
++SIG_EXPR_LIST_DECL_SINGLE(NDTR1, NDTR1, P4_DESC, COND6);
+ MS_PIN_DECL(P4, GPIOL4, VPIVS, NDTR1);
+ FUNC_GROUP_DECL(NDTR1, P4);
+ 
+ #define P3 93
+ #define P3_DESC		SIG_DESC_SET(SCU84, 21)
+-SIG_EXPR_LIST_DECL_SINGLE(VPICLK, VPI24, VPI_24_RSVD_DESC, P3_DESC, COND2);
+-SIG_EXPR_LIST_DECL_SINGLE(NRTS1, NRTS1, P3_DESC, COND2);
++SIG_EXPR_LIST_DECL_SINGLE(VPICLK, VPI24, VPI_24_RSVD_DESC, P3_DESC, COND6);
++SIG_EXPR_LIST_DECL_SINGLE(NRTS1, NRTS1, P3_DESC, COND6);
+ MS_PIN_DECL(P3, GPIOL5, VPICLK, NRTS1);
+ FUNC_GROUP_DECL(NRTS1, P3);
  
 -- 
 2.11.0
-
