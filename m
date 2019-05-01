@@ -1,34 +1,38 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Date: Wed, 1 May 2019 09:48:43 -0700
-Subject: [PATCH 1/6] thermal: Introduce
- devm_thermal_of_cooling_device_register
-In-Reply-To: <1555617500-10862-2-git-send-email-linux@roeck-us.net>
-References: <1555617500-10862-1-git-send-email-linux@roeck-us.net>
- <1555617500-10862-2-git-send-email-linux@roeck-us.net>
-Message-ID: <20190501164843.GA16333@roeck-us.net>
+From: Vijay Khemka <vijaykhemka@fb.com>
+Date: Wed, 1 May 2019 22:22:59 +0000
+Subject: [PATCH v2] misc: aspeed-lpc-ctrl: make parameter optional
+In-Reply-To: <20190501064501.GA20816@kroah.com>
+References: <20190116220154.1026171-1-vijaykhemka@fb.com>
+ <1547787502.2061444.1637712576.1F1E21B4@webmail.messagingengine.com>
+ <DCD8D2E5-DB18-427C-AA8F-18289E9AB0AB@fb.com>
+ <CACPK8Xdgv1YVgeykf0grSpR3LXTGa45hoBwZVq+zWgR0anhmTg@mail.gmail.com>
+ <20190501064501.GA20816@kroah.com>
+Message-ID: <3CEAC0C9-9B7A-4329-B719-B08A1951F12F@fb.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Apr 18, 2019 at 12:58:15PM -0700, Guenter Roeck wrote:
-> thermal_of_cooling_device_register() and thermal_cooling_device_register()
-> are typically called from driver probe functions, and
-> thermal_cooling_device_unregister() is called from remove functions. This
-> makes both a perfect candidate for device managed functions.
-> 
-> Introduce devm_thermal_of_cooling_device_register(). This function can
-> also be used to replace thermal_cooling_device_register() by passing a NULL
-> pointer as device node. The new function requires both struct device *
-> and struct device_node * as parameters since the struct device_node *
-> parameter is not always identical to dev->of_node.
-> 
-> Don't introduce a device managed remove function since it is not needed
-> at this point.
-> 
+Let me send both patches.
 
-Any feedback / thoughts / comments ?
+?On 4/30/19, 11:45 PM, "Greg Kroah-Hartman" <gregkh@linuxfoundation.org> wrote:
 
-Thanks,
-Guenter
+    On Wed, May 01, 2019 at 05:55:07AM +0000, Joel Stanley wrote:
+    > On Fri, 18 Jan 2019 at 20:12, Vijay Khemka <vijaykhemka@fb.com> wrote:
+    > >
+    > > Hi Andrew,
+    > > Thanks for this review, I will have a follow up patch for this return values.
+    > 
+    > Did you send a follow up patch to fix the return values?
+    > 
+    > Greg, is there any reason why you did not merge this one? 5.2 will
+    > have device trees that depend on this patch's behavior.
+    
+    No idea, if it needs to be applied, please resend.
+    
+    thanks,
+    
+    greg k-h
+    
+
