@@ -1,64 +1,197 @@
-From: Jyri Sarha <jsarha@ti.com>
-Date: Wed, 24 Jun 2020 12:03:16 +0300
-Subject: [PATCH v3 37/43] drm/tilcdc: Use GEM CMA object functions
-In-Reply-To: <20200605073247.4057-38-tzimmermann@suse.de>
-References: <20200605073247.4057-1-tzimmermann@suse.de>
- <20200605073247.4057-38-tzimmermann@suse.de>
-Message-ID: <b66ccc2f-221f-5ae7-b60b-9e2b77a98fc7@ti.com>
+From: Joel Stanley <joel@jms.id.au>
+Date: Wed, 1 May 2019 05:55:07 +0000
+Subject: [PATCH v2] misc: aspeed-lpc-ctrl: make parameter optional
+In-Reply-To: <DCD8D2E5-DB18-427C-AA8F-18289E9AB0AB@fb.com>
+References: <20190116220154.1026171-1-vijaykhemka@fb.com>
+ <1547787502.2061444.1637712576.1F1E21B4@webmail.messagingengine.com>
+ <DCD8D2E5-DB18-427C-AA8F-18289E9AB0AB@fb.com>
+Message-ID: <CACPK8Xdgv1YVgeykf0grSpR3LXTGa45hoBwZVq+zWgR0anhmTg@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 05/06/2020 10:32, Thomas Zimmermann wrote:
-> Create GEM objects with drm_gem_cma_create_object_default_funcs(), which
-> allocates the object and sets CMA's default object functions. Corresponding
-> callbacks in struct drm_driver are cleared. No functional changes are made.
-> 
-> Driver and object-function instances use the same callback functions, with
-> the exception of vunmap. The implementation of vunmap is empty and left out
-> in CMA's default object functions.
-> 
-> v3:
-> 	* convert to DRIVER_OPS macro in a separate patch
-> 
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> Acked-by: Emil Velikov <emil.velikov@collabora.com>
+On Fri, 18 Jan 2019 at 20:12, Vijay Khemka <vijaykhemka@fb.com> wrote:
+>
+> Hi Andrew,
+> Thanks for this review, I will have a follow up patch for this return values.
 
-Reviewed-by: Jyri Sarha <jsarha@ti.com>
-Tested-by: Jyri Sarha <jsarha@ti.com>
+Did you send a follow up patch to fix the return values?
 
-> ---
->  drivers/gpu/drm/tilcdc/tilcdc_drv.c | 7 +------
->  1 file changed, 1 insertion(+), 6 deletions(-)
-> 
-> diff --git a/drivers/gpu/drm/tilcdc/tilcdc_drv.c b/drivers/gpu/drm/tilcdc/tilcdc_drv.c
-> index a5e9ee4c7fbf4..a6582325651bd 100644
-> --- a/drivers/gpu/drm/tilcdc/tilcdc_drv.c
-> +++ b/drivers/gpu/drm/tilcdc/tilcdc_drv.c
-> @@ -496,17 +496,12 @@ DEFINE_DRM_GEM_CMA_FOPS(fops);
->  static struct drm_driver tilcdc_driver = {
->  	.driver_features    = DRIVER_GEM | DRIVER_MODESET | DRIVER_ATOMIC,
->  	.irq_handler        = tilcdc_irq,
-> -	.gem_free_object_unlocked = drm_gem_cma_free_object,
-> -	.gem_print_info     = drm_gem_cma_print_info,
-> -	.gem_vm_ops         = &drm_gem_cma_vm_ops,
-> +	.gem_create_object  = drm_gem_cma_create_object_default_funcs,
->  	.dumb_create        = drm_gem_cma_dumb_create,
->  
->  	.prime_handle_to_fd	= drm_gem_prime_handle_to_fd,
->  	.prime_fd_to_handle	= drm_gem_prime_fd_to_handle,
-> -	.gem_prime_get_sg_table	= drm_gem_cma_prime_get_sg_table,
->  	.gem_prime_import_sg_table = drm_gem_cma_prime_import_sg_table,
-> -	.gem_prime_vmap		= drm_gem_cma_prime_vmap,
-> -	.gem_prime_vunmap	= drm_gem_cma_prime_vunmap,
->  	.gem_prime_mmap		= drm_gem_cma_prime_mmap,
->  #ifdef CONFIG_DEBUG_FS
->  	.debugfs_init       = tilcdc_debugfs_init,
-> 
+Greg, is there any reason why you did not merge this one? 5.2 will
+have device trees that depend on this patch's behavior.
 
+Cheers,
 
--- 
-Texas Instruments Finland Oy, Porkkalankatu 22, 00180 Helsinki.
-Y-tunnus/Business ID: 0615521-4. Kotipaikka/Domicile: Helsinki
+Joel
+
+> ?On 1/17/19, 8:58 PM, "Andrew Jeffery" <andrew@aj.id.au> wrote:
+>
+>     Hi Vijay,
+>
+>     Thanks for doing the work to fix the driver. Some minor queries/points
+>     below.
+>
+>     On Thu, 17 Jan 2019, at 08:31, Vijay Khemka wrote:
+>     > Makiing memory-region and flash as optional parameter in device
+>     > tree if user needs to use these parameter through ioctl then
+>     > need to define in devicetree.
+>     >
+>     > Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
+>     > ---
+>     >  drivers/misc/aspeed-lpc-ctrl.c | 58 +++++++++++++++++++++-------------
+>     >  1 file changed, 36 insertions(+), 22 deletions(-)
+>     >
+>     > diff --git a/drivers/misc/aspeed-lpc-ctrl.c b/drivers/misc/aspeed-lpc-
+>     > ctrl.c
+>     > index a024f8042259..332210e06e98 100644
+>     > --- a/drivers/misc/aspeed-lpc-ctrl.c
+>     > +++ b/drivers/misc/aspeed-lpc-ctrl.c
+>     > @@ -68,6 +68,7 @@ static long aspeed_lpc_ctrl_ioctl(struct file *file,
+>     > unsigned int cmd,
+>     >           unsigned long param)
+>     >  {
+>     >   struct aspeed_lpc_ctrl *lpc_ctrl = file_aspeed_lpc_ctrl(file);
+>     > + struct device *dev = file->private_data;
+>     >   void __user *p = (void __user *)param;
+>     >   struct aspeed_lpc_ctrl_mapping map;
+>     >   u32 addr;
+>     > @@ -90,6 +91,12 @@ static long aspeed_lpc_ctrl_ioctl(struct file *file,
+>     > unsigned int cmd,
+>     >           if (map.window_id != 0)
+>     >                   return -EINVAL;
+>     >
+>     > +         /* If memory-region is not described in device tree */
+>     > +         if (!lpc_ctrl->mem_size) {
+>     > +                 dev_err(dev, "Didn't find reserved memory\n");
+>     > +                 return -EINVAL;
+>
+>     I feel like EINVAL isn't quite right - it's pretty generic, and the parameter
+>     value changes its validity with the devicetree context. My gut instinct
+>     would be to use EINVAL for parameter values that violate assumptions
+>     of the driver rather than violate configuration of the driver. Maybe ENXIO
+>     ("No such device or address") is an improvement: "I can't map that device
+>     because there's no such device or address"?
+>
+>     > +         }
+>     > +
+>     >           map.size = lpc_ctrl->mem_size;
+>     >
+>     >           return copy_to_user(p, &map, sizeof(map)) ? -EFAULT : 0;
+>     > @@ -126,9 +133,18 @@ static long aspeed_lpc_ctrl_ioctl(struct file
+>     > *file, unsigned int cmd,
+>     >                   return -EINVAL;
+>     >
+>     >           if (map.window_type == ASPEED_LPC_CTRL_WINDOW_FLASH) {
+>     > +                 if (!lpc_ctrl->pnor_size) {
+>     > +                         dev_err(dev, "Didn't find host pnor flash\n");
+>     > +                         return -EINVAL;
+>
+>     See the error code discussion above. Also, this is userspace's error not
+>     the kernel's, so I think dev_err() is a bit harsh. Probably best to just let
+>     userspace log the error if it thinks the it is concerning.
+>
+>     > +                 }
+>     >                   addr = lpc_ctrl->pnor_base;
+>     >                   size = lpc_ctrl->pnor_size;
+>     >           } else if (map.window_type == ASPEED_LPC_CTRL_WINDOW_MEMORY) {
+>     > +                 /* If memory-region is not described in device tree */
+>     > +                 if (!lpc_ctrl->mem_size) {
+>     > +                         dev_err(dev, "Didn't find reserved memory\n");
+>     > +                         return -EINVAL;
+>
+>     as above.
+>
+>     > +                 }
+>     >                   addr = lpc_ctrl->mem_base;
+>     >                   size = lpc_ctrl->mem_size;
+>     >           } else {
+>     > @@ -196,17 +212,17 @@ static int aspeed_lpc_ctrl_probe(struct
+>     > platform_device *pdev)
+>     >   if (!lpc_ctrl)
+>     >           return -ENOMEM;
+>     >
+>     > + /* If flash is described in device tree then store */
+>     >   node = of_parse_phandle(dev->of_node, "flash", 0);
+>     >   if (!node) {
+>     > -         dev_err(dev, "Didn't find host pnor flash node\n");
+>     > -         return -ENODEV;
+>     > - }
+>     > -
+>     > - rc = of_address_to_resource(node, 1, &resm);
+>     > - of_node_put(node);
+>     > - if (rc) {
+>     > -         dev_err(dev, "Couldn't address to resource for flash\n");
+>     > -         return rc;
+>     > +         dev_dbg(dev, "Didn't find host pnor flash node\n");
+>     > + } else {
+>     > +         rc = of_address_to_resource(node, 1, &resm);
+>     > +         of_node_put(node);
+>     > +         if (rc) {
+>     > +                 dev_err(dev, "Couldn't address to resource for flash\n");
+>     > +                 return rc;
+>     > +         }
+>     >   }
+>     >
+>     >   lpc_ctrl->pnor_size = resource_size(&resm);
+>     > @@ -214,22 +230,22 @@ static int aspeed_lpc_ctrl_probe(struct
+>     > platform_device *pdev)
+>     >
+>     >   dev_set_drvdata(&pdev->dev, lpc_ctrl);
+>     >
+>     > + /* If memory-region is described in device tree then store */
+>     >   node = of_parse_phandle(dev->of_node, "memory-region", 0);
+>     >   if (!node) {
+>     > -         dev_err(dev, "Didn't find reserved memory\n");
+>     > -         return -EINVAL;
+>     > - }
+>     > +         dev_dbg(dev, "Didn't find reserved memory\n");
+>     > + } else {
+>     > +         rc = of_address_to_resource(node, 0, &resm);
+>     > +         of_node_put(node);
+>     > +         if (rc) {
+>     > +                 dev_err(dev, "Couldn't address to resource for reserved memory\n");
+>     > +                 return -ENOMEM;
+>
+>     Wow, I think this is an abuse of ENOMEM. Its description is "Out of memory"
+>     which doesn't really reflect the problem here.
+>
+>     Not really your fault though, maybe we'll fix that with some follow-up patches.
+>
+>     Cheers,
+>
+>     Andrew
+>
+>     > +         }
+>     >
+>     > - rc = of_address_to_resource(node, 0, &resm);
+>     > - of_node_put(node);
+>     > - if (rc) {
+>     > -         dev_err(dev, "Couldn't address to resource for reserved memory\n");
+>     > -         return -ENOMEM;
+>     > +         lpc_ctrl->mem_size = resource_size(&resm);
+>     > +         lpc_ctrl->mem_base = resm.start;
+>     >   }
+>     >
+>     > - lpc_ctrl->mem_size = resource_size(&resm);
+>     > - lpc_ctrl->mem_base = resm.start;
+>     > -
+>     >   lpc_ctrl->regmap = syscon_node_to_regmap(
+>     >                   pdev->dev.parent->of_node);
+>     >   if (IS_ERR(lpc_ctrl->regmap)) {
+>     > @@ -258,8 +274,6 @@ static int aspeed_lpc_ctrl_probe(struct
+>     > platform_device *pdev)
+>     >           goto err;
+>     >   }
+>     >
+>     > - dev_info(dev, "Loaded at %pr\n", &resm);
+>     > -
+>     >   return 0;
+>     >
+>     >  err:
+>     > --
+>     > 2.17.1
+>     >
+>
+>
