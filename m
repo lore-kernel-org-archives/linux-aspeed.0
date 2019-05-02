@@ -1,80 +1,58 @@
-From: Timothy Pearson <tpearson@raptorengineering.com>
-Date: Wed, 1 May 2019 17:50:09 -0500 (CDT)
-Subject: [PATCH 3/3] aspeed/pinctrl: Fix simultaneous DVO and serial outputs
- on AST2500 devices
-Message-ID: <236762130.3394112.1556751009128.JavaMail.zimbra@raptorengineeringinc.com>
+From: Andrew Jeffery <andrew@aj.id.au>
+Date: Wed, 01 May 2019 21:57:02 -0400
+Subject: =?UTF-8?Q?Re:_[PATCH_1/3]_drm/aspeed:_Preserve_DVO_configuration_bits_du?=
+ =?UTF-8?Q?ring_initialization?=
+In-Reply-To: <1681003008.3393892.1556750962226.JavaMail.zimbra@raptorengineeringinc.com>
+References: <1681003008.3393892.1556750962226.JavaMail.zimbra@raptorengineeringinc.com>
+Message-ID: <a39f9067-740c-4177-bb20-b55778ccaf7b@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-There appears to be a significant error in the pinmux table starting on
-page 127 of the AST2500 datasheet v1.6.  Specifically, the COND2 (DVO)
-requirement is incorrectly applied to multiple digital video input (DVI)
-muxed pins, and no DVI-specific condition is provided.  This results in
-the serial devices incorrectly overriding the DVO pinmuxes and disabling
-the DVO pins.
 
-Create a new condition code (COND6) for DVI enable, and update the most
-seriously affected pins to use the new condition code.
 
-Signed-off-by: Timothy Pearson <tpearson@raptorengineering.com>
----
- drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c | 17 +++++++++--------
- 1 file changed, 9 insertions(+), 8 deletions(-)
+On Thu, 2 May 2019, at 08:19, Timothy Pearson wrote:
+> GFX064 contains DVO enable and mode bits.  These are hardware specific, 
+> configured
+> via the pinmux from the DT, and should not be cleared during startup.
+> 
+> Signed-off-by: Timothy Pearson <tpearson@raptorengineering.com>
+> ---
+>  drivers/gpu/drm/aspeed/aspeed_gfx_drv.c | 5 ++++-
+>  1 file changed, 4 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c 
+> b/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
+> index 713a3975852b..1a7a9a000e2e 100644
+> --- a/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
+> +++ b/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
+> @@ -98,6 +98,7 @@ static int aspeed_gfx_load(struct drm_device *drm)
+>  	struct aspeed_gfx *priv;
+>  	struct resource *res;
+>  	int ret;
+> +	u32 reg;
+>  
+>  	priv = devm_kzalloc(&pdev->dev, sizeof(*priv), GFP_KERNEL);
+>  	if (!priv)
+> @@ -146,7 +147,9 @@ static int aspeed_gfx_load(struct drm_device *drm)
+>  
+>  	/* Sanitize control registers */
+>  	writel(0, priv->base + CRT_CTRL1);
+> -	writel(0, priv->base + CRT_CTRL2);
+> +	/* Preserve CRT_CTRL2[7:6] (DVO configuration) */
+> +	reg = readl(priv->base + CRT_CTRL2) & 0xc0;
 
-diff --git a/drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c b/drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c
-index 6f357a11e89a..676f90d3c5f3 100644
---- a/drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c
-+++ b/drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c
-@@ -29,6 +29,7 @@
- 
- #define COND1		{ ASPEED_IP_SCU, SCU90, BIT(6), 0, 0 }
- #define COND2		{ ASPEED_IP_SCU, SCU94, GENMASK(1, 0), 0, 0 }
-+#define COND6		{ ASPEED_IP_SCU, SCU90, GENMASK(5, 4), 0, 0 }
- 
- /* LHCR0 is offset from the end of the H8S/2168-compatible registers */
- #define LHCR0		0x20
-@@ -660,8 +661,8 @@ SSSF_PIN_DECL(T2, GPIOL0, NCTS1, SIG_DESC_SET(SCU84, 16));
- 
- #define T1 89
- #define T1_DESC		SIG_DESC_SET(SCU84, 17)
--SIG_EXPR_LIST_DECL_SINGLE(VPIDE, VPI24, VPI_24_RSVD_DESC, T1_DESC, COND2);
--SIG_EXPR_LIST_DECL_SINGLE(NDCD1, NDCD1, T1_DESC, COND2);
-+SIG_EXPR_LIST_DECL_SINGLE(VPIDE, VPI24, VPI_24_RSVD_DESC, T1_DESC, COND6);
-+SIG_EXPR_LIST_DECL_SINGLE(NDCD1, NDCD1, T1_DESC, COND6);
- MS_PIN_DECL(T1, GPIOL1, VPIDE, NDCD1);
- FUNC_GROUP_DECL(NDCD1, T1);
- 
-@@ -674,22 +675,22 @@ FUNC_GROUP_DECL(NDSR1, U1);
- 
- #define U2 91
- #define U2_DESC		SIG_DESC_SET(SCU84, 19)
--SIG_EXPR_LIST_DECL_SINGLE(VPIHS, VPI24, VPI_24_RSVD_DESC, U2_DESC, COND2);
--SIG_EXPR_LIST_DECL_SINGLE(NRI1, NRI1, U2_DESC, COND2);
-+SIG_EXPR_LIST_DECL_SINGLE(VPIHS, VPI24, VPI_24_RSVD_DESC, U2_DESC, COND6);
-+SIG_EXPR_LIST_DECL_SINGLE(NRI1, NRI1, U2_DESC, COND6);
- MS_PIN_DECL(U2, GPIOL3, VPIHS, NRI1);
- FUNC_GROUP_DECL(NRI1, U2);
- 
- #define P4 92
- #define P4_DESC		SIG_DESC_SET(SCU84, 20)
--SIG_EXPR_LIST_DECL_SINGLE(VPIVS, VPI24, VPI_24_RSVD_DESC, P4_DESC, COND2);
--SIG_EXPR_LIST_DECL_SINGLE(NDTR1, NDTR1, P4_DESC, COND2);
-+SIG_EXPR_LIST_DECL_SINGLE(VPIVS, VPI24, VPI_24_RSVD_DESC, P4_DESC, COND6);
-+SIG_EXPR_LIST_DECL_SINGLE(NDTR1, NDTR1, P4_DESC, COND6);
- MS_PIN_DECL(P4, GPIOL4, VPIVS, NDTR1);
- FUNC_GROUP_DECL(NDTR1, P4);
- 
- #define P3 93
- #define P3_DESC		SIG_DESC_SET(SCU84, 21)
--SIG_EXPR_LIST_DECL_SINGLE(VPICLK, VPI24, VPI_24_RSVD_DESC, P3_DESC, COND2);
--SIG_EXPR_LIST_DECL_SINGLE(NRTS1, NRTS1, P3_DESC, COND2);
-+SIG_EXPR_LIST_DECL_SINGLE(VPICLK, VPI24, VPI_24_RSVD_DESC, P3_DESC, COND6);
-+SIG_EXPR_LIST_DECL_SINGLE(NRTS1, NRTS1, P3_DESC, COND6);
- MS_PIN_DECL(P3, GPIOL5, VPICLK, NRTS1);
- FUNC_GROUP_DECL(NRTS1, P3);
- 
--- 
-2.11.0
+I'd prefer we go the route of adding #defines for each bit, then OR'ing them
+to create an appropriate mask. This seems a little opaque, even if we have
+the comment.
+
+> +	writel(reg, priv->base + CRT_CTRL2);
+>  
+>  	aspeed_gfx_setup_mode_config(drm);
+>  
+> -- 
+> 2.11.0
+> 
+>
