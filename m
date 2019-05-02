@@ -1,12 +1,10 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Thu, 02 May 2019 02:40:39 -0400
-Subject: =?UTF-8?Q?Re:_[PATCH_3/3]_aspeed/pinctrl:_Fix_simultaneous_DVO_and_seria?=
- =?UTF-8?Q?l_outputs_on_AST2500_devices?=
-In-Reply-To: <1991472336.3446950.1556778801333.JavaMail.zimbra@raptorengineeringinc.com>
-References: <236762130.3394112.1556751009128.JavaMail.zimbra@raptorengineeringinc.com>
- <128da9c8-d138-47b9-b323-b845bd93ca2f@www.fastmail.com>
- <1991472336.3446950.1556778801333.JavaMail.zimbra@raptorengineeringinc.com>
-Message-ID: <e2388fbc-e664-4338-a0f5-d34a3621c3fb@www.fastmail.com>
+Date: Thu, 02 May 2019 02:49:32 -0400
+Subject: [PATCH] misc: aspeed-lpc-ctrl: Correct return values
+In-Reply-To: <20190502064021.GA14911@kroah.com>
+References: <20190501223836.1670096-1-vijaykhemka@fb.com>
+ <20190502064021.GA14911@kroah.com>
+Message-ID: <6defa7bc-ec29-4418-b05c-fb96c03621f6@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -15,117 +13,41 @@ Content-Transfer-Encoding: 7bit
 
 
 
-On Thu, 2 May 2019, at 16:03, Timothy Pearson wrote:
-> 
-> 
-> ----- Original Message -----
-> > From: "Andrew Jeffery" <andrew@aj.id.au>
-> > To: "Timothy Pearson" <tpearson@raptorengineering.com>, "linux-aspeed" <linux-aspeed@lists.ozlabs.org>, "Ryan Chen"
-> > <ryan_chen@aspeedtech.com>
-> > Sent: Thursday, May 2, 2019 12:51:00 AM
-> > Subject: Re: [PATCH 3/3] aspeed/pinctrl: Fix simultaneous DVO and serial outputs on AST2500 devices
-> 
-> > On Thu, 2 May 2019, at 08:20, Timothy Pearson wrote:
-> >> There appears to be a significant error in the pinmux table starting on
-> >> page 127 of the AST2500 datasheet v1.6.  Specifically, the COND2 (DVO)
-> >> requirement is incorrectly applied to multiple digital video input (DVI)
-> >> muxed pins, and no DVI-specific condition is provided.  This results in
-> >> the serial devices incorrectly overriding the DVO pinmuxes and disabling
-> >> the DVO pins.
-> >> 
-> >> Create a new condition code (COND6) for DVI enable, and update the most
-> >> seriously affected pins to use the new condition code.
-> >> 
-> >> Signed-off-by: Timothy Pearson <tpearson@raptorengineering.com>
-> >> ---
-> >>  drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c | 17 +++++++++--------
-> >>  1 file changed, 9 insertions(+), 8 deletions(-)
-> >> 
-> >> diff --git a/drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c
-> >> b/drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c
-> >> index 6f357a11e89a..676f90d3c5f3 100644
-> >> --- a/drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c
-> >> +++ b/drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c
-> >> @@ -29,6 +29,7 @@
-> >>  
-> >>  #define COND1		{ ASPEED_IP_SCU, SCU90, BIT(6), 0, 0 }
-> >>  #define COND2		{ ASPEED_IP_SCU, SCU94, GENMASK(1, 0), 0, 0 }
-> >> +#define COND6		{ ASPEED_IP_SCU, SCU90, GENMASK(5, 4), 0, 0 }
-> >>  
-> >>  /* LHCR0 is offset from the end of the H8S/2168-compatible registers */
-> >>  #define LHCR0		0x20
-> >> @@ -660,8 +661,8 @@ SSSF_PIN_DECL(T2, GPIOL0, NCTS1, SIG_DESC_SET(SCU84, 16));
-> >>  
-> >>  #define T1 89
-> >>  #define T1_DESC		SIG_DESC_SET(SCU84, 17)
-> >> -SIG_EXPR_LIST_DECL_SINGLE(VPIDE, VPI24, VPI_24_RSVD_DESC, T1_DESC, COND2);
-> >> -SIG_EXPR_LIST_DECL_SINGLE(NDCD1, NDCD1, T1_DESC, COND2);
-> >> +SIG_EXPR_LIST_DECL_SINGLE(VPIDE, VPI24, VPI_24_RSVD_DESC, T1_DESC, COND6);
-> >> +SIG_EXPR_LIST_DECL_SINGLE(NDCD1, NDCD1, T1_DESC, COND6);
+On Thu, 2 May 2019, at 16:10, Greg Kroah-Hartman wrote:
+> On Wed, May 01, 2019 at 03:38:36PM -0700, Vijay Khemka wrote:
+> > Corrected some of return values with appropriate meanings.
 > > 
-> > I feel like you didn't test this patch, because VPI_24_RSVD_DESC (the DVI
-> > condition)
-> > requires SCU90[5]=0b1, but your introduction of COND6 requires SCU90[5:4]=0b00
-> > for
-> > the mux configuration to succeed. This can't work - bit 5 of SCU90 can not
-> > simultaneously take the values 1 and 0.
+> > Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
+> > ---
+> >  drivers/misc/aspeed-lpc-ctrl.c | 15 +++++++--------
+> >  1 file changed, 7 insertions(+), 8 deletions(-)
+> > 
+> > diff --git a/drivers/misc/aspeed-lpc-ctrl.c b/drivers/misc/aspeed-lpc-ctrl.c
+> > index 332210e06e98..97ae341109d5 100644
+> > --- a/drivers/misc/aspeed-lpc-ctrl.c
+> > +++ b/drivers/misc/aspeed-lpc-ctrl.c
+> > @@ -68,7 +68,6 @@ static long aspeed_lpc_ctrl_ioctl(struct file *file, unsigned int cmd,
+> >  		unsigned long param)
+> >  {
+> >  	struct aspeed_lpc_ctrl *lpc_ctrl = file_aspeed_lpc_ctrl(file);
+> > -	struct device *dev = file->private_data;
+> >  	void __user *p = (void __user *)param;
+> >  	struct aspeed_lpc_ctrl_mapping map;
+> >  	u32 addr;
 > 
-> That's correct -- I don't have hardware that supports DVI available to 
-> test with.
+> This change is not reflected in your changelog text :(
+> 
+> Please fix up, or break this up into multiple patches.
 
-Okay. In that case I'm not prepared to ACK changes here, much less changes with
-that fail in this way. The current implementation at least follows what is dictated by
-the programming guide and is at least correct in theory.
+The return value fixes should also be squashed into the patch that introduced those lines
+given it hasn't yet been applied.
 
-As Ryan is not confident there are no negative side-effects to not following the
-configuration dictated by the programming guide, changes like this have a real
-up-hill battle on their hands.
-
-Cheers,
+Further, IIRC I previously suggested removing the dev_err()s entirely, not just switching
+them to pr_err(). Returning an error code is enough IMO, there's no need to pollute the
+kernel logs with application-level errors. Or make them dev_dbg().
 
 Andrew
 
 > 
-> > Ryan: Can we just drop the COND2 requirement for function 2 of balls T1, U2, P4
-> > and P3?
-> > I think that gets us where we need to be?
-> > 
-> > Cheers,
-> > 
-> > Andrew
-> > 
-> >>  MS_PIN_DECL(T1, GPIOL1, VPIDE, NDCD1);
-> >>  FUNC_GROUP_DECL(NDCD1, T1);
-> >>  
-> >> @@ -674,22 +675,22 @@ FUNC_GROUP_DECL(NDSR1, U1);
-> >>  
-> >>  #define U2 91
-> >>  #define U2_DESC		SIG_DESC_SET(SCU84, 19)
-> >> -SIG_EXPR_LIST_DECL_SINGLE(VPIHS, VPI24, VPI_24_RSVD_DESC, U2_DESC, COND2);
-> >> -SIG_EXPR_LIST_DECL_SINGLE(NRI1, NRI1, U2_DESC, COND2);
-> >> +SIG_EXPR_LIST_DECL_SINGLE(VPIHS, VPI24, VPI_24_RSVD_DESC, U2_DESC, COND6);
-> >> +SIG_EXPR_LIST_DECL_SINGLE(NRI1, NRI1, U2_DESC, COND6);
-> >>  MS_PIN_DECL(U2, GPIOL3, VPIHS, NRI1);
-> >>  FUNC_GROUP_DECL(NRI1, U2);
-> >>  
-> >>  #define P4 92
-> >>  #define P4_DESC		SIG_DESC_SET(SCU84, 20)
-> >> -SIG_EXPR_LIST_DECL_SINGLE(VPIVS, VPI24, VPI_24_RSVD_DESC, P4_DESC, COND2);
-> >> -SIG_EXPR_LIST_DECL_SINGLE(NDTR1, NDTR1, P4_DESC, COND2);
-> >> +SIG_EXPR_LIST_DECL_SINGLE(VPIVS, VPI24, VPI_24_RSVD_DESC, P4_DESC, COND6);
-> >> +SIG_EXPR_LIST_DECL_SINGLE(NDTR1, NDTR1, P4_DESC, COND6);
-> >>  MS_PIN_DECL(P4, GPIOL4, VPIVS, NDTR1);
-> >>  FUNC_GROUP_DECL(NDTR1, P4);
-> >>  
-> >>  #define P3 93
-> >>  #define P3_DESC		SIG_DESC_SET(SCU84, 21)
-> >> -SIG_EXPR_LIST_DECL_SINGLE(VPICLK, VPI24, VPI_24_RSVD_DESC, P3_DESC, COND2);
-> >> -SIG_EXPR_LIST_DECL_SINGLE(NRTS1, NRTS1, P3_DESC, COND2);
-> >> +SIG_EXPR_LIST_DECL_SINGLE(VPICLK, VPI24, VPI_24_RSVD_DESC, P3_DESC, COND6);
-> >> +SIG_EXPR_LIST_DECL_SINGLE(NRTS1, NRTS1, P3_DESC, COND6);
-> >>  MS_PIN_DECL(P3, GPIOL5, VPICLK, NRTS1);
-> >>  FUNC_GROUP_DECL(NRTS1, P3);
-> >>  
-> >> --
-> >> 2.11.0
+> greg k-h
 >
