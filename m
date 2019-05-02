@@ -1,71 +1,65 @@
-From: Eddie James <eajames@linux.ibm.com>
-Date: Thu, 2 May 2019 16:04:41 -0500
-Subject: [PATCH 7/7] media: aspeed: refine interrupt handling logic
-In-Reply-To: <20190502191317.29698-8-jae.hyun.yoo@linux.intel.com>
-References: <20190502191317.29698-1-jae.hyun.yoo@linux.intel.com>
- <20190502191317.29698-8-jae.hyun.yoo@linux.intel.com>
-Message-ID: <21bfb564-785b-24ad-4f03-d6762cc58a46@linux.ibm.com>
+From: Timothy Pearson <tpearson@raptorengineering.com>
+Date: Thu, 2 May 2019 16:51:15 -0500 (CDT)
+Subject: [PATCH 1/2] [v2] drm/aspeed: Preserve DVO configuration bits during
+ initialization
+Message-ID: <1731023470.3553122.1556833875705.JavaMail.zimbra@raptorengineeringinc.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+GFX064 contains DVO enable and mode bits.  These are hardware specific, configured
+via the pinmux from the DT, and should not be cleared during startup.
 
-On 5/2/19 2:13 PM, Jae Hyun Yoo wrote:
-> There are cases that interrupt bits are cleared by a 500ms delayed
-> work which causes unnecessary irq calls. Also, the current
-> interrupt handler returns IRQ_HANDLED always but it should return
-> IRQ_NONE if there is any unhandled interrupt. So this commit
-> refines the interrupt handling logic to fix these issues.
+Signed-off-by: Timothy Pearson <tpearson@raptorengineering.com>
+---
+ drivers/gpu/drm/aspeed/aspeed_gfx.h     | 3 +++
+ drivers/gpu/drm/aspeed/aspeed_gfx_drv.c | 5 ++++-
+ 2 files changed, 7 insertions(+), 1 deletion(-)
 
-
-Thanks Jae, looks good.
-
-Reviewed-by: Eddie James <eajames@linux.ibm.com>
-
-
->
-> Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-> Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
-> ---
->   drivers/media/platform/aspeed-video.c | 7 ++++---
->   1 file changed, 4 insertions(+), 3 deletions(-)
->
-> diff --git a/drivers/media/platform/aspeed-video.c b/drivers/media/platform/aspeed-video.c
-> index 8d0bb395e46d..98944a911998 100644
-> --- a/drivers/media/platform/aspeed-video.c
-> +++ b/drivers/media/platform/aspeed-video.c
-> @@ -488,6 +488,7 @@ static void aspeed_video_off(struct aspeed_video *video)
->   
->   	/* Disable interrupts */
->   	aspeed_video_write(video, VE_INTERRUPT_CTRL, 0);
-> +	aspeed_video_write(video, VE_INTERRUPT_STATUS, 0xffffffff);
->   
->   	/* Turn off the relevant clocks */
->   	clk_disable(video->vclk);
-> @@ -556,7 +557,7 @@ static irqreturn_t aspeed_video_irq(int irq, void *arg)
->   					    VE_INTERRUPT_MODE_DETECT, 0);
->   			aspeed_video_write(video, VE_INTERRUPT_STATUS,
->   					   VE_INTERRUPT_MODE_DETECT);
-> -
-> +			sts &= ~VE_INTERRUPT_MODE_DETECT;
->   			set_bit(VIDEO_MODE_DETECT_DONE, &video->flags);
->   			wake_up_interruptible_all(&video->wait);
->   		} else {
-> @@ -601,12 +602,12 @@ static irqreturn_t aspeed_video_irq(int irq, void *arg)
->   				    VE_INTERRUPT_COMP_COMPLETE, 0);
->   		aspeed_video_write(video, VE_INTERRUPT_STATUS,
->   				   VE_INTERRUPT_COMP_COMPLETE);
-> -
-> +		sts &= ~VE_INTERRUPT_COMP_COMPLETE;
->   		if (test_bit(VIDEO_STREAMING, &video->flags) && buf)
->   			aspeed_video_start_frame(video);
->   	}
->   
-> -	return IRQ_HANDLED;
-> +	return sts ? IRQ_NONE : IRQ_HANDLED;
->   }
->   
->   static void aspeed_video_check_and_set_polarity(struct aspeed_video *video)
-
+diff --git a/drivers/gpu/drm/aspeed/aspeed_gfx.h b/drivers/gpu/drm/aspeed/aspeed_gfx.h
+index b7a986e49177..b34c97613aaf 100644
+--- a/drivers/gpu/drm/aspeed/aspeed_gfx.h
++++ b/drivers/gpu/drm/aspeed/aspeed_gfx.h
+@@ -1,5 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0+
+ // Copyright 2018 IBM Corporation
++// Copyright 2019 Raptor Engineering, LLC
+ 
+ #include <drm/drm_device.h>
+ #include <drm/drm_simple_kms_helper.h>
+@@ -73,6 +74,8 @@ int aspeed_gfx_create_output(struct drm_device *drm);
+ 
+ /* CTRL2 */
+ #define CRT_CTRL_DAC_EN			BIT(0)
++#define CRT_CTRL_DVO_MODE		BIT(6)
++#define CRT_CTRL_DVO_EN			BIT(7)
+ #define CRT_CTRL_VBLANK_LINE(x)		(((x) << 20) & CRT_CTRL_VBLANK_LINE_MASK)
+ #define CRT_CTRL_VBLANK_LINE_MASK	GENMASK(20, 31)
+ 
+diff --git a/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c b/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
+index 713a3975852b..7e9072fd0ef0 100644
+--- a/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
++++ b/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
+@@ -98,6 +98,7 @@ static int aspeed_gfx_load(struct drm_device *drm)
+ 	struct aspeed_gfx *priv;
+ 	struct resource *res;
+ 	int ret;
++	u32 reg;
+ 
+ 	priv = devm_kzalloc(&pdev->dev, sizeof(*priv), GFP_KERNEL);
+ 	if (!priv)
+@@ -146,7 +147,9 @@ static int aspeed_gfx_load(struct drm_device *drm)
+ 
+ 	/* Sanitize control registers */
+ 	writel(0, priv->base + CRT_CTRL1);
+-	writel(0, priv->base + CRT_CTRL2);
++	/* Preserve CRT_CTRL2[7:6] (DVO configuration) */
++	reg = readl(priv->base + CRT_CTRL2) & (CRT_CTRL_DVO_MODE | CRT_CTRL_DVO_EN);
++	writel(reg, priv->base + CRT_CTRL2);
+ 
+ 	aspeed_gfx_setup_mode_config(drm);
+ 
+-- 
+2.11.0
