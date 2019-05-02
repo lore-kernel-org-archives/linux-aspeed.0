@@ -1,53 +1,31 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Thu, 02 May 2019 02:49:32 -0400
-Subject: [PATCH] misc: aspeed-lpc-ctrl: Correct return values
-In-Reply-To: <20190502064021.GA14911@kroah.com>
-References: <20190501223836.1670096-1-vijaykhemka@fb.com>
- <20190502064021.GA14911@kroah.com>
-Message-ID: <6defa7bc-ec29-4418-b05c-fb96c03621f6@www.fastmail.com>
+From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+Date: Thu,  2 May 2019 12:13:10 -0700
+Subject: [PATCH 0/7] Improve stability of Aspeed video engine driver
+Message-ID: <20190502191317.29698-1-jae.hyun.yoo@linux.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+This patch series improves stability of Aspeed video engine driver by fixing
+clock control and irq handling logic in the driver.
 
+This series should be applied on top of:
+https://www.spinics.net/lists/linux-media/msg150193.html
 
-On Thu, 2 May 2019, at 16:10, Greg Kroah-Hartman wrote:
-> On Wed, May 01, 2019 at 03:38:36PM -0700, Vijay Khemka wrote:
-> > Corrected some of return values with appropriate meanings.
-> > 
-> > Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
-> > ---
-> >  drivers/misc/aspeed-lpc-ctrl.c | 15 +++++++--------
-> >  1 file changed, 7 insertions(+), 8 deletions(-)
-> > 
-> > diff --git a/drivers/misc/aspeed-lpc-ctrl.c b/drivers/misc/aspeed-lpc-ctrl.c
-> > index 332210e06e98..97ae341109d5 100644
-> > --- a/drivers/misc/aspeed-lpc-ctrl.c
-> > +++ b/drivers/misc/aspeed-lpc-ctrl.c
-> > @@ -68,7 +68,6 @@ static long aspeed_lpc_ctrl_ioctl(struct file *file, unsigned int cmd,
-> >  		unsigned long param)
-> >  {
-> >  	struct aspeed_lpc_ctrl *lpc_ctrl = file_aspeed_lpc_ctrl(file);
-> > -	struct device *dev = file->private_data;
-> >  	void __user *p = (void __user *)param;
-> >  	struct aspeed_lpc_ctrl_mapping map;
-> >  	u32 addr;
-> 
-> This change is not reflected in your changelog text :(
-> 
-> Please fix up, or break this up into multiple patches.
+Jae Hyun Yoo (7):
+  media: aspeed: fix a kernel warning on clk control
+  media: aspeed: refine clock control logic
+  media: aspeed: change irq to threaded irq
+  media: aspeed: remove IRQF_SHARED flag
+  media: aspeed: reduce noisy log printing outs
+  media: aspeed: remove checking of VE_INTERRUPT_CAPTURE_COMPLETE
+  media: aspeed: refine interrupt handling logic
 
-The return value fixes should also be squashed into the patch that introduced those lines
-given it hasn't yet been applied.
+ drivers/media/platform/aspeed-video.c | 103 ++++++++++++++++++--------
+ 1 file changed, 73 insertions(+), 30 deletions(-)
 
-Further, IIRC I previously suggested removing the dev_err()s entirely, not just switching
-them to pr_err(). Returning an error code is enough IMO, there's no need to pollute the
-kernel logs with application-level errors. Or make them dev_dbg().
+-- 
+2.21.0
 
-Andrew
-
-> 
-> greg k-h
->
