@@ -1,48 +1,59 @@
-From: Timothy Pearson <tpearson@raptorengineering.com>
-Date: Wed, 1 May 2019 22:34:16 -0500 (CDT)
-Subject: [PATCH 2/3] aspeed/pinctrl: Fix simultaneous RS-232 / PWM and
- DVO outputs on AST2500 devices
-In-Reply-To: <d5a0e5a855144fd6bb65c569b37dedfa@TWMBX02.aspeed.com>
-References: <1890791123.3393899.1556750986902.JavaMail.zimbra@raptorengineeringinc.com>
- <f35bf045-48e4-432f-8239-29f8f6746158@www.fastmail.com>
- <d5a0e5a855144fd6bb65c569b37dedfa@TWMBX02.aspeed.com>
-Message-ID: <313461427.3426138.1556768056285.JavaMail.zimbra@raptorengineeringinc.com>
+From: Andrew Jeffery <andrew@aj.id.au>
+Date: Wed, 01 May 2019 23:38:12 -0400
+Subject: [PATCH] misc: aspeed-p2a-ctrl: fix mixed declarations
+In-Reply-To: <20190426165655.218228-1-venture@google.com>
+References: <20190426165655.218228-1-venture@google.com>
+Message-ID: <ad47a332-125b-49c6-bf06-2b414ad446be@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
------ Original Message -----
-> From: "Ryan Chen" <ryan_chen@aspeedtech.com>
-> To: "Andrew Jeffery" <andrew@aj.id.au>, "Timothy Pearson" <tpearson@raptorengineering.com>, "linux-aspeed"
-> <linux-aspeed@lists.ozlabs.org>
-> Cc: "Morris Mao" <morris_mao@aspeedtech.com>
-> Sent: Wednesday, May 1, 2019 10:06:25 PM
-> Subject: RE: [PATCH 2/3] aspeed/pinctrl: Fix simultaneous RS-232 / PWM and DVO outputs on AST2500 devices
 
->>On Thu, 2 May 2019, at 08:20, Timothy Pearson wrote:
->> There appears to be a small error in the pinmux table on pages 130 and
->> 131 of the AST2500 datasheet v1.6.  Specifically, the COND2
->> requirement used to mux the surrounding pins to DVI was inadvertently
->> replicated to pins V1, W1, V2, and W2 in the table, which do not
->> incorporate DVI functionality.
->> 
->> As a result of this error, both serial TX lines and the PWM 0/1
->> outputs were overriding the VPO pinmux settings when VPO was enabled
->> in the pinmux hogs.
->> 
->> This patch has been verified to function on Blackbird hardware.  Both
->> serial TXD pins and PWM0/PWM1 were functionally tested with SCU94[1:0]
->> set to 0x1.
-> 
-> Hello Tim.
-> 
-> The AST2500 pwm0/1 configure need following condition, the SCU94[1:0] is 0x1, it
-> should not work.
-> Could you help confirm it?
-> 
-> v2 : pwm 0 : scu88[0] = 1 & scu 94[1:0] = 0 & scu90[5] = 0
-> w2 : pwm 1 : scu88[1] = 1 & scu 94[1:0] = 0 & scu90[5] = 0
 
-I can confirm that with SCU94[1:0] == 0x1 the PWM0 and PWM1 outputs work correctly -- this was tested on our Blackbird hardware.  If you are reading from the datasheet, I suspect there are a few errors in it relating to the relatively rarely used DVO mux settings.
+On Sat, 27 Apr 2019, at 02:27, Patrick Venture wrote:
+> Fix up mixed declarations and code in aspeed_p2a_mmap.
+> 
+> Tested: Verified the build had the error and that this patch resolved it
+> and there were no other warnings or build errors associated with
+> compilation of this driver.
+> 
+> Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> Signed-off-by: Patrick Venture <venture@google.com>
+
+Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
+
+> ---
+>  drivers/misc/aspeed-p2a-ctrl.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/misc/aspeed-p2a-ctrl.c 
+> b/drivers/misc/aspeed-p2a-ctrl.c
+> index 9736821972ef..b60fbeaffcbd 100644
+> --- a/drivers/misc/aspeed-p2a-ctrl.c
+> +++ b/drivers/misc/aspeed-p2a-ctrl.c
+> @@ -100,6 +100,7 @@ static void aspeed_p2a_disable_bridge(struct 
+> aspeed_p2a_ctrl *p2a_ctrl)
+>  static int aspeed_p2a_mmap(struct file *file, struct vm_area_struct 
+> *vma)
+>  {
+>  	unsigned long vsize;
+> +	pgprot_t prot;
+>  	struct aspeed_p2a_user *priv = file->private_data;
+>  	struct aspeed_p2a_ctrl *ctrl = priv->parent;
+>  
+> @@ -107,7 +108,7 @@ static int aspeed_p2a_mmap(struct file *file, 
+> struct vm_area_struct *vma)
+>  		return -EINVAL;
+>  
+>  	vsize = vma->vm_end - vma->vm_start;
+> -	pgprot_t prot = vma->vm_page_prot;
+> +	prot = vma->vm_page_prot;
+>  
+>  	if (vma->vm_pgoff + vsize > ctrl->mem_base + ctrl->mem_size)
+>  		return -EINVAL;
+> -- 
+> 2.21.0.593.g511ec345e18-goog
+> 
+>
