@@ -1,875 +1,283 @@
-From: Brandon Wyman <bjwyman@gmail.com>
-Date: Mon, 6 May 2019 16:17:41 -0500
-Subject: [PATCH dev-5.0 v4] ARM: dts: aspeed: Add Swift BMC machine
-In-Reply-To: <1557175754-18515-1-git-send-email-anoo@linux.ibm.com>
-References: <CAK_vbW2X1DLqBi4EbPH9Cw0FM3o1P2SRguKVkkK47UYPCyxJdQ@mail.gmail.com>
- <1557175754-18515-1-git-send-email-anoo@linux.ibm.com>
-Message-ID: <CAK_vbW1OHPGo4LE7e5nZhi+zc+KHKomj5RL3Nfaafgic1LPeoA@mail.gmail.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Wed, 08 May 2019 16:31:35 +1000
+Subject: [PATCH 1/7] media: aspeed: fix a kernel warning on clk control
+In-Reply-To: <20190502191317.29698-2-jae.hyun.yoo@linux.intel.com>
+References: <20190502191317.29698-1-jae.hyun.yoo@linux.intel.com>
+ <20190502191317.29698-2-jae.hyun.yoo@linux.intel.com>
+Message-ID: <1ec7397cb164b40877839bbc90f79b5942675fdb.camel@kernel.crashing.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, May 6, 2019 at 3:49 PM Adriana Kobylak <anoo@linux.ibm.com> wrote:
->
-> From: Adriana Kobylak <anoo@us.ibm.com>
->
-> The Swift BMC is an ASPEED ast2500 based BMC that is part of
-> a Power9 server. This adds the device tree description for
-> most upstream components.
->
-> Signed-off-by: Adriana Kobylak <anoo@us.ibm.com>
-> ---
->  arch/arm/boot/dts/Makefile                 |   1 +
->  arch/arm/boot/dts/aspeed-bmc-opp-swift.dts | 824 +++++++++++++++++++++++++++++
->  2 files changed, 825 insertions(+)
->  create mode 100644 arch/arm/boot/dts/aspeed-bmc-opp-swift.dts
->
-> diff --git a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
-> index c01a7b1..93f0730 100644
-> --- a/arch/arm/boot/dts/Makefile
-> +++ b/arch/arm/boot/dts/Makefile
-> @@ -1245,6 +1245,7 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
->         aspeed-bmc-opp-lanyang.dtb \
->         aspeed-bmc-opp-palmetto.dtb \
->         aspeed-bmc-opp-romulus.dtb \
-> +       aspeed-bmc-opp-swift.dtb \
->         aspeed-bmc-opp-witherspoon.dtb \
->         aspeed-bmc-opp-zaius.dtb \
->         aspeed-bmc-portwell-neptune.dtb \
-> diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-swift.dts b/arch/arm/boot/dts/aspeed-bmc-opp-swift.dts
-> new file mode 100644
-> index 0000000..9610637
-> --- /dev/null
-> +++ b/arch/arm/boot/dts/aspeed-bmc-opp-swift.dts
-> @@ -0,0 +1,824 @@
-> +// SPDX-License-Identifier: GPL-2.0+
-> +/dts-v1/;
-> +#include "aspeed-g5.dtsi"
-> +#include <dt-bindings/gpio/aspeed-gpio.h>
-> +#include <dt-bindings/leds/leds-pca955x.h>
-> +
-> +/ {
-> +       model = "Swift BMC";
-> +       compatible = "ibm,swift-bmc", "aspeed,ast2500";
-> +
-> +       chosen {
-> +               stdout-path = &uart5;
-> +               bootargs = "console=ttyS4,115200 earlyprintk";
-> +       };
-> +
-> +       memory at 80000000 {
-> +               reg = <0x80000000 0x20000000>;
-> +       };
-> +
-> +       reserved-memory {
-> +               #address-cells = <1>;
-> +               #size-cells = <1>;
-> +               ranges;
-> +
-> +               flash_memory: region at 98000000 {
-> +                       no-map;
-> +                       reg = <0x98000000 0x04000000>; /* 64M */
-> +               };
-> +
-> +               gfx_memory: framebuffer {
-> +                       size = <0x01000000>;
-> +                       alignment = <0x01000000>;
-> +                       compatible = "shared-dma-pool";
-> +                       reusable;
-> +               };
-> +       };
-> +
-> +       gpio-keys {
-> +               compatible = "gpio-keys";
-> +
-> +               air-water {
-> +                       label = "air-water";
-> +                       gpios = <&gpio ASPEED_GPIO(B, 5) GPIO_ACTIVE_LOW>;
-> +                       linux,code = <ASPEED_GPIO(B, 5)>;
-> +               };
-> +
-> +               checkstop {
-> +                       label = "checkstop";
-> +                       gpios = <&gpio ASPEED_GPIO(J, 2) GPIO_ACTIVE_LOW>;
-> +                       linux,code = <ASPEED_GPIO(J, 2)>;
-> +               };
-> +
-> +               ps0-presence {
-> +                       label = "ps0-presence";
-> +                       gpios = <&gpio ASPEED_GPIO(R, 7) GPIO_ACTIVE_LOW>;
-> +                       linux,code = <ASPEED_GPIO(R, 7)>;
-> +               };
-> +
-> +               ps1-presence {
-> +                       label = "ps1-presence";
-> +                       gpios = <&gpio ASPEED_GPIO(N, 0) GPIO_ACTIVE_LOW>;
-> +                       linux,code = <ASPEED_GPIO(N, 0)>;
-> +               };
-> +
-> +               oppanel-presence {
-> +                       label = "oppanel-presence";
-> +                       gpios = <&gpio ASPEED_GPIO(A, 7) GPIO_ACTIVE_LOW>;
-> +                       linux,code = <ASPEED_GPIO(A, 7)>;
-> +               };
-> +
-> +               opencapi-riser-presence {
-> +                       label = "opencapi-riser-presence";
-> +                       gpios = <&gpio ASPEED_GPIO(I, 0) GPIO_ACTIVE_LOW>;
-> +                       linux,code = <ASPEED_GPIO(I, 0)>;
-> +               };
-> +       };
-> +
-> +       iio-hwmon-battery {
-> +               compatible = "iio-hwmon";
-> +               io-channels = <&adc 12>;
-> +       };
-> +
-> +       gpio-keys-polled {
-> +               compatible = "gpio-keys-polled";
-> +               #address-cells = <1>;
-> +               #size-cells = <0>;
-> +               poll-interval = <1000>;
-> +
-> +               scm0-presence {
-> +                       label = "scm0-presence";
-> +                       gpios = <&pca9552 6 GPIO_ACTIVE_LOW>;
-> +                       linux,code = <6>;
-> +               };
-> +
-> +               scm1-presence {
-> +                       label = "scm1-presence";
-> +                       gpios = <&pca9552 7 GPIO_ACTIVE_LOW>;
-> +                       linux,code = <7>;
-> +               };
-> +
-> +               cpu0vrm-presence {
-> +                       label = "cpu0vrm-presence";
-> +                       gpios = <&pca9552 12 GPIO_ACTIVE_LOW>;
-> +                       linux,code = <12>;
-> +               };
-> +
-> +               cpu1vrm-presence {
-> +                       label = "cpu1vrm-presence";
-> +                       gpios = <&pca9552 13 GPIO_ACTIVE_LOW>;
-> +                       linux,code = <13>;
-> +               };
-> +
-> +               fan0-presence {
-> +                       label = "fan0-presence";
-> +                       gpios = <&pca0 5 GPIO_ACTIVE_LOW>;
-> +                       linux,code = <5>;
-> +               };
-> +
-> +               fan1-presence {
-> +                       label = "fan1-presence";
-> +                       gpios = <&pca0 6 GPIO_ACTIVE_LOW>;
-> +                       linux,code = <6>;
-> +               };
-> +
-> +               fan2-presence {
-> +                       label = "fan2-presence";
-> +                       gpios = <&pca0 7 GPIO_ACTIVE_LOW>;
-> +                       linux,code = <7>;
-> +               };
-> +
-> +               fan3-presence {
-> +                       label = "fan3-presence";
-> +                       gpios = <&pca0 8 GPIO_ACTIVE_LOW>;
-> +                       linux,code = <8>;
-> +               };
-> +
-> +               fanboost-presence {
-> +                       label = "fanboost-presence";
-> +                       gpios = <&pca0 9 GPIO_ACTIVE_LOW>;
-> +                       linux,code = <9>;
-> +               };
-> +       };
-> +
-> +       leds {
-> +               compatible = "gpio-leds";
-> +
-> +               fan0 {
-> +                       retain-state-shutdown;
-> +                       default-state = "keep";
-> +                       gpios = <&pca0 0 GPIO_ACTIVE_LOW>;
-> +               };
-> +
-> +               fan1 {
-> +                       retain-state-shutdown;
-> +                       default-state = "keep";
-> +                       gpios = <&pca0 1 GPIO_ACTIVE_LOW>;
-> +               };
-> +
-> +               fan2 {
-> +                       retain-state-shutdown;
-> +                       default-state = "keep";
-> +                       gpios = <&pca0 2 GPIO_ACTIVE_LOW>;
-> +               };
-> +
-> +               fan3 {
-> +                       retain-state-shutdown;
-> +                       default-state = "keep";
-> +                       gpios = <&pca0 3 GPIO_ACTIVE_LOW>;
-> +               };
-> +
-> +               fanboost {
-> +                       retain-state-shutdown;
-> +                       default-state = "keep";
-> +                       gpios = <&pca0 4 GPIO_ACTIVE_LOW>;
-> +               };
-> +
-> +               front-fault {
-> +                       retain-state-shutdown;
-> +                       default-state = "keep";
-> +                       gpios = <&pca1 2 GPIO_ACTIVE_LOW>;
-> +               };
-> +
-> +               front-power {
-> +                       retain-state-shutdown;
-> +                       default-state = "keep";
-> +                       gpios = <&pca1 3 GPIO_ACTIVE_LOW>;
-> +               };
-> +
-> +               front-id {
-> +                       retain-state-shutdown;
-> +                       default-state = "keep";
-> +                       gpios = <&pca1 0 GPIO_ACTIVE_LOW>;
-> +               };
-> +
-> +               rear-fault {
-> +                       gpios = <&gpio ASPEED_GPIO(N, 2) GPIO_ACTIVE_LOW>;
-> +               };
-> +
-> +               rear-id {
-> +                       gpios = <&gpio ASPEED_GPIO(N, 4) GPIO_ACTIVE_LOW>;
-> +               };
-> +       };
-> +
-> +       fsi: gpio-fsi {
-> +               compatible = "fsi-master-gpio", "fsi-master";
-> +               #address-cells = <2>;
-> +               #size-cells = <0>;
-> +               no-gpio-delays;
-> +
-> +               clock-gpios = <&gpio ASPEED_GPIO(AA, 0) GPIO_ACTIVE_HIGH>;
-> +               data-gpios = <&gpio ASPEED_GPIO(E, 0) GPIO_ACTIVE_HIGH>;
-> +               mux-gpios = <&gpio ASPEED_GPIO(P, 4) GPIO_ACTIVE_HIGH>;
-> +               enable-gpios = <&gpio ASPEED_GPIO(P, 0) GPIO_ACTIVE_HIGH>;
-> +               trans-gpios = <&gpio ASPEED_GPIO(P, 3) GPIO_ACTIVE_HIGH>;
-> +       };
-> +
-> +       iio-hwmon-dps310 {
-> +               compatible = "iio-hwmon";
-> +               io-channels = <&dps 0>;
-> +       };
-> +
-> +};
-> +
-> +&fmc {
-> +       status = "okay";
-> +
-> +       flash at 0 {
-> +               status = "okay";
-> +               label = "bmc";
-> +               m25p,fast-read;
-> +               spi-max-frequency = <100000000>;
-> +               partitions {
-> +                       #address-cells = < 1 >;
-> +                       #size-cells = < 1 >;
-> +                       compatible = "fixed-partitions";
-> +                       u-boot at 0 {
-> +                               reg = < 0 0x60000 >;
-> +                               label = "u-boot";
-> +                       };
-> +                       u-boot-env at 60000 {
-> +                               reg = < 0x60000 0x20000 >;
-> +                               label = "u-boot-env";
-> +                       };
-> +                       obmc-ubi at 80000 {
-> +                               reg = < 0x80000 0x7F80000>;
-> +                               label = "obmc-ubi";
-> +                       };
-> +               };
-> +       };
-> +
-> +       flash at 1 {
-> +               status = "okay";
-> +               label = "alt-bmc";
-> +               m25p,fast-read;
-> +               spi-max-frequency = <100000000>;
-> +               partitions {
-> +                       #address-cells = < 1 >;
-> +                       #size-cells = < 1 >;
-> +                       compatible = "fixed-partitions";
-> +                       u-boot at 0 {
-> +                               reg = < 0 0x60000 >;
-> +                               label = "alt-u-boot";
-> +                       };
-> +                       u-boot-env at 60000 {
-> +                               reg = < 0x60000 0x20000 >;
-> +                               label = "alt-u-boot-env";
-> +                       };
-> +                       obmc-ubi at 80000 {
-> +                               reg = < 0x80000 0x7F80000>;
-> +                               label = "alt-obmc-ubi";
-> +                       };
-> +               };
-> +       };
-> +};
-> +
-> +&spi1 {
-> +       status = "okay";
-> +       pinctrl-names = "default";
-> +       pinctrl-0 = <&pinctrl_spi1_default>;
-> +
-> +       flash at 0 {
-> +               status = "okay";
-> +               label = "pnor";
-> +               m25p,fast-read;
-> +               spi-max-frequency = <100000000>;
-> +       };
-> +};
-> +
-> +&uart1 {
-> +       /* Rear RS-232 connector */
-> +       status = "okay";
-> +       pinctrl-names = "default";
-> +       pinctrl-0 = <&pinctrl_txd1_default
-> +                       &pinctrl_rxd1_default
-> +                       &pinctrl_nrts1_default
-> +                       &pinctrl_ndtr1_default
-> +                       &pinctrl_ndsr1_default
-> +                       &pinctrl_ncts1_default
-> +                       &pinctrl_ndcd1_default
-> +                       &pinctrl_nri1_default>;
-> +};
-> +
-> +&uart2 {
-> +       /* APSS */
-> +       status = "okay";
-> +       pinctrl-names = "default";
-> +       pinctrl-0 = <&pinctrl_txd2_default &pinctrl_rxd2_default>;
-> +};
-> +
-> +&uart5 {
-> +       status = "okay";
-> +};
-> +
-> +&lpc_ctrl {
-> +       status = "okay";
-> +       memory-region = <&flash_memory>;
-> +       flash = <&spi1>;
-> +};
-> +
-> +&mbox {
-> +       status = "okay";
-> +};
-> +
-> +&mac0 {
-> +       status = "okay";
-> +       pinctrl-names = "default";
-> +       pinctrl-0 = <&pinctrl_rmii1_default>;
-> +       use-ncsi;
-> +};
-> +
-> +&i2c2 {
-> +       status = "okay";
-> +
-> +       /* MUX ->
-> +        *    Samtec 1
-> +        *    Samtec 2
-> +        */
-> +};
-> +
-> +&i2c3 {
-> +       status = "okay";
-> +
-> +       max31785 at 52 {
-> +               compatible = "maxim,max31785a";
-> +               reg = <0x52>;
-> +               #address-cells = <1>;
-> +               #size-cells = <0>;
-> +
-> +               fan at 0 {
-> +                       compatible = "pmbus-fan";
-> +                       reg = <0>;
-> +                       tach-pulses = <2>;
-> +                       maxim,fan-rotor-input = "tach";
-> +                       maxim,fan-pwm-freq = <25000>;
-> +                       maxim,fan-no-watchdog;
-> +                       maxim,fan-no-fault-ramp;
-> +                       maxim,fan-ramp = <2>;
-> +                       maxim,fan-fault-pin-mon;
-> +               };
-> +
-> +               fan at 1 {
-> +                       compatible = "pmbus-fan";
-> +                       reg = <1>;
-> +                       tach-pulses = <2>;
-> +                       maxim,fan-rotor-input = "tach";
-> +                       maxim,fan-pwm-freq = <25000>;
-> +                       maxim,fan-no-watchdog;
-> +                       maxim,fan-no-fault-ramp;
-> +                       maxim,fan-ramp = <2>;
-> +                       maxim,fan-fault-pin-mon;
-> +               };
-> +
-> +               fan at 2 {
-> +                       compatible = "pmbus-fan";
-> +                       reg = <2>;
-> +                       tach-pulses = <2>;
-> +                       maxim,fan-rotor-input = "tach";
-> +                       maxim,fan-pwm-freq = <25000>;
-> +                       maxim,fan-no-watchdog;
-> +                       maxim,fan-no-fault-ramp;
-> +                       maxim,fan-ramp = <2>;
-> +                       maxim,fan-fault-pin-mon;
-> +               };
-> +
-> +               fan at 3 {
-> +                       compatible = "pmbus-fan";
-> +                       reg = <3>;
-> +                       tach-pulses = <2>;
-> +                       maxim,fan-rotor-input = "tach";
-> +                       maxim,fan-pwm-freq = <25000>;
-> +                       maxim,fan-no-watchdog;
-> +                       maxim,fan-no-fault-ramp;
-> +                       maxim,fan-ramp = <2>;
-> +                       maxim,fan-fault-pin-mon;
-> +               };
-> +
-> +               fan at 4 {
-> +                       compatible = "pmbus-fan";
-> +                       reg = <4>;
-> +                       tach-pulses = <2>;
-> +                       maxim,fan-rotor-input = "tach";
-> +                       maxim,fan-pwm-freq = <25000>;
-> +                       maxim,fan-no-watchdog;
-> +                       maxim,fan-no-fault-ramp;
-> +                       maxim,fan-ramp = <2>;
-> +                       maxim,fan-fault-pin-mon;
-> +               };
-> +       };
-> +
-> +       pca0: pca9552 at 60 {
-> +               compatible = "nxp,pca9552";
-> +               reg = <0x60>;
-> +               #address-cells = <1>;
-> +               #size-cells = <0>;
-> +
-> +               gpio-controller;
-> +               #gpio-cells = <2>;
-> +
-> +               gpio at 0 {
-> +                       reg = <0>;
-> +                       type = <PCA955X_TYPE_GPIO>;
-> +               };
-> +
-> +               gpio at 1 {
-> +                       reg = <1>;
-> +                       type = <PCA955X_TYPE_GPIO>;
-> +               };
-> +
-> +               gpio at 2 {
-> +                       reg = <2>;
-> +                       type = <PCA955X_TYPE_GPIO>;
-> +               };
-> +
-> +               gpio at 3 {
-> +                       reg = <3>;
-> +                       type = <PCA955X_TYPE_GPIO>;
-> +               };
-> +
-> +               gpio at 4 {
-> +                       reg = <4>;
-> +                       type = <PCA955X_TYPE_GPIO>;
-> +               };
-> +
-> +               gpio at 5 {
-> +                       reg = <5>;
-> +                       type = <PCA955X_TYPE_GPIO>;
-> +               };
-> +
-> +               gpio at 6 {
-> +                       reg = <6>;
-> +                       type = <PCA955X_TYPE_GPIO>;
-> +               };
-> +
-> +               gpio at 7 {
-> +                       reg = <7>;
-> +                       type = <PCA955X_TYPE_GPIO>;
-> +               };
-> +
-> +               gpio at 8 {
-> +                       reg = <8>;
-> +                       type = <PCA955X_TYPE_GPIO>;
-> +               };
-> +
-> +               gpio at 9 {
-> +                       reg = <9>;
-> +                       type = <PCA955X_TYPE_GPIO>;
-> +               };
-> +
-> +               gpio at 10 {
-> +                       reg = <10>;
-> +                       type = <PCA955X_TYPE_GPIO>;
-> +               };
-> +
-> +               gpio at 11 {
-> +                       reg = <11>;
-> +                       type = <PCA955X_TYPE_GPIO>;
-> +               };
-> +
-> +               gpio at 12 {
-> +                       reg = <12>;
-> +                       type = <PCA955X_TYPE_GPIO>;
-> +               };
-> +
-> +               gpio at 13 {
-> +                       reg = <13>;
-> +                       type = <PCA955X_TYPE_GPIO>;
-> +               };
-> +
-> +               gpio at 14 {
-> +                       reg = <14>;
-> +                       type = <PCA955X_TYPE_GPIO>;
-> +               };
-> +
-> +               gpio at 15 {
-> +                       reg = <15>;
-> +                       type = <PCA955X_TYPE_GPIO>;
-> +               };
-> +       };
-> +
-> +       power-supply at 68 {
-> +               compatible = "ibm,cffps1";
-> +               reg = <0x68>;
-> +       };
-> +
-> +       eeprom at 50 {
-> +               compatible = "atmel,24c64";
-> +               reg = <0x50>;
-> +       };
-> +
-> +       power-supply at 69 {
-> +               compatible = "ibm,cffps1";
-> +               reg = <0x69>;
-> +       };
-> +
-> +       eeprom at 51 {
-> +               compatible = "atmel,24c64";
-> +               reg = <0x51>;
-> +       };
-> +};
-> +
-> +&i2c7 {
-> +       status = "okay";
-> +
-> +       dps: dps310 at 76 {
-> +               compatible = "infineon,dps310";
-> +               reg = <0x76>;
-> +               #io-channel-cells = <0>;
-> +       };
-> +
-> +       tmp275 at 48 {
-> +               compatible = "ti,tmp275";
-> +               reg = <0x48>;
-> +       };
-> +
-> +       si7021a20 at 20 {
-> +               compatible = "si,si7021a20";
-> +               reg = <0x20>;
-> +       };
-> +
-> +       eeprom at 50 {
-> +               compatible = "atmel,24c64";
-> +               reg = <0x50>;
-> +       };
-> +
-> +       pca1: pca9551 at 60 {
-> +               compatible = "nxp,pca9551";
-> +               reg = <0x60>;
-> +               #address-cells = <1>;
-> +               #size-cells = <0>;
-> +
-> +               gpio-controller;
-> +               #gpio-cells = <2>;
-> +
-> +               gpio at 0 {
-> +                       reg = <0>;
-> +                       type = <PCA955X_TYPE_GPIO>;
-> +               };
-> +
-> +               gpio at 1 {
-> +                       reg = <1>;
-> +                       type = <PCA955X_TYPE_GPIO>;
-> +               };
-> +
-> +               gpio at 2 {
-> +                       reg = <2>;
-> +                       type = <PCA955X_TYPE_GPIO>;
-> +               };
-> +
-> +               gpio at 3 {
-> +                       reg = <3>;
-> +                       type = <PCA955X_TYPE_GPIO>;
-> +               };
-> +
-> +               gpio at 4 {
-> +                       reg = <4>;
-> +                       type = <PCA955X_TYPE_GPIO>;
-> +               };
-> +
-> +               gpio at 5 {
-> +                       reg = <5>;
-> +                       type = <PCA955X_TYPE_GPIO>;
-> +               };
-> +
-> +               gpio at 6 {
-> +                       reg = <6>;
-> +                       type = <PCA955X_TYPE_GPIO>;
-> +               };
-> +
-> +               gpio at 7 {
-> +                       reg = <7>;
-> +                       type = <PCA955X_TYPE_GPIO>;
-> +               };
-> +       };
-> +};
-> +
-> +&i2c8 {
-> +       status = "okay";
-> +
-> +       pca9552: pca9552 at 60 {
-> +               compatible = "nxp,pca9552";
-> +               reg = <0x60>;
-> +               #address-cells = <1>;
-> +               #size-cells = <0>;
-> +               gpio-controller;
-> +               #gpio-cells = <2>;
-> +
-> +               gpio-line-names = "PS_SMBUS_RESET_N", "APSS_RESET_N",
-> +                       "GPU0_TH_OVERT_N_BUFF", "GPU1_TH_OVERT_N_BUFF",
-> +                       "GPU2_TH_OVERT_N_BUFF", "GPU3_TH_OVERT_N_BUFF",
-> +                       "P9_SCM0_PRES", "P9_SCM1_PRES",
-> +                       "GPU0_PWR_GOOD_BUFF", "GPU1_PWR_GOOD_BUFF",
-> +                       "GPU2_PWR_GOOD_BUFF", "GPU3_PWR_GOOD_BUFF",
-> +                       "PRESENT_VRM_CP0_N", "PRESENT_VRM_CP1_N",
-> +                       "12V_BREAKER_FLT_N", "THROTTLE_UNLATCHED_N";
-> +
-> +               gpio at 0 {
-> +                       reg = <0>;
-> +                       type = <PCA955X_TYPE_GPIO>;
-> +               };
-> +
-> +               gpio at 1 {
-> +                       reg = <1>;
-> +                       type = <PCA955X_TYPE_GPIO>;
-> +               };
-> +
-> +               gpio at 2 {
-> +                       reg = <2>;
-> +                       type = <PCA955X_TYPE_GPIO>;
-> +               };
-> +
-> +               gpio at 3 {
-> +                       reg = <3>;
-> +                       type = <PCA955X_TYPE_GPIO>;
-> +               };
-> +
-> +               gpio at 4 {
-> +                       reg = <4>;
-> +                       type = <PCA955X_TYPE_GPIO>;
-> +               };
-> +
-> +               gpio at 5 {
-> +                       reg = <5>;
-> +                       type = <PCA955X_TYPE_GPIO>;
-> +               };
-> +
-> +               gpio at 6 {
-> +                       reg = <6>;
-> +                       type = <PCA955X_TYPE_GPIO>;
-> +               };
-> +
-> +               gpio at 7 {
-> +                       reg = <7>;
-> +                       type = <PCA955X_TYPE_GPIO>;
-> +               };
-> +
-> +               gpio at 8 {
-> +                       reg = <8>;
-> +                       type = <PCA955X_TYPE_GPIO>;
-> +               };
-> +
-> +               gpio at 9 {
-> +                       reg = <9>;
-> +                       type = <PCA955X_TYPE_GPIO>;
-> +               };
-> +
-> +               gpio at 10 {
-> +                       reg = <10>;
-> +                       type = <PCA955X_TYPE_GPIO>;
-> +               };
-> +
-> +               gpio at 11 {
-> +                       reg = <11>;
-> +                       type = <PCA955X_TYPE_GPIO>;
-> +               };
-> +
-> +               gpio at 12 {
-> +                       reg = <12>;
-> +                       type = <PCA955X_TYPE_GPIO>;
-> +               };
-> +
-> +               gpio at 13 {
-> +                       reg = <13>;
-> +                       type = <PCA955X_TYPE_GPIO>;
-> +               };
-> +
-> +               gpio at 14 {
-> +                       reg = <14>;
-> +                       type = <PCA955X_TYPE_GPIO>;
-> +               };
-> +
-> +               gpio at 15 {
-> +                       reg = <15>;
-> +                       type = <PCA955X_TYPE_GPIO>;
-> +               };
-> +       };
-> +
-> +       rtc at 32 {
-> +               compatible = "epson,rx8900";
-> +               reg = <0x32>;
-> +       };
-> +
-> +       eeprom at 51 {
-> +               compatible = "atmel,24c64";
-> +               reg = <0x51>;
-> +       };
-> +
-> +       ucd90160 at 64 {
-> +               compatible = "ti,ucd90160";
-> +               reg = <0x64>;
-> +       };
-> +};
-> +
-> +&i2c9 {
-> +       status = "okay";
-> +
-> +       eeprom at 50 {
-> +               compatible = "atmel,24c64";
-> +               reg = <0x50>;
-> +       };
-> +
-> +       tmp423a at 4c {
-> +               compatible = "ti,tmp423";
-> +               reg = <0x4c>;
-> +       };
-> +
-> +       ir35221 at 71 {
-> +               compatible = "infineon,ir35221";
-> +               reg = <0x71>;
-> +       };
-> +
-> +       ir35221 at 72 {
-> +               compatible = "infineon,ir35221";
-> +               reg = <0x72>;
-> +       };
-> +};
-> +
-> +&i2c10 {
-> +       status = "okay";
-> +
-> +       eeprom at 50 {
-> +               compatible = "atmel,24c64";
-> +               reg = <0x50>;
-> +       };
-> +
-> +       tmp423a at 4c {
-> +               compatible = "ti,tmp423";
-> +               reg = <0x4c>;
-> +       };
-> +
-> +       ir35221 at 71 {
-> +               compatible = "infineon,ir35221";
-> +               reg = <0x71>;
-> +       };
-> +
-> +       ir35221 at 72 {
-> +               compatible = "infineon,ir35221";
-> +               reg = <0x72>;
-> +       };
-> +};
-> +
-> +&i2c11 {
-> +       /* MUX
-> +        *   -> PCIe Slot 0
-> +        *   -> PCIe Slot 1
-> +        *   -> PCIe Slot 2
-> +        *   -> PCIe Slot 3
-> +        */
-> +       status = "okay";
-> +};
-> +
-> +&i2c12 {
-> +       status = "okay";
-> +
-> +       tmp275 at 48 {
-> +               compatible = "ti,tmp275";
-> +               reg = <0x48>;
-> +       };
-> +
-> +       tmp275 at 4a {
-> +               compatible = "ti,tmp275";
-> +               reg = <0x4a>;
-> +       };
-> +};
-> +
-> +&i2c13 {
-> +       status = "okay";
-> +};
-> +
-> +&vuart {
-> +       status = "okay";
-> +};
-> +
-> +&gfx {
-> +       status = "okay";
-> +       memory-region = <&gfx_memory>;
-> +};
-> +
-> +&pinctrl {
-> +       aspeed,external-nodes = <&gfx &lhc>;
-> +};
-> +
-> +&wdt1 {
-> +       aspeed,reset-type = "none";
-> +       aspeed,external-signal;
-> +       aspeed,ext-push-pull;
-> +       aspeed,ext-active-high;
-> +
-> +       pinctrl-names = "default";
-> +       pinctrl-0 = <&pinctrl_wdtrst1_default>;
-> +};
-> +
-> +&wdt2 {
-> +       aspeed,alt-boot;
-> +};
-> +
-> +&ibt {
-> +       status = "okay";
-> +};
-> +
-> +&adc {
-> +       status = "okay";
-> +};
-> +
-> +#include "ibm-power9-dual.dtsi"
-> --
-> 1.8.3.1
->
+On Thu, 2019-05-02 at 12:13 -0700, Jae Hyun Yoo wrote:
+> Video engine clock control functions in the Aspeed video engine
+> driver are being called from multiple context without any
+> protection so video clocks can be double disabled and eventually
+> it causes a kernel warning with stack dump printing out like below:
 
-Reviewed-by: Brandon Wyman <bjwyman@gmail.com>
+I already objected to the use of set_bit, clear_bit etc...
+
+Either you are protected by a spinlock, in which case you don't need
+them, use either the __ versions (non atomic) or just a bloody bool
+flag which is a lot clearer and will generated better code. Or you
+aren't protected in which case the code seems racy.
+
+
+> [  515.540498] ------------[ cut here ]------------
+> [  515.545174] WARNING: CPU: 0 PID: 1310 at drivers/clk/clk.c:684
+> clk_core_unprepare+0x13c/0x170
+> [  515.553806] vclk-gate already unprepared
+> [  515.557841] CPU: 0 PID: 1310 Comm: obmc-ikvm Tainted:
+> G        W         5.0.6-df66fbc97853fbba90a0bfa44de32f3d5f7602b4 #1
+> [  515.568973] Hardware name: Generic DT based system
+> [  515.573777] Backtrace:
+> [  515.576272] [<80107cdc>] (dump_backtrace) from [<80107f10>]
+> (show_stack+0x20/0x24)
+> [  515.583930]  r7:803a5614 r6:00000009 r5:00000000 r4:9d88fe1c
+> [  515.589712] [<80107ef0>] (show_stack) from [<80690184>]
+> (dump_stack+0x20/0x28)
+> [  515.597053] [<80690164>] (dump_stack) from [<80116044>]
+> (__warn.part.3+0xb4/0xdc)
+> [  515.604557] [<80115f90>] (__warn.part.3) from [<801160d8>]
+> (warn_slowpath_fmt+0x6c/0x90)
+> [  515.612734]  r6:000002ac r5:8080befc r4:80a07008
+> [  515.617463] [<80116070>] (warn_slowpath_fmt) from [<803a5614>]
+> (clk_core_unprepare+0x13c/0x170)
+> [  515.626167]  r3:8080cdf4 r2:8080bfc0
+> [  515.629834]  r7:98d682a8 r6:9d8a9200 r5:9e5151a0 r4:97abd620
+> [  515.635530] [<803a54d8>] (clk_core_unprepare) from [<803a76a4>]
+> (clk_unprepare+0x34/0x3c)
+> [  515.643812]  r5:9e5151a0 r4:97abd620
+> [  515.647529] [<803a7670>] (clk_unprepare) from [<804f36ec>]
+> (aspeed_video_off+0x38/0x50)
+> [  515.655539]  r5:9e5151a0 r4:9e504000
+> [  515.659242] [<804f36b4>] (aspeed_video_off) from [<804f4358>]
+> (aspeed_video_release+0x90/0x114)
+> [  515.668036]  r5:9e5044b0 r4:9e504000
+> [  515.671643] [<804f42c8>] (aspeed_video_release) from [<804d302c>]
+> (v4l2_release+0xd4/0xe8)
+> [  515.679999]  r7:98d682a8 r6:9d087810 r5:9d8a9200 r4:9e504318
+> [  515.685695] [<804d2f58>] (v4l2_release) from [<80236454>]
+> (__fput+0x98/0x1c4)
+> [  515.692914]  r5:9e51b608 r4:9d8a9200
+> [  515.696597] [<802363bc>] (__fput) from [<802365e8>]
+> (____fput+0x18/0x1c)
+> [  515.703315]  r9:80a0700c r8:801011e4 r7:00000000 r6:80a64b9c
+> r5:9d8e35a0 r4:9d8e38dc
+> [  515.711167] [<802365d0>] (____fput) from [<80131ca4>]
+> (task_work_run+0x7c/0xa0)
+> [  515.718596] [<80131c28>] (task_work_run) from [<80106884>]
+> (do_work_pending+0x4a8/0x578)
+> [  515.726777]  r7:801011e4 r6:80a07008 r5:9d88ffb0 r4:ffffe000
+> [  515.732466] [<801063dc>] (do_work_pending) from [<8010106c>]
+> (slow_work_pending+0xc/0x20)
+> [  515.740727] Exception stack(0x9d88ffb0 to 0x9d88fff8)
+> [  515.745840] ffa0:                                     00000000
+> 76f18094 00000000 00000000
+> [  515.754122] ffc0: 00000007 00176778 7eda4c20 00000006 00000000
+> 00000000 48e20fa4 00000000
+> [  515.762386] ffe0: 00000002 7eda4b08 00000000 48f91efc 80000010
+> 00000007
+> [  515.769097]  r10:00000000 r9:9d88e000 r8:801011e4 r7:00000006
+> r6:7eda4c20 r5:00176778
+> [  515.777006]  r4:00000007
+> [  515.779558] ---[ end trace 12c04aadef8afbbb ]---
+> [  515.784176] ------------[ cut here ]------------
+> [  515.788817] WARNING: CPU: 0 PID: 1310 at drivers/clk/clk.c:825
+> clk_core_disable+0x18c/0x204
+> [  515.797161] eclk-gate already disabled
+> [  515.800916] CPU: 0 PID: 1310 Comm: obmc-ikvm Tainted:
+> G        W         5.0.6-df66fbc97853fbba90a0bfa44de32f3d5f7602b4 #1
+> [  515.811945] Hardware name: Generic DT based system
+> [  515.816730] Backtrace:
+> [  515.819210] [<80107cdc>] (dump_backtrace) from [<80107f10>]
+> (show_stack+0x20/0x24)
+> [  515.826782]  r7:803a5900 r6:00000009 r5:00000000 r4:9d88fe04
+> [  515.832454] [<80107ef0>] (show_stack) from [<80690184>]
+> (dump_stack+0x20/0x28)
+> [  515.839687] [<80690164>] (dump_stack) from [<80116044>]
+> (__warn.part.3+0xb4/0xdc)
+> [  515.847170] [<80115f90>] (__warn.part.3) from [<801160d8>]
+> (warn_slowpath_fmt+0x6c/0x90)
+> [  515.855247]  r6:00000339 r5:8080befc r4:80a07008
+> [  515.859868] [<80116070>] (warn_slowpath_fmt) from [<803a5900>]
+> (clk_core_disable+0x18c/0x204)
+> [  515.868385]  r3:8080cdd0 r2:8080c00c
+> [  515.871957]  r7:98d682a8 r6:9d8a9200 r5:97abd560 r4:97abd560
+> [  515.877615] [<803a5774>] (clk_core_disable) from [<803a59a0>]
+> (clk_core_disable_lock+0x28/0x34)
+> [  515.886301]  r7:98d682a8 r6:9d8a9200 r5:97abd560 r4:a0000013
+> [  515.891960] [<803a5978>] (clk_core_disable_lock) from [<803a7714>]
+> (clk_disable+0x2c/0x30)
+> [  515.900216]  r5:9e5151a0 r4:9e515f60
+> [  515.903816] [<803a76e8>] (clk_disable) from [<804f36f8>]
+> (aspeed_video_off+0x44/0x50)
+> [  515.911656] [<804f36b4>] (aspeed_video_off) from [<804f4358>]
+> (aspeed_video_release+0x90/0x114)
+> [  515.920341]  r5:9e5044b0 r4:9e504000
+> [  515.923921] [<804f42c8>] (aspeed_video_release) from [<804d302c>]
+> (v4l2_release+0xd4/0xe8)
+> [  515.932184]  r7:98d682a8 r6:9d087810 r5:9d8a9200 r4:9e504318
+> [  515.937851] [<804d2f58>] (v4l2_release) from [<80236454>]
+> (__fput+0x98/0x1c4)
+> [  515.944980]  r5:9e51b608 r4:9d8a9200
+> [  515.948559] [<802363bc>] (__fput) from [<802365e8>]
+> (____fput+0x18/0x1c)
+> [  515.955257]  r9:80a0700c r8:801011e4 r7:00000000 r6:80a64b9c
+> r5:9d8e35a0 r4:9d8e38dc
+> [  515.963008] [<802365d0>] (____fput) from [<80131ca4>]
+> (task_work_run+0x7c/0xa0)
+> [  515.970333] [<80131c28>] (task_work_run) from [<80106884>]
+> (do_work_pending+0x4a8/0x578)
+> [  515.978421]  r7:801011e4 r6:80a07008 r5:9d88ffb0 r4:ffffe000
+> [  515.984086] [<801063dc>] (do_work_pending) from [<8010106c>]
+> (slow_work_pending+0xc/0x20)
+> [  515.992247] Exception stack(0x9d88ffb0 to 0x9d88fff8)
+> [  515.997296] ffa0:                                     00000000
+> 76f18094 00000000 00000000
+> [  516.005473] ffc0: 00000007 00176778 7eda4c20 00000006 00000000
+> 00000000 48e20fa4 00000000
+> [  516.013642] ffe0: 00000002 7eda4b08 00000000 48f91efc 80000010
+> 00000007
+> [  516.020257]  r10:00000000 r9:9d88e000 r8:801011e4 r7:00000006
+> r6:7eda4c20 r5:00176778
+> [  516.028072]  r4:00000007
+> [  516.030606] ---[ end trace 12c04aadef8afbbc ]---
+> 
+> To prevent this issue, this commit adds spinlock protection and
+> clock status checking logic into the Aspeed video engine driver.
+> 
+> Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+> Reviewed-by: Eddie James <eajames@linux.ibm.com>
+> ---
+>  drivers/media/platform/aspeed-video.c | 32 ++++++++++++++++++++++++-
+> --
+>  1 file changed, 29 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/media/platform/aspeed-video.c
+> b/drivers/media/platform/aspeed-video.c
+> index 55c55a68b016..2dac6d20b180 100644
+> --- a/drivers/media/platform/aspeed-video.c
+> +++ b/drivers/media/platform/aspeed-video.c
+> @@ -187,6 +187,7 @@ enum {
+>  	VIDEO_STREAMING,
+>  	VIDEO_FRAME_INPRG,
+>  	VIDEO_STOPPED,
+> +	VIDEO_CLOCKS_ON,
+>  };
+>  
+>  struct aspeed_video_addr {
+> @@ -483,19 +484,29 @@ static void
+> aspeed_video_enable_mode_detect(struct aspeed_video *video)
+>  
+>  static void aspeed_video_off(struct aspeed_video *video)
+>  {
+> +	if (!test_bit(VIDEO_CLOCKS_ON, &video->flags))
+> +		return;
+> +
+>  	/* Disable interrupts */
+>  	aspeed_video_write(video, VE_INTERRUPT_CTRL, 0);
+>  
+>  	/* Turn off the relevant clocks */
+>  	clk_disable_unprepare(video->vclk);
+>  	clk_disable_unprepare(video->eclk);
+> +
+> +	clear_bit(VIDEO_CLOCKS_ON, &video->flags);
+>  }
+>  
+>  static void aspeed_video_on(struct aspeed_video *video)
+>  {
+> +	if (test_bit(VIDEO_CLOCKS_ON, &video->flags))
+> +		return;
+> +
+>  	/* Turn on the relevant clocks */
+>  	clk_prepare_enable(video->eclk);
+>  	clk_prepare_enable(video->vclk);
+> +
+> +	set_bit(VIDEO_CLOCKS_ON, &video->flags);
+>  }
+>  
+>  static void aspeed_video_bufs_done(struct aspeed_video *video,
+> @@ -513,12 +524,14 @@ static void aspeed_video_bufs_done(struct
+> aspeed_video *video,
+>  
+>  static void aspeed_video_irq_res_change(struct aspeed_video *video)
+>  {
+> +	spin_lock(&video->lock);
+>  	dev_dbg(video->dev, "Resolution changed; resetting\n");
+>  
+>  	set_bit(VIDEO_RES_CHANGE, &video->flags);
+>  	clear_bit(VIDEO_FRAME_INPRG, &video->flags);
+>  
+>  	aspeed_video_off(video);
+> +	spin_unlock(&video->lock);
+>  	aspeed_video_bufs_done(video, VB2_BUF_STATE_ERROR);
+>  
+>  	schedule_delayed_work(&video->res_work,
+> RESOLUTION_CHANGE_DELAY);
+> @@ -938,9 +951,13 @@ static void aspeed_video_init_regs(struct
+> aspeed_video *video)
+>  
+>  static void aspeed_video_start(struct aspeed_video *video)
+>  {
+> +	unsigned long flags;
+> +
+> +	spin_lock_irqsave(&video->lock, flags);
+>  	aspeed_video_on(video);
+>  
+>  	aspeed_video_init_regs(video);
+> +	spin_unlock_irqrestore(&video->lock, flags);
+>  
+>  	/* Resolution set to 640x480 if no signal found */
+>  	aspeed_video_get_resolution(video);
+> @@ -956,6 +973,9 @@ static void aspeed_video_start(struct
+> aspeed_video *video)
+>  
+>  static void aspeed_video_stop(struct aspeed_video *video)
+>  {
+> +	unsigned long flags;
+> +
+> +	spin_lock_irqsave(&video->lock, flags);
+>  	set_bit(VIDEO_STOPPED, &video->flags);
+>  	cancel_delayed_work_sync(&video->res_work);
+>  
+> @@ -969,6 +989,7 @@ static void aspeed_video_stop(struct aspeed_video
+> *video)
+>  
+>  	video->v4l2_input_status = V4L2_IN_ST_NO_SIGNAL;
+>  	video->flags = 0;
+> +	spin_unlock_irqrestore(&video->lock, flags);
+>  }
+>  
+>  static int aspeed_video_querycap(struct file *file, void *fh,
+> @@ -1306,16 +1327,21 @@ static void
+> aspeed_video_resolution_work(struct work_struct *work)
+>  	struct delayed_work *dwork = to_delayed_work(work);
+>  	struct aspeed_video *video = container_of(dwork, struct
+> aspeed_video,
+>  						  res_work);
+> -	u32 input_status = video->v4l2_input_status;
+> +	unsigned long flags;
+> +	u32 input_status;
+>  
+> +	spin_lock_irqsave(&video->lock, flags);
+> +	input_status = video->v4l2_input_status;
+>  	aspeed_video_on(video);
+>  
+>  	/* Exit early in case no clients remain */
+> -	if (test_bit(VIDEO_STOPPED, &video->flags))
+> +	if (test_bit(VIDEO_STOPPED, &video->flags)) {
+> +		spin_unlock_irqrestore(&video->lock, flags);
+>  		goto done;
+> +	}
+>  
+>  	aspeed_video_init_regs(video);
+> -
+> +	spin_unlock_irqrestore(&video->lock, flags);
+>  	aspeed_video_get_resolution(video);
+>  
+>  	if (video->detected_timings.width != video-
+> >active_timings.width ||
+
