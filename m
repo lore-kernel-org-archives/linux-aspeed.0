@@ -1,48 +1,36 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Thu, 09 May 2019 12:16:45 +1000
-Subject: [PATCH 1/7] media: aspeed: fix a kernel warning on clk control
-In-Reply-To: <3786afed-c34d-e3f0-4cd5-620185807091@linux.intel.com>
-References: <20190502191317.29698-1-jae.hyun.yoo@linux.intel.com>
- <20190502191317.29698-2-jae.hyun.yoo@linux.intel.com>
- <1ec7397cb164b40877839bbc90f79b5942675fdb.camel@kernel.crashing.org>
- <6e93467e-1556-3cfd-b15c-c12b6907f526@linux.intel.com>
- <3b4269d829467870f0b6adac18089b93114fcd3c.camel@kernel.crashing.org>
- <3786afed-c34d-e3f0-4cd5-620185807091@linux.intel.com>
-Message-ID: <b682cc6a480f2b8a5e14c5c001fa1927467d4e18.camel@kernel.crashing.org>
+From: Tao Ren <taoren@fb.com>
+Date: Wed, 8 May 2019 20:43:34 -0700
+Subject: [PATCH] ARM: dts: aspeed: cmm: enable ehci host controllers
+Message-ID: <20190509034334.2165789-1-taoren@fb.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 2019-05-08 at 18:19 -0700, Jae Hyun Yoo wrote:
-> I changed that from a bool because the maintainer of this code, Eddie
-> doesn't like adding of an additional flag. I'll change it back with
-> codes in the first submit:
-> https://www.spinics.net/lists/linux-media/msg148955.html
-> 
-> Eddie,
-> Please let me know if you have any objection on that.
+Enable ehci0 and ehci1 USB host controllers on Facebook Backpack CMM BMC.
 
-Ok, so random flags ... ugh.
+Signed-off-by: Tao Ren <taoren@fb.com>
+---
+ arch/arm/boot/dts/aspeed-bmc-facebook-cmm.dts | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-Well, you can approach it either way. Have them all be bitops or all be
-bool.
-
-The tricky thing however is that if they are bitops you need to ensure
-that they are *all* manipulated under the same lock. If not you have to
-use the atomic bitops variants.
-
-The reason I don't like that is that experience shows that most uses of
-such atomic variants in drivers usually are failed attempts at papering
-over broken locking.
-
-If everything is covered by a lock, then using the non-atomic versions
-is more efficient, but so is using bool (optionally with :1 bitfield
-qualifiers to avoid wasting memory), which from a pure C language
-perspective I think is more expressive of what you are doing and more
-readable.
-
-Cheers,
-Ben.
+diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-cmm.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-cmm.dts
+index 43aba4071a5c..d519d307aa2a 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-facebook-cmm.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-facebook-cmm.dts
+@@ -372,3 +372,11 @@
+ &adc {
+ 	status = "okay";
+ };
++
++&ehci0 {
++	status = "okay";
++};
++
++&ehci1 {
++	status = "okay";
++};
+-- 
+2.17.1
 
