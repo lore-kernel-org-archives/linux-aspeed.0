@@ -1,70 +1,165 @@
-From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-Date: Thu, 9 May 2019 21:28:05 -0700
-Subject: [PATCH 1/7] media: aspeed: fix a kernel warning on clk control
-In-Reply-To: <1b208c6b78107aeca7b68fb496466e92957b935a.camel@kernel.crashing.org>
-References: <20190502191317.29698-1-jae.hyun.yoo@linux.intel.com>
- <20190502191317.29698-2-jae.hyun.yoo@linux.intel.com>
- <1ec7397cb164b40877839bbc90f79b5942675fdb.camel@kernel.crashing.org>
- <6e93467e-1556-3cfd-b15c-c12b6907f526@linux.intel.com>
- <3b4269d829467870f0b6adac18089b93114fcd3c.camel@kernel.crashing.org>
- <3786afed-c34d-e3f0-4cd5-620185807091@linux.intel.com>
- <b682cc6a480f2b8a5e14c5c001fa1927467d4e18.camel@kernel.crashing.org>
- <bd909078-323e-93a6-143f-0bb0f0d2229c@linux.intel.com>
- <9b9f9e0d8fdeef0749fa5fcef1647216e9a74f8c.camel@kernel.crashing.org>
- <2f21bac3-7095-a535-e964-ae24ae6e021d@linux.intel.com>
- <1b208c6b78107aeca7b68fb496466e92957b935a.camel@kernel.crashing.org>
-Message-ID: <2c1ee4fd-5f88-1254-608b-73ded050d3a6@linux.intel.com>
+From: Guenter Roeck <linux@roeck-us.net>
+Date: Sat, 11 May 2019 13:22:19 -0700
+Subject: [PATCH 1/6] thermal: Introduce
+ devm_thermal_of_cooling_device_register
+In-Reply-To: <20190511190415.GA22816@localhost.localdomain>
+References: <1555617500-10862-1-git-send-email-linux@roeck-us.net>
+ <1555617500-10862-2-git-send-email-linux@roeck-us.net>
+ <20190511190415.GA22816@localhost.localdomain>
+Message-ID: <4be54a9c-ccc9-5489-6938-c66229d361b3@roeck-us.net>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 5/9/2019 8:01 PM, Benjamin Herrenschmidt wrote:
-> On Thu, 2019-05-09 at 16:51 -0700, Jae Hyun Yoo wrote:
->> On 5/9/2019 4:19 PM, Benjamin Herrenschmidt wrote:
->>> On Thu, 2019-05-09 at 10:19 -0700, Jae Hyun Yoo wrote:
->>>>
->>>> Okay. Probably I need to add one another patch in this series to
->>>> address
->>>> what you pointed out.
->>>>
->>>> I have one question. I reviewed again all bitops in this driver
->>>> and
->>>> checked that some bitops are protected by a spinlock and some
->>>> others
->>>> are not. In this case, can I mix use atomic and non-atomic bitops
->>>> depend on each bitop's protection state by the spinlock? Or,
->>>> would it be
->>>> better to change all of them to bool in this case?
->>>
->>> No, if some aren't protected by a lock and some are, then they need
->>> to
->>> remain atomic.
->>>
->>> The question then becomes whether the unprotected ones are actually
->>> correct or just exposing more races.
->>
->> Got it. Not sure yet but I think the protected bitops could be moved
->> out
->> from the spinlock scope then all bitops could be kept as atomic.
-> 
-> Which is very likely to be extremely racy... (and gratuitously more
-> costly) :-)
+Hi Eduardo,
 
-Okay then, will try to wrap all bitops using a single spinlock and
-change all of them to non-atomic bitops. Is it right approach?
+On 5/11/19 12:04 PM, Eduardo Valentin wrote:
+> Hello Guenter,
+> 
+> On Thu, Apr 18, 2019 at 12:58:15PM -0700, Guenter Roeck wrote:
+>> thermal_of_cooling_device_register() and thermal_cooling_device_register()
+>> are typically called from driver probe functions, and
+>> thermal_cooling_device_unregister() is called from remove functions. This
+>> makes both a perfect candidate for device managed functions.
+>>
+>> Introduce devm_thermal_of_cooling_device_register(). This function can
+>> also be used to replace thermal_cooling_device_register() by passing a NULL
+>> pointer as device node. The new function requires both struct device *
+>> and struct device_node * as parameters since the struct device_node *
+>> parameter is not always identical to dev->of_node.
+>>
+>> Don't introduce a device managed remove function since it is not needed
+>> at this point.
+> 
+> I don't have any objection on adding this API. Only a minor thing below:
+> 
+> 
+>>
+>> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+>> ---
+>>   drivers/thermal/thermal_core.c | 49 ++++++++++++++++++++++++++++++++++++++++++
+>>   include/linux/thermal.h        |  5 +++++
+>>   2 files changed, 54 insertions(+)
+>>
+>> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+>> index 6590bb5cb688..e0b530603db6 100644
+>> --- a/drivers/thermal/thermal_core.c
+>> +++ b/drivers/thermal/thermal_core.c
+>> @@ -1046,6 +1046,55 @@ thermal_of_cooling_device_register(struct device_node *np,
+>>   }
+>>   EXPORT_SYMBOL_GPL(thermal_of_cooling_device_register);
+>>   
+>> +static void thermal_cooling_device_release(struct device *dev, void *res)
+>> +{
+>> +	thermal_cooling_device_unregister(
+>> +				*(struct thermal_cooling_device **)res);
+>> +}
+>> +
+>> +/**
+>> + * devm_thermal_of_cooling_device_register() - register an OF thermal cooling
+>> + *					       device
+>> + * @dev:	a valid struct device pointer of a sensor device.
+>> + * @np:		a pointer to a device tree node.
+>> + * @type:	the thermal cooling device type.
+>> + * @devdata:	device private data.
+>> + * @ops:	standard thermal cooling devices callbacks.
+>> + *
+>> + * This function will register a cooling device with device tree node reference.
+>> + * This interface function adds a new thermal cooling device (fan/processor/...)
+>> + * to /sys/class/thermal/ folder as cooling_device[0-*]. It tries to bind itself
+>> + * to all the thermal zone devices registered at the same time.
+>> + *
+>> + * Return: a pointer to the created struct thermal_cooling_device or an
+>> + * ERR_PTR. Caller must check return value with IS_ERR*() helpers.
+>> + */
+>> +struct thermal_cooling_device *
+>> +devm_thermal_of_cooling_device_register(struct device *dev,
+>> +				struct device_node *np,
+>> +				char *type, void *devdata,
+>> +				const struct thermal_cooling_device_ops *ops)
+>> +{
+>> +	struct thermal_cooling_device **ptr, *tcd;
+>> +
+>> +	ptr = devres_alloc(thermal_cooling_device_release, sizeof(*ptr),
+>> +			   GFP_KERNEL);
+>> +	if (!ptr)
+>> +		return ERR_PTR(-ENOMEM);
+>> +
+>> +	tcd = __thermal_cooling_device_register(np, type, devdata, ops);
+>> +	if (IS_ERR(tcd)) {
+>> +		devres_free(ptr);
+>> +		return tcd;
+>> +	}
+>> +
+>> +	*ptr = tcd;
+>> +	devres_add(dev, ptr);
+>> +
+>> +	return tcd;
+>> +}
+>> +EXPORT_SYMBOL_GPL(devm_thermal_of_cooling_device_register);
+>> +
+>>   static void __unbind(struct thermal_zone_device *tz, int mask,
+>>   		     struct thermal_cooling_device *cdev)
+>>   {
+>> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+>> index 5f4705f46c2f..43cf4fdd71d4 100644
+>> --- a/include/linux/thermal.h
+>> +++ b/include/linux/thermal.h
+>> @@ -447,6 +447,11 @@ struct thermal_cooling_device *thermal_cooling_device_register(char *, void *,
+>>   struct thermal_cooling_device *
+>>   thermal_of_cooling_device_register(struct device_node *np, char *, void *,
+>>   				   const struct thermal_cooling_device_ops *);
+>> +struct thermal_cooling_device *
+>> +devm_thermal_of_cooling_device_register(struct device *dev,
+>> +				struct device_node *np,
+>> +				char *type, void *devdata,
+>> +				const struct thermal_cooling_device_ops *ops);
+> 
+> We need to stub this in case thermal is not selected.
+> 
+
+Yes. Sorry, that completely slipped my mind.
+
+>>   void thermal_cooling_device_unregister(struct thermal_cooling_device *);
+>>   struct thermal_zone_device *thermal_zone_get_zone_by_name(const char *name);
+>>   int thermal_zone_get_temp(struct thermal_zone_device *tz, int *temp);
+> 
+> Something like:
+> 
+> 
+> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+> index 43cf4fd..9b1b365 100644
+> --- a/include/linux/thermal.h
+> +++ b/include/linux/thermal.h
+> @@ -508,6 +508,14 @@ static inline struct thermal_cooling_device *
+>   thermal_of_cooling_device_register(struct device_node *np,
+>          char *type, void *devdata, const struct thermal_cooling_device_ops *ops)
+>   { return ERR_PTR(-ENODEV); }
+> +struct thermal_cooling_device *
+> +devm_thermal_of_cooling_device_register(struct device *dev,
+> +                               struct device_node *np,
+> +                               char *type, void *devdata,
+> +                               const struct thermal_cooling_device_ops *ops)
+> +{
+> +       return ERR_PTR(-ENODEV);
+> +}
+>   static inline void thermal_cooling_device_unregister(
+>          struct thermal_cooling_device *cdev)
+>   { }
+> ~
+> 
+> 
+> If you want I can amend this to your patch and apply it.
+> 
+Please do.
+
+> Also, do you prefer me to collect only this patch and you would collect hwmon changes,
+> or are you ok if I collect all the series?
+> 
+
+Please go ahead and collect the entire series.
 
 Thanks,
-Jae
-
->>   I'll
->> look at and test this driver code more deeply again, and will submit
->> v2
->> soon.
->>
->> Again, thanks a lot for your review.
->>
->> Regards,
->> Jae
-> 
+Guenter
