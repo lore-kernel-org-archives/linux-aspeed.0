@@ -1,880 +1,151 @@
-From: Matt Spinler <mspinler@linux.ibm.com>
-Date: Mon, 06 May 2019 14:09:47 -0000
-Subject: [PATCH dev-5.0 v3] ARM: dts: aspeed: Add Swift BMC machine
-In-Reply-To: <1556572128-20917-1-git-send-email-anoo@linux.ibm.com>
-References: <5bbc8649-5a38-fe38-9a97-9c4ec582b511@linux.ibm.com>
- <1556572128-20917-1-git-send-email-anoo@linux.ibm.com>
-Message-ID: <98fe0915-50f5-62ca-f659-2fb852ac21e7@linux.ibm.com>
+From: Eduardo Valentin <edubezval@gmail.com>
+Date: Sat, 11 May 2019 19:04:31 -0000
+Subject: [PATCH 1/6] thermal: Introduce
+ devm_thermal_of_cooling_device_register
+In-Reply-To: <1555617500-10862-2-git-send-email-linux@roeck-us.net>
+References: <1555617500-10862-1-git-send-email-linux@roeck-us.net>
+ <1555617500-10862-2-git-send-email-linux@roeck-us.net>
+Message-ID: <20190511190415.GA22816@localhost.localdomain>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+Hello Guenter,
 
-On 4/29/2019 4:08 PM, Adriana Kobylak wrote:
-> From: Adriana Kobylak <anoo@us.ibm.com>
->
-> The Swift BMC is an ASPEED ast2500 based BMC that is part of
-> a Power9 server. This adds the device tree description for
-> most upstream components.
->
-> Signed-off-by: Adriana Kobylak <anoo@us.ibm.com>
+On Thu, Apr 18, 2019 at 12:58:15PM -0700, Guenter Roeck wrote:
+> thermal_of_cooling_device_register() and thermal_cooling_device_register()
+> are typically called from driver probe functions, and
+> thermal_cooling_device_unregister() is called from remove functions. This
+> makes both a perfect candidate for device managed functions.
+> 
+> Introduce devm_thermal_of_cooling_device_register(). This function can
+> also be used to replace thermal_cooling_device_register() by passing a NULL
+> pointer as device node. The new function requires both struct device *
+> and struct device_node * as parameters since the struct device_node *
+> parameter is not always identical to dev->of_node.
+> 
+> Don't introduce a device managed remove function since it is not needed
+> at this point.
+
+I don't have any objection on adding this API. Only a minor thing below:
 
 
-Reviewed-by: Matt Spinler <spinler@us.ibm.com>
-
-
+> 
+> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 > ---
->   arch/arm/boot/dts/Makefile                 |   1 +
->   arch/arm/boot/dts/aspeed-bmc-opp-swift.dts | 828 +++++++++++++++++++++++++++++
->   2 files changed, 829 insertions(+)
->   create mode 100644 arch/arm/boot/dts/aspeed-bmc-opp-swift.dts
->
-> diff --git a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
-> index bd40148..b82a24d 100644
-> --- a/arch/arm/boot/dts/Makefile
-> +++ b/arch/arm/boot/dts/Makefile
-> @@ -1244,6 +1244,7 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
->   	aspeed-bmc-opp-lanyang.dtb \
->   	aspeed-bmc-opp-palmetto.dtb \
->   	aspeed-bmc-opp-romulus.dtb \
-> +	aspeed-bmc-opp-swift.dtb \
->   	aspeed-bmc-opp-witherspoon.dtb \
->   	aspeed-bmc-opp-zaius.dtb \
->   	aspeed-bmc-portwell-neptune.dtb \
-> diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-swift.dts b/arch/arm/boot/dts/aspeed-bmc-opp-swift.dts
-> new file mode 100644
-> index 0000000..8d44e3c
-> --- /dev/null
-> +++ b/arch/arm/boot/dts/aspeed-bmc-opp-swift.dts
-> @@ -0,0 +1,828 @@
-> +// SPDX-License-Identifier: GPL-2.0+
-> +/dts-v1/;
-> +#include "aspeed-g5.dtsi"
-> +#include <dt-bindings/gpio/aspeed-gpio.h>
-> +#include <dt-bindings/leds/leds-pca955x.h>
-> +
-> +/ {
-> +	model = "Swift BMC";
-> +	compatible = "ibm,swift-bmc", "aspeed,ast2500";
-> +
-> +	chosen {
-> +		stdout-path = &uart5;
-> +		bootargs = "console=ttyS4,115200 earlyprintk";
-> +	};
-> +
-> +	memory at 80000000 {
-> +		reg = <0x80000000 0x20000000>;
-> +	};
-> +
-> +	reserved-memory {
-> +		#address-cells = <1>;
-> +		#size-cells = <1>;
-> +		ranges;
-> +
-> +		flash_memory: region at 98000000 {
-> +			no-map;
-> +			reg = <0x98000000 0x04000000>; /* 64M */
-> +		};
-> +
-> +		gfx_memory: framebuffer {
-> +			size = <0x01000000>;
-> +			alignment = <0x01000000>;
-> +			compatible = "shared-dma-pool";
-> +			reusable;
-> +		};
-> +	};
-> +
-> +	gpio-keys {
-> +		compatible = "gpio-keys";
-> +
-> +		air-water {
-> +			label = "air-water";
-> +			gpios = <&gpio ASPEED_GPIO(B, 5) GPIO_ACTIVE_LOW>;
-> +			linux,code = <ASPEED_GPIO(B, 5)>;
-> +		};
-> +
-> +		checkstop {
-> +			label = "checkstop";
-> +			gpios = <&gpio ASPEED_GPIO(J, 2) GPIO_ACTIVE_LOW>;
-> +			linux,code = <ASPEED_GPIO(J, 2)>;
-> +		};
-> +
-> +		ps0-presence {
-> +			label = "ps0-presence";
-> +			gpios = <&gpio ASPEED_GPIO(R, 7) GPIO_ACTIVE_LOW>;
-> +			linux,code = <ASPEED_GPIO(R, 7)>;
-> +		};
-> +
-> +		ps1-presence {
-> +			label = "ps1-presence";
-> +			gpios = <&gpio ASPEED_GPIO(N, 0) GPIO_ACTIVE_LOW>;
-> +			linux,code = <ASPEED_GPIO(N, 0)>;
-> +		};
-> +
-> +		oppanel-presence {
-> +			label = "oppanel-presence";
-> +			gpios = <&gpio ASPEED_GPIO(A, 7) GPIO_ACTIVE_LOW>;
-> +			linux,code = <ASPEED_GPIO(A, 7)>;
-> +		};
-> +
-> +		opencapi-riser-presence {
-> +			label = "opencapi-riser-presence";
-> +			gpios = <&gpio ASPEED_GPIO(I, 0) GPIO_ACTIVE_LOW>;
-> +			linux,code = <ASPEED_GPIO(I, 0)>;
-> +		};
-> +	};
-> +
-> +	iio-hwmon-battery {
-> +		compatible = "iio-hwmon";
-> +		io-channels = <&adc 12>;
-> +	};
-> +
-> +	gpio-keys-polled {
-> +		compatible = "gpio-keys-polled";
-> +		#address-cells = <1>;
-> +		#size-cells = <0>;
-> +		poll-interval = <1000>;
-> +
-> +		scm0-presence {
-> +			label = "scm0-presence";
-> +			gpios = <&pca9552 6 GPIO_ACTIVE_LOW>;
-> +			linux,code = <6>;
-> +		};
-> +
-> +		scm1-presence {
-> +			label = "scm1-presence";
-> +			gpios = <&pca9552 7 GPIO_ACTIVE_LOW>;
-> +			linux,code = <7>;
-> +		};
-> +
-> +		cpu0vrm-presence {
-> +			label = "cpu0vrm-presence";
-> +			gpios = <&pca9552 12 GPIO_ACTIVE_LOW>;
-> +			linux,code = <12>;
-> +		};
-> +
-> +		cpu1vrm-presence {
-> +			label = "cpu1vrm-presence";
-> +			gpios = <&pca9552 13 GPIO_ACTIVE_LOW>;
-> +			linux,code = <13>;
-> +		};
-> +
-> +		fan0-presence {
-> +			label = "fan0-presence";
-> +			gpios = <&pca0 5 GPIO_ACTIVE_LOW>;
-> +			linux,code = <5>;
-> +		};
-> +
-> +		fan1-presence {
-> +			label = "fan1-presence";
-> +			gpios = <&pca0 6 GPIO_ACTIVE_LOW>;
-> +			linux,code = <6>;
-> +		};
-> +
-> +		fan2-presence {
-> +			label = "fan2-presence";
-> +			gpios = <&pca0 7 GPIO_ACTIVE_LOW>;
-> +			linux,code = <7>;
-> +		};
-> +
-> +		fan3-presence {
-> +			label = "fan3-presence";
-> +			gpios = <&pca0 8 GPIO_ACTIVE_LOW>;
-> +			linux,code = <8>;
-> +		};
-> +
-> +		fanboost-presence {
-> +			label = "fanboost-presence";
-> +			gpios = <&pca0 9 GPIO_ACTIVE_LOW>;
-> +			linux,code = <9>;
-> +		};
-> +	};
-> +
-> +	leds {
-> +		compatible = "gpio-leds";
-> +
-> +		fan0 {
-> +			retain-state-shutdown;
-> +			default-state = "keep";
-> +			gpios = <&pca0 0 GPIO_ACTIVE_LOW>;
-> +		};
-> +
-> +		fan1 {
-> +			retain-state-shutdown;
-> +			default-state = "keep";
-> +			gpios = <&pca0 1 GPIO_ACTIVE_LOW>;
-> +		};
-> +
-> +		fan2 {
-> +			retain-state-shutdown;
-> +			default-state = "keep";
-> +			gpios = <&pca0 2 GPIO_ACTIVE_LOW>;
-> +		};
-> +
-> +		fan3 {
-> +			retain-state-shutdown;
-> +			default-state = "keep";
-> +			gpios = <&pca0 3 GPIO_ACTIVE_LOW>;
-> +		};
-> +
-> +		fanboost {
-> +			retain-state-shutdown;
-> +			default-state = "keep";
-> +			gpios = <&pca0 4 GPIO_ACTIVE_LOW>;
-> +		};
-> +
-> +		front-fault {
-> +			retain-state-shutdown;
-> +			default-state = "keep";
-> +			gpios = <&pca1 2 GPIO_ACTIVE_LOW>;
-> +		};
-> +
-> +		front-power {
-> +			retain-state-shutdown;
-> +			default-state = "keep";
-> +			gpios = <&pca1 3 GPIO_ACTIVE_LOW>;
-> +		};
-> +
-> +		front-id {
-> +			retain-state-shutdown;
-> +			default-state = "keep";
-> +			gpios = <&pca1 0 GPIO_ACTIVE_LOW>;
-> +		};
-> +
-> +		rear-fault {
-> +			gpios = <&gpio ASPEED_GPIO(N, 2) GPIO_ACTIVE_LOW>;
-> +		};
-> +
-> +		rear-id {
-> +			gpios = <&gpio ASPEED_GPIO(N, 4) GPIO_ACTIVE_LOW>;
-> +		};
-> +
-> +		rear-power {
-> +			gpios = <&gpio ASPEED_GPIO(N, 3) GPIO_ACTIVE_LOW>;
-> +		};
-> +	};
-> +
-> +	fsi: gpio-fsi {
-> +		compatible = "fsi-master-gpio", "fsi-master";
-> +		#address-cells = <2>;
-> +		#size-cells = <0>;
-> +		no-gpio-delays;
-> +
-> +		clock-gpios = <&gpio ASPEED_GPIO(AA, 0) GPIO_ACTIVE_HIGH>;
-> +		data-gpios = <&gpio ASPEED_GPIO(E, 0) GPIO_ACTIVE_HIGH>;
-> +		mux-gpios = <&gpio ASPEED_GPIO(P, 4) GPIO_ACTIVE_HIGH>;
-> +		enable-gpios = <&gpio ASPEED_GPIO(P, 0) GPIO_ACTIVE_HIGH>;
-> +		trans-gpios = <&gpio ASPEED_GPIO(P, 3) GPIO_ACTIVE_HIGH>;
-> +	};
-> +
-> +	iio-hwmon-dps310 {
-> +		compatible = "iio-hwmon";
-> +		io-channels = <&dps 0>;
-> +	};
-> +
-> +};
-> +
-> +&fmc {
-> +	status = "okay";
-> +
-> +	flash at 0 {
-> +		status = "okay";
-> +		label = "bmc";
-> +		m25p,fast-read;
-> +		spi-max-frequency = <100000000>;
-> +		partitions {
-> +			#address-cells = < 1 >;
-> +			#size-cells = < 1 >;
-> +			compatible = "fixed-partitions";
-> +			u-boot at 0 {
-> +				reg = < 0 0x60000 >;
-> +				label = "u-boot";
-> +			};
-> +			u-boot-env at 60000 {
-> +				reg = < 0x60000 0x20000 >;
-> +				label = "u-boot-env";
-> +			};
-> +			obmc-ubi at 80000 {
-> +				reg = < 0x80000 0x7F80000>;
-> +				label = "obmc-ubi";
-> +			};
-> +		};
-> +	};
-> +
-> +	flash at 1 {
-> +		status = "okay";
-> +		label = "alt-bmc";
-> +		m25p,fast-read;
-> +		spi-max-frequency = <100000000>;
-> +		partitions {
-> +			#address-cells = < 1 >;
-> +			#size-cells = < 1 >;
-> +			compatible = "fixed-partitions";
-> +			u-boot at 0 {
-> +				reg = < 0 0x60000 >;
-> +				label = "alt-u-boot";
-> +			};
-> +			u-boot-env at 60000 {
-> +				reg = < 0x60000 0x20000 >;
-> +				label = "alt-u-boot-env";
-> +			};
-> +			obmc-ubi at 80000 {
-> +				reg = < 0x80000 0x7F80000>;
-> +				label = "alt-obmc-ubi";
-> +			};
-> +		};
-> +	};
-> +};
-> +
-> +&spi1 {
-> +	status = "okay";
-> +	pinctrl-names = "default";
-> +	pinctrl-0 = <&pinctrl_spi1_default>;
-> +
-> +	flash at 0 {
-> +		status = "okay";
-> +		label = "pnor";
-> +		m25p,fast-read;
-> +		spi-max-frequency = <100000000>;
-> +	};
-> +};
-> +
-> +&uart1 {
-> +	/* Rear RS-232 connector */
-> +	status = "okay";
-> +	pinctrl-names = "default";
-> +	pinctrl-0 = <&pinctrl_txd1_default
-> +			&pinctrl_rxd1_default
-> +			&pinctrl_nrts1_default
-> +			&pinctrl_ndtr1_default
-> +			&pinctrl_ndsr1_default
-> +			&pinctrl_ncts1_default
-> +			&pinctrl_ndcd1_default
-> +			&pinctrl_nri1_default>;
-> +};
-> +
-> +&uart2 {
-> +	/* APSS */
-> +	status = "okay";
-> +	pinctrl-names = "default";
-> +	pinctrl-0 = <&pinctrl_txd2_default &pinctrl_rxd2_default>;
-> +};
-> +
-> +&uart5 {
-> +	status = "okay";
-> +};
-> +
-> +&lpc_ctrl {
-> +	status = "okay";
-> +	memory-region = <&flash_memory>;
-> +	flash = <&spi1>;
-> +};
-> +
-> +&mbox {
-> +	status = "okay";
-> +};
-> +
-> +&mac0 {
-> +	status = "okay";
-> +	pinctrl-names = "default";
-> +	pinctrl-0 = <&pinctrl_rmii1_default>;
-> +	use-ncsi;
-> +};
-> +
-> +&i2c2 {
-> +	status = "okay";
-> +
-> +	/* MUX ->
-> +	 *    Samtec 1
-> +	 *    Samtec 2
-> +	 */
-> +};
-> +
-> +&i2c3 {
-> +	status = "okay";
-> +
-> +	max31785 at 52 {
-> +		compatible = "maxim,max31785a";
-> +		reg = <0x52>;
-> +		#address-cells = <1>;
-> +		#size-cells = <0>;
-> +
-> +		fan at 0 {
-> +			compatible = "pmbus-fan";
-> +			reg = <0>;
-> +			tach-pulses = <2>;
-> +			maxim,fan-rotor-input = "tach";
-> +			maxim,fan-pwm-freq = <25000>;
-> +			maxim,fan-no-watchdog;
-> +			maxim,fan-no-fault-ramp;
-> +			maxim,fan-ramp = <2>;
-> +			maxim,fan-fault-pin-mon;
-> +		};
-> +
-> +		fan at 1 {
-> +			compatible = "pmbus-fan";
-> +			reg = <1>;
-> +			tach-pulses = <2>;
-> +			maxim,fan-rotor-input = "tach";
-> +			maxim,fan-pwm-freq = <25000>;
-> +			maxim,fan-no-watchdog;
-> +			maxim,fan-no-fault-ramp;
-> +			maxim,fan-ramp = <2>;
-> +			maxim,fan-fault-pin-mon;
-> +		};
-> +
-> +		fan at 2 {
-> +			compatible = "pmbus-fan";
-> +			reg = <2>;
-> +			tach-pulses = <2>;
-> +			maxim,fan-rotor-input = "tach";
-> +			maxim,fan-pwm-freq = <25000>;
-> +			maxim,fan-no-watchdog;
-> +			maxim,fan-no-fault-ramp;
-> +			maxim,fan-ramp = <2>;
-> +			maxim,fan-fault-pin-mon;
-> +		};
-> +
-> +		fan at 3 {
-> +			compatible = "pmbus-fan";
-> +			reg = <3>;
-> +			tach-pulses = <2>;
-> +			maxim,fan-rotor-input = "tach";
-> +			maxim,fan-pwm-freq = <25000>;
-> +			maxim,fan-no-watchdog;
-> +			maxim,fan-no-fault-ramp;
-> +			maxim,fan-ramp = <2>;
-> +			maxim,fan-fault-pin-mon;
-> +		};
-> +
-> +		fan at 4 {
-> +			compatible = "pmbus-fan";
-> +			reg = <4>;
-> +			tach-pulses = <2>;
-> +			maxim,fan-rotor-input = "tach";
-> +			maxim,fan-pwm-freq = <25000>;
-> +			maxim,fan-no-watchdog;
-> +			maxim,fan-no-fault-ramp;
-> +			maxim,fan-ramp = <2>;
-> +			maxim,fan-fault-pin-mon;
-> +		};
-> +	};
-> +
-> +	pca0: pca9552 at 60 {
-> +		compatible = "nxp,pca9552";
-> +		reg = <0x60>;
-> +		#address-cells = <1>;
-> +		#size-cells = <0>;
-> +
-> +		gpio-controller;
-> +		#gpio-cells = <2>;
-> +
-> +		gpio at 0 {
-> +			reg = <0>;
-> +			type = <PCA955X_TYPE_GPIO>;
-> +		};
-> +
-> +		gpio at 1 {
-> +			reg = <1>;
-> +			type = <PCA955X_TYPE_GPIO>;
-> +		};
-> +
-> +		gpio at 2 {
-> +			reg = <2>;
-> +			type = <PCA955X_TYPE_GPIO>;
-> +		};
-> +
-> +		gpio at 3 {
-> +			reg = <3>;
-> +			type = <PCA955X_TYPE_GPIO>;
-> +		};
-> +
-> +		gpio at 4 {
-> +			reg = <4>;
-> +			type = <PCA955X_TYPE_GPIO>;
-> +		};
-> +
-> +		gpio at 5 {
-> +			reg = <5>;
-> +			type = <PCA955X_TYPE_GPIO>;
-> +		};
-> +
-> +		gpio at 6 {
-> +			reg = <6>;
-> +			type = <PCA955X_TYPE_GPIO>;
-> +		};
-> +
-> +		gpio at 7 {
-> +			reg = <7>;
-> +			type = <PCA955X_TYPE_GPIO>;
-> +		};
-> +
-> +		gpio at 8 {
-> +			reg = <8>;
-> +			type = <PCA955X_TYPE_GPIO>;
-> +		};
-> +
-> +		gpio at 9 {
-> +			reg = <9>;
-> +			type = <PCA955X_TYPE_GPIO>;
-> +		};
-> +
-> +		gpio at 10 {
-> +			reg = <10>;
-> +			type = <PCA955X_TYPE_GPIO>;
-> +		};
-> +
-> +		gpio at 11 {
-> +			reg = <11>;
-> +			type = <PCA955X_TYPE_GPIO>;
-> +		};
-> +
-> +		gpio at 12 {
-> +			reg = <12>;
-> +			type = <PCA955X_TYPE_GPIO>;
-> +		};
-> +
-> +		gpio at 13 {
-> +			reg = <13>;
-> +			type = <PCA955X_TYPE_GPIO>;
-> +		};
-> +
-> +		gpio at 14 {
-> +			reg = <14>;
-> +			type = <PCA955X_TYPE_GPIO>;
-> +		};
-> +
-> +		gpio at 15 {
-> +			reg = <15>;
-> +			type = <PCA955X_TYPE_GPIO>;
-> +		};
-> +	};
-> +
-> +	power-supply at 68 {
-> +		compatible = "ibm,cffps1";
-> +		reg = <0x68>;
-> +	};
-> +
-> +	eeprom at 50 {
-> +		compatible = "atmel,24c64";
-> +		reg = <0x50>;
-> +	};
-> +
-> +	power-supply at 69 {
-> +		compatible = "ibm,cffps1";
-> +		reg = <0x69>;
-> +	};
-> +
-> +	eeprom at 51 {
-> +		compatible = "atmel,24c64";
-> +		reg = <0x51>;
-> +	};
-> +};
-> +
-> +&i2c7 {
-> +	status = "okay";
-> +
-> +	dps: dps310 at 76 {
-> +		compatible = "infineon,dps310";
-> +		reg = <0x76>;
-> +		#io-channel-cells = <0>;
-> +	};
-> +
-> +	tmp275 at 48 {
-> +		compatible = "ti,tmp275";
-> +		reg = <0x48>;
-> +	};
-> +
-> +	si7021a20 at 20 {
-> +		compatible = "si,si7021a20";
-> +		reg = <0x20>;
-> +	};
-> +
-> +	eeprom at 50 {
-> +		compatible = "atmel,24c64";
-> +		reg = <0x50>;
-> +	};
-> +
-> +	pca1: pca9551 at 60 {
-> +		compatible = "nxp,pca9551";
-> +		reg = <0x60>;
-> +		#address-cells = <1>;
-> +		#size-cells = <0>;
-> +
-> +		gpio-controller;
-> +		#gpio-cells = <2>;
-> +
-> +		gpio at 0 {
-> +			reg = <0>;
-> +			type = <PCA955X_TYPE_GPIO>;
-> +		};
-> +
-> +		gpio at 1 {
-> +			reg = <1>;
-> +			type = <PCA955X_TYPE_GPIO>;
-> +		};
-> +
-> +		gpio at 2 {
-> +			reg = <2>;
-> +			type = <PCA955X_TYPE_GPIO>;
-> +		};
-> +
-> +		gpio at 3 {
-> +			reg = <3>;
-> +			type = <PCA955X_TYPE_GPIO>;
-> +		};
-> +
-> +		gpio at 4 {
-> +			reg = <4>;
-> +			type = <PCA955X_TYPE_GPIO>;
-> +		};
-> +
-> +		gpio at 5 {
-> +			reg = <5>;
-> +			type = <PCA955X_TYPE_GPIO>;
-> +		};
-> +
-> +		gpio at 6 {
-> +			reg = <6>;
-> +			type = <PCA955X_TYPE_GPIO>;
-> +		};
-> +
-> +		gpio at 7 {
-> +			reg = <7>;
-> +			type = <PCA955X_TYPE_GPIO>;
-> +		};
-> +	};
-> +};
-> +
-> +&i2c8 {
-> +	status = "okay";
-> +
-> +	pca9552: pca9552 at 60 {
-> +		compatible = "nxp,pca9552";
-> +		reg = <0x60>;
-> +		#address-cells = <1>;
-> +		#size-cells = <0>;
-> +		gpio-controller;
-> +		#gpio-cells = <2>;
-> +
-> +		gpio-line-names = "PS_SMBUS_RESET_N", "APSS_RESET_N",
-> +			"GPU0_TH_OVERT_N_BUFF",	"GPU1_TH_OVERT_N_BUFF",
-> +			"GPU2_TH_OVERT_N_BUFF", "GPU3_TH_OVERT_N_BUFF",
-> +			"P9_SCM0_PRES",	"P9_SCM1_PRES",
-> +			"GPU0_PWR_GOOD_BUFF", "GPU1_PWR_GOOD_BUFF",
-> +			"GPU2_PWR_GOOD_BUFF", "GPU3_PWR_GOOD_BUFF",
-> +			"PRESENT_VRM_CP0_N", "PRESENT_VRM_CP1_N",
-> +			"12V_BREAKER_FLT_N", "THROTTLE_UNLATCHED_N";
-> +
-> +		gpio at 0 {
-> +			reg = <0>;
-> +			type = <PCA955X_TYPE_GPIO>;
-> +		};
-> +
-> +		gpio at 1 {
-> +			reg = <1>;
-> +			type = <PCA955X_TYPE_GPIO>;
-> +		};
-> +
-> +		gpio at 2 {
-> +			reg = <2>;
-> +			type = <PCA955X_TYPE_GPIO>;
-> +		};
-> +
-> +		gpio at 3 {
-> +			reg = <3>;
-> +			type = <PCA955X_TYPE_GPIO>;
-> +		};
-> +
-> +		gpio at 4 {
-> +			reg = <4>;
-> +			type = <PCA955X_TYPE_GPIO>;
-> +		};
-> +
-> +		gpio at 5 {
-> +			reg = <5>;
-> +			type = <PCA955X_TYPE_GPIO>;
-> +		};
-> +
-> +		gpio at 6 {
-> +			reg = <6>;
-> +			type = <PCA955X_TYPE_GPIO>;
-> +		};
-> +
-> +		gpio at 7 {
-> +			reg = <7>;
-> +			type = <PCA955X_TYPE_GPIO>;
-> +		};
-> +
-> +		gpio at 8 {
-> +			reg = <8>;
-> +			type = <PCA955X_TYPE_GPIO>;
-> +		};
-> +
-> +		gpio at 9 {
-> +			reg = <9>;
-> +			type = <PCA955X_TYPE_GPIO>;
-> +		};
-> +
-> +		gpio at 10 {
-> +			reg = <10>;
-> +			type = <PCA955X_TYPE_GPIO>;
-> +		};
-> +
-> +		gpio at 11 {
-> +			reg = <11>;
-> +			type = <PCA955X_TYPE_GPIO>;
-> +		};
-> +
-> +		gpio at 12 {
-> +			reg = <12>;
-> +			type = <PCA955X_TYPE_GPIO>;
-> +		};
-> +
-> +		gpio at 13 {
-> +			reg = <13>;
-> +			type = <PCA955X_TYPE_GPIO>;
-> +		};
-> +
-> +		gpio at 14 {
-> +			reg = <14>;
-> +			type = <PCA955X_TYPE_GPIO>;
-> +		};
-> +
-> +		gpio at 15 {
-> +			reg = <15>;
-> +			type = <PCA955X_TYPE_GPIO>;
-> +		};
-> +	};
-> +
-> +	rtc at 32 {
-> +		compatible = "epson,rx8900";
-> +		reg = <0x32>;
-> +	};
-> +
-> +	eeprom at 51 {
-> +		compatible = "atmel,24c64";
-> +		reg = <0x51>;
-> +	};
-> +
-> +	ucd90160 at 64 {
-> +		compatible = "ti,ucd90160";
-> +		reg = <0x64>;
-> +	};
-> +};
-> +
-> +&i2c9 {
-> +	status = "okay";
-> +
-> +	eeprom at 50 {
-> +		compatible = "atmel,24c64";
-> +		reg = <0x50>;
-> +	};
-> +
-> +	tmp423a at 4c {
-> +		compatible = "ti,tmp423";
-> +		reg = <0x4c>;
-> +	};
-> +
-> +	ir35221 at 71 {
-> +		compatible = "infineon,ir35221";
-> +		reg = <0x71>;
-> +	};
-> +
-> +	ir35221 at 72 {
-> +		compatible = "infineon,ir35221";
-> +		reg = <0x72>;
-> +	};
-> +};
-> +
-> +&i2c10 {
-> +	status = "okay";
-> +
-> +	eeprom at 50 {
-> +		compatible = "atmel,24c64";
-> +		reg = <0x50>;
-> +	};
-> +
-> +	tmp423a at 4c {
-> +		compatible = "ti,tmp423";
-> +		reg = <0x4c>;
-> +	};
-> +
-> +	ir35221 at 71 {
-> +		compatible = "infineon,ir35221";
-> +		reg = <0x71>;
-> +	};
-> +
-> +	ir35221 at 72 {
-> +		compatible = "infineon,ir35221";
-> +		reg = <0x72>;
-> +	};
-> +};
-> +
-> +&i2c11 {
-> +	/* MUX
-> +	 *   -> PCIe Slot 0
-> +	 *   -> PCIe Slot 1
-> +	 *   -> PCIe Slot 2
-> +	 *   -> PCIe Slot 3
-> +	 */
-> +	status = "okay";
-> +};
-> +
-> +&i2c12 {
-> +	status = "okay";
-> +
-> +	tmp275 at 48 {
-> +		compatible = "ti,tmp275";
-> +		reg = <0x48>;
-> +	};
-> +
-> +	tmp275 at 4a {
-> +		compatible = "ti,tmp275";
-> +		reg = <0x4a>;
-> +	};
-> +};
-> +
-> +&i2c13 {
-> +	status = "okay";
-> +};
-> +
-> +&vuart {
-> +	status = "okay";
-> +};
-> +
-> +&gfx {
-> +	status = "okay";
-> +	memory-region = <&gfx_memory>;
-> +};
-> +
-> +&pinctrl {
-> +	aspeed,external-nodes = <&gfx &lhc>;
-> +};
-> +
-> +&wdt1 {
-> +	aspeed,reset-type = "none";
-> +	aspeed,external-signal;
-> +	aspeed,ext-push-pull;
-> +	aspeed,ext-active-high;
-> +
-> +	pinctrl-names = "default";
-> +	pinctrl-0 = <&pinctrl_wdtrst1_default>;
-> +};
-> +
-> +&wdt2 {
-> +	aspeed,alt-boot;
-> +};
-> +
-> +&ibt {
-> +	status = "okay";
-> +};
-> +
-> +&adc {
-> +	status = "okay";
-> +};
-> +
-> +#include "ibm-power9-dual.dtsi"
+>  drivers/thermal/thermal_core.c | 49 ++++++++++++++++++++++++++++++++++++++++++
+>  include/linux/thermal.h        |  5 +++++
+>  2 files changed, 54 insertions(+)
+> 
+> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+> index 6590bb5cb688..e0b530603db6 100644
+> --- a/drivers/thermal/thermal_core.c
+> +++ b/drivers/thermal/thermal_core.c
+> @@ -1046,6 +1046,55 @@ thermal_of_cooling_device_register(struct device_node *np,
+>  }
+>  EXPORT_SYMBOL_GPL(thermal_of_cooling_device_register);
+>  
+> +static void thermal_cooling_device_release(struct device *dev, void *res)
+> +{
+> +	thermal_cooling_device_unregister(
+> +				*(struct thermal_cooling_device **)res);
+> +}
+> +
+> +/**
+> + * devm_thermal_of_cooling_device_register() - register an OF thermal cooling
+> + *					       device
+> + * @dev:	a valid struct device pointer of a sensor device.
+> + * @np:		a pointer to a device tree node.
+> + * @type:	the thermal cooling device type.
+> + * @devdata:	device private data.
+> + * @ops:	standard thermal cooling devices callbacks.
+> + *
+> + * This function will register a cooling device with device tree node reference.
+> + * This interface function adds a new thermal cooling device (fan/processor/...)
+> + * to /sys/class/thermal/ folder as cooling_device[0-*]. It tries to bind itself
+> + * to all the thermal zone devices registered at the same time.
+> + *
+> + * Return: a pointer to the created struct thermal_cooling_device or an
+> + * ERR_PTR. Caller must check return value with IS_ERR*() helpers.
+> + */
+> +struct thermal_cooling_device *
+> +devm_thermal_of_cooling_device_register(struct device *dev,
+> +				struct device_node *np,
+> +				char *type, void *devdata,
+> +				const struct thermal_cooling_device_ops *ops)
+> +{
+> +	struct thermal_cooling_device **ptr, *tcd;
+> +
+> +	ptr = devres_alloc(thermal_cooling_device_release, sizeof(*ptr),
+> +			   GFP_KERNEL);
+> +	if (!ptr)
+> +		return ERR_PTR(-ENOMEM);
+> +
+> +	tcd = __thermal_cooling_device_register(np, type, devdata, ops);
+> +	if (IS_ERR(tcd)) {
+> +		devres_free(ptr);
+> +		return tcd;
+> +	}
+> +
+> +	*ptr = tcd;
+> +	devres_add(dev, ptr);
+> +
+> +	return tcd;
+> +}
+> +EXPORT_SYMBOL_GPL(devm_thermal_of_cooling_device_register);
+> +
+>  static void __unbind(struct thermal_zone_device *tz, int mask,
+>  		     struct thermal_cooling_device *cdev)
+>  {
+> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+> index 5f4705f46c2f..43cf4fdd71d4 100644
+> --- a/include/linux/thermal.h
+> +++ b/include/linux/thermal.h
+> @@ -447,6 +447,11 @@ struct thermal_cooling_device *thermal_cooling_device_register(char *, void *,
+>  struct thermal_cooling_device *
+>  thermal_of_cooling_device_register(struct device_node *np, char *, void *,
+>  				   const struct thermal_cooling_device_ops *);
+> +struct thermal_cooling_device *
+> +devm_thermal_of_cooling_device_register(struct device *dev,
+> +				struct device_node *np,
+> +				char *type, void *devdata,
+> +				const struct thermal_cooling_device_ops *ops);
+
+We need to stub this in case thermal is not selected.
+
+>  void thermal_cooling_device_unregister(struct thermal_cooling_device *);
+>  struct thermal_zone_device *thermal_zone_get_zone_by_name(const char *name);
+>  int thermal_zone_get_temp(struct thermal_zone_device *tz, int *temp);
+
+Something like:
+
+
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index 43cf4fd..9b1b365 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -508,6 +508,14 @@ static inline struct thermal_cooling_device *
+ thermal_of_cooling_device_register(struct device_node *np,
+        char *type, void *devdata, const struct thermal_cooling_device_ops *ops)
+ { return ERR_PTR(-ENODEV); }
++struct thermal_cooling_device *
++devm_thermal_of_cooling_device_register(struct device *dev,
++                               struct device_node *np,
++                               char *type, void *devdata,
++                               const struct thermal_cooling_device_ops *ops)
++{
++       return ERR_PTR(-ENODEV);
++}
+ static inline void thermal_cooling_device_unregister(
+        struct thermal_cooling_device *cdev)
+ { }
+~
+
+
+If you want I can amend this to your patch and apply it.
+
+Also, do you prefer me to collect only this patch and you would collect hwmon changes,
+or are you ok if I collect all the series?
 
