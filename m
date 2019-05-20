@@ -1,186 +1,50 @@
-From: Adriana Kobylak <anoo@linux.ibm.com>
-Date: Mon, 20 May 2019 15:17:15 -0500
-Subject: [PATCH dev-5.1] ARM: dts: aspeed: swift: Add pca9539 devices
-Message-ID: <1558383435-38811-1-git-send-email-anoo@linux.ibm.com>
+From: Eddie James <eajames@linux.ibm.com>
+Date: Mon, 20 May 2019 15:19:18 -0500
+Subject: [PATCH v2 0/7] drivers/soc: Add Aspeed XDMA Engine Driver
+Message-ID: <1558383565-11821-1-git-send-email-eajames@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Adriana Kobylak <anoo@us.ibm.com>
+The XDMA engine embedded in the AST2500 SOC performs PCI DMA operations
+between the SOC (acting as a BMC) and a host processor in a server.
 
-Add the pca9539 devices to the Swift device tree.
+This series adds a driver to control the XDMA engine in order to easily
+perform DMA operations to and from the host processor.
 
-Signed-off-by: Adriana Kobylak <anoo@us.ibm.com>
----
- arch/arm/boot/dts/aspeed-bmc-opp-swift.dts | 146 +++++++++++++++++++++++++++++
- 1 file changed, 146 insertions(+)
+I previously sent this series v1 to drivers/misc, but I'm now fairly certain
+it belongs in drivers/soc, especially since the other Aspeed drivers have been
+moved to soc.
 
-diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-swift.dts b/arch/arm/boot/dts/aspeed-bmc-opp-swift.dts
-index 9610637..270c923 100644
---- a/arch/arm/boot/dts/aspeed-bmc-opp-swift.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-opp-swift.dts
-@@ -732,6 +732,79 @@
- 		compatible = "infineon,ir35221";
- 		reg = <0x72>;
- 	};
-+
-+	pca2: pca9539 at 74 {
-+		compatible = "nxp,pca9539";
-+		reg = <0x74>;
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+
-+		gpio at 0 {
-+			reg = <0>;
-+		};
-+
-+		gpio at 1 {
-+			reg = <1>;
-+		};
-+
-+		gpio at 2 {
-+			reg = <2>;
-+		};
-+
-+		gpio at 3 {
-+			reg = <3>;
-+		};
-+
-+		gpio at 4 {
-+			reg = <4>;
-+		};
-+
-+		gpio at 5 {
-+			reg = <5>;
-+		};
-+
-+		gpio at 6 {
-+			reg = <6>;
-+		};
-+
-+		gpio at 7 {
-+			reg = <7>;
-+		};
-+
-+		gpio at 8 {
-+			reg = <8>;
-+		};
-+
-+		gpio at 9 {
-+			reg = <9>;
-+		};
-+
-+		gpio at 10 {
-+			reg = <10>;
-+		};
-+
-+		gpio at 11 {
-+			reg = <11>;
-+		};
-+
-+		gpio at 12 {
-+			reg = <12>;
-+		};
-+
-+		gpio at 13 {
-+			reg = <13>;
-+		};
-+
-+		gpio at 14 {
-+			reg = <14>;
-+		};
-+
-+		gpio at 15 {
-+			reg = <15>;
-+		};
-+	};
- };
- 
- &i2c10 {
-@@ -756,6 +829,79 @@
- 		compatible = "infineon,ir35221";
- 		reg = <0x72>;
- 	};
-+
-+	pca3: pca9539 at 74 {
-+		compatible = "nxp,pca9539";
-+		reg = <0x74>;
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+
-+		gpio at 0 {
-+			reg = <0>;
-+		};
-+
-+		gpio at 1 {
-+			reg = <1>;
-+		};
-+
-+		gpio at 2 {
-+			reg = <2>;
-+		};
-+
-+		gpio at 3 {
-+			reg = <3>;
-+		};
-+
-+		gpio at 4 {
-+			reg = <4>;
-+		};
-+
-+		gpio at 5 {
-+			reg = <5>;
-+		};
-+
-+		gpio at 6 {
-+			reg = <6>;
-+		};
-+
-+		gpio at 7 {
-+			reg = <7>;
-+		};
-+
-+		gpio at 8 {
-+			reg = <8>;
-+		};
-+
-+		gpio at 9 {
-+			reg = <9>;
-+		};
-+
-+		gpio at 10 {
-+			reg = <10>;
-+		};
-+
-+		gpio at 11 {
-+			reg = <11>;
-+		};
-+
-+		gpio at 12 {
-+			reg = <12>;
-+		};
-+
-+		gpio at 13 {
-+			reg = <13>;
-+		};
-+
-+		gpio at 14 {
-+			reg = <14>;
-+		};
-+
-+		gpio at 15 {
-+			reg = <15>;
-+		};
-+	};
- };
- 
- &i2c11 {
+Changes since v1:
+ - Correct the XDMA command pitch
+ - Don't use packed for the aspeed_xdma_op structure
+ - Correct the SCU PCI config change
+
+Eddie James (7):
+  dt-bindings: soc: Add Aspeed XDMA engine binding documentation
+  drivers/soc: Add Aspeed XDMA Engine Driver
+  drivers/soc: xdma: Add user interface
+  drivers/soc: xdma: Add PCI device configuration sysfs
+  drivers/soc: xdma: Add debugfs entries
+  ARM: dts: aspeed: Add XDMA Engine
+  ARM: dts: aspeed: witherspoon: Enable XDMA Engine
+
+ .../devicetree/bindings/soc/aspeed/xdma.txt        |  23 +
+ MAINTAINERS                                        |   9 +
+ arch/arm/boot/dts/aspeed-bmc-opp-witherspoon.dts   |   4 +
+ arch/arm/boot/dts/aspeed-g5.dtsi                   |   8 +
+ drivers/soc/aspeed/Kconfig                         |   8 +
+ drivers/soc/aspeed/Makefile                        |   1 +
+ drivers/soc/aspeed/aspeed-xdma.c                   | 944 +++++++++++++++++++++
+ include/uapi/linux/aspeed-xdma.h                   |  26 +
+ 8 files changed, 1023 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/soc/aspeed/xdma.txt
+ create mode 100644 drivers/soc/aspeed/aspeed-xdma.c
+ create mode 100644 include/uapi/linux/aspeed-xdma.h
+
 -- 
 1.8.3.1
 
