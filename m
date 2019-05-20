@@ -1,165 +1,186 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Date: Sat, 11 May 2019 13:22:19 -0700
-Subject: [PATCH 1/6] thermal: Introduce
- devm_thermal_of_cooling_device_register
-In-Reply-To: <20190511190415.GA22816@localhost.localdomain>
-References: <1555617500-10862-1-git-send-email-linux@roeck-us.net>
- <1555617500-10862-2-git-send-email-linux@roeck-us.net>
- <20190511190415.GA22816@localhost.localdomain>
-Message-ID: <4be54a9c-ccc9-5489-6938-c66229d361b3@roeck-us.net>
+From: Adriana Kobylak <anoo@linux.ibm.com>
+Date: Mon, 20 May 2019 15:17:15 -0500
+Subject: [PATCH dev-5.1] ARM: dts: aspeed: swift: Add pca9539 devices
+Message-ID: <1558383435-38811-1-git-send-email-anoo@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Eduardo,
+From: Adriana Kobylak <anoo@us.ibm.com>
 
-On 5/11/19 12:04 PM, Eduardo Valentin wrote:
-> Hello Guenter,
-> 
-> On Thu, Apr 18, 2019 at 12:58:15PM -0700, Guenter Roeck wrote:
->> thermal_of_cooling_device_register() and thermal_cooling_device_register()
->> are typically called from driver probe functions, and
->> thermal_cooling_device_unregister() is called from remove functions. This
->> makes both a perfect candidate for device managed functions.
->>
->> Introduce devm_thermal_of_cooling_device_register(). This function can
->> also be used to replace thermal_cooling_device_register() by passing a NULL
->> pointer as device node. The new function requires both struct device *
->> and struct device_node * as parameters since the struct device_node *
->> parameter is not always identical to dev->of_node.
->>
->> Don't introduce a device managed remove function since it is not needed
->> at this point.
-> 
-> I don't have any objection on adding this API. Only a minor thing below:
-> 
-> 
->>
->> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
->> ---
->>   drivers/thermal/thermal_core.c | 49 ++++++++++++++++++++++++++++++++++++++++++
->>   include/linux/thermal.h        |  5 +++++
->>   2 files changed, 54 insertions(+)
->>
->> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
->> index 6590bb5cb688..e0b530603db6 100644
->> --- a/drivers/thermal/thermal_core.c
->> +++ b/drivers/thermal/thermal_core.c
->> @@ -1046,6 +1046,55 @@ thermal_of_cooling_device_register(struct device_node *np,
->>   }
->>   EXPORT_SYMBOL_GPL(thermal_of_cooling_device_register);
->>   
->> +static void thermal_cooling_device_release(struct device *dev, void *res)
->> +{
->> +	thermal_cooling_device_unregister(
->> +				*(struct thermal_cooling_device **)res);
->> +}
->> +
->> +/**
->> + * devm_thermal_of_cooling_device_register() - register an OF thermal cooling
->> + *					       device
->> + * @dev:	a valid struct device pointer of a sensor device.
->> + * @np:		a pointer to a device tree node.
->> + * @type:	the thermal cooling device type.
->> + * @devdata:	device private data.
->> + * @ops:	standard thermal cooling devices callbacks.
->> + *
->> + * This function will register a cooling device with device tree node reference.
->> + * This interface function adds a new thermal cooling device (fan/processor/...)
->> + * to /sys/class/thermal/ folder as cooling_device[0-*]. It tries to bind itself
->> + * to all the thermal zone devices registered at the same time.
->> + *
->> + * Return: a pointer to the created struct thermal_cooling_device or an
->> + * ERR_PTR. Caller must check return value with IS_ERR*() helpers.
->> + */
->> +struct thermal_cooling_device *
->> +devm_thermal_of_cooling_device_register(struct device *dev,
->> +				struct device_node *np,
->> +				char *type, void *devdata,
->> +				const struct thermal_cooling_device_ops *ops)
->> +{
->> +	struct thermal_cooling_device **ptr, *tcd;
->> +
->> +	ptr = devres_alloc(thermal_cooling_device_release, sizeof(*ptr),
->> +			   GFP_KERNEL);
->> +	if (!ptr)
->> +		return ERR_PTR(-ENOMEM);
->> +
->> +	tcd = __thermal_cooling_device_register(np, type, devdata, ops);
->> +	if (IS_ERR(tcd)) {
->> +		devres_free(ptr);
->> +		return tcd;
->> +	}
->> +
->> +	*ptr = tcd;
->> +	devres_add(dev, ptr);
->> +
->> +	return tcd;
->> +}
->> +EXPORT_SYMBOL_GPL(devm_thermal_of_cooling_device_register);
->> +
->>   static void __unbind(struct thermal_zone_device *tz, int mask,
->>   		     struct thermal_cooling_device *cdev)
->>   {
->> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
->> index 5f4705f46c2f..43cf4fdd71d4 100644
->> --- a/include/linux/thermal.h
->> +++ b/include/linux/thermal.h
->> @@ -447,6 +447,11 @@ struct thermal_cooling_device *thermal_cooling_device_register(char *, void *,
->>   struct thermal_cooling_device *
->>   thermal_of_cooling_device_register(struct device_node *np, char *, void *,
->>   				   const struct thermal_cooling_device_ops *);
->> +struct thermal_cooling_device *
->> +devm_thermal_of_cooling_device_register(struct device *dev,
->> +				struct device_node *np,
->> +				char *type, void *devdata,
->> +				const struct thermal_cooling_device_ops *ops);
-> 
-> We need to stub this in case thermal is not selected.
-> 
+Add the pca9539 devices to the Swift device tree.
 
-Yes. Sorry, that completely slipped my mind.
+Signed-off-by: Adriana Kobylak <anoo@us.ibm.com>
+---
+ arch/arm/boot/dts/aspeed-bmc-opp-swift.dts | 146 +++++++++++++++++++++++++++++
+ 1 file changed, 146 insertions(+)
 
->>   void thermal_cooling_device_unregister(struct thermal_cooling_device *);
->>   struct thermal_zone_device *thermal_zone_get_zone_by_name(const char *name);
->>   int thermal_zone_get_temp(struct thermal_zone_device *tz, int *temp);
-> 
-> Something like:
-> 
-> 
-> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-> index 43cf4fd..9b1b365 100644
-> --- a/include/linux/thermal.h
-> +++ b/include/linux/thermal.h
-> @@ -508,6 +508,14 @@ static inline struct thermal_cooling_device *
->   thermal_of_cooling_device_register(struct device_node *np,
->          char *type, void *devdata, const struct thermal_cooling_device_ops *ops)
->   { return ERR_PTR(-ENODEV); }
-> +struct thermal_cooling_device *
-> +devm_thermal_of_cooling_device_register(struct device *dev,
-> +                               struct device_node *np,
-> +                               char *type, void *devdata,
-> +                               const struct thermal_cooling_device_ops *ops)
-> +{
-> +       return ERR_PTR(-ENODEV);
-> +}
->   static inline void thermal_cooling_device_unregister(
->          struct thermal_cooling_device *cdev)
->   { }
-> ~
-> 
-> 
-> If you want I can amend this to your patch and apply it.
-> 
-Please do.
+diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-swift.dts b/arch/arm/boot/dts/aspeed-bmc-opp-swift.dts
+index 9610637..270c923 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-opp-swift.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-opp-swift.dts
+@@ -732,6 +732,79 @@
+ 		compatible = "infineon,ir35221";
+ 		reg = <0x72>;
+ 	};
++
++	pca2: pca9539 at 74 {
++		compatible = "nxp,pca9539";
++		reg = <0x74>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++		gpio-controller;
++		#gpio-cells = <2>;
++
++		gpio at 0 {
++			reg = <0>;
++		};
++
++		gpio at 1 {
++			reg = <1>;
++		};
++
++		gpio at 2 {
++			reg = <2>;
++		};
++
++		gpio at 3 {
++			reg = <3>;
++		};
++
++		gpio at 4 {
++			reg = <4>;
++		};
++
++		gpio at 5 {
++			reg = <5>;
++		};
++
++		gpio at 6 {
++			reg = <6>;
++		};
++
++		gpio at 7 {
++			reg = <7>;
++		};
++
++		gpio at 8 {
++			reg = <8>;
++		};
++
++		gpio at 9 {
++			reg = <9>;
++		};
++
++		gpio at 10 {
++			reg = <10>;
++		};
++
++		gpio at 11 {
++			reg = <11>;
++		};
++
++		gpio at 12 {
++			reg = <12>;
++		};
++
++		gpio at 13 {
++			reg = <13>;
++		};
++
++		gpio at 14 {
++			reg = <14>;
++		};
++
++		gpio at 15 {
++			reg = <15>;
++		};
++	};
+ };
+ 
+ &i2c10 {
+@@ -756,6 +829,79 @@
+ 		compatible = "infineon,ir35221";
+ 		reg = <0x72>;
+ 	};
++
++	pca3: pca9539 at 74 {
++		compatible = "nxp,pca9539";
++		reg = <0x74>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++		gpio-controller;
++		#gpio-cells = <2>;
++
++		gpio at 0 {
++			reg = <0>;
++		};
++
++		gpio at 1 {
++			reg = <1>;
++		};
++
++		gpio at 2 {
++			reg = <2>;
++		};
++
++		gpio at 3 {
++			reg = <3>;
++		};
++
++		gpio at 4 {
++			reg = <4>;
++		};
++
++		gpio at 5 {
++			reg = <5>;
++		};
++
++		gpio at 6 {
++			reg = <6>;
++		};
++
++		gpio at 7 {
++			reg = <7>;
++		};
++
++		gpio at 8 {
++			reg = <8>;
++		};
++
++		gpio at 9 {
++			reg = <9>;
++		};
++
++		gpio at 10 {
++			reg = <10>;
++		};
++
++		gpio at 11 {
++			reg = <11>;
++		};
++
++		gpio at 12 {
++			reg = <12>;
++		};
++
++		gpio at 13 {
++			reg = <13>;
++		};
++
++		gpio at 14 {
++			reg = <14>;
++		};
++
++		gpio at 15 {
++			reg = <15>;
++		};
++	};
+ };
+ 
+ &i2c11 {
+-- 
+1.8.3.1
 
-> Also, do you prefer me to collect only this patch and you would collect hwmon changes,
-> or are you ok if I collect all the series?
-> 
-
-Please go ahead and collect the entire series.
-
-Thanks,
-Guenter
