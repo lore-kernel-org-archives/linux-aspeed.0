@@ -1,67 +1,70 @@
 From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-Date: Fri, 24 May 2019 16:17:21 -0700
-Subject: [PATCH v2 07/11] media: aspeed: refine interrupt handling logic
+Date: Fri, 24 May 2019 16:17:23 -0700
+Subject: [PATCH v2 09/11] media: aspeed: use different delays for triggering
+ VE H/W reset
 In-Reply-To: <20190524231725.12320-1-jae.hyun.yoo@linux.intel.com>
 References: <20190524231725.12320-1-jae.hyun.yoo@linux.intel.com>
-Message-ID: <20190524231725.12320-8-jae.hyun.yoo@linux.intel.com>
+Message-ID: <20190524231725.12320-10-jae.hyun.yoo@linux.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-There are cases that interrupt bits are cleared by a 500ms delayed
-work which causes unnecessary irq calls. Also, the current
-interrupt handler returns IRQ_HANDLED always but it should return
-IRQ_NONE if there is any unhandled interrupt. So this commit
-refines the interrupt handling logic to fix these issues.
+In case of watchdog timeout detected while doing mode detection,
+it's better triggering video engine hardware reset immediately so
+this commit fixes code for the case. Other than the case, it will
+trigger video engine hardware reset after RESOLUTION_CHANGE_DELAY.
 
 Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
-Reviewed-by: Eddie James <eajames@linux.ibm.com>
 ---
 v1 -> v2:
- None.
+ New.
 
- drivers/media/platform/aspeed-video.c | 7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+ drivers/media/platform/aspeed-video.c | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/media/platform/aspeed-video.c b/drivers/media/platform/aspeed-video.c
-index 1cba582918cc..c0b889141b8f 100644
+index 4647ed2e9e63..67f476bf0a03 100644
 --- a/drivers/media/platform/aspeed-video.c
 +++ b/drivers/media/platform/aspeed-video.c
-@@ -488,6 +488,7 @@ static void aspeed_video_off(struct aspeed_video *video)
- 
- 	/* Disable interrupts */
- 	aspeed_video_write(video, VE_INTERRUPT_CTRL, 0);
-+	aspeed_video_write(video, VE_INTERRUPT_STATUS, 0xffffffff);
- 
- 	/* Turn off the relevant clocks */
- 	clk_disable(video->vclk);
-@@ -554,7 +555,7 @@ static irqreturn_t aspeed_video_irq(int irq, void *arg)
- 					    VE_INTERRUPT_MODE_DETECT, 0);
- 			aspeed_video_write(video, VE_INTERRUPT_STATUS,
- 					   VE_INTERRUPT_MODE_DETECT);
--
-+			sts &= ~VE_INTERRUPT_MODE_DETECT;
- 			set_bit(VIDEO_MODE_DETECT_DONE, &video->flags);
- 			wake_up_interruptible_all(&video->wait);
- 		} else {
-@@ -599,12 +600,12 @@ static irqreturn_t aspeed_video_irq(int irq, void *arg)
- 				    VE_INTERRUPT_COMP_COMPLETE, 0);
- 		aspeed_video_write(video, VE_INTERRUPT_STATUS,
- 				   VE_INTERRUPT_COMP_COMPLETE);
--
-+		sts &= ~VE_INTERRUPT_COMP_COMPLETE;
- 		if (test_bit(VIDEO_STREAMING, &video->flags) && buf)
- 			aspeed_video_start_frame(video);
- 	}
- 
--	return IRQ_HANDLED;
-+	return sts ? IRQ_NONE : IRQ_HANDLED;
+@@ -522,7 +522,7 @@ static void aspeed_video_bufs_done(struct aspeed_video *video,
+ 	spin_unlock_irqrestore(&video->lock, flags);
  }
  
- static void aspeed_video_check_and_set_polarity(struct aspeed_video *video)
+-static void aspeed_video_irq_res_change(struct aspeed_video *video)
++static void aspeed_video_irq_res_change(struct aspeed_video *video, ulong delay)
+ {
+ 	dev_dbg(video->dev, "Resolution changed; resetting\n");
+ 
+@@ -532,7 +532,7 @@ static void aspeed_video_irq_res_change(struct aspeed_video *video)
+ 	aspeed_video_off(video);
+ 	aspeed_video_bufs_done(video, VB2_BUF_STATE_ERROR);
+ 
+-	schedule_delayed_work(&video->res_work, RESOLUTION_CHANGE_DELAY);
++	schedule_delayed_work(&video->res_work, delay);
+ }
+ 
+ static irqreturn_t aspeed_video_irq(int irq, void *arg)
+@@ -545,7 +545,7 @@ static irqreturn_t aspeed_video_irq(int irq, void *arg)
+ 	 * re-initialize
+ 	 */
+ 	if (sts & VE_INTERRUPT_MODE_DETECT_WD) {
+-		aspeed_video_irq_res_change(video);
++		aspeed_video_irq_res_change(video, 0);
+ 		return IRQ_HANDLED;
+ 	}
+ 
+@@ -563,7 +563,8 @@ static irqreturn_t aspeed_video_irq(int irq, void *arg)
+ 			 * Signal acquired while NOT doing resolution
+ 			 * detection; reset the engine and re-initialize
+ 			 */
+-			aspeed_video_irq_res_change(video);
++			aspeed_video_irq_res_change(video,
++						    RESOLUTION_CHANGE_DELAY);
+ 			return IRQ_HANDLED;
+ 		}
+ 	}
 -- 
 2.21.0
 
