@@ -1,70 +1,59 @@
 From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-Date: Fri, 24 May 2019 16:17:23 -0700
-Subject: [PATCH v2 09/11] media: aspeed: use different delays for triggering
- VE H/W reset
+Date: Fri, 24 May 2019 16:17:22 -0700
+Subject: [PATCH v2 08/11] media: aspeed: remove source buffer allocation
+ before mode detection
 In-Reply-To: <20190524231725.12320-1-jae.hyun.yoo@linux.intel.com>
 References: <20190524231725.12320-1-jae.hyun.yoo@linux.intel.com>
-Message-ID: <20190524231725.12320-10-jae.hyun.yoo@linux.intel.com>
+Message-ID: <20190524231725.12320-9-jae.hyun.yoo@linux.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-In case of watchdog timeout detected while doing mode detection,
-it's better triggering video engine hardware reset immediately so
-this commit fixes code for the case. Other than the case, it will
-trigger video engine hardware reset after RESOLUTION_CHANGE_DELAY.
+Mode detection doesn't require source buffer allocation so this
+commit removes that.
 
 Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
 ---
 v1 -> v2:
  New.
 
- drivers/media/platform/aspeed-video.c | 9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
+ drivers/media/platform/aspeed-video.c | 21 ---------------------
+ 1 file changed, 21 deletions(-)
 
 diff --git a/drivers/media/platform/aspeed-video.c b/drivers/media/platform/aspeed-video.c
-index 4647ed2e9e63..67f476bf0a03 100644
+index c0b889141b8f..4647ed2e9e63 100644
 --- a/drivers/media/platform/aspeed-video.c
 +++ b/drivers/media/platform/aspeed-video.c
-@@ -522,7 +522,7 @@ static void aspeed_video_bufs_done(struct aspeed_video *video,
- 	spin_unlock_irqrestore(&video->lock, flags);
- }
+@@ -731,27 +731,6 @@ static void aspeed_video_get_resolution(struct aspeed_video *video)
+ 	det->height = MIN_HEIGHT;
+ 	video->v4l2_input_status = V4L2_IN_ST_NO_SIGNAL;
  
--static void aspeed_video_irq_res_change(struct aspeed_video *video)
-+static void aspeed_video_irq_res_change(struct aspeed_video *video, ulong delay)
- {
- 	dev_dbg(video->dev, "Resolution changed; resetting\n");
- 
-@@ -532,7 +532,7 @@ static void aspeed_video_irq_res_change(struct aspeed_video *video)
- 	aspeed_video_off(video);
- 	aspeed_video_bufs_done(video, VB2_BUF_STATE_ERROR);
- 
--	schedule_delayed_work(&video->res_work, RESOLUTION_CHANGE_DELAY);
-+	schedule_delayed_work(&video->res_work, delay);
- }
- 
- static irqreturn_t aspeed_video_irq(int irq, void *arg)
-@@ -545,7 +545,7 @@ static irqreturn_t aspeed_video_irq(int irq, void *arg)
- 	 * re-initialize
- 	 */
- 	if (sts & VE_INTERRUPT_MODE_DETECT_WD) {
--		aspeed_video_irq_res_change(video);
-+		aspeed_video_irq_res_change(video, 0);
- 		return IRQ_HANDLED;
- 	}
- 
-@@ -563,7 +563,8 @@ static irqreturn_t aspeed_video_irq(int irq, void *arg)
- 			 * Signal acquired while NOT doing resolution
- 			 * detection; reset the engine and re-initialize
- 			 */
--			aspeed_video_irq_res_change(video);
-+			aspeed_video_irq_res_change(video,
-+						    RESOLUTION_CHANGE_DELAY);
- 			return IRQ_HANDLED;
- 		}
- 	}
+-	/*
+-	 * Since we need max buffer size for detection, free the second source
+-	 * buffer first.
+-	 */
+-	if (video->srcs[1].size)
+-		aspeed_video_free_buf(video, &video->srcs[1]);
+-
+-	if (video->srcs[0].size < VE_MAX_SRC_BUFFER_SIZE) {
+-		if (video->srcs[0].size)
+-			aspeed_video_free_buf(video, &video->srcs[0]);
+-
+-		if (!aspeed_video_alloc_buf(video, &video->srcs[0],
+-					    VE_MAX_SRC_BUFFER_SIZE)) {
+-			dev_err(video->dev,
+-				"Failed to allocate source buffers\n");
+-			return;
+-		}
+-	}
+-
+-	aspeed_video_write(video, VE_SRC0_ADDR, video->srcs[0].dma);
+-
+ 	do {
+ 		if (tries) {
+ 			set_current_state(TASK_INTERRUPTIBLE);
 -- 
 2.21.0
 
