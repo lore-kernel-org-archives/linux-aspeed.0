@@ -1,22 +1,20 @@
 From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-Date: Fri, 24 May 2019 16:17:18 -0700
-Subject: [PATCH v2 04/11] media: aspeed: remove IRQF_SHARED flag
+Date: Fri, 24 May 2019 16:17:19 -0700
+Subject: [PATCH v2 05/11] media: aspeed: reduce noisy log printing outs
 In-Reply-To: <20190524231725.12320-1-jae.hyun.yoo@linux.intel.com>
 References: <20190524231725.12320-1-jae.hyun.yoo@linux.intel.com>
-Message-ID: <20190524231725.12320-5-jae.hyun.yoo@linux.intel.com>
+Message-ID: <20190524231725.12320-6-jae.hyun.yoo@linux.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Video Engine has a dedicated interrupt line so this driver doesn't
-need to use IRQF_SHARED flag so remove it. Also, it'd be good for
-following what Thomas recommended in the IRQF_ONESHOT support
-patch like below:
-
-"Note that for now IRQF_ONESHOT cannot be used with IRQF_SHARED to
-avoid complex accounting mechanisms."
+Currently, this driver prints out too much log messages when a
+mode change happens, video turned off by screen saver and etc.
+Actually, all cases are reported to user space properly. Also,
+these are not critical errors but recoverable things, so this
+commit changes the log level of some noisy printing outs.
 
 Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
 Reviewed-by: Eddie James <eajames@linux.ibm.com>
@@ -24,23 +22,58 @@ Reviewed-by: Eddie James <eajames@linux.ibm.com>
 v1 -> v2:
  None.
 
- drivers/media/platform/aspeed-video.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ drivers/media/platform/aspeed-video.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
 diff --git a/drivers/media/platform/aspeed-video.c b/drivers/media/platform/aspeed-video.c
-index f7db8969c8f2..d1b541409544 100644
+index d1b541409544..92abdfc79e76 100644
 --- a/drivers/media/platform/aspeed-video.c
 +++ b/drivers/media/platform/aspeed-video.c
-@@ -1601,8 +1601,7 @@ static int aspeed_video_init(struct aspeed_video *video)
+@@ -441,7 +441,7 @@ static int aspeed_video_start_frame(struct aspeed_video *video)
+ 
+ 	if (!(seq_ctrl & VE_SEQ_CTRL_COMP_BUSY) ||
+ 	    !(seq_ctrl & VE_SEQ_CTRL_CAP_BUSY)) {
+-		dev_err(video->dev, "Engine busy; don't start frame\n");
++		dev_dbg(video->dev, "Engine busy; don't start frame\n");
+ 		return -EBUSY;
  	}
  
- 	rc = devm_request_threaded_irq(dev, irq, NULL, aspeed_video_irq,
--				       IRQF_ONESHOT | IRQF_SHARED, DEVICE_NAME,
--				       video);
-+				       IRQF_ONESHOT, DEVICE_NAME, video);
- 	if (rc < 0) {
- 		dev_err(dev, "Unable to request IRQ %d\n", irq);
- 		return rc;
+@@ -769,7 +769,7 @@ static void aspeed_video_get_resolution(struct aspeed_video *video)
+ 						      res_check(video),
+ 						      MODE_DETECT_TIMEOUT);
+ 		if (!rc) {
+-			dev_err(video->dev, "Timed out; first mode detect\n");
++			dev_dbg(video->dev, "Timed out; first mode detect\n");
+ 			clear_bit(VIDEO_RES_DETECT, &video->flags);
+ 			return;
+ 		}
+@@ -787,7 +787,7 @@ static void aspeed_video_get_resolution(struct aspeed_video *video)
+ 						      MODE_DETECT_TIMEOUT);
+ 		clear_bit(VIDEO_RES_DETECT, &video->flags);
+ 		if (!rc) {
+-			dev_err(video->dev, "Timed out; second mode detect\n");
++			dev_dbg(video->dev, "Timed out; second mode detect\n");
+ 			return;
+ 		}
+ 
+@@ -821,7 +821,7 @@ static void aspeed_video_get_resolution(struct aspeed_video *video)
+ 	} while (invalid_resolution && (tries++ < INVALID_RESOLUTION_RETRIES));
+ 
+ 	if (invalid_resolution) {
+-		dev_err(video->dev, "Invalid resolution detected\n");
++		dev_dbg(video->dev, "Invalid resolution detected\n");
+ 		return;
+ 	}
+ 
+@@ -1456,7 +1456,7 @@ static void aspeed_video_stop_streaming(struct vb2_queue *q)
+ 				!test_bit(VIDEO_FRAME_INPRG, &video->flags),
+ 				STOP_TIMEOUT);
+ 	if (!rc) {
+-		dev_err(video->dev, "Timed out when stopping streaming\n");
++		dev_dbg(video->dev, "Timed out when stopping streaming\n");
+ 
+ 		/*
+ 		 * Need to force stop any DMA and try and get HW into a good
 -- 
 2.21.0
 
