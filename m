@@ -1,73 +1,38 @@
-From: Eddie James <eajames@linux.vnet.ibm.com>
-Date: Fri, 24 May 2019 11:08:57 -0500
-Subject: [PATCH v2 2/7] drivers/soc: Add Aspeed XDMA Engine Driver
-In-Reply-To: <CAK8P3a2HSOsw33VhAk4Z8ARiYn4jG68Ec7fynKbrFWUNDo37Wg@mail.gmail.com>
-References: <1558383565-11821-1-git-send-email-eajames@linux.ibm.com>
- <1558383565-11821-3-git-send-email-eajames@linux.ibm.com>
- <CAK8P3a2HSOsw33VhAk4Z8ARiYn4jG68Ec7fynKbrFWUNDo37Wg@mail.gmail.com>
-Message-ID: <687e4a77-0df1-4982-1edd-9d0559c489fe@linux.vnet.ibm.com>
+From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+Date: Fri, 24 May 2019 16:17:14 -0700
+Subject: [PATCH v2 00/11] Improve stability and add bug fixes of Aspeed video
+ engine driver
+Message-ID: <20190524231725.12320-1-jae.hyun.yoo@linux.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+This patch series improves stability of Aspeed video engine driver by fixing
+clock control and irq handling logic in the driver. Also, it adds a couple of
+bug fixes and a workaroud for a silicon bug.
 
-On 5/21/19 7:02 AM, Arnd Bergmann wrote:
-> On Mon, May 20, 2019 at 10:19 PM Eddie James <eajames@linux.ibm.com> wrote:
->> diff --git a/include/uapi/linux/aspeed-xdma.h b/include/uapi/linux/aspeed-xdma.h
->> new file mode 100644
->> index 0000000..2a4bd13
->> --- /dev/null
->> +++ b/include/uapi/linux/aspeed-xdma.h
->> @@ -0,0 +1,26 @@
->> +/* SPDX-License-Identifier: GPL-2.0+ */
->> +/* Copyright IBM Corp 2019 */
->> +
->> +#ifndef _UAPI_LINUX_ASPEED_XDMA_H_
->> +#define _UAPI_LINUX_ASPEED_XDMA_H_
->> +
->> +#include <linux/types.h>
->> +
->> +/*
->> + * aspeed_xdma_op
->> + *
->> + * upstream: boolean indicating the direction of the DMA operation; upstream
->> + *           means a transfer from the BMC to the host
->> + *
->> + * host_addr: the DMA address on the host side, typically configured by PCI
->> + *            subsystem
->> + *
->> + * len: the size of the transfer in bytes; it should be a multiple of 16 bytes
->> + */
->> +struct aspeed_xdma_op {
->> +       __u32 upstream;
->> +       __u64 host_addr;
->> +       __u32 len;
->> +};
->> +
->> +#endif /* _UAPI_LINUX_ASPEED_XDMA_H_ */
-> If this is a user space interface, please remove the holes in the
-> data structure.
+Changes since v1:
+- Removed spinlock handling code from 0001 patch.
+- Added 4 more patches.
 
+Jae Hyun Yoo (11):
+  media: aspeed: fix a kernel warning on clk control
+  media: aspeed: refine clock control logic
+  media: aspeed: change irq to threaded irq
+  media: aspeed: remove IRQF_SHARED flag
+  media: aspeed: reduce noisy log printing outs
+  media: aspeed: remove checking of VE_INTERRUPT_CAPTURE_COMPLETE
+  media: aspeed: refine interrupt handling logic
+  media: aspeed: remove source buffer allocation before mode detection
+  media: aspeed: use different delays for triggering VE H/W reset
+  media: aspeed: fix an incorrect timeout checking in mode detection
+  media: aspeed: add a workaround to fix a silicon bug
 
-Surely it's 4-byte aligned and there won't be holes??
+ drivers/media/platform/aspeed-video.c | 140 +++++++++++++++-----------
+ 1 file changed, 80 insertions(+), 60 deletions(-)
 
-
->
-> I don't see how this is actually used in this patch, maybe you meant
-> the definition to be part of another patch?
-
-
-The structure is used in this patch as an argument to aspeed_xdma_start().
-
-
-Thanks,
-
-Eddie
-
-
->
->      Arnd
->
+-- 
+2.21.0
 
