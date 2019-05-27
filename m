@@ -1,151 +1,110 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Date: Sat, 11 May 2019 19:04:31 -0000
-Subject: [PATCH 1/6] thermal: Introduce
- devm_thermal_of_cooling_device_register
-In-Reply-To: <1555617500-10862-2-git-send-email-linux@roeck-us.net>
-References: <1555617500-10862-1-git-send-email-linux@roeck-us.net>
- <1555617500-10862-2-git-send-email-linux@roeck-us.net>
-Message-ID: <20190511190415.GA22816@localhost.localdomain>
+From: Alexander Filippov <a.filippov@yadro.com>
+Date: Mon, 27 May 2019 14:27:53 +0300
+Subject: [PATCH] ARM: dts: aspeed: g4: add video engine support
+Message-ID: <20190527112753.1681-1-a.filippov@yadro.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello Guenter,
+Add a node to describe the video engine and VGA scratch registers on
+AST2400.
 
-On Thu, Apr 18, 2019 at 12:58:15PM -0700, Guenter Roeck wrote:
-> thermal_of_cooling_device_register() and thermal_cooling_device_register()
-> are typically called from driver probe functions, and
-> thermal_cooling_device_unregister() is called from remove functions. This
-> makes both a perfect candidate for device managed functions.
-> 
-> Introduce devm_thermal_of_cooling_device_register(). This function can
-> also be used to replace thermal_cooling_device_register() by passing a NULL
-> pointer as device node. The new function requires both struct device *
-> and struct device_node * as parameters since the struct device_node *
-> parameter is not always identical to dev->of_node.
-> 
-> Don't introduce a device managed remove function since it is not needed
-> at this point.
+These changes were copied from aspeed-g5.dtsi
 
-I don't have any objection on adding this API. Only a minor thing below:
+Signed-off-by: Alexander Filippov <a.filippov@yadro.com>
+---
+ arch/arm/boot/dts/aspeed-g4.dtsi | 62 ++++++++++++++++++++++++++++++++
+ 1 file changed, 62 insertions(+)
 
-
-> 
-> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
-> ---
->  drivers/thermal/thermal_core.c | 49 ++++++++++++++++++++++++++++++++++++++++++
->  include/linux/thermal.h        |  5 +++++
->  2 files changed, 54 insertions(+)
-> 
-> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-> index 6590bb5cb688..e0b530603db6 100644
-> --- a/drivers/thermal/thermal_core.c
-> +++ b/drivers/thermal/thermal_core.c
-> @@ -1046,6 +1046,55 @@ thermal_of_cooling_device_register(struct device_node *np,
->  }
->  EXPORT_SYMBOL_GPL(thermal_of_cooling_device_register);
->  
-> +static void thermal_cooling_device_release(struct device *dev, void *res)
-> +{
-> +	thermal_cooling_device_unregister(
-> +				*(struct thermal_cooling_device **)res);
-> +}
-> +
-> +/**
-> + * devm_thermal_of_cooling_device_register() - register an OF thermal cooling
-> + *					       device
-> + * @dev:	a valid struct device pointer of a sensor device.
-> + * @np:		a pointer to a device tree node.
-> + * @type:	the thermal cooling device type.
-> + * @devdata:	device private data.
-> + * @ops:	standard thermal cooling devices callbacks.
-> + *
-> + * This function will register a cooling device with device tree node reference.
-> + * This interface function adds a new thermal cooling device (fan/processor/...)
-> + * to /sys/class/thermal/ folder as cooling_device[0-*]. It tries to bind itself
-> + * to all the thermal zone devices registered at the same time.
-> + *
-> + * Return: a pointer to the created struct thermal_cooling_device or an
-> + * ERR_PTR. Caller must check return value with IS_ERR*() helpers.
-> + */
-> +struct thermal_cooling_device *
-> +devm_thermal_of_cooling_device_register(struct device *dev,
-> +				struct device_node *np,
-> +				char *type, void *devdata,
-> +				const struct thermal_cooling_device_ops *ops)
-> +{
-> +	struct thermal_cooling_device **ptr, *tcd;
-> +
-> +	ptr = devres_alloc(thermal_cooling_device_release, sizeof(*ptr),
-> +			   GFP_KERNEL);
-> +	if (!ptr)
-> +		return ERR_PTR(-ENOMEM);
-> +
-> +	tcd = __thermal_cooling_device_register(np, type, devdata, ops);
-> +	if (IS_ERR(tcd)) {
-> +		devres_free(ptr);
-> +		return tcd;
-> +	}
-> +
-> +	*ptr = tcd;
-> +	devres_add(dev, ptr);
-> +
-> +	return tcd;
-> +}
-> +EXPORT_SYMBOL_GPL(devm_thermal_of_cooling_device_register);
-> +
->  static void __unbind(struct thermal_zone_device *tz, int mask,
->  		     struct thermal_cooling_device *cdev)
->  {
-> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-> index 5f4705f46c2f..43cf4fdd71d4 100644
-> --- a/include/linux/thermal.h
-> +++ b/include/linux/thermal.h
-> @@ -447,6 +447,11 @@ struct thermal_cooling_device *thermal_cooling_device_register(char *, void *,
->  struct thermal_cooling_device *
->  thermal_of_cooling_device_register(struct device_node *np, char *, void *,
->  				   const struct thermal_cooling_device_ops *);
-> +struct thermal_cooling_device *
-> +devm_thermal_of_cooling_device_register(struct device *dev,
-> +				struct device_node *np,
-> +				char *type, void *devdata,
-> +				const struct thermal_cooling_device_ops *ops);
-
-We need to stub this in case thermal is not selected.
-
->  void thermal_cooling_device_unregister(struct thermal_cooling_device *);
->  struct thermal_zone_device *thermal_zone_get_zone_by_name(const char *name);
->  int thermal_zone_get_temp(struct thermal_zone_device *tz, int *temp);
-
-Something like:
-
-
-diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-index 43cf4fd..9b1b365 100644
---- a/include/linux/thermal.h
-+++ b/include/linux/thermal.h
-@@ -508,6 +508,14 @@ static inline struct thermal_cooling_device *
- thermal_of_cooling_device_register(struct device_node *np,
-        char *type, void *devdata, const struct thermal_cooling_device_ops *ops)
- { return ERR_PTR(-ENODEV); }
-+struct thermal_cooling_device *
-+devm_thermal_of_cooling_device_register(struct device *dev,
-+                               struct device_node *np,
-+                               char *type, void *devdata,
-+                               const struct thermal_cooling_device_ops *ops)
-+{
-+       return ERR_PTR(-ENODEV);
-+}
- static inline void thermal_cooling_device_unregister(
-        struct thermal_cooling_device *cdev)
- { }
-~
-
-
-If you want I can amend this to your patch and apply it.
-
-Also, do you prefer me to collect only this patch and you would collect hwmon changes,
-or are you ok if I collect all the series?
+diff --git a/arch/arm/boot/dts/aspeed-g4.dtsi b/arch/arm/boot/dts/aspeed-g4.dtsi
+index 6011692df15a..adc1804918df 100644
+--- a/arch/arm/boot/dts/aspeed-g4.dtsi
++++ b/arch/arm/boot/dts/aspeed-g4.dtsi
+@@ -168,6 +168,10 @@
+ 					compatible = "aspeed,g4-pinctrl";
+ 				};
+ 
++				vga_scratch: scratch {
++					compatible = "aspeed,bmc-misc";
++				};
++
+ 				p2a: p2a-control {
+ 					compatible = "aspeed,ast2400-p2a-ctrl";
+ 					status = "disabled";
+@@ -195,6 +199,16 @@
+ 				reg = <0x1e720000 0x8000>;	// 32K
+ 			};
+ 
++			video: video at 1e700000 {
++				compatible = "aspeed,ast2400-video-engine";
++				reg = <0x1e700000 0x1000>;
++				clocks = <&syscon ASPEED_CLK_GATE_VCLK>,
++					 <&syscon ASPEED_CLK_GATE_ECLK>;
++				clock-names = "vclk", "eclk";
++				interrupts = <7>;
++				status = "disabled";
++			};
++
+ 			gpio: gpio at 1e780000 {
+ 				#gpio-cells = <2>;
+ 				gpio-controller;
+@@ -1408,6 +1422,54 @@
+ 	};
+ };
+ 
++&vga_scratch {
++	dac_mux {
++		offset = <0x2c>;
++		bit-mask = <0x3>;
++		bit-shift = <16>;
++	};
++	vga0 {
++		offset = <0x50>;
++		bit-mask = <0xffffffff>;
++		bit-shift = <0>;
++	};
++	vga1 {
++		offset = <0x54>;
++		bit-mask = <0xffffffff>;
++		bit-shift = <0>;
++	};
++	vga2 {
++		offset = <0x58>;
++		bit-mask = <0xffffffff>;
++		bit-shift = <0>;
++	};
++	vga3 {
++		offset = <0x5c>;
++		bit-mask = <0xffffffff>;
++		bit-shift = <0>;
++	};
++	vga4 {
++		offset = <0x60>;
++		bit-mask = <0xffffffff>;
++		bit-shift = <0>;
++	};
++	vga5 {
++		offset = <0x64>;
++		bit-mask = <0xffffffff>;
++		bit-shift = <0>;
++	};
++	vga6 {
++		offset = <0x68>;
++		bit-mask = <0xffffffff>;
++		bit-shift = <0>;
++	};
++	vga7 {
++		offset = <0x6c>;
++		bit-mask = <0xffffffff>;
++		bit-shift = <0>;
++	};
++};
++
+ &sio_regs {
+ 	sio_2b {
+ 		offset = <0xf0>;
+-- 
+2.20.1
 
