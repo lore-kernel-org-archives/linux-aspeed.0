@@ -1,9 +1,9 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Wed, 29 May 2019 10:52:36 +0930
-Subject: [PATCH] ARM: dts: aspeed: g4: add video engine support
-In-Reply-To: <20190527112753.1681-1-a.filippov@yadro.com>
-References: <20190527112753.1681-1-a.filippov@yadro.com>
-Message-ID: <c0e01b11-5ea2-42d1-be67-2998809e310c@www.fastmail.com>
+Date: Wed, 29 May 2019 10:57:16 +0930
+Subject: [PATCH -next] EDAC: aspeed: Remove set but not used variable 'np'
+In-Reply-To: <20190525144153.2028-1-yuehaibing@huawei.com>
+References: <20190525144153.2028-1-yuehaibing@huawei.com>
+Message-ID: <04f103fb-54b1-4911-8164-44b20bfd1e72@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -12,114 +12,45 @@ Content-Transfer-Encoding: 7bit
 
 
 
-On Mon, 27 May 2019, at 20:58, Alexander Filippov wrote:
-> Add a node to describe the video engine and VGA scratch registers on
-> AST2400.
+On Sun, 26 May 2019, at 00:12, YueHaibing wrote:
+> Fixes gcc '-Wunused-but-set-variable' warning:
 > 
-> These changes were copied from aspeed-g5.dtsi
+> drivers/edac/aspeed_edac.c: In function aspeed_probe:
+> drivers/edac/aspeed_edac.c:284:22: warning: variable np set but not 
+> used [-Wunused-but-set-variable]
 > 
-> Signed-off-by: Alexander Filippov <a.filippov@yadro.com>
+> It is never used and can be removed.
+> 
+> Signed-off-by: YueHaibing <yuehaibing@huawei.com>
 
-Ugh, I should really sort out the bmc-misc stuff, I don't like to see it propagate
-in its current form. That's not your problem though, and I hope to address it in
-the near future.
-
-For the OpenBMC kernel tree:
-
-Acked-by: Andrew Jeffery <andrew@aj.id.au>
+Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
 
 > ---
->  arch/arm/boot/dts/aspeed-g4.dtsi | 62 ++++++++++++++++++++++++++++++++
->  1 file changed, 62 insertions(+)
+>  drivers/edac/aspeed_edac.c | 4 ----
+>  1 file changed, 4 deletions(-)
 > 
-> diff --git a/arch/arm/boot/dts/aspeed-g4.dtsi b/arch/arm/boot/dts/aspeed-g4.dtsi
-> index 6011692df15a..adc1804918df 100644
-> --- a/arch/arm/boot/dts/aspeed-g4.dtsi
-> +++ b/arch/arm/boot/dts/aspeed-g4.dtsi
-> @@ -168,6 +168,10 @@
->  					compatible = "aspeed,g4-pinctrl";
->  				};
+> diff --git a/drivers/edac/aspeed_edac.c b/drivers/edac/aspeed_edac.c
+> index 11833c0a5d07..5634437bb39d 100644
+> --- a/drivers/edac/aspeed_edac.c
+> +++ b/drivers/edac/aspeed_edac.c
+> @@ -281,15 +281,11 @@ static int aspeed_probe(struct platform_device *pdev)
+>  	struct device *dev = &pdev->dev;
+>  	struct edac_mc_layer layers[2];
+>  	struct mem_ctl_info *mci;
+> -	struct device_node *np;
+>  	struct resource *res;
+>  	void __iomem *regs;
+>  	u32 reg04;
+>  	int rc;
 >  
-> +				vga_scratch: scratch {
-> +					compatible = "aspeed,bmc-misc";
-> +				};
-> +
->  				p2a: p2a-control {
->  					compatible = "aspeed,ast2400-p2a-ctrl";
->  					status = "disabled";
-> @@ -195,6 +199,16 @@
->  				reg = <0x1e720000 0x8000>;	// 32K
->  			};
->  
-> +			video: video at 1e700000 {
-> +				compatible = "aspeed,ast2400-video-engine";
-> +				reg = <0x1e700000 0x1000>;
-> +				clocks = <&syscon ASPEED_CLK_GATE_VCLK>,
-> +					 <&syscon ASPEED_CLK_GATE_ECLK>;
-> +				clock-names = "vclk", "eclk";
-> +				interrupts = <7>;
-> +				status = "disabled";
-> +			};
-> +
->  			gpio: gpio at 1e780000 {
->  				#gpio-cells = <2>;
->  				gpio-controller;
-> @@ -1408,6 +1422,54 @@
->  	};
->  };
->  
-> +&vga_scratch {
-> +	dac_mux {
-> +		offset = <0x2c>;
-> +		bit-mask = <0x3>;
-> +		bit-shift = <16>;
-> +	};
-> +	vga0 {
-> +		offset = <0x50>;
-> +		bit-mask = <0xffffffff>;
-> +		bit-shift = <0>;
-> +	};
-> +	vga1 {
-> +		offset = <0x54>;
-> +		bit-mask = <0xffffffff>;
-> +		bit-shift = <0>;
-> +	};
-> +	vga2 {
-> +		offset = <0x58>;
-> +		bit-mask = <0xffffffff>;
-> +		bit-shift = <0>;
-> +	};
-> +	vga3 {
-> +		offset = <0x5c>;
-> +		bit-mask = <0xffffffff>;
-> +		bit-shift = <0>;
-> +	};
-> +	vga4 {
-> +		offset = <0x60>;
-> +		bit-mask = <0xffffffff>;
-> +		bit-shift = <0>;
-> +	};
-> +	vga5 {
-> +		offset = <0x64>;
-> +		bit-mask = <0xffffffff>;
-> +		bit-shift = <0>;
-> +	};
-> +	vga6 {
-> +		offset = <0x68>;
-> +		bit-mask = <0xffffffff>;
-> +		bit-shift = <0>;
-> +	};
-> +	vga7 {
-> +		offset = <0x6c>;
-> +		bit-mask = <0xffffffff>;
-> +		bit-shift = <0>;
-> +	};
-> +};
-> +
->  &sio_regs {
->  	sio_2b {
->  		offset = <0xf0>;
+> -	/* setup regmap */
+> -	np = dev->of_node;
+> -
+>  	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+>  	if (!res)
+>  		return -ENOENT;
 > -- 
-> 2.20.1
+> 2.17.1
+> 
 > 
 >
