@@ -1,40 +1,41 @@
 From: Eddie James <eajames@linux.ibm.com>
-Date: Wed, 29 May 2019 13:10:04 -0500
-Subject: [PATCH v3 4/8] Documentation: ABI: Add aspeed-xdma sysfs documentation
+Date: Wed, 29 May 2019 13:10:07 -0500
+Subject: [PATCH v3 7/8] ARM: dts: aspeed: Add XDMA Engine
 In-Reply-To: <1559153408-31190-1-git-send-email-eajames@linux.ibm.com>
 References: <1559153408-31190-1-git-send-email-eajames@linux.ibm.com>
-Message-ID: <1559153408-31190-5-git-send-email-eajames@linux.ibm.com>
+Message-ID: <1559153408-31190-8-git-send-email-eajames@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Document the pcidev sysfs attribute used by the aspeed-xdma driver.
+Add a node for the XDMA engine with all the necessary information.
 
 Signed-off-by: Eddie James <eajames@linux.ibm.com>
 ---
- Documentation/ABI/testing/sysfs-devices-platform-aspeed-xdma | 11 +++++++++++
- 1 file changed, 11 insertions(+)
- create mode 100644 Documentation/ABI/testing/sysfs-devices-platform-aspeed-xdma
+ arch/arm/boot/dts/aspeed-g5.dtsi | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-diff --git a/Documentation/ABI/testing/sysfs-devices-platform-aspeed-xdma b/Documentation/ABI/testing/sysfs-devices-platform-aspeed-xdma
-new file mode 100644
-index 0000000..27189bbd
---- /dev/null
-+++ b/Documentation/ABI/testing/sysfs-devices-platform-aspeed-xdma
-@@ -0,0 +1,11 @@
-+What:		/sys/bus/platform/devices/1e6e7000.xdma/pcidev
-+Date:		May 2019
-+KernelVersion:	5.2
-+Contact:	Eddie James <eajames@linux.ibm.com>
-+Description:	When written, this file sets the PCI device that will be used
-+		for DMA operations by the XDMA engine. When read, it provides
-+		the current PCI device being used by the XDMA engine.
-+		Valid values: vga or bmc.
-+		Default vga, can be set by aspeed-xdma.pcidev= module
-+		parameter.
-+Users:		aspeed-xdma driver
+diff --git a/arch/arm/boot/dts/aspeed-g5.dtsi b/arch/arm/boot/dts/aspeed-g5.dtsi
+index 5b1ca26..bfc8328 100644
+--- a/arch/arm/boot/dts/aspeed-g5.dtsi
++++ b/arch/arm/boot/dts/aspeed-g5.dtsi
+@@ -243,6 +243,14 @@
+ 				interrupts = <0x19>;
+ 			};
+ 
++			xdma: xdma at 1e6e7000 {
++				compatible = "aspeed,ast2500-xdma";
++				reg = <0x1e6e7000 0x100>;
++				resets = <&syscon ASPEED_RESET_XDMA>;
++				interrupts = <6>;
++				status = "disabled";
++			};
++
+ 			adc: adc at 1e6e9000 {
+ 				compatible = "aspeed,ast2500-adc";
+ 				reg = <0x1e6e9000 0xb0>;
 -- 
 1.8.3.1
 
