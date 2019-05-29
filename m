@@ -1,64 +1,56 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Wed, 29 May 2019 11:29:35 +0930
-Subject: [PATCH v2 2/7] drivers/soc: Add Aspeed XDMA Engine Driver
-In-Reply-To: <687e4a77-0df1-4982-1edd-9d0559c489fe@linux.vnet.ibm.com>
-References: <1558383565-11821-1-git-send-email-eajames@linux.ibm.com>
- <1558383565-11821-3-git-send-email-eajames@linux.ibm.com>
- <CAK8P3a2HSOsw33VhAk4Z8ARiYn4jG68Ec7fynKbrFWUNDo37Wg@mail.gmail.com>
- <687e4a77-0df1-4982-1edd-9d0559c489fe@linux.vnet.ibm.com>
-Message-ID: <39ca244a-1243-4039-9dcb-7eb2183908d4@www.fastmail.com>
+From: Stefan Schaeckeler (sschaeck) <sschaeck@cisco.com>
+Date: Wed, 29 May 2019 03:10:54 +0000
+Subject: [PATCH -next] EDAC: aspeed: Remove set but not used variable 'np'
+In-Reply-To: <04f103fb-54b1-4911-8164-44b20bfd1e72@www.fastmail.com>
+References: <20190525144153.2028-1-yuehaibing@huawei.com>
+ <04f103fb-54b1-4911-8164-44b20bfd1e72@www.fastmail.com>
+Message-ID: <960D5667-41E7-47F3-9C0A-726CA919B82D@cisco.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+On  Tuesday, May 28, 2019 at 6:27 PM, Andrew Jeffery wrote:
+> On Sun, 26 May 2019, at 00:12, YueHaibing wrote:
+> > Fixes gcc '-Wunused-but-set-variable' warning:
+> >
+> > drivers/edac/aspeed_edac.c: In function aspeed_probe:
+> > drivers/edac/aspeed_edac.c:284:22: warning: variable np set but not
+> > used [-Wunused-but-set-variable]
+> >
+> > It is never used and can be removed.
+> >
+> > Signed-off-by: YueHaibing <yuehaibing@huawei.com>
+>
+> Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
 
+Reviewed-by: Stefan Schaeckeler <sschaeck@cisco.com>
 
-On Sat, 25 May 2019, at 01:39, Eddie James wrote:
-> 
-> On 5/21/19 7:02 AM, Arnd Bergmann wrote:
-> > On Mon, May 20, 2019 at 10:19 PM Eddie James <eajames@linux.ibm.com> wrote:
-> >> diff --git a/include/uapi/linux/aspeed-xdma.h b/include/uapi/linux/aspeed-xdma.h
-> >> new file mode 100644
-> >> index 0000000..2a4bd13
-> >> --- /dev/null
-> >> +++ b/include/uapi/linux/aspeed-xdma.h
-> >> @@ -0,0 +1,26 @@
-> >> +/* SPDX-License-Identifier: GPL-2.0+ */
-> >> +/* Copyright IBM Corp 2019 */
-> >> +
-> >> +#ifndef _UAPI_LINUX_ASPEED_XDMA_H_
-> >> +#define _UAPI_LINUX_ASPEED_XDMA_H_
-> >> +
-> >> +#include <linux/types.h>
-> >> +
-> >> +/*
-> >> + * aspeed_xdma_op
-> >> + *
-> >> + * upstream: boolean indicating the direction of the DMA operation; upstream
-> >> + *           means a transfer from the BMC to the host
-> >> + *
-> >> + * host_addr: the DMA address on the host side, typically configured by PCI
-> >> + *            subsystem
-> >> + *
-> >> + * len: the size of the transfer in bytes; it should be a multiple of 16 bytes
-> >> + */
-> >> +struct aspeed_xdma_op {
-> >> +       __u32 upstream;
-> >> +       __u64 host_addr;
-> >> +       __u32 len;
-> >> +};
-> >> +
-> >> +#endif /* _UAPI_LINUX_ASPEED_XDMA_H_ */
-> > If this is a user space interface, please remove the holes in the
-> > data structure.
-> 
-> 
-> Surely it's 4-byte aligned and there won't be holes??
+> > ---
+> >  drivers/edac/aspeed_edac.c | 4 ----
+> >  1 file changed, 4 deletions(-)
+> >
+> > diff --git a/drivers/edac/aspeed_edac.c b/drivers/edac/aspeed_edac.c
+> > index 11833c0a5d07..5634437bb39d 100644
+> > --- a/drivers/edac/aspeed_edac.c
+> > +++ b/drivers/edac/aspeed_edac.c
+> > @@ -281,15 +281,11 @@ static int aspeed_probe(struct platform_device *pdev)
+> >  	struct device *dev = &pdev->dev;
+> >  	struct edac_mc_layer layers[2];
+> >  	struct mem_ctl_info *mci;
+> > -	struct device_node *np;
+> >  	struct resource *res;
+> >  	void __iomem *regs;
+> >  	u32 reg04;
+> > 	int rc;
+> >
+> > -	/* setup regmap */
+> > -	np = dev->of_node;
+> > -
+> >  	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+> >  	if (!res)
+> >  		return -ENOENT;
+> > --
+> > 2.17.1
 
-__u64 is 8-byte aligned, so you have a hole after upstream.
-
-Easiest just to put upstream after len?
-
-Andrew
