@@ -1,76 +1,125 @@
-From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-Date: Fri, 24 May 2019 16:17:25 -0700
-Subject: [PATCH v2 11/11] media: aspeed: add a workaround to fix a silicon bug
-In-Reply-To: <20190524231725.12320-1-jae.hyun.yoo@linux.intel.com>
-References: <20190524231725.12320-1-jae.hyun.yoo@linux.intel.com>
-Message-ID: <20190524231725.12320-12-jae.hyun.yoo@linux.intel.com>
+From: Andrew Jeffery <andrew@aj.id.au>
+Date: Wed, 29 May 2019 10:52:36 +0930
+Subject: [PATCH] ARM: dts: aspeed: g4: add video engine support
+In-Reply-To: <20190527112753.1681-1-a.filippov@yadro.com>
+References: <20190527112753.1681-1-a.filippov@yadro.com>
+Message-ID: <c0e01b11-5ea2-42d1-be67-2998809e310c@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-AST2500 silicon revision A1 and A2 have a silicon bug which causes
-extremly long capturing time on specific resolutions (1680 width).
-To fix the bug, this commit adjusts the capturing window register
-setting to 1728 if detected width is 1680. The compression window
-register setting will be kept as the original width so output
-result will be the same.
 
-Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
----
-v1 -> v2:
- New.
 
- drivers/media/platform/aspeed-video.c | 26 +++++++++++++++++++-------
- 1 file changed, 19 insertions(+), 7 deletions(-)
+On Mon, 27 May 2019, at 20:58, Alexander Filippov wrote:
+> Add a node to describe the video engine and VGA scratch registers on
+> AST2400.
+> 
+> These changes were copied from aspeed-g5.dtsi
+> 
+> Signed-off-by: Alexander Filippov <a.filippov@yadro.com>
 
-diff --git a/drivers/media/platform/aspeed-video.c b/drivers/media/platform/aspeed-video.c
-index b05b073b63bc..f93989f532d6 100644
---- a/drivers/media/platform/aspeed-video.c
-+++ b/drivers/media/platform/aspeed-video.c
-@@ -824,8 +824,27 @@ static void aspeed_video_set_resolution(struct aspeed_video *video)
- 	struct v4l2_bt_timings *act = &video->active_timings;
- 	unsigned int size = act->width * act->height;
- 
-+	/* Set capture/compression frame sizes */
- 	aspeed_video_calc_compressed_size(video, size);
- 
-+	if (video->active_timings.width == 1680) {
-+		/*
-+		 * This is a workaround to fix a silicon bug on A1 and A2
-+		 * revisions. Since it doesn't break capturing operation on A0
-+		 * revision, use it for all revisions without checking the
-+		 * revision ID.
-+		 */
-+		aspeed_video_write(video, VE_CAP_WINDOW,
-+				   1728 << 16 | act->height);
-+		size += (1728 - 1680) * video->active_timings.height;
-+	} else {
-+		aspeed_video_write(video, VE_CAP_WINDOW,
-+				   act->width << 16 | act->height);
-+	}
-+	aspeed_video_write(video, VE_COMP_WINDOW,
-+			   act->width << 16 | act->height);
-+	aspeed_video_write(video, VE_SRC_SCANLINE_OFFSET, act->width * 4);
-+
- 	/* Don't use direct mode below 1024 x 768 (irqs don't fire) */
- 	if (size < DIRECT_FETCH_THRESHOLD) {
- 		aspeed_video_write(video, VE_TGS_0,
-@@ -842,13 +861,6 @@ static void aspeed_video_set_resolution(struct aspeed_video *video)
- 		aspeed_video_update(video, VE_CTRL, 0, VE_CTRL_DIRECT_FETCH);
- 	}
- 
--	/* Set capture/compression frame sizes */
--	aspeed_video_write(video, VE_CAP_WINDOW,
--			   act->width << 16 | act->height);
--	aspeed_video_write(video, VE_COMP_WINDOW,
--			   act->width << 16 | act->height);
--	aspeed_video_write(video, VE_SRC_SCANLINE_OFFSET, act->width * 4);
--
- 	size *= 4;
- 
- 	if (size == video->srcs[0].size / 2) {
--- 
-2.21.0
+Ugh, I should really sort out the bmc-misc stuff, I don't like to see it propagate
+in its current form. That's not your problem though, and I hope to address it in
+the near future.
 
+For the OpenBMC kernel tree:
+
+Acked-by: Andrew Jeffery <andrew@aj.id.au>
+
+> ---
+>  arch/arm/boot/dts/aspeed-g4.dtsi | 62 ++++++++++++++++++++++++++++++++
+>  1 file changed, 62 insertions(+)
+> 
+> diff --git a/arch/arm/boot/dts/aspeed-g4.dtsi b/arch/arm/boot/dts/aspeed-g4.dtsi
+> index 6011692df15a..adc1804918df 100644
+> --- a/arch/arm/boot/dts/aspeed-g4.dtsi
+> +++ b/arch/arm/boot/dts/aspeed-g4.dtsi
+> @@ -168,6 +168,10 @@
+>  					compatible = "aspeed,g4-pinctrl";
+>  				};
+>  
+> +				vga_scratch: scratch {
+> +					compatible = "aspeed,bmc-misc";
+> +				};
+> +
+>  				p2a: p2a-control {
+>  					compatible = "aspeed,ast2400-p2a-ctrl";
+>  					status = "disabled";
+> @@ -195,6 +199,16 @@
+>  				reg = <0x1e720000 0x8000>;	// 32K
+>  			};
+>  
+> +			video: video at 1e700000 {
+> +				compatible = "aspeed,ast2400-video-engine";
+> +				reg = <0x1e700000 0x1000>;
+> +				clocks = <&syscon ASPEED_CLK_GATE_VCLK>,
+> +					 <&syscon ASPEED_CLK_GATE_ECLK>;
+> +				clock-names = "vclk", "eclk";
+> +				interrupts = <7>;
+> +				status = "disabled";
+> +			};
+> +
+>  			gpio: gpio at 1e780000 {
+>  				#gpio-cells = <2>;
+>  				gpio-controller;
+> @@ -1408,6 +1422,54 @@
+>  	};
+>  };
+>  
+> +&vga_scratch {
+> +	dac_mux {
+> +		offset = <0x2c>;
+> +		bit-mask = <0x3>;
+> +		bit-shift = <16>;
+> +	};
+> +	vga0 {
+> +		offset = <0x50>;
+> +		bit-mask = <0xffffffff>;
+> +		bit-shift = <0>;
+> +	};
+> +	vga1 {
+> +		offset = <0x54>;
+> +		bit-mask = <0xffffffff>;
+> +		bit-shift = <0>;
+> +	};
+> +	vga2 {
+> +		offset = <0x58>;
+> +		bit-mask = <0xffffffff>;
+> +		bit-shift = <0>;
+> +	};
+> +	vga3 {
+> +		offset = <0x5c>;
+> +		bit-mask = <0xffffffff>;
+> +		bit-shift = <0>;
+> +	};
+> +	vga4 {
+> +		offset = <0x60>;
+> +		bit-mask = <0xffffffff>;
+> +		bit-shift = <0>;
+> +	};
+> +	vga5 {
+> +		offset = <0x64>;
+> +		bit-mask = <0xffffffff>;
+> +		bit-shift = <0>;
+> +	};
+> +	vga6 {
+> +		offset = <0x68>;
+> +		bit-mask = <0xffffffff>;
+> +		bit-shift = <0>;
+> +	};
+> +	vga7 {
+> +		offset = <0x6c>;
+> +		bit-mask = <0xffffffff>;
+> +		bit-shift = <0>;
+> +	};
+> +};
+> +
+>  &sio_regs {
+>  	sio_2b {
+>  		offset = <0xf0>;
+> -- 
+> 2.20.1
+> 
+>
