@@ -1,11 +1,12 @@
-From: Eddie James <eajames@linux.vnet.ibm.com>
-Date: Wed, 29 May 2019 11:07:57 -0500
-Subject: [PATCH v2 08/11] media: aspeed: remove source buffer allocation
- before mode detection
-In-Reply-To: <20190524231725.12320-9-jae.hyun.yoo@linux.intel.com>
+From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+Date: Wed, 29 May 2019 10:04:45 -0700
+Subject: [PATCH v2 10/11] media: aspeed: fix an incorrect timeout checking
+ in mode detection
+In-Reply-To: <50abcb27-30af-9dfc-3a53-4261832f272d@linux.vnet.ibm.com>
 References: <20190524231725.12320-1-jae.hyun.yoo@linux.intel.com>
- <20190524231725.12320-9-jae.hyun.yoo@linux.intel.com>
-Message-ID: <9c99274c-5c7e-a97f-16b9-55f4f9d8d945@linux.vnet.ibm.com>
+ <20190524231725.12320-11-jae.hyun.yoo@linux.intel.com>
+ <50abcb27-30af-9dfc-3a53-4261832f272d@linux.vnet.ibm.com>
+Message-ID: <b28ff2a7-337d-bbb5-4177-9e0473f18102@linux.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -13,53 +14,45 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 
-On 5/24/19 6:17 PM, Jae Hyun Yoo wrote:
-> Mode detection doesn't require source buffer allocation so this
-> commit removes that.
+On 5/29/2019 7:03 AM, Eddie James wrote:
+> 
+> On 5/24/19 6:17 PM, Jae Hyun Yoo wrote:
+>> There is an incorrect timeout checking in mode detection logic so
+>> it misses resolution detecting chances. This commit fixes the bug.
+>>
+>> Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+>> ---
+>> v1 -> v2:
+>> ? New.
+>>
+>> ? drivers/media/platform/aspeed-video.c | 2 +-
+>> ? 1 file changed, 1 insertion(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/media/platform/aspeed-video.c 
+>> b/drivers/media/platform/aspeed-video.c
+>> index 67f476bf0a03..b05b073b63bc 100644
+>> --- a/drivers/media/platform/aspeed-video.c
+>> +++ b/drivers/media/platform/aspeed-video.c
+>> @@ -735,7 +735,7 @@ static void aspeed_video_get_resolution(struct 
+>> aspeed_video *video)
+>> ????? do {
+>> ????????? if (tries) {
+>> ????????????? set_current_state(TASK_INTERRUPTIBLE);
+>> -??????????? if (schedule_timeout(INVALID_RESOLUTION_DELAY))
+>> +??????????? if (!schedule_timeout(INVALID_RESOLUTION_DELAY))
+>> ????????????????? return;
+> 
+> 
+> schedule_timeout returns 0 when the timer has expired otherwise the 
+> remaining time in? jiffies will be returned. So if it was interrupted 
+> (timer did not expire and it returns non-zero) then we should return, 
+> rather than keep trying. So I think it was correct before. Thanks, Eddie
 
+I thought that there is an explicit waking up case of this waiting
+before the delay expires but I checked code again that there isn't. So
+yes, you are right. Will drop this change from this series.
 
-Reviewed-by: Eddie James <eajames@linux.ibm.com>
+Thanks for the review!
 
-
->
-> Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-> ---
-> v1 -> v2:
->   New.
->
->   drivers/media/platform/aspeed-video.c | 21 ---------------------
->   1 file changed, 21 deletions(-)
->
-> diff --git a/drivers/media/platform/aspeed-video.c b/drivers/media/platform/aspeed-video.c
-> index c0b889141b8f..4647ed2e9e63 100644
-> --- a/drivers/media/platform/aspeed-video.c
-> +++ b/drivers/media/platform/aspeed-video.c
-> @@ -731,27 +731,6 @@ static void aspeed_video_get_resolution(struct aspeed_video *video)
->   	det->height = MIN_HEIGHT;
->   	video->v4l2_input_status = V4L2_IN_ST_NO_SIGNAL;
->   
-> -	/*
-> -	 * Since we need max buffer size for detection, free the second source
-> -	 * buffer first.
-> -	 */
-> -	if (video->srcs[1].size)
-> -		aspeed_video_free_buf(video, &video->srcs[1]);
-> -
-> -	if (video->srcs[0].size < VE_MAX_SRC_BUFFER_SIZE) {
-> -		if (video->srcs[0].size)
-> -			aspeed_video_free_buf(video, &video->srcs[0]);
-> -
-> -		if (!aspeed_video_alloc_buf(video, &video->srcs[0],
-> -					    VE_MAX_SRC_BUFFER_SIZE)) {
-> -			dev_err(video->dev,
-> -				"Failed to allocate source buffers\n");
-> -			return;
-> -		}
-> -	}
-> -
-> -	aspeed_video_write(video, VE_SRC0_ADDR, video->srcs[0].dma);
-> -
->   	do {
->   		if (tries) {
->   			set_current_state(TASK_INTERRUPTIBLE);
-
+Regards,
+Jae
