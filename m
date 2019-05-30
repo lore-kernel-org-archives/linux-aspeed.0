@@ -1,10 +1,13 @@
 From: Vijay Khemka <vijaykhemka@fb.com>
-Date: Thu, 30 May 2019 20:37:26 +0000
-Subject: [PATCH] soc: aspeed: lpc-ctrl: make parameter optional
-In-Reply-To: <fe36fbac-e29c-4210-9af2-defca62e9c2a@www.fastmail.com>
-References: <20190529172103.1130525-1-vijaykhemka@fb.com>
- <fe36fbac-e29c-4210-9af2-defca62e9c2a@www.fastmail.com>
-Message-ID: <B9D6474A-E58E-4198-AFA7-3EE742E0BABE@fb.com>
+Date: Thu, 30 May 2019 20:44:40 +0000
+Subject: [PATCH 2/2] Docs: hwmon: pmbus: Add PXE1610 driver
+In-Reply-To: <20190530194441.GA12310@roeck-us.net>
+References: <20190529223511.4059120-1-vijaykhemka@fb.com>
+ <20190529223511.4059120-2-vijaykhemka@fb.com>
+ <0a94e784-41a0-4f2d-f9f8-6b365a1e755e@roeck-us.net>
+ <27E78CF3-FAE7-4B6F-ABD7-77F4AE1CD633@fb.com>
+ <20190530194441.GA12310@roeck-us.net>
+Message-ID: <5E506871-5361-47CD-9BE7-A0A9708F12A7@fb.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -13,152 +16,131 @@ Content-Transfer-Encoding: 7bit
 
 
 
-?On 5/29/19, 9:02 PM, "Andrew Jeffery" <andrew@aj.id.au> wrote:
+?On 5/30/19, 12:45 PM, "Guenter Roeck" <groeck7 at gmail.com on behalf of linux@roeck-us.net> wrote:
 
-    
-    
-    On Thu, 30 May 2019, at 02:51, Vijay Khemka wrote:
-    > Makiing
-    
-    Typo here, but I'd prefer to see this patch go in, so
-Corrected in next version v2.
-    
-    > memory-region and flash as optional parameter in device
-    > tree if user needs to use these parameter through ioctl then
-    > need to define in devicetree.
+    On Thu, May 30, 2019 at 06:51:52PM +0000, Vijay Khemka wrote:
     > 
-    > Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
-    
-    Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
-    
-    > ---
-    >  drivers/soc/aspeed/aspeed-lpc-ctrl.c | 58 +++++++++++++++++-----------
-    >  1 file changed, 36 insertions(+), 22 deletions(-)
     > 
-    > diff --git a/drivers/soc/aspeed/aspeed-lpc-ctrl.c 
-    > b/drivers/soc/aspeed/aspeed-lpc-ctrl.c
-    > index a024f8042259..aca13779764a 100644
-    > --- a/drivers/soc/aspeed/aspeed-lpc-ctrl.c
-    > +++ b/drivers/soc/aspeed/aspeed-lpc-ctrl.c
-    > @@ -68,6 +68,7 @@ static long aspeed_lpc_ctrl_ioctl(struct file *file, 
-    > unsigned int cmd,
-    >  		unsigned long param)
-    >  {
-    >  	struct aspeed_lpc_ctrl *lpc_ctrl = file_aspeed_lpc_ctrl(file);
-    > +	struct device *dev = file->private_data;
-    >  	void __user *p = (void __user *)param;
-    >  	struct aspeed_lpc_ctrl_mapping map;
-    >  	u32 addr;
-    > @@ -90,6 +91,12 @@ static long aspeed_lpc_ctrl_ioctl(struct file *file, 
-    > unsigned int cmd,
-    >  		if (map.window_id != 0)
-    >  			return -EINVAL;
-    >  
-    > +		/* If memory-region is not described in device tree */
-    > +		if (!lpc_ctrl->mem_size) {
-    > +			dev_dbg(dev, "Didn't find reserved memory\n");
-    > +			return -ENXIO;
-    > +		}
-    > +
-    >  		map.size = lpc_ctrl->mem_size;
-    >  
-    >  		return copy_to_user(p, &map, sizeof(map)) ? -EFAULT : 0;
-    > @@ -126,9 +133,18 @@ static long aspeed_lpc_ctrl_ioctl(struct file 
-    > *file, unsigned int cmd,
-    >  			return -EINVAL;
-    >  
-    >  		if (map.window_type == ASPEED_LPC_CTRL_WINDOW_FLASH) {
-    > +			if (!lpc_ctrl->pnor_size) {
-    > +				dev_dbg(dev, "Didn't find host pnor flash\n");
-    > +				return -ENXIO;
-    > +			}
-    >  			addr = lpc_ctrl->pnor_base;
-    >  			size = lpc_ctrl->pnor_size;
-    >  		} else if (map.window_type == ASPEED_LPC_CTRL_WINDOW_MEMORY) {
-    > +			/* If memory-region is not described in device tree */
-    > +			if (!lpc_ctrl->mem_size) {
-    > +				dev_dbg(dev, "Didn't find reserved memory\n");
-    > +				return -ENXIO;
-    > +			}
-    >  			addr = lpc_ctrl->mem_base;
-    >  			size = lpc_ctrl->mem_size;
-    >  		} else {
-    > @@ -196,17 +212,17 @@ static int aspeed_lpc_ctrl_probe(struct 
-    > platform_device *pdev)
-    >  	if (!lpc_ctrl)
-    >  		return -ENOMEM;
-    >  
-    > +	/* If flash is described in device tree then store */
-    >  	node = of_parse_phandle(dev->of_node, "flash", 0);
-    >  	if (!node) {
-    > -		dev_err(dev, "Didn't find host pnor flash node\n");
-    > -		return -ENODEV;
-    > -	}
-    > -
-    > -	rc = of_address_to_resource(node, 1, &resm);
-    > -	of_node_put(node);
-    > -	if (rc) {
-    > -		dev_err(dev, "Couldn't address to resource for flash\n");
-    > -		return rc;
-    > +		dev_dbg(dev, "Didn't find host pnor flash node\n");
-    > +	} else {
-    > +		rc = of_address_to_resource(node, 1, &resm);
-    > +		of_node_put(node);
-    > +		if (rc) {
-    > +			dev_err(dev, "Couldn't address to resource for flash\n");
-    > +			return rc;
-    > +		}
-    >  	}
-    >  
-    >  	lpc_ctrl->pnor_size = resource_size(&resm);
-    > @@ -214,22 +230,22 @@ static int aspeed_lpc_ctrl_probe(struct 
-    > platform_device *pdev)
-    >  
-    >  	dev_set_drvdata(&pdev->dev, lpc_ctrl);
-    >  
-    > +	/* If memory-region is described in device tree then store */
-    >  	node = of_parse_phandle(dev->of_node, "memory-region", 0);
-    >  	if (!node) {
-    > -		dev_err(dev, "Didn't find reserved memory\n");
-    > -		return -EINVAL;
-    > -	}
-    > +		dev_dbg(dev, "Didn't find reserved memory\n");
-    > +	} else {
-    > +		rc = of_address_to_resource(node, 0, &resm);
-    > +		of_node_put(node);
-    > +		if (rc) {
-    > +			dev_err(dev, "Couldn't address to resource for reserved memory\n");
-    > +			return -ENXIO;
-    > +		}
-    >  
-    > -	rc = of_address_to_resource(node, 0, &resm);
-    > -	of_node_put(node);
-    > -	if (rc) {
-    > -		dev_err(dev, "Couldn't address to resource for reserved memory\n");
-    > -		return -ENOMEM;
-    > +		lpc_ctrl->mem_size = resource_size(&resm);
-    > +		lpc_ctrl->mem_base = resm.start;
-    >  	}
-    >  
-    > -	lpc_ctrl->mem_size = resource_size(&resm);
-    > -	lpc_ctrl->mem_base = resm.start;
-    > -
-    >  	lpc_ctrl->regmap = syscon_node_to_regmap(
-    >  			pdev->dev.parent->of_node);
-    >  	if (IS_ERR(lpc_ctrl->regmap)) {
-    > @@ -258,8 +274,6 @@ static int aspeed_lpc_ctrl_probe(struct 
-    > platform_device *pdev)
-    >  		goto err;
-    >  	}
-    >  
-    > -	dev_info(dev, "Loaded at %pr\n", &resm);
-    > -
-    >  	return 0;
-    >  
-    >  err:
-    > -- 
-    > 2.17.1
+    > On 5/29/19, 6:05 PM, "Guenter Roeck" <groeck7 at gmail.com on behalf of linux@roeck-us.net> wrote:
     > 
-    >
+    >     On 5/29/19 3:35 PM, Vijay Khemka wrote:
+    >     > Added support for Infenion PXE1610 driver
+    >     > 
+    >     > Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
+    >     > ---
+    >     >   Documentation/hwmon/pxe1610 | 84 +++++++++++++++++++++++++++++++++++++
+    >     >   1 file changed, 84 insertions(+)
+    >     >   create mode 100644 Documentation/hwmon/pxe1610
+    >     > 
+    >     > diff --git a/Documentation/hwmon/pxe1610 b/Documentation/hwmon/pxe1610
+    >     > new file mode 100644
+    >     > index 000000000000..b5c83edf027a
+    >     > --- /dev/null
+    >     > +++ b/Documentation/hwmon/pxe1610
+    >     > @@ -0,0 +1,84 @@
+    >     > +Kernel driver pxe1610
+    >     > +=====================
+    >     > +
+    >     > +Supported chips:
+    >     > +  * Infinion PXE1610
+    >     > +    Prefix: 'pxe1610'
+    >     > +    Addresses scanned: -
+    >     > +    Datasheet: Datasheet is not publicly available.
+    >     > +
+    >     > +  * Infinion PXE1110
+    >     > +    Prefix: 'pxe1110'
+    >     > +    Addresses scanned: -
+    >     > +    Datasheet: Datasheet is not publicly available.
+    >     > +
+    >     > +  * Infinion PXM1310
+    >     > +    Prefix: 'pxm1310'
+    >     > +    Addresses scanned: -
+    >     > +    Datasheet: Datasheet is not publicly available.
+    >     > +
+    >     > +Author: Vijay Khemka <vijaykhemka@fb.com>
+    >     > +
+    >     > +
+    >     > +Description
+    >     > +-----------
+    >     > +
+    >     > +PXE1610 is a Multi-rail/Multiphase Digital Controllers and
+    >     > +it is compliant to Intel VR13 DC-DC converter specifications.
+    >     > +
+    >     
+    >     And the others ?
+    > This supports VR12 as well and I don't see this controller supports any other VR versions.
+    >     
+    The point here is that there is no description of the other controllers.
+Ok, I get it, mainly all 3 controllers are from same family of Infineon controller but I will add details here.
+    
+    >     > +
+    >     > +Usage Notes
+    >     > +-----------
+    >     > +
+    >     > +This driver can be enabled with kernel config CONFIG_SENSORS_PXE1610
+    >     > +set to 'y' or 'm'(for module).
+    >     > +
+    >     The above does not really add value.
+    > Ok, I will remove it.
+    >     
+    >     > +This driver does not probe for PMBus devices. You will have
+    >     > +to instantiate devices explicitly.
+    >     > +
+    >     > +Example: the following commands will load the driver for an PXE1610
+    >     > +at address 0x70 on I2C bus #4:
+    >     > +
+    >     > +# modprobe pxe1610
+    >     > +# echo pxe1610 0x70 > /sys/bus/i2c/devices/i2c-4/new_device
+    >     > +
+    >     > +It can also be instantiated by declaring in device tree if it is
+    >     > +built as a kernel not as a module.
+    >     > +
+    >     
+    >     I assume you mean "built into the kernel".
+    >     Why would devicetree based instantiation not work if the driver is built
+    >     as module ?
+    > Will correct statement here.
+    >     
+    >     > +
+    >     > +Sysfs attributes
+    >     > +----------------
+    >     > +
+    >     > +curr1_label		"iin"
+    >     > +curr1_input		Measured input current
+    >     > +curr1_alarm		Current high alarm
+    >     > +
+    >     > +curr[2-4]_label		"iout[1-3]"
+    >     > +curr[2-4]_input		Measured output current
+    >     > +curr[2-4]_crit		Critical maximum current
+    >     > +curr[2-4]_crit_alarm	Current critical high alarm
+    >     > +
+    >     > +in1_label		"vin"
+    >     > +in1_input		Measured input voltage
+    >     > +in1_crit		Critical maximum input voltage
+    >     > +in1_crit_alarm		Input voltage critical high alarm
+    >     > +
+    >     > +in[2-4]_label		"vout[1-3]"
+    >     > +in[2-4]_input		Measured output voltage
+    >     > +in[2-4]_lcrit		Critical minimum output voltage
+    >     > +in[2-4]_lcrit_alarm	Output voltage critical low alarm
+    >     > +in[2-4]_crit		Critical maximum output voltage
+    >     > +in[2-4]_crit_alarm	Output voltage critical high alarm
+    >     > +
+    >     > +power1_label		"pin"
+    >     > +power1_input		Measured input power
+    >     > +power1_alarm		Input power high alarm
+    >     > +
+    >     > +power[2-4]_label	"pout[1-3]"
+    >     > +power[2-4]_input	Measured output power
+    >     > +
+    >     > +temp[1-3]_input		Measured temperature
+    >     > +temp[1-3]_crit		Critical high temperature
+    >     > +temp[1-3]_crit_alarm	Chip temperature critical high alarm
+    >     > +temp[1-3]_max		Maximum temperature
+    >     > +temp[1-3]_max_alarm	Chip temperature high alarm
+    >     > 
+    >     
+    >     
+    > 
     
 
