@@ -1,182 +1,125 @@
-From: Vijay Khemka <vijaykhemka@fb.com>
-Date: Wed, 29 May 2019 15:35:08 -0700
-Subject: [PATCH 1/2] hwmon: pmbus: Add Infineon PXE1610 VR driver
-Message-ID: <20190529223511.4059120-1-vijaykhemka@fb.com>
+From: Joel Stanley <joel@jms.id.au>
+Date: Thu, 30 May 2019 00:34:04 +0000
+Subject: [PATCH] ARM: dts: aspeed: g4: add video engine support
+In-Reply-To: <20190527112753.1681-1-a.filippov@yadro.com>
+References: <20190527112753.1681-1-a.filippov@yadro.com>
+Message-ID: <CACPK8XeXh8uiQ6f5LWJRBJ=VwMAvdPHOo34uHhWZyMFBG2HVqw@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Added pmbus driver for the new device Infineon pxe1610
-voltage regulator. It also supports similar family device
-PXE1110 and PXM1310.
+Hi Alexander,
 
-Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
----
- drivers/hwmon/pmbus/Kconfig   |   9 +++
- drivers/hwmon/pmbus/Makefile  |   1 +
- drivers/hwmon/pmbus/pxe1610.c | 119 ++++++++++++++++++++++++++++++++++
- 3 files changed, 129 insertions(+)
- create mode 100644 drivers/hwmon/pmbus/pxe1610.c
+On Mon, 27 May 2019 at 11:28, Alexander Filippov <a.filippov@yadro.com> wrote:
+>
+> Add a node to describe the video engine and VGA scratch registers on
+> AST2400.
 
-diff --git a/drivers/hwmon/pmbus/Kconfig b/drivers/hwmon/pmbus/Kconfig
-index 30751eb9550a..338ef9b5a395 100644
---- a/drivers/hwmon/pmbus/Kconfig
-+++ b/drivers/hwmon/pmbus/Kconfig
-@@ -154,6 +154,15 @@ config SENSORS_MAX8688
- 	  This driver can also be built as a module. If so, the module will
- 	  be called max8688.
- 
-+config SENSORS_PXE1610
-+	tristate "Infineon PXE1610"
-+	help
-+	  If you say yes here you get hardware monitoring support for Infineon
-+	  PXE1610.
-+
-+	  This driver can also be built as a module. If so, the module will
-+	  be called pxe1610.
-+
- config SENSORS_TPS40422
- 	tristate "TI TPS40422"
- 	help
-diff --git a/drivers/hwmon/pmbus/Makefile b/drivers/hwmon/pmbus/Makefile
-index 2219b9300316..b0fbd017a91a 100644
---- a/drivers/hwmon/pmbus/Makefile
-+++ b/drivers/hwmon/pmbus/Makefile
-@@ -18,6 +18,7 @@ obj-$(CONFIG_SENSORS_MAX20751)	+= max20751.o
- obj-$(CONFIG_SENSORS_MAX31785)	+= max31785.o
- obj-$(CONFIG_SENSORS_MAX34440)	+= max34440.o
- obj-$(CONFIG_SENSORS_MAX8688)	+= max8688.o
-+obj-$(CONFIG_SENSORS_PXE1610)	+= pxe1610.o
- obj-$(CONFIG_SENSORS_TPS40422)	+= tps40422.o
- obj-$(CONFIG_SENSORS_TPS53679)	+= tps53679.o
- obj-$(CONFIG_SENSORS_UCD9000)	+= ucd9000.o
-diff --git a/drivers/hwmon/pmbus/pxe1610.c b/drivers/hwmon/pmbus/pxe1610.c
-new file mode 100644
-index 000000000000..01e267944df5
---- /dev/null
-+++ b/drivers/hwmon/pmbus/pxe1610.c
-@@ -0,0 +1,119 @@
-+// SPDX-License-Identifier: GPL-2.0+
-+/*
-+ * Hardware monitoring driver for Infineon PXE1610
-+ *
-+ * Copyright (c) 2019 Facebook Inc
-+ *
-+ */
-+
-+#include <linux/err.h>
-+#include <linux/i2c.h>
-+#include <linux/init.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include "pmbus.h"
-+
-+/*
-+ * Identify chip parameters.
-+ */
-+static int pxe1610_identify(struct i2c_client *client,
-+			  struct pmbus_driver_info *info)
-+{
-+	if (pmbus_check_byte_register(client, 0, PMBUS_VOUT_MODE)) {
-+		int vout_mode;
-+
-+		vout_mode = pmbus_read_byte_data(client, 0, PMBUS_VOUT_MODE);
-+		switch (vout_mode & 0x1f) {
-+		case 1:
-+			info->vrm_version = vr12;
-+		break;
-+		case 2:
-+			info->vrm_version = vr13;
-+		break;
-+		default:
-+			return -ENODEV;
-+		}
-+	}
-+	return 0;
-+}
-+
-+static int pxe1610_probe(struct i2c_client *client,
-+			 const struct i2c_device_id *id)
-+{
-+	struct pmbus_driver_info *info;
-+	u8 buf[I2C_SMBUS_BLOCK_MAX];
-+	int ret;
-+
-+	if (!i2c_check_functionality(client->adapter,
-+				     I2C_FUNC_SMBUS_READ_BYTE_DATA
-+				| I2C_FUNC_SMBUS_READ_WORD_DATA
-+				| I2C_FUNC_SMBUS_READ_BLOCK_DATA))
-+		return -ENODEV;
-+
-+	/* By default this device doesn't boot to page 0, so set page 0
-+	 * to access all pmbus registers.
-+	 */
-+	i2c_smbus_write_byte_data(client, 0, 0);
-+
-+	/* Read Manufacturer id */
-+	ret = i2c_smbus_read_block_data(client, PMBUS_MFR_ID, buf);
-+	if (ret < 0) {
-+		dev_err(&client->dev, "Failed to read PMBUS_MFR_ID\n");
-+		return ret;
-+	}
-+	if (ret != 2 || strncmp(buf, "XP", strlen("XP"))) {
-+		dev_err(&client->dev, "MFR_ID unrecognised\n");
-+		return -ENODEV;
-+	}
-+
-+	info = devm_kzalloc(&client->dev, sizeof(struct pmbus_driver_info),
-+			    GFP_KERNEL);
-+	if (!info)
-+		return -ENOMEM;
-+
-+	info->format[PSC_VOLTAGE_IN] = linear;
-+	info->format[PSC_VOLTAGE_OUT] = vid;
-+	info->format[PSC_CURRENT_IN] = linear;
-+	info->format[PSC_CURRENT_OUT] = linear;
-+	info->format[PSC_POWER] = linear;
-+	info->format[PSC_TEMPERATURE] = linear;
-+
-+	info->func[0] = PMBUS_HAVE_VIN
-+		| PMBUS_HAVE_VOUT | PMBUS_HAVE_IIN
-+		| PMBUS_HAVE_IOUT | PMBUS_HAVE_PIN
-+		| PMBUS_HAVE_POUT | PMBUS_HAVE_TEMP
-+		| PMBUS_HAVE_STATUS_VOUT | PMBUS_HAVE_STATUS_IOUT
-+		| PMBUS_HAVE_STATUS_INPUT | PMBUS_HAVE_STATUS_TEMP;
-+	info->func[1] = info->func[0];
-+	info->func[2] = info->func[0];
-+
-+	info->pages = id->driver_data;
-+	info->identify = pxe1610_identify;
-+
-+	return pmbus_do_probe(client, id, info);
-+}
-+
-+static const struct i2c_device_id pxe1610_id[] = {
-+	{"pxe1610", 3},
-+	{"pxe1110", 3},
-+	{"pxm1310", 3},
-+	{}
-+};
-+
-+MODULE_DEVICE_TABLE(i2c, pxe1610_id);
-+
-+/* This is the driver that will be inserted */
-+static struct i2c_driver pxe1610_driver = {
-+	.driver = {
-+		   .name = "pxe1610",
-+		   },
-+	.probe = pxe1610_probe,
-+	.remove = pmbus_do_remove,
-+	.id_table = pxe1610_id,
-+};
-+
-+module_i2c_driver(pxe1610_driver);
-+
-+MODULE_AUTHOR("Vijay Khemka <vijaykhemka@fb.com>");
-+MODULE_DESCRIPTION("PMBus driver for Infineon PXE1610, PXE1110 and PXM1310");
-+MODULE_LICENSE("GPL");
--- 
-2.17.1
+The scratch registers are unrelated to the video engine. As Andrew
+pointed out, the bindings are not upstream either.
 
+Can you re-spin this patch wit just the video engine changes?
+
+We also need a platform to enable and test this on. Can you submit the
+device tree for your system?
+
+>
+> These changes were copied from aspeed-g5.dtsi
+>
+> Signed-off-by: Alexander Filippov <a.filippov@yadro.com>
+> ---
+>  arch/arm/boot/dts/aspeed-g4.dtsi | 62 ++++++++++++++++++++++++++++++++
+>  1 file changed, 62 insertions(+)
+>
+> diff --git a/arch/arm/boot/dts/aspeed-g4.dtsi b/arch/arm/boot/dts/aspeed-g4.dtsi
+> index 6011692df15a..adc1804918df 100644
+> --- a/arch/arm/boot/dts/aspeed-g4.dtsi
+> +++ b/arch/arm/boot/dts/aspeed-g4.dtsi
+> @@ -168,6 +168,10 @@
+>                                         compatible = "aspeed,g4-pinctrl";
+>                                 };
+>
+> +                               vga_scratch: scratch {
+> +                                       compatible = "aspeed,bmc-misc";
+> +                               };
+> +
+>                                 p2a: p2a-control {
+>                                         compatible = "aspeed,ast2400-p2a-ctrl";
+>                                         status = "disabled";
+> @@ -195,6 +199,16 @@
+>                                 reg = <0x1e720000 0x8000>;      // 32K
+>                         };
+>
+> +                       video: video at 1e700000 {
+> +                               compatible = "aspeed,ast2400-video-engine";
+> +                               reg = <0x1e700000 0x1000>;
+> +                               clocks = <&syscon ASPEED_CLK_GATE_VCLK>,
+> +                                        <&syscon ASPEED_CLK_GATE_ECLK>;
+> +                               clock-names = "vclk", "eclk";
+> +                               interrupts = <7>;
+> +                               status = "disabled";
+> +                       };
+> +
+>                         gpio: gpio at 1e780000 {
+>                                 #gpio-cells = <2>;
+>                                 gpio-controller;
+> @@ -1408,6 +1422,54 @@
+>         };
+>  };
+>
+> +&vga_scratch {
+> +       dac_mux {
+> +               offset = <0x2c>;
+> +               bit-mask = <0x3>;
+> +               bit-shift = <16>;
+> +       };
+> +       vga0 {
+> +               offset = <0x50>;
+> +               bit-mask = <0xffffffff>;
+> +               bit-shift = <0>;
+> +       };
+> +       vga1 {
+> +               offset = <0x54>;
+> +               bit-mask = <0xffffffff>;
+> +               bit-shift = <0>;
+> +       };
+> +       vga2 {
+> +               offset = <0x58>;
+> +               bit-mask = <0xffffffff>;
+> +               bit-shift = <0>;
+> +       };
+> +       vga3 {
+> +               offset = <0x5c>;
+> +               bit-mask = <0xffffffff>;
+> +               bit-shift = <0>;
+> +       };
+> +       vga4 {
+> +               offset = <0x60>;
+> +               bit-mask = <0xffffffff>;
+> +               bit-shift = <0>;
+> +       };
+> +       vga5 {
+> +               offset = <0x64>;
+> +               bit-mask = <0xffffffff>;
+> +               bit-shift = <0>;
+> +       };
+> +       vga6 {
+> +               offset = <0x68>;
+> +               bit-mask = <0xffffffff>;
+> +               bit-shift = <0>;
+> +       };
+> +       vga7 {
+> +               offset = <0x6c>;
+> +               bit-mask = <0xffffffff>;
+> +               bit-shift = <0>;
+> +       };
+> +};
+> +
+>  &sio_regs {
+>         sio_2b {
+>                 offset = <0xf0>;
+> --
+> 2.20.1
+>
