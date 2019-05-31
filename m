@@ -1,82 +1,89 @@
 From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-Date: Fri, 31 May 2019 15:15:43 -0700
-Subject: [PATCH v3 05/10] media: aspeed: reduce noisy log printing outs
+Date: Fri, 31 May 2019 15:15:46 -0700
+Subject: [PATCH v3 08/10] media: aspeed: remove source buffer allocation
+ before mode detection
 In-Reply-To: <20190531221548.14757-1-jae.hyun.yoo@linux.intel.com>
 References: <20190531221548.14757-1-jae.hyun.yoo@linux.intel.com>
-Message-ID: <20190531221548.14757-6-jae.hyun.yoo@linux.intel.com>
+Message-ID: <20190531221548.14757-9-jae.hyun.yoo@linux.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Currently, this driver prints out too much log messages when a
-mode change happens, video turned off by screen saver and etc.
-Actually, all cases are reported to user space properly. Also,
-these are not critical errors but recoverable things, so this
-commit changes the log level of some noisy printing outs.
+Mode detection doesn't require source buffer allocation so this
+commit removes that.
 
 Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
 Reviewed-by: Eddie James <eajames@linux.ibm.com>
 ---
 v2 -> v3:
- None.
+ Corrected re-allocation logic of source buffers.
 
 v1 -> v2:
- None.
+ New.
 
- drivers/media/platform/aspeed-video.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ drivers/media/platform/aspeed-video.c | 37 ++++-----------------------
+ 1 file changed, 5 insertions(+), 32 deletions(-)
 
 diff --git a/drivers/media/platform/aspeed-video.c b/drivers/media/platform/aspeed-video.c
-index d1b541409544..92abdfc79e76 100644
+index c0b889141b8f..d6708ddb0391 100644
 --- a/drivers/media/platform/aspeed-video.c
 +++ b/drivers/media/platform/aspeed-video.c
-@@ -441,7 +441,7 @@ static int aspeed_video_start_frame(struct aspeed_video *video)
+@@ -731,27 +731,6 @@ static void aspeed_video_get_resolution(struct aspeed_video *video)
+ 	det->height = MIN_HEIGHT;
+ 	video->v4l2_input_status = V4L2_IN_ST_NO_SIGNAL;
  
- 	if (!(seq_ctrl & VE_SEQ_CTRL_COMP_BUSY) ||
- 	    !(seq_ctrl & VE_SEQ_CTRL_CAP_BUSY)) {
--		dev_err(video->dev, "Engine busy; don't start frame\n");
-+		dev_dbg(video->dev, "Engine busy; don't start frame\n");
- 		return -EBUSY;
- 	}
+-	/*
+-	 * Since we need max buffer size for detection, free the second source
+-	 * buffer first.
+-	 */
+-	if (video->srcs[1].size)
+-		aspeed_video_free_buf(video, &video->srcs[1]);
+-
+-	if (video->srcs[0].size < VE_MAX_SRC_BUFFER_SIZE) {
+-		if (video->srcs[0].size)
+-			aspeed_video_free_buf(video, &video->srcs[0]);
+-
+-		if (!aspeed_video_alloc_buf(video, &video->srcs[0],
+-					    VE_MAX_SRC_BUFFER_SIZE)) {
+-			dev_err(video->dev,
+-				"Failed to allocate source buffers\n");
+-			return;
+-		}
+-	}
+-
+-	aspeed_video_write(video, VE_SRC0_ADDR, video->srcs[0].dma);
+-
+ 	do {
+ 		if (tries) {
+ 			set_current_state(TASK_INTERRUPTIBLE);
+@@ -871,20 +850,14 @@ static void aspeed_video_set_resolution(struct aspeed_video *video)
  
-@@ -769,7 +769,7 @@ static void aspeed_video_get_resolution(struct aspeed_video *video)
- 						      res_check(video),
- 						      MODE_DETECT_TIMEOUT);
- 		if (!rc) {
--			dev_err(video->dev, "Timed out; first mode detect\n");
-+			dev_dbg(video->dev, "Timed out; first mode detect\n");
- 			clear_bit(VIDEO_RES_DETECT, &video->flags);
- 			return;
- 		}
-@@ -787,7 +787,7 @@ static void aspeed_video_get_resolution(struct aspeed_video *video)
- 						      MODE_DETECT_TIMEOUT);
- 		clear_bit(VIDEO_RES_DETECT, &video->flags);
- 		if (!rc) {
--			dev_err(video->dev, "Timed out; second mode detect\n");
-+			dev_dbg(video->dev, "Timed out; second mode detect\n");
- 			return;
- 		}
+ 	size *= 4;
  
-@@ -821,7 +821,7 @@ static void aspeed_video_get_resolution(struct aspeed_video *video)
- 	} while (invalid_resolution && (tries++ < INVALID_RESOLUTION_RETRIES));
+-	if (size == video->srcs[0].size / 2) {
+-		aspeed_video_write(video, VE_SRC1_ADDR,
+-				   video->srcs[0].dma + size);
+-	} else if (size == video->srcs[0].size) {
+-		if (!aspeed_video_alloc_buf(video, &video->srcs[1], size))
+-			goto err_mem;
+-
+-		aspeed_video_write(video, VE_SRC1_ADDR, video->srcs[1].dma);
+-	} else {
+-		aspeed_video_free_buf(video, &video->srcs[0]);
++	if (size != video->srcs[0].size) {
++		if (video->srcs[0].size)
++			aspeed_video_free_buf(video, &video->srcs[0]);
++		if (video->srcs[1].size)
++			aspeed_video_free_buf(video, &video->srcs[1]);
  
- 	if (invalid_resolution) {
--		dev_err(video->dev, "Invalid resolution detected\n");
-+		dev_dbg(video->dev, "Invalid resolution detected\n");
- 		return;
- 	}
+ 		if (!aspeed_video_alloc_buf(video, &video->srcs[0], size))
+ 			goto err_mem;
+-
+ 		if (!aspeed_video_alloc_buf(video, &video->srcs[1], size))
+ 			goto err_mem;
  
-@@ -1456,7 +1456,7 @@ static void aspeed_video_stop_streaming(struct vb2_queue *q)
- 				!test_bit(VIDEO_FRAME_INPRG, &video->flags),
- 				STOP_TIMEOUT);
- 	if (!rc) {
--		dev_err(video->dev, "Timed out when stopping streaming\n");
-+		dev_dbg(video->dev, "Timed out when stopping streaming\n");
- 
- 		/*
- 		 * Need to force stop any DMA and try and get HW into a good
 -- 
 2.21.0
 
