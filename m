@@ -1,41 +1,51 @@
 From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-Date: Fri, 31 May 2019 15:15:38 -0700
-Subject: [PATCH v3 00/10] Improve stability and add bug fixes of Aspeed video
- engine driver
-Message-ID: <20190531221548.14757-1-jae.hyun.yoo@linux.intel.com>
+Date: Fri, 31 May 2019 15:15:41 -0700
+Subject: [PATCH v3 03/10] media: aspeed: change irq to threaded irq
+In-Reply-To: <20190531221548.14757-1-jae.hyun.yoo@linux.intel.com>
+References: <20190531221548.14757-1-jae.hyun.yoo@linux.intel.com>
+Message-ID: <20190531221548.14757-4-jae.hyun.yoo@linux.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This patch series improves stability of Aspeed video engine driver by fixing
-clock control and irq handling logic in the driver. Also, it adds a couple of
-bug fixes and a workaroud for a silicon bug.
+Differently from other Aspeed drivers, this driver calls clock
+control APIs in interrupt context. Since ECLK is coupled with a
+reset bit in clk-aspeed module, aspeed_clk_enable will make 10ms of
+busy waiting delay for triggering the reset and it will eventually
+disturb other drivers' interrupt handling. To fix this issue, this
+commit changes this driver's irq to threaded irq so that the delay
+can be happened in a thread context.
 
-Changes since v2:
-- Corrected re-allocation logic of source buffer.
-- Removed an incorrect patch from this series (10/11 in v2).
-- Added more details into the silicon bug workaround fix comment.
+Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+Reviewed-by: Eddie James <eajames@linux.ibm.com>
+---
+v2 -> v3:
+ None.
 
-Changes since v1:
-- Removed spinlock handling code from 0001 patch.
-- Added 4 more patches.
-Jae Hyun Yoo (10):
-  media: aspeed: fix a kernel warning on clk control
-  media: aspeed: refine clock control logic
-  media: aspeed: change irq to threaded irq
-  media: aspeed: remove IRQF_SHARED flag
-  media: aspeed: reduce noisy log printing outs
-  media: aspeed: remove checking of VE_INTERRUPT_CAPTURE_COMPLETE
-  media: aspeed: refine interrupt handling logic
-  media: aspeed: remove source buffer allocation before mode detection
-  media: aspeed: use different delays for triggering VE H/W reset
-  media: aspeed: add a workaround to fix a silicon bug
+v1 -> v2:
+ None.
 
- drivers/media/platform/aspeed-video.c | 156 ++++++++++++++------------
- 1 file changed, 86 insertions(+), 70 deletions(-)
+ drivers/media/platform/aspeed-video.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
+diff --git a/drivers/media/platform/aspeed-video.c b/drivers/media/platform/aspeed-video.c
+index 7982ce634936..f7db8969c8f2 100644
+--- a/drivers/media/platform/aspeed-video.c
++++ b/drivers/media/platform/aspeed-video.c
+@@ -1600,8 +1600,9 @@ static int aspeed_video_init(struct aspeed_video *video)
+ 		return -ENODEV;
+ 	}
+ 
+-	rc = devm_request_irq(dev, irq, aspeed_video_irq, IRQF_SHARED,
+-			      DEVICE_NAME, video);
++	rc = devm_request_threaded_irq(dev, irq, NULL, aspeed_video_irq,
++				       IRQF_ONESHOT | IRQF_SHARED, DEVICE_NAME,
++				       video);
+ 	if (rc < 0) {
+ 		dev_err(dev, "Unable to request IRQ %d\n", irq);
+ 		return rc;
 -- 
 2.21.0
 
