@@ -1,52 +1,323 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Fri, 31 May 2019 17:29:58 +0930
-Subject: [PATCH v2] ARM: dts: aspeed: g4: add video engine support
-In-Reply-To: <20190530093544.12215-1-a.filippov@yadro.com>
-References: <20190530093544.12215-1-a.filippov@yadro.com>
-Message-ID: <af088bbb-d55f-4477-a564-ef9fcc306433@www.fastmail.com>
+From: Alexander A. Filippov <a.filippov@yadro.com>
+Date: Fri, 31 May 2019 12:07:01 +0300
+Subject: [PATCH v3] ARM: dts: aspeed: Add YADRO VESNIN BMC
+In-Reply-To: <2966b961-77ca-4371-949c-195b623e344b@www.fastmail.com>
+References: <20190531061207.23079-1-a.filippov@yadro.com>
+ <2966b961-77ca-4371-949c-195b623e344b@www.fastmail.com>
+Message-ID: <20190531090701.GA12476@bbwork.lan>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+On Fri, May 31, 2019 at 04:02:37PM +0930, Andrew Jeffery wrote:
+> Hello Alexander,
 
+Hi Andrew,
 
-On Thu, 30 May 2019, at 19:06, Alexander Filippov wrote:
-> Add a node to describe the video engine on AST2400.
 > 
-> These changes were copied from aspeed-g5.dtsi
+> On Fri, 31 May 2019, at 15:42, Alexander Filippov wrote:
+> > VESNIN is an OpenPower machine with an Aspeed 2400 BMC SoC manufactured
+> > by YADRO.
+> > 
+> > Signed-off-by: Alexander Filippov <a.filippov@yadro.com>
+> > ---
+> >  arch/arm/boot/dts/Makefile                  |   1 +
+> >  arch/arm/boot/dts/aspeed-bmc-opp-vesnin.dts | 234 ++++++++++++++++++++
+> >  2 files changed, 235 insertions(+)
+> >  create mode 100644 arch/arm/boot/dts/aspeed-bmc-opp-vesnin.dts
+> > 
+> > diff --git a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
+> > index 834cce80d1b8..09a851a4705c 100644
+> > --- a/arch/arm/boot/dts/Makefile
+> > +++ b/arch/arm/boot/dts/Makefile
+> > @@ -1261,6 +1261,7 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
+> >  	aspeed-bmc-opp-palmetto.dtb \
+> >  	aspeed-bmc-opp-romulus.dtb \
+> >  	aspeed-bmc-opp-swift.dtb \
+> > +	aspeed-bmc-opp-vesnin.dtb \
 > 
-> Signed-off-by: Alexander Filippov <a.filippov@yadro.com>
+> The patch doesn't apply to upstream - the Swift machine only exists in the
+> OpenBMC kernel tree. Please rebase the patch onto upstream and resend.
 
-Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
+Done.
 
-> ---
->  arch/arm/boot/dts/aspeed-g4.dtsi | 10 ++++++++++
->  1 file changed, 10 insertions(+)
 > 
-> diff --git a/arch/arm/boot/dts/aspeed-g4.dtsi b/arch/arm/boot/dts/aspeed-g4.dtsi
-> index 6011692df15a..5a9e3f684359 100644
-> --- a/arch/arm/boot/dts/aspeed-g4.dtsi
-> +++ b/arch/arm/boot/dts/aspeed-g4.dtsi
-> @@ -195,6 +195,16 @@
->  				reg = <0x1e720000 0x8000>;	// 32K
->  			};
->  
-> +			video: video at 1e700000 {
-> +				compatible = "aspeed,ast2400-video-engine";
-> +				reg = <0x1e700000 0x1000>;
-> +				clocks = <&syscon ASPEED_CLK_GATE_VCLK>,
-> +					 <&syscon ASPEED_CLK_GATE_ECLK>;
-> +				clock-names = "vclk", "eclk";
-> +				interrupts = <7>;
-> +				status = "disabled";
-> +			};
-> +
->  			gpio: gpio at 1e780000 {
->  				#gpio-cells = <2>;
->  				gpio-controller;
-> -- 
-> 2.20.1
+> >  	aspeed-bmc-opp-witherspoon.dtb \
+> >  	aspeed-bmc-opp-zaius.dtb \
+> >  	aspeed-bmc-portwell-neptune.dtb \
+> > diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-vesnin.dts 
+> > b/arch/arm/boot/dts/aspeed-bmc-opp-vesnin.dts
+> > new file mode 100644
+> > index 000000000000..20f07f5bb4f4
+> > --- /dev/null
+> > +++ b/arch/arm/boot/dts/aspeed-bmc-opp-vesnin.dts
+> > @@ -0,0 +1,234 @@
+> > +// SPDX-License-Identifier: GPL-2.0+
+> > +// Copyright 2019 YADRO
+> > +/dts-v1/;
+> > +
+> > +#include "aspeed-g4.dtsi"
+> > +#include <dt-bindings/gpio/aspeed-gpio.h>
+> > +
+> > +/ {
+> > +	model = "Vesnin BMC";
+> > +	compatible = "yadro,vesnin-bmc", "aspeed,ast2400";
+> > +
+> > +	chosen {
+> > +		stdout-path = &uart5;
+> > +		bootargs = "console=ttyS4,115200 earlyprintk";
+> > +	};
+> > +
+> > +	memory {
+> > +		reg = <0x40000000 0x20000000>;
+> > +	};
+> > +
+> > +	reserved-memory {
+> > +		#address-cells = <1>;
+> > +		#size-cells = <1>;
+> > +		ranges;
+> > +
+> > +		vga_memory: framebuffer at 5f000000 {
+> > +			no-map;
+> > +			reg = <0x5f000000 0x01000000>; /* 16MB */
+> > +		};
+> > +		flash_memory: region at 5c000000 {
+> > +			no-map;
+> > +			reg = <0x5c000000 0x02000000>; /* 32M */
+> > +		};
+> > +	};
+> > +
+> > +	leds {
+> > +		compatible = "gpio-leds";
+> > +
+> > +		heartbeat {
+> > +			gpios = <&gpio ASPEED_GPIO(R, 4) GPIO_ACTIVE_LOW>;
+> > +		};
+> > +		power_red {
+> > +			gpios = <&gpio ASPEED_GPIO(N, 1) GPIO_ACTIVE_LOW>;
+> > +		};
+> > +
+> > +		id_blue {
+> > +			gpios = <&gpio ASPEED_GPIO(O, 0) GPIO_ACTIVE_LOW>;
+> > +		};
+> > +
+> > +		alarm_red {
+> > +			gpios = <&gpio ASPEED_GPIO(N, 6) GPIO_ACTIVE_LOW>;
+> > +		};
+> > +
+> > +		alarm_yel {
+> > +			gpios = <&gpio ASPEED_GPIO(N, 7) GPIO_ACTIVE_HIGH>;
+> > +		};
+> > +	};
+> > +
+> > +	gpio-keys {
+> > +		compatible = "gpio-keys";
+> > +
+> > +		button_checkstop {
+> > +			label = "checkstop";
+> > +			linux,code = <74>;
+> > +			gpios = <&gpio ASPEED_GPIO(P, 5) GPIO_ACTIVE_LOW>;
+> > +		};
+> > +
+> > +		button_identify {
+> > +			label = "identify";
+> > +			linux,code = <152>;
+> > +			gpios = <&gpio ASPEED_GPIO(O, 7) GPIO_ACTIVE_LOW>;
+> > +		};
+> > +	};
+> > +};
+> > +
+> > +&fmc {
+> > +	status = "okay";
+> > +	flash at 0 {
+> > +		status = "okay";
+> > +		m25p,fast-read;
+> > +        label = "bmc";
+> > +#include "openbmc-flash-layout.dtsi"
+> > +	};
+> > +};
+> > +
+> > +&spi {
+> > +	status = "okay";
+> > +	pinctrl-names = "default";
+> > +	pinctrl-0 = <&pinctrl_spi1debug_default>;
 > 
->
+> Is this how the board is strapped? I'm asking in case it's just copy/paste
+> from Palmetto, which was (unfortunately) strapped this way.
+
+Yes, the board is strapped in such manner.
+I guess it was brought from barreleye which was a prototype for vesnin.
+
+Setting this pin to &pinctrl_spi1_default leads to warning:
+  kernel: aspeed-smc 1e630000.spi: Error applying setting, reverse things back
+
+> 
+> > +
+> > +	flash at 0 {
+> > +		status = "okay";
+> > +		label = "pnor";
+> > +		m25p,fast-read;
+> > +	};
+> > +};
+> > +
+> > +&mac0 {
+> > +	status = "okay";
+> > +
+> > +	use-ncsi;
+> > +	no-hw-checksum;
+> > +
+> > +	pinctrl-names = "default";
+> > +	pinctrl-0 = <&pinctrl_rmii1_default>;
+> > +};
+> > +
+> > +
+> > +&uart5 {
+> > +	status = "okay";
+> > +};
+> > +
+> > +&lpc_ctrl {
+> > +	status = "okay";
+> > +	memory-region = <&flash_memory>;
+> > +	flash = <&spi>;
+> > +};
+> > +
+> > +&ibt {
+> > +	status = "okay";
+> > +};
+> > +
+> > +&lpc_host {
+> > +    sio_regs: regs {
+> > +        compatible = "aspeed,bmc-misc";
+> 
+> The patches for this are not upstream, and won't make it in their current
+> form. Please drop this node from the patch.
+> 
+
+Done.
+
+> > +    };
+> > +};
+> > +
+> > +&mbox {
+> > +	status = "okay";
+> 
+> This driver is not upstream either, and we plan on dropping it from the
+> OpenBMC tree too. Please remove this node from the patch.
+
+Done.
+
+> 
+> Cheers,
+> 
+> Andrew
+> 
+> > +};
+> > +
+> > +&uart3 {
+> > +	status = "okay";
+> > +	pinctrl-names = "default";
+> > +	pinctrl-0 = <&pinctrl_txd2_default &pinctrl_rxd2_default>;
+> > +};
+> > +
+> > +&i2c0 {
+> > +	status = "okay";
+> > +
+> > +	eeprom at 50 {
+> > +		compatible = "atmel,24c256";
+> > +		reg = <0x50>;
+> > +		pagesize = <64>;
+> > +	};
+> > +};
+> > +
+> > +&i2c1 {
+> > +	status = "okay";
+> > +
+> > +	tmp75 at 49 {
+> > +		compatible = "ti,tmp75";
+> > +		reg = <0x49>;
+> > +	};
+> > +};
+> > +
+> > +&i2c2 {
+> > +	status = "okay";
+> > +};
+> > +
+> > +&i2c3 {
+> > +	status = "okay";
+> > +};
+> > +
+> > +&i2c4 {
+> > +	status = "okay";
+> > +
+> > +	occ-hwmon at 50 {
+> > +		compatible = "ibm,p8-occ-hwmon";
+> > +		reg = <0x50>;
+> > +	};
+> > +};
+> > +
+> > +&i2c5 {
+> > +	status = "okay";
+> > +
+> > +	occ-hwmon at 51 {
+> > +		compatible = "ibm,p8-occ-hwmon";
+> > +		reg = <0x51>;
+> > +	};
+> > +};
+> > +
+> > +&i2c6 {
+> > +	status = "okay";
+> > +
+> > +	w83795g at 2f {
+> > +		compatible = "nuvoton,w83795g";
+> > +		reg = <0x2f>;
+> > +	};
+> > +};
+> > +
+> > +&i2c7 {
+> > +	status = "okay";
+> > +
+> > +	occ-hwmon at 56 {
+> > +		compatible = "ibm,p8-occ-hwmon";
+> > +		reg = <0x56>;
+> > +	};
+> > +};
+> > +
+> > +&i2c9 {
+> > +	status = "okay";
+> > +};
+> > +
+> > +&i2c10 {
+> > +	status = "okay";
+> > +};
+> > +
+> > +&i2c11 {
+> > +	status = "okay";
+> > +
+> > +	occ-hwmon at 57 {
+> > +		compatible = "ibm,p8-occ-hwmon";
+> > +		reg = <0x57>;
+> > +	};
+> > +};
+> > +
+> > +&i2c12 {
+> > +	status = "okay";
+> > +
+> > +	rtc at 68 {
+> > +		compatible = "maxim,ds3231";
+> > +		reg = <0x68>;
+> > +	};
+> > +};
+> > +
+> > +&i2c13 {
+> > +	status = "okay";
+> > +};
+> > +
+> > +&vuart {
+> > +	status = "okay";
+> > +};
+> > -- 
+> > 2.20.1
+> > 
+> >
