@@ -1,38 +1,32 @@
-From: Joel Stanley <joel@jms.id.au>
-Date: Mon, 3 Jun 2019 23:04:55 +0000
-Subject: [PATCH dev-5.1] ARM: dts: aspeed: swift: Add VDD (IR35219) devices
-In-Reply-To: <66ef1d874db0bf4963f3ea80d3436c3f@linux.vnet.ibm.com>
-References: <1559334700-51970-1-git-send-email-anoo@linux.ibm.com>
- <CACPK8Xc8_SAkxQ1_HTFOkCsV8ejWS=MVXazH+bvDcE=9xKLF8A@mail.gmail.com>
- <66ef1d874db0bf4963f3ea80d3436c3f@linux.vnet.ibm.com>
-Message-ID: <CACPK8Xdg+epi33nz5f2euLOR3UWNiVSXP52hUcstE=63XnNrjA@mail.gmail.com>
+From: Linus Walleij <linus.walleij@linaro.org>
+Date: Tue, 4 Jun 2019 01:07:41 +0200
+Subject: [PATCH linux dev-5.1 v1] ARM: dts: aspeed: Add SGPM pinmux
+In-Reply-To: <1559601789-27121-1-git-send-email-hongweiz@ami.com>
+References: <1559601789-27121-1-git-send-email-hongweiz@ami.com>
+Message-ID: <CACRpkdYPHw994Ov0xCfK6tCg60tiuWrRwTcYpMSfOr4G0VKu_Q@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, 3 Jun 2019 at 19:37, Adriana Kobylak <anoo@linux.ibm.com> wrote:
+Hi Hongwei,
+
+On Tue, Jun 4, 2019 at 12:44 AM Hongwei Zhang <hongweiz@ami.com> wrote:
 >
-> On 2019-06-03 04:06, Joel Stanley wrote:
-> > On Fri, 31 May 2019 at 20:31, Adriana Kobylak <anoo@linux.ibm.com>
-> > wrote:
-> >>
-> >> From: Adriana Kobylak <anoo@us.ibm.com>
-> >>
-> >> Add the VDD (IR35219) devices to the Swift device tree.
-> >>
-> >> +       ir35219 at 70 {
-> >> +               compatible = "infineon,ir35219";
-> >
-> > There's no driver for these in our tree. Do you have one coming?
+> Add SGPM pinmux to ast2500-pinctrl function and group, to prepare for
+> supporting SGPIO in AST2500 SoC.
 >
-> Eddie will be writing one [Swift VDD VRM device driver
-> #311](https://github.com/ibm-openbmc/dev/issues/311)
-> Should we put this patch on hold until the driver is done?
+> Signed-off-by: Hongwei Zhang <hongweiz@ami.com>
+> ---
+>  Documentation/devicetree/bindings/pinctrl/pinctrl-aspeed.txt | 2 +-
+>  arch/arm/boot/dts/aspeed-g5.dtsi                             | 5 +++++
+>  drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c                   | 4 ++++
 
-Yes. We generally don't put things in the device tree if there's no driver.
+Please try to separate out the change to arch/arm/boot/dts/aspeed-g5.dtsi
+into a separate patch that goes through ARM SoC.
 
-Cheers,
+Other than that it looks fine to me.
 
-Joel
+Yours,
+Linus Walleij
