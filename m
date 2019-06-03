@@ -1,81 +1,275 @@
-From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-Date: Fri, 31 May 2019 15:15:48 -0700
-Subject: [PATCH v3 10/10] media: aspeed: add a workaround to fix a silicon bug
-In-Reply-To: <20190531221548.14757-1-jae.hyun.yoo@linux.intel.com>
-References: <20190531221548.14757-1-jae.hyun.yoo@linux.intel.com>
-Message-ID: <20190531221548.14757-11-jae.hyun.yoo@linux.intel.com>
+From: Andrew Jeffery <andrew@aj.id.au>
+Date: Mon, 03 Jun 2019 10:58:47 +0930
+Subject: [PATCH v4] ARM: dts: aspeed: Add YADRO VESNIN BMC
+In-Reply-To: <20190531090950.13466-1-a.filippov@yadro.com>
+References: <20190531090950.13466-1-a.filippov@yadro.com>
+Message-ID: <246c9b25-1c05-4c2f-9185-c438c97ebdec@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-AST2500 silicon revision A1 and A2 have a silicon bug which causes
-extremly long capturing time on specific resolutions (1680 width).
-To fix the bug, this commit adjusts the capturing window register
-setting to 1728 if detected width is 1680. The compression window
-register setting will be kept as the original width so output
-result will be the same.
 
-Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
----
-v2 -> v3:
- Added more detail comments why the value 1728 is picked.
 
-v1 -> v2:
- New.
+On Fri, 31 May 2019, at 18:40, Alexander Filippov wrote:
+> VESNIN is an OpenPower machine with an Aspeed 2400 BMC SoC manufactured
+> by YADRO.
+> 
+> Signed-off-by: Alexander Filippov <a.filippov@yadro.com>
 
- drivers/media/platform/aspeed-video.c | 28 ++++++++++++++++++++-------
- 1 file changed, 21 insertions(+), 7 deletions(-)
+Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
 
-diff --git a/drivers/media/platform/aspeed-video.c b/drivers/media/platform/aspeed-video.c
-index ba093096a5a7..f899ac3b4a61 100644
---- a/drivers/media/platform/aspeed-video.c
-+++ b/drivers/media/platform/aspeed-video.c
-@@ -824,8 +824,29 @@ static void aspeed_video_set_resolution(struct aspeed_video *video)
- 	struct v4l2_bt_timings *act = &video->active_timings;
- 	unsigned int size = act->width * act->height;
- 
-+	/* Set capture/compression frame sizes */
- 	aspeed_video_calc_compressed_size(video, size);
- 
-+	if (video->active_timings.width == 1680) {
-+		/*
-+		 * This is a workaround to fix a silicon bug on A1 and A2
-+		 * revisions. Since it doesn't break capturing operation of
-+		 * other revisions, use it for all revisions without checking
-+		 * the revision ID. It picked 1728 which is a very next
-+		 * 64-pixels aligned value to 1680 to minimize memory bandwidth
-+		 * and to get better access speed from video engine.
-+		 */
-+		aspeed_video_write(video, VE_CAP_WINDOW,
-+				   1728 << 16 | act->height);
-+		size += (1728 - 1680) * video->active_timings.height;
-+	} else {
-+		aspeed_video_write(video, VE_CAP_WINDOW,
-+				   act->width << 16 | act->height);
-+	}
-+	aspeed_video_write(video, VE_COMP_WINDOW,
-+			   act->width << 16 | act->height);
-+	aspeed_video_write(video, VE_SRC_SCANLINE_OFFSET, act->width * 4);
-+
- 	/* Don't use direct mode below 1024 x 768 (irqs don't fire) */
- 	if (size < DIRECT_FETCH_THRESHOLD) {
- 		aspeed_video_write(video, VE_TGS_0,
-@@ -842,13 +863,6 @@ static void aspeed_video_set_resolution(struct aspeed_video *video)
- 		aspeed_video_update(video, VE_CTRL, 0, VE_CTRL_DIRECT_FETCH);
- 	}
- 
--	/* Set capture/compression frame sizes */
--	aspeed_video_write(video, VE_CAP_WINDOW,
--			   act->width << 16 | act->height);
--	aspeed_video_write(video, VE_COMP_WINDOW,
--			   act->width << 16 | act->height);
--	aspeed_video_write(video, VE_SRC_SCANLINE_OFFSET, act->width * 4);
--
- 	size *= 4;
- 
- 	if (size != video->srcs[0].size) {
--- 
-2.21.0
-
+> ---
+>  arch/arm/boot/dts/Makefile                  |   1 +
+>  arch/arm/boot/dts/aspeed-bmc-opp-vesnin.dts | 224 ++++++++++++++++++++
+>  2 files changed, 225 insertions(+)
+>  create mode 100644 arch/arm/boot/dts/aspeed-bmc-opp-vesnin.dts
+> 
+> diff --git a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
+> index dab2914fa293..64a956372fe1 100644
+> --- a/arch/arm/boot/dts/Makefile
+> +++ b/arch/arm/boot/dts/Makefile
+> @@ -1272,6 +1272,7 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
+>  	aspeed-bmc-opp-lanyang.dtb \
+>  	aspeed-bmc-opp-palmetto.dtb \
+>  	aspeed-bmc-opp-romulus.dtb \
+> +	aspeed-bmc-opp-vesnin.dtb \
+>  	aspeed-bmc-opp-witherspoon.dtb \
+>  	aspeed-bmc-opp-zaius.dtb \
+>  	aspeed-bmc-portwell-neptune.dtb \
+> diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-vesnin.dts 
+> b/arch/arm/boot/dts/aspeed-bmc-opp-vesnin.dts
+> new file mode 100644
+> index 000000000000..0b9e29c3212e
+> --- /dev/null
+> +++ b/arch/arm/boot/dts/aspeed-bmc-opp-vesnin.dts
+> @@ -0,0 +1,224 @@
+> +// SPDX-License-Identifier: GPL-2.0+
+> +// Copyright 2019 YADRO
+> +/dts-v1/;
+> +
+> +#include "aspeed-g4.dtsi"
+> +#include <dt-bindings/gpio/aspeed-gpio.h>
+> +
+> +/ {
+> +	model = "Vesnin BMC";
+> +	compatible = "yadro,vesnin-bmc", "aspeed,ast2400";
+> +
+> +	chosen {
+> +		stdout-path = &uart5;
+> +		bootargs = "console=ttyS4,115200 earlyprintk";
+> +	};
+> +
+> +	memory {
+> +		reg = <0x40000000 0x20000000>;
+> +	};
+> +
+> +	reserved-memory {
+> +		#address-cells = <1>;
+> +		#size-cells = <1>;
+> +		ranges;
+> +
+> +		vga_memory: framebuffer at 5f000000 {
+> +			no-map;
+> +			reg = <0x5f000000 0x01000000>; /* 16MB */
+> +		};
+> +		flash_memory: region at 5c000000 {
+> +			no-map;
+> +			reg = <0x5c000000 0x02000000>; /* 32M */
+> +		};
+> +	};
+> +
+> +	leds {
+> +		compatible = "gpio-leds";
+> +
+> +		heartbeat {
+> +			gpios = <&gpio ASPEED_GPIO(R, 4) GPIO_ACTIVE_LOW>;
+> +		};
+> +		power_red {
+> +			gpios = <&gpio ASPEED_GPIO(N, 1) GPIO_ACTIVE_LOW>;
+> +		};
+> +
+> +		id_blue {
+> +			gpios = <&gpio ASPEED_GPIO(O, 0) GPIO_ACTIVE_LOW>;
+> +		};
+> +
+> +		alarm_red {
+> +			gpios = <&gpio ASPEED_GPIO(N, 6) GPIO_ACTIVE_LOW>;
+> +		};
+> +
+> +		alarm_yel {
+> +			gpios = <&gpio ASPEED_GPIO(N, 7) GPIO_ACTIVE_HIGH>;
+> +		};
+> +	};
+> +
+> +	gpio-keys {
+> +		compatible = "gpio-keys";
+> +
+> +		button_checkstop {
+> +			label = "checkstop";
+> +			linux,code = <74>;
+> +			gpios = <&gpio ASPEED_GPIO(P, 5) GPIO_ACTIVE_LOW>;
+> +		};
+> +
+> +		button_identify {
+> +			label = "identify";
+> +			linux,code = <152>;
+> +			gpios = <&gpio ASPEED_GPIO(O, 7) GPIO_ACTIVE_LOW>;
+> +		};
+> +	};
+> +};
+> +
+> +&fmc {
+> +	status = "okay";
+> +	flash at 0 {
+> +		status = "okay";
+> +		m25p,fast-read;
+> +        label = "bmc";
+> +#include "openbmc-flash-layout.dtsi"
+> +	};
+> +};
+> +
+> +&spi {
+> +	status = "okay";
+> +	pinctrl-names = "default";
+> +	pinctrl-0 = <&pinctrl_spi1debug_default>;
+> +
+> +	flash at 0 {
+> +		status = "okay";
+> +		label = "pnor";
+> +		m25p,fast-read;
+> +	};
+> +};
+> +
+> +&mac0 {
+> +	status = "okay";
+> +
+> +	use-ncsi;
+> +	no-hw-checksum;
+> +
+> +	pinctrl-names = "default";
+> +	pinctrl-0 = <&pinctrl_rmii1_default>;
+> +};
+> +
+> +
+> +&uart5 {
+> +	status = "okay";
+> +};
+> +
+> +&lpc_ctrl {
+> +	status = "okay";
+> +	memory-region = <&flash_memory>;
+> +	flash = <&spi>;
+> +};
+> +
+> +&ibt {
+> +	status = "okay";
+> +};
+> +
+> +&uart3 {
+> +	status = "okay";
+> +	pinctrl-names = "default";
+> +	pinctrl-0 = <&pinctrl_txd2_default &pinctrl_rxd2_default>;
+> +};
+> +
+> +&i2c0 {
+> +	status = "okay";
+> +
+> +	eeprom at 50 {
+> +		compatible = "atmel,24c256";
+> +		reg = <0x50>;
+> +		pagesize = <64>;
+> +	};
+> +};
+> +
+> +&i2c1 {
+> +	status = "okay";
+> +
+> +	tmp75 at 49 {
+> +		compatible = "ti,tmp75";
+> +		reg = <0x49>;
+> +	};
+> +};
+> +
+> +&i2c2 {
+> +	status = "okay";
+> +};
+> +
+> +&i2c3 {
+> +	status = "okay";
+> +};
+> +
+> +&i2c4 {
+> +	status = "okay";
+> +
+> +	occ-hwmon at 50 {
+> +		compatible = "ibm,p8-occ-hwmon";
+> +		reg = <0x50>;
+> +	};
+> +};
+> +
+> +&i2c5 {
+> +	status = "okay";
+> +
+> +	occ-hwmon at 51 {
+> +		compatible = "ibm,p8-occ-hwmon";
+> +		reg = <0x51>;
+> +	};
+> +};
+> +
+> +&i2c6 {
+> +	status = "okay";
+> +
+> +	w83795g at 2f {
+> +		compatible = "nuvoton,w83795g";
+> +		reg = <0x2f>;
+> +	};
+> +};
+> +
+> +&i2c7 {
+> +	status = "okay";
+> +
+> +	occ-hwmon at 56 {
+> +		compatible = "ibm,p8-occ-hwmon";
+> +		reg = <0x56>;
+> +	};
+> +};
+> +
+> +&i2c9 {
+> +	status = "okay";
+> +};
+> +
+> +&i2c10 {
+> +	status = "okay";
+> +};
+> +
+> +&i2c11 {
+> +	status = "okay";
+> +
+> +	occ-hwmon at 57 {
+> +		compatible = "ibm,p8-occ-hwmon";
+> +		reg = <0x57>;
+> +	};
+> +};
+> +
+> +&i2c12 {
+> +	status = "okay";
+> +
+> +	rtc at 68 {
+> +		compatible = "maxim,ds3231";
+> +		reg = <0x68>;
+> +	};
+> +};
+> +
+> +&i2c13 {
+> +	status = "okay";
+> +};
+> +
+> +&vuart {
+> +	status = "okay";
+> +};
+> -- 
+> 2.20.1
+> 
+>
