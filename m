@@ -1,36 +1,135 @@
-From: Shawn Guo <shawnguo@kernel.org>
-Date: Thu, 6 Jun 2019 10:10:32 +0800
-Subject: [PATCH v2] ARM: configs: Remove useless UEVENT_HELPER_PATH
-In-Reply-To: <1559636093-26005-1-git-send-email-krzk@kernel.org>
-References: <1559636093-26005-1-git-send-email-krzk@kernel.org>
-Message-ID: <20190606021027.GV29853@dragon>
+From: Vijay Khemka <vijaykhemka@fb.com>
+Date: Thu, 6 Jun 2019 18:49:09 +0000
+Subject: [PATCH v2 2/2] Docs: hwmon: pmbus: Add PXE1610 driver
+In-Reply-To: <20190605204811.GA32379@roeck-us.net>
+References: <20190530231159.222188-1-vijaykhemka@fb.com>
+ <20190530231159.222188-2-vijaykhemka@fb.com>
+ <20190605204811.GA32379@roeck-us.net>
+Message-ID: <27BD2580-6ADD-4389-A891-AE4AE9010E62@fb.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Jun 04, 2019 at 10:14:53AM +0200, Krzysztof Kozlowski wrote:
-> Remove the CONFIG_UEVENT_HELPER_PATH because:
-> 1. It is disabled since commit 1be01d4a5714 ("driver: base: Disable
->    CONFIG_UEVENT_HELPER by default") as its dependency (UEVENT_HELPER) was
->    made default to 'n',
-> 2. It is not recommended (help message: "This should not be used today
->    [...] creates a high system load") and was kept only for ancient
->    userland,
-> 3. Certain userland specifically requests it to be disabled (systemd
->    README: "Legacy hotplug slows down the system and confuses udev").
-> 
-> Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
-> Acked-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> 
-> ---
-> 
-> Changes since v2:
-> 1. Remove unrelated files.
-> 2. Add Geert's ack.
-> ---
-...
->  arch/arm/configs/imx_v4_v5_defconfig      | 1 -
 
-Acked-by: Shawn Guo <shawnguo@kernel.org>
+
+?On 6/5/19, 1:48 PM, "Guenter Roeck" <groeck7 at gmail.com on behalf of linux@roeck-us.net> wrote:
+
+    On Thu, May 30, 2019 at 04:11:57PM -0700, Vijay Khemka wrote:
+    > Added support for Infenion PXE1610 driver
+    > 
+    Applied, after fixing
+    	s/Infenion/Infineon/
+    	s/Infinion/Infineon/
+Thanks
+    
+    Guenter
+    
+    > Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
+    > ---
+    > Changes in v2:
+    > incorporated all the feedback from Guenter Roeck <linux@roeck-us.net>
+    > 
+    >  Documentation/hwmon/pxe1610 | 90 +++++++++++++++++++++++++++++++++++++
+    >  1 file changed, 90 insertions(+)
+    >  create mode 100644 Documentation/hwmon/pxe1610
+    > 
+    > diff --git a/Documentation/hwmon/pxe1610 b/Documentation/hwmon/pxe1610
+    > new file mode 100644
+    > index 000000000000..24825db8736f
+    > --- /dev/null
+    > +++ b/Documentation/hwmon/pxe1610
+    > @@ -0,0 +1,90 @@
+    > +Kernel driver pxe1610
+    > +=====================
+    > +
+    > +Supported chips:
+    > +  * Infinion PXE1610
+    > +    Prefix: 'pxe1610'
+    > +    Addresses scanned: -
+    > +    Datasheet: Datasheet is not publicly available.
+    > +
+    > +  * Infinion PXE1110
+    > +    Prefix: 'pxe1110'
+    > +    Addresses scanned: -
+    > +    Datasheet: Datasheet is not publicly available.
+    > +
+    > +  * Infinion PXM1310
+    > +    Prefix: 'pxm1310'
+    > +    Addresses scanned: -
+    > +    Datasheet: Datasheet is not publicly available.
+    > +
+    > +Author: Vijay Khemka <vijaykhemka@fb.com>
+    > +
+    > +
+    > +Description
+    > +-----------
+    > +
+    > +PXE1610/PXE1110 are Multi-rail/Multiphase Digital Controllers
+    > +and compliant to
+    > +	-- Intel VR13 DC-DC converter specifications.
+    > +	-- Intel SVID protocol.
+    > +Used for Vcore power regulation for Intel VR13 based microprocessors
+    > +	-- Servers, Workstations, and High-end desktops
+    > +
+    > +PXM1310 is a Multi-rail Controllers and it is compliant to
+    > +	-- Intel VR13 DC-DC converter specifications.
+    > +	-- Intel SVID protocol.
+    > +Used for DDR3/DDR4 Memory power regulation for Intel VR13 and
+    > +IMVP8 based systems
+    > +
+    > +
+    > +Usage Notes
+    > +-----------
+    > +
+    > +This driver does not probe for PMBus devices. You will have
+    > +to instantiate devices explicitly.
+    > +
+    > +Example: the following commands will load the driver for an PXE1610
+    > +at address 0x70 on I2C bus #4:
+    > +
+    > +# modprobe pxe1610
+    > +# echo pxe1610 0x70 > /sys/bus/i2c/devices/i2c-4/new_device
+    > +
+    > +It can also be instantiated by declaring in device tree
+    > +
+    > +
+    > +Sysfs attributes
+    > +----------------
+    > +
+    > +curr1_label		"iin"
+    > +curr1_input		Measured input current
+    > +curr1_alarm		Current high alarm
+    > +
+    > +curr[2-4]_label		"iout[1-3]"
+    > +curr[2-4]_input		Measured output current
+    > +curr[2-4]_crit		Critical maximum current
+    > +curr[2-4]_crit_alarm	Current critical high alarm
+    > +
+    > +in1_label		"vin"
+    > +in1_input		Measured input voltage
+    > +in1_crit		Critical maximum input voltage
+    > +in1_crit_alarm		Input voltage critical high alarm
+    > +
+    > +in[2-4]_label		"vout[1-3]"
+    > +in[2-4]_input		Measured output voltage
+    > +in[2-4]_lcrit		Critical minimum output voltage
+    > +in[2-4]_lcrit_alarm	Output voltage critical low alarm
+    > +in[2-4]_crit		Critical maximum output voltage
+    > +in[2-4]_crit_alarm	Output voltage critical high alarm
+    > +
+    > +power1_label		"pin"
+    > +power1_input		Measured input power
+    > +power1_alarm		Input power high alarm
+    > +
+    > +power[2-4]_label	"pout[1-3]"
+    > +power[2-4]_input	Measured output power
+    > +
+    > +temp[1-3]_input		Measured temperature
+    > +temp[1-3]_crit		Critical high temperature
+    > +temp[1-3]_crit_alarm	Chip temperature critical high alarm
+    > +temp[1-3]_max		Maximum temperature
+    > +temp[1-3]_max_alarm	Chip temperature high alarm
+    
+
