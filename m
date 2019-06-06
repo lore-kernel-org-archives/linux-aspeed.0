@@ -1,127 +1,90 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Date: Wed, 5 Jun 2019 13:48:11 -0700
-Subject: [PATCH v2 2/2] Docs: hwmon: pmbus: Add PXE1610 driver
-In-Reply-To: <20190530231159.222188-2-vijaykhemka@fb.com>
-References: <20190530231159.222188-1-vijaykhemka@fb.com>
- <20190530231159.222188-2-vijaykhemka@fb.com>
-Message-ID: <20190605204811.GA32379@roeck-us.net>
+From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+Date: Wed, 5 Jun 2019 17:53:29 -0700
+Subject: [PATCH v3 10/10] media: aspeed: add a workaround to fix a silicon
+ bug
+In-Reply-To: <20190531221548.14757-11-jae.hyun.yoo@linux.intel.com>
+References: <20190531221548.14757-1-jae.hyun.yoo@linux.intel.com>
+ <20190531221548.14757-11-jae.hyun.yoo@linux.intel.com>
+Message-ID: <38a8ca27-9991-fe8c-4d89-abdaacd4130b@linux.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, May 30, 2019 at 04:11:57PM -0700, Vijay Khemka wrote:
-> Added support for Infenion PXE1610 driver
+Hi Eddie,
+
+All patches in this series were queued to linux/media tree except this
+one. Can you please review this patch?
+
+Thanks,
+Jae
+
+On 5/31/2019 3:15 PM, Jae Hyun Yoo wrote:
+> AST2500 silicon revision A1 and A2 have a silicon bug which causes
+> extremly long capturing time on specific resolutions (1680 width).
+> To fix the bug, this commit adjusts the capturing window register
+> setting to 1728 if detected width is 1680. The compression window
+> register setting will be kept as the original width so output
+> result will be the same.
 > 
-Applied, after fixing
-	s/Infenion/Infineon/
-	s/Infinion/Infineon/
-
-Guenter
-
-> Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
+> Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
 > ---
-> Changes in v2:
-> incorporated all the feedback from Guenter Roeck <linux@roeck-us.net>
+> v2 -> v3:
+>   Added more detail comments why the value 1728 is picked.
 > 
->  Documentation/hwmon/pxe1610 | 90 +++++++++++++++++++++++++++++++++++++
->  1 file changed, 90 insertions(+)
->  create mode 100644 Documentation/hwmon/pxe1610
+> v1 -> v2:
+>   New.
 > 
-> diff --git a/Documentation/hwmon/pxe1610 b/Documentation/hwmon/pxe1610
-> new file mode 100644
-> index 000000000000..24825db8736f
-> --- /dev/null
-> +++ b/Documentation/hwmon/pxe1610
-> @@ -0,0 +1,90 @@
-> +Kernel driver pxe1610
-> +=====================
+>   drivers/media/platform/aspeed-video.c | 28 ++++++++++++++++++++-------
+>   1 file changed, 21 insertions(+), 7 deletions(-)
+> 
+> diff --git a/drivers/media/platform/aspeed-video.c b/drivers/media/platform/aspeed-video.c
+> index ba093096a5a7..f899ac3b4a61 100644
+> --- a/drivers/media/platform/aspeed-video.c
+> +++ b/drivers/media/platform/aspeed-video.c
+> @@ -824,8 +824,29 @@ static void aspeed_video_set_resolution(struct aspeed_video *video)
+>   	struct v4l2_bt_timings *act = &video->active_timings;
+>   	unsigned int size = act->width * act->height;
+>   
+> +	/* Set capture/compression frame sizes */
+>   	aspeed_video_calc_compressed_size(video, size);
+>   
+> +	if (video->active_timings.width == 1680) {
+> +		/*
+> +		 * This is a workaround to fix a silicon bug on A1 and A2
+> +		 * revisions. Since it doesn't break capturing operation of
+> +		 * other revisions, use it for all revisions without checking
+> +		 * the revision ID. It picked 1728 which is a very next
+> +		 * 64-pixels aligned value to 1680 to minimize memory bandwidth
+> +		 * and to get better access speed from video engine.
+> +		 */
+> +		aspeed_video_write(video, VE_CAP_WINDOW,
+> +				   1728 << 16 | act->height);
+> +		size += (1728 - 1680) * video->active_timings.height;
+> +	} else {
+> +		aspeed_video_write(video, VE_CAP_WINDOW,
+> +				   act->width << 16 | act->height);
+> +	}
+> +	aspeed_video_write(video, VE_COMP_WINDOW,
+> +			   act->width << 16 | act->height);
+> +	aspeed_video_write(video, VE_SRC_SCANLINE_OFFSET, act->width * 4);
 > +
-> +Supported chips:
-> +  * Infinion PXE1610
-> +    Prefix: 'pxe1610'
-> +    Addresses scanned: -
-> +    Datasheet: Datasheet is not publicly available.
-> +
-> +  * Infinion PXE1110
-> +    Prefix: 'pxe1110'
-> +    Addresses scanned: -
-> +    Datasheet: Datasheet is not publicly available.
-> +
-> +  * Infinion PXM1310
-> +    Prefix: 'pxm1310'
-> +    Addresses scanned: -
-> +    Datasheet: Datasheet is not publicly available.
-> +
-> +Author: Vijay Khemka <vijaykhemka@fb.com>
-> +
-> +
-> +Description
-> +-----------
-> +
-> +PXE1610/PXE1110 are Multi-rail/Multiphase Digital Controllers
-> +and compliant to
-> +	-- Intel VR13 DC-DC converter specifications.
-> +	-- Intel SVID protocol.
-> +Used for Vcore power regulation for Intel VR13 based microprocessors
-> +	-- Servers, Workstations, and High-end desktops
-> +
-> +PXM1310 is a Multi-rail Controllers and it is compliant to
-> +	-- Intel VR13 DC-DC converter specifications.
-> +	-- Intel SVID protocol.
-> +Used for DDR3/DDR4 Memory power regulation for Intel VR13 and
-> +IMVP8 based systems
-> +
-> +
-> +Usage Notes
-> +-----------
-> +
-> +This driver does not probe for PMBus devices. You will have
-> +to instantiate devices explicitly.
-> +
-> +Example: the following commands will load the driver for an PXE1610
-> +at address 0x70 on I2C bus #4:
-> +
-> +# modprobe pxe1610
-> +# echo pxe1610 0x70 > /sys/bus/i2c/devices/i2c-4/new_device
-> +
-> +It can also be instantiated by declaring in device tree
-> +
-> +
-> +Sysfs attributes
-> +----------------
-> +
-> +curr1_label		"iin"
-> +curr1_input		Measured input current
-> +curr1_alarm		Current high alarm
-> +
-> +curr[2-4]_label		"iout[1-3]"
-> +curr[2-4]_input		Measured output current
-> +curr[2-4]_crit		Critical maximum current
-> +curr[2-4]_crit_alarm	Current critical high alarm
-> +
-> +in1_label		"vin"
-> +in1_input		Measured input voltage
-> +in1_crit		Critical maximum input voltage
-> +in1_crit_alarm		Input voltage critical high alarm
-> +
-> +in[2-4]_label		"vout[1-3]"
-> +in[2-4]_input		Measured output voltage
-> +in[2-4]_lcrit		Critical minimum output voltage
-> +in[2-4]_lcrit_alarm	Output voltage critical low alarm
-> +in[2-4]_crit		Critical maximum output voltage
-> +in[2-4]_crit_alarm	Output voltage critical high alarm
-> +
-> +power1_label		"pin"
-> +power1_input		Measured input power
-> +power1_alarm		Input power high alarm
-> +
-> +power[2-4]_label	"pout[1-3]"
-> +power[2-4]_input	Measured output power
-> +
-> +temp[1-3]_input		Measured temperature
-> +temp[1-3]_crit		Critical high temperature
-> +temp[1-3]_crit_alarm	Chip temperature critical high alarm
-> +temp[1-3]_max		Maximum temperature
-> +temp[1-3]_max_alarm	Chip temperature high alarm
+>   	/* Don't use direct mode below 1024 x 768 (irqs don't fire) */
+>   	if (size < DIRECT_FETCH_THRESHOLD) {
+>   		aspeed_video_write(video, VE_TGS_0,
+> @@ -842,13 +863,6 @@ static void aspeed_video_set_resolution(struct aspeed_video *video)
+>   		aspeed_video_update(video, VE_CTRL, 0, VE_CTRL_DIRECT_FETCH);
+>   	}
+>   
+> -	/* Set capture/compression frame sizes */
+> -	aspeed_video_write(video, VE_CAP_WINDOW,
+> -			   act->width << 16 | act->height);
+> -	aspeed_video_write(video, VE_COMP_WINDOW,
+> -			   act->width << 16 | act->height);
+> -	aspeed_video_write(video, VE_SRC_SCANLINE_OFFSET, act->width * 4);
+> -
+>   	size *= 4;
+>   
+>   	if (size != video->srcs[0].size) {
+> 
