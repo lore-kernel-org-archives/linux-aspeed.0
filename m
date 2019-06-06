@@ -1,99 +1,64 @@
-From: Hans Verkuil <hverkuil@xs4all.nl>
-Date: Wed, 12 Jun 2019 09:17:44 +0200
-Subject: [PATCH v3 10/10] media: aspeed: add a workaround to fix a silicon
- bug
-In-Reply-To: <38a8ca27-9991-fe8c-4d89-abdaacd4130b@linux.intel.com>
-References: <20190531221548.14757-1-jae.hyun.yoo@linux.intel.com>
- <20190531221548.14757-11-jae.hyun.yoo@linux.intel.com>
- <38a8ca27-9991-fe8c-4d89-abdaacd4130b@linux.intel.com>
-Message-ID: <490d6111-32c1-f8f4-dc3c-39314446709e@xs4all.nl>
+From: Nicolas.Ferre@microchip.com <Nicolas.Ferre@microchip.com>
+Date: Thu, 6 Jun 2019 09:16:06 +0000
+Subject: [PATCH v2] ARM: configs: Remove useless UEVENT_HELPER_PATH
+In-Reply-To: <1559636093-26005-1-git-send-email-krzk@kernel.org>
+References: <1559636093-26005-1-git-send-email-krzk@kernel.org>
+Message-ID: <58ffd0ff-42e8-1011-0329-65957717de72@microchip.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Eddie: ping!
-
-Regards,
-
-	Hans
-
-On 6/6/19 2:53 AM, Jae Hyun Yoo wrote:
-> Hi Eddie,
+On 04/06/2019 at 10:14, Krzysztof Kozlowski wrote:
+> Remove the CONFIG_UEVENT_HELPER_PATH because:
+> 1. It is disabled since commit 1be01d4a5714 ("driver: base: Disable
+>     CONFIG_UEVENT_HELPER by default") as its dependency (UEVENT_HELPER) was
+>     made default to 'n',
+> 2. It is not recommended (help message: "This should not be used today
+>     [...] creates a high system load") and was kept only for ancient
+>     userland,
+> 3. Certain userland specifically requests it to be disabled (systemd
+>     README: "Legacy hotplug slows down the system and confuses udev").
 > 
-> All patches in this series were queued to linux/media tree except this
-> one. Can you please review this patch?
+> Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
+> Acked-by: Geert Uytterhoeven <geert+renesas@glider.be>
 > 
-> Thanks,
-> Jae
+> ---
 > 
-> On 5/31/2019 3:15 PM, Jae Hyun Yoo wrote:
->> AST2500 silicon revision A1 and A2 have a silicon bug which causes
->> extremly long capturing time on specific resolutions (1680 width).
->> To fix the bug, this commit adjusts the capturing window register
->> setting to 1728 if detected width is 1680. The compression window
->> register setting will be kept as the original width so output
->> result will be the same.
->>
->> Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
->> ---
->> v2 -> v3:
->>   Added more detail comments why the value 1728 is picked.
->>
->> v1 -> v2:
->>   New.
->>
->>   drivers/media/platform/aspeed-video.c | 28 ++++++++++++++++++++-------
->>   1 file changed, 21 insertions(+), 7 deletions(-)
->>
->> diff --git a/drivers/media/platform/aspeed-video.c b/drivers/media/platform/aspeed-video.c
->> index ba093096a5a7..f899ac3b4a61 100644
->> --- a/drivers/media/platform/aspeed-video.c
->> +++ b/drivers/media/platform/aspeed-video.c
->> @@ -824,8 +824,29 @@ static void aspeed_video_set_resolution(struct aspeed_video *video)
->>   	struct v4l2_bt_timings *act = &video->active_timings;
->>   	unsigned int size = act->width * act->height;
->>   
->> +	/* Set capture/compression frame sizes */
->>   	aspeed_video_calc_compressed_size(video, size);
->>   
->> +	if (video->active_timings.width == 1680) {
->> +		/*
->> +		 * This is a workaround to fix a silicon bug on A1 and A2
->> +		 * revisions. Since it doesn't break capturing operation of
->> +		 * other revisions, use it for all revisions without checking
->> +		 * the revision ID. It picked 1728 which is a very next
->> +		 * 64-pixels aligned value to 1680 to minimize memory bandwidth
->> +		 * and to get better access speed from video engine.
->> +		 */
->> +		aspeed_video_write(video, VE_CAP_WINDOW,
->> +				   1728 << 16 | act->height);
->> +		size += (1728 - 1680) * video->active_timings.height;
->> +	} else {
->> +		aspeed_video_write(video, VE_CAP_WINDOW,
->> +				   act->width << 16 | act->height);
->> +	}
->> +	aspeed_video_write(video, VE_COMP_WINDOW,
->> +			   act->width << 16 | act->height);
->> +	aspeed_video_write(video, VE_SRC_SCANLINE_OFFSET, act->width * 4);
->> +
->>   	/* Don't use direct mode below 1024 x 768 (irqs don't fire) */
->>   	if (size < DIRECT_FETCH_THRESHOLD) {
->>   		aspeed_video_write(video, VE_TGS_0,
->> @@ -842,13 +863,6 @@ static void aspeed_video_set_resolution(struct aspeed_video *video)
->>   		aspeed_video_update(video, VE_CTRL, 0, VE_CTRL_DIRECT_FETCH);
->>   	}
->>   
->> -	/* Set capture/compression frame sizes */
->> -	aspeed_video_write(video, VE_CAP_WINDOW,
->> -			   act->width << 16 | act->height);
->> -	aspeed_video_write(video, VE_COMP_WINDOW,
->> -			   act->width << 16 | act->height);
->> -	aspeed_video_write(video, VE_SRC_SCANLINE_OFFSET, act->width * 4);
->> -
->>   	size *= 4;
->>   
->>   	if (size != video->srcs[0].size) {
->>
+> Changes since v2:
+> 1. Remove unrelated files.
+> 2. Add Geert's ack.
+> ---
+>   arch/arm/configs/acs5k_defconfig          | 1 -
+>   arch/arm/configs/acs5k_tiny_defconfig     | 1 -
+>   arch/arm/configs/am200epdkit_defconfig    | 1 -
+>   arch/arm/configs/aspeed_g4_defconfig      | 1 -
+>   arch/arm/configs/aspeed_g5_defconfig      | 1 -
+>   arch/arm/configs/at91_dt_defconfig        | 1 -
 
+[..]
+
+>   arch/arm/configs/sama5_defconfig          | 1 -
+
+for at91 (at91_dt_defconfig & sama5_defconfig):
+Acked-by: Nicolas Ferre <nicolas.ferre@microchip.com>
+
+>   arch/arm/configs/socfpga_defconfig        | 1 -
+>   arch/arm/configs/spear13xx_defconfig      | 1 -
+>   arch/arm/configs/spear3xx_defconfig       | 1 -
+>   arch/arm/configs/spear6xx_defconfig       | 1 -
+>   arch/arm/configs/spitz_defconfig          | 1 -
+>   arch/arm/configs/tango4_defconfig         | 1 -
+>   arch/arm/configs/tct_hammer_defconfig     | 1 -
+>   arch/arm/configs/u300_defconfig           | 1 -
+>   arch/arm/configs/u8500_defconfig          | 1 -
+>   arch/arm/configs/vexpress_defconfig       | 1 -
+>   arch/arm/configs/viper_defconfig          | 1 -
+>   arch/arm/configs/xcep_defconfig           | 1 -
+>   arch/arm/configs/zeus_defconfig           | 1 -
+>   arch/arm/configs/zx_defconfig             | 1 -
+>   69 files changed, 69 deletions(-)
+[..]
+-- 
+Nicolas Ferre
