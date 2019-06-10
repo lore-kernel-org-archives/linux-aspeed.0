@@ -1,27 +1,27 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Date: Sat, 8 Jun 2019 00:25:16 +0200
-Subject: [PATCH 1/3 linux dev-5.1 arm/soc v2] ARM: dts: aspeed: Add SGPM
- pinmux
-In-Reply-To: <1559684524-15583-1-git-send-email-hongweiz@ami.com>
-References: <1559684524-15583-1-git-send-email-hongweiz@ami.com>
-Message-ID: <CACRpkdYW3rezzJ3XAuuSNNsRiDh9nYNL8NNFjaZ=_NeXrmZbqA@mail.gmail.com>
+From: Greg KH <gregkh@linuxfoundation.org>
+Date: Mon, 10 Jun 2019 18:49:30 +0200
+Subject: [patch 1/5] AST2500 DMA UART driver
+In-Reply-To: <1559737395-28542-2-git-send-email-open.sudheer@gmail.com>
+References: <1559737395-28542-1-git-send-email-open.sudheer@gmail.com>
+ <1559737395-28542-2-git-send-email-open.sudheer@gmail.com>
+Message-ID: <20190610164930.GA32085@kroah.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Jun 4, 2019 at 11:42 PM Hongwei Zhang <hongweiz@ami.com> wrote:
+On Wed, Jun 05, 2019 at 05:53:11PM +0530, sudheer.v wrote:
+> From: sudheer Kumar veliseti <sudheer.open@gmail.com>
+> 
+> Signed-off-by: sudheer veliseti <sudheer.open@gmail.com>
+> ---
 
-> Add SGPM pinmux to ast2500-pinctrl function and group, to prepare for
-> supporting SGPIO in AST2500 SoC.
->
-> Signed-off-by: Hongwei Zhang <hongweiz@ami.com>
+I can not take a patch without any changelog text at all, especially for
+one that is 1928 lines long :(
 
-Acked-by: Linus Walleij <linus.walleij@linaro.org>
+Please provide a proper changelog and I will be glad to review it.
 
-Please funnel this part of the patch through the ARM SoC
-tree. I guess Joel will queue this?
+thanks,
 
-Yours,
-Linus Walleij
+greg k-h
