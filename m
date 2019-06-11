@@ -1,40 +1,38 @@
-From: Greg KH <gregkh@linuxfoundation.org>
-Date: Mon, 10 Jun 2019 18:50:40 +0200
-Subject: [patch 1/5] AST2500 DMA UART driver
-In-Reply-To: <1559737395-28542-2-git-send-email-open.sudheer@gmail.com>
-References: <1559737395-28542-1-git-send-email-open.sudheer@gmail.com>
- <1559737395-28542-2-git-send-email-open.sudheer@gmail.com>
-Message-ID: <20190610165040.GB32085@kroah.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Tue, 11 Jun 2019 15:11:48 +0200
+Subject: [PATCH v1 2/2] soc: nuvoton: add NPCM LPC BPC driver
+In-Reply-To: <20190610133245.306812-3-tmaimon77@gmail.com>
+References: <20190610133245.306812-1-tmaimon77@gmail.com>
+ <20190610133245.306812-3-tmaimon77@gmail.com>
+Message-ID: <CAK8P3a0s1fdt2yHVjOXffeKPKkwUyJ7DKCZHHMKjx+3j300ZAQ@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Jun 05, 2019 at 05:53:11PM +0530, sudheer.v wrote:
-> +
-> +#define CONFIG_UART_DMA_DEBUG
-> +
-> +#ifdef CONFIG_UART_DMA_DEBUG
-> +#define UART_DBG(fmt, args...) pr_debug("%s() " fmt, __func__, ## args)
-> +#else
-> +#define UART_DBG(fmt, args...)
-> +#endif
-> +
-> +#define  CONFIG_UART_TX_DMA_DEBUG 1
-> +
-> +#ifdef CONFIG_UART_TX_DMA_DEBUG
-> +#define UART_TX_DBG(fmt, args...) pr_debug("%s()"fmt, __func__, ## args)
-> +#else
-> +#define UART_TX_DBG(fmt, args...)
-> +#endif
+On Mon, Jun 10, 2019 at 4:19 PM Tomer Maimon <tmaimon77@gmail.com> wrote:
+>
+> Add Nuvoton BMC NPCM BIOS post code (BPC) driver.
+>
+> The NPCM BPC monitoring two I/O address written by
+> the host on the Low Pin Count (LPC) bus, the capure
+> data stored in 128-word FIFO.
+>
+> Signed-off-by: Tomer Maimon <tmaimon77@gmail.com>
 
-Why have you left debugging on here?
+We've run into this situation before, but don't have a good solution yet:
 
-Why does your tiny driver have custom debug macros?  Please always use
-the in-kernel standard ones so you can dynamically enable/disable them
-as needed without having to rebuild the code.
+The driver seems useful and well implemented, but I keep having a bad
+feeling about adding a chardev driver into drivers/soc for something that
+is clearly specific to a particular implementation on the hardware side
+but generic on the user interface. The same user interface might be
+used on an Aspeed BMC or any other one, so please coordinate at
+least between Novoton and Aspeed developers on creating a common
+user interface, and review each other's patches.
 
-I stopped reading here, sorry.
+Maybe we can introduce a drivers/bmc/ (or even drivers/openbmc)
+that collects all those user interfaces with a thin abstraction layer
+and one or two hardware specific back-ends?
 
-greg k-h
+        Arnd
