@@ -1,38 +1,38 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Tue, 11 Jun 2019 15:11:48 +0200
-Subject: [PATCH v1 2/2] soc: nuvoton: add NPCM LPC BPC driver
-In-Reply-To: <20190610133245.306812-3-tmaimon77@gmail.com>
-References: <20190610133245.306812-1-tmaimon77@gmail.com>
- <20190610133245.306812-3-tmaimon77@gmail.com>
-Message-ID: <CAK8P3a0s1fdt2yHVjOXffeKPKkwUyJ7DKCZHHMKjx+3j300ZAQ@mail.gmail.com>
+From: Borislav Petkov <bp@alien8.de>
+Date: Tue, 11 Jun 2019 15:12:29 +0200
+Subject: [PATCH -next] EDAC: aspeed: Remove set but not used variable 'np'
+In-Reply-To: <960D5667-41E7-47F3-9C0A-726CA919B82D@cisco.com>
+References: <20190525144153.2028-1-yuehaibing@huawei.com>
+ <04f103fb-54b1-4911-8164-44b20bfd1e72@www.fastmail.com>
+ <960D5667-41E7-47F3-9C0A-726CA919B82D@cisco.com>
+Message-ID: <20190611131229.GF31772@zn.tnic>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Jun 10, 2019 at 4:19 PM Tomer Maimon <tmaimon77@gmail.com> wrote:
->
-> Add Nuvoton BMC NPCM BIOS post code (BPC) driver.
->
-> The NPCM BPC monitoring two I/O address written by
-> the host on the Low Pin Count (LPC) bus, the capure
-> data stored in 128-word FIFO.
->
-> Signed-off-by: Tomer Maimon <tmaimon77@gmail.com>
+On Wed, May 29, 2019 at 03:10:54AM +0000, Stefan Schaeckeler (sschaeck) wrote:
+> On  Tuesday, May 28, 2019 at 6:27 PM, Andrew Jeffery wrote:
+> > On Sun, 26 May 2019, at 00:12, YueHaibing wrote:
+> > > Fixes gcc '-Wunused-but-set-variable' warning:
+> > >
+> > > drivers/edac/aspeed_edac.c: In function aspeed_probe:
+> > > drivers/edac/aspeed_edac.c:284:22: warning: variable np set but not
+> > > used [-Wunused-but-set-variable]
+> > >
+> > > It is never used and can be removed.
+> > >
+> > > Signed-off-by: YueHaibing <yuehaibing@huawei.com>
+> >
+> > Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
+> 
+> Reviewed-by: Stefan Schaeckeler <sschaeck@cisco.com>
 
-We've run into this situation before, but don't have a good solution yet:
+Applied, thanks.
 
-The driver seems useful and well implemented, but I keep having a bad
-feeling about adding a chardev driver into drivers/soc for something that
-is clearly specific to a particular implementation on the hardware side
-but generic on the user interface. The same user interface might be
-used on an Aspeed BMC or any other one, so please coordinate at
-least between Novoton and Aspeed developers on creating a common
-user interface, and review each other's patches.
+-- 
+Regards/Gruss,
+    Boris.
 
-Maybe we can introduce a drivers/bmc/ (or even drivers/openbmc)
-that collects all those user interfaces with a thin abstraction layer
-and one or two hardware specific back-ends?
-
-        Arnd
+Good mailing practices for 400: avoid top-posting and trim the reply.
