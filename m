@@ -1,54 +1,47 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Thu, 13 Jun 2019 13:49:42 +0200
-Subject: [PATCH v1 2/2] soc: nuvoton: add NPCM LPC BPC driver
-In-Reply-To: <CAP6Zq1jZEUzbB-ZidF2SD24k8iC_uBkXZ9WbtPpOYNCRjRTz3g@mail.gmail.com>
-References: <20190610133245.306812-1-tmaimon77@gmail.com>
- <20190610133245.306812-3-tmaimon77@gmail.com>
- <CAK8P3a0s1fdt2yHVjOXffeKPKkwUyJ7DKCZHHMKjx+3j300ZAQ@mail.gmail.com>
- <CAP6Zq1jZEUzbB-ZidF2SD24k8iC_uBkXZ9WbtPpOYNCRjRTz3g@mail.gmail.com>
-Message-ID: <CAK8P3a1YvBoehevVuRHMD71pkA1iDJLrfhvdhup2p+f-33HtzA@mail.gmail.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Date: Thu, 13 Jun 2019 16:53:53 +0200
+Subject: [PATCH v3] ARM: configs: Remove useless UEVENT_HELPER_PATH
+In-Reply-To: <20190604185229.7393-1-krzk@kernel.org>
+References: <20190604185229.7393-1-krzk@kernel.org>
+Message-ID: <CAJKOXPd4LVFGgonbsuxii-5Fu5wWhxU9yotLHw+OXsPcxYw_3g@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Jun 13, 2019 at 11:18 AM Tomer Maimon <tmaimon77@gmail.com> wrote:
+On Tue, 4 Jun 2019 at 20:52, Krzysztof Kozlowski <krzk@kernel.org> wrote:
 >
+> Remove the CONFIG_UEVENT_HELPER_PATH because:
+> 1. It is disabled since commit 1be01d4a5714 ("driver: base: Disable
+>    CONFIG_UEVENT_HELPER by default") as its dependency (UEVENT_HELPER) was
+>    made default to 'n',
+> 2. It is not recommended (help message: "This should not be used today
+>    [...] creates a high system load") and was kept only for ancient
+>    userland,
+> 3. Certain userland specifically requests it to be disabled (systemd
+>    README: "Legacy hotplug slows down the system and confuses udev").
 >
-> Probably the only vendors that will use the snoop will be Nuvoton and Aspeed.
-> is it worth to create new snoop common user interface for it,
-> if we will develop a new snoop user interface who will be the maintainer?
-
-One or more of you will have to volunteer to maintain the new subsystem.
-
-There are lots of ways this can be structured, and once you have
-a maintainer (team), they can decide how to do it, but I'm available
-to come up with ideas here.
-
-Generally speaking, you don't need a ton of abstraction. The
-drivers/watchdog subsystem could serve as a template there.
-This has both models, the old way in which each HW specific
-driver uses its own chardev, and the new model in which the
-common code sits in a library module, and individual drivers
-register to it.
-
-I think the amount of code for two drivers is roughly the same
-in either model, but the shared user interface implementation
-makes it easier to ensure that the interfaces are in fact
-compatible.
-
-The other thing your own framework can do is to provide some
-consistency between BMC specific drivers for different
-functionality.
-
->> Maybe we can introduce a drivers/bmc/ (or even drivers/openbmc)
->>
->> that collects all those user interfaces with a thin abstraction layer
->> and one or two hardware specific back-ends?
+> Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
+> Acked-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> Acked-by: Alexandre Belloni <alexandre.belloni@bootlin.com>
+> For vexpress:
+> Acked-by: Sudeep Holla <sudeep.holla@arm.com>
 >
-> Sounds good, Maybe we can move the KCS BMC from driver/char/ipmi to the drivers/bmc/?
+> ---
+>
+> Changes since v2:
+> 1. Remove unrelated files.
+> 2. Add Geert's ack.
+>
+> Changes sice v3:
+> 1. Change also mini2440_defconfig.
+> 2. Add more acks.
 
-Good idea. Yes, please.
+Hi Arnd and Olof,
 
-       Arnd
+Do you want to apply it directly or maybe I can send it along with
+other my defconfig pull request?
+
+Best regards,
+Krzysztof
