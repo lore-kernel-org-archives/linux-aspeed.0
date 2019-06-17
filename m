@@ -1,38 +1,23 @@
-From: Olof Johansson <olof@lixom.net>
-Date: Wed, 19 Jun 2019 07:09:24 -0700
-Subject: [PATCH v2] ARM: configs: Remove useless UEVENT_HELPER_PATH
-In-Reply-To: <1559636093-26005-1-git-send-email-krzk@kernel.org>
-References: <1559636093-26005-1-git-send-email-krzk@kernel.org>
-Message-ID: <20190619140924.cl33iuqndoigldgi@localhost>
+From: Emil Velikov <emil.l.velikov@gmail.com>
+Date: Mon, 17 Jun 2019 18:56:06 +0100
+Subject: [PATCH 06/59] drm/prime: Actually remove DRIVER_PRIME everywhere
+In-Reply-To: <20190614203615.12639-7-daniel.vetter@ffwll.ch>
+References: <20190614203615.12639-1-daniel.vetter@ffwll.ch>
+ <20190614203615.12639-7-daniel.vetter@ffwll.ch>
+Message-ID: <20190617175606.GE26766@arch-x1c3>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Jun 04, 2019 at 10:14:53AM +0200, Krzysztof Kozlowski wrote:
-> Remove the CONFIG_UEVENT_HELPER_PATH because:
-> 1. It is disabled since commit 1be01d4a5714 ("driver: base: Disable
->    CONFIG_UEVENT_HELPER by default") as its dependency (UEVENT_HELPER) was
->    made default to 'n',
-> 2. It is not recommended (help message: "This should not be used today
->    [...] creates a high system load") and was kept only for ancient
->    userland,
-> 3. Certain userland specifically requests it to be disabled (systemd
->    README: "Legacy hotplug slows down the system and confuses udev").
+On 2019/06/14, Daniel Vetter wrote:
+> Split out to make the functional changes stick out more.
 > 
-> Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
-> Acked-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> 
-> ---
-> 
-> Changes since v2:
-> 1. Remove unrelated files.
-> 2. Add Geert's ack.
+Since this patch flew-by, as standalone one (intentionally or not) I'd
+add, anything vaguely like:
 
-So your other patch added mini2440 in a follow-up patch, but this one doesn't?!
+"Core users of DRIVER_PRIME were removed from core with prior patches."
 
-Applied with that fixup.
-
-
--Olof
+HTH
+Emil
