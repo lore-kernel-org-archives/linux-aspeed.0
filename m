@@ -1,29 +1,38 @@
-From: Tao Ren <taoren@fb.com>
-Date: Wed, 19 Jun 2019 01:03:14 +0000
-Subject: [PATCH] ARM: dts: aspeed: Add Facebook Minipack BMC
-In-Reply-To: <d201fadc-0b8e-48df-8e50-bccd5d5019c7@www.fastmail.com>
-References: <20190618042421.1227372-1-taoren@fb.com>
- <d201fadc-0b8e-48df-8e50-bccd5d5019c7@www.fastmail.com>
-Message-ID: <9f757278-9d96-b81c-4fc1-21266b68165f@fb.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Wed, 19 Jun 2019 14:56:23 +0200
+Subject: [PATCH] soc: aspeed: fix probe error handling
+Message-ID: <20190619125636.1109665-1-arnd@arndb.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 6/18/19 5:41 PM, Andrew Jeffery wrote:
-> 
-> 
-> On Tue, 18 Jun 2019, at 13:54, Tao Ren wrote:
->> Add initial version of device tree for Facebook Minipack ast2500 BMC.
->>
->> Signed-off-by: Tao Ren <taoren@fb.com>
-> 
-> Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
+gcc warns that a mising "flash" phandle node leads to undefined
+behavior later:
 
-Thanks a lot for the quick review, Andrew!
+drivers/soc/aspeed/aspeed-lpc-ctrl.c: In function 'aspeed_lpc_ctrl_probe':
+drivers/soc/aspeed/aspeed-lpc-ctrl.c:201:18: error: '*((void *)&resm+8)' may be used uninitialized in this function [-Werror=maybe-uninitialized]
 
+The device cannot work without this node, so just error out here.
 
-Cheers,
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+ drivers/soc/aspeed/aspeed-lpc-ctrl.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-Tao
+diff --git a/drivers/soc/aspeed/aspeed-lpc-ctrl.c b/drivers/soc/aspeed/aspeed-lpc-ctrl.c
+index 239520bb207e..81109d22af6a 100644
+--- a/drivers/soc/aspeed/aspeed-lpc-ctrl.c
++++ b/drivers/soc/aspeed/aspeed-lpc-ctrl.c
+@@ -212,6 +212,7 @@ static int aspeed_lpc_ctrl_probe(struct platform_device *pdev)
+ 	node = of_parse_phandle(dev->of_node, "flash", 0);
+ 	if (!node) {
+ 		dev_dbg(dev, "Didn't find host pnor flash node\n");
++		return -ENXIO;
+ 	} else {
+ 		rc = of_address_to_resource(node, 1, &resm);
+ 		of_node_put(node);
+-- 
+2.20.0
+
