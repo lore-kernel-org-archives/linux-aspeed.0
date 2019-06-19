@@ -1,41 +1,38 @@
-From: Vijay Khemka <vijaykhemka@fb.com>
-Date: Tue, 25 Jun 2019 18:22:19 +0000
-Subject: [PATCH v2 1/2] hwmon: pmbus: Add Infineon PXE1610 VR driver
-In-Reply-To: <75FAE0E3-DE09-416A-90A4-D0AEC0684FC9@fb.com>
-References: <20190530231159.222188-1-vijaykhemka@fb.com>
- <20190605204659.GA32329@roeck-us.net>
- <75FAE0E3-DE09-416A-90A4-D0AEC0684FC9@fb.com>
-Message-ID: <EAB47703-259E-4AE3-B5D5-C58BB6098787@fb.com>
+From: Olof Johansson <olof@lixom.net>
+Date: Wed, 19 Jun 2019 07:09:24 -0700
+Subject: [PATCH v2] ARM: configs: Remove useless UEVENT_HELPER_PATH
+In-Reply-To: <1559636093-26005-1-git-send-email-krzk@kernel.org>
+References: <1559636093-26005-1-git-send-email-krzk@kernel.org>
+Message-ID: <20190619140924.cl33iuqndoigldgi@localhost>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+On Tue, Jun 04, 2019 at 10:14:53AM +0200, Krzysztof Kozlowski wrote:
+> Remove the CONFIG_UEVENT_HELPER_PATH because:
+> 1. It is disabled since commit 1be01d4a5714 ("driver: base: Disable
+>    CONFIG_UEVENT_HELPER by default") as its dependency (UEVENT_HELPER) was
+>    made default to 'n',
+> 2. It is not recommended (help message: "This should not be used today
+>    [...] creates a high system load") and was kept only for ancient
+>    userland,
+> 3. Certain userland specifically requests it to be disabled (systemd
+>    README: "Legacy hotplug slows down the system and confuses udev").
+> 
+> Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
+> Acked-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> 
+> ---
+> 
+> Changes since v2:
+> 1. Remove unrelated files.
+> 2. Add Geert's ack.
+
+So your other patch added mini2440 in a follow-up patch, but this one doesn't?!
+
+Applied with that fixup.
 
 
-?On 6/6/19, 11:49 AM, "Linux-aspeed on behalf of Vijay Khemka" <linux-aspeed-bounces+vijaykhemka=fb.com at lists.ozlabs.org on behalf of vijaykhemka@fb.com> wrote:
-
-    
-    
-    On 6/5/19, 1:47 PM, "Guenter Roeck" <groeck7 at gmail.com on behalf of linux@roeck-us.net> wrote:
-    
-        On Thu, May 30, 2019 at 04:11:56PM -0700, Vijay Khemka wrote:
-        > Added pmbus driver for the new device Infineon pxe1610
-        > voltage regulator. It also supports similar family device
-        > PXE1110 and PXM1310.
-        > 
-        > Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
-        
-        Applied.
-    Thanks
-        
-        Thanks,
-        Guenter
-
-Joel,
-Can you please pull this patch in our bmc linux tree.
-
-Thanks
--Vijay
-
+-Olof
