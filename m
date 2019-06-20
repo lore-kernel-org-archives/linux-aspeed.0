@@ -1,67 +1,114 @@
-From: Ryan Chen <ryan_chen@aspeedtech.com>
-Date: Thu, 20 Jun 2019 07:29:53 +0000
-Subject: [PATCH 1/2] i2c: aspeed: allow to customize base clock divisor
-In-Reply-To: <18565fcf-3dc1-b671-f826-e4417e4ad284@fb.com>
-References: <20190619205009.4176588-1-taoren@fb.com>
- <CAFd5g45TMtXcuqONdkpN_K+c0O+wUw8wkGzcQfV+sO8p5Krc9w@mail.gmail.com>
- <18565fcf-3dc1-b671-f826-e4417e4ad284@fb.com>
-Message-ID: <c610ecede7494c189a92a9a3f6d0fd16@TWMBX02.aspeed.com>
+From: Joel Stanley <joel@jms.id.au>
+Date: Thu, 20 Jun 2019 07:34:16 +0000
+Subject: [GIT PULL] ARM: aspeed: dts changes for 5.3
+Message-ID: <CACPK8XfMEzqvTGZz7JZxz0XQ0tBHzpJRDxtCEFB-ZzKCyDeuQw@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello Tao,
-	Our recommend about clk divider setting is follow the datasheet clock setting table for clock divisor. 
+Hello ARM maintainers,
 
-Ryan  
- 
-	
+Here's the ASPEED device tree changes for 5.3. Most of the patches
+have been baking for a number of weeks, with a few late changes added
+in today.
 
------Original Message-----
-From: Linux-aspeed [mailto:linux-aspeed-bounces+ryan_chen=aspeedtech.com at lists.ozlabs.org] On Behalf Of Tao Ren
-Sent: Thursday, June 20, 2019 6:33 AM
-To: Brendan Higgins <brendanhiggins@google.com>
-Cc: Mark Rutland <mark.rutland@arm.com>; devicetree <devicetree@vger.kernel.org>; linux-aspeed at lists.ozlabs.org; OpenBMC Maillist <openbmc@lists.ozlabs.org>; Linux Kernel Mailing List <linux-kernel@vger.kernel.org>; Rob Herring <robh+dt@kernel.org>; Linux ARM <linux-arm-kernel@lists.infradead.org>; linux-i2c at vger.kernel.org
-Subject: Re: [PATCH 1/2] i2c: aspeed: allow to customize base clock divisor
+The following changes since commit a188339ca5a396acc588e5851ed7e19f66b0ebd9:
 
-On 6/19/19 2:25 PM, Brendan Higgins wrote:
-> On Wed, Jun 19, 2019 at 2:00 PM Tao Ren <taoren@fb.com> wrote:
->>
->> Some intermittent I2C transaction failures are observed on Facebook 
->> CMM and Minipack (ast2500) BMC platforms, because slave devices (such 
->> as CPLD, BIC and etc.) NACK the address byte sometimes. The issue can 
->> be resolved by increasing base clock divisor which affects ASPEED I2C 
->> Controller's base clock and other AC timing parameters.
->>
->> This patch allows to customize ASPEED I2C Controller's base clock 
->> divisor in device tree.
-> 
-> First off, are you sure you actually need this?
-> 
-> You should be able to achieve an effectively equivalent result by just 
-> lowering the `bus-frequency` property specified in the DT. The 
-> `bus-frequency` property ultimately determines all the register 
-> values, and you should be able to set it to whatever you want by 
-> refering to the Aspeed documentation.
-> 
-> Nevertheless, the code that determines the correct dividers from the 
-> frequency is based on the tables in the Aspeed documentation. I don't 
-> think the equation makes sense when the base_clk_divisor is fixed; I 
-> mean it will probably just set the other divisor to max or min 
-> depending on the values chosen. I think if someone really wants to 
-> program this parameter manually, they probably want to set the other 
-> parameters manually too.
-Thank you for the quick response, Brendan.
+  Linux 5.2-rc1 (2019-05-19 15:47:09 -0700)
 
-Aspeed I2C bus frequency is defined by 3 parameters (base_clk_divisor, clk_high_width, clk_low_width), and I choose base_clk_divisor because it controls all the Aspeed I2C timings (such as setup time and hold time). Once base_clk_divisor is decided (either by the current logic in i2c-aspeed driver or manually set in device tree), clk_high_width and clk_low_width will be calculated by i2c-aspeed driver to meet the specified I2C bus speed.
+are available in the Git repository at:
 
-For example, by setting I2C bus frequency to 100KHz on AST2500 platform, (base_clock_divisor, clk_high_width, clk_low_width) is set to (3, 15, 14) by our driver. But some slave devices (on CMM i2c-8 and Minipack i2c-0) NACK byte transactions with the default timing setting: the issue can be resolved by setting base_clk_divisor to 4, and (clk_high_width, clk_low_width) will be set to (7, 7) by our i2c-aspeed driver to achieve similar I2C bus speed.
+  git://git.kernel.org/pub/scm/linux/kernel/git/joel/aspeed.git \
+    tags/aspeed-5.3-devicetree
 
-Not sure if my answer helps to address your concerns, but kindly let me know if you have further questions/suggestions.
+for you to fetch changes up to 6084110a0e9c4bff75970f3d68091ceff9e2c2c7:
 
+  ARM: dts: aspeed: Enable video engine on romulus and wtherspoon
+(2019-06-20 16:37:26 +0930)
 
-Thanks,
+----------------------------------------------------------------
+ASPEED device tree updates for 5.3
 
-Tao
+We have various device tree updates from the OpenBMC project to enable
+bits and pieces in existing systems, notably updates to Google's Zaius.
+
+There are some AST2500 machines under development:
+
+  * Lenovo Hr630
+  * IBM Swift
+  * Facebook YAMP
+
+And some AST2400 machines that have been around but out of tree and have
+now joined the party:
+
+  * YADRO VESNIN
+  * Microsoft Olympus
+
+----------------------------------------------------------------
+Adriana Kobylak (2):
+      ARM: dts: aspeed: Add Swift BMC machine
+      ARM: dts: aspeed: swift: Add pca9539 devices
+
+Alexander Filippov (1):
+      ARM: dts: aspeed: Add YADRO VESNIN BMC
+
+Andrew Peng (1):
+      ARM: dts: aspeed: Adding Lenovo Hr630 BMC
+
+Benjamin Herrenschmidt (1):
+      ARM: dts: aspeed: Add Power9 and Power9 CFAM description
+
+Eddie James (1):
+      ARM: dts: aspeed: Enable video engine on romulus and wtherspoon
+
+Hongwei Zhang (1):
+      ARM: dts: aspeed: Add Microsoft Olympus BMC
+
+Joel Stanley (1):
+      ARM: dts: aspeed: Rename flash-controller nodes
+
+John Wang (1):
+      ARM: dts: aspeed: Add Inspur fp5280g2 BMC machine
+
+Maxim Sloyko (1):
+      ARM: dts: aspeed: zaius: add Infineon and Intersil regulators
+
+Patrick Venture (2):
+      ARM: dts: aspeed: Add aspeed-p2a-ctrl node
+      ARM: dts: aspeed: quanta-q71: Enable p2a node
+
+Robert Lippert (2):
+      ARM: dts: aspeed: zaius: update 12V brick I2C address
+      ARM: dts: aspeed: zaius: fixed I2C bus numbers for pcie slots
+
+Tao Ren (2):
+      ARM: dts: aspeed: cmm: enable ehci host controllers
+      ARM: dts: aspeed: Add Facebook YAMP BMC
+
+ arch/arm/boot/dts/Makefile                         |   6 +
+ arch/arm/boot/dts/aspeed-bmc-facebook-cmm.dts      |   8 +
+ arch/arm/boot/dts/aspeed-bmc-facebook-yamp.dts     | 160 ++++
+ arch/arm/boot/dts/aspeed-bmc-inspur-fp5280g2.dts   | 846 ++++++++++++++++++
+ arch/arm/boot/dts/aspeed-bmc-lenovo-hr630.dts      | 566 ++++++++++++
+ arch/arm/boot/dts/aspeed-bmc-microsoft-olympus.dts | 207 +++++
+ arch/arm/boot/dts/aspeed-bmc-opp-lanyang.dts       |   2 +
+ arch/arm/boot/dts/aspeed-bmc-opp-palmetto.dts      |  22 +
+ arch/arm/boot/dts/aspeed-bmc-opp-romulus.dts       |  14 +
+ arch/arm/boot/dts/aspeed-bmc-opp-swift.dts         | 966 +++++++++++++++++++++
+ arch/arm/boot/dts/aspeed-bmc-opp-vesnin.dts        | 224 +++++
+ arch/arm/boot/dts/aspeed-bmc-opp-witherspoon.dts   |  14 +
+ arch/arm/boot/dts/aspeed-bmc-opp-zaius.dts         | 123 ++-
+ arch/arm/boot/dts/aspeed-bmc-quanta-q71l.dts       |   5 +
+ arch/arm/boot/dts/aspeed-g4.dtsi                   |   8 +-
+ arch/arm/boot/dts/aspeed-g5.dtsi                   |  11 +-
+ arch/arm/boot/dts/ibm-power9-dual.dtsi             | 248 ++++++
+ 17 files changed, 3417 insertions(+), 13 deletions(-)
+ create mode 100644 arch/arm/boot/dts/aspeed-bmc-facebook-yamp.dts
+ create mode 100644 arch/arm/boot/dts/aspeed-bmc-inspur-fp5280g2.dts
+ create mode 100644 arch/arm/boot/dts/aspeed-bmc-lenovo-hr630.dts
+ create mode 100644 arch/arm/boot/dts/aspeed-bmc-microsoft-olympus.dts
+ create mode 100644 arch/arm/boot/dts/aspeed-bmc-opp-swift.dts
+ create mode 100644 arch/arm/boot/dts/aspeed-bmc-opp-vesnin.dts
+ create mode 100644 arch/arm/boot/dts/ibm-power9-dual.dtsi
