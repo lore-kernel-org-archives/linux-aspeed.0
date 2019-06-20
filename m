@@ -1,33 +1,72 @@
-From: Tao Ren <taoren@fb.com>
-Date: Thu, 20 Jun 2019 08:13:59 +0000
-Subject: [PATCH 1/2] i2c: aspeed: allow to customize base clock divisor
-In-Reply-To: <195bb56028d04001bbaf835cc17e032e@TWMBX02.aspeed.com>
-References: <20190619205009.4176588-1-taoren@fb.com>
- <CAFd5g45TMtXcuqONdkpN_K+c0O+wUw8wkGzcQfV+sO8p5Krc9w@mail.gmail.com>
- <18565fcf-3dc1-b671-f826-e4417e4ad284@fb.com>
- <c610ecede7494c189a92a9a3f6d0fd16@TWMBX02.aspeed.com>
- <bdd53adb-6987-1b91-adde-298839b2c066@fb.com>
- <195bb56028d04001bbaf835cc17e032e@TWMBX02.aspeed.com>
-Message-ID: <56ff5fa8-091a-2cbc-dfa3-b912cf328695@fb.com>
+From: Joel Stanley <joel@jms.id.au>
+Date: Thu, 20 Jun 2019 08:29:36 +0000
+Subject: [PATCH] soc: aspeed: fix probe error handling
+In-Reply-To: <20190619125636.1109665-1-arnd@arndb.de>
+References: <20190619125636.1109665-1-arnd@arndb.de>
+Message-ID: <CACPK8Xe0Ppr8QjPSTPyNSHEbSXvuZLjC04hqP6ATTSystY888w@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 6/20/19 1:01 AM, Ryan Chen wrote:
-> Hello Tao,
-> 	Let me more clear. When you set (3, 15, 14) the device sometimes response nack. 
-> 	but when you set (4, 7, 7), the device always ack. Am I right? 
-> Ryan
+On Wed, 19 Jun 2019 at 12:56, Arnd Bergmann <arnd@arndb.de> wrote:
+>
+> gcc warns that a mising "flash" phandle node leads to undefined
+> behavior later:
+>
+> drivers/soc/aspeed/aspeed-lpc-ctrl.c: In function 'aspeed_lpc_ctrl_probe':
+> drivers/soc/aspeed/aspeed-lpc-ctrl.c:201:18: error: '*((void *)&resm+8)' may be used uninitialized in this function [-Werror=maybe-uninitialized]
+>
+> The device cannot work without this node, so just error out here.
+>
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
-Hello Ryan,
+Thanks Arnd. This looks like it applies on top of Vijay's recent patch?
 
-It's correct. We have seen the problem on 2 Facebook BMC platforms so far. Given the other ~10 Facebook BMC platforms are still running kernel 4.1 (with (4, 7, 7) settings), I'd assume more platforms will be impacted after upgrading to the latest kernel.
+The intent of that change was to make the driver usable for systems
+that do not want to depend on the flash phandle. I think the fix we
+want looks like this:
 
-Thank you for spending time on this!
+--- a/drivers/soc/aspeed/aspeed-lpc-ctrl.c
++++ b/drivers/soc/aspeed/aspeed-lpc-ctrl.c
+@@ -224,10 +224,11 @@ static int aspeed_lpc_ctrl_probe(struct
+platform_device *pdev)
+                        dev_err(dev, "Couldn't address to resource for
+flash\n");
+                        return rc;
+                }
++
++               lpc_ctrl->pnor_size = resource_size(&resm);
++               lpc_ctrl->pnor_base = resm.start;
+        }
 
+-       lpc_ctrl->pnor_size = resource_size(&resm);
+-       lpc_ctrl->pnor_base = resm.start;
+
+
+Vijay, do you agree?
 
 Cheers,
 
-Tao
+Joel
+
+> ---
+>  drivers/soc/aspeed/aspeed-lpc-ctrl.c | 1 +
+>  1 file changed, 1 insertion(+)
+>
+> diff --git a/drivers/soc/aspeed/aspeed-lpc-ctrl.c b/drivers/soc/aspeed/aspeed-lpc-ctrl.c
+> index 239520bb207e..81109d22af6a 100644
+> --- a/drivers/soc/aspeed/aspeed-lpc-ctrl.c
+> +++ b/drivers/soc/aspeed/aspeed-lpc-ctrl.c
+> @@ -212,6 +212,7 @@ static int aspeed_lpc_ctrl_probe(struct platform_device *pdev)
+>         node = of_parse_phandle(dev->of_node, "flash", 0);
+>         if (!node) {
+>                 dev_dbg(dev, "Didn't find host pnor flash node\n");
+> +               return -ENXIO;
+>         } else {
+>                 rc = of_address_to_resource(node, 1, &resm);
+>                 of_node_put(node);
+> --
+> 2.20.0
+>
