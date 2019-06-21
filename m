@@ -1,35 +1,80 @@
-From: Greg KH <gregkh@linuxfoundation.org>
-Date: Fri, 21 Jun 2019 15:17:29 +0200
-Subject: [patch 0/5] *** DMA based UART driver for AST2500 ***
-In-Reply-To: <1561115855-4186-1-git-send-email-open.sudheer@gmail.com>
-References: <1561115855-4186-1-git-send-email-open.sudheer@gmail.com>
-Message-ID: <20190621131729.GA9997@kroah.com>
+From: Vijay Khemka <vijaykhemka@fb.com>
+Date: Fri, 21 Jun 2019 16:53:47 +0000
+Subject: [PATCH] soc: aspeed: fix probe error handling
+In-Reply-To: <CACPK8Xe0Ppr8QjPSTPyNSHEbSXvuZLjC04hqP6ATTSystY888w@mail.gmail.com>
+References: <20190619125636.1109665-1-arnd@arndb.de>
+ <CACPK8Xe0Ppr8QjPSTPyNSHEbSXvuZLjC04hqP6ATTSystY888w@mail.gmail.com>
+Message-ID: <004B5807-847B-454E-A87D-C546D2077B4D@fb.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Jun 21, 2019 at 04:47:30PM +0530, sudheer.v wrote:
-> From: sudheer veliseti <sudheer.open@gmail.com>
-> 
-> Hi,
-> AST2500 has dedicated Uart DMA controller which has 12 sets of
-> Tx and RX channels connected to UART controller directly.
-> Since the DMA controller have dedicated buffers and registers,
-> there would be little benifit in adding DMA framework overhead.
-> So the software for DMA controller is included within the UART driver itself.
-> 
-> Thanks and Regards
-> Sudheer.V
 
-Is this a v2 of this patch series?
 
-You always have to version your patches and say what changed from the
-previous one, like the documentation says to do.
+?On 6/20/19, 1:29 AM, "Joel Stanley" <joel@jms.id.au> wrote:
 
-Please fix this up and resend.
+    On Wed, 19 Jun 2019 at 12:56, Arnd Bergmann <arnd@arndb.de> wrote:
+    >
+    > gcc warns that a mising "flash" phandle node leads to undefined
+    > behavior later:
+    >
+    > drivers/soc/aspeed/aspeed-lpc-ctrl.c: In function 'aspeed_lpc_ctrl_probe':
+    > drivers/soc/aspeed/aspeed-lpc-ctrl.c:201:18: error: '*((void *)&resm+8)' may be used uninitialized in this function [-Werror=maybe-uninitialized]
+    >
+    > The device cannot work without this node, so just error out here.
+    >
+    > Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+    
+    Thanks Arnd. This looks like it applies on top of Vijay's recent patch?
+    
+    The intent of that change was to make the driver usable for systems
+    that do not want to depend on the flash phandle. I think the fix we
+    want looks like this:
+    
+    --- a/drivers/soc/aspeed/aspeed-lpc-ctrl.c
+    +++ b/drivers/soc/aspeed/aspeed-lpc-ctrl.c
+    @@ -224,10 +224,11 @@ static int aspeed_lpc_ctrl_probe(struct
+    platform_device *pdev)
+                            dev_err(dev, "Couldn't address to resource for
+    flash\n");
+                            return rc;
+                    }
+    +
+    +               lpc_ctrl->pnor_size = resource_size(&resm);
+    +               lpc_ctrl->pnor_base = resm.start;
+            }
+    
+    -       lpc_ctrl->pnor_size = resource_size(&resm);
+    -       lpc_ctrl->pnor_base = resm.start;
+    
+    
+    Vijay, do you agree?
+Yes Joel. Thanks for this.
+    
+    Cheers,
+    
+    Joel
+    
+    > ---
+    >  drivers/soc/aspeed/aspeed-lpc-ctrl.c | 1 +
+    >  1 file changed, 1 insertion(+)
+    >
+    > diff --git a/drivers/soc/aspeed/aspeed-lpc-ctrl.c b/drivers/soc/aspeed/aspeed-lpc-ctrl.c
+    > index 239520bb207e..81109d22af6a 100644
+    > --- a/drivers/soc/aspeed/aspeed-lpc-ctrl.c
+    > +++ b/drivers/soc/aspeed/aspeed-lpc-ctrl.c
+    > @@ -212,6 +212,7 @@ static int aspeed_lpc_ctrl_probe(struct platform_device *pdev)
+    >         node = of_parse_phandle(dev->of_node, "flash", 0);
+    >         if (!node) {
+    >                 dev_dbg(dev, "Didn't find host pnor flash node\n");
+    > +               return -ENXIO;
+    >         } else {
+    >                 rc = of_address_to_resource(node, 1, &resm);
+    >                 of_node_put(node);
+    > --
+    > 2.20.0
+    >
+    
 
-thanks,
-
-greg k-h
