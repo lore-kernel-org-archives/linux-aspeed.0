@@ -1,62 +1,45 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Fri, 21 Jun 2019 11:26:52 +0930
-Subject: [PATCH] soc: aspeed: lpc-ctrl: Fix probe error handling
-In-Reply-To: <20190620091738.14683-1-joel@jms.id.au>
-References: <20190620091738.14683-1-joel@jms.id.au>
-Message-ID: <e321507a-13d1-4eb8-ac7a-53c75a9d9842@www.fastmail.com>
+From: sudheer.v <open.sudheer@gmail.com>
+Date: Fri, 21 Jun 2019 16:47:30 +0530
+Subject: [patch 0/5] *** DMA based UART driver for AST2500 ***
+Message-ID: <1561115855-4186-1-git-send-email-open.sudheer@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+From: sudheer veliseti <sudheer.open@gmail.com>
+
+Hi,
+AST2500 has dedicated Uart DMA controller which has 12 sets of
+Tx and RX channels connected to UART controller directly.
+Since the DMA controller have dedicated buffers and registers,
+there would be little benifit in adding DMA framework overhead.
+So the software for DMA controller is included within the UART driver itself.
+
+Thanks and Regards
+Sudheer.V
+
+sudheer veliseti (5):
+  AST2500 DMA UART driver
+  build configuration for AST2500 DMA UART driver
+  DT nodes for AST2500 DMA UART driver
+  defconfig and MAINTAINERS updated for AST2500 DMA UART driver
+  Documentation: DT bindings AST2500 DMA UART driver
+
+ .../bindings/serial/ast2500-dma-uart.txt      |   40 +
+ MAINTAINERS                                   |   13 +
+ arch/arm/boot/dts/aspeed-ast2500-evb.dts      |   21 +
+ arch/arm/boot/dts/aspeed-g5.dtsi              |   71 +-
+ arch/arm/configs/aspeed_g5_defconfig          |    1 +
+ .../tty/serial/8250/8250_ast2500_uart_dma.c   | 1879 +++++++++++++++++
+ drivers/tty/serial/8250/Kconfig               |   35 +-
+ drivers/tty/serial/8250/Makefile              |    1 +
+ 8 files changed, 2056 insertions(+), 5 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/serial/ast2500-dma-uart.txt
+ create mode 100644 drivers/tty/serial/8250/8250_ast2500_uart_dma.c
+
+-- 
+2.17.1
 
 
-On Thu, 20 Jun 2019, at 18:47, Joel Stanley wrote:
-> gcc warns that a mising "flash" phandle node leads to undefined
-> behavior later:
-> 
-> drivers/soc/aspeed/aspeed-lpc-ctrl.c: In function 
-> 'aspeed_lpc_ctrl_probe':
-> drivers/soc/aspeed/aspeed-lpc-ctrl.c:201:18: error: '*((void 
-> *)&resm+8)' may be used uninitialized in this function 
-> [-Werror=maybe-uninitialized]
-> 
-> Only set the flash base and size if we find a phandle in the device
-> tree.
-
-Ugh, yeah. Not sure how I missed that. Thanks for fixing it.
-
-Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
-
-> 
-> Reported-by: Arnd Bergmann <arnd@arndb.de>
-> Signed-off-by: Joel Stanley <joel@jms.id.au>
-> ---
->  drivers/soc/aspeed/aspeed-lpc-ctrl.c | 5 +++--
->  1 file changed, 3 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/soc/aspeed/aspeed-lpc-ctrl.c 
-> b/drivers/soc/aspeed/aspeed-lpc-ctrl.c
-> index aca13779764a..eee26c2d8b52 100644
-> --- a/drivers/soc/aspeed/aspeed-lpc-ctrl.c
-> +++ b/drivers/soc/aspeed/aspeed-lpc-ctrl.c
-> @@ -223,10 +223,11 @@ static int aspeed_lpc_ctrl_probe(struct 
-> platform_device *pdev)
->  			dev_err(dev, "Couldn't address to resource for flash\n");
->  			return rc;
->  		}
-> +
-> +		lpc_ctrl->pnor_size = resource_size(&resm);
-> +		lpc_ctrl->pnor_base = resm.start;
->  	}
->  
-> -	lpc_ctrl->pnor_size = resource_size(&resm);
-> -	lpc_ctrl->pnor_base = resm.start;
->  
->  	dev_set_drvdata(&pdev->dev, lpc_ctrl);
->  
-> -- 
-> 2.20.1
-> 
->
