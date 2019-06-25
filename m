@@ -1,75 +1,55 @@
-From: sudheer.v <open.sudheer@gmail.com>
-Date: Tue, 25 Jun 2019 16:14:36 +0530
-Subject: [patch v3 5/5] Documentation: DT bindings AST2500 DMA UART driver
-In-Reply-To: <1561459476-14268-1-git-send-email-open.sudheer@gmail.com>
-References: <1561459476-14268-1-git-send-email-open.sudheer@gmail.com>
-Message-ID: <1561459476-14268-6-git-send-email-open.sudheer@gmail.com>
+From: Olof Johansson <olof@lixom.net>
+Date: Tue, 25 Jun 2019 04:36:57 -0700
+Subject: [GIT PULL] ARM: aspeed: dts changes for 5.3
+In-Reply-To: <CACPK8XfMEzqvTGZz7JZxz0XQ0tBHzpJRDxtCEFB-ZzKCyDeuQw@mail.gmail.com>
+References: <CACPK8XfMEzqvTGZz7JZxz0XQ0tBHzpJRDxtCEFB-ZzKCyDeuQw@mail.gmail.com>
+Message-ID: <20190625113657.uiy7ytcotn57hq3r@localhost>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: sudheer veliseti <sudheer.open@gmail.com>
+On Thu, Jun 20, 2019 at 07:34:16AM +0000, Joel Stanley wrote:
+> Hello ARM maintainers,
+> 
+> Here's the ASPEED device tree changes for 5.3. Most of the patches
+> have been baking for a number of weeks, with a few late changes added
+> in today.
+> 
+> The following changes since commit a188339ca5a396acc588e5851ed7e19f66b0ebd9:
+> 
+>   Linux 5.2-rc1 (2019-05-19 15:47:09 -0700)
+> 
+> are available in the Git repository at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/joel/aspeed.git \
+>     tags/aspeed-5.3-devicetree
+> 
+> for you to fetch changes up to 6084110a0e9c4bff75970f3d68091ceff9e2c2c7:
+> 
+>   ARM: dts: aspeed: Enable video engine on romulus and wtherspoon
+> (2019-06-20 16:37:26 +0930)
+> 
+> ----------------------------------------------------------------
+> ASPEED device tree updates for 5.3
+> 
+> We have various device tree updates from the OpenBMC project to enable
+> bits and pieces in existing systems, notably updates to Google's Zaius.
+> 
+> There are some AST2500 machines under development:
+> 
+>   * Lenovo Hr630
+>   * IBM Swift
+>   * Facebook YAMP
+> 
+> And some AST2400 machines that have been around but out of tree and have
+> now joined the party:
+> 
+>   * YADRO VESNIN
+>   * Microsoft Olympus
 
-documentation for Dt bindings for DMA based UARTs in AST2500
+Merged, thanks!
 
-Signed-off-by: sudheer veliseti <sudheer.open@gmail.com>
----
 
-Changes in v3:
-- change logs added
-
-.../bindings/serial/ast2500-dma-uart.txt      | 40 +++++++++++++++++++
- 1 file changed, 40 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/serial/ast2500-dma-uart.txt
-
-diff --git a/Documentation/devicetree/bindings/serial/ast2500-dma-uart.txt b/Documentation/devicetree/bindings/serial/ast2500-dma-uart.txt
-new file mode 100644
-index 000000000000..6f01ddecba56
---- /dev/null
-+++ b/Documentation/devicetree/bindings/serial/ast2500-dma-uart.txt
-@@ -0,0 +1,40 @@
-+
-+node for DMA controller:
-+                       ast_uart_sdma: uart_sdma at 1e79e000 {
-+                               compatible = "aspeed,ast-uart-sdma";
-+                               reg = <0x1e79e000 0x400>;
-+                               interrupts = <50>;
-+                               status = "disabled";
-+                       };
-+this node  doesn't binds with any driver.
-+DMA controller is handled as a separate SW layer,and is included in the same driver.
-+This DMA controller node is included in DT just for Register base and interrupt details
-+
-+
-+
-+node for DMA-UART :
-+
-+
-+Required properties:
-+
-+- compatible: "aspeed,ast-sdma-uart"
-+- reg: The base address of the UART register bank
-+- interrupts: should contain interrupt specifier.
-+- clocks: Clock driving the hardware;
-+- pinctrl-0 : list of pinconfigurations
-+- dma-channel: channel of DMA-controller which is used
-+
-+Example:
-+
-+                 dma_uart1: dma_uart1 at 1e783000{
-+                          compatible = "aspeed,ast-sdma-uart";
-+                          reg = <0x1e783000 0x1000>;
-+                          reg-shift = <2>;
-+                          interrupts = <9>;
-+                          clocks = <&syscon ASPEED_CLK_GATE_UART1CLK>;
-+                          dma-channel = <0>;
-+                          no-loopback-test;
-+                          pinctrl-names = "default";
-+                          pinctrl-0 = <&pinctrl_txd1_default &pinctrl_rxd1_default>;
-+                          status = "disabled";
-+                       };
--- 
-2.17.1
-
+-Olof
