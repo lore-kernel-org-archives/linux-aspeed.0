@@ -1,61 +1,41 @@
-From: Olof Johansson <olof@lixom.net>
-Date: Tue, 25 Jun 2019 15:18:11 +0200
-Subject: [GIT PULL] ARM: aspeed: defconfig changes for 5.3
-In-Reply-To: <CACPK8XfL-U-BeynGQNBp5rPiv1gzD=7DVzyvrgtoL3njU1Kr_A@mail.gmail.com>
-References: <CACPK8XfL-U-BeynGQNBp5rPiv1gzD=7DVzyvrgtoL3njU1Kr_A@mail.gmail.com>
-Message-ID: <CAOesGMjTBazjfMYEKww_dGuFAZYa7f6JBZDoyyCNaWKvKdpbQw@mail.gmail.com>
+From: Vijay Khemka <vijaykhemka@fb.com>
+Date: Tue, 25 Jun 2019 18:22:19 +0000
+Subject: [PATCH v2 1/2] hwmon: pmbus: Add Infineon PXE1610 VR driver
+In-Reply-To: <75FAE0E3-DE09-416A-90A4-D0AEC0684FC9@fb.com>
+References: <20190530231159.222188-1-vijaykhemka@fb.com>
+ <20190605204659.GA32329@roeck-us.net>
+ <75FAE0E3-DE09-416A-90A4-D0AEC0684FC9@fb.com>
+Message-ID: <EAB47703-259E-4AE3-B5D5-C58BB6098787@fb.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi,
-
-Looks like the multi_v5_defconfig changes aren't producing the results
-you're probably expecting -- unless the drivers are pending in
-linux-next?
-
-arch/arm/configs/multi_v5_defconfig:257:warning: override: reassigning
-to symbol ASPEED_LPC_CTRL
-arch/arm/configs/multi_v5_defconfig:258:warning: override: reassigning
-to symbol ASPEED_LPC_SNOOP
 
 
--Olof
+?On 6/6/19, 11:49 AM, "Linux-aspeed on behalf of Vijay Khemka" <linux-aspeed-bounces+vijaykhemka=fb.com at lists.ozlabs.org on behalf of vijaykhemka@fb.com> wrote:
 
-On Sat, Jun 22, 2019 at 9:59 AM Joel Stanley <joel@jms.id.au> wrote:
->
-> Hi ARM maintainers,
->
-> Here are some defconfig updates for the ASPEED machines. I haven't
-> sent one for a while, so there's a nice collection of drivers to add.
->
-> The following changes since commit a188339ca5a396acc588e5851ed7e19f66b0ebd9:
->
->   Linux 5.2-rc1 (2019-05-19 15:47:09 -0700)
->
-> are available in the Git repository at:
->
->   git://git.kernel.org/pub/scm/linux/kernel/git/joel/aspeed.git \
->     tags/aspeed-5.3-defconfig
->
-> for you to fetch changes up to 2d8bf3404bb0e65dffb7326f7fb6e96fa3cee418:
->
->   ARM: configs: multi_v5: Add more ASPEED devices (2019-06-22 17:12:17 +0930)
->
-> ----------------------------------------------------------------
-> ASPEED device tree updates for 5.3
->
-> Add new drivers to the ASPEED G4 and G5 defconfigs, and to the armv5
-> multi defconfig.
->
-> ----------------------------------------------------------------
-> Joel Stanley (2):
->       ARM: configs: aspeed: Add new drivers
->       ARM: configs: multi_v5: Add more ASPEED devices
->
->  arch/arm/configs/aspeed_g4_defconfig | 10 ++++++++--
->  arch/arm/configs/aspeed_g5_defconfig | 14 ++++++++++++--
->  arch/arm/configs/multi_v5_defconfig  |  8 ++++++++
->  3 files changed, 28 insertions(+), 4 deletions(-)
+    
+    
+    On 6/5/19, 1:47 PM, "Guenter Roeck" <groeck7 at gmail.com on behalf of linux@roeck-us.net> wrote:
+    
+        On Thu, May 30, 2019 at 04:11:56PM -0700, Vijay Khemka wrote:
+        > Added pmbus driver for the new device Infineon pxe1610
+        > voltage regulator. It also supports similar family device
+        > PXE1110 and PXM1310.
+        > 
+        > Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
+        
+        Applied.
+    Thanks
+        
+        Thanks,
+        Guenter
+
+Joel,
+Can you please pull this patch in our bmc linux tree.
+
+Thanks
+-Vijay
+
