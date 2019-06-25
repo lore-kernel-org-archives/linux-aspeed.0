@@ -1,35 +1,61 @@
 From: Olof Johansson <olof@lixom.net>
-Date: Tue, 25 Jun 2019 05:43:20 -0700
-Subject: [GIT PULL] ARM: aspeed: soc changes for 5.3
-In-Reply-To: <CACPK8Xdpd3Q7dexOEZqt9rP0KJz1XeRwXe6A1k1azm7eDhRm=g@mail.gmail.com>
-References: <CACPK8Xdpd3Q7dexOEZqt9rP0KJz1XeRwXe6A1k1azm7eDhRm=g@mail.gmail.com>
-Message-ID: <20190625124320.swddlaa7uyobu2h4@localhost>
+Date: Tue, 25 Jun 2019 15:18:11 +0200
+Subject: [GIT PULL] ARM: aspeed: defconfig changes for 5.3
+In-Reply-To: <CACPK8XfL-U-BeynGQNBp5rPiv1gzD=7DVzyvrgtoL3njU1Kr_A@mail.gmail.com>
+References: <CACPK8XfL-U-BeynGQNBp5rPiv1gzD=7DVzyvrgtoL3njU1Kr_A@mail.gmail.com>
+Message-ID: <CAOesGMjTBazjfMYEKww_dGuFAZYa7f6JBZDoyyCNaWKvKdpbQw@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sat, Jun 22, 2019 at 07:59:26AM +0000, Joel Stanley wrote:
-> Hi ARM maintainers,
-> 
-> Here is a small soc change and a fix for that same change. This is the
-> first time I've had an aspeed soc pull request, so here we go.
-> 
-> The following changes since commit a188339ca5a396acc588e5851ed7e19f66b0ebd9:
-> 
->   Linux 5.2-rc1 (2019-05-19 15:47:09 -0700)
-> 
-> are available in the Git repository at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/joel/aspeed.git \
->     tags/aspeed-5.3-soc
-> 
-> for you to fetch changes up to c8a3b9b50d8331528fc8d03aadd1fec3d60362d7:
-> 
->   soc: aspeed: lpc-ctrl: Fix probe error handling (2019-06-22 16:56:35 +0930)
+Hi,
 
-Merged, thanks!
+Looks like the multi_v5_defconfig changes aren't producing the results
+you're probably expecting -- unless the drivers are pending in
+linux-next?
+
+arch/arm/configs/multi_v5_defconfig:257:warning: override: reassigning
+to symbol ASPEED_LPC_CTRL
+arch/arm/configs/multi_v5_defconfig:258:warning: override: reassigning
+to symbol ASPEED_LPC_SNOOP
 
 
 -Olof
+
+On Sat, Jun 22, 2019 at 9:59 AM Joel Stanley <joel@jms.id.au> wrote:
+>
+> Hi ARM maintainers,
+>
+> Here are some defconfig updates for the ASPEED machines. I haven't
+> sent one for a while, so there's a nice collection of drivers to add.
+>
+> The following changes since commit a188339ca5a396acc588e5851ed7e19f66b0ebd9:
+>
+>   Linux 5.2-rc1 (2019-05-19 15:47:09 -0700)
+>
+> are available in the Git repository at:
+>
+>   git://git.kernel.org/pub/scm/linux/kernel/git/joel/aspeed.git \
+>     tags/aspeed-5.3-defconfig
+>
+> for you to fetch changes up to 2d8bf3404bb0e65dffb7326f7fb6e96fa3cee418:
+>
+>   ARM: configs: multi_v5: Add more ASPEED devices (2019-06-22 17:12:17 +0930)
+>
+> ----------------------------------------------------------------
+> ASPEED device tree updates for 5.3
+>
+> Add new drivers to the ASPEED G4 and G5 defconfigs, and to the armv5
+> multi defconfig.
+>
+> ----------------------------------------------------------------
+> Joel Stanley (2):
+>       ARM: configs: aspeed: Add new drivers
+>       ARM: configs: multi_v5: Add more ASPEED devices
+>
+>  arch/arm/configs/aspeed_g4_defconfig | 10 ++++++++--
+>  arch/arm/configs/aspeed_g5_defconfig | 14 ++++++++++++--
+>  arch/arm/configs/multi_v5_defconfig  |  8 ++++++++
+>  3 files changed, 28 insertions(+), 4 deletions(-)
