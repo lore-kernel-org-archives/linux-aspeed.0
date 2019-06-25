@@ -1,21 +1,20 @@
 From: Olof Johansson <olof@lixom.net>
-Date: Tue, 25 Jun 2019 04:36:57 -0700
-Subject: [GIT PULL] ARM: aspeed: dts changes for 5.3
-In-Reply-To: <CACPK8XfMEzqvTGZz7JZxz0XQ0tBHzpJRDxtCEFB-ZzKCyDeuQw@mail.gmail.com>
-References: <CACPK8XfMEzqvTGZz7JZxz0XQ0tBHzpJRDxtCEFB-ZzKCyDeuQw@mail.gmail.com>
-Message-ID: <20190625113657.uiy7ytcotn57hq3r@localhost>
+Date: Tue, 25 Jun 2019 05:21:16 -0700
+Subject: [GIT PULL] ARM: aspeed: defconfig changes for 5.3
+In-Reply-To: <CACPK8XfL-U-BeynGQNBp5rPiv1gzD=7DVzyvrgtoL3njU1Kr_A@mail.gmail.com>
+References: <CACPK8XfL-U-BeynGQNBp5rPiv1gzD=7DVzyvrgtoL3njU1Kr_A@mail.gmail.com>
+Message-ID: <20190625122116.6ah3acqgy5ixxpim@localhost>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Jun 20, 2019 at 07:34:16AM +0000, Joel Stanley wrote:
-> Hello ARM maintainers,
+On Sat, Jun 22, 2019 at 07:58:46AM +0000, Joel Stanley wrote:
+> Hi ARM maintainers,
 > 
-> Here's the ASPEED device tree changes for 5.3. Most of the patches
-> have been baking for a number of weeks, with a few late changes added
-> in today.
+> Here are some defconfig updates for the ASPEED machines. I haven't
+> sent one for a while, so there's a nice collection of drivers to add.
 > 
 > The following changes since commit a188339ca5a396acc588e5851ed7e19f66b0ebd9:
 > 
@@ -24,30 +23,11 @@ On Thu, Jun 20, 2019 at 07:34:16AM +0000, Joel Stanley wrote:
 > are available in the Git repository at:
 > 
 >   git://git.kernel.org/pub/scm/linux/kernel/git/joel/aspeed.git \
->     tags/aspeed-5.3-devicetree
+>     tags/aspeed-5.3-defconfig
 > 
-> for you to fetch changes up to 6084110a0e9c4bff75970f3d68091ceff9e2c2c7:
+> for you to fetch changes up to 2d8bf3404bb0e65dffb7326f7fb6e96fa3cee418:
 > 
->   ARM: dts: aspeed: Enable video engine on romulus and wtherspoon
-> (2019-06-20 16:37:26 +0930)
-> 
-> ----------------------------------------------------------------
-> ASPEED device tree updates for 5.3
-> 
-> We have various device tree updates from the OpenBMC project to enable
-> bits and pieces in existing systems, notably updates to Google's Zaius.
-> 
-> There are some AST2500 machines under development:
-> 
->   * Lenovo Hr630
->   * IBM Swift
->   * Facebook YAMP
-> 
-> And some AST2400 machines that have been around but out of tree and have
-> now joined the party:
-> 
->   * YADRO VESNIN
->   * Microsoft Olympus
+>   ARM: configs: multi_v5: Add more ASPEED devices (2019-06-22 17:12:17 +0930)
 
 Merged, thanks!
 
