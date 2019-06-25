@@ -1,7 +1,9 @@
 From: sudheer.v <open.sudheer@gmail.com>
-Date: Tue, 25 Jun 2019 16:14:31 +0530
-Subject: [patch v3 0/5] *** DMA based UART driver for AST2500 ***
-Message-ID: <1561459476-14268-1-git-send-email-open.sudheer@gmail.com>
+Date: Tue, 25 Jun 2019 16:14:33 +0530
+Subject: [patch v3 2/5] build configuration for AST2500 DMA UART driver
+In-Reply-To: <1561459476-14268-1-git-send-email-open.sudheer@gmail.com>
+References: <1561459476-14268-1-git-send-email-open.sudheer@gmail.com>
+Message-ID: <1561459476-14268-3-git-send-email-open.sudheer@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -10,40 +12,84 @@ Content-Transfer-Encoding: 7bit
 
 From: sudheer veliseti <sudheer.open@gmail.com>
 
-Hi,
-AST2500 has dedicated Uart DMA controller which has 12 sets of
-Tx and RX channels connected to UART controller directly.
-Since the DMA controller have dedicated buffers and registers,
-there would be little benifit in adding DMA framework overhead.
-So the software for DMA controller is included within the UART driver itself.
+build config for DMA based UART driver in AST2500.
+Total Available  UARTs in AST2500 are 4
 
-Thanks and Regards
-Sudheer.V
+Signed-off-by: sudheer veliseti <sudheer.open@gmail.com>
+---
 
-changes in v3:
-- custom debugs replaced with pr_debug in 8250_ast2500_uart_dma.c
-- change logs added in patches
+Changes in v3:
+- change logs added
 
-sudheer veliseti (5):
-  AST2500 DMA UART driver
-  build configuration for AST2500 DMA UART driver
-  DT nodes for AST2500 DMA UART driver
-  defconfig and MAINTAINERS updated for AST2500 DMA UART driver
-  Documentation: DT bindings AST2500 DMA UART driver
+drivers/tty/serial/8250/Kconfig  | 35 +++++++++++++++++++++++++++++++-
+ drivers/tty/serial/8250/Makefile |  1 +
+ 2 files changed, 35 insertions(+), 1 deletion(-)
 
- .../bindings/serial/ast2500-dma-uart.txt      |   40 +
- MAINTAINERS                                   |   13 +
- arch/arm/boot/dts/aspeed-ast2500-evb.dts      |   21 +
- arch/arm/boot/dts/aspeed-g5.dtsi              |   71 +-
- arch/arm/configs/aspeed_g5_defconfig          |    1 +
- .../tty/serial/8250/8250_ast2500_uart_dma.c   | 1879 +++++++++++++++++
- drivers/tty/serial/8250/Kconfig               |   35 +-
- drivers/tty/serial/8250/Makefile              |    1 +
- 8 files changed, 2056 insertions(+), 5 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/serial/ast2500-dma-uart.txt
- create mode 100644 drivers/tty/serial/8250/8250_ast2500_uart_dma.c
-
+diff --git a/drivers/tty/serial/8250/Kconfig b/drivers/tty/serial/8250/Kconfig
+index 15c2c5463835..c793466a1c47 100644
+--- a/drivers/tty/serial/8250/Kconfig
++++ b/drivers/tty/serial/8250/Kconfig
+@@ -45,7 +45,7 @@ config SERIAL_8250_DEPRECATED_OPTIONS
+ 	  keep the 8250_core.* options around until they revert the changes
+ 	  they already did.
+ 
+-	  If 8250 is built as a module, this adds 8250_core alias instead. 
++	  If 8250 is built as a module, this adds 8250_core alias instead.
+ 
+ 	  If you did not notice yet and/or you have userspace from pre-3.7, it
+ 	  is safe (and recommended) to say N here.
+@@ -189,6 +189,39 @@ config SERIAL_8250_RUNTIME_UARTS
+ 	  with the module parameter "nr_uarts", or boot-time parameter
+ 	  8250.nr_uarts
+ 
++config  AST_SERIAL_DMA_UART
++        tristate "AST UART driver with DMA"
++        select SERIAL_CORE
++        help
++          UART driver with DMA support for Aspeed BMC AST25XX.
++          this driver supports UARTs in AST2500,AST2600. It uses
++          DMA channel of DMA engines present in these chips.
++          since this dma engine is used only by UARTs it is not
++          added as a separate DMA driver instead added as a layer
++          within UART driver.
++
++
++config AST_NR_DMA_UARTS
++        int "Maximum number of uart dma serial ports"
++        depends on AST_SERIAL_DMA_UART
++        default "4"
++        help
++          Set this to the number of serial ports you want the driver
++          to support.  This includes any ports discovered via ACPI or
++          PCI enumeration and any ports that may be added at run-time
++          via hot-plug, or any ISA multi-port serial cards.
++
++config AST_RUNTIME_DMA_UARTS
++        int "Number of uart dma serial ports to register at runtime"
++        depends on AST_SERIAL_DMA_UART
++        range 0 AST_NR_DMA_UARTS
++        default "4"
++        help
++          Set this to the maximum number of serial ports you want
++          the kernel to register at boot time.  This can be overridden
++          with the module parameter "nr_uarts", or boot-time parameter
++          8250.nr_uarts
++
+ config SERIAL_8250_EXTENDED
+ 	bool "Extended 8250/16550 serial driver options"
+ 	depends on SERIAL_8250
+diff --git a/drivers/tty/serial/8250/Makefile b/drivers/tty/serial/8250/Makefile
+index 18751bc63a84..54d40e5c6e2a 100644
+--- a/drivers/tty/serial/8250/Makefile
++++ b/drivers/tty/serial/8250/Makefile
+@@ -36,6 +36,7 @@ obj-$(CONFIG_SERIAL_8250_LPSS)		+= 8250_lpss.o
+ obj-$(CONFIG_SERIAL_8250_MID)		+= 8250_mid.o
+ obj-$(CONFIG_SERIAL_8250_MOXA)		+= 8250_moxa.o
+ obj-$(CONFIG_SERIAL_8250_PXA)		+= 8250_pxa.o
++obj-$(CONFIG_AST_SERIAL_DMA_UART)	+= 8250_ast2500_uart_dma.o
+ obj-$(CONFIG_SERIAL_OF_PLATFORM)	+= 8250_of.o
+ 
+ CFLAGS_8250_ingenic.o += -I$(srctree)/scripts/dtc/libfdt
 -- 
 2.17.1
-
 
