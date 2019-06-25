@@ -1,9 +1,9 @@
 From: sudheer.v <open.sudheer@gmail.com>
-Date: Fri, 21 Jun 2019 16:47:31 +0530
-Subject: [patch 1/5] AST2500 DMA UART driver
-In-Reply-To: <1561115855-4186-1-git-send-email-open.sudheer@gmail.com>
-References: <1561115855-4186-1-git-send-email-open.sudheer@gmail.com>
-Message-ID: <1561115855-4186-2-git-send-email-open.sudheer@gmail.com>
+Date: Tue, 25 Jun 2019 16:14:32 +0530
+Subject: [patch v3 1/5] AST2500 DMA UART driver
+In-Reply-To: <1561459476-14268-1-git-send-email-open.sudheer@gmail.com>
+References: <1561459476-14268-1-git-send-email-open.sudheer@gmail.com>
+Message-ID: <1561459476-14268-2-git-send-email-open.sudheer@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -32,7 +32,12 @@ only to report any spurious interrupts in hardware.
 
 Signed-off-by: sudheer veliseti <sudheer.open@gmail.com>
 ---
- .../tty/serial/8250/8250_ast2500_uart_dma.c   | 1879 +++++++++++++++++
+
+Changes in v3:
+-custom debug replaced by in kerenl dynamic debug: pr_debug 
+-change-logs added 
+
+.../tty/serial/8250/8250_ast2500_uart_dma.c   | 1879 +++++++++++++++++
  1 file changed, 1879 insertions(+)
  create mode 100644 drivers/tty/serial/8250/8250_ast2500_uart_dma.c
 
