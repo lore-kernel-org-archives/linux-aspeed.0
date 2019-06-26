@@ -1,23 +1,44 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Wed, 26 Jun 2019 10:00:50 +0930
-Subject: [PATCH] [PATCH v1] ARM: dts: aspeed: Adding Lenovo Hr855xg2 BMC
-In-Reply-To: <1561444696-446373-1-git-send-email-pengms1@lenovo.com>
+From: Andrew MS1 Peng <pengms1@lenovo.com>
+Date: Wed, 26 Jun 2019 02:00:53 +0000
+Subject: =?utf-8?B?562U5aSNOiBbRXh0ZXJuYWxdICBSZTogW1BBVENIXSBbUEFUQ0ggdjFdIEFS?=
+ =?utf-8?Q?M:_dts:_aspeed:_Adding_Lenovo_Hr855xg2_BMC?=
+In-Reply-To: <b9abadd4-58e1-4a47-bbcf-f173a1dd2bff@www.fastmail.com>
 References: <1561444696-446373-1-git-send-email-pengms1@lenovo.com>
-Message-ID: <b9abadd4-58e1-4a47-bbcf-f173a1dd2bff@www.fastmail.com>
+ <b9abadd4-58e1-4a47-bbcf-f173a1dd2bff@www.fastmail.com>
+Message-ID: <498f5c2517744d70bc82eb5b4c7fd085@lenovo.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+Hi Andrew
+
+We've got a couple of patches on their way upstream for 5.3 that remove the need to reserve memory simply to satisfy the aspeed-lpc-ctrl driver.
+If you base the patch on top of Joel's aspeed-5.3-soc tag you can remove this node and the phandle reference to it.
+	I reserve 1MB for lpc-bridge in DT file for in-band firmware update (phosphor-ipmi-flash).
+
+Just want to confirm that you want the kernel to hog these lines (the consequence is they're unavailable to userspace).
+	Yes, I have confirmed the setting of GPIO.
+
+Regards,
+Andrew Peng
+
+-----????-----
+???: Andrew Jeffery <andrew@aj.id.au> 
+????: 2019?6?26? 8:31
+???: Andrew MS1 Peng <pengms1@lenovo.com>; Patrick Venture <venture@google.com>; Benjamin Fair <benjaminfair@google.com>; linux-kernel at vger.kernel.org; linux-aspeed at lists.ozlabs.org; linux-arm-kernel at lists.infradead.org; devicetree at vger.kernel.org; mark.rutland at arm.com; Rob Herring <robh+dt@kernel.org>
+??: Lisa YJ19 Liu <liuyj19@lenovo.com>; Duke KH Du <dukh@lenovo.com>; Yonghui YH21 Liu <liuyh21@lenovo.com>; Harry Sung1 <hsung1@lenovo.com>; Joel Stanley <joel@jms.id.au>; openbmc at lists.ozlabs.org; Derek Lin23 <dlin23@lenovo.com>
+??: [External] Re: [PATCH] [PATCH v1] ARM: dts: aspeed: Adding Lenovo Hr855xg2 BMC
+
 
 
 On Tue, 25 Jun 2019, at 16:08, Andrew Peng wrote:
-> Initial introduction of Lenovo Hr855xg2 family equipped with
-> Aspeed 2500 BMC SoC. Hr855xg2 is a x86 server development kit
-> with a ASPEED ast2500 BMC manufactured by Lenovo.
-> Specifically, This adds the Hr855xg2 platform device tree file
-> used by the Hr855xg2 BMC machines.
+> Initial introduction of Lenovo Hr855xg2 family equipped with Aspeed 
+> 2500 BMC SoC. Hr855xg2 is a x86 server development kit with a ASPEED 
+> ast2500 BMC manufactured by Lenovo.
+> Specifically, This adds the Hr855xg2 platform device tree file used by 
+> the Hr855xg2 BMC machines.
 > 
 > This also adds an entry of Hr855xg2 device tree file in Makefile
 > 
@@ -28,11 +49,12 @@ On Tue, 25 Jun 2019, at 16:08, Andrew Peng wrote:
 > Signed-off-by: Derek Lin <dlin23@lenovo.com>
 > ---
 >  arch/arm/boot/dts/Makefile                       |   1 +
->  arch/arm/boot/dts/aspeed-bmc-lenovo-hr855xg2.dts | 687 +++++++++++++++++++++++
+>  arch/arm/boot/dts/aspeed-bmc-lenovo-hr855xg2.dts | 687 
+> +++++++++++++++++++++++
 >  2 files changed, 688 insertions(+)
 >  create mode 100644 arch/arm/boot/dts/aspeed-bmc-lenovo-hr855xg2.dts
 > 
-> diff --git a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
+> diff --git a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile 
 > index dab2914f..d874777 100644
 > --- a/arch/arm/boot/dts/Makefile
 > +++ b/arch/arm/boot/dts/Makefile
@@ -44,7 +66,7 @@ On Tue, 25 Jun 2019, at 16:08, Andrew Peng wrote:
 >  	aspeed-bmc-opp-lanyang.dtb \
 >  	aspeed-bmc-opp-palmetto.dtb \
 >  	aspeed-bmc-opp-romulus.dtb \
-> diff --git a/arch/arm/boot/dts/aspeed-bmc-lenovo-hr855xg2.dts 
+> diff --git a/arch/arm/boot/dts/aspeed-bmc-lenovo-hr855xg2.dts
 > b/arch/arm/boot/dts/aspeed-bmc-lenovo-hr855xg2.dts
 > new file mode 100644
 > index 0000000..d8dbf3a
@@ -98,11 +120,9 @@ On Tue, 25 Jun 2019, at 16:08, Andrew Peng wrote:
 > +			reg = <0x98000000 0x00100000>; /* 1M */
 > +		};
 
-We've got a couple of patches on their way upstream for 5.3 that remove
-the need to reserve memory simply to satisfy the aspeed-lpc-ctrl driver.
+We've got a couple of patches on their way upstream for 5.3 that remove the need to reserve memory simply to satisfy the aspeed-lpc-ctrl driver.
 
-If you base the patch on top of Joel's aspeed-5.3-soc tag you can remove
-this node and the phandle reference to it.
+If you base the patch on top of Joel's aspeed-5.3-soc tag you can remove this node and the phandle reference to it.
 
 > +
 > +		gfx_memory: framebuffer {
@@ -208,8 +228,7 @@ i.e. remove the above.
 > +&mac1 {
 > +	status = "okay";
 > +	pinctrl-names = "default";
-> +	pinctrl-0 = <&pinctrl_rgmii2_default &pinctrl_mdio2_default>;
-> +};
+> +	pinctrl-0 = <&pinctrl_rgmii2_default &pinctrl_mdio2_default>; };
 > +
 > +&adc{
 > +	status = "okay";
@@ -747,8 +766,7 @@ i.e. remove the above.
 > +		line-name = "ESPI_BMC_ALERT_N";
 > +	};
 
-Just want to confirm that you want the kernel to hog these lines
-(the consequence is they're unavailable to userspace).
+Just want to confirm that you want the kernel to hog these lines (the consequence is they're unavailable to userspace).
 
 Cheers,
 
@@ -756,7 +774,7 @@ Andrew
 
 > +
 > +};
-> -- 
+> --
 > 2.7.4
 > 
 >
