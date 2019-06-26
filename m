@@ -1,281 +1,42 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Wed, 26 Jun 2019 16:44:25 +0930
-Subject: [PATCH 3/8] dt-bindings: pinctrl: aspeed: Convert AST2500 bindings to
- json-schema
+Date: Wed, 26 Jun 2019 16:44:26 +0930
+Subject: [PATCH 4/8] MAINTAINERS: Add entry for ASPEED pinctrl drivers
 In-Reply-To: <20190626071430.28556-1-andrew@aj.id.au>
 References: <20190626071430.28556-1-andrew@aj.id.au>
-Message-ID: <20190626071430.28556-4-andrew@aj.id.au>
+Message-ID: <20190626071430.28556-5-andrew@aj.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Convert ASPEED pinctrl bindings to DT schema format using json-schema.
+Add myself as maintainer to avoid burdening others with the madness.
 
 Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
 ---
- .../pinctrl/aspeed,ast2500-pinctrl.txt        | 119 -----------------
- .../pinctrl/aspeed,ast2500-pinctrl.yaml       | 124 ++++++++++++++++++
- 2 files changed, 124 insertions(+), 119 deletions(-)
- delete mode 100644 Documentation/devicetree/bindings/pinctrl/aspeed,ast2500-pinctrl.txt
- create mode 100644 Documentation/devicetree/bindings/pinctrl/aspeed,ast2500-pinctrl.yaml
+ MAINTAINERS | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/pinctrl/aspeed,ast2500-pinctrl.txt b/Documentation/devicetree/bindings/pinctrl/aspeed,ast2500-pinctrl.txt
-deleted file mode 100644
-index 2f16e401338a..000000000000
---- a/Documentation/devicetree/bindings/pinctrl/aspeed,ast2500-pinctrl.txt
-+++ /dev/null
-@@ -1,119 +0,0 @@
--=============================
--Aspeed AST2500 Pin Controller
--=============================
--
--Required properties for g5:
--- compatible : 			Should be one of the following:
--				"aspeed,ast2500-pinctrl"
--				"aspeed,g5-pinctrl"
--
--- aspeed,external-nodes:	A cell of phandles to external controller nodes:
--				0: compatible with "aspeed,ast2500-gfx", "syscon"
--				1: compatible with "aspeed,ast2500-lhc", "syscon"
--
--The pin controller node should be the child of a syscon node with the required
--property:
--
--- compatible : 		Should be one of the following:
--			"aspeed,ast2500-scu", "syscon", "simple-mfd"
--			"aspeed,g5-scu", "syscon", "simple-mfd"
--
--Refer to the the bindings described in
--Documentation/devicetree/bindings/mfd/syscon.txt
--
--Subnode Format
--==============
--
--The required properties of pinmux child nodes are:
--- function: the mux function to select
--- groups  : the list of groups to select with this function
--
--Required properties of pinconf child nodes are:
--- groups: A list of groups to select (either this or "pins" must be
--          specified)
--- pins  : A list of ball names as strings, eg "D14" (either this or "groups"
--          must be specified)
--
--Optional properties of pinconf child nodes are:
--- bias-disable  : disable any pin bias
--- bias-pull-down: pull down the pin
--- drive-strength: sink or source at most X mA
--
--Definitions are as specified in
--Documentation/devicetree/bindings/pinctrl/pinctrl-bindings.txt, with any
--further limitations as described above.
--
--For pinmux, each mux function has only one associated pin group. Each group is
--named by its function. The following values for the function and groups
--properties are supported:
--
--ACPI ADC0 ADC1 ADC10 ADC11 ADC12 ADC13 ADC14 ADC15 ADC2 ADC3 ADC4 ADC5 ADC6
--ADC7 ADC8 ADC9 BMCINT DDCCLK DDCDAT ESPI FWSPICS1 FWSPICS2 GPID0 GPID2 GPID4
--GPID6 GPIE0 GPIE2 GPIE4 GPIE6 I2C10 I2C11 I2C12 I2C13 I2C14 I2C3 I2C4 I2C5 I2C6
--I2C7 I2C8 I2C9 LAD0 LAD1 LAD2 LAD3 LCLK LFRAME LPCHC LPCPD LPCPLUS LPCPME
--LPCRST LPCSMI LSIRQ MAC1LINK MAC2LINK MDIO1 MDIO2 NCTS1 NCTS2 NCTS3 NCTS4 NDCD1
--NDCD2 NDCD3 NDCD4 NDSR1 NDSR2 NDSR3 NDSR4 NDTR1 NDTR2 NDTR3 NDTR4 NRI1 NRI2
--NRI3 NRI4 NRTS1 NRTS2 NRTS3 NRTS4 OSCCLK PEWAKE PNOR PWM0 PWM1 PWM2 PWM3 PWM4
--PWM5 PWM6 PWM7 RGMII1 RGMII2 RMII1 RMII2 RXD1 RXD2 RXD3 RXD4 SALT1 SALT10
--SALT11 SALT12 SALT13 SALT14 SALT2 SALT3 SALT4 SALT5 SALT6 SALT7 SALT8 SALT9
--SCL1 SCL2 SD1 SD2 SDA1 SDA2 SGPS1 SGPS2 SIOONCTRL SIOPBI SIOPBO SIOPWREQ
--SIOPWRGD SIOS3 SIOS5 SIOSCI SPI1 SPI1CS1 SPI1DEBUG SPI1PASSTHRU SPI2CK SPI2CS0
--SPI2CS1 SPI2MISO SPI2MOSI TIMER3 TIMER4 TIMER5 TIMER6 TIMER7 TIMER8 TXD1 TXD2
--TXD3 TXD4 UART6 USB11BHID USB2AD USB2AH USB2BD USB2BH USBCKI VGABIOSROM VGAHS
--VGAVS VPI24 VPO WDTRST1 WDTRST2
--
--Example
--=======
--
--ahb {
--	apb {
--		syscon: scu at 1e6e2000 {
--			compatible = "aspeed,ast2500-scu", "syscon", "simple-mfd";
--			reg = <0x1e6e2000 0x1a8>;
--
--			pinctrl: pinctrl {
--				compatible = "aspeed,g5-pinctrl";
--				aspeed,external-nodes = <&gfx &lhc>;
--
--				pinctrl_i2c3_default: i2c3_default {
--					function = "I2C3";
--					groups = "I2C3";
--				};
--
--				pinctrl_gpioh0_unbiased_default: gpioh0 {
--					pins = "A18";
--					bias-disable;
--				};
--			};
--		};
--
--		gfx: display at 1e6e6000 {
--			compatible = "aspeed,ast2500-gfx", "syscon";
--			reg = <0x1e6e6000 0x1000>;
--		};
--	};
--
--	lpc: lpc at 1e789000 {
--		compatible = "aspeed,ast2500-lpc", "simple-mfd";
--		reg = <0x1e789000 0x1000>;
--
--		#address-cells = <1>;
--		#size-cells = <1>;
--		ranges = <0x0 0x1e789000 0x1000>;
--
--		lpc_host: lpc-host at 80 {
--			compatible = "aspeed,ast2500-lpc-host", "simple-mfd", "syscon";
--			reg = <0x80 0x1e0>;
--			reg-io-width = <4>;
--
--			#address-cells = <1>;
--			#size-cells = <1>;
--			ranges = <0x0 0x80 0x1e0>;
--
--			lhc: lhc at 20 {
--			       compatible = "aspeed,ast2500-lhc";
--			       reg = <0x20 0x24 0x48 0x8>;
--			};
--		};
--	};
--};
-diff --git a/Documentation/devicetree/bindings/pinctrl/aspeed,ast2500-pinctrl.yaml b/Documentation/devicetree/bindings/pinctrl/aspeed,ast2500-pinctrl.yaml
-new file mode 100644
-index 000000000000..bf4d1e3bb23d
---- /dev/null
-+++ b/Documentation/devicetree/bindings/pinctrl/aspeed,ast2500-pinctrl.yaml
-@@ -0,0 +1,124 @@
-+# SPDX-License-Identifier: GPL-2.0+
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/pinctrl/aspeed,ast2500-pinctrl.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
+diff --git a/MAINTAINERS b/MAINTAINERS
+index a6954776a37e..978383f5c1ab 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -2586,6 +2586,15 @@ S:	Maintained
+ F:	Documentation/hwmon/asc7621.rst
+ F:	drivers/hwmon/asc7621.c
+ 
++ASPEED PINCTRL DRIVERS
++M:	Andrew Jeffery <andrew@aj.id.au>
++L:	linux-aspeed at lists.ozlabs.org (moderated for non-subscribers)
++L:	openbmc at lists.ozlabs.org (moderated for non-subscribers)
++L:	linux-gpio at vger.kernel.org
++S:	Maintained
++F:	drivers/pinctrl/aspeed/
++F:	Documentation/devicetree/bindings/pinctrl/aspeed,*
 +
-+title: ASPEED AST2500 Pin Controller
-+
-+maintainers:
-+  - Andrew Jeffery <andrew@aj.id.au>
-+
-+properties:
-+  compatible:
-+    oneOf:
-+      - items:
-+        - enum:
-+          - aspeed,ast2500-pinctrl
-+      - items:
-+        - enum:
-+          - aspeed,g5-pinctrl
-+  aspeed,external-nodes:
-+    minItems: 2
-+    maxItems: 2
-+    allOf:
-+      - $ref: /schemas/types.yaml#/definitions/phandle-array
-+    description: |
-+      A cell of phandles to external controller nodes:
-+      0: compatible with "aspeed,ast2500-gfx", "syscon"
-+      1: compatible with "aspeed,ast2500-lhc", "syscon"
-+
-+required:
-+  - compatible
-+  - aspeed,external-nodes
-+
-+description: |+
-+  The pin controller node should be the child of a syscon node with the required
-+  property:
-+
-+  - compatible: 	Should be one of the following:
-+  			"aspeed,ast2500-scu", "syscon", "simple-mfd"
-+  			"aspeed,g5-scu", "syscon", "simple-mfd"
-+
-+  Refer to the the bindings described in
-+  Documentation/devicetree/bindings/mfd/syscon.txt
-+
-+  For the AST2500 pinmux, each mux function has only one associated pin group.
-+  Each group is named by its function. The following values for the function
-+  and groups properties are supported:
-+
-+  ACPI ADC0 ADC1 ADC10 ADC11 ADC12 ADC13 ADC14 ADC15 ADC2 ADC3 ADC4 ADC5 ADC6
-+  ADC7 ADC8 ADC9 BMCINT DDCCLK DDCDAT ESPI FWSPICS1 FWSPICS2 GPID0 GPID2 GPID4
-+  GPID6 GPIE0 GPIE2 GPIE4 GPIE6 I2C10 I2C11 I2C12 I2C13 I2C14 I2C3 I2C4 I2C5
-+  I2C6 I2C7 I2C8 I2C9 LAD0 LAD1 LAD2 LAD3 LCLK LFRAME LPCHC LPCPD LPCPLUS
-+  LPCPME LPCRST LPCSMI LSIRQ MAC1LINK MAC2LINK MDIO1 MDIO2 NCTS1 NCTS2 NCTS3
-+  NCTS4 NDCD1 NDCD2 NDCD3 NDCD4 NDSR1 NDSR2 NDSR3 NDSR4 NDTR1 NDTR2 NDTR3 NDTR4
-+  NRI1 NRI2 NRI3 NRI4 NRTS1 NRTS2 NRTS3 NRTS4 OSCCLK PEWAKE PNOR PWM0 PWM1 PWM2
-+  PWM3 PWM4 PWM5 PWM6 PWM7 RGMII1 RGMII2 RMII1 RMII2 RXD1 RXD2 RXD3 RXD4 SALT1
-+  SALT10 SALT11 SALT12 SALT13 SALT14 SALT2 SALT3 SALT4 SALT5 SALT6 SALT7 SALT8
-+  SALT9 SCL1 SCL2 SD1 SD2 SDA1 SDA2 SGPS1 SGPS2 SIOONCTRL SIOPBI SIOPBO
-+  SIOPWREQ SIOPWRGD SIOS3 SIOS5 SIOSCI SPI1 SPI1CS1 SPI1DEBUG SPI1PASSTHRU
-+  SPI2CK SPI2CS0 SPI2CS1 SPI2MISO SPI2MOSI TIMER3 TIMER4 TIMER5 TIMER6 TIMER7
-+  TIMER8 TXD1 TXD2 TXD3 TXD4 UART6 USB11BHID USB2AD USB2AH USB2BD USB2BH USBCKI
-+  VGABIOSROM VGAHS VGAVS VPI24 VPO WDTRST1 WDTRST2
-+
-+examples:
-+  - |
-+    compatible = "simple-bus";
-+    ranges;
-+
-+    apb {
-+        compatible = "simple-bus";
-+        #address-cells = <1>;
-+        #size-cells = <1>;
-+        ranges;
-+
-+        syscon: scu at 1e6e2000 {
-+            compatible = "aspeed,ast2500-scu", "syscon", "simple-mfd";
-+            reg = <0x1e6e2000 0x1a8>;
-+
-+            pinctrl: pinctrl {
-+                compatible = "aspeed,g5-pinctrl";
-+                aspeed,external-nodes = <&gfx &lhc>;
-+
-+                pinctrl_i2c3_default: i2c3_default {
-+                    function = "I2C3";
-+                    groups = "I2C3";
-+                };
-+
-+                pinctrl_gpioh0_unbiased_default: gpioh0 {
-+                    pins = "A18";
-+                    bias-disable;
-+                };
-+            };
-+        };
-+
-+        gfx: display at 1e6e6000 {
-+            compatible = "aspeed,ast2500-gfx", "syscon";
-+            reg = <0x1e6e6000 0x1000>;
-+        };
-+    };
-+
-+    lpc: lpc at 1e789000 {
-+        compatible = "aspeed,ast2500-lpc", "simple-mfd";
-+        reg = <0x1e789000 0x1000>;
-+
-+        #address-cells = <1>;
-+        #size-cells = <1>;
-+        ranges = <0x0 0x1e789000 0x1000>;
-+
-+        lpc_host: lpc-host at 80 {
-+            compatible = "aspeed,ast2500-lpc-host", "simple-mfd", "syscon";
-+            reg = <0x80 0x1e0>;
-+            reg-io-width = <4>;
-+
-+            #address-cells = <1>;
-+            #size-cells = <1>;
-+            ranges = <0x0 0x80 0x1e0>;
-+
-+            lhc: lhc at 20 {
-+                   compatible = "aspeed,ast2500-lhc";
-+                   reg = <0x20 0x24 0x48 0x8>;
-+            };
-+        };
-+    };
+ ASPEED VIDEO ENGINE DRIVER
+ M:	Eddie James <eajames@linux.ibm.com>
+ L:	linux-media at vger.kernel.org
 -- 
 2.20.1
 
