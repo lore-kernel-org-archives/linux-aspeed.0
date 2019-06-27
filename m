@@ -1,41 +1,45 @@
-From: Olof Johansson <olof@lixom.net>
-Date: Wed, 26 Jun 2019 19:18:08 -0700
-Subject: [GIT PULL] ARM: aspeed: defconfig changes for 5.3
-In-Reply-To: <CACPK8Xf=vb4To_fxpJiaT-is3BBGg1SUsAc1qtFrBd-FwmPXRA@mail.gmail.com>
-References: <CACPK8XfL-U-BeynGQNBp5rPiv1gzD=7DVzyvrgtoL3njU1Kr_A@mail.gmail.com>
- <CAOesGMjTBazjfMYEKww_dGuFAZYa7f6JBZDoyyCNaWKvKdpbQw@mail.gmail.com>
- <CACPK8Xf=vb4To_fxpJiaT-is3BBGg1SUsAc1qtFrBd-FwmPXRA@mail.gmail.com>
-Message-ID: <20190627021808.47q4n4bhrj75hxzw@localhost>
+From: Joel Stanley <joel@jms.id.au>
+Date: Thu, 27 Jun 2019 03:30:35 +0000
+Subject: [PATCH 5/8] pinctrl: aspeed: Correct comment that is no longer
+ true
+In-Reply-To: <20190626071430.28556-6-andrew@aj.id.au>
+References: <20190626071430.28556-1-andrew@aj.id.au>
+ <20190626071430.28556-6-andrew@aj.id.au>
+Message-ID: <CACPK8XcPxJAOBAnKMKxtiG4Fkz8BPf8KtW1Kc3A9tU_emQviVg@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Jun 26, 2019 at 02:03:45AM +0000, Joel Stanley wrote:
-> On Tue, 25 Jun 2019 at 13:18, Olof Johansson <olof@lixom.net> wrote:
-> >
-> > Hi,
-> >
-> > Looks like the multi_v5_defconfig changes aren't producing the results
-> > you're probably expecting -- unless the drivers are pending in
-> > linux-next?
-> >
-> > arch/arm/configs/multi_v5_defconfig:257:warning: override: reassigning
-> > to symbol ASPEED_LPC_CTRL
-> > arch/arm/configs/multi_v5_defconfig:258:warning: override: reassigning
-> > to symbol ASPEED_LPC_SNOOP
-> 
-> Oops, sorry. I made a mistake when preparing the change and missed the
-> warning when testing. We now have two copies of each of these options
-> in the defconfig (they moved around due to misc -> soc movement).
+On Wed, 26 Jun 2019 at 07:16, Andrew Jeffery <andrew@aj.id.au> wrote:
+>
+> We have handled the GFX register case for quite some time now.
+>
+> Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
+> ---
+>  drivers/pinctrl/aspeed/pinctrl-aspeed.h | 3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
+>
+> diff --git a/drivers/pinctrl/aspeed/pinctrl-aspeed.h b/drivers/pinctrl/aspeed/pinctrl-aspeed.h
+> index 4b06ddbc6aec..c5918c4a087c 100644
+> --- a/drivers/pinctrl/aspeed/pinctrl-aspeed.h
+> +++ b/drivers/pinctrl/aspeed/pinctrl-aspeed.h
+> @@ -240,8 +240,7 @@
+>   * opposed to naming them e.g. PINMUX_CTRL_[0-9]). Further, signal expressions
+>   * reference registers beyond those dedicated to pinmux, such as the system
+>   * reset control and MAC clock configuration registers. The AST2500 goes a step
 
-No worries!
+AST2600 too?
 
-> I've sent a follow up patch for you to apply directly. Let me know if
-> that's okay, otherwise I can do a new tag.
+Acked-by: Joel Stanley <joel@jms.id.au>
 
-Patch was fine, applied.
-
-
--Olof
+> - * further and references registers in the graphics IP block, but that isn't
+> - * handled yet.
+> + * further and references registers in the graphics IP block.
+>   */
+>  #define SCU2C           0x2C /* Misc. Control Register */
+>  #define SCU3C           0x3C /* System Reset Control/Status Register */
+> --
+> 2.20.1
+>
