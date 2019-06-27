@@ -1,33 +1,41 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Thu, 27 Jun 2019 10:38:44 +0930
-Subject: [PATCH 0/8] pinctrl: aspeed: Preparation for AST2600
-In-Reply-To: <CACRpkdboxjMmeb8feffyG5JJ7fGPR6hqC8sc+XV5We3TC__LXg@mail.gmail.com>
-References: <20190626071430.28556-1-andrew@aj.id.au>
- <CACRpkdboxjMmeb8feffyG5JJ7fGPR6hqC8sc+XV5We3TC__LXg@mail.gmail.com>
-Message-ID: <fa54f9a1-481e-4146-a4c2-7c43cf9a26e8@www.fastmail.com>
+From: Olof Johansson <olof@lixom.net>
+Date: Wed, 26 Jun 2019 19:18:08 -0700
+Subject: [GIT PULL] ARM: aspeed: defconfig changes for 5.3
+In-Reply-To: <CACPK8Xf=vb4To_fxpJiaT-is3BBGg1SUsAc1qtFrBd-FwmPXRA@mail.gmail.com>
+References: <CACPK8XfL-U-BeynGQNBp5rPiv1gzD=7DVzyvrgtoL3njU1Kr_A@mail.gmail.com>
+ <CAOesGMjTBazjfMYEKww_dGuFAZYa7f6JBZDoyyCNaWKvKdpbQw@mail.gmail.com>
+ <CACPK8Xf=vb4To_fxpJiaT-is3BBGg1SUsAc1qtFrBd-FwmPXRA@mail.gmail.com>
+Message-ID: <20190627021808.47q4n4bhrj75hxzw@localhost>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-
-
-On Wed, 26 Jun 2019, at 17:25, Linus Walleij wrote:
-> On Wed, Jun 26, 2019 at 9:15 AM Andrew Jeffery <andrew@aj.id.au> wrote:
+On Wed, Jun 26, 2019 at 02:03:45AM +0000, Joel Stanley wrote:
+> On Tue, 25 Jun 2019 at 13:18, Olof Johansson <olof@lixom.net> wrote:
+> >
+> > Hi,
+> >
+> > Looks like the multi_v5_defconfig changes aren't producing the results
+> > you're probably expecting -- unless the drivers are pending in
+> > linux-next?
+> >
+> > arch/arm/configs/multi_v5_defconfig:257:warning: override: reassigning
+> > to symbol ASPEED_LPC_CTRL
+> > arch/arm/configs/multi_v5_defconfig:258:warning: override: reassigning
+> > to symbol ASPEED_LPC_SNOOP
 > 
-> > The ASPEED AST2600 is in the pipeline, and we have enough information to start
-> > preparing to upstream support for it. This series lays some ground work;
-> > splitting the bindings and dicing the implementation up a little further to
-> > facilitate differences between the 2600 and previous SoC generations.
-> 
-> All looks good to me, but Rob should have a glance at the DT bindings
-> and YAML syntax before I proceed to apply them.
+> Oops, sorry. I made a mistake when preparing the change and missed the
+> warning when testing. We now have two copies of each of these options
+> in the defconfig (they moved around due to misc -> soc movement).
 
-Thanks for the quick review. Rob's responded, looks like I'll need to send a v2 at
-least. Might need a hand sorting out describing generic pinctrl dt bits (subnodes
-with function and group properties).
+No worries!
 
-Cheers,
+> I've sent a follow up patch for you to apply directly. Let me know if
+> that's okay, otherwise I can do a new tag.
 
-Andrew
+Patch was fine, applied.
+
+
+-Olof
