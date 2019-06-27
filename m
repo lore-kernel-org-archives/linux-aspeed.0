@@ -1,176 +1,78 @@
-From: Rob Herring <robh+dt@kernel.org>
-Date: Thu, 27 Jun 2019 08:32:12 -0600
-Subject: [PATCH 2/8] dt-bindings: pinctrl: aspeed: Convert AST2400
- bindings to json-schema
-In-Reply-To: <30d5585b-7591-4149-87c4-816e4c18fb9d@www.fastmail.com>
-References: <20190626071430.28556-1-andrew@aj.id.au>
- <20190626071430.28556-3-andrew@aj.id.au>
- <CAL_JsqKXPzFYTHos-uvCUtBj-bcsNfrzt5GjxQ=PmgeXpp5J-A@mail.gmail.com>
- <30d5585b-7591-4149-87c4-816e4c18fb9d@www.fastmail.com>
-Message-ID: <CAL_JsqJo37LQV9WKx_Zqy8KZ52=37TiGcNbFah6MsJmMYP23XA@mail.gmail.com>
+From: Eddie James <eajames@linux.ibm.com>
+Date: Thu, 27 Jun 2019 14:19:47 -0500
+Subject: [PATCH v3 1/8] dt-bindings: soc: Add Aspeed XDMA engine binding
+ documentation
+In-Reply-To: <58b74556-cbf0-4da2-9392-4c4ac40ad760@www.fastmail.com>
+References: <1559153408-31190-1-git-send-email-eajames@linux.ibm.com>
+ <1559153408-31190-2-git-send-email-eajames@linux.ibm.com>
+ <58b74556-cbf0-4da2-9392-4c4ac40ad760@www.fastmail.com>
+Message-ID: <c8d80e9a-6fa9-aa57-3b5f-e20b20dd0f66@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Jun 26, 2019 at 9:55 PM Andrew Jeffery <andrew@aj.id.au> wrote:
->
->
->
-> On Wed, 26 Jun 2019, at 23:17, Rob Herring wrote:
-> > On Wed, Jun 26, 2019 at 1:21 AM Andrew Jeffery <andrew@aj.id.au> wrote:
-> > > +  The pin controller node should be the child of a syscon node with the
-> > > +  required property:
-> > > +
-> > > +  - compatible:     Should be one of the following:
-> > > +                    "aspeed,ast2400-scu", "syscon", "simple-mfd"
-> > > +                    "aspeed,g4-scu", "syscon", "simple-mfd"
-> > > +
-> > > +  Refer to the the bindings described in
-> > > +  Documentation/devicetree/bindings/mfd/syscon.txt
-> > > +
-> > > +  For the AST2400 pinmux, each mux function has only one associated pin group.
-> > > +  Each group is named by its function. The following values for the function
-> > > +  and groups properties are supported:
-> > > +
-> > > +  ACPI ADC0 ADC1 ADC10 ADC11 ADC12 ADC13 ADC14 ADC15 ADC2 ADC3 ADC4 ADC5 ADC6
-> > > +  ADC7 ADC8 ADC9 BMCINT DDCCLK DDCDAT EXTRST FLACK FLBUSY FLWP GPID GPID0 GPID2
-> > > +  GPID4 GPID6 GPIE0 GPIE2 GPIE4 GPIE6 I2C10 I2C11 I2C12 I2C13 I2C14 I2C3 I2C4
-> > > +  I2C5 I2C6 I2C7 I2C8 I2C9 LPCPD LPCPME LPCRST LPCSMI MAC1LINK MAC2LINK MDIO1
-> > > +  MDIO2 NCTS1 NCTS2 NCTS3 NCTS4 NDCD1 NDCD2 NDCD3 NDCD4 NDSR1 NDSR2 NDSR3 NDSR4
-> > > +  NDTR1 NDTR2 NDTR3 NDTR4 NDTS4 NRI1 NRI2 NRI3 NRI4 NRTS1 NRTS2 NRTS3 OSCCLK
-> > > +  PWM0 PWM1 PWM2 PWM3 PWM4 PWM5 PWM6 PWM7 RGMII1 RGMII2 RMII1 RMII2 ROM16 ROM8
-> > > +  ROMCS1 ROMCS2 ROMCS3 ROMCS4 RXD1 RXD2 RXD3 RXD4 SALT1 SALT2 SALT3 SALT4 SD1
-> > > +  SD2 SGPMCK SGPMI SGPMLD SGPMO SGPSCK SGPSI0 SGPSI1 SGPSLD SIOONCTRL SIOPBI
-> > > +  SIOPBO SIOPWREQ SIOPWRGD SIOS3 SIOS5 SIOSCI SPI1 SPI1DEBUG SPI1PASSTHRU
-> > > +  SPICS1 TIMER3 TIMER4 TIMER5 TIMER6 TIMER7 TIMER8 TXD1 TXD2 TXD3 TXD4 UART6
-> > > +  USB11D1 USB11H2 USB2D1 USB2H1 USBCKI VGABIOS_ROM VGAHS VGAVS VPI18 VPI24
-> > > +  VPI30 VPO12 VPO24 WDTRST1 WDTRST2
-> >
-> > This should be a schema. You need to define child nodes and list these
-> > as values for 'function' and 'group'. Ideally, the child nodes would
-> > have some sort of pattern, but if not, you can just match on '^.*$'
-> > under patternProperties.
->
-> The children don't have any pattern in their node name, which drives
-> me towards the '^.*$' pattern match, however, what I've found is that
-> I get the following errors for some of the relevant dts files:
->
-> ```
-> /home/andrew/src/linux/aspeed/arch/arm/boot/dts/aspeed-bmc-opp-palmetto.dt.yaml: compatible: ['aspeed,g4-pinctrl'] is not of type 'object'
-> /home/andrew/src/linux/aspeed/arch/arm/boot/dts/aspeed-bmc-opp-palmetto.dt.yaml: pinctrl-names: ['default'] is not of type 'object'
-> /home/andrew/src/linux/aspeed/arch/arm/boot/dts/aspeed-bmc-opp-palmetto.dt.yaml: pinctrl-0: [[7, 8, 9, 10, 11, 12]] is not of type 'object'
-> /home/andrew/src/linux/aspeed/arch/arm/boot/dts/aspeed-bmc-opp-palmetto.dt.yaml: phandle: [[13]] is not of type 'object'
-> /home/andrew/src/linux/aspeed/arch/arm/boot/dts/aspeed-bmc-opp-palmetto.dt.yaml: $nodename: ['pinctrl'] is not of type 'object'
-> /home/andrew/src/linux/aspeed/arch/arm/boot/dts/aspeed-bmc-quanta-q71l.dt.yaml: compatible: ['aspeed,g4-pinctrl'] is not of type 'object'
-> /home/andrew/src/linux/aspeed/arch/arm/boot/dts/aspeed-bmc-quanta-q71l.dt.yaml: pinctrl-names: ['default'] is not of type 'object'
-> /home/andrew/src/linux/aspeed/arch/arm/boot/dts/aspeed-bmc-quanta-q71l.dt.yaml: pinctrl-0: [[9, 10, 11, 12]] is not of type 'object'
-> /home/andrew/src/linux/aspeed/arch/arm/boot/dts/aspeed-bmc-quanta-q71l.dt.yaml: phandle: [[13]] is not of type 'object'
-> /home/andrew/src/linux/aspeed/arch/arm/boot/dts/aspeed-bmc-quanta-q71l.dt.yaml: $nodename: ['pinctrl'] is not of type 'object'
-> ```
->
 
-The problem is "^.*$" matches both properties and child nodes.
-
-> We shouldn't be expecting these properties in the child nodes, so
-> something is busted. Looking at processed-schema.yaml, we have:
+On 5/30/19 12:30 AM, Andrew Jeffery wrote:
 >
-> ```
-> - $filename: /home/andrew/src/linux/aspeed/Documentation/devicetree/bindings/pinctrl/aspeed,ast2400-pinctrl.yaml
->   $id: http://devicetree.org/schemas/pinctrl/aspeed,ast2400-pinctrl.yaml#
->   $schema: http://devicetree.org/meta-schemas/core.yaml#
->   patternProperties:
->     ^.*$:
->       patternProperties:
->         ^function|groups$:
->           allOf:
->           - {$ref: /schemas/types.yaml#/definitions/string}
->           - additionalItems: false
->             items:
->               enum: [ACPI, ADC0, ADC1, ADC10, ADC11, ADC12, ADC13, ADC14, ADC15, ADC2,
->                 ADC3, ADC4, ADC5, ADC6, ADC7, ADC8, ADC9, BMCINT, DDCCLK, DDCDAT,
->                 EXTRST, FLACK, FLBUSY, FLWP, GPID, GPID0, GPID2, GPID4, GPID6, GPIE0,
->                 GPIE2, GPIE4, GPIE6, I2C10, I2C11, I2C12, I2C13, I2C14, I2C3, I2C4,
->                 I2C5, I2C6, I2C7, I2C8, I2C9, LPCPD, LPCPME, LPCRST, LPCSMI, MAC1LINK,
->                 MAC2LINK, MDIO1, MDIO2, NCTS1, NCTS2, NCTS3, NCTS4, NDCD1, NDCD2,
->                 NDCD3, NDCD4, NDSR1, NDSR2, NDSR3, NDSR4, NDTR1, NDTR2, NDTR3, NDTR4,
->                 NDTS4, NRI1, NRI2, NRI3, NRI4, NRTS1, NRTS2, NRTS3, OSCCLK, PWM0,
->                 PWM1, PWM2, PWM3, PWM4, PWM5, PWM6, PWM7, RGMII1, RGMII2, RMII1, RMII2,
->                 ROM16, ROM8, ROMCS1, ROMCS2, ROMCS3, ROMCS4, RXD1, RXD2, RXD3, RXD4,
->                 SALT1, SALT2, SALT3, SALT4, SD1, SD2, SGPMCK, SGPMI, SGPMLD, SGPMO,
->                 SGPSCK, SGPSI0, SGPSI1, SGPSLD, SIOONCTRL, SIOPBI, SIOPBO, SIOPWREQ,
->                 SIOPWRGD, SIOS3, SIOS5, SIOSCI, SPI1, SPI1DEBUG, SPI1PASSTHRU, SPICS1,
->                 TIMER3, TIMER4, TIMER5, TIMER6, TIMER7, TIMER8, TXD1, TXD2, TXD3,
->                 TXD4, UART6, USB11D1, USB11H2, USB2D1, USB2H1, USBCKI, VGABIOS_ROM,
->                 VGAHS, VGAVS, VPI18, VPI24, VPI30, VPO12, VPO24, WDTRST1, WDTRST2]
->             maxItems: 1
->             minItems: 1
->             type: array
->         pinctrl-[0-9]+: true
->       properties: {phandle: true, pinctrl-names: true, status: true}
->       type: object
->     pinctrl-[0-9]+: true
->   properties:
->     $nodename: true
->     compatible:
->       additionalItems: false
->       items:
->       - enum: ['aspeed,ast2400-pinctrl', 'aspeed,g4-pinctrl']
->       maxItems: 1
->       minItems: 1
->       type: array
->     phandle: true
->     pinctrl-names: true
->     status: true
->   required: [compatible]
->   select:
->     properties:
->       compatible:
->         contains:
->           enum: ['aspeed,ast2400-pinctrl', 'aspeed,g4-pinctrl']
->     required: [compatible]
->   title: ASPEED AST2400 Pin Controller
-> ```
+> On Thu, 30 May 2019, at 03:40, Eddie James wrote:
+>> Document the bindings.
+>>
+>> Signed-off-by: Eddie James <eajames@linux.ibm.com>
+>> ---
+>>   .../devicetree/bindings/soc/aspeed/xdma.txt        | 23 ++++++++++++++++++++++
+>>   1 file changed, 23 insertions(+)
+>>   create mode 100644 Documentation/devicetree/bindings/soc/aspeed/xdma.txt
+>>
+>> diff --git a/Documentation/devicetree/bindings/soc/aspeed/xdma.txt
+>> b/Documentation/devicetree/bindings/soc/aspeed/xdma.txt
+>> new file mode 100644
+>> index 0000000..85e82ea
+>> --- /dev/null
+>> +++ b/Documentation/devicetree/bindings/soc/aspeed/xdma.txt
+>> @@ -0,0 +1,23 @@
+>> +* Device tree bindings for the Aspeed XDMA Engine
+>> +
+>> +The XDMA Engine embedded in the AST2500 SOC can perform automatic DMA
+>> +operations over PCI between the AST2500 (acting as a BMC) and a host
+>> processor.
+>> +
+>> +Required properties:
+>> +
+>> + - compatible		"aspeed,ast2500-xdma"
+>> + - reg			contains the offset and length of the memory region
+>> +			assigned to the XDMA registers
+>> + - resets		reset specifier for the syscon reset associated with
+>> +			the XDMA engine
+>> + - interrupts		the interrupt associated with the XDMA engine on this
+>> +			platform
+> The indentation is quite distracting. If you rev the series can you fix it?
+
+
+I think the diff is throwing it off; it all lines up when applied.
+
+Thanks,
+
+Eddie
+
+
 >
-> `properties: {phandle: true, pinctrl-names: true, status: true}` has been
-> merged into my '^.*$' patternProperty, presumably partly from
-> pinctrl-consumer.yaml, and this seems to be the source of the bad
-> output. If as a hack I change my pattern to '^.*_default$' the problem
-> goes away as we no longer try to enforce the constraints on properties
-> provided by other bindings, but the problem is the node names are
-> largely freeform[1] (unless I enforce a naming constraint as part of my
-> bindings?).
+> Otherwise,
 >
-> [1] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Documentation/devicetree/bindings/pinctrl/pinctrl-bindings.txt?h=v5.2-rc6#n112
+> Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
 >
-> >
-> > BTW, You can put the names under a 'definitions' key and then use
-> > '$ref' to reference them from function and group to avoid duplicating
-> > the names. Or use patternProperties with '^(function|group)$'.
->
-> I've used the patternProperties approach above as I couldn't get the
-> definitions/$ref approach to work. I did the following:
+>> +
+>> +Example:
+>> +
+>> +    xdma at 1e6e7000 {
+>> +        compatible = "aspeed,ast2500-xdma";
+>> +        reg = <0x1e6e7000 0x100>;
+>> +        resets = <&syscon ASPEED_RESET_XDMA>;
+>> +        interrupts = <6>;
+>> +    };
+>> -- 
+>> 1.8.3.1
+>>
+>>
 
-The problem is we'd need to process the schema under definitions. The
-YAML encoding we validate against always encodes strings as arrays as
-dtc has no way of knowing if a given property is a string array or
-single string. So to avoid a bunch of boilerplate in every binding, we
-process the schema to transform single strings into arrays of length
-1.
-
-It's probably best to stick with the patternProperties approach. I
-think you can do something like this:
-
-"^.*$":
-  if:
-    type: object
-  then:
-    patternProperties:
-       '^(function|group)$':
-         ...
-
-I'm not completely certain this works though, so if you can send me an
-updated binding with what you have so far I can test it out.
-
-Rob
