@@ -1,112 +1,226 @@
-From: Steven Lee <steven_lee@aspeedtech.com>
-Date: Mon, 31 May 2021 13:23:19 +0800
-Subject: [PATCH v2 1/4] dt-bindings: aspeed-sgpio: Convert txt bindings
- to yaml.
-In-Reply-To: <CACRpkdYnvzOW_86QgLAsNpNXWZXpaMiE7g9_jHZ0ZsFyhOjjAg@mail.gmail.com>
-References: <20210527005455.25758-1-steven_lee@aspeedtech.com>
- <20210527005455.25758-2-steven_lee@aspeedtech.com>
- <CACRpkdZFcFuT9rdrc8BfEBmhy0--9uLMSJWfr=A+nU117_BT8A@mail.gmail.com>
- <20210528040934.GA28403@aspeedtech.com>
- <CACRpkdYnvzOW_86QgLAsNpNXWZXpaMiE7g9_jHZ0ZsFyhOjjAg@mail.gmail.com>
-Message-ID: <20210531052318.GA3973@aspeedtech.com>
+From: Eddie James <eajames@linux.ibm.com>
+Date: Mon, 1 Jul 2019 13:38:56 -0500
+Subject: [PATCH v3 5/8] drivers/soc: xdma: Add PCI device configuration
+ sysfs
+In-Reply-To: <20190531034502.GH17772@u40b0340c692b58f6553c.ant.amazon.com>
+References: <1559153408-31190-1-git-send-email-eajames@linux.ibm.com>
+ <1559153408-31190-6-git-send-email-eajames@linux.ibm.com>
+ <20190531034502.GH17772@u40b0340c692b58f6553c.ant.amazon.com>
+Message-ID: <358d0c5b-1473-bb6a-810d-45230b890a55@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The 05/28/2021 16:35, Linus Walleij wrote:
-> On Fri, May 28, 2021 at 6:10 AM Steven Lee <steven_lee@aspeedtech.com> wrote:
-> > The 05/28/2021 07:51, Linus Walleij wrote:
-> > > On Thu, May 27, 2021 at 2:55 AM Steven Lee <steven_lee@aspeedtech.com> wrote:
-> > >
-> > > > +  max-ngpios:
-> > > > +    description:
-> > > > +      represents the number of actual hardware-supported GPIOs (ie,
-> > > > +      slots within the clocked serial GPIO data). Since each HW GPIO is both an
-> > > > +      input and an output, we provide max_ngpios * 2 lines on our gpiochip
-> > > > +      device. We also use it to define the split between the inputs and
-> > > > +      outputs; the inputs start at line 0, the outputs start at max_ngpios.
-> > > > +    minimum: 0
-> > > > +    maximum: 128
-> > >
-> > > Why can this not be derived from the compatible value?
-> > >
-> > > Normally there should be one compatible per hardware variant
-> > > of the block. And this should be aligned with that, should it not?
-> > >
-> > > If this is not the case, maybe more detailed compatible strings
-> > > are needed, maybe double compatibles with compatible per
-> > > family and SoC?
-> > >
-> >
-> > Thanks for your suggestion.
-> > I add max-ngpios in dt-bindings as there is ngpios defined in
-> > dt-bindings, users can get the both max-ngpios and ngpios information
-> > from dtsi without digging sgpio driver.
-> >
-> > https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/arch/arm/boot/dts/aspeed-g5.dtsi#n354
-> >
-> > If adding more detailed compatibles is better, I will add them to sgpio driver
-> > in V3 patch and remove max-ngpios from dt-bindings.
-> >
-> > Since AST2600 has 2 sgpio controller one with 128 pins and another one with 80 pins.
-> > For supporting max-ngpios in compatibles, 2 platform data for each
-> > ast2600 sgpio controller as follows are necessary.
-> >
-> > ```
-> > static const struct aspeed_sgpio_pdata ast2600_sgpiom1_pdata = {
-> >         .max_ngpios = 128;
-> > };
-> > static const struct aspeed_sgpio_pdata ast2600_sgpiom2_pdata = {
-> >         .max_ngpios = 80;
-> > };
-> >
-> > { .compatible = "aspeed,ast2500-sgpio" , .data = &ast2400_sgpio_pdata, },
-> > { .compatible = "aspeed,ast2600-sgpiom1", .data = &ast2600_sgpiom1_pdata, },
-> > { .compatible = "aspeed,ast2600-sgpiom2", .data = &ast2600_sgpiom2_pdata, },
-> 
-> There is a soft border between two IP blocks being "compatible"
-> and parameterized and two IP blocks being different and having
-> unique compatibles.
-> 
-> For example we know for sure we don't use different compatibles
-> because of how interrupt lines or DMA channels are connected.
-> 
 
-Thanks for sharing the knowledge and examples.
+On 5/30/19 10:45 PM, Eduardo Valentin wrote:
+> On Wed, May 29, 2019 at 01:10:05PM -0500, Eddie James wrote:
+>> The AST2500 has two PCI devices embedded. The XDMA engine can use either
+>> device to perform DMA transfers. Users need the capability to choose
+>> which device to use. This commit therefore adds two sysfs files that
+>> toggle the AST2500 and XDMA engine between the two PCI devices.
+>>
+>> Signed-off-by: Eddie James <eajames@linux.ibm.com>
+>> ---
+>>   drivers/soc/aspeed/aspeed-xdma.c | 103 +++++++++++++++++++++++++++++++++++++--
+>>   1 file changed, 100 insertions(+), 3 deletions(-)
+>>
+>> diff --git a/drivers/soc/aspeed/aspeed-xdma.c b/drivers/soc/aspeed/aspeed-xdma.c
+>> index 39f6545..ddd5e1e 100644
+>> --- a/drivers/soc/aspeed/aspeed-xdma.c
+>> +++ b/drivers/soc/aspeed/aspeed-xdma.c
+>> @@ -143,6 +143,7 @@ struct aspeed_xdma {
+>>   	void *cmdq_vga_virt;
+>>   	struct gen_pool *vga_pool;
+>>   
+>> +	char pcidev[4];
+>>   	struct miscdevice misc;
+>>   };
+>>   
+>> @@ -165,6 +166,10 @@ struct aspeed_xdma_client {
+>>   	SCU_PCIE_CONF_VGA_EN_IRQ | SCU_PCIE_CONF_VGA_EN_DMA |
+>>   	SCU_PCIE_CONF_RSVD;
+>>   
+>> +static char *_pcidev = "vga";
+>> +module_param_named(pcidev, _pcidev, charp, 0600);
+>> +MODULE_PARM_DESC(pcidev, "Default PCI device used by XDMA engine for DMA ops");
+>> +
+>>   static void aspeed_scu_pcie_write(struct aspeed_xdma *ctx, u32 conf)
+>>   {
+>>   	u32 v = 0;
+>> @@ -512,7 +517,7 @@ static int aspeed_xdma_release(struct inode *inode, struct file *file)
+>>   	.release		= aspeed_xdma_release,
+>>   };
+>>   
+>> -static int aspeed_xdma_init_mem(struct aspeed_xdma *ctx)
+>> +static int aspeed_xdma_init_mem(struct aspeed_xdma *ctx, u32 conf)
+>>   {
+>>   	int rc;
+>>   	u32 scu_conf = 0;
+>> @@ -522,7 +527,7 @@ static int aspeed_xdma_init_mem(struct aspeed_xdma *ctx)
+>>   	const u32 vga_sizes[4] = { 0x800000, 0x1000000, 0x2000000, 0x4000000 };
+>>   	void __iomem *sdmc_base = ioremap(0x1e6e0000, 0x100);
+>>   
+>> -	aspeed_scu_pcie_write(ctx, aspeed_xdma_vga_pcie_conf);
+>> +	aspeed_scu_pcie_write(ctx, conf);
+>>   
+>>   	regmap_read(ctx->scu, SCU_STRAP, &scu_conf);
+>>   	ctx->vga_size = vga_sizes[FIELD_GET(SCU_STRAP_VGA_MEM, scu_conf)];
+>> @@ -598,10 +603,91 @@ static int aspeed_xdma_init_mem(struct aspeed_xdma *ctx)
+>>   	return rc;
+>>   }
+>>   
+>> +static int aspeed_xdma_change_pcie_conf(struct aspeed_xdma *ctx, u32 conf)
+>> +{
+>> +	int rc;
+>> +
+>> +	mutex_lock(&ctx->start_lock);
+>> +	rc = wait_event_interruptible_timeout(ctx->wait,
+>> +					      !test_bit(XDMA_IN_PRG,
+>> +							&ctx->flags),
+>> +					      msecs_to_jiffies(1000));
+>> +	if (rc < 0) {
+>> +		mutex_unlock(&ctx->start_lock);
+>> +		return -EINTR;
+>> +	}
+>> +
+>> +	/* previous op didn't complete, wake up waiters anyway */
+>> +	if (!rc)
+>> +		wake_up_interruptible_all(&ctx->wait);
+>> +
+>> +	reset_control_assert(ctx->reset);
+>> +	msleep(10);
+>> +
+>> +	aspeed_scu_pcie_write(ctx, conf);
+>> +	msleep(10);
+>> +
+>> +	reset_control_deassert(ctx->reset);
+>> +	msleep(10);
+>> +
+>> +	aspeed_xdma_init_eng(ctx);
+>> +
+>> +	mutex_unlock(&ctx->start_lock);
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +static int aspeed_xdma_pcidev_to_conf(struct aspeed_xdma *ctx,
+>> +				      const char *pcidev, u32 *conf)
+>> +{
+>> +	if (!strcasecmp(pcidev, "vga")) {
+>> +		*conf = aspeed_xdma_vga_pcie_conf;
+>> +		return 0;
+>> +	}
+>> +
+>> +	if (!strcasecmp(pcidev, "bmc")) {
+>> +		*conf = aspeed_xdma_bmc_pcie_conf;
+>> +		return 0;
+>> +	}
+> strncasecmp()?
 
-> So if this is an external thing, outside of the IP itself, I might back
-> off on this and say it shall be a parameter.
-> 
-> But max-ngpios? It is confusingly similar to ngpios.
-> 
-> So we need to think about this name.
-> 
-> Something like gpio-hardware-slots or something else that
-> really describe what this is.
-> 
-> Does this always strictly follow ngpios so that the number
-> of gpio slots == ngpios * 2? In that case only put ngpios into
-> the device tree and multiply by 2 in the driver, because ngpios
-> is exactly for this: parameterizing hardware limitations.
-> 
 
-The parameter max-ngpios is the maxmum number of gpio pins that SoC supported,
-ngpios is the maximum number of gpio pins that sgpio devices(e.g. sgpio cards) supported.
+Yes, will change, and below.
 
-For instance, a sgpio card that supports 64 gpio pins which is connected to
-ast2600evb sgpio master interface 2. The dts file should be configured as follows.
 
-```
-max-ngpios = <80>
-ngpios = <64>
+>
+>> +
+>> +	return -EINVAL;
+>> +}
+>> +
+>> +static ssize_t aspeed_xdma_show_pcidev(struct device *dev,
+>> +				       struct device_attribute *attr,
+>> +				       char *buf)
+>> +{
+>> +	struct aspeed_xdma *ctx = dev_get_drvdata(dev);
+>> +
+>> +	return snprintf(buf, PAGE_SIZE - 1, "%s", ctx->pcidev);
+>> +}
+>> +
+>> +static ssize_t aspeed_xdma_store_pcidev(struct device *dev,
+>> +					struct device_attribute *attr,
+>> +					const char *buf, size_t count)
+>> +{
+>> +	u32 conf;
+>> +	struct aspeed_xdma *ctx = dev_get_drvdata(dev);
+>> +	int rc = aspeed_xdma_pcidev_to_conf(ctx, buf, &conf);
+>> +
+>> +	if (rc)
+>> +		return rc;
+>> +
+>> +	rc = aspeed_xdma_change_pcie_conf(ctx, conf);
+>> +	if (rc)
+>> +		return rc;
+>> +
+>> +	strcpy(ctx->pcidev, buf);
+> should we use strncpy() instead?
+>
+>> +	return count;
+>> +}
+>> +static DEVICE_ATTR(pcidev, 0644, aspeed_xdma_show_pcidev,
+>> +		   aspeed_xdma_store_pcidev);
+>> +
+>>   static int aspeed_xdma_probe(struct platform_device *pdev)
+>>   {
+>>   	int irq;
+>>   	int rc;
+>> +	u32 conf;
+>>   	struct resource *res;
+>>   	struct device *dev = &pdev->dev;
+>>   	struct aspeed_xdma *ctx = devm_kzalloc(dev, sizeof(*ctx), GFP_KERNEL);
+>> @@ -657,7 +743,14 @@ static int aspeed_xdma_probe(struct platform_device *pdev)
+>>   
+>>   	msleep(10);
+>>   
+>> -	rc = aspeed_xdma_init_mem(ctx);
+>> +	if (aspeed_xdma_pcidev_to_conf(ctx, _pcidev, &conf)) {
+>> +		conf = aspeed_xdma_vga_pcie_conf;
+>> +		strcpy(ctx->pcidev, "vga");
+>> +	} else {
+>> +		strcpy(ctx->pcidev, _pcidev);
+>> +	}
+> same...
+>
+>> +
+>> +	rc = aspeed_xdma_init_mem(ctx, conf);
+>>   	if (rc) {
+>>   		reset_control_assert(ctx->reset);
+>>   		return rc;
+>> @@ -682,6 +775,8 @@ static int aspeed_xdma_probe(struct platform_device *pdev)
+>>   		return rc;
+>>   	}
+>>   
+>> +	device_create_file(dev, &dev_attr_pcidev);
+> Should we consider using one of the default attributes here instead of device_create_file()?
+> http://kroah.com/log/blog/2013/06/26/how-to-create-a-sysfs-file-correctly/
 
-```
 
-About the parameter naming, I was wondering if 'ngpios-of-sgpiom' is more clear
-than max-ngpios as it is the maximum number of gpio pins that sgpio master
-interfaces supported.
+Doesn't seem to be any way to create attributes per device with that 
+method. Setting the device->groups in probe() doesn't do it.
 
-> Yours,
-> Linus Walleij
+
+>
+> BTW, was this ABI documented? Is this the same file documented in patch 2?
+
+
+Patch 4, but yes.
+
+
+>
+>> +
+>>   	return 0;
+>>   }
+>>   
+>> @@ -689,6 +784,8 @@ static int aspeed_xdma_remove(struct platform_device *pdev)
+>>   {
+>>   	struct aspeed_xdma *ctx = platform_get_drvdata(pdev);
+>>   
+>> +	device_remove_file(ctx->dev, &dev_attr_pcidev);
+>> +
+>>   	misc_deregister(&ctx->misc);
+>>   	gen_pool_free(ctx->vga_pool, (unsigned long)ctx->cmdq_vga_virt,
+>>   		      XDMA_CMDQ_SIZE);
+>> -- 
+>> 1.8.3.1
+>>
+
