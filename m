@@ -1,63 +1,52 @@
-From: Russell King - ARM Linux admin <linux@armlinux.org.uk>
-Date: Wed, 10 Jul 2019 10:43:37 +0100
-Subject: [PATCH 00/12] treewide: Fix GENMASK misuses
-In-Reply-To: <5fa1fa6998332642c49e2d5209193ffe2713f333.camel@sipsolutions.net>
-References: <cover.1562734889.git.joe@perches.com>
- <5fa1fa6998332642c49e2d5209193ffe2713f333.camel@sipsolutions.net>
-Message-ID: <20190710094337.wf2lftxzfjq2etro@shell.armlinux.org.uk>
+From: Andrew Jeffery <andrew@aj.id.au>
+Date: Wed, 10 Jul 2019 23:40:09 +0930
+Subject: [PATCH] clk: aspeed: Add SDIO gate
+Message-ID: <20190710141009.20651-1-andrew@aj.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Jul 10, 2019 at 11:17:31AM +0200, Johannes Berg wrote:
-> On Tue, 2019-07-09 at 22:04 -0700, Joe Perches wrote:
-> > These GENMASK uses are inverted argument order and the
-> > actual masks produced are incorrect.  Fix them.
-> > 
-> > Add checkpatch tests to help avoid more misuses too.
-> > 
-> > Joe Perches (12):
-> >   checkpatch: Add GENMASK tests
-> 
-> IMHO this doesn't make a lot of sense as a checkpatch test - just throw
-> in a BUILD_BUG_ON()?
+From: Joel Stanley <joel@jms.id.au>
 
-My personal take on this is that GENMASK() is really not useful, it's
-just pure obfuscation and leads to exactly these kinds of mistakes.
+The clock divisor comes with an enable bit (gate). This was not
+implemented as we didn't have access to SD hardware when writing the
+driver. Now that we can test it, add the gate as a parent to the
+divisor.
 
-Yes, I fully understand the argument that you can just specify the
-start and end bits, and it _in theory_ makes the code more readable.
+There is no reason to expose the gate separately, so users will enable
+it by turning on the ASPEED_CLK_SDIO divisor.
 
-However, the problem is when writing code.  GENMASK(a, b).  Is a the
-starting bit or ending bit?  Is b the number of bits?  It's confusing
-and causes mistakes resulting in incorrect code.  A BUILD_BUG_ON()
-can catch some of the cases, but not all of them.
+Signed-off-by: Joel Stanley <joel@jms.id.au>
+[aj: Minor style cleanup]
+Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
+---
+ drivers/clk/clk-aspeed.c | 11 ++++++++---
+ 1 file changed, 8 insertions(+), 3 deletions(-)
 
-For example:
-
-	GENMASK(6, 2)
-
-would satisify the requirement that a > b, so a BUILD_BUG_ON() will
-not trigger, but was the author meaning 0x3c or 0xc0?
-
-Personally, I've decided I am _not_ going to use GENMASK() in my code
-because I struggle to get the macro arguments correct - I'm _much_
-happier, and it is way more reliable for me to write the mask in hex
-notation.
-
-I think this is where use of a ternary operator would come in use.  The
-normal way of writing a number of bits tends to be "a:b", so if GENMASK
-took something like GENMASK(6:2), then I'd have less issue with it,
-because it's argument is then in a familiar notation.
-
-Yes, I'm sure that someone will point out that the GENMASK arguments
-are just in the same order, but that doesn't prevent _me_ frequently
-getting it wrong - and that's the point.  The macro seems to me to
-cause more problems than it solves.
-
+diff --git a/drivers/clk/clk-aspeed.c b/drivers/clk/clk-aspeed.c
+index 42b4df6ba249..898291501f45 100644
+--- a/drivers/clk/clk-aspeed.c
++++ b/drivers/clk/clk-aspeed.c
+@@ -500,9 +500,14 @@ static int aspeed_clk_probe(struct platform_device *pdev)
+ 		return PTR_ERR(hw);
+ 	aspeed_clk_data->hws[ASPEED_CLK_MPLL] =	hw;
+ 
+-	/* SD/SDIO clock divider (TODO: There's a gate too) */
+-	hw = clk_hw_register_divider_table(dev, "sdio", "hpll", 0,
+-			scu_base + ASPEED_CLK_SELECTION, 12, 3, 0,
++	/* SD/SDIO clock divider and gate */
++	hw = clk_hw_register_gate(dev, "sd_extclk_gate", "hpll", 0,
++				  scu_base + ASPEED_CLK_SELECTION, 15, 0,
++				  &aspeed_clk_lock);
++	if (IS_ERR(hw))
++		return PTR_ERR(hw);
++	hw = clk_hw_register_divider_table(dev, "sd_extclk", "sd_extclk_gate",
++			0, scu_base + ASPEED_CLK_SELECTION, 12, 3, 0,
+ 			soc_data->div_table,
+ 			&aspeed_clk_lock);
+ 	if (IS_ERR(hw))
 -- 
-RMK's Patch system: https://www.armlinux.org.uk/developer/patches/
-FTTC broadband for 0.8mile line in suburbia: sync at 12.1Mbps down 622kbps up
-According to speedtest.net: 11.9Mbps down 500kbps up
+2.20.1
+
