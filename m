@@ -1,147 +1,44 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Wed, 10 Jul 2019 23:43:23 +0930
-Subject: [PATCH 1/3] ARM: config: aspeed-g5: Refresh on 5.2
+Date: Wed, 10 Jul 2019 23:43:24 +0930
+Subject: [PATCH 2/3] ARM: config: aspeed-g5: Enable SD Controller
 In-Reply-To: <20190710141325.20888-1-andrew@aj.id.au>
 References: <20190710141325.20888-1-andrew@aj.id.au>
-Message-ID: <20190710141325.20888-2-andrew@aj.id.au>
+Message-ID: <20190710141325.20888-3-andrew@aj.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-$ make aspeed_g5_defconfig &&
-         make savedefconfig &&
-         mv defconfig arch/arm/configs/aspeed_g5_defconfig
+From: Ryan Chen <ryanchen.aspeed@gmail.com>
 
+Enable various options necessary for building the driver for the ASPEED
+SD controller.
+
+Signed-off-by: Ryan Chen <ryanchen.aspeed@gmail.com>
 Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
 ---
- arch/arm/configs/aspeed_g5_defconfig | 54 ++++++++++++----------------
- 1 file changed, 22 insertions(+), 32 deletions(-)
+ arch/arm/configs/aspeed_g5_defconfig | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
 diff --git a/arch/arm/configs/aspeed_g5_defconfig b/arch/arm/configs/aspeed_g5_defconfig
-index 407ffb7655a8..249eeeb55d59 100644
+index 249eeeb55d59..9cb3cfd35a59 100644
 --- a/arch/arm/configs/aspeed_g5_defconfig
 +++ b/arch/arm/configs/aspeed_g5_defconfig
-@@ -20,29 +20,28 @@ CONFIG_PERF_EVENTS=y
- # CONFIG_COMPAT_BRK is not set
- CONFIG_SLAB=y
- CONFIG_SLAB_FREELIST_RANDOM=y
--CONFIG_JUMP_LABEL=y
--CONFIG_STRICT_KERNEL_RWX=y
--CONFIG_GCC_PLUGINS=y
--# CONFIG_BLK_DEV_BSG is not set
--# CONFIG_BLK_DEBUG_FS is not set
--# CONFIG_IOSCHED_DEADLINE is not set
--# CONFIG_MQ_IOSCHED_DEADLINE is not set
--# CONFIG_MQ_IOSCHED_KYBER is not set
- CONFIG_ARCH_MULTI_V6=y
- # CONFIG_ARCH_MULTI_V7 is not set
- CONFIG_ARCH_ASPEED=y
- CONFIG_MACH_ASPEED_G5=y
- # CONFIG_CACHE_L2X0 is not set
- CONFIG_VMSPLIT_2G=y
--# CONFIG_COMPACTION is not set
- CONFIG_UACCESS_WITH_MEMCPY=y
- CONFIG_SECCOMP=y
- # CONFIG_ATAGS is not set
- CONFIG_ZBOOT_ROM_TEXT=0x0
- CONFIG_ZBOOT_ROM_BSS=0x0
- CONFIG_KEXEC=y
--# CONFIG_CORE_DUMP_DEFAULT_ELF_HEADERS is not set
- # CONFIG_SUSPEND is not set
-+CONFIG_FIRMWARE_MEMMAP=y
-+CONFIG_JUMP_LABEL=y
-+CONFIG_STRICT_KERNEL_RWX=y
-+# CONFIG_BLK_DEV_BSG is not set
-+# CONFIG_BLK_DEBUG_FS is not set
-+# CONFIG_MQ_IOSCHED_DEADLINE is not set
-+# CONFIG_MQ_IOSCHED_KYBER is not set
-+# CONFIG_CORE_DUMP_DEFAULT_ELF_HEADERS is not set
-+# CONFIG_COMPACTION is not set
- CONFIG_NET=y
- CONFIG_PACKET=y
- CONFIG_PACKET_DIAG=y
-@@ -51,20 +50,12 @@ CONFIG_UNIX_DIAG=y
- CONFIG_INET=y
- CONFIG_IP_MULTICAST=y
- CONFIG_SYN_COOKIES=y
--# CONFIG_INET_XFRM_MODE_TRANSPORT is not set
--# CONFIG_INET_XFRM_MODE_TUNNEL is not set
--# CONFIG_INET_XFRM_MODE_BEET is not set
- # CONFIG_INET_DIAG is not set
--# CONFIG_INET6_XFRM_MODE_TRANSPORT is not set
--# CONFIG_INET6_XFRM_MODE_TUNNEL is not set
--# CONFIG_INET6_XFRM_MODE_BEET is not set
- CONFIG_NETFILTER=y
- # CONFIG_NETFILTER_ADVANCED is not set
- CONFIG_VLAN_8021Q=y
- CONFIG_NET_NCSI=y
--CONFIG_BPF_STREAM_PARSER=y
- # CONFIG_WIRELESS is not set
--CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
- CONFIG_DEVTMPFS=y
- CONFIG_DEVTMPFS_MOUNT=y
- # CONFIG_PREVENT_FIRMWARE_BUILD is not set
-@@ -78,8 +69,6 @@ CONFIG_MTD_UBI=y
- CONFIG_MTD_UBI_FASTMAP=y
- CONFIG_MTD_UBI_BLOCK=y
- CONFIG_BLK_DEV_LOOP=y
--CONFIG_ASPEED_LPC_CTRL=y
--CONFIG_ASPEED_LPC_SNOOP=y
- CONFIG_EEPROM_AT24=y
- CONFIG_NETDEVICES=y
- CONFIG_NETCONSOLE=y
-@@ -209,6 +198,8 @@ CONFIG_RTC_DRV_PCF8523=y
- CONFIG_RTC_DRV_RV8803=y
- # CONFIG_VIRTIO_MENU is not set
- # CONFIG_IOMMU_SUPPORT is not set
-+CONFIG_ASPEED_LPC_CTRL=y
-+CONFIG_ASPEED_LPC_SNOOP=y
- CONFIG_IIO=y
- CONFIG_ASPEED_ADC=y
- CONFIG_MAX1363=y
-@@ -219,7 +210,6 @@ CONFIG_FSI_MASTER_HUB=y
- CONFIG_FSI_MASTER_AST_CF=y
- CONFIG_FSI_SCOM=y
- CONFIG_FSI_SBEFIFO=y
--CONFIG_FIRMWARE_MEMMAP=y
- CONFIG_FANOTIFY=y
- CONFIG_OVERLAY_FS=y
- CONFIG_TMPFS=y
-@@ -232,6 +222,17 @@ CONFIG_SQUASHFS=y
- CONFIG_SQUASHFS_XZ=y
- CONFIG_SQUASHFS_ZSTD=y
- # CONFIG_NETWORK_FILESYSTEMS is not set
-+CONFIG_HARDENED_USERCOPY=y
-+CONFIG_FORTIFY_SOURCE=y
-+# CONFIG_CRYPTO_ECHAINIV is not set
-+CONFIG_CRYPTO_HMAC=y
-+CONFIG_CRYPTO_SHA256=y
-+CONFIG_CRYPTO_USER_API_HASH=y
-+# CONFIG_CRYPTO_HW is not set
-+# CONFIG_XZ_DEC_X86 is not set
-+# CONFIG_XZ_DEC_POWERPC is not set
-+# CONFIG_XZ_DEC_IA64 is not set
-+# CONFIG_XZ_DEC_SPARC is not set
- CONFIG_PRINTK_TIME=y
- CONFIG_DYNAMIC_DEBUG=y
- CONFIG_DEBUG_INFO=y
-@@ -250,14 +251,3 @@ CONFIG_FUNCTION_TRACER=y
- # CONFIG_RUNTIME_TESTING_MENU is not set
- CONFIG_DEBUG_WX=y
- CONFIG_DEBUG_USER=y
--CONFIG_HARDENED_USERCOPY=y
--CONFIG_FORTIFY_SOURCE=y
--# CONFIG_CRYPTO_ECHAINIV is not set
--CONFIG_CRYPTO_HMAC=y
--CONFIG_CRYPTO_SHA256=y
--CONFIG_CRYPTO_USER_API_HASH=y
--# CONFIG_CRYPTO_HW is not set
--# CONFIG_XZ_DEC_X86 is not set
--# CONFIG_XZ_DEC_POWERPC is not set
--# CONFIG_XZ_DEC_IA64 is not set
--# CONFIG_XZ_DEC_SPARC is not set
+@@ -182,6 +182,13 @@ CONFIG_USB_CONFIGFS_F_LB_SS=y
+ CONFIG_USB_CONFIGFS_F_FS=y
+ CONFIG_USB_CONFIGFS_F_HID=y
+ CONFIG_USB_CONFIGFS_F_PRINTER=y
++CONFIG_MMC=y
++CONFIG_MMC_BLOCK=y
++CONFIG_MMC_BLOCK_MINORS=8
++CONFIG_MMC_DEBUG=y
++CONFIG_MMC_SDHCI=y
++CONFIG_MMC_SDHCI_PLTFM=y
++CONFIG_MMC_SDHCI_OF_ASPEED=y
+ CONFIG_NEW_LEDS=y
+ CONFIG_LEDS_CLASS=y
+ CONFIG_LEDS_CLASS_FLASH=y
 -- 
 2.20.1
 
