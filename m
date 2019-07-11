@@ -1,56 +1,38 @@
-From: Rob Herring <robh+dt@kernel.org>
-Date: Thu, 11 Jul 2019 07:44:31 -0600
-Subject: [PATCH 1/2] dt-bindings: mmc: Document Aspeed SD controller
-In-Reply-To: <3b0788cf-eee4-48b2-901d-d2ab6716ab1b@www.fastmail.com>
-References: <20190710141611.21159-1-andrew@aj.id.au>
- <20190710141611.21159-2-andrew@aj.id.au>
- <CAL_JsqKrYcUbn_02z9GQO6U4rz7k=p3kB7_G0tKmv25MMZZNQg@mail.gmail.com>
- <3b0788cf-eee4-48b2-901d-d2ab6716ab1b@www.fastmail.com>
-Message-ID: <CAL_Jsq+mAd=US3cbNQexFGrLxhkSyqi2XyGetyHrZV6QMd69EA@mail.gmail.com>
+From: YueHaibing <yuehaibing@huawei.com>
+Date: Thu, 11 Jul 2019 22:24:57 +0800
+Subject: [PATCH -next] pinctrl: aspeed: Make aspeed_pinmux_ips static
+Message-ID: <20190711142457.37028-1-yuehaibing@huawei.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Jul 10, 2019 at 6:56 PM Andrew Jeffery <andrew@aj.id.au> wrote:
->
->
->
-> On Thu, 11 Jul 2019, at 01:20, Rob Herring wrote:
-> > On Wed, Jul 10, 2019 at 8:16 AM Andrew Jeffery <andrew@aj.id.au> wrote:
-> > >
-> > > The ASPEED SD/SDIO/eMMC controller exposes two slots implementing the
-> > > SDIO Host Specification v2.00, with 1 or 4 bit data buses, or an 8 bit
-> > > data bus if only a single slot is enabled.
-> > >
-> > > Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
-> > > ---
-> > >  .../bindings/mmc/sdhci-of-aspeed.yaml         | 91 +++++++++++++++++++
-> >
-> > aspeed,sdhci.yaml
->
-> Ack. Previously I had separate documents for different compatibles, wasn't sure
-> how to tackle name one document covering multiple compatibles.
->
-> >
-> > >  1 file changed, 91 insertions(+)
-> > >  create mode 100644 Documentation/devicetree/bindings/mmc/sdhci-of-aspeed.yaml
-> > >
-> > > diff --git a/Documentation/devicetree/bindings/mmc/sdhci-of-aspeed.yaml b/Documentation/devicetree/bindings/mmc/sdhci-of-aspeed.yaml
-> > > new file mode 100644
-> > > index 000000000000..e98a2ac4d46d
-> > > --- /dev/null
-> > > +++ b/Documentation/devicetree/bindings/mmc/sdhci-of-aspeed.yaml
-> > > @@ -0,0 +1,91 @@
-> > > +# SPDX-License-Identifier: GPL-2.0-or-later
-> >
-> > The preferred license is (GPL-2.0 OR BSD-2-Clause) if that is okay with you.
->
-> I should poke people internally again, I had asked, just haven't got a clear
-> answer. What was the justification for the preference (just so I can pass that
-> on)?
+Fix sparse warning:
 
-To use schema in non-GPL projects. *BSD, Zephyr, etc.
+drivers/pinctrl/aspeed/pinmux-aspeed.c:8:12: warning:
+ symbol 'aspeed_pinmux_ips' was not declared. Should it be static?
 
-Rob
+Reported-by: Hulk Robot <hulkci@huawei.com>
+Signed-off-by: YueHaibing <yuehaibing@huawei.com>
+---
+ drivers/pinctrl/aspeed/pinmux-aspeed.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/pinctrl/aspeed/pinmux-aspeed.c b/drivers/pinctrl/aspeed/pinmux-aspeed.c
+index 5b0fe17..839c01b 100644
+--- a/drivers/pinctrl/aspeed/pinmux-aspeed.c
++++ b/drivers/pinctrl/aspeed/pinmux-aspeed.c
+@@ -5,7 +5,7 @@
+ 
+ #include "pinmux-aspeed.h"
+ 
+-const char *const aspeed_pinmux_ips[] = {
++static const char *const aspeed_pinmux_ips[] = {
+ 	[ASPEED_IP_SCU] = "SCU",
+ 	[ASPEED_IP_GFX] = "GFX",
+ 	[ASPEED_IP_LPC] = "LPC",
+-- 
+2.7.4
+
+
