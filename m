@@ -1,48 +1,36 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Fri, 12 Jul 2019 10:26:26 +0930
-Subject: [PATCH -next] pinctrl: aspeed: Make aspeed_pinmux_ips static
-In-Reply-To: <20190711142457.37028-1-yuehaibing@huawei.com>
-References: <20190711142457.37028-1-yuehaibing@huawei.com>
-Message-ID: <8ed970e9-7062-4905-9d8e-d5f28a0a4919@www.fastmail.com>
+Date: Fri, 12 Jul 2019 13:02:12 +0930
+Subject: [PATCH v2 0/2] mmc: Add support for the ASPEED SD controller
+Message-ID: <20190712033214.24713-1-andrew@aj.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+Hello,
 
+This is v2 of the ASPEED SD controller driver. v2 primarily addresses Rob's
+comments on the bindings in v1. The v1 series can be found here:
 
-On Thu, 11 Jul 2019, at 23:55, YueHaibing wrote:
-> Fix sparse warning:
-> 
-> drivers/pinctrl/aspeed/pinmux-aspeed.c:8:12: warning:
->  symbol 'aspeed_pinmux_ips' was not declared. Should it be static?
-> 
-> Reported-by: Hulk Robot <hulkci@huawei.com>
-> Signed-off-by: YueHaibing <yuehaibing@huawei.com>
+https://lists.ozlabs.org/pipermail/linux-aspeed/2019-July/001988.html
 
-Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
+Please review!
 
-> ---
->  drivers/pinctrl/aspeed/pinmux-aspeed.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/pinctrl/aspeed/pinmux-aspeed.c 
-> b/drivers/pinctrl/aspeed/pinmux-aspeed.c
-> index 5b0fe17..839c01b 100644
-> --- a/drivers/pinctrl/aspeed/pinmux-aspeed.c
-> +++ b/drivers/pinctrl/aspeed/pinmux-aspeed.c
-> @@ -5,7 +5,7 @@
->  
->  #include "pinmux-aspeed.h"
->  
-> -const char *const aspeed_pinmux_ips[] = {
-> +static const char *const aspeed_pinmux_ips[] = {
->  	[ASPEED_IP_SCU] = "SCU",
->  	[ASPEED_IP_GFX] = "GFX",
->  	[ASPEED_IP_LPC] = "LPC",
-> -- 
-> 2.7.4
-> 
-> 
->
+Andrew
+
+Andrew Jeffery (2):
+  dt-bindings: mmc: Document Aspeed SD controller
+  mmc: Add support for the ASPEED SD controller
+
+ .../devicetree/bindings/mmc/aspeed,sdhci.yaml |  90 +++++
+ drivers/mmc/host/Kconfig                      |  12 +
+ drivers/mmc/host/Makefile                     |   1 +
+ drivers/mmc/host/sdhci-of-aspeed.c            | 326 ++++++++++++++++++
+ 4 files changed, 429 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml
+ create mode 100644 drivers/mmc/host/sdhci-of-aspeed.c
+
+-- 
+2.20.1
+
