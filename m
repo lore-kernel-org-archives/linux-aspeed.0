@@ -1,136 +1,123 @@
-From: Maxime Ripard <maxime.ripard@bootlin.com>
-Date: Fri, 12 Jul 2019 15:10:28 +0200
-Subject: [PATCH v2 1/2] dt-bindings: mmc: Document Aspeed SD controller
-In-Reply-To: <20190712033214.24713-2-andrew@aj.id.au>
-References: <20190712033214.24713-1-andrew@aj.id.au>
- <20190712033214.24713-2-andrew@aj.id.au>
-Message-ID: <20190712131028.ba4d4jetg4btsx4u@flea>
+From: Andrzej Hajda <a.hajda@samsung.com>
+Date: Fri, 12 Jul 2019 14:54:09 +0200
+Subject: [PATCH 00/12] treewide: Fix GENMASK misuses
+In-Reply-To: <cover.1562734889.git.joe@perches.com>
+References: <CGME20190710050444epcas1p250f7aa0f8798a7757df51d66f5970c2a@epcas1p2.samsung.com>
+ <cover.1562734889.git.joe@perches.com>
+Message-ID: <469b0d3d-9466-b287-5ca3-27f3d01ff3cd@samsung.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi,
+Hi Joe,
 
-On Fri, Jul 12, 2019 at 01:02:13PM +0930, Andrew Jeffery wrote:
-> The ASPEED SD/SDIO/eMMC controller exposes two slots implementing the
-> SDIO Host Specification v2.00, with 1 or 4 bit data buses, or an 8 bit
-> data bus if only a single slot is enabled.
+On 10.07.2019 07:04, Joe Perches wrote:
+> These GENMASK uses are inverted argument order and the
+> actual masks produced are incorrect.  Fix them.
 >
-> Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
-> ---
-> In v2:
+> Add checkpatch tests to help avoid more misuses too.
 >
-> * Rename to aspeed,sdhci.yaml
-> * Rename sd-controller compatible
-> * Add `maxItems: 1` for reg properties
-> * Move sdhci subnode description to patternProperties
-> * Drop sdhci compatible requirement
-> * #address-cells and #size-cells are required
-> * Prevent additional properties
-> * Implement explicit ranges in example
-> * Remove slot property
+> Joe Perches (12):
+>   checkpatch: Add GENMASK tests
+>   clocksource/drivers/npcm: Fix misuse of GENMASK macro
+>   drm: aspeed_gfx: Fix misuse of GENMASK macro
+>   iio: adc: max9611: Fix misuse of GENMASK macro
+>   irqchip/gic-v3-its: Fix misuse of GENMASK macro
+>   mmc: meson-mx-sdio: Fix misuse of GENMASK macro
+>   net: ethernet: mediatek: Fix misuses of GENMASK macro
+>   net: stmmac: Fix misuses of GENMASK macro
+>   rtw88: Fix misuse of GENMASK macro
+>   phy: amlogic: G12A: Fix misuse of GENMASK macro
+>   staging: media: cedrus: Fix misuse of GENMASK macro
+>   ASoC: wcd9335: Fix misuse of GENMASK macro
 >
->  .../devicetree/bindings/mmc/aspeed,sdhci.yaml | 90 +++++++++++++++++++
->  1 file changed, 90 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml
+>  drivers/clocksource/timer-npcm7xx.c               |  2 +-
+>  drivers/gpu/drm/aspeed/aspeed_gfx.h               |  2 +-
+>  drivers/iio/adc/max9611.c                         |  2 +-
+>  drivers/irqchip/irq-gic-v3-its.c                  |  2 +-
+>  drivers/mmc/host/meson-mx-sdio.c                  |  2 +-
+>  drivers/net/ethernet/mediatek/mtk_eth_soc.h       |  2 +-
+>  drivers/net/ethernet/mediatek/mtk_sgmii.c         |  2 +-
+>  drivers/net/ethernet/stmicro/stmmac/descs.h       |  2 +-
+>  drivers/net/ethernet/stmicro/stmmac/dwmac-sun8i.c |  4 ++--
+>  drivers/net/wireless/realtek/rtw88/rtw8822b.c     |  2 +-
+>  drivers/phy/amlogic/phy-meson-g12a-usb2.c         |  2 +-
+>  drivers/staging/media/sunxi/cedrus/cedrus_regs.h  |  2 +-
+>  scripts/checkpatch.pl                             | 15 +++++++++++++++
+>  sound/soc/codecs/wcd-clsh-v2.c                    |  2 +-
+>  14 files changed, 29 insertions(+), 14 deletions(-)
 >
-> diff --git a/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml b/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml
-> new file mode 100644
-> index 000000000000..67a691c3348c
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml
-> @@ -0,0 +1,90 @@
-> +# SPDX-License-Identifier: GPL-2.0-or-later
-> +%YAML 1.2
-> +---
-> +$id: http://devicetree.org/schemas/mmc/aspeed,sdhci.yaml#
-> +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> +
-> +title: ASPEED SD/SDIO/eMMC Controller
-> +
-> +maintainers:
-> +  - Andrew Jeffery <andrew@aj.id.au>
-> +  - Ryan Chen <ryanchen.aspeed@gmail.com>
-> +
-> +description: |+
-> +  The ASPEED SD/SDIO/eMMC controller exposes two slots implementing the SDIO
-> +  Host Specification v2.00, with 1 or 4 bit data buses, or an 8 bit data bus if
-> +  only a single slot is enabled.
-> +
-> +  The two slots are supported by a common configuration area. As the SDHCIs for
-> +  the slots are dependent on the common configuration area, they are described
-> +  as child nodes.
-> +
-> +properties:
-> +  compatible:
-> +    enum: [ aspeed,ast2400-sd-controller, aspeed,ast2500-sd-controller ]
-> +  reg:
-> +    maxItems: 1
-> +    description: Common configuration registers
-> +  ranges: true
-> +  clocks:
-> +    maxItems: 1
-> +    description: The SD/SDIO controller clock gate
+After adding following compile time check:
 
-#address-cells and #size-cells have not been described here.
+------
 
-> +patternProperties:
-> +  "^sdhci@[0-9a-f]+$":
-> +    type: object
-> +    properties:
-> +      compatible:
-> +        enum: [ aspeed,ast2400-sdhci, aspeed,ast2500-sdhci ]
-> +      reg:
-> +        maxItems: 1
-> +        description: The SDHCI registers
-> +      clocks:
-> +        maxItems: 1
-> +        description: The SD bus clock
-> +      interrupts:
-> +        maxItems: 1
-> +        description: The SD interrupt shared between both slots
-> +    required:
-> +      - compatible
-> +      - reg
-> +      - clocks
-> +      - interrupts
-> +
-> +additionalProperties: false
+diff --git a/Makefile b/Makefile
+index 5102b2bbd224..ac4ea5f443a9 100644
+--- a/Makefile
++++ b/Makefile
+@@ -457,7 +457,7 @@ KBUILD_AFLAGS?? := -D__ASSEMBLY__ -fno-PIE
+?KBUILD_CFLAGS?? := -Wall -Wundef -Werror=strict-prototypes -Wno-trigraphs \
+?????????????????? -fno-strict-aliasing -fno-common -fshort-wchar -fno-PIE \
+?????????????????? -Werror=implicit-function-declaration
+-Werror=implicit-int \
+-????????????????? -Wno-format-security \
++????????????????? -Wno-format-security -Werror=div-by-zero \
+?????????????????? -std=gnu89
+?KBUILD_CPPFLAGS := -D__KERNEL__
+?KBUILD_AFLAGS_KERNEL :=
+diff --git a/include/linux/bits.h b/include/linux/bits.h
+index 669d69441a62..61d74b103055 100644
+--- a/include/linux/bits.h
++++ b/include/linux/bits.h
+@@ -19,11 +19,11 @@
+? * GENMASK_ULL(39, 21) gives us the 64bit vector 0x000000ffffe00000.
+? */
+?#define GENMASK(h, l) \
+-?????? (((~UL(0)) - (UL(1) << (l)) + 1) & \
++?????? (((~UL(0)) - (UL(1) << (l)) + 1 + 0/((h) >= (l))) & \
+???????? (~UL(0) >> (BITS_PER_LONG - 1 - (h))))
+?
+?#define GENMASK_ULL(h, l) \
+-?????? (((~ULL(0)) - (ULL(1) << (l)) + 1) & \
++?????? (((~ULL(0)) - (ULL(1) << (l)) + 1 + 0/((h) >= (l))) & \
+???????? (~ULL(0) >> (BITS_PER_LONG_LONG - 1 - (h))))
+?
+?#endif /* __LINUX_BITS_H */
 
-But that means that it will generate a warning in your DT if you ever
-use them.
+-------
 
-> +required:
-> +  - compatible
-> +  - reg
-> +  - "#address-cells"
-> +  - "#size-cells"
-> +  - ranges
-> +  - clocks
-> +
-> +examples:
-> +  - |
-> +    #include <dt-bindings/clock/aspeed-clock.h>
-> +    sdc at 1e740000 {
-> +            compatible = "aspeed,ast2500-sd-controller";
-> +            reg = <0x1e740000 0x100>;
-> +            #address-cells = <1>;
-> +            #size-cells = <1>;
+I was able to detect one more GENMASK misue (AARCH64, allyesconfig):
 
-Starting with your example.
+? CC????? drivers/phy/rockchip/phy-rockchip-inno-hdmi.o
+In file included from ../include/linux/bitops.h:5:0,
+???????????????? from ../include/linux/kernel.h:12,
+???????????????? from ../include/linux/clk.h:13,
+???????????????? from ../drivers/phy/rockchip/phy-rockchip-inno-hdmi.c:9:
+../drivers/phy/rockchip/phy-rockchip-inno-hdmi.c: In function
+?inno_hdmi_phy_rk3328_power_on?:
+../include/linux/bits.h:22:37: error: division by zero [-Werror=div-by-zero]
+? (((~UL(0)) - (UL(1) << (l)) + 1 + 0/((h) >= (l))) & \
+???????????????????????????????????? ^
+../drivers/phy/rockchip/phy-rockchip-inno-hdmi.c:24:42: note: in
+expansion of macro ?GENMASK?
+?#define UPDATE(x, h, l)? (((x) << (l)) & GENMASK((h), (l)))
+????????????????????????????????????????? ^~~~~~~
+../drivers/phy/rockchip/phy-rockchip-inno-hdmi.c:201:50: note: in
+expansion of macro ?UPDATE?
+?#define RK3328_TERM_RESISTOR_CALIB_SPEED_7_0(x)? UPDATE(x, 7, 9)
+????????????????????????????????????????????????? ^~~~~~
+../drivers/phy/rockchip/phy-rockchip-inno-hdmi.c:1046:26: note: in
+expansion of macro ?RK3328_TERM_RESISTOR_CALIB_SPEED_7_0?
+?? inno_write(inno, 0xc6, RK3328_TERM_RESISTOR_CALIB_SPEED_7_0(v));
 
-Maxime
 
---
-Maxime Ripard, Bootlin
-Embedded Linux and Kernel engineering
-https://bootlin.com
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 228 bytes
-Desc: not available
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20190712/ce3a4c80/attachment.sig>
+Of course I do not advise to add the check as is to Kernel - it is
+undefined behavior area AFAIK.
+
+
+Regards
+
+Andrzej
+
