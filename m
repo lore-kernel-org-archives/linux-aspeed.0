@@ -1,53 +1,136 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Wed, 24 Jul 2019 10:02:12 +0930
-Subject: [PATCH linux dev-5.2] ARM: dts: aspeed: swift: Fix FSI GPIOs
-In-Reply-To: <20190719203037.11795-1-mspinler@linux.ibm.com>
-References: <20190719203037.11795-1-mspinler@linux.ibm.com>
-Message-ID: <7f2c08f5-a04d-499c-b59b-3d62d7f025af@www.fastmail.com>
+From: Maxime Ripard <maxime.ripard@bootlin.com>
+Date: Fri, 12 Jul 2019 15:10:28 +0200
+Subject: [PATCH v2 1/2] dt-bindings: mmc: Document Aspeed SD controller
+In-Reply-To: <20190712033214.24713-2-andrew@aj.id.au>
+References: <20190712033214.24713-1-andrew@aj.id.au>
+ <20190712033214.24713-2-andrew@aj.id.au>
+Message-ID: <20190712131028.ba4d4jetg4btsx4u@flea>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+Hi,
 
-
-On Sat, 20 Jul 2019, at 06:01, Matt Spinler wrote:
-> From: Matt Spinler <spinler@us.ibm.com>
-> 
-> Change the FSI clock and data GPIOs to match what the hardware turned
-> out to use.
-> 
-> Signed-off-by: Matt Spinler <spinler@us.ibm.com>
-
-Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
-
-And yeah, please make sure to include relevant lists in the future as Olof
-mentioned.
-
-Andrew
-
-> ---
->  arch/arm/boot/dts/aspeed-bmc-opp-swift.dts | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-swift.dts 
-> b/arch/arm/boot/dts/aspeed-bmc-opp-swift.dts
-> index caac895c60b4..f14f745b34ca 100644
-> --- a/arch/arm/boot/dts/aspeed-bmc-opp-swift.dts
-> +++ b/arch/arm/boot/dts/aspeed-bmc-opp-swift.dts
-> @@ -207,8 +207,8 @@
->  		#size-cells = <0>;
->  		no-gpio-delays;
->  
-> -		clock-gpios = <&gpio ASPEED_GPIO(AA, 0) GPIO_ACTIVE_HIGH>;
-> -		data-gpios = <&gpio ASPEED_GPIO(E, 0) GPIO_ACTIVE_HIGH>;
-> +		clock-gpios = <&gpio ASPEED_GPIO(P, 1) GPIO_ACTIVE_HIGH>;
-> +		data-gpios = <&gpio ASPEED_GPIO(P, 2) GPIO_ACTIVE_HIGH>;
->  		mux-gpios = <&gpio ASPEED_GPIO(P, 4) GPIO_ACTIVE_HIGH>;
->  		enable-gpios = <&gpio ASPEED_GPIO(P, 0) GPIO_ACTIVE_HIGH>;
->  		trans-gpios = <&gpio ASPEED_GPIO(P, 3) GPIO_ACTIVE_HIGH>;
-> -- 
-> 2.22.0
-> 
+On Fri, Jul 12, 2019 at 01:02:13PM +0930, Andrew Jeffery wrote:
+> The ASPEED SD/SDIO/eMMC controller exposes two slots implementing the
+> SDIO Host Specification v2.00, with 1 or 4 bit data buses, or an 8 bit
+> data bus if only a single slot is enabled.
 >
+> Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
+> ---
+> In v2:
+>
+> * Rename to aspeed,sdhci.yaml
+> * Rename sd-controller compatible
+> * Add `maxItems: 1` for reg properties
+> * Move sdhci subnode description to patternProperties
+> * Drop sdhci compatible requirement
+> * #address-cells and #size-cells are required
+> * Prevent additional properties
+> * Implement explicit ranges in example
+> * Remove slot property
+>
+>  .../devicetree/bindings/mmc/aspeed,sdhci.yaml | 90 +++++++++++++++++++
+>  1 file changed, 90 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml
+>
+> diff --git a/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml b/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml
+> new file mode 100644
+> index 000000000000..67a691c3348c
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml
+> @@ -0,0 +1,90 @@
+> +# SPDX-License-Identifier: GPL-2.0-or-later
+> +%YAML 1.2
+> +---
+> +$id: http://devicetree.org/schemas/mmc/aspeed,sdhci.yaml#
+> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> +
+> +title: ASPEED SD/SDIO/eMMC Controller
+> +
+> +maintainers:
+> +  - Andrew Jeffery <andrew@aj.id.au>
+> +  - Ryan Chen <ryanchen.aspeed@gmail.com>
+> +
+> +description: |+
+> +  The ASPEED SD/SDIO/eMMC controller exposes two slots implementing the SDIO
+> +  Host Specification v2.00, with 1 or 4 bit data buses, or an 8 bit data bus if
+> +  only a single slot is enabled.
+> +
+> +  The two slots are supported by a common configuration area. As the SDHCIs for
+> +  the slots are dependent on the common configuration area, they are described
+> +  as child nodes.
+> +
+> +properties:
+> +  compatible:
+> +    enum: [ aspeed,ast2400-sd-controller, aspeed,ast2500-sd-controller ]
+> +  reg:
+> +    maxItems: 1
+> +    description: Common configuration registers
+> +  ranges: true
+> +  clocks:
+> +    maxItems: 1
+> +    description: The SD/SDIO controller clock gate
+
+#address-cells and #size-cells have not been described here.
+
+> +patternProperties:
+> +  "^sdhci@[0-9a-f]+$":
+> +    type: object
+> +    properties:
+> +      compatible:
+> +        enum: [ aspeed,ast2400-sdhci, aspeed,ast2500-sdhci ]
+> +      reg:
+> +        maxItems: 1
+> +        description: The SDHCI registers
+> +      clocks:
+> +        maxItems: 1
+> +        description: The SD bus clock
+> +      interrupts:
+> +        maxItems: 1
+> +        description: The SD interrupt shared between both slots
+> +    required:
+> +      - compatible
+> +      - reg
+> +      - clocks
+> +      - interrupts
+> +
+> +additionalProperties: false
+
+But that means that it will generate a warning in your DT if you ever
+use them.
+
+> +required:
+> +  - compatible
+> +  - reg
+> +  - "#address-cells"
+> +  - "#size-cells"
+> +  - ranges
+> +  - clocks
+> +
+> +examples:
+> +  - |
+> +    #include <dt-bindings/clock/aspeed-clock.h>
+> +    sdc at 1e740000 {
+> +            compatible = "aspeed,ast2500-sd-controller";
+> +            reg = <0x1e740000 0x100>;
+> +            #address-cells = <1>;
+> +            #size-cells = <1>;
+
+Starting with your example.
+
+Maxime
+
+--
+Maxime Ripard, Bootlin
+Embedded Linux and Kernel engineering
+https://bootlin.com
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 228 bytes
+Desc: not available
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20190712/ce3a4c80/attachment.sig>
