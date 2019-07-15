@@ -1,51 +1,33 @@
-From: Hongwei Zhang <Hongweiz@ami.com>
-Date: Fri, 12 Jul 2019 20:18:39 +0000
-Subject: [linux,dev-5.1 v1] dt-bindings: gpio: aspeed: Add SGPIO support
-In-Reply-To: <9c998f5f-42ef-43bd-b024-839ee00126de@www.fastmail.com>
-References: <1562184069-22332-1-git-send-email-hongweiz@ami.com>
- <9c998f5f-42ef-43bd-b024-839ee00126de@www.fastmail.com>
-Message-ID: <14D3C8298A3B0F42A1EB31EE961CFF82AA8F46AD@atlms2.us.megatrends.com>
+From: Andrew Jeffery <andrew@aj.id.au>
+Date: Mon, 15 Jul 2019 11:55:06 +0930
+Subject: [PATCH 2/3 v2] dt-bindings: gpio: aspeed: Add SGPIO support
+In-Reply-To: <1562962440-15908-1-git-send-email-hongweiz@ami.com>
+References: <1562962440-15908-1-git-send-email-hongweiz@ami.com>
+Message-ID: <56d7603a-c1b9-4893-871d-2aee17329e40@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Thanks for your review, Andrew,
+Hello Hongwei,
 
-Just submitted an updated binding document, with new proper subject line:
-
-[PATCH 2/3 v2] dt-bindings: gpio: aspeed: Add SGPIO support
-
-Regards,
---Hongwei
-
------Original Message-----
-From: Andrew Jeffery <andrew@aj.id.au> 
-Sent: Tuesday, July 9, 2019 10:16 PM
-To: Hongwei Zhang <Hongweiz@ami.com>; devicetree at vger.kernel.org; Joel Stanley <joel@jms.id.au>; Linus Walleij <linus.walleij@linaro.org>
-Cc: Rob Herring <robh+dt@kernel.org>; Mark Rutland <mark.rutland@arm.com>; linux-aspeed at lists.ozlabs.org; linux-kernel at vger.kernel.org
-Subject: Re: [linux,dev-5.1 v1] dt-bindings: gpio: aspeed: Add SGPIO support
-
-
-
-On Thu, 4 Jul 2019, at 05:31, Hongwei Zhang wrote:
+On Sat, 13 Jul 2019, at 05:44, Hongwei Zhang wrote:
 > Add bindings to support SGPIO on AST2400 or AST2500.
 > 
 > Signed-off-by: Hongwei Zhang <hongweiz@ami.com>
 > ---
->  .../devicetree/bindings/gpio/sgpio-aspeed.txt      | 36 ++++++++++++++++++++++
->  1 file changed, 36 insertions(+)
->  create mode 100644 
-> Documentation/devicetree/bindings/gpio/sgpio-aspeed.txt
+>  .../devicetree/bindings/gpio/sgpio-aspeed.txt      | 43 ++++++++++++++++++++++
+>  1 file changed, 43 insertions(+)
+>  create mode 100755 Documentation/devicetree/bindings/gpio/sgpio-aspeed.txt
 > 
-> diff --git a/Documentation/devicetree/bindings/gpio/sgpio-aspeed.txt
+> diff --git a/Documentation/devicetree/bindings/gpio/sgpio-aspeed.txt 
 > b/Documentation/devicetree/bindings/gpio/sgpio-aspeed.txt
-> new file mode 100644
-> index 0000000..f5fc6ef
+> new file mode 100755
+> index 0000000..3ae2b79
 > --- /dev/null
 > +++ b/Documentation/devicetree/bindings/gpio/sgpio-aspeed.txt
-> @@ -0,0 +1,36 @@
+> @@ -0,0 +1,43 @@
 > +Aspeed SGPIO controller Device Tree Bindings
 > +-------------------------------------------
 > +
@@ -61,47 +43,50 @@ On Thu, 4 Jul 2019, at 05:31, Hongwei Zhang wrote:
 > +- gpio-controller	: Marks the device node as a GPIO controller.
 > +- interrupts		: Interrupt specifier (see interrupt bindings for
 > +			  details)
+> +
 > +- interrupt-controller	: Mark the GPIO controller as an 
 > interrupt-controller
+> +
+> +- nr-gpios		: number of GPIO pins to serialise. (should be multiple of 
+> 8, up to 80 pins)
+> +			  if not specified, defaults to 80.
 
-As this is a serial GPIO controller, a critical piece of configuration information is how many GPIOs we wish to serialise. This is done in multiples of 8, up to 80 pins.
+This appears to be a statement about the driver implementation, but bindings
+documents are about describing hardware. Reading the datasheet it actually
+appears the ASPEED SGPIO hardware comes up in what is "technically" a
+forbidden state (equivalent to `nr-gpios = <0>;`), though the device is also
+disabled at this point, so it's probably moot. The point is the true default
+value from a hardware perspective is 0, not 80, so if we're going to talk about
+default values, 0 would be more appropriate. However:
 
-The bindings need to describe the "ngpios" property from the generic GPIO bindings and how this affects the behaviour of the controller.
-
-We also need to add the "bus-frequency" property here to control the rate of SGPMCK.
+You've also listed nr-gpios under the "Required properties" header, but the
+description suggests it's optional. It's either one or the other, please lets be
+clear about it. On that front, lets make it nr-gpios *not* optional (i.e. make it
+required) thus force the specification of how many SGPIOs we want to emit
+on the bus. This value is coupled to the platform design, so I don't think
+there's ever a scenario where we want nr-gpios to take a default value.
 
 > +
-> +Optional properties:
+> +- clocks               : A phandle to the APB clock for SGPM clock 
+> division
 > +
-> +- clocks                : A phandle to the clock to use for debounce 
-> timings
+> +- bus-frequency	: SGPM CLK frequency, if not specified defaults to 1 
+> MHz
 
-We need this, but not for the reason specified, and it should be a required property. We need PCLK (the APB clock) to derive the SGPIO bus frequency. Despite what the datasheet blurb says, there's no debounce control for the SGPIO master (this is a copy/paste mistake from the description of the parallel GPIO master).
+Again here with the default value - SGPM CLK period is derived from PCLK by
+the expression `period = PCLK * 2 *(GPIO254[31:16] + 1)`, where GPIO254's
+initialisation state is `GPIO254[31:16] = 0`, which gives a default SGPM bus
+frequency of PCLK / 2. This is likely not going to be 1MHz (more like ~12MHz).
 
-> +
-> +The sgpio and interrupt properties are further described in their
-> respective
-> +bindings documentation:
-> +
-> +- Documentation/devicetree/bindings/sgpio/gpio.txt
-> +- 
-> +Documentation/devicetree/bindings/interrupt-controller/interrupts.txt
-> +
-> +  Example:
-> +	sgpio at 1e780200 {
-> +		#gpio-cells = <2>;
-> +		compatible = "aspeed,ast2500-sgpio";
-> +		gpio-controller;
-> +		interrupts = <40>;
-> +		reg = <0x1e780200 0x0100>;
-> +		interrupt-controller;
-> +	};
+Lets just make the property required. That way we avoid any ambiguity about
+the bus frequency and thus don't need words about defaults that turn out to
+be about the driver, not about the hardware.
 
-You'll need to fix up the example after making the changes mentioned above.
+Finally, when updating patches in response to feedback, please send the full
+series again, and bump the series version number. That way people can review
+a coherent set of patches and not have to hunt around and (fail to) collate the
+correct combination. It makes it easier to say "Reviewed-by:" on your patches :)
+
+Cheers,
 
 Andrew
-
-> --
-> 2.7.4
-> 
->
