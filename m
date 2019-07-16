@@ -1,9 +1,10 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Tue, 16 Jul 2019 10:07:01 +0930
-Subject: [PATCH] dt-bindings: pinctrl: aspeed: Fix AST2500 example errors
-In-Reply-To: <20190715224841.6771-1-robh@kernel.org>
-References: <20190715224841.6771-1-robh@kernel.org>
-Message-ID: <0b4f89e7-a60f-4978-ba9c-1e04c551b1f1@www.fastmail.com>
+Date: Tue, 16 Jul 2019 10:07:41 +0930
+Subject: =?UTF-8?Q?Re:_[PATCH]_dt-bindings:_pinctrl:_aspeed:_Fix_'compatible'_sch?=
+ =?UTF-8?Q?ema_errors?=
+In-Reply-To: <20190715223725.12924-1-robh@kernel.org>
+References: <20190715223725.12924-1-robh@kernel.org>
+Message-ID: <3c579d04-1a52-4573-825e-44e2ce25adbd@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -12,17 +13,22 @@ Content-Transfer-Encoding: 7bit
 
 
 
-On Tue, 16 Jul 2019, at 08:18, Rob Herring wrote:
-> The schema examples are now validated against the schema itself. The
-> AST2500 pinctrl schema has a couple of errors:
+On Tue, 16 Jul 2019, at 08:07, Rob Herring wrote:
+> The Aspeed pinctl schema have errors in the 'compatible' schema:
 > 
-> Documentation/devicetree/bindings/pinctrl/aspeed,ast2500-pinctrl.example.dt.yaml: \
-> example-0: $nodename:0: 'example-0' does not match 
-> '^(bus|soc|axi|ahb|apb)(@[0-9a-f]+)?$'
-> Documentation/devicetree/bindings/pinctrl/aspeed,ast2500-pinctrl.example.dt.yaml: \
-> pinctrl: aspeed,external-nodes: [[1, 2]] is too short
+> Documentation/devicetree/bindings/pinctrl/aspeed,ast2400-pinctrl.yaml: \
+> properties:compatible:enum: ['aspeed', 'ast2400-pinctrl', 'aspeed', 
+> 'g4-pinctrl'] has non-unique elements
+> Documentation/devicetree/bindings/pinctrl/aspeed,ast2500-pinctrl.yaml: \
+> properties:compatible:enum: ['aspeed', 'ast2500-pinctrl', 'aspeed', 
+> 'g5-pinctrl'] has non-unique elements
+> 
+> Flow style sequences have to be quoted if the vales contain ','. Fix
+> this by using the more common one line per entry formatting.
 > 
 > Fixes: 0a617de16730 ("dt-bindings: pinctrl: aspeed: Convert AST2500 
+> bindings to json-schema")
+> Fixes: 07457937bb5c ("dt-bindings: pinctrl: aspeed: Convert AST2400 
 > bindings to json-schema")
 > Cc: Andrew Jeffery <andrew@aj.id.au>
 > Cc: Linus Walleij <linus.walleij@linaro.org>
@@ -35,36 +41,48 @@ On Tue, 16 Jul 2019, at 08:18, Rob Herring wrote:
 Acked-by: Andrew Jeffery <andrew@aj.id.au>
 
 > ---
->  .../devicetree/bindings/pinctrl/aspeed,ast2500-pinctrl.yaml  | 5 +----
->  1 file changed, 1 insertion(+), 4 deletions(-)
+>  .../devicetree/bindings/pinctrl/aspeed,ast2400-pinctrl.yaml   | 4 +++-
+>  .../devicetree/bindings/pinctrl/aspeed,ast2500-pinctrl.yaml   | 4 +++-
+>  2 files changed, 6 insertions(+), 2 deletions(-)
 > 
+> diff --git 
+> a/Documentation/devicetree/bindings/pinctrl/aspeed,ast2400-pinctrl.yaml 
+> b/Documentation/devicetree/bindings/pinctrl/aspeed,ast2400-pinctrl.yaml
+> index 61a110a7db8a..125599a2dc5e 100644
+> --- 
+> a/Documentation/devicetree/bindings/pinctrl/aspeed,ast2400-pinctrl.yaml
+> +++ 
+> b/Documentation/devicetree/bindings/pinctrl/aspeed,ast2400-pinctrl.yaml
+> @@ -22,7 +22,9 @@ description: |+
+>  
+>  properties:
+>    compatible:
+> -    enum: [ aspeed,ast2400-pinctrl, aspeed,g4-pinctrl ]
+> +    enum:
+> +      - aspeed,ast2400-pinctrl
+> +      - aspeed,g4-pinctrl
+>  
+>  patternProperties:
+>    '^.*$':
 > diff --git 
 > a/Documentation/devicetree/bindings/pinctrl/aspeed,ast2500-pinctrl.yaml 
 > b/Documentation/devicetree/bindings/pinctrl/aspeed,ast2500-pinctrl.yaml
-> index a464cfa0cba3..3e6d85318577 100644
+> index cf561bd55128..a464cfa0cba3 100644
 > --- 
 > a/Documentation/devicetree/bindings/pinctrl/aspeed,ast2500-pinctrl.yaml
 > +++ 
 > b/Documentation/devicetree/bindings/pinctrl/aspeed,ast2500-pinctrl.yaml
-> @@ -76,9 +76,6 @@ required:
+> @@ -22,7 +22,9 @@ description: |+
 >  
->  examples:
->    - |
-> -    compatible = "simple-bus";
-> -    ranges;
-> -
->      apb {
->          compatible = "simple-bus";
->          #address-cells = <1>;
-> @@ -91,7 +88,7 @@ examples:
->  
->              pinctrl: pinctrl {
->                  compatible = "aspeed,g5-pinctrl";
-> -                aspeed,external-nodes = <&gfx &lhc>;
-> +                aspeed,external-nodes = <&gfx>, <&lhc>;
->  
->                  pinctrl_i2c3_default: i2c3_default {
->                      function = "I2C3";
+>  properties:
+>    compatible:
+> -    enum: [ aspeed,ast2500-pinctrl, aspeed,g5-pinctrl ]
+> +    enum:
+> +      - aspeed,ast2500-pinctrl
+> +      - aspeed,g5-pinctrl
+>    aspeed,external-nodes:
+>      minItems: 2
+>      maxItems: 2
 > -- 
 > 2.20.1
 > 
