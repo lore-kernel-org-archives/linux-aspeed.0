@@ -1,10 +1,11 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Tue, 16 Jul 2019 10:07:41 +0930
+Date: Tue, 16 Jul 2019 10:09:55 +0930
 Subject: =?UTF-8?Q?Re:_[PATCH]_dt-bindings:_pinctrl:_aspeed:_Fix_'compatible'_sch?=
  =?UTF-8?Q?ema_errors?=
-In-Reply-To: <20190715223725.12924-1-robh@kernel.org>
+In-Reply-To: <CACPK8Xdz98CQzgE2KCjz8eOhPtx=H8jTe1hVT7LvP77U_gGASQ@mail.gmail.com>
 References: <20190715223725.12924-1-robh@kernel.org>
-Message-ID: <3c579d04-1a52-4573-825e-44e2ce25adbd@www.fastmail.com>
+ <CACPK8Xdz98CQzgE2KCjz8eOhPtx=H8jTe1hVT7LvP77U_gGASQ@mail.gmail.com>
+Message-ID: <ec16c833-371d-4dce-828d-dd99dccc43ee@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -13,77 +14,33 @@ Content-Transfer-Encoding: 7bit
 
 
 
-On Tue, 16 Jul 2019, at 08:07, Rob Herring wrote:
-> The Aspeed pinctl schema have errors in the 'compatible' schema:
+On Tue, 16 Jul 2019, at 08:47, Joel Stanley wrote:
+> On Mon, 15 Jul 2019 at 22:37, Rob Herring <robh@kernel.org> wrote:
+> >
+> > The Aspeed pinctl schema have errors in the 'compatible' schema:
+> >
+> > Documentation/devicetree/bindings/pinctrl/aspeed,ast2400-pinctrl.yaml: \
+> > properties:compatible:enum: ['aspeed', 'ast2400-pinctrl', 'aspeed', 'g4-pinctrl'] has non-unique elements
+> > Documentation/devicetree/bindings/pinctrl/aspeed,ast2500-pinctrl.yaml: \
+> > properties:compatible:enum: ['aspeed', 'ast2500-pinctrl', 'aspeed', 'g5-pinctrl'] has non-unique elements
+> >
+> > Flow style sequences have to be quoted if the vales contain ','. Fix
+> > this by using the more common one line per entry formatting.
 > 
-> Documentation/devicetree/bindings/pinctrl/aspeed,ast2400-pinctrl.yaml: \
-> properties:compatible:enum: ['aspeed', 'ast2400-pinctrl', 'aspeed', 
-> 'g4-pinctrl'] has non-unique elements
-> Documentation/devicetree/bindings/pinctrl/aspeed,ast2500-pinctrl.yaml: \
-> properties:compatible:enum: ['aspeed', 'ast2500-pinctrl', 'aspeed', 
-> 'g5-pinctrl'] has non-unique elements
+> >
+> >  properties:
+> >    compatible:
+> > -    enum: [ aspeed,ast2400-pinctrl, aspeed,g4-pinctrl ]
+> > +    enum:
+> > +      - aspeed,ast2400-pinctrl
+> > +      - aspeed,g4-pinctrl
 > 
-> Flow style sequences have to be quoted if the vales contain ','. Fix
-> this by using the more common one line per entry formatting.
+> Thanks for the fix. However, we've standardised on the first form for
+> all of our device trees, so we can drop the second compatible string
+> from the bindings.
 > 
-> Fixes: 0a617de16730 ("dt-bindings: pinctrl: aspeed: Convert AST2500 
-> bindings to json-schema")
-> Fixes: 07457937bb5c ("dt-bindings: pinctrl: aspeed: Convert AST2400 
-> bindings to json-schema")
-> Cc: Andrew Jeffery <andrew@aj.id.au>
-> Cc: Linus Walleij <linus.walleij@linaro.org>
-> Cc: Joel Stanley <joel@jms.id.au>
-> Cc: linux-aspeed at lists.ozlabs.org
-> Cc: linux-gpio at vger.kernel.org
-> Cc: linux-arm-kernel at lists.infradead.org
-> Signed-off-by: Rob Herring <robh@kernel.org>
+> I think Andrew already has a patch cooking to do this.
 
-Acked-by: Andrew Jeffery <andrew@aj.id.au>
+Yes, I have a series in the works. Will send patches soon.
 
-> ---
->  .../devicetree/bindings/pinctrl/aspeed,ast2400-pinctrl.yaml   | 4 +++-
->  .../devicetree/bindings/pinctrl/aspeed,ast2500-pinctrl.yaml   | 4 +++-
->  2 files changed, 6 insertions(+), 2 deletions(-)
-> 
-> diff --git 
-> a/Documentation/devicetree/bindings/pinctrl/aspeed,ast2400-pinctrl.yaml 
-> b/Documentation/devicetree/bindings/pinctrl/aspeed,ast2400-pinctrl.yaml
-> index 61a110a7db8a..125599a2dc5e 100644
-> --- 
-> a/Documentation/devicetree/bindings/pinctrl/aspeed,ast2400-pinctrl.yaml
-> +++ 
-> b/Documentation/devicetree/bindings/pinctrl/aspeed,ast2400-pinctrl.yaml
-> @@ -22,7 +22,9 @@ description: |+
->  
->  properties:
->    compatible:
-> -    enum: [ aspeed,ast2400-pinctrl, aspeed,g4-pinctrl ]
-> +    enum:
-> +      - aspeed,ast2400-pinctrl
-> +      - aspeed,g4-pinctrl
->  
->  patternProperties:
->    '^.*$':
-> diff --git 
-> a/Documentation/devicetree/bindings/pinctrl/aspeed,ast2500-pinctrl.yaml 
-> b/Documentation/devicetree/bindings/pinctrl/aspeed,ast2500-pinctrl.yaml
-> index cf561bd55128..a464cfa0cba3 100644
-> --- 
-> a/Documentation/devicetree/bindings/pinctrl/aspeed,ast2500-pinctrl.yaml
-> +++ 
-> b/Documentation/devicetree/bindings/pinctrl/aspeed,ast2500-pinctrl.yaml
-> @@ -22,7 +22,9 @@ description: |+
->  
->  properties:
->    compatible:
-> -    enum: [ aspeed,ast2500-pinctrl, aspeed,g5-pinctrl ]
-> +    enum:
-> +      - aspeed,ast2500-pinctrl
-> +      - aspeed,g5-pinctrl
->    aspeed,external-nodes:
->      minItems: 2
->      maxItems: 2
-> -- 
-> 2.20.1
-> 
->
+Andrew
