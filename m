@@ -1,271 +1,49 @@
-From: Vijay Khemka <vijaykhemka@fb.com>
-Date: Mon, 22 Jul 2019 12:24:49 -0700
-Subject: [PATCH 2/2] ARM: dts: aspeed: tiogapass: Add Riser card
-In-Reply-To: <20190722192451.1947348-1-vijaykhemka@fb.com>
+From: Guenter Roeck <linux@roeck-us.net>
+Date: Mon, 22 Jul 2019 13:06:22 -0700
+Subject: [PATCH] dt-bindings: hwmon: Add binding for pxe1610
+In-Reply-To: <20190722192451.1947348-2-vijaykhemka@fb.com>
 References: <20190722192451.1947348-1-vijaykhemka@fb.com>
-Message-ID: <20190722192451.1947348-3-vijaykhemka@fb.com>
+ <20190722192451.1947348-2-vijaykhemka@fb.com>
+Message-ID: <20190722200622.GA20435@roeck-us.net>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Added i2c mux for riser card and multiple ava card and its sensor
-components for Facebook Tiogapass platform
+On Mon, Jul 22, 2019 at 12:24:48PM -0700, Vijay Khemka wrote:
+> Added new DT binding document for Infineon PXE1610 devices.
+> 
+> Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
+> ---
+>  .../devicetree/bindings/hwmon/pxe1610.txt         | 15 +++++++++++++++
+>  1 file changed, 15 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/hwmon/pxe1610.txt
+> 
+> diff --git a/Documentation/devicetree/bindings/hwmon/pxe1610.txt b/Documentation/devicetree/bindings/hwmon/pxe1610.txt
+> new file mode 100644
+> index 000000000000..635daf4955db
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/hwmon/pxe1610.txt
+> @@ -0,0 +1,15 @@
+> +pxe1610 properties
+> +
+> +Required properties:
+> +- compatible: Must be one of the following:
+> +	- "infineon,pxe1610" for pxe1610
+> +	- "infineon,pxe1110" for pxe1610
+> +	- "infineon,pxm1310" for pxm1310
+> +- reg: I2C address
+> +
+> +Example:
+> +
+> +vr at 48 {
+> +	compatible = "infineon,pxe1610";
+> +	reg = <0x48>;
+> +};
 
-Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
----
- .../dts/aspeed-bmc-facebook-tiogapass.dts     | 230 ++++++++++++++++++
- 1 file changed, 230 insertions(+)
+Wouldn't it be better to add this to
+./Documentation/devicetree/bindings/trivial-devices.txt ?
 
-diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
-index b7783833a58c..8d0bcb3cd419 100644
---- a/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
-@@ -12,6 +12,27 @@
- 	aliases {
- 		serial0 = &uart1;
- 		serial4 = &uart5;
-+
-+		/*
-+		 * Hardcode the bus number of i2c switches' channels to
-+		 * avoid breaking the legacy applications.
-+		 */
-+		i2c16 = &imux16;
-+		i2c17 = &imux17;
-+		i2c18 = &imux18;
-+		i2c19 = &imux19;
-+		i2c20 = &imux20;
-+		i2c21 = &imux21;
-+		i2c22 = &imux22;
-+		i2c23 = &imux23;
-+		i2c24 = &imux24;
-+		i2c25 = &imux25;
-+		i2c26 = &imux26;
-+		i2c27 = &imux27;
-+		i2c28 = &imux28;
-+		i2c29 = &imux29;
-+		i2c30 = &imux30;
-+		i2c31 = &imux31;
- 	};
- 	chosen {
- 		stdout-path = &uart5;
-@@ -124,6 +145,215 @@
- &i2c1 {
- 	status = "okay";
- 	//X24 Riser
-+	i2c-switch at 71 {
-+		compatible = "nxp,pca9544";
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+		reg = <0x71>;
-+
-+		imux16: i2c at 0 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <0>;
-+
-+			ina219 at 45 {
-+				compatible = "ti,ina219";
-+				reg = <0x45>;
-+			};
-+
-+			tmp75 at 48 {
-+				compatible = "ti,tmp75";
-+				reg = <0x48>;
-+			};
-+
-+			tmp421 at 49 {
-+				compatible = "ti,tmp75";
-+				reg = <0x49>;
-+			};
-+
-+			eeprom at 50 {
-+				compatible = "atmel,24c64";
-+				reg = <0x50>;
-+				pagesize = <32>;
-+			};
-+
-+			i2c-switch at 73 {
-+				compatible = "nxp,pca9546";
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				reg = <0x73>;
-+
-+				imux20: i2c at 0 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <0>;
-+				};
-+
-+				imux21: i2c at 1 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <1>;
-+				};
-+
-+				imux22: i2c at 2 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <2>;
-+				};
-+
-+				imux23: i2c at 3 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <3>;
-+				};
-+
-+			};
-+
-+		};
-+
-+		imux17: i2c at 1 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <1>;
-+
-+			ina219 at 45 {
-+				compatible = "ti,ina219";
-+				reg = <0x45>;
-+			};
-+
-+			tmp421 at 48 {
-+				compatible = "ti,tmp75";
-+				reg = <0x48>;
-+			};
-+
-+			tmp421 at 49 {
-+				compatible = "ti,tmp75";
-+				reg = <0x49>;
-+			};
-+
-+			eeprom at 50 {
-+				compatible = "atmel,24c64";
-+				reg = <0x50>;
-+				pagesize = <32>;
-+			};
-+
-+			i2c-switch at 73 {
-+				compatible = "nxp,pca9546";
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				reg = <0x73>;
-+
-+				imux24: i2c at 0 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <0>;
-+				};
-+
-+				imux25: i2c at 1 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <1>;
-+				};
-+
-+				imux26: i2c at 2 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <2>;
-+				};
-+
-+				imux27: i2c at 3 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <3>;
-+				};
-+
-+			};
-+
-+		};
-+
-+		imux18: i2c at 2 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <2>;
-+
-+			ina219 at 45 {
-+				compatible = "ti,ina219";
-+				reg = <0x45>;
-+			};
-+
-+			tmp421 at 48 {
-+				compatible = "ti,tmp75";
-+				reg = <0x48>;
-+			};
-+
-+			tmp421 at 49 {
-+				compatible = "ti,tmp75";
-+				reg = <0x49>;
-+			};
-+
-+			eeprom at 50 {
-+				compatible = "atmel,24c64";
-+				reg = <0x50>;
-+				pagesize = <32>;
-+			};
-+
-+			i2c-switch at 73 {
-+				compatible = "nxp,pca9546";
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				reg = <0x73>;
-+
-+				imux28: i2c at 0 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <0>;
-+				};
-+
-+				imux29: i2c at 1 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <1>;
-+				};
-+
-+				imux30: i2c at 2 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <2>;
-+				};
-+
-+				imux31: i2c at 3 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <3>;
-+				};
-+
-+			};
-+
-+		};
-+
-+		imux19: i2c at 3 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <3>;
-+
-+			i2c-switch at 40 {
-+				compatible = "ti,ina219";
-+				reg = <0x40>;
-+			};
-+
-+			i2c-switch at 41 {
-+				compatible = "ti,ina219";
-+				reg = <0x41>;
-+			};
-+
-+			i2c-switch at 45 {
-+				compatible = "ti,ina219";
-+				reg = <0x45>;
-+			};
-+
-+		};
-+
-+	};
- };
- 
- &i2c2 {
--- 
-2.17.1
-
+Thanks,
+Guenter
