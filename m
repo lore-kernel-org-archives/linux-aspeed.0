@@ -1,166 +1,44 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Mon, 22 Jul 2019 11:12:11 +0930
-Subject: [v5 1/2] dt-bindings: gpio: aspeed: Add SGPIO support
-In-Reply-To: <CACRpkdYhVoP75ZDfASW+DH5yf-a5diitiXsh7eLsJx5hsTC9sQ@mail.gmail.com>
-References: <1563564291-9692-1-git-send-email-hongweiz@ami.com>
- <1563564291-9692-2-git-send-email-hongweiz@ami.com>
- <CACRpkdYhVoP75ZDfASW+DH5yf-a5diitiXsh7eLsJx5hsTC9sQ@mail.gmail.com>
-Message-ID: <ef9d9c17-6e2d-4a4e-ac44-f8da4bb3b8eb@www.fastmail.com>
+From: Vijay Khemka <vijaykhemka@fb.com>
+Date: Mon, 22 Jul 2019 12:24:48 -0700
+Subject: [PATCH] dt-bindings: hwmon: Add binding for pxe1610
+In-Reply-To: <20190722192451.1947348-1-vijaykhemka@fb.com>
+References: <20190722192451.1947348-1-vijaykhemka@fb.com>
+Message-ID: <20190722192451.1947348-2-vijaykhemka@fb.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+Added new DT binding document for Infineon PXE1610 devices.
 
+Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
+---
+ .../devicetree/bindings/hwmon/pxe1610.txt         | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/hwmon/pxe1610.txt
 
-On Sat, 20 Jul 2019, at 17:43, Linus Walleij wrote:
-> Hi Hongwei,
-> 
-> after looking close at the driver and bindings I have this feeback:
-> 
-> On Fri, Jul 19, 2019 at 9:25 PM Hongwei Zhang <hongweiz@ami.com> wrote:
-> 
-> +- reg                  : Address and length of the register set for the device
-> 
-> This 0x100 range may look simple but in the driver it looks like
-> this:
-> 
-> +static const struct aspeed_sgpio_bank aspeed_sgpio_banks[] = {
-> +       {
-> +               .val_regs = 0x0000,
-> +               .rdata_reg = 0x0070,
-> +               .irq_regs = 0x0004,
-> +               .names = { "A", "B", "C", "D" },
-> +       },
-> +       {
-> +               .val_regs = 0x001C,
-> +               .rdata_reg = 0x0074,
-> +               .irq_regs = 0x0020,
-> +               .names = { "E", "F", "G", "H" },
-> +       },
-> +       {
-> +               .val_regs = 0x0038,
-> +               .rdata_reg = 0x0078,
-> +               .irq_regs = 0x003C,
-> +               .names = { "I", "J" },
-> +       },
-> +};
-> 
-> So first break this into up to 10 different instances with one device
-> per bank instead.
-> 
-> For each device:
-> 
-> reg = <0x1e780200 4>, <x1e780204 ..>, <0x1e780270 ..>;
-> reg-names = "val", "irq", "rdata";
-> 
-> This way you use the device tree features for locating the
-> register offsets instead of hard-coding it into the driver,
-> which will make the driver simpler.
-> 
-> > +- ngpios               : number of GPIO pins to serialise.
-> > +                         (should be multiple of 8, up to 80 pins)
-> 
-> This is wrong. This should be split into 10 different devices providing
-> 8 GPIO lines each. The "ngpios" is not intended to subdivide
-> banks, but for the case where you use say bits 0..11 of 32 bits in
-> a register by setting ngpios to 12.
-> 
-> I see that they use the same clock divider and the same interrupt,
-> but this is better to partition into a separate clock divider driver
-> and up to 10 instances of GPIO devices with 8 GPIOs each.
-> 
-> I also see that they use the same interrupt. This is fine, in your
-> driver just grab a shared IRQ and all the IRQ handlers will be
-> traversed. This is a well known pattern for all operating systems.
-> 
-> > +- clocks                : A phandle to the APB clock for SGPM clock division
-> > +
-> > +- bus-frequency                : SGPM CLK frequency
-> 
-> I see that there is a common clock control register in offset 0x54.
-> 
-> Split this out to a separate clock driver that provides a divided clock
-> that all GPIO blocks can get, no matter if you use 1, 2 .. 10 of these
-> blocks.
-> 
-> The fact that these GPIO banks and the clock register is in the same
-> memory range does not really matter. Split up the memory range in
-> on reg = per GPIO chip and one reg for the clock.
+diff --git a/Documentation/devicetree/bindings/hwmon/pxe1610.txt b/Documentation/devicetree/bindings/hwmon/pxe1610.txt
+new file mode 100644
+index 000000000000..635daf4955db
+--- /dev/null
++++ b/Documentation/devicetree/bindings/hwmon/pxe1610.txt
+@@ -0,0 +1,15 @@
++pxe1610 properties
++
++Required properties:
++- compatible: Must be one of the following:
++	- "infineon,pxe1610" for pxe1610
++	- "infineon,pxe1110" for pxe1610
++	- "infineon,pxm1310" for pxm1310
++- reg: I2C address
++
++Example:
++
++vr at 48 {
++	compatible = "infineon,pxe1610";
++	reg = <0x48>;
++};
+-- 
+2.17.1
 
-The issue that I see with this is that the SGPIO bus clock configuration
-is not the only field in the SGPIO control register - it also contains the
-number of GPIOs the bus should output along with a bus enable bit.
-The clock, and particularly the number of GPIOs (due to the nature
-of the SGPIO bus) both need to be configured before we set the
-enable bit (or obviously all can be done simultaneously).
-
-I'll explore some of the options below (it's a bit train-of-thought,
-hopefully it makes sense):
-
-If the clock driver owns the control register, it also needs to know how
-many GPIOs we want to emit on the bus. This seems like an awkward
-configuration parameter for a clock driver.
-
-To avoid the weird parameter we could protect the control register
-with a lock shared between the clock driver and the SGPIO driver. This
-way the SGPIO driver could have the ngpios parameter, and request
-the clock after its written the ngpios value to the control register. A
-regmap would be useful here to avoid the resource clash and it also
-provides the required lock.
-
-However, you're also going down the path of splitting the driver such
-that there's one instance per bank. With this approach we need to
-solve two problems: Accounting for the total number of GPIOs, and
-only enabling the bus after the last bank has had its driver probed.
-
-The accounting might be handled by accumulating the number of
-GPIOs in each bank in the control register itself, e.g. the driver
-implementation does something like:
-
-spin_lock(...)
-ctrl = ioread32(...)
-ngpios = FIELD_GET(ASPEED_SGPIO_CTRL_NGPIOS, ctrl);
-ngpios += 8;
-ctrl &= ~ASPEED_SGPIO_CTRL_NGPIOS;
-ctrl |= FIELD_PREP(ASPEED_SGPIO_CTRL_NGPIOS, ngpios);
-iowrite32(ctrl, ...);
-spin_unlock(...);
-
-This works on cold boot of the device when the ngpios field is set to
-zero due to reset, however will fail on subsequent warm reboots if
-the GPIO IP block is protected from reset by the SoC's watchdog
-configuration: the field will not be zeroed in this case, and the
-value of the field is represented by `NR_BOOTS * NR_GPIOS`,
-which is incorrect. To do this correctly I guess we would need some
-other global state held in the driver implementation (zeroed when
-the kernel is loaded), and write the incremented value to the control
-register on each probe() invocation.
-
-However, that aside, we can't simply enable the bus in the clock
-enable callback if enable is called per-bank, as it is called once on
-the first request with further requests simply refcounted as you
-mentioned. This is exactly the behaviour we can't tolerate with the
-bus: it must only be enabled after the last GPIO bank is registered,
-when we know the total number of GPIOs to emit. So we can only
-call clk_prepare_enable() after the last bank is probed, or in the
-probe() of the last bank if the driver has some way to tell it is the
-last instance. In my mind per-bank clock management makes the
-implementation more involved than it should be, and isn't really
-reflective of what the clk subsystem is trying to achieve (violates
-clk_prepare()/clk_enable() post conditions, or boils down to just
-calling devm_clk_get() in probe() with no further action, which 
-seems kinda pointless).
-
-Having a separate clk implementation whose instance is requested
-once by a monolithic SGPIO driver matches how the hardware is
-designed. However, given the issue of sharing the register with the
-GPIO count, in my opinion it seems to make more sense to leave the
-driver design as is and minimise the accidental complexity
-introduced by the behavioural mismatch of the clk abstraction
-and the addition of locking where it wasn't previously necessary.
-
-Interested in your thoughts.
-
-Andrew
