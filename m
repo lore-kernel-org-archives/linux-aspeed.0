@@ -1,49 +1,42 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Date: Mon, 22 Jul 2019 13:06:22 -0700
-Subject: [PATCH] dt-bindings: hwmon: Add binding for pxe1610
-In-Reply-To: <20190722192451.1947348-2-vijaykhemka@fb.com>
-References: <20190722192451.1947348-1-vijaykhemka@fb.com>
- <20190722192451.1947348-2-vijaykhemka@fb.com>
-Message-ID: <20190722200622.GA20435@roeck-us.net>
+From: Olof Johansson <olof@lixom.net>
+Date: Mon, 22 Jul 2019 13:23:04 -0700
+Subject: [PATCH linux dev-5.2] ARM: dts: aspeed: swift: Fix FSI GPIOs
+In-Reply-To: <20190719203037.11795-1-mspinler@linux.ibm.com>
+References: <20190719203037.11795-1-mspinler@linux.ibm.com>
+Message-ID: <CAOesGMhf984ic0O4zhNGo=SfrqDX2wDkYxyfga81JDXkUyciqw@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Jul 22, 2019 at 12:24:48PM -0700, Vijay Khemka wrote:
-> Added new DT binding document for Infineon PXE1610 devices.
-> 
-> Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
-> ---
->  .../devicetree/bindings/hwmon/pxe1610.txt         | 15 +++++++++++++++
->  1 file changed, 15 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/hwmon/pxe1610.txt
-> 
-> diff --git a/Documentation/devicetree/bindings/hwmon/pxe1610.txt b/Documentation/devicetree/bindings/hwmon/pxe1610.txt
-> new file mode 100644
-> index 000000000000..635daf4955db
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/hwmon/pxe1610.txt
-> @@ -0,0 +1,15 @@
-> +pxe1610 properties
-> +
-> +Required properties:
-> +- compatible: Must be one of the following:
-> +	- "infineon,pxe1610" for pxe1610
-> +	- "infineon,pxe1110" for pxe1610
-> +	- "infineon,pxm1310" for pxm1310
-> +- reg: I2C address
-> +
-> +Example:
-> +
-> +vr at 48 {
-> +	compatible = "infineon,pxe1610";
-> +	reg = <0x48>;
-> +};
+On Fri, Jul 19, 2019 at 1:31 PM Matt Spinler <mspinler@linux.ibm.com> wrote:
+>
+> From: Matt Spinler <spinler@us.ibm.com>
+>
+> Change the FSI clock and data GPIOs to match what the hardware turned
+> out to use.
+>
+> Signed-off-by: Matt Spinler <spinler@us.ibm.com>
 
-Wouldn't it be better to add this to
-./Documentation/devicetree/bindings/trivial-devices.txt ?
+Hi,
 
-Thanks,
-Guenter
+This is not a comment on this patch specifically, just an overall
+request for people to adjust how they post patches:
+
+When running get_maintainer.pl on
+arch/arm/boot/dts/aspeed-bmc-opp-swift.dts, I get the following:
+
+[...]
+linux-arm-kernel at lists.infradead.org (moderated list:ARM/ASPEED MACHINE SUPPORT)
+linux-aspeed at lists.ozlabs.org (moderated list:ARM/ASPEED MACHINE SUPPORT)
+[...]
+
+Please include both of them on patches. Lots of people aren't
+subscribed to the aspeed-only mailing list, so coming back later to
+reply to a patch is hard when it hasn't made it into your mailboxes.
+
+
+Thanks!
+
+-Olof
