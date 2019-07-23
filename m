@@ -1,11 +1,10 @@
 From: Vijay Khemka <vijaykhemka@fb.com>
-Date: Tue, 23 Jul 2019 00:12:13 +0000
-Subject: [PATCH] dt-bindings: hwmon: Add binding for pxe1610
-In-Reply-To: <20190722200622.GA20435@roeck-us.net>
+Date: Tue, 23 Jul 2019 00:33:40 +0000
+Subject: [PATCH 1/2] ARM: dts: aspeed: tiogapass: Add VR devices
+In-Reply-To: <802c5419-08ec-4a0e-8a50-ad4a1bbf7f3a@www.fastmail.com>
 References: <20190722192451.1947348-1-vijaykhemka@fb.com>
- <20190722192451.1947348-2-vijaykhemka@fb.com>
- <20190722200622.GA20435@roeck-us.net>
-Message-ID: <6E2B35D8-B538-4C96-B289-27A87ECD74DB@fb.com>
+ <802c5419-08ec-4a0e-8a50-ad4a1bbf7f3a@www.fastmail.com>
+Message-ID: <69DFAF50-E181-4C7A-910A-C45E6E151F8E@fb.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -14,46 +13,86 @@ Content-Transfer-Encoding: 7bit
 
 
 
-?On 7/22/19, 1:06 PM, "Guenter Roeck" <groeck7 at gmail.com on behalf of linux@roeck-us.net> wrote:
+?On 7/22/19, 5:12 PM, "Andrew Jeffery" <andrew@aj.id.au> wrote:
 
-    On Mon, Jul 22, 2019 at 12:24:48PM -0700, Vijay Khemka wrote:
-    > Added new DT binding document for Infineon PXE1610 devices.
+    Hi Vijay,
+    
+    A few nitpicks.
+    
+    On Tue, 23 Jul 2019, at 05:10, Vijay Khemka wrote:
+    > Addes
+    
+    Typo: Adds
+Ack
+    
+    > Voltage
+    
+    Unnecessary capitalisation.
+Ack
+    
+    > regulators Infineon pxe1610 devices to Facebook
+    > tiogapass platform.
     > 
     > Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
     > ---
-    >  .../devicetree/bindings/hwmon/pxe1610.txt         | 15 +++++++++++++++
-    >  1 file changed, 15 insertions(+)
-    >  create mode 100644 Documentation/devicetree/bindings/hwmon/pxe1610.txt
+    >  .../dts/aspeed-bmc-facebook-tiogapass.dts     | 36 +++++++++++++++++++
+    >  1 file changed, 36 insertions(+)
     > 
-    > diff --git a/Documentation/devicetree/bindings/hwmon/pxe1610.txt b/Documentation/devicetree/bindings/hwmon/pxe1610.txt
-    > new file mode 100644
-    > index 000000000000..635daf4955db
-    > --- /dev/null
-    > +++ b/Documentation/devicetree/bindings/hwmon/pxe1610.txt
-    > @@ -0,0 +1,15 @@
-    > +pxe1610 properties
-    > +
-    > +Required properties:
-    > +- compatible: Must be one of the following:
-    > +	- "infineon,pxe1610" for pxe1610
-    > +	- "infineon,pxe1110" for pxe1610
-    > +	- "infineon,pxm1310" for pxm1310
-    > +- reg: I2C address
-    > +
-    > +Example:
-    > +
-    > +vr at 48 {
-    > +	compatible = "infineon,pxe1610";
-    > +	reg = <0x48>;
-    > +};
+    > diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts 
+    > b/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
+    > index c4521eda787c..b7783833a58c 100644
+    > --- a/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
+    > +++ b/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
+    > @@ -144,6 +144,42 @@
+    >  &i2c5 {
+    >  	status = "okay";
+    >  	// CPU Voltage regulators
+    > +	vr at 48 {
     
-    Wouldn't it be better to add this to
-    ./Documentation/devicetree/bindings/trivial-devices.txt ?
-Sure, I didn't know about this file. I will add and send another patch. It is 
-Documentation/devicetree/bindings/trivial-devices.yaml. How do I abandon 
-this patch or just leave it.
+    The recommended generic name is 'regulator', so e.g. regulator at 48
+Ack: Submitted v2 for this patch.
     
-    Thanks,
-    Guenter
+    > +		compatible = "infineon,pxe1610";
+    > +		reg = <0x48>;
+    > +	};
+    > +	vr at 4a {
+    > +		compatible = "infineon,pxe1610";
+    > +		reg = <0x4a>;
+    > +	};
+    > +	vr at 50 {
+    > +		compatible = "infineon,pxe1610";
+    > +		reg = <0x50>;
+    > +	};
+    > +	vr at 52 {
+    > +		compatible = "infineon,pxe1610";
+    > +		reg = <0x52>;
+    > +	};
+    > +	vr at 58 {
+    > +		compatible = "infineon,pxe1610";
+    > +		reg = <0x58>;
+    > +	};
+    > +	vr at 5a {
+    > +		compatible = "infineon,pxe1610";
+    > +		reg = <0x5a>;
+    > +	};
+    > +	vr at 68 {
+    > +		compatible = "infineon,pxe1610";
+    > +		reg = <0x68>;
+    > +	};
+    > +	vr at 70 {
+    > +		compatible = "infineon,pxe1610";
+    > +		reg = <0x70>;
+    > +	};
+    > +	vr at 72 {
+    > +		compatible = "infineon,pxe1610";
+    > +		reg = <0x72>;
+    > +	};
+    >  };
+    >  
+    >  &i2c6 {
+    > -- 
+    > 2.17.1
+    > 
+    >
     
 
