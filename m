@@ -1,27 +1,35 @@
-From: Rob Herring <robh+dt@kernel.org>
-Date: Wed, 24 Jul 2019 07:40:00 -0600
-Subject: [PATCH 3/3] dt-bindings: aspeed: Remove mention of deprecated
- compatibles
-In-Reply-To: <20190724081313.12934-4-andrew@aj.id.au>
-References: <20190724081313.12934-1-andrew@aj.id.au>
- <20190724081313.12934-4-andrew@aj.id.au>
-Message-ID: <CAL_JsqLEb3QSLAhm9BsFa+A_Jmgr4gDtV2nUCKkgwwQaMLBk9g@mail.gmail.com>
+From: Joe Perches <joe@perches.com>
+Date: Wed, 24 Jul 2019 10:16:22 -0700
+Subject: [PATCH 03/12] drm: aspeed_gfx: Fix misuse of GENMASK macro
+In-Reply-To: <cddd7ad7e9f81dec1e86c106f04229d21fc21920.1562734889.git.joe@perches.com>
+References: <cover.1562734889.git.joe@perches.com>
+ <cddd7ad7e9f81dec1e86c106f04229d21fc21920.1562734889.git.joe@perches.com>
+Message-ID: <2a0c5ef5c7e20b190156908991e4c964a501d80a.camel@perches.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Jul 24, 2019 at 2:13 AM Andrew Jeffery <andrew@aj.id.au> wrote:
->
-> Guide readers away from using the aspeed,g[45].* compatible patterns.
->
-> Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
+On Tue, 2019-07-09 at 22:04 -0700, Joe Perches wrote:
+> Arguments are supposed to be ordered high then low.
+> 
+> Signed-off-by: Joe Perches <joe@perches.com>
 > ---
->  Documentation/devicetree/bindings/mfd/aspeed-scu.txt         | 2 --
->  Documentation/devicetree/bindings/misc/aspeed-p2a-ctrl.txt   | 2 --
->  .../devicetree/bindings/pinctrl/aspeed,ast2400-pinctrl.yaml  | 5 +----
->  .../devicetree/bindings/pinctrl/aspeed,ast2500-pinctrl.yaml  | 4 +---
->  4 files changed, 2 insertions(+), 11 deletions(-)
+>  drivers/gpu/drm/aspeed/aspeed_gfx.h | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/gpu/drm/aspeed/aspeed_gfx.h b/drivers/gpu/drm/aspeed/aspeed_gfx.h
+> index a10358bb61ec..095ea03e5833 100644
+> --- a/drivers/gpu/drm/aspeed/aspeed_gfx.h
+> +++ b/drivers/gpu/drm/aspeed/aspeed_gfx.h
+> @@ -74,7 +74,7 @@ int aspeed_gfx_create_output(struct drm_device *drm);
+>  /* CTRL2 */
+>  #define CRT_CTRL_DAC_EN			BIT(0)
+>  #define CRT_CTRL_VBLANK_LINE(x)		(((x) << 20) & CRT_CTRL_VBLANK_LINE_MASK)
+> -#define CRT_CTRL_VBLANK_LINE_MASK	GENMASK(20, 31)
+> +#define CRT_CTRL_VBLANK_LINE_MASK	GENMASK(31, 20)
 
-Reviewed-by: Rob Herring <robh@kernel.org>
+ping?
+
+
