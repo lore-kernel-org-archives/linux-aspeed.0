@@ -1,7 +1,9 @@
 From: sudheer.v <open.sudheer@gmail.com>
-Date: Fri, 26 Jul 2019 18:57:15 +0530
-Subject: [patch v4 0/5] *** AST2500 DMA UART driver ***
-Message-ID: <1564147640-30753-1-git-send-email-open.sudheer@gmail.com>
+Date: Fri, 26 Jul 2019 18:57:18 +0530
+Subject: [patch v4 3/5] DT nodes for AST2500 DMA UART driver
+In-Reply-To: <1564147640-30753-1-git-send-email-open.sudheer@gmail.com>
+References: <1564147640-30753-1-git-send-email-open.sudheer@gmail.com>
+Message-ID: <1564147640-30753-4-git-send-email-open.sudheer@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -10,46 +12,149 @@ Content-Transfer-Encoding: 7bit
 
 From: sudheer veliseti <sudheer.open@gmail.com>
 
-Hi,
+DT node for DMA controller(ast_uart_sdma) doesn't bind to any DMA controller driver.
+This is because Software for DMA controller is not based on DMA framework,but is dedicated
+and serves only UARTs in AST2500. ast_uart_sdma node is searched by compatible string in the 
+driver software.basic use of this node is to provide register base address of DMA controller and DMA irq number(<50>).
+IRQ of DMA controller is of crucial importance, which does RX and TX of UART data. 
 
-In this patchset v4,all the comments provided for patchset v3
-are addressed.Also there is considerable
-change in the code related to how the per port
-uart structure is registerd with uart core.
-so the patch [patch v4 1/5] considerably differs from [patch v3 1/5]
+uart nodes dma_uart1,2...etc binds to the platform driver.
+irq numbers <9>,<32>,<33>,<34> in dma_uart nodes install ISRs which are of not much interest in uart data TX/RX .
 
-Thanks and Regards
-Sudheer.V
 
-changes in v4:
-- since TX uart interrupt is being invoked by 8250 framework
-  instead of expected TX DMA interrupt,registration of uart port is changed.
-  per port uart structure registration is done directly now
-  instead of going throgh 8250 framework.
-  so there is considerable change in code against v3 patch
-changes in v3:
-- custom debugs replaced with pr_debug in 8250_ast2500_uart_dma.c
-- change logs added in patches
+Signed-off-by: sudheer veliseti <sudheer.open@gmail.com>
+---
 
-sudheer veliseti (5):
-  AST2500 DMA UART driver
-  build configuration for AST2500 DMA UART driver
-  DT nodes for AST2500 DMA UART driver
-  defconfig and MAINTAINERS updated for AST2500 DMA UART driver
-  Documentation: DT bindings AST2500 DMA UART driver
+changes from v3->v4:
+-
+changes from v2->v3:
+- change logs added
 
- .../bindings/serial/ast2500-dma-uart.txt      |   43 +
- MAINTAINERS                                   |   12 +
- arch/arm/boot/dts/aspeed-ast2500-evb.dts      |   21 +
- arch/arm/boot/dts/aspeed-g5.dtsi              |   71 +-
- arch/arm/configs/aspeed_g5_defconfig          |    1 +
- .../tty/serial/8250/8250_ast2500_uart_dma.c   | 1901 +++++++++++++++++
- drivers/tty/serial/8250/Kconfig               |   45 +-
- drivers/tty/serial/8250/Makefile              |    1 +
- 8 files changed, 2090 insertions(+), 5 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/serial/ast2500-dma-uart.txt
- create mode 100644 drivers/tty/serial/8250/8250_ast2500_uart_dma.c
+ arch/arm/boot/dts/aspeed-ast2500-evb.dts | 21 +++++++
+ arch/arm/boot/dts/aspeed-g5.dtsi         | 71 ++++++++++++++++++++++--
+ 2 files changed, 88 insertions(+), 4 deletions(-)
 
+diff --git a/arch/arm/boot/dts/aspeed-ast2500-evb.dts b/arch/arm/boot/dts/aspeed-ast2500-evb.dts
+index 5dbb33c10c4f..4da09fbe94df 100644
+--- a/arch/arm/boot/dts/aspeed-ast2500-evb.dts
++++ b/arch/arm/boot/dts/aspeed-ast2500-evb.dts
+@@ -64,6 +64,27 @@
+ 	status = "okay";
+ };
+ 
++&ast_uart_sdma {
++	status = "okay";
++};
++
++&dma_uart1 {
++	status = "okay";
++};
++
++&dma_uart2 {
++	status = "okay";
++};
++
++&dma_uart3 {
++	status = "okay";
++};
++
++&dma_uart4 {
++	status = "okay";
++};
++
++
+ &mac0 {
+ 	status = "okay";
+ 
+diff --git a/arch/arm/boot/dts/aspeed-g5.dtsi b/arch/arm/boot/dts/aspeed-g5.dtsi
+index 674746513031..fb7b3ed463de 100644
+--- a/arch/arm/boot/dts/aspeed-g5.dtsi
++++ b/arch/arm/boot/dts/aspeed-g5.dtsi
+@@ -23,10 +23,10 @@
+ 		i2c11 = &i2c11;
+ 		i2c12 = &i2c12;
+ 		i2c13 = &i2c13;
+-		serial0 = &uart1;
+-		serial1 = &uart2;
+-		serial2 = &uart3;
+-		serial3 = &uart4;
++		serial0 = &dma_uart1;
++		serial1 = &dma_uart2;
++		serial2 = &dma_uart3;
++		serial3 = &dma_uart4;
+ 		serial4 = &uart5;
+ 		serial5 = &vuart;
+ 		peci0 = &peci0;
+@@ -497,6 +497,69 @@
+ 				status = "disabled";
+ 			};
+ 
++			ast_uart_sdma: uart_sdma at 1e79e000 {
++				compatible = "aspeed,ast-uart-sdma";
++				reg = <0x1e79e000 0x400>;
++				interrupts = <50>;
++				status = "disabled";
++			};
++
++			dma_uart1: dma_uart1 at 1e783000{
++				compatible = "aspeed,ast-sdma-uart";
++				reg = <0x1e783000 0x1000>;
++				reg-shift = <2>;
++				interrupts = <9>;
++				clocks = <&syscon ASPEED_CLK_GATE_UART1CLK>;
++				dma-channel = <0>;
++				no-loopback-test;
++				pinctrl-names = "default";
++				pinctrl-0 = <&pinctrl_txd1_default
++							 &pinctrl_rxd1_default>;
++				status = "disabled";
++			};
++
++			dma_uart2: dma_uart2 at 1e78d000{
++				compatible = "aspeed,ast-sdma-uart";
++				reg = <0x1e78d000 0x1000>;
++				reg-shift = <2>;
++				interrupts = <32>;
++				clocks = <&syscon ASPEED_CLK_GATE_UART2CLK>;
++				dma-channel = <1>;
++				no-loopback-test;
++				pinctrl-names = "default";
++				pinctrl-0 = <&pinctrl_txd2_default
++							 &pinctrl_rxd2_default>;
++				status = "disabled";
++			};
++
++			dma_uart3: dma_uart3 at 1e78e000{
++				compatible = "aspeed,ast-sdma-uart";
++				reg = <0x1e78e000 0x1000>;
++				reg-shift = <2>;
++				interrupts = <33>;
++				clocks = <&syscon ASPEED_CLK_GATE_UART3CLK>;
++				dma-channel = <2>;
++				no-loopback-test;
++				pinctrl-names = "default";
++				pinctrl-0 = <&pinctrl_txd3_default
++							 &pinctrl_rxd3_default>;
++				status = "disabled";
++			};
++
++			dma_uart4: dma_uart4 at 1e78f000{
++				compatible = "aspeed,ast-sdma-uart";
++				reg = <0x1e78f000 0x1000>;
++				reg-shift = <2>;
++				interrupts = <34>;
++				clocks = <&syscon ASPEED_CLK_GATE_UART4CLK>;
++				dma-channel = <3>;
++				no-loopback-test;
++				pinctrl-names = "default";
++				pinctrl-0 = <&pinctrl_txd4_default
++							 &pinctrl_rxd4_default>;
++				status = "disabled";
++			};
++
+ 			i2c: bus at 1e78a000 {
+ 				compatible = "simple-bus";
+ 				#address-cells = <1>;
 -- 
 2.17.1
 
