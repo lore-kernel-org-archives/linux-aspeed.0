@@ -1,69 +1,51 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Fri, 26 Jul 2019 15:09:50 +0930
-Subject: [PATCH 08/17] ARM: dts: aspeed: Cleanup lpc-ctrl and snoop regs
+Date: Fri, 26 Jul 2019 15:09:51 +0930
+Subject: [PATCH 09/17] ARM: dts: ibm-power9-dual: Add a unit address for OCC
+ nodes
 In-Reply-To: <20190726053959.2003-1-andrew@aj.id.au>
 References: <20190726053959.2003-1-andrew@aj.id.au>
-Message-ID: <20190726053959.2003-9-andrew@aj.id.au>
+Message-ID: <20190726053959.2003-10-andrew@aj.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Fix the following warning:
+These temporarily have a unit address until userspace is fixed up as
+noted in comments elsewhere in the dtsi.
 
-    arch/arm/boot/dts/aspeed-g5.dtsi:409.27-414.8: Warning (unique_unit_address): /ahb/apb/lpc at 1e789000/lpc-host at 80/lpc-ctrl at 0: duplicate unit-address (also used in node /ahb/apb/lpc at 1e789000/lpc-host at 80/lpc-snoop at 0)
+Fixes the following warning:
+
+    arch/arm/boot/dts/ibm-power9-dual.dtsi:89.18-91.6: Warning (unit_address_vs_reg): /gpio-fsi/cfam at 0,0/sbefifo at 2400/occ: node has a reg or ranges property, but no unit name
+    arch/arm/boot/dts/ibm-power9-dual.dtsi:190.18-192.6: Warning (unit_address_vs_reg): /gpio-fsi/cfam at 0,0/hub at 3400/cfam at 1,0/sbefifo at 2400/occ: node has a reg or ranges property, but no unit name
 
 Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
 ---
- arch/arm/boot/dts/aspeed-g4.dtsi | 6 +++---
- arch/arm/boot/dts/aspeed-g5.dtsi | 6 +++---
- 2 files changed, 6 insertions(+), 6 deletions(-)
+ arch/arm/boot/dts/ibm-power9-dual.dtsi | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/arm/boot/dts/aspeed-g4.dtsi b/arch/arm/boot/dts/aspeed-g4.dtsi
-index dd4b0b15afcf..ed78020f6269 100644
---- a/arch/arm/boot/dts/aspeed-g4.dtsi
-+++ b/arch/arm/boot/dts/aspeed-g4.dtsi
-@@ -296,14 +296,14 @@
+diff --git a/arch/arm/boot/dts/ibm-power9-dual.dtsi b/arch/arm/boot/dts/ibm-power9-dual.dtsi
+index 2abc42eda7b0..a0fa65b44b0f 100644
+--- a/arch/arm/boot/dts/ibm-power9-dual.dtsi
++++ b/arch/arm/boot/dts/ibm-power9-dual.dtsi
+@@ -86,7 +86,7 @@
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
  
- 					lpc_ctrl: lpc-ctrl at 0 {
- 						compatible = "aspeed,ast2400-lpc-ctrl";
--						reg = <0x0 0x80>;
-+						reg = <0x0 0x10>;
- 						clocks = <&syscon ASPEED_CLK_GATE_LCLK>;
- 						status = "disabled";
- 					};
+-			fsi_occ0: occ {
++			fsi_occ0: occ at 1 {
+ 				compatible = "ibm,p9-occ";
+ 			};
+ 		};
+@@ -187,7 +187,7 @@
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
  
--					lpc_snoop: lpc-snoop at 0 {
-+					lpc_snoop: lpc-snoop at 10 {
- 						compatible = "aspeed,ast2400-lpc-snoop";
--						reg = <0x0 0x80>;
-+						reg = <0x10 0x8>;
- 						interrupts = <8>;
- 						status = "disabled";
- 					};
-diff --git a/arch/arm/boot/dts/aspeed-g5.dtsi b/arch/arm/boot/dts/aspeed-g5.dtsi
-index 3b4af88f9b80..a8a593dd2240 100644
---- a/arch/arm/boot/dts/aspeed-g5.dtsi
-+++ b/arch/arm/boot/dts/aspeed-g5.dtsi
-@@ -408,14 +408,14 @@
- 
- 					lpc_ctrl: lpc-ctrl at 0 {
- 						compatible = "aspeed,ast2500-lpc-ctrl";
--						reg = <0x0 0x80>;
-+						reg = <0x0 0x10>;
- 						clocks = <&syscon ASPEED_CLK_GATE_LCLK>;
- 						status = "disabled";
- 					};
- 
--					lpc_snoop: lpc-snoop at 0 {
-+					lpc_snoop: lpc-snoop at 10 {
- 						compatible = "aspeed,ast2500-lpc-snoop";
--						reg = <0x0 0x80>;
-+						reg = <0x10 0x8>;
- 						interrupts = <8>;
- 						status = "disabled";
- 					};
+-			fsi_occ1: occ {
++			fsi_occ1: occ at 2 {
+ 				compatible = "ibm,p9-occ";
+ 			};
+ 		};
 -- 
 2.20.1
 
