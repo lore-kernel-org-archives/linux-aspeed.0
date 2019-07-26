@@ -1,58 +1,43 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Fri, 26 Jul 2019 16:17:31 +0930
-Subject: [PATCH v2 2/2] mmc: Add support for the ASPEED SD controller
-In-Reply-To: <8a7bfe52-83ca-7601-7d75-e5615da7b5de@intel.com>
-References: <20190712033214.24713-1-andrew@aj.id.au>
- <20190712033214.24713-3-andrew@aj.id.au>
- <d6f7fdf2-07ed-354a-ca29-f3175623679c@intel.com>
- <7cd30f3d-43fd-42da-9301-091eb2625c65@www.fastmail.com>
- <8a7bfe52-83ca-7601-7d75-e5615da7b5de@intel.com>
-Message-ID: <4c6c020d-5985-4c57-aaae-c2393f9cc2fc@www.fastmail.com>
+From: Alexander A. Filippov <a.filippov@yadro.com>
+Date: Fri, 26 Jul 2019 10:56:53 +0300
+Subject: [PATCH 04/17] ARM: dts: vesnin: Add unit address for memory node
+In-Reply-To: <20190726053959.2003-5-andrew@aj.id.au>
+References: <20190726053959.2003-1-andrew@aj.id.au>
+ <20190726053959.2003-5-andrew@aj.id.au>
+Message-ID: <20190726075653.GA10397@bbwork.lan>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-
-
-On Fri, 26 Jul 2019, at 15:27, Adrian Hunter wrote:
-> On 26/07/19 3:52 AM, Andrew Jeffery wrote:
-> > On Thu, 25 Jul 2019, at 22:49, Adrian Hunter wrote:
-> >> On 12/07/19 6:32 AM, Andrew Jeffery wrote:
-> >>> +static int aspeed_sdhci_probe(struct platform_device *pdev)
-> >>> +{
-> >>> +	struct sdhci_pltfm_host *pltfm_host;
-> >>> +	struct aspeed_sdhci *dev;
-> >>> +	struct sdhci_host *host;
-> >>> +	struct resource *res;
-> >>> +	int slot;
-> >>> +	int ret;
-> >>> +
-> >>> +	host = sdhci_pltfm_init(pdev, &aspeed_sdc_pdata, sizeof(*dev));
-> >>> +	if (IS_ERR(host))
-> >>> +		return PTR_ERR(host);
-> >>> +
-> >>> +	pltfm_host = sdhci_priv(host);
-> >>> +	dev = sdhci_pltfm_priv(pltfm_host);
-> >>> +	dev->parent = dev_get_drvdata(pdev->dev.parent);
-> >>> +
-> >>> +	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> >>> +	slot = aspeed_sdhci_calculate_slot(dev, res);
-> >>> +	if (slot < 0)
-> >>> +		return slot;
-> >>> +	dev_info(&pdev->dev, "Configuring for slot %d\n", slot);
-> >>> +	dev->width_mask = !slot ? ASPEED_SDC_S0MMC8 : ASPEED_SDC_S1MMC8;
-> >>
-> >> That implies that you only support 2 slots which begs the question why
-> >> you don't validate slot.
-> > 
-> > I'm not sure what you mean here, but I'll dig into it.
+On Fri, Jul 26, 2019 at 03:09:46PM +0930, Andrew Jeffery wrote:
+> Fixes the following warnings:
 > 
-> I just meant, if you only support 2 slots:
+>     arch/arm/boot/dts/aspeed-bmc-opp-vesnin.dt.yaml: /: memory: False schema does not allow {'reg': [[1073741824, 536870912]]}
+>     arch/arm/boot/dts/aspeed-bmc-opp-vesnin.dt.yaml: memory: 'device_type' is a required property
 > 
-> 	if (slot > 1)
-> 		return -EINVAL;
->
+> Cc: Alexander Filippov <a.filippov@yadro.com>
+> Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
+> ---
+>  arch/arm/boot/dts/aspeed-bmc-opp-vesnin.dts | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-vesnin.dts b/arch/arm/boot/dts/aspeed-bmc-opp-vesnin.dts
+> index 0b9e29c3212e..81d9dcb752a0 100644
+> --- a/arch/arm/boot/dts/aspeed-bmc-opp-vesnin.dts
+> +++ b/arch/arm/boot/dts/aspeed-bmc-opp-vesnin.dts
+> @@ -14,7 +14,7 @@
+>  		bootargs = "console=ttyS4,115200 earlyprintk";
+>  	};
+>  
+> -	memory {
+> +	memory at 40000000 {
+>  		reg = <0x40000000 0x20000000>;
+>  	};
+>  
+> -- 
+> 2.20.1
+> 
 
-Oh, sure.
+Tested-by: Alexander Filippov <a.filippov@yadro.com>
