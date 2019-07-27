@@ -1,80 +1,112 @@
-From: sudheer.v <open.sudheer@gmail.com>
-Date: Fri, 26 Jul 2019 18:57:20 +0530
-Subject: [patch v4 5/5] Documentation: DT bindings AST2500 DMA UART driver
-In-Reply-To: <1564147640-30753-1-git-send-email-open.sudheer@gmail.com>
-References: <1564147640-30753-1-git-send-email-open.sudheer@gmail.com>
-Message-ID: <1564147640-30753-6-git-send-email-open.sudheer@gmail.com>
+From: Oskar Senft <osk@google.com>
+Date: Sat, 27 Jul 2019 09:42:42 -0400
+Subject: [PATCH] drivers/tty/serial/8250: Make Aspeed VUART SIRQ polarity
+ configurable
+Message-ID: <20190727134242.49847-1-osk@google.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: sudheer veliseti <sudheer.open@gmail.com>
+Make the SIRQ polarity for Aspeed 24xx/25xx VUART configurable via
+sysfs. It is required on some host platforms (e.g. TYAN S7106) to
+reconfigure this setting from the default to enable the host to receive
+interrupts from the VUART.
 
-documentation for Dt bindings for DMA based UARTs in AST2500
+The setting is configurable via sysfs rather than device-tree to stay in
+line with other related configurable settings.
 
-Signed-off-by: sudheer veliseti <sudheer.open@gmail.com>
+Tested: Verified on TYAN S7106 mainboard.
+Signed-off-by: Oskar Senft <osk@google.com>
 ---
+ .../ABI/stable/sysfs-driver-aspeed-vuart      | 10 ++++-
+ drivers/tty/serial/8250/8250_aspeed_vuart.c   | 39 +++++++++++++++++++
+ 2 files changed, 48 insertions(+), 1 deletion(-)
 
-Changes in v4:
--
-Changes in v3:
-- change logs added
-
-.../bindings/serial/ast2500-dma-uart.txt      | 43 +++++++++++++++++++
- 1 file changed, 43 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/serial/ast2500-dma-uart.txt
-
-diff --git a/Documentation/devicetree/bindings/serial/ast2500-dma-uart.txt b/Documentation/devicetree/bindings/serial/ast2500-dma-uart.txt
-new file mode 100644
-index 000000000000..6ebc60b51d4c
---- /dev/null
-+++ b/Documentation/devicetree/bindings/serial/ast2500-dma-uart.txt
-@@ -0,0 +1,43 @@
-+DT Bindings DMA UART for AST25XX:
+diff --git a/Documentation/ABI/stable/sysfs-driver-aspeed-vuart b/Documentation/ABI/stable/sysfs-driver-aspeed-vuart
+index 8062953ce77b..64fad87ad964 100644
+--- a/Documentation/ABI/stable/sysfs-driver-aspeed-vuart
++++ b/Documentation/ABI/stable/sysfs-driver-aspeed-vuart
+@@ -6,10 +6,18 @@ Description:	Configures which IO port the host side of the UART
+ Users:		OpenBMC.  Proposed changes should be mailed to
+ 		openbmc at lists.ozlabs.org
+ 
+-What:		/sys/bus/platform/drivers/aspeed-vuart*/sirq
++What:		/sys/bus/platform/drivers/aspeed-vuart/*/sirq
+ Date:		April 2017
+ Contact:	Jeremy Kerr <jk@ozlabs.org>
+ Description:	Configures which interrupt number the host side of
+ 		the UART will appear on the host <-> BMC LPC bus.
+ Users:		OpenBMC.  Proposed changes should be mailed to
+ 		openbmc at lists.ozlabs.org
 +
-+node for DMA controller:
-+                       ast_uart_sdma: uart_sdma at 1e79e000 {
-+                               compatible = "aspeed,ast-uart-sdma";
-+                               reg = <0x1e79e000 0x400>;
-+                               interrupts = <50>;
-+                               status = "disabled";
-+                       };
-+this node  doesn't binds with any driver.
-+DMA controller is handled as a separate SW layer,
-+and is included in the same driver.
-+This DMA controller node is included in DT
-+just for Register and interrupt details
++What:		/sys/bus/platform/drivers/aspeed-vuart/*/sirq_polarity
++Date:		July 2019
++Contact:	Oskar Senft <osk@google.com>
++Description:	Configures the polarity of the serial interrupt to the
++		host via the BMC LPC bus.
++Users:		OpenBMC.  Proposed changes should be mailed to
++		openbmc at lists.ozlabs.org
+diff --git a/drivers/tty/serial/8250/8250_aspeed_vuart.c b/drivers/tty/serial/8250/8250_aspeed_vuart.c
+index 0438d9a905ce..ef0a6ff69841 100644
+--- a/drivers/tty/serial/8250/8250_aspeed_vuart.c
++++ b/drivers/tty/serial/8250/8250_aspeed_vuart.c
+@@ -22,6 +22,7 @@
+ 
+ #define ASPEED_VUART_GCRA		0x20
+ #define ASPEED_VUART_GCRA_VUART_EN		BIT(0)
++#define ASPEED_VUART_GCRA_HOST_SIRQ_POLARITY	BIT(1)
+ #define ASPEED_VUART_GCRA_DISABLE_HOST_TX_DISCARD BIT(5)
+ #define ASPEED_VUART_GCRB		0x24
+ #define ASPEED_VUART_GCRB_HOST_SIRQ_MASK	GENMASK(7, 4)
+@@ -131,8 +132,46 @@ static ssize_t sirq_store(struct device *dev, struct device_attribute *attr,
+ 
+ static DEVICE_ATTR_RW(sirq);
+ 
++static ssize_t sirq_polarity_show(struct device *dev,
++				  struct device_attribute *attr, char *buf)
++{
++	struct aspeed_vuart *vuart = dev_get_drvdata(dev);
++	u8 reg;
 +
++	reg = readb(vuart->regs + ASPEED_VUART_GCRA);
++	reg &= ASPEED_VUART_GCRA_HOST_SIRQ_POLARITY;
 +
++	return snprintf(buf, PAGE_SIZE - 1, "%u\n", reg ? 1 : 0);
++}
 +
-+node for DMA-UARTS :
++static ssize_t sirq_polarity_store(struct device *dev,
++				   struct device_attribute *attr,
++				   const char *buf, size_t count)
++{
++	struct aspeed_vuart *vuart = dev_get_drvdata(dev);
++	unsigned long val;
++	int err;
++	u8 reg;
 +
++	err = kstrtoul(buf, 0, &val);
++	if (err)
++		return err;
 +
-+Required properties:
++	reg = readb(vuart->regs + ASPEED_VUART_GCRA);
++	if (val != 0)
++		reg |= ASPEED_VUART_GCRA_HOST_SIRQ_POLARITY;
++	else
++		reg &= ~ASPEED_VUART_GCRA_HOST_SIRQ_POLARITY;
++	writeb(reg, vuart->regs + ASPEED_VUART_GCRA);
 +
-+- compatible: "aspeed,ast-sdma-uart"
-+- reg: The base address of the UART register bank
-+- interrupts: should contain interrupt specifier.
-+- clocks: Clock driving the hardware;
-+- pinctrl-0 : list of pinconfigurations
-+- dma-channel: channel of DMA-controller which is used
++	return count;
++}
 +
-+Example:
++static DEVICE_ATTR_RW(sirq_polarity);
 +
-+	dma_uart1: dma_uart1 at 1e783000{
-+        compatible = "aspeed,ast-sdma-uart";
-+        reg = <0x1e783000 0x1000>;
-+        reg-shift = <2>;
-+        interrupts = <9>;
-+        clocks = <&syscon ASPEED_CLK_GATE_UART1CLK>;
-+        dma-channel = <0>;
-+        no-loopback-test;
-+        pinctrl-names = "default";
-+        pinctrl-0 = <&pinctrl_txd1_default &pinctrl_rxd1_default>;
-+        status = "disabled";
-+        };
+ static struct attribute *aspeed_vuart_attrs[] = {
+ 	&dev_attr_sirq.attr,
++	&dev_attr_sirq_polarity.attr,
+ 	&dev_attr_lpc_address.attr,
+ 	NULL,
+ };
 -- 
-2.17.1
+2.22.0.709.g102302147b-goog
 
