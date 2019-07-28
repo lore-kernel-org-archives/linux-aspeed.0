@@ -1,57 +1,28 @@
 From: Linus Walleij <linus.walleij@linaro.org>
-Date: Mon, 29 Jul 2019 00:53:45 +0200
-Subject: [PATCH] pinctrl: aspeed-g5: Delay acquisition of regmaps
-In-Reply-To: <20190724080155.12209-1-andrew@aj.id.au>
-References: <20190724080155.12209-1-andrew@aj.id.au>
-Message-ID: <CACRpkdaJTB-=DODtj-u6bOkmy7bQ8eXoYyTqv4xK9L+cV4T11Q@mail.gmail.com>
+Date: Mon, 29 Jul 2019 01:14:37 +0200
+Subject: [PATCH 0/6] pinctrl: aspeed: Add AST2600 pinmux support
+In-Reply-To: <20190711041942.23202-1-andrew@aj.id.au>
+References: <20190711041942.23202-1-andrew@aj.id.au>
+Message-ID: <CACRpkdb4pEdPHbo=3+fJXe9WG8K7A2_xVMtKWCJCfEawDO5wBw@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Jul 24, 2019 at 10:02 AM Andrew Jeffery <andrew@aj.id.au> wrote:
+On Thu, Jul 11, 2019 at 6:19 AM Andrew Jeffery <andrew@aj.id.au> wrote:
 
-> While sorting out some devicetree issues I found that the pinctrl driver
-> was failing to acquire its GFX regmap even though the phandle was
-> present in the devicetree:
+> This series adds pinmux support for the AST2600. Some more rework was required
+> on top of the previous cleanup series, but this rework was focussed on
+> supporting features of the AST2600 pinmux rather than fixing issues with the
+> existing infrastructure for the ASPEED drivers. Due to the dependences it's
+> based on top of pinctrl/devel, so should avoid any more SPDX issues.
 >
->     [    0.124190] aspeed-g5-pinctrl 1e6e2000.syscon:pinctrl: No GFX phandle found, some mux configurations may fail
->
-> Without access to the GFX regmap we fail to configure the mux for the
-> VPO function:
->
->     [    1.548866] pinctrl core: add 1 pinctrl maps
->     [    1.549826] aspeed-g5-pinctrl 1e6e2000.syscon:pinctrl: found group selector 164 for VPO
->     [    1.550638] aspeed-g5-pinctrl 1e6e2000.syscon:pinctrl: request pin 144 (V20) for 1e6e6000.display
->     [    1.551346] aspeed-g5-pinctrl 1e6e2000.syscon:pinctrl: request pin 145 (U19) for 1e6e6000.display
->     ...
->     [    1.562057] aspeed-g5-pinctrl 1e6e2000.syscon:pinctrl: request pin 218 (T22) for 1e6e6000.display
->     [    1.562541] aspeed-g5-pinctrl 1e6e2000.syscon:pinctrl: request pin 219 (R20) for 1e6e6000.display
->     [    1.563113] Muxing pin 144 for VPO
->     [    1.563456] Want SCU8C[0x00000001]=0x1, got 0x0 from 0x00000000
->     [    1.564624] aspeed_gfx 1e6e6000.display: Error applying setting, reverse things back
->
-> This turned out to be a simple problem of timing: The ASPEED pinctrl
-> driver is probed during arch_initcall(), while GFX is processed much
-> later. As such the GFX syscon is not yet registered during the pinctrl
-> probe() and we get an -EPROBE_DEFER when we try to look it up, however
-> we must not defer probing the pinctrl driver for the inability to mux
-> some GFX-related functions.
->
-> Switch to lazily grabbing the regmaps when they're first required by the
-> mux configuration. This generates a bit of noise in the patch as we have
-> to drop the `const` qualifier on arguments for several function
-> prototypes, but has the benefit of working.
->
-> I've smoke tested this for the ast2500-evb under qemu with a dummy
-> graphics device. We now succeed in our attempts to configure the SoC's
-> VPO pinmux function.
->
-> Fixes: 7d29ed88acbb ("pinctrl: aspeed: Read and write bits in LPC and GFX controllers")
-> Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
+> ASPEED have been testing the patches on hardware, so even for an initial pass
+> there's some confidence in the implementation.
 
-Patch applied for fixes. Good rootcausing!
+I'm unsure if I need to wait for the DT bindings to be fixed on this
+series?
 
 Yours,
 Linus Walleij
