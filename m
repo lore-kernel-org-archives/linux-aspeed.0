@@ -1,26 +1,22 @@
 From: Linus Walleij <linus.walleij@linaro.org>
-Date: Mon, 29 Jul 2019 23:53:04 +0200
-Subject: [PATCH 0/3] ARM: dts: aspeed: Deprecate g[45]-style compatibles
-In-Reply-To: <20190724081313.12934-1-andrew@aj.id.au>
-References: <20190724081313.12934-1-andrew@aj.id.au>
-Message-ID: <CACRpkdapypySGPrLgSMSNy1fzkca2BfMUGzf3koFWQZ-M5VOvg@mail.gmail.com>
+Date: Mon, 29 Jul 2019 23:55:02 +0200
+Subject: [RFC-ish PATCH 00/17] Clean up ASPEED devicetree warnings
+In-Reply-To: <20190726053959.2003-1-andrew@aj.id.au>
+References: <20190726053959.2003-1-andrew@aj.id.au>
+Message-ID: <CACRpkdZVVgqdt=+YYEauChoxjqKk6=LNKzj-40u3CFLxJr0D7Q@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Jul 24, 2019 at 10:13 AM Andrew Jeffery <andrew@aj.id.au> wrote:
+On Fri, Jul 26, 2019 at 7:40 AM Andrew Jeffery <andrew@aj.id.au> wrote:
 
-> It's probably best if we push the three patches all through one tree rather
-> than fragmenting. Is everyone happy if Joel applies them to the aspeed tree?
+> The aim of this series is to minimise/eliminate all the warnings from the
+> ASPEED devicetrees. It mostly achieves its goal, as outlined below.
 
-If you are sure it will not collide with parallell work in the
-pinctrl tree, yes.
+I suppose it will all be merged in  the Aspeed tree?
 Acked-by: Linus Walleij <linus.walleij@linaro.org>
-
-(If it does collide I'd prefer to take the pinctrl patches and fix the
-conflicts in my tree.)
 
 Yours,
 Linus Walleij
