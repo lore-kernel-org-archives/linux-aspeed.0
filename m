@@ -1,80 +1,231 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Mon, 29 Jul 2019 12:32:57 +0930
-Subject: =?UTF-8?Q?Re:_[PATCH]_drivers/tty/serial/8250:_Make_Aspeed_VUART_SIRQ_po?=
- =?UTF-8?Q?larity_configurable?=
-In-Reply-To: <CABoTLcS2Pepyfc8A-gzm+Nh2T5yCCmexCC94K8Pm=4mtM4JHBA@mail.gmail.com>
-References: <20190727134242.49847-1-osk@google.com>
- <9fb8c99449cebd68fb5975890dedaa06ce7808ae.camel@kernel.crashing.org>
- <CABoTLcRPXffZuKy-DTFUVKJQRydSzMDynYRgBbZ_470iVN1KnA@mail.gmail.com>
- <CABoTLcTSFvQruPRnoRPgiWjOXNDOCSnAXVesG7f1WAuLLLVSSg@mail.gmail.com>
- <6b31627a8c5a2616c83783550517961b7ed8f3cb.camel@ozlabs.org>
- <CABoTLcQF4_He15F5oO0Pxjdm6f7pLCxBF77cz7wR=jjWaednYQ@mail.gmail.com>
- <9855284dfa4c4d4a52441553691c7b4b08a9cc34.camel@ozlabs.org>
- <CABoTLcS2Pepyfc8A-gzm+Nh2T5yCCmexCC94K8Pm=4mtM4JHBA@mail.gmail.com>
-Message-ID: <53f2c3aa-9502-4989-9c22-1a7f1c74cf47@www.fastmail.com>
+Date: Mon, 29 Jul 2019 14:09:24 +0930
+Subject: [PATCH 2/4] net: phy: Add mdio-aspeed
+In-Reply-To: <20190729043926.32679-1-andrew@aj.id.au>
+References: <20190729043926.32679-1-andrew@aj.id.au>
+Message-ID: <20190729043926.32679-3-andrew@aj.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+The AST2600 design separates the MDIO controllers from the MAC, which is
+where they were placed in the AST2400 and AST2500. Further, the register
+interface is reworked again, so now we have three possible different
+interface implementations, however this driver only supports the
+interface provided by the AST2600. The AST2400 and AST2500 will continue
+to be supported by the MDIO support embedded in the FTGMAC100 driver.
 
+Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
+---
+ drivers/net/phy/Kconfig       |  13 +++
+ drivers/net/phy/Makefile      |   1 +
+ drivers/net/phy/mdio-aspeed.c | 159 ++++++++++++++++++++++++++++++++++
+ 3 files changed, 173 insertions(+)
+ create mode 100644 drivers/net/phy/mdio-aspeed.c
 
-On Mon, 29 Jul 2019, at 11:51, Oskar Senft wrote:
-> 
-> Hi Jeremy
-> 
-> > Somewhat offtopic, but are you sure you want to enable the SuperIO
-> >  device?
-> No :-D I'm aware of CVE-2019-6260. I just listed it as a potential 
-> source of SIRQs.
-> > > The VUART is covered by this code and we don't have a PUART driver
-> >  > yet.
-> >  > 
-> >  > It might make sense to have this as a global setting which each driver
-> >  > could read. But wouldn't this be an exercise for the future where we
-> >  > actually have a second device? I don't think the Aspeed currently has
-> >  > any other devices that could generate a SIRQ (except for the PUART for
-> >  > which there's no driver).
-> > 
-> >  We have a bunch of SIRQ sources that we use (on OpenPOWER platforms) -
-> >  the BT interface, the KCS interface, the UARTs, and the mbox hardware.
-> >  It's not just the VUART/PUART :)
-> Interesting. From what Aspeed explained, the SIRQ polarity for UARTs is 
-> inverted to that for other devices. I haven't looked into how other 
-> devices work, to be honest. Do we set the polarity there explicitly?
-> > > Having said that, ideally I'd like the SIRQ polarity to be auto-
-> >  > configured from the LPC/eSPI HW pin strap anyway. I have the code for
-> >  > that almost done. Maybe we shouldn't even have the sysfs interface for
-> >  > it and I should strip that out?
-> > 
-> >  Yeah, I think I agree with that. The only downside is that the 
-> >  individual drivers will now need to poke at the SCU to query the
-> >  LPC/eSPI configuration. If you can find a nice way to do that, then that
-> >  sounds like the best approach. Can you query it through the parent bus
-> >  perhaps?
-> I'm experimenting with this:
-> syscon_regmap_lookup_by_compatible("aspeed,ast2500-scu");
-> 
-> I'll need to think on how to make this work on both ast2400 and 
-> ast2500, though. I actually need to have a look at the ast2400 data 
-> sheet wrt. VUART registers, too!
-> 
-> The structure is this:
-> apb {
->  syscon {
->  ...
->  }
->  vuart {
->  ...
->  }
-> }
-> 
-> So the vuart is a sibling of syscon, which holds the registers. I guess 
-> I'll have to go with "by_compatible"?
+diff --git a/drivers/net/phy/Kconfig b/drivers/net/phy/Kconfig
+index 20f14c5fbb7e..206d8650ee7f 100644
+--- a/drivers/net/phy/Kconfig
++++ b/drivers/net/phy/Kconfig
+@@ -21,6 +21,19 @@ config MDIO_BUS
+ 
+ if MDIO_BUS
+ 
++config MDIO_ASPEED
++	tristate "ASPEED MDIO bus controller"
++	depends on ARCH_ASPEED || COMPILE_TEST
++	depends on OF_MDIO && HAS_IOMEM
++	help
++	  This module provides a driver for the independent MDIO bus
++	  controllers found in the ASPEED AST2600 SoC. This is a driver for the
++	  third revision of the ASPEED MDIO register interface - the first two
++	  revisions are the "old" and "new" interfaces found in the AST2400 and
++	  AST2500, embedded in the MAC. For legacy reasons, FTGMAC100 driver
++	  continues to drive the embedded MDIO controller for the AST2400 and
++	  AST2500 SoCs, so say N if AST2600 support is not required.
++
+ config MDIO_BCM_IPROC
+ 	tristate "Broadcom iProc MDIO bus controller"
+ 	depends on ARCH_BCM_IPROC || COMPILE_TEST
+diff --git a/drivers/net/phy/Makefile b/drivers/net/phy/Makefile
+index 839acb292c38..ba07c27e4208 100644
+--- a/drivers/net/phy/Makefile
++++ b/drivers/net/phy/Makefile
+@@ -22,6 +22,7 @@ libphy-$(CONFIG_LED_TRIGGER_PHY)	+= phy_led_triggers.o
+ obj-$(CONFIG_PHYLINK)		+= phylink.o
+ obj-$(CONFIG_PHYLIB)		+= libphy.o
+ 
++obj-$(CONFIG_MDIO_ASPEED)	+= mdio-aspeed.o
+ obj-$(CONFIG_MDIO_BCM_IPROC)	+= mdio-bcm-iproc.o
+ obj-$(CONFIG_MDIO_BCM_UNIMAC)	+= mdio-bcm-unimac.o
+ obj-$(CONFIG_MDIO_BITBANG)	+= mdio-bitbang.o
+diff --git a/drivers/net/phy/mdio-aspeed.c b/drivers/net/phy/mdio-aspeed.c
+new file mode 100644
+index 000000000000..71496a9ff54a
+--- /dev/null
++++ b/drivers/net/phy/mdio-aspeed.c
+@@ -0,0 +1,159 @@
++// SPDX-License-Identifier: GPL-2.0-or-later
++/* Copyright (C) 2019 IBM Corp. */
++
++#include <linux/bitfield.h>
++#include <linux/delay.h>
++#include <linux/mdio.h>
++#include <linux/module.h>
++#include <linux/of.h>
++#include <linux/of_mdio.h>
++#include <linux/phy.h>
++#include <linux/platform_device.h>
++
++#define DRV_NAME "mdio-aspeed"
++
++#define ASPEED_MDIO_CTRL		0x0
++#define   ASPEED_MDIO_CTRL_FIRE		BIT(31)
++#define   ASPEED_MDIO_CTRL_ST		BIT(28)
++#define     ASPEED_MDIO_CTRL_ST_C45	0
++#define     ASPEED_MDIO_CTRL_ST_C22	1
++#define   ASPEED_MDIO_CTRL_OP		GENMASK(27, 26)
++#define     MDIO_C22_OP_WRITE		0b01
++#define     MDIO_C22_OP_READ		0b10
++#define   ASPEED_MDIO_CTRL_PHYAD	GENMASK(25, 21)
++#define   ASPEED_MDIO_CTRL_REGAD	GENMASK(20, 16)
++#define   ASPEED_MDIO_CTRL_MIIWDATA	GENMASK(15, 0)
++
++#define ASPEED_MDIO_DATA		0x4
++#define   ASPEED_MDIO_DATA_MDC_THRES	GENMASK(31, 24)
++#define   ASPEED_MDIO_DATA_MDIO_EDGE	BIT(23)
++#define   ASPEED_MDIO_DATA_MDIO_LATCH	GENMASK(22, 20)
++#define   ASPEED_MDIO_DATA_IDLE		BIT(16)
++#define   ASPEED_MDIO_DATA_MIIRDATA	GENMASK(15, 0)
++
++#define ASPEED_MDIO_RETRIES		10
++
++struct aspeed_mdio {
++	void __iomem *base;
++};
++
++static int aspeed_mdio_read(struct mii_bus *bus, int addr, int regnum)
++{
++	struct aspeed_mdio *ctx = bus->priv;
++	u32 ctrl;
++	int i;
++
++	dev_dbg(&bus->dev, "%s: addr: %d, regnum: %d\n", __func__, addr,
++		regnum);
++
++	/* Just clause 22 for the moment */
++	ctrl = ASPEED_MDIO_CTRL_FIRE
++		| FIELD_PREP(ASPEED_MDIO_CTRL_ST, ASPEED_MDIO_CTRL_ST_C22)
++		| FIELD_PREP(ASPEED_MDIO_CTRL_OP, MDIO_C22_OP_READ)
++		| FIELD_PREP(ASPEED_MDIO_CTRL_PHYAD, addr)
++		| FIELD_PREP(ASPEED_MDIO_CTRL_REGAD, regnum);
++
++	iowrite32(ctrl, ctx->base + ASPEED_MDIO_CTRL);
++
++	for (i = 0; i < ASPEED_MDIO_RETRIES; i++) {
++		u32 data;
++
++		data = ioread32(ctx->base + ASPEED_MDIO_DATA);
++		if (data & ASPEED_MDIO_DATA_IDLE)
++			return FIELD_GET(ASPEED_MDIO_DATA_MIIRDATA, data);
++
++		udelay(100);
++	}
++
++	dev_err(&bus->dev, "MDIO read failed\n");
++	return -EIO;
++}
++
++static int aspeed_mdio_write(struct mii_bus *bus, int addr, int regnum, u16 val)
++{
++	struct aspeed_mdio *ctx = bus->priv;
++	u32 ctrl;
++	int i;
++
++	dev_dbg(&bus->dev, "%s: addr: %d, regnum: %d, val: 0x%x\n",
++		__func__, addr, regnum, val);
++
++	/* Just clause 22 for the moment */
++	ctrl = ASPEED_MDIO_CTRL_FIRE
++		| FIELD_PREP(ASPEED_MDIO_CTRL_ST, ASPEED_MDIO_CTRL_ST_C22)
++		| FIELD_PREP(ASPEED_MDIO_CTRL_OP, MDIO_C22_OP_WRITE)
++		| FIELD_PREP(ASPEED_MDIO_CTRL_PHYAD, addr)
++		| FIELD_PREP(ASPEED_MDIO_CTRL_REGAD, regnum)
++		| FIELD_PREP(ASPEED_MDIO_CTRL_MIIWDATA, val);
++
++	iowrite32(ctrl, ctx->base + ASPEED_MDIO_CTRL);
++
++	for (i = 0; i < ASPEED_MDIO_RETRIES; i++) {
++		ctrl = ioread32(ctx->base + ASPEED_MDIO_CTRL);
++		if (!(ctrl & ASPEED_MDIO_CTRL_FIRE))
++			return 0;
++
++		udelay(100);
++	}
++
++	dev_err(&bus->dev, "MDIO write failed\n");
++	return -EIO;
++}
++
++static int aspeed_mdio_probe(struct platform_device *pdev)
++{
++	struct aspeed_mdio *ctx;
++	struct mii_bus *bus;
++	int rc;
++
++	bus = devm_mdiobus_alloc_size(&pdev->dev, sizeof(*ctx));
++	if (!bus)
++		return -ENOMEM;
++
++	ctx = bus->priv;
++	ctx->base = devm_platform_ioremap_resource(pdev, 0);
++	if (IS_ERR(ctx->base))
++		return PTR_ERR(ctx->base);
++
++	bus->name = DRV_NAME;
++	snprintf(bus->id, MII_BUS_ID_SIZE, "%s%d", pdev->name, pdev->id);
++	bus->parent = &pdev->dev;
++	bus->read = aspeed_mdio_read;
++	bus->write = aspeed_mdio_write;
++
++	rc = of_mdiobus_register(bus, pdev->dev.of_node);
++	if (rc) {
++		dev_err(&pdev->dev, "Cannot register MDIO bus!\n");
++		return rc;
++	}
++
++	platform_set_drvdata(pdev, bus);
++
++	return 0;
++}
++
++static int aspeed_mdio_remove(struct platform_device *pdev)
++{
++	mdiobus_unregister(platform_get_drvdata(pdev));
++
++	return 0;
++}
++
++static const struct of_device_id aspeed_mdio_of_match[] = {
++	{ .compatible = "aspeed,ast2600-mdio", },
++	{ },
++};
++
++static struct platform_driver aspeed_mdio_driver = {
++	.driver = {
++		.name = DRV_NAME,
++		.of_match_table = aspeed_mdio_of_match,
++	},
++	.probe = aspeed_mdio_probe,
++	.remove = aspeed_mdio_remove,
++};
++
++module_platform_driver(aspeed_mdio_driver);
++
++MODULE_AUTHOR("Andrew Jeffery <andrew@aj.id.au>");
++MODULE_LICENSE("GPL");
+-- 
+2.20.1
 
-It might be better to add a property to the UART DT node that references
-the SCU syscon by phandle, that way you don't need to muck around
-with compatible names for the SCU syscon.
-
-Andrew
