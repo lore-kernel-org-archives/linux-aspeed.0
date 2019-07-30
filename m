@@ -1,51 +1,107 @@
-From: Hongwei Zhang <hongweiz@ami.com>
-Date: Tue, 30 Jul 2019 15:25:37 -0400
-Subject: [v5 1/2] dt-bindings: gpio: aspeed: Add SGPIO support
-In-Reply-To: <1563564291-9692-2-git-send-email-hongweiz@ami.com>
-References: <1563564291-9692-2-git-send-email-hongweiz@ami.com>
-Message-ID: <1564514737-4638-1-git-send-email-hongweiz@ami.com>
+From: Andrew Jeffery <andrew@aj.id.au>
+Date: Wed, 31 Jul 2019 09:28:49 +0930
+Subject: [v6 1/2] dt-bindings: gpio: aspeed: Add SGPIO support
+In-Reply-To: <1564500268-2627-2-git-send-email-hongweiz@ami.com>
+References: <1564500268-2627-1-git-send-email-hongweiz@ami.com>
+ <1564500268-2627-2-git-send-email-hongweiz@ami.com>
+Message-ID: <f22b671a-2968-41cb-b158-372663fa6843@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello Linus and Andrew,
 
-Thanks for your detailed comments, I just submitted v6 of our update:
-_http://patchwork.ozlabs.org/cover/1139035/
-_http://patchwork.ozlabs.org/patch/1139038/
-_http://patchwork.ozlabs.org/patch/1139040/
 
-please ignore my previous patches sent on 07/28, they does not have proper serial
-title and one of the patch is missing.
+On Wed, 31 Jul 2019, at 00:55, Hongwei Zhang wrote:
+> Add bindings to support SGPIO on AST2400 or AST2500.
+> 
+> Signed-off-by: Hongwei Zhang <hongweiz@ami.com>
+> ---
+>  .../devicetree/bindings/gpio/sgpio-aspeed.txt      | 55 ++++++++++++++++++++++
+>  1 file changed, 55 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/gpio/sgpio-aspeed.txt
+> 
+> diff --git a/Documentation/devicetree/bindings/gpio/sgpio-aspeed.txt 
+> b/Documentation/devicetree/bindings/gpio/sgpio-aspeed.txt
+> new file mode 100644
+> index 0000000..f9ed438
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/gpio/sgpio-aspeed.txt
+> @@ -0,0 +1,55 @@
+> +Aspeed SGPIO controller Device Tree Bindings
+> +-------------------------------------------
+> +
+> +This SGPIO controller is for ASPEED AST2500 SoC, it supports up to 80 
+> full 
+> +featured Serial GPIOs. Each of the Serial GPIO pins can be programmed 
+> to 
+> +support the following options:
+> +- Support interrupt option for each input port and various interrupt 
+> +  sensitivity option (level-high, level-low, edge-high, edge-low)
+> +- Support reset tolerance option for each output port
+> +- Directly connected to APB bus and its shift clock is from APB bus 
+> clock
+> +  divided by a programmable value.
+> +- Co-work with external signal-chained TTL components (74LV165/74LV595)
+> +
+> +
+> +Required properties:
+> +
+> +- compatible		: Either "aspeed,ast2400-sgpio" or "aspeed,ast2500-sgpio"
+> +
+> +- #gpio-cells 		: Should be two
+> +			  - First cell is the GPIO line number
+> +			  - Second cell is used to specify optional
+> +			    parameters (unused)
+> +
+> +- reg			: Address and length of the register set for the device
+> +- gpio-controller	: Marks the device node as a GPIO controller
+> +- interrupts		: Interrupt specifier (see interrupt bindings for
+> +			  details)
+> +
+> +- interrupt-controller	: Mark the GPIO controller as an 
+> interrupt-controller
+> +
+> +- ngpios		: number of GPIO pins to serialise. 
+> +			  (should be multiple of 8, up to 80 pins)
+> +
+> +- clocks                : A phandle to the APB clock for SGPM clock 
+> division
+> +
+> +- bus-frequency		: SGPM CLK frequency
+> +
+> +
+> +The sgpio and interrupt properties are further described in their 
+> respective bindings documentation:
+> +
+> +- Documentation/devicetree/bindings/sgpio/gpio.txt
 
---Hongwei
+This isn't a file? This one is (s/sgpio/gpio/):
 
-> From:	Linus Walleij <linus.walleij@linaro.org>
-> Sent:	Monday, July 29, 2019 5:57 PM
-> To:	Andrew Jeffery
-> Cc:	Hongwei Zhang; open list:GPIO SUBSYSTEM; Joel Stanley; open list:OPEN FIRMWARE AND 
-> FLATTENED DEVICE TREE BINDINGS; linux-aspeed; Bartosz Golaszewski; Rob Herring; Mark Rutland; 
-> linux-kernel at vger.kernel.org; Linux ARM
-> Subject:	Re: [v5 1/2] dt-bindings: gpio: aspeed: Add SGPIO support
+ Documentation/devicetree/bindings/gpio/gpio.txt
+
+I assume this was the result of a stray search/replace?
+
+With that fixed you can add: Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
+
+Andrew
+
+> +- Documentation/devicetree/bindings/interrupt-controller/interrupts.txt
+> +
+> +  Example:
+> +	sgpio: sgpio at 1e780200 {
+> +		#gpio-cells = <2>;
+> +		compatible = "aspeed,ast2500-sgpio";
+> +		gpio-controller;
+> +		interrupts = <40>;
+> +		reg = <0x1e780200 0x0100>;
+> +		clocks = <&syscon ASPEED_CLK_APB>;
+> +		interrupt-controller;
+> +		ngpios = <8>;
+> +		bus-frequency = <12000000>;
+> +	};
+> -- 
+> 2.7.4
 > 
-> On Mon, Jul 29, 2019 at 2:19 AM Andrew Jeffery <andrew@aj.id.au> wrote:
-> 
-> > The behaviour is to periodically emit the state of all enabled GPIOs 
-> > (i.e. the ngpios value), one per bus clock cycle. There's no explicit 
-> > addressing scheme, the protocol encodes the value for a given GPIO by 
-> > its position in the data stream relative to a pulse on the "load data"
-> > (LD) line, whose envelope covers the clock cycle for the last GPIO in 
-> > the sequence. Similar to SPI the bus has both out and in lines, which 
-> > cater to output/input GPIOs.
-> >
-> > A rough timing diagram for a 16-GPIO configuration looks like what 
-> > I've pasted here:
-> >
-> > https://gist.github.com/amboar/c9543af1957854474b8c05ab357f0675
-> 
-> OK that is complex. I agree we need to keep this driver together.
-> 
-> Yours,
-> Linus Walleij
+>
