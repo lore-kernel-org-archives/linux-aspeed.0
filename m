@@ -1,103 +1,533 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Tue, 30 Jul 2019 10:39:50 +0930
-Subject: [RFC-ish PATCH 00/17] Clean up ASPEED devicetree warnings
-In-Reply-To: <CAL_JsqJ+sFDG8eKbV3gvmqVHx+otWbki4dY213apzXgfhbXXEw@mail.gmail.com>
-References: <20190726053959.2003-1-andrew@aj.id.au>
- <CAL_JsqJ+sFDG8eKbV3gvmqVHx+otWbki4dY213apzXgfhbXXEw@mail.gmail.com>
-Message-ID: <fd8e57f0-aee2-403e-b6fb-76d0c18fe306@www.fastmail.com>
+From: Oskar Senft <osk@google.com>
+Date: Mon, 29 Jul 2019 21:49:53 -0400
+Subject: [PATCH v2 1/3] misc: aspeed: Add Aspeed UART routing control driver.
+Message-ID: <20190730014955.34059-1-osk@google.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+This driver adds sysfs files that allow the BMC userspace to configure
+how UARTs and physical serial I/O ports are routed.
 
+Tested: Checked correct behavior (both read & write) on TYAN S7106
+board by manually changing routing settings and confirming that bits
+flow as expected. Tested for UART1 and UART3 as this board doesn't have
+the other UARTs wired up in a testable way.
 
-On Tue, 30 Jul 2019, at 10:23, Rob Herring wrote:
-> On Thu, Jul 25, 2019 at 11:40 PM Andrew Jeffery <andrew@aj.id.au> wrote:
-> >
-> > Hello,
-> >
-> > The aim of this series is to minimise/eliminate all the warnings from the
-> > ASPEED devicetrees. It mostly achieves its goal, as outlined below.
-> >
-> > Using `aspeed_g5_defconfig` we started with the follow warning count:
-> >
-> >     $ make dtbs 2>&1 >/dev/null | wc -l
-> >     218
-> >
-> > and after the full series is applied we have:
-> >
-> >     $ make dtbs 2>&1 >/dev/null | wc -l
-> >     2
-> >
-> > for a 100x reduction.
-> >
-> > Getting there though isn't without some potential controversy, which I've saved
-> > for the last half of the series. The following patches I think are in pretty
-> > good shape:
-> >
-> >   ARM: dts: aspeed-g5: Move EDAC node to APB
-> >   ARM: dts: aspeed-g5: Use recommended generic node name for SDMC
-> >   ARM: dts: aspeed-g5: Fix aspeed,external-nodes description
-> >   ARM: dts: vesnin: Add unit address for memory node
-> >   ARM: dts: fp5280g2: Cleanup gpio-keys-polled properties
-> >   ARM: dts: swift: Cleanup gpio-keys-polled properties
-> >   ARM: dts: witherspoon: Cleanup gpio-keys-polled properties
-> >   ARM: dts: aspeed: Cleanup lpc-ctrl and snoop regs
-> >   ARM: dts: ibm-power9-dual: Add a unit address for OCC nodes
-> >
-> > With these patches applied we get to:
-> >
-> >     $ make dtbs 2>&1 >/dev/null | wc -l
-> >     144
-> >
-> > So they make a dent, but fail to clean up the bulk of the issues. From here
-> > I've mixed in some binding and driver changes with subsequent updates to the
-> > devicetrees:
-> >
-> >   dt-bindings: pinctrl: aspeed: Add reg property as a hint
-> >   dt-bindings: misc: Document reg for aspeed,p2a-ctrl nodes
-> >   ARM: dts: aspeed: Add reg hints to syscon children
-> >   dt-bindings: ipmi: aspeed: Introduce a v2 binding for KCS
-> >   ipmi: kcs: Finish configuring ASPEED KCS device before enable
-> >   ipmi: kcs: aspeed: Implement v2 bindings
-> >   ARM: dts: aspeed-g5: Change KCS nodes to v2 binding
-> >   ARM: dts: aspeed-g5: Sort LPC child nodes by unit address
-> >
-> > By `dt-bindings: ipmi: aspeed: Introduce a v2 binding for KCS` the warnings are
-> > reduced to:
-> >
-> >     $ make dtbs 2>&1 >/dev/null | wc -l
-> >     125
-> >
-> > The bang-for-buck is in fixing up the KCS bindings which removes all-but-two of
-> > the remaining warnings (which we can't feasibly remove), but doing so forces
-> > code changes (which I'd avoided up until this point).
-> >
-> > Reflecting broadly on the fixes, I think I've made a mistake way back by using
-> > syscon/simple-mfds to expose the innards of the SCU and LPC controllers in the
-> > devicetree. This series cleans up what's currently there, but I have half a
-> > mind to rev the SCU and LPC bindings to not use simple-mfd and instead have a
-> > driver implementation that uses `platform_device_register_full()` or similar to
-> > deal with the mess.
-> >
-> > Rob - I'm looking for your thoughts here and on the series, I've never felt
-> > entirely comfortable with what I cooked up. Your advice would be appreciated.
-> 
-> The series generally looks fine to me from a quick scan. As far as
-> dropping 'simple-mfd', having less fine grained description in DT is
-> generally my preference. It comes down to whether what you have
-> defined is maintainable. As most of it is just additions, I think what
-> you have is fine. Maybe keep all this in mind for the next chip
-> depending how the SCU and LPC change.
+Signed-off-by: Oskar Senft <osk@google.com>
+---
+Changes since v1:
+ Moved from drivers/misc into drivers/soc.
+ Added support for AST2400.
 
-Okay, I think the timing of that suggestion is good given where things are with
-the AST2600. I'll keep that in mind.
+ .../stable/sysfs-driver-aspeed-uart-routing   |  14 +
+ .../misc-devices/aspeed-uart-routing.txt      |  50 +++
+ drivers/soc/aspeed/Kconfig                    |   7 +
+ drivers/soc/aspeed/Makefile                   |   7 +-
+ drivers/soc/aspeed/aspeed-uart-routing.c      | 385 ++++++++++++++++++
+ 5 files changed, 460 insertions(+), 3 deletions(-)
+ create mode 100644 Documentation/ABI/stable/sysfs-driver-aspeed-uart-routing
+ create mode 100644 Documentation/misc-devices/aspeed-uart-routing.txt
+ create mode 100644 drivers/soc/aspeed/aspeed-uart-routing.c
 
-Consensus so far seems to be that the series is fine. I'll split it up and send out
-the sub-series to the relevant lists with the acks accumulated here.
+diff --git a/Documentation/ABI/stable/sysfs-driver-aspeed-uart-routing b/Documentation/ABI/stable/sysfs-driver-aspeed-uart-routing
+new file mode 100644
+index 000000000000..5068737d9c12
+--- /dev/null
++++ b/Documentation/ABI/stable/sysfs-driver-aspeed-uart-routing
+@@ -0,0 +1,14 @@
++What:		/sys/bus/platform/drivers/aspeed-uart-routing/*/io*
++Date:		August 2018
++Contact:	Oskar Senft <osk@google.com>
++Description:	Configures the input source for the specific physical
++		serial I/O port.
++Users:		OpenBMC.  Proposed changes should be mailed to
++		openbmc at lists.ozlabs.org
++
++What:		/sys/bus/platform/drivers/aspeed-uart-routing/*/uart*
++Date:		August 2018
++Contact:	Oskar Senft <osk@google.com>
++Description:	Configures the input source for the specific UART.
++Users:		OpenBMC.  Proposed changes should be mailed to
++		openbmc at lists.ozlabs.org
+diff --git a/Documentation/misc-devices/aspeed-uart-routing.txt b/Documentation/misc-devices/aspeed-uart-routing.txt
+new file mode 100644
+index 000000000000..dcfdf90a6b6b
+--- /dev/null
++++ b/Documentation/misc-devices/aspeed-uart-routing.txt
+@@ -0,0 +1,50 @@
++Kernel driver aspeed-uart-routing
++=================================
++
++Supported chips:
++Aspeed AST24xx
++Aspeed AST25xx
++
++Author:
++Google LLC
++
++Description
++-----------
++
++The Aspeed AST24xx/AST25xx allow to dynamically route the inputs for the
++built-in UARTS and physical serial I/O ports.
++
++This allows, for example, to connect the output of UART to another UART.
++This can be used to enable host<->BMC communication via UARTs, e.g. to allow
++access to the host's serial console.
++
++This driver is for the BMC side. The sysfs files allow the BMC userspace
++which owns the system configuration policy, to configure how UARTs and
++physical serial I/O ports are routed.
++
++The driver provides the following files in sysfs:
++uart1		Configure the input signal to UART1.
++uart2		Configure the input signal to UART2.
++uart3		Configure the input signal to UART3.
++uart4		Configure the input signal to UART4.
++uart5		Configure the input signal to UART5.
++io1		Configure the input signal to physical serial port 1.
++io2		Configure the input signal to physical serial port 2.
++io3		Configure the input signal to physical serial port 3.
++io4		Configure the input signal to physical serial port 4.
++io5		Configure the input signal to physical serial port 5.
++
++When read, each file shows the list of available options with the currently
++selected option marked by square brackets "[]". The list of available options
++depends on the selected file.
++
++Example:
++$ cat /sys/bus/platform/drivers/aspeed-uart-routing/*.uart_routing/uart1
++[io1] io2 io3 io4 uart2 uart3 uart4 io6
++
++In this case, UART1 gets its input signal from IO1 (physical serial port 1).
++
++$ echo -n "uart3" \
++  >/sys/bus/platform/drivers/aspeed-uart-routing/*.uart_routing/uart1
++$ cat /sys/bus/platform/drivers/aspeed-uart-routing/*.uart_routing/uart1
++io1 io2 io3 io4 uart2 [uart3] uart4 io6
+diff --git a/drivers/soc/aspeed/Kconfig b/drivers/soc/aspeed/Kconfig
+index 323e177aa74d..ab11dd81c752 100644
+--- a/drivers/soc/aspeed/Kconfig
++++ b/drivers/soc/aspeed/Kconfig
+@@ -29,4 +29,11 @@ config ASPEED_P2A_CTRL
+ 	  ioctl()s, the driver also provides an interface for userspace mappings to
+ 	  a pre-defined region.
+ 
++config ASPEED_UART_ROUTING
++	depends on SOC_ASPEED && REGMAP && MFD_SYSCON
++	tristate "Aspeed ast2400/2500 UART routing control"
++	help
++	  Control Aspeed ast2400/ast2500 UART routing via sysfs. This enables UART
++	  and I/O components to be dynamically connected at runtime.
++
+ endmenu
+diff --git a/drivers/soc/aspeed/Makefile b/drivers/soc/aspeed/Makefile
+index b64be47f2b1f..2fb979dec443 100644
+--- a/drivers/soc/aspeed/Makefile
++++ b/drivers/soc/aspeed/Makefile
+@@ -1,4 +1,5 @@
+ # SPDX-License-Identifier: GPL-2.0-only
+-obj-$(CONFIG_ASPEED_LPC_CTRL)	+= aspeed-lpc-ctrl.o
+-obj-$(CONFIG_ASPEED_LPC_SNOOP)	+= aspeed-lpc-snoop.o
+-obj-$(CONFIG_ASPEED_P2A_CTRL)	+= aspeed-p2a-ctrl.o
++obj-$(CONFIG_ASPEED_LPC_CTRL)		+= aspeed-lpc-ctrl.o
++obj-$(CONFIG_ASPEED_LPC_SNOOP)		+= aspeed-lpc-snoop.o
++obj-$(CONFIG_ASPEED_P2A_CTRL)		+= aspeed-p2a-ctrl.o
++obj-$(CONFIG_ASPEED_UART_ROUTING)	+= aspeed-uart-routing.o
+diff --git a/drivers/soc/aspeed/aspeed-uart-routing.c b/drivers/soc/aspeed/aspeed-uart-routing.c
+new file mode 100644
+index 000000000000..937191bfc740
+--- /dev/null
++++ b/drivers/soc/aspeed/aspeed-uart-routing.c
+@@ -0,0 +1,385 @@
++// SPDX-License-Identifier: GPL-2.0+
++/*
++ * UART Routing driver for Aspeed AST24xx/AST25xx
++ *
++ * Copyright (c) 2018 Google LLC
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * version 2 as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
++ * GNU General Public License for more details.
++ */
++#include <linux/device.h>
++#include <linux/module.h>
++#include <linux/of_address.h>
++#include <linux/of_platform.h>
++
++/* The Aspeed AST24xx/AST25xx allow to dynamically route the inputs for the
++ * built-in UARTS and physical serial I/O ports.
++ *
++ * This allows, for example, to connect the output of UART to another UART.
++ * This can be used to enable host<->BMC communication via UARTs, e.g. to allow
++ * access to the host's serial console.
++ *
++ * This driver is for the BMC side. The sysfs files allow the BMC userspace
++ * which owns the system configuration policy, to configure how UARTs and
++ * physical serial I/O ports are routed.
++ */
++
++#define ASPEED_HICRA_IO1	"io1"
++#define ASPEED_HICRA_IO2	"io2"
++#define ASPEED_HICRA_IO3	"io3"
++#define ASPEED_HICRA_IO4	"io4"
++#define ASPEED_HICRA_IO5	"io5"
++#define ASPEED_HICRA_IO6	"io6"
++#define ASPEED_HICRA_UART1	"uart1"
++#define ASPEED_HICRA_UART2	"uart2"
++#define ASPEED_HICRA_UART3	"uart3"
++#define ASPEED_HICRA_UART4	"uart4"
++#define ASPEED_HICRA_UART5	"uart5"
++
++struct aspeed_uart_routing {
++	struct device		*dev;
++	void __iomem		*regs;
++	spinlock_t		lock;
++};
++
++struct aspeed_uart_routing_selector {
++	struct device_attribute	dev_attr;
++	int			shift;
++	int			mask;
++	const char		* const options[];
++};
++
++#define to_routing_selector(_dev_attr)					\
++	container_of(_dev_attr, struct aspeed_uart_routing_selector, dev_attr)
++
++
++static ssize_t aspeed_uart_routing_show(struct device *dev,
++					struct device_attribute *attr,
++					char *buf);
++
++static ssize_t aspeed_uart_routing_store(struct device *dev,
++					 struct device_attribute *attr,
++					 const char *buf, size_t count);
++
++#define ROUTING_ATTR(_name) {						\
++	.attr = {.name = _name,					\
++		 .mode = VERIFY_OCTAL_PERMISSIONS(0644) }, \
++	.show = aspeed_uart_routing_show,				\
++	.store = aspeed_uart_routing_store,				\
++}
++
++static struct aspeed_uart_routing_selector uart5_sel = {
++	.dev_attr = ROUTING_ATTR(ASPEED_HICRA_UART5),
++	.shift = 28,
++	.mask = 0xf,
++	.options = {
++		    ASPEED_HICRA_IO5,   // 0
++		    ASPEED_HICRA_IO1,   // 1
++		    ASPEED_HICRA_IO2,   // 2
++		    ASPEED_HICRA_IO3,   // 3
++		    ASPEED_HICRA_IO4,   // 4
++		    ASPEED_HICRA_UART1, // 5
++		    ASPEED_HICRA_UART2, // 6
++		    ASPEED_HICRA_UART3, // 7
++		    ASPEED_HICRA_UART4, // 8
++		    ASPEED_HICRA_IO6,   // 9
++		    NULL,               // NULL termination
++		    },
++};
++
++static struct aspeed_uart_routing_selector uart4_sel = {
++	.dev_attr = ROUTING_ATTR(ASPEED_HICRA_UART4),
++	.shift = 25,
++	.mask = 0x7,
++	.options = {
++		    ASPEED_HICRA_IO4,   // 0
++		    ASPEED_HICRA_IO1,   // 1
++		    ASPEED_HICRA_IO2,   // 2
++		    ASPEED_HICRA_IO3,   // 3
++		    ASPEED_HICRA_UART1, // 4
++		    ASPEED_HICRA_UART2, // 5
++		    ASPEED_HICRA_UART3, // 6
++		    ASPEED_HICRA_IO6,   // 7
++		    NULL,               // NULL termination
++	},
++};
++
++static struct aspeed_uart_routing_selector uart3_sel = {
++	.dev_attr = ROUTING_ATTR(ASPEED_HICRA_UART3),
++	.shift = 22,
++	.mask = 0x7,
++	.options = {
++		    ASPEED_HICRA_IO3,   // 0
++		    ASPEED_HICRA_IO4,   // 1
++		    ASPEED_HICRA_IO1,   // 2
++		    ASPEED_HICRA_IO2,   // 3
++		    ASPEED_HICRA_UART4, // 4
++		    ASPEED_HICRA_UART1, // 5
++		    ASPEED_HICRA_UART2, // 6
++		    ASPEED_HICRA_IO6,   // 7
++		    NULL,               // NULL termination
++		    },
++};
++
++static struct aspeed_uart_routing_selector uart2_sel = {
++	.dev_attr = ROUTING_ATTR(ASPEED_HICRA_UART2),
++	.shift = 19,
++	.mask = 0x7,
++	.options = {
++		    ASPEED_HICRA_IO2,   // 0
++		    ASPEED_HICRA_IO3,   // 1
++		    ASPEED_HICRA_IO4,   // 2
++		    ASPEED_HICRA_IO1,   // 3
++		    ASPEED_HICRA_UART3, // 4
++		    ASPEED_HICRA_UART4, // 5
++		    ASPEED_HICRA_UART1, // 6
++		    ASPEED_HICRA_IO6,   // 7
++		    NULL,               // NULL termination
++		    },
++};
++
++static struct aspeed_uart_routing_selector uart1_sel = {
++	.dev_attr = ROUTING_ATTR(ASPEED_HICRA_UART1),
++	.shift = 16,
++	.mask = 0x7,
++	.options = {
++		    ASPEED_HICRA_IO1,   // 0
++		    ASPEED_HICRA_IO2,   // 1
++		    ASPEED_HICRA_IO3,   // 2
++		    ASPEED_HICRA_IO4,   // 3
++		    ASPEED_HICRA_UART2, // 4
++		    ASPEED_HICRA_UART3, // 5
++		    ASPEED_HICRA_UART4, // 6
++		    ASPEED_HICRA_IO6,   // 7
++		    NULL,               // NULL termination
++		    },
++};
++
++static struct aspeed_uart_routing_selector io5_sel = {
++	.dev_attr = ROUTING_ATTR(ASPEED_HICRA_IO5),
++	.shift = 12,
++	.mask = 0x7,
++	.options = {
++		    ASPEED_HICRA_UART5, // 0
++		    ASPEED_HICRA_UART1, // 1
++		    ASPEED_HICRA_UART2, // 2
++		    ASPEED_HICRA_UART3, // 3
++		    ASPEED_HICRA_UART4, // 4
++		    ASPEED_HICRA_IO1,   // 5
++		    ASPEED_HICRA_IO3,   // 6
++		    ASPEED_HICRA_IO6,   // 7
++		    NULL,               // NULL termination
++		    },
++};
++
++static struct aspeed_uart_routing_selector io4_sel = {
++	.dev_attr = ROUTING_ATTR(ASPEED_HICRA_IO4),
++	.shift = 9,
++	.mask = 0x7,
++	.options = {
++		    ASPEED_HICRA_UART4, // 0
++		    ASPEED_HICRA_UART5, // 1
++		    ASPEED_HICRA_UART1, // 2
++		    ASPEED_HICRA_UART2, // 3
++		    ASPEED_HICRA_UART3, // 4
++		    ASPEED_HICRA_IO1,   // 5
++		    ASPEED_HICRA_IO2,   // 6
++		    ASPEED_HICRA_IO6,   // 7
++		    NULL,               // NULL termination
++		    },
++};
++
++static struct aspeed_uart_routing_selector io3_sel = {
++	.dev_attr = ROUTING_ATTR(ASPEED_HICRA_IO3),
++	.shift = 6,
++	.mask = 0x7,
++	.options = {
++		    ASPEED_HICRA_UART3, // 0
++		    ASPEED_HICRA_UART4, // 1
++		    ASPEED_HICRA_UART5, // 2
++		    ASPEED_HICRA_UART1, // 3
++		    ASPEED_HICRA_UART2, // 4
++		    ASPEED_HICRA_IO1,   // 5
++		    ASPEED_HICRA_IO2,   // 6
++		    ASPEED_HICRA_IO6,   // 7
++		    NULL,               // NULL termination
++		    },
++};
++
++static struct aspeed_uart_routing_selector io2_sel = {
++	.dev_attr = ROUTING_ATTR(ASPEED_HICRA_IO2),
++	.shift = 3,
++	.mask = 0x7,
++	.options = {
++		    ASPEED_HICRA_UART2, // 0
++		    ASPEED_HICRA_UART3, // 1
++		    ASPEED_HICRA_UART4, // 2
++		    ASPEED_HICRA_UART5, // 3
++		    ASPEED_HICRA_UART1, // 4
++		    ASPEED_HICRA_IO3,   // 5
++		    ASPEED_HICRA_IO4,   // 6
++		    ASPEED_HICRA_IO6,   // 7
++		    NULL,               // NULL termination
++		    },
++};
++
++static struct aspeed_uart_routing_selector io1_sel = {
++	.dev_attr = ROUTING_ATTR(ASPEED_HICRA_IO1),
++	.shift = 0,
++	.mask = 0x7,
++	.options = {
++		    ASPEED_HICRA_UART1, // 0
++		    ASPEED_HICRA_UART2, // 1
++		    ASPEED_HICRA_UART3, // 2
++		    ASPEED_HICRA_UART4, // 3
++		    ASPEED_HICRA_UART5, // 4
++		    ASPEED_HICRA_IO3,   // 5
++		    ASPEED_HICRA_IO4,   // 6
++		    ASPEED_HICRA_IO6,   // 7
++		    NULL,               // NULL termination
++		    },
++};
++
++
++static struct attribute *aspeed_uart_routing_attrs[] = {
++	&uart1_sel.dev_attr.attr,
++	&uart2_sel.dev_attr.attr,
++	&uart3_sel.dev_attr.attr,
++	&uart4_sel.dev_attr.attr,
++	&uart5_sel.dev_attr.attr,
++	&io1_sel.dev_attr.attr,
++	&io2_sel.dev_attr.attr,
++	&io3_sel.dev_attr.attr,
++	&io4_sel.dev_attr.attr,
++	&io5_sel.dev_attr.attr,
++	NULL,
++};
++
++static const struct attribute_group aspeed_uart_routing_attr_group = {
++	.attrs = aspeed_uart_routing_attrs,
++};
++
++static ssize_t aspeed_uart_routing_show(struct device *dev,
++					struct device_attribute *attr,
++					char *buf)
++{
++	struct aspeed_uart_routing *uart_routing = dev_get_drvdata(dev);
++	struct aspeed_uart_routing_selector *sel = to_routing_selector(attr);
++	int val, pos, len;
++
++	val = (readl(uart_routing->regs) >> sel->shift) & sel->mask;
++
++	len = 0;
++	for (pos = 0; sel->options[pos] != NULL; ++pos) {
++		if (pos == val) {
++			len += snprintf(buf + len, PAGE_SIZE - 1 - len,
++					"[%s] ", sel->options[pos]);
++		} else {
++			len += snprintf(buf + len, PAGE_SIZE - 1 - len,
++					"%s ", sel->options[pos]);
++		}
++	}
++
++	if (val >= pos) {
++		len += snprintf(buf + len, PAGE_SIZE - 1 - len,
++				"[unknown(%d)]", val);
++	}
++
++	len += snprintf(buf + len, PAGE_SIZE - 1 - len, "\n");
++
++	return len;
++}
++
++static ssize_t aspeed_uart_routing_store(struct device *dev,
++					 struct device_attribute *attr,
++					 const char *buf, size_t count)
++{
++	struct aspeed_uart_routing *uart_routing = dev_get_drvdata(dev);
++	struct aspeed_uart_routing_selector *sel = to_routing_selector(attr);
++	int val;
++	u32 reg;
++
++	val = match_string(sel->options, -1, buf);
++	if (val < 0) {
++		dev_err(dev, "invalid value \"%s\"\n", buf);
++		return -EINVAL;
++	}
++
++	spin_lock(&uart_routing->lock);
++	reg = readl(uart_routing->regs);
++	// Zero out existing value in specified bits.
++	reg &= ~(sel->mask << sel->shift);
++	// Set new value in specified bits.
++	reg |= (val & sel->mask) << sel->shift;
++	writel(reg, uart_routing->regs);
++	spin_unlock(&uart_routing->lock);
++
++	return count;
++}
++
++static int aspeed_uart_routing_probe(struct platform_device *pdev)
++{
++	struct aspeed_uart_routing *uart_routing;
++	struct resource *res;
++	int rc;
++
++	uart_routing = devm_kzalloc(&pdev->dev,
++				    sizeof(*uart_routing),
++				    GFP_KERNEL);
++	if (!uart_routing)
++		return -ENOMEM;
++
++	spin_lock_init(&uart_routing->lock);
++	uart_routing->dev = &pdev->dev;
++
++	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++	uart_routing->regs = devm_ioremap_resource(&pdev->dev, res);
++	if (IS_ERR(uart_routing->regs))
++		return PTR_ERR(uart_routing->regs);
++
++	rc = sysfs_create_group(&uart_routing->dev->kobj,
++				&aspeed_uart_routing_attr_group);
++	if (rc < 0)
++		return rc;
++
++	platform_set_drvdata(pdev, uart_routing);
++
++	return 0;
++}
++
++static int aspeed_uart_routing_remove(struct platform_device *pdev)
++{
++	struct aspeed_uart_routing *uart_routing = platform_get_drvdata(pdev);
++
++	sysfs_remove_group(&uart_routing->dev->kobj,
++			   &aspeed_uart_routing_attr_group);
++
++	return 0;
++}
++
++static const struct of_device_id aspeed_uart_routing_table[] = {
++	{ .compatible = "aspeed,ast2400-uart-routing" },
++	{ .compatible = "aspeed,ast2500-uart-routing" },
++	{ },
++};
++
++static struct platform_driver aspeed_uart_routing_driver = {
++	.driver = {
++		.name = "aspeed-uart-routing",
++		.of_match_table = aspeed_uart_routing_table,
++	},
++	.probe = aspeed_uart_routing_probe,
++	.remove = aspeed_uart_routing_remove,
++};
++
++module_platform_driver(aspeed_uart_routing_driver);
++
++MODULE_AUTHOR("Oskar Senft <osk@google.com>");
++MODULE_LICENSE("GPL v2");
++MODULE_DESCRIPTION("Driver to configure Aspeed UART routing");
+-- 
+2.22.0.709.g102302147b-goog
 
-Thanks all for taking a look.
-
-Andrew
