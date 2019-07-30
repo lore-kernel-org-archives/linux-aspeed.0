@@ -1,550 +1,293 @@
-From: Hongwei Zhang <hongweiz@ami.com>
-Date: Tue, 30 Jul 2019 11:24:28 -0400
-Subject: [v6 2/2] gpio: aspeed: Add SGPIO driver
-In-Reply-To: <1564500268-2627-1-git-send-email-hongweiz@ami.com>
-References: <1564500268-2627-1-git-send-email-hongweiz@ami.com>
-Message-ID: <1564500268-2627-3-git-send-email-hongweiz@ami.com>
+From: Greg KH <gregkh@linuxfoundation.org>
+Date: Tue, 30 Jul 2019 17:47:59 +0200
+Subject: [patch v4 1/5] AST2500 DMA UART driver
+In-Reply-To: <1564147640-30753-2-git-send-email-open.sudheer@gmail.com>
+References: <1564147640-30753-1-git-send-email-open.sudheer@gmail.com>
+ <1564147640-30753-2-git-send-email-open.sudheer@gmail.com>
+Message-ID: <20190730154759.GA26425@kroah.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add SGPIO driver support for Aspeed AST2500 SoC.
+On Fri, Jul 26, 2019 at 06:57:16PM +0530, sudheer.v wrote:
+> From: sudheer veliseti <sudheer.open@gmail.com>
+> 
+> UART driver for Aspeed's bmc chip AST2500
+> 
+> Design approch:
+> AST2500 has dedicated Uart DMA controller which has 12 sets of Tx and RX channels
+> connected to UART controller directly.
+> Since the DMA controller have dedicated buffers and registers,
+> there would be little benifit in adding DMA framework overhead.
+> So the software for DMA controller is included within the UART driver itself.
+> 
+> implementation details:
+> 'struct ast_uart_port' is populated and registered with uart_core.
+> code is organised into two layers UART-layer and DMA-Layer,both of them are
+> in the same file.UART-layer requests Rx and Tx dma channels
+> and registers callbacks with DMA controller software Layer
+> Interrupt service routine for DMA controller is the crucial one for Handling all
+> the tx and rx data. ISRs installed for individual uarts are just dummy,and are helpful 
+> only to report any spurious interrupts in hardware.
+> 
+> 
+> Signed-off-by: sudheer veliseti <sudheer.open@gmail.com>
+> ---
+> 
+> Changes from v3->v4:
+> - per port uart structures are registerd directly with uart core 
+>   Instead of registering through 8250 Frame work,
+>   ast_uart_port is registered using uart_add_one_port
+> -SDMA_RX_FIX macro replaced with CONFIG_AST_UART_DMA_RX_INTERRUPT
+> -ast_uart_sdma_isr : DMA interrupt handler code is improvised
+> -replaced pr_debug with ftrace wherever appropriate
+> -dev_err is used in all error return cases
+> -uart driver structure ast25xx_uart_reg is modified
+> -driver name changed to ast2500-uart-dma-drv
+> -rx_timer initialisation and callback fn modified
+> 
+> Changes from v2->v3:
+> -custom debug replaced by in kerenl dynamic debug: pr_debug 
+> -change-logs added 
+> 
+> 
+> .../tty/serial/8250/8250_ast2500_uart_dma.c   | 1901 +++++++++++++++++
+>  1 file changed, 1901 insertions(+)
+>  create mode 100644 drivers/tty/serial/8250/8250_ast2500_uart_dma.c
+> 
+> diff --git a/drivers/tty/serial/8250/8250_ast2500_uart_dma.c b/drivers/tty/serial/8250/8250_ast2500_uart_dma.c
+> new file mode 100644
+> index 000000000000..bc830d605372
+> --- /dev/null
+> +++ b/drivers/tty/serial/8250/8250_ast2500_uart_dma.c
+> @@ -0,0 +1,1901 @@
+> +// SPDX-License-Identifier: GPL-2.0
+> +/*
+> + *  DMA UART Driver for ASPEED BMC chip: AST2500
+> + *
+> + *  Copyright (C) 2019 sudheer Kumar veliseti, Aspeed technology Inc.
+> + *  <open.sudheer@gmail.com>
 
-Signed-off-by: Hongwei Zhang <hongweiz@ami.com>
----
- drivers/gpio/sgpio-aspeed.c | 521 ++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 521 insertions(+)
- create mode 100644 drivers/gpio/sgpio-aspeed.c
+What was the copyright on the file you copied?  Please properly
+attribute that here.
 
-diff --git a/drivers/gpio/sgpio-aspeed.c b/drivers/gpio/sgpio-aspeed.c
-new file mode 100644
-index 0000000..9a17b1a
---- /dev/null
-+++ b/drivers/gpio/sgpio-aspeed.c
-@@ -0,0 +1,521 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
-+/*
-+ * Copyright 2019 American Megatrends International LLC.
-+ *
-+ * Author: Karthikeyan Mani <karthikeyanm@amiindia.co.in>
-+ */
-+
-+#include <linux/bitfield.h>
-+#include <linux/clk.h>
-+#include <linux/gpio/driver.h>
-+#include <linux/hashtable.h>
-+#include <linux/init.h>
-+#include <linux/io.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/spinlock.h>
-+#include <linux/string.h>
-+
-+#define MAX_NR_SGPIO			80
-+
-+#define ASPEED_SGPIO_CTRL		0x54
-+
-+#define ASPEED_SGPIO_PINS_MASK		GENMASK(9, 6)
-+#define ASPEED_SGPIO_CLK_DIV_MASK	GENMASK(31, 16)
-+#define ASPEED_SGPIO_ENABLE		BIT(0)
-+
-+struct aspeed_sgpio {
-+	struct gpio_chip chip;
-+	struct clk *pclk;
-+	spinlock_t lock;
-+	void __iomem *base;
-+	uint32_t dir_in[3];
-+	int irq;
-+};
-+
-+struct aspeed_sgpio_bank {
-+	uint16_t    val_regs;
-+	uint16_t    rdata_reg;
-+	uint16_t    irq_regs;
-+	const char  names[4][3];
-+};
-+
-+/*
-+ * Note: The "value" register returns the input value when the GPIO is
-+ *	 configured as an input.
-+ *
-+ *	 The "rdata" register returns the output value when the GPIO is
-+ *	 configured as an output.
-+ */
-+static const struct aspeed_sgpio_bank aspeed_sgpio_banks[] = {
-+	{
-+		.val_regs = 0x0000,
-+		.rdata_reg = 0x0070,
-+		.irq_regs = 0x0004,
-+		.names = { "A", "B", "C", "D" },
-+	},
-+	{
-+		.val_regs = 0x001C,
-+		.rdata_reg = 0x0074,
-+		.irq_regs = 0x0020,
-+		.names = { "E", "F", "G", "H" },
-+	},
-+	{
-+		.val_regs = 0x0038,
-+		.rdata_reg = 0x0078,
-+		.irq_regs = 0x003C,
-+		.names = { "I", "J" },
-+	},
-+};
-+
-+enum aspeed_sgpio_reg {
-+	reg_val,
-+	reg_rdata,
-+	reg_irq_enable,
-+	reg_irq_type0,
-+	reg_irq_type1,
-+	reg_irq_type2,
-+	reg_irq_status,
-+};
-+
-+#define GPIO_VAL_VALUE      0x00
-+#define GPIO_IRQ_ENABLE     0x00
-+#define GPIO_IRQ_TYPE0      0x04
-+#define GPIO_IRQ_TYPE1      0x08
-+#define GPIO_IRQ_TYPE2      0x0C
-+#define GPIO_IRQ_STATUS     0x10
-+
-+static void __iomem *bank_reg(struct aspeed_sgpio *gpio,
-+				     const struct aspeed_sgpio_bank *bank,
-+				     const enum aspeed_sgpio_reg reg)
-+{
-+	switch (reg) {
-+	case reg_val:
-+		return gpio->base + bank->val_regs + GPIO_VAL_VALUE;
-+	case reg_rdata:
-+		return gpio->base + bank->rdata_reg;
-+	case reg_irq_enable:
-+		return gpio->base + bank->irq_regs + GPIO_IRQ_ENABLE;
-+	case reg_irq_type0:
-+		return gpio->base + bank->irq_regs + GPIO_IRQ_TYPE0;
-+	case reg_irq_type1:
-+		return gpio->base + bank->irq_regs + GPIO_IRQ_TYPE1;
-+	case reg_irq_type2:
-+		return gpio->base + bank->irq_regs + GPIO_IRQ_TYPE2;
-+	case reg_irq_status:
-+		return gpio->base + bank->irq_regs + GPIO_IRQ_STATUS;
-+	default:
-+		/* acturally if code runs to here, it's an error case */
-+		BUG_ON(1);
-+	}
-+}
-+
-+#define GPIO_BANK(x)    ((x) >> 5)
-+#define GPIO_OFFSET(x)  ((x) & 0x1f)
-+#define GPIO_BIT(x)     BIT(GPIO_OFFSET(x))
-+
-+static const struct aspeed_sgpio_bank *to_bank(unsigned int offset)
-+{
-+	unsigned int bank = GPIO_BANK(offset);
-+
-+	WARN_ON(bank >= ARRAY_SIZE(aspeed_sgpio_banks));
-+	return &aspeed_sgpio_banks[bank];
-+}
-+
-+static int aspeed_sgpio_get(struct gpio_chip *gc, unsigned int offset)
-+{
-+	struct aspeed_sgpio *gpio = gpiochip_get_data(gc);
-+	const struct aspeed_sgpio_bank *bank = to_bank(offset);
-+	unsigned long flags;
-+	enum aspeed_sgpio_reg reg;
-+	bool is_input;
-+	int rc = 0;
-+
-+	spin_lock_irqsave(&gpio->lock, flags);
-+
-+	is_input = gpio->dir_in[GPIO_BANK(offset)] & GPIO_BIT(offset);
-+	reg = is_input ? reg_val : reg_rdata;
-+	rc = !!(ioread32(bank_reg(gpio, bank, reg)) & GPIO_BIT(offset));
-+
-+	spin_unlock_irqrestore(&gpio->lock, flags);
-+
-+	return rc;
-+}
-+
-+static void aspeed_sgpio_set(struct gpio_chip *gc, unsigned int offset, int val)
-+{
-+	struct aspeed_sgpio *gpio = gpiochip_get_data(gc);
-+	const struct aspeed_sgpio_bank *bank = to_bank(offset);
-+	unsigned long flags;
-+	void __iomem *addr;
-+	u32 reg = 0;
-+
-+	spin_lock_irqsave(&gpio->lock, flags);
-+
-+	addr = bank_reg(gpio, bank, reg_val);
-+
-+	if (val)
-+		reg |= GPIO_BIT(offset);
-+	else
-+		reg &= ~GPIO_BIT(offset);
-+
-+	iowrite32(reg, addr);
-+
-+	spin_unlock_irqrestore(&gpio->lock, flags);
-+}
-+
-+static int aspeed_sgpio_dir_in(struct gpio_chip *gc, unsigned int offset)
-+{
-+	struct aspeed_sgpio *gpio = gpiochip_get_data(gc);
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&gpio->lock, flags);
-+	gpio->dir_in[GPIO_BANK(offset)] |= GPIO_BIT(offset);
-+	spin_unlock_irqrestore(&gpio->lock, flags);
-+
-+	return 0;
-+}
-+
-+static int aspeed_sgpio_dir_out(struct gpio_chip *gc, unsigned int offset, int val)
-+{
-+	struct aspeed_sgpio *gpio = gpiochip_get_data(gc);
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&gpio->lock, flags);
-+	gpio->dir_in[GPIO_BANK(offset)] &= ~GPIO_BIT(offset);
-+	spin_unlock_irqrestore(&gpio->lock, flags);
-+
-+	aspeed_sgpio_set(gc, offset, val);
-+
-+	return 0;
-+}
-+
-+static int aspeed_sgpio_get_direction(struct gpio_chip *gc, unsigned int offset)
-+{
-+	int dir_status;
-+	struct aspeed_sgpio *gpio = gpiochip_get_data(gc);
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&gpio->lock, flags);
-+	dir_status = gpio->dir_in[GPIO_BANK(offset)] & GPIO_BIT(offset);
-+	spin_unlock_irqrestore(&gpio->lock, flags);
-+
-+	return dir_status;
-+
-+}
-+
-+static void irqd_to_aspeed_sgpio_data(struct irq_data *d,
-+					     struct aspeed_sgpio **gpio,
-+					     const struct aspeed_sgpio_bank **bank,
-+					     u32 *bit, int *offset)
-+{
-+	struct aspeed_sgpio *internal;
-+
-+	*offset = irqd_to_hwirq(d);
-+	internal = irq_data_get_irq_chip_data(d);
-+	WARN_ON(!internal);
-+
-+	*gpio = internal;
-+	*bank = to_bank(*offset);
-+	*bit = GPIO_BIT(*offset);
-+}
-+
-+static void aspeed_sgpio_irq_ack(struct irq_data *d)
-+{
-+	const struct aspeed_sgpio_bank *bank;
-+	struct aspeed_sgpio *gpio;
-+	unsigned long flags;
-+	void __iomem *status_addr;
-+	int offset;
-+	u32 bit;
-+
-+	irqd_to_aspeed_sgpio_data(d, &gpio, &bank, &bit, &offset);
-+
-+	status_addr = bank_reg(gpio, bank, reg_irq_status);
-+
-+	spin_lock_irqsave(&gpio->lock, flags);
-+
-+	iowrite32(bit, status_addr);
-+
-+	spin_unlock_irqrestore(&gpio->lock, flags);
-+}
-+
-+static void aspeed_sgpio_irq_set_mask(struct irq_data *d, bool set)
-+{
-+	const struct aspeed_sgpio_bank *bank;
-+	struct aspeed_sgpio *gpio;
-+	unsigned long flags;
-+	u32 reg, bit;
-+	void __iomem *addr;
-+	int offset;
-+
-+	irqd_to_aspeed_sgpio_data(d, &gpio, &bank, &bit, &offset);
-+	addr = bank_reg(gpio, bank, reg_irq_enable);
-+
-+	spin_lock_irqsave(&gpio->lock, flags);
-+
-+	reg = ioread32(addr);
-+	if (set)
-+		reg |= bit;
-+	else
-+		reg &= ~bit;
-+
-+	iowrite32(reg, addr);
-+
-+	spin_unlock_irqrestore(&gpio->lock, flags);
-+}
-+
-+static void aspeed_sgpio_irq_mask(struct irq_data *d)
-+{
-+	aspeed_sgpio_irq_set_mask(d, false);
-+}
-+
-+static void aspeed_sgpio_irq_unmask(struct irq_data *d)
-+{
-+	aspeed_sgpio_irq_set_mask(d, true);
-+}
-+
-+static int aspeed_sgpio_set_type(struct irq_data *d, unsigned int type)
-+{
-+	u32 type0 = 0;
-+	u32 type1 = 0;
-+	u32 type2 = 0;
-+	u32 bit, reg;
-+	const struct aspeed_sgpio_bank *bank;
-+	irq_flow_handler_t handler;
-+	struct aspeed_sgpio *gpio;
-+	unsigned long flags;
-+	void __iomem *addr;
-+	int offset;
-+
-+	irqd_to_aspeed_sgpio_data(d, &gpio, &bank, &bit, &offset);
-+
-+	switch (type & IRQ_TYPE_SENSE_MASK) {
-+	case IRQ_TYPE_EDGE_BOTH:
-+		type2 |= bit;
-+		/* fall through */
-+	case IRQ_TYPE_EDGE_RISING:
-+		type0 |= bit;
-+		/* fall through */
-+	case IRQ_TYPE_EDGE_FALLING:
-+		handler = handle_edge_irq;
-+		break;
-+	case IRQ_TYPE_LEVEL_HIGH:
-+		type0 |= bit;
-+		/* fall through */
-+	case IRQ_TYPE_LEVEL_LOW:
-+		type1 |= bit;
-+		handler = handle_level_irq;
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	spin_lock_irqsave(&gpio->lock, flags);
-+
-+	addr = bank_reg(gpio, bank, reg_irq_type0);
-+	reg = ioread32(addr);
-+	reg = (reg & ~bit) | type0;
-+	iowrite32(reg, addr);
-+
-+	addr = bank_reg(gpio, bank, reg_irq_type1);
-+	reg = ioread32(addr);
-+	reg = (reg & ~bit) | type1;
-+	iowrite32(reg, addr);
-+
-+	addr = bank_reg(gpio, bank, reg_irq_type2);
-+	reg = ioread32(addr);
-+	reg = (reg & ~bit) | type2;
-+	iowrite32(reg, addr);
-+
-+	spin_unlock_irqrestore(&gpio->lock, flags);
-+
-+	irq_set_handler_locked(d, handler);
-+
-+	return 0;
-+}
-+
-+static void aspeed_sgpio_irq_handler(struct irq_desc *desc)
-+{
-+	struct gpio_chip *gc = irq_desc_get_handler_data(desc);
-+	struct irq_chip *ic = irq_desc_get_chip(desc);
-+	struct aspeed_sgpio *data = gpiochip_get_data(gc);
-+	unsigned int i, p, girq;
-+	unsigned long reg;
-+
-+	chained_irq_enter(ic, desc);
-+
-+	for (i = 0; i < ARRAY_SIZE(aspeed_sgpio_banks); i++) {
-+		const struct aspeed_sgpio_bank *bank = &aspeed_sgpio_banks[i];
-+
-+		reg = ioread32(bank_reg(data, bank, reg_irq_status));
-+
-+		for_each_set_bit(p, &reg, 32) {
-+			girq = irq_find_mapping(gc->irq.domain, i * 32 + p);
-+			generic_handle_irq(girq);
-+		}
-+
-+	}
-+
-+	chained_irq_exit(ic, desc);
-+}
-+
-+static struct irq_chip aspeed_sgpio_irqchip = {
-+	.name       = "aspeed-sgpio",
-+	.irq_ack    = aspeed_sgpio_irq_ack,
-+	.irq_mask   = aspeed_sgpio_irq_mask,
-+	.irq_unmask = aspeed_sgpio_irq_unmask,
-+	.irq_set_type   = aspeed_sgpio_set_type,
-+};
-+
-+static int aspeed_sgpio_setup_irqs(struct aspeed_sgpio *gpio,
-+				   struct platform_device *pdev)
-+{
-+	int rc, i;
-+	const struct aspeed_sgpio_bank *bank;
-+
-+	rc = platform_get_irq(pdev, 0);
-+	if (rc < 0)
-+		return rc;
-+
-+	gpio->irq = rc;
-+
-+	/* Disable IRQ and clear Interrupt status registers for all SPGIO Pins. */
-+	for (i = 0; i < ARRAY_SIZE(aspeed_sgpio_banks); i++) {
-+		bank =  &aspeed_sgpio_banks[i];
-+		/* disable irq enable bits */
-+		iowrite32(0x00000000, bank_reg(gpio, bank, reg_irq_enable));
-+		/* clear status bits */
-+		iowrite32(0xffffffff, bank_reg(gpio, bank, reg_irq_status));
-+	}
-+
-+	rc = gpiochip_irqchip_add(&gpio->chip, &aspeed_sgpio_irqchip,
-+				  0, handle_bad_irq, IRQ_TYPE_NONE);
-+	if (rc) {
-+		dev_info(&pdev->dev, "Could not add irqchip\n");
-+		return rc;
-+	}
-+
-+	gpiochip_set_chained_irqchip(&gpio->chip, &aspeed_sgpio_irqchip,
-+				     gpio->irq, aspeed_sgpio_irq_handler);
-+
-+	/* set IRQ settings and Enable Interrupt */
-+	for (i = 0; i < ARRAY_SIZE(aspeed_sgpio_banks); i++) {
-+		bank = &aspeed_sgpio_banks[i];
-+		/* set falling or level-low irq */
-+		iowrite32(0x00000000, bank_reg(gpio, bank, reg_irq_type0));
-+		/* trigger type is edge */
-+		iowrite32(0x00000000, bank_reg(gpio, bank, reg_irq_type1));
-+		/* dual edge trigger mode. */
-+		iowrite32(0xffffffff, bank_reg(gpio, bank, reg_irq_type2));
-+		/* enable irq */
-+		iowrite32(0xffffffff, bank_reg(gpio, bank, reg_irq_enable));
-+	}
-+
-+	return 0;
-+}
-+
-+static const struct of_device_id aspeed_sgpio_of_table[] = {
-+	{ .compatible = "aspeed,ast2400-sgpio" },
-+	{ .compatible = "aspeed,ast2500-sgpio" },
-+	{}
-+};
-+MODULE_DEVICE_TABLE(of, aspeed_sgpio_of_table);
-+
-+static int __init aspeed_sgpio_probe(struct platform_device *pdev)
-+{
-+	struct aspeed_sgpio *gpio;
-+	u32 nr_gpios, sgpio_freq, sgpio_clk_div;
-+	int rc;
-+	unsigned long apb_freq;
-+
-+	gpio = devm_kzalloc(&pdev->dev, sizeof(*gpio), GFP_KERNEL);
-+	if (!gpio)
-+		return -ENOMEM;
-+
-+	gpio->base = devm_platform_ioremap_resource(pdev, 0);
-+	if (IS_ERR(gpio->base))
-+		return PTR_ERR(gpio->base);
-+
-+	rc = of_property_read_u32(pdev->dev.of_node, "ngpios", &nr_gpios);
-+	if (rc < 0) {
-+		dev_err(&pdev->dev, "Could not read ngpios property\n");
-+		return -EINVAL;
-+	} else if (nr_gpios > MAX_NR_SGPIO) {
-+		dev_err(&pdev->dev, "Number of GPIOs exceeds the maximum of %d: %d\n",
-+			MAX_NR_SGPIO, nr_gpios);
-+		return -EINVAL;
-+	}
-+
-+	rc = of_property_read_u32(pdev->dev.of_node, "bus-frequency", &sgpio_freq);
-+	if (rc < 0) {
-+		dev_err(&pdev->dev, "Could not read bus-frequency property\n");
-+		return -EINVAL;
-+	}
-+
-+	gpio->pclk = devm_clk_get(&pdev->dev, NULL);
-+	if (IS_ERR(gpio->pclk)) {
-+		dev_err(&pdev->dev, "devm_clk_get failed\n");
-+		return PTR_ERR(gpio->pclk);
-+	}
-+
-+	apb_freq = clk_get_rate(gpio->pclk);
-+
-+	/*
-+	 * From the datasheet,
-+	 *	SGPIO period = 1/PCLK * 2 * (GPIO254[31:16] + 1)
-+	 *	period = 2 * (GPIO254[31:16] + 1) / PCLK
-+	 *	frequency = 1 / (2 * (GPIO254[31:16] + 1) / PCLK)
-+	 *	frequency = PCLK / (2 * (GPIO254[31:16] + 1))
-+	 *	frequency * 2 * (GPIO254[31:16] + 1) = PCLK
-+	 *	GPIO254[31:16] = PCLK / (frequency * 2) - 1
-+	 */
-+	if (sgpio_freq == 0)
-+		return -EINVAL;
-+
-+	sgpio_clk_div = (apb_freq / (sgpio_freq * 2)) - 1;
-+
-+	if (sgpio_clk_div > (1 << 16) - 1)
-+		return -EINVAL;
-+
-+	iowrite32(FIELD_PREP(ASPEED_SGPIO_CLK_DIV_MASK, sgpio_clk_div) |
-+		  FIELD_PREP(ASPEED_SGPIO_PINS_MASK, (nr_gpios / 8)) |
-+		  ASPEED_SGPIO_ENABLE,
-+		  gpio->base + ASPEED_SGPIO_CTRL);
-+
-+	spin_lock_init(&gpio->lock);
-+
-+	gpio->chip.parent = &pdev->dev;
-+	gpio->chip.ngpio = nr_gpios;
-+	gpio->chip.direction_input = aspeed_sgpio_dir_in;
-+	gpio->chip.direction_output = aspeed_sgpio_dir_out;
-+	gpio->chip.get_direction = aspeed_sgpio_get_direction;
-+	gpio->chip.request = NULL;
-+	gpio->chip.free = NULL;
-+	gpio->chip.get = aspeed_sgpio_get;
-+	gpio->chip.set = aspeed_sgpio_set;
-+	gpio->chip.set_config = NULL;
-+	gpio->chip.label = dev_name(&pdev->dev);
-+	gpio->chip.base = -1;
-+
-+	/* set all SGPIO pins as input (1). */
-+	memset(gpio->dir_in, 0xff, sizeof(gpio->dir_in));
-+
-+	rc = devm_gpiochip_add_data(&pdev->dev, &gpio->chip, gpio);
-+	if (rc < 0)
-+		return rc;
-+
-+	return aspeed_sgpio_setup_irqs(gpio, pdev);
-+}
-+
-+static struct platform_driver aspeed_sgpio_driver = {
-+	.driver = {
-+		.name = KBUILD_MODNAME,
-+		.of_match_table = aspeed_sgpio_of_table,
-+	},
-+};
-+
-+module_platform_driver_probe(aspeed_sgpio_driver, aspeed_sgpio_probe);
-+MODULE_DESCRIPTION("Aspeed Serial GPIO Driver");
-+MODULE_LICENSE("GPL");
--- 
-2.7.4
 
+> + *
+> + */
+> +#include <linux/clk.h>
+> +#include <linux/dma-mapping.h>
+> +#include <linux/module.h>
+> +#include <linux/of_address.h>
+> +#include <linux/of_irq.h>
+> +#include <linux/tty.h>
+> +#include <linux/tty_flip.h>
+> +#include "8250.h"
+> +
+> +#define SERIAL8250_CONSOLE NULL
+> +#define TTY_AST_MAJOR 204
+> +#define TTY_AST_MINOR 68
+
+Where did you get this minor number from?
+
+> +
+> +#define DMA_BUFF_SIZE		0x1000
+> +#define SDMA_RX_BUFF_SIZE	0x10000
+> +#define PASS_LIMIT 256
+> +#define UART_DMA_NR CONFIG_AST_NR_DMA_UARTS
+> +#define AST_UART_SDMA_CH 12
+> +
+> +/* enum ast_uart_chan_op
+> + * operation codes passed to the DMA code by the user, and also used
+> + * to inform the current channel owner of any changes to the system state
+> + */
+> +enum ast_uart_chan_op {
+> +	AST_UART_DMAOP_TRIGGER,
+> +	AST_UART_DMAOP_STOP,
+> +	AST_UART_DMAOP_PAUSE,
+> +};
+> +
+> +/* ast_uart_dma_cbfn: buffer callback routinei type */
+> +typedef void (*ast_uart_dma_cbfn)(void *dev_id, u16 len);
+> +
+> +struct ast_sdma_info {
+> +	u8 ch_no;
+> +	u8 direction;
+> +	u8 enable;
+> +	void *priv;
+> +	char *sdma_virt_addr;
+> +	dma_addr_t dma_phy_addr;
+> +	/* cdriver callbacks */
+> +	ast_uart_dma_cbfn callback_fn; /* buffer done callback */
+> +};
+> +
+> +struct ast_sdma_ch {
+> +	struct ast_sdma_info tx_dma_info[AST_UART_SDMA_CH];
+> +	struct ast_sdma_info rx_dma_info[AST_UART_SDMA_CH];
+> +};
+> +
+> +struct ast_sdma {
+> +	void __iomem *reg_base;
+> +	int dma_irq;
+> +	struct ast_sdma_ch *dma_ch;
+> +	struct regmap *map;
+> +};
+> +
+> +#define UART_TX_SDMA_EN		0x00
+> +#define UART_RX_SDMA_EN		0x04
+> +#define UART_SDMA_CONF		0x08 /* Misc, Buffer size  */
+> +#define UART_SDMA_TIMER		0x0C
+> +#define UART_TX_SDMA_REST	0x20
+> +#define UART_RX_SDMA_REST	0x24
+> +#define UART_TX_SDMA_IER	0x30
+> +#define UART_TX_SDMA_ISR	0x34
+> +#define UART_RX_SDMA_IER	0x38
+> +#define UART_RX_SDMA_ISR	0x3C
+> +#define UART_TX_R_POINT(x)	(0x40 + ((x) * 0x20))
+> +#define UART_TX_W_POINT(x)	(0x44 + ((x) * 0x20))
+> +#define UART_TX_SDMA_ADDR(x)	(0x48 + ((x) * 0x20))
+> +#define UART_RX_R_POINT(x)	(0x50 + ((x) * 0x20))
+> +#define UART_RX_W_POINT(x)	(0x54 + ((x) * 0x20))
+> +#define UART_RX_SDMA_ADDR(x)	(0x58 + ((x) * 0x20))
+> +#define SDMA_CH_EN(x)		BIT(x)
+> +
+> +#define SDMA_TX_BUFF_SIZE_MASK	(0x3)
+> +#define SDMA_SET_TX_BUFF_SIZE(x)(x)
+> +#define SDMA_BUFF_SIZE_1KB	(0x0)
+> +#define SDMA_BUFF_SIZE_4KB	(0x1)
+> +#define SDMA_BUFF_SIZE_16KB	(0x2)
+> +#define SDMA_BUFF_SIZE_64KB	(0x3)
+> +#define SDMA_RX_BUFF_SIZE_MASK	(0x3 << 2)
+> +#define SDMA_SET_RX_BUFF_SIZE(x)((x) << 2)
+> +#define SDMA_TIMEOUT_DIS	BIT(4)
+> +
+> +#define UART_SDMA11_INT		BIT(11)
+> +#define UART_SDMA10_INT		BIT(10)
+> +#define UART_SDMA9_INT		BIT(9)
+> +#define UART_SDMA8_INT		BIT(8)
+> +#define UART_SDMA7_INT		BIT(7)
+> +#define UART_SDMA6_INT		BIT(6)
+> +#define UART_SDMA5_INT		BIT(5)
+> +#define UART_SDMA4_INT		BIT(4)
+> +#define UART_SDMA3_INT		BIT(3)
+> +#define UART_SDMA2_INT		BIT(2)
+> +#define UART_SDMA1_INT		BIT(1)
+> +#define UART_SDMA0_INT		BIT(0)
+> +
+> +/*
+> + * Configuration:
+> + *   share_irqs - whether we pass IRQF_SHARED to request_irq().
+> + *   This option is unsafe when used on edge-triggered interrupts.
+> + */
+> +static unsigned int share_irqs = SERIAL8250_SHARE_IRQS;
+> +
+> +static unsigned int nr_uarts = CONFIG_AST_RUNTIME_DMA_UARTS;
+> +
+> +struct ast_uart_port {
+> +	struct uart_port port;
+> +	unsigned short capabilities; /* port capabilities */
+> +	unsigned short bugs;         /* port bugs */
+> +	unsigned int tx_loadsz;      /* transmit fifo load size */
+> +	unsigned char acr;
+> +	unsigned char ier;
+> +	unsigned char lcr;
+> +	unsigned char mcr;
+> +	unsigned char mcr_mask;  /* mask of user bits */
+> +	unsigned char mcr_force; /* mask of forced bits */
+> +	struct circ_buf rx_dma_buf;
+> +	struct circ_buf tx_dma_buf;
+> +	unsigned char dma_channel;
+> +	dma_addr_t dma_rx_addr; /* Mapped ADMA descr. table */
+> +	dma_addr_t dma_tx_addr; /* Mapped ADMA descr. table */
+> +#ifdef CONFIG_AST_UART_DMA_RX_INTERRUPT
+> +	struct tasklet_struct rx_tasklet;
+> +#else
+> +	struct timer_list rx_timer;
+> +	unsigned int workaround;
+> +#endif
+> +	struct tasklet_struct tx_tasklet;
+> +	spinlock_t lock;
+> +	int tx_done;
+> +	int tx_count;
+> +	struct platform_device *ast_uart_pdev;
+> +/*
+> + * Some bits in registers are cleared on a read, so they must
+> + * be saved whenever the register is read but the bits will not
+> + * be immediately processed.
+> + */
+> +#define LSR_SAVE_FLAGS UART_LSR_BRK_ERROR_BITS
+> +	unsigned char lsr_saved_flags;
+> +#define MSR_SAVE_FLAGS UART_MSR_ANY_DELTA
+> +	unsigned char msr_saved_flags;
+> +
+> +	/*
+> +	 * We provide a per-port pm hook.
+> +	 */
+> +	void (*pm)(struct uart_port *port, unsigned int state,
+> +						 unsigned int old);
+> +};
+> +
+> +static struct ast_uart_port ast_uart_ports[UART_DMA_NR];
+> +
+> +#define GET_DEV(ast_uart_port_priv_ptr)\
+> +		(ast_uart_port_priv_ptr->ast_uart_pdev->dev)
+> +
+> +static inline struct ast_uart_port *
+> +to_ast_dma_uart_port(struct uart_port *uart) {
+> +	return container_of(uart, struct ast_uart_port, port);
+> +}
+> +
+> +struct irq_info {
+> +	spinlock_t lock;
+> +	struct ast_uart_port *up;
+> +};
+> +
+> +static struct irq_info ast_uart_irq[1];
+> +static DEFINE_MUTEX(ast_uart_mutex);
+> +
+> +/*
+> + * Here we define the default xmit fifo size used for each type of UART.
+> + */
+> +static const struct serial8250_config uart_config[] = {
+> +	[PORT_UNKNOWN] = {
+> +		.name		= "unknown",
+> +		.fifo_size	= 1,
+> +		.tx_loadsz	= 1,
+> +	},
+> +	[PORT_8250] = {
+> +		.name		= "8250",
+> +		.fifo_size	= 1,
+> +		.tx_loadsz	= 1,
+> +	},
+> +	[PORT_16450] = {
+> +		.name		= "16450",
+> +		.fifo_size	= 1,
+> +		.tx_loadsz	= 1,
+> +	},
+> +	[PORT_16550] = {
+> +		.name		= "16550",
+> +		.fifo_size	= 1,
+> +		.tx_loadsz	= 1,
+> +	},
+> +	[PORT_16550A] = {
+> +		.name		= "16550A",
+> +		.fifo_size	= 16,
+> +		.tx_loadsz	= 16,
+> +		.fcr		= UART_FCR_ENABLE_FIFO | UART_FCR_R_TRIG_10
+> +							| UART_FCR_DMA_SELECT,
+> +		.flags		= UART_CAP_FIFO,
+> +	},
+> +};
+
+I doubt you need all of these port types, right?  You only have one type
+of device, please strip out _ALL_ of the unneeded code in here.  You did
+a wholesale copy of the old driver, to get away with that you then need
+to customize it to work properly with your hardware _AND_ take away all
+code that is not needed for your hardware.
+
+Lots of this file can be removed, please do so.
+
+thanks,
+
+greg k-h
