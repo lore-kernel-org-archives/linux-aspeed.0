@@ -1,72 +1,61 @@
 From: Oskar Senft <osk@google.com>
-Date: Mon, 29 Jul 2019 21:49:54 -0400
-Subject: [PATCH v2 2/3] dt-bindings: misc: Bindings doc for aspeed-uart-routing
+Date: Mon, 29 Jul 2019 21:49:55 -0400
+Subject: [PATCH v2 3/3] ARM: dts: aspeed: Add uart-routing node
 In-Reply-To: <20190730014955.34059-1-osk@google.com>
 References: <20190730014955.34059-1-osk@google.com>
-Message-ID: <20190730014955.34059-2-osk@google.com>
+Message-ID: <20190730014955.34059-3-osk@google.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Device tree bindings documentation for the aspeed-uart-routing driver.
+Add a node for the aspeed-uart-routing module. This node, when enabled
+will provide control of the Aspeed UART routing via sysfs.
 
 Signed-off-by: Oskar Senft <osk@google.com>
 ---
 Changes since v1:
- Split out bindings documentation from driver commit.
- Added bindings for AST2400.
+ Added AST2400.
 
- .../bindings/misc/aspeed-uart-routing.txt     | 39 +++++++++++++++++++
- 1 file changed, 39 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/misc/aspeed-uart-routing.txt
+ arch/arm/boot/dts/aspeed-g4.dtsi | 6 ++++++
+ arch/arm/boot/dts/aspeed-g5.dtsi | 6 ++++++
+ 2 files changed, 12 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/misc/aspeed-uart-routing.txt b/Documentation/devicetree/bindings/misc/aspeed-uart-routing.txt
-new file mode 100644
-index 000000000000..bb9ce689d56b
---- /dev/null
-+++ b/Documentation/devicetree/bindings/misc/aspeed-uart-routing.txt
-@@ -0,0 +1,39 @@
-+======================================================================
-+Device tree bindings for Aspeed AST2400/AST2500 UART Routing Control Driver
-+======================================================================
+diff --git a/arch/arm/boot/dts/aspeed-g4.dtsi b/arch/arm/boot/dts/aspeed-g4.dtsi
+index dd4b0b15afcf..d855bc19d677 100644
+--- a/arch/arm/boot/dts/aspeed-g4.dtsi
++++ b/arch/arm/boot/dts/aspeed-g4.dtsi
+@@ -326,6 +326,12 @@
+ 						status = "disabled";
+ 					};
+ 				};
 +
-+The Aspeed AST2500 allows to dynamically route the inputs for the built-in
-+UARTS and physical serial I/O ports.
++				uart_routing: uart_routing at 9c {
++					compatible = "aspeed,ast2400-uart-routing";
++					reg = <0x9c 0x4>;
++					status = "disabled";
++				};
+ 			};
+ 
+ 			uart2: serial at 1e78d000 {
+diff --git a/arch/arm/boot/dts/aspeed-g5.dtsi b/arch/arm/boot/dts/aspeed-g5.dtsi
+index 7149ff3b6fb3..9e561504042a 100644
+--- a/arch/arm/boot/dts/aspeed-g5.dtsi
++++ b/arch/arm/boot/dts/aspeed-g5.dtsi
+@@ -440,6 +440,12 @@
+ 						status = "disabled";
+ 					};
+ 				};
 +
-+Required properties:
-+===================
-+
-+ - compatible: must be one of:
-+	- "aspeed,ast2400-uart-routing"
-+	- "aspeed,ast2500-uart-routing"
-+
-+Optional properties:
-+===================
-+
-+The uart-routing node should be the child of a lpc node with the required
-+property:
-+
-+- compatible : Should be one of the following:
-+		"aspeed,ast2400-lpc", "simple-mfd"
-+		"aspeed,ast2500-lpc", "simple-mfd"
-+
-+Example
-+===================
-+
-+g5 Example
-+----------
-+
-+lpc: lpc at 1e789000 {
-+	compatible = "aspeed,ast2500-lpc", "simple-mfd";
-+	reg = <0x1e789000 0x1000>;
-+
-+	uart_routing: uart_routing at 9c {
-+		compatible = "aspeed,ast2500-uart-routing";
-+		reg = <0x9c 0x4>;
-+	};
-+};
++				uart_routing: uart_routing at 9c {
++					compatible = "aspeed,ast2500-uart-routing";
++					reg = <0x9c 0x4>;
++					status = "disabled";
++				};
+ 			};
+ 
+ 			uart2: serial at 1e78d000 {
 -- 
 2.22.0.709.g102302147b-goog
 
