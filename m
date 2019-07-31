@@ -1,50 +1,32 @@
-From: Heiko Stuebner <heiko@sntech.de>
-Date: Thu, 29 Nov 2018 14:18:03 +0100
-Subject: [PATCH] iio: adc: Replace license text w/ SPDX identifier
-In-Reply-To: <20181128175312.9634-1-matheus.bernardino@usp.br>
-References: <20181128175312.9634-1-matheus.bernardino@usp.br>
-Message-ID: <3999722.Y4omgby9AG@phil>
+From: Rob Herring <robh+dt@kernel.org>
+Date: Wed, 31 Jul 2019 12:00:59 -0600
+Subject: [PATCH net-next v2 1/4] dt-bindings: net: Add aspeed,
+ ast2600-mdio binding
+In-Reply-To: <20190731053959.16293-2-andrew@aj.id.au>
+References: <20190731053959.16293-1-andrew@aj.id.au>
+ <20190731053959.16293-2-andrew@aj.id.au>
+Message-ID: <CAL_JsqLu2M7qnO08kHbgheNCN1+Lis0shrjfnphMbkSJKRs7=A@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Am Mittwoch, 28. November 2018, 18:53:12 CET schrieb Matheus Tavares:
-> From: Lucas Santos <ilucas.ms@gmail.com>
-> 
-> This patch removes all license boilerplate texts from the .c and .h
-> files at drivers/iio/adc/ and, instead, adds the proper SPDX license
-> identifiers.
-> 
-> Signed-off-by: Lucas Santos <ilucas.ms@gmail.com>
-> Signed-off-by: Matheus Tavares <matheus.bernardino@usp.br>
+On Tue, Jul 30, 2019 at 11:39 PM Andrew Jeffery <andrew@aj.id.au> wrote:
+>
+> The AST2600 splits out the MDIO bus controller from the MAC into its own
+> IP block and rearranges the register layout. Add a new binding to
+> describe the new hardware.
+>
+> Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
+>
 > ---
+> v2:
+> * aspeed: Utilise mdio.yaml
+> * aspeed: Drop status from example
+> ---
+>  .../bindings/net/aspeed,ast2600-mdio.yaml     | 45 +++++++++++++++++++
+>  1 file changed, 45 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/net/aspeed,ast2600-mdio.yaml
 
-> diff --git a/drivers/iio/adc/rockchip_saradc.c b/drivers/iio/adc/rockchip_saradc.c
-> index 1f98566d5b3c..234c6df348ce 100644
-> --- a/drivers/iio/adc/rockchip_saradc.c
-> +++ b/drivers/iio/adc/rockchip_saradc.c
-> @@ -1,16 +1,7 @@
-> +// SPDX-License-Identifier: GPL-2.0+
->  /*
->   * Rockchip Successive Approximation Register (SAR) A/D Converter
->   * Copyright (C) 2014 ROCKCHIP, Inc.
-> - *
-> - * This program is free software; you can redistribute it and/or modify
-> - * it under the terms of the GNU General Public License as published by
-> - * the Free Software Foundation; either version 2 of the License, or
-> - * (at your option) any later version.
-> - *
-> - * This program is distributed in the hope that it will be useful,
-> - * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> - * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> - * GNU General Public License for more details.
->   */
->  
->  #include <linux/module.h>
-
-For the Rockchip-part
-Acked-by: Heiko Stuebner <heiko@sntech.de>
-
-
+Reviewed-by: Rob Herring <robh@kernel.org>
