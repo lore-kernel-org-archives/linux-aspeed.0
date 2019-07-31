@@ -1,7 +1,7 @@
 From: Ben Pai <Ben_Pai@wistron.com>
-Date: Tue, 30 Jul 2019 14:00:29 +0800
-Subject: [PATCH] ARM: dts: aspeed: Add Mihawk BMC platform
-Message-ID: <20190730060029.25268-1-Ben_Pai@wistron.com>
+Date: Wed, 31 Jul 2019 15:47:42 +0800
+Subject: [PATCH v2 2/2] ARM: dts: aspeed: Add Mihawk BMC platform
+Message-ID: <20190731074742.23456-1-Ben_Pai@wistron.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -11,14 +11,11 @@ Content-Transfer-Encoding: 7bit
 The Mihawk BMC is an ASPEED ast2500 based BMC that is part of an
 OpenPower Power9 server.
 
-This adds the device tree description for most upstream components. It
-is a squashed commit from the OpenBMC kernel tree.
-
 Signed-off-by: Ben Pai <Ben_Pai@wistron.com>
 ---
  arch/arm/boot/dts/Makefile                  |   1 +
- arch/arm/boot/dts/aspeed-bmc-opp-mihawk.dts | 922 ++++++++++++++++++++
- 2 files changed, 923 insertions(+)
+ arch/arm/boot/dts/aspeed-bmc-opp-mihawk.dts | 907 ++++++++++++++++++++
+ 2 files changed, 908 insertions(+)
  create mode 100755 arch/arm/boot/dts/aspeed-bmc-opp-mihawk.dts
 
 diff --git a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
@@ -34,10 +31,10 @@ index eb6de52c1936..262345544359 100644
  	aspeed-bmc-quanta-q71l.dtb
 diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-mihawk.dts b/arch/arm/boot/dts/aspeed-bmc-opp-mihawk.dts
 new file mode 100755
-index 000000000000..cfa20e0b2939
+index 000000000000..913c94326f3f
 --- /dev/null
 +++ b/arch/arm/boot/dts/aspeed-bmc-opp-mihawk.dts
-@@ -0,0 +1,922 @@
+@@ -0,0 +1,907 @@
 +/dts-v1/;
 +
 +#include "aspeed-g5.dtsi"
@@ -119,7 +116,6 @@ index 000000000000..cfa20e0b2939
 +	gpio-keys-polled {
 +		compatible = "gpio-keys-polled";
 +		#address-cells = <1>;
-+		#size-cells = <0>;
 +		poll-interval = <1000>;
 +
 +		fan0-presence {
@@ -695,7 +691,6 @@ index 000000000000..cfa20e0b2939
 +&i2c8 {
 +	status = "okay";
 +
-+	/* FSI CLK/DAT */
 +	eeprom at 50 {
 +		compatible = "atmel,24c64";
 +		reg = <0x50>;
@@ -726,8 +721,6 @@ index 000000000000..cfa20e0b2939
 +		#size-cells = <0>;
 +		reg = <0x70>;
 +
-+		/*interrupt-parent = <&ipic>;*/
-+		/*interrupts = <17 IRQ_TYPE_LEVEL_LOW>;*/
 +		i2c-mux-idle-disconnect;
 +		interrupt-controller;
 +		#interrupt-cells = <2>;
@@ -739,8 +732,6 @@ index 000000000000..cfa20e0b2939
 +		#size-cells = <0>;
 +		reg = <0x71>;
 +
-+		/*interrupt-parent = <&ipic>;*/
-+		/*interrupts = <17 IRQ_TYPE_LEVEL_LOW>;*/
 +		i2c-mux-idle-disconnect;
 +		interrupt-controller;
 +		#interrupt-cells = <2>;	
@@ -771,8 +762,6 @@ index 000000000000..cfa20e0b2939
 +		#size-cells = <0>;
 +		reg = <0x70>;
 +
-+		/*interrupt-parent = <&ipic>;*/
-+		/*interrupts = <17 IRQ_TYPE_LEVEL_LOW>;*/
 +		i2c-mux-idle-disconnect;
 +		interrupt-controller;
 +		#interrupt-cells = <2>;
@@ -784,8 +773,6 @@ index 000000000000..cfa20e0b2939
 +		#size-cells = <0>;
 +		reg = <0x71>;
 +
-+		/*interrupt-parent = <&ipic>;*/
-+		/*interrupts = <17 IRQ_TYPE_LEVEL_LOW>;*/
 +		i2c-mux-idle-disconnect;
 +		interrupt-controller;
 +		#interrupt-cells = <2>;	
@@ -822,11 +809,11 @@ index 000000000000..cfa20e0b2939
 +		reg = <0x49>;
 +	};
 +
-+    /* chip emc1462 use emc1403 driver */
-+    emc1403 at 4c {
-+        compatible = "smsc,emc1403";
-+        reg = <0x4c>;
-+    };
++	/* chip emc1462 use emc1403 driver */
++	emc1403 at 4c {
++        	compatible = "smsc,emc1403";
++        	reg = <0x4c>;
++    	};
 +
 +};
 +
@@ -846,8 +833,6 @@ index 000000000000..cfa20e0b2939
 +		#size-cells = <0>;
 +		reg = <0x70>;
 +
-+		/*interrupt-parent = <&ipic>;*/
-+		/*interrupts = <17 IRQ_TYPE_LEVEL_LOW>;*/
 +		interrupt-controller;
 +		#interrupt-cells = <2>;
 +		
@@ -924,10 +909,6 @@ index 000000000000..cfa20e0b2939
 +	memory-region = <&gfx_memory>;
 +};
 +
-+&pinctrl {
-+	aspeed,external-nodes = <&gfx &lhc>;
-+};
-+
 +&adc {
 +	status = "okay";
 +};
@@ -960,7 +941,7 @@ index 000000000000..cfa20e0b2939
 +};
 +
 +#include "ibm-power9-dual.dtsi"
-\ No newline at end of file
++
 -- 
 2.17.1
 
