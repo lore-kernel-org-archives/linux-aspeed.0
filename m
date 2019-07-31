@@ -1,60 +1,82 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Wed, 31 Jul 2019 12:42:48 +0930
-Subject: =?UTF-8?Q?Re:_[PATCH_v2_2/3]_dt-bindings:_serial:_8250:_Add_documentatio?=
- =?UTF-8?Q?n_for_espi-enabled.?=
-In-Reply-To: <20190731013404.243755-2-osk@google.com>
-References: <20190731013404.243755-1-osk@google.com>
- <20190731013404.243755-2-osk@google.com>
-Message-ID: <b4670171-e161-4d7a-91dc-a1e5a95f7dbc@www.fastmail.com>
+Date: Wed, 31 Jul 2019 15:09:56 +0930
+Subject: [PATCH net-next v2 1/4] dt-bindings: net: Add aspeed,
+ ast2600-mdio binding
+In-Reply-To: <20190731053959.16293-1-andrew@aj.id.au>
+References: <20190731053959.16293-1-andrew@aj.id.au>
+Message-ID: <20190731053959.16293-2-andrew@aj.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Oskar,
+The AST2600 splits out the MDIO bus controller from the MAC into its own
+IP block and rearranges the register layout. Add a new binding to
+describe the new hardware.
 
-On Wed, 31 Jul 2019, at 11:04, Oskar Senft wrote:
-> Add documentation for 8250_aspeed_vuart's espi-enabled property that
-> enables to auto-configure the VUART's SIRQ polarity.
-> 
-> Signed-off-by: Oskar Senft <osk@google.com>
-> ---
->  Documentation/devicetree/bindings/serial/8250.txt | 5 +++++
->  1 file changed, 5 insertions(+)
-> 
-> diff --git a/Documentation/devicetree/bindings/serial/8250.txt 
-> b/Documentation/devicetree/bindings/serial/8250.txt
-> index 20d351f268ef..4b8b9e502179 100644
-> --- a/Documentation/devicetree/bindings/serial/8250.txt
-> +++ b/Documentation/devicetree/bindings/serial/8250.txt
-> @@ -56,6 +56,11 @@ Optional properties:
->  - {rts,cts,dtr,dsr,rng,dcd}-gpios: specify a GPIO for 
-> RTS/CTS/DTR/DSR/RI/DCD
->    line respectively. It will use specified GPIO instead of the 
-> peripheral
->    function pin for the UART feature. If unsure, don't specify this 
-> property.
-> +- espi-enabled: Only applicable to aspeed,ast2500-vuart.
+Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
 
-Bit of a bikeshed, but:
+---
+v2:
+* aspeed: Utilise mdio.yaml
+* aspeed: Drop status from example
+---
+ .../bindings/net/aspeed,ast2600-mdio.yaml     | 45 +++++++++++++++++++
+ 1 file changed, 45 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/net/aspeed,ast2600-mdio.yaml
 
-Given it's ASPEED-specific I expect you should use a vendor prefix for the
-property, e.g. aspeed,espi-enabled.
+diff --git a/Documentation/devicetree/bindings/net/aspeed,ast2600-mdio.yaml b/Documentation/devicetree/bindings/net/aspeed,ast2600-mdio.yaml
+new file mode 100644
+index 000000000000..71808e78a495
+--- /dev/null
++++ b/Documentation/devicetree/bindings/net/aspeed,ast2600-mdio.yaml
+@@ -0,0 +1,45 @@
++# SPDX-License-Identifier: GPL-2.0-or-later
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/net/aspeed,ast2600-mdio.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: ASPEED AST2600 MDIO Controller
++
++maintainers:
++  - Andrew Jeffery <andrew@aj.id.au>
++
++description: |+
++  The ASPEED AST2600 MDIO controller is the third iteration of ASPEED's MDIO
++  bus register interface, this time also separating out the controller from the
++  MAC.
++
++allOf:
++  - $ref: "mdio.yaml#"
++
++properties:
++  compatible:
++    const: aspeed,ast2600-mdio
++  reg:
++    maxItems: 1
++    description: The register range of the MDIO controller instance
++
++required:
++  - compatible
++  - reg
++  - "#address-cells"
++  - "#size-cells"
++
++examples:
++  - |
++    mdio0: mdio at 1e650000 {
++            compatible = "aspeed,ast2600-mdio";
++            reg = <0x1e650000 0x8>;
++            #address-cells = <1>;
++            #size-cells = <0>;
++
++            ethphy0: ethernet-phy at 0 {
++                    compatible = "ethernet-phy-ieee802.3-c22";
++                    reg = <0>;
++            };
++    };
+-- 
+2.20.1
 
-However, as I understand it you want to determine what polarity the SIRQ
-should be regardless of which of eSPI or LPC are enabled, so I don't think
-the property name should be an explicit statement about eSPI. Maybe
-"aspeed,sirq-polarity-sense"? Anyway, see the point below:
-
-Please use ./scripts/get_maintainer.pl to determine where to send the
-series - Copying just the linux-aspeed@ list for upstream patches is not
-enough. For instance the series needs to at least go via the linux-serial@
-list given that's the affected subsystem, and you're adding to the
-devicetree binding so you need to send to the devicetree@ list as well
-(you'll need an ack from Rob Herring). The get_maintainer.pl script will
-give you all the information you need.
-
-Cheers,
-
-Andrew
