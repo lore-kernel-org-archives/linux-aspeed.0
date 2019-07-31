@@ -1,237 +1,105 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Wed, 31 Jul 2019 15:09:57 +0930
-Subject: [PATCH net-next v2 2/4] net: phy: Add mdio-aspeed
+Date: Wed, 31 Jul 2019 15:09:58 +0930
+Subject: [PATCH net-next v2 3/4] net: ftgmac100: Add support for DT phy-handle
+ property
 In-Reply-To: <20190731053959.16293-1-andrew@aj.id.au>
 References: <20190731053959.16293-1-andrew@aj.id.au>
-Message-ID: <20190731053959.16293-3-andrew@aj.id.au>
+Message-ID: <20190731053959.16293-4-andrew@aj.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The AST2600 design separates the MDIO controllers from the MAC, which is
-where they were placed in the AST2400 and AST2500. Further, the register
-interface is reworked again, so now we have three possible different
-interface implementations, however this driver only supports the
-interface provided by the AST2600. The AST2400 and AST2500 will continue
-to be supported by the MDIO support embedded in the FTGMAC100 driver.
+phy-handle is necessary for the AST2600 which separates the MDIO
+controllers from the MAC.
 
-The hardware supports both C22 and C45 mode, but for the moment only C22
-support is implemented.
+I've tried to minimise the intrusion of supporting the AST2600 to the
+FTGMAC100 by leaving in place the existing MDIO support for the embedded
+MDIO interface. The AST2400 and AST2500 continue to be supported this
+way, as it avoids breaking/reworking existing devicetrees.
+
+The AST2600 support by contrast requires the presence of the phy-handle
+property in the MAC devicetree node to specify the appropriate PHY to
+associate with the MAC. In the event that someone wants to specify the
+MDIO bus topology under the MAC node on an AST2400 or AST2500, the
+current auto-probe approach is done conditional on the absence of an
+"mdio" child node of the MAC.
 
 Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
-
 ---
-v2:
-* Use readl_poll_timeout() instead of open-coded loop
-* Error on C45 accesses
----
- drivers/net/phy/Kconfig       |  13 +++
- drivers/net/phy/Makefile      |   1 +
- drivers/net/phy/mdio-aspeed.c | 157 ++++++++++++++++++++++++++++++++++
- 3 files changed, 171 insertions(+)
- create mode 100644 drivers/net/phy/mdio-aspeed.c
+ drivers/net/ethernet/faraday/ftgmac100.c | 37 +++++++++++++++++++++---
+ 1 file changed, 33 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/phy/Kconfig b/drivers/net/phy/Kconfig
-index 20f14c5fbb7e..206d8650ee7f 100644
---- a/drivers/net/phy/Kconfig
-+++ b/drivers/net/phy/Kconfig
-@@ -21,6 +21,19 @@ config MDIO_BUS
- 
- if MDIO_BUS
- 
-+config MDIO_ASPEED
-+	tristate "ASPEED MDIO bus controller"
-+	depends on ARCH_ASPEED || COMPILE_TEST
-+	depends on OF_MDIO && HAS_IOMEM
-+	help
-+	  This module provides a driver for the independent MDIO bus
-+	  controllers found in the ASPEED AST2600 SoC. This is a driver for the
-+	  third revision of the ASPEED MDIO register interface - the first two
-+	  revisions are the "old" and "new" interfaces found in the AST2400 and
-+	  AST2500, embedded in the MAC. For legacy reasons, FTGMAC100 driver
-+	  continues to drive the embedded MDIO controller for the AST2400 and
-+	  AST2500 SoCs, so say N if AST2600 support is not required.
-+
- config MDIO_BCM_IPROC
- 	tristate "Broadcom iProc MDIO bus controller"
- 	depends on ARCH_BCM_IPROC || COMPILE_TEST
-diff --git a/drivers/net/phy/Makefile b/drivers/net/phy/Makefile
-index 839acb292c38..ba07c27e4208 100644
---- a/drivers/net/phy/Makefile
-+++ b/drivers/net/phy/Makefile
-@@ -22,6 +22,7 @@ libphy-$(CONFIG_LED_TRIGGER_PHY)	+= phy_led_triggers.o
- obj-$(CONFIG_PHYLINK)		+= phylink.o
- obj-$(CONFIG_PHYLIB)		+= libphy.o
- 
-+obj-$(CONFIG_MDIO_ASPEED)	+= mdio-aspeed.o
- obj-$(CONFIG_MDIO_BCM_IPROC)	+= mdio-bcm-iproc.o
- obj-$(CONFIG_MDIO_BCM_UNIMAC)	+= mdio-bcm-unimac.o
- obj-$(CONFIG_MDIO_BITBANG)	+= mdio-bitbang.o
-diff --git a/drivers/net/phy/mdio-aspeed.c b/drivers/net/phy/mdio-aspeed.c
-new file mode 100644
-index 000000000000..cad820568f75
---- /dev/null
-+++ b/drivers/net/phy/mdio-aspeed.c
-@@ -0,0 +1,157 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
-+/* Copyright (C) 2019 IBM Corp. */
-+
-+#include <linux/bitfield.h>
-+#include <linux/delay.h>
-+#include <linux/iopoll.h>
-+#include <linux/mdio.h>
-+#include <linux/module.h>
-+#include <linux/of.h>
+diff --git a/drivers/net/ethernet/faraday/ftgmac100.c b/drivers/net/ethernet/faraday/ftgmac100.c
+index 030fed65393e..563384b788ab 100644
+--- a/drivers/net/ethernet/faraday/ftgmac100.c
++++ b/drivers/net/ethernet/faraday/ftgmac100.c
+@@ -17,6 +17,7 @@
+ #include <linux/module.h>
+ #include <linux/netdevice.h>
+ #include <linux/of.h>
 +#include <linux/of_mdio.h>
-+#include <linux/phy.h>
-+#include <linux/platform_device.h>
+ #include <linux/phy.h>
+ #include <linux/platform_device.h>
+ #include <linux/property.h>
+@@ -1619,8 +1620,13 @@ static int ftgmac100_setup_mdio(struct net_device *netdev)
+ 	if (!priv->mii_bus)
+ 		return -EIO;
+ 
+-	if (priv->is_aspeed) {
+-		/* This driver supports the old MDIO interface */
++	if (of_device_is_compatible(np, "aspeed,ast2400-mac") ||
++	    of_device_is_compatible(np, "aspeed,ast2500-mac")) {
++		/* The AST2600 has a separate MDIO controller */
 +
-+#define DRV_NAME "mdio-aspeed"
++		/* For the AST2400 and AST2500 this driver only supports the
++		 * old MDIO interface
++		 */
+ 		reg = ioread32(priv->base + FTGMAC100_OFFSET_REVR);
+ 		reg &= ~FTGMAC100_REVR_NEW_MDIO_INTERFACE;
+ 		iowrite32(reg, priv->base + FTGMAC100_OFFSET_REVR);
+@@ -1797,7 +1803,8 @@ static int ftgmac100_probe(struct platform_device *pdev)
+ 
+ 	np = pdev->dev.of_node;
+ 	if (np && (of_device_is_compatible(np, "aspeed,ast2400-mac") ||
+-		   of_device_is_compatible(np, "aspeed,ast2500-mac"))) {
++		   of_device_is_compatible(np, "aspeed,ast2500-mac") ||
++		   of_device_is_compatible(np, "aspeed,ast2600-mac"))) {
+ 		priv->rxdes0_edorr_mask = BIT(30);
+ 		priv->txdes0_edotr_mask = BIT(30);
+ 		priv->is_aspeed = true;
+@@ -1817,7 +1824,29 @@ static int ftgmac100_probe(struct platform_device *pdev)
+ 		priv->ndev = ncsi_register_dev(netdev, ftgmac100_ncsi_handler);
+ 		if (!priv->ndev)
+ 			goto err_ncsi_dev;
+-	} else {
++	} else if (np && of_get_property(np, "phy-handle", NULL)) {
++		struct phy_device *phy;
 +
-+#define ASPEED_MDIO_CTRL		0x0
-+#define   ASPEED_MDIO_CTRL_FIRE		BIT(31)
-+#define   ASPEED_MDIO_CTRL_ST		BIT(28)
-+#define     ASPEED_MDIO_CTRL_ST_C45	0
-+#define     ASPEED_MDIO_CTRL_ST_C22	1
-+#define   ASPEED_MDIO_CTRL_OP		GENMASK(27, 26)
-+#define     MDIO_C22_OP_WRITE		0b01
-+#define     MDIO_C22_OP_READ		0b10
-+#define   ASPEED_MDIO_CTRL_PHYAD	GENMASK(25, 21)
-+#define   ASPEED_MDIO_CTRL_REGAD	GENMASK(20, 16)
-+#define   ASPEED_MDIO_CTRL_MIIWDATA	GENMASK(15, 0)
++		phy = of_phy_get_and_connect(priv->netdev, np,
++					     &ftgmac100_adjust_link);
++		if (!phy) {
++			dev_err(&pdev->dev, "Failed to connect to phy\n");
++			goto err_setup_mdio;
++		}
 +
-+#define ASPEED_MDIO_DATA		0x4
-+#define   ASPEED_MDIO_DATA_MDC_THRES	GENMASK(31, 24)
-+#define   ASPEED_MDIO_DATA_MDIO_EDGE	BIT(23)
-+#define   ASPEED_MDIO_DATA_MDIO_LATCH	GENMASK(22, 20)
-+#define   ASPEED_MDIO_DATA_IDLE		BIT(16)
-+#define   ASPEED_MDIO_DATA_MIIRDATA	GENMASK(15, 0)
++		/* Indicate that we support PAUSE frames (see comment in
++		 * Documentation/networking/phy.txt)
++		 */
++		phy_support_asym_pause(phy);
 +
-+#define ASPEED_MDIO_INTERVAL_US		100
-+#define ASPEED_MDIO_TIMEOUT_US		(ASPEED_MDIO_INTERVAL_US * 10)
-+
-+struct aspeed_mdio {
-+	void __iomem *base;
-+};
-+
-+static int aspeed_mdio_read(struct mii_bus *bus, int addr, int regnum)
-+{
-+	struct aspeed_mdio *ctx = bus->priv;
-+	u32 ctrl;
-+	u32 data;
-+	int rc;
-+
-+	dev_dbg(&bus->dev, "%s: addr: %d, regnum: %d\n", __func__, addr,
-+		regnum);
-+
-+	/* Just clause 22 for the moment */
-+	if (regnum & MII_ADDR_C45)
-+		return -EOPNOTSUPP;
-+
-+	ctrl = ASPEED_MDIO_CTRL_FIRE
-+		| FIELD_PREP(ASPEED_MDIO_CTRL_ST, ASPEED_MDIO_CTRL_ST_C22)
-+		| FIELD_PREP(ASPEED_MDIO_CTRL_OP, MDIO_C22_OP_READ)
-+		| FIELD_PREP(ASPEED_MDIO_CTRL_PHYAD, addr)
-+		| FIELD_PREP(ASPEED_MDIO_CTRL_REGAD, regnum);
-+
-+	iowrite32(ctrl, ctx->base + ASPEED_MDIO_CTRL);
-+
-+	rc = readl_poll_timeout(ctx->base + ASPEED_MDIO_DATA, data,
-+				data & ASPEED_MDIO_DATA_IDLE,
-+				ASPEED_MDIO_INTERVAL_US,
-+				ASPEED_MDIO_TIMEOUT_US);
-+	if (rc < 0)
-+		return rc;
-+
-+	return FIELD_GET(ASPEED_MDIO_DATA_MIIRDATA, data);
-+}
-+
-+static int aspeed_mdio_write(struct mii_bus *bus, int addr, int regnum, u16 val)
-+{
-+	struct aspeed_mdio *ctx = bus->priv;
-+	u32 ctrl;
-+
-+	dev_dbg(&bus->dev, "%s: addr: %d, regnum: %d, val: 0x%x\n",
-+		__func__, addr, regnum, val);
-+
-+	/* Just clause 22 for the moment */
-+	if (regnum & MII_ADDR_C45)
-+		return -EOPNOTSUPP;
-+
-+	ctrl = ASPEED_MDIO_CTRL_FIRE
-+		| FIELD_PREP(ASPEED_MDIO_CTRL_ST, ASPEED_MDIO_CTRL_ST_C22)
-+		| FIELD_PREP(ASPEED_MDIO_CTRL_OP, MDIO_C22_OP_WRITE)
-+		| FIELD_PREP(ASPEED_MDIO_CTRL_PHYAD, addr)
-+		| FIELD_PREP(ASPEED_MDIO_CTRL_REGAD, regnum)
-+		| FIELD_PREP(ASPEED_MDIO_CTRL_MIIWDATA, val);
-+
-+	iowrite32(ctrl, ctx->base + ASPEED_MDIO_CTRL);
-+
-+	return readl_poll_timeout(ctx->base + ASPEED_MDIO_CTRL, ctrl,
-+				  !(ctrl & ASPEED_MDIO_CTRL_FIRE),
-+				  ASPEED_MDIO_INTERVAL_US,
-+				  ASPEED_MDIO_TIMEOUT_US);
-+}
-+
-+static int aspeed_mdio_probe(struct platform_device *pdev)
-+{
-+	struct aspeed_mdio *ctx;
-+	struct mii_bus *bus;
-+	int rc;
-+
-+	bus = devm_mdiobus_alloc_size(&pdev->dev, sizeof(*ctx));
-+	if (!bus)
-+		return -ENOMEM;
-+
-+	ctx = bus->priv;
-+	ctx->base = devm_platform_ioremap_resource(pdev, 0);
-+	if (IS_ERR(ctx->base))
-+		return PTR_ERR(ctx->base);
-+
-+	bus->name = DRV_NAME;
-+	snprintf(bus->id, MII_BUS_ID_SIZE, "%s%d", pdev->name, pdev->id);
-+	bus->parent = &pdev->dev;
-+	bus->read = aspeed_mdio_read;
-+	bus->write = aspeed_mdio_write;
-+
-+	rc = of_mdiobus_register(bus, pdev->dev.of_node);
-+	if (rc) {
-+		dev_err(&pdev->dev, "Cannot register MDIO bus!\n");
-+		return rc;
-+	}
-+
-+	platform_set_drvdata(pdev, bus);
-+
-+	return 0;
-+}
-+
-+static int aspeed_mdio_remove(struct platform_device *pdev)
-+{
-+	mdiobus_unregister(platform_get_drvdata(pdev));
-+
-+	return 0;
-+}
-+
-+static const struct of_device_id aspeed_mdio_of_match[] = {
-+	{ .compatible = "aspeed,ast2600-mdio", },
-+	{ },
-+};
-+
-+static struct platform_driver aspeed_mdio_driver = {
-+	.driver = {
-+		.name = DRV_NAME,
-+		.of_match_table = aspeed_mdio_of_match,
-+	},
-+	.probe = aspeed_mdio_probe,
-+	.remove = aspeed_mdio_remove,
-+};
-+
-+module_platform_driver(aspeed_mdio_driver);
-+
-+MODULE_AUTHOR("Andrew Jeffery <andrew@aj.id.au>");
-+MODULE_LICENSE("GPL");
++		/* Display what we found */
++		phy_attached_info(phy);
++	} else if (np && !of_get_child_by_name(np, "mdio")) {
++		/* Support legacy ASPEED devicetree descriptions that decribe a
++		 * MAC with an embedded MDIO controller but have no "mdio"
++		 * child node. Automatically scan the MDIO bus for available
++		 * PHYs.
++		 */
+ 		priv->use_ncsi = false;
+ 		err = ftgmac100_setup_mdio(netdev);
+ 		if (err)
 -- 
 2.20.1
 
