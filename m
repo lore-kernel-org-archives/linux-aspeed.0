@@ -1,29 +1,43 @@
-From: Andrew Lunn <andrew@lunn.ch>
-Date: Thu, 1 Aug 2019 05:53:15 +0200
-Subject: [PATCH net-next v2 2/4] net: phy: Add mdio-aspeed
-In-Reply-To: <20190731053959.16293-3-andrew@aj.id.au>
-References: <20190731053959.16293-1-andrew@aj.id.au>
- <20190731053959.16293-3-andrew@aj.id.au>
-Message-ID: <20190801035315.GG2713@lunn.ch>
+From: Andrew Jeffery <andrew@aj.id.au>
+Date: Thu, 01 Aug 2019 15:15:42 +0930
+Subject: [PATCH 0/3] ARM: dts: aspeed: Deprecate g[45]-style compatibles
+In-Reply-To: <9d0f2b20-e6f6-419c-a866-c4a0dd92aa63@www.fastmail.com>
+References: <20190724081313.12934-1-andrew@aj.id.au>
+ <CACRpkdapypySGPrLgSMSNy1fzkca2BfMUGzf3koFWQZ-M5VOvg@mail.gmail.com>
+ <9d0f2b20-e6f6-419c-a866-c4a0dd92aa63@www.fastmail.com>
+Message-ID: <3691f6cb-2451-43f7-9f00-d5693071ba59@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Jul 31, 2019 at 03:09:57PM +0930, Andrew Jeffery wrote:
-> The AST2600 design separates the MDIO controllers from the MAC, which is
-> where they were placed in the AST2400 and AST2500. Further, the register
-> interface is reworked again, so now we have three possible different
-> interface implementations, however this driver only supports the
-> interface provided by the AST2600. The AST2400 and AST2500 will continue
-> to be supported by the MDIO support embedded in the FTGMAC100 driver.
-> 
-> The hardware supports both C22 and C45 mode, but for the moment only C22
-> support is implemented.
-> 
-> Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
 
-Reviewed-by: Andrew Lunn <andrew@lunn.ch>
 
-    Andrew
+On Tue, 30 Jul 2019, at 10:27, Andrew Jeffery wrote:
+> 
+> 
+> On Tue, 30 Jul 2019, at 07:23, Linus Walleij wrote:
+> > On Wed, Jul 24, 2019 at 10:13 AM Andrew Jeffery <andrew@aj.id.au> wrote:
+> > 
+> > > It's probably best if we push the three patches all through one tree rather
+> > > than fragmenting. Is everyone happy if Joel applies them to the aspeed tree?
+> > 
+> > If you are sure it will not collide with parallell work in the
+> > pinctrl tree, yes.
+> > Acked-by: Linus Walleij <linus.walleij@linaro.org>
+> > 
+> > (If it does collide I'd prefer to take the pinctrl patches and fix the
+> > conflicts in my tree.)
+> 
+> Fair enough, I don't know the answer so I'll poke around. I don't 
+> really mind
+> where the series goes in, I just want to avoid landing only part of it 
+> if I split it up.
+
+Okay, it currently conflicts with my cleanup-devicetree-warnings series.
+
+Joel, do you mind if Linus takes this series through the pinctrl tree, given
+the fix to the devicetrees is patch 1/3?
+
+Andrew
