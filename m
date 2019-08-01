@@ -1,581 +1,984 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Thu, 01 Aug 2019 12:29:08 +0930
-Subject: [v7 2/2] gpio: aspeed: Add SGPIO driver
-In-Reply-To: <1564603297-1391-3-git-send-email-hongweiz@ami.com>
-References: <1564603297-1391-1-git-send-email-hongweiz@ami.com>
- <1564603297-1391-3-git-send-email-hongweiz@ami.com>
-Message-ID: <421bad26-6a77-458d-aca1-155d120c8155@www.fastmail.com>
+Date: Thu, 01 Aug 2019 12:40:08 +0930
+Subject: [PATCH v2 2/2] ARM: dts: aspeed: Add Mihawk BMC platform
+In-Reply-To: <20190731074742.23456-1-Ben_Pai@wistron.com>
+References: <20190731074742.23456-1-Ben_Pai@wistron.com>
+Message-ID: <0adb1e44-6a89-455e-968a-7f07343b6350@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+Hi Ben,
 
+Comments inline below. Also apologies for the IBM/IPS mixup in the previous
+review, I've been corrected :)
 
-On Thu, 1 Aug 2019, at 05:32, Hongwei Zhang wrote:
-> Add SGPIO driver support for Aspeed AST2500 SoC.
+On Wed, 31 Jul 2019, at 17:17, Ben Pai wrote:
+> The Mihawk BMC is an ASPEED ast2500 based BMC that is part of an
+> OpenPower Power9 server.
 > 
-> Signed-off-by: Hongwei Zhang <hongweiz@ami.com>
-> Reviewed-by:   Andrew Jeffery <andrew@aj.id.au>
+> Signed-off-by: Ben Pai <Ben_Pai@wistron.com>
+> ---
+>  arch/arm/boot/dts/Makefile                  |   1 +
+>  arch/arm/boot/dts/aspeed-bmc-opp-mihawk.dts | 907 ++++++++++++++++++++
+>  2 files changed, 908 insertions(+)
+>  create mode 100755 arch/arm/boot/dts/aspeed-bmc-opp-mihawk.dts
+> 
+> diff --git a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
+> index eb6de52c1936..262345544359 100644
+> --- a/arch/arm/boot/dts/Makefile
+> +++ b/arch/arm/boot/dts/Makefile
+> @@ -1281,5 +1281,6 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
+>  	aspeed-bmc-opp-vesnin.dtb \
+>  	aspeed-bmc-opp-witherspoon.dtb \
+>  	aspeed-bmc-opp-zaius.dtb \
+> +	aspeed-bmc-opp-mihawk.dtb \
 
-Adding my Reviewed-by tag is a bit keen, I only gave it for the bindings on v6.
+This is a sorted list, please put it in the right spot.
 
-However, having looked over the patch you've addressed all of the issues I've
-found, so you can keep it.
+>  	aspeed-bmc-portwell-neptune.dtb \
+>  	aspeed-bmc-quanta-q71l.dtb
+> diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-mihawk.dts 
+> b/arch/arm/boot/dts/aspeed-bmc-opp-mihawk.dts
+> new file mode 100755
+> index 000000000000..913c94326f3f
+> --- /dev/null
+> +++ b/arch/arm/boot/dts/aspeed-bmc-opp-mihawk.dts
+> @@ -0,0 +1,907 @@
+> +/dts-v1/;
+> +
+> +#include "aspeed-g5.dtsi"
+> +#include <dt-bindings/gpio/aspeed-gpio.h>
+> +#include <dt-bindings/leds/leds-pca955x.h>
+> +
+> +/ {
+> +	model = "Mihawk BMC";
+> +	compatible = "ibm,mihawk-bmc", "aspeed,ast2500";
+> +
+> +
+> +	chosen {
+> +		stdout-path = &uart5;
+> +		bootargs = "console=ttyS4,115200 earlyprintk";
+> +	};
+> +
+> +	memory at 80000000 {
+> +		reg = <0x80000000 0x20000000>; /* address and size of RAM(512MB) */
+> +	};
+> +
+> +	reserved-memory {
+> +		#address-cells = <1>;
+> +		#size-cells = <1>;
+> +		ranges;
+> +
+> +		flash_memory: region at 98000000 {
+> +			no-map;
+> +			reg = <0x98000000 0x04000000>; /* 64M */
+> +		};
+> +
+> +		gfx_memory: framebuffer {
+> +			size = <0x01000000>;
+> +			alignment = <0x01000000>;
+> +			compatible = "shared-dma-pool";
+> +			reusable;
+> +		};
+> +
+> +		video_engine_memory: jpegbuffer {
+> +			size = <0x02000000>;	/* 32MM */
+> +			alignment = <0x01000000>;
+> +			compatible = "shared-dma-pool";
+> +			reusable;
+> +		};
+> +	};
+> +
+> +	gpio-keys {
+> +		compatible = "gpio-keys";
+> +
+> +		air-water {
+> +			label = "air-water";
+> +			gpios = <&gpio ASPEED_GPIO(F, 6) GPIO_ACTIVE_LOW>;
+> +			linux,code = <ASPEED_GPIO(F, 6)>;
+> +		};
+> +
+> +		checkstop {
+> +			label = "checkstop";
+> +			gpios = <&gpio ASPEED_GPIO(J, 2) GPIO_ACTIVE_LOW>;
+> +			linux,code = <ASPEED_GPIO(J, 2)>;
+> +		};
+> +
+> +		ps0-presence {
+> +			label = "ps0-presence";
+> +			gpios = <&gpio ASPEED_GPIO(Z, 2) GPIO_ACTIVE_LOW>;
+> +			linux,code = <ASPEED_GPIO(Z, 2)>;
+> +		};
+> +
+> +		ps1-presence {
+> +			label = "ps1-presence";
+> +			gpios = <&gpio ASPEED_GPIO(Z, 0) GPIO_ACTIVE_LOW>;
+> +			linux,code = <ASPEED_GPIO(Z, 0)>;
+> +		};
+> +		id-button {
+> +			label = "id-button";
+> +			gpios = <&gpio ASPEED_GPIO(F, 1) GPIO_ACTIVE_LOW>;
+> +			linux,code = <ASPEED_GPIO(F, 1)>;
+> +		};
+> +	};
+> +
+> +	gpio-keys-polled {
+> +		compatible = "gpio-keys-polled";
+> +		#address-cells = <1>;
+
+Delete the #address-cells property (both it and the #size-cells properties
+are not needed for the gpio-keys-polled node).
+
+> +		poll-interval = <1000>;
+> +
+> +		fan0-presence {
+> +			label = "fan0-presence";
+> +			gpios = <&pca9552 9 GPIO_ACTIVE_LOW>;
+> +			linux,code = <9>;
+> +		};
+> +
+> +		fan1-presence {
+> +			label = "fan1-presence";
+> +			gpios = <&pca9552 10 GPIO_ACTIVE_LOW>;
+> +			linux,code = <10>;
+> +		};
+> +
+> +		fan2-presence {
+> +			label = "fan2-presence";
+> +			gpios = <&pca9552 11 GPIO_ACTIVE_LOW>;
+> +			linux,code = <11>;
+> +		};
+> +
+> +		fan3-presence {
+> +			label = "fan3-presence";
+> +			gpios = <&pca9552 12 GPIO_ACTIVE_LOW>;
+> +			linux,code = <12>;
+> +		};
+> +
+> +		fan4-presence {
+> +			label = "fan4-presence";
+> +			gpios = <&pca9552 13 GPIO_ACTIVE_LOW>;
+> +			linux,code = <13>;
+> +		};
+> +
+> +		fan5-presence {
+> +			label = "fan5-presence";
+> +			gpios = <&pca9552 14 GPIO_ACTIVE_LOW>;
+> +			linux,code = <14>;
+> +		};
+> +	};
+> +
+> +	leds {
+> +		compatible = "gpio-leds";
+> +
+> +		fault {
+> +			retain-state-shutdown;
+> +			default-state = "keep";
+> +			gpios = <&gpio ASPEED_GPIO(AA, 0) GPIO_ACTIVE_LOW>;
+> +		};
+> +
+> +		power {
+> +			retain-state-shutdown;
+> +			default-state = "keep";
+> +			gpios = <&gpio ASPEED_GPIO(AA, 1) GPIO_ACTIVE_LOW>;
+> +		};
+> +
+> +		rear-id {
+> +			retain-state-shutdown;
+> +			default-state = "keep";
+> +			gpios = <&gpio ASPEED_GPIO(AA, 2) GPIO_ACTIVE_LOW>;
+> +		};
+> +
+> +		rear-g {
+> +			retain-state-shutdown;
+> +			default-state = "keep";
+> +			gpios = <&gpio ASPEED_GPIO(AA, 4) GPIO_ACTIVE_LOW>;
+> +		};
+> +
+> +		rear-ok {
+> +			retain-state-shutdown;
+> +			default-state = "keep";
+> +			gpios = <&gpio ASPEED_GPIO(Y, 0) GPIO_ACTIVE_LOW>;
+> +		};
+> +
+> +		fan0 {
+> +			retain-state-shutdown;
+> +			default-state = "keep";
+> +			gpios = <&pca9552 0 GPIO_ACTIVE_LOW>;
+> +		};
+> +
+> +		fan1 {
+> +			retain-state-shutdown;
+> +			default-state = "keep";
+> +			gpios = <&pca9552 1 GPIO_ACTIVE_LOW>;
+> +		};
+> +
+> +		fan2 {
+> +			retain-state-shutdown;
+> +			default-state = "keep";
+> +			gpios = <&pca9552 2 GPIO_ACTIVE_LOW>;
+> +		};
+> +
+> +		fan3 {
+> +			retain-state-shutdown;
+> +			default-state = "keep";
+> +			gpios = <&pca9552 3 GPIO_ACTIVE_LOW>;
+> +		};
+> +
+> +		fan4 {
+> +			retain-state-shutdown;
+> +			default-state = "keep";
+> +			gpios = <&pca9552 4 GPIO_ACTIVE_LOW>;
+> +		};
+> +
+> +		fan5 {
+> +			retain-state-shutdown;
+> +			default-state = "keep";
+> +			gpios = <&pca9552 5 GPIO_ACTIVE_LOW>;
+> +		};
+> +	};
+> +
+> +	fsi: gpio-fsi {
+> +		compatible = "fsi-master-gpio", "fsi-master";
+> +		#address-cells = <2>;
+> +		#size-cells = <0>;
+> +		no-gpio-delays;
+> +
+> +		clock-gpios = <&gpio ASPEED_GPIO(E, 6) GPIO_ACTIVE_HIGH>;
+> +		data-gpios = <&gpio ASPEED_GPIO(E, 7) GPIO_ACTIVE_HIGH>;
+> +		mux-gpios = <&gpio ASPEED_GPIO(E, 5) GPIO_ACTIVE_HIGH>;
+> +		enable-gpios = <&gpio ASPEED_GPIO(D, 0) GPIO_ACTIVE_HIGH>;
+> +		trans-gpios = <&gpio ASPEED_GPIO(R, 2) GPIO_ACTIVE_HIGH>;
+> +	};
+> +	iio-hwmon-12v {
+> +		compatible = "iio-hwmon";
+> +		io-channels = <&adc 0>;
+> +	};
+> +	
+> +	iio-hwmon-5v {
+> +		compatible = "iio-hwmon";
+> +		io-channels = <&adc 1>;
+> +	};
+> +	
+> +	iio-hwmon-3v {
+> +		compatible = "iio-hwmon";
+> +		io-channels = <&adc 2>;
+> +	};
+> +		
+> +	iio-hwmon-vdd0 {
+> +		compatible = "iio-hwmon";
+> +		io-channels = <&adc 3>;
+> +	};
+> +	
+> +	iio-hwmon-vdd1 {
+> +		compatible = "iio-hwmon";
+> +		io-channels = <&adc 4>;
+> +	};
+> +	
+> +	iio-hwmon-vcs0 {
+> +		compatible = "iio-hwmon";
+> +		io-channels = <&adc 5>;
+> +	};
+> +	
+> +	iio-hwmon-vcs1 {
+> +		compatible = "iio-hwmon";
+> +		io-channels = <&adc 6>;
+> +	};
+> +
+> +	iio-hwmon-vdn0 {
+> +		compatible = "iio-hwmon";
+> +		io-channels = <&adc 7>;
+> +	};
+> +	
+> +	iio-hwmon-vdn1 {
+> +		compatible = "iio-hwmon";
+> +		io-channels = <&adc 8>;
+> +	};
+> +	
+> +	iio-hwmon-vio0 {
+> +		compatible = "iio-hwmon";
+> +		io-channels = <&adc 9>;
+> +	};
+> +	
+> +	iio-hwmon-vio1 {
+> +		compatible = "iio-hwmon";
+> +		io-channels = <&adc 10>;
+> +	};
+> +	
+> +	iio-hwmon-vddra {
+> +		compatible = "iio-hwmon";
+> +		io-channels = <&adc 11>;
+> +	};
+> +	
+> +	iio-hwmon-vddrb {
+> +		compatible = "iio-hwmon";
+> +		io-channels = <&adc 13>;
+> +	};
+> +	
+> +	iio-hwmon-vddrc {
+> +		compatible = "iio-hwmon";
+> +		io-channels = <&adc 14>;
+> +	};
+> +	
+> +	iio-hwmon-vddrd {
+> +		compatible = "iio-hwmon";
+> +		io-channels = <&adc 15>;
+> +	};
+> +	
+> +	iio-hwmon-battery {
+> +		compatible = "iio-hwmon";
+> +		io-channels = <&adc 12>;
+> +	};
+> +};
+> +
+> +&pwm_tacho {
+> +	status = "okay";
+> +	/*compatible = "aspeed,ast2500-pwm-tacho";
+> +	#address-cells = <1>;
+> +	#size-cells = <1>;
+> +	reg = <0x1e786000 0x1000>;
+> +	clocks = <&pwm_tacho_fixed_clk>;*/
+
+I missed this commented block last time? Please remove it.
+
+> +	pinctrl-names = "default";
+> +	pinctrl-0 = <&pinctrl_pwm0_default &pinctrl_pwm1_default
+> +		&pinctrl_pwm2_default &pinctrl_pwm3_default
+> +		&pinctrl_pwm4_default &pinctrl_pwm5_default>;
+> +
+> +	fan at 0 {
+> +		reg = <0x00>;
+> +		aspeed,fan-tach-ch = /bits/ 8 <0x00>;
+> +	};
+> +
+> +	fan at 1 {
+> +		reg = <0x01>;
+> +		aspeed,fan-tach-ch = /bits/ 8 <0x01>;
+> +	};
+> +
+> +	fan at 2 {
+> +		reg = <0x02>;
+> +		aspeed,fan-tach-ch = /bits/ 8 <0x02>;
+> +	};
+> +
+> +	fan at 3 {
+> +		reg = <0x03>;
+> +		aspeed,fan-tach-ch = /bits/ 8 <0x03>;
+> +	};
+> +
+> +	fan at 4 {
+> +		reg = <0x04>;
+> +		aspeed,fan-tach-ch = /bits/ 8 <0x04>;
+> +	};
+> +
+> +	fan at 5 {
+> +		reg = <0x05>;
+> +		aspeed,fan-tach-ch = /bits/ 8 <0x05>;
+> +	};
+> +
+> +	fan at 6 {
+> +		reg = <0x00>;
+> +		aspeed,fan-tach-ch = /bits/ 8 <0x06>;
+> +	};
+> +
+> +	fan at 7 {
+> +		reg = <0x01>;
+> +		aspeed,fan-tach-ch = /bits/ 8 <0x07>;
+> +	};
+> +
+> +	fan at 8 {
+> +		reg = <0x02>;
+> +		aspeed,fan-tach-ch = /bits/ 8 <0x08>;
+> +	};
+> +
+> +	fan at 9 {
+> +		reg = <0x03>;
+> +		aspeed,fan-tach-ch = /bits/ 8 <0x09>;
+> +	};
+> +
+> +	fan at 10 {
+> +		reg = <0x04>;
+> +		aspeed,fan-tach-ch = /bits/ 8 <0x0a>;
+> +	};
+> +
+> +	fan at 11 {
+> +		reg = <0x05>;
+> +		aspeed,fan-tach-ch = /bits/ 8 <0x0b>;
+> +	};
+> +};
+> +
+> +&fmc {
+> +	status = "okay";
+> +	flash at 0 {
+> +		status = "okay";
+> +		label = "bmc";
+> +		m25p,fast-read;
+> +		spi-max-frequency = <50000000>;
+> +		partitions {
+> +			#address-cells = < 1 >;
+> +			#size-cells = < 1 >;
+> +			compatible = "fixed-partitions";
+> +			u-boot at 0 {
+> +				reg = < 0 0x60000 >;
+> +				label = "u-boot";
+> +			};
+> +			u-boot-env at 60000 {
+> +				reg = < 0x60000 0x20000 >;
+> +				label = "u-boot-env";
+> +			};
+> +			obmc-ubi at 80000 {
+> +				reg = < 0x80000 0x1F80000 >;
+> +				label = "obmc-ubi";
+> +			};
+> +		};
+> +	};
+> +	flash at 1 {
+> +		status = "okay";
+> +		label = "alt-bmc";
+> +		m25p,fast-read;
+> +		spi-max-frequency = <50000000>;
+> +		partitions {
+> +			#address-cells = < 1 >;
+> +			#size-cells = < 1 >;
+> +			compatible = "fixed-partitions";
+> +			u-boot at 0 {
+> +				reg = < 0 0x60000 >;
+> +				label = "alt-u-boot";
+> +			};
+> +			u-boot-env at 60000 {
+> +				reg = < 0x60000 0x20000 >;
+> +				label = "alt-u-boot-env";
+> +			};
+> +			obmc-ubi at 80000 {
+> +				reg = < 0x80000 0x1F80000 >;
+> +				label = "alt-obmc-ubi";
+> +			};
+> +		};
+> +	};
+> +};
+> +
+> +&spi1 {
+> +	status = "okay";
+> +	pinctrl-names = "default";
+> +	pinctrl-0 = <&pinctrl_spi1_default>;
+> +
+> +	flash at 0 {
+> +		status = "okay";
+> +		label = "pnor";
+> +		m25p,fast-read;
+> +		spi-max-frequency = <100000000>;
+> +	};
+> +};
+> +
+> +&lpc_ctrl {
+> +	status = "okay";
+> +	memory-region = <&flash_memory>;
+> +	flash = <&spi1>;
+> +};
+> +
+> +&uart1 {
+> +	/* Rear RS-232 connector */
+> +	status = "okay";
+> +
+> +	pinctrl-names = "default";
+> +	pinctrl-0 = <&pinctrl_txd1_default
+> +			&pinctrl_rxd1_default
+> +			&pinctrl_nrts1_default
+> +			&pinctrl_ndtr1_default
+> +			&pinctrl_ndsr1_default
+> +			&pinctrl_ncts1_default
+> +			&pinctrl_ndcd1_default
+> +			&pinctrl_nri1_default>;
+> +};
+> +
+> +&uart2 {
+> +	/* APSS */
+> +	status = "okay";
+> +
+> +	pinctrl-names = "default";
+> +	pinctrl-0 = <&pinctrl_txd2_default &pinctrl_rxd2_default>;
+> +};
+> +
+> +&uart5 {
+> +	status = "okay";
+> +};
+> +
+> +&mac0 {
+> +	status = "okay";
+> +
+> +	pinctrl-names = "default";
+> +	pinctrl-0 = <&pinctrl_rmii1_default>;
+> +	use-ncsi;
+> +};
+> +
+> +&mac1 {
+> +	status = "okay";
+> +
+> +	pinctrl-names = "default";
+> +	pinctrl-0 = <&pinctrl_rgmii2_default &pinctrl_mdio2_default>;
+> +};
+> +
+> +&i2c0 {
+> +	status = "disabled";
+> +};
+> +
+> +&i2c1 {
+> +	status = "disabled";
+> +};
+> +
+> +&i2c2 {
+> +	status = "okay";
+> +
+> +	/* SAMTEC P0 */
+> +	/* SAMTEC P1 */
+> +	
+> +};
+> +
+> +&i2c3 {
+> +	status = "okay";
+> +
+> +	/* APSS */
+> +	/* CPLD */
+> +
+> +	/* PCA9516 (repeater) ->
+> +	 *    CLK Buffer 9FGS9092
+> +	 *    CLK Buffer 9DBL0651BKILFT
+> +	 *    CLK Buffer 9DBL0651BKILFT
+> +	 *    Power Supply 0
+> +	 *    Power Supply 1
+> +	 *    PCA 9552 LED
+> +	 */
+> +	 
+> +	power-supply at 58 {
+> +		compatible = "ibm,cffps1";
+> +		reg = <0x58>;
+> +	};
+> +
+> +	power-supply at 5b {
+> +		compatible = "ibm,cffps1";
+> +		reg = <0x5b>;
+> +	};
+> +
+> +	pca9552: pca9552 at 60 {
+> +		compatible = "nxp,pca9552";
+> +		reg = <0x60>;
+> +		#address-cells = <1>;
+> +		#size-cells = <0>;
+> +		gpio-controller;
+> +		#gpio-cells = <2>;
+> +
+> +		gpio at 0 {
+> +			reg = <0>;
+> +			type = <PCA955X_TYPE_GPIO>;
+> +		};
+> +		gpio at 1 {
+> +			reg = <1>;
+> +			type = <PCA955X_TYPE_GPIO>;
+> +		};
+> +		gpio at 2 {
+> +			reg = <2>;
+> +			type = <PCA955X_TYPE_GPIO>;
+> +		};
+> +		gpio at 3 {
+> +			reg = <3>;
+> +			type = <PCA955X_TYPE_GPIO>;
+> +		};
+> +		gpio at 4 {
+> +			reg = <4>;
+> +			type = <PCA955X_TYPE_GPIO>;
+> +		};
+> +		gpio at 5 {
+> +			reg = <5>;
+> +			type = <PCA955X_TYPE_GPIO>;
+> +		};
+> +		gpio at 6 {
+> +			reg = <6>;
+> +			type = <PCA955X_TYPE_GPIO>;
+> +		};
+> +		gpio at 7 {
+> +			reg = <7>;
+> +			type = <PCA955X_TYPE_GPIO>;
+> +		};
+> +		gpio at 8 {
+> +			reg = <8>;
+> +			type = <PCA955X_TYPE_GPIO>;
+> +		};
+> +		gpio at 9 {
+> +			reg = <9>;
+> +			type = <PCA955X_TYPE_GPIO>;
+> +		};
+> +		gpio at 10 {
+> +			reg = <10>;
+> +			type = <PCA955X_TYPE_GPIO>;
+> +		};
+> +		gpio at 11 {
+> +			reg = <11>;
+> +			type = <PCA955X_TYPE_GPIO>;
+> +		};
+> +		gpio at 12 {
+> +			reg = <12>;
+> +			type = <PCA955X_TYPE_GPIO>;
+> +		};
+> +		gpio at 13 {
+> +			reg = <13>;
+> +			type = <PCA955X_TYPE_GPIO>;
+> +		};
+> +		gpio at 14 {
+> +			reg = <14>;
+> +			type = <PCA955X_TYPE_GPIO>;
+> +		};
+> +		gpio at 15 {
+> +			reg = <15>;
+> +			type = <PCA955X_TYPE_GPIO>;
+> +		};
+> +
+> +	};
+> +
+> +};
+> +
+> +&i2c4 {
+> +	status = "okay";
+> +
+> +	/* CP0 VDD & VCS : IR35221 */
+> +	/* CP0 VDN : IR35221 */
+> +	/* CP0 VIO : IR38064 */
+> +        /* CP0 VDDR : PXM1330 */
+> +
+> +	ir35221 at 70 {
+> +		compatible = "infineon,ir35221";
+> +		reg = <0x70>;
+> +	};
+> +
+> +	ir35221 at 72 {
+> +		compatible = "infineon,ir35221";
+> +		reg = <0x72>;
+> +	};
+> +
+> +};
+> +
+> +&i2c5 {
+> +	status = "okay";
+> +	
+> +	/* CP0 VDD & VCS : IR35221 */
+> +	/* CP0 VDN : IR35221 */
+> +	/* CP0 VIO : IR38064 */
+> +        /* CP0 VDDR : PXM1330 */
+> +
+> +	ir35221 at 70 {
+> +		compatible = "infineon,ir35221";
+> +		reg = <0x70>;
+> +	};
+> +
+> +	ir35221 at 72 {
+> +		compatible = "infineon,ir35221";
+> +		reg = <0x72>;
+> +	};
+> +	
+> +};
+> +
+> +&i2c6 {
+> +	status = "okay";
+> +	
+> +	/* pca9548 -> NVMe1 to 8 */
+> +	
+> +	pca9548 at 70 {
+> +		compatible = "nxp,pca9548";
+> +		#address-cells = <1>;
+> +		#size-cells = <0>;
+> +		reg = <0x70>;
+> +	};
+> +	
+> +};
+> +
+> +&i2c7 {
+> +	status = "okay";
+> +	
+> +	/* pca9548 -> NVMe9 to 16 */
+> +	
+> +	pca9548 at 70 {
+> +		compatible = "nxp,pca9548";
+> +		#address-cells = <1>;
+> +		#size-cells = <0>;
+> +		reg = <0x70>;
+> +	};
+> +	
+> +};
+> +
+> +&i2c8 {
+> +	status = "okay";
+> +
+> +	eeprom at 50 {
+> +		compatible = "atmel,24c64";
+> +		reg = <0x50>;
+> +	};
+> +};
+> +
+> +&i2c9 {
+> +	status = "okay";
+> +	
+> +	/* pca9545 Riser -> 
+> +	* 	PCIe x8  Slot3 
+> +	* 	PCIe x16 slot4 
+> +	* 	PCIe x8  slot5 
+> +	* 	I2C BMC RISER PCA9554
+> +	* 	BMC SCL/SDA PCA9554 
+> +	* 	PCA9554
+> +	*/
+> +	
+> +	/* pca9545 -> 
+> +	* 	PCIe x16 Slot1 
+> +	* 	PCIe x8  slot2 
+> +	* 	PEX8748 
+> +	*/
+> +
+> +	pca9545riser at 70 {
+> +		compatible = "nxp,pca9545";
+> +		#address-cells = <1>;
+> +		#size-cells = <0>;
+> +		reg = <0x70>;
+> +
+> +		i2c-mux-idle-disconnect;
+> +		interrupt-controller;
+> +		#interrupt-cells = <2>;
+> +	};
+> +	
+> +	pca9545 at 71 {
+> +		compatible = "nxp,pca9545";
+> +		#address-cells = <1>;
+> +		#size-cells = <0>;
+> +		reg = <0x71>;
+> +
+> +		i2c-mux-idle-disconnect;
+> +		interrupt-controller;
+> +		#interrupt-cells = <2>;	
+> +	};
+> +};
+> +
+> +&i2c10 {
+> +	status = "okay";
+> +	
+> +	/* pca9545 Riser -> 
+> +	* 	PCIe x8  Slot8 
+> +	* 	PCIe x16 slot9 
+> +	* 	PCIe x8  slot10 
+> +	* 	I2C BMC RISER PCA9554
+> +	* 	BMC SCL/SDA PCA9554 
+> +	* 	PCA9554
+> +	*/
+> +	
+> +	/* pca9545 -> 
+> +	* 	PCIe x16 Slot1 
+> +	* 	PCIe x8  slot2 
+> +	* 	PEX8748 
+> +	*/
+> +	
+> +	pca9545riser at 70 {
+> +		compatible = "nxp,pca9545";
+> +		#address-cells = <1>;
+> +		#size-cells = <0>;
+> +		reg = <0x70>;
+> +
+> +		i2c-mux-idle-disconnect;
+> +		interrupt-controller;
+> +		#interrupt-cells = <2>;
+> +	};
+> +	
+> +	pca9545 at 71 {
+> +		compatible = "nxp,pca9545";
+> +		#address-cells = <1>;
+> +		#size-cells = <0>;
+> +		reg = <0x71>;
+> +
+> +		i2c-mux-idle-disconnect;
+> +		interrupt-controller;
+> +		#interrupt-cells = <2>;	
+> +	};
+> +};
+> +
+> +&i2c11 {
+> +	status = "okay";
+> +	
+> +	/* TPM */
+> +	/* RTC RX8900CE */
+> +	/* FPGA for power sequence */
+> +	/* TMP275A */
+> +	/* TMP275A */
+> +	/* EMC1462 */
+> +
+> +	tpm at 57 {
+> +		compatible = "infineon,slb9645tt";
+> +		reg = <0x57>;
+> +	};
+> +	
+> +	rtc at 32 {
+> +		compatible = "epson,rx8900";
+> +		reg = <0x32>;
+> +	};
+> +	
+> +	tmp275 at 48 {
+> +		compatible = "ti,tmp275";
+> +		reg = <0x48>;
+> +	};
+> +	
+> +	tmp275 at 49 {
+> +		compatible = "ti,tmp275";
+> +		reg = <0x49>;
+> +	};
+> +
+> +	/* chip emc1462 use emc1403 driver */
+> +	emc1403 at 4c {
+> +        	compatible = "smsc,emc1403";
+> +        	reg = <0x4c>;
+> +    	};
+> +
+> +};
+> +
+> +&i2c12 {
+> +	status = "okay";
+> +
+> +	/* pca9545 ->
+> +	*	SAS BP1
+> +	*	SAS BP2
+> +	*	NVMe BP
+> +	*	M.2 riser
+> +	*/
+> +	
+> +	pca9545 at 70 {
+> +		compatible = "nxp,pca9545";
+> +		#address-cells = <1>;
+> +		#size-cells = <0>;
+> +		reg = <0x70>;
+> +
+> +		interrupt-controller;
+> +		#interrupt-cells = <2>;
+> +		
+> +		i2c at 0 {
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +			reg = <0>;
+> +			
+> +			eeprom at 50 {
+> +				compatible = "atmel,24c64";
+> +				reg = <0x50>;
+> +			};
+> +		};
+> +		
+> +		i2c at 1 {
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +			reg = <1>;
+> +			
+> +			eeprom at 50 {
+> +				compatible = "atmel,24c64";
+> +				reg = <0x50>;
+> +			};
+> +		};
+> +		
+> +		i2c at 2 {
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +			reg = <2>;
+> +			
+> +			eeprom at 50 {
+> +				compatible = "atmel,24c64";
+> +				reg = <0x50>;
+> +			};
+> +		};
+> +		
+> +		i2c at 3 {
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +			reg = <3>;
+> +			
+> +			tmp275 at 48 {
+> +				compatible = "ti,tmp275";
+> +				reg = <0x48>;
+> +			};
+> +		};
+> +		
+> +	};
+> +	
+> +};
+> +
+> +&i2c13 {
+> +	status = "okay";
+> +	
+> +	/* pca9548 ->
+> +	*	NVMe BP
+> +	*	NVMe HDD17 to 24
+> +	*/
+> +	
+> +	pca9548 at 70 {
+> +		compatible = "nxp,pca9548";
+> +		#address-cells = <1>;
+> +		#size-cells = <0>;
+> +		reg = <0x70>;
+> +	};	
+> +};
+> +
+> +&vuart {
+> +	status = "okay";
+> +};
+> +
+> +&gfx {
+> +	status = "okay";
+> +	memory-region = <&gfx_memory>;
+> +};
+> +
+> +&adc {
+> +	status = "okay";
+
+You're still missing the pinmux properties for the ADC lines being used.
+Please add them.
+
+Cheers,
 
 Andrew
 
-> ---
->  drivers/gpio/sgpio-aspeed.c | 530 ++++++++++++++++++++++++++++++++++++++++++++
->  1 file changed, 530 insertions(+)
->  create mode 100644 drivers/gpio/sgpio-aspeed.c
-> 
-> diff --git a/drivers/gpio/sgpio-aspeed.c b/drivers/gpio/sgpio-aspeed.c
-> new file mode 100644
-> index 0000000..752efea
-> --- /dev/null
-> +++ b/drivers/gpio/sgpio-aspeed.c
-> @@ -0,0 +1,530 @@
-> +// SPDX-License-Identifier: GPL-2.0-or-later
-> +/*
-> + * Copyright 2019 American Megatrends International LLC.
-> + *
-> + * Author: Karthikeyan Mani <karthikeyanm@amiindia.co.in>
-> + */
-> +
-> +#include <linux/bitfield.h>
-> +#include <linux/clk.h>
-> +#include <linux/gpio/driver.h>
-> +#include <linux/hashtable.h>
-> +#include <linux/init.h>
-> +#include <linux/io.h>
-> +#include <linux/kernel.h>
-> +#include <linux/module.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/spinlock.h>
-> +#include <linux/string.h>
-> +
-> +#define MAX_NR_SGPIO			80
-> +
-> +#define ASPEED_SGPIO_CTRL		0x54
-> +
-> +#define ASPEED_SGPIO_PINS_MASK		GENMASK(9, 6)
-> +#define ASPEED_SGPIO_CLK_DIV_MASK	GENMASK(31, 16)
-> +#define ASPEED_SGPIO_ENABLE		BIT(0)
-> +
-> +struct aspeed_sgpio {
-> +	struct gpio_chip chip;
-> +	struct clk *pclk;
-> +	spinlock_t lock;
-> +	void __iomem *base;
-> +	uint32_t dir_in[3];
-> +	int irq;
 > +};
 > +
-> +struct aspeed_sgpio_bank {
-> +	uint16_t    val_regs;
-> +	uint16_t    rdata_reg;
-> +	uint16_t    irq_regs;
-> +	const char  names[4][3];
+> +&wdt1 {
+> +	aspeed,reset-type = "none";
+> +	aspeed,external-signal;
+> +	aspeed,ext-push-pull;
+> +	aspeed,ext-active-high;
+> +
+> +	pinctrl-names = "default";
+> +	pinctrl-0 = <&pinctrl_wdtrst1_default>;
 > +};
 > +
-> +/*
-> + * Note: The "value" register returns the input value when the GPIO is
-> + *	 configured as an input.
-> + *
-> + *	 The "rdata" register returns the output value when the GPIO is
-> + *	 configured as an output.
-> + */
-> +static const struct aspeed_sgpio_bank aspeed_sgpio_banks[] = {
-> +	{
-> +		.val_regs = 0x0000,
-> +		.rdata_reg = 0x0070,
-> +		.irq_regs = 0x0004,
-> +		.names = { "A", "B", "C", "D" },
-> +	},
-> +	{
-> +		.val_regs = 0x001C,
-> +		.rdata_reg = 0x0074,
-> +		.irq_regs = 0x0020,
-> +		.names = { "E", "F", "G", "H" },
-> +	},
-> +	{
-> +		.val_regs = 0x0038,
-> +		.rdata_reg = 0x0078,
-> +		.irq_regs = 0x003C,
-> +		.names = { "I", "J" },
-> +	},
+> +&wdt2 {
+> +	aspeed,alt-boot;
 > +};
 > +
-> +enum aspeed_sgpio_reg {
-> +	reg_val,
-> +	reg_rdata,
-> +	reg_irq_enable,
-> +	reg_irq_type0,
-> +	reg_irq_type1,
-> +	reg_irq_type2,
-> +	reg_irq_status,
+> +&ibt {
+> +	status = "okay";
 > +};
 > +
-> +#define GPIO_VAL_VALUE      0x00
-> +#define GPIO_IRQ_ENABLE     0x00
-> +#define GPIO_IRQ_TYPE0      0x04
-> +#define GPIO_IRQ_TYPE1      0x08
-> +#define GPIO_IRQ_TYPE2      0x0C
-> +#define GPIO_IRQ_STATUS     0x10
-> +
-> +static void __iomem *bank_reg(struct aspeed_sgpio *gpio,
-> +				     const struct aspeed_sgpio_bank *bank,
-> +				     const enum aspeed_sgpio_reg reg)
-> +{
-> +	switch (reg) {
-> +	case reg_val:
-> +		return gpio->base + bank->val_regs + GPIO_VAL_VALUE;
-> +	case reg_rdata:
-> +		return gpio->base + bank->rdata_reg;
-> +	case reg_irq_enable:
-> +		return gpio->base + bank->irq_regs + GPIO_IRQ_ENABLE;
-> +	case reg_irq_type0:
-> +		return gpio->base + bank->irq_regs + GPIO_IRQ_TYPE0;
-> +	case reg_irq_type1:
-> +		return gpio->base + bank->irq_regs + GPIO_IRQ_TYPE1;
-> +	case reg_irq_type2:
-> +		return gpio->base + bank->irq_regs + GPIO_IRQ_TYPE2;
-> +	case reg_irq_status:
-> +		return gpio->base + bank->irq_regs + GPIO_IRQ_STATUS;
-> +	default:
-> +		/* acturally if code runs to here, it's an error case */
-> +		BUG_ON(1);
-> +	}
-> +}
-> +
-> +#define GPIO_BANK(x)    ((x) >> 5)
-> +#define GPIO_OFFSET(x)  ((x) & 0x1f)
-> +#define GPIO_BIT(x)     BIT(GPIO_OFFSET(x))
-> +
-> +static const struct aspeed_sgpio_bank *to_bank(unsigned int offset)
-> +{
-> +	unsigned int bank = GPIO_BANK(offset);
-> +
-> +	WARN_ON(bank >= ARRAY_SIZE(aspeed_sgpio_banks));
-> +	return &aspeed_sgpio_banks[bank];
-> +}
-> +
-> +static int aspeed_sgpio_get(struct gpio_chip *gc, unsigned int offset)
-> +{
-> +	struct aspeed_sgpio *gpio = gpiochip_get_data(gc);
-> +	const struct aspeed_sgpio_bank *bank = to_bank(offset);
-> +	unsigned long flags;
-> +	enum aspeed_sgpio_reg reg;
-> +	bool is_input;
-> +	int rc = 0;
-> +
-> +	spin_lock_irqsave(&gpio->lock, flags);
-> +
-> +	is_input = gpio->dir_in[GPIO_BANK(offset)] & GPIO_BIT(offset);
-> +	reg = is_input ? reg_val : reg_rdata;
-> +	rc = !!(ioread32(bank_reg(gpio, bank, reg)) & GPIO_BIT(offset));
-> +
-> +	spin_unlock_irqrestore(&gpio->lock, flags);
-> +
-> +	return rc;
-> +}
-> +
-> +static void __aspeed_sgpio_set(struct gpio_chip *gc, unsigned int 
-> offset, int val)
-> +{
-> +	struct aspeed_sgpio *gpio = gpiochip_get_data(gc);
-> +	const struct aspeed_sgpio_bank *bank = to_bank(offset);
-> +	void __iomem *addr;
-> +	u32 reg = 0;
-> +
-> +	addr = bank_reg(gpio, bank, reg_val);
-> +	reg = ioread32(addr);
-> +
-> +	if (val)
-> +		reg |= GPIO_BIT(offset);
-> +	else
-> +		reg &= ~GPIO_BIT(offset);
-> +
-> +	iowrite32(reg, addr);
-> +}
-> +
-> +static void aspeed_sgpio_set(struct gpio_chip *gc, unsigned int 
-> offset, int val)
-> +{
-> +	struct aspeed_sgpio *gpio = gpiochip_get_data(gc);
-> +	unsigned long flags;
-> +
-> +	spin_lock_irqsave(&gpio->lock, flags);
-> +
-> +	__aspeed_sgpio_set(gc, offset, val);
-> +
-> +	spin_unlock_irqrestore(&gpio->lock, flags);
-> +}
-> +
-> +static int aspeed_sgpio_dir_in(struct gpio_chip *gc, unsigned int 
-> offset)
-> +{
-> +	struct aspeed_sgpio *gpio = gpiochip_get_data(gc);
-> +	unsigned long flags;
-> +
-> +	spin_lock_irqsave(&gpio->lock, flags);
-> +	gpio->dir_in[GPIO_BANK(offset)] |= GPIO_BIT(offset);
-> +	spin_unlock_irqrestore(&gpio->lock, flags);
-> +
-> +	return 0;
-> +}
-> +
-> +static int aspeed_sgpio_dir_out(struct gpio_chip *gc, unsigned int 
-> offset, int val)
-> +{
-> +	struct aspeed_sgpio *gpio = gpiochip_get_data(gc);
-> +	unsigned long flags;
-> +
-> +	spin_lock_irqsave(&gpio->lock, flags);
-> +
-> +	gpio->dir_in[GPIO_BANK(offset)] &= ~GPIO_BIT(offset);
-> +	__aspeed_sgpio_set(gc, offset, val);
-> +
-> +	spin_unlock_irqrestore(&gpio->lock, flags);
-> +
-> +	return 0;
-> +}
-> +
-> +static int aspeed_sgpio_get_direction(struct gpio_chip *gc, unsigned 
-> int offset)
-> +{
-> +	int dir_status;
-> +	struct aspeed_sgpio *gpio = gpiochip_get_data(gc);
-> +	unsigned long flags;
-> +
-> +	spin_lock_irqsave(&gpio->lock, flags);
-> +	dir_status = gpio->dir_in[GPIO_BANK(offset)] & GPIO_BIT(offset);
-> +	spin_unlock_irqrestore(&gpio->lock, flags);
-> +
-> +	return dir_status;
-> +
-> +}
-> +
-> +static void irqd_to_aspeed_sgpio_data(struct irq_data *d,
-> +					struct aspeed_sgpio **gpio,
-> +					const struct aspeed_sgpio_bank **bank,
-> +					u32 *bit, int *offset)
-> +{
-> +	struct aspeed_sgpio *internal;
-> +
-> +	*offset = irqd_to_hwirq(d);
-> +	internal = irq_data_get_irq_chip_data(d);
-> +	WARN_ON(!internal);
-> +
-> +	*gpio = internal;
-> +	*bank = to_bank(*offset);
-> +	*bit = GPIO_BIT(*offset);
-> +}
-> +
-> +static void aspeed_sgpio_irq_ack(struct irq_data *d)
-> +{
-> +	const struct aspeed_sgpio_bank *bank;
-> +	struct aspeed_sgpio *gpio;
-> +	unsigned long flags;
-> +	void __iomem *status_addr;
-> +	int offset;
-> +	u32 bit;
-> +
-> +	irqd_to_aspeed_sgpio_data(d, &gpio, &bank, &bit, &offset);
-> +
-> +	status_addr = bank_reg(gpio, bank, reg_irq_status);
-> +
-> +	spin_lock_irqsave(&gpio->lock, flags);
-> +
-> +	iowrite32(bit, status_addr);
-> +
-> +	spin_unlock_irqrestore(&gpio->lock, flags);
-> +}
-> +
-> +static void aspeed_sgpio_irq_set_mask(struct irq_data *d, bool set)
-> +{
-> +	const struct aspeed_sgpio_bank *bank;
-> +	struct aspeed_sgpio *gpio;
-> +	unsigned long flags;
-> +	u32 reg, bit;
-> +	void __iomem *addr;
-> +	int offset;
-> +
-> +	irqd_to_aspeed_sgpio_data(d, &gpio, &bank, &bit, &offset);
-> +	addr = bank_reg(gpio, bank, reg_irq_enable);
-> +
-> +	spin_lock_irqsave(&gpio->lock, flags);
-> +
-> +	reg = ioread32(addr);
-> +	if (set)
-> +		reg |= bit;
-> +	else
-> +		reg &= ~bit;
-> +
-> +	iowrite32(reg, addr);
-> +
-> +	spin_unlock_irqrestore(&gpio->lock, flags);
-> +}
-> +
-> +static void aspeed_sgpio_irq_mask(struct irq_data *d)
-> +{
-> +	aspeed_sgpio_irq_set_mask(d, false);
-> +}
-> +
-> +static void aspeed_sgpio_irq_unmask(struct irq_data *d)
-> +{
-> +	aspeed_sgpio_irq_set_mask(d, true);
-> +}
-> +
-> +static int aspeed_sgpio_set_type(struct irq_data *d, unsigned int type)
-> +{
-> +	u32 type0 = 0;
-> +	u32 type1 = 0;
-> +	u32 type2 = 0;
-> +	u32 bit, reg;
-> +	const struct aspeed_sgpio_bank *bank;
-> +	irq_flow_handler_t handler;
-> +	struct aspeed_sgpio *gpio;
-> +	unsigned long flags;
-> +	void __iomem *addr;
-> +	int offset;
-> +
-> +	irqd_to_aspeed_sgpio_data(d, &gpio, &bank, &bit, &offset);
-> +
-> +	switch (type & IRQ_TYPE_SENSE_MASK) {
-> +	case IRQ_TYPE_EDGE_BOTH:
-> +		type2 |= bit;
-> +		/* fall through */
-> +	case IRQ_TYPE_EDGE_RISING:
-> +		type0 |= bit;
-> +		/* fall through */
-> +	case IRQ_TYPE_EDGE_FALLING:
-> +		handler = handle_edge_irq;
-> +		break;
-> +	case IRQ_TYPE_LEVEL_HIGH:
-> +		type0 |= bit;
-> +		/* fall through */
-> +	case IRQ_TYPE_LEVEL_LOW:
-> +		type1 |= bit;
-> +		handler = handle_level_irq;
-> +		break;
-> +	default:
-> +		return -EINVAL;
-> +	}
-> +
-> +	spin_lock_irqsave(&gpio->lock, flags);
-> +
-> +	addr = bank_reg(gpio, bank, reg_irq_type0);
-> +	reg = ioread32(addr);
-> +	reg = (reg & ~bit) | type0;
-> +	iowrite32(reg, addr);
-> +
-> +	addr = bank_reg(gpio, bank, reg_irq_type1);
-> +	reg = ioread32(addr);
-> +	reg = (reg & ~bit) | type1;
-> +	iowrite32(reg, addr);
-> +
-> +	addr = bank_reg(gpio, bank, reg_irq_type2);
-> +	reg = ioread32(addr);
-> +	reg = (reg & ~bit) | type2;
-> +	iowrite32(reg, addr);
-> +
-> +	spin_unlock_irqrestore(&gpio->lock, flags);
-> +
-> +	irq_set_handler_locked(d, handler);
-> +
-> +	return 0;
-> +}
-> +
-> +static void aspeed_sgpio_irq_handler(struct irq_desc *desc)
-> +{
-> +	struct gpio_chip *gc = irq_desc_get_handler_data(desc);
-> +	struct irq_chip *ic = irq_desc_get_chip(desc);
-> +	struct aspeed_sgpio *data = gpiochip_get_data(gc);
-> +	unsigned int i, p, girq;
-> +	unsigned long reg;
-> +
-> +	chained_irq_enter(ic, desc);
-> +
-> +	for (i = 0; i < ARRAY_SIZE(aspeed_sgpio_banks); i++) {
-> +		const struct aspeed_sgpio_bank *bank = &aspeed_sgpio_banks[i];
-> +
-> +		reg = ioread32(bank_reg(data, bank, reg_irq_status));
-> +
-> +		for_each_set_bit(p, &reg, 32) {
-> +			girq = irq_find_mapping(gc->irq.domain, i * 32 + p);
-> +			generic_handle_irq(girq);
-> +		}
-> +
-> +	}
-> +
-> +	chained_irq_exit(ic, desc);
-> +}
-> +
-> +static struct irq_chip aspeed_sgpio_irqchip = {
-> +	.name       = "aspeed-sgpio",
-> +	.irq_ack    = aspeed_sgpio_irq_ack,
-> +	.irq_mask   = aspeed_sgpio_irq_mask,
-> +	.irq_unmask = aspeed_sgpio_irq_unmask,
-> +	.irq_set_type   = aspeed_sgpio_set_type,
+> +&vhub {
+> +	status = "okay";
 > +};
 > +
-> +static int aspeed_sgpio_setup_irqs(struct aspeed_sgpio *gpio,
-> +				   struct platform_device *pdev)
-> +{
-> +	int rc, i;
-> +	const struct aspeed_sgpio_bank *bank;
-> +
-> +	rc = platform_get_irq(pdev, 0);
-> +	if (rc < 0)
-> +		return rc;
-> +
-> +	gpio->irq = rc;
-> +
-> +	/* Disable IRQ and clear Interrupt status registers for all SPGIO 
-> Pins. */
-> +	for (i = 0; i < ARRAY_SIZE(aspeed_sgpio_banks); i++) {
-> +		bank =  &aspeed_sgpio_banks[i];
-> +		/* disable irq enable bits */
-> +		iowrite32(0x00000000, bank_reg(gpio, bank, reg_irq_enable));
-> +		/* clear status bits */
-> +		iowrite32(0xffffffff, bank_reg(gpio, bank, reg_irq_status));
-> +	}
-> +
-> +	rc = gpiochip_irqchip_add(&gpio->chip, &aspeed_sgpio_irqchip,
-> +				  0, handle_bad_irq, IRQ_TYPE_NONE);
-> +	if (rc) {
-> +		dev_info(&pdev->dev, "Could not add irqchip\n");
-> +		return rc;
-> +	}
-> +
-> +	gpiochip_set_chained_irqchip(&gpio->chip, &aspeed_sgpio_irqchip,
-> +				     gpio->irq, aspeed_sgpio_irq_handler);
-> +
-> +	/* set IRQ settings and Enable Interrupt */
-> +	for (i = 0; i < ARRAY_SIZE(aspeed_sgpio_banks); i++) {
-> +		bank = &aspeed_sgpio_banks[i];
-> +		/* set falling or level-low irq */
-> +		iowrite32(0x00000000, bank_reg(gpio, bank, reg_irq_type0));
-> +		/* trigger type is edge */
-> +		iowrite32(0x00000000, bank_reg(gpio, bank, reg_irq_type1));
-> +		/* dual edge trigger mode. */
-> +		iowrite32(0xffffffff, bank_reg(gpio, bank, reg_irq_type2));
-> +		/* enable irq */
-> +		iowrite32(0xffffffff, bank_reg(gpio, bank, reg_irq_enable));
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +static const struct of_device_id aspeed_sgpio_of_table[] = {
-> +	{ .compatible = "aspeed,ast2400-sgpio" },
-> +	{ .compatible = "aspeed,ast2500-sgpio" },
-> +	{}
-> +};
-> +MODULE_DEVICE_TABLE(of, aspeed_sgpio_of_table);
-> +
-> +static int __init aspeed_sgpio_probe(struct platform_device *pdev)
-> +{
-> +	struct aspeed_sgpio *gpio;
-> +	u32 nr_gpios, sgpio_freq, sgpio_clk_div;
-> +	int rc;
-> +	unsigned long apb_freq;
-> +
-> +	gpio = devm_kzalloc(&pdev->dev, sizeof(*gpio), GFP_KERNEL);
-> +	if (!gpio)
-> +		return -ENOMEM;
-> +
-> +	gpio->base = devm_platform_ioremap_resource(pdev, 0);
-> +	if (IS_ERR(gpio->base))
-> +		return PTR_ERR(gpio->base);
-> +
-> +	rc = of_property_read_u32(pdev->dev.of_node, "ngpios", &nr_gpios);
-> +	if (rc < 0) {
-> +		dev_err(&pdev->dev, "Could not read ngpios property\n");
-> +		return -EINVAL;
-> +	} else if (nr_gpios > MAX_NR_SGPIO) {
-> +		dev_err(&pdev->dev, "Number of GPIOs exceeds the maximum of %d: 
-> %d\n",
-> +			MAX_NR_SGPIO, nr_gpios);
-> +		return -EINVAL;
-> +	}
-> +
-> +	rc = of_property_read_u32(pdev->dev.of_node, "bus-frequency", 
-> &sgpio_freq);
-> +	if (rc < 0) {
-> +		dev_err(&pdev->dev, "Could not read bus-frequency property\n");
-> +		return -EINVAL;
-> +	}
-> +
-> +	gpio->pclk = devm_clk_get(&pdev->dev, NULL);
-> +	if (IS_ERR(gpio->pclk)) {
-> +		dev_err(&pdev->dev, "devm_clk_get failed\n");
-> +		return PTR_ERR(gpio->pclk);
-> +	}
-> +
-> +	apb_freq = clk_get_rate(gpio->pclk);
-> +
-> +	/*
-> +	 * From the datasheet,
-> +	 *	SGPIO period = 1/PCLK * 2 * (GPIO254[31:16] + 1)
-> +	 *	period = 2 * (GPIO254[31:16] + 1) / PCLK
-> +	 *	frequency = 1 / (2 * (GPIO254[31:16] + 1) / PCLK)
-> +	 *	frequency = PCLK / (2 * (GPIO254[31:16] + 1))
-> +	 *	frequency * 2 * (GPIO254[31:16] + 1) = PCLK
-> +	 *	GPIO254[31:16] = PCLK / (frequency * 2) - 1
-> +	 */
-> +	if (sgpio_freq == 0)
-> +		return -EINVAL;
-> +
-> +	sgpio_clk_div = (apb_freq / (sgpio_freq * 2)) - 1;
-> +
-> +	if (sgpio_clk_div > (1 << 16) - 1)
-> +		return -EINVAL;
-> +
-> +	iowrite32(FIELD_PREP(ASPEED_SGPIO_CLK_DIV_MASK, sgpio_clk_div) |
-> +		  FIELD_PREP(ASPEED_SGPIO_PINS_MASK, (nr_gpios / 8)) |
-> +		  ASPEED_SGPIO_ENABLE,
-> +		  gpio->base + ASPEED_SGPIO_CTRL);
-> +
-> +	spin_lock_init(&gpio->lock);
-> +
-> +	gpio->chip.parent = &pdev->dev;
-> +	gpio->chip.ngpio = nr_gpios;
-> +	gpio->chip.direction_input = aspeed_sgpio_dir_in;
-> +	gpio->chip.direction_output = aspeed_sgpio_dir_out;
-> +	gpio->chip.get_direction = aspeed_sgpio_get_direction;
-> +	gpio->chip.request = NULL;
-> +	gpio->chip.free = NULL;
-> +	gpio->chip.get = aspeed_sgpio_get;
-> +	gpio->chip.set = aspeed_sgpio_set;
-> +	gpio->chip.set_config = NULL;
-> +	gpio->chip.label = dev_name(&pdev->dev);
-> +	gpio->chip.base = -1;
-> +
-> +	/* set all SGPIO pins as input (1). */
-> +	memset(gpio->dir_in, 0xff, sizeof(gpio->dir_in));
-> +
-> +	rc = devm_gpiochip_add_data(&pdev->dev, &gpio->chip, gpio);
-> +	if (rc < 0)
-> +		return rc;
-> +
-> +	return aspeed_sgpio_setup_irqs(gpio, pdev);
-> +}
-> +
-> +static struct platform_driver aspeed_sgpio_driver = {
-> +	.driver = {
-> +		.name = KBUILD_MODNAME,
-> +		.of_match_table = aspeed_sgpio_of_table,
-> +	},
+> +&video {
+> +	status = "okay";
+> +	memory-region = <&video_engine_memory>;
 > +};
 > +
-> +module_platform_driver_probe(aspeed_sgpio_driver, aspeed_sgpio_probe);
-> +MODULE_DESCRIPTION("Aspeed Serial GPIO Driver");
-> +MODULE_LICENSE("GPL");
+> +#include "ibm-power9-dual.dtsi"
+> +
 > -- 
-> 2.7.4
+> 2.17.1
 > 
+> 
+> ---------------------------------------------------------------------------------------------------------------------------------------------------------------
+> This email contains confidential or legally privileged information and 
+> is for the sole use of its intended recipient. 
+> Any unauthorized review, use, copying or distribution of this email or 
+> the content of this email is strictly prohibited.
+> If you are not the intended recipient, you may reply to the sender and 
+> should delete this e-mail immediately.
+> ---------------------------------------------------------------------------------------------------------------------------------------------------------------
 >
