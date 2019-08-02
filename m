@@ -1,41 +1,41 @@
 From: Tao Ren <taoren@fb.com>
-Date: Thu, 1 Aug 2019 17:54:27 -0700
-Subject: [PATCH] ARM: dts: aspeed: Add Facebook Wedge40 BMC
-Message-ID: <20190802005427.467841-1-taoren@fb.com>
+Date: Thu, 1 Aug 2019 18:01:55 -0700
+Subject: [PATCH] ARM: dts: aspeed: Add Facebook Wedge100 BMC
+Message-ID: <20190802010155.489238-1-taoren@fb.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add initial version of device tree for Facebook Wedge40 AST2400 BMC
+Add initial version of device tree for Facebook Wedge100 AST2400 BMC
 platform.
 
 Signed-off-by: Tao Ren <taoren@fb.com>
 ---
  arch/arm/boot/dts/Makefile                    |   1 +
- .../boot/dts/aspeed-bmc-facebook-wedge40.dts  | 141 ++++++++++++++++++
- 2 files changed, 142 insertions(+)
- create mode 100644 arch/arm/boot/dts/aspeed-bmc-facebook-wedge40.dts
+ .../boot/dts/aspeed-bmc-facebook-wedge100.dts | 149 ++++++++++++++++++
+ 2 files changed, 150 insertions(+)
+ create mode 100644 arch/arm/boot/dts/aspeed-bmc-facebook-wedge100.dts
 
 diff --git a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
-index 39a05a10a2a2..dfc1011eb3f2 100644
+index 39a05a10a2a2..d71504ed82d3 100644
 --- a/arch/arm/boot/dts/Makefile
 +++ b/arch/arm/boot/dts/Makefile
 @@ -1273,6 +1273,7 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
  	aspeed-bmc-facebook-cmm.dtb \
  	aspeed-bmc-facebook-minipack.dtb \
  	aspeed-bmc-facebook-tiogapass.dtb \
-+	aspeed-bmc-facebook-wedge40.dtb \
++	aspeed-bmc-facebook-wedge100.dtb \
  	aspeed-bmc-facebook-yamp.dtb \
  	aspeed-bmc-intel-s2600wf.dtb \
  	aspeed-bmc-inspur-fp5280g2.dtb \
-diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-wedge40.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-wedge40.dts
+diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-wedge100.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-wedge100.dts
 new file mode 100644
-index 000000000000..764633964ac1
+index 000000000000..ccd700467ea7
 --- /dev/null
-+++ b/arch/arm/boot/dts/aspeed-bmc-facebook-wedge40.dts
-@@ -0,0 +1,141 @@
++++ b/arch/arm/boot/dts/aspeed-bmc-facebook-wedge100.dts
+@@ -0,0 +1,149 @@
 +// SPDX-License-Identifier: GPL-2.0+
 +// Copyright (c) 2018 Facebook Inc.
 +/dts-v1/;
@@ -43,8 +43,8 @@ index 000000000000..764633964ac1
 +#include "aspeed-g4.dtsi"
 +
 +/ {
-+	model = "Facebook Wedge 40 BMC";
-+	compatible = "facebook,wedge40-bmc", "aspeed,ast2400";
++	model = "Facebook Wedge 100 BMC";
++	compatible = "facebook,wedge100-bmc", "aspeed,ast2400";
 +
 +	aliases {
 +		/*
@@ -73,7 +73,8 @@ index 000000000000..764633964ac1
 +};
 +
 +&wdt2 {
-+	status = "disabled";
++	status = "okay";
++	aspeed,reset-type = "system";
 +};
 +
 +&fmc {
@@ -148,6 +149,13 @@ index 000000000000..764633964ac1
 +
 +&i2c7 {
 +	status = "okay";
++
++	i2c-switch at 70 {
++		compatible = "nxp,pca9548";
++		#address-cells = <1>;
++		#size-cells = <0>;
++		reg = <0x70>;
++	};
 +};
 +
 +&i2c8 {
