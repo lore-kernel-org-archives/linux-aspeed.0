@@ -1,151 +1,182 @@
-From: Rob Herring <robh+dt@kernel.org>
-Date: Thu, 1 Aug 2019 16:59:04 -0600
-Subject: [PATCH v3 1/2] dt-bindings: mmc: Document Aspeed SD controller
-In-Reply-To: <20190730062316.32037-2-andrew@aj.id.au>
-References: <20190730062316.32037-1-andrew@aj.id.au>
- <20190730062316.32037-2-andrew@aj.id.au>
-Message-ID: <CAL_Jsq+oZRREV=VjYUxT3WphOa5tBaF1pvS_JKSphBY=3XB5MA@mail.gmail.com>
+From: Tao Ren <taoren@fb.com>
+Date: Thu, 1 Aug 2019 17:54:27 -0700
+Subject: [PATCH] ARM: dts: aspeed: Add Facebook Wedge40 BMC
+Message-ID: <20190802005427.467841-1-taoren@fb.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Jul 30, 2019 at 12:23 AM Andrew Jeffery <andrew@aj.id.au> wrote:
->
-> The ASPEED SD/SDIO/eMMC controller exposes two slots implementing the
-> SDIO Host Specification v2.00, with 1 or 4 bit data buses, or an 8 bit
-> data bus if only a single slot is enabled.
->
-> Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
->
-> ---
-> v3:
-> * Fix compatible enums
-> * Add AST2600 compatibles
-> * Describe #address-cells / #size-cells
-> ---
->  .../devicetree/bindings/mmc/aspeed,sdhci.yaml | 100 ++++++++++++++++++
->  1 file changed, 100 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml
->
-> diff --git a/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml b/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml
-> new file mode 100644
-> index 000000000000..dd2a00c59641
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml
-> @@ -0,0 +1,100 @@
-> +# SPDX-License-Identifier: GPL-2.0-or-later
-> +%YAML 1.2
-> +---
-> +$id: http://devicetree.org/schemas/mmc/aspeed,sdhci.yaml#
-> +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> +
-> +title: ASPEED SD/SDIO/eMMC Controller
-> +
-> +maintainers:
-> +  - Andrew Jeffery <andrew@aj.id.au>
-> +  - Ryan Chen <ryanchen.aspeed@gmail.com>
-> +
-> +description: |+
-> +  The ASPEED SD/SDIO/eMMC controller exposes two slots implementing the SDIO
-> +  Host Specification v2.00, with 1 or 4 bit data buses, or an 8 bit data bus if
-> +  only a single slot is enabled.
-> +
-> +  The two slots are supported by a common configuration area. As the SDHCIs for
-> +  the slots are dependent on the common configuration area, they are described
-> +  as child nodes.
-> +
-> +properties:
-> +  compatible:
-> +    enum:
-> +      - aspeed,ast2400-sd-controller
-> +      - aspeed,ast2500-sd-controller
-> +      - aspeed,ast2600-sd-controller
-> +  reg:
-> +    maxItems: 1
-> +    description: Common configuration registers
-> +  "#address-cells":
-> +    const: 1
-> +  "#size-cells":
-> +    const: 1
-> +  ranges: true
-> +  clocks:
-> +    maxItems: 1
-> +    description: The SD/SDIO controller clock gate
-> +
-> +patternProperties:
-> +  "^sdhci@[0-9a-f]+$":
+Add initial version of device tree for Facebook Wedge40 AST2400 BMC
+platform.
 
-This should probably have:
+Signed-off-by: Tao Ren <taoren@fb.com>
+---
+ arch/arm/boot/dts/Makefile                    |   1 +
+ .../boot/dts/aspeed-bmc-facebook-wedge40.dts  | 141 ++++++++++++++++++
+ 2 files changed, 142 insertions(+)
+ create mode 100644 arch/arm/boot/dts/aspeed-bmc-facebook-wedge40.dts
 
-allOf:
-  - $ref: mmc-controller.yaml
+diff --git a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
+index 39a05a10a2a2..dfc1011eb3f2 100644
+--- a/arch/arm/boot/dts/Makefile
++++ b/arch/arm/boot/dts/Makefile
+@@ -1273,6 +1273,7 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
+ 	aspeed-bmc-facebook-cmm.dtb \
+ 	aspeed-bmc-facebook-minipack.dtb \
+ 	aspeed-bmc-facebook-tiogapass.dtb \
++	aspeed-bmc-facebook-wedge40.dtb \
+ 	aspeed-bmc-facebook-yamp.dtb \
+ 	aspeed-bmc-intel-s2600wf.dtb \
+ 	aspeed-bmc-inspur-fp5280g2.dtb \
+diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-wedge40.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-wedge40.dts
+new file mode 100644
+index 000000000000..764633964ac1
+--- /dev/null
++++ b/arch/arm/boot/dts/aspeed-bmc-facebook-wedge40.dts
+@@ -0,0 +1,141 @@
++// SPDX-License-Identifier: GPL-2.0+
++// Copyright (c) 2018 Facebook Inc.
++/dts-v1/;
++
++#include "aspeed-g4.dtsi"
++
++/ {
++	model = "Facebook Wedge 40 BMC";
++	compatible = "facebook,wedge40-bmc", "aspeed,ast2400";
++
++	aliases {
++		/*
++		 * Override the default uart aliases to avoid breaking
++		 * the legacy applications.
++		 */
++		serial0 = &uart5;
++		serial1 = &uart1;
++		serial2 = &uart3;
++		serial3 = &uart4;
++	};
++
++	chosen {
++		stdout-path = &uart3;
++		bootargs = "debug console=ttyS2,9600n8 root=/dev/ram rw";
++	};
++
++	memory at 40000000 {
++		reg = <0x40000000 0x20000000>;
++	};
++};
++
++&wdt1 {
++	status = "okay";
++	aspeed,reset-type = "system";
++};
++
++&wdt2 {
++	status = "disabled";
++};
++
++&fmc {
++	status = "okay";
++	flash at 0 {
++		status = "okay";
++		m25p,fast-read;
++		label = "fmc0";
++#include "facebook-bmc-flash-layout.dtsi"
++	};
++};
++
++&uart1 {
++	status = "okay";
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_txd1_default
++		     &pinctrl_rxd1_default>;
++};
++
++&uart3 {
++	status = "okay";
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_txd3_default
++		     &pinctrl_rxd3_default>;
++};
++
++&uart4 {
++	status = "okay";
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_txd4_default
++		     &pinctrl_rxd4_default>;
++};
++
++&uart5 {
++	status = "okay";
++};
++
++&mac1 {
++	status = "okay";
++	no-hw-checksum;
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_rgmii2_default &pinctrl_mdio2_default>;
++};
++
++&i2c0 {
++	status = "okay";
++};
++
++&i2c1 {
++	status = "okay";
++};
++
++&i2c2 {
++	status = "okay";
++};
++
++&i2c3 {
++	status = "okay";
++};
++
++&i2c4 {
++	status = "okay";
++};
++
++&i2c5 {
++	status = "okay";
++};
++
++&i2c6 {
++	status = "okay";
++};
++
++&i2c7 {
++	status = "okay";
++};
++
++&i2c8 {
++	status = "okay";
++};
++
++&i2c9 {
++	status = "okay";
++};
++
++&i2c10 {
++	status = "okay";
++};
++
++&i2c11 {
++	status = "okay";
++};
++
++&i2c12 {
++	status = "okay";
++};
++
++&i2c13 {
++	status = "okay";
++};
++
++&vhub {
++	status = "okay";
++};
+-- 
+2.17.1
 
-Another new thing in 5.3. :)
-
-> +    type: object
-> +    properties:
-> +      compatible:
-> +        enum:
-> +          - aspeed,ast2400-sdhci
-> +          - aspeed,ast2500-sdhci
-> +          - aspeed,ast2600-sdhci
-> +      reg:
-> +        maxItems: 1
-> +        description: The SDHCI registers
-> +      clocks:
-> +        maxItems: 1
-> +        description: The SD bus clock
-> +      interrupts:
-> +        maxItems: 1
-> +        description: The SD interrupt shared between both slots
-> +    required:
-> +      - compatible
-> +      - reg
-> +      - clocks
-> +      - interrupts
-> +
-> +additionalProperties: false
-> +
-> +required:
-> +  - compatible
-> +  - reg
-> +  - "#address-cells"
-> +  - "#size-cells"
-> +  - ranges
-> +  - clocks
-> +
-> +examples:
-> +  - |
-> +    #include <dt-bindings/clock/aspeed-clock.h>
-> +    sdc at 1e740000 {
-> +            compatible = "aspeed,ast2500-sd-controller";
-> +            reg = <0x1e740000 0x100>;
-> +            #address-cells = <1>;
-> +            #size-cells = <1>;
-> +            ranges = <0 0x1e740000 0x10000>;
-> +            clocks = <&syscon ASPEED_CLK_GATE_SDCLK>;
-> +
-> +            sdhci0: sdhci at 100 {
-> +                    compatible = "aspeed,ast2500-sdhci";
-> +                    reg = <0x100 0x100>;
-> +                    interrupts = <26>;
-> +                    sdhci,auto-cmd12;
-
-Not documented. Maybe should be common, but there's only a few users.
-
-> +                    clocks = <&syscon ASPEED_CLK_SDIO>;
-> +            };
-> +
-> +            sdhci1: sdhci at 200 {
-> +                    compatible = "aspeed,ast2500-sdhci";
-> +                    reg = <0x200 0x100>;
-> +                    interrupts = <26>;
-> +                    sdhci,auto-cmd12;
-> +                    clocks = <&syscon ASPEED_CLK_SDIO>;
-> +            };
-> +    };
-> --
-> 2.20.1
->
