@@ -1,39 +1,146 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Mon,  5 Aug 2019 12:21:53 +0930
-Subject: [PATCH v4 0/2] mmc: Add support for the ASPEED SD controller
-Message-ID: <20190805025155.9020-1-andrew@aj.id.au>
+Date: Mon,  5 Aug 2019 12:21:54 +0930
+Subject: [PATCH v4 1/2] dt-bindings: mmc: Document Aspeed SD controller
+In-Reply-To: <20190805025155.9020-1-andrew@aj.id.au>
+References: <20190805025155.9020-1-andrew@aj.id.au>
+Message-ID: <20190805025155.9020-2-andrew@aj.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello,
+The ASPEED SD/SDIO/MMC controller exposes two slots implementing the
+SDIO Host Specification v2.00, with 1 or 4 bit data buses, or an 8 bit
+data bus if only a single slot is enabled.
 
-v4 of the ASPEED SDHCI driver addresses Rob's comments on the binding, making
-it utilise the new mmc-controller schema and describing the sdhci,auto-cmd12
-property.
+Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
 
-v3 can be found here:
+---
+v3:
+* Make use of mmc-controller.yaml
+* Document sdhci,auto-cmd12
 
-http://patchwork.ozlabs.org/cover/1138793/
-
-Please review!
-
-Andrew
-
-Andrew Jeffery (2):
-  dt-bindings: mmc: Document Aspeed SD controller
-  mmc: Add support for the ASPEED SD controller
-
- .../devicetree/bindings/mmc/aspeed,sdhci.yaml | 105 ++++++
- drivers/mmc/host/Kconfig                      |  12 +
- drivers/mmc/host/Makefile                     |   1 +
- drivers/mmc/host/sdhci-of-aspeed.c            | 328 ++++++++++++++++++
- 4 files changed, 446 insertions(+)
+v2:
+* Fix compatible enums
+* Add AST2600 compatibles
+* Describe #address-cells / #size-cells
+---
+ .../devicetree/bindings/mmc/aspeed,sdhci.yaml | 105 ++++++++++++++++++
+ 1 file changed, 105 insertions(+)
  create mode 100644 Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml
- create mode 100644 drivers/mmc/host/sdhci-of-aspeed.c
 
+diff --git a/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml b/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml
+new file mode 100644
+index 000000000000..ca8684f47962
+--- /dev/null
++++ b/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml
+@@ -0,0 +1,105 @@
++# SPDX-License-Identifier: GPL-2.0-or-later
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/mmc/aspeed,sdhci.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: ASPEED SD/SDIO/eMMC Controller
++
++maintainers:
++  - Andrew Jeffery <andrew@aj.id.au>
++  - Ryan Chen <ryanchen.aspeed@gmail.com>
++
++description: |+
++  The ASPEED SD/SDIO/eMMC controller exposes two slots implementing the SDIO
++  Host Specification v2.00, with 1 or 4 bit data buses, or an 8 bit data bus if
++  only a single slot is enabled.
++
++  The two slots are supported by a common configuration area. As the SDHCIs for
++  the slots are dependent on the common configuration area, they are described
++  as child nodes.
++
++properties:
++  compatible:
++    enum:
++      - aspeed,ast2400-sd-controller
++      - aspeed,ast2500-sd-controller
++      - aspeed,ast2600-sd-controller
++  reg:
++    maxItems: 1
++    description: Common configuration registers
++  "#address-cells":
++    const: 1
++  "#size-cells":
++    const: 1
++  ranges: true
++  clocks:
++    maxItems: 1
++    description: The SD/SDIO controller clock gate
++
++patternProperties:
++  "^sdhci@[0-9a-f]+$":
++    type: object
++    allOf:
++        - $ref: mmc-controller.yaml
++    properties:
++      compatible:
++        enum:
++          - aspeed,ast2400-sdhci
++          - aspeed,ast2500-sdhci
++          - aspeed,ast2600-sdhci
++      reg:
++        maxItems: 1
++        description: The SDHCI registers
++      clocks:
++        maxItems: 1
++        description: The SD bus clock
++      interrupts:
++        maxItems: 1
++        description: The SD interrupt shared between both slots
++      sdhci,auto-cmd12:
++        type: boolean
++        description: Specifies that controller should use auto CMD12
++    required:
++      - compatible
++      - reg
++      - clocks
++      - interrupts
++
++additionalProperties: false
++
++required:
++  - compatible
++  - reg
++  - "#address-cells"
++  - "#size-cells"
++  - ranges
++  - clocks
++
++examples:
++  - |
++    #include <dt-bindings/clock/aspeed-clock.h>
++    sdc at 1e740000 {
++            compatible = "aspeed,ast2500-sd-controller";
++            reg = <0x1e740000 0x100>;
++            #address-cells = <1>;
++            #size-cells = <1>;
++            ranges = <0 0x1e740000 0x10000>;
++            clocks = <&syscon ASPEED_CLK_GATE_SDCLK>;
++
++            sdhci0: sdhci at 100 {
++                    compatible = "aspeed,ast2500-sdhci";
++                    reg = <0x100 0x100>;
++                    interrupts = <26>;
++                    sdhci,auto-cmd12;
++                    clocks = <&syscon ASPEED_CLK_SDIO>;
++            };
++
++            sdhci1: sdhci at 200 {
++                    compatible = "aspeed,ast2500-sdhci";
++                    reg = <0x200 0x100>;
++                    interrupts = <26>;
++                    sdhci,auto-cmd12;
++                    clocks = <&syscon ASPEED_CLK_SDIO>;
++            };
++    };
 -- 
 2.20.1
 
