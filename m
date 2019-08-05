@@ -1,12 +1,11 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Mon, 05 Aug 2019 10:18:21 +0930
-Subject: [RFC-ish PATCH 00/17] Clean up ASPEED devicetree warnings
-In-Reply-To: <CACPK8Xc4Vigeu1B1Su5392BSCSKfoEDqt_tiDtgKmNH5ucAvAg@mail.gmail.com>
-References: <20190726053959.2003-1-andrew@aj.id.au>
- <CAL_JsqJ+sFDG8eKbV3gvmqVHx+otWbki4dY213apzXgfhbXXEw@mail.gmail.com>
- <fd8e57f0-aee2-403e-b6fb-76d0c18fe306@www.fastmail.com>
- <CACPK8Xc4Vigeu1B1Su5392BSCSKfoEDqt_tiDtgKmNH5ucAvAg@mail.gmail.com>
-Message-ID: <5a6a22f8-d459-4aec-b69b-e49d096afa85@www.fastmail.com>
+Date: Mon, 05 Aug 2019 11:40:17 +0930
+Subject: [PATCH v3 1/2] dt-bindings: mmc: Document Aspeed SD controller
+In-Reply-To: <CAL_Jsq+oZRREV=VjYUxT3WphOa5tBaF1pvS_JKSphBY=3XB5MA@mail.gmail.com>
+References: <20190730062316.32037-1-andrew@aj.id.au>
+ <20190730062316.32037-2-andrew@aj.id.au>
+ <CAL_Jsq+oZRREV=VjYUxT3WphOa5tBaF1pvS_JKSphBY=3XB5MA@mail.gmail.com>
+Message-ID: <35aaa5a4-1e0d-4f64-8985-36e2c01ccc05@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -15,55 +14,135 @@ Content-Transfer-Encoding: 7bit
 
 
 
-On Fri, 2 Aug 2019, at 15:21, Joel Stanley wrote:
-> On Tue, 30 Jul 2019 at 01:09, Andrew Jeffery <andrew@aj.id.au> wrote:
-> 
-> > > > The bang-for-buck is in fixing up the KCS bindings which removes all-but-two of
-> > > > the remaining warnings (which we can't feasibly remove), but doing so forces
-> > > > code changes (which I'd avoided up until this point).
-> > > >
-> > > > Reflecting broadly on the fixes, I think I've made a mistake way back by using
-> > > > syscon/simple-mfds to expose the innards of the SCU and LPC controllers in the
-> > > > devicetree. This series cleans up what's currently there, but I have half a
-> > > > mind to rev the SCU and LPC bindings to not use simple-mfd and instead have a
-> > > > driver implementation that uses `platform_device_register_full()` or similar to
-> > > > deal with the mess.
-> > > >
-> > > > Rob - I'm looking for your thoughts here and on the series, I've never felt
-> > > > entirely comfortable with what I cooked up. Your advice would be appreciated.
-> > >
-> > > The series generally looks fine to me from a quick scan. As far as
-> > > dropping 'simple-mfd', having less fine grained description in DT is
-> > > generally my preference. It comes down to whether what you have
-> > > defined is maintainable. As most of it is just additions, I think what
-> > > you have is fine. Maybe keep all this in mind for the next chip
-> > > depending how the SCU and LPC change.
+On Fri, 2 Aug 2019, at 08:29, Rob Herring wrote:
+> On Tue, Jul 30, 2019 at 12:23 AM Andrew Jeffery <andrew@aj.id.au> wrote:
 > >
-> > Okay, I think the timing of that suggestion is good given where things are with
-> > the AST2600. I'll keep that in mind.
+> > The ASPEED SD/SDIO/eMMC controller exposes two slots implementing the
+> > SDIO Host Specification v2.00, with 1 or 4 bit data buses, or an 8 bit
+> > data bus if only a single slot is enabled.
 > >
-> > Consensus so far seems to be that the series is fine. I'll split it up and send out
-> > the sub-series to the relevant lists with the acks accumulated here.
+> > Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
+> >
+> > ---
+> > v3:
+> > * Fix compatible enums
+> > * Add AST2600 compatibles
+> > * Describe #address-cells / #size-cells
+> > ---
+> >  .../devicetree/bindings/mmc/aspeed,sdhci.yaml | 100 ++++++++++++++++++
+> >  1 file changed, 100 insertions(+)
+> >  create mode 100644 Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml
+> >
+> > diff --git a/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml b/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml
+> > new file mode 100644
+> > index 000000000000..dd2a00c59641
+> > --- /dev/null
+> > +++ b/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml
+> > @@ -0,0 +1,100 @@
+> > +# SPDX-License-Identifier: GPL-2.0-or-later
+> > +%YAML 1.2
+> > +---
+> > +$id: http://devicetree.org/schemas/mmc/aspeed,sdhci.yaml#
+> > +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> > +
+> > +title: ASPEED SD/SDIO/eMMC Controller
+> > +
+> > +maintainers:
+> > +  - Andrew Jeffery <andrew@aj.id.au>
+> > +  - Ryan Chen <ryanchen.aspeed@gmail.com>
+> > +
+> > +description: |+
+> > +  The ASPEED SD/SDIO/eMMC controller exposes two slots implementing the SDIO
+> > +  Host Specification v2.00, with 1 or 4 bit data buses, or an 8 bit data bus if
+> > +  only a single slot is enabled.
+> > +
+> > +  The two slots are supported by a common configuration area. As the SDHCIs for
+> > +  the slots are dependent on the common configuration area, they are described
+> > +  as child nodes.
+> > +
+> > +properties:
+> > +  compatible:
+> > +    enum:
+> > +      - aspeed,ast2400-sd-controller
+> > +      - aspeed,ast2500-sd-controller
+> > +      - aspeed,ast2600-sd-controller
+> > +  reg:
+> > +    maxItems: 1
+> > +    description: Common configuration registers
+> > +  "#address-cells":
+> > +    const: 1
+> > +  "#size-cells":
+> > +    const: 1
+> > +  ranges: true
+> > +  clocks:
+> > +    maxItems: 1
+> > +    description: The SD/SDIO controller clock gate
+> > +
+> > +patternProperties:
+> > +  "^sdhci@[0-9a-f]+$":
 > 
-> The series look good. I suggest posting the KCS bindings and driver
-> changes as their own series to go through the IPMI tree.
+> This should probably have:
+> 
+> allOf:
+>   - $ref: mmc-controller.yaml
+> 
+> Another new thing in 5.3. :)
 
-Yeah, that was the plan.
+Ack.
 
 > 
-> Please add my tag to all the patches except the OCC one, which I need
-> to do some investigation in to.
+> > +    type: object
+> > +    properties:
+> > +      compatible:
+> > +        enum:
+> > +          - aspeed,ast2400-sdhci
+> > +          - aspeed,ast2500-sdhci
+> > +          - aspeed,ast2600-sdhci
+> > +      reg:
+> > +        maxItems: 1
+> > +        description: The SDHCI registers
+> > +      clocks:
+> > +        maxItems: 1
+> > +        description: The SD bus clock
+> > +      interrupts:
+> > +        maxItems: 1
+> > +        description: The SD interrupt shared between both slots
+> > +    required:
+> > +      - compatible
+> > +      - reg
+> > +      - clocks
+> > +      - interrupts
+> > +
+> > +additionalProperties: false
+> > +
+> > +required:
+> > +  - compatible
+> > +  - reg
+> > +  - "#address-cells"
+> > +  - "#size-cells"
+> > +  - ranges
+> > +  - clocks
+> > +
+> > +examples:
+> > +  - |
+> > +    #include <dt-bindings/clock/aspeed-clock.h>
+> > +    sdc at 1e740000 {
+> > +            compatible = "aspeed,ast2500-sd-controller";
+> > +            reg = <0x1e740000 0x100>;
+> > +            #address-cells = <1>;
+> > +            #size-cells = <1>;
+> > +            ranges = <0 0x1e740000 0x10000>;
+> > +            clocks = <&syscon ASPEED_CLK_GATE_SDCLK>;
+> > +
+> > +            sdhci0: sdhci at 100 {
+> > +                    compatible = "aspeed,ast2500-sdhci";
+> > +                    reg = <0x100 0x100>;
+> > +                    interrupts = <26>;
+> > +                    sdhci,auto-cmd12;
 > 
-> Reviewed-by: Joel Stanley <joel@jms.id.au>
+> Not documented. Maybe should be common, but there's only a few users.
 
-Thanks, will do.
-
-> 
-> The others can go via the aspeed tree. Perhaps post them as their own
-> series too so I don't get confused and apply the wrong ones. That way
-> if Rob wants to send his reviewed-by he can.
-
-SGTM.
+I'll document it locally for the moment.
 
 Cheers,
 
