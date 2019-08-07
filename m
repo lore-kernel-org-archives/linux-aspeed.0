@@ -1,38 +1,38 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Wed, 07 Aug 2019 10:06:00 +0930
-Subject: =?UTF-8?Q?Re:_[PATCH]_pinctrl:_aspeed:_g6:_Remove_const_specifier_from_a?=
- =?UTF-8?Q?speed=5Fg6=5Fsig=5Fexpr=5Fset's_ctx_parameter?=
-In-Reply-To: <20190807003037.48457-1-natechancellor@gmail.com>
-References: <20190807003037.48457-1-natechancellor@gmail.com>
-Message-ID: <0e4bf79c-0e35-4cf4-b375-a023aa2cd034@www.fastmail.com>
+Date: Wed,  7 Aug 2019 10:06:27 +0930
+Subject: [PATCH v5 0/2] mmc: Add support for the ASPEED SD controller
+Message-ID: <20190807003629.2974-1-andrew@aj.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+Hello,
 
+v5 of the ASPEED SDHCI patches fixes an error-path cleanup issue pointed out by
+Adrian.
 
-On Wed, 7 Aug 2019, at 10:02, Nathan Chancellor wrote:
-> clang errors:
-> 
-> drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c:2325:9: error: incompatible
-> pointer types initializing 'int (*)(struct aspeed_pinmux_data *, const
-> struct aspeed_sig_expr *, bool)' with an expression of type 'int (const
-> struct aspeed_pinmux_data *, const struct aspeed_sig_expr *, bool)'
-> [-Werror,-Wincompatible-pointer-types]
->         .set = aspeed_g6_sig_expr_set,
->                ^~~~~~~~~~~~~~~~~~~~~~
-> 1 error generated.
-> 
-> Commit 674fa8daa8c9 ("pinctrl: aspeed-g5: Delay acquisition of regmaps")
-> changed the set function pointer declaration and the g6 one wasn't
-> updated (I assume because it wasn't merged yet).
-> 
-> Fixes: 2eda1cdec49f ("pinctrl: aspeed: Add AST2600 pinmux support")
-> Link: https://github.com/ClangBuiltLinux/linux/issues/632
-> Signed-off-by: Nathan Chancellor <natechancellor@gmail.com>
+v4 can be found here:
 
-That's exactly what happened. Thanks.
+http://patchwork.ozlabs.org/cover/1141949/
 
-Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
+Please review!
+
+Andrew
+
+Andrew Jeffery (2):
+  dt-bindings: mmc: Document Aspeed SD controller
+  mmc: Add support for the ASPEED SD controller
+
+ .../devicetree/bindings/mmc/aspeed,sdhci.yaml | 105 ++++++
+ drivers/mmc/host/Kconfig                      |  12 +
+ drivers/mmc/host/Makefile                     |   1 +
+ drivers/mmc/host/sdhci-of-aspeed.c            | 332 ++++++++++++++++++
+ 4 files changed, 450 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml
+ create mode 100644 drivers/mmc/host/sdhci-of-aspeed.c
+
+-- 
+2.20.1
+
