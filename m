@@ -1,54 +1,49 @@
-From: Vijay Khemka <vijaykhemka@fb.com>
-Date: Tue, 6 Aug 2019 20:35:43 +0000
-Subject: [PATCH] dt-bindings: Add pxe1610 as a trivial device
-In-Reply-To: <CACPK8XehEoakQxvQhC1cU5tvZaVbLOARtZ4xc6dD8sx9WDiPuA@mail.gmail.com>
-References: <20190723002052.2878847-1-vijaykhemka@fb.com>
- <CAL_Jsq+uAjK6+xzkyOhcH96tZuqv7i6Nz5_nhUQkZ2adt2gutA@mail.gmail.com>
- <CAL_Jsq+Kw0TFW_v54Y2QHcChqpNDYhFyCSO5Cj-be9yLSCq-Pw@mail.gmail.com>
- <F7BAC53E-925E-4FA4-815D-ACB82DF8D240@fb.com>
- <CACPK8XehEoakQxvQhC1cU5tvZaVbLOARtZ4xc6dD8sx9WDiPuA@mail.gmail.com>
-Message-ID: <E47FF678-1B81-4C00-9328-B0452D74E62D@fb.com>
+From: Nathan Chancellor <natechancellor@gmail.com>
+Date: Tue,  6 Aug 2019 17:30:37 -0700
+Subject: [PATCH] pinctrl: aspeed: g6: Remove const specifier from
+ aspeed_g6_sig_expr_set's ctx parameter
+Message-ID: <20190807003037.48457-1-natechancellor@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Joel,
-I have added all 3 id in the documentation patch and I am not sure if that patch has been applied or not.
+clang errors:
 
-Regards
--Vijay
+drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c:2325:9: error: incompatible
+pointer types initializing 'int (*)(struct aspeed_pinmux_data *, const
+struct aspeed_sig_expr *, bool)' with an expression of type 'int (const
+struct aspeed_pinmux_data *, const struct aspeed_sig_expr *, bool)'
+[-Werror,-Wincompatible-pointer-types]
+        .set = aspeed_g6_sig_expr_set,
+               ^~~~~~~~~~~~~~~~~~~~~~
+1 error generated.
 
-?On 8/1/19, 11:31 PM, "Joel Stanley" <joel@jms.id.au> wrote:
+Commit 674fa8daa8c9 ("pinctrl: aspeed-g5: Delay acquisition of regmaps")
+changed the set function pointer declaration and the g6 one wasn't
+updated (I assume because it wasn't merged yet).
 
-    Add pxe1610 as a trivial device
-    
-    
-    
-    On Tue, 23 Jul 2019 at 17:14, Vijay Khemka <vijaykhemka@fb.com> wrote:
-    >
-    > On 7/23/19, 7:53 AM, "Rob Herring" <robh+dt@kernel.org> wrote:
-    >
-    >     On Tue, Jul 23, 2019 at 8:50 AM Rob Herring <robh+dt@kernel.org> wrote:
-    >     >
-    >     > On Mon, Jul 22, 2019 at 6:46 PM Vijay Khemka <vijaykhemka@fb.com> wrote:
-    >     > >
-    >     > > The pxe1610 is a voltage regulator from Infineon. It also supports
-    >     > > other VRs pxe1110 and pxm1310 from Infineon.
-    >
-    >     What happened to the other compatibles? S/w doesn't need to know the
-    >     differences?
-    > As far as driver is concerned, it doesn't need to know differences.
-    
-    You have these three IDs in the driver:
-    
-     pxm1310
-     pxm1310
-     pxe1610
-    
-    So all three could be listed in the documentation?
-    
-    Rob, is this what you wanted Vijay to do?
-    
+Fixes: 2eda1cdec49f ("pinctrl: aspeed: Add AST2600 pinmux support")
+Link: https://github.com/ClangBuiltLinux/linux/issues/632
+Signed-off-by: Nathan Chancellor <natechancellor@gmail.com>
+---
+ drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c b/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
+index 6012d7d4a22a..648ddb7f038a 100644
+--- a/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
++++ b/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
+@@ -2267,7 +2267,7 @@ static const struct aspeed_pin_function aspeed_g6_functions[] = {
+  * Return: 0 if the expression is configured as requested and a negative error
+  * code otherwise
+  */
+-static int aspeed_g6_sig_expr_set(const struct aspeed_pinmux_data *ctx,
++static int aspeed_g6_sig_expr_set(struct aspeed_pinmux_data *ctx,
+ 				  const struct aspeed_sig_expr *expr,
+ 				  bool enable)
+ {
+-- 
+2.23.0.rc1
 
