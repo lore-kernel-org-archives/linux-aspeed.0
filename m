@@ -1,69 +1,43 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Date: Thu, 22 Aug 2019 13:45:19 +0200
-Subject: [PATCH v5 1/2] dt-bindings: mmc: Document Aspeed SD controller
-In-Reply-To: <6c94aada-9c4a-4f55-9a43-349282ad12af@www.fastmail.com>
-References: <20190807003629.2974-1-andrew@aj.id.au>
- <20190807003629.2974-2-andrew@aj.id.au>
- <CACPK8Xe6Zp1uOqEffEc0b6oGa7portEAifGPRqb876HmA+oZeg@mail.gmail.com>
- <6c94aada-9c4a-4f55-9a43-349282ad12af@www.fastmail.com>
-Message-ID: <CAPDyKFrDPxFMm710Z25i-euOT2rrgCNXVa4na-fye0xamMXq_A@mail.gmail.com>
+From: Nishka Dasgupta <nishkadg.linux@gmail.com>
+Date: Thu, 08 Aug 2019 07:51:22 -0000
+Subject: [PATCH] mtd: spi-nor: aspeed-smc: Add of_node_put()
+Message-ID: <20190808075104.15928-1-nishkadg.linux@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, 15 Aug 2019 at 07:37, Andrew Jeffery <andrew@aj.id.au> wrote:
->
->
->
-> On Thu, 15 Aug 2019, at 15:06, Joel Stanley wrote:
-> > On Wed, 7 Aug 2019 at 00:38, Andrew Jeffery <andrew@aj.id.au> wrote:
-> > >
-> > > The ASPEED SD/SDIO/MMC controller exposes two slots implementing the
-> > > SDIO Host Specification v2.00, with 1 or 4 bit data buses, or an 8 bit
-> > > data bus if only a single slot is enabled.
-> > >
-> > > Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
-> >
-> > Reviewed-by: Joel Stanley <joel@jms.id.au>
-> >
-> > Two minor comments below.
-> >
-> > > +++ b/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml
-> > > @@ -0,0 +1,105 @@
-> > > +# SPDX-License-Identifier: GPL-2.0-or-later
-> >
-> > No "Copyright IBM" ?
->
-> I'm going rogue.
->
-> That reminds me I should chase up where we got to with the binding
-> licensing.
->
-> >
-> > > +%YAML 1.2
-> > > +---
-> >
-> > > +
-> > > +examples:
-> > > +  - |
-> > > +    #include <dt-bindings/clock/aspeed-clock.h>
-> > > +    sdc at 1e740000 {
-> > > +            compatible = "aspeed,ast2500-sd-controller";
-> > > +            reg = <0x1e740000 0x100>;
-> > > +            #address-cells = <1>;
-> > > +            #size-cells = <1>;
-> > > +            ranges = <0 0x1e740000 0x10000>;
-> >
-> > According to the datasheet this could be 0x20000. It does not matter
-> > though, as there's nothing in it past 0x300.
->
-> Good catch.
->
+Each iteration of for_each_available_child_of_node puts the previous
+node, but in the case of a break from the middle of the loop, there is
+no put, thus causing a memory leak. Upon termination of the loop
+(whether by break or a natural exit), either ret will have a non-zero
+value or child will be NULL. Hence add an of_node_put() that will
+execute only when ret has a non-zero value, as calling of_node_put() on
+a possible NULL value does not cause any further issues.
+Issue found with Coccinelle.
 
-Are you planning on sending a v6 or you want me to apply this and you
-can post a patch on top?
+Signed-off-by: Nishka Dasgupta <nishkadg.linux@gmail.com>
+---
+ drivers/mtd/spi-nor/aspeed-smc.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-Kind regards
-Uffe
+diff --git a/drivers/mtd/spi-nor/aspeed-smc.c b/drivers/mtd/spi-nor/aspeed-smc.c
+index 19b8757325d2..009c1da8574c 100644
+--- a/drivers/mtd/spi-nor/aspeed-smc.c
++++ b/drivers/mtd/spi-nor/aspeed-smc.c
+@@ -836,8 +836,10 @@ static int aspeed_smc_setup_flash(struct aspeed_smc_controller *controller,
+ 		controller->chips[cs] = chip;
+ 	}
+ 
+-	if (ret)
++	if (ret) {
++		of_node_put(child);
+ 		aspeed_smc_unregister(controller);
++	}
+ 
+ 	return ret;
+ }
+-- 
+2.19.1
+
