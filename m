@@ -1,27 +1,39 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Fri, 09 Aug 2019 10:08:45 +0930
-Subject: [PATCH] mtd: spi-nor: aspeed-smc: Add of_node_put()
-In-Reply-To: <20190808075104.15928-1-nishkadg.linux@gmail.com>
-References: <20190808075104.15928-1-nishkadg.linux@gmail.com>
-Message-ID: <7335d5d1-77c7-4cfe-9ba5-2fc81e3e69eb@www.fastmail.com>
+From: Linus Walleij <linus.walleij@linaro.org>
+Date: Sat, 10 Aug 2019 10:12:57 +0200
+Subject: [PATCH] pinctrl: aspeed: g6: Remove const specifier from
+ aspeed_g6_sig_expr_set's ctx parameter
+In-Reply-To: <20190807003037.48457-1-natechancellor@gmail.com>
+References: <20190807003037.48457-1-natechancellor@gmail.com>
+Message-ID: <CACRpkdbDgOQXfxgM4dEyzBRhtske3=V+858B7J8jGExnJE5fJQ@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+On Wed, Aug 7, 2019 at 2:32 AM Nathan Chancellor
+<natechancellor@gmail.com> wrote:
 
+> clang errors:
+>
+> drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c:2325:9: error: incompatible
+> pointer types initializing 'int (*)(struct aspeed_pinmux_data *, const
+> struct aspeed_sig_expr *, bool)' with an expression of type 'int (const
+> struct aspeed_pinmux_data *, const struct aspeed_sig_expr *, bool)'
+> [-Werror,-Wincompatible-pointer-types]
+>         .set = aspeed_g6_sig_expr_set,
+>                ^~~~~~~~~~~~~~~~~~~~~~
+> 1 error generated.
+>
+> Commit 674fa8daa8c9 ("pinctrl: aspeed-g5: Delay acquisition of regmaps")
+> changed the set function pointer declaration and the g6 one wasn't
+> updated (I assume because it wasn't merged yet).
+>
+> Fixes: 2eda1cdec49f ("pinctrl: aspeed: Add AST2600 pinmux support")
+> Link: https://github.com/ClangBuiltLinux/linux/issues/632
+> Signed-off-by: Nathan Chancellor <natechancellor@gmail.com>
 
-On Thu, 8 Aug 2019, at 17:21, Nishka Dasgupta wrote:
-> Each iteration of for_each_available_child_of_node puts the previous
-> node, but in the case of a break from the middle of the loop, there is
-> no put, thus causing a memory leak. Upon termination of the loop
-> (whether by break or a natural exit), either ret will have a non-zero
-> value or child will be NULL. Hence add an of_node_put() that will
-> execute only when ret has a non-zero value, as calling of_node_put() on
-> a possible NULL value does not cause any further issues.
-> Issue found with Coccinelle.
-> 
-> Signed-off-by: Nishka Dasgupta <nishkadg.linux@gmail.com>
+Patch applied with Andrew's ACK.
 
-Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
+Yours,
+Linus Walleij
