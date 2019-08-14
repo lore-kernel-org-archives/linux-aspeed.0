@@ -1,71 +1,38 @@
 From: Linus Walleij <linus.walleij@linaro.org>
-Date: Wed, 14 Aug 2019 10:09:20 +0200
-Subject: [v7 2/2] gpio: aspeed: Add SGPIO driver
-In-Reply-To: <1564603297-1391-3-git-send-email-hongweiz@ami.com>
-References: <1564603297-1391-1-git-send-email-hongweiz@ami.com>
- <1564603297-1391-3-git-send-email-hongweiz@ami.com>
-Message-ID: <CACRpkdaojLe3UTc0=66b5J2yrSOo7t8o5bAY=WRscL+met3iWQ@mail.gmail.com>
+Date: Wed, 14 Aug 2019 10:41:17 +0200
+Subject: [PATCH 3/3] dt-bindings: aspeed: Remove mention of deprecated
+ compatibles
+In-Reply-To: <20190812101504.GF26727@dell>
+References: <20190724081313.12934-1-andrew@aj.id.au>
+ <20190724081313.12934-4-andrew@aj.id.au>
+ <CACRpkdZCJWeZO6CFvkq4uhnX+o_q_AfkDZ=a2kmUgbS3JtDqfA@mail.gmail.com>
+ <20190812101504.GF26727@dell>
+Message-ID: <CACRpkdapA_-yp4ihY3S+CHMmDMKU2b0u=sj2UhJ-cvv39Dji_g@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Hongwei,
-
-thanks for your patch!
-
-I have now merged the bindings so you only need to respin
-this patch.
-
-On Wed, Jul 31, 2019 at 10:02 PM Hongwei Zhang <hongweiz@ami.com> wrote:
-
-> Add SGPIO driver support for Aspeed AST2500 SoC.
+On Mon, Aug 12, 2019 at 12:15 PM Lee Jones <lee.jones@linaro.org> wrote:
+> On Mon, 05 Aug 2019, Linus Walleij wrote:
 >
-> Signed-off-by: Hongwei Zhang <hongweiz@ami.com>
-> Reviewed-by:   Andrew Jeffery <andrew@aj.id.au>
+> > On Wed, Jul 24, 2019 at 10:13 AM Andrew Jeffery <andrew@aj.id.au> wrote:
+> >
+> > > Guide readers away from using the aspeed,g[45].* compatible patterns.
+> > >
+> > > Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
+> >
+> > Patch applied to the pinctrl tree.
+>
+> With my Ack?
 
-I guess I need to go with this, there are some minor things
-I still want to be fixed:
+Sorry no. :( Was I too trigger-happy?
 
-> +static void __aspeed_sgpio_set(struct gpio_chip *gc, unsigned int offset, int val)
-
-I don't like __underscore_functions because their semantic
-is ambiguous.
-
-Rename this something like aspeed_sgpio_commit() or
-whatever best fits the actual use.
-
-> +static int aspeed_sgpio_setup_irqs(struct aspeed_sgpio *gpio,
-> +                                  struct platform_device *pdev)
-> +{
-(...)
-> +       rc = gpiochip_irqchip_add(&gpio->chip, &aspeed_sgpio_irqchip,
-> +                                 0, handle_bad_irq, IRQ_TYPE_NONE);
-(...)
-> +       gpiochip_set_chained_irqchip(&gpio->chip, &aspeed_sgpio_irqchip,
-> +                                    gpio->irq, aspeed_sgpio_irq_handler);
-
-We do not set up chained irqchips like this anymore, sorry.
-
-I am currently rewriting all existing chained drivers to pass
-an initialized irqchip when registering the whole gpio chip.
-See drivers/gpio/TODO.
-
-Here are examples:
-https://lore.kernel.org/linux-gpio/20190811080539.15647-1-linus.walleij at linaro.org/
-https://lore.kernel.org/linux-gpio/20190812132554.18313-1-linus.walleij at linaro.org/
-
-> +       /* set all SGPIO pins as input (1). */
-> +       memset(gpio->dir_in, 0xff, sizeof(gpio->dir_in));
-
-Do the irqchip set-up here, before adding the gpio_chip.
-
-> +       rc = devm_gpiochip_add_data(&pdev->dev, &gpio->chip, gpio);
-> +       if (rc < 0)
-> +               return rc;
-> +
-> +       return aspeed_sgpio_setup_irqs(gpio, pdev);
+Usually I take Rob's ACK as authoritative for anything under
+Documentation/devicetree but if you have concerns about the
+patch from an MFD point of view I will revert it pending further
+discussion.
 
 Yours,
 Linus Walleij
