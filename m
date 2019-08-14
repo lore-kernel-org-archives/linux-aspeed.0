@@ -1,46 +1,48 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Wed, 14 Aug 2019 11:54:37 +0100
-Subject: [PATCH 3/3] dt-bindings: aspeed: Remove mention of deprecated
- compatibles
-In-Reply-To: <CACRpkdapA_-yp4ihY3S+CHMmDMKU2b0u=sj2UhJ-cvv39Dji_g@mail.gmail.com>
-References: <20190724081313.12934-1-andrew@aj.id.au>
- <20190724081313.12934-4-andrew@aj.id.au>
- <CACRpkdZCJWeZO6CFvkq4uhnX+o_q_AfkDZ=a2kmUgbS3JtDqfA@mail.gmail.com>
- <20190812101504.GF26727@dell>
- <CACRpkdapA_-yp4ihY3S+CHMmDMKU2b0u=sj2UhJ-cvv39Dji_g@mail.gmail.com>
-Message-ID: <20190814105437.GE26727@dell>
+From: Daniel Vetter <daniel@ffwll.ch>
+Date: Wed, 14 Aug 2019 19:27:27 +0200
+Subject: [PATCH] drm/aspeed: gfc_crtc: Make structure aspeed_gfx_funcs
+ constant
+In-Reply-To: <20190813063355.25549-1-nishkadg.linux@gmail.com>
+References: <20190813063355.25549-1-nishkadg.linux@gmail.com>
+Message-ID: <20190814172727.GQ7444@phenom.ffwll.local>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 14 Aug 2019, Linus Walleij wrote:
-
-> On Mon, Aug 12, 2019 at 12:15 PM Lee Jones <lee.jones@linaro.org> wrote:
-> > On Mon, 05 Aug 2019, Linus Walleij wrote:
-> >
-> > > On Wed, Jul 24, 2019 at 10:13 AM Andrew Jeffery <andrew@aj.id.au> wrote:
-> > >
-> > > > Guide readers away from using the aspeed,g[45].* compatible patterns.
-> > > >
-> > > > Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
-> > >
-> > > Patch applied to the pinctrl tree.
-> >
-> > With my Ack?
+On Tue, Aug 13, 2019 at 12:03:55PM +0530, Nishka Dasgupta wrote:
+> The static structure aspeed_gfx_funcs, of type
+> drm_simple_display_pipe_funcs, is used only as an argument to
+> drm_simple_display_pipe_init(), which does not modify it. Hence make it
+> constant to protect it from unintended modification.
+> Issue found with Coccinelle.
 > 
-> Sorry no. :( Was I too trigger-happy?
-> 
-> Usually I take Rob's ACK as authoritative for anything under
-> Documentation/devicetree but if you have concerns about the
-> patch from an MFD point of view I will revert it pending further
-> discussion.
+> Signed-off-by: Nishka Dasgupta <nishkadg.linux@gmail.com>
 
-No need.  I would have Acked it.
+Applied, thanks for your patch.
+> ---
+>  drivers/gpu/drm/aspeed/aspeed_gfx_crtc.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/gpu/drm/aspeed/aspeed_gfx_crtc.c b/drivers/gpu/drm/aspeed/aspeed_gfx_crtc.c
+> index 15db9e426ec4..2184b8be6fd4 100644
+> --- a/drivers/gpu/drm/aspeed/aspeed_gfx_crtc.c
+> +++ b/drivers/gpu/drm/aspeed/aspeed_gfx_crtc.c
+> @@ -215,7 +215,7 @@ static void aspeed_gfx_disable_vblank(struct drm_simple_display_pipe *pipe)
+>  	writel(reg | CRT_CTRL_VERTICAL_INTR_STS, priv->base + CRT_CTRL1);
+>  }
+>  
+> -static struct drm_simple_display_pipe_funcs aspeed_gfx_funcs = {
+> +static const struct drm_simple_display_pipe_funcs aspeed_gfx_funcs = {
+>  	.enable		= aspeed_gfx_pipe_enable,
+>  	.disable	= aspeed_gfx_pipe_disable,
+>  	.update		= aspeed_gfx_pipe_update,
+> -- 
+> 2.19.1
+> 
 
 -- 
-Lee Jones [???]
-Linaro Services Technical Lead
-Linaro.org ? Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+Daniel Vetter
+Software Engineer, Intel Corporation
+http://blog.ffwll.ch
