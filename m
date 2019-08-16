@@ -1,61 +1,35 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Thu, 15 Aug 2019 15:08:24 +0930
-Subject: [PATCH v5 1/2] dt-bindings: mmc: Document Aspeed SD controller
-In-Reply-To: <CACPK8Xe6Zp1uOqEffEc0b6oGa7portEAifGPRqb876HmA+oZeg@mail.gmail.com>
-References: <20190807003629.2974-1-andrew@aj.id.au>
- <20190807003629.2974-2-andrew@aj.id.au>
- <CACPK8Xe6Zp1uOqEffEc0b6oGa7portEAifGPRqb876HmA+oZeg@mail.gmail.com>
-Message-ID: <6c94aada-9c4a-4f55-9a43-349282ad12af@www.fastmail.com>
+From: Joel Stanley <joel@jms.id.au>
+Date: Sat, 17 Aug 2019 01:28:04 +0930
+Subject: [PATCH 0/2] clk: Add driver for ast2600
+Message-ID: <20190816155806.22869-1-joel@jms.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+Hello clock maintainers,
 
+This adds a new driver for the ast2600 BMC's clocks. It's a separate
+from the existing aspeed one as the ast2600 changes enough from the
+previous generation to make it hard to support with one driver.
 
-On Thu, 15 Aug 2019, at 15:06, Joel Stanley wrote:
-> On Wed, 7 Aug 2019 at 00:38, Andrew Jeffery <andrew@aj.id.au> wrote:
-> >
-> > The ASPEED SD/SDIO/MMC controller exposes two slots implementing the
-> > SDIO Host Specification v2.00, with 1 or 4 bit data buses, or an 8 bit
-> > data bus if only a single slot is enabled.
-> >
-> > Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
-> 
-> Reviewed-by: Joel Stanley <joel@jms.id.au>
-> 
-> Two minor comments below.
-> 
-> > +++ b/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml
-> > @@ -0,0 +1,105 @@
-> > +# SPDX-License-Identifier: GPL-2.0-or-later
-> 
-> No "Copyright IBM" ?
+It has been tested on the ast2600 evaluation board.
 
-I'm going rogue.
+Joel Stanley (2):
+  clk: aspeed: Move structures to header
+  clk: Add support for AST2600 SoC
 
-That reminds me I should chase up where we got to with the binding
-licensing.
+ drivers/clk/Makefile                      |   1 +
+ drivers/clk/clk-aspeed.c                  |  63 +-
+ drivers/clk/clk-aspeed.h                  |  76 +++
+ drivers/clk/clk-ast2600.c                 | 711 ++++++++++++++++++++++
+ include/dt-bindings/clock/ast2600-clock.h | 116 ++++
+ 5 files changed, 906 insertions(+), 61 deletions(-)
+ create mode 100644 drivers/clk/clk-aspeed.h
+ create mode 100644 drivers/clk/clk-ast2600.c
+ create mode 100644 include/dt-bindings/clock/ast2600-clock.h
 
-> 
-> > +%YAML 1.2
-> > +---
-> 
-> > +
-> > +examples:
-> > +  - |
-> > +    #include <dt-bindings/clock/aspeed-clock.h>
-> > +    sdc at 1e740000 {
-> > +            compatible = "aspeed,ast2500-sd-controller";
-> > +            reg = <0x1e740000 0x100>;
-> > +            #address-cells = <1>;
-> > +            #size-cells = <1>;
-> > +            ranges = <0 0x1e740000 0x10000>;
-> 
-> According to the datasheet this could be 0x20000. It does not matter
-> though, as there's nothing in it past 0x300.
+-- 
+2.23.0.rc1
 
-Good catch.
-
-Andrew
