@@ -1,43 +1,83 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Mon, 19 Aug 2019 09:46:46 +0930
-Subject: [PATCH 1/2] dt-bindings: watchdog: Add ast2600 compatible
-In-Reply-To: <20190816160347.23393-2-joel@jms.id.au>
-References: <20190816160347.23393-1-joel@jms.id.au>
- <20190816160347.23393-2-joel@jms.id.au>
-Message-ID: <efbc1e57-5c5e-4ff4-af94-d18b017d64ab@www.fastmail.com>
+From: Joel Stanley <joel@jms.id.au>
+Date: Mon, 19 Aug 2019 02:03:54 +0000
+Subject: [PATCH 2/2] clk: Add support for AST2600 SoC
+In-Reply-To: <20190816171441.3B8F720665@mail.kernel.org>
+References: <20190816155806.22869-1-joel@jms.id.au>
+ <20190816155806.22869-3-joel@jms.id.au>
+ <20190816171441.3B8F720665@mail.kernel.org>
+Message-ID: <CACPK8Xf3C36KMgDmmRtNFqVFHzZx81ko+=54PA4+d5xPitum3g@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-
-
-On Sat, 17 Aug 2019, at 01:34, Joel Stanley wrote:
-> This adds a compatible for the ast2600, a new ASPEED SoC.
-> 
-> Signed-off-by: Joel Stanley <joel@jms.id.au>
-
-Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
-
-> ---
->  Documentation/devicetree/bindings/watchdog/aspeed-wdt.txt | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/Documentation/devicetree/bindings/watchdog/aspeed-wdt.txt 
-> b/Documentation/devicetree/bindings/watchdog/aspeed-wdt.txt
-> index c5077a1f5cb3..d78d4a8fb868 100644
-> --- a/Documentation/devicetree/bindings/watchdog/aspeed-wdt.txt
-> +++ b/Documentation/devicetree/bindings/watchdog/aspeed-wdt.txt
-> @@ -4,6 +4,7 @@ Required properties:
->   - compatible: must be one of:
->  	- "aspeed,ast2400-wdt"
->  	- "aspeed,ast2500-wdt"
-> +	- "aspeed,ast2600-wdt"
->  
->   - reg: physical base address of the controller and length of memory mapped
->     region
-> -- 
-> 2.23.0.rc1
-> 
+On Fri, 16 Aug 2019 at 17:14, Stephen Boyd <sboyd@kernel.org> wrote:
 >
+> Quoting Joel Stanley (2019-08-16 08:58:06)
+> > diff --git a/drivers/clk/clk-ast2600.c b/drivers/clk/clk-ast2600.c
+> > new file mode 100644
+> > index 000000000000..083d5299238c
+> > --- /dev/null
+> > +++ b/drivers/clk/clk-ast2600.c
+> > @@ -0,0 +1,701 @@
+> > +// SPDX-License-Identifier: GPL-2.0-or-later
+> > +// Copyright IBM Corp
+> > +// Copyright ASPEED Technology
+> > +
+> [...]
+> > +#define ASPEED_DPLL_PARAM              0x260
+> > +
+> > +#define ASPEED_G6_STRAP1               0x500
+> > +
+> > +/* Globally visible clocks */
+> > +static DEFINE_SPINLOCK(aspeed_clk_lock);
+>
+> I guess we can be guaranteed that the two drivers aren't compiled into
+> the same image? Otherwise this will alias with clk-aspeed.c and make
+> kallsyms annoying to use.
+
+I will change the name.
+
+>
+> > +
+> > +/* Keeps track of all clocks */
+> > +static struct clk_hw_onecell_data *aspeed_g6_clk_data;
+> > +
+> > +static void __iomem *scu_g6_base;
+> > +
+> > +static const struct aspeed_gate_data aspeed_g6_gates[] = {
+> > +       /*                                  clk rst  name               parent   flags */
+> > +       [ASPEED_CLK_GATE_MCLK]          = {  0, -1, "mclk-gate",        "mpll",  CLK_IS_CRITICAL }, /* SDRAM */
+>
+> Please document CLK_IS_CRITICAL usage. I guess it's memory so never turn
+> it off?
+
+Yes.
+
+I added some comments and removed some uses that I didn't know the
+reason for. We can add them back later if required, with the
+reasoning.
+
+> > +static const char * const vclk_parent_names[] = {
+>
+> Can you use the new way of specifying clk parents instead of just using
+> strings?
+
+How does this work? I had a browse of the APIs in clk-provider.h and
+it appeared the functions all take char *s still.
+
+> > +       hw = clk_hw_register_fixed_factor(NULL, "ahb", "hpll", 0, 1, axi_div * ahb_div);
+>
+> There aren't checks for if these things fail. I guess it doesn't matter
+> and just let it fail hard?
+
+I think that's sensible here. If the system has run out of memory this
+early on then there's not going to be much that works.
+
+Thanks for the review. I've fixed all of the style issues you
+mentioned, but would appreciate some guidance on the parent API.
+
+Cheers,
+
+Joel
