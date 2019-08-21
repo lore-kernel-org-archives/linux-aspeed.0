@@ -1,83 +1,66 @@
-From: Matthias Maennich <maennich@google.com>
-Date: Wed, 21 Aug 2019 15:03:41 +0100
-Subject: [PATCH v3 00/11] Symbol Namespaces
-In-Reply-To: <20190821133846.GC4890@kroah.com>
+From: Guenter Roeck <linux@roeck-us.net>
+Date: Wed, 21 Aug 2019 07:59:11 -0700
+Subject: [PATCH v3 11/11] RFC: watchdog: export core symbols in
+ WATCHDOG_CORE namespace
+In-Reply-To: <20190821114955.12788-12-maennich@google.com>
 References: <20190813121733.52480-1-maennich@google.com>
  <20190821114955.12788-1-maennich@google.com>
- <20190821131140.GC2349@hirez.programming.kicks-ass.net>
- <20190821133846.GC4890@kroah.com>
-Message-ID: <20190821140341.GA126314@google.com>
+ <20190821114955.12788-12-maennich@google.com>
+Message-ID: <20190821145911.GA6521@roeck-us.net>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 21 Aug, 06:38, Greg Kroah-Hartman wrote:
->On Wed, Aug 21, 2019 at 03:11:40PM +0200, Peter Zijlstra wrote:
->> On Wed, Aug 21, 2019 at 12:49:15PM +0100, Matthias Maennich wrote:
->> > As of Linux 5.3-rc5, there are 31205 [1] exported symbols in the kernel.
->> > That is a growth of roughly 1000 symbols since 4.17 (30206 [2]).  There
->> > seems to be some consensus amongst kernel devs that the export surface
->> > is too large, and hard to reason about.
->> >
->> > Generally, these symbols fall in one of these categories:
->> > 1) Symbols actually meant for drivers
->> > 2) Symbols that are only exported because functionality is split over
->> >    multiple modules, yet they really shouldn't be used by modules outside
->> >    of their own subsystem
->> > 3) Symbols really only meant for in-tree use
->> >
->> > When module developers try to upstream their code, it regularly turns
->> > out that they are using exported symbols that they really shouldn't be
->> > using. This problem is even bigger for drivers that are currently
->> > out-of-tree, which may be using many symbols that they shouldn't be
->> > using, and that break when those symbols are removed or modified.
->> >
->> > This patch allows subsystem maintainers to partition their exported
->> > symbols into separate namespaces, and module authors to import such
->> > namespaces only when needed.
->> >
->> > This allows subsystem maintainers to more easily limit availability of
->> > these namespaced symbols to other parts of the kernel. It can also be
->> > used to partition the set of exported symbols for documentation
->> > purposes; for example, a set of symbols that is really only used for
->> > debugging could be in a "SUBSYSTEM_DEBUG" namespace.
->>
->> I'm missing how one can prohibit these random out of tree modules from
->> doing MODULE_IMPORT_NS().
->
->Nothing, but then they are explicitly being "bad" :)
->
+On Wed, Aug 21, 2019 at 12:49:26PM +0100, Matthias Maennich wrote:
+> Modules using these symbols are required to explicitly import the
+> namespace. This patch was generated with the following steps and serves
+> as a reference to use the symbol namespace feature:
+> 
+>  1) Use EXPORT_SYMBOL_NS* macros instead of EXPORT_SYMBOL* for symbols
+>     in watchdog_core.c
+>  2) make  (see warnings during modpost about missing imports)
+>  3) make nsdeps
+> 
+> I used 'allmodconfig' for the above steps to ensure all occurrences are
+> patched.
+> 
+> Defining DEFAULT_SYMBOL_NAMESPACE in the Makefile is not trivial in this
+> case as not only watchdog_core is defined in drivers/watchdog/Makefile.
+> Hence this patch uses the variant of using the EXPORT_SYMBOL_NS* macros
+> to export into a different namespace.
+> 
+I don't have the context, and thus I am missing the point of this patch
+set. Whatever it is supposed to accomplish, it seems extreme to me
+to require extra code in each driver for it.
 
-As a side effect of this implementation (namespace imports via modinfo
-tags), imports are very visible for (out-of-tree) modules, e.g.
+Anyway, WATCHDOG_CORE would be the default namespace (if it is what
+I think it is) for watchdog drivers, even though not all watchdog drivers
+use it. As such, I am missing an explanation why defining it in Makefile
+is not trivial. "... as not only watchdog_core is defined in
+drivers/watchdog/Makefile" does not mean anything to me and is not a real
+explanation. Also, it is not immediately obvious to me why "select
+WATCHDOG_CORE" in Kconfig would not automatically imply that WATCHDOG_CORE
+is used by a given driver, and why it is impossible to use that
+information to avoid the per-driver changes.
 
-$ modinfo drivers/usb/storage/ums-usbat.ko
-  filename:       drivers/usb/storage/ums-usbat.ko
-  import_ns:      USB_STORAGE
-  license:        GPL
-  author:         ...
-  ...
+I am also missing an explanation why WATCHDOG_CORE is going to be a
+separate namespace to start with. Maybe that discussion has happened,
+but I don't recall being advised or asked or told about it. Are we also
+going to have a new HWMON_CORE namespace ? And the same for each other
+subsystem in the kernel ?
 
->> That is; suppose I stick all the preempt_notifier symbols in a KVM
->> namespace, how do I enforce no out-of-tree modules ever do
->> MODULE_IMPORT_NS(KVM) and gain access?
->>
+Since this is being added to the watchdog API, it will have to be
+documented accordingly. Watchdog driver writers, both inside and outside
+the watchdog subsystem, will need to know that they now have to add an
+additional boilerplate declaration into their drivers.
 
-That is actually a feature worth following up: Restricting the
-namespaces that can be imported by modules. I am afraid it is not part
-of this series, but should not be too hard once agreed how such a list
-will be defined.
+Last but not least, combining patches affecting multiple subsystems in a
+single patch will make it difficult to apply and will likely result in
+conflicts. Personally I would prefer a split into one patch per affected
+subsystem. Also, please keep in mind that new pending watchdog drivers
+won't have the new boilerplate.
 
->> (the above would basically break virtualbox, which I knows uses preempt
->> notifiers too, but I don't give a rats arse about that)
->
->It's a huge red flag for anyone reviewing the code that this module is
->doing something it probably really should not be doing at all.  It will
->make reviewing code easier, this isn't there to try to "prevent bad
->actors" at all, sorry.
->
-
-Cheers,
-Matthias
+Thanks,
+Guenter
