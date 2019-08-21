@@ -1,361 +1,134 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Wed, 21 Aug 2019 15:25:28 +0930
-Subject: [PATCH 5/7] ARM: dts: aspeed: Add AST2600 and EVB
+Date: Wed, 21 Aug 2019 15:25:29 +0930
+Subject: [PATCH 6/7] ARM: configs: multi_v7: Add ASPEED G6
 In-Reply-To: <20190821055530.8720-1-joel@jms.id.au>
 References: <20190821055530.8720-1-joel@jms.id.au>
-Message-ID: <20190821055530.8720-6-joel@jms.id.au>
+Message-ID: <20190821055530.8720-7-joel@jms.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The AST2600 is a new SoC by ASPEED. It contains a dual core Cortex A7
-CPU and shares many periperhals with the existing AST2400 and AST2500.
+This adds the ASPEED AST2600 system and associated ASPEED devices so we
+get build coverage.
+
+The changes to the UART configuration to ensure the default console
+(UART5) works.
 
 Signed-off-by: Joel Stanley <joel@jms.id.au>
 ---
- arch/arm/boot/dts/Makefile               |   1 +
- arch/arm/boot/dts/aspeed-ast2600-evb.dts |  44 ++++
- arch/arm/boot/dts/aspeed-g6.dtsi         | 266 +++++++++++++++++++++++
- 3 files changed, 311 insertions(+)
- create mode 100644 arch/arm/boot/dts/aspeed-ast2600-evb.dts
- create mode 100644 arch/arm/boot/dts/aspeed-g6.dtsi
+ arch/arm/configs/multi_v7_defconfig | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
 
-diff --git a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
-index 247e556de48e..2d8d29e5686d 100644
---- a/arch/arm/boot/dts/Makefile
-+++ b/arch/arm/boot/dts/Makefile
-@@ -1276,6 +1276,7 @@ dtb-$(CONFIG_ARCH_MILBEAUT) += milbeaut-m10v-evb.dtb
- dtb-$(CONFIG_ARCH_ZX) += zx296702-ad1.dtb
- dtb-$(CONFIG_ARCH_ASPEED) += \
- 	aspeed-ast2500-evb.dtb \
-+	aspeed-ast2600-evb.dtb \
- 	aspeed-bmc-arm-centriq2400-rep.dtb \
- 	aspeed-bmc-arm-stardragon4800-rep2.dtb \
- 	aspeed-bmc-facebook-cmm.dtb \
-diff --git a/arch/arm/boot/dts/aspeed-ast2600-evb.dts b/arch/arm/boot/dts/aspeed-ast2600-evb.dts
-new file mode 100644
-index 000000000000..7f2528e084b5
---- /dev/null
-+++ b/arch/arm/boot/dts/aspeed-ast2600-evb.dts
-@@ -0,0 +1,44 @@
-+// SPDX-License-Identifier: GPL-2.0+
-+// Copyright 2019 IBM Corp.
-+
-+/dts-v1/;
-+
-+#include "aspeed-g6.dtsi"
-+
-+/ {
-+	model = "AST2600 EVB";
-+	compatible = "aspeed,ast2600";
-+
-+	aliases {
-+		serial4 = &uart5;
-+	};
-+
-+	chosen {
-+		bootargs = "console=ttyS4,115200n8";
-+	};
-+
-+	memory at 80000000 {
-+		device_type = "memory";
-+		reg = <0x80000000 0x80000000>;
-+	};
-+};
-+
-+&mdio1 {
-+	status = "okay";
-+
-+	ethphy1: ethernet-phy at 0 {
-+		compatible = "ethernet-phy-ieee802.3-c22";
-+		reg = <0>;
-+	};
-+};
-+
-+&mac1 {
-+	status = "okay";
-+
-+	phy-mode = "rgmii";
-+	phy-handle = <&ethphy1>;
-+};
-+
-+&emmc {
-+	status = "okay";
-+};
-diff --git a/arch/arm/boot/dts/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed-g6.dtsi
-new file mode 100644
-index 000000000000..9f9931541060
---- /dev/null
-+++ b/arch/arm/boot/dts/aspeed-g6.dtsi
-@@ -0,0 +1,266 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
-+// Copyright 2019 IBM Corp.
-+
-+#include <dt-bindings/interrupt-controller/arm-gic.h>
-+#include <dt-bindings/clock/ast2600-clock.h>
-+
-+/ {
-+	model = "Aspeed BMC";
-+	compatible = "aspeed,ast2600";
-+	#address-cells = <1>;
-+	#size-cells = <1>;
-+	interrupt-parent = <&gic>;
-+
-+	aliases {
-+		serial4 = &uart5;
-+	};
-+
-+
-+	cpus {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+		enable-method = "aspeed,ast2600-smp";
-+
-+		cpu at f00 {
-+			compatible = "arm,cortex-a7";
-+			device_type = "cpu";
-+			reg = <0xf00>;
-+		};
-+
-+		cpu at f01 {
-+			compatible = "arm,cortex-a7";
-+			device_type = "cpu";
-+			reg = <0xf01>;
-+		};
-+	};
-+
-+	timer {
-+		compatible = "arm,armv7-timer";
-+		interrupt-parent = <&gic>;
-+		interrupts = <GIC_PPI 13 (GIC_CPU_MASK_SIMPLE(2) | IRQ_TYPE_LEVEL_LOW)>,
-+			     <GIC_PPI 14 (GIC_CPU_MASK_SIMPLE(2) | IRQ_TYPE_LEVEL_LOW)>,
-+			     <GIC_PPI 11 (GIC_CPU_MASK_SIMPLE(2) | IRQ_TYPE_LEVEL_LOW)>,
-+			     <GIC_PPI 10 (GIC_CPU_MASK_SIMPLE(2) | IRQ_TYPE_LEVEL_LOW)>;
-+		clocks = <&syscon ASPEED_CLK_HPLL>;
-+		arm,cpu-registers-not-fw-configured;
-+	};
-+
-+	ahb {
-+		compatible = "simple-bus";
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		device_type = "soc";
-+		ranges;
-+
-+		gic: interrupt-controller at 40461000 {
-+			compatible = "arm,cortex-a7-gic";
-+			interrupts = <GIC_PPI 9 (GIC_CPU_MASK_SIMPLE(2) | IRQ_TYPE_LEVEL_HIGH)>;
-+			#interrupt-cells = <3>;
-+			interrupt-controller;
-+			interrupt-parent = <&gic>;
-+			reg = <0x40461000 0x1000>,
-+			    <0x40462000 0x1000>,
-+			    <0x40464000 0x2000>,
-+			    <0x40466000 0x2000>;
-+			};
-+
-+		mdio0: mdio at 1e650000 {
-+			compatible = "aspeed,ast2600-mdio";
-+			reg = <0x1e650000 0x8>;
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			status = "disabled";
-+		};
-+
-+		mdio1: mdio at 1e650008 {
-+			compatible = "aspeed,ast2600-mdio";
-+			reg = <0x1e650008 0x8>;
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			status = "disabled";
-+		};
-+
-+		mdio2: mdio at 1e650010 {
-+			compatible = "aspeed,ast2600-mdio";
-+			reg = <0x1e650010 0x8>;
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			status = "disabled";
-+		};
-+
-+		mdio3: mdio at 1e650018 {
-+			compatible = "aspeed,ast2600-mdio";
-+			reg = <0x1e650018 0x8>;
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			status = "disabled";
-+		};
-+
-+		mac0: ftgmac at 1e660000 {
-+			compatible = "aspeed,ast2600-mac", "faraday,ftgmac100";
-+			reg = <0x1e660000 0x180>;
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			interrupts = <GIC_SPI 2 IRQ_TYPE_LEVEL_HIGH>;
-+			clocks = <&syscon ASPEED_CLK_GATE_MAC1CLK>;
-+			status = "disabled";
-+		};
-+
-+		mac1: ftgmac at 1e680000 {
-+			compatible = "aspeed,ast2600-mac", "faraday,ftgmac100";
-+			reg = <0x1e680000 0x180>;
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			interrupts = <GIC_SPI 3 IRQ_TYPE_LEVEL_HIGH>;
-+			clocks = <&syscon ASPEED_CLK_GATE_MAC2CLK>;
-+			status = "disabled";
-+		};
-+
-+		mac2: ftgmac at 1e670000 {
-+			compatible = "aspeed,ast2600-mac", "faraday,ftgmac100";
-+			reg = <0x1e670000 0x180>;
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			interrupts = <GIC_SPI 32 IRQ_TYPE_LEVEL_HIGH>;
-+			clocks = <&syscon ASPEED_CLK_GATE_MAC3CLK>;
-+			status = "disabled";
-+		};
-+
-+		mac3: ftgmac at 1e690000 {
-+			compatible = "aspeed,ast2600-mac", "faraday,ftgmac100";
-+			reg = <0x1e690000 0x180>;
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			interrupts = <GIC_SPI 33 IRQ_TYPE_LEVEL_HIGH>;
-+			clocks = <&syscon ASPEED_CLK_GATE_MAC4CLK>;
-+			status = "disabled";
-+		};
-+
-+		apb {
-+			compatible = "simple-bus";
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			ranges;
-+
-+			syscon: syscon at 1e6e2000 {
-+				compatible = "aspeed,ast2600-scu", "syscon", "simple-mfd";
-+				reg = <0x1e6e2000 0x1000>;
-+				ranges = <0 0x1e6e2000 0x1000>;
-+				#address-cells = <1>;
-+				#size-cells = <1>;
-+				#clock-cells = <1>;
-+				#reset-cells = <1>;
-+
-+				pinctrl: pinctrl {
-+					compatible = "aspeed,ast2600-pinctrl";
-+				};
-+
-+				smp-memram at 180 {
-+					compatible = "aspeed,ast2600-smpmem";
-+					reg = <0x180 0x40>;
-+				};
-+			};
-+
-+			rng: hwrng at 1e6e2524 {
-+				compatible = "timeriomem_rng";
-+				reg = <0x1e6e2524 0x4>;
-+				period = <1>;
-+				quality = <100>;
-+			};
-+
-+			rtc: rtc at 1e781000 {
-+				compatible = "aspeed,ast2600-rtc";
-+				reg = <0x1e781000 0x18>;
-+				interrupts = <GIC_SPI 13 IRQ_TYPE_LEVEL_HIGH>;
-+				status = "disabled";
-+			};
-+
-+			uart5: serial at 1e784000 {
-+				compatible = "ns16550a";
-+				reg = <0x1e784000 0x1000>;
-+				reg-shift = <2>;
-+				interrupts = <GIC_SPI 8 IRQ_TYPE_LEVEL_HIGH>;
-+				clocks = <&syscon ASPEED_CLK_GATE_UART5CLK>;
-+				no-loopback-test;
-+			};
-+
-+			wdt1: watchdog at 1e785000 {
-+				compatible = "aspeed,ast2600-wdt";
-+				reg = <0x1e785000 0x40>;
-+			};
-+
-+			wdt2: watchdog at 1e785040 {
-+				compatible = "aspeed,ast2600-wdt";
-+				reg = <0x1e785040 0x40>;
-+				status = "disabled";
-+			};
-+
-+			wdt3: watchdog at 1e785080 {
-+				compatible = "aspeed,ast2600-wdt";
-+				reg = <0x1e785080 0x40>;
-+				status = "disabled";
-+			};
-+
-+			wdt4: watchdog at 1e7850C0 {
-+				compatible = "aspeed,ast2600-wdt";
-+				reg = <0x1e7850C0 0x40>;
-+				status = "disabled";
-+			};
-+
-+			sdc: sdc at 1e740000 {
-+				compatible = "aspeed,ast2600-sd-controller";
-+				reg = <0x1e740000 0x100>;
-+				#address-cells = <1>;
-+				#size-cells = <1>;
-+				ranges = <0 0x1e740000 0x10000>;
-+				clocks = <&syscon ASPEED_CLK_GATE_SDCLK>;
-+				status = "disabled";
-+
-+				sdhci0: sdhci at 1e740100 {
-+					compatible = "aspeed,ast2600-sdhci", "sdhci";
-+					reg = <0x100 0x100>;
-+					interrupts = <GIC_SPI 43 IRQ_TYPE_LEVEL_HIGH>;
-+					sdhci,auto-cmd12;
-+					clocks = <&syscon ASPEED_CLK_SDIO>;
-+					status = "disabled";
-+				};
-+
-+				sdhci1: sdhci at 1e740200 {
-+					compatible = "aspeed,ast2600-sdhci", "sdhci";
-+					reg = <0x200 0x100>;
-+					interrupts = <GIC_SPI 43 IRQ_TYPE_LEVEL_HIGH>;
-+					sdhci,auto-cmd12;
-+					clocks = <&syscon ASPEED_CLK_SDIO>;
-+					status = "disabled";
-+				};
-+			};
-+
-+			emmc: sdc at 1e750000 {
-+				compatible = "aspeed,ast2600-sd-controller";
-+				reg = <0x1e750000 0x100>;
-+				#address-cells = <1>;
-+				#size-cells = <1>;
-+				ranges = <0 0x1e750000 0x10000>;
-+				clocks = <&syscon ASPEED_CLK_GATE_EMMCCLK>;
-+				status = "disabled";
-+
-+				sdhci at 1e750100 {
-+					compatible = "aspeed,ast2600-sdhci";
-+					reg = <0x100 0x100>;
-+					sdhci,auto-cmd12;
-+					interrupts = <GIC_SPI 15 IRQ_TYPE_LEVEL_HIGH>;
-+					clocks = <&syscon ASPEED_CLK_EMMC>;
-+					pinctrl-names = "default";
-+					pinctrl-0 = <&pinctrl_emmc_default>;
-+				};
-+			};
-+		};
-+	};
-+};
-+
-+&pinctrl {
-+	pinctrl_emmc_default: emmc_default {
-+		function = "SD3";
-+		groups = "SD3";
-+	};
-+};
+diff --git a/arch/arm/configs/multi_v7_defconfig b/arch/arm/configs/multi_v7_defconfig
+index 3dc02a5e7672..ebb00321b1eb 100644
+--- a/arch/arm/configs/multi_v7_defconfig
++++ b/arch/arm/configs/multi_v7_defconfig
+@@ -9,6 +9,8 @@ CONFIG_ARCH_VIRT=y
+ CONFIG_ARCH_ALPINE=y
+ CONFIG_ARCH_ARTPEC=y
+ CONFIG_MACH_ARTPEC6=y
++CONFIG_ARCH_ASPEED=y
++CONFIG_MACH_ASPEED_G6=y
+ CONFIG_ARCH_AT91=y
+ CONFIG_SOC_SAMA5D2=y
+ CONFIG_SOC_SAMA5D3=y
+@@ -200,6 +202,7 @@ CONFIG_MTD_NAND_VF610_NFC=y
+ CONFIG_MTD_NAND_DAVINCI=y
+ CONFIG_MTD_NAND_STM32_FMC2=y
+ CONFIG_MTD_SPI_NOR=y
++CONFIG_SPI_ASPEED_SMC=m
+ CONFIG_MTD_UBI=y
+ CONFIG_BLK_DEV_LOOP=y
+ CONFIG_BLK_DEV_RAM=y
+@@ -306,7 +309,11 @@ CONFIG_INPUT_STPMIC1_ONKEY=y
+ CONFIG_SERIO_AMBAKMI=y
+ CONFIG_SERIAL_8250=y
+ CONFIG_SERIAL_8250_CONSOLE=y
++CONFIG_SERIAL_8250_NR_UARTS=5
++CONFIG_SERIAL_8250_RUNTIME_UARTS=5
+ CONFIG_SERIAL_8250_EXTENDED=y
++CONFIG_SERIAL_8250_MANY_PORTS=y
++CONFIG_SERIAL_8250_ASPEED_VUART=m
+ CONFIG_SERIAL_8250_SHARE_IRQ=y
+ CONFIG_SERIAL_8250_BCM2835AUX=y
+ CONFIG_SERIAL_8250_DW=y
+@@ -351,6 +358,8 @@ CONFIG_SERIAL_STM32=y
+ CONFIG_SERIAL_STM32_CONSOLE=y
+ CONFIG_SERIAL_DEV_BUS=y
+ CONFIG_VIRTIO_CONSOLE=y
++CONFIG_ASPEED_KCS_IPMI_BMC=m
++CONFIG_ASPEED_BT_IPMI_BMC=m
+ CONFIG_HW_RANDOM=y
+ CONFIG_HW_RANDOM_ST=y
+ CONFIG_TCG_TPM=m
+@@ -360,6 +369,7 @@ CONFIG_I2C_ARB_GPIO_CHALLENGE=m
+ CONFIG_I2C_MUX_PCA954x=y
+ CONFIG_I2C_MUX_PINCTRL=y
+ CONFIG_I2C_DEMUX_PINCTRL=y
++CONFIG_I2C_ASPEED=m
+ CONFIG_I2C_AT91=m
+ CONFIG_I2C_BCM2835=y
+ CONFIG_I2C_CADENCE=y
+@@ -464,6 +474,7 @@ CONFIG_CHARGER_MAX77693=m
+ CONFIG_CHARGER_MAX8997=m
+ CONFIG_CHARGER_MAX8998=m
+ CONFIG_CHARGER_TPS65090=y
++CONFIG_SENSORS_ASPEED=m
+ CONFIG_SENSORS_IIO_HWMON=y
+ CONFIG_SENSORS_LM90=y
+ CONFIG_SENSORS_LM95245=y
+@@ -594,6 +605,7 @@ CONFIG_VIDEO_V4L2_SUBDEV_API=y
+ CONFIG_MEDIA_USB_SUPPORT=y
+ CONFIG_USB_VIDEO_CLASS=m
+ CONFIG_V4L_PLATFORM_DRIVERS=y
++CONFIG_VIDEO_ASPEED=m
+ CONFIG_VIDEO_STM32_DCMI=m
+ CONFIG_VIDEO_SAMSUNG_EXYNOS4_IS=m
+ CONFIG_VIDEO_S5P_FIMC=m
+@@ -663,6 +675,7 @@ CONFIG_DRM_MXSFB=m
+ CONFIG_DRM_PL111=m
+ CONFIG_DRM_LIMA=m
+ CONFIG_DRM_PANFROST=m
++CONFIG_DRM_ASPEED_GFX=m
+ CONFIG_FB_EFI=y
+ CONFIG_FB_WM8505=y
+ CONFIG_FB_SH_MOBILE_LCDC=y
+@@ -762,6 +775,7 @@ CONFIG_USB_MXS_PHY=y
+ CONFIG_USB_GADGET=y
+ CONFIG_USB_FSL_USB2=y
+ CONFIG_USB_RENESAS_USBHS_UDC=m
++CONFIG_USB_ASPEED_VHUB=m
+ CONFIG_USB_CONFIGFS=m
+ CONFIG_USB_CONFIGFS_SERIAL=y
+ CONFIG_USB_CONFIGFS_ACM=y
+@@ -870,6 +884,7 @@ CONFIG_RTC_DRV_TEGRA=y
+ CONFIG_RTC_DRV_ST_LPC=y
+ CONFIG_RTC_DRV_STM32=y
+ CONFIG_RTC_DRV_CPCAP=m
++CONFIG_RTC_DRV_ASPEED=m
+ CONFIG_DMADEVICES=y
+ CONFIG_AT_HDMAC=y
+ CONFIG_AT_XDMAC=y
+@@ -920,6 +935,9 @@ CONFIG_TEGRA_IOMMU_SMMU=y
+ CONFIG_REMOTEPROC=m
+ CONFIG_ST_REMOTEPROC=m
+ CONFIG_RPMSG_VIRTIO=m
++CONFIG_ASPEED_LPC_CTRL=m
++CONFIG_ASPEED_LPC_SNOOP=m
++CONFIG_ASPEED_P2A_CTRL=m
+ CONFIG_RASPBERRYPI_POWER=y
+ CONFIG_QCOM_GSBI=y
+ CONFIG_QCOM_PM=y
+@@ -952,6 +970,7 @@ CONFIG_ARM_TEGRA_DEVFREQ=m
+ CONFIG_TI_AEMIF=y
+ CONFIG_IIO=y
+ CONFIG_IIO_SW_TRIGGER=y
++CONFIG_ASPEED_ADC=m
+ CONFIG_AT91_ADC=m
+ CONFIG_AT91_SAMA5D2_ADC=m
+ CONFIG_BERLIN2_ADC=m
 -- 
 2.23.0.rc1
 
