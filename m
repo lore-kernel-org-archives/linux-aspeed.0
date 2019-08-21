@@ -1,49 +1,51 @@
-From: Greg KH <gregkh@linuxfoundation.org>
-Date: Wed, 21 Aug 2019 05:39:33 -0700
-Subject: [PATCH v3 11/11] RFC: watchdog: export core symbols in
- WATCHDOG_CORE namespace
-In-Reply-To: <20190821114955.12788-12-maennich@google.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Date: Wed, 21 Aug 2019 15:11:40 +0200
+Subject: [PATCH v3 00/11] Symbol Namespaces
+In-Reply-To: <20190821114955.12788-1-maennich@google.com>
 References: <20190813121733.52480-1-maennich@google.com>
  <20190821114955.12788-1-maennich@google.com>
- <20190821114955.12788-12-maennich@google.com>
-Message-ID: <20190821123933.GC4059@kroah.com>
+Message-ID: <20190821131140.GC2349@hirez.programming.kicks-ass.net>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Aug 21, 2019 at 12:49:26PM +0100, Matthias Maennich wrote:
-> Modules using these symbols are required to explicitly import the
-> namespace. This patch was generated with the following steps and serves
-> as a reference to use the symbol namespace feature:
+On Wed, Aug 21, 2019 at 12:49:15PM +0100, Matthias Maennich wrote:
+> As of Linux 5.3-rc5, there are 31205 [1] exported symbols in the kernel.
+> That is a growth of roughly 1000 symbols since 4.17 (30206 [2]).  There
+> seems to be some consensus amongst kernel devs that the export surface
+> is too large, and hard to reason about.
 > 
->  1) Use EXPORT_SYMBOL_NS* macros instead of EXPORT_SYMBOL* for symbols
->     in watchdog_core.c
->  2) make  (see warnings during modpost about missing imports)
->  3) make nsdeps
+> Generally, these symbols fall in one of these categories:
+> 1) Symbols actually meant for drivers
+> 2) Symbols that are only exported because functionality is split over
+>    multiple modules, yet they really shouldn't be used by modules outside
+>    of their own subsystem
+> 3) Symbols really only meant for in-tree use
 > 
-> I used 'allmodconfig' for the above steps to ensure all occurrences are
-> patched.
+> When module developers try to upstream their code, it regularly turns
+> out that they are using exported symbols that they really shouldn't be
+> using. This problem is even bigger for drivers that are currently
+> out-of-tree, which may be using many symbols that they shouldn't be
+> using, and that break when those symbols are removed or modified.
 > 
-> Defining DEFAULT_SYMBOL_NAMESPACE in the Makefile is not trivial in this
-> case as not only watchdog_core is defined in drivers/watchdog/Makefile.
-> Hence this patch uses the variant of using the EXPORT_SYMBOL_NS* macros
-> to export into a different namespace.
+> This patch allows subsystem maintainers to partition their exported
+> symbols into separate namespaces, and module authors to import such
+> namespaces only when needed.
 > 
-> An alternative to this patch would be a single definition line before
-> any use of EXPORT_SYMBOL*:
->  #define DEFAULT_SYMBOL_NAMESPACE WATCHDOG_CORE
-> 
-> Signed-off-by: Matthias Maennich <maennich@google.com>
+> This allows subsystem maintainers to more easily limit availability of
+> these namespaced symbols to other parts of the kernel. It can also be
+> used to partition the set of exported symbols for documentation
+> purposes; for example, a set of symbols that is really only used for
+> debugging could be in a "SUBSYSTEM_DEBUG" namespace.
 
-As we talked in chat, the cc: list for this patch was crazy :)
+I'm missing how one can prohibit these random out of tree modules from
+doing MODULE_IMPORT_NS().
 
-If you end up resending this (as odds are the mailing lists will trash
-it for too many recipients), feel free to add:
+That is; suppose I stick all the preempt_notifier symbols in a KVM
+namespace, how do I enforce no out-of-tree modules ever do
+MODULE_IMPORT_NS(KVM) and gain access?
 
-Reviewed-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-
-Great work,
-
-greg k-h
+(the above would basically break virtualbox, which I knows uses preempt
+notifiers too, but I don't give a rats arse about that)
