@@ -1,117 +1,361 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Wed, 21 Aug 2019 15:25:27 +0930
-Subject: [PATCH 4/7] ARM: aspeed: Enable SMP boot
+Date: Wed, 21 Aug 2019 15:25:28 +0930
+Subject: [PATCH 5/7] ARM: dts: aspeed: Add AST2600 and EVB
 In-Reply-To: <20190821055530.8720-1-joel@jms.id.au>
 References: <20190821055530.8720-1-joel@jms.id.au>
-Message-ID: <20190821055530.8720-5-joel@jms.id.au>
+Message-ID: <20190821055530.8720-6-joel@jms.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This brings the secondary CPU into Linux. It depends on the setup
-performed by ASPEED's u-boot.
+The AST2600 is a new SoC by ASPEED. It contains a dual core Cortex A7
+CPU and shares many periperhals with the existing AST2400 and AST2500.
 
 Signed-off-by: Joel Stanley <joel@jms.id.au>
 ---
- arch/arm/Makefile              |  1 +
- arch/arm/mach-aspeed/Makefile  |  5 +++
- arch/arm/mach-aspeed/platsmp.c | 61 ++++++++++++++++++++++++++++++++++
- 3 files changed, 67 insertions(+)
- create mode 100644 arch/arm/mach-aspeed/Makefile
- create mode 100644 arch/arm/mach-aspeed/platsmp.c
+ arch/arm/boot/dts/Makefile               |   1 +
+ arch/arm/boot/dts/aspeed-ast2600-evb.dts |  44 ++++
+ arch/arm/boot/dts/aspeed-g6.dtsi         | 266 +++++++++++++++++++++++
+ 3 files changed, 311 insertions(+)
+ create mode 100644 arch/arm/boot/dts/aspeed-ast2600-evb.dts
+ create mode 100644 arch/arm/boot/dts/aspeed-g6.dtsi
 
-diff --git a/arch/arm/Makefile b/arch/arm/Makefile
-index f96419135d35..be2fc3e79434 100644
---- a/arch/arm/Makefile
-+++ b/arch/arm/Makefile
-@@ -155,6 +155,7 @@ textofs-$(CONFIG_ARCH_AXXIA) := 0x00308000
- machine-$(CONFIG_ARCH_ACTIONS)		+= actions
- machine-$(CONFIG_ARCH_ALPINE)		+= alpine
- machine-$(CONFIG_ARCH_ARTPEC)		+= artpec
-+machine-$(CONFIG_ARCH_ASPEED)           += aspeed
- machine-$(CONFIG_ARCH_AT91)		+= at91
- machine-$(CONFIG_ARCH_AXXIA)		+= axxia
- machine-$(CONFIG_ARCH_BCM)		+= bcm
-diff --git a/arch/arm/mach-aspeed/Makefile b/arch/arm/mach-aspeed/Makefile
+diff --git a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
+index 247e556de48e..2d8d29e5686d 100644
+--- a/arch/arm/boot/dts/Makefile
++++ b/arch/arm/boot/dts/Makefile
+@@ -1276,6 +1276,7 @@ dtb-$(CONFIG_ARCH_MILBEAUT) += milbeaut-m10v-evb.dtb
+ dtb-$(CONFIG_ARCH_ZX) += zx296702-ad1.dtb
+ dtb-$(CONFIG_ARCH_ASPEED) += \
+ 	aspeed-ast2500-evb.dtb \
++	aspeed-ast2600-evb.dtb \
+ 	aspeed-bmc-arm-centriq2400-rep.dtb \
+ 	aspeed-bmc-arm-stardragon4800-rep2.dtb \
+ 	aspeed-bmc-facebook-cmm.dtb \
+diff --git a/arch/arm/boot/dts/aspeed-ast2600-evb.dts b/arch/arm/boot/dts/aspeed-ast2600-evb.dts
 new file mode 100644
-index 000000000000..1951b3317a76
+index 000000000000..7f2528e084b5
 --- /dev/null
-+++ b/arch/arm/mach-aspeed/Makefile
-@@ -0,0 +1,5 @@
-+# SPDX-License-Identifier: GPL-2.0-or-later
-+# Copyright (C) ASPEED Technology Inc.
-+# Copyright IBM Corp.
++++ b/arch/arm/boot/dts/aspeed-ast2600-evb.dts
+@@ -0,0 +1,44 @@
++// SPDX-License-Identifier: GPL-2.0+
++// Copyright 2019 IBM Corp.
 +
-+obj-$(CONFIG_SMP) += platsmp.o
-diff --git a/arch/arm/mach-aspeed/platsmp.c b/arch/arm/mach-aspeed/platsmp.c
-new file mode 100644
-index 000000000000..2324becf7991
---- /dev/null
-+++ b/arch/arm/mach-aspeed/platsmp.c
-@@ -0,0 +1,61 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
-+// Copyright (C) ASPEED Technology Inc.
-+// Copyright IBM Corp.
++/dts-v1/;
 +
-+#include <linux/of_address.h>
-+#include <linux/io.h>
-+#include <linux/of.h>
-+#include <linux/smp.h>
++#include "aspeed-g6.dtsi"
 +
-+#define BOOT_ADDR	0x00
-+#define BOOT_SIG	0x04
++/ {
++	model = "AST2600 EVB";
++	compatible = "aspeed,ast2600";
 +
-+static struct device_node *secboot_node;
++	aliases {
++		serial4 = &uart5;
++	};
 +
-+static int aspeed_g6_boot_secondary(unsigned int cpu, struct task_struct *idle)
-+{
-+	void __iomem *base;
++	chosen {
++		bootargs = "console=ttyS4,115200n8";
++	};
 +
-+	base = of_iomap(secboot_node, 0);
-+	if (!base) {
-+		pr_err("could not map the secondary boot base!");
-+		return -ENODEV;
-+	}
-+
-+	writel_relaxed(0, base + BOOT_ADDR);
-+	writel_relaxed(__pa_symbol(secondary_startup_arm), base + BOOT_ADDR);
-+	writel_relaxed((0xABBAAB00 | (cpu & 0xff)), base + BOOT_SIG);
-+
-+	dsb_sev();
-+
-+	iounmap(base);
-+
-+	return 0;
-+}
-+
-+static void __init aspeed_g6_smp_prepare_cpus(unsigned int max_cpus)
-+{
-+	void __iomem *base;
-+
-+	secboot_node = of_find_compatible_node(NULL, NULL, "aspeed,ast2600-smpmem");
-+	if (!secboot_node) {
-+		pr_err("secboot device node found!!\n");
-+		return;
-+	}
-+
-+	base = of_iomap(secboot_node, 0);
-+	if (!base) {
-+		pr_err("could not map the secondary boot base!");
-+		return;
-+	}
-+	__raw_writel(0xBADABABA, base + BOOT_SIG);
-+
-+	iounmap(base);
-+}
-+
-+static const struct smp_operations aspeed_smp_ops __initconst = {
-+	.smp_prepare_cpus	= aspeed_g6_smp_prepare_cpus,
-+	.smp_boot_secondary	= aspeed_g6_boot_secondary,
++	memory at 80000000 {
++		device_type = "memory";
++		reg = <0x80000000 0x80000000>;
++	};
 +};
 +
-+CPU_METHOD_OF_DECLARE(aspeed_smp, "aspeed,ast2600-smp", &aspeed_smp_ops);
++&mdio1 {
++	status = "okay";
++
++	ethphy1: ethernet-phy at 0 {
++		compatible = "ethernet-phy-ieee802.3-c22";
++		reg = <0>;
++	};
++};
++
++&mac1 {
++	status = "okay";
++
++	phy-mode = "rgmii";
++	phy-handle = <&ethphy1>;
++};
++
++&emmc {
++	status = "okay";
++};
+diff --git a/arch/arm/boot/dts/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed-g6.dtsi
+new file mode 100644
+index 000000000000..9f9931541060
+--- /dev/null
++++ b/arch/arm/boot/dts/aspeed-g6.dtsi
+@@ -0,0 +1,266 @@
++// SPDX-License-Identifier: GPL-2.0-or-later
++// Copyright 2019 IBM Corp.
++
++#include <dt-bindings/interrupt-controller/arm-gic.h>
++#include <dt-bindings/clock/ast2600-clock.h>
++
++/ {
++	model = "Aspeed BMC";
++	compatible = "aspeed,ast2600";
++	#address-cells = <1>;
++	#size-cells = <1>;
++	interrupt-parent = <&gic>;
++
++	aliases {
++		serial4 = &uart5;
++	};
++
++
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
++		enable-method = "aspeed,ast2600-smp";
++
++		cpu at f00 {
++			compatible = "arm,cortex-a7";
++			device_type = "cpu";
++			reg = <0xf00>;
++		};
++
++		cpu at f01 {
++			compatible = "arm,cortex-a7";
++			device_type = "cpu";
++			reg = <0xf01>;
++		};
++	};
++
++	timer {
++		compatible = "arm,armv7-timer";
++		interrupt-parent = <&gic>;
++		interrupts = <GIC_PPI 13 (GIC_CPU_MASK_SIMPLE(2) | IRQ_TYPE_LEVEL_LOW)>,
++			     <GIC_PPI 14 (GIC_CPU_MASK_SIMPLE(2) | IRQ_TYPE_LEVEL_LOW)>,
++			     <GIC_PPI 11 (GIC_CPU_MASK_SIMPLE(2) | IRQ_TYPE_LEVEL_LOW)>,
++			     <GIC_PPI 10 (GIC_CPU_MASK_SIMPLE(2) | IRQ_TYPE_LEVEL_LOW)>;
++		clocks = <&syscon ASPEED_CLK_HPLL>;
++		arm,cpu-registers-not-fw-configured;
++	};
++
++	ahb {
++		compatible = "simple-bus";
++		#address-cells = <1>;
++		#size-cells = <1>;
++		device_type = "soc";
++		ranges;
++
++		gic: interrupt-controller at 40461000 {
++			compatible = "arm,cortex-a7-gic";
++			interrupts = <GIC_PPI 9 (GIC_CPU_MASK_SIMPLE(2) | IRQ_TYPE_LEVEL_HIGH)>;
++			#interrupt-cells = <3>;
++			interrupt-controller;
++			interrupt-parent = <&gic>;
++			reg = <0x40461000 0x1000>,
++			    <0x40462000 0x1000>,
++			    <0x40464000 0x2000>,
++			    <0x40466000 0x2000>;
++			};
++
++		mdio0: mdio at 1e650000 {
++			compatible = "aspeed,ast2600-mdio";
++			reg = <0x1e650000 0x8>;
++			#address-cells = <1>;
++			#size-cells = <0>;
++			status = "disabled";
++		};
++
++		mdio1: mdio at 1e650008 {
++			compatible = "aspeed,ast2600-mdio";
++			reg = <0x1e650008 0x8>;
++			#address-cells = <1>;
++			#size-cells = <0>;
++			status = "disabled";
++		};
++
++		mdio2: mdio at 1e650010 {
++			compatible = "aspeed,ast2600-mdio";
++			reg = <0x1e650010 0x8>;
++			#address-cells = <1>;
++			#size-cells = <0>;
++			status = "disabled";
++		};
++
++		mdio3: mdio at 1e650018 {
++			compatible = "aspeed,ast2600-mdio";
++			reg = <0x1e650018 0x8>;
++			#address-cells = <1>;
++			#size-cells = <0>;
++			status = "disabled";
++		};
++
++		mac0: ftgmac at 1e660000 {
++			compatible = "aspeed,ast2600-mac", "faraday,ftgmac100";
++			reg = <0x1e660000 0x180>;
++			#address-cells = <1>;
++			#size-cells = <0>;
++			interrupts = <GIC_SPI 2 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&syscon ASPEED_CLK_GATE_MAC1CLK>;
++			status = "disabled";
++		};
++
++		mac1: ftgmac at 1e680000 {
++			compatible = "aspeed,ast2600-mac", "faraday,ftgmac100";
++			reg = <0x1e680000 0x180>;
++			#address-cells = <1>;
++			#size-cells = <0>;
++			interrupts = <GIC_SPI 3 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&syscon ASPEED_CLK_GATE_MAC2CLK>;
++			status = "disabled";
++		};
++
++		mac2: ftgmac at 1e670000 {
++			compatible = "aspeed,ast2600-mac", "faraday,ftgmac100";
++			reg = <0x1e670000 0x180>;
++			#address-cells = <1>;
++			#size-cells = <0>;
++			interrupts = <GIC_SPI 32 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&syscon ASPEED_CLK_GATE_MAC3CLK>;
++			status = "disabled";
++		};
++
++		mac3: ftgmac at 1e690000 {
++			compatible = "aspeed,ast2600-mac", "faraday,ftgmac100";
++			reg = <0x1e690000 0x180>;
++			#address-cells = <1>;
++			#size-cells = <0>;
++			interrupts = <GIC_SPI 33 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&syscon ASPEED_CLK_GATE_MAC4CLK>;
++			status = "disabled";
++		};
++
++		apb {
++			compatible = "simple-bus";
++			#address-cells = <1>;
++			#size-cells = <1>;
++			ranges;
++
++			syscon: syscon at 1e6e2000 {
++				compatible = "aspeed,ast2600-scu", "syscon", "simple-mfd";
++				reg = <0x1e6e2000 0x1000>;
++				ranges = <0 0x1e6e2000 0x1000>;
++				#address-cells = <1>;
++				#size-cells = <1>;
++				#clock-cells = <1>;
++				#reset-cells = <1>;
++
++				pinctrl: pinctrl {
++					compatible = "aspeed,ast2600-pinctrl";
++				};
++
++				smp-memram at 180 {
++					compatible = "aspeed,ast2600-smpmem";
++					reg = <0x180 0x40>;
++				};
++			};
++
++			rng: hwrng at 1e6e2524 {
++				compatible = "timeriomem_rng";
++				reg = <0x1e6e2524 0x4>;
++				period = <1>;
++				quality = <100>;
++			};
++
++			rtc: rtc at 1e781000 {
++				compatible = "aspeed,ast2600-rtc";
++				reg = <0x1e781000 0x18>;
++				interrupts = <GIC_SPI 13 IRQ_TYPE_LEVEL_HIGH>;
++				status = "disabled";
++			};
++
++			uart5: serial at 1e784000 {
++				compatible = "ns16550a";
++				reg = <0x1e784000 0x1000>;
++				reg-shift = <2>;
++				interrupts = <GIC_SPI 8 IRQ_TYPE_LEVEL_HIGH>;
++				clocks = <&syscon ASPEED_CLK_GATE_UART5CLK>;
++				no-loopback-test;
++			};
++
++			wdt1: watchdog at 1e785000 {
++				compatible = "aspeed,ast2600-wdt";
++				reg = <0x1e785000 0x40>;
++			};
++
++			wdt2: watchdog at 1e785040 {
++				compatible = "aspeed,ast2600-wdt";
++				reg = <0x1e785040 0x40>;
++				status = "disabled";
++			};
++
++			wdt3: watchdog at 1e785080 {
++				compatible = "aspeed,ast2600-wdt";
++				reg = <0x1e785080 0x40>;
++				status = "disabled";
++			};
++
++			wdt4: watchdog at 1e7850C0 {
++				compatible = "aspeed,ast2600-wdt";
++				reg = <0x1e7850C0 0x40>;
++				status = "disabled";
++			};
++
++			sdc: sdc at 1e740000 {
++				compatible = "aspeed,ast2600-sd-controller";
++				reg = <0x1e740000 0x100>;
++				#address-cells = <1>;
++				#size-cells = <1>;
++				ranges = <0 0x1e740000 0x10000>;
++				clocks = <&syscon ASPEED_CLK_GATE_SDCLK>;
++				status = "disabled";
++
++				sdhci0: sdhci at 1e740100 {
++					compatible = "aspeed,ast2600-sdhci", "sdhci";
++					reg = <0x100 0x100>;
++					interrupts = <GIC_SPI 43 IRQ_TYPE_LEVEL_HIGH>;
++					sdhci,auto-cmd12;
++					clocks = <&syscon ASPEED_CLK_SDIO>;
++					status = "disabled";
++				};
++
++				sdhci1: sdhci at 1e740200 {
++					compatible = "aspeed,ast2600-sdhci", "sdhci";
++					reg = <0x200 0x100>;
++					interrupts = <GIC_SPI 43 IRQ_TYPE_LEVEL_HIGH>;
++					sdhci,auto-cmd12;
++					clocks = <&syscon ASPEED_CLK_SDIO>;
++					status = "disabled";
++				};
++			};
++
++			emmc: sdc at 1e750000 {
++				compatible = "aspeed,ast2600-sd-controller";
++				reg = <0x1e750000 0x100>;
++				#address-cells = <1>;
++				#size-cells = <1>;
++				ranges = <0 0x1e750000 0x10000>;
++				clocks = <&syscon ASPEED_CLK_GATE_EMMCCLK>;
++				status = "disabled";
++
++				sdhci at 1e750100 {
++					compatible = "aspeed,ast2600-sdhci";
++					reg = <0x100 0x100>;
++					sdhci,auto-cmd12;
++					interrupts = <GIC_SPI 15 IRQ_TYPE_LEVEL_HIGH>;
++					clocks = <&syscon ASPEED_CLK_EMMC>;
++					pinctrl-names = "default";
++					pinctrl-0 = <&pinctrl_emmc_default>;
++				};
++			};
++		};
++	};
++};
++
++&pinctrl {
++	pinctrl_emmc_default: emmc_default {
++		function = "SD3";
++		groups = "SD3";
++	};
++};
 -- 
 2.23.0.rc1
 
