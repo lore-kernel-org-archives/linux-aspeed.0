@@ -1,17 +1,12 @@
 From: Ivan Mikhaylov <i.mikhaylov@yadro.com>
-Date: Wed, 21 Aug 2019 18:45:36 +0300
-Subject: No subject
-Message-ID: <2d690bc4d00a3b911d7c50a909aa7f27870ea092.camel@yadro.com>
+Date: Wed, 21 Aug 2019 18:52:22 +0300
+Subject: [PATCH 0/3] add dual-boot support
+Message-ID: <f27c52df7ddd460695d6ed1d7823a65a72012361.camel@yadro.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-
-From 1687adb615ceb7a4013712604f177dc906059667 Mon Sep 17 00:00:00 2001
-From: Ivan Mikhaylov <i.mikhaylov@yadro.com>
-Date: Wed, 21 Aug 2019 18:21:05 +
-Subject: [PATCH 0/3] add dual-boot support
 
 ASPEED SoCs support dual-boot feature for SPI Flash.
 When strapped appropriately, the SoC starts wdt2 (/dev/watchdog1)
