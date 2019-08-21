@@ -1,91 +1,125 @@
-From: Ivan Mikhaylov <i.mikhaylov@yadro.com>
-Date: Wed, 21 Aug 2019 18:57:43 +0300
-Subject: [PATCH 3/3] watchdog/aspeed: add support for dual boot
-Message-ID: <1f2cd155057e5ab0cdb20a9a11614bbb09bb49ad.camel@yadro.com>
+From: Matthias Maennich <maennich@google.com>
+Date: Wed, 21 Aug 2019 17:28:12 +0100
+Subject: [PATCH v3 11/11] RFC: watchdog: export core symbols in
+ WATCHDOG_CORE namespace
+In-Reply-To: <20190821145911.GA6521@roeck-us.net>
+References: <20190813121733.52480-1-maennich@google.com>
+ <20190821114955.12788-1-maennich@google.com>
+ <20190821114955.12788-12-maennich@google.com>
+ <20190821145911.GA6521@roeck-us.net>
+Message-ID: <20190821162812.GB77665@google.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Set WDT_CLEAR_TIMEOUT_AND_BOOT_CODE_SELECTION into WDT_CLEAR_TIMEOUT_STATUS
-to clear out boot code source and re-enable access to the primary SPI flash
-chip while booted via wdt2 from the alternate chip.
+Hi Guenter!
 
-AST2400 datasheet says:
-"In the 2nd flash booting mode, all the address mapping to CS0# would be
-re-directed to CS1#. And CS0# is not accessable under this mode. To access
-CS0#, firmware should clear the 2nd boot mode register in the WDT2 status
-register WDT30.bit[1]."
+On Wed, 21 Aug, 07:59, Guenter Roeck wrote:
+>On Wed, Aug 21, 2019 at 12:49:26PM +0100, Matthias Maennich wrote:
+>> Modules using these symbols are required to explicitly import the
+>> namespace. This patch was generated with the following steps and serves
+>> as a reference to use the symbol namespace feature:
+>>
+>>  1) Use EXPORT_SYMBOL_NS* macros instead of EXPORT_SYMBOL* for symbols
+>>     in watchdog_core.c
+>>  2) make  (see warnings during modpost about missing imports)
+>>  3) make nsdeps
+>>
+>> I used 'allmodconfig' for the above steps to ensure all occurrences are
+>> patched.
+>>
+>> Defining DEFAULT_SYMBOL_NAMESPACE in the Makefile is not trivial in this
+>> case as not only watchdog_core is defined in drivers/watchdog/Makefile.
+>> Hence this patch uses the variant of using the EXPORT_SYMBOL_NS* macros
+>> to export into a different namespace.
+>>
+>I don't have the context, and thus I am missing the point of this patch
+>set. Whatever it is supposed to accomplish, it seems extreme to me
+>to require extra code in each driver for it.
+>
 
-Signed-off-by: Ivan Mikhaylov <i.mikhaylov@yadro.com>
----
- drivers/watchdog/aspeed_wdt.c | 30 ++++++++++++++++++++++++++++++
- 1 file changed, 30 insertions(+)
+Unfortunately, get_maintainer.pl has helped me too much and this series
+got blocked by some mailing lists due to the large amount of recipients.
+Following versions will be sent to the previous audience + the
+linux-watchdog list.
+For context, the full series (including previous versions) can be found
+on lore at
+https://lore.kernel.org/lkml/20180716122125.175792-1-maco at android.com/
+and the cover letter for v3 has made it to linux-amlogic
+https://lore.kernel.org/linux-amlogic/20190821114955.12788-1-maennich at google.com/
 
-diff --git a/drivers/watchdog/aspeed_wdt.c b/drivers/watchdog/aspeed_wdt.c
-index cc71861e033a..858e62f1c7ba 100644
---- a/drivers/watchdog/aspeed_wdt.c
-+++ b/drivers/watchdog/aspeed_wdt.c
-@@ -53,6 +53,8 @@ MODULE_DEVICE_TABLE(of, aspeed_wdt_of_table);
- #define   WDT_CTRL_ENABLE		BIT(0)
- #define WDT_TIMEOUT_STATUS	0x10
- #define   WDT_TIMEOUT_STATUS_BOOT_SECONDARY	BIT(1)
-+#define WDT_CLEAR_TIMEOUT_STATUS	0x14
-+#define   WDT_CLEAR_TIMEOUT_AND_BOOT_CODE_SELECTION	BIT(0)
- 
- /*
-  * WDT_RESET_WIDTH controls the characteristics of the external pulse (if
-@@ -165,6 +167,29 @@ static int aspeed_wdt_restart(struct watchdog_device *wdd,
- 	return 0;
- }
- 
-+static ssize_t access_cs0_store(struct device *dev,
-+			      struct device_attribute *attr,
-+			      const char *buf, size_t size)
-+{
-+	struct aspeed_wdt *wdt = dev_get_drvdata(dev);
-+
-+	if (unlikely(!wdt))
-+		return -ENODEV;
-+
-+	writel(WDT_CLEAR_TIMEOUT_AND_BOOT_CODE_SELECTION,
-+			wdt->base + WDT_CLEAR_TIMEOUT_STATUS);
-+	wdt->wdd.bootstatus |= WDIOF_EXTERN1;
-+
-+	return size;
-+}
-+static DEVICE_ATTR_WO(access_cs0);
-+
-+static struct attribute *bswitch_attrs[] = {
-+	&dev_attr_access_cs0.attr,
-+	NULL
-+};
-+ATTRIBUTE_GROUPS(bswitch);
-+
- static const struct watchdog_ops aspeed_wdt_ops = {
- 	.start		= aspeed_wdt_start,
- 	.stop		= aspeed_wdt_stop,
-@@ -223,6 +248,9 @@ static int aspeed_wdt_probe(struct platform_device *pdev)
- 
- 	wdt->ctrl = WDT_CTRL_1MHZ_CLK;
- 
-+	if (of_property_read_bool(np, "aspeed,alt-boot"))
-+		wdt->wdd.groups = bswitch_groups;
-+
- 	/*
- 	 * Control reset on a per-device basis to ensure the
- 	 * host is not affected by a BMC reboot
-@@ -309,6 +337,8 @@ static int aspeed_wdt_probe(struct platform_device *pdev)
- 	if (status & WDT_TIMEOUT_STATUS_BOOT_SECONDARY)
- 		wdt->wdd.bootstatus = WDIOF_CARDRESET;
- 
-+	dev_set_drvdata(dev, wdt);
-+
- 	return devm_watchdog_register_device(dev, &wdt->wdd);
- }
- 
--- 
-2.20.1
+>Anyway, WATCHDOG_CORE would be the default namespace (if it is what
+>I think it is) for watchdog drivers, even though not all watchdog drivers
+>use it. As such, I am missing an explanation why defining it in Makefile
+>is not trivial. "... as not only watchdog_core is defined in
+>drivers/watchdog/Makefile" does not mean anything to me and is not a real
 
+True, that is a bit out of context. Especially considering you did not
+receive any other messages of that series.
+Defining a namespace a symbol should be exported to can be done in
+different ways. All of them effectively change the EXPORT_SYMBOL*
+macro's behaviour. The method I am referring to is using
 
+  ccflags-y += -DDEFAULT_SYMBOL_NAMESPACE=WATCHDOG_CORE
+
+directly in drivers/watchdog/Makefile. Since this would also apply the
+namespace to exports in non-core modules it would be incorrect. Thus I
+used the method of applying the namespace directly by changing the
+EXPORT_SYMBOL macro expansion.
+
+>explanation. Also, it is not immediately obvious to me why "select
+>WATCHDOG_CORE" in Kconfig would not automatically imply that WATCHDOG_CORE
+>is used by a given driver, and why it is impossible to use that
+>information to avoid the per-driver changes.
+>
+
+One intention of this patch series is to make exporting and using of
+namespaces explicit. As such, the subsystem exporting symbols is
+defining the namespace it exports to and the module using a namespace is
+supposed to explicitly declare its usage via import. In case of watchdog
+(and probably other cases) it might make sense to find a way to
+implicitly import the namespace for in-tree drivers in the same area.
+
+>I am also missing an explanation why WATCHDOG_CORE is going to be a
+>separate namespace to start with. Maybe that discussion has happened,
+>but I don't recall being advised or asked or told about it. Are we also
+>going to have a new HWMON_CORE namespace ? And the same for each other
+>subsystem in the kernel ?
+>
+
+This very patch is an RFC to demonstrate how Symbol Namespaces would be
+used based on the current implementation (the other RFC as part of this
+series is for the introduction of the namespace USB_STORAGE).
+WATCHDOG_CORE serves as one of two examples. I do not think the two RFC
+patches should be merged along with this series.
+
+>Since this is being added to the watchdog API, it will have to be
+>documented accordingly. Watchdog driver writers, both inside and outside
+>the watchdog subsystem, will need to know that they now have to add an
+>additional boilerplate declaration into their drivers.
+>
+
+Completely agree. This is just an RFC that omits these details as it
+purely focuses on the introduction and consequences of such a namespace
+to demonstrate how the feature works.
+
+>Last but not least, combining patches affecting multiple subsystems in a
+>single patch will make it difficult to apply and will likely result in
+>conflicts. Personally I would prefer a split into one patch per affected
+>subsystem. Also, please keep in mind that new pending watchdog drivers
+>won't have the new boilerplate.
+
+I understand the point. Especially as I am already now affected by the
+long list of recipients when sending this patch. The problem with single
+patches here is, that once a symbol is exported into a namespace, all
+modules using it have to declare that import to avoid a warning at
+compile time and module load time. Hence the all-in-one approach.
+Luckily, the patch series also provides a way to address such a warning
+(via `make nsdeps`) that creates the necessary source code fix as a
+single line per module and namespace right after MODULE_LICENSE(). That
+is how this patch was created in the first place.
+
+Cheers,
+Matthias
