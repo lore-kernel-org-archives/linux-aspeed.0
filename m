@@ -1,125 +1,99 @@
-From: Matthias Maennich <maennich@google.com>
-Date: Wed, 21 Aug 2019 17:28:12 +0100
-Subject: [PATCH v3 11/11] RFC: watchdog: export core symbols in
- WATCHDOG_CORE namespace
-In-Reply-To: <20190821145911.GA6521@roeck-us.net>
-References: <20190813121733.52480-1-maennich@google.com>
- <20190821114955.12788-1-maennich@google.com>
- <20190821114955.12788-12-maennich@google.com>
- <20190821145911.GA6521@roeck-us.net>
-Message-ID: <20190821162812.GB77665@google.com>
+From: Alexander Amelkin <a.amelkin@yadro.com>
+Date: Wed, 21 Aug 2019 20:42:24 +0300
+Subject: [PATCH 3/3] watchdog/aspeed: add support for dual boot
+In-Reply-To: <20190821163220.GA11547@roeck-us.net>
+References: <1f2cd155057e5ab0cdb20a9a11614bbb09bb49ad.camel@yadro.com>
+ <20190821163220.GA11547@roeck-us.net>
+Message-ID: <9e7fe5cc-ba1b-b8b6-69c5-c3c6cf508a36@yadro.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Guenter!
-
-On Wed, 21 Aug, 07:59, Guenter Roeck wrote:
->On Wed, Aug 21, 2019 at 12:49:26PM +0100, Matthias Maennich wrote:
->> Modules using these symbols are required to explicitly import the
->> namespace. This patch was generated with the following steps and serves
->> as a reference to use the symbol namespace feature:
+21.08.2019 19:32, Guenter Roeck wrote:
+> On Wed, Aug 21, 2019 at 06:57:43PM +0300, Ivan Mikhaylov wrote:
+>> Set WDT_CLEAR_TIMEOUT_AND_BOOT_CODE_SELECTION into WDT_CLEAR_TIMEOUT_STATUS
+>> to clear out boot code source and re-enable access to the primary SPI flash
+>> chip while booted via wdt2 from the alternate chip.
 >>
->>  1) Use EXPORT_SYMBOL_NS* macros instead of EXPORT_SYMBOL* for symbols
->>     in watchdog_core.c
->>  2) make  (see warnings during modpost about missing imports)
->>  3) make nsdeps
->>
->> I used 'allmodconfig' for the above steps to ensure all occurrences are
->> patched.
->>
->> Defining DEFAULT_SYMBOL_NAMESPACE in the Makefile is not trivial in this
->> case as not only watchdog_core is defined in drivers/watchdog/Makefile.
->> Hence this patch uses the variant of using the EXPORT_SYMBOL_NS* macros
->> to export into a different namespace.
->>
->I don't have the context, and thus I am missing the point of this patch
->set. Whatever it is supposed to accomplish, it seems extreme to me
->to require extra code in each driver for it.
+>> AST2400 datasheet says:
+>> "In the 2nd flash booting mode, all the address mapping to CS0# would be
+>> re-directed to CS1#. And CS0# is not accessable under this mode. To access
+>> CS0#, firmware should clear the 2nd boot mode register in the WDT2 status
+>> register WDT30.bit[1]."
+> Is there reason to not do this automatically when loading the module
+> in alt-boot mode ? What means does userspace have to determine if CS0
+> or CS1 is active at any given time ? If there is reason to ever have CS1
+> active instead of CS0, what means would userspace have to enable it ?
+
+Yes, there is. The driver is loaded long before the filesystems are mounted. The filesystems, in the event of alternate/recovery boot, need to be mounted from the same chip that the kernel was booted. For one reason because the main chip at CS0 is most probably corrupt. If you clear that bit when driver is loaded, your software will not know that and will try to mount the wrong filesystems. The whole idea of ASPEED's switching chipselects is to have identical firmware in both chips, without the need to process the alternate boot state in any way except for indicating a successful boot and restoring access to CS0 when needed.
+
+The userspace can read bootstatus sysfs node to determine if an alternate boot has occured.
+
+With ASPEED, CS1 is activated automatically by wdt2 when system fails to boot from the primary flash chip (at CS0) and disable the watchdog to indicate a successful boot. When that happens, both CS0 and CS1 controls? get routed in hardware to CS1 line, making the primary flash chip inaccessible. Depending on the architecture of the user-space software, it may choose to re-enable access to the primary chip via CS0 at different times. There must be a way to do so.
+
+> If userspace can not really determine if CS1 or CS0 is active, all it could
+> ever do was to enable CS0 to be in a deterministic state. If so, it doesn't
+> make sense to ever have CS1 active, and re-enabling CS0 could be automatic.
 >
+> Similar, if CS1 can ever be enabled, there is no means for userspace to ensure
+> that some other application did not re-enable CS0 while it believes that CS1
+> is enabled. If there is no means for userspace to enable CS1, it can never be
+> sure what is enabled (because some other entity may have enabled CS0 while
+> userspace just thought that CS1 is still enabled). Again, the only means
+> to guarantee a well defined state would be to explicitly enable CS0 and provive
+> no means to enable CS1. Again, this could be done during boot, not requiring
+> an explicit request from userspace.
 
-Unfortunately, get_maintainer.pl has helped me too much and this series
-got blocked by some mailing lists due to the large amount of recipients.
-Following versions will be sent to the previous audience + the
-linux-watchdog list.
-For context, the full series (including previous versions) can be found
-on lore at
-https://lore.kernel.org/lkml/20180716122125.175792-1-maco at android.com/
-and the cover letter for v3 has made it to linux-amlogic
-https://lore.kernel.org/linux-amlogic/20190821114955.12788-1-maennich at google.com/
+Please understand that activation of CS1 in place of CS0 is NOT a software choice!
 
->Anyway, WATCHDOG_CORE would be the default namespace (if it is what
->I think it is) for watchdog drivers, even though not all watchdog drivers
->use it. As such, I am missing an explanation why defining it in Makefile
->is not trivial. "... as not only watchdog_core is defined in
->drivers/watchdog/Makefile" does not mean anything to me and is not a real
 
-True, that is a bit out of context. Especially considering you did not
-receive any other messages of that series.
-Defining a namespace a symbol should be exported to can be done in
-different ways. All of them effectively change the EXPORT_SYMBOL*
-macro's behaviour. The method I am referring to is using
+>> +	if (unlikely(!wdt))
+>> +		return -ENODEV;
+>> +
+> How would this ever happen, and how / where is drvdata set to NULL ?
 
-  ccflags-y += -DDEFAULT_SYMBOL_NAMESPACE=WATCHDOG_CORE
+This is purely for robustness. Seeing a pointer obtained via a function accessed without first checking it for validity makes me nervous.
 
-directly in drivers/watchdog/Makefile. Since this would also apply the
-namespace to exports in non-core modules it would be incorrect. Thus I
-used the method of applying the namespace directly by changing the
-EXPORT_SYMBOL macro expansion.
+This code most probably adds nothing at the assembly level.
 
->explanation. Also, it is not immediately obvious to me why "select
->WATCHDOG_CORE" in Kconfig would not automatically imply that WATCHDOG_CORE
->is used by a given driver, and why it is impossible to use that
->information to avoid the per-driver changes.
 >
+>> +	writel(WDT_CLEAR_TIMEOUT_AND_BOOT_CODE_SELECTION,
+>> +			wdt->base + WDT_CLEAR_TIMEOUT_STATUS);
+>> +	wdt->wdd.bootstatus |= WDIOF_EXTERN1;
+> The variable reflects the _boot status_. It should not change after booting.
+Is there any documentation that dictates that? All I could find is
 
-One intention of this patch series is to make exporting and using of
-namespaces explicit. As such, the subsystem exporting symbols is
-defining the namespace it exports to and the module using a namespace is
-supposed to explicitly declare its usage via import. In case of watchdog
-(and probably other cases) it might make sense to find a way to
-implicitly import the namespace for in-tree drivers in the same area.
+"bootstatus: status of the device after booting". That doesn't look to me like it absolutely can not change to reflect the updated status (that is, to reflect that the originally set up alternate CS routing has been reset to normal).
 
->I am also missing an explanation why WATCHDOG_CORE is going to be a
->separate namespace to start with. Maybe that discussion has happened,
->but I don't recall being advised or asked or told about it. Are we also
->going to have a new HWMON_CORE namespace ? And the same for each other
->subsystem in the kernel ?
+If you absolutely disallow that, I think we could make 'access_cs0' readable instead, so it could report the current state of the boot code selection bit. Reverted, I suppose. That way 'access_cs0' would report 1 after 1 has been written to it (it wouldn't be possible to write a zero).
+
+> @@ -223,6 +248,9 @@ static int aspeed_wdt_probe(struct platform_device *pdev)
+>  
+>  	wdt->ctrl = WDT_CTRL_1MHZ_CLK;
+>  
+> +	if (of_property_read_bool(np, "aspeed,alt-boot"))
+> +		wdt->wdd.groups = bswitch_groups;
+> +
+> Why does this have to be separate to the existing evaluation of
+> aspeed,alt-boot, and why does the existing code not work ?
 >
+> Also, is it guaranteed that this does not interfer with existing
+> support for alt-boot ?
 
-This very patch is an RFC to demonstrate how Symbol Namespaces would be
-used based on the current implementation (the other RFC as part of this
-series is for the introduction of the namespace USB_STORAGE).
-WATCHDOG_CORE serves as one of two examples. I do not think the two RFC
-patches should be merged along with this series.
+I think Ivan will comment on this.
 
->Since this is being added to the watchdog API, it will have to be
->documented accordingly. Watchdog driver writers, both inside and outside
->the watchdog subsystem, will need to know that they now have to add an
->additional boilerplate declaration into their drivers.
->
+With best regards,
+Alexander Amelkin,
+BIOS/BMC Team Lead, YADRO
+https://yadro.com
 
-Completely agree. This is just an RFC that omits these details as it
-purely focuses on the introduction and consequences of such a namespace
-to demonstrate how the feature works.
 
->Last but not least, combining patches affecting multiple subsystems in a
->single patch will make it difficult to apply and will likely result in
->conflicts. Personally I would prefer a split into one patch per affected
->subsystem. Also, please keep in mind that new pending watchdog drivers
->won't have the new boilerplate.
-
-I understand the point. Especially as I am already now affected by the
-long list of recipients when sending this patch. The problem with single
-patches here is, that once a symbol is exported into a namespace, all
-modules using it have to declare that import to avoid a warning at
-compile time and module load time. Hence the all-in-one approach.
-Luckily, the patch series also provides a way to address such a warning
-(via `make nsdeps`) that creates the necessary source code fix as a
-single line per module and namespace right after MODULE_LICENSE(). That
-is how this patch was created in the first place.
-
-Cheers,
-Matthias
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 819 bytes
+Desc: OpenPGP digital signature
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20190821/a5922211/attachment-0001.sig>
