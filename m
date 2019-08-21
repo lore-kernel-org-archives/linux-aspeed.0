@@ -1,32 +1,39 @@
 From: Ivan Mikhaylov <i.mikhaylov@yadro.com>
-Date: Wed, 21 Aug 2019 18:54:35 +0300
-Subject: [PATCH 1/3] vesnin: add wdt2 section with alt-boot option
-Message-ID: <90ee26eca127501ed035f5dcd74f880b0c7e10f5.camel@yadro.com>
+Date: Wed, 21 Aug 2019 18:56:20 +0300
+Subject: [PATCH 2/3] vesnin: add secondary SPI flash chip
+Message-ID: <9aa6b419194701e1c75bac2dc4192a31888a616b.camel@yadro.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Adds wdt2 section with 'alt-boot' option into dts for vesnin.
+Adds secondary SPI flash chip into dts for vesnin.
 
 Signed-off-by: Ivan Mikhaylov <i.mikhaylov@yadro.com>
 ---
- arch/arm/boot/dts/aspeed-bmc-opp-vesnin.dts | 4 ++++
- 1 file changed, 4 insertions(+)
+ arch/arm/boot/dts/aspeed-bmc-opp-vesnin.dts | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
 diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-vesnin.dts b/arch/arm/boot/dts/aspeed-bmc-opp-vesnin.dts
-index 0b9e29c3212e..2ee26c86a32e 100644
+index 2ee26c86a32e..db4cc3df61ce 100644
 --- a/arch/arm/boot/dts/aspeed-bmc-opp-vesnin.dts
 +++ b/arch/arm/boot/dts/aspeed-bmc-opp-vesnin.dts
-@@ -222,3 +222,7 @@
- &vuart {
- 	status = "okay";
- };
+@@ -81,6 +81,14 @@
+         label = "bmc";
+ #include "openbmc-flash-layout.dtsi"
+ 	};
 +
-+&wdt2 {
-+	aspeed,alt-boot;
-+};
++	flash at 1 {
++		status = "okay";
++		reg = < 1 >;
++		compatible = "jedec,spi-nor";
++		m25p,fast-read;
++		label = "alt";
++	};
+ };
+ 
+ &spi {
 -- 
 2.20.1
 
