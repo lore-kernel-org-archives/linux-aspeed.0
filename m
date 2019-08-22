@@ -1,10 +1,10 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Thu, 22 Aug 2019 10:57:22 +0930
-Subject: [PATCH 2/7] ARM: aspeed: Select timer in each SoC
-In-Reply-To: <20190821055530.8720-3-joel@jms.id.au>
+Date: Thu, 22 Aug 2019 10:58:35 +0930
+Subject: [PATCH 3/7] ARM: aspeed: Add ASPEED AST2600 architecture
+In-Reply-To: <20190821055530.8720-4-joel@jms.id.au>
 References: <20190821055530.8720-1-joel@jms.id.au>
- <20190821055530.8720-3-joel@jms.id.au>
-Message-ID: <0e9c483f-4f12-45a4-8d2c-1aa3ae34fa7a@www.fastmail.com>
+ <20190821055530.8720-4-joel@jms.id.au>
+Message-ID: <839a0780-e0ab-4615-ad6f-fda1881260b2@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -14,44 +14,47 @@ Content-Transfer-Encoding: 7bit
 
 
 On Wed, 21 Aug 2019, at 15:26, Joel Stanley wrote:
-> In preparation for adding the ast2600 which does not use this timer.
+> The AST2600 is a Cortex A7 dual core CPU that uses the ARM GIC for
+> interrupts and ARM timer as a clocksource.
 > 
 > Signed-off-by: Joel Stanley <joel@jms.id.au>
 
 Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
 
 > ---
->  arch/arm/mach-aspeed/Kconfig | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
+>  arch/arm/mach-aspeed/Kconfig | 14 +++++++++++++-
+>  1 file changed, 13 insertions(+), 1 deletion(-)
 > 
 > diff --git a/arch/arm/mach-aspeed/Kconfig b/arch/arm/mach-aspeed/Kconfig
-> index a15c3a291386..2979aa4daeea 100644
+> index 2979aa4daeea..56007b0b6120 100644
 > --- a/arch/arm/mach-aspeed/Kconfig
 > +++ b/arch/arm/mach-aspeed/Kconfig
-> @@ -5,7 +5,6 @@ menuconfig ARCH_ASPEED
+> @@ -1,7 +1,7 @@
+>  # SPDX-License-Identifier: GPL-2.0-only
+>  menuconfig ARCH_ASPEED
+>  	bool "Aspeed BMC architectures"
+> -	depends on ARCH_MULTI_V5 || ARCH_MULTI_V6
+> +	depends on ARCH_MULTI_V5 || ARCH_MULTI_V6 || ARCH_MULTI_V7
 >  	select SRAM
 >  	select WATCHDOG
 >  	select ASPEED_WATCHDOG
-> -	select FTTMR010_TIMER
->  	select MFD_SYSCON
->  	select PINCTRL
->  	help
-> @@ -18,6 +17,7 @@ config MACH_ASPEED_G4
->  	depends on ARCH_MULTI_V5
->  	select CPU_ARM926T
->  	select PINCTRL_ASPEED_G4
-> +	select FTTMR010_TIMER
->  	help
->  	 Say yes if you intend to run on an Aspeed ast2400 or similar
->  	 fourth generation BMCs, such as those used by OpenPower Power8
-> @@ -28,6 +28,7 @@ config MACH_ASPEED_G5
->  	depends on ARCH_MULTI_V6
->  	select CPU_V6
->  	select PINCTRL_ASPEED_G5
-> +	select FTTMR010_TIMER
->  	help
+> @@ -33,4 +33,16 @@ config MACH_ASPEED_G5
 >  	 Say yes if you intend to run on an Aspeed ast2500 or similar
 >  	 fifth generation Aspeed BMCs.
+>  
+> +config MACH_ASPEED_G6
+> +	bool "Aspeed SoC 6th Generation"
+> +	depends on ARCH_MULTI_V7
+> +	select CPU_V7
+> +	select PINCTRL_ASPEED_G6
+> +	select ARM_GIC
+> +	select HAVE_ARM_ARCH_TIMER
+> +	select HAVE_SMP
+> +	help
+> +	 Say yes if you intend to run on an Aspeed ast2600 or similar
+> +	 sixth generation Aspeed BMCs.
+> +
+>  endif
 > -- 
 > 2.23.0.rc1
 > 
