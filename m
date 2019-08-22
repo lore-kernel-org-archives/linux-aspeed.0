@@ -1,32 +1,63 @@
-From: Nicolas Pitre <nico@fluxnic.net>
-Date: Wed, 21 Aug 2019 16:48:10 -0400 (EDT)
-Subject: [PATCH v3 00/11] Symbol Namespaces
-In-Reply-To: <20190821133737.GB4890@kroah.com>
-References: <20190813121733.52480-1-maennich@google.com>
- <20190821114955.12788-1-maennich@google.com>
- <nycvar.YSQ.7.76.1908210840490.19480@knanqh.ubzr>
- <20190821133737.GB4890@kroah.com>
-Message-ID: <nycvar.YSQ.7.76.1908211642050.19480@knanqh.ubzr>
+From: Ivan Mikhaylov <i.mikhaylov@yadro.com>
+Date: Thu, 22 Aug 2019 12:15:20 +0300
+Subject: [PATCH 3/3] watchdog/aspeed: add support for dual boot
+In-Reply-To: <20190821163220.GA11547@roeck-us.net>
+References: <1f2cd155057e5ab0cdb20a9a11614bbb09bb49ad.camel@yadro.com>
+ <20190821163220.GA11547@roeck-us.net>
+Message-ID: <a022c0590f0fbf22cc8476b5ef3f1c22746429ac.camel@yadro.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 21 Aug 2019, Greg KH wrote:
-
-> On Wed, Aug 21, 2019 at 08:46:47AM -0400, Nicolas Pitre wrote:
+On Wed, 2019-08-21 at 09:32 -0700, Guenter Roeck wrote:
 > 
-> > One solution for drastically reducing the effective export surface is to 
-> > have CONFIG_TRIM_UNUSED_KSYMS=y. This is more extreme than symbol 
-> > namespace, but might be worth mentioning nevertheless.
+> > +	writel(WDT_CLEAR_TIMEOUT_AND_BOOT_CODE_SELECTION,
+> > +			wdt->base + WDT_CLEAR_TIMEOUT_STATUS);
+> > +	wdt->wdd.bootstatus |= WDIOF_EXTERN1;
 > 
-> Oh that's amazing, I never noticed that feature.  That is a nice thing,
-> thanks for pointing it out.
+> The variable reflects the _boot status_. It should not change after booting.
 
-For those interested, this feature was demonstrated with numbers here:
+Okay, then perhaps may we set 'status' handler for watchdog device and check 
+'status' file? Right now 'bootstatus' and 'status' are same because there is no
+handler for 'status'.
 
-https://lwn.net/Articles/746780/
+> > +
+> > +	return size;
+> > +}
+> > +static DEVICE_ATTR_WO(access_cs0);
+> > +
+> > +static struct attribute *bswitch_attrs[] = {
+> > +	&dev_attr_access_cs0.attr,
+> > +	NULL
+> > +};
+> > +ATTRIBUTE_GROUPS(bswitch);
+> > +
+> >  static const struct watchdog_ops aspeed_wdt_ops = {
+> >  	.start		= aspeed_wdt_start,
+> >  	.stop		= aspeed_wdt_stop,
+> > @@ -223,6 +248,9 @@ static int aspeed_wdt_probe(struct platform_device
+> > *pdev)
+> >  
+> >  	wdt->ctrl = WDT_CTRL_1MHZ_CLK;
+> >  
+> > +	if (of_property_read_bool(np, "aspeed,alt-boot"))
+> > +		wdt->wdd.groups = bswitch_groups;
+> > +
+> Why does this have to be separate to the existing evaluation of
+> aspeed,alt-boot, and why does the existing code not work ?
+> 
+> Also, is it guaranteed that this does not interfer with existing
+> support for alt-boot ?
 
+It doesn't, it just provides for ast2400 switch to cs0 at side 1(cs1). Problem
+is that only one flash chip(side 1/cs1) is accessible on alternate boot, there
+is citation from the documentation in commit body. So if by some reason side 0
+is corrupted, need to switch into alternate boot to cs1, do the load from it,
+drop that bit to make side 0 accessible and do the flash of first side. On
+ast2500/2600 this problem is solved already, in alternate boot there both flash
+chips are present. It's additional requirement for alternate boot on ast2400, to
+make the possibility to access at all side 0 flash chip after we boot to the
+alternate side.
 
-Nicolas
