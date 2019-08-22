@@ -1,63 +1,81 @@
-From: Ivan Mikhaylov <i.mikhaylov@yadro.com>
-Date: Thu, 22 Aug 2019 12:15:20 +0300
-Subject: [PATCH 3/3] watchdog/aspeed: add support for dual boot
-In-Reply-To: <20190821163220.GA11547@roeck-us.net>
-References: <1f2cd155057e5ab0cdb20a9a11614bbb09bb49ad.camel@yadro.com>
- <20190821163220.GA11547@roeck-us.net>
-Message-ID: <a022c0590f0fbf22cc8476b5ef3f1c22746429ac.camel@yadro.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Date: Thu, 22 Aug 2019 14:14:16 +0200
+Subject: [PATCH v5 1/2] dt-bindings: mmc: Document Aspeed SD controller
+In-Reply-To: <c78d4c45-477b-4078-b269-aec72571c8cd@www.fastmail.com>
+References: <20190807003629.2974-1-andrew@aj.id.au>
+ <20190807003629.2974-2-andrew@aj.id.au>
+ <CACPK8Xe6Zp1uOqEffEc0b6oGa7portEAifGPRqb876HmA+oZeg@mail.gmail.com>
+ <6c94aada-9c4a-4f55-9a43-349282ad12af@www.fastmail.com>
+ <CAPDyKFrDPxFMm710Z25i-euOT2rrgCNXVa4na-fye0xamMXq_A@mail.gmail.com>
+ <c78d4c45-477b-4078-b269-aec72571c8cd@www.fastmail.com>
+Message-ID: <CAPDyKFrWMjaqv8z6HnmDn12c2SsjU6fEzjZesxj=nwbP9YRiPw@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 2019-08-21 at 09:32 -0700, Guenter Roeck wrote:
-> 
-> > +	writel(WDT_CLEAR_TIMEOUT_AND_BOOT_CODE_SELECTION,
-> > +			wdt->base + WDT_CLEAR_TIMEOUT_STATUS);
-> > +	wdt->wdd.bootstatus |= WDIOF_EXTERN1;
-> 
-> The variable reflects the _boot status_. It should not change after booting.
+On Thu, 22 Aug 2019 at 13:55, Andrew Jeffery <andrew@aj.id.au> wrote:
+>
+>
+>
+> On Thu, 22 Aug 2019, at 21:15, Ulf Hansson wrote:
+> > On Thu, 15 Aug 2019 at 07:37, Andrew Jeffery <andrew@aj.id.au> wrote:
+> > >
+> > >
+> > >
+> > > On Thu, 15 Aug 2019, at 15:06, Joel Stanley wrote:
+> > > > On Wed, 7 Aug 2019 at 00:38, Andrew Jeffery <andrew@aj.id.au> wrote:
+> > > > >
+> > > > > The ASPEED SD/SDIO/MMC controller exposes two slots implementing the
+> > > > > SDIO Host Specification v2.00, with 1 or 4 bit data buses, or an 8 bit
+> > > > > data bus if only a single slot is enabled.
+> > > > >
+> > > > > Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
+> > > >
+> > > > Reviewed-by: Joel Stanley <joel@jms.id.au>
+> > > >
+> > > > Two minor comments below.
+> > > >
+> > > > > +++ b/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml
+> > > > > @@ -0,0 +1,105 @@
+> > > > > +# SPDX-License-Identifier: GPL-2.0-or-later
+> > > >
+> > > > No "Copyright IBM" ?
+> > >
+> > > I'm going rogue.
+> > >
+> > > That reminds me I should chase up where we got to with the binding
+> > > licensing.
+> > >
+> > > >
+> > > > > +%YAML 1.2
+> > > > > +---
+> > > >
+> > > > > +
+> > > > > +examples:
+> > > > > +  - |
+> > > > > +    #include <dt-bindings/clock/aspeed-clock.h>
+> > > > > +    sdc at 1e740000 {
+> > > > > +            compatible = "aspeed,ast2500-sd-controller";
+> > > > > +            reg = <0x1e740000 0x100>;
+> > > > > +            #address-cells = <1>;
+> > > > > +            #size-cells = <1>;
+> > > > > +            ranges = <0 0x1e740000 0x10000>;
+> > > >
+> > > > According to the datasheet this could be 0x20000. It does not matter
+> > > > though, as there's nothing in it past 0x300.
+> > >
+> > > Good catch.
+> > >
+> >
+> > Are you planning on sending a v6 or you want me to apply this and you
+> > can post a patch on top?
+>
+> Yeah, sorry, I wasn't very clear there. I was hoping just to do a follow-up
+> patch with the cleanups if you're okay with that?
 
-Okay, then perhaps may we set 'status' handler for watchdog device and check 
-'status' file? Right now 'bootstatus' and 'status' are same because there is no
-handler for 'status'.
+That's fine. V5 applied for next, thanks!
 
-> > +
-> > +	return size;
-> > +}
-> > +static DEVICE_ATTR_WO(access_cs0);
-> > +
-> > +static struct attribute *bswitch_attrs[] = {
-> > +	&dev_attr_access_cs0.attr,
-> > +	NULL
-> > +};
-> > +ATTRIBUTE_GROUPS(bswitch);
-> > +
-> >  static const struct watchdog_ops aspeed_wdt_ops = {
-> >  	.start		= aspeed_wdt_start,
-> >  	.stop		= aspeed_wdt_stop,
-> > @@ -223,6 +248,9 @@ static int aspeed_wdt_probe(struct platform_device
-> > *pdev)
-> >  
-> >  	wdt->ctrl = WDT_CTRL_1MHZ_CLK;
-> >  
-> > +	if (of_property_read_bool(np, "aspeed,alt-boot"))
-> > +		wdt->wdd.groups = bswitch_groups;
-> > +
-> Why does this have to be separate to the existing evaluation of
-> aspeed,alt-boot, and why does the existing code not work ?
-> 
-> Also, is it guaranteed that this does not interfer with existing
-> support for alt-boot ?
-
-It doesn't, it just provides for ast2400 switch to cs0 at side 1(cs1). Problem
-is that only one flash chip(side 1/cs1) is accessible on alternate boot, there
-is citation from the documentation in commit body. So if by some reason side 0
-is corrupted, need to switch into alternate boot to cs1, do the load from it,
-drop that bit to make side 0 accessible and do the flash of first side. On
-ast2500/2600 this problem is solved already, in alternate boot there both flash
-chips are present. It's additional requirement for alternate boot on ast2400, to
-make the possibility to access at all side 0 flash chip after we boot to the
-alternate side.
-
+Kind regards
+Uffe
