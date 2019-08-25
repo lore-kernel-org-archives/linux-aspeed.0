@@ -1,7 +1,7 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Sun, 25 Aug 2019 14:10:15 +0000
-Subject: [GIT PULL] ARM: aspeed: devicetree changes for 5.4
-Message-ID: <CACPK8XfKHpNYXNE_VRaLeGUQa7-hkmUS0nsPfaeSLE4sckKFHg@mail.gmail.com>
+Date: Sun, 25 Aug 2019 14:10:39 +0000
+Subject: [GIT PULL] ARM: aspeed: defconfig changes for 5.4
+Message-ID: <CACPK8XdyWzghA0QPDzA_MK5FYwhT5afqDJHNdhc8mfD2uk8MfQ@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -10,8 +10,10 @@ Content-Transfer-Encoding: 7bit
 
 Hello ARM Maintainers,
 
-Here are the APSEED device tree changes. No ast2600 support here
-unfortunately as the clock driver wasn't quite ready in time.
+Some bits and pieces for the defconfigs. The multi_v7 one applies to
+linux-next with a bit of fuzz, but let us know if you run in to any
+issues. I'll be away for this week, but Andrew will be on hand to help
+out.
 
 The following changes since commit 5f9e832c137075045d15cd6899ab0505cfb2ca4b:
 
@@ -20,72 +22,31 @@ The following changes since commit 5f9e832c137075045d15cd6899ab0505cfb2ca4b:
 are available in the Git repository at:
 
   git://git.kernel.org/pub/scm/linux/kernel/git/joel/aspeed.git \
-    tags/aspeed-5.4-devicetree
+   tags/aspeed-5.4-defconfig
 
-for you to fetch changes up to 49b0f3be0b86292eed6f6aedadf4252131d9c111:
+for you to fetch changes up to 4cdabee7d6d2e439fea726a101e448c4ca6837f4:
 
-  ARM: dts: aspeed: swift: Add eMMC device (2019-08-22 15:34:20 +0930)
-
-----------------------------------------------------------------
-ASPEED device tree updates for 5.4
-
-New machines:
-
- - Facebook Wedge100, Wedge40 and Minipack
- - Lenovo Hr855xg2
- - Wistron Mihawk
-
-There's a few other updates, notably some changes to to use the newly
-added SDHCI driver.
+  ARM: configs: aspeed_g5: Enable AST2600 (2019-08-25 23:22:54 +0930)
 
 ----------------------------------------------------------------
-Andrew Jeffery (2):
-      ARM: dts: aspeed: Describe SD controllers
-      ARM: dts: aspeed: Enable first MMC slot on AST2500 EVB
+ASPEED defconfig updates for 5.4
 
-Andrew Peng (1):
-      ARM: dts: aspeed: Add Lenovo Hr855xg2 BMC
+ - Enable the new AST2600 in multi_v7 and the aspeed_g5 configs.
 
-Ben Pai (1):
-      ARM: dts: aspeed: Add Mihawk BMC platform
+ - Regenerate defconfigs to drop old options
 
-Hongwei Zhang (1):
-      ARM: dts: aspeed: Add SGPM pinmux
+ - Clean up network options
 
-Joel Stanley (1):
-      ARM: dts: aspeed: swift: Add eMMC device
+----------------------------------------------------------------
+Joel Stanley (3):
+      ARM: configs: aspeed: Refresh defconfigs
+      ARM: configs: multi_v7: Add ASPEED G6
+      ARM: configs: aspeed_g5: Enable AST2600
 
-John Wang (1):
-      ARM: dts: aspeed: fp5280g2: Fix power supply address
+William A. Kennington III (1):
+      ARM: configs: aspeed: Enable commonly used network functionality
 
-Matt Spinler (1):
-      ARM: dts: aspeed: swift: Fix FSI GPIOs
-
-Tao Ren (3):
-      ARM: dts: aspeed: Add Facebook Minipack BMC
-      ARM: dts: aspeed: Add Facebook Wedge40 BMC
-      ARM: dts: aspeed: Add Facebook Wedge100 BMC
-
-Vijay Khemka (3):
-      ARM: dts: aspeed: tiogapass: Add VR devices
-      ARM: dts: aspeed: tiogapass: Move battery sensor
-      ARM: dts: aspeed: tiogapass: Add Riser card
-
- arch/arm/boot/dts/Makefile                         |   5 +
- arch/arm/boot/dts/aspeed-ast2500-evb.dts           |  11 +
- arch/arm/boot/dts/aspeed-bmc-facebook-minipack.dts | 429 ++++++++++
- .../arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts | 272 +++++-
- arch/arm/boot/dts/aspeed-bmc-facebook-wedge100.dts | 149 ++++
- arch/arm/boot/dts/aspeed-bmc-facebook-wedge40.dts  | 141 ++++
- arch/arm/boot/dts/aspeed-bmc-inspur-fp5280g2.dts   |   4 +-
- arch/arm/boot/dts/aspeed-bmc-lenovo-hr855xg2.dts   | 663 +++++++++++++++
- arch/arm/boot/dts/aspeed-bmc-opp-mihawk.dts        | 918 +++++++++++++++++++++
- arch/arm/boot/dts/aspeed-bmc-opp-swift.dts         |  15 +-
- arch/arm/boot/dts/aspeed-g4.dtsi                   |  28 +
- arch/arm/boot/dts/aspeed-g5.dtsi                   |  33 +
- 12 files changed, 2659 insertions(+), 9 deletions(-)
- create mode 100644 arch/arm/boot/dts/aspeed-bmc-facebook-minipack.dts
- create mode 100644 arch/arm/boot/dts/aspeed-bmc-facebook-wedge100.dts
- create mode 100644 arch/arm/boot/dts/aspeed-bmc-facebook-wedge40.dts
- create mode 100644 arch/arm/boot/dts/aspeed-bmc-lenovo-hr855xg2.dts
- create mode 100755 arch/arm/boot/dts/aspeed-bmc-opp-mihawk.dts
+ arch/arm/configs/aspeed_g4_defconfig | 50 +++++++++++---------------
+ arch/arm/configs/aspeed_g5_defconfig | 68 ++++++++++++++++++++----------------
+ arch/arm/configs/multi_v7_defconfig  | 19 ++++++++++
+ 3 files changed, 78 insertions(+), 59 deletions(-)
