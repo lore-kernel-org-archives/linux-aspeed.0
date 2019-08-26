@@ -1,33 +1,40 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Mon, 26 Aug 2019 12:20:59 +0930
-Subject: =?UTF-8?Q?Re:_[PATCH]_media:_aspeed:_fix_an_incorrect_return_code_on_buf?=
- =?UTF-8?Q?fer_allocation_failure?=
-In-Reply-To: <588f6cbd-b6ca-4f43-8034-80956ee56bb8@www.fastmail.com>
-References: <20190823212957.26043-1-jae.hyun.yoo@linux.intel.com>
- <588f6cbd-b6ca-4f43-8034-80956ee56bb8@www.fastmail.com>
-Message-ID: <758d249b-81c1-4e26-b3d5-ce79d86231b9@www.fastmail.com>
+From: Wei Yongjun <weiyongjun1@huawei.com>
+Date: Mon, 26 Aug 2019 12:00:13 +0000
+Subject: [PATCH -next] mmc: aspeed: Fix return value check in
+ aspeed_sdc_probe()
+Message-ID: <20190826120013.183435-1-weiyongjun1@huawei.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+In case of error, the function of_platform_device_create() returns
+NULL pointer not ERR_PTR(). The IS_ERR() test in the return value
+check should be replaced with NULL test.
+
+Fixes: 09eed7fffd33 ("mmc: Add support for the ASPEED SD controller")
+Signed-off-by: Wei Yongjun <weiyongjun1@huawei.com>
+---
+ drivers/mmc/host/sdhci-of-aspeed.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/mmc/host/sdhci-of-aspeed.c b/drivers/mmc/host/sdhci-of-aspeed.c
+index 8bb095ca2fa9..d5acb5afc50f 100644
+--- a/drivers/mmc/host/sdhci-of-aspeed.c
++++ b/drivers/mmc/host/sdhci-of-aspeed.c
+@@ -261,9 +261,9 @@ static int aspeed_sdc_probe(struct platform_device *pdev)
+ 		struct platform_device *cpdev;
+ 
+ 		cpdev = of_platform_device_create(child, NULL, &pdev->dev);
+-		if (IS_ERR(cpdev)) {
++		if (!cpdev) {
+ 			of_node_put(child);
+-			ret = PTR_ERR(cpdev);
++			ret = -ENODEV;
+ 			goto err_clk;
+ 		}
+ 	}
 
 
-On Mon, 26 Aug 2019, at 11:02, Andrew Jeffery wrote:
-> 
-> 
-> On Sat, 24 Aug 2019, at 07:00, Jae Hyun Yoo wrote:
-> > It returns '0' even when a failure happens on jpeg buffer allocation
-> > so this commit fixes the issue.
-> > 
-> > Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-> 
-> Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
 
-Keep my Reviewed-by, but can you please do a v2 that adds a Fixes: tag
-and also Cc stable with the patch?
-
-Cheers,
-
-Andrew
