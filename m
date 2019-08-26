@@ -1,41 +1,47 @@
 From: Ivan Mikhaylov <i.mikhaylov@yadro.com>
-Date: Mon, 26 Aug 2019 13:46:34 +0300
-Subject: [PATCH v2 2/4] vesnin: add secondary SPI flash chip
-In-Reply-To: <20190826104636.19324-1-i.mikhaylov@yadro.com>
-References: <20190826104636.19324-1-i.mikhaylov@yadro.com>
-Message-ID: <20190826104636.19324-3-i.mikhaylov@yadro.com>
+Date: Mon, 26 Aug 2019 13:46:32 +0300
+Subject: [PATCH v2 0/4] add dual-boot support
+Message-ID: <20190826104636.19324-1-i.mikhaylov@yadro.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Adds secondary SPI flash chip into dts for vesnin.
+ASPEED SoCs support dual-boot feature for SPI Flash.
+When strapped appropriately, the SoC starts wdt2 (/dev/watchdog1)
+and if within a minute it is not disabled, it goes off and reboots
+the SoC from an alternate SPI Flash chip by changing CS0 controls
+to actually drive CS1 line.
 
-Signed-off-by: Ivan Mikhaylov <i.mikhaylov@yadro.com>
----
- arch/arm/boot/dts/aspeed-bmc-opp-vesnin.dts | 8 ++++++++
- 1 file changed, 8 insertions(+)
+When booted from alternate chip, in order to access the main chip
+at CS0, the user must reset the appropriate bit in the watchdog
+hardware. There is no interface that would allow to do that from
+an embedded firmware startup script.
 
-diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-vesnin.dts b/arch/arm/boot/dts/aspeed-bmc-opp-vesnin.dts
-index 2ee26c86a32e..db4cc3df61ce 100644
---- a/arch/arm/boot/dts/aspeed-bmc-opp-vesnin.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-opp-vesnin.dts
-@@ -81,6 +81,14 @@
-         label = "bmc";
- #include "openbmc-flash-layout.dtsi"
- 	};
-+
-+	flash at 1 {
-+		status = "okay";
-+		reg = < 1 >;
-+		compatible = "jedec,spi-nor";
-+		m25p,fast-read;
-+		label = "alt";
-+	};
- };
- 
- &spi {
+This commit implements support for that feature:
+
+* Enable 'alt-boot' option for wdt2
+
+* Enable secondary SPI flash chip
+
+* Make it possible to get access to the primary SPI flash chip at CS0
+  after booting from the alternate chip at CS1. A sysfs interface is added
+  to provide an easy way for embedded firmware startup scripts to clear
+  the chip select bit to gain access to the primary flash chip in order
+  to allow for recovery of its contents.
+
+Ivan Mikhaylov (4):
+  vesnin: add wdt2 section with alt-boot option
+  vesnin: add secondary SPI flash chip
+  watchdog/aspeed: add support for dual boot
+  dt-bindings/watchdog: Add access_cs0 option for alt-boot
+
+ .../bindings/watchdog/aspeed-wdt.txt          |  7 +++
+ arch/arm/boot/dts/aspeed-bmc-opp-vesnin.dts   | 12 ++++
+ drivers/watchdog/aspeed_wdt.c                 | 62 ++++++++++++++++++-
+ 3 files changed, 80 insertions(+), 1 deletion(-)
+
 -- 
 2.20.1
 
