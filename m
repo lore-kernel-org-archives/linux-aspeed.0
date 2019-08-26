@@ -1,45 +1,52 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Mon, 26 Aug 2019 11:02:19 +0930
-Subject: =?UTF-8?Q?Re:_[PATCH]_media:_aspeed:_fix_an_incorrect_return_code_on_buf?=
- =?UTF-8?Q?fer_allocation_failure?=
-In-Reply-To: <20190823212957.26043-1-jae.hyun.yoo@linux.intel.com>
-References: <20190823212957.26043-1-jae.hyun.yoo@linux.intel.com>
-Message-ID: <588f6cbd-b6ca-4f43-8034-80956ee56bb8@www.fastmail.com>
+Date: Mon, 26 Aug 2019 11:46:19 +0930
+Subject: [PATCH] dt-bindings: mmc: aspeed: Update example ranges property
+Message-ID: <20190826021620.11915-1-andrew@aj.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+The example node in the binding uses the AST2500 compatible string for
+the SD controller with a 64kiB ranges property, but the SD controller is
+allocated 128kiB of MMIO space according to the AST2500 datasheet. Fix
+the example to correctly reflect the hardware in the AST2500, however it
+should be noted that the MMIO region is reduced to 64kiB in the AST2600
+where a second SD controller block has been introduced into the address
+space.
 
+Also add the IBM copyright header that I left out of the initial patch.
 
-On Sat, 24 Aug 2019, at 07:00, Jae Hyun Yoo wrote:
-> It returns '0' even when a failure happens on jpeg buffer allocation
-> so this commit fixes the issue.
-> 
-> Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+Suggested-by: Joel Stanley <joel@jms.id.au>
+Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
+---
+Hi Ulf, this is the follow-up fix as discussed here:
 
-Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
+http://patchwork.ozlabs.org/patch/1143090/
 
-> ---
->  drivers/media/platform/aspeed-video.c | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/drivers/media/platform/aspeed-video.c 
-> b/drivers/media/platform/aspeed-video.c
-> index f899ac3b4a61..94f97d96dabc 100644
-> --- a/drivers/media/platform/aspeed-video.c
-> +++ b/drivers/media/platform/aspeed-video.c
-> @@ -1624,6 +1624,7 @@ static int aspeed_video_init(struct aspeed_video 
-> *video)
->  	if (!aspeed_video_alloc_buf(video, &video->jpeg,
->  				    VE_JPEG_HEADER_SIZE)) {
->  		dev_err(dev, "Failed to allocate DMA for JPEG header\n");
-> +		rc = -ENOMEM;
->  		goto err_release_reserved_mem;
->  	}
->  
-> -- 
-> 2.7.4
-> 
->
+ Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml b/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml
+index 570f8c72662b..200de9396036 100644
+--- a/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml
++++ b/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml
+@@ -1,4 +1,5 @@
+ # SPDX-License-Identifier: GPL-2.0-or-later
++# Copyright 2019 IBM Corp.
+ %YAML 1.2
+ ---
+ $id: http://devicetree.org/schemas/mmc/aspeed,sdhci.yaml#
+@@ -84,7 +85,7 @@ examples:
+             reg = <0x1e740000 0x100>;
+             #address-cells = <1>;
+             #size-cells = <1>;
+-            ranges = <0 0x1e740000 0x10000>;
++            ranges = <0 0x1e740000 0x20000>;
+             clocks = <&syscon ASPEED_CLK_GATE_SDCLK>;
+ 
+             sdhci0: sdhci at 100 {
+-- 
+2.20.1
+
