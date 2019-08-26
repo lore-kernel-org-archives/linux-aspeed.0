@@ -1,52 +1,33 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Mon, 26 Aug 2019 11:46:19 +0930
-Subject: [PATCH] dt-bindings: mmc: aspeed: Update example ranges property
-Message-ID: <20190826021620.11915-1-andrew@aj.id.au>
+Date: Mon, 26 Aug 2019 12:20:59 +0930
+Subject: =?UTF-8?Q?Re:_[PATCH]_media:_aspeed:_fix_an_incorrect_return_code_on_buf?=
+ =?UTF-8?Q?fer_allocation_failure?=
+In-Reply-To: <588f6cbd-b6ca-4f43-8034-80956ee56bb8@www.fastmail.com>
+References: <20190823212957.26043-1-jae.hyun.yoo@linux.intel.com>
+ <588f6cbd-b6ca-4f43-8034-80956ee56bb8@www.fastmail.com>
+Message-ID: <758d249b-81c1-4e26-b3d5-ce79d86231b9@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The example node in the binding uses the AST2500 compatible string for
-the SD controller with a 64kiB ranges property, but the SD controller is
-allocated 128kiB of MMIO space according to the AST2500 datasheet. Fix
-the example to correctly reflect the hardware in the AST2500, however it
-should be noted that the MMIO region is reduced to 64kiB in the AST2600
-where a second SD controller block has been introduced into the address
-space.
 
-Also add the IBM copyright header that I left out of the initial patch.
 
-Suggested-by: Joel Stanley <joel@jms.id.au>
-Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
----
-Hi Ulf, this is the follow-up fix as discussed here:
+On Mon, 26 Aug 2019, at 11:02, Andrew Jeffery wrote:
+> 
+> 
+> On Sat, 24 Aug 2019, at 07:00, Jae Hyun Yoo wrote:
+> > It returns '0' even when a failure happens on jpeg buffer allocation
+> > so this commit fixes the issue.
+> > 
+> > Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+> 
+> Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
 
-http://patchwork.ozlabs.org/patch/1143090/
+Keep my Reviewed-by, but can you please do a v2 that adds a Fixes: tag
+and also Cc stable with the patch?
 
- Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+Cheers,
 
-diff --git a/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml b/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml
-index 570f8c72662b..200de9396036 100644
---- a/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml
-+++ b/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml
-@@ -1,4 +1,5 @@
- # SPDX-License-Identifier: GPL-2.0-or-later
-+# Copyright 2019 IBM Corp.
- %YAML 1.2
- ---
- $id: http://devicetree.org/schemas/mmc/aspeed,sdhci.yaml#
-@@ -84,7 +85,7 @@ examples:
-             reg = <0x1e740000 0x100>;
-             #address-cells = <1>;
-             #size-cells = <1>;
--            ranges = <0 0x1e740000 0x10000>;
-+            ranges = <0 0x1e740000 0x20000>;
-             clocks = <&syscon ASPEED_CLK_GATE_SDCLK>;
- 
-             sdhci0: sdhci at 100 {
--- 
-2.20.1
-
+Andrew
