@@ -1,40 +1,26 @@
-From: Wei Yongjun <weiyongjun1@huawei.com>
-Date: Mon, 26 Aug 2019 12:00:13 +0000
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Mon, 26 Aug 2019 16:03:44 +0300
 Subject: [PATCH -next] mmc: aspeed: Fix return value check in
  aspeed_sdc_probe()
-Message-ID: <20190826120013.183435-1-weiyongjun1@huawei.com>
+In-Reply-To: <20190826120013.183435-1-weiyongjun1@huawei.com>
+References: <20190826120013.183435-1-weiyongjun1@huawei.com>
+Message-ID: <20190826130343.GA23584@kadam>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-In case of error, the function of_platform_device_create() returns
-NULL pointer not ERR_PTR(). The IS_ERR() test in the return value
-check should be replaced with NULL test.
+> Fixes: 09eed7fffd33 ("mmc: Add support for the ASPEED SD controller")
+                        ^^^^
+When we're adding new files, could we use the prefix for the new driver
+instead of just the subsystem?  "mmc: aspeed: Add new driver"?
+Otherwise it's tricky to know what people want for the driver.
 
-Fixes: 09eed7fffd33 ("mmc: Add support for the ASPEED SD controller")
-Signed-off-by: Wei Yongjun <weiyongjun1@huawei.com>
----
- drivers/mmc/host/sdhci-of-aspeed.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+I just wrote this same patch and I swear I would have sent my patch
+earlier but I spent hours thinking about the patch prefix and then the
+census people came to the house and delayed me even more.
 
-diff --git a/drivers/mmc/host/sdhci-of-aspeed.c b/drivers/mmc/host/sdhci-of-aspeed.c
-index 8bb095ca2fa9..d5acb5afc50f 100644
---- a/drivers/mmc/host/sdhci-of-aspeed.c
-+++ b/drivers/mmc/host/sdhci-of-aspeed.c
-@@ -261,9 +261,9 @@ static int aspeed_sdc_probe(struct platform_device *pdev)
- 		struct platform_device *cpdev;
- 
- 		cpdev = of_platform_device_create(child, NULL, &pdev->dev);
--		if (IS_ERR(cpdev)) {
-+		if (!cpdev) {
- 			of_node_put(child);
--			ret = PTR_ERR(cpdev);
-+			ret = -ENODEV;
- 			goto err_clk;
- 		}
- 	}
-
-
+regards,
+dan carpenter
 
