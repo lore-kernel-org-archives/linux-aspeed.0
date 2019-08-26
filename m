@@ -1,11 +1,11 @@
-From: Eddie James <eajames@linux.vnet.ibm.com>
-Date: Mon, 26 Aug 2019 10:12:47 -0500
-Subject: [PATCH 3/7] media: aspeed-video: address a protential usage of an
- unit var
-In-Reply-To: <7c85f7dc159927a7316dc13f52697f157fb6e2bd.1566502743.git.mchehab+samsung@kernel.org>
-References: <4a411ba155eb062b6575aba0824123c840806c0b.1566502743.git.mchehab+samsung@kernel.org>
- <7c85f7dc159927a7316dc13f52697f157fb6e2bd.1566502743.git.mchehab+samsung@kernel.org>
-Message-ID: <64b90f55-2d8d-718d-0562-528063f3edab@linux.vnet.ibm.com>
+From: Andrew Jeffery <andrew@aj.id.au>
+Date: Tue, 27 Aug 2019 09:07:17 +0930
+Subject: =?UTF-8?Q?Re:_[PATCH_-next]_mmc:_aspeed:_Fix_return_value_check_in_aspee?=
+ =?UTF-8?Q?d=5Fsdc=5Fprobe()?=
+In-Reply-To: <20190826130343.GA23584@kadam>
+References: <20190826120013.183435-1-weiyongjun1@huawei.com>
+ <20190826130343.GA23584@kadam>
+Message-ID: <629128e7-cc91-412f-8946-668fac2eb3b9@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -13,55 +13,16 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 
-On 8/22/19 2:39 PM, Mauro Carvalho Chehab wrote:
-> While this might not occur in practice, if the device is doing
-> the right thing, it would be teoretically be possible to have
-> both hsync_counter and vsync_counter negatives.
->
-> If this ever happen, ctrl will be undefined, but the driver
-> will still call:
->
-> 	aspeed_video_update(video, VE_CTRL, 0, ctrl);
->
-> Change the code to prevent this to happen.
->
-> This was warned by cppcheck:
->
-> 	[drivers/media/platform/aspeed-video.c:653]: (error) Uninitialized variable: ctrl
 
+On Mon, 26 Aug 2019, at 22:34, Dan Carpenter wrote:
+> > Fixes: 09eed7fffd33 ("mmc: Add support for the ASPEED SD controller")
+>                         ^^^^
+> When we're adding new files, could we use the prefix for the new driver
+> instead of just the subsystem?  "mmc: aspeed: Add new driver"?
+> Otherwise it's tricky to know what people want for the driver.
 
-Thanks Mauro.
+I don't have any issue with the request, but I don't understand this last
+bit. What do you mean by "it's tricky to know what people want for the
+driver"?
 
-
-Reviewed-by: Eddie James <eajames@linux.ibm.com>
-
-
->
-> Signed-off-by: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
-> ---
->   drivers/media/platform/aspeed-video.c | 5 +++--
->   1 file changed, 3 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/media/platform/aspeed-video.c b/drivers/media/platform/aspeed-video.c
-> index f899ac3b4a61..4ef37cfc8446 100644
-> --- a/drivers/media/platform/aspeed-video.c
-> +++ b/drivers/media/platform/aspeed-video.c
-> @@ -630,7 +630,7 @@ static void aspeed_video_check_and_set_polarity(struct aspeed_video *video)
->   	}
->   
->   	if (hsync_counter < 0 || vsync_counter < 0) {
-> -		u32 ctrl;
-> +		u32 ctrl = 0;
->   
->   		if (hsync_counter < 0) {
->   			ctrl = VE_CTRL_HSYNC_POL;
-> @@ -650,7 +650,8 @@ static void aspeed_video_check_and_set_polarity(struct aspeed_video *video)
->   				V4L2_DV_VSYNC_POS_POL;
->   		}
->   
-> -		aspeed_video_update(video, VE_CTRL, 0, ctrl);
-> +		if (ctrl)
-> +			aspeed_video_update(video, VE_CTRL, 0, ctrl);
->   	}
->   }
->   
+Andrew
