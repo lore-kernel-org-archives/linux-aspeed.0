@@ -1,10 +1,11 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Tue, 27 Aug 2019 09:10:37 +0930
-Subject: =?UTF-8?Q?Re:_[PATCH_-next]_mmc:_aspeed:_Fix_return_value_check_in_aspee?=
- =?UTF-8?Q?d=5Fsdc=5Fprobe()?=
-In-Reply-To: <20190826120013.183435-1-weiyongjun1@huawei.com>
-References: <20190826120013.183435-1-weiyongjun1@huawei.com>
-Message-ID: <e23e0193-51c8-41a2-95f7-d48f0ef00eb5@www.fastmail.com>
+Date: Tue, 27 Aug 2019 09:27:44 +0930
+Subject: =?UTF-8?Q?Re:_[PATCH_v2_4/4]_dt-bindings/watchdog:_Add_access=5Fcs0_opti?=
+ =?UTF-8?Q?on_for_alt-boot?=
+In-Reply-To: <20190826104636.19324-5-i.mikhaylov@yadro.com>
+References: <20190826104636.19324-1-i.mikhaylov@yadro.com>
+ <20190826104636.19324-5-i.mikhaylov@yadro.com>
+Message-ID: <f33aa4b8-6d06-4226-8859-ce21a4b8728b@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -13,37 +14,32 @@ Content-Transfer-Encoding: 7bit
 
 
 
-On Mon, 26 Aug 2019, at 21:27, Wei Yongjun wrote:
-> In case of error, the function of_platform_device_create() returns
-> NULL pointer not ERR_PTR(). The IS_ERR() test in the return value
-> check should be replaced with NULL test.
+On Mon, 26 Aug 2019, at 20:17, Ivan Mikhaylov wrote:
+> The option for the ast2400/2500 to get access to CS0 at runtime.
 > 
-> Fixes: 09eed7fffd33 ("mmc: Add support for the ASPEED SD controller")
-> Signed-off-by: Wei Yongjun <weiyongjun1@huawei.com>
+> Signed-off-by: Ivan Mikhaylov <i.mikhaylov@yadro.com>
 > ---
->  drivers/mmc/host/sdhci-of-aspeed.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+>  Documentation/devicetree/bindings/watchdog/aspeed-wdt.txt | 7 +++++++
+>  1 file changed, 7 insertions(+)
 > 
-> diff --git a/drivers/mmc/host/sdhci-of-aspeed.c 
-> b/drivers/mmc/host/sdhci-of-aspeed.c
-> index 8bb095ca2fa9..d5acb5afc50f 100644
-> --- a/drivers/mmc/host/sdhci-of-aspeed.c
-> +++ b/drivers/mmc/host/sdhci-of-aspeed.c
-> @@ -261,9 +261,9 @@ static int aspeed_sdc_probe(struct platform_device 
-> *pdev)
->  		struct platform_device *cpdev;
+> diff --git a/Documentation/devicetree/bindings/watchdog/aspeed-wdt.txt 
+> b/Documentation/devicetree/bindings/watchdog/aspeed-wdt.txt
+> index c5077a1f5cb3..023a9b578df6 100644
+> --- a/Documentation/devicetree/bindings/watchdog/aspeed-wdt.txt
+> +++ b/Documentation/devicetree/bindings/watchdog/aspeed-wdt.txt
+> @@ -34,6 +34,13 @@ Optional properties:
+>                  engine is responsible for this.
 >  
->  		cpdev = of_platform_device_create(child, NULL, &pdev->dev);
-> -		if (IS_ERR(cpdev)) {
-> +		if (!cpdev) {
->  			of_node_put(child);
-> -			ret = PTR_ERR(cpdev);
-> +			ret = -ENODEV;
->  			goto err_clk;
->  		}
->  	}
+>   - aspeed,alt-boot:    If property is present then boot from alternate 
+> block.
+> +                       At alternate side 'access_cs0' sysfs file 
+> provides:
 
-I ... have no idea why I wrote it that way. I must have just assumed it returned
-an ERR_PTR(). Thanks for finding/fixing that.
+Why are we talking about sysfs in the devicetree binding? This patch
+doesn't seem right to me.
 
-Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
+Also if we're not supporting the aspeed,alt-boot property we should
+probably document it as deprecated rather than making it disappear,
+unless you're going to fix the systems that are using it.
+
+Andrew
