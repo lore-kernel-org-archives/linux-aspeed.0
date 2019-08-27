@@ -1,66 +1,50 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Date: Tue, 27 Aug 2019 15:49:39 +0200
-Subject: [PATCH] dt-bindings: mmc: aspeed: Update example ranges property
-In-Reply-To: <20190826021620.11915-1-andrew@aj.id.au>
-References: <20190826021620.11915-1-andrew@aj.id.au>
-Message-ID: <CAPDyKFroS-Z+4QYitmYrCugPV_f4u1MDJiRkDxGWvVjsU=9RgA@mail.gmail.com>
+Date: Tue, 27 Aug 2019 15:49:43 +0200
+Subject: [PATCH -next] mmc: aspeed: Fix return value check in
+ aspeed_sdc_probe()
+In-Reply-To: <alpine.DEB.2.21.1908270845410.2537@hadrien>
+References: <20190826120013.183435-1-weiyongjun1@huawei.com>
+ <20190826130343.GA23584@kadam>
+ <629128e7-cc91-412f-8946-668fac2eb3b9@www.fastmail.com>
+ <alpine.DEB.2.21.1908270845410.2537@hadrien>
+Message-ID: <CAPDyKFqXLG7VCh+9oQQ4HD=6dHQLY1PHEkmC+atnB-zDntKULA@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, 26 Aug 2019 at 04:15, Andrew Jeffery <andrew@aj.id.au> wrote:
+On Tue, 27 Aug 2019 at 02:47, Julia Lawall <julia.lawall@lip6.fr> wrote:
 >
-> The example node in the binding uses the AST2500 compatible string for
-> the SD controller with a 64kiB ranges property, but the SD controller is
-> allocated 128kiB of MMIO space according to the AST2500 datasheet. Fix
-> the example to correctly reflect the hardware in the AST2500, however it
-> should be noted that the MMIO region is reduced to 64kiB in the AST2600
-> where a second SD controller block has been introduced into the address
-> space.
 >
-> Also add the IBM copyright header that I left out of the initial patch.
 >
-> Suggested-by: Joel Stanley <joel@jms.id.au>
-> Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
+> On Tue, 27 Aug 2019, Andrew Jeffery wrote:
+>
+> >
+> >
+> > On Mon, 26 Aug 2019, at 22:34, Dan Carpenter wrote:
+> > > > Fixes: 09eed7fffd33 ("mmc: Add support for the ASPEED SD controller")
+> > >                         ^^^^
+> > > When we're adding new files, could we use the prefix for the new driver
+> > > instead of just the subsystem?  "mmc: aspeed: Add new driver"?
+> > > Otherwise it's tricky to know what people want for the driver.
+> >
+> > I don't have any issue with the request, but I don't understand this last
+> > bit. What do you mean by "it's tricky to know what people want for the
+> > driver"?
+>
+> There is no obvious algorithm that tells how to go from a file name to an
+> appropriate subject line prefix.
 
-Applied for next, thanks!
+For MMC we normally use the name of the host driver file (excluding
+".c") as part of the prefix.
 
-FYI, I took the liberty to amend all aspeed patches, by putting
-"sdhci-of-aspeed" as the prefix of the commit message header.
+For this case that means I amended the header into: mmc:
+sdhci-of-aspeed: Fix return value check in aspeed_sdc_probe() and
+applied it for next.
+
+I also took the liberty to change this for the other related patches
+for the "aspeed" driver to follow the same pattern.
 
 Kind regards
 Uffe
-
-
-> ---
-> Hi Ulf, this is the follow-up fix as discussed here:
->
-> http://patchwork.ozlabs.org/patch/1143090/
->
->  Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
->
-> diff --git a/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml b/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml
-> index 570f8c72662b..200de9396036 100644
-> --- a/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml
-> +++ b/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml
-> @@ -1,4 +1,5 @@
->  # SPDX-License-Identifier: GPL-2.0-or-later
-> +# Copyright 2019 IBM Corp.
->  %YAML 1.2
->  ---
->  $id: http://devicetree.org/schemas/mmc/aspeed,sdhci.yaml#
-> @@ -84,7 +85,7 @@ examples:
->              reg = <0x1e740000 0x100>;
->              #address-cells = <1>;
->              #size-cells = <1>;
-> -            ranges = <0 0x1e740000 0x10000>;
-> +            ranges = <0 0x1e740000 0x20000>;
->              clocks = <&syscon ASPEED_CLK_GATE_SDCLK>;
->
->              sdhci0: sdhci at 100 {
-> --
-> 2.20.1
->
