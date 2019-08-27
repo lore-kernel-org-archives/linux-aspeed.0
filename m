@@ -1,47 +1,34 @@
 From: Ivan Mikhaylov <i.mikhaylov@yadro.com>
-Date: Tue, 27 Aug 2019 19:54:22 +0300
-Subject: [PATCH v3 0/4] add dual-boot support
-Message-ID: <20190827165426.17037-1-i.mikhaylov@yadro.com>
+Date: Tue, 27 Aug 2019 19:54:23 +0300
+Subject: [PATCH v3 1/4] vesnin: add wdt2 section with alt-boot option
+In-Reply-To: <20190827165426.17037-1-i.mikhaylov@yadro.com>
+References: <20190827165426.17037-1-i.mikhaylov@yadro.com>
+Message-ID: <20190827165426.17037-2-i.mikhaylov@yadro.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-ASPEED SoCs support dual-boot feature for SPI Flash.
-When strapped appropriately, the SoC starts wdt2 (/dev/watchdog1)
-and if within a minute it is not disabled, it goes off and reboots
-the SoC from an alternate SPI Flash chip by changing CS0 controls
-to actually drive CS1 line.
+Adds wdt2 section with 'alt-boot' option into dts for vesnin.
 
-When booted from alternate chip, in order to access the main chip
-at CS0, the user must reset the appropriate bit in the watchdog
-hardware. There is no interface that would allow to do that from
-an embedded firmware startup script.
+Signed-off-by: Ivan Mikhaylov <i.mikhaylov@yadro.com>
+---
+ arch/arm/boot/dts/aspeed-bmc-opp-vesnin.dts | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-This commit implements support for that feature:
-
-* Enable 'alt-boot' option for wdt2
-
-* Enable secondary SPI flash chip
-
-* Make it possible to get access to the primary SPI flash chip at CS0
-  after booting from the alternate chip at CS1. A sysfs interface is added
-  to provide an easy way for embedded firmware startup scripts to clear
-  the chip select bit to gain access to the primary flash chip in order
-  to allow for recovery of its contents.
-
-Ivan Mikhaylov (4):
-  vesnin: add wdt2 section with alt-boot option
-  vesnin: add secondary SPI flash chip
-  watchdog/aspeed: add support for dual boot
-  aspeed/watchdog: Add access_cs0 option for alt-boot
-
- .../ABI/testing/sysfs-class-watchdog          | 34 ++++++++++
- arch/arm/boot/dts/aspeed-bmc-opp-vesnin.dts   | 12 ++++
- drivers/watchdog/aspeed_wdt.c                 | 65 ++++++++++++++++++-
- 3 files changed, 110 insertions(+), 1 deletion(-)
-
+diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-vesnin.dts b/arch/arm/boot/dts/aspeed-bmc-opp-vesnin.dts
+index 0b9e29c3212e..2ee26c86a32e 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-opp-vesnin.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-opp-vesnin.dts
+@@ -222,3 +222,7 @@
+ &vuart {
+ 	status = "okay";
+ };
++
++&wdt2 {
++	aspeed,alt-boot;
++};
 -- 
 2.20.1
 
