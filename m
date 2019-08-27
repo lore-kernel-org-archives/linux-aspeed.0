@@ -1,32 +1,40 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Date: Tue, 27 Aug 2019 10:21:52 -0700
-Subject: [PATCH v3 3/4] watchdog/aspeed: add support for dual boot
-In-Reply-To: <20190827165426.17037-4-i.mikhaylov@yadro.com>
-References: <20190827165426.17037-1-i.mikhaylov@yadro.com>
- <20190827165426.17037-4-i.mikhaylov@yadro.com>
-Message-ID: <20190827172151.GA31588@roeck-us.net>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Tue, 27 Aug 2019 22:12:33 +0200
+Subject: [PATCH 7/7] ARM: configs: aspeed_g5: Enable AST2600
+In-Reply-To: <CACPK8Xe=mq_Zuw6vsFtb=42ZodbHcizX9QwUoRzY0cDdoWr-Fw@mail.gmail.com>
+References: <20190821055530.8720-1-joel@jms.id.au>
+ <20190821055530.8720-8-joel@jms.id.au>
+ <faf79f9d-baa1-4c8c-a35b-c5d97ad6df8b@www.fastmail.com>
+ <CACPK8Xe=mq_Zuw6vsFtb=42ZodbHcizX9QwUoRzY0cDdoWr-Fw@mail.gmail.com>
+Message-ID: <CAK8P3a1Dgzrw7nuQR_YJYXSF7Owop2Hpd80bAL0OPhzHMHcbPg@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Aug 27, 2019 at 07:54:25PM +0300, Ivan Mikhaylov wrote:
-> Set WDT_CLEAR_TIMEOUT_AND_BOOT_CODE_SELECTION into WDT_CLEAR_TIMEOUT_STATUS
-> to clear out boot code source and re-enable access to the primary SPI flash
-> chip while booted via wdt2 from the alternate chip.
-> 
-> AST2400 datasheet says:
-> "In the 2nd flash booting mode, all the address mapping to CS0# would be
-> re-directed to CS1#. And CS0# is not accessable under this mode. To access
-> CS0#, firmware should clear the 2nd boot mode register in the WDT2 status
-> register WDT30.bit[1]."
-> 
-> Signed-off-by: Ivan Mikhaylov <i.mikhaylov@yadro.com>
+On Thu, Aug 22, 2019 at 6:43 AM Joel Stanley <joel@jms.id.au> wrote:
+>
+> On Thu, 22 Aug 2019 at 02:07, Andrew Jeffery <andrew@aj.id.au> wrote:
+> > > +CONFIG_MMC=y
+> > > +CONFIG_MMC_SDHCI=y
+> > > +CONFIG_MMC_SDHCI_PLTFM=y
+> > > +CONFIG_MMC_SDHCI_OF_ASPEED=y
+> >
+> > The patches haven't yet been applied to the MMC tree, maybe we should
+> > add this later?
+>
+> When enabling drivers in the same merge window as they go into the
+> tree we will always be in this situation.
+>
+> If the driver doesn't make it in this merge window, or first has has
+> changes, the worst that will happen is the kconfig name changes and I
+> need to update it later. I think we're safe to include it as-is.
 
-Please run "checkpatch --strict" on this patch and fix the reported problems
-(I _did_ ask for proper multi-line aligment before, but there are a couple
-of other issues as well).
+Yes, that's fine.
 
-Thanks,
-Guenter
+Please also enable all the drivers you need in multi_v7_defconfig
+now, preferably as loadable modules.
+
+
+      Arnd
