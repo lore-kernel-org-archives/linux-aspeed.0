@@ -1,64 +1,37 @@
-From: Ivan Mikhaylov <i.mikhaylov@yadro.com>
-Date: Tue, 27 Aug 2019 19:54:26 +0300
-Subject: [PATCH v3 4/4] aspeed/watchdog: Add access_cs0 option for alt-boot
-In-Reply-To: <20190827165426.17037-1-i.mikhaylov@yadro.com>
-References: <20190827165426.17037-1-i.mikhaylov@yadro.com>
-Message-ID: <20190827165426.17037-5-i.mikhaylov@yadro.com>
+From: Tudor.Ambarus@microchip.com <Tudor.Ambarus@microchip.com>
+Date: Wed, 28 Aug 2019 10:20:11 +0000
+Subject: [PATCH] mtd: spi-nor: aspeed-smc: Add of_node_put()
+In-Reply-To: <20190808075104.15928-1-nishkadg.linux@gmail.com>
+References: <20190808075104.15928-1-nishkadg.linux@gmail.com>
+Message-ID: <96475f82-066c-ff67-3ea9-1fec64eef021@microchip.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The option for the ast2400/2500 to get access to CS0 at runtime.
 
-Signed-off-by: Ivan Mikhaylov <i.mikhaylov@yadro.com>
----
- .../ABI/testing/sysfs-class-watchdog          | 34 +++++++++++++++++++
- 1 file changed, 34 insertions(+)
 
-diff --git a/Documentation/ABI/testing/sysfs-class-watchdog b/Documentation/ABI/testing/sysfs-class-watchdog
-index 6317ade5ad19..675f9b537661 100644
---- a/Documentation/ABI/testing/sysfs-class-watchdog
-+++ b/Documentation/ABI/testing/sysfs-class-watchdog
-@@ -72,3 +72,37 @@ Description:
- 		It is a read/write file. When read, the currently assigned
- 		pretimeout governor is returned.  When written, it sets
- 		the pretimeout governor.
-+
-+What:		/sys/class/watchdog/watchdog1/access_cs0
-+Date:		August 2019
-+Contact:	Ivan Mikhaylov <i.mikhaylov@yadro.com>,
-+		Alexander Amelkin <a.amelkin@yadro.com>
-+Description:
-+		It is a read/write file. This attribute exists only if the
-+		system has booted from the alternate flash chip due to
-+		expiration of a watchdog timer of AST2400/AST2500 when
-+		alternate boot function was enabled with 'aspeed,alt-boot'
-+		devicetree option for that watchdog or with an appropriate
-+		h/w strapping (for WDT2 only).
-+
-+		At alternate flash the 'access_cs0' sysfs node provides:
-+			ast2400: a way to get access to the primary SPI flash
-+				chip at CS0 after booting from the alternate
-+				chip at CS1.
-+			ast2500: a way to restore the normal address mapping
-+				from (CS0->CS1, CS1->CS0) to (CS0->CS0,
-+				CS1->CS1).
-+
-+		Clearing the boot code selection and timeout counter also
-+		resets to the initial state the chip select line mapping. When
-+		the SoC is in normal mapping state (i.e. booted from CS0),
-+		clearing those bits does nothing for both versions of the SoC.
-+		For alternate boot mode (booted from CS1 due to wdt2
-+		expiration) the behavior differs as described above.
-+
-+		This option can be used with wdt2 (watchdog1) only.
-+
-+		When read, the current status of the boot code selection is
-+		shown. When written with any non-zero value, it clears
-+		the boot code selection and the timeout counter, which results
-+		in chipselect reset for AST2400/AST2500.
--- 
-2.20.1
+On 08/08/2019 10:51 AM, Nishka Dasgupta wrote:
+> External E-Mail
+> 
+> 
+> Each iteration of for_each_available_child_of_node puts the previous
+> node, but in the case of a break from the middle of the loop, there is
+> no put, thus causing a memory leak. Upon termination of the loop
+> (whether by break or a natural exit), either ret will have a non-zero
+> value or child will be NULL. Hence add an of_node_put() that will
+> execute only when ret has a non-zero value, as calling of_node_put() on
+> a possible NULL value does not cause any further issues.
+> Issue found with Coccinelle.
+> 
+> Signed-off-by: Nishka Dasgupta <nishkadg.linux@gmail.com>
+> ---
+>  drivers/mtd/spi-nor/aspeed-smc.c | 4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
+> 
+Applied to https://git.kernel.org/pub/scm/linux/kernel/git/mtd/linux.git,
+spi-nor/next branch.
 
+Thanks,
+ta
