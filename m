@@ -1,32 +1,46 @@
 From: Eddie James <eajames@linux.ibm.com>
-Date: Fri, 30 Aug 2019 14:11:00 -0500
-Subject: [PATCH v2 0/3] pmbus: ibm-cffps: Add support for version 2 of PSU
-Message-ID: <1567192263-15065-1-git-send-email-eajames@linux.ibm.com>
+Date: Fri, 30 Aug 2019 14:11:02 -0500
+Subject: [PATCH v2 2/3] ARM: dts: aspeed: swift: Change power supplies to
+ version 2
+In-Reply-To: <1567192263-15065-1-git-send-email-eajames@linux.ibm.com>
+References: <1567192263-15065-1-git-send-email-eajames@linux.ibm.com>
+Message-ID: <1567192263-15065-3-git-send-email-eajames@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Version 2 of this PSU supports a second page of data and changes the
-format of the FW version command. Use the devicetree binding (or the I2C
-device ID) to determine which version the driver should use. Therefore add
-the new compatible string to the devicetree documentation and change the
-Swift system devicetree to use version 2.
+Swift power supplies are version 2 of the IBM CFFPS. Make it so in the
+devicetree.
 
-Changes since v1:
- - use an enum for the version instead of integers 1, 2, etc
+Signed-off-by: Eddie James <eajames@linux.ibm.com>
+---
+ arch/arm/boot/dts/aspeed-bmc-opp-swift.dts | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Eddie James (3):
-  dt-bindings: hwmon: Document ibm,cffps2 compatible string
-  ARM: dts: aspeed: swift: Change power supplies to version 2
-  pmbus: ibm-cffps: Add support for version 2 of the PSU
-
- .../devicetree/bindings/hwmon/ibm,cffps1.txt       |   8 +-
- arch/arm/boot/dts/aspeed-bmc-opp-swift.dts         |   4 +-
- drivers/hwmon/pmbus/ibm-cffps.c                    | 110 ++++++++++++++++-----
- 3 files changed, 95 insertions(+), 27 deletions(-)
-
+diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-swift.dts b/arch/arm/boot/dts/aspeed-bmc-opp-swift.dts
+index f14f745..815b865 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-opp-swift.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-opp-swift.dts
+@@ -494,7 +494,7 @@
+ 	};
+ 
+ 	power-supply at 68 {
+-		compatible = "ibm,cffps1";
++		compatible = "ibm,cffps2";
+ 		reg = <0x68>;
+ 	};
+ 
+@@ -504,7 +504,7 @@
+ 	};
+ 
+ 	power-supply at 69 {
+-		compatible = "ibm,cffps1";
++		compatible = "ibm,cffps2";
+ 		reg = <0x69>;
+ 	};
+ 
 -- 
 1.8.3.1
 
