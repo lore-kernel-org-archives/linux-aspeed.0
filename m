@@ -1,48 +1,40 @@
-From: Rob Herring <robh@kernel.org>
-Date: Thu, 29 Aug 2019 17:56:02 -0500
-Subject: [PATCH v2 4/4] dt-bindings/watchdog: Add access_cs0 option for
- alt-boot
-In-Reply-To: <20190826104636.19324-5-i.mikhaylov@yadro.com>
-References: <20190826104636.19324-1-i.mikhaylov@yadro.com>
- <20190826104636.19324-5-i.mikhaylov@yadro.com>
-Message-ID: <20190829225602.GA15783@bogus>
+From: Andrew Jeffery <andrew@aj.id.au>
+Date: Fri, 30 Aug 2019 17:16:42 +0930
+Subject: [PATCH 0/2] mmc: sdhci-of-aspeed: Fixes for AST2600 eMMC support
+Message-ID: <20190830074644.10936-1-andrew@aj.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Aug 26, 2019 at 01:46:36PM +0300, Ivan Mikhaylov wrote:
-> The option for the ast2400/2500 to get access to CS0 at runtime.
-> 
-> Signed-off-by: Ivan Mikhaylov <i.mikhaylov@yadro.com>
-> ---
->  Documentation/devicetree/bindings/watchdog/aspeed-wdt.txt | 7 +++++++
->  1 file changed, 7 insertions(+)
-> 
-> diff --git a/Documentation/devicetree/bindings/watchdog/aspeed-wdt.txt b/Documentation/devicetree/bindings/watchdog/aspeed-wdt.txt
-> index c5077a1f5cb3..023a9b578df6 100644
-> --- a/Documentation/devicetree/bindings/watchdog/aspeed-wdt.txt
-> +++ b/Documentation/devicetree/bindings/watchdog/aspeed-wdt.txt
-> @@ -34,6 +34,13 @@ Optional properties:
->                  engine is responsible for this.
->  
->   - aspeed,alt-boot:    If property is present then boot from alternate block.
-> +                       At alternate side 'access_cs0' sysfs file provides:
+Hello,
 
-What's sysfs?
+The ASPEED SDHCI driver patches sent previously were based on testing on the
+AST2500. The SD controllers in the 2500 and 2600 had the same register layout
+according to the documentation, so we added the necessary devicetree compatible
+string at the same time.
 
-Don't put Linux stuff in bindings.
+Now that I've got access to 2600 hardware with an eMMC chip I have a couple of
+patches that are fixes enabling support for it. I don't think the first patch
+is too controversial - in some cases we weren't ensuring the clock was enabled
+before returning from the set_clock() callback.
 
-> +                       ast2400: a way to get access to the primary SPI flash
-> +                                chip at CS0 after booting from the alternate
-> +                                chip at CS1.
-> +                       ast2500: a way to restore the normal address mapping from
-> +                                (CS0->CS1, CS1->CS0) to (CS0->CS0, CS1->CS1).
-> +
->   - aspeed,external-signal: If property is present then signal is sent to
->  			external reset counter (only WDT1 and WDT2). If not
->  			specified no external signal is sent.
-> -- 
-> 2.20.1
-> 
+I'm a bit unsure about the second patch though which enables use of
+max-frequency in the devicetree, it feels a bit hacky so I'm looking for any
+suggestions on the approach.
+
+Please review!
+
+Andrew
+
+Andrew Jeffery (2):
+  mmc: sdhci-of-aspeed: Uphold clocks-on post-condition of set_clock()
+  mmc: sdhci-of-aspeed: Allow max-frequency limitation of SDCLK
+
+ drivers/mmc/host/sdhci-of-aspeed.c | 21 +++++++++++++++++----
+ 1 file changed, 17 insertions(+), 4 deletions(-)
+
+-- 
+2.20.1
+
