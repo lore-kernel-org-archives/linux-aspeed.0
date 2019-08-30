@@ -1,40 +1,80 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Fri, 30 Aug 2019 17:16:42 +0930
-Subject: [PATCH 0/2] mmc: sdhci-of-aspeed: Fixes for AST2600 eMMC support
-Message-ID: <20190830074644.10936-1-andrew@aj.id.au>
+Date: Fri, 30 Aug 2019 17:16:44 +0930
+Subject: [PATCH 2/2] mmc: sdhci-of-aspeed: Allow max-frequency limitation of
+ SDCLK
+In-Reply-To: <20190830074644.10936-1-andrew@aj.id.au>
+References: <20190830074644.10936-1-andrew@aj.id.au>
+Message-ID: <20190830074644.10936-3-andrew@aj.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello,
+Add a get_max_clock() handler to sdhci-of-aspeed to report f_max as the
+maximum clock rate if it is set. This enables artificial limitation of
+the bus speed via max-frequency in the devicetree for e.g. the AST2600
+evaluation board where I am seeing errors at 200MHz.
 
-The ASPEED SDHCI driver patches sent previously were based on testing on the
-AST2500. The SD controllers in the 2500 and 2600 had the same register layout
-according to the documentation, so we added the necessary devicetree compatible
-string at the same time.
+Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
+---
+ drivers/mmc/host/sdhci-of-aspeed.c | 20 ++++++++++++++++++--
+ 1 file changed, 18 insertions(+), 2 deletions(-)
 
-Now that I've got access to 2600 hardware with an eMMC chip I have a couple of
-patches that are fixes enabling support for it. I don't think the first patch
-is too controversial - in some cases we weren't ensuring the clock was enabled
-before returning from the set_clock() callback.
-
-I'm a bit unsure about the second patch though which enables use of
-max-frequency in the devicetree, it feels a bit hacky so I'm looking for any
-suggestions on the approach.
-
-Please review!
-
-Andrew
-
-Andrew Jeffery (2):
-  mmc: sdhci-of-aspeed: Uphold clocks-on post-condition of set_clock()
-  mmc: sdhci-of-aspeed: Allow max-frequency limitation of SDCLK
-
- drivers/mmc/host/sdhci-of-aspeed.c | 21 +++++++++++++++++----
- 1 file changed, 17 insertions(+), 4 deletions(-)
-
+diff --git a/drivers/mmc/host/sdhci-of-aspeed.c b/drivers/mmc/host/sdhci-of-aspeed.c
+index a9175ca85696..5cc00abcd71f 100644
+--- a/drivers/mmc/host/sdhci-of-aspeed.c
++++ b/drivers/mmc/host/sdhci-of-aspeed.c
+@@ -52,16 +52,24 @@ static void aspeed_sdc_configure_8bit_mode(struct aspeed_sdc *sdc,
+ 
+ static void aspeed_sdhci_set_clock(struct sdhci_host *host, unsigned int clock)
+ {
++	struct sdhci_pltfm_host *pltfm_host;
++	unsigned long parent;
+ 	int div;
+ 	u16 clk;
+ 
++	pltfm_host = sdhci_priv(host);
++	parent = clk_get_rate(pltfm_host->clk);
++
+ 	sdhci_writew(host, 0, SDHCI_CLOCK_CONTROL);
+ 
+ 	if (clock == 0)
+ 		goto out;
+ 
++	if (WARN_ON(clock > host->max_clk))
++		clock = host->max_clk;
++
+ 	for (div = 1; div < 256; div *= 2) {
+-		if ((host->max_clk / div) <= clock)
++		if ((parent / div) <= clock)
+ 			break;
+ 	}
+ 	div >>= 1;
+@@ -74,6 +82,14 @@ static void aspeed_sdhci_set_clock(struct sdhci_host *host, unsigned int clock)
+ 	host->clock = clock;
+ }
+ 
++static unsigned int aspeed_sdhci_get_max_clock(struct sdhci_host *host)
++{
++	if (host->mmc->f_max)
++		return host->mmc->f_max;
++
++	return sdhci_pltfm_clk_get_max_clock(host);
++}
++
+ static void aspeed_sdhci_set_bus_width(struct sdhci_host *host, int width)
+ {
+ 	struct sdhci_pltfm_host *pltfm_priv;
+@@ -100,7 +116,7 @@ static void aspeed_sdhci_set_bus_width(struct sdhci_host *host, int width)
+ 
+ static const struct sdhci_ops aspeed_sdhci_ops = {
+ 	.set_clock = aspeed_sdhci_set_clock,
+-	.get_max_clock = sdhci_pltfm_clk_get_max_clock,
++	.get_max_clock = aspeed_sdhci_get_max_clock,
+ 	.set_bus_width = aspeed_sdhci_set_bus_width,
+ 	.get_timeout_clock = sdhci_pltfm_clk_get_max_clock,
+ 	.reset = sdhci_reset,
 -- 
 2.20.1
 
