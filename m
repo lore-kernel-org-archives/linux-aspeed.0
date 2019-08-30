@@ -1,29 +1,40 @@
 From: Eddie James <eajames@linux.ibm.com>
-Date: Fri, 30 Aug 2019 11:09:42 -0500
-Subject: [PATCH 0/3] pmbus: ibm-cffps: Add support for version 2 of PSU
-Message-ID: <1567181385-22129-1-git-send-email-eajames@linux.ibm.com>
+Date: Fri, 30 Aug 2019 11:09:43 -0500
+Subject: [PATCH 1/3] dt-bindings: hwmon: Document ibm, cffps2 compatible string
+In-Reply-To: <1567181385-22129-1-git-send-email-eajames@linux.ibm.com>
+References: <1567181385-22129-1-git-send-email-eajames@linux.ibm.com>
+Message-ID: <1567181385-22129-2-git-send-email-eajames@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Version 2 of this PSU supports a second page of data and changes the
-format of the FW version command. Use the devicetree binding (or the I2C
-device ID) to determine which version the driver should use. Therefore add
-the new compatible string to the devicetree documentation and change the
-Swift system devicetree to use version 2.
+Document the compatible string for version 2 of the IBM CFFPS PSU.
 
-Eddie James (3):
-  dt-bindings: hwmon: Document ibm,cffps2 compatible string
-  ARM: dts: aspeed: swift: Change power supplies to version 2
-  pmbus: ibm-cffps: Add support for version 2 of the PSU
+Signed-off-by: Eddie James <eajames@linux.ibm.com>
+---
+ Documentation/devicetree/bindings/hwmon/ibm,cffps1.txt | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
- .../devicetree/bindings/hwmon/ibm,cffps1.txt       |   8 +-
- arch/arm/boot/dts/aspeed-bmc-opp-swift.dts         |   4 +-
- drivers/hwmon/pmbus/ibm-cffps.c                    | 109 ++++++++++++++++-----
- 3 files changed, 94 insertions(+), 27 deletions(-)
-
+diff --git a/Documentation/devicetree/bindings/hwmon/ibm,cffps1.txt b/Documentation/devicetree/bindings/hwmon/ibm,cffps1.txt
+index f68a0a6..1036f65 100644
+--- a/Documentation/devicetree/bindings/hwmon/ibm,cffps1.txt
++++ b/Documentation/devicetree/bindings/hwmon/ibm,cffps1.txt
+@@ -1,8 +1,10 @@
+-Device-tree bindings for IBM Common Form Factor Power Supply Version 1
+-----------------------------------------------------------------------
++Device-tree bindings for IBM Common Form Factor Power Supply Versions 1 and 2
++-----------------------------------------------------------------------------
+ 
+ Required properties:
+- - compatible = "ibm,cffps1";
++ - compatible				: Must be one of the following:
++						"ibm,cffps1"
++						"ibm,cffps2"
+  - reg = < I2C bus address >;		: Address of the power supply on the
+ 					  I2C bus.
+ 
 -- 
 1.8.3.1
 
