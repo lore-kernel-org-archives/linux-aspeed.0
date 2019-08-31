@@ -1,66 +1,47 @@
 From: Guenter Roeck <linux@roeck-us.net>
-Date: Sat, 31 Aug 2019 08:01:35 -0700
-Subject: [PATCH v4 4/4] aspeed/watchdog: Add access_cs0 option for alt-boot
-In-Reply-To: <20190828102402.13155-5-i.mikhaylov@yadro.com>
-References: <20190828102402.13155-1-i.mikhaylov@yadro.com>
- <20190828102402.13155-5-i.mikhaylov@yadro.com>
-Message-ID: <20190831150135.GA7230@roeck-us.net>
+Date: Sat, 31 Aug 2019 08:26:30 -0700
+Subject: [PATCH v2 1/3] dt-bindings: hwmon: Document ibm,cffps2
+ compatible string
+In-Reply-To: <1567192263-15065-2-git-send-email-eajames@linux.ibm.com>
+References: <1567192263-15065-1-git-send-email-eajames@linux.ibm.com>
+ <1567192263-15065-2-git-send-email-eajames@linux.ibm.com>
+Message-ID: <20190831152630.GA8907@roeck-us.net>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Aug 28, 2019 at 01:24:02PM +0300, Ivan Mikhaylov wrote:
-> The option for the ast2400/2500 to get access to CS0 at runtime.
+On Fri, Aug 30, 2019 at 02:11:01PM -0500, Eddie James wrote:
+> Document the compatible string for version 2 of the IBM CFFPS PSU.
 > 
-> Signed-off-by: Ivan Mikhaylov <i.mikhaylov@yadro.com>
+> Signed-off-by: Eddie James <eajames@linux.ibm.com>
 
-Reviewed-by: Guenter Roeck <linux@roeck-us.net>
+Applied to hwmon-next. Note that we'll still need review from a DT maintainer.
+I don't see any problems, but then who knows.
+
+Thanks,
+Guenter
 
 > ---
->  .../ABI/testing/sysfs-class-watchdog          | 34 +++++++++++++++++++
->  1 file changed, 34 insertions(+)
+>  Documentation/devicetree/bindings/hwmon/ibm,cffps1.txt | 8 +++++---
+>  1 file changed, 5 insertions(+), 3 deletions(-)
 > 
-> diff --git a/Documentation/ABI/testing/sysfs-class-watchdog b/Documentation/ABI/testing/sysfs-class-watchdog
-> index 6317ade5ad19..675f9b537661 100644
-> --- a/Documentation/ABI/testing/sysfs-class-watchdog
-> +++ b/Documentation/ABI/testing/sysfs-class-watchdog
-> @@ -72,3 +72,37 @@ Description:
->  		It is a read/write file. When read, the currently assigned
->  		pretimeout governor is returned.  When written, it sets
->  		the pretimeout governor.
-> +
-> +What:		/sys/class/watchdog/watchdog1/access_cs0
-> +Date:		August 2019
-> +Contact:	Ivan Mikhaylov <i.mikhaylov@yadro.com>,
-> +		Alexander Amelkin <a.amelkin@yadro.com>
-> +Description:
-> +		It is a read/write file. This attribute exists only if the
-> +		system has booted from the alternate flash chip due to
-> +		expiration of a watchdog timer of AST2400/AST2500 when
-> +		alternate boot function was enabled with 'aspeed,alt-boot'
-> +		devicetree option for that watchdog or with an appropriate
-> +		h/w strapping (for WDT2 only).
-> +
-> +		At alternate flash the 'access_cs0' sysfs node provides:
-> +			ast2400: a way to get access to the primary SPI flash
-> +				chip at CS0 after booting from the alternate
-> +				chip at CS1.
-> +			ast2500: a way to restore the normal address mapping
-> +				from (CS0->CS1, CS1->CS0) to (CS0->CS0,
-> +				CS1->CS1).
-> +
-> +		Clearing the boot code selection and timeout counter also
-> +		resets to the initial state the chip select line mapping. When
-> +		the SoC is in normal mapping state (i.e. booted from CS0),
-> +		clearing those bits does nothing for both versions of the SoC.
-> +		For alternate boot mode (booted from CS1 due to wdt2
-> +		expiration) the behavior differs as described above.
-> +
-> +		This option can be used with wdt2 (watchdog1) only.
-> +
-> +		When read, the current status of the boot code selection is
-> +		shown. When written with any non-zero value, it clears
-> +		the boot code selection and the timeout counter, which results
-> +		in chipselect reset for AST2400/AST2500.
+> diff --git a/Documentation/devicetree/bindings/hwmon/ibm,cffps1.txt b/Documentation/devicetree/bindings/hwmon/ibm,cffps1.txt
+> index f68a0a6..1036f65 100644
+> --- a/Documentation/devicetree/bindings/hwmon/ibm,cffps1.txt
+> +++ b/Documentation/devicetree/bindings/hwmon/ibm,cffps1.txt
+> @@ -1,8 +1,10 @@
+> -Device-tree bindings for IBM Common Form Factor Power Supply Version 1
+> -----------------------------------------------------------------------
+> +Device-tree bindings for IBM Common Form Factor Power Supply Versions 1 and 2
+> +-----------------------------------------------------------------------------
+>  
+>  Required properties:
+> - - compatible = "ibm,cffps1";
+> + - compatible				: Must be one of the following:
+> +						"ibm,cffps1"
+> +						"ibm,cffps2"
+>   - reg = < I2C bus address >;		: Address of the power supply on the
+>  					  I2C bus.
+>  
