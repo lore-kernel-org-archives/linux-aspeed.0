@@ -1,86 +1,40 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Mon,  2 Sep 2019 13:28:39 +0930
-Subject: [PATCH v2 1/4] mmc: sdhci-of-aspeed: Fix link failure for SPARC
+Date: Mon,  2 Sep 2019 13:28:41 +0930
+Subject: [PATCH v2 3/4] mmc: sdhci-of-aspeed: Uphold clocks-on post-condition
+ of set_clock()
 In-Reply-To: <20190902035842.2747-1-andrew@aj.id.au>
 References: <20190902035842.2747-1-andrew@aj.id.au>
-Message-ID: <20190902035842.2747-2-andrew@aj.id.au>
+Message-ID: <20190902035842.2747-4-andrew@aj.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Resolves the following build error reported by the 0-day bot:
+The early-exit didn't seem to matter on the AST2500, but on the AST2600
+the SD clock genuinely may not be running on entry to
+aspeed_sdhci_set_clock(). Remove the early exit to ensure we always run
+sdhci_enable_clk().
 
-    ERROR: "of_platform_device_create" [drivers/mmc/host/sdhci-of-aspeed.ko] undefined!
-
-SPARC does not set CONFIG_OF_ADDRESS so the symbol is missing. Guard the
-callsite to maintain build coverage for the rest of the driver.
-
-Reported-by: kbuild test robot <lkp@intel.com>
 Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
 ---
- drivers/mmc/host/sdhci-of-aspeed.c | 38 ++++++++++++++++++++----------
- 1 file changed, 25 insertions(+), 13 deletions(-)
+ drivers/mmc/host/sdhci-of-aspeed.c | 3 ---
+ 1 file changed, 3 deletions(-)
 
 diff --git a/drivers/mmc/host/sdhci-of-aspeed.c b/drivers/mmc/host/sdhci-of-aspeed.c
-index d5acb5afc50f..96ca494752c5 100644
+index 213b3dbd49ef..c31d74427c49 100644
 --- a/drivers/mmc/host/sdhci-of-aspeed.c
 +++ b/drivers/mmc/host/sdhci-of-aspeed.c
-@@ -224,10 +224,30 @@ static struct platform_driver aspeed_sdhci_driver = {
- 	.remove		= aspeed_sdhci_remove,
- };
+@@ -55,9 +55,6 @@ static void aspeed_sdhci_set_clock(struct sdhci_host *host, unsigned int clock)
+ 	int div;
+ 	u16 clk;
  
--static int aspeed_sdc_probe(struct platform_device *pdev)
+-	if (clock == host->clock)
+-		return;
 -
-+static int aspeed_sdc_create_sdhcis(struct platform_device *pdev)
- {
-+#if defined(CONFIG_OF_ADDRESS)
- 	struct device_node *parent, *child;
-+
-+	parent = pdev->dev.of_node;
-+
-+	for_each_available_child_of_node(parent, child) {
-+		struct platform_device *cpdev;
-+
-+		cpdev = of_platform_device_create(child, NULL, &pdev->dev);
-+		if (!cpdev) {
-+			of_node_put(child);
-+			return -ENODEV;
-+		}
-+	}
-+#endif
-+
-+	return 0;
-+}
-+
-+static int aspeed_sdc_probe(struct platform_device *pdev)
-+
-+{
- 	struct aspeed_sdc *sdc;
- 	int ret;
+ 	sdhci_writew(host, 0, SDHCI_CLOCK_CONTROL);
  
-@@ -256,17 +276,9 @@ static int aspeed_sdc_probe(struct platform_device *pdev)
- 
- 	dev_set_drvdata(&pdev->dev, sdc);
- 
--	parent = pdev->dev.of_node;
--	for_each_available_child_of_node(parent, child) {
--		struct platform_device *cpdev;
--
--		cpdev = of_platform_device_create(child, NULL, &pdev->dev);
--		if (!cpdev) {
--			of_node_put(child);
--			ret = -ENODEV;
--			goto err_clk;
--		}
--	}
-+	ret = aspeed_sdc_create_sdhcis(pdev);
-+	if (ret)
-+		goto err_clk;
- 
- 	return 0;
- 
+ 	if (clock == 0)
 -- 
 2.20.1
 
