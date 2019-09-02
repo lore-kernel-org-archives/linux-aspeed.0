@@ -1,71 +1,25 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Mon, 02 Sep 2019 14:56:38 +0930
-Subject: [PATCH v2 1/4] mmc: sdhci-of-aspeed: Fix link failure for SPARC
-In-Reply-To: <CACPK8XfYgEUfaK6rtr+FdEq-Vau6d4wE2Rvfp6Q4G2-kjVLT0g@mail.gmail.com>
-References: <20190902035842.2747-1-andrew@aj.id.au>
- <20190902035842.2747-2-andrew@aj.id.au>
- <CACPK8XfYgEUfaK6rtr+FdEq-Vau6d4wE2Rvfp6Q4G2-kjVLT0g@mail.gmail.com>
-Message-ID: <83570e25-b20a-4a17-85ea-15a9a53289bf@www.fastmail.com>
+From: Rob Herring <robh@kernel.org>
+Date: Mon, 02 Sep 2019 14:39:08 +0100
+Subject: [PATCH v2 1/3] dt-bindings: hwmon: Document ibm,
+ cffps2 compatible string
+In-Reply-To: <1567192263-15065-2-git-send-email-eajames@linux.ibm.com>
+References: <1567192263-15065-1-git-send-email-eajames@linux.ibm.com>
+ <1567192263-15065-2-git-send-email-eajames@linux.ibm.com>
+Message-ID: <5d6d1b7c.1c69fb81.7f479.9ca6@mx.google.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-
-
-On Mon, 2 Sep 2019, at 13:42, Joel Stanley wrote:
-> On Mon, 2 Sep 2019 at 03:58, Andrew Jeffery <andrew@aj.id.au> wrote:
-> >
-> > Resolves the following build error reported by the 0-day bot:
-> >
-> >     ERROR: "of_platform_device_create" [drivers/mmc/host/sdhci-of-aspeed.ko] undefined!
-> >
-> > SPARC does not set CONFIG_OF_ADDRESS so the symbol is missing. Guard the
-> > callsite to maintain build coverage for the rest of the driver.
-> >
-> > Reported-by: kbuild test robot <lkp@intel.com>
-> > Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
-> > ---
-> >  drivers/mmc/host/sdhci-of-aspeed.c | 38 ++++++++++++++++++++----------
-> >  1 file changed, 25 insertions(+), 13 deletions(-)
-> >
-> > diff --git a/drivers/mmc/host/sdhci-of-aspeed.c b/drivers/mmc/host/sdhci-of-aspeed.c
-> > index d5acb5afc50f..96ca494752c5 100644
-> > --- a/drivers/mmc/host/sdhci-of-aspeed.c
-> > +++ b/drivers/mmc/host/sdhci-of-aspeed.c
-> > @@ -224,10 +224,30 @@ static struct platform_driver aspeed_sdhci_driver = {
-> >         .remove         = aspeed_sdhci_remove,
-> >  };
-> >
-> > -static int aspeed_sdc_probe(struct platform_device *pdev)
-> > -
-> > +static int aspeed_sdc_create_sdhcis(struct platform_device *pdev)
-> >  {
-> > +#if defined(CONFIG_OF_ADDRESS)
+On Fri, 30 Aug 2019 14:11:01 -0500, Eddie James wrote:
+> Document the compatible string for version 2 of the IBM CFFPS PSU.
 > 
-> This is going to be untested code forever, as no one will be running
-> on a chip with this hardware present but OF_ADDRESS disabled.
+> Signed-off-by: Eddie James <eajames@linux.ibm.com>
+> ---
+>  Documentation/devicetree/bindings/hwmon/ibm,cffps1.txt | 8 +++++---
+>  1 file changed, 5 insertions(+), 3 deletions(-)
 > 
-> How about we make the driver depend on OF_ADDRESS instead?
 
-Testing is split into two pieces here: compile-time and run-time.
-Clearly the run-time behaviour is going to be broken on configurations
-without CONFIG_OF_ADDRESS (SPARC as mentioned), but I don't think
-that means we shouldn't allow it to be compiled in that case
-(e.g. CONFIG_COMPILE_TEST performs a similar role).
+Reviewed-by: Rob Herring <robh@kernel.org>
 
-With respect to compile-time it's possible to compile either path as
-demonstrated by the build failure report.
-
-Having said that there's no reason we  couldn't do what you suggest,
-just it wasn't the existing solution pattern for the problem (there are
-several other drivers that suffered the same bug that were fixed in the
-style of this patch). Either way works, it's all somewhat academic.
-Your suggestion is more obvious in terms of correctness, but this
-patch is basically just code motion (the only addition is the `#if`/
-`#endif` lines over what was already there if we disregard the
-function declaration/invocation). I'll change it if there are further
-complaints and a reason to do a v3.
-
-Andrew
