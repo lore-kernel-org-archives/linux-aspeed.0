@@ -1,9 +1,9 @@
 From: Arnd Bergmann <arnd@arndb.de>
-Date: Tue, 3 Sep 2019 16:03:15 +0200
-Subject: [GIT PULL] ARM: aspeed: devicetree changes for 5.4
-In-Reply-To: <CACPK8XfKHpNYXNE_VRaLeGUQa7-hkmUS0nsPfaeSLE4sckKFHg@mail.gmail.com>
-References: <CACPK8XfKHpNYXNE_VRaLeGUQa7-hkmUS0nsPfaeSLE4sckKFHg@mail.gmail.com>
-Message-ID: <CAK8P3a1ESGrYOO4Xa3ikQ=E_vy9-sizTmcJkaqvFPYAaQ52DBQ@mail.gmail.com>
+Date: Tue, 3 Sep 2019 18:59:46 +0200
+Subject: [GIT PULL] ARM: aspeed: defconfig changes for 5.4
+In-Reply-To: <CACPK8XdyWzghA0QPDzA_MK5FYwhT5afqDJHNdhc8mfD2uk8MfQ@mail.gmail.com>
+References: <CACPK8XdyWzghA0QPDzA_MK5FYwhT5afqDJHNdhc8mfD2uk8MfQ@mail.gmail.com>
+Message-ID: <CAK8P3a3zL1oi3dSy4w8DB1v=O_42mEE243y_-0ScV=v=LOmaGA@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -12,17 +12,14 @@ Content-Transfer-Encoding: 7bit
 
 On Sun, Aug 25, 2019 at 4:10 PM Joel Stanley <joel@jms.id.au> wrote:
 > ----------------------------------------------------------------
-> ASPEED device tree updates for 5.4
+> ASPEED defconfig updates for 5.4
 >
-> New machines:
+>  - Enable the new AST2600 in multi_v7 and the aspeed_g5 configs.
 >
->  - Facebook Wedge100, Wedge40 and Minipack
->  - Lenovo Hr855xg2
->  - Wistron Mihawk
+>  - Regenerate defconfigs to drop old options
 >
-> There's a few other updates, notably some changes to to use the newly
-> added SDHCI driver.
+>  - Clean up network options
 
-Pulled into arm/dt, thanks!
+Pulled into arm/defconfig, thanks!
 
-       Arnd
+      Arnd
