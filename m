@@ -1,25 +1,35 @@
-From: Rob Herring <robh@kernel.org>
-Date: Mon, 02 Sep 2019 14:39:08 +0100
-Subject: [PATCH v2 1/3] dt-bindings: hwmon: Document ibm,
- cffps2 compatible string
-In-Reply-To: <1567192263-15065-2-git-send-email-eajames@linux.ibm.com>
-References: <1567192263-15065-1-git-send-email-eajames@linux.ibm.com>
- <1567192263-15065-2-git-send-email-eajames@linux.ibm.com>
-Message-ID: <5d6d1b7c.1c69fb81.7f479.9ca6@mx.google.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Tue, 3 Sep 2019 14:19:11 +0200
+Subject: [GIT PULL] ARM: aspeed: arch changes for 5.4
+In-Reply-To: <CACPK8Xc1aSp5fXL3cEzC9SJsCXG2JwsSPpQrW3a09dkvhCyHHA@mail.gmail.com>
+References: <CACPK8Xc1aSp5fXL3cEzC9SJsCXG2JwsSPpQrW3a09dkvhCyHHA@mail.gmail.com>
+Message-ID: <CAK8P3a10eKP6cJUw-SHam1zBMZe-FOhVcBn01TT_VVFYHrUA-w@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, 30 Aug 2019 14:11:01 -0500, Eddie James wrote:
-> Document the compatible string for version 2 of the IBM CFFPS PSU.
-> 
-> Signed-off-by: Eddie James <eajames@linux.ibm.com>
-> ---
->  Documentation/devicetree/bindings/hwmon/ibm,cffps1.txt | 8 +++++---
->  1 file changed, 5 insertions(+), 3 deletions(-)
-> 
+On Sun, Aug 25, 2019 at 4:10 PM Joel Stanley <joel@jms.id.au> wrote:
+>
+> Hello ARM Maintainers,
+>
+> Here's my first mach-aspeed pull request. We finally had to add some
+> code here to support SMP on the shiny new ASPEED AST2600.
+>
+> The following changes since commit 5f9e832c137075045d15cd6899ab0505cfb2ca4b:
+>
+>   Linus 5.3-rc1 (2019-07-21 14:05:38 -0700)
+>
+> are available in the Git repository at:
+>
+>   git://git.kernel.org/pub/scm/linux/kernel/git/joel/aspeed.git \
+>     tags/aspeed-5.4-arch
+>
 
-Reviewed-by: Rob Herring <robh@kernel.org>
+Pulled into arm/soc branch, after changing Olof's patchwork wrapper script
+to ignore the '\' character at the line break.
 
+Thanks
+
+       Arnd
