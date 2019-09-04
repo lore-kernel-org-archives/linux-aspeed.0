@@ -1,9 +1,10 @@
 From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-Date: Wed, 4 Sep 2019 08:57:44 +0200
-Subject: [PATCH 1/4] gpio/aspeed: Fix incorrect number of banks
-In-Reply-To: <20190904061245.30770-1-rashmica.g@gmail.com>
+Date: Wed, 4 Sep 2019 09:02:33 +0200
+Subject: [PATCH 4/4] gpio: Update documentation with ast2600 controllers
+In-Reply-To: <20190904061245.30770-4-rashmica.g@gmail.com>
 References: <20190904061245.30770-1-rashmica.g@gmail.com>
-Message-ID: <CAMpxmJUVijPRGDw3GcSVt=MYod4nCD-npQKVmn2L4AdBSy5++w@mail.gmail.com>
+ <20190904061245.30770-4-rashmica.g@gmail.com>
+Message-ID: <CAMpxmJUGm3Zs8VHwHnXTQ2cKnpF0caR=7V4bBi1_sy1U2mWc0g@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -12,32 +13,35 @@ Content-Transfer-Encoding: 7bit
 
 ?r., 4 wrz 2019 o 08:13 Rashmica Gupta <rashmica.g@gmail.com> napisa?(a):
 >
-> Fixes: 361b79119a4b7 ('gpio: Add Aspeed driver')
->
 
-Please, add a proper commit description. Checkpatch should have warned
-you about it.
+Again, this needs a proper commit description and the subject should
+start with "dt-bindings: ...".
+
+You also need to Cc the device-tree maintainers. Use
+scripts/get_maintainer.pl to list all people that should get this
+patch.
 
 Bart
 
 > Signed-off-by: Rashmica Gupta <rashmica.g@gmail.com>
 > ---
->  drivers/gpio/gpio-aspeed.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  Documentation/devicetree/bindings/gpio/gpio-aspeed.txt | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
 >
-> diff --git a/drivers/gpio/gpio-aspeed.c b/drivers/gpio/gpio-aspeed.c
-> index 9defe25d4721..77752b2624e8 100644
-> --- a/drivers/gpio/gpio-aspeed.c
-> +++ b/drivers/gpio/gpio-aspeed.c
-> @@ -1165,7 +1165,7 @@ static int __init aspeed_gpio_probe(struct platform_device *pdev)
->         gpio->chip.base = -1;
+> diff --git a/Documentation/devicetree/bindings/gpio/gpio-aspeed.txt b/Documentation/devicetree/bindings/gpio/gpio-aspeed.txt
+> index 7e9b586770b0..cd388797e07c 100644
+> --- a/Documentation/devicetree/bindings/gpio/gpio-aspeed.txt
+> +++ b/Documentation/devicetree/bindings/gpio/gpio-aspeed.txt
+> @@ -2,7 +2,8 @@ Aspeed GPIO controller Device Tree Bindings
+>  -------------------------------------------
 >
->         /* Allocate a cache of the output registers */
-> -       banks = gpio->config->nr_gpios >> 5;
-> +       banks = (gpio->config->nr_gpios >> 5) + 1;
->         gpio->dcache = devm_kcalloc(&pdev->dev,
->                                     banks, sizeof(u32), GFP_KERNEL);
->         if (!gpio->dcache)
+>  Required properties:
+> -- compatible           : Either "aspeed,ast2400-gpio" or "aspeed,ast2500-gpio"
+> +- compatible           : Either "aspeed,ast2400-gpio", "aspeed,ast2500-gpio",
+> +                                         "aspeed,ast2600-gpio", or "aspeed,ast2600-1-8v-gpio"
+>
+>  - #gpio-cells          : Should be two
+>                           - First cell is the GPIO line number
 > --
 > 2.20.1
 >
