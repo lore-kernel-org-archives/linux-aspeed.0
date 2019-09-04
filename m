@@ -1,64 +1,76 @@
 From: Rashmica Gupta <rashmica.g@gmail.com>
-Date: Wed,  4 Sep 2019 16:12:43 +1000
-Subject: [PATCH 2/4] gpio/aspeed: Setup irqchip dynamically
+Date: Wed,  4 Sep 2019 16:12:44 +1000
+Subject: [PATCH 3/4] gpio: Add in ast2600 details to Aspeed driver
 In-Reply-To: <20190904061245.30770-1-rashmica.g@gmail.com>
 References: <20190904061245.30770-1-rashmica.g@gmail.com>
-Message-ID: <20190904061245.30770-2-rashmica.g@gmail.com>
+Message-ID: <20190904061245.30770-3-rashmica.g@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This is in preparation for ast2600 as we will have two gpio drivers
-which need their own irqchip.
+The ast2600 has two gpio controllers, one for 3.6V GPIOS and one for 1.8V GPIOS.
 
 Signed-off-by: Rashmica Gupta <rashmica.g@gmail.com>
 ---
- drivers/gpio/gpio-aspeed.c | 16 +++++++---------
- 1 file changed, 7 insertions(+), 9 deletions(-)
+ drivers/gpio/gpio-aspeed.c | 29 +++++++++++++++++++++++++++--
+ 1 file changed, 27 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/gpio/gpio-aspeed.c b/drivers/gpio/gpio-aspeed.c
-index 77752b2624e8..60ab042c9129 100644
+index 60ab042c9129..98881c99d0b9 100644
 --- a/drivers/gpio/gpio-aspeed.c
 +++ b/drivers/gpio/gpio-aspeed.c
-@@ -52,6 +52,7 @@ struct aspeed_gpio_config {
-  */
- struct aspeed_gpio {
- 	struct gpio_chip chip;
-+	struct irq_chip irqc;
- 	spinlock_t lock;
- 	void __iomem *base;
- 	int irq;
-@@ -681,14 +682,6 @@ static void aspeed_gpio_irq_handler(struct irq_desc *desc)
- 	chained_irq_exit(ic, desc);
- }
+@@ -662,12 +662,14 @@ static void aspeed_gpio_irq_handler(struct irq_desc *desc)
+ 	struct gpio_chip *gc = irq_desc_get_handler_data(desc);
+ 	struct irq_chip *ic = irq_desc_get_chip(desc);
+ 	struct aspeed_gpio *data = gpiochip_get_data(gc);
+-	unsigned int i, p, girq;
++	unsigned int i, p, girq, banks;
+ 	unsigned long reg;
++	struct aspeed_gpio *gpio = gpiochip_get_data(gc);
  
--static struct irq_chip aspeed_gpio_irqchip = {
--	.name		= "aspeed-gpio",
--	.irq_ack	= aspeed_gpio_irq_ack,
--	.irq_mask	= aspeed_gpio_irq_mask,
--	.irq_unmask	= aspeed_gpio_irq_unmask,
--	.irq_set_type	= aspeed_gpio_set_type,
--};
--
- static void set_irq_valid_mask(struct aspeed_gpio *gpio)
- {
- 	const struct aspeed_bank_props *props = gpio->config->props;
-@@ -1192,7 +1185,12 @@ static int __init aspeed_gpio_probe(struct platform_device *pdev)
+ 	chained_irq_enter(ic, desc);
  
- 		gpio->irq = rc;
- 		girq = &gpio->chip.irq;
--		girq->chip = &aspeed_gpio_irqchip;
-+		girq->chip = &gpio->irqc;
-+		girq->chip->name = dev_name(&pdev->dev);
-+		girq->chip->irq_ack = aspeed_gpio_irq_ack;
-+		girq->chip->irq_mask = aspeed_gpio_irq_mask;
-+		girq->chip->irq_unmask = aspeed_gpio_irq_unmask;
-+		girq->chip->irq_set_type = aspeed_gpio_set_type;
- 		girq->parent_handler = aspeed_gpio_irq_handler;
- 		girq->num_parents = 1;
- 		girq->parents = devm_kcalloc(&pdev->dev, 1,
+-	for (i = 0; i < ARRAY_SIZE(aspeed_gpio_banks); i++) {
++	banks = (gpio->config->nr_gpios >> 5) + 1;
++	for (i = 0; i < banks; i++) {
+ 		const struct aspeed_gpio_bank *bank = &aspeed_gpio_banks[i];
+ 
+ 		reg = ioread32(bank_reg(data, bank, reg_irq_status));
+@@ -1108,9 +1110,32 @@ static const struct aspeed_gpio_config ast2500_config =
+ 	/* 232 for simplicity, actual number is 228 (4-GPIO hole in GPIOAB) */
+ 	{ .nr_gpios = 232, .props = ast2500_bank_props, };
+ 
++static const struct aspeed_bank_props ast2600_bank_props[] = {
++	/*     input	  output   */
++	{5, 0xffffffff,  0x0000ffff}, /* U/V/W/X */
++	{6, 0xffff0000,  0x0fff0000}, /* Y/Z */
++	{ },
++};
++
++static const struct aspeed_gpio_config ast2600_config =
++	/* 208 3.6V GPIOs */
++	{ .nr_gpios = 208, .props = ast2600_bank_props, };
++
++static const struct aspeed_bank_props ast2600_1_8v_bank_props[] = {
++	/*     input	  output   */
++	{1, 0x0000000f,  0x0000000f}, /* E */
++	{ },
++};
++
++static const struct aspeed_gpio_config ast2600_1_8v_config =
++	/* 36 1.8V GPIOs */
++	{ .nr_gpios = 36, .props = ast2600_1_8v_bank_props, };
++
+ static const struct of_device_id aspeed_gpio_of_table[] = {
+ 	{ .compatible = "aspeed,ast2400-gpio", .data = &ast2400_config, },
+ 	{ .compatible = "aspeed,ast2500-gpio", .data = &ast2500_config, },
++	{ .compatible = "aspeed,ast2600-gpio", .data = &ast2600_config, },
++	{ .compatible = "aspeed,ast2600-1-8v-gpio", .data = &ast2600_1_8v_config,},
+ 	{}
+ };
+ MODULE_DEVICE_TABLE(of, aspeed_gpio_of_table);
 -- 
 2.20.1
 
