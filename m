@@ -1,88 +1,46 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Wed, 04 Sep 2019 09:32:44 +0930
-Subject: [PATCH v2 1/4] mmc: sdhci-of-aspeed: Fix link failure for SPARC
-In-Reply-To: <CAPDyKFpWJu3RH4TWoO_wcJq0LDrM_fAUfsCC==e8O_6A8dLhiA@mail.gmail.com>
-References: <20190902035842.2747-1-andrew@aj.id.au>
- <20190902035842.2747-2-andrew@aj.id.au>
- <CACPK8XfYgEUfaK6rtr+FdEq-Vau6d4wE2Rvfp6Q4G2-kjVLT0g@mail.gmail.com>
- <83570e25-b20a-4a17-85ea-15a9a53289bf@www.fastmail.com>
- <CAPDyKFpWJu3RH4TWoO_wcJq0LDrM_fAUfsCC==e8O_6A8dLhiA@mail.gmail.com>
-Message-ID: <38ff59e7-491b-478b-afff-a664d8f66547@www.fastmail.com>
+Date: Wed,  4 Sep 2019 11:51:20 +0930
+Subject: [PATCH v3] mmc: sdhci-of-aspeed: Depend on CONFIG_OF_ADDRESS
+Message-ID: <20190904022120.4174-1-andrew@aj.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+Resolves the following build error reported by the 0-day bot:
 
+    ERROR: "of_platform_device_create" [drivers/mmc/host/sdhci-of-aspeed.ko] undefined!
 
-On Wed, 4 Sep 2019, at 00:18, Ulf Hansson wrote:
-> On Mon, 2 Sep 2019 at 07:26, Andrew Jeffery <andrew@aj.id.au> wrote:
-> >
-> >
-> >
-> > On Mon, 2 Sep 2019, at 13:42, Joel Stanley wrote:
-> > > On Mon, 2 Sep 2019 at 03:58, Andrew Jeffery <andrew@aj.id.au> wrote:
-> > > >
-> > > > Resolves the following build error reported by the 0-day bot:
-> > > >
-> > > >     ERROR: "of_platform_device_create" [drivers/mmc/host/sdhci-of-aspeed.ko] undefined!
-> > > >
-> > > > SPARC does not set CONFIG_OF_ADDRESS so the symbol is missing. Guard the
-> > > > callsite to maintain build coverage for the rest of the driver.
-> > > >
-> > > > Reported-by: kbuild test robot <lkp@intel.com>
-> > > > Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
-> > > > ---
-> > > >  drivers/mmc/host/sdhci-of-aspeed.c | 38 ++++++++++++++++++++----------
-> > > >  1 file changed, 25 insertions(+), 13 deletions(-)
-> > > >
-> > > > diff --git a/drivers/mmc/host/sdhci-of-aspeed.c b/drivers/mmc/host/sdhci-of-aspeed.c
-> > > > index d5acb5afc50f..96ca494752c5 100644
-> > > > --- a/drivers/mmc/host/sdhci-of-aspeed.c
-> > > > +++ b/drivers/mmc/host/sdhci-of-aspeed.c
-> > > > @@ -224,10 +224,30 @@ static struct platform_driver aspeed_sdhci_driver = {
-> > > >         .remove         = aspeed_sdhci_remove,
-> > > >  };
-> > > >
-> > > > -static int aspeed_sdc_probe(struct platform_device *pdev)
-> > > > -
-> > > > +static int aspeed_sdc_create_sdhcis(struct platform_device *pdev)
-> > > >  {
-> > > > +#if defined(CONFIG_OF_ADDRESS)
-> > >
-> > > This is going to be untested code forever, as no one will be running
-> > > on a chip with this hardware present but OF_ADDRESS disabled.
-> > >
-> > > How about we make the driver depend on OF_ADDRESS instead?
-> >
-> > Testing is split into two pieces here: compile-time and run-time.
-> > Clearly the run-time behaviour is going to be broken on configurations
-> > without CONFIG_OF_ADDRESS (SPARC as mentioned), but I don't think
-> > that means we shouldn't allow it to be compiled in that case
-> > (e.g. CONFIG_COMPILE_TEST performs a similar role).
-> >
-> > With respect to compile-time it's possible to compile either path as
-> > demonstrated by the build failure report.
-> >
-> > Having said that there's no reason we  couldn't do what you suggest,
-> > just it wasn't the existing solution pattern for the problem (there are
-> > several other drivers that suffered the same bug that were fixed in the
-> > style of this patch). Either way works, it's all somewhat academic.
-> > Your suggestion is more obvious in terms of correctness, but this
-> > patch is basically just code motion (the only addition is the `#if`/
-> > `#endif` lines over what was already there if we disregard the
-> > function declaration/invocation). I'll change it if there are further
-> > complaints and a reason to do a v3.
-> 
-> I am in favor of Joel's suggestion as I don't really like having
-> ifdefs bloating around in the driver (unless very good reasons).
-> Please re-spin a v3.
-> 
-> Another option is to implement stub function and to deal with error
-> codes, but that sounds more like a long term thingy, if even
-> applicable here.
+SPARC does not set CONFIG_OF_ADDRESS so the symbol is missing. Depend on
+CONFIG_OF_ADDRESS to ensure the driver is only built for supported
+configurations.
 
-No worries then, will post a respin shortly.
+Fixes: 2d28dbe042f4 ("mmc: sdhci-of-aspeed: Add support for the ASPEED SD controller")
+Reported-by: kbuild test robot <lkp@intel.com>
+Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
+---
+v2 was a series of 4 patches, three of which were applied leaving this build
+fix to be reworked. The v2 series can be found here:
 
-Andrew
+https://patchwork.ozlabs.org/cover/1156457/
+
+ drivers/mmc/host/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/mmc/host/Kconfig b/drivers/mmc/host/Kconfig
+index 0f8a230de2f3..3a52f5703286 100644
+--- a/drivers/mmc/host/Kconfig
++++ b/drivers/mmc/host/Kconfig
+@@ -157,7 +157,7 @@ config MMC_SDHCI_OF_ARASAN
+ config MMC_SDHCI_OF_ASPEED
+ 	tristate "SDHCI OF support for the ASPEED SDHCI controller"
+ 	depends on MMC_SDHCI_PLTFM
+-	depends on OF
++	depends on OF && OF_ADDRESS
+ 	help
+ 	  This selects the ASPEED Secure Digital Host Controller Interface.
+ 
+-- 
+2.20.1
+
