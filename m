@@ -1,29 +1,33 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Date: Wed, 11 Sep 2019 11:13:38 +0100
-Subject: [PATCH v3 5/5] gpio: Add in ast2600 details to Aspeed driver
-In-Reply-To: <20190906063737.15428-1-rashmica.g@gmail.com>
-References: <20190906063737.15428-1-rashmica.g@gmail.com>
-Message-ID: <CACRpkdbmusuLNfzcxxnYk=Up7UT3GMdLU4R+WnS86oTV9PNcWw@mail.gmail.com>
+From: Rashmica Gupta <rashmica.g@gmail.com>
+Date: Wed,  4 Sep 2019 16:12:42 +1000
+Subject: [PATCH 1/4] gpio/aspeed: Fix incorrect number of banks
+Message-ID: <20190904061245.30770-1-rashmica.g@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Sep 6, 2019 at 7:37 AM Rashmica Gupta <rashmica.g@gmail.com> wrote:
+Fixes: 361b79119a4b7 ('gpio: Add Aspeed driver')
 
-> The ast2600 is a new generation of SoC from ASPEED. Similarly to the
-> ast2400 and ast2500, it has a GPIO controller for it's 3.3V GPIO pins.
-> Additionally, it has a GPIO controller for 1.8V GPIO pins.
->
-> As the register names for both controllers are the same and the 36 1.8V
-> GPIOs and the first 36 of the 3.3V GPIOs are all bidirectional, we can
-> use the same configuration struct and use the ngpio property to
-> differentiate between the two sets of GPIOs.
->
-> Signed-off-by: Rashmica Gupta <rashmica.g@gmail.com>
+Signed-off-by: Rashmica Gupta <rashmica.g@gmail.com>
+---
+ drivers/gpio/gpio-aspeed.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Patch applied.
+diff --git a/drivers/gpio/gpio-aspeed.c b/drivers/gpio/gpio-aspeed.c
+index 9defe25d4721..77752b2624e8 100644
+--- a/drivers/gpio/gpio-aspeed.c
++++ b/drivers/gpio/gpio-aspeed.c
+@@ -1165,7 +1165,7 @@ static int __init aspeed_gpio_probe(struct platform_device *pdev)
+ 	gpio->chip.base = -1;
+ 
+ 	/* Allocate a cache of the output registers */
+-	banks = gpio->config->nr_gpios >> 5;
++	banks = (gpio->config->nr_gpios >> 5) + 1;
+ 	gpio->dcache = devm_kcalloc(&pdev->dev,
+ 				    banks, sizeof(u32), GFP_KERNEL);
+ 	if (!gpio->dcache)
+-- 
+2.20.1
 
-Yours,
-Linus Walleij
