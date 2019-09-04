@@ -1,33 +1,64 @@
 From: Rashmica Gupta <rashmica.g@gmail.com>
-Date: Wed,  4 Sep 2019 16:12:42 +1000
-Subject: [PATCH 1/4] gpio/aspeed: Fix incorrect number of banks
-Message-ID: <20190904061245.30770-1-rashmica.g@gmail.com>
+Date: Wed,  4 Sep 2019 16:12:43 +1000
+Subject: [PATCH 2/4] gpio/aspeed: Setup irqchip dynamically
+In-Reply-To: <20190904061245.30770-1-rashmica.g@gmail.com>
+References: <20190904061245.30770-1-rashmica.g@gmail.com>
+Message-ID: <20190904061245.30770-2-rashmica.g@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Fixes: 361b79119a4b7 ('gpio: Add Aspeed driver')
+This is in preparation for ast2600 as we will have two gpio drivers
+which need their own irqchip.
 
 Signed-off-by: Rashmica Gupta <rashmica.g@gmail.com>
 ---
- drivers/gpio/gpio-aspeed.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/gpio/gpio-aspeed.c | 16 +++++++---------
+ 1 file changed, 7 insertions(+), 9 deletions(-)
 
 diff --git a/drivers/gpio/gpio-aspeed.c b/drivers/gpio/gpio-aspeed.c
-index 9defe25d4721..77752b2624e8 100644
+index 77752b2624e8..60ab042c9129 100644
 --- a/drivers/gpio/gpio-aspeed.c
 +++ b/drivers/gpio/gpio-aspeed.c
-@@ -1165,7 +1165,7 @@ static int __init aspeed_gpio_probe(struct platform_device *pdev)
- 	gpio->chip.base = -1;
+@@ -52,6 +52,7 @@ struct aspeed_gpio_config {
+  */
+ struct aspeed_gpio {
+ 	struct gpio_chip chip;
++	struct irq_chip irqc;
+ 	spinlock_t lock;
+ 	void __iomem *base;
+ 	int irq;
+@@ -681,14 +682,6 @@ static void aspeed_gpio_irq_handler(struct irq_desc *desc)
+ 	chained_irq_exit(ic, desc);
+ }
  
- 	/* Allocate a cache of the output registers */
--	banks = gpio->config->nr_gpios >> 5;
-+	banks = (gpio->config->nr_gpios >> 5) + 1;
- 	gpio->dcache = devm_kcalloc(&pdev->dev,
- 				    banks, sizeof(u32), GFP_KERNEL);
- 	if (!gpio->dcache)
+-static struct irq_chip aspeed_gpio_irqchip = {
+-	.name		= "aspeed-gpio",
+-	.irq_ack	= aspeed_gpio_irq_ack,
+-	.irq_mask	= aspeed_gpio_irq_mask,
+-	.irq_unmask	= aspeed_gpio_irq_unmask,
+-	.irq_set_type	= aspeed_gpio_set_type,
+-};
+-
+ static void set_irq_valid_mask(struct aspeed_gpio *gpio)
+ {
+ 	const struct aspeed_bank_props *props = gpio->config->props;
+@@ -1192,7 +1185,12 @@ static int __init aspeed_gpio_probe(struct platform_device *pdev)
+ 
+ 		gpio->irq = rc;
+ 		girq = &gpio->chip.irq;
+-		girq->chip = &aspeed_gpio_irqchip;
++		girq->chip = &gpio->irqc;
++		girq->chip->name = dev_name(&pdev->dev);
++		girq->chip->irq_ack = aspeed_gpio_irq_ack;
++		girq->chip->irq_mask = aspeed_gpio_irq_mask;
++		girq->chip->irq_unmask = aspeed_gpio_irq_unmask;
++		girq->chip->irq_set_type = aspeed_gpio_set_type;
+ 		girq->parent_handler = aspeed_gpio_irq_handler;
+ 		girq->num_parents = 1;
+ 		girq->parents = devm_kcalloc(&pdev->dev, 1,
 -- 
 2.20.1
 
