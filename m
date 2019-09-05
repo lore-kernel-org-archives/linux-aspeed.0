@@ -1,111 +1,47 @@
 From: Oskar Senft <osk@google.com>
-Date: Thu, 5 Sep 2019 10:38:24 -0400
-Subject: [PATCH v2 1/3] drivers/tty/serial/8250: Make Aspeed VUART SIRQ
- polarity configurable
-In-Reply-To: <a2ff0b6edb87d5495dd8e683e95d3b719e55f970.camel@ozlabs.org>
+Date: Thu, 5 Sep 2019 10:41:13 -0400
+Subject: [PATCH v2 2/3] dt-bindings: serial: 8250: Add documentation for
+ espi-enabled.
+In-Reply-To: <f1d2757119807a48833eba193cd9b443dde0ccba.camel@ozlabs.org>
 References: <20190731013404.243755-1-osk@google.com>
- <a2ff0b6edb87d5495dd8e683e95d3b719e55f970.camel@ozlabs.org>
-Message-ID: <CABoTLcS2z-RtUcm_QNcNC2Pvo4GSg29qpuOnvh+W=UTe+4ehkA@mail.gmail.com>
+ <20190731013404.243755-2-osk@google.com>
+ <b4670171-e161-4d7a-91dc-a1e5a95f7dbc@www.fastmail.com>
+ <f1d2757119807a48833eba193cd9b443dde0ccba.camel@ozlabs.org>
+Message-ID: <CABoTLcTR-iNEftk8ThnyBKn0qD2+jTAOFmZAdGciVXj6KJJcww@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Jeremy
+Hi Andrew and Jeremy
 
-Thanks for your comments, they were really helpful!
+Thanks for both your input, that was helpful. I'm sorry it took me so long
+to get back to this. I hope it's in better shape now.
 
-
-> > +What:
-> /sys/bus/platform/drivers/aspeed-vuart/*/sirq_polarity
-> > +Date:                July 2019
-> > +Contact:     Oskar Senft <osk@google.com>
-> > +Description: Configures the polarity of the serial interrupt to the
-> > +             host via the BMC LPC bus.
+> Given it's ASPEED-specific I expect you should use a vendor prefix for the
+> > property, e.g. aspeed,espi-enabled.
 >
-> Can you mention what the value represents? 1/0 don't really indicate a
-> specific polarity.
+That was a very good point.
+
+
+> > However, as I understand it you want to determine what polarity the SIRQ
+> > should be regardless of which of eSPI or LPC are enabled, so I don't
+> think
+> > the property name should be an explicit statement about eSPI. Maybe
+> > "aspeed,sirq-polarity-sense"?
 >
-Good point. Not sure why I didn't do that initially.
-
-
-> > @@ -310,6 +379,7 @@ static int aspeed_vuart_probe(struct platform_device
-> *pdev)
-> >       struct resource *res;
-> >       u32 clk, prop;
-> >       int rc;
-> > +     struct of_phandle_args espi_enabled_args;
-> Minor: can you reverse-christmas-tree this?
+> Yep, +1 on Andrew's comments here. This property isn't an indication on
+> whether espi is enabled, but a method to detect it.
 >
-Oops, yeah. Sorry! Conflicting coding styles in my head got confused.
+I agree. I was so focused on functionality that I didn't look at this with
+a wider view.
 
-
-> > +     rc = of_parse_phandle_with_fixed_args(
-> > +             np, "espi-enabled", 2, 0, &espi_enabled_args);
-> > +     if (rc < 0) {
-> > +             dev_warn(&pdev->dev, "espi-enabled property not found\n");
-> That may just be a matter of changing this to dev_debug.
->
-That was my intent, sorry for that.
-
-I'll send v3 with those changes in a few minutes.
+I'll send v3 of the patch that contains appropriate changes. I'll also
+include further lists and individuals to get OKs as needed.
 
 Thanks
 Oskar.
-
-
-On Wed, Sep 4, 2019 at 9:14 PM Jeremy Kerr <jk@ozlabs.org> wrote:
-
-> Hi Oskar,
->
-> Looks good to me, some minor comments though:
->
-> > +
-> > +What:
-> /sys/bus/platform/drivers/aspeed-vuart/*/sirq_polarity
-> > +Date:                July 2019
-> > +Contact:     Oskar Senft <osk@google.com>
-> > +Description: Configures the polarity of the serial interrupt to the
-> > +             host via the BMC LPC bus.
->
-> Can you mention what the value represents? 1/0 don't really indicate a
-> specific polarity.
->
-> Alternatively, we could use descriptive values (say, "active-low" /
-> "idle-low").
->
-> > @@ -310,6 +379,7 @@ static int aspeed_vuart_probe(struct platform_device
-> *pdev)
-> >       struct resource *res;
-> >       u32 clk, prop;
-> >       int rc;
-> > +     struct of_phandle_args espi_enabled_args;
->
-> Minor: can you reverse-christmas-tree this?
->
-> > @@ -402,6 +472,18 @@ static int aspeed_vuart_probe(struct
-> platform_device *pdev)
-> >
-> >       vuart->line = rc;
-> >
-> > +     rc = of_parse_phandle_with_fixed_args(
-> > +             np, "espi-enabled", 2, 0, &espi_enabled_args);
-> > +     if (rc < 0) {
-> > +             dev_warn(&pdev->dev, "espi-enabled property not found\n");
->
-> In the binding spec, you've listed this property at optional, but here
-> we dev_warn() if its not present. Can we default to existing behaviour
-> if it's not there?
->
-> That may just be a matter of changing this to dev_debug.
->
-> Cheers,
->
->
-> Jeremy
->
->
 -------------- next part --------------
 An HTML attachment was scrubbed...
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20190905/a92748e8/attachment.htm>
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20190905/b5d5a676/attachment.htm>
