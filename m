@@ -1,72 +1,52 @@
-From: Rashmica Gupta <rashmica.g@gmail.com>
-Date: Thu, 05 Sep 2019 09:34:10 +1000
-Subject: [PATCH 3/4] gpio: Add in ast2600 details to Aspeed driver
-In-Reply-To: <CAHp75Ve0zEkuD-75aZ6FU+A=DvX8NvVvY3n9p_pYDyfa76sxoQ@mail.gmail.com>
-References: <20190904061245.30770-1-rashmica.g@gmail.com>
- <20190904061245.30770-3-rashmica.g@gmail.com>
- <CAHp75Ve0zEkuD-75aZ6FU+A=DvX8NvVvY3n9p_pYDyfa76sxoQ@mail.gmail.com>
-Message-ID: <1ca6ffddd2452e218ef19ea84ac6c6277e1a9725.camel@gmail.com>
+From: Joel Stanley <joel@jms.id.au>
+Date: Wed,  4 Sep 2019 17:02:20 -0700
+Subject: [PATCH] ARM: dts: aspeed-g4: Add all flash chips
+Message-ID: <20190905000221.31445-1-joel@jms.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 2019-09-04 at 19:30 +0300, Andy Shevchenko wrote:
-> On Wed, Sep 4, 2019 at 9:14 AM Rashmica Gupta <rashmica.g@gmail.com>
-> wrote:
-> > The ast2600 has two gpio controllers, one for 3.6V GPIOS and one
-> > for 1.8V GPIOS.
-> > 
-> > Signed-off-by: Rashmica Gupta <rashmica.g@gmail.com>
-> > -       for (i = 0; i < ARRAY_SIZE(aspeed_gpio_banks); i++) {
-> > +       banks = (gpio->config->nr_gpios >> 5) + 1;
-> 
-> Same comment as per the other patch.
-> 
-> > +       for (i = 0; i < banks; i++) {
-> > +static const struct aspeed_bank_props ast2600_bank_props[] = {
-> > +       /*     input      output   */
-> > +       {5, 0xffffffff,  0x0000ffff}, /* U/V/W/X */
-> > +       {6, 0xffff0000,  0x0fff0000}, /* Y/Z */
-> 
-> Perhaps GENMASK() for all values?
+The FMC supports five chip selects, so describe the five possible flash
+chips.
 
-Perhaps this and your other comments below would be best addressed in
-an additional cleanup patch? This patch follows the formatting of the
-existing code and it's not very clean to differ from that or to change
-the formatting of the current code in this patch.
+Signed-off-by: Joel Stanley <joel@jms.id.au>
+---
+ arch/arm/boot/dts/aspeed-g4.dtsi | 20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)
 
-
-> 
-> > +       { },
-> 
-> Comma is not needed here.
-> 
-> > +};
-> > +
-> > +static const struct aspeed_gpio_config ast2600_config =
-> > +       /* 208 3.6V GPIOs */
-> > +       { .nr_gpios = 208, .props = ast2600_bank_props, };
-> 
-> Seems curly braces missed their places.
-> 
-> > +static const struct aspeed_bank_props ast2600_1_8v_bank_props[] =
-> > {
-> > +       /*     input      output   */
-> > +       {1, 0x0000000f,  0x0000000f}, /* E */
-> 
-> GENMASK()?
-> 
-> > +       { },
-> 
-> No comma.
-> 
-> > +};
-> > +static const struct aspeed_gpio_config ast2600_1_8v_config =
-> > +       /* 36 1.8V GPIOs */
-> > +       { .nr_gpios = 36, .props = ast2600_1_8v_bank_props, };
-> 
-> Location of the curly braces?
-> 
+diff --git a/arch/arm/boot/dts/aspeed-g4.dtsi b/arch/arm/boot/dts/aspeed-g4.dtsi
+index e465cda40fe7..dffb595d30e4 100644
+--- a/arch/arm/boot/dts/aspeed-g4.dtsi
++++ b/arch/arm/boot/dts/aspeed-g4.dtsi
+@@ -67,6 +67,26 @@
+ 				compatible = "jedec,spi-nor";
+ 				status = "disabled";
+ 			};
++			flash at 1 {
++				reg = < 1 >;
++				compatible = "jedec,spi-nor";
++				status = "disabled";
++			};
++			flash at 2 {
++				reg = < 2 >;
++				compatible = "jedec,spi-nor";
++				status = "disabled";
++			};
++			flash at 3 {
++				reg = < 3 >;
++				compatible = "jedec,spi-nor";
++				status = "disabled";
++			};
++			flash at 4 {
++				reg = < 4 >;
++				compatible = "jedec,spi-nor";
++				status = "disabled";
++			};
+ 		};
+ 
+ 		spi: spi at 1e630000 {
+-- 
+2.23.0.rc1
 
