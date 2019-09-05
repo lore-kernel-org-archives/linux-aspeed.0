@@ -1,59 +1,58 @@
-From: Joel Stanley <joel@jms.id.au>
-Date: Thu, 5 Sep 2019 00:43:38 +0000
-Subject: [GIT PULL] ARM: aspeed: devicetree changes for 5.4, round two
-Message-ID: <CACPK8Xdp4gVuetmiu2bRTTH6oHhRrC7FELHWKVB2ZGSbPbH7HQ@mail.gmail.com>
+From: Jeremy Kerr <jk@ozlabs.org>
+Date: Thu, 05 Sep 2019 09:14:44 +0800
+Subject: [PATCH v2 1/3] drivers/tty/serial/8250: Make Aspeed VUART SIRQ
+ polarity configurable
+In-Reply-To: <20190731013404.243755-1-osk@google.com>
+References: <20190731013404.243755-1-osk@google.com>
+Message-ID: <a2ff0b6edb87d5495dd8e683e95d3b719e55f970.camel@ozlabs.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello ARM maintainers,
+Hi Oskar,
 
-Here are some late fixes I collected for the ASPEED boards.
+Looks good to me, some minor comments though:
 
-I've thrown the commits on top of the ones in the first pull request, which
-you've merged. I've not sent a second pull before so if that's not the done
-thing then let me know what you prefer.
+> +
+> +What:		/sys/bus/platform/drivers/aspeed-vuart/*/sirq_polarity
+> +Date:		July 2019
+> +Contact:	Oskar Senft <osk@google.com>
+> +Description:	Configures the polarity of the serial interrupt to the
+> +		host via the BMC LPC bus.
 
-The following changes since commit 49b0f3be0b86292eed6f6aedadf4252131d9c111:
+Can you mention what the value represents? 1/0 don't really indicate a
+specific polarity.
 
-  ARM: dts: aspeed: swift: Add eMMC device (2019-08-22 15:34:20 +0930)
+Alternatively, we could use descriptive values (say, "active-low" /
+"idle-low").
 
-are available in the Git repository at:
+> @@ -310,6 +379,7 @@ static int aspeed_vuart_probe(struct platform_device *pdev)
+>  	struct resource *res;
+>  	u32 clk, prop;
+>  	int rc;
+> +	struct of_phandle_args espi_enabled_args;
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/joel/aspeed.git \
-      tags/aspeed-5.4-devicetree-2
+Minor: can you reverse-christmas-tree this?
 
-for you to fetch changes up to 89b97c429e2e77d695b5133572ca12ec256a4ea4:
+> @@ -402,6 +472,18 @@ static int aspeed_vuart_probe(struct platform_device *pdev)
+>  
+>  	vuart->line = rc;
+>  
+> +	rc = of_parse_phandle_with_fixed_args(
+> +		np, "espi-enabled", 2, 0, &espi_enabled_args);
+> +	if (rc < 0) {
+> +		dev_warn(&pdev->dev, "espi-enabled property not found\n");
 
-  ARM: dts: aspeed-g5: Fixe gpio-ranges upper limit (2019-09-04 17:34:34 -0700)
+In the binding spec, you've listed this property at optional, but here
+we dev_warn() if its not present. Can we default to existing behaviour
+if it's not there?
 
-----------------------------------------------------------------
-ASPEED device tree updates for 5.4, second round
+That may just be a matter of changing this to dev_debug.
 
- - Alternate flash support for Vesnin
- - Minor cleanups and fixes
+Cheers,
 
-----------------------------------------------------------------
-Eddie James (1):
-      ARM: dts: aspeed: swift: Change power supplies to version 2
 
-Ivan Mikhaylov (2):
-      ARM: dts: aspeed: vesnin: Add wdt2 with alt-boot option
-      ARM: dts: aspeed: vesnin: Add secondary SPI flash chip
+Jeremy
 
-Joel Stanley (2):
-      ARM: dts: aspeed-g4: Add all flash chips
-      ARM; dts: aspeed: mihawk: File should not be executable
-
-Oscar A Perez (1):
-      ARM: dts: aspeed-g5: Fixe gpio-ranges upper limit
-
- arch/arm/boot/dts/aspeed-bmc-opp-mihawk.dts |  0
- arch/arm/boot/dts/aspeed-bmc-opp-swift.dts  |  4 ++--
- arch/arm/boot/dts/aspeed-bmc-opp-vesnin.dts | 10 ++++++++++
- arch/arm/boot/dts/aspeed-g4.dtsi            | 20 ++++++++++++++++++++
- arch/arm/boot/dts/aspeed-g5.dtsi            |  2 +-
- 5 files changed, 33 insertions(+), 3 deletions(-)
- mode change 100755 => 100644 arch/arm/boot/dts/aspeed-bmc-opp-mihawk.dts
