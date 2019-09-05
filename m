@@ -1,35 +1,27 @@
 From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Date: Thu, 5 Sep 2019 11:08:13 +0300
-Subject: [PATCH 1/4] gpio/aspeed: Fix incorrect number of banks
-In-Reply-To: <dd62da5f10c06fae1823bf8338c2acc83fe40a40.camel@gmail.com>
+Date: Thu, 5 Sep 2019 11:10:55 +0300
+Subject: [PATCH 3/4] gpio: Add in ast2600 details to Aspeed driver
+In-Reply-To: <1ca6ffddd2452e218ef19ea84ac6c6277e1a9725.camel@gmail.com>
 References: <20190904061245.30770-1-rashmica.g@gmail.com>
- <CAHp75Vd_6Rpt5=BjzV8YFCiFP7qsRrYHHo7+=gWwnZH-zT9jNw@mail.gmail.com>
- <dd62da5f10c06fae1823bf8338c2acc83fe40a40.camel@gmail.com>
-Message-ID: <CAHp75VfbjRfCOzo2+95aiGDcmEUOAqUORY4epK+REJ=Y57XFFQ@mail.gmail.com>
+ <20190904061245.30770-3-rashmica.g@gmail.com>
+ <CAHp75Ve0zEkuD-75aZ6FU+A=DvX8NvVvY3n9p_pYDyfa76sxoQ@mail.gmail.com>
+ <1ca6ffddd2452e218ef19ea84ac6c6277e1a9725.camel@gmail.com>
+Message-ID: <CAHp75VcCUuCNx35DReO4YzSgDv0YJPKXdpL+xNyjwOZX8jvVtA@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Sep 5, 2019 at 2:17 AM Rashmica Gupta <rashmica.g@gmail.com> wrote:
-> On Wed, 2019-09-04 at 19:27 +0300, Andy Shevchenko wrote:
-> > On Wed, Sep 4, 2019 at 9:14 AM Rashmica Gupta <rashmica.g@gmail.com>
-> > wrote:
+On Thu, Sep 5, 2019 at 2:34 AM Rashmica Gupta <rashmica.g@gmail.com> wrote:>
+> On Wed, 2019-09-04 at 19:30 +0300, Andy Shevchenko wrote:
 
-> > > -       banks = gpio->config->nr_gpios >> 5;
-> > > +       banks = (gpio->config->nr_gpios >> 5) + 1;
-> >
-> > Shouldn't be rather DIV_ROUND_UP(nr_gpios, sizeof(u32)) ?
->
-> I agree that DIV_ROUND_UP is the right thing to use here, but wouldn't
-> it be DIV_ROUND_UP(nr_gpios, 32)?
+> Perhaps this and your other comments below would be best addressed in
+> an additional cleanup patch? This patch follows the formatting of the
+> existing code and it's not very clean to differ from that or to change
+> the formatting of the current code in this patch.
 
-Right. Either this or BITS_PER_TYPE(u32).
-
-> > >         gpio->dcache = devm_kcalloc(&pdev->dev,
-> > >                                     banks, sizeof(u32),
-> > > GFP_KERNEL);
+OK.
 
 -- 
 With Best Regards,
