@@ -1,40 +1,32 @@
-From: Oskar Senft <osk@google.com>
-Date: Thu,  5 Sep 2019 10:41:29 -0400
-Subject: [PATCH v3 2/3] dt-bindings: serial: 8250: Add aspeed,
- sirq-polarity-sense.
-In-Reply-To: <20190905144130.220713-1-osk@google.com>
-References: <20190905144130.220713-1-osk@google.com>
-Message-ID: <20190905144130.220713-2-osk@google.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Thu, 5 Sep 2019 17:51:48 +0200
+Subject: [GIT PULL] ARM: aspeed: devicetree changes for 5.4, round two
+In-Reply-To: <CACPK8Xdp4gVuetmiu2bRTTH6oHhRrC7FELHWKVB2ZGSbPbH7HQ@mail.gmail.com>
+References: <CACPK8Xdp4gVuetmiu2bRTTH6oHhRrC7FELHWKVB2ZGSbPbH7HQ@mail.gmail.com>
+Message-ID: <CAK8P3a0Vjwgyrw9wZLr1=W85FbvgZ=RADSHoL_JscvELMdF=qw@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add documentation for 8250_aspeed_vuart's aspeed,sirq-polarity-sense
-property that enables to auto-configure the VUART's SIRQ polarity.
+On Thu, Sep 5, 2019 at 2:43 AM Joel Stanley <joel@jms.id.au> wrote:
+>
+> Hello ARM maintainers,
+>
+> Here are some late fixes I collected for the ASPEED boards.
+>
+> I've thrown the commits on top of the ones in the first pull request, which
+> you've merged. I've not sent a second pull before so if that's not the done
+> thing then let me know what you prefer.
 
-Signed-off-by: Oskar Senft <osk@google.com>
----
- Documentation/devicetree/bindings/serial/8250.txt | 5 +++++
- 1 file changed, 5 insertions(+)
+This is the best way to do it.
 
-diff --git a/Documentation/devicetree/bindings/serial/8250.txt b/Documentation/devicetree/bindings/serial/8250.txt
-index 20d351f268ef..55700f20f6ee 100644
---- a/Documentation/devicetree/bindings/serial/8250.txt
-+++ b/Documentation/devicetree/bindings/serial/8250.txt
-@@ -56,6 +56,11 @@ Optional properties:
- - {rts,cts,dtr,dsr,rng,dcd}-gpios: specify a GPIO for RTS/CTS/DTR/DSR/RI/DCD
-   line respectively. It will use specified GPIO instead of the peripheral
-   function pin for the UART feature. If unsure, don't specify this property.
-+- aspeed,sirq-polarity-sense: Only applicable to aspeed,ast2500-vuart.
-+  phandle to aspeed,ast2500-scu compatible syscon alongside register offset
-+  and bit number to identify how the SIRQ polarity should be configured.
-+  One possible data source is the LPC/eSPI mode bit.
-+  Example: aspeed,sirq-polarity-sense = <&syscon 0x70 25>
- 
- Note:
- * fsl,ns16550:
--- 
-2.23.0.187.g17f5b7556c-goog
+> ASPEED device tree updates for 5.4, second round
+>
+>  - Alternate flash support for Vesnin
+>  - Minor cleanups and fixes
 
+Pulled into arm/dt, thanks!
+
+     Arnd
