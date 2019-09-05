@@ -1,37 +1,33 @@
-From: Rashmica Gupta <rashmica.g@gmail.com>
-Date: Thu,  5 Sep 2019 11:16:35 +1000
-Subject: [PATCH v2 1/4] gpio/aspeed: Fix incorrect number of banks
-Message-ID: <20190905011635.15902-1-rashmica.g@gmail.com>
+From: Jeremy Kerr <jk@ozlabs.org>
+Date: Thu, 05 Sep 2019 09:16:53 +0800
+Subject: [PATCH v2 2/3] dt-bindings: serial: 8250: Add documentation for
+ espi-enabled.
+In-Reply-To: <b4670171-e161-4d7a-91dc-a1e5a95f7dbc@www.fastmail.com>
+References: <20190731013404.243755-1-osk@google.com>
+ <20190731013404.243755-2-osk@google.com>
+ <b4670171-e161-4d7a-91dc-a1e5a95f7dbc@www.fastmail.com>
+Message-ID: <f1d2757119807a48833eba193cd9b443dde0ccba.camel@ozlabs.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The current calculation for the number of GPIO banks is only correct if
-the number of GPIOs is a multiple of 32 (if there were 31 GPIOs we would
-currently say there are 0 banks, which is incorrect).
+Hi Oskar,
 
-Fixes: 361b79119a4b7 ('gpio: Add Aspeed driver')
+> Given it's ASPEED-specific I expect you should use a vendor prefix for the
+> property, e.g. aspeed,espi-enabled.
+> 
+> However, as I understand it you want to determine what polarity the SIRQ
+> should be regardless of which of eSPI or LPC are enabled, so I don't think
+> the property name should be an explicit statement about eSPI. Maybe
+> "aspeed,sirq-polarity-sense"?
 
-Signed-off-by: Rashmica Gupta <rashmica.g@gmail.com>
----
- drivers/gpio/gpio-aspeed.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Yep, +1 on Andrew's comments here. This property isn't an indication on
+whether espi is enabled, but a method to detect it.
 
-diff --git a/drivers/gpio/gpio-aspeed.c b/drivers/gpio/gpio-aspeed.c
-index 9defe25d4721..b83e23aecd18 100644
---- a/drivers/gpio/gpio-aspeed.c
-+++ b/drivers/gpio/gpio-aspeed.c
-@@ -1165,7 +1165,7 @@ static int __init aspeed_gpio_probe(struct platform_device *pdev)
- 	gpio->chip.base = -1;
- 
- 	/* Allocate a cache of the output registers */
--	banks = gpio->config->nr_gpios >> 5;
-+	banks = DIV_ROUND_UP(gpio->config->nr_gpios, 32);
- 	gpio->dcache = devm_kcalloc(&pdev->dev,
- 				    banks, sizeof(u32), GFP_KERNEL);
- 	if (!gpio->dcache)
--- 
-2.20.1
+Cheers,
+
+
+Jeremy
 
