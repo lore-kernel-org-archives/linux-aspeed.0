@@ -1,28 +1,111 @@
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Date: Thu, 5 Sep 2019 11:10:55 +0300
-Subject: [PATCH 3/4] gpio: Add in ast2600 details to Aspeed driver
-In-Reply-To: <1ca6ffddd2452e218ef19ea84ac6c6277e1a9725.camel@gmail.com>
-References: <20190904061245.30770-1-rashmica.g@gmail.com>
- <20190904061245.30770-3-rashmica.g@gmail.com>
- <CAHp75Ve0zEkuD-75aZ6FU+A=DvX8NvVvY3n9p_pYDyfa76sxoQ@mail.gmail.com>
- <1ca6ffddd2452e218ef19ea84ac6c6277e1a9725.camel@gmail.com>
-Message-ID: <CAHp75VcCUuCNx35DReO4YzSgDv0YJPKXdpL+xNyjwOZX8jvVtA@mail.gmail.com>
+From: Oskar Senft <osk@google.com>
+Date: Thu, 5 Sep 2019 10:38:24 -0400
+Subject: [PATCH v2 1/3] drivers/tty/serial/8250: Make Aspeed VUART SIRQ
+ polarity configurable
+In-Reply-To: <a2ff0b6edb87d5495dd8e683e95d3b719e55f970.camel@ozlabs.org>
+References: <20190731013404.243755-1-osk@google.com>
+ <a2ff0b6edb87d5495dd8e683e95d3b719e55f970.camel@ozlabs.org>
+Message-ID: <CABoTLcS2z-RtUcm_QNcNC2Pvo4GSg29qpuOnvh+W=UTe+4ehkA@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Sep 5, 2019 at 2:34 AM Rashmica Gupta <rashmica.g@gmail.com> wrote:>
-> On Wed, 2019-09-04 at 19:30 +0300, Andy Shevchenko wrote:
+Hi Jeremy
 
-> Perhaps this and your other comments below would be best addressed in
-> an additional cleanup patch? This patch follows the formatting of the
-> existing code and it's not very clean to differ from that or to change
-> the formatting of the current code in this patch.
+Thanks for your comments, they were really helpful!
 
-OK.
 
--- 
-With Best Regards,
-Andy Shevchenko
+> > +What:
+> /sys/bus/platform/drivers/aspeed-vuart/*/sirq_polarity
+> > +Date:                July 2019
+> > +Contact:     Oskar Senft <osk@google.com>
+> > +Description: Configures the polarity of the serial interrupt to the
+> > +             host via the BMC LPC bus.
+>
+> Can you mention what the value represents? 1/0 don't really indicate a
+> specific polarity.
+>
+Good point. Not sure why I didn't do that initially.
+
+
+> > @@ -310,6 +379,7 @@ static int aspeed_vuart_probe(struct platform_device
+> *pdev)
+> >       struct resource *res;
+> >       u32 clk, prop;
+> >       int rc;
+> > +     struct of_phandle_args espi_enabled_args;
+> Minor: can you reverse-christmas-tree this?
+>
+Oops, yeah. Sorry! Conflicting coding styles in my head got confused.
+
+
+> > +     rc = of_parse_phandle_with_fixed_args(
+> > +             np, "espi-enabled", 2, 0, &espi_enabled_args);
+> > +     if (rc < 0) {
+> > +             dev_warn(&pdev->dev, "espi-enabled property not found\n");
+> That may just be a matter of changing this to dev_debug.
+>
+That was my intent, sorry for that.
+
+I'll send v3 with those changes in a few minutes.
+
+Thanks
+Oskar.
+
+
+On Wed, Sep 4, 2019 at 9:14 PM Jeremy Kerr <jk@ozlabs.org> wrote:
+
+> Hi Oskar,
+>
+> Looks good to me, some minor comments though:
+>
+> > +
+> > +What:
+> /sys/bus/platform/drivers/aspeed-vuart/*/sirq_polarity
+> > +Date:                July 2019
+> > +Contact:     Oskar Senft <osk@google.com>
+> > +Description: Configures the polarity of the serial interrupt to the
+> > +             host via the BMC LPC bus.
+>
+> Can you mention what the value represents? 1/0 don't really indicate a
+> specific polarity.
+>
+> Alternatively, we could use descriptive values (say, "active-low" /
+> "idle-low").
+>
+> > @@ -310,6 +379,7 @@ static int aspeed_vuart_probe(struct platform_device
+> *pdev)
+> >       struct resource *res;
+> >       u32 clk, prop;
+> >       int rc;
+> > +     struct of_phandle_args espi_enabled_args;
+>
+> Minor: can you reverse-christmas-tree this?
+>
+> > @@ -402,6 +472,18 @@ static int aspeed_vuart_probe(struct
+> platform_device *pdev)
+> >
+> >       vuart->line = rc;
+> >
+> > +     rc = of_parse_phandle_with_fixed_args(
+> > +             np, "espi-enabled", 2, 0, &espi_enabled_args);
+> > +     if (rc < 0) {
+> > +             dev_warn(&pdev->dev, "espi-enabled property not found\n");
+>
+> In the binding spec, you've listed this property at optional, but here
+> we dev_warn() if its not present. Can we default to existing behaviour
+> if it's not there?
+>
+> That may just be a matter of changing this to dev_debug.
+>
+> Cheers,
+>
+>
+> Jeremy
+>
+>
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20190905/a92748e8/attachment.htm>
