@@ -1,39 +1,47 @@
-From: Rashmica Gupta <rashmica.g@gmail.com>
-Date: Thu,  5 Sep 2019 11:18:00 +1000
-Subject: [PATCH v2 4/4] gpio: dt-bindings: Update documentation with ast2600
- controllers
-Message-ID: <20190905011800.16156-1-rashmica.g@gmail.com>
+From: Andrew Jeffery <andrew@aj.id.au>
+Date: Thu, 05 Sep 2019 13:17:33 +0930
+Subject: [PATCH v2 1/4] gpio/aspeed: Fix incorrect number of banks
+In-Reply-To: <20190905011635.15902-1-rashmica.g@gmail.com>
+References: <20190905011635.15902-1-rashmica.g@gmail.com>
+Message-ID: <5f3ec58f-d83b-41f9-80ed-35a5434bb985@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The ast2600 is a new generation of SoC from ASPEED. Similarly to the
-ast2400 and ast2500, it has a GPIO controller for it's 3.6V GPIO pins.
-Additionally, it has a GPIO controller for 36 1.8V GPIO pins. These
-voltages are fixed and cannot be configured via pinconf, so we have two
-separate drivers for them.
 
-Signed-off-by: Rashmica Gupta <rashmica.g@gmail.com>
----
- Documentation/devicetree/bindings/gpio/gpio-aspeed.txt | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/Documentation/devicetree/bindings/gpio/gpio-aspeed.txt b/Documentation/devicetree/bindings/gpio/gpio-aspeed.txt
-index 7e9b586770b0..cd388797e07c 100644
---- a/Documentation/devicetree/bindings/gpio/gpio-aspeed.txt
-+++ b/Documentation/devicetree/bindings/gpio/gpio-aspeed.txt
-@@ -2,7 +2,8 @@ Aspeed GPIO controller Device Tree Bindings
- -------------------------------------------
- 
- Required properties:
--- compatible		: Either "aspeed,ast2400-gpio" or "aspeed,ast2500-gpio"
-+- compatible		: Either "aspeed,ast2400-gpio", "aspeed,ast2500-gpio",
-+					  "aspeed,ast2600-gpio", or "aspeed,ast2600-1-8v-gpio"
- 
- - #gpio-cells 		: Should be two
- 			  - First cell is the GPIO line number
--- 
-2.20.1
+On Thu, 5 Sep 2019, at 10:46, Rashmica Gupta wrote:
+> The current calculation for the number of GPIO banks is only correct if
+> the number of GPIOs is a multiple of 32 (if there were 31 GPIOs we would
+> currently say there are 0 banks, which is incorrect).
+> 
+> Fixes: 361b79119a4b7 ('gpio: Add Aspeed driver')
+> 
+> Signed-off-by: Rashmica Gupta <rashmica.g@gmail.com>
 
+Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
+
+> ---
+>  drivers/gpio/gpio-aspeed.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/gpio/gpio-aspeed.c b/drivers/gpio/gpio-aspeed.c
+> index 9defe25d4721..b83e23aecd18 100644
+> --- a/drivers/gpio/gpio-aspeed.c
+> +++ b/drivers/gpio/gpio-aspeed.c
+> @@ -1165,7 +1165,7 @@ static int __init aspeed_gpio_probe(struct 
+> platform_device *pdev)
+>  	gpio->chip.base = -1;
+>  
+>  	/* Allocate a cache of the output registers */
+> -	banks = gpio->config->nr_gpios >> 5;
+> +	banks = DIV_ROUND_UP(gpio->config->nr_gpios, 32);
+>  	gpio->dcache = devm_kcalloc(&pdev->dev,
+>  				    banks, sizeof(u32), GFP_KERNEL);
+>  	if (!gpio->dcache)
+> -- 
+> 2.20.1
+> 
+>
