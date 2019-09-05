@@ -1,56 +1,59 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Thu, 05 Sep 2019 10:03:33 +0930
-Subject: [PATCH] ARM: dts: aspeed-g4: Add all flash chips
-In-Reply-To: <20190905000221.31445-1-joel@jms.id.au>
-References: <20190905000221.31445-1-joel@jms.id.au>
-Message-ID: <d9805fa2-db79-457b-a166-7c84e1608128@www.fastmail.com>
+From: Joel Stanley <joel@jms.id.au>
+Date: Thu, 5 Sep 2019 00:43:38 +0000
+Subject: [GIT PULL] ARM: aspeed: devicetree changes for 5.4, round two
+Message-ID: <CACPK8Xdp4gVuetmiu2bRTTH6oHhRrC7FELHWKVB2ZGSbPbH7HQ@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+Hello ARM maintainers,
 
+Here are some late fixes I collected for the ASPEED boards.
 
-On Thu, 5 Sep 2019, at 09:32, Joel Stanley wrote:
-> The FMC supports five chip selects, so describe the five possible flash
-> chips.
-> 
-> Signed-off-by: Joel Stanley <joel@jms.id.au>
-> ---
->  arch/arm/boot/dts/aspeed-g4.dtsi | 20 ++++++++++++++++++++
->  1 file changed, 20 insertions(+)
-> 
-> diff --git a/arch/arm/boot/dts/aspeed-g4.dtsi b/arch/arm/boot/dts/aspeed-g4.dtsi
-> index e465cda40fe7..dffb595d30e4 100644
-> --- a/arch/arm/boot/dts/aspeed-g4.dtsi
-> +++ b/arch/arm/boot/dts/aspeed-g4.dtsi
-> @@ -67,6 +67,26 @@
->  				compatible = "jedec,spi-nor";
->  				status = "disabled";
->  			};
-> +			flash at 1 {
-> +				reg = < 1 >;
-> +				compatible = "jedec,spi-nor";
-> +				status = "disabled";
-> +			};
-> +			flash at 2 {
-> +				reg = < 2 >;
-> +				compatible = "jedec,spi-nor";
-> +				status = "disabled";
-> +			};
-> +			flash at 3 {
-> +				reg = < 3 >;
-> +				compatible = "jedec,spi-nor";
-> +				status = "disabled";
-> +			};
-> +			flash at 4 {
-> +				reg = < 4 >;
-> +				compatible = "jedec,spi-nor";
-> +				status = "disabled";
-> +			};
+I've thrown the commits on top of the ones in the first pull request, which
+you've merged. I've not sent a second pull before so if that's not the done
+thing then let me know what you prefer.
 
-The FMC supports parallel NOR and NAND interfaces too, but so far no-one has
-cared for these options, so if they ever do we'll fix it then.
+The following changes since commit 49b0f3be0b86292eed6f6aedadf4252131d9c111:
 
-Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
+  ARM: dts: aspeed: swift: Add eMMC device (2019-08-22 15:34:20 +0930)
+
+are available in the Git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/joel/aspeed.git \
+      tags/aspeed-5.4-devicetree-2
+
+for you to fetch changes up to 89b97c429e2e77d695b5133572ca12ec256a4ea4:
+
+  ARM: dts: aspeed-g5: Fixe gpio-ranges upper limit (2019-09-04 17:34:34 -0700)
+
+----------------------------------------------------------------
+ASPEED device tree updates for 5.4, second round
+
+ - Alternate flash support for Vesnin
+ - Minor cleanups and fixes
+
+----------------------------------------------------------------
+Eddie James (1):
+      ARM: dts: aspeed: swift: Change power supplies to version 2
+
+Ivan Mikhaylov (2):
+      ARM: dts: aspeed: vesnin: Add wdt2 with alt-boot option
+      ARM: dts: aspeed: vesnin: Add secondary SPI flash chip
+
+Joel Stanley (2):
+      ARM: dts: aspeed-g4: Add all flash chips
+      ARM; dts: aspeed: mihawk: File should not be executable
+
+Oscar A Perez (1):
+      ARM: dts: aspeed-g5: Fixe gpio-ranges upper limit
+
+ arch/arm/boot/dts/aspeed-bmc-opp-mihawk.dts |  0
+ arch/arm/boot/dts/aspeed-bmc-opp-swift.dts  |  4 ++--
+ arch/arm/boot/dts/aspeed-bmc-opp-vesnin.dts | 10 ++++++++++
+ arch/arm/boot/dts/aspeed-g4.dtsi            | 20 ++++++++++++++++++++
+ arch/arm/boot/dts/aspeed-g5.dtsi            |  2 +-
+ 5 files changed, 33 insertions(+), 3 deletions(-)
+ mode change 100755 => 100644 arch/arm/boot/dts/aspeed-bmc-opp-mihawk.dts
