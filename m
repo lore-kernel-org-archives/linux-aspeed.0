@@ -1,49 +1,38 @@
 From: Rashmica Gupta <rashmica.g@gmail.com>
-Date: Fri,  6 Sep 2019 16:25:47 +1000
-Subject: [PATCH v3 1/5] dt-bindings: gpio: aspeed: Update documentation with
- ast2600 controllers
-Message-ID: <20190906062547.13264-1-rashmica.g@gmail.com>
+Date: Fri,  6 Sep 2019 16:26:22 +1000
+Subject: [PATCH v3 2/5] gpio/aspeed: Fix incorrect number of banks
+Message-ID: <20190906062623.13354-1-rashmica.g@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The ast2600 is a new generation of SoC from ASPEED. Similarly to the
-ast2400 and ast2500, it has a GPIO controller for it's 3.3V GPIO pins.
-Additionally, it has a GPIO controller for 36 1.8V GPIO pins.  We use
-the ngpio property to differentiate between these controllers.
+The current calculation for the number of GPIO banks is only correct if
+the number of GPIOs is a multiple of 32 (if there were 31 GPIOs we would
+currently say there are 0 banks, which is incorrect).
+
+Fixes: 361b79119a4b7 ('gpio: Add Aspeed driver')
 
 Signed-off-by: Rashmica Gupta <rashmica.g@gmail.com>
+Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
 ---
- Documentation/devicetree/bindings/gpio/gpio-aspeed.txt | 7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+ drivers/gpio/gpio-aspeed.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/Documentation/devicetree/bindings/gpio/gpio-aspeed.txt b/Documentation/devicetree/bindings/gpio/gpio-aspeed.txt
-index 7e9b586770b0..b2033fc3a71a 100644
---- a/Documentation/devicetree/bindings/gpio/gpio-aspeed.txt
-+++ b/Documentation/devicetree/bindings/gpio/gpio-aspeed.txt
-@@ -2,7 +2,8 @@ Aspeed GPIO controller Device Tree Bindings
- -------------------------------------------
+diff --git a/drivers/gpio/gpio-aspeed.c b/drivers/gpio/gpio-aspeed.c
+index 9defe25d4721..b83e23aecd18 100644
+--- a/drivers/gpio/gpio-aspeed.c
++++ b/drivers/gpio/gpio-aspeed.c
+@@ -1165,7 +1165,7 @@ static int __init aspeed_gpio_probe(struct platform_device *pdev)
+ 	gpio->chip.base = -1;
  
- Required properties:
--- compatible		: Either "aspeed,ast2400-gpio" or "aspeed,ast2500-gpio"
-+- compatible		: Either "aspeed,ast2400-gpio", "aspeed,ast2500-gpio",
-+					or "aspeed,ast2600-gpio".
- 
- - #gpio-cells 		: Should be two
- 			  - First cell is the GPIO line number
-@@ -17,7 +18,9 @@ Required properties:
- 
- Optional properties:
- 
--- clocks                : A phandle to the clock to use for debounce timings
-+- clocks		: A phandle to the clock to use for debounce timings
-+- ngpios		: Number of GPIOs controlled by this controller. Should	be set
-+				  when there are multiple GPIO controllers on a SoC (ast2600).
- 
- The gpio and interrupt properties are further described in their respective
- bindings documentation:
+ 	/* Allocate a cache of the output registers */
+-	banks = gpio->config->nr_gpios >> 5;
++	banks = DIV_ROUND_UP(gpio->config->nr_gpios, 32);
+ 	gpio->dcache = devm_kcalloc(&pdev->dev,
+ 				    banks, sizeof(u32), GFP_KERNEL);
+ 	if (!gpio->dcache)
 -- 
 2.20.1
 
