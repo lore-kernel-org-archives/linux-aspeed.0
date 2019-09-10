@@ -1,10 +1,10 @@
 From: Vijay Khemka <vijaykhemka@fb.com>
-Date: Tue, 10 Sep 2019 22:13:59 +0000
+Date: Tue, 10 Sep 2019 22:48:43 +0000
 Subject: [PATCH] ftgmac100: Disable HW checksum generation on AST2500
 In-Reply-To: <bd5eab2e-6ba6-9e27-54d4-d9534da9d5f7@gmail.com>
 References: <20190910213734.3112330-1-vijaykhemka@fb.com>
  <bd5eab2e-6ba6-9e27-54d4-d9534da9d5f7@gmail.com>
-Message-ID: <CB5E42DA-E357-49F5-9060-C1C0C6921624@fb.com>
+Message-ID: <0797B1F1-883D-4129-AC16-794957ACCF1B@fb.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -25,7 +25,10 @@ Content-Transfer-Encoding: 7bit
     How about IPv4, do these packets have problem? If not, can you continue
     advertising NETIF_F_IP_CSUM but take out NETIF_F_IPV6_CSUM?
 
-Yes IPv4 works. Let me test with your suggestion and will update patch.
+I changed code from (netdev->hw_features &= ~NETIF_F_HW_CSUM) to 
+(netdev->hw_features &= ~NETIF_F_ IPV6_CSUM). And it is not working. 
+Don't know why. IPV4 works without any change but IPv6 needs HW_CSUM
+Disabled.
     
     > 
     > Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
