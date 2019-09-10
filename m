@@ -1,9 +1,10 @@
 From: Vijay Khemka <vijaykhemka@fb.com>
-Date: Tue, 10 Sep 2019 22:05:16 +0000
-Subject: [PATCH v2 1/4] gpio/aspeed: Fix incorrect number of banks
-In-Reply-To: <20190905011635.15902-1-rashmica.g@gmail.com>
-References: <20190905011635.15902-1-rashmica.g@gmail.com>
-Message-ID: <4DEF3F24-0249-4A77-981C-EB62EEC29A92@fb.com>
+Date: Tue, 10 Sep 2019 22:13:59 +0000
+Subject: [PATCH] ftgmac100: Disable HW checksum generation on AST2500
+In-Reply-To: <bd5eab2e-6ba6-9e27-54d4-d9534da9d5f7@gmail.com>
+References: <20190910213734.3112330-1-vijaykhemka@fb.com>
+ <bd5eab2e-6ba6-9e27-54d4-d9534da9d5f7@gmail.com>
+Message-ID: <CB5E42DA-E357-49F5-9060-C1C0C6921624@fb.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -12,36 +13,46 @@ Content-Transfer-Encoding: 7bit
 
 
 
-?On 9/4/19, 6:17 PM, "Linux-aspeed on behalf of Rashmica Gupta" <linux-aspeed-bounces+vijaykhemka=fb.com at lists.ozlabs.org on behalf of rashmica.g@gmail.com> wrote:
+?On 9/10/19, 3:05 PM, "Florian Fainelli" <f.fainelli@gmail.com> wrote:
 
-    The current calculation for the number of GPIO banks is only correct if
-    the number of GPIOs is a multiple of 32 (if there were 31 GPIOs we would
-    currently say there are 0 banks, which is incorrect).
+    On 9/10/19 2:37 PM, Vijay Khemka wrote:
+    > HW checksum generation is not working for AST2500, specially with IPV6
+    > over NCSI. All TCP packets with IPv6 get dropped. By disabling this
+    > it works perfectly fine with IPV6.
+    > 
+    > Verified with IPV6 enabled and can do ssh.
     
-    Fixes: 361b79119a4b7 ('gpio: Add Aspeed driver')
+    How about IPv4, do these packets have problem? If not, can you continue
+    advertising NETIF_F_IP_CSUM but take out NETIF_F_IPV6_CSUM?
+
+Yes IPv4 works. Let me test with your suggestion and will update patch.
     
-    Signed-off-by: Rashmica Gupta <rashmica.g@gmail.com>
-Reviewed-by: Vijay Khemka <vijaykhemka@fb.com>
-    ---
-     drivers/gpio/gpio-aspeed.c | 2 +-
-     1 file changed, 1 insertion(+), 1 deletion(-)
+    > 
+    > Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
+    > ---
+    >  drivers/net/ethernet/faraday/ftgmac100.c | 5 +++--
+    >  1 file changed, 3 insertions(+), 2 deletions(-)
+    > 
+    > diff --git a/drivers/net/ethernet/faraday/ftgmac100.c b/drivers/net/ethernet/faraday/ftgmac100.c
+    > index 030fed65393e..591c9725002b 100644
+    > --- a/drivers/net/ethernet/faraday/ftgmac100.c
+    > +++ b/drivers/net/ethernet/faraday/ftgmac100.c
+    > @@ -1839,8 +1839,9 @@ static int ftgmac100_probe(struct platform_device *pdev)
+    >  	if (priv->use_ncsi)
+    >  		netdev->hw_features |= NETIF_F_HW_VLAN_CTAG_FILTER;
+    >  
+    > -	/* AST2400  doesn't have working HW checksum generation */
+    > -	if (np && (of_device_is_compatible(np, "aspeed,ast2400-mac")))
+    > +	/* AST2400  and AST2500 doesn't have working HW checksum generation */
+    > +	if (np && (of_device_is_compatible(np, "aspeed,ast2400-mac") ||
+    > +		   of_device_is_compatible(np, "aspeed,ast2500-mac")))
+    >  		netdev->hw_features &= ~NETIF_F_HW_CSUM;
+    >  	if (np && of_get_property(np, "no-hw-checksum", NULL))
+    >  		netdev->hw_features &= ~(NETIF_F_HW_CSUM | NETIF_F_RXCSUM);
+    > 
     
-    diff --git a/drivers/gpio/gpio-aspeed.c b/drivers/gpio/gpio-aspeed.c
-    index 9defe25d4721..b83e23aecd18 100644
-    --- a/drivers/gpio/gpio-aspeed.c
-    +++ b/drivers/gpio/gpio-aspeed.c
-    @@ -1165,7 +1165,7 @@ static int __init aspeed_gpio_probe(struct platform_device *pdev)
-     	gpio->chip.base = -1;
-     
-     	/* Allocate a cache of the output registers */
-    -	banks = gpio->config->nr_gpios >> 5;
-    +	banks = DIV_ROUND_UP(gpio->config->nr_gpios, 32);
-Good catch
-     	gpio->dcache = devm_kcalloc(&pdev->dev,
-     				    banks, sizeof(u32), GFP_KERNEL);
-     	if (!gpio->dcache)
+    
     -- 
-    2.20.1
-    
+    Florian
     
 
