@@ -1,58 +1,27 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Mon, 09 Sep 2019 11:23:57 +0930
-Subject: =?UTF-8?Q?Re:_[PATCH_pinctrl/fixes]_pinctrl:_aspeed:_Fix_spurious_mux_fa?=
- =?UTF-8?Q?ilures_on_the_AST2500?=
-In-Reply-To: <20190829071738.2523-1-andrew@aj.id.au>
-References: <20190829071738.2523-1-andrew@aj.id.au>
-Message-ID: <5f66333d-1621-4e36-b138-52453f61cc68@www.fastmail.com>
+From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+Date: Tue, 10 Sep 2019 12:07:54 -0700
+Subject: [PATCH -next 0/2] media: aspeed: refine mode detection flow
+Message-ID: <20190910190756.31432-1-jae.hyun.yoo@linux.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+This patch series refines mode detection flow by adding and fixing of
+hsync/vsync polarity setting register handling. Please review this change.
 
+Thanks,
+-Jae
 
-On Thu, 29 Aug 2019, at 16:47, Andrew Jeffery wrote:
-> Commit 674fa8daa8c9 ("pinctrl: aspeed-g5: Delay acquisition of regmaps")
-> was determined to be a partial fix to the problem of acquiring the LPC
-> Host Controller and GFX regmaps: The AST2500 pin controller may need to
-> fetch syscon regmaps during expression evaluation as well as when
-> setting mux state. For example, this case is hit by attempting to export
-> pins exposing the LPC Host Controller as GPIOs.
-> 
-> An optional eval() hook is added to the Aspeed pinmux operation struct
-> and called from aspeed_sig_expr_eval() if the pointer is set by the
-> SoC-specific driver. This enables the AST2500 to perform the custom
-> action of acquiring its regmap dependencies as required.
-> 
-> John Wang tested the fix on an Inspur FP5280G2 machine (AST2500-based)
-> where the issue was found, and I've booted the fix on Witherspoon
-> (AST2500) and Palmetto (AST2400) machines, and poked at relevant pins
-> under QEMU by forcing mux configurations via devmem before exporting
-> GPIOs to exercise the driver.
-> 
-> Fixes: 7d29ed88acbb ("pinctrl: aspeed: Read and write bits in LPC and 
-> GFX controllers")
-> Fixes: 674fa8daa8c9 ("pinctrl: aspeed-g5: Delay acquisition of regmaps")
-> Reported-by: John Wang <wangzqbj@inspur.com>
-> Tested-by: John Wang <wangzqbj@inspur.com>
-> Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
-> 
-> ---
-> Hi Linus,
-> 
-> The timing of merging the AST2600 (g6) driver and 674fa8daa8c9 ("pinctrl:
-> aspeed-g5: Delay acquisition of regmaps") caused a bit of a rough spot a
-> few weeks back. This fix doesn't cause any such disruption - I've
-> developed it on top of pinctrl/fixes and back-merged the result into
-> pinctrl/devel to test for build breakage (via CONFIG_COMPILE_TEST to
-> enable all of the g4, g5 and g6 drivers). All three ASPEED pinctrl
-> drivers built successfully, so it should be enough to simply take this
-> patch through pinctrl/fixes and leave pinctrl/devel as is for the 5.4
-> merge window.
-> ---
+Jae Hyun Yoo (2):
+  media: aspeed: refine hsync/vsync polarity setting logic
+  media: aspeed: set hsync and vsync polarities to normal before
+    starting mode detection
 
-Ping? Was hoping to get this merged before 5.3 is tagged.
+ drivers/media/platform/aspeed-video.c | 45 ++++++++++++++-------------
+ 1 file changed, 23 insertions(+), 22 deletions(-)
 
-Andrew
+-- 
+2.23.0
+
