@@ -1,40 +1,49 @@
-From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-Date: Tue, 10 Sep 2019 12:07:56 -0700
-Subject: [PATCH -next 2/2] media: aspeed: set hsync and vsync polarities to
- normal before starting mode detection
-In-Reply-To: <20190910190756.31432-1-jae.hyun.yoo@linux.intel.com>
-References: <20190910190756.31432-1-jae.hyun.yoo@linux.intel.com>
-Message-ID: <20190910190756.31432-3-jae.hyun.yoo@linux.intel.com>
+From: Florian Fainelli <f.fainelli@gmail.com>
+Date: Tue, 10 Sep 2019 15:05:28 -0700
+Subject: [PATCH] ftgmac100: Disable HW checksum generation on AST2500
+In-Reply-To: <20190910213734.3112330-1-vijaykhemka@fb.com>
+References: <20190910213734.3112330-1-vijaykhemka@fb.com>
+Message-ID: <bd5eab2e-6ba6-9e27-54d4-d9534da9d5f7@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Sometimes it detects a weird resolution such as 1024x287 when the
-actual resolution is 1024x768. To resolve such an issue, this
-commit adds clearing for hsync and vsync polarity register bits
-at the beginning of the first mode detection. This is recommended
-in the datasheet.
+On 9/10/19 2:37 PM, Vijay Khemka wrote:
+> HW checksum generation is not working for AST2500, specially with IPV6
+> over NCSI. All TCP packets with IPv6 get dropped. By disabling this
+> it works perfectly fine with IPV6.
+> 
+> Verified with IPV6 enabled and can do ssh.
 
-Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
----
- drivers/media/platform/aspeed-video.c | 2 ++
- 1 file changed, 2 insertions(+)
+How about IPv4, do these packets have problem? If not, can you continue
+advertising NETIF_F_IP_CSUM but take out NETIF_F_IPV6_CSUM?
 
-diff --git a/drivers/media/platform/aspeed-video.c b/drivers/media/platform/aspeed-video.c
-index 8f77079da55a..929b3a5b8849 100644
---- a/drivers/media/platform/aspeed-video.c
-+++ b/drivers/media/platform/aspeed-video.c
-@@ -740,6 +740,8 @@ static void aspeed_video_get_resolution(struct aspeed_video *video)
- 		}
- 
- 		set_bit(VIDEO_RES_DETECT, &video->flags);
-+		aspeed_video_update(video, VE_CTRL,
-+				    VE_CTRL_VSYNC_POL | VE_CTRL_HSYNC_POL, 0);
- 		aspeed_video_enable_mode_detect(video);
- 
- 		rc = wait_event_interruptible_timeout(video->wait,
+> 
+> Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
+> ---
+>  drivers/net/ethernet/faraday/ftgmac100.c | 5 +++--
+>  1 file changed, 3 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/faraday/ftgmac100.c b/drivers/net/ethernet/faraday/ftgmac100.c
+> index 030fed65393e..591c9725002b 100644
+> --- a/drivers/net/ethernet/faraday/ftgmac100.c
+> +++ b/drivers/net/ethernet/faraday/ftgmac100.c
+> @@ -1839,8 +1839,9 @@ static int ftgmac100_probe(struct platform_device *pdev)
+>  	if (priv->use_ncsi)
+>  		netdev->hw_features |= NETIF_F_HW_VLAN_CTAG_FILTER;
+>  
+> -	/* AST2400  doesn't have working HW checksum generation */
+> -	if (np && (of_device_is_compatible(np, "aspeed,ast2400-mac")))
+> +	/* AST2400  and AST2500 doesn't have working HW checksum generation */
+> +	if (np && (of_device_is_compatible(np, "aspeed,ast2400-mac") ||
+> +		   of_device_is_compatible(np, "aspeed,ast2500-mac")))
+>  		netdev->hw_features &= ~NETIF_F_HW_CSUM;
+>  	if (np && of_get_property(np, "no-hw-checksum", NULL))
+>  		netdev->hw_features &= ~(NETIF_F_HW_CSUM | NETIF_F_RXCSUM);
+> 
+
+
 -- 
-2.23.0
-
+Florian
