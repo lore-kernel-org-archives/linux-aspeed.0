@@ -1,9 +1,7 @@
 From: Tudor.Ambarus@microchip.com <Tudor.Ambarus@microchip.com>
-Date: Tue, 17 Sep 2019 15:55:45 +0000
-Subject: [PATCH 20/23] mtd: spi-nor: Update sr2_bit7_quad_enable()
-In-Reply-To: <20190917155426.7432-1-tudor.ambarus@microchip.com>
-References: <20190917155426.7432-1-tudor.ambarus@microchip.com>
-Message-ID: <20190917155426.7432-21-tudor.ambarus@microchip.com>
+Date: Tue, 17 Sep 2019 15:54:40 +0000
+Subject: [PATCH 00/23] mtd: spi-nor: Quad Enable and (un)lock methods
+Message-ID: <20190917155426.7432-1-tudor.ambarus@microchip.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -12,68 +10,74 @@ Content-Transfer-Encoding: 7bit
 
 From: Tudor Ambarus <tudor.ambarus@microchip.com>
 
-Rename the method to spi_nor_sr2_bit7_quad_enable(). Do the
-read back test on all the eight bits of the Status Register,
-not just the QE one.
+Patches 1 - 14 are just clean up patches for the Flash Register
+Operations.
 
-Signed-off-by: Tudor Ambarus <tudor.ambarus@microchip.com>
----
- drivers/mtd/spi-nor/spi-nor.c | 13 ++++++++-----
- 1 file changed, 8 insertions(+), 5 deletions(-)
+Patches 15 - 21 deal with the Quad Enable and the (un)lock methods.
+Fixed the clearing of QE bit on (un)lock() operations. Reworked the
+Quad Enable methods and the disabling of the block write protection
+at power-up.
 
-diff --git a/drivers/mtd/spi-nor/spi-nor.c b/drivers/mtd/spi-nor/spi-nor.c
-index 8648666fb9bd..a9cdb6dbc25c 100644
---- a/drivers/mtd/spi-nor/spi-nor.c
-+++ b/drivers/mtd/spi-nor/spi-nor.c
-@@ -1994,7 +1994,7 @@ static int spi_nor_sr2_bit1_quad_enable(struct spi_nor *nor)
- }
- 
- /**
-- * sr2_bit7_quad_enable() - set QE bit in Status Register 2.
-+ * spi_nor_sr2_bit7_quad_enable() - set QE bit in Status Register 2.
-  * @nor:	pointer to a 'struct spi_nor'
-  *
-  * Set the Quad Enable (QE) bit in the Status Register 2.
-@@ -2005,10 +2005,11 @@ static int spi_nor_sr2_bit1_quad_enable(struct spi_nor *nor)
-  *
-  * Return: 0 on success, -errno otherwise.
-  */
--static int sr2_bit7_quad_enable(struct spi_nor *nor)
-+static int spi_nor_sr2_bit7_quad_enable(struct spi_nor *nor)
- {
- 	u8 *sr2 = nor->bouncebuf;
- 	int ret;
-+	u8 sr2_written;
- 
- 	/* Check current Quad Enable bit value. */
- 	ret = spi_nor_read_sr2(nor, sr2);
-@@ -2025,13 +2026,15 @@ static int sr2_bit7_quad_enable(struct spi_nor *nor)
- 	if (ret)
- 		return ret;
- 
-+	sr2_written = *sr2;
-+
- 	/* Read back and check it. */
- 	ret = spi_nor_read_sr2(nor, sr2);
- 	if (ret)
- 		return ret;
- 
--	if (!(*sr2 & SR2_QUAD_EN_BIT7)) {
--		dev_err(nor->dev, "SR2 Quad bit not set\n");
-+	if (*sr2 != sr2_written) {
-+		dev_err(nor->dev, "Read back test failed\n");
- 		return -EIO;
- 	}
- 
-@@ -3605,7 +3608,7 @@ static int spi_nor_parse_bfpt(struct spi_nor *nor,
- 
- 	case BFPT_DWORD15_QER_SR2_BIT7:
- 		nor->flags &= ~SNOR_F_HAS_16BIT_SR;
--		flash->quad_enable = sr2_bit7_quad_enable;
-+		flash->quad_enable = spi_nor_sr2_bit7_quad_enable;
- 		break;
- 
- 	case BFPT_DWORD15_QER_SR2_BIT1:
+Patch 22 adds Global Block Unlock support as an optimization for
+unlocking the entire memory array. Patch 23 uses it in sst26vf064b.
+
+This is just compile tested, I don't have a relevant spansion-like
+flash memory to test the (un)lock() methods.
+
+The patch set can be tested using mtd-utils:
+1/ do a read-erase-write-read-back test immediately after boot, to check
+the spi_nor_unlock_all() method
+	mtd_debug read /dev/mtd-yours offset size read-file
+	hexdump read-file
+	mtd_debug erase /dev/mtd-yours offset size
+	dd if=/dev/urandom of=write-file bs=please-choose count=please-choose
+	mtd_debug write /dev/mtd-yours offset write-file-size write-file
+	mtd_debug read /dev/mtd-yours offset write-file-size read-file
+	sha1sum read-file write-file
+2/ lock flash then try to erase/write it, to see if the lock works
+	flash_lock /dev/mtd-yours offset block-count
+	read-erase/write-read-back test
+3/ unlock flash and do a read-erase-write-read-back to check if the QE
+bit was not cleared.
+
+Thanks,
+ta
+
+Tudor Ambarus (23):
+  mtd: spi-nor: hisi-sfc: Drop nor->erase NULL assignment
+  mtd: spi-nor: Introduce 'struct spi_nor_controller_ops'
+  mtd: spi-nor: cadence-quadspi: Fix cqspi_command_read() definition
+  mtd: spi-nor: Rename nor->params to nor->flash
+  mtd: spi-nor: Rework read_sr()
+  mtd: spi-nor: Rework read_fsr()
+  mtd: spi-nor: Rework read_cr()
+  mtd: spi-nor: Rework write_enable/disable()
+  mtd: spi-nor: Fix retlen handling in sst_write()
+  mtd: spi-nor: Rework write_sr()
+  mtd: spi-nor: Rework spi_nor_read/write_sr2()
+  mtd: spi-nor: Report error in spi_nor_xread_sr()
+  mtd: spi-nor: Void return type for spi_nor_clear_sr/fsr()
+  mtd: spi-nor: Drop duplicated new line
+  mtd: spi-nor: Drop spansion_quad_enable()
+  mtd: spi-nor: Fix errno on quad_enable methods
+  mtd: spi-nor: Fix clearing of QE bit on lock()/unlock()
+  mtd: spi-nor: Rework macronix_quad_enable()
+  mtd: spi-nor: Rework spansion(_no)_read_cr_quad_enable()
+  mtd: spi-nor: Update sr2_bit7_quad_enable()
+  mtd: spi-nor: Rework the disabling of block write protection
+  mtd: spi-nor: Add Global Block Unlock support
+  mtd: spi-nor: Unlock global block protection on sst26vf064b
+
+ drivers/mtd/spi-nor/aspeed-smc.c      |   23 +-
+ drivers/mtd/spi-nor/cadence-quadspi.c |   54 +-
+ drivers/mtd/spi-nor/hisi-sfc.c        |   23 +-
+ drivers/mtd/spi-nor/intel-spi.c       |   24 +-
+ drivers/mtd/spi-nor/mtk-quadspi.c     |   25 +-
+ drivers/mtd/spi-nor/nxp-spifi.c       |   23 +-
+ drivers/mtd/spi-nor/spi-nor.c         | 1697 ++++++++++++++++++---------------
+ include/linux/mtd/spi-nor.h           |   75 +-
+ 8 files changed, 1050 insertions(+), 894 deletions(-)
+
 -- 
 2.9.5
 
