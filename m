@@ -1,9 +1,9 @@
 From: Tudor.Ambarus@microchip.com <Tudor.Ambarus@microchip.com>
-Date: Tue, 17 Sep 2019 15:54:47 +0000
-Subject: [PATCH 02/23] mtd: spi-nor: Introduce 'struct spi_nor_controller_ops'
+Date: Tue, 17 Sep 2019 15:55:06 +0000
+Subject: [PATCH 08/23] mtd: spi-nor: Rework write_enable/disable()
 In-Reply-To: <20190917155426.7432-1-tudor.ambarus@microchip.com>
 References: <20190917155426.7432-1-tudor.ambarus@microchip.com>
-Message-ID: <20190917155426.7432-3-tudor.ambarus@microchip.com>
+Message-ID: <20190917155426.7432-9-tudor.ambarus@microchip.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -12,780 +12,331 @@ Content-Transfer-Encoding: 7bit
 
 From: Tudor Ambarus <tudor.ambarus@microchip.com>
 
-Move all SPI NOR controller driver specific ops in a dedicated
-structure. 'struct spi_nor' becomes lighter.
+static int write_enable(struct spi_nor *nor)
+static int write_disable(struct spi_nor *nor)
+become
+static int spi_nor_write_enable(struct spi_nor *nor)
+static int spi_nor_write_disable(struct spi_nor *nor)
 
-Use size_t for lengths in 'int (*write_reg)()' and 'int (*read_reg)()'.
-Rename wite/read_buf to buf, the name of the functions are
-suggestive enough. Constify buf in int (*write_reg). Comply with these
-changes in the SPI NOR controller drivers.
+Check for errors after each call to them. Move them up in the
+file as the first SPI NOR Register Operations, to avoid further
+forward declarations.
 
-Suggested-by: Boris Brezillon <boris.brezillon@collabora.com>
 Signed-off-by: Tudor Ambarus <tudor.ambarus@microchip.com>
 ---
- drivers/mtd/spi-nor/aspeed-smc.c      | 23 ++++++-----
- drivers/mtd/spi-nor/cadence-quadspi.c | 39 ++++++++++--------
- drivers/mtd/spi-nor/hisi-sfc.c        | 22 +++++-----
- drivers/mtd/spi-nor/intel-spi.c       | 24 ++++++-----
- drivers/mtd/spi-nor/mtk-quadspi.c     | 25 +++++++-----
- drivers/mtd/spi-nor/nxp-spifi.c       | 23 +++++++----
- drivers/mtd/spi-nor/spi-nor.c         | 76 ++++++++++++++++++++---------------
- include/linux/mtd/spi-nor.h           | 51 +++++++++++++----------
- 8 files changed, 166 insertions(+), 117 deletions(-)
+ drivers/mtd/spi-nor/spi-nor.c | 175 +++++++++++++++++++++++++++++-------------
+ 1 file changed, 120 insertions(+), 55 deletions(-)
 
-diff --git a/drivers/mtd/spi-nor/aspeed-smc.c b/drivers/mtd/spi-nor/aspeed-smc.c
-index 009c1da8574c..2b7cabbb680c 100644
---- a/drivers/mtd/spi-nor/aspeed-smc.c
-+++ b/drivers/mtd/spi-nor/aspeed-smc.c
-@@ -320,7 +320,8 @@ static void aspeed_smc_unprep(struct spi_nor *nor, enum spi_nor_ops ops)
- 	mutex_unlock(&chip->controller->mutex);
- }
- 
--static int aspeed_smc_read_reg(struct spi_nor *nor, u8 opcode, u8 *buf, int len)
-+static int aspeed_smc_read_reg(struct spi_nor *nor, u8 opcode, u8 *buf,
-+			       size_t len)
- {
- 	struct aspeed_smc_chip *chip = nor->priv;
- 
-@@ -331,8 +332,8 @@ static int aspeed_smc_read_reg(struct spi_nor *nor, u8 opcode, u8 *buf, int len)
- 	return 0;
- }
- 
--static int aspeed_smc_write_reg(struct spi_nor *nor, u8 opcode, u8 *buf,
--				int len)
-+static int aspeed_smc_write_reg(struct spi_nor *nor, u8 opcode, const u8 *buf,
-+				size_t len)
- {
- 	struct aspeed_smc_chip *chip = nor->priv;
- 
-@@ -746,6 +747,15 @@ static int aspeed_smc_chip_setup_finish(struct aspeed_smc_chip *chip)
- 	return 0;
- }
- 
-+static const struct spi_nor_controller_ops aspeed_smc_controller_ops = {
-+	.prepare = aspeed_smc_prep,
-+	.unprepare = aspeed_smc_unprep,
-+	.read_reg = aspeed_smc_read_reg,
-+	.write_reg = aspeed_smc_write_reg,
-+	.read = aspeed_smc_read_user,
-+	.write = aspeed_smc_write_user,
-+};
-+
- static int aspeed_smc_setup_flash(struct aspeed_smc_controller *controller,
- 				  struct device_node *np, struct resource *r)
- {
-@@ -805,12 +815,7 @@ static int aspeed_smc_setup_flash(struct aspeed_smc_controller *controller,
- 		nor->dev = dev;
- 		nor->priv = chip;
- 		spi_nor_set_flash_node(nor, child);
--		nor->read = aspeed_smc_read_user;
--		nor->write = aspeed_smc_write_user;
--		nor->read_reg = aspeed_smc_read_reg;
--		nor->write_reg = aspeed_smc_write_reg;
--		nor->prepare = aspeed_smc_prep;
--		nor->unprepare = aspeed_smc_unprep;
-+		nor->controller_ops = &aspeed_smc_controller_ops;
- 
- 		ret = aspeed_smc_chip_setup_init(chip, r);
- 		if (ret)
-diff --git a/drivers/mtd/spi-nor/cadence-quadspi.c b/drivers/mtd/spi-nor/cadence-quadspi.c
-index 7bef63947b29..ebda612641a4 100644
---- a/drivers/mtd/spi-nor/cadence-quadspi.c
-+++ b/drivers/mtd/spi-nor/cadence-quadspi.c
-@@ -356,18 +356,19 @@ static int cqspi_exec_flash_cmd(struct cqspi_st *cqspi, unsigned int reg)
- 
- static int cqspi_command_read(struct spi_nor *nor,
- 			      const u8 *txbuf, const unsigned n_tx,
--			      u8 *rxbuf, const unsigned n_rx)
-+			      u8 *rxbuf, size_t n_rx)
- {
- 	struct cqspi_flash_pdata *f_pdata = nor->priv;
- 	struct cqspi_st *cqspi = f_pdata->cqspi;
- 	void __iomem *reg_base = cqspi->iobase;
- 	unsigned int rdreg;
- 	unsigned int reg;
--	unsigned int read_len;
-+	size_t read_len;
- 	int status;
- 
- 	if (!n_rx || n_rx > CQSPI_STIG_DATA_LEN_MAX || !rxbuf) {
--		dev_err(nor->dev, "Invalid input argument, len %d rxbuf 0x%p\n",
-+		dev_err(nor->dev,
-+			"Invalid input argument, len %zu rxbuf 0x%p\n",
- 			n_rx, rxbuf);
- 		return -EINVAL;
- 	}
-@@ -404,19 +405,19 @@ static int cqspi_command_read(struct spi_nor *nor,
- }
- 
- static int cqspi_command_write(struct spi_nor *nor, const u8 opcode,
--			       const u8 *txbuf, const unsigned n_tx)
-+			       const u8 *txbuf, size_t n_tx)
- {
- 	struct cqspi_flash_pdata *f_pdata = nor->priv;
- 	struct cqspi_st *cqspi = f_pdata->cqspi;
- 	void __iomem *reg_base = cqspi->iobase;
- 	unsigned int reg;
- 	unsigned int data;
--	u32 write_len;
-+	size_t write_len;
- 	int ret;
- 
- 	if (n_tx > CQSPI_STIG_DATA_LEN_MAX || (n_tx && !txbuf)) {
- 		dev_err(nor->dev,
--			"Invalid input argument, cmdlen %d txbuf 0x%p\n",
-+			"Invalid input argument, cmdlen %zu txbuf 0x%p\n",
- 			n_tx, txbuf);
- 		return -EINVAL;
- 	}
-@@ -1050,7 +1051,7 @@ static int cqspi_erase(struct spi_nor *nor, loff_t offs)
- 		return ret;
- 
- 	/* Send write enable, then erase commands. */
--	ret = nor->write_reg(nor, SPINOR_OP_WREN, NULL, 0);
-+	ret = nor->controller_ops->write_reg(nor, SPINOR_OP_WREN, NULL, 0);
- 	if (ret)
- 		return ret;
- 
-@@ -1080,7 +1081,7 @@ static void cqspi_unprep(struct spi_nor *nor, enum spi_nor_ops ops)
- 	mutex_unlock(&cqspi->bus_mutex);
- }
- 
--static int cqspi_read_reg(struct spi_nor *nor, u8 opcode, u8 *buf, int len)
-+static int cqspi_read_reg(struct spi_nor *nor, u8 opcode, u8 *buf, size_t len)
- {
- 	int ret;
- 
-@@ -1091,7 +1092,8 @@ static int cqspi_read_reg(struct spi_nor *nor, u8 opcode, u8 *buf, int len)
- 	return ret;
- }
- 
--static int cqspi_write_reg(struct spi_nor *nor, u8 opcode, u8 *buf, int len)
-+static int cqspi_write_reg(struct spi_nor *nor, u8 opcode, const u8 *buf,
-+			   size_t len)
- {
- 	int ret;
- 
-@@ -1216,6 +1218,16 @@ static void cqspi_request_mmap_dma(struct cqspi_st *cqspi)
- 	init_completion(&cqspi->rx_dma_complete);
- }
- 
-+static const struct spi_nor_controller_ops cqspi_controller_ops = {
-+	.prepare = cqspi_prep,
-+	.unprepare = cqspi_unprep,
-+	.read_reg = cqspi_read_reg,
-+	.write_reg = cqspi_write_reg,
-+	.read = cqspi_read,
-+	.write = cqspi_write,
-+	.erase = cqspi_erase,
-+};
-+
- static int cqspi_setup_flash(struct cqspi_st *cqspi, struct device_node *np)
- {
- 	struct platform_device *pdev = cqspi->pdev;
-@@ -1265,14 +1277,7 @@ static int cqspi_setup_flash(struct cqspi_st *cqspi, struct device_node *np)
- 		nor->dev = dev;
- 		spi_nor_set_flash_node(nor, np);
- 		nor->priv = f_pdata;
--
--		nor->read_reg = cqspi_read_reg;
--		nor->write_reg = cqspi_write_reg;
--		nor->read = cqspi_read;
--		nor->write = cqspi_write;
--		nor->erase = cqspi_erase;
--		nor->prepare = cqspi_prep;
--		nor->unprepare = cqspi_unprep;
-+		nor->controller_ops = &cqspi_controller_ops;
- 
- 		mtd->name = devm_kasprintf(dev, GFP_KERNEL, "%s.%d",
- 					   dev_name(dev), cs);
-diff --git a/drivers/mtd/spi-nor/hisi-sfc.c b/drivers/mtd/spi-nor/hisi-sfc.c
-index c99ed9cdbf9c..a1258216f89d 100644
---- a/drivers/mtd/spi-nor/hisi-sfc.c
-+++ b/drivers/mtd/spi-nor/hisi-sfc.c
-@@ -177,7 +177,7 @@ static void hisi_spi_nor_unprep(struct spi_nor *nor, enum spi_nor_ops ops)
- }
- 
- static int hisi_spi_nor_op_reg(struct spi_nor *nor,
--				u8 opcode, int len, u8 optype)
-+				u8 opcode, size_t len, u8 optype)
- {
- 	struct hifmc_priv *priv = nor->priv;
- 	struct hifmc_host *host = priv->host;
-@@ -200,7 +200,7 @@ static int hisi_spi_nor_op_reg(struct spi_nor *nor,
- }
- 
- static int hisi_spi_nor_read_reg(struct spi_nor *nor, u8 opcode, u8 *buf,
--		int len)
-+				 size_t len)
- {
- 	struct hifmc_priv *priv = nor->priv;
- 	struct hifmc_host *host = priv->host;
-@@ -215,7 +215,7 @@ static int hisi_spi_nor_read_reg(struct spi_nor *nor, u8 opcode, u8 *buf,
- }
- 
- static int hisi_spi_nor_write_reg(struct spi_nor *nor, u8 opcode,
--				u8 *buf, int len)
-+				  const u8 *buf, size_t len)
- {
- 	struct hifmc_priv *priv = nor->priv;
- 	struct hifmc_host *host = priv->host;
-@@ -311,6 +311,15 @@ static ssize_t hisi_spi_nor_write(struct spi_nor *nor, loff_t to,
- 	return len;
- }
- 
-+static const struct spi_nor_controller_ops hisi_controller_ops = {
-+	.prepare = hisi_spi_nor_prep,
-+	.unprepare = hisi_spi_nor_unprep,
-+	.read_reg = hisi_spi_nor_read_reg,
-+	.write_reg = hisi_spi_nor_write_reg,
-+	.read = hisi_spi_nor_read,
-+	.write = hisi_spi_nor_write,
-+};
-+
- /**
-  * Get spi flash device information and register it as a mtd device.
-  */
-@@ -357,13 +366,8 @@ static int hisi_spi_nor_register(struct device_node *np,
- 	}
- 	priv->host = host;
- 	nor->priv = priv;
-+	nor->controller_ops = &hisi_controller_ops;
- 
--	nor->prepare = hisi_spi_nor_prep;
--	nor->unprepare = hisi_spi_nor_unprep;
--	nor->read_reg = hisi_spi_nor_read_reg;
--	nor->write_reg = hisi_spi_nor_write_reg;
--	nor->read = hisi_spi_nor_read;
--	nor->write = hisi_spi_nor_write;
- 	ret = spi_nor_scan(nor, NULL, &hwcaps);
- 	if (ret)
- 		return ret;
-diff --git a/drivers/mtd/spi-nor/intel-spi.c b/drivers/mtd/spi-nor/intel-spi.c
-index 43e55a2e9b27..dc38f19ac7ae 100644
---- a/drivers/mtd/spi-nor/intel-spi.c
-+++ b/drivers/mtd/spi-nor/intel-spi.c
-@@ -426,7 +426,7 @@ static int intel_spi_opcode_index(struct intel_spi *ispi, u8 opcode, int optype)
- 	return 0;
- }
- 
--static int intel_spi_hw_cycle(struct intel_spi *ispi, u8 opcode, int len)
-+static int intel_spi_hw_cycle(struct intel_spi *ispi, u8 opcode, size_t len)
- {
- 	u32 val, status;
- 	int ret;
-@@ -469,7 +469,7 @@ static int intel_spi_hw_cycle(struct intel_spi *ispi, u8 opcode, int len)
- 	return 0;
- }
- 
--static int intel_spi_sw_cycle(struct intel_spi *ispi, u8 opcode, int len,
-+static int intel_spi_sw_cycle(struct intel_spi *ispi, u8 opcode, size_t len,
- 			      int optype)
- {
- 	u32 val = 0, status;
-@@ -535,7 +535,8 @@ static int intel_spi_sw_cycle(struct intel_spi *ispi, u8 opcode, int len,
- 	return 0;
- }
- 
--static int intel_spi_read_reg(struct spi_nor *nor, u8 opcode, u8 *buf, int len)
-+static int intel_spi_read_reg(struct spi_nor *nor, u8 opcode, u8 *buf,
-+			      size_t len)
- {
- 	struct intel_spi *ispi = nor->priv;
- 	int ret;
-@@ -555,7 +556,8 @@ static int intel_spi_read_reg(struct spi_nor *nor, u8 opcode, u8 *buf, int len)
- 	return intel_spi_read_block(ispi, buf, len);
- }
- 
--static int intel_spi_write_reg(struct spi_nor *nor, u8 opcode, u8 *buf, int len)
-+static int intel_spi_write_reg(struct spi_nor *nor, u8 opcode, const u8 *buf,
-+			       size_t len)
- {
- 	struct intel_spi *ispi = nor->priv;
- 	int ret;
-@@ -864,6 +866,14 @@ static void intel_spi_fill_partition(struct intel_spi *ispi,
- 	}
- }
- 
-+static const struct spi_nor_controller_ops intel_spi_controller_ops = {
-+	.read_reg = intel_spi_read_reg,
-+	.write_reg = intel_spi_write_reg,
-+	.read = intel_spi_read,
-+	.write = intel_spi_write,
-+	.erase = intel_spi_erase,
-+};
-+
- struct intel_spi *intel_spi_probe(struct device *dev,
- 	struct resource *mem, const struct intel_spi_boardinfo *info)
- {
-@@ -897,11 +907,7 @@ struct intel_spi *intel_spi_probe(struct device *dev,
- 
- 	ispi->nor.dev = ispi->dev;
- 	ispi->nor.priv = ispi;
--	ispi->nor.read_reg = intel_spi_read_reg;
--	ispi->nor.write_reg = intel_spi_write_reg;
--	ispi->nor.read = intel_spi_read;
--	ispi->nor.write = intel_spi_write;
--	ispi->nor.erase = intel_spi_erase;
-+	ispi->nor.controller_ops = &intel_spi_controller_ops;
- 
- 	ret = spi_nor_scan(&ispi->nor, NULL, &hwcaps);
- 	if (ret) {
-diff --git a/drivers/mtd/spi-nor/mtk-quadspi.c b/drivers/mtd/spi-nor/mtk-quadspi.c
-index 34db01ab6cab..b1691680d174 100644
---- a/drivers/mtd/spi-nor/mtk-quadspi.c
-+++ b/drivers/mtd/spi-nor/mtk-quadspi.c
-@@ -151,9 +151,9 @@ static int mtk_nor_execute_cmd(struct mtk_nor *mtk_nor, u8 cmdval)
- }
- 
- static int mtk_nor_do_tx_rx(struct mtk_nor *mtk_nor, u8 op,
--			    u8 *tx, int txlen, u8 *rx, int rxlen)
-+			    const u8 *tx, size_t txlen, u8 *rx, size_t rxlen)
- {
--	int len = 1 + txlen + rxlen;
-+	size_t len = 1 + txlen + rxlen;
- 	int i, ret, idx;
- 
- 	if (len > MTK_NOR_MAX_SHIFT)
-@@ -193,7 +193,7 @@ static int mtk_nor_do_tx_rx(struct mtk_nor *mtk_nor, u8 op,
- }
- 
- /* Do a WRSR (Write Status Register) command */
--static int mtk_nor_wr_sr(struct mtk_nor *mtk_nor, u8 sr)
-+static int mtk_nor_wr_sr(struct mtk_nor *mtk_nor, const u8 sr)
- {
- 	writeb(sr, mtk_nor->base + MTK_NOR_PRGDATA5_REG);
- 	writeb(8, mtk_nor->base + MTK_NOR_CNT_REG);
-@@ -354,7 +354,7 @@ static ssize_t mtk_nor_write(struct spi_nor *nor, loff_t to, size_t len,
- 	return len;
- }
- 
--static int mtk_nor_read_reg(struct spi_nor *nor, u8 opcode, u8 *buf, int len)
-+static int mtk_nor_read_reg(struct spi_nor *nor, u8 opcode, u8 *buf, size_t len)
- {
- 	int ret;
- 	struct mtk_nor *mtk_nor = nor->priv;
-@@ -376,8 +376,8 @@ static int mtk_nor_read_reg(struct spi_nor *nor, u8 opcode, u8 *buf, int len)
- 	return ret;
- }
- 
--static int mtk_nor_write_reg(struct spi_nor *nor, u8 opcode, u8 *buf,
--			     int len)
-+static int mtk_nor_write_reg(struct spi_nor *nor, u8 opcode, const u8 *buf,
-+			     size_t len)
- {
- 	int ret;
- 	struct mtk_nor *mtk_nor = nor->priv;
-@@ -419,6 +419,13 @@ static int mtk_nor_enable_clk(struct mtk_nor *mtk_nor)
- 	return 0;
- }
- 
-+static const struct spi_nor_controller_ops mtk_controller_ops = {
-+	.read_reg = mtk_nor_read_reg,
-+	.write_reg = mtk_nor_write_reg,
-+	.read = mtk_nor_read,
-+	.write = mtk_nor_write,
-+};
-+
- static int mtk_nor_init(struct mtk_nor *mtk_nor,
- 			struct device_node *flash_node)
- {
-@@ -438,12 +445,8 @@ static int mtk_nor_init(struct mtk_nor *mtk_nor,
- 	nor->dev = mtk_nor->dev;
- 	nor->priv = mtk_nor;
- 	spi_nor_set_flash_node(nor, flash_node);
-+	nor->controller_ops = &mtk_controller_ops;
- 
--	/* fill the hooks to spi nor */
--	nor->read = mtk_nor_read;
--	nor->read_reg = mtk_nor_read_reg;
--	nor->write = mtk_nor_write;
--	nor->write_reg = mtk_nor_write_reg;
- 	nor->mtd.name = "mtk_nor";
- 	/* initialized with NULL */
- 	ret = spi_nor_scan(nor, NULL, &hwcaps);
-diff --git a/drivers/mtd/spi-nor/nxp-spifi.c b/drivers/mtd/spi-nor/nxp-spifi.c
-index 4a871587392b..9a5b1a7c636a 100644
---- a/drivers/mtd/spi-nor/nxp-spifi.c
-+++ b/drivers/mtd/spi-nor/nxp-spifi.c
-@@ -123,7 +123,8 @@ static int nxp_spifi_set_memory_mode_on(struct nxp_spifi *spifi)
- 	return ret;
- }
- 
--static int nxp_spifi_read_reg(struct spi_nor *nor, u8 opcode, u8 *buf, int len)
-+static int nxp_spifi_read_reg(struct spi_nor *nor, u8 opcode, u8 *buf,
-+			      size_t len)
- {
- 	struct nxp_spifi *spifi = nor->priv;
- 	u32 cmd;
-@@ -145,7 +146,8 @@ static int nxp_spifi_read_reg(struct spi_nor *nor, u8 opcode, u8 *buf, int len)
- 	return nxp_spifi_wait_for_cmd(spifi);
- }
- 
--static int nxp_spifi_write_reg(struct spi_nor *nor, u8 opcode, u8 *buf, int len)
-+static int nxp_spifi_write_reg(struct spi_nor *nor, u8 opcode, const u8 *buf,
-+			       size_t len)
- {
- 	struct nxp_spifi *spifi = nor->priv;
- 	u32 cmd;
-@@ -263,9 +265,18 @@ static int nxp_spifi_setup_memory_cmd(struct nxp_spifi *spifi)
- static void nxp_spifi_dummy_id_read(struct spi_nor *nor)
- {
- 	u8 id[SPI_NOR_MAX_ID_LEN];
--	nor->read_reg(nor, SPINOR_OP_RDID, id, SPI_NOR_MAX_ID_LEN);
-+	nor->controller_ops->read_reg(nor, SPINOR_OP_RDID, id,
-+				      SPI_NOR_MAX_ID_LEN);
- }
- 
-+static const struct spi_nor_controller_ops nxp_spifi_controller_ops = {
-+	.read_reg  = nxp_spifi_read_reg,
-+	.write_reg = nxp_spifi_write_reg,
-+	.read  = nxp_spifi_read,
-+	.write = nxp_spifi_write,
-+	.erase = nxp_spifi_erase,
-+};
-+
- static int nxp_spifi_setup_flash(struct nxp_spifi *spifi,
- 				 struct device_node *np)
- {
-@@ -332,11 +343,7 @@ static int nxp_spifi_setup_flash(struct nxp_spifi *spifi,
- 	spifi->nor.dev   = spifi->dev;
- 	spi_nor_set_flash_node(&spifi->nor, np);
- 	spifi->nor.priv  = spifi;
--	spifi->nor.read  = nxp_spifi_read;
--	spifi->nor.write = nxp_spifi_write;
--	spifi->nor.erase = nxp_spifi_erase;
--	spifi->nor.read_reg  = nxp_spifi_read_reg;
--	spifi->nor.write_reg = nxp_spifi_write_reg;
-+	spifi->nor.controller_ops = &nxp_spifi_controller_ops;
- 
- 	/*
- 	 * The first read on a hard reset isn't reliable so do a
 diff --git a/drivers/mtd/spi-nor/spi-nor.c b/drivers/mtd/spi-nor/spi-nor.c
-index 1d8621d43160..b8c7ded0f145 100644
+index 04491885b9bb..271c2b465038 100644
 --- a/drivers/mtd/spi-nor/spi-nor.c
 +++ b/drivers/mtd/spi-nor/spi-nor.c
-@@ -338,7 +338,7 @@ static ssize_t spi_nor_read_data(struct spi_nor *nor, loff_t from, size_t len,
- 	if (nor->spimem)
- 		return spi_nor_spimem_read_data(nor, from, len, buf);
- 
--	return nor->read(nor, from, len, buf);
-+	return nor->controller_ops->read(nor, from, len, buf);
+@@ -389,6 +389,64 @@ static ssize_t spi_nor_write_data(struct spi_nor *nor, loff_t to, size_t len,
  }
  
  /**
-@@ -385,7 +385,7 @@ static ssize_t spi_nor_write_data(struct spi_nor *nor, loff_t to, size_t len,
- 	if (nor->spimem)
- 		return spi_nor_spimem_write_data(nor, to, len, buf);
- 
--	return nor->write(nor, to, len, buf);
-+	return nor->controller_ops->write(nor, to, len, buf);
++ * spi_nor_write_enable() - Set write enable latch with Write Enable command.
++ * @nor:        pointer to 'struct spi_nor'
++ *
++ * Return: 0 on success, -errno otherwise.
++ */
++static int spi_nor_write_enable(struct spi_nor *nor)
++{
++	int ret;
++
++	if (nor->spimem) {
++		struct spi_mem_op op =
++			SPI_MEM_OP(SPI_MEM_OP_CMD(SPINOR_OP_WREN, 1),
++				   SPI_MEM_OP_NO_ADDR,
++				   SPI_MEM_OP_NO_DUMMY,
++				   SPI_MEM_OP_NO_DATA);
++
++		ret = spi_mem_exec_op(nor->spimem, &op);
++	} else {
++		ret = nor->controller_ops->write_reg(nor, SPINOR_OP_WREN,
++						     NULL, 0);
++	}
++
++	if (ret)
++		dev_err(nor->dev, "error %d on Write Enable\n", ret);
++
++	return ret;
++}
++
++/**
++ * spi_nor_write_disable() - Send Write Disable instruction to the chip.
++ * @nor:        pointer to 'struct spi_nor'
++ *
++ * Return: 0 on success, -errno otherwise.
++ */
++static int spi_nor_write_disable(struct spi_nor *nor)
++{
++	int ret;
++
++	if (nor->spimem) {
++		struct spi_mem_op op =
++			SPI_MEM_OP(SPI_MEM_OP_CMD(SPINOR_OP_WRDI, 1),
++				   SPI_MEM_OP_NO_ADDR,
++				   SPI_MEM_OP_NO_DUMMY,
++				   SPI_MEM_OP_NO_DATA);
++
++		ret = spi_mem_exec_op(nor->spimem, &op);
++	} else {
++		ret = nor->controller_ops->write_reg(nor, SPINOR_OP_WRDI,
++						     NULL, 0);
++	}
++
++	if (ret)
++		dev_err(nor->dev, "error %d on Write Disable\n", ret);
++
++	return ret;
++}
++
++/**
+  * spi_nor_read_sr() - Read the Status Register.
+  * @nor:        pointer to 'struct spi_nor'
+  * @sr:		buffer where the value of the Status Register will be written.
+@@ -500,43 +558,6 @@ static int write_sr(struct spi_nor *nor, u8 val)
+ 					      nor->bouncebuf, 1);
  }
  
- /*
-@@ -406,7 +406,8 @@ static int read_sr(struct spi_nor *nor)
- 
- 		ret = spi_mem_exec_op(nor->spimem, &op);
- 	} else {
--		ret = nor->read_reg(nor, SPINOR_OP_RDSR, nor->bouncebuf, 1);
-+		ret = nor->controller_ops->read_reg(nor, SPINOR_OP_RDSR,
-+						    nor->bouncebuf, 1);
- 	}
- 
- 	if (ret < 0) {
-@@ -435,7 +436,8 @@ static int read_fsr(struct spi_nor *nor)
- 
- 		ret = spi_mem_exec_op(nor->spimem, &op);
- 	} else {
--		ret = nor->read_reg(nor, SPINOR_OP_RDFSR, nor->bouncebuf, 1);
-+		ret = nor->controller_ops->read_reg(nor, SPINOR_OP_RDFSR,
-+						    nor->bouncebuf, 1);
- 	}
- 
- 	if (ret < 0) {
-@@ -464,7 +466,8 @@ static int read_cr(struct spi_nor *nor)
- 
- 		ret = spi_mem_exec_op(nor->spimem, &op);
- 	} else {
--		ret = nor->read_reg(nor, SPINOR_OP_RDCR, nor->bouncebuf, 1);
-+		ret = nor->controller_ops->read_reg(nor, SPINOR_OP_RDCR,
-+						    nor->bouncebuf, 1);
- 	}
- 
- 	if (ret < 0) {
-@@ -492,7 +495,8 @@ static int write_sr(struct spi_nor *nor, u8 val)
- 		return spi_mem_exec_op(nor->spimem, &op);
- 	}
- 
--	return nor->write_reg(nor, SPINOR_OP_WRSR, nor->bouncebuf, 1);
-+	return nor->controller_ops->write_reg(nor, SPINOR_OP_WRSR,
-+					      nor->bouncebuf, 1);
- }
- 
- /*
-@@ -511,7 +515,7 @@ static int write_enable(struct spi_nor *nor)
- 		return spi_mem_exec_op(nor->spimem, &op);
- 	}
- 
--	return nor->write_reg(nor, SPINOR_OP_WREN, NULL, 0);
-+	return nor->controller_ops->write_reg(nor, SPINOR_OP_WREN, NULL, 0);
- }
- 
- /*
-@@ -529,7 +533,7 @@ static int write_disable(struct spi_nor *nor)
- 		return spi_mem_exec_op(nor->spimem, &op);
- 	}
- 
--	return nor->write_reg(nor, SPINOR_OP_WRDI, NULL, 0);
-+	return nor->controller_ops->write_reg(nor, SPINOR_OP_WRDI, NULL, 0);
- }
- 
+-/*
+- * Set write enable latch with Write Enable command.
+- * Returns negative if error occurred.
+- */
+-static int write_enable(struct spi_nor *nor)
+-{
+-	if (nor->spimem) {
+-		struct spi_mem_op op =
+-			SPI_MEM_OP(SPI_MEM_OP_CMD(SPINOR_OP_WREN, 1),
+-				   SPI_MEM_OP_NO_ADDR,
+-				   SPI_MEM_OP_NO_DUMMY,
+-				   SPI_MEM_OP_NO_DATA);
+-
+-		return spi_mem_exec_op(nor->spimem, &op);
+-	}
+-
+-	return nor->controller_ops->write_reg(nor, SPINOR_OP_WREN, NULL, 0);
+-}
+-
+-/*
+- * Send write disable instruction to the chip.
+- */
+-static int write_disable(struct spi_nor *nor)
+-{
+-	if (nor->spimem) {
+-		struct spi_mem_op op =
+-			SPI_MEM_OP(SPI_MEM_OP_CMD(SPINOR_OP_WRDI, 1),
+-				   SPI_MEM_OP_NO_ADDR,
+-				   SPI_MEM_OP_NO_DUMMY,
+-				   SPI_MEM_OP_NO_DATA);
+-
+-		return spi_mem_exec_op(nor->spimem, &op);
+-	}
+-
+-	return nor->controller_ops->write_reg(nor, SPINOR_OP_WRDI, NULL, 0);
+-}
+-
  static struct spi_nor *mtd_to_spi_nor(struct mtd_info *mtd)
-@@ -631,8 +635,9 @@ static int macronix_set_4byte(struct spi_nor *nor, bool enable)
- 		return spi_mem_exec_op(nor->spimem, &op);
- 	}
- 
--	return nor->write_reg(nor, enable ? SPINOR_OP_EN4B : SPINOR_OP_EX4B,
--			      NULL, 0);
-+	return nor->controller_ops->write_reg(nor, enable ? SPINOR_OP_EN4B :
-+							    SPINOR_OP_EX4B,
-+					      NULL, 0);
- }
- 
- static int st_micron_set_4byte(struct spi_nor *nor, bool enable)
-@@ -660,7 +665,8 @@ static int spansion_set_4byte(struct spi_nor *nor, bool enable)
- 		return spi_mem_exec_op(nor->spimem, &op);
- 	}
- 
--	return nor->write_reg(nor, SPINOR_OP_BRWR, nor->bouncebuf, 1);
-+	return nor->controller_ops->write_reg(nor, SPINOR_OP_BRWR,
-+					      nor->bouncebuf, 1);
- }
- 
- static int spi_nor_write_ear(struct spi_nor *nor, u8 ear)
-@@ -677,7 +683,8 @@ static int spi_nor_write_ear(struct spi_nor *nor, u8 ear)
- 		return spi_mem_exec_op(nor->spimem, &op);
- 	}
- 
--	return nor->write_reg(nor, SPINOR_OP_WREAR, nor->bouncebuf, 1);
-+	return nor->controller_ops->write_reg(nor, SPINOR_OP_WREAR,
-+					      nor->bouncebuf, 1);
- }
- 
- static int winbond_set_4byte(struct spi_nor *nor, bool enable)
-@@ -712,7 +719,7 @@ static int spi_nor_xread_sr(struct spi_nor *nor, u8 *sr)
- 		return spi_mem_exec_op(nor->spimem, &op);
- 	}
- 
--	return nor->read_reg(nor, SPINOR_OP_XRDSR, sr, 1);
-+	return nor->controller_ops->read_reg(nor, SPINOR_OP_XRDSR, sr, 1);
- }
- 
- static int s3an_sr_ready(struct spi_nor *nor)
-@@ -740,7 +747,7 @@ static int spi_nor_clear_sr(struct spi_nor *nor)
- 		return spi_mem_exec_op(nor->spimem, &op);
- 	}
- 
--	return nor->write_reg(nor, SPINOR_OP_CLSR, NULL, 0);
-+	return nor->controller_ops->write_reg(nor, SPINOR_OP_CLSR, NULL, 0);
- }
- 
- static int spi_nor_sr_ready(struct spi_nor *nor)
-@@ -774,7 +781,7 @@ static int spi_nor_clear_fsr(struct spi_nor *nor)
- 		return spi_mem_exec_op(nor->spimem, &op);
- 	}
- 
--	return nor->write_reg(nor, SPINOR_OP_CLFSR, NULL, 0);
-+	return nor->controller_ops->write_reg(nor, SPINOR_OP_CLFSR, NULL, 0);
- }
- 
- static int spi_nor_fsr_ready(struct spi_nor *nor)
-@@ -871,7 +878,8 @@ static int erase_chip(struct spi_nor *nor)
- 		return spi_mem_exec_op(nor->spimem, &op);
- 	}
- 
--	return nor->write_reg(nor, SPINOR_OP_CHIP_ERASE, NULL, 0);
-+	return nor->controller_ops->write_reg(nor, SPINOR_OP_CHIP_ERASE,
-+					      NULL, 0);
- }
- 
- static int spi_nor_lock_and_prep(struct spi_nor *nor, enum spi_nor_ops ops)
-@@ -880,10 +888,9 @@ static int spi_nor_lock_and_prep(struct spi_nor *nor, enum spi_nor_ops ops)
- 
- 	mutex_lock(&nor->lock);
- 
--	if (nor->prepare) {
--		ret = nor->prepare(nor, ops);
-+	if (nor->controller_ops &&  nor->controller_ops->prepare) {
-+		ret = nor->controller_ops->prepare(nor, ops);
- 		if (ret) {
--			dev_err(nor->dev, "failed in the preparation.\n");
- 			mutex_unlock(&nor->lock);
- 			return ret;
- 		}
-@@ -893,8 +900,8 @@ static int spi_nor_lock_and_prep(struct spi_nor *nor, enum spi_nor_ops ops)
- 
- static void spi_nor_unlock_and_unprep(struct spi_nor *nor, enum spi_nor_ops ops)
  {
--	if (nor->unprepare)
--		nor->unprepare(nor, ops);
-+	if (nor->controller_ops && nor->controller_ops->unprepare)
-+		nor->controller_ops->unprepare(nor, ops);
- 	mutex_unlock(&nor->lock);
+ 	return mtd->priv;
+@@ -645,9 +666,15 @@ static int st_micron_set_4byte(struct spi_nor *nor, bool enable)
+ {
+ 	int ret;
+ 
+-	write_enable(nor);
++	ret = spi_nor_write_enable(nor);
++	if (ret)
++		return ret;
++
+ 	ret = macronix_set_4byte(nor, enable);
+-	write_disable(nor);
++	if (ret)
++		return ret;
++
++	ret = spi_nor_write_disable(nor);
+ 
+ 	return ret;
  }
+@@ -701,9 +728,15 @@ static int winbond_set_4byte(struct spi_nor *nor, bool enable)
+ 	 * Register to be set to 1, so all 3-byte-address reads come from the
+ 	 * second 16M. We must clear the register to enable normal behavior.
+ 	 */
+-	write_enable(nor);
++	ret = spi_nor_write_enable(nor);
++	if (ret)
++		return ret;
++
+ 	ret = spi_nor_write_ear(nor, 0);
+-	write_disable(nor);
++	if (ret)
++		return ret;
++
++	ret = spi_nor_write_disable(nor);
  
-@@ -935,8 +942,8 @@ static int spi_nor_erase_sector(struct spi_nor *nor, u32 addr)
+ 	return ret;
+ }
+@@ -1219,7 +1252,9 @@ static int spi_nor_erase_multi_sectors(struct spi_nor *nor, u64 addr, u32 len)
+ 	list_for_each_entry_safe(cmd, next, &erase_list, list) {
+ 		nor->erase_opcode = cmd->opcode;
+ 		while (cmd->count) {
+-			write_enable(nor);
++			ret = spi_nor_write_enable(nor);
++			if (ret)
++				goto destroy_erase_cmd_list;
  
- 	addr = spi_nor_convert_addr(nor, addr);
+ 			ret = spi_nor_erase_sector(nor, addr);
+ 			if (ret)
+@@ -1274,7 +1309,9 @@ static int spi_nor_erase(struct mtd_info *mtd, struct erase_info *instr)
+ 	if (len == mtd->size && !(nor->flags & SNOR_F_NO_OP_CHIP_ERASE)) {
+ 		unsigned long timeout;
  
--	if (nor->erase)
--		return nor->erase(nor, addr);
-+	if (nor->controller_ops && nor->controller_ops->erase)
-+		return nor->controller_ops->erase(nor, addr);
+-		write_enable(nor);
++		ret = spi_nor_write_enable(nor);
++		if (ret)
++			goto erase_err;
+ 
+ 		if (erase_chip(nor)) {
+ 			ret = -EIO;
+@@ -1302,7 +1339,9 @@ static int spi_nor_erase(struct mtd_info *mtd, struct erase_info *instr)
+ 	/* "sector"-at-a-time erase */
+ 	} else if (spi_nor_has_uniform_erase(nor)) {
+ 		while (len) {
+-			write_enable(nor);
++			ret = spi_nor_write_enable(nor);
++			if (ret)
++				goto erase_err;
+ 
+ 			ret = spi_nor_erase_sector(nor, addr);
+ 			if (ret)
+@@ -1323,7 +1362,7 @@ static int spi_nor_erase(struct mtd_info *mtd, struct erase_info *instr)
+ 			goto erase_err;
+ 	}
+ 
+-	write_disable(nor);
++	ret = spi_nor_write_disable(nor);
+ 
+ erase_err:
+ 	spi_nor_unlock_and_unprep(nor, SPI_NOR_OPS_ERASE);
+@@ -1336,7 +1375,10 @@ static int write_sr_and_check(struct spi_nor *nor, u8 status_new, u8 mask)
+ {
+ 	int ret;
+ 
+-	write_enable(nor);
++	ret = spi_nor_write_enable(nor);
++	if (ret)
++		return ret;
++
+ 	ret = write_sr(nor, status_new);
+ 	if (ret)
+ 		return ret;
+@@ -1681,7 +1723,9 @@ static int write_sr_cr(struct spi_nor *nor, u8 *sr_cr)
+ {
+ 	int ret;
+ 
+-	write_enable(nor);
++	ret = spi_nor_write_enable(nor);
++	if (ret)
++		return ret;
  
  	if (nor->spimem) {
  		struct spi_mem_op op =
-@@ -957,8 +964,8 @@ static int spi_nor_erase_sector(struct spi_nor *nor, u32 addr)
- 		addr >>= 8;
- 	}
+@@ -1733,7 +1777,9 @@ static int macronix_quad_enable(struct spi_nor *nor)
+ 	if (nor->bouncebuf[0] & SR_QUAD_EN_MX)
+ 		return 0;
  
--	return nor->write_reg(nor, nor->erase_opcode, nor->bouncebuf,
--			      nor->addr_width);
-+	return nor->controller_ops->write_reg(nor, nor->erase_opcode,
-+					      nor->bouncebuf, nor->addr_width);
- }
+-	write_enable(nor);
++	ret = spi_nor_write_enable(nor);
++	if (ret)
++		return ret;
  
- /**
-@@ -1678,7 +1685,8 @@ static int write_sr_cr(struct spi_nor *nor, u8 *sr_cr)
+ 	write_sr(nor, nor->bouncebuf[0] | SR_QUAD_EN_MX);
  
- 		ret = spi_mem_exec_op(nor->spimem, &op);
- 	} else {
--		ret = nor->write_reg(nor, SPINOR_OP_WRSR, sr_cr, 2);
-+		ret = nor->controller_ops->write_reg(nor, SPINOR_OP_WRSR,
-+						     sr_cr, 2);
- 	}
+@@ -1936,7 +1982,9 @@ static int sr2_bit7_quad_enable(struct spi_nor *nor)
+ 	/* Update the Quad Enable bit. */
+ 	*sr2 |= SR2_QUAD_EN_BIT7;
  
+-	write_enable(nor);
++	ret = spi_nor_write_enable(nor);
++	if (ret)
++		return ret;
+ 
+ 	ret = spi_nor_write_sr2(nor, sr2);
  	if (ret < 0) {
-@@ -1873,7 +1881,7 @@ static int spi_nor_write_sr2(struct spi_nor *nor, u8 *sr2)
- 		return spi_mem_exec_op(nor->spimem, &op);
+@@ -1978,7 +2026,9 @@ static int spi_nor_clear_sr_bp(struct spi_nor *nor)
+ 	if (ret)
+ 		return ret;
+ 
+-	write_enable(nor);
++	ret = spi_nor_write_enable(nor);
++	if (ret)
++		return ret;
+ 
+ 	ret = write_sr(nor, nor->bouncebuf[0] & ~mask);
+ 	if (ret) {
+@@ -2601,7 +2651,9 @@ static int sst_write(struct mtd_info *mtd, loff_t to, size_t len,
+ 	if (ret)
+ 		return ret;
+ 
+-	write_enable(nor);
++	ret = spi_nor_write_enable(nor);
++	if (ret)
++		goto unlock_and_unprep;
+ 
+ 	nor->sst_write_second = false;
+ 
+@@ -2640,14 +2692,19 @@ static int sst_write(struct mtd_info *mtd, loff_t to, size_t len,
  	}
+ 	nor->sst_write_second = false;
  
--	return nor->write_reg(nor, SPINOR_OP_WRSR2, sr2, 1);
-+	return nor->controller_ops->write_reg(nor, SPINOR_OP_WRSR2, sr2, 1);
- }
- 
- static int spi_nor_read_sr2(struct spi_nor *nor, u8 *sr2)
-@@ -1888,7 +1896,7 @@ static int spi_nor_read_sr2(struct spi_nor *nor, u8 *sr2)
- 		return spi_mem_exec_op(nor->spimem, &op);
- 	}
- 
--	return nor->read_reg(nor, SPINOR_OP_RDSR2, sr2, 1);
-+	return nor->controller_ops->read_reg(nor, SPINOR_OP_RDSR2, sr2, 1);
- }
- 
- /**
-@@ -2520,8 +2528,8 @@ static const struct flash_info *spi_nor_read_id(struct spi_nor *nor)
- 
- 		tmp = spi_mem_exec_op(nor->spimem, &op);
- 	} else {
--		tmp = nor->read_reg(nor, SPINOR_OP_RDID, id,
--				    SPI_NOR_MAX_ID_LEN);
-+		tmp = nor->controller_ops->read_reg(nor, SPINOR_OP_RDID, id,
-+						    SPI_NOR_MAX_ID_LEN);
- 	}
- 	if (tmp < 0) {
- 		dev_err(nor->dev, "error %d reading JEDEC ID\n", tmp);
-@@ -2722,9 +2730,11 @@ static int spi_nor_write(struct mtd_info *mtd, loff_t to, size_t len,
- static int spi_nor_check(struct spi_nor *nor)
- {
- 	if (!nor->dev ||
--	    (!nor->spimem &&
--	    (!nor->read || !nor->write || !nor->read_reg ||
--	      !nor->write_reg))) {
-+	    (!nor->spimem && nor->controller_ops &&
-+	    (!nor->controller_ops->read ||
-+	     !nor->controller_ops->write ||
-+	     !nor->controller_ops->read_reg ||
-+	     !nor->controller_ops->write_reg))) {
- 		pr_err("spi-nor: please fill all the necessary fields!\n");
- 		return -EINVAL;
- 	}
-diff --git a/include/linux/mtd/spi-nor.h b/include/linux/mtd/spi-nor.h
-index fc0b4b19c900..d1d736d3c8ab 100644
---- a/include/linux/mtd/spi-nor.h
-+++ b/include/linux/mtd/spi-nor.h
-@@ -466,6 +466,34 @@ enum spi_nor_pp_command_index {
- struct spi_nor;
- 
- /**
-+ * struct spi_nor_controller_ops - SPI NOR controller driver specific
-+ *                                 operations.
-+ * @prepare:		[OPTIONAL] do some preparations for the
-+ *			read/write/erase/lock/unlock operations.
-+ * @unprepare:		[OPTIONAL] do some post work after the
-+ *			read/write/erase/lock/unlock operations.
-+ * @read_reg:		read out the register.
-+ * @write_reg:		write data to the register.
-+ * @read:		read data from the SPI NOR.
-+ * @write:		write data to the SPI NOR.
-+ * @erase:		erase a sector of the SPI NOR at the offset @offs; if
-+ *			not provided by the driver, spi-nor will send the erase
-+ *			opcode via write_reg().
-+ */
-+struct spi_nor_controller_ops {
-+	int (*prepare)(struct spi_nor *nor, enum spi_nor_ops ops);
-+	void (*unprepare)(struct spi_nor *nor, enum spi_nor_ops ops);
-+	int (*read_reg)(struct spi_nor *nor, u8 opcode, u8 *buf, size_t len);
-+	int (*write_reg)(struct spi_nor *nor, u8 opcode, const u8 *buf,
-+			 size_t len);
+-	write_disable(nor);
++	ret = spi_nor_write_disable(nor);
++	if (ret)
++		goto sst_write_err;
 +
-+	ssize_t (*read)(struct spi_nor *nor, loff_t from, size_t len, u8 *buf);
-+	ssize_t (*write)(struct spi_nor *nor, loff_t to, size_t len,
-+			 const u8 *buf);
-+	int (*erase)(struct spi_nor *nor, loff_t offs);
-+};
+ 	ret = spi_nor_wait_till_ready(nor);
+ 	if (ret)
+ 		goto sst_write_err;
+ 
+ 	/* Write out trailing byte if it exists. */
+ 	if (actual != len) {
+-		write_enable(nor);
++		ret = spi_nor_write_enable(nor);
++		if (ret)
++			goto sst_write_err;
+ 
+ 		nor->program_opcode = SPINOR_OP_BP;
+ 		ret = spi_nor_write_data(nor, to, 1, buf + actual);
+@@ -2658,11 +2715,16 @@ static int sst_write(struct mtd_info *mtd, loff_t to, size_t len,
+ 		ret = spi_nor_wait_till_ready(nor);
+ 		if (ret)
+ 			goto sst_write_err;
+-		write_disable(nor);
 +
-+/**
-  * struct spi_nor_locking_ops - SPI NOR locking methods
-  * @lock:	lock a region of the SPI NOR.
-  * @unlock:	unlock a region of the SPI NOR.
-@@ -549,17 +577,7 @@ struct flash_info;
-  * @read_proto:		the SPI protocol for read operations
-  * @write_proto:	the SPI protocol for write operations
-  * @reg_proto		the SPI protocol for read_reg/write_reg/erase operations
-- * @prepare:		[OPTIONAL] do some preparations for the
-- *			read/write/erase/lock/unlock operations
-- * @unprepare:		[OPTIONAL] do some post work after the
-- *			read/write/erase/lock/unlock operations
-- * @read_reg:		[DRIVER-SPECIFIC] read out the register
-- * @write_reg:		[DRIVER-SPECIFIC] write data to the register
-- * @read:		[DRIVER-SPECIFIC] read data from the SPI NOR
-- * @write:		[DRIVER-SPECIFIC] write data to the SPI NOR
-- * @erase:		[DRIVER-SPECIFIC] erase a sector of the SPI NOR
-- *			at the offset @offs; if not provided by the driver,
-- *			spi-nor will send the erase opcode via write_reg()
-+ * @controller_ops:	SPI NOR controller driver specific operations.
-  * @clear_sr_bp:	[FLASH-SPECIFIC] clears the Block Protection Bits from
-  *			the SPI NOR Status Register.
-  * @params:		[FLASH-SPECIFIC] SPI-NOR flash parameters and settings.
-@@ -588,16 +606,7 @@ struct spi_nor {
- 	bool			sst_write_second;
- 	u32			flags;
++		ret = spi_nor_write_disable(nor);
++		if (ret)
++			goto sst_write_err;
++
+ 		actual += 1;
+ 	}
+ sst_write_err:
+ 	*retlen += actual;
++unlock_and_unprep:
+ 	spi_nor_unlock_and_unprep(nor, SPI_NOR_OPS_WRITE);
+ 	return ret;
+ }
+@@ -2710,7 +2772,10 @@ static int spi_nor_write(struct mtd_info *mtd, loff_t to, size_t len,
  
--	int (*prepare)(struct spi_nor *nor, enum spi_nor_ops ops);
--	void (*unprepare)(struct spi_nor *nor, enum spi_nor_ops ops);
--	int (*read_reg)(struct spi_nor *nor, u8 opcode, u8 *buf, int len);
--	int (*write_reg)(struct spi_nor *nor, u8 opcode, u8 *buf, int len);
--
--	ssize_t (*read)(struct spi_nor *nor, loff_t from,
--			size_t len, u_char *read_buf);
--	ssize_t (*write)(struct spi_nor *nor, loff_t to,
--			size_t len, const u_char *write_buf);
--	int (*erase)(struct spi_nor *nor, loff_t offs);
-+	const struct spi_nor_controller_ops *controller_ops;
+ 		addr = spi_nor_convert_addr(nor, addr);
  
- 	int (*clear_sr_bp)(struct spi_nor *nor);
- 	struct spi_nor_flash_parameter params;
+-		write_enable(nor);
++		ret = spi_nor_write_enable(nor);
++		if (ret)
++			goto write_err;
++
+ 		ret = spi_nor_write_data(nor, addr, page_remain, buf + i);
+ 		if (ret < 0)
+ 			goto write_err;
 -- 
 2.9.5
 
