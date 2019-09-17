@@ -1,9 +1,9 @@
 From: Tudor.Ambarus@microchip.com <Tudor.Ambarus@microchip.com>
-Date: Tue, 17 Sep 2019 15:55:38 +0000
-Subject: [PATCH 18/23] mtd: spi-nor: Rework macronix_quad_enable()
+Date: Tue, 17 Sep 2019 15:55:41 +0000
+Subject: [PATCH 19/23] mtd: spi-nor: Rework spansion(_no)_read_cr_quad_enable()
 In-Reply-To: <20190917155426.7432-1-tudor.ambarus@microchip.com>
 References: <20190917155426.7432-1-tudor.ambarus@microchip.com>
-Message-ID: <20190917155426.7432-19-tudor.ambarus@microchip.com>
+Message-ID: <20190917155426.7432-20-tudor.ambarus@microchip.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -12,111 +12,203 @@ Content-Transfer-Encoding: 7bit
 
 From: Tudor Ambarus <tudor.ambarus@microchip.com>
 
-Rename method to a generic name: spi_nor_sr1_bit6_quad_enable().
+Merge:
+spansion_no_read_cr_quad_enable()
+spansion_read_cr_quad_enable()
 
-Use spi_nor_write_sr1_and_check(). Now we check the validity of all
-the eight bits of the Status Register, not just of the SR1_QUAD_EN_BIT6.
+in spi_nor_sr2_bit1_quad_enable().
+
+Avoid duplication of code by using spi_nor_write_16bit_sr_and_check(),
+the SNOR_F_NO_READ_CR case is treated there.
+
+We now do the Read Back test even for the old
+spansion_no_read_cr_quad_enable() case.
 
 Signed-off-by: Tudor Ambarus <tudor.ambarus@microchip.com>
 ---
- drivers/mtd/spi-nor/spi-nor.c | 34 ++++++++++------------------------
- include/linux/mtd/spi-nor.h   |  2 +-
- 2 files changed, 11 insertions(+), 25 deletions(-)
+ drivers/mtd/spi-nor/spi-nor.c | 89 ++++++++++---------------------------------
+ include/linux/mtd/spi-nor.h   |  4 +-
+ 2 files changed, 22 insertions(+), 71 deletions(-)
 
 diff --git a/drivers/mtd/spi-nor/spi-nor.c b/drivers/mtd/spi-nor/spi-nor.c
-index 4a513ed13807..2f79923e7db5 100644
+index 2f79923e7db5..8648666fb9bd 100644
 --- a/drivers/mtd/spi-nor/spi-nor.c
 +++ b/drivers/mtd/spi-nor/spi-nor.c
-@@ -1938,16 +1938,15 @@ static int spi_nor_is_locked(struct mtd_info *mtd, loff_t ofs, uint64_t len)
+@@ -907,7 +907,7 @@ static int spi_nor_write_16bit_sr_and_check(struct spi_nor *nor, u8 status_new,
+ 		 * Write Status (01h) command is available just for the cases
+ 		 * in which the QE bit is described in SR2 at BIT(1).
+ 		 */
+-		sr_cr[1] = CR_QUAD_EN_SPAN;
++		sr_cr[1] = SR2_QUAD_EN_BIT1;
+ 	} else {
+ 		sr_cr[1] = 0;
+ 	}
+@@ -1963,81 +1963,34 @@ static int spi_nor_sr1_bit6_quad_enable(struct spi_nor *nor)
  }
  
  /**
-- * macronix_quad_enable() - set QE bit in Status Register.
-+ * spi_nor_sr1_bit6_quad_enable() - Set the Quad Enable BIT(6) in the Status
-+ * Register 1.
+- * spansion_no_read_cr_quad_enable() - set QE bit in Configuration Register.
++ * spi_nor_sr2_bit1_quad_enable() - set the Quad Enable BIT(1) in the Status
++ * Register 2.
   * @nor:	pointer to a 'struct spi_nor'
   *
-- * Set the Quad Enable (QE) bit in the Status Register.
+- * Set the Quad Enable (QE) bit in the Configuration Register.
+- * This function should be used with QSPI memories not supporting the Read
+- * Configuration Register (35h) instruction.
 - *
-- * bit 6 of the Status Register is the QE bit for Macronix like QSPI memories.
-+ * Bit 6 of the Status Register 1 is the QE bit for Macronix like QSPI memories.
+- * bit 1 of the Configuration Register is the QE bit for Spansion like QSPI
+- * memories.
+- *
+- * Return: 0 on success, -errno otherwise.
+- */
+-static int spansion_no_read_cr_quad_enable(struct spi_nor *nor)
+-{
+-	u8 *sr_cr = nor->bouncebuf;
+-	int ret;
+-
+-	/* Keep the current value of the Status Register. */
+-	ret = spi_nor_read_sr(nor, &sr_cr[0]);
+-	if (ret)
+-		return ret;
+-
+-	sr_cr[1] = CR_QUAD_EN_SPAN;
+-
+-	return spi_nor_write_sr(nor, sr_cr, 2);
+-}
+-
+-/**
+- * spansion_read_cr_quad_enable() - set QE bit in Configuration Register.
+- * @nor:	pointer to a 'struct spi_nor'
+- *
+- * Set the Quad Enable (QE) bit in the Configuration Register.
+- * This function should be used with QSPI memories supporting the Read
+- * Configuration Register (35h) instruction.
+- *
+- * bit 1 of the Configuration Register is the QE bit for Spansion like QSPI
+- * memories.
++ * Bit 1 of the Status Register 2 is the QE bit for Spansion like QSPI memories.
   *
   * Return: 0 on success, -errno otherwise.
   */
--static int macronix_quad_enable(struct spi_nor *nor)
-+static int spi_nor_sr1_bit6_quad_enable(struct spi_nor *nor)
+-static int spansion_read_cr_quad_enable(struct spi_nor *nor)
++static int spi_nor_sr2_bit1_quad_enable(struct spi_nor *nor)
  {
+-	u8 *sr_cr = nor->bouncebuf;
  	int ret;
  
-@@ -1955,25 +1954,12 @@ static int macronix_quad_enable(struct spi_nor *nor)
+-	/* Check current Quad Enable bit value. */
+-	ret = spi_nor_read_cr(nor, &sr_cr[1]);
+-	if (ret)
+-		return ret;
+-
+-	if (sr_cr[1] & CR_QUAD_EN_SPAN)
+-		return 0;
++	if (!(nor->flags & SNOR_F_NO_READ_CR)) {
++		/* Check current Quad Enable bit value. */
++		ret = spi_nor_read_cr(nor, &nor->bouncebuf[0]);
++		if (ret)
++			return ret;
+ 
+-	sr_cr[1] |= CR_QUAD_EN_SPAN;
++		if (nor->bouncebuf[0] & SR2_QUAD_EN_BIT1)
++			return 0;
++	}
+ 
+ 	/* Keep the current value of the Status Register. */
+-	ret = spi_nor_read_sr(nor, &sr_cr[0]);
+-	if (ret)
+-		return ret;
+-
+-	ret = spi_nor_write_sr(nor, sr_cr, 2);
+-	if (ret)
+-		return ret;
+-
+-	/* Read back and check it. */
+-	ret = spi_nor_read_cr(nor, &sr_cr[1]);
++	ret = spi_nor_read_sr(nor, &nor->bouncebuf[0]);
  	if (ret)
  		return ret;
  
--	if (nor->bouncebuf[0] & SR_QUAD_EN_MX)
-+	if (nor->bouncebuf[0] & SR1_QUAD_EN_BIT6)
- 		return 0;
- 
--	nor->bouncebuf[0] |= SR_QUAD_EN_MX;
-+	nor->bouncebuf[0] |= SR1_QUAD_EN_BIT6;
- 
--	ret = spi_nor_write_sr(nor, &nor->bouncebuf[0], 1);
--	if (ret)
--		return ret;
--
--	ret = spi_nor_read_sr(nor, &nor->bouncebuf[0]);
--	if (ret)
--		return ret;
--
--	if (!(nor->bouncebuf[0] & SR_QUAD_EN_MX)) {
--		dev_err(nor->dev, "Macronix Quad bit not set\n");
+-	if (!(sr_cr[1] & CR_QUAD_EN_SPAN)) {
+-		dev_err(nor->dev, "Spansion Quad bit not set\n");
 -		return -EIO;
 -	}
 -
 -	return 0;
-+	return spi_nor_write_sr1_and_check(nor, nor->bouncebuf[0], 0xFF);
++	return spi_nor_write_16bit_sr_and_check(nor, nor->bouncebuf[0], 0xFF);
  }
  
  /**
-@@ -2277,7 +2263,7 @@ static void gd25q256_default_init(struct spi_nor *nor)
- 	 * indicate the quad_enable method for this case, we need
- 	 * to set it in the default_init fixup hook.
+@@ -2117,7 +2070,7 @@ static int spi_nor_clear_sr_bp(struct spi_nor *nor)
+  *
+  * Read-modify-write function that clears the Block Protection bits from the
+  * Status Register without affecting other bits. The function is tightly
+- * coupled with the spansion_read_cr_quad_enable() function. Both assume that
++ * coupled with the spi_nor_sr2_bit1_quad_enable() function. Both assume that
+  * the Write Register with 16 bits, together with the Read Configuration
+  * Register (35h) instructions are supported.
+  *
+@@ -2138,7 +2091,7 @@ static int spi_nor_spansion_clear_sr_bp(struct spi_nor *nor)
+ 	 * When the configuration register Quad Enable bit is one, only the
+ 	 * Write Status (01h) command with two data bytes may be used.
  	 */
--	nor->flash.quad_enable = macronix_quad_enable;
-+	nor->flash.quad_enable = spi_nor_sr1_bit6_quad_enable;
- }
- 
- static struct spi_nor_fixups gd25q256_fixups = {
-@@ -3661,7 +3647,7 @@ static int spi_nor_parse_bfpt(struct spi_nor *nor,
- 
- 	case BFPT_DWORD15_QER_SR1_BIT6:
- 		nor->flags &= ~SNOR_F_HAS_16BIT_SR;
--		flash->quad_enable = macronix_quad_enable;
-+		flash->quad_enable = spi_nor_sr1_bit6_quad_enable;
+-	if (sr_cr[1] & CR_QUAD_EN_SPAN) {
++	if (sr_cr[1] & SR2_QUAD_EN_BIT1) {
+ 		ret = spi_nor_read_sr(nor, &sr_cr[0]);
+ 		if (ret)
+ 			return ret;
+@@ -3642,7 +3595,7 @@ static int spi_nor_parse_bfpt(struct spi_nor *nor,
+ 		 * supported.
+ 		 */
+ 		nor->flags |= SNOR_F_NO_READ_CR;
+-		flash->quad_enable = spansion_no_read_cr_quad_enable;
++		flash->quad_enable = spi_nor_sr2_bit1_quad_enable;
  		break;
  
- 	case BFPT_DWORD15_QER_SR2_BIT7:
-@@ -4558,7 +4544,7 @@ static int spi_nor_setup(struct spi_nor *nor,
+ 	case BFPT_DWORD15_QER_SR1_BIT6:
+@@ -3663,7 +3616,7 @@ static int spi_nor_parse_bfpt(struct spi_nor *nor,
+ 		 * assumption of a 16-bit Write Status (01h) command.
+ 		 */
+ 		nor->flags |= SNOR_F_HAS_16BIT_SR;
+-		flash->quad_enable = spansion_read_cr_quad_enable;
++		flash->quad_enable = spi_nor_sr2_bit1_quad_enable;
+ 		break;
  
- static void macronix_set_default_init(struct spi_nor *nor)
- {
--	nor->flash.quad_enable = macronix_quad_enable;
-+	nor->flash.quad_enable = spi_nor_sr1_bit6_quad_enable;
- 	nor->flash.set_4byte = macronix_set_4byte;
- }
+ 	default:
+@@ -4626,7 +4579,7 @@ static void spi_nor_info_init_flash_params(struct spi_nor *nor)
+ 	u8 i, erase_mask;
  
+ 	/* Initialize legacy flash parameters and settings. */
+-	flash->quad_enable = spansion_read_cr_quad_enable;
++	flash->quad_enable = spi_nor_sr2_bit1_quad_enable;
+ 	flash->set_4byte = spansion_set_4byte;
+ 	flash->setup = spi_nor_default_setup;
+ 	/* Default to 16-bit Write Status (01h) Command */
+@@ -4844,7 +4797,7 @@ static int spi_nor_init(struct spi_nor *nor)
+ 	int err;
+ 
+ 	if (nor->clear_sr_bp) {
+-		if (nor->flash.quad_enable == spansion_read_cr_quad_enable)
++		if (nor->flash.quad_enable == spi_nor_sr2_bit1_quad_enable)
+ 			nor->clear_sr_bp = spi_nor_spansion_clear_sr_bp;
+ 
+ 		err = nor->clear_sr_bp(nor);
 diff --git a/include/linux/mtd/spi-nor.h b/include/linux/mtd/spi-nor.h
-index fc3a8f5209f0..3a835de90b6a 100644
+index 3a835de90b6a..5590a36eb43e 100644
 --- a/include/linux/mtd/spi-nor.h
 +++ b/include/linux/mtd/spi-nor.h
-@@ -133,7 +133,7 @@
- #define SR_E_ERR		BIT(5)
- #define SR_P_ERR		BIT(6)
+@@ -144,10 +144,8 @@
+ #define FSR_P_ERR		BIT(4)	/* Program operation status */
+ #define FSR_PT_ERR		BIT(1)	/* Protection error bit */
  
--#define SR_QUAD_EN_MX		BIT(6)	/* Macronix Quad I/O */
-+#define SR1_QUAD_EN_BIT6	BIT(6)
+-/* Configuration Register bits. */
+-#define CR_QUAD_EN_SPAN		BIT(1)	/* Spansion Quad I/O */
+-
+ /* Status Register 2 bits. */
++#define SR2_QUAD_EN_BIT1	BIT(1)
+ #define SR2_QUAD_EN_BIT7	BIT(7)
  
- /* Enhanced Volatile Configuration Register bits */
- #define EVCR_QUAD_EN_MICRON	BIT(7)	/* Micron Quad I/O */
+ /* Supported SPI protocols */
 -- 
 2.9.5
 
