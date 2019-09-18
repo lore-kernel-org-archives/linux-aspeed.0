@@ -1,107 +1,49 @@
-From: Eddie James <eajames@linux.ibm.com>
-Date: Fri, 27 Sep 2019 15:58:46 -0500
-Subject: [PATCH v2 1/4] dt-bindings: interrupt-controller: Add Aspeed SCU
- interrupt controller
-In-Reply-To: <1569617929-29055-1-git-send-email-eajames@linux.ibm.com>
-References: <1569617929-29055-1-git-send-email-eajames@linux.ibm.com>
-Message-ID: <1569617929-29055-2-git-send-email-eajames@linux.ibm.com>
+From: Markus Elfring <Markus.Elfring@web.de>
+Date: Wed, 18 Sep 2019 08:26:55 -0000
+Subject: [PATCH] hwmon: (aspeed-pwm-tacho) Use
+ devm_platform_ioremap_resource() in aspeed_pwm_tacho_probe()
+Message-ID: <cd5bab7b-9333-2a43-bcf0-a47bbbe719eb@web.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Document the Aspeed SCU interrupt controller and add an include file
-for the interrupts it provides.
+From: Markus Elfring <elfring@users.sourceforge.net>
+Date: Wed, 18 Sep 2019 10:12:31 +0200
 
-Signed-off-by: Eddie James <eajames@linux.ibm.com>
+Simplify this function implementation by using a known wrapper function.
+
+This issue was detected by using the Coccinelle software.
+
+Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
 ---
- .../interrupt-controller/aspeed,ast2xxx-scu-ic.txt | 26 ++++++++++++++++++++++
- MAINTAINERS                                        |  7 ++++++
- .../interrupt-controller/aspeed-scu-ic.h           | 23 +++++++++++++++++++
- 3 files changed, 56 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/interrupt-controller/aspeed,ast2xxx-scu-ic.txt
- create mode 100644 include/dt-bindings/interrupt-controller/aspeed-scu-ic.h
+ drivers/hwmon/aspeed-pwm-tacho.c | 7 +------
+ 1 file changed, 1 insertion(+), 6 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/interrupt-controller/aspeed,ast2xxx-scu-ic.txt b/Documentation/devicetree/bindings/interrupt-controller/aspeed,ast2xxx-scu-ic.txt
-new file mode 100644
-index 0000000..baa3780
---- /dev/null
-+++ b/Documentation/devicetree/bindings/interrupt-controller/aspeed,ast2xxx-scu-ic.txt
-@@ -0,0 +1,26 @@
-+Aspeed AST25XX and AST26XX SCU Interrupt Controller
-+
-+Required Properties:
-+ - #interrupt-cells		: must be 1
-+ - compatible			: must be "aspeed,ast2500-scu-ic",
-+				  "aspeed,ast2600-scu-ic0" or
-+				  "aspeed,ast2600-scu-ic1"
-+ - reg				: address and size of the SCU register
-+				  associated with the controller
-+ - interrupts			: interrupt from the parent controller
-+ - interrupt-controller		: indicates that the controlle receives and
-+				  fires new interrupts for child busses
-+
-+Example:
-+
-+    syscon at 1e6e2000 {
-+        ranges = <0 0x1e6e2000 0x1a8>;
-+
-+        scu_ic: interrupt-controller at 18 {
-+            #interrupt-cells = <1>;
-+            compatible = "aspeed,ast2500-scu-ic";
-+            reg = <0x18 0x04>;
-+            interrupts = <21>;
-+            interrupt-controller;
-+        };
-+    };
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 7ce3c95..c7e028c 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -2651,6 +2651,13 @@ S:	Maintained
- F:	drivers/pinctrl/aspeed/
- F:	Documentation/devicetree/bindings/pinctrl/aspeed,*
- 
-+ASPEED SCU INTERRUPT CONTROLLER DRIVER
-+M:	Eddie James <eajames@linux.ibm.com>
-+L:	linux-aspeed at lists.ozlabs.org (moderated for non-subscribers)
-+S:	Maintained
-+F:	Documentation/devicetree/bindings/interrupt-controller/aspeed,ast2xxx-scu-ic.txt
-+F:	include/dt-bindings/interrupt-controller/aspeed-scu-ic.h
-+
- ASPEED VIDEO ENGINE DRIVER
- M:	Eddie James <eajames@linux.ibm.com>
- L:	linux-media at vger.kernel.org
-diff --git a/include/dt-bindings/interrupt-controller/aspeed-scu-ic.h b/include/dt-bindings/interrupt-controller/aspeed-scu-ic.h
-new file mode 100644
-index 0000000..f315d5a
---- /dev/null
-+++ b/include/dt-bindings/interrupt-controller/aspeed-scu-ic.h
-@@ -0,0 +1,23 @@
-+/* SPDX-License-Identifier: GPL-2.0+ */
-+
-+#ifndef _DT_BINDINGS_INTERRUPT_CONTROLLER_ASPEED_SCU_IC_H_
-+#define _DT_BINDINGS_INTERRUPT_CONTROLLER_ASPEED_SCU_IC_H_
-+
-+#define ASPEED_SCU_IC_VGA_CURSOR_CHANGE			0
-+#define ASPEED_SCU_IC_VGA_SCRATCH_REG_CHANGE		1
-+
-+#define ASPEED_AST2500_SCU_IC_PCIE_RESET_LO_TO_HI	2
-+#define ASPEED_AST2500_SCU_IC_PCIE_RESET_HI_TO_LO	3
-+#define ASPEED_AST2500_SCU_IC_LPC_RESET_LO_TO_HI	4
-+#define ASPEED_AST2500_SCU_IC_LPC_RESET_HI_TO_LO	5
-+#define ASPEED_AST2500_SCU_IC_ISSUE_MSI			6
-+
-+#define ASPEED_AST2600_SCU_IC0_PCIE_PERST_LO_TO_HI	2
-+#define ASPEED_AST2600_SCU_IC0_PCIE_PERST_HI_TO_LO	3
-+#define ASPEED_AST2600_SCU_IC0_PCIE_RCRST_LO_TO_HI	4
-+#define ASPEED_AST2600_SCU_IC0_PCIE_RCRST_HI_TO_LO	5
-+
-+#define ASPEED_AST2600_SCU_IC1_LPC_RESET_LO_TO_HI	0
-+#define ASPEED_AST2600_SCU_IC1_LPC_RESET_HI_TO_LO	1
-+
-+#endif /* _DT_BINDINGS_INTERRUPT_CONTROLLER_ASPEED_SCU_IC_H_ */
--- 
-1.8.3.1
+diff --git a/drivers/hwmon/aspeed-pwm-tacho.c b/drivers/hwmon/aspeed-pwm-tacho.c
+index 40c489be62ea..33fb54845bf6 100644
+--- a/drivers/hwmon/aspeed-pwm-tacho.c
++++ b/drivers/hwmon/aspeed-pwm-tacho.c
+@@ -891,17 +891,12 @@ static int aspeed_pwm_tacho_probe(struct platform_device *pdev)
+ 	struct device_node *np, *child;
+ 	struct aspeed_pwm_tacho_data *priv;
+ 	void __iomem *regs;
+-	struct resource *res;
+ 	struct device *hwmon;
+ 	struct clk *clk;
+ 	int ret;
+
+ 	np = dev->of_node;
+-
+-	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-	if (!res)
+-		return -ENOENT;
+-	regs = devm_ioremap_resource(dev, res);
++	regs = devm_platform_ioremap_resource(pdev, 0);
+ 	if (IS_ERR(regs))
+ 		return PTR_ERR(regs);
+ 	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
+--
+2.23.0
 
