@@ -1,70 +1,95 @@
 From: Vignesh Raghavendra <vigneshr@ti.com>
-Date: Fri, 20 Sep 2019 06:06:44 -0000
-Subject: [PATCH 00/23] mtd: spi-nor: Quad Enable and (un)lock methods
-In-Reply-To: <20190917155426.7432-1-tudor.ambarus@microchip.com>
+Date: Fri, 20 Sep 2019 15:15:32 -0000
+Subject: [PATCH 17/23] mtd: spi-nor: Fix clearing of QE bit on
+ lock()/unlock()
+In-Reply-To: <20190917155426.7432-18-tudor.ambarus@microchip.com>
 References: <20190917155426.7432-1-tudor.ambarus@microchip.com>
-Message-ID: <920a9946-af0d-1190-d59c-0b4acee71931@ti.com>
+ <20190917155426.7432-18-tudor.ambarus@microchip.com>
+Message-ID: <dceca616-2b98-9bc8-73e4-32fb06fc753d@ti.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi,
+Hi Tudor
 
-On 17-Sep-19 9:24 PM, Tudor.Ambarus at microchip.com wrote:
-> From: Tudor Ambarus <tudor.ambarus@microchip.com>
-> 
 [...]
-> Tudor Ambarus (23):
->   mtd: spi-nor: hisi-sfc: Drop nor->erase NULL assignment
->   mtd: spi-nor: Introduce 'struct spi_nor_controller_ops'
->   mtd: spi-nor: cadence-quadspi: Fix cqspi_command_read() definition
->   mtd: spi-nor: Rename nor->params to nor->flash
->   mtd: spi-nor: Rework read_sr()
->   mtd: spi-nor: Rework read_fsr()
->   mtd: spi-nor: Rework read_cr()
->   mtd: spi-nor: Rework write_enable/disable()
->   mtd: spi-nor: Fix retlen handling in sst_write()
->   mtd: spi-nor: Rework write_sr()
->   mtd: spi-nor: Rework spi_nor_read/write_sr2()
->   mtd: spi-nor: Report error in spi_nor_xread_sr()
->   mtd: spi-nor: Void return type for spi_nor_clear_sr/fsr()
->   mtd: spi-nor: Drop duplicated new line
->   mtd: spi-nor: Drop spansion_quad_enable()
->   mtd: spi-nor: Fix errno on quad_enable methods
->   mtd: spi-nor: Fix clearing of QE bit on lock()/unlock()
->   mtd: spi-nor: Rework macronix_quad_enable()
->   mtd: spi-nor: Rework spansion(_no)_read_cr_quad_enable()
->   mtd: spi-nor: Update sr2_bit7_quad_enable()
->   mtd: spi-nor: Rework the disabling of block write protection
->   mtd: spi-nor: Add Global Block Unlock support
->   mtd: spi-nor: Unlock global block protection on sst26vf064b
 
-With whole series applied, I see:
+On 17-Sep-19 9:25 PM, Tudor.Ambarus at microchip.com wrote:
+> +static int spi_nor_write_16bit_sr_and_check(struct spi_nor *nor, u8 status_new,
+> +					    u8 mask)
+> +{
+> +	int ret;
+> +	u8 *sr_cr = nor->bouncebuf;
+> +	u8 cr_written;
+> +
+> +	/* Make sure we don't overwrite the contents of Status Register 2. */
+> +	if (!(nor->flags & SNOR_F_NO_READ_CR)) {
 
-drivers/mtd/spi-nor/spi-nor.c:520: warning: Function parameter or member 'cr' not described in 'spi_nor_read_cr'
-drivers/mtd/spi-nor/spi-nor.c:520: warning: Excess function parameter 'fsr' description in 'spi_nor_read_cr'
-drivers/mtd/spi-nor/spi-nor.c:742: warning: Function parameter or member 'len' not described in 'spi_nor_write_sr'
-drivers/mtd/spi-nor/spi-nor.c:889: warning: Function parameter or member 'status_new' not described in 'spi_nor_write_sr1_and_check'
-drivers/mtd/spi-nor/spi-nor.c:889: warning: Function parameter or member 'mask' not described in 'spi_nor_write_sr1_and_check'
-drivers/mtd/spi-nor/spi-nor.c:923: warning: Function parameter or member 'status_new' not described in 'spi_nor_write_16bit_sr_and_check'
-drivers/mtd/spi-nor/spi-nor.c:923: warning: Function parameter or member 'mask' not described in 'spi_nor_write_16bit_sr_and_check'
-drivers/mtd/spi-nor/spi-nor.c:997: warning: Function parameter or member 'status_new' not described in 'spi_nor_write_sr_and_check'
-drivers/mtd/spi-nor/spi-nor.c:997: warning: Function parameter or member 'mask' not described in 'spi_nor_write_sr_and_check'
+Assuming SNOR_F_NO_READ_CR is not set...
 
-Could you please fix up docs next time around?
+> +		ret = spi_nor_read_cr(nor, &sr_cr[1]);
+> +		if (ret)
+> +			return ret;
+> +	} else if (nor->flash.quad_enable) {
+> +		/*
+> +		 * If the Status Register 2 Read command (35h) is not
+> +		 * supported, we should at least be sure we don't
+> +		 * change the value of the SR2 Quad Enable bit.
+> +		 *
+> +		 * We can safely assume that when the Quad Enable method is
+> +		 * set, the value of the QE bit is one, as a consequence of the
+> +		 * nor->flash.quad_enable() call.
+> +		 *
+> +		 * We can safely assume that the Quad Enable bit is present in
+> +		 * the Status Register 2 at BIT(1). According to the JESD216
+> +		 * revB standard, BFPT DWORDS[15], bits 22:20, the 16-bit
+> +		 * Write Status (01h) command is available just for the cases
+> +		 * in which the QE bit is described in SR2 at BIT(1).
+> +		 */
+> +		sr_cr[1] = CR_QUAD_EN_SPAN;
+> +	} else {
+> +		sr_cr[1] = 0;
+> +	}
+> +
+
+CR_QUAD_EN_SPAN will not be in sr_cr[1] when we reach here. So code
+won't enable quad mode.
+
+
+> +	sr_cr[0] = status_new;
+> +
+> +	ret = spi_nor_write_sr(nor, sr_cr, 2);
+> +	if (ret)
+> +		return ret;
+> +
+> +	cr_written = sr_cr[1];
+> +
+> +	ret = spi_nor_read_sr(nor, &sr_cr[0]);
+> +	if (ret)
+> +		return ret;
+> +
+> +	if ((sr_cr[0] & mask) != (status_new & mask)) {
+> +		dev_err(nor->dev, "Read back test failed\n");
+> +		return -EIO;
+> +	}
+> +
+> +	if (nor->flags & SNOR_F_NO_READ_CR)
+> +		return 0;
+> +
+> +	ret = spi_nor_read_cr(nor, &sr_cr[1]);
+> +	if (ret)
+> +		return ret;
+> +
+> +	if (cr_written != sr_cr[1]) {
+> +		dev_err(nor->dev, "Read back test failed\n");
+> +		return -EIO;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
 
 Regards
 Vignesh
-> 
->  drivers/mtd/spi-nor/aspeed-smc.c      |   23 +-
->  drivers/mtd/spi-nor/cadence-quadspi.c |   54 +-
->  drivers/mtd/spi-nor/hisi-sfc.c        |   23 +-
->  drivers/mtd/spi-nor/intel-spi.c       |   24 +-
->  drivers/mtd/spi-nor/mtk-quadspi.c     |   25 +-
->  drivers/mtd/spi-nor/nxp-spifi.c       |   23 +-
->  drivers/mtd/spi-nor/spi-nor.c         | 1697 ++++++++++++++++++---------------
->  include/linux/mtd/spi-nor.h           |   75 +-
->  8 files changed, 1050 insertions(+), 894 deletions(-)
-> 
