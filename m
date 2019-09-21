@@ -1,95 +1,48 @@
-From: Vignesh Raghavendra <vigneshr@ti.com>
-Date: Fri, 20 Sep 2019 15:15:32 -0000
-Subject: [PATCH 17/23] mtd: spi-nor: Fix clearing of QE bit on
- lock()/unlock()
-In-Reply-To: <20190917155426.7432-18-tudor.ambarus@microchip.com>
-References: <20190917155426.7432-1-tudor.ambarus@microchip.com>
- <20190917155426.7432-18-tudor.ambarus@microchip.com>
-Message-ID: <dceca616-2b98-9bc8-73e4-32fb06fc753d@ti.com>
+From: Markus Elfring <Markus.Elfring@web.de>
+Date: Sat, 21 Sep 2019 16:53:08 -0000
+Subject: [PATCH] EDAC: Aspeed: Use devm_platform_ioremap_resource() in
+ aspeed_probe()
+Message-ID: <baabb9e9-a1b2-3a04-9fb6-aa632de5f722@web.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Tudor
+From: Markus Elfring <elfring@users.sourceforge.net>
+Date: Sat, 21 Sep 2019 18:32:46 +0200
 
-[...]
+Simplify this function implementation by using a known wrapper function.
 
-On 17-Sep-19 9:25 PM, Tudor.Ambarus at microchip.com wrote:
-> +static int spi_nor_write_16bit_sr_and_check(struct spi_nor *nor, u8 status_new,
-> +					    u8 mask)
-> +{
-> +	int ret;
-> +	u8 *sr_cr = nor->bouncebuf;
-> +	u8 cr_written;
-> +
-> +	/* Make sure we don't overwrite the contents of Status Register 2. */
-> +	if (!(nor->flags & SNOR_F_NO_READ_CR)) {
+This issue was detected by using the Coccinelle software.
 
-Assuming SNOR_F_NO_READ_CR is not set...
+Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+---
+ drivers/edac/aspeed_edac.c | 7 +------
+ 1 file changed, 1 insertion(+), 6 deletions(-)
 
-> +		ret = spi_nor_read_cr(nor, &sr_cr[1]);
-> +		if (ret)
-> +			return ret;
-> +	} else if (nor->flash.quad_enable) {
-> +		/*
-> +		 * If the Status Register 2 Read command (35h) is not
-> +		 * supported, we should at least be sure we don't
-> +		 * change the value of the SR2 Quad Enable bit.
-> +		 *
-> +		 * We can safely assume that when the Quad Enable method is
-> +		 * set, the value of the QE bit is one, as a consequence of the
-> +		 * nor->flash.quad_enable() call.
-> +		 *
-> +		 * We can safely assume that the Quad Enable bit is present in
-> +		 * the Status Register 2 at BIT(1). According to the JESD216
-> +		 * revB standard, BFPT DWORDS[15], bits 22:20, the 16-bit
-> +		 * Write Status (01h) command is available just for the cases
-> +		 * in which the QE bit is described in SR2 at BIT(1).
-> +		 */
-> +		sr_cr[1] = CR_QUAD_EN_SPAN;
-> +	} else {
-> +		sr_cr[1] = 0;
-> +	}
-> +
+diff --git a/drivers/edac/aspeed_edac.c b/drivers/edac/aspeed_edac.c
+index 5634437bb39d..09a9e3de9595 100644
+--- a/drivers/edac/aspeed_edac.c
++++ b/drivers/edac/aspeed_edac.c
+@@ -281,16 +281,11 @@ static int aspeed_probe(struct platform_device *pdev)
+ 	struct device *dev = &pdev->dev;
+ 	struct edac_mc_layer layers[2];
+ 	struct mem_ctl_info *mci;
+-	struct resource *res;
+ 	void __iomem *regs;
+ 	u32 reg04;
+ 	int rc;
 
-CR_QUAD_EN_SPAN will not be in sr_cr[1] when we reach here. So code
-won't enable quad mode.
+-	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-	if (!res)
+-		return -ENOENT;
+-
+-	regs = devm_ioremap_resource(dev, res);
++	regs = devm_platform_ioremap_resource(pdev, 0);
+ 	if (IS_ERR(regs))
+ 		return PTR_ERR(regs);
 
+--
+2.23.0
 
-> +	sr_cr[0] = status_new;
-> +
-> +	ret = spi_nor_write_sr(nor, sr_cr, 2);
-> +	if (ret)
-> +		return ret;
-> +
-> +	cr_written = sr_cr[1];
-> +
-> +	ret = spi_nor_read_sr(nor, &sr_cr[0]);
-> +	if (ret)
-> +		return ret;
-> +
-> +	if ((sr_cr[0] & mask) != (status_new & mask)) {
-> +		dev_err(nor->dev, "Read back test failed\n");
-> +		return -EIO;
-> +	}
-> +
-> +	if (nor->flags & SNOR_F_NO_READ_CR)
-> +		return 0;
-> +
-> +	ret = spi_nor_read_cr(nor, &sr_cr[1]);
-> +	if (ret)
-> +		return ret;
-> +
-> +	if (cr_written != sr_cr[1]) {
-> +		dev_err(nor->dev, "Read back test failed\n");
-> +		return -EIO;
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-
-Regards
-Vignesh
