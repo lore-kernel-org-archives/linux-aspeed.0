@@ -1,9 +1,7 @@
 From: Hongwei Zhang <hongweiz@ami.com>
-Date: Tue, 24 Sep 2019 15:02:20 -0400
-Subject: [v1, 0/1] gpio: dts: aspeed: Add SGPIO driver
-In-Reply-To: <1569351740-6285-1-git-send-email-hongweiz@ami.com>
-References: <1569351740-6285-1-git-send-email-hongweiz@ami.com>
-Message-ID: <1569351740-6285-2-git-send-email-hongweiz@ami.com>
+Date: Tue, 24 Sep 2019 15:07:01 -0400
+Subject: [v1, 1/1] gpio: dts: aspeed: Add SGPIO driver
+Message-ID: <1569352021-6383-1-git-send-email-hongweiz@ami.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
