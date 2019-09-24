@@ -1,62 +1,97 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Fri, 20 Sep 2019 09:42:51 +0200
-Subject: [PATCH] ARM: aspeed: ast2500 is ARMv6K
-In-Reply-To: <CACPK8XcsegR5R0nkiZ-UEMgCqNMggCXjAr2N-6J1S6mEhGLrBQ@mail.gmail.com>
-References: <20190919142654.1578823-1-arnd@arndb.de>
- <CACPK8XcsegR5R0nkiZ-UEMgCqNMggCXjAr2N-6J1S6mEhGLrBQ@mail.gmail.com>
-Message-ID: <CAK8P3a17ReGKk70YoS72OvV=9KfDJBwDQkFDKx_1imdEbTboZQ@mail.gmail.com>
+From: Tudor.Ambarus@microchip.com <Tudor.Ambarus@microchip.com>
+Date: Tue, 24 Sep 2019 07:45:45 +0000
+Subject: [PATCH v2 00/22] mtd: spi-nor: Quad Enable and (un)lock methods
+Message-ID: <20190924074533.6618-1-tudor.ambarus@microchip.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Sep 20, 2019 at 7:51 AM Joel Stanley <joel@jms.id.au> wrote:
-> On Thu, 19 Sep 2019 at 14:27, Arnd Bergmann <arnd@arndb.de> wrote:
+From: Tudor Ambarus <tudor.ambarus@microchip.com>
 
-> > Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> > ---
-> >  arch/arm/mach-aspeed/Kconfig | 1 -
-> >  1 file changed, 1 deletion(-)
-> >
-> > diff --git a/arch/arm/mach-aspeed/Kconfig b/arch/arm/mach-aspeed/Kconfig
-> > index a293137f5814..163931a03136 100644
-> > --- a/arch/arm/mach-aspeed/Kconfig
-> > +++ b/arch/arm/mach-aspeed/Kconfig
-> > @@ -26,7 +26,6 @@ config MACH_ASPEED_G4
-> >  config MACH_ASPEED_G5
-> >         bool "Aspeed SoC 5th Generation"
-> >         depends on ARCH_MULTI_V6
-> > -       select CPU_V6
-> >         select PINCTRL_ASPEED_G5 if !CC_IS_CLANG
->
-> I can't find any trees with !CC_IS_CLANG here. Is there a problem
-> building our pinmux driver with Clang?
+Patches 1 - 14 are just clean up patches for the Flash Register
+Operations.
 
-This was an unrelated change from my local randconfig tree.
+Patches 15 - 22 deal with the Quad Enable and the (un)lock methods.
+Fixed the clearing of QE bit on (un)lock() operations. Reworked the
+Quad Enable methods and the disabling of the block write protection
+at power-up.
 
-Your driver uncovered a bug in clang that is now fixed, the driver
-itself is fine, see https://bugs.llvm.org/show_bug.cgi?id=43243
+Again, this is just compile tested, I don't have (yet) a relevant
+spansion-like flash memory to test the (un)lock() methods, so I'll need
+your help for testing this patch set.
 
-> I tested with this patch:
-> --- a/arch/arm/mach-aspeed/Kconfig
-> +++ b/arch/arm/mach-aspeed/Kconfig
-> @@ -25,8 +25,8 @@ config MACH_ASPEED_G4
->
->  config MACH_ASPEED_G5
->         bool "Aspeed SoC 5th Generation"
-> +       # This implies ARMv6K which covers the ARM1176
->         depends on ARCH_MULTI_V6
-> -       select CPU_V6
->         select PINCTRL_ASPEED_G5
->         select FTTMR010_TIMER
->         help
->
-> If you want to apply that as a fix for 5.4 I would be happy with that.
->
-> Fixes: 8c2ed9bcfbeb ("arm: Add Aspeed machine")
-> Reviewed-by: Joel Stanley <joel@jms.id.au>
+The patch set can be tested using mtd-utils:
+1/ do a read-erase-write-read-back test immediately after boot, to check
+the spi_nor_unlock_all() method. The focus is on the erase/write
+methods, we want to see if the flash is unlocked at power-up.
+        mtd_debug read /dev/mtd-yours offset size read-file
+        hexdump read-file
+        mtd_debug erase /dev/mtd-yours offset size
+        dd if=/dev/urandom of=write-file bs=please-choose count=please-choose
+        mtd_debug write /dev/mtd-yours offset write-file-size write-file
+        mtd_debug read /dev/mtd-yours offset write-file-size read-file
+        sha1sum read-file write-file
+2/ lock flash then try to erase/write it, to see if the lock works
+        flash_lock /dev/mtd-yours offset block-count
+        Do the read-erase-write-read-back test from 1/. The contents of
+        flash should not change in the erase and write steps.
+3/ unlock flash and do the read-erase-write-read-back from 1/. The value of the
+   QEE should not change and you should be able to erase and write the flash.
+   Test 1/ should be successful.
 
-Applied to arm/fixes now.
+v2:
+- Introduce spi_nor_write_16bit_cr_and_check() as per Vignesh's suggestion. The
+  Configuration Register contains bits that can be updated in future: FREEZE,
+  CMP. Provide a generic method that allows updating all bits of the
+  Configuration Register.
+- Fix SNOR_F_NO_READ_CR case in
+  "mtd: spi-nor: Rework the disabling of block write protection". When the flash
+  doesn't support the CR Read command, we make an assumption about the value of
+  the QE bit. In spi_nor_init(), call spi_nor_quad_enable() first, then
+  spi_nor_unlock_all(), so that at the spi_nor_unlock_all() time we can be sure
+  the QE bit has value one, because of the previous call to spi_nor_quad_enable().
+- Fix if statement in spi_nor_write_sr_and_check():
+  if (nor->flags & SNOR_F_HAS_16BIT_SR)
+- Fix documentation warnings.
+- New patch: "mtd: spi-nor: Check all the bits written, not just the BP ones".
+- Drop Global Unlock patches, will send them in a different patch set.
 
-      Arnd
+Tudor Ambarus (22):
+  mtd: spi-nor: hisi-sfc: Drop nor->erase NULL assignment
+  mtd: spi-nor: Introduce 'struct spi_nor_controller_ops'
+  mtd: spi-nor: cadence-quadspi: Fix cqspi_command_read() definition
+  mtd: spi-nor: Rename nor->params to nor->flash
+  mtd: spi-nor: Rework read_sr()
+  mtd: spi-nor: Rework read_fsr()
+  mtd: spi-nor: Rework read_cr()
+  mtd: spi-nor: Rework write_enable/disable()
+  mtd: spi-nor: Fix retlen handling in sst_write()
+  mtd: spi-nor: Rework write_sr()
+  mtd: spi-nor: Rework spi_nor_read/write_sr2()
+  mtd: spi-nor: Report error in spi_nor_xread_sr()
+  mtd: spi-nor: Void return type for spi_nor_clear_sr/fsr()
+  mtd: spi-nor: Drop duplicated new line
+  mtd: spi-nor: Drop spansion_quad_enable()
+  mtd: spi-nor: Fix errno on quad_enable methods
+  mtd: spi-nor: Check all the bits written, not just the BP ones
+  mtd: spi-nor: Fix clearing of QE bit on lock()/unlock()
+  mtd: spi-nor: Rework macronix_quad_enable()
+  mtd: spi-nor: Rework spansion(_no)_read_cr_quad_enable()
+  mtd: spi-nor: Update sr2_bit7_quad_enable()
+  mtd: spi-nor: Rework the disabling of block write protection
+
+ drivers/mtd/spi-nor/aspeed-smc.c      |   23 +-
+ drivers/mtd/spi-nor/cadence-quadspi.c |   54 +-
+ drivers/mtd/spi-nor/hisi-sfc.c        |   23 +-
+ drivers/mtd/spi-nor/intel-spi.c       |   24 +-
+ drivers/mtd/spi-nor/mtk-quadspi.c     |   25 +-
+ drivers/mtd/spi-nor/nxp-spifi.c       |   23 +-
+ drivers/mtd/spi-nor/spi-nor.c         | 1716 ++++++++++++++++++---------------
+ include/linux/mtd/spi-nor.h           |   74 +-
+ 8 files changed, 1058 insertions(+), 904 deletions(-)
+
+-- 
+2.9.5
+
