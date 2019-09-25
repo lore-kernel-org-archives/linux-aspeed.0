@@ -1,41 +1,69 @@
 From: Hongwei Zhang <hongweiz@ami.com>
-Date: Wed, 25 Sep 2019 15:22:15 -0400
-Subject: [v2, 0/2] gpio: dts: aspeed: Add SGPIO driver 
-Message-ID: <1569439337-10482-1-git-send-email-hongweiz@ami.com>
+Date: Wed, 25 Sep 2019 15:22:16 -0400
+Subject: [v2, 1/2] gpio: dts: aspeed: Add SGPIO driver
+In-Reply-To: <1569439337-10482-1-git-send-email-hongweiz@ami.com>
+References: <1569439337-10482-1-git-send-email-hongweiz@ami.com>
+Message-ID: <1569439337-10482-2-git-send-email-hongweiz@ami.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello,
+Add SGPIO driver support for Aspeed AST2500 SoC.
 
-This short series introduce the Kconfig, Makefile, and dts for the 
-Aspeed AST2500 SGPIO controller. This is the last patch set.
-Please review.
-
-[v2]:	changes between v1 and v2:
-	- split the patches based on review feedback.
-
-[v1]:	Initial commit
-
-The related SGPIO driver has been accepted and merged into v5.4:
-_http://patchwork.ozlabs.org/patch/1150357/
-
-The related SGPM pinmux dt-binding document, dts, and pinctrl driver
-updates have been accepted and merged:
-_http://patchwork.ozlabs.org/patch/1110210/
-
-Thanks!
-Hongwei Zhang (1):
-  gpio: dts: aspeed: Add SGPIO driver
-
+Signed-off-by: Hongwei Zhang <hongweiz@ami.com>
+---
  arch/arm/Kconfig                 |  2 ++
  arch/arm/boot/dts/aspeed-g5.dtsi | 16 +++++++++++++++-
- drivers/gpio/Kconfig             |  8 ++++++++
- drivers/gpio/Makefile            |  1 +
- 4 files changed, 26 insertions(+), 1 deletion(-)
 
+diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+index 2436021..c9f08ab 100644
+--- a/arch/arm/Kconfig
++++ b/arch/arm/Kconfig
+@@ -1460,6 +1460,8 @@ config ARCH_NR_GPIO
+ 	default 416 if ARCH_SUNXI
+ 	default 392 if ARCH_U8500
+ 	default 352 if ARCH_VT8500
++	default 312 if MACH_ASPEED_G5
++	default 304 if MACH_ASPEED_G4
+ 	default 288 if ARCH_ROCKCHIP
+ 	default 264 if MACH_H4700
+ 	default 0
+diff --git a/arch/arm/boot/dts/aspeed-g5.dtsi b/arch/arm/boot/dts/aspeed-g5.dtsi
+index 00f05bd..85da7ea 100644
+--- a/arch/arm/boot/dts/aspeed-g5.dtsi
++++ b/arch/arm/boot/dts/aspeed-g5.dtsi
+@@ -311,7 +311,7 @@
+ 				#gpio-cells = <2>;
+ 				gpio-controller;
+ 				compatible = "aspeed,ast2500-gpio";
+-				reg = <0x1e780000 0x1000>;
++				reg = <0x1e780000 0x200>;
+ 				interrupts = <20>;
+ 				gpio-ranges = <&pinctrl 0 0 232>;
+ 				clocks = <&syscon ASPEED_CLK_APB>;
+@@ -319,6 +319,20 @@
+ 				#interrupt-cells = <2>;
+ 			};
+ 
++			sgpio: sgpio at 1e780200 {
++				#gpio-cells = <2>;
++				compatible = "aspeed,ast2500-sgpio";
++				gpio-controller;
++				interrupts = <40>;
++				reg = <0x1e780200 0x0100>;
++				clocks = <&syscon ASPEED_CLK_APB>;
++				interrupt-controller;
++				ngpios = <8>;
++				bus-frequency = <12000000>;
++				pinctrl-names = "default";
++				pinctrl-0 = <&pinctrl_sgpm_default>;
++			};
++
+ 			rtc: rtc at 1e781000 {
+ 				compatible = "aspeed,ast2500-rtc";
+ 				reg = <0x1e781000 0x18>;
 -- 
 2.7.4
 
