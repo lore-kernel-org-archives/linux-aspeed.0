@@ -1,110 +1,111 @@
-From: Bartosz Golaszewski <brgl@bgdev.pl>
-Date: Wed, 25 Sep 2019 09:31:46 +0200
-Subject: [v1, 1/1] gpio: dts: aspeed: Add SGPIO driver
-In-Reply-To: <1569352021-6383-1-git-send-email-hongweiz@ami.com>
-References: <1569352021-6383-1-git-send-email-hongweiz@ami.com>
-Message-ID: <CAMRc=MecTmtpauqTsdEmZipeDOHoCMAXx6X6Z4zjszr9_W-aeA@mail.gmail.com>
+From: Tudor.Ambarus@microchip.com <Tudor.Ambarus@microchip.com>
+Date: Wed, 25 Sep 2019 10:11:57 +0000
+Subject: [PATCH v2 00/22] mtd: spi-nor: Quad Enable and (un)lock methods
+In-Reply-To: <20190924074533.6618-1-tudor.ambarus@microchip.com>
+References: <20190924074533.6618-1-tudor.ambarus@microchip.com>
+Message-ID: <f5d876a7-4610-2729-8f4a-0c122946d436@microchip.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-wt., 24 wrz 2019 o 21:07 Hongwei Zhang <hongweiz@ami.com> napisa?(a):
->
-> Add SGPIO driver support for Aspeed AST2500 SoC.
->
-> Signed-off-by: Hongwei Zhang <hongweiz@ami.com>
-> ---
->  arch/arm/Kconfig                 |  2 ++
->  arch/arm/boot/dts/aspeed-g5.dtsi | 16 +++++++++++++++-
->  drivers/gpio/Kconfig             |  8 ++++++++
->  drivers/gpio/Makefile            |  1 +
->  4 files changed, 26 insertions(+), 1 deletion(-)
->
-> diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
-> index 2436021..c9f08ab 100644
-> --- a/arch/arm/Kconfig
-> +++ b/arch/arm/Kconfig
-> @@ -1460,6 +1460,8 @@ config ARCH_NR_GPIO
->         default 416 if ARCH_SUNXI
->         default 392 if ARCH_U8500
->         default 352 if ARCH_VT8500
-> +       default 312 if MACH_ASPEED_G5
-> +       default 304 if MACH_ASPEED_G4
->         default 288 if ARCH_ROCKCHIP
->         default 264 if MACH_H4700
->         default 0
-> diff --git a/arch/arm/boot/dts/aspeed-g5.dtsi b/arch/arm/boot/dts/aspeed-g5.dtsi
-> index 00f05bd..85da7ea 100644
-> --- a/arch/arm/boot/dts/aspeed-g5.dtsi
-> +++ b/arch/arm/boot/dts/aspeed-g5.dtsi
-> @@ -311,7 +311,7 @@
->                                 #gpio-cells = <2>;
->                                 gpio-controller;
->                                 compatible = "aspeed,ast2500-gpio";
-> -                               reg = <0x1e780000 0x1000>;
-> +                               reg = <0x1e780000 0x200>;
->                                 interrupts = <20>;
->                                 gpio-ranges = <&pinctrl 0 0 232>;
->                                 clocks = <&syscon ASPEED_CLK_APB>;
-> @@ -319,6 +319,20 @@
->                                 #interrupt-cells = <2>;
->                         };
->
-> +                       sgpio: sgpio at 1e780200 {
-> +                               #gpio-cells = <2>;
-> +                               compatible = "aspeed,ast2500-sgpio";
-> +                               gpio-controller;
-> +                               interrupts = <40>;
-> +                               reg = <0x1e780200 0x0100>;
-> +                               clocks = <&syscon ASPEED_CLK_APB>;
-> +                               interrupt-controller;
-> +                               ngpios = <8>;
-> +                               bus-frequency = <12000000>;
-> +                               pinctrl-names = "default";
-> +                               pinctrl-0 = <&pinctrl_sgpm_default>;
-> +                       };
-> +
->                         rtc: rtc at 1e781000 {
->                                 compatible = "aspeed,ast2500-rtc";
->                                 reg = <0x1e781000 0x18>;
-> diff --git a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
-> index bb13c26..e94f903 100644
-> --- a/drivers/gpio/Kconfig
-> +++ b/drivers/gpio/Kconfig
-> @@ -120,6 +120,14 @@ config GPIO_ASPEED
->         help
->           Say Y here to support Aspeed AST2400 and AST2500 GPIO controllers.
->
-> +config SGPIO_ASPEED
-> +       bool "Aspeed SGPIO support"
-> +       depends on (ARCH_ASPEED || COMPILE_TEST) && OF_GPIO
-> +       select GPIO_GENERIC
-> +       select GPIOLIB_IRQCHIP
-> +       help
-> +         Say Y here to support Aspeed AST2500 SGPIO functionality.
-> +
->  config GPIO_ATH79
->         tristate "Atheros AR71XX/AR724X/AR913X GPIO support"
->         default y if ATH79
-> diff --git a/drivers/gpio/Makefile b/drivers/gpio/Makefile
-> index a4e9117..bebbd82 100644
-> --- a/drivers/gpio/Makefile
-> +++ b/drivers/gpio/Makefile
-> @@ -32,6 +32,7 @@ obj-$(CONFIG_GPIO_AMD_FCH)            += gpio-amd-fch.o
->  obj-$(CONFIG_GPIO_AMDPT)               += gpio-amdpt.o
->  obj-$(CONFIG_GPIO_ARIZONA)             += gpio-arizona.o
->  obj-$(CONFIG_GPIO_ASPEED)              += gpio-aspeed.o
-> +obj-$(CONFIG_SGPIO_ASPEED)             += sgpio-aspeed.o
->  obj-$(CONFIG_GPIO_ATH79)               += gpio-ath79.o
->  obj-$(CONFIG_GPIO_BCM_KONA)            += gpio-bcm-kona.o
->  obj-$(CONFIG_GPIO_BD70528)             += gpio-bd70528.o
-> --
-> 2.7.4
->
+Hi, Jonas,
 
-This should be split into separate patches with one extending the
-binding document and one adding actual support.
+s25fl512s is impacted by this patch set. Would you please do a little test to
+see if everything is ok for your flash with these patches applied? I don't have
+the flash, so I can't do the tests by myself. There is a possible test method
+described below in the cover letter.
 
-Bart
+You can find the patches at
+https://patchwork.ozlabs.org/project/linux-mtd/list/?series=132270 or at
+https://github.com/ambarus/linux-0day, branch spi-nor/quad-enable-rework-v2.
+
+Thank you,
+ta
+
+On 09/24/2019 10:45 AM, Tudor Ambarus - M18064 wrote:
+> From: Tudor Ambarus <tudor.ambarus@microchip.com>
+> 
+> Patches 1 - 14 are just clean up patches for the Flash Register
+> Operations.
+> 
+> Patches 15 - 22 deal with the Quad Enable and the (un)lock methods.
+> Fixed the clearing of QE bit on (un)lock() operations. Reworked the
+> Quad Enable methods and the disabling of the block write protection
+> at power-up.
+> 
+> Again, this is just compile tested, I don't have (yet) a relevant
+> spansion-like flash memory to test the (un)lock() methods, so I'll need
+> your help for testing this patch set.
+> 
+> The patch set can be tested using mtd-utils:
+> 1/ do a read-erase-write-read-back test immediately after boot, to check
+> the spi_nor_unlock_all() method. The focus is on the erase/write
+> methods, we want to see if the flash is unlocked at power-up.
+>         mtd_debug read /dev/mtd-yours offset size read-file
+>         hexdump read-file
+>         mtd_debug erase /dev/mtd-yours offset size
+>         dd if=/dev/urandom of=write-file bs=please-choose count=please-choose
+>         mtd_debug write /dev/mtd-yours offset write-file-size write-file
+>         mtd_debug read /dev/mtd-yours offset write-file-size read-file
+>         sha1sum read-file write-file
+> 2/ lock flash then try to erase/write it, to see if the lock works
+>         flash_lock /dev/mtd-yours offset block-count
+>         Do the read-erase-write-read-back test from 1/. The contents of
+>         flash should not change in the erase and write steps.
+> 3/ unlock flash and do the read-erase-write-read-back from 1/. The value of the
+>    QEE should not change and you should be able to erase and write the flash.
+>    Test 1/ should be successful.
+> 
+> v2:
+> - Introduce spi_nor_write_16bit_cr_and_check() as per Vignesh's suggestion. The
+>   Configuration Register contains bits that can be updated in future: FREEZE,
+>   CMP. Provide a generic method that allows updating all bits of the
+>   Configuration Register.
+> - Fix SNOR_F_NO_READ_CR case in
+>   "mtd: spi-nor: Rework the disabling of block write protection". When the flash
+>   doesn't support the CR Read command, we make an assumption about the value of
+>   the QE bit. In spi_nor_init(), call spi_nor_quad_enable() first, then
+>   spi_nor_unlock_all(), so that at the spi_nor_unlock_all() time we can be sure
+>   the QE bit has value one, because of the previous call to spi_nor_quad_enable().
+> - Fix if statement in spi_nor_write_sr_and_check():
+>   if (nor->flags & SNOR_F_HAS_16BIT_SR)
+> - Fix documentation warnings.
+> - New patch: "mtd: spi-nor: Check all the bits written, not just the BP ones".
+> - Drop Global Unlock patches, will send them in a different patch set.
+> 
+> Tudor Ambarus (22):
+>   mtd: spi-nor: hisi-sfc: Drop nor->erase NULL assignment
+>   mtd: spi-nor: Introduce 'struct spi_nor_controller_ops'
+>   mtd: spi-nor: cadence-quadspi: Fix cqspi_command_read() definition
+>   mtd: spi-nor: Rename nor->params to nor->flash
+>   mtd: spi-nor: Rework read_sr()
+>   mtd: spi-nor: Rework read_fsr()
+>   mtd: spi-nor: Rework read_cr()
+>   mtd: spi-nor: Rework write_enable/disable()
+>   mtd: spi-nor: Fix retlen handling in sst_write()
+>   mtd: spi-nor: Rework write_sr()
+>   mtd: spi-nor: Rework spi_nor_read/write_sr2()
+>   mtd: spi-nor: Report error in spi_nor_xread_sr()
+>   mtd: spi-nor: Void return type for spi_nor_clear_sr/fsr()
+>   mtd: spi-nor: Drop duplicated new line
+>   mtd: spi-nor: Drop spansion_quad_enable()
+>   mtd: spi-nor: Fix errno on quad_enable methods
+>   mtd: spi-nor: Check all the bits written, not just the BP ones
+>   mtd: spi-nor: Fix clearing of QE bit on lock()/unlock()
+>   mtd: spi-nor: Rework macronix_quad_enable()
+>   mtd: spi-nor: Rework spansion(_no)_read_cr_quad_enable()
+>   mtd: spi-nor: Update sr2_bit7_quad_enable()
+>   mtd: spi-nor: Rework the disabling of block write protection
+> 
+>  drivers/mtd/spi-nor/aspeed-smc.c      |   23 +-
+>  drivers/mtd/spi-nor/cadence-quadspi.c |   54 +-
+>  drivers/mtd/spi-nor/hisi-sfc.c        |   23 +-
+>  drivers/mtd/spi-nor/intel-spi.c       |   24 +-
+>  drivers/mtd/spi-nor/mtk-quadspi.c     |   25 +-
+>  drivers/mtd/spi-nor/nxp-spifi.c       |   23 +-
+>  drivers/mtd/spi-nor/spi-nor.c         | 1716 ++++++++++++++++++---------------
+>  include/linux/mtd/spi-nor.h           |   74 +-
+>  8 files changed, 1058 insertions(+), 904 deletions(-)
+> 
