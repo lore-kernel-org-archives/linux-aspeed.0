@@ -1,52 +1,52 @@
 From: Eddie James <eajames@linux.ibm.com>
-Date: Fri, 27 Sep 2019 15:58:48 -0500
-Subject: [PATCH v2 3/4] ARM: dts: aspeed: ast2500: Add SCU interrupt controller
+Date: Fri, 27 Sep 2019 15:58:49 -0500
+Subject: [PATCH v2 4/4] ARM: dts: aspeed: ast2600: Add SCU interrupt
+ controllers
 In-Reply-To: <1569617929-29055-1-git-send-email-eajames@linux.ibm.com>
 References: <1569617929-29055-1-git-send-email-eajames@linux.ibm.com>
-Message-ID: <1569617929-29055-4-git-send-email-eajames@linux.ibm.com>
+Message-ID: <1569617929-29055-5-git-send-email-eajames@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add a node for the interrupt controller provided by the SCU.
+Add nodes for the interrupt controllers provided by the SCU.
 
 Signed-off-by: Eddie James <eajames@linux.ibm.com>
 ---
- arch/arm/boot/dts/aspeed-g5.dtsi | 11 ++++++++++-
- 1 file changed, 10 insertions(+), 1 deletion(-)
+ arch/arm/boot/dts/aspeed-g6.dtsi | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
 
-diff --git a/arch/arm/boot/dts/aspeed-g5.dtsi b/arch/arm/boot/dts/aspeed-g5.dtsi
-index e8feb8b..450c2d2 100644
---- a/arch/arm/boot/dts/aspeed-g5.dtsi
-+++ b/arch/arm/boot/dts/aspeed-g5.dtsi
-@@ -209,8 +209,9 @@
- 			syscon: syscon at 1e6e2000 {
- 				compatible = "aspeed,ast2500-scu", "syscon", "simple-mfd";
- 				reg = <0x1e6e2000 0x1a8>;
-+				ranges = <0 0x1e6e2000 0x1a8>;
- 				#address-cells = <1>;
--				#size-cells = <0>;
-+				#size-cells = <1>;
- 				#clock-cells = <1>;
- 				#reset-cells = <1>;
- 
-@@ -224,6 +225,14 @@
- 					compatible = "aspeed,ast2500-p2a-ctrl";
- 					status = "disabled";
+diff --git a/arch/arm/boot/dts/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed-g6.dtsi
+index 3a1422f..d89f1e6 100644
+--- a/arch/arm/boot/dts/aspeed-g6.dtsi
++++ b/arch/arm/boot/dts/aspeed-g6.dtsi
+@@ -159,6 +159,24 @@
+ 					compatible = "aspeed,ast2600-smpmem";
+ 					reg = <0x180 0x40>;
  				};
 +
-+				scu_ic: interrupt-controller at 18 {
++				scu_ic0: interrupt-controller at 0 {
 +					#interrupt-cells = <1>;
-+					compatible = "aspeed,ast2500-scu-ic";
-+					reg = <0x18 0x04>;
-+					interrupts = <21>;
++					compatible = "aspeed,ast2600-scu-ic0";
++					reg = <0x560 0x4>;
++					interrupt-parent = <&gic>;
++					interrupts = <GIC_SPI 12 IRQ_TYPE_LEVEL_HIGH>;
++					interrupt-controller;
++				};
++
++				scu_ic1: interrupt-controller at 1 {
++					#interrupt-cells = <1>;
++					compatible = "aspeed,ast2600-scu-ic1";
++					reg = <0x570 0x4>;
++					interrupt-parent = <&gic>;
++					interrupts = <GIC_SPI 41 IRQ_TYPE_LEVEL_HIGH>;
 +					interrupt-controller;
 +				};
  			};
  
- 			rng: hwrng at 1e6e2078 {
+ 			rng: hwrng at 1e6e2524 {
 -- 
 1.8.3.1
 
