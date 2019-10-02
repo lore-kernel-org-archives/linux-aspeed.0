@@ -1,34 +1,25 @@
 From: Chia-Wei, Wang <chiawei_wang@aspeedtech.com>
-Date: Wed, 2 Oct 2019 14:11:59 +0800
-Subject: [PATCH 1/2] peci: aspeed: Add AST2600 compatible string
-In-Reply-To: <20191002061200.29888-1-chiawei_wang@aspeedtech.com>
-References: <20191002061200.29888-1-chiawei_wang@aspeedtech.com>
-Message-ID: <20191002061200.29888-2-chiawei_wang@aspeedtech.com>
+Date: Wed, 2 Oct 2019 14:11:58 +0800
+Subject: [PATCH 0/2] peci: aspeed: Add AST2600 compatible
+Message-ID: <20191002061200.29888-1-chiawei_wang@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The AST2600 SoC contains the same register set as AST25xx.
+Update the Aspeed PECI driver with the AST2600 compatible string.
+A new comptabile string is needed for the extended HW feature of
+AST2600.
 
-Signed-off-by: Chia-Wei, Wang <chiawei_wang@aspeedtech.com>
----
- drivers/peci/peci-aspeed.c | 1 +
- 1 file changed, 1 insertion(+)
+Chia-Wei, Wang (2):
+  peci: aspeed: Add AST2600 compatible string
+  dt-bindings: peci: aspeed: Add AST2600 compatible
 
-diff --git a/drivers/peci/peci-aspeed.c b/drivers/peci/peci-aspeed.c
-index 51cb2563ceb6..4eed119dc83b 100644
---- a/drivers/peci/peci-aspeed.c
-+++ b/drivers/peci/peci-aspeed.c
-@@ -485,6 +485,7 @@ static int aspeed_peci_remove(struct platform_device *pdev)
- static const struct of_device_id aspeed_peci_of_table[] = {
- 	{ .compatible = "aspeed,ast2400-peci", },
- 	{ .compatible = "aspeed,ast2500-peci", },
-+	{ .compatible = "aspeed,ast2600-peci", },
- 	{ }
- };
- MODULE_DEVICE_TABLE(of, aspeed_peci_of_table);
+ Documentation/devicetree/bindings/peci/peci-aspeed.txt | 1 +
+ drivers/peci/peci-aspeed.c                             | 1 +
+ 2 files changed, 2 insertions(+)
+
 -- 
 2.17.1
 
