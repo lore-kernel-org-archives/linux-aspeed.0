@@ -1,99 +1,65 @@
 From: Cédric Le Goater <clg@kaod.org>
-Date: Fri,  4 Oct 2019 13:59:08 +0200
-Subject: [PATCH 05/16] mtd: spi-nor: aspeed: Limit the maximum SPI frequency
+Date: Fri,  4 Oct 2019 13:59:06 +0200
+Subject: [PATCH 03/16] mtd: spi-nor: aspeed: Link controller with the ahb clock
 In-Reply-To: <20191004115919.20788-1-clg@kaod.org>
 References: <20191004115919.20788-1-clg@kaod.org>
-Message-ID: <20191004115919.20788-6-clg@kaod.org>
+Message-ID: <20191004115919.20788-4-clg@kaod.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The read training algorithm can choose a 100MHz SPI frequency which
-might be a bit too high for dual output IO on some chips, for the
-W25Q256 on palmetto for instance. The MX66L1G45G on witherspoon should
-be fine though. Also, the second chip of the FMC controller does not
-get any optimize settings for reads. Only the first is configured by
-U-Boot.
-
-To fix these two issues, we introduce a "spi-max-frequency" property
-in the device tree which will be used to cap the read training
-algorithm. It is now considered safe to run the read training on the
-FMC controller chips as well.
-
-By default, the frequency setting is 50MHz.
+We will need the AHB frequency to set the HCLK settings in the SMC
+controller to perform the read training.
 
 Signed-off-by: C?dric Le Goater <clg@kaod.org>
-Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
 ---
- drivers/mtd/spi-nor/aspeed-smc.c | 17 +++++++++++++----
- 1 file changed, 13 insertions(+), 4 deletions(-)
+ drivers/mtd/spi-nor/aspeed-smc.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
 diff --git a/drivers/mtd/spi-nor/aspeed-smc.c b/drivers/mtd/spi-nor/aspeed-smc.c
-index 155c407c2bdf..1c1822a13407 100644
+index c775e0612613..facd8fc16ca3 100644
 --- a/drivers/mtd/spi-nor/aspeed-smc.c
 +++ b/drivers/mtd/spi-nor/aspeed-smc.c
-@@ -58,6 +58,7 @@ static const struct aspeed_smc_info fmc_2400_info = {
- 	.ctl0 = 0x10,
- 	.timing = 0x94,
- 	.set_4b = aspeed_smc_chip_set_4b,
-+	.optimize_read = aspeed_smc_optimize_read,
- };
+@@ -6,6 +6,7 @@
+  */
  
- static const struct aspeed_smc_info spi_2400_info = {
-@@ -79,6 +80,7 @@ static const struct aspeed_smc_info fmc_2500_info = {
- 	.ctl0 = 0x10,
- 	.timing = 0x94,
- 	.set_4b = aspeed_smc_chip_set_4b,
-+	.optimize_read = aspeed_smc_optimize_read,
- };
+ #include <linux/bug.h>
++#include <linux/clk.h>
+ #include <linux/device.h>
+ #include <linux/io.h>
+ #include <linux/module.h>
+@@ -109,6 +110,8 @@ struct aspeed_smc_controller {
+ 	void __iomem *ahb_base;			/* per-chip windows resource */
+ 	u32 ahb_window_size;			/* full mapping window size */
  
- static const struct aspeed_smc_info spi_2500_info = {
-@@ -110,6 +112,7 @@ struct aspeed_smc_chip {
- 	u32 ctl_val[smc_max];			/* control settings */
- 	enum aspeed_smc_flash_type type;	/* what type of flash */
- 	struct spi_nor nor;
-+	u32 clk_rate;
- };
- 
- struct aspeed_smc_controller {
-@@ -126,6 +129,8 @@ struct aspeed_smc_controller {
++	unsigned long	clk_frequency;
++
  	struct aspeed_smc_chip *chips[0];	/* pointers to attached chips */
  };
  
-+#define ASPEED_SPI_DEFAULT_FREQ		50000000
+@@ -909,6 +912,7 @@ static int aspeed_smc_probe(struct platform_device *pdev)
+ 	struct aspeed_smc_controller *controller;
+ 	const struct of_device_id *match;
+ 	const struct aspeed_smc_info *info;
++	struct clk *clk;
+ 	struct resource *res;
+ 	int ret;
+ 
+@@ -940,6 +944,12 @@ static int aspeed_smc_probe(struct platform_device *pdev)
+ 
+ 	controller->ahb_window_size = resource_size(res);
+ 
++	clk = devm_clk_get(&pdev->dev, NULL);
++	if (IS_ERR(clk))
++		return PTR_ERR(clk);
++	controller->clk_frequency = clk_get_rate(clk);
++	devm_clk_put(&pdev->dev, clk);
 +
- /*
-  * SPI Flash Configuration Register (AST2500 SPI)
-  *     or
-@@ -1002,11 +1007,8 @@ static int aspeed_smc_chip_setup_finish(struct aspeed_smc_chip *chip)
- 	dev_info(controller->dev, "read control register: %08x\n",
- 		 chip->ctl_val[smc_read]);
- 
--	/*
--	 * TODO: get max freq from chip
--	 */
- 	if (optimize_read && info->optimize_read)
--		info->optimize_read(chip, 104000000);
-+		info->optimize_read(chip, chip->clk_rate);
- 	return 0;
- }
- 
-@@ -1060,6 +1062,13 @@ static int aspeed_smc_setup_flash(struct aspeed_smc_controller *controller,
- 			break;
- 		}
- 
-+		if (of_property_read_u32(child, "spi-max-frequency",
-+					 &chip->clk_rate)) {
-+			chip->clk_rate = ASPEED_SPI_DEFAULT_FREQ;
-+		}
-+		dev_info(dev, "Using %d MHz SPI frequency\n",
-+			 chip->clk_rate / 1000000);
-+
- 		chip->controller = controller;
- 		chip->ctl = controller->regs + info->ctl0 + cs * 4;
- 		chip->cs = cs;
+ 	ret = aspeed_smc_setup_flash(controller, np, res);
+ 	if (ret)
+ 		dev_err(dev, "Aspeed SMC probe failed %d\n", ret);
 -- 
 2.21.0
 
