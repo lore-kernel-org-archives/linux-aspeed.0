@@ -1,46 +1,68 @@
-From: ChiaWei Wang <chiawei_wang@aspeedtech.com>
-Date: Fri, 4 Oct 2019 01:34:43 +0000
-Subject: [PATCH 0/2] peci: aspeed: Add AST2600 compatible
-In-Reply-To: <b219c8e9-4f72-f91c-ba57-96ffab82ff2e@linux.intel.com>
-References: <20191002061200.29888-1-chiawei_wang@aspeedtech.com>
- <70044749-785b-6ff3-7a28-fb049dcfec54@linux.intel.com>
- <CACPK8XfBxC+4PHHCkMoXr+twjfWaovcJ5c=hfCmHRJ6LpGNeFg@mail.gmail.com>
- <03d21443-aa9a-a126-dc77-a21f14f708c9@linux.intel.com>
- <4af9eb8fa6fd41fc87708fc8afdcc83e@TWMBX02.aspeed.com>
- <b219c8e9-4f72-f91c-ba57-96ffab82ff2e@linux.intel.com>
-Message-ID: <ad79c20427ea4aa28c826d32e96b82e8@TWMBX02.aspeed.com>
+From: Tudor.Ambarus@microchip.com <Tudor.Ambarus@microchip.com>
+Date: Fri, 4 Oct 2019 10:03:40 +0000
+Subject: [PATCH v2 10/22] mtd: spi-nor: Rework write_sr()
+In-Reply-To: <83d62334-bd1c-20b7-3c58-225392c819f8@huawei.com>
+References: <20190924074533.6618-1-tudor.ambarus@microchip.com>
+ <20190924074533.6618-11-tudor.ambarus@microchip.com>
+ <83d62334-bd1c-20b7-3c58-225392c819f8@huawei.com>
+Message-ID: <e5d9b91f-cb86-0b82-5631-af0868ba4796@microchip.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Sure. We will re-submit the patches with the revision suggested.
-Thanks.
+Hi, John,
 
-Regards,
-Chiawei
-
-************* Email Confidentiality Notice ********************
-DISCLAIMER:
-This message (and any attachments) may contain legally privileged and/or other confidential information. If you have received it in error, please notify the sender by reply e-mail and immediately delete the e-mail and any attachments without copying or disclosing the contents. Thank you.
-
-
------Original Message-----
-From: Jae Hyun Yoo [mailto:jae.hyun.yoo at linux.intel.com] 
-Sent: Friday, October 4, 2019 12:20 AM
-To: ChiaWei Wang <chiawei_wang@aspeedtech.com>; Joel Stanley <joel@jms.id.au>
-Cc: Jason M Biils <jason.m.bills@linux.intel.com>; Rob Herring <robh+dt@kernel.org>; Mark Rutland <mark.rutland@arm.com>; Andrew Jeffery <andrew@aj.id.au>; linux-aspeed <linux-aspeed@lists.ozlabs.org>; OpenBMC Maillist <openbmc@lists.ozlabs.org>; devicetree <devicetree@vger.kernel.org>; Linux ARM <linux-arm-kernel@lists.infradead.org>; Linux Kernel Mailing List <linux-kernel@vger.kernel.org>; Ryan Chen <ryan_chen@aspeedtech.com>
-Subject: Re: [PATCH 0/2] peci: aspeed: Add AST2600 compatible
-
-On 10/2/2019 7:35 PM, ChiaWei Wang wrote:
-> Hi Jae Hyun,
+On 10/04/2019 12:39 PM, John Garry wrote:
+> External E-Mail
 > 
-> Thanks for the feedback.
-> For now should I use GitHub pull-request to submit the patches of PECI-related change to OpenBMC dev-5.3 tree only?
+> 
+> On 24/09/2019 08:46, Tudor.Ambarus at microchip.com wrote:
+>> +}
+>> +
+>> +/**
+>> + * spi_nor_write_sr() - Write the Status Register.
+>> + * @nor:??? pointer to 'struct spi_nor'.
+>> + * @sr:??????? buffer to write to the Status Register.
+>> + * @len:??? number of bytes to write to the Status Register.
+>> + *
+>> + * Return: 0 on success, -errno otherwise.
+>> ? */
+>> -static int write_sr(struct spi_nor *nor, u8 val)
+>> +static int spi_nor_write_sr(struct spi_nor *nor, const u8 *sr, size_t len)
+>> ?{
+>> -??? nor->bouncebuf[0] = val;
+>> +??? int ret;
+>> +
+>> +??? ret = spi_nor_write_enable(nor);
+>> +??? if (ret)
+>> +??????? return ret;
+>> +
+> 
+> Hi Tudor,
+> 
+>> ???? if (nor->spimem) {
+>> ???????? struct spi_mem_op op =
+>> ???????????? SPI_MEM_OP(SPI_MEM_OP_CMD(SPINOR_OP_WRSR, 1),
+>> ??????????????????? SPI_MEM_OP_NO_ADDR,
+>> ??????????????????? SPI_MEM_OP_NO_DUMMY,
+>> -?????????????????? SPI_MEM_OP_DATA_IN(1, nor->bouncebuf, 1));
+> 
+> This be SPI_MEM_OP_DATA_OUT() in the current mainline code also, right?
 
-You could submit this patch series to OpenBMC mailing list with [PATCH linux dev-5.3] prefix.
+In v5.4-rc1 this is defined as SPI_MEM_OP_DATA_IN, so the Mainline code should
+fail. This looks like a bug. I didn't noticed it when doing the patch.
 
-Thanks,
+> 
+> I'm testing my under development driver on top of v5.4-rc1, and flash_lock -u is broken.
 
-Jae
+It's not clear to me, does flash_lock fail with my patches on top of v5.4-rc1?
+Or it fails when testing v5.4-rc1?
+
+Can you test v5.4-rc1 and see if flash_lock works on you flash or not?
+
+Please specify which flash do you use, and which controller.
+
+Thanks for testing this!
+ta
