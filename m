@@ -1,103 +1,79 @@
-From: Alexandre Belloni <alexandre.belloni@bootlin.com>
-Date: Mon, 7 Oct 2019 12:10:37 +0200
-Subject: [PATCH -next 00/34] rtc: use devm_platform_ioremap_resource() to
- simplify code
-In-Reply-To: <20191006102953.57536-1-yuehaibing@huawei.com>
-References: <20191006102953.57536-1-yuehaibing@huawei.com>
-Message-ID: <20191007101037.GE4254@piout.net>
+From: John Garry <john.garry@huawei.com>
+Date: Fri, 4 Oct 2019 10:39:51 +0100
+Subject: [PATCH v2 10/22] mtd: spi-nor: Rework write_sr()
+In-Reply-To: <20190924074533.6618-11-tudor.ambarus@microchip.com>
+References: <20190924074533.6618-1-tudor.ambarus@microchip.com>
+ <20190924074533.6618-11-tudor.ambarus@microchip.com>
+Message-ID: <83d62334-bd1c-20b7-3c58-225392c819f8@huawei.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 06/10/2019 18:29:19+0800, YueHaibing wrote:
-> devm_platform_ioremap_resource() internally have platform_get_resource()
-> and devm_ioremap_resource() in it. So instead of calling them separately
-> use devm_platform_ioremap_resource() directly.
-> 
-> YueHaibing (34):
->   rtc: asm9260: use devm_platform_ioremap_resource() to simplify code
->   rtc: rtc-aspeed: use devm_platform_ioremap_resource() to simplify code
->   rtc: brcmstb-waketimer: use devm_platform_ioremap_resource() to
->     simplify code
->   rtc: at91sam9: use devm_platform_ioremap_resource() to simplify code
->   rtc: cadence: use devm_platform_ioremap_resource() to simplify code
->   rtc: coh901331: use devm_platform_ioremap_resource() to simplify code
->   rtc: davinci: use devm_platform_ioremap_resource() to simplify code
->   rtc: digicolor: use devm_platform_ioremap_resource() to simplify code
->   rtc: ds1216: use devm_platform_ioremap_resource() to simplify code
->   rtc: ds1511: use devm_platform_ioremap_resource() to simplify code
->   rtc: ds1553: use devm_platform_ioremap_resource() to simplify code
->   rtc: ep93xx: use devm_platform_ioremap_resource() to simplify code
->   rtc: jz4740: use devm_platform_ioremap_resource() to simplify code
->   rtc: lpc24xx: use devm_platform_ioremap_resource() to simplify code
->   rtc: lpc32xx: use devm_platform_ioremap_resource() to simplify code
->   rtc: meson: use devm_platform_ioremap_resource() to simplify code
->   rtc: mt7622: use devm_platform_ioremap_resource() to simplify code
->   rtc: mv: use devm_platform_ioremap_resource() to simplify code
->   rtc: omap: use devm_platform_ioremap_resource() to simplify code
->   rtc: pic32: use devm_platform_ioremap_resource() to simplify code
->   rtc: rtd119x: use devm_platform_ioremap_resource() to simplify code
->   rtc: s3c: use devm_platform_ioremap_resource() to simplify code
->   rtc: sa1100: use devm_platform_ioremap_resource() to simplify code
->   rtc: spear: use devm_platform_ioremap_resource() to simplify code
->   rtc: stk17ta8: use devm_platform_ioremap_resource() to simplify code
->   rtc: ds1286: use devm_platform_ioremap_resource() to simplify code
->   rtc: st-lpc: use devm_platform_ioremap_resource() to simplify code
->   rtc: stm32: use devm_platform_ioremap_resource() to simplify code
->   rtc: sunxi: use devm_platform_ioremap_resource() to simplify code
->   rtc: tegra: use devm_platform_ioremap_resource() to simplify code
->   rtc: tx4939: use devm_platform_ioremap_resource() to simplify code
->   rtc: vt8500: use devm_platform_ioremap_resource() to simplify code
->   rtc: xgene: use devm_platform_ioremap_resource() to simplify code
->   rtc: zynqmp: use devm_platform_ioremap_resource() to simplify code
-> 
->  drivers/rtc/rtc-asm9260.c           | 4 +---
->  drivers/rtc/rtc-aspeed.c            | 4 +---
->  drivers/rtc/rtc-at91sam9.c          | 4 +---
->  drivers/rtc/rtc-brcmstb-waketimer.c | 4 +---
->  drivers/rtc/rtc-cadence.c           | 4 +---
->  drivers/rtc/rtc-coh901331.c         | 4 +---
->  drivers/rtc/rtc-davinci.c           | 4 +---
->  drivers/rtc/rtc-digicolor.c         | 4 +---
->  drivers/rtc/rtc-ds1216.c            | 4 +---
->  drivers/rtc/rtc-ds1286.c            | 4 +---
->  drivers/rtc/rtc-ds1511.c            | 4 +---
->  drivers/rtc/rtc-ds1553.c            | 4 +---
->  drivers/rtc/rtc-ep93xx.c            | 4 +---
->  drivers/rtc/rtc-jz4740.c            | 4 +---
->  drivers/rtc/rtc-lpc24xx.c           | 4 +---
->  drivers/rtc/rtc-lpc32xx.c           | 4 +---
->  drivers/rtc/rtc-meson.c             | 4 +---
->  drivers/rtc/rtc-mt7622.c            | 4 +---
->  drivers/rtc/rtc-mv.c                | 4 +---
->  drivers/rtc/rtc-omap.c              | 4 +---
->  drivers/rtc/rtc-pic32.c             | 4 +---
->  drivers/rtc/rtc-rtd119x.c           | 4 +---
->  drivers/rtc/rtc-s3c.c               | 4 +---
->  drivers/rtc/rtc-sa1100.c            | 4 +---
->  drivers/rtc/rtc-spear.c             | 4 +---
->  drivers/rtc/rtc-st-lpc.c            | 4 +---
->  drivers/rtc/rtc-stk17ta8.c          | 4 +---
->  drivers/rtc/rtc-stm32.c             | 4 +---
->  drivers/rtc/rtc-sunxi.c             | 4 +---
->  drivers/rtc/rtc-tegra.c             | 4 +---
->  drivers/rtc/rtc-tx4939.c            | 4 +---
->  drivers/rtc/rtc-vt8500.c            | 4 +---
->  drivers/rtc/rtc-xgene.c             | 4 +---
->  drivers/rtc/rtc-zynqmp.c            | 5 +----
->  34 files changed, 34 insertions(+), 103 deletions(-)
-> 
+On 24/09/2019 08:46, Tudor.Ambarus at microchip.com wrote:
+> +}
+> +
+> +/**
+> + * spi_nor_write_sr() - Write the Status Register.
+> + * @nor:	pointer to 'struct spi_nor'.
+> + * @sr:		buffer to write to the Status Register.
+> + * @len:	number of bytes to write to the Status Register.
+> + *
+> + * Return: 0 on success, -errno otherwise.
+>   */
+> -static int write_sr(struct spi_nor *nor, u8 val)
+> +static int spi_nor_write_sr(struct spi_nor *nor, const u8 *sr, size_t len)
+>  {
+> -	nor->bouncebuf[0] = val;
+> +	int ret;
+> +
+> +	ret = spi_nor_write_enable(nor);
+> +	if (ret)
+> +		return ret;
+> +
 
-I've quashed and applied.
+Hi Tudor,
 
-> -- 
-> 2.7.4
-> 
-> 
+>  	if (nor->spimem) {
+>  		struct spi_mem_op op =
+>  			SPI_MEM_OP(SPI_MEM_OP_CMD(SPINOR_OP_WRSR, 1),
+>  				   SPI_MEM_OP_NO_ADDR,
+>  				   SPI_MEM_OP_NO_DUMMY,
+> -				   SPI_MEM_OP_DATA_IN(1, nor->bouncebuf, 1));
 
--- 
-Alexandre Belloni, Bootlin
-Embedded Linux and Kernel engineering
-https://bootlin.com
+This be SPI_MEM_OP_DATA_OUT() in the current mainline code also, right?
+
+I'm testing my under development driver on top of v5.4-rc1, and 
+flash_lock -u is broken.
+
+Cheers,
+John
+
+> +				   SPI_MEM_OP_DATA_OUT(len, sr, 1));
+>
+> -		return spi_mem_exec_op(nor->spimem, &op);
+> +		ret = spi_mem_exec_op(nor->spimem, &op);
+> +	} else {
+> +		ret = nor->controller_ops->write_reg(nor, SPINOR_OP_WRSR,
+> +						     sr, len);
+>  	}
+>
+> -	return nor->controller_ops->write_reg(nor, SPINOR_OP_WRSR,
+> -					      nor->bouncebuf, 1);
+> +	if (ret) {
+> +		dev_err(nor->dev, "error while writing Status Register\n");
+> +		return ret;
+> +	}
+> +
+> +	ret = spi_nor_wait_till_ready(nor);
+> +
+> +	return ret;
+>  }
+>
+>  static struct spi_nor *mtd_to_spi_nor(struct mtd_info *mtd)
+> @@ -741,161 +914,6 @@ static int winbond_set_4byte(struct spi_nor *nor, bool enable)
+>  	return ret;
+>  }
+
+
