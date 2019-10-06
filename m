@@ -1,10 +1,10 @@
 From: YueHaibing <yuehaibing@huawei.com>
-Date: Sun, 6 Oct 2019 18:29:25 +0800
-Subject: [PATCH -next 06/34] rtc: coh901331: use
- devm_platform_ioremap_resource() to simplify code
+Date: Sun, 6 Oct 2019 18:29:28 +0800
+Subject: [PATCH -next 09/34] rtc: ds1216: use devm_platform_ioremap_resource()
+ to simplify code
 In-Reply-To: <20191006102953.57536-1-yuehaibing@huawei.com>
 References: <20191006102953.57536-1-yuehaibing@huawei.com>
-Message-ID: <20191006102953.57536-7-yuehaibing@huawei.com>
+Message-ID: <20191006102953.57536-10-yuehaibing@huawei.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -16,29 +16,30 @@ This is detected by coccinelle.
 
 Signed-off-by: YueHaibing <yuehaibing@huawei.com>
 ---
- drivers/rtc/rtc-coh901331.c | 4 +---
+ drivers/rtc/rtc-ds1216.c | 4 +---
  1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/drivers/rtc/rtc-coh901331.c b/drivers/rtc/rtc-coh901331.c
-index 4ac8508..da59917 100644
---- a/drivers/rtc/rtc-coh901331.c
-+++ b/drivers/rtc/rtc-coh901331.c
-@@ -164,15 +164,13 @@ static int __init coh901331_probe(struct platform_device *pdev)
- {
- 	int ret;
- 	struct coh901331_port *rtap;
--	struct resource *res;
+diff --git a/drivers/rtc/rtc-ds1216.c b/drivers/rtc/rtc-ds1216.c
+index b225bcf..7eeb3f3 100644
+--- a/drivers/rtc/rtc-ds1216.c
++++ b/drivers/rtc/rtc-ds1216.c
+@@ -137,7 +137,6 @@ static const struct rtc_class_ops ds1216_rtc_ops = {
  
- 	rtap = devm_kzalloc(&pdev->dev,
- 			    sizeof(struct coh901331_port), GFP_KERNEL);
- 	if (!rtap)
- 		return -ENOMEM;
+ static int __init ds1216_rtc_probe(struct platform_device *pdev)
+ {
+-	struct resource *res;
+ 	struct ds1216_priv *priv;
+ 	u8 dummy[8];
+ 
+@@ -147,8 +146,7 @@ static int __init ds1216_rtc_probe(struct platform_device *pdev)
+ 
+ 	platform_set_drvdata(pdev, priv);
  
 -	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
--	rtap->virtbase  = devm_ioremap_resource(&pdev->dev, res);
-+	rtap->virtbase  = devm_platform_ioremap_resource(pdev, 0);
- 	if (IS_ERR(rtap->virtbase))
- 		return PTR_ERR(rtap->virtbase);
+-	priv->ioaddr = devm_ioremap_resource(&pdev->dev, res);
++	priv->ioaddr = devm_platform_ioremap_resource(pdev, 0);
+ 	if (IS_ERR(priv->ioaddr))
+ 		return PTR_ERR(priv->ioaddr);
  
 -- 
 2.7.4
