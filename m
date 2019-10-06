@@ -1,10 +1,10 @@
 From: YueHaibing <yuehaibing@huawei.com>
-Date: Sun, 6 Oct 2019 18:29:24 +0800
-Subject: [PATCH -next 05/34] rtc: cadence: use
+Date: Sun, 6 Oct 2019 18:29:20 +0800
+Subject: [PATCH -next 01/34] rtc: asm9260: use
  devm_platform_ioremap_resource() to simplify code
 In-Reply-To: <20191006102953.57536-1-yuehaibing@huawei.com>
 References: <20191006102953.57536-1-yuehaibing@huawei.com>
-Message-ID: <20191006102953.57536-6-yuehaibing@huawei.com>
+Message-ID: <20191006102953.57536-2-yuehaibing@huawei.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -16,30 +16,30 @@ This is detected by coccinelle.
 
 Signed-off-by: YueHaibing <yuehaibing@huawei.com>
 ---
- drivers/rtc/rtc-cadence.c | 4 +---
+ drivers/rtc/rtc-asm9260.c | 4 +---
  1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/drivers/rtc/rtc-cadence.c b/drivers/rtc/rtc-cadence.c
-index 592aae2..595d5d2 100644
---- a/drivers/rtc/rtc-cadence.c
-+++ b/drivers/rtc/rtc-cadence.c
-@@ -255,7 +255,6 @@ static const struct rtc_class_ops cdns_rtc_ops = {
- static int cdns_rtc_probe(struct platform_device *pdev)
+diff --git a/drivers/rtc/rtc-asm9260.c b/drivers/rtc/rtc-asm9260.c
+index 10413d8..10064bd 100644
+--- a/drivers/rtc/rtc-asm9260.c
++++ b/drivers/rtc/rtc-asm9260.c
+@@ -245,7 +245,6 @@ static int asm9260_rtc_probe(struct platform_device *pdev)
  {
- 	struct cdns_rtc *crtc;
--	struct resource *res;
- 	int ret;
- 	unsigned long ref_clk_freq;
+ 	struct asm9260_rtc_priv *priv;
+ 	struct device *dev = &pdev->dev;
+-	struct resource	*res;
+ 	int irq_alarm, ret;
+ 	u32 ccr;
  
-@@ -263,8 +262,7 @@ static int cdns_rtc_probe(struct platform_device *pdev)
- 	if (!crtc)
- 		return -ENOMEM;
+@@ -260,8 +259,7 @@ static int asm9260_rtc_probe(struct platform_device *pdev)
+ 	if (irq_alarm < 0)
+ 		return irq_alarm;
  
 -	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
--	crtc->regs = devm_ioremap_resource(&pdev->dev, res);
-+	crtc->regs = devm_platform_ioremap_resource(pdev, 0);
- 	if (IS_ERR(crtc->regs))
- 		return PTR_ERR(crtc->regs);
+-	priv->iobase = devm_ioremap_resource(dev, res);
++	priv->iobase = devm_platform_ioremap_resource(pdev, 0);
+ 	if (IS_ERR(priv->iobase))
+ 		return PTR_ERR(priv->iobase);
  
 -- 
 2.7.4
