@@ -1,10 +1,10 @@
 From: YueHaibing <yuehaibing@huawei.com>
-Date: Sun, 6 Oct 2019 18:29:31 +0800
-Subject: [PATCH -next 12/34] rtc: ep93xx: use devm_platform_ioremap_resource()
- to simplify code
+Date: Sun, 6 Oct 2019 18:29:23 +0800
+Subject: [PATCH -next 04/34] rtc: at91sam9: use
+ devm_platform_ioremap_resource() to simplify code
 In-Reply-To: <20191006102953.57536-1-yuehaibing@huawei.com>
 References: <20191006102953.57536-1-yuehaibing@huawei.com>
-Message-ID: <20191006102953.57536-13-yuehaibing@huawei.com>
+Message-ID: <20191006102953.57536-5-yuehaibing@huawei.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -16,29 +16,30 @@ This is detected by coccinelle.
 
 Signed-off-by: YueHaibing <yuehaibing@huawei.com>
 ---
- drivers/rtc/rtc-ep93xx.c | 4 +---
+ drivers/rtc/rtc-at91sam9.c | 4 +---
  1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/drivers/rtc/rtc-ep93xx.c b/drivers/rtc/rtc-ep93xx.c
-index 1766496..8ec9ea1 100644
---- a/drivers/rtc/rtc-ep93xx.c
-+++ b/drivers/rtc/rtc-ep93xx.c
-@@ -122,15 +122,13 @@ static const struct attribute_group ep93xx_rtc_sysfs_files = {
- static int ep93xx_rtc_probe(struct platform_device *pdev)
+diff --git a/drivers/rtc/rtc-at91sam9.c b/drivers/rtc/rtc-at91sam9.c
+index bb3ba7b..e39e898 100644
+--- a/drivers/rtc/rtc-at91sam9.c
++++ b/drivers/rtc/rtc-at91sam9.c
+@@ -334,7 +334,6 @@ static const struct rtc_class_ops at91_rtc_ops = {
+  */
+ static int at91_rtc_probe(struct platform_device *pdev)
  {
- 	struct ep93xx_rtc *ep93xx_rtc;
--	struct resource *res;
- 	int err;
+-	struct resource	*r;
+ 	struct sam9_rtc	*rtc;
+ 	int		ret, irq;
+ 	u32		mr;
+@@ -358,8 +357,7 @@ static int at91_rtc_probe(struct platform_device *pdev)
  
- 	ep93xx_rtc = devm_kzalloc(&pdev->dev, sizeof(*ep93xx_rtc), GFP_KERNEL);
- 	if (!ep93xx_rtc)
- 		return -ENOMEM;
+ 	platform_set_drvdata(pdev, rtc);
  
--	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
--	ep93xx_rtc->mmio_base = devm_ioremap_resource(&pdev->dev, res);
-+	ep93xx_rtc->mmio_base = devm_platform_ioremap_resource(pdev, 0);
- 	if (IS_ERR(ep93xx_rtc->mmio_base))
- 		return PTR_ERR(ep93xx_rtc->mmio_base);
+-	r = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-	rtc->rtt = devm_ioremap_resource(&pdev->dev, r);
++	rtc->rtt = devm_platform_ioremap_resource(pdev, 0);
+ 	if (IS_ERR(rtc->rtt))
+ 		return PTR_ERR(rtc->rtt);
  
 -- 
 2.7.4
