@@ -1,10 +1,10 @@
 From: YueHaibing <yuehaibing@huawei.com>
-Date: Sun, 6 Oct 2019 18:29:33 +0800
-Subject: [PATCH -next 14/34] rtc: lpc24xx: use
- devm_platform_ioremap_resource() to simplify code
+Date: Sun, 6 Oct 2019 18:29:29 +0800
+Subject: [PATCH -next 10/34] rtc: ds1511: use devm_platform_ioremap_resource()
+ to simplify code
 In-Reply-To: <20191006102953.57536-1-yuehaibing@huawei.com>
 References: <20191006102953.57536-1-yuehaibing@huawei.com>
-Message-ID: <20191006102953.57536-15-yuehaibing@huawei.com>
+Message-ID: <20191006102953.57536-11-yuehaibing@huawei.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -16,30 +16,31 @@ This is detected by coccinelle.
 
 Signed-off-by: YueHaibing <yuehaibing@huawei.com>
 ---
- drivers/rtc/rtc-lpc24xx.c | 4 +---
+ drivers/rtc/rtc-ds1511.c | 4 +---
  1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/drivers/rtc/rtc-lpc24xx.c b/drivers/rtc/rtc-lpc24xx.c
-index a8bb156..00ef16b 100644
---- a/drivers/rtc/rtc-lpc24xx.c
-+++ b/drivers/rtc/rtc-lpc24xx.c
-@@ -194,15 +194,13 @@ static const struct rtc_class_ops lpc24xx_rtc_ops = {
- static int lpc24xx_rtc_probe(struct platform_device *pdev)
- {
- 	struct lpc24xx_rtc *rtc;
--	struct resource *res;
- 	int irq, ret;
+diff --git a/drivers/rtc/rtc-ds1511.c b/drivers/rtc/rtc-ds1511.c
+index b6a4775..a63872c 100644
+--- a/drivers/rtc/rtc-ds1511.c
++++ b/drivers/rtc/rtc-ds1511.c
+@@ -414,7 +414,6 @@ static int ds1511_nvram_write(void *priv, unsigned int pos, void *buf,
  
- 	rtc = devm_kzalloc(&pdev->dev, sizeof(*rtc), GFP_KERNEL);
- 	if (!rtc)
+ static int ds1511_rtc_probe(struct platform_device *pdev)
+ {
+-	struct resource *res;
+ 	struct rtc_plat_data *pdata;
+ 	int ret = 0;
+ 	struct nvmem_config ds1511_nvmem_cfg = {
+@@ -431,8 +430,7 @@ static int ds1511_rtc_probe(struct platform_device *pdev)
+ 	if (!pdata)
  		return -ENOMEM;
  
 -	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
--	rtc->rtc_base = devm_ioremap_resource(&pdev->dev, res);
-+	rtc->rtc_base = devm_platform_ioremap_resource(pdev, 0);
- 	if (IS_ERR(rtc->rtc_base))
- 		return PTR_ERR(rtc->rtc_base);
- 
+-	ds1511_base = devm_ioremap_resource(&pdev->dev, res);
++	ds1511_base = devm_platform_ioremap_resource(pdev, 0);
+ 	if (IS_ERR(ds1511_base))
+ 		return PTR_ERR(ds1511_base);
+ 	pdata->ioaddr = ds1511_base;
 -- 
 2.7.4
 
