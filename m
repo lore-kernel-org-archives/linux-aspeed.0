@@ -1,10 +1,10 @@
 From: YueHaibing <yuehaibing@huawei.com>
-Date: Sun, 6 Oct 2019 18:29:26 +0800
-Subject: [PATCH -next 07/34] rtc: davinci: use
+Date: Sun, 6 Oct 2019 18:29:24 +0800
+Subject: [PATCH -next 05/34] rtc: cadence: use
  devm_platform_ioremap_resource() to simplify code
 In-Reply-To: <20191006102953.57536-1-yuehaibing@huawei.com>
 References: <20191006102953.57536-1-yuehaibing@huawei.com>
-Message-ID: <20191006102953.57536-8-yuehaibing@huawei.com>
+Message-ID: <20191006102953.57536-6-yuehaibing@huawei.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -16,30 +16,30 @@ This is detected by coccinelle.
 
 Signed-off-by: YueHaibing <yuehaibing@huawei.com>
 ---
- drivers/rtc/rtc-davinci.c | 4 +---
+ drivers/rtc/rtc-cadence.c | 4 +---
  1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/drivers/rtc/rtc-davinci.c b/drivers/rtc/rtc-davinci.c
-index d8e0db2..390b735 100644
---- a/drivers/rtc/rtc-davinci.c
-+++ b/drivers/rtc/rtc-davinci.c
-@@ -469,7 +469,6 @@ static int __init davinci_rtc_probe(struct platform_device *pdev)
+diff --git a/drivers/rtc/rtc-cadence.c b/drivers/rtc/rtc-cadence.c
+index 592aae2..595d5d2 100644
+--- a/drivers/rtc/rtc-cadence.c
++++ b/drivers/rtc/rtc-cadence.c
+@@ -255,7 +255,6 @@ static const struct rtc_class_ops cdns_rtc_ops = {
+ static int cdns_rtc_probe(struct platform_device *pdev)
  {
- 	struct device *dev = &pdev->dev;
- 	struct davinci_rtc *davinci_rtc;
+ 	struct cdns_rtc *crtc;
 -	struct resource *res;
- 	int ret = 0;
+ 	int ret;
+ 	unsigned long ref_clk_freq;
  
- 	davinci_rtc = devm_kzalloc(&pdev->dev, sizeof(struct davinci_rtc), GFP_KERNEL);
-@@ -480,8 +479,7 @@ static int __init davinci_rtc_probe(struct platform_device *pdev)
- 	if (davinci_rtc->irq < 0)
- 		return davinci_rtc->irq;
+@@ -263,8 +262,7 @@ static int cdns_rtc_probe(struct platform_device *pdev)
+ 	if (!crtc)
+ 		return -ENOMEM;
  
 -	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
--	davinci_rtc->base = devm_ioremap_resource(dev, res);
-+	davinci_rtc->base = devm_platform_ioremap_resource(pdev, 0);
- 	if (IS_ERR(davinci_rtc->base))
- 		return PTR_ERR(davinci_rtc->base);
+-	crtc->regs = devm_ioremap_resource(&pdev->dev, res);
++	crtc->regs = devm_platform_ioremap_resource(pdev, 0);
+ 	if (IS_ERR(crtc->regs))
+ 		return PTR_ERR(crtc->regs);
  
 -- 
 2.7.4
