@@ -1,51 +1,23 @@
-From: Kevin Hilman <khilman@baylibre.com>
-Date: Mon, 07 Oct 2019 11:09:15 -0700
-Subject: [PATCH -next 16/34] rtc: meson: use
+From: Florian Fainelli <f.fainelli@gmail.com>
+Date: Mon, 7 Oct 2019 11:15:33 -0700
+Subject: [PATCH -next 03/34] rtc: brcmstb-waketimer: use
  devm_platform_ioremap_resource() to simplify code
-In-Reply-To: <20191006102953.57536-17-yuehaibing@huawei.com>
+In-Reply-To: <20191006102953.57536-4-yuehaibing@huawei.com>
 References: <20191006102953.57536-1-yuehaibing@huawei.com>
- <20191006102953.57536-17-yuehaibing@huawei.com>
-Message-ID: <7hk19gfmwk.fsf@baylibre.com>
+ <20191006102953.57536-4-yuehaibing@huawei.com>
+Message-ID: <dd5ef249-820c-9a5c-9fdf-50c7af9b0f61@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-YueHaibing <yuehaibing@huawei.com> writes:
-
+On 10/6/19 3:29 AM, YueHaibing wrote:
 > Use devm_platform_ioremap_resource() to simplify the code a bit.
 > This is detected by coccinelle.
->
+> 
 > Signed-off-by: YueHaibing <yuehaibing@huawei.com>
 
-Reviewed-by: Kevin Hilman <khilman@baylibre.com>
-
-> ---
->  drivers/rtc/rtc-meson.c | 4 +---
->  1 file changed, 1 insertion(+), 3 deletions(-)
->
-> diff --git a/drivers/rtc/rtc-meson.c b/drivers/rtc/rtc-meson.c
-> index e08b981..9bd8478 100644
-> --- a/drivers/rtc/rtc-meson.c
-> +++ b/drivers/rtc/rtc-meson.c
-> @@ -292,7 +292,6 @@ static int meson_rtc_probe(struct platform_device *pdev)
->  	};
->  	struct device *dev = &pdev->dev;
->  	struct meson_rtc *rtc;
-> -	struct resource *res;
->  	void __iomem *base;
->  	int ret;
->  	u32 tm;
-> @@ -312,8 +311,7 @@ static int meson_rtc_probe(struct platform_device *pdev)
->  	rtc->rtc->ops = &meson_rtc_ops;
->  	rtc->rtc->range_max = U32_MAX;
->  
-> -	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> -	base = devm_ioremap_resource(dev, res);
-> +	base = devm_platform_ioremap_resource(pdev, 0);
->  	if (IS_ERR(base))
->  		return PTR_ERR(base);
->  
-> -- 
-> 2.7.4
+Acked-by: Florian Fainelli <f.fainelli@gmail.com>
+-- 
+Florian
