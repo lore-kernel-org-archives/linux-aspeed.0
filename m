@@ -1,71 +1,103 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Wed, 09 Oct 2019 15:37:09 +1100
-Subject: [PATCH] ftgmac100: Disable HW checksum generation on AST2500
-In-Reply-To: <CACPK8XcS4iKfKigPbPg0BFbmjbT-kdyjiPDXjk1k5XaS5bCdAA@mail.gmail.com>
-References: <20190910213734.3112330-1-vijaykhemka@fb.com>
- <bd5eab2e-6ba6-9e27-54d4-d9534da9d5f7@gmail.com>
- <CACPK8XcS4iKfKigPbPg0BFbmjbT-kdyjiPDXjk1k5XaS5bCdAA@mail.gmail.com>
-Message-ID: <95e215664612c0487808c02232852ef2188c95a5.camel@kernel.crashing.org>
+From: Alexandre Belloni <alexandre.belloni@bootlin.com>
+Date: Mon, 7 Oct 2019 12:10:37 +0200
+Subject: [PATCH -next 00/34] rtc: use devm_platform_ioremap_resource() to
+ simplify code
+In-Reply-To: <20191006102953.57536-1-yuehaibing@huawei.com>
+References: <20191006102953.57536-1-yuehaibing@huawei.com>
+Message-ID: <20191007101037.GE4254@piout.net>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 2019-09-11 at 14:48 +0000, Joel Stanley wrote:
-> Hi Ben,
+On 06/10/2019 18:29:19+0800, YueHaibing wrote:
+> devm_platform_ioremap_resource() internally have platform_get_resource()
+> and devm_ioremap_resource() in it. So instead of calling them separately
+> use devm_platform_ioremap_resource() directly.
 > 
-> On Tue, 10 Sep 2019 at 22:05, Florian Fainelli <f.fainelli@gmail.com>
-> wrote:
-> > 
-> > On 9/10/19 2:37 PM, Vijay Khemka wrote:
-> > > HW checksum generation is not working for AST2500, specially with
-> > > IPV6
-> > > over NCSI. All TCP packets with IPv6 get dropped. By disabling
-> > > this
-> > > it works perfectly fine with IPV6.
-> > > 
-> > > Verified with IPV6 enabled and can do ssh.
-> > 
-> > How about IPv4, do these packets have problem? If not, can you
-> > continue
-> > advertising NETIF_F_IP_CSUM but take out NETIF_F_IPV6_CSUM?
-> > 
-> > > 
-> > > Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
-> > > ---
-> > >  drivers/net/ethernet/faraday/ftgmac100.c | 5 +++--
-> > >  1 file changed, 3 insertions(+), 2 deletions(-)
-> > > 
-> > > diff --git a/drivers/net/ethernet/faraday/ftgmac100.c
-> > > b/drivers/net/ethernet/faraday/ftgmac100.c
-> > > index 030fed65393e..591c9725002b 100644
-> > > --- a/drivers/net/ethernet/faraday/ftgmac100.c
-> > > +++ b/drivers/net/ethernet/faraday/ftgmac100.c
-> > > @@ -1839,8 +1839,9 @@ static int ftgmac100_probe(struct
-> > > platform_device *pdev)
-> > >       if (priv->use_ncsi)
-> > >               netdev->hw_features |= NETIF_F_HW_VLAN_CTAG_FILTER;
-> > > 
-> > > -     /* AST2400  doesn't have working HW checksum generation */
-> > > -     if (np && (of_device_is_compatible(np, "aspeed,ast2400-
-> > > mac")))
-> > > +     /* AST2400  and AST2500 doesn't have working HW checksum
-> > > generation */
-> > > +     if (np && (of_device_is_compatible(np, "aspeed,ast2400-
-> > > mac") ||
-> > > +                of_device_is_compatible(np, "aspeed,ast2500-
-> > > mac")))
+> YueHaibing (34):
+>   rtc: asm9260: use devm_platform_ioremap_resource() to simplify code
+>   rtc: rtc-aspeed: use devm_platform_ioremap_resource() to simplify code
+>   rtc: brcmstb-waketimer: use devm_platform_ioremap_resource() to
+>     simplify code
+>   rtc: at91sam9: use devm_platform_ioremap_resource() to simplify code
+>   rtc: cadence: use devm_platform_ioremap_resource() to simplify code
+>   rtc: coh901331: use devm_platform_ioremap_resource() to simplify code
+>   rtc: davinci: use devm_platform_ioremap_resource() to simplify code
+>   rtc: digicolor: use devm_platform_ioremap_resource() to simplify code
+>   rtc: ds1216: use devm_platform_ioremap_resource() to simplify code
+>   rtc: ds1511: use devm_platform_ioremap_resource() to simplify code
+>   rtc: ds1553: use devm_platform_ioremap_resource() to simplify code
+>   rtc: ep93xx: use devm_platform_ioremap_resource() to simplify code
+>   rtc: jz4740: use devm_platform_ioremap_resource() to simplify code
+>   rtc: lpc24xx: use devm_platform_ioremap_resource() to simplify code
+>   rtc: lpc32xx: use devm_platform_ioremap_resource() to simplify code
+>   rtc: meson: use devm_platform_ioremap_resource() to simplify code
+>   rtc: mt7622: use devm_platform_ioremap_resource() to simplify code
+>   rtc: mv: use devm_platform_ioremap_resource() to simplify code
+>   rtc: omap: use devm_platform_ioremap_resource() to simplify code
+>   rtc: pic32: use devm_platform_ioremap_resource() to simplify code
+>   rtc: rtd119x: use devm_platform_ioremap_resource() to simplify code
+>   rtc: s3c: use devm_platform_ioremap_resource() to simplify code
+>   rtc: sa1100: use devm_platform_ioremap_resource() to simplify code
+>   rtc: spear: use devm_platform_ioremap_resource() to simplify code
+>   rtc: stk17ta8: use devm_platform_ioremap_resource() to simplify code
+>   rtc: ds1286: use devm_platform_ioremap_resource() to simplify code
+>   rtc: st-lpc: use devm_platform_ioremap_resource() to simplify code
+>   rtc: stm32: use devm_platform_ioremap_resource() to simplify code
+>   rtc: sunxi: use devm_platform_ioremap_resource() to simplify code
+>   rtc: tegra: use devm_platform_ioremap_resource() to simplify code
+>   rtc: tx4939: use devm_platform_ioremap_resource() to simplify code
+>   rtc: vt8500: use devm_platform_ioremap_resource() to simplify code
+>   rtc: xgene: use devm_platform_ioremap_resource() to simplify code
+>   rtc: zynqmp: use devm_platform_ioremap_resource() to simplify code
 > 
-> Do you recall under what circumstances we need to disable hardware
-> checksumming?
+>  drivers/rtc/rtc-asm9260.c           | 4 +---
+>  drivers/rtc/rtc-aspeed.c            | 4 +---
+>  drivers/rtc/rtc-at91sam9.c          | 4 +---
+>  drivers/rtc/rtc-brcmstb-waketimer.c | 4 +---
+>  drivers/rtc/rtc-cadence.c           | 4 +---
+>  drivers/rtc/rtc-coh901331.c         | 4 +---
+>  drivers/rtc/rtc-davinci.c           | 4 +---
+>  drivers/rtc/rtc-digicolor.c         | 4 +---
+>  drivers/rtc/rtc-ds1216.c            | 4 +---
+>  drivers/rtc/rtc-ds1286.c            | 4 +---
+>  drivers/rtc/rtc-ds1511.c            | 4 +---
+>  drivers/rtc/rtc-ds1553.c            | 4 +---
+>  drivers/rtc/rtc-ep93xx.c            | 4 +---
+>  drivers/rtc/rtc-jz4740.c            | 4 +---
+>  drivers/rtc/rtc-lpc24xx.c           | 4 +---
+>  drivers/rtc/rtc-lpc32xx.c           | 4 +---
+>  drivers/rtc/rtc-meson.c             | 4 +---
+>  drivers/rtc/rtc-mt7622.c            | 4 +---
+>  drivers/rtc/rtc-mv.c                | 4 +---
+>  drivers/rtc/rtc-omap.c              | 4 +---
+>  drivers/rtc/rtc-pic32.c             | 4 +---
+>  drivers/rtc/rtc-rtd119x.c           | 4 +---
+>  drivers/rtc/rtc-s3c.c               | 4 +---
+>  drivers/rtc/rtc-sa1100.c            | 4 +---
+>  drivers/rtc/rtc-spear.c             | 4 +---
+>  drivers/rtc/rtc-st-lpc.c            | 4 +---
+>  drivers/rtc/rtc-stk17ta8.c          | 4 +---
+>  drivers/rtc/rtc-stm32.c             | 4 +---
+>  drivers/rtc/rtc-sunxi.c             | 4 +---
+>  drivers/rtc/rtc-tegra.c             | 4 +---
+>  drivers/rtc/rtc-tx4939.c            | 4 +---
+>  drivers/rtc/rtc-vt8500.c            | 4 +---
+>  drivers/rtc/rtc-xgene.c             | 4 +---
+>  drivers/rtc/rtc-zynqmp.c            | 5 +----
+>  34 files changed, 34 insertions(+), 103 deletions(-)
+> 
 
-Any news on this ? AST2400 has no HW checksum logic in HW, AST2500
-should work for IPV4 fine, we should only selectively disable it for
-IPV6.
+I've quashed and applied.
 
-Can you do an updated patch ?
+> -- 
+> 2.7.4
+> 
+> 
 
-Cheers,
-Ben.
-
+-- 
+Alexandre Belloni, Bootlin
+Embedded Linux and Kernel engineering
+https://bootlin.com
