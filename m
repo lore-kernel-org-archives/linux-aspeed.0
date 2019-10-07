@@ -1,131 +1,62 @@
-From: Cédric Le Goater <clg@kaod.org>
-Date: Fri,  4 Oct 2019 13:59:05 +0200
-Subject: [PATCH 02/16] mtd: spi-nor: aspeed: Add support for SPI dual IO read
- mode
-In-Reply-To: <20191004115919.20788-1-clg@kaod.org>
-References: <20191004115919.20788-1-clg@kaod.org>
-Message-ID: <20191004115919.20788-3-clg@kaod.org>
+From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+Date: Mon,  7 Oct 2019 16:13:08 -0700
+Subject: [PATCH 0/5] i2c: aspeed: Add buffer and DMA modes support
+Message-ID: <20191007231313.4700-1-jae.hyun.yoo@linux.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Implements support for the dual IO read mode on aspeed SMC/FMC
-controllers which uses both MISO and MOSI lines for data during a read
-to double the read bandwidth.
+This patch series adds buffer mode and DMA mode transfer support for the
+Aspeed I2C driver. With this change, default transfer mode will be set to
+buffer mode for better performance, and DMA mode can be selectively used
+depends on platform configuration.
 
-Based on work from Robert Lippert <roblip@gmail.com>
+* Buffer mode
+  AST2400:
+    It has 2 KBytes (256 Bytes x 8 pages) of I2C SRAM buffer pool from
+    0x1e78a800 to 0x1e78afff that can be used for all busses with
+    buffer pool manipulation. To simplify implementation for supporting
+    both AST2400 and AST2500, it assigns each 128 Bytes per bus without
+    using buffer pool manipulation so total 1792 Bytes of I2C SRAM
+    buffer will be used.
 
-Signed-off-by: C?dric Le Goater <clg@kaod.org>
----
- drivers/mtd/spi-nor/aspeed-smc.c | 56 +++++++++++++++++++++++++-------
- 1 file changed, 44 insertions(+), 12 deletions(-)
+  AST2500:
+    It has 16 Bytes of individual I2C SRAM buffer per each bus and its
+    range is from 0x1e78a200 to 0x1e78a2df, so it doesn't have 'buffer
+    page selection' bit field in the Function control register, and
+    neither 'base address pointer' bit field in the Pool buffer control
+    register it has. To simplify implementation for supporting both
+    AST2400 and AST2500, it writes zeros on those register bit fields
+    but it's okay because it does nothing in AST2500.
 
-diff --git a/drivers/mtd/spi-nor/aspeed-smc.c b/drivers/mtd/spi-nor/aspeed-smc.c
-index 148bbc934efc..c775e0612613 100644
---- a/drivers/mtd/spi-nor/aspeed-smc.c
-+++ b/drivers/mtd/spi-nor/aspeed-smc.c
-@@ -369,18 +369,49 @@ static void aspeed_smc_send_cmd_addr(struct spi_nor *nor, u8 cmd, u32 addr)
- 	}
- }
- 
-+static int aspeed_smc_get_io_mode(struct aspeed_smc_chip *chip)
-+{
-+	switch (chip->nor.read_proto) {
-+	case SNOR_PROTO_1_1_1:
-+		return 0;
-+	case SNOR_PROTO_1_1_2:
-+		return CONTROL_IO_DUAL_DATA;
-+	case SNOR_PROTO_1_2_2:
-+		return CONTROL_IO_DUAL_ADDR_DATA;
-+	default:
-+		dev_err(chip->nor.dev, "unsupported SPI read mode\n");
-+		return -EINVAL;
-+	}
-+}
-+
-+static void aspeed_smc_set_io_mode(struct aspeed_smc_chip *chip, u32 io_mode)
-+{
-+	u32 ctl;
-+
-+	if (io_mode > 0) {
-+		ctl = readl(chip->ctl) & ~CONTROL_IO_MODE_MASK;
-+		ctl |= io_mode;
-+		writel(ctl, chip->ctl);
-+	}
-+}
-+
- static ssize_t aspeed_smc_read_user(struct spi_nor *nor, loff_t from,
- 				    size_t len, u_char *read_buf)
- {
- 	struct aspeed_smc_chip *chip = nor->priv;
- 	int i;
- 	u8 dummy = 0xFF;
-+	int io_mode = aspeed_smc_get_io_mode(chip);
- 
- 	aspeed_smc_start_user(nor);
- 	aspeed_smc_send_cmd_addr(nor, nor->read_opcode, from);
- 	for (i = 0; i < chip->nor.read_dummy / 8; i++)
- 		aspeed_smc_write_to_ahb(chip->ahb_base, &dummy, sizeof(dummy));
- 
-+	/* Set IO mode only for data */
-+	if (io_mode == CONTROL_IO_DUAL_DATA)
-+		aspeed_smc_set_io_mode(chip, io_mode);
-+
- 	aspeed_smc_read_from_ahb(read_buf, chip->ahb_base, len);
- 	aspeed_smc_stop_user(nor);
- 	return len;
-@@ -731,6 +762,7 @@ static int aspeed_smc_chip_setup_finish(struct aspeed_smc_chip *chip)
- {
- 	struct aspeed_smc_controller *controller = chip->controller;
- 	const struct aspeed_smc_info *info = controller->info;
-+	int io_mode;
- 	u32 cmd;
- 
- 	if (chip->nor.addr_width == 4 && info->set_4b)
-@@ -753,22 +785,21 @@ static int aspeed_smc_chip_setup_finish(struct aspeed_smc_chip *chip)
- 	 * TODO: Adjust clocks if fast read is supported and interpret
- 	 * SPI-NOR flags to adjust controller settings.
- 	 */
--	if (chip->nor.read_proto == SNOR_PROTO_1_1_1) {
--		if (chip->nor.read_dummy == 0)
--			cmd = CONTROL_COMMAND_MODE_NORMAL;
--		else
--			cmd = CONTROL_COMMAND_MODE_FREAD;
--	} else {
--		dev_err(chip->nor.dev, "unsupported SPI read mode\n");
--		return -EINVAL;
--	}
-+	io_mode = aspeed_smc_get_io_mode(chip);
-+	if (io_mode < 0)
-+		return io_mode;
- 
--	chip->ctl_val[smc_read] |= cmd |
-+	if (chip->nor.read_dummy == 0)
-+		cmd = CONTROL_COMMAND_MODE_NORMAL;
-+	else
-+		cmd = CONTROL_COMMAND_MODE_FREAD;
-+
-+	chip->ctl_val[smc_read] |= cmd | io_mode |
- 		chip->nor.read_opcode << CONTROL_COMMAND_SHIFT |
- 		CONTROL_IO_DUMMY_SET(chip->nor.read_dummy / 8);
- 
--	dev_dbg(controller->dev, "base control register: %08x\n",
--		chip->ctl_val[smc_read]);
-+	dev_info(controller->dev, "read control register: %08x\n",
-+		 chip->ctl_val[smc_read]);
- 	return 0;
- }
- 
-@@ -778,6 +809,7 @@ static int aspeed_smc_setup_flash(struct aspeed_smc_controller *controller,
- 	const struct spi_nor_hwcaps hwcaps = {
- 		.mask = SNOR_HWCAPS_READ |
- 			SNOR_HWCAPS_READ_FAST |
-+			SNOR_HWCAPS_READ_1_1_2 |
- 			SNOR_HWCAPS_PP,
- 	};
- 	const struct aspeed_smc_info *info = controller->info;
+* DMA mode
+  Only AST2500 and later versions support DMA mode under some limitations:
+    I2C is sharing the DMA H/W with UHCI host controller and MCTP
+    controller. Since those controllers operate with DMA mode only, I2C
+    has to use buffer mode or byte mode instead if one of those
+    controllers is enabled. Also make sure that if SD/eMMC or Port80
+    snoop uses DMA mode instead of PIO or FIFO respectively, I2C can't
+    use DMA mode.
+
+Please review it.
+
+-Jae
+
+Jae Hyun Yoo (5):
+  dt-bindings: i2c: aspeed: add buffer and DMA mode transfer support
+  ARM: dts: aspeed: add I2C buffer mode support
+  i2c: aspeed: fix master pending state handling
+  i2c: aspeed: add buffer mode transfer support
+  i2c: aspeed: add DMA mode transfer support
+
+ .../devicetree/bindings/i2c/i2c-aspeed.txt    |  67 ++-
+ arch/arm/boot/dts/aspeed-g4.dtsi              |  47 +-
+ arch/arm/boot/dts/aspeed-g5.dtsi              |  47 +-
+ drivers/i2c/busses/i2c-aspeed.c               | 513 ++++++++++++++++--
+ 4 files changed, 588 insertions(+), 86 deletions(-)
+
 -- 
-2.21.0
+2.23.0
 
