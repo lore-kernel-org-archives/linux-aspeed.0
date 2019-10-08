@@ -1,36 +1,75 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Tue,  8 Oct 2019 22:05:22 +1030
-Subject: [PATCH 1/2] dt-bindings: clock: Add AST2500 RMII RCLK definitions
+Date: Tue,  8 Oct 2019 22:05:23 +1030
+Subject: [PATCH 2/2] clk: aspeed: Add RMII RCLK gates for both AST2500 MACs
 In-Reply-To: <20191008113523.13601-1-andrew@aj.id.au>
 References: <20191008113523.13601-1-andrew@aj.id.au>
-Message-ID: <20191008113523.13601-2-andrew@aj.id.au>
+Message-ID: <20191008113523.13601-3-andrew@aj.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The AST2500 has an explicit gate for the RMII RCLK for each of the two
-MACs.
+RCLK is a fixed 50MHz clock derived from HPLL that is described by a
+single gate for each MAC.
 
 Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
 ---
- include/dt-bindings/clock/aspeed-clock.h | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/clk/clk-aspeed.c | 27 ++++++++++++++++++++++++++-
+ 1 file changed, 26 insertions(+), 1 deletion(-)
 
-diff --git a/include/dt-bindings/clock/aspeed-clock.h b/include/dt-bindings/clock/aspeed-clock.h
-index f43738607d77..64e245fb113f 100644
---- a/include/dt-bindings/clock/aspeed-clock.h
-+++ b/include/dt-bindings/clock/aspeed-clock.h
-@@ -39,6 +39,8 @@
- #define ASPEED_CLK_BCLK			33
- #define ASPEED_CLK_MPLL			34
- #define ASPEED_CLK_24M			35
-+#define ASPEED_CLK_GATE_MAC1RCLK	36
-+#define ASPEED_CLK_GATE_MAC2RCLK	37
+diff --git a/drivers/clk/clk-aspeed.c b/drivers/clk/clk-aspeed.c
+index abf06fb6453e..867d8771bb1e 100644
+--- a/drivers/clk/clk-aspeed.c
++++ b/drivers/clk/clk-aspeed.c
+@@ -14,7 +14,7 @@
  
- #define ASPEED_RESET_XDMA		0
- #define ASPEED_RESET_MCTP		1
+ #include "clk-aspeed.h"
+ 
+-#define ASPEED_NUM_CLKS		36
++#define ASPEED_NUM_CLKS		38
+ 
+ #define ASPEED_RESET2_OFFSET	32
+ 
+@@ -28,6 +28,7 @@
+ #define  AST2400_HPLL_BYPASS_EN	BIT(17)
+ #define ASPEED_MISC_CTRL	0x2c
+ #define  UART_DIV13_EN		BIT(12)
++#define ASPEED_MAC_CLK_DLY	0x48
+ #define ASPEED_STRAP		0x70
+ #define  CLKIN_25MHZ_EN		BIT(23)
+ #define  AST2400_CLK_SOURCE_SEL	BIT(18)
+@@ -462,6 +463,30 @@ static int aspeed_clk_probe(struct platform_device *pdev)
+ 		return PTR_ERR(hw);
+ 	aspeed_clk_data->hws[ASPEED_CLK_MAC] = hw;
+ 
++	if (of_device_is_compatible(pdev->dev.of_node, "aspeed,ast2500-scu")) {
++		/* RMII 50MHz RCLK */
++		hw = clk_hw_register_fixed_rate(dev, "mac12rclk", "hpll", 0,
++						50000000);
++		if (IS_ERR(hw))
++			return PTR_ERR(hw);
++
++		/* RMII1 50MHz (RCLK) output enable */
++		hw = clk_hw_register_gate(dev, "mac1rclk-gate", "mac12rclk", 0,
++				scu_base + ASPEED_MAC_CLK_DLY, 29, 0,
++				&aspeed_clk_lock);
++		if (IS_ERR(hw))
++			return PTR_ERR(hw);
++		aspeed_clk_data->hws[ASPEED_CLK_GATE_MAC1RCLK] = hw;
++
++		/* RMII2 50MHz (RCLK) output enable */
++		hw = clk_hw_register_gate(dev, "mac2rclk-gate", "mac12rclk", 0,
++				scu_base + ASPEED_MAC_CLK_DLY, 30, 0,
++				&aspeed_clk_lock);
++		if (IS_ERR(hw))
++			return PTR_ERR(hw);
++		aspeed_clk_data->hws[ASPEED_CLK_GATE_MAC2RCLK] = hw;
++	}
++
+ 	/* LPC Host (LHCLK) clock divider */
+ 	hw = clk_hw_register_divider_table(dev, "lhclk", "hpll", 0,
+ 			scu_base + ASPEED_CLK_SELECTION, 20, 3, 0,
 -- 
 2.20.1
 
