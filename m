@@ -1,183 +1,61 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Tue,  8 Oct 2019 15:11:53 +1030
-Subject: [PATCH 7/7] pinctrl: aspeed-g6: Rename SD3 to EMMC and rework pin
- groups
+From: Joel Stanley <joel@jms.id.au>
+Date: Tue, 8 Oct 2019 04:54:47 +0000
+Subject: [PATCH 0/7] pinctrl: Fixes for AST2600 support
 In-Reply-To: <20191008044153.12734-1-andrew@aj.id.au>
 References: <20191008044153.12734-1-andrew@aj.id.au>
-Message-ID: <20191008044153.12734-8-andrew@aj.id.au>
+Message-ID: <CACPK8XeKx_W0_b6ZLJzVdtQQOL8eZ3FcscB5TZT5NXMwRi4r6g@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Johnny Huang <johnny_huang@aspeedtech.com>
+On Tue, 8 Oct 2019 at 04:41, Andrew Jeffery <andrew@aj.id.au> wrote:
+>
+> Hello,
+>
+> This series resolves several issues found in testing by Johnny Huang from
+> ASPEED, who also contributed the patches to fix them. We'll have more patches
+> from him in the near future (which I'm pretty happy about).
 
-AST2600 EMMC support 3 types DAT bus sizes (1, 4 and 8-bit),
-corresponding to 3 groups: EMMCG1, EMMCG4 and EMMCG8
+For the series:
 
-Fixes: 58dc52ad00a0 ("pinctrl: aspeed: Add AST2600 pinmux support")
-Signed-off-by: Johnny Huang <johnny_huang@aspeedtech.com>
-Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
----
- drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c | 72 ++++++++++------------
- drivers/pinctrl/aspeed/pinmux-aspeed.h     |  1 +
- 2 files changed, 33 insertions(+), 40 deletions(-)
+Reviewed-by: Joel Stanley <joel@jms.id.au>
 
-diff --git a/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c b/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
-index dc17cf3d3549..c6800d220920 100644
---- a/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
-+++ b/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
-@@ -1440,74 +1440,72 @@ FUNC_GROUP_DECL(RGMII2, D4, C2, C1, D3, E4, F5, D2, E3, D1, F4, E2, E1);
- FUNC_GROUP_DECL(RMII2, D4, C2, C1, D3, D2, D1, F4, E2, E1);
- 
- #define AB4 232
--SIG_EXPR_LIST_DECL_SESG(AB4, SD3CLK, SD3, SIG_DESC_SET(SCU400, 24));
--PIN_DECL_1(AB4, GPIO18D0, SD3CLK);
-+SIG_EXPR_LIST_DECL_SEMG(AB4, EMMCCLK, EMMCG1, EMMC, SIG_DESC_SET(SCU400, 24));
-+PIN_DECL_1(AB4, GPIO18D0, EMMCCLK);
- 
- #define AA4 233
--SIG_EXPR_LIST_DECL_SESG(AA4, SD3CMD, SD3, SIG_DESC_SET(SCU400, 25));
--PIN_DECL_1(AA4, GPIO18D1, SD3CMD);
-+SIG_EXPR_LIST_DECL_SEMG(AA4, EMMCCMD, EMMCG1, EMMC, SIG_DESC_SET(SCU400, 25));
-+PIN_DECL_1(AA4, GPIO18D1, EMMCCMD);
- 
- #define AC4 234
--SIG_EXPR_LIST_DECL_SESG(AC4, SD3DAT0, SD3, SIG_DESC_SET(SCU400, 26));
--PIN_DECL_1(AC4, GPIO18D2, SD3DAT0);
-+SIG_EXPR_LIST_DECL_SEMG(AC4, EMMCDAT0, EMMCG1, EMMC, SIG_DESC_SET(SCU400, 26));
-+PIN_DECL_1(AC4, GPIO18D2, EMMCDAT0);
- 
- #define AA5 235
--SIG_EXPR_LIST_DECL_SESG(AA5, SD3DAT1, SD3, SIG_DESC_SET(SCU400, 27));
--PIN_DECL_1(AA5, GPIO18D3, SD3DAT1);
-+SIG_EXPR_LIST_DECL_SEMG(AA5, EMMCDAT1, EMMCG4, EMMC, SIG_DESC_SET(SCU400, 27));
-+PIN_DECL_1(AA5, GPIO18D3, EMMCDAT1);
- 
- #define Y5 236
--SIG_EXPR_LIST_DECL_SESG(Y5, SD3DAT2, SD3, SIG_DESC_SET(SCU400, 28));
--PIN_DECL_1(Y5, GPIO18D4, SD3DAT2);
-+SIG_EXPR_LIST_DECL_SEMG(Y5, EMMCDAT2, EMMCG4, EMMC, SIG_DESC_SET(SCU400, 28));
-+PIN_DECL_1(Y5, GPIO18D4, EMMCDAT2);
- 
- #define AB5 237
--SIG_EXPR_LIST_DECL_SESG(AB5, SD3DAT3, SD3, SIG_DESC_SET(SCU400, 29));
--PIN_DECL_1(AB5, GPIO18D5, SD3DAT3);
-+SIG_EXPR_LIST_DECL_SEMG(AB5, EMMCDAT3, EMMCG4, EMMC, SIG_DESC_SET(SCU400, 29));
-+PIN_DECL_1(AB5, GPIO18D5, EMMCDAT3);
- 
- #define AB6 238
--SIG_EXPR_LIST_DECL_SESG(AB6, SD3CD, SD3, SIG_DESC_SET(SCU400, 30));
--PIN_DECL_1(AB6, GPIO18D6, SD3CD);
-+SIG_EXPR_LIST_DECL_SEMG(AB6, EMMCCD, EMMCG1, EMMC, SIG_DESC_SET(SCU400, 30));
-+PIN_DECL_1(AB6, GPIO18D6, EMMCCD);
- 
- #define AC5 239
--SIG_EXPR_LIST_DECL_SESG(AC5, SD3WP, SD3, SIG_DESC_SET(SCU400, 31));
--PIN_DECL_1(AC5, GPIO18D7, SD3WP);
-+SIG_EXPR_LIST_DECL_SEMG(AC5, EMMCWP, EMMCG1, EMMC, SIG_DESC_SET(SCU400, 31));
-+PIN_DECL_1(AC5, GPIO18D7, EMMCWP);
- 
--FUNC_GROUP_DECL(SD3, AB4, AA4, AC4, AA5, Y5, AB5, AB6, AC5);
-+GROUP_DECL(EMMCG1, AB4, AA4, AC4, AB6, AC5);
-+GROUP_DECL(EMMCG4, AB4, AA4, AC4, AA5, Y5, AB5, AB6, AC5);
- 
- #define Y1 240
- SIG_EXPR_LIST_DECL_SEMG(Y1, FWSPIDCS, FWSPID, FWSPID, SIG_DESC_SET(SCU500, 3));
- SIG_EXPR_LIST_DECL_SESG(Y1, VBCS, VB, SIG_DESC_SET(SCU500, 5));
--SIG_EXPR_LIST_DECL_SESG(Y1, SD3DAT4, SD3DAT4, SIG_DESC_SET(SCU404, 0));
--PIN_DECL_3(Y1, GPIO18E0, FWSPIDCS, VBCS, SD3DAT4);
--FUNC_GROUP_DECL(SD3DAT4, Y1);
-+SIG_EXPR_LIST_DECL_SEMG(Y1, EMMCDAT4, EMMCG8, EMMC, SIG_DESC_SET(SCU404, 0));
-+PIN_DECL_3(Y1, GPIO18E0, FWSPIDCS, VBCS, EMMCDAT4);
- 
- #define Y2 241
- SIG_EXPR_LIST_DECL_SEMG(Y2, FWSPIDCK, FWSPID, FWSPID, SIG_DESC_SET(SCU500, 3));
- SIG_EXPR_LIST_DECL_SESG(Y2, VBCK, VB, SIG_DESC_SET(SCU500, 5));
--SIG_EXPR_LIST_DECL_SESG(Y2, SD3DAT5, SD3DAT5, SIG_DESC_SET(SCU404, 1));
--PIN_DECL_3(Y2, GPIO18E1, FWSPIDCK, VBCK, SD3DAT5);
--FUNC_GROUP_DECL(SD3DAT5, Y2);
-+SIG_EXPR_LIST_DECL_SEMG(Y2, EMMCDAT5, EMMCG8, EMMC, SIG_DESC_SET(SCU404, 1));
-+PIN_DECL_3(Y2, GPIO18E1, FWSPIDCK, VBCK, EMMCDAT5);
- 
- #define Y3 242
- SIG_EXPR_LIST_DECL_SEMG(Y3, FWSPIDMOSI, FWSPID, FWSPID,
- 			SIG_DESC_SET(SCU500, 3));
- SIG_EXPR_LIST_DECL_SESG(Y3, VBMOSI, VB, SIG_DESC_SET(SCU500, 5));
--SIG_EXPR_LIST_DECL_SESG(Y3, SD3DAT6, SD3DAT6, SIG_DESC_SET(SCU404, 2));
--PIN_DECL_3(Y3, GPIO18E2, FWSPIDMOSI, VBMOSI, SD3DAT6);
--FUNC_GROUP_DECL(SD3DAT6, Y3);
-+SIG_EXPR_LIST_DECL_SEMG(Y3, EMMCDAT6, EMMCG8, EMMC, SIG_DESC_SET(SCU404, 2));
-+PIN_DECL_3(Y3, GPIO18E2, FWSPIDMOSI, VBMOSI, EMMCDAT6);
- 
- #define Y4 243
- SIG_EXPR_LIST_DECL_SEMG(Y4, FWSPIDMISO, FWSPID, FWSPID,
- 			SIG_DESC_SET(SCU500, 3));
- SIG_EXPR_LIST_DECL_SESG(Y4, VBMISO, VB, SIG_DESC_SET(SCU500, 5));
--SIG_EXPR_LIST_DECL_SESG(Y4, SD3DAT7, SD3DAT7, SIG_DESC_SET(SCU404, 3));
--PIN_DECL_3(Y4, GPIO18E3, FWSPIDMISO, VBMISO, SD3DAT7);
--FUNC_GROUP_DECL(SD3DAT7, Y4);
-+SIG_EXPR_LIST_DECL_SEMG(Y4, EMMCDAT7, EMMCG8, EMMC, SIG_DESC_SET(SCU404, 3));
-+PIN_DECL_3(Y4, GPIO18E3, FWSPIDMISO, VBMISO, EMMCDAT7);
- 
- GROUP_DECL(FWSPID, Y1, Y2, Y3, Y4);
- GROUP_DECL(FWQSPID, Y1, Y2, Y3, Y4, AE12, AF12);
-+GROUP_DECL(EMMCG8, AB4, AA4, AC4, AA5, Y5, AB5, AB6, AC5, Y1, Y2, Y3, Y4);
- FUNC_DECL_2(FWSPID, FWSPID, FWQSPID);
- FUNC_GROUP_DECL(VB, Y1, Y2, Y3, Y4);
--
-+FUNC_DECL_3(EMMC, EMMCG1, EMMCG4, EMMCG8);
- /*
-  * FIXME: Confirm bits and priorities are the right way around for the
-  * following 4 pins
-@@ -1968,11 +1966,9 @@ static const struct aspeed_pin_group aspeed_g6_groups[] = {
- 	ASPEED_PINCTRL_GROUP(SALT9G1),
- 	ASPEED_PINCTRL_GROUP(SD1),
- 	ASPEED_PINCTRL_GROUP(SD2),
--	ASPEED_PINCTRL_GROUP(SD3),
--	ASPEED_PINCTRL_GROUP(SD3DAT4),
--	ASPEED_PINCTRL_GROUP(SD3DAT5),
--	ASPEED_PINCTRL_GROUP(SD3DAT6),
--	ASPEED_PINCTRL_GROUP(SD3DAT7),
-+	ASPEED_PINCTRL_GROUP(EMMCG1),
-+	ASPEED_PINCTRL_GROUP(EMMCG4),
-+	ASPEED_PINCTRL_GROUP(EMMCG8),
- 	ASPEED_PINCTRL_GROUP(SGPM1),
- 	ASPEED_PINCTRL_GROUP(SGPS1),
- 	ASPEED_PINCTRL_GROUP(SIOONCTRL),
-@@ -2051,6 +2047,7 @@ static const struct aspeed_pin_function aspeed_g6_functions[] = {
- 	ASPEED_PINCTRL_FUNC(ADC8),
- 	ASPEED_PINCTRL_FUNC(ADC9),
- 	ASPEED_PINCTRL_FUNC(BMCINT),
-+	ASPEED_PINCTRL_FUNC(EMMC),
- 	ASPEED_PINCTRL_FUNC(ESPI),
- 	ASPEED_PINCTRL_FUNC(ESPIALT),
- 	ASPEED_PINCTRL_FUNC(FSI1),
-@@ -2183,11 +2180,6 @@ static const struct aspeed_pin_function aspeed_g6_functions[] = {
- 	ASPEED_PINCTRL_FUNC(SALT9),
- 	ASPEED_PINCTRL_FUNC(SD1),
- 	ASPEED_PINCTRL_FUNC(SD2),
--	ASPEED_PINCTRL_FUNC(SD3),
--	ASPEED_PINCTRL_FUNC(SD3DAT4),
--	ASPEED_PINCTRL_FUNC(SD3DAT5),
--	ASPEED_PINCTRL_FUNC(SD3DAT6),
--	ASPEED_PINCTRL_FUNC(SD3DAT7),
- 	ASPEED_PINCTRL_FUNC(SGPM1),
- 	ASPEED_PINCTRL_FUNC(SGPS1),
- 	ASPEED_PINCTRL_FUNC(SIOONCTRL),
-diff --git a/drivers/pinctrl/aspeed/pinmux-aspeed.h b/drivers/pinctrl/aspeed/pinmux-aspeed.h
-index d5202241f411..140c5ce9fbc1 100644
---- a/drivers/pinctrl/aspeed/pinmux-aspeed.h
-+++ b/drivers/pinctrl/aspeed/pinmux-aspeed.h
-@@ -738,6 +738,7 @@ struct aspeed_pin_desc {
- 	static const char *FUNC_SYM(func)[] = { __VA_ARGS__ }
- 
- #define FUNC_DECL_2(func, one, two) FUNC_DECL_(func, #one, #two)
-+#define FUNC_DECL_3(func, one, two, three) FUNC_DECL_(func, #one, #two, #three)
- 
- #define FUNC_GROUP_DECL(func, ...) \
- 	GROUP_DECL(func, __VA_ARGS__); \
--- 
-2.20.1
+These patches have been in the OpenBMC tree for a while and look good.
 
+Cheers,
+
+Joel
+
+>
+> The major issue resolved is the way I grouped the eMMC pins. What I had was
+> ugly and I want to get rid of it before the binding is solidified with the 5.4
+> release.
+>
+> The remaining fixes are minor issues that stem from lack of documentation or
+> understanding on my part, and at least one brain-fart.
+>
+> Please review!
+>
+> Andrew
+>
+> Andrew Jeffery (4):
+>   dt-bindings: pinctrl: aspeed-g6: Rework SD3 function and groups
+>   pinctrl: aspeed-g6: Sort pins for sanity
+>   pinctrl: aspeed-g6: Fix I2C14 SDA description
+>   pinctrl: aspeed-g6: Make SIG_DESC_CLEAR() behave intuitively
+>
+> Johnny Huang (3):
+>   pinctrl: aspeed-g6: Fix I3C3/I3C4 pinmux configuration
+>   pinctrl: aspeed-g6: Fix UART13 group pinmux
+>   pinctrl: aspeed-g6: Rename SD3 to EMMC and rework pin groups
+>
+>  .../pinctrl/aspeed,ast2600-pinctrl.yaml       |  86 ++++++------
+>  drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c    | 124 ++++++++----------
+>  drivers/pinctrl/aspeed/pinmux-aspeed.h        |   3 +-
+>  3 files changed, 98 insertions(+), 115 deletions(-)
+>
+> --
+> 2.20.1
+>
