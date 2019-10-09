@@ -1,89 +1,84 @@
-From: Eddie James <eajames@linux.vnet.ibm.com>
-Date: Wed, 9 Oct 2019 09:59:36 -0500
-Subject: [PATCH] media: aspeed: clear garbage interrupts
-In-Reply-To: <20190926222743.18546-1-jae.hyun.yoo@linux.intel.com>
-References: <20190926222743.18546-1-jae.hyun.yoo@linux.intel.com>
-Message-ID: <90573930-c53b-9954-99e4-9b37e0661025@linux.vnet.ibm.com>
+From: Oskar Senft <osk@google.com>
+Date: Wed, 9 Oct 2019 14:18:44 -0400
+Subject: [PATCH] ftgmac100: Disable HW checksum generation on AST2500
+In-Reply-To: <95e215664612c0487808c02232852ef2188c95a5.camel@kernel.crashing.org>
+References: <20190910213734.3112330-1-vijaykhemka@fb.com>
+ <bd5eab2e-6ba6-9e27-54d4-d9534da9d5f7@gmail.com>
+ <CACPK8XcS4iKfKigPbPg0BFbmjbT-kdyjiPDXjk1k5XaS5bCdAA@mail.gmail.com>
+ <95e215664612c0487808c02232852ef2188c95a5.camel@kernel.crashing.org>
+Message-ID: <CABoTLcTNwNTua9Neuw5cuFn0Nuz1E6UAakqfkLp1rirbwoQo=w@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+Does HW in the AST2500 actually perform the HW checksum calculation, or
+would that be the responsibility of the NIC that it's talking to via NC-SI?
 
-On 9/26/19 5:27 PM, Jae Hyun Yoo wrote:
-> From: Jae Hyun Yoo <jae.hyun.yoo@intel.com>
+Oskar.
+
+On Wed, Oct 9, 2019 at 12:38 AM Benjamin Herrenschmidt <
+benh@kernel.crashing.org> wrote:
+
+> On Wed, 2019-09-11 at 14:48 +0000, Joel Stanley wrote:
+> > Hi Ben,
+> >
+> > On Tue, 10 Sep 2019 at 22:05, Florian Fainelli <f.fainelli@gmail.com>
+> > wrote:
+> > >
+> > > On 9/10/19 2:37 PM, Vijay Khemka wrote:
+> > > > HW checksum generation is not working for AST2500, specially with
+> > > > IPV6
+> > > > over NCSI. All TCP packets with IPv6 get dropped. By disabling
+> > > > this
+> > > > it works perfectly fine with IPV6.
+> > > >
+> > > > Verified with IPV6 enabled and can do ssh.
+> > >
+> > > How about IPv4, do these packets have problem? If not, can you
+> > > continue
+> > > advertising NETIF_F_IP_CSUM but take out NETIF_F_IPV6_CSUM?
+> > >
+> > > >
+> > > > Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
+> > > > ---
+> > > >  drivers/net/ethernet/faraday/ftgmac100.c | 5 +++--
+> > > >  1 file changed, 3 insertions(+), 2 deletions(-)
+> > > >
+> > > > diff --git a/drivers/net/ethernet/faraday/ftgmac100.c
+> > > > b/drivers/net/ethernet/faraday/ftgmac100.c
+> > > > index 030fed65393e..591c9725002b 100644
+> > > > --- a/drivers/net/ethernet/faraday/ftgmac100.c
+> > > > +++ b/drivers/net/ethernet/faraday/ftgmac100.c
+> > > > @@ -1839,8 +1839,9 @@ static int ftgmac100_probe(struct
+> > > > platform_device *pdev)
+> > > >       if (priv->use_ncsi)
+> > > >               netdev->hw_features |= NETIF_F_HW_VLAN_CTAG_FILTER;
+> > > >
+> > > > -     /* AST2400  doesn't have working HW checksum generation */
+> > > > -     if (np && (of_device_is_compatible(np, "aspeed,ast2400-
+> > > > mac")))
+> > > > +     /* AST2400  and AST2500 doesn't have working HW checksum
+> > > > generation */
+> > > > +     if (np && (of_device_is_compatible(np, "aspeed,ast2400-
+> > > > mac") ||
+> > > > +                of_device_is_compatible(np, "aspeed,ast2500-
+> > > > mac")))
+> >
+> > Do you recall under what circumstances we need to disable hardware
+> > checksumming?
 >
-> CAPTURE_COMPLETE and FRAME_COMPLETE interrupts come even when these
-> are disabled in the VE_INTERRUPT_CTRL register and eventually this
-> behavior causes disabling irq itself like below:
-
-
-Thanks!
-
-Reviewed-by: Eddie James <eajames@linux.ibm.com>
-
-
+> Any news on this ? AST2400 has no HW checksum logic in HW, AST2500
+> should work for IPV4 fine, we should only selectively disable it for
+> IPV6.
 >
-> [10055.108784] irq 23: nobody cared (try booting with the "irqpoll" option)
-> [10055.115525] CPU: 0 PID: 331 Comm: swampd Tainted: G        W         5.3.0-4fde000-dirty-d683e2e #1
-> [10055.124565] Hardware name: Generic DT based system
-> [10055.129355] Backtrace:
-> [10055.131854] [<80107d7c>] (dump_backtrace) from [<80107fb0>] (show_stack+0x20/0x24)
-> [10055.139431]  r7:00000017 r6:00000001 r5:00000000 r4:9d51dc00
-> [10055.145120] [<80107f90>] (show_stack) from [<8074bf50>] (dump_stack+0x20/0x28)
-> [10055.152361] [<8074bf30>] (dump_stack) from [<80150ffc>] (__report_bad_irq+0x40/0xc0)
-> [10055.160109] [<80150fbc>] (__report_bad_irq) from [<80150f2c>] (note_interrupt+0x23c/0x294)
-> [10055.168374]  r9:015b6e60 r8:00000000 r7:00000017 r6:00000001 r5:00000000 r4:9d51dc00
-> [10055.176136] [<80150cf0>] (note_interrupt) from [<8014df1c>] (handle_irq_event_percpu+0x88/0x98)
-> [10055.184835]  r10:7eff7910 r9:015b6e60 r8:00000000 r7:9d417600 r6:00000001 r5:00000002
-> [10055.192657]  r4:9d51dc00 r3:00000000
-> [10055.196248] [<8014de94>] (handle_irq_event_percpu) from [<8014df64>] (handle_irq_event+0x38/0x4c)
-> [10055.205113]  r5:80b56d50 r4:9d51dc00
-> [10055.208697] [<8014df2c>] (handle_irq_event) from [<80151f1c>] (handle_level_irq+0xbc/0x12c)
-> [10055.217037]  r5:80b56d50 r4:9d51dc00
-> [10055.220623] [<80151e60>] (handle_level_irq) from [<8014d4b8>] (generic_handle_irq+0x30/0x44)
-> [10055.229052]  r5:80b56d50 r4:00000017
-> [10055.232648] [<8014d488>] (generic_handle_irq) from [<8014d524>] (__handle_domain_irq+0x58/0xb4)
-> [10055.241356] [<8014d4cc>] (__handle_domain_irq) from [<801021e4>] (avic_handle_irq+0x68/0x70)
-> [10055.249797]  r9:015b6e60 r8:00c5387d r7:00c5387d r6:ffffffff r5:9dd33fb0 r4:9d402380
-> [10055.257539] [<8010217c>] (avic_handle_irq) from [<80101e34>] (__irq_usr+0x54/0x80)
-> [10055.265105] Exception stack(0x9dd33fb0 to 0x9dd33ff8)
-> [10055.270152] 3fa0:                                     015d0530 00000000 00000000 015d0538
-> [10055.278328] 3fc0: 015d0530 015b6e60 00000000 00000000 0052c5d0 015b6e60 7eff7910 7eff7918
-> [10055.286496] 3fe0: 76ce5614 7eff7908 0050e2f4 76a3a08c 20000010 ffffffff
-> [10055.293104]  r5:20000010 r4:76a3a08c
-> [10055.296673] handlers:
-> [10055.298967] [<79f218a5>] irq_default_primary_handler threaded [<1de88514>] aspeed_video_irq
-> [10055.307344] Disabling IRQ #23
+> Can you do an updated patch ?
 >
-> To fix this issue, this commit makes the interrupt handler clear
-> these garbage interrupts. This driver enables and uses only
-> COMP_COMPLETE interrupt instead for frame handling.
+> Cheers,
+> Ben.
 >
-> Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@intel.com>
-> ---
->   drivers/media/platform/aspeed-video.c | 10 ++++++++++
->   1 file changed, 10 insertions(+)
 >
-> diff --git a/drivers/media/platform/aspeed-video.c b/drivers/media/platform/aspeed-video.c
-> index eb12f3793062..e842f99d20a9 100644
-> --- a/drivers/media/platform/aspeed-video.c
-> +++ b/drivers/media/platform/aspeed-video.c
-> @@ -606,6 +606,16 @@ static irqreturn_t aspeed_video_irq(int irq, void *arg)
->   			aspeed_video_start_frame(video);
->   	}
->   
-> +	/*
-> +	 * CAPTURE_COMPLETE and FRAME_COMPLETE interrupts come even when these
-> +	 * are disabled in the VE_INTERRUPT_CTRL register so clear them to
-> +	 * prevent unnecessary interrupt calls.
-> +	 */
-> +	if (sts & VE_INTERRUPT_CAPTURE_COMPLETE)
-> +		sts &= ~VE_INTERRUPT_CAPTURE_COMPLETE;
-> +	if (sts & VE_INTERRUPT_FRAME_COMPLETE)
-> +		sts &= ~VE_INTERRUPT_FRAME_COMPLETE;
-> +
->   	return sts ? IRQ_NONE : IRQ_HANDLED;
->   }
->   
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20191009/35d1a2be/attachment.htm>
