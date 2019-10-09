@@ -1,94 +1,366 @@
-From: Dmitry Vyukov <dvyukov@google.com>
-Date: Wed, 9 Oct 2019 09:06:09 +0200
-Subject: i2c-aspeed testing with kunit fake and syzkaller
-In-Reply-To: <CACPK8XcaAa8aRjqV+vYzh71KMp6hEwLi+qV6bcQUC5xATm0zzg@mail.gmail.com>
-References: <CACT4Y+YJ8qK7CrU2S-TY-DVCdt+aY=Wzq7+iiPoDsdGf-m8G8A@mail.gmail.com>
- <CACPK8XcaAa8aRjqV+vYzh71KMp6hEwLi+qV6bcQUC5xATm0zzg@mail.gmail.com>
-Message-ID: <CACT4Y+ZXaz31ktL3XBAb+rVXrGw9+nujC0+kUU6fRin-rGXcuA@mail.gmail.com>
+From: Cédric Le Goater <clg@kaod.org>
+Date: Wed, 9 Oct 2019 15:32:40 +0200
+Subject: [PATCH 2/5] ARM: dts: aspeed: add I2C buffer mode support
+In-Reply-To: <20191007231313.4700-3-jae.hyun.yoo@linux.intel.com>
+References: <20191007231313.4700-1-jae.hyun.yoo@linux.intel.com>
+ <20191007231313.4700-3-jae.hyun.yoo@linux.intel.com>
+Message-ID: <6f015065-3a45-878d-86b2-0edf10f1f4cb@kaod.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Oct 9, 2019 at 8:48 AM Joel Stanley <joel@jms.id.au> wrote:
->
-> On Tue, 8 Oct 2019 at 14:44, Dmitry Vyukov <dvyukov@google.com> wrote:
-> >
-> > Hi i2c/aspeed-related people,
-> >
-> > Some time ago Brendan and myself did an experiment of testing the
-> > i2c-aspeed driver in a qemu VM (without any hardware/emulation) using
-> > kunit-based fake hardware. The fake allowed us to get 10 i2c devices
-> > successfully probe and appear in /dev/. Which in turn allowed us to
-> > test the actual driver with syzkaller.
-> > I will just leave here some details and traces as FYI and for future
-> > reference. I think this is an important precedent in general.
->
-> Wow, this is extensive. It will take me some time to digest it.
->
-> Thanks for sending it along.
->
-> Cheers,
->
-> Joel
->
->
-> >
-> > The kernel branch is here:
-> > https://github.com/dvyukov/linux/commits/kunit-i2c-stub2
-> > This is one of kunit branches with this commit on top:
-> > https://github.com/dvyukov/linux/commit/c9c1706611fdc49679c5bf5bff1e147ab7c7aa79
-> > This contains lots of hacks to get the fake working on x86 and leave
-> > persistent devices initialized (rather than shutdown them after
-> > unit-testing).
+On 08/10/2019 01:13, Jae Hyun Yoo wrote:
+> Byte mode currently this driver uses makes lots of interrupt call
+> which isn't good for performance and it makes the driver very
+> timing sensitive. To improve performance of the driver, this commit
+> adds buffer mode transfer support which uses I2C SRAM buffer
+> instead of using a single byte buffer.
+> 
+> AST2400:
+> It has 2 KBytes (256 Bytes x 8 pages) of I2C SRAM buffer pool from
+> 0x1e78a800 to 0x1e78afff that can be used for all busses with
+> buffer pool manipulation. To simplify implementation for supporting
+> both AST2400 and AST2500, it assigns each 128 Bytes per bus without
+> using buffer pool manipulation so total 1792 Bytes of I2C SRAM
+> buffer will be used.
+> 
+> AST2500:
+> It has 16 Bytes of individual I2C SRAM buffer per each bus and its
+> range is from 0x1e78a200 to 0x1e78a2df, so it doesn't have 'buffer
+> page selection' bit field in the Function control register, and
+> neither 'base address pointer' bit field in the Pool buffer control
+> register it has. To simplify implementation for supporting both
+> AST2400 and AST2500, it writes zeros on those register bit fields
+> but it's okay because it does nothing in AST2500.
+> 
+> This commit fixes all I2C bus nodes to support buffer mode
+> transfer.
+> 
+> Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
 
-One thing I should have pointed to is the actual "hardware fake":
-https://github.com/dvyukov/linux/blob/d154ffa80dff44c8b941814d700b22e6cf4c23c2/drivers/i2c/busses/i2c-aspeed-fake.c
 
-Brendan, in this mode kunit prints whole lot of messages re
-missed/failed expectations, etc. It probably should have a special
-mode for platform mock when it does not bother about expectations, at
-least doesn't print anything.
+Reviewed-by: C?dric Le Goater <clg@kaod.org>
 
-> > This is the kernel config:
-> > https://gist.githubusercontent.com/dvyukov/72a31dad43b5687e6ffdcdb4cb342175/raw/24b706326e2d9202789fece5bfc17355aadda411/gistfile1.txt
-> > (some i2c configs + a bunch of debugging configs).
-> >
-> > If you boot this kernel with the config in qemu, you should see /dev/i2c-{0,10}.
-> >
-> > Probably any syzkaller commit will work, but I just testing on this one:
-> > https://github.com/google/syzkaller/tree/2ab6c4a4571d4170b0009a5b14b9789b016814b6
-> > Here is syzkaller config I used:
-> > https://gist.githubusercontent.com/dvyukov/d0a3c0e9b44cc7d445b36a8a50404ed8/raw/5f6aab34c6515cc4e96dac6cf3a98aaaf5e21b58/gistfile1.txt
-> >
-> > Here is kernel coverage we achieved as the result of fuzzing:
-> > https://drive.google.com/file/d/1JdNshmCWI3crJ3BuVo6uvRuHMBrwH5eB/view?usp=sharing
-> >
-> > For crashes, I've got 3 different task hangs:
-> >
-> > INFO: task hung in i2c_transfer
-> > https://gist.githubusercontent.com/dvyukov/25e98a59b643bc868c7489f566ed9eab/raw/67b717488ae9af381a5b0615e5ddf2d226369d3c/gistfile1.txt
-> >
-> > INFO: task hung in i2c_smbus_xfer
-> > https://gist.githubusercontent.com/dvyukov/7ca87fea1b397d46e3393227a34595b9/raw/f5385f025abfc3ad2e91fd4f2616e58c7de8804e/gistfile1.txt
-> >
-> > INFO: task hung in aspeed_i2c_master_xfer
-> > https://gist.githubusercontent.com/dvyukov/dbc51e3ea7034f255c8fd1c99965d91a/raw/a5165e4e6c3b41d593d02fc22996104e468cfab3/gistfile1.txt
-> >
-> > And some memory corruptions (non-thread-safe kunit data structures?):
-> >
-> > KASAN: use-after-free Read in aspeed_i2c_fake_write_command_reg
-> > https://gist.githubusercontent.com/dvyukov/6ca5bca5cf7a40a93636360635a4672c/raw/5ad0e7b33907f4b0db102b74c2a11237df612462/gistfile1.txt
-> >
-> > KASAN: use-after-free Read in __of_find_property
-> > https://gist.githubusercontent.com/dvyukov/95ed93a39d38fd215c141b58e5d3ec0f/raw/ea7f2346982a31ab16fca2850f91e1ef11faf687/gistfile1.txt
-> >
-> > general protection fault in mock_do_expect
-> > https://gist.githubusercontent.com/dvyukov/8c2e3def6775d39cb7496b56a77cbcd8/raw/5778337009e21397b484aafe5b24c87ebe64b63f/gistfile1.txt
-> >
-> > There are probably a number of things that can be improved in kunit
-> > platform mock, the fake driver and syzkaller i2c coverage, but this is
-> > a starting point.
-> >
-> > Thanks
+> ---
+>  arch/arm/boot/dts/aspeed-g4.dtsi | 47 +++++++++++++++++++-------------
+>  arch/arm/boot/dts/aspeed-g5.dtsi | 47 +++++++++++++++++++-------------
+>  2 files changed, 56 insertions(+), 38 deletions(-)
+> 
+> diff --git a/arch/arm/boot/dts/aspeed-g4.dtsi b/arch/arm/boot/dts/aspeed-g4.dtsi
+> index dffb595d30e4..f51b016aa769 100644
+> --- a/arch/arm/boot/dts/aspeed-g4.dtsi
+> +++ b/arch/arm/boot/dts/aspeed-g4.dtsi
+> @@ -420,12 +420,21 @@
+>  };
+>  
+>  &i2c {
+> -	i2c_ic: interrupt-controller at 0 {
+> -		#interrupt-cells = <1>;
+> -		compatible = "aspeed,ast2400-i2c-ic";
+> +	i2c_gr: i2c-global-regs at 0 {
+> +		compatible = "aspeed,ast2400-i2c-gr", "syscon";
+>  		reg = <0x0 0x40>;
+> -		interrupts = <12>;
+> -		interrupt-controller;
+> +
+> +		#address-cells = <1>;
+> +		#size-cells = <1>;
+> +		ranges = <0x0 0x0 0x40>;
+> +
+> +		i2c_ic: interrupt-controller at 0 {
+> +			#interrupt-cells = <1>;
+> +			compatible = "aspeed,ast2400-i2c-ic";
+> +			reg = <0x0 0x4>;
+> +			interrupts = <12>;
+> +			interrupt-controller;
+> +		};
+>  	};
+>  
+>  	i2c0: i2c-bus at 40 {
+> @@ -433,7 +442,7 @@
+>  		#size-cells = <0>;
+>  		#interrupt-cells = <1>;
+>  
+> -		reg = <0x40 0x40>;
+> +		reg = <0x40 0x40>, <0x800 0x80>;
+>  		compatible = "aspeed,ast2400-i2c-bus";
+>  		clocks = <&syscon ASPEED_CLK_APB>;
+>  		resets = <&syscon ASPEED_RESET_I2C>;
+> @@ -449,7 +458,7 @@
+>  		#size-cells = <0>;
+>  		#interrupt-cells = <1>;
+>  
+> -		reg = <0x80 0x40>;
+> +		reg = <0x80 0x40>, <0x880 0x80>;
+>  		compatible = "aspeed,ast2400-i2c-bus";
+>  		clocks = <&syscon ASPEED_CLK_APB>;
+>  		resets = <&syscon ASPEED_RESET_I2C>;
+> @@ -465,7 +474,7 @@
+>  		#size-cells = <0>;
+>  		#interrupt-cells = <1>;
+>  
+> -		reg = <0xc0 0x40>;
+> +		reg = <0xc0 0x40>, <0x900 0x80>;
+>  		compatible = "aspeed,ast2400-i2c-bus";
+>  		clocks = <&syscon ASPEED_CLK_APB>;
+>  		resets = <&syscon ASPEED_RESET_I2C>;
+> @@ -482,7 +491,7 @@
+>  		#size-cells = <0>;
+>  		#interrupt-cells = <1>;
+>  
+> -		reg = <0x100 0x40>;
+> +		reg = <0x100 0x40>, <0x980 0x80>;
+>  		compatible = "aspeed,ast2400-i2c-bus";
+>  		clocks = <&syscon ASPEED_CLK_APB>;
+>  		resets = <&syscon ASPEED_RESET_I2C>;
+> @@ -499,7 +508,7 @@
+>  		#size-cells = <0>;
+>  		#interrupt-cells = <1>;
+>  
+> -		reg = <0x140 0x40>;
+> +		reg = <0x140 0x40>, <0xa00 0x80>;
+>  		compatible = "aspeed,ast2400-i2c-bus";
+>  		clocks = <&syscon ASPEED_CLK_APB>;
+>  		resets = <&syscon ASPEED_RESET_I2C>;
+> @@ -516,7 +525,7 @@
+>  		#size-cells = <0>;
+>  		#interrupt-cells = <1>;
+>  
+> -		reg = <0x180 0x40>;
+> +		reg = <0x180 0x40>, <0xa80 0x80>;
+>  		compatible = "aspeed,ast2400-i2c-bus";
+>  		clocks = <&syscon ASPEED_CLK_APB>;
+>  		resets = <&syscon ASPEED_RESET_I2C>;
+> @@ -533,7 +542,7 @@
+>  		#size-cells = <0>;
+>  		#interrupt-cells = <1>;
+>  
+> -		reg = <0x1c0 0x40>;
+> +		reg = <0x1c0 0x40>, <0xb00 0x80>;
+>  		compatible = "aspeed,ast2400-i2c-bus";
+>  		clocks = <&syscon ASPEED_CLK_APB>;
+>  		resets = <&syscon ASPEED_RESET_I2C>;
+> @@ -550,7 +559,7 @@
+>  		#size-cells = <0>;
+>  		#interrupt-cells = <1>;
+>  
+> -		reg = <0x300 0x40>;
+> +		reg = <0x300 0x40>, <0xb80 0x80>;
+>  		compatible = "aspeed,ast2400-i2c-bus";
+>  		clocks = <&syscon ASPEED_CLK_APB>;
+>  		resets = <&syscon ASPEED_RESET_I2C>;
+> @@ -567,7 +576,7 @@
+>  		#size-cells = <0>;
+>  		#interrupt-cells = <1>;
+>  
+> -		reg = <0x340 0x40>;
+> +		reg = <0x340 0x40>, <0xc00 0x80>;
+>  		compatible = "aspeed,ast2400-i2c-bus";
+>  		clocks = <&syscon ASPEED_CLK_APB>;
+>  		resets = <&syscon ASPEED_RESET_I2C>;
+> @@ -584,7 +593,7 @@
+>  		#size-cells = <0>;
+>  		#interrupt-cells = <1>;
+>  
+> -		reg = <0x380 0x40>;
+> +		reg = <0x380 0x40>, <0xc80 0x80>;
+>  		compatible = "aspeed,ast2400-i2c-bus";
+>  		clocks = <&syscon ASPEED_CLK_APB>;
+>  		resets = <&syscon ASPEED_RESET_I2C>;
+> @@ -601,7 +610,7 @@
+>  		#size-cells = <0>;
+>  		#interrupt-cells = <1>;
+>  
+> -		reg = <0x3c0 0x40>;
+> +		reg = <0x3c0 0x40>, <0xd00 0x80>;
+>  		compatible = "aspeed,ast2400-i2c-bus";
+>  		clocks = <&syscon ASPEED_CLK_APB>;
+>  		resets = <&syscon ASPEED_RESET_I2C>;
+> @@ -618,7 +627,7 @@
+>  		#size-cells = <0>;
+>  		#interrupt-cells = <1>;
+>  
+> -		reg = <0x400 0x40>;
+> +		reg = <0x400 0x40>, <0xd80 0x80>;
+>  		compatible = "aspeed,ast2400-i2c-bus";
+>  		clocks = <&syscon ASPEED_CLK_APB>;
+>  		resets = <&syscon ASPEED_RESET_I2C>;
+> @@ -635,7 +644,7 @@
+>  		#size-cells = <0>;
+>  		#interrupt-cells = <1>;
+>  
+> -		reg = <0x440 0x40>;
+> +		reg = <0x440 0x40>, <0xe00 0x80>;
+>  		compatible = "aspeed,ast2400-i2c-bus";
+>  		clocks = <&syscon ASPEED_CLK_APB>;
+>  		resets = <&syscon ASPEED_RESET_I2C>;
+> @@ -652,7 +661,7 @@
+>  		#size-cells = <0>;
+>  		#interrupt-cells = <1>;
+>  
+> -		reg = <0x480 0x40>;
+> +		reg = <0x480 0x40>, <0xe80 0x80>;
+>  		compatible = "aspeed,ast2400-i2c-bus";
+>  		clocks = <&syscon ASPEED_CLK_APB>;
+>  		resets = <&syscon ASPEED_RESET_I2C>;
+> diff --git a/arch/arm/boot/dts/aspeed-g5.dtsi b/arch/arm/boot/dts/aspeed-g5.dtsi
+> index e8feb8b66a2f..cbc31ce3fab2 100644
+> --- a/arch/arm/boot/dts/aspeed-g5.dtsi
+> +++ b/arch/arm/boot/dts/aspeed-g5.dtsi
+> @@ -513,12 +513,21 @@
+>  };
+>  
+>  &i2c {
+> -	i2c_ic: interrupt-controller at 0 {
+> -		#interrupt-cells = <1>;
+> -		compatible = "aspeed,ast2500-i2c-ic";
+> +	i2c_gr: i2c-global-regs at 0 {
+> +		compatible = "aspeed,ast2500-i2c-gr", "syscon";
+>  		reg = <0x0 0x40>;
+> -		interrupts = <12>;
+> -		interrupt-controller;
+> +
+> +		#address-cells = <1>;
+> +		#size-cells = <1>;
+> +		ranges = <0x0 0x0 0x40>;
+> +
+> +		i2c_ic: interrupt-controller at 0 {
+> +			#interrupt-cells = <1>;
+> +			compatible = "aspeed,ast2500-i2c-ic";
+> +			reg = <0x0 0x4>;
+> +			interrupts = <12>;
+> +			interrupt-controller;
+> +		};
+>  	};
+>  
+>  	i2c0: i2c-bus at 40 {
+> @@ -526,7 +535,7 @@
+>  		#size-cells = <0>;
+>  		#interrupt-cells = <1>;
+>  
+> -		reg = <0x40 0x40>;
+> +		reg = <0x40 0x40>, <0x200 0x10>;
+>  		compatible = "aspeed,ast2500-i2c-bus";
+>  		clocks = <&syscon ASPEED_CLK_APB>;
+>  		resets = <&syscon ASPEED_RESET_I2C>;
+> @@ -542,7 +551,7 @@
+>  		#size-cells = <0>;
+>  		#interrupt-cells = <1>;
+>  
+> -		reg = <0x80 0x40>;
+> +		reg = <0x80 0x40>, <0x210 0x10>;
+>  		compatible = "aspeed,ast2500-i2c-bus";
+>  		clocks = <&syscon ASPEED_CLK_APB>;
+>  		resets = <&syscon ASPEED_RESET_I2C>;
+> @@ -558,7 +567,7 @@
+>  		#size-cells = <0>;
+>  		#interrupt-cells = <1>;
+>  
+> -		reg = <0xc0 0x40>;
+> +		reg = <0xc0 0x40>, <0x220 0x10>;
+>  		compatible = "aspeed,ast2500-i2c-bus";
+>  		clocks = <&syscon ASPEED_CLK_APB>;
+>  		resets = <&syscon ASPEED_RESET_I2C>;
+> @@ -575,7 +584,7 @@
+>  		#size-cells = <0>;
+>  		#interrupt-cells = <1>;
+>  
+> -		reg = <0x100 0x40>;
+> +		reg = <0x100 0x40>, <0x230 0x10>;
+>  		compatible = "aspeed,ast2500-i2c-bus";
+>  		clocks = <&syscon ASPEED_CLK_APB>;
+>  		resets = <&syscon ASPEED_RESET_I2C>;
+> @@ -592,7 +601,7 @@
+>  		#size-cells = <0>;
+>  		#interrupt-cells = <1>;
+>  
+> -		reg = <0x140 0x40>;
+> +		reg = <0x140 0x40>, <0x240 0x10>;
+>  		compatible = "aspeed,ast2500-i2c-bus";
+>  		clocks = <&syscon ASPEED_CLK_APB>;
+>  		resets = <&syscon ASPEED_RESET_I2C>;
+> @@ -609,7 +618,7 @@
+>  		#size-cells = <0>;
+>  		#interrupt-cells = <1>;
+>  
+> -		reg = <0x180 0x40>;
+> +		reg = <0x180 0x40>, <0x250 0x10>;
+>  		compatible = "aspeed,ast2500-i2c-bus";
+>  		clocks = <&syscon ASPEED_CLK_APB>;
+>  		resets = <&syscon ASPEED_RESET_I2C>;
+> @@ -626,7 +635,7 @@
+>  		#size-cells = <0>;
+>  		#interrupt-cells = <1>;
+>  
+> -		reg = <0x1c0 0x40>;
+> +		reg = <0x1c0 0x40>, <0x260 0x10>;
+>  		compatible = "aspeed,ast2500-i2c-bus";
+>  		clocks = <&syscon ASPEED_CLK_APB>;
+>  		resets = <&syscon ASPEED_RESET_I2C>;
+> @@ -643,7 +652,7 @@
+>  		#size-cells = <0>;
+>  		#interrupt-cells = <1>;
+>  
+> -		reg = <0x300 0x40>;
+> +		reg = <0x300 0x40>, <0x270 0x10>;
+>  		compatible = "aspeed,ast2500-i2c-bus";
+>  		clocks = <&syscon ASPEED_CLK_APB>;
+>  		resets = <&syscon ASPEED_RESET_I2C>;
+> @@ -660,7 +669,7 @@
+>  		#size-cells = <0>;
+>  		#interrupt-cells = <1>;
+>  
+> -		reg = <0x340 0x40>;
+> +		reg = <0x340 0x40>, <0x280 0x10>;
+>  		compatible = "aspeed,ast2500-i2c-bus";
+>  		clocks = <&syscon ASPEED_CLK_APB>;
+>  		resets = <&syscon ASPEED_RESET_I2C>;
+> @@ -677,7 +686,7 @@
+>  		#size-cells = <0>;
+>  		#interrupt-cells = <1>;
+>  
+> -		reg = <0x380 0x40>;
+> +		reg = <0x380 0x40>, <0x290 0x10>;
+>  		compatible = "aspeed,ast2500-i2c-bus";
+>  		clocks = <&syscon ASPEED_CLK_APB>;
+>  		resets = <&syscon ASPEED_RESET_I2C>;
+> @@ -694,7 +703,7 @@
+>  		#size-cells = <0>;
+>  		#interrupt-cells = <1>;
+>  
+> -		reg = <0x3c0 0x40>;
+> +		reg = <0x3c0 0x40>, <0x2a0 0x10>;
+>  		compatible = "aspeed,ast2500-i2c-bus";
+>  		clocks = <&syscon ASPEED_CLK_APB>;
+>  		resets = <&syscon ASPEED_RESET_I2C>;
+> @@ -711,7 +720,7 @@
+>  		#size-cells = <0>;
+>  		#interrupt-cells = <1>;
+>  
+> -		reg = <0x400 0x40>;
+> +		reg = <0x400 0x40>, <0x2b0 0x10>;
+>  		compatible = "aspeed,ast2500-i2c-bus";
+>  		clocks = <&syscon ASPEED_CLK_APB>;
+>  		resets = <&syscon ASPEED_RESET_I2C>;
+> @@ -728,7 +737,7 @@
+>  		#size-cells = <0>;
+>  		#interrupt-cells = <1>;
+>  
+> -		reg = <0x440 0x40>;
+> +		reg = <0x440 0x40>, <0x2c0 0x10>;
+>  		compatible = "aspeed,ast2500-i2c-bus";
+>  		clocks = <&syscon ASPEED_CLK_APB>;
+>  		resets = <&syscon ASPEED_RESET_I2C>;
+> @@ -745,7 +754,7 @@
+>  		#size-cells = <0>;
+>  		#interrupt-cells = <1>;
+>  
+> -		reg = <0x480 0x40>;
+> +		reg = <0x480 0x40>, <0x2d0 0x10>;
+>  		compatible = "aspeed,ast2500-i2c-bus";
+>  		clocks = <&syscon ASPEED_CLK_APB>;
+>  		resets = <&syscon ASPEED_RESET_I2C>;
+> 
+
