@@ -1,38 +1,83 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Sat, 19 Oct 2019 21:25:32 +1100
-Subject: [PATCH v2] ftgmac100: Disable HW checksum generation on AST2500
-In-Reply-To: <3D78AA04-A502-4A9F-87A0-0D62D56952AF@fb.com>
-References: <20191011213027.2110008-1-vijaykhemka@fb.com>
- <3a1176067b745fddfc625bbd142a41913ee3e3a1.camel@kernel.crashing.org>
- <0C0BC813-5A84-403F-9C48-9447AAABD867@fb.com>
- <071cf1eeefcbfc14633a13bc2d15ad7392987a88.camel@kernel.crashing.org>
- <9AA81274-01F2-4803-8905-26F0521486CE@fb.com>
- <f6d5cb45a9aa167533135c5b218b45b1d210d31a.camel@kernel.crashing.org>
- <529EF9B4-DFDE-4DB7-BE26-3AED8D814134@fb.com>
- <0ef567e985ce3fe821cbd80265f85a35d16be373.camel@kernel.crashing.org>
- <3D78AA04-A502-4A9F-87A0-0D62D56952AF@fb.com>
-Message-ID: <72d1a78d7807b1bda00e1bafe0c2ecefe267918b.camel@kernel.crashing.org>
+From: Boris Brezillon <boris.brezillon@collabora.com>
+Date: Wed, 9 Oct 2019 22:55:55 +0200
+Subject: [PATCH 00/16] mtd: spi-nor: aspeed: AST2600 support and extensions
+In-Reply-To: <20191004115919.20788-1-clg@kaod.org>
+References: <20191004115919.20788-1-clg@kaod.org>
+Message-ID: <20191009225555.67622339@dhcp-172-31-174-146.wireless.concordia.ca>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sat, 2019-10-19 at 01:31 +0000, Vijay Khemka wrote:
-> Thanks Ben,
-> I will try to add some trace and test whatever possible and test it.
-> As we
-> don't have tcpdump into our image and I have limited understanding of
-> networking stack so if you get some time to verify ipv6, it will be
-> really
-> helpful. 
->     
+Hi Cedric,
 
-You only need tcpdump (or wireshark) on the *other end* of the link,
-could even be your laptop, to look at what the generated frames look
-like and compare with your traces.
+On Fri,  4 Oct 2019 13:59:03 +0200
+C?dric Le Goater <clg@kaod.org> wrote:
 
-Cheers,
-Ben.
+> Hello,
+> 
+> This series first extends the support for the Aspeed AST2500 and
+> AST2400 SMC driver. It adds Dual Data support and read training giving
+> the best read settings for a given chip. Support for the new AST2600
+> SoC is added at the end.
+> 
+> I understand that a new spi_mem framework exists and I do have an
+> experimental driver using it. But unfortunately, it is difficult to
+> integrate the read training. The Aspeed constraints are not compatible
+> and i haven't had the time to extend the current framework.
 
+Hm, I don't think that's a good reason to push new features to the
+existing driver, especially since I asked others to migrate their
+drivers to spi-mem in the past. I do understand your concerns, and I'll
+let the SPI NOR/MTD maintainers make the final call, but I think it'd
+be better for the SPI MEM ecosystem to think about this link-training
+API (Vignesh needs it for the Cadence driver IIRC) rather than pushing
+this kind of feature to spi-nor controller drivers.
+
+> 
+> This patchset has been in use for some time in the OpenBMC kernel on
+> these systems :
+> 
+>  * OpenPOWER Palmetto (AST2400)
+>  * Evaluation board (AST2500) 
+>  * OpenPOWER Witherspoon (AST2500)
+>  * OpenPOWER Romulus (AST2500)
+>  * OpenPOWER Zaius (AST2500)
+>    and many others
+>  
+> and it is now in use on these boards with the new SoC :
+> 
+>  * Evaluation board (AST2600) 
+>  * Tacoma board (AST2600) 
+> 
+> Thanks,
+> 
+> C.
+> 
+> Alexander Soldatov (1):
+>   mtd: spi-nor: fix options for mx66l51235f
+> 
+> C?dric Le Goater (15):
+>   mtd: spi-nor: aspeed: Use command mode for reads
+>   mtd: spi-nor: aspeed: Add support for SPI dual IO read mode
+>   mtd: spi-nor: aspeed: Link controller with the ahb clock
+>   mtd: spi-nor: aspeed: Add read training
+>   mtd: spi-nor: aspeed: Limit the maximum SPI frequency
+>   mtd: spi-nor: aspeed: Add support for the 4B opcodes
+>   mtd: spi-nor: Add support for w25q512jv
+>   mtd: spi-nor: aspeed: Introduce a field for the AHB physical address
+>   mtd: spi-nor: aspeed: Introduce segment operations
+>   dt-bindings: mtd: aspeed-smc: Add new comptatible for AST2600
+>   mtd: spi-nor: aspeed: Add initial support for the AST2600
+>   mtd: spi-nor: aspeed: Check for disabled segments on the AST2600
+>   mtd: spi-nor: aspeed: Introduce training operations per platform
+>   mtd: spi-nor: aspeed: Introduce a HCLK mask for training
+>   mtd: spi-nor: aspeed: Add read training support for the AST2600
+> 
+>  drivers/mtd/spi-nor/aspeed-smc.c              | 593 ++++++++++++++++--
+>  drivers/mtd/spi-nor/spi-nor.c                 |   5 +-
+>  .../devicetree/bindings/mtd/aspeed-smc.txt    |   2 +
+>  3 files changed, 551 insertions(+), 49 deletions(-)
+> 
 
