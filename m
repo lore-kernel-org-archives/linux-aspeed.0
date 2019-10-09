@@ -1,26 +1,29 @@
 From: Oskar Senft <osk@google.com>
-Date: Wed, 9 Oct 2019 14:18:44 -0400
+Date: Wed, 9 Oct 2019 14:20:59 -0400
 Subject: [PATCH] ftgmac100: Disable HW checksum generation on AST2500
 In-Reply-To: <95e215664612c0487808c02232852ef2188c95a5.camel@kernel.crashing.org>
 References: <20190910213734.3112330-1-vijaykhemka@fb.com>
  <bd5eab2e-6ba6-9e27-54d4-d9534da9d5f7@gmail.com>
  <CACPK8XcS4iKfKigPbPg0BFbmjbT-kdyjiPDXjk1k5XaS5bCdAA@mail.gmail.com>
  <95e215664612c0487808c02232852ef2188c95a5.camel@kernel.crashing.org>
-Message-ID: <CABoTLcTNwNTua9Neuw5cuFn0Nuz1E6UAakqfkLp1rirbwoQo=w@mail.gmail.com>
+Message-ID: <CABoTLcQ=N4ugYeo5jxbGtBR0nbu_Ri-OV4pE0PP-yvwXX7W+uw@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Does HW in the AST2500 actually perform the HW checksum calculation, or
-would that be the responsibility of the NIC that it's talking to via NC-SI?
+Does HW in the AST2500 actually perform the HW checksum calculation,
+or would that be the responsibility of the NIC that it's talking to
+via NC-SI?
 
-Oskar.
+(Sorry for the double posting! I had HTML mode enabled by default
+which causes the e-mail to be dropped in some places)
 
-On Wed, Oct 9, 2019 at 12:38 AM Benjamin Herrenschmidt <
-benh@kernel.crashing.org> wrote:
 
+On Wed, Oct 9, 2019 at 12:38 AM Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+>
 > On Wed, 2019-09-11 at 14:48 +0000, Joel Stanley wrote:
 > > Hi Ben,
 > >
@@ -78,7 +81,3 @@ benh@kernel.crashing.org> wrote:
 > Cheers,
 > Ben.
 >
->
--------------- next part --------------
-An HTML attachment was scrubbed...
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20191009/35d1a2be/attachment.htm>
