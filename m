@@ -1,121 +1,56 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Thu, 10 Oct 2019 12:37:56 +1030
-Subject: [PATCH v2 3/3] net: ftgmac100: Ungate RCLK for RMII on ASPEED MACs
-In-Reply-To: <20191010020756.4198-1-andrew@aj.id.au>
-References: <20191010020756.4198-1-andrew@aj.id.au>
-Message-ID: <20191010020756.4198-4-andrew@aj.id.au>
+From: Joel Stanley <joel@jms.id.au>
+Date: Thu, 10 Oct 2019 05:28:26 +0000
+Subject: [PATCH 3/5] i2c: aspeed: fix master pending state handling
+In-Reply-To: <CAFd5g47vLN6NyZR73+EqOqfOPnM7CkGGsCwEn3udnJt99d8KCg@mail.gmail.com>
+References: <20191007231313.4700-1-jae.hyun.yoo@linux.intel.com>
+ <20191007231313.4700-4-jae.hyun.yoo@linux.intel.com>
+ <20191008203157.GA184092@google.com>
+ <ac256b3f-2a06-6fa5-72ab-d8f8014d253e@linux.intel.com>
+ <CAFd5g47vLN6NyZR73+EqOqfOPnM7CkGGsCwEn3udnJt99d8KCg@mail.gmail.com>
+Message-ID: <CACPK8Xc4JCNDwVfJ4zzsaZvoSmtqgMZwhYO8sv76aRnPiQwK_A@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The 50MHz RCLK has to be enabled before the RMII interface will function.
+On Tue, 8 Oct 2019 at 21:54, Brendan Higgins <brendanhiggins@google.com> wrote:
+>
+> On Tue, Oct 8, 2019 at 2:13 PM Jae Hyun Yoo
+> <jae.hyun.yoo@linux.intel.com> wrote:
+> >
+> > On 10/8/2019 1:31 PM, Brendan Higgins wrote:
+> > > On Mon, Oct 07, 2019 at 04:13:11PM -0700, Jae Hyun Yoo wrote:
+> > >> In case of master pending state, it should not trigger the master
+> > >> command because this H/W is sharing the same data buffer for slave
+> > >> and master operations, so this commit fixes the issue with making
+> > >> the master command triggering happen when the state goes to active
+> > >> state.
+> > >
+> > > nit: Makes sense, but can you explain what might happen without your
+> > > change?
+> >
+> > If we don't use this fix, a master command could corrupt data in the
+> > shared buffer if H/W is still on processing slave operation at the
+> > timing.
+>
+> Right, can you add that to the commit message?
+>
+> Is this trivially reproducible? We might want to submit this
+> separately as a bugfix.
+>
+> Actually yeah, can you send this separately as a bugfix? I think we
+> might want to include this in 5.4.
+>
+> Wolfram and Joel, what do you think?
 
-Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
----
-v2: Mainly a rework of error case handling, some changes to comments
+Yes, good suggestion. A corruption fix should be merged I think.
 
- drivers/net/ethernet/faraday/ftgmac100.c | 50 +++++++++++++++++++-----
- 1 file changed, 40 insertions(+), 10 deletions(-)
+Always send bug fixes upstream with Fixes tags so they land in the
+stable tree. This is preferable to sending them separately to the
+openbmc for inclusion in that tree, and potentially reaches a wider
+audience.
 
-diff --git a/drivers/net/ethernet/faraday/ftgmac100.c b/drivers/net/ethernet/faraday/ftgmac100.c
-index 9b7af94a40bb..824310253099 100644
---- a/drivers/net/ethernet/faraday/ftgmac100.c
-+++ b/drivers/net/ethernet/faraday/ftgmac100.c
-@@ -90,6 +90,9 @@ struct ftgmac100 {
- 	struct mii_bus *mii_bus;
- 	struct clk *clk;
- 
-+	/* AST2500/AST2600 RMII ref clock gate */
-+	struct clk *rclk;
-+
- 	/* Link management */
- 	int cur_speed;
- 	int cur_duplex;
-@@ -1718,20 +1721,41 @@ static void ftgmac100_ncsi_handler(struct ncsi_dev *nd)
- 		   nd->link_up ? "up" : "down");
- }
- 
--static void ftgmac100_setup_clk(struct ftgmac100 *priv)
-+static int ftgmac100_setup_clk(struct ftgmac100 *priv)
- {
--	priv->clk = devm_clk_get(priv->dev, NULL);
--	if (IS_ERR(priv->clk))
--		return;
-+	struct clk *clk;
-+	int rc;
- 
--	clk_prepare_enable(priv->clk);
-+	clk = devm_clk_get(priv->dev, NULL /* MACCLK */);
-+	if (IS_ERR(clk))
-+		return PTR_ERR(clk);
-+	priv->clk = clk;
-+	rc = clk_prepare_enable(priv->clk);
-+	if (rc)
-+		return rc;
- 
- 	/* Aspeed specifies a 100MHz clock is required for up to
- 	 * 1000Mbit link speeds. As NCSI is limited to 100Mbit, 25MHz
- 	 * is sufficient
- 	 */
--	clk_set_rate(priv->clk, priv->use_ncsi ? FTGMAC_25MHZ :
--			FTGMAC_100MHZ);
-+	rc = clk_set_rate(priv->clk, priv->use_ncsi ? FTGMAC_25MHZ :
-+			  FTGMAC_100MHZ);
-+	if (rc)
-+		goto cleanup_clk;
-+
-+	/* RCLK is for RMII, typically used for NCSI. Optional because its not
-+	 * necessary if it's the AST2400 MAC, or the MAC is configured for
-+	 * RGMII, or the controller is not an ASPEED-based controller.
-+	 */
-+	priv->rclk = devm_clk_get_optional(priv->dev, "RCLK");
-+	rc = clk_prepare_enable(priv->rclk);
-+	if (!rc)
-+		return 0;
-+
-+cleanup_clk:
-+	clk_disable_unprepare(priv->clk);
-+
-+	return rc;
- }
- 
- static int ftgmac100_probe(struct platform_device *pdev)
-@@ -1853,8 +1877,11 @@ static int ftgmac100_probe(struct platform_device *pdev)
- 			goto err_setup_mdio;
- 	}
- 
--	if (priv->is_aspeed)
--		ftgmac100_setup_clk(priv);
-+	if (priv->is_aspeed) {
-+		err = ftgmac100_setup_clk(priv);
-+		if (err)
-+			goto err_ncsi_dev;
-+	}
- 
- 	/* Default ring sizes */
- 	priv->rx_q_entries = priv->new_rx_q_entries = DEF_RX_QUEUE_ENTRIES;
-@@ -1886,8 +1913,10 @@ static int ftgmac100_probe(struct platform_device *pdev)
- 
- 	return 0;
- 
--err_ncsi_dev:
- err_register_netdev:
-+	clk_disable_unprepare(priv->rclk);
-+	clk_disable_unprepare(priv->clk);
-+err_ncsi_dev:
- 	ftgmac100_destroy_mdio(netdev);
- err_setup_mdio:
- 	iounmap(priv->base);
-@@ -1909,6 +1938,7 @@ static int ftgmac100_remove(struct platform_device *pdev)
- 
- 	unregister_netdev(netdev);
- 
-+	clk_disable_unprepare(priv->rclk);
- 	clk_disable_unprepare(priv->clk);
- 
- 	/* There's a small chance the reset task will have been re-queued,
--- 
-2.20.1
+Cheers,
 
+Joel
