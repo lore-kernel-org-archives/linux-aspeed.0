@@ -1,81 +1,61 @@
 From: Vijay Khemka <vijaykhemka@fb.com>
-Date: Thu, 10 Oct 2019 19:15:06 +0000
-Subject: [PATCH] ftgmac100: Disable HW checksum generation on AST2500
-In-Reply-To: <95e215664612c0487808c02232852ef2188c95a5.camel@kernel.crashing.org>
-References: <20190910213734.3112330-1-vijaykhemka@fb.com>
- <bd5eab2e-6ba6-9e27-54d4-d9534da9d5f7@gmail.com>
- <CACPK8XcS4iKfKigPbPg0BFbmjbT-kdyjiPDXjk1k5XaS5bCdAA@mail.gmail.com>
- <95e215664612c0487808c02232852ef2188c95a5.camel@kernel.crashing.org>
-Message-ID: <AF7B985F-6E42-4CD4-B3D0-4B9EA42253C9@fb.com>
+Date: Thu, 10 Oct 2019 19:20:47 +0000
+Subject: [PATCH v2] ftgmac100: Disable HW checksum generation on AST2500
+In-Reply-To: <20190911194453.2595021-1-vijaykhemka@fb.com>
+References: <20190911194453.2595021-1-vijaykhemka@fb.com>
+Message-ID: <4B7340B5-C35C-4B18-8D8C-B5B8D16BA551@fb.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+Resending this patch again. 
 
+?On 9/11/19, 1:05 PM, "Vijay Khemka" <vijaykhemka@fb.com> wrote:
 
-?On 10/8/19, 9:37 PM, "Benjamin Herrenschmidt" <benh@kernel.crashing.org> wrote:
-
-    On Wed, 2019-09-11 at 14:48 +0000, Joel Stanley wrote:
-    > Hi Ben,
-    > 
-    > On Tue, 10 Sep 2019 at 22:05, Florian Fainelli <f.fainelli@gmail.com>
-    > wrote:
-    > > 
-    > > On 9/10/19 2:37 PM, Vijay Khemka wrote:
-    > > > HW checksum generation is not working for AST2500, specially with
-    > > > IPV6
-    > > > over NCSI. All TCP packets with IPv6 get dropped. By disabling
-    > > > this
-    > > > it works perfectly fine with IPV6.
-    > > > 
-    > > > Verified with IPV6 enabled and can do ssh.
-    > > 
-    > > How about IPv4, do these packets have problem? If not, can you
-    > > continue
-    > > advertising NETIF_F_IP_CSUM but take out NETIF_F_IPV6_CSUM?
-    > > 
-    > > > 
-    > > > Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
-    > > > ---
-    > > >  drivers/net/ethernet/faraday/ftgmac100.c | 5 +++--
-    > > >  1 file changed, 3 insertions(+), 2 deletions(-)
-    > > > 
-    > > > diff --git a/drivers/net/ethernet/faraday/ftgmac100.c
-    > > > b/drivers/net/ethernet/faraday/ftgmac100.c
-    > > > index 030fed65393e..591c9725002b 100644
-    > > > --- a/drivers/net/ethernet/faraday/ftgmac100.c
-    > > > +++ b/drivers/net/ethernet/faraday/ftgmac100.c
-    > > > @@ -1839,8 +1839,9 @@ static int ftgmac100_probe(struct
-    > > > platform_device *pdev)
-    > > >       if (priv->use_ncsi)
-    > > >               netdev->hw_features |= NETIF_F_HW_VLAN_CTAG_FILTER;
-    > > > 
-    > > > -     /* AST2400  doesn't have working HW checksum generation */
-    > > > -     if (np && (of_device_is_compatible(np, "aspeed,ast2400-
-    > > > mac")))
-    > > > +     /* AST2400  and AST2500 doesn't have working HW checksum
-    > > > generation */
-    > > > +     if (np && (of_device_is_compatible(np, "aspeed,ast2400-
-    > > > mac") ||
-    > > > +                of_device_is_compatible(np, "aspeed,ast2500-
-    > > > mac")))
-    > 
-    > Do you recall under what circumstances we need to disable hardware
-    > checksumming?
+    HW checksum generation is not working for AST2500, specially with IPV6
+    over NCSI. All TCP packets with IPv6 get dropped. By disabling this
+    it works perfectly fine with IPV6. As it works for IPV4 so enabled
+    hw checksum back for IPV4.
     
-    Any news on this ? AST2400 has no HW checksum logic in HW, AST2500
-    should work for IPV4 fine, we should only selectively disable it for
-    IPV6.
-
-Ben, I have already sent v2 for this with requested change which only disable 
-for IPV6 in AST2500. I can send it again.
+    Verified with IPV6 enabled and can do ssh.
     
-    Can you do an updated patch ?
+    Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
+    ---
+    Changes since v1:
+     Enabled IPV4 hw checksum generation as it works for IPV4.
     
-    Cheers,
-    Ben.
+     drivers/net/ethernet/faraday/ftgmac100.c | 13 ++++++++++++-
+     1 file changed, 12 insertions(+), 1 deletion(-)
+    
+    diff --git a/drivers/net/ethernet/faraday/ftgmac100.c b/drivers/net/ethernet/faraday/ftgmac100.c
+    index 030fed65393e..0255a28d2958 100644
+    --- a/drivers/net/ethernet/faraday/ftgmac100.c
+    +++ b/drivers/net/ethernet/faraday/ftgmac100.c
+    @@ -1842,8 +1842,19 @@ static int ftgmac100_probe(struct platform_device *pdev)
+     	/* AST2400  doesn't have working HW checksum generation */
+     	if (np && (of_device_is_compatible(np, "aspeed,ast2400-mac")))
+     		netdev->hw_features &= ~NETIF_F_HW_CSUM;
+    +
+    +	/* AST2500 doesn't have working HW checksum generation for IPV6
+    +	 * but it works for IPV4, so disabling hw checksum and enabling
+    +	 * it for only IPV4.
+    +	 */
+    +	if (np && (of_device_is_compatible(np, "aspeed,ast2500-mac"))) {
+    +		netdev->hw_features &= ~NETIF_F_HW_CSUM;
+    +		netdev->hw_features |= NETIF_F_IP_CSUM;
+    +	}
+    +
+     	if (np && of_get_property(np, "no-hw-checksum", NULL))
+    -		netdev->hw_features &= ~(NETIF_F_HW_CSUM | NETIF_F_RXCSUM);
+    +		netdev->hw_features &= ~(NETIF_F_HW_CSUM | NETIF_F_RXCSUM
+    +					 | NETIF_F_IP_CSUM);
+     	netdev->features |= netdev->hw_features;
+     
+     	/* register network device */
+    -- 
+    2.17.1
     
     
 
