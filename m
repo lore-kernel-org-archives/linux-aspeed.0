@@ -1,48 +1,102 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Thu, 10 Oct 2019 11:22:17 +1030
-Subject: [PATCH 1/2] dt-bindings: clock: Add AST2500 RMII RCLK definitions
-In-Reply-To: <CACPK8Xf-f-r4S02GoxYdBYOJi5NGYMCOr6XGVza4vEGAsqzR9w@mail.gmail.com>
-References: <20191008113523.13601-1-andrew@aj.id.au>
- <20191008113523.13601-2-andrew@aj.id.au>
- <CACPK8Xf-f-r4S02GoxYdBYOJi5NGYMCOr6XGVza4vEGAsqzR9w@mail.gmail.com>
-Message-ID: <18ac98e1-82b6-4782-bdfb-56765653e6df@www.fastmail.com>
+From: Brendan Higgins <brendanhiggins@google.com>
+Date: Wed, 9 Oct 2019 17:54:24 -0700
+Subject: i2c-aspeed testing with kunit fake and syzkaller
+In-Reply-To: <CACT4Y+ZXaz31ktL3XBAb+rVXrGw9+nujC0+kUU6fRin-rGXcuA@mail.gmail.com>
+References: <CACT4Y+YJ8qK7CrU2S-TY-DVCdt+aY=Wzq7+iiPoDsdGf-m8G8A@mail.gmail.com>
+ <CACPK8XcaAa8aRjqV+vYzh71KMp6hEwLi+qV6bcQUC5xATm0zzg@mail.gmail.com>
+ <CACT4Y+ZXaz31ktL3XBAb+rVXrGw9+nujC0+kUU6fRin-rGXcuA@mail.gmail.com>
+Message-ID: <CAFd5g45xQvYozyuoFKXXcP6FFBZ6ZOVR-=gQ8J7_MEwWG_QmOg@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-
-
-On Tue, 8 Oct 2019, at 23:07, Joel Stanley wrote:
-> On Tue, 8 Oct 2019 at 11:34, Andrew Jeffery <andrew@aj.id.au> wrote:
+On Wed, Oct 9, 2019 at 12:06 AM Dmitry Vyukov <dvyukov@google.com> wrote:
+>
+> On Wed, Oct 9, 2019 at 8:48 AM Joel Stanley <joel@jms.id.au> wrote:
 > >
-> > The AST2500 has an explicit gate for the RMII RCLK for each of the two
-> > MACs.
+> > On Tue, 8 Oct 2019 at 14:44, Dmitry Vyukov <dvyukov@google.com> wrote:
+> > >
+> > > Hi i2c/aspeed-related people,
+> > >
+> > > Some time ago Brendan and myself did an experiment of testing the
+> > > i2c-aspeed driver in a qemu VM (without any hardware/emulation) using
+> > > kunit-based fake hardware. The fake allowed us to get 10 i2c devices
+> > > successfully probe and appear in /dev/. Which in turn allowed us to
+> > > test the actual driver with syzkaller.
+> > > I will just leave here some details and traces as FYI and for future
+> > > reference. I think this is an important precedent in general.
 > >
-> > Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
-> > ---
-> >  include/dt-bindings/clock/aspeed-clock.h | 2 ++
-> >  1 file changed, 2 insertions(+)
+> > Wow, this is extensive. It will take me some time to digest it.
 > >
-> > diff --git a/include/dt-bindings/clock/aspeed-clock.h b/include/dt-bindings/clock/aspeed-clock.h
-> > index f43738607d77..64e245fb113f 100644
-> > --- a/include/dt-bindings/clock/aspeed-clock.h
-> > +++ b/include/dt-bindings/clock/aspeed-clock.h
-> > @@ -39,6 +39,8 @@
-> >  #define ASPEED_CLK_BCLK                        33
-> >  #define ASPEED_CLK_MPLL                        34
-> >  #define ASPEED_CLK_24M                 35
-> > +#define ASPEED_CLK_GATE_MAC1RCLK       36
-> > +#define ASPEED_CLK_GATE_MAC2RCLK       37
-> 
-> Calling these ASPEED_CLK_GATE breaks the pattern the rest of the
-> driver has in using that name for the clocks that are registered as
-> struct aspeed_clk_gate clocks.
-> 
-> Do you think we should drop the GATE_ to match the existing clocks?
+> > Thanks for sending it along.
+> >
+> > Cheers,
+> >
+> > Joel
+> >
+> >
+> > >
+> > > The kernel branch is here:
+> > > https://github.com/dvyukov/linux/commits/kunit-i2c-stub2
+> > > This is one of kunit branches with this commit on top:
+> > > https://github.com/dvyukov/linux/commit/c9c1706611fdc49679c5bf5bff1e147ab7c7aa79
+> > > This contains lots of hacks to get the fake working on x86 and leave
+> > > persistent devices initialized (rather than shutdown them after
+> > > unit-testing).
+>
+> One thing I should have pointed to is the actual "hardware fake":
+> https://github.com/dvyukov/linux/blob/d154ffa80dff44c8b941814d700b22e6cf4c23c2/drivers/i2c/busses/i2c-aspeed-fake.c
+>
+> Brendan, in this mode kunit prints whole lot of messages re
+> missed/failed expectations, etc. It probably should have a special
+> mode for platform mock when it does not bother about expectations, at
+> least doesn't print anything.
 
-I named them that way because the bits in question do just gate the
-clocks, but I've renamed them to keep the pattern. Will send a v2.
+That's a good point. I will put it on the TODO list. Nevertheless, I
+am afraid there are a lot of things ahead of it (in regard to KUnit).
+(People should let me know if they find this interesting and I will
+try to move it up the priority list.)
 
-Andrew
+> > > This is the kernel config:
+> > > https://gist.githubusercontent.com/dvyukov/72a31dad43b5687e6ffdcdb4cb342175/raw/24b706326e2d9202789fece5bfc17355aadda411/gistfile1.txt
+> > > (some i2c configs + a bunch of debugging configs).
+> > >
+> > > If you boot this kernel with the config in qemu, you should see /dev/i2c-{0,10}.
+> > >
+> > > Probably any syzkaller commit will work, but I just testing on this one:
+> > > https://github.com/google/syzkaller/tree/2ab6c4a4571d4170b0009a5b14b9789b016814b6
+> > > Here is syzkaller config I used:
+> > > https://gist.githubusercontent.com/dvyukov/d0a3c0e9b44cc7d445b36a8a50404ed8/raw/5f6aab34c6515cc4e96dac6cf3a98aaaf5e21b58/gistfile1.txt
+> > >
+> > > Here is kernel coverage we achieved as the result of fuzzing:
+> > > https://drive.google.com/file/d/1JdNshmCWI3crJ3BuVo6uvRuHMBrwH5eB/view?usp=sharing
+> > >
+> > > For crashes, I've got 3 different task hangs:
+> > >
+> > > INFO: task hung in i2c_transfer
+> > > https://gist.githubusercontent.com/dvyukov/25e98a59b643bc868c7489f566ed9eab/raw/67b717488ae9af381a5b0615e5ddf2d226369d3c/gistfile1.txt
+> > >
+> > > INFO: task hung in i2c_smbus_xfer
+> > > https://gist.githubusercontent.com/dvyukov/7ca87fea1b397d46e3393227a34595b9/raw/f5385f025abfc3ad2e91fd4f2616e58c7de8804e/gistfile1.txt
+> > >
+> > > INFO: task hung in aspeed_i2c_master_xfer
+> > > https://gist.githubusercontent.com/dvyukov/dbc51e3ea7034f255c8fd1c99965d91a/raw/a5165e4e6c3b41d593d02fc22996104e468cfab3/gistfile1.txt
+> > >
+> > > And some memory corruptions (non-thread-safe kunit data structures?):
+> > >
+> > > KASAN: use-after-free Read in aspeed_i2c_fake_write_command_reg
+> > > https://gist.githubusercontent.com/dvyukov/6ca5bca5cf7a40a93636360635a4672c/raw/5ad0e7b33907f4b0db102b74c2a11237df612462/gistfile1.txt
+> > >
+> > > KASAN: use-after-free Read in __of_find_property
+> > > https://gist.githubusercontent.com/dvyukov/95ed93a39d38fd215c141b58e5d3ec0f/raw/ea7f2346982a31ab16fca2850f91e1ef11faf687/gistfile1.txt
+> > >
+> > > general protection fault in mock_do_expect
+> > > https://gist.githubusercontent.com/dvyukov/8c2e3def6775d39cb7496b56a77cbcd8/raw/5778337009e21397b484aafe5b24c87ebe64b63f/gistfile1.txt
+> > >
+> > > There are probably a number of things that can be improved in kunit
+> > > platform mock, the fake driver and syzkaller i2c coverage, but this is
+> > > a starting point.
+> > >
+> > > Thanks
