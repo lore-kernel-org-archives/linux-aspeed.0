@@ -1,135 +1,55 @@
 From: Boris Brezillon <boris.brezillon@collabora.com>
-Date: Thu, 10 Oct 2019 09:33:08 +0200
-Subject: [PATCH v2 09/22] mtd: spi-nor: Fix retlen handling in sst_write()
-In-Reply-To: <20190924074533.6618-10-tudor.ambarus@microchip.com>
-References: <20190924074533.6618-1-tudor.ambarus@microchip.com>
- <20190924074533.6618-10-tudor.ambarus@microchip.com>
-Message-ID: <20191010093308.2fe94974@dhcp-172-31-174-146.wireless.concordia.ca>
+Date: Fri, 11 Oct 2019 08:45:22 +0200
+Subject: [PATCH 00/16] mtd: spi-nor: aspeed: AST2600 support and extensions
+In-Reply-To: <CACPK8Xe__AYvrh40vqjwoM=XKJfp5MeqrMARpFUDGWCyJK6jXQ@mail.gmail.com>
+References: <20191004115919.20788-1-clg@kaod.org>
+ <20191009225555.67622339@dhcp-172-31-174-146.wireless.concordia.ca>
+ <CACPK8Xe__AYvrh40vqjwoM=XKJfp5MeqrMARpFUDGWCyJK6jXQ@mail.gmail.com>
+Message-ID: <20191011084503.5b7a7c2c@dhcp-172-31-174-146.wireless.concordia.ca>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, 24 Sep 2019 07:46:21 +0000
-<Tudor.Ambarus@microchip.com> wrote:
+On Thu, 10 Oct 2019 23:47:45 +0000
+Joel Stanley <joel@jms.id.au> wrote:
 
-> From: Tudor Ambarus <tudor.ambarus@microchip.com>
+> On Wed, 9 Oct 2019 at 20:56, Boris Brezillon
+> <boris.brezillon@collabora.com> wrote:
+> >
+> > Hi Cedric,
+> >
+> > On Fri,  4 Oct 2019 13:59:03 +0200
+> > C?dric Le Goater <clg@kaod.org> wrote:
+> >  
+> > > Hello,
+> > >
+> > > This series first extends the support for the Aspeed AST2500 and
+> > > AST2400 SMC driver. It adds Dual Data support and read training giving
+> > > the best read settings for a given chip. Support for the new AST2600
+> > > SoC is added at the end.
+> > >
+> > > I understand that a new spi_mem framework exists and I do have an
+> > > experimental driver using it. But unfortunately, it is difficult to
+> > > integrate the read training. The Aspeed constraints are not compatible
+> > > and i haven't had the time to extend the current framework.  
+> >
+> > Hm, I don't think that's a good reason to push new features to the
+> > existing driver, especially since I asked others to migrate their
+> > drivers to spi-mem in the past. I do understand your concerns, and I'll
+> > let the SPI NOR/MTD maintainers make the final call, but I think it'd
+> > be better for the SPI MEM ecosystem to think about this link-training
+> > API (Vignesh needs it for the Cadence driver IIRC) rather than pushing
+> > this kind of feature to spi-nor controller drivers.  
 > 
-> In case the write of the first byte failed, retlen was incorrectly
-> incremented to *retlen += actual; on the exit path. retlen should be
-> incremented when actual data was written to the flash.
+> As Cedric mentioned, the OpenBMC project has been shipping the read
+> training code for the ast2400/ast2400 for several years now. It would
+> be great to see it in mainline.
 > 
-> Rename 'sst_write_err' label to 'out' as it is no longer generic for
-> all the write errors in the sst_write() method, and may introduce
-> confusion.
+> I think it's reasonable to ask for the driver to be moved to the
+> spi-mem subsystem once it has the required APIs.
 
-Renaming the label is indeed a good thing, but should be done in a
-separate patch.
-
-> 
-> Signed-off-by: Tudor Ambarus <tudor.ambarus@microchip.com>
-> ---
->  drivers/mtd/spi-nor/spi-nor.c | 22 +++++++++++-----------
->  1 file changed, 11 insertions(+), 11 deletions(-)
-> 
-> diff --git a/drivers/mtd/spi-nor/spi-nor.c b/drivers/mtd/spi-nor/spi-nor.c
-> index 0aee068a5835..be5dee622d51 100644
-> --- a/drivers/mtd/spi-nor/spi-nor.c
-> +++ b/drivers/mtd/spi-nor/spi-nor.c
-> @@ -2665,12 +2665,12 @@ static int sst_write(struct mtd_info *mtd, loff_t to, size_t len,
->  		/* write one byte. */
->  		ret = spi_nor_write_data(nor, to, 1, buf);
->  		if (ret < 0)
-> -			goto sst_write_err;
-> +			goto unlock_and_unprep;
->  		WARN(ret != 1, "While writing 1 byte written %i bytes\n",
->  		     (int)ret);
->  		ret = spi_nor_wait_till_ready(nor);
->  		if (ret)
-> -			goto sst_write_err;
-> +			goto unlock_and_unprep;
->  	}
->  	to += actual;
-
-Not sure we need this new label, we can just have:
-
-	actual = 0;
-	/* Start write from odd address. */
-	if (to % 2) {
-		nor->program_opcode = SPINOR_OP_BP;
-
-		/* write one byte. */
-		ret = spi_nor_write_data(nor, to, 1, buf);
-		if (ret < 0)
-			goto out;
-		WARN(ret != 1, "While writing 1 byte written %i
-		bytes\n", (int)ret);
-		ret = spi_nor_wait_till_ready(nor);
-		if (ret)
-			goto out;
-
-		to++;
-		actual++;
-	}
-
->  
-> @@ -2681,12 +2681,12 @@ static int sst_write(struct mtd_info *mtd, loff_t to, size_t len,
->  		/* write two bytes. */
->  		ret = spi_nor_write_data(nor, to, 2, buf + actual);
->  		if (ret < 0)
-> -			goto sst_write_err;
-> +			goto out;
->  		WARN(ret != 2, "While writing 2 bytes written %i bytes\n",
->  		     (int)ret);
->  		ret = spi_nor_wait_till_ready(nor);
->  		if (ret)
-> -			goto sst_write_err;
-> +			goto out;
->  		to += 2;
->  		nor->sst_write_second = true;
->  	}
-> @@ -2694,35 +2694,35 @@ static int sst_write(struct mtd_info *mtd, loff_t to, size_t len,
->  
->  	ret = spi_nor_write_disable(nor);
->  	if (ret)
-> -		goto sst_write_err;
-> +		goto out;
->  
->  	ret = spi_nor_wait_till_ready(nor);
->  	if (ret)
-> -		goto sst_write_err;
-> +		goto out;
->  
->  	/* Write out trailing byte if it exists. */
->  	if (actual != len) {
->  		ret = spi_nor_write_enable(nor);
->  		if (ret)
-> -			goto sst_write_err;
-> +			goto out;
->  
->  		nor->program_opcode = SPINOR_OP_BP;
->  		ret = spi_nor_write_data(nor, to, 1, buf + actual);
->  		if (ret < 0)
-> -			goto sst_write_err;
-> +			goto out;
->  		WARN(ret != 1, "While writing 1 byte written %i bytes\n",
->  		     (int)ret);
->  		ret = spi_nor_wait_till_ready(nor);
->  		if (ret)
-> -			goto sst_write_err;
-> +			goto out;
->  
->  		ret = spi_nor_write_disable(nor);
->  		if (ret)
-> -			goto sst_write_err;
-> +			goto out;
->  
->  		actual += 1;
->  	}
-> -sst_write_err:
-> +out:
->  	*retlen += actual;
->  unlock_and_unprep:
->  	spi_nor_unlock_and_unprep(nor, SPI_NOR_OPS_WRITE);
-
+Except it won't have the necessary APIs unless someone works on it, and
+adding this feature to existing spi-nor drivers won't help achieving
+this goal.
