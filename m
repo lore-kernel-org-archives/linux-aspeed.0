@@ -1,20 +1,18 @@
-From: Vignesh Raghavendra <vigneshr@ti.com>
-Date: Fri, 11 Oct 2019 18:43:33 +0530
+From: Cédric Le Goater <clg@kaod.org>
+Date: Fri, 11 Oct 2019 15:55:25 +0200
 Subject: [PATCH 04/16] mtd: spi-nor: aspeed: Add read training
 In-Reply-To: <20191011142805.6cc3905c@dhcp-172-31-174-146.wireless.concordia.ca>
 References: <20191004115919.20788-1-clg@kaod.org>
  <20191004115919.20788-5-clg@kaod.org>
  <20191011142805.6cc3905c@dhcp-172-31-174-146.wireless.concordia.ca>
-Message-ID: <a933999d-cb3d-ef3c-8a0d-a1f022817543@ti.com>
+Message-ID: <3244b1ce-587c-6f12-cc9c-7eee0354e76b@kaod.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Cedric,
-
-On 11/10/19 5:58 PM, Boris Brezillon wrote:
+On 11/10/2019 14:28, Boris Brezillon wrote:
 > On Fri,  4 Oct 2019 13:59:07 +0200
 > C?dric Le Goater <clg@kaod.org> wrote:
 > 
@@ -42,29 +40,33 @@ On 11/10/19 5:58 PM, Boris Brezillon wrote:
 > IIUC, you're using a SPINOR_OP_READ operation to read the golden
 > buffer, and if I'm right, you start reading at offset 0 of the dirmap
 > window (offset 0 in the flash), so basically the first block in the NOR.
+
+Yes.
+
 > What happens if this block is erased? In that case your golden buf will
 > contain only 0xff values, and the read calibration is likely to be
-> useless (how can you determine if timings are good when IO pins always
+> useless 
+
+yes. that is why we have the aspeed_smc_check_calib_data() routine to
+check that the data read makes some sense. If this is not the case, then :
+
+	 "Calibration area too uniform, using low speed"
+
+> (how can you determine if timings are good when IO pins always
 > stay high). Don't we have a command that return non-ff/non-0 data while
-> still being predictable and immutable? Do you expect users to always
+> still being predictable and immutable? 
+
+Not that I know of on these controllers.
+
+> Do you expect users to always
 > flash a pattern that helps calibrating those delays?
+
+This is the case on the OpenBMC systems, AFAICT. 
+
+u-boot.bin should be the data read on the FMC controller and the 
+SPI controller contains the host Firmware which is as random.   
+
 > 
-
-Yes, this is precisely my concern as well. I have been developing
-training sequence for cadence-quadspi controller (requirements are
-similar to what you have here) and found that its better to use read
-only data such as SFDP table data to calibrate. Cadence-quadspi requires
-training only in higher performance modes like Quad/Octal DTR mode and
-needs 16 bytes of known data for calibration. Hence SFDP works well for
-my case.
-But the problem here is that, aspeed controller needs 16K of known data.
-SFDP table is not that big and read beyond address space is not required
-to wrap around.
-Wondering if you really need to read 16K amount of data for calibration?
-
-Regards
-Vignesh
-
 >> +}
 >> +
 >> +static int aspeed_smc_optimize_read(struct aspeed_smc_chip *chip,
@@ -135,6 +137,3 @@ Vignesh
 > 
 > 
 
--- 
-Regards
-Vignesh
