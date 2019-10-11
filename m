@@ -1,38 +1,31 @@
-From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-Date: Thu, 10 Oct 2019 16:52:41 -0700
-Subject: [PATCH] i2c: aspeed: fix master pending state handling
-In-Reply-To: <49244d71-cbc3-f2ae-97ac-74b5f68a4816@fb.com>
-References: <20191009212034.20325-1-jae.hyun.yoo@linux.intel.com>
- <49244d71-cbc3-f2ae-97ac-74b5f68a4816@fb.com>
-Message-ID: <4ca4083d-23ff-0475-f5fd-ec3745b440b2@linux.intel.com>
+From: Jakub Kicinski <jakub.kicinski@netronome.com>
+Date: Thu, 10 Oct 2019 18:16:51 -0700
+Subject: [PATCH v2] ftgmac100: Disable HW checksum generation on AST2500
+In-Reply-To: <4B7340B5-C35C-4B18-8D8C-B5B8D16BA551@fb.com>
+References: <20190911194453.2595021-1-vijaykhemka@fb.com>
+ <4B7340B5-C35C-4B18-8D8C-B5B8D16BA551@fb.com>
+Message-ID: <20191010181651.5abd4c21@cakuba.netronome.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 10/10/2019 4:29 PM, Tao Ren wrote:
-> On 10/9/19 2:20 PM, Jae Hyun Yoo wrote:
->> In case of master pending state, it should not trigger a master
->> command, otherwise data could be corrupted because this H/W shares
->> the same data buffer for slave and master operations. It also means
->> that H/W command queue handling is unreliable because of the buffer
->> sharing issue. To fix this issue, it clears command queue if a
->> master command is queued in pending state to use S/W solution
->> instead of H/W command queue handling. Also, it refines restarting
->> mechanism of the pending master command.
->>
->> Fixes: 2e57b7cebb98 ("i2c: aspeed: Add multi-master use case support")
->> Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+On Thu, 10 Oct 2019 19:20:47 +0000, Vijay Khemka wrote:
+> Resending this patch again. 
+
+Perhaps I'm missing context but what's the intention here?
+
+In case this is resubmitting the patch for inclusion in the upstream
+kernel you need to send it out properly with git send-email or such..
+
+> ?On 9/11/19, 1:05 PM, "Vijay Khemka" <vijaykhemka@fb.com> wrote:
 > 
-> Tested-by: Tao Ren <taoren@fb.com>
-> 
-> Tested the patch on Facebook Minipack BMC (multi-master i2c-0 environment) and
-> everything looks good to me.
-
-Thanks for sharing the test result and your code reviews.
-
-Best,
-
-Jae
-
+>     HW checksum generation is not working for AST2500, specially with IPV6
+>     over NCSI. All TCP packets with IPv6 get dropped. By disabling this
+>     it works perfectly fine with IPV6. As it works for IPV4 so enabled
+>     hw checksum back for IPV4.
+>     
+>     Verified with IPV6 enabled and can do ssh.
+>     
+>     Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
