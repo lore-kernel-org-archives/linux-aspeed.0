@@ -1,29 +1,48 @@
-From: Rob Herring <robh@kernel.org>
-Date: Fri, 11 Oct 2019 09:33:48 -0500
-Subject: [PATCH v2 1/4] dt-bindings: interrupt-controller: Add Aspeed SCU
- interrupt controller
-In-Reply-To: <1569617929-29055-2-git-send-email-eajames@linux.ibm.com>
-References: <1569617929-29055-1-git-send-email-eajames@linux.ibm.com>
- <1569617929-29055-2-git-send-email-eajames@linux.ibm.com>
-Message-ID: <20191011143348.GA22630@bogus>
+From: Cédric Le Goater <clg@kaod.org>
+Date: Fri, 11 Oct 2019 16:37:49 +0200
+Subject: [PATCH 04/16] mtd: spi-nor: aspeed: Add read training
+In-Reply-To: <20191011162919.77b05cf8@dhcp-172-31-174-146.wireless.concordia.ca>
+References: <20191004115919.20788-1-clg@kaod.org>
+ <20191004115919.20788-5-clg@kaod.org>
+ <20191011142805.6cc3905c@dhcp-172-31-174-146.wireless.concordia.ca>
+ <3244b1ce-587c-6f12-cc9c-7eee0354e76b@kaod.org>
+ <20191011162919.77b05cf8@dhcp-172-31-174-146.wireless.concordia.ca>
+Message-ID: <b1db5178-69b4-e061-4237-5b24d14aeb1f@kaod.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, 27 Sep 2019 15:58:46 -0500, Eddie James wrote:
-> Document the Aspeed SCU interrupt controller and add an include file
-> for the interrupts it provides.
+On 11/10/2019 16:29, Boris Brezillon wrote:
+> On Fri, 11 Oct 2019 15:55:25 +0200
+> C?dric Le Goater <clg@kaod.org> wrote:
 > 
-> Signed-off-by: Eddie James <eajames@linux.ibm.com>
-> ---
->  .../interrupt-controller/aspeed,ast2xxx-scu-ic.txt | 26 ++++++++++++++++++++++
->  MAINTAINERS                                        |  7 ++++++
->  .../interrupt-controller/aspeed-scu-ic.h           | 23 +++++++++++++++++++
->  3 files changed, 56 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/interrupt-controller/aspeed,ast2xxx-scu-ic.txt
->  create mode 100644 include/dt-bindings/interrupt-controller/aspeed-scu-ic.h
+>  
+>>> (how can you determine if timings are good when IO pins always
+>>> stay high). Don't we have a command that return non-ff/non-0 data while
+>>> still being predictable and immutable?   
+>>
+>> Not that I know of on these controllers.
 > 
+> It's not really a controller thing, more a chip thing. The ideal
+> solution would be to have a loopback mode or an internal SRAM you can
+> write then read back, but AFAICT it doesn't exists. There's the SFDP
+> table as Vignesh mentioned, but we have the following problems:
+> 
+> 1/ it might be too small (definitely < 16k)
+> 2/ some NORs don't support SFDP (maybe not the ones we care about
+>    though)
 
-Reviewed-by: Rob Herring <robh@kernel.org>
+
+Yes. The approach we follow has good results, once the data is 
+qualified as good enough for the training. 
+
+We had some issues back in 2014 with some chips on early systems 
+and I think we could reduce the amount of the data read and the 
+number of loops now. 
+
+Thanks,
+
+C. 
+
