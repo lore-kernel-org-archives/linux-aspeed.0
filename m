@@ -1,32 +1,34 @@
-From: Rob Herring <robh@kernel.org>
-Date: Tue, 15 Oct 2019 17:24:15 -0500
-Subject: [PATCH 1/7] dt-bindings: pinctrl: aspeed-g6: Rework SD3 function
- and groups
-In-Reply-To: <20191008044153.12734-2-andrew@aj.id.au>
+From: Linus Walleij <linus.walleij@linaro.org>
+Date: Wed, 16 Oct 2019 13:19:01 +0200
+Subject: [PATCH 0/7] pinctrl: Fixes for AST2600 support
+In-Reply-To: <20191008044153.12734-1-andrew@aj.id.au>
 References: <20191008044153.12734-1-andrew@aj.id.au>
- <20191008044153.12734-2-andrew@aj.id.au>
-Message-ID: <20191015222415.GA10977@bogus>
+Message-ID: <CACRpkda5cWaA7R3XzyiERCCgwUrjnXd+wCBeKvt-wtjex7wNDg@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue,  8 Oct 2019 15:11:47 +1030, Andrew Jeffery wrote:
-> Rename SD3 functions and groups to EMMC to better reflect their intended
-> use before the binding escapes too far into the wild. Also clean up the
-> SD3 pin groups to eliminate some silliness that slipped through the
-> cracks (SD3DAT[4-7]) by unifying them into three new groups: EMMCG1,
-> EMMCG4 and EMMCG8 for 1, 4 and 8-bit data buses respectively.
-> 
-> Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
-> ---
-> Unfortunately reflowing the list creates a lot of noise in this change. As
-> mentioned the SD3DAT[4-7] groups are renamed, as is the SD3 function. There
-> should be no functional changes beyond that.
-> 
->  .../pinctrl/aspeed,ast2600-pinctrl.yaml       | 86 +++++++++----------
->  1 file changed, 42 insertions(+), 44 deletions(-)
-> 
+On Tue, Oct 8, 2019 at 6:41 AM Andrew Jeffery <andrew@aj.id.au> wrote:
 
-Reviewed-by: Rob Herring <robh@kernel.org>
+> This series resolves several issues found in testing by Johnny Huang from
+> ASPEED, who also contributed the patches to fix them. We'll have more patches
+> from him in the near future (which I'm pretty happy about).
+>
+> The major issue resolved is the way I grouped the eMMC pins. What I had was
+> ugly and I want to get rid of it before the binding is solidified with the 5.4
+> release.
+
+Should some of these go in with fixes? All of them? Or just some?
+I applied them to devel right now (for v5.5).
+
+> The remaining fixes are minor issues that stem from lack of documentation or
+> understanding on my part, and at least one brain-fart.
+
+Do they need to go in to v5.4 or not?
+
+I need a shortlist of anything that should go into v5.4 if anything.
+
+Yours,
+Linus Walleij
