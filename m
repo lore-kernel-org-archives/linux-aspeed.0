@@ -1,34 +1,24 @@
 From: Wolfram Sang <wsa@the-dreams.de>
-Date: Mon, 21 Oct 2019 14:16:29 +0200
-Subject: AST2600 i2c irq issue
-In-Reply-To: <8c62b118777c44d1bf8e1a3c32175644@TWMBX02.aspeed.com>
-References: <CACPK8XdqFkPgCQcgpM5C_YwfJ86Lmk=hG5zTcfbCDCMncXCJMg@mail.gmail.com>
- <f9fecc04-2a9a-4cbd-a1ff-ffb680b0fec2@linux.vnet.ibm.com>
- <dbb8635e-a95a-3951-cd65-3428adc461ec@linux.intel.com>
- <8c62b118777c44d1bf8e1a3c32175644@TWMBX02.aspeed.com>
-Message-ID: <20191021121629.GE1145@ninjato>
+Date: Mon, 21 Oct 2019 14:23:12 +0200
+Subject: [PATCH 1/2] i2c: Aspeed: Add AST2600 compatible
+In-Reply-To: <1568392510-866-2-git-send-email-eajames@linux.ibm.com>
+References: <1568392510-866-1-git-send-email-eajames@linux.ibm.com>
+ <1568392510-866-2-git-send-email-eajames@linux.ibm.com>
+Message-ID: <20191021122312.GH1145@ninjato>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-
->          spin_lock(&bus->lock);
->          irq_received = readl(bus->base + ASPEED_I2C_INTR_STS_REG);
-> +       if (!irq_received)
-> +               return IRQ_NONE;
-> +
->          /* Ack all interrupts except for Rx done */
->          writel(irq_received & ~ASPEED_I2CD_INTR_RX_DONE,
->                 bus->base + ASPEED_I2C_INTR_STS_REG);
+On Fri, Sep 13, 2019 at 11:35:09AM -0500, Eddie James wrote:
+> The driver default behavior works with the AST2600. We need a new
+> compatible though to make sure the driver doesn't enable AST2400 or
+> AST2500 behavior.
 > 
-> 
-> I think it's a right fix for the issue. At least, we need to prevent
-> any driver state corruption. The state machine would run correctly if
-> we filtering the garbage interrupt out.
+> Signed-off-by: Eddie James <eajames@linux.ibm.com>
 
-Just unlock the spinlock before you return...
+Applied to for-next, thanks!
 
 -------------- next part --------------
 A non-text attachment was scrubbed...
@@ -36,4 +26,4 @@ Name: signature.asc
 Type: application/pgp-signature
 Size: 833 bytes
 Desc: not available
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20191021/eeb5c44a/attachment.sig>
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20191021/2281d57d/attachment.sig>
