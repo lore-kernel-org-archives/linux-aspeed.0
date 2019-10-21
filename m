@@ -1,35 +1,34 @@
-From: Boris Brezillon <boris.brezillon@collabora.com>
-Date: Fri, 11 Oct 2019 16:29:19 +0200
-Subject: [PATCH 04/16] mtd: spi-nor: aspeed: Add read training
-In-Reply-To: <3244b1ce-587c-6f12-cc9c-7eee0354e76b@kaod.org>
-References: <20191004115919.20788-1-clg@kaod.org>
- <20191004115919.20788-5-clg@kaod.org>
- <20191011142805.6cc3905c@dhcp-172-31-174-146.wireless.concordia.ca>
- <3244b1ce-587c-6f12-cc9c-7eee0354e76b@kaod.org>
-Message-ID: <20191011162919.77b05cf8@dhcp-172-31-174-146.wireless.concordia.ca>
+From: Wolfram Sang <wsa@the-dreams.de>
+Date: Mon, 21 Oct 2019 14:09:45 +0200
+Subject: [PATCH] i2c: aspeed: fix master pending state handling
+In-Reply-To: <20191009212034.20325-1-jae.hyun.yoo@linux.intel.com>
+References: <20191009212034.20325-1-jae.hyun.yoo@linux.intel.com>
+Message-ID: <20191021120945.GC1145@ninjato>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, 11 Oct 2019 15:55:25 +0200
-C?dric Le Goater <clg@kaod.org> wrote:
-
- 
-> > (how can you determine if timings are good when IO pins always
-> > stay high). Don't we have a command that return non-ff/non-0 data while
-> > still being predictable and immutable?   
+On Wed, Oct 09, 2019 at 02:20:34PM -0700, Jae Hyun Yoo wrote:
+> In case of master pending state, it should not trigger a master
+> command, otherwise data could be corrupted because this H/W shares
+> the same data buffer for slave and master operations. It also means
+> that H/W command queue handling is unreliable because of the buffer
+> sharing issue. To fix this issue, it clears command queue if a
+> master command is queued in pending state to use S/W solution
+> instead of H/W command queue handling. Also, it refines restarting
+> mechanism of the pending master command.
 > 
-> Not that I know of on these controllers.
+> Fixes: 2e57b7cebb98 ("i2c: aspeed: Add multi-master use case support")
+> Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
 
-It's not really a controller thing, more a chip thing. The ideal
-solution would be to have a loopback mode or an internal SRAM you can
-write then read back, but AFAICT it doesn't exists. There's the SFDP
-table as Vignesh mentioned, but we have the following problems:
+Applied to for-current, thanks!
 
-1/ it might be too small (definitely < 16k)
-2/ some NORs don't support SFDP (maybe not the ones we care about
-   though)
-
-
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 833 bytes
+Desc: not available
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20191021/e070e653/attachment.sig>
