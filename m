@@ -1,137 +1,127 @@
 From: Tao Ren <taoren@fb.com>
-Date: Mon, 21 Oct 2019 12:48:18 -0700
-Subject: [PATCH 2/4] ARM: dts: aspeed: cmm: include dtsi for common network
- BMC devices
+Date: Mon, 21 Oct 2019 12:48:17 -0700
+Subject: [PATCH 1/4] ARM: dts: aspeed: add dtsi for Facebook AST2500 Network
+ BMCs
 In-Reply-To: <20191021194820.293556-1-taoren@fb.com>
 References: <20191021194820.293556-1-taoren@fb.com>
-Message-ID: <20191021194820.293556-3-taoren@fb.com>
+Message-ID: <20191021194820.293556-2-taoren@fb.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The patch simplifies CMM device tree by including dtsi to define devices
-which are common to Facebook AST2500 Network BMC platforms.
-
-Below is the summary of changes comparing with previous dts version:
-  - enabling the second firmware flash.
-  - enabling the emmc device in slot #0.
+Introduce "facebook-netbmc-ast2500-common.dtsi" which is included by all
+Facebook AST2500 Network BMC platforms. The major purpose is to minimize
+duplicated device entries cross Facebook Network BMC dts files.
 
 Signed-off-by: Tao Ren <taoren@fb.com>
 ---
- arch/arm/boot/dts/aspeed-bmc-facebook-cmm.dts | 66 +++++--------------
- 1 file changed, 16 insertions(+), 50 deletions(-)
+ .../dts/facebook-netbmc-ast2500-common.dtsi   | 96 +++++++++++++++++++
+ 1 file changed, 96 insertions(+)
+ create mode 100644 arch/arm/boot/dts/facebook-netbmc-ast2500-common.dtsi
 
-diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-cmm.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-cmm.dts
-index d519d307aa2a..0a031132594a 100644
---- a/arch/arm/boot/dts/aspeed-bmc-facebook-cmm.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-facebook-cmm.dts
-@@ -2,7 +2,7 @@
- // Copyright (c) 2018 Facebook Inc.
- /dts-v1/;
- 
--#include "aspeed-g5.dtsi"
-+#include "facebook-netbmc-ast2500-common.dtsi"
- 
- / {
- 	model = "Facebook Backpack CMM BMC";
-@@ -53,10 +53,6 @@
- 		bootargs = "console=ttyS1,9600n8 root=/dev/ram rw earlyprintk";
- 	};
- 
--	memory at 80000000 {
--		reg = <0x80000000 0x20000000>;
--	};
--
- 	ast-adc-hwmon {
- 		compatible = "iio-hwmon";
- 		io-channels = <&adc 0>, <&adc 1>, <&adc 2>, <&adc 3>,
-@@ -64,39 +60,7 @@
- 	};
- };
- 
--&pinctrl {
--	aspeed,external-nodes = <&gfx &lhc>;
--};
--
--/*
-- * Update reset type to "system" (full chip) to fix warm reboot hang issue
-- * when reset type is set to default ("soc", gated by reset mask registers).
-- */
--&wdt1 {
--	status = "okay";
--	aspeed,reset-type = "system";
--};
--
--/*
-- * wdt2 is not used by Backpack CMM.
-- */
--&wdt2 {
--	status = "disabled";
--};
--
--&fmc {
--	status = "okay";
--	flash at 0 {
--		status = "okay";
--		m25p,fast-read;
--		label = "bmc";
--#include "facebook-bmc-flash-layout.dtsi"
--	};
--};
--
- &uart1 {
--	status = "okay";
--	pinctrl-names = "default";
- 	pinctrl-0 = <&pinctrl_txd1_default
- 		     &pinctrl_rxd1_default
- 		     &pinctrl_ncts1_default
-@@ -107,8 +71,6 @@
- };
- 
- &uart3 {
--	status = "okay";
--	pinctrl-names = "default";
- 	pinctrl-0 = <&pinctrl_txd3_default
- 		     &pinctrl_rxd3_default
- 		     &pinctrl_ncts3_default
-@@ -123,17 +85,6 @@
- 		     &pinctrl_rxd4_default>;
- };
- 
--&uart5 {
--	status = "okay";
--};
--
--&mac1 {
--	status = "okay";
--	no-hw-checksum;
--	pinctrl-names = "default";
--	pinctrl-0 = <&pinctrl_rgmii2_default &pinctrl_mdio2_default>;
--};
--
- /*
-  * I2C bus reserved for communication with COM-E.
-  */
-@@ -380,3 +331,18 @@
- &ehci1 {
- 	status = "okay";
- };
+diff --git a/arch/arm/boot/dts/facebook-netbmc-ast2500-common.dtsi b/arch/arm/boot/dts/facebook-netbmc-ast2500-common.dtsi
+new file mode 100644
+index 000000000000..7a395ba56512
+--- /dev/null
++++ b/arch/arm/boot/dts/facebook-netbmc-ast2500-common.dtsi
+@@ -0,0 +1,96 @@
++// SPDX-License-Identifier: GPL-2.0+
++// Copyright (c) 2019 Facebook Inc.
 +
-+&vhub {
++#include "aspeed-g5.dtsi"
++
++/ {
++	memory at 80000000 {
++		reg = <0x80000000 0x40000000>;
++	};
++};
++
++/*
++ * Update reset type to "system" (full chip) to fix warm reboot hang issue
++ * when reset type is set to default ("soc", gated by reset mask registers).
++ */
++&wdt1 {
++	status = "okay";
++	aspeed,reset-type = "system";
++};
++
++&wdt2 {
 +	status = "disabled";
 +};
 +
-+&sdhci0 {
++&uart1 {
++	status = "okay";
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_txd1_default
++		     &pinctrl_rxd1_default>;
++};
++
++&uart3 {
++	status = "okay";
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_txd3_default
++		     &pinctrl_rxd3_default>;
++};
++
++&uart5 {
++	status = "okay";
++};
++
++&fmc {
 +	status = "okay";
 +
++	fmc_flash0: flash at 0 {
++		status = "okay";
++		m25p,fast-read;
++		label = "spi0.0";
++
++#include "facebook-bmc-flash-layout.dtsi"
++	};
++
++	fmc_flash1: flash at 1 {
++		status = "okay";
++		m25p,fast-read;
++		label = "spi0.1";
++
++		partitions {
++			compatible = "fixed-partitions";
++			#address-cells = <1>;
++			#size-cells = <1>;
++
++			flash1 at 0 {
++				reg = <0x0 0x2000000>;
++				label = "flash1";
++			};
++		};
++	};
++};
++
++&mac1 {
++	status = "okay";
++	no-hw-checksum;
 +	pinctrl-names = "default";
-+	pinctrl-0 = <&pinctrl_sd1_default>;
++	pinctrl-0 = <&pinctrl_rgmii2_default &pinctrl_mdio2_default>;
++};
++
++&rtc {
++	status = "okay";
++};
++
++&vhub {
++	status = "okay";
++};
++
++&sdmmc {
++	status = "okay";
 +};
 +
 +&sdhci1 {
-+	status = "disabled";
++	status = "okay";
++
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_sd2_default>;
 +};
 -- 
 2.17.1
