@@ -1,125 +1,400 @@
-From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-Date: Tue, 22 Oct 2019 10:44:55 -0700
-Subject: [PATCH i2c-next 1/2] dt-bindings: i2c: aspeed: add hardware
- timeout support
-In-Reply-To: <b98827fa-462a-060b-efc7-27fe5d7742ff@axentia.se>
-References: <20191021202414.17484-1-jae.hyun.yoo@linux.intel.com>
- <20191021202414.17484-2-jae.hyun.yoo@linux.intel.com>
- <0a629f7b-b829-c332-27d8-dc825205ff72@axentia.se>
- <7abf933b-cb18-10af-9c1b-163ec65ffae5@linux.intel.com>
- <b98827fa-462a-060b-efc7-27fe5d7742ff@axentia.se>
-Message-ID: <7806ece8-1d7c-7aa8-20af-6f5f964bec64@linux.intel.com>
+From: Eddie James <eajames@linux.vnet.ibm.com>
+Date: Tue, 22 Oct 2019 15:24:44 -0500
+Subject: AST2600 i2c irq issue
+In-Reply-To: <8c62b118777c44d1bf8e1a3c32175644@TWMBX02.aspeed.com>
+References: <CACPK8XdqFkPgCQcgpM5C_YwfJ86Lmk=hG5zTcfbCDCMncXCJMg@mail.gmail.com>
+ <f9fecc04-2a9a-4cbd-a1ff-ffb680b0fec2@linux.vnet.ibm.com>
+ <dbb8635e-a95a-3951-cd65-3428adc461ec@linux.intel.com>
+ <8c62b118777c44d1bf8e1a3c32175644@TWMBX02.aspeed.com>
+Message-ID: <333e959f-9296-b6d5-9442-b979a8abd50d@linux.vnet.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 10/22/2019 1:45 AM, Peter Rosin wrote:
-> On 2019-10-21 23:57, Jae Hyun Yoo wrote:
->> Hi Peter,
->>
->> On 10/21/2019 2:05 PM, Peter Rosin wrote:
->>> On 2019-10-21 22:24, Jae Hyun Yoo wrote:
->>>> Append a binding to support hardware timeout feature.
->>>>
->>>> Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
->>>> ---
->>>>    Documentation/devicetree/bindings/i2c/i2c-aspeed.txt | 2 ++
->>>>    1 file changed, 2 insertions(+)
->>>>
->>>> diff --git a/Documentation/devicetree/bindings/i2c/i2c-aspeed.txt b/Documentation/devicetree/bindings/i2c/i2c-aspeed.txt
->>>> index b47f6ccb196a..133bfedf4cdd 100644
->>>> --- a/Documentation/devicetree/bindings/i2c/i2c-aspeed.txt
->>>> +++ b/Documentation/devicetree/bindings/i2c/i2c-aspeed.txt
->>>> @@ -17,6 +17,8 @@ Optional Properties:
->>>>    - bus-frequency	: frequency of the bus clock in Hz defaults to 100 kHz when not
->>>>    		  specified
->>>>    - multi-master	: states that there is another master active on this bus.
->>>> +- aspeed,hw-timeout-ms	: Hardware timeout in milliseconds. If it's not
->>>> +			  specified, the H/W timeout feature will be disabled.
->>>>    
->>>>    Example:
->>>>    
->>>>
->>>
->>> Some SMBus clients support a smbus-timeout-disable binding for disabling
->>> timeouts like this, for cases where the I2C adapter in question on occasion
->>> is unable to keep the pace. Adding that property thus avoids undesired
->>> timeouts when the client is SMBus conformant without it. Your new binding
->>> is the reverse situation, where you want to add a timeout where one is
->>> otherwise missing.
->>>
->>> Anyway, since I2C does not have a specified lowest possible frequency, this
->>> feels like something that is more in the SMBus arena. Should the property
->>> perhaps be a generic property named smbus-timeout-ms, or something like
->>> that?
->>
->> Well, I tried upstreaming of the generic timeout property a year ago but
->> I agreed that the generic bus timeout property can be set by an ioctl
->> command so it didn't need to be added into device tree at that time. Not
->> sure if any need has come recently but I haven't heard that. This driver
->> still uses the generic timeout property which is provided by i2c core
->> for handling command timeouts, and it's out of scope from this patch
->> series.
->>
->>> If the above is not wanted or appropriate, then I would personally prefer
->>> aspeed,bus-timeout-ms over aspeed,hw-timeout-ms. To me, hw-timeout-ms sounds
->>> like a (more serious) timeout between the CPU and the I2C peripheral unit
->>> or something like that. But I don't care deeply...
->>
->> Changes I submitted in this patch set is for a different purpose which
->> is very Aspeed H/W specific, and actually it's a more serious timeout
->> setting indeed. If this H/W is used in multi-master environment, it
->> could meet a H/W hang that freezes itself in slave mode and it can't
->> escape from the state. To resolve the specific case, this H/W provides
->> self-recovery feature which monitors abnormal state of SDA, SCL and its
->> H/W state machine using the timeout setting to determine the escape
->> condition.
-> 
-> Are you saying that the aspeed HW is buggy and that this abnormal state
-> is self inflicted by the aspeed HW even if other masters on the bus
-> behave sanely? Because I didn't quite read it that way at all...
 
-I don't think it's an Aspeed HW bug. Actually, this HW can be exposed to
-very severe environments if it is used as a Baseboard Management
-Controller which needs two or more multi-masters on a bus depends on
-HW design. Also, it should expect unknown or buggy device attachment
-on a bus through add-on card slots. Aspeed HW provides HW timeout
-feature to support exceptional cases handling which comes from the
-severe use cases.
+On 10/18/19 8:36 PM, Ryan Chen wrote:
+> Hello Joel,
+> 	Could you enable kernel config CONFIG_I2C_DEBUG_BUS? And send me the log.
+>
+> 	And also add following in aspeed_i2c_bus_irq function
+>
+> 	........................
+> 	irq_received = readl(bus->base + ASPEED_I2C_INTR_STS_REG);
+> 	+ irq_received &= 0xf000ffff;	
 
-> To me, it sounded *exactly* like the state I2C clients end up in when an
-> I2C master "dies" and stops communicating in the middle of a transaction.
-> I.e. the thing that the SMBus timeout is designed to prevent (and the
-> state the I2C nine-clk-recovery sequence addresses). The only twist (that
-> I saw) was that the aspeed HW is also a master and that the aspeed master
-> driver is completely locked out from the bus while some obnoxious master
-> fails to complete its transaction (or whatever it was up to).
 
-If this HW runs on a single-master bus, any master dying issue will be
-cured by recovery logic which this driver already has and the logic uses
-the bus timeout setting you are saying.
+Hi Ryan,
 
-This patch set is mainly focusing on a 'slave mode hang' issue on a
-'multi-master' bus which can't be covered by the recovery logic.
+I dumped the I2C register state at each IRQ like you mentioned. This was 
+the kernel log in this case:
 
-> If this can only be triggered when the HW is acting as a slave, and by
-> aborted or otherwise funky master activity on the bus, then I wouldn't
-> call it an HW issue. Then it would be a bus issue. I.e. something needing
-> a bus-timeout instead of a hw-timeout.
+[?? 39.266308] aspeed-i2c-bus 1e78a280.i2c-bus: master failed to RX
+[?? 39.273303] aspeed-i2c-bus 1e78a280.i2c-bus: irq handled != irq. 
+expected 0x00000014, but was 0x00000010
 
-Here is an example. In a multi-node BMC system, a peer master can be
-shutdown in the middle of transaction, then this Aspeed HW keeps waiting
-for a next event from the peer master but it can't happen because the
-peer master was already shutdown. If we enable the 'slave inactive
-timeout feature' using the HW timeout setting, the this HW can escape
-from the waiting state. If we don't, this HW hangs forever in the
-waiting state and it's the reason why I implemented this patch set.
+The gXX registers are the global i2c registers (not specific to the bus).
 
-The hw-timeout setting needs fine tuning depends on HW environment so
-it should be different from the bus-timeout.
+0: irq[00000000] before[inactive] after[start]
+ ??? 00[00008001]
+ ??? 04[007ee005]
+ ??? 08[00000000]
+ ??? 0c[0000607f]
+ ??? 10[00000000]
+ ??? 14[0a060000]
+ ??? 18[00000080]
+ ??? 1c[00000000]
+ ??? 20[000004e1]
+ ??? 24[fffffff7]
+ ??? 28[00000000]
+ ??? 2c[fffffff7]
+ ??? 30[00000000]
+ ??? g00[00000000]
+ ??? g04[00000000]
+ ??? g08[00000000]
+ ??? g0c[00000000]
+ ??? g10[00000000]
+1: irq[00000001] before[start] after[tx_first]
+ ??? 00[00008001]
+ ??? 04[007ee005]
+ ??? 08[00000000]
+ ??? 0c[0000607f]
+ ??? 10[00000000]
+ ??? 14[0c430000]
+ ??? 18[00000080]
+ ??? 1c[00000000]
+ ??? 20[0000e2e2]
+ ??? 24[fffffff7]
+ ??? 28[00000000]
+ ??? 2c[fffffff7]
+ ??? 30[00000000]
+ ??? g00[00000000]
+ ??? g04[00000000]
+ ??? g08[00000000]
+ ??? g0c[00000000]
+ ??? g10[00000000]
+2: irq[00000001] before[tx_first] after[tx]
+ ??? 00[00008001]
+ ??? 04[007ee005]
+ ??? 08[00000000]
+ ??? 0c[0000607f]
+ ??? 10[00000000]
+ ??? 14[0c430000]
+ ??? 18[00000080]
+ ??? 1c[00000000]
+ ??? 20[0000e2e2]
+ ??? 24[fffffff7]
+ ??? 28[00000000]
+ ??? 2c[fffffff7]
+ ??? 30[00000000]
+ ??? g00[00000000]
+ ??? g04[00000000]
+ ??? g08[00000000]
+ ??? g0c[00000000]
+ ??? g10[00000000]
+3: irq[00000001] before[start] after[start]
+ ??? 00[00008001]
+ ??? 04[007ee005]
+ ??? 08[00000000]
+ ??? 0c[0000607f]
+ ??? 10[00000000]
+ ??? 14[0c430000]
+ ??? 18[00000080]
+ ??? 1c[00000000]
+ ??? 20[0000e289]
+ ??? 24[fffffff7]
+ ??? 28[00000000]
+ ??? 2c[fffffff7]
+ ??? 30[00000000]
+ ??? g00[00000000]
+ ??? g04[00000000]
+ ??? g08[00000000]
+ ??? g0c[00000000]
+ ??? g10[00000000]
+4: irq[00000005] before[start] after[rx_first]
+ ??? 00[00008001]
+ ??? 04[007ee005]
+ ??? 08[00000000]
+ ??? 0c[0000607f]
+ ??? 10[00000004]
+ ??? 14[0c430000]
+ ??? 18[00000080]
+ ??? 1c[00000000]
+ ??? 20[000000e3]
+ ??? 24[fffffff7]
+ ??? 28[00000000]
+ ??? 2c[fffffff7]
+ ??? 30[00000000]
+ ??? g00[00000010]
+ ??? g04[00000000]
+ ??? g08[00000000]
+ ??? g0c[00000000]
+ ??? g10[00000000]
+5: irq[00000005] before[rx_first] after[rx]
+ ??? 00[00008001]
+ ??? 04[007ee005]
+ ??? 08[00000000]
+ ??? 0c[0000607f]
+ ??? 10[00000004]
+ ??? 14[0c430000]
+ ??? 18[00000080]
+ ??? 1c[00000000]
+ ??? 20[000000e3]
+ ??? 24[fffffff7]
+ ??? 28[00000000]
+ ??? 2c[fffffff7]
+ ??? 30[00000000]
+ ??? g00[00000010]
+ ??? g04[00000000]
+ ??? g08[00000000]
+ ??? g0c[00000000]
+ ??? g10[00000000]
+6: irq[00000004] before[rx] after[rx]
+ ??? 00[00008001]
+ ??? 04[007ee005]
+ ??? 08[00000000]
+ ??? 0c[0000607f]
+ ??? 10[00000004]
+ ??? 14[0c410000]
+ ??? 18[00000080]
+ ??? 1c[00000000]
+ ??? 20[0000d8e3]
+ ??? 24[fffffff7]
+ ??? 28[00000000]
+ ??? 2c[fffffff7]
+ ??? 30[00000000]
+ ??? g00[00000010]
+ ??? g04[00000000]
+ ??? g08[00000000]
+ ??? g0c[00000000]
+ ??? g10[00000000]
+7: irq[00000000] before[rx] after[stop]
+ ??? 00[00008001]
+ ??? 04[007ee005]
+ ??? 08[00000000]
+ ??? 0c[0000607f]
+ ??? 10[00000004]??? <<< this is interesting. this has changed since the 
+start of the interrupt handler.
+ ??? 14[0c430000]
+ ??? 18[00000080]
+ ??? 1c[00000000]
+ ??? 20[00001de3]
+ ??? 24[fffffff7]
+ ??? 28[00000000]
+ ??? 2c[fffffff7]
+ ??? 30[00000000]
+ ??? g00[00000010]
+ ??? g04[00000000]
+ ??? g08[00000000]
+ ??? g0c[00000000]
+ ??? g10[00000000]
+8: irq[00000014] before[stop] after[inactive]
+ ??? 00[00008001]
+ ??? 04[007ee005]
+ ??? 08[00000000]
+ ??? 0c[0000607f]
+ ??? 10[00000004]
+ ??? 14[0a060000]
+ ??? 18[00000080]
+ ??? 1c[00000000]
+ ??? 20[00001de3]
+ ??? 24[fffffff7]
+ ??? 28[00000000]
+ ??? 2c[fffffff7]
+ ??? 30[00000000]
+ ??? g00[00000010]
+ ??? g04[00000000]
+ ??? g08[00000000]
+ ??? g0c[00000000]
+ ??? g10[00000000]
+
+
+I grabbed the registers when the driver state transitions in the irq 
+handler. So, after the irq status has been initially cleared (except for 
+rx). In the case of 7, when the irq status changes, I grab it in 
+aspeed_i2c_do_stop before writing the STOP. So immediately after the 
+"master failed to RX" log. The entire irq handler is spin locked, so all 
+of the state transitions and register grabbing is locked.
+
+Any thoughts?
 
 Thanks,
 
-Jae
+Eddie
+
+
+> 	------------------------
+>
+> 	
+> 	
+>
+> -----Original Message-----
+> From: Jae Hyun Yoo [mailto:jae.hyun.yoo at linux.intel.com]
+> Sent: Friday, October 18, 2019 6:29 AM
+> To: Eddie James <eajames@linux.vnet.ibm.com>; Joel Stanley <joel@jms.id.au>; Brendan Higgins <brendanhiggins@google.com>
+> Cc: linux-aspeed <linux-aspeed@lists.ozlabs.org>; linux-i2c at vger.kernel.org; Andrew Jeffery <andrew@aj.id.au>; Eddie James <eajames@linux.ibm.com>; Ryan Chen <ryan_chen@aspeedtech.com>
+> Subject: Re: AST2600 i2c irq issue
+>
+> On 10/17/2019 1:31 PM, Eddie James wrote:
+>> On 10/17/19 1:14 AM, Joel Stanley wrote:
+>>> I have been doing bringup of the ast2600. It contains i2c buses that
+>>> are register compatible with the ast2500, and I am running them
+>>> without buffer or DMA mode. This is with v5.3.6, with no patches
+>>> other than adding the compatible string:
+>>>
+>>> --- a/drivers/i2c/busses/i2c-aspeed.c
+>>> +++ b/drivers/i2c/busses/i2c-aspeed.c
+>>> @@ -938,6 +938,10 @@ static const struct of_device_id
+>>> aspeed_i2c_bus_of_table[] = {
+>>>  ???????????????? .compatible = "aspeed,ast2500-i2c-bus",
+>>>  ???????????????? .data = aspeed_i2c_25xx_get_clk_reg_val,
+>>>  ???????? },
+>>> +?????? {
+>>> +?????????????? .compatible = "aspeed,ast2600-i2c-bus",
+>>> +?????????????? .data = aspeed_i2c_25xx_get_clk_reg_val,
+>>> +?????? },
+>>>  ???????? { },
+>>>  ? };
+>>>
+>>>
+>>> I see this behavior:
+>>>
+>>> [?? 20.981417] aspeed-i2c-bus 1e78a280.i2c-bus: master failed to RX [
+>>> 20.988259] aspeed-i2c-bus 1e78a280.i2c-bus: irq handled != irq.
+>>> expected 0x00000014, but was 0x00000010 [?? 22.451265] aspeed-i2c-bus
+>>> 1e78a200.i2c-bus: master failed to STOP.
+>>> irq_status:0x0
+>>> [?? 22.459909] aspeed-i2c-bus 1e78a200.i2c-bus: irq handled != irq.
+>>> expected 0x00000010, but was 0x00000000 [?? 22.470604] aspeed-i2c-bus
+>>> 1e78a200.i2c-bus: irq handled != irq.
+>>> expected 0x00000011, but was 0x00000000 [?? 29.156951] aspeed-i2c-bus
+>>> 1e78a280.i2c-bus: master failed to STOP.
+>>> irq_status:0x0
+>>> [?? 29.165601] aspeed-i2c-bus 1e78a280.i2c-bus: irq handled != irq.
+>>> expected 0x00000010, but was 0x00000000
+>>>
+>>> It happens on boot, and can also be triggered by placing load on the
+>>> system. In particular, if I copy a large amount of data to the flash.
+>>>
+>>> The IRQs are being served on one of the CPUs:
+>>>
+>>>  ? 29:????????? 0????????? 0???? GIC-0 142 Level???? 1e78a080.i2c-bus
+>>>  ? 30:????????? 0????????? 0???? GIC-0 143 Level???? 1e78a100.i2c-bus
+>>>  ? 31:????????? 0????????? 0???? GIC-0 144 Level???? 1e78a180.i2c-bus
+>>>  ? 32:???? 302596????????? 0???? GIC-0 145 Level???? 1e78a200.i2c-bus
+>>>  ? 33:???? 197340????????? 0???? GIC-0 146 Level???? 1e78a280.i2c-bus
+>>>  ? 34:???? 196900????????? 0???? GIC-0 147 Level???? 1e78a300.i2c-bus
+>>>  ? 35:????????? 0????????? 0???? GIC-0 149 Level???? 1e78a400.i2c-bus
+>>>  ? 36:?????? 2199????????? 0???? GIC-0 151 Level???? 1e78a500.i2c-bus
+>>>  ? 37:????????? 0????????? 0???? GIC-0 152 Level???? 1e78a580.i2c-bus
+>>>  ? 38:?????? 3407????????? 0???? GIC-0 153 Level???? 1e78a600.i2c-bus
+>>>  ? 39:????????? 0????????? 0???? GIC-0 154 Level???? 1e78a680.i2c-bus
+>>>  ? 40:????????? 0????????? 0???? GIC-0 155 Level???? 1e78a700.i2c-bus
+>>>
+>>> Following a hunch, I booted the system with SMP disabled (it's a dual
+>>> core part). The issue did not reproduce.
+>>>
+>>> This suggests the driver is lacking locking. I am yet to do any
+>>> detailed debugging.
+>>
+>> Been doing some testing.
+>>
+>> I'm not sure it's locking, but I think it could have something to do
+>> with the fact that the driver only acknowledges (clears the irq status
+>> register) the RX done bit way later than the rest of the bits. Is
+>> there a reason for this?
+>>
+>> It seems to me that we get a second interrupt pending (on the second
+>> processor? don't see how as we never see any irqs handled there) for
+>> RX done sometimes, immediately after we've cleared it. I've ONLY seen
+>> it on RX done. Here's some data to show this:
+>>
+>> This is just some custom tracing to track the driver state and the irqs.
+>> There was too much traffic for dev_dbg to handle. before is the driver
+>> state before the irq, and after is the driver state after the irq.
+>>
+>> 0: error entries[10]
+>>   ??? 0: irq[00000000] before[inactive] after[start]
+>>   ??? 1: irq[00000001] before[start] after[tx_first]
+>>   ??? 2: irq[00000001] before[tx_first] after[tx]
+>>   ??? 3: irq[00000001] before[tx] after[start]
+>>   ??? 4: irq[00000005] before[start] after[rx_first]
+>>   ??? 5: irq[00000005] before[rx_first] after[rx]
+>>   ??? 6: irq[00000004] before[rx] after[rx]
+>>   ??? 7: irq[00000004] before[rx] after[stop]??? << all good, transfer
+>> is complete so we send stop.
+>>   ??? 8: irq[00000000] before[stop] after[inactive]??? << this is the
+>> one that triggers "failed to STOP" below
+> It's really odd. Why does H/W trigger an interrupt without setting any flag? Or is it an irq affinity setting issue?
+>
+>>   ??? 9: irq[00000010] before[inactive] after[inactive]??? << now we
+>> get the actual stop, but we're in the wrong state and ignore it
+>> 1: error entries[9]
+>>   ??? 0: irq[00000000] before[inactive] after[start]
+>>   ??? 1: irq[00000001] before[start] after[tx_first]
+>>   ??? 2: irq[00000001] before[tx_first] after[tx]
+>>   ??? 3: irq[00000001] before[tx] after[start]
+>>   ??? 4: irq[00000005] before[start] after[rx_first]
+>>   ??? 5: irq[00000005] before[rx_first] after[rx]
+>>   ??? 6: irq[00000004] before[rx] after[rx]???? << all good, transfer
+>> is continuing
+>>   ??? 7: irq[00000000] before[rx] after[stop]? << no RX during an RX
+>> operation causes driver to abort and stop
+> Here again. If it happens, state machine in driver will be broken and it would affect the next event handling.
+>
+> I didn't see this issue in AST2500 which has a single core and runs in UP kernel. Seems that it can be observed only in AST2600 SMP setting.
+>
+> Ryan,
+> Can you please check it whether it's an expected H/W behavior of AST2600 or not?
+>
+>>   ??? 8: irq[00000014] before[stop] after[inactive] << now we get the
+>> RX and the stop.
+>>
+>> This corresponds to:
+>>
+>> [?? 18.405472] aspeed-i2c-bus 1e78a300.i2c-bus: master failed to STOP.
+>> irq_status:0x0
+>> [?? 18.414164] aspeed-i2c-bus 1e78a300.i2c-bus: irq handled != irq.
+>> expected 0x00000010, but was 0x00000000 [?? 21.355422] aspeed-i2c-bus
+>> 1e78a300.i2c-bus: master failed to RX [?? 21.363323] aspeed-i2c-bus
+>> 1e78a300.i2c-bus: irq handled != irq.
+>> expected 0x00000014, but was 0x00000010
+>>
+>>
+>> I don't understand how disabling SMP fixes this, since the second core
+>> doesn't seem to ever handle any interrupts. Maybe it's just reporting
+>> it wrong? From what I understand of interrupt handling, the second
+>> core is allowed to get interrupts while the first is handling an
+>> interrupt and has therefore disabled it's own interrupts... correct me
+>> if I misunderstand. In this case then, RX done gets triggered on the
+>> second core since it's sitting around uncleared in the status register?
+>>
+>>
+>> I was also able to "fix" this by simple returning IRQ_NONE if
+>> irq_status == 0 in the interrupt handler. But probably not a good solution.
+> A fix like below, right?
+>
+> @@ -603,6 +603,9 @@ static irqreturn_t aspeed_i2c_bus_irq(int irq, void
+> *dev_id)
+>
+>           spin_lock(&bus->lock);
+>           irq_received = readl(bus->base + ASPEED_I2C_INTR_STS_REG);
+> +       if (!irq_received)
+> +               return IRQ_NONE;
+> +
+>           /* Ack all interrupts except for Rx done */
+>           writel(irq_received & ~ASPEED_I2CD_INTR_RX_DONE,
+>                  bus->base + ASPEED_I2C_INTR_STS_REG);
+>
+>
+> I think it's a right fix for the issue. At least, we need to prevent any driver state corruption. The state machine would run correctly if we filtering the garbage interrupt out.
+>
+> Cheers,
+>
+> Jae
+>
+>> Eddie
+>>
+>>
+>>> Have you seen any behavior like this?
