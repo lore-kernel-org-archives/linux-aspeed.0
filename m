@@ -1,76 +1,62 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Fri, 25 Oct 2019 13:47:24 +1100
-Subject: [PATCH] net: ethernet: ftgmac100: Fix DMA coherency issue with SW
- checksum
-Message-ID: <572a7d510ace5e5a5ba41c4774d330133291c82a.camel@kernel.crashing.org>
+From: Tudor.Ambarus@microchip.com <Tudor.Ambarus@microchip.com>
+Date: Fri, 25 Oct 2019 07:34:30 +0000
+Subject: [PATCH v2 09/22] mtd: spi-nor: Fix retlen handling in sst_write()
+In-Reply-To: <20191010093308.2fe94974@dhcp-172-31-174-146.wireless.concordia.ca>
+References: <20190924074533.6618-1-tudor.ambarus@microchip.com>
+ <20190924074533.6618-10-tudor.ambarus@microchip.com>
+ <20191010093308.2fe94974@dhcp-172-31-174-146.wireless.concordia.ca>
+Message-ID: <7f23e9c0-0e9c-e365-e103-75ead47000a3@microchip.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-We are calling the checksum helper after the dma_map_single()
-call to map the packet. This is incorrect as the checksumming
-code will touch the packet from the CPU. This means the cache
-won't be properly flushes (or the bounce buffering will leave
-us with the unmodified packet to DMA).
-
-This moves the calculation of the checksum & vlan tags to
-before the DMA mapping.
-
-This also has the side effect of fixing another bug: If the
-checksum helper fails, we goto "drop" to drop the packet, which
-will not unmap the DMA mapping.
-
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Fixes: 05690d633f30 ftgmac100: Upgrade to NETIF_F_HW_CSUM
-CC: stable at vger.kernel.org [v4.12+]
----
- drivers/net/ethernet/faraday/ftgmac100.c | 25 ++++++++++++------------
- 1 file changed, 12 insertions(+), 13 deletions(-)
-
-diff --git a/drivers/net/ethernet/faraday/ftgmac100.c b/drivers/net/ethernet/faraday/ftgmac100.c
-index 9b7af94a40bb..96e9565f1e08 100644
---- a/drivers/net/ethernet/faraday/ftgmac100.c
-+++ b/drivers/net/ethernet/faraday/ftgmac100.c
-@@ -727,6 +727,18 @@ static netdev_tx_t ftgmac100_hard_start_xmit(struct sk_buff *skb,
- 	 */
- 	nfrags = skb_shinfo(skb)->nr_frags;
- 
-+	/* Setup HW checksumming */
-+	csum_vlan = 0;
-+	if (skb->ip_summed == CHECKSUM_PARTIAL &&
-+	    !ftgmac100_prep_tx_csum(skb, &csum_vlan))
-+		goto drop;
-+
-+	/* Add VLAN tag */
-+	if (skb_vlan_tag_present(skb)) {
-+		csum_vlan |= FTGMAC100_TXDES1_INS_VLANTAG;
-+		csum_vlan |= skb_vlan_tag_get(skb) & 0xffff;
-+	}
-+
- 	/* Get header len */
- 	len = skb_headlen(skb);
- 
-@@ -753,19 +765,6 @@ static netdev_tx_t ftgmac100_hard_start_xmit(struct sk_buff *skb,
- 	if (nfrags == 0)
- 		f_ctl_stat |= FTGMAC100_TXDES0_LTS;
- 	txdes->txdes3 = cpu_to_le32(map);
--
--	/* Setup HW checksumming */
--	csum_vlan = 0;
--	if (skb->ip_summed == CHECKSUM_PARTIAL &&
--	    !ftgmac100_prep_tx_csum(skb, &csum_vlan))
--		goto drop;
--
--	/* Add VLAN tag */
--	if (skb_vlan_tag_present(skb)) {
--		csum_vlan |= FTGMAC100_TXDES1_INS_VLANTAG;
--		csum_vlan |= skb_vlan_tag_get(skb) & 0xffff;
--	}
--
- 	txdes->txdes1 = cpu_to_le32(csum_vlan);
- 
- 	/* Next descriptor */
 
 
+On 10/10/2019 10:33 AM, Boris Brezillon wrote:
+
+>>  drivers/mtd/spi-nor/spi-nor.c | 22 +++++++++++-----------
+>>  1 file changed, 11 insertions(+), 11 deletions(-)
+>>
+>> diff --git a/drivers/mtd/spi-nor/spi-nor.c b/drivers/mtd/spi-nor/spi-nor.c
+>> index 0aee068a5835..be5dee622d51 100644
+>> --- a/drivers/mtd/spi-nor/spi-nor.c
+>> +++ b/drivers/mtd/spi-nor/spi-nor.c
+>> @@ -2665,12 +2665,12 @@ static int sst_write(struct mtd_info *mtd, loff_t to, size_t len,
+>>  		/* write one byte. */
+>>  		ret = spi_nor_write_data(nor, to, 1, buf);
+>>  		if (ret < 0)
+>> -			goto sst_write_err;
+>> +			goto unlock_and_unprep;
+>>  		WARN(ret != 1, "While writing 1 byte written %i bytes\n",
+>>  		     (int)ret);
+>>  		ret = spi_nor_wait_till_ready(nor);
+>>  		if (ret)
+>> -			goto sst_write_err;
+>> +			goto unlock_and_unprep;
+>>  	}
+>>  	to += actual;
+> Not sure we need this new label, we can just have:
+> 
+> 	actual = 0;
+> 	/* Start write from odd address. */
+> 	if (to % 2) {
+> 		nor->program_opcode = SPINOR_OP_BP;
+> 
+> 		/* write one byte. */
+> 		ret = spi_nor_write_data(nor, to, 1, buf);
+> 		if (ret < 0)
+> 			goto out;
+> 		WARN(ret != 1, "While writing 1 byte written %i
+> 		bytes\n", (int)ret);
+> 		ret = spi_nor_wait_till_ready(nor);
+> 		if (ret)
+> 			goto out;
+> 
+> 		to++;
+> 		actual++;
+> 	}
+> 
+
+nice, thanks!
