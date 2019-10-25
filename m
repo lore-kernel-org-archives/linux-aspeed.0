@@ -1,45 +1,76 @@
-From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-Date: Thu, 24 Oct 2019 11:03:13 -0700
-Subject: AST2600 i2c irq issue
-In-Reply-To: <333e959f-9296-b6d5-9442-b979a8abd50d@linux.vnet.ibm.com>
-References: <CACPK8XdqFkPgCQcgpM5C_YwfJ86Lmk=hG5zTcfbCDCMncXCJMg@mail.gmail.com>
- <f9fecc04-2a9a-4cbd-a1ff-ffb680b0fec2@linux.vnet.ibm.com>
- <dbb8635e-a95a-3951-cd65-3428adc461ec@linux.intel.com>
- <8c62b118777c44d1bf8e1a3c32175644@TWMBX02.aspeed.com>
- <333e959f-9296-b6d5-9442-b979a8abd50d@linux.vnet.ibm.com>
-Message-ID: <5508f358-77b8-f5f7-2577-79da25e4e5ea@linux.intel.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Fri, 25 Oct 2019 13:47:24 +1100
+Subject: [PATCH] net: ethernet: ftgmac100: Fix DMA coherency issue with SW
+ checksum
+Message-ID: <572a7d510ace5e5a5ba41c4774d330133291c82a.camel@kernel.crashing.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Eddie,
+We are calling the checksum helper after the dma_map_single()
+call to map the packet. This is incorrect as the checksumming
+code will touch the packet from the CPU. This means the cache
+won't be properly flushes (or the bounce buffering will leave
+us with the unmodified packet to DMA).
 
-On 10/22/2019 1:24 PM, Eddie James wrote:
+This moves the calculation of the checksum & vlan tags to
+before the DMA mapping.
 
-[...]
+This also has the side effect of fixing another bug: If the
+checksum helper fails, we goto "drop" to drop the packet, which
+will not unmap the DMA mapping.
 
-> 7: irq[00000000] before[rx] after[stop]
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Fixes: 05690d633f30 ftgmac100: Upgrade to NETIF_F_HW_CSUM
+CC: stable at vger.kernel.org [v4.12+]
+---
+ drivers/net/ethernet/faraday/ftgmac100.c | 25 ++++++++++++------------
+ 1 file changed, 12 insertions(+), 13 deletions(-)
 
-'irq[]' here and '10[]' below are the same register. This log means an
-interrupt came with empty status.
+diff --git a/drivers/net/ethernet/faraday/ftgmac100.c b/drivers/net/ethernet/faraday/ftgmac100.c
+index 9b7af94a40bb..96e9565f1e08 100644
+--- a/drivers/net/ethernet/faraday/ftgmac100.c
++++ b/drivers/net/ethernet/faraday/ftgmac100.c
+@@ -727,6 +727,18 @@ static netdev_tx_t ftgmac100_hard_start_xmit(struct sk_buff *skb,
+ 	 */
+ 	nfrags = skb_shinfo(skb)->nr_frags;
+ 
++	/* Setup HW checksumming */
++	csum_vlan = 0;
++	if (skb->ip_summed == CHECKSUM_PARTIAL &&
++	    !ftgmac100_prep_tx_csum(skb, &csum_vlan))
++		goto drop;
++
++	/* Add VLAN tag */
++	if (skb_vlan_tag_present(skb)) {
++		csum_vlan |= FTGMAC100_TXDES1_INS_VLANTAG;
++		csum_vlan |= skb_vlan_tag_get(skb) & 0xffff;
++	}
++
+ 	/* Get header len */
+ 	len = skb_headlen(skb);
+ 
+@@ -753,19 +765,6 @@ static netdev_tx_t ftgmac100_hard_start_xmit(struct sk_buff *skb,
+ 	if (nfrags == 0)
+ 		f_ctl_stat |= FTGMAC100_TXDES0_LTS;
+ 	txdes->txdes3 = cpu_to_le32(map);
+-
+-	/* Setup HW checksumming */
+-	csum_vlan = 0;
+-	if (skb->ip_summed == CHECKSUM_PARTIAL &&
+-	    !ftgmac100_prep_tx_csum(skb, &csum_vlan))
+-		goto drop;
+-
+-	/* Add VLAN tag */
+-	if (skb_vlan_tag_present(skb)) {
+-		csum_vlan |= FTGMAC100_TXDES1_INS_VLANTAG;
+-		csum_vlan |= skb_vlan_tag_get(skb) & 0xffff;
+-	}
+-
+ 	txdes->txdes1 = cpu_to_le32(csum_vlan);
+ 
+ 	/* Next descriptor */
 
->  ??? 00[00008001]
->  ??? 04[007ee005]
->  ??? 08[00000000]
->  ??? 0c[0000607f]
->  ??? 10[00000004]??? <<< this is interesting. this has changed since the 
-> start of the interrupt handler.
 
-The interrupt status was updated lately at here. Looks like there is a
-timing gap in H/W between interrupt triggering and status updating. I
-haven't seen this issue in previous H/W versions.
-
-This issue can be resolved by your patch but ultimately this issue
-should be fixed in AST2600 A1 revision H/W if possible so that we can
-remove the unnecessary interrupt handling.
-
-Thanks,
-
-Jae
