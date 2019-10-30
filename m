@@ -1,23 +1,41 @@
-From: Stephen Boyd <sboyd@kernel.org>
-Date: Mon, 28 Oct 2019 16:40:28 -0700
-Subject: [PATCH] clk: ast2600: Fix enabling of clocks
-In-Reply-To: <20191016131319.31318-1-joel@jms.id.au>
-References: <20191016131319.31318-1-joel@jms.id.au>
-Message-ID: <20191028234029.07821214E0@mail.kernel.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Wed, 30 Oct 2019 12:53:43 +1100
+Subject: [PATCH] net: ethernet: ftgmac100: Fix DMA coherency issue with
+ SW checksum
+In-Reply-To: <20191028.162410.844978847156294593.davem@davemloft.net>
+References: <572a7d510ace5e5a5ba41c4774d330133291c82a.camel@kernel.crashing.org>
+ <20191028.162410.844978847156294593.davem@davemloft.net>
+Message-ID: <9ed07f451759bb3400e5456af09874161b204acd.camel@kernel.crashing.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Quoting Joel Stanley (2019-10-16 06:13:19)
-> The struct clk_ops enable callback for the aspeed gates mixes up the set
-> to clear and write to set registers.
+On Mon, 2019-10-28 at 16:24 -0700, David Miller wrote:
+> From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Date: Fri, 25 Oct 2019 13:47:24 +1100
 > 
-> Fixes: d3d04f6c330a ("clk: Add support for AST2600 SoC")
-> Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
-> Signed-off-by: Joel Stanley <joel@jms.id.au>
-> ---
+> > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> > Fixes: 05690d633f30 ftgmac100: Upgrade to NETIF_F_HW_CSUM
+> 
+> Please put the commit header string inside double quotes and
+> parenthesis
+> (" ")
 
-Applied to clk-fixes
+Will do next time, I had just copy/pasted the git shortlog :-)
+
+> > CC: stable at vger.kernel.org [v4.12+]
+> 
+> Do not CC: stable for networking submissions as per the netdev FAQ.
+
+Ah oops, learned.
+
+> All fixed up, and queued up for -stable, thanks Ben.
+
+Thanks.
+
+Cheers,
+Ben.
+
 
