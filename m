@@ -1,78 +1,32 @@
 From: andriy.shevchenko@linux.intel.com <andriy.shevchenko@linux.intel.com>
-Date: Tue, 5 Nov 2019 16:28:36 +0200
+Date: Tue, 5 Nov 2019 16:32:49 +0200
 Subject: [PATCH 00/62] Add definition for GPIO direction
-In-Reply-To: <20191105134026.vl6h6kghuzmslptx@pengutronix.de>
+In-Reply-To: <fdcfc69b39990dd382804db45422ed692881ea15.camel@fi.rohmeurope.com>
 References: <cover.1572875541.git.matti.vaittinen@fi.rohmeurope.com>
  <20191105122042.GO32742@smile.fi.intel.com>
  <4e6fa62d7022c7b1426477a150a93c899725f5b0.camel@fi.rohmeurope.com>
- <20191105131038.duol3rwwkbuvgvwv@pengutronix.de>
- <20191105133025.GR32742@smile.fi.intel.com>
- <20191105134026.vl6h6kghuzmslptx@pengutronix.de>
-Message-ID: <20191105142836.GS32742@smile.fi.intel.com>
+ <20191105131125.GP32742@smile.fi.intel.com>
+ <fdcfc69b39990dd382804db45422ed692881ea15.camel@fi.rohmeurope.com>
+Message-ID: <20191105143249.GT32742@smile.fi.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Nov 05, 2019 at 02:40:26PM +0100, Uwe Kleine-K?nig wrote:
-> On Tue, Nov 05, 2019 at 03:30:25PM +0200, andriy.shevchenko at linux.intel.com wrote:
-> > On Tue, Nov 05, 2019 at 02:10:38PM +0100, Uwe Kleine-K?nig wrote:
-> > > On Tue, Nov 05, 2019 at 12:54:55PM +0000, Vaittinen, Matti wrote:
-> > > > On Tue, 2019-11-05 at 14:20 +0200, Andy Shevchenko wrote:
-> > > > > I would also like to see bloat-o-meter statistics before and after
-> > > > > your patch.
-> > > > > My guts tell me that the result will be not in the favour of yours
-> > > > > solution.
-> > > > 
-> > > > Can you please tell me what type of stats you hope to see? I can try
-> > > > generating what you are after. The cover letter contained typical +/-
-> > > > change stats from git and summary:
-> > > > 
-> > > > 62 files changed, 228 insertions(+), 104 deletions(-)
-> > > 
-> > > I guess he wants to see
-> > > 
-> > > 	scripts/bloat-o-meter vmlinuz.old vmlinuz
-> > 
-> > Yes, but be sure you have compiled them all and build them all in.
-> > Otherwise you might get wrong result.
-> > 
-> > > . I would expect a 0 there. I didn't look in detail, but in general I
-> > > like the idea to give 0 and 1 a symbolic name.
-> > 
-> > I'll will be fine with that if and only if maintainers are okay. For now,
-> > I don't like the idea to trade bad for worse.
-> 
-> I don't see you concern.
-> 
-> 	int somefunction(...)
-> 	{
-> 		return 1;
-> 	}
-> 
-> is definitively worse than
-> 
-> 	int somefunction(...)
-> 	{
-> 		return GPIO_LINE_DIRECTION_IN;
-> 	}
-> 
-> and after cpp had its go on the source the compiler sees the exact same
-> thing, so I don't expect any size changes. The only change is that to
-> write (or understand) the above code, you have to know that 1
-> corresponds to GPIO input (or was it output?) while in the later
-> function it is obvious that we're talking about an input.
+On Tue, Nov 05, 2019 at 01:54:27PM +0000, Vaittinen, Matti wrote:
+> On Tue, 2019-11-05 at 15:11 +0200, andriy.shevchenko at linux.intel.com
+> wrote:
 
-In almost all cases I'm involved in the original code is different:
+> Unfortunately I don't right now have the time to waste arguing over it
+> ;)
 
-	return !!foo();
+Neither do I.
 
-vs.
+P.S. I have already wasted enough on this discussion, as I said before I'm fine
+with the change as long as maintainers of the subsystem are fine.
 
-	if (foo())
-		return A;
-	return B;
+That's my last message on the topic till then.
 
 -- 
 With Best Regards,
