@@ -1,52 +1,77 @@
-From: Tao Ren <rentao.bupt@gmail.com>
-Date: Fri, 1 Nov 2019 10:42:57 -0700
-Subject: [PATCH 1/4] ARM: dts: aspeed: add dtsi for Facebook AST2500
- Network BMCs
-In-Reply-To: <CACPK8XfebA9PcpyWkofCJ5fAZ9ddUjQ4ZeCf73KXb51+k_+N1Q@mail.gmail.com>
-References: <20191021194820.293556-1-taoren@fb.com>
- <20191021194820.293556-2-taoren@fb.com>
- <CACPK8XfebA9PcpyWkofCJ5fAZ9ddUjQ4ZeCf73KXb51+k_+N1Q@mail.gmail.com>
-Message-ID: <20191101174257.GB13557@taoren-ubuntu-R90MNF91>
+From: Vijay Khemka <vijaykhemka@fb.com>
+Date: Tue, 5 Nov 2019 11:47:31 -0800
+Subject: [PATCH] drivers: ipmi: Support for both IPMB Req and Resp
+Message-ID: <20191105194732.1521963-1-vijaykhemka@fb.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Nov 01, 2019 at 10:12:10AM +0000, Joel Stanley wrote:
-> On Mon, 21 Oct 2019 at 19:49, Tao Ren <taoren@fb.com> wrote:
-> >
-> > Introduce "facebook-netbmc-ast2500-common.dtsi" which is included by all
-> > Facebook AST2500 Network BMC platforms. The major purpose is to minimize
-> > duplicated device entries cross Facebook Network BMC dts files.
-> >
-> 
-> > +
-> > +&mac1 {
-> > +       status = "okay";
-> > +       no-hw-checksum;
-> 
-> Was this included to work around the IPv6 issue that Benh recently fixed?
-> 
-> If you can test your platform with
-> 88824e3bf29a2fcacfd9ebbfe03063649f0f3254 applied and the
-> no-hw-checksum property removed, please send a follow up to remove
-> this property.
-> 
-> It's not doing any harm, but by cleaning it up there's less chance
-> others blindly copy the same thing.
-> 
-> Thanks,
-> 
-> Joel
+Removed check for request or response in IPMB packets coming from
+device as well as from host. Now it supports both way communication
+to device via IPMB. Both request and response will be passed to
+application.
 
-Yes. I'm planning to try the patch. Will send out a followup patch to
-remove the line if everything goes fine.
+Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
+---
+ drivers/char/ipmi/ipmb_dev_int.c | 29 +----------------------------
+ 1 file changed, 1 insertion(+), 28 deletions(-)
 
-Cheers,
+diff --git a/drivers/char/ipmi/ipmb_dev_int.c b/drivers/char/ipmi/ipmb_dev_int.c
+index 285e0b8f9a97..7201fdb533d8 100644
+--- a/drivers/char/ipmi/ipmb_dev_int.c
++++ b/drivers/char/ipmi/ipmb_dev_int.c
+@@ -133,9 +133,6 @@ static ssize_t ipmb_write(struct file *file, const char __user *buf,
+ 	rq_sa = GET_7BIT_ADDR(msg[RQ_SA_8BIT_IDX]);
+ 	netf_rq_lun = msg[NETFN_LUN_IDX];
+ 
+-	if (!(netf_rq_lun & NETFN_RSP_BIT_MASK))
+-		return -EINVAL;
+-
+ 	/*
+ 	 * subtract rq_sa and netf_rq_lun from the length of the msg passed to
+ 	 * i2c_smbus_xfer
+@@ -203,28 +200,6 @@ static u8 ipmb_verify_checksum1(struct ipmb_dev *ipmb_dev, u8 rs_sa)
+ 		ipmb_dev->request.checksum1);
+ }
+ 
+-static bool is_ipmb_request(struct ipmb_dev *ipmb_dev, u8 rs_sa)
+-{
+-	if (ipmb_dev->msg_idx >= IPMB_REQUEST_LEN_MIN) {
+-		if (ipmb_verify_checksum1(ipmb_dev, rs_sa))
+-			return false;
+-
+-		/*
+-		 * Check whether this is an IPMB request or
+-		 * response.
+-		 * The 6 MSB of netfn_rs_lun are dedicated to the netfn
+-		 * while the remaining bits are dedicated to the lun.
+-		 * If the LSB of the netfn is cleared, it is associated
+-		 * with an IPMB request.
+-		 * If the LSB of the netfn is set, it is associated with
+-		 * an IPMB response.
+-		 */
+-		if (!(ipmb_dev->request.netfn_rs_lun & NETFN_RSP_BIT_MASK))
+-			return true;
+-	}
+-	return false;
+-}
+-
+ /*
+  * The IPMB protocol only supports I2C Writes so there is no need
+  * to support I2C_SLAVE_READ* events.
+@@ -273,9 +248,7 @@ static int ipmb_slave_cb(struct i2c_client *client,
+ 
+ 	case I2C_SLAVE_STOP:
+ 		ipmb_dev->request.len = ipmb_dev->msg_idx;
+-
+-		if (is_ipmb_request(ipmb_dev, GET_8BIT_ADDR(client->addr)))
+-			ipmb_handle_request(ipmb_dev);
++		ipmb_handle_request(ipmb_dev);
+ 		break;
+ 
+ 	default:
+-- 
+2.17.1
 
-Tao
-
-> > +       pinctrl-names = "default";
-> > +       pinctrl-0 = <&pinctrl_rgmii2_default &pinctrl_mdio2_default>;
-> > +};
