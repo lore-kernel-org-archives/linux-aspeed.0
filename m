@@ -1,12 +1,14 @@
 From: Vaittinen, Matti <Matti.Vaittinen@fi.rohmeurope.com>
-Date: Tue, 5 Nov 2019 13:54:27 +0000
+Date: Tue, 5 Nov 2019 14:00:02 +0000
 Subject: [PATCH 00/62] Add definition for GPIO direction
-In-Reply-To: <20191105131125.GP32742@smile.fi.intel.com>
+In-Reply-To: <20191105133604.d2xcasxw7pwzwvh7@pengutronix.de>
 References: <cover.1572875541.git.matti.vaittinen@fi.rohmeurope.com>
  <20191105122042.GO32742@smile.fi.intel.com>
  <4e6fa62d7022c7b1426477a150a93c899725f5b0.camel@fi.rohmeurope.com>
- <20191105131125.GP32742@smile.fi.intel.com>
-Message-ID: <fdcfc69b39990dd382804db45422ed692881ea15.camel@fi.rohmeurope.com>
+ <20191105131038.duol3rwwkbuvgvwv@pengutronix.de>
+ <938a5ec7b41ae9ce7b0de83764d6b774cfdaa781.camel@fi.rohmeurope.com>
+ <20191105133604.d2xcasxw7pwzwvh7@pengutronix.de>
+Message-ID: <a967c764d135ab0f96f6b1df62ac91426c935b44.camel@fi.rohmeurope.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -14,153 +16,91 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 
-On Tue, 2019-11-05 at 15:11 +0200, andriy.shevchenko at linux.intel.com
-wrote:
-> On Tue, Nov 05, 2019 at 12:54:55PM +0000, Vaittinen, Matti wrote:
-> > On Tue, 2019-11-05 at 14:20 +0200, Andy Shevchenko wrote:
-> > > On Tue, Nov 05, 2019 at 12:09:10PM +0200, Matti Vaittinen wrote:
-> > > > The patch series adds definitions for GPIO line directions.
+On Tue, 2019-11-05 at 14:36 +0100, Uwe Kleine-K?nig wrote:
+> On Tue, Nov 05, 2019 at 01:30:20PM +0000, Vaittinen, Matti wrote:
+> > On Tue, 2019-11-05 at 14:10 +0100, Uwe Kleine-K?nig wrote:
+> > > Hello,
+> > > 
+> > > On Tue, Nov 05, 2019 at 12:54:55PM +0000, Vaittinen, Matti wrote:
+> > > > On Tue, 2019-11-05 at 14:20 +0200, Andy Shevchenko wrote:
+> > > > > I would also like to see bloat-o-meter statistics before and
+> > > > > after
+> > > > > your patch.
+> > > > > My guts tell me that the result will be not in the favour of
+> > > > > yours
+> > > > > solution.
 > > > > 
-> > > > For occasional GPIO contributor like me it is always a pain to
-> > > > remember
-> > > > whether 1 or 0 was used for GPIO direction INPUT/OUTPUT.
-> > > > Judging
-> > > > the
-> > > > fact that I removed few comments like:
-> > > > 
-> > > > /* Return 0 if output, 1 if input */
-> > > > /* This means "out" */
-> > > > return 1; /* input */
-> > > > return 0; /* output */
-> > > > 
-> > > > it seems at least some others may find it hard to remember too.
-> > > > Adding
-> > > > defines for these values helps us who really have good - but
-> > > > short
-> > > > duration - memory :]
-> > > > 
-> > > > Please also see the last patch. It adds warning prints to be
-> > > > emitted
-> > > > from gpiolib if other than defined values are used. This patch
+> > > > Can you please tell me what type of stats you hope to see? I
 > > > > can
-> > > > be
-> > > > dropped out if there is a reason for that to still be allowed.
+> > > > try
+> > > > generating what you are after. The cover letter contained
+> > > > typical
+> > > > +/-
+> > > > change stats from git and summary:
 > > > > 
-> > > > This idea comes from RFC series for ROHM BD71828 PMIC and was
-> > > > initially
-> > > > discussed with Linus Walleij here:
-> > > > https://lore.kernel.org/lkml/c06725c3dd34118a324907137758d8b85b3d4043.camel at fi.rohmeurope.com/
-> > > > but as this has no dependencies to BD71828 work (which probably
-> > > > takes a
-> > > > while) I decided to make it independent series.
-> > > > 
-> > > > Patches are compile-tested only. I have no HW to really test
-> > > > them.
-> > > > Thus I'd
-> > > > appreciate carefull review. This work is mainly about
-> > > > converting
-> > > > zeros
-> > > > and ones to the new defines but it wouldn't be first time I get
-> > > > it
-> > > > wrong
-> > > > in one of the patches :)
+> > > > 62 files changed, 228 insertions(+), 104 deletions(-)
 > > > 
-> > > For all patches I have been Cc'ed to, NAK.
+> > > I guess he wants to see
 > > > 
-> > > I don't see the advantages now since all known hardware uses the
-> > > single bit to
-> > > describe direction (even for Intel where we have separate gating
-> > > for
-> > > in and out
-> > > buffers the direction we basically rely on the bit that enables
-> > > out
-> > > buffer).
+> > > 	scripts/bloat-o-meter vmlinuz.old vmlinuz
 > > > 
-> > > So, that said the direction is always 1 bit and basically 0/1
-> > > value. 
+> > > . I would expect a 0 there. I didn't look in detail, but in
+> > > general I
+> > > like the idea to give 0 and 1 a symbolic name.
 > > 
-> > Yes. At least for now. And this patch didn't change that although
-> > it
-> > makes it possible to do so if required.
-> > 
-> > > Which one
-> > > is in and which one is out just a matter of an agreement we did.
-> > 
-> > This one is exactly the problem patch series was created for. Which
-> > one
-> > is IN and which is OUT is indeed a matter of an agreement - but
-> > this
-> > agreement should be clearly visible, well defined and same for all.
-> > 
-> > It's *annoying* to try finding out whether it was 1 or 0 one should
-> > return from get_direction callback for OUTPUT. This is probably the
-> > reason we have comments like
-> > 
-> > return 1; /* input */
-> > 
-> > there.
-> > 
-> > As this is global agreement for all GPIO framework users - not
-> > something that can be agreed per driver basis - we should have GPIO
-> > framework wide definitions for this. We can just add definitions
-> > for
-> > new drivers to benefit - but I think adding them also for existing
-> > drivers improves readability significantly (see below).
-> > 
-> > > I would also like to see bloat-o-meter statistics before and
-> > > after
-> > > your patch.
-> > > My guts tell me that the result will be not in the favour of
-> > > yours
-> > > solution.
-> > 
-> > Can you please tell me what type of stats you hope to see? 
+> > Thanks Uwe. This far I have only cross-compiled the series for arm
+> > which I use for developing the ROHM PMICs. scripts/bloat-o-meter /
+> > tools it uses does not seem to recognize the image format (not a
+> > big
+> > surprize as my host is x86_64).
 > 
-> bloat-o-meter. It's a script that compares two object files to see
-> which
-> functions got fatter, and which are slimmer. You may find it in the
-> kernel tree
-> sources (scripts/ folder).
-
-Right. Uwe explained that to me.
-
-> > I can try
-> > generating what you are after. The cover letter contained typical
-> > +/-
-> > change stats from git and summary:
-> > 
-> > 62 files changed, 228 insertions(+), 104 deletions(-)
-> > 
-> > It sure shows that amount of lines was increased (roughly 2 lines
-> > more
-> > / changed file)
+> It works for me, I guess that's because my binutils support several
+> architectures:
 > 
-> Which is making unneeded churn.
-
-Not unneeded. A few of us see the value of naming the 1 and 0.
-
-> > - but I guess that was expected as I don't like
-> > ternary.
+> 	$ nm --help
+> 	...
+> 	nm: supported targets: elf64-x86-64 elf32-i386 elf32-iamcu
+> elf32-x86-64
+> 	pei-i386 pei-x86-64 elf64-l1om elf64-k1om elf64-little elf64-
+> big
+> 	elf32-little elf32-big elf64-littleaarch64 elf64-bigaarch64
+> 	elf32-littleaarch64 elf32-bigaarch64 elf32-littlearm elf32-
+> bigarm
+> 	elf64-alpha ecoff-littlealpha elf32-littlearm-fdpic elf32-
+> bigarm-fdpic
+> 	elf32-hppa-linux elf32-hppa elf64-ia64-little elf64-ia64-big
+> pei-ia64
+> 	elf32-m32r-linux elf32-m32rle-linux elf32-m68k elf32-
+> tradbigmips
+> 	elf32-tradlittlemips ecoff-bigmips ecoff-littlemips elf32-
+> ntradbigmips
+> 	elf64-tradbigmips elf32-ntradlittlemips elf64-tradlittlemips
+> 	elf32-powerpc aixcoff-rs6000 elf32-powerpcle ppcboot elf64-
+> powerpc
+> 	elf64-powerpcle aixcoff64-rs6000 aix5coff64-rs6000 elf64-
+> littleriscv
+> 	elf32-littleriscv elf32-s390 elf64-s390 elf32-sh-linux elf32-
+> shbig-linux
+> 	elf32-sh-fdpic elf32-shbig-fdpic elf32-sparc elf64-sparc pe-
+> x86-64
+> 	pe-bigobj-x86-64 pe-i386 plugin srec symbolsrec verilog tekhex
+> binary
+> 	ihex
 > 
-> And I like them, so, what to do?
+> (added line breaks for easier reading). I got this by installing
+> binutils-multiarch (on Debian).
 
-Well, if you maintain those files and like ternary, then they can be
-ternary. I don't really care as long as I don't need to be the one
-maintaining them. Not really a battle I want to invest in. I can even
-go and drop the patches for files you are maintaining if you see that's
-the way to go. It's easier for me.
+Thanks Uwe! That was kind! I'm on Fedora but I guess I can find the
+multiarch binutils :) I'll try that tomorrow when I'm back at the
+office. Let's see what kind of results I can get from it.
 
-As I said, I don't plan to change the meaning of 1 and 0 - although I
-thought that allowing it might help in the future. Main goal was to
-name the 1 and 0. Naming can be done even if all users were not
-converted to use the names - as long as values behind names are not
-changed. Changing the values is a burden that can be carried by others
-when it is needed - we can now just make it easier or harder.
+Unfortunately bunch of the GPIOs depend on x86 - so I need to see what
+I can compile in with decent effort. For my compile test I just hacked
+the Makefile to force all in and added some dummy macros to fix few
+missing functions :| But I guess I can get some results.
 
-So as to what to do - please just give me the final decision so that I
-know if I should just drop the intel patches or use the ternary.
-Unfortunately I don't right now have the time to waste arguing over it
-;)
+> 
+> Best regards
+> Uwe
+> 
 
-Br,
-	Matti
