@@ -1,41 +1,32 @@
-From: Vaittinen, Matti <Matti.Vaittinen@fi.rohmeurope.com>
-Date: Tue, 5 Nov 2019 14:00:02 +0000
+From: andriy.shevchenko@linux.intel.com <andriy.shevchenko@linux.intel.com>
+Date: Tue, 5 Nov 2019 16:28:36 +0200
 Subject: [PATCH 00/62] Add definition for GPIO direction
-In-Reply-To: <20191105133604.d2xcasxw7pwzwvh7@pengutronix.de>
+In-Reply-To: <20191105134026.vl6h6kghuzmslptx@pengutronix.de>
 References: <cover.1572875541.git.matti.vaittinen@fi.rohmeurope.com>
  <20191105122042.GO32742@smile.fi.intel.com>
  <4e6fa62d7022c7b1426477a150a93c899725f5b0.camel@fi.rohmeurope.com>
  <20191105131038.duol3rwwkbuvgvwv@pengutronix.de>
- <938a5ec7b41ae9ce7b0de83764d6b774cfdaa781.camel@fi.rohmeurope.com>
- <20191105133604.d2xcasxw7pwzwvh7@pengutronix.de>
-Message-ID: <a967c764d135ab0f96f6b1df62ac91426c935b44.camel@fi.rohmeurope.com>
+ <20191105133025.GR32742@smile.fi.intel.com>
+ <20191105134026.vl6h6kghuzmslptx@pengutronix.de>
+Message-ID: <20191105142836.GS32742@smile.fi.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-
-On Tue, 2019-11-05 at 14:36 +0100, Uwe Kleine-K?nig wrote:
-> On Tue, Nov 05, 2019 at 01:30:20PM +0000, Vaittinen, Matti wrote:
-> > On Tue, 2019-11-05 at 14:10 +0100, Uwe Kleine-K?nig wrote:
-> > > Hello,
-> > > 
+On Tue, Nov 05, 2019 at 02:40:26PM +0100, Uwe Kleine-K?nig wrote:
+> On Tue, Nov 05, 2019 at 03:30:25PM +0200, andriy.shevchenko at linux.intel.com wrote:
+> > On Tue, Nov 05, 2019 at 02:10:38PM +0100, Uwe Kleine-K?nig wrote:
 > > > On Tue, Nov 05, 2019 at 12:54:55PM +0000, Vaittinen, Matti wrote:
 > > > > On Tue, 2019-11-05 at 14:20 +0200, Andy Shevchenko wrote:
-> > > > > I would also like to see bloat-o-meter statistics before and
-> > > > > after
+> > > > > I would also like to see bloat-o-meter statistics before and after
 > > > > > your patch.
-> > > > > My guts tell me that the result will be not in the favour of
-> > > > > yours
+> > > > > My guts tell me that the result will be not in the favour of yours
 > > > > > solution.
 > > > > 
-> > > > Can you please tell me what type of stats you hope to see? I
-> > > > can
-> > > > try
-> > > > generating what you are after. The cover letter contained
-> > > > typical
-> > > > +/-
+> > > > Can you please tell me what type of stats you hope to see? I can try
+> > > > generating what you are after. The cover letter contained typical +/-
 > > > > change stats from git and summary:
 > > > > 
 > > > > 62 files changed, 228 insertions(+), 104 deletions(-)
@@ -43,64 +34,48 @@ On Tue, 2019-11-05 at 14:36 +0100, Uwe Kleine-K?nig wrote:
 > > > I guess he wants to see
 > > > 
 > > > 	scripts/bloat-o-meter vmlinuz.old vmlinuz
-> > > 
-> > > . I would expect a 0 there. I didn't look in detail, but in
-> > > general I
+> > 
+> > Yes, but be sure you have compiled them all and build them all in.
+> > Otherwise you might get wrong result.
+> > 
+> > > . I would expect a 0 there. I didn't look in detail, but in general I
 > > > like the idea to give 0 and 1 a symbolic name.
 > > 
-> > Thanks Uwe. This far I have only cross-compiled the series for arm
-> > which I use for developing the ROHM PMICs. scripts/bloat-o-meter /
-> > tools it uses does not seem to recognize the image format (not a
-> > big
-> > surprize as my host is x86_64).
+> > I'll will be fine with that if and only if maintainers are okay. For now,
+> > I don't like the idea to trade bad for worse.
 > 
-> It works for me, I guess that's because my binutils support several
-> architectures:
+> I don't see you concern.
 > 
-> 	$ nm --help
-> 	...
-> 	nm: supported targets: elf64-x86-64 elf32-i386 elf32-iamcu
-> elf32-x86-64
-> 	pei-i386 pei-x86-64 elf64-l1om elf64-k1om elf64-little elf64-
-> big
-> 	elf32-little elf32-big elf64-littleaarch64 elf64-bigaarch64
-> 	elf32-littleaarch64 elf32-bigaarch64 elf32-littlearm elf32-
-> bigarm
-> 	elf64-alpha ecoff-littlealpha elf32-littlearm-fdpic elf32-
-> bigarm-fdpic
-> 	elf32-hppa-linux elf32-hppa elf64-ia64-little elf64-ia64-big
-> pei-ia64
-> 	elf32-m32r-linux elf32-m32rle-linux elf32-m68k elf32-
-> tradbigmips
-> 	elf32-tradlittlemips ecoff-bigmips ecoff-littlemips elf32-
-> ntradbigmips
-> 	elf64-tradbigmips elf32-ntradlittlemips elf64-tradlittlemips
-> 	elf32-powerpc aixcoff-rs6000 elf32-powerpcle ppcboot elf64-
-> powerpc
-> 	elf64-powerpcle aixcoff64-rs6000 aix5coff64-rs6000 elf64-
-> littleriscv
-> 	elf32-littleriscv elf32-s390 elf64-s390 elf32-sh-linux elf32-
-> shbig-linux
-> 	elf32-sh-fdpic elf32-shbig-fdpic elf32-sparc elf64-sparc pe-
-> x86-64
-> 	pe-bigobj-x86-64 pe-i386 plugin srec symbolsrec verilog tekhex
-> binary
-> 	ihex
+> 	int somefunction(...)
+> 	{
+> 		return 1;
+> 	}
 > 
-> (added line breaks for easier reading). I got this by installing
-> binutils-multiarch (on Debian).
+> is definitively worse than
+> 
+> 	int somefunction(...)
+> 	{
+> 		return GPIO_LINE_DIRECTION_IN;
+> 	}
+> 
+> and after cpp had its go on the source the compiler sees the exact same
+> thing, so I don't expect any size changes. The only change is that to
+> write (or understand) the above code, you have to know that 1
+> corresponds to GPIO input (or was it output?) while in the later
+> function it is obvious that we're talking about an input.
 
-Thanks Uwe! That was kind! I'm on Fedora but I guess I can find the
-multiarch binutils :) I'll try that tomorrow when I'm back at the
-office. Let's see what kind of results I can get from it.
+In almost all cases I'm involved in the original code is different:
 
-Unfortunately bunch of the GPIOs depend on x86 - so I need to see what
-I can compile in with decent effort. For my compile test I just hacked
-the Makefile to force all in and added some dummy macros to fix few
-missing functions :| But I guess I can get some results.
+	return !!foo();
 
-> 
-> Best regards
-> Uwe
-> 
+vs.
+
+	if (foo())
+		return A;
+	return B;
+
+-- 
+With Best Regards,
+Andy Shevchenko
+
 
