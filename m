@@ -1,25 +1,34 @@
-From: Corey Minyard <minyard@acm.org>
-Date: Thu, 7 Nov 2019 07:34:25 -0600
+From: Asmaa Mnebhi <Asmaa@mellanox.com>
+Date: Thu, 7 Nov 2019 14:23:29 +0000
 Subject: [PATCH v2] drivers: ipmi: Support for both IPMB Req and Resp
-In-Reply-To: <20191106182921.1086795-1-vijaykhemka@fb.com>
+In-Reply-To: <20191107133425.GA10276@minyard.net>
 References: <20191106182921.1086795-1-vijaykhemka@fb.com>
-Message-ID: <20191107133425.GA10276@minyard.net>
+ <20191107133425.GA10276@minyard.net>
+Message-ID: <DB6PR0501MB271256AD5BC602AAF90CBDA5DA780@DB6PR0501MB2712.eurprd05.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+Thanks Corey!
+
+-----Original Message-----
+From: Corey Minyard <tcminyard@gmail.com> On Behalf Of Corey Minyard
+Sent: Thursday, November 7, 2019 8:34 AM
+To: Vijay Khemka <vijaykhemka@fb.com>
+Cc: Arnd Bergmann <arnd@arndb.de>; Greg Kroah-Hartman <gregkh@linuxfoundation.org>; openipmi-developer at lists.sourceforge.net; linux-kernel at vger.kernel.org; cminyard at mvista.com; Asmaa Mnebhi <Asmaa@mellanox.com>; joel at jms.id.au; linux-aspeed at lists.ozlabs.org; sdasari at fb.com
+Subject: Re: [PATCH v2] drivers: ipmi: Support for both IPMB Req and Resp
+
 On Wed, Nov 06, 2019 at 10:29:21AM -0800, Vijay Khemka wrote:
-> Removed check for request or response in IPMB packets coming from
-> device as well as from host. Now it supports both way communication
-> to device via IPMB. Both request and response will be passed to
+> Removed check for request or response in IPMB packets coming from 
+> device as well as from host. Now it supports both way communication to 
+> device via IPMB. Both request and response will be passed to 
 > application.
 > 
 > Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
 
-Thanks, this is in my for-next tree now.  Asnaam, I took your previous
-comments as a "Reviewed-by", if that is ok.
+Thanks, this is in my for-next tree now.  Asnaam, I took your previous comments as a "Reviewed-by", if that is ok.
 
 -corey
 
@@ -27,7 +36,8 @@ comments as a "Reviewed-by", if that is ok.
 >  drivers/char/ipmi/ipmb_dev_int.c | 31 +++++++++----------------------
 >  1 file changed, 9 insertions(+), 22 deletions(-)
 > 
-> diff --git a/drivers/char/ipmi/ipmb_dev_int.c b/drivers/char/ipmi/ipmb_dev_int.c
+> diff --git a/drivers/char/ipmi/ipmb_dev_int.c 
+> b/drivers/char/ipmi/ipmb_dev_int.c
 > index 285e0b8f9a97..ae3bfba27526 100644
 > --- a/drivers/char/ipmi/ipmb_dev_int.c
 > +++ b/drivers/char/ipmi/ipmb_dev_int.c
@@ -75,7 +85,8 @@ comments as a "Reviewed-by", if that is ok.
 >  	return false;
 >  }
 >  
-> @@ -273,8 +261,7 @@ static int ipmb_slave_cb(struct i2c_client *client,
+> @@ -273,8 +261,7 @@ static int ipmb_slave_cb(struct i2c_client 
+> *client,
 >  
 >  	case I2C_SLAVE_STOP:
 >  		ipmb_dev->request.len = ipmb_dev->msg_idx;
@@ -85,6 +96,6 @@ comments as a "Reviewed-by", if that is ok.
 >  			ipmb_handle_request(ipmb_dev);
 >  		break;
 >  
-> -- 
+> --
 > 2.17.1
 > 
