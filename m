@@ -1,71 +1,69 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Fri,  8 Nov 2019 06:37:28 -0500
-Subject: [PATCH AUTOSEL 4.19 181/205] ARM: dts: aspeed: Fix I2C bus warnings
-In-Reply-To: <20191108113752.12502-1-sashal@kernel.org>
-References: <20191108113752.12502-1-sashal@kernel.org>
-Message-ID: <20191108113752.12502-181-sashal@kernel.org>
+From: Cédric Le Goater <clg@kaod.org>
+Date: Fri, 8 Nov 2019 08:57:57 +0100
+Subject: [PATCH] watchdog: aspeed: Fix clock behaviour for ast2600
+In-Reply-To: <20191108032905.22463-1-joel@jms.id.au>
+References: <20191108032905.22463-1-joel@jms.id.au>
+Message-ID: <b82e1ba9-7ad3-6fbe-710f-51afc573f738@kaod.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Rob Herring <robh@kernel.org>
+On 08/11/2019 04:29, Joel Stanley wrote:
+> The ast2600 no longer uses bit 4 in the control register to indicate a
+> 1MHz clock (It now controls weather this watchdog is reset by a SOC
+> reset). This means we do not want to set it. It also does not need to be
+> set for the ast2500, as it is read-only on that SoC.
+> 
+> The comment next to the clock rate selection wandered away from where it
+> was set, so put it back next to the register setting it's describing.
+> 
+> Fixes: b3528b487448 ("watchdog: aspeed: Add support for AST2600")
+> Signed-off-by: Joel Stanley <joel@jms.id.au>
 
-[ Upstream commit 1426d40e11f730e0c0fd3700a7048082f87b0e6e ]
 
-dtc has new checks for I2C buses. The ASpeed dts files have a node named
-'i2c' which causes a false positive warning. As the node is a 'simple-bus',
-correct the node name to be 'bus' to fix the warnings.
 
-arch/arm/boot/dts/aspeed-bmc-opp-lanyang.dtb: Warning (i2c_bus_bridge): /ahb/apb/i2c at 1e78a000: incorrect #size-cells for I2C bus
-arch/arm/boot/dts/aspeed-bmc-opp-romulus.dtb: Warning (i2c_bus_bridge): /ahb/apb/i2c at 1e78a000: incorrect #size-cells for I2C bus
-arch/arm/boot/dts/aspeed-ast2500-evb.dtb: Warning (i2c_bus_bridge): /ahb/apb/i2c at 1e78a000: incorrect #size-cells for I2C bus
-arch/arm/boot/dts/aspeed-bmc-arm-centriq2400-rep.dtb: Warning (i2c_bus_bridge): /ahb/apb/i2c at 1e78a000: incorrect #size-cells for I2C bus
-arch/arm/boot/dts/aspeed-bmc-intel-s2600wf.dtb: Warning (i2c_bus_bridge): /ahb/apb/i2c at 1e78a000: incorrect #size-cells for I2C bus
-arch/arm/boot/dts/aspeed-bmc-opp-palmetto.dtb: Warning (i2c_bus_bridge): /ahb/apb/i2c at 1e78a000: incorrect #size-cells for I2C bus
-arch/arm/boot/dts/aspeed-bmc-opp-witherspoon.dtb: Warning (i2c_bus_bridge): /ahb/apb/i2c at 1e78a000: incorrect #size-cells for I2C bus
-arch/arm/boot/dts/aspeed-bmc-opp-zaius.dtb: Warning (i2c_bus_bridge): /ahb/apb/i2c at 1e78a000: incorrect #size-cells for I2C bus
-arch/arm/boot/dts/aspeed-bmc-portwell-neptune.dtb: Warning (i2c_bus_bridge): /ahb/apb/i2c at 1e78a000: incorrect #size-cells for I2C bus
-arch/arm/boot/dts/aspeed-bmc-quanta-q71l.dtb: Warning (i2c_bus_bridge): /ahb/apb/i2c at 1e78a000: incorrect #size-cells for I2C bus
+Reviewed-by: C?dric Le Goater <clg@kaod.org>
 
-Cc: Joel Stanley <joel@jms.id.au>
-Cc: Andrew Jeffery <andrew@aj.id.au>
-Cc: linux-aspeed at lists.ozlabs.org
-Signed-off-by: Rob Herring <robh@kernel.org>
-Signed-off-by: Joel Stanley <joel@jms.id.au>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- arch/arm/boot/dts/aspeed-g4.dtsi | 2 +-
- arch/arm/boot/dts/aspeed-g5.dtsi | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/arm/boot/dts/aspeed-g4.dtsi b/arch/arm/boot/dts/aspeed-g4.dtsi
-index b23a983f95a53..69f6b9d2e7e7d 100644
---- a/arch/arm/boot/dts/aspeed-g4.dtsi
-+++ b/arch/arm/boot/dts/aspeed-g4.dtsi
-@@ -350,7 +350,7 @@
- 				status = "disabled";
- 			};
- 
--			i2c: i2c at 1e78a000 {
-+			i2c: bus at 1e78a000 {
- 				compatible = "simple-bus";
- 				#address-cells = <1>;
- 				#size-cells = <1>;
-diff --git a/arch/arm/boot/dts/aspeed-g5.dtsi b/arch/arm/boot/dts/aspeed-g5.dtsi
-index 87fdc146ff525..d107459fc0f89 100644
---- a/arch/arm/boot/dts/aspeed-g5.dtsi
-+++ b/arch/arm/boot/dts/aspeed-g5.dtsi
-@@ -410,7 +410,7 @@
- 				status = "disabled";
- 			};
- 
--			i2c: i2c at 1e78a000 {
-+			i2c: bus at 1e78a000 {
- 				compatible = "simple-bus";
- 				#address-cells = <1>;
- 				#size-cells = <1>;
--- 
-2.20.1
+> ---
+>  drivers/watchdog/aspeed_wdt.c | 16 ++++++++++------
+>  1 file changed, 10 insertions(+), 6 deletions(-)
+> 
+> diff --git a/drivers/watchdog/aspeed_wdt.c b/drivers/watchdog/aspeed_wdt.c
+> index 4ec0906bf12c..7e00960651fa 100644
+> --- a/drivers/watchdog/aspeed_wdt.c
+> +++ b/drivers/watchdog/aspeed_wdt.c
+> @@ -258,11 +258,6 @@ static int aspeed_wdt_probe(struct platform_device *pdev)
+>  	if (IS_ERR(wdt->base))
+>  		return PTR_ERR(wdt->base);
+>  
+> -	/*
+> -	 * The ast2400 wdt can run at PCLK, or 1MHz. The ast2500 only
+> -	 * runs at 1MHz. We chose to always run at 1MHz, as there's no
+> -	 * good reason to have a faster watchdog counter.
+> -	 */
+>  	wdt->wdd.info = &aspeed_wdt_info;
+>  	wdt->wdd.ops = &aspeed_wdt_ops;
+>  	wdt->wdd.max_hw_heartbeat_ms = WDT_MAX_TIMEOUT_MS;
+> @@ -278,7 +273,16 @@ static int aspeed_wdt_probe(struct platform_device *pdev)
+>  		return -EINVAL;
+>  	config = ofdid->data;
+>  
+> -	wdt->ctrl = WDT_CTRL_1MHZ_CLK;
+> +	/*
+> +	 * On clock rates:
+> +	 *  - ast2400 wdt can run at PCLK, or 1MHz
+> +	 *  - ast2500 only runs at 1MHz, hard coding bit 4 to 1
+> +	 *  - ast2600 always runs at 1MHz
+> +	 *
+> +	 * Set the ast2400 to run at 1MHz as it simplifies the driver.
+> +	 */
+> +	if (of_device_is_compatible(np, "aspeed,ast2400-wdt"))
+> +		wdt->ctrl = WDT_CTRL_1MHZ_CLK;
+>  
+>  	/*
+>  	 * Control reset on a per-device basis to ensure the
+> 
 
