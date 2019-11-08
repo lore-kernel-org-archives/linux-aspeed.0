@@ -1,79 +1,74 @@
-From: Joel Stanley <joel@jms.id.au>
-Date: Thu, 21 Nov 2019 02:52:39 +0000
-Subject: [PATCH] aspeed: fix snoop_file_poll()'s return type
-In-Reply-To: <787e54c2-2fe3-4afc-a69b-94771726194b@www.fastmail.com>
-References: <20191120000647.30551-1-luc.vanoostenryck@gmail.com>
- <787e54c2-2fe3-4afc-a69b-94771726194b@www.fastmail.com>
-Message-ID: <CACPK8XfO=F-BtCuDqyQODJv=6joYmyFiQ5eOYC5YuDJhcLSJtw@mail.gmail.com>
+From: Jerry Hoemann <jerry.hoemann@hpe.com>
+Date: Fri, 8 Nov 2019 11:05:17 -0700
+Subject: [PATCH] watchdog: aspeed: Fix clock behaviour for ast2600
+In-Reply-To: <20191108032905.22463-1-joel@jms.id.au>
+References: <20191108032905.22463-1-joel@jms.id.au>
+Message-ID: <20191108180517.GB150483@anatevka.americas.hpqcorp.net>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 20 Nov 2019 at 05:42, Andrew Jeffery <andrew@aj.id.au> wrote:
->
-> On Wed, 20 Nov 2019, at 10:36, Luc Van Oostenryck wrote:
-> > snoop_file_poll() is defined as returning 'unsigned int' but the
-> > .poll method is declared as returning '__poll_t', a bitwise type.
-> >
-> > Fix this by using the proper return type and using the EPOLL
-> > constants instead of the POLL ones, as required for __poll_t.
-> >
-> > CC: Joel Stanley <joel@jms.id.au>
-> > CC: Andrew Jeffery <andrew@aj.id.au>
-> > CC: linux-aspeed at lists.ozlabs.org
-> > CC: linux-arm-kernel at lists.infradead.org
-> > Signed-off-by: Luc Van Oostenryck <luc.vanoostenryck@gmail.com>
-> > ---
-> >  drivers/soc/aspeed/aspeed-lpc-snoop.c | 4 ++--
-> >  1 file changed, 2 insertions(+), 2 deletions(-)
-> >
-> > diff --git a/drivers/soc/aspeed/aspeed-lpc-snoop.c
-> > b/drivers/soc/aspeed/aspeed-lpc-snoop.c
-> > index 48f7ac238861..f3d8d53ab84d 100644
-> > --- a/drivers/soc/aspeed/aspeed-lpc-snoop.c
-> > +++ b/drivers/soc/aspeed/aspeed-lpc-snoop.c
-> > @@ -97,13 +97,13 @@ static ssize_t snoop_file_read(struct file *file,
-> > char __user *buffer,
-> >       return ret ? ret : copied;
-> >  }
-> >
-> > -static unsigned int snoop_file_poll(struct file *file,
-> > +static __poll_t snoop_file_poll(struct file *file,
-> >                                   struct poll_table_struct *pt)
-> >  {
-> >       struct aspeed_lpc_snoop_channel *chan = snoop_file_to_chan(file);
-> >
-> >       poll_wait(file, &chan->wq, pt);
-> > -     return !kfifo_is_empty(&chan->fifo) ? POLLIN : 0;
-> > +     return !kfifo_is_empty(&chan->fifo) ? EPOLLIN : 0;
->
-> Looks fine to me as POLLIN and EPOLLIN evaluate to the same value despite
-> the type difference.
+On Fri, Nov 08, 2019 at 01:59:05PM +1030, Joel Stanley wrote:
+> The ast2600 no longer uses bit 4 in the control register to indicate a
+> 1MHz clock (It now controls weather this watchdog is reset by a SOC
+> reset). This means we do not want to set it. It also does not need to be
+> set for the ast2500, as it is read-only on that SoC.
 
-I assume Luc was using sparse to check:
 
-CHECK   ../drivers/soc/aspeed/aspeed-lpc-snoop.c
-../drivers/soc/aspeed/aspeed-lpc-snoop.c:112:19: warning: incorrect
-type in initializer (different base types)
-../drivers/soc/aspeed/aspeed-lpc-snoop.c:112:19:    expected
-restricted __poll_t ( *poll )( ... )
-../drivers/soc/aspeed/aspeed-lpc-snoop.c:112:19:    got unsigned int (
-* )( ... )
+s/weather/whether/
 
-If you fix the return type:
 
-  CHECK   ../drivers/soc/aspeed/aspeed-lpc-snoop.c
-../drivers/soc/aspeed/aspeed-lpc-snoop.c:106:45: warning: incorrect
-type in return expression (different base types)
-../drivers/soc/aspeed/aspeed-lpc-snoop.c:106:45:    expected restricted __poll_t
-../drivers/soc/aspeed/aspeed-lpc-snoop.c:106:45:    got int
+> 
+> The comment next to the clock rate selection wandered away from where it
+> was set, so put it back next to the register setting it's describing.
+> 
+> Fixes: b3528b487448 ("watchdog: aspeed: Add support for AST2600")
+> Signed-off-by: Joel Stanley <joel@jms.id.au>
+> ---
+>  drivers/watchdog/aspeed_wdt.c | 16 ++++++++++------
+>  1 file changed, 10 insertions(+), 6 deletions(-)
+> 
+> diff --git a/drivers/watchdog/aspeed_wdt.c b/drivers/watchdog/aspeed_wdt.c
+> index 4ec0906bf12c..7e00960651fa 100644
+> --- a/drivers/watchdog/aspeed_wdt.c
+> +++ b/drivers/watchdog/aspeed_wdt.c
+> @@ -258,11 +258,6 @@ static int aspeed_wdt_probe(struct platform_device *pdev)
+>  	if (IS_ERR(wdt->base))
+>  		return PTR_ERR(wdt->base);
+>  
+> -	/*
+> -	 * The ast2400 wdt can run at PCLK, or 1MHz. The ast2500 only
+> -	 * runs at 1MHz. We chose to always run at 1MHz, as there's no
+> -	 * good reason to have a faster watchdog counter.
+> -	 */
+>  	wdt->wdd.info = &aspeed_wdt_info;
+>  	wdt->wdd.ops = &aspeed_wdt_ops;
+>  	wdt->wdd.max_hw_heartbeat_ms = WDT_MAX_TIMEOUT_MS;
+> @@ -278,7 +273,16 @@ static int aspeed_wdt_probe(struct platform_device *pdev)
+>  		return -EINVAL;
+>  	config = ofdid->data;
+>  
+> -	wdt->ctrl = WDT_CTRL_1MHZ_CLK;
+> +	/*
+> +	 * On clock rates:
+> +	 *  - ast2400 wdt can run at PCLK, or 1MHz
+> +	 *  - ast2500 only runs at 1MHz, hard coding bit 4 to 1
+> +	 *  - ast2600 always runs at 1MHz
+> +	 *
+> +	 * Set the ast2400 to run at 1MHz as it simplifies the driver.
+> +	 */
+> +	if (of_device_is_compatible(np, "aspeed,ast2400-wdt"))
+> +		wdt->ctrl = WDT_CTRL_1MHZ_CLK;
+>  
+>  	/*
+>  	 * Control reset on a per-device basis to ensure the
+> -- 
+> 2.24.0.rc1
 
-Reviewed-by: Joel Stanley <joel@jms.id.au>
+-- 
 
-I will send this to the ARM SOC maintainer. Thanks Luc!
-
-Cheers,
-
-Joel
+-----------------------------------------------------------------------------
+Jerry Hoemann                  Software Engineer   Hewlett Packard Enterprise
+-----------------------------------------------------------------------------
