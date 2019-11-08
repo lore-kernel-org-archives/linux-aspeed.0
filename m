@@ -1,64 +1,22 @@
 From: Stephen Boyd <sboyd@kernel.org>
-Date: Fri, 08 Nov 2019 08:42:54 -0800
-Subject: [PATCH v2 1/2] dt-bindings: clock: Add AST2600 RMII RCLK gate
- definitions
-In-Reply-To: <CACPK8Xe7dmeVjQYObzOw9LdwxH3+1XTcU+RJOZo5C69j8d-yOg@mail.gmail.com>
+Date: Fri, 08 Nov 2019 08:48:53 -0800
+Subject: [PATCH v2 2/2] clk: ast2600: Add RMII RCLK gates for all four MACs
+In-Reply-To: <20191010020725.3990-3-andrew@aj.id.au>
 References: <20191010020725.3990-1-andrew@aj.id.au>
- <20191010020725.3990-2-andrew@aj.id.au>
- <CACPK8XcGgGsoLNpCccKPb-5bojQS4c5BePewwocc-z29On7Rjg@mail.gmail.com>
- <20191107230029.75ED72178F@mail.kernel.org>
- <CACPK8Xe7dmeVjQYObzOw9LdwxH3+1XTcU+RJOZo5C69j8d-yOg@mail.gmail.com>
-Message-ID: <20191108164255.44B1F206A3@mail.kernel.org>
+ <20191010020725.3990-3-andrew@aj.id.au>
+Message-ID: <20191108164853.EA1C22178F@mail.kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Quoting Joel Stanley (2019-11-08 03:29:41)
-> On Thu, 7 Nov 2019 at 23:00, Stephen Boyd <sboyd@kernel.org> wrote:
-> >
-> > Quoting Joel Stanley (2019-10-31 21:50:42)
-> > > Hi clock maintainers,
-> > >
-> > > On Thu, 10 Oct 2019 at 02:06, Andrew Jeffery <andrew@aj.id.au> wrote:
-> > > >
-> > > > The AST2600 has an explicit gate for the RMII RCLK for each of the four
-> > > > MACs.
-> > > >
-> > > > Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
-> > >
-> > > I needed this patch and the aspeed-clock.h one for the aspeed dts
-> > > tree, so I've put them in a branch called "aspeed-clk-for-v5.5" and
-> > > merged that into the aspeed tree. Could you merge that into the clock
-> > > tree when you get to merging these ones?
-> > >
-> > > https://git.kernel.org/pub/scm/linux/kernel/git/joel/aspeed.git/log/?h=aspeed-clk-for-v5.5
-> > >
-> >
-> > Can you send a pull request please?
+Quoting Andrew Jeffery (2019-10-09 19:07:25)
+> RCLK is a fixed 50MHz clock derived from HPLL/HCLK that is described by a
+> single gate for each MAC.
 > 
-> Sure. Here you go. Let me know if you need it in a separate email.
-> 
-> The following changes since commit d8d9ad83a497f78edd4016df0919a49628dcafbc:
-> 
->   dt-bindings: clock: Add AST2600 RMII RCLK gate definitions
-> (2019-11-01 15:01:18 +1030)
-> 
-> are available in the Git repository at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/joel/aspeed.git
-> tags/aspeed-5.5-clk
-> 
-> for you to fetch changes up to d8d9ad83a497f78edd4016df0919a49628dcafbc:
-> 
->   dt-bindings: clock: Add AST2600 RMII RCLK gate definitions
-> (2019-11-01 15:01:18 +1030)
-> 
-> ----------------------------------------------------------------
-> ASPEED clock device tree bindings for 5.5
-> 
-> ----------------------------------------------------------------
+> Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
+> ---
 
-The diffstat got lost? Anyway, thanks! I pulled it into clk-next.
+Applied to clk-next
 
