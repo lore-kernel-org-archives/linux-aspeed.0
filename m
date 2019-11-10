@@ -1,41 +1,48 @@
-From: YueHaibing <yuehaibing@huawei.com>
-Date: Sat, 9 Nov 2019 11:36:34 +0800
-Subject: [PATCH v2 -next] fsi: aspeed: Use devm_kfree in
- aspeed_master_release()
-In-Reply-To: <20191109033209.45244-1-yuehaibing@huawei.com>
-References: <20191109033209.45244-1-yuehaibing@huawei.com>
-Message-ID: <20191109033634.30544-1-yuehaibing@huawei.com>
+From: Marc Zyngier <maz@kernel.org>
+Date: Sun, 10 Nov 2019 14:53:12 +0000
+Subject: [PATCH 02/12] irqchip: Add Aspeed SCU interrupt controller
+In-Reply-To: <1573244313-9190-3-git-send-email-eajames@linux.ibm.com>
+References: <1573244313-9190-1-git-send-email-eajames@linux.ibm.com>
+ <1573244313-9190-3-git-send-email-eajames@linux.ibm.com>
+Message-ID: <20191110145312.3805b25b@why>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-'aspeed' is allocated by devm_kzalloc(), it should not be
-freed by kfree().
+On Fri,  8 Nov 2019 14:18:23 -0600
+Eddie James <eajames@linux.ibm.com> wrote:
 
-Fixes: 1edac1269c02 ("fsi: Add ast2600 master driver")
-Signed-off-by: YueHaibing <yuehaibing@huawei.com>
----
-v2: fix log typos
----
- drivers/fsi/fsi-master-aspeed.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Hi Eddie,
 
-diff --git a/drivers/fsi/fsi-master-aspeed.c b/drivers/fsi/fsi-master-aspeed.c
-index 3dd82dd..0f63eec 100644
---- a/drivers/fsi/fsi-master-aspeed.c
-+++ b/drivers/fsi/fsi-master-aspeed.c
-@@ -361,7 +361,7 @@ static void aspeed_master_release(struct device *dev)
- 	struct fsi_master_aspeed *aspeed =
- 		to_fsi_master_aspeed(dev_to_fsi_master(dev));
- 
--	kfree(aspeed);
-+	devm_kfree(dev, aspeed);
- }
- 
- /* mmode encoders */
+> The Aspeed SOCs provide some interrupts through the System Control
+> Unit registers. Add an interrupt controller that provides these
+> interrupts to the system.
+> 
+> Signed-off-by: Eddie James <eajames@linux.ibm.com>
+> ---
+>  MAINTAINERS                         |   1 +
+>  drivers/irqchip/Makefile            |   2 +-
+>  drivers/irqchip/irq-aspeed-scu-ic.c | 233 ++++++++++++++++++++++++++++++++++++
+>  3 files changed, 235 insertions(+), 1 deletion(-)
+>  create mode 100644 drivers/irqchip/irq-aspeed-scu-ic.c
+
+[...]
+
+> +static int aspeed_scu_ic_map(struct irq_domain *domain, unsigned int irq,
+> +			     irq_hw_number_t hwirq)
+> +{
+> +	irq_set_chip_and_handler(irq, &aspeed_scu_ic_chip, handle_simple_irq);
+
+handle_simple_irq is usually wrong, and works badly with threaded
+interrupts. I suggest you'd change it to handle_level_irq, which
+probably matches the behaviour of the controller.
+
+Otherwise, this looks good.
+
+Thanks,
+
+	M.
 -- 
-2.7.4
-
-
+Jazz is not dead. It just smells funny...
