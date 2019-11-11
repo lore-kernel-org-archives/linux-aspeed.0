@@ -1,48 +1,41 @@
-From: Marc Zyngier <maz@kernel.org>
-Date: Sun, 10 Nov 2019 14:53:12 +0000
-Subject: [PATCH 02/12] irqchip: Add Aspeed SCU interrupt controller
-In-Reply-To: <1573244313-9190-3-git-send-email-eajames@linux.ibm.com>
-References: <1573244313-9190-1-git-send-email-eajames@linux.ibm.com>
- <1573244313-9190-3-git-send-email-eajames@linux.ibm.com>
-Message-ID: <20191110145312.3805b25b@why>
+From: Guenter Roeck <linux@roeck-us.net>
+Date: Mon, 11 Nov 2019 06:16:06 -0800
+Subject: [PATCH -next] fsi: aspeed: Use devm_kfree in
+ aspeed_master_release()
+In-Reply-To: <20191109033209.45244-1-yuehaibing@huawei.com>
+References: <20191109033209.45244-1-yuehaibing@huawei.com>
+Message-ID: <62eacd00-300c-bc3e-b680-605bd0b7a983@roeck-us.net>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri,  8 Nov 2019 14:18:23 -0600
-Eddie James <eajames@linux.ibm.com> wrote:
-
-Hi Eddie,
-
-> The Aspeed SOCs provide some interrupts through the System Control
-> Unit registers. Add an interrupt controller that provides these
-> interrupts to the system.
+On 11/8/19 7:32 PM, YueHaibing wrote:
+> 'aspeed' is allocted by devm_kfree(), it should not be
+> freed bt kfree().
 > 
-> Signed-off-by: Eddie James <eajames@linux.ibm.com>
+> Fixes: 1edac1269c02 ("fsi: Add ast2600 master driver")
+> Signed-off-by: YueHaibing <yuehaibing@huawei.com>
 > ---
->  MAINTAINERS                         |   1 +
->  drivers/irqchip/Makefile            |   2 +-
->  drivers/irqchip/irq-aspeed-scu-ic.c | 233 ++++++++++++++++++++++++++++++++++++
->  3 files changed, 235 insertions(+), 1 deletion(-)
->  create mode 100644 drivers/irqchip/irq-aspeed-scu-ic.c
+>   drivers/fsi/fsi-master-aspeed.c | 2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/fsi/fsi-master-aspeed.c b/drivers/fsi/fsi-master-aspeed.c
+> index 3dd82dd..0f63eec 100644
+> --- a/drivers/fsi/fsi-master-aspeed.c
+> +++ b/drivers/fsi/fsi-master-aspeed.c
+> @@ -361,7 +361,7 @@ static void aspeed_master_release(struct device *dev)
+>   	struct fsi_master_aspeed *aspeed =
+>   		to_fsi_master_aspeed(dev_to_fsi_master(dev));
+>   
+> -	kfree(aspeed);
+> +	devm_kfree(dev, aspeed);
+>   }
+>   
+>   /* mmode encoders */
+> 
+The memory is attached to the device, and will thus be freed once the device
+is released. Why is the release function needed in the first place ?
 
-[...]
-
-> +static int aspeed_scu_ic_map(struct irq_domain *domain, unsigned int irq,
-> +			     irq_hw_number_t hwirq)
-> +{
-> +	irq_set_chip_and_handler(irq, &aspeed_scu_ic_chip, handle_simple_irq);
-
-handle_simple_irq is usually wrong, and works badly with threaded
-interrupts. I suggest you'd change it to handle_level_irq, which
-probably matches the behaviour of the controller.
-
-Otherwise, this looks good.
-
-Thanks,
-
-	M.
--- 
-Jazz is not dead. It just smells funny...
+Guenter
