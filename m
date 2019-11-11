@@ -1,22 +1,25 @@
 From: Guenter Roeck <linux@roeck-us.net>
-Date: Mon, 11 Nov 2019 06:16:06 -0800
-Subject: [PATCH -next] fsi: aspeed: Use devm_kfree in
+Date: Mon, 11 Nov 2019 06:17:47 -0800
+Subject: [PATCH v2 -next] fsi: aspeed: Use devm_kfree in
  aspeed_master_release()
-In-Reply-To: <20191109033209.45244-1-yuehaibing@huawei.com>
+In-Reply-To: <20191109033634.30544-1-yuehaibing@huawei.com>
 References: <20191109033209.45244-1-yuehaibing@huawei.com>
-Message-ID: <62eacd00-300c-bc3e-b680-605bd0b7a983@roeck-us.net>
+ <20191109033634.30544-1-yuehaibing@huawei.com>
+Message-ID: <c2b2ca4c-d164-5c16-d518-f9040b81c5ea@roeck-us.net>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 11/8/19 7:32 PM, YueHaibing wrote:
-> 'aspeed' is allocted by devm_kfree(), it should not be
-> freed bt kfree().
+On 11/8/19 7:36 PM, YueHaibing wrote:
+> 'aspeed' is allocated by devm_kzalloc(), it should not be
+> freed by kfree().
 > 
 > Fixes: 1edac1269c02 ("fsi: Add ast2600 master driver")
 > Signed-off-by: YueHaibing <yuehaibing@huawei.com>
+> ---
+> v2: fix log typos
 > ---
 >   drivers/fsi/fsi-master-aspeed.c | 2 +-
 >   1 file changed, 1 insertion(+), 1 deletion(-)
@@ -35,7 +38,7 @@ On 11/8/19 7:32 PM, YueHaibing wrote:
 >   
 >   /* mmode encoders */
 > 
-The memory is attached to the device, and will thus be freed once the device
-is released. Why is the release function needed in the first place ?
+Same question as before: Why is there a release function in the first place ?
 
 Guenter
+
