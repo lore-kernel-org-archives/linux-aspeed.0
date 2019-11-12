@@ -1,31 +1,35 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Tue, 12 Nov 2019 16:58:52 +1030
-Subject: [PATCH 0/5] ARM: config: ASPEED updates for 5.5
-Message-ID: <20191112062857.32638-1-joel@jms.id.au>
+Date: Tue, 12 Nov 2019 16:58:53 +1030
+Subject: [PATCH 1/5] ARM: config: aspeed-g5: Enable 8250_DW quirks
+In-Reply-To: <20191112062857.32638-1-joel@jms.id.au>
+References: <20191112062857.32638-1-joel@jms.id.au>
+Message-ID: <20191112062857.32638-2-joel@jms.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Here are some additions to the defconfigs for ASPEED machines that I
-intend on sending for 5.5.
+This driver option is used by the AST2600 A0 boards to work around a
+hardware issue.
 
-If you have time to ack them that would be appreciated.
+Signed-off-by: Joel Stanley <joel@jms.id.au>
+---
+ arch/arm/configs/aspeed_g5_defconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
-Joel Stanley (5):
-  ARM: config: aspeed-g5: Enable 8250_DW quirks
-  ARM: config: aspeed-g5: Add SGPIO and FSI drivers
-  ARM: config: aspeed-g4: Add MMC, and cleanup
-  ARM: configs: multi_v7: ASPEED network, gpio, FSI
-  ARM: config: multi_v5: ASPEED SDHCI, SGPIO
-
- arch/arm/configs/aspeed_g4_defconfig | 18 ++++++++++++------
- arch/arm/configs/aspeed_g5_defconfig |  4 ++++
- arch/arm/configs/multi_v5_defconfig  |  4 ++++
- arch/arm/configs/multi_v7_defconfig  |  9 +++++++++
- 4 files changed, 29 insertions(+), 6 deletions(-)
-
+diff --git a/arch/arm/configs/aspeed_g5_defconfig b/arch/arm/configs/aspeed_g5_defconfig
+index 597536cc9573..b87508c7056c 100644
+--- a/arch/arm/configs/aspeed_g5_defconfig
++++ b/arch/arm/configs/aspeed_g5_defconfig
+@@ -139,6 +139,7 @@ CONFIG_SERIAL_8250_RUNTIME_UARTS=6
+ CONFIG_SERIAL_8250_EXTENDED=y
+ CONFIG_SERIAL_8250_ASPEED_VUART=y
+ CONFIG_SERIAL_8250_SHARE_IRQ=y
++CONFIG_SERIAL_8250_DW=y
+ CONFIG_SERIAL_OF_PLATFORM=y
+ CONFIG_ASPEED_KCS_IPMI_BMC=y
+ CONFIG_ASPEED_BT_IPMI_BMC=y
 -- 
 2.24.0
 
