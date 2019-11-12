@@ -1,5 +1,5 @@
 From: Asmaa Mnebhi <Asmaa@mellanox.com>
-Date: Tue, 12 Nov 2019 20:48:06 +0000
+Date: Tue, 12 Nov 2019 22:06:00 +0000
 Subject: [PATCH 2/2] drivers: ipmi: Modify max length of IPMB packet
 In-Reply-To: <20191112202932.GJ2882@minyard.net>
 References: <20191112023610.3644314-1-vijaykhemka@fb.com>
@@ -7,14 +7,14 @@ References: <20191112023610.3644314-1-vijaykhemka@fb.com>
  <20191112124845.GE2882@minyard.net>
  <7BC487D6-6ACA-46CE-A751-8367FEDEE647@fb.com>
  <20191112202932.GJ2882@minyard.net>
-Message-ID: <DB6PR0501MB2712E7F87DD479BE23A99E21DA770@DB6PR0501MB2712.eurprd05.prod.outlook.com>
+Message-ID: <DB6PR0501MB27127CF534336BDEB5D005FFDA770@DB6PR0501MB2712.eurprd05.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-
+Also, let me clarify one thing. It doesn't matter how big the response is. In my testing, I also had some responses that are over 128 bytes, and this driver still works. It is the user space program which determines the last bytes received. The 128 bytes is the max number of bytes handled by your i2c/smbus driver at each i2c transaction. My i2c driver can only transmit 128 bytes at a time. So just like Corey pointed out, it would be better to pass this through ACPI/device tree.
 
 -----Original Message-----
 From: Corey Minyard <tcminyard@gmail.com> On Behalf Of Corey Minyard
@@ -44,8 +44,6 @@ On Tue, Nov 12, 2019 at 07:56:34PM +0000, Vijay Khemka wrote:
 Hmm.  Well, that is a pretty significant violation of the spec, but there's nothing hard in the protocol that prohibits it, I guess.
 
 If Asmaa is ok with this, I'm ok with it, too.
-
-It doesn't bother me either. But I would like to do some experiment/testing first before validating it. I will get back to you. Vijay, how are you doing your testing?
 
 -corey
 
