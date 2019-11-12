@@ -1,91 +1,65 @@
-From: Vijay Khemka <vijaykhemka@fb.com>
-Date: Mon, 11 Nov 2019 18:36:09 -0800
-Subject: [PATCH 1/2] drivers: ipmi: Support raw i2c packet in IPMB
-Message-ID: <20191112023610.3644314-1-vijaykhemka@fb.com>
+From: YueHaibing <yuehaibing@huawei.com>
+Date: Tue, 12 Nov 2019 11:47:44 +0800
+Subject: [PATCH v3 -next] fsi: aspeed: Fix aspeed device free
+In-Reply-To: <20191109033634.30544-1-yuehaibing@huawei.com>
+References: <20191109033634.30544-1-yuehaibing@huawei.com>
+Message-ID: <20191112034744.10180-1-yuehaibing@huawei.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Many IPMB devices doesn't support smbus protocol and current driver
-support only smbus devices. So added support for raw i2c packets.
+'aspeed' is allocted by devm_kfree(), it should not be kfree().
+In fact it will be freed while the device released.
+Also we grap reference after fsi_master_register() success,
+so should put it in fsi_master_aspeed_remove().
 
-Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
+Fixes: 1edac1269c02 ("fsi: Add ast2600 master driver")
+Signed-off-by: YueHaibing <yuehaibing@huawei.com>
 ---
- drivers/char/ipmi/Kconfig        |  6 ++++++
- drivers/char/ipmi/ipmb_dev_int.c | 30 ++++++++++++++++++++++++++++++
- 2 files changed, 36 insertions(+)
+v3: remove unneeded release() and put last reference
+v2: fix log typos
+---
+ drivers/fsi/fsi-master-aspeed.c | 10 +---------
+ 1 file changed, 1 insertion(+), 9 deletions(-)
 
-diff --git a/drivers/char/ipmi/Kconfig b/drivers/char/ipmi/Kconfig
-index a9cfe4c05e64..e5268443b478 100644
---- a/drivers/char/ipmi/Kconfig
-+++ b/drivers/char/ipmi/Kconfig
-@@ -139,3 +139,9 @@ config IPMB_DEVICE_INTERFACE
- 	  Provides a driver for a device (Satellite MC) to
- 	  receive requests and send responses back to the BMC via
- 	  the IPMB interface. This module requires I2C support.
-+
-+config IPMB_SMBUS_DISABLE
-+	bool 'Disable SMBUS protocol for sending packet to IPMB device'
-+	depends on IPMB_DEVICE_INTERFACE
-+	help
-+	  provides functionality of sending raw i2c packets to IPMB device.
-diff --git a/drivers/char/ipmi/ipmb_dev_int.c b/drivers/char/ipmi/ipmb_dev_int.c
-index ae3bfba27526..2419b9a928b2 100644
---- a/drivers/char/ipmi/ipmb_dev_int.c
-+++ b/drivers/char/ipmi/ipmb_dev_int.c
-@@ -118,6 +118,10 @@ static ssize_t ipmb_write(struct file *file, const char __user *buf,
- 	struct ipmb_dev *ipmb_dev = to_ipmb_dev(file);
- 	u8 rq_sa, netf_rq_lun, msg_len;
- 	union i2c_smbus_data data;
-+#ifdef CONFIG_IPMB_SMBUS_DISABLE
-+	unsigned char *i2c_buf;
-+	struct i2c_msg i2c_msg;
-+#endif
- 	u8 msg[MAX_MSG_LEN];
- 	ssize_t ret;
- 
-@@ -133,6 +137,31 @@ static ssize_t ipmb_write(struct file *file, const char __user *buf,
- 	rq_sa = GET_7BIT_ADDR(msg[RQ_SA_8BIT_IDX]);
- 	netf_rq_lun = msg[NETFN_LUN_IDX];
- 
-+#ifdef CONFIG_IPMB_SMBUS_DISABLE
-+	/*
-+	 * subtract 1 byte (rq_sa) from the length of the msg passed to
-+	 * raw i2c_transfer
-+	 */
-+	msg_len = msg[IPMB_MSG_LEN_IDX] - 1;
-+
-+	i2c_buf = kzalloc(msg_len, GFP_KERNEL);
-+	if (!i2c_buf)
-+		return -EFAULT;
-+
-+	/* Copy message to buffer except first 2 bytes (length and address) */
-+	memcpy(i2c_buf, msg+2, msg_len);
-+
-+	i2c_msg.addr = rq_sa;
-+	i2c_msg.flags = ipmb_dev->client->flags &
-+			(I2C_M_TEN | I2C_CLIENT_PEC | I2C_CLIENT_SCCB);
-+	i2c_msg.len = msg_len;
-+	i2c_msg.buf = i2c_buf;
-+
-+	ret = i2c_transfer(ipmb_dev->client->adapter, &i2c_msg, 1);
-+	kfree(i2c_buf);
-+
-+	return (ret == 1) ? count : ret;
-+#else
- 	/*
- 	 * subtract rq_sa and netf_rq_lun from the length of the msg passed to
- 	 * i2c_smbus_xfer
-@@ -149,6 +178,7 @@ static ssize_t ipmb_write(struct file *file, const char __user *buf,
- 			     I2C_SMBUS_BLOCK_DATA, &data);
- 
- 	return ret ? : count;
-+#endif
+diff --git a/drivers/fsi/fsi-master-aspeed.c b/drivers/fsi/fsi-master-aspeed.c
+index f49742b..01a7f24 100644
+--- a/drivers/fsi/fsi-master-aspeed.c
++++ b/drivers/fsi/fsi-master-aspeed.c
+@@ -350,14 +350,6 @@ static int aspeed_master_break(struct fsi_master *master, int link)
+ 	return aspeed_master_write(master, link, 0, addr, &cmd, 4);
  }
  
- static unsigned int ipmb_poll(struct file *file, poll_table *wait)
+-static void aspeed_master_release(struct device *dev)
+-{
+-	struct fsi_master_aspeed *aspeed =
+-		to_fsi_master_aspeed(dev_to_fsi_master(dev));
+-
+-	kfree(aspeed);
+-}
+-
+ /* mmode encoders */
+ static inline u32 fsi_mmode_crs0(u32 x)
+ {
+@@ -483,7 +475,6 @@ static int fsi_master_aspeed_probe(struct platform_device *pdev)
+ 	dev_info(&pdev->dev, "hub version %08x (%d links)\n", reg, links);
+ 
+ 	aspeed->master.dev.parent = &pdev->dev;
+-	aspeed->master.dev.release = aspeed_master_release;
+ 	aspeed->master.dev.of_node = of_node_get(dev_of_node(&pdev->dev));
+ 
+ 	aspeed->master.n_links = links;
+@@ -522,6 +513,7 @@ static int fsi_master_aspeed_remove(struct platform_device *pdev)
+ 
+ 	fsi_master_unregister(&aspeed->master);
+ 	clk_disable_unprepare(aspeed->clk);
++	put_device(&aspeed->master.dev);
+ 
+ 	return 0;
+ }
 -- 
-2.17.1
+2.7.4
+
 
