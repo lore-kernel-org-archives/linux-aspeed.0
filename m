@@ -1,36 +1,91 @@
 From: Vijay Khemka <vijaykhemka@fb.com>
-Date: Mon, 11 Nov 2019 18:36:10 -0800
-Subject: [PATCH 2/2] drivers: ipmi: Modify max length of IPMB packet
-In-Reply-To: <20191112023610.3644314-1-vijaykhemka@fb.com>
-References: <20191112023610.3644314-1-vijaykhemka@fb.com>
-Message-ID: <20191112023610.3644314-2-vijaykhemka@fb.com>
+Date: Mon, 11 Nov 2019 18:36:09 -0800
+Subject: [PATCH 1/2] drivers: ipmi: Support raw i2c packet in IPMB
+Message-ID: <20191112023610.3644314-1-vijaykhemka@fb.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-As per IPMB specification, maximum packet size supported is 255,
-modified Max length to 240 from 128 to accommodate more data.
+Many IPMB devices doesn't support smbus protocol and current driver
+support only smbus devices. So added support for raw i2c packets.
 
 Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
 ---
- drivers/char/ipmi/ipmb_dev_int.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/char/ipmi/Kconfig        |  6 ++++++
+ drivers/char/ipmi/ipmb_dev_int.c | 30 ++++++++++++++++++++++++++++++
+ 2 files changed, 36 insertions(+)
 
+diff --git a/drivers/char/ipmi/Kconfig b/drivers/char/ipmi/Kconfig
+index a9cfe4c05e64..e5268443b478 100644
+--- a/drivers/char/ipmi/Kconfig
++++ b/drivers/char/ipmi/Kconfig
+@@ -139,3 +139,9 @@ config IPMB_DEVICE_INTERFACE
+ 	  Provides a driver for a device (Satellite MC) to
+ 	  receive requests and send responses back to the BMC via
+ 	  the IPMB interface. This module requires I2C support.
++
++config IPMB_SMBUS_DISABLE
++	bool 'Disable SMBUS protocol for sending packet to IPMB device'
++	depends on IPMB_DEVICE_INTERFACE
++	help
++	  provides functionality of sending raw i2c packets to IPMB device.
 diff --git a/drivers/char/ipmi/ipmb_dev_int.c b/drivers/char/ipmi/ipmb_dev_int.c
-index 2419b9a928b2..7f9198bbce96 100644
+index ae3bfba27526..2419b9a928b2 100644
 --- a/drivers/char/ipmi/ipmb_dev_int.c
 +++ b/drivers/char/ipmi/ipmb_dev_int.c
-@@ -19,7 +19,7 @@
- #include <linux/spinlock.h>
- #include <linux/wait.h>
+@@ -118,6 +118,10 @@ static ssize_t ipmb_write(struct file *file, const char __user *buf,
+ 	struct ipmb_dev *ipmb_dev = to_ipmb_dev(file);
+ 	u8 rq_sa, netf_rq_lun, msg_len;
+ 	union i2c_smbus_data data;
++#ifdef CONFIG_IPMB_SMBUS_DISABLE
++	unsigned char *i2c_buf;
++	struct i2c_msg i2c_msg;
++#endif
+ 	u8 msg[MAX_MSG_LEN];
+ 	ssize_t ret;
  
--#define MAX_MSG_LEN		128
-+#define MAX_MSG_LEN		240
- #define IPMB_REQUEST_LEN_MIN	7
- #define NETFN_RSP_BIT_MASK	0x4
- #define REQUEST_QUEUE_MAX_LEN	256
+@@ -133,6 +137,31 @@ static ssize_t ipmb_write(struct file *file, const char __user *buf,
+ 	rq_sa = GET_7BIT_ADDR(msg[RQ_SA_8BIT_IDX]);
+ 	netf_rq_lun = msg[NETFN_LUN_IDX];
+ 
++#ifdef CONFIG_IPMB_SMBUS_DISABLE
++	/*
++	 * subtract 1 byte (rq_sa) from the length of the msg passed to
++	 * raw i2c_transfer
++	 */
++	msg_len = msg[IPMB_MSG_LEN_IDX] - 1;
++
++	i2c_buf = kzalloc(msg_len, GFP_KERNEL);
++	if (!i2c_buf)
++		return -EFAULT;
++
++	/* Copy message to buffer except first 2 bytes (length and address) */
++	memcpy(i2c_buf, msg+2, msg_len);
++
++	i2c_msg.addr = rq_sa;
++	i2c_msg.flags = ipmb_dev->client->flags &
++			(I2C_M_TEN | I2C_CLIENT_PEC | I2C_CLIENT_SCCB);
++	i2c_msg.len = msg_len;
++	i2c_msg.buf = i2c_buf;
++
++	ret = i2c_transfer(ipmb_dev->client->adapter, &i2c_msg, 1);
++	kfree(i2c_buf);
++
++	return (ret == 1) ? count : ret;
++#else
+ 	/*
+ 	 * subtract rq_sa and netf_rq_lun from the length of the msg passed to
+ 	 * i2c_smbus_xfer
+@@ -149,6 +178,7 @@ static ssize_t ipmb_write(struct file *file, const char __user *buf,
+ 			     I2C_SMBUS_BLOCK_DATA, &data);
+ 
+ 	return ret ? : count;
++#endif
+ }
+ 
+ static unsigned int ipmb_poll(struct file *file, poll_table *wait)
 -- 
 2.17.1
 
