@@ -1,17 +1,27 @@
-From: Corey Minyard <minyard@acm.org>
-Date: Tue, 12 Nov 2019 14:29:32 -0600
+From: Asmaa Mnebhi <Asmaa@mellanox.com>
+Date: Tue, 12 Nov 2019 20:48:06 +0000
 Subject: [PATCH 2/2] drivers: ipmi: Modify max length of IPMB packet
-In-Reply-To: <7BC487D6-6ACA-46CE-A751-8367FEDEE647@fb.com>
+In-Reply-To: <20191112202932.GJ2882@minyard.net>
 References: <20191112023610.3644314-1-vijaykhemka@fb.com>
  <20191112023610.3644314-2-vijaykhemka@fb.com>
  <20191112124845.GE2882@minyard.net>
  <7BC487D6-6ACA-46CE-A751-8367FEDEE647@fb.com>
-Message-ID: <20191112202932.GJ2882@minyard.net>
+ <20191112202932.GJ2882@minyard.net>
+Message-ID: <DB6PR0501MB2712E7F87DD479BE23A99E21DA770@DB6PR0501MB2712.eurprd05.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+
+
+
+-----Original Message-----
+From: Corey Minyard <tcminyard@gmail.com> On Behalf Of Corey Minyard
+Sent: Tuesday, November 12, 2019 3:30 PM
+To: Vijay Khemka <vijaykhemka@fb.com>
+Cc: Arnd Bergmann <arnd@arndb.de>; Greg Kroah-Hartman <gregkh@linuxfoundation.org>; openipmi-developer at lists.sourceforge.net; linux-kernel at vger.kernel.org; cminyard at mvista.com; Asmaa Mnebhi <Asmaa@mellanox.com>; joel at jms.id.au; linux-aspeed at lists.ozlabs.org; Sai Dasari <sdasari@fb.com>
+Subject: Re: [PATCH 2/2] drivers: ipmi: Modify max length of IPMB packet
 
 On Tue, Nov 12, 2019 at 07:56:34PM +0000, Vijay Khemka wrote:
 > 
@@ -28,13 +38,14 @@ On Tue, Nov 12, 2019 at 07:56:34PM +0000, Vijay Khemka wrote:
 >     under "IPMB Output" states: The IPMB standard message length is
 >     specified as 32 bytes, maximum, including slave address.
 > 
-> We are using IPMI OEM messages and our response size is around 150 bytes
-> For some of responses. That's why I had set it to 240 bytes.
+> We are using IPMI OEM messages and our response size is around 150 
+> bytes For some of responses. That's why I had set it to 240 bytes.
 
-Hmm.  Well, that is a pretty significant violation of the spec, but
-there's nothing hard in the protocol that prohibits it, I guess.
+Hmm.  Well, that is a pretty significant violation of the spec, but there's nothing hard in the protocol that prohibits it, I guess.
 
 If Asmaa is ok with this, I'm ok with it, too.
+
+It doesn't bother me either. But I would like to do some experiment/testing first before validating it. I will get back to you. Vijay, how are you doing your testing?
 
 -corey
 
@@ -64,6 +75,6 @@ If Asmaa is ok with this, I'm ok with it, too.
 >     >  #define REQUEST_QUEUE_MAX_LEN	256
 >     > -- 
 >     > 2.17.1
->     > 
+>     >
 >     
 > 
