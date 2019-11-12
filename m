@@ -1,33 +1,36 @@
-From: Rob Herring <robh@kernel.org>
-Date: Mon, 11 Nov 2019 18:54:59 -0600
-Subject: [PATCH 01/12] dt-bindings: interrupt-controller: Add Aspeed SCU
- interrupt controller
-In-Reply-To: <1573244313-9190-2-git-send-email-eajames@linux.ibm.com>
-References: <1573244313-9190-1-git-send-email-eajames@linux.ibm.com>
- <1573244313-9190-2-git-send-email-eajames@linux.ibm.com>
-Message-ID: <20191112005459.GA6260@bogus>
+From: Vijay Khemka <vijaykhemka@fb.com>
+Date: Mon, 11 Nov 2019 18:36:10 -0800
+Subject: [PATCH 2/2] drivers: ipmi: Modify max length of IPMB packet
+In-Reply-To: <20191112023610.3644314-1-vijaykhemka@fb.com>
+References: <20191112023610.3644314-1-vijaykhemka@fb.com>
+Message-ID: <20191112023610.3644314-2-vijaykhemka@fb.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri,  8 Nov 2019 14:18:22 -0600, Eddie James wrote:
-> Document the Aspeed SCU interrupt controller and add an include file
-> for the interrupts it provides.
-> 
-> Signed-off-by: Eddie James <eajames@linux.ibm.com>
-> ---
->  .../interrupt-controller/aspeed,ast2xxx-scu-ic.txt | 26 ++++++++++++++++++++++
->  MAINTAINERS                                        |  7 ++++++
->  .../interrupt-controller/aspeed-scu-ic.h           | 23 +++++++++++++++++++
->  3 files changed, 56 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/interrupt-controller/aspeed,ast2xxx-scu-ic.txt
->  create mode 100644 include/dt-bindings/interrupt-controller/aspeed-scu-ic.h
-> 
+As per IPMB specification, maximum packet size supported is 255,
+modified Max length to 240 from 128 to accommodate more data.
 
-Please add Acked-by/Reviewed-by tags when posting new versions. However,
-there's no need to repost patches *only* to add the tags. The upstream
-maintainer will do that for acks received on the version they apply.
+Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
+---
+ drivers/char/ipmi/ipmb_dev_int.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-If a tag was not added on purpose, please state why and what changed.
+diff --git a/drivers/char/ipmi/ipmb_dev_int.c b/drivers/char/ipmi/ipmb_dev_int.c
+index 2419b9a928b2..7f9198bbce96 100644
+--- a/drivers/char/ipmi/ipmb_dev_int.c
++++ b/drivers/char/ipmi/ipmb_dev_int.c
+@@ -19,7 +19,7 @@
+ #include <linux/spinlock.h>
+ #include <linux/wait.h>
+ 
+-#define MAX_MSG_LEN		128
++#define MAX_MSG_LEN		240
+ #define IPMB_REQUEST_LEN_MIN	7
+ #define NETFN_RSP_BIT_MASK	0x4
+ #define REQUEST_QUEUE_MAX_LEN	256
+-- 
+2.17.1
+
