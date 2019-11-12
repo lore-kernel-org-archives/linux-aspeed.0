@@ -1,78 +1,146 @@
-From: Asmaa Mnebhi <Asmaa@mellanox.com>
-Date: Tue, 12 Nov 2019 22:06:00 +0000
-Subject: [PATCH 2/2] drivers: ipmi: Modify max length of IPMB packet
-In-Reply-To: <20191112202932.GJ2882@minyard.net>
-References: <20191112023610.3644314-1-vijaykhemka@fb.com>
- <20191112023610.3644314-2-vijaykhemka@fb.com>
- <20191112124845.GE2882@minyard.net>
- <7BC487D6-6ACA-46CE-A751-8367FEDEE647@fb.com>
- <20191112202932.GJ2882@minyard.net>
-Message-ID: <DB6PR0501MB27127CF534336BDEB5D005FFDA770@DB6PR0501MB2712.eurprd05.prod.outlook.com>
+From: Vijay Khemka <vijaykhemka@fb.com>
+Date: Tue, 12 Nov 2019 15:13:07 -0800
+Subject: [PATCH v2] drivers: ipmi: Support raw i2c packet in IPMB
+Message-ID: <20191112231309.3094727-1-vijaykhemka@fb.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Also, let me clarify one thing. It doesn't matter how big the response is. In my testing, I also had some responses that are over 128 bytes, and this driver still works. It is the user space program which determines the last bytes received. The 128 bytes is the max number of bytes handled by your i2c/smbus driver at each i2c transaction. My i2c driver can only transmit 128 bytes at a time. So just like Corey pointed out, it would be better to pass this through ACPI/device tree.
+Many IPMB devices doesn't support smbus protocol and current driver
+support only smbus devices. Added support for raw i2c packets.
 
------Original Message-----
-From: Corey Minyard <tcminyard@gmail.com> On Behalf Of Corey Minyard
-Sent: Tuesday, November 12, 2019 3:30 PM
-To: Vijay Khemka <vijaykhemka@fb.com>
-Cc: Arnd Bergmann <arnd@arndb.de>; Greg Kroah-Hartman <gregkh@linuxfoundation.org>; openipmi-developer at lists.sourceforge.net; linux-kernel at vger.kernel.org; cminyard at mvista.com; Asmaa Mnebhi <Asmaa@mellanox.com>; joel at jms.id.au; linux-aspeed at lists.ozlabs.org; Sai Dasari <sdasari@fb.com>
-Subject: Re: [PATCH 2/2] drivers: ipmi: Modify max length of IPMB packet
+User can include ipmi_ipmb.h and set xmit type via ioctl.
 
-On Tue, Nov 12, 2019 at 07:56:34PM +0000, Vijay Khemka wrote:
-> 
-> 
-> ?On 11/12/19, 4:48 AM, "Corey Minyard" <tcminyard at gmail.com on behalf of minyard@acm.org> wrote:
-> 
->     On Mon, Nov 11, 2019 at 06:36:10PM -0800, Vijay Khemka wrote:
->     > As per IPMB specification, maximum packet size supported is 255,
->     > modified Max length to 240 from 128 to accommodate more data.
->     
->     I couldn't find this in the IPMB specification.
->     
->     IIRC, the maximum on I2C is 32 byts, and table 6-9 in the IPMI spec,
->     under "IPMB Output" states: The IPMB standard message length is
->     specified as 32 bytes, maximum, including slave address.
-> 
-> We are using IPMI OEM messages and our response size is around 150 
-> bytes For some of responses. That's why I had set it to 240 bytes.
+Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
+---
+ drivers/char/ipmi/ipmb_dev_int.c | 54 ++++++++++++++++++++++++++++++++
+ include/uapi/linux/ipmi_ipmb.h   | 17 ++++++++++
+ 2 files changed, 71 insertions(+)
+ create mode 100644 include/uapi/linux/ipmi_ipmb.h
 
-Hmm.  Well, that is a pretty significant violation of the spec, but there's nothing hard in the protocol that prohibits it, I guess.
+diff --git a/drivers/char/ipmi/ipmb_dev_int.c b/drivers/char/ipmi/ipmb_dev_int.c
+index ae3bfba27526..11f7240f62cc 100644
+--- a/drivers/char/ipmi/ipmb_dev_int.c
++++ b/drivers/char/ipmi/ipmb_dev_int.c
+@@ -18,6 +18,7 @@
+ #include <linux/slab.h>
+ #include <linux/spinlock.h>
+ #include <linux/wait.h>
++#include <linux/ipmi_ipmb.h>
+ 
+ #define MAX_MSG_LEN		128
+ #define IPMB_REQUEST_LEN_MIN	7
+@@ -63,6 +64,7 @@ struct ipmb_dev {
+ 	spinlock_t lock;
+ 	wait_queue_head_t wait_queue;
+ 	struct mutex file_mutex;
++	unsigned long xmit_type;
+ };
+ 
+ static inline struct ipmb_dev *to_ipmb_dev(struct file *file)
+@@ -112,6 +114,39 @@ static ssize_t ipmb_read(struct file *file, char __user *buf, size_t count,
+ 	return ret < 0 ? ret : count;
+ }
+ 
++static int ipmb_i2c_write(struct i2c_client *client, u8 *msg)
++{
++	unsigned char *i2c_buf;
++	struct i2c_msg i2c_msg;
++	ssize_t ret;
++	u8 msg_len;
++
++	/*
++	 * subtract 1 byte (rq_sa) from the length of the msg passed to
++	 * raw i2c_transfer
++	 */
++	msg_len = msg[IPMB_MSG_LEN_IDX] - 1;
++
++	i2c_buf = kzalloc(msg_len, GFP_KERNEL);
++	if (!i2c_buf)
++		return -EFAULT;
++
++	/* Copy message to buffer except first 2 bytes (length and address) */
++	memcpy(i2c_buf, msg+2, msg_len);
++
++	i2c_msg.addr = GET_7BIT_ADDR(msg[RQ_SA_8BIT_IDX]);
++	i2c_msg.flags = client->flags &
++			(I2C_M_TEN | I2C_CLIENT_PEC | I2C_CLIENT_SCCB);
++	i2c_msg.len = msg_len;
++	i2c_msg.buf = i2c_buf;
++
++	ret = i2c_transfer(client->adapter, &i2c_msg, 1);
++	kfree(i2c_buf);
++
++	return ret;
++
++}
++
+ static ssize_t ipmb_write(struct file *file, const char __user *buf,
+ 			size_t count, loff_t *ppos)
+ {
+@@ -133,6 +168,11 @@ static ssize_t ipmb_write(struct file *file, const char __user *buf,
+ 	rq_sa = GET_7BIT_ADDR(msg[RQ_SA_8BIT_IDX]);
+ 	netf_rq_lun = msg[NETFN_LUN_IDX];
+ 
++	if (ipmb_dev->xmit_type == IPMB_XMIT_TYPE_I2C_RAW) {
++		ret = ipmb_i2c_write(ipmb_dev->client, msg);
++		return (ret == 1) ? count : ret;
++	}
++
+ 	/*
+ 	 * subtract rq_sa and netf_rq_lun from the length of the msg passed to
+ 	 * i2c_smbus_xfer
+@@ -166,11 +206,25 @@ static unsigned int ipmb_poll(struct file *file, poll_table *wait)
+ 	return mask;
+ }
+ 
++static long ipmb_ioctl(struct file *file, unsigned int cmd,
++				unsigned long arg)
++{
++	struct ipmb_dev *ipmb_dev = to_ipmb_dev(file);
++
++	if (cmd == IPMI_IPMB_IOCTL_SET_XMIT_TYPE)
++		ipmb_dev->xmit_type = arg;
++	else
++		return -EINVAL;
++
++	return 0;
++}
++
+ static const struct file_operations ipmb_fops = {
+ 	.owner	= THIS_MODULE,
+ 	.read	= ipmb_read,
+ 	.write	= ipmb_write,
+ 	.poll	= ipmb_poll,
++	.unlocked_ioctl = ipmb_ioctl,
+ };
+ 
+ /* Called with ipmb_dev->lock held. */
+diff --git a/include/uapi/linux/ipmi_ipmb.h b/include/uapi/linux/ipmi_ipmb.h
+new file mode 100644
+index 000000000000..b283752f77f8
+--- /dev/null
++++ b/include/uapi/linux/ipmi_ipmb.h
+@@ -0,0 +1,17 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/*
++ * Copyright (c) 2019, Facebook
++ */
++
++#ifndef _UAPI_LINUX_IPMI_IPMB_H
++#define _UAPI_LINUX_IPMI_IPMB_H
++
++#include <linux/ioctl.h>
++
++#define __IPMI_IPMB_IOCTL_MAGIC        0xC1
++#define IPMI_IPMB_IOCTL_SET_XMIT_TYPE _IO(__IPMI_IPMB_IOCTL_MAGIC, 0x01)
++
++#define IPMB_XMIT_TYPE_SMBUS 0
++#define IPMB_XMIT_TYPE_I2C_RAW 1
++
++#endif /* _UAPI_LINUX_IPMI_IPMB_H */
+-- 
+2.17.1
 
-If Asmaa is ok with this, I'm ok with it, too.
-
--corey
-
->     
->     I'm not sure where 128 came from, but maybe it should be reduced to 31.
->     
->     -corey
->     
->     > 
->     > Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
->     > ---
->     >  drivers/char/ipmi/ipmb_dev_int.c | 2 +-
->     >  1 file changed, 1 insertion(+), 1 deletion(-)
->     > 
->     > diff --git a/drivers/char/ipmi/ipmb_dev_int.c b/drivers/char/ipmi/ipmb_dev_int.c
->     > index 2419b9a928b2..7f9198bbce96 100644
->     > --- a/drivers/char/ipmi/ipmb_dev_int.c
->     > +++ b/drivers/char/ipmi/ipmb_dev_int.c
->     > @@ -19,7 +19,7 @@
->     >  #include <linux/spinlock.h>
->     >  #include <linux/wait.h>
->     >  
->     > -#define MAX_MSG_LEN		128
->     > +#define MAX_MSG_LEN		240
->     >  #define IPMB_REQUEST_LEN_MIN	7
->     >  #define NETFN_RSP_BIT_MASK	0x4
->     >  #define REQUEST_QUEUE_MAX_LEN	256
->     > -- 
->     > 2.17.1
->     >
->     
-> 
