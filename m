@@ -1,17 +1,29 @@
-From: Vijay Khemka <vijaykhemka@fb.com>
-Date: Wed, 13 Nov 2019 11:23:25 -0800
+From: Asmaa Mnebhi <Asmaa@mellanox.com>
+Date: Wed, 13 Nov 2019 20:32:57 +0000
 Subject: [PATCH v3] drivers: ipmi: Support raw i2c packet in IPMB
-Message-ID: <20191113192325.2821207-1-vijaykhemka@fb.com>
+In-Reply-To: <20191113192325.2821207-1-vijaykhemka@fb.com>
+References: <20191113192325.2821207-1-vijaykhemka@fb.com>
+Message-ID: <DB6PR0501MB2712FAF45EE8CB2D513465A9DA760@DB6PR0501MB2712.eurprd05.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Many IPMB devices doesn't support smbus protocol and current driver
-support only smbus devices. Added support for raw i2c packets.
+Inline response:
+
+-----Original Message-----
+From: Vijay Khemka <vijaykhemka@fb.com> 
+Sent: Wednesday, November 13, 2019 2:23 PM
+To: Corey Minyard <minyard@acm.org>; Arnd Bergmann <arnd@arndb.de>; Greg Kroah-Hartman <gregkh@linuxfoundation.org>; openipmi-developer at lists.sourceforge.net; linux-kernel at vger.kernel.org
+Cc: vijaykhemka at fb.com; cminyard at mvista.com; Asmaa Mnebhi <Asmaa@mellanox.com>; joel at jms.id.au; linux-aspeed at lists.ozlabs.org; sdasari at fb.com
+Subject: [PATCH v3] drivers: ipmi: Support raw i2c packet in IPMB
+
+Many IPMB devices doesn't support smbus protocol and current driver support only smbus devices. Added support for raw i2c packets.
 
 User can define use-i2c-block in device tree to use i2c raw transfer.
+
+Asmaa>> Fix the description: "The ipmb_dev_int driver only supports the smbus protocol at the moment. Add support for the i2c protocol as well. There will be a variable passed by though the device tree or ACPI table which sets the configures the protocol as either i2c or smbus."
 
 Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
 ---
@@ -29,13 +41,13 @@ index ae3bfba27526..16d5d4b636a9 100644
 +	bool use_i2c;
  };
  
- static inline struct ipmb_dev *to_ipmb_dev(struct file *file)
-@@ -112,6 +113,39 @@ static ssize_t ipmb_read(struct file *file, char __user *buf, size_t count,
+Asmaa>> rename this variable : is_i2c_protocol
+
+ static inline struct ipmb_dev *to_ipmb_dev(struct file *file) @@ -112,6 +113,39 @@ static ssize_t ipmb_read(struct file *file, char __user *buf, size_t count,
  	return ret < 0 ? ret : count;
  }
  
-+static int ipmb_i2c_write(struct i2c_client *client, u8 *msg)
-+{
++static int ipmb_i2c_write(struct i2c_client *client, u8 *msg) {
 +	unsigned char *i2c_buf;
 +	struct i2c_msg i2c_msg;
 +	ssize_t ret;
@@ -48,6 +60,12 @@ index ae3bfba27526..16d5d4b636a9 100644
 +	msg_len = msg[IPMB_MSG_LEN_IDX] - 1;
 +
 +	i2c_buf = kzalloc(msg_len, GFP_KERNEL);
+
+Asmaa >> We do not want to use kzalloc every time you execute this write function. It would create so much fragmentation.
+You don't really need to use kzalloc anyways. 
+
+Also, this code chunk is short, so you can call it directly from the write function. I don't think you need a separate function for it.
+
 +	if (!i2c_buf)
 +		return -EFAULT;
 +
@@ -57,6 +75,8 @@ index ae3bfba27526..16d5d4b636a9 100644
 +	i2c_msg.addr = GET_7BIT_ADDR(msg[RQ_SA_8BIT_IDX]);
 +	i2c_msg.flags = client->flags &
 +			(I2C_M_TEN | I2C_CLIENT_PEC | I2C_CLIENT_SCCB);
+Asmaa>> I don't think ipmb supports 10 bit addresses. The max number of bits in the IPMB address field is 8.
+
 +	i2c_msg.len = msg_len;
 +	i2c_msg.buf = i2c_buf;
 +
@@ -90,14 +110,14 @@ index ae3bfba27526..16d5d4b636a9 100644
 +	struct device_node *np;
  	int ret;
  
- 	ipmb_dev = devm_kzalloc(&client->dev, sizeof(*ipmb_dev),
-@@ -302,6 +343,13 @@ static int ipmb_probe(struct i2c_client *client,
+ 	ipmb_dev = devm_kzalloc(&client->dev, sizeof(*ipmb_dev), @@ -302,6 +343,13 @@ static int ipmb_probe(struct i2c_client *client,
  	if (ret)
  		return ret;
  
 +	/* Check if i2c block xmit needs to use instead of smbus */
 +	np = client->dev.of_node;
 +	if (np && of_get_property(np, "use-i2c-block", NULL))
+Asmaa>> Rename this variable i2c-protocol. And also, apply this to ACPI as well.
 +		ipmb_dev->use_i2c = true;
 +	else
 +		ipmb_dev->use_i2c = false;
@@ -105,6 +125,6 @@ index ae3bfba27526..16d5d4b636a9 100644
  	ipmb_dev->client = client;
  	i2c_set_clientdata(client, ipmb_dev);
  	ret = i2c_slave_register(client, ipmb_slave_cb);
--- 
+--
 2.17.1
 
