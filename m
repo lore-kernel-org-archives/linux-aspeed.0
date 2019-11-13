@@ -1,8 +1,8 @@
-From: Vijay Khemka <vijaykhemka@fb.com>
-Date: Wed, 13 Nov 2019 17:40:55 +0000
+From: Asmaa Mnebhi <Asmaa@mellanox.com>
+Date: Wed, 13 Nov 2019 17:52:56 +0000
 Subject: [Openipmi-developer] [PATCH 2/2] drivers: ipmi: Modify max length
  of IPMB packet
-In-Reply-To: <20191113005115.GK2882@minyard.net>
+In-Reply-To: <C9D94D1B-A992-425E-826F-3BDA98E26999@fb.com>
 References: <20191112023610.3644314-1-vijaykhemka@fb.com>
  <20191112023610.3644314-2-vijaykhemka@fb.com>
  <20191112124845.GE2882@minyard.net>
@@ -10,12 +10,22 @@ References: <20191112023610.3644314-1-vijaykhemka@fb.com>
  <20191112202932.GJ2882@minyard.net>
  <DB6PR0501MB27127CF534336BDEB5D005FFDA770@DB6PR0501MB2712.eurprd05.prod.outlook.com>
  <20191113005115.GK2882@minyard.net>
-Message-ID: <C9D94D1B-A992-425E-826F-3BDA98E26999@fb.com>
+ <C9D94D1B-A992-425E-826F-3BDA98E26999@fb.com>
+Message-ID: <DB6PR0501MB2712698C135A1195233A9E13DA760@DB6PR0501MB2712.eurprd05.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+
+Hi Vijay
+
+-----Original Message-----
+From: Vijay Khemka <vijaykhemka@fb.com> 
+Sent: Wednesday, November 13, 2019 12:41 PM
+To: minyard@acm.org; Asmaa Mnebhi <Asmaa@mellanox.com>
+Cc: cminyard at mvista.com; Sai Dasari <sdasari@fb.com>; linux-aspeed at lists.ozlabs.org; Arnd Bergmann <arnd@arndb.de>; Greg Kroah-Hartman <gregkh@linuxfoundation.org>; linux-kernel at vger.kernel.org; openipmi-developer at lists.sourceforge.net
+Subject: Re: [Openipmi-developer] [PATCH 2/2] drivers: ipmi: Modify max length of IPMB packet
 
 
 
@@ -34,6 +44,10 @@ Ok, I will pass this max size through device tree and change this patch.
 I have sent patch for i2c transfer using ioctl, I hope that should be fine. 
 Please review that v2 patch.
     
+>> why can't you pass this information through device tree/ACPI as well?
+All you need in your DT/ACPI table is a variable that indicates whether it is i2c or smbus. You check that variable in the ipmb driver, then decide which code path to take.
+I prefer not to use ioctl for system configuration.
+
     -corey
     
     > 
