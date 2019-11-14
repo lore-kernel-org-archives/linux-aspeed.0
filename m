@@ -1,85 +1,47 @@
-From: Milton Miller II <miltonm@us.ibm.com>
-Date: Thu, 14 Nov 2019 00:04:09 +0000
-Subject: [PATCH 2/2] mmc: sdhci-of-aspeed: add inversion signal presence
-In-Reply-To: <20191113155237.30646-3-i.mikhaylov@yadro.com>
-References: <20191113155237.30646-3-i.mikhaylov@yadro.com>,
- <20191113155237.30646-1-i.mikhaylov@yadro.com>
-Message-ID: <OF20F73C7F.F32D5A9E-ON002584B1.00836403-002584B2.0000614A@notes.na.collabserv.com>
+From: Joel Stanley <joel@jms.id.au>
+Date: Thu, 14 Nov 2019 04:09:19 +0000
+Subject: [GIT PULL] ARM: aspeed: defconfig changes for 5.5
+Message-ID: <CACPK8Xc3a=6irkTSfwyPrr=nWv_fa9nMxthtC2AyqFJEWvuMwg@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 11/13/2019 around 09:57AM in some time zone, Ivan Mikhaylov wrote:
->Change the default .get_cd callback. Add inverted signal card
->detection
->check.
->
->Signed-off-by: Ivan Mikhaylov <i.mikhaylov@yadro.com>
->
->diff --git a/drivers/mmc/host/sdhci-of-aspeed.c
->b/drivers/mmc/host/sdhci-of-aspeed.c
->index 8962f6664381..8eded8a6ed8d 100644
->--- a/drivers/mmc/host/sdhci-of-aspeed.c
->+++ b/drivers/mmc/host/sdhci-of-aspeed.c
->@@ -31,6 +31,7 @@ struct aspeed_sdc {
-> struct aspeed_sdhci {
-> 	struct aspeed_sdc *parent;
-> 	u32 width_mask;
->+	u8 cd_inverted;
+Hello ARM maintainers,
 
-The mmc core/host.c checks the device tree and stores the
-result as mmc->caps2 & MMC_CAP2_CD_ACTIVE_HIGH
+Here are some defconfig changes for 5.5. There is a diffstat and shortlog below.
 
-This appears to be accessale as sdhci_host->mmc->caps2.
+The following changes since commit b50a85c023f494047a3767398ca589d1c801f22b:
 
-Please reuse this bit like the other drivers.
+  ARM: config: multi_v5: ASPEED SDHCI, SGPIO (2019-11-13 14:38:39 +1030)
 
-> };
-> 
-> static void aspeed_sdc_configure_8bit_mode(struct aspeed_sdc *sdc,
->@@ -143,6 +144,21 @@ static inline int
->aspeed_sdhci_calculate_slot(struct aspeed_sdhci *dev,
-> 	return (delta / 0x100) - 1;
-> }
-> 
->+static int aspeed_get_cd(struct mmc_host *mmc)
->+{
->+	struct aspeed_sdhci *aspeed_sdhci;
->+	struct sdhci_pltfm_host *pltfm_priv;
->+	struct sdhci_host *host = mmc_priv(mmc);
->+
->+	int presence = !!(sdhci_readl(host, SDHCI_PRESENT_STATE)
->+			 & SDHCI_CARD_PRESENT);
->+
->+	pltfm_priv = sdhci_priv(host);
->+	aspeed_sdhci = sdhci_pltfm_priv(pltfm_priv);
->+
->+	return presence ^ aspeed_sdhci->cd_inverted;
->+}
->+
-> static int aspeed_sdhci_probe(struct platform_device *pdev)
-> {
-> 	struct sdhci_pltfm_host *pltfm_host;
->@@ -183,6 +199,13 @@ static int aspeed_sdhci_probe(struct
->platform_device *pdev)
-> 		goto err_pltfm_free;
-> 	}
-> 
->+	dev->cd_inverted = 0;
->+	host->mmc_host_ops.get_cd = aspeed_get_cd;
->+	if (of_property_read_bool(pdev->dev.of_node, "cd-inverted")) {
->+		dev->cd_inverted = 1;
->+		dev_info(&pdev->dev, "aspeed: sdhci: presence signal inversion
->enabled\n");
->+	}
->+
-> 	ret = mmc_of_parse(host->mmc);
-> 	if (ret)
-> 		goto err_sdhci_add;
->-- 
->2.20.1
->
->
+are available in the Git repository at:
 
+  git://git.kernel.org/pub/scm/linux/kernel/git/joel/aspeed.git
+tags/aspeed-5.5-defconfig
+
+for you to fetch changes up to b50a85c023f494047a3767398ca589d1c801f22b:
+
+  ARM: config: multi_v5: ASPEED SDHCI, SGPIO (2019-11-13 14:38:39 +1030)
+
+----------------------------------------------------------------
+ASPEED device tree updates for 5.5
+
+This adds recently merged drivers to the aspeed g4 and g5 defconfigs,
+and to the multi v5 and v7 shared defconfigs.
+
+----------------------------------------------------------------
+
+Joel Stanley (5):
+      ARM: config: aspeed-g5: Enable 8250_DW quirks
+      ARM: config: aspeed-g5: Add SGPIO and FSI drivers
+      ARM: config: aspeed-g4: Add MMC, and cleanup
+      ARM: configs: multi_v7: ASPEED network, gpio, FSI
+      ARM: config: multi_v5: ASPEED SDHCI, SGPIO
+
+ arch/arm/configs/aspeed_g4_defconfig | 18 ++++++++++++------
+ arch/arm/configs/aspeed_g5_defconfig |  4 ++++
+ arch/arm/configs/multi_v5_defconfig  |  4 ++++
+ arch/arm/configs/multi_v7_defconfig  |  9 +++++++++
+ 4 files changed, 29 insertions(+), 6 deletions(-)
