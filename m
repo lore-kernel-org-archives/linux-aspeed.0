@@ -1,42 +1,55 @@
 From: Ivan Mikhaylov <i.mikhaylov@yadro.com>
-Date: Thu, 14 Nov 2019 15:54:34 +0300
-Subject: [PATCH v2 1/2] aspeed: dts: add sd card for vesnin
+Date: Thu, 14 Nov 2019 15:54:35 +0300
+Subject: [PATCH v2 2/2] mmc: sdhci-of-aspeed: add inversion signal presence
 In-Reply-To: <20191114125435.27756-1-i.mikhaylov@yadro.com>
 References: <20191114125435.27756-1-i.mikhaylov@yadro.com>
-Message-ID: <20191114125435.27756-2-i.mikhaylov@yadro.com>
+Message-ID: <20191114125435.27756-3-i.mikhaylov@yadro.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Presence signal is inverted for vesnin boards, 'cd-inverted' added
-for invertion signal enablement. Vesnin BMC uses microSD, there is
-no WP switch, 'disable-wp' is used for this purpose.
+Change the default .get_cd callback. Add inverted signal card detection
+check.
 
 Signed-off-by: Ivan Mikhaylov <i.mikhaylov@yadro.com>
 
-diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-vesnin.dts b/arch/arm/boot/dts/aspeed-bmc-opp-vesnin.dts
-index a27c88d23056..7ae3436e0d99 100644
---- a/arch/arm/boot/dts/aspeed-bmc-opp-vesnin.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-opp-vesnin.dts
-@@ -232,3 +232,16 @@
- &wdt2 {
- 	aspeed,alt-boot;
- };
+diff --git a/drivers/mmc/host/sdhci-of-aspeed.c b/drivers/mmc/host/sdhci-of-aspeed.c
+index 8962f6664381..186559ee8fcc 100644
+--- a/drivers/mmc/host/sdhci-of-aspeed.c
++++ b/drivers/mmc/host/sdhci-of-aspeed.c
+@@ -143,6 +143,19 @@ static inline int aspeed_sdhci_calculate_slot(struct aspeed_sdhci *dev,
+ 	return (delta / 0x100) - 1;
+ }
+ 
++static int aspeed_get_cd(struct mmc_host *mmc)
++{
++	struct sdhci_host *host = mmc_priv(mmc);
 +
-+&sdmmc {
-+	status = "okay";
-+};
++	int present = !!(sdhci_readl(host, SDHCI_PRESENT_STATE)
++			 & SDHCI_CARD_PRESENT);
 +
-+&sdhci1 {
-+	status = "okay";
++	if (mmc->caps2 & MMC_CAP2_CD_ACTIVE_HIGH)
++		present = !present;
 +
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pinctrl_sd2_default>;
-+	cd-inverted;
-+	disable-wp;
-+};
++	return present;
++}
++
+ static int aspeed_sdhci_probe(struct platform_device *pdev)
+ {
+ 	struct sdhci_pltfm_host *pltfm_host;
+@@ -183,6 +196,10 @@ static int aspeed_sdhci_probe(struct platform_device *pdev)
+ 		goto err_pltfm_free;
+ 	}
+ 
++	host->mmc_host_ops.get_cd = aspeed_get_cd;
++	if (of_property_read_bool(pdev->dev.of_node, "cd-inverted"))
++		dev_info(&pdev->dev, "aspeed: sdhci: presence signal inversion enabled\n");
++
+ 	ret = mmc_of_parse(host->mmc);
+ 	if (ret)
+ 		goto err_sdhci_add;
 -- 
 2.20.1
 
