@@ -1,82 +1,82 @@
-From: Adrian Hunter <adrian.hunter@intel.com>
-Date: Fri, 15 Nov 2019 09:20:34 +0200
-Subject: [PATCH v2 2/2] mmc: sdhci-of-aspeed: add inversion
- sighttps://elixir.bootlin.com/linux/v4.6/ident/sdhci_opsnal presence
-In-Reply-To: <b443738f5e2a3c7ba96b329a8347374f7f934483.camel@yadro.com>
+From: Ivan Mikhaylov <i.mikhaylov@yadro.com>
+Date: Fri, 15 Nov 2019 15:56:54 +0300
+Subject: [PATCH v2 2/2] mmc: sdhci-of-aspeed: add inversion signal presence
+In-Reply-To: <d177ef37-643e-442d-d536-750e0bb5e86d@intel.com>
 References: <20191114125435.27756-1-i.mikhaylov@yadro.com>
  <20191114125435.27756-3-i.mikhaylov@yadro.com>
  <fcb5f8b5-40b9-6497-b24d-0b73e2525949@intel.com>
  <b443738f5e2a3c7ba96b329a8347374f7f934483.camel@yadro.com>
-Message-ID: <d177ef37-643e-442d-d536-750e0bb5e86d@intel.com>
+ <d177ef37-643e-442d-d536-750e0bb5e86d@intel.com>
+Message-ID: <221381ebad0236625775bda5655fcd7c78455e6f.camel@yadro.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 14/11/19 7:19 PM, Ivan Mikhaylov wrote:
-> On Thu, 2019-11-14 at 15:10 +0200, Adrian Hunter wrote:
->> On 14/11/19 2:54 PM, Ivan Mikhaylov wrote:
->>> Change the default .get_cd callback. Add inverted signal card detection
->>> check.
->>>
->>> Signed-off-by: Ivan Mikhaylov <i.mikhaylov@yadro.com>
->>>
->>> diff --git a/drivers/mmc/host/sdhci-of-aspeed.c b/drivers/mmc/host/sdhci-of-
->>> aspeed.c
->>> index 8962f6664381..186559ee8fcc 100644
->>> --- a/drivers/mmc/host/sdhci-of-aspeed.c
->>> +++ b/drivers/mmc/host/sdhci-of-aspeed.c
->>> @@ -143,6 +143,19 @@ static inline int aspeed_sdhci_calculate_slot(struct
->>> aspeed_sdhci *dev,
->>>  	return (delta / 0x100) - 1;
->>>  }
->>>  
->>> +static int aspeed_get_cd(struct mmc_host *mmc)
->>> +{
->>> +	struct sdhci_host *host = mmc_priv(mmc);
->>> +
->>> +	int present = !!(sdhci_readl(host, SDHCI_PRESENT_STATE)
->>> +			 & SDHCI_CARD_PRESENT);
->>> +
->>> +	if (mmc->caps2 & MMC_CAP2_CD_ACTIVE_HIGH)
->>> +		present = !present;
->>
->> Perhaps safer to flip the bit using CONFIG_MMC_SDHCI_IO_ACCESSORS and
->> ->readl() callback
->>
+On Fri, 2019-11-15 at 09:20 +0200, Adrian Hunter wrote:
+> On 14/11/19 7:19 PM, Ivan Mikhaylov wrote:
+> > On Thu, 2019-11-14 at 15:10 +0200, Adrian Hunter wrote:
+> > On 14/11/19 2:54 PM, Ivan Mikhaylov wrote:
+> > > > Change the default .get_cd callback. Add inverted signal card detection
+> > > > check.
+> > > > 
+> > > > Signed-off-by: Ivan Mikhaylov <i.mikhaylov@yadro.com>
+> > > > 
+> > > > diff --git a/drivers/mmc/host/sdhci-of-aspeed.c
+> > > > b/drivers/mmc/host/sdhci-of-
+> > > > aspeed.c
+> > > > index 8962f6664381..186559ee8fcc 100644
+> > > > --- a/drivers/mmc/host/sdhci-of-aspeed.c
+> > > > +++ b/drivers/mmc/host/sdhci-of-aspeed.c
+> > > > @@ -143,6 +143,19 @@ static inline int
+> > > > aspeed_sdhci_calculate_slot(struct
+> > > > aspeed_sdhci *dev,
+> > > >  	return (delta / 0x100) - 1;
+> > > >  }
+> > > >  
+> > > > +static int aspeed_get_cd(struct mmc_host *mmc)
+> > > > +{
+> > > > +	struct sdhci_host *host = mmc_priv(mmc);
+> > > > +
+> > > > +	int present = !!(sdhci_readl(host, SDHCI_PRESENT_STATE)
+> > > > +			 & SDHCI_CARD_PRESENT);
+> > > > +
+> > > > +	if (mmc->caps2 & MMC_CAP2_CD_ACTIVE_HIGH)
+> > > > +		present = !present;
+> > > 
+> > > Perhaps safer to flip the bit using CONFIG_MMC_SDHCI_IO_ACCESSORS and
+> > > ->readl() callback
 > 
-> Sorry, don't quite understand what you're saying. You want to instantiate
-> '.read_l' callback instead of '.get_cd' in sdhci_ops and substitute the real
-> value?
 > 
-> res = readl(base, reg);
-> if (reg == SDHCI_PRESENT_STATE)
-> 	if (mmc->caps2 & MMC_CAP2_CD_ACTIVE_HIGH)
-> 		return !res;
+> > Sorry, don't quite understand what you're saying. You want to instantiate
+> > '.read_l' callback instead of '.get_cd' in sdhci_ops and substitute the real
+> > value?
+> > 
+> > res = readl(base, reg);
+> > if (reg == SDHCI_PRESENT_STATE)
+> > 	if (mmc->caps2 & MMC_CAP2_CD_ACTIVE_HIGH)
+> > 		return !res;
+> 
+> Presumably just flip the SDHCI_CARD_PRESENT bit i.e.
+> 
+> 		return res ^ SDHCI_CARD_PRESENT;
+> 
+> > return res;
+> > 
+> > Something like this?
+> 
+> Yes
+> 
 
-Presumably just flip the SDHCI_CARD_PRESENT bit i.e.
+Don't you think it will bring a little overhead on any sdhci_readl plus
+sdhci_readl will not get the real value in case of inverted signal which seems
+is not right from communication fairness between hw and sw? I took that approach
+with .get_cd from variety of drivers in host/mmc but if you think it will be
+better and safer with .read_l - I'll do that way. 
 
-		return res ^ SDHCI_CARD_PRESENT;
+Sorry for the link in subject, didn't notice that I put it in previous message
+somehow.
 
-> return res;
-> 
-> Something like this?
-
-Yes
-
-> 
->>  
->>> +	host->mmc_host_ops.get_cd = aspeed_get_cd;
->>> +	if (of_property_read_bool(pdev->dev.of_node, "cd-inverted"))
->>> +		dev_info(&pdev->dev, "aspeed: sdhci: presence signal inversion
->>> enabled\n");
->>
->> Is this print really needed?
->>
-> I can remove it if you think it's redundant.
-> 
-> Thanks.
-> 
-> 
+Thanks.
 
