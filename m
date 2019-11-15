@@ -1,106 +1,82 @@
-From: Vijay Khemka <vijaykhemka@fb.com>
-Date: Thu, 14 Nov 2019 14:33:08 -0800
-Subject: [PATCH v6] drivers: ipmi: Support raw i2c packet in IPMB
-Message-ID: <20191114223308.3650936-1-vijaykhemka@fb.com>
+From: Adrian Hunter <adrian.hunter@intel.com>
+Date: Fri, 15 Nov 2019 09:20:34 +0200
+Subject: [PATCH v2 2/2] mmc: sdhci-of-aspeed: add inversion
+ sighttps://elixir.bootlin.com/linux/v4.6/ident/sdhci_opsnal presence
+In-Reply-To: <b443738f5e2a3c7ba96b329a8347374f7f934483.camel@yadro.com>
+References: <20191114125435.27756-1-i.mikhaylov@yadro.com>
+ <20191114125435.27756-3-i.mikhaylov@yadro.com>
+ <fcb5f8b5-40b9-6497-b24d-0b73e2525949@intel.com>
+ <b443738f5e2a3c7ba96b329a8347374f7f934483.camel@yadro.com>
+Message-ID: <d177ef37-643e-442d-d536-750e0bb5e86d@intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Many IPMB devices don't support smbus protocol and this driver
-only supports the smbus protocol at the moment.
+On 14/11/19 7:19 PM, Ivan Mikhaylov wrote:
+> On Thu, 2019-11-14 at 15:10 +0200, Adrian Hunter wrote:
+>> On 14/11/19 2:54 PM, Ivan Mikhaylov wrote:
+>>> Change the default .get_cd callback. Add inverted signal card detection
+>>> check.
+>>>
+>>> Signed-off-by: Ivan Mikhaylov <i.mikhaylov@yadro.com>
+>>>
+>>> diff --git a/drivers/mmc/host/sdhci-of-aspeed.c b/drivers/mmc/host/sdhci-of-
+>>> aspeed.c
+>>> index 8962f6664381..186559ee8fcc 100644
+>>> --- a/drivers/mmc/host/sdhci-of-aspeed.c
+>>> +++ b/drivers/mmc/host/sdhci-of-aspeed.c
+>>> @@ -143,6 +143,19 @@ static inline int aspeed_sdhci_calculate_slot(struct
+>>> aspeed_sdhci *dev,
+>>>  	return (delta / 0x100) - 1;
+>>>  }
+>>>  
+>>> +static int aspeed_get_cd(struct mmc_host *mmc)
+>>> +{
+>>> +	struct sdhci_host *host = mmc_priv(mmc);
+>>> +
+>>> +	int present = !!(sdhci_readl(host, SDHCI_PRESENT_STATE)
+>>> +			 & SDHCI_CARD_PRESENT);
+>>> +
+>>> +	if (mmc->caps2 & MMC_CAP2_CD_ACTIVE_HIGH)
+>>> +		present = !present;
+>>
+>> Perhaps safer to flip the bit using CONFIG_MMC_SDHCI_IO_ACCESSORS and
+>> ->readl() callback
+>>
+> 
+> Sorry, don't quite understand what you're saying. You want to instantiate
+> '.read_l' callback instead of '.get_cd' in sdhci_ops and substitute the real
+> value?
+> 
+> res = readl(base, reg);
+> if (reg == SDHCI_PRESENT_STATE)
+> 	if (mmc->caps2 & MMC_CAP2_CD_ACTIVE_HIGH)
+> 		return !res;
 
-Added support for the i2c protocol as well. There will be a variable
-"i2c-protocol" passed by the device tree or ACPI table which determines
-whether the protocol is i2c or smbus.
+Presumably just flip the SDHCI_CARD_PRESENT bit i.e.
 
-Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
-Reviewed-by: Asmaa Mnebhi <asmaa@mellanox.com>
----
- Documentation/IPMB.txt           |  4 ++++
- drivers/char/ipmi/ipmb_dev_int.c | 29 +++++++++++++++++++++++++++++
- 2 files changed, 33 insertions(+)
+		return res ^ SDHCI_CARD_PRESENT;
 
-diff --git a/Documentation/IPMB.txt b/Documentation/IPMB.txt
-index a6ed8b68bd0f..7a023beff976 100644
---- a/Documentation/IPMB.txt
-+++ b/Documentation/IPMB.txt
-@@ -71,9 +71,13 @@ b) Example for device tree:
-          ipmb at 10 {
-                  compatible = "ipmb-dev";
-                  reg = <0x10>;
-+                 i2c-protocol;
-          };
- };
- 
-+If xmit of data to be done using raw i2c block vs smbus
-+then "i2c-protocol" needs to be defined as above.
-+
- 2) Manually from Linux:
- modprobe ipmb-dev-int
- 
-diff --git a/drivers/char/ipmi/ipmb_dev_int.c b/drivers/char/ipmi/ipmb_dev_int.c
-index ae3bfba27526..68a254c0dd92 100644
---- a/drivers/char/ipmi/ipmb_dev_int.c
-+++ b/drivers/char/ipmi/ipmb_dev_int.c
-@@ -63,6 +63,7 @@ struct ipmb_dev {
- 	spinlock_t lock;
- 	wait_queue_head_t wait_queue;
- 	struct mutex file_mutex;
-+	bool is_i2c_protocol;
- };
- 
- static inline struct ipmb_dev *to_ipmb_dev(struct file *file)
-@@ -112,6 +113,25 @@ static ssize_t ipmb_read(struct file *file, char __user *buf, size_t count,
- 	return ret < 0 ? ret : count;
- }
- 
-+static int ipmb_i2c_write(struct i2c_client *client, u8 *msg, u8 addr)
-+{
-+	struct i2c_msg i2c_msg;
-+
-+	/*
-+	 * subtract 1 byte (rq_sa) from the length of the msg passed to
-+	 * raw i2c_transfer
-+	 */
-+	i2c_msg.len = msg[IPMB_MSG_LEN_IDX] - 1;
-+
-+	/* Assign message to buffer except first 2 bytes (length and address) */
-+	i2c_msg.buf = msg + 2;
-+
-+	i2c_msg.addr = addr;
-+	i2c_msg.flags = client->flags & I2C_CLIENT_PEC;
-+
-+	return i2c_transfer(client->adapter, &i2c_msg, 1);
-+}
-+
- static ssize_t ipmb_write(struct file *file, const char __user *buf,
- 			size_t count, loff_t *ppos)
- {
-@@ -133,6 +153,12 @@ static ssize_t ipmb_write(struct file *file, const char __user *buf,
- 	rq_sa = GET_7BIT_ADDR(msg[RQ_SA_8BIT_IDX]);
- 	netf_rq_lun = msg[NETFN_LUN_IDX];
- 
-+	/* Check i2c block transfer vs smbus */
-+	if (ipmb_dev->is_i2c_protocol) {
-+		ret = ipmb_i2c_write(ipmb_dev->client, msg, rq_sa);
-+		return (ret == 1) ? count : ret;
-+	}
-+
- 	/*
- 	 * subtract rq_sa and netf_rq_lun from the length of the msg passed to
- 	 * i2c_smbus_xfer
-@@ -302,6 +328,9 @@ static int ipmb_probe(struct i2c_client *client,
- 	if (ret)
- 		return ret;
- 
-+	ipmb_dev->is_i2c_protocol
-+		= device_property_read_bool(&client->dev, "i2c-protocol");
-+
- 	ipmb_dev->client = client;
- 	i2c_set_clientdata(client, ipmb_dev);
- 	ret = i2c_slave_register(client, ipmb_slave_cb);
--- 
-2.17.1
+> return res;
+> 
+> Something like this?
+
+Yes
+
+> 
+>>  
+>>> +	host->mmc_host_ops.get_cd = aspeed_get_cd;
+>>> +	if (of_property_read_bool(pdev->dev.of_node, "cd-inverted"))
+>>> +		dev_info(&pdev->dev, "aspeed: sdhci: presence signal inversion
+>>> enabled\n");
+>>
+>> Is this print really needed?
+>>
+> I can remove it if you think it's redundant.
+> 
+> Thanks.
+> 
+> 
 
