@@ -1,74 +1,202 @@
-From: Jerry Hoemann <jerry.hoemann@hpe.com>
-Date: Fri, 8 Nov 2019 11:05:17 -0700
-Subject: [PATCH] watchdog: aspeed: Fix clock behaviour for ast2600
-In-Reply-To: <20191108032905.22463-1-joel@jms.id.au>
-References: <20191108032905.22463-1-joel@jms.id.au>
-Message-ID: <20191108180517.GB150483@anatevka.americas.hpqcorp.net>
+From: manikandan-e <manikandan.hcl.ers.epl@gmail.com>
+Date: Mon, 18 Nov 2019 18:07:07 +0530
+Subject: [PATCH] ARM: dts: aspeed: Adding Facebook Yosemite V2 BMC
+Message-ID: <20191118123707.GA5560@cnn>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Nov 08, 2019 at 01:59:05PM +1030, Joel Stanley wrote:
-> The ast2600 no longer uses bit 4 in the control register to indicate a
-> 1MHz clock (It now controls weather this watchdog is reset by a SOC
-> reset). This means we do not want to set it. It also does not need to be
-> set for the ast2500, as it is read-only on that SoC.
+The Yosemite V2 is a facebook multi-node server
+platform that host four OCP server. The BMC
+in the Yosemite V2 platorm based on AST2500 SoC.
 
+This patch adds linux device tree entry related to
+Yosemite V2 specific devices connected to BMC SoC.
 
-s/weather/whether/
+Signed-off-by: manikandan-e <manikandan.hcl.ers.epl@gmail.com>
+---
+ .../boot/dts/aspeed-bmc-facebook-yosemitev2.dts    | 170 +++++++++++++++++++++
+ 1 file changed, 170 insertions(+)
+ create mode 100644 arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts
 
-
-> 
-> The comment next to the clock rate selection wandered away from where it
-> was set, so put it back next to the register setting it's describing.
-> 
-> Fixes: b3528b487448 ("watchdog: aspeed: Add support for AST2600")
-> Signed-off-by: Joel Stanley <joel@jms.id.au>
-> ---
->  drivers/watchdog/aspeed_wdt.c | 16 ++++++++++------
->  1 file changed, 10 insertions(+), 6 deletions(-)
-> 
-> diff --git a/drivers/watchdog/aspeed_wdt.c b/drivers/watchdog/aspeed_wdt.c
-> index 4ec0906bf12c..7e00960651fa 100644
-> --- a/drivers/watchdog/aspeed_wdt.c
-> +++ b/drivers/watchdog/aspeed_wdt.c
-> @@ -258,11 +258,6 @@ static int aspeed_wdt_probe(struct platform_device *pdev)
->  	if (IS_ERR(wdt->base))
->  		return PTR_ERR(wdt->base);
->  
-> -	/*
-> -	 * The ast2400 wdt can run at PCLK, or 1MHz. The ast2500 only
-> -	 * runs at 1MHz. We chose to always run at 1MHz, as there's no
-> -	 * good reason to have a faster watchdog counter.
-> -	 */
->  	wdt->wdd.info = &aspeed_wdt_info;
->  	wdt->wdd.ops = &aspeed_wdt_ops;
->  	wdt->wdd.max_hw_heartbeat_ms = WDT_MAX_TIMEOUT_MS;
-> @@ -278,7 +273,16 @@ static int aspeed_wdt_probe(struct platform_device *pdev)
->  		return -EINVAL;
->  	config = ofdid->data;
->  
-> -	wdt->ctrl = WDT_CTRL_1MHZ_CLK;
-> +	/*
-> +	 * On clock rates:
-> +	 *  - ast2400 wdt can run at PCLK, or 1MHz
-> +	 *  - ast2500 only runs at 1MHz, hard coding bit 4 to 1
-> +	 *  - ast2600 always runs at 1MHz
-> +	 *
-> +	 * Set the ast2400 to run at 1MHz as it simplifies the driver.
-> +	 */
-> +	if (of_device_is_compatible(np, "aspeed,ast2400-wdt"))
-> +		wdt->ctrl = WDT_CTRL_1MHZ_CLK;
->  
->  	/*
->  	 * Control reset on a per-device basis to ensure the
-> -- 
-> 2.24.0.rc1
-
+diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts
+new file mode 100644
+index 0000000..46a285a
+--- /dev/null
++++ b/arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts
+@@ -0,0 +1,170 @@
++// SPDX-License-Identifier: GPL-2.0+
++// Copyright (c) 2018 Facebook Inc.
++// Author:
++/dts-v1/;
++
++#include "aspeed-g5.dtsi"
++#include <dt-bindings/gpio/aspeed-gpio.h>
++
++/ {
++	model = "Facebook Yosemitev2 BMC";
++	compatible = "facebook,yosemitev2-bmc", "aspeed,ast2500";
++	aliases {
++		serial0 = &uart1;
++		serial4 = &uart5;
++	};
++	chosen {
++		stdout-path = &uart5;
++		bootargs = "console=ttyS4,115200 earlyprintk";
++	};
++
++	memory at 80000000 {
++		reg = <0x80000000 0x20000000>;
++	};
++
++	iio-hwmon {
++		// VOLATAGE SENSOR
++		compatible = "iio-hwmon";
++		io-channels = <&adc 0> , <&adc 1> , <&adc 2> ,  <&adc 3> ,
++		<&adc 4> , <&adc 5> , <&adc 6> ,  <&adc 7> ,
++		<&adc 8> , <&adc 9> , <&adc 10>, <&adc 11> ,
++		<&adc 12> , <&adc 13> , <&adc 14> , <&adc 15> ;
++	};
++};
++
++&fmc {
++	status = "okay";
++	flash at 0 {
++		status = "okay";
++		m25p,fast-read;
++#include "openbmc-flash-layout.dtsi"
++	};
++};
++
++&spi1 {
++	status = "okay";
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_spi1_default>;
++	flash at 0 {
++		status = "okay";
++		m25p,fast-read;
++		label = "pnor";
++	};
++};
++
++&lpc_snoop {
++	status = "okay";
++	snoop-ports = <0x80>;
++};
++
++&lpc_ctrl {
++	// Enable lpc clock
++	status = "okay";
++};
++
++&vuart {
++	// VUART Host Console
++	status = "okay";
++};
++
++&uart1 {
++	// Host Console
++	status = "okay";
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_txd1_default
++		     &pinctrl_rxd1_default>;
++};
++
++&uart2 {
++	// SoL Host Console
++	status = "okay";
++};
++
++&uart3 {
++	// SoL BMC Console
++	status = "okay";
++};
++
++&uart5 {
++	// BMC Console
++	status = "okay";
++};
++
++&mac0 {
++	status = "okay";
++
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_rmii1_default>;
++	use-ncsi;
++};
++
++&adc {
++	status = "okay";
++};
++
++&i2c8 {
++	status = "okay";
++	//FRU EEPROM
++	eeprom at 51 {
++		compatible = "atmel,24c64";
++		reg = <0x51>;
++		pagesize = <32>;
++	};
++};
++
++&i2c9 {
++	status = "okay";
++	tmp421 at 4e {
++	//INLET TEMP
++		compatible = "ti,tmp421";
++		reg = <0x4e>;
++	};
++	//OUTLET TEMP
++	tmp421 at 4f {
++		compatible = "ti,tmp421";
++		reg = <0x4f>;
++	};
++};
++
++&i2c10 {
++	status = "okay";
++	//HSC
++	adm1278 at 40 {
++		compatible = "adi,adm1278";
++		reg = <0x40>;
++	};
++};
++
++&i2c11 {
++	status = "okay";
++	//MEZZ_TEMP_SENSOR
++	tmp421 at 1f {
++		compatible = "ti,tmp421";
++		reg = <0x1f>;
++	};
++};
++
++&i2c12 {
++	status = "okay";
++	//MEZZ_FRU
++	eeprom at 51 {
++		compatible = "atmel,24c64";
++		reg = <0x51>;
++		pagesize = <32>;
++	};
++};
++
++&pwm_tacho {
++	status = "okay";
++   //FSC
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_pwm0_default &pinctrl_pwm1_default>;
++	fan at 0 {
++		reg = <0x00>;
++		aspeed,fan-tach-ch = /bits/ 8 <0x00>;
++	};
++	fan at 1 {
++		reg = <0x01>;
++		aspeed,fan-tach-ch = /bits/ 8 <0x02>;
++	};
++};
 -- 
+2.7.4
 
------------------------------------------------------------------------------
-Jerry Hoemann                  Software Engineer   Hewlett Packard Enterprise
------------------------------------------------------------------------------
