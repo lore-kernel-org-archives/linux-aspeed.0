@@ -1,44 +1,73 @@
-From: Ivan Mikhaylov <i.mikhaylov@yadro.com>
-Date: Mon, 18 Nov 2019 13:46:46 +0300
-Subject: [PATCH v3 3/3] mmc: sdhci-of-aspeed: add inversion signal presence
-In-Reply-To: <20191118104646.3838-1-i.mikhaylov@yadro.com>
-References: <20191118104646.3838-1-i.mikhaylov@yadro.com>
-Message-ID: <20191118104646.3838-4-i.mikhaylov@yadro.com>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Date: Tue, 19 Nov 2019 06:16:48 +0100
+Subject: [PATCH 4.19 211/422] ARM: dts: aspeed: Fix I2C bus warnings
+In-Reply-To: <20191119051400.261610025@linuxfoundation.org>
+References: <20191119051400.261610025@linuxfoundation.org>
+Message-ID: <20191119051412.266011758@linuxfoundation.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add read_l callback in sdhci_ops with flipping of SDHCI_CARD_PRESENT
-bit in case of inverted card detection signal.
+From: Rob Herring <robh@kernel.org>
 
-Signed-off-by: Ivan Mikhaylov <i.mikhaylov@yadro.com>
+[ Upstream commit 1426d40e11f730e0c0fd3700a7048082f87b0e6e ]
 
-diff --git a/drivers/mmc/host/sdhci-of-aspeed.c b/drivers/mmc/host/sdhci-of-aspeed.c
-index 8962f6664381..56912e30c47e 100644
---- a/drivers/mmc/host/sdhci-of-aspeed.c
-+++ b/drivers/mmc/host/sdhci-of-aspeed.c
-@@ -111,7 +111,19 @@ static void aspeed_sdhci_set_bus_width(struct sdhci_host *host, int width)
- 	sdhci_writeb(host, ctrl, SDHCI_HOST_CONTROL);
- }
+dtc has new checks for I2C buses. The ASpeed dts files have a node named
+'i2c' which causes a false positive warning. As the node is a 'simple-bus',
+correct the node name to be 'bus' to fix the warnings.
+
+arch/arm/boot/dts/aspeed-bmc-opp-lanyang.dtb: Warning (i2c_bus_bridge): /ahb/apb/i2c at 1e78a000: incorrect #size-cells for I2C bus
+arch/arm/boot/dts/aspeed-bmc-opp-romulus.dtb: Warning (i2c_bus_bridge): /ahb/apb/i2c at 1e78a000: incorrect #size-cells for I2C bus
+arch/arm/boot/dts/aspeed-ast2500-evb.dtb: Warning (i2c_bus_bridge): /ahb/apb/i2c at 1e78a000: incorrect #size-cells for I2C bus
+arch/arm/boot/dts/aspeed-bmc-arm-centriq2400-rep.dtb: Warning (i2c_bus_bridge): /ahb/apb/i2c at 1e78a000: incorrect #size-cells for I2C bus
+arch/arm/boot/dts/aspeed-bmc-intel-s2600wf.dtb: Warning (i2c_bus_bridge): /ahb/apb/i2c at 1e78a000: incorrect #size-cells for I2C bus
+arch/arm/boot/dts/aspeed-bmc-opp-palmetto.dtb: Warning (i2c_bus_bridge): /ahb/apb/i2c at 1e78a000: incorrect #size-cells for I2C bus
+arch/arm/boot/dts/aspeed-bmc-opp-witherspoon.dtb: Warning (i2c_bus_bridge): /ahb/apb/i2c at 1e78a000: incorrect #size-cells for I2C bus
+arch/arm/boot/dts/aspeed-bmc-opp-zaius.dtb: Warning (i2c_bus_bridge): /ahb/apb/i2c at 1e78a000: incorrect #size-cells for I2C bus
+arch/arm/boot/dts/aspeed-bmc-portwell-neptune.dtb: Warning (i2c_bus_bridge): /ahb/apb/i2c at 1e78a000: incorrect #size-cells for I2C bus
+arch/arm/boot/dts/aspeed-bmc-quanta-q71l.dtb: Warning (i2c_bus_bridge): /ahb/apb/i2c at 1e78a000: incorrect #size-cells for I2C bus
+
+Cc: Joel Stanley <joel@jms.id.au>
+Cc: Andrew Jeffery <andrew@aj.id.au>
+Cc: linux-aspeed at lists.ozlabs.org
+Signed-off-by: Rob Herring <robh@kernel.org>
+Signed-off-by: Joel Stanley <joel@jms.id.au>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ arch/arm/boot/dts/aspeed-g4.dtsi | 2 +-
+ arch/arm/boot/dts/aspeed-g5.dtsi | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/arm/boot/dts/aspeed-g4.dtsi b/arch/arm/boot/dts/aspeed-g4.dtsi
+index b23a983f95a53..69f6b9d2e7e7d 100644
+--- a/arch/arm/boot/dts/aspeed-g4.dtsi
++++ b/arch/arm/boot/dts/aspeed-g4.dtsi
+@@ -350,7 +350,7 @@
+ 				status = "disabled";
+ 			};
  
-+static u32 aspeed_sdhci_readl(struct sdhci_host *host, int reg)
-+{
-+	u32 val = readl(host->ioaddr + reg);
-+
-+	if (unlikely(reg == SDHCI_PRESENT_STATE) &&
-+	    (host->mmc->caps2 & MMC_CAP2_CD_ACTIVE_HIGH))
-+		val ^= SDHCI_CARD_PRESENT;
-+
-+	return val;
-+}
-+
- static const struct sdhci_ops aspeed_sdhci_ops = {
-+	.read_l = aspeed_sdhci_readl,
- 	.set_clock = aspeed_sdhci_set_clock,
- 	.get_max_clock = aspeed_sdhci_get_max_clock,
- 	.set_bus_width = aspeed_sdhci_set_bus_width,
+-			i2c: i2c at 1e78a000 {
++			i2c: bus at 1e78a000 {
+ 				compatible = "simple-bus";
+ 				#address-cells = <1>;
+ 				#size-cells = <1>;
+diff --git a/arch/arm/boot/dts/aspeed-g5.dtsi b/arch/arm/boot/dts/aspeed-g5.dtsi
+index 87fdc146ff525..d107459fc0f89 100644
+--- a/arch/arm/boot/dts/aspeed-g5.dtsi
++++ b/arch/arm/boot/dts/aspeed-g5.dtsi
+@@ -410,7 +410,7 @@
+ 				status = "disabled";
+ 			};
+ 
+-			i2c: i2c at 1e78a000 {
++			i2c: bus at 1e78a000 {
+ 				compatible = "simple-bus";
+ 				#address-cells = <1>;
+ 				#size-cells = <1>;
 -- 
 2.20.1
+
+
 
