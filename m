@@ -1,43 +1,35 @@
-From: Luc Van Oostenryck <luc.vanoostenryck@gmail.com>
-Date: Thu, 21 Nov 2019 11:08:23 +0100
-Subject: [PATCH] aspeed: fix snoop_file_poll()'s return type
-In-Reply-To: <CACPK8XfO=F-BtCuDqyQODJv=6joYmyFiQ5eOYC5YuDJhcLSJtw@mail.gmail.com>
-References: <20191120000647.30551-1-luc.vanoostenryck@gmail.com>
- <787e54c2-2fe3-4afc-a69b-94771726194b@www.fastmail.com>
- <CACPK8XfO=F-BtCuDqyQODJv=6joYmyFiQ5eOYC5YuDJhcLSJtw@mail.gmail.com>
-Message-ID: <20191121100823.2twowr42nsyykvgg@ltop.local>
+From: Andrew Jeffery <andrew@aj.id.au>
+Date: Fri, 22 Nov 2019 09:16:39 +1030
+Subject: [PATCH] ARM: dts: aspeed: Adding Facebook Yosemite V2 BMC
+In-Reply-To: <20191121074843.GA10607@cnn>
+References: <20191118123707.GA5560@cnn>
+ <b2f503f0-0f13-46bc-a1be-c82a42b85797@www.fastmail.com>
+ <D34D3A2F-9CD5-4924-8407-F6EB0A4C66B5@fb.com> <20191121074843.GA10607@cnn>
+Message-ID: <0fce7468-bb35-4d47-8d5d-abc228e99085@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Nov 21, 2019 at 02:52:39AM +0000, Joel Stanley wrote:
-> On Wed, 20 Nov 2019 at 05:42, Andrew Jeffery <andrew@aj.id.au> wrote:
-> >
-> > Looks fine to me as POLLIN and EPOLLIN evaluate to the same value despite
-> > the type difference.
-> 
-> I assume Luc was using sparse to check:
-> 
-> CHECK   ../drivers/soc/aspeed/aspeed-lpc-snoop.c
-> ../drivers/soc/aspeed/aspeed-lpc-snoop.c:112:19: warning: incorrect
-> type in initializer (different base types)
-> ../drivers/soc/aspeed/aspeed-lpc-snoop.c:112:19:    expected
-> restricted __poll_t ( *poll )( ... )
-> ../drivers/soc/aspeed/aspeed-lpc-snoop.c:112:19:    got unsigned int (
-> * )( ... )
-> 
-> If you fix the return type:
-> 
->   CHECK   ../drivers/soc/aspeed/aspeed-lpc-snoop.c
-> ../drivers/soc/aspeed/aspeed-lpc-snoop.c:106:45: warning: incorrect
-> type in return expression (different base types)
-> ../drivers/soc/aspeed/aspeed-lpc-snoop.c:106:45:    expected restricted __poll_t
-> ../drivers/soc/aspeed/aspeed-lpc-snoop.c:106:45:    got int
 
-Yes, but with the change s/POLLIN/EPOLLIN/ this last warning
-is not issued.
- 
+
+On Thu, 21 Nov 2019, at 18:18, Manikandan wrote:
+> 
+> Hi Andrew/Vijay,
+> 
+> Thanks for the review .
+> 
+> The following changes done in dts and tested in Facebook Yosemite V2 
+> BMC platform,
+>   1. LPC feature removed as not supported .
+>   2. VUART feature removed as not supported.
+>   3. Host UART feature removed as not in the current scope.
+>   4. ADC pinctrl details added in dts.
+
+Can you please re-send the patch as a v2 and inline to the mail rather than
+as an attachment?
+
 Cheers,
--- Luc
+
+Andrew
