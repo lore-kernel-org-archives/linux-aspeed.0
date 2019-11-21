@@ -1,43 +1,79 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Date: Wed, 20 Nov 2019 13:58:55 +0100
-Subject: [PATCH v3 2/3] mmc: sdhci-of-aspeed: enable
- CONFIG_MMC_SDHCI_IO_ACCESSORS
-In-Reply-To: <20191118104646.3838-3-i.mikhaylov@yadro.com>
-References: <20191118104646.3838-1-i.mikhaylov@yadro.com>
- <20191118104646.3838-3-i.mikhaylov@yadro.com>
-Message-ID: <CAPDyKFoz3ipYBGR-6ubfqhtQVG9h16axoHNdSoo+OyNgKRs2Tw@mail.gmail.com>
+From: Joel Stanley <joel@jms.id.au>
+Date: Thu, 21 Nov 2019 02:52:39 +0000
+Subject: [PATCH] aspeed: fix snoop_file_poll()'s return type
+In-Reply-To: <787e54c2-2fe3-4afc-a69b-94771726194b@www.fastmail.com>
+References: <20191120000647.30551-1-luc.vanoostenryck@gmail.com>
+ <787e54c2-2fe3-4afc-a69b-94771726194b@www.fastmail.com>
+Message-ID: <CACPK8XfO=F-BtCuDqyQODJv=6joYmyFiQ5eOYC5YuDJhcLSJtw@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, 18 Nov 2019 at 11:47, Ivan Mikhaylov <i.mikhaylov@yadro.com> wrote:
+On Wed, 20 Nov 2019 at 05:42, Andrew Jeffery <andrew@aj.id.au> wrote:
 >
-> Enable CONFIG_MMC_SDHCI_IO_ACCESSORS on the aspeed board. The read_l
-> callback is used for inverted card detection.
+> On Wed, 20 Nov 2019, at 10:36, Luc Van Oostenryck wrote:
+> > snoop_file_poll() is defined as returning 'unsigned int' but the
+> > .poll method is declared as returning '__poll_t', a bitwise type.
+> >
+> > Fix this by using the proper return type and using the EPOLL
+> > constants instead of the POLL ones, as required for __poll_t.
+> >
+> > CC: Joel Stanley <joel@jms.id.au>
+> > CC: Andrew Jeffery <andrew@aj.id.au>
+> > CC: linux-aspeed at lists.ozlabs.org
+> > CC: linux-arm-kernel at lists.infradead.org
+> > Signed-off-by: Luc Van Oostenryck <luc.vanoostenryck@gmail.com>
+> > ---
+> >  drivers/soc/aspeed/aspeed-lpc-snoop.c | 4 ++--
+> >  1 file changed, 2 insertions(+), 2 deletions(-)
+> >
+> > diff --git a/drivers/soc/aspeed/aspeed-lpc-snoop.c
+> > b/drivers/soc/aspeed/aspeed-lpc-snoop.c
+> > index 48f7ac238861..f3d8d53ab84d 100644
+> > --- a/drivers/soc/aspeed/aspeed-lpc-snoop.c
+> > +++ b/drivers/soc/aspeed/aspeed-lpc-snoop.c
+> > @@ -97,13 +97,13 @@ static ssize_t snoop_file_read(struct file *file,
+> > char __user *buffer,
+> >       return ret ? ret : copied;
+> >  }
+> >
+> > -static unsigned int snoop_file_poll(struct file *file,
+> > +static __poll_t snoop_file_poll(struct file *file,
+> >                                   struct poll_table_struct *pt)
+> >  {
+> >       struct aspeed_lpc_snoop_channel *chan = snoop_file_to_chan(file);
+> >
+> >       poll_wait(file, &chan->wq, pt);
+> > -     return !kfifo_is_empty(&chan->fifo) ? POLLIN : 0;
+> > +     return !kfifo_is_empty(&chan->fifo) ? EPOLLIN : 0;
 >
-> Signed-off-by: Ivan Mikhaylov <i.mikhaylov@yadro.com>
+> Looks fine to me as POLLIN and EPOLLIN evaluate to the same value despite
+> the type difference.
 
-Applied for next, updating the changelog according to Andrew's comments, thanks!
+I assume Luc was using sparse to check:
 
-Kind regards
-Uffe
+CHECK   ../drivers/soc/aspeed/aspeed-lpc-snoop.c
+../drivers/soc/aspeed/aspeed-lpc-snoop.c:112:19: warning: incorrect
+type in initializer (different base types)
+../drivers/soc/aspeed/aspeed-lpc-snoop.c:112:19:    expected
+restricted __poll_t ( *poll )( ... )
+../drivers/soc/aspeed/aspeed-lpc-snoop.c:112:19:    got unsigned int (
+* )( ... )
 
+If you fix the return type:
 
->
-> diff --git a/drivers/mmc/host/Kconfig b/drivers/mmc/host/Kconfig
-> index 49ea02c467bf..c9c1bb722368 100644
-> --- a/drivers/mmc/host/Kconfig
-> +++ b/drivers/mmc/host/Kconfig
-> @@ -159,6 +159,7 @@ config MMC_SDHCI_OF_ASPEED
->         tristate "SDHCI OF support for the ASPEED SDHCI controller"
->         depends on MMC_SDHCI_PLTFM
->         depends on OF && OF_ADDRESS
-> +       select MMC_SDHCI_IO_ACCESSORS
->         help
->           This selects the ASPEED Secure Digital Host Controller Interface.
->
-> --
-> 2.20.1
->
+  CHECK   ../drivers/soc/aspeed/aspeed-lpc-snoop.c
+../drivers/soc/aspeed/aspeed-lpc-snoop.c:106:45: warning: incorrect
+type in return expression (different base types)
+../drivers/soc/aspeed/aspeed-lpc-snoop.c:106:45:    expected restricted __poll_t
+../drivers/soc/aspeed/aspeed-lpc-snoop.c:106:45:    got int
+
+Reviewed-by: Joel Stanley <joel@jms.id.au>
+
+I will send this to the ARM SOC maintainer. Thanks Luc!
+
+Cheers,
+
+Joel
