@@ -1,9 +1,9 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Tue, 26 Nov 2019 10:08:36 +1030
-Subject: [PATCH] irqchip/aspeed-i2c-ic: Fix irq domain name memory leak
-In-Reply-To: <20191125202937.23133-1-roy.van.doormaal@prodrive-technologies.com>
-References: <20191125202937.23133-1-roy.van.doormaal@prodrive-technologies.com>
-Message-ID: <ff44cecd-7e05-4e5d-b88f-2d6af6fd8b8b@www.fastmail.com>
+Date: Tue, 26 Nov 2019 10:30:15 +1030
+Subject: [PATCH v3] ARM: dts: aspeed: Adding Facebook Yosemite V2 BMC
+In-Reply-To: <20191125130420.GA24018@cnn>
+References: <20191125130420.GA24018@cnn>
+Message-ID: <3232fa33-559f-4086-a605-7186d81ee3f7@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -12,57 +12,14 @@ Content-Transfer-Encoding: 7bit
 
 
 
-On Tue, 26 Nov 2019, at 06:59, Roy van Doormaal wrote:
-> The aspeed irqchip driver overwrites the default irq domain name,
-> but doesn't free the existing domain name.
-> This patch frees the irq domain name before overwriting it.
+On Mon, 25 Nov 2019, at 23:34, manikandan-e wrote:
+> The Yosemite V2 is a facebook multi-node server
+> platform that host four OCP server. The BMC
+> in the Yosemite V2 platorm based on AST2500 SoC.
 > 
-> kmemleak trace:
+> This patch adds linux device tree entry related to
+> Yosemite V2 specific devices connected to BMC SoC.
 > 
-> unreferenced object 0xb8004c40 (size 64):
-> comm "swapper", pid 0, jiffies 4294937303 (age 747.660s)
-> hex dump (first 32 bytes):
-> 3a 61 68 62 3a 61 70 62 3a 62 75 73 40 31 65 37 :ahb:apb:bus at 1e7
-> 38 61 30 30 30 3a 69 6e 74 65 72 72 75 70 74 2d 8a000:interrupt-
-> backtrace:
-> [<086b59b8>] kmemleak_alloc+0xa8/0xc0
-> [<b5a3490c>] __kmalloc_track_caller+0x118/0x1a0
-> [<f59c7ced>] kvasprintf+0x5c/0xc0
-> [<49275eec>] kasprintf+0x30/0x50
-> [<5713064b>] __irq_domain_add+0x184/0x25c
-> [<53c594d0>] aspeed_i2c_ic_of_init+0x9c/0x128
-> [<d8d7017e>] of_irq_init+0x1ec/0x314
-> [<f8405bf1>] irqchip_init+0x1c/0x24
-> [<7ef974b3>] init_IRQ+0x30/0x90
-> [<87a1438f>] start_kernel+0x28c/0x458
-> [< (null)>] (null)
-> [<f0763fdf>] 0xffffffff
-> 
-> Signed-off-by: Roy van Doormaal <roy.van.doormaal@prodrive-technologies.com>
-> ---
->  drivers/irqchip/irq-aspeed-i2c-ic.c | 2 ++
->  1 file changed, 2 insertions(+)
-> 
-> diff --git a/drivers/irqchip/irq-aspeed-i2c-ic.c 
-> b/drivers/irqchip/irq-aspeed-i2c-ic.c
-> index 8d591c179f81..8081b8483a79 100644
-> --- a/drivers/irqchip/irq-aspeed-i2c-ic.c
-> +++ b/drivers/irqchip/irq-aspeed-i2c-ic.c
-> @@ -92,6 +92,8 @@ static int __init aspeed_i2c_ic_of_init(struct 
-> device_node *node,
->  		goto err_iounmap;
->  	}
->  
-> +	if (i2c_ic->irq_domain->flags & IRQ_DOMAIN_NAME_ALLOCATED)
-> +		kfree(i2c_ic->irq_domain->name);
->  	i2c_ic->irq_domain->name = "aspeed-i2c-domain";
+> Signed-off-by: manikandan-e <manikandan.hcl.ers.epl@gmail.com>
 
-Given that the name is no-longer allocated I think you need to clear the
-IRQ_DOMAIN_NAME_ALLOCATED bit from flags to avoid attempting to
-free the const string in irq_domain_remove():
-
-https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/kernel/irq/irqdomain.c?h=v5.4#n263
-
-Or do a kstrdup().
-
-Andrew
+Acked-by: Andrew Jeffery <andrew@aj.id.au>
