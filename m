@@ -1,9 +1,10 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Thu, 28 Nov 2019 09:05:21 +1030
-Subject: [PATCH v4] ARM: dts: aspeed: Adding Facebook Yosemite V2 BMC
-In-Reply-To: <20191127132340.GA22672@cnn>
-References: <20191127132340.GA22672@cnn>
-Message-ID: <ba027dc2-613c-40c6-bb5e-1d320e51b191@www.fastmail.com>
+Date: Thu, 28 Nov 2019 09:46:08 +1030
+Subject: [PATCH 1/2] dt-bindings: mfd: Add ast2600 to ASPEED LPC
+In-Reply-To: <20191126022243.215261-2-joel@jms.id.au>
+References: <20191126022243.215261-1-joel@jms.id.au>
+ <20191126022243.215261-2-joel@jms.id.au>
+Message-ID: <1a1db770-1f34-4bfe-a235-1b05841428b0@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -12,24 +13,71 @@ Content-Transfer-Encoding: 7bit
 
 
 
-On Wed, 27 Nov 2019, at 23:53, manikandan-e wrote:
-> The Yosemite V2 is a facebook multi-node server
-> platform that host four OCP server. The BMC
-> in the Yosemite V2 platorm based on AST2500 SoC.
+On Tue, 26 Nov 2019, at 12:52, Joel Stanley wrote:
+> The AST2600 has the same LPC layout as previous generation SoCs.
 > 
-> This patch adds linux device tree entry related to
-> Yosemite V2 specific devices connected to BMC SoC.
+> Signed-off-by: Joel Stanley <joel@jms.id.au>
+> ---
+>  Documentation/devicetree/bindings/mfd/aspeed-lpc.txt | 11 +++++++++--
+>  1 file changed, 9 insertions(+), 2 deletions(-)
 > 
-> Signed-off-by: manikandan-e <manikandan.hcl.ers.epl@gmail.com>
+> diff --git a/Documentation/devicetree/bindings/mfd/aspeed-lpc.txt 
+> b/Documentation/devicetree/bindings/mfd/aspeed-lpc.txt
+> index 86446074e206..bef07c3b1a3e 100644
+> --- a/Documentation/devicetree/bindings/mfd/aspeed-lpc.txt
+> +++ b/Documentation/devicetree/bindings/mfd/aspeed-lpc.txt
+> @@ -46,6 +46,7 @@ Required properties
+>  - compatible:	One of:
+>  		"aspeed,ast2400-lpc", "simple-mfd"
+>  		"aspeed,ast2500-lpc", "simple-mfd"
+> +		"aspeed,ast2600-lpc", "simple-mfd"
+>  
+>  - reg:		contains the physical address and length values of the Aspeed
+>                  LPC memory region.
+> @@ -64,6 +65,7 @@ BMC Node
+>  - compatible:	One of:
+>  		"aspeed,ast2400-lpc-bmc"
+>  		"aspeed,ast2500-lpc-bmc"
+> +		"aspeed,ast2600-lpc-bmc"
+>  
+>  - reg:		contains the physical address and length values of the
+>                  H8S/2168-compatible LPC controller memory region
+> @@ -128,6 +130,7 @@ Required properties:
+>  - compatible:	One of:
+>  		"aspeed,ast2400-lpc-ctrl";
+>  		"aspeed,ast2500-lpc-ctrl";
+> +		"aspeed,ast2600-lpc-ctrl";
+>  
+>  - reg:		contains offset/length values of the host interface controller
+>  		memory regions
+> @@ -168,6 +171,7 @@ Required properties:
+>  - compatible:	One of:
+>  		"aspeed,ast2400-lhc";
+>  		"aspeed,ast2500-lhc";
+> +		"aspeed,ast2600-lhc";
+>  
+>  - reg:		contains offset/length values of the LHC memory regions. In the
+>  		AST2400 and AST2500 there are two regions.
+> @@ -187,8 +191,11 @@ state of the LPC bus. Some systems may chose to 
+> modify this configuration.
+>  
+>  Required properties:
+>  
+> - - compatible:		"aspeed,ast2500-lpc-reset" or
+> -			"aspeed,ast2400-lpc-reset"
+> + - compatible:		One of:
+> +			"aspeed,ast2400-lhc";
+> +			"aspeed,ast2500-lhc";
+> +			"aspeed,ast2600-lhc";
 
-If people have reviewed previous versions of your patches and sent
-Reviewed-by/Acked-by/Tested-by tags, please make sure to include
-them on future versions of the patches _unless_ there has been
-significant change that might invalidate the tag. In that case, also
-provide a short description as to why you dropped the tags. You can
-add free-form information below the `---` and it will not be included
-in the commit for the patch.
+This doesn't look right, you've removed the reset compatibles. It looks like
+copy/paste from the hunk before.
 
-Cheers,
-
-Andrew
+> +
+>   - reg:			offset and length of the IP in the LHC memory region
+>   - #reset-controller	indicates the number of reset cells expected
+>  
+> -- 
+> 2.24.0
+> 
+>
