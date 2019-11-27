@@ -1,182 +1,35 @@
-From: manikandan-e <manikandan.hcl.ers.epl@gmail.com>
-Date: Wed, 27 Nov 2019 18:53:40 +0530
+From: Andrew Jeffery <andrew@aj.id.au>
+Date: Thu, 28 Nov 2019 09:05:21 +1030
 Subject: [PATCH v4] ARM: dts: aspeed: Adding Facebook Yosemite V2 BMC
-Message-ID: <20191127132340.GA22672@cnn>
+In-Reply-To: <20191127132340.GA22672@cnn>
+References: <20191127132340.GA22672@cnn>
+Message-ID: <ba027dc2-613c-40c6-bb5e-1d320e51b191@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The Yosemite V2 is a facebook multi-node server
-platform that host four OCP server. The BMC
-in the Yosemite V2 platorm based on AST2500 SoC.
 
-This patch adds linux device tree entry related to
-Yosemite V2 specific devices connected to BMC SoC.
 
-Signed-off-by: manikandan-e <manikandan.hcl.ers.epl@gmail.com>
----
- .../boot/dts/aspeed-bmc-facebook-yosemitev2.dts    | 150 +++++++++++++++++++++
- 1 file changed, 150 insertions(+)
- create mode 100644 arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts
+On Wed, 27 Nov 2019, at 23:53, manikandan-e wrote:
+> The Yosemite V2 is a facebook multi-node server
+> platform that host four OCP server. The BMC
+> in the Yosemite V2 platorm based on AST2500 SoC.
+> 
+> This patch adds linux device tree entry related to
+> Yosemite V2 specific devices connected to BMC SoC.
+> 
+> Signed-off-by: manikandan-e <manikandan.hcl.ers.epl@gmail.com>
 
-diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts
-new file mode 100644
-index 0000000..44e2b17
---- /dev/null
-+++ b/arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts
-@@ -0,0 +1,150 @@
-+// SPDX-License-Identifier: GPL-2.0+
-+// Copyright (c) 2018 Facebook Inc.
-+/dts-v1/;
-+
-+#include "aspeed-g5.dtsi"
-+#include <dt-bindings/gpio/aspeed-gpio.h>
-+
-+/ {
-+	model = "Facebook Yosemitev2 BMC";
-+	compatible = "facebook,yosemitev2-bmc", "aspeed,ast2500";
-+	aliases {
-+		serial4 = &uart5;
-+	};
-+	chosen {
-+		stdout-path = &uart5;
-+	};
-+
-+	memory at 80000000 {
-+		reg = <0x80000000 0x20000000>;
-+	};
-+
-+	iio-hwmon {
-+		// VOLATAGE SENSOR
-+		compatible = "iio-hwmon";
-+		io-channels = <&adc 0> , <&adc 1> , <&adc 2> ,  <&adc 3> ,
-+		<&adc 4> , <&adc 5> , <&adc 6> ,  <&adc 7> ,
-+		<&adc 8> , <&adc 9> , <&adc 10>, <&adc 11> ,
-+		<&adc 12> , <&adc 13> , <&adc 14> , <&adc 15> ;
-+	};
-+};
-+
-+&fmc {
-+	status = "okay";
-+	flash at 0 {
-+		status = "okay";
-+		m25p,fast-read;
-+#include "openbmc-flash-layout.dtsi"
-+	};
-+};
-+
-+&spi1 {
-+	status = "okay";
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pinctrl_spi1_default>;
-+	flash at 0 {
-+		status = "okay";
-+		m25p,fast-read;
-+		label = "pnor";
-+	};
-+};
-+
-+&uart5 {
-+	// BMC Console
-+	status = "okay";
-+};
-+
-+&mac0 {
-+	status = "okay";
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pinctrl_rmii1_default>;
-+	use-ncsi;
-+};
-+
-+&adc {
-+	status = "okay";
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pinctrl_adc0_default
-+			&pinctrl_adc1_default
-+			&pinctrl_adc2_default
-+			&pinctrl_adc3_default
-+			&pinctrl_adc4_default
-+			&pinctrl_adc5_default
-+			&pinctrl_adc6_default
-+			&pinctrl_adc7_default
-+			&pinctrl_adc8_default
-+			&pinctrl_adc9_default
-+			&pinctrl_adc10_default
-+			&pinctrl_adc11_default
-+			&pinctrl_adc12_default
-+			&pinctrl_adc13_default
-+			&pinctrl_adc14_default
-+			&pinctrl_adc15_default>;
-+};
-+
-+&i2c8 {
-+	status = "okay";
-+	//FRU EEPROM
-+	eeprom at 51 {
-+		compatible = "atmel,24c64";
-+		reg = <0x51>;
-+		pagesize = <32>;
-+	};
-+};
-+
-+&i2c9 {
-+	status = "okay";
-+	tmp421 at 4e {
-+	//INLET TEMP
-+		compatible = "ti,tmp421";
-+		reg = <0x4e>;
-+	};
-+	//OUTLET TEMP
-+	tmp421 at 4f {
-+		compatible = "ti,tmp421";
-+		reg = <0x4f>;
-+	};
-+};
-+
-+&i2c10 {
-+	status = "okay";
-+	//HSC
-+	adm1278 at 40 {
-+		compatible = "adi,adm1278";
-+		reg = <0x40>;
-+	};
-+};
-+
-+&i2c11 {
-+	status = "okay";
-+	//MEZZ_TEMP_SENSOR
-+	tmp421 at 1f {
-+		compatible = "ti,tmp421";
-+		reg = <0x1f>;
-+	};
-+};
-+
-+&i2c12 {
-+	status = "okay";
-+	//MEZZ_FRU
-+	eeprom at 51 {
-+		compatible = "atmel,24c64";
-+		reg = <0x51>;
-+		pagesize = <32>;
-+	};
-+};
-+
-+&pwm_tacho {
-+	status = "okay";
-+	//FSC
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pinctrl_pwm0_default &pinctrl_pwm1_default>;
-+	fan at 0 {
-+		reg = <0x00>;
-+		aspeed,fan-tach-ch = /bits/ 8 <0x00>;
-+	};
-+	fan at 1 {
-+		reg = <0x01>;
-+		aspeed,fan-tach-ch = /bits/ 8 <0x02>;
-+	};
-+};
--- 
-2.7.4
+If people have reviewed previous versions of your patches and sent
+Reviewed-by/Acked-by/Tested-by tags, please make sure to include
+them on future versions of the patches _unless_ there has been
+significant change that might invalidate the tag. In that case, also
+provide a short description as to why you dropped the tags. You can
+add free-form information below the `---` and it will not be included
+in the commit for the patch.
 
+Cheers,
+
+Andrew
