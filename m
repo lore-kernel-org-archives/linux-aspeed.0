@@ -1,25 +1,214 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Thu, 28 Nov 2019 09:58:35 +1030
-Subject: [PATCH 07/62] gpio: gpio-aspeed: Use new GPIO_LINE_DIRECTION
-In-Reply-To: <493e2f9ed5aff112519adcdf2d3044bf54c2d91a.1572945709.git.matti.vaittinen@fi.rohmeurope.com>
-References: <cover.1572945709.git.matti.vaittinen@fi.rohmeurope.com>
- <493e2f9ed5aff112519adcdf2d3044bf54c2d91a.1572945709.git.matti.vaittinen@fi.rohmeurope.com>
-Message-ID: <01b18f38-2faa-4896-9a61-d0c657596c6f@www.fastmail.com>
+From: Joel Stanley <joel@jms.id.au>
+Date: Thu, 28 Nov 2019 00:45:56 +0000
+Subject: [PATCH v4] ARM: dts: aspeed: Adding Facebook Yosemite V2 BMC
+In-Reply-To: <20191127060747.GA30829@cnn>
+References: <20191127060747.GA30829@cnn>
+Message-ID: <CACPK8Xc4jw_gPqbTZ5tbSBUD0NF3_aRk+aCbGDZBye3CF+n=rg@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+On Wed, 27 Nov 2019 at 06:07, manikandan-e
+<manikandan.hcl.ers.epl@gmail.com> wrote:
+>
+> The Yosemite V2 is a facebook multi-node server
+> platform that host four OCP server. The BMC
+> in the Yosemite V2 platorm based on AST2500 SoC.
+
+spelling: platform
+
+>
+> This patch adds linux device tree entry related to
+> Yosemite V2 specific devices connected to BMC SoC.
+>
+> Signed-off-by: manikandan-e <manikandan.hcl.ers.epl@gmail.com>
+
+Please see this:
+
+ https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Documentation/process/submitting-patches.rst#n418
+
+ > then you just add a line saying:
+ >
+ > Signed-off-by: Random J Developer <random@developer.example.org>
+ >
+ > using your real name (sorry, no pseudonyms or anonymous contributions.)
+
+Can you make sure you've got your real name there? You can make this
+global with:
+
+ > git config --global user.name "Random J Developer"
+ > git commit --amend --reset-author
 
 
-On Tue, 5 Nov 2019, at 20:42, Matti Vaittinen wrote:
-> It's hard for occasional GPIO code reader/writer to know if values 0/1
-> equal to IN or OUT. Use defined GPIO_LINE_DIRECTION_IN and
-> GPIO_LINE_DIRECTION_OUT to help them out.
-> 
-> Signed-off-by: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
+> ---
+>  .../boot/dts/aspeed-bmc-facebook-yosemitev2.dts    | 150 +++++++++++++++++++++
+>  1 file changed, 150 insertions(+)
+>  create mode 100644 arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts
+>
+> diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts
+> new file mode 100644
+> index 0000000..44e2b17
+> --- /dev/null
+> +++ b/arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts
+> @@ -0,0 +1,150 @@
+> +// SPDX-License-Identifier: GPL-2.0+
 
-Not sure where the series is at, but this looks fine to me:
+The kernel prefers this to be spelt "GPL-2.0-or-later"
 
-Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
+> +// Copyright (c) 2018 Facebook Inc.
+> +/dts-v1/;
+> +
+> +#include "aspeed-g5.dtsi"
+> +#include <dt-bindings/gpio/aspeed-gpio.h>
+> +
+> +/ {
+> +       model = "Facebook Yosemitev2 BMC";
+> +       compatible = "facebook,yosemitev2-bmc", "aspeed,ast2500";
+> +       aliases {
+> +               serial4 = &uart5;
+> +       };
+> +       chosen {
+> +               stdout-path = &uart5;
+> +       };
+> +
+> +       memory at 80000000 {
+> +               reg = <0x80000000 0x20000000>;
+> +       };
+> +
+> +       iio-hwmon {
+> +               // VOLATAGE SENSOR
+> +               compatible = "iio-hwmon";
+> +               io-channels = <&adc 0> , <&adc 1> , <&adc 2> ,  <&adc 3> ,
+> +               <&adc 4> , <&adc 5> , <&adc 6> ,  <&adc 7> ,
+> +               <&adc 8> , <&adc 9> , <&adc 10>, <&adc 11> ,
+> +               <&adc 12> , <&adc 13> , <&adc 14> , <&adc 15> ;
+> +       };
+> +};
+> +
+> +&fmc {
+> +       status = "okay";
+> +       flash at 0 {
+> +               status = "okay";
+> +               m25p,fast-read;
+> +#include "openbmc-flash-layout.dtsi"
+> +       };
+> +};
+> +
+> +&spi1 {
+> +       status = "okay";
+> +       pinctrl-names = "default";
+> +       pinctrl-0 = <&pinctrl_spi1_default>;
+> +       flash at 0 {
+> +               status = "okay";
+> +               m25p,fast-read;
+> +               label = "pnor";
+> +       };
+> +};
+> +
+> +&uart5 {
+> +       // BMC Console
+> +       status = "okay";
+> +};
+> +
+> +&mac0 {
+> +       status = "okay";
+> +       pinctrl-names = "default";
+> +       pinctrl-0 = <&pinctrl_rmii1_default>;
+> +       use-ncsi;
+> +};
+> +
+> +&adc {
+> +       status = "okay";
+> +       pinctrl-names = "default";
+> +       pinctrl-0 = <&pinctrl_adc0_default
+> +                       &pinctrl_adc1_default
+> +                       &pinctrl_adc2_default
+> +                       &pinctrl_adc3_default
+> +                       &pinctrl_adc4_default
+> +                       &pinctrl_adc5_default
+> +                       &pinctrl_adc6_default
+> +                       &pinctrl_adc7_default
+> +                       &pinctrl_adc8_default
+> +                       &pinctrl_adc9_default
+> +                       &pinctrl_adc10_default
+> +                       &pinctrl_adc11_default
+> +                       &pinctrl_adc12_default
+> +                       &pinctrl_adc13_default
+> +                       &pinctrl_adc14_default
+> +                       &pinctrl_adc15_default>;
+> +};
+> +
+> +&i2c8 {
+> +       status = "okay";
+> +       //FRU EEPROM
+> +       eeprom at 51 {
+> +               compatible = "atmel,24c64";
+> +               reg = <0x51>;
+> +               pagesize = <32>;
+> +       };
+> +};
+> +
+> +&i2c9 {
+> +       status = "okay";
+> +       tmp421 at 4e {
+> +       //INLET TEMP
+
+Make this consistent by putting it one line up.
+
+> +               compatible = "ti,tmp421";
+> +               reg = <0x4e>;
+> +       };
+> +       //OUTLET TEMP
+> +       tmp421 at 4f {
+> +               compatible = "ti,tmp421";
+> +               reg = <0x4f>;
+> +       };
+> +};
+> +
+> +&i2c10 {
+> +       status = "okay";
+> +       //HSC
+> +       adm1278 at 40 {
+> +               compatible = "adi,adm1278";
+> +               reg = <0x40>;
+> +       };
+> +};
+> +
+> +&i2c11 {
+> +       status = "okay";
+> +       //MEZZ_TEMP_SENSOR
+> +       tmp421 at 1f {
+> +               compatible = "ti,tmp421";
+> +               reg = <0x1f>;
+> +       };
+> +};
+> +
+> +&i2c12 {
+> +       status = "okay";
+> +       //MEZZ_FRU
+> +       eeprom at 51 {
+> +               compatible = "atmel,24c64";
+> +               reg = <0x51>;
+> +               pagesize = <32>;
+> +       };
+> +};
+> +
+> +&pwm_tacho {
+> +       status = "okay";
+> +       //FSC
+> +       pinctrl-names = "default";
+> +       pinctrl-0 = <&pinctrl_pwm0_default &pinctrl_pwm1_default>;
+> +       fan at 0 {
+> +               reg = <0x00>;
+> +               aspeed,fan-tach-ch = /bits/ 8 <0x00>;
+> +       };
+> +       fan at 1 {
+> +               reg = <0x01>;
+> +               aspeed,fan-tach-ch = /bits/ 8 <0x02>;
+> +       };
+> +};
+> --
+> 2.7.4
+>
