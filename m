@@ -1,161 +1,267 @@
 From: Marco Felsch <m.felsch@pengutronix.de>
-Date: Fri, 29 Nov 2019 18:25:33 +0100
-Subject: [PATCH v3 2/6] gpio: make gpiod_to_offset() available for other users
+Date: Fri, 29 Nov 2019 18:25:37 +0100
+Subject: [PATCH v3 6/6] regulator: da9062: add gpio based regulator
+ dis-/enable support
 In-Reply-To: <20191129172537.31410-1-m.felsch@pengutronix.de>
 References: <20191129172537.31410-1-m.felsch@pengutronix.de>
-Message-ID: <20191129172537.31410-3-m.felsch@pengutronix.de>
+Message-ID: <20191129172537.31410-7-m.felsch@pengutronix.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Currently gpiod_to_offset() is a gpio-subsystem private function which
-is used by the gpiolib itself and by the aspeed gpio driver. The time
-has shown that there are other drivers as well which need this
-information in some special cases e.g. MFD drivers. The patch makes the
-function public but you need to explicit add the <linux/gpio/private.h>
-include. See discussion [1] for more information.
-
-[1] https://lkml.org/lkml/2019/11/27/357
+Each regulator can be enabeld/disabled by the internal pmic state
+machine or by a gpio input signal. Typically the OTP configures the
+regulators to be enabled/disabled on a specific sequence number which is
+most the time fine. Sometimes we need to reconfigure that due to a PCB
+bug. This patch adds the support to disable/enable the regulator based
+on a gpio input signal.
 
 Signed-off-by: Marco Felsch <m.felsch@pengutronix.de>
 ---
 v3:
-- former patch description was "gpio: add support to get local gpio number"
-- adapt commit message and description to reflect new state
-- don't add wrapper instead use the already existing gpiod_to_offset
-- move gpiod_to_offset from gpiolib.h into gpiolib.c
-- move declaration into linux/gpio/private.h
+- add comment on reg_field
+- append ena_gpi to da9062_regulator_info instead of insert it in the
+  middle
 ---
- drivers/gpio/gpio-aspeed.c   | 11 +++++------
- drivers/gpio/gpiolib-sysfs.c |  1 +
- drivers/gpio/gpiolib.c       | 22 ++++++++++++++++++++++
- drivers/gpio/gpiolib.h       |  8 --------
- include/linux/gpio/private.h | 27 +++++++++++++++++++++++++++
- 5 files changed, 55 insertions(+), 14 deletions(-)
- create mode 100644 include/linux/gpio/private.h
+ drivers/regulator/da9062-regulator.c | 88 +++++++++++++++++++++++++++-
+ 1 file changed, 86 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/gpio/gpio-aspeed.c b/drivers/gpio/gpio-aspeed.c
-index b1d1d39e5174..e10ebad6853a 100644
---- a/drivers/gpio/gpio-aspeed.c
-+++ b/drivers/gpio/gpio-aspeed.c
-@@ -20,13 +20,12 @@
- #include <linux/string.h>
+diff --git a/drivers/regulator/da9062-regulator.c b/drivers/regulator/da9062-regulator.c
+index 6117e631236b..79b08029282a 100644
+--- a/drivers/regulator/da9062-regulator.c
++++ b/drivers/regulator/da9062-regulator.c
+@@ -62,8 +62,13 @@ struct da9062_regulator_info {
+ 	 * vsel_gpi:
+ 	 * The input port which is used by a regulator to select between
+ 	 * voltage-a/b settings.
++	 *
++	 * ena_gpi:
++	 * The input port which is used by a regulator to en-/disable its
++	 * output.
+ 	 */
+ 	struct reg_field vsel_gpi;
++	struct reg_field ena_gpi;
+ };
  
- /*
-- * These two headers aren't meant to be used by GPIO drivers. We need
-- * them in order to access gpiod_to_offset() which we need to implement
-- * the aspeed specific API which allows the coprocessor to request
-- * access to some GPIOs and to arbitrate between coprocessor and ARM.
-+ * The header isn't meant to be used by GPIO drivers. We need it in order to
-+ * access gpiod_to_offset() which we need to implement the aspeed specific API
-+ * which allows the coprocessor to request access to some GPIOs and to
-+ * arbitrate between coprocessor and ARM.
-  */
--#include <linux/gpio/consumer.h>
--#include "gpiolib.h"
-+#include <linux/gpio/private.h>
+ /* Single regulator settings */
+@@ -78,6 +83,7 @@ struct da9062_regulator {
+ 	struct regmap_field			*sleep;
+ 	struct regmap_field			*suspend_sleep;
+ 	struct regmap_field			*vsel_gpi;
++	struct regmap_field			*ena_gpi;
+ };
  
- struct aspeed_bank_props {
- 	unsigned int bank;
-diff --git a/drivers/gpio/gpiolib-sysfs.c b/drivers/gpio/gpiolib-sysfs.c
-index d4cab6a80928..367db78bb58c 100644
---- a/drivers/gpio/gpiolib-sysfs.c
-+++ b/drivers/gpio/gpiolib-sysfs.c
-@@ -5,6 +5,7 @@
- #include <linux/sysfs.h>
- #include <linux/gpio/consumer.h>
- #include <linux/gpio/driver.h>
-+#include <linux/gpio/private.h>
- #include <linux/interrupt.h>
- #include <linux/kdev_t.h>
- #include <linux/slab.h>
-diff --git a/drivers/gpio/gpiolib.c b/drivers/gpio/gpiolib.c
-index 548cf41c6179..197cac0e3e99 100644
---- a/drivers/gpio/gpiolib.c
-+++ b/drivers/gpio/gpiolib.c
-@@ -150,6 +150,28 @@ struct gpio_desc *gpiochip_get_desc(struct gpio_chip *chip,
- 	return &gdev->descs[hwnum];
+ /* Encapsulates all information for the regulators driver */
+@@ -423,7 +429,10 @@ static int da9062_config_gpi(struct device_node *np,
+ 		goto free;
+ 	}
+ 
+-	ret = regmap_field_write(regl->vsel_gpi, nr);
++	if (!strncmp(gpi_id, "ena", 3))
++		ret = regmap_field_write(regl->ena_gpi, nr);
++	else
++		ret = regmap_field_write(regl->vsel_gpi, nr);
+ 
+ free:
+ 	kfree(prop);
+@@ -436,7 +445,13 @@ static int da9062_parse_dt(struct device_node *np,
+ 			   const struct regulator_desc *desc,
+ 			   struct regulator_config *cfg)
+ {
+-	return da9062_config_gpi(np, desc, cfg, "vsel");
++	int error;
++
++	error = da9062_config_gpi(np, desc, cfg, "vsel");
++	if (error)
++		return error;
++
++	return da9062_config_gpi(np, desc, cfg, "ena");
  }
  
-+/**
-+ * gpiod_to_offset - obtain the local GPIO number from a global unique
-+ *		     descriptor
-+ * @desc:	     gpio whose local gpio number should be returned
-+ *
-+ * It converts the global unique descriptor into the gpio chip local gpio
-+ * number. This can be useful if you need to do further device configuration
-+ * e.g. for a MFD. Use this function with caution. You will get a wrong number
-+ * if you pass the wrong descriptor.
-+ *
-+ * Return:
-+ * * the GPIO number of the passed descriptor relative to its chip
-+ * * -EINVAL if desc is invalid or NULL
-+ */
-+int gpiod_to_offset(const struct gpio_desc *desc)
-+{
-+	if (IS_ERR_OR_NULL(desc))
-+		return -EINVAL;
-+	return desc - &desc->gdev->descs[0];
-+}
-+EXPORT_SYMBOL_GPL(gpiod_to_offset);
-+
- /**
-  * desc_to_gpio - convert a GPIO descriptor to the integer namespace
-  * @desc: GPIO descriptor
-diff --git a/drivers/gpio/gpiolib.h b/drivers/gpio/gpiolib.h
-index a7f93ce6e114..a586a793b084 100644
---- a/drivers/gpio/gpiolib.h
-+++ b/drivers/gpio/gpiolib.h
-@@ -124,14 +124,6 @@ int gpiod_configure_flags(struct gpio_desc *desc, const char *con_id,
- int gpiod_hog(struct gpio_desc *desc, const char *name,
- 		unsigned long lflags, enum gpiod_flags dflags);
+ /* DA9061 Regulator information */
+@@ -481,6 +496,10 @@ static const struct da9062_regulator_info local_da9061_regulator_info[] = {
+ 			__builtin_ffs((int)DA9062AA_VBUCK1_GPI_MASK) - 1,
+ 			sizeof(unsigned int) * 8 -
+ 			__builtin_clz(DA9062AA_VBUCK1_GPI_MASK) - 1),
++		.ena_gpi = REG_FIELD(DA9062AA_BUCK1_CONT,
++			__builtin_ffs((int)DA9062AA_BUCK1_GPI_MASK) - 1,
++			sizeof(unsigned int) * 8 -
++			__builtin_clz(DA9062AA_BUCK1_GPI_MASK) - 1),
+ 	},
+ 	{
+ 		.desc.id = DA9061_ID_BUCK2,
+@@ -522,6 +541,10 @@ static const struct da9062_regulator_info local_da9061_regulator_info[] = {
+ 			__builtin_ffs((int)DA9062AA_VBUCK3_GPI_MASK) - 1,
+ 			sizeof(unsigned int) * 8 -
+ 			__builtin_clz(DA9062AA_VBUCK3_GPI_MASK) - 1),
++		.ena_gpi = REG_FIELD(DA9062AA_BUCK3_CONT,
++			__builtin_ffs((int)DA9062AA_BUCK3_GPI_MASK) - 1,
++			sizeof(unsigned int) * 8 -
++			__builtin_clz(DA9062AA_BUCK3_GPI_MASK) - 1),
+ 	},
+ 	{
+ 		.desc.id = DA9061_ID_BUCK3,
+@@ -563,6 +586,10 @@ static const struct da9062_regulator_info local_da9061_regulator_info[] = {
+ 			__builtin_ffs((int)DA9062AA_VBUCK4_GPI_MASK) - 1,
+ 			sizeof(unsigned int) * 8 -
+ 			__builtin_clz(DA9062AA_VBUCK4_GPI_MASK) - 1),
++		.ena_gpi = REG_FIELD(DA9062AA_BUCK4_CONT,
++			__builtin_ffs((int)DA9062AA_BUCK4_GPI_MASK) - 1,
++			sizeof(unsigned int) * 8 -
++			__builtin_clz(DA9062AA_BUCK4_GPI_MASK) - 1),
+ 	},
+ 	{
+ 		.desc.id = DA9061_ID_LDO1,
+@@ -597,6 +624,10 @@ static const struct da9062_regulator_info local_da9061_regulator_info[] = {
+ 			__builtin_ffs((int)DA9062AA_VLDO1_GPI_MASK) - 1,
+ 			sizeof(unsigned int) * 8 -
+ 			__builtin_clz(DA9062AA_VLDO1_GPI_MASK) - 1),
++		.ena_gpi = REG_FIELD(DA9062AA_LDO1_CONT,
++			__builtin_ffs((int)DA9062AA_LDO1_GPI_MASK) - 1,
++			sizeof(unsigned int) * 8 -
++			__builtin_clz(DA9062AA_LDO1_GPI_MASK) - 1),
+ 		.oc_event = REG_FIELD(DA9062AA_STATUS_D,
+ 			__builtin_ffs((int)DA9062AA_LDO1_ILIM_MASK) - 1,
+ 			sizeof(unsigned int) * 8 -
+@@ -635,6 +666,10 @@ static const struct da9062_regulator_info local_da9061_regulator_info[] = {
+ 			__builtin_ffs((int)DA9062AA_VLDO2_GPI_MASK) - 1,
+ 			sizeof(unsigned int) * 8 -
+ 			__builtin_clz(DA9062AA_VLDO2_GPI_MASK) - 1),
++		.ena_gpi = REG_FIELD(DA9062AA_LDO2_CONT,
++			__builtin_ffs((int)DA9062AA_LDO2_GPI_MASK) - 1,
++			sizeof(unsigned int) * 8 -
++			__builtin_clz(DA9062AA_LDO2_GPI_MASK) - 1),
+ 		.oc_event = REG_FIELD(DA9062AA_STATUS_D,
+ 			__builtin_ffs((int)DA9062AA_LDO2_ILIM_MASK) - 1,
+ 			sizeof(unsigned int) * 8 -
+@@ -673,6 +708,10 @@ static const struct da9062_regulator_info local_da9061_regulator_info[] = {
+ 			__builtin_ffs((int)DA9062AA_VLDO3_GPI_MASK) - 1,
+ 			sizeof(unsigned int) * 8 -
+ 			__builtin_clz(DA9062AA_VLDO3_GPI_MASK) - 1),
++		.ena_gpi = REG_FIELD(DA9062AA_LDO3_CONT,
++			__builtin_ffs((int)DA9062AA_LDO3_GPI_MASK) - 1,
++			sizeof(unsigned int) * 8 -
++			__builtin_clz(DA9062AA_LDO3_GPI_MASK) - 1),
+ 		.oc_event = REG_FIELD(DA9062AA_STATUS_D,
+ 			__builtin_ffs((int)DA9062AA_LDO3_ILIM_MASK) - 1,
+ 			sizeof(unsigned int) * 8 -
+@@ -711,6 +750,10 @@ static const struct da9062_regulator_info local_da9061_regulator_info[] = {
+ 			__builtin_ffs((int)DA9062AA_VLDO4_GPI_MASK) - 1,
+ 			sizeof(unsigned int) * 8 -
+ 			__builtin_clz(DA9062AA_VLDO4_GPI_MASK) - 1),
++		.ena_gpi = REG_FIELD(DA9062AA_LDO4_CONT,
++			__builtin_ffs((int)DA9062AA_LDO4_GPI_MASK) - 1,
++			sizeof(unsigned int) * 8 -
++			__builtin_clz(DA9062AA_LDO4_GPI_MASK) - 1),
+ 		.oc_event = REG_FIELD(DA9062AA_STATUS_D,
+ 			__builtin_ffs((int)DA9062AA_LDO4_ILIM_MASK) - 1,
+ 			sizeof(unsigned int) * 8 -
+@@ -760,6 +803,10 @@ static const struct da9062_regulator_info local_da9062_regulator_info[] = {
+ 			__builtin_ffs((int)DA9062AA_VBUCK1_GPI_MASK) - 1,
+ 			sizeof(unsigned int) * 8 -
+ 			__builtin_clz(DA9062AA_VBUCK1_GPI_MASK) - 1),
++		.ena_gpi = REG_FIELD(DA9062AA_BUCK1_CONT,
++			__builtin_ffs((int)DA9062AA_BUCK1_GPI_MASK) - 1,
++			sizeof(unsigned int) * 8 -
++			__builtin_clz(DA9062AA_BUCK1_GPI_MASK) - 1),
+ 	},
+ 	{
+ 		.desc.id = DA9062_ID_BUCK2,
+@@ -801,6 +848,10 @@ static const struct da9062_regulator_info local_da9062_regulator_info[] = {
+ 			__builtin_ffs((int)DA9062AA_VBUCK2_GPI_MASK) - 1,
+ 			sizeof(unsigned int) * 8 -
+ 			__builtin_clz(DA9062AA_VBUCK2_GPI_MASK) - 1),
++		.ena_gpi = REG_FIELD(DA9062AA_BUCK2_CONT,
++			__builtin_ffs((int)DA9062AA_BUCK2_GPI_MASK) - 1,
++			sizeof(unsigned int) * 8 -
++			__builtin_clz(DA9062AA_BUCK2_GPI_MASK) - 1),
+ 	},
+ 	{
+ 		.desc.id = DA9062_ID_BUCK3,
+@@ -842,6 +893,10 @@ static const struct da9062_regulator_info local_da9062_regulator_info[] = {
+ 			__builtin_ffs((int)DA9062AA_VBUCK3_GPI_MASK) - 1,
+ 			sizeof(unsigned int) * 8 -
+ 			__builtin_clz(DA9062AA_VBUCK3_GPI_MASK) - 1),
++		.ena_gpi = REG_FIELD(DA9062AA_BUCK3_CONT,
++			__builtin_ffs((int)DA9062AA_BUCK3_GPI_MASK) - 1,
++			sizeof(unsigned int) * 8 -
++			__builtin_clz(DA9062AA_BUCK3_GPI_MASK) - 1),
+ 	},
+ 	{
+ 		.desc.id = DA9062_ID_BUCK4,
+@@ -883,6 +938,10 @@ static const struct da9062_regulator_info local_da9062_regulator_info[] = {
+ 			__builtin_ffs((int)DA9062AA_VBUCK4_GPI_MASK) - 1,
+ 			sizeof(unsigned int) * 8 -
+ 			__builtin_clz(DA9062AA_VBUCK4_GPI_MASK) - 1),
++		.ena_gpi = REG_FIELD(DA9062AA_BUCK4_CONT,
++			__builtin_ffs((int)DA9062AA_BUCK4_GPI_MASK) - 1,
++			sizeof(unsigned int) * 8 -
++			__builtin_clz(DA9062AA_BUCK4_GPI_MASK) - 1),
+ 	},
+ 	{
+ 		.desc.id = DA9062_ID_LDO1,
+@@ -917,6 +976,10 @@ static const struct da9062_regulator_info local_da9062_regulator_info[] = {
+ 			__builtin_ffs((int)DA9062AA_VLDO1_GPI_MASK) - 1,
+ 			sizeof(unsigned int) * 8 -
+ 			__builtin_clz(DA9062AA_VLDO1_GPI_MASK) - 1),
++		.ena_gpi = REG_FIELD(DA9062AA_LDO1_CONT,
++			__builtin_ffs((int)DA9062AA_LDO1_GPI_MASK) - 1,
++			sizeof(unsigned int) * 8 -
++			__builtin_clz(DA9062AA_LDO1_GPI_MASK) - 1),
+ 		.oc_event = REG_FIELD(DA9062AA_STATUS_D,
+ 			__builtin_ffs((int)DA9062AA_LDO1_ILIM_MASK) - 1,
+ 			sizeof(unsigned int) * 8 -
+@@ -955,6 +1018,10 @@ static const struct da9062_regulator_info local_da9062_regulator_info[] = {
+ 			__builtin_ffs((int)DA9062AA_VLDO2_GPI_MASK) - 1,
+ 			sizeof(unsigned int) * 8 -
+ 			__builtin_clz(DA9062AA_VLDO2_GPI_MASK) - 1),
++		.ena_gpi = REG_FIELD(DA9062AA_LDO2_CONT,
++			__builtin_ffs((int)DA9062AA_LDO2_GPI_MASK) - 1,
++			sizeof(unsigned int) * 8 -
++			__builtin_clz(DA9062AA_LDO2_GPI_MASK) - 1),
+ 		.oc_event = REG_FIELD(DA9062AA_STATUS_D,
+ 			__builtin_ffs((int)DA9062AA_LDO2_ILIM_MASK) - 1,
+ 			sizeof(unsigned int) * 8 -
+@@ -993,6 +1060,10 @@ static const struct da9062_regulator_info local_da9062_regulator_info[] = {
+ 			__builtin_ffs((int)DA9062AA_VLDO3_GPI_MASK) - 1,
+ 			sizeof(unsigned int) * 8 -
+ 			__builtin_clz(DA9062AA_VLDO3_GPI_MASK) - 1),
++		.ena_gpi = REG_FIELD(DA9062AA_LDO3_CONT,
++			__builtin_ffs((int)DA9062AA_LDO3_GPI_MASK) - 1,
++			sizeof(unsigned int) * 8 -
++			__builtin_clz(DA9062AA_LDO3_GPI_MASK) - 1),
+ 		.oc_event = REG_FIELD(DA9062AA_STATUS_D,
+ 			__builtin_ffs((int)DA9062AA_LDO3_ILIM_MASK) - 1,
+ 			sizeof(unsigned int) * 8 -
+@@ -1031,6 +1102,10 @@ static const struct da9062_regulator_info local_da9062_regulator_info[] = {
+ 			__builtin_ffs((int)DA9062AA_VLDO4_GPI_MASK) - 1,
+ 			sizeof(unsigned int) * 8 -
+ 			__builtin_clz(DA9062AA_VLDO4_GPI_MASK) - 1),
++		.ena_gpi = REG_FIELD(DA9062AA_LDO4_CONT,
++			__builtin_ffs((int)DA9062AA_LDO4_GPI_MASK) - 1,
++			sizeof(unsigned int) * 8 -
++			__builtin_clz(DA9062AA_LDO4_GPI_MASK) - 1),
+ 		.oc_event = REG_FIELD(DA9062AA_STATUS_D,
+ 			__builtin_ffs((int)DA9062AA_LDO4_ILIM_MASK) - 1,
+ 			sizeof(unsigned int) * 8 -
+@@ -1160,6 +1235,15 @@ static int da9062_regulator_probe(struct platform_device *pdev)
+ 				return PTR_ERR(regl->vsel_gpi);
+ 		}
  
--/*
-- * Return the GPIO number of the passed descriptor relative to its chip
-- */
--static inline int gpiod_to_offet(const struct gpio_desc *desc)
--{
--	return desc - &desc->gdev->descs[0];
--}
--
- /* With descriptor prefix */
- 
- #define gpiod_emerg(desc, fmt, ...)					       \
-diff --git a/include/linux/gpio/private.h b/include/linux/gpio/private.h
-new file mode 100644
-index 000000000000..56514bdcfac6
---- /dev/null
-+++ b/include/linux/gpio/private.h
-@@ -0,0 +1,27 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/*
-+ * Functions listed here should be used with caution. Mostly those functions are
-+ * used by the gpiolib internally. But the time has shown that some special
-+ * drivers needs access to these helpers too.
-+ */
-+#ifndef __LINUX_GPIO_PRIVATE_H
-+#define __LINUX_GPIO_PRIVATE_H
++		if (regl->info->ena_gpi.reg) {
++			regl->ena_gpi = devm_regmap_field_alloc(
++					&pdev->dev,
++					chip->regmap,
++					regl->info->ena_gpi);
++			if (IS_ERR(regl->ena_gpi))
++				return PTR_ERR(regl->ena_gpi);
++		}
 +
-+struct gpio_desc;
-+
-+#ifdef CONFIG_GPIOLIB
-+
-+int gpiod_to_offset(const struct gpio_desc *desc);
-+
-+#else /* CONFIG_GPIOLIB */
-+
-+static inline int gpiod_to_offset(const struct gpio_desc *desc)
-+{
-+	/* GPIO can never have been requested */
-+	WARN_ON(desc);
-+	return 0;
-+}
-+
-+#endif /* CONFIG_GPIOLIB */
-+
-+#endif /* __LINUX_GPIO_PRIVATE_H */
+ 		/* Register regulator */
+ 		memset(&config, 0, sizeof(config));
+ 		config.dev = chip->dev;
 -- 
 2.20.1
 
