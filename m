@@ -1,43 +1,47 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Mon, 2 Dec 2019 12:04:42 +0000
-Subject: [PATCH v3 0/6] DA9062 PMIC features
-In-Reply-To: <CACRpkdaSmwORgetv7aZjtgk+2OchcvQR4SBjdWQ4KsRMHuUvSg@mail.gmail.com>
-References: <20191129172537.31410-1-m.felsch@pengutronix.de>
- <CACRpkdaSmwORgetv7aZjtgk+2OchcvQR4SBjdWQ4KsRMHuUvSg@mail.gmail.com>
-Message-ID: <20191202120442.GC14416@dell>
+From: Philipp Zabel <p.zabel@pengutronix.de>
+Date: Mon, 02 Dec 2019 13:53:37 +0100
+Subject: [PATCH v2 2/2] reset: simple: Add AST2600 compatibility string
+In-Reply-To: <20191129000827.650566-3-joel@jms.id.au>
+References: <20191129000827.650566-1-joel@jms.id.au>
+ <20191129000827.650566-3-joel@jms.id.au>
+Message-ID: <2498da189d5e21ae70fb6884df6fc16ecfee2087.camel@pengutronix.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, 02 Dec 2019, Linus Walleij wrote:
+On Fri, 2019-11-29 at 10:38 +1030, Joel Stanley wrote:
+> From: Brad Bishop <bradleyb@fuzziesquirrel.com>
+> 
+> The AST2600 SoC contains the same LPC register set as the AST2500.
 
-> On Fri, Nov 29, 2019 at 6:25 PM Marco Felsch <m.felsch@pengutronix.de> wrote:
-> 
-> > this series address all comments made on [1]. Patch "gpio: add support
-> > to get local gpio number" is splitted into:
-> >  - "gpio: treewide rename gpio_chip_hwgpio to gpiod_to_offset"
-> >  - "gpio: make gpiod_to_offset() available for other users"
-> > Please check the discussion [1] for more information. You need to apply
-> > [2] to test the new features.
-> 
-> I am very happy with the shape of patches (1) and (2).
-> 
-> I can apply these on an immutable branch and merge into the
-> GPIO tree at v5.5-rc1 and offer to other subsystem maintainers
-> to pull in so they can merge the rest of the patch series on
-> top.
-> 
-> Alternatively I can merge all the patches into the GPIO tree.
-> 
-> I suppose this is not so much of a MFD business at this
-> point so whatever the regulator maintainer prefers I suppose?
+If the LPC register set is exactly the same, shouldn't AST2600 reuse the
+AST2500 compatible, i.e.:
+	compatible = "aspeed,ast2600-lpc-reset", "aspeed,ast2500-lpc-reset";
+?
 
-Acked-by: Lee Jones <lee.jones@linaro.org>
+> 
+> Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
+> Signed-off-by: Brad Bishop <bradleyb@fuzziesquirrel.com>
+> Signed-off-by: Joel Stanley <joel@jms.id.au>
+> ---
+>  drivers/reset/reset-simple.c | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/drivers/reset/reset-simple.c b/drivers/reset/reset-simple.c
+> index 067e7e7b34f1..795c9063fe7b 100644
+> --- a/drivers/reset/reset-simple.c
+> +++ b/drivers/reset/reset-simple.c
+> @@ -125,6 +125,7 @@ static const struct of_device_id reset_simple_dt_ids[] = {
+>  		.data = &reset_simple_active_low },
+>  	{ .compatible = "aspeed,ast2400-lpc-reset" },
+>  	{ .compatible = "aspeed,ast2500-lpc-reset" },
+> +	{ .compatible = "aspeed,ast2600-lpc-reset" },
+>  	{ .compatible = "bitmain,bm1880-reset",
+>  		.data = &reset_simple_active_low },
+>  	{ .compatible = "snps,dw-high-reset" },
 
--- 
-Lee Jones [???]
-Linaro Services Technical Lead
-Linaro.org ? Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+regards
+Philipp
+
