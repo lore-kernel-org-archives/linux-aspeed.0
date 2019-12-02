@@ -1,10 +1,9 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Mon,  2 Dec 2019 16:44:30 +1030
-Subject: [PATCH 5/7] pinctrl: aspeed: Move aspeed_pin_config_map to separate
- source file
+Date: Mon,  2 Dec 2019 16:44:31 +1030
+Subject: [PATCH 6/7] pinctrl: aspeed: Use masks to describe pinconf bitfields
 In-Reply-To: <20191202061432.3996-1-andrew@aj.id.au>
 References: <20191202061432.3996-1-andrew@aj.id.au>
-Message-ID: <20191202061432.3996-6-andrew@aj.id.au>
+Message-ID: <20191202061432.3996-7-andrew@aj.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -13,187 +12,137 @@ Content-Transfer-Encoding: 7bit
 
 From: Johnny Huang <johnny_huang@aspeedtech.com>
 
-The AST2600 pinconf differs from the 2400 and 2500, aspeed_pin_config_map
-should define separately, and add @confmaps and @nconfmaps to
-aspeed_pinctrl_data structure for that change.
+Since some of the AST2600 pinconf setting are not just single bit, modified
+aspeed_pin_config @bit to @mask and add @mask to aspeed_pin_config_map to
+support configuring multiple bits.
 
 Signed-off-by: Johnny Huang <johnny_huang@aspeedtech.com>
+[AJ: Tweak commit message]
 Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
 ---
- drivers/pinctrl/aspeed/pinctrl-aspeed-g4.c | 10 ++++++
- drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c | 10 ++++++
- drivers/pinctrl/aspeed/pinctrl-aspeed.c    | 38 +++-------------------
- drivers/pinctrl/aspeed/pinctrl-aspeed.h    | 19 +++++++++++
- 4 files changed, 44 insertions(+), 33 deletions(-)
+ drivers/pinctrl/aspeed/pinctrl-aspeed-g4.c | 10 +++++-----
+ drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c | 10 +++++-----
+ drivers/pinctrl/aspeed/pinctrl-aspeed.c    | 12 ++++++------
+ drivers/pinctrl/aspeed/pinctrl-aspeed.h    |  7 ++++---
+ 4 files changed, 20 insertions(+), 19 deletions(-)
 
 diff --git a/drivers/pinctrl/aspeed/pinctrl-aspeed-g4.c b/drivers/pinctrl/aspeed/pinctrl-aspeed-g4.c
-index c56ded0ac57e..62b8aa53b627 100644
+index 62b8aa53b627..bfed0e274643 100644
 --- a/drivers/pinctrl/aspeed/pinctrl-aspeed-g4.c
 +++ b/drivers/pinctrl/aspeed/pinctrl-aspeed-g4.c
-@@ -2594,6 +2594,14 @@ static int aspeed_g4_sig_expr_set(struct aspeed_pinmux_data *ctx,
- 	return 0;
+@@ -2595,11 +2595,11 @@ static int aspeed_g4_sig_expr_set(struct aspeed_pinmux_data *ctx,
  }
  
-+static const struct aspeed_pin_config_map aspeed_g4_pin_config_map[] = {
-+	{ PIN_CONFIG_BIAS_PULL_DOWN,  0, 1},
-+	{ PIN_CONFIG_BIAS_PULL_DOWN, -1, 0},
-+	{ PIN_CONFIG_BIAS_DISABLE,   -1, 1},
-+	{ PIN_CONFIG_DRIVE_STRENGTH,  8, 0},
-+	{ PIN_CONFIG_DRIVE_STRENGTH, 16, 1},
-+};
-+
- static const struct aspeed_pinmux_ops aspeed_g4_ops = {
- 	.set = aspeed_g4_sig_expr_set,
- };
-@@ -2610,6 +2618,8 @@ static struct aspeed_pinctrl_data aspeed_g4_pinctrl_data = {
- 	},
- 	.configs = aspeed_g4_configs,
- 	.nconfigs = ARRAY_SIZE(aspeed_g4_configs),
-+	.confmaps = aspeed_g4_pin_config_map,
-+	.nconfmaps = ARRAY_SIZE(aspeed_g4_pin_config_map),
+ static const struct aspeed_pin_config_map aspeed_g4_pin_config_map[] = {
+-	{ PIN_CONFIG_BIAS_PULL_DOWN,  0, 1},
+-	{ PIN_CONFIG_BIAS_PULL_DOWN, -1, 0},
+-	{ PIN_CONFIG_BIAS_DISABLE,   -1, 1},
+-	{ PIN_CONFIG_DRIVE_STRENGTH,  8, 0},
+-	{ PIN_CONFIG_DRIVE_STRENGTH, 16, 1},
++	{ PIN_CONFIG_BIAS_PULL_DOWN,  0, 1, BIT_MASK(0)},
++	{ PIN_CONFIG_BIAS_PULL_DOWN, -1, 0, BIT_MASK(0)},
++	{ PIN_CONFIG_BIAS_DISABLE,   -1, 1, BIT_MASK(0)},
++	{ PIN_CONFIG_DRIVE_STRENGTH,  8, 0, BIT_MASK(0)},
++	{ PIN_CONFIG_DRIVE_STRENGTH, 16, 1, BIT_MASK(0)},
  };
  
- static const struct pinmux_ops aspeed_g4_pinmux_ops = {
+ static const struct aspeed_pinmux_ops aspeed_g4_ops = {
 diff --git a/drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c b/drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c
-index b2fe47b98fa0..2acbcf3d508a 100644
+index 2acbcf3d508a..0cab4c2576e2 100644
 --- a/drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c
 +++ b/drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c
-@@ -2780,6 +2780,14 @@ static int aspeed_g5_sig_expr_set(struct aspeed_pinmux_data *ctx,
- 	return 0;
+@@ -2781,11 +2781,11 @@ static int aspeed_g5_sig_expr_set(struct aspeed_pinmux_data *ctx,
  }
  
-+static const struct aspeed_pin_config_map aspeed_g5_pin_config_map[] = {
-+	{ PIN_CONFIG_BIAS_PULL_DOWN,  0, 1},
-+	{ PIN_CONFIG_BIAS_PULL_DOWN, -1, 0},
-+	{ PIN_CONFIG_BIAS_DISABLE,   -1, 1},
-+	{ PIN_CONFIG_DRIVE_STRENGTH,  8, 0},
-+	{ PIN_CONFIG_DRIVE_STRENGTH, 16, 1},
-+};
-+
- static const struct aspeed_pinmux_ops aspeed_g5_ops = {
- 	.eval = aspeed_g5_sig_expr_eval,
- 	.set = aspeed_g5_sig_expr_set,
-@@ -2797,6 +2805,8 @@ static struct aspeed_pinctrl_data aspeed_g5_pinctrl_data = {
- 	},
- 	.configs = aspeed_g5_configs,
- 	.nconfigs = ARRAY_SIZE(aspeed_g5_configs),
-+	.confmaps = aspeed_g5_pin_config_map,
-+	.nconfmaps = ARRAY_SIZE(aspeed_g5_pin_config_map),
+ static const struct aspeed_pin_config_map aspeed_g5_pin_config_map[] = {
+-	{ PIN_CONFIG_BIAS_PULL_DOWN,  0, 1},
+-	{ PIN_CONFIG_BIAS_PULL_DOWN, -1, 0},
+-	{ PIN_CONFIG_BIAS_DISABLE,   -1, 1},
+-	{ PIN_CONFIG_DRIVE_STRENGTH,  8, 0},
+-	{ PIN_CONFIG_DRIVE_STRENGTH, 16, 1},
++	{ PIN_CONFIG_BIAS_PULL_DOWN,  0, 1, BIT_MASK(0)},
++	{ PIN_CONFIG_BIAS_PULL_DOWN, -1, 0, BIT_MASK(0)},
++	{ PIN_CONFIG_BIAS_DISABLE,   -1, 1, BIT_MASK(0)},
++	{ PIN_CONFIG_DRIVE_STRENGTH,  8, 0, BIT_MASK(0)},
++	{ PIN_CONFIG_DRIVE_STRENGTH, 16, 1, BIT_MASK(0)},
  };
  
- static const struct pinmux_ops aspeed_g5_pinmux_ops = {
+ static const struct aspeed_pinmux_ops aspeed_g5_ops = {
 diff --git a/drivers/pinctrl/aspeed/pinctrl-aspeed.c b/drivers/pinctrl/aspeed/pinctrl-aspeed.c
-index 54933665b5f8..fc68aca7b36c 100644
+index fc68aca7b36c..b625a657171e 100644
 --- a/drivers/pinctrl/aspeed/pinctrl-aspeed.c
 +++ b/drivers/pinctrl/aspeed/pinctrl-aspeed.c
-@@ -411,49 +411,21 @@ static inline const struct aspeed_pin_config *find_pinconf_config(
- 	return NULL;
- }
- 
--/*
-- * Aspeed pin configuration description.
-- *
-- * @param: pinconf configuration parameter
-- * @arg: The supported argument for @param, or -1 if any value is supported
-- * @val: The register value to write to configure @arg for @param
-- *
-- * The map is to be used in conjunction with the configuration array supplied
-- * by the driver implementation.
-- */
--struct aspeed_pin_config_map {
--	enum pin_config_param param;
--	s32 arg;
--	u32 val;
--};
--
- enum aspeed_pin_config_map_type { MAP_TYPE_ARG, MAP_TYPE_VAL };
- 
--/* Aspeed consistently both:
-- *
-- * 1. Defines "disable bits" for internal pull-downs
-- * 2. Uses 8mA or 16mA drive strengths
-- */
--static const struct aspeed_pin_config_map pin_config_map[] = {
--	{ PIN_CONFIG_BIAS_PULL_DOWN,  0, 1 },
--	{ PIN_CONFIG_BIAS_PULL_DOWN, -1, 0 },
--	{ PIN_CONFIG_BIAS_DISABLE,   -1, 1 },
--	{ PIN_CONFIG_DRIVE_STRENGTH,  8, 0 },
--	{ PIN_CONFIG_DRIVE_STRENGTH, 16, 1 },
--};
--
- static const struct aspeed_pin_config_map *find_pinconf_map(
-+		const struct aspeed_pinctrl_data *pdata,
- 		enum pin_config_param param,
- 		enum aspeed_pin_config_map_type type,
- 		s64 value)
- {
- 	int i;
- 
--	for (i = 0; i < ARRAY_SIZE(pin_config_map); i++) {
-+	for (i = 0; i < pdata->nconfmaps; i++) {
- 		const struct aspeed_pin_config_map *elem;
- 		bool match;
- 
--		elem = &pin_config_map[i];
-+		elem = &pdata->confmaps[i];
- 
- 		switch (type) {
- 		case MAP_TYPE_ARG:
-@@ -491,7 +463,7 @@ int aspeed_pin_config_get(struct pinctrl_dev *pctldev, unsigned int offset,
- 	if (rc < 0)
+@@ -464,7 +464,7 @@ int aspeed_pin_config_get(struct pinctrl_dev *pctldev, unsigned int offset,
  		return rc;
  
--	pmap = find_pinconf_map(param, MAP_TYPE_VAL,
-+	pmap = find_pinconf_map(pdata, param, MAP_TYPE_VAL,
- 			(val & BIT(pconf->bit)) >> pconf->bit);
+ 	pmap = find_pinconf_map(pdata, param, MAP_TYPE_VAL,
+-			(val & BIT(pconf->bit)) >> pconf->bit);
++			(val & pconf->mask) >> __ffs(pconf->mask));
  
  	if (!pmap)
-@@ -535,7 +507,7 @@ int aspeed_pin_config_set(struct pinctrl_dev *pctldev, unsigned int offset,
- 		if (!pconf)
- 			return -ENOTSUPP;
- 
--		pmap = find_pinconf_map(param, MAP_TYPE_ARG, arg);
-+		pmap = find_pinconf_map(pdata, param, MAP_TYPE_ARG, arg);
- 
+ 		return -EINVAL;
+@@ -512,17 +512,17 @@ int aspeed_pin_config_set(struct pinctrl_dev *pctldev, unsigned int offset,
  		if (WARN_ON(!pmap))
  			return -EINVAL;
+ 
+-		val = pmap->val << pconf->bit;
++		val = pmap->val << __ffs(pconf->mask);
+ 
+ 		rc = regmap_update_bits(pdata->scu, pconf->reg,
+-					BIT(pconf->bit), val);
++					pmap->mask, val);
+ 
+ 		if (rc < 0)
+ 			return rc;
+ 
+-		pr_debug("%s: Set SCU%02X[%d]=%d for param %d(=%d) on pin %d\n",
+-				__func__, pconf->reg, pconf->bit, pmap->val,
+-				param, arg, offset);
++		pr_debug("%s: Set SCU%02X[%lu]=%d for param %d(=%d) on pin %d\n",
++				__func__, pconf->reg, __ffs(pconf->mask),
++				pmap->val, param, arg, offset);
+ 	}
+ 
+ 	return 0;
 diff --git a/drivers/pinctrl/aspeed/pinctrl-aspeed.h b/drivers/pinctrl/aspeed/pinctrl-aspeed.h
-index a7db31202033..27d3929b6aca 100644
+index 27d3929b6aca..6f0f03395617 100644
 --- a/drivers/pinctrl/aspeed/pinctrl-aspeed.h
 +++ b/drivers/pinctrl/aspeed/pinctrl-aspeed.h
-@@ -42,6 +42,22 @@ struct aspeed_pin_config {
- 	.bit = bit_ \
- }
- 
-+/*
-+ * Aspeed pin configuration description.
-+ *
-+ * @param: pinconf configuration parameter
-+ * @arg: The supported argument for @param, or -1 if any value is supported
-+ * @val: The register value to write to configure @arg for @param
-+ *
-+ * The map is to be used in conjunction with the configuration array supplied
-+ * by the driver implementation.
-+ */
-+struct aspeed_pin_config_map {
-+	enum pin_config_param param;
-+	s32 arg;
-+	u32 val;
-+};
-+
- struct aspeed_pinctrl_data {
- 	struct regmap *scu;
- 
-@@ -52,6 +68,9 @@ struct aspeed_pinctrl_data {
- 	const unsigned int nconfigs;
- 
- 	struct aspeed_pinmux_data pinmux;
-+
-+	const struct aspeed_pin_config_map *confmaps;
-+	const unsigned int nconfmaps;
+@@ -24,8 +24,7 @@ struct aspeed_pin_config {
+ 	enum pin_config_param param;
+ 	unsigned int pins[2];
+ 	unsigned int reg;
+-	u8 bit;
+-	u8 value;
++	u32 mask;
  };
  
- /* Aspeed pinctrl helpers */
+ #define ASPEED_PINCTRL_PIN(name_) \
+@@ -39,7 +38,7 @@ struct aspeed_pin_config {
+ 	.param = param_, \
+ 	.pins = {pin0_, pin1_}, \
+ 	.reg = reg_, \
+-	.bit = bit_ \
++	.mask = BIT_MASK(bit_) \
+ }
+ 
+ /*
+@@ -48,6 +47,7 @@ struct aspeed_pin_config {
+  * @param: pinconf configuration parameter
+  * @arg: The supported argument for @param, or -1 if any value is supported
+  * @val: The register value to write to configure @arg for @param
++ * @mask: The bitfield mask for @val
+  *
+  * The map is to be used in conjunction with the configuration array supplied
+  * by the driver implementation.
+@@ -56,6 +56,7 @@ struct aspeed_pin_config_map {
+ 	enum pin_config_param param;
+ 	s32 arg;
+ 	u32 val;
++	u32 mask;
+ };
+ 
+ struct aspeed_pinctrl_data {
 -- 
 2.20.1
 
