@@ -1,38 +1,53 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Mon, 02 Dec 2019 13:30:04 +1030
-Subject: =?UTF-8?Q?Re:_[PATCH_v3_2/6]_gpio:_make_gpiod=5Fto=5Foffset()_available_?=
- =?UTF-8?Q?for_other_users?=
-In-Reply-To: <20191129172537.31410-3-m.felsch@pengutronix.de>
-References: <20191129172537.31410-1-m.felsch@pengutronix.de>
- <20191129172537.31410-3-m.felsch@pengutronix.de>
-Message-ID: <23d79dff-6577-4fba-b7e6-d494ec7b8a93@www.fastmail.com>
+Date: Mon,  2 Dec 2019 15:13:47 +1030
+Subject: [PATCH] soc: aspeed: Fail probe of lpc-ctrl if reserved memory is not
+ aligned
+Message-ID: <20191202044347.14508-1-andrew@aj.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+Alignment is a hardware constraint of the LPC2AHB bridge, and misaligned
+reserved memory will present as corrupted data.
 
+Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
+---
+ drivers/soc/aspeed/aspeed-lpc-ctrl.c | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
 
-On Sat, 30 Nov 2019, at 03:55, Marco Felsch wrote:
-> Currently gpiod_to_offset() is a gpio-subsystem private function which
-> is used by the gpiolib itself and by the aspeed gpio driver. The time
-> has shown that there are other drivers as well which need this
-> information in some special cases e.g. MFD drivers. The patch makes the
-> function public but you need to explicit add the <linux/gpio/private.h>
-> include. See discussion [1] for more information.
-> 
-> [1] https://lkml.org/lkml/2019/11/27/357
-> 
-> Signed-off-by: Marco Felsch <m.felsch@pengutronix.de>
-> ---
-> v3:
-> - former patch description was "gpio: add support to get local gpio number"
-> - adapt commit message and description to reflect new state
-> - don't add wrapper instead use the already existing gpiod_to_offset
-> - move gpiod_to_offset from gpiolib.h into gpiolib.c
-> - move declaration into linux/gpio/private.h
-> ---
->  drivers/gpio/gpio-aspeed.c   | 11 +++++------
+diff --git a/drivers/soc/aspeed/aspeed-lpc-ctrl.c b/drivers/soc/aspeed/aspeed-lpc-ctrl.c
+index 01ed21e8bfee..fec17948cda0 100644
+--- a/drivers/soc/aspeed/aspeed-lpc-ctrl.c
++++ b/drivers/soc/aspeed/aspeed-lpc-ctrl.c
+@@ -4,6 +4,7 @@
+  */
+ 
+ #include <linux/clk.h>
++#include <linux/log2.h>
+ #include <linux/mfd/syscon.h>
+ #include <linux/miscdevice.h>
+ #include <linux/mm.h>
+@@ -241,6 +242,18 @@ static int aspeed_lpc_ctrl_probe(struct platform_device *pdev)
+ 
+ 		lpc_ctrl->mem_size = resource_size(&resm);
+ 		lpc_ctrl->mem_base = resm.start;
++
++		if (!is_power_of_2(lpc_ctrl->mem_size)) {
++			dev_err(dev, "Reserved memory size must be a power of 2, got %zu\n",
++			       (size_t)lpc_ctrl->mem_size);
++			return -EINVAL;
++		}
++
++		if (!IS_ALIGNED(lpc_ctrl->mem_base, lpc_ctrl->mem_size)) {
++			dev_err(dev, "Reserved memory must be naturally aligned for size %zu\n",
++			       (size_t)lpc_ctrl->mem_size);
++			return -EINVAL;
++		}
+ 	}
+ 
+ 	lpc_ctrl->regmap = syscon_node_to_regmap(
+-- 
+2.20.1
 
-Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
