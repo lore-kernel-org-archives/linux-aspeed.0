@@ -1,98 +1,45 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Mon,  2 Dec 2019 15:31:10 +1030
-Subject: [PATCH] pinctrl: aspeed-g6: Fix LPC/eSPI mux configuration
-Message-ID: <20191202050110.15340-1-andrew@aj.id.au>
+Date: Mon,  2 Dec 2019 16:44:25 +1030
+Subject: [PATCH 0/7] pinctrl: aspeed-g6: USB and pinconf support
+Message-ID: <20191202061432.3996-1-andrew@aj.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Early revisions of the AST2600 datasheet are conflicted about the state
-of the LPC/eSPI strapping bit (SCU510[6]). Conversations with ASPEED
-determined that the reference pinmux configuration tables were in error
-and the SCU documentation contained the correct configuration. Update
-the driver to reflect the state described in the SCU documentation.
+Hello,
 
-Fixes: 2eda1cdec49f ("pinctrl: aspeed: Add AST2600 pinmux support")
-Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
----
- drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c | 24 ++++++++--------------
- 1 file changed, 8 insertions(+), 16 deletions(-)
+This series adds USB and pinconf support to the AST2600 pincontrol driver. The
+patches have largely been developed by Johnny Huang from ASPEED and have been
+used for bringup and verification of the chip. The were developed around the
+time of the 5.4 merge window but I got distracted for a while and haven't had
+an opportunity to send them until now. They've had a run in the OpenBMC kernel
+tree and so shouldn't cause any issues, but given where we are for 5.5 I'm just
+getting them in early for 5.6 so we don't miss another release.
 
-diff --git a/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c b/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
-index c6800d220920..bb07024d22ed 100644
---- a/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
-+++ b/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
-@@ -1088,60 +1088,52 @@ SSSF_PIN_DECL(AF15, GPIOV7, LPCSMI, SIG_DESC_SET(SCU434, 15));
- 
- #define AB7 176
- SIG_EXPR_LIST_DECL_SESG(AB7, LAD0, LPC, SIG_DESC_SET(SCU434, 16),
--			  SIG_DESC_CLEAR(SCU510, 6));
--SIG_EXPR_LIST_DECL_SESG(AB7, ESPID0, ESPI, SIG_DESC_SET(SCU434, 16),
- 			  SIG_DESC_SET(SCU510, 6));
-+SIG_EXPR_LIST_DECL_SESG(AB7, ESPID0, ESPI, SIG_DESC_SET(SCU434, 16));
- PIN_DECL_2(AB7, GPIOW0, LAD0, ESPID0);
- 
- #define AB8 177
- SIG_EXPR_LIST_DECL_SESG(AB8, LAD1, LPC, SIG_DESC_SET(SCU434, 17),
--			  SIG_DESC_CLEAR(SCU510, 6));
--SIG_EXPR_LIST_DECL_SESG(AB8, ESPID1, ESPI, SIG_DESC_SET(SCU434, 17),
- 			  SIG_DESC_SET(SCU510, 6));
-+SIG_EXPR_LIST_DECL_SESG(AB8, ESPID1, ESPI, SIG_DESC_SET(SCU434, 17));
- PIN_DECL_2(AB8, GPIOW1, LAD1, ESPID1);
- 
- #define AC8 178
- SIG_EXPR_LIST_DECL_SESG(AC8, LAD2, LPC, SIG_DESC_SET(SCU434, 18),
--			  SIG_DESC_CLEAR(SCU510, 6));
--SIG_EXPR_LIST_DECL_SESG(AC8, ESPID2, ESPI, SIG_DESC_SET(SCU434, 18),
- 			  SIG_DESC_SET(SCU510, 6));
-+SIG_EXPR_LIST_DECL_SESG(AC8, ESPID2, ESPI, SIG_DESC_SET(SCU434, 18));
- PIN_DECL_2(AC8, GPIOW2, LAD2, ESPID2);
- 
- #define AC7 179
- SIG_EXPR_LIST_DECL_SESG(AC7, LAD3, LPC, SIG_DESC_SET(SCU434, 19),
--			  SIG_DESC_CLEAR(SCU510, 6));
--SIG_EXPR_LIST_DECL_SESG(AC7, ESPID3, ESPI, SIG_DESC_SET(SCU434, 19),
- 			  SIG_DESC_SET(SCU510, 6));
-+SIG_EXPR_LIST_DECL_SESG(AC7, ESPID3, ESPI, SIG_DESC_SET(SCU434, 19));
- PIN_DECL_2(AC7, GPIOW3, LAD3, ESPID3);
- 
- #define AE7 180
- SIG_EXPR_LIST_DECL_SESG(AE7, LCLK, LPC, SIG_DESC_SET(SCU434, 20),
--			  SIG_DESC_CLEAR(SCU510, 6));
--SIG_EXPR_LIST_DECL_SESG(AE7, ESPICK, ESPI, SIG_DESC_SET(SCU434, 20),
- 			  SIG_DESC_SET(SCU510, 6));
-+SIG_EXPR_LIST_DECL_SESG(AE7, ESPICK, ESPI, SIG_DESC_SET(SCU434, 20));
- PIN_DECL_2(AE7, GPIOW4, LCLK, ESPICK);
- 
- #define AF7 181
- SIG_EXPR_LIST_DECL_SESG(AF7, LFRAME, LPC, SIG_DESC_SET(SCU434, 21),
--			  SIG_DESC_CLEAR(SCU510, 6));
--SIG_EXPR_LIST_DECL_SESG(AF7, ESPICS, ESPI, SIG_DESC_SET(SCU434, 21),
- 			  SIG_DESC_SET(SCU510, 6));
-+SIG_EXPR_LIST_DECL_SESG(AF7, ESPICS, ESPI, SIG_DESC_SET(SCU434, 21));
- PIN_DECL_2(AF7, GPIOW5, LFRAME, ESPICS);
- 
- #define AD7 182
- SIG_EXPR_LIST_DECL_SESG(AD7, LSIRQ, LSIRQ, SIG_DESC_SET(SCU434, 22),
--			  SIG_DESC_CLEAR(SCU510, 6));
--SIG_EXPR_LIST_DECL_SESG(AD7, ESPIALT, ESPIALT, SIG_DESC_SET(SCU434, 22),
- 			  SIG_DESC_SET(SCU510, 6));
-+SIG_EXPR_LIST_DECL_SESG(AD7, ESPIALT, ESPIALT, SIG_DESC_SET(SCU434, 22));
- PIN_DECL_2(AD7, GPIOW6, LSIRQ, ESPIALT);
- FUNC_GROUP_DECL(LSIRQ, AD7);
- FUNC_GROUP_DECL(ESPIALT, AD7);
- 
- #define AD8 183
- SIG_EXPR_LIST_DECL_SESG(AD8, LPCRST, LPC, SIG_DESC_SET(SCU434, 23),
--			  SIG_DESC_CLEAR(SCU510, 6));
--SIG_EXPR_LIST_DECL_SESG(AD8, ESPIRST, ESPI, SIG_DESC_SET(SCU434, 23),
- 			  SIG_DESC_SET(SCU510, 6));
-+SIG_EXPR_LIST_DECL_SESG(AD8, ESPIRST, ESPI, SIG_DESC_SET(SCU434, 23));
- PIN_DECL_2(AD8, GPIOW7, LPCRST, ESPIRST);
- 
- FUNC_GROUP_DECL(LPC, AB7, AB8, AC8, AC7, AE7, AF7, AD8);
+Please review!
+
+Andrew Jeffery (1):
+  dt-bindings: pinctrl: aspeed-g6: Add USB functions and groups
+
+Johnny Huang (6):
+  pinctrl: aspeed-g6: Add AST2600 I3C1 and I3C2 pinmux config
+  pinctrl: aspeed-g6: Add support for the AST2600 USB pinmux
+  pinctrl: aspeed: Add ASPEED_SB_PINCONF() helper
+  pinctrl: aspeed: Move aspeed_pin_config_map to separate source file
+  pinctrl: aspeed: Use masks to describe pinconf bitfields
+  pinctrl: aspeed-g6: Add AST2600 pinconf support
+
+ .../pinctrl/aspeed,ast2600-pinctrl.yaml       |   9 +-
+ drivers/pinctrl/aspeed/pinctrl-aspeed-g4.c    | 170 ++++----
+ drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c    | 212 +++++-----
+ drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c    | 387 +++++++++++++++++-
+ drivers/pinctrl/aspeed/pinctrl-aspeed.c       |  50 +--
+ drivers/pinctrl/aspeed/pinctrl-aspeed.h       |  38 +-
+ drivers/pinctrl/aspeed/pinmux-aspeed.h        |   1 +
+ 7 files changed, 640 insertions(+), 227 deletions(-)
+
 -- 
 2.20.1
 
