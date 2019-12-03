@@ -1,74 +1,46 @@
-From: Rob Herring <robh+dt@kernel.org>
-Date: Tue, 3 Dec 2019 08:47:40 -0600
-Subject: [PATCH 00/14] ARM: dts: aspeed: Cleanup dtc warnings
-In-Reply-To: <cover.08e3a6c95159f017b753d0f240086d1a7923758b.1575369656.git-series.andrew@aj.id.au>
-References: <cover.08e3a6c95159f017b753d0f240086d1a7923758b.1575369656.git-series.andrew@aj.id.au>
-Message-ID: <CAL_JsqLMs1MsNXMFTCVdrkNNx5ktg0_Q=zf6xgiTkeys-T+CNg@mail.gmail.com>
+From: Brendan Higgins <brendanhiggins@google.com>
+Date: Tue, 3 Dec 2019 15:18:52 -0800
+Subject: [PATCH v2] irqchip/aspeed-i2c-ic: Fix irq domain name memory leak
+In-Reply-To: <20191126074025.5112-1-roy.van.doormaal@prodrive-technologies.com>
+References: <20191125202937.23133-1-roy.van.doormaal@prodrive-technologies.com>
+ <20191126074025.5112-1-roy.van.doormaal@prodrive-technologies.com>
+Message-ID: <CAFd5g450nWm47mFi10W+J=oiaO_sV0fXh3SwH0zxX6ZF1qZ-Xw@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Dec 3, 2019 at 6:02 AM Andrew Jeffery <andrew@aj.id.au> wrote:
+On Mon, Nov 25, 2019 at 11:41 PM Roy van Doormaal
+<roy.van.doormaal@prodrive-technologies.com> wrote:
 >
-> Hello,
+> The aspeed irqchip driver overwrites the default irq domain name,
+> but doesn't free the existing domain name.
+> This patch frees the irq domain name before overwriting it.
 >
-> This series is based on an RFC-ish series I sent quite some time ago to which I
-> have only just been able to circle back. The previous discussion can be found
-> here:
+> kmemleak trace:
 >
-> https://lore.kernel.org/lkml/20190726053959.2003-1-andrew at aj.id.au/
+> unreferenced object 0xb8004c40 (size 64):
+> comm "swapper", pid 0, jiffies 4294937303 (age 747.660s)
+> hex dump (first 32 bytes):
+> 3a 61 68 62 3a 61 70 62 3a 62 75 73 40 31 65 37 :ahb:apb:bus at 1e7
+> 38 61 30 30 30 3a 69 6e 74 65 72 72 75 70 74 2d 8a000:interrupt-
+> backtrace:
+> [<086b59b8>] kmemleak_alloc+0xa8/0xc0
+> [<b5a3490c>] __kmalloc_track_caller+0x118/0x1a0
+> [<f59c7ced>] kvasprintf+0x5c/0xc0
+> [<49275eec>] kasprintf+0x30/0x50
+> [<5713064b>] __irq_domain_add+0x184/0x25c
+> [<53c594d0>] aspeed_i2c_ic_of_init+0x9c/0x128
+> [<d8d7017e>] of_irq_init+0x1ec/0x314
+> [<f8405bf1>] irqchip_init+0x1c/0x24
+> [<7ef974b3>] init_IRQ+0x30/0x90
+> [<87a1438f>] start_kernel+0x28c/0x458
+> [< (null)>] (null)
+> [<f0763fdf>] 0xffffffff
 >
-> I've split, shuffled and rebased the series a little, with at least one extra
-> cleanup for the g6 dtsi. This series is just the devicetree changes, the IPMI
-> KCS changes will be posted separately shortly.
->
-> Combined with the KCS changes we achieve similar stats to the RFC series,
-> reducing 264 warnings to 6.
->
-> I've added each patches' tags from last time, but please glance over them
-> again.
->
-> Cheers,
->
-> Andrew
->
-> Andrew Jeffery (14):
->   dt-bindings: pinctrl: aspeed: Add reg property as a hint
->   dt-bindings: misc: Document reg for aspeed,p2a-ctrl nodes
->   ARM: dts: aspeed-g5: Move EDAC node to APB
->   ARM: dts: aspeed-g5: Use recommended generic node name for SDMC
->   ARM: dts: aspeed-g5: Fix aspeed,external-nodes description
->   ARM: dts: vesnin: Add unit address for memory node
->   ARM: dts: fp5280g2: Cleanup gpio-keys-polled properties
->   ARM: dts: swift: Cleanup gpio-keys-polled properties
->   ARM: dts: witherspoon: Cleanup gpio-keys-polled properties
->   ARM: dts: aspeed: Cleanup lpc-ctrl and snoop regs
->   ARM: dts: aspeed: Add reg hints to syscon children
->   ARM: dts: aspeed-g5: Sort LPC child nodes by unit address
->   ARM: dts: aspeed-g6: Cleanup watchdog unit address
->   ARM: dts: ibm-power9-dual: Add a unit address for OCC nodes
->
->  Documentation/devicetree/bindings/misc/aspeed-p2a-ctrl.txt            |  1 +
->  Documentation/devicetree/bindings/pinctrl/aspeed,ast2400-pinctrl.yaml |  3 +++
->  Documentation/devicetree/bindings/pinctrl/aspeed,ast2500-pinctrl.yaml |  3 +++
->  arch/arm/boot/dts/aspeed-bmc-arm-centriq2400-rep.dts                  |  4 ----
->  arch/arm/boot/dts/aspeed-bmc-arm-stardragon4800-rep2.dts              |  4 ----
->  arch/arm/boot/dts/aspeed-bmc-inspur-fp5280g2.dts                      | 11 +++++++----
->  arch/arm/boot/dts/aspeed-bmc-intel-s2600wf.dts                        |  4 ----
->  arch/arm/boot/dts/aspeed-bmc-opp-lanyang.dts                          |  4 ----
->  arch/arm/boot/dts/aspeed-bmc-opp-romulus.dts                          |  4 ----
->  arch/arm/boot/dts/aspeed-bmc-opp-swift.dts                            |  6 ------
->  arch/arm/boot/dts/aspeed-bmc-opp-vesnin.dts                           |  2 +-
->  arch/arm/boot/dts/aspeed-bmc-opp-witherspoon.dts                      |  6 ------
->  arch/arm/boot/dts/aspeed-bmc-opp-zaius.dts                            |  2 --
->  arch/arm/boot/dts/aspeed-g4.dtsi                                      | 21 ++++++++++++---------
->  arch/arm/boot/dts/aspeed-g5.dtsi                                      | 49 ++++++++++++++++++++++++++-----------------------
->  arch/arm/boot/dts/aspeed-g6.dtsi                                      |  2 +-
->  arch/arm/boot/dts/ibm-power9-dual.dtsi                                |  4 ++--
->  17 files changed, 56 insertions(+), 74 deletions(-)
+> Signed-off-by: Roy van Doormaal <roy.van.doormaal@prodrive-technologies.com>
 
-Other than patch 5, for the series:
+Acked-by: Brendan Higgins <brendanhiggins@google.com>
 
-Reviewed-by: Rob Herring <robh@kernel.org>
+Sorry for the delayed response.
