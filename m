@@ -1,57 +1,70 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Tue,  3 Dec 2019 22:34:02 +1030
-Subject: [PATCH 01/14] dt-bindings: pinctrl: aspeed: Add reg property as a hint
-In-Reply-To: <cover.08e3a6c95159f017b753d0f240086d1a7923758b.1575369656.git-series.andrew@aj.id.au>
-References: <cover.08e3a6c95159f017b753d0f240086d1a7923758b.1575369656.git-series.andrew@aj.id.au>
-Message-ID: <b65a012a91b49352c0cdef01e8959a62537c8d76.1575369656.git-series.andrew@aj.id.au>
+Date: Tue,  3 Dec 2019 22:34:01 +1030
+Subject: [PATCH 00/14] ARM: dts: aspeed: Cleanup dtc warnings
+Message-ID: <cover.08e3a6c95159f017b753d0f240086d1a7923758b.1575369656.git-series.andrew@aj.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The pinctrl node sits under a syscon device, and can assume offsets from
-the base of the syscon based on the compatible. However, for devicetree
-correctness allow a reg property to be specified, which an associated
-driver may choose to use to discover associated resources.
+Hello,
 
-Cc: Linus Walleij <linus.walleij@linaro.org>
-Cc: linux-gpio at vger.kernel.org
-Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
-Acked-by: Linus Walleij <linus.walleij@linaro.org>
-Reviewed-by: Joel Stanley <joel@jms.id.au>
----
- Documentation/devicetree/bindings/pinctrl/aspeed,ast2400-pinctrl.yaml | 3 +++
- Documentation/devicetree/bindings/pinctrl/aspeed,ast2500-pinctrl.yaml | 3 +++
- 2 files changed, 6 insertions(+)
+This series is based on an RFC-ish series I sent quite some time ago to which I
+have only just been able to circle back. The previous discussion can be found
+here:
 
-diff --git a/Documentation/devicetree/bindings/pinctrl/aspeed,ast2400-pinctrl.yaml b/Documentation/devicetree/bindings/pinctrl/aspeed,ast2400-pinctrl.yaml
-index 39ad8657d018..bb690e20c368 100644
---- a/Documentation/devicetree/bindings/pinctrl/aspeed,ast2400-pinctrl.yaml
-+++ b/Documentation/devicetree/bindings/pinctrl/aspeed,ast2400-pinctrl.yaml
-@@ -22,6 +22,9 @@ description: |+
- properties:
-   compatible:
-     const: aspeed,ast2400-pinctrl
-+  reg:
-+    description: |
-+      A hint for the memory regions associated with the pin-controller
- 
- patternProperties:
-   '^.*$':
-diff --git a/Documentation/devicetree/bindings/pinctrl/aspeed,ast2500-pinctrl.yaml b/Documentation/devicetree/bindings/pinctrl/aspeed,ast2500-pinctrl.yaml
-index 3c6405be07ed..f7f5d57f2c9a 100644
---- a/Documentation/devicetree/bindings/pinctrl/aspeed,ast2500-pinctrl.yaml
-+++ b/Documentation/devicetree/bindings/pinctrl/aspeed,ast2500-pinctrl.yaml
-@@ -23,6 +23,9 @@ description: |+
- properties:
-   compatible:
-     const: aspeed,ast2500-pinctrl
-+  reg:
-+    description: |
-+      A hint for the memory regions associated with the pin-controller
-   aspeed,external-nodes:
-     minItems: 2
-     maxItems: 2
+https://lore.kernel.org/lkml/20190726053959.2003-1-andrew at aj.id.au/
+
+I've split, shuffled and rebased the series a little, with at least one extra
+cleanup for the g6 dtsi. This series is just the devicetree changes, the IPMI
+KCS changes will be posted separately shortly.
+
+Combined with the KCS changes we achieve similar stats to the RFC series,
+reducing 264 warnings to 6.
+
+I've added each patches' tags from last time, but please glance over them
+again.
+
+Cheers,
+
+Andrew
+
+Andrew Jeffery (14):
+  dt-bindings: pinctrl: aspeed: Add reg property as a hint
+  dt-bindings: misc: Document reg for aspeed,p2a-ctrl nodes
+  ARM: dts: aspeed-g5: Move EDAC node to APB
+  ARM: dts: aspeed-g5: Use recommended generic node name for SDMC
+  ARM: dts: aspeed-g5: Fix aspeed,external-nodes description
+  ARM: dts: vesnin: Add unit address for memory node
+  ARM: dts: fp5280g2: Cleanup gpio-keys-polled properties
+  ARM: dts: swift: Cleanup gpio-keys-polled properties
+  ARM: dts: witherspoon: Cleanup gpio-keys-polled properties
+  ARM: dts: aspeed: Cleanup lpc-ctrl and snoop regs
+  ARM: dts: aspeed: Add reg hints to syscon children
+  ARM: dts: aspeed-g5: Sort LPC child nodes by unit address
+  ARM: dts: aspeed-g6: Cleanup watchdog unit address
+  ARM: dts: ibm-power9-dual: Add a unit address for OCC nodes
+
+ Documentation/devicetree/bindings/misc/aspeed-p2a-ctrl.txt            |  1 +
+ Documentation/devicetree/bindings/pinctrl/aspeed,ast2400-pinctrl.yaml |  3 +++
+ Documentation/devicetree/bindings/pinctrl/aspeed,ast2500-pinctrl.yaml |  3 +++
+ arch/arm/boot/dts/aspeed-bmc-arm-centriq2400-rep.dts                  |  4 ----
+ arch/arm/boot/dts/aspeed-bmc-arm-stardragon4800-rep2.dts              |  4 ----
+ arch/arm/boot/dts/aspeed-bmc-inspur-fp5280g2.dts                      | 11 +++++++----
+ arch/arm/boot/dts/aspeed-bmc-intel-s2600wf.dts                        |  4 ----
+ arch/arm/boot/dts/aspeed-bmc-opp-lanyang.dts                          |  4 ----
+ arch/arm/boot/dts/aspeed-bmc-opp-romulus.dts                          |  4 ----
+ arch/arm/boot/dts/aspeed-bmc-opp-swift.dts                            |  6 ------
+ arch/arm/boot/dts/aspeed-bmc-opp-vesnin.dts                           |  2 +-
+ arch/arm/boot/dts/aspeed-bmc-opp-witherspoon.dts                      |  6 ------
+ arch/arm/boot/dts/aspeed-bmc-opp-zaius.dts                            |  2 --
+ arch/arm/boot/dts/aspeed-g4.dtsi                                      | 21 ++++++++++++---------
+ arch/arm/boot/dts/aspeed-g5.dtsi                                      | 49 ++++++++++++++++++++++++++-----------------------
+ arch/arm/boot/dts/aspeed-g6.dtsi                                      |  2 +-
+ arch/arm/boot/dts/ibm-power9-dual.dtsi                                |  4 ++--
+ 17 files changed, 56 insertions(+), 74 deletions(-)
+
+base-commit: 3eca037f2dfce07a31da0a837ac35d6d846614b0
 -- 
 git-series 0.9.1
