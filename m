@@ -1,70 +1,40 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Tue,  3 Dec 2019 22:34:01 +1030
-Subject: [PATCH 00/14] ARM: dts: aspeed: Cleanup dtc warnings
-Message-ID: <cover.08e3a6c95159f017b753d0f240086d1a7923758b.1575369656.git-series.andrew@aj.id.au>
+Date: Tue,  3 Dec 2019 22:34:03 +1030
+Subject: [PATCH 02/14] dt-bindings: misc: Document reg for aspeed,
+ p2a-ctrl nodes
+In-Reply-To: <cover.08e3a6c95159f017b753d0f240086d1a7923758b.1575369656.git-series.andrew@aj.id.au>
+References: <cover.08e3a6c95159f017b753d0f240086d1a7923758b.1575369656.git-series.andrew@aj.id.au>
+Message-ID: <17ccbf7c6f9f7b81543eabee06d81e137c8759c6.1575369656.git-series.andrew@aj.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello,
+The P2A controller node sits under a syscon device, and can assume
+offsets from the base of the syscon based on the compatible. However,
+for devicetree correctness allow a reg property to be specified, which
+an associated driver may choose to use to discover associated resources.
 
-This series is based on an RFC-ish series I sent quite some time ago to which I
-have only just been able to circle back. The previous discussion can be found
-here:
+Cc: Patrick Venture <venture@google.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
+Reviewed-by: Joel Stanley <joel@jms.id.au>
+---
+ Documentation/devicetree/bindings/misc/aspeed-p2a-ctrl.txt | 1 +
+ 1 file changed, 1 insertion(+)
 
-https://lore.kernel.org/lkml/20190726053959.2003-1-andrew at aj.id.au/
-
-I've split, shuffled and rebased the series a little, with at least one extra
-cleanup for the g6 dtsi. This series is just the devicetree changes, the IPMI
-KCS changes will be posted separately shortly.
-
-Combined with the KCS changes we achieve similar stats to the RFC series,
-reducing 264 warnings to 6.
-
-I've added each patches' tags from last time, but please glance over them
-again.
-
-Cheers,
-
-Andrew
-
-Andrew Jeffery (14):
-  dt-bindings: pinctrl: aspeed: Add reg property as a hint
-  dt-bindings: misc: Document reg for aspeed,p2a-ctrl nodes
-  ARM: dts: aspeed-g5: Move EDAC node to APB
-  ARM: dts: aspeed-g5: Use recommended generic node name for SDMC
-  ARM: dts: aspeed-g5: Fix aspeed,external-nodes description
-  ARM: dts: vesnin: Add unit address for memory node
-  ARM: dts: fp5280g2: Cleanup gpio-keys-polled properties
-  ARM: dts: swift: Cleanup gpio-keys-polled properties
-  ARM: dts: witherspoon: Cleanup gpio-keys-polled properties
-  ARM: dts: aspeed: Cleanup lpc-ctrl and snoop regs
-  ARM: dts: aspeed: Add reg hints to syscon children
-  ARM: dts: aspeed-g5: Sort LPC child nodes by unit address
-  ARM: dts: aspeed-g6: Cleanup watchdog unit address
-  ARM: dts: ibm-power9-dual: Add a unit address for OCC nodes
-
- Documentation/devicetree/bindings/misc/aspeed-p2a-ctrl.txt            |  1 +
- Documentation/devicetree/bindings/pinctrl/aspeed,ast2400-pinctrl.yaml |  3 +++
- Documentation/devicetree/bindings/pinctrl/aspeed,ast2500-pinctrl.yaml |  3 +++
- arch/arm/boot/dts/aspeed-bmc-arm-centriq2400-rep.dts                  |  4 ----
- arch/arm/boot/dts/aspeed-bmc-arm-stardragon4800-rep2.dts              |  4 ----
- arch/arm/boot/dts/aspeed-bmc-inspur-fp5280g2.dts                      | 11 +++++++----
- arch/arm/boot/dts/aspeed-bmc-intel-s2600wf.dts                        |  4 ----
- arch/arm/boot/dts/aspeed-bmc-opp-lanyang.dts                          |  4 ----
- arch/arm/boot/dts/aspeed-bmc-opp-romulus.dts                          |  4 ----
- arch/arm/boot/dts/aspeed-bmc-opp-swift.dts                            |  6 ------
- arch/arm/boot/dts/aspeed-bmc-opp-vesnin.dts                           |  2 +-
- arch/arm/boot/dts/aspeed-bmc-opp-witherspoon.dts                      |  6 ------
- arch/arm/boot/dts/aspeed-bmc-opp-zaius.dts                            |  2 --
- arch/arm/boot/dts/aspeed-g4.dtsi                                      | 21 ++++++++++++---------
- arch/arm/boot/dts/aspeed-g5.dtsi                                      | 49 ++++++++++++++++++++++++++-----------------------
- arch/arm/boot/dts/aspeed-g6.dtsi                                      |  2 +-
- arch/arm/boot/dts/ibm-power9-dual.dtsi                                |  4 ++--
- 17 files changed, 56 insertions(+), 74 deletions(-)
-
-base-commit: 3eca037f2dfce07a31da0a837ac35d6d846614b0
+diff --git a/Documentation/devicetree/bindings/misc/aspeed-p2a-ctrl.txt b/Documentation/devicetree/bindings/misc/aspeed-p2a-ctrl.txt
+index 0e1fa5bc6a30..f2e2e28b317c 100644
+--- a/Documentation/devicetree/bindings/misc/aspeed-p2a-ctrl.txt
++++ b/Documentation/devicetree/bindings/misc/aspeed-p2a-ctrl.txt
+@@ -18,6 +18,7 @@ Required properties:
+ Optional properties:
+ ===================
+ 
++- reg: A hint for the memory regions associated with the P2A controller
+ - memory-region: A phandle to a reserved_memory region to be used for the PCI
+ 		to AHB mapping
+ 
 -- 
 git-series 0.9.1
