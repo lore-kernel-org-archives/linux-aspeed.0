@@ -1,50 +1,42 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Tue,  3 Dec 2019 22:34:15 +1030
-Subject: [PATCH 14/14] ARM: dts: ibm-power9-dual: Add a unit address for OCC
- nodes
-In-Reply-To: <cover.08e3a6c95159f017b753d0f240086d1a7923758b.1575369656.git-series.andrew@aj.id.au>
-References: <cover.08e3a6c95159f017b753d0f240086d1a7923758b.1575369656.git-series.andrew@aj.id.au>
-Message-ID: <895711a51b34e0618761cb9e6594e6734769e1cc.1575369656.git-series.andrew@aj.id.au>
+Date: Tue,  3 Dec 2019 23:08:22 +1030
+Subject: [PATCH 0/3] ipmi: kcs-bmc: Rework bindings to clean up DT warnings
+Message-ID: <cover.5630f63168ad5cddf02e9796106f8e086c196907.1575376664.git-series.andrew@aj.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-These temporarily have a unit address until userspace is fixed up as
-noted in comments elsewhere in the dtsi.
+Hello,
 
-Fixes the following warning:
+This is a short series reworking the devicetree binding and driver for the
+ASPEED BMC KCS devices. With the number of supported ASPEED BMC devicetrees the
+changes enable removal of more than 100 lines of warning output from dtc.
 
-    arch/arm/boot/dts/ibm-power9-dual.dtsi:89.18-91.6: Warning (unit_address_vs_reg): /gpio-fsi/cfam at 0,0/sbefifo at 2400/occ: node has a reg or ranges property, but no unit name
-    arch/arm/boot/dts/ibm-power9-dual.dtsi:190.18-192.6: Warning (unit_address_vs_reg): /gpio-fsi/cfam at 0,0/hub at 3400/cfam at 1,0/sbefifo at 2400/occ: node has a reg or ranges property, but no unit name
+These changes are extracted from an RFC series posted previously, which can be
+found here:
 
-Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
----
- arch/arm/boot/dts/ibm-power9-dual.dtsi | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+https://lore.kernel.org/lkml/20190726053959.2003-1-andrew at aj.id.au/
 
-diff --git a/arch/arm/boot/dts/ibm-power9-dual.dtsi b/arch/arm/boot/dts/ibm-power9-dual.dtsi
-index 2abc42eda7b0..a0fa65b44b0f 100644
---- a/arch/arm/boot/dts/ibm-power9-dual.dtsi
-+++ b/arch/arm/boot/dts/ibm-power9-dual.dtsi
-@@ -86,7 +86,7 @@
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 
--			fsi_occ0: occ {
-+			fsi_occ0: occ at 1 {
- 				compatible = "ibm,p9-occ";
- 			};
- 		};
-@@ -187,7 +187,7 @@
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 
--			fsi_occ1: occ {
-+			fsi_occ1: occ at 2 {
- 				compatible = "ibm,p9-occ";
- 			};
- 		};
+Haiyue has already reviewed the driver patches in that thread so the re-posting
+carries his tags. Since the original series the patches have been rebased on
+top of char-misc/master with no further changes. However, please take a look to
+make sure the patches are still sane.
+
+Cheers,
+
+Andrew
+
+Andrew Jeffery (3):
+  dt-bindings: ipmi: aspeed: Introduce a v2 binding for KCS
+  ipmi: kcs: Finish configuring ASPEED KCS device before enable
+  ipmi: kcs: aspeed: Implement v2 bindings
+
+ Documentation/devicetree/bindings/ipmi/aspeed-kcs-bmc.txt |  20 +-
+ drivers/char/ipmi/kcs_bmc_aspeed.c                        | 151 +++++--
+ 2 files changed, 139 insertions(+), 32 deletions(-)
+
+base-commit: 937d6eefc716a9071f0e3bada19200de1bb9d048
 -- 
 git-series 0.9.1
