@@ -1,28 +1,36 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Mon, 16 Dec 2019 10:05:02 +1030
-Subject: [PATCH v5] ARM: dts: aspeed: Adding Facebook Yosemite V2 BMC
-In-Reply-To: <20191213135131.GA1822@cnn>
-References: <20191213135131.GA1822@cnn>
-Message-ID: <8017a61e-e579-41ea-816a-4a76a6dc41e9@www.fastmail.com>
+From: Mark Brown <broonie@kernel.org>
+Date: Wed, 4 Dec 2019 13:46:31 +0000
+Subject: [PATCH v3 3/6] dt-bindings: mfd: da9062: add regulator voltage
+ selection documentation
+In-Reply-To: <20191129172537.31410-4-m.felsch@pengutronix.de>
+References: <20191129172537.31410-1-m.felsch@pengutronix.de>
+ <20191129172537.31410-4-m.felsch@pengutronix.de>
+Message-ID: <20191204134631.GT1998@sirena.org.uk>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sat, 14 Dec 2019, at 00:21, Manikandan Elumalai wrote:
-> The Yosemite V2 is a facebook multi-node server
-> platform that host four OCP server. The BMC
-> in the Yosemite V2 platform based on AST2500 SoC.
-> 
-> This patch adds linux device tree entry related to
-> Yosemite V2 specific devices connected to BMC SoC.
-> 
-> Signed-off-by : Manikandan Elumalai <manikandan.hcl.ers.epl@gmail.com>
-> Acked-by        : Andrew Jeffery <andrew@aj.id.au>
-> Reviewed-by  : Vijay Khemka <vkhemka@fb.com>
+On Fri, Nov 29, 2019 at 06:25:34PM +0100, Marco Felsch wrote:
 
-In the future, don't worry about aligning parts of the tag text. Single space is
-the custom (and is less effort!)
+> +  Optional regulator device-specific properties:
+> +  - dlg,vsel-sense-gpios : A GPIO reference to a local general purpose input,
+> +    the datasheet calls it GPI. The regulator sense the input signal and select
+> +    the active or suspend voltage settings. If the signal is active the
+> +    active-settings are applied else the suspend-settings are applied.
+> +    Attention: Sharing the same GPI for other purposes or across multiple
+> +    regulators is possible but the polarity setting must equal.
 
-Andrew
+I'm really confused by this.  As far as I understand it it seems
+to be doing pinmuxing on the chip using the GPIO bindings which
+is itself a bit odd and I don't see anything here that configures
+whatever sets the state of the pins.  Don't we need another GPIO
+to set the vsel-sense inputs on the PMIC?
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 488 bytes
+Desc: not available
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20191204/b850f940/attachment-0001.sig>
