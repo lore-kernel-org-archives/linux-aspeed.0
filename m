@@ -1,12 +1,12 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Thu, 05 Dec 2019 15:36:04 +1030
-Subject: =?UTF-8?Q?Re:_[PATCH_05/14]_ARM:_dts:_aspeed-g5:_Fix_aspeed,
- external-nod?= =?UTF-8?Q?es_description?=
-In-Reply-To: <CAL_JsqJ8p-zs2F-mXkO_egoBtZ8WymM4O-2AaDJMZYeCFS3sLg@mail.gmail.com>
-References: <cover.08e3a6c95159f017b753d0f240086d1a7923758b.1575369656.git-series.andrew@aj.id.au>
- <141f068d10b94413a6d0ca73fe07f8e961380e7b.1575369656.git-series.andrew@aj.id.au>
- <CAL_JsqJ8p-zs2F-mXkO_egoBtZ8WymM4O-2AaDJMZYeCFS3sLg@mail.gmail.com>
-Message-ID: <25487d30-d748-445b-aad2-03c4d9241631@www.fastmail.com>
+Date: Thu, 05 Dec 2019 15:43:39 +1030
+Subject: =?UTF-8?Q?Re:_[PATCH_1/3]_dt-bindings:_ipmi:_aspeed:_Introduce_a_v2_bind?=
+ =?UTF-8?Q?ing_for_KCS?=
+In-Reply-To: <CAL_Jsq+3qXJbTu9G42g11PLJH-A0XeSQmJKj0obO32QFna3dEA@mail.gmail.com>
+References: <cover.5630f63168ad5cddf02e9796106f8e086c196907.1575376664.git-series.andrew@aj.id.au>
+ <3da2492c244962c27b21aad87bfa6bf74f568f1d.1575376664.git-series.andrew@aj.id.au>
+ <CAL_Jsq+3qXJbTu9G42g11PLJH-A0XeSQmJKj0obO32QFna3dEA@mail.gmail.com>
+Message-ID: <40d554c0-de62-4d45-bbcc-dd3a3aa12a65@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -15,94 +15,128 @@ Content-Transfer-Encoding: 7bit
 
 
 
-On Wed, 4 Dec 2019, at 01:13, Rob Herring wrote:
-> On Tue, Dec 3, 2019 at 6:03 AM Andrew Jeffery <andrew@aj.id.au> wrote:
+On Wed, 4 Dec 2019, at 01:01, Rob Herring wrote:
+> On Tue, Dec 3, 2019 at 6:36 AM Andrew Jeffery <andrew@aj.id.au> wrote:
 > >
-> > The existing approach lead to an error from the dtbs_check:
+> > The v2 binding utilises reg and renames some of the v1 properties.
 > >
-> >     pinctrl: aspeed,external-nodes: [[8, 9]] is too short
-> 
-> This one where we have list of phandles is fixed in dtc. I need to
-> update the kernel's copy.
-
-Ah, cool.
-
-> 
-> > Cc: Adriana Kobylak <anoo@us.ibm.com>
-> > Cc: Brian Yang <yang.brianc.w@inventec.com>
-> > Cc: Joel Stanley <joel@jms.id.au>
-> > Cc: John Wang <wangzqbj@inspur.com>
-> > Cc: Ken Chen <chen.kenyy@inventec.com>
-> > Cc: Tao Ren <taoren@fb.com>
-> > Cc: Xo Wang <xow@google.com>
-> > Cc: Yuan Yao <yao.yuan@linaro.org>
 > > Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
-> > Reviewed-by: Joel Stanley <joel@jms.id.au>
 > > ---
-> >  arch/arm/boot/dts/aspeed-bmc-arm-centriq2400-rep.dts     |  4 +----
-> >  arch/arm/boot/dts/aspeed-bmc-arm-stardragon4800-rep2.dts |  4 +----
-> >  arch/arm/boot/dts/aspeed-bmc-inspur-fp5280g2.dts         |  9 +++++++--
-> >  arch/arm/boot/dts/aspeed-bmc-intel-s2600wf.dts           |  4 +----
-> >  arch/arm/boot/dts/aspeed-bmc-opp-lanyang.dts             |  4 +----
-> >  arch/arm/boot/dts/aspeed-bmc-opp-romulus.dts             |  4 +----
-> >  arch/arm/boot/dts/aspeed-bmc-opp-swift.dts               |  4 +----
-> >  arch/arm/boot/dts/aspeed-bmc-opp-witherspoon.dts         |  4 +----
-> >  arch/arm/boot/dts/aspeed-bmc-opp-zaius.dts               |  2 +--
-> >  arch/arm/boot/dts/aspeed-g5.dtsi                         |  3 +--
-> >  10 files changed, 8 insertions(+), 34 deletions(-)
+> >  Documentation/devicetree/bindings/ipmi/aspeed-kcs-bmc.txt | 20 +++++---
+> >  1 file changed, 14 insertions(+), 6 deletions(-)
 > >
-> > diff --git a/arch/arm/boot/dts/aspeed-bmc-arm-centriq2400-rep.dts b/arch/arm/boot/dts/aspeed-bmc-arm-centriq2400-rep.dts
-> > index c2ece0b91885..de9612e49c69 100644
-> > --- a/arch/arm/boot/dts/aspeed-bmc-arm-centriq2400-rep.dts
-> > +++ b/arch/arm/boot/dts/aspeed-bmc-arm-centriq2400-rep.dts
-> > @@ -211,10 +211,6 @@
-> >         status = "okay";
-> >  };
+> > diff --git a/Documentation/devicetree/bindings/ipmi/aspeed-kcs-bmc.txt b/Documentation/devicetree/bindings/ipmi/aspeed-kcs-bmc.txt
+> > index d98a9bf45d6c..76b180ebbde4 100644
+> > --- a/Documentation/devicetree/bindings/ipmi/aspeed-kcs-bmc.txt
+> > +++ b/Documentation/devicetree/bindings/ipmi/aspeed-kcs-bmc.txt
+> > @@ -1,9 +1,10 @@
+> > -* Aspeed KCS (Keyboard Controller Style) IPMI interface
+> > +# Aspeed KCS (Keyboard Controller Style) IPMI interface
 > >
-> > -&pinctrl {
-> > -       aspeed,external-nodes = <&gfx &lhc>;
-> > -};
-> > -
-> >  &gpio {
-> >         pin_gpio_c7 {
-> >                 gpio-hog;
-> > diff --git a/arch/arm/boot/dts/aspeed-bmc-arm-stardragon4800-rep2.dts b/arch/arm/boot/dts/aspeed-bmc-arm-stardragon4800-rep2.dts
-> > index 2c29ac037d32..022d0744d786 100644
-> > --- a/arch/arm/boot/dts/aspeed-bmc-arm-stardragon4800-rep2.dts
-> > +++ b/arch/arm/boot/dts/aspeed-bmc-arm-stardragon4800-rep2.dts
-> > @@ -200,10 +200,6 @@
-> >         status = "okay";
-> >  };
+> >  The Aspeed SOCs (AST2400 and AST2500) are commonly used as BMCs
+> >  (Baseboard Management Controllers) and the KCS interface can be
+> >  used to perform in-band IPMI communication with their host.
 > >
-> > -&pinctrl {
-> > -       aspeed,external-nodes = <&gfx &lhc>;
-> > -};
-> > -
-> >  &gpio {
-> >         pin_gpio_c7 {
-> >                 gpio-hog;
-> > diff --git a/arch/arm/boot/dts/aspeed-bmc-inspur-fp5280g2.dts b/arch/arm/boot/dts/aspeed-bmc-inspur-fp5280g2.dts
-> > index c17bb7fce7ff..d69da58476fe 100644
-> > --- a/arch/arm/boot/dts/aspeed-bmc-inspur-fp5280g2.dts
-> > +++ b/arch/arm/boot/dts/aspeed-bmc-inspur-fp5280g2.dts
-> > @@ -782,8 +782,13 @@
-> >         memory-region = <&gfx_memory>;
-> >  };
+> > +## v1
+> >  Required properties:
+> >  - compatible : should be one of
+> >      "aspeed,ast2400-kcs-bmc"
+> > @@ -12,14 +13,21 @@ Required properties:
+> >  - kcs_chan : The LPC channel number in the controller
+> >  - kcs_addr : The host CPU IO map address
 > >
-> > -&pinctrl {
-> > -       aspeed,external-nodes = <&gfx &lhc>;
-> > +&gpio {
-> > +       pin_gpio_b7 {
-> > +               gpio-hog;
-> > +               gpios = <ASPEED_GPIO(B,7) GPIO_ACTIVE_LOW>;
-> > +               output-high;
-> > +               line-name = "BMC_INIT_OK";
-> > +       };
+> > +## v2
+> > +Required properties:
+> > +- compatible : should be one of
+> > +    "aspeed,ast2400-kcs-bmc-v2"
+> > +    "aspeed,ast2500-kcs-bmc-v2"
+> > +- reg : The address and size of the IDR, ODR and STR registers
+> > +- interrupts : interrupt generated by the controller
+> > +- slave-reg : The host CPU IO map address
 > 
-> Seems like an unrelated change?
+> aspeed,slave-reg
 
-Yeah, that seems to be a bad rebase conflict resolution.
+I don't agree, as it's not an aspeed-specific behaviour. This property
+controls where the device appears in the host's LPC IO address space,
+which is a common problem for any LPC IO device exposed by the BMC
+to the host.
 
-Thanks,
+> 
+> >
+> >  Example:
+> >
+> > -    kcs3: kcs3 at 0 {
+> > -        compatible = "aspeed,ast2500-kcs-bmc";
+> > -        reg = <0x0 0x80>;
+> > +    kcs3: kcs at 24 {
+> > +        compatible = "aspeed,ast2500-kcs-bmc-v2";
+> > +        reg = <0x24 0x1>, <0x30 0x1>, <0x3c 0x1>;
+> 
+> What are the other registers in this address space? I'm not so sure
+> this is an improvement if you end up with a bunch of nodes with single
+> registers.
+
+Put into practice the bindings give the following patch: on the AST2500:
+
+diff --git a/arch/arm/boot/dts/aspeed-g5.dtsi b/arch/arm/boot/dts/aspeed-g5.dtsi
+index e8feb8b66a2f..5d51f469cbf0 100644
+--- a/arch/arm/boot/dts/aspeed-g5.dtsi
++++ b/arch/arm/boot/dts/aspeed-g5.dtsi
+@@ -399,22 +399,22 @@
+                                        #size-cells = <1>;
+                                        ranges = <0x0 0x0 0x80>;
+ 
+-                                       kcs1: kcs1 at 0 {
+-                                               compatible = "aspeed,ast2500-kcs-bmc";
++                                       kcs1: kcs at 24 {
++                                               compatible = "aspeed,ast2500-kcs-bmc-v2";
++                                               reg = <0x24 0x1>, <0x30 0x1>, <0x3c 0x1>;
+                                                interrupts = <8>;
+-                                               kcs_chan = <1>;
+                                                status = "disabled";
+                                        };
+-                                       kcs2: kcs2 at 0 {
+-                                               compatible = "aspeed,ast2500-kcs-bmc";
++                                       kcs2: kcs at 28 {
++                                               compatible = "aspeed,ast2500-kcs-bmc-v2";
++                                               reg = <0x28 0x1>, <0x34 0x1>, <0x40 0x1>;
+                                                interrupts = <8>;
+-                                               kcs_chan = <2>;
+                                                status = "disabled";
+                                        };
+-                                       kcs3: kcs3 at 0 {
+-                                               compatible = "aspeed,ast2500-kcs-bmc";
++                                       kcs3: kcs at 2c {
++                                               compatible = "aspeed,ast2500-kcs-bmc-v2";
++                                               reg = <0x2c 0x1>, <0x38 0x1>, <0x44 0x1>;
+                                                interrupts = <8>;
+-                                               kcs_chan = <3>;
+                                                status = "disabled";
+                                        };
+                                };
+@@ -428,10 +428,10 @@
+                                        #size-cells = <1>;
+                                        ranges = <0x0 0x80 0x1e0>;
+ 
+-                                       kcs4: kcs4 at 0 {
+-                                               compatible = "aspeed,ast2500-kcs-bmc";
++                                       kcs4: kcs at 94 {
++                                               compatible = "aspeed,ast2500-kcs-bmc-v2";
++                                               reg = <0x94 0x1>, <0x98 0x1>, <0x9c 0x1>;
+                                                interrupts = <8>;
+-                                               kcs_chan = <4>;
+                                                status = "disabled";
+                                        };
+
+The aim is to fix these warnings which appear for every aspeed-based devicetree:
+
+        arch/arm/boot/dts/aspeed-g5.dtsi:376.19-381.8: Warning (unit_address_vs_reg): /ahb/apb/lpc at 1e789000/lpc-bmc at 0/kcs1 at 0: node has a unit name, but no reg property
+        arch/arm/boot/dts/aspeed-g5.dtsi:382.19-387.8: Warning (unit_address_vs_reg): /ahb/apb/lpc at 1e789000/lpc-bmc at 0/kcs2 at 0: node has a unit name, but no reg property
+        arch/arm/boot/dts/aspeed-g5.dtsi:388.19-393.8: Warning (unit_address_vs_reg): /ahb/apb/lpc at 1e789000/lpc-bmc at 0/kcs3 at 0: node has a unit name, but no reg property
+        arch/arm/boot/dts/aspeed-g5.dtsi:405.19-410.8: Warning (unit_address_vs_reg): /ahb/apb/lpc at 1e789000/lpc-host at 80/kcs4 at 0: node has a unit name, but no reg property
+        arch/arm/boot/dts/aspeed-g5.dtsi:376.19-381.8: Warning (unique_unit_address): /ahb/apb/lpc at 1e789000/lpc-bmc at 0/kcs1 at 0: duplicate unit-address (also used in node /ahb/apb/lpc at 1e789000/lpc-bmc at 0/kcs2 at 0)
+        arch/arm/boot/dts/aspeed-g5.dtsi:376.19-381.8: Warning (unique_unit_address): /ahb/apb/lpc at 1e789000/lpc-bmc at 0/kcs1 at 0: duplicate unit-address (also used in node /ahb/apb/lpc at 1e789000/lpc-bmc at 0/kcs3 at 0)
+        arch/arm/boot/dts/aspeed-g5.dtsi:382.19-387.8: Warning (unique_unit_address): /ahb/apb/lpc at 1e789000/lpc-bmc at 0/kcs2 at 0: duplicate unit-address (also used in node /ahb/apb/lpc at 1e789000/lpc-bmc at 0/kcs3 at 0)
+        arch/arm/boot/dts/aspeed-g5.dtsi:405.19-410.8: Warning (unique_unit_address): /ahb/apb/lpc at 1e789000/lpc-host at 80/kcs4 at 0: duplicate unit-address (also used in node /ahb/apb/lpc at 1e789000/lpc-host at 80/lpc-ctrl at 0)
 
 Andrew
