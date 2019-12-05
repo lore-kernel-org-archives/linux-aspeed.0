@@ -1,52 +1,71 @@
 From: Eddie James <eajames@linux.ibm.com>
-Date: Thu,  5 Dec 2019 11:15:03 -0600
-Subject: [PATCH v2 03/12] ARM: dts: aspeed: ast2500: Add SCU interrupt
- controller
+Date: Thu,  5 Dec 2019 11:15:09 -0600
+Subject: [PATCH v2 09/12] ARM: dts: aspeed: ast2600: Add XDMA Engine
 In-Reply-To: <1575566112-11658-1-git-send-email-eajames@linux.ibm.com>
 References: <1575566112-11658-1-git-send-email-eajames@linux.ibm.com>
-Message-ID: <1575566112-11658-4-git-send-email-eajames@linux.ibm.com>
+Message-ID: <1575566112-11658-10-git-send-email-eajames@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add a node for the interrupt controller provided by the SCU.
+Add a node for the XDMA engine with all the necessary information. Also
+add a simple syscon node for the SDRAM memory controller.
 
 Signed-off-by: Eddie James <eajames@linux.ibm.com>
 ---
- arch/arm/boot/dts/aspeed-g5.dtsi | 10 +++++++++-
- 1 file changed, 9 insertions(+), 1 deletion(-)
+Changes since v1:
+ - Add a syscon SDRAM controller
+ - Add various properties to XDMA node
 
-diff --git a/arch/arm/boot/dts/aspeed-g5.dtsi b/arch/arm/boot/dts/aspeed-g5.dtsi
-index a259c63..df44022 100644
---- a/arch/arm/boot/dts/aspeed-g5.dtsi
-+++ b/arch/arm/boot/dts/aspeed-g5.dtsi
-@@ -216,8 +216,9 @@
- 			syscon: syscon at 1e6e2000 {
- 				compatible = "aspeed,ast2500-scu", "syscon", "simple-mfd";
- 				reg = <0x1e6e2000 0x1a8>;
-+				ranges = <0 0x1e6e2000 0x1a8>;
- 				#address-cells = <1>;
--				#size-cells = <0>;
-+				#size-cells = <1>;
- 				#clock-cells = <1>;
- 				#reset-cells = <1>;
+ arch/arm/boot/dts/aspeed-g6.dtsi | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
+
+diff --git a/arch/arm/boot/dts/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed-g6.dtsi
+index ead336e..514d685 100644
+--- a/arch/arm/boot/dts/aspeed-g6.dtsi
++++ b/arch/arm/boot/dts/aspeed-g6.dtsi
+@@ -3,6 +3,7 @@
  
-@@ -231,6 +232,13 @@
- 					compatible = "aspeed,ast2500-p2a-ctrl";
- 					status = "disabled";
- 				};
+ #include <dt-bindings/interrupt-controller/arm-gic.h>
+ #include <dt-bindings/clock/ast2600-clock.h>
++#include <dt-bindings/interrupt-controller/aspeed-scu-ic.h>
+ 
+ / {
+ 	model = "Aspeed BMC";
+@@ -265,6 +266,11 @@
+ 			status = "disabled";
+ 		};
+ 
++		sdmc: sdram at 1e6e0000 {
++			compatible = "syscon";
++			reg = <0x1e6e0000 0xb8>;
++		};
 +
-+				scu_ic: interrupt-controller at 18 {
-+					#interrupt-cells = <1>;
-+					compatible = "aspeed,ast2500-scu-ic";
-+					interrupts = <21>;
-+					interrupt-controller;
-+				};
+ 		apb {
+ 			compatible = "simple-bus";
+ 			#address-cells = <1>;
+@@ -311,6 +317,19 @@
+ 				quality = <100>;
  			};
  
- 			rng: hwrng at 1e6e2078 {
++			xdma: xdma at 1e6e7000 {
++				compatible = "aspeed,ast2600-xdma";
++				reg = <0x1e6e7000 0x100>;
++				clocks = <&syscon ASPEED_CLK_GATE_BCLK>;
++				resets = <&syscon ASPEED_RESET_DEV_XDMA>;
++				interrupts-extended = <&gic GIC_SPI 6 IRQ_TYPE_LEVEL_HIGH>,
++						      <&scu_ic0 ASPEED_AST2600_SCU_IC0_PCIE_PERST_LO_TO_HI>;
++				pcie-device = "bmc";
++				scu = <&syscon>;
++				sdmc = <&sdmc>;
++				status = "disabled";
++			};
++
+ 			gpio0: gpio at 1e780000 {
+ 				#gpio-cells = <2>;
+ 				gpio-controller;
 -- 
 1.8.3.1
 
