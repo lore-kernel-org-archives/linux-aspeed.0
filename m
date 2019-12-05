@@ -1,31 +1,68 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Thu, 05 Dec 2019 15:45:17 +1030
-Subject: =?UTF-8?Q?Re:_[PATCH_2/3]_ipmi:_kcs:_Finish_configuring_ASPEED_KCS_devic?=
- =?UTF-8?Q?e_before_enable?=
-In-Reply-To: <20191203134026.GI18165@minyard.net>
-References: <cover.5630f63168ad5cddf02e9796106f8e086c196907.1575376664.git-series.andrew@aj.id.au>
- <84315a29b453068373c096c03433e3a326731988.1575376664.git-series.andrew@aj.id.au>
- <20191203134026.GI18165@minyard.net>
-Message-ID: <cd76d709-683b-44c0-b29f-d31c9dddc75e@www.fastmail.com>
+From: Eddie James <eajames@linux.ibm.com>
+Date: Thu,  5 Dec 2019 11:15:00 -0600
+Subject: [PATCH v2 00/12] Aspeed: Add SCU interrupt controller and XDMA engine
+ drivers
+Message-ID: <1575566112-11658-1-git-send-email-eajames@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+This series first adds a driver to control the interrupt controller provided by
+the System Control Unit (SCU) on the AST2500 and AST2600 SOCs. The interrupts
+made available are necessary for the control of the XDMA engine embedded in the
+same Aspeed SOCs.
+This series then adds a driver to control the XDMA engine. This driver was
+previously sent to the list without support for the AST2600, and has been
+refactored significantly to enable that support. The XDMA engine performs
+automatic DMA operations between the Aspeed SOC (acting as a BMC) and a host
+processor.
 
+Changes since v1:
+ - See individual patches
+ - In summary, first the irqchip driver switched to use the parent SCU regmap
+   rather than iomapping it's register. Secondly, the XDMA initialization
+   switched to use properties from the device tree rather than dynamically
+   calculate memory spaces, and system config.
 
-On Wed, 4 Dec 2019, at 00:10, Corey Minyard wrote:
-> On Tue, Dec 03, 2019 at 11:08:24PM +1030, Andrew Jeffery wrote:
-> > The currently interrupts are configured after the channel was enabled.
-> 
-> How about:
-> 
-> The interrupts were configured after the channel was enabled, configure
-> them before so they will work.
+Eddie James (12):
+  dt-bindings: interrupt-controller: Add Aspeed SCU interrupt controller
+  irqchip: Add Aspeed SCU interrupt controller
+  ARM: dts: aspeed: ast2500: Add SCU interrupt controller
+  ARM: dts: aspeed: ast2600: Add SCU interrupt controllers
+  dt-bindings: soc: Add Aspeed XDMA Engine
+  drivers/soc: Add Aspeed XDMA Engine Driver
+  drivers/soc: xdma: Add user interface
+  ARM: dts: aspeed: ast2500: Add XDMA Engine
+  ARM: dts: aspeed: ast2600: Add XDMA Engine
+  ARM: dts: aspeed: witherspoon: Enable XDMA Engine
+  ARM: dts: aspeed: rainier: Enable XDMA engine
+  ARM: dts: aspeed: tacoma: Enable XDMA engine
 
-Hah, yes, that commit message did get a bit mangled. I'll update it.
+ .../interrupt-controller/aspeed,ast2xxx-scu-ic.txt |   23 +
+ .../devicetree/bindings/soc/aspeed/xdma.txt        |   43 +
+ MAINTAINERS                                        |   16 +
+ arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts       |    5 +
+ arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts        |    5 +
+ arch/arm/boot/dts/aspeed-bmc-opp-witherspoon.dts   |    5 +
+ arch/arm/boot/dts/aspeed-g5.dtsi                   |   25 +-
+ arch/arm/boot/dts/aspeed-g6.dtsi                   |   33 +
+ drivers/irqchip/Makefile                           |    2 +-
+ drivers/irqchip/irq-aspeed-scu-ic.c                |  239 +++++
+ drivers/soc/aspeed/Kconfig                         |    8 +
+ drivers/soc/aspeed/Makefile                        |    1 +
+ drivers/soc/aspeed/aspeed-xdma.c                   | 1007 ++++++++++++++++++++
+ .../interrupt-controller/aspeed-scu-ic.h           |   23 +
+ include/uapi/linux/aspeed-xdma.h                   |   41 +
+ 15 files changed, 1473 insertions(+), 3 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/interrupt-controller/aspeed,ast2xxx-scu-ic.txt
+ create mode 100644 Documentation/devicetree/bindings/soc/aspeed/xdma.txt
+ create mode 100644 drivers/irqchip/irq-aspeed-scu-ic.c
+ create mode 100644 drivers/soc/aspeed/aspeed-xdma.c
+ create mode 100644 include/dt-bindings/interrupt-controller/aspeed-scu-ic.h
+ create mode 100644 include/uapi/linux/aspeed-xdma.h
 
-Thanks,
+-- 
+1.8.3.1
 
-Andrew
