@@ -1,40 +1,48 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Tue, 10 Dec 2019 21:28:31 +0100
-Subject: [PATCH] gpio: aspeed: avoid return type warning
-Message-ID: <20191210202842.2546758-1-arnd@arndb.de>
+From: Sasha Levin <sashal@kernel.org>
+Date: Tue, 10 Dec 2019 16:04:10 -0500
+Subject: [PATCH AUTOSEL 5.4 145/350] media: aspeed: set hsync and vsync
+ polarities to normal before starting mode detection
+In-Reply-To: <20191210210735.9077-1-sashal@kernel.org>
+References: <20191210210735.9077-1-sashal@kernel.org>
+Message-ID: <20191210210735.9077-106-sashal@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-gcc has a hard time tracking whether BUG_ON(1) ends
-execution or not:
+From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
 
-drivers/gpio/gpio-aspeed-sgpio.c: In function 'bank_reg':
-drivers/gpio/gpio-aspeed-sgpio.c:112:1: error: control reaches end of non-void function [-Werror=return-type]
+[ Upstream commit 5b3f3c41c5c791c1c22cd91655e7ef4b2a1dff7c ]
 
-Use the simpler BUG() that gcc knows cannot continue.
+Sometimes it detects a weird resolution such as 1024x287 when the
+actual resolution is 1024x768. To resolve such an issue, this
+commit adds clearing for hsync and vsync polarity register bits
+at the beginning of the first mode detection. This is recommended
+in the datasheet.
 
-Fixes: f8b410e3695a ("gpio: aspeed-sgpio: Rename and add Kconfig/Makefile")
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+Reviewed-by: Eddie James <eajames@linux.ibm.com>
+Signed-off-by: Hans Verkuil <hverkuil-cisco@xs4all.nl>
+Signed-off-by: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/gpio/gpio-aspeed-sgpio.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/media/platform/aspeed-video.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/gpio/gpio-aspeed-sgpio.c b/drivers/gpio/gpio-aspeed-sgpio.c
-index 7e99860ca447..8319812593e3 100644
---- a/drivers/gpio/gpio-aspeed-sgpio.c
-+++ b/drivers/gpio/gpio-aspeed-sgpio.c
-@@ -107,7 +107,7 @@ static void __iomem *bank_reg(struct aspeed_sgpio *gpio,
- 		return gpio->base + bank->irq_regs + GPIO_IRQ_STATUS;
- 	default:
- 		/* acturally if code runs to here, it's an error case */
--		BUG_ON(1);
-+		BUG();
- 	}
- }
+diff --git a/drivers/media/platform/aspeed-video.c b/drivers/media/platform/aspeed-video.c
+index eb12f37930629..84e0650106f51 100644
+--- a/drivers/media/platform/aspeed-video.c
++++ b/drivers/media/platform/aspeed-video.c
+@@ -741,6 +741,8 @@ static void aspeed_video_get_resolution(struct aspeed_video *video)
+ 		}
  
+ 		set_bit(VIDEO_RES_DETECT, &video->flags);
++		aspeed_video_update(video, VE_CTRL,
++				    VE_CTRL_VSYNC_POL | VE_CTRL_HSYNC_POL, 0);
+ 		aspeed_video_enable_mode_detect(video);
+ 
+ 		rc = wait_event_interruptible_timeout(video->wait,
 -- 
-2.20.0
+2.20.1
 
