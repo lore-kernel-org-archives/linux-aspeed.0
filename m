@@ -1,81 +1,40 @@
-From: Marco Felsch <m.felsch@pengutronix.de>
-Date: Tue, 10 Dec 2019 10:41:44 +0100
-Subject: [PATCH v3 3/6] dt-bindings: mfd: da9062: add regulator voltage
- selection documentation
-In-Reply-To: <20191204134631.GT1998@sirena.org.uk>
-References: <20191129172537.31410-1-m.felsch@pengutronix.de>
- <20191129172537.31410-4-m.felsch@pengutronix.de>
- <20191204134631.GT1998@sirena.org.uk>
-Message-ID: <20191210094144.mxximpuouchy3fqu@pengutronix.de>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Tue, 10 Dec 2019 21:28:31 +0100
+Subject: [PATCH] gpio: aspeed: avoid return type warning
+Message-ID: <20191210202842.2546758-1-arnd@arndb.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Mark,
+gcc has a hard time tracking whether BUG_ON(1) ends
+execution or not:
 
-On 19-12-04 13:46, Mark Brown wrote:
-> On Fri, Nov 29, 2019 at 06:25:34PM +0100, Marco Felsch wrote:
-> 
-> > +  Optional regulator device-specific properties:
-> > +  - dlg,vsel-sense-gpios : A GPIO reference to a local general purpose input,
-> > +    the datasheet calls it GPI. The regulator sense the input signal and select
-> > +    the active or suspend voltage settings. If the signal is active the
-> > +    active-settings are applied else the suspend-settings are applied.
-> > +    Attention: Sharing the same GPI for other purposes or across multiple
-> > +    regulators is possible but the polarity setting must equal.
-> 
-> I'm really confused by this.  As far as I understand it it seems
-> to be doing pinmuxing on the chip using the GPIO bindings which
-> is itself a bit odd and I don't see anything here that configures
-> whatever sets the state of the pins.  Don't we need another GPIO
-> to set the vsel-sense inputs on the PMIC?
+drivers/gpio/gpio-aspeed-sgpio.c: In function 'bank_reg':
+drivers/gpio/gpio-aspeed-sgpio.c:112:1: error: control reaches end of non-void function [-Werror=return-type]
 
-Yes the PMIC is very configurable and it took a while till I understand
-it.. @Adam please correct me if I'm wrong.
+Use the simpler BUG() that gcc knows cannot continue.
 
-The PMIC regulators regardless of the type: ldo or buck can be
-simplified drawn as:
+Fixes: f8b410e3695a ("gpio: aspeed-sgpio: Rename and add Kconfig/Makefile")
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+ drivers/gpio/gpio-aspeed-sgpio.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-
-
-da9062-gpio               da9062-regulator
-    
-  +-------------------------------------------------------
-  |                  PMIC
-  |    
-  > GPIO0            +--------------------------+
-  |                  |         REGULATOR-0      |
-  > GPIO1 -------+   |                          |
-  |              +-- > vsel-in    voltage-a-out <
-  > GPIO2        |   |                          |
-  |              |   > enable-in  voltage-b-out <
-  |              |   |                          |
-  |              |   +--------------------------+
-  |              |                              
-  |              |   +--------------------------+                          
-  |              |   |         REGULATOR-1      |                          
-  |              |   |                          |                          
-  |              +-- > vsel-in    voltage-a-out <                          
-  |                  |                          |                          
-  |                  > enable-in  voltage-b-out <
-  |                  |                          |
-  |                  +--------------------------+
-  |
-
-The 'vsel-in' and 'enable-in' regulator inputs must be routed to the
-PMIC GPIOs which must be configured as input. If this is a pinmux in
-your opinion, then yes we need to do that. IMHO it isn't a pinmux
-because from the regulator point of view it is just a GPIO which comes
-from our own gpio-dev (da9062-gpio). So the abstraction is vald. Anyway
-I'm with you that this isn't the typical use-case.
-
-Regards,
-  Marco 
-
+diff --git a/drivers/gpio/gpio-aspeed-sgpio.c b/drivers/gpio/gpio-aspeed-sgpio.c
+index 7e99860ca447..8319812593e3 100644
+--- a/drivers/gpio/gpio-aspeed-sgpio.c
++++ b/drivers/gpio/gpio-aspeed-sgpio.c
+@@ -107,7 +107,7 @@ static void __iomem *bank_reg(struct aspeed_sgpio *gpio,
+ 		return gpio->base + bank->irq_regs + GPIO_IRQ_STATUS;
+ 	default:
+ 		/* acturally if code runs to here, it's an error case */
+-		BUG_ON(1);
++		BUG();
+ 	}
+ }
+ 
 -- 
-Pengutronix e.K.                           |                             |
-Steuerwalder Str. 21                       | http://www.pengutronix.de/  |
-31137 Hildesheim, Germany                  | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+2.20.0
+
