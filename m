@@ -1,97 +1,120 @@
-From: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-Date: Wed, 11 Dec 2019 16:14:09 +0000
-Subject: [PATCH v3 3/6] dt-bindings: mfd: da9062: add regulator voltage
- selection documentation
-In-Reply-To: <20191210094144.mxximpuouchy3fqu@pengutronix.de>
-References: <20191129172537.31410-1-m.felsch@pengutronix.de>
- <20191129172537.31410-4-m.felsch@pengutronix.de>
- <20191204134631.GT1998@sirena.org.uk>
- <20191210094144.mxximpuouchy3fqu@pengutronix.de>
-Message-ID: <AM5PR1001MB099497419E4DCA69D424EC35805A0@AM5PR1001MB0994.EURPRD10.PROD.OUTLOOK.COM>
+From: Brendan Higgins <brendanhiggins@google.com>
+Date: Wed, 11 Dec 2019 11:27:35 -0800
+Subject: [PATCH v1 0/7] uml: add unspecified HAS_IOMEM dependencies
+Message-ID: <20191211192742.95699-1-brendanhiggins@google.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 10 December 2019 09:42, Marco Felsch wrote:
+# TL;DR
 
-> Hi Mark,
-> 
-> On 19-12-04 13:46, Mark Brown wrote:
-> > On Fri, Nov 29, 2019 at 06:25:34PM +0100, Marco Felsch wrote:
-> >
-> > > +  Optional regulator device-specific properties:
-> > > +  - dlg,vsel-sense-gpios : A GPIO reference to a local general purpose input,
-> > > +    the datasheet calls it GPI. The regulator sense the input signal and select
-> > > +    the active or suspend voltage settings. If the signal is active the
-> > > +    active-settings are applied else the suspend-settings are applied.
-> > > +    Attention: Sharing the same GPI for other purposes or across multiple
-> > > +    regulators is possible but the polarity setting must equal.
-> >
-> > I'm really confused by this.  As far as I understand it it seems
-> > to be doing pinmuxing on the chip using the GPIO bindings which
-> > is itself a bit odd and I don't see anything here that configures
-> > whatever sets the state of the pins.  Don't we need another GPIO
-> > to set the vsel-sense inputs on the PMIC?
-> 
-> Yes the PMIC is very configurable and it took a while till I understand
-> it.. @Adam please correct me if I'm wrong.
-> 
-> The PMIC regulators regardless of the type: ldo or buck can be
-> simplified drawn as:
-> 
-> 
-> 
-> da9062-gpio               da9062-regulator
-> 
->   +-------------------------------------------------------
->   |                  PMIC
->   |
->   > GPIO0            +--------------------------+
->   |                  |         REGULATOR-0      |
->   > GPIO1 -------+   |                          |
->   |              +-- > vsel-in    voltage-a-out <
->   > GPIO2        |   |                          |
->   |              |   > enable-in  voltage-b-out <
->   |              |   |                          |
->   |              |   +--------------------------+
->   |              |
->   |              |   +--------------------------+
->   |              |   |         REGULATOR-1      |
->   |              |   |                          |
->   |              +-- > vsel-in    voltage-a-out <
->   |                  |                          |
->   |                  > enable-in  voltage-b-out <
->   |                  |                          |
->   |                  +--------------------------+
->   |
-> 
-> The 'vsel-in' and 'enable-in' regulator inputs must be routed to the
-> PMIC GPIOs which must be configured as input. If this is a pinmux in
-> your opinion, then yes we need to do that. IMHO it isn't a pinmux
-> because from the regulator point of view it is just a GPIO which comes
-> from our own gpio-dev (da9062-gpio). So the abstraction is vald. Anyway
-> I'm with you that this isn't the typical use-case.
+This patchset adds a missing HAS_IOMEM dependency to several drivers in
+an attempt to get allyesconfig closer to working for ARCH=um.
 
-We've had this discussion before and to me it felt more like pinmux than GPIO
-although I understand we're configuring the GPIO pin as input before then
-configuring a regulator to take that specific internal GPIO as the control
-signal. We're defining a specific role to this pin in HW rather than it being a
-general software handled GPI so it feels like this would be neater under pinmux.
-There does still need to be a mapping between that pin and the regulator which I
-guess would be served by passing the pin to the regulator through generic pinmux
-bindings and then in the regulator code you're simply just enabling the
-regulator to be controlled from that pin. The HW lets you control multiple
-regulators from the same input pin so there's a flexibility there to be
-captured, as you mention.
+# What am I trying to do?
 
-> 
-> Regards,
->   Marco
-> 
-> --
-> Pengutronix e.K.                           |                             |
-> Steuerwalder Str. 21                       | http://www.pengutronix.de/  |
-> 31137 Hildesheim, Germany                  | Phone: +49-5121-206917-0    |
-> Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+This patchset is part of my attempt to get `make ARCH=um allyesconfig`
+to produce a config that will build *and* boot to init, so that I can
+use it as a mechanism to run tests[1].
+
+This patchset is attempting to deal with
+
+CONFIG_PINCTRL_EQUILIBRIUM=y
+CONFIG_MTD_NAND_CADENCE=y
+CONFIG_FSI_MASTER_ASPEED=y
+CONFIG_CRYPTO_DEV_SAFEXCEL=y
+CONFIG_XIL_AXIS_FIFO=y
+CONFIG_CRYPTO_DEV_AMLOGIC_GXL=y
+CONFIG_XILINX_AXI_EMAC=y
+
+which are selected by `make ARCH=um allyesconfig`, but prevent it from
+building.
+
+# How far away are we from an allyesconfig UML kernel?
+
+I have identified 33 Kconfigs that are selected by allyesconfig, but
+will either not build on UML, or prevent it from booting. They are:
+
+CONFIG_STATIC_LINK=y
+CONFIG_UML_NET_PCAP=y
+CONFIG_NET_PTP_CLASSIFY=y
+CONFIG_IP_VS=y
+CONFIG_BRIDGE_EBT_BROUTE=y
+CONFIG_BRIDGE_EBT_T_FILTER=y
+CONFIG_BRIDGE_EBT_T_NAT=y
+CONFIG_MTD_NAND_CADENCE=y
+CONFIG_MTD_NAND_NANDSIM=y
+CONFIG_BLK_DEV_NULL_BLK=y
+CONFIG_BLK_DEV_RAM=y
+CONFIG_SCSI_DEBUG=y
+CONFIG_NET_VENDOR_XILINX=y
+CONFIG_NULL_TTY=y
+CONFIG_PTP_1588_CLOCK=y
+CONFIG_PINCTRL_EQUILIBRIUM=y
+CONFIG_DMABUF_SELFTESTS=y
+CONFIG_COMEDI=y
+CONFIG_XIL_AXIS_FIFO=y
+CONFIG_EXFAT_FS=y
+CONFIG_STM_DUMMY=y
+CONFIG_FSI_MASTER_ASPEED=y
+CONFIG_JFS_FS=y
+CONFIG_UBIFS_FS=y
+CONFIG_CRAMFS=y
+CONFIG_CRYPTO_DEV_SAFEXCEL=y
+CONFIG_CRYPTO_DEV_AMLOGIC_GXL=y
+CONFIG_KCOV=y
+CONFIG_LKDTM=y
+CONFIG_REED_SOLOMON_TEST=y
+CONFIG_TEST_RHASHTABLE=y
+CONFIG_TEST_MEMINIT=y
+CONFIG_NETWORK_PHY_TIMESTAMPING=y
+
+CONFIG_STATIC_LINK=y and CONFIG_UML_NET_PCAP=y already have fixes on
+their way.
+
+I also have a patchset that just got accepted to fix
+CONFIG_EXFAT_FS=y[2].
+
+So with this patchset and these other three fixes mentioned here, we
+will be about a third of the way there. There is only one more broken
+config that prevents UML from building, CONFIG_LKDTM=y. After this there
+will still be 22 broken configs which will prevent the UML allyesconfig
+kernel from reaching the end of init; nevertheless, this is a good
+milestone where, once reached, we can stop some of this bleeding by
+adding a build test.
+
+# Why won't allyesconfig break again after this series of fixes?
+
+As I mentioned above, I am using UML for testing the kernel, and I am
+currently working on getting my tests to run on KernelCI. As part of our
+testing procedure for KernelCI, we are planning on building a UML kernel
+using allyesconfig and running our tests on it. Thus, we will find out
+very quickly once someone breaks allyesconfig again once we get this all
+working.
+
+Brendan Higgins (7):
+  pinctrl: equilibrium: add unspecified HAS_IOMEM dependency
+  mtd: rawnand: add unspecified HAS_IOMEM dependency
+  net: axienet: add unspecified HAS_IOMEM dependency
+  crypto: inside-secure: add unspecified HAS_IOMEM dependency
+  crypto: amlogic: add unspecified HAS_IOMEM dependency
+  staging: axis-fifo: add unspecified HAS_IOMEM dependency
+  fsi: aspeed: add unspecified HAS_IOMEM dependency
+
+ drivers/crypto/Kconfig              | 2 +-
+ drivers/crypto/amlogic/Kconfig      | 1 +
+ drivers/fsi/Kconfig                 | 1 +
+ drivers/mtd/nand/raw/Kconfig        | 2 +-
+ drivers/net/ethernet/xilinx/Kconfig | 1 +
+ drivers/pinctrl/Kconfig             | 1 +
+ drivers/staging/axis-fifo/Kconfig   | 2 +-
+ 7 files changed, 7 insertions(+), 3 deletions(-)
+
+[1] https://bugzilla.kernel.org/show_bug.cgi?id=205223
+[2] https://patchwork.kernel.org/patch/11273771/
+
+-- 
+2.24.0.525.g8f36a354ae-goog
+
