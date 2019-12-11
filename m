@@ -1,44 +1,42 @@
-From: Corey Minyard <cminyard@mvista.com>
-Date: Wed, 11 Dec 2019 13:23:25 -0600
-Subject: [PATCH] drivers: ipmi: Modify max length of IPMB packet
-In-Reply-To: <20191211190155.1279610-1-vijaykhemka@fb.com>
-References: <20191211190155.1279610-1-vijaykhemka@fb.com>
-Message-ID: <20191211192325.GD3585@minyard.net>
+From: Brendan Higgins <brendanhiggins@google.com>
+Date: Wed, 11 Dec 2019 11:27:42 -0800
+Subject: [PATCH v1 7/7] fsi: aspeed: add unspecified HAS_IOMEM dependency
+In-Reply-To: <20191211192742.95699-1-brendanhiggins@google.com>
+References: <20191211192742.95699-1-brendanhiggins@google.com>
+Message-ID: <20191211192742.95699-8-brendanhiggins@google.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Dec 11, 2019 at 11:01:55AM -0800, Vijay Khemka wrote:
-> As per IPMB specification, maximum packet size supported is 255,
-> modified Max length to 240 from 128 to accommodate more data.
+Currently CONFIG_FSI_MASTER_ASPEED=y implicitly depends on
+CONFIG_HAS_IOMEM=y; consequently, on architectures without IOMEM we get
+the following build error:
 
-This is in my next tree.
+ld: drivers/fsi/fsi-master-aspeed.o: in function `fsi_master_aspeed_probe':
+drivers/fsi/fsi-master-aspeed.c:436: undefined reference to `devm_ioremap_resource'
 
-Thanks,
+Fix the build error by adding the unspecified dependency.
 
--corey
+Reported-by: Brendan Higgins <brendanhiggins@google.com>
+Signed-off-by: Brendan Higgins <brendanhiggins@google.com>
+---
+ drivers/fsi/Kconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
-> 
-> Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
-> ---
->  drivers/char/ipmi/ipmb_dev_int.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/char/ipmi/ipmb_dev_int.c b/drivers/char/ipmi/ipmb_dev_int.c
-> index 68a254c0dd92..382e4a1df510 100644
-> --- a/drivers/char/ipmi/ipmb_dev_int.c
-> +++ b/drivers/char/ipmi/ipmb_dev_int.c
-> @@ -19,7 +19,7 @@
->  #include <linux/spinlock.h>
->  #include <linux/wait.h>
->  
-> -#define MAX_MSG_LEN		128
-> +#define MAX_MSG_LEN		240
->  #define IPMB_REQUEST_LEN_MIN	7
->  #define NETFN_RSP_BIT_MASK	0x4
->  #define REQUEST_QUEUE_MAX_LEN	256
-> -- 
-> 2.17.1
-> 
+diff --git a/drivers/fsi/Kconfig b/drivers/fsi/Kconfig
+index 92ce6d85802cc..4cc0e630ab79b 100644
+--- a/drivers/fsi/Kconfig
++++ b/drivers/fsi/Kconfig
+@@ -55,6 +55,7 @@ config FSI_MASTER_AST_CF
+ 
+ config FSI_MASTER_ASPEED
+ 	tristate "FSI ASPEED master"
++	depends on HAS_IOMEM
+ 	help
+ 	 This option enables a FSI master that is present behind an OPB bridge
+ 	 in the AST2600.
+-- 
+2.24.0.525.g8f36a354ae-goog
+
