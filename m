@@ -1,192 +1,31 @@
-From: Manikandan Elumalai <manikandan.hcl.ers.epl@gmail.com>
-Date: Thu, 12 Dec 2019 18:37:58 +0530
-Subject: [PATCH v4 2/2] ARM: dts: aspeed: Adding Facebook Yosemite V2 BMC
-Message-ID: <20191212130758.GA7388@cnn>
+From: Brad Bishop <bradleyb@fuzziesquirrel.com>
+Date: Thu, 12 Dec 2019 09:51:58 -0500
+Subject: [PATCH v2 2/2] reset: simple: Add AST2600 compatibility string
+In-Reply-To: <2498da189d5e21ae70fb6884df6fc16ecfee2087.camel@pengutronix.de>
+References: <20191129000827.650566-1-joel@jms.id.au>
+ <20191129000827.650566-3-joel@jms.id.au>
+ <2498da189d5e21ae70fb6884df6fc16ecfee2087.camel@pengutronix.de>
+Message-ID: <EFF7E049-08C0-40A0-946A-18822C7AEEE3@fuzziesquirrel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The Yosemite V2 is a facebook multi-node server
-platform that host four OCP server. The BMC
-in the Yosemite V2 platform based on AST2500 SoC.
+Hi Philipp.  Thanks for your time.
 
-This patch adds linux device tree entry related to
-Yosemite V2 specific devices connected to BMC SoC.
+> On Dec 2, 2019, at 7:53 AM, Philipp Zabel <p.zabel@pengutronix.de> wrote:
+> 
+> On Fri, 2019-11-29 at 10:38 +1030, Joel Stanley wrote:
+>> From: Brad Bishop <bradleyb@fuzziesquirrel.com>
+>> 
+>> The AST2600 SoC contains the same LPC register set as the AST2500.
+> 
+> If the LPC register set is exactly the same, shouldn't AST2600 reuse the
+> AST2500 compatible, i.e.:
+> 	compatible = "aspeed,ast2600-lpc-reset", "aspeed,ast2500-lpc-reset";
+> ?
 
---- Reviews summary
---- v4[2/2] - Spell and contributor name correction.
----         - License identifier changed to GPL-2.0-or-later.
----         - aspeed-gpio.h removed.
----         - FAN2 tacho channel changed.
----      v4 - Bootargs removed.
----      v3 - Uart1 Debug removed .
----      v2 - LPC and VUART removed .
----      v1 - Initial draft.
+I?m not sure.  I let what was already there be my guide - the ast2500 LPC registers are the same as the ast2400 as well and those got their own compatibles.  Is there a guideline written down somewhere that backs your thinking up?
 
-Signed-off-by: Manikandan Elumalai <manikandan.hcl.ers.epl@gmail.com>
-Acked-by   : Andrew Jeffery <andrew@aj.id.au>
-Reviewed-by: Vijay Khemka <vkhemka@fb.com>
----
- .../boot/dts/aspeed-bmc-facebook-yosemitev2.dts    | 148 +++++++++++++++++++++
- 1 file changed, 148 insertions(+)
- create mode 100644 arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts
-
-diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts
-new file mode 100644
-index 0000000..ffd7f4c
---- /dev/null
-+++ b/arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts
-@@ -0,0 +1,148 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
-+// Copyright (c) 2018 Facebook Inc.
-+
-+/dts-v1/;
-+
-+#include "aspeed-g5.dtsi"
-+/ {
-+	model = "Facebook Yosemitev2 BMC";
-+	compatible = "facebook,yosemitev2-bmc", "aspeed,ast2500";
-+	aliases {
-+		serial4 = &uart5;
-+	};
-+	chosen {
-+		stdout-path = &uart5;
-+	};
-+
-+	memory at 80000000 {
-+		reg = <0x80000000 0x20000000>;
-+	};
-+
-+	iio-hwmon {
-+		// VOLATAGE SENSOR
-+		compatible = "iio-hwmon";
-+		io-channels = <&adc 0> , <&adc 1> , <&adc 2> ,  <&adc 3> ,
-+		<&adc 4> , <&adc 5> , <&adc 6> ,  <&adc 7> ,
-+		<&adc 8> , <&adc 9> , <&adc 10>, <&adc 11> ,
-+		<&adc 12> , <&adc 13> , <&adc 14> , <&adc 15> ;
-+	};
-+};
-+
-+&fmc {
-+	status = "okay";
-+	flash at 0 {
-+		status = "okay";
-+		m25p,fast-read;
-+#include "openbmc-flash-layout.dtsi"
-+	};
-+};
-+
-+&spi1 {
-+	status = "okay";
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pinctrl_spi1_default>;
-+	flash at 0 {
-+		status = "okay";
-+		m25p,fast-read;
-+		label = "pnor";
-+	};
-+};
-+
-+&uart5 {
-+	// BMC Console
-+	status = "okay";
-+};
-+
-+&mac0 {
-+	status = "okay";
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pinctrl_rmii1_default>;
-+	use-ncsi;
-+};
-+
-+&adc {
-+	status = "okay";
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pinctrl_adc0_default
-+			&pinctrl_adc1_default
-+			&pinctrl_adc2_default
-+			&pinctrl_adc3_default
-+			&pinctrl_adc4_default
-+			&pinctrl_adc5_default
-+			&pinctrl_adc6_default
-+			&pinctrl_adc7_default
-+			&pinctrl_adc8_default
-+			&pinctrl_adc9_default
-+			&pinctrl_adc10_default
-+			&pinctrl_adc11_default
-+			&pinctrl_adc12_default
-+			&pinctrl_adc13_default
-+			&pinctrl_adc14_default
-+			&pinctrl_adc15_default>;
-+};
-+
-+&i2c8 {
-+	//FRU EEPROM
-+	status = "okay";
-+	eeprom at 51 {
-+		compatible = "atmel,24c64";
-+		reg = <0x51>;
-+		pagesize = <32>;
-+	};
-+};
-+
-+&i2c9 {
-+	//INLET & OUTLET TEMP
-+	status = "okay";
-+	tmp421 at 4e {
-+		compatible = "ti,tmp421";
-+		reg = <0x4e>;
-+	};
-+	tmp421 at 4f {
-+		compatible = "ti,tmp421";
-+		reg = <0x4f>;
-+	};
-+};
-+
-+&i2c10 {
-+	//HSC
-+	status = "okay";
-+	adm1278 at 40 {
-+		compatible = "adi,adm1278";
-+		reg = <0x40>;
-+	};
-+};
-+
-+&i2c11 {
-+	//MEZZ_TEMP_SENSOR
-+	status = "okay";
-+	tmp421 at 1f {
-+		compatible = "ti,tmp421";
-+		reg = <0x1f>;
-+	};
-+};
-+
-+&i2c12 {
-+	//MEZZ_FRU
-+	status = "okay";
-+	eeprom at 51 {
-+		compatible = "atmel,24c64";
-+		reg = <0x51>;
-+		pagesize = <32>;
-+	};
-+};
-+
-+&pwm_tacho {
-+	//FSC
-+	status = "okay";
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pinctrl_pwm0_default &pinctrl_pwm1_default>;
-+	fan at 0 {
-+		reg = <0x00>;
-+		aspeed,fan-tach-ch = /bits/ 8 <0x00>;
-+	};
-+	fan at 1 {
-+		reg = <0x01>;
-+		aspeed,fan-tach-ch = /bits/ 8 <0x01>;
-+	};
-+};
--- 
-2.7.4
-
+thanks - brad
