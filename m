@@ -1,120 +1,39 @@
-From: Brendan Higgins <brendanhiggins@google.com>
-Date: Wed, 11 Dec 2019 11:27:35 -0800
-Subject: [PATCH v1 0/7] uml: add unspecified HAS_IOMEM dependencies
-Message-ID: <20191211192742.95699-1-brendanhiggins@google.com>
+From: Mark Brown <broonie@kernel.org>
+Date: Thu, 12 Dec 2019 16:10:19 +0000
+Subject: [PATCH v3 3/6] dt-bindings: mfd: da9062: add regulator voltage
+ selection documentation
+In-Reply-To: <20191211170918.q7kqkd4lrwwp7jl3@pengutronix.de>
+References: <20191129172537.31410-1-m.felsch@pengutronix.de>
+ <20191129172537.31410-4-m.felsch@pengutronix.de>
+ <20191204134631.GT1998@sirena.org.uk>
+ <20191210094144.mxximpuouchy3fqu@pengutronix.de>
+ <AM5PR1001MB099497419E4DCA69D424EC35805A0@AM5PR1001MB0994.EURPRD10.PROD.OUTLOOK.COM>
+ <20191211170918.q7kqkd4lrwwp7jl3@pengutronix.de>
+Message-ID: <20191212161019.GF4310@sirena.org.uk>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-# TL;DR
+On Wed, Dec 11, 2019 at 06:09:18PM +0100, Marco Felsch wrote:
 
-This patchset adds a missing HAS_IOMEM dependency to several drivers in
-an attempt to get allyesconfig closer to working for ARCH=um.
+> so one argument more for my solution. Also we don't configure the "pad"
+> to be a vsel/ena-pin. The hw-pad can only be a gpio or has an alternate
+> function (WDKICK for GPIO0, Seq. SYS_EN for GPIO2, Seq. PWR_EN for GPIO4).
+> Instead we tell the regulator to use _this_ GPIO e.g. for voltage
+> selection so we go the other way around. My last argument why pinctrl
+> isn't the correct place is that the GPIO1 can be used for
+> regulator-0:vsel-in and for regulator-1:enable-in. So this pad would
+> have different states which is invalid IMHO.
 
-# What am I trying to do?
-
-This patchset is part of my attempt to get `make ARCH=um allyesconfig`
-to produce a config that will build *and* boot to init, so that I can
-use it as a mechanism to run tests[1].
-
-This patchset is attempting to deal with
-
-CONFIG_PINCTRL_EQUILIBRIUM=y
-CONFIG_MTD_NAND_CADENCE=y
-CONFIG_FSI_MASTER_ASPEED=y
-CONFIG_CRYPTO_DEV_SAFEXCEL=y
-CONFIG_XIL_AXIS_FIFO=y
-CONFIG_CRYPTO_DEV_AMLOGIC_GXL=y
-CONFIG_XILINX_AXI_EMAC=y
-
-which are selected by `make ARCH=um allyesconfig`, but prevent it from
-building.
-
-# How far away are we from an allyesconfig UML kernel?
-
-I have identified 33 Kconfigs that are selected by allyesconfig, but
-will either not build on UML, or prevent it from booting. They are:
-
-CONFIG_STATIC_LINK=y
-CONFIG_UML_NET_PCAP=y
-CONFIG_NET_PTP_CLASSIFY=y
-CONFIG_IP_VS=y
-CONFIG_BRIDGE_EBT_BROUTE=y
-CONFIG_BRIDGE_EBT_T_FILTER=y
-CONFIG_BRIDGE_EBT_T_NAT=y
-CONFIG_MTD_NAND_CADENCE=y
-CONFIG_MTD_NAND_NANDSIM=y
-CONFIG_BLK_DEV_NULL_BLK=y
-CONFIG_BLK_DEV_RAM=y
-CONFIG_SCSI_DEBUG=y
-CONFIG_NET_VENDOR_XILINX=y
-CONFIG_NULL_TTY=y
-CONFIG_PTP_1588_CLOCK=y
-CONFIG_PINCTRL_EQUILIBRIUM=y
-CONFIG_DMABUF_SELFTESTS=y
-CONFIG_COMEDI=y
-CONFIG_XIL_AXIS_FIFO=y
-CONFIG_EXFAT_FS=y
-CONFIG_STM_DUMMY=y
-CONFIG_FSI_MASTER_ASPEED=y
-CONFIG_JFS_FS=y
-CONFIG_UBIFS_FS=y
-CONFIG_CRAMFS=y
-CONFIG_CRYPTO_DEV_SAFEXCEL=y
-CONFIG_CRYPTO_DEV_AMLOGIC_GXL=y
-CONFIG_KCOV=y
-CONFIG_LKDTM=y
-CONFIG_REED_SOLOMON_TEST=y
-CONFIG_TEST_RHASHTABLE=y
-CONFIG_TEST_MEMINIT=y
-CONFIG_NETWORK_PHY_TIMESTAMPING=y
-
-CONFIG_STATIC_LINK=y and CONFIG_UML_NET_PCAP=y already have fixes on
-their way.
-
-I also have a patchset that just got accepted to fix
-CONFIG_EXFAT_FS=y[2].
-
-So with this patchset and these other three fixes mentioned here, we
-will be about a third of the way there. There is only one more broken
-config that prevents UML from building, CONFIG_LKDTM=y. After this there
-will still be 22 broken configs which will prevent the UML allyesconfig
-kernel from reaching the end of init; nevertheless, this is a good
-milestone where, once reached, we can stop some of this bleeding by
-adding a build test.
-
-# Why won't allyesconfig break again after this series of fixes?
-
-As I mentioned above, I am using UML for testing the kernel, and I am
-currently working on getting my tests to run on KernelCI. As part of our
-testing procedure for KernelCI, we are planning on building a UML kernel
-using allyesconfig and running our tests on it. Thus, we will find out
-very quickly once someone breaks allyesconfig again once we get this all
-working.
-
-Brendan Higgins (7):
-  pinctrl: equilibrium: add unspecified HAS_IOMEM dependency
-  mtd: rawnand: add unspecified HAS_IOMEM dependency
-  net: axienet: add unspecified HAS_IOMEM dependency
-  crypto: inside-secure: add unspecified HAS_IOMEM dependency
-  crypto: amlogic: add unspecified HAS_IOMEM dependency
-  staging: axis-fifo: add unspecified HAS_IOMEM dependency
-  fsi: aspeed: add unspecified HAS_IOMEM dependency
-
- drivers/crypto/Kconfig              | 2 +-
- drivers/crypto/amlogic/Kconfig      | 1 +
- drivers/fsi/Kconfig                 | 1 +
- drivers/mtd/nand/raw/Kconfig        | 2 +-
- drivers/net/ethernet/xilinx/Kconfig | 1 +
- drivers/pinctrl/Kconfig             | 1 +
- drivers/staging/axis-fifo/Kconfig   | 2 +-
- 7 files changed, 7 insertions(+), 3 deletions(-)
-
-[1] https://bugzilla.kernel.org/show_bug.cgi?id=205223
-[2] https://patchwork.kernel.org/patch/11273771/
-
--- 
-2.24.0.525.g8f36a354ae-goog
-
+Note that there's two bits to my concern - one is if we should be using
+gpiolib or pinctrl, the other is what's driving the input (whichever API
+it's configured through) which didn't seem to be mentioned.
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 488 bytes
+Desc: not available
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20191212/661db55a/attachment-0001.sig>
