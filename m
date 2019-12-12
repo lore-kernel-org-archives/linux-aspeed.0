@@ -1,46 +1,208 @@
-From: Brendan Higgins <brendanhiggins@google.com>
-Date: Wed, 11 Dec 2019 16:30:03 -0800
-Subject: [PATCH v1 7/7] fsi: aspeed: add unspecified HAS_IOMEM dependency
-In-Reply-To: <CACPK8XctCb9Q2RaFVHEDuWxKDXpCWMWs-+vnKZ=SeTa3xRnT_g@mail.gmail.com>
-References: <20191211192742.95699-1-brendanhiggins@google.com>
- <20191211192742.95699-8-brendanhiggins@google.com>
- <CACPK8XctCb9Q2RaFVHEDuWxKDXpCWMWs-+vnKZ=SeTa3xRnT_g@mail.gmail.com>
-Message-ID: <CAFd5g45MFYMK-eZWPC5fhm2OkynUXKfArUVhbanYVH+qKRUwPg@mail.gmail.com>
+From: Andrew Jeffery <andrew@aj.id.au>
+Date: Thu, 12 Dec 2019 11:39:59 +1030
+Subject: [PATCH v4 2/2] ARM: dts: aspeed: Adding Facebook Yosemite V2 BMC
+In-Reply-To: <20191211202620.GA31628@cnn>
+References: <20191211202620.GA31628@cnn>
+Message-ID: <78c346a0-217c-4216-b16a-498f80e7303a@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Dec 11, 2019 at 4:12 PM Joel Stanley <joel@jms.id.au> wrote:
+
+
+On Thu, 12 Dec 2019, at 06:56, Manikandan Elumalai wrote:
+> The Yosemite V2 is a facebook multi-node server
+> platform that host four OCP server. The BMC
+> in the Yosemite V2 platform based on AST2500 SoC.
+> 
+> This patch adds linux device tree entry related to
+> Yosemite V2 specific devices connected to BMC SoC.
+> 
+> --- Reviews summary
+> --- v4[2/2] - Spell and contributor name correction.
+> ---         - License identifier changed to GPL-2.0-or-later.
+> ---         - aspeed-gpio.h removed.
+> ---         - FAN2 tacho channel changed.
+> ---      v4 - Bootargs removed.
+> ---         - Reviewed-by: Vijay Khemka <vkhemka@fb.com>
+> ---      v3 - Uart1 Debug removed .
+> ---         - Acked-by:Andrew Jeffery <andrew@aj.id.au>
+
+You need to put the Reviewed-by / Acked-by tags down below your Signed-off-by. That
+way we know that the patch is still ready to go (and they appear in patchwork - you can
+(currently) see that they're missing[1]).
+
+[1] https://patchwork.ozlabs.org/project/linux-aspeed/list/?series=147912&state=%2A&archive=both
+
+Andrew
+
+> ---      v2 - LPC and VUART removed .
+> ---      v1 - Initial draft.
+> 
+> Signed-off-by: Manikandan Elumalai <manikandan.hcl.ers.epl@gmail.com>
+> ---
+>  .../boot/dts/aspeed-bmc-facebook-yosemitev2.dts    | 148 +++++++++++++++++++++
+>  1 file changed, 148 insertions(+)
+>  create mode 100644 arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts
+> 
+> diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts 
+> b/arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts
+> new file mode 100644
+> index 0000000..ffd7f4c
+> --- /dev/null
+> +++ b/arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts
+> @@ -0,0 +1,148 @@
+> +// SPDX-License-Identifier: GPL-2.0-or-later
+> +// Copyright (c) 2018 Facebook Inc.
+> +
+> +/dts-v1/;
+> +
+> +#include "aspeed-g5.dtsi"
+> +/ {
+> +	model = "Facebook Yosemitev2 BMC";
+> +	compatible = "facebook,yosemitev2-bmc", "aspeed,ast2500";
+> +	aliases {
+> +		serial4 = &uart5;
+> +	};
+> +	chosen {
+> +		stdout-path = &uart5;
+> +	};
+> +
+> +	memory at 80000000 {
+> +		reg = <0x80000000 0x20000000>;
+> +	};
+> +
+> +	iio-hwmon {
+> +		// VOLATAGE SENSOR
+> +		compatible = "iio-hwmon";
+> +		io-channels = <&adc 0> , <&adc 1> , <&adc 2> ,  <&adc 3> ,
+> +		<&adc 4> , <&adc 5> , <&adc 6> ,  <&adc 7> ,
+> +		<&adc 8> , <&adc 9> , <&adc 10>, <&adc 11> ,
+> +		<&adc 12> , <&adc 13> , <&adc 14> , <&adc 15> ;
+> +	};
+> +};
+> +
+> +&fmc {
+> +	status = "okay";
+> +	flash at 0 {
+> +		status = "okay";
+> +		m25p,fast-read;
+> +#include "openbmc-flash-layout.dtsi"
+> +	};
+> +};
+> +
+> +&spi1 {
+> +	status = "okay";
+> +	pinctrl-names = "default";
+> +	pinctrl-0 = <&pinctrl_spi1_default>;
+> +	flash at 0 {
+> +		status = "okay";
+> +		m25p,fast-read;
+> +		label = "pnor";
+> +	};
+> +};
+> +
+> +&uart5 {
+> +	// BMC Console
+> +	status = "okay";
+> +};
+> +
+> +&mac0 {
+> +	status = "okay";
+> +	pinctrl-names = "default";
+> +	pinctrl-0 = <&pinctrl_rmii1_default>;
+> +	use-ncsi;
+> +};
+> +
+> +&adc {
+> +	status = "okay";
+> +	pinctrl-names = "default";
+> +	pinctrl-0 = <&pinctrl_adc0_default
+> +			&pinctrl_adc1_default
+> +			&pinctrl_adc2_default
+> +			&pinctrl_adc3_default
+> +			&pinctrl_adc4_default
+> +			&pinctrl_adc5_default
+> +			&pinctrl_adc6_default
+> +			&pinctrl_adc7_default
+> +			&pinctrl_adc8_default
+> +			&pinctrl_adc9_default
+> +			&pinctrl_adc10_default
+> +			&pinctrl_adc11_default
+> +			&pinctrl_adc12_default
+> +			&pinctrl_adc13_default
+> +			&pinctrl_adc14_default
+> +			&pinctrl_adc15_default>;
+> +};
+> +
+> +&i2c8 {
+> +	//FRU EEPROM
+> +	status = "okay";
+> +	eeprom at 51 {
+> +		compatible = "atmel,24c64";
+> +		reg = <0x51>;
+> +		pagesize = <32>;
+> +	};
+> +};
+> +
+> +&i2c9 {
+> +	//INLET & OUTLET TEMP
+> +	status = "okay";
+> +	tmp421 at 4e {
+> +		compatible = "ti,tmp421";
+> +		reg = <0x4e>;
+> +	};
+> +	tmp421 at 4f {
+> +		compatible = "ti,tmp421";
+> +		reg = <0x4f>;
+> +	};
+> +};
+> +
+> +&i2c10 {
+> +	//HSC
+> +	status = "okay";
+> +	adm1278 at 40 {
+> +		compatible = "adi,adm1278";
+> +		reg = <0x40>;
+> +	};
+> +};
+> +
+> +&i2c11 {
+> +	//MEZZ_TEMP_SENSOR
+> +	status = "okay";
+> +	tmp421 at 1f {
+> +		compatible = "ti,tmp421";
+> +		reg = <0x1f>;
+> +	};
+> +};
+> +
+> +&i2c12 {
+> +	//MEZZ_FRU
+> +	status = "okay";
+> +	eeprom at 51 {
+> +		compatible = "atmel,24c64";
+> +		reg = <0x51>;
+> +		pagesize = <32>;
+> +	};
+> +};
+> +
+> +&pwm_tacho {
+> +	//FSC
+> +	status = "okay";
+> +	pinctrl-names = "default";
+> +	pinctrl-0 = <&pinctrl_pwm0_default &pinctrl_pwm1_default>;
+> +	fan at 0 {
+> +		reg = <0x00>;
+> +		aspeed,fan-tach-ch = /bits/ 8 <0x00>;
+> +	};
+> +	fan at 1 {
+> +		reg = <0x01>;
+> +		aspeed,fan-tach-ch = /bits/ 8 <0x01>;
+> +	};
+> +};
+> -- 
+> 2.7.4
+> 
 >
-> On Wed, 11 Dec 2019 at 19:28, Brendan Higgins <brendanhiggins@google.com> wrote:
-> >
-> > Currently CONFIG_FSI_MASTER_ASPEED=y implicitly depends on
-> > CONFIG_HAS_IOMEM=y; consequently, on architectures without IOMEM we get
-> > the following build error:
-> >
-> > ld: drivers/fsi/fsi-master-aspeed.o: in function `fsi_master_aspeed_probe':
-> > drivers/fsi/fsi-master-aspeed.c:436: undefined reference to `devm_ioremap_resource'
-> >
-> > Fix the build error by adding the unspecified dependency.
-> >
-> > Reported-by: Brendan Higgins <brendanhiggins@google.com>
-> > Signed-off-by: Brendan Higgins <brendanhiggins@google.com>
->
-> Nice. I hit this when attempting to force on CONFIG_COMPILE_TEST in
-> order to build some ARM drivers under UM. Do you have plans to fix
-> that too?
-
-The only broken configs I found for UML are all listed on the cover
-letter of this patch. I think fixing COMPILE_TEST on UM could be
-worthwhile. Did you see any brokenness other than what I mentioned on
-the cover letter?
-
-> Do you want to get this in a fix for 5.5?
-
-Preferably, yes.
-
-> Acked-by: Joel Stanley <joel@jms.id.au>
-
-Thanks!
