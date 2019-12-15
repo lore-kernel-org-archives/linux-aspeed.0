@@ -1,30 +1,28 @@
-From: Rob Herring <robh@kernel.org>
-Date: Fri, 13 Dec 2019 16:23:17 -0600
-Subject: [PATCH v3 5/6] dt-bindings: mfd: da9062: add regulator gpio
- enable/disable documentation
-In-Reply-To: <20191129172537.31410-6-m.felsch@pengutronix.de>
-References: <20191129172537.31410-1-m.felsch@pengutronix.de>
- <20191129172537.31410-6-m.felsch@pengutronix.de>
-Message-ID: <20191213222317.GA32740@bogus>
+From: Andrew Jeffery <andrew@aj.id.au>
+Date: Mon, 16 Dec 2019 10:05:02 +1030
+Subject: [PATCH v5] ARM: dts: aspeed: Adding Facebook Yosemite V2 BMC
+In-Reply-To: <20191213135131.GA1822@cnn>
+References: <20191213135131.GA1822@cnn>
+Message-ID: <8017a61e-e579-41ea-816a-4a76a6dc41e9@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, 29 Nov 2019 18:25:36 +0100, Marco Felsch wrote:
-> At the gpio-based regulator enable/disable documentation. This property
-> can be applied to each subnode within the 'regulators' node so each
-> regulator can be configured differently.
+On Sat, 14 Dec 2019, at 00:21, Manikandan Elumalai wrote:
+> The Yosemite V2 is a facebook multi-node server
+> platform that host four OCP server. The BMC
+> in the Yosemite V2 platform based on AST2500 SoC.
 > 
-> Signed-off-by: Marco Felsch <m.felsch@pengutronix.de>
-> ---
-> Changelog:
-> v3:
-> - adapt binding description
+> This patch adds linux device tree entry related to
+> Yosemite V2 specific devices connected to BMC SoC.
 > 
->  Documentation/devicetree/bindings/mfd/da9062.txt | 8 ++++++++
->  1 file changed, 8 insertions(+)
-> 
+> Signed-off-by : Manikandan Elumalai <manikandan.hcl.ers.epl@gmail.com>
+> Acked-by        : Andrew Jeffery <andrew@aj.id.au>
+> Reviewed-by  : Vijay Khemka <vkhemka@fb.com>
 
-Reviewed-by: Rob Herring <robh@kernel.org>
+In the future, don't worry about aligning parts of the tag text. Single space is
+the custom (and is less effort!)
+
+Andrew
