@@ -1,39 +1,37 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Date: Mon, 16 Dec 2019 13:28:30 +0100
-Subject: [PATCH v3 3/6] dt-bindings: mfd: da9062: add regulator voltage
- selection documentation
-In-Reply-To: <20191212162152.5uu3feacduetysq7@pengutronix.de>
+From: Lee Jones <lee.jones@linaro.org>
+Date: Mon, 16 Dec 2019 16:31:41 +0000
+Subject: [PATCH v3 5/6] dt-bindings: mfd: da9062: add regulator gpio
+ enable/disable documentation
+In-Reply-To: <20191129172537.31410-6-m.felsch@pengutronix.de>
 References: <20191129172537.31410-1-m.felsch@pengutronix.de>
- <20191129172537.31410-4-m.felsch@pengutronix.de>
- <20191204134631.GT1998@sirena.org.uk>
- <20191210094144.mxximpuouchy3fqu@pengutronix.de>
- <AM5PR1001MB099497419E4DCA69D424EC35805A0@AM5PR1001MB0994.EURPRD10.PROD.OUTLOOK.COM>
- <20191211170918.q7kqkd4lrwwp7jl3@pengutronix.de>
- <20191212161019.GF4310@sirena.org.uk>
- <20191212162152.5uu3feacduetysq7@pengutronix.de>
-Message-ID: <CACRpkdbkiQLmyxHG4mAOqOho34UkUZwctRwsUgyJKCgZBOUEvQ@mail.gmail.com>
+ <20191129172537.31410-6-m.felsch@pengutronix.de>
+Message-ID: <20191216163141.GS2369@dell>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Dec 12, 2019 at 5:21 PM Marco Felsch <m.felsch@pengutronix.de> wrote:
-> On 19-12-12 16:10, Mark Brown wrote:
+On Fri, 29 Nov 2019, Marco Felsch wrote:
 
-> > Note that there's two bits to my concern - one is if we should be using
-> > gpiolib or pinctrl, the other is what's driving the input (whichever API
-> > it's configured through) which didn't seem to be mentioned.
->
-> gpiolib or pinctrl:
-> I pointed out all my arguments above so I think it is time for Linus.
+> At the gpio-based regulator enable/disable documentation. This property
+> can be applied to each subnode within the 'regulators' node so each
+> regulator can be configured differently.
+> 
+> Signed-off-by: Marco Felsch <m.felsch@pengutronix.de>
+> ---
+> Changelog:
+> v3:
+> - adapt binding description
+> 
+>  Documentation/devicetree/bindings/mfd/da9062.txt | 8 ++++++++
+>  1 file changed, 8 insertions(+)
 
-I think I've elaborated on this?
+For my own reference:
+  Acked-for-MFD-by: Lee Jones <lee.jones@linaro.org>
 
-The API is fine with me, because this thing does some autonomous
-control and I don't know any better way to share that same line
-with the GPIO subsystem than to make this offset available to
-the regulator driver.
-
-Yours,
-Linus Walleij
+-- 
+Lee Jones [???]
+Linaro Services Technical Lead
+Linaro.org ? Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog
