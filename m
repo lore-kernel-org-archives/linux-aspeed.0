@@ -1,14 +1,16 @@
-From: Tao Ren <rentao.bupt@gmail.com>
-Date: Sun, 15 Dec 2019 23:01:32 -0800
+From: Alexander A. Filippov <a.filippov@yadro.com>
+Date: Mon, 16 Dec 2019 10:55:39 +0300
 Subject: [PATCH] ARM: dts: aspeed: AST2400 disables hw checksum
 In-Reply-To: <20191216064132.78015-1-joel@jms.id.au>
 References: <20191216064132.78015-1-joel@jms.id.au>
-Message-ID: <20191216070131.GA11755@taoren-ubuntu-R90MNF91>
+Message-ID: <20191216075539.GA13054@bbwork.lan>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+
+Reviewed-by: Alexander Filippov <a.filippov@yadro.com>
 
 On Mon, Dec 16, 2019 at 05:41:32PM +1100, Joel Stanley wrote:
 > There is no need to specify this property in the device tree as the
@@ -63,8 +65,4 @@ On Mon, Dec 16, 2019 at 05:41:32PM +1100, Joel Stanley wrote:
 >  };
 > -- 
 > 2.24.0
-
-Thanks for the fix, Joel. I totally forget I added the property in
-ast2400 dts.
-
-Reviewed-by: Tao Ren <rentao.bupt@gmail.com>
+> 
