@@ -1,8 +1,8 @@
-From: Marco Felsch <m.felsch@pengutronix.de>
-Date: Mon, 16 Dec 2019 09:55:25 +0100
+From: Mark Brown <broonie@kernel.org>
+Date: Mon, 16 Dec 2019 11:44:54 +0000
 Subject: [PATCH v3 3/6] dt-bindings: mfd: da9062: add regulator voltage
  selection documentation
-In-Reply-To: <20191212165124.GJ4310@sirena.org.uk>
+In-Reply-To: <20191216085525.csr2aglm5md4vtsw@pengutronix.de>
 References: <20191129172537.31410-1-m.felsch@pengutronix.de>
  <20191129172537.31410-4-m.felsch@pengutronix.de>
  <20191204134631.GT1998@sirena.org.uk>
@@ -12,46 +12,34 @@ References: <20191129172537.31410-1-m.felsch@pengutronix.de>
  <20191212161019.GF4310@sirena.org.uk>
  <20191212162152.5uu3feacduetysq7@pengutronix.de>
  <20191212165124.GJ4310@sirena.org.uk>
-Message-ID: <20191216085525.csr2aglm5md4vtsw@pengutronix.de>
+ <20191216085525.csr2aglm5md4vtsw@pengutronix.de>
+Message-ID: <20191216114454.GB4161@sirena.org.uk>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 19-12-12 16:51, Mark Brown wrote:
-> On Thu, Dec 12, 2019 at 05:21:53PM +0100, Marco Felsch wrote:
-> 
-> > "... what's driving the input ..":
-> > Sorry I didn't get you here. What did you mean? The input is driven by
-> > the host. This can be any gpio line and in my case it is a gpio line
-> > driven by the soc-hw during a suspend operation.
-> 
-> Something needs to say what that thing is, especially if it's runtime
-> controllable.  In your case from the point of view of software there is
-> actually no enable control so we shouldn't be providing an enable
-> operation to the framework.
+On Mon, Dec 16, 2019 at 09:55:25AM +0100, Marco Felsch wrote:
+> On 19-12-12 16:51, Mark Brown wrote:
 
-The enabel control signal is always available, please check [1] table
-63. There is a mux in front of the enable pin so:
+> > Something needs to say what that thing is, especially if it's runtime
+> > controllable.  In your case from the point of view of software there is
+> > actually no enable control so we shouldn't be providing an enable
+> > operation to the framework.
 
-             +-------------
- Seq. |\     |   Regulator
- GPI1 | \    |
- GPI2 | | -- > Enable
- GPI3 | /    |
-      |/     .
-             .
-             .
+> The enabel control signal is always available, please check [1] table
+> 63. There is a mux in front of the enable pin so:
 
-Adam please correct me if this is wrong.
-
-[1] https://www.dialog-semiconductor.com/sites/default/files/da9062_datasheet_3v6.pdf
-
-Regards,
-  Marco
-
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel at lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+What I'm saying is that I think the binding needs to explicitly talk
+about that since at the minute it's really confusing reading it as it
+is, it sounds very much like it's trying to override that in a chip
+specific fashion as using gpiolib and the GPIO bindings for pinmuxing is
+really quite unusual.
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 488 bytes
+Desc: not available
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20191216/3142359c/attachment-0001.sig>
