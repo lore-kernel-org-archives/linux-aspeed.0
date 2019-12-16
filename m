@@ -13,15 +13,30 @@ References: <20191129172537.31410-1-m.felsch@pengutronix.de>
  <20191212162152.5uu3feacduetysq7@pengutronix.de>
  <20191212165124.GJ4310@sirena.org.uk>
  <20191216085525.csr2aglm5md4vtsw@pengutronix.de>
-Message-ID: <AM5PR1001MB09941005A47B603805D3C53280510@AM5PR1001MB0994.EURPRD10.PROD.OUTLOOK.COM>
+Message-ID: <AM5PR1001MB0994C60CB5B957CFE19E495D80510@AM5PR1001MB0994.EURPRD10.PROD.OUTLOOK.COM>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 16 December 2019 08:55, Marco Felsch wrote:
 
+
+> -----Original Message-----
+> From: Marco Felsch <m.felsch@pengutronix.de>
+> Sent: 16 December 2019 08:55
+> To: Mark Brown <broonie@kernel.org>
+> Cc: devicetree at vger.kernel.org; Support Opensource
+> <Support.Opensource@diasemi.com>; linux-aspeed at lists.ozlabs.org; linux-
+> gpio at vger.kernel.org; andrew at aj.id.au; linus.walleij at linaro.org;
+> lgirdwood at gmail.com; linux-kernel at vger.kernel.org;
+> bgolaszewski at baylibre.com; robh+dt at kernel.org; joel at jms.id.au;
+> kernel at pengutronix.de; Adam Thomson
+> <Adam.Thomson.Opensource@diasemi.com>; lee.jones at linaro.org; linux-arm-
+> kernel at lists.infradead.org
+> Subject: Re: [PATCH v3 3/6] dt-bindings: mfd: da9062: add regulator voltage
+> selection documentation
+> 
 > On 19-12-12 16:51, Mark Brown wrote:
 > > On Thu, Dec 12, 2019 at 05:21:53PM +0100, Marco Felsch wrote:
 > >
@@ -48,16 +63,6 @@ On 16 December 2019 08:55, Marco Felsch wrote:
 >              .
 > 
 > Adam please correct me if this is wrong.
-
-Yes the register can always be configured regardless of the associated pin
-configuration, but if say GPIO1 was configured as a GPO but a regulator was
-configured to use GPIO1 as its GPI control mechanism, the output signal from
-GPIO1 would be ignored, the sequencer control would not have any effect and
-you're simply left with manual I2C control. Really we shouldn't be getting into
-that situation though. If a GPIO is to be used as a regulator control signal
-then it should be marked as such and I don't think we should be able to use that
-pin for anything other than regulator control.
-
 > 
 > [1] https://www.dialog-
 > semiconductor.com/sites/default/files/da9062_datasheet_3v6.pdf
