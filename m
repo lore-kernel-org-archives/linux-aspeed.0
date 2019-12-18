@@ -1,106 +1,98 @@
 From: Eddie James <eajames@linux.ibm.com>
-Date: Wed, 18 Dec 2019 09:09:27 -0600
-Subject: [PATCH v3 01/12] dt-bindings: interrupt-controller: Add Aspeed SCU
- interrupt controller
+Date: Wed, 18 Dec 2019 09:09:34 -0600
+Subject: [PATCH v3 08/12] soc: aspeed: xdma: Add reset ioctl
 In-Reply-To: <1576681778-18737-1-git-send-email-eajames@linux.ibm.com>
 References: <1576681778-18737-1-git-send-email-eajames@linux.ibm.com>
-Message-ID: <1576681778-18737-2-git-send-email-eajames@linux.ibm.com>
+Message-ID: <1576681778-18737-9-git-send-email-eajames@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Document the Aspeed SCU interrupt controller and add an include file
-for the interrupts it provides.
+Users of the XDMA engine need a way to reset it if something goes wrong.
+Problems on the host side, or user error, such as incorrect host
+address, may result in the DMA operation never completing and no way to
+determine what went wrong. Therefore, add an ioctl to reset the engine
+so that users can recover in this situation.
 
 Signed-off-by: Eddie James <eajames@linux.ibm.com>
-Reviewed-by: Rob Herring <robh@kernel.org>
-Acked-by: Andrew Jeffery <andrew@aj.id.au>
 ---
- .../aspeed,ast2xxx-scu-ic.txt                 | 23 +++++++++++++++++++
- MAINTAINERS                                   |  7 ++++++
- .../interrupt-controller/aspeed-scu-ic.h      | 23 +++++++++++++++++++
- 3 files changed, 53 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/interrupt-controller/aspeed,ast2xxx-scu-ic.txt
- create mode 100644 include/dt-bindings/interrupt-controller/aspeed-scu-ic.h
+ drivers/soc/aspeed/aspeed-xdma.c | 36 ++++++++++++++++++++++++++++++++
+ include/uapi/linux/aspeed-xdma.h |  4 ++++
+ 2 files changed, 40 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/interrupt-controller/aspeed,ast2xxx-scu-ic.txt b/Documentation/devicetree/bindings/interrupt-controller/aspeed,ast2xxx-scu-ic.txt
-new file mode 100644
-index 000000000000..251ed44171db
---- /dev/null
-+++ b/Documentation/devicetree/bindings/interrupt-controller/aspeed,ast2xxx-scu-ic.txt
-@@ -0,0 +1,23 @@
-+Aspeed AST25XX and AST26XX SCU Interrupt Controller
-+
-+Required Properties:
-+ - #interrupt-cells		: must be 1
-+ - compatible			: must be "aspeed,ast2500-scu-ic",
-+				  "aspeed,ast2600-scu-ic0" or
-+				  "aspeed,ast2600-scu-ic1"
-+ - interrupts			: interrupt from the parent controller
-+ - interrupt-controller		: indicates that the controller receives and
-+				  fires new interrupts for child busses
-+
-+Example:
-+
-+    syscon at 1e6e2000 {
-+        ranges = <0 0x1e6e2000 0x1a8>;
-+
-+        scu_ic: interrupt-controller at 18 {
-+            #interrupt-cells = <1>;
-+            compatible = "aspeed,ast2500-scu-ic";
-+            interrupts = <21>;
-+            interrupt-controller;
-+        };
-+    };
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 39a8c6a49b81..219cd69d871b 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -2692,6 +2692,13 @@ S:	Maintained
- F:	drivers/pinctrl/aspeed/
- F:	Documentation/devicetree/bindings/pinctrl/aspeed,*
+diff --git a/drivers/soc/aspeed/aspeed-xdma.c b/drivers/soc/aspeed/aspeed-xdma.c
+index e844937dc925..21a36b59e718 100644
+--- a/drivers/soc/aspeed/aspeed-xdma.c
++++ b/drivers/soc/aspeed/aspeed-xdma.c
+@@ -611,6 +611,41 @@ static __poll_t aspeed_xdma_poll(struct file *file,
+ 	return mask;
+ }
  
-+ASPEED SCU INTERRUPT CONTROLLER DRIVER
-+M:	Eddie James <eajames@linux.ibm.com>
-+L:	linux-aspeed at lists.ozlabs.org (moderated for non-subscribers)
-+S:	Maintained
-+F:	Documentation/devicetree/bindings/interrupt-controller/aspeed,ast2xxx-scu-ic.txt
-+F:	include/dt-bindings/interrupt-controller/aspeed-scu-ic.h
++static long aspeed_xdma_ioctl(struct file *file, unsigned int cmd,
++			      unsigned long param)
++{
++	unsigned long flags;
++	struct aspeed_xdma_client *client = file->private_data;
++	struct aspeed_xdma *ctx = client->ctx;
 +
- ASPEED VIDEO ENGINE DRIVER
- M:	Eddie James <eajames@linux.ibm.com>
- L:	linux-media at vger.kernel.org
-diff --git a/include/dt-bindings/interrupt-controller/aspeed-scu-ic.h b/include/dt-bindings/interrupt-controller/aspeed-scu-ic.h
-new file mode 100644
-index 000000000000..f315d5a7f5ee
---- /dev/null
-+++ b/include/dt-bindings/interrupt-controller/aspeed-scu-ic.h
-@@ -0,0 +1,23 @@
-+/* SPDX-License-Identifier: GPL-2.0+ */
++	switch (cmd) {
++	case ASPEED_XDMA_IOCTL_RESET:
++		spin_lock_irqsave(&ctx->reset_lock, flags);
++		if (ctx->in_reset) {
++			spin_unlock_irqrestore(&ctx->reset_lock, flags);
++			return 0;
++		}
 +
-+#ifndef _DT_BINDINGS_INTERRUPT_CONTROLLER_ASPEED_SCU_IC_H_
-+#define _DT_BINDINGS_INTERRUPT_CONTROLLER_ASPEED_SCU_IC_H_
++		ctx->in_reset = true;
++		spin_unlock_irqrestore(&ctx->reset_lock, flags);
 +
-+#define ASPEED_SCU_IC_VGA_CURSOR_CHANGE			0
-+#define ASPEED_SCU_IC_VGA_SCRATCH_REG_CHANGE		1
++		if (ctx->current_client)
++			dev_warn(ctx->dev,
++				 "User reset with transfer in progress.\n");
 +
-+#define ASPEED_AST2500_SCU_IC_PCIE_RESET_LO_TO_HI	2
-+#define ASPEED_AST2500_SCU_IC_PCIE_RESET_HI_TO_LO	3
-+#define ASPEED_AST2500_SCU_IC_LPC_RESET_LO_TO_HI	4
-+#define ASPEED_AST2500_SCU_IC_LPC_RESET_HI_TO_LO	5
-+#define ASPEED_AST2500_SCU_IC_ISSUE_MSI			6
++		mutex_lock(&ctx->start_lock);
 +
-+#define ASPEED_AST2600_SCU_IC0_PCIE_PERST_LO_TO_HI	2
-+#define ASPEED_AST2600_SCU_IC0_PCIE_PERST_HI_TO_LO	3
-+#define ASPEED_AST2600_SCU_IC0_PCIE_RCRST_LO_TO_HI	4
-+#define ASPEED_AST2600_SCU_IC0_PCIE_RCRST_HI_TO_LO	5
++		aspeed_xdma_reset(ctx);
 +
-+#define ASPEED_AST2600_SCU_IC1_LPC_RESET_LO_TO_HI	0
-+#define ASPEED_AST2600_SCU_IC1_LPC_RESET_HI_TO_LO	1
++		mutex_unlock(&ctx->start_lock);
++		break;
++	default:
++		return -EINVAL;
++	}
 +
-+#endif /* _DT_BINDINGS_INTERRUPT_CONTROLLER_ASPEED_SCU_IC_H_ */
++	return 0;
++}
++
+ static void aspeed_xdma_vma_close(struct vm_area_struct *vma)
+ {
+ 	int rc;
+@@ -701,6 +736,7 @@ static const struct file_operations aspeed_xdma_fops = {
+ 	.owner			= THIS_MODULE,
+ 	.write			= aspeed_xdma_write,
+ 	.poll			= aspeed_xdma_poll,
++	.unlocked_ioctl		= aspeed_xdma_ioctl,
+ 	.mmap			= aspeed_xdma_mmap,
+ 	.open			= aspeed_xdma_open,
+ 	.release		= aspeed_xdma_release,
+diff --git a/include/uapi/linux/aspeed-xdma.h b/include/uapi/linux/aspeed-xdma.h
+index 2efaa6067c39..3a3646fd1e9e 100644
+--- a/include/uapi/linux/aspeed-xdma.h
++++ b/include/uapi/linux/aspeed-xdma.h
+@@ -4,8 +4,12 @@
+ #ifndef _UAPI_LINUX_ASPEED_XDMA_H_
+ #define _UAPI_LINUX_ASPEED_XDMA_H_
+ 
++#include <linux/ioctl.h>
+ #include <linux/types.h>
+ 
++#define __ASPEED_XDMA_IOCTL_MAGIC	0xb7
++#define ASPEED_XDMA_IOCTL_RESET		_IO(__ASPEED_XDMA_IOCTL_MAGIC, 0)
++
+ /*
+  * aspeed_xdma_direction
+  *
 -- 
 2.24.0
 
