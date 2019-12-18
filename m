@@ -1,9 +1,11 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Thu, 19 Dec 2019 09:02:53 +1030
-Subject: [PATCH] EDAC: aspeed: Remove unneeded semicolon
-In-Reply-To: <1576648806-1114-1-git-send-email-vulab@iscas.ac.cn>
-References: <1576648806-1114-1-git-send-email-vulab@iscas.ac.cn>
-Message-ID: <524f6f1c-c32d-498b-b835-ae01c338a7e2@www.fastmail.com>
+Date: Thu, 19 Dec 2019 09:04:41 +1030
+Subject: =?UTF-8?Q?Re:_[PATCH_v3_03/12]_ARM:_dts:_aspeed:_ast2500:_Add_SCU_interr?=
+ =?UTF-8?Q?upt_controller?=
+In-Reply-To: <1576681778-18737-4-git-send-email-eajames@linux.ibm.com>
+References: <1576681778-18737-1-git-send-email-eajames@linux.ibm.com>
+ <1576681778-18737-4-git-send-email-eajames@linux.ibm.com>
+Message-ID: <1a43e1cf-e723-40e2-a871-0cfb1b86a164@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -12,9 +14,9 @@ Content-Transfer-Encoding: 7bit
 
 
 
-On Wed, 18 Dec 2019, at 16:30, Xu Wang wrote:
-> Remove unneeded semicolon reported by coccinelle.
+On Thu, 19 Dec 2019, at 01:39, Eddie James wrote:
+> Add a node for the interrupt controller provided by the SCU.
 > 
-> Signed-off-by: Xu Wang <vulab@iscas.ac.cn>
+> Signed-off-by: Eddie James <eajames@linux.ibm.com>
 
-Acked-by: Andrew Jeffery <andrew@aj.id.au>
+Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
