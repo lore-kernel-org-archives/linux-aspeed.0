@@ -1,74 +1,303 @@
 From: Eddie James <eajames@linux.ibm.com>
-Date: Wed, 18 Dec 2019 09:09:26 -0600
-Subject: [PATCH v3 00/12] aspeed: Add SCU interrupt controller and XDMA engine
- drivers
-Message-ID: <1576681778-18737-1-git-send-email-eajames@linux.ibm.com>
+Date: Wed, 18 Dec 2019 09:09:33 -0600
+Subject: [PATCH v3 07/12] soc: aspeed: xdma: Add user interface
+In-Reply-To: <1576681778-18737-1-git-send-email-eajames@linux.ibm.com>
+References: <1576681778-18737-1-git-send-email-eajames@linux.ibm.com>
+Message-ID: <1576681778-18737-8-git-send-email-eajames@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This series first adds a driver to control the interrupt controller provided by
-the System Control Unit (SCU) on the AST2500 and AST2600 SOCs. The interrupts
-made available are necessary for the control of the XDMA engine embedded in the
-same Aspeed SOCs.
-This series then adds a driver to control the XDMA engine. This driver was
-previously sent to the list without support for the AST2600, and has been
-refactored significantly to enable that support. The XDMA engine performs
-automatic DMA operations between the Aspeed SOC (acting as a BMC) and a host
-processor.
+This commits adds a miscdevice to provide a user interface to the XDMA
+engine. The interface provides the write operation to start DMA
+operations. The DMA parameters are passed as the data to the write call.
+The actual data to transfer is NOT passed through write. Note that both
+directions of DMA operation are accomplished through the write command;
+BMC to host and host to BMC.
 
+The XDMA driver reserves an area of physical memory for DMA operations,
+as the XDMA engine is restricted to accessing certain physical memory
+areas on some platforms. This memory forms a pool from which users can
+allocate pages for their usage with calls to mmap. The space allocated
+by a client will be the space used in the DMA operation. For an
+"upstream" (BMC to host) operation, the data in the client's area will
+be transferred to the host. For a "downstream" (host to BMC) operation,
+the host data will be placed in the client's memory area.
+
+Poll is also provided in order to determine when the DMA operation is
+complete for non-blocking IO.
+
+Signed-off-by: Eddie James <eajames@linux.ibm.com>
+---
 Changes since v2:
- - See individual patches
- - Drop rainier dts patch
- - In summary, remove references to VGA memory as the XDMA driver doesn't care
-   where it is. Remove SDRAM controller reference. Move user reset
-   functionality to a separate patch and make it an ioctl.
+ - Rework commit message to talk about VGA memory less
+ - Remove user reset functionality
+ - Clean up sanity checks in aspeed_xdma_write()
+ - Wait for transfer complete in the vm area close function
 
-Changes since v1:
- - See individual patches
- - In summary, first the irqchip driver switched to use the parent SCU regmap
-   rather than iomapping it's register. Secondly, the XDMA initialization
-   switched to use properties from the device tree rather than dynamically
-   calculate memory spaces, and system config.
+ drivers/soc/aspeed/aspeed-xdma.c | 205 ++++++++++++++++++++++++++++++-
+ 1 file changed, 203 insertions(+), 2 deletions(-)
 
-Eddie James (12):
-  dt-bindings: interrupt-controller: Add Aspeed SCU interrupt controller
-  irqchip: Add Aspeed SCU interrupt controller
-  ARM: dts: aspeed: ast2500: Add SCU interrupt controller
-  ARM: dts: aspeed: ast2600: Add SCU interrupt controllers
-  dt-bindings: soc: Add Aspeed XDMA Engine
-  soc: aspeed: Add XDMA Engine Driver
-  soc: aspeed: xdma: Add user interface
-  soc: aspeed: xdma: Add reset ioctl
-  ARM: dts: aspeed: ast2500: Add XDMA Engine
-  ARM: dts: aspeed: ast2600: Add XDMA Engine
-  ARM: dts: aspeed: witherspoon: Enable XDMA Engine
-  ARM: dts: aspeed: tacoma: Enable XDMA engine
-
- .../aspeed,ast2xxx-scu-ic.txt                 |   23 +
- .../devicetree/bindings/soc/aspeed/xdma.txt   |   40 +
- MAINTAINERS                                   |   16 +
- arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts   |    5 +
- .../boot/dts/aspeed-bmc-opp-witherspoon.dts   |    5 +
- arch/arm/boot/dts/aspeed-g5.dtsi              |   19 +
- arch/arm/boot/dts/aspeed-g6.dtsi              |   27 +
- drivers/irqchip/Makefile                      |    2 +-
- drivers/irqchip/irq-aspeed-scu-ic.c           |  239 ++++
- drivers/soc/aspeed/Kconfig                    |    8 +
- drivers/soc/aspeed/Makefile                   |    1 +
- drivers/soc/aspeed/aspeed-xdma.c              | 1014 +++++++++++++++++
- .../interrupt-controller/aspeed-scu-ic.h      |   23 +
- include/uapi/linux/aspeed-xdma.h              |   42 +
- 14 files changed, 1463 insertions(+), 1 deletion(-)
- create mode 100644 Documentation/devicetree/bindings/interrupt-controller/aspeed,ast2xxx-scu-ic.txt
- create mode 100644 Documentation/devicetree/bindings/soc/aspeed/xdma.txt
- create mode 100644 drivers/irqchip/irq-aspeed-scu-ic.c
- create mode 100644 drivers/soc/aspeed/aspeed-xdma.c
- create mode 100644 include/dt-bindings/interrupt-controller/aspeed-scu-ic.h
- create mode 100644 include/uapi/linux/aspeed-xdma.h
-
+diff --git a/drivers/soc/aspeed/aspeed-xdma.c b/drivers/soc/aspeed/aspeed-xdma.c
+index cb94adf798b1..e844937dc925 100644
+--- a/drivers/soc/aspeed/aspeed-xdma.c
++++ b/drivers/soc/aspeed/aspeed-xdma.c
+@@ -13,6 +13,7 @@
+ #include <linux/io.h>
+ #include <linux/jiffies.h>
+ #include <linux/mfd/syscon.h>
++#include <linux/miscdevice.h>
+ #include <linux/module.h>
+ #include <linux/mutex.h>
+ #include <linux/of_device.h>
+@@ -201,6 +202,8 @@ struct aspeed_xdma {
+ 	struct clk *clock;
+ 	struct reset_control *reset;
+ 
++	/* file_lock serializes reads of current_client */
++	struct mutex file_lock;
+ 	/* client_lock protects error and in_progress of the client */
+ 	spinlock_t client_lock;
+ 	struct aspeed_xdma_client *current_client;
+@@ -223,6 +226,8 @@ struct aspeed_xdma {
+ 	void __iomem *mem_virt;
+ 	dma_addr_t cmdq_phys;
+ 	struct gen_pool *pool;
++
++	struct miscdevice misc;
+ };
+ 
+ struct aspeed_xdma_client {
+@@ -522,6 +527,185 @@ static irqreturn_t aspeed_xdma_pcie_irq(int irq, void *arg)
+ 	return IRQ_HANDLED;
+ }
+ 
++static ssize_t aspeed_xdma_write(struct file *file, const char __user *buf,
++				 size_t len, loff_t *offset)
++{
++	int rc;
++	struct aspeed_xdma_op op;
++	struct aspeed_xdma_client *client = file->private_data;
++	struct aspeed_xdma *ctx = client->ctx;
++
++	if (len != sizeof(op))
++		return -EINVAL;
++
++	rc = copy_from_user(&op, buf, len);
++	if (rc)
++		return rc;
++
++	if (!op.len || op.len > client->size ||
++	    op.direction > ASPEED_XDMA_DIRECTION_UPSTREAM)
++		return -EINVAL;
++
++	if (file->f_flags & O_NONBLOCK) {
++		if (!mutex_trylock(&ctx->file_lock))
++			return -EAGAIN;
++
++		if (ctx->current_client) {
++			mutex_unlock(&ctx->file_lock);
++			return -EBUSY;
++		}
++	} else {
++		mutex_lock(&ctx->file_lock);
++
++		rc = wait_event_interruptible(ctx->wait, !ctx->current_client);
++		if (rc) {
++			mutex_unlock(&ctx->file_lock);
++			return -EINTR;
++		}
++	}
++
++	aspeed_xdma_start(ctx, &op, client->phys, client);
++
++	mutex_unlock(&ctx->file_lock);
++
++	if (!(file->f_flags & O_NONBLOCK)) {
++		rc = wait_event_interruptible(ctx->wait, !client->in_progress);
++		if (rc)
++			return -EINTR;
++
++		if (client->error)
++			return -EIO;
++	}
++
++	return len;
++}
++
++static __poll_t aspeed_xdma_poll(struct file *file,
++				 struct poll_table_struct *wait)
++{
++	__poll_t mask = 0;
++	__poll_t req = poll_requested_events(wait);
++	struct aspeed_xdma_client *client = file->private_data;
++	struct aspeed_xdma *ctx = client->ctx;
++
++	if (req & (EPOLLIN | EPOLLRDNORM)) {
++		if (client->in_progress)
++			poll_wait(file, &ctx->wait, wait);
++
++		if (!client->in_progress) {
++			if (client->error)
++				mask |= EPOLLERR;
++			else
++				mask |= EPOLLIN | EPOLLRDNORM;
++		}
++	}
++
++	if (req & (EPOLLOUT | EPOLLWRNORM)) {
++		if (ctx->current_client)
++			poll_wait(file, &ctx->wait, wait);
++
++		if (!ctx->current_client)
++			mask |= EPOLLOUT | EPOLLWRNORM;
++	}
++
++	return mask;
++}
++
++static void aspeed_xdma_vma_close(struct vm_area_struct *vma)
++{
++	int rc;
++	struct aspeed_xdma_client *client = vma->vm_private_data;
++
++	rc = wait_event_interruptible(client->ctx->wait, !client->in_progress);
++	if (rc)
++		return;
++
++	gen_pool_free(client->ctx->pool, (unsigned long)client->virt,
++		      client->size);
++
++	client->virt = NULL;
++	client->phys = 0;
++	client->size = 0;
++}
++
++static const struct vm_operations_struct aspeed_xdma_vm_ops = {
++	.close =	aspeed_xdma_vma_close,
++};
++
++static int aspeed_xdma_mmap(struct file *file, struct vm_area_struct *vma)
++{
++	int rc;
++	struct aspeed_xdma_client *client = file->private_data;
++	struct aspeed_xdma *ctx = client->ctx;
++
++	/* restrict file to one mapping */
++	if (client->size)
++		return -EBUSY;
++
++	client->size = vma->vm_end - vma->vm_start;
++	client->virt = gen_pool_dma_alloc(ctx->pool, client->size,
++					  &client->phys);
++	if (!client->virt) {
++		client->phys = 0;
++		client->size = 0;
++		return -ENOMEM;
++	}
++
++	vma->vm_pgoff = (client->phys - ctx->mem_phys) >> PAGE_SHIFT;
++	vma->vm_ops = &aspeed_xdma_vm_ops;
++	vma->vm_private_data = client;
++	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
++
++	rc = io_remap_pfn_range(vma, vma->vm_start, client->phys >> PAGE_SHIFT,
++				client->size, vma->vm_page_prot);
++	if (rc) {
++		gen_pool_free(ctx->pool, (unsigned long)client->virt,
++			      client->size);
++
++		client->virt = NULL;
++		client->phys = 0;
++		client->size = 0;
++		return rc;
++	}
++
++	dev_dbg(ctx->dev, "mmap: v[%08lx] to p[%08x], s[%08x]\n",
++		vma->vm_start, (u32)client->phys, client->size);
++
++	return 0;
++}
++
++static int aspeed_xdma_open(struct inode *inode, struct file *file)
++{
++	struct miscdevice *misc = file->private_data;
++	struct aspeed_xdma *ctx = container_of(misc, struct aspeed_xdma, misc);
++	struct aspeed_xdma_client *client = kzalloc(sizeof(*client),
++						    GFP_KERNEL);
++
++	if (!client)
++		return -ENOMEM;
++
++	client->ctx = ctx;
++	file->private_data = client;
++	return 0;
++}
++
++static int aspeed_xdma_release(struct inode *inode, struct file *file)
++{
++	struct aspeed_xdma_client *client = file->private_data;
++
++	kfree(client);
++	return 0;
++}
++
++static const struct file_operations aspeed_xdma_fops = {
++	.owner			= THIS_MODULE,
++	.write			= aspeed_xdma_write,
++	.poll			= aspeed_xdma_poll,
++	.mmap			= aspeed_xdma_mmap,
++	.open			= aspeed_xdma_open,
++	.release		= aspeed_xdma_release,
++};
++
+ static int aspeed_xdma_probe(struct platform_device *pdev)
+ {
+ 	int rc;
+@@ -543,6 +727,7 @@ static int aspeed_xdma_probe(struct platform_device *pdev)
+ 	ctx->chip = md;
+ 	ctx->dev = dev;
+ 	platform_set_drvdata(pdev, ctx);
++	mutex_init(&ctx->file_lock);
+ 	mutex_init(&ctx->start_lock);
+ 	INIT_WORK(&ctx->reset_work, aspeed_xdma_reset_work);
+ 	spin_lock_init(&ctx->client_lock);
+@@ -674,6 +859,22 @@ static int aspeed_xdma_probe(struct platform_device *pdev)
+ 
+ 	aspeed_xdma_init_eng(ctx);
+ 
++	ctx->misc.minor = MISC_DYNAMIC_MINOR;
++	ctx->misc.fops = &aspeed_xdma_fops;
++	ctx->misc.name = "aspeed-xdma";
++	ctx->misc.parent = dev;
++	rc = misc_register(&ctx->misc);
++	if (rc) {
++		dev_err(dev, "Failed to register xdma miscdevice.\n");
++
++		gen_pool_free(ctx->pool, (unsigned long)ctx->cmdq,
++			      XDMA_CMDQ_SIZE);
++
++		reset_control_assert(ctx->reset);
++		clk_disable_unprepare(ctx->clock);
++		return rc;
++	}
++
+ 	/*
+ 	 * This interrupt could fire immediately so only request it once the
+ 	 * engine and driver are initialized.
+@@ -695,8 +896,8 @@ static int aspeed_xdma_remove(struct platform_device *pdev)
+ {
+ 	struct aspeed_xdma *ctx = platform_get_drvdata(pdev);
+ 
+-	gen_pool_free(ctx->pool, (unsigned long)ctx->cmdq_virt,
+-		      XDMA_CMDQ_SIZE);
++	misc_deregister(&ctx->misc);
++	gen_pool_free(ctx->pool, (unsigned long)ctx->cmdq, XDMA_CMDQ_SIZE);
+ 
+ 	reset_control_assert(ctx->reset);
+ 	clk_disable_unprepare(ctx->clock);
 -- 
 2.24.0
 
