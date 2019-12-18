@@ -1,68 +1,56 @@
-From: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-Date: Tue, 17 Dec 2019 13:13:10 +0000
-Subject: [PATCH v3 3/6] dt-bindings: mfd: da9062: add regulator voltage
- selection documentation
-In-Reply-To: <20191217123116.GB29666@pengutronix.de>
-References: <20191210094144.mxximpuouchy3fqu@pengutronix.de>
- <AM5PR1001MB099497419E4DCA69D424EC35805A0@AM5PR1001MB0994.EURPRD10.PROD.OUTLOOK.COM>
- <20191211170918.q7kqkd4lrwwp7jl3@pengutronix.de>
- <20191212161019.GF4310@sirena.org.uk>
- <20191212162152.5uu3feacduetysq7@pengutronix.de>
- <20191212165124.GJ4310@sirena.org.uk>
- <20191216085525.csr2aglm5md4vtsw@pengutronix.de>
- <AM5PR1001MB09941005A47B603805D3C53280510@AM5PR1001MB0994.EURPRD10.PROD.OUTLOOK.COM>
- <20191217090034.GD31182@pengutronix.de>
- <AM5PR1001MB099460B2D291644F088707BA80500@AM5PR1001MB0994.EURPRD10.PROD.OUTLOOK.COM>
- <20191217123116.GB29666@pengutronix.de>
-Message-ID: <AM5PR1001MB0994377F69ED2EFF2BEB580380500@AM5PR1001MB0994.EURPRD10.PROD.OUTLOOK.COM>
+From: Eddie James <eajames@linux.ibm.com>
+Date: Wed, 18 Dec 2019 09:09:36 -0600
+Subject: [PATCH v3 10/12] ARM: dts: aspeed: ast2600: Add XDMA Engine
+In-Reply-To: <1576681778-18737-1-git-send-email-eajames@linux.ibm.com>
+References: <1576681778-18737-1-git-send-email-eajames@linux.ibm.com>
+Message-ID: <1576681778-18737-11-git-send-email-eajames@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 17 December 2019 12:31, Marco Felsch wrote:
+Add a node for the XDMA engine with all the necessary information.
 
-> On 19-12-17 09:53, Adam Thomson wrote:
-> > On 17 December 2019 09:01, Marco Felsch wrote:
-> >
-> > > > > The enabel control signal is always available, please check [1] table
-> > > > > 63. There is a mux in front of the enable pin so:
-> > > > >
-> > > > >              +-------------
-> > > > >  Seq. |\     |   Regulator
-> > > > >  GPI1 | \    |
-> > > > >  GPI2 | | -- > Enable
-> > > > >  GPI3 | /    |
-> > > > >       |/     .
-> > > > >              .
-> > > > >              .
-> > > > >
-> > > > > Adam please correct me if this is wrong.
-> > > >
-> > > > Yes the register can always be configured regardless of the associated pin
-> > > > configuration, but if say GPIO1 was configured as a GPO but a regulator was
-> > > > configured to use GPIO1 as its GPI control mechanism, the output signal
-> from
-> > > > GPIO1 would be ignored, the sequencer control would not have any effect
-> and
-> > > > you're simply left with manual I2C control. Really we shouldn't be getting
-> into
-> > > > that situation though. If a GPIO is to be used as a regulator control signal
-> > > > then it should be marked as such and I don't think we should be able to use
-> that
-> > > > pin for anything other than regulator control.
-> > >
-> > > I see, so we have to guarantee that the requested gpio is configured as
-> > > input. This can be done by:
-> >
-> > This is one of the reasons I thought this was better suited to being done in the
-> > pinctrl/pinmux side. If you configure the GPIO as for regulator control then
-> > the code can automatically configure the GPIO for input. That doesn't then
-> need
-> > to be in the regulator driver.
-> 
-> I still don't prefer that way.. pls check my arguments I already made
-> and I don't wanna repeat it again.
+Signed-off-by: Eddie James <eajames@linux.ibm.com>
+---
+Changes since v2:
+ - Remove addition of sdmc stuff
 
-Yes, I read your arguments but still can't agree :)
+ arch/arm/boot/dts/aspeed-g6.dtsi | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+
+diff --git a/arch/arm/boot/dts/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed-g6.dtsi
+index ead336e93a12..d5ee235790f5 100644
+--- a/arch/arm/boot/dts/aspeed-g6.dtsi
++++ b/arch/arm/boot/dts/aspeed-g6.dtsi
+@@ -3,6 +3,7 @@
+ 
+ #include <dt-bindings/interrupt-controller/arm-gic.h>
+ #include <dt-bindings/clock/ast2600-clock.h>
++#include <dt-bindings/interrupt-controller/aspeed-scu-ic.h>
+ 
+ / {
+ 	model = "Aspeed BMC";
+@@ -311,6 +312,18 @@ rng: hwrng at 1e6e2524 {
+ 				quality = <100>;
+ 			};
+ 
++			xdma: xdma at 1e6e7000 {
++				compatible = "aspeed,ast2600-xdma";
++				reg = <0x1e6e7000 0x100>;
++				clocks = <&syscon ASPEED_CLK_GATE_BCLK>;
++				resets = <&syscon ASPEED_RESET_DEV_XDMA>;
++				interrupts-extended = <&gic GIC_SPI 6 IRQ_TYPE_LEVEL_HIGH>,
++						      <&scu_ic0 ASPEED_AST2600_SCU_IC0_PCIE_PERST_LO_TO_HI>;
++				pcie-device = "bmc";
++				scu = <&syscon>;
++				status = "disabled";
++			};
++
+ 			gpio0: gpio at 1e780000 {
+ 				#gpio-cells = <2>;
+ 				gpio-controller;
+-- 
+2.24.0
+
