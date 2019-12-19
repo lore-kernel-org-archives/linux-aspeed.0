@@ -1,42 +1,95 @@
-From: Manikandan Elumalai <manikandan.hcl.ers.epl@gmail.com>
-Date: Thu, 19 Dec 2019 23:33:33 +0530
-Subject: [PATCH v5] ARM: dts: aspeed: Adding Facebook Yosemite V2 BMC
-In-Reply-To: <8017a61e-e579-41ea-816a-4a76a6dc41e9@www.fastmail.com>
-References: <20191213135131.GA1822@cnn>
- <8017a61e-e579-41ea-816a-4a76a6dc41e9@www.fastmail.com>
-Message-ID: <CAMRErLPS69htCp2hGsy5__HEEY=7V=Ao5754nu2Xe=VkB3t6iQ@mail.gmail.com>
+From: Vijay Khemka <vijaykhemka@fb.com>
+Date: Thu, 19 Dec 2019 10:33:30 -0800
+Subject: [PATCH] ARM: dts: aspeed: tiogapass: Add gpio line names
+Message-ID: <20191219183330.2860724-1-vijaykhemka@fb.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Joel,
-              I have done the changes as per your review comments in v4
-and submitted as v5 . Please review the v5 patch.
-Thanks
-Mani.E
+Added GPIO line names for all gpio used in tiogapass platform,
+these line names will be used by libgpiod to control GPIOs
 
-On Mon, Dec 16, 2019 at 5:03 AM Andrew Jeffery <andrew@aj.id.au> wrote:
+Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
+---
+ .../dts/aspeed-bmc-facebook-tiogapass.dts     | 63 +++++++++++++++++++
+ 1 file changed, 63 insertions(+)
 
-> On Sat, 14 Dec 2019, at 00:21, Manikandan Elumalai wrote:
-> > The Yosemite V2 is a facebook multi-node server
-> > platform that host four OCP server. The BMC
-> > in the Yosemite V2 platform based on AST2500 SoC.
-> >
-> > This patch adds linux device tree entry related to
-> > Yosemite V2 specific devices connected to BMC SoC.
-> >
-> > Signed-off-by : Manikandan Elumalai <manikandan.hcl.ers.epl@gmail.com>
-> > Acked-by        : Andrew Jeffery <andrew@aj.id.au>
-> > Reviewed-by  : Vijay Khemka <vkhemka@fb.com>
->
-> In the future, don't worry about aligning parts of the tag text. Single
-> space is
-> the custom (and is less effort!)
->
-> Andrew
->
--------------- next part --------------
-An HTML attachment was scrubbed...
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20191219/3d3c7ff1/attachment.htm>
+diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
+index 682f729ea25e..28c3a69437b1 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
+@@ -121,6 +121,69 @@
+ 	kcs_addr = <0xca2>;
+ };
+ 
++&gpio {
++	status = "okay";
++	gpio-line-names =
++	/*A0-A7*/	"BMC_CPLD_FPGA_SEL","","","","","","","",
++	/*B0-B7*/	"","BMC_DEBUG_EN","","","","BMC_PPIN","PS_PWROK",
++			"IRQ_PVDDQ_GHJ_VRHOT_LVT3",
++	/*C0-C7*/	"","","","","","","","",
++	/*D0-D7*/	"BIOS_MRC_DEBUG_MSG_DIS","BOARD_REV_ID0","",
++			"BOARD_REV_ID1","IRQ_DIMM_SAVE_LVT3","BOARD_REV_ID2",
++			"CPU_ERR0_LVT3_BMC","CPU_ERR1_LVT3_BMC",
++	/*E0-E7*/	"RESET_BUTTON","RESET_OUT","POWER_BUTTON",
++			"POWER_OUT","NMI_BUTTON","","CPU0_PROCHOT_LVT3_ BMC",
++			"CPU1_PROCHOT_LVT3_ BMC",
++	/*F0-F7*/	"IRQ_PVDDQ_ABC_VRHOT_LVT3","",
++			"IRQ_PVCCIN_CPU0_VRHOT_LVC3",
++			"IRQ_PVCCIN_CPU1_VRHOT_LVC3",
++			"IRQ_PVDDQ_KLM_VRHOT_LVT3","","P3VBAT_BRIDGE_EN","",
++	/*G0-G7*/	"CPU_ERR2_LVT3","CPU_CATERR_LVT3","PCH_BMC_THERMTRIP",
++			"CPU0_SKTOCC_LVT3","","","","BIOS_SMI_ACTIVE",
++	/*H0-H7*/	"LED_POST_CODE_0","LED_POST_CODE_1","LED_POST_CODE_2",
++			"LED_POST_CODE_3","LED_POST_CODE_4","LED_POST_CODE_5",
++			"LED_POST_CODE_6","LED_POST_CODE_7",
++	/*I0-I7*/	"CPU0_FIVR_FAULT_LVT3","CPU1_FIVR_FAULT_LVT3",
++			"FORCE_ADR","UV_ADR_TRIGGER_EN","","","","",
++	/*J0-J7*/	"","","","","","","","",
++	/*K0-K7*/	"","","","","","","","",
++	/*L0-L7*/	"IRQ_UV_DETECT","IRQ_OC_DETECT","HSC_TIMER_EXP","",
++			"MEM_THERM_EVENT_PCH","PMBUS_ALERT_BUF_EN","","",
++	/*M0-M7*/	"CPU0_RC_ERROR","CPU1_RC_ERROR","","OC_DETECT_EN",
++			"CPU0_THERMTRIP_LATCH_LVT3",
++			"CPU1_THERMTRIP_LATCH_LVT3","","",
++	/*N0-N7*/	"","","","CPU_MSMI_LVT3","","","","",
++	/*O0-O7*/	"","","","","","","","",
++	/*P0-P7*/	"BOARD_SKU_ID0","BOARD_SKU_ID1","BOARD_SKU_ID2",
++			"BOARD_SKU_ID3","BOARD_SKU_ID4","BMC_PREQ",
++			"BMC_PWR_DEBUG","RST_RSMRST",
++	/*Q0-Q7*/	"","","","","UARTSW_LSB","UARTSW_MSB",
++			"POST_CARD_PRES_BMC","PE_BMC_WAKE",
++	/*R0-R7*/	"","","BMC_TCK_MUX_SEL","BMC_PRDY",
++			"BMC_XDP_PRSNT_IN","RST_BMC_PLTRST_BUF","SLT_CFG0",
++			"SLT_CFG1",
++	/*S0-S7*/	"THROTTLE","BMC_READY","","HSC_SMBUS_SWITCH_EN","",
++			"","","",
++	/*T0-T7*/	"","","","","","","","",
++	/*U0-U7*/	"","","","","","BMC_FAULT","","",
++	/*V0-V7*/	"","","","FAST_PROCHOT_EN","","","","",
++	/*W0-W7*/	"","","","","","","","",
++	/*X0-X7*/	"","","","GLOBAL_RST_WARN",
++			"CPU0_MEMABC_MEMHOT_LVT3_BMC",
++			"CPU0_MEMDEF_MEMHOT_LVT3_BMC",
++			"CPU1_MEMGHJ_MEMHOT_LVT3_BMC",
++			"CPU1_MEMKLM_MEMHOT_LVT3_BMC",
++	/*Y0-Y7*/	"SIO_S3","SIO_S5","BMC_JTAG_SEL","SIO_ONCONTROL","",
++			"","","",
++	/*Z0-Z7*/	"","SIO_POWER_GOOD","IRQ_PVDDQ_DEF_VRHOT_LVT3","",
++			"","","","",
++	/*AA0-AA7*/	"CPU1_SKTOCC_LVT3","IRQ_SML1_PMBUS_ALERT",
++			"SERVER_POWER_LED","","PECI_MUX_SELECT","UV_HIGH_SET",
++			"","POST_COMPLETE",
++	/*AB0-AB7*/	"IRQ_HSC_FAULT","OCP_MEZZA_PRES","","","","","","",
++	/*AC0-AC7*/	"","","","","","","","";
++};
++
+ &mac0 {
+ 	status = "okay";
+ 
+-- 
+2.17.1
+
