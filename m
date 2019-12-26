@@ -1,7 +1,8 @@
 From: Andrew Peng <pengms1@lenovo.com>
-Date: Thu, 26 Dec 2019 16:54:35 +0800
-Subject: [PATCH v1 1/1] ARM: dts: aspeed: update Hr855xg2 device tree
-Message-ID: <1577350475-127530-1-git-send-email-pengms1@lenovo.com>
+Date: Thu, 26 Dec 2019 16:57:46 +0800
+Subject: [PATCH linux dev-5.4 v1 1/1] ARM: dts: aspeed: update Hr855xg2 device
+ tree
+Message-ID: <1577350666-128981-1-git-send-email-pengms1@lenovo.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -21,11 +22,11 @@ Signed-off-by: Yonghui Liu <liuyh21@lenovo.com>
 ---
 v1: initial version
 
- arch/arm/boot/dts/aspeed-bmc-lenovo-hr855xg2.dts | 557 ++++++++++++++++-------
- 1 file changed, 382 insertions(+), 175 deletions(-)
+ arch/arm/boot/dts/aspeed-bmc-lenovo-hr855xg2.dts | 555 ++++++++++++++++-------
+ 1 file changed, 381 insertions(+), 174 deletions(-)
 
 diff --git a/arch/arm/boot/dts/aspeed-bmc-lenovo-hr855xg2.dts b/arch/arm/boot/dts/aspeed-bmc-lenovo-hr855xg2.dts
-index 8193fad..e1386d4 100644
+index 084c455..e1386d4 100644
 --- a/arch/arm/boot/dts/aspeed-bmc-lenovo-hr855xg2.dts
 +++ b/arch/arm/boot/dts/aspeed-bmc-lenovo-hr855xg2.dts
 @@ -15,14 +15,21 @@
@@ -233,15 +234,6 @@ index 8193fad..e1386d4 100644
  };
  
  &ibt {
-@@ -140,7 +261,7 @@
- 	pinctrl-names = "default";
- 	pinctrl-0 = <&pinctrl_rmii1_default>;
- 	clocks = <&syscon ASPEED_CLK_GATE_MAC1CLK>,
--		 <&syscon ASPEED_CLK_GATE_MAC1RCLK>;
-+		 <&syscon ASPEED_CLK_MAC1RCLK>;
- 	clock-names = "MACCLK", "RCLK";
- 	use-ncsi;
- };
 @@ -172,37 +293,77 @@
  			&pinctrl_adc15_default>;
  };
