@@ -1,108 +1,64 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Fri, 27 Dec 2019 12:39:13 -0500
-Subject: [PATCH AUTOSEL 5.4 085/187] pinctrl: aspeed-g6: Fix LPC/eSPI mux
- configuration
-In-Reply-To: <20191227174055.4923-1-sashal@kernel.org>
-References: <20191227174055.4923-1-sashal@kernel.org>
-Message-ID: <20191227174055.4923-85-sashal@kernel.org>
+From: Vijay Khemka <vijaykhemka@fb.com>
+Date: Fri, 27 Dec 2019 14:43:49 -0800
+Subject: [net-next PATCH] net/ncsi: Fix gma flag setting after response
+Message-ID: <20191227224349.2182366-1-vijaykhemka@fb.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Andrew Jeffery <andrew@aj.id.au>
+gma_flag was set at the time of GMA command request but it should
+only be set after getting successful response. Movinng this flag
+setting in GMA response handler.
 
-[ Upstream commit eb45f2110b036e4e35d3f3aaee1c2ccf49d92425 ]
+This flag is used mainly for not repeating GMA command once
+received MAC address.
 
-Early revisions of the AST2600 datasheet are conflicted about the state
-of the LPC/eSPI strapping bit (SCU510[6]). Conversations with ASPEED
-determined that the reference pinmux configuration tables were in error
-and the SCU documentation contained the correct configuration. Update
-the driver to reflect the state described in the SCU documentation.
-
-Fixes: 2eda1cdec49f ("pinctrl: aspeed: Add AST2600 pinmux support")
-Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
-Link: https://lore.kernel.org/r/20191202050110.15340-1-andrew at aj.id.au
-Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
 ---
- drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c | 24 ++++++++--------------
- 1 file changed, 8 insertions(+), 16 deletions(-)
+ net/ncsi/ncsi-manage.c | 3 ---
+ net/ncsi/ncsi-rsp.c    | 6 ++++++
+ 2 files changed, 6 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c b/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
-index c6800d220920..bb07024d22ed 100644
---- a/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
-+++ b/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
-@@ -1088,60 +1088,52 @@ SSSF_PIN_DECL(AF15, GPIOV7, LPCSMI, SIG_DESC_SET(SCU434, 15));
+diff --git a/net/ncsi/ncsi-manage.c b/net/ncsi/ncsi-manage.c
+index 70fe02697544..e20b81514029 100644
+--- a/net/ncsi/ncsi-manage.c
++++ b/net/ncsi/ncsi-manage.c
+@@ -764,9 +764,6 @@ static int ncsi_gma_handler(struct ncsi_cmd_arg *nca, unsigned int mf_id)
+ 		return -1;
+ 	}
  
- #define AB7 176
- SIG_EXPR_LIST_DECL_SESG(AB7, LAD0, LPC, SIG_DESC_SET(SCU434, 16),
--			  SIG_DESC_CLEAR(SCU510, 6));
--SIG_EXPR_LIST_DECL_SESG(AB7, ESPID0, ESPI, SIG_DESC_SET(SCU434, 16),
- 			  SIG_DESC_SET(SCU510, 6));
-+SIG_EXPR_LIST_DECL_SESG(AB7, ESPID0, ESPI, SIG_DESC_SET(SCU434, 16));
- PIN_DECL_2(AB7, GPIOW0, LAD0, ESPID0);
+-	/* Set the flag for GMA command which should only be called once */
+-	nca->ndp->gma_flag = 1;
+-
+ 	/* Get Mac address from NCSI device */
+ 	return nch->handler(nca);
+ }
+diff --git a/net/ncsi/ncsi-rsp.c b/net/ncsi/ncsi-rsp.c
+index d5611f04926d..a94bb59793f0 100644
+--- a/net/ncsi/ncsi-rsp.c
++++ b/net/ncsi/ncsi-rsp.c
+@@ -627,6 +627,9 @@ static int ncsi_rsp_handler_oem_mlx_gma(struct ncsi_request *nr)
+ 	saddr.sa_family = ndev->type;
+ 	ndev->priv_flags |= IFF_LIVE_ADDR_CHANGE;
+ 	memcpy(saddr.sa_data, &rsp->data[MLX_MAC_ADDR_OFFSET], ETH_ALEN);
++	/* Set the flag for GMA command which should only be called once */
++	ndp->gma_flag = 1;
++
+ 	ret = ops->ndo_set_mac_address(ndev, &saddr);
+ 	if (ret < 0)
+ 		netdev_warn(ndev, "NCSI: 'Writing mac address to device failed\n");
+@@ -671,6 +674,9 @@ static int ncsi_rsp_handler_oem_bcm_gma(struct ncsi_request *nr)
+ 	if (!is_valid_ether_addr((const u8 *)saddr.sa_data))
+ 		return -ENXIO;
  
- #define AB8 177
- SIG_EXPR_LIST_DECL_SESG(AB8, LAD1, LPC, SIG_DESC_SET(SCU434, 17),
--			  SIG_DESC_CLEAR(SCU510, 6));
--SIG_EXPR_LIST_DECL_SESG(AB8, ESPID1, ESPI, SIG_DESC_SET(SCU434, 17),
- 			  SIG_DESC_SET(SCU510, 6));
-+SIG_EXPR_LIST_DECL_SESG(AB8, ESPID1, ESPI, SIG_DESC_SET(SCU434, 17));
- PIN_DECL_2(AB8, GPIOW1, LAD1, ESPID1);
- 
- #define AC8 178
- SIG_EXPR_LIST_DECL_SESG(AC8, LAD2, LPC, SIG_DESC_SET(SCU434, 18),
--			  SIG_DESC_CLEAR(SCU510, 6));
--SIG_EXPR_LIST_DECL_SESG(AC8, ESPID2, ESPI, SIG_DESC_SET(SCU434, 18),
- 			  SIG_DESC_SET(SCU510, 6));
-+SIG_EXPR_LIST_DECL_SESG(AC8, ESPID2, ESPI, SIG_DESC_SET(SCU434, 18));
- PIN_DECL_2(AC8, GPIOW2, LAD2, ESPID2);
- 
- #define AC7 179
- SIG_EXPR_LIST_DECL_SESG(AC7, LAD3, LPC, SIG_DESC_SET(SCU434, 19),
--			  SIG_DESC_CLEAR(SCU510, 6));
--SIG_EXPR_LIST_DECL_SESG(AC7, ESPID3, ESPI, SIG_DESC_SET(SCU434, 19),
- 			  SIG_DESC_SET(SCU510, 6));
-+SIG_EXPR_LIST_DECL_SESG(AC7, ESPID3, ESPI, SIG_DESC_SET(SCU434, 19));
- PIN_DECL_2(AC7, GPIOW3, LAD3, ESPID3);
- 
- #define AE7 180
- SIG_EXPR_LIST_DECL_SESG(AE7, LCLK, LPC, SIG_DESC_SET(SCU434, 20),
--			  SIG_DESC_CLEAR(SCU510, 6));
--SIG_EXPR_LIST_DECL_SESG(AE7, ESPICK, ESPI, SIG_DESC_SET(SCU434, 20),
- 			  SIG_DESC_SET(SCU510, 6));
-+SIG_EXPR_LIST_DECL_SESG(AE7, ESPICK, ESPI, SIG_DESC_SET(SCU434, 20));
- PIN_DECL_2(AE7, GPIOW4, LCLK, ESPICK);
- 
- #define AF7 181
- SIG_EXPR_LIST_DECL_SESG(AF7, LFRAME, LPC, SIG_DESC_SET(SCU434, 21),
--			  SIG_DESC_CLEAR(SCU510, 6));
--SIG_EXPR_LIST_DECL_SESG(AF7, ESPICS, ESPI, SIG_DESC_SET(SCU434, 21),
- 			  SIG_DESC_SET(SCU510, 6));
-+SIG_EXPR_LIST_DECL_SESG(AF7, ESPICS, ESPI, SIG_DESC_SET(SCU434, 21));
- PIN_DECL_2(AF7, GPIOW5, LFRAME, ESPICS);
- 
- #define AD7 182
- SIG_EXPR_LIST_DECL_SESG(AD7, LSIRQ, LSIRQ, SIG_DESC_SET(SCU434, 22),
--			  SIG_DESC_CLEAR(SCU510, 6));
--SIG_EXPR_LIST_DECL_SESG(AD7, ESPIALT, ESPIALT, SIG_DESC_SET(SCU434, 22),
- 			  SIG_DESC_SET(SCU510, 6));
-+SIG_EXPR_LIST_DECL_SESG(AD7, ESPIALT, ESPIALT, SIG_DESC_SET(SCU434, 22));
- PIN_DECL_2(AD7, GPIOW6, LSIRQ, ESPIALT);
- FUNC_GROUP_DECL(LSIRQ, AD7);
- FUNC_GROUP_DECL(ESPIALT, AD7);
- 
- #define AD8 183
- SIG_EXPR_LIST_DECL_SESG(AD8, LPCRST, LPC, SIG_DESC_SET(SCU434, 23),
--			  SIG_DESC_CLEAR(SCU510, 6));
--SIG_EXPR_LIST_DECL_SESG(AD8, ESPIRST, ESPI, SIG_DESC_SET(SCU434, 23),
- 			  SIG_DESC_SET(SCU510, 6));
-+SIG_EXPR_LIST_DECL_SESG(AD8, ESPIRST, ESPI, SIG_DESC_SET(SCU434, 23));
- PIN_DECL_2(AD8, GPIOW7, LPCRST, ESPIRST);
- 
- FUNC_GROUP_DECL(LPC, AB7, AB8, AC8, AC7, AE7, AF7, AD8);
++	/* Set the flag for GMA command which should only be called once */
++	ndp->gma_flag = 1;
++
+ 	ret = ops->ndo_set_mac_address(ndev, &saddr);
+ 	if (ret < 0)
+ 		netdev_warn(ndev, "NCSI: 'Writing mac address to device failed\n");
 -- 
-2.20.1
+2.17.1
 
