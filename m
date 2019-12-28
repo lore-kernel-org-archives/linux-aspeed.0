@@ -1,46 +1,42 @@
-From: Ma Feng <mafeng.ma@huawei.com>
-Date: Thu, 19 Dec 2019 06:25:47 -0000
-Subject: [PATCH] EDAC/aspeed: Remove unneeded semicolon
-Message-ID: <1576735835-114453-1-git-send-email-mafeng.ma@huawei.com>
+From: Yangtao Li <tiny.windzz@gmail.com>
+Date: Sat, 28 Dec 2019 19:06:31 +0000
+Subject: [PATCH] fsi: aspeed: convert to devm_platform_ioremap_resource
+Message-ID: <20191228190631.26777-1-tiny.windzz@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Fixes coccicheck warning:
+Use devm_platform_ioremap_resource() to simplify code.
 
-drivers/edac/aspeed_edac.c:246:2-3: Unneeded semicolon
-drivers/edac/aspeed_edac.c:255:2-3: Unneeded semicolon
-
-Reported-by: Hulk Robot <hulkci@huawei.com>
-Signed-off-by: Ma Feng <mafeng.ma@huawei.com>
+Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
 ---
- drivers/edac/aspeed_edac.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/fsi/fsi-master-aspeed.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/drivers/edac/aspeed_edac.c b/drivers/edac/aspeed_edac.c
-index 09a9e3d..b194658b 100644
---- a/drivers/edac/aspeed_edac.c
-+++ b/drivers/edac/aspeed_edac.c
-@@ -243,7 +243,7 @@ static int init_csrows(struct mem_ctl_info *mci)
- 	if (!np) {
- 		dev_err(mci->pdev, "dt: missing /memory node\n");
- 		return -ENODEV;
--	};
-+	}
-
- 	rc = of_address_to_resource(np, 0, &r);
-
-@@ -252,7 +252,7 @@ static int init_csrows(struct mem_ctl_info *mci)
- 	if (rc) {
- 		dev_err(mci->pdev, "dt: failed requesting resource for /memory node\n");
- 		return rc;
--	};
-+	}
-
- 	dev_dbg(mci->pdev, "dt: /memory node resources: first page r.start=0x%x, resource_size=0x%x, PAGE_SHIFT macro=0x%x\n",
- 		r.start, resource_size(&r), PAGE_SHIFT);
---
-2.6.2
+diff --git a/drivers/fsi/fsi-master-aspeed.c b/drivers/fsi/fsi-master-aspeed.c
+index f49742b310c2..edd0b287e7b7 100644
+--- a/drivers/fsi/fsi-master-aspeed.c
++++ b/drivers/fsi/fsi-master-aspeed.c
+@@ -422,7 +422,6 @@ static int aspeed_master_init(struct fsi_master_aspeed *aspeed)
+ static int fsi_master_aspeed_probe(struct platform_device *pdev)
+ {
+ 	struct fsi_master_aspeed *aspeed;
+-	struct resource *res;
+ 	int rc, links, reg;
+ 	__be32 raw;
+ 
+@@ -432,8 +431,7 @@ static int fsi_master_aspeed_probe(struct platform_device *pdev)
+ 
+ 	aspeed->dev = &pdev->dev;
+ 
+-	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-	aspeed->base = devm_ioremap_resource(&pdev->dev, res);
++	aspeed->base = devm_platform_ioremap_resource(pdev, 0);
+ 	if (IS_ERR(aspeed->base))
+ 		return PTR_ERR(aspeed->base);
+ 
+-- 
+2.17.1
 
