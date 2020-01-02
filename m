@@ -1,98 +1,35 @@
 From: Eddie James <eajames@linux.ibm.com>
-Date: Thu,  2 Jan 2020 13:27:52 -0600
-Subject: [PATCH v4 08/12] soc: aspeed: xdma: Add reset ioctl
+Date: Thu,  2 Jan 2020 13:27:56 -0600
+Subject: [PATCH v4 12/12] ARM: dts: aspeed: tacoma: Enable XDMA engine
 In-Reply-To: <1577993276-2184-1-git-send-email-eajames@linux.ibm.com>
 References: <1577993276-2184-1-git-send-email-eajames@linux.ibm.com>
-Message-ID: <1577993276-2184-9-git-send-email-eajames@linux.ibm.com>
+Message-ID: <1577993276-2184-13-git-send-email-eajames@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Users of the XDMA engine need a way to reset it if something goes wrong.
-Problems on the host side, or user error, such as incorrect host
-address, may result in the DMA operation never completing and no way to
-determine what went wrong. Therefore, add an ioctl to reset the engine
-so that users can recover in this situation.
+Enable the XDMA engine node.
 
 Signed-off-by: Eddie James <eajames@linux.ibm.com>
 ---
- drivers/soc/aspeed/aspeed-xdma.c | 36 ++++++++++++++++++++++++++++++++
- include/uapi/linux/aspeed-xdma.h |  4 ++++
- 2 files changed, 40 insertions(+)
+ arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/drivers/soc/aspeed/aspeed-xdma.c b/drivers/soc/aspeed/aspeed-xdma.c
-index 5ad0efaf6e05..f11615ef8013 100644
---- a/drivers/soc/aspeed/aspeed-xdma.c
-+++ b/drivers/soc/aspeed/aspeed-xdma.c
-@@ -616,6 +616,41 @@ static __poll_t aspeed_xdma_poll(struct file *file,
- 	return mask;
- }
- 
-+static long aspeed_xdma_ioctl(struct file *file, unsigned int cmd,
-+			      unsigned long param)
-+{
-+	unsigned long flags;
-+	struct aspeed_xdma_client *client = file->private_data;
-+	struct aspeed_xdma *ctx = client->ctx;
+diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts b/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts
+index f02de4ab058c..2e5cd51db7c2 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts
+@@ -1193,3 +1193,8 @@ &pinctrl {
+ 	pinctrl-0 = <&pinctrl_lpc_default>,
+ 		    <&pinctrl_lsirq_default>;
+ };
 +
-+	switch (cmd) {
-+	case ASPEED_XDMA_IOCTL_RESET:
-+		spin_lock_irqsave(&ctx->reset_lock, flags);
-+		if (ctx->in_reset) {
-+			spin_unlock_irqrestore(&ctx->reset_lock, flags);
-+			return 0;
-+		}
-+
-+		ctx->in_reset = true;
-+		spin_unlock_irqrestore(&ctx->reset_lock, flags);
-+
-+		if (ctx->current_client)
-+			dev_warn(ctx->dev,
-+				 "User reset with transfer in progress.\n");
-+
-+		mutex_lock(&ctx->start_lock);
-+
-+		aspeed_xdma_reset(ctx);
-+
-+		mutex_unlock(&ctx->start_lock);
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+
- static void aspeed_xdma_vma_close(struct vm_area_struct *vma)
- {
- 	int rc;
-@@ -709,6 +744,7 @@ static const struct file_operations aspeed_xdma_fops = {
- 	.owner			= THIS_MODULE,
- 	.write			= aspeed_xdma_write,
- 	.poll			= aspeed_xdma_poll,
-+	.unlocked_ioctl		= aspeed_xdma_ioctl,
- 	.mmap			= aspeed_xdma_mmap,
- 	.open			= aspeed_xdma_open,
- 	.release		= aspeed_xdma_release,
-diff --git a/include/uapi/linux/aspeed-xdma.h b/include/uapi/linux/aspeed-xdma.h
-index 2efaa6067c39..3a3646fd1e9e 100644
---- a/include/uapi/linux/aspeed-xdma.h
-+++ b/include/uapi/linux/aspeed-xdma.h
-@@ -4,8 +4,12 @@
- #ifndef _UAPI_LINUX_ASPEED_XDMA_H_
- #define _UAPI_LINUX_ASPEED_XDMA_H_
- 
-+#include <linux/ioctl.h>
- #include <linux/types.h>
- 
-+#define __ASPEED_XDMA_IOCTL_MAGIC	0xb7
-+#define ASPEED_XDMA_IOCTL_RESET		_IO(__ASPEED_XDMA_IOCTL_MAGIC, 0)
-+
- /*
-  * aspeed_xdma_direction
-  *
++&xdma {
++	status = "okay";
++	memory = <0xbf800000 0x00800000>;
++};
 -- 
 2.24.0
 
