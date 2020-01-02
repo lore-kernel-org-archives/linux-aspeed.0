@@ -1,33 +1,42 @@
-From: Vijay Khemka <vijaykhemka@fb.com>
-Date: Thu, 2 Jan 2020 18:56:19 +0000
-Subject: [net-next PATCH] net/ncsi: Fix gma flag setting after response
-In-Reply-To: <20191230.203442.69341487993928315.davem@davemloft.net>
-References: <20191227224349.2182366-1-vijaykhemka@fb.com>
- <20191230.203442.69341487993928315.davem@davemloft.net>
-Message-ID: <6494F283-FC28-459D-B9DE-494FC8D0CAFA@fb.com>
+From: Eddie James <eajames@linux.ibm.com>
+Date: Thu,  2 Jan 2020 13:27:47 -0600
+Subject: [PATCH v4 03/12] ARM: dts: aspeed: ast2500: Add SCU interrupt
+ controller
+In-Reply-To: <1577993276-2184-1-git-send-email-eajames@linux.ibm.com>
+References: <1577993276-2184-1-git-send-email-eajames@linux.ibm.com>
+Message-ID: <1577993276-2184-4-git-send-email-eajames@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+Add a node for the interrupt controller provided by the SCU.
 
+Signed-off-by: Eddie James <eajames@linux.ibm.com>
+Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
+---
+ arch/arm/boot/dts/aspeed-g5.dtsi | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-?On 12/30/19, 8:34 PM, "David Miller" <davem@davemloft.net> wrote:
-
-    From: Vijay Khemka <vijaykhemka@fb.com>
-    Date: Fri, 27 Dec 2019 14:43:49 -0800
-    
-    > gma_flag was set at the time of GMA command request but it should
-    > only be set after getting successful response. Movinng this flag
-    > setting in GMA response handler.
-    > 
-    > This flag is used mainly for not repeating GMA command once
-    > received MAC address.
-    > 
-    > Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
-    
-    Applied.
-Thanks David
-    
+diff --git a/arch/arm/boot/dts/aspeed-g5.dtsi b/arch/arm/boot/dts/aspeed-g5.dtsi
+index a259c63fff06..4791a50e37ee 100644
+--- a/arch/arm/boot/dts/aspeed-g5.dtsi
++++ b/arch/arm/boot/dts/aspeed-g5.dtsi
+@@ -231,6 +231,13 @@ p2a: p2a-control {
+ 					compatible = "aspeed,ast2500-p2a-ctrl";
+ 					status = "disabled";
+ 				};
++
++				scu_ic: interrupt-controller at 18 {
++					#interrupt-cells = <1>;
++					compatible = "aspeed,ast2500-scu-ic";
++					interrupts = <21>;
++					interrupt-controller;
++				};
+ 			};
+ 
+ 			rng: hwrng at 1e6e2078 {
+-- 
+2.24.0
 
