@@ -1,9 +1,9 @@
 From: Eddie James <eajames@linux.ibm.com>
-Date: Thu,  2 Jan 2020 13:27:56 -0600
-Subject: [PATCH v4 12/12] ARM: dts: aspeed: tacoma: Enable XDMA engine
+Date: Thu,  2 Jan 2020 13:27:55 -0600
+Subject: [PATCH v4 11/12] ARM: dts: aspeed: witherspoon: Enable XDMA Engine
 In-Reply-To: <1577993276-2184-1-git-send-email-eajames@linux.ibm.com>
 References: <1577993276-2184-1-git-send-email-eajames@linux.ibm.com>
-Message-ID: <1577993276-2184-13-git-send-email-eajames@linux.ibm.com>
+Message-ID: <1577993276-2184-12-git-send-email-eajames@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -14,22 +14,23 @@ Enable the XDMA engine node.
 
 Signed-off-by: Eddie James <eajames@linux.ibm.com>
 ---
- arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts | 5 +++++
+ arch/arm/boot/dts/aspeed-bmc-opp-witherspoon.dts | 5 +++++
  1 file changed, 5 insertions(+)
 
-diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts b/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts
-index f02de4ab058c..2e5cd51db7c2 100644
---- a/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts
-@@ -1193,3 +1193,8 @@ &pinctrl {
- 	pinctrl-0 = <&pinctrl_lpc_default>,
- 		    <&pinctrl_lsirq_default>;
+diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-witherspoon.dts b/arch/arm/boot/dts/aspeed-bmc-opp-witherspoon.dts
+index 569dad93e162..1a28b86f00ea 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-opp-witherspoon.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-opp-witherspoon.dts
+@@ -658,4 +658,9 @@ &video {
+ 	memory-region = <&video_engine_memory>;
  };
-+
+ 
 +&xdma {
 +	status = "okay";
-+	memory = <0xbf800000 0x00800000>;
++	memory = <0x9f000000 0x01000000>;
 +};
++
+ #include "ibm-power9-dual.dtsi"
 -- 
 2.24.0
 
