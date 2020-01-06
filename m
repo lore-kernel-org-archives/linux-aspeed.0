@@ -1,301 +1,151 @@
-From: Eddie James <eajames@linux.ibm.com>
-Date: Thu,  2 Jan 2020 13:27:51 -0600
-Subject: [PATCH v4 07/12] soc: aspeed: xdma: Add user interface
-In-Reply-To: <1577993276-2184-1-git-send-email-eajames@linux.ibm.com>
-References: <1577993276-2184-1-git-send-email-eajames@linux.ibm.com>
-Message-ID: <1577993276-2184-8-git-send-email-eajames@linux.ibm.com>
+From: Joel Stanley <joel@jms.id.au>
+Date: Mon, 6 Jan 2020 06:47:39 +0000
+Subject: [PATCH v1 1/1] ARM: dts: aspeed: update Hr855xg2 device tree
+In-Reply-To: <1577350475-127530-1-git-send-email-pengms1@lenovo.com>
+References: <1577350475-127530-1-git-send-email-pengms1@lenovo.com>
+Message-ID: <CACPK8XeY5dPHtRfFD55dLVHT0SF1gJEVf1DixsbJKpciLP2s5Q@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This commits adds a miscdevice to provide a user interface to the XDMA
-engine. The interface provides the write operation to start DMA
-operations. The DMA parameters are passed as the data to the write call.
-The actual data to transfer is NOT passed through write. Note that both
-directions of DMA operation are accomplished through the write command;
-BMC to host and host to BMC.
+On Thu, 26 Dec 2019 at 08:54, Andrew Peng <pengms1@lenovo.com> wrote:
+>
 
-The XDMA driver reserves an area of physical memory for DMA operations,
-as the XDMA engine is restricted to accessing certain physical memory
-areas on some platforms. This memory forms a pool from which users can
-allocate pages for their usage with calls to mmap. The space allocated
-by a client will be the space used in the DMA operation. For an
-"upstream" (BMC to host) operation, the data in the client's area will
-be transferred to the host. For a "downstream" (host to BMC) operation,
-the host data will be placed in the client's memory area.
+When you have a list of things like below, it's sometimes a good hint
+that you should be sending one patch for each bullet point. This makes
+it easier to review.
 
-Poll is also provided in order to determine when the DMA operation is
-complete for non-blocking IO.
+> Update i2c aliases.
+> Change flash_memory mapping address and size.
+> Add in a gpio-keys section.
+> Enable vhub, vuart, spi1 and spi2.
+> Add raa228006, ir38164 and sn1701022 hwmon sensors.
+> Remove some unuse gpio from gpio section.
 
-Signed-off-by: Eddie James <eajames@linux.ibm.com>
----
-Changes since v3:
- - Use READ_ONCE for current_client
- - add dev_warn for failed mmap
+unused?
 
- drivers/soc/aspeed/aspeed-xdma.c | 205 +++++++++++++++++++++++++++++++
- 1 file changed, 205 insertions(+)
+>
+> Signed-off-by: Andrew Peng <pengms1@lenovo.com>
+> Signed-off-by: Derek Lin <dlin23@lenovo.com>
+> Signed-off-by: Yonghui Liu <liuyh21@lenovo.com>
 
-diff --git a/drivers/soc/aspeed/aspeed-xdma.c b/drivers/soc/aspeed/aspeed-xdma.c
-index b79855016c8b..5ad0efaf6e05 100644
---- a/drivers/soc/aspeed/aspeed-xdma.c
-+++ b/drivers/soc/aspeed/aspeed-xdma.c
-@@ -13,6 +13,7 @@
- #include <linux/io.h>
- #include <linux/jiffies.h>
- #include <linux/mfd/syscon.h>
-+#include <linux/miscdevice.h>
- #include <linux/module.h>
- #include <linux/mutex.h>
- #include <linux/of_device.h>
-@@ -201,6 +202,8 @@ struct aspeed_xdma {
- 	struct clk *clock;
- 	struct reset_control *reset;
- 
-+	/* file_lock serializes reads of current_client */
-+	struct mutex file_lock;
- 	/* client_lock protects error and in_progress of the client */
- 	spinlock_t client_lock;
- 	struct aspeed_xdma_client *current_client;
-@@ -223,6 +226,8 @@ struct aspeed_xdma {
- 	void __iomem *mem_virt;
- 	dma_addr_t cmdq_phys;
- 	struct gen_pool *pool;
-+
-+	struct miscdevice misc;
- };
- 
- struct aspeed_xdma_client {
-@@ -527,6 +532,188 @@ static irqreturn_t aspeed_xdma_pcie_irq(int irq, void *arg)
- 	return IRQ_HANDLED;
- }
- 
-+static ssize_t aspeed_xdma_write(struct file *file, const char __user *buf,
-+				 size_t len, loff_t *offset)
-+{
-+	int rc;
-+	struct aspeed_xdma_op op;
-+	struct aspeed_xdma_client *client = file->private_data;
-+	struct aspeed_xdma *ctx = client->ctx;
-+
-+	if (len != sizeof(op))
-+		return -EINVAL;
-+
-+	rc = copy_from_user(&op, buf, len);
-+	if (rc)
-+		return rc;
-+
-+	if (!op.len || op.len > client->size ||
-+	    op.direction > ASPEED_XDMA_DIRECTION_UPSTREAM)
-+		return -EINVAL;
-+
-+	if (file->f_flags & O_NONBLOCK) {
-+		if (!mutex_trylock(&ctx->file_lock))
-+			return -EAGAIN;
-+
-+		if (READ_ONCE(ctx->current_client)) {
-+			mutex_unlock(&ctx->file_lock);
-+			return -EBUSY;
-+		}
-+	} else {
-+		mutex_lock(&ctx->file_lock);
-+
-+		rc = wait_event_interruptible(ctx->wait, !ctx->current_client);
-+		if (rc) {
-+			mutex_unlock(&ctx->file_lock);
-+			return -EINTR;
-+		}
-+	}
-+
-+	aspeed_xdma_start(ctx, &op, client->phys, client);
-+
-+	mutex_unlock(&ctx->file_lock);
-+
-+	if (!(file->f_flags & O_NONBLOCK)) {
-+		rc = wait_event_interruptible(ctx->wait, !client->in_progress);
-+		if (rc)
-+			return -EINTR;
-+
-+		if (client->error)
-+			return -EIO;
-+	}
-+
-+	return len;
-+}
-+
-+static __poll_t aspeed_xdma_poll(struct file *file,
-+				 struct poll_table_struct *wait)
-+{
-+	__poll_t mask = 0;
-+	__poll_t req = poll_requested_events(wait);
-+	struct aspeed_xdma_client *client = file->private_data;
-+	struct aspeed_xdma *ctx = client->ctx;
-+
-+	if (req & (EPOLLIN | EPOLLRDNORM)) {
-+		if (client->in_progress)
-+			poll_wait(file, &ctx->wait, wait);
-+
-+		if (!client->in_progress) {
-+			if (client->error)
-+				mask |= EPOLLERR;
-+			else
-+				mask |= EPOLLIN | EPOLLRDNORM;
-+		}
-+	}
-+
-+	if (req & (EPOLLOUT | EPOLLWRNORM)) {
-+		if (ctx->current_client)
-+			poll_wait(file, &ctx->wait, wait);
-+
-+		if (!ctx->current_client)
-+			mask |= EPOLLOUT | EPOLLWRNORM;
-+	}
-+
-+	return mask;
-+}
-+
-+static void aspeed_xdma_vma_close(struct vm_area_struct *vma)
-+{
-+	int rc;
-+	struct aspeed_xdma_client *client = vma->vm_private_data;
-+
-+	rc = wait_event_interruptible(client->ctx->wait, !client->in_progress);
-+	if (rc)
-+		return;
-+
-+	gen_pool_free(client->ctx->pool, (unsigned long)client->virt,
-+		      client->size);
-+
-+	client->virt = NULL;
-+	client->phys = 0;
-+	client->size = 0;
-+}
-+
-+static const struct vm_operations_struct aspeed_xdma_vm_ops = {
-+	.close =	aspeed_xdma_vma_close,
-+};
-+
-+static int aspeed_xdma_mmap(struct file *file, struct vm_area_struct *vma)
-+{
-+	int rc;
-+	struct aspeed_xdma_client *client = file->private_data;
-+	struct aspeed_xdma *ctx = client->ctx;
-+
-+	/* restrict file to one mapping */
-+	if (client->size)
-+		return -EBUSY;
-+
-+	client->size = vma->vm_end - vma->vm_start;
-+	client->virt = gen_pool_dma_alloc(ctx->pool, client->size,
-+					  &client->phys);
-+	if (!client->virt) {
-+		client->phys = 0;
-+		client->size = 0;
-+		return -ENOMEM;
-+	}
-+
-+	vma->vm_pgoff = (client->phys - ctx->mem_phys) >> PAGE_SHIFT;
-+	vma->vm_ops = &aspeed_xdma_vm_ops;
-+	vma->vm_private_data = client;
-+	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
-+
-+	rc = io_remap_pfn_range(vma, vma->vm_start, client->phys >> PAGE_SHIFT,
-+				client->size, vma->vm_page_prot);
-+	if (rc) {
-+		dev_warn(ctx->dev, "mmap err: v[%08lx] to p[%08x], s[%08x]\n",
-+			 vma->vm_start, (u32)client->phys, client->size);
-+
-+		gen_pool_free(ctx->pool, (unsigned long)client->virt,
-+			      client->size);
-+
-+		client->virt = NULL;
-+		client->phys = 0;
-+		client->size = 0;
-+		return rc;
-+	}
-+
-+	dev_dbg(ctx->dev, "mmap: v[%08lx] to p[%08x], s[%08x]\n",
-+		vma->vm_start, (u32)client->phys, client->size);
-+
-+	return 0;
-+}
-+
-+static int aspeed_xdma_open(struct inode *inode, struct file *file)
-+{
-+	struct miscdevice *misc = file->private_data;
-+	struct aspeed_xdma *ctx = container_of(misc, struct aspeed_xdma, misc);
-+	struct aspeed_xdma_client *client = kzalloc(sizeof(*client),
-+						    GFP_KERNEL);
-+
-+	if (!client)
-+		return -ENOMEM;
-+
-+	client->ctx = ctx;
-+	file->private_data = client;
-+	return 0;
-+}
-+
-+static int aspeed_xdma_release(struct inode *inode, struct file *file)
-+{
-+	struct aspeed_xdma_client *client = file->private_data;
-+
-+	kfree(client);
-+	return 0;
-+}
-+
-+static const struct file_operations aspeed_xdma_fops = {
-+	.owner			= THIS_MODULE,
-+	.write			= aspeed_xdma_write,
-+	.poll			= aspeed_xdma_poll,
-+	.mmap			= aspeed_xdma_mmap,
-+	.open			= aspeed_xdma_open,
-+	.release		= aspeed_xdma_release,
-+};
-+
- static int aspeed_xdma_init_scu(struct aspeed_xdma *ctx, struct device *dev)
- {
- 	struct regmap *scu = syscon_regmap_lookup_by_phandle(dev->of_node,
-@@ -592,6 +779,7 @@ static int aspeed_xdma_probe(struct platform_device *pdev)
- 	ctx->chip = md;
- 	ctx->dev = dev;
- 	platform_set_drvdata(pdev, ctx);
-+	mutex_init(&ctx->file_lock);
- 	mutex_init(&ctx->start_lock);
- 	INIT_WORK(&ctx->reset_work, aspeed_xdma_reset_work);
- 	spin_lock_init(&ctx->client_lock);
-@@ -688,6 +876,22 @@ static int aspeed_xdma_probe(struct platform_device *pdev)
- 
- 	aspeed_xdma_init_eng(ctx);
- 
-+	ctx->misc.minor = MISC_DYNAMIC_MINOR;
-+	ctx->misc.fops = &aspeed_xdma_fops;
-+	ctx->misc.name = "aspeed-xdma";
-+	ctx->misc.parent = dev;
-+	rc = misc_register(&ctx->misc);
-+	if (rc) {
-+		dev_err(dev, "Failed to register xdma miscdevice.\n");
-+
-+		gen_pool_free(ctx->pool, (unsigned long)ctx->cmdq,
-+			      XDMA_CMDQ_SIZE);
-+
-+		reset_control_assert(ctx->reset);
-+		clk_disable_unprepare(ctx->clock);
-+		return rc;
-+	}
-+
- 	/*
- 	 * This interrupt could fire immediately so only request it once the
- 	 * engine and driver are initialized.
-@@ -709,6 +913,7 @@ static int aspeed_xdma_remove(struct platform_device *pdev)
- {
- 	struct aspeed_xdma *ctx = platform_get_drvdata(pdev);
- 
-+	misc_deregister(&ctx->misc);
- 	gen_pool_free(ctx->pool, (unsigned long)ctx->cmdq, XDMA_CMDQ_SIZE);
- 
- 	reset_control_assert(ctx->reset);
--- 
-2.24.0
+I got two copies of this. I think they are the same.
 
+> ---
+> v1: initial version
+>
+>  arch/arm/boot/dts/aspeed-bmc-lenovo-hr855xg2.dts | 557 ++++++++++++++++-------
+>  1 file changed, 382 insertions(+), 175 deletions(-)
+>
+> diff --git a/arch/arm/boot/dts/aspeed-bmc-lenovo-hr855xg2.dts b/arch/arm/boot/dts/aspeed-bmc-lenovo-hr855xg2.dts
+> index 8193fad..e1386d4 100644
+> --- a/arch/arm/boot/dts/aspeed-bmc-lenovo-hr855xg2.dts
+> +++ b/arch/arm/boot/dts/aspeed-bmc-lenovo-hr855xg2.dts
+> @@ -15,14 +15,21 @@
+>         compatible = "lenovo,hr855xg2-bmc", "aspeed,ast2500";
+>
+
+> -               flash_memory: region at 98000000 {
+> +               flash_memory: region at 9EFF0000 {
+>                         no-map;
+> -                       reg = <0x98000000 0x00100000>; /* 1M */
+> +                       reg = <0x9EFF0000 0x00010000>; /* 64K */
+
+Do you really use 64K here, or was this a workaround for the lpc-ctlr
+driver requiring a memory region?
+
+If it's a workaround you can now drop the memory region phandle, as
+the driver works without it.
+
+> +&spi2 {
+>         status = "okay";
+>         pinctrl-names = "default";
+> -       pinctrl-0 = <&pinctrl_txd1_default
+> -                       &pinctrl_rxd1_default>;
+> +       pinctrl-0 = <&pinctrl_spi2ck_default
+> +                               &pinctrl_spi2cs0_default
+> +                               &pinctrl_spi2miso_default
+> +                               &pinctrl_spi2mosi_default>;
+> +
+> +               spidev at 0 {
+> +                               status = "okay";
+> +                               compatible = "aspeed,spidev";
+> +                               reg = < 0 >;
+> +                               spi-max-frequency = <50000000>;
+> +               };
+
+This is for an out of tree driver? We discourage that, and prefer you
+submit the driver upstream for review before adding it to the device
+tree.
+
+Please drop the sbidev bit from your next version.
+
+> +
+> +               flash at 0 {
+> +                               compatible = "jedec,spi-nor";
+> +                               m25p,fast-read;
+> +                               label = "fpga";
+> +                               reg = < 0 >;
+> +                               spi-max-frequency = <50000000>;
+> +                               status = "okay";
+> +               };
+>  };
+
+> +&vuart {
+>         status = "okay";
+> +       auto-flow-control;
+> +       espi-enabled = <&syscon 0x70 25>;
+
+Is this the same as the upstreamed aspeed,sirq-polarity-sense?
+
+Please review https://git.kernel.org/torvalds/c/8d310c9107a2a3f19dc7bb54dd50f70c65ef5409.
+I think you will find you can drop the espi-enabled property as
+aspeed-g5.dtsi now contains the same information.
+
+> +               pcie_slot12: i2c at 4{
+> +                               #address-cells = <1>;
+> +                               #size-cells = <0>;
+> +                               reg = <4>;
+> +               };
+> +
+> +               switch0_i2c5:i2c at 5{
+
+a space after the :
+
+> +                               #address-cells = <1>;
+> +                               #size-cells = <0>;
+> +                               reg = <5>;
+> +                               eeprom at 54 {
+> +                                               compatible = "atmel,24c04";
+> +                                               pagesize = <16>;
+> +                                               reg = <0x54>;
+> +                               };
+>                 };
+>         };
+>  };
+> @@ -216,13 +377,43 @@
+>         };
+>
+>         VR at 45 {
+> -               compatible = "pmbus";
+> +               compatible = "raa228006";
+
+Please send this change once you've had your pmbus driver accepted by
+Guneter. In the mean time I suggest dropping it from v2 so we can
+merge the other changes.
+
+>                 reg = <0x45>;
+>         };
+>  };
+>
+
+> +       CPU0_VCCIN at 60 {
+
+Convention is to use lower case for node names.
+
+> +               compatible = "raa228006";
+> +               reg = <0x60>;
+> +       };
+> +
