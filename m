@@ -1,36 +1,79 @@
-From: Joel Stanley <joel@jms.id.au>
-Date: Tue,  7 Jan 2020 14:13:24 +1030
-Subject: [PATCH 3/3] video: aspeed: Update copyright information
-In-Reply-To: <20200107034324.38073-1-joel@jms.id.au>
-References: <20200107034324.38073-1-joel@jms.id.au>
-Message-ID: <20200107034324.38073-4-joel@jms.id.au>
+From: Marco Felsch <m.felsch@pengutronix.de>
+Date: Tue, 7 Jan 2020 09:36:54 +0100
+Subject: [PATCH v3 3/6] dt-bindings: mfd: da9062: add regulator voltage
+ selection documentation
+In-Reply-To: <20191217125832.GF4755@sirena.org.uk>
+References: <20191210094144.mxximpuouchy3fqu@pengutronix.de>
+ <AM5PR1001MB099497419E4DCA69D424EC35805A0@AM5PR1001MB0994.EURPRD10.PROD.OUTLOOK.COM>
+ <20191211170918.q7kqkd4lrwwp7jl3@pengutronix.de>
+ <20191212161019.GF4310@sirena.org.uk>
+ <20191212162152.5uu3feacduetysq7@pengutronix.de>
+ <20191212165124.GJ4310@sirena.org.uk>
+ <20191216085525.csr2aglm5md4vtsw@pengutronix.de>
+ <20191216114454.GB4161@sirena.org.uk>
+ <20191217073533.GC31182@pengutronix.de>
+ <20191217125832.GF4755@sirena.org.uk>
+Message-ID: <20200107083654.atgbjhrnhyax2gqq@pengutronix.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Use the preferred form for GPL2+, and add IBM and Intel as the authors.
-The driver was initially upstreamed by Eddie from IBM, and has had major
-contributions from Jae at Intel.
+Hi Mark,
 
-Signed-off-by: Joel Stanley <joel@jms.id.au>
----
- drivers/media/platform/aspeed-video.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+On 19-12-17 12:58, Mark Brown wrote:
+> On Tue, Dec 17, 2019 at 08:35:33AM +0100, Marco Felsch wrote:
+> > On 19-12-16 11:44, Mark Brown wrote:
+> 
+> > > What I'm saying is that I think the binding needs to explicitly talk
+> > > about that since at the minute it's really confusing reading it as it
+> > > is, it sounds very much like it's trying to override that in a chip
+> > > specific fashion as using gpiolib and the GPIO bindings for pinmuxing is
+> > > really quite unusual.
+> 
+> > Hm.. I still think that we don't mux the pin to some special function.
+> > It is still a gpio input pin and if we don't request the pin we could
+> > read the input from user-space too and get a 'valid' value. Muxing would
+> > happen if we change the pad to so called _alternate_ function. Anyway,
+> > lets find a binding description:
+> 
+> I don't think any of this makes much difference from a user point of
+> view.
+> 
+> > IMHO this is very descriptive and needs no update.
+> 
+> > description:
+> >  - A GPIO reference to a local general purpose input, [1] calls it GPI.
+> >    The DA9062 regulators can select between voltage-a/-b settings.
+> >    Each regulator has a VBUCK*_GPI or VLDO*_GPI input to determine the
+> >    active setting. In front of the VBUCK*_GPI/VLDO*_GPI input is a mux
+> >    to select between different signal sources, valid sources are: the
+> >    internal sequencer, GPI1, GPI2 and GPI3. See [1] table 63 for more
+> >    information. Most the time the internal sequencer is fine but
+> >    sometimes it is necessary to use the signal from the DA9062 GPI
+> >    pads. This binding covers the second use case.
+> >    Attention: Sharing the same GPI for other purposes or across multiple
+> >    regulators is possible but the polarity setting must equal.
+> 
+> This doesn't say anything about how the GPIO input is expected to be
+> controlled, for voltage setting any runtime control would need to be
+> done by the driver and it sounds like that's all that can be controlled.
+> The way this reads I'd expect one use of this to be for fast voltage
+> setting for example (you could even combine that with suspend sequencing
+> using the internal sequencer if you mux back to the sequencer during
+> suspend).
 
-diff --git a/drivers/media/platform/aspeed-video.c b/drivers/media/platform/aspeed-video.c
-index d70b893fd4cf..71e0dbdb37dc 100644
---- a/drivers/media/platform/aspeed-video.c
-+++ b/drivers/media/platform/aspeed-video.c
-@@ -1,4 +1,6 @@
--// SPDX-License-Identifier: GPL-2.0+
-+// SPDX-License-Identifier: GPL-2.0-or-later
-+// Copyright 2020 IBM Corp.
-+// Copyright (c) 2019 Intel Corporation
- 
- #include <linux/atomic.h>
- #include <linux/bitfield.h>
--- 
-2.24.1
+The input signal is routed trough the da9062 gpio block to the
+regualtors. You can't set any voltage value using a gpio instead you
+decide which voltage setting is applied. The voltage values for
+runtime/suspend comes from the dt-data. No it's not just a fast
+switching option imagine the system suspend case where the cpu and soc
+voltage can be reduced to a very low value. Older soc's like the imx6
+signaling this state by a hard wired gpio line because the soc and
+cpu cores don't work properly on such low voltage values. This is
+my use case and I can't use the sequencer.
+
+Regards,
+  Marco
 
