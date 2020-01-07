@@ -1,52 +1,26 @@
-From: Marco Felsch <m.felsch@pengutronix.de>
-Date: Tue, 7 Jan 2020 14:38:11 +0100
-Subject: [PATCH v3 3/6] dt-bindings: mfd: da9062: add regulator voltage
- selection documentation
-In-Reply-To: <20200107130911.GD4877@sirena.org.uk>
-References: <20191211170918.q7kqkd4lrwwp7jl3@pengutronix.de>
- <20191212161019.GF4310@sirena.org.uk>
- <20191212162152.5uu3feacduetysq7@pengutronix.de>
- <20191212165124.GJ4310@sirena.org.uk>
- <20191216085525.csr2aglm5md4vtsw@pengutronix.de>
- <20191216114454.GB4161@sirena.org.uk>
- <20191217073533.GC31182@pengutronix.de>
- <20191217125832.GF4755@sirena.org.uk>
- <20200107083654.atgbjhrnhyax2gqq@pengutronix.de>
- <20200107130911.GD4877@sirena.org.uk>
-Message-ID: <20200107133811.rua5i6lflzyzlh24@pengutronix.de>
+From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+Date: Tue, 7 Jan 2020 09:20:25 -0800
+Subject: [PATCH 1/3] media: aspeed: Rework memory mapping in probe
+In-Reply-To: <20200107034324.38073-2-joel@jms.id.au>
+References: <20200107034324.38073-1-joel@jms.id.au>
+ <20200107034324.38073-2-joel@jms.id.au>
+Message-ID: <1f4b4c28-83e6-9fdb-f7a2-67e786a656c3@linux.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 20-01-07 13:09, Mark Brown wrote:
-> On Tue, Jan 07, 2020 at 09:36:54AM +0100, Marco Felsch wrote:
-> > On 19-12-17 12:58, Mark Brown wrote:
+On 1/6/2020 7:43 PM, Joel Stanley wrote:
+> Use the recently introduced function devm_platform_ioremap_resource to
+> save a few lines of code. This makes the driver match common platform
+> device probe patterns.
 > 
-> > > This doesn't say anything about how the GPIO input is expected to be
-> > > controlled, for voltage setting any runtime control would need to be
-> > > done by the driver and it sounds like that's all that can be controlled.
-> > > The way this reads I'd expect one use of this to be for fast voltage
-> > > setting for example (you could even combine that with suspend sequencing
-> > > using the internal sequencer if you mux back to the sequencer during
-> > > suspend).
-> 
-> > The input signal is routed trough the da9062 gpio block to the
-> > regualtors. You can't set any voltage value using a gpio instead you
-> > decide which voltage setting is applied. The voltage values for
-> > runtime/suspend comes from the dt-data. No it's not just a fast
-> > switching option imagine the system suspend case where the cpu and soc
-> > voltage can be reduced to a very low value. Older soc's like the imx6
-> > signaling this state by a hard wired gpio line because the soc and
-> > cpu cores don't work properly on such low voltage values. This is
-> > my use case and I can't use the sequencer.
-> 
-> My point is that I can't tell any of this from the description.
+> Signed-off-by: Joel Stanley <joel@jms.id.au>
+> ---
 
-Therefore I want to discuss the dt-binding documentation with you and
-the others to get this done. Is the above description better to
-understand the dt-binding?
+Reviewed-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
 
-Regards,
-  Marco
+Thanks,
+
+Jae
