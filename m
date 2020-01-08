@@ -1,25 +1,24 @@
-From: Rob Herring <robh@kernel.org>
-Date: Wed, 8 Jan 2020 14:33:23 -0600
-Subject: [PATCH 2/3] Documentation: dt-bindings: media: add AST2600 Video
- Engine support
-In-Reply-To: <20200107011503.17435-3-jae.hyun.yoo@linux.intel.com>
-References: <20200107011503.17435-1-jae.hyun.yoo@linux.intel.com>
- <20200107011503.17435-3-jae.hyun.yoo@linux.intel.com>
-Message-ID: <20200108203323.GA18757@bogus>
+From: David Miller <davem@davemloft.net>
+Date: Wed, 08 Jan 2020 13:09:32 -0800 (PST)
+Subject: [net-next PATCH] net/ncsi: Send device address as source address
+In-Reply-To: <20200107193034.1322431-1-vijaykhemka@fb.com>
+References: <20200107193034.1322431-1-vijaykhemka@fb.com>
+Message-ID: <20200108.130932.721413767130819084.davem@davemloft.net>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon,  6 Jan 2020 17:15:02 -0800, Jae Hyun Yoo wrote:
-> The AST2600 has Video Engine so add the compatible string into the
-> document.
-> 
-> Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-> ---
->  Documentation/devicetree/bindings/media/aspeed-video.txt | 5 +++--
->  1 file changed, 3 insertions(+), 2 deletions(-)
-> 
+From: Vijay Khemka <vijaykhemka@fb.com>
+Date: Tue, 7 Jan 2020 11:30:33 -0800
 
-Acked-by: Rob Herring <robh@kernel.org>
+> After receiving device mac address from device, send this as
+> a source address for further commands instead of broadcast
+> address.
+> 
+> This will help in multi host NIC cards.
+> 
+> Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
+
+Applied to net-next, thanks.
