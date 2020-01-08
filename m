@@ -1,45 +1,47 @@
-From: Vijay Khemka <vijaykhemka@fb.com>
-Date: Tue, 7 Jan 2020 11:30:33 -0800
-Subject: [net-next PATCH] net/ncsi: Send device address as source address
-Message-ID: <20200107193034.1322431-1-vijaykhemka@fb.com>
+From: Joel Stanley <joel@jms.id.au>
+Date: Wed, 8 Jan 2020 02:55:04 +0000
+Subject: [GIT PULL] aspeed: device tree fixes for 5.5
+Message-ID: <CACPK8XcjazgORXNZBU1ECMukXG4HA8D9VeDxiSPifDk_iB7_dw@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-After receiving device mac address from device, send this as
-a source address for further commands instead of broadcast
-address.
+Hello arm maintainers,
 
-This will help in multi host NIC cards.
+Here are some fixes for some device tree mistakes that went in during
+the 5.5 merge window.
 
-Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
----
- net/ncsi/ncsi-cmd.c | 10 +++++++++-
- 1 file changed, 9 insertions(+), 1 deletion(-)
+The following changes since commit ffcdc5df08bfc4f418693b22cf2a1182de3375b4:
 
-diff --git a/net/ncsi/ncsi-cmd.c b/net/ncsi/ncsi-cmd.c
-index 0187e65176c0..ba9ae482141b 100644
---- a/net/ncsi/ncsi-cmd.c
-+++ b/net/ncsi/ncsi-cmd.c
-@@ -369,7 +369,15 @@ int ncsi_xmit_cmd(struct ncsi_cmd_arg *nca)
- 	eh = skb_push(nr->cmd, sizeof(*eh));
- 	eh->h_proto = htons(ETH_P_NCSI);
- 	eth_broadcast_addr(eh->h_dest);
--	eth_broadcast_addr(eh->h_source);
-+
-+	/* If mac address received from device then use it for
-+	 * source address as unicast address else use broadcast
-+	 * address as source address
-+	 */
-+	if (nca->ndp->gma_flag == 1)
-+		memcpy(eh->h_source, nca->ndp->ndev.dev->dev_addr, ETH_ALEN);
-+	else
-+		eth_broadcast_addr(eh->h_source);
- 
- 	/* Start the timer for the request that might not have
- 	 * corresponding response. Given NCSI is an internal
--- 
-2.17.1
+  ARM: dts: aspeed: rainier: Fix fan fault and presence (2020-01-08
+12:51:03 +1030)
 
+are available in the Git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/joel/aspeed.git
+tags/aspeed-5.5-devicetree-fixes
+
+for you to fetch changes up to ffcdc5df08bfc4f418693b22cf2a1182de3375b4:
+
+  ARM: dts: aspeed: rainier: Fix fan fault and presence (2020-01-08
+12:51:03 +1030)
+
+----------------------------------------------------------------
+ASPEED device tree fixes for 5.5
+
+Fixes for some badly applied patches that went in to 5.5. There is also
+a fix for an incorrect i2c address.
+
+----------------------------------------------------------------
+
+Brandon Wyman (1):
+      ARM: dts: aspeed: rainier: Fix fan fault and presence
+
+Joel Stanley (5):
+      ARM: dts: aspeed-g6: Fix FSI master location
+      ARM: dts: aspeed: tacoma: Fix fsi master node
+      ARM: dts: aspeed: tacoma: Remove duplicate i2c busses
+      ARM: dts: aspeed: tacoma: Remove duplicate flash nodes
+      ARM: dts: aspeed: rainier: Remove duplicate i2c busses
