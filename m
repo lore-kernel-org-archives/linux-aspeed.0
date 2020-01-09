@@ -1,10 +1,10 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Thu, 09 Jan 2020 15:38:20 +1030
-Subject: [PATCH v4 06/12] soc: aspeed: Add XDMA Engine Driver
-In-Reply-To: <1577993276-2184-7-git-send-email-eajames@linux.ibm.com>
+Date: Thu, 09 Jan 2020 16:23:34 +1030
+Subject: [PATCH v4 07/12] soc: aspeed: xdma: Add user interface
+In-Reply-To: <1577993276-2184-8-git-send-email-eajames@linux.ibm.com>
 References: <1577993276-2184-1-git-send-email-eajames@linux.ibm.com>
- <1577993276-2184-7-git-send-email-eajames@linux.ibm.com>
-Message-ID: <3c44c745-d39a-4724-860d-a66537b2adbb@www.fastmail.com>
+ <1577993276-2184-8-git-send-email-eajames@linux.ibm.com>
+Message-ID: <4a8922c3-4062-4c57-bf2a-33b8f9b965f7@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -14,55 +14,56 @@ Content-Transfer-Encoding: 7bit
 
 
 On Fri, 3 Jan 2020, at 05:57, Eddie James wrote:
-> +static int aspeed_xdma_init_scu(struct aspeed_xdma *ctx, struct device *dev)
+> +static ssize_t aspeed_xdma_write(struct file *file, const char __user *buf,
+> +				 size_t len, loff_t *offset)
 > +{
-> +	struct regmap *scu = syscon_regmap_lookup_by_phandle(dev->of_node,
-> +							     "aspeed,scu");
+> +	int rc;
+> +	struct aspeed_xdma_op op;
+> +	struct aspeed_xdma_client *client = file->private_data;
+> +	struct aspeed_xdma *ctx = client->ctx;
 > +
-> +	if (!IS_ERR(scu)) {
-> +		u32 selection;
-> +		bool pcie_device_bmc = true;
-> +		const u32 bmc = SCU_PCIE_CONF_BMC_EN |
-> +			SCU_PCIE_CONF_BMC_EN_MSI | SCU_PCIE_CONF_BMC_EN_IRQ |
-> +			SCU_PCIE_CONF_BMC_EN_DMA;
-> +		const u32 vga = SCU_PCIE_CONF_VGA_EN |
-> +			SCU_PCIE_CONF_VGA_EN_MSI | SCU_PCIE_CONF_VGA_EN_IRQ |
-> +			SCU_PCIE_CONF_VGA_EN_DMA;
-> +		const char *pcie = NULL;
+> +	if (len != sizeof(op))
+> +		return -EINVAL;
 > +
-> +		if (!of_property_read_string(dev->of_node, "pcie-device",
-> +					     &pcie)) {
-> +			if (!strcmp(pcie, "vga")) {
-> +				pcie_device_bmc = false;
-> +			} else if (strcmp(pcie, "bmc")) {
-> +				dev_err(dev,
-> +					"Invalid pcie-device property %s.\n",
-> +					pcie);
-> +				return -EINVAL;
-> +			}
+> +	rc = copy_from_user(&op, buf, len);
+> +	if (rc)
+> +		return rc;
+> +
+> +	if (!op.len || op.len > client->size ||
+> +	    op.direction > ASPEED_XDMA_DIRECTION_UPSTREAM)
+> +		return -EINVAL;
+> +
+> +	if (file->f_flags & O_NONBLOCK) {
+> +		if (!mutex_trylock(&ctx->file_lock))
+> +			return -EAGAIN;
+> +
+> +		if (READ_ONCE(ctx->current_client)) {
+> +			mutex_unlock(&ctx->file_lock);
+> +			return -EBUSY;
 > +		}
-> +
-> +		if (pcie_device_bmc) {
-> +			selection = bmc;
-> +			regmap_write(scu, ctx->chip->scu_bmc_class,
-> +				     SCU_BMC_CLASS_REV_XDMA);
-> +		} else {
-> +			selection = vga;
-> +		}
-> +
-> +		regmap_update_bits(scu, ctx->chip->scu_pcie_conf, bmc | vga,
-> +				   selection);
 > +	} else {
-> +		dev_warn(dev, "Unable to configure PCIe; continuing.\n");
+> +		mutex_lock(&ctx->file_lock);
+> +
+> +		rc = wait_event_interruptible(ctx->wait, !ctx->current_client);
+> +		if (rc) {
+> +			mutex_unlock(&ctx->file_lock);
+> +			return -EINTR;
+> +		}
 > +	}
+> +
+> +	aspeed_xdma_start(ctx, &op, client->phys, client);
 
-Not something you need to fix but generally I'd structure this as a early-return:
+As aspeed_xdma_start() has to take start_lock, if O_NONBLOCK is set we will
+potentially violate its contract if the engine is currently being reset. We could
+avoid this by adding
 
-    if (IS_ERR(scu)) {
-        dev_warn(dev, "Unable to configure PCIe; continuing.\n");
-        return 0;
-    }
-    ...
+    if (READ_ONCE(ctx->in_reset))
+        return -EBUSY;
 
-Could probably also improve the warning message to say what caused the
-failure, but again, something that can be changed later.
+before mutex_trylock(&ctx->file_lock) in the O_NONBLOCK path.
+
+Anyway, I think I've convinced myself the locking isn't wrong. It's possible
+that it could be improved, but I think we're hitting the point of diminishing
+returns.
+
+Andrew
