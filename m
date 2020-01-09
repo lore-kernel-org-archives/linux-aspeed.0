@@ -1,10 +1,10 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Thu, 09 Jan 2020 16:32:17 +1030
-Subject: [PATCH v4 09/12] ARM: dts: aspeed: ast2500: Add XDMA Engine
-In-Reply-To: <1577993276-2184-10-git-send-email-eajames@linux.ibm.com>
+Date: Thu, 09 Jan 2020 16:32:40 +1030
+Subject: [PATCH v4 10/12] ARM: dts: aspeed: ast2600: Add XDMA Engine
+In-Reply-To: <1577993276-2184-11-git-send-email-eajames@linux.ibm.com>
 References: <1577993276-2184-1-git-send-email-eajames@linux.ibm.com>
- <1577993276-2184-10-git-send-email-eajames@linux.ibm.com>
-Message-ID: <d1e6ea02-0b16-4dc6-8abb-1bbf30bd6548@www.fastmail.com>
+ <1577993276-2184-11-git-send-email-eajames@linux.ibm.com>
+Message-ID: <581ff3b5-c6c1-4e29-b87c-3bd961c4e659@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
