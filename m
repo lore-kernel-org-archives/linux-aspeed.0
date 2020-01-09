@@ -1,9 +1,10 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Thu, 09 Jan 2020 12:23:32 +1030
-Subject: [PATCH] fsi: aspeed: convert to devm_platform_ioremap_resource
-In-Reply-To: <20191228190631.26777-1-tiny.windzz@gmail.com>
-References: <20191228190631.26777-1-tiny.windzz@gmail.com>
-Message-ID: <f93bd92d-e509-4825-a4bf-00f5b7c6ff7d@www.fastmail.com>
+Date: Thu, 09 Jan 2020 15:15:38 +1030
+Subject: [PATCH v4 05/12] dt-bindings: soc: Add Aspeed XDMA Engine
+In-Reply-To: <1577993276-2184-6-git-send-email-eajames@linux.ibm.com>
+References: <1577993276-2184-1-git-send-email-eajames@linux.ibm.com>
+ <1577993276-2184-6-git-send-email-eajames@linux.ibm.com>
+Message-ID: <3cc1006c-c107-4864-b652-118e84060c38@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -12,9 +13,69 @@ Content-Transfer-Encoding: 7bit
 
 
 
-On Sun, 29 Dec 2019, at 05:36, Yangtao Li wrote:
-> Use devm_platform_ioremap_resource() to simplify code.
+On Fri, 3 Jan 2020, at 05:57, Eddie James wrote:
+> Document the bindings for the Aspeed AST25XX and AST26XX XDMA engine.
 > 
-> Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
+> Signed-off-by: Eddie James <eajames@linux.ibm.com>
+> Reviewed-by: Rob Herring <robh@kernel.org>
+> ---
+> Changes since v3:
+>  - Switch "scu" property to "aspeed,scu"
+> 
+>  .../devicetree/bindings/soc/aspeed/xdma.txt   | 40 +++++++++++++++++++
+>  MAINTAINERS                                   |  6 +++
+>  2 files changed, 46 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/soc/aspeed/xdma.txt
+> 
+> diff --git a/Documentation/devicetree/bindings/soc/aspeed/xdma.txt 
+> b/Documentation/devicetree/bindings/soc/aspeed/xdma.txt
+> new file mode 100644
+> index 000000000000..e0740ccfa910
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/soc/aspeed/xdma.txt
+> @@ -0,0 +1,40 @@
+> +Aspeed AST25XX and AST26XX XDMA Engine
+> +
+> +The XDMA Engine embedded in the AST2500 and AST2600 SOCs can perform 
+> automatic
+> +DMA operations over PCI between the SOC (acting as a BMC) and a host 
+> processor.
+> +
+> +Required properties:
+> + - compatible		: must be "aspeed,ast2500-xdma" or
+> +			  "aspeed,ast2600-xdma"
+> + - reg			: contains the address and size of the memory region
+> +			  associated with the XDMA engine registers
+> + - clocks		: clock specifier for the clock associated with the
+> +			  XDMA engine
+> + - resets		: reset specifier for the syscon reset associated with
+> +			  the XDMA engine
+> + - interrupts-extended	: two interrupt cells; the first specifies the 
+> global
+> +			  interrupt for the XDMA engine and the second
+> +			  specifies the PCI-E reset or PERST interrupt.
+> + - aspeed,scu		: a phandle to the syscon node for the system control
+> +			  unit of the SOC
+> + - memory		: contains the address and size of the memory area to
+> +			  be used by the XDMA engine for DMA operations
+> +
+> +Optional properties:
+> + - pcie-device		: should be either "bmc" or "vga", corresponding to
+> +			  which device should be used by the XDMA engine for
+> +			  DMA operations. If this property is not set, the XDMA
+> +			  engine will use the BMC PCI-E device.
+> +
+> +Example:
+> +
+> +    xdma at 1e6e7000 {
+> +        compatible = "aspeed,ast2500-xdma";
+> +        reg = <0x1e6e7000 0x100>;
+> +        clocks = <&syscon ASPEED_CLK_GATE_BCLK>;
+> +        resets = <&syscon ASPEED_RESET_XDMA>;
+> +        interrupts-extended = <&vic 6>, <&scu_ic 
+> ASPEED_AST2500_SCU_IC_PCIE_RESET_LO_TO_HI>;
+> +        scu = <&syscon>;
 
-Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
+You missed fixing the example :)
+
+Andrew
