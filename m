@@ -1,10 +1,10 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Thu, 09 Jan 2020 15:15:38 +1030
-Subject: [PATCH v4 05/12] dt-bindings: soc: Add Aspeed XDMA Engine
-In-Reply-To: <1577993276-2184-6-git-send-email-eajames@linux.ibm.com>
+Date: Thu, 09 Jan 2020 15:38:20 +1030
+Subject: [PATCH v4 06/12] soc: aspeed: Add XDMA Engine Driver
+In-Reply-To: <1577993276-2184-7-git-send-email-eajames@linux.ibm.com>
 References: <1577993276-2184-1-git-send-email-eajames@linux.ibm.com>
- <1577993276-2184-6-git-send-email-eajames@linux.ibm.com>
-Message-ID: <3cc1006c-c107-4864-b652-118e84060c38@www.fastmail.com>
+ <1577993276-2184-7-git-send-email-eajames@linux.ibm.com>
+Message-ID: <3c44c745-d39a-4724-860d-a66537b2adbb@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -14,68 +14,55 @@ Content-Transfer-Encoding: 7bit
 
 
 On Fri, 3 Jan 2020, at 05:57, Eddie James wrote:
-> Document the bindings for the Aspeed AST25XX and AST26XX XDMA engine.
-> 
-> Signed-off-by: Eddie James <eajames@linux.ibm.com>
-> Reviewed-by: Rob Herring <robh@kernel.org>
-> ---
-> Changes since v3:
->  - Switch "scu" property to "aspeed,scu"
-> 
->  .../devicetree/bindings/soc/aspeed/xdma.txt   | 40 +++++++++++++++++++
->  MAINTAINERS                                   |  6 +++
->  2 files changed, 46 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/soc/aspeed/xdma.txt
-> 
-> diff --git a/Documentation/devicetree/bindings/soc/aspeed/xdma.txt 
-> b/Documentation/devicetree/bindings/soc/aspeed/xdma.txt
-> new file mode 100644
-> index 000000000000..e0740ccfa910
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/soc/aspeed/xdma.txt
-> @@ -0,0 +1,40 @@
-> +Aspeed AST25XX and AST26XX XDMA Engine
+> +static int aspeed_xdma_init_scu(struct aspeed_xdma *ctx, struct device *dev)
+> +{
+> +	struct regmap *scu = syscon_regmap_lookup_by_phandle(dev->of_node,
+> +							     "aspeed,scu");
 > +
-> +The XDMA Engine embedded in the AST2500 and AST2600 SOCs can perform 
-> automatic
-> +DMA operations over PCI between the SOC (acting as a BMC) and a host 
-> processor.
+> +	if (!IS_ERR(scu)) {
+> +		u32 selection;
+> +		bool pcie_device_bmc = true;
+> +		const u32 bmc = SCU_PCIE_CONF_BMC_EN |
+> +			SCU_PCIE_CONF_BMC_EN_MSI | SCU_PCIE_CONF_BMC_EN_IRQ |
+> +			SCU_PCIE_CONF_BMC_EN_DMA;
+> +		const u32 vga = SCU_PCIE_CONF_VGA_EN |
+> +			SCU_PCIE_CONF_VGA_EN_MSI | SCU_PCIE_CONF_VGA_EN_IRQ |
+> +			SCU_PCIE_CONF_VGA_EN_DMA;
+> +		const char *pcie = NULL;
 > +
-> +Required properties:
-> + - compatible		: must be "aspeed,ast2500-xdma" or
-> +			  "aspeed,ast2600-xdma"
-> + - reg			: contains the address and size of the memory region
-> +			  associated with the XDMA engine registers
-> + - clocks		: clock specifier for the clock associated with the
-> +			  XDMA engine
-> + - resets		: reset specifier for the syscon reset associated with
-> +			  the XDMA engine
-> + - interrupts-extended	: two interrupt cells; the first specifies the 
-> global
-> +			  interrupt for the XDMA engine and the second
-> +			  specifies the PCI-E reset or PERST interrupt.
-> + - aspeed,scu		: a phandle to the syscon node for the system control
-> +			  unit of the SOC
-> + - memory		: contains the address and size of the memory area to
-> +			  be used by the XDMA engine for DMA operations
+> +		if (!of_property_read_string(dev->of_node, "pcie-device",
+> +					     &pcie)) {
+> +			if (!strcmp(pcie, "vga")) {
+> +				pcie_device_bmc = false;
+> +			} else if (strcmp(pcie, "bmc")) {
+> +				dev_err(dev,
+> +					"Invalid pcie-device property %s.\n",
+> +					pcie);
+> +				return -EINVAL;
+> +			}
+> +		}
 > +
-> +Optional properties:
-> + - pcie-device		: should be either "bmc" or "vga", corresponding to
-> +			  which device should be used by the XDMA engine for
-> +			  DMA operations. If this property is not set, the XDMA
-> +			  engine will use the BMC PCI-E device.
+> +		if (pcie_device_bmc) {
+> +			selection = bmc;
+> +			regmap_write(scu, ctx->chip->scu_bmc_class,
+> +				     SCU_BMC_CLASS_REV_XDMA);
+> +		} else {
+> +			selection = vga;
+> +		}
 > +
-> +Example:
-> +
-> +    xdma at 1e6e7000 {
-> +        compatible = "aspeed,ast2500-xdma";
-> +        reg = <0x1e6e7000 0x100>;
-> +        clocks = <&syscon ASPEED_CLK_GATE_BCLK>;
-> +        resets = <&syscon ASPEED_RESET_XDMA>;
-> +        interrupts-extended = <&vic 6>, <&scu_ic 
-> ASPEED_AST2500_SCU_IC_PCIE_RESET_LO_TO_HI>;
-> +        scu = <&syscon>;
+> +		regmap_update_bits(scu, ctx->chip->scu_pcie_conf, bmc | vga,
+> +				   selection);
+> +	} else {
+> +		dev_warn(dev, "Unable to configure PCIe; continuing.\n");
+> +	}
 
-You missed fixing the example :)
+Not something you need to fix but generally I'd structure this as a early-return:
 
-Andrew
+    if (IS_ERR(scu)) {
+        dev_warn(dev, "Unable to configure PCIe; continuing.\n");
+        return 0;
+    }
+    ...
+
+Could probably also improve the warning message to say what caused the
+failure, but again, something that can be changed later.
