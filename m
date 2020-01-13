@@ -1,36 +1,37 @@
-From: Eddie James <eajames@linux.ibm.com>
-Date: Thu,  9 Jan 2020 14:59:03 -0600
-Subject: [PATCH v5 12/12] ARM: dts: aspeed: tacoma: Enable XDMA engine
-In-Reply-To: <20200109205903.27036-1-eajames@linux.ibm.com>
-References: <20200109205903.27036-1-eajames@linux.ibm.com>
-Message-ID: <20200109205903.27036-13-eajames@linux.ibm.com>
+From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+Date: Mon, 13 Jan 2020 13:34:53 -0800
+Subject: [PATCH] clk: ast2600: enable BCLK for PCI/PCIe bus always
+Message-ID: <20200113213453.27108-1-jae.hyun.yoo@linux.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Enable the XDMA engine node.
+BCLK for PCI/PCIe bus should be enabled always with having the
+CLK_IS_CRITICAL flag otherwise it will be disabled at kernel late
+initcall phase as an unused clock, and eventually it causes
+unexpected behavior on BMC features that are connected to the host
+through PCI/PCIe bus.
 
-Signed-off-by: Eddie James <eajames@linux.ibm.com>
+Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
 ---
- arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts | 6 ++++++
- 1 file changed, 6 insertions(+)
+ drivers/clk/clk-ast2600.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts b/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts
-index ff49ec76fa7c..3e6c30951575 100644
---- a/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts
-@@ -800,3 +800,9 @@ &pinctrl {
- 	pinctrl-0 = <&pinctrl_lpc_default>,
- 		    <&pinctrl_lsirq_default>;
- };
-+
-+&xdma {
-+	status = "okay";
-+	/* 1G DRAM with 8M VRAM which is reserved at the top. */
-+	memory = <0xbf800000 0x00800000>;
-+};
+diff --git a/drivers/clk/clk-ast2600.c b/drivers/clk/clk-ast2600.c
+index 392d01705b97..42bfdc16bf7a 100644
+--- a/drivers/clk/clk-ast2600.c
++++ b/drivers/clk/clk-ast2600.c
+@@ -64,7 +64,7 @@ static const struct aspeed_gate_data aspeed_g6_gates[] = {
+ 	[ASPEED_CLK_GATE_GCLK]		= {  2,  7, "gclk-gate",	NULL,	 0 },	/* 2D engine */
+ 	/* vclk parent - dclk/d1clk/hclk/mclk */
+ 	[ASPEED_CLK_GATE_VCLK]		= {  3,  6, "vclk-gate",	NULL,	 0 },	/* Video Capture */
+-	[ASPEED_CLK_GATE_BCLK]		= {  4,  8, "bclk-gate",	"bclk",	 0 }, /* PCIe/PCI */
++	[ASPEED_CLK_GATE_BCLK]		= {  4,  8, "bclk-gate",	"bclk",	 CLK_IS_CRITICAL }, /* PCIe/PCI */
+ 	/* From dpll */
+ 	[ASPEED_CLK_GATE_DCLK]		= {  5, -1, "dclk-gate",	NULL,	 CLK_IS_CRITICAL }, /* DAC */
+ 	[ASPEED_CLK_GATE_REF0CLK]	= {  6, -1, "ref0clk-gate",	"clkin", CLK_IS_CRITICAL },
 -- 
-2.24.0
+2.17.1
 
