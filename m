@@ -1,49 +1,86 @@
-From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-Date: Wed, 15 Jan 2020 13:26:39 -0800
-Subject: [PATCH 2/2] clk: ast2600: add critical clock setting logic
-In-Reply-To: <20200115212639.4998-1-jae.hyun.yoo@linux.intel.com>
-References: <20200115212639.4998-1-jae.hyun.yoo@linux.intel.com>
-Message-ID: <20200115212639.4998-3-jae.hyun.yoo@linux.intel.com>
+From: Eddie James <eajames@linux.ibm.com>
+Date: Wed, 15 Jan 2020 15:29:38 -0600
+Subject: [PATCH v6 00/12] aspeed: Add SCU interrupt controller and XDMA engine
+ drivers
+Message-ID: <1579123790-6894-1-git-send-email-eajames@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This commit adds critical clock setting logic that applies
-CLK_IS_CRITICAL flag if it detects 'clock-critical' property in
-device tree.
+This series first adds a driver to control the interrupt controller provided by
+the System Control Unit (SCU) on the AST2500 and AST2600 SOCs. The interrupts
+made available are necessary for the control of the XDMA engine embedded in the
+same Aspeed SOCs.
+This series then adds a driver to control the XDMA engine. This driver was
+previously sent to the list without support for the AST2600, and has been
+refactored significantly to enable that support. The XDMA engine performs
+automatic DMA operations between the Aspeed SOC (acting as a BMC) and a host
+processor.
 
-Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
----
- drivers/clk/clk-ast2600.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+Changes since v5:
+ - Rework the XDMA locking completely; thanks Andrew Jeffrey for the help.
 
-diff --git a/drivers/clk/clk-ast2600.c b/drivers/clk/clk-ast2600.c
-index 392d01705b97..49d89ffdd4be 100644
---- a/drivers/clk/clk-ast2600.c
-+++ b/drivers/clk/clk-ast2600.c
-@@ -599,8 +599,11 @@ static int aspeed_g6_clk_probe(struct platform_device *pdev)
- 
- 	for (i = 0; i < ARRAY_SIZE(aspeed_g6_gates); i++) {
- 		const struct aspeed_gate_data *gd = &aspeed_g6_gates[i];
-+		unsigned long flags = gd->flags;
- 		u32 gate_flags;
- 
-+		of_clk_detect_critical(pdev->dev.of_node, i, &flags);
-+
- 		/*
- 		 * Special case: the USB port 1 clock (bit 14) is always
- 		 * working the opposite way from the other ones.
-@@ -609,7 +612,7 @@ static int aspeed_g6_clk_probe(struct platform_device *pdev)
- 		hw = aspeed_g6_clk_hw_register_gate(dev,
- 				gd->name,
- 				gd->parent_name,
--				gd->flags,
-+				flags,
- 				map,
- 				gd->clock_idx,
- 				gd->reset_idx,
+Changes since v4:
+ - Fix dts documentation example for XDMA
+ - Add errno in warning for SCU failure in XDMA PCIe config
+ - Add a check for in_reset before proceeding in O_NONBLOCK case
+ - Add comments to memory sizes in the witherspoon/tacoma XDMA dts entries
+
+Changes since v3:
+ - See individual patches; just clean-up items
+
+Changes since v2:
+ - See individual patches
+ - Drop rainier dts patch
+ - In summary, remove references to VGA memory as the XDMA driver doesn't care
+   where it is. Remove SDRAM controller reference. Move user reset
+   functionality to a separate patch and make it an ioctl.
+
+Changes since v1:
+ - See individual patches
+ - In summary, first the irqchip driver switched to use the parent SCU regmap
+   rather than iomapping it's register. Secondly, the XDMA initialization
+   switched to use properties from the device tree rather than dynamically
+   calculate memory spaces, and system config.
+
+Eddie James (12):
+  dt-bindings: interrupt-controller: Add Aspeed SCU interrupt controller
+  irqchip: Add Aspeed SCU interrupt controller
+  ARM: dts: aspeed: ast2500: Add SCU interrupt controller
+  ARM: dts: aspeed: ast2600: Add SCU interrupt controllers
+  dt-bindings: soc: Add Aspeed XDMA Engine
+  soc: aspeed: Add XDMA Engine Driver
+  soc: aspeed: xdma: Add user interface
+  soc: aspeed: xdma: Add reset ioctl
+  ARM: dts: aspeed: ast2500: Add XDMA Engine
+  ARM: dts: aspeed: ast2600: Add XDMA Engine
+  ARM: dts: aspeed: witherspoon: Enable XDMA Engine
+  ARM: dts: aspeed: tacoma: Enable XDMA engine
+
+ .../interrupt-controller/aspeed,ast2xxx-scu-ic.txt |   23 +
+ .../devicetree/bindings/soc/aspeed/xdma.txt        |   40 +
+ MAINTAINERS                                        |   16 +
+ arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts        |    6 +
+ arch/arm/boot/dts/aspeed-bmc-opp-witherspoon.dts   |    6 +
+ arch/arm/boot/dts/aspeed-g5.dtsi                   |   19 +
+ arch/arm/boot/dts/aspeed-g6.dtsi                   |   27 +
+ drivers/irqchip/Makefile                           |    2 +-
+ drivers/irqchip/irq-aspeed-scu-ic.c                |  239 +++++
+ drivers/soc/aspeed/Kconfig                         |    8 +
+ drivers/soc/aspeed/Makefile                        |    1 +
+ drivers/soc/aspeed/aspeed-xdma.c                   | 1025 ++++++++++++++++++++
+ .../interrupt-controller/aspeed-scu-ic.h           |   23 +
+ include/uapi/linux/aspeed-xdma.h                   |   42 +
+ 14 files changed, 1476 insertions(+), 1 deletion(-)
+ create mode 100644 Documentation/devicetree/bindings/interrupt-controller/aspeed,ast2xxx-scu-ic.txt
+ create mode 100644 Documentation/devicetree/bindings/soc/aspeed/xdma.txt
+ create mode 100644 drivers/irqchip/irq-aspeed-scu-ic.c
+ create mode 100644 drivers/soc/aspeed/aspeed-xdma.c
+ create mode 100644 include/dt-bindings/interrupt-controller/aspeed-scu-ic.h
+ create mode 100644 include/uapi/linux/aspeed-xdma.h
+
 -- 
-2.17.1
+1.8.3.1
 
