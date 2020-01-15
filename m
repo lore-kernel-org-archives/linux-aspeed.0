@@ -1,42 +1,88 @@
 From: Eddie James <eajames@linux.ibm.com>
-Date: Wed, 15 Jan 2020 15:29:41 -0600
-Subject: [PATCH v6 03/12] ARM: dts: aspeed: ast2500: Add SCU interrupt
- controller
+Date: Wed, 15 Jan 2020 15:29:43 -0600
+Subject: [PATCH v6 05/12] dt-bindings: soc: Add Aspeed XDMA Engine
 In-Reply-To: <1579123790-6894-1-git-send-email-eajames@linux.ibm.com>
 References: <1579123790-6894-1-git-send-email-eajames@linux.ibm.com>
-Message-ID: <1579123790-6894-4-git-send-email-eajames@linux.ibm.com>
+Message-ID: <1579123790-6894-6-git-send-email-eajames@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add a node for the interrupt controller provided by the SCU.
+Document the bindings for the Aspeed AST25XX and AST26XX XDMA engine.
 
 Signed-off-by: Eddie James <eajames@linux.ibm.com>
-Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
+Reviewed-by: Rob Herring <robh@kernel.org>
 ---
- arch/arm/boot/dts/aspeed-g5.dtsi | 7 +++++++
- 1 file changed, 7 insertions(+)
+ .../devicetree/bindings/soc/aspeed/xdma.txt        | 40 ++++++++++++++++++++++
+ MAINTAINERS                                        |  6 ++++
+ 2 files changed, 46 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/soc/aspeed/xdma.txt
 
-diff --git a/arch/arm/boot/dts/aspeed-g5.dtsi b/arch/arm/boot/dts/aspeed-g5.dtsi
-index ebec0fa..1c40c8f 100644
---- a/arch/arm/boot/dts/aspeed-g5.dtsi
-+++ b/arch/arm/boot/dts/aspeed-g5.dtsi
-@@ -222,6 +222,13 @@
- 				#clock-cells = <1>;
- 				#reset-cells = <1>;
- 
-+				scu_ic: interrupt-controller at 18 {
-+					#interrupt-cells = <1>;
-+					compatible = "aspeed,ast2500-scu-ic";
-+					interrupts = <21>;
-+					interrupt-controller;
-+				};
+diff --git a/Documentation/devicetree/bindings/soc/aspeed/xdma.txt b/Documentation/devicetree/bindings/soc/aspeed/xdma.txt
+new file mode 100644
+index 0000000..074bda5
+--- /dev/null
++++ b/Documentation/devicetree/bindings/soc/aspeed/xdma.txt
+@@ -0,0 +1,40 @@
++Aspeed AST25XX and AST26XX XDMA Engine
 +
- 				p2a: p2a-control at 2c {
- 					compatible = "aspeed,ast2500-p2a-ctrl";
- 					reg = <0x2c 0x4>;
++The XDMA Engine embedded in the AST2500 and AST2600 SOCs can perform automatic
++DMA operations over PCI between the SOC (acting as a BMC) and a host processor.
++
++Required properties:
++ - compatible		: must be "aspeed,ast2500-xdma" or
++			  "aspeed,ast2600-xdma"
++ - reg			: contains the address and size of the memory region
++			  associated with the XDMA engine registers
++ - clocks		: clock specifier for the clock associated with the
++			  XDMA engine
++ - resets		: reset specifier for the syscon reset associated with
++			  the XDMA engine
++ - interrupts-extended	: two interrupt cells; the first specifies the global
++			  interrupt for the XDMA engine and the second
++			  specifies the PCI-E reset or PERST interrupt.
++ - aspeed,scu		: a phandle to the syscon node for the system control
++			  unit of the SOC
++ - memory		: contains the address and size of the memory area to
++			  be used by the XDMA engine for DMA operations
++
++Optional properties:
++ - pcie-device		: should be either "bmc" or "vga", corresponding to
++			  which device should be used by the XDMA engine for
++			  DMA operations. If this property is not set, the XDMA
++			  engine will use the BMC PCI-E device.
++
++Example:
++
++    xdma at 1e6e7000 {
++        compatible = "aspeed,ast2500-xdma";
++        reg = <0x1e6e7000 0x100>;
++        clocks = <&syscon ASPEED_CLK_GATE_BCLK>;
++        resets = <&syscon ASPEED_RESET_XDMA>;
++        interrupts-extended = <&vic 6>, <&scu_ic ASPEED_AST2500_SCU_IC_PCIE_RESET_LO_TO_HI>;
++        aspeed,scu = <&syscon>;
++        pcie-device = "bmc";
++        memory = <0x9f000000 0x01000000>;
++    };
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 75057ab..48d0ffd 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -2744,6 +2744,12 @@ S:	Maintained
+ F:	drivers/media/platform/aspeed-video.c
+ F:	Documentation/devicetree/bindings/media/aspeed-video.txt
+ 
++ASPEED XDMA ENGINE DRIVER
++M:	Eddie James <eajames@linux.ibm.com>
++L:	linux-aspeed at lists.ozlabs.org (moderated for non-subscribers)
++S:	Maintained
++F:	Documentation/devicetree/bindings/soc/aspeed/xdma.txt
++
+ ASUS NOTEBOOKS AND EEEPC ACPI/WMI EXTRAS DRIVERS
+ M:	Corentin Chary <corentin.chary@gmail.com>
+ L:	acpi4asus-user at lists.sourceforge.net
 -- 
 1.8.3.1
 
