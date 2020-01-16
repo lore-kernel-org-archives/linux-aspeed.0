@@ -1,50 +1,58 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Thu, 16 Jan 2020 11:41:39 -0500
-Subject: [PATCH AUTOSEL 5.4 124/205] media: aspeed-video: Fix memory leaks in
- aspeed_video_probe
+Date: Thu, 16 Jan 2020 11:42:47 -0500
+Subject: [PATCH AUTOSEL 5.4 192/205] soc: aspeed: Fix snoop_file_poll()'s
+ return type
 In-Reply-To: <20200116164300.6705-1-sashal@kernel.org>
 References: <20200116164300.6705-1-sashal@kernel.org>
-Message-ID: <20200116164300.6705-124-sashal@kernel.org>
+Message-ID: <20200116164300.6705-192-sashal@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Navid Emamdoost <navid.emamdoost@gmail.com>
+From: Luc Van Oostenryck <luc.vanoostenryck@gmail.com>
 
-[ Upstream commit c3df30a01da4955e04fa068c503cd784b31dad92 ]
+[ Upstream commit a4e55ccd4392e70f296d12e81b93c6ca96ee21d5 ]
 
-In the implementation of aspeed_video_probe() the allocated memory for
-video should be released if either devm_ioremap_resource()
-or aspeed_video_init() or aspeed_video_setup_video() fails. Replace
-kzalloc() with devm_kzalloc to avoid explicit release for video.
+snoop_file_poll() is defined as returning 'unsigned int' but the
+.poll method is declared as returning '__poll_t', a bitwise type.
 
-Fixes: d2b4387f3bdf ("media: platform: Add Aspeed Video Engine driver")
-Signed-off-by: Navid Emamdoost <navid.emamdoost@gmail.com>
-Reviewed-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-Reviewed-by: Eddie James <eajames@linux.ibm.com>
-Signed-off-by: Hans Verkuil <hverkuil-cisco@xs4all.nl>
-Signed-off-by: Mauro Carvalho Chehab <mchehab@kernel.org>
+Fix this by using the proper return type and using the EPOLL
+constants instead of the POLL ones, as required for __poll_t.
+
+Link: https://lore.kernel.org/r/20191121051851.268726-1-joel at jms.id.au
+Fixes: 3772e5da4454 ("drivers/misc: Aspeed LPC snoop output using misc chardev")
+Signed-off-by: Luc Van Oostenryck <luc.vanoostenryck@gmail.com>
+Reviewed-by: Joel Stanley <joel@jms.id.au>
+Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
+Signed-off-by: Joel Stanley <joel@jms.id.au>
+Signed-off-by: Olof Johansson <olof@lixom.net>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/media/platform/aspeed-video.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/soc/aspeed/aspeed-lpc-snoop.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/media/platform/aspeed-video.c b/drivers/media/platform/aspeed-video.c
-index 096a7c9a8963..4eaaf39b9223 100644
---- a/drivers/media/platform/aspeed-video.c
-+++ b/drivers/media/platform/aspeed-video.c
-@@ -1658,7 +1658,8 @@ static int aspeed_video_probe(struct platform_device *pdev)
- {
- 	int rc;
- 	struct resource *res;
--	struct aspeed_video *video = kzalloc(sizeof(*video), GFP_KERNEL);
-+	struct aspeed_video *video =
-+		devm_kzalloc(&pdev->dev, sizeof(*video), GFP_KERNEL);
+diff --git a/drivers/soc/aspeed/aspeed-lpc-snoop.c b/drivers/soc/aspeed/aspeed-lpc-snoop.c
+index 48f7ac238861..f3d8d53ab84d 100644
+--- a/drivers/soc/aspeed/aspeed-lpc-snoop.c
++++ b/drivers/soc/aspeed/aspeed-lpc-snoop.c
+@@ -97,13 +97,13 @@ static ssize_t snoop_file_read(struct file *file, char __user *buffer,
+ 	return ret ? ret : copied;
+ }
  
- 	if (!video)
- 		return -ENOMEM;
+-static unsigned int snoop_file_poll(struct file *file,
++static __poll_t snoop_file_poll(struct file *file,
+ 				    struct poll_table_struct *pt)
+ {
+ 	struct aspeed_lpc_snoop_channel *chan = snoop_file_to_chan(file);
+ 
+ 	poll_wait(file, &chan->wq, pt);
+-	return !kfifo_is_empty(&chan->fifo) ? POLLIN : 0;
++	return !kfifo_is_empty(&chan->fifo) ? EPOLLIN : 0;
+ }
+ 
+ static const struct file_operations snoop_fops = {
 -- 
 2.20.1
 
