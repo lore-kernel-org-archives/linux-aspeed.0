@@ -1,78 +1,50 @@
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-Date: Thu, 16 Jan 2020 10:57:31 +0100
-Subject: [PATCH 1/2] clk: aspeed: add critical clock setting logic
-In-Reply-To: <20200115212639.4998-2-jae.hyun.yoo@linux.intel.com>
-References: <20200115212639.4998-1-jae.hyun.yoo@linux.intel.com>
- <20200115212639.4998-2-jae.hyun.yoo@linux.intel.com>
-Message-ID: <3cafc96a-0ec5-d51c-94cc-2b2e41cc5c65@molgen.mpg.de>
+From: Sasha Levin <sashal@kernel.org>
+Date: Thu, 16 Jan 2020 11:41:39 -0500
+Subject: [PATCH AUTOSEL 5.4 124/205] media: aspeed-video: Fix memory leaks in
+ aspeed_video_probe
+In-Reply-To: <20200116164300.6705-1-sashal@kernel.org>
+References: <20200116164300.6705-1-sashal@kernel.org>
+Message-ID: <20200116164300.6705-124-sashal@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Dear Jae,
+From: Navid Emamdoost <navid.emamdoost@gmail.com>
 
+[ Upstream commit c3df30a01da4955e04fa068c503cd784b31dad92 ]
 
-On 2020-01-15 22:26, Jae Hyun Yoo wrote:
-> This commit adds critical clock setting logic that applies
-> CLK_IS_CRITICAL flag if it detects 'clock-critical' property in
-> device tree.
+In the implementation of aspeed_video_probe() the allocated memory for
+video should be released if either devm_ioremap_resource()
+or aspeed_video_init() or aspeed_video_setup_video() fails. Replace
+kzalloc() with devm_kzalloc to avoid explicit release for video.
 
-Tested how?
+Fixes: d2b4387f3bdf ("media: platform: Add Aspeed Video Engine driver")
+Signed-off-by: Navid Emamdoost <navid.emamdoost@gmail.com>
+Reviewed-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+Reviewed-by: Eddie James <eajames@linux.ibm.com>
+Signed-off-by: Hans Verkuil <hverkuil-cisco@xs4all.nl>
+Signed-off-by: Mauro Carvalho Chehab <mchehab@kernel.org>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/media/platform/aspeed-video.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-> Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-> ---
->  drivers/clk/clk-aspeed.c | 5 ++++-
->  1 file changed, 4 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/clk/clk-aspeed.c b/drivers/clk/clk-aspeed.c
-> index 411ff5fb2c07..d22eeb574ede 100644
-> --- a/drivers/clk/clk-aspeed.c
-> +++ b/drivers/clk/clk-aspeed.c
-> @@ -541,8 +541,11 @@ static int aspeed_clk_probe(struct platform_device *pdev)
->  
->  	for (i = 0; i < ARRAY_SIZE(aspeed_gates); i++) {
->  		const struct aspeed_gate_data *gd = &aspeed_gates[i];
-> +		unsigned long flags = gd->flags;
->  		u32 gate_flags;
->  
-> +		of_clk_detect_critical(pdev->dev.of_node, i, &flags);
-> +
+diff --git a/drivers/media/platform/aspeed-video.c b/drivers/media/platform/aspeed-video.c
+index 096a7c9a8963..4eaaf39b9223 100644
+--- a/drivers/media/platform/aspeed-video.c
++++ b/drivers/media/platform/aspeed-video.c
+@@ -1658,7 +1658,8 @@ static int aspeed_video_probe(struct platform_device *pdev)
+ {
+ 	int rc;
+ 	struct resource *res;
+-	struct aspeed_video *video = kzalloc(sizeof(*video), GFP_KERNEL);
++	struct aspeed_video *video =
++		devm_kzalloc(&pdev->dev, sizeof(*video), GFP_KERNEL);
+ 
+ 	if (!video)
+ 		return -ENOMEM;
+-- 
+2.20.1
 
-The function description in `drivers/clk/clk.c` has the warning below.
-
->  * Do not use this function. It exists only for legacy Device Tree
->  * bindings, such as the one-clock-per-node style that are outdated.
->  * Those bindings typically put all clock data into .dts and the Linux
->  * driver has no clock data, thus making it impossible to set this flag
->  * correctly from the driver. Only those drivers may call
->  * of_clk_detect_critical from their setup functions.
-
-Will this still work?
-
->  		/* Special case: the USB port 1 clock (bit 14) is always
->  		 * working the opposite way from the other ones.
->  		 */
-> @@ -550,7 +553,7 @@ static int aspeed_clk_probe(struct platform_device *pdev)
->  		hw = aspeed_clk_hw_register_gate(dev,
->  				gd->name,
->  				gd->parent_name,
-> -				gd->flags,
-> +				flags,
->  				map,
->  				gd->clock_idx,
->  				gd->reset_idx,
-
-
-Kind regards,
-
-Paul
-
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: smime.p7s
-Type: application/pkcs7-signature
-Size: 5174 bytes
-Desc: S/MIME Cryptographic Signature
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20200116/a87f0f3e/attachment.bin>
