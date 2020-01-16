@@ -1,36 +1,60 @@
-From: Eddie James <eajames@linux.ibm.com>
-Date: Wed, 15 Jan 2020 15:29:50 -0600
-Subject: [PATCH v6 12/12] ARM: dts: aspeed: tacoma: Enable XDMA engine
-In-Reply-To: <1579123790-6894-1-git-send-email-eajames@linux.ibm.com>
-References: <1579123790-6894-1-git-send-email-eajames@linux.ibm.com>
-Message-ID: <1579123790-6894-13-git-send-email-eajames@linux.ibm.com>
+From: Joel Stanley <joel@jms.id.au>
+Date: Thu, 16 Jan 2020 01:38:02 +0000
+Subject: [PATCH 1/2] clk: aspeed: add critical clock setting logic
+In-Reply-To: <20200115212639.4998-2-jae.hyun.yoo@linux.intel.com>
+References: <20200115212639.4998-1-jae.hyun.yoo@linux.intel.com>
+ <20200115212639.4998-2-jae.hyun.yoo@linux.intel.com>
+Message-ID: <CACPK8Xez9XQPQCsUU1Fu_POTJ3dh3tGJvK=otJdMYv40aZLqsw@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Enable the XDMA engine node.
+On Wed, 15 Jan 2020 at 21:25, Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com> wrote:
+>
+> This commit adds critical clock setting logic that applies
+> CLK_IS_CRITICAL flag if it detects 'clock-critical' property in
+> device tree.
+>
+> Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+> ---
+>  drivers/clk/clk-aspeed.c | 5 ++++-
+>  1 file changed, 4 insertions(+), 1 deletion(-)
+>
+> diff --git a/drivers/clk/clk-aspeed.c b/drivers/clk/clk-aspeed.c
+> index 411ff5fb2c07..d22eeb574ede 100644
+> --- a/drivers/clk/clk-aspeed.c
+> +++ b/drivers/clk/clk-aspeed.c
+> @@ -541,8 +541,11 @@ static int aspeed_clk_probe(struct platform_device *pdev)
+>
+>         for (i = 0; i < ARRAY_SIZE(aspeed_gates); i++) {
+>                 const struct aspeed_gate_data *gd = &aspeed_gates[i];
+> +               unsigned long flags = gd->flags;
+>                 u32 gate_flags;
+>
+> +               of_clk_detect_critical(pdev->dev.of_node, i, &flags);
 
-Signed-off-by: Eddie James <eajames@linux.ibm.com>
----
- arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts | 6 ++++++
- 1 file changed, 6 insertions(+)
+This makes sense to me.
 
-diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts b/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts
-index ff49ec7..3e6c309 100644
---- a/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts
-@@ -800,3 +800,9 @@
- 	pinctrl-0 = <&pinctrl_lpc_default>,
- 		    <&pinctrl_lsirq_default>;
- };
-+
-+&xdma {
-+	status = "okay";
-+	/* 1G DRAM with 8M VRAM which is reserved at the top. */
-+	memory = <0xbf800000 0x00800000>;
-+};
--- 
-1.8.3.1
+> +
+>                 /* Special case: the USB port 1 clock (bit 14) is always
+>                  * working the opposite way from the other ones.
+>                  */
+> @@ -550,7 +553,7 @@ static int aspeed_clk_probe(struct platform_device *pdev)
+>                 hw = aspeed_clk_hw_register_gate(dev,
+>                                 gd->name,
+>                                 gd->parent_name,
+> -                               gd->flags,
+> +                               flags,
 
+For completeness should we make this
+
+ flags | gd->flags
+
+>                                 map,
+>                                 gd->clock_idx,
+>                                 gd->reset_idx,
+> --
+> 2.17.1
+>
