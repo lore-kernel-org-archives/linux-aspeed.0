@@ -1,49 +1,49 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Thu, 16 Jan 2020 12:02:46 -0500
-Subject: [PATCH AUTOSEL 4.19 528/671] ARM: dts: aspeed-g5: Fixe gpio-ranges
- upper limit
+Date: Thu, 16 Jan 2020 12:03:05 -0500
+Subject: [PATCH AUTOSEL 4.19 547/671] gpio/aspeed: Fix incorrect number of
+ banks
 In-Reply-To: <20200116170509.12787-1-sashal@kernel.org>
 References: <20200116170509.12787-1-sashal@kernel.org>
-Message-ID: <20200116170509.12787-265-sashal@kernel.org>
+Message-ID: <20200116170509.12787-284-sashal@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Oscar A Perez <linux@neuralgames.com>
+From: Rashmica Gupta <rashmica.g@gmail.com>
 
-[ Upstream commit 89b97c429e2e77d695b5133572ca12ec256a4ea4 ]
+[ Upstream commit 3c4710ae6f883f9c6e3df5e27e274702a1221c57 ]
 
-According to the AST2500/AST2520 specs, these SoCs support up to 228 GPIO
-pins. However, 'gpio-ranges' value in 'aspeed-g5.dtsi' file is currently
-setting the upper limit to 220 which isn't allowing access to all their
-GPIOs. The correct upper limit value is 232 (actual number is 228 plus a
-4-GPIO hole in GPIOAB). Without this patch, GPIOs AC5 and AC6 do not work
-correctly on a AST2500 BMC running Linux Kernel v4.19
+The current calculation for the number of GPIO banks is only correct if
+the number of GPIOs is a multiple of 32 (if there were 31 GPIOs we would
+currently say there are 0 banks, which is incorrect).
 
-Fixes: 2039f90d136c ("ARM: dts: aspeed-g5: Add gpio controller to devicetree")
-Signed-off-by: Oscar A Perez <linux@neuralgames.com>
+Fixes: 361b79119a4b7 ('gpio: Add Aspeed driver')
+
+Signed-off-by: Rashmica Gupta <rashmica.g@gmail.com>
 Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
-Signed-off-by: Joel Stanley <joel@jms.id.au>
+Link: https://lore.kernel.org/r/20190906062623.13354-1-rashmica.g at gmail.com
+Reviewed-by: Joel Stanley <joel@jms.d.au>
+Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- arch/arm/boot/dts/aspeed-g5.dtsi | 2 +-
+ drivers/gpio/gpio-aspeed.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/arm/boot/dts/aspeed-g5.dtsi b/arch/arm/boot/dts/aspeed-g5.dtsi
-index d107459fc0f8..f2e1015d75ab 100644
---- a/arch/arm/boot/dts/aspeed-g5.dtsi
-+++ b/arch/arm/boot/dts/aspeed-g5.dtsi
-@@ -247,7 +247,7 @@
- 				compatible = "aspeed,ast2500-gpio";
- 				reg = <0x1e780000 0x1000>;
- 				interrupts = <20>;
--				gpio-ranges = <&pinctrl 0 0 220>;
-+				gpio-ranges = <&pinctrl 0 0 232>;
- 				clocks = <&syscon ASPEED_CLK_APB>;
- 				interrupt-controller;
- 			};
+diff --git a/drivers/gpio/gpio-aspeed.c b/drivers/gpio/gpio-aspeed.c
+index b696ec35efb3..e627e0e9001a 100644
+--- a/drivers/gpio/gpio-aspeed.c
++++ b/drivers/gpio/gpio-aspeed.c
+@@ -1199,7 +1199,7 @@ static int __init aspeed_gpio_probe(struct platform_device *pdev)
+ 	gpio->chip.irq.need_valid_mask = true;
+ 
+ 	/* Allocate a cache of the output registers */
+-	banks = gpio->config->nr_gpios >> 5;
++	banks = DIV_ROUND_UP(gpio->config->nr_gpios, 32);
+ 	gpio->dcache = devm_kcalloc(&pdev->dev,
+ 				    banks, sizeof(u32), GFP_KERNEL);
+ 	if (!gpio->dcache)
 -- 
 2.20.1
 
