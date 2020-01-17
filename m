@@ -1,11 +1,10 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Fri, 17 Jan 2020 10:42:01 +1030
-Subject: =?UTF-8?Q?Re:_[PATCH_v6_11/12]_ARM:_dts:_aspeed:_witherspoon:_Enable_XDM?=
- =?UTF-8?Q?A_Engine?=
-In-Reply-To: <1579123790-6894-12-git-send-email-eajames@linux.ibm.com>
+Date: Fri, 17 Jan 2020 10:43:40 +1030
+Subject: [PATCH v6 12/12] ARM: dts: aspeed: tacoma: Enable XDMA engine
+In-Reply-To: <1579123790-6894-13-git-send-email-eajames@linux.ibm.com>
 References: <1579123790-6894-1-git-send-email-eajames@linux.ibm.com>
- <1579123790-6894-12-git-send-email-eajames@linux.ibm.com>
-Message-ID: <2ebf5f23-66dc-40c5-9812-f635f70b5245@www.fastmail.com>
+ <1579123790-6894-13-git-send-email-eajames@linux.ibm.com>
+Message-ID: <17a4475c-e8e4-4514-88e4-4efe7fd8dc8a@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
