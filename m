@@ -1,143 +1,86 @@
-From: Joel Stanley <joel@jms.id.au>
-Date: Tue, 21 Jan 2020 01:53:15 +0000
-Subject: [PATCH 1/2] hwrng: Add support for ASPEED RNG
-In-Reply-To: <20200120150113.2565-1-linux@neuralgames.com>
-References: <20200120150113.2565-1-linux@neuralgames.com>
-Message-ID: <CACPK8XfuVN3Q=npEoOP-amQS0-wemxcx6LKaHHZEsBAHzq1wzA@mail.gmail.com>
+From: Vijay Khemka <vijaykhemka@fb.com>
+Date: Tue, 21 Jan 2020 18:42:08 +0000
+Subject: [GIT PULL] ARM: aspeed: devicetree changes for 5.6
+In-Reply-To: <CACPK8XepSy6D4CNWjSWDDK0p7Dx_rneWne4t4uyy=di5nx3zmA@mail.gmail.com>
+References: <CACPK8XepSy6D4CNWjSWDDK0p7Dx_rneWne4t4uyy=di5nx3zmA@mail.gmail.com>
+Message-ID: <6958E763-F18E-4305-8480-2EB6C58A082C@fb.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi,
+Hi Joel,
+I guess you missed my patch here.
+  -- [PATCH v2] ARM: dts: aspeed: tiogapass: Add gpio line names
 
-On Mon, 20 Jan 2020 at 15:12, Oscar A Perez <linux@neuralgames.com> wrote:
->
-> This minimal driver adds support for the Hardware Random Number Generator
-> that comes with the AST2400/AST2500/AST2600 SOCs from AspeedTech.
->
-> The HRNG on these SOCs uses Ring Oscillators working together to generate
-> a stream of random bits that can be read by the platform via a 32bit data
-> register.
+I have sent versionv2 on Jan 17 as v1 was not merged.
 
-Thanks for the patch.
+Regards
+-Vijay
 
-We've been using the timeriomem-rng driver for the past few years on
-aspeed hardware. You can see how that's set up by looking at
-arch/arm/boot/dts/aspeed-g{4,5,6}.dtsi
+?On 1/19/20, 10:21 PM, "Linux-aspeed on behalf of Joel Stanley" <linux-aspeed-bounces+vijaykhemka=fb.com at lists.ozlabs.org on behalf of joel@jms.id.au> wrote:
 
-I suggest we continue to use the generic driver.
+    Hello ARM maintainers,
+    
+    Sorry for sending this one is a bit late, I was off at linux.conf.au last week.
+    
+    The following changes since commit 39be9e84f65be599919c7069bdad24dc2d9cd65d:
+    
+      ARM: dts: aspeed: rainier: Add UCD90320 power sequencer (2020-01-20
+    15:50:57 +1000)
+    
+    are available in the Git repository at:
+    
+      git://git.kernel.org/pub/scm/linux/kernel/git/joel/aspeed.git
+    tags/aspeed-5.6-devicetree
+    
+    for you to fetch changes up to 39be9e84f65be599919c7069bdad24dc2d9cd65d:
+    
+      ARM: dts: aspeed: rainier: Add UCD90320 power sequencer (2020-01-20
+    15:50:57 +1000)
+    
+    ----------------------------------------------------------------
+    ASPEED device tree updates for 5.6
+    
+     - Cleanups for dtc warnings
+    
+     - Ethernet hardware checksum cleanups. A bug in the driver was fixed so
+     machines don't need to specify this anymore.
+    
+     - Misc improvements
+    
+    ----------------------------------------------------------------
+    
+    Andrew Jeffery (13):
+          dt-bindings: pinctrl: aspeed: Add reg property as a hint
+          dt-bindings: misc: Document reg for aspeed, p2a-ctrl nodes
+          ARM: dts: aspeed-g5: Move EDAC node to APB
+          ARM: dts: aspeed-g5: Use recommended generic node name for SDMC
+          ARM: dts: vesnin: Add unit address for memory node
+          ARM: dts: fp5280g2: Cleanup gpio-keys-polled properties
+          ARM: dts: swift: Cleanup gpio-keys-polled properties
+          ARM: dts: witherspoon: Cleanup gpio-keys-polled properties
+          ARM: dts: aspeed: Cleanup lpc-ctrl and snoop regs
+          ARM: dts: aspeed: Add reg hints to syscon children
+          ARM: dts: aspeed-g5: Sort LPC child nodes by unit address
+          ARM: dts: aspeed-g6: Cleanup watchdog unit address
+          ARM: dts: ibm-power9-dual: Add a unit address for OCC nodes
+    
+    Eddie James (1):
+          ARM: dts: aspeed: rainier: Switch PSUs to unknown version
+    
+    Ivan Mikhaylov (1):
+          ARM: dts: aspeed: Add SD card for Vesnin
+    
+    Jim Wright (1):
+          ARM: dts: aspeed: rainier: Add UCD90320 power sequencer
+    
+    Joel Stanley (1):
+          ARM: dts: aspeed: AST2400 disables hw checksum
+    
+    Tao Ren (2):
+          ARM: dts: aspeed: netbmc: Delete no-hw-checksum
+          ARM: dts: aspeed: yamp: Delete no-hw-checksum
+    
 
-Cheers,
-
-Joel
-
-
-
->
-> Signed-off-by: Oscar A Perez <linux@neuralgames.com>
-> ---
->  .../devicetree/bindings/rng/aspeed-rng.yaml   | 90 +++++++++++++++++++
->  1 file changed, 90 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/rng/aspeed-rng.yaml
->
-> diff --git a/Documentation/devicetree/bindings/rng/aspeed-rng.yaml b/Documentation/devicetree/bindings/rng/aspeed-rng.yaml
-> new file mode 100644
-> index 000000000000..06070ebe1c33
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/rng/aspeed-rng.yaml
-> @@ -0,0 +1,90 @@
-> +# SPDX-License-Identifier: GPL-2.0
-> +%YAML 1.2
-> +---
-> +$id: "http://devicetree.org/schemas/rng/aspeed-rng.yaml#"
-> +$schema: "http://devicetree.org/meta-schemas/core.yaml#"
-> +
-> +
-> +title: Bindings for Aspeed Hardware Random Number Generator
-> +
-> +
-> +maintainers:
-> +  - Oscar A Perez <linux@neuralgames.com>
-> +
-> +
-> +description: |
-> +  The HRNG on the AST2400/AST2500/AST2600 SOCs from AspeedTech  uses four Ring
-> +  Oscillators working together to generate a stream of random bits that can be
-> +  read by the platform via a 32bit data register every one microsecond.
-> +  All the platform has to do is to provide to the driver the 'quality' entropy
-> +  value, the  'mode' in which the combining  ROs will generate the  stream  of
-> +  random bits and, the 'period' value that is used as a wait-time between reads
-> +  from the 32bit data register.
-> +
-> +
-> +properties:
-> +  compatible:
-> +    oneOf:
-> +      - items:
-> +          - enum:
-> +              - aspeed,ast2400-rng
-> +              - aspeed,ast2500-rng
-> +              - aspeed,ast2600-rng
-> +
-> +
-> +  reg:
-> +    description:
-> +      Base address and length of the register set of this block.
-> +      Currently 'reg' must be eight bytes wide and 32-bit aligned.
-> +
-> +    maxItems: 1
-> +
-> +
-> +  period:
-> +    description:
-> +      Wait time in microseconds to be used between reads.
-> +      The RNG on these Aspeed SOCs generates 32bit of random data
-> +      every one microsecond. Choose between 1 and n microseconds.
-> +
-> +    maxItems: 1
-> +
-> +
-> +  mode:
-> +    description:
-> +      One of the eight modes in which the four internal ROs (Ring
-> +      Oscillators)  are combined to generate a stream  of random
-> +      bits. The default mode is seven which is the default method
-> +      of combining RO random bits on these Aspeed SOCs.
-> +
-> +    maxItems: 1
-> +
-> +
-> +  quality:
-> +    description:
-> +      Estimated number of bits of entropy per 1024 bits read from
-> +      the RNG.  Note that the default quality is zero which stops
-> +      this HRNG from automatically filling the kernel's entropy
-> +      pool with data.
-> +
-> +    maxItems: 1
-> +
-> +
-> +required:
-> +  - compatible
-> +  - reg
-> +  - period
-> +  - quality
-> +
-> +
-> +examples:
-> +  - |
-> +    rng: hwrng at 1e6e2074 {
-> +         compatible = "aspeed,ast2500-rng";
-> +         reg = <0x1e6e2074 0x8>;
-> +         period = <4>;
-> +         quality = <128>;
-> +         mode = <0x7>;
-> +    };
-> +
-> +
-> +...
-> --
-> 2.17.1
->
