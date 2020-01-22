@@ -1,86 +1,112 @@
-From: Vijay Khemka <vijaykhemka@fb.com>
-Date: Tue, 21 Jan 2020 18:42:08 +0000
-Subject: [GIT PULL] ARM: aspeed: devicetree changes for 5.6
-In-Reply-To: <CACPK8XepSy6D4CNWjSWDDK0p7Dx_rneWne4t4uyy=di5nx3zmA@mail.gmail.com>
-References: <CACPK8XepSy6D4CNWjSWDDK0p7Dx_rneWne4t4uyy=di5nx3zmA@mail.gmail.com>
-Message-ID: <6958E763-F18E-4305-8480-2EB6C58A082C@fb.com>
+From: Joel Stanley <joel@jms.id.au>
+Date: Wed, 22 Jan 2020 00:26:38 +0000
+Subject: [External] Re: [PATCH v1 1/1] ARM: dts: aspeed: update Hr855xg2
+ device tree
+In-Reply-To: <85dc718f42f54d40ad50853c047ec3ae@lenovo.com>
+References: <1577350475-127530-1-git-send-email-pengms1@lenovo.com>
+ <CACPK8XeY5dPHtRfFD55dLVHT0SF1gJEVf1DixsbJKpciLP2s5Q@mail.gmail.com>
+ <85dc718f42f54d40ad50853c047ec3ae@lenovo.com>
+Message-ID: <CACPK8XctO0SraKF_0Z40S_bBjz_ooQacpej3tMxwTq6XD90DGg@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Joel,
-I guess you missed my patch here.
-  -- [PATCH v2] ARM: dts: aspeed: tiogapass: Add gpio line names
+On Thu, 9 Jan 2020 at 08:07, Andrew MS1 Peng <pengms1@lenovo.com> wrote:
+>
+> Hi Joel,
+>
+> Please help to check below my comments. Thanks.
+>
+> Regards,
+> Andrew Peng
+>
+> > -----????-----
+> > ???: Joel Stanley <joel@jms.id.au>
+> > ????: 2020?1?6? 14:48
+> > ???: Andrew MS1 Peng <pengms1@lenovo.com>
+> > ??: Rob Herring <robh+dt@kernel.org>; Mark Rutland
+> > <mark.rutland@arm.com>; Andrew Jeffery <andrew@aj.id.au>; devicetree
+> > <devicetree@vger.kernel.org>; Linux ARM
+> > <linux-arm-kernel@lists.infradead.org>; linux-aspeed
+> > <linux-aspeed@lists.ozlabs.org>; Linux Kernel Mailing List
+> > <linux-kernel@vger.kernel.org>; Benjamin Fair <benjaminfair@google.com>;
+> > OpenBMC Maillist <openbmc@lists.ozlabs.org>; Derek Lin23
+> > <dlin23@lenovo.com>; Yonghui YH21 Liu <liuyh21@lenovo.com>
+> > ??: [External] Re: [PATCH v1 1/1] ARM: dts: aspeed: update Hr855xg2
+> > device tree
+> >
+> > On Thu, 26 Dec 2019 at 08:54, Andrew Peng <pengms1@lenovo.com> wrote:
+> > >
+> >
+> > When you have a list of things like below, it's sometimes a good hint that you
+> > should be sending one patch for each bullet point. This makes it easier to
+> > review.
+> >
+>
+> Should I separate below changes to six patches for next patch version?
+> For example: [PATCH v2 0/5]  [PATCH v2 1/5] ...etc
 
-I have sent versionv2 on Jan 17 as v1 was not merged.
+It's up to you.
 
-Regards
--Vijay
+I do not require it.
 
-?On 1/19/20, 10:21 PM, "Linux-aspeed on behalf of Joel Stanley" <linux-aspeed-bounces+vijaykhemka=fb.com at lists.ozlabs.org on behalf of joel@jms.id.au> wrote:
+>
+> > > Update i2c aliases.
+> > > Change flash_memory mapping address and size.
+> > > Add in a gpio-keys section.
+> > > Enable vhub, vuart, spi1 and spi2.
+> > > Add raa228006, ir38164 and sn1701022 hwmon sensors.
+> > > Remove some unuse gpio from gpio section.
+> >
+> > unused?
+> >
+>
+> It was my mistake, the correct sentence should be "Remove gpio from gpio section since it controlled by user space."
+>
+> > >
+> > > Signed-off-by: Andrew Peng <pengms1@lenovo.com>
+> > > Signed-off-by: Derek Lin <dlin23@lenovo.com>
+> > > Signed-off-by: Yonghui Liu <liuyh21@lenovo.com>
+> >
+> > I got two copies of this. I think they are the same.
+> >
+>
+> I apologize to send twice.
+>
+> > > ---
+> > > v1: initial version
+> > >
+> > >  arch/arm/boot/dts/aspeed-bmc-lenovo-hr855xg2.dts | 557
+> > > ++++++++++++++++-------
+> > >  1 file changed, 382 insertions(+), 175 deletions(-)
+> > >
+> > > diff --git a/arch/arm/boot/dts/aspeed-bmc-lenovo-hr855xg2.dts
+> > > b/arch/arm/boot/dts/aspeed-bmc-lenovo-hr855xg2.dts
+> > > index 8193fad..e1386d4 100644
+> > > --- a/arch/arm/boot/dts/aspeed-bmc-lenovo-hr855xg2.dts
+> > > +++ b/arch/arm/boot/dts/aspeed-bmc-lenovo-hr855xg2.dts
+> > > @@ -15,14 +15,21 @@
+> > >         compatible = "lenovo,hr855xg2-bmc", "aspeed,ast2500";
+> > >
+> >
+> > > -               flash_memory: region at 98000000 {
+> > > +               flash_memory: region at 9EFF0000 {
+> > >                         no-map;
+> > > -                       reg = <0x98000000 0x00100000>; /* 1M */
+> > > +                       reg = <0x9EFF0000 0x00010000>; /* 64K */
+> >
+> > Do you really use 64K here, or was this a workaround for the lpc-ctlr driver
+> > requiring a memory region?
+> >
+>
+> We reserve 64K for L2A In-Band Firmware Update (phosphor-ipmi-flash).
 
-    Hello ARM maintainers,
-    
-    Sorry for sending this one is a bit late, I was off at linux.conf.au last week.
-    
-    The following changes since commit 39be9e84f65be599919c7069bdad24dc2d9cd65d:
-    
-      ARM: dts: aspeed: rainier: Add UCD90320 power sequencer (2020-01-20
-    15:50:57 +1000)
-    
-    are available in the Git repository at:
-    
-      git://git.kernel.org/pub/scm/linux/kernel/git/joel/aspeed.git
-    tags/aspeed-5.6-devicetree
-    
-    for you to fetch changes up to 39be9e84f65be599919c7069bdad24dc2d9cd65d:
-    
-      ARM: dts: aspeed: rainier: Add UCD90320 power sequencer (2020-01-20
-    15:50:57 +1000)
-    
-    ----------------------------------------------------------------
-    ASPEED device tree updates for 5.6
-    
-     - Cleanups for dtc warnings
-    
-     - Ethernet hardware checksum cleanups. A bug in the driver was fixed so
-     machines don't need to specify this anymore.
-    
-     - Misc improvements
-    
-    ----------------------------------------------------------------
-    
-    Andrew Jeffery (13):
-          dt-bindings: pinctrl: aspeed: Add reg property as a hint
-          dt-bindings: misc: Document reg for aspeed, p2a-ctrl nodes
-          ARM: dts: aspeed-g5: Move EDAC node to APB
-          ARM: dts: aspeed-g5: Use recommended generic node name for SDMC
-          ARM: dts: vesnin: Add unit address for memory node
-          ARM: dts: fp5280g2: Cleanup gpio-keys-polled properties
-          ARM: dts: swift: Cleanup gpio-keys-polled properties
-          ARM: dts: witherspoon: Cleanup gpio-keys-polled properties
-          ARM: dts: aspeed: Cleanup lpc-ctrl and snoop regs
-          ARM: dts: aspeed: Add reg hints to syscon children
-          ARM: dts: aspeed-g5: Sort LPC child nodes by unit address
-          ARM: dts: aspeed-g6: Cleanup watchdog unit address
-          ARM: dts: ibm-power9-dual: Add a unit address for OCC nodes
-    
-    Eddie James (1):
-          ARM: dts: aspeed: rainier: Switch PSUs to unknown version
-    
-    Ivan Mikhaylov (1):
-          ARM: dts: aspeed: Add SD card for Vesnin
-    
-    Jim Wright (1):
-          ARM: dts: aspeed: rainier: Add UCD90320 power sequencer
-    
-    Joel Stanley (1):
-          ARM: dts: aspeed: AST2400 disables hw checksum
-    
-    Tao Ren (2):
-          ARM: dts: aspeed: netbmc: Delete no-hw-checksum
-          ARM: dts: aspeed: yamp: Delete no-hw-checksum
-    
+Okay, thanks for clarifying.
 
+I am happy with rest of your responses. Please send v2 with these things fixed.
+
+Cheers,
+
+Joel
