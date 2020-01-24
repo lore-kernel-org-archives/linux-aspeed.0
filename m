@@ -1,10 +1,9 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Thu, 23 Jan 2020 20:17:41 -0500
-Subject: [PATCH AUTOSEL 4.19 05/11] ARM: config: aspeed-g5: Enable 8250_DW
- quirks
-In-Reply-To: <20200124011747.18575-1-sashal@kernel.org>
-References: <20200124011747.18575-1-sashal@kernel.org>
-Message-ID: <20200124011747.18575-5-sashal@kernel.org>
+Date: Thu, 23 Jan 2020 20:17:59 -0500
+Subject: [PATCH AUTOSEL 4.14 3/5] ARM: config: aspeed-g5: Enable 8250_DW quirks
+In-Reply-To: <20200124011801.18712-1-sashal@kernel.org>
+References: <20200124011801.18712-1-sashal@kernel.org>
+Message-ID: <20200124011801.18712-3-sashal@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -27,17 +26,17 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 1 insertion(+)
 
 diff --git a/arch/arm/configs/aspeed_g5_defconfig b/arch/arm/configs/aspeed_g5_defconfig
-index 02fa3a41add5c..247be6c23d2c6 100644
+index c0ad7b82086bd..cb23f8ade3e2b 100644
 --- a/arch/arm/configs/aspeed_g5_defconfig
 +++ b/arch/arm/configs/aspeed_g5_defconfig
-@@ -138,6 +138,7 @@ CONFIG_SERIAL_8250_RUNTIME_UARTS=6
+@@ -110,6 +110,7 @@ CONFIG_SERIAL_8250_RUNTIME_UARTS=6
  CONFIG_SERIAL_8250_EXTENDED=y
  CONFIG_SERIAL_8250_ASPEED_VUART=y
  CONFIG_SERIAL_8250_SHARE_IRQ=y
 +CONFIG_SERIAL_8250_DW=y
  CONFIG_SERIAL_OF_PLATFORM=y
- CONFIG_ASPEED_KCS_IPMI_BMC=y
  CONFIG_ASPEED_BT_IPMI_BMC=y
+ # CONFIG_HW_RANDOM is not set
 -- 
 2.20.1
 
