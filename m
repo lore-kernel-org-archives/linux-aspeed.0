@@ -1,10 +1,11 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Fri, 24 Jan 2020 01:22:33 +0000
-Subject: [PATCH AUTOSEL 4.9 1/2] ARM: config: aspeed-g5: Enable 8250_DW
+Date: Fri, 24 Jan 2020 01:22:57 +0000
+Subject: [PATCH AUTOSEL 4.14 3/5] ARM: config: aspeed-g5: Enable 8250_DW
  quirks
-In-Reply-To: <20200124011808.18801-1-sashal@kernel.org>
-References: <20200124011808.18801-1-sashal@kernel.org>
-Message-ID: <CACPK8XdNmF0GN_PkXttSmvAVSqUh7FtDzYOD-=LFeL-0=NHOkA@mail.gmail.com>
+In-Reply-To: <20200124011801.18712-3-sashal@kernel.org>
+References: <20200124011801.18712-1-sashal@kernel.org>
+ <20200124011801.18712-3-sashal@kernel.org>
+Message-ID: <CACPK8XdJ8=+SNws2NCjKeX8PRa2wV-J0wzAuWUiP6miL-TioNw@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -36,17 +37,17 @@ Joel
 >  1 file changed, 1 insertion(+)
 >
 > diff --git a/arch/arm/configs/aspeed_g5_defconfig b/arch/arm/configs/aspeed_g5_defconfig
-> index 4f366b0370e93..3fb6bcba79942 100644
+> index c0ad7b82086bd..cb23f8ade3e2b 100644
 > --- a/arch/arm/configs/aspeed_g5_defconfig
 > +++ b/arch/arm/configs/aspeed_g5_defconfig
-> @@ -53,6 +53,7 @@ CONFIG_SERIAL_8250_NR_UARTS=6
->  CONFIG_SERIAL_8250_RUNTIME_UARTS=6
+> @@ -110,6 +110,7 @@ CONFIG_SERIAL_8250_RUNTIME_UARTS=6
 >  CONFIG_SERIAL_8250_EXTENDED=y
+>  CONFIG_SERIAL_8250_ASPEED_VUART=y
 >  CONFIG_SERIAL_8250_SHARE_IRQ=y
 > +CONFIG_SERIAL_8250_DW=y
 >  CONFIG_SERIAL_OF_PLATFORM=y
+>  CONFIG_ASPEED_BT_IPMI_BMC=y
 >  # CONFIG_HW_RANDOM is not set
->  # CONFIG_USB_SUPPORT is not set
 > --
 > 2.20.1
 >
