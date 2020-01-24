@@ -1,20 +1,17 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Fri, 24 Jan 2020 01:21:40 +0000
-Subject: [PATCH AUTOSEL 4.19 05/11] ARM: config: aspeed-g5: Enable 8250_DW
+Date: Fri, 24 Jan 2020 01:22:33 +0000
+Subject: [PATCH AUTOSEL 4.9 1/2] ARM: config: aspeed-g5: Enable 8250_DW
  quirks
-In-Reply-To: <20200124011747.18575-5-sashal@kernel.org>
-References: <20200124011747.18575-1-sashal@kernel.org>
- <20200124011747.18575-5-sashal@kernel.org>
-Message-ID: <CACPK8XeGLW6cm9UV7gqrOF18BzsRBppzLQLY6G=Y2MDj2Yrnhw@mail.gmail.com>
+In-Reply-To: <20200124011808.18801-1-sashal@kernel.org>
+References: <20200124011808.18801-1-sashal@kernel.org>
+Message-ID: <CACPK8XdNmF0GN_PkXttSmvAVSqUh7FtDzYOD-=LFeL-0=NHOkA@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-HI Sasha,
-
-On Fri, 24 Jan 2020 at 01:17, Sasha Levin <sashal@kernel.org> wrote:
+On Fri, 24 Jan 2020 at 01:18, Sasha Levin <sashal@kernel.org> wrote:
 >
 > From: Joel Stanley <joel@jms.id.au>
 >
@@ -39,17 +36,17 @@ Joel
 >  1 file changed, 1 insertion(+)
 >
 > diff --git a/arch/arm/configs/aspeed_g5_defconfig b/arch/arm/configs/aspeed_g5_defconfig
-> index 02fa3a41add5c..247be6c23d2c6 100644
+> index 4f366b0370e93..3fb6bcba79942 100644
 > --- a/arch/arm/configs/aspeed_g5_defconfig
 > +++ b/arch/arm/configs/aspeed_g5_defconfig
-> @@ -138,6 +138,7 @@ CONFIG_SERIAL_8250_RUNTIME_UARTS=6
+> @@ -53,6 +53,7 @@ CONFIG_SERIAL_8250_NR_UARTS=6
+>  CONFIG_SERIAL_8250_RUNTIME_UARTS=6
 >  CONFIG_SERIAL_8250_EXTENDED=y
->  CONFIG_SERIAL_8250_ASPEED_VUART=y
 >  CONFIG_SERIAL_8250_SHARE_IRQ=y
 > +CONFIG_SERIAL_8250_DW=y
 >  CONFIG_SERIAL_OF_PLATFORM=y
->  CONFIG_ASPEED_KCS_IPMI_BMC=y
->  CONFIG_ASPEED_BT_IPMI_BMC=y
+>  # CONFIG_HW_RANDOM is not set
+>  # CONFIG_USB_SUPPORT is not set
 > --
 > 2.20.1
 >
