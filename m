@@ -1,36 +1,43 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Fri, 24 Jan 2020 10:31:30 +1030
-Subject: [PATCH v2] ARM: dts: aspeed: update Hr855xg2 device tree
-In-Reply-To: <20200123085112.8371-1-pengms1@lenovo.com>
-References: <20200123085112.8371-1-pengms1@lenovo.com>
-Message-ID: <1c13de6c-3bee-4afc-8a03-691222b07ebe@www.fastmail.com>
+From: Sasha Levin <sashal@kernel.org>
+Date: Thu, 23 Jan 2020 20:16:53 -0500
+Subject: [PATCH AUTOSEL 5.4 18/33] ARM: config: aspeed-g5: Enable 8250_DW
+ quirks
+In-Reply-To: <20200124011708.18232-1-sashal@kernel.org>
+References: <20200124011708.18232-1-sashal@kernel.org>
+Message-ID: <20200124011708.18232-18-sashal@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+From: Joel Stanley <joel@jms.id.au>
 
+[ Upstream commit a5331a7a87ec81d5228b7421acf831b2d0c0de26 ]
 
-On Thu, 23 Jan 2020, at 19:21, Andrew Peng wrote:
-> Update i2c aliases.
-> Change flash_memory mapping address and size.
-> Add in a gpio-keys section.
-> Add in a peci0 section.
-> Update i2c0,i2c0 and i2c11 section.
-> Enable vhub, vuart, spi1 and spi2.
-> Remove gpio from gpio section since it controlled by user space.
+This driver option is used by the AST2600 A0 boards to work around a
+hardware issue.
 
-These seem like largely independent items. I'd prefer that you have
-one commit for each item in the list, that way it's easier to review
-and understand the relationships between the bits of affected code.
-Basically, don't give people reasons to say no to your patches :) The
-smaller and more coherent the change, the easier it is to give it a
-Reviewed-by or Acked-by tag.
+Reviewed-by: C?dric Le Goater <clg@kaod.org>
+Acked-by: Arnd Bergmann <arnd@arndb.de>
+Signed-off-by: Joel Stanley <joel@jms.id.au>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ arch/arm/configs/aspeed_g5_defconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
-Also commit messages should say _why_ you're making the changes
-not _what_ changes you're making. The diff tells us _what_, but nothing
-besides comments and the commit message can tell us why. It's much
-more convincing if you explain why your patch must be applied.
+diff --git a/arch/arm/configs/aspeed_g5_defconfig b/arch/arm/configs/aspeed_g5_defconfig
+index 597536cc9573d..b87508c7056c9 100644
+--- a/arch/arm/configs/aspeed_g5_defconfig
++++ b/arch/arm/configs/aspeed_g5_defconfig
+@@ -139,6 +139,7 @@ CONFIG_SERIAL_8250_RUNTIME_UARTS=6
+ CONFIG_SERIAL_8250_EXTENDED=y
+ CONFIG_SERIAL_8250_ASPEED_VUART=y
+ CONFIG_SERIAL_8250_SHARE_IRQ=y
++CONFIG_SERIAL_8250_DW=y
+ CONFIG_SERIAL_OF_PLATFORM=y
+ CONFIG_ASPEED_KCS_IPMI_BMC=y
+ CONFIG_ASPEED_BT_IPMI_BMC=y
+-- 
+2.20.1
 
-Andrew
