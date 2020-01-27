@@ -1,34 +1,55 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Fri, 24 Jan 2020 15:29:17 -0500
-Subject: [PATCH AUTOSEL 4.19 05/11] ARM: config: aspeed-g5: Enable
- 8250_DW quirks
-In-Reply-To: <CACPK8XeGLW6cm9UV7gqrOF18BzsRBppzLQLY6G=Y2MDj2Yrnhw@mail.gmail.com>
-References: <20200124011747.18575-1-sashal@kernel.org>
- <20200124011747.18575-5-sashal@kernel.org>
- <CACPK8XeGLW6cm9UV7gqrOF18BzsRBppzLQLY6G=Y2MDj2Yrnhw@mail.gmail.com>
-Message-ID: <20200124202917.GI1706@sasha-vm>
+From: Brendan Higgins <brendanhiggins@google.com>
+Date: Mon, 27 Jan 2020 01:46:25 -0800
+Subject: [PATCH v1 7/7] fsi: aspeed: add unspecified HAS_IOMEM dependency
+In-Reply-To: <CAFd5g45MFYMK-eZWPC5fhm2OkynUXKfArUVhbanYVH+qKRUwPg@mail.gmail.com>
+References: <20191211192742.95699-1-brendanhiggins@google.com>
+ <20191211192742.95699-8-brendanhiggins@google.com>
+ <CACPK8XctCb9Q2RaFVHEDuWxKDXpCWMWs-+vnKZ=SeTa3xRnT_g@mail.gmail.com>
+ <CAFd5g45MFYMK-eZWPC5fhm2OkynUXKfArUVhbanYVH+qKRUwPg@mail.gmail.com>
+Message-ID: <CAFd5g454tX9zxRAq5T_pDGzcWt7u5r119wjo-BCGVq+=Ej4bGQ@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Jan 24, 2020 at 01:21:40AM +0000, Joel Stanley wrote:
->HI Sasha,
+On Wed, Dec 11, 2019 at 4:30 PM Brendan Higgins
+<brendanhiggins@google.com> wrote:
 >
->On Fri, 24 Jan 2020 at 01:17, Sasha Levin <sashal@kernel.org> wrote:
->>
->> From: Joel Stanley <joel@jms.id.au>
->>
->> [ Upstream commit a5331a7a87ec81d5228b7421acf831b2d0c0de26 ]
->>
->> This driver option is used by the AST2600 A0 boards to work around a
->> hardware issue.
+> On Wed, Dec 11, 2019 at 4:12 PM Joel Stanley <joel@jms.id.au> wrote:
+> >
+> > On Wed, 11 Dec 2019 at 19:28, Brendan Higgins <brendanhiggins@google.com> wrote:
+> > >
+> > > Currently CONFIG_FSI_MASTER_ASPEED=y implicitly depends on
+> > > CONFIG_HAS_IOMEM=y; consequently, on architectures without IOMEM we get
+> > > the following build error:
+> > >
+> > > ld: drivers/fsi/fsi-master-aspeed.o: in function `fsi_master_aspeed_probe':
+> > > drivers/fsi/fsi-master-aspeed.c:436: undefined reference to `devm_ioremap_resource'
+> > >
+> > > Fix the build error by adding the unspecified dependency.
+> > >
+> > > Reported-by: Brendan Higgins <brendanhiggins@google.com>
+> > > Signed-off-by: Brendan Higgins <brendanhiggins@google.com>
+> >
+> > Nice. I hit this when attempting to force on CONFIG_COMPILE_TEST in
+> > order to build some ARM drivers under UM. Do you have plans to fix
+> > that too?
 >
->This hardware was only supported from 5.4+, so I think we can drop this patch.
+> The only broken configs I found for UML are all listed on the cover
+> letter of this patch. I think fixing COMPILE_TEST on UM could be
+> worthwhile. Did you see any brokenness other than what I mentioned on
+> the cover letter?
+>
+> > Do you want to get this in a fix for 5.5?
+>
+> Preferably, yes.
+>
+> > Acked-by: Joel Stanley <joel@jms.id.au>
 
-I'll drop it for 4.19 and older, thanks!
+Hey, I know I owe you a reply about debugging your kunitconfig (I'll
+try to get to that this week); nevertheless, it looks like this patch
+didn't make it into 5.5. Can you make sure it gets into 5.6? It
+shouldn't depend on anything else.
 
--- 
-Thanks,
-Sasha
+Cheers
