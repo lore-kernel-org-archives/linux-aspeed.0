@@ -1,55 +1,78 @@
-From: Brendan Higgins <brendanhiggins@google.com>
-Date: Mon, 27 Jan 2020 01:46:25 -0800
-Subject: [PATCH v1 7/7] fsi: aspeed: add unspecified HAS_IOMEM dependency
-In-Reply-To: <CAFd5g45MFYMK-eZWPC5fhm2OkynUXKfArUVhbanYVH+qKRUwPg@mail.gmail.com>
-References: <20191211192742.95699-1-brendanhiggins@google.com>
- <20191211192742.95699-8-brendanhiggins@google.com>
- <CACPK8XctCb9Q2RaFVHEDuWxKDXpCWMWs-+vnKZ=SeTa3xRnT_g@mail.gmail.com>
- <CAFd5g45MFYMK-eZWPC5fhm2OkynUXKfArUVhbanYVH+qKRUwPg@mail.gmail.com>
-Message-ID: <CAFd5g454tX9zxRAq5T_pDGzcWt7u5r119wjo-BCGVq+=Ej4bGQ@mail.gmail.com>
+From: Andrew Jeffery <andrew@aj.id.au>
+Date: Tue, 28 Jan 2020 11:23:19 +1030
+Subject: [PATCH 1/2] hwrng: Add support for ASPEED RNG
+In-Reply-To: <136bbab84d13d8d56a5ac297e415975e@neuralgames.com>
+References: <20200120150113.2565-1-linux@neuralgames.com>
+ <CACPK8XfuVN3Q=npEoOP-amQS0-wemxcx6LKaHHZEsBAHzq1wzA@mail.gmail.com>
+ <4446ffb694c7742ca9492c7360856789@neuralgames.com>
+ <575811fd-24ca-409c-8d33-c2152ee401d7@www.fastmail.com>
+ <136bbab84d13d8d56a5ac297e415975e@neuralgames.com>
+Message-ID: <b83f2a1f-e1be-433c-8dc8-c469cb38f423@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Dec 11, 2019 at 4:30 PM Brendan Higgins
-<brendanhiggins@google.com> wrote:
->
-> On Wed, Dec 11, 2019 at 4:12 PM Joel Stanley <joel@jms.id.au> wrote:
-> >
-> > On Wed, 11 Dec 2019 at 19:28, Brendan Higgins <brendanhiggins@google.com> wrote:
-> > >
-> > > Currently CONFIG_FSI_MASTER_ASPEED=y implicitly depends on
-> > > CONFIG_HAS_IOMEM=y; consequently, on architectures without IOMEM we get
-> > > the following build error:
-> > >
-> > > ld: drivers/fsi/fsi-master-aspeed.o: in function `fsi_master_aspeed_probe':
-> > > drivers/fsi/fsi-master-aspeed.c:436: undefined reference to `devm_ioremap_resource'
-> > >
-> > > Fix the build error by adding the unspecified dependency.
-> > >
-> > > Reported-by: Brendan Higgins <brendanhiggins@google.com>
-> > > Signed-off-by: Brendan Higgins <brendanhiggins@google.com>
-> >
-> > Nice. I hit this when attempting to force on CONFIG_COMPILE_TEST in
-> > order to build some ARM drivers under UM. Do you have plans to fix
-> > that too?
->
-> The only broken configs I found for UML are all listed on the cover
-> letter of this patch. I think fixing COMPILE_TEST on UM could be
-> worthwhile. Did you see any brokenness other than what I mentioned on
-> the cover letter?
->
-> > Do you want to get this in a fix for 5.5?
->
-> Preferably, yes.
->
-> > Acked-by: Joel Stanley <joel@jms.id.au>
 
-Hey, I know I owe you a reply about debugging your kunitconfig (I'll
-try to get to that this week); nevertheless, it looks like this patch
-didn't make it into 5.5. Can you make sure it gets into 5.6? It
-shouldn't depend on anything else.
 
-Cheers
+On Sat, 25 Jan 2020, at 11:40, linux at neuralgames.com wrote:
+> On 2020-01-22 19:53, Andrew Jeffery wrote:
+> >> Thanks for reviewing the patch.
+> >> 
+> >> The RNG on Aspeed hardware allows eight different modes for combining
+> >> its four internal Ring Oscillators that together generate a stream of
+> >> random bits. However, the timeriomem-rng driver does not allow for 
+> >> mode
+> >> selection so, the Aspeed RNG with this generic driver runs always on
+> >> mode 'seven' (The default value for mode according to the AspeedTech
+> >> datasheets).
+> >> 
+> >> I've performed some testings on this Aspeed RNG using the NIST
+> >> Statistical Test Suite (NIST 800-22r1a) and, the results I got show 
+> >> that
+> >> the default mode 'seven' isn't producing the best entropy and linear
+> >> rank when compared against the other modes available on these SOCs.  
+> >> On
+> >> the other hand, the driver that I'm proposing here allows for mode
+> >> selection which would help improve the random output for those looking
+> >> to get the best out of this Aspeed RNG.
+> > 
+> > Have you published the data and results of this study somewhere? This
+> > really should be mentioned in the commit message as justification for
+> > not using timeriomem-rng.
+> > 
+> > Andrew
+> 
+> Hi Andrew,
+> 
+> I have uploaded the results of my tests to my GitHub, along with all the 
+> binaries
+> containing the random bits that I collected from this Aspeed RNG using 
+> all 8 modes.
+> You can also find in this repository a patch for the hw_random core 
+> driver that
+> I've been using to collect this data. Here is the link:
+>    https://github.com/operezmuena/aspeed-rng-testing
+> 
+> You can see in the reports that when using large enough samples (40Mb in 
+> size)
+> this Aspeed RNG consistently fails the linear rank and entropy tests, no 
+> matter
+> what RNG mode is selected. However, modes 2, 4 and 6 produce better 
+> entropy than
+> the rest.
+> I'm now collecting rng data from 2 other AST2520 SOCs that I have in 
+> order to
+> compare results.
+
+Nice work. Eyeballing the summaries, it seems mode 6 or mode 4 may be
+improvements over 7? What's your analysis? It would be nice to have the
+data from your other two SoCs to corroborate. Again, going forward, please
+point to your measurements in your commit message.
+
+Not that I've looked, but is it feasible to augment timeriomem-rng with
+the ability to configure the RNG rather than implement a new driver? Why
+didn't you go that route?
+
+Andrew
