@@ -1,58 +1,34 @@
-From: Vijay Khemka <vijaykhemka@fb.com>
-Date: Thu, 30 Jan 2020 13:46:26 -0800
-Subject: [PATCH v2] ARM: dts: aspeed: tiogapass: Add IPMB device
-Message-ID: <20200130214626.2863329-1-vijaykhemka@fb.com>
+From: Joel Stanley <joel@jms.id.au>
+Date: Fri, 31 Jan 2020 03:43:56 +0000
+Subject: [PATCH v1 7/7] fsi: aspeed: add unspecified HAS_IOMEM dependency
+In-Reply-To: <CAFd5g454tX9zxRAq5T_pDGzcWt7u5r119wjo-BCGVq+=Ej4bGQ@mail.gmail.com>
+References: <20191211192742.95699-1-brendanhiggins@google.com>
+ <20191211192742.95699-8-brendanhiggins@google.com>
+ <CACPK8XctCb9Q2RaFVHEDuWxKDXpCWMWs-+vnKZ=SeTa3xRnT_g@mail.gmail.com>
+ <CAFd5g45MFYMK-eZWPC5fhm2OkynUXKfArUVhbanYVH+qKRUwPg@mail.gmail.com>
+ <CAFd5g454tX9zxRAq5T_pDGzcWt7u5r119wjo-BCGVq+=Ej4bGQ@mail.gmail.com>
+Message-ID: <CACPK8XddCV6QnvRSS7WcyoN7W3yuUSbyT67on=EMhV7jWDExUg@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Adding IPMB devices for facebook tiogapass platform.
+On Mon, 27 Jan 2020 at 09:46, Brendan Higgins <brendanhiggins@google.com> wrote:
 
-Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
----
- arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts | 13 +++++++++++++
- 1 file changed, 13 insertions(+)
+> > > Do you want to get this in a fix for 5.5?
+> >
+> > Preferably, yes.
+> >
+> > > Acked-by: Joel Stanley <joel@jms.id.au>
+>
+> Hey, I know I owe you a reply about debugging your kunitconfig (I'll
+> try to get to that this week); nevertheless, it looks like this patch
+> didn't make it into 5.5. Can you make sure it gets into 5.6? It
+> shouldn't depend on anything else.
 
-diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
-index fb7f034d5db2..1cb5b9bf468f 100644
---- a/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
-@@ -5,6 +5,7 @@
- 
- #include "aspeed-g5.dtsi"
- #include <dt-bindings/gpio/aspeed-gpio.h>
-+#include <dt-bindings/i2c/i2c.h>
- 
- / {
- 	model = "Facebook TiogaPass BMC";
-@@ -428,6 +429,12 @@
- &i2c4 {
- 	status = "okay";
- 	// BMC Debug Header
-+	multi-master;
-+	ipmb0 at 10 {
-+		compatible = "ipmb-dev";
-+		reg = <(0x10 | I2C_OWN_SLAVE_ADDRESS)>;
-+		i2c-protocol;
-+	};
- };
- 
- &i2c5 {
-@@ -509,6 +516,12 @@
- &i2c9 {
- 	status = "okay";
- 	//USB Debug Connector
-+	multi-master;
-+	ipmb0 at 10 {
-+		compatible = "ipmb-dev";
-+		reg = <(0x10 | I2C_OWN_SLAVE_ADDRESS)>;
-+		i2c-protocol;
-+	};
- };
- 
- &pwm_tacho {
--- 
-2.17.1
+Sure, thanks for the reminder.
 
+Cheers,
+
+Joel
