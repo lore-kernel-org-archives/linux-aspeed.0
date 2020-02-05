@@ -1,81 +1,78 @@
-From: Eddie James <eajames@linux.ibm.com>
-Date: Wed, 26 Feb 2020 08:50:06 -0600
-Subject: [PATCH -next] media: aspeed: add AST2600 support
-In-Reply-To: <20200225195853.17480-1-jae.hyun.yoo@linux.intel.com>
-References: <20200225195853.17480-1-jae.hyun.yoo@linux.intel.com>
-Message-ID: <f4ffad91-9742-9b68-be51-c1ec222e24b6@linux.ibm.com>
+From: Andrew Geissler <geissonator@gmail.com>
+Date: Wed, 05 Feb 2020 21:55:44 -0000
+Subject: [PATCH linux dev-5.4 v2] ARM: dts: aspeed: witherspoon: Add gpio line
+ names
+In-Reply-To: <FMfcgxwGDDpcbrVbWGfkMRbZCLSZqpMM>
+References: <FMfcgxwGDDpcbrVbWGfkMRbZCLSZqpMM>
+Message-ID: <20200205215511.80333-1-geissonator@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+From: Andrew Geissler <geissonator@yahoo.com>
 
-On 2/25/20 1:58 PM, Jae Hyun Yoo wrote:
-> Video engine in AST2600 has the exactly same register set with
-> AST2500 except VR084 register which provides more precise JPEG
-> size read back. This commit adds support for the difference and
-> adds 'aspeed,ast2600-video-engine' compatible OF string.
+Name the gpios so libgiod will work with them
 
+Signed-off-by: Andrew Geissler <geissonator@yahoo.com>
+---
+v2: added upstream to patch
+    prepended fsi- on fsi related gpios
+    prepended led- on led related gpios
+    prepended presence on presence related gpios
+    dropped pin_gpio_a1 definition
+---
+ .../boot/dts/aspeed-bmc-opp-witherspoon.dts   | 36 +++++++++++++++++++
+ 1 file changed, 36 insertions(+)
 
-Thanks Jae!
+diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-witherspoon.dts b/arch/arm/boot/dts/aspeed-bmc-opp-witherspoon.dts
+index 515f0f208ee6..2519722928a4 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-opp-witherspoon.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-opp-witherspoon.dts
+@@ -193,6 +193,42 @@
+ 
+ };
+ 
++&gpio {
++    status = "okay";
++	gpio-line-names =
++	/*A0-A7*/	"","cfam-reset","","","","","fsi-mux","",
++	/*B0-B7*/	"","","","","","air-water","","",
++	/*C0-C7*/	"","","","","","","","",
++	/*D0-D7*/	"fsi-enable","","","","","","","",
++	/*E0-E7*/	"fsi-data","","","","","","","",
++	/*F0-F7*/	"","","","","","","","",
++	/*G0-G7*/	"","","","","","","","",
++	/*H0-H7*/	"","","","","","","","",
++	/*I0-I7*/	"","","","","","","","",
++	/*J0-J7*/	"","","checkstop","","","","","",
++	/*K0-K7*/	"","","","","","","","",
++	/*L0-L7*/	"","","","","","","","",
++	/*M0-M7*/	"","","","","","","","",
++	/*N0-N7*/	"presence-ps1","","led-rear-fault","led-rear-power",
++		        "led-rear-id","","","",
++	/*O0-O7*/	"","","","","","","","",
++	/*P0-P7*/	"","","","","","","","presence-ps0",
++	/*Q0-Q7*/	"","","","","","","","",
++	/*R0-R7*/	"","","fsi-trans","","","power-button","","",
++	/*S0-S7*/	"","","","","","","","",
++	/*T0-T7*/	"","","","","","","","",
++	/*U0-U7*/	"","","","","","","","",
++	/*V0-V7*/	"","","","","","","","",
++	/*W0-W7*/	"","","","","","","","",
++	/*X0-X7*/	"","","","","","","","",
++	/*Y0-Y7*/	"","","","","","","","",
++	/*Z0-Z7*/	"","","","","","","","",
++	/*AA0-AA7*/	"fsi-clock","","","","","","","",
++	/*AB0-AB7*/	"","","","","","","","",
++	/*AC0-AC7*/	"","","","","","","","";
++
++};
++
+ &fmc {
+ 	status = "okay";
+ 
+-- 
+2.21.0 (Apple Git-122)
 
-Reviewed-by: Eddie James <eajames@linux.ibm.com>
-
-
->
-> Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-> ---
->   drivers/media/platform/aspeed-video.c | 15 +++++++++++----
->   1 file changed, 11 insertions(+), 4 deletions(-)
->
-> diff --git a/drivers/media/platform/aspeed-video.c b/drivers/media/platform/aspeed-video.c
-> index 47444a336ebb..7d98db1d9b52 100644
-> --- a/drivers/media/platform/aspeed-video.c
-> +++ b/drivers/media/platform/aspeed-video.c
-> @@ -1,6 +1,6 @@
->   // SPDX-License-Identifier: GPL-2.0-or-later
->   // Copyright 2020 IBM Corp.
-> -// Copyright (c) 2019 Intel Corporation
-> +// Copyright (c) 2019-2020 Intel Corporation
->   
->   #include <linux/atomic.h>
->   #include <linux/bitfield.h>
-> @@ -132,7 +132,8 @@
->   #define  VE_COMP_CTRL_HQ_DCT_CHR	GENMASK(26, 22)
->   #define  VE_COMP_CTRL_HQ_DCT_LUM	GENMASK(31, 27)
->   
-> -#define VE_OFFSET_COMP_STREAM		0x078
-> +#define AST2400_VE_COMP_SIZE_READ_BACK	0x078
-> +#define AST2600_VE_COMP_SIZE_READ_BACK	0x084
->   
->   #define VE_SRC_LR_EDGE_DET		0x090
->   #define  VE_SRC_LR_EDGE_DET_LEFT	GENMASK(11, 0)
-> @@ -252,12 +253,17 @@ struct aspeed_video_config {
->   
->   static const struct aspeed_video_config ast2400_config = {
->   	.jpeg_mode = AST2400_VE_SEQ_CTRL_JPEG_MODE,
-> -	.comp_size_read = VE_OFFSET_COMP_STREAM,
-> +	.comp_size_read = AST2400_VE_COMP_SIZE_READ_BACK,
->   };
->   
->   static const struct aspeed_video_config ast2500_config = {
->   	.jpeg_mode = AST2500_VE_SEQ_CTRL_JPEG_MODE,
-> -	.comp_size_read = VE_OFFSET_COMP_STREAM,
-> +	.comp_size_read = AST2400_VE_COMP_SIZE_READ_BACK,
-> +};
-> +
-> +static const struct aspeed_video_config ast2600_config = {
-> +	.jpeg_mode = AST2500_VE_SEQ_CTRL_JPEG_MODE,
-> +	.comp_size_read = AST2600_VE_COMP_SIZE_READ_BACK,
->   };
->   
->   static const u32 aspeed_video_jpeg_header[ASPEED_VIDEO_JPEG_HEADER_SIZE] = {
-> @@ -1673,6 +1679,7 @@ static int aspeed_video_init(struct aspeed_video *video)
->   static const struct of_device_id aspeed_video_of_match[] = {
->   	{ .compatible = "aspeed,ast2400-video-engine", .data = &ast2400_config },
->   	{ .compatible = "aspeed,ast2500-video-engine", .data = &ast2500_config },
-> +	{ .compatible = "aspeed,ast2600-video-engine", .data = &ast2600_config },
->   	{}
->   };
->   MODULE_DEVICE_TABLE(of, aspeed_video_of_match);
