@@ -1,50 +1,90 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Mon, 10 Feb 2020 02:28:13 +0000
-Subject: [PATCH 1/2] ARM: dts: aspeed: ast2500: Fix SCU IRQ controller
- node address
-In-Reply-To: <20200204224908.19967-2-eajames@linux.ibm.com>
-References: <20200204224908.19967-1-eajames@linux.ibm.com>
- <20200204224908.19967-2-eajames@linux.ibm.com>
-Message-ID: <CACPK8XcYSoAM0VZFZSnVTRXHsEcib+-s8e3p7HD67VV35hEA=Q@mail.gmail.com>
+Date: Mon, 10 Feb 2020 02:29:19 +0000
+Subject: [PATCH v3] ARM: dts: aspeed: witherspoon: Add gpio line names
+In-Reply-To: <20200206170234.84288-1-geissonator@gmail.com>
+References: <20200206170234.84288-1-geissonator@gmail.com>
+Message-ID: <CACPK8Xdg0ocBzDqtkoo8cSCpUq+QjHQ1PKrsVZd8NPUvPFeFCw@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, 4 Feb 2020 at 22:49, Eddie James <eajames@linux.ibm.com> wrote:
+On Thu, 6 Feb 2020 at 17:03, Andrew Geissler <geissonator@gmail.com> wrote:
 >
-> The node was defined with a unit address but had no reg property,
-> resulting in a warning. The address is unecessary, so drop it.
-
-Please add a reg property instead of removing the unit address.
-
-The hardware still lives at that address, even if your driver doesn't
-currently use that information.
-
-Cheers,
-
-Joel
-
+> From: Andrew Geissler <geissonator@yahoo.com>
 >
-> Signed-off-by: Eddie James <eajames@linux.ibm.com>
+> Name the GPIOs to help userspace work with them. The names describe the
+> functionality the lines provide, not the net or ball name. This makes it
+> easier to share userspace code across different systems and makes the
+> use of the lines more obvious.
+>
+> Signed-off-by: Andrew Geissler <geissonator@yahoo.com>
+
+Reviewed-by: Joel Stanley <joel@jms.id.au>
+
+I will wait for  Andrew before merging, but this looks good to me.
+
+
 > ---
->  arch/arm/boot/dts/aspeed-g5.dtsi | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+> v3: added more detail to commit message
+>     removed linux dev-5.4 from PATCH header
+>     removed redundant status from gpio
+>     removed blank line
+> v2: added upstream to patch
+>     prepended fsi- on fsi related gpios
+>     prepended led- on led related gpios
+>     prepended presence on presence related gpios
+>     dropped pin_gpio_a1 definition
+> ---
+>  .../boot/dts/aspeed-bmc-opp-witherspoon.dts   | 34 +++++++++++++++++++
+>  1 file changed, 34 insertions(+)
 >
-> diff --git a/arch/arm/boot/dts/aspeed-g5.dtsi b/arch/arm/boot/dts/aspeed-g5.dtsi
-> index 569f9d74c696..aeee18fc1e7e 100644
-> --- a/arch/arm/boot/dts/aspeed-g5.dtsi
-> +++ b/arch/arm/boot/dts/aspeed-g5.dtsi
-> @@ -222,7 +222,7 @@ syscon: syscon at 1e6e2000 {
->                                 #clock-cells = <1>;
->                                 #reset-cells = <1>;
+> diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-witherspoon.dts b/arch/arm/boot/dts/aspeed-bmc-opp-witherspoon.dts
+> index 515f0f208ee6..2269c73b8987 100644
+> --- a/arch/arm/boot/dts/aspeed-bmc-opp-witherspoon.dts
+> +++ b/arch/arm/boot/dts/aspeed-bmc-opp-witherspoon.dts
+> @@ -193,6 +193,40 @@
 >
-> -                               scu_ic: interrupt-controller at 18 {
-> +                               scu_ic: interrupt-controller {
->                                         #interrupt-cells = <1>;
->                                         compatible = "aspeed,ast2500-scu-ic";
->                                         interrupts = <21>;
+>  };
+>
+> +&gpio {
+> +       gpio-line-names =
+> +       /*A0-A7*/       "","cfam-reset","","","","","fsi-mux","",
+> +       /*B0-B7*/       "","","","","","air-water","","",
+> +       /*C0-C7*/       "","","","","","","","",
+> +       /*D0-D7*/       "fsi-enable","","","","","","","",
+> +       /*E0-E7*/       "fsi-data","","","","","","","",
+> +       /*F0-F7*/       "","","","","","","","",
+> +       /*G0-G7*/       "","","","","","","","",
+> +       /*H0-H7*/       "","","","","","","","",
+> +       /*I0-I7*/       "","","","","","","","",
+> +       /*J0-J7*/       "","","checkstop","","","","","",
+> +       /*K0-K7*/       "","","","","","","","",
+> +       /*L0-L7*/       "","","","","","","","",
+> +       /*M0-M7*/       "","","","","","","","",
+> +       /*N0-N7*/       "presence-ps1","","led-rear-fault","led-rear-power",
+> +                       "led-rear-id","","","",
+> +       /*O0-O7*/       "","","","","","","","",
+> +       /*P0-P7*/       "","","","","","","","presence-ps0",
+> +       /*Q0-Q7*/       "","","","","","","","",
+> +       /*R0-R7*/       "","","fsi-trans","","","power-button","","",
+> +       /*S0-S7*/       "","","","","","","","",
+> +       /*T0-T7*/       "","","","","","","","",
+> +       /*U0-U7*/       "","","","","","","","",
+> +       /*V0-V7*/       "","","","","","","","",
+> +       /*W0-W7*/       "","","","","","","","",
+> +       /*X0-X7*/       "","","","","","","","",
+> +       /*Y0-Y7*/       "","","","","","","","",
+> +       /*Z0-Z7*/       "","","","","","","","",
+> +       /*AA0-AA7*/     "fsi-clock","","","","","","","",
+> +       /*AB0-AB7*/     "","","","","","","","",
+> +       /*AC0-AC7*/     "","","","","","","","";
+> +};
+> +
+>  &fmc {
+>         status = "okay";
+>
 > --
-> 2.24.0
+> 2.21.0 (Apple Git-122)
 >
