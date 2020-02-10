@@ -1,108 +1,36 @@
-From: Tao Ren <rentao.bupt@gmail.com>
-Date: Mon, 10 Feb 2020 11:31:29 -0800
-Subject: [PATCH 2/3] usb: gadget: aspeed: add ast2600 vhub support
-In-Reply-To: <b7bf421b5fad397a7ef430af6c0c09602dd66c2a.camel@kernel.crashing.org>
-References: <20200131222157.20849-1-rentao.bupt@gmail.com>
- <20200131222157.20849-3-rentao.bupt@gmail.com>
- <CACPK8XcmUYhnePr1AG2M9P-oGvOM=zCM+r44jWUzPYGxUEGOGw@mail.gmail.com>
- <b7bf421b5fad397a7ef430af6c0c09602dd66c2a.camel@kernel.crashing.org>
-Message-ID: <20200210193128.GC5346@taoren-ubuntu-R90MNF91>
+From: Eddie James <eajames@linux.ibm.com>
+Date: Mon, 10 Feb 2020 13:32:26 -0600
+Subject: [PATCH v2 1/2] ARM: dts: aspeed: ast2500: Fix SCU IRQ controller node
+In-Reply-To: <1581363147-19310-1-git-send-email-eajames@linux.ibm.com>
+References: <1581363147-19310-1-git-send-email-eajames@linux.ibm.com>
+Message-ID: <1581363147-19310-2-git-send-email-eajames@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Feb 10, 2020 at 08:29:22AM +0100, Benjamin Herrenschmidt wrote:
-> On Mon, 2020-02-10 at 02:48 +0000, Joel Stanley wrote:
-> > On Fri, 31 Jan 2020 at 22:22, <rentao.bupt@gmail.com> wrote:
-> > > 
-> > > From: Tao Ren <rentao.bupt@gmail.com>
-> > > 
-> > > Add AST2600 support in aspeed-vhub driver. There are 3 major differences
-> > > between AST2500 and AST2600 vhub:
-> > >   - AST2600 supports 7 downstream ports while AST2500 supports 5.
-> > >   - AST2600 supports 21 generic endpoints while AST2500 supports 15.
-> > >   - EP0 data buffer's 8-byte DMA alignment restriction is removed from
-> > >     AST2600.
-> > > 
-> > > Signed-off-by: Tao Ren <rentao.bupt@gmail.com>
-> > > Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
-> 
-> Travelling at the moment so my review might be a bit delayed. Also for
-> some reason I missed your original submission, sorry about that, please
-> poke me next time if I don't reply within a couple of days !
+The node was defined with a unit address but had no reg property,
+resulting in a warning. Add a reg property for consistency to fix the
+warning.
 
-No worries Ben and thanks for the review. I thought people was too busy
-during merge window :)
+Signed-off-by: Eddie James <eajames@linux.ibm.com>
+---
+ arch/arm/boot/dts/aspeed-g5.dtsi | 1 +
+ 1 file changed, 1 insertion(+)
 
-> 
-> One thing to look into as well is the 2600 has revived the "device
-> controller" which looks like a cut down version of a vhub device, so we
-> should break a bit more the linkage between vhub and the underlying
-> devices so the latter can be instanciated standalone...
-> 
-> (Foor for thought, I'm not asking you to do that right now)
+diff --git a/arch/arm/boot/dts/aspeed-g5.dtsi b/arch/arm/boot/dts/aspeed-g5.dtsi
+index 569f9d7..9db7bde 100644
+--- a/arch/arm/boot/dts/aspeed-g5.dtsi
++++ b/arch/arm/boot/dts/aspeed-g5.dtsi
+@@ -225,6 +225,7 @@
+ 				scu_ic: interrupt-controller at 18 {
+ 					#interrupt-cells = <1>;
+ 					compatible = "aspeed,ast2500-scu-ic";
++					reg = <0x18 0x4>;
+ 					interrupts = <21>;
+ 					interrupt-controller;
+ 				};
+-- 
+1.8.3.1
 
-Thanks for sharing your thought. I was actually curious why "device
-controller" was back. Anyways I feel it might be easier to break the
-linkage when we decide to add driver for the "device controller".
-
-
-Cheers,
-
-Tao
-> 
-> Cheers,
-> Ben.
-> 
-> > Reviewed-by: Joel Stanley <joel@jms.id.au>
-> > 
-> > > ---
-> > >  drivers/usb/gadget/udc/aspeed-vhub/Kconfig | 4 ++--
-> > >  drivers/usb/gadget/udc/aspeed-vhub/core.c  | 9 +++++++++
-> > >  2 files changed, 11 insertions(+), 2 deletions(-)
-> > > 
-> > > diff --git a/drivers/usb/gadget/udc/aspeed-vhub/Kconfig b/drivers/usb/gadget/udc/aspeed-vhub/Kconfig
-> > > index 83ba8a2eb6af..605500b19cf3 100644
-> > > --- a/drivers/usb/gadget/udc/aspeed-vhub/Kconfig
-> > > +++ b/drivers/usb/gadget/udc/aspeed-vhub/Kconfig
-> > > @@ -4,5 +4,5 @@ config USB_ASPEED_VHUB
-> > >         depends on ARCH_ASPEED || COMPILE_TEST
-> > >         depends on USB_LIBCOMPOSITE
-> > >         help
-> > > -         USB peripheral controller for the Aspeed AST2500 family
-> > > -         SoCs supporting the "vHub" functionality and USB2.0
-> > > +         USB peripheral controller for the Aspeed AST2400, AST2500 and
-> > > +         AST2600 family SoCs supporting the "vHub" functionality and USB2.0
-> > > diff --git a/drivers/usb/gadget/udc/aspeed-vhub/core.c b/drivers/usb/gadget/udc/aspeed-vhub/core.c
-> > > index 94081cc04113..c827bf420278 100644
-> > > --- a/drivers/usb/gadget/udc/aspeed-vhub/core.c
-> > > +++ b/drivers/usb/gadget/udc/aspeed-vhub/core.c
-> > > @@ -42,6 +42,11 @@ static const struct ast_vhub_config ast2400_config = {
-> > >         .max_epns = 15,
-> > >  };
-> > > 
-> > > +static const struct ast_vhub_config ast2600_config = {
-> > > +       .max_ports = 7,
-> > > +       .max_epns = 21,
-> > > +};
-> > > +
-> > >  static const struct of_device_id ast_vhub_dt_ids[] = {
-> > >         {
-> > >                 .compatible = "aspeed,ast2400-usb-vhub",
-> > > @@ -51,6 +56,10 @@ static const struct of_device_id ast_vhub_dt_ids[] = {
-> > >                 .compatible = "aspeed,ast2500-usb-vhub",
-> > >                 .data = &ast2400_config,
-> > >         },
-> > > +       {
-> > > +               .compatible = "aspeed,ast2600-usb-vhub",
-> > > +               .data = &ast2600_config,
-> > > +       },
-> > >         { }
-> > >  };
-> > >  MODULE_DEVICE_TABLE(of, ast_vhub_dt_ids);
-> > > --
-> > > 2.17.1
-> > > 
-> 
