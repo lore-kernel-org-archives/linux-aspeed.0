@@ -1,57 +1,55 @@
-From: Tao Ren <rentao.bupt@gmail.com>
-Date: Tue, 11 Feb 2020 18:37:47 -0800
-Subject: [PATCH 1/3] usb: gadget: aspeed: read vhub config from
- of_device_id
-In-Reply-To: <746b08aabf7ea976a382ad2ca30fa10a095e7ed8.camel@kernel.crashing.org>
-References: <20200131222157.20849-1-rentao.bupt@gmail.com>
- <20200131222157.20849-2-rentao.bupt@gmail.com>
- <CACPK8Xe0b+zVNqf8v5YXOLkzqDeb4JHqec-bqFpaVFGTwHThhA@mail.gmail.com>
- <386e905fb705266efcac0c1b3a10053889c7fead.camel@kernel.crashing.org>
- <20200210190744.GA5346@taoren-ubuntu-R90MNF91>
- <746b08aabf7ea976a382ad2ca30fa10a095e7ed8.camel@kernel.crashing.org>
-Message-ID: <20200212023746.GA9834@taoren-ubuntu-R90MNF91>
+From: rentao.bupt@gmail.com <rentao.bupt@gmail.com>
+Date: Wed, 12 Feb 2020 13:57:12 -0800
+Subject: [PATCH v2 0/5] aspeed-g6: enable usb support
+Message-ID: <20200212215717.9474-1-rentao.bupt@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Feb 11, 2020 at 09:50:42AM +0100, Benjamin Herrenschmidt wrote:
-> On Mon, 2020-02-10 at 11:07 -0800, Tao Ren wrote:
-> > > > This looks generally okay. We should wait for Ben's ack before
-> > > > applying.
-> > > 
-> > > Shouldn't we instead have DT fields indicating those values ?
-> > 
-> > May I ask why we prefer adding dt fields (such as "aspeed,vhub-max-ports"
-> > and "aspeed,vhub-max-endpoints") instead of assigning these values based
-> > on aspeed family? For example, is it to allow users to set a smaller
-> > number of ports/endpoints?
-> 
-> It's not a strong drive but it makes it more convenient to add support
-> to newer revisions if the only differences are those numbers.
+From: Tao Ren <rentao.bupt@gmail.com>
 
-Got it. Thanks for the clarify. Will send out v2 patches after more
-testing.
+The patch series aims at enabling USB Host and Gadget support on AST2600
+platforms.
 
-> > 
-> > > Also we should add a DT representation for the various ID/strings of
-> > > the hub itself so manufacturers can customize them.
-> > 
-> > Sure. I will add DT nodes for vendor/product/device IDs/strings. As it's
-> > not directly related to ast2600-support, shall I handle it in a separate
-> > patch? Or I can include the patch in this patch series?
-> 
-> Separate. Thanks !
+Patch #1 replaces hardcoded vhub port/endpoint number with device tree
+properties, so that it's more convenient to add support for ast2600-vhub
+which provides more downstream ports and endpoints.
 
-Will take care of the change once this patch series is accepted.
+Patch #2 and #3 add vhub port/endpoint properties into aspeed-g4 and
+aspeed-g5 dtsi.
 
+Patch #4 enables ast2600 support in aspeed-vhub usb gadget driver.
 
-Cheers,
+Patch #5 adds USB devices and according pin groups in aspeed-g6 dtsi.
 
-Tao
-> 
-> Cheers,
-> Ben.
-> 
-> 
+The patch series is sanity tested on AST2520 (Yamp) BMC and AST2600-A0
+eval board:
+  - AST2520: created 5 gadget devices with 15 endpoints, and all of them
+    can be enumerated from usb-host side.
+  - AST2600: created 7 gadget devices with 20 endpoints, and all of them
+    can be enumerated from usb-host side.
+
+Tao Ren (5):
+  usb: gadget: aspeed: read vhub properties from device tree
+  ARM: dts: aspeed-g4: add vhub port and endpoint properties
+  ARM: dts: aspeed-g5: add vhub port and endpoint properties
+  usb: gadget: aspeed: add ast2600 vhub support
+  ARM: dts: aspeed-g6: add usb functions
+
+ arch/arm/boot/dts/aspeed-g4.dtsi           |  2 +
+ arch/arm/boot/dts/aspeed-g5.dtsi           |  2 +
+ arch/arm/boot/dts/aspeed-g6-pinctrl.dtsi   | 25 ++++++++
+ arch/arm/boot/dts/aspeed-g6.dtsi           | 45 ++++++++++++++
+ drivers/usb/gadget/udc/aspeed-vhub/Kconfig |  4 +-
+ drivers/usb/gadget/udc/aspeed-vhub/core.c  | 71 ++++++++++++++--------
+ drivers/usb/gadget/udc/aspeed-vhub/dev.c   | 30 ++++++---
+ drivers/usb/gadget/udc/aspeed-vhub/epn.c   |  4 +-
+ drivers/usb/gadget/udc/aspeed-vhub/hub.c   | 26 +++++---
+ drivers/usb/gadget/udc/aspeed-vhub/vhub.h  | 23 +++----
+ 10 files changed, 170 insertions(+), 62 deletions(-)
+
+-- 
+2.17.1
+
