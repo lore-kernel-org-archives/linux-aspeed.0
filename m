@@ -1,10 +1,9 @@
 From: rentao.bupt@gmail.com <rentao.bupt@gmail.com>
-Date: Mon, 17 Feb 2020 19:13:15 -0800
-Subject: [PATCH v3 5/5] ARM: dts: aspeed-g4: add vhub port and endpoint
- properties
+Date: Mon, 17 Feb 2020 19:13:13 -0800
+Subject: [PATCH v3 3/5] ARM: dts: aspeed-g6: add usb functions
 In-Reply-To: <20200218031315.562-1-rentao.bupt@gmail.com>
 References: <20200218031315.562-1-rentao.bupt@gmail.com>
-Message-ID: <20200218031315.562-6-rentao.bupt@gmail.com>
+Message-ID: <20200218031315.562-4-rentao.bupt@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -13,30 +12,112 @@ Content-Transfer-Encoding: 7bit
 
 From: Tao Ren <rentao.bupt@gmail.com>
 
-Add "aspeed,vhub-downstream-ports" and "aspeed,vhub-generic-endpoints"
-properties to describe supported number of vhub ports and endpoints.
+Add USB components and according pin groups in aspeed-g6 dtsi.
 
 Signed-off-by: Tao Ren <rentao.bupt@gmail.com>
+Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
 ---
- No changes in v2/v3.
-   - It's given v3 to align with the version of the patch series.
+ Changes in v3:
+   - None.
+ Changes in v2:
+   - added port/endpoint properties for vhub dt node.
 
- arch/arm/boot/dts/aspeed-g4.dtsi | 2 ++
- 1 file changed, 2 insertions(+)
+ arch/arm/boot/dts/aspeed-g6-pinctrl.dtsi | 25 +++++++++++++
+ arch/arm/boot/dts/aspeed-g6.dtsi         | 45 ++++++++++++++++++++++++
+ 2 files changed, 70 insertions(+)
 
-diff --git a/arch/arm/boot/dts/aspeed-g4.dtsi b/arch/arm/boot/dts/aspeed-g4.dtsi
-index 807a0fc20670..8e04303e8514 100644
---- a/arch/arm/boot/dts/aspeed-g4.dtsi
-+++ b/arch/arm/boot/dts/aspeed-g4.dtsi
-@@ -164,6 +164,8 @@
- 			reg = <0x1e6a0000 0x300>;
- 			interrupts = <5>;
- 			clocks = <&syscon ASPEED_CLK_GATE_USBPORT1CLK>;
-+			aspeed,vhub-downstream-ports = <5>;
-+			aspeed,vhub-generic-endpoints = <15>;
- 			pinctrl-names = "default";
- 			pinctrl-0 = <&pinctrl_usb2d_default>;
+diff --git a/arch/arm/boot/dts/aspeed-g6-pinctrl.dtsi b/arch/arm/boot/dts/aspeed-g6-pinctrl.dtsi
+index 045ce66ca876..7028e21bdd98 100644
+--- a/arch/arm/boot/dts/aspeed-g6-pinctrl.dtsi
++++ b/arch/arm/boot/dts/aspeed-g6-pinctrl.dtsi
+@@ -1112,6 +1112,31 @@
+ 		groups = "UART9";
+ 	};
+ 
++	pinctrl_usb2ah_default: usb2ah_default {
++		function = "USB2AH";
++		groups = "USBA";
++	};
++
++	pinctrl_usb2ad_default: usb2ad_default {
++		function = "USB2AD";
++		groups = "USBA";
++	};
++
++	pinctrl_usb2bh_default: usb2bh_default {
++		function = "USB2BH";
++		groups = "USBB";
++	};
++
++	pinctrl_usb2bd_default: usb2bd_default {
++		function = "USB2BD";
++		groups = "USBB";
++	};
++
++	pinctrl_usb11bhid_default: usb11bhid_default {
++		function = "USB11BHID";
++		groups = "USBB";
++	};
++
+ 	pinctrl_vb_default: vb_default {
+ 		function = "VB";
+ 		groups = "VB";
+diff --git a/arch/arm/boot/dts/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed-g6.dtsi
+index 796976d275e1..0a29b3b57a9d 100644
+--- a/arch/arm/boot/dts/aspeed-g6.dtsi
++++ b/arch/arm/boot/dts/aspeed-g6.dtsi
+@@ -245,6 +245,51 @@
  			status = "disabled";
+ 		};
+ 
++		ehci0: usb at 1e6a1000 {
++			compatible = "aspeed,ast2600-ehci", "generic-ehci";
++			reg = <0x1e6a1000 0x100>;
++			interrupts = <GIC_SPI 5 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&syscon ASPEED_CLK_GATE_USBPORT1CLK>;
++			pinctrl-names = "default";
++			pinctrl-0 = <&pinctrl_usb2ah_default>;
++			status = "disabled";
++		};
++
++		ehci1: usb at 1e6a3000 {
++			compatible = "aspeed,ast2600-ehci", "generic-ehci";
++			reg = <0x1e6a3000 0x100>;
++			interrupts = <GIC_SPI 9 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&syscon ASPEED_CLK_GATE_USBPORT2CLK>;
++			pinctrl-names = "default";
++			pinctrl-0 = <&pinctrl_usb2bh_default>;
++			status = "disabled";
++		};
++
++		uhci: usb at 1e6b0000 {
++			compatible = "aspeed,ast2600-uhci", "generic-uhci";
++			reg = <0x1e6b0000 0x100>;
++			interrupts = <GIC_SPI 10 IRQ_TYPE_LEVEL_HIGH>;
++			#ports = <2>;
++			clocks = <&syscon ASPEED_CLK_GATE_USBUHCICLK>;
++			status = "disabled";
++			/*
++			 * No default pinmux, it will follow EHCI, use an
++			 * explicit pinmux override if EHCI is not enabled.
++			 */
++		};
++
++		vhub: usb-vhub at 1e6a0000 {
++			compatible = "aspeed,ast2600-usb-vhub";
++			reg = <0x1e6a0000 0x350>;
++			interrupts = <GIC_SPI 5 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&syscon ASPEED_CLK_GATE_USBPORT1CLK>;
++			aspeed,vhub-downstream-ports = <7>;
++			aspeed,vhub-generic-endpoints = <21>;
++			pinctrl-names = "default";
++			pinctrl-0 = <&pinctrl_usb2ad_default>;
++			status = "disabled";
++		};
++
+ 		apb {
+ 			compatible = "simple-bus";
+ 			#address-cells = <1>;
 -- 
 2.17.1
 
