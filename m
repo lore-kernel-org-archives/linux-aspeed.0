@@ -1,42 +1,63 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Mon, 17 Feb 2020 10:26:57 +1030
-Subject: [PATCH v6 06/12] soc: aspeed: Add XDMA Engine Driver
-In-Reply-To: <CAK8P3a3HsdpLz0aDGem1BrQsNo2mEJOnOsLcKFcLjaERx9dhGg@mail.gmail.com>
-References: <1579123790-6894-1-git-send-email-eajames@linux.ibm.com>
- <1579123790-6894-7-git-send-email-eajames@linux.ibm.com>
- <CAK8P3a3HsdpLz0aDGem1BrQsNo2mEJOnOsLcKFcLjaERx9dhGg@mail.gmail.com>
-Message-ID: <3a053c3e-0fec-4ab9-b941-a335524b3303@www.fastmail.com>
+From: rentao.bupt@gmail.com <rentao.bupt@gmail.com>
+Date: Mon, 17 Feb 2020 19:13:12 -0800
+Subject: [PATCH v3 2/5] usb: gadget: aspeed: add ast2600 vhub support
+In-Reply-To: <20200218031315.562-1-rentao.bupt@gmail.com>
+References: <20200218031315.562-1-rentao.bupt@gmail.com>
+Message-ID: <20200218031315.562-3-rentao.bupt@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+From: Tao Ren <rentao.bupt@gmail.com>
 
+Add AST2600 support in aspeed-vhub driver. There are 3 major differences
+between AST2500 and AST2600 vhub:
+  - AST2600 supports 7 downstream ports while AST2500 supports 5.
+  - AST2600 supports 21 generic endpoints while AST2500 supports 15.
+  - EP0 data buffer's 8-byte DMA alignment restriction is removed from
+    AST2600.
 
-On Tue, 11 Feb 2020, at 03:05, Arnd Bergmann wrote:
-> On Wed, Jan 15, 2020 at 10:31 PM Eddie James <eajames@linux.ibm.com> wrote:
-> >
-> > The XDMA engine embedded in the AST2500 and AST2600 SOCs performs PCI
-> > DMA operations between the SOC (acting as a BMC) and a host processor
-> > in a server.
-> >
-> > This commit adds a driver to control the XDMA engine and adds functions
-> > to initialize the hardware and memory and start DMA operations.
-> >
-> > Signed-off-by: Eddie James <eajames@linux.ibm.com>
-> 
-> Hi Eddie,
-> 
-> I'm missing the bigger picture in the description here, how does this fit into
-> the PCIe endpoint framework and the dmaengine subsystem?
-> 
-> Does the AST2500 show up as a PCIe device in the host, or do you just
-> inject DMAs into the host and hope that bypasses the IOMMU?
+Signed-off-by: Tao Ren <rentao.bupt@gmail.com>
+Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
+Reviewed-by: Joel Stanley <joel@jms.id.au>
+---
+ Changes in v3:
+   - None.
+ Changes in v2:
+   - removed "ast_vhub_config" related logic.
 
-The host needs to coordinate out-of-band with the BMC to communicate host
-addresses to be used. The host should configure the IOMMU as required before
-triggering transfers (either from it's own XDMA interface or requesting the BMC
-queue the transfer).
+ drivers/usb/gadget/udc/aspeed-vhub/Kconfig | 4 ++--
+ drivers/usb/gadget/udc/aspeed-vhub/core.c  | 3 +++
+ 2 files changed, 5 insertions(+), 2 deletions(-)
 
-Andrew
+diff --git a/drivers/usb/gadget/udc/aspeed-vhub/Kconfig b/drivers/usb/gadget/udc/aspeed-vhub/Kconfig
+index 83ba8a2eb6af..605500b19cf3 100644
+--- a/drivers/usb/gadget/udc/aspeed-vhub/Kconfig
++++ b/drivers/usb/gadget/udc/aspeed-vhub/Kconfig
+@@ -4,5 +4,5 @@ config USB_ASPEED_VHUB
+ 	depends on ARCH_ASPEED || COMPILE_TEST
+ 	depends on USB_LIBCOMPOSITE
+ 	help
+-	  USB peripheral controller for the Aspeed AST2500 family
+-	  SoCs supporting the "vHub" functionality and USB2.0
++	  USB peripheral controller for the Aspeed AST2400, AST2500 and
++	  AST2600 family SoCs supporting the "vHub" functionality and USB2.0
+diff --git a/drivers/usb/gadget/udc/aspeed-vhub/core.c b/drivers/usb/gadget/udc/aspeed-vhub/core.c
+index e4395813df35..442845a64660 100644
+--- a/drivers/usb/gadget/udc/aspeed-vhub/core.c
++++ b/drivers/usb/gadget/udc/aspeed-vhub/core.c
+@@ -431,6 +431,9 @@ static const struct of_device_id ast_vhub_dt_ids[] = {
+ 	{
+ 		.compatible = "aspeed,ast2500-usb-vhub",
+ 	},
++	{
++		.compatible = "aspeed,ast2600-usb-vhub",
++	},
+ 	{ }
+ };
+ MODULE_DEVICE_TABLE(of, ast_vhub_dt_ids);
+-- 
+2.17.1
+
