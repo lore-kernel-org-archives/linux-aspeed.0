@@ -1,76 +1,70 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Thu, 20 Feb 2020 12:39:45 +1100
-Subject: [PATCH 2/2] usb: gadget: aspeed: fixup usb1 device descriptor
- at init time
-In-Reply-To: <20200218235600.6763-3-rentao.bupt@gmail.com>
-References: <20200218235600.6763-1-rentao.bupt@gmail.com>
- <20200218235600.6763-3-rentao.bupt@gmail.com>
-Message-ID: <55e77bcb37ec780094b8d226f89bd5557e30d913.camel@kernel.crashing.org>
+From: Ben Pai <Ben_Pai@wistron.com>
+Date: Thu, 20 Feb 2020 13:52:55 +0800
+Subject: [PATCH v1] ARM: dts: mihawk: Change the name of mihawk led
+Message-ID: <20200220055255.22809-1-Ben_Pai@wistron.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, 2020-02-18 at 15:56 -0800, rentao.bupt at gmail.com wrote:
-> From: Tao Ren <rentao.bupt@gmail.com>
-> 
-> This patch moves fixup-usb1-device-descriptor logic from get_descriptor
-> handler to "ast_vhub_fixup_dev_desc" function so the device descriptor
-> is only patched once (at vhub init time).
+1.Change the name of power, fault and rear-id.
+2.Remove the two leds.
 
-I don't like this either. We should make ast_vhub_dev_desc and patch a
-copy here too. I know today there's only one instance of the vhub in a
-given SoC but that might not always be the case.
+Signed-off-by: Ben Pai <Ben_Pai@wistron.com>
+---
+ arch/arm/boot/dts/aspeed-bmc-opp-mihawk.dts | 17 +++--------------
+ 1 file changed, 3 insertions(+), 14 deletions(-)
 
-> Signed-off-by: Tao Ren <rentao.bupt@gmail.com>
-> ---
->  drivers/usb/gadget/udc/aspeed-vhub/hub.c | 20 +++++++++-----------
->  1 file changed, 9 insertions(+), 11 deletions(-)
-> 
-> diff --git a/drivers/usb/gadget/udc/aspeed-vhub/hub.c b/drivers/usb/gadget/udc/aspeed-vhub/hub.c
-> index 4e3ef83283a6..b8bf54b12adc 100644
-> --- a/drivers/usb/gadget/udc/aspeed-vhub/hub.c
-> +++ b/drivers/usb/gadget/udc/aspeed-vhub/hub.c
-> @@ -76,13 +76,6 @@ static struct usb_device_descriptor ast_vhub_dev_desc = {
->  	.bNumConfigurations	= 1,
->  };
->  
-> -/* Patches to the above when forcing USB1 mode */
-> -static void ast_vhub_patch_dev_desc_usb1(struct usb_device_descriptor *desc)
-> -{
-> -	desc->bcdUSB = cpu_to_le16(0x0100);
-> -	desc->bDeviceProtocol = 0;
-> -}
-> -
->  /*
->   * Configuration descriptor: same comments as above
->   * regarding handling USB1 mode.
-> @@ -316,10 +309,6 @@ static int ast_vhub_rep_desc(struct ast_vhub_ep *ep,
->  	if (len > dsize)
->  		len = dsize;
->  
-> -	/* Patch it if forcing USB1 */
-> -	if (desc_type == USB_DT_DEVICE && ep->vhub->force_usb1)
-> -		ast_vhub_patch_dev_desc_usb1(ep->buf);
-> -
->  	/* Shoot it from the EP buffer */
->  	return ast_vhub_reply(ep, NULL, len);
->  }
-> @@ -878,6 +867,15 @@ static void ast_vhub_fixup_dev_desc(struct ast_vhub *vhub)
->  		if (of_str[id])
->  			ast_vhub_str_array[i].s = of_str[id];
->  	}
-> +
-> +	/*
-> +	 * Update USB Release Number and Protocol code if vhub is running
-> +	 * at USB 1.x speed.
-> +	 */
-> +	if (vhub->force_usb1) {
-> +		ast_vhub_dev_desc.bcdUSB = cpu_to_le16(0x0100);
-> +		ast_vhub_dev_desc.bDeviceProtocol = 0;
-> +	}
->  }
->  
->  void ast_vhub_init_hub(struct ast_vhub *vhub)
+diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-mihawk.dts b/arch/arm/boot/dts/aspeed-bmc-opp-mihawk.dts
+index e55cc454b17f..6c11854b9006 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-opp-mihawk.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-opp-mihawk.dts
+@@ -120,35 +120,24 @@
+ 	leds {
+ 		compatible = "gpio-leds";
+ 
+-		fault {
++		front-fault {
+ 			retain-state-shutdown;
+ 			default-state = "keep";
+ 			gpios = <&gpio ASPEED_GPIO(AA, 0) GPIO_ACTIVE_LOW>;
+ 		};
+ 
+-		power {
++		power-button {
+ 			retain-state-shutdown;
+ 			default-state = "keep";
+ 			gpios = <&gpio ASPEED_GPIO(AA, 1) GPIO_ACTIVE_LOW>;
+ 		};
+ 
+-		rear-id {
++		front-id {
+ 			retain-state-shutdown;
+ 			default-state = "keep";
+ 			gpios = <&gpio ASPEED_GPIO(AA, 2) GPIO_ACTIVE_LOW>;
+ 		};
+ 
+-		rear-g {
+-			retain-state-shutdown;
+-			default-state = "keep";
+-			gpios = <&gpio ASPEED_GPIO(AA, 4) GPIO_ACTIVE_LOW>;
+-		};
+-
+-		rear-ok {
+-			retain-state-shutdown;
+-			default-state = "keep";
+-			gpios = <&gpio ASPEED_GPIO(Y, 0) GPIO_ACTIVE_LOW>;
+-		};
+ 
+ 		fan0 {
+ 			retain-state-shutdown;
+-- 
+2.17.1
 
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------
+This email contains confidential or legally privileged information and is for the sole use of its intended recipient. 
+Any unauthorized review, use, copying or distribution of this email or the content of this email is strictly prohibited.
+If you are not the intended recipient, you may reply to the sender and should delete this e-mail immediately.
+---------------------------------------------------------------------------------------------------------------------------------------------------------------
