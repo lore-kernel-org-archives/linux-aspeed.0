@@ -1,78 +1,36 @@
-From: Andrew Geissler <geissonator@gmail.com>
-Date: Wed, 05 Feb 2020 21:55:44 -0000
-Subject: [PATCH linux dev-5.4 v2] ARM: dts: aspeed: witherspoon: Add gpio line
- names
-In-Reply-To: <FMfcgxwGDDpcbrVbWGfkMRbZCLSZqpMM>
-References: <FMfcgxwGDDpcbrVbWGfkMRbZCLSZqpMM>
-Message-ID: <20200205215511.80333-1-geissonator@gmail.com>
+From: Ondrej Jirman <megous@megous.com>
+Date: Sun, 23 Feb 2020 00:51:52 +0100
+Subject: [PATCH] drm: aspeed: Fix GENMASK misuse
+Message-ID: <20200222235152.242816-1-megous@megous.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Andrew Geissler <geissonator@yahoo.com>
+Arguments to GENMASK should be msb >= lsb.
 
-Name the gpios so libgiod will work with them
-
-Signed-off-by: Andrew Geissler <geissonator@yahoo.com>
+Signed-off-by: Ondrej Jirman <megous@megous.com>
 ---
-v2: added upstream to patch
-    prepended fsi- on fsi related gpios
-    prepended led- on led related gpios
-    prepended presence on presence related gpios
-    dropped pin_gpio_a1 definition
----
- .../boot/dts/aspeed-bmc-opp-witherspoon.dts   | 36 +++++++++++++++++++
- 1 file changed, 36 insertions(+)
+I just grepped the whole kernel tree for GENMASK argument order issues,
+and this is one of the three that popped up. No testing was done.
 
-diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-witherspoon.dts b/arch/arm/boot/dts/aspeed-bmc-opp-witherspoon.dts
-index 515f0f208ee6..2519722928a4 100644
---- a/arch/arm/boot/dts/aspeed-bmc-opp-witherspoon.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-opp-witherspoon.dts
-@@ -193,6 +193,42 @@
+ drivers/gpu/drm/aspeed/aspeed_gfx.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/gpu/drm/aspeed/aspeed_gfx.h b/drivers/gpu/drm/aspeed/aspeed_gfx.h
+index a10358bb61ec4..095ea03e5833c 100644
+--- a/drivers/gpu/drm/aspeed/aspeed_gfx.h
++++ b/drivers/gpu/drm/aspeed/aspeed_gfx.h
+@@ -74,7 +74,7 @@ int aspeed_gfx_create_output(struct drm_device *drm);
+ /* CTRL2 */
+ #define CRT_CTRL_DAC_EN			BIT(0)
+ #define CRT_CTRL_VBLANK_LINE(x)		(((x) << 20) & CRT_CTRL_VBLANK_LINE_MASK)
+-#define CRT_CTRL_VBLANK_LINE_MASK	GENMASK(20, 31)
++#define CRT_CTRL_VBLANK_LINE_MASK	GENMASK(31, 20)
  
- };
- 
-+&gpio {
-+    status = "okay";
-+	gpio-line-names =
-+	/*A0-A7*/	"","cfam-reset","","","","","fsi-mux","",
-+	/*B0-B7*/	"","","","","","air-water","","",
-+	/*C0-C7*/	"","","","","","","","",
-+	/*D0-D7*/	"fsi-enable","","","","","","","",
-+	/*E0-E7*/	"fsi-data","","","","","","","",
-+	/*F0-F7*/	"","","","","","","","",
-+	/*G0-G7*/	"","","","","","","","",
-+	/*H0-H7*/	"","","","","","","","",
-+	/*I0-I7*/	"","","","","","","","",
-+	/*J0-J7*/	"","","checkstop","","","","","",
-+	/*K0-K7*/	"","","","","","","","",
-+	/*L0-L7*/	"","","","","","","","",
-+	/*M0-M7*/	"","","","","","","","",
-+	/*N0-N7*/	"presence-ps1","","led-rear-fault","led-rear-power",
-+		        "led-rear-id","","","",
-+	/*O0-O7*/	"","","","","","","","",
-+	/*P0-P7*/	"","","","","","","","presence-ps0",
-+	/*Q0-Q7*/	"","","","","","","","",
-+	/*R0-R7*/	"","","fsi-trans","","","power-button","","",
-+	/*S0-S7*/	"","","","","","","","",
-+	/*T0-T7*/	"","","","","","","","",
-+	/*U0-U7*/	"","","","","","","","",
-+	/*V0-V7*/	"","","","","","","","",
-+	/*W0-W7*/	"","","","","","","","",
-+	/*X0-X7*/	"","","","","","","","",
-+	/*Y0-Y7*/	"","","","","","","","",
-+	/*Z0-Z7*/	"","","","","","","","",
-+	/*AA0-AA7*/	"fsi-clock","","","","","","","",
-+	/*AB0-AB7*/	"","","","","","","","",
-+	/*AC0-AC7*/	"","","","","","","","";
-+
-+};
-+
- &fmc {
- 	status = "okay";
- 
+ /* CRT_HORIZ0 */
+ #define CRT_H_TOTAL(x)			(x)
 -- 
-2.21.0 (Apple Git-122)
+2.25.1
 
