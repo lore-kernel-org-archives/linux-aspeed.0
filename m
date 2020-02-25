@@ -1,36 +1,120 @@
-From: Ondrej Jirman <megous@megous.com>
-Date: Sun, 23 Feb 2020 00:51:52 +0100
-Subject: [PATCH] drm: aspeed: Fix GENMASK misuse
-Message-ID: <20200222235152.242816-1-megous@megous.com>
+From: Matthew Barth <msbarth@linux.ibm.com>
+Date: Tue, 25 Feb 2020 14:14:15 -0600
+Subject: [PATCH v2] ARM: dts: rainier: Set PCA9552 pin types
+Message-ID: <20200225201415.431668-1-msbarth@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Arguments to GENMASK should be msb >= lsb.
+All 16 pins of the PCA9552 at 7-bit address 0x61 should be set as type
+GPIO.
 
-Signed-off-by: Ondrej Jirman <megous@megous.com>
+Signed-off-by: Matthew Barth <msbarth@linux.ibm.com>
 ---
-I just grepped the whole kernel tree for GENMASK argument order issues,
-and this is one of the three that popped up. No testing was done.
+v2: Added leds-pca955x.h include
+    Added upstream to patch
+---
+---
+ arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
 
- drivers/gpu/drm/aspeed/aspeed_gfx.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/gpu/drm/aspeed/aspeed_gfx.h b/drivers/gpu/drm/aspeed/aspeed_gfx.h
-index a10358bb61ec4..095ea03e5833c 100644
---- a/drivers/gpu/drm/aspeed/aspeed_gfx.h
-+++ b/drivers/gpu/drm/aspeed/aspeed_gfx.h
-@@ -74,7 +74,7 @@ int aspeed_gfx_create_output(struct drm_device *drm);
- /* CTRL2 */
- #define CRT_CTRL_DAC_EN			BIT(0)
- #define CRT_CTRL_VBLANK_LINE(x)		(((x) << 20) & CRT_CTRL_VBLANK_LINE_MASK)
--#define CRT_CTRL_VBLANK_LINE_MASK	GENMASK(20, 31)
-+#define CRT_CTRL_VBLANK_LINE_MASK	GENMASK(31, 20)
+diff --git a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
+index c63cefce636d..d9fa9fd48058 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
+@@ -4,6 +4,7 @@
  
- /* CRT_HORIZ0 */
- #define CRT_H_TOTAL(x)			(x)
+ #include "aspeed-g6.dtsi"
+ #include <dt-bindings/gpio/aspeed-gpio.h>
++#include <dt-bindings/leds/leds-pca955x.h>
+ 
+ / {
+ 	model = "Rainier";
+@@ -351,66 +352,82 @@
+ 
+ 		gpio at 0 {
+ 			reg = <0>;
++			type = <PCA955X_TYPE_GPIO>;
+ 		};
+ 
+ 		gpio at 1 {
+ 			reg = <1>;
++			type = <PCA955X_TYPE_GPIO>;
+ 		};
+ 
+ 		gpio at 2 {
+ 			reg = <2>;
++			type = <PCA955X_TYPE_GPIO>;
+ 		};
+ 
+ 		gpio at 3 {
+ 			reg = <3>;
++			type = <PCA955X_TYPE_GPIO>;
+ 		};
+ 
+ 		gpio at 4 {
+ 			reg = <4>;
++			type = <PCA955X_TYPE_GPIO>;
+ 		};
+ 
+ 		gpio at 5 {
+ 			reg = <5>;
++			type = <PCA955X_TYPE_GPIO>;
+ 		};
+ 
+ 		gpio at 6 {
+ 			reg = <6>;
++			type = <PCA955X_TYPE_GPIO>;
+ 		};
+ 
+ 		gpio at 7 {
+ 			reg = <7>;
++			type = <PCA955X_TYPE_GPIO>;
+ 		};
+ 
+ 		gpio at 8 {
+ 			reg = <8>;
++			type = <PCA955X_TYPE_GPIO>;
+ 		};
+ 
+ 		gpio at 9 {
+ 			reg = <9>;
++			type = <PCA955X_TYPE_GPIO>;
+ 		};
+ 
+ 		gpio at 10 {
+ 			reg = <10>;
++			type = <PCA955X_TYPE_GPIO>;
+ 		};
+ 
+ 		gpio at 11 {
+ 			reg = <11>;
++			type = <PCA955X_TYPE_GPIO>;
+ 		};
+ 
+ 		gpio at 12 {
+ 			reg = <12>;
++			type = <PCA955X_TYPE_GPIO>;
+ 		};
+ 
+ 		gpio at 13 {
+ 			reg = <13>;
++			type = <PCA955X_TYPE_GPIO>;
+ 		};
+ 
+ 		gpio at 14 {
+ 			reg = <14>;
++			type = <PCA955X_TYPE_GPIO>;
+ 		};
+ 
+ 		gpio at 15 {
+ 			reg = <15>;
++			type = <PCA955X_TYPE_GPIO>;
+ 		};
+ 	};
+ 
 -- 
-2.25.1
+2.24.1
 
