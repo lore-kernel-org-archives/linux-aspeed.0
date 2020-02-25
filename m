@@ -1,66 +1,73 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Tue, 25 Feb 2020 10:10:06 +1030
-Subject: [PATCH] ARM: dts: aspeed: tacoma: Enable eMMC controller
-In-Reply-To: <CACPK8XeLWZT-VvuErtz6oE1tv1dhwwOnpZbV7PVr2PxgT2fopA@mail.gmail.com>
-References: <20200202163939.13326-1-linux@roeck-us.net>
- <CACPK8XeLWZT-VvuErtz6oE1tv1dhwwOnpZbV7PVr2PxgT2fopA@mail.gmail.com>
-Message-ID: <c5d15783-4e4c-426b-9df0-ee8efc57cefc@www.fastmail.com>
+From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+Date: Tue, 25 Feb 2020 11:58:53 -0800
+Subject: [PATCH -next] media: aspeed: add AST2600 support
+Message-ID: <20200225195853.17480-1-jae.hyun.yoo@linux.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+Video engine in AST2600 has the exactly same register set with
+AST2500 except VR084 register which provides more precise JPEG
+size read back. This commit adds support for the difference and
+adds 'aspeed,ast2600-video-engine' compatible OF string.
 
+Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+---
+ drivers/media/platform/aspeed-video.c | 15 +++++++++++----
+ 1 file changed, 11 insertions(+), 4 deletions(-)
 
-On Tue, 4 Feb 2020, at 16:24, Joel Stanley wrote:
-> On Sun, 2 Feb 2020 at 16:39, Guenter Roeck <linux@roeck-us.net> wrote:
-> >
-> > Enabling emmc without enabling its controller doesn't do any good.
-> > Enable its controller as well to make it work.
-> >
-> > Cc: Andrew Jeffery <andrew@aj.id.au>
-> > Cc: Joel Stanley <joel@jms.id.au>
-> > Signed-off-by: Guenter Roeck <linux@roeck-us.net>
-> 
-> Thanks Guenter. The description in aspeed-g6.dtsi changed at some
-> point and Tacoma was not updated.
-> 
-> > ---
-> >  arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts | 4 ++++
-> >  1 file changed, 4 insertions(+)
-> >
-> > diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts b/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts
-> > index ff49ec76fa7c..47293a5e0c59 100644
-> > --- a/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts
-> > +++ b/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts
-> > @@ -132,6 +132,10 @@
-> >         use-ncsi;
-> >  };
-> >
-> > +&emmc_controller {
-> > +       status = "okay";
-> > +};
-> > +
-> >  &emmc {
-> >         status = "okay";
-> >  };
-> 
-> This node is redundant, as it is not disabled in the dtsi.
-> 
-> Andrew, should we add disabled to the emmc node?
+diff --git a/drivers/media/platform/aspeed-video.c b/drivers/media/platform/aspeed-video.c
+index 47444a336ebb..7d98db1d9b52 100644
+--- a/drivers/media/platform/aspeed-video.c
++++ b/drivers/media/platform/aspeed-video.c
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0-or-later
+ // Copyright 2020 IBM Corp.
+-// Copyright (c) 2019 Intel Corporation
++// Copyright (c) 2019-2020 Intel Corporation
+ 
+ #include <linux/atomic.h>
+ #include <linux/bitfield.h>
+@@ -132,7 +132,8 @@
+ #define  VE_COMP_CTRL_HQ_DCT_CHR	GENMASK(26, 22)
+ #define  VE_COMP_CTRL_HQ_DCT_LUM	GENMASK(31, 27)
+ 
+-#define VE_OFFSET_COMP_STREAM		0x078
++#define AST2400_VE_COMP_SIZE_READ_BACK	0x078
++#define AST2600_VE_COMP_SIZE_READ_BACK	0x084
+ 
+ #define VE_SRC_LR_EDGE_DET		0x090
+ #define  VE_SRC_LR_EDGE_DET_LEFT	GENMASK(11, 0)
+@@ -252,12 +253,17 @@ struct aspeed_video_config {
+ 
+ static const struct aspeed_video_config ast2400_config = {
+ 	.jpeg_mode = AST2400_VE_SEQ_CTRL_JPEG_MODE,
+-	.comp_size_read = VE_OFFSET_COMP_STREAM,
++	.comp_size_read = AST2400_VE_COMP_SIZE_READ_BACK,
+ };
+ 
+ static const struct aspeed_video_config ast2500_config = {
+ 	.jpeg_mode = AST2500_VE_SEQ_CTRL_JPEG_MODE,
+-	.comp_size_read = VE_OFFSET_COMP_STREAM,
++	.comp_size_read = AST2400_VE_COMP_SIZE_READ_BACK,
++};
++
++static const struct aspeed_video_config ast2600_config = {
++	.jpeg_mode = AST2500_VE_SEQ_CTRL_JPEG_MODE,
++	.comp_size_read = AST2600_VE_COMP_SIZE_READ_BACK,
+ };
+ 
+ static const u32 aspeed_video_jpeg_header[ASPEED_VIDEO_JPEG_HEADER_SIZE] = {
+@@ -1673,6 +1679,7 @@ static int aspeed_video_init(struct aspeed_video *video)
+ static const struct of_device_id aspeed_video_of_match[] = {
+ 	{ .compatible = "aspeed,ast2400-video-engine", .data = &ast2400_config },
+ 	{ .compatible = "aspeed,ast2500-video-engine", .data = &ast2500_config },
++	{ .compatible = "aspeed,ast2600-video-engine", .data = &ast2600_config },
+ 	{}
+ };
+ MODULE_DEVICE_TABLE(of, aspeed_video_of_match);
+-- 
+2.17.1
 
-Probably. Also the nodes are badly named, partly because of the structure
-of the IP block. 'emmc' in this instance isn't the actual card, it's the SDHCI,
-and emmc_controller is a 'parent' that contains some global state which
-applies to one or more SDHCIs inside the IP block.
-
-We should probably cook up better names.
-
-> 
-> Or remove the label completely, and just have emmc_controller?
-
-Maybe this is a better approach? The eMMC IP block only has one associated
-SDHCI, so that would make sense.
-
-Andrew
