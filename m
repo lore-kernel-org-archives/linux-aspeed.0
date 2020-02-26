@@ -1,79 +1,81 @@
-From: Joel Stanley <joel@jms.id.au>
-Date: Wed, 26 Feb 2020 10:55:59 +0000
-Subject: [PATCH v1] ARM: dts: mihawk: Change the name of mihawk led
-In-Reply-To: <20200220055255.22809-1-Ben_Pai@wistron.com>
-References: <20200220055255.22809-1-Ben_Pai@wistron.com>
-Message-ID: <CACPK8Xf=t+PY42qxF9jProYGGZZJONb=H1D4xZJc7teFWJ2FrA@mail.gmail.com>
+From: Eddie James <eajames@linux.ibm.com>
+Date: Wed, 26 Feb 2020 08:50:06 -0600
+Subject: [PATCH -next] media: aspeed: add AST2600 support
+In-Reply-To: <20200225195853.17480-1-jae.hyun.yoo@linux.intel.com>
+References: <20200225195853.17480-1-jae.hyun.yoo@linux.intel.com>
+Message-ID: <f4ffad91-9742-9b68-be51-c1ec222e24b6@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, 20 Feb 2020 at 05:53, Ben Pai <Ben_Pai@wistron.com> wrote:
+
+On 2/25/20 1:58 PM, Jae Hyun Yoo wrote:
+> Video engine in AST2600 has the exactly same register set with
+> AST2500 except VR084 register which provides more precise JPEG
+> size read back. This commit adds support for the difference and
+> adds 'aspeed,ast2600-video-engine' compatible OF string.
+
+
+Thanks Jae!
+
+Reviewed-by: Eddie James <eajames@linux.ibm.com>
+
+
 >
-> 1.Change the name of power, fault and rear-id.
-> 2.Remove the two leds.
-
-The patch looks okay. Why do you remove the other two leds?
-
-Reviewed-by: Joel Stanley <joel@jms.id.au>
-
->
-> Signed-off-by: Ben Pai <Ben_Pai@wistron.com>
+> Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
 > ---
->  arch/arm/boot/dts/aspeed-bmc-opp-mihawk.dts | 17 +++--------------
->  1 file changed, 3 insertions(+), 14 deletions(-)
+>   drivers/media/platform/aspeed-video.c | 15 +++++++++++----
+>   1 file changed, 11 insertions(+), 4 deletions(-)
 >
-> diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-mihawk.dts b/arch/arm/boot/dts/aspeed-bmc-opp-mihawk.dts
-> index e55cc454b17f..6c11854b9006 100644
-> --- a/arch/arm/boot/dts/aspeed-bmc-opp-mihawk.dts
-> +++ b/arch/arm/boot/dts/aspeed-bmc-opp-mihawk.dts
-> @@ -120,35 +120,24 @@
->         leds {
->                 compatible = "gpio-leds";
->
-> -               fault {
-> +               front-fault {
->                         retain-state-shutdown;
->                         default-state = "keep";
->                         gpios = <&gpio ASPEED_GPIO(AA, 0) GPIO_ACTIVE_LOW>;
->                 };
->
-> -               power {
-> +               power-button {
->                         retain-state-shutdown;
->                         default-state = "keep";
->                         gpios = <&gpio ASPEED_GPIO(AA, 1) GPIO_ACTIVE_LOW>;
->                 };
->
-> -               rear-id {
-> +               front-id {
->                         retain-state-shutdown;
->                         default-state = "keep";
->                         gpios = <&gpio ASPEED_GPIO(AA, 2) GPIO_ACTIVE_LOW>;
->                 };
->
-> -               rear-g {
-> -                       retain-state-shutdown;
-> -                       default-state = "keep";
-> -                       gpios = <&gpio ASPEED_GPIO(AA, 4) GPIO_ACTIVE_LOW>;
-> -               };
-> -
-> -               rear-ok {
-> -                       retain-state-shutdown;
-> -                       default-state = "keep";
-> -                       gpios = <&gpio ASPEED_GPIO(Y, 0) GPIO_ACTIVE_LOW>;
-> -               };
->
->                 fan0 {
->                         retain-state-shutdown;
-> --
-> 2.17.1
->
->
-> ---------------------------------------------------------------------------------------------------------------------------------------------------------------
-> This email contains confidential or legally privileged information and is for the sole use of its intended recipient.
-> Any unauthorized review, use, copying or distribution of this email or the content of this email is strictly prohibited.
-> If you are not the intended recipient, you may reply to the sender and should delete this e-mail immediately.
-> ---------------------------------------------------------------------------------------------------------------------------------------------------------------
+> diff --git a/drivers/media/platform/aspeed-video.c b/drivers/media/platform/aspeed-video.c
+> index 47444a336ebb..7d98db1d9b52 100644
+> --- a/drivers/media/platform/aspeed-video.c
+> +++ b/drivers/media/platform/aspeed-video.c
+> @@ -1,6 +1,6 @@
+>   // SPDX-License-Identifier: GPL-2.0-or-later
+>   // Copyright 2020 IBM Corp.
+> -// Copyright (c) 2019 Intel Corporation
+> +// Copyright (c) 2019-2020 Intel Corporation
+>   
+>   #include <linux/atomic.h>
+>   #include <linux/bitfield.h>
+> @@ -132,7 +132,8 @@
+>   #define  VE_COMP_CTRL_HQ_DCT_CHR	GENMASK(26, 22)
+>   #define  VE_COMP_CTRL_HQ_DCT_LUM	GENMASK(31, 27)
+>   
+> -#define VE_OFFSET_COMP_STREAM		0x078
+> +#define AST2400_VE_COMP_SIZE_READ_BACK	0x078
+> +#define AST2600_VE_COMP_SIZE_READ_BACK	0x084
+>   
+>   #define VE_SRC_LR_EDGE_DET		0x090
+>   #define  VE_SRC_LR_EDGE_DET_LEFT	GENMASK(11, 0)
+> @@ -252,12 +253,17 @@ struct aspeed_video_config {
+>   
+>   static const struct aspeed_video_config ast2400_config = {
+>   	.jpeg_mode = AST2400_VE_SEQ_CTRL_JPEG_MODE,
+> -	.comp_size_read = VE_OFFSET_COMP_STREAM,
+> +	.comp_size_read = AST2400_VE_COMP_SIZE_READ_BACK,
+>   };
+>   
+>   static const struct aspeed_video_config ast2500_config = {
+>   	.jpeg_mode = AST2500_VE_SEQ_CTRL_JPEG_MODE,
+> -	.comp_size_read = VE_OFFSET_COMP_STREAM,
+> +	.comp_size_read = AST2400_VE_COMP_SIZE_READ_BACK,
+> +};
+> +
+> +static const struct aspeed_video_config ast2600_config = {
+> +	.jpeg_mode = AST2500_VE_SEQ_CTRL_JPEG_MODE,
+> +	.comp_size_read = AST2600_VE_COMP_SIZE_READ_BACK,
+>   };
+>   
+>   static const u32 aspeed_video_jpeg_header[ASPEED_VIDEO_JPEG_HEADER_SIZE] = {
+> @@ -1673,6 +1679,7 @@ static int aspeed_video_init(struct aspeed_video *video)
+>   static const struct of_device_id aspeed_video_of_match[] = {
+>   	{ .compatible = "aspeed,ast2400-video-engine", .data = &ast2400_config },
+>   	{ .compatible = "aspeed,ast2500-video-engine", .data = &ast2500_config },
+> +	{ .compatible = "aspeed,ast2600-video-engine", .data = &ast2600_config },
+>   	{}
+>   };
+>   MODULE_DEVICE_TABLE(of, aspeed_video_of_match);
