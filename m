@@ -1,29 +1,49 @@
-From: Tao Ren <rentao.bupt@gmail.com>
-Date: Thu, 27 Feb 2020 15:10:00 -0800
-Subject: [PATCH v4 7/7] dt-bindings: usb: add documentation for aspeed
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Fri, 28 Feb 2020 10:30:02 +1100
+Subject: [PATCH v5 7/7] dt-bindings: usb: add documentation for aspeed
  usb-vhub
-In-Reply-To: <20200227224250.GC29420@taoren-ubuntu-R90MNF91>
-References: <20200226230346.672-1-rentao.bupt@gmail.com>
- <20200226230346.672-8-rentao.bupt@gmail.com>
- <20200227165504.GA26955@bogus>
- <20200227224250.GC29420@taoren-ubuntu-R90MNF91>
-Message-ID: <20200227231000.GA31175@taoren-ubuntu-R90MNF91>
+In-Reply-To: <20200227230507.8682-8-rentao.bupt@gmail.com>
+References: <20200227230507.8682-1-rentao.bupt@gmail.com>
+ <20200227230507.8682-8-rentao.bupt@gmail.com>
+Message-ID: <3150424b9e9f5856c747a0fbf44647919f49209d.camel@kernel.crashing.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Rob,
+On Thu, 2020-02-27 at 15:05 -0800, rentao.bupt at gmail.com wrote:
 
-On Thu, Feb 27, 2020 at 02:42:51PM -0800, Tao Ren wrote:
-> Sorry I forgot to add you when including the dt-binding document to the
-> series v4: will add you and all dt binding maintainers in v5 soon.
+ .../...
 
-Just realized I already added you for the previous patch versions. Sorry
-about the noise.
+You haven't fixed the problem spotted by Rob which is that the example
+is now out of sync, it's missing the required properties.
 
+Also long run I think best is going to have a child node per downstream
+port, so we create a matching linux struct device. This will make it
+easier to deal with the other device-controller in the ast2600 which is
+basically one of these without a vhub above it.
 
-Cheers,
+> +required:
+> +  - compatible
+> +  - reg
+> +  - clocks
+> +  - interrupts
+> +  - aspeed,vhub-downstream-ports
+> +  - aspeed,vhub-generic-endpoints
+> +
+> +additionalProperties: false
+> +
+> +examples:
+> +  - |
+> +    #include <dt-bindings/clock/aspeed-clock.h>
+> +    vhub: usb-vhub at 1e6a0000 {
+> +            compatible = "aspeed,ast2500-usb-vhub";
+> +            reg = <0x1e6a0000 0x300>;
+> +            interrupts = <5>;
+> +            clocks = <&syscon ASPEED_CLK_GATE_USBPORT1CLK>;
+> +            pinctrl-names = "default";
+> +            pinctrl-0 = <&pinctrl_usb2ad_default>;
+> +    };
+> -- 
 
-Tao
