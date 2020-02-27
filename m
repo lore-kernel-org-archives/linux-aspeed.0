@@ -1,96 +1,37 @@
-From: Ben_Pai@wistron.com <Ben_Pai@wistron.com>
-Date: Thu, 27 Feb 2020 06:31:30 +0000
-Subject: [PATCH v1] ARM: dts: mihawk: Change the name of mihawk led
-In-Reply-To: <CACPK8Xf=t+PY42qxF9jProYGGZZJONb=H1D4xZJc7teFWJ2FrA@mail.gmail.com>
-References: <20200220055255.22809-1-Ben_Pai@wistron.com>
- <CACPK8Xf=t+PY42qxF9jProYGGZZJONb=H1D4xZJc7teFWJ2FrA@mail.gmail.com>
-Message-ID: <3633e9f58ab14118bf4c8df3f25ea0d2@wistron.com>
+From: Rob Herring <robh@kernel.org>
+Date: Thu, 27 Feb 2020 10:55:04 -0600
+Subject: [PATCH v4 7/7] dt-bindings: usb: add documentation for aspeed
+ usb-vhub
+In-Reply-To: <20200226230346.672-8-rentao.bupt@gmail.com>
+References: <20200226230346.672-1-rentao.bupt@gmail.com>
+ <20200226230346.672-8-rentao.bupt@gmail.com>
+Message-ID: <20200227165504.GA26955@bogus>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Mihawk platform no longer supports these two LEDs, so I think these two LEDs should be removed from dts.
-
-Signed-off-by: Ben Pai <Ben_Pai@wistron.com>
-
------Original Message-----
-From: Joel Stanley <joel@jms.id.au> 
-Sent: Wednesday, February 26, 2020 6:56 PM
-To: Ben Pai/WHQ/Wistron <Ben_Pai@wistron.com>
-Cc: Rob Herring <robh+dt@kernel.org>; Mark Rutland <mark.rutland@arm.com>; Andrew Jeffery <andrew@aj.id.au>; devicetree <devicetree@vger.kernel.org>; Linux ARM <linux-arm-kernel@lists.infradead.org>; linux-aspeed <linux-aspeed@lists.ozlabs.org>; Linux Kernel Mailing List <linux-kernel@vger.kernel.org>; wangat at tw.ibm.com; Claire Ku/WHQ/Wistron <Claire_Ku@wistron.com>
-Subject: Re: [PATCH v1] ARM: dts: mihawk: Change the name of mihawk led
-
-On Thu, 20 Feb 2020 at 05:53, Ben Pai <Ben_Pai@wistron.com> wrote:
->
-> 1.Change the name of power, fault and rear-id.
-> 2.Remove the two leds.
-
-The patch looks okay. Why do you remove the other two leds?
-
-Reviewed-by: Joel Stanley <joel@jms.id.au>
-
->
-> Signed-off-by: Ben Pai <Ben_Pai@wistron.com>
+On Wed, 26 Feb 2020 15:03:46 -0800, rentao.bupt at gmail.com wrote:
+> From: Tao Ren <rentao.bupt@gmail.com>
+> 
+> Add device tree binding documentation for aspeed usb-vhub driver.
+> 
+> Signed-off-by: Tao Ren <rentao.bupt@gmail.com>
 > ---
->  arch/arm/boot/dts/aspeed-bmc-opp-mihawk.dts | 17 +++--------------
->  1 file changed, 3 insertions(+), 14 deletions(-)
->
-> diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-mihawk.dts 
-> b/arch/arm/boot/dts/aspeed-bmc-opp-mihawk.dts
-> index e55cc454b17f..6c11854b9006 100644
-> --- a/arch/arm/boot/dts/aspeed-bmc-opp-mihawk.dts
-> +++ b/arch/arm/boot/dts/aspeed-bmc-opp-mihawk.dts
-> @@ -120,35 +120,24 @@
->         leds {
->                 compatible = "gpio-leds";
->
-> -               fault {
-> +               front-fault {
->                         retain-state-shutdown;
->                         default-state = "keep";
->                         gpios = <&gpio ASPEED_GPIO(AA, 0) GPIO_ACTIVE_LOW>;
->                 };
->
-> -               power {
-> +               power-button {
->                         retain-state-shutdown;
->                         default-state = "keep";
->                         gpios = <&gpio ASPEED_GPIO(AA, 1) GPIO_ACTIVE_LOW>;
->                 };
->
-> -               rear-id {
-> +               front-id {
->                         retain-state-shutdown;
->                         default-state = "keep";
->                         gpios = <&gpio ASPEED_GPIO(AA, 2) GPIO_ACTIVE_LOW>;
->                 };
->
-> -               rear-g {
-> -                       retain-state-shutdown;
-> -                       default-state = "keep";
-> -                       gpios = <&gpio ASPEED_GPIO(AA, 4) GPIO_ACTIVE_LOW>;
-> -               };
-> -
-> -               rear-ok {
-> -                       retain-state-shutdown;
-> -                       default-state = "keep";
-> -                       gpios = <&gpio ASPEED_GPIO(Y, 0) GPIO_ACTIVE_LOW>;
-> -               };
->
->                 fan0 {
->                         retain-state-shutdown;
-> --
-> 2.17.1
->
->
-> ----------------------------------------------------------------------
-> ----------------------------------------------------------------------
-> ------------------- This email contains confidential or legally 
-> privileged information and is for the sole use of its intended recipient.
-> Any unauthorized review, use, copying or distribution of this email or the content of this email is strictly prohibited.
-> If you are not the intended recipient, you may reply to the sender and should delete this e-mail immediately.
-> ----------------------------------------------------------------------
-> ----------------------------------------------------------------------
-> -------------------
+>  No change in v2/v3/v4:
+>    - the patch is added to the patch series since v4.
+> 
+>  .../bindings/usb/aspeed,usb-vhub.yaml         | 71 +++++++++++++++++++
+>  1 file changed, 71 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/usb/aspeed,usb-vhub.yaml
+> 
+
+My bot found errors running 'make dt_binding_check' on your patch:
+
+Documentation/devicetree/bindings/display/simple-framebuffer.example.dts:21.16-37.11: Warning (chosen_node_is_root): /example-0/chosen: chosen node must be at root node
+/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/usb/aspeed,usb-vhub.example.dt.yaml: usb-vhub at 1e6a0000: 'aspeed,vhub-downstream-ports' is a required property
+/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/usb/aspeed,usb-vhub.example.dt.yaml: usb-vhub at 1e6a0000: 'aspeed,vhub-generic-endpoints' is a required property
+
+See https://patchwork.ozlabs.org/patch/1245388
+Please check and re-submit.
