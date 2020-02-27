@@ -1,54 +1,58 @@
-From: Tao Ren <rentao.bupt@gmail.com>
-Date: Thu, 27 Feb 2020 14:42:51 -0800
-Subject: [PATCH v4 7/7] dt-bindings: usb: add documentation for aspeed
- usb-vhub
-In-Reply-To: <20200227165504.GA26955@bogus>
-References: <20200226230346.672-1-rentao.bupt@gmail.com>
- <20200226230346.672-8-rentao.bupt@gmail.com>
- <20200227165504.GA26955@bogus>
-Message-ID: <20200227224250.GC29420@taoren-ubuntu-R90MNF91>
+From: rentao.bupt@gmail.com <rentao.bupt@gmail.com>
+Date: Thu, 27 Feb 2020 15:05:00 -0800
+Subject: [PATCH v5 0/7] aspeed-g6: enable usb support
+Message-ID: <20200227230507.8682-1-rentao.bupt@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Rob,
+From: Tao Ren <rentao.bupt@gmail.com>
 
-On Thu, Feb 27, 2020 at 10:55:04AM -0600, Rob Herring wrote:
-> On Wed, 26 Feb 2020 15:03:46 -0800, rentao.bupt at gmail.com wrote:
-> > From: Tao Ren <rentao.bupt@gmail.com>
-> > 
-> > Add device tree binding documentation for aspeed usb-vhub driver.
-> > 
-> > Signed-off-by: Tao Ren <rentao.bupt@gmail.com>
-> > ---
-> >  No change in v2/v3/v4:
-> >    - the patch is added to the patch series since v4.
-> > 
-> >  .../bindings/usb/aspeed,usb-vhub.yaml         | 71 +++++++++++++++++++
-> >  1 file changed, 71 insertions(+)
-> >  create mode 100644 Documentation/devicetree/bindings/usb/aspeed,usb-vhub.yaml
-> > 
-> 
-> My bot found errors running 'make dt_binding_check' on your patch:
-> 
-> Documentation/devicetree/bindings/display/simple-framebuffer.example.dts:21.16-37.11: Warning (chosen_node_is_root): /example-0/chosen: chosen node must be at root node
-> /builds/robherring/linux-dt-review/Documentation/devicetree/bindings/usb/aspeed,usb-vhub.example.dt.yaml: usb-vhub at 1e6a0000: 'aspeed,vhub-downstream-ports' is a required property
-> /builds/robherring/linux-dt-review/Documentation/devicetree/bindings/usb/aspeed,usb-vhub.example.dt.yaml: usb-vhub at 1e6a0000: 'aspeed,vhub-generic-endpoints' is a required property
-> 
-> See https://patchwork.ozlabs.org/patch/1245388
-> Please check and re-submit.
+The patch series aims at enabling USB Host and Gadget support on AST2600
+platforms.
 
-I ran "make dt_binding_check" in my local environment and don't see the
-failures. The 2 properties are introduced in this patch set and I add
-the properties in aspeed-g4/5/6 dtsi files (patch #4, #5 and #6): am I
-missing something?
+Patch #1 includes vhub's usb descriptors in struct "ast_vhub": all usb
+descriptor changes will go to the per-vhub instance instead of touching
+the global default descriptors.
 
-Sorry I forgot to add you when including the dt-binding document to the
-series v4: will add you and all dt binding maintainers in v5 soon.
+Patch #2 replaces hardcoded vhub port/endpoint number with device tree
+properties, so that it's more convenient to add support for ast2600-vhub
+which provides more downstream ports and endpoints.
 
+Patch #3 enables ast2600 support in aspeed-vhub usb gadget driver.
 
-Cheers,
+Patch #4 adds USB devices and according pin groups in aspeed-g6 dtsi.
 
-Tao
+Patch #5 and #6 add vhub port/endpoint properties into aspeed-g4 and
+aspeed-g5 dtsi.
+
+Patch #7 adds device tree binding document for aspeed usb-vhub driver.
+
+Tao Ren (7):
+  usb: gadget: aspeed: support per-vhub usb descriptors
+  usb: gadget: aspeed: read vhub properties from device tree
+  usb: gadget: aspeed: add ast2600 vhub support
+  ARM: dts: aspeed-g6: add usb functions
+  ARM: dts: aspeed-g5: add vhub port and endpoint properties
+  ARM: dts: aspeed-g4: add vhub port and endpoint properties
+  dt-bindings: usb: add documentation for aspeed usb-vhub
+
+ .../bindings/usb/aspeed,usb-vhub.yaml         | 71 +++++++++++++++++++
+ arch/arm/boot/dts/aspeed-g4.dtsi              |  2 +
+ arch/arm/boot/dts/aspeed-g5.dtsi              |  2 +
+ arch/arm/boot/dts/aspeed-g6-pinctrl.dtsi      | 25 +++++++
+ arch/arm/boot/dts/aspeed-g6.dtsi              | 45 ++++++++++++
+ drivers/usb/gadget/udc/aspeed-vhub/Kconfig    |  4 +-
+ drivers/usb/gadget/udc/aspeed-vhub/core.c     | 71 ++++++++++++-------
+ drivers/usb/gadget/udc/aspeed-vhub/dev.c      | 30 +++++---
+ drivers/usb/gadget/udc/aspeed-vhub/epn.c      |  4 +-
+ drivers/usb/gadget/udc/aspeed-vhub/hub.c      | 58 ++++++++++-----
+ drivers/usb/gadget/udc/aspeed-vhub/vhub.h     | 43 +++++++----
+ 11 files changed, 284 insertions(+), 71 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/usb/aspeed,usb-vhub.yaml
+
+-- 
+2.17.1
+
