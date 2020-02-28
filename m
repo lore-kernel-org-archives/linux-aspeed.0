@@ -1,9 +1,9 @@
-From: Eddie James <eajames@linux.ibm.com>
-Date: Fri, 28 Feb 2020 09:14:52 -0600
+From: Brandon Wyman <bjwyman@gmail.com>
+Date: Fri, 28 Feb 2020 11:24:01 -0600
 Subject: [PATCH v2] ARM: dts: rainier: Set PCA9552 pin types
 In-Reply-To: <20200225201415.431668-1-msbarth@linux.ibm.com>
 References: <20200225201415.431668-1-msbarth@linux.ibm.com>
-Message-ID: <59ceccbd-b776-51fc-e80b-39427c70ec70@linux.ibm.com>
+Message-ID: <ec4c675a-b1db-c2d5-97d0-dcff44123db0@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -11,20 +11,16 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 
-On 2/25/20 2:14 PM, Matthew Barth wrote:
+On 2020-02-25 14:14, Matthew Barth wrote:
 > All 16 pins of the PCA9552 at 7-bit address 0x61 should be set as type
 > GPIO.
 >
 > Signed-off-by: Matthew Barth <msbarth@linux.ibm.com>
-
-
-Reviewed-by: Eddie James <eajames@linux.ibm.com>
-
-
 > ---
 > v2: Added leds-pca955x.h include
 >      Added upstream to patch
 > ---
+Reviewed-by: Brandon Wyman <bjwyman@gmail.com>
 > ---
 >   arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts | 17 +++++++++++++++++
 >   1 file changed, 17 insertions(+)
