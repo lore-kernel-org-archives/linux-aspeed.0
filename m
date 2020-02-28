@@ -1,53 +1,126 @@
-From: Tao Ren <rentao.bupt@gmail.com>
-Date: Fri, 28 Feb 2020 00:13:11 -0800
-Subject: [PATCH v5 7/7] dt-bindings: usb: add documentation for aspeed
- usb-vhub
-In-Reply-To: <2676013663fc8c53e02a5fdaafb1b27e18249b80.camel@kernel.crashing.org>
-References: <20200227230507.8682-1-rentao.bupt@gmail.com>
- <20200227230507.8682-8-rentao.bupt@gmail.com>
- <3150424b9e9f5856c747a0fbf44647919f49209d.camel@kernel.crashing.org>
- <20200228010444.GA19910@taoren-ubuntu-R90MNF91>
- <2676013663fc8c53e02a5fdaafb1b27e18249b80.camel@kernel.crashing.org>
-Message-ID: <20200228081309.GA4531@taoren-ubuntuvm>
+From: Eddie James <eajames@linux.ibm.com>
+Date: Fri, 28 Feb 2020 09:14:52 -0600
+Subject: [PATCH v2] ARM: dts: rainier: Set PCA9552 pin types
+In-Reply-To: <20200225201415.431668-1-msbarth@linux.ibm.com>
+References: <20200225201415.431668-1-msbarth@linux.ibm.com>
+Message-ID: <59ceccbd-b776-51fc-e80b-39427c70ec70@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Feb 28, 2020 at 02:02:28PM +1100, Benjamin Herrenschmidt wrote:
-> On Thu, 2020-02-27 at 17:05 -0800, Tao Ren wrote:
-> > > Also long run I think best is going to have a child node per downstream
-> > > port, so we create a matching linux struct device. This will make it
-> > > easier to deal with the other device-controller in the ast2600 which is
-> > > basically one of these without a vhub above it.
-> > 
-> > Maybe a dumb question: what would be the proper place to parse the child
-> > node/properties when they are added? For example, in some usb_gadget_ops
-> > callback?
-> 
-> No. What the vhub would do is when it probes, it creates a platform
-> device for each "port" child node that's linked to the DT node.
-> 
-> The driver for the device then attaches to it via standard DT matching
-> and checks if it has a vhub parent or not, and based on that, operates
-> as a vhub child device or a standalone one.
-> 
-> (For example, it might have different functions for EP selection since
-> standalone devices have private EPs rather than a shared pool)
-> 
-> They can both be in the same module or they can be separate modules
-> with cross dependencies.
-> 
-> Cheers,
-> Ben.
 
-I see. It's to describe these downstream devices (such as configurations
-and according functions) in device tree, which is similar to defining a
-composite device and linking functions/interfaces via configfs. Thanks for
-the clarify.
+On 2/25/20 2:14 PM, Matthew Barth wrote:
+> All 16 pins of the PCA9552 at 7-bit address 0x61 should be set as type
+> GPIO.
+>
+> Signed-off-by: Matthew Barth <msbarth@linux.ibm.com>
 
 
-Cheers,
+Reviewed-by: Eddie James <eajames@linux.ibm.com>
 
-Tao
+
+> ---
+> v2: Added leds-pca955x.h include
+>      Added upstream to patch
+> ---
+> ---
+>   arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts | 17 +++++++++++++++++
+>   1 file changed, 17 insertions(+)
+>
+> diff --git a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
+> index c63cefce636d..d9fa9fd48058 100644
+> --- a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
+> +++ b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
+> @@ -4,6 +4,7 @@
+>   
+>   #include "aspeed-g6.dtsi"
+>   #include <dt-bindings/gpio/aspeed-gpio.h>
+> +#include <dt-bindings/leds/leds-pca955x.h>
+>   
+>   / {
+>   	model = "Rainier";
+> @@ -351,66 +352,82 @@
+>   
+>   		gpio at 0 {
+>   			reg = <0>;
+> +			type = <PCA955X_TYPE_GPIO>;
+>   		};
+>   
+>   		gpio at 1 {
+>   			reg = <1>;
+> +			type = <PCA955X_TYPE_GPIO>;
+>   		};
+>   
+>   		gpio at 2 {
+>   			reg = <2>;
+> +			type = <PCA955X_TYPE_GPIO>;
+>   		};
+>   
+>   		gpio at 3 {
+>   			reg = <3>;
+> +			type = <PCA955X_TYPE_GPIO>;
+>   		};
+>   
+>   		gpio at 4 {
+>   			reg = <4>;
+> +			type = <PCA955X_TYPE_GPIO>;
+>   		};
+>   
+>   		gpio at 5 {
+>   			reg = <5>;
+> +			type = <PCA955X_TYPE_GPIO>;
+>   		};
+>   
+>   		gpio at 6 {
+>   			reg = <6>;
+> +			type = <PCA955X_TYPE_GPIO>;
+>   		};
+>   
+>   		gpio at 7 {
+>   			reg = <7>;
+> +			type = <PCA955X_TYPE_GPIO>;
+>   		};
+>   
+>   		gpio at 8 {
+>   			reg = <8>;
+> +			type = <PCA955X_TYPE_GPIO>;
+>   		};
+>   
+>   		gpio at 9 {
+>   			reg = <9>;
+> +			type = <PCA955X_TYPE_GPIO>;
+>   		};
+>   
+>   		gpio at 10 {
+>   			reg = <10>;
+> +			type = <PCA955X_TYPE_GPIO>;
+>   		};
+>   
+>   		gpio at 11 {
+>   			reg = <11>;
+> +			type = <PCA955X_TYPE_GPIO>;
+>   		};
+>   
+>   		gpio at 12 {
+>   			reg = <12>;
+> +			type = <PCA955X_TYPE_GPIO>;
+>   		};
+>   
+>   		gpio at 13 {
+>   			reg = <13>;
+> +			type = <PCA955X_TYPE_GPIO>;
+>   		};
+>   
+>   		gpio at 14 {
+>   			reg = <14>;
+> +			type = <PCA955X_TYPE_GPIO>;
+>   		};
+>   
+>   		gpio at 15 {
+>   			reg = <15>;
+> +			type = <PCA955X_TYPE_GPIO>;
+>   		};
+>   	};
+>   
