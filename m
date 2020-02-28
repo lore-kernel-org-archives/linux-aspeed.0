@@ -1,40 +1,43 @@
-From: Tao Ren <rentao.bupt@gmail.com>
-Date: Thu, 27 Feb 2020 18:17:19 -0800
-Subject: [PATCH v4 7/7] dt-bindings: usb: add documentation for aspeed
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Fri, 28 Feb 2020 14:02:28 +1100
+Subject: [PATCH v5 7/7] dt-bindings: usb: add documentation for aspeed
  usb-vhub
-In-Reply-To: <20200227224250.GC29420@taoren-ubuntu-R90MNF91>
-References: <20200226230346.672-1-rentao.bupt@gmail.com>
- <20200226230346.672-8-rentao.bupt@gmail.com>
- <20200227165504.GA26955@bogus>
- <20200227224250.GC29420@taoren-ubuntu-R90MNF91>
-Message-ID: <20200228021718.GA10827@taoren-ubuntu-R90MNF91>
+In-Reply-To: <20200228010444.GA19910@taoren-ubuntu-R90MNF91>
+References: <20200227230507.8682-1-rentao.bupt@gmail.com>
+ <20200227230507.8682-8-rentao.bupt@gmail.com>
+ <3150424b9e9f5856c747a0fbf44647919f49209d.camel@kernel.crashing.org>
+ <20200228010444.GA19910@taoren-ubuntu-R90MNF91>
+Message-ID: <2676013663fc8c53e02a5fdaafb1b27e18249b80.camel@kernel.crashing.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Rob,
-
-On Thu, Feb 27, 2020 at 02:42:51PM -0800, Tao Ren wrote:
-> > My bot found errors running 'make dt_binding_check' on your patch:
-> > 
-> > Documentation/devicetree/bindings/display/simple-framebuffer.example.dts:21.16-37.11: Warning (chosen_node_is_root): /example-0/chosen: chosen node must be at root node
-> > /builds/robherring/linux-dt-review/Documentation/devicetree/bindings/usb/aspeed,usb-vhub.example.dt.yaml: usb-vhub at 1e6a0000: 'aspeed,vhub-downstream-ports' is a required property
-> > /builds/robherring/linux-dt-review/Documentation/devicetree/bindings/usb/aspeed,usb-vhub.example.dt.yaml: usb-vhub at 1e6a0000: 'aspeed,vhub-generic-endpoints' is a required property
-> > 
-> > See https://patchwork.ozlabs.org/patch/1245388
-> > Please check and re-submit.
+On Thu, 2020-02-27 at 17:05 -0800, Tao Ren wrote:
+> > Also long run I think best is going to have a child node per downstream
+> > port, so we create a matching linux struct device. This will make it
+> > easier to deal with the other device-controller in the ast2600 which is
+> > basically one of these without a vhub above it.
 > 
-> I ran "make dt_binding_check" in my local environment and don't see the
-> failures. The 2 properties are introduced in this patch set and I add
-> the properties in aspeed-g4/5/6 dtsi files (patch #4, #5 and #6): am I
-> missing something?
+> Maybe a dumb question: what would be the proper place to parse the child
+> node/properties when they are added? For example, in some usb_gadget_ops
+> callback?
 
-I think I missed "libyaml-dev" package. I've reproduced the error in my
-environment and added the 2 required properties in patch v6.
+No. What the vhub would do is when it probes, it creates a platform
+device for each "port" child node that's linked to the DT node.
 
+The driver for the device then attaches to it via standard DT matching
+and checks if it has a vhub parent or not, and based on that, operates
+as a vhub child device or a standalone one.
+
+(For example, it might have different functions for EP selection since
+standalone devices have private EPs rather than a shared pool)
+
+They can both be in the same module or they can be separate modules
+with cross dependencies.
 
 Cheers,
+Ben.
 
-Tao
+
