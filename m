@@ -1,9 +1,9 @@
 From: Tudor.Ambarus@microchip.com <Tudor.Ambarus@microchip.com>
-Date: Mon, 2 Mar 2020 18:07:54 +0000
-Subject: [PATCH 17/23] mtd: spi-nor: Move SST bits out of core.c
+Date: Mon, 2 Mar 2020 18:07:53 +0000
+Subject: [PATCH 16/23] mtd: spi-nor: Move Spansion bits out of core.c
 In-Reply-To: <20200302180730.1886678-1-tudor.ambarus@microchip.com>
 References: <20200302180730.1886678-1-tudor.ambarus@microchip.com>
-Message-ID: <20200302180730.1886678-18-tudor.ambarus@microchip.com>
+Message-ID: <20200302180730.1886678-17-tudor.ambarus@microchip.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -12,223 +12,138 @@ Content-Transfer-Encoding: 7bit
 
 From: Boris Brezillon <bbrezillon@kernel.org>
 
-Create a SPI NOR manufacturer driver for SST chips, and move the
-SST definitions outside of core.c.
+Create a SPI NOR manufacturer driver for Spansion chips, and move the
+Spansion definitions outside of core.c.
 
 Signed-off-by: Boris Brezillon <bbrezillon@kernel.org>
 Signed-off-by: Tudor Ambarus <tudor.ambarus@microchip.com>
 ---
- drivers/mtd/spi-nor/Makefile |   1 +
- drivers/mtd/spi-nor/core.c   | 123 +---------------------------
- drivers/mtd/spi-nor/core.h   |   1 +
- drivers/mtd/spi-nor/sst.c    | 151 +++++++++++++++++++++++++++++++++++
- 4 files changed, 156 insertions(+), 120 deletions(-)
- create mode 100644 drivers/mtd/spi-nor/sst.c
+ drivers/mtd/spi-nor/Makefile   |  1 +
+ drivers/mtd/spi-nor/core.c     | 59 +--------------------
+ drivers/mtd/spi-nor/core.h     |  1 +
+ drivers/mtd/spi-nor/spansion.c | 95 ++++++++++++++++++++++++++++++++++
+ 4 files changed, 98 insertions(+), 58 deletions(-)
+ create mode 100644 drivers/mtd/spi-nor/spansion.c
 
 diff --git a/drivers/mtd/spi-nor/Makefile b/drivers/mtd/spi-nor/Makefile
-index cb06ee50bf68..ef7afc654a15 100644
+index c7e5fb908bec..cb06ee50bf68 100644
 --- a/drivers/mtd/spi-nor/Makefile
 +++ b/drivers/mtd/spi-nor/Makefile
-@@ -12,4 +12,5 @@ spi-nor-objs			+= issi.o
+@@ -11,4 +11,5 @@ spi-nor-objs			+= intel.o
+ spi-nor-objs			+= issi.o
  spi-nor-objs			+= macronix.o
  spi-nor-objs			+= micron-st.o
- spi-nor-objs			+= spansion.o
-+spi-nor-objs			+= sst.o
++spi-nor-objs			+= spansion.o
  obj-$(CONFIG_MTD_SPI_NOR)	+= spi-nor.o
 diff --git a/drivers/mtd/spi-nor/core.c b/drivers/mtd/spi-nor/core.c
-index 448717543d1e..9ff0b09887b4 100644
+index 8d54dfe33cdc..448717543d1e 100644
 --- a/drivers/mtd/spi-nor/core.c
 +++ b/drivers/mtd/spi-nor/core.c
-@@ -2017,25 +2017,6 @@ int spi_nor_sr2_bit7_quad_enable(struct spi_nor *nor)
+@@ -2017,44 +2017,6 @@ int spi_nor_sr2_bit7_quad_enable(struct spi_nor *nor)
   * old entries may be missing 4K flag.
   */
  static const struct flash_info spi_nor_ids[] = {
--	/* SST -- large erase sizes are "overlays", "sectors" are 4K */
--	{ "sst25vf040b", INFO(0xbf258d, 0, 64 * 1024,  8, SECT_4K | SST_WRITE) },
--	{ "sst25vf080b", INFO(0xbf258e, 0, 64 * 1024, 16, SECT_4K | SST_WRITE) },
--	{ "sst25vf016b", INFO(0xbf2541, 0, 64 * 1024, 32, SECT_4K | SST_WRITE) },
--	{ "sst25vf032b", INFO(0xbf254a, 0, 64 * 1024, 64, SECT_4K | SST_WRITE) },
--	{ "sst25vf064c", INFO(0xbf254b, 0, 64 * 1024, 128, SECT_4K) },
--	{ "sst25wf512",  INFO(0xbf2501, 0, 64 * 1024,  1, SECT_4K | SST_WRITE) },
--	{ "sst25wf010",  INFO(0xbf2502, 0, 64 * 1024,  2, SECT_4K | SST_WRITE) },
--	{ "sst25wf020",  INFO(0xbf2503, 0, 64 * 1024,  4, SECT_4K | SST_WRITE) },
--	{ "sst25wf020a", INFO(0x621612, 0, 64 * 1024,  4, SECT_4K) },
--	{ "sst25wf040b", INFO(0x621613, 0, 64 * 1024,  8, SECT_4K) },
--	{ "sst25wf040",  INFO(0xbf2504, 0, 64 * 1024,  8, SECT_4K | SST_WRITE) },
--	{ "sst25wf080",  INFO(0xbf2505, 0, 64 * 1024, 16, SECT_4K | SST_WRITE) },
--	{ "sst26wf016b", INFO(0xbf2651, 0, 64 * 1024, 32, SECT_4K |
--			      SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ) },
--	{ "sst26vf016b", INFO(0xbf2641, 0, 64 * 1024, 32, SECT_4K |
--			      SPI_NOR_DUAL_READ) },
--	{ "sst26vf064b", INFO(0xbf2643, 0, 64 * 1024, 128, SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ) },
+-	/* Spansion/Cypress -- single (large) sector size only, at least
+-	 * for the chips listed here (without boot sectors).
+-	 */
+-	{ "s25sl032p",  INFO(0x010215, 0x4d00,  64 * 1024,  64, SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ) },
+-	{ "s25sl064p",  INFO(0x010216, 0x4d00,  64 * 1024, 128, SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ) },
+-	{ "s25fl128s0", INFO6(0x012018, 0x4d0080, 256 * 1024, 64,
+-			SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ | USE_CLSR) },
+-	{ "s25fl128s1", INFO6(0x012018, 0x4d0180, 64 * 1024, 256,
+-			SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ | USE_CLSR) },
+-	{ "s25fl256s0", INFO(0x010219, 0x4d00, 256 * 1024, 128, USE_CLSR) },
+-	{ "s25fl256s1", INFO(0x010219, 0x4d01,  64 * 1024, 512, SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ | USE_CLSR) },
+-	{ "s25fl512s",  INFO6(0x010220, 0x4d0080, 256 * 1024, 256,
+-			SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ |
+-			SPI_NOR_HAS_LOCK | USE_CLSR) },
+-	{ "s25fs512s",  INFO6(0x010220, 0x4d0081, 256 * 1024, 256, SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ | USE_CLSR) },
+-	{ "s70fl01gs",  INFO(0x010221, 0x4d00, 256 * 1024, 256, 0) },
+-	{ "s25sl12800", INFO(0x012018, 0x0300, 256 * 1024,  64, 0) },
+-	{ "s25sl12801", INFO(0x012018, 0x0301,  64 * 1024, 256, 0) },
+-	{ "s25fl129p0", INFO(0x012018, 0x4d00, 256 * 1024,  64, SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ | USE_CLSR) },
+-	{ "s25fl129p1", INFO(0x012018, 0x4d01,  64 * 1024, 256, SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ | USE_CLSR) },
+-	{ "s25sl004a",  INFO(0x010212,      0,  64 * 1024,   8, 0) },
+-	{ "s25sl008a",  INFO(0x010213,      0,  64 * 1024,  16, 0) },
+-	{ "s25sl016a",  INFO(0x010214,      0,  64 * 1024,  32, 0) },
+-	{ "s25sl032a",  INFO(0x010215,      0,  64 * 1024,  64, 0) },
+-	{ "s25sl064a",  INFO(0x010216,      0,  64 * 1024, 128, 0) },
+-	{ "s25fl004k",  INFO(0xef4013,      0,  64 * 1024,   8, SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ) },
+-	{ "s25fl008k",  INFO(0xef4014,      0,  64 * 1024,  16, SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ) },
+-	{ "s25fl016k",  INFO(0xef4015,      0,  64 * 1024,  32, SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ) },
+-	{ "s25fl064k",  INFO(0xef4017,      0,  64 * 1024, 128, SECT_4K) },
+-	{ "s25fl116k",  INFO(0x014015,      0,  64 * 1024,  32, SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ) },
+-	{ "s25fl132k",  INFO(0x014016,      0,  64 * 1024,  64, SECT_4K) },
+-	{ "s25fl164k",  INFO(0x014017,      0,  64 * 1024, 128, SECT_4K) },
+-	{ "s25fl204k",  INFO(0x014013,      0,  64 * 1024,   8, SECT_4K | SPI_NOR_DUAL_READ) },
+-	{ "s25fl208k",  INFO(0x014014,      0,  64 * 1024,  16, SECT_4K | SPI_NOR_DUAL_READ) },
+-	{ "s25fl064l",  INFO(0x016017,      0,  64 * 1024, 128, SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ | SPI_NOR_4B_OPCODES) },
+-	{ "s25fl128l",  INFO(0x016018,      0,  64 * 1024, 256, SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ | SPI_NOR_4B_OPCODES) },
+-	{ "s25fl256l",  INFO(0x016019,      0,  64 * 1024, 512, SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ | SPI_NOR_4B_OPCODES) },
 -
- 	/* Winbond -- w25x "blocks" are 64K, "sectors" are 4KiB */
- 	{ "w25x05", INFO(0xef3010, 0, 64 * 1024,  1,  SECT_4K) },
- 	{ "w25x10", INFO(0xef3011, 0, 64 * 1024,  2,  SECT_4K) },
-@@ -2136,6 +2117,7 @@ static const struct spi_nor_manufacturer *manufacturers[] = {
+ 	/* SST -- large erase sizes are "overlays", "sectors" are 4K */
+ 	{ "sst25vf040b", INFO(0xbf258d, 0, 64 * 1024,  8, SECT_4K | SST_WRITE) },
+ 	{ "sst25vf080b", INFO(0xbf258e, 0, 64 * 1024, 16, SECT_4K | SST_WRITE) },
+@@ -2173,6 +2135,7 @@ static const struct spi_nor_manufacturer *manufacturers[] = {
+ 	&spi_nor_macronix,
  	&spi_nor_micron,
  	&spi_nor_st,
- 	&spi_nor_spansion,
-+	&spi_nor_sst,
++	&spi_nor_spansion,
  };
  
  static const struct flash_info *
-@@ -2236,92 +2218,6 @@ static int spi_nor_read(struct mtd_info *mtd, loff_t from, size_t len,
- 	return ret;
+@@ -3106,17 +3069,6 @@ static void spi_nor_info_init_params(struct spi_nor *nor)
+ 	spi_nor_init_uniform_erase_map(map, erase_mask, params->size);
  }
  
--static int sst_write(struct mtd_info *mtd, loff_t to, size_t len,
--		size_t *retlen, const u_char *buf)
+-static void spansion_post_sfdp_fixups(struct spi_nor *nor)
 -{
--	struct spi_nor *nor = mtd_to_spi_nor(mtd);
--	size_t actual = 0;
--	int ret;
+-	if (nor->params.size <= SZ_16M)
+-		return;
 -
--	dev_dbg(nor->dev, "to 0x%08x, len %zd\n", (u32)to, len);
--
--	ret = spi_nor_lock_and_prep(nor);
--	if (ret)
--		return ret;
--
--	ret = spi_nor_write_enable(nor);
--	if (ret)
--		goto out;
--
--	nor->sst_write_second = false;
--
--	/* Start write from odd address. */
--	if (to % 2) {
--		nor->program_opcode = SPINOR_OP_BP;
--
--		/* write one byte. */
--		ret = spi_nor_write_data(nor, to, 1, buf);
--		if (ret < 0)
--			goto out;
--		WARN(ret != 1, "While writing 1 byte written %i bytes\n", ret);
--		ret = spi_nor_wait_till_ready(nor);
--		if (ret)
--			goto out;
--
--		to++;
--		actual++;
--	}
--
--	/* Write out most of the data here. */
--	for (; actual < len - 1; actual += 2) {
--		nor->program_opcode = SPINOR_OP_AAI_WP;
--
--		/* write two bytes. */
--		ret = spi_nor_write_data(nor, to, 2, buf + actual);
--		if (ret < 0)
--			goto out;
--		WARN(ret != 2, "While writing 2 bytes written %i bytes\n", ret);
--		ret = spi_nor_wait_till_ready(nor);
--		if (ret)
--			goto out;
--		to += 2;
--		nor->sst_write_second = true;
--	}
--	nor->sst_write_second = false;
--
--	ret = spi_nor_write_disable(nor);
--	if (ret)
--		goto out;
--
--	ret = spi_nor_wait_till_ready(nor);
--	if (ret)
--		goto out;
--
--	/* Write out trailing byte if it exists. */
--	if (actual != len) {
--		ret = spi_nor_write_enable(nor);
--		if (ret)
--			goto out;
--
--		nor->program_opcode = SPINOR_OP_BP;
--		ret = spi_nor_write_data(nor, to, 1, buf + actual);
--		if (ret < 0)
--			goto out;
--		WARN(ret != 1, "While writing 1 byte written %i bytes\n", ret);
--		ret = spi_nor_wait_till_ready(nor);
--		if (ret)
--			goto out;
--
--		actual += 1;
--
--		ret = spi_nor_write_disable(nor);
--	}
--out:
--	*retlen += actual;
--	spi_nor_unlock_and_unprep(nor);
--	return ret;
+-	nor->flags |= SNOR_F_4B_OPCODES;
+-	/* No small sector erase for 4-byte command set */
+-	nor->erase_opcode = SPINOR_OP_SE;
+-	nor->mtd.erasesize = nor->info->sector_size;
 -}
 -
- /*
-  * Write an address range to the nor chip.  Data must be written in
-  * FLASH_PAGESIZE chunks.  The address range may be any size provided
-@@ -2915,11 +2811,6 @@ static int spi_nor_setup(struct spi_nor *nor,
- 	return nor->params.setup(nor, hwcaps);
- }
- 
--static void sst_set_default_init(struct spi_nor *nor)
--{
--	nor->flags |= SNOR_F_HAS_LOCK;
--}
--
- static void winbond_set_default_init(struct spi_nor *nor)
+ static void s3an_post_sfdp_fixups(struct spi_nor *nor)
  {
- 	nor->params.set_4byte = winbond_set_4byte;
-@@ -2934,10 +2825,6 @@ static void spi_nor_manufacturer_init_params(struct spi_nor *nor)
+ 	nor->params.setup = s3an_nor_setup;
+@@ -3134,15 +3086,6 @@ static void s3an_post_sfdp_fixups(struct spi_nor *nor)
+  */
+ static void spi_nor_post_sfdp_fixups(struct spi_nor *nor)
  {
- 	/* Init flash parameters based on MFR */
- 	switch (JEDEC_MFR(nor->info)) {
--	case SNOR_MFR_SST:
--		sst_set_default_init(nor);
+-	switch (JEDEC_MFR(nor->info)) {
+-	case SNOR_MFR_SPANSION:
+-		spansion_post_sfdp_fixups(nor);
 -		break;
 -
- 	case SNOR_MFR_WINBOND:
- 		winbond_set_default_init(nor);
- 		break;
-@@ -3409,6 +3296,8 @@ int spi_nor_scan(struct spi_nor *nor, const char *name,
- 	if (info->flags & SPI_NOR_HAS_LOCK)
- 		nor->flags |= SNOR_F_HAS_LOCK;
- 
-+	mtd->_write = spi_nor_write;
-+
- 	/* Init flash parameters based on flash_info struct and SFDP */
- 	spi_nor_init_params(nor);
- 
-@@ -3429,12 +3318,6 @@ int spi_nor_scan(struct spi_nor *nor, const char *name,
- 		mtd->_is_locked = spi_nor_is_locked;
- 	}
- 
--	/* sst nor chips use AAI word program */
--	if (info->flags & SST_WRITE)
--		mtd->_write = sst_write;
--	else
--		mtd->_write = spi_nor_write;
+-	default:
+-		break;
+-	}
 -
- 	if (info->flags & USE_FSR)
- 		nor->flags |= SNOR_F_USE_FSR;
- 	if (info->flags & SPI_NOR_HAS_TB) {
+ 	if (nor->info->flags & SPI_S3AN)
+ 		s3an_post_sfdp_fixups(nor);
+ 
 diff --git a/drivers/mtd/spi-nor/core.h b/drivers/mtd/spi-nor/core.h
-index 8e45617578f3..7bc0f6a15b36 100644
+index 7e3ec8e4ef34..8e45617578f3 100644
 --- a/drivers/mtd/spi-nor/core.h
 +++ b/drivers/mtd/spi-nor/core.h
-@@ -179,6 +179,7 @@ extern const struct spi_nor_manufacturer spi_nor_macronix;
+@@ -178,6 +178,7 @@ extern const struct spi_nor_manufacturer spi_nor_issi;
+ extern const struct spi_nor_manufacturer spi_nor_macronix;
  extern const struct spi_nor_manufacturer spi_nor_micron;
  extern const struct spi_nor_manufacturer spi_nor_st;
- extern const struct spi_nor_manufacturer spi_nor_spansion;
-+extern const struct spi_nor_manufacturer spi_nor_sst;
++extern const struct spi_nor_manufacturer spi_nor_spansion;
  
  int spi_nor_write_enable(struct spi_nor *nor);
  int spi_nor_write_disable(struct spi_nor *nor);
-diff --git a/drivers/mtd/spi-nor/sst.c b/drivers/mtd/spi-nor/sst.c
+diff --git a/drivers/mtd/spi-nor/spansion.c b/drivers/mtd/spi-nor/spansion.c
 new file mode 100644
-index 000000000000..e0af6d25d573
+index 000000000000..16683983a20e
 --- /dev/null
-+++ b/drivers/mtd/spi-nor/sst.c
-@@ -0,0 +1,151 @@
++++ b/drivers/mtd/spi-nor/spansion.c
+@@ -0,0 +1,95 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * Copyright (C) 2005, Intec Automation Inc.
@@ -239,146 +154,90 @@ index 000000000000..e0af6d25d573
 +
 +#include "core.h"
 +
-+static const struct flash_info sst_parts[] = {
-+	/* SST -- large erase sizes are "overlays", "sectors" are 4K */
-+	{ "sst25vf040b", INFO(0xbf258d, 0, 64 * 1024,  8,
-+			      SECT_4K | SST_WRITE) },
-+	{ "sst25vf080b", INFO(0xbf258e, 0, 64 * 1024, 16,
-+			      SECT_4K | SST_WRITE) },
-+	{ "sst25vf016b", INFO(0xbf2541, 0, 64 * 1024, 32,
-+			      SECT_4K | SST_WRITE) },
-+	{ "sst25vf032b", INFO(0xbf254a, 0, 64 * 1024, 64,
-+			      SECT_4K | SST_WRITE) },
-+	{ "sst25vf064c", INFO(0xbf254b, 0, 64 * 1024, 128, SECT_4K) },
-+	{ "sst25wf512",  INFO(0xbf2501, 0, 64 * 1024,  1,
-+			      SECT_4K | SST_WRITE) },
-+	{ "sst25wf010",  INFO(0xbf2502, 0, 64 * 1024,  2,
-+			      SECT_4K | SST_WRITE) },
-+	{ "sst25wf020",  INFO(0xbf2503, 0, 64 * 1024,  4,
-+			      SECT_4K | SST_WRITE) },
-+	{ "sst25wf020a", INFO(0x621612, 0, 64 * 1024,  4, SECT_4K) },
-+	{ "sst25wf040b", INFO(0x621613, 0, 64 * 1024,  8, SECT_4K) },
-+	{ "sst25wf040",  INFO(0xbf2504, 0, 64 * 1024,  8,
-+			      SECT_4K | SST_WRITE) },
-+	{ "sst25wf080",  INFO(0xbf2505, 0, 64 * 1024, 16,
-+			      SECT_4K | SST_WRITE) },
-+	{ "sst26wf016b", INFO(0xbf2651, 0, 64 * 1024, 32,
-+			      SECT_4K | SPI_NOR_DUAL_READ |
-+			      SPI_NOR_QUAD_READ) },
-+	{ "sst26vf016b", INFO(0xbf2641, 0, 64 * 1024, 32,
-+			      SECT_4K | SPI_NOR_DUAL_READ) },
-+	{ "sst26vf064b", INFO(0xbf2643, 0, 64 * 1024, 128,
-+			      SECT_4K | SPI_NOR_DUAL_READ |
-+			      SPI_NOR_QUAD_READ) },
++static const struct flash_info spansion_parts[] = {
++	/* Spansion/Cypress -- single (large) sector size only, at least
++	 * for the chips listed here (without boot sectors).
++	 */
++	{ "s25sl032p",  INFO(0x010215, 0x4d00,  64 * 1024,  64,
++			     SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ) },
++	{ "s25sl064p",  INFO(0x010216, 0x4d00,  64 * 1024, 128,
++			     SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ) },
++	{ "s25fl128s0", INFO6(0x012018, 0x4d0080, 256 * 1024, 64,
++			      SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ |
++			      USE_CLSR) },
++	{ "s25fl128s1", INFO6(0x012018, 0x4d0180, 64 * 1024, 256,
++			      SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ |
++			      USE_CLSR) },
++	{ "s25fl256s0", INFO(0x010219, 0x4d00, 256 * 1024, 128, USE_CLSR) },
++	{ "s25fl256s1", INFO(0x010219, 0x4d01,  64 * 1024, 512,
++			     SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ |
++			     USE_CLSR) },
++	{ "s25fl512s",  INFO6(0x010220, 0x4d0080, 256 * 1024, 256,
++			      SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ |
++			      SPI_NOR_HAS_LOCK | USE_CLSR) },
++	{ "s25fs512s",  INFO6(0x010220, 0x4d0081, 256 * 1024, 256,
++			      SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ |
++			      USE_CLSR) },
++	{ "s70fl01gs",  INFO(0x010221, 0x4d00, 256 * 1024, 256, 0) },
++	{ "s25sl12800", INFO(0x012018, 0x0300, 256 * 1024,  64, 0) },
++	{ "s25sl12801", INFO(0x012018, 0x0301,  64 * 1024, 256, 0) },
++	{ "s25fl129p0", INFO(0x012018, 0x4d00, 256 * 1024,  64,
++			     SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ |
++			     USE_CLSR) },
++	{ "s25fl129p1", INFO(0x012018, 0x4d01,  64 * 1024, 256,
++			     SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ |
++			     USE_CLSR) },
++	{ "s25sl004a",  INFO(0x010212,      0,  64 * 1024,   8, 0) },
++	{ "s25sl008a",  INFO(0x010213,      0,  64 * 1024,  16, 0) },
++	{ "s25sl016a",  INFO(0x010214,      0,  64 * 1024,  32, 0) },
++	{ "s25sl032a",  INFO(0x010215,      0,  64 * 1024,  64, 0) },
++	{ "s25sl064a",  INFO(0x010216,      0,  64 * 1024, 128, 0) },
++	{ "s25fl004k",  INFO(0xef4013,      0,  64 * 1024,   8,
++			     SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ) },
++	{ "s25fl008k",  INFO(0xef4014,      0,  64 * 1024,  16,
++			     SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ) },
++	{ "s25fl016k",  INFO(0xef4015,      0,  64 * 1024,  32,
++			     SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ) },
++	{ "s25fl064k",  INFO(0xef4017,      0,  64 * 1024, 128, SECT_4K) },
++	{ "s25fl116k",  INFO(0x014015,      0,  64 * 1024,  32,
++			     SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ) },
++	{ "s25fl132k",  INFO(0x014016,      0,  64 * 1024,  64, SECT_4K) },
++	{ "s25fl164k",  INFO(0x014017,      0,  64 * 1024, 128, SECT_4K) },
++	{ "s25fl204k",  INFO(0x014013,      0,  64 * 1024,   8,
++			     SECT_4K | SPI_NOR_DUAL_READ) },
++	{ "s25fl208k",  INFO(0x014014,      0,  64 * 1024,  16,
++			     SECT_4K | SPI_NOR_DUAL_READ) },
++	{ "s25fl064l",  INFO(0x016017,      0,  64 * 1024, 128,
++			     SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ |
++			     SPI_NOR_4B_OPCODES) },
++	{ "s25fl128l",  INFO(0x016018,      0,  64 * 1024, 256,
++			     SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ |
++			     SPI_NOR_4B_OPCODES) },
++	{ "s25fl256l",  INFO(0x016019,      0,  64 * 1024, 512,
++			     SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ |
++			     SPI_NOR_4B_OPCODES) },
 +};
 +
-+static int sst_write(struct mtd_info *mtd, loff_t to, size_t len,
-+		     size_t *retlen, const u_char *buf)
++static void spansion_post_sfdp_fixups(struct spi_nor *nor)
 +{
-+	struct spi_nor *nor = mtd_to_spi_nor(mtd);
-+	size_t actual = 0;
-+	int ret;
++	if (nor->params.size <= SZ_16M)
++		return;
 +
-+	dev_dbg(nor->dev, "to 0x%08x, len %zd\n", (u32)to, len);
-+
-+	ret = spi_nor_lock_and_prep(nor);
-+	if (ret)
-+		return ret;
-+
-+	ret = spi_nor_write_enable(nor);
-+	if (ret)
-+		goto out;
-+
-+	nor->sst_write_second = false;
-+
-+	/* Start write from odd address. */
-+	if (to % 2) {
-+		nor->program_opcode = SPINOR_OP_BP;
-+
-+		/* write one byte. */
-+		ret = spi_nor_write_data(nor, to, 1, buf);
-+		if (ret < 0)
-+			goto out;
-+		WARN(ret != 1, "While writing 1 byte written %i bytes\n", ret);
-+		ret = spi_nor_wait_till_ready(nor);
-+		if (ret)
-+			goto out;
-+
-+		to++;
-+		actual++;
-+	}
-+
-+	/* Write out most of the data here. */
-+	for (; actual < len - 1; actual += 2) {
-+		nor->program_opcode = SPINOR_OP_AAI_WP;
-+
-+		/* write two bytes. */
-+		ret = spi_nor_write_data(nor, to, 2, buf + actual);
-+		if (ret < 0)
-+			goto out;
-+		WARN(ret != 2, "While writing 2 bytes written %i bytes\n", ret);
-+		ret = spi_nor_wait_till_ready(nor);
-+		if (ret)
-+			goto out;
-+		to += 2;
-+		nor->sst_write_second = true;
-+	}
-+	nor->sst_write_second = false;
-+
-+	ret = spi_nor_write_disable(nor);
-+	if (ret)
-+		goto out;
-+
-+	ret = spi_nor_wait_till_ready(nor);
-+	if (ret)
-+		goto out;
-+
-+	/* Write out trailing byte if it exists. */
-+	if (actual != len) {
-+		ret = spi_nor_write_enable(nor);
-+		if (ret)
-+			goto out;
-+
-+		nor->program_opcode = SPINOR_OP_BP;
-+		ret = spi_nor_write_data(nor, to, 1, buf + actual);
-+		if (ret < 0)
-+			goto out;
-+		WARN(ret != 1, "While writing 1 byte written %i bytes\n", ret);
-+		ret = spi_nor_wait_till_ready(nor);
-+		if (ret)
-+			goto out;
-+
-+		actual += 1;
-+
-+		ret = spi_nor_write_disable(nor);
-+	}
-+out:
-+	*retlen += actual;
-+	spi_nor_unlock_and_unprep(nor);
-+	return ret;
++	nor->flags |= SNOR_F_4B_OPCODES;
++	/* No small sector erase for 4-byte command set */
++	nor->erase_opcode = SPINOR_OP_SE;
++	nor->mtd.erasesize = nor->info->sector_size;
 +}
 +
-+static void sst_default_init(struct spi_nor *nor)
-+{
-+	nor->flags |= SNOR_F_HAS_LOCK;
-+}
-+
-+static void sst_post_sfdp_fixups(struct spi_nor *nor)
-+{
-+	if (nor->info->flags & SST_WRITE)
-+		nor->mtd._write = sst_write;
-+}
-+
-+static const struct spi_nor_fixups sst_fixups = {
-+	.default_init = sst_default_init,
-+	.post_sfdp = sst_post_sfdp_fixups,
++static const struct spi_nor_fixups spansion_fixups = {
++	.post_sfdp = spansion_post_sfdp_fixups,
 +};
 +
-+const struct spi_nor_manufacturer spi_nor_sst = {
-+	.name = "sst",
-+	.parts = sst_parts,
-+	.nparts = ARRAY_SIZE(sst_parts),
-+	.fixups = &sst_fixups,
++const struct spi_nor_manufacturer spi_nor_spansion = {
++	.name = "spansion",
++	.parts = spansion_parts,
++	.nparts = ARRAY_SIZE(spansion_parts),
++	.fixups = &spansion_fixups,
 +};
 -- 
 2.23.0
