@@ -1,153 +1,293 @@
-From: Tao Ren <rentao.bupt@gmail.com>
-Date: Mon, 2 Mar 2020 22:30:57 -0800
-Subject: [PATCH v6 7/7] dt-bindings: usb: add documentation for aspeed
- usb-vhub
-In-Reply-To: <20200302234744.GA21778@bogus>
-References: <20200228020757.10513-1-rentao.bupt@gmail.com>
- <20200228020757.10513-8-rentao.bupt@gmail.com>
- <20200302234744.GA21778@bogus>
-Message-ID: <20200303063056.GA6751@taoren-ubuntu-R90MNF91>
+From: Tudor.Ambarus@microchip.com <Tudor.Ambarus@microchip.com>
+Date: Mon, 2 Mar 2020 18:07:44 +0000
+Subject: [PATCH 01/23] mtd: spi-nor: Stop prefixing generic functions with a
+ manufacturer name
+In-Reply-To: <20200302180730.1886678-1-tudor.ambarus@microchip.com>
+References: <20200302180730.1886678-1-tudor.ambarus@microchip.com>
+Message-ID: <20200302180730.1886678-2-tudor.ambarus@microchip.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Rob,
+From: Boris Brezillon <bbrezillon@kernel.org>
 
-Thanks for the careful review and I've addressed all your feedback in
-v7 (based on my understanding). Please kindly let me know if you have
-further suggestions.
+Replace the manufacturer prefix by something describing more precisely
+what those functions do.
 
+Signed-off-by: Boris Brezillon <bbrezillon@kernel.org>
+[tudor.ambarus at microchip.com: prepend spi_nor_ to all modified methods.]
+Signed-off-by: Tudor Ambarus <tudor.ambarus@microchip.com>
+---
+ drivers/mtd/spi-nor/spi-nor.c | 88 ++++++++++++++++++-----------------
+ 1 file changed, 45 insertions(+), 43 deletions(-)
 
-Cheers,
-
-Tao
-
-On Mon, Mar 02, 2020 at 05:47:44PM -0600, Rob Herring wrote:
-> On Thu, Feb 27, 2020 at 06:07:57PM -0800, rentao.bupt at gmail.com wrote:
-> > From: Tao Ren <rentao.bupt@gmail.com>
-> > 
-> > Add device tree binding documentation for the Aspeed USB 2.0 Virtual HUb
-> > Controller.
-> > 
-> > Signed-off-by: Tao Ren <rentao.bupt@gmail.com>
-> > Reviewed-by: Joel Stanley <joel@jms.id.au>
-> > ---
-> >  Changes in v6:
-> >    - added 2 required properties into example and passed "make
-> >      dt_binding_check".
-> >  Changes in v5:
-> >    - updated maintainer to Ben.
-> >    - refined patch description per Joel's suggestion.
-> >  No change in v2/v3/v4:
-> >    - the patch is added to the patch series since v4.
-> > 
-> >  .../bindings/usb/aspeed,usb-vhub.yaml         | 73 +++++++++++++++++++
-> >  1 file changed, 73 insertions(+)
-> >  create mode 100644 Documentation/devicetree/bindings/usb/aspeed,usb-vhub.yaml
-> > 
-> > diff --git a/Documentation/devicetree/bindings/usb/aspeed,usb-vhub.yaml b/Documentation/devicetree/bindings/usb/aspeed,usb-vhub.yaml
-> > new file mode 100644
-> > index 000000000000..b9f33310e9a2
-> > --- /dev/null
-> > +++ b/Documentation/devicetree/bindings/usb/aspeed,usb-vhub.yaml
-> > @@ -0,0 +1,73 @@
-> > +# SPDX-License-Identifier: GPL-2.0-or-later
-> 
-> Dual license new bindings please.
-> 
-> (GPL-2.0-only OR BSD-2-Clause)
-> 
-> > +# Copyright (c) 2020 Facebook Inc.
-> > +%YAML 1.2
-> > +---
-> > +$id: http://devicetree.org/schemas/usb/aspeed,usb-vhub.yaml#
-> > +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> > +
-> > +title: ASPEED USB 2.0 Virtual Hub Controller
-> > +
-> > +maintainers:
-> > +  - Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> > +
-> > +description: |+
-> > +  The ASPEED USB 2.0 Virtual Hub Controller implements 1 set of USB Hub
-> > +  register and several sets of Device and Endpoint registers to support
-> > +  the Virtual Hub's downstream USB devices.
-> > +
-> > +  Supported number of devices and endpoints vary depending on hardware
-> > +  revisions. AST2400 and AST2500 Virtual Hub supports 5 downstream devices
-> > +  and 15 generic endpoints, while AST2600 Virtual Hub supports 7 downstream
-> > +  devices and 21 generic endpoints.
-> > +
-> > +properties:
-> > +  compatible:
-> > +    enum:
-> > +      - aspeed,ast2400-usb-vhub
-> > +      - aspeed,ast2500-usb-vhub
-> > +      - aspeed,ast2600-usb-vhub
-> > +
-> > +  reg:
-> > +    maxItems: 1
-> > +    description: Common configuration registers
-> 
-> If 'Common' means something specific to this block, then keep. 
-> Otherwise, you can drop ti.
-> 
-> > +
-> > +  clocks:
-> > +    maxItems: 1
-> > +    description: The Virtual Hub Controller clock gate
-> 
-> Drop this.
-> 
-> > +
-> > +  interrupts:
-> > +    maxItems: 1
-> > +
-> > +  aspeed,vhub-downstream-ports:
-> > +    description: Number of downstream ports supported by the Virtual Hub
-> > +    allOf:
-> > +      - $ref: /schemas/types.yaml#/definitions/uint32
-> 
-> Constraints?
-> 
-> 'maximum: 5' ?
-> 
-> default?
-> 
-> > +
-> > +  aspeed,vhub-generic-endpoints:
-> > +    description: Number of generic endpoints supported by the Virtual Hub
-> > +    allOf:
-> > +      - $ref: /schemas/types.yaml#/definitions/uint32
-> 
-> Constraints?
-> 
-> > +
-> > +required:
-> > +  - compatible
-> > +  - reg
-> > +  - clocks
-> > +  - interrupts
-> > +  - aspeed,vhub-downstream-ports
-> > +  - aspeed,vhub-generic-endpoints
-> > +
-> > +additionalProperties: false
-> > +
-> > +examples:
-> > +  - |
-> > +    #include <dt-bindings/clock/aspeed-clock.h>
-> > +    vhub: usb-vhub at 1e6a0000 {
-> > +            compatible = "aspeed,ast2500-usb-vhub";
-> > +            reg = <0x1e6a0000 0x300>;
-> > +            interrupts = <5>;
-> > +            clocks = <&syscon ASPEED_CLK_GATE_USBPORT1CLK>;
-> > +            aspeed,vhub-downstream-ports = <5>;
-> > +            aspeed,vhub-generic-endpoints = <15>;
-> > +            pinctrl-names = "default";
-> > +            pinctrl-0 = <&pinctrl_usb2ad_default>;
-> > +    };
-> > -- 
-> > 2.17.1
-> > 
+diff --git a/drivers/mtd/spi-nor/spi-nor.c b/drivers/mtd/spi-nor/spi-nor.c
+index caf0c109cca0..b15e262765e1 100644
+--- a/drivers/mtd/spi-nor/spi-nor.c
++++ b/drivers/mtd/spi-nor/spi-nor.c
+@@ -568,14 +568,15 @@ static int spi_nor_read_cr(struct spi_nor *nor, u8 *cr)
+ }
+ 
+ /**
+- * macronix_set_4byte() - Set 4-byte address mode for Macronix flashes.
++ * spi_nor_en4_ex4_set_4byte() - Enter/Exit 4-byte mode for Macronix like
++ * flashes.
+  * @nor:	pointer to 'struct spi_nor'.
+  * @enable:	true to enter the 4-byte address mode, false to exit the 4-byte
+  *		address mode.
+  *
+  * Return: 0 on success, -errno otherwise.
+  */
+-static int macronix_set_4byte(struct spi_nor *nor, bool enable)
++static int spi_nor_en4_ex4_set_4byte(struct spi_nor *nor, bool enable)
+ {
+ 	int ret;
+ 
+@@ -604,14 +605,15 @@ static int macronix_set_4byte(struct spi_nor *nor, bool enable)
+ }
+ 
+ /**
+- * st_micron_set_4byte() - Set 4-byte address mode for ST and Micron flashes.
++ * spi_nor_en4_ex4_wen_set_4byte() - Set 4-byte address mode for ST and Micron
++ * flashes.
+  * @nor:	pointer to 'struct spi_nor'.
+  * @enable:	true to enter the 4-byte address mode, false to exit the 4-byte
+  *		address mode.
+  *
+  * Return: 0 on success, -errno otherwise.
+  */
+-static int st_micron_set_4byte(struct spi_nor *nor, bool enable)
++static int spi_nor_en4_ex4_wen_set_4byte(struct spi_nor *nor, bool enable)
+ {
+ 	int ret;
+ 
+@@ -619,7 +621,7 @@ static int st_micron_set_4byte(struct spi_nor *nor, bool enable)
+ 	if (ret)
+ 		return ret;
+ 
+-	ret = macronix_set_4byte(nor, enable);
++	ret = spi_nor_en4_ex4_set_4byte(nor, enable);
+ 	if (ret)
+ 		return ret;
+ 
+@@ -703,7 +705,7 @@ static int winbond_set_4byte(struct spi_nor *nor, bool enable)
+ {
+ 	int ret;
+ 
+-	ret = macronix_set_4byte(nor, enable);
++	ret = spi_nor_en4_ex4_set_4byte(nor, enable);
+ 	if (ret || enable)
+ 		return ret;
+ 
+@@ -755,13 +757,13 @@ static int spi_nor_xread_sr(struct spi_nor *nor, u8 *sr)
+ }
+ 
+ /**
+- * s3an_sr_ready() - Query the Status Register of the S3AN flash to see if the
+- * flash is ready for new commands.
++ * spi_nor_xsr_ready() - Query the Status Register of the S3AN flash to see if
++ * the flash is ready for new commands.
+  * @nor:	pointer to 'struct spi_nor'.
+  *
+  * Return: 0 on success, -errno otherwise.
+  */
+-static int s3an_sr_ready(struct spi_nor *nor)
++static int spi_nor_xsr_ready(struct spi_nor *nor)
+ {
+ 	int ret;
+ 
+@@ -892,7 +894,7 @@ static int spi_nor_ready(struct spi_nor *nor)
+ 	int sr, fsr;
+ 
+ 	if (nor->flags & SNOR_F_READY_XSR_RDY)
+-		sr = s3an_sr_ready(nor);
++		sr = spi_nor_xsr_ready(nor);
+ 	else
+ 		sr = spi_nor_sr_ready(nor);
+ 	if (sr < 0)
+@@ -1784,8 +1786,8 @@ static int spi_nor_erase(struct mtd_info *mtd, struct erase_info *instr)
+ 	return ret;
+ }
+ 
+-static void stm_get_locked_range(struct spi_nor *nor, u8 sr, loff_t *ofs,
+-				 uint64_t *len)
++static void spi_nor_get_locked_range_sr(struct spi_nor *nor, u8 sr, loff_t *ofs,
++					uint64_t *len)
+ {
+ 	struct mtd_info *mtd = &nor->mtd;
+ 	u8 mask = SR_BP2 | SR_BP1 | SR_BP0;
+@@ -1813,8 +1815,8 @@ static void stm_get_locked_range(struct spi_nor *nor, u8 sr, loff_t *ofs,
+  * Return 1 if the entire region is locked (if @locked is true) or unlocked (if
+  * @locked is false); 0 otherwise
+  */
+-static int stm_check_lock_status_sr(struct spi_nor *nor, loff_t ofs, uint64_t len,
+-				    u8 sr, bool locked)
++static int spi_nor_check_lock_status_sr(struct spi_nor *nor, loff_t ofs,
++					uint64_t len, u8 sr, bool locked)
+ {
+ 	loff_t lock_offs;
+ 	uint64_t lock_len;
+@@ -1822,7 +1824,7 @@ static int stm_check_lock_status_sr(struct spi_nor *nor, loff_t ofs, uint64_t le
+ 	if (!len)
+ 		return 1;
+ 
+-	stm_get_locked_range(nor, sr, &lock_offs, &lock_len);
++	spi_nor_get_locked_range_sr(nor, sr, &lock_offs, &lock_len);
+ 
+ 	if (locked)
+ 		/* Requested range is a sub-range of locked range */
+@@ -1832,16 +1834,16 @@ static int stm_check_lock_status_sr(struct spi_nor *nor, loff_t ofs, uint64_t le
+ 		return (ofs >= lock_offs + lock_len) || (ofs + len <= lock_offs);
+ }
+ 
+-static int stm_is_locked_sr(struct spi_nor *nor, loff_t ofs, uint64_t len,
+-			    u8 sr)
++static int spi_nor_is_locked_sr(struct spi_nor *nor, loff_t ofs, uint64_t len,
++				u8 sr)
+ {
+-	return stm_check_lock_status_sr(nor, ofs, len, sr, true);
++	return spi_nor_check_lock_status_sr(nor, ofs, len, sr, true);
+ }
+ 
+-static int stm_is_unlocked_sr(struct spi_nor *nor, loff_t ofs, uint64_t len,
+-			      u8 sr)
++static int spi_nor_is_unlocked_sr(struct spi_nor *nor, loff_t ofs, uint64_t len,
++				  u8 sr)
+ {
+-	return stm_check_lock_status_sr(nor, ofs, len, sr, false);
++	return spi_nor_check_lock_status_sr(nor, ofs, len, sr, false);
+ }
+ 
+ /*
+@@ -1876,7 +1878,7 @@ static int stm_is_unlocked_sr(struct spi_nor *nor, loff_t ofs, uint64_t len,
+  *
+  * Returns negative on errors, 0 on success.
+  */
+-static int stm_lock(struct spi_nor *nor, loff_t ofs, uint64_t len)
++static int spi_nor_sr_lock(struct spi_nor *nor, loff_t ofs, uint64_t len)
+ {
+ 	struct mtd_info *mtd = &nor->mtd;
+ 	int ret, status_old, status_new;
+@@ -1894,16 +1896,16 @@ static int stm_lock(struct spi_nor *nor, loff_t ofs, uint64_t len)
+ 	status_old = nor->bouncebuf[0];
+ 
+ 	/* If nothing in our range is unlocked, we don't need to do anything */
+-	if (stm_is_locked_sr(nor, ofs, len, status_old))
++	if (spi_nor_is_locked_sr(nor, ofs, len, status_old))
+ 		return 0;
+ 
+ 	/* If anything below us is unlocked, we can't use 'bottom' protection */
+-	if (!stm_is_locked_sr(nor, 0, ofs, status_old))
++	if (!spi_nor_is_locked_sr(nor, 0, ofs, status_old))
+ 		can_be_bottom = false;
+ 
+ 	/* If anything above us is unlocked, we can't use 'top' protection */
+-	if (!stm_is_locked_sr(nor, ofs + len, mtd->size - (ofs + len),
+-				status_old))
++	if (!spi_nor_is_locked_sr(nor, ofs + len, mtd->size - (ofs + len),
++				  status_old))
+ 		can_be_top = false;
+ 
+ 	if (!can_be_bottom && !can_be_top)
+@@ -1958,11 +1960,11 @@ static int stm_lock(struct spi_nor *nor, loff_t ofs, uint64_t len)
+ }
+ 
+ /*
+- * Unlock a region of the flash. See stm_lock() for more info
++ * Unlock a region of the flash. See spi_nor_sr_lock() for more info
+  *
+  * Returns negative on errors, 0 on success.
+  */
+-static int stm_unlock(struct spi_nor *nor, loff_t ofs, uint64_t len)
++static int spi_nor_sr_unlock(struct spi_nor *nor, loff_t ofs, uint64_t len)
+ {
+ 	struct mtd_info *mtd = &nor->mtd;
+ 	int ret, status_old, status_new;
+@@ -1980,16 +1982,16 @@ static int stm_unlock(struct spi_nor *nor, loff_t ofs, uint64_t len)
+ 	status_old = nor->bouncebuf[0];
+ 
+ 	/* If nothing in our range is locked, we don't need to do anything */
+-	if (stm_is_unlocked_sr(nor, ofs, len, status_old))
++	if (spi_nor_is_unlocked_sr(nor, ofs, len, status_old))
+ 		return 0;
+ 
+ 	/* If anything below us is locked, we can't use 'top' protection */
+-	if (!stm_is_unlocked_sr(nor, 0, ofs, status_old))
++	if (!spi_nor_is_unlocked_sr(nor, 0, ofs, status_old))
+ 		can_be_top = false;
+ 
+ 	/* If anything above us is locked, we can't use 'bottom' protection */
+-	if (!stm_is_unlocked_sr(nor, ofs + len, mtd->size - (ofs + len),
+-				status_old))
++	if (!spi_nor_is_unlocked_sr(nor, ofs + len, mtd->size - (ofs + len),
++				    status_old))
+ 		can_be_bottom = false;
+ 
+ 	if (!can_be_bottom && !can_be_top)
+@@ -2046,13 +2048,13 @@ static int stm_unlock(struct spi_nor *nor, loff_t ofs, uint64_t len)
+ }
+ 
+ /*
+- * Check if a region of the flash is (completely) locked. See stm_lock() for
+- * more info.
++ * Check if a region of the flash is (completely) locked. See spi_nor_sr_lock()
++ * for more info.
+  *
+  * Returns 1 if entire region is locked, 0 if any portion is unlocked, and
+  * negative on errors.
+  */
+-static int stm_is_locked(struct spi_nor *nor, loff_t ofs, uint64_t len)
++static int spi_nor_sr_is_locked(struct spi_nor *nor, loff_t ofs, uint64_t len)
+ {
+ 	int ret;
+ 
+@@ -2060,13 +2062,13 @@ static int stm_is_locked(struct spi_nor *nor, loff_t ofs, uint64_t len)
+ 	if (ret)
+ 		return ret;
+ 
+-	return stm_is_locked_sr(nor, ofs, len, nor->bouncebuf[0]);
++	return spi_nor_is_locked_sr(nor, ofs, len, nor->bouncebuf[0]);
+ }
+ 
+-static const struct spi_nor_locking_ops stm_locking_ops = {
+-	.lock = stm_lock,
+-	.unlock = stm_unlock,
+-	.is_locked = stm_is_locked,
++static const struct spi_nor_locking_ops spi_nor_sr_locking_ops = {
++	.lock = spi_nor_sr_lock,
++	.unlock = spi_nor_sr_unlock,
++	.is_locked = spi_nor_sr_is_locked,
+ };
+ 
+ static int spi_nor_lock(struct mtd_info *mtd, loff_t ofs, uint64_t len)
+@@ -4655,7 +4657,7 @@ static void issi_set_default_init(struct spi_nor *nor)
+ static void macronix_set_default_init(struct spi_nor *nor)
+ {
+ 	nor->params.quad_enable = spi_nor_sr1_bit6_quad_enable;
+-	nor->params.set_4byte = macronix_set_4byte;
++	nor->params.set_4byte = spi_nor_en4_ex4_set_4byte;
+ }
+ 
+ static void sst_set_default_init(struct spi_nor *nor)
+@@ -4668,7 +4670,7 @@ static void st_micron_set_default_init(struct spi_nor *nor)
+ 	nor->flags |= SNOR_F_HAS_LOCK;
+ 	nor->flags &= ~SNOR_F_HAS_16BIT_SR;
+ 	nor->params.quad_enable = NULL;
+-	nor->params.set_4byte = st_micron_set_4byte;
++	nor->params.set_4byte = spi_nor_en4_ex4_wen_set_4byte;
+ }
+ 
+ static void winbond_set_default_init(struct spi_nor *nor)
+@@ -4895,7 +4897,7 @@ static void spi_nor_late_init_params(struct spi_nor *nor)
+ 	 * the default ones.
+ 	 */
+ 	if (nor->flags & SNOR_F_HAS_LOCK && !nor->params.locking_ops)
+-		nor->params.locking_ops = &stm_locking_ops;
++		nor->params.locking_ops = &spi_nor_sr_locking_ops;
+ }
+ 
+ /**
+-- 
+2.23.0
