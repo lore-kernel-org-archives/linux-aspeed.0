@@ -1,9 +1,10 @@
 From: Tudor.Ambarus@microchip.com <Tudor.Ambarus@microchip.com>
-Date: Mon, 2 Mar 2020 18:07:50 +0000
-Subject: [PATCH 10/23] mtd: spi-nor: Move Fujitsu bits out of core.c
+Date: Mon, 2 Mar 2020 18:07:47 +0000
+Subject: [PATCH 05/23] mtd: spi-nor: Add the concept of SPI NOR manufacturer
+ driver
 In-Reply-To: <20200302180730.1886678-1-tudor.ambarus@microchip.com>
 References: <20200302180730.1886678-1-tudor.ambarus@microchip.com>
-Message-ID: <20200302180730.1886678-11-tudor.ambarus@microchip.com>
+Message-ID: <20200302180730.1886678-6-tudor.ambarus@microchip.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -12,88 +13,211 @@ Content-Transfer-Encoding: 7bit
 
 From: Boris Brezillon <bbrezillon@kernel.org>
 
-Create a SPI NOR manufacturer driver for Fujitsu chips, and move the
-Fujitsu definitions outside of core.c.
+Declare a spi_nor_manufacturer struct and add basic building blocks to
+move manufacturer specific code outside of the core.
 
 Signed-off-by: Boris Brezillon <bbrezillon@kernel.org>
 Signed-off-by: Tudor Ambarus <tudor.ambarus@microchip.com>
 ---
- drivers/mtd/spi-nor/Makefile  |  1 +
- drivers/mtd/spi-nor/core.c    |  4 +---
- drivers/mtd/spi-nor/core.h    |  1 +
- drivers/mtd/spi-nor/fujitsu.c | 20 ++++++++++++++++++++
- 4 files changed, 23 insertions(+), 3 deletions(-)
- create mode 100644 drivers/mtd/spi-nor/fujitsu.c
+ drivers/mtd/spi-nor/core.c  | 78 +++++++++++++++++++++++++++++++------
+ drivers/mtd/spi-nor/core.h  | 14 +++++++
+ include/linux/mtd/spi-nor.h |  8 ++++
+ 3 files changed, 89 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/mtd/spi-nor/Makefile b/drivers/mtd/spi-nor/Makefile
-index 384c520689d8..ca6222d98b0f 100644
---- a/drivers/mtd/spi-nor/Makefile
-+++ b/drivers/mtd/spi-nor/Makefile
-@@ -5,4 +5,5 @@ spi-nor-objs			+= atmel.o
- spi-nor-objs			+= eon.o
- spi-nor-objs			+= esmt.o
- spi-nor-objs			+= everspin.o
-+spi-nor-objs			+= fujitsu.o
- obj-$(CONFIG_MTD_SPI_NOR)	+= spi-nor.o
 diff --git a/drivers/mtd/spi-nor/core.c b/drivers/mtd/spi-nor/core.c
-index 07eec3476053..3f3955bbbb70 100644
+index 16cf9d4b1a73..d41ef1795707 100644
 --- a/drivers/mtd/spi-nor/core.c
 +++ b/drivers/mtd/spi-nor/core.c
-@@ -2079,9 +2079,6 @@ static struct spi_nor_fixups gd25q256_fixups = {
-  * old entries may be missing 4K flag.
-  */
- static const struct flash_info spi_nor_ids[] = {
--	/* Fujitsu */
--	{ "mb85rs1mt", INFO(0x047f27, 0, 128 * 1024, 1, SPI_NOR_NO_ERASE) },
--
- 	/* GigaDevice */
- 	{
- 		"gd25q16", INFO(0xc84015, 0, 64 * 1024,  32,
-@@ -2430,6 +2427,7 @@ static const struct spi_nor_manufacturer *manufacturers[] = {
- 	&spi_nor_eon,
- 	&spi_nor_esmt,
- 	&spi_nor_everspin,
-+	&spi_nor_fujitsu,
+@@ -2472,8 +2472,26 @@ static const struct flash_info spi_nor_ids[] = {
+ 	{ },
  };
  
- static const struct flash_info *
++static const struct spi_nor_manufacturer *manufacturers[0];
++
++static const struct flash_info *
++spi_nor_search_part_by_id(const struct flash_info *parts, unsigned int nparts,
++			  const u8 *id)
++{
++	unsigned int i;
++
++	for (i = 0; i < nparts; i++) {
++		if (parts[i].id_len &&
++		    !memcmp(parts[i].id, id, parts[i].id_len))
++			return &parts[i];
++	}
++
++	return NULL;
++}
++
+ static const struct flash_info *spi_nor_read_id(struct spi_nor *nor)
+ {
++	const struct flash_info *info;
+ 	u8 *id = nor->bouncebuf;
+ 	unsigned int i;
+ 	int ret;
+@@ -2495,11 +2513,21 @@ static const struct flash_info *spi_nor_read_id(struct spi_nor *nor)
+ 		return ERR_PTR(ret);
+ 	}
+ 
+-	for (i = 0; i < ARRAY_SIZE(spi_nor_ids) - 1; i++) {
+-		if (spi_nor_ids[i].id_len &&
+-		    !memcmp(spi_nor_ids[i].id, id, spi_nor_ids[i].id_len))
+-			return &spi_nor_ids[i];
++	for (i = 0; i < ARRAY_SIZE(manufacturers); i++) {
++		info = spi_nor_search_part_by_id(manufacturers[i]->parts,
++						 manufacturers[i]->nparts,
++						 id);
++		if (info) {
++			nor->manufacturer = manufacturers[i];
++			return info;
++		}
+ 	}
++
++	info = spi_nor_search_part_by_id(spi_nor_ids,
++					 ARRAY_SIZE(spi_nor_ids) - 1, id);
++	if (info)
++		return info;
++
+ 	dev_err(nor->dev, "unrecognized JEDEC id bytes: %*ph\n",
+ 		SPI_NOR_MAX_ID_LEN, id);
+ 	return ERR_PTR(-ENODEV);
+@@ -2985,6 +3013,16 @@ int spi_nor_post_bfpt_fixups(struct spi_nor *nor,
+ 			     const struct sfdp_bfpt *bfpt,
+ 			     struct spi_nor_flash_parameter *params)
+ {
++	int ret;
++
++	if (nor->manufacturer && nor->manufacturer->fixups &&
++	    nor->manufacturer->fixups->post_bfpt) {
++		ret = nor->manufacturer->fixups->post_bfpt(nor, bfpt_header,
++							   bfpt, params);
++		if (ret)
++			return ret;
++	}
++
+ 	if (nor->info->fixups && nor->info->fixups->post_bfpt)
+ 		return nor->info->fixups->post_bfpt(nor, bfpt_header, bfpt,
+ 						    params);
+@@ -3294,6 +3332,10 @@ static void spi_nor_manufacturer_init_params(struct spi_nor *nor)
+ 		break;
+ 	}
+ 
++	if (nor->manufacturer && nor->manufacturer->fixups &&
++	    nor->manufacturer->fixups->default_init)
++		nor->manufacturer->fixups->default_init(nor);
++
+ 	if (nor->info->fixups && nor->info->fixups->default_init)
+ 		nor->info->fixups->default_init(nor);
+ }
+@@ -3453,6 +3495,10 @@ static void spi_nor_post_sfdp_fixups(struct spi_nor *nor)
+ 	if (nor->info->flags & SPI_S3AN)
+ 		s3an_post_sfdp_fixups(nor);
+ 
++	if (nor->manufacturer && nor->manufacturer->fixups &&
++	    nor->manufacturer->fixups->post_sfdp)
++		nor->manufacturer->fixups->post_sfdp(nor);
++
+ 	if (nor->info->fixups && nor->info->fixups->post_sfdp)
+ 		nor->info->fixups->post_sfdp(nor);
+ }
+@@ -3615,15 +3661,25 @@ void spi_nor_restore(struct spi_nor *nor)
+ }
+ EXPORT_SYMBOL_GPL(spi_nor_restore);
+ 
+-static const struct flash_info *spi_nor_match_id(const char *name)
++static const struct flash_info *spi_nor_match_id(struct spi_nor *nor,
++						 const char *name)
+ {
+-	const struct flash_info *id = spi_nor_ids;
++	unsigned int i, j;
+ 
+-	while (id->name) {
+-		if (!strcmp(name, id->name))
+-			return id;
+-		id++;
++	for (i = 0; i < ARRAY_SIZE(spi_nor_ids) - 1; i++) {
++		if (!strcmp(name, spi_nor_ids[i].name))
++			return &spi_nor_ids[i];
+ 	}
++
++	for (i = 0; i < ARRAY_SIZE(manufacturers); i++) {
++		for (j = 0; j < manufacturers[i]->nparts; j++) {
++			if (!strcmp(name, manufacturers[i]->parts[j].name)) {
++				nor->manufacturer = manufacturers[i];
++				return &manufacturers[i]->parts[j];
++			}
++		}
++	}
++
+ 	return NULL;
+ }
+ 
+@@ -3670,7 +3726,7 @@ static const struct flash_info *spi_nor_get_flash_info(struct spi_nor *nor,
+ 	const struct flash_info *info = NULL;
+ 
+ 	if (name)
+-		info = spi_nor_match_id(name);
++		info = spi_nor_match_id(nor, name);
+ 	/* Try to auto-detect if chip name wasn't specified or not found */
+ 	if (!info)
+ 		info = spi_nor_read_id(nor);
 diff --git a/drivers/mtd/spi-nor/core.h b/drivers/mtd/spi-nor/core.h
-index d36e7f93dbcf..1b9f7402e5ff 100644
+index 7e2d88edf1f1..89b8dd1c8213 100644
 --- a/drivers/mtd/spi-nor/core.h
 +++ b/drivers/mtd/spi-nor/core.h
-@@ -171,6 +171,7 @@ extern const struct spi_nor_manufacturer spi_nor_atmel;
- extern const struct spi_nor_manufacturer spi_nor_eon;
- extern const struct spi_nor_manufacturer spi_nor_esmt;
- extern const struct spi_nor_manufacturer spi_nor_everspin;
-+extern const struct spi_nor_manufacturer spi_nor_fujitsu;
+@@ -152,6 +152,20 @@ struct flash_info {
+ 		.addr_width = 3,					\
+ 		.flags = SPI_NOR_NO_FR | SPI_S3AN,
  
++/**
++ * struct spi_nor_manufacturer - SPI NOR manufacturer object
++ * @name: manufacturer name
++ * @parts: array of parts supported by this manufacturer
++ * @nparts: number of entries in the parts array
++ * @fixups: hooks called at various points in time during spi_nor_scan()
++ */
++struct spi_nor_manufacturer {
++	const char *name;
++	const struct flash_info *parts;
++	unsigned int nparts;
++	const struct spi_nor_fixups *fixups;
++};
++
  int spi_nor_write_enable(struct spi_nor *nor);
  int spi_nor_write_disable(struct spi_nor *nor);
-diff --git a/drivers/mtd/spi-nor/fujitsu.c b/drivers/mtd/spi-nor/fujitsu.c
-new file mode 100644
-index 000000000000..e385d93e756c
---- /dev/null
-+++ b/drivers/mtd/spi-nor/fujitsu.c
-@@ -0,0 +1,20 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Copyright (C) 2005, Intec Automation Inc.
-+ * Copyright (C) 2014, Freescale Semiconductor, Inc.
+ int spi_nor_en4_ex4_set_4byte(struct spi_nor *nor, bool enable);
+diff --git a/include/linux/mtd/spi-nor.h b/include/linux/mtd/spi-nor.h
+index de90724f62f1..dde2988a809e 100644
+--- a/include/linux/mtd/spi-nor.h
++++ b/include/linux/mtd/spi-nor.h
+@@ -554,6 +554,12 @@ struct spi_nor_flash_parameter {
+  */
+ struct flash_info;
+ 
++/**
++ * struct spi_nor_manufacturer - Forward declaration of a structure used
++ * internally by the core and manufacturer drivers.
 + */
++struct spi_nor_manufacturer;
 +
-+#include <linux/mtd/spi-nor.h>
-+
-+#include "core.h"
-+
-+static const struct flash_info fujitsu_parts[] = {
-+	/* Fujitsu */
-+	{ "mb85rs1mt", INFO(0x047f27, 0, 128 * 1024, 1, SPI_NOR_NO_ERASE) },
-+};
-+
-+const struct spi_nor_manufacturer spi_nor_fujitsu = {
-+	.name = "fujitsu",
-+	.parts = fujitsu_parts,
-+	.nparts = ARRAY_SIZE(fujitsu_parts),
-+};
+ /**
+  * struct spi_nor - Structure for defining a the SPI NOR layer
+  * @mtd:		point to a mtd_info structure
+@@ -564,6 +570,7 @@ struct flash_info;
+  *                      layer is not DMA-able
+  * @bouncebuf_size:	size of the bounce buffer
+  * @info:		spi-nor part JDEC MFR id and other info
++ * @manufacturer:	spi-nor manufacturer
+  * @page_size:		the page size of the SPI NOR
+  * @addr_width:		number of address bytes
+  * @erase_opcode:	the opcode for erasing a sector
+@@ -591,6 +598,7 @@ struct spi_nor {
+ 	u8			*bouncebuf;
+ 	size_t			bouncebuf_size;
+ 	const struct flash_info	*info;
++	const struct spi_nor_manufacturer *manufacturer;
+ 	u32			page_size;
+ 	u8			addr_width;
+ 	u8			erase_opcode;
 -- 
 2.23.0
