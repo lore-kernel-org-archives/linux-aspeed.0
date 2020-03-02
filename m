@@ -1,38 +1,58 @@
-From: Lixue Liang <lianglixuehao@126.com>
-Date: Fri, 28 Jul 2023 12:24:16 +0000
-Subject: [PATCH] i2c: aspeed: Avoid accessing freed buffers during i2c transfers.
-Message-ID: <20230728122416.17782-1-lianglixuehao@126.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Mon, 02 Mar 2020 15:49:07 +1100
+Subject: [PATCH v5 7/7] dt-bindings: usb: add documentation for aspeed
+ usb-vhub
+In-Reply-To: <20200228081309.GA4531@taoren-ubuntuvm>
+References: <20200227230507.8682-1-rentao.bupt@gmail.com>
+ <20200227230507.8682-8-rentao.bupt@gmail.com>
+ <3150424b9e9f5856c747a0fbf44647919f49209d.camel@kernel.crashing.org>
+ <20200228010444.GA19910@taoren-ubuntu-R90MNF91>
+ <2676013663fc8c53e02a5fdaafb1b27e18249b80.camel@kernel.crashing.org>
+ <20200228081309.GA4531@taoren-ubuntuvm>
+Message-ID: <42daa66bedc1b06936bc9cbc6e9b31f6dd8ed3a1.camel@kernel.crashing.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Lixue Liang <lianglixue@greatwall.com.cn>
+On Fri, 2020-02-28 at 00:13 -0800, Tao Ren wrote:
+> On Fri, Feb 28, 2020 at 02:02:28PM +1100, Benjamin Herrenschmidt wrote:
+> > On Thu, 2020-02-27 at 17:05 -0800, Tao Ren wrote:
+> > > > Also long run I think best is going to have a child node per downstream
+> > > > port, so we create a matching linux struct device. This will make it
+> > > > easier to deal with the other device-controller in the ast2600 which is
+> > > > basically one of these without a vhub above it.
+> > > 
+> > > Maybe a dumb question: what would be the proper place to parse the child
+> > > node/properties when they are added? For example, in some usb_gadget_ops
+> > > callback?
+> > 
+> > No. What the vhub would do is when it probes, it creates a platform
+> > device for each "port" child node that's linked to the DT node.
+> > 
+> > The driver for the device then attaches to it via standard DT matching
+> > and checks if it has a vhub parent or not, and based on that, operates
+> > as a vhub child device or a standalone one.
+> > 
+> > (For example, it might have different functions for EP selection since
+> > standalone devices have private EPs rather than a shared pool)
+> > 
+> > They can both be in the same module or they can be separate modules
+> > with cross dependencies.
+> > 
+> > Cheers,
+> > Ben.
+> 
+> I see. It's to describe these downstream devices (such as configurations
+> and according functions) in device tree, which is similar to defining a
+> composite device and linking functions/interfaces via configfs. Thanks for
+> the clarify.
 
-After waiting for the transmission timeout, the I2C controller will
-continue to transmit data when the bus is idle. Clearing bus->msg will
-avoid kernel panic when accessing the freed msg->buf in
-aspeed_i2c_master_irq.
+It's also to make it easier long run to support both the standalone
+variant and the vhub variant from the same code base.
 
-Signed-off-by: Lixue Liang <lianglixue@greatwall.com.cn>
----
- drivers/i2c/busses/i2c-aspeed.c | 2 ++
- 1 file changed, 2 insertions(+)
+Cheers,
+Ben.
 
-diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
-index 2e5acfeb76c8..c83057497e26 100644
---- a/drivers/i2c/busses/i2c-aspeed.c
-+++ b/drivers/i2c/busses/i2c-aspeed.c
-@@ -713,6 +713,8 @@ static int aspeed_i2c_master_xfer(struct i2c_adapter *adap,
- 		spin_lock_irqsave(&bus->lock, flags);
- 		if (bus->master_state == ASPEED_I2C_MASTER_PENDING)
- 			bus->master_state = ASPEED_I2C_MASTER_INACTIVE;
-+
-+		bus->msgs = NULL;
- 		spin_unlock_irqrestore(&bus->lock, flags);
- 
- 		return -ETIMEDOUT;
--- 
-2.27.0
 
