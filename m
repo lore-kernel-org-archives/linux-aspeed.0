@@ -1,9 +1,9 @@
 From: Tudor.Ambarus@microchip.com <Tudor.Ambarus@microchip.com>
-Date: Mon, 2 Mar 2020 18:07:48 +0000
-Subject: [PATCH 07/23] mtd: spi-nor: Move Eon bits out of core.c
+Date: Mon, 2 Mar 2020 18:07:54 +0000
+Subject: [PATCH 18/23] mtd: spi-nor: Move Winbond bits out of core.c
 In-Reply-To: <20200302180730.1886678-1-tudor.ambarus@microchip.com>
 References: <20200302180730.1886678-1-tudor.ambarus@microchip.com>
-Message-ID: <20200302180730.1886678-8-tudor.ambarus@microchip.com>
+Message-ID: <20200302180730.1886678-19-tudor.ambarus@microchip.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -12,83 +12,201 @@ Content-Transfer-Encoding: 7bit
 
 From: Boris Brezillon <bbrezillon@kernel.org>
 
-Create a SPI NOR manufacturer driver for Eon chips, and move the
-Eon definitions outside of core.c.
+Create a SPI NOR manufacturer driver for Winbond chips, and move the
+Winbond definitions outside of core.c.
 
 Signed-off-by: Boris Brezillon <bbrezillon@kernel.org>
 Signed-off-by: Tudor Ambarus <tudor.ambarus@microchip.com>
 ---
- drivers/mtd/spi-nor/Makefile |  1 +
- drivers/mtd/spi-nor/core.c   | 18 +-----------------
- drivers/mtd/spi-nor/core.h   |  1 +
- drivers/mtd/spi-nor/eon.c    | 34 ++++++++++++++++++++++++++++++++++
- 4 files changed, 37 insertions(+), 17 deletions(-)
- create mode 100644 drivers/mtd/spi-nor/eon.c
+ drivers/mtd/spi-nor/Makefile  |   1 +
+ drivers/mtd/spi-nor/core.c    | 115 +---------------------------------
+ drivers/mtd/spi-nor/core.h    |   1 +
+ drivers/mtd/spi-nor/winbond.c | 113 +++++++++++++++++++++++++++++++++
+ 4 files changed, 116 insertions(+), 114 deletions(-)
+ create mode 100644 drivers/mtd/spi-nor/winbond.c
 
 diff --git a/drivers/mtd/spi-nor/Makefile b/drivers/mtd/spi-nor/Makefile
-index 0a243592e416..e1bc8ccfe14d 100644
+index ef7afc654a15..33b6f834a14f 100644
 --- a/drivers/mtd/spi-nor/Makefile
 +++ b/drivers/mtd/spi-nor/Makefile
-@@ -2,4 +2,5 @@
- 
- spi-nor-objs			:= core.o sfdp.o
- spi-nor-objs			+= atmel.o
-+spi-nor-objs			+= eon.o
+@@ -13,4 +13,5 @@ spi-nor-objs			+= macronix.o
+ spi-nor-objs			+= micron-st.o
+ spi-nor-objs			+= spansion.o
+ spi-nor-objs			+= sst.o
++spi-nor-objs			+= winbond.o
  obj-$(CONFIG_MTD_SPI_NOR)	+= spi-nor.o
 diff --git a/drivers/mtd/spi-nor/core.c b/drivers/mtd/spi-nor/core.c
-index 45d370229e0a..67a3493939f6 100644
+index 9ff0b09887b4..c99f063b0781 100644
 --- a/drivers/mtd/spi-nor/core.c
 +++ b/drivers/mtd/spi-nor/core.c
-@@ -2079,23 +2079,6 @@ static struct spi_nor_fixups gd25q256_fixups = {
+@@ -487,38 +487,6 @@ int spi_nor_write_ear(struct spi_nor *nor, u8 ear)
+ 	return ret;
+ }
+ 
+-/**
+- * winbond_set_4byte() - Set 4-byte address mode for Winbond flashes.
+- * @nor:	pointer to 'struct spi_nor'.
+- * @enable:	true to enter the 4-byte address mode, false to exit the 4-byte
+- *		address mode.
+- *
+- * Return: 0 on success, -errno otherwise.
+- */
+-static int winbond_set_4byte(struct spi_nor *nor, bool enable)
+-{
+-	int ret;
+-
+-	ret = spi_nor_en4_ex4_set_4byte(nor, enable);
+-	if (ret || enable)
+-		return ret;
+-
+-	/*
+-	 * On Winbond W25Q256FV, leaving 4byte mode causes the Extended Address
+-	 * Register to be set to 1, so all 3-byte-address reads come from the
+-	 * second 16M. We must clear the register to enable normal behavior.
+-	 */
+-	ret = spi_nor_write_enable(nor);
+-	if (ret)
+-		return ret;
+-
+-	ret = spi_nor_write_ear(nor, 0);
+-	if (ret)
+-		return ret;
+-
+-	return spi_nor_write_disable(nor);
+-}
+-
+ /**
+  * spi_nor_xread_sr() - Read the Status Register on S3AN flashes.
+  * @nor:	pointer to 'struct spi_nor'.
+@@ -2017,73 +1985,6 @@ int spi_nor_sr2_bit7_quad_enable(struct spi_nor *nor)
   * old entries may be missing 4K flag.
   */
  static const struct flash_info spi_nor_ids[] = {
--	/* EON -- en25xxx */
--	{ "en25f32",    INFO(0x1c3116, 0, 64 * 1024,   64, SECT_4K) },
--	{ "en25p32",    INFO(0x1c2016, 0, 64 * 1024,   64, 0) },
--	{ "en25q32b",   INFO(0x1c3016, 0, 64 * 1024,   64, 0) },
--	{ "en25p64",    INFO(0x1c2017, 0, 64 * 1024,  128, 0) },
--	{ "en25q64",    INFO(0x1c3017, 0, 64 * 1024,  128, SECT_4K) },
--	{ "en25q80a",   INFO(0x1c3014, 0, 64 * 1024,   16,
--			SECT_4K | SPI_NOR_DUAL_READ) },
--	{ "en25qh16",   INFO(0x1c7015, 0, 64 * 1024,   32,
--			SECT_4K | SPI_NOR_DUAL_READ) },
--	{ "en25qh32",   INFO(0x1c7016, 0, 64 * 1024,   64, 0) },
--	{ "en25qh64",   INFO(0x1c7017, 0, 64 * 1024,  128,
--			SECT_4K | SPI_NOR_DUAL_READ) },
--	{ "en25qh128",  INFO(0x1c7018, 0, 64 * 1024,  256, 0) },
--	{ "en25qh256",  INFO(0x1c7019, 0, 64 * 1024,  512, 0) },
--	{ "en25s64",	INFO(0x1c3817, 0, 64 * 1024,  128, SECT_4K) },
+-	/* Winbond -- w25x "blocks" are 64K, "sectors" are 4KiB */
+-	{ "w25x05", INFO(0xef3010, 0, 64 * 1024,  1,  SECT_4K) },
+-	{ "w25x10", INFO(0xef3011, 0, 64 * 1024,  2,  SECT_4K) },
+-	{ "w25x20", INFO(0xef3012, 0, 64 * 1024,  4,  SECT_4K) },
+-	{ "w25x40", INFO(0xef3013, 0, 64 * 1024,  8,  SECT_4K) },
+-	{ "w25x80", INFO(0xef3014, 0, 64 * 1024,  16, SECT_4K) },
+-	{ "w25x16", INFO(0xef3015, 0, 64 * 1024,  32, SECT_4K) },
+-	{
+-		"w25q16dw", INFO(0xef6015, 0, 64 * 1024,  32,
+-			SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ |
+-			SPI_NOR_HAS_LOCK | SPI_NOR_HAS_TB)
+-	},
+-	{ "w25x32", INFO(0xef3016, 0, 64 * 1024,  64, SECT_4K) },
+-	{
+-		"w25q16jv-im/jm", INFO(0xef7015, 0, 64 * 1024,  32,
+-			SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ |
+-			SPI_NOR_HAS_LOCK | SPI_NOR_HAS_TB)
+-	},
+-	{ "w25q20cl", INFO(0xef4012, 0, 64 * 1024,  4, SECT_4K) },
+-	{ "w25q20bw", INFO(0xef5012, 0, 64 * 1024,  4, SECT_4K) },
+-	{ "w25q20ew", INFO(0xef6012, 0, 64 * 1024,  4, SECT_4K) },
+-	{ "w25q32", INFO(0xef4016, 0, 64 * 1024,  64, SECT_4K) },
+-	{
+-		"w25q32dw", INFO(0xef6016, 0, 64 * 1024,  64,
+-			SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ |
+-			SPI_NOR_HAS_LOCK | SPI_NOR_HAS_TB)
+-	},
+-	{
+-		"w25q32jv", INFO(0xef7016, 0, 64 * 1024,  64,
+-			SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ |
+-			SPI_NOR_HAS_LOCK | SPI_NOR_HAS_TB)
+-	},
+-	{
+-		"w25q32jwm", INFO(0xef8016, 0, 64 * 1024,  64,
+-			SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ |
+-			SPI_NOR_HAS_LOCK | SPI_NOR_HAS_TB)
+-	},
+-	{ "w25x64", INFO(0xef3017, 0, 64 * 1024, 128, SECT_4K) },
+-	{ "w25q64", INFO(0xef4017, 0, 64 * 1024, 128, SECT_4K) },
+-	{
+-		"w25q64dw", INFO(0xef6017, 0, 64 * 1024, 128,
+-			SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ |
+-			SPI_NOR_HAS_LOCK | SPI_NOR_HAS_TB)
+-	},
+-	{
+-		"w25q128fw", INFO(0xef6018, 0, 64 * 1024, 256,
+-			SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ |
+-			SPI_NOR_HAS_LOCK | SPI_NOR_HAS_TB)
+-	},
+-	{
+-		"w25q128jv", INFO(0xef7018, 0, 64 * 1024, 256,
+-			SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ |
+-			SPI_NOR_HAS_LOCK | SPI_NOR_HAS_TB)
+-	},
+-	{ "w25q80", INFO(0xef5014, 0, 64 * 1024,  16, SECT_4K) },
+-	{ "w25q80bl", INFO(0xef4014, 0, 64 * 1024,  16, SECT_4K) },
+-	{ "w25q128", INFO(0xef4018, 0, 64 * 1024, 256, SECT_4K) },
+-	{ "w25q256", INFO(0xef4019, 0, 64 * 1024, 512,
+-			  SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ |
+-			  SPI_NOR_4B_OPCODES) },
+-	{ "w25q256jvm", INFO(0xef7019, 0, 64 * 1024, 512,
+-			     SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ) },
+-	{ "w25q256jw", INFO(0xef6019, 0, 64 * 1024, 512,
+-			     SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ) },
+-	{ "w25m512jv", INFO(0xef7119, 0, 64 * 1024, 1024,
+-			SECT_4K | SPI_NOR_QUAD_READ | SPI_NOR_DUAL_READ) },
 -
- 	/* ESMT */
- 	{ "f25l32pa", INFO(0x8c2016, 0, 64 * 1024, 64, SECT_4K | SPI_NOR_HAS_LOCK) },
- 	{ "f25l32qa", INFO(0x8c4116, 0, 64 * 1024, 64, SECT_4K | SPI_NOR_HAS_LOCK) },
-@@ -2455,6 +2438,7 @@ static const struct flash_info spi_nor_ids[] = {
- 
- static const struct spi_nor_manufacturer *manufacturers[] = {
- 	&spi_nor_atmel,
-+	&spi_nor_eon,
+ 	/* Catalyst / On Semiconductor -- non-JEDEC */
+ 	{ "cat25c11", CAT25_INFO(  16, 8, 16, 1, SPI_NOR_NO_ERASE | SPI_NOR_NO_FR) },
+ 	{ "cat25c03", CAT25_INFO(  32, 8, 16, 2, SPI_NOR_NO_ERASE | SPI_NOR_NO_FR) },
+@@ -2118,6 +2019,7 @@ static const struct spi_nor_manufacturer *manufacturers[] = {
+ 	&spi_nor_st,
+ 	&spi_nor_spansion,
+ 	&spi_nor_sst,
++	&spi_nor_winbond,
  };
  
  static const struct flash_info *
+@@ -2811,11 +2713,6 @@ static int spi_nor_setup(struct spi_nor *nor,
+ 	return nor->params.setup(nor, hwcaps);
+ }
+ 
+-static void winbond_set_default_init(struct spi_nor *nor)
+-{
+-	nor->params.set_4byte = winbond_set_4byte;
+-}
+-
+ /**
+  * spi_nor_manufacturer_init_params() - Initialize the flash's parameters and
+  * settings based on MFR register and ->default_init() hook.
+@@ -2823,16 +2720,6 @@ static void winbond_set_default_init(struct spi_nor *nor)
+  */
+ static void spi_nor_manufacturer_init_params(struct spi_nor *nor)
+ {
+-	/* Init flash parameters based on MFR */
+-	switch (JEDEC_MFR(nor->info)) {
+-	case SNOR_MFR_WINBOND:
+-		winbond_set_default_init(nor);
+-		break;
+-
+-	default:
+-		break;
+-	}
+-
+ 	if (nor->manufacturer && nor->manufacturer->fixups &&
+ 	    nor->manufacturer->fixups->default_init)
+ 		nor->manufacturer->fixups->default_init(nor);
 diff --git a/drivers/mtd/spi-nor/core.h b/drivers/mtd/spi-nor/core.h
-index 505e580add68..1ac226c456e1 100644
+index 7bc0f6a15b36..01e0b8e2b191 100644
 --- a/drivers/mtd/spi-nor/core.h
 +++ b/drivers/mtd/spi-nor/core.h
-@@ -168,6 +168,7 @@ struct spi_nor_manufacturer {
- 
- /* Manufacturer drivers. */
- extern const struct spi_nor_manufacturer spi_nor_atmel;
-+extern const struct spi_nor_manufacturer spi_nor_eon;
+@@ -180,6 +180,7 @@ extern const struct spi_nor_manufacturer spi_nor_micron;
+ extern const struct spi_nor_manufacturer spi_nor_st;
+ extern const struct spi_nor_manufacturer spi_nor_spansion;
+ extern const struct spi_nor_manufacturer spi_nor_sst;
++extern const struct spi_nor_manufacturer spi_nor_winbond;
  
  int spi_nor_write_enable(struct spi_nor *nor);
  int spi_nor_write_disable(struct spi_nor *nor);
-diff --git a/drivers/mtd/spi-nor/eon.c b/drivers/mtd/spi-nor/eon.c
+diff --git a/drivers/mtd/spi-nor/winbond.c b/drivers/mtd/spi-nor/winbond.c
 new file mode 100644
-index 000000000000..ddb8e3650835
+index 000000000000..1e77dffbf729
 --- /dev/null
-+++ b/drivers/mtd/spi-nor/eon.c
-@@ -0,0 +1,34 @@
++++ b/drivers/mtd/spi-nor/winbond.c
+@@ -0,0 +1,113 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * Copyright (C) 2005, Intec Automation Inc.
@@ -99,29 +217,108 @@ index 000000000000..ddb8e3650835
 +
 +#include "core.h"
 +
-+static const struct flash_info eon_parts[] = {
-+	/* EON -- en25xxx */
-+	{ "en25f32",    INFO(0x1c3116, 0, 64 * 1024,   64, SECT_4K) },
-+	{ "en25p32",    INFO(0x1c2016, 0, 64 * 1024,   64, 0) },
-+	{ "en25q32b",   INFO(0x1c3016, 0, 64 * 1024,   64, 0) },
-+	{ "en25p64",    INFO(0x1c2017, 0, 64 * 1024,  128, 0) },
-+	{ "en25q64",    INFO(0x1c3017, 0, 64 * 1024,  128, SECT_4K) },
-+	{ "en25q80a",   INFO(0x1c3014, 0, 64 * 1024,   16,
-+			     SECT_4K | SPI_NOR_DUAL_READ) },
-+	{ "en25qh16",   INFO(0x1c7015, 0, 64 * 1024,   32,
-+			     SECT_4K | SPI_NOR_DUAL_READ) },
-+	{ "en25qh32",   INFO(0x1c7016, 0, 64 * 1024,   64, 0) },
-+	{ "en25qh64",   INFO(0x1c7017, 0, 64 * 1024,  128,
-+			     SECT_4K | SPI_NOR_DUAL_READ) },
-+	{ "en25qh128",  INFO(0x1c7018, 0, 64 * 1024,  256, 0) },
-+	{ "en25qh256",  INFO(0x1c7019, 0, 64 * 1024,  512, 0) },
-+	{ "en25s64",	INFO(0x1c3817, 0, 64 * 1024,  128, SECT_4K) },
++static const struct flash_info winbond_parts[] = {
++	/* Winbond -- w25x "blocks" are 64K, "sectors" are 4KiB */
++	{ "w25x05", INFO(0xef3010, 0, 64 * 1024,  1,  SECT_4K) },
++	{ "w25x10", INFO(0xef3011, 0, 64 * 1024,  2,  SECT_4K) },
++	{ "w25x20", INFO(0xef3012, 0, 64 * 1024,  4,  SECT_4K) },
++	{ "w25x40", INFO(0xef3013, 0, 64 * 1024,  8,  SECT_4K) },
++	{ "w25x80", INFO(0xef3014, 0, 64 * 1024,  16, SECT_4K) },
++	{ "w25x16", INFO(0xef3015, 0, 64 * 1024,  32, SECT_4K) },
++	{ "w25q16dw", INFO(0xef6015, 0, 64 * 1024,  32,
++			   SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ |
++			   SPI_NOR_HAS_LOCK | SPI_NOR_HAS_TB) },
++	{ "w25x32", INFO(0xef3016, 0, 64 * 1024,  64, SECT_4K) },
++	{ "w25q16jv-im/jm", INFO(0xef7015, 0, 64 * 1024,  32,
++				 SECT_4K | SPI_NOR_DUAL_READ |
++				 SPI_NOR_QUAD_READ | SPI_NOR_HAS_LOCK |
++				 SPI_NOR_HAS_TB) },
++	{ "w25q20cl", INFO(0xef4012, 0, 64 * 1024,  4, SECT_4K) },
++	{ "w25q20bw", INFO(0xef5012, 0, 64 * 1024,  4, SECT_4K) },
++	{ "w25q20ew", INFO(0xef6012, 0, 64 * 1024,  4, SECT_4K) },
++	{ "w25q32", INFO(0xef4016, 0, 64 * 1024,  64, SECT_4K) },
++	{ "w25q32dw", INFO(0xef6016, 0, 64 * 1024,  64,
++			   SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ |
++			   SPI_NOR_HAS_LOCK | SPI_NOR_HAS_TB) },
++	{ "w25q32jv", INFO(0xef7016, 0, 64 * 1024,  64,
++			   SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ |
++			   SPI_NOR_HAS_LOCK | SPI_NOR_HAS_TB)
++	},
++	{ "w25q32jwm", INFO(0xef8016, 0, 64 * 1024,  64,
++			    SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ |
++			    SPI_NOR_HAS_LOCK | SPI_NOR_HAS_TB) },
++	{ "w25x64", INFO(0xef3017, 0, 64 * 1024, 128, SECT_4K) },
++	{ "w25q64", INFO(0xef4017, 0, 64 * 1024, 128, SECT_4K) },
++	{ "w25q64dw", INFO(0xef6017, 0, 64 * 1024, 128,
++			   SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ |
++			   SPI_NOR_HAS_LOCK | SPI_NOR_HAS_TB) },
++	{ "w25q128fw", INFO(0xef6018, 0, 64 * 1024, 256,
++			    SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ |
++			    SPI_NOR_HAS_LOCK | SPI_NOR_HAS_TB) },
++	{ "w25q128jv", INFO(0xef7018, 0, 64 * 1024, 256,
++			    SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ |
++			    SPI_NOR_HAS_LOCK | SPI_NOR_HAS_TB) },
++	{ "w25q80", INFO(0xef5014, 0, 64 * 1024,  16, SECT_4K) },
++	{ "w25q80bl", INFO(0xef4014, 0, 64 * 1024,  16, SECT_4K) },
++	{ "w25q128", INFO(0xef4018, 0, 64 * 1024, 256, SECT_4K) },
++	{ "w25q256", INFO(0xef4019, 0, 64 * 1024, 512,
++			  SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ |
++			  SPI_NOR_4B_OPCODES) },
++	{ "w25q256jvm", INFO(0xef7019, 0, 64 * 1024, 512,
++			     SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ) },
++	{ "w25q256jw", INFO(0xef6019, 0, 64 * 1024, 512,
++			     SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ) },
++	{ "w25m512jv", INFO(0xef7119, 0, 64 * 1024, 1024,
++			    SECT_4K | SPI_NOR_QUAD_READ | SPI_NOR_DUAL_READ) },
 +};
 +
-+const struct spi_nor_manufacturer spi_nor_eon = {
-+	.name = "eon",
-+	.parts = eon_parts,
-+	.nparts = ARRAY_SIZE(eon_parts),
++/**
++ * winbond_set_4byte() - Set 4-byte address mode for Winbond flashes.
++ * @nor:	pointer to 'struct spi_nor'.
++ * @enable:	true to enter the 4-byte address mode, false to exit the 4-byte
++ *		address mode.
++ *
++ * Return: 0 on success, -errno otherwise.
++ */
++static int winbond_set_4byte(struct spi_nor *nor, bool enable)
++{
++	int ret;
++
++	ret = spi_nor_en4_ex4_set_4byte(nor, enable);
++	if (ret || enable)
++		return ret;
++
++	/*
++	 * On Winbond W25Q256FV, leaving 4byte mode causes the Extended Address
++	 * Register to be set to 1, so all 3-byte-address reads come from the
++	 * second 16M. We must clear the register to enable normal behavior.
++	 */
++	ret = spi_nor_write_enable(nor);
++	if (ret)
++		return ret;
++
++	ret = spi_nor_write_ear(nor, 0);
++	if (ret)
++		return ret;
++
++	return spi_nor_write_disable(nor);
++}
++
++static void winbond_default_init(struct spi_nor *nor)
++{
++	nor->params.set_4byte = winbond_set_4byte;
++}
++
++static const struct spi_nor_fixups winbond_fixups = {
++	.default_init = winbond_default_init,
 +};
++
++const struct spi_nor_manufacturer spi_nor_winbond = {
++	.name = "winbond",
++	.parts = winbond_parts,
++	.nparts = ARRAY_SIZE(winbond_parts),
++	.fixups = &winbond_fixups,
++};
++
 -- 
 2.23.0
