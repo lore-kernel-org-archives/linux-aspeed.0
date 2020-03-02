@@ -1,9 +1,9 @@
 From: Tudor.Ambarus@microchip.com <Tudor.Ambarus@microchip.com>
-Date: Mon, 2 Mar 2020 18:07:45 +0000
-Subject: [PATCH 02/23] mtd: spi-nor: Prepare core / manufacturer code split
+Date: Mon, 2 Mar 2020 18:07:48 +0000
+Subject: [PATCH 06/23] mtd: spi-nor: Move Atmel bits out of core.c
 In-Reply-To: <20200302180730.1886678-1-tudor.ambarus@microchip.com>
 References: <20200302180730.1886678-1-tudor.ambarus@microchip.com>
-Message-ID: <20200302180730.1886678-3-tudor.ambarus@microchip.com>
+Message-ID: <20200302180730.1886678-7-tudor.ambarus@microchip.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -12,297 +12,158 @@ Content-Transfer-Encoding: 7bit
 
 From: Boris Brezillon <bbrezillon@kernel.org>
 
-Move all SPI NOR controller drivers to a controllers/ sub-directory
-so that we only have SPI NOR related source files under
-drivers/mtd/spi-nor/.
-
-Rename spi-nor.c into core.c, we are about to split this file in multiple
-source files (one per manufacturer, plus one for the SFDP parsing logic).
+Create a SPI NOR manufacturer driver for Atmel chips, and move the
+Atmel definitions outside of core.c.
 
 Signed-off-by: Boris Brezillon <bbrezillon@kernel.org>
 Signed-off-by: Tudor Ambarus <tudor.ambarus@microchip.com>
 ---
- drivers/mtd/spi-nor/Kconfig                   | 83 +------------------
- drivers/mtd/spi-nor/Makefile                  | 10 +--
- drivers/mtd/spi-nor/controllers/Kconfig       | 83 +++++++++++++++++++
- drivers/mtd/spi-nor/controllers/Makefile      |  9 ++
- .../spi-nor/{ => controllers}/aspeed-smc.c    |  0
- .../{ => controllers}/cadence-quadspi.c       |  0
- .../mtd/spi-nor/{ => controllers}/hisi-sfc.c  |  0
- .../spi-nor/{ => controllers}/intel-spi-pci.c |  0
- .../{ => controllers}/intel-spi-platform.c    |  0
- .../mtd/spi-nor/{ => controllers}/intel-spi.c |  0
- .../mtd/spi-nor/{ => controllers}/intel-spi.h |  0
- .../spi-nor/{ => controllers}/mtk-quadspi.c   |  0
- .../mtd/spi-nor/{ => controllers}/nxp-spifi.c |  0
- drivers/mtd/spi-nor/{spi-nor.c => core.c}     |  0
- 14 files changed, 95 insertions(+), 90 deletions(-)
- create mode 100644 drivers/mtd/spi-nor/controllers/Kconfig
- create mode 100644 drivers/mtd/spi-nor/controllers/Makefile
- rename drivers/mtd/spi-nor/{ => controllers}/aspeed-smc.c (100%)
- rename drivers/mtd/spi-nor/{ => controllers}/cadence-quadspi.c (100%)
- rename drivers/mtd/spi-nor/{ => controllers}/hisi-sfc.c (100%)
- rename drivers/mtd/spi-nor/{ => controllers}/intel-spi-pci.c (100%)
- rename drivers/mtd/spi-nor/{ => controllers}/intel-spi-platform.c (100%)
- rename drivers/mtd/spi-nor/{ => controllers}/intel-spi.c (100%)
- rename drivers/mtd/spi-nor/{ => controllers}/intel-spi.h (100%)
- rename drivers/mtd/spi-nor/{ => controllers}/mtk-quadspi.c (100%)
- rename drivers/mtd/spi-nor/{ => controllers}/nxp-spifi.c (100%)
- rename drivers/mtd/spi-nor/{spi-nor.c => core.c} (100%)
+ drivers/mtd/spi-nor/Makefile |  1 +
+ drivers/mtd/spi-nor/atmel.c  | 46 ++++++++++++++++++++++++++++++++++++
+ drivers/mtd/spi-nor/core.c   | 32 +++----------------------
+ drivers/mtd/spi-nor/core.h   |  3 +++
+ 4 files changed, 53 insertions(+), 29 deletions(-)
+ create mode 100644 drivers/mtd/spi-nor/atmel.c
 
-diff --git a/drivers/mtd/spi-nor/Kconfig b/drivers/mtd/spi-nor/Kconfig
-index c1eda67d1ad2..6e816eafb312 100644
---- a/drivers/mtd/spi-nor/Kconfig
-+++ b/drivers/mtd/spi-nor/Kconfig
-@@ -24,87 +24,6 @@ config MTD_SPI_NOR_USE_4K_SECTORS
- 	  Please note that some tools/drivers/filesystems may not work with
- 	  4096 B erase size (e.g. UBIFS requires 15 KiB as a minimum).
- 
--config SPI_ASPEED_SMC
--	tristate "Aspeed flash controllers in SPI mode"
--	depends on ARCH_ASPEED || COMPILE_TEST
--	depends on HAS_IOMEM && OF
--	help
--	  This enables support for the Firmware Memory controller (FMC)
--	  in the Aspeed AST2500/AST2400 SoCs when attached to SPI NOR chips,
--	  and support for the SPI flash memory controller (SPI) for
--	  the host firmware. The implementation only supports SPI NOR.
--
--config SPI_CADENCE_QUADSPI
--	tristate "Cadence Quad SPI controller"
--	depends on OF && (ARM || ARM64 || COMPILE_TEST)
--	help
--	  Enable support for the Cadence Quad SPI Flash controller.
--
--	  Cadence QSPI is a specialized controller for connecting an SPI
--	  Flash over 1/2/4-bit wide bus. Enable this option if you have a
--	  device with a Cadence QSPI controller and want to access the
--	  Flash as an MTD device.
--
--config SPI_HISI_SFC
--	tristate "Hisilicon FMC SPI-NOR Flash Controller(SFC)"
--	depends on ARCH_HISI || COMPILE_TEST
--	depends on HAS_IOMEM
--	help
--	  This enables support for HiSilicon FMC SPI-NOR flash controller.
--
--config SPI_MTK_QUADSPI
--	tristate "MediaTek Quad SPI controller"
--	depends on HAS_IOMEM
--	help
--	  This enables support for the Quad SPI controller in master mode.
--	  This controller does not support generic SPI. It only supports
--	  SPI NOR.
--
--config SPI_NXP_SPIFI
--	tristate "NXP SPI Flash Interface (SPIFI)"
--	depends on OF && (ARCH_LPC18XX || COMPILE_TEST)
--	depends on HAS_IOMEM
--	help
--	  Enable support for the NXP LPC SPI Flash Interface controller.
--
--	  SPIFI is a specialized controller for connecting serial SPI
--	  Flash. Enable this option if you have a device with a SPIFI
--	  controller and want to access the Flash as a mtd device.
--
--config SPI_INTEL_SPI
--	tristate
--
--config SPI_INTEL_SPI_PCI
--	tristate "Intel PCH/PCU SPI flash PCI driver (DANGEROUS)"
--	depends on X86 && PCI
--	select SPI_INTEL_SPI
--	help
--	  This enables PCI support for the Intel PCH/PCU SPI controller in
--	  master mode. This controller is present in modern Intel hardware
--	  and is used to hold BIOS and other persistent settings. Using
--	  this driver it is possible to upgrade BIOS directly from Linux.
--
--	  Say N here unless you know what you are doing. Overwriting the
--	  SPI flash may render the system unbootable.
--
--	  To compile this driver as a module, choose M here: the module
--	  will be called intel-spi-pci.
--
--config SPI_INTEL_SPI_PLATFORM
--	tristate "Intel PCH/PCU SPI flash platform driver (DANGEROUS)"
--	depends on X86
--	select SPI_INTEL_SPI
--	help
--	  This enables platform support for the Intel PCH/PCU SPI
--	  controller in master mode. This controller is present in modern
--	  Intel hardware and is used to hold BIOS and other persistent
--	  settings. Using this driver it is possible to upgrade BIOS
--	  directly from Linux.
--
--	  Say N here unless you know what you are doing. Overwriting the
--	  SPI flash may render the system unbootable.
--
--	  To compile this driver as a module, choose M here: the module
--	  will be called intel-spi-platform.
-+source "drivers/mtd/spi-nor/controllers/Kconfig"
- 
- endif # MTD_SPI_NOR
 diff --git a/drivers/mtd/spi-nor/Makefile b/drivers/mtd/spi-nor/Makefile
-index 9c5ed03cdc19..d6fc70ab4a32 100644
+index 6bcdb6f1615a..0a243592e416 100644
 --- a/drivers/mtd/spi-nor/Makefile
 +++ b/drivers/mtd/spi-nor/Makefile
-@@ -1,10 +1,4 @@
+@@ -1,4 +1,5 @@
  # SPDX-License-Identifier: GPL-2.0
-+
-+spi-nor-objs			:= core.o
+ 
+ spi-nor-objs			:= core.o sfdp.o
++spi-nor-objs			+= atmel.o
  obj-$(CONFIG_MTD_SPI_NOR)	+= spi-nor.o
--obj-$(CONFIG_SPI_ASPEED_SMC)	+= aspeed-smc.o
--obj-$(CONFIG_SPI_CADENCE_QUADSPI)	+= cadence-quadspi.o
--obj-$(CONFIG_SPI_HISI_SFC)	+= hisi-sfc.o
--obj-$(CONFIG_SPI_MTK_QUADSPI)    += mtk-quadspi.o
--obj-$(CONFIG_SPI_NXP_SPIFI)	+= nxp-spifi.o
--obj-$(CONFIG_SPI_INTEL_SPI)	+= intel-spi.o
--obj-$(CONFIG_SPI_INTEL_SPI_PCI)	+= intel-spi-pci.o
--obj-$(CONFIG_SPI_INTEL_SPI_PLATFORM)	+= intel-spi-platform.o
-diff --git a/drivers/mtd/spi-nor/controllers/Kconfig b/drivers/mtd/spi-nor/controllers/Kconfig
+diff --git a/drivers/mtd/spi-nor/atmel.c b/drivers/mtd/spi-nor/atmel.c
 new file mode 100644
-index 000000000000..a02feb201a5b
+index 000000000000..3f5f21a473a6
 --- /dev/null
-+++ b/drivers/mtd/spi-nor/controllers/Kconfig
-@@ -0,0 +1,83 @@
-+# SPDX-License-Identifier: GPL-2.0-only
-+config SPI_ASPEED_SMC
-+	tristate "Aspeed flash controllers in SPI mode"
-+	depends on ARCH_ASPEED || COMPILE_TEST
-+	depends on HAS_IOMEM && OF
-+	help
-+	  This enables support for the Firmware Memory controller (FMC)
-+	  in the Aspeed AST2500/AST2400 SoCs when attached to SPI NOR chips,
-+	  and support for the SPI flash memory controller (SPI) for
-+	  the host firmware. The implementation only supports SPI NOR.
++++ b/drivers/mtd/spi-nor/atmel.c
+@@ -0,0 +1,46 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Copyright (C) 2005, Intec Automation Inc.
++ * Copyright (C) 2014, Freescale Semiconductor, Inc.
++ */
 +
-+config SPI_CADENCE_QUADSPI
-+	tristate "Cadence Quad SPI controller"
-+	depends on OF && (ARM || ARM64 || COMPILE_TEST)
-+	help
-+	  Enable support for the Cadence Quad SPI Flash controller.
++#include <linux/mtd/spi-nor.h>
 +
-+	  Cadence QSPI is a specialized controller for connecting an SPI
-+	  Flash over 1/2/4-bit wide bus. Enable this option if you have a
-+	  device with a Cadence QSPI controller and want to access the
-+	  Flash as an MTD device.
++#include "core.h"
 +
-+config SPI_HISI_SFC
-+	tristate "Hisilicon FMC SPI-NOR Flash Controller(SFC)"
-+	depends on ARCH_HISI || COMPILE_TEST
-+	depends on HAS_IOMEM
-+	help
-+	  This enables support for HiSilicon FMC SPI-NOR flash controller.
++static const struct flash_info atmel_parts[] = {
++	/* Atmel -- some are (confusingly) marketed as "DataFlash" */
++	{ "at25fs010",  INFO(0x1f6601, 0, 32 * 1024,   4, SECT_4K) },
++	{ "at25fs040",  INFO(0x1f6604, 0, 64 * 1024,   8, SECT_4K) },
 +
-+config SPI_MTK_QUADSPI
-+	tristate "MediaTek Quad SPI controller"
-+	depends on HAS_IOMEM
-+	help
-+	  This enables support for the Quad SPI controller in master mode.
-+	  This controller does not support generic SPI. It only supports
-+	  SPI NOR.
++	{ "at25df041a", INFO(0x1f4401, 0, 64 * 1024,   8, SECT_4K) },
++	{ "at25df321",  INFO(0x1f4700, 0, 64 * 1024,  64, SECT_4K) },
++	{ "at25df321a", INFO(0x1f4701, 0, 64 * 1024,  64, SECT_4K) },
++	{ "at25df641",  INFO(0x1f4800, 0, 64 * 1024, 128, SECT_4K) },
 +
-+config SPI_NXP_SPIFI
-+	tristate "NXP SPI Flash Interface (SPIFI)"
-+	depends on OF && (ARCH_LPC18XX || COMPILE_TEST)
-+	depends on HAS_IOMEM
-+	help
-+	  Enable support for the NXP LPC SPI Flash Interface controller.
++	{ "at25sl321",	INFO(0x1f4216, 0, 64 * 1024, 64,
++			     SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ) },
 +
-+	  SPIFI is a specialized controller for connecting serial SPI
-+	  Flash. Enable this option if you have a device with a SPIFI
-+	  controller and want to access the Flash as a mtd device.
++	{ "at26f004",   INFO(0x1f0400, 0, 64 * 1024,  8, SECT_4K) },
++	{ "at26df081a", INFO(0x1f4501, 0, 64 * 1024, 16, SECT_4K) },
++	{ "at26df161a", INFO(0x1f4601, 0, 64 * 1024, 32, SECT_4K) },
++	{ "at26df321",  INFO(0x1f4700, 0, 64 * 1024, 64, SECT_4K) },
 +
-+config SPI_INTEL_SPI
-+	tristate
++	{ "at45db081d", INFO(0x1f2500, 0, 64 * 1024, 16, SECT_4K) },
++};
 +
-+config SPI_INTEL_SPI_PCI
-+	tristate "Intel PCH/PCU SPI flash PCI driver (DANGEROUS)"
-+	depends on X86 && PCI
-+	select SPI_INTEL_SPI
-+	help
-+	  This enables PCI support for the Intel PCH/PCU SPI controller in
-+	  master mode. This controller is present in modern Intel hardware
-+	  and is used to hold BIOS and other persistent settings. Using
-+	  this driver it is possible to upgrade BIOS directly from Linux.
++static void atmel_default_init(struct spi_nor *nor)
++{
++	nor->flags |= SNOR_F_HAS_LOCK;
++}
 +
-+	  Say N here unless you know what you are doing. Overwriting the
-+	  SPI flash may render the system unbootable.
++static const struct spi_nor_fixups atmel_fixups = {
++	.default_init = atmel_default_init,
++};
 +
-+	  To compile this driver as a module, choose M here: the module
-+	  will be called intel-spi-pci.
++const struct spi_nor_manufacturer spi_nor_atmel = {
++	.name = "atmel",
++	.parts = atmel_parts,
++	.nparts = ARRAY_SIZE(atmel_parts),
++	.fixups = &atmel_fixups,
++};
+diff --git a/drivers/mtd/spi-nor/core.c b/drivers/mtd/spi-nor/core.c
+index d41ef1795707..45d370229e0a 100644
+--- a/drivers/mtd/spi-nor/core.c
++++ b/drivers/mtd/spi-nor/core.c
+@@ -2079,25 +2079,6 @@ static struct spi_nor_fixups gd25q256_fixups = {
+  * old entries may be missing 4K flag.
+  */
+ static const struct flash_info spi_nor_ids[] = {
+-	/* Atmel -- some are (confusingly) marketed as "DataFlash" */
+-	{ "at25fs010",  INFO(0x1f6601, 0, 32 * 1024,   4, SECT_4K) },
+-	{ "at25fs040",  INFO(0x1f6604, 0, 64 * 1024,   8, SECT_4K) },
+-
+-	{ "at25df041a", INFO(0x1f4401, 0, 64 * 1024,   8, SECT_4K) },
+-	{ "at25df321",  INFO(0x1f4700, 0, 64 * 1024,  64, SECT_4K) },
+-	{ "at25df321a", INFO(0x1f4701, 0, 64 * 1024,  64, SECT_4K) },
+-	{ "at25df641",  INFO(0x1f4800, 0, 64 * 1024, 128, SECT_4K) },
+-
+-	{ "at25sl321",	INFO(0x1f4216, 0, 64 * 1024, 64,
+-			     SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ) },
+-
+-	{ "at26f004",   INFO(0x1f0400, 0, 64 * 1024,  8, SECT_4K) },
+-	{ "at26df081a", INFO(0x1f4501, 0, 64 * 1024, 16, SECT_4K) },
+-	{ "at26df161a", INFO(0x1f4601, 0, 64 * 1024, 32, SECT_4K) },
+-	{ "at26df321",  INFO(0x1f4700, 0, 64 * 1024, 64, SECT_4K) },
+-
+-	{ "at45db081d", INFO(0x1f2500, 0, 64 * 1024, 16, SECT_4K) },
+-
+ 	/* EON -- en25xxx */
+ 	{ "en25f32",    INFO(0x1c3116, 0, 64 * 1024,   64, SECT_4K) },
+ 	{ "en25p32",    INFO(0x1c2016, 0, 64 * 1024,   64, 0) },
+@@ -2472,7 +2453,9 @@ static const struct flash_info spi_nor_ids[] = {
+ 	{ },
+ };
+ 
+-static const struct spi_nor_manufacturer *manufacturers[0];
++static const struct spi_nor_manufacturer *manufacturers[] = {
++	&spi_nor_atmel,
++};
+ 
+ static const struct flash_info *
+ spi_nor_search_part_by_id(const struct flash_info *parts, unsigned int nparts,
+@@ -3251,11 +3234,6 @@ static int spi_nor_setup(struct spi_nor *nor,
+ 	return nor->params.setup(nor, hwcaps);
+ }
+ 
+-static void atmel_set_default_init(struct spi_nor *nor)
+-{
+-	nor->flags |= SNOR_F_HAS_LOCK;
+-}
+-
+ static void intel_set_default_init(struct spi_nor *nor)
+ {
+ 	nor->flags |= SNOR_F_HAS_LOCK;
+@@ -3299,10 +3277,6 @@ static void spi_nor_manufacturer_init_params(struct spi_nor *nor)
+ {
+ 	/* Init flash parameters based on MFR */
+ 	switch (JEDEC_MFR(nor->info)) {
+-	case SNOR_MFR_ATMEL:
+-		atmel_set_default_init(nor);
+-		break;
+-
+ 	case SNOR_MFR_INTEL:
+ 		intel_set_default_init(nor);
+ 		break;
+diff --git a/drivers/mtd/spi-nor/core.h b/drivers/mtd/spi-nor/core.h
+index 89b8dd1c8213..505e580add68 100644
+--- a/drivers/mtd/spi-nor/core.h
++++ b/drivers/mtd/spi-nor/core.h
+@@ -166,6 +166,9 @@ struct spi_nor_manufacturer {
+ 	const struct spi_nor_fixups *fixups;
+ };
+ 
++/* Manufacturer drivers. */
++extern const struct spi_nor_manufacturer spi_nor_atmel;
 +
-+config SPI_INTEL_SPI_PLATFORM
-+	tristate "Intel PCH/PCU SPI flash platform driver (DANGEROUS)"
-+	depends on X86
-+	select SPI_INTEL_SPI
-+	help
-+	  This enables platform support for the Intel PCH/PCU SPI
-+	  controller in master mode. This controller is present in modern
-+	  Intel hardware and is used to hold BIOS and other persistent
-+	  settings. Using this driver it is possible to upgrade BIOS
-+	  directly from Linux.
-+
-+	  Say N here unless you know what you are doing. Overwriting the
-+	  SPI flash may render the system unbootable.
-+
-+	  To compile this driver as a module, choose M here: the module
-+	  will be called intel-spi-platform.
-diff --git a/drivers/mtd/spi-nor/controllers/Makefile b/drivers/mtd/spi-nor/controllers/Makefile
-new file mode 100644
-index 000000000000..c9a39992d63d
---- /dev/null
-+++ b/drivers/mtd/spi-nor/controllers/Makefile
-@@ -0,0 +1,9 @@
-+# SPDX-License-Identifier: GPL-2.0
-+obj-$(CONFIG_SPI_ASPEED_SMC)	+= aspeed-smc.o
-+obj-$(CONFIG_SPI_CADENCE_QUADSPI)	+= cadence-quadspi.o
-+obj-$(CONFIG_SPI_HISI_SFC)	+= hisi-sfc.o
-+obj-$(CONFIG_SPI_MTK_QUADSPI)    += mtk-quadspi.o
-+obj-$(CONFIG_SPI_NXP_SPIFI)	+= nxp-spifi.o
-+obj-$(CONFIG_SPI_INTEL_SPI)	+= intel-spi.o
-+obj-$(CONFIG_SPI_INTEL_SPI_PCI)	+= intel-spi-pci.o
-+obj-$(CONFIG_SPI_INTEL_SPI_PLATFORM)	+= intel-spi-platform.o
-diff --git a/drivers/mtd/spi-nor/aspeed-smc.c b/drivers/mtd/spi-nor/controllers/aspeed-smc.c
-similarity index 100%
-rename from drivers/mtd/spi-nor/aspeed-smc.c
-rename to drivers/mtd/spi-nor/controllers/aspeed-smc.c
-diff --git a/drivers/mtd/spi-nor/cadence-quadspi.c b/drivers/mtd/spi-nor/controllers/cadence-quadspi.c
-similarity index 100%
-rename from drivers/mtd/spi-nor/cadence-quadspi.c
-rename to drivers/mtd/spi-nor/controllers/cadence-quadspi.c
-diff --git a/drivers/mtd/spi-nor/hisi-sfc.c b/drivers/mtd/spi-nor/controllers/hisi-sfc.c
-similarity index 100%
-rename from drivers/mtd/spi-nor/hisi-sfc.c
-rename to drivers/mtd/spi-nor/controllers/hisi-sfc.c
-diff --git a/drivers/mtd/spi-nor/intel-spi-pci.c b/drivers/mtd/spi-nor/controllers/intel-spi-pci.c
-similarity index 100%
-rename from drivers/mtd/spi-nor/intel-spi-pci.c
-rename to drivers/mtd/spi-nor/controllers/intel-spi-pci.c
-diff --git a/drivers/mtd/spi-nor/intel-spi-platform.c b/drivers/mtd/spi-nor/controllers/intel-spi-platform.c
-similarity index 100%
-rename from drivers/mtd/spi-nor/intel-spi-platform.c
-rename to drivers/mtd/spi-nor/controllers/intel-spi-platform.c
-diff --git a/drivers/mtd/spi-nor/intel-spi.c b/drivers/mtd/spi-nor/controllers/intel-spi.c
-similarity index 100%
-rename from drivers/mtd/spi-nor/intel-spi.c
-rename to drivers/mtd/spi-nor/controllers/intel-spi.c
-diff --git a/drivers/mtd/spi-nor/intel-spi.h b/drivers/mtd/spi-nor/controllers/intel-spi.h
-similarity index 100%
-rename from drivers/mtd/spi-nor/intel-spi.h
-rename to drivers/mtd/spi-nor/controllers/intel-spi.h
-diff --git a/drivers/mtd/spi-nor/mtk-quadspi.c b/drivers/mtd/spi-nor/controllers/mtk-quadspi.c
-similarity index 100%
-rename from drivers/mtd/spi-nor/mtk-quadspi.c
-rename to drivers/mtd/spi-nor/controllers/mtk-quadspi.c
-diff --git a/drivers/mtd/spi-nor/nxp-spifi.c b/drivers/mtd/spi-nor/controllers/nxp-spifi.c
-similarity index 100%
-rename from drivers/mtd/spi-nor/nxp-spifi.c
-rename to drivers/mtd/spi-nor/controllers/nxp-spifi.c
-diff --git a/drivers/mtd/spi-nor/spi-nor.c b/drivers/mtd/spi-nor/core.c
-similarity index 100%
-rename from drivers/mtd/spi-nor/spi-nor.c
-rename to drivers/mtd/spi-nor/core.c
+ int spi_nor_write_enable(struct spi_nor *nor);
+ int spi_nor_write_disable(struct spi_nor *nor);
+ int spi_nor_en4_ex4_set_4byte(struct spi_nor *nor, bool enable);
 -- 
 2.23.0
