@@ -1,9 +1,9 @@
 From: Tudor.Ambarus@microchip.com <Tudor.Ambarus@microchip.com>
-Date: Mon, 2 Mar 2020 18:07:54 +0000
-Subject: [PATCH 18/23] mtd: spi-nor: Move Winbond bits out of core.c
+Date: Mon, 2 Mar 2020 18:07:56 +0000
+Subject: [PATCH 20/23] mtd: spi-nor: Move Xilinx bits out of core.c
 In-Reply-To: <20200302180730.1886678-1-tudor.ambarus@microchip.com>
 References: <20200302180730.1886678-1-tudor.ambarus@microchip.com>
-Message-ID: <20200302180730.1886678-19-tudor.ambarus@microchip.com>
+Message-ID: <20200302180730.1886678-21-tudor.ambarus@microchip.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -12,201 +12,197 @@ Content-Transfer-Encoding: 7bit
 
 From: Boris Brezillon <bbrezillon@kernel.org>
 
-Create a SPI NOR manufacturer driver for Winbond chips, and move the
-Winbond definitions outside of core.c.
+Create a SPI NOR manufacturer driver for Xilinx chips, and move the
+Xilinx definitions outside of core.c.
+
+While at it, remove the SPI_S3AN flag which is now useless.
 
 Signed-off-by: Boris Brezillon <bbrezillon@kernel.org>
 Signed-off-by: Tudor Ambarus <tudor.ambarus@microchip.com>
 ---
- drivers/mtd/spi-nor/Makefile  |   1 +
- drivers/mtd/spi-nor/core.c    | 115 +---------------------------------
- drivers/mtd/spi-nor/core.h    |   1 +
- drivers/mtd/spi-nor/winbond.c | 113 +++++++++++++++++++++++++++++++++
- 4 files changed, 116 insertions(+), 114 deletions(-)
- create mode 100644 drivers/mtd/spi-nor/winbond.c
+ drivers/mtd/spi-nor/Makefile |  1 +
+ drivers/mtd/spi-nor/core.c   | 76 +----------------------------
+ drivers/mtd/spi-nor/core.h   | 13 +----
+ drivers/mtd/spi-nor/xilinx.c | 94 ++++++++++++++++++++++++++++++++++++
+ 4 files changed, 98 insertions(+), 86 deletions(-)
+ create mode 100644 drivers/mtd/spi-nor/xilinx.c
 
 diff --git a/drivers/mtd/spi-nor/Makefile b/drivers/mtd/spi-nor/Makefile
-index ef7afc654a15..33b6f834a14f 100644
+index cd8d95b727c9..fa03513dd160 100644
 --- a/drivers/mtd/spi-nor/Makefile
 +++ b/drivers/mtd/spi-nor/Makefile
-@@ -13,4 +13,5 @@ spi-nor-objs			+= macronix.o
- spi-nor-objs			+= micron-st.o
+@@ -15,4 +15,5 @@ spi-nor-objs			+= micron-st.o
  spi-nor-objs			+= spansion.o
  spi-nor-objs			+= sst.o
-+spi-nor-objs			+= winbond.o
+ spi-nor-objs			+= winbond.o
++spi-nor-objs			+= xilinx.o
  obj-$(CONFIG_MTD_SPI_NOR)	+= spi-nor.o
 diff --git a/drivers/mtd/spi-nor/core.c b/drivers/mtd/spi-nor/core.c
-index 9ff0b09887b4..c99f063b0781 100644
+index 1776fb8eb66b..3e9f6bafa01b 100644
 --- a/drivers/mtd/spi-nor/core.c
 +++ b/drivers/mtd/spi-nor/core.c
-@@ -487,38 +487,6 @@ int spi_nor_write_ear(struct spi_nor *nor, u8 ear)
- 	return ret;
+@@ -1117,26 +1117,6 @@ void spi_nor_unlock_and_unprep(struct spi_nor *nor)
+ 	mutex_unlock(&nor->lock);
  }
  
--/**
-- * winbond_set_4byte() - Set 4-byte address mode for Winbond flashes.
-- * @nor:	pointer to 'struct spi_nor'.
-- * @enable:	true to enter the 4-byte address mode, false to exit the 4-byte
-- *		address mode.
-- *
-- * Return: 0 on success, -errno otherwise.
+-/*
+- * This code converts an address to the Default Address Mode, that has non
+- * power of two page sizes. We must support this mode because it is the default
+- * mode supported by Xilinx tools, it can access the whole flash area and
+- * changing over to the Power-of-two mode is irreversible and corrupts the
+- * original data.
+- * Addr can safely be unsigned int, the biggest S3AN device is smaller than
+- * 4 MiB.
 - */
--static int winbond_set_4byte(struct spi_nor *nor, bool enable)
+-static u32 s3an_convert_addr(struct spi_nor *nor, u32 addr)
 -{
--	int ret;
+-	u32 offset, page;
 -
--	ret = spi_nor_en4_ex4_set_4byte(nor, enable);
--	if (ret || enable)
--		return ret;
+-	offset = addr % nor->page_size;
+-	page = addr / nor->page_size;
+-	page <<= (nor->page_size > 512) ? 10 : 9;
 -
--	/*
--	 * On Winbond W25Q256FV, leaving 4byte mode causes the Extended Address
--	 * Register to be set to 1, so all 3-byte-address reads come from the
--	 * second 16M. We must clear the register to enable normal behavior.
--	 */
--	ret = spi_nor_write_enable(nor);
--	if (ret)
--		return ret;
--
--	ret = spi_nor_write_ear(nor, 0);
--	if (ret)
--		return ret;
--
--	return spi_nor_write_disable(nor);
+-	return page | offset;
 -}
 -
- /**
-  * spi_nor_xread_sr() - Read the Status Register on S3AN flashes.
-  * @nor:	pointer to 'struct spi_nor'.
-@@ -2017,73 +1985,6 @@ int spi_nor_sr2_bit7_quad_enable(struct spi_nor *nor)
+ static u32 spi_nor_convert_addr(struct spi_nor *nor, loff_t addr)
+ {
+ 	if (!nor->params.convert_addr)
+@@ -1985,13 +1965,6 @@ int spi_nor_sr2_bit7_quad_enable(struct spi_nor *nor)
   * old entries may be missing 4K flag.
   */
  static const struct flash_info spi_nor_ids[] = {
--	/* Winbond -- w25x "blocks" are 64K, "sectors" are 4KiB */
--	{ "w25x05", INFO(0xef3010, 0, 64 * 1024,  1,  SECT_4K) },
--	{ "w25x10", INFO(0xef3011, 0, 64 * 1024,  2,  SECT_4K) },
--	{ "w25x20", INFO(0xef3012, 0, 64 * 1024,  4,  SECT_4K) },
--	{ "w25x40", INFO(0xef3013, 0, 64 * 1024,  8,  SECT_4K) },
--	{ "w25x80", INFO(0xef3014, 0, 64 * 1024,  16, SECT_4K) },
--	{ "w25x16", INFO(0xef3015, 0, 64 * 1024,  32, SECT_4K) },
--	{
--		"w25q16dw", INFO(0xef6015, 0, 64 * 1024,  32,
--			SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ |
--			SPI_NOR_HAS_LOCK | SPI_NOR_HAS_TB)
--	},
--	{ "w25x32", INFO(0xef3016, 0, 64 * 1024,  64, SECT_4K) },
--	{
--		"w25q16jv-im/jm", INFO(0xef7015, 0, 64 * 1024,  32,
--			SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ |
--			SPI_NOR_HAS_LOCK | SPI_NOR_HAS_TB)
--	},
--	{ "w25q20cl", INFO(0xef4012, 0, 64 * 1024,  4, SECT_4K) },
--	{ "w25q20bw", INFO(0xef5012, 0, 64 * 1024,  4, SECT_4K) },
--	{ "w25q20ew", INFO(0xef6012, 0, 64 * 1024,  4, SECT_4K) },
--	{ "w25q32", INFO(0xef4016, 0, 64 * 1024,  64, SECT_4K) },
--	{
--		"w25q32dw", INFO(0xef6016, 0, 64 * 1024,  64,
--			SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ |
--			SPI_NOR_HAS_LOCK | SPI_NOR_HAS_TB)
--	},
--	{
--		"w25q32jv", INFO(0xef7016, 0, 64 * 1024,  64,
--			SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ |
--			SPI_NOR_HAS_LOCK | SPI_NOR_HAS_TB)
--	},
--	{
--		"w25q32jwm", INFO(0xef8016, 0, 64 * 1024,  64,
--			SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ |
--			SPI_NOR_HAS_LOCK | SPI_NOR_HAS_TB)
--	},
--	{ "w25x64", INFO(0xef3017, 0, 64 * 1024, 128, SECT_4K) },
--	{ "w25q64", INFO(0xef4017, 0, 64 * 1024, 128, SECT_4K) },
--	{
--		"w25q64dw", INFO(0xef6017, 0, 64 * 1024, 128,
--			SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ |
--			SPI_NOR_HAS_LOCK | SPI_NOR_HAS_TB)
--	},
--	{
--		"w25q128fw", INFO(0xef6018, 0, 64 * 1024, 256,
--			SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ |
--			SPI_NOR_HAS_LOCK | SPI_NOR_HAS_TB)
--	},
--	{
--		"w25q128jv", INFO(0xef7018, 0, 64 * 1024, 256,
--			SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ |
--			SPI_NOR_HAS_LOCK | SPI_NOR_HAS_TB)
--	},
--	{ "w25q80", INFO(0xef5014, 0, 64 * 1024,  16, SECT_4K) },
--	{ "w25q80bl", INFO(0xef4014, 0, 64 * 1024,  16, SECT_4K) },
--	{ "w25q128", INFO(0xef4018, 0, 64 * 1024, 256, SECT_4K) },
--	{ "w25q256", INFO(0xef4019, 0, 64 * 1024, 512,
--			  SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ |
--			  SPI_NOR_4B_OPCODES) },
--	{ "w25q256jvm", INFO(0xef7019, 0, 64 * 1024, 512,
--			     SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ) },
--	{ "w25q256jw", INFO(0xef6019, 0, 64 * 1024, 512,
--			     SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ) },
--	{ "w25m512jv", INFO(0xef7119, 0, 64 * 1024, 1024,
--			SECT_4K | SPI_NOR_QUAD_READ | SPI_NOR_DUAL_READ) },
+-	/* Xilinx S3AN Internal Flash */
+-	{ "3S50AN", S3AN_INFO(0x1f2200, 64, 264) },
+-	{ "3S200AN", S3AN_INFO(0x1f2400, 256, 264) },
+-	{ "3S400AN", S3AN_INFO(0x1f2400, 256, 264) },
+-	{ "3S700AN", S3AN_INFO(0x1f2500, 512, 264) },
+-	{ "3S1400AN", S3AN_INFO(0x1f2600, 512, 528) },
 -
- 	/* Catalyst / On Semiconductor -- non-JEDEC */
- 	{ "cat25c11", CAT25_INFO(  16, 8, 16, 1, SPI_NOR_NO_ERASE | SPI_NOR_NO_FR) },
- 	{ "cat25c03", CAT25_INFO(  32, 8, 16, 2, SPI_NOR_NO_ERASE | SPI_NOR_NO_FR) },
-@@ -2118,6 +2019,7 @@ static const struct spi_nor_manufacturer *manufacturers[] = {
- 	&spi_nor_st,
+ 	/* XMC (Wuhan Xinxin Semiconductor Manufacturing Corp.) */
+ 	{ "XM25QH64A", INFO(0x207017, 0, 64 * 1024, 128, SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ) },
+ 	{ "XM25QH128A", INFO(0x207018, 0, 64 * 1024, 256, SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ) },
+@@ -2014,6 +1987,7 @@ static const struct spi_nor_manufacturer *manufacturers[] = {
  	&spi_nor_spansion,
  	&spi_nor_sst,
-+	&spi_nor_winbond,
+ 	&spi_nor_winbond,
++	&spi_nor_xilinx,
  };
  
  static const struct flash_info *
-@@ -2811,11 +2713,6 @@ static int spi_nor_setup(struct spi_nor *nor,
- 	return nor->params.setup(nor, hwcaps);
+@@ -2199,46 +2173,6 @@ static int spi_nor_check(struct spi_nor *nor)
+ 	return 0;
  }
  
--static void winbond_set_default_init(struct spi_nor *nor)
+-static int s3an_nor_setup(struct spi_nor *nor,
+-			  const struct spi_nor_hwcaps *hwcaps)
 -{
--	nor->params.set_4byte = winbond_set_4byte;
+-	int ret;
+-
+-	ret = spi_nor_xread_sr(nor, nor->bouncebuf);
+-	if (ret)
+-		return ret;
+-
+-	nor->erase_opcode = SPINOR_OP_XSE;
+-	nor->program_opcode = SPINOR_OP_XPP;
+-	nor->read_opcode = SPINOR_OP_READ;
+-	nor->flags |= SNOR_F_NO_OP_CHIP_ERASE;
+-
+-	/*
+-	 * This flashes have a page size of 264 or 528 bytes (known as
+-	 * Default addressing mode). It can be changed to a more standard
+-	 * Power of two mode where the page size is 256/512. This comes
+-	 * with a price: there is 3% less of space, the data is corrupted
+-	 * and the page size cannot be changed back to default addressing
+-	 * mode.
+-	 *
+-	 * The current addressing mode can be read from the XRDSR register
+-	 * and should not be changed, because is a destructive operation.
+-	 */
+-	if (nor->bouncebuf[0] & XSR_PAGESIZE) {
+-		/* Flash in Power of 2 mode */
+-		nor->page_size = (nor->page_size == 264) ? 256 : 512;
+-		nor->mtd.writebufsize = nor->page_size;
+-		nor->mtd.size = 8 * nor->page_size * nor->info->n_sectors;
+-		nor->mtd.erasesize = 8 * nor->page_size;
+-	} else {
+-		/* Flash in Default addressing mode */
+-		nor->params.convert_addr = s3an_convert_addr;
+-		nor->mtd.erasesize = nor->info->sector_size;
+-	}
+-
+-	return 0;
+-}
+-
+ static void
+ spi_nor_set_read_settings(struct spi_nor_read_command *read,
+ 			  u8 num_mode_clocks,
+@@ -2837,11 +2771,6 @@ static void spi_nor_info_init_params(struct spi_nor *nor)
+ 	spi_nor_init_uniform_erase_map(map, erase_mask, params->size);
+ }
+ 
+-static void s3an_post_sfdp_fixups(struct spi_nor *nor)
+-{
+-	nor->params.setup = s3an_nor_setup;
 -}
 -
  /**
-  * spi_nor_manufacturer_init_params() - Initialize the flash's parameters and
-  * settings based on MFR register and ->default_init() hook.
-@@ -2823,16 +2720,6 @@ static void winbond_set_default_init(struct spi_nor *nor)
+  * spi_nor_post_sfdp_fixups() - Updates the flash's parameters and settings
+  * after SFDP has been parsed (is also called for SPI NORs that do not
+@@ -2854,9 +2783,6 @@ static void s3an_post_sfdp_fixups(struct spi_nor *nor)
   */
- static void spi_nor_manufacturer_init_params(struct spi_nor *nor)
+ static void spi_nor_post_sfdp_fixups(struct spi_nor *nor)
  {
--	/* Init flash parameters based on MFR */
--	switch (JEDEC_MFR(nor->info)) {
--	case SNOR_MFR_WINBOND:
--		winbond_set_default_init(nor);
--		break;
--
--	default:
--		break;
--	}
+-	if (nor->info->flags & SPI_S3AN)
+-		s3an_post_sfdp_fixups(nor);
 -
  	if (nor->manufacturer && nor->manufacturer->fixups &&
- 	    nor->manufacturer->fixups->default_init)
- 		nor->manufacturer->fixups->default_init(nor);
+ 	    nor->manufacturer->fixups->post_sfdp)
+ 		nor->manufacturer->fixups->post_sfdp(nor);
 diff --git a/drivers/mtd/spi-nor/core.h b/drivers/mtd/spi-nor/core.h
-index 7bc0f6a15b36..01e0b8e2b191 100644
+index 9eb46900bc72..abd5332afaf5 100644
 --- a/drivers/mtd/spi-nor/core.h
 +++ b/drivers/mtd/spi-nor/core.h
-@@ -180,6 +180,7 @@ extern const struct spi_nor_manufacturer spi_nor_micron;
- extern const struct spi_nor_manufacturer spi_nor_st;
+@@ -73,16 +73,6 @@ struct flash_info {
+ #define SPI_NOR_XSR_RDY		BIT(10)	/*
+ 					 * S3AN flashes have specific opcode to
+ 					 * read the status register.
+-					 * Flags SPI_NOR_XSR_RDY and SPI_S3AN
+-					 * use the same bit as one implies the
+-					 * other, but we will get rid of
+-					 * SPI_S3AN soon.
+-					 */
+-#define	SPI_S3AN		BIT(10)	/*
+-					 * Xilinx Spartan 3AN In-System Flash
+-					 * (MFR cannot be used for probing
+-					 * because it has the same value as
+-					 * ATMEL flashes)
+ 					 */
+ #define SPI_NOR_4B_OPCODES	BIT(11)	/*
+ 					 * Use dedicated 4byte address op codes
+@@ -150,7 +140,7 @@ struct flash_info {
+ 		.n_sectors = (_n_sectors),				\
+ 		.page_size = _page_size,				\
+ 		.addr_width = 3,					\
+-		.flags = SPI_NOR_NO_FR | SPI_S3AN,
++		.flags = SPI_NOR_NO_FR | SPI_NOR_XSR_RDY,
+ 
+ /**
+  * struct spi_nor_manufacturer - SPI NOR manufacturer object
+@@ -182,6 +172,7 @@ extern const struct spi_nor_manufacturer spi_nor_st;
  extern const struct spi_nor_manufacturer spi_nor_spansion;
  extern const struct spi_nor_manufacturer spi_nor_sst;
-+extern const struct spi_nor_manufacturer spi_nor_winbond;
+ extern const struct spi_nor_manufacturer spi_nor_winbond;
++extern const struct spi_nor_manufacturer spi_nor_xilinx;
  
  int spi_nor_write_enable(struct spi_nor *nor);
  int spi_nor_write_disable(struct spi_nor *nor);
-diff --git a/drivers/mtd/spi-nor/winbond.c b/drivers/mtd/spi-nor/winbond.c
+diff --git a/drivers/mtd/spi-nor/xilinx.c b/drivers/mtd/spi-nor/xilinx.c
 new file mode 100644
-index 000000000000..1e77dffbf729
+index 000000000000..fcf635d89f65
 --- /dev/null
-+++ b/drivers/mtd/spi-nor/winbond.c
-@@ -0,0 +1,113 @@
++++ b/drivers/mtd/spi-nor/xilinx.c
+@@ -0,0 +1,94 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * Copyright (C) 2005, Intec Automation Inc.
@@ -217,108 +213,89 @@ index 000000000000..1e77dffbf729
 +
 +#include "core.h"
 +
-+static const struct flash_info winbond_parts[] = {
-+	/* Winbond -- w25x "blocks" are 64K, "sectors" are 4KiB */
-+	{ "w25x05", INFO(0xef3010, 0, 64 * 1024,  1,  SECT_4K) },
-+	{ "w25x10", INFO(0xef3011, 0, 64 * 1024,  2,  SECT_4K) },
-+	{ "w25x20", INFO(0xef3012, 0, 64 * 1024,  4,  SECT_4K) },
-+	{ "w25x40", INFO(0xef3013, 0, 64 * 1024,  8,  SECT_4K) },
-+	{ "w25x80", INFO(0xef3014, 0, 64 * 1024,  16, SECT_4K) },
-+	{ "w25x16", INFO(0xef3015, 0, 64 * 1024,  32, SECT_4K) },
-+	{ "w25q16dw", INFO(0xef6015, 0, 64 * 1024,  32,
-+			   SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ |
-+			   SPI_NOR_HAS_LOCK | SPI_NOR_HAS_TB) },
-+	{ "w25x32", INFO(0xef3016, 0, 64 * 1024,  64, SECT_4K) },
-+	{ "w25q16jv-im/jm", INFO(0xef7015, 0, 64 * 1024,  32,
-+				 SECT_4K | SPI_NOR_DUAL_READ |
-+				 SPI_NOR_QUAD_READ | SPI_NOR_HAS_LOCK |
-+				 SPI_NOR_HAS_TB) },
-+	{ "w25q20cl", INFO(0xef4012, 0, 64 * 1024,  4, SECT_4K) },
-+	{ "w25q20bw", INFO(0xef5012, 0, 64 * 1024,  4, SECT_4K) },
-+	{ "w25q20ew", INFO(0xef6012, 0, 64 * 1024,  4, SECT_4K) },
-+	{ "w25q32", INFO(0xef4016, 0, 64 * 1024,  64, SECT_4K) },
-+	{ "w25q32dw", INFO(0xef6016, 0, 64 * 1024,  64,
-+			   SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ |
-+			   SPI_NOR_HAS_LOCK | SPI_NOR_HAS_TB) },
-+	{ "w25q32jv", INFO(0xef7016, 0, 64 * 1024,  64,
-+			   SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ |
-+			   SPI_NOR_HAS_LOCK | SPI_NOR_HAS_TB)
-+	},
-+	{ "w25q32jwm", INFO(0xef8016, 0, 64 * 1024,  64,
-+			    SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ |
-+			    SPI_NOR_HAS_LOCK | SPI_NOR_HAS_TB) },
-+	{ "w25x64", INFO(0xef3017, 0, 64 * 1024, 128, SECT_4K) },
-+	{ "w25q64", INFO(0xef4017, 0, 64 * 1024, 128, SECT_4K) },
-+	{ "w25q64dw", INFO(0xef6017, 0, 64 * 1024, 128,
-+			   SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ |
-+			   SPI_NOR_HAS_LOCK | SPI_NOR_HAS_TB) },
-+	{ "w25q128fw", INFO(0xef6018, 0, 64 * 1024, 256,
-+			    SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ |
-+			    SPI_NOR_HAS_LOCK | SPI_NOR_HAS_TB) },
-+	{ "w25q128jv", INFO(0xef7018, 0, 64 * 1024, 256,
-+			    SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ |
-+			    SPI_NOR_HAS_LOCK | SPI_NOR_HAS_TB) },
-+	{ "w25q80", INFO(0xef5014, 0, 64 * 1024,  16, SECT_4K) },
-+	{ "w25q80bl", INFO(0xef4014, 0, 64 * 1024,  16, SECT_4K) },
-+	{ "w25q128", INFO(0xef4018, 0, 64 * 1024, 256, SECT_4K) },
-+	{ "w25q256", INFO(0xef4019, 0, 64 * 1024, 512,
-+			  SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ |
-+			  SPI_NOR_4B_OPCODES) },
-+	{ "w25q256jvm", INFO(0xef7019, 0, 64 * 1024, 512,
-+			     SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ) },
-+	{ "w25q256jw", INFO(0xef6019, 0, 64 * 1024, 512,
-+			     SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ) },
-+	{ "w25m512jv", INFO(0xef7119, 0, 64 * 1024, 1024,
-+			    SECT_4K | SPI_NOR_QUAD_READ | SPI_NOR_DUAL_READ) },
++static const struct flash_info xilinx_parts[] = {
++	/* Xilinx S3AN Internal Flash */
++	{ "3S50AN", S3AN_INFO(0x1f2200, 64, 264) },
++	{ "3S200AN", S3AN_INFO(0x1f2400, 256, 264) },
++	{ "3S400AN", S3AN_INFO(0x1f2400, 256, 264) },
++	{ "3S700AN", S3AN_INFO(0x1f2500, 512, 264) },
++	{ "3S1400AN", S3AN_INFO(0x1f2600, 512, 528) },
 +};
 +
-+/**
-+ * winbond_set_4byte() - Set 4-byte address mode for Winbond flashes.
-+ * @nor:	pointer to 'struct spi_nor'.
-+ * @enable:	true to enter the 4-byte address mode, false to exit the 4-byte
-+ *		address mode.
-+ *
-+ * Return: 0 on success, -errno otherwise.
++/*
++ * This code converts an address to the Default Address Mode, that has non
++ * power of two page sizes. We must support this mode because it is the default
++ * mode supported by Xilinx tools, it can access the whole flash area and
++ * changing over to the Power-of-two mode is irreversible and corrupts the
++ * original data.
++ * Addr can safely be unsigned int, the biggest S3AN device is smaller than
++ * 4 MiB.
 + */
-+static int winbond_set_4byte(struct spi_nor *nor, bool enable)
++static u32 s3an_convert_addr(struct spi_nor *nor, u32 addr)
++{
++	u32 offset, page;
++
++	offset = addr % nor->page_size;
++	page = addr / nor->page_size;
++	page <<= (nor->page_size > 512) ? 10 : 9;
++
++	return page | offset;
++}
++
++static int xilinx_nor_setup(struct spi_nor *nor,
++			    const struct spi_nor_hwcaps *hwcaps)
 +{
 +	int ret;
 +
-+	ret = spi_nor_en4_ex4_set_4byte(nor, enable);
-+	if (ret || enable)
++	ret = spi_nor_xread_sr(nor, nor->bouncebuf);
++	if (ret)
 +		return ret;
++
++	nor->erase_opcode = SPINOR_OP_XSE;
++	nor->program_opcode = SPINOR_OP_XPP;
++	nor->read_opcode = SPINOR_OP_READ;
++	nor->flags |= SNOR_F_NO_OP_CHIP_ERASE;
 +
 +	/*
-+	 * On Winbond W25Q256FV, leaving 4byte mode causes the Extended Address
-+	 * Register to be set to 1, so all 3-byte-address reads come from the
-+	 * second 16M. We must clear the register to enable normal behavior.
++	 * This flashes have a page size of 264 or 528 bytes (known as
++	 * Default addressing mode). It can be changed to a more standard
++	 * Power of two mode where the page size is 256/512. This comes
++	 * with a price: there is 3% less of space, the data is corrupted
++	 * and the page size cannot be changed back to default addressing
++	 * mode.
++	 *
++	 * The current addressing mode can be read from the XRDSR register
++	 * and should not be changed, because is a destructive operation.
 +	 */
-+	ret = spi_nor_write_enable(nor);
-+	if (ret)
-+		return ret;
++	if (nor->bouncebuf[0] & XSR_PAGESIZE) {
++		/* Flash in Power of 2 mode */
++		nor->page_size = (nor->page_size == 264) ? 256 : 512;
++		nor->mtd.writebufsize = nor->page_size;
++		nor->mtd.size = 8 * nor->page_size * nor->info->n_sectors;
++		nor->mtd.erasesize = 8 * nor->page_size;
++	} else {
++		/* Flash in Default addressing mode */
++		nor->params.convert_addr = s3an_convert_addr;
++		nor->mtd.erasesize = nor->info->sector_size;
++	}
 +
-+	ret = spi_nor_write_ear(nor, 0);
-+	if (ret)
-+		return ret;
-+
-+	return spi_nor_write_disable(nor);
++	return 0;
 +}
 +
-+static void winbond_default_init(struct spi_nor *nor)
++static void xilinx_post_sfdp_fixups(struct spi_nor *nor)
 +{
-+	nor->params.set_4byte = winbond_set_4byte;
++	nor->params.setup = xilinx_nor_setup;
 +}
 +
-+static const struct spi_nor_fixups winbond_fixups = {
-+	.default_init = winbond_default_init,
++static const struct spi_nor_fixups xilinx_fixups = {
++	.post_sfdp = xilinx_post_sfdp_fixups,
 +};
 +
-+const struct spi_nor_manufacturer spi_nor_winbond = {
-+	.name = "winbond",
-+	.parts = winbond_parts,
-+	.nparts = ARRAY_SIZE(winbond_parts),
-+	.fixups = &winbond_fixups,
++const struct spi_nor_manufacturer spi_nor_xilinx = {
++	.name = "xilinx",
++	.parts = xilinx_parts,
++	.nparts = ARRAY_SIZE(xilinx_parts),
++	.fixups = &xilinx_fixups,
 +};
-+
 -- 
 2.23.0
