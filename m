@@ -1,9 +1,9 @@
 From: Tudor.Ambarus@microchip.com <Tudor.Ambarus@microchip.com>
-Date: Mon, 2 Mar 2020 18:07:53 +0000
-Subject: [PATCH 16/23] mtd: spi-nor: Move Spansion bits out of core.c
+Date: Mon, 2 Mar 2020 18:07:48 +0000
+Subject: [PATCH 07/23] mtd: spi-nor: Move Eon bits out of core.c
 In-Reply-To: <20200302180730.1886678-1-tudor.ambarus@microchip.com>
 References: <20200302180730.1886678-1-tudor.ambarus@microchip.com>
-Message-ID: <20200302180730.1886678-17-tudor.ambarus@microchip.com>
+Message-ID: <20200302180730.1886678-8-tudor.ambarus@microchip.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -12,138 +12,83 @@ Content-Transfer-Encoding: 7bit
 
 From: Boris Brezillon <bbrezillon@kernel.org>
 
-Create a SPI NOR manufacturer driver for Spansion chips, and move the
-Spansion definitions outside of core.c.
+Create a SPI NOR manufacturer driver for Eon chips, and move the
+Eon definitions outside of core.c.
 
 Signed-off-by: Boris Brezillon <bbrezillon@kernel.org>
 Signed-off-by: Tudor Ambarus <tudor.ambarus@microchip.com>
 ---
- drivers/mtd/spi-nor/Makefile   |  1 +
- drivers/mtd/spi-nor/core.c     | 59 +--------------------
- drivers/mtd/spi-nor/core.h     |  1 +
- drivers/mtd/spi-nor/spansion.c | 95 ++++++++++++++++++++++++++++++++++
- 4 files changed, 98 insertions(+), 58 deletions(-)
- create mode 100644 drivers/mtd/spi-nor/spansion.c
+ drivers/mtd/spi-nor/Makefile |  1 +
+ drivers/mtd/spi-nor/core.c   | 18 +-----------------
+ drivers/mtd/spi-nor/core.h   |  1 +
+ drivers/mtd/spi-nor/eon.c    | 34 ++++++++++++++++++++++++++++++++++
+ 4 files changed, 37 insertions(+), 17 deletions(-)
+ create mode 100644 drivers/mtd/spi-nor/eon.c
 
 diff --git a/drivers/mtd/spi-nor/Makefile b/drivers/mtd/spi-nor/Makefile
-index c7e5fb908bec..cb06ee50bf68 100644
+index 0a243592e416..e1bc8ccfe14d 100644
 --- a/drivers/mtd/spi-nor/Makefile
 +++ b/drivers/mtd/spi-nor/Makefile
-@@ -11,4 +11,5 @@ spi-nor-objs			+= intel.o
- spi-nor-objs			+= issi.o
- spi-nor-objs			+= macronix.o
- spi-nor-objs			+= micron-st.o
-+spi-nor-objs			+= spansion.o
+@@ -2,4 +2,5 @@
+ 
+ spi-nor-objs			:= core.o sfdp.o
+ spi-nor-objs			+= atmel.o
++spi-nor-objs			+= eon.o
  obj-$(CONFIG_MTD_SPI_NOR)	+= spi-nor.o
 diff --git a/drivers/mtd/spi-nor/core.c b/drivers/mtd/spi-nor/core.c
-index 8d54dfe33cdc..448717543d1e 100644
+index 45d370229e0a..67a3493939f6 100644
 --- a/drivers/mtd/spi-nor/core.c
 +++ b/drivers/mtd/spi-nor/core.c
-@@ -2017,44 +2017,6 @@ int spi_nor_sr2_bit7_quad_enable(struct spi_nor *nor)
+@@ -2079,23 +2079,6 @@ static struct spi_nor_fixups gd25q256_fixups = {
   * old entries may be missing 4K flag.
   */
  static const struct flash_info spi_nor_ids[] = {
--	/* Spansion/Cypress -- single (large) sector size only, at least
--	 * for the chips listed here (without boot sectors).
--	 */
--	{ "s25sl032p",  INFO(0x010215, 0x4d00,  64 * 1024,  64, SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ) },
--	{ "s25sl064p",  INFO(0x010216, 0x4d00,  64 * 1024, 128, SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ) },
--	{ "s25fl128s0", INFO6(0x012018, 0x4d0080, 256 * 1024, 64,
--			SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ | USE_CLSR) },
--	{ "s25fl128s1", INFO6(0x012018, 0x4d0180, 64 * 1024, 256,
--			SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ | USE_CLSR) },
--	{ "s25fl256s0", INFO(0x010219, 0x4d00, 256 * 1024, 128, USE_CLSR) },
--	{ "s25fl256s1", INFO(0x010219, 0x4d01,  64 * 1024, 512, SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ | USE_CLSR) },
--	{ "s25fl512s",  INFO6(0x010220, 0x4d0080, 256 * 1024, 256,
--			SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ |
--			SPI_NOR_HAS_LOCK | USE_CLSR) },
--	{ "s25fs512s",  INFO6(0x010220, 0x4d0081, 256 * 1024, 256, SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ | USE_CLSR) },
--	{ "s70fl01gs",  INFO(0x010221, 0x4d00, 256 * 1024, 256, 0) },
--	{ "s25sl12800", INFO(0x012018, 0x0300, 256 * 1024,  64, 0) },
--	{ "s25sl12801", INFO(0x012018, 0x0301,  64 * 1024, 256, 0) },
--	{ "s25fl129p0", INFO(0x012018, 0x4d00, 256 * 1024,  64, SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ | USE_CLSR) },
--	{ "s25fl129p1", INFO(0x012018, 0x4d01,  64 * 1024, 256, SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ | USE_CLSR) },
--	{ "s25sl004a",  INFO(0x010212,      0,  64 * 1024,   8, 0) },
--	{ "s25sl008a",  INFO(0x010213,      0,  64 * 1024,  16, 0) },
--	{ "s25sl016a",  INFO(0x010214,      0,  64 * 1024,  32, 0) },
--	{ "s25sl032a",  INFO(0x010215,      0,  64 * 1024,  64, 0) },
--	{ "s25sl064a",  INFO(0x010216,      0,  64 * 1024, 128, 0) },
--	{ "s25fl004k",  INFO(0xef4013,      0,  64 * 1024,   8, SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ) },
--	{ "s25fl008k",  INFO(0xef4014,      0,  64 * 1024,  16, SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ) },
--	{ "s25fl016k",  INFO(0xef4015,      0,  64 * 1024,  32, SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ) },
--	{ "s25fl064k",  INFO(0xef4017,      0,  64 * 1024, 128, SECT_4K) },
--	{ "s25fl116k",  INFO(0x014015,      0,  64 * 1024,  32, SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ) },
--	{ "s25fl132k",  INFO(0x014016,      0,  64 * 1024,  64, SECT_4K) },
--	{ "s25fl164k",  INFO(0x014017,      0,  64 * 1024, 128, SECT_4K) },
--	{ "s25fl204k",  INFO(0x014013,      0,  64 * 1024,   8, SECT_4K | SPI_NOR_DUAL_READ) },
--	{ "s25fl208k",  INFO(0x014014,      0,  64 * 1024,  16, SECT_4K | SPI_NOR_DUAL_READ) },
--	{ "s25fl064l",  INFO(0x016017,      0,  64 * 1024, 128, SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ | SPI_NOR_4B_OPCODES) },
--	{ "s25fl128l",  INFO(0x016018,      0,  64 * 1024, 256, SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ | SPI_NOR_4B_OPCODES) },
--	{ "s25fl256l",  INFO(0x016019,      0,  64 * 1024, 512, SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ | SPI_NOR_4B_OPCODES) },
+-	/* EON -- en25xxx */
+-	{ "en25f32",    INFO(0x1c3116, 0, 64 * 1024,   64, SECT_4K) },
+-	{ "en25p32",    INFO(0x1c2016, 0, 64 * 1024,   64, 0) },
+-	{ "en25q32b",   INFO(0x1c3016, 0, 64 * 1024,   64, 0) },
+-	{ "en25p64",    INFO(0x1c2017, 0, 64 * 1024,  128, 0) },
+-	{ "en25q64",    INFO(0x1c3017, 0, 64 * 1024,  128, SECT_4K) },
+-	{ "en25q80a",   INFO(0x1c3014, 0, 64 * 1024,   16,
+-			SECT_4K | SPI_NOR_DUAL_READ) },
+-	{ "en25qh16",   INFO(0x1c7015, 0, 64 * 1024,   32,
+-			SECT_4K | SPI_NOR_DUAL_READ) },
+-	{ "en25qh32",   INFO(0x1c7016, 0, 64 * 1024,   64, 0) },
+-	{ "en25qh64",   INFO(0x1c7017, 0, 64 * 1024,  128,
+-			SECT_4K | SPI_NOR_DUAL_READ) },
+-	{ "en25qh128",  INFO(0x1c7018, 0, 64 * 1024,  256, 0) },
+-	{ "en25qh256",  INFO(0x1c7019, 0, 64 * 1024,  512, 0) },
+-	{ "en25s64",	INFO(0x1c3817, 0, 64 * 1024,  128, SECT_4K) },
 -
- 	/* SST -- large erase sizes are "overlays", "sectors" are 4K */
- 	{ "sst25vf040b", INFO(0xbf258d, 0, 64 * 1024,  8, SECT_4K | SST_WRITE) },
- 	{ "sst25vf080b", INFO(0xbf258e, 0, 64 * 1024, 16, SECT_4K | SST_WRITE) },
-@@ -2173,6 +2135,7 @@ static const struct spi_nor_manufacturer *manufacturers[] = {
- 	&spi_nor_macronix,
- 	&spi_nor_micron,
- 	&spi_nor_st,
-+	&spi_nor_spansion,
+ 	/* ESMT */
+ 	{ "f25l32pa", INFO(0x8c2016, 0, 64 * 1024, 64, SECT_4K | SPI_NOR_HAS_LOCK) },
+ 	{ "f25l32qa", INFO(0x8c4116, 0, 64 * 1024, 64, SECT_4K | SPI_NOR_HAS_LOCK) },
+@@ -2455,6 +2438,7 @@ static const struct flash_info spi_nor_ids[] = {
+ 
+ static const struct spi_nor_manufacturer *manufacturers[] = {
+ 	&spi_nor_atmel,
++	&spi_nor_eon,
  };
  
  static const struct flash_info *
-@@ -3106,17 +3069,6 @@ static void spi_nor_info_init_params(struct spi_nor *nor)
- 	spi_nor_init_uniform_erase_map(map, erase_mask, params->size);
- }
- 
--static void spansion_post_sfdp_fixups(struct spi_nor *nor)
--{
--	if (nor->params.size <= SZ_16M)
--		return;
--
--	nor->flags |= SNOR_F_4B_OPCODES;
--	/* No small sector erase for 4-byte command set */
--	nor->erase_opcode = SPINOR_OP_SE;
--	nor->mtd.erasesize = nor->info->sector_size;
--}
--
- static void s3an_post_sfdp_fixups(struct spi_nor *nor)
- {
- 	nor->params.setup = s3an_nor_setup;
-@@ -3134,15 +3086,6 @@ static void s3an_post_sfdp_fixups(struct spi_nor *nor)
-  */
- static void spi_nor_post_sfdp_fixups(struct spi_nor *nor)
- {
--	switch (JEDEC_MFR(nor->info)) {
--	case SNOR_MFR_SPANSION:
--		spansion_post_sfdp_fixups(nor);
--		break;
--
--	default:
--		break;
--	}
--
- 	if (nor->info->flags & SPI_S3AN)
- 		s3an_post_sfdp_fixups(nor);
- 
 diff --git a/drivers/mtd/spi-nor/core.h b/drivers/mtd/spi-nor/core.h
-index 7e3ec8e4ef34..8e45617578f3 100644
+index 505e580add68..1ac226c456e1 100644
 --- a/drivers/mtd/spi-nor/core.h
 +++ b/drivers/mtd/spi-nor/core.h
-@@ -178,6 +178,7 @@ extern const struct spi_nor_manufacturer spi_nor_issi;
- extern const struct spi_nor_manufacturer spi_nor_macronix;
- extern const struct spi_nor_manufacturer spi_nor_micron;
- extern const struct spi_nor_manufacturer spi_nor_st;
-+extern const struct spi_nor_manufacturer spi_nor_spansion;
+@@ -168,6 +168,7 @@ struct spi_nor_manufacturer {
+ 
+ /* Manufacturer drivers. */
+ extern const struct spi_nor_manufacturer spi_nor_atmel;
++extern const struct spi_nor_manufacturer spi_nor_eon;
  
  int spi_nor_write_enable(struct spi_nor *nor);
  int spi_nor_write_disable(struct spi_nor *nor);
-diff --git a/drivers/mtd/spi-nor/spansion.c b/drivers/mtd/spi-nor/spansion.c
+diff --git a/drivers/mtd/spi-nor/eon.c b/drivers/mtd/spi-nor/eon.c
 new file mode 100644
-index 000000000000..16683983a20e
+index 000000000000..ddb8e3650835
 --- /dev/null
-+++ b/drivers/mtd/spi-nor/spansion.c
-@@ -0,0 +1,95 @@
++++ b/drivers/mtd/spi-nor/eon.c
+@@ -0,0 +1,34 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * Copyright (C) 2005, Intec Automation Inc.
@@ -154,90 +99,29 @@ index 000000000000..16683983a20e
 +
 +#include "core.h"
 +
-+static const struct flash_info spansion_parts[] = {
-+	/* Spansion/Cypress -- single (large) sector size only, at least
-+	 * for the chips listed here (without boot sectors).
-+	 */
-+	{ "s25sl032p",  INFO(0x010215, 0x4d00,  64 * 1024,  64,
-+			     SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ) },
-+	{ "s25sl064p",  INFO(0x010216, 0x4d00,  64 * 1024, 128,
-+			     SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ) },
-+	{ "s25fl128s0", INFO6(0x012018, 0x4d0080, 256 * 1024, 64,
-+			      SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ |
-+			      USE_CLSR) },
-+	{ "s25fl128s1", INFO6(0x012018, 0x4d0180, 64 * 1024, 256,
-+			      SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ |
-+			      USE_CLSR) },
-+	{ "s25fl256s0", INFO(0x010219, 0x4d00, 256 * 1024, 128, USE_CLSR) },
-+	{ "s25fl256s1", INFO(0x010219, 0x4d01,  64 * 1024, 512,
-+			     SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ |
-+			     USE_CLSR) },
-+	{ "s25fl512s",  INFO6(0x010220, 0x4d0080, 256 * 1024, 256,
-+			      SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ |
-+			      SPI_NOR_HAS_LOCK | USE_CLSR) },
-+	{ "s25fs512s",  INFO6(0x010220, 0x4d0081, 256 * 1024, 256,
-+			      SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ |
-+			      USE_CLSR) },
-+	{ "s70fl01gs",  INFO(0x010221, 0x4d00, 256 * 1024, 256, 0) },
-+	{ "s25sl12800", INFO(0x012018, 0x0300, 256 * 1024,  64, 0) },
-+	{ "s25sl12801", INFO(0x012018, 0x0301,  64 * 1024, 256, 0) },
-+	{ "s25fl129p0", INFO(0x012018, 0x4d00, 256 * 1024,  64,
-+			     SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ |
-+			     USE_CLSR) },
-+	{ "s25fl129p1", INFO(0x012018, 0x4d01,  64 * 1024, 256,
-+			     SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ |
-+			     USE_CLSR) },
-+	{ "s25sl004a",  INFO(0x010212,      0,  64 * 1024,   8, 0) },
-+	{ "s25sl008a",  INFO(0x010213,      0,  64 * 1024,  16, 0) },
-+	{ "s25sl016a",  INFO(0x010214,      0,  64 * 1024,  32, 0) },
-+	{ "s25sl032a",  INFO(0x010215,      0,  64 * 1024,  64, 0) },
-+	{ "s25sl064a",  INFO(0x010216,      0,  64 * 1024, 128, 0) },
-+	{ "s25fl004k",  INFO(0xef4013,      0,  64 * 1024,   8,
-+			     SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ) },
-+	{ "s25fl008k",  INFO(0xef4014,      0,  64 * 1024,  16,
-+			     SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ) },
-+	{ "s25fl016k",  INFO(0xef4015,      0,  64 * 1024,  32,
-+			     SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ) },
-+	{ "s25fl064k",  INFO(0xef4017,      0,  64 * 1024, 128, SECT_4K) },
-+	{ "s25fl116k",  INFO(0x014015,      0,  64 * 1024,  32,
-+			     SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ) },
-+	{ "s25fl132k",  INFO(0x014016,      0,  64 * 1024,  64, SECT_4K) },
-+	{ "s25fl164k",  INFO(0x014017,      0,  64 * 1024, 128, SECT_4K) },
-+	{ "s25fl204k",  INFO(0x014013,      0,  64 * 1024,   8,
++static const struct flash_info eon_parts[] = {
++	/* EON -- en25xxx */
++	{ "en25f32",    INFO(0x1c3116, 0, 64 * 1024,   64, SECT_4K) },
++	{ "en25p32",    INFO(0x1c2016, 0, 64 * 1024,   64, 0) },
++	{ "en25q32b",   INFO(0x1c3016, 0, 64 * 1024,   64, 0) },
++	{ "en25p64",    INFO(0x1c2017, 0, 64 * 1024,  128, 0) },
++	{ "en25q64",    INFO(0x1c3017, 0, 64 * 1024,  128, SECT_4K) },
++	{ "en25q80a",   INFO(0x1c3014, 0, 64 * 1024,   16,
 +			     SECT_4K | SPI_NOR_DUAL_READ) },
-+	{ "s25fl208k",  INFO(0x014014,      0,  64 * 1024,  16,
++	{ "en25qh16",   INFO(0x1c7015, 0, 64 * 1024,   32,
 +			     SECT_4K | SPI_NOR_DUAL_READ) },
-+	{ "s25fl064l",  INFO(0x016017,      0,  64 * 1024, 128,
-+			     SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ |
-+			     SPI_NOR_4B_OPCODES) },
-+	{ "s25fl128l",  INFO(0x016018,      0,  64 * 1024, 256,
-+			     SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ |
-+			     SPI_NOR_4B_OPCODES) },
-+	{ "s25fl256l",  INFO(0x016019,      0,  64 * 1024, 512,
-+			     SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ |
-+			     SPI_NOR_4B_OPCODES) },
++	{ "en25qh32",   INFO(0x1c7016, 0, 64 * 1024,   64, 0) },
++	{ "en25qh64",   INFO(0x1c7017, 0, 64 * 1024,  128,
++			     SECT_4K | SPI_NOR_DUAL_READ) },
++	{ "en25qh128",  INFO(0x1c7018, 0, 64 * 1024,  256, 0) },
++	{ "en25qh256",  INFO(0x1c7019, 0, 64 * 1024,  512, 0) },
++	{ "en25s64",	INFO(0x1c3817, 0, 64 * 1024,  128, SECT_4K) },
 +};
 +
-+static void spansion_post_sfdp_fixups(struct spi_nor *nor)
-+{
-+	if (nor->params.size <= SZ_16M)
-+		return;
-+
-+	nor->flags |= SNOR_F_4B_OPCODES;
-+	/* No small sector erase for 4-byte command set */
-+	nor->erase_opcode = SPINOR_OP_SE;
-+	nor->mtd.erasesize = nor->info->sector_size;
-+}
-+
-+static const struct spi_nor_fixups spansion_fixups = {
-+	.post_sfdp = spansion_post_sfdp_fixups,
-+};
-+
-+const struct spi_nor_manufacturer spi_nor_spansion = {
-+	.name = "spansion",
-+	.parts = spansion_parts,
-+	.nparts = ARRAY_SIZE(spansion_parts),
-+	.fixups = &spansion_fixups,
++const struct spi_nor_manufacturer spi_nor_eon = {
++	.name = "eon",
++	.parts = eon_parts,
++	.nparts = ARRAY_SIZE(eon_parts),
 +};
 -- 
 2.23.0
