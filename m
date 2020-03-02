@@ -1,9 +1,9 @@
 From: Tudor.Ambarus@microchip.com <Tudor.Ambarus@microchip.com>
-Date: Mon, 2 Mar 2020 18:07:51 +0000
-Subject: [PATCH 12/23] mtd: spi-nor: Move Intel bits out of core.c
+Date: Mon, 2 Mar 2020 18:07:54 +0000
+Subject: [PATCH 17/23] mtd: spi-nor: Move SST bits out of core.c
 In-Reply-To: <20200302180730.1886678-1-tudor.ambarus@microchip.com>
 References: <20200302180730.1886678-1-tudor.ambarus@microchip.com>
-Message-ID: <20200302180730.1886678-13-tudor.ambarus@microchip.com>
+Message-ID: <20200302180730.1886678-18-tudor.ambarus@microchip.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -12,94 +12,223 @@ Content-Transfer-Encoding: 7bit
 
 From: Boris Brezillon <bbrezillon@kernel.org>
 
-Create a SPI NOR manufacturer driver for Intel chips, and move the
-Intel definitions outside of core.c.
+Create a SPI NOR manufacturer driver for SST chips, and move the
+SST definitions outside of core.c.
 
 Signed-off-by: Boris Brezillon <bbrezillon@kernel.org>
 Signed-off-by: Tudor Ambarus <tudor.ambarus@microchip.com>
 ---
- drivers/mtd/spi-nor/Makefile |  1 +
- drivers/mtd/spi-nor/core.c   | 15 +--------------
- drivers/mtd/spi-nor/core.h   |  1 +
- drivers/mtd/spi-nor/intel.c  | 32 ++++++++++++++++++++++++++++++++
- 4 files changed, 35 insertions(+), 14 deletions(-)
- create mode 100644 drivers/mtd/spi-nor/intel.c
+ drivers/mtd/spi-nor/Makefile |   1 +
+ drivers/mtd/spi-nor/core.c   | 123 +---------------------------
+ drivers/mtd/spi-nor/core.h   |   1 +
+ drivers/mtd/spi-nor/sst.c    | 151 +++++++++++++++++++++++++++++++++++
+ 4 files changed, 156 insertions(+), 120 deletions(-)
+ create mode 100644 drivers/mtd/spi-nor/sst.c
 
 diff --git a/drivers/mtd/spi-nor/Makefile b/drivers/mtd/spi-nor/Makefile
-index 38f704be4b03..8eb741a27fa7 100644
+index cb06ee50bf68..ef7afc654a15 100644
 --- a/drivers/mtd/spi-nor/Makefile
 +++ b/drivers/mtd/spi-nor/Makefile
-@@ -7,4 +7,5 @@ spi-nor-objs			+= esmt.o
- spi-nor-objs			+= everspin.o
- spi-nor-objs			+= fujitsu.o
- spi-nor-objs			+= gigadevice.o
-+spi-nor-objs			+= intel.o
+@@ -12,4 +12,5 @@ spi-nor-objs			+= issi.o
+ spi-nor-objs			+= macronix.o
+ spi-nor-objs			+= micron-st.o
+ spi-nor-objs			+= spansion.o
++spi-nor-objs			+= sst.o
  obj-$(CONFIG_MTD_SPI_NOR)	+= spi-nor.o
 diff --git a/drivers/mtd/spi-nor/core.c b/drivers/mtd/spi-nor/core.c
-index 8520423b1104..2f47852a3a01 100644
+index 448717543d1e..9ff0b09887b4 100644
 --- a/drivers/mtd/spi-nor/core.c
 +++ b/drivers/mtd/spi-nor/core.c
-@@ -2064,11 +2064,6 @@ static struct spi_nor_fixups mx25l25635_fixups = {
+@@ -2017,25 +2017,6 @@ int spi_nor_sr2_bit7_quad_enable(struct spi_nor *nor)
   * old entries may be missing 4K flag.
   */
  static const struct flash_info spi_nor_ids[] = {
--	/* Intel/Numonyx -- xxxs33b */
--	{ "160s33b",  INFO(0x898911, 0, 64 * 1024,  32, 0) },
--	{ "320s33b",  INFO(0x898912, 0, 64 * 1024,  64, 0) },
--	{ "640s33b",  INFO(0x898913, 0, 64 * 1024, 128, 0) },
+-	/* SST -- large erase sizes are "overlays", "sectors" are 4K */
+-	{ "sst25vf040b", INFO(0xbf258d, 0, 64 * 1024,  8, SECT_4K | SST_WRITE) },
+-	{ "sst25vf080b", INFO(0xbf258e, 0, 64 * 1024, 16, SECT_4K | SST_WRITE) },
+-	{ "sst25vf016b", INFO(0xbf2541, 0, 64 * 1024, 32, SECT_4K | SST_WRITE) },
+-	{ "sst25vf032b", INFO(0xbf254a, 0, 64 * 1024, 64, SECT_4K | SST_WRITE) },
+-	{ "sst25vf064c", INFO(0xbf254b, 0, 64 * 1024, 128, SECT_4K) },
+-	{ "sst25wf512",  INFO(0xbf2501, 0, 64 * 1024,  1, SECT_4K | SST_WRITE) },
+-	{ "sst25wf010",  INFO(0xbf2502, 0, 64 * 1024,  2, SECT_4K | SST_WRITE) },
+-	{ "sst25wf020",  INFO(0xbf2503, 0, 64 * 1024,  4, SECT_4K | SST_WRITE) },
+-	{ "sst25wf020a", INFO(0x621612, 0, 64 * 1024,  4, SECT_4K) },
+-	{ "sst25wf040b", INFO(0x621613, 0, 64 * 1024,  8, SECT_4K) },
+-	{ "sst25wf040",  INFO(0xbf2504, 0, 64 * 1024,  8, SECT_4K | SST_WRITE) },
+-	{ "sst25wf080",  INFO(0xbf2505, 0, 64 * 1024, 16, SECT_4K | SST_WRITE) },
+-	{ "sst26wf016b", INFO(0xbf2651, 0, 64 * 1024, 32, SECT_4K |
+-			      SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ) },
+-	{ "sst26vf016b", INFO(0xbf2641, 0, 64 * 1024, 32, SECT_4K |
+-			      SPI_NOR_DUAL_READ) },
+-	{ "sst26vf064b", INFO(0xbf2643, 0, 64 * 1024, 128, SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ) },
 -
- 	/* ISSI */
- 	{ "is25cd512",  INFO(0x7f9d20, 0, 32 * 1024,   2, SECT_4K) },
- 	{ "is25lq040b", INFO(0x9d4013, 0, 64 * 1024,   8,
-@@ -2370,6 +2365,7 @@ static const struct spi_nor_manufacturer *manufacturers[] = {
- 	&spi_nor_everspin,
- 	&spi_nor_fujitsu,
- 	&spi_nor_gigadevice,
-+	&spi_nor_intel,
+ 	/* Winbond -- w25x "blocks" are 64K, "sectors" are 4KiB */
+ 	{ "w25x05", INFO(0xef3010, 0, 64 * 1024,  1,  SECT_4K) },
+ 	{ "w25x10", INFO(0xef3011, 0, 64 * 1024,  2,  SECT_4K) },
+@@ -2136,6 +2117,7 @@ static const struct spi_nor_manufacturer *manufacturers[] = {
+ 	&spi_nor_micron,
+ 	&spi_nor_st,
+ 	&spi_nor_spansion,
++	&spi_nor_sst,
  };
  
  static const struct flash_info *
-@@ -3149,11 +3145,6 @@ static int spi_nor_setup(struct spi_nor *nor,
+@@ -2236,92 +2218,6 @@ static int spi_nor_read(struct mtd_info *mtd, loff_t from, size_t len,
+ 	return ret;
+ }
+ 
+-static int sst_write(struct mtd_info *mtd, loff_t to, size_t len,
+-		size_t *retlen, const u_char *buf)
+-{
+-	struct spi_nor *nor = mtd_to_spi_nor(mtd);
+-	size_t actual = 0;
+-	int ret;
+-
+-	dev_dbg(nor->dev, "to 0x%08x, len %zd\n", (u32)to, len);
+-
+-	ret = spi_nor_lock_and_prep(nor);
+-	if (ret)
+-		return ret;
+-
+-	ret = spi_nor_write_enable(nor);
+-	if (ret)
+-		goto out;
+-
+-	nor->sst_write_second = false;
+-
+-	/* Start write from odd address. */
+-	if (to % 2) {
+-		nor->program_opcode = SPINOR_OP_BP;
+-
+-		/* write one byte. */
+-		ret = spi_nor_write_data(nor, to, 1, buf);
+-		if (ret < 0)
+-			goto out;
+-		WARN(ret != 1, "While writing 1 byte written %i bytes\n", ret);
+-		ret = spi_nor_wait_till_ready(nor);
+-		if (ret)
+-			goto out;
+-
+-		to++;
+-		actual++;
+-	}
+-
+-	/* Write out most of the data here. */
+-	for (; actual < len - 1; actual += 2) {
+-		nor->program_opcode = SPINOR_OP_AAI_WP;
+-
+-		/* write two bytes. */
+-		ret = spi_nor_write_data(nor, to, 2, buf + actual);
+-		if (ret < 0)
+-			goto out;
+-		WARN(ret != 2, "While writing 2 bytes written %i bytes\n", ret);
+-		ret = spi_nor_wait_till_ready(nor);
+-		if (ret)
+-			goto out;
+-		to += 2;
+-		nor->sst_write_second = true;
+-	}
+-	nor->sst_write_second = false;
+-
+-	ret = spi_nor_write_disable(nor);
+-	if (ret)
+-		goto out;
+-
+-	ret = spi_nor_wait_till_ready(nor);
+-	if (ret)
+-		goto out;
+-
+-	/* Write out trailing byte if it exists. */
+-	if (actual != len) {
+-		ret = spi_nor_write_enable(nor);
+-		if (ret)
+-			goto out;
+-
+-		nor->program_opcode = SPINOR_OP_BP;
+-		ret = spi_nor_write_data(nor, to, 1, buf + actual);
+-		if (ret < 0)
+-			goto out;
+-		WARN(ret != 1, "While writing 1 byte written %i bytes\n", ret);
+-		ret = spi_nor_wait_till_ready(nor);
+-		if (ret)
+-			goto out;
+-
+-		actual += 1;
+-
+-		ret = spi_nor_write_disable(nor);
+-	}
+-out:
+-	*retlen += actual;
+-	spi_nor_unlock_and_unprep(nor);
+-	return ret;
+-}
+-
+ /*
+  * Write an address range to the nor chip.  Data must be written in
+  * FLASH_PAGESIZE chunks.  The address range may be any size provided
+@@ -2915,11 +2811,6 @@ static int spi_nor_setup(struct spi_nor *nor,
  	return nor->params.setup(nor, hwcaps);
  }
  
--static void intel_set_default_init(struct spi_nor *nor)
+-static void sst_set_default_init(struct spi_nor *nor)
 -{
 -	nor->flags |= SNOR_F_HAS_LOCK;
 -}
 -
- static void issi_set_default_init(struct spi_nor *nor)
+ static void winbond_set_default_init(struct spi_nor *nor)
  {
- 	nor->params.quad_enable = spi_nor_sr1_bit6_quad_enable;
-@@ -3192,10 +3183,6 @@ static void spi_nor_manufacturer_init_params(struct spi_nor *nor)
+ 	nor->params.set_4byte = winbond_set_4byte;
+@@ -2934,10 +2825,6 @@ static void spi_nor_manufacturer_init_params(struct spi_nor *nor)
  {
  	/* Init flash parameters based on MFR */
  	switch (JEDEC_MFR(nor->info)) {
--	case SNOR_MFR_INTEL:
--		intel_set_default_init(nor);
+-	case SNOR_MFR_SST:
+-		sst_set_default_init(nor);
 -		break;
 -
- 	case SNOR_MFR_ISSI:
- 		issi_set_default_init(nor);
+ 	case SNOR_MFR_WINBOND:
+ 		winbond_set_default_init(nor);
  		break;
+@@ -3409,6 +3296,8 @@ int spi_nor_scan(struct spi_nor *nor, const char *name,
+ 	if (info->flags & SPI_NOR_HAS_LOCK)
+ 		nor->flags |= SNOR_F_HAS_LOCK;
+ 
++	mtd->_write = spi_nor_write;
++
+ 	/* Init flash parameters based on flash_info struct and SFDP */
+ 	spi_nor_init_params(nor);
+ 
+@@ -3429,12 +3318,6 @@ int spi_nor_scan(struct spi_nor *nor, const char *name,
+ 		mtd->_is_locked = spi_nor_is_locked;
+ 	}
+ 
+-	/* sst nor chips use AAI word program */
+-	if (info->flags & SST_WRITE)
+-		mtd->_write = sst_write;
+-	else
+-		mtd->_write = spi_nor_write;
+-
+ 	if (info->flags & USE_FSR)
+ 		nor->flags |= SNOR_F_USE_FSR;
+ 	if (info->flags & SPI_NOR_HAS_TB) {
 diff --git a/drivers/mtd/spi-nor/core.h b/drivers/mtd/spi-nor/core.h
-index c44802a05532..c4c23efaa68b 100644
+index 8e45617578f3..7bc0f6a15b36 100644
 --- a/drivers/mtd/spi-nor/core.h
 +++ b/drivers/mtd/spi-nor/core.h
-@@ -173,6 +173,7 @@ extern const struct spi_nor_manufacturer spi_nor_esmt;
- extern const struct spi_nor_manufacturer spi_nor_everspin;
- extern const struct spi_nor_manufacturer spi_nor_fujitsu;
- extern const struct spi_nor_manufacturer spi_nor_gigadevice;
-+extern const struct spi_nor_manufacturer spi_nor_intel;
+@@ -179,6 +179,7 @@ extern const struct spi_nor_manufacturer spi_nor_macronix;
+ extern const struct spi_nor_manufacturer spi_nor_micron;
+ extern const struct spi_nor_manufacturer spi_nor_st;
+ extern const struct spi_nor_manufacturer spi_nor_spansion;
++extern const struct spi_nor_manufacturer spi_nor_sst;
  
  int spi_nor_write_enable(struct spi_nor *nor);
  int spi_nor_write_disable(struct spi_nor *nor);
-diff --git a/drivers/mtd/spi-nor/intel.c b/drivers/mtd/spi-nor/intel.c
+diff --git a/drivers/mtd/spi-nor/sst.c b/drivers/mtd/spi-nor/sst.c
 new file mode 100644
-index 000000000000..d8196f101368
+index 000000000000..e0af6d25d573
 --- /dev/null
-+++ b/drivers/mtd/spi-nor/intel.c
-@@ -0,0 +1,32 @@
++++ b/drivers/mtd/spi-nor/sst.c
+@@ -0,0 +1,151 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * Copyright (C) 2005, Intec Automation Inc.
@@ -110,27 +239,146 @@ index 000000000000..d8196f101368
 +
 +#include "core.h"
 +
-+static const struct flash_info intel_parts[] = {
-+	/* Intel/Numonyx -- xxxs33b */
-+	{ "160s33b",  INFO(0x898911, 0, 64 * 1024,  32, 0) },
-+	{ "320s33b",  INFO(0x898912, 0, 64 * 1024,  64, 0) },
-+	{ "640s33b",  INFO(0x898913, 0, 64 * 1024, 128, 0) },
++static const struct flash_info sst_parts[] = {
++	/* SST -- large erase sizes are "overlays", "sectors" are 4K */
++	{ "sst25vf040b", INFO(0xbf258d, 0, 64 * 1024,  8,
++			      SECT_4K | SST_WRITE) },
++	{ "sst25vf080b", INFO(0xbf258e, 0, 64 * 1024, 16,
++			      SECT_4K | SST_WRITE) },
++	{ "sst25vf016b", INFO(0xbf2541, 0, 64 * 1024, 32,
++			      SECT_4K | SST_WRITE) },
++	{ "sst25vf032b", INFO(0xbf254a, 0, 64 * 1024, 64,
++			      SECT_4K | SST_WRITE) },
++	{ "sst25vf064c", INFO(0xbf254b, 0, 64 * 1024, 128, SECT_4K) },
++	{ "sst25wf512",  INFO(0xbf2501, 0, 64 * 1024,  1,
++			      SECT_4K | SST_WRITE) },
++	{ "sst25wf010",  INFO(0xbf2502, 0, 64 * 1024,  2,
++			      SECT_4K | SST_WRITE) },
++	{ "sst25wf020",  INFO(0xbf2503, 0, 64 * 1024,  4,
++			      SECT_4K | SST_WRITE) },
++	{ "sst25wf020a", INFO(0x621612, 0, 64 * 1024,  4, SECT_4K) },
++	{ "sst25wf040b", INFO(0x621613, 0, 64 * 1024,  8, SECT_4K) },
++	{ "sst25wf040",  INFO(0xbf2504, 0, 64 * 1024,  8,
++			      SECT_4K | SST_WRITE) },
++	{ "sst25wf080",  INFO(0xbf2505, 0, 64 * 1024, 16,
++			      SECT_4K | SST_WRITE) },
++	{ "sst26wf016b", INFO(0xbf2651, 0, 64 * 1024, 32,
++			      SECT_4K | SPI_NOR_DUAL_READ |
++			      SPI_NOR_QUAD_READ) },
++	{ "sst26vf016b", INFO(0xbf2641, 0, 64 * 1024, 32,
++			      SECT_4K | SPI_NOR_DUAL_READ) },
++	{ "sst26vf064b", INFO(0xbf2643, 0, 64 * 1024, 128,
++			      SECT_4K | SPI_NOR_DUAL_READ |
++			      SPI_NOR_QUAD_READ) },
 +};
 +
-+static void intel_default_init(struct spi_nor *nor)
++static int sst_write(struct mtd_info *mtd, loff_t to, size_t len,
++		     size_t *retlen, const u_char *buf)
++{
++	struct spi_nor *nor = mtd_to_spi_nor(mtd);
++	size_t actual = 0;
++	int ret;
++
++	dev_dbg(nor->dev, "to 0x%08x, len %zd\n", (u32)to, len);
++
++	ret = spi_nor_lock_and_prep(nor);
++	if (ret)
++		return ret;
++
++	ret = spi_nor_write_enable(nor);
++	if (ret)
++		goto out;
++
++	nor->sst_write_second = false;
++
++	/* Start write from odd address. */
++	if (to % 2) {
++		nor->program_opcode = SPINOR_OP_BP;
++
++		/* write one byte. */
++		ret = spi_nor_write_data(nor, to, 1, buf);
++		if (ret < 0)
++			goto out;
++		WARN(ret != 1, "While writing 1 byte written %i bytes\n", ret);
++		ret = spi_nor_wait_till_ready(nor);
++		if (ret)
++			goto out;
++
++		to++;
++		actual++;
++	}
++
++	/* Write out most of the data here. */
++	for (; actual < len - 1; actual += 2) {
++		nor->program_opcode = SPINOR_OP_AAI_WP;
++
++		/* write two bytes. */
++		ret = spi_nor_write_data(nor, to, 2, buf + actual);
++		if (ret < 0)
++			goto out;
++		WARN(ret != 2, "While writing 2 bytes written %i bytes\n", ret);
++		ret = spi_nor_wait_till_ready(nor);
++		if (ret)
++			goto out;
++		to += 2;
++		nor->sst_write_second = true;
++	}
++	nor->sst_write_second = false;
++
++	ret = spi_nor_write_disable(nor);
++	if (ret)
++		goto out;
++
++	ret = spi_nor_wait_till_ready(nor);
++	if (ret)
++		goto out;
++
++	/* Write out trailing byte if it exists. */
++	if (actual != len) {
++		ret = spi_nor_write_enable(nor);
++		if (ret)
++			goto out;
++
++		nor->program_opcode = SPINOR_OP_BP;
++		ret = spi_nor_write_data(nor, to, 1, buf + actual);
++		if (ret < 0)
++			goto out;
++		WARN(ret != 1, "While writing 1 byte written %i bytes\n", ret);
++		ret = spi_nor_wait_till_ready(nor);
++		if (ret)
++			goto out;
++
++		actual += 1;
++
++		ret = spi_nor_write_disable(nor);
++	}
++out:
++	*retlen += actual;
++	spi_nor_unlock_and_unprep(nor);
++	return ret;
++}
++
++static void sst_default_init(struct spi_nor *nor)
 +{
 +	nor->flags |= SNOR_F_HAS_LOCK;
 +}
 +
-+static const struct spi_nor_fixups intel_fixups = {
-+	.default_init = intel_default_init,
++static void sst_post_sfdp_fixups(struct spi_nor *nor)
++{
++	if (nor->info->flags & SST_WRITE)
++		nor->mtd._write = sst_write;
++}
++
++static const struct spi_nor_fixups sst_fixups = {
++	.default_init = sst_default_init,
++	.post_sfdp = sst_post_sfdp_fixups,
 +};
 +
-+const struct spi_nor_manufacturer spi_nor_intel = {
-+	.name = "intel",
-+	.parts = intel_parts,
-+	.nparts = ARRAY_SIZE(intel_parts),
-+	.fixups = &intel_fixups,
++const struct spi_nor_manufacturer spi_nor_sst = {
++	.name = "sst",
++	.parts = sst_parts,
++	.nparts = ARRAY_SIZE(sst_parts),
++	.fixups = &sst_fixups,
 +};
 -- 
 2.23.0
