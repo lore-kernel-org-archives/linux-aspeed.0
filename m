@@ -1,41 +1,23 @@
-From: Tudor.Ambarus@microchip.com <Tudor.Ambarus@microchip.com>
-Date: Tue, 3 Mar 2020 07:28:58 +0000
-Subject: [PATCH 00/23] mtd: spi-nor: Move manufacturer/SFDP code out of
- the core
-In-Reply-To: <CACPK8Xcvf2wSE5Y4E8Lbs6R9mHhztvNsr8vNrYaPX+kMMUhZvA@mail.gmail.com>
+From: Mika Westerberg <mika.westerberg@linux.intel.com>
+Date: Tue, 3 Mar 2020 12:22:22 +0200
+Subject: [PATCH 12/23] mtd: spi-nor: Move Intel bits out of core.c
+In-Reply-To: <20200302180730.1886678-13-tudor.ambarus@microchip.com>
 References: <20200302180730.1886678-1-tudor.ambarus@microchip.com>
- <CACPK8Xcvf2wSE5Y4E8Lbs6R9mHhztvNsr8vNrYaPX+kMMUhZvA@mail.gmail.com>
-Message-ID: <2530971.qIT9jh00La@localhost.localdomain>
+ <20200302180730.1886678-13-tudor.ambarus@microchip.com>
+Message-ID: <20200303102222.GL2540@lahna.fi.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tuesday, March 3, 2020 9:15:31 AM EET Joel Stanley wrote:
-> EXTERNAL EMAIL: Do not click links or open attachments unless you know the
-> content is safe
+On Mon, Mar 02, 2020 at 06:07:51PM +0000, Tudor.Ambarus at microchip.com wrote:
+> From: Boris Brezillon <bbrezillon@kernel.org>
 > 
-> Hi Tudor,
-
-Hi, Joel,
-
+> Create a SPI NOR manufacturer driver for Intel chips, and move the
+> Intel definitions outside of core.c.
 > 
-> On Mon, 2 Mar 2020 at 18:07, <Tudor.Ambarus@microchip.com> wrote:
-> > From: Tudor Ambarus <tudor.ambarus@microchip.com>
-> > 
-> > Hello,
-> > 
-> > This patch series is an attempt at getting all manufacturer specific
-> > quirks/code out of the core to make the core logic more readable and
-> > thus ease maintainance.
-> 
-> I tried to apply this to linus' tree (5.6-rc4) but it had a bunch of
-> conflicts. What did you base this on?
+> Signed-off-by: Boris Brezillon <bbrezillon@kernel.org>
+> Signed-off-by: Tudor Ambarus <tudor.ambarus@microchip.com>
 
-T:      git git://git.kernel.org/pub/scm/linux/kernel/git/mtd/linux.git spi-
-nor/next
-
-Cheers,
-ta
-
+Reviewed-by: Mika Westerberg <mika.westerberg@linux.intel.com>
