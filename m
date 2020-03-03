@@ -1,140 +1,58 @@
-From: Rob Herring <robh@kernel.org>
-Date: Mon, 2 Mar 2020 17:47:44 -0600
-Subject: [PATCH v6 7/7] dt-bindings: usb: add documentation for aspeed
- usb-vhub
-In-Reply-To: <20200228020757.10513-8-rentao.bupt@gmail.com>
-References: <20200228020757.10513-1-rentao.bupt@gmail.com>
- <20200228020757.10513-8-rentao.bupt@gmail.com>
-Message-ID: <20200302234744.GA21778@bogus>
+From: rentao.bupt@gmail.com <rentao.bupt@gmail.com>
+Date: Mon,  2 Mar 2020 22:23:29 -0800
+Subject: [PATCH v7 0/7] aspeed-g6: enable usb support
+Message-ID: <20200303062336.7361-1-rentao.bupt@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Feb 27, 2020 at 06:07:57PM -0800, rentao.bupt at gmail.com wrote:
-> From: Tao Ren <rentao.bupt@gmail.com>
-> 
-> Add device tree binding documentation for the Aspeed USB 2.0 Virtual HUb
-> Controller.
-> 
-> Signed-off-by: Tao Ren <rentao.bupt@gmail.com>
-> Reviewed-by: Joel Stanley <joel@jms.id.au>
-> ---
->  Changes in v6:
->    - added 2 required properties into example and passed "make
->      dt_binding_check".
->  Changes in v5:
->    - updated maintainer to Ben.
->    - refined patch description per Joel's suggestion.
->  No change in v2/v3/v4:
->    - the patch is added to the patch series since v4.
-> 
->  .../bindings/usb/aspeed,usb-vhub.yaml         | 73 +++++++++++++++++++
->  1 file changed, 73 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/usb/aspeed,usb-vhub.yaml
-> 
-> diff --git a/Documentation/devicetree/bindings/usb/aspeed,usb-vhub.yaml b/Documentation/devicetree/bindings/usb/aspeed,usb-vhub.yaml
-> new file mode 100644
-> index 000000000000..b9f33310e9a2
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/usb/aspeed,usb-vhub.yaml
-> @@ -0,0 +1,73 @@
-> +# SPDX-License-Identifier: GPL-2.0-or-later
+From: Tao Ren <rentao.bupt@gmail.com>
 
-Dual license new bindings please.
+The patch series aims at enabling USB Host and Gadget support on AST2600
+platforms.
 
-(GPL-2.0-only OR BSD-2-Clause)
+Patch #1 includes vhub's usb descriptors in struct "ast_vhub": all usb
+descriptor changes will go to the per-vhub instance instead of touching
+the global default descriptors.
 
-> +# Copyright (c) 2020 Facebook Inc.
-> +%YAML 1.2
-> +---
-> +$id: http://devicetree.org/schemas/usb/aspeed,usb-vhub.yaml#
-> +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> +
-> +title: ASPEED USB 2.0 Virtual Hub Controller
-> +
-> +maintainers:
-> +  - Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> +
-> +description: |+
-> +  The ASPEED USB 2.0 Virtual Hub Controller implements 1 set of USB Hub
-> +  register and several sets of Device and Endpoint registers to support
-> +  the Virtual Hub's downstream USB devices.
-> +
-> +  Supported number of devices and endpoints vary depending on hardware
-> +  revisions. AST2400 and AST2500 Virtual Hub supports 5 downstream devices
-> +  and 15 generic endpoints, while AST2600 Virtual Hub supports 7 downstream
-> +  devices and 21 generic endpoints.
-> +
-> +properties:
-> +  compatible:
-> +    enum:
-> +      - aspeed,ast2400-usb-vhub
-> +      - aspeed,ast2500-usb-vhub
-> +      - aspeed,ast2600-usb-vhub
-> +
-> +  reg:
-> +    maxItems: 1
-> +    description: Common configuration registers
+Patch #2 replaces hardcoded vhub port/endpoint number with device tree
+properties, so that it's more convenient to add support for ast2600-vhub
+which provides more downstream ports and endpoints.
 
-If 'Common' means something specific to this block, then keep. 
-Otherwise, you can drop ti.
+Patch #3 enables ast2600 support in aspeed-vhub usb gadget driver.
 
-> +
-> +  clocks:
-> +    maxItems: 1
-> +    description: The Virtual Hub Controller clock gate
+Patch #4 adds USB devices and according pin groups in aspeed-g6 dtsi.
 
-Drop this.
+Patch #5 and #6 add vhub port/endpoint properties into aspeed-g4 and
+aspeed-g5 dtsi.
 
-> +
-> +  interrupts:
-> +    maxItems: 1
-> +
-> +  aspeed,vhub-downstream-ports:
-> +    description: Number of downstream ports supported by the Virtual Hub
-> +    allOf:
-> +      - $ref: /schemas/types.yaml#/definitions/uint32
+Patch #7 adds device tree binding document for aspeed usb-vhub driver.
 
-Constraints?
+Tao Ren (7):
+  usb: gadget: aspeed: support per-vhub usb descriptors
+  usb: gadget: aspeed: read vhub properties from device tree
+  usb: gadget: aspeed: add ast2600 vhub support
+  ARM: dts: aspeed-g6: add usb functions
+  ARM: dts: aspeed-g5: add vhub port and endpoint properties
+  ARM: dts: aspeed-g4: add vhub port and endpoint properties
+  dt-bindings: usb: add documentation for aspeed usb-vhub
 
-'maximum: 5' ?
+ .../bindings/usb/aspeed,usb-vhub.yaml         | 77 +++++++++++++++++++
+ arch/arm/boot/dts/aspeed-g4.dtsi              |  2 +
+ arch/arm/boot/dts/aspeed-g5.dtsi              |  2 +
+ arch/arm/boot/dts/aspeed-g6-pinctrl.dtsi      | 25 ++++++
+ arch/arm/boot/dts/aspeed-g6.dtsi              | 45 +++++++++++
+ drivers/usb/gadget/udc/aspeed-vhub/Kconfig    |  4 +-
+ drivers/usb/gadget/udc/aspeed-vhub/core.c     | 71 ++++++++++-------
+ drivers/usb/gadget/udc/aspeed-vhub/dev.c      | 30 ++++++--
+ drivers/usb/gadget/udc/aspeed-vhub/epn.c      |  4 +-
+ drivers/usb/gadget/udc/aspeed-vhub/hub.c      | 58 +++++++++-----
+ drivers/usb/gadget/udc/aspeed-vhub/vhub.h     | 43 +++++++----
+ 11 files changed, 290 insertions(+), 71 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/usb/aspeed,usb-vhub.yaml
 
-default?
+-- 
+2.17.1
 
-> +
-> +  aspeed,vhub-generic-endpoints:
-> +    description: Number of generic endpoints supported by the Virtual Hub
-> +    allOf:
-> +      - $ref: /schemas/types.yaml#/definitions/uint32
-
-Constraints?
-
-> +
-> +required:
-> +  - compatible
-> +  - reg
-> +  - clocks
-> +  - interrupts
-> +  - aspeed,vhub-downstream-ports
-> +  - aspeed,vhub-generic-endpoints
-> +
-> +additionalProperties: false
-> +
-> +examples:
-> +  - |
-> +    #include <dt-bindings/clock/aspeed-clock.h>
-> +    vhub: usb-vhub at 1e6a0000 {
-> +            compatible = "aspeed,ast2500-usb-vhub";
-> +            reg = <0x1e6a0000 0x300>;
-> +            interrupts = <5>;
-> +            clocks = <&syscon ASPEED_CLK_GATE_USBPORT1CLK>;
-> +            aspeed,vhub-downstream-ports = <5>;
-> +            aspeed,vhub-generic-endpoints = <15>;
-> +            pinctrl-names = "default";
-> +            pinctrl-0 = <&pinctrl_usb2ad_default>;
-> +    };
-> -- 
-> 2.17.1
-> 
