@@ -1,95 +1,96 @@
-From: Andrew Geissler <geissonator@gmail.com>
-Date: Fri,  6 Mar 2020 11:02:18 -0600
-Subject: [PATCH 2/2] ARM: dts: aspeed: zaius: Add gpio line names
-In-Reply-To: <20200306170218.79698-1-geissonator@yahoo.com>
-References: <20200306170218.79698-1-geissonator@yahoo.com>
-Message-ID: <20200306170218.79698-2-geissonator@yahoo.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Wed, 11 Mar 2020 12:31:22 +1100
+Subject: [PATCH v2] usb: gadget: aspeed: improve vhub port irq handling
+In-Reply-To: <20200305234746.1002-1-rentao.bupt@gmail.com>
+References: <20200305234746.1002-1-rentao.bupt@gmail.com>
+Message-ID: <481e9b7d40c51505518a34ddc2515d3200dbf158.camel@kernel.crashing.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Name the GPIOs to help userspace work with them. The names describe the
-functionality the lines provide, not the net or ball name. This makes it
-easier to share userspace code across different systems and makes the
-use of the lines more obvious.
+On Thu, 2020-03-05 at 15:47 -0800, rentao.bupt at gmail.com wrote:
+> From: Tao Ren <rentao.bupt@gmail.com>
+> 
+> This patch evaluates vhub ports' irq mask before going through per-port
+> irq handling one by one, which helps to speed up irq handling in case
+> there is no port interrupt.
+> 
+> Signed-off-by: Tao Ren <rentao.bupt@gmail.com>
+> ---
+>  Changes in v2:
+>    - use "for_each_set_bit" to speed up port irq handling.
+> 
+>  drivers/usb/gadget/udc/aspeed-vhub/core.c | 11 ++++++++---
+>  drivers/usb/gadget/udc/aspeed-vhub/vhub.h |  8 +++-----
+>  2 files changed, 11 insertions(+), 8 deletions(-)
+> 
+> diff --git a/drivers/usb/gadget/udc/aspeed-vhub/core.c b/drivers/usb/gadget/udc/aspeed-vhub/core.c
+> index f8d35dd60c34..af2dbd405361 100644
+> --- a/drivers/usb/gadget/udc/aspeed-vhub/core.c
+> +++ b/drivers/usb/gadget/udc/aspeed-vhub/core.c
+> @@ -134,11 +134,14 @@ static irqreturn_t ast_vhub_irq(int irq, void *data)
+>  	}
+>  
+>  	/* Handle device interrupts */
+> -	for (i = 0; i < vhub->max_ports; i++) {
+> -		u32 dev_mask = VHUB_IRQ_DEVICE1 << i;
+> +	if (istat & vhub->port_irq_mask) {
+> +		int offset = VHUB_IRQ_DEV1_BIT;
+> +		int size = VHUB_IRQ_DEV1_BIT + vhub->max_ports;
+>  
+> -		if (istat & dev_mask)
+> +		for_each_set_bit_from(offset, (unsigned long *)&istat, size) 
 
-Signed-off-by: Andrew Geissler <geissonator@yahoo.com>
----
- arch/arm/boot/dts/aspeed-bmc-opp-zaius.dts | 37 +++++++++++++++++++---
- 1 file changed, 33 insertions(+), 4 deletions(-)
+That type cast is very bad. It will not work on big endian for example
+(yes this driver isn't used on big endian today but still).
 
-diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-zaius.dts b/arch/arm/boot/dts/aspeed-bmc-opp-zaius.dts
-index bc60ec291681..4bcc82046362 100644
---- a/arch/arm/boot/dts/aspeed-bmc-opp-zaius.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-opp-zaius.dts
-@@ -478,32 +478,61 @@
- 	pinctrl-names = "default";
- 	pinctrl-0 = <&pinctrl_gpioh_unbiased>;
- 
-+	gpio-line-names =
-+	/*A0-A7*/	"","cfam-reset","","","","","","",
-+	/*B0-B7*/	"","","","","","","","",
-+	/*C0-C7*/	"","","","","","","","",
-+	/*D0-D7*/	"fsi-enable","","","","","led-sys-boot-status","led-attention",
-+				"led-fault",
-+	/*E0-E7*/	"","","","","","","","presence-pcie-e2b",
-+	/*F0-F7*/	"","","","","","","","checkstop",
-+	/*G0-G7*/	"fsi-clock","fsi-data","","","","","","",
-+	/*H0-H7*/	"onewire0","onewire1","onewire2","onewire3","","","","",
-+	/*I0-I7*/	"","","","power-button","","","","",
-+	/*J0-J7*/	"","","","","","","","",
-+	/*K0-K7*/	"","","","","","","","",
-+	/*L0-L7*/	"","","","","","","","",
-+	/*M0-M7*/	"","","","","","","","",
-+	/*N0-N7*/	"","","","","","","","",
-+	/*O0-O7*/	"","","","","iso_u164_en","","fsi-trans","",
-+	/*P0-P7*/	"ncsi_mux_en_n","bmc_i2c2_sw_rst_n","","bmc_i2c5_sw_rst_n","",
-+				"","fsi-mux","",
-+	/*Q0-Q7*/	"","","","","","","","",
-+	/*R0-R7*/	"","","","","","","","",
-+	/*S0-S7*/	"","","","","","","","",
-+	/*T0-T7*/	"","","","","","","","",
-+	/*U0-U7*/	"","","","","","","","",
-+	/*V0-V7*/	"","","","","","","","",
-+	/*W0-W7*/	"","","","","","","","",
-+	/*X0-X7*/	"","","","","","","","",
-+	/*Y0-Y7*/	"","","","","","","","",
-+	/*Z0-Z7*/	"","","","","","","","",
-+	/*AA0-AA7*/	"","","led-hdd-fault","","","","","",
-+	/*AB0-AB7*/	"","","","","","","","",
-+	/*AC0-AC7*/	"","","","","","","","";
-+
- 	line_iso_u146_en {
- 		gpio-hog;
- 		gpios = <ASPEED_GPIO(O, 4) GPIO_ACTIVE_HIGH>;
- 		output-high;
--		line-name = "iso_u164_en";
- 	};
- 
- 	ncsi_mux_en_n {
- 		gpio-hog;
- 		gpios = <ASPEED_GPIO(P, 0) GPIO_ACTIVE_HIGH>;
- 		output-low;
--		line-name = "ncsi_mux_en_n";
- 	};
- 
- 	line_bmc_i2c2_sw_rst_n {
- 		gpio-hog;
- 		gpios = <ASPEED_GPIO(P, 1) GPIO_ACTIVE_HIGH>;
- 		output-high;
--		line-name = "bmc_i2c2_sw_rst_n";
- 	};
- 
- 	line_bmc_i2c5_sw_rst_n {
- 		gpio-hog;
- 		gpios = <ASPEED_GPIO(P, 3) GPIO_ACTIVE_HIGH>;
- 		output-high;
--		line-name = "bmc_i2c5_sw_rst_n";
- 	};
- };
- 
--- 
-2.21.0 (Apple Git-122)
+Please assign istat to an unsigned long (or make it unsigned long to
+begin with).
+
+> +			i = offset - VHUB_IRQ_DEV1_BIT;
+>  			ast_vhub_dev_irq(&vhub->ports[i].dev);
+> +		}
+>  	}
+>  
+>  	/* Handle top-level vHub EP0 interrupts */
+> @@ -332,6 +335,8 @@ static int ast_vhub_probe(struct platform_device *pdev)
+>  
+>  	spin_lock_init(&vhub->lock);
+>  	vhub->pdev = pdev;
+> +	vhub->port_irq_mask = GENMASK(VHUB_IRQ_DEV1_BIT + vhub->max_ports - 1,
+> +				      VHUB_IRQ_DEV1_BIT);
+>  
+>  	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+>  	vhub->regs = devm_ioremap_resource(&pdev->dev, res);
+> diff --git a/drivers/usb/gadget/udc/aspeed-vhub/vhub.h b/drivers/usb/gadget/udc/aspeed-vhub/vhub.h
+> index fac79ef6d669..23a1ac91f8d2 100644
+> --- a/drivers/usb/gadget/udc/aspeed-vhub/vhub.h
+> +++ b/drivers/usb/gadget/udc/aspeed-vhub/vhub.h
+> @@ -51,14 +51,11 @@
+>  #define VHUB_CTRL_UPSTREAM_CONNECT		(1 << 0)
+>  
+>  /* IER & ISR */
+> +#define VHUB_IRQ_DEV1_BIT			9
+>  #define VHUB_IRQ_USB_CMD_DEADLOCK		(1 << 18)
+>  #define VHUB_IRQ_EP_POOL_NAK			(1 << 17)
+>  #define VHUB_IRQ_EP_POOL_ACK_STALL		(1 << 16)
+> -#define VHUB_IRQ_DEVICE5			(1 << 13)
+> -#define VHUB_IRQ_DEVICE4			(1 << 12)
+> -#define VHUB_IRQ_DEVICE3			(1 << 11)
+> -#define VHUB_IRQ_DEVICE2			(1 << 10)
+> -#define VHUB_IRQ_DEVICE1			(1 << 9)
+> +#define VHUB_IRQ_DEVICE1			(1 << (VHUB_IRQ_DEV1_BIT))
+>  #define VHUB_IRQ_BUS_RESUME			(1 << 8)
+>  #define VHUB_IRQ_BUS_SUSPEND 			(1 << 7)
+>  #define VHUB_IRQ_BUS_RESET 			(1 << 6)
+> @@ -402,6 +399,7 @@ struct ast_vhub {
+>  	/* Per-port info */
+>  	struct ast_vhub_port		*ports;
+>  	u32				max_ports;
+> +	u32				port_irq_mask;
+>  
+>  	/* Generic EP data structures */
+>  	struct ast_vhub_ep		*epns;
 
