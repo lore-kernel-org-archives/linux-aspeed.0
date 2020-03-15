@@ -1,10 +1,10 @@
 From: rentao.bupt@gmail.com <rentao.bupt@gmail.com>
-Date: Sun, 15 Mar 2020 12:16:29 -0700
-Subject: [PATCH v2 3/6] usb: gadget: aspeed: allow to set usb strings in
- device tree
+Date: Sun, 15 Mar 2020 12:16:30 -0700
+Subject: [PATCH v2 4/6] usb: gadget: aspeed: allow to set device IDs in device
+ tree
 In-Reply-To: <20200315191632.12536-1-rentao.bupt@gmail.com>
 References: <20200315191632.12536-1-rentao.bupt@gmail.com>
-Message-ID: <20200315191632.12536-4-rentao.bupt@gmail.com>
+Message-ID: <20200315191632.12536-5-rentao.bupt@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -13,97 +13,57 @@ Content-Transfer-Encoding: 7bit
 
 From: Tao Ren <rentao.bupt@gmail.com>
 
-If "vhub,string-descriptor" device tree property is defined, the driver
-will load string descriptors from device tree; otherwise, the default
-string descriptors will be used.
+The patch overrides idVendor, idProduct and bcdDevice fields in vhub
+Device Descriptor if according device tree properties are defined.
 
 Signed-off-by: Tao Ren <rentao.bupt@gmail.com>
 ---
- No change in v2:
-   - the patch is added into the series since v2.
+ Changes in v2:
+   - update per-vhub device descriptor instance instead of the global
+     default descriptor.
 
- drivers/usb/gadget/udc/aspeed-vhub/hub.c | 58 +++++++++++++++++++++++-
- 1 file changed, 57 insertions(+), 1 deletion(-)
+ drivers/usb/gadget/udc/aspeed-vhub/hub.c | 21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
 
 diff --git a/drivers/usb/gadget/udc/aspeed-vhub/hub.c b/drivers/usb/gadget/udc/aspeed-vhub/hub.c
-index 35edf37553f0..421631d86a17 100644
+index 421631d86a17..13fba91aad6a 100644
 --- a/drivers/usb/gadget/udc/aspeed-vhub/hub.c
 +++ b/drivers/usb/gadget/udc/aspeed-vhub/hub.c
-@@ -941,9 +941,61 @@ static int ast_vhub_str_alloc_add(struct ast_vhub *vhub,
- 	return 0;
+@@ -887,6 +887,26 @@ void ast_vhub_hub_reset(struct ast_vhub *vhub)
+ 	writel(0, vhub->regs + AST_VHUB_EP1_STS_CHG);
  }
  
-+static const struct {
-+	const char *name;
-+	u8 id;
-+} str_id_map[] = {
-+	{"manufacturer",	AST_VHUB_STR_MANUF},
-+	{"product",		AST_VHUB_STR_PRODUCT},
-+	{"serial-number",	AST_VHUB_STR_SERIAL},
-+	{},
-+};
-+
-+static int ast_vhub_of_parse_str_desc(struct ast_vhub *vhub,
-+				      const struct device_node *desc_np)
++static void ast_vhub_of_parse_dev_desc(struct ast_vhub *vhub,
++				       const struct device_node *vhub_np)
 +{
-+	u32 langid;
-+	int ret = 0;
-+	int i, offset;
-+	const char *str;
-+	struct device_node *child;
-+	struct usb_string str_array[AST_VHUB_STR_INDEX_MAX];
-+	struct usb_gadget_strings lang_str = {
-+		.strings = (struct usb_string *)str_array,
-+	};
++	u16 id;
++	u32 data;
 +
-+	for_each_child_of_node(desc_np, child) {
-+		if (of_property_read_u32(child, "reg", &langid))
-+			continue; /* no language identifier specified */
-+
-+		if (!usb_validate_langid(langid))
-+			continue; /* invalid language identifier */
-+
-+		lang_str.language = langid;
-+		for (i = offset = 0; str_id_map[i].name; i++) {
-+			str = of_get_property(child, str_id_map[i].name, NULL);
-+			if (str) {
-+				str_array[offset].s = str;
-+				str_array[offset].id = str_id_map[i].id;
-+				offset++;
-+			}
-+		}
-+		str_array[offset].id = 0;
-+		str_array[offset].s = NULL;
-+
-+		ret = ast_vhub_str_alloc_add(vhub, &lang_str);
-+		if (ret)
-+			break;
++	if (!of_property_read_u32(vhub_np, "vhub-vendor-id", &data)) {
++		id = (u16)data;
++		vhub->vhub_dev_desc.idVendor = cpu_to_le16(id);
 +	}
-+
-+	return ret;
++	if (!of_property_read_u32(vhub_np, "vhub-product-id", &data)) {
++		id = (u16)data;
++		vhub->vhub_dev_desc.idProduct = cpu_to_le16(id);
++	}
++	if (!of_property_read_u32(vhub_np, "vhub-device-revision", &data)) {
++		id = (u16)data;
++		vhub->vhub_dev_desc.bcdDevice = cpu_to_le16(id);
++	}
 +}
 +
- static int ast_vhub_init_desc(struct ast_vhub *vhub)
+ static struct usb_gadget_string_container*
+ ast_vhub_str_container_alloc(struct ast_vhub *vhub)
  {
- 	int ret;
-+	struct device_node *desc_np;
-+	const struct device_node *vhub_np = vhub->pdev->dev.of_node;
- 
+@@ -1000,6 +1020,7 @@ static int ast_vhub_init_desc(struct ast_vhub *vhub)
  	/* Initialize vhub Device Descriptor. */
  	memcpy(&vhub->vhub_dev_desc, &ast_vhub_dev_desc,
-@@ -960,7 +1012,11 @@ static int ast_vhub_init_desc(struct ast_vhub *vhub)
+ 		sizeof(vhub->vhub_dev_desc));
++	ast_vhub_of_parse_dev_desc(vhub, vhub_np);
  
- 	/* Initialize vhub String Descriptors. */
- 	INIT_LIST_HEAD(&vhub->vhub_str_desc);
--	ret = ast_vhub_str_alloc_add(vhub, &ast_vhub_strings);
-+	desc_np = of_get_child_by_name(vhub_np, "vhub-strings");
-+	if (desc_np)
-+		ret = ast_vhub_of_parse_str_desc(vhub, desc_np);
-+	else
-+		ret = ast_vhub_str_alloc_add(vhub, &ast_vhub_strings);
- 
- 	return ret;
- }
+ 	/* Initialize vhub Configuration Descriptor. */
+ 	memcpy(&vhub->vhub_conf_desc, &ast_vhub_conf_desc,
 -- 
 2.17.1
 
