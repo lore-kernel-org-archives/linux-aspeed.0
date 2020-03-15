@@ -1,71 +1,92 @@
-From: Joel Stanley <joel@jms.id.au>
-Date: Thu, 12 Mar 2020 22:44:13 +1030
-Subject: [PATCH] soc: aspeed-lpc-ctrl: LPC to AHB mapping on ast2600
-Message-ID: <20200312121413.294384-1-joel@jms.id.au>
+From: rentao.bupt@gmail.com <rentao.bupt@gmail.com>
+Date: Sun, 15 Mar 2020 12:14:30 -0700
+Subject: [PATCH v3] usb: gadget: aspeed: improve vhub port irq handling
+Message-ID: <20200315191430.12379-1-rentao.bupt@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The ast2600 disables the mapping of AHB memory regions by default,
-only allowing the LPC window to point to SPI NOR. In order to point the
-window to any AHB address, an ast2600 specific bit must be toggled.
+From: Tao Ren <rentao.bupt@gmail.com>
 
-Signed-off-by: Joel Stanley <joel@jms.id.au>
+This patch evaluates vhub ports' irq mask before going through per-port
+irq handling one by one, which helps to speed up irq handling in case
+there is no port interrupt.
+
+Signed-off-by: Tao Ren <rentao.bupt@gmail.com>
 ---
- drivers/soc/aspeed/aspeed-lpc-ctrl.c | 17 +++++++++++++++++
- 1 file changed, 17 insertions(+)
+ Changes in v3:
+   - assign istat to (unsigned long) bitmap before calling
+     "for_each_set_bit_from".
+ Changes in v2:
+   - use "for_each_set_bit" to speed up port irq handling.
 
-diff --git a/drivers/soc/aspeed/aspeed-lpc-ctrl.c b/drivers/soc/aspeed/aspeed-lpc-ctrl.c
-index f4ac14c40518..142cb4cc85e7 100644
---- a/drivers/soc/aspeed/aspeed-lpc-ctrl.c
-+++ b/drivers/soc/aspeed/aspeed-lpc-ctrl.c
-@@ -22,6 +22,9 @@
- #define HICR5_ENL2H	BIT(8)
- #define HICR5_ENFWH	BIT(10)
- 
-+#define HICR6 0x4
-+#define SW_FWH2AHB	BIT(17)
-+
- #define HICR7 0x8
- #define HICR8 0xc
- 
-@@ -33,6 +36,7 @@ struct aspeed_lpc_ctrl {
- 	resource_size_t		mem_size;
- 	u32		pnor_size;
- 	u32		pnor_base;
-+	bool			fwh2ahb;
- };
- 
- static struct aspeed_lpc_ctrl *file_aspeed_lpc_ctrl(struct file *file)
-@@ -177,6 +181,16 @@ static long aspeed_lpc_ctrl_ioctl(struct file *file, unsigned int cmd,
- 		if (rc)
- 			return rc;
- 
-+		/*
-+		 * Switch to FWH2AHB mode, AST2600 only.
-+		 *
-+		 * The other bits in this register are interrupt status bits
-+		 * that are cleared by writing 1. As we don't want to clear
-+		 * them, set only the bit of interest.
-+		 */
-+		if (lpc_ctrl->fwh2ahb)
-+			regmap_write(lpc_ctrl->regmap, HICR6, SW_FWH2AHB);
-+
- 		/*
- 		 * Enable LPC FHW cycles. This is required for the host to
- 		 * access the regions specified.
-@@ -274,6 +288,9 @@ static int aspeed_lpc_ctrl_probe(struct platform_device *pdev)
- 		return rc;
+ drivers/usb/gadget/udc/aspeed-vhub/core.c | 12 +++++++++---
+ drivers/usb/gadget/udc/aspeed-vhub/vhub.h |  8 +++-----
+ 2 files changed, 12 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/usb/gadget/udc/aspeed-vhub/core.c b/drivers/usb/gadget/udc/aspeed-vhub/core.c
+index f8d35dd60c34..555e8645fb1e 100644
+--- a/drivers/usb/gadget/udc/aspeed-vhub/core.c
++++ b/drivers/usb/gadget/udc/aspeed-vhub/core.c
+@@ -134,11 +134,15 @@ static irqreturn_t ast_vhub_irq(int irq, void *data)
  	}
  
-+	if (of_device_is_compatible(dev->of_node, "aspeed,ast2600-lpc-ctrl"))
-+		lpc_ctrl->fwh2ahb = true;
-+
- 	lpc_ctrl->miscdev.minor = MISC_DYNAMIC_MINOR;
- 	lpc_ctrl->miscdev.name = DEVICE_NAME;
- 	lpc_ctrl->miscdev.fops = &aspeed_lpc_ctrl_fops;
+ 	/* Handle device interrupts */
+-	for (i = 0; i < vhub->max_ports; i++) {
+-		u32 dev_mask = VHUB_IRQ_DEVICE1 << i;
++	if (istat & vhub->port_irq_mask) {
++		unsigned long bitmap = istat;
++		int offset = VHUB_IRQ_DEV1_BIT;
++		int size = VHUB_IRQ_DEV1_BIT + vhub->max_ports;
+ 
+-		if (istat & dev_mask)
++		for_each_set_bit_from(offset, &bitmap, size) {
++			i = offset - VHUB_IRQ_DEV1_BIT;
+ 			ast_vhub_dev_irq(&vhub->ports[i].dev);
++		}
+ 	}
+ 
+ 	/* Handle top-level vHub EP0 interrupts */
+@@ -332,6 +336,8 @@ static int ast_vhub_probe(struct platform_device *pdev)
+ 
+ 	spin_lock_init(&vhub->lock);
+ 	vhub->pdev = pdev;
++	vhub->port_irq_mask = GENMASK(VHUB_IRQ_DEV1_BIT + vhub->max_ports - 1,
++				      VHUB_IRQ_DEV1_BIT);
+ 
+ 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+ 	vhub->regs = devm_ioremap_resource(&pdev->dev, res);
+diff --git a/drivers/usb/gadget/udc/aspeed-vhub/vhub.h b/drivers/usb/gadget/udc/aspeed-vhub/vhub.h
+index fac79ef6d669..23a1ac91f8d2 100644
+--- a/drivers/usb/gadget/udc/aspeed-vhub/vhub.h
++++ b/drivers/usb/gadget/udc/aspeed-vhub/vhub.h
+@@ -51,14 +51,11 @@
+ #define VHUB_CTRL_UPSTREAM_CONNECT		(1 << 0)
+ 
+ /* IER & ISR */
++#define VHUB_IRQ_DEV1_BIT			9
+ #define VHUB_IRQ_USB_CMD_DEADLOCK		(1 << 18)
+ #define VHUB_IRQ_EP_POOL_NAK			(1 << 17)
+ #define VHUB_IRQ_EP_POOL_ACK_STALL		(1 << 16)
+-#define VHUB_IRQ_DEVICE5			(1 << 13)
+-#define VHUB_IRQ_DEVICE4			(1 << 12)
+-#define VHUB_IRQ_DEVICE3			(1 << 11)
+-#define VHUB_IRQ_DEVICE2			(1 << 10)
+-#define VHUB_IRQ_DEVICE1			(1 << 9)
++#define VHUB_IRQ_DEVICE1			(1 << (VHUB_IRQ_DEV1_BIT))
+ #define VHUB_IRQ_BUS_RESUME			(1 << 8)
+ #define VHUB_IRQ_BUS_SUSPEND 			(1 << 7)
+ #define VHUB_IRQ_BUS_RESET 			(1 << 6)
+@@ -402,6 +399,7 @@ struct ast_vhub {
+ 	/* Per-port info */
+ 	struct ast_vhub_port		*ports;
+ 	u32				max_ports;
++	u32				port_irq_mask;
+ 
+ 	/* Generic EP data structures */
+ 	struct ast_vhub_ep		*epns;
 -- 
-2.25.1
+2.17.1
 
