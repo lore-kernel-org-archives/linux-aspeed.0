@@ -1,9 +1,10 @@
 From: rentao.bupt@gmail.com <rentao.bupt@gmail.com>
-Date: Sun, 15 Mar 2020 12:16:28 -0700
-Subject: [PATCH v2 2/6] usb: gadget: add "usb_validate_langid" function
+Date: Sun, 15 Mar 2020 12:16:29 -0700
+Subject: [PATCH v2 3/6] usb: gadget: aspeed: allow to set usb strings in
+ device tree
 In-Reply-To: <20200315191632.12536-1-rentao.bupt@gmail.com>
 References: <20200315191632.12536-1-rentao.bupt@gmail.com>
-Message-ID: <20200315191632.12536-3-rentao.bupt@gmail.com>
+Message-ID: <20200315191632.12536-4-rentao.bupt@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -12,98 +13,97 @@ Content-Transfer-Encoding: 7bit
 
 From: Tao Ren <rentao.bupt@gmail.com>
 
-The USB LANGID validation code in "check_user_usb_string" function is
-moved to "usb_validate_langid" function which can be used by other usb
-gadget drivers.
+If "vhub,string-descriptor" device tree property is defined, the driver
+will load string descriptors from device tree; otherwise, the default
+string descriptors will be used.
 
 Signed-off-by: Tao Ren <rentao.bupt@gmail.com>
 ---
  No change in v2:
    - the patch is added into the series since v2.
 
- drivers/usb/gadget/configfs.c  | 14 +-------------
- drivers/usb/gadget/usbstring.c | 24 ++++++++++++++++++++++++
- include/linux/usb/gadget.h     |  3 +++
- 3 files changed, 28 insertions(+), 13 deletions(-)
+ drivers/usb/gadget/udc/aspeed-vhub/hub.c | 58 +++++++++++++++++++++++-
+ 1 file changed, 57 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/usb/gadget/configfs.c b/drivers/usb/gadget/configfs.c
-index 32b637e3e1fa..822ef0470c5f 100644
---- a/drivers/usb/gadget/configfs.c
-+++ b/drivers/usb/gadget/configfs.c
-@@ -13,8 +13,6 @@
- int check_user_usb_string(const char *name,
- 		struct usb_gadget_strings *stringtab_dev)
- {
--	unsigned primary_lang;
--	unsigned sub_lang;
- 	u16 num;
- 	int ret;
- 
-@@ -22,17 +20,7 @@ int check_user_usb_string(const char *name,
- 	if (ret)
- 		return ret;
- 
--	primary_lang = num & 0x3ff;
--	sub_lang = num >> 10;
--
--	/* simple sanity check for valid langid */
--	switch (primary_lang) {
--	case 0:
--	case 0x62 ... 0xfe:
--	case 0x100 ... 0x3ff:
--		return -EINVAL;
--	}
--	if (!sub_lang)
-+	if (!usb_validate_langid(num))
- 		return -EINVAL;
- 
- 	stringtab_dev->language = num;
-diff --git a/drivers/usb/gadget/usbstring.c b/drivers/usb/gadget/usbstring.c
-index 7c24d1ce1088..58a4d3325090 100644
---- a/drivers/usb/gadget/usbstring.c
-+++ b/drivers/usb/gadget/usbstring.c
-@@ -65,3 +65,27 @@ usb_gadget_get_string (const struct usb_gadget_strings *table, int id, u8 *buf)
- 	return buf [0];
+diff --git a/drivers/usb/gadget/udc/aspeed-vhub/hub.c b/drivers/usb/gadget/udc/aspeed-vhub/hub.c
+index 35edf37553f0..421631d86a17 100644
+--- a/drivers/usb/gadget/udc/aspeed-vhub/hub.c
++++ b/drivers/usb/gadget/udc/aspeed-vhub/hub.c
+@@ -941,9 +941,61 @@ static int ast_vhub_str_alloc_add(struct ast_vhub *vhub,
+ 	return 0;
  }
- EXPORT_SYMBOL_GPL(usb_gadget_get_string);
+ 
++static const struct {
++	const char *name;
++	u8 id;
++} str_id_map[] = {
++	{"manufacturer",	AST_VHUB_STR_MANUF},
++	{"product",		AST_VHUB_STR_PRODUCT},
++	{"serial-number",	AST_VHUB_STR_SERIAL},
++	{},
++};
 +
-+/**
-+ * usb_validate_langid - validate usb language identifiers
-+ * @lang: usb language identifier
-+ *
-+ * Returns true for valid language identifier, otherwise false.
-+ */
-+bool usb_validate_langid(u16 langid)
++static int ast_vhub_of_parse_str_desc(struct ast_vhub *vhub,
++				      const struct device_node *desc_np)
 +{
-+	u16 primary_lang = langid & 0x3ff;	/* bit [9:0] */
-+	u16 sub_lang = langid >> 10;		/* bit [15:10] */
++	u32 langid;
++	int ret = 0;
++	int i, offset;
++	const char *str;
++	struct device_node *child;
++	struct usb_string str_array[AST_VHUB_STR_INDEX_MAX];
++	struct usb_gadget_strings lang_str = {
++		.strings = (struct usb_string *)str_array,
++	};
 +
-+	switch (primary_lang) {
-+	case 0:
-+	case 0x62 ... 0xfe:
-+	case 0x100 ... 0x3ff:
-+		return false;
++	for_each_child_of_node(desc_np, child) {
++		if (of_property_read_u32(child, "reg", &langid))
++			continue; /* no language identifier specified */
++
++		if (!usb_validate_langid(langid))
++			continue; /* invalid language identifier */
++
++		lang_str.language = langid;
++		for (i = offset = 0; str_id_map[i].name; i++) {
++			str = of_get_property(child, str_id_map[i].name, NULL);
++			if (str) {
++				str_array[offset].s = str;
++				str_array[offset].id = str_id_map[i].id;
++				offset++;
++			}
++		}
++		str_array[offset].id = 0;
++		str_array[offset].s = NULL;
++
++		ret = ast_vhub_str_alloc_add(vhub, &lang_str);
++		if (ret)
++			break;
 +	}
-+	if (!sub_lang)
-+		return false;
 +
-+	return true;
++	return ret;
 +}
-+EXPORT_SYMBOL_GPL(usb_validate_langid);
-diff --git a/include/linux/usb/gadget.h b/include/linux/usb/gadget.h
-index 124462d65eac..1a05227bdfae 100644
---- a/include/linux/usb/gadget.h
-+++ b/include/linux/usb/gadget.h
-@@ -773,6 +773,9 @@ struct usb_gadget_string_container {
- /* put descriptor for string with that id into buf (buflen >= 256) */
- int usb_gadget_get_string(const struct usb_gadget_strings *table, int id, u8 *buf);
- 
-+/* check if the given language identifier is valid */
-+bool usb_validate_langid(u16 langid);
 +
- /*-------------------------------------------------------------------------*/
+ static int ast_vhub_init_desc(struct ast_vhub *vhub)
+ {
+ 	int ret;
++	struct device_node *desc_np;
++	const struct device_node *vhub_np = vhub->pdev->dev.of_node;
  
- /* utility to simplify managing config descriptors */
+ 	/* Initialize vhub Device Descriptor. */
+ 	memcpy(&vhub->vhub_dev_desc, &ast_vhub_dev_desc,
+@@ -960,7 +1012,11 @@ static int ast_vhub_init_desc(struct ast_vhub *vhub)
+ 
+ 	/* Initialize vhub String Descriptors. */
+ 	INIT_LIST_HEAD(&vhub->vhub_str_desc);
+-	ret = ast_vhub_str_alloc_add(vhub, &ast_vhub_strings);
++	desc_np = of_get_child_by_name(vhub_np, "vhub-strings");
++	if (desc_np)
++		ret = ast_vhub_of_parse_str_desc(vhub, desc_np);
++	else
++		ret = ast_vhub_str_alloc_add(vhub, &ast_vhub_strings);
+ 
+ 	return ret;
+ }
 -- 
 2.17.1
 
