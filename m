@@ -1,113 +1,87 @@
-From: rentao.bupt@gmail.com <rentao.bupt@gmail.com>
-Date: Sun, 15 Mar 2020 12:16:32 -0700
-Subject: [PATCH v2 6/6] dt-bindings: usb: document aspeed vhub device
- ID/string properties
-In-Reply-To: <20200315191632.12536-1-rentao.bupt@gmail.com>
-References: <20200315191632.12536-1-rentao.bupt@gmail.com>
-Message-ID: <20200315191632.12536-7-rentao.bupt@gmail.com>
+From: Andrew Jeffery <andrew@aj.id.au>
+Date: Mon, 16 Mar 2020 12:28:35 +1030
+Subject: [PATCH] soc: aspeed-lpc-ctrl: LPC to AHB mapping on ast2600
+In-Reply-To: <20200312121413.294384-1-joel@jms.id.au>
+References: <20200312121413.294384-1-joel@jms.id.au>
+Message-ID: <2f51b12e-3651-48e4-b733-01f41ca44b92@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Tao Ren <rentao.bupt@gmail.com>
 
-Update device tree binding document for aspeed vhub's device IDs and
-string properties.
 
-Signed-off-by: Tao Ren <rentao.bupt@gmail.com>
----
- No change in v2:
-   - the patch is added into the series since v2.
+On Thu, 12 Mar 2020, at 22:44, Joel Stanley wrote:
+> The ast2600 disables the mapping of AHB memory regions by default,
+> only allowing the LPC window to point to SPI NOR. In order to point the
+> window to any AHB address, an ast2600 specific bit must be toggled.
+> 
+> Signed-off-by: Joel Stanley <joel@jms.id.au>
+> ---
+>  drivers/soc/aspeed/aspeed-lpc-ctrl.c | 17 +++++++++++++++++
+>  1 file changed, 17 insertions(+)
+> 
+> diff --git a/drivers/soc/aspeed/aspeed-lpc-ctrl.c 
+> b/drivers/soc/aspeed/aspeed-lpc-ctrl.c
+> index f4ac14c40518..142cb4cc85e7 100644
+> --- a/drivers/soc/aspeed/aspeed-lpc-ctrl.c
+> +++ b/drivers/soc/aspeed/aspeed-lpc-ctrl.c
+> @@ -22,6 +22,9 @@
+>  #define HICR5_ENL2H	BIT(8)
+>  #define HICR5_ENFWH	BIT(10)
+>  
+> +#define HICR6 0x4
 
- .../bindings/usb/aspeed,usb-vhub.yaml         | 68 +++++++++++++++++++
- 1 file changed, 68 insertions(+)
+Given you introduced this I assume we don't have anything else touching
+the register, but if we ever do hopefully whoever it is that adds support is
+conscious that they need to be doing an read/modify/write to correctly
+clear the W1C registers without frobbing the bridge state.
 
-diff --git a/Documentation/devicetree/bindings/usb/aspeed,usb-vhub.yaml b/Documentation/devicetree/bindings/usb/aspeed,usb-vhub.yaml
-index 06399ba0d9e4..5b2e8d867219 100644
---- a/Documentation/devicetree/bindings/usb/aspeed,usb-vhub.yaml
-+++ b/Documentation/devicetree/bindings/usb/aspeed,usb-vhub.yaml
-@@ -52,6 +52,59 @@ properties:
-         minimum: 1
-         maximum: 21
- 
-+  vhub-vendor-id:
-+    description: vhub Vendor ID
-+    allOf:
-+      - $ref: /schemas/types.yaml#/definitions/uint32
-+      - maximum: 65535
-+
-+  vhub-product-id:
-+    description: vhub Product ID
-+    allOf:
-+      - $ref: /schemas/types.yaml#/definitions/uint32
-+      - maximum: 65535
-+
-+  vhub-device-revision:
-+    description: vhub Device Revision in binary-coded decimal
-+    allOf:
-+      - $ref: /schemas/types.yaml#/definitions/uint32
-+      - maximum: 65535
-+
-+  vhub-strings:
-+    type: object
-+
-+    properties:
-+      '#address-cells':
-+        const: 1
-+
-+      '#size-cells':
-+        const: 0
-+
-+    patternProperties:
-+      '^string@[0-9a-f]+$':
-+        type: object
-+        description: string descriptors of the specific language
-+
-+        properties:
-+          reg:
-+            maxItems: 1
-+            description: 16-bit Language Identifier defined by USB-IF
-+
-+          manufacturer:
-+            description: vhub manufacturer
-+            allOf:
-+              - $ref: /schemas/types.yaml#/definitions/string
-+
-+          product:
-+            description: vhub product name
-+            allOf:
-+              - $ref: /schemas/types.yaml#/definitions/string
-+
-+          serial-number:
-+            description: vhub device serial number
-+            allOf:
-+              - $ref: /schemas/types.yaml#/definitions/string
-+
- required:
-   - compatible
-   - reg
-@@ -74,4 +127,19 @@ examples:
-             aspeed,vhub-generic-endpoints = <15>;
-             pinctrl-names = "default";
-             pinctrl-0 = <&pinctrl_usb2ad_default>;
-+
-+            vhub-vendor-id = <0x1d6b>;
-+            vhub-product-id = <0x0107>;
-+            vhub-device-revision = <0x0100>;
-+            vhub-strings {
-+                #address-cells = <1>;
-+                #size-cells = <0>;
-+
-+                string at 0409 {
-+                        reg = <0x0409>;
-+                        manufacturer = "ASPEED";
-+                        product = "USB Virtual Hub";
-+                        serial-number = "0000";
-+                };
-+            };
-     };
--- 
-2.17.1
+Looks like Aspeed should have introduced two bits to manage it :/
 
+> +#define SW_FWH2AHB	BIT(17)
+> +
+>  #define HICR7 0x8
+>  #define HICR8 0xc
+>  
+> @@ -33,6 +36,7 @@ struct aspeed_lpc_ctrl {
+>  	resource_size_t		mem_size;
+>  	u32		pnor_size;
+>  	u32		pnor_base;
+> +	bool			fwh2ahb;
+>  };
+>  
+>  static struct aspeed_lpc_ctrl *file_aspeed_lpc_ctrl(struct file *file)
+> @@ -177,6 +181,16 @@ static long aspeed_lpc_ctrl_ioctl(struct file 
+> *file, unsigned int cmd,
+>  		if (rc)
+>  			return rc;
+>  
+> +		/*
+> +		 * Switch to FWH2AHB mode, AST2600 only.
+> +		 *
+> +		 * The other bits in this register are interrupt status bits
+> +		 * that are cleared by writing 1. As we don't want to clear
+> +		 * them, set only the bit of interest.
+> +		 */
+> +		if (lpc_ctrl->fwh2ahb)
+> +			regmap_write(lpc_ctrl->regmap, HICR6, SW_FWH2AHB);
+> +
+>  		/*
+>  		 * Enable LPC FHW cycles. This is required for the host to
+>  		 * access the regions specified.
+> @@ -274,6 +288,9 @@ static int aspeed_lpc_ctrl_probe(struct 
+> platform_device *pdev)
+>  		return rc;
+>  	}
+>  
+> +	if (of_device_is_compatible(dev->of_node, "aspeed,ast2600-lpc-ctrl"))
+> +		lpc_ctrl->fwh2ahb = true;
+> +
+
+This implies that we don't want the SPI-only behaviour by default, which is
+true for our platforms but doesn't really reflect the hardware. What are your
+thoughts on adding an explict devicetree property? use-fwh2ahb?
+
+Andrew
