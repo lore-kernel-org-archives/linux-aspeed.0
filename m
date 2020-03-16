@@ -1,87 +1,65 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Mon, 16 Mar 2020 12:28:35 +1030
-Subject: [PATCH] soc: aspeed-lpc-ctrl: LPC to AHB mapping on ast2600
-In-Reply-To: <20200312121413.294384-1-joel@jms.id.au>
-References: <20200312121413.294384-1-joel@jms.id.au>
-Message-ID: <2f51b12e-3651-48e4-b733-01f41ca44b92@www.fastmail.com>
+From: Joel Stanley <joel@jms.id.au>
+Date: Mon, 16 Mar 2020 04:49:55 +0000
+Subject: [PATCH v6 06/12] soc: aspeed: Add XDMA Engine Driver
+In-Reply-To: <1a303336-9ffb-353f-efe3-7d45ed114fd0@linux.vnet.ibm.com>
+References: <1579123790-6894-1-git-send-email-eajames@linux.ibm.com>
+ <1579123790-6894-7-git-send-email-eajames@linux.ibm.com>
+ <CAK8P3a3HsdpLz0aDGem1BrQsNo2mEJOnOsLcKFcLjaERx9dhGg@mail.gmail.com>
+ <1a303336-9ffb-353f-efe3-7d45ed114fd0@linux.vnet.ibm.com>
+Message-ID: <CACPK8XcD5O0dwEOSHqWfCu38B96JkdbcvzCuJhep+PXF6foC=g@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+On Mon, 10 Feb 2020 at 17:10, Eddie James <eajames@linux.vnet.ibm.com> wrote:
+>
+>
+> On 2/10/20 10:35 AM, Arnd Bergmann wrote:
+> > On Wed, Jan 15, 2020 at 10:31 PM Eddie James <eajames@linux.ibm.com> wrote:
+> >> The XDMA engine embedded in the AST2500 and AST2600 SOCs performs PCI
+> >> DMA operations between the SOC (acting as a BMC) and a host processor
+> >> in a server.
+> >>
+> >> This commit adds a driver to control the XDMA engine and adds functions
+> >> to initialize the hardware and memory and start DMA operations.
+> >>
+> >> Signed-off-by: Eddie James <eajames@linux.ibm.com>
+> > Hi Eddie,
+> >
+> > I'm missing the bigger picture in the description here, how does this fit into
+> > the PCIe endpoint framework and the dmaengine subsystem?
+>
+>
+> Hi,
+>
+> It doesn't fit into the PCIe endpoint framework. The XDMA engine
+> abstracts all the PCIe details away so the BMC cannot configure any of
+> the things the PCIe endpoint exposes.
+>
+> It also doesn't fit into the dmaengine subsystem due to the restriction
+> on the ast2500 (and maybe the ast2600) that the XDMA engine can only
+> access certain areas of physical memory. Also problematic would be
+> pausing/resuming/terminating transfers because the XDMA engine can't do
+> those things.
+>
+>
+> >
+> > Does the AST2500 show up as a PCIe device in the host, or do you just
+> > inject DMAs into the host and hope that bypasses the IOMMU?
+> > If it shows up as an endpoint, how does the endpoint driver link into the
+> > dma driver?
+>
+>
+> The AST2500 and AST2600 have two PCIe devices on them, so these will
+> show up on the host if the BMC enables both of them. Either or both can
+> also be disabled and therefore will not show up. On the host side, in
+> order to receive DMA transfers, its simply a matter of registering a PCI
+> device driver and allocating some coherent DMA.... Not sure about the
+> details of endpoints/dma client driver?
+>
+>
+> Hopefully this answers your questions. Thanks,
 
-
-On Thu, 12 Mar 2020, at 22:44, Joel Stanley wrote:
-> The ast2600 disables the mapping of AHB memory regions by default,
-> only allowing the LPC window to point to SPI NOR. In order to point the
-> window to any AHB address, an ast2600 specific bit must be toggled.
-> 
-> Signed-off-by: Joel Stanley <joel@jms.id.au>
-> ---
->  drivers/soc/aspeed/aspeed-lpc-ctrl.c | 17 +++++++++++++++++
->  1 file changed, 17 insertions(+)
-> 
-> diff --git a/drivers/soc/aspeed/aspeed-lpc-ctrl.c 
-> b/drivers/soc/aspeed/aspeed-lpc-ctrl.c
-> index f4ac14c40518..142cb4cc85e7 100644
-> --- a/drivers/soc/aspeed/aspeed-lpc-ctrl.c
-> +++ b/drivers/soc/aspeed/aspeed-lpc-ctrl.c
-> @@ -22,6 +22,9 @@
->  #define HICR5_ENL2H	BIT(8)
->  #define HICR5_ENFWH	BIT(10)
->  
-> +#define HICR6 0x4
-
-Given you introduced this I assume we don't have anything else touching
-the register, but if we ever do hopefully whoever it is that adds support is
-conscious that they need to be doing an read/modify/write to correctly
-clear the W1C registers without frobbing the bridge state.
-
-Looks like Aspeed should have introduced two bits to manage it :/
-
-> +#define SW_FWH2AHB	BIT(17)
-> +
->  #define HICR7 0x8
->  #define HICR8 0xc
->  
-> @@ -33,6 +36,7 @@ struct aspeed_lpc_ctrl {
->  	resource_size_t		mem_size;
->  	u32		pnor_size;
->  	u32		pnor_base;
-> +	bool			fwh2ahb;
->  };
->  
->  static struct aspeed_lpc_ctrl *file_aspeed_lpc_ctrl(struct file *file)
-> @@ -177,6 +181,16 @@ static long aspeed_lpc_ctrl_ioctl(struct file 
-> *file, unsigned int cmd,
->  		if (rc)
->  			return rc;
->  
-> +		/*
-> +		 * Switch to FWH2AHB mode, AST2600 only.
-> +		 *
-> +		 * The other bits in this register are interrupt status bits
-> +		 * that are cleared by writing 1. As we don't want to clear
-> +		 * them, set only the bit of interest.
-> +		 */
-> +		if (lpc_ctrl->fwh2ahb)
-> +			regmap_write(lpc_ctrl->regmap, HICR6, SW_FWH2AHB);
-> +
->  		/*
->  		 * Enable LPC FHW cycles. This is required for the host to
->  		 * access the regions specified.
-> @@ -274,6 +288,9 @@ static int aspeed_lpc_ctrl_probe(struct 
-> platform_device *pdev)
->  		return rc;
->  	}
->  
-> +	if (of_device_is_compatible(dev->of_node, "aspeed,ast2600-lpc-ctrl"))
-> +		lpc_ctrl->fwh2ahb = true;
-> +
-
-This implies that we don't want the SPI-only behaviour by default, which is
-true for our platforms but doesn't really reflect the hardware. What are your
-thoughts on adding an explict devicetree property? use-fwh2ahb?
-
-Andrew
+Arnd, did you have further questions about this driver?
