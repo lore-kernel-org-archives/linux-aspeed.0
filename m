@@ -1,137 +1,60 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Tue, 31 Mar 2020 11:13:17 +1100
-Subject: [PATCH v2 6/6] dt-bindings: usb: document aspeed vhub device
- ID/string properties
-In-Reply-To: <20200330192347.GA6388@bogus>
-References: <20200315191632.12536-1-rentao.bupt@gmail.com>
- <20200315191632.12536-7-rentao.bupt@gmail.com>
- <20200330192347.GA6388@bogus>
-Message-ID: <4dc3ac910c79dcca398eb5161dde44e1cc50baca.camel@kernel.crashing.org>
+From: Gustavo A. R. Silva <gustavo@embeddedor.com>
+Date: Thu, 19 Mar 2020 17:43:26 -0500
+Subject: [PATCH][next] mtd: spi-nor: controllers: aspeed-smc: Replace
+ zero-length array with flexible-array member
+Message-ID: <20200319224326.GA25390@embeddedor.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, 2020-03-30 at 13:23 -0600, Rob Herring wrote:
-> On Sun, Mar 15, 2020 at 12:16:32PM -0700, rentao.bupt at gmail.com wrote:
-> > From: Tao Ren <rentao.bupt@gmail.com>
-> > 
-> > Update device tree binding document for aspeed vhub's device IDs and
-> > string properties.
-> > 
-> > Signed-off-by: Tao Ren <rentao.bupt@gmail.com>
-> > ---
-> >  No change in v2:
-> >    - the patch is added into the series since v2.
-> > 
-> >  .../bindings/usb/aspeed,usb-vhub.yaml         | 68 +++++++++++++++++++
-> >  1 file changed, 68 insertions(+)
-> > 
-> > diff --git a/Documentation/devicetree/bindings/usb/aspeed,usb-vhub.yaml b/Documentation/devicetree/bindings/usb/aspeed,usb-vhub.yaml
-> > index 06399ba0d9e4..5b2e8d867219 100644
-> > --- a/Documentation/devicetree/bindings/usb/aspeed,usb-vhub.yaml
-> > +++ b/Documentation/devicetree/bindings/usb/aspeed,usb-vhub.yaml
-> > @@ -52,6 +52,59 @@ properties:
-> >          minimum: 1
-> >          maximum: 21
-> >  
-> > +  vhub-vendor-id:
-> > +    description: vhub Vendor ID
-> > +    allOf:
-> > +      - $ref: /schemas/types.yaml#/definitions/uint32
-> > +      - maximum: 65535
-> > +
-> > +  vhub-product-id:
-> > +    description: vhub Product ID
-> > +    allOf:
-> > +      - $ref: /schemas/types.yaml#/definitions/uint32
-> > +      - maximum: 65535
-> 
-> There's already standard 'vendor-id' and 'device-id' properties. Use 
-> those.
+The current codebase makes use of the zero-length array language
+extension to the C90 standard, but the preferred mechanism to declare
+variable-length types such as these ones is a flexible array member[1][2],
+introduced in C99:
 
-So yes and no... I don't fundamentally object but keep in mind that
-traditionally, the properties are about matching with a physical
-hardware.
+struct foo {
+        int stuff;
+        struct boo array[];
+};
 
-In this case however, we are describing a virtual piece of HW and so
-those IDs are going to be picked up to be exposed as the USB
-vendor/device of the vhub on the USB bus.
+By making use of the mechanism above, we will get a compiler warning
+in case the flexible array does not occur last in the structure, which
+will help us prevent some kind of undefined behavior bugs from being
+inadvertently introduced[3] to the codebase from now on.
 
-Not necessarily an issue but it's more "configuration" than "matching"
-and as such, it might make sense to expose that with a prefix, though I
-would prefer something like usb-vendor-id or usb,vendor-id...
+Also, notice that, dynamic memory allocations won't be affected by
+this change:
 
-> > +
-> > +  vhub-device-revision:
-> 
-> Specific to USB, not vhub.
+"Flexible array members have incomplete type, and so the sizeof operator
+may not be applied. As a quirk of the original implementation of
+zero-length arrays, sizeof evaluates to zero."[1]
 
-Same as the above.
+This issue was found with the help of Coccinelle.
 
-> > +    description: vhub Device Revision in binary-coded decimal
-> > +    allOf:
-> > +      - $ref: /schemas/types.yaml#/definitions/uint32
-> > +      - maximum: 65535
-> > +
-> > +  vhub-strings:
-> > +    type: object
-> > +
-> > +    properties:
-> > +      '#address-cells':
-> > +        const: 1
-> > +
-> > +      '#size-cells':
-> > +        const: 0
-> > +
-> > +    patternProperties:
-> > +      '^string@[0-9a-f]+$':
-> > +        type: object
-> > +        description: string descriptors of the specific language
-> > +
-> > +        properties:
-> > +          reg:
-> > +            maxItems: 1
-> > +            description: 16-bit Language Identifier defined by USB-IF
-> > +
-> > +          manufacturer:
-> > +            description: vhub manufacturer
-> > +            allOf:
-> > +              - $ref: /schemas/types.yaml#/definitions/string
-> > +
-> > +          product:
-> > +            description: vhub product name
-> > +            allOf:
-> > +              - $ref: /schemas/types.yaml#/definitions/string
-> > +
-> > +          serial-number:
-> > +            description: vhub device serial number
-> > +            allOf:
-> > +              - $ref: /schemas/types.yaml#/definitions/string
-> 
-> For all of this, it's USB specific, not vhub specific. I'm not sure this 
-> is the right approach. It might be better to just define properties 
-> which are just raw USB descriptors rather than inventing some DT format 
-> that then has to be converted into USB descriptors.
+[1] https://gcc.gnu.org/onlinedocs/gcc/Zero-Length.html
+[2] https://github.com/KSPP/linux/issues/21
+[3] commit 76497732932f ("cxgb3/l2t: Fix undefined behaviour")
 
-Raw blob in the DT is rather annoying and leads to hard to parse stuff
-for both humans and scripts. The main strenght of the DT is it's easy
-to read and manipulate.
+Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
+---
+ drivers/mtd/spi-nor/controllers/aspeed-smc.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Also not the entire descriptor is configurable this way.
-
-That said, it could be that using  the DT for the above is overkill and
-instead, we should consider a configfs like the rest of USB gadget.
-Though it isn't obvious how to do that, the current gadget stuff
-doesn't really "fit" what we need here.
-
-Maybe we could expose the port as UDCs but not actually expose them on
-the bus until the hub is "activated" via a special configfs entry...
-
-Cheers,
-Ben.
-
-> os the 
-> Rob
+diff --git a/drivers/mtd/spi-nor/controllers/aspeed-smc.c b/drivers/mtd/spi-nor/controllers/aspeed-smc.c
+index 395127349aa8..e26a1897db0e 100644
+--- a/drivers/mtd/spi-nor/controllers/aspeed-smc.c
++++ b/drivers/mtd/spi-nor/controllers/aspeed-smc.c
+@@ -109,7 +109,7 @@ struct aspeed_smc_controller {
+ 	void __iomem *ahb_base;			/* per-chip windows resource */
+ 	u32 ahb_window_size;			/* full mapping window size */
+ 
+-	struct aspeed_smc_chip *chips[0];	/* pointers to attached chips */
++	struct aspeed_smc_chip *chips[];	/* pointers to attached chips */
+ };
+ 
+ /*
+-- 
+2.23.0
 
