@@ -1,65 +1,53 @@
-From: Joel Stanley <joel@jms.id.au>
-Date: Mon, 16 Mar 2020 04:49:55 +0000
-Subject: [PATCH v6 06/12] soc: aspeed: Add XDMA Engine Driver
-In-Reply-To: <1a303336-9ffb-353f-efe3-7d45ed114fd0@linux.vnet.ibm.com>
-References: <1579123790-6894-1-git-send-email-eajames@linux.ibm.com>
- <1579123790-6894-7-git-send-email-eajames@linux.ibm.com>
- <CAK8P3a3HsdpLz0aDGem1BrQsNo2mEJOnOsLcKFcLjaERx9dhGg@mail.gmail.com>
- <1a303336-9ffb-353f-efe3-7d45ed114fd0@linux.vnet.ibm.com>
-Message-ID: <CACPK8XcD5O0dwEOSHqWfCu38B96JkdbcvzCuJhep+PXF6foC=g@mail.gmail.com>
+From: Tudor.Ambarus@microchip.com <Tudor.Ambarus@microchip.com>
+Date: Mon, 23 Mar 2020 18:05:19 +0000
+Subject: [PATCH][next] mtd: spi-nor: controllers: aspeed-smc: Replace
+ zero-length array with flexible-array member
+In-Reply-To: <20200319224326.GA25390@embeddedor.com>
+References: <20200319224326.GA25390@embeddedor.com>
+Message-ID: <3763037.C4K6B0S6ij@192.168.0.120>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, 10 Feb 2020 at 17:10, Eddie James <eajames@linux.vnet.ibm.com> wrote:
->
->
-> On 2/10/20 10:35 AM, Arnd Bergmann wrote:
-> > On Wed, Jan 15, 2020 at 10:31 PM Eddie James <eajames@linux.ibm.com> wrote:
-> >> The XDMA engine embedded in the AST2500 and AST2600 SOCs performs PCI
-> >> DMA operations between the SOC (acting as a BMC) and a host processor
-> >> in a server.
-> >>
-> >> This commit adds a driver to control the XDMA engine and adds functions
-> >> to initialize the hardware and memory and start DMA operations.
-> >>
-> >> Signed-off-by: Eddie James <eajames@linux.ibm.com>
-> > Hi Eddie,
-> >
-> > I'm missing the bigger picture in the description here, how does this fit into
-> > the PCIe endpoint framework and the dmaengine subsystem?
->
->
-> Hi,
->
-> It doesn't fit into the PCIe endpoint framework. The XDMA engine
-> abstracts all the PCIe details away so the BMC cannot configure any of
-> the things the PCIe endpoint exposes.
->
-> It also doesn't fit into the dmaengine subsystem due to the restriction
-> on the ast2500 (and maybe the ast2600) that the XDMA engine can only
-> access certain areas of physical memory. Also problematic would be
-> pausing/resuming/terminating transfers because the XDMA engine can't do
-> those things.
->
->
-> >
-> > Does the AST2500 show up as a PCIe device in the host, or do you just
-> > inject DMAs into the host and hope that bypasses the IOMMU?
-> > If it shows up as an endpoint, how does the endpoint driver link into the
-> > dma driver?
->
->
-> The AST2500 and AST2600 have two PCIe devices on them, so these will
-> show up on the host if the BMC enables both of them. Either or both can
-> also be disabled and therefore will not show up. On the host side, in
-> order to receive DMA transfers, its simply a matter of registering a PCI
-> device driver and allocating some coherent DMA.... Not sure about the
-> details of endpoints/dma client driver?
->
->
-> Hopefully this answers your questions. Thanks,
+On Friday, March 20, 2020 12:43:26 AM EET Gustavo A. R. Silva wrote:
+> EXTERNAL EMAIL: Do not click links or open attachments unless you know the
+> content is safe
+> 
+> The current codebase makes use of the zero-length array language
+> extension to the C90 standard, but the preferred mechanism to declare
+> variable-length types such as these ones is a flexible array member[1][2],
+> introduced in C99:
+> 
+> struct foo {
+>         int stuff;
+>         struct boo array[];
+> };
+> 
+> By making use of the mechanism above, we will get a compiler warning
+> in case the flexible array does not occur last in the structure, which
+> will help us prevent some kind of undefined behavior bugs from being
+> inadvertently introduced[3] to the codebase from now on.
+> 
+> Also, notice that, dynamic memory allocations won't be affected by
+> this change:
+> 
+> "Flexible array members have incomplete type, and so the sizeof operator
+> may not be applied. As a quirk of the original implementation of
+> zero-length arrays, sizeof evaluates to zero."[1]
+> 
+> This issue was found with the help of Coccinelle.
+> 
+> [1] https://gcc.gnu.org/onlinedocs/gcc/Zero-Length.html
+> [2] https://github.com/KSPP/linux/issues/21
+> [3] commit 76497732932f ("cxgb3/l2t: Fix undefined behaviour")
+> 
+> Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
+> ---
+>  drivers/mtd/spi-nor/controllers/aspeed-smc.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
-Arnd, did you have further questions about this driver?
+Applied, thanks.
+ta
+
