@@ -1,53 +1,110 @@
-From: Tudor.Ambarus@microchip.com <Tudor.Ambarus@microchip.com>
-Date: Mon, 23 Mar 2020 18:05:19 +0000
-Subject: [PATCH][next] mtd: spi-nor: controllers: aspeed-smc: Replace
- zero-length array with flexible-array member
-In-Reply-To: <20200319224326.GA25390@embeddedor.com>
-References: <20200319224326.GA25390@embeddedor.com>
-Message-ID: <3763037.C4K6B0S6ij@192.168.0.120>
+From: Andrew Jeffery <andrew@aj.id.au>
+Date: Fri, 27 Mar 2020 09:50:58 +1030
+Subject: [PATCH 2/2] ARM: dts: aspeed: zaius: Add gpio line names
+In-Reply-To: <20200306170218.79698-2-geissonator@yahoo.com>
+References: <20200306170218.79698-1-geissonator@yahoo.com>
+ <20200306170218.79698-2-geissonator@yahoo.com>
+Message-ID: <294a52cd-2f60-41e5-a58f-a74151a83b08@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Friday, March 20, 2020 12:43:26 AM EET Gustavo A. R. Silva wrote:
-> EXTERNAL EMAIL: Do not click links or open attachments unless you know the
-> content is safe
+
+
+On Sat, 7 Mar 2020, at 03:32, Andrew Geissler wrote:
+> Name the GPIOs to help userspace work with them. The names describe the
+> functionality the lines provide, not the net or ball name. This makes it
+> easier to share userspace code across different systems and makes the
+> use of the lines more obvious.
 > 
-> The current codebase makes use of the zero-length array language
-> extension to the C90 standard, but the preferred mechanism to declare
-> variable-length types such as these ones is a flexible array member[1][2],
-> introduced in C99:
-> 
-> struct foo {
->         int stuff;
->         struct boo array[];
-> };
-> 
-> By making use of the mechanism above, we will get a compiler warning
-> in case the flexible array does not occur last in the structure, which
-> will help us prevent some kind of undefined behavior bugs from being
-> inadvertently introduced[3] to the codebase from now on.
-> 
-> Also, notice that, dynamic memory allocations won't be affected by
-> this change:
-> 
-> "Flexible array members have incomplete type, and so the sizeof operator
-> may not be applied. As a quirk of the original implementation of
-> zero-length arrays, sizeof evaluates to zero."[1]
-> 
-> This issue was found with the help of Coccinelle.
-> 
-> [1] https://gcc.gnu.org/onlinedocs/gcc/Zero-Length.html
-> [2] https://github.com/KSPP/linux/issues/21
-> [3] commit 76497732932f ("cxgb3/l2t: Fix undefined behaviour")
-> 
-> Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
+> Signed-off-by: Andrew Geissler <geissonator@yahoo.com>
+
+So we're creating a bit of an ad-hoc ABI here between the DT and userspace.
+
+Where are we documenting it?
+
+Generally I think the idea is good though, so:
+
+Acked-by: Andrew Jeffery <andrew@aj.id.au>
+
 > ---
->  drivers/mtd/spi-nor/controllers/aspeed-smc.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-
-Applied, thanks.
-ta
-
+>  arch/arm/boot/dts/aspeed-bmc-opp-zaius.dts | 37 +++++++++++++++++++---
+>  1 file changed, 33 insertions(+), 4 deletions(-)
+> 
+> diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-zaius.dts 
+> b/arch/arm/boot/dts/aspeed-bmc-opp-zaius.dts
+> index bc60ec291681..4bcc82046362 100644
+> --- a/arch/arm/boot/dts/aspeed-bmc-opp-zaius.dts
+> +++ b/arch/arm/boot/dts/aspeed-bmc-opp-zaius.dts
+> @@ -478,32 +478,61 @@
+>  	pinctrl-names = "default";
+>  	pinctrl-0 = <&pinctrl_gpioh_unbiased>;
+>  
+> +	gpio-line-names =
+> +	/*A0-A7*/	"","cfam-reset","","","","","","",
+> +	/*B0-B7*/	"","","","","","","","",
+> +	/*C0-C7*/	"","","","","","","","",
+> +	/*D0-D7*/	"fsi-enable","","","","","led-sys-boot-status","led-attention",
+> +				"led-fault",
+> +	/*E0-E7*/	"","","","","","","","presence-pcie-e2b",
+> +	/*F0-F7*/	"","","","","","","","checkstop",
+> +	/*G0-G7*/	"fsi-clock","fsi-data","","","","","","",
+> +	/*H0-H7*/	"onewire0","onewire1","onewire2","onewire3","","","","",
+> +	/*I0-I7*/	"","","","power-button","","","","",
+> +	/*J0-J7*/	"","","","","","","","",
+> +	/*K0-K7*/	"","","","","","","","",
+> +	/*L0-L7*/	"","","","","","","","",
+> +	/*M0-M7*/	"","","","","","","","",
+> +	/*N0-N7*/	"","","","","","","","",
+> +	/*O0-O7*/	"","","","","iso_u164_en","","fsi-trans","",
+> +	/*P0-P7*/	"ncsi_mux_en_n","bmc_i2c2_sw_rst_n","","bmc_i2c5_sw_rst_n","",
+> +				"","fsi-mux","",
+> +	/*Q0-Q7*/	"","","","","","","","",
+> +	/*R0-R7*/	"","","","","","","","",
+> +	/*S0-S7*/	"","","","","","","","",
+> +	/*T0-T7*/	"","","","","","","","",
+> +	/*U0-U7*/	"","","","","","","","",
+> +	/*V0-V7*/	"","","","","","","","",
+> +	/*W0-W7*/	"","","","","","","","",
+> +	/*X0-X7*/	"","","","","","","","",
+> +	/*Y0-Y7*/	"","","","","","","","",
+> +	/*Z0-Z7*/	"","","","","","","","",
+> +	/*AA0-AA7*/	"","","led-hdd-fault","","","","","",
+> +	/*AB0-AB7*/	"","","","","","","","",
+> +	/*AC0-AC7*/	"","","","","","","","";
+> +
+>  	line_iso_u146_en {
+>  		gpio-hog;
+>  		gpios = <ASPEED_GPIO(O, 4) GPIO_ACTIVE_HIGH>;
+>  		output-high;
+> -		line-name = "iso_u164_en";
+>  	};
+>  
+>  	ncsi_mux_en_n {
+>  		gpio-hog;
+>  		gpios = <ASPEED_GPIO(P, 0) GPIO_ACTIVE_HIGH>;
+>  		output-low;
+> -		line-name = "ncsi_mux_en_n";
+>  	};
+>  
+>  	line_bmc_i2c2_sw_rst_n {
+>  		gpio-hog;
+>  		gpios = <ASPEED_GPIO(P, 1) GPIO_ACTIVE_HIGH>;
+>  		output-high;
+> -		line-name = "bmc_i2c2_sw_rst_n";
+>  	};
+>  
+>  	line_bmc_i2c5_sw_rst_n {
+>  		gpio-hog;
+>  		gpios = <ASPEED_GPIO(P, 3) GPIO_ACTIVE_HIGH>;
+>  		output-high;
+> -		line-name = "bmc_i2c5_sw_rst_n";
+>  	};
+>  };
+>  
+> -- 
+> 2.21.0 (Apple Git-122)
+> 
+>
