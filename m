@@ -1,60 +1,28 @@
-From: Gustavo A. R. Silva <gustavo@embeddedor.com>
-Date: Thu, 19 Mar 2020 17:43:26 -0500
-Subject: [PATCH][next] mtd: spi-nor: controllers: aspeed-smc: Replace
- zero-length array with flexible-array member
-Message-ID: <20200319224326.GA25390@embeddedor.com>
+From: Changming Liu <liu.changm@northeastern.edu>
+Date: Sun, 29 Mar 2020 19:37:37 +0000
+Subject: [Bug Report] soc/aspeed: integer error in aspeed_p2a_region_acquire
+Message-ID: <BL0PR06MB45481A385F546CF5B6855C16E5CA0@BL0PR06MB4548.namprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The current codebase makes use of the zero-length array language
-extension to the C90 standard, but the preferred mechanism to declare
-variable-length types such as these ones is a flexible array member[1][2],
-introduced in C99:
+Hi Joel and Andrew,
 
-struct foo {
-        int stuff;
-        struct boo array[];
-};
+Greetings, I'm a first year PhD student who is interested in the usage of UBSan in the linux kernel, and with some experiments I found that in 
+drivers/soc/aspeed/aspeed-p2a-ctrl.c function aspeed_p2a_region_acquire, there is an unsigned integer error which might cause unexpected behavior.
 
-By making use of the mechanism above, we will get a compiler warning
-in case the flexible array does not occur last in the structure, which
-will help us prevent some kind of undefined behavior bugs from being
-inadvertently introduced[3] to the codebase from now on.
+More specifically, the map structure, after the execution of copy_from_user at line 180 in function aspeed_p2a_ioctl, is filled with data from user space.  So the code at line 136 that is
 
-Also, notice that, dynamic memory allocations won't be affected by
-this change:
+end = map->addr + (map->length - 1);
 
-"Flexible array members have incomplete type, and so the sizeof operator
-may not be applied. As a quirk of the original implementation of
-zero-length arrays, sizeof evaluates to zero."[1]
+the subtraction could underflow when map->length equals zero, also, this sum could overflow. As a consequence, the check at line 149 could be bypassed and the following code could be executed.
 
-This issue was found with the help of Coccinelle.
+Although the fact that map->addr is a 64-bit unsigned integer and map->length is 32-bit makes the overflow less likely to happen, it seems doesn't eliminate the possibility entirely. I guess a access_ok could do?
 
-[1] https://gcc.gnu.org/onlinedocs/gcc/Zero-Length.html
-[2] https://github.com/KSPP/linux/issues/21
-[3] commit 76497732932f ("cxgb3/l2t: Fix undefined behaviour")
+Due to the lack of knowledge of the interaction between this module and the user space, I'm not able to assess if this is security-related problem. I'd appreciate it very much to hear your valuable opinion on why this could not cause any trouble if it's indeed the case, this will help me under linux and UBSAN a lot! and I'm more than happy to provide more information if needed.
 
-Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
----
- drivers/mtd/spi-nor/controllers/aspeed-smc.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Looking forward to your valued response!
 
-diff --git a/drivers/mtd/spi-nor/controllers/aspeed-smc.c b/drivers/mtd/spi-nor/controllers/aspeed-smc.c
-index 395127349aa8..e26a1897db0e 100644
---- a/drivers/mtd/spi-nor/controllers/aspeed-smc.c
-+++ b/drivers/mtd/spi-nor/controllers/aspeed-smc.c
-@@ -109,7 +109,7 @@ struct aspeed_smc_controller {
- 	void __iomem *ahb_base;			/* per-chip windows resource */
- 	u32 ahb_window_size;			/* full mapping window size */
- 
--	struct aspeed_smc_chip *chips[0];	/* pointers to attached chips */
-+	struct aspeed_smc_chip *chips[];	/* pointers to attached chips */
- };
- 
- /*
--- 
-2.23.0
-
+Changming Liu
