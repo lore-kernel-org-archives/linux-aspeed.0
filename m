@@ -1,126 +1,102 @@
-From: Andrew Geissler <geissonator@gmail.com>
-Date: Mon, 30 Mar 2020 13:16:16 -0500
-Subject: [PATCH 2/2] ARM: dts: aspeed: zaius: Add gpio line names
-In-Reply-To: <294a52cd-2f60-41e5-a58f-a74151a83b08@www.fastmail.com>
-References: <20200306170218.79698-1-geissonator@yahoo.com>
- <20200306170218.79698-2-geissonator@yahoo.com>
- <294a52cd-2f60-41e5-a58f-a74151a83b08@www.fastmail.com>
-Message-ID: <9360D2B2-8242-4BA1-BF06-8916E87EDE67@gmail.com>
+From: Rob Herring <robh@kernel.org>
+Date: Mon, 30 Mar 2020 13:23:47 -0600
+Subject: [PATCH v2 6/6] dt-bindings: usb: document aspeed vhub device
+ ID/string properties
+In-Reply-To: <20200315191632.12536-7-rentao.bupt@gmail.com>
+References: <20200315191632.12536-1-rentao.bupt@gmail.com>
+ <20200315191632.12536-7-rentao.bupt@gmail.com>
+Message-ID: <20200330192347.GA6388@bogus>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-
-
-> On Mar 26, 2020, at 6:20 PM, Andrew Jeffery <andrew@aj.id.au> wrote:
+On Sun, Mar 15, 2020 at 12:16:32PM -0700, rentao.bupt at gmail.com wrote:
+> From: Tao Ren <rentao.bupt@gmail.com>
 > 
+> Update device tree binding document for aspeed vhub's device IDs and
+> string properties.
 > 
+> Signed-off-by: Tao Ren <rentao.bupt@gmail.com>
+> ---
+>  No change in v2:
+>    - the patch is added into the series since v2.
 > 
-> On Sat, 7 Mar 2020, at 03:32, Andrew Geissler wrote:
->> Name the GPIOs to help userspace work with them. The names describe the
->> functionality the lines provide, not the net or ball name. This makes it
->> easier to share userspace code across different systems and makes the
->> use of the lines more obvious.
->> 
->> Signed-off-by: Andrew Geissler <geissonator@yahoo.com>
+>  .../bindings/usb/aspeed,usb-vhub.yaml         | 68 +++++++++++++++++++
+>  1 file changed, 68 insertions(+)
 > 
-> So we're creating a bit of an ad-hoc ABI here between the DT and userspace.
-> 
-> Where are we documenting it?
+> diff --git a/Documentation/devicetree/bindings/usb/aspeed,usb-vhub.yaml b/Documentation/devicetree/bindings/usb/aspeed,usb-vhub.yaml
+> index 06399ba0d9e4..5b2e8d867219 100644
+> --- a/Documentation/devicetree/bindings/usb/aspeed,usb-vhub.yaml
+> +++ b/Documentation/devicetree/bindings/usb/aspeed,usb-vhub.yaml
+> @@ -52,6 +52,59 @@ properties:
+>          minimum: 1
+>          maximum: 21
+>  
+> +  vhub-vendor-id:
+> +    description: vhub Vendor ID
+> +    allOf:
+> +      - $ref: /schemas/types.yaml#/definitions/uint32
+> +      - maximum: 65535
+> +
+> +  vhub-product-id:
+> +    description: vhub Product ID
+> +    allOf:
+> +      - $ref: /schemas/types.yaml#/definitions/uint32
+> +      - maximum: 65535
 
-Yeah, so far it?s basically design by precedent. If you want your OpenBMC
-function to work then follow the standards we're setting in other dts?s.
+There's already standard 'vendor-id' and 'device-id' properties. Use 
+those.
 
-Is there a good place to document this? I could create a OpenBMC design
-doc but that would not address non-OpenBMC areas.
+> +
+> +  vhub-device-revision:
 
-> 
-> Generally I think the idea is good though, so:
-> 
-> Acked-by: Andrew Jeffery <andrew@aj.id.au>
+Specific to USB, not vhub.
 
-Thanks
+> +    description: vhub Device Revision in binary-coded decimal
+> +    allOf:
+> +      - $ref: /schemas/types.yaml#/definitions/uint32
+> +      - maximum: 65535
+> +
+> +  vhub-strings:
+> +    type: object
+> +
+> +    properties:
+> +      '#address-cells':
+> +        const: 1
+> +
+> +      '#size-cells':
+> +        const: 0
+> +
+> +    patternProperties:
+> +      '^string@[0-9a-f]+$':
+> +        type: object
+> +        description: string descriptors of the specific language
+> +
+> +        properties:
+> +          reg:
+> +            maxItems: 1
+> +            description: 16-bit Language Identifier defined by USB-IF
+> +
+> +          manufacturer:
+> +            description: vhub manufacturer
+> +            allOf:
+> +              - $ref: /schemas/types.yaml#/definitions/string
+> +
+> +          product:
+> +            description: vhub product name
+> +            allOf:
+> +              - $ref: /schemas/types.yaml#/definitions/string
+> +
+> +          serial-number:
+> +            description: vhub device serial number
+> +            allOf:
+> +              - $ref: /schemas/types.yaml#/definitions/string
 
-> 
->> ---
->> arch/arm/boot/dts/aspeed-bmc-opp-zaius.dts | 37 +++++++++++++++++++---
->> 1 file changed, 33 insertions(+), 4 deletions(-)
->> 
->> diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-zaius.dts 
->> b/arch/arm/boot/dts/aspeed-bmc-opp-zaius.dts
->> index bc60ec291681..4bcc82046362 100644
->> --- a/arch/arm/boot/dts/aspeed-bmc-opp-zaius.dts
->> +++ b/arch/arm/boot/dts/aspeed-bmc-opp-zaius.dts
->> @@ -478,32 +478,61 @@
->> 	pinctrl-names = "default";
->> 	pinctrl-0 = <&pinctrl_gpioh_unbiased>;
->> 
->> +	gpio-line-names =
->> +	/*A0-A7*/	"","cfam-reset","","","","","","",
->> +	/*B0-B7*/	"","","","","","","","",
->> +	/*C0-C7*/	"","","","","","","","",
->> +	/*D0-D7*/	"fsi-enable","","","","","led-sys-boot-status","led-attention",
->> +				"led-fault",
->> +	/*E0-E7*/	"","","","","","","","presence-pcie-e2b",
->> +	/*F0-F7*/	"","","","","","","","checkstop",
->> +	/*G0-G7*/	"fsi-clock","fsi-data","","","","","","",
->> +	/*H0-H7*/	"onewire0","onewire1","onewire2","onewire3","","","","",
->> +	/*I0-I7*/	"","","","power-button","","","","",
->> +	/*J0-J7*/	"","","","","","","","",
->> +	/*K0-K7*/	"","","","","","","","",
->> +	/*L0-L7*/	"","","","","","","","",
->> +	/*M0-M7*/	"","","","","","","","",
->> +	/*N0-N7*/	"","","","","","","","",
->> +	/*O0-O7*/	"","","","","iso_u164_en","","fsi-trans","",
->> +	/*P0-P7*/	"ncsi_mux_en_n","bmc_i2c2_sw_rst_n","","bmc_i2c5_sw_rst_n","",
->> +				"","fsi-mux","",
->> +	/*Q0-Q7*/	"","","","","","","","",
->> +	/*R0-R7*/	"","","","","","","","",
->> +	/*S0-S7*/	"","","","","","","","",
->> +	/*T0-T7*/	"","","","","","","","",
->> +	/*U0-U7*/	"","","","","","","","",
->> +	/*V0-V7*/	"","","","","","","","",
->> +	/*W0-W7*/	"","","","","","","","",
->> +	/*X0-X7*/	"","","","","","","","",
->> +	/*Y0-Y7*/	"","","","","","","","",
->> +	/*Z0-Z7*/	"","","","","","","","",
->> +	/*AA0-AA7*/	"","","led-hdd-fault","","","","","",
->> +	/*AB0-AB7*/	"","","","","","","","",
->> +	/*AC0-AC7*/	"","","","","","","","";
->> +
->> 	line_iso_u146_en {
->> 		gpio-hog;
->> 		gpios = <ASPEED_GPIO(O, 4) GPIO_ACTIVE_HIGH>;
->> 		output-high;
->> -		line-name = "iso_u164_en";
->> 	};
->> 
->> 	ncsi_mux_en_n {
->> 		gpio-hog;
->> 		gpios = <ASPEED_GPIO(P, 0) GPIO_ACTIVE_HIGH>;
->> 		output-low;
->> -		line-name = "ncsi_mux_en_n";
->> 	};
->> 
->> 	line_bmc_i2c2_sw_rst_n {
->> 		gpio-hog;
->> 		gpios = <ASPEED_GPIO(P, 1) GPIO_ACTIVE_HIGH>;
->> 		output-high;
->> -		line-name = "bmc_i2c2_sw_rst_n";
->> 	};
->> 
->> 	line_bmc_i2c5_sw_rst_n {
->> 		gpio-hog;
->> 		gpios = <ASPEED_GPIO(P, 3) GPIO_ACTIVE_HIGH>;
->> 		output-high;
->> -		line-name = "bmc_i2c5_sw_rst_n";
->> 	};
->> };
->> 
->> -- 
->> 2.21.0 (Apple Git-122)
->> 
->> 
+For all of this, it's USB specific, not vhub specific. I'm not sure this 
+is the right approach. It might be better to just define properties 
+which are just raw USB descriptors rather than inventing some DT format 
+that then has to be converted into USB descriptors.
 
+Rob
