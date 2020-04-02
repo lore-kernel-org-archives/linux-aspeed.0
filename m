@@ -1,64 +1,123 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Thu, 02 Apr 2020 21:37:35 +1100
-Subject: [PATCH v2 6/6] dt-bindings: usb: document aspeed vhub device
- ID/string properties
-In-Reply-To: <CAL_JsqKZeCC352TKFGDNRRogSefF9vq+J=WqCEeg59PBsSOW1w@mail.gmail.com>
-References: <20200315191632.12536-1-rentao.bupt@gmail.com>
- <20200315191632.12536-7-rentao.bupt@gmail.com>
- <20200330192347.GA6388@bogus>
- <4dc3ac910c79dcca398eb5161dde44e1cc50baca.camel@kernel.crashing.org>
- <CAL_JsqKZeCC352TKFGDNRRogSefF9vq+J=WqCEeg59PBsSOW1w@mail.gmail.com>
-Message-ID: <c556467d63cd5de806b4bf1806caee013ba5a808.camel@kernel.crashing.org>
+Date: Thu, 02 Apr 2020 21:45:38 +1100
+Subject: [PATCH v3] usb: gadget: aspeed: improve vhub port irq handling
+In-Reply-To: <20200401215826.GA8248@taoren-ubuntu-R90MNF91>
+References: <20200315191430.12379-1-rentao.bupt@gmail.com>
+ <20200401215826.GA8248@taoren-ubuntu-R90MNF91>
+Message-ID: <512d625e45ea953d722bb7ea73c3619730312284.camel@kernel.crashing.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, 2020-03-31 at 10:21 -0600, Rob Herring wrote:
-> Surely the descriptor building code can be shared at a minimum.
+On Wed, 2020-04-01 at 14:58 -0700, Tao Ren wrote:
+> Hi Ben,
 > 
-> Regardless of whether gadget configfs fits, usually it is pretty clear
-> whether something belongs in DT or userspace. That should be decided
-> first.
+> Any further comments on the patch?
+
+Ah sorry, nope. Did you check the generated assembly to see if it
+looked any better ? :-)
+
+Otherwise,
+
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+
 > 
-> > Maybe we could expose the port as UDCs but not actually expose them on
-> > the bus until the hub is "activated" via a special configfs entry...
+> Cheers,
 > 
-> If control of the hub is done by userspace, I'd think configuration
-> should be there too.
-
-It's not in the current driver. For now, I expose the hub when the
-driver loads/initializes, and it creates UDCs for each port, which are
-then controlled from userspace.
-
-That said, I did it this way because it was easy, not because there are
-fundamental reasons to do so...
-
-The main reason to want to change the hub descriptor is for the device
-to advertise a vendor/device ID rather than our generic linux one,
-which some vendors might want to do for ... reasons. I didn't implement
-that functionality initially as in openbmc case, we didn't care. But I
-know some vendors would like to, if anything because from a user
-perspective, it's actually nice to have the string tell you that it's
-your BMC rather than Linux Fundation Hub.
-
-Originally I suggested we allow that via the device-tree because it was
-the simplest way to get there and I love have to deal with less code ..
-:)
-
-However, if we want to support the whole language string set etc... it
-gets really clumsy. So if there's a strong will to get there all the
-way, then configfs is probably the way to go.
-
-In that case, some sugery will probably be needed to make the gadget
-descriptor building code a bit less dependent on the overall gadget
-stuff... either that, or pre-create a "hub" gadget at driver loading
-time that userspace can modify before "plugging".
-
-In that case, the discussion should move back to linux-usb...
-
-Cheers,
-Ben.
-
+> Tao
+> 
+> On Sun, Mar 15, 2020 at 12:14:30PM -0700, rentao.bupt at gmail.com
+> wrote:
+> > From: Tao Ren <rentao.bupt@gmail.com>
+> > 
+> > This patch evaluates vhub ports' irq mask before going through per-
+> > port
+> > irq handling one by one, which helps to speed up irq handling in
+> > case
+> > there is no port interrupt.
+> > 
+> > Signed-off-by: Tao Ren <rentao.bupt@gmail.com>
+> > ---
+> >  Changes in v3:
+> >    - assign istat to (unsigned long) bitmap before calling
+> >      "for_each_set_bit_from".
+> >  Changes in v2:
+> >    - use "for_each_set_bit" to speed up port irq handling.
+> > 
+> >  drivers/usb/gadget/udc/aspeed-vhub/core.c | 12 +++++++++---
+> >  drivers/usb/gadget/udc/aspeed-vhub/vhub.h |  8 +++-----
+> >  2 files changed, 12 insertions(+), 8 deletions(-)
+> > 
+> > diff --git a/drivers/usb/gadget/udc/aspeed-vhub/core.c
+> > b/drivers/usb/gadget/udc/aspeed-vhub/core.c
+> > index f8d35dd60c34..555e8645fb1e 100644
+> > --- a/drivers/usb/gadget/udc/aspeed-vhub/core.c
+> > +++ b/drivers/usb/gadget/udc/aspeed-vhub/core.c
+> > @@ -134,11 +134,15 @@ static irqreturn_t ast_vhub_irq(int irq, void
+> > *data)
+> >  	}
+> >  
+> >  	/* Handle device interrupts */
+> > -	for (i = 0; i < vhub->max_ports; i++) {
+> > -		u32 dev_mask = VHUB_IRQ_DEVICE1 << i;
+> > +	if (istat & vhub->port_irq_mask) {
+> > +		unsigned long bitmap = istat;
+> > +		int offset = VHUB_IRQ_DEV1_BIT;
+> > +		int size = VHUB_IRQ_DEV1_BIT + vhub->max_ports;
+> >  
+> > -		if (istat & dev_mask)
+> > +		for_each_set_bit_from(offset, &bitmap, size) {
+> > +			i = offset - VHUB_IRQ_DEV1_BIT;
+> >  			ast_vhub_dev_irq(&vhub->ports[i].dev);
+> > +		}
+> >  	}
+> >  
+> >  	/* Handle top-level vHub EP0 interrupts */
+> > @@ -332,6 +336,8 @@ static int ast_vhub_probe(struct
+> > platform_device *pdev)
+> >  
+> >  	spin_lock_init(&vhub->lock);
+> >  	vhub->pdev = pdev;
+> > +	vhub->port_irq_mask = GENMASK(VHUB_IRQ_DEV1_BIT + vhub-
+> > >max_ports - 1,
+> > +				      VHUB_IRQ_DEV1_BIT);
+> >  
+> >  	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+> >  	vhub->regs = devm_ioremap_resource(&pdev->dev, res);
+> > diff --git a/drivers/usb/gadget/udc/aspeed-vhub/vhub.h
+> > b/drivers/usb/gadget/udc/aspeed-vhub/vhub.h
+> > index fac79ef6d669..23a1ac91f8d2 100644
+> > --- a/drivers/usb/gadget/udc/aspeed-vhub/vhub.h
+> > +++ b/drivers/usb/gadget/udc/aspeed-vhub/vhub.h
+> > @@ -51,14 +51,11 @@
+> >  #define VHUB_CTRL_UPSTREAM_CONNECT		(1 << 0)
+> >  
+> >  /* IER & ISR */
+> > +#define VHUB_IRQ_DEV1_BIT			9
+> >  #define VHUB_IRQ_USB_CMD_DEADLOCK		(1 << 18)
+> >  #define VHUB_IRQ_EP_POOL_NAK			(1 << 17)
+> >  #define VHUB_IRQ_EP_POOL_ACK_STALL		(1 << 16)
+> > -#define VHUB_IRQ_DEVICE5			(1 << 13)
+> > -#define VHUB_IRQ_DEVICE4			(1 << 12)
+> > -#define VHUB_IRQ_DEVICE3			(1 << 11)
+> > -#define VHUB_IRQ_DEVICE2			(1 << 10)
+> > -#define VHUB_IRQ_DEVICE1			(1 << 9)
+> > +#define VHUB_IRQ_DEVICE1			(1 <<
+> > (VHUB_IRQ_DEV1_BIT))
+> >  #define VHUB_IRQ_BUS_RESUME			(1 << 8)
+> >  #define VHUB_IRQ_BUS_SUSPEND 			(1 << 7)
+> >  #define VHUB_IRQ_BUS_RESET 			(1 << 6)
+> > @@ -402,6 +399,7 @@ struct ast_vhub {
+> >  	/* Per-port info */
+> >  	struct ast_vhub_port		*ports;
+> >  	u32				max_ports;
+> > +	u32				port_irq_mask;
+> >  
+> >  	/* Generic EP data structures */
+> >  	struct ast_vhub_ep		*epns;
+> > -- 
+> > 2.17.1
+> > 
 
