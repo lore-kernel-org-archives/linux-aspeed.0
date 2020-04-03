@@ -1,12 +1,10 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Fri, 03 Apr 2020 11:21:41 +1030
-Subject: [PATCH 2/2] ARM: dts: aspeed: zaius: Add gpio line names
-In-Reply-To: <9360D2B2-8242-4BA1-BF06-8916E87EDE67@gmail.com>
-References: <20200306170218.79698-1-geissonator@yahoo.com>
- <20200306170218.79698-2-geissonator@yahoo.com>
- <294a52cd-2f60-41e5-a58f-a74151a83b08@www.fastmail.com>
- <9360D2B2-8242-4BA1-BF06-8916E87EDE67@gmail.com>
-Message-ID: <48c9bd0e-3b5c-4f76-830f-4b0bd962148b@www.fastmail.com>
+Date: Fri, 03 Apr 2020 14:20:21 +1030
+Subject: =?UTF-8?Q?Re:_[PATCH_v2_0/3]_ipmi:_kcs-bmc:_Rework_bindings_to_clean_up_?=
+ =?UTF-8?Q?DT_warnings?=
+In-Reply-To: <cover.fe20dfec1a7c91771c6bb574814ffb4bb49e2136.1576462051.git-series.andrew@aj.id.au>
+References: <cover.fe20dfec1a7c91771c6bb574814ffb4bb49e2136.1576462051.git-series.andrew@aj.id.au>
+Message-ID: <7734002a-181e-4baf-b9a3-af66894acc16@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -15,33 +13,18 @@ Content-Transfer-Encoding: 7bit
 
 
 
-On Tue, 31 Mar 2020, at 04:46, Andrew Geissler wrote:
+On Mon, 16 Dec 2019, at 12:57, Andrew Jeffery wrote:
+> Hello,
 > 
+> This is a short series reworking the devicetree binding and driver for the
+> ASPEED BMC KCS devices. With the number of supported ASPEED BMC devicetrees the
+> changes enable removal of more than 100 lines of warning output from dtc.
 > 
-> > On Mar 26, 2020, at 6:20 PM, Andrew Jeffery <andrew@aj.id.au> wrote:
-> > 
-> > 
-> > 
-> > On Sat, 7 Mar 2020, at 03:32, Andrew Geissler wrote:
-> >> Name the GPIOs to help userspace work with them. The names describe the
-> >> functionality the lines provide, not the net or ball name. This makes it
-> >> easier to share userspace code across different systems and makes the
-> >> use of the lines more obvious.
-> >> 
-> >> Signed-off-by: Andrew Geissler <geissonator@yahoo.com>
-> > 
-> > So we're creating a bit of an ad-hoc ABI here between the DT and userspace.
-> > 
-> > Where are we documenting it?
+> v1 can be found here:
 > 
-> Yeah, so far it?s basically design by precedent. If you want your OpenBMC
-> function to work then follow the standards we're setting in other dts?s.
+> https://lore.kernel.org/lkml/cover.5630f63168ad5cddf02e9796106f8e086c196907.1575376664.git-series.andrew at aj.id.au/
 > 
-> Is there a good place to document this? I could create a OpenBMC design
-> doc but that would not address non-OpenBMC areas.
+> v2 cleans up the commit message of 2/3 and changes the name of the property
+> governing the LPC IO address for the KCS devices.
 
-Don't let perfect be the enemy of good enough :) Lets document it in OpenBMC
-and then look at alternatives if we find it's necessary. I don't think we will given
-that the contract is between the kernel and OpenBMC userspace.
-
-Andrew
+Ping?
