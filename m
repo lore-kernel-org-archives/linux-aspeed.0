@@ -1,38 +1,30 @@
-From: Eddie James <eajames@linux.ibm.com>
-Date: Thu,  2 Apr 2020 14:49:55 -0500
-Subject: [PATCH v7 5/5] ARM: dts: Aspeed: AST2600: Add XDMA PCI-E root control
- reset
+From: Andrew Jeffery <andrew@aj.id.au>
+Date: Fri, 03 Apr 2020 11:02:41 +1030
+Subject: [PATCH v7 0/5] soc: aspeed: Add XDMA engine driver
 In-Reply-To: <20200402194955.16643-1-eajames@linux.ibm.com>
 References: <20200402194955.16643-1-eajames@linux.ibm.com>
-Message-ID: <20200402194955.16643-6-eajames@linux.ibm.com>
+Message-ID: <8ca08ea0-2f3e-4b44-a595-bfe96ca02b3f@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The AST2600 XDMA engine requires the PCI-E root control reset be cleared
-as well, so add a phandle to that syscon reset.
 
-Signed-off-by: Eddie James <eajames@linux.ibm.com>
----
- arch/arm/boot/dts/aspeed-g6.dtsi | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm/boot/dts/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed-g6.dtsi
-index 1ffc15177b79..65e2826fddb6 100644
---- a/arch/arm/boot/dts/aspeed-g6.dtsi
-+++ b/arch/arm/boot/dts/aspeed-g6.dtsi
-@@ -342,7 +342,8 @@ xdma: xdma at 1e6e7000 {
- 				compatible = "aspeed,ast2600-xdma";
- 				reg = <0x1e6e7000 0x100>;
- 				clocks = <&syscon ASPEED_CLK_GATE_BCLK>;
--				resets = <&syscon ASPEED_RESET_DEV_XDMA>;
-+				resets = <&syscon ASPEED_RESET_DEV_XDMA>, <&syscon ASPEED_RESET_RC_XDMA>;
-+				reset-names = "dev", "rc";
- 				interrupts-extended = <&gic GIC_SPI 6 IRQ_TYPE_LEVEL_HIGH>,
- 						      <&scu_ic0 2>;
- 				pcie-device = "bmc";
--- 
-2.24.0
+On Fri, 3 Apr 2020, at 06:19, Eddie James wrote:
+> This series adds a driver to control the Aspeed XDMA engine embedded in the
+> AST2500 and AST2600. The XDMA engine performs automatic DMA operations
+> over PCI-E between the Aspeed SOC (acting as a BMC) and a host processor.
+> 
+> Changes since v6:
+>  - See individual patches
 
+v7 is not an evolution on v6 - v7 contains a bunch of bugs that v6 fixed (at least
+wrt locking). How did you generate this series?
+
+Also my name is misspelled in each of the Reviewed-by: tags which makes me
+think that something has gone quite wrong with the posting of v7, and I'm
+concerned that this was based on e.g. v5 but with my tags against v6 applied.
+
+Andrew
