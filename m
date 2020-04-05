@@ -1,38 +1,53 @@
-From: Eddie James <eajames@linux.ibm.com>
-Date: Fri,  3 Apr 2020 11:29:01 -0500
-Subject: [PATCH v8 5/5] ARM: dts: Aspeed: AST2600: Add XDMA PCI-E root control
- reset
-In-Reply-To: <20200403162901.21106-1-eajames@linux.ibm.com>
-References: <20200403162901.21106-1-eajames@linux.ibm.com>
-Message-ID: <20200403162901.21106-6-eajames@linux.ibm.com>
+From: Andrew Jeffery <andrew@aj.id.au>
+Date: Sun, 05 Apr 2020 16:27:35 +0930
+Subject: [PATCH v7 0/5] soc: aspeed: Add XDMA engine driver
+In-Reply-To: <d1fe0157-8a4b-f0f5-f0e4-443d6f4e3e4a@linux.ibm.com>
+References: <20200402194955.16643-1-eajames@linux.ibm.com>
+ <8ca08ea0-2f3e-4b44-a595-bfe96ca02b3f@www.fastmail.com>
+ <d1fe0157-8a4b-f0f5-f0e4-443d6f4e3e4a@linux.ibm.com>
+Message-ID: <73c7b292-fa99-4809-a0fa-b3605f35aff4@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The AST2600 XDMA engine requires the PCI-E root control reset be cleared
-as well, so add a phandle to that syscon reset.
 
-Signed-off-by: Eddie James <eajames@linux.ibm.com>
----
- arch/arm/boot/dts/aspeed-g6.dtsi | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm/boot/dts/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed-g6.dtsi
-index 1ffc15177b79..65e2826fddb6 100644
---- a/arch/arm/boot/dts/aspeed-g6.dtsi
-+++ b/arch/arm/boot/dts/aspeed-g6.dtsi
-@@ -342,7 +342,8 @@ xdma: xdma at 1e6e7000 {
- 				compatible = "aspeed,ast2600-xdma";
- 				reg = <0x1e6e7000 0x100>;
- 				clocks = <&syscon ASPEED_CLK_GATE_BCLK>;
--				resets = <&syscon ASPEED_RESET_DEV_XDMA>;
-+				resets = <&syscon ASPEED_RESET_DEV_XDMA>, <&syscon ASPEED_RESET_RC_XDMA>;
-+				reset-names = "dev", "rc";
- 				interrupts-extended = <&gic GIC_SPI 6 IRQ_TYPE_LEVEL_HIGH>,
- 						      <&scu_ic0 2>;
- 				pcie-device = "bmc";
--- 
-2.24.0
+On Sat, 4 Apr 2020, at 01:22, Eddie James wrote:
+> 
+> On 4/2/20 7:32 PM, Andrew Jeffery wrote:
+> >
+> > On Fri, 3 Apr 2020, at 06:19, Eddie James wrote:
+> >> This series adds a driver to control the Aspeed XDMA engine embedded in the
+> >> AST2500 and AST2600. The XDMA engine performs automatic DMA operations
+> >> over PCI-E between the Aspeed SOC (acting as a BMC) and a host processor.
+> >>
+> >> Changes since v6:
+> >>   - See individual patches
+> > v7 is not an evolution on v6 - v7 contains a bunch of bugs that v6 fixed (at least
+> > wrt locking). How did you generate this series?
+> 
+> 
+> My goodness, I could have sworn that was v6. I took the series that was 
+> merged in the openbmc kernel. Must have gotten mixed up. -_-
 
+No worries, hopefully v8 is in the right state :)
+
+> 
+> 
+> >
+> > Also my name is misspelled in each of the Reviewed-by: tags which makes me
+> > think that something has gone quite wrong with the posting of v7, and I'm
+> > concerned that this was based on e.g. v5 but with my tags against v6 applied.
+> 
+> 
+> Well thats because I added them manually since they had "disappeared" or 
+> so I thought from v6 during the application to openbmc... guess that 
+> should have been a warning sign
+
+It certainly was for me!
+
+Cheers,
+
+Andrew
