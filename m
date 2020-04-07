@@ -1,325 +1,160 @@
-From: Alexander Filippov <a.filippov@yadro.com>
-Date: Mon, 6 Apr 2020 13:15:53 +0300
-Subject: [PATCH] ARM: DTS: Aspeed: Add YADRO Nicole BMC
-Message-ID: <20200406101553.28958-1-a.filippov@yadro.com>
+From: Tao Ren <rentao.bupt@gmail.com>
+Date: Mon, 6 Apr 2020 23:02:43 -0700
+Subject: [PATCH v3] usb: gadget: aspeed: improve vhub port irq handling
+In-Reply-To: <20200403064826.GA10866@taoren-ubuntu-R90MNF91>
+References: <20200315191430.12379-1-rentao.bupt@gmail.com>
+ <20200401215826.GA8248@taoren-ubuntu-R90MNF91>
+ <512d625e45ea953d722bb7ea73c3619730312284.camel@kernel.crashing.org>
+ <20200403064826.GA10866@taoren-ubuntu-R90MNF91>
+Message-ID: <20200407060242.GA15050@taoren-ubuntu-R90MNF91>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Nicole is an OpenPower machine with an Aspeed 2500 BMC SoC manufactured
-by YADRO.
+Hi Ben,
 
-Signed-off-by: Alexander Filippov <a.filippov@yadro.com>
----
- arch/arm/boot/dts/Makefile                  |   1 +
- arch/arm/boot/dts/aspeed-bmc-opp-nicole.dts | 284 ++++++++++++++++++++
- 2 files changed, 285 insertions(+)
- create mode 100644 arch/arm/boot/dts/aspeed-bmc-opp-nicole.dts
+On Thu, Apr 02, 2020 at 11:48:27PM -0700, Tao Ren wrote:
+> On Thu, Apr 02, 2020 at 09:45:38PM +1100, Benjamin Herrenschmidt wrote:
+> > On Wed, 2020-04-01 at 14:58 -0700, Tao Ren wrote:
+> > > Hi Ben,
+> > > 
+> > > Any further comments on the patch?
+> > 
+> > Ah sorry, nope. Did you check the generated assembly to see if it
+> > looked any better ? :-)
+> > 
+> > Otherwise,
+> > 
+> > Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> 
+> Thanks Ben for the review. Let me see if I can collect some runtime data
+> on my ast2400 BMC platform. Will update back later.
 
-diff --git a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
-index e8dd99201397..6f9fe0f959f2 100644
---- a/arch/arm/boot/dts/Makefile
-+++ b/arch/arm/boot/dts/Makefile
-@@ -1347,6 +1347,7 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
- 	aspeed-bmc-microsoft-olympus.dtb \
- 	aspeed-bmc-opp-lanyang.dtb \
- 	aspeed-bmc-opp-mihawk.dtb \
-+	aspeed-bmc-opp-nicole.dtb \
- 	aspeed-bmc-opp-palmetto.dtb \
- 	aspeed-bmc-opp-romulus.dtb \
- 	aspeed-bmc-opp-swift.dtb \
-diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-nicole.dts b/arch/arm/boot/dts/aspeed-bmc-opp-nicole.dts
-new file mode 100644
-index 000000000000..0c8a9e7838ff
---- /dev/null
-+++ b/arch/arm/boot/dts/aspeed-bmc-opp-nicole.dts
-@@ -0,0 +1,284 @@
-+// SPDX-License-Identifier: GPL-2.0+
-+// Copyright 2019 YADRO
-+/dts-v1/;
-+#include "aspeed-g5.dtsi"
-+#include <dt-bindings/gpio/aspeed-gpio.h>
-+
-+/ {
-+	model = "Nicole BMC";
-+	compatible = "yadro,nicole-bmc", "aspeed,ast2500";
-+
-+	chosen {
-+		stdout-path = &uart5;
-+		bootargs = "console=ttyS4,115200 earlyprintk";
-+	};
-+
-+	memory at 80000000 {
-+		reg = <0x80000000 0x20000000>;
-+	};
-+
-+	reserved-memory {
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		ranges;
-+
-+		vga_memory: framebuffer at 9f000000 {
-+			no-map;
-+			reg = <0x9f000000 0x01000000>; /* 16M */
-+		};
-+
-+		flash_memory: region at 98000000 {
-+			no-map;
-+			reg = <0x98000000 0x04000000>; /* 64M */
-+		};
-+
-+		coldfire_memory: codefire_memory at 9ef00000 {
-+			reg = <0x9ef00000 0x00100000>;
-+			no-map;
-+		};
-+
-+		gfx_memory: framebuffer {
-+			size = <0x01000000>;
-+			alignment = <0x01000000>;
-+			compatible = "shared-dma-pool";
-+			reusable;
-+		};
-+
-+		video_engine_memory: jpegbuffer {
-+			size = <0x02000000>;	/* 32M */
-+			alignment = <0x01000000>;
-+			compatible = "shared-dma-pool";
-+			reusable;
-+		};
-+	};
-+
-+	leds {
-+		compatible = "gpio-leds";
-+
-+		power {
-+			gpios = <&gpio ASPEED_GPIO(AA, 4) GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		identify {
-+			gpios = <&gpio ASPEED_GPIO(AA, 7) GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		alarm_red {
-+			gpios = <&gpio ASPEED_GPIO(AA, 3) GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		alarm_yellow {
-+			gpios = <&gpio ASPEED_GPIO(AA, 1) GPIO_ACTIVE_HIGH>;
-+		};
-+	};
-+
-+	fsi: gpio-fsi {
-+		compatible = "aspeed,ast2500-cf-fsi-master", "fsi-master";
-+		#address-cells = <2>;
-+		#size-cells = <0>;
-+		no-gpio-delays;
-+
-+		memory-region = <&coldfire_memory>;
-+		aspeed,sram = <&sram>;
-+		aspeed,cvic = <&cvic>;
-+
-+		clock-gpios = <&gpio ASPEED_GPIO(AA, 0) GPIO_ACTIVE_HIGH>;
-+		data-gpios = <&gpio ASPEED_GPIO(AA, 2) GPIO_ACTIVE_HIGH>;
-+		mux-gpios = <&gpio ASPEED_GPIO(A, 6) GPIO_ACTIVE_HIGH>;
-+		enable-gpios = <&gpio ASPEED_GPIO(D, 0) GPIO_ACTIVE_HIGH>;
-+		trans-gpios = <&gpio ASPEED_GPIO(P, 1) GPIO_ACTIVE_HIGH>;
-+	};
-+
-+	gpio-keys {
-+		compatible = "gpio-keys";
-+
-+		checkstop {
-+			label = "checkstop";
-+			gpios = <&gpio ASPEED_GPIO(J, 2) GPIO_ACTIVE_LOW>;
-+			linux,code = <ASPEED_GPIO(J, 2)>;
-+		};
-+	};
-+};
-+
-+&fmc {
-+	status = "okay";
-+	flash at 0 {
-+		status = "okay";
-+		m25p,fast-read;
-+		label = "bmc";
-+		spi-max-frequency = <50000000>;
-+#include "openbmc-flash-layout.dtsi"
-+	};
-+};
-+
-+&spi1 {
-+	status = "okay";
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pinctrl_spi1_default>;
-+
-+	flash at 0 {
-+		status = "okay";
-+		m25p,fast-read;
-+		label = "pnor";
-+		spi-max-frequency = <100000000>;
-+	};
-+};
-+
-+&lpc_ctrl {
-+	status = "okay";
-+	memory-region = <&flash_memory>;
-+	flash = <&spi1>;
-+};
-+
-+&uart1 {
-+	/* Rear RS-232 connector */
-+	status = "okay";
-+
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pinctrl_txd1_default
-+			&pinctrl_rxd1_default
-+			&pinctrl_nrts1_default
-+			&pinctrl_ndtr1_default
-+			&pinctrl_ndsr1_default
-+			&pinctrl_ncts1_default
-+			&pinctrl_ndcd1_default
-+			&pinctrl_nri1_default>;
-+};
-+
-+&uart5 {
-+	status = "okay";
-+};
-+
-+&mac0 {
-+	status = "okay";
-+
-+	use-ncsi;
-+
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pinctrl_rmii1_default>;
-+	clocks = <&syscon ASPEED_CLK_GATE_MAC1CLK>,
-+		 <&syscon ASPEED_CLK_MAC1RCLK>;
-+	clock-names = "MACCLK", "RCLK";
-+};
-+
-+&i2c0 {
-+	status = "okay";
-+
-+	eeprom at 50 {
-+		compatible = "atmel,24c256";
-+		reg = <0x50>;
-+		pagesize = <64>;
-+	};
-+};
-+
-+&i2c1 {
-+	status = "okay";
-+};
-+
-+&i2c2 {
-+	status = "okay";
-+};
-+
-+&i2c3 {
-+	status = "okay";
-+};
-+
-+&i2c4 {
-+	status = "okay";
-+};
-+
-+&i2c5 {
-+	status = "okay";
-+};
-+
-+&i2c6 {
-+	status = "okay";
-+
-+	rtc at 32 {
-+		compatible = "epson,rx8900";
-+		reg = <0x32>;
-+	};
-+};
-+
-+&i2c7 {
-+	status = "okay";
-+};
-+
-+&i2c8 {
-+	status = "okay";
-+};
-+
-+&i2c9 {
-+	status = "okay";
-+};
-+
-+&i2c10 {
-+	status = "okay";
-+};
-+
-+&i2c11 {
-+	status = "okay";
-+};
-+
-+&i2c12 {
-+	status = "okay";
-+};
-+
-+&gpio {
-+	nic_func_mode0 {
-+		gpio-hog;
-+		gpios = <ASPEED_GPIO(D, 3) GPIO_ACTIVE_HIGH>;
-+		output-low;
-+		line-name = "nic_func_mode0";
-+	};
-+	nic_func_mode1 {
-+		gpio-hog;
-+		gpios = <ASPEED_GPIO(D, 4) GPIO_ACTIVE_HIGH>;
-+		output-low;
-+		line-name = "nic_func_mode1";
-+	};
-+	seq_cont {
-+		gpio-hog;
-+		gpios = <ASPEED_GPIO(S, 7) GPIO_ACTIVE_HIGH>;
-+		output-low;
-+		line-name = "seq_cont";
-+	};
-+	ncsi_cfg {
-+		gpio-hog;
-+		input;
-+		gpios = <ASPEED_GPIO(E, 1) GPIO_ACTIVE_HIGH>;
-+		line-name = "ncsi_cfg";
-+	};
-+};
-+
-+&vuart {
-+	status = "okay";
-+};
-+
-+&gfx {
-+	status = "okay";
-+	memory-region = <&gfx_memory>;
-+};
-+
-+&pinctrl {
-+	aspeed,external-nodes = <&gfx &lhc>;
-+};
-+
-+&ibt {
-+	status = "okay";
-+};
-+
-+&vhub {
-+	status = "okay";
-+};
-+
-+&adc {
-+	status = "okay";
-+};
-+
-+&video {
-+	status = "okay";
-+	memory-region = <&video_engine_memory>;
-+};
-+
-+#include "ibm-power9-dual.dtsi"
--- 
-2.21.1
+I ran some testing on my ast2400 and ast2500 BMC and looks like the
+for() loop runs faster than for_each_set_bit_from() loop in my
+environment. I'm not sure if something needs to be revised in my test
+code, but please kindly share your suggestions:
 
+I use get_cycles() to calculate execution time of 2 different loops, and
+ast_vhub_dev_irq() is replaced with barrier() to avoid "noise"; below
+are the results:
+
+  - when downstream port number is 5 and only 1 irq bit is set, it takes
+    ~30 cycles to finish for_each_set_bit() loop, and 20-25 cycles to
+    finish the for() loop.
+
+  - if downstream port number is 5 and all 5 bits are set, then
+    for_each_set_bit() loop takes ~50 cycles and for() loop takes ~25
+    cycles.
+
+  - when I increase downsteam port number to 16 and set 1 irq bit, the
+    for_each_set_bit() loop takes ~30 cycles and for() loop takes 25
+    cycles. It's a little surprise to me because I thought for() loop
+    would cost 60+ cycles (3 times of the value when port number is 5).
+
+  - if downstream port number is 16 and all irq status bits are set,
+    then for_each_set_bit() loop takes 60-70 cycles and for() loop takes
+    30+ cycles.
+
+
+Cheers,
+
+Tao
+
+> 
+> > > 
+> > > On Sun, Mar 15, 2020 at 12:14:30PM -0700, rentao.bupt at gmail.com
+> > > wrote:
+> > > > From: Tao Ren <rentao.bupt@gmail.com>
+> > > > 
+> > > > This patch evaluates vhub ports' irq mask before going through per-
+> > > > port
+> > > > irq handling one by one, which helps to speed up irq handling in
+> > > > case
+> > > > there is no port interrupt.
+> > > > 
+> > > > Signed-off-by: Tao Ren <rentao.bupt@gmail.com>
+> > > > ---
+> > > >  Changes in v3:
+> > > >    - assign istat to (unsigned long) bitmap before calling
+> > > >      "for_each_set_bit_from".
+> > > >  Changes in v2:
+> > > >    - use "for_each_set_bit" to speed up port irq handling.
+> > > > 
+> > > >  drivers/usb/gadget/udc/aspeed-vhub/core.c | 12 +++++++++---
+> > > >  drivers/usb/gadget/udc/aspeed-vhub/vhub.h |  8 +++-----
+> > > >  2 files changed, 12 insertions(+), 8 deletions(-)
+> > > > 
+> > > > diff --git a/drivers/usb/gadget/udc/aspeed-vhub/core.c
+> > > > b/drivers/usb/gadget/udc/aspeed-vhub/core.c
+> > > > index f8d35dd60c34..555e8645fb1e 100644
+> > > > --- a/drivers/usb/gadget/udc/aspeed-vhub/core.c
+> > > > +++ b/drivers/usb/gadget/udc/aspeed-vhub/core.c
+> > > > @@ -134,11 +134,15 @@ static irqreturn_t ast_vhub_irq(int irq, void
+> > > > *data)
+> > > >  	}
+> > > >  
+> > > >  	/* Handle device interrupts */
+> > > > -	for (i = 0; i < vhub->max_ports; i++) {
+> > > > -		u32 dev_mask = VHUB_IRQ_DEVICE1 << i;
+> > > > +	if (istat & vhub->port_irq_mask) {
+> > > > +		unsigned long bitmap = istat;
+> > > > +		int offset = VHUB_IRQ_DEV1_BIT;
+> > > > +		int size = VHUB_IRQ_DEV1_BIT + vhub->max_ports;
+> > > >  
+> > > > -		if (istat & dev_mask)
+> > > > +		for_each_set_bit_from(offset, &bitmap, size) {
+> > > > +			i = offset - VHUB_IRQ_DEV1_BIT;
+> > > >  			ast_vhub_dev_irq(&vhub->ports[i].dev);
+> > > > +		}
+> > > >  	}
+> > > >  
+> > > >  	/* Handle top-level vHub EP0 interrupts */
+> > > > @@ -332,6 +336,8 @@ static int ast_vhub_probe(struct
+> > > > platform_device *pdev)
+> > > >  
+> > > >  	spin_lock_init(&vhub->lock);
+> > > >  	vhub->pdev = pdev;
+> > > > +	vhub->port_irq_mask = GENMASK(VHUB_IRQ_DEV1_BIT + vhub-
+> > > > >max_ports - 1,
+> > > > +				      VHUB_IRQ_DEV1_BIT);
+> > > >  
+> > > >  	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+> > > >  	vhub->regs = devm_ioremap_resource(&pdev->dev, res);
+> > > > diff --git a/drivers/usb/gadget/udc/aspeed-vhub/vhub.h
+> > > > b/drivers/usb/gadget/udc/aspeed-vhub/vhub.h
+> > > > index fac79ef6d669..23a1ac91f8d2 100644
+> > > > --- a/drivers/usb/gadget/udc/aspeed-vhub/vhub.h
+> > > > +++ b/drivers/usb/gadget/udc/aspeed-vhub/vhub.h
+> > > > @@ -51,14 +51,11 @@
+> > > >  #define VHUB_CTRL_UPSTREAM_CONNECT		(1 << 0)
+> > > >  
+> > > >  /* IER & ISR */
+> > > > +#define VHUB_IRQ_DEV1_BIT			9
+> > > >  #define VHUB_IRQ_USB_CMD_DEADLOCK		(1 << 18)
+> > > >  #define VHUB_IRQ_EP_POOL_NAK			(1 << 17)
+> > > >  #define VHUB_IRQ_EP_POOL_ACK_STALL		(1 << 16)
+> > > > -#define VHUB_IRQ_DEVICE5			(1 << 13)
+> > > > -#define VHUB_IRQ_DEVICE4			(1 << 12)
+> > > > -#define VHUB_IRQ_DEVICE3			(1 << 11)
+> > > > -#define VHUB_IRQ_DEVICE2			(1 << 10)
+> > > > -#define VHUB_IRQ_DEVICE1			(1 << 9)
+> > > > +#define VHUB_IRQ_DEVICE1			(1 <<
+> > > > (VHUB_IRQ_DEV1_BIT))
+> > > >  #define VHUB_IRQ_BUS_RESUME			(1 << 8)
+> > > >  #define VHUB_IRQ_BUS_SUSPEND 			(1 << 7)
+> > > >  #define VHUB_IRQ_BUS_RESET 			(1 << 6)
+> > > > @@ -402,6 +399,7 @@ struct ast_vhub {
+> > > >  	/* Per-port info */
+> > > >  	struct ast_vhub_port		*ports;
+> > > >  	u32				max_ports;
+> > > > +	u32				port_irq_mask;
+> > > >  
+> > > >  	/* Generic EP data structures */
+> > > >  	struct ast_vhub_ep		*epns;
+> > > > -- 
+> > > > 2.17.1
+> > > > 
+> > 
