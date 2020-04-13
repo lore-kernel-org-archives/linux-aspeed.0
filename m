@@ -1,9 +1,9 @@
 From: Ernesto Corona <ernesto.corona@intel.com>
-Date: Mon, 13 Apr 2020 15:29:19 -0700
-Subject: [PATCH v29 5/6] Documentation jtag: Add JTAG core driver ioctl number
+Date: Mon, 13 Apr 2020 15:29:20 -0700
+Subject: [PATCH v29 6/6] drivers: jtag: Add JTAG core driver Maintainers
 In-Reply-To: <20200413222920.4722-1-ernesto.corona@intel.com>
 References: <20200413222920.4722-1-ernesto.corona@intel.com>
-Message-ID: <20200413222920.4722-6-ernesto.corona@intel.com>
+Message-ID: <20200413222920.4722-7-ernesto.corona@intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -15,59 +15,48 @@ JTAG platform drivers. It provide user layer API interface for flashing
 and debugging external devices which equipped with JTAG interface
 using standard transactions.
 
-Driver exposes set of IOCTL to user space for:
-- XFER:
-  SIR (Scan Instruction Register, IEEE 1149.1 Data Register scan);
-  SDR (Scan Data Register, IEEE 1149.1 Instruction Register scan);
-- GIOCSTATUS read the current TAPC state of the JTAG controller
-- SIOCSTATE Forces the JTAG TAPC to go into a particular state.
-- SIOCFREQ/GIOCFREQ for setting and reading JTAG frequency.
-- IOCBITBANG for low level control of JTAG signals.
-
 Signed-off-by: Oleksandr Shamray <oleksandrs@mellanox.com>
 Signed-off-by: Ernesto Corona <ernesto.corona@intel.com>
-Acked-by: Philippe Ombredanne <pombredanne@nexb.com>
-Cc: Jonathan Corbet <corbet@lwn.net>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Gustavo Pimentel <gustavo.pimentel@synopsys.com>
-Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: Kishon Vijay Abraham I <kishon@ti.com>
-Cc: Darrick J. Wong <darrick.wong@oracle.com>
-Cc: Bryant G. Ly <bryantly@linux.vnet.ibm.com>
-Cc: Eric Sandeen <sandeen@redhat.com>
-Cc: Randy Dunlap <rdunlap@infradead.org>
-Cc: Tomohiro Kusumi <kusumi.tomohiro@gmail.com>
-Cc: Arnd Bergmann <arnd@arndb.de>
-Cc: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
-Cc: Alexandre Belloni <alexandre.belloni@bootlin.com>
-Cc: "Theodore Ts'o" <tytso@mit.edu>
-Cc: Eric Biggers <ebiggers@google.com>
-Cc: Steven Filary <steven.a.filary@intel.com>
+Acked-by: Arnd Bergmann <arnd@arndb.de>
 Cc: Jiri Pirko <jiri@mellanox.com>
 Cc: Vadim Pasternak <vadimp@mellanox.com>
+Cc: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: David S. Miller <davem@davemloft.net>
+Cc: Nicolas Ferre <nicolas.ferre@microchip.com>
+Cc: Rob Herring <robh@kernel.org>
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc: Lukas Bulwahn <lukas.bulwahn@gmail.com>
+Cc: Steven Filary <steven.a.filary@intel.com>
 Cc: Amithash Prasad <amithash@fb.com>
 Cc: Patrick Williams <patrickw3@fb.com>
 Cc: Rgrs <rgrs@protonmail.com>
-
-v28->v29
-Move ioctl number to userspace-api/ioctl/ioctl-number.rst
 ---
- Documentation/userspace-api/ioctl/ioctl-number.rst | 2 ++
- 1 file changed, 2 insertions(+)
+ MAINTAINERS | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
-diff --git a/Documentation/userspace-api/ioctl/ioctl-number.rst b/Documentation/userspace-api/ioctl/ioctl-number.rst
-index f759edafd938..7c005fc9a1c2 100644
---- a/Documentation/userspace-api/ioctl/ioctl-number.rst
-+++ b/Documentation/userspace-api/ioctl/ioctl-number.rst
-@@ -332,6 +332,8 @@ Code  Seq#    Include File                                           Comments
-                                                                      <mailto:vgo@ratio.de>
- 0xB1  00-1F                                                          PPPoX
-                                                                      <mailto:mostrows@styx.uwaterloo.ca>
-+0xB2  00-0F  linux/jtag.h                                            JTAG driver
-+                                                                     <mailto:oleksandrs@mellanox.com>
- 0xB3  00     linux/mmc/ioctl.h
- 0xB4  00-0F  linux/gpio.h                                            <mailto:linux-gpio@vger.kernel.org>
- 0xB5  00-0F  uapi/linux/rpmsg.h                                      <mailto:linux-remoteproc@vger.kernel.org>
+diff --git a/MAINTAINERS b/MAINTAINERS
+index e64e5db31497..96d20fbb719c 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -9144,6 +9144,17 @@ L:	linux-serial at vger.kernel.org
+ S:	Orphan
+ F:	drivers/tty/serial/jsm/
+ 
++JTAG SUBSYSTEM
++M:	Oleksandr Shamray <oleksandrs@mellanox.com>
++M:	Vadim Pasternak <vadimp@mellanox.com>
++M	Ernesto Corona <ernesto.corona@intel.com>
++S:	Maintained
++F:	include/linux/jtag.h
++F:	include/uapi/linux/jtag.h
++F:	drivers/jtag/
++F:	Documentation/devicetree/bindings/jtag/
++F:	Documentation/ABI/testing/jtag-dev
++
+ K10TEMP HARDWARE MONITORING DRIVER
+ M:	Clemens Ladisch <clemens@ladisch.de>
+ L:	linux-hwmon at vger.kernel.org
 -- 
 2.17.1
 
