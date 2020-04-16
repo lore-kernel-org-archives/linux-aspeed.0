@@ -1,95 +1,38 @@
 From: Eddie James <eajames@linux.ibm.com>
-Date: Thu, 16 Apr 2020 15:03:38 -0500
-Subject: [PATCH v9 4/5] soc: aspeed: xdma: Add reset ioctl
+Date: Thu, 16 Apr 2020 15:03:39 -0500
+Subject: [PATCH v9 5/5] ARM: dts: Aspeed: AST2600: Add XDMA PCI-E root control
+ reset
 In-Reply-To: <1587067419-5107-1-git-send-email-eajames@linux.ibm.com>
 References: <1587067419-5107-1-git-send-email-eajames@linux.ibm.com>
-Message-ID: <1587067419-5107-5-git-send-email-eajames@linux.ibm.com>
+Message-ID: <1587067419-5107-6-git-send-email-eajames@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Users of the XDMA engine need a way to reset it if something goes wrong.
-Problems on the host side, or user error, such as incorrect host
-address, may result in the DMA operation never completing and no way to
-determine what went wrong. Therefore, add an ioctl to reset the engine
-so that users can recover in this situation.
+The AST2600 XDMA engine requires the PCI-E root control reset be cleared
+as well, so add a phandle to that syscon reset.
 
 Signed-off-by: Eddie James <eajames@linux.ibm.com>
-Acked-by: Andrew Jeffery <andrew@aj.id.au>
 ---
- drivers/soc/aspeed/aspeed-xdma.c | 32 ++++++++++++++++++++++++++++++++
- include/uapi/linux/aspeed-xdma.h |  4 ++++
- 2 files changed, 36 insertions(+)
+ arch/arm/boot/dts/aspeed-g6.dtsi | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/soc/aspeed/aspeed-xdma.c b/drivers/soc/aspeed/aspeed-xdma.c
-index 41506ed..94ae04f 100644
---- a/drivers/soc/aspeed/aspeed-xdma.c
-+++ b/drivers/soc/aspeed/aspeed-xdma.c
-@@ -640,6 +640,37 @@ static __poll_t aspeed_xdma_poll(struct file *file,
- 	return mask;
- }
- 
-+static long aspeed_xdma_ioctl(struct file *file, unsigned int cmd,
-+			      unsigned long param)
-+{
-+	unsigned long flags;
-+	struct aspeed_xdma_client *client = file->private_data;
-+	struct aspeed_xdma *ctx = client->ctx;
-+
-+	switch (cmd) {
-+	case ASPEED_XDMA_IOCTL_RESET:
-+		spin_lock_irqsave(&ctx->engine_lock, flags);
-+		if (ctx->in_reset) {
-+			spin_unlock_irqrestore(&ctx->engine_lock, flags);
-+			return 0;
-+		}
-+
-+		ctx->in_reset = true;
-+		spin_unlock_irqrestore(&ctx->engine_lock, flags);
-+
-+		if (READ_ONCE(ctx->current_client))
-+			dev_warn(ctx->dev,
-+				 "User reset with transfer in progress.\n");
-+
-+		aspeed_xdma_reset(ctx);
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+
- static void aspeed_xdma_vma_close(struct vm_area_struct *vma)
- {
- 	int rc;
-@@ -734,6 +765,7 @@ static int aspeed_xdma_release(struct inode *inode, struct file *file)
- 	.owner			= THIS_MODULE,
- 	.write			= aspeed_xdma_write,
- 	.poll			= aspeed_xdma_poll,
-+	.unlocked_ioctl		= aspeed_xdma_ioctl,
- 	.mmap			= aspeed_xdma_mmap,
- 	.open			= aspeed_xdma_open,
- 	.release		= aspeed_xdma_release,
-diff --git a/include/uapi/linux/aspeed-xdma.h b/include/uapi/linux/aspeed-xdma.h
-index 2efaa60..3a3646f 100644
---- a/include/uapi/linux/aspeed-xdma.h
-+++ b/include/uapi/linux/aspeed-xdma.h
-@@ -4,8 +4,12 @@
- #ifndef _UAPI_LINUX_ASPEED_XDMA_H_
- #define _UAPI_LINUX_ASPEED_XDMA_H_
- 
-+#include <linux/ioctl.h>
- #include <linux/types.h>
- 
-+#define __ASPEED_XDMA_IOCTL_MAGIC	0xb7
-+#define ASPEED_XDMA_IOCTL_RESET		_IO(__ASPEED_XDMA_IOCTL_MAGIC, 0)
-+
- /*
-  * aspeed_xdma_direction
-  *
+diff --git a/arch/arm/boot/dts/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed-g6.dtsi
+index 1ffc1517..19f3287 100644
+--- a/arch/arm/boot/dts/aspeed-g6.dtsi
++++ b/arch/arm/boot/dts/aspeed-g6.dtsi
+@@ -342,7 +342,8 @@
+ 				compatible = "aspeed,ast2600-xdma";
+ 				reg = <0x1e6e7000 0x100>;
+ 				clocks = <&syscon ASPEED_CLK_GATE_BCLK>;
+-				resets = <&syscon ASPEED_RESET_DEV_XDMA>;
++				resets = <&syscon ASPEED_RESET_DEV_XDMA>, <&syscon ASPEED_RESET_RC_XDMA>;
++				reset-names = "device", "root-complex";
+ 				interrupts-extended = <&gic GIC_SPI 6 IRQ_TYPE_LEVEL_HIGH>,
+ 						      <&scu_ic0 2>;
+ 				pcie-device = "bmc";
 -- 
 1.8.3.1
 
