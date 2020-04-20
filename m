@@ -1,38 +1,35 @@
 From: Eddie James <eajames@linux.ibm.com>
-Date: Mon, 20 Apr 2020 15:26:09 -0500
-Subject: [PATCH v10 5/7] ARM: dts: Aspeed: AST2600: Add XDMA PCI-E root
- control reset
+Date: Mon, 20 Apr 2020 15:26:10 -0500
+Subject: [PATCH v10 6/7] ARM: dts: Aspeed: AST2500: Add missing SCU interrupt
+ controller include
 In-Reply-To: <20200420202611.17776-1-eajames@linux.ibm.com>
 References: <20200420202611.17776-1-eajames@linux.ibm.com>
-Message-ID: <20200420202611.17776-6-eajames@linux.ibm.com>
+Message-ID: <20200420202611.17776-7-eajames@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The AST2600 XDMA engine requires the PCI-E root control reset be cleared
-as well, so add a phandle to that syscon reset.
+The XDMA node references the SCU interrupt controller interrupts which
+should be included.
 
 Signed-off-by: Eddie James <eajames@linux.ibm.com>
 ---
- arch/arm/boot/dts/aspeed-g6.dtsi | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ arch/arm/boot/dts/aspeed-g5.dtsi | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/arch/arm/boot/dts/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed-g6.dtsi
-index 1ffc15177b79..19f3287b7320 100644
---- a/arch/arm/boot/dts/aspeed-g6.dtsi
-+++ b/arch/arm/boot/dts/aspeed-g6.dtsi
-@@ -342,7 +342,8 @@ xdma: xdma at 1e6e7000 {
- 				compatible = "aspeed,ast2600-xdma";
- 				reg = <0x1e6e7000 0x100>;
- 				clocks = <&syscon ASPEED_CLK_GATE_BCLK>;
--				resets = <&syscon ASPEED_RESET_DEV_XDMA>;
-+				resets = <&syscon ASPEED_RESET_DEV_XDMA>, <&syscon ASPEED_RESET_RC_XDMA>;
-+				reset-names = "device", "root-complex";
- 				interrupts-extended = <&gic GIC_SPI 6 IRQ_TYPE_LEVEL_HIGH>,
- 						      <&scu_ic0 2>;
- 				pcie-device = "bmc";
+diff --git a/arch/arm/boot/dts/aspeed-g5.dtsi b/arch/arm/boot/dts/aspeed-g5.dtsi
+index 284face7de2c..04ecc8b78f7a 100644
+--- a/arch/arm/boot/dts/aspeed-g5.dtsi
++++ b/arch/arm/boot/dts/aspeed-g5.dtsi
+@@ -1,5 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0+
+ #include <dt-bindings/clock/aspeed-clock.h>
++#include <dt-bindings/interrupt-controller/aspeed-scu-ic.h>
+ 
+ / {
+ 	model = "Aspeed BMC";
 -- 
 2.24.0
 
