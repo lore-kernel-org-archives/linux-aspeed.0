@@ -1,408 +1,357 @@
-From: Ben Pai <Ben_Pai@wistron.com>
-Date: Thu, 23 Apr 2020 17:52:30 +0800
-Subject: [PATCH v1] ARM: dts: aspeed: mihawk: add aliases for i2c
-Message-ID: <20200423095230.7622-1-Ben_Pai@wistron.com>
+From: Alexander Filippov <a.filippov@yadro.com>
+Date: Thu, 23 Apr 2020 14:21:00 +0300
+Subject: [PATCH] ARM: DTS: Aspeed: Add YADRO Nicole BMC
+Message-ID: <20200423112100.19424-1-a.filippov@yadro.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Set the bus id for each mux channel to avoid switching channels
-multiple times
+Nicole is an OpenPower machine with an Aspeed 2500 BMC SoC manufactured
+by YADRO.
 
-Signed-off-by: Ben Pai <Ben_Pai@wistron.com>
+Signed-off-by: Alexander Filippov <a.filippov@yadro.com>
 ---
- arch/arm/boot/dts/aspeed-bmc-opp-mihawk.dts | 293 +++++++++++++++++++-
- 1 file changed, 289 insertions(+), 4 deletions(-)
+ arch/arm/boot/dts/Makefile                  |   1 +
+ arch/arm/boot/dts/aspeed-bmc-opp-nicole.dts | 316 ++++++++++++++++++++
+ 2 files changed, 317 insertions(+)
+ create mode 100644 arch/arm/boot/dts/aspeed-bmc-opp-nicole.dts
 
-diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-mihawk.dts b/arch/arm/boot/dts/aspeed-bmc-opp-mihawk.dts
-index f7e935ede919..0f8550f158f5 100644
---- a/arch/arm/boot/dts/aspeed-bmc-opp-mihawk.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-opp-mihawk.dts
-@@ -8,6 +8,52 @@
- 	model = "Mihawk BMC";
- 	compatible = "ibm,mihawk-bmc", "aspeed,ast2500";
- 
-+	aliases {
-+		i2c215 = &bus6_mux215;
-+		i2c216 = &bus6_mux216;
-+		i2c217 = &bus6_mux217;
-+		i2c218 = &bus6_mux218;
-+		i2c219 = &bus6_mux219;
-+		i2c220 = &bus6_mux220;
-+		i2c221 = &bus6_mux221;
-+		i2c222 = &bus6_mux222;
-+		i2c223 = &bus7_mux223;
-+		i2c224 = &bus7_mux224;
-+		i2c225 = &bus7_mux225;
-+		i2c226 = &bus7_mux226;
-+		i2c227 = &bus7_mux227;
-+		i2c228 = &bus7_mux228;
-+		i2c229 = &bus7_mux229;
-+		i2c230 = &bus7_mux230;
-+		i2c231 = &bus9_mux231;
-+		i2c232 = &bus9_mux232;
-+		i2c233 = &bus9_mux233;
-+		i2c234 = &bus9_mux234;
-+		i2c235 = &bus9_mux235;
-+		i2c236 = &bus9_mux236;
-+		i2c237 = &bus9_mux237;
-+		i2c238 = &bus9_mux238;
-+		i2c239 = &bus10_mux239;
-+		i2c240 = &bus10_mux240;
-+		i2c241 = &bus10_mux241;
-+		i2c242 = &bus10_mux242;
-+		i2c243 = &bus10_mux243;
-+		i2c244 = &bus10_mux244;
-+		i2c245 = &bus10_mux245;
-+		i2c246 = &bus10_mux246;
-+		i2c247 = &bus12_mux247;
-+		i2c248 = &bus12_mux248;
-+		i2c249 = &bus12_mux249;
-+		i2c250 = &bus12_mux250;
-+		i2c251 = &bus13_mux251;
-+		i2c252 = &bus13_mux252;
-+		i2c253 = &bus13_mux253;
-+		i2c254 = &bus13_mux254;
-+		i2c255 = &bus13_mux255;
-+		i2c256 = &bus13_mux256;
-+		i2c257 = &bus13_mux257;
-+		i2c258 = &bus13_mux258;
+diff --git a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
+index e8dd99201397..6f9fe0f959f2 100644
+--- a/arch/arm/boot/dts/Makefile
++++ b/arch/arm/boot/dts/Makefile
+@@ -1347,6 +1347,7 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
+ 	aspeed-bmc-microsoft-olympus.dtb \
+ 	aspeed-bmc-opp-lanyang.dtb \
+ 	aspeed-bmc-opp-mihawk.dtb \
++	aspeed-bmc-opp-nicole.dtb \
+ 	aspeed-bmc-opp-palmetto.dtb \
+ 	aspeed-bmc-opp-romulus.dtb \
+ 	aspeed-bmc-opp-swift.dtb \
+diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-nicole.dts b/arch/arm/boot/dts/aspeed-bmc-opp-nicole.dts
+new file mode 100644
+index 000000000000..4f2b91d6a891
+--- /dev/null
++++ b/arch/arm/boot/dts/aspeed-bmc-opp-nicole.dts
+@@ -0,0 +1,316 @@
++// SPDX-License-Identifier: GPL-2.0+
++// Copyright 2019 YADRO
++/dts-v1/;
++#include "aspeed-g5.dtsi"
++#include <dt-bindings/gpio/aspeed-gpio.h>
++
++/ {
++	model = "Nicole BMC";
++	compatible = "yadro,nicole-bmc", "aspeed,ast2500";
++
++	chosen {
++		stdout-path = &uart5;
++		bootargs = "console=ttyS4,115200 earlyprintk";
 +	};
- 
- 	chosen {
- 		stdout-path = &uart5;
-@@ -630,6 +676,54 @@
- 		#address-cells = <1>;
- 		#size-cells = <0>;
- 		reg = <0x70>;
 +
-+		bus6_mux215: i2c at 0 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <0>;
-+		};
++	memory at 80000000 {
++		reg = <0x80000000 0x20000000>;
++	};
 +
-+		bus6_mux216: i2c at 1 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <1>;
++	reserved-memory {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		ranges;
++
++		vga_memory: framebuffer at 9f000000 {
++			no-map;
++			reg = <0x9f000000 0x01000000>; /* 16M */
 +		};
 +
-+		bus6_mux217: i2c at 2 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <2>;
++		flash_memory: region at 98000000 {
++			no-map;
++			reg = <0x98000000 0x04000000>; /* 64M */
 +		};
 +
-+		bus6_mux218: i2c at 3 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <3>;
++		coldfire_memory: codefire_memory at 9ef00000 {
++			reg = <0x9ef00000 0x00100000>;
++			no-map;
 +		};
 +
-+		bus6_mux219: i2c at 4 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <4>;
++		gfx_memory: framebuffer {
++			size = <0x01000000>;
++			alignment = <0x01000000>;
++			compatible = "shared-dma-pool";
++			reusable;
 +		};
 +
-+		bus6_mux220: i2c at 5 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <5>;
++		video_engine_memory: jpegbuffer {
++			size = <0x02000000>;	/* 32M */
++			alignment = <0x01000000>;
++			compatible = "shared-dma-pool";
++			reusable;
++		};
++	};
++
++	leds {
++		compatible = "gpio-leds";
++
++		power {
++			gpios = <&gpio ASPEED_GPIO(AA, 4) GPIO_ACTIVE_HIGH>;
 +		};
 +
-+		bus6_mux221: i2c at 6 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <6>;
++		identify {
++			gpios = <&gpio ASPEED_GPIO(AA, 7) GPIO_ACTIVE_HIGH>;
 +		};
 +
-+		bus6_mux222: i2c at 7 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <7>;
-+		};
- 	};
- 
- };
-@@ -644,6 +738,54 @@
- 		#address-cells = <1>;
- 		#size-cells = <0>;
- 		reg = <0x70>;
-+
-+		bus7_mux223: i2c at 0 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <0>;
++		alarm_red {
++			gpios = <&gpio ASPEED_GPIO(AA, 3) GPIO_ACTIVE_HIGH>;
 +		};
 +
-+		bus7_mux224: i2c at 1 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <1>;
++		alarm_yellow {
++			gpios = <&gpio ASPEED_GPIO(AA, 1) GPIO_ACTIVE_HIGH>;
 +		};
++	};
 +
-+		bus7_mux225: i2c at 2 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <2>;
-+		};
++	fsi: gpio-fsi {
++		compatible = "aspeed,ast2500-cf-fsi-master", "fsi-master";
++		#address-cells = <2>;
++		#size-cells = <0>;
++		no-gpio-delays;
 +
-+		bus7_mux226: i2c at 3 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <3>;
-+		};
++		memory-region = <&coldfire_memory>;
++		aspeed,sram = <&sram>;
++		aspeed,cvic = <&cvic>;
 +
-+		bus7_mux227: i2c at 4 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <4>;
-+		};
++		clock-gpios = <&gpio ASPEED_GPIO(AA, 0) GPIO_ACTIVE_HIGH>;
++		data-gpios = <&gpio ASPEED_GPIO(AA, 2) GPIO_ACTIVE_HIGH>;
++		mux-gpios = <&gpio ASPEED_GPIO(A, 6) GPIO_ACTIVE_HIGH>;
++		enable-gpios = <&gpio ASPEED_GPIO(D, 0) GPIO_ACTIVE_HIGH>;
++		trans-gpios = <&gpio ASPEED_GPIO(P, 1) GPIO_ACTIVE_HIGH>;
++	};
 +
-+		bus7_mux228: i2c at 5 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <5>;
-+		};
++	gpio-keys {
++		compatible = "gpio-keys";
 +
-+		bus7_mux229: i2c at 6 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <6>;
++		checkstop {
++			label = "checkstop";
++			gpios = <&gpio ASPEED_GPIO(J, 2) GPIO_ACTIVE_LOW>;
++			linux,code = <ASPEED_GPIO(J, 2)>;
 +		};
++	};
 +
-+		bus7_mux230: i2c at 7 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <7>;
-+		};
- 	};
- 
- };
-@@ -684,6 +826,30 @@
- 		i2c-mux-idle-disconnect;
- 		interrupt-controller;
- 		#interrupt-cells = <2>;
++	iio-hwmon-battery {
++		compatible = "iio-hwmon";
++		io-channels = <&adc 12>;
++	};
++};
 +
-+		bus9_mux231: i2c at 0 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <0>;
-+		};
++&fmc {
++	status = "okay";
++	flash at 0 {
++		status = "okay";
++		m25p,fast-read;
++		label = "bmc";
++		spi-max-frequency = <50000000>;
++#include "openbmc-flash-layout.dtsi"
++	};
++};
 +
-+		bus9_mux232: i2c at 1 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <1>;
-+		};
++&spi1 {
++	status = "okay";
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_spi1_default>;
 +
-+		bus9_mux233: i2c at 2 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <2>;
-+		};
++	flash at 0 {
++		status = "okay";
++		m25p,fast-read;
++		label = "pnor";
++		spi-max-frequency = <100000000>;
++	};
++};
 +
-+		bus9_mux234: i2c at 3 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <3>;
-+		};
- 	};
- 
- 	pca9545 at 71 {
-@@ -695,6 +861,30 @@
- 		i2c-mux-idle-disconnect;
- 		interrupt-controller;
- 		#interrupt-cells = <2>;
++&lpc_ctrl {
++	status = "okay";
++	memory-region = <&flash_memory>;
++	flash = <&spi1>;
++};
 +
-+		bus9_mux235: i2c at 0 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <0>;
-+		};
++&uart1 {
++	/* Rear RS-232 connector */
++	status = "okay";
 +
-+		bus9_mux236: i2c at 1 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <1>;
-+		};
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_txd1_default
++			&pinctrl_rxd1_default
++			&pinctrl_nrts1_default
++			&pinctrl_ndtr1_default
++			&pinctrl_ndsr1_default
++			&pinctrl_ncts1_default
++			&pinctrl_ndcd1_default
++			&pinctrl_nri1_default>;
++};
 +
-+		bus9_mux237: i2c at 2 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <2>;
-+		};
++&uart5 {
++	status = "okay";
++};
 +
-+		bus9_mux238: i2c at 3 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <3>;
-+		};
- 	};
- };
- 
-@@ -725,6 +915,30 @@
- 		i2c-mux-idle-disconnect;
- 		interrupt-controller;
- 		#interrupt-cells = <2>;
++&mac0 {
++	status = "okay";
 +
-+		bus10_mux239: i2c at 0 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <0>;
-+		};
++	use-ncsi;
 +
-+		bus10_mux240: i2c at 1 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <1>;
-+		};
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_rmii1_default>;
++	clocks = <&syscon ASPEED_CLK_GATE_MAC1CLK>,
++		 <&syscon ASPEED_CLK_MAC1RCLK>;
++	clock-names = "MACCLK", "RCLK";
++};
 +
-+		bus10_mux241: i2c at 2 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <2>;
-+		};
++&i2c0 {
++	status = "okay";
 +
-+		bus10_mux242: i2c at 3 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <3>;
-+		};
- 	};
- 
- 	pca9545 at 71 {
-@@ -736,6 +950,30 @@
- 		i2c-mux-idle-disconnect;
- 		interrupt-controller;
- 		#interrupt-cells = <2>;
++	eeprom at 50 {
++		compatible = "atmel,24c256";
++		reg = <0x50>;
++		pagesize = <64>;
++	};
++};
 +
-+		bus10_mux243: i2c at 0 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <0>;
-+		};
++&i2c2 {
++	status = "okay";
++    /* CPU0 characterization connector */
++};
 +
-+		bus10_mux244: i2c at 1 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <1>;
-+		};
++&i2c3 {
++	status = "okay";
++    /* CLK GEN SI5338 */
++};
 +
-+		bus10_mux245: i2c at 2 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <2>;
-+		};
++&i2c4 {
++	status = "okay";
++    /* Voltage regulators for CPU0 */
++};
 +
-+		bus10_mux246: i2c at 3 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <3>;
-+		};
- 	};
- };
- 
-@@ -796,7 +1034,7 @@
- 		interrupt-controller;
- 		#interrupt-cells = <2>;
- 
--		i2c at 0 {
-+		bus12_mux247: i2c at 0 {
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 			reg = <0>;
-@@ -807,7 +1045,7 @@
- 			};
- 		};
- 
--		i2c at 1 {
-+		bus12_mux248: i2c at 1 {
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 			reg = <1>;
-@@ -818,7 +1056,7 @@
- 			};
- 		};
- 
--		i2c at 2 {
-+		bus12_mux249: i2c at 2 {
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 			reg = <2>;
-@@ -829,7 +1067,7 @@
- 			};
- 		};
- 
--		i2c at 3 {
-+		bus12_mux250: i2c at 3 {
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 			reg = <3>;
-@@ -857,6 +1095,53 @@
- 		#address-cells = <1>;
- 		#size-cells = <0>;
- 		reg = <0x70>;
-+		bus13_mux251: i2c at 0 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <0>;
-+		};
++&i2c5 {
++	status = "okay";
++    /* Voltage regulators for CPU1 */
++};
 +
-+		bus13_mux252: i2c at 1 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <1>;
-+		};
++&i2c6 {
++	status = "okay";
 +
-+		bus13_mux253: i2c at 2 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <2>;
-+		};
++	rtc at 32 {
++		compatible = "epson,rx8900";
++		reg = <0x32>;
++	};
++};
 +
-+		bus13_mux254: i2c at 3 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <3>;
-+		};
++&i2c7 {
++	status = "okay";
++    /* CPLD */
++};
 +
-+		bus13_mux255: i2c at 4 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <4>;
-+		};
++&gpio {
++	gpio-line-names =
++	/*A0-A7*/	"","cfam-reset","","","","","fsi-mux","",
++	/*B0-B7*/	"","","","","","","","",
++	/*C0-C7*/	"","","","","","","","",
++	/*D0-D7*/	"fsi-enable","","","nic_func_mode0","nic_func_mode1","","","",
++	/*E0-E7*/	"","ncsi_cfg","","","","","","",
++	/*F0-F7*/	"","","","","","","","",
++	/*G0-G7*/	"","","","","","","","",
++	/*H0-H7*/	"","","","","","","","",
++	/*I0-I7*/	"","","","","","","","",
++	/*J0-J7*/	"","","checkstop","","","","","",
++	/*K0-K7*/	"","","","","","","","",
++	/*L0-L7*/	"","","","","","","","",
++	/*M0-M7*/	"","","","","","","","",
++	/*N0-N7*/	"","","","","","","","",
++	/*O0-O7*/	"","","id-button","","","","","",
++	/*P0-P7*/	"","fsi-trans","","","","","","",
++	/*Q0-Q7*/	"","","","","","","","",
++	/*R0-R7*/	"","","","","","","","",
++	/*S0-S7*/	"","","","","","","","seq_cont",
++	/*T0-T7*/	"","","","","","","","",
++	/*U0-U7*/	"","","","","","","","",
++	/*V0-V7*/	"","","","","","","","",
++	/*W0-W7*/	"","","","","","","","",
++	/*X0-X7*/	"","","","","","","","",
++	/*Y0-Y7*/	"","","","","","","","",
++	/*Z0-Z7*/	"","","","","","","","",
++	/*AA0-AA7*/ "fsi-clock","led-alarm-yellow","fsi-data","led-alarm-red",
++                "led-power","","","led-identify",
++	/*AB0-AB7*/	"","","","","","","","",
++	/*AC0-AC7*/	"","","","","","","","";
 +
-+		bus13_mux256: i2c at 5 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <5>;
-+		};
++	nic_func_mode0 {
++		gpio-hog;
++		gpios = <ASPEED_GPIO(D, 3) GPIO_ACTIVE_HIGH>;
++		output-low;
++	};
++	nic_func_mode1 {
++		gpio-hog;
++		gpios = <ASPEED_GPIO(D, 4) GPIO_ACTIVE_HIGH>;
++		output-low;
++	};
++	seq_cont {
++		gpio-hog;
++		gpios = <ASPEED_GPIO(S, 7) GPIO_ACTIVE_HIGH>;
++		output-low;
++	};
++	ncsi_cfg {
++		gpio-hog;
++		input;
++		gpios = <ASPEED_GPIO(E, 1) GPIO_ACTIVE_HIGH>;
++	};
++};
 +
-+		bus13_mux257: i2c at 6 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <6>;
-+		};
++&vuart {
++	status = "okay";
++};
 +
-+		bus13_mux258: i2c at 7 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <7>;
-+		};
- 	};
- };
- 
++&gfx {
++	status = "okay";
++	memory-region = <&gfx_memory>;
++};
++
++&pinctrl {
++	aspeed,external-nodes = <&gfx &lhc>;
++};
++
++&ibt {
++	status = "okay";
++};
++
++&vhub {
++	status = "okay";
++};
++
++&adc {
++	status = "okay";
++
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_adc0_default
++			&pinctrl_adc1_default
++			&pinctrl_adc2_default
++			&pinctrl_adc3_default
++			&pinctrl_adc4_default
++			&pinctrl_adc5_default
++			&pinctrl_adc6_default
++			&pinctrl_adc7_default
++			&pinctrl_adc8_default
++			&pinctrl_adc9_default
++			&pinctrl_adc10_default
++			&pinctrl_adc11_default
++			&pinctrl_adc12_default
++			&pinctrl_adc13_default
++			&pinctrl_adc14_default
++			&pinctrl_adc15_default>;
++};
++
++&video {
++	status = "okay";
++	memory-region = <&video_engine_memory>;
++};
++
++#include "ibm-power9-dual.dtsi"
 -- 
-2.17.1
+2.21.1
 
-
----------------------------------------------------------------------------------------------------------------------------------------------------------------
-This email contains confidential or legally privileged information and is for the sole use of its intended recipient. 
-Any unauthorized review, use, copying or distribution of this email or the content of this email is strictly prohibited.
-If you are not the intended recipient, you may reply to the sender and should delete this e-mail immediately.
----------------------------------------------------------------------------------------------------------------------------------------------------------------
