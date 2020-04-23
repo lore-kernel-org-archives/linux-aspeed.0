@@ -1,178 +1,408 @@
-From: Rob Herring <robh@kernel.org>
-Date: Wed, 22 Apr 2020 15:13:25 -0500
-Subject: [PATCH v10 1/7] dt-bindings: soc: Add Aspeed XDMA Engine
-In-Reply-To: <20200420202611.17776-2-eajames@linux.ibm.com>
-References: <20200420202611.17776-1-eajames@linux.ibm.com>
- <20200420202611.17776-2-eajames@linux.ibm.com>
-Message-ID: <20200422201325.GA12023@bogus>
+From: Ben Pai <Ben_Pai@wistron.com>
+Date: Thu, 23 Apr 2020 17:52:30 +0800
+Subject: [PATCH v1] ARM: dts: aspeed: mihawk: add aliases for i2c
+Message-ID: <20200423095230.7622-1-Ben_Pai@wistron.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Apr 20, 2020 at 03:26:05PM -0500, Eddie James wrote:
-> Document the bindings for the Aspeed AST25XX and AST26XX XDMA engine.
-> 
-> Signed-off-by: Eddie James <eajames@linux.ibm.com>
-> Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
-> ---
->  .../devicetree/bindings/soc/aspeed/xdma.yaml  | 108 ++++++++++++++++++
->  MAINTAINERS                                   |   6 +
->  2 files changed, 114 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/soc/aspeed/xdma.yaml
-> 
-> diff --git a/Documentation/devicetree/bindings/soc/aspeed/xdma.yaml b/Documentation/devicetree/bindings/soc/aspeed/xdma.yaml
-> new file mode 100644
-> index 000000000000..428a575da1be
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/soc/aspeed/xdma.yaml
-> @@ -0,0 +1,108 @@
-> +# SPDX-License-Identifier: (GPL-2.0-or-later)
+Set the bus id for each mux channel to avoid switching channels
+multiple times
 
-Dual license new bindings please:
+Signed-off-by: Ben Pai <Ben_Pai@wistron.com>
+---
+ arch/arm/boot/dts/aspeed-bmc-opp-mihawk.dts | 293 +++++++++++++++++++-
+ 1 file changed, 289 insertions(+), 4 deletions(-)
 
-(GPL-2.0-only OR BSD-2-Clause)
+diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-mihawk.dts b/arch/arm/boot/dts/aspeed-bmc-opp-mihawk.dts
+index f7e935ede919..0f8550f158f5 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-opp-mihawk.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-opp-mihawk.dts
+@@ -8,6 +8,52 @@
+ 	model = "Mihawk BMC";
+ 	compatible = "ibm,mihawk-bmc", "aspeed,ast2500";
+ 
++	aliases {
++		i2c215 = &bus6_mux215;
++		i2c216 = &bus6_mux216;
++		i2c217 = &bus6_mux217;
++		i2c218 = &bus6_mux218;
++		i2c219 = &bus6_mux219;
++		i2c220 = &bus6_mux220;
++		i2c221 = &bus6_mux221;
++		i2c222 = &bus6_mux222;
++		i2c223 = &bus7_mux223;
++		i2c224 = &bus7_mux224;
++		i2c225 = &bus7_mux225;
++		i2c226 = &bus7_mux226;
++		i2c227 = &bus7_mux227;
++		i2c228 = &bus7_mux228;
++		i2c229 = &bus7_mux229;
++		i2c230 = &bus7_mux230;
++		i2c231 = &bus9_mux231;
++		i2c232 = &bus9_mux232;
++		i2c233 = &bus9_mux233;
++		i2c234 = &bus9_mux234;
++		i2c235 = &bus9_mux235;
++		i2c236 = &bus9_mux236;
++		i2c237 = &bus9_mux237;
++		i2c238 = &bus9_mux238;
++		i2c239 = &bus10_mux239;
++		i2c240 = &bus10_mux240;
++		i2c241 = &bus10_mux241;
++		i2c242 = &bus10_mux242;
++		i2c243 = &bus10_mux243;
++		i2c244 = &bus10_mux244;
++		i2c245 = &bus10_mux245;
++		i2c246 = &bus10_mux246;
++		i2c247 = &bus12_mux247;
++		i2c248 = &bus12_mux248;
++		i2c249 = &bus12_mux249;
++		i2c250 = &bus12_mux250;
++		i2c251 = &bus13_mux251;
++		i2c252 = &bus13_mux252;
++		i2c253 = &bus13_mux253;
++		i2c254 = &bus13_mux254;
++		i2c255 = &bus13_mux255;
++		i2c256 = &bus13_mux256;
++		i2c257 = &bus13_mux257;
++		i2c258 = &bus13_mux258;
++	};
+ 
+ 	chosen {
+ 		stdout-path = &uart5;
+@@ -630,6 +676,54 @@
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+ 		reg = <0x70>;
++
++		bus6_mux215: i2c at 0 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0>;
++		};
++
++		bus6_mux216: i2c at 1 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <1>;
++		};
++
++		bus6_mux217: i2c at 2 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <2>;
++		};
++
++		bus6_mux218: i2c at 3 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <3>;
++		};
++
++		bus6_mux219: i2c at 4 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <4>;
++		};
++
++		bus6_mux220: i2c at 5 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <5>;
++		};
++
++		bus6_mux221: i2c at 6 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <6>;
++		};
++
++		bus6_mux222: i2c at 7 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <7>;
++		};
+ 	};
+ 
+ };
+@@ -644,6 +738,54 @@
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+ 		reg = <0x70>;
++
++		bus7_mux223: i2c at 0 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0>;
++		};
++
++		bus7_mux224: i2c at 1 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <1>;
++		};
++
++		bus7_mux225: i2c at 2 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <2>;
++		};
++
++		bus7_mux226: i2c at 3 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <3>;
++		};
++
++		bus7_mux227: i2c at 4 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <4>;
++		};
++
++		bus7_mux228: i2c at 5 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <5>;
++		};
++
++		bus7_mux229: i2c at 6 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <6>;
++		};
++
++		bus7_mux230: i2c at 7 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <7>;
++		};
+ 	};
+ 
+ };
+@@ -684,6 +826,30 @@
+ 		i2c-mux-idle-disconnect;
+ 		interrupt-controller;
+ 		#interrupt-cells = <2>;
++
++		bus9_mux231: i2c at 0 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0>;
++		};
++
++		bus9_mux232: i2c at 1 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <1>;
++		};
++
++		bus9_mux233: i2c at 2 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <2>;
++		};
++
++		bus9_mux234: i2c at 3 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <3>;
++		};
+ 	};
+ 
+ 	pca9545 at 71 {
+@@ -695,6 +861,30 @@
+ 		i2c-mux-idle-disconnect;
+ 		interrupt-controller;
+ 		#interrupt-cells = <2>;
++
++		bus9_mux235: i2c at 0 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0>;
++		};
++
++		bus9_mux236: i2c at 1 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <1>;
++		};
++
++		bus9_mux237: i2c at 2 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <2>;
++		};
++
++		bus9_mux238: i2c at 3 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <3>;
++		};
+ 	};
+ };
+ 
+@@ -725,6 +915,30 @@
+ 		i2c-mux-idle-disconnect;
+ 		interrupt-controller;
+ 		#interrupt-cells = <2>;
++
++		bus10_mux239: i2c at 0 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0>;
++		};
++
++		bus10_mux240: i2c at 1 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <1>;
++		};
++
++		bus10_mux241: i2c at 2 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <2>;
++		};
++
++		bus10_mux242: i2c at 3 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <3>;
++		};
+ 	};
+ 
+ 	pca9545 at 71 {
+@@ -736,6 +950,30 @@
+ 		i2c-mux-idle-disconnect;
+ 		interrupt-controller;
+ 		#interrupt-cells = <2>;
++
++		bus10_mux243: i2c at 0 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0>;
++		};
++
++		bus10_mux244: i2c at 1 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <1>;
++		};
++
++		bus10_mux245: i2c at 2 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <2>;
++		};
++
++		bus10_mux246: i2c at 3 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <3>;
++		};
+ 	};
+ };
+ 
+@@ -796,7 +1034,7 @@
+ 		interrupt-controller;
+ 		#interrupt-cells = <2>;
+ 
+-		i2c at 0 {
++		bus12_mux247: i2c at 0 {
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 			reg = <0>;
+@@ -807,7 +1045,7 @@
+ 			};
+ 		};
+ 
+-		i2c at 1 {
++		bus12_mux248: i2c at 1 {
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 			reg = <1>;
+@@ -818,7 +1056,7 @@
+ 			};
+ 		};
+ 
+-		i2c at 2 {
++		bus12_mux249: i2c at 2 {
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 			reg = <2>;
+@@ -829,7 +1067,7 @@
+ 			};
+ 		};
+ 
+-		i2c at 3 {
++		bus12_mux250: i2c at 3 {
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 			reg = <3>;
+@@ -857,6 +1095,53 @@
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+ 		reg = <0x70>;
++		bus13_mux251: i2c at 0 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0>;
++		};
++
++		bus13_mux252: i2c at 1 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <1>;
++		};
++
++		bus13_mux253: i2c at 2 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <2>;
++		};
++
++		bus13_mux254: i2c at 3 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <3>;
++		};
++
++		bus13_mux255: i2c at 4 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <4>;
++		};
++
++		bus13_mux256: i2c at 5 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <5>;
++		};
++
++		bus13_mux257: i2c at 6 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <6>;
++		};
++
++		bus13_mux258: i2c at 7 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <7>;
++		};
+ 	};
+ };
+ 
+-- 
+2.17.1
 
-> +%YAML 1.2
-> +---
-> +$id: http://devicetree.org/schemas/soc/aspeed/xdma.yaml#
-> +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> +
-> +title: Aspeed AST25XX and AST26XX XDMA Engine
-> +
-> +maintainers:
-> + - Eddie James <eajames@linux.ibm.com>
-> +
-> +description: |
-> +  This binding describes the XDMA Engine embedded in the AST2500 and AST2600
-> +  SOCs. The XDMA engine can perform automatic DMA operations over PCI between
-> +  the SOC (acting as a BMC) and a host processor.
-> +
-> +properties:
-> +  compatible:
-> +    enum:
-> +      - aspeed,ast2500-xdma
-> +      - aspeed,ast2600-xdma
-> +
-> +  reg:
-> +    items:
-> +      - description: engine register space
 
-That's all 'reg' properties. You don't need a description for a 
-single entry. Just:
-
-reg:
-  maxItems: 1
-
-> +
-> +  clocks:
-> +    maxItems: 1
-> +
-> +  resets:
-> +    minItems: 1
-> +    maxItems: 2
-> +
-> +  reset-names:
-> +    maxItems: 2
-> +    items:
-> +      - const: device
-> +      - const: root-complex
-> +
-> +  interrupts-extended:
-
-Just use 'interrupts'. The tools fix things up so both work.
-
-> +    maxItems: 2
-> +    items:
-> +      - description: global interrupt for the XDMA engine
-> +      - description: PCI-E reset or PERST interrupt
-> +
-> +  aspeed,scu:
-> +    description: a reference to the System Control Unit node of the Aspeed SOC.
-> +    allOf:
-> +      - $ref: /schemas/types.yaml#/definitions/phandle
-> +
-> +  aspeed,pcie-device:
-> +    description: describes which PCI-E device the XDMA engine should use
-> +    allOf:
-> +      - $ref: /schemas/types.yaml#/definitions/string
-> +      - oneOf:
-> +        - items:
-> +          - const: bmc
-> +        - items:
-> +          - const: vga
-
-The oneOf (inclusive) can be just:
-
-enum: [ bmc, vga ]
-
-> +
-> +required:
-> +  - compatible
-> +  - reg
-> +  - clocks
-> +  - resets
-> +  - interrupts-extended
-> +  - aspeed,scu
-> +  - memory-region
-> +
-> +if:
-> +  properties:
-> +    compatible:
-> +      contains:
-> +        const: aspeed,ast2600-xdma
-> +then:
-> +  required:
-> +    - reset-names
-> +
-> +examples:
-> +  - |
-> +    #include <dt-bindings/clock/ast2600-clock.h>
-> +    #include <dt-bindings/interrupt-controller/arm-gic.h>
-> +    #include <dt-bindings/interrupt-controller/aspeed-scu-ic.h>
-> +    syscon: syscon at 1e6e2000 {
-> +        reg = <0x1e6e2000 0x1000>;
-> +        ranges = <0 0x1e6e2000 0x1000>;
-> +        #address-cells = <1>;
-> +        #size-cells = <1>;
-> +        #clock-cells = <1>;
-> +        #reset-cells = <1>;
-> +        scu_ic0: interrupt-controller at 560 {
-> +            reg = <0x560 0x4>;
-> +            interrupt-controller;
-> +            #interrupt-cells = <1>;
-> +        };
-> +    };
-> +    xdma at 1e6e7000 {
-> +        compatible = "aspeed,ast2600-xdma";
-> +        reg = <0x1e6e7000 0x100>;
-> +        clocks = <&syscon ASPEED_CLK_GATE_BCLK>;
-> +        resets = <&syscon ASPEED_RESET_DEV_XDMA>, <&syscon ASPEED_RESET_RC_XDMA>;
-> +        reset-names = "device", "root-complex";
-> +        interrupts-extended = <&gic GIC_SPI 6 IRQ_TYPE_LEVEL_HIGH>,
-> +                              <&scu_ic0 ASPEED_AST2600_SCU_IC0_PCIE_PERST_LO_TO_HI>;
-> +        aspeed,scu = <&syscon>;
-> +        aspeed,pcie-device = "bmc";
-> +        memory-region = <&vga_memory>;
-> +    };
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index ecd7def6ff4b..b1963e01a75e 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -2774,6 +2774,12 @@ S:	Maintained
->  F:	Documentation/devicetree/bindings/media/aspeed-video.txt
->  F:	drivers/media/platform/aspeed-video.c
->  
-> +ASPEED XDMA ENGINE DRIVER
-> +M:	Eddie James <eajames@linux.ibm.com>
-> +L:	linux-aspeed at lists.ozlabs.org (moderated for non-subscribers)
-> +S:	Maintained
-> +F:	Documentation/devicetree/bindings/soc/aspeed/xdma.yaml
-> +
->  ASUS NOTEBOOKS AND EEEPC ACPI/WMI EXTRAS DRIVERS
->  M:	Corentin Chary <corentin.chary@gmail.com>
->  L:	acpi4asus-user at lists.sourceforge.net
-> -- 
-> 2.24.0
-> 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------
+This email contains confidential or legally privileged information and is for the sole use of its intended recipient. 
+Any unauthorized review, use, copying or distribution of this email or the content of this email is strictly prohibited.
+If you are not the intended recipient, you may reply to the sender and should delete this e-mail immediately.
+---------------------------------------------------------------------------------------------------------------------------------------------------------------
