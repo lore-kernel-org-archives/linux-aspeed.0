@@ -1,357 +1,169 @@
-From: Alexander Filippov <a.filippov@yadro.com>
-Date: Fri, 24 Apr 2020 16:53:03 +0300
-Subject: [PATCH v5] ARM: DTS: Aspeed: Add YADRO Nicole BMC
-Message-ID: <20200424135303.20952-1-a.filippov@yadro.com>
+From: Sam Ravnborg <sam@ravnborg.org>
+Date: Fri, 24 Apr 2020 20:02:46 +0200
+Subject: [PATCH 55/59] drm/aspeed: Use devm_drm_dev_alloc
+In-Reply-To: <20200415074034.175360-56-daniel.vetter@ffwll.ch>
+References: <20200415074034.175360-1-daniel.vetter@ffwll.ch>
+ <20200415074034.175360-56-daniel.vetter@ffwll.ch>
+Message-ID: <20200424180246.GK7074@ravnborg.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Nicole is an OpenPower machine with an Aspeed 2500 BMC SoC manufactured
-by YADRO.
-
-Signed-off-by: Alexander Filippov <a.filippov@yadro.com>
----
- arch/arm/boot/dts/Makefile                  |   1 +
- arch/arm/boot/dts/aspeed-bmc-opp-nicole.dts | 316 ++++++++++++++++++++
- 2 files changed, 317 insertions(+)
- create mode 100644 arch/arm/boot/dts/aspeed-bmc-opp-nicole.dts
-
-diff --git a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
-index e8dd99201397..6f9fe0f959f2 100644
---- a/arch/arm/boot/dts/Makefile
-+++ b/arch/arm/boot/dts/Makefile
-@@ -1347,6 +1347,7 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
- 	aspeed-bmc-microsoft-olympus.dtb \
- 	aspeed-bmc-opp-lanyang.dtb \
- 	aspeed-bmc-opp-mihawk.dtb \
-+	aspeed-bmc-opp-nicole.dtb \
- 	aspeed-bmc-opp-palmetto.dtb \
- 	aspeed-bmc-opp-romulus.dtb \
- 	aspeed-bmc-opp-swift.dtb \
-diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-nicole.dts b/arch/arm/boot/dts/aspeed-bmc-opp-nicole.dts
-new file mode 100644
-index 000000000000..31b7e83adc46
---- /dev/null
-+++ b/arch/arm/boot/dts/aspeed-bmc-opp-nicole.dts
-@@ -0,0 +1,316 @@
-+// SPDX-License-Identifier: GPL-2.0+
-+// Copyright 2019 YADRO
-+/dts-v1/;
-+#include "aspeed-g5.dtsi"
-+#include <dt-bindings/gpio/aspeed-gpio.h>
-+
-+/ {
-+	model = "Nicole BMC";
-+	compatible = "yadro,nicole-bmc", "aspeed,ast2500";
-+
-+	chosen {
-+		stdout-path = &uart5;
-+		bootargs = "console=ttyS4,115200 earlyprintk";
-+	};
-+
-+	memory at 80000000 {
-+		reg = <0x80000000 0x20000000>;
-+	};
-+
-+	reserved-memory {
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		ranges;
-+
-+		vga_memory: framebuffer at 9f000000 {
-+			no-map;
-+			reg = <0x9f000000 0x01000000>; /* 16M */
-+		};
-+
-+		flash_memory: region at 98000000 {
-+			no-map;
-+			reg = <0x98000000 0x04000000>; /* 64M */
-+		};
-+
-+		coldfire_memory: codefire_memory at 9ef00000 {
-+			reg = <0x9ef00000 0x00100000>;
-+			no-map;
-+		};
-+
-+		gfx_memory: framebuffer {
-+			size = <0x01000000>;
-+			alignment = <0x01000000>;
-+			compatible = "shared-dma-pool";
-+			reusable;
-+		};
-+
-+		video_engine_memory: jpegbuffer {
-+			size = <0x02000000>;	/* 32M */
-+			alignment = <0x01000000>;
-+			compatible = "shared-dma-pool";
-+			reusable;
-+		};
-+	};
-+
-+	leds {
-+		compatible = "gpio-leds";
-+
-+		power {
-+			gpios = <&gpio ASPEED_GPIO(AA, 4) GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		identify {
-+			gpios = <&gpio ASPEED_GPIO(AA, 7) GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		alarm_red {
-+			gpios = <&gpio ASPEED_GPIO(AA, 3) GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		alarm_yellow {
-+			gpios = <&gpio ASPEED_GPIO(AA, 1) GPIO_ACTIVE_HIGH>;
-+		};
-+	};
-+
-+	fsi: gpio-fsi {
-+		compatible = "aspeed,ast2500-cf-fsi-master", "fsi-master";
-+		#address-cells = <2>;
-+		#size-cells = <0>;
-+		no-gpio-delays;
-+
-+		memory-region = <&coldfire_memory>;
-+		aspeed,sram = <&sram>;
-+		aspeed,cvic = <&cvic>;
-+
-+		clock-gpios = <&gpio ASPEED_GPIO(AA, 0) GPIO_ACTIVE_HIGH>;
-+		data-gpios = <&gpio ASPEED_GPIO(AA, 2) GPIO_ACTIVE_HIGH>;
-+		mux-gpios = <&gpio ASPEED_GPIO(A, 6) GPIO_ACTIVE_HIGH>;
-+		enable-gpios = <&gpio ASPEED_GPIO(D, 0) GPIO_ACTIVE_HIGH>;
-+		trans-gpios = <&gpio ASPEED_GPIO(P, 1) GPIO_ACTIVE_HIGH>;
-+	};
-+
-+	gpio-keys {
-+		compatible = "gpio-keys";
-+
-+		checkstop {
-+			label = "checkstop";
-+			gpios = <&gpio ASPEED_GPIO(J, 2) GPIO_ACTIVE_LOW>;
-+			linux,code = <ASPEED_GPIO(J, 2)>;
-+		};
-+	};
-+
-+	iio-hwmon-battery {
-+		compatible = "iio-hwmon";
-+		io-channels = <&adc 12>;
-+	};
-+};
-+
-+&fmc {
-+	status = "okay";
-+	flash at 0 {
-+		status = "okay";
-+		m25p,fast-read;
-+		label = "bmc";
-+		spi-max-frequency = <50000000>;
-+#include "openbmc-flash-layout.dtsi"
-+	};
-+};
-+
-+&spi1 {
-+	status = "okay";
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pinctrl_spi1_default>;
-+
-+	flash at 0 {
-+		status = "okay";
-+		m25p,fast-read;
-+		label = "pnor";
-+		spi-max-frequency = <100000000>;
-+	};
-+};
-+
-+&lpc_ctrl {
-+	status = "okay";
-+	memory-region = <&flash_memory>;
-+	flash = <&spi1>;
-+};
-+
-+&uart1 {
-+	/* Rear RS-232 connector */
-+	status = "okay";
-+
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pinctrl_txd1_default
-+			&pinctrl_rxd1_default
-+			&pinctrl_nrts1_default
-+			&pinctrl_ndtr1_default
-+			&pinctrl_ndsr1_default
-+			&pinctrl_ncts1_default
-+			&pinctrl_ndcd1_default
-+			&pinctrl_nri1_default>;
-+};
-+
-+&uart5 {
-+	status = "okay";
-+};
-+
-+&mac0 {
-+	status = "okay";
-+
-+	use-ncsi;
-+
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pinctrl_rmii1_default>;
-+	clocks = <&syscon ASPEED_CLK_GATE_MAC1CLK>,
-+		 <&syscon ASPEED_CLK_MAC1RCLK>;
-+	clock-names = "MACCLK", "RCLK";
-+};
-+
-+&i2c0 {
-+	status = "okay";
-+
-+	eeprom at 50 {
-+		compatible = "atmel,24c256";
-+		reg = <0x50>;
-+		pagesize = <64>;
-+	};
-+};
-+
-+&i2c2 {
-+	status = "okay";
-+	/* CPU0 characterization connector */
-+};
-+
-+&i2c3 {
-+	status = "okay";
-+	/* CLK GEN SI5338 */
-+};
-+
-+&i2c4 {
-+	status = "okay";
-+	/* Voltage regulators for CPU0 */
-+};
-+
-+&i2c5 {
-+	status = "okay";
-+	/* Voltage regulators for CPU1 */
-+};
-+
-+&i2c6 {
-+	status = "okay";
-+
-+	rtc at 32 {
-+		compatible = "epson,rx8900";
-+		reg = <0x32>;
-+	};
-+};
-+
-+&i2c7 {
-+	status = "okay";
-+	/* CPLD */
-+};
-+
-+&gpio {
-+	gpio-line-names =
-+	/*A0-A7*/	"","cfam-reset","","","","","fsi-mux","",
-+	/*B0-B7*/	"","","","","","","","",
-+	/*C0-C7*/	"","","","","","","","",
-+	/*D0-D7*/	"fsi-enable","","","nic_func_mode0","nic_func_mode1","","","",
-+	/*E0-E7*/	"","ncsi_cfg","","","","","","",
-+	/*F0-F7*/	"","","","","","","","",
-+	/*G0-G7*/	"","","","","","","","",
-+	/*H0-H7*/	"","","","","","","","",
-+	/*I0-I7*/	"","","","","","","","",
-+	/*J0-J7*/	"","","checkstop","","","","","",
-+	/*K0-K7*/	"","","","","","","","",
-+	/*L0-L7*/	"","","","","","","","",
-+	/*M0-M7*/	"","","","","","","","",
-+	/*N0-N7*/	"","","","","","","","",
-+	/*O0-O7*/	"","","id-button","","","","","",
-+	/*P0-P7*/	"","fsi-trans","","","","","","",
-+	/*Q0-Q7*/	"","","","","","","","",
-+	/*R0-R7*/	"","","","","","","","",
-+	/*S0-S7*/	"","","","","","","","seq_cont",
-+	/*T0-T7*/	"","","","","","","","",
-+	/*U0-U7*/	"","","","","","","","",
-+	/*V0-V7*/	"","","","","","","","",
-+	/*W0-W7*/	"","","","","","","","",
-+	/*X0-X7*/	"","","","","","","","",
-+	/*Y0-Y7*/	"","","","","","","","",
-+	/*Z0-Z7*/	"","","","","","","","",
-+	/*AA0-AA7*/	"fsi-clock","led_alarm_yellow","fsi-data","led_alarm_red",
-+			"led_power","","","led_identify",
-+	/*AB0-AB7*/	"","","","","","","","",
-+	/*AC0-AC7*/	"","","","","","","","";
-+
-+	nic_func_mode0 {
-+		gpio-hog;
-+		gpios = <ASPEED_GPIO(D, 3) GPIO_ACTIVE_HIGH>;
-+		output-low;
-+	};
-+	nic_func_mode1 {
-+		gpio-hog;
-+		gpios = <ASPEED_GPIO(D, 4) GPIO_ACTIVE_HIGH>;
-+		output-low;
-+	};
-+	seq_cont {
-+		gpio-hog;
-+		gpios = <ASPEED_GPIO(S, 7) GPIO_ACTIVE_HIGH>;
-+		output-low;
-+	};
-+	ncsi_cfg {
-+		gpio-hog;
-+		input;
-+		gpios = <ASPEED_GPIO(E, 1) GPIO_ACTIVE_HIGH>;
-+	};
-+};
-+
-+&vuart {
-+	status = "okay";
-+};
-+
-+&gfx {
-+	status = "okay";
-+	memory-region = <&gfx_memory>;
-+};
-+
-+&pinctrl {
-+	aspeed,external-nodes = <&gfx &lhc>;
-+};
-+
-+&ibt {
-+	status = "okay";
-+};
-+
-+&vhub {
-+	status = "okay";
-+};
-+
-+&adc {
-+	status = "okay";
-+
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pinctrl_adc0_default
-+			&pinctrl_adc1_default
-+			&pinctrl_adc2_default
-+			&pinctrl_adc3_default
-+			&pinctrl_adc4_default
-+			&pinctrl_adc5_default
-+			&pinctrl_adc6_default
-+			&pinctrl_adc7_default
-+			&pinctrl_adc8_default
-+			&pinctrl_adc9_default
-+			&pinctrl_adc10_default
-+			&pinctrl_adc11_default
-+			&pinctrl_adc12_default
-+			&pinctrl_adc13_default
-+			&pinctrl_adc14_default
-+			&pinctrl_adc15_default>;
-+};
-+
-+&video {
-+	status = "okay";
-+	memory-region = <&video_engine_memory>;
-+};
-+
-+#include "ibm-power9-dual.dtsi"
--- 
-2.21.1
-
+On Wed, Apr 15, 2020 at 09:40:30AM +0200, Daniel Vetter wrote:
+> As usual, we can drop the drm_dev_put() and need to embed the
+> drm_device. Since it's so few, also go right ahead and leave
+> drm_device->dev_private set to NULL, so that we always use the
+> container_of() upcast, which is faster anyway.
+> 
+> Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
+> Cc: Joel Stanley <joel@jms.id.au>
+> Cc: Andrew Jeffery <andrew@aj.id.au>
+> Cc: linux-aspeed at lists.ozlabs.org
+> Cc: linux-arm-kernel at lists.infradead.org
+Acked-by: Sam Ravnborg <sam@ravnborg.org>
+> ---
+>  drivers/gpu/drm/aspeed/aspeed_gfx.h      |  2 ++
+>  drivers/gpu/drm/aspeed/aspeed_gfx_crtc.c |  2 +-
+>  drivers/gpu/drm/aspeed/aspeed_gfx_drv.c  | 31 +++++++++---------------
+>  drivers/gpu/drm/aspeed/aspeed_gfx_out.c  |  2 +-
+>  4 files changed, 15 insertions(+), 22 deletions(-)
+> 
+> diff --git a/drivers/gpu/drm/aspeed/aspeed_gfx.h b/drivers/gpu/drm/aspeed/aspeed_gfx.h
+> index adc02940de6f..e7ca95827ae8 100644
+> --- a/drivers/gpu/drm/aspeed/aspeed_gfx.h
+> +++ b/drivers/gpu/drm/aspeed/aspeed_gfx.h
+> @@ -5,6 +5,7 @@
+>  #include <drm/drm_simple_kms_helper.h>
+>  
+>  struct aspeed_gfx {
+> +	struct drm_device		drm;
+>  	void __iomem			*base;
+>  	struct clk			*clk;
+>  	struct reset_control		*rst;
+> @@ -13,6 +14,7 @@ struct aspeed_gfx {
+>  	struct drm_simple_display_pipe	pipe;
+>  	struct drm_connector		connector;
+>  };
+> +#define to_aspeed_gfx(x) container_of(x, struct aspeed_gfx, drm)
+>  
+>  int aspeed_gfx_create_pipe(struct drm_device *drm);
+>  int aspeed_gfx_create_output(struct drm_device *drm);
+> diff --git a/drivers/gpu/drm/aspeed/aspeed_gfx_crtc.c b/drivers/gpu/drm/aspeed/aspeed_gfx_crtc.c
+> index 2184b8be6fd4..e54686c31a90 100644
+> --- a/drivers/gpu/drm/aspeed/aspeed_gfx_crtc.c
+> +++ b/drivers/gpu/drm/aspeed/aspeed_gfx_crtc.c
+> @@ -231,7 +231,7 @@ static const uint32_t aspeed_gfx_formats[] = {
+>  
+>  int aspeed_gfx_create_pipe(struct drm_device *drm)
+>  {
+> -	struct aspeed_gfx *priv = drm->dev_private;
+> +	struct aspeed_gfx *priv = to_aspeed_gfx(drm);
+>  
+>  	return drm_simple_display_pipe_init(drm, &priv->pipe, &aspeed_gfx_funcs,
+>  					    aspeed_gfx_formats,
+> diff --git a/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c b/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
+> index ada2f6aca906..6b27242b9ee3 100644
+> --- a/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
+> +++ b/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
+> @@ -77,7 +77,7 @@ static void aspeed_gfx_setup_mode_config(struct drm_device *drm)
+>  static irqreturn_t aspeed_gfx_irq_handler(int irq, void *data)
+>  {
+>  	struct drm_device *drm = data;
+> -	struct aspeed_gfx *priv = drm->dev_private;
+> +	struct aspeed_gfx *priv = to_aspeed_gfx(drm);
+>  	u32 reg;
+>  
+>  	reg = readl(priv->base + CRT_CTRL1);
+> @@ -96,15 +96,10 @@ static irqreturn_t aspeed_gfx_irq_handler(int irq, void *data)
+>  static int aspeed_gfx_load(struct drm_device *drm)
+>  {
+>  	struct platform_device *pdev = to_platform_device(drm->dev);
+> -	struct aspeed_gfx *priv;
+> +	struct aspeed_gfx *priv = to_aspeed_gfx(drm);
+>  	struct resource *res;
+>  	int ret;
+>  
+> -	priv = devm_kzalloc(&pdev->dev, sizeof(*priv), GFP_KERNEL);
+> -	if (!priv)
+> -		return -ENOMEM;
+> -	drm->dev_private = priv;
+> -
+>  	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+>  	priv->base = devm_ioremap_resource(drm->dev, res);
+>  	if (IS_ERR(priv->base))
+> @@ -187,8 +182,6 @@ static void aspeed_gfx_unload(struct drm_device *drm)
+>  {
+>  	drm_kms_helper_poll_fini(drm);
+>  	drm_mode_config_cleanup(drm);
+> -
+> -	drm->dev_private = NULL;
+>  }
+>  
+>  DEFINE_DRM_GEM_CMA_FOPS(fops);
+> @@ -216,27 +209,26 @@ static const struct of_device_id aspeed_gfx_match[] = {
+>  
+>  static int aspeed_gfx_probe(struct platform_device *pdev)
+>  {
+> -	struct drm_device *drm;
+> +	struct aspeed_gfx *priv;
+>  	int ret;
+>  
+> -	drm = drm_dev_alloc(&aspeed_gfx_driver, &pdev->dev);
+> -	if (IS_ERR(drm))
+> -		return PTR_ERR(drm);
+> +	priv = devm_drm_dev_alloc(&pdev->dev, &aspeed_gfx_driver,
+> +				  struct aspeed_gfx, drm);
+> +	if (IS_ERR(priv))
+> +		return PTR_ERR(priv);
+>  
+> -	ret = aspeed_gfx_load(drm);
+> +	ret = aspeed_gfx_load(&priv->drm);
+>  	if (ret)
+> -		goto err_free;
+> +		return ret;
+>  
+> -	ret = drm_dev_register(drm, 0);
+> +	ret = drm_dev_register(&priv->drm, 0);
+>  	if (ret)
+>  		goto err_unload;
+>  
+>  	return 0;
+>  
+>  err_unload:
+> -	aspeed_gfx_unload(drm);
+> -err_free:
+> -	drm_dev_put(drm);
+> +	aspeed_gfx_unload(&priv->drm);
+>  
+>  	return ret;
+>  }
+> @@ -247,7 +239,6 @@ static int aspeed_gfx_remove(struct platform_device *pdev)
+>  
+>  	drm_dev_unregister(drm);
+>  	aspeed_gfx_unload(drm);
+> -	drm_dev_put(drm);
+>  
+>  	return 0;
+>  }
+> diff --git a/drivers/gpu/drm/aspeed/aspeed_gfx_out.c b/drivers/gpu/drm/aspeed/aspeed_gfx_out.c
+> index 67ee5fa10055..6759cb88415a 100644
+> --- a/drivers/gpu/drm/aspeed/aspeed_gfx_out.c
+> +++ b/drivers/gpu/drm/aspeed/aspeed_gfx_out.c
+> @@ -28,7 +28,7 @@ static const struct drm_connector_funcs aspeed_gfx_connector_funcs = {
+>  
+>  int aspeed_gfx_create_output(struct drm_device *drm)
+>  {
+> -	struct aspeed_gfx *priv = drm->dev_private;
+> +	struct aspeed_gfx *priv = to_aspeed_gfx(drm);
+>  	int ret;
+>  
+>  	priv->connector.dpms = DRM_MODE_DPMS_OFF;
+> -- 
+> 2.25.1
+> 
+> _______________________________________________
+> dri-devel mailing list
+> dri-devel at lists.freedesktop.org
+> https://lists.freedesktop.org/mailman/listinfo/dri-devel
