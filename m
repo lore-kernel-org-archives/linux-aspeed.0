@@ -1,29 +1,35 @@
-From: Ryan Chen <ryan_chen@aspeedtech.com>
-Date: Tue, 5 May 2020 01:52:01 +0000
-Subject: [PATCH v0 linux master] i2c/busses: Avoid i2c interrupt status
- clear race condition.
-In-Reply-To: <232b9fac588beb4d024ab496b118c51af2b0ecba.camel@kernel.crashing.org>
-References: <20200429033737.2781-1-ryan_chen@aspeedtech.com>
- <20200429075357.GA1957@kunai>
- <56add9c6e6b5410986325a1360466e4b@TWMBX02.aspeed.com>
- <20200429090355.GA2891@kunai>
- <232b9fac588beb4d024ab496b118c51af2b0ecba.camel@kernel.crashing.org>
-Message-ID: <fc8bc729af844e658fd1ac1f86480f00@TWMBX02.aspeed.com>
+From: Patrick Williams <patrick@stwcx.xyz>
+Date: Fri, 1 May 2020 06:40:47 -0500
+Subject: [PATCH v7] ARM: DTS: Aspeed: Add YADRO Nicole BMC
+In-Reply-To: <20200429113711.13183-1-a.filippov@yadro.com>
+References: <20200429113711.13183-1-a.filippov@yadro.com>
+Message-ID: <20200501114047.GC5268@heinlein.lan.stwcx.xyz>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-> > And is there maybe a Fixes: tag for it?
-> > [Ryan Chen] Yes it is a fix patch.
+On Wed, Apr 29, 2020 at 02:37:11PM +0300, Alexander Filippov wrote:
+> Nicole is an OpenPower machine with an Aspeed 2500 BMC SoC manufactured
+> by YADRO.
 > 
-> I meant this (from submitting-patches.rst):
+> Signed-off-by: Alexander Filippov <a.filippov@yadro.com>
+> ---
+>  arch/arm/boot/dts/Makefile                  |   1 +
+>  arch/arm/boot/dts/aspeed-bmc-opp-nicole.dts | 326 ++++++++++++++++++++
+>  2 files changed, 327 insertions(+)
+>  create mode 100644 arch/arm/boot/dts/aspeed-bmc-opp-nicole.dts
+> 
 
->It fixes the original implementation of the driver basically. It's just a classic posted-write fix. The write to clear the pending interrupt is asynchronous, so you can get spurrious ones if you return from the handler before it has percolated to the HW.
+Reviewed-by: Patrick Williams <patrick@stwcx.xyz>
 
->I assume it's just more visible on the 2600 because of the cores are significantly faster but the IO bus is still as dumb.
-
->Ryan: You could always add a Fixed-by: tag that specifies the commit that added the initial driver...
-[Ryan Chen] Thanks Ben.
-
+-- 
+Patrick Williams
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 833 bytes
+Desc: not available
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20200501/0e7bfc01/attachment.sig>
