@@ -1,34 +1,32 @@
-From: Wolfram Sang <wsa@the-dreams.de>
-Date: Thu, 30 Apr 2020 16:17:01 +0200
-Subject: [PATCH v0 linux master] i2c/busses: Avoid i2c interrupt status
- clear race condition.
-In-Reply-To: <20200429033737.2781-1-ryan_chen@aspeedtech.com>
-References: <20200429033737.2781-1-ryan_chen@aspeedtech.com>
-Message-ID: <20200430141701.GC3355@ninjato>
+From: Andrew Jeffery <andrew@aj.id.au>
+Date: Mon, 04 May 2020 20:34:02 +0930
+Subject: [PATCH v5] ARM: DTS: Aspeed: Add YADRO Nicole BMC
+In-Reply-To: <CACPK8XcP3V=8fAUfNvRFqPU9G38dGR43Kpp=Uxm=P_AjrMnzBQ@mail.gmail.com>
+References: <20200424135303.20952-1-a.filippov@yadro.com>
+ <CACPK8XcP3V=8fAUfNvRFqPU9G38dGR43Kpp=Uxm=P_AjrMnzBQ@mail.gmail.com>
+Message-ID: <c1de0c90-d486-4855-bb26-0f3cc416b05d@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Apr 29, 2020 at 11:37:37AM +0800, ryan_chen wrote:
-> In AST2600 there have a slow peripheral bus between CPU
->  and i2c controller.
-> Therefore GIC i2c interrupt status clear have delay timing,
-> when CPU issue write clear i2c controller interrupt status.
-> To avoid this issue, the driver need have read after write
->  clear at i2c ISR.
+
+
+On Mon, 27 Apr 2020, at 20:41, Joel Stanley wrote:
+> On Fri, 24 Apr 2020 at 13:53, Alexander Filippov <a.filippov@yadro.com> wrote:
+> >
+> > Nicole is an OpenPower machine with an Aspeed 2500 BMC SoC manufactured
+> > by YADRO.
+> >
+> > Signed-off-by: Alexander Filippov <a.filippov@yadro.com>
 > 
-> Signed-off-by: ryan_chen <ryan_chen@aspeedtech.com>
+> This looks good to me.
+> 
+> Andrew, do you have any comments before I merge?
 
-Applied to for-current with a Fixes tag, thanks! Please, try to add one
-next time and please also check how the subsystem formats the $subject
-line.
+Not other than muxing all the ADC lines to enable just one seems a bit strange,
+but Alexander mentioned previously that the rest were simply grounded so it's
+not going to cause any problems in practice.
 
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 833 bytes
-Desc: not available
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20200430/f27edc1e/attachment.sig>
+Andrew
