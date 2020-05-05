@@ -1,69 +1,151 @@
 From: Eddie James <eajames@linux.ibm.com>
-Date: Tue,  5 May 2020 11:58:17 -0500
-Subject: [PATCH v11 0/8] soc: aspeed: Add XDMA engine driver
-Message-ID: <1588697905-23444-1-git-send-email-eajames@linux.ibm.com>
+Date: Tue,  5 May 2020 11:58:18 -0500
+Subject: [PATCH v11 1/8] dt-bindings: soc: Add Aspeed XDMA Engine
+In-Reply-To: <1588697905-23444-1-git-send-email-eajames@linux.ibm.com>
+References: <1588697905-23444-1-git-send-email-eajames@linux.ibm.com>
+Message-ID: <1588697905-23444-2-git-send-email-eajames@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This series adds a driver to control the Aspeed XDMA engine embedded in the
-AST2500 and AST2600. The XDMA engine performs automatic DMA operations
-over PCI-E between the Aspeed SOC (acting as a BMC) and a host processor.
+Document the bindings for the Aspeed AST25XX and AST26XX XDMA engine.
 
-Changes since v10:
- - Fix devicetree binding documentation
- - Add patches to enable the device on witherspoon and tacoma systems
- - Fix the driver to actually use the updated bindings
- - Remove the device managed memory in favor of manually allocating and freeing
-   This adds considerable complexity to the probe function and requires the
-   use of a kobject and associated release method, but it fixes the problem of
-   the device context being deleted during an operation or with memory still
-   mapped if the device is unbound from the driver
- - Remove the client kref system
- - Reset the device when a user closes a file handle with an on-going operation
-
-Changes since v9:
- - Remove the kernel command queue
- - Use memcpy_toio instead to copy commands to the buffer
- - Free the client's genalloc'd memory in the release method
- - Switch the bindings documentation to yaml
- - Add patches to fix SCU interrupt controller include
-
-Changes since v8:
- - Use DMA API to allocate memory from reserved region.
- - Fix the driver for the AST2500 by keeping the command queue in kernel
-   memory and copying the whole buffer to the reserved memory area before
-   starting the operation.
- - Add krefs to the client structure to prevent use-after-free.
- - Switch reset-names binding to "device", "root-complex"
-
-Eddie James (8):
-  dt-bindings: soc: Add Aspeed XDMA Engine
-  soc: aspeed: Add XDMA Engine Driver
-  soc: aspeed: xdma: Add user interface
-  soc: aspeed: xdma: Add reset ioctl
-  ARM: dts: Aspeed: AST2600: Update XDMA engine node
-  ARM: dts: Aspeed: AST2500: Update XDMA engine node
-  ARM: dts: Aspeed: Witherspoon: Enable XDMA engine
-  ARM: dts: Aspeed: Tacoma: Enable XDMA engine
-
- .../devicetree/bindings/soc/aspeed/xdma.yaml       |  103 ++
- MAINTAINERS                                        |    8 +
- arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts        |   11 +
- arch/arm/boot/dts/aspeed-bmc-opp-witherspoon.dts   |   11 +
- arch/arm/boot/dts/aspeed-g5.dtsi                   |    5 +-
- arch/arm/boot/dts/aspeed-g6.dtsi                   |    8 +-
- drivers/soc/aspeed/Kconfig                         |    8 +
- drivers/soc/aspeed/Makefile                        |    1 +
- drivers/soc/aspeed/aspeed-xdma.c                   | 1205 ++++++++++++++++++++
- include/uapi/linux/aspeed-xdma.h                   |   42 +
- 10 files changed, 1397 insertions(+), 5 deletions(-)
+Signed-off-by: Eddie James <eajames@linux.ibm.com>
+Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
+---
+ .../devicetree/bindings/soc/aspeed/xdma.yaml       | 103 +++++++++++++++++++++
+ MAINTAINERS                                        |   6 ++
+ 2 files changed, 109 insertions(+)
  create mode 100644 Documentation/devicetree/bindings/soc/aspeed/xdma.yaml
- create mode 100644 drivers/soc/aspeed/aspeed-xdma.c
- create mode 100644 include/uapi/linux/aspeed-xdma.h
 
+diff --git a/Documentation/devicetree/bindings/soc/aspeed/xdma.yaml b/Documentation/devicetree/bindings/soc/aspeed/xdma.yaml
+new file mode 100644
+index 0000000..4957435
+--- /dev/null
++++ b/Documentation/devicetree/bindings/soc/aspeed/xdma.yaml
+@@ -0,0 +1,103 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/soc/aspeed/xdma.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Aspeed AST25XX and AST26XX XDMA Engine
++
++maintainers:
++ - Eddie James <eajames@linux.ibm.com>
++
++description: |
++  This binding describes the XDMA Engine embedded in the AST2500 and AST2600
++  SOCs. The XDMA engine can perform automatic DMA operations over PCI between
++  the SOC (acting as a BMC) and a host processor.
++
++properties:
++  compatible:
++    enum:
++      - aspeed,ast2500-xdma
++      - aspeed,ast2600-xdma
++
++  reg:
++    maxItems: 1
++
++  clocks:
++    maxItems: 1
++
++  resets:
++    minItems: 1
++    maxItems: 2
++
++  reset-names:
++    maxItems: 2
++    items:
++      - const: device
++      - const: root-complex
++
++  interrupts:
++    maxItems: 2
++    items:
++      - description: global interrupt for the XDMA engine
++      - description: PCI-E reset or PERST interrupt
++
++  aspeed,scu:
++    description: a reference to the System Control Unit node of the Aspeed SOC.
++    allOf:
++      - $ref: /schemas/types.yaml#/definitions/phandle
++
++  aspeed,pcie-device:
++    description: describes which PCI-E device the XDMA engine should use
++    allOf:
++      - $ref: /schemas/types.yaml#/definitions/string
++      - enum: [ bmc, vga ]
++
++required:
++  - compatible
++  - reg
++  - clocks
++  - resets
++  - interrupts-extended
++  - aspeed,scu
++  - memory-region
++
++if:
++  properties:
++    compatible:
++      contains:
++        const: aspeed,ast2600-xdma
++then:
++  required:
++    - reset-names
++
++examples:
++  - |
++    #include <dt-bindings/clock/ast2600-clock.h>
++    #include <dt-bindings/interrupt-controller/arm-gic.h>
++    #include <dt-bindings/interrupt-controller/aspeed-scu-ic.h>
++    syscon: syscon at 1e6e2000 {
++        reg = <0x1e6e2000 0x1000>;
++        ranges = <0 0x1e6e2000 0x1000>;
++        #address-cells = <1>;
++        #size-cells = <1>;
++        #clock-cells = <1>;
++        #reset-cells = <1>;
++        scu_ic0: interrupt-controller at 560 {
++            reg = <0x560 0x4>;
++            interrupt-controller;
++            #interrupt-cells = <1>;
++        };
++    };
++    xdma at 1e6e7000 {
++        compatible = "aspeed,ast2600-xdma";
++        reg = <0x1e6e7000 0x100>;
++        clocks = <&syscon ASPEED_CLK_GATE_BCLK>;
++        resets = <&syscon ASPEED_RESET_DEV_XDMA>, <&syscon ASPEED_RESET_RC_XDMA>;
++        reset-names = "device", "root-complex";
++        interrupts-extended = <&gic GIC_SPI 6 IRQ_TYPE_LEVEL_HIGH>,
++                              <&scu_ic0 ASPEED_AST2600_SCU_IC0_PCIE_PERST_LO_TO_HI>;
++        aspeed,scu = <&syscon>;
++        aspeed,pcie-device = "bmc";
++        memory-region = <&vga_memory>;
++    };
+diff --git a/MAINTAINERS b/MAINTAINERS
+index b103ff0..6a421fd 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -2780,6 +2780,12 @@ S:	Maintained
+ F:	Documentation/devicetree/bindings/media/aspeed-video.txt
+ F:	drivers/media/platform/aspeed-video.c
+ 
++ASPEED XDMA ENGINE DRIVER
++M:	Eddie James <eajames@linux.ibm.com>
++L:	linux-aspeed at lists.ozlabs.org (moderated for non-subscribers)
++S:	Maintained
++F:	Documentation/devicetree/bindings/soc/aspeed/xdma.yaml
++
+ ASUS NOTEBOOKS AND EEEPC ACPI/WMI EXTRAS DRIVERS
+ M:	Corentin Chary <corentin.chary@gmail.com>
+ L:	acpi4asus-user at lists.sourceforge.net
 -- 
 1.8.3.1
 
