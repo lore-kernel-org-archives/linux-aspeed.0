@@ -1,42 +1,26 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Mon, 04 May 2020 22:53:34 +0930
-Subject: [PATCH v5] ARM: DTS: Aspeed: Add YADRO Nicole BMC
-In-Reply-To: <CACPK8XezSFzCeQN4tkvcmjOHEAgrRGYBiBzRymaazpv8Lh-gTQ@mail.gmail.com>
-References: <20200424135303.20952-1-a.filippov@yadro.com>
- <CACPK8XcP3V=8fAUfNvRFqPU9G38dGR43Kpp=Uxm=P_AjrMnzBQ@mail.gmail.com>
- <c1de0c90-d486-4855-bb26-0f3cc416b05d@www.fastmail.com>
- <CACPK8XezSFzCeQN4tkvcmjOHEAgrRGYBiBzRymaazpv8Lh-gTQ@mail.gmail.com>
-Message-ID: <0ca41514-d664-41e6-9f0c-0d948db3e9ad@www.fastmail.com>
+From: Ryan Chen <ryan_chen@aspeedtech.com>
+Date: Tue, 5 May 2020 01:51:19 +0000
+Subject: [PATCH v0 linux master] i2c/busses: Avoid i2c interrupt status
+ clear race condition.
+In-Reply-To: <20200430141701.GC3355@ninjato>
+References: <20200429033737.2781-1-ryan_chen@aspeedtech.com>
+ <20200430141701.GC3355@ninjato>
+Message-ID: <9192c38a24804689809fa80601ae9126@TWMBX02.aspeed.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-
-
-On Mon, 4 May 2020, at 22:14, Joel Stanley wrote:
-> On Mon, 4 May 2020 at 11:04, Andrew Jeffery <andrew@aj.id.au> wrote:
-> >
-> >
-> >
-> > On Mon, 27 Apr 2020, at 20:41, Joel Stanley wrote:
-> > > On Fri, 24 Apr 2020 at 13:53, Alexander Filippov <a.filippov@yadro.com> wrote:
-> > > >
-> > > > Nicole is an OpenPower machine with an Aspeed 2500 BMC SoC manufactured
-> > > > by YADRO.
-> > > >
-> > > > Signed-off-by: Alexander Filippov <a.filippov@yadro.com>
-> > >
-> > > This looks good to me.
-> > >
-> > > Andrew, do you have any comments before I merge?
-> >
-> > Not other than muxing all the ADC lines to enable just one seems a bit strange,
-> > but Alexander mentioned previously that the rest were simply grounded so it's
-> > not going to cause any problems in practice.
+> In AST2600 there have a slow peripheral bus between CPU  and i2c 
+> controller.
+> Therefore GIC i2c interrupt status clear have delay timing, when CPU 
+> issue write clear i2c controller interrupt status.
+> To avoid this issue, the driver need have read after write  clear at 
+> i2c ISR.
 > 
-> Thanks. Can you say the magic words for patchwork to pick up?
->
+> Signed-off-by: ryan_chen <ryan_chen@aspeedtech.com>
 
-Acked-by: Andrew Jeffery <andrew@aj.id.au>
+>Applied to for-current with a Fixes tag, thanks! Please, try to add one next time and please also check how the subsystem formats the $subject line.
+[Ryan Chen] Thanks your review, will add fixes tag at subject. 
+
