@@ -1,60 +1,47 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Thu,  7 May 2020 10:28:26 -0400
-Subject: [PATCH AUTOSEL 5.4 32/35] i2c: aspeed: Avoid i2c interrupt status
- clear race condition.
-In-Reply-To: <20200507142830.26239-1-sashal@kernel.org>
-References: <20200507142830.26239-1-sashal@kernel.org>
-Message-ID: <20200507142830.26239-32-sashal@kernel.org>
+From: Joel Stanley <joel@jms.id.au>
+Date: Fri, 8 May 2020 07:49:25 +0000
+Subject: ARM: aspeed: devicetree changes for 5.8
+Message-ID: <CACPK8Xd-=XFREvvS-mK_ECyn14y0GPAMyy5BpEEUYfaw4jAgsw@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: ryan_chen <ryan_chen@aspeedtech.com>
+Hello ARM Maintainers,
 
-[ Upstream commit c926c87b8e36dcc0ea5c2a0a0227ed4f32d0516a ]
+Thanks to covid chaos there was no aspeed pull request for 5.7. We're
+back for 5.8 though!
 
-In AST2600 there have a slow peripheral bus between CPU and i2c
-controller. Therefore GIC i2c interrupt status clear have delay timing,
-when CPU issue write clear i2c controller interrupt status. To avoid
-this issue, the driver need have read after write clear at i2c ISR.
+There's a patch in here that causes some build time warnings from the
+device tree compiler. I've sent a patch for that to the dtc folk:
 
-Fixes: f327c686d3ba ("i2c: aspeed: added driver for Aspeed I2C")
-Signed-off-by: ryan_chen <ryan_chen@aspeedtech.com>
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-[wsa: added Fixes tag]
-Signed-off-by: Wolfram Sang <wsa@the-dreams.de>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/i2c/busses/i2c-aspeed.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+https://lore.kernel.org/lkml/20200508063904.60162-1-joel at jms.id.au/
 
-diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
-index 7b098ff5f5dd3..dad6e432de89f 100644
---- a/drivers/i2c/busses/i2c-aspeed.c
-+++ b/drivers/i2c/busses/i2c-aspeed.c
-@@ -603,6 +603,7 @@ static irqreturn_t aspeed_i2c_bus_irq(int irq, void *dev_id)
- 	/* Ack all interrupts except for Rx done */
- 	writel(irq_received & ~ASPEED_I2CD_INTR_RX_DONE,
- 	       bus->base + ASPEED_I2C_INTR_STS_REG);
-+	readl(bus->base + ASPEED_I2C_INTR_STS_REG);
- 	irq_remaining = irq_received;
- 
- #if IS_ENABLED(CONFIG_I2C_SLAVE)
-@@ -645,9 +646,11 @@ static irqreturn_t aspeed_i2c_bus_irq(int irq, void *dev_id)
- 			irq_received, irq_handled);
- 
- 	/* Ack Rx done */
--	if (irq_received & ASPEED_I2CD_INTR_RX_DONE)
-+	if (irq_received & ASPEED_I2CD_INTR_RX_DONE) {
- 		writel(ASPEED_I2CD_INTR_RX_DONE,
- 		       bus->base + ASPEED_I2C_INTR_STS_REG);
-+		readl(bus->base + ASPEED_I2C_INTR_STS_REG);
-+	}
- 	spin_unlock(&bus->lock);
- 	return irq_remaining ? IRQ_NONE : IRQ_HANDLED;
- }
--- 
-2.20.1
+The following changes since commit fa4c8ec6feaa3237f5d44cb8c6d0aa0dff6e1bcc:
 
+  ARM: dts: aspeed: Change KCS nodes to v2 binding (2020-05-05 16:37:17 +0930)
+
+are available in the Git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/joel/aspeed.git
+tags/aspeed-5.8-devicetree
+
+for you to fetch changes up to fa4c8ec6feaa3237f5d44cb8c6d0aa0dff6e1bcc:
+
+  ARM: dts: aspeed: Change KCS nodes to v2 binding (2020-05-05 16:37:17 +0930)
+
+----------------------------------------------------------------
+ASPEED device tree updates for 5.8
+
+New machines:
+
+ - YADRO's ast2500 OpenPower P9 Nicole BMC
+ - Facebook's ast2500 x86 Yosemite V2 BMC
+
+The AST2600 machines Rainier and Tacoma were fleshed out.
+
+Machines have started describing the GPIO names as userspace attempts
+to use the GPIO chardev API.
+
+----------------------------------------------------------------
