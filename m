@@ -1,268 +1,82 @@
 From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Fri, 22 May 2020 22:48:17 +0300
-Subject: [PATCH 01/21] drm/cma-helper: Rework DRM_GEM_CMA_VMAP_DRIVER_OPS
- macro
-In-Reply-To: <20200522174835.GA1087580@ravnborg.org>
+Date: Fri, 22 May 2020 23:12:40 +0300
+Subject: [PATCH 15/21] drm/rcar-du: Use GEM CMA object functions
+In-Reply-To: <20200522135246.10134-16-tzimmermann@suse.de>
 References: <20200522135246.10134-1-tzimmermann@suse.de>
- <20200522135246.10134-2-tzimmermann@suse.de>
- <20200522174835.GA1087580@ravnborg.org>
-Message-ID: <20200522194817.GD5824@pendragon.ideasonboard.com>
+ <20200522135246.10134-16-tzimmermann@suse.de>
+Message-ID: <20200522201240.GE5824@pendragon.ideasonboard.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello,
+Hi Thomas,
 
-On Fri, May 22, 2020 at 07:48:35PM +0200, Sam Ravnborg wrote:
-> On Fri, May 22, 2020 at 03:52:26PM +0200, Thomas Zimmermann wrote:
-> > Rename the macro to DRM_GEM_CMA_DRIVER_OPS to align with SHMEM
-> > helpers.
->
-> This part is fine, I like that the naming is somehow consistent.
-> 
-> > An internal version is provided for drivers that override
-> > the default .dumb_create callback. Adapt drivers to the changes.
-> I loathe anything named __foo or __FOO. This __ signals to me
-> that the author was clueless in naming - or some sort.
-> I know that __ is used in some lib headers - but thats not the case
-> here.
-> 
-> But I love that we have a variant that takes a create function.
-> So we do not have to escape from the nice macro.
-> The macro is another way to tell me as rewiewer that this
-> drivers uses all the default helpers for this.
-> 
-> 
-> So critizising the name I better suggest something that
-> I personally like better:
-> 
-> DRM_GEM_CMA_DRIVER_OPS_CREATE()
-> 
-> It would look like this:
-> 	/* GEM Operations */
-> -	DRM_GEM_CMA_VMAP_DRIVER_OPS,
-> -	.dumb_create            = drm_sun4i_gem_dumb_create,
-> +	DRM_GEM_CMA_DRIVER_OPS_CREATE(drm_sun4i_gem_dumb_create),
+Thank you for the patch.
 
-I agree with Sam here. With this change,
+On Fri, May 22, 2020 at 03:52:40PM +0200, Thomas Zimmermann wrote:
+> The rcar-du driver uses the default implementation for CMA functions;
+> except for the .dumb_create callback. The __DRM_GEM_CMA_DRIVER_OPS macro
+> now sets these defaults and .dumb_create in struct drm_driver. All
+> remaining operations are provided by CMA GEM object functions.
+> 
+> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+> ---
+>  drivers/gpu/drm/rcar-du/rcar_du_drv.c | 11 +----------
+>  1 file changed, 1 insertion(+), 10 deletions(-)
+> 
+> diff --git a/drivers/gpu/drm/rcar-du/rcar_du_drv.c b/drivers/gpu/drm/rcar-du/rcar_du_drv.c
+> index 3e67cf70f0402..3728038cec1d1 100644
+> --- a/drivers/gpu/drm/rcar-du/rcar_du_drv.c
+> +++ b/drivers/gpu/drm/rcar-du/rcar_du_drv.c
+> @@ -476,16 +476,7 @@ DEFINE_DRM_GEM_CMA_FOPS(rcar_du_fops);
+>  
+>  static struct drm_driver rcar_du_driver = {
+>  	.driver_features	= DRIVER_GEM | DRIVER_MODESET | DRIVER_ATOMIC,
+> -	.gem_free_object_unlocked = drm_gem_cma_free_object,
+> -	.gem_vm_ops		= &drm_gem_cma_vm_ops,
+> -	.prime_handle_to_fd	= drm_gem_prime_handle_to_fd,
+> -	.prime_fd_to_handle	= drm_gem_prime_fd_to_handle,
+> -	.gem_prime_get_sg_table	= drm_gem_cma_prime_get_sg_table,
+> -	.gem_prime_import_sg_table = drm_gem_cma_prime_import_sg_table,
+> -	.gem_prime_vmap		= drm_gem_cma_prime_vmap,
+> -	.gem_prime_vunmap	= drm_gem_cma_prime_vunmap,
+> -	.gem_prime_mmap		= drm_gem_cma_prime_mmap,
+> -	.dumb_create		= rcar_du_dumb_create,
+> +	__DRM_GEM_CMA_DRIVER_OPS(rcar_du_dumb_create),
 
-Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Your __DRM_GEM_CMA_DRIVER_OPS is defined as
 
-> Please fix zte/zx_drm_drv.c which also uses DRM_GEM_CMA_VMAP_DRIVER_OPS.
-> 
-> The naming is a bikeshedding topic that we may not agree on, soo..
-> 
-> With zte fixed the patch is:
-> Reviewed-by: Sam Ravnborg <sam@ravnborg.org>
-> 
-> > Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> > ---
-> >  drivers/gpu/drm/drm_gem_cma_helper.c |  2 +-
-> >  drivers/gpu/drm/sun4i/sun4i_drv.c    |  3 +--
-> >  drivers/gpu/drm/tidss/tidss_drv.c    |  2 +-
-> >  drivers/gpu/drm/tiny/hx8357d.c       |  2 +-
-> >  drivers/gpu/drm/tiny/ili9225.c       |  2 +-
-> >  drivers/gpu/drm/tiny/ili9341.c       |  2 +-
-> >  drivers/gpu/drm/tiny/ili9486.c       |  2 +-
-> >  drivers/gpu/drm/tiny/mi0283qt.c      |  2 +-
-> >  drivers/gpu/drm/tiny/repaper.c       |  2 +-
-> >  drivers/gpu/drm/tiny/st7586.c        |  2 +-
-> >  drivers/gpu/drm/tiny/st7735r.c       |  2 +-
-> >  include/drm/drm_gem_cma_helper.h     | 24 ++++++++++++++++++++----
-> >  12 files changed, 31 insertions(+), 16 deletions(-)
-> > 
-> > diff --git a/drivers/gpu/drm/drm_gem_cma_helper.c b/drivers/gpu/drm/drm_gem_cma_helper.c
-> > index 12e98fb28229d..6fa4d2f2e3987 100644
-> > --- a/drivers/gpu/drm/drm_gem_cma_helper.c
-> > +++ b/drivers/gpu/drm/drm_gem_cma_helper.c
-> > @@ -620,7 +620,7 @@ EXPORT_SYMBOL(drm_cma_gem_create_object_default_funcs);
-> >   * address set. This address is released when the object is freed.
-> >   *
-> >   * This function can be used as the &drm_driver.gem_prime_import_sg_table
-> > - * callback. The DRM_GEM_CMA_VMAP_DRIVER_OPS() macro provides a shortcut to set
-> > + * callback. The &DRM_GEM_CMA_DRIVER_OPS macro provides a shortcut to set
-> >   * the necessary DRM driver operations.
-> >   *
-> >   * Returns:
-> > diff --git a/drivers/gpu/drm/sun4i/sun4i_drv.c b/drivers/gpu/drm/sun4i/sun4i_drv.c
-> > index 328272ff77d84..012855fd89c24 100644
-> > --- a/drivers/gpu/drm/sun4i/sun4i_drv.c
-> > +++ b/drivers/gpu/drm/sun4i/sun4i_drv.c
-> > @@ -52,8 +52,7 @@ static struct drm_driver sun4i_drv_driver = {
-> >  	.minor			= 0,
-> >  
-> >  	/* GEM Operations */
-> > -	DRM_GEM_CMA_VMAP_DRIVER_OPS,
-> > -	.dumb_create		= drm_sun4i_gem_dumb_create,
-> > +	__DRM_GEM_CMA_DRIVER_OPS(drm_sun4i_gem_dumb_create),
-> >  };
-> >  
-> >  static int sun4i_drv_bind(struct device *dev)
-> > diff --git a/drivers/gpu/drm/tidss/tidss_drv.c b/drivers/gpu/drm/tidss/tidss_drv.c
-> > index 99edc66ebdef2..1753cdc74ebda 100644
-> > --- a/drivers/gpu/drm/tidss/tidss_drv.c
-> > +++ b/drivers/gpu/drm/tidss/tidss_drv.c
-> > @@ -112,7 +112,7 @@ static struct drm_driver tidss_driver = {
-> >  	.driver_features	= DRIVER_GEM | DRIVER_MODESET | DRIVER_ATOMIC,
-> >  	.fops			= &tidss_fops,
-> >  	.release		= tidss_release,
-> > -	DRM_GEM_CMA_VMAP_DRIVER_OPS,
-> > +	DRM_GEM_CMA_DRIVER_OPS,
-> >  	.name			= "tidss",
-> >  	.desc			= "TI Keystone DSS",
-> >  	.date			= "20180215",
-> > diff --git a/drivers/gpu/drm/tiny/hx8357d.c b/drivers/gpu/drm/tiny/hx8357d.c
-> > index b4bc358a3269a..592da71d7ca70 100644
-> > --- a/drivers/gpu/drm/tiny/hx8357d.c
-> > +++ b/drivers/gpu/drm/tiny/hx8357d.c
-> > @@ -196,7 +196,7 @@ DEFINE_DRM_GEM_CMA_FOPS(hx8357d_fops);
-> >  static struct drm_driver hx8357d_driver = {
-> >  	.driver_features	= DRIVER_GEM | DRIVER_MODESET | DRIVER_ATOMIC,
-> >  	.fops			= &hx8357d_fops,
-> > -	DRM_GEM_CMA_VMAP_DRIVER_OPS,
-> > +	DRM_GEM_CMA_DRIVER_OPS,
-> >  	.debugfs_init		= mipi_dbi_debugfs_init,
-> >  	.name			= "hx8357d",
-> >  	.desc			= "HX8357D",
-> > diff --git a/drivers/gpu/drm/tiny/ili9225.c b/drivers/gpu/drm/tiny/ili9225.c
-> > index d1a5ab6747d5c..368ff6c8a1efb 100644
-> > --- a/drivers/gpu/drm/tiny/ili9225.c
-> > +++ b/drivers/gpu/drm/tiny/ili9225.c
-> > @@ -346,7 +346,7 @@ DEFINE_DRM_GEM_CMA_FOPS(ili9225_fops);
-> >  static struct drm_driver ili9225_driver = {
-> >  	.driver_features	= DRIVER_GEM | DRIVER_MODESET | DRIVER_ATOMIC,
-> >  	.fops			= &ili9225_fops,
-> > -	DRM_GEM_CMA_VMAP_DRIVER_OPS,
-> > +	DRM_GEM_CMA_DRIVER_OPS,
-> >  	.name			= "ili9225",
-> >  	.desc			= "Ilitek ILI9225",
-> >  	.date			= "20171106",
-> > diff --git a/drivers/gpu/drm/tiny/ili9341.c b/drivers/gpu/drm/tiny/ili9341.c
-> > index bb819f45a5d3b..e1b9043ef7a0a 100644
-> > --- a/drivers/gpu/drm/tiny/ili9341.c
-> > +++ b/drivers/gpu/drm/tiny/ili9341.c
-> > @@ -152,7 +152,7 @@ DEFINE_DRM_GEM_CMA_FOPS(ili9341_fops);
-> >  static struct drm_driver ili9341_driver = {
-> >  	.driver_features	= DRIVER_GEM | DRIVER_MODESET | DRIVER_ATOMIC,
-> >  	.fops			= &ili9341_fops,
-> > -	DRM_GEM_CMA_VMAP_DRIVER_OPS,
-> > +	DRM_GEM_CMA_DRIVER_OPS,
-> >  	.debugfs_init		= mipi_dbi_debugfs_init,
-> >  	.name			= "ili9341",
-> >  	.desc			= "Ilitek ILI9341",
-> > diff --git a/drivers/gpu/drm/tiny/ili9486.c b/drivers/gpu/drm/tiny/ili9486.c
-> > index 2702ea557d297..90a17f40fdf0c 100644
-> > --- a/drivers/gpu/drm/tiny/ili9486.c
-> > +++ b/drivers/gpu/drm/tiny/ili9486.c
-> > @@ -165,7 +165,7 @@ DEFINE_DRM_GEM_CMA_FOPS(ili9486_fops);
-> >  static struct drm_driver ili9486_driver = {
-> >  	.driver_features	= DRIVER_GEM | DRIVER_MODESET | DRIVER_ATOMIC,
-> >  	.fops			= &ili9486_fops,
-> > -	DRM_GEM_CMA_VMAP_DRIVER_OPS,
-> > +	DRM_GEM_CMA_DRIVER_OPS,
-> >  	.debugfs_init		= mipi_dbi_debugfs_init,
-> >  	.name			= "ili9486",
-> >  	.desc			= "Ilitek ILI9486",
-> > diff --git a/drivers/gpu/drm/tiny/mi0283qt.c b/drivers/gpu/drm/tiny/mi0283qt.c
-> > index 08ac549ab0f7f..6624c2098fba2 100644
-> > --- a/drivers/gpu/drm/tiny/mi0283qt.c
-> > +++ b/drivers/gpu/drm/tiny/mi0283qt.c
-> > @@ -156,7 +156,7 @@ DEFINE_DRM_GEM_CMA_FOPS(mi0283qt_fops);
-> >  static struct drm_driver mi0283qt_driver = {
-> >  	.driver_features	= DRIVER_GEM | DRIVER_MODESET | DRIVER_ATOMIC,
-> >  	.fops			= &mi0283qt_fops,
-> > -	DRM_GEM_CMA_VMAP_DRIVER_OPS,
-> > +	DRM_GEM_CMA_DRIVER_OPS,
-> >  	.debugfs_init		= mipi_dbi_debugfs_init,
-> >  	.name			= "mi0283qt",
-> >  	.desc			= "Multi-Inno MI0283QT",
-> > diff --git a/drivers/gpu/drm/tiny/repaper.c b/drivers/gpu/drm/tiny/repaper.c
-> > index 1c0e7169545b4..877dcece25828 100644
-> > --- a/drivers/gpu/drm/tiny/repaper.c
-> > +++ b/drivers/gpu/drm/tiny/repaper.c
-> > @@ -946,7 +946,7 @@ DEFINE_DRM_GEM_CMA_FOPS(repaper_fops);
-> >  static struct drm_driver repaper_driver = {
-> >  	.driver_features	= DRIVER_GEM | DRIVER_MODESET | DRIVER_ATOMIC,
-> >  	.fops			= &repaper_fops,
-> > -	DRM_GEM_CMA_VMAP_DRIVER_OPS,
-> > +	DRM_GEM_CMA_DRIVER_OPS,
-> >  	.name			= "repaper",
-> >  	.desc			= "Pervasive Displays RePaper e-ink panels",
-> >  	.date			= "20170405",
-> > diff --git a/drivers/gpu/drm/tiny/st7586.c b/drivers/gpu/drm/tiny/st7586.c
-> > index 2a1fae422f7a2..ec84bdc51f60d 100644
-> > --- a/drivers/gpu/drm/tiny/st7586.c
-> > +++ b/drivers/gpu/drm/tiny/st7586.c
-> > @@ -285,7 +285,7 @@ DEFINE_DRM_GEM_CMA_FOPS(st7586_fops);
-> >  static struct drm_driver st7586_driver = {
-> >  	.driver_features	= DRIVER_GEM | DRIVER_MODESET | DRIVER_ATOMIC,
-> >  	.fops			= &st7586_fops,
-> > -	DRM_GEM_CMA_VMAP_DRIVER_OPS,
-> > +	DRM_GEM_CMA_DRIVER_OPS,
-> >  	.debugfs_init		= mipi_dbi_debugfs_init,
-> >  	.name			= "st7586",
-> >  	.desc			= "Sitronix ST7586",
-> > diff --git a/drivers/gpu/drm/tiny/st7735r.c b/drivers/gpu/drm/tiny/st7735r.c
-> > index 0af1b15efdf8a..cfd4933f3b30c 100644
-> > --- a/drivers/gpu/drm/tiny/st7735r.c
-> > +++ b/drivers/gpu/drm/tiny/st7735r.c
-> > @@ -157,7 +157,7 @@ DEFINE_DRM_GEM_CMA_FOPS(st7735r_fops);
-> >  static struct drm_driver st7735r_driver = {
-> >  	.driver_features	= DRIVER_GEM | DRIVER_MODESET | DRIVER_ATOMIC,
-> >  	.fops			= &st7735r_fops,
-> > -	DRM_GEM_CMA_VMAP_DRIVER_OPS,
-> > +	DRM_GEM_CMA_DRIVER_OPS,
-> >  	.debugfs_init		= mipi_dbi_debugfs_init,
-> >  	.name			= "st7735r",
-> >  	.desc			= "Sitronix ST7735R",
-> > diff --git a/include/drm/drm_gem_cma_helper.h b/include/drm/drm_gem_cma_helper.h
-> > index 947ac95eb24a9..917d42603db06 100644
-> > --- a/include/drm/drm_gem_cma_helper.h
-> > +++ b/include/drm/drm_gem_cma_helper.h
-> > @@ -110,21 +110,37 @@ struct drm_gem_object *
-> >  drm_cma_gem_create_object_default_funcs(struct drm_device *dev, size_t size);
-> >  
-> >  /**
-> > - * DRM_GEM_CMA_VMAP_DRIVER_OPS - CMA GEM driver operations ensuring a virtual
-> > - *                               address on the buffer
-> > + * __DRM_GEM_CMA_DRIVER_OPS - CMA GEM driver operations ensuring a
-> > + *                            virtual address on the buffer
-> > + * @__dumb_create: callback function for .dumb_create
-> >   *
-> >   * This macro provides a shortcut for setting the default GEM operations in the
-> >   * &drm_driver structure for drivers that need the virtual address also on
-> >   * imported buffers.
-> > + *
-> > + * This macro is a variant of DRM_GEM_CMA_DRIVER_OPS for drivers that
-> > + * override the default implementation of .dumb_create. Use
-> > + * DRM_GEM_CMA_DRIVER_OPS if possible.
-> >   */
-> > -#define DRM_GEM_CMA_VMAP_DRIVER_OPS \
-> > +#define __DRM_GEM_CMA_DRIVER_OPS(__dumb_create) \
-> >  	.gem_create_object	= drm_cma_gem_create_object_default_funcs, \
-> > -	.dumb_create		= drm_gem_cma_dumb_create, \
-> > +	.dumb_create		= (__dumb_create), \
-> >  	.prime_handle_to_fd	= drm_gem_prime_handle_to_fd, \
-> >  	.prime_fd_to_handle	= drm_gem_prime_fd_to_handle, \
-> >  	.gem_prime_import_sg_table = drm_gem_cma_prime_import_sg_table_vmap, \
-> >  	.gem_prime_mmap		= drm_gem_prime_mmap
-> >  
-> > +/**
-> > + * DRM_GEM_CMA_DRIVER_OPS - CMA GEM driver operations ensuring a virtual
-> > + *                          address on the buffer
-> > + *
-> > + * This macro provides a shortcut for setting the default GEM operations in the
-> > + * &drm_driver structure for drivers that need the virtual address also on
-> > + * imported buffers.
-> > + */
-> > +#define DRM_GEM_CMA_DRIVER_OPS \
-> > +	__DRM_GEM_CMA_DRIVER_OPS(drm_gem_cma_dumb_create)
-> > +
-> >  struct drm_gem_object *
-> >  drm_gem_cma_prime_import_sg_table_vmap(struct drm_device *drm,
-> >  				       struct dma_buf_attachment *attach,
+#define __DRM_GEM_CMA_DRIVER_OPS(__dumb_create) \
+        .gem_create_object      = drm_cma_gem_create_object_default_funcs, \
+        .dumb_create            = (__dumb_create), \
+        .prime_handle_to_fd     = drm_gem_prime_handle_to_fd, \
+        .prime_fd_to_handle     = drm_gem_prime_fd_to_handle, \
+        .gem_prime_import_sg_table = drm_gem_cma_prime_import_sg_table_vmap, \
+        .gem_prime_mmap         = drm_gem_prime_mmap
+
+The patch thus introduces several changes:
+
+- drm_gem_cma_prime_import_sg_table_vmap() is used instead of
+  drm_gem_cma_prime_import_sg_table() combined with .gem_prime_vmap()
+  and .gem_prime_vunmap(). I believe that's fine, but splitting that
+  change in a separate commit, or at the very least explaining it in
+  details in the commit message, would make review easier.
+
+- .gem_create_object() is now set. That seems to be OK, but I'm not sure
+  to grasp all the implications. This should also be explained in the
+  commit message, and ideally split to a separate patch.
+
+- drm_gem_cma_prime_mmap() is replaced with drm_gem_prime_mmap(). Same
+  comments :-)
+
+This patch hides way too many changes in what is documented as just
+innocent refactoring. It seems other drivers are affected too.
+
+>  	.fops			= &rcar_du_fops,
+>  	.name			= "rcar-du",
+>  	.desc			= "Renesas R-Car Display Unit",
 
 -- 
 Regards,
