@@ -1,10 +1,9 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Fri, 22 May 2020 23:12:40 +0300
-Subject: [PATCH 15/21] drm/rcar-du: Use GEM CMA object functions
-In-Reply-To: <20200522135246.10134-16-tzimmermann@suse.de>
-References: <20200522135246.10134-1-tzimmermann@suse.de>
- <20200522135246.10134-16-tzimmermann@suse.de>
-Message-ID: <20200522201240.GE5824@pendragon.ideasonboard.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Sun, 24 May 2020 22:50:30 +0800
+Subject: [PATCH 21/21] drm/zte: Use GEM CMA object functions
+In-Reply-To: <20200522135246.10134-22-tzimmermann@suse.de>
+References: <20200522135246.10134-22-tzimmermann@suse.de>
+Message-ID: <202005242216.M9tijiU9%lkp@intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -13,72 +12,58 @@ Content-Transfer-Encoding: 7bit
 
 Hi Thomas,
 
-Thank you for the patch.
+I love your patch! Yet something to improve:
 
-On Fri, May 22, 2020 at 03:52:40PM +0200, Thomas Zimmermann wrote:
-> The rcar-du driver uses the default implementation for CMA functions;
-> except for the .dumb_create callback. The __DRM_GEM_CMA_DRIVER_OPS macro
-> now sets these defaults and .dumb_create in struct drm_driver. All
-> remaining operations are provided by CMA GEM object functions.
-> 
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> ---
->  drivers/gpu/drm/rcar-du/rcar_du_drv.c | 11 +----------
->  1 file changed, 1 insertion(+), 10 deletions(-)
-> 
-> diff --git a/drivers/gpu/drm/rcar-du/rcar_du_drv.c b/drivers/gpu/drm/rcar-du/rcar_du_drv.c
-> index 3e67cf70f0402..3728038cec1d1 100644
-> --- a/drivers/gpu/drm/rcar-du/rcar_du_drv.c
-> +++ b/drivers/gpu/drm/rcar-du/rcar_du_drv.c
-> @@ -476,16 +476,7 @@ DEFINE_DRM_GEM_CMA_FOPS(rcar_du_fops);
->  
->  static struct drm_driver rcar_du_driver = {
->  	.driver_features	= DRIVER_GEM | DRIVER_MODESET | DRIVER_ATOMIC,
-> -	.gem_free_object_unlocked = drm_gem_cma_free_object,
-> -	.gem_vm_ops		= &drm_gem_cma_vm_ops,
-> -	.prime_handle_to_fd	= drm_gem_prime_handle_to_fd,
-> -	.prime_fd_to_handle	= drm_gem_prime_fd_to_handle,
-> -	.gem_prime_get_sg_table	= drm_gem_cma_prime_get_sg_table,
-> -	.gem_prime_import_sg_table = drm_gem_cma_prime_import_sg_table,
-> -	.gem_prime_vmap		= drm_gem_cma_prime_vmap,
-> -	.gem_prime_vunmap	= drm_gem_cma_prime_vunmap,
-> -	.gem_prime_mmap		= drm_gem_cma_prime_mmap,
-> -	.dumb_create		= rcar_du_dumb_create,
-> +	__DRM_GEM_CMA_DRIVER_OPS(rcar_du_dumb_create),
+[auto build test ERROR on next-20200519]
+[cannot apply to sunxi/sunxi/for-next joel-aspeed/for-next shawnguo/for-next stm32/stm32-next linus/master pinchartl-media/drm/du/next v5.7-rc6 v5.7-rc5 v5.7-rc4 v5.7-rc6]
+[if your patch is applied to the wrong git tree, please drop us a note to help
+improve the system. BTW, we also suggest to use '--base' option to specify the
+base tree in git format-patch, please see https://stackoverflow.com/a/37406982]
 
-Your __DRM_GEM_CMA_DRIVER_OPS is defined as
+url:    https://github.com/0day-ci/linux/commits/Thomas-Zimmermann/drm-Convert-most-CMA-based-drivers-to-GEM-object-functions/20200522-215754
+base:    fb57b1fabcb28f358901b2df90abd2b48abc1ca8
+config: arm64-randconfig-r032-20200524 (attached as .config)
+compiler: clang version 11.0.0 (https://github.com/llvm/llvm-project 3393cc4cebf9969db94dc424b7a2b6195589c33b)
+reproduce (this is a W=1 build):
+        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        # install arm64 cross compiling tool for clang build
+        # apt-get install binutils-aarch64-linux-gnu
+        # save the attached .config to linux build tree
+        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=clang make.cross ARCH=arm64 
 
-#define __DRM_GEM_CMA_DRIVER_OPS(__dumb_create) \
-        .gem_create_object      = drm_cma_gem_create_object_default_funcs, \
-        .dumb_create            = (__dumb_create), \
-        .prime_handle_to_fd     = drm_gem_prime_handle_to_fd, \
-        .prime_fd_to_handle     = drm_gem_prime_fd_to_handle, \
-        .gem_prime_import_sg_table = drm_gem_cma_prime_import_sg_table_vmap, \
-        .gem_prime_mmap         = drm_gem_prime_mmap
+If you fix the issue, kindly add following tag as appropriate
+Reported-by: kbuild test robot <lkp@intel.com>
 
-The patch thus introduces several changes:
+All errors (new ones prefixed by >>, old ones prefixed by <<):
 
-- drm_gem_cma_prime_import_sg_table_vmap() is used instead of
-  drm_gem_cma_prime_import_sg_table() combined with .gem_prime_vmap()
-  and .gem_prime_vunmap(). I believe that's fine, but splitting that
-  change in a separate commit, or at the very least explaining it in
-  details in the commit message, would make review easier.
+>> drivers/gpu/drm/zte/zx_drm_drv.c:39:2: error: use of undeclared identifier 'DRM_GEM_CMA_VMAP_DRIVER_OPS'
+DRM_GEM_CMA_VMAP_DRIVER_OPS,
+^
+1 error generated.
 
-- .gem_create_object() is now set. That seems to be OK, but I'm not sure
-  to grasp all the implications. This should also be explained in the
-  commit message, and ideally split to a separate patch.
+vim +/DRM_GEM_CMA_VMAP_DRIVER_OPS +39 drivers/gpu/drm/zte/zx_drm_drv.c
 
-- drm_gem_cma_prime_mmap() is replaced with drm_gem_prime_mmap(). Same
-  comments :-)
+    36	
+    37	static struct drm_driver zx_drm_driver = {
+    38		.driver_features = DRIVER_GEM | DRIVER_MODESET | DRIVER_ATOMIC,
+  > 39		DRM_GEM_CMA_VMAP_DRIVER_OPS,
+    40		.fops = &zx_drm_fops,
+    41		.name = "zx-vou",
+    42		.desc = "ZTE VOU Controller DRM",
+    43		.date = "20160811",
+    44		.major = 1,
+    45		.minor = 0,
+    46	};
+    47	
 
-This patch hides way too many changes in what is documented as just
-innocent refactoring. It seems other drivers are affected too.
-
->  	.fops			= &rcar_du_fops,
->  	.name			= "rcar-du",
->  	.desc			= "Renesas R-Car Display Unit",
-
--- 
-Regards,
-
-Laurent Pinchart
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: .config.gz
+Type: application/gzip
+Size: 41332 bytes
+Desc: not available
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20200524/815e8167/attachment-0001.gz>
