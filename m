@@ -1,66 +1,60 @@
-From: Paul Cercueil <paul@crapouillou.net>
-Date: Wed, 27 May 2020 02:28:31 +0200
-Subject: [PATCH 09/21] drm/ingenic: Use GEM CMA object functions
-In-Reply-To: <20200522135246.10134-10-tzimmermann@suse.de>
-References: <20200522135246.10134-1-tzimmermann@suse.de>
- <20200522135246.10134-10-tzimmermann@suse.de>
-Message-ID: <JZRYAQ.1QIOMTT6TPVS1@crapouillou.net>
+From: rentao.bupt@gmail.com <rentao.bupt@gmail.com>
+Date: Wed, 27 May 2020 18:11:54 -0700
+Subject: [PATCH] usb: gadget: aspeed: fixup vhub port irq handling
+Message-ID: <20200528011154.30355-1-rentao.bupt@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Thomas,
+From: Tao Ren <rentao.bupt@gmail.com>
 
-Le ven. 22 mai 2020 ? 15:52, Thomas Zimmermann <tzimmermann@suse.de> a 
-?crit :
-> The ingenic driver uses the default implementation for CMA functions. 
-> The
-> DRM_GEM_CMA_DRIVER_OPS macro now sets these defaults in struct 
-> drm_driver.
-> All remaining operations are provided by CMA GEM object functions.
-> 
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+This is a follow-on patch for commit a23be4ed8f48 ("usb: gadget: aspeed:
+improve vhub port irq handling"): for_each_set_bit() is replaced with
+simple for() loop because for() loop runs faster on ASPEED BMC.
 
-Tested-by: Paul Cercueil <paul@crapouillou.net>
-Reviewed-by: Paul Cercueil <paul@crapouillou.net>
+Signed-off-by: Tao Ren <rentao.bupt@gmail.com>
+---
+ drivers/usb/gadget/udc/aspeed-vhub/core.c | 10 +++-------
+ drivers/usb/gadget/udc/aspeed-vhub/vhub.h |  3 +++
+ 2 files changed, 6 insertions(+), 7 deletions(-)
 
-Cheers,
--Paul
-
-> ---
->  drivers/gpu/drm/ingenic/ingenic-drm.c | 13 +------------
->  1 file changed, 1 insertion(+), 12 deletions(-)
-> 
-> diff --git a/drivers/gpu/drm/ingenic/ingenic-drm.c 
-> b/drivers/gpu/drm/ingenic/ingenic-drm.c
-> index eff57a1f70fb0..1c1cee367b752 100644
-> --- a/drivers/gpu/drm/ingenic/ingenic-drm.c
-> +++ b/drivers/gpu/drm/ingenic/ingenic-drm.c
-> @@ -519,18 +519,7 @@ static struct drm_driver ingenic_drm_driver_data 
-> = {
->  	.patchlevel		= 0,
-> 
->  	.fops			= &ingenic_drm_fops,
-> -
-> -	.dumb_create		= drm_gem_cma_dumb_create,
-> -	.gem_free_object_unlocked = drm_gem_cma_free_object,
-> -	.gem_vm_ops		= &drm_gem_cma_vm_ops,
-> -
-> -	.prime_handle_to_fd	= drm_gem_prime_handle_to_fd,
-> -	.prime_fd_to_handle	= drm_gem_prime_fd_to_handle,
-> -	.gem_prime_get_sg_table	= drm_gem_cma_prime_get_sg_table,
-> -	.gem_prime_import_sg_table = drm_gem_cma_prime_import_sg_table,
-> -	.gem_prime_vmap		= drm_gem_cma_prime_vmap,
-> -	.gem_prime_vunmap	= drm_gem_cma_prime_vunmap,
-> -	.gem_prime_mmap		= drm_gem_cma_prime_mmap,
-> +	DRM_GEM_CMA_DRIVER_OPS,
-> 
->  	.irq_handler		= ingenic_drm_irq_handler,
->  };
-> --
-> 2.26.2
-> 
-
+diff --git a/drivers/usb/gadget/udc/aspeed-vhub/core.c b/drivers/usb/gadget/udc/aspeed-vhub/core.c
+index cdf96911e4b1..be7bb64e3594 100644
+--- a/drivers/usb/gadget/udc/aspeed-vhub/core.c
++++ b/drivers/usb/gadget/udc/aspeed-vhub/core.c
+@@ -135,13 +135,9 @@ static irqreturn_t ast_vhub_irq(int irq, void *data)
+ 
+ 	/* Handle device interrupts */
+ 	if (istat & vhub->port_irq_mask) {
+-		unsigned long bitmap = istat;
+-		int offset = VHUB_IRQ_DEV1_BIT;
+-		int size = VHUB_IRQ_DEV1_BIT + vhub->max_ports;
+-
+-		for_each_set_bit_from(offset, &bitmap, size) {
+-			i = offset - VHUB_IRQ_DEV1_BIT;
+-			ast_vhub_dev_irq(&vhub->ports[i].dev);
++		for (i = 0; i < vhub->max_ports; i++) {
++			if (istat & VHUB_DEV_IRQ(i))
++				ast_vhub_dev_irq(&vhub->ports[i].dev);
+ 		}
+ 	}
+ 
+diff --git a/drivers/usb/gadget/udc/aspeed-vhub/vhub.h b/drivers/usb/gadget/udc/aspeed-vhub/vhub.h
+index 2e5a1ef14a75..87a5dea12d3c 100644
+--- a/drivers/usb/gadget/udc/aspeed-vhub/vhub.h
++++ b/drivers/usb/gadget/udc/aspeed-vhub/vhub.h
+@@ -67,6 +67,9 @@
+ #define VHUB_IRQ_HUB_EP0_SETUP			(1 << 0)
+ #define VHUB_IRQ_ACK_ALL			0x1ff
+ 
++/* Downstream device IRQ mask. */
++#define VHUB_DEV_IRQ(n)				(VHUB_IRQ_DEVICE1 << (n))
++
+ /* SW reset reg */
+ #define VHUB_SW_RESET_EP_POOL			(1 << 9)
+ #define VHUB_SW_RESET_DMA_CONTROLLER		(1 << 8)
+-- 
+2.17.1
 
