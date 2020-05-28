@@ -1,75 +1,47 @@
-From: Tao Ren <rentao.bupt@gmail.com>
-Date: Wed, 27 May 2020 18:20:11 -0700
-Subject: [PATCH] usb: gadget: aspeed: fixup vhub port irq handling
-In-Reply-To: <20200528011154.30355-1-rentao.bupt@gmail.com>
-References: <20200528011154.30355-1-rentao.bupt@gmail.com>
-Message-ID: <20200528012010.GA30405@taoren-ubuntu-R90MNF91>
+From: Manikandan Elumalai <manikandan.hcl.ers.epl@gmail.com>
+Date: Thu, 28 May 2020 19:45:23 +0530
+Subject: [PATCH] hwmon:(adm1275) Enable adm1278 ADM1278_TEMP1_EN
+Message-ID: <20200528141523.GA8810@cnn>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Ben,
 
-I sent out the follow-on patch per Greg's suggestion, and the purpose is
-to include the latest version (v4) of the original commit. As v4 was
-already Acked-by you, can I add the tag for this patch? Or are you
-willing to Ack it again?
+The adm1278 temperature sysfs attribute need it for one of the our openbmc platform . 
+This functionality is not enabled by default, so PMON_CONFIG needs to be modified in order to enable it.
 
+---
+ drivers/hwmon/pmbus/adm1275.c | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
 
-Cheers,
+diff --git a/drivers/hwmon/pmbus/adm1275.c b/drivers/hwmon/pmbus/adm1275.c
+index 5caa37fb..47b293d 100644
+--- a/drivers/hwmon/pmbus/adm1275.c
++++ b/drivers/hwmon/pmbus/adm1275.c
+@@ -681,6 +681,21 @@ static int adm1275_probe(struct i2c_client *client,
+ 			}
+ 		}
+ 
++		config = i2c_smbus_read_byte_data(client, ADM1275_PMON_CONFIG);
++		if (config < 0)
++			return config;
++
++		/* Enable TEMP1 by defult */
++		config |= ADM1278_TEMP1_EN;
++		ret = i2c_smbus_write_byte_data(client,
++					ADM1275_PMON_CONFIG,
++					config);
++		if (ret < 0) {
++		dev_err(&client->dev,
++			"Failed to enable temperature config\n");
++		return -ENODEV;
++		}
++
+ 		if (config & ADM1278_TEMP1_EN)
+ 			info->func[0] |=
+ 				PMBUS_HAVE_TEMP | PMBUS_HAVE_STATUS_TEMP;
+-- 
+2.7.4
 
-Tao
-
-On Wed, May 27, 2020 at 06:11:54PM -0700, rentao.bupt at gmail.com wrote:
-> From: Tao Ren <rentao.bupt@gmail.com>
-> 
-> This is a follow-on patch for commit a23be4ed8f48 ("usb: gadget: aspeed:
-> improve vhub port irq handling"): for_each_set_bit() is replaced with
-> simple for() loop because for() loop runs faster on ASPEED BMC.
-> 
-> Signed-off-by: Tao Ren <rentao.bupt@gmail.com>
-> ---
->  drivers/usb/gadget/udc/aspeed-vhub/core.c | 10 +++-------
->  drivers/usb/gadget/udc/aspeed-vhub/vhub.h |  3 +++
->  2 files changed, 6 insertions(+), 7 deletions(-)
-> 
-> diff --git a/drivers/usb/gadget/udc/aspeed-vhub/core.c b/drivers/usb/gadget/udc/aspeed-vhub/core.c
-> index cdf96911e4b1..be7bb64e3594 100644
-> --- a/drivers/usb/gadget/udc/aspeed-vhub/core.c
-> +++ b/drivers/usb/gadget/udc/aspeed-vhub/core.c
-> @@ -135,13 +135,9 @@ static irqreturn_t ast_vhub_irq(int irq, void *data)
->  
->  	/* Handle device interrupts */
->  	if (istat & vhub->port_irq_mask) {
-> -		unsigned long bitmap = istat;
-> -		int offset = VHUB_IRQ_DEV1_BIT;
-> -		int size = VHUB_IRQ_DEV1_BIT + vhub->max_ports;
-> -
-> -		for_each_set_bit_from(offset, &bitmap, size) {
-> -			i = offset - VHUB_IRQ_DEV1_BIT;
-> -			ast_vhub_dev_irq(&vhub->ports[i].dev);
-> +		for (i = 0; i < vhub->max_ports; i++) {
-> +			if (istat & VHUB_DEV_IRQ(i))
-> +				ast_vhub_dev_irq(&vhub->ports[i].dev);
->  		}
->  	}
->  
-> diff --git a/drivers/usb/gadget/udc/aspeed-vhub/vhub.h b/drivers/usb/gadget/udc/aspeed-vhub/vhub.h
-> index 2e5a1ef14a75..87a5dea12d3c 100644
-> --- a/drivers/usb/gadget/udc/aspeed-vhub/vhub.h
-> +++ b/drivers/usb/gadget/udc/aspeed-vhub/vhub.h
-> @@ -67,6 +67,9 @@
->  #define VHUB_IRQ_HUB_EP0_SETUP			(1 << 0)
->  #define VHUB_IRQ_ACK_ALL			0x1ff
->  
-> +/* Downstream device IRQ mask. */
-> +#define VHUB_DEV_IRQ(n)				(VHUB_IRQ_DEVICE1 << (n))
-> +
->  /* SW reset reg */
->  #define VHUB_SW_RESET_EP_POOL			(1 << 9)
->  #define VHUB_SW_RESET_DMA_CONTROLLER		(1 << 8)
-> -- 
-> 2.17.1
-> 
