@@ -1,92 +1,63 @@
-From: Vijay Khemka <vijaykhemka@fb.com>
-Date: Fri, 29 May 2020 23:47:13 +0000
-Subject: [PATCH v2] hwmon:(adm1275) Enable adm1278 ADM1278_TEMP1_EN
-In-Reply-To: <41b169b7-83cb-c814-179e-9e62f17f27d8@roeck-us.net>
-References: <20200529124607.GA3469@cnn>
- <6F5BD2D3-997D-4607-BC0C-B36497B51D13@fb.com>
- <41b169b7-83cb-c814-179e-9e62f17f27d8@roeck-us.net>
-Message-ID: <86D10289-7406-4114-B058-1B2693E3C4E1@fb.com>
+From: Emil Velikov <emil.l.velikov@gmail.com>
+Date: Thu, 28 May 2020 15:34:30 +0100
+Subject: [PATCH 07/21] drm/hisilicon/kirin: Use GEM CMA object functions
+In-Reply-To: <ccee78e2-8930-2de6-0b7c-0f1ad1e636f8@suse.de>
+References: <20200522135246.10134-1-tzimmermann@suse.de>
+ <20200522135246.10134-8-tzimmermann@suse.de>
+ <CACvgo51cYh4iLKEfrLSbgOGQM4=ojsBq54gW9VJBPoX+p04o+g@mail.gmail.com>
+ <ccee78e2-8930-2de6-0b7c-0f1ad1e636f8@suse.de>
+Message-ID: <CACvgo52de8opoX98Kchp00gfDa7iGyezumNZPeNaOeLpYjETEQ@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+On Mon, 25 May 2020 at 13:41, Thomas Zimmermann <tzimmermann@suse.de> wrote:
+>
+> Hi Emil
+>
+> Am 22.05.20 um 20:11 schrieb Emil Velikov:
+> > Hi Thomas,
+> >
+> > On Fri, 22 May 2020 at 14:53, Thomas Zimmermann <tzimmermann@suse.de> wrote:
+> >>
+> >> The kirin driver uses the default implementation for CMA functions; except
+> >> for the .dumb_create callback. The __DRM_GEM_CMA_DRIVER_OPS macro now sets
+> >> these defaults and .dumb_create in struct drm_driver. All remaining
+> >> operations are provided by CMA GEM object functions.
+> >>
+> >> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+> >> ---
+> >>  drivers/gpu/drm/hisilicon/kirin/kirin_drm_ade.c | 12 +-----------
+> >>  1 file changed, 1 insertion(+), 11 deletions(-)
+> >>
+> >> diff --git a/drivers/gpu/drm/hisilicon/kirin/kirin_drm_ade.c b/drivers/gpu/drm/hisilicon/kirin/kirin_drm_ade.c
+> >> index c339e632522a9..b1ffd7d43e562 100644
+> >> --- a/drivers/gpu/drm/hisilicon/kirin/kirin_drm_ade.c
+> >> +++ b/drivers/gpu/drm/hisilicon/kirin/kirin_drm_ade.c
+> >> @@ -921,17 +921,7 @@ DEFINE_DRM_GEM_CMA_FOPS(ade_fops);
+> >>  static struct drm_driver ade_driver = {
+> >>         .driver_features = DRIVER_GEM | DRIVER_MODESET | DRIVER_ATOMIC,
+> >>         .fops = &ade_fops,
+> >> -       .gem_free_object_unlocked = drm_gem_cma_free_object,
+> >> -       .gem_vm_ops = &drm_gem_cma_vm_ops,
+> >> -       .dumb_create = drm_gem_cma_dumb_create_internal,
+> >
+> > This doesn't seem right. The _internal documentation explicitly says
+> > that this should _not_ be used as .dumb_create. Instead drivers should
+> > use it to implement their callback.
+> >
+> > Since it yields the same result as drm_gem_cma_dumb_create we can use
+> > the default macro below.
+>
+> I noticed this and thought that the driver authors probably had their
+> reasons. Changing the driver to the default macro is probably still a
+> good idea.
+>
+To be on the _extra_ safe side might want to keep that separate patch
+explicitly CC-ing the author/reviewers of the offending commit.
+Although as said before - it's your call, I'm fine either way.
 
-
-?On 5/29/20, 11:56 AM, "Guenter Roeck" <groeck7 at gmail.com on behalf of linux@roeck-us.net> wrote:
-
-    On 5/29/20 10:57 AM, Vijay Khemka wrote:
-    > 
-    > 
-    > On 5/29/20, 5:47 AM, "Manikandan Elumalai" <manikandan.hcl.ers.epl@gmail.com> wrote:
-    > 
-    >     The adm1278 temperature sysfs attribute need it for one of the openbmc platform . 
-    >     This functionality is not enabled by default, so PMON_CONFIG needs to be modified in order to enable it.
-    >     
-    >     Signed-off-by   : Manikandan Elumalai <manikandan.hcl.ers.epl@gmail.com>
-    >     
-    >     v2:
-    >        - Add Signed-off-by.
-    >        - Removed ADM1278_TEMP1_EN check.
-    >     ---
-    >      drivers/hwmon/pmbus/adm1275.c | 21 +++++++++++++++++----
-    >      1 file changed, 17 insertions(+), 4 deletions(-)
-    >     
-    >     diff --git a/drivers/hwmon/pmbus/adm1275.c b/drivers/hwmon/pmbus/adm1275.c
-    >     index 5caa37fb..ab5fceb 100644
-    >     --- a/drivers/hwmon/pmbus/adm1275.c
-    >     +++ b/drivers/hwmon/pmbus/adm1275.c
-    >     @@ -666,7 +666,23 @@ static int adm1275_probe(struct i2c_client *client,
-    >      		tindex = 3;
-    >      
-    >      		info->func[0] |= PMBUS_HAVE_PIN | PMBUS_HAVE_STATUS_INPUT |
-    >     -			PMBUS_HAVE_VOUT | PMBUS_HAVE_STATUS_VOUT;
-    >     +			PMBUS_HAVE_VOUT | PMBUS_HAVE_STATUS_VOUT |
-    >     +			PMBUS_HAVE_TEMP | PMBUS_HAVE_STATUS_TEMP;
-    >     +
-    >     +		config = i2c_smbus_read_byte_data(client, ADM1275_PMON_CONFIG);
-    >     +		if (config < 0)
-    >     +			return config;
-    >     +
-    >     +		/* Enable TEMP1 by default */
-    >     +		config |= ADM1278_TEMP1_EN;
-    >     +		ret = i2c_smbus_write_byte_data(client,
-    >     +					ADM1275_PMON_CONFIG,
-    >     +					config);
-    >     +		if (ret < 0) {
-    >     +		dev_err(&client->dev,
-    >     +			"Failed to enable temperature config\n");
-    >     +		return -ENODEV;
-    >     +		}
-    > You don't need this above code removing check as below should be enough  to
-    > populate sysfs entry you need.
-    > 
-
-    You mean you are only interested in having the attribute, even if it doesn't
-    report anything useful because monitoring is disabled in the chip ?
-    Sorry, I don't understand. Can you elaborate ?
-Sorry for misinterpretation, No I don't mean that. This should be fine.
-
-    Thanks,
-    Guenter
-
-    >      		/* Enable VOUT if not enabled (it is disabled by default) */
-    >      		if (!(config & ADM1278_VOUT_EN)) {
-    >     @@ -681,9 +697,6 @@ static int adm1275_probe(struct i2c_client *client,
-    >      			}
-    >      		}
-    >      
-    >     -		if (config & ADM1278_TEMP1_EN)
-    >     -			info->func[0] |=
-    >     -				PMBUS_HAVE_TEMP | PMBUS_HAVE_STATUS_TEMP;
-    >      		if (config & ADM1278_VIN_EN)
-    >      			info->func[0] |= PMBUS_HAVE_VIN;
-    >      		break;
-    >     -- 
-    >     2.7.4
-    >     
-    >     
-    > 
-
-
+HTH
+Emil
