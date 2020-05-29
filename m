@@ -1,53 +1,70 @@
-From: Patrick Williams <patrick@stwcx.xyz>
-Date: Fri, 29 May 2020 07:49:38 -0500
-Subject: [PATCH] hwmon:(adm1275) Enable adm1278 ADM1278_TEMP1_EN
-In-Reply-To: <20200528141523.GA8810@cnn>
-References: <20200528141523.GA8810@cnn>
-Message-ID: <20200529124938.GE17541@heinlein>
+From: Guenter Roeck <linux@roeck-us.net>
+Date: Fri, 29 May 2020 10:30:16 -0700
+Subject: [PATCH v2] hwmon:(adm1275) Enable adm1278 ADM1278_TEMP1_EN
+In-Reply-To: <20200529124607.GA3469@cnn>
+References: <20200529124607.GA3469@cnn>
+Message-ID: <49485085-7cc7-9e29-a719-98d1e184378b@roeck-us.net>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, May 28, 2020 at 07:45:23PM +0530, Manikandan Elumalai wrote:
-
-Hi Manikandan,
-
-Adding the PMBus maintainers...
-
-> 
-> The adm1278 temperature sysfs attribute need it for one of the our openbmc platform . 
+On 5/29/20 5:46 AM, Manikandan Elumalai wrote:
+> The adm1278 temperature sysfs attribute need it for one of the openbmc platform . 
 > This functionality is not enabled by default, so PMON_CONFIG needs to be modified in order to enable it.
+> 
+> Signed-off-by   : Manikandan Elumalai <manikandan.hcl.ers.epl@gmail.com>
 
-Vijay already mentioned the Signed-off-by here.
-
-Since this is a kernel patch and your first time contributing one, please
-read through:
-    https://www.kernel.org/doc/html/latest/process/1.Intro.html
-and the MAINTAINERS file.  Another thing you've missed is using the
-get_maintainer.pl script to find out who you're suppose to CC.  It is
-fine to have additional CCs but we're missing the pmbus maintainer on
-this patch.
+This is not valid.
 
 > 
-> ---
->  drivers/hwmon/pmbus/adm1275.c | 15 +++++++++++++++
->  1 file changed, 15 insertions(+)
+> v2:
+>    - Add Signed-off-by.
+>    - Removed ADM1278_TEMP1_EN check.
+
+checkpatch reports:
+
+> ---WARNING: Possible unwrapped commit description (prefer a maximum 75 chars per line)
+#14:
+The adm1278 temperature sysfs attribute need it for one of the openbmc platform .
+
+CHECK: Alignment should match open parenthesis
+#45: FILE: drivers/hwmon/pmbus/adm1275.c:679:
++		ret = i2c_smbus_write_byte_data(client,
++					ADM1275_PMON_CONFIG,
+
+WARNING: suspect code indent for conditional statements (16, 16)
+#47: FILE: drivers/hwmon/pmbus/adm1275.c:681:
++		if (ret < 0) {
++		dev_err(&client->dev,
+
+ERROR: Missing Signed-off-by: line(s)
+
+total: 1 errors, 2 warnings, 1 checks, 33 lines checked
+
+Please follow published guidelines when submitting patches.
+
+>  drivers/hwmon/pmbus/adm1275.c | 21 +++++++++++++++++----
+>  1 file changed, 17 insertions(+), 4 deletions(-)
 > 
 > diff --git a/drivers/hwmon/pmbus/adm1275.c b/drivers/hwmon/pmbus/adm1275.c
-> index 5caa37fb..47b293d 100644
+> index 5caa37fb..ab5fceb 100644
 > --- a/drivers/hwmon/pmbus/adm1275.c
 > +++ b/drivers/hwmon/pmbus/adm1275.c
-> @@ -681,6 +681,21 @@ static int adm1275_probe(struct i2c_client *client,
->  			}
->  		}
+> @@ -666,7 +666,23 @@ static int adm1275_probe(struct i2c_client *client,
+>  		tindex = 3;
 >  
+>  		info->func[0] |= PMBUS_HAVE_PIN | PMBUS_HAVE_STATUS_INPUT |
+> -			PMBUS_HAVE_VOUT | PMBUS_HAVE_STATUS_VOUT;
+> +			PMBUS_HAVE_VOUT | PMBUS_HAVE_STATUS_VOUT |
+> +			PMBUS_HAVE_TEMP | PMBUS_HAVE_STATUS_TEMP;
+> +
 > +		config = i2c_smbus_read_byte_data(client, ADM1275_PMON_CONFIG);
 > +		if (config < 0)
 > +			return config;
 > +
-> +		/* Enable TEMP1 by defult */
+> +		/* Enable TEMP1 by default */
 > +		config |= ADM1278_TEMP1_EN;
 > +		ret = i2c_smbus_write_byte_data(client,
 > +					ADM1275_PMON_CONFIG,
@@ -57,27 +74,24 @@ this patch.
 > +			"Failed to enable temperature config\n");
 > +		return -ENODEV;
 > +		}
-> +
 
-This code might work for your design, but likely doesn't work for
-everyone and isn't likely to be accepted in its current state.  I think
-you need some kind of detection logic here to know if TEMP1_EN *should*
-be enabled.  Do we need a device-tree entry for this?
+This can be handled in a single operation, together with ADM1278_VOUT_EN
+below. There is no need for two separate write operations.
 
+Guenter
 
->  		if (config & ADM1278_TEMP1_EN)
->  			info->func[0] |=
->  				PMBUS_HAVE_TEMP | PMBUS_HAVE_STATUS_TEMP;
-> -- 
-> 2.7.4
+> 
+>  		/* Enable VOUT if not enabled (it is disabled by default) */
+>  		if (!(config & ADM1278_VOUT_EN)) {
+> @@ -681,9 +697,6 @@ static int adm1275_probe(struct i2c_client *client,
+>  			}
+>  		}
+>  
+> -		if (config & ADM1278_TEMP1_EN)
+> -			info->func[0] |=
+> -				PMBUS_HAVE_TEMP | PMBUS_HAVE_STATUS_TEMP;
+>  		if (config & ADM1278_VIN_EN)
+>  			info->func[0] |= PMBUS_HAVE_VIN;
+>  		break;
 > 
 
--- 
-Patrick Williams
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 833 bytes
-Desc: not available
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20200529/d3c35d29/attachment.sig>
