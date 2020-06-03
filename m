@@ -1,114 +1,148 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Fri, 5 Jun 2020 11:16:13 +0300
-Subject: [PATCH v3 03/43] drm/cma-helper: Add DRM_GEM_CMA_DRIVER_OPS to
- set default GEM CMA functions
-In-Reply-To: <20200605073247.4057-4-tzimmermann@suse.de>
-References: <20200605073247.4057-1-tzimmermann@suse.de>
- <20200605073247.4057-4-tzimmermann@suse.de>
-Message-ID: <20200605081613.GA9325@pendragon.ideasonboard.com>
+From: Thomas Zimmermann <tzimmermann@suse.de>
+Date: Wed, 3 Jun 2020 09:48:29 +0200
+Subject: [PATCH 15/21] drm/rcar-du: Use GEM CMA object functions
+In-Reply-To: <50d76988-f627-037d-a8bc-d18f6662c981@ideasonboard.com>
+References: <20200522135246.10134-1-tzimmermann@suse.de>
+ <20200522135246.10134-16-tzimmermann@suse.de>
+ <20200522201240.GE5824@pendragon.ideasonboard.com>
+ <816a8a0e-bb98-ea6c-5016-94b18e045fb5@suse.de>
+ <50d76988-f627-037d-a8bc-d18f6662c981@ideasonboard.com>
+Message-ID: <32d4e4cb-9b5d-4d69-67d1-1b1953e977c5@suse.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Thomas,
+Hi
 
-Thank you for the patch.
-
-On Fri, Jun 05, 2020 at 09:32:07AM +0200, Thomas Zimmermann wrote:
-> The macro to DRM_GEM_CMA_DRIVER_OPS sets GEM callbacks in struct drm_driver
-> to their defaults for CMA. An variant of the macro is provided for drivers
-
-s/An variant/A variant/
-
-> that override the default .dumb_create callback. Adapt drivers to the changes.
+Am 25.05.20 um 17:38 schrieb Kieran Bingham:
+> On 25/05/2020 13:49, Thomas Zimmermann wrote:
+>> Hi
+>>
+>> Am 22.05.20 um 22:12 schrieb Laurent Pinchart:
+>>> Hi Thomas,
+>>>
+>>> Thank you for the patch.
+>>>
+>>> On Fri, May 22, 2020 at 03:52:40PM +0200, Thomas Zimmermann wrote:
+>>>> The rcar-du driver uses the default implementation for CMA functions;
+>>>> except for the .dumb_create callback. The __DRM_GEM_CMA_DRIVER_OPS macro
+>>>> now sets these defaults and .dumb_create in struct drm_driver. All
+>>>> remaining operations are provided by CMA GEM object functions.
+>>>>
+>>>> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+>>>> ---
+>>>>  drivers/gpu/drm/rcar-du/rcar_du_drv.c | 11 +----------
+>>>>  1 file changed, 1 insertion(+), 10 deletions(-)
+>>>>
+>>>> diff --git a/drivers/gpu/drm/rcar-du/rcar_du_drv.c b/drivers/gpu/drm/rcar-du/rcar_du_drv.c
+>>>> index 3e67cf70f0402..3728038cec1d1 100644
+>>>> --- a/drivers/gpu/drm/rcar-du/rcar_du_drv.c
+>>>> +++ b/drivers/gpu/drm/rcar-du/rcar_du_drv.c
+>>>> @@ -476,16 +476,7 @@ DEFINE_DRM_GEM_CMA_FOPS(rcar_du_fops);
+>>>>  
+>>>>  static struct drm_driver rcar_du_driver = {
+>>>>  	.driver_features	= DRIVER_GEM | DRIVER_MODESET | DRIVER_ATOMIC,
+>>>> -	.gem_free_object_unlocked = drm_gem_cma_free_object,
+>>>> -	.gem_vm_ops		= &drm_gem_cma_vm_ops,
+>>>> -	.prime_handle_to_fd	= drm_gem_prime_handle_to_fd,
+>>>> -	.prime_fd_to_handle	= drm_gem_prime_fd_to_handle,
+>>>> -	.gem_prime_get_sg_table	= drm_gem_cma_prime_get_sg_table,
+>>>> -	.gem_prime_import_sg_table = drm_gem_cma_prime_import_sg_table,
+>>>> -	.gem_prime_vmap		= drm_gem_cma_prime_vmap,
+>>>> -	.gem_prime_vunmap	= drm_gem_cma_prime_vunmap,
+>>>> -	.gem_prime_mmap		= drm_gem_cma_prime_mmap,
+>>>> -	.dumb_create		= rcar_du_dumb_create,
+>>>> +	__DRM_GEM_CMA_DRIVER_OPS(rcar_du_dumb_create),
+>>>
+>>> Your __DRM_GEM_CMA_DRIVER_OPS is defined as
+>>>
+>>> #define __DRM_GEM_CMA_DRIVER_OPS(__dumb_create) \
+>>>         .gem_create_object      = drm_cma_gem_create_object_default_funcs, \
+>>>         .dumb_create            = (__dumb_create), \
+>>>         .prime_handle_to_fd     = drm_gem_prime_handle_to_fd, \
+>>>         .prime_fd_to_handle     = drm_gem_prime_fd_to_handle, \
+>>>         .gem_prime_import_sg_table = drm_gem_cma_prime_import_sg_table_vmap, \
+>>>         .gem_prime_mmap         = drm_gem_prime_mmap
+>>>
+>>> The patch thus introduces several changes:
+>>>
+>>> - drm_gem_cma_prime_import_sg_table_vmap() is used instead of
+>>>   drm_gem_cma_prime_import_sg_table() combined with .gem_prime_vmap()
+>>>   and .gem_prime_vunmap(). I believe that's fine, but splitting that
+>>>   change in a separate commit, or at the very least explaining it in
+>>>   details in the commit message, would make review easier.
+>>>
+>>> - .gem_create_object() is now set. That seems to be OK, but I'm not sure
+>>>   to grasp all the implications. This should also be explained in the
+>>>   commit message, and ideally split to a separate patch.
+>>
+>> That's relevant during object creation and sets the object functions.
+>> See one of my other replies for how this can go away after all CMA
+>> drivers have been updated to GEM object functions.
+>>
+>>
+>>>
+>>> - drm_gem_cma_prime_mmap() is replaced with drm_gem_prime_mmap(). Same
+>>>   comments :-)
+>>
+>> I relied on the aspeed driver to be correct. After Sam's comment on
+>> that, I read the code once again several times. The original
+>> implementation clears VM_PFNMAP. And I cannot find that code any longer.
+>> Going back to the original function might be better.
+>>
+>>
+>>>
+>>> This patch hides way too many changes in what is documented as just
+>>> innocent refactoring. It seems other drivers are affected too.
+>>
+>> Could you test the patchset? I don't have the HW.
 > 
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> Reviewed-by: Sam Ravnborg <sam@ravnborg.org>
-> Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-> Acked-by: Emil Velikov <emil.velikov@collabora.com>
-> ---
->  include/drm/drm_gem_cma_helper.h | 46 +++++++++++++++++++++++++++++---
->  1 file changed, 43 insertions(+), 3 deletions(-)
+> Digging out the branch you provided elsewhere in this thread:
 > 
-> diff --git a/include/drm/drm_gem_cma_helper.h b/include/drm/drm_gem_cma_helper.h
-> index 2cdf333ae585d..5e1e595c0e72d 100644
-> --- a/include/drm/drm_gem_cma_helper.h
-> +++ b/include/drm/drm_gem_cma_helper.h
-> @@ -109,6 +109,42 @@ void drm_gem_cma_prime_vunmap(struct drm_gem_object *obj, void *vaddr);
->  struct drm_gem_object *
->  drm_gem_cma_create_object_default_funcs(struct drm_device *dev, size_t size);
->  
-> +/**
-> + * DRM_GEM_CMA_DRIVER_OPS_WITH_DUMB_CREATE - CMA GEM driver operations
-> + * @dumb_create_func: callback function for .dumb_create
-> + *
-> + * This macro provides a shortcut for setting the default GEM operations in the
-> + * &drm_driver structure.
-> + *
-> + * This macro is a variant of DRM_GEM_CMA_DRIVER_OPS for drivers that
-> + * override the default implementation of &struct rm_driver.dumb_create. Use
-> + * DRM_GEM_CMA_DRIVER_OPS if possible. Drivers that require a virtual address
-> + * on imported buffers should use
-> + * DRM_GEM_CMA_DRIVER_OPS_VMAP_WITH_DUMB_CREATE() instead.
-> + */
-> +#define DRM_GEM_CMA_DRIVER_OPS_WITH_DUMB_CREATE(dumb_create_func) \
-> +	.gem_create_object	= drm_gem_cma_create_object_default_funcs, \
-> +	.dumb_create		= (dumb_create_func), \
+>>>> Could you boot-test with the patchset applied?
+>>>
+>>> Yes, if you have a git branch I can just build and boot I can
+>>> do it quickly!
+>>
+>> Fantastic! It's the cma-objfuncs branch of
+>>
+>> https://gitlab.freedesktop.org/tzimmermann/linux.git
+> 
+> I have successfully run our display tests with your patches here on an
+> R-Car H3 Salvator-XS(-es2).
+> 
+> Tested-by: Kieran Bingham <kieran.bingham+renesas@ideasonboard.com>
 
-Do we need parentheses here ?
+Thanks for testing.
 
-> +	.prime_handle_to_fd	= drm_gem_prime_handle_to_fd, \
-> +	.prime_fd_to_handle	= drm_gem_prime_fd_to_handle, \
-> +	.gem_prime_import_sg_table = drm_gem_cma_prime_import_sg_table, \
-> +	.gem_prime_mmap		= drm_gem_cma_prime_mmap
-> +
-> +/**
-> + * DRM_GEM_CMA_DRIVER_OPS - CMA GEM driver operations
-> + *
-> + * This macro provides a shortcut for setting the default GEM operations in the
-> + * &drm_driver structure.
-> + *
-> + * Drivers that come with their own implementation of
-> + * &struct drm_driver.dumb_create should use
-> + * DRM_GEM_CMA_DRIVER_OPS_WITH_DUMB_CREATE() instead. Use
-> + * DRM_GEM_CMA_DRIVER_OPS if possible. Drivers that require a virtual address
-> + * on imported buffers should use DRM_GEM_CMA_DRIVER_OPS_VMAP instead.
-> + */
-> +#define DRM_GEM_CMA_DRIVER_OPS \
-> +	DRM_GEM_CMA_DRIVER_OPS_WITH_DUMB_CREATE(drm_gem_cma_dumb_create)
-> +
->  /**
->   * DRM_GEM_CMA_DRIVER_OPS_VMAP_WITH_DUMB_CREATE - CMA GEM driver operations
->   *                                                ensuring a virtual address
-> @@ -120,8 +156,10 @@ drm_gem_cma_create_object_default_funcs(struct drm_device *dev, size_t size);
->   * imported buffers.
->   *
->   * This macro is a variant of DRM_GEM_CMA_DRIVER_OPS_VMAP for drivers that
-> - * override the default implementation of &struct rm_driver.dumb_create. Use
-> - * DRM_GEM_CMA_DRIVER_OPS_VMAP if possible.
-> + * override the default implementation of &struct drm_driver.dumb_create. Use
-> + * DRM_GEM_CMA_DRIVER_OPS_VMAP if possible. Drivers that do not require a
-> + * virtual address on imported buffers should use
-> + * DRM_GEM_CMA_DRIVER_OPS_WITH_DUMB_CREATE() instead.
->   */
->  #define DRM_GEM_CMA_DRIVER_OPS_VMAP_WITH_DUMB_CREATE(dumb_create_func) \
->  	.gem_create_object	= drm_gem_cma_create_object_default_funcs, \
-> @@ -142,7 +180,9 @@ drm_gem_cma_create_object_default_funcs(struct drm_device *dev, size_t size);
->   * Drivers that come with their own implementation of
->   * &struct drm_driver.dumb_create should use
->   * DRM_GEM_CMA_DRIVER_OPS_VMAP_WITH_DUMB_CREATE() instead. Use
-> - * DRM_GEM_CMA_DRIVER_OPS_VMAP if possible.
-> + * DRM_GEM_CMA_DRIVER_OPS_VMAP if possible. Drivers that do not require a
-> + * virtual address on imported buffers should use DRM_GEM_CMA_DRIVER_OPS
-> + * instead.
->   */
->  #define DRM_GEM_CMA_DRIVER_OPS_VMAP \
->  	DRM_GEM_CMA_DRIVER_OPS_VMAP_WITH_DUMB_CREATE(drm_gem_cma_dumb_create)
+> 
+> 
+> 
+>> Best regards
+>> Thomas
+>>
+>>>
+>>>>  	.fops			= &rcar_du_fops,
+>>>>  	.name			= "rcar-du",
+>>>>  	.desc			= "Renesas R-Car Display Unit",
+>>>
+>>
 > 
 
 -- 
-Regards,
+Thomas Zimmermann
+Graphics Driver Developer
+SUSE Software Solutions Germany GmbH
+Maxfeldstr. 5, 90409 N?rnberg, Germany
+(HRB 36809, AG N?rnberg)
+Gesch?ftsf?hrer: Felix Imend?rffer
 
-Laurent Pinchart
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 488 bytes
+Desc: OpenPGP digital signature
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20200603/6368b264/attachment-0001.sig>
