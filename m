@@ -1,16 +1,16 @@
 From: Thomas Zimmermann <tzimmermann@suse.de>
-Date: Wed,  3 Jun 2020 10:31:11 +0200
-Subject: [PATCH v2 02/23] drm/arc: Use GEM CMA object functions
+Date: Wed,  3 Jun 2020 10:31:12 +0200
+Subject: [PATCH v2 03/23] drm/arm: Use GEM CMA object functions
 In-Reply-To: <20200603083132.4610-1-tzimmermann@suse.de>
 References: <20200603083132.4610-1-tzimmermann@suse.de>
-Message-ID: <20200603083132.4610-3-tzimmermann@suse.de>
+Message-ID: <20200603083132.4610-4-tzimmermann@suse.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The arc driver uses the default implementation for CMA functions. The
+The arm driver uses the default implementation for CMA functions. The
 DRM_GEM_CMA_DRIVER_OPS macro now sets these defaults in struct drm_driver.
 
 Using DRM_GEM_CMA_DRIVER_OPS introduces several changes: the driver now
@@ -23,25 +23,26 @@ by drm_gem_prime_mmap(), which goes through GEM file operations. These
 changes have been part of the aspeed driver for some time.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+Acked-by: Liviu Dudau <liviu.dudau@arm.com>
 Acked-by: Emil Velikov <emil.velikov@collabora.com>
 ---
- drivers/gpu/drm/arc/arcpgu_drv.c | 12 +-----------
+ drivers/gpu/drm/arm/hdlcd_drv.c | 12 +-----------
  1 file changed, 1 insertion(+), 11 deletions(-)
 
-diff --git a/drivers/gpu/drm/arc/arcpgu_drv.c b/drivers/gpu/drm/arc/arcpgu_drv.c
-index c05d001163e0e..f164818ec477a 100644
---- a/drivers/gpu/drm/arc/arcpgu_drv.c
-+++ b/drivers/gpu/drm/arc/arcpgu_drv.c
-@@ -154,17 +154,7 @@ static struct drm_driver arcpgu_drm_driver = {
- 	.minor = 0,
- 	.patchlevel = 0,
- 	.fops = &arcpgu_drm_ops,
--	.dumb_create = drm_gem_cma_dumb_create,
--	.prime_handle_to_fd = drm_gem_prime_handle_to_fd,
--	.prime_fd_to_handle = drm_gem_prime_fd_to_handle,
+diff --git a/drivers/gpu/drm/arm/hdlcd_drv.c b/drivers/gpu/drm/arm/hdlcd_drv.c
+index 194419f47c5e5..c83b81a3a582a 100644
+--- a/drivers/gpu/drm/arm/hdlcd_drv.c
++++ b/drivers/gpu/drm/arm/hdlcd_drv.c
+@@ -240,17 +240,7 @@ static struct drm_driver hdlcd_driver = {
+ 	.irq_preinstall = hdlcd_irq_preinstall,
+ 	.irq_postinstall = hdlcd_irq_postinstall,
+ 	.irq_uninstall = hdlcd_irq_uninstall,
 -	.gem_free_object_unlocked = drm_gem_cma_free_object,
 -	.gem_print_info = drm_gem_cma_print_info,
 -	.gem_vm_ops = &drm_gem_cma_vm_ops,
+-	.dumb_create = drm_gem_cma_dumb_create,
+-	.prime_handle_to_fd = drm_gem_prime_handle_to_fd,
+-	.prime_fd_to_handle = drm_gem_prime_fd_to_handle,
 -	.gem_prime_get_sg_table = drm_gem_cma_prime_get_sg_table,
 -	.gem_prime_import_sg_table = drm_gem_cma_prime_import_sg_table,
 -	.gem_prime_vmap = drm_gem_cma_prime_vmap,
@@ -49,7 +50,7 @@ index c05d001163e0e..f164818ec477a 100644
 -	.gem_prime_mmap = drm_gem_cma_prime_mmap,
 +	DRM_GEM_CMA_DRIVER_OPS,
  #ifdef CONFIG_DEBUG_FS
- 	.debugfs_init = arcpgu_debugfs_init,
+ 	.debugfs_init = hdlcd_debugfs_init,
  #endif
 -- 
 2.26.2
