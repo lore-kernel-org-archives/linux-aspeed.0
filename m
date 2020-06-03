@@ -1,96 +1,568 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Fri, 26 Feb 2021 08:31:14 +0000
-Subject: [PATCH 2/4] mfd: simple-mfd-i2c: Adds Ampere's Altra SMpro support
-In-Reply-To: <20210225101854.13896-3-quan@os.amperecomputing.com>
-References: <20210225101854.13896-1-quan@os.amperecomputing.com>
- <20210225101854.13896-3-quan@os.amperecomputing.com>
-Message-ID: <20210226083114.GE641347@dell>
+From: Ben Pai <Ben_Pai@wistron.com>
+Date: Wed, 3 Jun 2020 17:26:22 +0800
+Subject: [PATCH v1] ARM: dts: aspeed: mihawk: add aliases for i2c and add
+ thermal sensor
+Message-ID: <20200603092622.1404-1-Ben_Pai@wistron.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, 25 Feb 2021, Quan Nguyen wrote:
+1.Set the bus id for each mux channel to avoid switching channels
+multiple times
+2.Set smbus_en of IO expander to 1 in order to be able to read tmp401
+sensor
+3.Add 8 tmp401 thermal sensors
 
-> Adds an MFD driver for SMpro found on the Mt.Jade hardware reference
-> platform with Ampere's Altra processor family.
-> 
-> Signed-off-by: Quan Nguyen <quan@os.amperecomputing.com>
-> ---
->  drivers/mfd/Kconfig          | 10 ++++++++++
->  drivers/mfd/simple-mfd-i2c.c | 15 +++++++++++++--
->  2 files changed, 23 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
-> index b74efa469e90..5414371bdea1 100644
-> --- a/drivers/mfd/Kconfig
-> +++ b/drivers/mfd/Kconfig
-> @@ -77,6 +77,16 @@ config MFD_AS3711
->  	help
->  	  Support for the AS3711 PMIC from AMS
->  
-> +config MFD_SMPRO
-> +	tristate "Ampere Computing MFD SMpro core driver"
-> +	select MFD_SIMPLE_MFD_I2C
+Signed-off-by: Ben Pai <Ben_Pai@wistron.com>
+---
+ arch/arm/boot/dts/aspeed-bmc-opp-mihawk.dts | 449 +++++++++++++++++++-
+ 1 file changed, 444 insertions(+), 5 deletions(-)
 
-Nice to see another user here.
-
-> +	help
-> +	  Say yes here to enable SMpro driver support for Ampere's Altra
-> +	  processor family.
-> +
-> +	  Ampere's Altra SMpro exposes an I2C regmap interface that can
-> +	  be accessed by child devices.
-> +
->  config MFD_AS3722
->  	tristate "ams AS3722 Power Management IC"
->  	select MFD_CORE
-> diff --git a/drivers/mfd/simple-mfd-i2c.c b/drivers/mfd/simple-mfd-i2c.c
-> index 87f684cff9a1..0459a9fbd3f5 100644
-> --- a/drivers/mfd/simple-mfd-i2c.c
-> +++ b/drivers/mfd/simple-mfd-i2c.c
-> @@ -21,14 +21,24 @@ static const struct regmap_config simple_regmap_config = {
->  	.val_bits = 8,
->  };
->  
-> +static const struct regmap_config simple_word_regmap_config = {
-> +	.reg_bits = 8,
-> +	.val_bits = 16,
-> +};
-> +
->  static int simple_mfd_i2c_probe(struct i2c_client *i2c)
->  {
->  	const struct regmap_config *config;
->  	struct regmap *regmap;
->  
->  	config = device_get_match_data(&i2c->dev);
-> -	if (!config)
-> -		config = &simple_regmap_config;
-> +	if (!config) {
-> +		if (of_device_is_compatible(i2c->dev.of_node,
-> +						"ampere,ac01-smpro"))
-
-Could you use 'struct of_device_id's .data attribute instead please?
-
-> +			config = &simple_word_regmap_config;
-> +		else
-> +			config = &simple_regmap_config;
-> +	}
->  
->  	regmap = devm_regmap_init_i2c(i2c, config);
->  	if (IS_ERR(regmap))
-> @@ -39,6 +49,7 @@ static int simple_mfd_i2c_probe(struct i2c_client *i2c)
->  
->  static const struct of_device_id simple_mfd_i2c_of_match[] = {
->  	{ .compatible = "kontron,sl28cpld" },
-> +	{ .compatible = "ampere,ac01-smpro" },
->  	{}
->  };
->  MODULE_DEVICE_TABLE(of, simple_mfd_i2c_of_match);
-
+diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-mihawk.dts b/arch/arm/boot/dts/aspeed-bmc-opp-mihawk.dts
+index f7e935ede919..78451b283d93 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-opp-mihawk.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-opp-mihawk.dts
+@@ -7,7 +7,52 @@
+ / {
+ 	model = "Mihawk BMC";
+ 	compatible = "ibm,mihawk-bmc", "aspeed,ast2500";
+-
++	aliases {
++		i2c215 = &bus6_mux215;
++		i2c216 = &bus6_mux216;
++		i2c217 = &bus6_mux217;
++		i2c218 = &bus6_mux218;
++		i2c219 = &bus6_mux219;
++		i2c220 = &bus6_mux220;
++		i2c221 = &bus6_mux221;
++		i2c222 = &bus6_mux222;
++		i2c223 = &bus7_mux223;
++		i2c224 = &bus7_mux224;
++		i2c225 = &bus7_mux225;
++		i2c226 = &bus7_mux226;
++		i2c227 = &bus7_mux227;
++		i2c228 = &bus7_mux228;
++		i2c229 = &bus7_mux229;
++		i2c230 = &bus7_mux230;
++		i2c231 = &bus9_mux231;
++		i2c232 = &bus9_mux232;
++		i2c233 = &bus9_mux233;
++		i2c234 = &bus9_mux234;
++		i2c235 = &bus9_mux235;
++		i2c236 = &bus9_mux236;
++		i2c237 = &bus9_mux237;
++		i2c238 = &bus9_mux238;
++		i2c239 = &bus10_mux239;
++		i2c240 = &bus10_mux240;
++		i2c241 = &bus10_mux241;
++		i2c242 = &bus10_mux242;
++		i2c243 = &bus10_mux243;
++		i2c244 = &bus10_mux244;
++		i2c245 = &bus10_mux245;
++		i2c246 = &bus10_mux246;
++		i2c247 = &bus12_mux247;
++		i2c248 = &bus12_mux248;
++		i2c249 = &bus12_mux249;
++		i2c250 = &bus12_mux250;
++		i2c251 = &bus13_mux251;
++		i2c252 = &bus13_mux252;
++		i2c253 = &bus13_mux253;
++		i2c254 = &bus13_mux254;
++		i2c255 = &bus13_mux255;
++		i2c256 = &bus13_mux256;
++		i2c257 = &bus13_mux257;
++		i2c258 = &bus13_mux258;
++	};
+ 
+ 	chosen {
+ 		stdout-path = &uart5;
+@@ -630,6 +675,55 @@
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+ 		reg = <0x70>;
++
++		bus6_mux215: i2c at 0 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0>;
++		};
++
++		bus6_mux216: i2c at 1 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <1>;
++		};
++
++		bus6_mux217: i2c at 2 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <2>;
++		};
++
++		bus6_mux218: i2c at 3 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <3>;
++		};
++
++		bus6_mux219: i2c at 4 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <4>;
++		};
++
++		bus6_mux220: i2c at 5 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <5>;
++		};
++
++		bus6_mux221: i2c at 6 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <6>;
++		};
++
++		bus6_mux222: i2c at 7 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <7>;
++		};
++
+ 	};
+ 
+ };
+@@ -644,6 +738,55 @@
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+ 		reg = <0x70>;
++
++		bus7_mux223: i2c at 0 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0>;
++		};
++
++		bus7_mux224: i2c at 1 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <1>;
++		};
++
++		bus7_mux225: i2c at 2 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <2>;
++		};
++
++		bus7_mux226: i2c at 3 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <3>;
++		};
++
++		bus7_mux227: i2c at 4 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <4>;
++		};
++
++		bus7_mux228: i2c at 5 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <5>;
++		};
++
++		bus7_mux229: i2c at 6 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <6>;
++		};
++
++		bus7_mux230: i2c at 7 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <7>;
++		};
++
+ 	};
+ 
+ };
+@@ -684,6 +827,68 @@
+ 		i2c-mux-idle-disconnect;
+ 		interrupt-controller;
+ 		#interrupt-cells = <2>;
++
++		bus9_mux231: i2c at 0 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0>;
++
++			tca9554 at 39 {
++				compatible = "ti,tca9554";
++				reg = <0x39>;
++				gpio-controller;
++				#gpio-cells = <2>;
++
++				smbus0 {
++					gpio-hog;
++					gpios = <4 GPIO_ACTIVE_HIGH>;
++					output-high;
++					line-name = "smbus0";
++				};
++			};
++
++			tmp431 at 4c {
++				compatible = "ti,tmp401";
++				reg = <0x4c>;
++			};
++		};
++
++		bus9_mux232: i2c at 1 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <1>;
++
++			tca9554 at 39 {
++				compatible = "ti,tca9554";
++				reg = <0x39>;
++				gpio-controller;
++				#gpio-cells = <2>;
++
++				smbus1 {
++					gpio-hog;
++					gpios = <4 GPIO_ACTIVE_HIGH>;
++					output-high;
++					line-name = "smbus1";
++				};
++			};
++
++			tmp431 at 4c {
++				compatible = "ti,tmp401";
++				reg = <0x4c>;
++			};
++		};
++
++		bus9_mux233: i2c at 2 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <2>;
++		};
++
++		bus9_mux234: i2c at 3 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <3>;
++		};
+ 	};
+ 
+ 	pca9545 at 71 {
+@@ -695,6 +900,68 @@
+ 		i2c-mux-idle-disconnect;
+ 		interrupt-controller;
+ 		#interrupt-cells = <2>;
++
++		bus9_mux235: i2c at 0 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0>;
++
++			tca9554 at 39 {
++				compatible = "ti,tca9554";
++				reg = <0x39>;
++				gpio-controller;
++				#gpio-cells = <2>;
++
++				smbus2 {
++					gpio-hog;
++					gpios = <4 GPIO_ACTIVE_HIGH>;
++					output-high;
++					line-name = "smbus2";
++				};
++			};
++
++			tmp431 at 4c {
++				compatible = "ti,tmp401";
++				reg = <0x4c>;
++			};
++		};
++
++		bus9_mux236: i2c at 1 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <1>;
++
++			tca9554 at 39 {
++				compatible = "ti,tca9554";
++				reg = <0x39>;
++				gpio-controller;
++				#gpio-cells = <2>;
++
++				smbus3 {
++					gpio-hog;
++					gpios = <4 GPIO_ACTIVE_HIGH>;
++					output-high;
++					line-name = "smbus3";
++				};
++			};
++
++			tmp431 at 4c {
++				compatible = "ti,tmp401";
++				reg = <0x4c>;
++			};
++		};
++
++		bus9_mux237: i2c at 2 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <2>;
++		};
++
++		bus9_mux238: i2c at 3 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <3>;
++		};
+ 	};
+ };
+ 
+@@ -725,6 +992,68 @@
+ 		i2c-mux-idle-disconnect;
+ 		interrupt-controller;
+ 		#interrupt-cells = <2>;
++
++		bus10_mux239: i2c at 0 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0>;
++
++			tca9554 at 39 {
++				compatible = "ti,tca9554";
++				reg = <0x39>;
++				gpio-controller;
++				#gpio-cells = <2>;
++
++				smbus4 {
++					gpio-hog;
++					gpios = <4 GPIO_ACTIVE_HIGH>;
++					output-high;
++					line-name = "smbus4";
++				};
++			};
++
++			tmp431 at 4c {
++				compatible = "ti,tmp401";
++				reg = <0x4c>;
++			};
++		};
++
++		bus10_mux240: i2c at 1 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <1>;
++
++			tca9554 at 39 {
++				compatible = "ti,tca9554";
++				reg = <0x39>;
++				gpio-controller;
++				#gpio-cells = <2>;
++
++				smbus5 {
++					gpio-hog;
++					gpios = <4 GPIO_ACTIVE_HIGH>;
++					output-high;
++					line-name = "smbus5";
++				};
++			};
++
++			tmp431 at 4c {
++				compatible = "ti,tmp401";
++				reg = <0x4c>;
++			};
++		};
++
++		bus10_mux241: i2c at 2 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <2>;
++		};
++
++		bus10_mux242: i2c at 3 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <3>;
++		};
+ 	};
+ 
+ 	pca9545 at 71 {
+@@ -736,6 +1065,68 @@
+ 		i2c-mux-idle-disconnect;
+ 		interrupt-controller;
+ 		#interrupt-cells = <2>;
++
++		bus10_mux243: i2c at 0 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0>;
++
++			tca9554 at 39 {
++				compatible = "ti,tca9554";
++				reg = <0x39>;
++				gpio-controller;
++				#gpio-cells = <2>;
++
++				smbus6 {
++					gpio-hog;
++					gpios = <4 GPIO_ACTIVE_HIGH>;
++					output-high;
++					line-name = "smbus6";
++				};
++			};
++
++			tmp431 at 4c {
++				compatible = "ti,tmp401";
++				reg = <0x4c>;
++			};
++		};
++
++		bus10_mux244: i2c at 1 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <1>;
++
++			tca9554 at 39 {
++				compatible = "ti,tca9554";
++				reg = <0x39>;
++				gpio-controller;
++				#gpio-cells = <2>;
++
++				smbus7 {
++					gpio-hog;
++					gpios = <4 GPIO_ACTIVE_HIGH>;
++					output-high;
++					line-name = "smbus7";
++				};
++			};
++
++			tmp431 at 4c {
++				compatible = "ti,tmp401";
++				reg = <0x4c>;
++			};
++		};
++
++		bus10_mux245: i2c at 2 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <2>;
++		};
++
++		bus10_mux246: i2c at 3 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <3>;
++		};
+ 	};
+ };
+ 
+@@ -796,7 +1187,7 @@
+ 		interrupt-controller;
+ 		#interrupt-cells = <2>;
+ 
+-		i2c at 0 {
++		bus12_mux247: i2c at 0 {
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 			reg = <0>;
+@@ -807,7 +1198,7 @@
+ 			};
+ 		};
+ 
+-		i2c at 1 {
++		bus12_mux248: i2c at 1 {
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 			reg = <1>;
+@@ -818,7 +1209,7 @@
+ 			};
+ 		};
+ 
+-		i2c at 2 {
++		bus12_mux249: i2c at 2 {
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 			reg = <2>;
+@@ -829,7 +1220,7 @@
+ 			};
+ 		};
+ 
+-		i2c at 3 {
++		bus12_mux250: i2c at 3 {
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 			reg = <3>;
+@@ -857,6 +1248,54 @@
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+ 		reg = <0x70>;
++
++		bus13_mux251: i2c at 0 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0>;
++		};
++
++		bus13_mux252: i2c at 1 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <1>;
++		};
++
++		bus13_mux253: i2c at 2 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <2>;
++		};
++
++		bus13_mux254: i2c at 3 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <3>;
++		};
++
++		bus13_mux255: i2c at 4 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <4>;
++		};
++
++		bus13_mux256: i2c at 5 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <5>;
++		};
++
++		bus13_mux257: i2c at 6 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <6>;
++		};
++
++		bus13_mux258: i2c at 7 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <7>;
++		};
+ 	};
+ };
+ 
 -- 
-Lee Jones [???]
-Senior Technical Lead - Developer Services
-Linaro.org ? Open source software for Arm SoCs
-Follow Linaro: Facebook | Twitter | Blog
+2.17.1
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------
+This email contains confidential or legally privileged information and is for the sole use of its intended recipient. 
+Any unauthorized review, use, copying or distribution of this email or the content of this email is strictly prohibited.
+If you are not the intended recipient, you may reply to the sender and should delete this e-mail immediately.
+---------------------------------------------------------------------------------------------------------------------------------------------------------------
