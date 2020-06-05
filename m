@@ -1,106 +1,54 @@
 From: Thomas Zimmermann <tzimmermann@suse.de>
-Date: Fri,  5 Jun 2020 09:32:05 +0200
-Subject: [PATCH v3 01/43] drm/cma-helper: Rename symbols from drm_cma_gem_ to
- drm_gem_cma_
+Date: Fri,  5 Jun 2020 09:32:08 +0200
+Subject: [PATCH v3 04/43] drm/arc: Use GEM CMA object functions
 In-Reply-To: <20200605073247.4057-1-tzimmermann@suse.de>
 References: <20200605073247.4057-1-tzimmermann@suse.de>
-Message-ID: <20200605073247.4057-2-tzimmermann@suse.de>
+Message-ID: <20200605073247.4057-5-tzimmermann@suse.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This fixes the naming of several symbols within CMA helpers. No functional
-changes are made.
+Create GEM objects with drm_gem_cma_create_object_default_funcs(), which
+allocates the object and sets CMA's default object functions. Corresponding
+callbacks in struct drm_driver are cleared. No functional changes are made.
+
+Driver and object-function instances use the same callback functions, with
+the exception of vunmap. The implementation of vunmap is empty and left out
+in CMA's default object functions.
+
+v3:
+	* convert to DRIVER_OPS macro in a separate patch
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+Acked-by: Emil Velikov <emil.velikov@collabora.com>
 ---
- drivers/gpu/drm/aspeed/aspeed_gfx_drv.c |  2 +-
- drivers/gpu/drm/drm_gem_cma_helper.c    | 10 +++++-----
- include/drm/drm_gem_cma_helper.h        |  4 ++--
- 3 files changed, 8 insertions(+), 8 deletions(-)
+ drivers/gpu/drm/arc/arcpgu_drv.c | 7 +------
+ 1 file changed, 1 insertion(+), 6 deletions(-)
 
-diff --git a/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c b/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
-index 6b27242b9ee3c..5e7ea0459d018 100644
---- a/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
-+++ b/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
-@@ -188,7 +188,7 @@ DEFINE_DRM_GEM_CMA_FOPS(fops);
- 
- static struct drm_driver aspeed_gfx_driver = {
- 	.driver_features        = DRIVER_GEM | DRIVER_MODESET | DRIVER_ATOMIC,
--	.gem_create_object	= drm_cma_gem_create_object_default_funcs,
-+	.gem_create_object	= drm_gem_cma_create_object_default_funcs,
- 	.dumb_create		= drm_gem_cma_dumb_create,
- 	.prime_handle_to_fd	= drm_gem_prime_handle_to_fd,
- 	.prime_fd_to_handle	= drm_gem_prime_fd_to_handle,
-diff --git a/drivers/gpu/drm/drm_gem_cma_helper.c b/drivers/gpu/drm/drm_gem_cma_helper.c
-index b3db3ca7bd7a7..842e2fa332354 100644
---- a/drivers/gpu/drm/drm_gem_cma_helper.c
-+++ b/drivers/gpu/drm/drm_gem_cma_helper.c
-@@ -572,7 +572,7 @@ void drm_gem_cma_prime_vunmap(struct drm_gem_object *obj, void *vaddr)
- }
- EXPORT_SYMBOL_GPL(drm_gem_cma_prime_vunmap);
- 
--static const struct drm_gem_object_funcs drm_cma_gem_default_funcs = {
-+static const struct drm_gem_object_funcs drm_gem_cma_default_funcs = {
- 	.free = drm_gem_cma_free_object,
- 	.print_info = drm_gem_cma_print_info,
- 	.get_sg_table = drm_gem_cma_prime_get_sg_table,
-@@ -581,7 +581,7 @@ static const struct drm_gem_object_funcs drm_cma_gem_default_funcs = {
- };
- 
- /**
-- * drm_cma_gem_create_object_default_funcs - Create a CMA GEM object with a
-+ * drm_gem_cma_create_object_default_funcs - Create a CMA GEM object with a
-  *                                           default function table
-  * @dev: DRM device
-  * @size: Size of the object to allocate
-@@ -593,7 +593,7 @@ static const struct drm_gem_object_funcs drm_cma_gem_default_funcs = {
-  * A pointer to a allocated GEM object or an error pointer on failure.
-  */
- struct drm_gem_object *
--drm_cma_gem_create_object_default_funcs(struct drm_device *dev, size_t size)
-+drm_gem_cma_create_object_default_funcs(struct drm_device *dev, size_t size)
- {
- 	struct drm_gem_cma_object *cma_obj;
- 
-@@ -601,11 +601,11 @@ drm_cma_gem_create_object_default_funcs(struct drm_device *dev, size_t size)
- 	if (!cma_obj)
- 		return NULL;
- 
--	cma_obj->base.funcs = &drm_cma_gem_default_funcs;
-+	cma_obj->base.funcs = &drm_gem_cma_default_funcs;
- 
- 	return &cma_obj->base;
- }
--EXPORT_SYMBOL(drm_cma_gem_create_object_default_funcs);
-+EXPORT_SYMBOL(drm_gem_cma_create_object_default_funcs);
- 
- /**
-  * drm_gem_cma_prime_import_sg_table_vmap - PRIME import another driver's
-diff --git a/include/drm/drm_gem_cma_helper.h b/include/drm/drm_gem_cma_helper.h
-index 947ac95eb24a9..64b7e9d42129a 100644
---- a/include/drm/drm_gem_cma_helper.h
-+++ b/include/drm/drm_gem_cma_helper.h
-@@ -107,7 +107,7 @@ void *drm_gem_cma_prime_vmap(struct drm_gem_object *obj);
- void drm_gem_cma_prime_vunmap(struct drm_gem_object *obj, void *vaddr);
- 
- struct drm_gem_object *
--drm_cma_gem_create_object_default_funcs(struct drm_device *dev, size_t size);
-+drm_gem_cma_create_object_default_funcs(struct drm_device *dev, size_t size);
- 
- /**
-  * DRM_GEM_CMA_VMAP_DRIVER_OPS - CMA GEM driver operations ensuring a virtual
-@@ -118,7 +118,7 @@ drm_cma_gem_create_object_default_funcs(struct drm_device *dev, size_t size);
-  * imported buffers.
-  */
- #define DRM_GEM_CMA_VMAP_DRIVER_OPS \
--	.gem_create_object	= drm_cma_gem_create_object_default_funcs, \
-+	.gem_create_object	= drm_gem_cma_create_object_default_funcs, \
- 	.dumb_create		= drm_gem_cma_dumb_create, \
- 	.prime_handle_to_fd	= drm_gem_prime_handle_to_fd, \
- 	.prime_fd_to_handle	= drm_gem_prime_fd_to_handle, \
+diff --git a/drivers/gpu/drm/arc/arcpgu_drv.c b/drivers/gpu/drm/arc/arcpgu_drv.c
+index c05d001163e0e..64ddd998aa44b 100644
+--- a/drivers/gpu/drm/arc/arcpgu_drv.c
++++ b/drivers/gpu/drm/arc/arcpgu_drv.c
+@@ -154,16 +154,11 @@ static struct drm_driver arcpgu_drm_driver = {
+ 	.minor = 0,
+ 	.patchlevel = 0,
+ 	.fops = &arcpgu_drm_ops,
++	.gem_create_object = drm_gem_cma_create_object_default_funcs,
+ 	.dumb_create = drm_gem_cma_dumb_create,
+ 	.prime_handle_to_fd = drm_gem_prime_handle_to_fd,
+ 	.prime_fd_to_handle = drm_gem_prime_fd_to_handle,
+-	.gem_free_object_unlocked = drm_gem_cma_free_object,
+-	.gem_print_info = drm_gem_cma_print_info,
+-	.gem_vm_ops = &drm_gem_cma_vm_ops,
+-	.gem_prime_get_sg_table = drm_gem_cma_prime_get_sg_table,
+ 	.gem_prime_import_sg_table = drm_gem_cma_prime_import_sg_table,
+-	.gem_prime_vmap = drm_gem_cma_prime_vmap,
+-	.gem_prime_vunmap = drm_gem_cma_prime_vunmap,
+ 	.gem_prime_mmap = drm_gem_cma_prime_mmap,
+ #ifdef CONFIG_DEBUG_FS
+ 	.debugfs_init = arcpgu_debugfs_init,
 -- 
 2.26.2
 
