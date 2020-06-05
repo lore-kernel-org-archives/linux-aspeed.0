@@ -1,56 +1,99 @@
-From: Emil Velikov <emil.l.velikov@gmail.com>
-Date: Fri, 5 Jun 2020 16:40:07 +0100
-Subject: [PATCH v3 00/43] Convert most CMA-based drivers to GEM object
- functions
+From: Thomas Zimmermann <tzimmermann@suse.de>
+Date: Fri,  5 Jun 2020 09:32:07 +0200
+Subject: [PATCH v3 03/43] drm/cma-helper: Add DRM_GEM_CMA_DRIVER_OPS to set
+ default GEM CMA functions
 In-Reply-To: <20200605073247.4057-1-tzimmermann@suse.de>
 References: <20200605073247.4057-1-tzimmermann@suse.de>
-Message-ID: <CACvgo501LS_pcuiM_=BonJTnWEkcjC4m5yueEeJyv_c9Q8MAvQ@mail.gmail.com>
+Message-ID: <20200605073247.4057-4-tzimmermann@suse.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Thomas,
+The macro to DRM_GEM_CMA_DRIVER_OPS sets GEM callbacks in struct drm_driver
+to their defaults for CMA. An variant of the macro is provided for drivers
+that override the default .dumb_create callback. Adapt drivers to the changes.
 
-On Fri, 5 Jun 2020 at 08:33, Thomas Zimmermann <tzimmermann@suse.de> wrote:
->
-> Most of the CMA-based drivers use the default implementation for the
-> callbacks in struct drm_driver. With this patch, these interfaces are
-> initialized with a common helper macro and GEM object functions replace
-> several deprecated interfaces.
->
-> To address Laurent's comment on the amount of changes per patch, I re-
-> organized the series.
->
->  1) There are now DRIVER_OPS macros for drivers that require a virtual
->     address on imported buffers, and macros for drivers that don't. Therefore,
->     drivers don't switch to drm_gem_cma_prime_import_sg_table_vmap()
->     implicitly when they begin using the DRIVER_OPS macro.
->
->  2) I split each driver's patch into two: the first converts the driver to
->     GEM CMA object functions, the second introduces the DRIVER_OPS macro.
->     Neither patch should result in a functional change. I kept existing R-b
->     and A-b tags on both patches. Existing Tested-by tags are only on the
->     final patch, as that's closest to what has been tested.
->
->  3) I dropped the conversion to drm_gem_prime_mmap() from the patchset. As
->     part of this change, the CMA object functions could provide an mmap
->     function, which is worth it's own series. The patch for aspeed requires
->     drm_gem_prime_mmap(), so I removed it from the series.
->
-> Patches 1 to 3 update the existing macro and helper to similar naming as with
-> SHMEM, add a new DRIVER_OPS macro, and add helpers for drivers that override
-> the default implementation for .dumb_create(). The remaining patches up to
-> the final one convert the drivers. The kirin driver also changes to the
-> default dumb_create function. The final patch deletes .gem_print_info from
-> struct drm_driver.
->
-> I don't have much of the hardware, so it's only compile-tested on aarch64,
-> arm and x86-64 only. Several patches have Tested-by tags.
->
+Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+Reviewed-by: Sam Ravnborg <sam@ravnborg.org>
+Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Acked-by: Emil Velikov <emil.velikov@collabora.com>
+---
+ include/drm/drm_gem_cma_helper.h | 46 +++++++++++++++++++++++++++++---
+ 1 file changed, 43 insertions(+), 3 deletions(-)
 
-For the whole updated series:
-Reviewed-by: Emil Velikov <emil.velikov@collabora.com>
+diff --git a/include/drm/drm_gem_cma_helper.h b/include/drm/drm_gem_cma_helper.h
+index 2cdf333ae585d..5e1e595c0e72d 100644
+--- a/include/drm/drm_gem_cma_helper.h
++++ b/include/drm/drm_gem_cma_helper.h
+@@ -109,6 +109,42 @@ void drm_gem_cma_prime_vunmap(struct drm_gem_object *obj, void *vaddr);
+ struct drm_gem_object *
+ drm_gem_cma_create_object_default_funcs(struct drm_device *dev, size_t size);
+ 
++/**
++ * DRM_GEM_CMA_DRIVER_OPS_WITH_DUMB_CREATE - CMA GEM driver operations
++ * @dumb_create_func: callback function for .dumb_create
++ *
++ * This macro provides a shortcut for setting the default GEM operations in the
++ * &drm_driver structure.
++ *
++ * This macro is a variant of DRM_GEM_CMA_DRIVER_OPS for drivers that
++ * override the default implementation of &struct rm_driver.dumb_create. Use
++ * DRM_GEM_CMA_DRIVER_OPS if possible. Drivers that require a virtual address
++ * on imported buffers should use
++ * DRM_GEM_CMA_DRIVER_OPS_VMAP_WITH_DUMB_CREATE() instead.
++ */
++#define DRM_GEM_CMA_DRIVER_OPS_WITH_DUMB_CREATE(dumb_create_func) \
++	.gem_create_object	= drm_gem_cma_create_object_default_funcs, \
++	.dumb_create		= (dumb_create_func), \
++	.prime_handle_to_fd	= drm_gem_prime_handle_to_fd, \
++	.prime_fd_to_handle	= drm_gem_prime_fd_to_handle, \
++	.gem_prime_import_sg_table = drm_gem_cma_prime_import_sg_table, \
++	.gem_prime_mmap		= drm_gem_cma_prime_mmap
++
++/**
++ * DRM_GEM_CMA_DRIVER_OPS - CMA GEM driver operations
++ *
++ * This macro provides a shortcut for setting the default GEM operations in the
++ * &drm_driver structure.
++ *
++ * Drivers that come with their own implementation of
++ * &struct drm_driver.dumb_create should use
++ * DRM_GEM_CMA_DRIVER_OPS_WITH_DUMB_CREATE() instead. Use
++ * DRM_GEM_CMA_DRIVER_OPS if possible. Drivers that require a virtual address
++ * on imported buffers should use DRM_GEM_CMA_DRIVER_OPS_VMAP instead.
++ */
++#define DRM_GEM_CMA_DRIVER_OPS \
++	DRM_GEM_CMA_DRIVER_OPS_WITH_DUMB_CREATE(drm_gem_cma_dumb_create)
++
+ /**
+  * DRM_GEM_CMA_DRIVER_OPS_VMAP_WITH_DUMB_CREATE - CMA GEM driver operations
+  *                                                ensuring a virtual address
+@@ -120,8 +156,10 @@ drm_gem_cma_create_object_default_funcs(struct drm_device *dev, size_t size);
+  * imported buffers.
+  *
+  * This macro is a variant of DRM_GEM_CMA_DRIVER_OPS_VMAP for drivers that
+- * override the default implementation of &struct rm_driver.dumb_create. Use
+- * DRM_GEM_CMA_DRIVER_OPS_VMAP if possible.
++ * override the default implementation of &struct drm_driver.dumb_create. Use
++ * DRM_GEM_CMA_DRIVER_OPS_VMAP if possible. Drivers that do not require a
++ * virtual address on imported buffers should use
++ * DRM_GEM_CMA_DRIVER_OPS_WITH_DUMB_CREATE() instead.
+  */
+ #define DRM_GEM_CMA_DRIVER_OPS_VMAP_WITH_DUMB_CREATE(dumb_create_func) \
+ 	.gem_create_object	= drm_gem_cma_create_object_default_funcs, \
+@@ -142,7 +180,9 @@ drm_gem_cma_create_object_default_funcs(struct drm_device *dev, size_t size);
+  * Drivers that come with their own implementation of
+  * &struct drm_driver.dumb_create should use
+  * DRM_GEM_CMA_DRIVER_OPS_VMAP_WITH_DUMB_CREATE() instead. Use
+- * DRM_GEM_CMA_DRIVER_OPS_VMAP if possible.
++ * DRM_GEM_CMA_DRIVER_OPS_VMAP if possible. Drivers that do not require a
++ * virtual address on imported buffers should use DRM_GEM_CMA_DRIVER_OPS
++ * instead.
+  */
+ #define DRM_GEM_CMA_DRIVER_OPS_VMAP \
+ 	DRM_GEM_CMA_DRIVER_OPS_VMAP_WITH_DUMB_CREATE(drm_gem_cma_dumb_create)
+-- 
+2.26.2
 
--Emil
