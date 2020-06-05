@@ -1,66 +1,66 @@
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Date: Wed,  3 Jun 2020 10:31:32 +0200
-Subject: [PATCH v2 23/23] drm: Remove struct drm_driver.gem_print_info
-In-Reply-To: <20200603083132.4610-1-tzimmermann@suse.de>
-References: <20200603083132.4610-1-tzimmermann@suse.de>
-Message-ID: <20200603083132.4610-24-tzimmermann@suse.de>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Fri, 5 Jun 2020 11:20:40 +0300
+Subject: [PATCH v3 31/43] drm/shmobile: Use GEM CMA object functions
+In-Reply-To: <20200605073247.4057-32-tzimmermann@suse.de>
+References: <20200605073247.4057-1-tzimmermann@suse.de>
+ <20200605073247.4057-32-tzimmermann@suse.de>
+Message-ID: <20200605082040.GB9325@pendragon.ideasonboard.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The .gem_print_info callback in struct drm_driver is obsolete and has
-no users left. Remove it.
+Hi Thomas,
 
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-Suggested-by: Emil Velikov <emil.velikov@collabora.com>
----
- drivers/gpu/drm/drm_gem.c |  2 --
- include/drm/drm_drv.h     | 17 -----------------
- 2 files changed, 19 deletions(-)
+Thank you for the patch.
 
-diff --git a/drivers/gpu/drm/drm_gem.c b/drivers/gpu/drm/drm_gem.c
-index efc0367841e2b..08b3fa27ec406 100644
---- a/drivers/gpu/drm/drm_gem.c
-+++ b/drivers/gpu/drm/drm_gem.c
-@@ -1191,8 +1191,6 @@ void drm_gem_print_info(struct drm_printer *p, unsigned int indent,
- 
- 	if (obj->funcs && obj->funcs->print_info)
- 		obj->funcs->print_info(p, indent, obj);
--	else if (obj->dev->driver->gem_print_info)
--		obj->dev->driver->gem_print_info(p, indent, obj);
- }
- 
- int drm_gem_pin(struct drm_gem_object *obj)
-diff --git a/include/drm/drm_drv.h b/include/drm/drm_drv.h
-index bb924cddc09c1..8f110a28b6a23 100644
---- a/include/drm/drm_drv.h
-+++ b/include/drm/drm_drv.h
-@@ -353,23 +353,6 @@ struct drm_driver {
- 	 */
- 	void (*gem_close_object) (struct drm_gem_object *, struct drm_file *);
- 
--	/**
--	 * @gem_print_info:
--	 *
--	 * This callback is deprecated in favour of
--	 * &drm_gem_object_funcs.print_info.
--	 *
--	 * If driver subclasses struct &drm_gem_object, it can implement this
--	 * optional hook for printing additional driver specific info.
--	 *
--	 * drm_printf_indent() should be used in the callback passing it the
--	 * indent argument.
--	 *
--	 * This callback is called from drm_gem_print_info().
--	 */
--	void (*gem_print_info)(struct drm_printer *p, unsigned int indent,
--			       const struct drm_gem_object *obj);
--
- 	/**
- 	 * @gem_create_object: constructor for gem objects
- 	 *
+On Fri, Jun 05, 2020 at 09:32:35AM +0200, Thomas Zimmermann wrote:
+> Create GEM objects with drm_gem_cma_create_object_default_funcs(), which
+> allocates the object and sets CMA's default object functions. Corresponding
+> callbacks in struct drm_driver are cleared. No functional changes are made.
+> 
+> Driver and object-function instances use the same callback functions, with
+> the exception of vunmap. The implementation of vunmap is empty and left out
+> in CMA's default object functions.
+> 
+> v3:
+> 	* convert to DRIVER_OPS macro in a separate patch
+> 
+> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+> Acked-by: Emil Velikov <emil.velikov@collabora.com>
+
+Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+
+> ---
+>  drivers/gpu/drm/shmobile/shmob_drm_drv.c | 6 +-----
+>  1 file changed, 1 insertion(+), 5 deletions(-)
+> 
+> diff --git a/drivers/gpu/drm/shmobile/shmob_drm_drv.c b/drivers/gpu/drm/shmobile/shmob_drm_drv.c
+> index ae9d6b8d3ca87..e209610d4b8a1 100644
+> --- a/drivers/gpu/drm/shmobile/shmob_drm_drv.c
+> +++ b/drivers/gpu/drm/shmobile/shmob_drm_drv.c
+> @@ -131,14 +131,10 @@ DEFINE_DRM_GEM_CMA_FOPS(shmob_drm_fops);
+>  static struct drm_driver shmob_drm_driver = {
+>  	.driver_features	= DRIVER_GEM | DRIVER_MODESET,
+>  	.irq_handler		= shmob_drm_irq,
+> -	.gem_free_object_unlocked = drm_gem_cma_free_object,
+> -	.gem_vm_ops		= &drm_gem_cma_vm_ops,
+> +	.gem_create_object	= drm_gem_cma_create_object_default_funcs,
+>  	.prime_handle_to_fd	= drm_gem_prime_handle_to_fd,
+>  	.prime_fd_to_handle	= drm_gem_prime_fd_to_handle,
+> -	.gem_prime_get_sg_table	= drm_gem_cma_prime_get_sg_table,
+>  	.gem_prime_import_sg_table = drm_gem_cma_prime_import_sg_table,
+> -	.gem_prime_vmap		= drm_gem_cma_prime_vmap,
+> -	.gem_prime_vunmap	= drm_gem_cma_prime_vunmap,
+>  	.gem_prime_mmap		= drm_gem_cma_prime_mmap,
+>  	.dumb_create		= drm_gem_cma_dumb_create,
+>  	.fops			= &shmob_drm_fops,
+> -- 
+> 2.26.2
+> 
+
 -- 
-2.26.2
+Regards,
 
+Laurent Pinchart
