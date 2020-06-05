@@ -1,52 +1,48 @@
 From: Thomas Zimmermann <tzimmermann@suse.de>
-Date: Fri,  5 Jun 2020 09:32:33 +0200
-Subject: [PATCH v3 29/43] drm/rcar-du: Use GEM CMA object functions
+Date: Fri,  5 Jun 2020 09:32:34 +0200
+Subject: [PATCH v3 30/43] drm/rcar-du: Set GEM CMA functions with
+ DRM_GEM_CMA_DRIVER_OPS_WITH_DUMB_CREATE
 In-Reply-To: <20200605073247.4057-1-tzimmermann@suse.de>
 References: <20200605073247.4057-1-tzimmermann@suse.de>
-Message-ID: <20200605073247.4057-30-tzimmermann@suse.de>
+Message-ID: <20200605073247.4057-31-tzimmermann@suse.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Create GEM objects with drm_gem_cma_create_object_default_funcs(), which
-allocates the object and sets CMA's default object functions. Corresponding
-callbacks in struct drm_driver are cleared. No functional changes are made.
+DRM_GEM_CMA_DRIVER_OPS_WITH_DUMB_CREATE sets the functions in
+struct drm_driver to their defaults. No functional changes are
+made.
 
-Driver and object-function instances use the same callback functions, with
-the exception of vunmap. The implementation of vunmap is empty and left out
-in CMA's default object functions.
-
-v3:
-	* convert to DRIVER_OPS macro in a separate patch
+v2:
+	* update for DRM_GEM_CMA_DRIVER_OPS_WITH_DUMB_CREATE
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+Tested-by: Kieran Bingham <kieran.bingham+renesas@ideasonboard.com>
 Acked-by: Emil Velikov <emil.velikov@collabora.com>
 ---
- drivers/gpu/drm/rcar-du/rcar_du_drv.c | 6 +-----
- 1 file changed, 1 insertion(+), 5 deletions(-)
+ drivers/gpu/drm/rcar-du/rcar_du_drv.c | 7 +------
+ 1 file changed, 1 insertion(+), 6 deletions(-)
 
 diff --git a/drivers/gpu/drm/rcar-du/rcar_du_drv.c b/drivers/gpu/drm/rcar-du/rcar_du_drv.c
-index 3e67cf70f0402..43610d5bf8820 100644
+index 43610d5bf8820..f53b0ec710850 100644
 --- a/drivers/gpu/drm/rcar-du/rcar_du_drv.c
 +++ b/drivers/gpu/drm/rcar-du/rcar_du_drv.c
-@@ -476,14 +476,10 @@ DEFINE_DRM_GEM_CMA_FOPS(rcar_du_fops);
+@@ -476,12 +476,7 @@ DEFINE_DRM_GEM_CMA_FOPS(rcar_du_fops);
  
  static struct drm_driver rcar_du_driver = {
  	.driver_features	= DRIVER_GEM | DRIVER_MODESET | DRIVER_ATOMIC,
--	.gem_free_object_unlocked = drm_gem_cma_free_object,
--	.gem_vm_ops		= &drm_gem_cma_vm_ops,
-+	.gem_create_object	= drm_gem_cma_create_object_default_funcs,
- 	.prime_handle_to_fd	= drm_gem_prime_handle_to_fd,
- 	.prime_fd_to_handle	= drm_gem_prime_fd_to_handle,
--	.gem_prime_get_sg_table	= drm_gem_cma_prime_get_sg_table,
- 	.gem_prime_import_sg_table = drm_gem_cma_prime_import_sg_table,
--	.gem_prime_vmap		= drm_gem_cma_prime_vmap,
--	.gem_prime_vunmap	= drm_gem_cma_prime_vunmap,
- 	.gem_prime_mmap		= drm_gem_cma_prime_mmap,
- 	.dumb_create		= rcar_du_dumb_create,
+-	.gem_create_object	= drm_gem_cma_create_object_default_funcs,
+-	.prime_handle_to_fd	= drm_gem_prime_handle_to_fd,
+-	.prime_fd_to_handle	= drm_gem_prime_fd_to_handle,
+-	.gem_prime_import_sg_table = drm_gem_cma_prime_import_sg_table,
+-	.gem_prime_mmap		= drm_gem_cma_prime_mmap,
+-	.dumb_create		= rcar_du_dumb_create,
++	DRM_GEM_CMA_DRIVER_OPS_WITH_DUMB_CREATE(rcar_du_dumb_create),
  	.fops			= &rcar_du_fops,
+ 	.name			= "rcar-du",
+ 	.desc			= "Renesas R-Car Display Unit",
 -- 
 2.26.2
 
