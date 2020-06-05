@@ -1,10 +1,10 @@
 From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Fri, 5 Jun 2020 11:20:40 +0300
-Subject: [PATCH v3 31/43] drm/shmobile: Use GEM CMA object functions
-In-Reply-To: <20200605073247.4057-32-tzimmermann@suse.de>
+Date: Fri, 5 Jun 2020 11:23:43 +0300
+Subject: [PATCH v3 29/43] drm/rcar-du: Use GEM CMA object functions
+In-Reply-To: <20200605073247.4057-30-tzimmermann@suse.de>
 References: <20200605073247.4057-1-tzimmermann@suse.de>
- <20200605073247.4057-32-tzimmermann@suse.de>
-Message-ID: <20200605082040.GB9325@pendragon.ideasonboard.com>
+ <20200605073247.4057-30-tzimmermann@suse.de>
+Message-ID: <20200605082343.GC9325@pendragon.ideasonboard.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -15,7 +15,7 @@ Hi Thomas,
 
 Thank you for the patch.
 
-On Fri, Jun 05, 2020 at 09:32:35AM +0200, Thomas Zimmermann wrote:
+On Fri, Jun 05, 2020 at 09:32:33AM +0200, Thomas Zimmermann wrote:
 > Create GEM objects with drm_gem_cma_create_object_default_funcs(), which
 > allocates the object and sets CMA's default object functions. Corresponding
 > callbacks in struct drm_driver are cleared. No functional changes are made.
@@ -33,17 +33,17 @@ On Fri, Jun 05, 2020 at 09:32:35AM +0200, Thomas Zimmermann wrote:
 Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 
 > ---
->  drivers/gpu/drm/shmobile/shmob_drm_drv.c | 6 +-----
+>  drivers/gpu/drm/rcar-du/rcar_du_drv.c | 6 +-----
 >  1 file changed, 1 insertion(+), 5 deletions(-)
 > 
-> diff --git a/drivers/gpu/drm/shmobile/shmob_drm_drv.c b/drivers/gpu/drm/shmobile/shmob_drm_drv.c
-> index ae9d6b8d3ca87..e209610d4b8a1 100644
-> --- a/drivers/gpu/drm/shmobile/shmob_drm_drv.c
-> +++ b/drivers/gpu/drm/shmobile/shmob_drm_drv.c
-> @@ -131,14 +131,10 @@ DEFINE_DRM_GEM_CMA_FOPS(shmob_drm_fops);
->  static struct drm_driver shmob_drm_driver = {
->  	.driver_features	= DRIVER_GEM | DRIVER_MODESET,
->  	.irq_handler		= shmob_drm_irq,
+> diff --git a/drivers/gpu/drm/rcar-du/rcar_du_drv.c b/drivers/gpu/drm/rcar-du/rcar_du_drv.c
+> index 3e67cf70f0402..43610d5bf8820 100644
+> --- a/drivers/gpu/drm/rcar-du/rcar_du_drv.c
+> +++ b/drivers/gpu/drm/rcar-du/rcar_du_drv.c
+> @@ -476,14 +476,10 @@ DEFINE_DRM_GEM_CMA_FOPS(rcar_du_fops);
+>  
+>  static struct drm_driver rcar_du_driver = {
+>  	.driver_features	= DRIVER_GEM | DRIVER_MODESET | DRIVER_ATOMIC,
 > -	.gem_free_object_unlocked = drm_gem_cma_free_object,
 > -	.gem_vm_ops		= &drm_gem_cma_vm_ops,
 > +	.gem_create_object	= drm_gem_cma_create_object_default_funcs,
@@ -54,11 +54,8 @@ Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 > -	.gem_prime_vmap		= drm_gem_cma_prime_vmap,
 > -	.gem_prime_vunmap	= drm_gem_cma_prime_vunmap,
 >  	.gem_prime_mmap		= drm_gem_cma_prime_mmap,
->  	.dumb_create		= drm_gem_cma_dumb_create,
->  	.fops			= &shmob_drm_fops,
-> -- 
-> 2.26.2
-> 
+>  	.dumb_create		= rcar_du_dumb_create,
+>  	.fops			= &rcar_du_fops,
 
 -- 
 Regards,
