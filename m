@@ -1,65 +1,54 @@
-From: Neil Armstrong <narmstrong@baylibre.com>
-Date: Thu, 4 Jun 2020 09:59:21 +0200
-Subject: [PATCH v2 14/23] drm/meson: Use GEM CMA object functions
-In-Reply-To: <20200603083132.4610-15-tzimmermann@suse.de>
-References: <20200603083132.4610-1-tzimmermann@suse.de>
- <20200603083132.4610-15-tzimmermann@suse.de>
-Message-ID: <678d58a0-f254-8054-1d9d-a34fc001d1f1@baylibre.com>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Fri, 5 Jun 2020 11:13:05 +0300
+Subject: [PATCH v3 32/43] drm/shmobile: Set GEM CMA functions with
+ DRM_GEM_CMA_DRIVER_OPS
+In-Reply-To: <20200605073247.4057-33-tzimmermann@suse.de>
+References: <20200605073247.4057-1-tzimmermann@suse.de>
+ <20200605073247.4057-33-tzimmermann@suse.de>
+Message-ID: <20200605081305.GA10638@pendragon.ideasonboard.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 03/06/2020 10:31, Thomas Zimmermann wrote:
-> The meson driver uses the default implementation for CMA functions; except
-> for the .dumb_create callback. The DRM_GEM_CMA_DRIVER_OPS_WITH_DUMB_CREATE()
-> macro now sets these defaults and .dumb_create in struct drm_driver.
-> 
-> By using DRM_GEM_CMA_DRIVER_OPS_WITH_DUMB_CREATE() the driver now
-> sets .gem_create_object to drm_cma_gem_create_object_default_funcs(),
-> which sets CMA GEM object functions. GEM object functions implement the
-> rsp operations where possible. Corresponding interfaces in struct drm_driver
-> are cleared. Prime import now uses drm_gem_cma_prime_import_sg_table_vmap(),
-> which maps the imported buffer upon import. Mmap operations are performed
-> by drm_gem_prime_mmap(), which goes through GEM file operations. These
-> changes have been part of the aspeed driver for some time.
-> 
-> v2:
-> 	* update for DRM_GEM_CMA_DRIVER_OPS_WITH_DUMB_CREATE
+Hi Thomas,
+
+Thank you for the patch.
+
+On Fri, Jun 05, 2020 at 09:32:36AM +0200, Thomas Zimmermann wrote:
+> DRM_GEM_CMA_DRIVER_OPS sets the functions in struct drm_driver
+> to their defaults. No functional changes are made.
 > 
 > Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 > Acked-by: Emil Velikov <emil.velikov@collabora.com>
+
+Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+
 > ---
->  drivers/gpu/drm/meson/meson_drv.c | 15 ++-------------
->  1 file changed, 2 insertions(+), 13 deletions(-)
+>  drivers/gpu/drm/shmobile/shmob_drm_drv.c | 7 +------
+>  1 file changed, 1 insertion(+), 6 deletions(-)
 > 
-> diff --git a/drivers/gpu/drm/meson/meson_drv.c b/drivers/gpu/drm/meson/meson_drv.c
-> index 4c5aafcec7991..8b9c8dd788c41 100644
-> --- a/drivers/gpu/drm/meson/meson_drv.c
-> +++ b/drivers/gpu/drm/meson/meson_drv.c
-> @@ -96,19 +96,8 @@ static struct drm_driver meson_driver = {
->  	/* IRQ */
->  	.irq_handler		= meson_irq,
->  
-> -	/* PRIME Ops */
+> diff --git a/drivers/gpu/drm/shmobile/shmob_drm_drv.c b/drivers/gpu/drm/shmobile/shmob_drm_drv.c
+> index e209610d4b8a1..26a15c214bd3f 100644
+> --- a/drivers/gpu/drm/shmobile/shmob_drm_drv.c
+> +++ b/drivers/gpu/drm/shmobile/shmob_drm_drv.c
+> @@ -131,12 +131,7 @@ DEFINE_DRM_GEM_CMA_FOPS(shmob_drm_fops);
+>  static struct drm_driver shmob_drm_driver = {
+>  	.driver_features	= DRIVER_GEM | DRIVER_MODESET,
+>  	.irq_handler		= shmob_drm_irq,
+> -	.gem_create_object	= drm_gem_cma_create_object_default_funcs,
 > -	.prime_handle_to_fd	= drm_gem_prime_handle_to_fd,
 > -	.prime_fd_to_handle	= drm_gem_prime_fd_to_handle,
-> -	.gem_prime_get_sg_table	= drm_gem_cma_prime_get_sg_table,
 > -	.gem_prime_import_sg_table = drm_gem_cma_prime_import_sg_table,
-> -	.gem_prime_vmap		= drm_gem_cma_prime_vmap,
-> -	.gem_prime_vunmap	= drm_gem_cma_prime_vunmap,
 > -	.gem_prime_mmap		= drm_gem_cma_prime_mmap,
-> -
-> -	/* GEM Ops */
-> -	.dumb_create		= meson_dumb_create,
-> -	.gem_free_object_unlocked = drm_gem_cma_free_object,
-> -	.gem_vm_ops		= &drm_gem_cma_vm_ops,
-> +	/* CMA Ops */
-> +	DRM_GEM_CMA_DRIVER_OPS_WITH_DUMB_CREATE(meson_dumb_create),
->  
->  	/* Misc */
->  	.fops			= &fops,
-> 
+> -	.dumb_create		= drm_gem_cma_dumb_create,
+> +	DRM_GEM_CMA_DRIVER_OPS,
+>  	.fops			= &shmob_drm_fops,
+>  	.name			= "shmob-drm",
+>  	.desc			= "Renesas SH Mobile DRM",
 
-Acked-by: Neil Armstrong <narmstrong@baylibre.com>
+-- 
+Regards,
+
+Laurent Pinchart
