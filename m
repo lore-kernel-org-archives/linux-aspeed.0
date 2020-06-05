@@ -1,10 +1,10 @@
 From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Fri, 5 Jun 2020 11:23:43 +0300
-Subject: [PATCH v3 29/43] drm/rcar-du: Use GEM CMA object functions
-In-Reply-To: <20200605073247.4057-30-tzimmermann@suse.de>
+Date: Fri, 5 Jun 2020 11:37:29 +0300
+Subject: [PATCH v3 43/43] drm: Remove struct drm_driver.gem_print_info
+In-Reply-To: <20200605073247.4057-44-tzimmermann@suse.de>
 References: <20200605073247.4057-1-tzimmermann@suse.de>
- <20200605073247.4057-30-tzimmermann@suse.de>
-Message-ID: <20200605082343.GC9325@pendragon.ideasonboard.com>
+ <20200605073247.4057-44-tzimmermann@suse.de>
+Message-ID: <20200605083729.GA11426@pendragon.ideasonboard.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -15,47 +15,64 @@ Hi Thomas,
 
 Thank you for the patch.
 
-On Fri, Jun 05, 2020 at 09:32:33AM +0200, Thomas Zimmermann wrote:
-> Create GEM objects with drm_gem_cma_create_object_default_funcs(), which
-> allocates the object and sets CMA's default object functions. Corresponding
-> callbacks in struct drm_driver are cleared. No functional changes are made.
-> 
-> Driver and object-function instances use the same callback functions, with
-> the exception of vunmap. The implementation of vunmap is empty and left out
-> in CMA's default object functions.
-> 
-> v3:
-> 	* convert to DRIVER_OPS macro in a separate patch
-> 
+On Fri, Jun 05, 2020 at 09:32:47AM +0200, Thomas Zimmermann wrote:
+> The .gem_print_info callback in struct drm_driver is obsolete and has
+> no users left. Remove it.
+
+I like code removal :-) Looking forward to the removal of more
+GEM-related fields from struct drm_driver.
+
 > Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> Acked-by: Emil Velikov <emil.velikov@collabora.com>
+> Suggested-by: Emil Velikov <emil.velikov@collabora.com>
 
 Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 
 > ---
->  drivers/gpu/drm/rcar-du/rcar_du_drv.c | 6 +-----
->  1 file changed, 1 insertion(+), 5 deletions(-)
+>  drivers/gpu/drm/drm_gem.c |  2 --
+>  include/drm/drm_drv.h     | 17 -----------------
+>  2 files changed, 19 deletions(-)
 > 
-> diff --git a/drivers/gpu/drm/rcar-du/rcar_du_drv.c b/drivers/gpu/drm/rcar-du/rcar_du_drv.c
-> index 3e67cf70f0402..43610d5bf8820 100644
-> --- a/drivers/gpu/drm/rcar-du/rcar_du_drv.c
-> +++ b/drivers/gpu/drm/rcar-du/rcar_du_drv.c
-> @@ -476,14 +476,10 @@ DEFINE_DRM_GEM_CMA_FOPS(rcar_du_fops);
+> diff --git a/drivers/gpu/drm/drm_gem.c b/drivers/gpu/drm/drm_gem.c
+> index efc0367841e2b..08b3fa27ec406 100644
+> --- a/drivers/gpu/drm/drm_gem.c
+> +++ b/drivers/gpu/drm/drm_gem.c
+> @@ -1191,8 +1191,6 @@ void drm_gem_print_info(struct drm_printer *p, unsigned int indent,
 >  
->  static struct drm_driver rcar_du_driver = {
->  	.driver_features	= DRIVER_GEM | DRIVER_MODESET | DRIVER_ATOMIC,
-> -	.gem_free_object_unlocked = drm_gem_cma_free_object,
-> -	.gem_vm_ops		= &drm_gem_cma_vm_ops,
-> +	.gem_create_object	= drm_gem_cma_create_object_default_funcs,
->  	.prime_handle_to_fd	= drm_gem_prime_handle_to_fd,
->  	.prime_fd_to_handle	= drm_gem_prime_fd_to_handle,
-> -	.gem_prime_get_sg_table	= drm_gem_cma_prime_get_sg_table,
->  	.gem_prime_import_sg_table = drm_gem_cma_prime_import_sg_table,
-> -	.gem_prime_vmap		= drm_gem_cma_prime_vmap,
-> -	.gem_prime_vunmap	= drm_gem_cma_prime_vunmap,
->  	.gem_prime_mmap		= drm_gem_cma_prime_mmap,
->  	.dumb_create		= rcar_du_dumb_create,
->  	.fops			= &rcar_du_fops,
+>  	if (obj->funcs && obj->funcs->print_info)
+>  		obj->funcs->print_info(p, indent, obj);
+> -	else if (obj->dev->driver->gem_print_info)
+> -		obj->dev->driver->gem_print_info(p, indent, obj);
+>  }
+>  
+>  int drm_gem_pin(struct drm_gem_object *obj)
+> diff --git a/include/drm/drm_drv.h b/include/drm/drm_drv.h
+> index bb924cddc09c1..8f110a28b6a23 100644
+> --- a/include/drm/drm_drv.h
+> +++ b/include/drm/drm_drv.h
+> @@ -353,23 +353,6 @@ struct drm_driver {
+>  	 */
+>  	void (*gem_close_object) (struct drm_gem_object *, struct drm_file *);
+>  
+> -	/**
+> -	 * @gem_print_info:
+> -	 *
+> -	 * This callback is deprecated in favour of
+> -	 * &drm_gem_object_funcs.print_info.
+> -	 *
+> -	 * If driver subclasses struct &drm_gem_object, it can implement this
+> -	 * optional hook for printing additional driver specific info.
+> -	 *
+> -	 * drm_printf_indent() should be used in the callback passing it the
+> -	 * indent argument.
+> -	 *
+> -	 * This callback is called from drm_gem_print_info().
+> -	 */
+> -	void (*gem_print_info)(struct drm_printer *p, unsigned int indent,
+> -			       const struct drm_gem_object *obj);
+> -
+>  	/**
+>  	 * @gem_create_object: constructor for gem objects
+>  	 *
 
 -- 
 Regards,
