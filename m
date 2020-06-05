@@ -1,204 +1,29 @@
 From: Ben Pai <Ben_Pai@wistron.com>
-Date: Wed, 3 Jun 2020 17:26:22 +0800
-Subject: [PATCH v1] ARM: dts: aspeed: mihawk: add aliases for i2c and add
- thermal sensor
-Message-ID: <20200603092622.1404-1-Ben_Pai@wistron.com>
+Date: Fri, 5 Jun 2020 18:06:14 +0800
+Subject: [PATCH v1 1/2] ARM: dts: aspeed: mihawk: IO expander uses TCA9554
+ driver
+Message-ID: <20200605100614.14726-1-Ben_Pai@wistron.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-1.Set the bus id for each mux channel to avoid switching channels
-multiple times
-2.Set smbus_en of IO expander to 1 in order to be able to read tmp401
-sensor
-3.Add 8 tmp401 thermal sensors
+Set smbus_en of IO expander to 1 in order to be able to read sensor.
 
 Signed-off-by: Ben Pai <Ben_Pai@wistron.com>
 ---
- arch/arm/boot/dts/aspeed-bmc-opp-mihawk.dts | 449 +++++++++++++++++++-
- 1 file changed, 444 insertions(+), 5 deletions(-)
+ arch/arm/boot/dts/aspeed-bmc-opp-mihawk.dts | 112 ++++++++++++++++++++
+ 1 file changed, 112 insertions(+)
 
 diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-mihawk.dts b/arch/arm/boot/dts/aspeed-bmc-opp-mihawk.dts
-index f7e935ede919..78451b283d93 100644
+index eac6ed2bbc67..25ffe65fbdc0 100644
 --- a/arch/arm/boot/dts/aspeed-bmc-opp-mihawk.dts
 +++ b/arch/arm/boot/dts/aspeed-bmc-opp-mihawk.dts
-@@ -7,7 +7,52 @@
- / {
- 	model = "Mihawk BMC";
- 	compatible = "ibm,mihawk-bmc", "aspeed,ast2500";
--
-+	aliases {
-+		i2c215 = &bus6_mux215;
-+		i2c216 = &bus6_mux216;
-+		i2c217 = &bus6_mux217;
-+		i2c218 = &bus6_mux218;
-+		i2c219 = &bus6_mux219;
-+		i2c220 = &bus6_mux220;
-+		i2c221 = &bus6_mux221;
-+		i2c222 = &bus6_mux222;
-+		i2c223 = &bus7_mux223;
-+		i2c224 = &bus7_mux224;
-+		i2c225 = &bus7_mux225;
-+		i2c226 = &bus7_mux226;
-+		i2c227 = &bus7_mux227;
-+		i2c228 = &bus7_mux228;
-+		i2c229 = &bus7_mux229;
-+		i2c230 = &bus7_mux230;
-+		i2c231 = &bus9_mux231;
-+		i2c232 = &bus9_mux232;
-+		i2c233 = &bus9_mux233;
-+		i2c234 = &bus9_mux234;
-+		i2c235 = &bus9_mux235;
-+		i2c236 = &bus9_mux236;
-+		i2c237 = &bus9_mux237;
-+		i2c238 = &bus9_mux238;
-+		i2c239 = &bus10_mux239;
-+		i2c240 = &bus10_mux240;
-+		i2c241 = &bus10_mux241;
-+		i2c242 = &bus10_mux242;
-+		i2c243 = &bus10_mux243;
-+		i2c244 = &bus10_mux244;
-+		i2c245 = &bus10_mux245;
-+		i2c246 = &bus10_mux246;
-+		i2c247 = &bus12_mux247;
-+		i2c248 = &bus12_mux248;
-+		i2c249 = &bus12_mux249;
-+		i2c250 = &bus12_mux250;
-+		i2c251 = &bus13_mux251;
-+		i2c252 = &bus13_mux252;
-+		i2c253 = &bus13_mux253;
-+		i2c254 = &bus13_mux254;
-+		i2c255 = &bus13_mux255;
-+		i2c256 = &bus13_mux256;
-+		i2c257 = &bus13_mux257;
-+		i2c258 = &bus13_mux258;
-+	};
- 
- 	chosen {
- 		stdout-path = &uart5;
-@@ -630,6 +675,55 @@
- 		#address-cells = <1>;
- 		#size-cells = <0>;
- 		reg = <0x70>;
-+
-+		bus6_mux215: i2c at 0 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <0>;
-+		};
-+
-+		bus6_mux216: i2c at 1 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <1>;
-+		};
-+
-+		bus6_mux217: i2c at 2 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <2>;
-+		};
-+
-+		bus6_mux218: i2c at 3 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <3>;
-+		};
-+
-+		bus6_mux219: i2c at 4 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <4>;
-+		};
-+
-+		bus6_mux220: i2c at 5 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <5>;
-+		};
-+
-+		bus6_mux221: i2c at 6 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <6>;
-+		};
-+
-+		bus6_mux222: i2c at 7 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <7>;
-+		};
-+
- 	};
- 
- };
-@@ -644,6 +738,55 @@
- 		#address-cells = <1>;
- 		#size-cells = <0>;
- 		reg = <0x70>;
-+
-+		bus7_mux223: i2c at 0 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <0>;
-+		};
-+
-+		bus7_mux224: i2c at 1 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <1>;
-+		};
-+
-+		bus7_mux225: i2c at 2 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <2>;
-+		};
-+
-+		bus7_mux226: i2c at 3 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <3>;
-+		};
-+
-+		bus7_mux227: i2c at 4 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <4>;
-+		};
-+
-+		bus7_mux228: i2c at 5 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <5>;
-+		};
-+
-+		bus7_mux229: i2c at 6 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <6>;
-+		};
-+
-+		bus7_mux230: i2c at 7 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <7>;
-+		};
-+
- 	};
- 
- };
-@@ -684,6 +827,68 @@
- 		i2c-mux-idle-disconnect;
- 		interrupt-controller;
- 		#interrupt-cells = <2>;
-+
-+		bus9_mux231: i2c at 0 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <0>;
+@@ -820,12 +820,40 @@
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 			reg = <0>;
 +
 +			tca9554 at 39 {
 +				compatible = "ti,tca9554";
@@ -213,17 +38,12 @@ index f7e935ede919..78451b283d93 100644
 +					line-name = "smbus0";
 +				};
 +			};
-+
-+			tmp431 at 4c {
-+				compatible = "ti,tmp401";
-+				reg = <0x4c>;
-+			};
-+		};
-+
-+		bus9_mux232: i2c at 1 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <1>;
+ 		};
+ 
+ 		bus9_mux232: i2c at 1 {
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 			reg = <1>;
 +
 +			tca9554 at 39 {
 +				compatible = "ti,tca9554";
@@ -238,36 +58,13 @@ index f7e935ede919..78451b283d93 100644
 +					line-name = "smbus1";
 +				};
 +			};
-+
-+			tmp431 at 4c {
-+				compatible = "ti,tmp401";
-+				reg = <0x4c>;
-+			};
-+		};
-+
-+		bus9_mux233: i2c at 2 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <2>;
-+		};
-+
-+		bus9_mux234: i2c at 3 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <3>;
-+		};
- 	};
+ 		};
  
- 	pca9545 at 71 {
-@@ -695,6 +900,68 @@
- 		i2c-mux-idle-disconnect;
- 		interrupt-controller;
- 		#interrupt-cells = <2>;
-+
-+		bus9_mux235: i2c at 0 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <0>;
+ 		bus9_mux233: i2c at 2 {
+@@ -855,12 +883,40 @@
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 			reg = <0>;
 +
 +			tca9554 at 39 {
 +				compatible = "ti,tca9554";
@@ -282,17 +79,12 @@ index f7e935ede919..78451b283d93 100644
 +					line-name = "smbus2";
 +				};
 +			};
-+
-+			tmp431 at 4c {
-+				compatible = "ti,tmp401";
-+				reg = <0x4c>;
-+			};
-+		};
-+
-+		bus9_mux236: i2c at 1 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <1>;
+ 		};
+ 
+ 		bus9_mux236: i2c at 1 {
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 			reg = <1>;
 +
 +			tca9554 at 39 {
 +				compatible = "ti,tca9554";
@@ -307,36 +99,13 @@ index f7e935ede919..78451b283d93 100644
 +					line-name = "smbus3";
 +				};
 +			};
-+
-+			tmp431 at 4c {
-+				compatible = "ti,tmp401";
-+				reg = <0x4c>;
-+			};
-+		};
-+
-+		bus9_mux237: i2c at 2 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <2>;
-+		};
-+
-+		bus9_mux238: i2c at 3 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <3>;
-+		};
- 	};
- };
+ 		};
  
-@@ -725,6 +992,68 @@
- 		i2c-mux-idle-disconnect;
- 		interrupt-controller;
- 		#interrupt-cells = <2>;
-+
-+		bus10_mux239: i2c at 0 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <0>;
+ 		bus9_mux237: i2c at 2 {
+@@ -909,12 +965,40 @@
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 			reg = <0>;
 +
 +			tca9554 at 39 {
 +				compatible = "ti,tca9554";
@@ -351,17 +120,12 @@ index f7e935ede919..78451b283d93 100644
 +					line-name = "smbus4";
 +				};
 +			};
-+
-+			tmp431 at 4c {
-+				compatible = "ti,tmp401";
-+				reg = <0x4c>;
-+			};
-+		};
-+
-+		bus10_mux240: i2c at 1 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <1>;
+ 		};
+ 
+ 		bus10_mux240: i2c at 1 {
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 			reg = <1>;
 +
 +			tca9554 at 39 {
 +				compatible = "ti,tca9554";
@@ -376,36 +140,13 @@ index f7e935ede919..78451b283d93 100644
 +					line-name = "smbus5";
 +				};
 +			};
-+
-+			tmp431 at 4c {
-+				compatible = "ti,tmp401";
-+				reg = <0x4c>;
-+			};
-+		};
-+
-+		bus10_mux241: i2c at 2 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <2>;
-+		};
-+
-+		bus10_mux242: i2c at 3 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <3>;
-+		};
- 	};
+ 		};
  
- 	pca9545 at 71 {
-@@ -736,6 +1065,68 @@
- 		i2c-mux-idle-disconnect;
- 		interrupt-controller;
- 		#interrupt-cells = <2>;
-+
-+		bus10_mux243: i2c at 0 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <0>;
+ 		bus10_mux241: i2c at 2 {
+@@ -944,12 +1028,40 @@
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 			reg = <0>;
 +
 +			tca9554 at 39 {
 +				compatible = "ti,tca9554";
@@ -420,17 +161,12 @@ index f7e935ede919..78451b283d93 100644
 +					line-name = "smbus6";
 +				};
 +			};
-+
-+			tmp431 at 4c {
-+				compatible = "ti,tmp401";
-+				reg = <0x4c>;
-+			};
-+		};
-+
-+		bus10_mux244: i2c at 1 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <1>;
+ 		};
+ 
+ 		bus10_mux244: i2c at 1 {
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 			reg = <1>;
 +
 +			tca9554 at 39 {
 +				compatible = "ti,tca9554";
@@ -445,118 +181,9 @@ index f7e935ede919..78451b283d93 100644
 +					line-name = "smbus7";
 +				};
 +			};
-+
-+			tmp431 at 4c {
-+				compatible = "ti,tmp401";
-+				reg = <0x4c>;
-+			};
-+		};
-+
-+		bus10_mux245: i2c at 2 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <2>;
-+		};
-+
-+		bus10_mux246: i2c at 3 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <3>;
-+		};
- 	};
- };
- 
-@@ -796,7 +1187,7 @@
- 		interrupt-controller;
- 		#interrupt-cells = <2>;
- 
--		i2c at 0 {
-+		bus12_mux247: i2c at 0 {
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 			reg = <0>;
-@@ -807,7 +1198,7 @@
- 			};
  		};
  
--		i2c at 1 {
-+		bus12_mux248: i2c at 1 {
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 			reg = <1>;
-@@ -818,7 +1209,7 @@
- 			};
- 		};
- 
--		i2c at 2 {
-+		bus12_mux249: i2c at 2 {
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 			reg = <2>;
-@@ -829,7 +1220,7 @@
- 			};
- 		};
- 
--		i2c at 3 {
-+		bus12_mux250: i2c at 3 {
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 			reg = <3>;
-@@ -857,6 +1248,54 @@
- 		#address-cells = <1>;
- 		#size-cells = <0>;
- 		reg = <0x70>;
-+
-+		bus13_mux251: i2c at 0 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <0>;
-+		};
-+
-+		bus13_mux252: i2c at 1 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <1>;
-+		};
-+
-+		bus13_mux253: i2c at 2 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <2>;
-+		};
-+
-+		bus13_mux254: i2c at 3 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <3>;
-+		};
-+
-+		bus13_mux255: i2c at 4 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <4>;
-+		};
-+
-+		bus13_mux256: i2c at 5 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <5>;
-+		};
-+
-+		bus13_mux257: i2c at 6 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <6>;
-+		};
-+
-+		bus13_mux258: i2c at 7 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <7>;
-+		};
- 	};
- };
- 
+ 		bus10_mux245: i2c at 2 {
 -- 
 2.17.1
 
