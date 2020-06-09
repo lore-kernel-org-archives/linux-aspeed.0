@@ -1,33 +1,136 @@
-From: Joel Stanley <joel@jms.id.au>
-Date: Thu, 11 Jun 2020 12:05:12 +0000
-Subject: [PATCH v7] ARM: DTS: Aspeed: Add YADRO Nicole BMC
-In-Reply-To: <20200610081500.GA27959@bbwork.lan>
-References: <20200429113711.13183-1-a.filippov@yadro.com>
- <20200610081500.GA27959@bbwork.lan>
-Message-ID: <CACPK8XeGPBYcaR-Y2AtGsqfK3P722qWUU+46Op0S600Ohf4H_A@mail.gmail.com>
+From: Thomas Zimmermann <tzimmermann@suse.de>
+Date: Tue, 9 Jun 2020 11:45:18 +0200
+Subject: [PATCH v3 03/43] drm/cma-helper: Add DRM_GEM_CMA_DRIVER_OPS to
+ set default GEM CMA functions
+In-Reply-To: <20200605081613.GA9325@pendragon.ideasonboard.com>
+References: <20200605073247.4057-1-tzimmermann@suse.de>
+ <20200605073247.4057-4-tzimmermann@suse.de>
+ <20200605081613.GA9325@pendragon.ideasonboard.com>
+Message-ID: <ea77f730-935a-d03d-c50e-5e8cf17b949c@suse.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 10 Jun 2020 at 08:15, Alexander A. Filippov
-<a.filippov@yadro.com> wrote:
->
-> On Wed, Apr 29, 2020 at 02:37:11PM +0300, Alexander Filippov wrote:
-> > Nicole is an OpenPower machine with an Aspeed 2500 BMC SoC manufactured
-> > by YADRO.
-> >
-> > Signed-off-by: Alexander Filippov <a.filippov@yadro.com>
-> >
->
-> ping
+Hi
 
-Reviewed-by: Joel Stanley <joel@jms.id.au>
+Am 05.06.20 um 10:16 schrieb Laurent Pinchart:
+> Hi Thomas,
+> 
+> Thank you for the patch.
+> 
+> On Fri, Jun 05, 2020 at 09:32:07AM +0200, Thomas Zimmermann wrote:
+>> The macro to DRM_GEM_CMA_DRIVER_OPS sets GEM callbacks in struct drm_driver
+>> to their defaults for CMA. An variant of the macro is provided for drivers
+> 
+> s/An variant/A variant/
+> 
+>> that override the default .dumb_create callback. Adapt drivers to the changes.
+>>
+>> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+>> Reviewed-by: Sam Ravnborg <sam@ravnborg.org>
+>> Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+>> Acked-by: Emil Velikov <emil.velikov@collabora.com>
+>> ---
+>>  include/drm/drm_gem_cma_helper.h | 46 +++++++++++++++++++++++++++++---
+>>  1 file changed, 43 insertions(+), 3 deletions(-)
+>>
+>> diff --git a/include/drm/drm_gem_cma_helper.h b/include/drm/drm_gem_cma_helper.h
+>> index 2cdf333ae585d..5e1e595c0e72d 100644
+>> --- a/include/drm/drm_gem_cma_helper.h
+>> +++ b/include/drm/drm_gem_cma_helper.h
+>> @@ -109,6 +109,42 @@ void drm_gem_cma_prime_vunmap(struct drm_gem_object *obj, void *vaddr);
+>>  struct drm_gem_object *
+>>  drm_gem_cma_create_object_default_funcs(struct drm_device *dev, size_t size);
+>>  
+>> +/**
+>> + * DRM_GEM_CMA_DRIVER_OPS_WITH_DUMB_CREATE - CMA GEM driver operations
+>> + * @dumb_create_func: callback function for .dumb_create
+>> + *
+>> + * This macro provides a shortcut for setting the default GEM operations in the
+>> + * &drm_driver structure.
+>> + *
+>> + * This macro is a variant of DRM_GEM_CMA_DRIVER_OPS for drivers that
+>> + * override the default implementation of &struct rm_driver.dumb_create. Use
+>> + * DRM_GEM_CMA_DRIVER_OPS if possible. Drivers that require a virtual address
+>> + * on imported buffers should use
+>> + * DRM_GEM_CMA_DRIVER_OPS_VMAP_WITH_DUMB_CREATE() instead.
+>> + */
+>> +#define DRM_GEM_CMA_DRIVER_OPS_WITH_DUMB_CREATE(dumb_create_func) \
+>> +	.gem_create_object	= drm_gem_cma_create_object_default_funcs, \
+>> +	.dumb_create		= (dumb_create_func), \
+> 
+> Do we need parentheses here ?
 
-This missed the merge window for 5.8. I will queue it up after -rc1 is
-released for 5.9.
+That can probably be removed.
 
-Cheers,
+Best regards
+Thomas
 
-Joel
+> 
+>> +	.prime_handle_to_fd	= drm_gem_prime_handle_to_fd, \
+>> +	.prime_fd_to_handle	= drm_gem_prime_fd_to_handle, \
+>> +	.gem_prime_import_sg_table = drm_gem_cma_prime_import_sg_table, \
+>> +	.gem_prime_mmap		= drm_gem_cma_prime_mmap
+>> +
+>> +/**
+>> + * DRM_GEM_CMA_DRIVER_OPS - CMA GEM driver operations
+>> + *
+>> + * This macro provides a shortcut for setting the default GEM operations in the
+>> + * &drm_driver structure.
+>> + *
+>> + * Drivers that come with their own implementation of
+>> + * &struct drm_driver.dumb_create should use
+>> + * DRM_GEM_CMA_DRIVER_OPS_WITH_DUMB_CREATE() instead. Use
+>> + * DRM_GEM_CMA_DRIVER_OPS if possible. Drivers that require a virtual address
+>> + * on imported buffers should use DRM_GEM_CMA_DRIVER_OPS_VMAP instead.
+>> + */
+>> +#define DRM_GEM_CMA_DRIVER_OPS \
+>> +	DRM_GEM_CMA_DRIVER_OPS_WITH_DUMB_CREATE(drm_gem_cma_dumb_create)
+>> +
+>>  /**
+>>   * DRM_GEM_CMA_DRIVER_OPS_VMAP_WITH_DUMB_CREATE - CMA GEM driver operations
+>>   *                                                ensuring a virtual address
+>> @@ -120,8 +156,10 @@ drm_gem_cma_create_object_default_funcs(struct drm_device *dev, size_t size);
+>>   * imported buffers.
+>>   *
+>>   * This macro is a variant of DRM_GEM_CMA_DRIVER_OPS_VMAP for drivers that
+>> - * override the default implementation of &struct rm_driver.dumb_create. Use
+>> - * DRM_GEM_CMA_DRIVER_OPS_VMAP if possible.
+>> + * override the default implementation of &struct drm_driver.dumb_create. Use
+>> + * DRM_GEM_CMA_DRIVER_OPS_VMAP if possible. Drivers that do not require a
+>> + * virtual address on imported buffers should use
+>> + * DRM_GEM_CMA_DRIVER_OPS_WITH_DUMB_CREATE() instead.
+>>   */
+>>  #define DRM_GEM_CMA_DRIVER_OPS_VMAP_WITH_DUMB_CREATE(dumb_create_func) \
+>>  	.gem_create_object	= drm_gem_cma_create_object_default_funcs, \
+>> @@ -142,7 +180,9 @@ drm_gem_cma_create_object_default_funcs(struct drm_device *dev, size_t size);
+>>   * Drivers that come with their own implementation of
+>>   * &struct drm_driver.dumb_create should use
+>>   * DRM_GEM_CMA_DRIVER_OPS_VMAP_WITH_DUMB_CREATE() instead. Use
+>> - * DRM_GEM_CMA_DRIVER_OPS_VMAP if possible.
+>> + * DRM_GEM_CMA_DRIVER_OPS_VMAP if possible. Drivers that do not require a
+>> + * virtual address on imported buffers should use DRM_GEM_CMA_DRIVER_OPS
+>> + * instead.
+>>   */
+>>  #define DRM_GEM_CMA_DRIVER_OPS_VMAP \
+>>  	DRM_GEM_CMA_DRIVER_OPS_VMAP_WITH_DUMB_CREATE(drm_gem_cma_dumb_create)
+>>
+> 
+
+-- 
+Thomas Zimmermann
+Graphics Driver Developer
+SUSE Software Solutions Germany GmbH
+Maxfeldstr. 5, 90409 N?rnberg, Germany
+(HRB 36809, AG N?rnberg)
+Gesch?ftsf?hrer: Felix Imend?rffer
+
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 488 bytes
+Desc: OpenPGP digital signature
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20200609/8cfb749a/attachment-0001.sig>
