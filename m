@@ -1,61 +1,53 @@
-From: rentao.bupt@gmail.com <rentao.bupt@gmail.com>
-Date: Mon, 29 Jun 2020 17:08:51 -0700
-Subject: [PATCH 3/3] ARM: dts: aspeed: wedge40: enable pwm_tacho device
-In-Reply-To: <20200630000851.26879-1-rentao.bupt@gmail.com>
-References: <20200630000851.26879-1-rentao.bupt@gmail.com>
-Message-ID: <20200630000851.26879-4-rentao.bupt@gmail.com>
+From: Jyri Sarha <jsarha@ti.com>
+Date: Wed, 24 Jun 2020 12:03:29 +0300
+Subject: [PATCH v3 38/43] drm/tilcdc: Set GEM CMA functions with
+ DRM_GEM_CMA_DRIVER_OPS
+In-Reply-To: <20200605073247.4057-39-tzimmermann@suse.de>
+References: <20200605073247.4057-1-tzimmermann@suse.de>
+ <20200605073247.4057-39-tzimmermann@suse.de>
+Message-ID: <44a68de2-b176-f1c6-3865-ccd092ca3353@ti.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Tao Ren <rentao.bupt@gmail.com>
+On 05/06/2020 10:32, Thomas Zimmermann wrote:
+> DRM_GEM_CMA_DRIVER_OPS sets the functions in struct drm_driver
+> to their defaults. No functional changes are made.
+> 
+> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+> Acked-by: Emil Velikov <emil.velikov@collabora.com>
 
-Enable pwm_tacho device for fan control and monitoring in Wedge40.
+Reviewed-by: Jyri Sarha <jsarha@ti.com>
+Tested-by: Jyri Sarha <jsarha@ti.com>
 
-Signed-off-by: Tao Ren <rentao.bupt@gmail.com>
----
- .../boot/dts/aspeed-bmc-facebook-wedge40.dts  | 29 +++++++++++++++++++
- 1 file changed, 29 insertions(+)
+> ---
+>  drivers/gpu/drm/tilcdc/tilcdc_drv.c | 8 +-------
+>  1 file changed, 1 insertion(+), 7 deletions(-)
+> 
+> diff --git a/drivers/gpu/drm/tilcdc/tilcdc_drv.c b/drivers/gpu/drm/tilcdc/tilcdc_drv.c
+> index a6582325651bd..0d74a64432633 100644
+> --- a/drivers/gpu/drm/tilcdc/tilcdc_drv.c
+> +++ b/drivers/gpu/drm/tilcdc/tilcdc_drv.c
+> @@ -496,13 +496,7 @@ DEFINE_DRM_GEM_CMA_FOPS(fops);
+>  static struct drm_driver tilcdc_driver = {
+>  	.driver_features    = DRIVER_GEM | DRIVER_MODESET | DRIVER_ATOMIC,
+>  	.irq_handler        = tilcdc_irq,
+> -	.gem_create_object  = drm_gem_cma_create_object_default_funcs,
+> -	.dumb_create        = drm_gem_cma_dumb_create,
+> -
+> -	.prime_handle_to_fd	= drm_gem_prime_handle_to_fd,
+> -	.prime_fd_to_handle	= drm_gem_prime_fd_to_handle,
+> -	.gem_prime_import_sg_table = drm_gem_cma_prime_import_sg_table,
+> -	.gem_prime_mmap		= drm_gem_cma_prime_mmap,
+> +	DRM_GEM_CMA_DRIVER_OPS,
+>  #ifdef CONFIG_DEBUG_FS
+>  	.debugfs_init       = tilcdc_debugfs_init,
+>  #endif
+> 
 
-diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-wedge40.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-wedge40.dts
-index 1049cfa80ac2..8ac23ff6b09e 100644
---- a/arch/arm/boot/dts/aspeed-bmc-facebook-wedge40.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-facebook-wedge40.dts
-@@ -135,3 +135,32 @@
- &adc {
- 	status = "okay";
- };
-+
-+&pwm_tacho {
-+	status = "okay";
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pinctrl_pwm0_default
-+		     &pinctrl_pwm1_default
-+		     &pinctrl_pwm6_default
-+		     &pinctrl_pwm7_default>;
-+
-+	fan at 0 {
-+		reg = <0x00>;
-+		aspeed,fan-tach-ch = /bits/ 8 <0x00 0x01>;
-+	};
-+
-+	fan at 1 {
-+		reg = <0x01>;
-+		aspeed,fan-tach-ch = /bits/ 8 <0x02 0x03>;
-+	};
-+
-+	fan at 6 {
-+		reg = <0x06>;
-+		aspeed,fan-tach-ch = /bits/ 8 <0x04 0x05>;
-+	};
-+
-+	fan at 7 {
-+		reg = <0x07>;
-+		aspeed,fan-tach-ch = /bits/ 8 <0x06 0x07>;
-+	};
-+};
+
 -- 
-2.17.1
-
+Texas Instruments Finland Oy, Porkkalankatu 22, 00180 Helsinki.
+Y-tunnus/Business ID: 0615521-4. Kotipaikka/Domicile: Helsinki
