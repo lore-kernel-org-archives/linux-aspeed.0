@@ -1,9 +1,7 @@
 From: rentao.bupt@gmail.com <rentao.bupt@gmail.com>
-Date: Mon, 29 Jun 2020 17:08:50 -0700
-Subject: [PATCH 2/3] ARM: dts: aspeed: wedge40: enable adc device
-In-Reply-To: <20200630000851.26879-1-rentao.bupt@gmail.com>
-References: <20200630000851.26879-1-rentao.bupt@gmail.com>
-Message-ID: <20200630000851.26879-3-rentao.bupt@gmail.com>
+Date: Mon, 29 Jun 2020 17:08:48 -0700
+Subject: [PATCH 0/3] ARM: dts: aspeed: fixup wedge40 device tree
+Message-ID: <20200630000851.26879-1-rentao.bupt@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -12,38 +10,24 @@ Content-Transfer-Encoding: 7bit
 
 From: Tao Ren <rentao.bupt@gmail.com>
 
-Enable adc controller and corresponding voltage sensoring channels for
-Wedge40.
+The patch series update several devices' settings in Facebook Wedge40
+device tree.
 
-Signed-off-by: Tao Ren <rentao.bupt@gmail.com>
----
- arch/arm/boot/dts/aspeed-bmc-facebook-wedge40.dts | 9 +++++++++
- 1 file changed, 9 insertions(+)
+Patch #1 disables a few i2c controllers as they are not being used at
+present.
 
-diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-wedge40.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-wedge40.dts
-index aea23c313088..1049cfa80ac2 100644
---- a/arch/arm/boot/dts/aspeed-bmc-facebook-wedge40.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-facebook-wedge40.dts
-@@ -27,6 +27,11 @@
- 	memory at 40000000 {
- 		reg = <0x40000000 0x20000000>;
- 	};
-+
-+	ast-adc-hwmon {
-+		compatible = "iio-hwmon";
-+		io-channels = <&adc 5>, <&adc 6>, <&adc 7>, <&adc 8>, <&adc 9>;
-+	};
- };
- 
- &wdt1 {
-@@ -126,3 +131,7 @@
- &vhub {
- 	status = "okay";
- };
-+
-+&adc {
-+	status = "okay";
-+};
+Patch #2 enables adc device for voltage monitoring.
+
+Patch #3 enables pwm_tacho device for fan control and monitoring.
+
+Tao Ren (3):
+  ARM: dts: aspeed: wedge40: disable a few i2c controllers
+  ARM: dts: aspeed: wedge40: enable adc device
+  ARM: dts: aspeed: wedge40: enable pwm_tacho device
+
+ .../boot/dts/aspeed-bmc-facebook-wedge40.dts  | 42 +++++++++++++++----
+ 1 file changed, 34 insertions(+), 8 deletions(-)
+
 -- 
 2.17.1
 
