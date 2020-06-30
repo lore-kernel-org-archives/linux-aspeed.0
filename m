@@ -1,9 +1,9 @@
 From: rentao.bupt@gmail.com <rentao.bupt@gmail.com>
-Date: Mon, 29 Jun 2020 17:08:49 -0700
-Subject: [PATCH 1/3] ARM: dts: aspeed: wedge40: disable a few i2c controllers
+Date: Mon, 29 Jun 2020 17:08:51 -0700
+Subject: [PATCH 3/3] ARM: dts: aspeed: wedge40: enable pwm_tacho device
 In-Reply-To: <20200630000851.26879-1-rentao.bupt@gmail.com>
 References: <20200630000851.26879-1-rentao.bupt@gmail.com>
-Message-ID: <20200630000851.26879-2-rentao.bupt@gmail.com>
+Message-ID: <20200630000851.26879-4-rentao.bupt@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -12,44 +12,50 @@ Content-Transfer-Encoding: 7bit
 
 From: Tao Ren <rentao.bupt@gmail.com>
 
-Disable i2c bus #9, #10 and #13 as these i2c controllers are not used on
-Wedge40.
+Enable pwm_tacho device for fan control and monitoring in Wedge40.
 
 Signed-off-by: Tao Ren <rentao.bupt@gmail.com>
 ---
- arch/arm/boot/dts/aspeed-bmc-facebook-wedge40.dts | 12 ------------
- 1 file changed, 12 deletions(-)
+ .../boot/dts/aspeed-bmc-facebook-wedge40.dts  | 29 +++++++++++++++++++
+ 1 file changed, 29 insertions(+)
 
 diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-wedge40.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-wedge40.dts
-index 54e508530dce..aea23c313088 100644
+index 1049cfa80ac2..8ac23ff6b09e 100644
 --- a/arch/arm/boot/dts/aspeed-bmc-facebook-wedge40.dts
 +++ b/arch/arm/boot/dts/aspeed-bmc-facebook-wedge40.dts
-@@ -115,14 +115,6 @@
+@@ -135,3 +135,32 @@
+ &adc {
  	status = "okay";
  };
- 
--&i2c9 {
--	status = "okay";
--};
--
--&i2c10 {
--	status = "okay";
--};
--
- &i2c11 {
- 	status = "okay";
- };
-@@ -131,10 +123,6 @@
- 	status = "okay";
- };
- 
--&i2c13 {
--	status = "okay";
--};
--
- &vhub {
- 	status = "okay";
- };
++
++&pwm_tacho {
++	status = "okay";
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_pwm0_default
++		     &pinctrl_pwm1_default
++		     &pinctrl_pwm6_default
++		     &pinctrl_pwm7_default>;
++
++	fan at 0 {
++		reg = <0x00>;
++		aspeed,fan-tach-ch = /bits/ 8 <0x00 0x01>;
++	};
++
++	fan at 1 {
++		reg = <0x01>;
++		aspeed,fan-tach-ch = /bits/ 8 <0x02 0x03>;
++	};
++
++	fan at 6 {
++		reg = <0x06>;
++		aspeed,fan-tach-ch = /bits/ 8 <0x04 0x05>;
++	};
++
++	fan at 7 {
++		reg = <0x07>;
++		aspeed,fan-tach-ch = /bits/ 8 <0x06 0x07>;
++	};
++};
 -- 
 2.17.1
 
