@@ -1,45 +1,65 @@
-From: Paolo Abeni <pabeni@redhat.com>
-Date: Tue, 31 May 2022 10:21:19 +0200
-Subject: [PATCH 1/2] net/ncsi: use proper "mellanox" DT vendor prefix
-In-Reply-To: <20220529111017.181766-1-krzysztof.kozlowski@linaro.org>
-References: <20220529111017.181766-1-krzysztof.kozlowski@linaro.org>
-Message-ID: <48cb78ebd38dfe4ac05e337d5fb38623b7ee0e8f.camel@redhat.com>
+From: Guenter Roeck <linux@roeck-us.net>
+Date: Tue, 30 Jun 2020 17:10:02 -0700
+Subject: [PATCH] drm/aspeed: Call drm_fbdev_generic_setup after
+ drm_dev_register
+Message-ID: <20200701001002.74997-1-linux@roeck-us.net>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello,
+The following backtrace is seen when running aspeed G5 kernels.
 
-On Sun, 2022-05-29 at 13:10 +0200, Krzysztof Kozlowski wrote:
-> "mlx" Devicetree vendor prefix is not documented and instead "mellanox"
-> should be used.
-> 
-> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-> ---
->  net/ncsi/ncsi-manage.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
-> 
-> diff --git a/net/ncsi/ncsi-manage.c b/net/ncsi/ncsi-manage.c
-> index 78814417d753..80713febfac6 100644
-> --- a/net/ncsi/ncsi-manage.c
-> +++ b/net/ncsi/ncsi-manage.c
-> @@ -1803,7 +1803,8 @@ struct ncsi_dev *ncsi_register_dev(struct net_device *dev,
->  	pdev = to_platform_device(dev->dev.parent);
->  	if (pdev) {
->  		np = pdev->dev.of_node;
-> -		if (np && of_get_property(np, "mlx,multi-host", NULL))
-> +		if (np && (of_get_property(np, "mellanox,multi-host", NULL) ||
-> +			   of_get_property(np, "mlx,multi-host", NULL)))
->  			ndp->mlx_multi_host = true;
->  	}
-> 
+WARNING: CPU: 0 PID: 1 at drivers/gpu/drm/drm_fb_helper.c:2233 drm_fbdev_generic_setup+0x138/0x198
+aspeed_gfx 1e6e6000.display: Device has not been registered.
+CPU: 0 PID: 1 Comm: swapper/0 Not tainted 5.8.0-rc3 #1
+Hardware name: Generic DT based system
+Backtrace:
+[<8010d6d0>] (dump_backtrace) from [<8010d9b8>] (show_stack+0x20/0x24)
+r7:00000009 r6:60000153 r5:00000000 r4:8119fa94
+[<8010d998>] (show_stack) from [<80b8cb98>] (dump_stack+0xcc/0xec)
+[<80b8cacc>] (dump_stack) from [<80123ef0>] (__warn+0xd8/0xfc)
+r7:00000009 r6:80e62ed0 r5:00000000 r4:974c3ccc
+[<80123e18>] (__warn) from [<80123f98>] (warn_slowpath_fmt+0x84/0xc4)
+r9:00000009 r8:806a0140 r7:000008b9 r6:80e62ed0 r5:80e631f8 r4:974c2000
+[<80123f18>] (warn_slowpath_fmt) from [<806a0140>] (drm_fbdev_generic_setup+0x138/0x198)
+r9:00000001 r8:9758fc10 r7:9758fc00 r6:00000000 r5:00000020 r4:9768a000
+[<806a0008>] (drm_fbdev_generic_setup) from [<806d4558>] (aspeed_gfx_probe+0x204/0x32c)
+r7:9758fc00 r6:00000000 r5:00000000 r4:9768a000
+[<806d4354>] (aspeed_gfx_probe) from [<806dfca0>] (platform_drv_probe+0x58/0xa8)
 
-I can't guess which tree are you targeting, devicetree? net-next? could
-you please specify?
+Since commit 1aed9509b29a6 ("drm/fb-helper: Remove return value from
+drm_fbdev_generic_setup()"), drm_fbdev_generic_setup() must be called
+after drm_dev_register() to avoid the warning. Do that.
 
-thanks!
+Fixes: 1aed9509b29a6 ("drm/fb-helper: Remove return value from drm_fbdev_generic_setup()")
+Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+---
+ drivers/gpu/drm/aspeed/aspeed_gfx_drv.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-Paolo
+diff --git a/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c b/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
+index 6b27242b9ee3..bca3fcff16ec 100644
+--- a/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
++++ b/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
+@@ -173,8 +173,6 @@ static int aspeed_gfx_load(struct drm_device *drm)
+ 
+ 	drm_mode_config_reset(drm);
+ 
+-	drm_fbdev_generic_setup(drm, 32);
+-
+ 	return 0;
+ }
+ 
+@@ -225,6 +223,7 @@ static int aspeed_gfx_probe(struct platform_device *pdev)
+ 	if (ret)
+ 		goto err_unload;
+ 
++	drm_fbdev_generic_setup(&priv->drm, 32);
+ 	return 0;
+ 
+ err_unload:
+-- 
+2.17.1
 
