@@ -1,23 +1,48 @@
-From: Stephen Boyd <sboyd@kernel.org>
-Date: Sat, 11 Jul 2020 09:16:11 -0700
-Subject: [PATCH 1/2] clk: AST2600: Add mux for EMMC clock
-In-Reply-To: <20200709195706.12741-2-eajames@linux.ibm.com>
-References: <20200709195706.12741-1-eajames@linux.ibm.com>
- <20200709195706.12741-2-eajames@linux.ibm.com>
-Message-ID: <159448417133.1987609.8669229169177662950@swboyd.mtv.corp.google.com>
+From: Linus Walleij <linus.walleij@linaro.org>
+Date: Thu, 16 Jul 2020 10:31:34 +0200
+Subject: [PATCH] pinctrl: aspeed: Improve debug output
+In-Reply-To: <20200701030039.2834418-1-joel@jms.id.au>
+References: <20200701030039.2834418-1-joel@jms.id.au>
+Message-ID: <CACRpkdY_3HHfC1uDHVfnD529o5Wpa7msZU+YMomnpUS6qJjx4g@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Quoting Eddie James (2020-07-09 12:57:05)
-> The EMMC clock can be derived from either the HPLL or the MPLL. Register
-> a clock mux so that the rate is calculated correctly based upon the
-> parent.
-> 
-> Signed-off-by: Eddie James <eajames@linux.ibm.com>
-> Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
-> ---
+On Wed, Jul 1, 2020 at 5:00 AM Joel Stanley <joel@jms.id.au> wrote:
 
-Applied to clk-fixes
+> From: Andrew Jeffery <andrew@aj.id.au>
+>
+> We need to iterate over each pin in a group for a function and
+> disable higher priority mux configurations on the pin before finally
+> muxing the relevant function's signal. With the current debug output it
+> is hard to track what register output is relevant to which operation, so
+> break up the actions in the debug output by providing some more context.
+>
+> Before:
+>
+>     [    5.446656] aspeed-g6-pinctrl 1e6e2000.syscon:pinctrl: request pin 37 (B26) for 1e780000.gpio:341
+>     [    5.447377] Want SCU414[0x00000020]=0x1, got 0x0 from 0x00000000
+>     [    5.447854] Want SCU4B4[0x00000020]=0x1, got 0x0 from 0x00000000
+>     [    5.448340] Want SCU4B4[0x00000020]=0x1, got 0x0 from 0x00000000
+>
+> After:
+>
+>     [    5.298053] Muxing pin 37 for GPIO
+>     [    5.298294] Disabling signal NRI4 for NRI4
+>     [    5.298593] Want SCU414[0x00000020]=0x1, got 0x0 from 0x00000000
+>     [    5.298983] Disabling signal RGMII4RXD1 for RGMII4
+>     [    5.299309] Want SCU4B4[0x00000020]=0x1, got 0x0 from 0x00000000
+>     [    5.299694] Disabling signal RMII4RXD1 for RMII4
+>     [    5.300014] Want SCU4B4[0x00000020]=0x1, got 0x0 from 0x00000000
+>     [    5.300396] Enabling signal GPIOE5 for GPIOE5
+>     [    5.300687] Muxed pin 37 as GPIOE5
+>
+> Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
+> Signed-off-by: Joel Stanley <joel@jms.id.au>
+
+Patch applied, thanks!
+
+Yours,
+Linus Walleij
