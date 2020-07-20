@@ -1,10 +1,10 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Mon, 20 Jul 2020 17:36:50 -0400
-Subject: [PATCH AUTOSEL 5.7 15/40] hwmon: (aspeed-pwm-tacho) Avoid possible
+Date: Mon, 20 Jul 2020 17:37:43 -0400
+Subject: [PATCH AUTOSEL 5.4 10/34] hwmon: (aspeed-pwm-tacho) Avoid possible
  buffer overflow
-In-Reply-To: <20200720213715.406997-1-sashal@kernel.org>
-References: <20200720213715.406997-1-sashal@kernel.org>
-Message-ID: <20200720213715.406997-15-sashal@kernel.org>
+In-Reply-To: <20200720213807.407380-1-sashal@kernel.org>
+References: <20200720213807.407380-1-sashal@kernel.org>
+Message-ID: <20200720213807.407380-10-sashal@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -32,7 +32,7 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 2 insertions(+)
 
 diff --git a/drivers/hwmon/aspeed-pwm-tacho.c b/drivers/hwmon/aspeed-pwm-tacho.c
-index 33fb54845bf6d..3d8239fd66ed6 100644
+index 40c489be62eaa..40f3139f1e028 100644
 --- a/drivers/hwmon/aspeed-pwm-tacho.c
 +++ b/drivers/hwmon/aspeed-pwm-tacho.c
 @@ -851,6 +851,8 @@ static int aspeed_create_fan(struct device *dev,
