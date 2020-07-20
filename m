@@ -1,10 +1,10 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Mon, 20 Jul 2020 17:38:40 -0400
-Subject: [PATCH AUTOSEL 4.19 09/19] hwmon: (aspeed-pwm-tacho) Avoid possible
+Date: Mon, 20 Jul 2020 17:39:08 -0400
+Subject: [PATCH AUTOSEL 4.14 07/13] hwmon: (aspeed-pwm-tacho) Avoid possible
  buffer overflow
-In-Reply-To: <20200720213851.407715-1-sashal@kernel.org>
-References: <20200720213851.407715-1-sashal@kernel.org>
-Message-ID: <20200720213851.407715-9-sashal@kernel.org>
+In-Reply-To: <20200720213914.407919-1-sashal@kernel.org>
+References: <20200720213914.407919-1-sashal@kernel.org>
+Message-ID: <20200720213914.407919-7-sashal@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -32,10 +32,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 2 insertions(+)
 
 diff --git a/drivers/hwmon/aspeed-pwm-tacho.c b/drivers/hwmon/aspeed-pwm-tacho.c
-index 5e449eac788a1..a43fa730a513b 100644
+index 69b97d45e3cbb..e4337e9dda444 100644
 --- a/drivers/hwmon/aspeed-pwm-tacho.c
 +++ b/drivers/hwmon/aspeed-pwm-tacho.c
-@@ -880,6 +880,8 @@ static int aspeed_create_fan(struct device *dev,
+@@ -878,6 +878,8 @@ static int aspeed_create_fan(struct device *dev,
  	ret = of_property_read_u32(child, "reg", &pwm_port);
  	if (ret)
  		return ret;
