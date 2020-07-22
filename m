@@ -1,147 +1,273 @@
-From: Jet Li <Jet.Le@ibm.com>
-Date: Tue, 21 Jul 2020 20:00:31 +0800
-Subject: [PATCH linux dev-5.7 v1] ARM: dts: aspeed: rainier: Add I2c buses for
- nvme use
-Message-ID: <20200721120031.27258-1-Jet.Le@ibm.com>
+From: Supreeth Venkatesh <supreeth.venkatesh@amd.com>
+Date: Wed, 22 Jul 2020 16:55:06 -0500
+Subject: [PATCH v2 1/1] ARM:dts:aspeed: Initial device tree for AMD EthanolX
+Message-ID: <20200722215506.5984-1-supreeth.venkatesh@amd.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Jet Li <Jet.Li@ibm.com>
+Initial introduction of AMD EthanolX platform equipped with an
+Aspeed ast2500 BMC manufactured by AMD.
 
-Adding pca9552 exposes the presence detect lines for the cards
-and tca9554 exposes the presence details for the cards.
+AMD EthanolX platform is an AMD customer reference board with an
+Aspeed ast2500 BMC manufactured by AMD.
+This adds AMD EthanolX device tree file including the flash layout
+used by EthanolX BMC machines.
 
-Signed-off-by: Jet Li <Jet.Li@ibm.com>
+This also adds an entry of AMD EthanolX device tree file in Makefile.
+
+Signed-off-by: Supreeth Venkatesh <supreeth.venkatesh@amd.com>
 ---
- arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts | 105 +++++++++++++++++++++++++++
- 1 file changed, 105 insertions(+)
+Changes since v1:
+* Addressed review comment regarding SPDX License Identifier
+* Added I2c0 and I2c1 which cater to AMD's APML Interface
+---
+ arch/arm/boot/dts/Makefile                    |   1 +
+ arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts | 221 ++++++++++++++++++
+ 2 files changed, 222 insertions(+)
+ create mode 100644 arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts
 
-diff --git a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
-index 1ae119a..76a7e82 100644
---- a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
-@@ -248,6 +248,21 @@
- 		compatible = "atmel,24c64";
- 		reg = <0x51>;
- 	};
+diff --git a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
+index d6dfdf73e66b..55ed881d2ebc 100644
+--- a/arch/arm/boot/dts/Makefile
++++ b/arch/arm/boot/dts/Makefile
+@@ -1281,6 +1281,7 @@ dtb-$(CONFIG_ARCH_ZX) += zx296702-ad1.dtb
+ dtb-$(CONFIG_ARCH_ASPEED) += \
+ 	aspeed-ast2500-evb.dtb \
+ 	aspeed-ast2600-evb.dtb \
++	aspeed-bmc-amd-ethanolx.dtb \
+ 	aspeed-bmc-arm-centriq2400-rep.dtb \
+ 	aspeed-bmc-arm-stardragon4800-rep2.dtb \
+ 	aspeed-bmc-facebook-cmm.dtb \
+diff --git a/arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts b/arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts
+new file mode 100644
+index 000000000000..3d67fa31a3ab
+--- /dev/null
++++ b/arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts
+@@ -0,0 +1,221 @@
++// SPDX-License-Identifier: GPL-2.0
++// Copyright (c) 2020 AMD Inc.
++// Author: Supreeth Venkatesh <supreeth.venkatesh@amd.com>
++/dts-v1/;
 +
-+	tca9554 at 40 {
-+		compatible = "ti,tca9554";
-+		reg = <0x40>;
-+		gpio-controller;
-+		#gpio-cells = <2>;
++#include "aspeed-g5.dtsi"
++#include <dt-bindings/gpio/aspeed-gpio.h>
 +
-+		smbus0 {
-+			gpio-hog;
-+			gpios = <4 GPIO_ACTIVE_HIGH>;
-+			output-high;
-+			line-name = "smbus0";
++/ {
++	model = "AMD EthanolX BMC";
++	compatible = "amd,ethanolx-bmc", "aspeed,ast2500";
++
++	memory at 80000000 {
++		reg = <0x80000000 0x20000000>;
++	};
++	aliases {
++		serial0 = &uart1;
++		serial4 = &uart5;
++	};
++	chosen {
++		stdout-path = &uart5;
++		bootargs = "console=ttyS4,115200 earlyprintk";
++	};
++	leds {
++		compatible = "gpio-leds";
++
++		fault {
++			gpios = <&gpio ASPEED_GPIO(A, 2) GPIO_ACTIVE_LOW>;
++		};
++
++		identify {
++			gpios = <&gpio ASPEED_GPIO(A, 3) GPIO_ACTIVE_LOW>;
 +		};
 +	};
++	iio-hwmon {
++		compatible = "iio-hwmon";
++		io-channels = <&adc 0>, <&adc 1>, <&adc 2>, <&adc 3>, <&adc 4>;
++	};
++};
 +
- };
- 
- &i2c1 {
-@@ -562,6 +577,96 @@
- 		compatible = "atmel,24c64";
- 		reg = <0x51>;
- 	};
++&fmc {
++	status = "okay";
++	flash at 0 {
++		status = "okay";
++		m25p,fast-read;
++		#include "openbmc-flash-layout.dtsi"
++	};
++};
 +
-+	pca1: pca9552 at 61 {
-+		compatible = "nxp,pca9552";
-+		reg = <0x61>;
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+		gpio-controller;
-+		#gpio-cells = <2>;
 +
-+		gpio at 0 {
-+			reg = <0>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
++&mac0 {
++	status = "okay";
 +
-+		gpio at 1 {
-+			reg = <1>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_rmii1_default>;
++	clocks = <&syscon ASPEED_CLK_GATE_MAC1CLK>,
++		 <&syscon ASPEED_CLK_MAC1RCLK>;
++	clock-names = "MACCLK", "RCLK";
++};
 +
-+		gpio at 2 {
-+			reg = <2>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
++&uart1 {
++	//Host Console
++	status = "okay";
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_txd1_default
++		     &pinctrl_rxd1_default>;
++};
 +
-+		gpio at 3 {
-+			reg = <3>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
++&uart5 {
++	//BMC Console
++	status = "okay";
++};
 +
-+		gpio at 4 {
-+			reg = <4>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
++&adc {
++	status = "okay";
 +
-+		gpio at 5 {
-+			reg = <5>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_adc0_default
++		     &pinctrl_adc1_default
++		     &pinctrl_adc2_default
++		     &pinctrl_adc3_default
++		     &pinctrl_adc4_default>;
++};
 +
-+		gpio at 6 {
-+			reg = <6>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
++//APML for P0
++&i2c0 {
++	reg = <0x80 0x40>;
++	status = "okay";
++};
 +
-+		gpio at 7 {
-+			reg = <7>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
++//APML for P1
++&i2c1 {
++	reg = <0xc0 0x40>;
++	status = "okay";
++};
 +
-+		gpio at 8 {
-+			reg = <8>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
++// Thermal Sensors
++&i2c7 {
++	status = "okay";
 +
-+		gpio at 9 {
-+			reg = <9>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 10 {
-+			reg = <10>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 11 {
-+			reg = <11>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 12 {
-+			reg = <12>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 13 {
-+			reg = <13>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 14 {
-+			reg = <14>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 15 {
-+			reg = <15>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
++	lm75a at 48 {
++		compatible = "national,lm75a";
++		reg = <0x48>;
 +	};
 +
- };
- 
- &i2c9 {
++	lm75a at 49 {
++		compatible = "national,lm75a";
++		reg = <0x49>;
++	};
++
++	lm75a at 4a {
++		compatible = "national,lm75a";
++		reg = <0x4a>;
++	};
++
++	lm75a at 4b {
++		compatible = "national,lm75a";
++		reg = <0x4b>;
++	};
++
++	lm75a at 4c {
++		compatible = "national,lm75a";
++		reg = <0x4c>;
++	};
++
++	lm75a at 4d {
++		compatible = "national,lm75a";
++		reg = <0x4d>;
++	};
++
++	lm75a at 4e {
++		compatible = "national,lm75a";
++		reg = <0x4e>;
++	};
++
++	lm75a at 4f {
++		compatible = "national,lm75a";
++		reg = <0x4f>;
++	};
++};
++
++&kcs1 {
++	status = "okay";
++	kcs_addr = <0x60>;
++};
++
++&kcs2 {
++	status = "okay";
++	kcs_addr = <0x62>;
++};
++
++&kcs4 {
++	status = "okay";
++	kcs_addr = <0x97DE>;
++};
++
++&lpc_snoop {
++	status = "okay";
++	snoop-ports = <0x80>;
++};
++
++&lpc_ctrl {
++	//Enable lpc clock
++	status = "okay";
++};
++
++&pwm_tacho {
++	status = "okay";
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_pwm0_default
++	&pinctrl_pwm1_default
++	&pinctrl_pwm2_default
++	&pinctrl_pwm3_default
++	&pinctrl_pwm4_default
++	&pinctrl_pwm5_default
++	&pinctrl_pwm6_default
++	&pinctrl_pwm7_default>;
++
++	fan at 0 {
++		reg = <0x00>;
++		aspeed,fan-tach-ch = /bits/ 8 <0x00>;
++	};
++
++	fan at 1 {
++		reg = <0x01>;
++		aspeed,fan-tach-ch = /bits/ 8 <0x01>;
++	};
++
++	fan at 2 {
++		reg = <0x02>;
++		aspeed,fan-tach-ch = /bits/ 8 <0x02>;
++	};
++
++	fan at 3 {
++		reg = <0x03>;
++		aspeed,fan-tach-ch = /bits/ 8 <0x03>;
++	};
++
++	fan at 4 {
++		reg = <0x04>;
++		aspeed,fan-tach-ch = /bits/ 8 <0x04>;
++	};
++
++	fan at 5 {
++		reg = <0x05>;
++		aspeed,fan-tach-ch = /bits/ 8 <0x05>;
++	};
++
++	fan at 6 {
++		reg = <0x06>;
++		aspeed,fan-tach-ch = /bits/ 8 <0x06>;
++	};
++
++	fan at 7 {
++		reg = <0x07>;
++		aspeed,fan-tach-ch = /bits/ 8 <0x07>;
++	};
++};
++
++
++
 -- 
-1.8.3.1
+2.17.1
 
