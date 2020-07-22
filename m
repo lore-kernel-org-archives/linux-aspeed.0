@@ -1,51 +1,287 @@
-From: Gustavo A. R. Silva <gustavoars@kernel.org>
-Date: Tue, 21 Jul 2020 18:22:32 -0500
-Subject: [PATCH v2][next] i2c: aspeed: Use fallthrough pseudo-keyword
-Message-ID: <20200721232231.GA1888@embeddedor>
+From: Joel Stanley <joel@jms.id.au>
+Date: Wed, 22 Jul 2020 05:57:41 +0000
+Subject: [PATCH 1/1] ARM:dts:aspeed: Initial device tree for AMD EthanolX
+In-Reply-To: <20200720160147.22339-1-supreeth.venkatesh@amd.com>
+References: <20200720160147.22339-1-supreeth.venkatesh@amd.com>
+Message-ID: <CACPK8XfBPb85uXyYiphD9uEUG6a+acAzEMAsfaenT3t0jqUWNw@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Replace the existing /* fall through */ comments and its variants with
-the new pseudo-keyword macro fallthrough[1]. Also, remove unnecessary
-fall-through markings when it is the case.
+On Mon, 20 Jul 2020 at 16:02, Supreeth Venkatesh
+<supreeth.venkatesh@amd.com> wrote:
+>
+> Initial introduction of AMD EthanolX platform equipped with an
+> Aspeed ast2500 BMC manufactured by AMD.
+>
+> AMD EthanolX platform is an AMD customer reference board with an
+> Aspeed ast2500 BMC manufactured by AMD.
+> This adds AMD EthanolX device tree file including the flash layout
+> used by EthanolX BMC machines.
+>
+> This also adds an entry of AMD EthanolX device tree file in Makefile.
+>
+> Signed-off-by: Supreeth Venkatesh <supreeth.venkatesh@amd.com>
 
-[1] https://www.kernel.org/doc/html/v5.7/process/deprecated.html?highlight=fallthrough#implicit-switch-case-fall-through
+Reviewed-by: Joel Stanley <joel@jms.id.au>
 
-Reviewed-by: Brendan Higgins <brendanhiggins@google.com>
-Signed-off-by: Gustavo A. R. Silva <gustavoars@kernel.org>
----
-Changes in v2:
- - Update URL. Use proper URL to Linux v5.7 documentation.
- - Add Brendan's Reviewed-by tag.
+Looks good. One question about the licence.
 
- drivers/i2c/busses/i2c-aspeed.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
-index f51702d86a90..31268074c422 100644
---- a/drivers/i2c/busses/i2c-aspeed.c
-+++ b/drivers/i2c/busses/i2c-aspeed.c
-@@ -504,7 +504,7 @@ static u32 aspeed_i2c_master_irq(struct aspeed_i2c_bus *bus, u32 irq_status)
- 			goto error_and_stop;
- 		}
- 		irq_handled |= ASPEED_I2CD_INTR_TX_ACK;
--		/* fall through */
-+		fallthrough;
- 	case ASPEED_I2C_MASTER_TX_FIRST:
- 		if (bus->buf_index < msg->len) {
- 			bus->master_state = ASPEED_I2C_MASTER_TX;
-@@ -520,7 +520,7 @@ static u32 aspeed_i2c_master_irq(struct aspeed_i2c_bus *bus, u32 irq_status)
- 		/* RX may not have completed yet (only address cycle) */
- 		if (!(irq_status & ASPEED_I2CD_INTR_RX_DONE))
- 			goto out_no_complete;
--		/* fall through */
-+		fallthrough;
- 	case ASPEED_I2C_MASTER_RX:
- 		if (unlikely(!(irq_status & ASPEED_I2CD_INTR_RX_DONE))) {
- 			dev_err(bus->dev, "master failed to RX\n");
--- 
-2.27.0
+> +++ b/arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts
+> @@ -0,0 +1,209 @@
+> +// SPDX-License-Identifier: Apache-2.0
+> +// Copyright (c) 2020 AMD Inc.
 
+Can you have a read of the licence rules and add a preferred licence.
+The rules are here:
+
+ https://www.kernel.org/doc/html/latest/process/license-rules.html
+
+This very hacky one liner will give you an idea of common licences
+used by device trees:
+
+$ git grep -h SPDX -- arch/arm/boot/dts/ | cut -c3- |sort -b | uniq -c
+| sort -hr
+    579  SPDX-License-Identifier: GPL-2.0
+    305  SPDX-License-Identifier: GPL-2.0-only
+    222  SPDX-License-Identifier: GPL-2.0-or-later
+    188  SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+     91  SPDX-License-Identifier: GPL-2.0+
+     72  SPDX-License-Identifier: (GPL-2.0 OR MIT)
+     57  SPDX-License-Identifier: GPL-2.0+ OR MIT
+     46  SPDX-License-Identifier: GPL-2.0-or-later OR MIT
+     38  SPDX-License-Identifier: GPL-2.0 OR X11
+     29  SPDX-License-Identifier: GPL-2.0 OR MIT
+     19  SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
+     16  SPDX-License-Identifier: GPL-2.0-only */
+      6  SPDX-License-Identifier: ISC
+      5  SPDX-License-Identifier: (GPL-2.0 OR BSD-3-Clause)
+      4  SPDX-License-Identifier: (GPL-2.0+ OR X11)
+      4  SPDX-License-Identifier: (GPL-2.0 or MIT)
+      4  SPDX-License-Identifier: GPL-2.0 */
+      3  SPDX-License-Identifier: (GPL-2.0-or-later OR BSD-2-Clause)
+      2  SPDX-License-Identifier: (GPL-2.0-or-later OR BSD-3-Clause) */
+      2  SPDX-License-Identifier: GPL-2.0-or-later */
+      2  SPDX-License-Identifier: GPL-2.0+ OR BSD-3-Clause
+      2  SPDX-License-Identifier: (GPL-2.0+)
+      2  SPDX-License-Identifier: (GPL-2.0)
+      2 SPDX-License-Identifier: GPL-2.0
+      1  SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause) */
+      1  SPDX-License-Identifier:  GPL-2.0+
+      1 SPDX-License-Identifier: GPL-2.0+
+      1   SPDX-License-Identifier: BSD-3-Clause
+
+
+> +// Author: Supreeth Venkatesh <supreeth.venkatesh@amd.com>
+> +/dts-v1/;
+> +
+> +#include "aspeed-g5.dtsi"
+> +#include <dt-bindings/gpio/aspeed-gpio.h>
+> +
+> +/ {
+> +       model = "AMD EthanolX BMC";
+> +       compatible = "amd,ethanolx-bmc", "aspeed,ast2500";
+> +
+> +       memory at 80000000 {
+> +               reg = <0x80000000 0x20000000>;
+> +       };
+> +       aliases {
+> +               serial0 = &uart1;
+> +               serial4 = &uart5;
+> +       };
+> +       chosen {
+> +               stdout-path = &uart5;
+> +               bootargs = "console=ttyS4,115200 earlyprintk";
+> +       };
+> +       leds {
+> +               compatible = "gpio-leds";
+> +
+> +               fault {
+> +                       gpios = <&gpio ASPEED_GPIO(A, 2) GPIO_ACTIVE_LOW>;
+> +               };
+> +
+> +               identify {
+> +                       gpios = <&gpio ASPEED_GPIO(A, 3) GPIO_ACTIVE_LOW>;
+> +               };
+> +       };
+> +       iio-hwmon {
+> +               compatible = "iio-hwmon";
+> +               io-channels = <&adc 0>, <&adc 1>, <&adc 2>, <&adc 3>, <&adc 4>;
+> +       };
+> +};
+> +
+> +&fmc {
+> +       status = "okay";
+> +       flash at 0 {
+> +               status = "okay";
+> +               m25p,fast-read;
+> +               #include "openbmc-flash-layout.dtsi"
+> +       };
+> +};
+> +
+> +
+> +&mac0 {
+> +       status = "okay";
+> +
+> +       pinctrl-names = "default";
+> +       pinctrl-0 = <&pinctrl_rmii1_default>;
+> +       clocks = <&syscon ASPEED_CLK_GATE_MAC1CLK>,
+> +                <&syscon ASPEED_CLK_MAC1RCLK>;
+> +       clock-names = "MACCLK", "RCLK";
+> +};
+> +
+> +&uart1 {
+> +       //Host Console
+> +       status = "okay";
+> +       pinctrl-names = "default";
+> +       pinctrl-0 = <&pinctrl_txd1_default
+> +                    &pinctrl_rxd1_default>;
+> +};
+> +
+> +&uart5 {
+> +       //BMC Console
+> +       status = "okay";
+> +};
+> +
+> +&adc {
+> +       status = "okay";
+> +
+> +       pinctrl-names = "default";
+> +       pinctrl-0 = <&pinctrl_adc0_default
+> +                    &pinctrl_adc1_default
+> +                    &pinctrl_adc2_default
+> +                    &pinctrl_adc3_default
+> +                    &pinctrl_adc4_default>;
+> +};
+> +
+> +// Thermal Sensors
+> +&i2c7 {
+> +       status = "okay";
+> +
+> +       lm75a at 48 {
+> +               compatible = "national,lm75a";
+> +               reg = <0x48>;
+> +       };
+> +
+> +       lm75a at 49 {
+> +               compatible = "national,lm75a";
+> +               reg = <0x49>;
+> +       };
+> +
+> +       lm75a at 4a {
+> +               compatible = "national,lm75a";
+> +               reg = <0x4a>;
+> +       };
+> +
+> +       lm75a at 4b {
+> +               compatible = "national,lm75a";
+> +               reg = <0x4b>;
+> +       };
+> +
+> +       lm75a at 4c {
+> +               compatible = "national,lm75a";
+> +               reg = <0x4c>;
+> +       };
+> +
+> +       lm75a at 4d {
+> +               compatible = "national,lm75a";
+> +               reg = <0x4d>;
+> +       };
+> +
+> +       lm75a at 4e {
+> +               compatible = "national,lm75a";
+> +               reg = <0x4e>;
+> +       };
+> +
+> +       lm75a at 4f {
+> +               compatible = "national,lm75a";
+> +               reg = <0x4f>;
+> +       };
+> +};
+> +
+> +&kcs1 {
+> +       status = "okay";
+> +       kcs_addr = <0x60>;
+> +};
+> +
+> +&kcs2 {
+> +       status = "okay";
+> +       kcs_addr = <0x62>;
+> +};
+> +
+> +&kcs4 {
+> +       status = "okay";
+> +       kcs_addr = <0x97DE>;
+> +};
+> +
+> +&lpc_snoop {
+> +       status = "okay";
+> +       snoop-ports = <0x80>;
+> +};
+> +
+> +&lpc_ctrl {
+> +       //Enable lpc clock
+> +       status = "okay";
+> +};
+> +
+> +&pwm_tacho {
+> +       status = "okay";
+> +       pinctrl-names = "default";
+> +       pinctrl-0 = <&pinctrl_pwm0_default
+> +       &pinctrl_pwm1_default
+> +       &pinctrl_pwm2_default
+> +       &pinctrl_pwm3_default
+> +       &pinctrl_pwm4_default
+> +       &pinctrl_pwm5_default
+> +       &pinctrl_pwm6_default
+> +       &pinctrl_pwm7_default>;
+> +
+> +       fan at 0 {
+> +               reg = <0x00>;
+> +               aspeed,fan-tach-ch = /bits/ 8 <0x00>;
+> +       };
+> +
+> +       fan at 1 {
+> +               reg = <0x01>;
+> +               aspeed,fan-tach-ch = /bits/ 8 <0x01>;
+> +       };
+> +
+> +       fan at 2 {
+> +               reg = <0x02>;
+> +               aspeed,fan-tach-ch = /bits/ 8 <0x02>;
+> +       };
+> +
+> +       fan at 3 {
+> +               reg = <0x03>;
+> +               aspeed,fan-tach-ch = /bits/ 8 <0x03>;
+> +       };
+> +
+> +       fan at 4 {
+> +               reg = <0x04>;
+> +               aspeed,fan-tach-ch = /bits/ 8 <0x04>;
+> +       };
+> +
+> +       fan at 5 {
+> +               reg = <0x05>;
+> +               aspeed,fan-tach-ch = /bits/ 8 <0x05>;
+> +       };
+> +
+> +       fan at 6 {
+> +               reg = <0x06>;
+> +               aspeed,fan-tach-ch = /bits/ 8 <0x06>;
+> +       };
+> +
+> +       fan at 7 {
+> +               reg = <0x07>;
+> +               aspeed,fan-tach-ch = /bits/ 8 <0x07>;
+> +       };
+> +};
+> +
+> +
+> +
+> --
+> 2.17.1
+>
