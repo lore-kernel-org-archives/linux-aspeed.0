@@ -1,286 +1,33 @@
-From: Joel Stanley <joel@jms.id.au>
-Date: Thu, 23 Jul 2020 07:23:23 +0000
-Subject: [PATCH v2 1/1] ARM:dts:aspeed: Initial device tree for AMD
- EthanolX
-In-Reply-To: <20200722215506.5984-1-supreeth.venkatesh@amd.com>
-References: <20200722215506.5984-1-supreeth.venkatesh@amd.com>
-Message-ID: <CACPK8XeAr+Y1ySCa4DXeoHU-39eS2g38QOSgvbMk-VmbPk4cVA@mail.gmail.com>
+From: rentao.bupt@gmail.com <rentao.bupt@gmail.com>
+Date: Thu, 23 Jul 2020 16:05:36 -0700
+Subject: [PATCH v2 0/3] ARM: dts: aspeed: fixup wedge40 device tree
+Message-ID: <20200723230539.17860-1-rentao.bupt@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 22 Jul 2020 at 21:55, Supreeth Venkatesh
-<supreeth.venkatesh@amd.com> wrote:
->
-> Initial introduction of AMD EthanolX platform equipped with an
-> Aspeed ast2500 BMC manufactured by AMD.
->
-> AMD EthanolX platform is an AMD customer reference board with an
-> Aspeed ast2500 BMC manufactured by AMD.
-> This adds AMD EthanolX device tree file including the flash layout
-> used by EthanolX BMC machines.
->
-> This also adds an entry of AMD EthanolX device tree file in Makefile.
->
-> Signed-off-by: Supreeth Venkatesh <supreeth.venkatesh@amd.com>
-> ---
-> Changes since v1:
-> * Addressed review comment regarding SPDX License Identifier
-> * Added I2c0 and I2c1 which cater to AMD's APML Interface
-> ---
->  arch/arm/boot/dts/Makefile                    |   1 +
->  arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts | 221 ++++++++++++++++++
->  2 files changed, 222 insertions(+)
->  create mode 100644 arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts
->
-> diff --git a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
-> index d6dfdf73e66b..55ed881d2ebc 100644
-> --- a/arch/arm/boot/dts/Makefile
-> +++ b/arch/arm/boot/dts/Makefile
-> @@ -1281,6 +1281,7 @@ dtb-$(CONFIG_ARCH_ZX) += zx296702-ad1.dtb
->  dtb-$(CONFIG_ARCH_ASPEED) += \
->         aspeed-ast2500-evb.dtb \
->         aspeed-ast2600-evb.dtb \
-> +       aspeed-bmc-amd-ethanolx.dtb \
->         aspeed-bmc-arm-centriq2400-rep.dtb \
->         aspeed-bmc-arm-stardragon4800-rep2.dtb \
->         aspeed-bmc-facebook-cmm.dtb \
-> diff --git a/arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts b/arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts
-> new file mode 100644
-> index 000000000000..3d67fa31a3ab
-> --- /dev/null
-> +++ b/arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts
-> @@ -0,0 +1,221 @@
-> +// SPDX-License-Identifier: GPL-2.0
-> +// Copyright (c) 2020 AMD Inc.
-> +// Author: Supreeth Venkatesh <supreeth.venkatesh@amd.com>
-> +/dts-v1/;
-> +
-> +#include "aspeed-g5.dtsi"
-> +#include <dt-bindings/gpio/aspeed-gpio.h>
-> +
-> +/ {
-> +       model = "AMD EthanolX BMC";
-> +       compatible = "amd,ethanolx-bmc", "aspeed,ast2500";
-> +
-> +       memory at 80000000 {
-> +               reg = <0x80000000 0x20000000>;
-> +       };
-> +       aliases {
-> +               serial0 = &uart1;
-> +               serial4 = &uart5;
-> +       };
-> +       chosen {
-> +               stdout-path = &uart5;
-> +               bootargs = "console=ttyS4,115200 earlyprintk";
-> +       };
-> +       leds {
-> +               compatible = "gpio-leds";
-> +
-> +               fault {
-> +                       gpios = <&gpio ASPEED_GPIO(A, 2) GPIO_ACTIVE_LOW>;
-> +               };
-> +
-> +               identify {
-> +                       gpios = <&gpio ASPEED_GPIO(A, 3) GPIO_ACTIVE_LOW>;
-> +               };
-> +       };
-> +       iio-hwmon {
-> +               compatible = "iio-hwmon";
-> +               io-channels = <&adc 0>, <&adc 1>, <&adc 2>, <&adc 3>, <&adc 4>;
-> +       };
-> +};
-> +
-> +&fmc {
-> +       status = "okay";
-> +       flash at 0 {
-> +               status = "okay";
-> +               m25p,fast-read;
-> +               #include "openbmc-flash-layout.dtsi"
-> +       };
-> +};
-> +
-> +
-> +&mac0 {
-> +       status = "okay";
-> +
-> +       pinctrl-names = "default";
-> +       pinctrl-0 = <&pinctrl_rmii1_default>;
-> +       clocks = <&syscon ASPEED_CLK_GATE_MAC1CLK>,
-> +                <&syscon ASPEED_CLK_MAC1RCLK>;
-> +       clock-names = "MACCLK", "RCLK";
-> +};
-> +
-> +&uart1 {
-> +       //Host Console
-> +       status = "okay";
-> +       pinctrl-names = "default";
-> +       pinctrl-0 = <&pinctrl_txd1_default
-> +                    &pinctrl_rxd1_default>;
-> +};
-> +
-> +&uart5 {
-> +       //BMC Console
-> +       status = "okay";
-> +};
-> +
-> +&adc {
-> +       status = "okay";
-> +
-> +       pinctrl-names = "default";
-> +       pinctrl-0 = <&pinctrl_adc0_default
-> +                    &pinctrl_adc1_default
-> +                    &pinctrl_adc2_default
-> +                    &pinctrl_adc3_default
-> +                    &pinctrl_adc4_default>;
-> +};
-> +
-> +//APML for P0
-> +&i2c0 {
-> +       reg = <0x80 0x40>;
-> +       status = "okay";
-> +};
-> +
-> +//APML for P1
-> +&i2c1 {
-> +       reg = <0xc0 0x40>;
+From: Tao Ren <rentao.bupt@gmail.com>
 
-This is unusual. i2c1 is at 0x80; this will clash with i2c2.
+The patch series update several devices' settings in Facebook Wedge40
+device tree.
 
-Note that the i2c naming in linux counts from zero, whereas the ASPEED
-docs count from 1. So if your board layout has I2C1, you actually want
-i2c2 in the device tree.
+Patch #1 disables a few i2c controllers as they are not being used at
+present.
 
-> +       status = "okay";
-> +};
-> +
-> +// Thermal Sensors
-> +&i2c7 {
-> +       status = "okay";
-> +
-> +       lm75a at 48 {
-> +               compatible = "national,lm75a";
-> +               reg = <0x48>;
-> +       };
-> +
-> +       lm75a at 49 {
-> +               compatible = "national,lm75a";
-> +               reg = <0x49>;
-> +       };
-> +
-> +       lm75a at 4a {
-> +               compatible = "national,lm75a";
-> +               reg = <0x4a>;
-> +       };
-> +
-> +       lm75a at 4b {
-> +               compatible = "national,lm75a";
-> +               reg = <0x4b>;
-> +       };
-> +
-> +       lm75a at 4c {
-> +               compatible = "national,lm75a";
-> +               reg = <0x4c>;
-> +       };
-> +
-> +       lm75a at 4d {
-> +               compatible = "national,lm75a";
-> +               reg = <0x4d>;
-> +       };
-> +
-> +       lm75a at 4e {
-> +               compatible = "national,lm75a";
-> +               reg = <0x4e>;
-> +       };
-> +
-> +       lm75a at 4f {
-> +               compatible = "national,lm75a";
-> +               reg = <0x4f>;
-> +       };
-> +};
-> +
-> +&kcs1 {
-> +       status = "okay";
-> +       kcs_addr = <0x60>;
-> +};
-> +
-> +&kcs2 {
-> +       status = "okay";
-> +       kcs_addr = <0x62>;
-> +};
-> +
-> +&kcs4 {
-> +       status = "okay";
-> +       kcs_addr = <0x97DE>;
-> +};
-> +
-> +&lpc_snoop {
-> +       status = "okay";
-> +       snoop-ports = <0x80>;
-> +};
-> +
-> +&lpc_ctrl {
-> +       //Enable lpc clock
-> +       status = "okay";
-> +};
-> +
-> +&pwm_tacho {
-> +       status = "okay";
-> +       pinctrl-names = "default";
-> +       pinctrl-0 = <&pinctrl_pwm0_default
-> +       &pinctrl_pwm1_default
-> +       &pinctrl_pwm2_default
-> +       &pinctrl_pwm3_default
-> +       &pinctrl_pwm4_default
-> +       &pinctrl_pwm5_default
-> +       &pinctrl_pwm6_default
-> +       &pinctrl_pwm7_default>;
-> +
-> +       fan at 0 {
-> +               reg = <0x00>;
-> +               aspeed,fan-tach-ch = /bits/ 8 <0x00>;
-> +       };
-> +
-> +       fan at 1 {
-> +               reg = <0x01>;
-> +               aspeed,fan-tach-ch = /bits/ 8 <0x01>;
-> +       };
-> +
-> +       fan at 2 {
-> +               reg = <0x02>;
-> +               aspeed,fan-tach-ch = /bits/ 8 <0x02>;
-> +       };
-> +
-> +       fan at 3 {
-> +               reg = <0x03>;
-> +               aspeed,fan-tach-ch = /bits/ 8 <0x03>;
-> +       };
-> +
-> +       fan at 4 {
-> +               reg = <0x04>;
-> +               aspeed,fan-tach-ch = /bits/ 8 <0x04>;
-> +       };
-> +
-> +       fan at 5 {
-> +               reg = <0x05>;
-> +               aspeed,fan-tach-ch = /bits/ 8 <0x05>;
-> +       };
-> +
-> +       fan at 6 {
-> +               reg = <0x06>;
-> +               aspeed,fan-tach-ch = /bits/ 8 <0x06>;
-> +       };
-> +
-> +       fan at 7 {
-> +               reg = <0x07>;
-> +               aspeed,fan-tach-ch = /bits/ 8 <0x07>;
-> +       };
-> +};
-> +
-> +
-> +
-> --
-> 2.17.1
->
+Patch #2 enables adc device for voltage monitoring.
+
+Patch #3 enables pwm_tacho device for fan control and monitoring.
+
+Tao Ren (3):
+  ARM: dts: aspeed: wedge40: disable a few i2c controllers
+  ARM: dts: aspeed: wedge40: enable adc device
+  ARM: dts: aspeed: wedge40: enable pwm_tacho device
+
+ .../boot/dts/aspeed-bmc-facebook-wedge40.dts  | 42 +++++++++++++++----
+ 1 file changed, 34 insertions(+), 8 deletions(-)
+
+-- 
+2.17.1
+
