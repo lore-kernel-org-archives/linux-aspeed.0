@@ -1,16 +1,17 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Wed, 22 Jul 2020 05:57:41 +0000
-Subject: [PATCH 1/1] ARM:dts:aspeed: Initial device tree for AMD EthanolX
-In-Reply-To: <20200720160147.22339-1-supreeth.venkatesh@amd.com>
-References: <20200720160147.22339-1-supreeth.venkatesh@amd.com>
-Message-ID: <CACPK8XfBPb85uXyYiphD9uEUG6a+acAzEMAsfaenT3t0jqUWNw@mail.gmail.com>
+Date: Thu, 23 Jul 2020 07:23:23 +0000
+Subject: [PATCH v2 1/1] ARM:dts:aspeed: Initial device tree for AMD
+ EthanolX
+In-Reply-To: <20200722215506.5984-1-supreeth.venkatesh@amd.com>
+References: <20200722215506.5984-1-supreeth.venkatesh@amd.com>
+Message-ID: <CACPK8XeAr+Y1ySCa4DXeoHU-39eS2g38QOSgvbMk-VmbPk4cVA@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, 20 Jul 2020 at 16:02, Supreeth Venkatesh
+On Wed, 22 Jul 2020 at 21:55, Supreeth Venkatesh
 <supreeth.venkatesh@amd.com> wrote:
 >
 > Initial introduction of AMD EthanolX platform equipped with an
@@ -24,57 +25,36 @@ On Mon, 20 Jul 2020 at 16:02, Supreeth Venkatesh
 > This also adds an entry of AMD EthanolX device tree file in Makefile.
 >
 > Signed-off-by: Supreeth Venkatesh <supreeth.venkatesh@amd.com>
-
-Reviewed-by: Joel Stanley <joel@jms.id.au>
-
-Looks good. One question about the licence.
-
-
+> ---
+> Changes since v1:
+> * Addressed review comment regarding SPDX License Identifier
+> * Added I2c0 and I2c1 which cater to AMD's APML Interface
+> ---
+>  arch/arm/boot/dts/Makefile                    |   1 +
+>  arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts | 221 ++++++++++++++++++
+>  2 files changed, 222 insertions(+)
+>  create mode 100644 arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts
+>
+> diff --git a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
+> index d6dfdf73e66b..55ed881d2ebc 100644
+> --- a/arch/arm/boot/dts/Makefile
+> +++ b/arch/arm/boot/dts/Makefile
+> @@ -1281,6 +1281,7 @@ dtb-$(CONFIG_ARCH_ZX) += zx296702-ad1.dtb
+>  dtb-$(CONFIG_ARCH_ASPEED) += \
+>         aspeed-ast2500-evb.dtb \
+>         aspeed-ast2600-evb.dtb \
+> +       aspeed-bmc-amd-ethanolx.dtb \
+>         aspeed-bmc-arm-centriq2400-rep.dtb \
+>         aspeed-bmc-arm-stardragon4800-rep2.dtb \
+>         aspeed-bmc-facebook-cmm.dtb \
+> diff --git a/arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts b/arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts
+> new file mode 100644
+> index 000000000000..3d67fa31a3ab
+> --- /dev/null
 > +++ b/arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts
-> @@ -0,0 +1,209 @@
-> +// SPDX-License-Identifier: Apache-2.0
+> @@ -0,0 +1,221 @@
+> +// SPDX-License-Identifier: GPL-2.0
 > +// Copyright (c) 2020 AMD Inc.
-
-Can you have a read of the licence rules and add a preferred licence.
-The rules are here:
-
- https://www.kernel.org/doc/html/latest/process/license-rules.html
-
-This very hacky one liner will give you an idea of common licences
-used by device trees:
-
-$ git grep -h SPDX -- arch/arm/boot/dts/ | cut -c3- |sort -b | uniq -c
-| sort -hr
-    579  SPDX-License-Identifier: GPL-2.0
-    305  SPDX-License-Identifier: GPL-2.0-only
-    222  SPDX-License-Identifier: GPL-2.0-or-later
-    188  SPDX-License-Identifier: (GPL-2.0+ OR MIT)
-     91  SPDX-License-Identifier: GPL-2.0+
-     72  SPDX-License-Identifier: (GPL-2.0 OR MIT)
-     57  SPDX-License-Identifier: GPL-2.0+ OR MIT
-     46  SPDX-License-Identifier: GPL-2.0-or-later OR MIT
-     38  SPDX-License-Identifier: GPL-2.0 OR X11
-     29  SPDX-License-Identifier: GPL-2.0 OR MIT
-     19  SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
-     16  SPDX-License-Identifier: GPL-2.0-only */
-      6  SPDX-License-Identifier: ISC
-      5  SPDX-License-Identifier: (GPL-2.0 OR BSD-3-Clause)
-      4  SPDX-License-Identifier: (GPL-2.0+ OR X11)
-      4  SPDX-License-Identifier: (GPL-2.0 or MIT)
-      4  SPDX-License-Identifier: GPL-2.0 */
-      3  SPDX-License-Identifier: (GPL-2.0-or-later OR BSD-2-Clause)
-      2  SPDX-License-Identifier: (GPL-2.0-or-later OR BSD-3-Clause) */
-      2  SPDX-License-Identifier: GPL-2.0-or-later */
-      2  SPDX-License-Identifier: GPL-2.0+ OR BSD-3-Clause
-      2  SPDX-License-Identifier: (GPL-2.0+)
-      2  SPDX-License-Identifier: (GPL-2.0)
-      2 SPDX-License-Identifier: GPL-2.0
-      1  SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause) */
-      1  SPDX-License-Identifier:  GPL-2.0+
-      1 SPDX-License-Identifier: GPL-2.0+
-      1   SPDX-License-Identifier: BSD-3-Clause
-
-
 > +// Author: Supreeth Venkatesh <supreeth.venkatesh@amd.com>
 > +/dts-v1/;
 > +
@@ -155,6 +135,25 @@ $ git grep -h SPDX -- arch/arm/boot/dts/ | cut -c3- |sort -b | uniq -c
 > +                    &pinctrl_adc2_default
 > +                    &pinctrl_adc3_default
 > +                    &pinctrl_adc4_default>;
+> +};
+> +
+> +//APML for P0
+> +&i2c0 {
+> +       reg = <0x80 0x40>;
+> +       status = "okay";
+> +};
+> +
+> +//APML for P1
+> +&i2c1 {
+> +       reg = <0xc0 0x40>;
+
+This is unusual. i2c1 is at 0x80; this will clash with i2c2.
+
+Note that the i2c naming in linux counts from zero, whereas the ASPEED
+docs count from 1. So if your board layout has I2C1, you actually want
+i2c2 in the device tree.
+
+> +       status = "okay";
 > +};
 > +
 > +// Thermal Sensors
