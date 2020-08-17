@@ -1,37 +1,61 @@
-From: Vijay Khemka <vijaykhemka@fb.com>
-Date: Thu, 13 Aug 2020 12:04:30 -0700
-Subject: [PATCH] ARM: dts: aspeed: tiogapass: Remove vuart
-Message-ID: <20200813190431.3331026-1-vijaykhemka@fb.com>
+From: Felipe Balbi <balbi@kernel.org>
+Date: Mon, 17 Aug 2020 16:49:32 +0300
+Subject: [PATCH] usb: gadget: aspeed: fixup vhub port irq handling
+In-Reply-To: <20200528011154.30355-1-rentao.bupt@gmail.com>
+References: <20200528011154.30355-1-rentao.bupt@gmail.com>
+Message-ID: <875z9hz8k3.fsf@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Removed vuart for facebook tiogapass platform as it uses uart2 and
-uart3 pin with aspeed uart routing feature.
 
-Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
----
- arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts | 5 -----
- 1 file changed, 5 deletions(-)
+Hi,
 
-diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
-index 2d44d9ad4e40..e6ad821a8635 100644
---- a/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
-@@ -82,11 +82,6 @@ &lpc_ctrl {
- 	status = "okay";
- };
- 
--&vuart {
--	// VUART Host Console
--	status = "okay";
--};
--
- &uart1 {
- 	// Host Console
- 	status = "okay";
+rentao.bupt at gmail.com writes:
+> From: Tao Ren <rentao.bupt@gmail.com>
+>
+> This is a follow-on patch for commit a23be4ed8f48 ("usb: gadget: aspeed:
+> improve vhub port irq handling"): for_each_set_bit() is replaced with
+> simple for() loop because for() loop runs faster on ASPEED BMC.
+>
+> Signed-off-by: Tao Ren <rentao.bupt@gmail.com>
+> ---
+>  drivers/usb/gadget/udc/aspeed-vhub/core.c | 10 +++-------
+>  drivers/usb/gadget/udc/aspeed-vhub/vhub.h |  3 +++
+>  2 files changed, 6 insertions(+), 7 deletions(-)
+>
+> diff --git a/drivers/usb/gadget/udc/aspeed-vhub/core.c b/drivers/usb/gadget/udc/aspeed-vhub/core.c
+> index cdf96911e4b1..be7bb64e3594 100644
+> --- a/drivers/usb/gadget/udc/aspeed-vhub/core.c
+> +++ b/drivers/usb/gadget/udc/aspeed-vhub/core.c
+> @@ -135,13 +135,9 @@ static irqreturn_t ast_vhub_irq(int irq, void *data)
+>  
+>  	/* Handle device interrupts */
+>  	if (istat & vhub->port_irq_mask) {
+> -		unsigned long bitmap = istat;
+> -		int offset = VHUB_IRQ_DEV1_BIT;
+> -		int size = VHUB_IRQ_DEV1_BIT + vhub->max_ports;
+> -
+> -		for_each_set_bit_from(offset, &bitmap, size) {
+> -			i = offset - VHUB_IRQ_DEV1_BIT;
+> -			ast_vhub_dev_irq(&vhub->ports[i].dev);
+> +		for (i = 0; i < vhub->max_ports; i++) {
+> +			if (istat & VHUB_DEV_IRQ(i))
+> +				ast_vhub_dev_irq(&vhub->ports[i].dev);
+
+how have you measured your statement above? for_each_set_bit() does
+exactly what you did. Unless your architecture has an instruction which
+helps finds the next set bit (like cls on ARM), which, then, makes it
+much faster.
+
 -- 
-2.24.1
-
+balbi
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 857 bytes
+Desc: not available
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20200817/5793c222/attachment.sig>
