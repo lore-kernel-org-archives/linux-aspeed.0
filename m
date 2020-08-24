@@ -1,9 +1,7 @@
 From: rentao.bupt@gmail.com <rentao.bupt@gmail.com>
-Date: Mon, 24 Aug 2020 11:29:55 -0700
-Subject: [PATCH 2/2] ARM: dts: aspeed: wedge40: Update UART4 pin settings
-In-Reply-To: <20200824182955.7988-1-rentao.bupt@gmail.com>
-References: <20200824182955.7988-1-rentao.bupt@gmail.com>
-Message-ID: <20200824182955.7988-3-rentao.bupt@gmail.com>
+Date: Mon, 24 Aug 2020 14:19:43 -0700
+Subject: [PATCH 0/5] ARM: dts: aspeed: Add Facebook Wedge400 (AST2500) BMC
+Message-ID: <20200824211948.12852-1-rentao.bupt@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -12,28 +10,38 @@ Content-Transfer-Encoding: 7bit
 
 From: Tao Ren <rentao.bupt@gmail.com>
 
-Enable UART4's NRTS4 (A19) pin because the pin is used for RS485
-software emulation.
+The patch series adds Facebook Wedge400 (AST2500) BMC device tree, and
+FMC flash layout is re-structured because flash size and layout varies
+across different Facebook AST2500 OpenBMC platforms.
 
-Signed-off-by: Tao Ren <rentao.bupt@gmail.com>
----
- arch/arm/boot/dts/aspeed-bmc-facebook-wedge40.dts | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+Patch #1 removes flash layout from ast2500-facebook-netbmc-common.dtsi
+because now we have 32MB, 64MB an 128MB flashes on different Facebook
+AST2500 OpenBMC platforms.
 
-diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-wedge40.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-wedge40.dts
-index 3f2a48fa77b3..8c426ba2f8ab 100644
---- a/arch/arm/boot/dts/aspeed-bmc-facebook-wedge40.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-facebook-wedge40.dts
-@@ -71,7 +71,8 @@
- 	status = "okay";
- 	pinctrl-names = "default";
- 	pinctrl-0 = <&pinctrl_txd4_default
--		     &pinctrl_rxd4_default>;
-+		     &pinctrl_rxd4_default
-+		     &pinctrl_ndts4_default>;
- };
- 
- &uart5 {
+Patch #2, #3 and #4 sets FMC flash layout in CMM, Yamp and Minipack
+device tree explicitly because the original layout settings were removed
+from ast2500-facebook-netbmc-common.dtsi (in patch #1).
+
+Patch #5 adds Facebook Wedge400 AST2500 BMC device tree.
+
+
+Tao Ren (5):
+  ARM: dts: aspeed: Remove flash layout from Facebook AST2500 Common
+    dtsi
+  ARM: dts: aspeed: cmm: Set 32MB FMC flash layout
+  ARM: dts: aspeed: yamp: Set 32MB FMC flash layout
+  ARM: dts: aspeed: minipack: Update 64MB FMC flash layout
+  ARM: dts: aspeed: Add Facebook Wedge400 BMC
+
+ arch/arm/boot/dts/Makefile                    |   1 +
+ arch/arm/boot/dts/aspeed-bmc-facebook-cmm.dts |  17 +
+ .../boot/dts/aspeed-bmc-facebook-minipack.dts |  47 +-
+ .../boot/dts/aspeed-bmc-facebook-wedge400.dts | 420 ++++++++++++++++++
+ .../arm/boot/dts/aspeed-bmc-facebook-yamp.dts |  17 +
+ .../dts/ast2500-facebook-netbmc-common.dtsi   |  13 -
+ 6 files changed, 500 insertions(+), 15 deletions(-)
+ create mode 100644 arch/arm/boot/dts/aspeed-bmc-facebook-wedge400.dts
+
 -- 
 2.17.1
 
