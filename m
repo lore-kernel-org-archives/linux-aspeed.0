@@ -1,10 +1,9 @@
 From: rentao.bupt@gmail.com <rentao.bupt@gmail.com>
-Date: Mon, 24 Aug 2020 14:19:44 -0700
-Subject: [PATCH 1/5] ARM: dts: aspeed: Remove flash layout from Facebook
- AST2500 Common dtsi
+Date: Mon, 24 Aug 2020 14:19:45 -0700
+Subject: [PATCH 2/5] ARM: dts: aspeed: cmm: Set 32MB FMC flash layout
 In-Reply-To: <20200824211948.12852-1-rentao.bupt@gmail.com>
 References: <20200824211948.12852-1-rentao.bupt@gmail.com>
-Message-ID: <20200824211948.12852-2-rentao.bupt@gmail.com>
+Message-ID: <20200824211948.12852-3-rentao.bupt@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -13,45 +12,39 @@ Content-Transfer-Encoding: 7bit
 
 From: Tao Ren <rentao.bupt@gmail.com>
 
-Remove FMC flash layout from ast2500-facebook-netbmc-common.dtsi because
-flash size and layout varies across different Facebook AST2500 OpenBMC
-platforms.
+Set 32MB FMC flash layout in CMM device tree explicitly because the flash
+layout settings were removed from "ast2500-facebook-netbmc-common.dtsi".
 
 Signed-off-by: Tao Ren <rentao.bupt@gmail.com>
 ---
- .../boot/dts/ast2500-facebook-netbmc-common.dtsi    | 13 -------------
- 1 file changed, 13 deletions(-)
+ arch/arm/boot/dts/aspeed-bmc-facebook-cmm.dts | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
 
-diff --git a/arch/arm/boot/dts/ast2500-facebook-netbmc-common.dtsi b/arch/arm/boot/dts/ast2500-facebook-netbmc-common.dtsi
-index 7468f102bd76..c0c43b8644ee 100644
---- a/arch/arm/boot/dts/ast2500-facebook-netbmc-common.dtsi
-+++ b/arch/arm/boot/dts/ast2500-facebook-netbmc-common.dtsi
-@@ -47,25 +47,12 @@
- 		status = "okay";
- 		m25p,fast-read;
- 		label = "spi0.0";
--
--#include "facebook-bmc-flash-layout.dtsi"
- 	};
- 
- 	fmc_flash1: flash at 1 {
- 		status = "okay";
- 		m25p,fast-read;
- 		label = "spi0.1";
--
--		partitions {
--			compatible = "fixed-partitions";
--			#address-cells = <1>;
--			#size-cells = <1>;
--
--			flash1 at 0 {
--				reg = <0x0 0x2000000>;
--				label = "flash1";
--			};
--		};
- 	};
+diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-cmm.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-cmm.dts
+index 7bc7df7ed428..2fb8b147f489 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-facebook-cmm.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-facebook-cmm.dts
+@@ -1571,3 +1571,20 @@
+ &sdhci1 {
+ 	status = "disabled";
  };
- 
++
++&fmc_flash0 {
++#include "facebook-bmc-flash-layout.dtsi"
++};
++
++&fmc_flash1 {
++	partitions {
++		compatible = "fixed-partitions";
++		#address-cells = <1>;
++		#size-cells = <1>;
++
++		flash1 at 0 {
++			reg = <0x0 0x2000000>;
++			label = "flash1";
++		};
++	};
++};
 -- 
 2.17.1
 
