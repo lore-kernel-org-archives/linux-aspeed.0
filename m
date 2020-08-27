@@ -1,54 +1,44 @@
-From: Felipe Balbi <balbi@kernel.org>
-Date: Mon, 31 Aug 2020 12:56:22 +0300
-Subject: [PATCH] usb: gadget: aspeed: fixup vhub port irq handling
-In-Reply-To: <20200817225603.GA21228@taoren-ubuntu-R90MNF91>
-References: <20200528011154.30355-1-rentao.bupt@gmail.com>
- <875z9hz8k3.fsf@kernel.org>
- <20200817225603.GA21228@taoren-ubuntu-R90MNF91>
-Message-ID: <87v9gz9m0p.fsf@kernel.org>
+From: Tero Kristo <t-kristo@ti.com>
+Date: Thu, 27 Aug 2020 10:13:16 +0300
+Subject: [PATCH 2/2] EDAC/ti: Fix handling of platform_get_irq() error
+In-Reply-To: <20200827070743.26628-2-krzk@kernel.org>
+References: <20200827070743.26628-1-krzk@kernel.org>
+ <20200827070743.26628-2-krzk@kernel.org>
+Message-ID: <1a92f43b-5358-169f-7dd8-1860a26d9861@ti.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+On 27/08/2020 10:07, Krzysztof Kozlowski wrote:
+> platform_get_irq() returns -ERRNO on error.  In such case comparison
+> to 0 would pass the check.
+> 
+> Fixes: 86a18ee21e5e ("EDAC, ti: Add support for TI keystone and DRA7xx EDAC")
+> Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
 
-Hi,
+Reviewed-by: Tero Kristo <t-kristo@ti.com>
 
-Tao Ren <rentao.bupt@gmail.com> writes:
->> > diff --git a/drivers/usb/gadget/udc/aspeed-vhub/core.c b/drivers/usb/gadget/udc/aspeed-vhub/core.c
->> > index cdf96911e4b1..be7bb64e3594 100644
->> > --- a/drivers/usb/gadget/udc/aspeed-vhub/core.c
->> > +++ b/drivers/usb/gadget/udc/aspeed-vhub/core.c
->> > @@ -135,13 +135,9 @@ static irqreturn_t ast_vhub_irq(int irq, void *data)
->> >  
->> >  	/* Handle device interrupts */
->> >  	if (istat & vhub->port_irq_mask) {
->> > -		unsigned long bitmap = istat;
->> > -		int offset = VHUB_IRQ_DEV1_BIT;
->> > -		int size = VHUB_IRQ_DEV1_BIT + vhub->max_ports;
->> > -
->> > -		for_each_set_bit_from(offset, &bitmap, size) {
->> > -			i = offset - VHUB_IRQ_DEV1_BIT;
->> > -			ast_vhub_dev_irq(&vhub->ports[i].dev);
->> > +		for (i = 0; i < vhub->max_ports; i++) {
->> > +			if (istat & VHUB_DEV_IRQ(i))
->> > +				ast_vhub_dev_irq(&vhub->ports[i].dev);
->> 
->> how have you measured your statement above? for_each_set_bit() does
->> exactly what you did. Unless your architecture has an instruction which
->> helps finds the next set bit (like cls on ARM), which, then, makes it
->> much faster.
->
-> I did some testing and result shows for() loop runs faster than
-> for_each_set_bit() loop. Please refer to details below (discussion with
-> Benjamin in the original patch) and kindly let me know your
-> suggestions.
+> ---
+>   drivers/edac/ti_edac.c | 3 ++-
+>   1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/edac/ti_edac.c b/drivers/edac/ti_edac.c
+> index 6e52796a0b41..e7eae20f83d1 100644
+> --- a/drivers/edac/ti_edac.c
+> +++ b/drivers/edac/ti_edac.c
+> @@ -278,7 +278,8 @@ static int ti_edac_probe(struct platform_device *pdev)
+>   
+>   	/* add EMIF ECC error handler */
+>   	error_irq = platform_get_irq(pdev, 0);
+> -	if (!error_irq) {
+> +	if (error_irq < 0) {
+> +		ret = error_irq;
+>   		edac_printk(KERN_ERR, EDAC_MOD_NAME,
+>   			    "EMIF irq number not defined.\n");
+>   		goto err;
+> 
 
-no strong feelings, just surprised you're already worried about 20~40
-cycles of cpu time ;-)
-
-patch queued for next merge window
-
--- 
-balbi
+--
+Texas Instruments Finland Oy, Porkkalankatu 22, 00180 Helsinki. Y-tunnus/Business ID: 0615521-4. Kotipaikka/Domicile: Helsinki
