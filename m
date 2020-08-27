@@ -1,7 +1,9 @@
 From: Krzysztof Kozlowski <krzk@kernel.org>
-Date: Thu, 27 Aug 2020 09:07:42 +0200
-Subject: [PATCH 1/2] EDAC/aspeed: Fix handling of platform_get_irq() error
-Message-ID: <20200827070743.26628-1-krzk@kernel.org>
+Date: Thu, 27 Aug 2020 09:07:43 +0200
+Subject: [PATCH 2/2] EDAC/ti: Fix handling of platform_get_irq() error
+In-Reply-To: <20200827070743.26628-1-krzk@kernel.org>
+References: <20200827070743.26628-1-krzk@kernel.org>
+Message-ID: <20200827070743.26628-2-krzk@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -11,27 +13,26 @@ Content-Transfer-Encoding: 7bit
 platform_get_irq() returns -ERRNO on error.  In such case comparison
 to 0 would pass the check.
 
-Fixes: 9b7e6242ee4e ("EDAC, aspeed: Add an Aspeed AST2500 EDAC driver")
+Fixes: 86a18ee21e5e ("EDAC, ti: Add support for TI keystone and DRA7xx EDAC")
 Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
 ---
- drivers/edac/aspeed_edac.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/edac/ti_edac.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/edac/aspeed_edac.c b/drivers/edac/aspeed_edac.c
-index b194658b8b5c..fbec28dc661d 100644
---- a/drivers/edac/aspeed_edac.c
-+++ b/drivers/edac/aspeed_edac.c
-@@ -209,8 +209,8 @@ static int config_irq(void *ctx, struct platform_device *pdev)
- 	/* register interrupt handler */
- 	irq = platform_get_irq(pdev, 0);
- 	dev_dbg(&pdev->dev, "got irq %d\n", irq);
--	if (!irq)
--		return -ENODEV;
-+	if (irq < 0)
-+		return irq;
+diff --git a/drivers/edac/ti_edac.c b/drivers/edac/ti_edac.c
+index 6e52796a0b41..e7eae20f83d1 100644
+--- a/drivers/edac/ti_edac.c
++++ b/drivers/edac/ti_edac.c
+@@ -278,7 +278,8 @@ static int ti_edac_probe(struct platform_device *pdev)
  
- 	rc = devm_request_irq(&pdev->dev, irq, mcr_isr, IRQF_TRIGGER_HIGH,
- 			      DRV_NAME, ctx);
+ 	/* add EMIF ECC error handler */
+ 	error_irq = platform_get_irq(pdev, 0);
+-	if (!error_irq) {
++	if (error_irq < 0) {
++		ret = error_irq;
+ 		edac_printk(KERN_ERR, EDAC_MOD_NAME,
+ 			    "EMIF irq number not defined.\n");
+ 		goto err;
 -- 
 2.17.1
 
