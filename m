@@ -1,10 +1,10 @@
 From: Krzysztof Kozlowski <krzk@kernel.org>
-Date: Sat, 29 Aug 2020 11:40:22 +0200
-Subject: [PATCH 4/6] ARM: dts: aspeed: Fix PCA95xx GPIO expander properties on
- Portwell
+Date: Sat, 29 Aug 2020 11:40:23 +0200
+Subject: [PATCH 5/6] ARM: dts: dove: Fix PCA95xx GPIO expander properties on
+ A510
 In-Reply-To: <20200829094024.31842-1-krzk@kernel.org>
 References: <20200829094024.31842-1-krzk@kernel.org>
-Message-ID: <20200829094024.31842-4-krzk@kernel.org>
+Message-ID: <20200829094024.31842-5-krzk@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -16,22 +16,21 @@ properly.
 
 Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
 ---
- arch/arm/boot/dts/aspeed-bmc-portwell-neptune.dts | 2 ++
- 1 file changed, 2 insertions(+)
+ arch/arm/boot/dts/dove-sbc-a510.dts | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/arch/arm/boot/dts/aspeed-bmc-portwell-neptune.dts b/arch/arm/boot/dts/aspeed-bmc-portwell-neptune.dts
-index 4a1ca8f5b6a7..03c161493ffc 100644
---- a/arch/arm/boot/dts/aspeed-bmc-portwell-neptune.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-portwell-neptune.dts
-@@ -121,6 +121,8 @@
- 	pca9555 at 27 {
+diff --git a/arch/arm/boot/dts/dove-sbc-a510.dts b/arch/arm/boot/dts/dove-sbc-a510.dts
+index 2bb85a9b7614..df021f9b0117 100644
+--- a/arch/arm/boot/dts/dove-sbc-a510.dts
++++ b/arch/arm/boot/dts/dove-sbc-a510.dts
+@@ -143,6 +143,7 @@
+ 	gpio_ext: gpio at 20 {
  		compatible = "nxp,pca9555";
- 		reg = <0x27>;
+ 		reg = <0x20>;
 +		gpio-controller;
-+		#gpio-cells = <2>;
+ 		#gpio-cells = <2>;
  	};
  };
- 
 -- 
 2.17.1
 
