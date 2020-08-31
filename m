@@ -1,97 +1,78 @@
-From: Chanh Nguyen <chanh@os.amperecomputing.com>
-Date: Tue, 28 Feb 2023 17:28:20 +0700
-Subject: [PATCH v2] ARM: dts: aspeed: mtmitchell: Enable NCSI
-Message-ID: <20230228102820.18477-1-chanh@os.amperecomputing.com>
+From: Tao Ren <rentao.bupt@gmail.com>
+Date: Mon, 31 Aug 2020 16:26:08 -0700
+Subject: [PATCH] usb: gadget: aspeed: fixup vhub port irq handling
+In-Reply-To: <87y2lv9m32.fsf@kernel.org>
+References: <20200528011154.30355-1-rentao.bupt@gmail.com>
+ <875z9hz8k3.fsf@kernel.org>
+ <20200817225603.GA21228@taoren-ubuntu-R90MNF91>
+ <87y2lv9m32.fsf@kernel.org>
+Message-ID: <20200831232607.GA4015@taoren-ubuntu-R90MNF91>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Support the mac3 (RGMII4) as an NC-SI stack instead of an MDIO PHY.
+On Mon, Aug 31, 2020 at 12:54:57PM +0300, Felipe Balbi wrote:
+> 
+> Hi,
+> 
+> Tao Ren <rentao.bupt@gmail.com> writes:
+> > On Mon, Aug 17, 2020 at 04:49:32PM +0300, Felipe Balbi wrote:
+> >> 
+> >> Hi,
+> >> 
+> >> rentao.bupt at gmail.com writes:
+> >> > From: Tao Ren <rentao.bupt@gmail.com>
+> >> >
+> >> > This is a follow-on patch for commit a23be4ed8f48 ("usb: gadget: aspeed:
+> >> > improve vhub port irq handling"): for_each_set_bit() is replaced with
+> >> > simple for() loop because for() loop runs faster on ASPEED BMC.
+> >> >
+> >> > Signed-off-by: Tao Ren <rentao.bupt@gmail.com>
+> >> > ---
+> >> >  drivers/usb/gadget/udc/aspeed-vhub/core.c | 10 +++-------
+> >> >  drivers/usb/gadget/udc/aspeed-vhub/vhub.h |  3 +++
+> >> >  2 files changed, 6 insertions(+), 7 deletions(-)
+> >> >
+> >> > diff --git a/drivers/usb/gadget/udc/aspeed-vhub/core.c b/drivers/usb/gadget/udc/aspeed-vhub/core.c
+> >> > index cdf96911e4b1..be7bb64e3594 100644
+> >> > --- a/drivers/usb/gadget/udc/aspeed-vhub/core.c
+> >> > +++ b/drivers/usb/gadget/udc/aspeed-vhub/core.c
+> >> > @@ -135,13 +135,9 @@ static irqreturn_t ast_vhub_irq(int irq, void *data)
+> >> >  
+> >> >  	/* Handle device interrupts */
+> >> >  	if (istat & vhub->port_irq_mask) {
+> >> > -		unsigned long bitmap = istat;
+> >> > -		int offset = VHUB_IRQ_DEV1_BIT;
+> >> > -		int size = VHUB_IRQ_DEV1_BIT + vhub->max_ports;
+> >> > -
+> >> > -		for_each_set_bit_from(offset, &bitmap, size) {
+> >> > -			i = offset - VHUB_IRQ_DEV1_BIT;
+> >> > -			ast_vhub_dev_irq(&vhub->ports[i].dev);
+> >> > +		for (i = 0; i < vhub->max_ports; i++) {
+> >> > +			if (istat & VHUB_DEV_IRQ(i))
+> >> > +				ast_vhub_dev_irq(&vhub->ports[i].dev);
+> >> 
+> >> how have you measured your statement above? for_each_set_bit() does
+> >> exactly what you did. Unless your architecture has an instruction which
+> >> helps finds the next set bit (like cls on ARM), which, then, makes it
+> >> much faster.
+> >
+> > I did some testing and result shows for() loop runs faster than
+> > for_each_set_bit() loop. Please refer to details below (discussion with
+> > Benjamin in the original patch) and kindly let me know your suggestions.
+> 
+> no strong feelings, just surprised that you're already worried about
+> 20~40 cycles of cpu time ;-)
+> 
+> Patch applied for next merge window
 
-The OCP slot #0 and OCP slot #1 use a common the BMC_NCSI signal,
-so we use only one of them at the same time. The OCP slot #0 will
-be enabled by PCA9539's setting by default.
+Thanks Felipe. Ben had some concerns about interrupt handling cost on
+AST2400 BMC (ARM9), hence we did the comparison and noticed the small
+difference :)
 
-Also, enable the OCP Auxiliary Power during booting.
 
-Signed-off-by: Chanh Nguyen <chanh@os.amperecomputing.com>
----
-Changes in v2:
-   - Change PCA9539APW node name.                     [Krzysztof]
----
- .../boot/dts/aspeed-bmc-ampere-mtmitchell.dts | 37 ++++++++++++++++++-
- 1 file changed, 36 insertions(+), 1 deletion(-)
+Cheers,
 
-diff --git a/arch/arm/boot/dts/aspeed-bmc-ampere-mtmitchell.dts b/arch/arm/boot/dts/aspeed-bmc-ampere-mtmitchell.dts
-index 4b91600eaf62..1e0e88465254 100644
---- a/arch/arm/boot/dts/aspeed-bmc-ampere-mtmitchell.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-ampere-mtmitchell.dts
-@@ -251,6 +251,14 @@
- 	pinctrl-0 = <&pinctrl_rgmii1_default>;
- };
- 
-+&mac3 {
-+	status = "okay";
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pinctrl_rmii4_default>;
-+	clock-names = "MACCLK", "RCLK";
-+	use-ncsi;
-+};
-+
- &fmc {
- 	status = "okay";
- 	flash at 0 {
-@@ -439,6 +447,26 @@
- 	status = "okay";
- };
- 
-+&i2c8 {
-+	status = "okay";
-+
-+	gpio at 77 {
-+		compatible = "nxp,pca9539";
-+		reg = <0x77>;
-+		gpio-controller;
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+		#gpio-cells = <2>;
-+
-+		bmc-ocp0-en-hog {
-+			gpio-hog;
-+			gpios = <7 GPIO_ACTIVE_LOW>;
-+			output-high;
-+			line-name = "bmc-ocp0-en-n";
-+		};
-+	};
-+};
-+
- &i2c9 {
- 	status = "okay";
- };
-@@ -530,13 +558,20 @@
- 	/*V0-V7*/	"s0-hightemp-n","s0-fault-alert","s0-sys-auth-failure-n",
- 			"host0-reboot-ack-n","host0-ready","host0-shd-req-n",
- 			"host0-shd-ack-n","s0-overtemp-n",
--	/*W0-W7*/	"ocp-aux-pwren","ocp-main-pwren","ocp-pgood","",
-+	/*W0-W7*/	"","ocp-main-pwren","ocp-pgood","",
- 			"bmc-ok","bmc-ready","spi0-program-sel","spi0-backup-sel",
- 	/*X0-X7*/	"i2c-backup-sel","s1-fault-alert","s1-fw-boot-ok",
- 			"s1-hightemp-n","s0-spi-auth-fail-n","s1-sys-auth-failure-n",
- 			"s1-overtemp-n","s1-spi-auth-fail-n",
- 	/*Y0-Y7*/	"","","","","","","","host0-special-boot",
- 	/*Z0-Z7*/	"reset-button","ps0-pgood","ps1-pgood","","","","","";
-+
-+	ocp-aux-pwren-hog {
-+		gpio-hog;
-+		gpios = <ASPEED_GPIO(W, 0) GPIO_ACTIVE_HIGH>;
-+		output-high;
-+		line-name = "ocp-aux-pwren";
-+	};
- };
- 
- &gpio1 {
--- 
-2.17.1
-
+Tao
