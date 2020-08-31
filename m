@@ -1,11 +1,11 @@
 From: Felipe Balbi <balbi@kernel.org>
-Date: Mon, 31 Aug 2020 12:54:10 +0300
+Date: Mon, 31 Aug 2020 12:54:57 +0300
 Subject: [PATCH] usb: gadget: aspeed: fixup vhub port irq handling
 In-Reply-To: <20200817225603.GA21228@taoren-ubuntu-R90MNF91>
 References: <20200528011154.30355-1-rentao.bupt@gmail.com>
  <875z9hz8k3.fsf@kernel.org>
  <20200817225603.GA21228@taoren-ubuntu-R90MNF91>
-Message-ID: <87zh6b9m4d.fsf@kernel.org>
+Message-ID: <87y2lv9m32.fsf@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -74,4 +74,4 @@ Name: signature.asc
 Type: application/pgp-signature
 Size: 857 bytes
 Desc: not available
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20200831/6f6ceba7/attachment.sig>
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20200831/51107915/attachment.sig>
