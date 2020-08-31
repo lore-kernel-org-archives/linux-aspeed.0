@@ -1,11 +1,11 @@
 From: Felipe Balbi <balbi@kernel.org>
-Date: Mon, 31 Aug 2020 12:54:57 +0300
+Date: Mon, 31 Aug 2020 12:56:22 +0300
 Subject: [PATCH] usb: gadget: aspeed: fixup vhub port irq handling
 In-Reply-To: <20200817225603.GA21228@taoren-ubuntu-R90MNF91>
 References: <20200528011154.30355-1-rentao.bupt@gmail.com>
  <875z9hz8k3.fsf@kernel.org>
  <20200817225603.GA21228@taoren-ubuntu-R90MNF91>
-Message-ID: <87y2lv9m32.fsf@kernel.org>
+Message-ID: <87v9gz9m0p.fsf@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -16,23 +16,6 @@ Content-Transfer-Encoding: 7bit
 Hi,
 
 Tao Ren <rentao.bupt@gmail.com> writes:
-> On Mon, Aug 17, 2020 at 04:49:32PM +0300, Felipe Balbi wrote:
->> 
->> Hi,
->> 
->> rentao.bupt at gmail.com writes:
->> > From: Tao Ren <rentao.bupt@gmail.com>
->> >
->> > This is a follow-on patch for commit a23be4ed8f48 ("usb: gadget: aspeed:
->> > improve vhub port irq handling"): for_each_set_bit() is replaced with
->> > simple for() loop because for() loop runs faster on ASPEED BMC.
->> >
->> > Signed-off-by: Tao Ren <rentao.bupt@gmail.com>
->> > ---
->> >  drivers/usb/gadget/udc/aspeed-vhub/core.c | 10 +++-------
->> >  drivers/usb/gadget/udc/aspeed-vhub/vhub.h |  3 +++
->> >  2 files changed, 6 insertions(+), 7 deletions(-)
->> >
 >> > diff --git a/drivers/usb/gadget/udc/aspeed-vhub/core.c b/drivers/usb/gadget/udc/aspeed-vhub/core.c
 >> > index cdf96911e4b1..be7bb64e3594 100644
 >> > --- a/drivers/usb/gadget/udc/aspeed-vhub/core.c
@@ -59,19 +42,13 @@ Tao Ren <rentao.bupt@gmail.com> writes:
 >
 > I did some testing and result shows for() loop runs faster than
 > for_each_set_bit() loop. Please refer to details below (discussion with
-> Benjamin in the original patch) and kindly let me know your suggestions.
+> Benjamin in the original patch) and kindly let me know your
+> suggestions.
 
-no strong feelings, just surprised that you're already worried about
-20~40 cycles of cpu time ;-)
+no strong feelings, just surprised you're already worried about 20~40
+cycles of cpu time ;-)
 
-Patch applied for next merge window
+patch queued for next merge window
 
 -- 
 balbi
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 857 bytes
-Desc: not available
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20200831/51107915/attachment.sig>
