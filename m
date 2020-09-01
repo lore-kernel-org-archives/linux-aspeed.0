@@ -1,36 +1,30 @@
-From: Wolfram Sang <wsa@kernel.org>
-Date: Tue, 1 Sep 2020 08:11:39 +0200
-Subject: [PATCH 4/5] ARM: dts: Aspeed: Tacoma: Add IBM Operation Panel
- I2C device
-In-Reply-To: <CACPK8XfeKiee-LAQZXs6jygr1Bj7pqGTGLUnTV1mzO5FBZ-XZQ@mail.gmail.com>
-References: <20200820161152.22751-1-eajames@linux.ibm.com>
- <20200820161152.22751-5-eajames@linux.ibm.com>
- <CACPK8XfeKiee-LAQZXs6jygr1Bj7pqGTGLUnTV1mzO5FBZ-XZQ@mail.gmail.com>
-Message-ID: <20200901061139.GC1148@ninjato>
+From: Borislav Petkov <bp@alien8.de>
+Date: Tue, 1 Sep 2020 20:51:36 +0200
+Subject: [PATCH 1/2] EDAC/aspeed: Fix handling of platform_get_irq() error
+In-Reply-To: <20200827070743.26628-1-krzk@kernel.org>
+References: <20200827070743.26628-1-krzk@kernel.org>
+Message-ID: <20200901185136.GD8392@zn.tnic>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-
-> > +       ibm-panel at 62 {
-> > +               compatible = "ibm,op-panel";
-> > +               reg = <0x40000062>; /* I2C_OWN_SLAVE_ADDRESS */
+On Thu, Aug 27, 2020 at 09:07:42AM +0200, Krzysztof Kozlowski wrote:
+> platform_get_irq() returns -ERRNO on error.  In such case comparison
+> to 0 would pass the check.
 > 
-> Other users of SLAVE_ADDRESS have included <dt-bindings/i2c/i2c.h> and
-> written the reg as follows:
-> 
-> reg = <(I2C_OWN_SLAVE_ADDRESS | 0x62)>
-> 
-> Which obviously has the same result. I'll leave it up to you.
+> Fixes: 9b7e6242ee4e ("EDAC, aspeed: Add an Aspeed AST2500 EDAC driver")
+> Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
+> ---
+>  drivers/edac/aspeed_edac.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 
-The latter, please.
+Both applied,
+thanks.
 
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 833 bytes
-Desc: not available
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20200901/c7ad5023/attachment-0001.sig>
+-- 
+Regards/Gruss,
+    Boris.
+
+https://people.kernel.org/tglx/notes-about-netiquette
