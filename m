@@ -1,78 +1,69 @@
-From: Tao Ren <rentao.bupt@gmail.com>
-Date: Mon, 31 Aug 2020 16:26:08 -0700
-Subject: [PATCH] usb: gadget: aspeed: fixup vhub port irq handling
-In-Reply-To: <87y2lv9m32.fsf@kernel.org>
-References: <20200528011154.30355-1-rentao.bupt@gmail.com>
- <875z9hz8k3.fsf@kernel.org>
- <20200817225603.GA21228@taoren-ubuntu-R90MNF91>
- <87y2lv9m32.fsf@kernel.org>
-Message-ID: <20200831232607.GA4015@taoren-ubuntu-R90MNF91>
+From: Joel Stanley <joel@jms.id.au>
+Date: Tue, 1 Sep 2020 05:58:12 +0000
+Subject: [PATCH 2/5] input: misc: Add IBM Operation Panel driver
+In-Reply-To: <20200820161152.22751-3-eajames@linux.ibm.com>
+References: <20200820161152.22751-1-eajames@linux.ibm.com>
+ <20200820161152.22751-3-eajames@linux.ibm.com>
+Message-ID: <CACPK8XdMqZv5f0X1-G2WPrYSpYMpMjJC4WxNsiKSxqtWb0M1jw@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Aug 31, 2020 at 12:54:57PM +0300, Felipe Balbi wrote:
-> 
-> Hi,
-> 
-> Tao Ren <rentao.bupt@gmail.com> writes:
-> > On Mon, Aug 17, 2020 at 04:49:32PM +0300, Felipe Balbi wrote:
-> >> 
-> >> Hi,
-> >> 
-> >> rentao.bupt at gmail.com writes:
-> >> > From: Tao Ren <rentao.bupt@gmail.com>
-> >> >
-> >> > This is a follow-on patch for commit a23be4ed8f48 ("usb: gadget: aspeed:
-> >> > improve vhub port irq handling"): for_each_set_bit() is replaced with
-> >> > simple for() loop because for() loop runs faster on ASPEED BMC.
-> >> >
-> >> > Signed-off-by: Tao Ren <rentao.bupt@gmail.com>
-> >> > ---
-> >> >  drivers/usb/gadget/udc/aspeed-vhub/core.c | 10 +++-------
-> >> >  drivers/usb/gadget/udc/aspeed-vhub/vhub.h |  3 +++
-> >> >  2 files changed, 6 insertions(+), 7 deletions(-)
-> >> >
-> >> > diff --git a/drivers/usb/gadget/udc/aspeed-vhub/core.c b/drivers/usb/gadget/udc/aspeed-vhub/core.c
-> >> > index cdf96911e4b1..be7bb64e3594 100644
-> >> > --- a/drivers/usb/gadget/udc/aspeed-vhub/core.c
-> >> > +++ b/drivers/usb/gadget/udc/aspeed-vhub/core.c
-> >> > @@ -135,13 +135,9 @@ static irqreturn_t ast_vhub_irq(int irq, void *data)
-> >> >  
-> >> >  	/* Handle device interrupts */
-> >> >  	if (istat & vhub->port_irq_mask) {
-> >> > -		unsigned long bitmap = istat;
-> >> > -		int offset = VHUB_IRQ_DEV1_BIT;
-> >> > -		int size = VHUB_IRQ_DEV1_BIT + vhub->max_ports;
-> >> > -
-> >> > -		for_each_set_bit_from(offset, &bitmap, size) {
-> >> > -			i = offset - VHUB_IRQ_DEV1_BIT;
-> >> > -			ast_vhub_dev_irq(&vhub->ports[i].dev);
-> >> > +		for (i = 0; i < vhub->max_ports; i++) {
-> >> > +			if (istat & VHUB_DEV_IRQ(i))
-> >> > +				ast_vhub_dev_irq(&vhub->ports[i].dev);
-> >> 
-> >> how have you measured your statement above? for_each_set_bit() does
-> >> exactly what you did. Unless your architecture has an instruction which
-> >> helps finds the next set bit (like cls on ARM), which, then, makes it
-> >> much faster.
-> >
-> > I did some testing and result shows for() loop runs faster than
-> > for_each_set_bit() loop. Please refer to details below (discussion with
-> > Benjamin in the original patch) and kindly let me know your suggestions.
-> 
-> no strong feelings, just surprised that you're already worried about
-> 20~40 cycles of cpu time ;-)
-> 
-> Patch applied for next merge window
+On Thu, 20 Aug 2020 at 16:12, Eddie James <eajames@linux.ibm.com> wrote:
+>
+> Add a driver to get the button events from the panel and provide
+> them to userspace with the input subsystem. The panel is
+> connected with I2C and controls the bus, so the driver registers
+> as an I2C slave device.
+>
+> Signed-off-by: Eddie James <eajames@linux.ibm.com>
+> ---
+>  MAINTAINERS                    |   1 +
+>  drivers/input/misc/Kconfig     |  10 ++
+>  drivers/input/misc/Makefile    |   1 +
+>  drivers/input/misc/ibm-panel.c | 186 +++++++++++++++++++++++++++++++++
+>  4 files changed, 198 insertions(+)
+>  create mode 100644 drivers/input/misc/ibm-panel.c
+>
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index a9fd08e9cd54..077cc79ad7fd 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -8283,6 +8283,7 @@ M:        Eddie James <eajames@linux.ibm.com>
+>  L:     linux-input at vger.kernel.org
+>  S:     Maintained
+>  F:     Documentation/devicetree/bindings/input/ibm,op-panel.yaml
+> +F:     drivers/input/misc/ibm-panel.c
+>
+>  IBM Power 842 compression accelerator
+>  M:     Haren Myneni <haren@us.ibm.com>
+> diff --git a/drivers/input/misc/Kconfig b/drivers/input/misc/Kconfig
+> index 362e8a01980c..88fb465a18b8 100644
+> --- a/drivers/input/misc/Kconfig
+> +++ b/drivers/input/misc/Kconfig
+> @@ -708,6 +708,16 @@ config INPUT_ADXL34X_SPI
+>           To compile this driver as a module, choose M here: the
+>           module will be called adxl34x-spi.
+>
+> +config INPUT_IBM_PANEL
+> +       tristate "IBM Operation Panel driver"
+> +       depends on I2C_SLAVE || COMPILE_TEST
+> +       help
+> +         Supports the IBM Operation Panel as an input device. The panel is a
+> +         controller attached to the system with some buttons and an LCD display
+> +         that allows someone with physical access to the system to perform
+> +         various administrative tasks. This driver only supports the part of
+> +         the controller that sends commands to the system.
 
-Thanks Felipe. Ben had some concerns about interrupt handling cost on
-AST2400 BMC (ARM9), hence we did the comparison and noticed the small
-difference :)
+Is this always attached via a service processor/bmc? If so, mention it
+here so people know there's no point enabling it on a host/distro
+kernel.
 
+I assume you're implementing the protocol correctly.  If you have a
+link to a specification then include that in the file.
 
-Cheers,
+The code looks okay to me.
 
-Tao
+Reviewed-by: Joel Stanley <joel@jms.id.au>
