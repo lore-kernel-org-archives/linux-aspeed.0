@@ -1,95 +1,38 @@
-From: Joel Stanley <joel@jms.id.au>
-Date: Tue, 1 Sep 2020 06:01:39 +0000
-Subject: [PATCH 1/5] dt-bindings: input: Add documentation for IBM
- Operation Panel
-In-Reply-To: <20200820161152.22751-2-eajames@linux.ibm.com>
+From: Wolfram Sang <wsa@kernel.org>
+Date: Tue, 1 Sep 2020 08:11:08 +0200
+Subject: [PATCH 2/5] input: misc: Add IBM Operation Panel driver
+In-Reply-To: <20200820161152.22751-3-eajames@linux.ibm.com>
 References: <20200820161152.22751-1-eajames@linux.ibm.com>
- <20200820161152.22751-2-eajames@linux.ibm.com>
-Message-ID: <CACPK8Xe6CWgs555t_TCkwv2fZ9Aev9bFH6P8dHYnp9u6Pt0dVg@mail.gmail.com>
+ <20200820161152.22751-3-eajames@linux.ibm.com>
+Message-ID: <20200901061108.GB1148@ninjato>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, 20 Aug 2020 at 16:12, Eddie James <eajames@linux.ibm.com> wrote:
->
-> Document the bindings for the IBM Operation Panel, which provides
-> a simple interface to control a server. It has a display and three
-> buttons.
-> Also update MAINTAINERS for the new file.
->
-> Signed-off-by: Eddie James <eajames@linux.ibm.com>
 
-Acked-by: Joel Stanley <joel@jms.id.au>
+> +	switch (event) {
+> +	case I2C_SLAVE_STOP:
+> +		command_size = panel->idx;
+> +		fallthrough;
+> +	case I2C_SLAVE_WRITE_REQUESTED:
+> +		panel->idx = 0;
+> +		break;
+> +	case I2C_SLAVE_WRITE_RECEIVED:
+> +		if (panel->idx < sizeof(panel->command))
+> +			panel->command[panel->idx++] = *val;
+> +		else
+> +			dev_dbg(&panel->input->dev, "command truncated\n");
 
-> ---
->  .../bindings/input/ibm,op-panel.yaml          | 38 +++++++++++++++++++
->  MAINTAINERS                                   |  6 +++
->  2 files changed, 44 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/input/ibm,op-panel.yaml
->
-> diff --git a/Documentation/devicetree/bindings/input/ibm,op-panel.yaml b/Documentation/devicetree/bindings/input/ibm,op-panel.yaml
-> new file mode 100644
-> index 000000000000..86a32e8f3ef0
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/input/ibm,op-panel.yaml
-> @@ -0,0 +1,38 @@
-> +# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
-> +%YAML 1.2
-> +---
-> +$id: http://devicetree.org/schemas/input/ibm,op-panel.yaml#
-> +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> +
-> +title: IBM Operation Panel
-> +
-> +maintainers:
-> +  - Eddie James <eajames@linux.ibm.com>
-> +
-> +description: |
-> +  The IBM Operation Panel provides a simple interface to control the connected
-> +  server. It has a display and three buttons: two directional arrows and one
-> +  'Enter' button.
-> +
-> +properties:
-> +  compatible:
-> +    const: ibm,op-panel
-> +
-> +  reg:
-> +    maxItems: 1
-> +
-> +required:
-> +  - compatible
-> +  - reg
-> +
-> +examples:
-> +  - |
-> +    i2c {
-> +        #address-cells = <1>;
-> +        #size-cells = <0>;
-> +
-> +        ibm-op-panel at 62 {
-> +            compatible = "ibm,op-panel";
-> +            reg = <0x40000062>; /* I2C_OWN_SLAVE_ADDRESS */
-> +        };
-> +    };
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index ac79fdbdf8d0..a9fd08e9cd54 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -8278,6 +8278,12 @@ T:       git git://git.kernel.org/pub/scm/linux/kernel/git/aegl/linux.git
->  F:     Documentation/ia64/
->  F:     arch/ia64/
->
-> +IBM Operation Panel Input Driver
-> +M:     Eddie James <eajames@linux.ibm.com>
-> +L:     linux-input at vger.kernel.org
-> +S:     Maintained
-> +F:     Documentation/devicetree/bindings/input/ibm,op-panel.yaml
-> +
->  IBM Power 842 compression accelerator
->  M:     Haren Myneni <haren@us.ibm.com>
->  S:     Supported
-> --
-> 2.26.2
->
+Just double checking: Do you really want to process truncated commands?
+Since you detect the state here, you could also choose to reject such
+commands?
+
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 833 bytes
+Desc: not available
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20200901/2d5dae3a/attachment.sig>
