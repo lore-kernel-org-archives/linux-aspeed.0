@@ -1,30 +1,43 @@
-From: Borislav Petkov <bp@alien8.de>
-Date: Tue, 1 Sep 2020 20:51:36 +0200
-Subject: [PATCH 1/2] EDAC/aspeed: Fix handling of platform_get_irq() error
-In-Reply-To: <20200827070743.26628-1-krzk@kernel.org>
-References: <20200827070743.26628-1-krzk@kernel.org>
-Message-ID: <20200901185136.GD8392@zn.tnic>
+From: Eddie James <eajames@linux.ibm.com>
+Date: Wed, 2 Sep 2020 10:47:18 -0500
+Subject: [PATCH 2/5] input: misc: Add IBM Operation Panel driver
+In-Reply-To: <20200901061108.GB1148@ninjato>
+References: <20200820161152.22751-1-eajames@linux.ibm.com>
+ <20200820161152.22751-3-eajames@linux.ibm.com>
+ <20200901061108.GB1148@ninjato>
+Message-ID: <796de8d4-6771-a8da-ea93-6e7e08aa93b0@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Aug 27, 2020 at 09:07:42AM +0200, Krzysztof Kozlowski wrote:
-> platform_get_irq() returns -ERRNO on error.  In such case comparison
-> to 0 would pass the check.
-> 
-> Fixes: 9b7e6242ee4e ("EDAC, aspeed: Add an Aspeed AST2500 EDAC driver")
-> Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
-> ---
->  drivers/edac/aspeed_edac.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
 
-Both applied,
-thanks.
+On 9/1/20 1:11 AM, Wolfram Sang wrote:
+>> +	switch (event) {
+>> +	case I2C_SLAVE_STOP:
+>> +		command_size = panel->idx;
+>> +		fallthrough;
+>> +	case I2C_SLAVE_WRITE_REQUESTED:
+>> +		panel->idx = 0;
+>> +		break;
+>> +	case I2C_SLAVE_WRITE_RECEIVED:
+>> +		if (panel->idx < sizeof(panel->command))
+>> +			panel->command[panel->idx++] = *val;
+>> +		else
+>> +			dev_dbg(&panel->input->dev, "command truncated\n");
+> Just double checking: Do you really want to process truncated commands?
+> Since you detect the state here, you could also choose to reject such
+> commands?
 
--- 
-Regards/Gruss,
-    Boris.
 
-https://people.kernel.org/tglx/notes-about-netiquette
+Yes I suppose not. It could still be a valid command with extra bytes, 
+but unlikely, so probably better not to handle it.
+
+
+Thanks,
+
+Eddie
+
+
+>
