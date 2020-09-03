@@ -1,43 +1,98 @@
-From: Eddie James <eajames@linux.ibm.com>
-Date: Wed, 2 Sep 2020 10:47:18 -0500
-Subject: [PATCH 2/5] input: misc: Add IBM Operation Panel driver
-In-Reply-To: <20200901061108.GB1148@ninjato>
-References: <20200820161152.22751-1-eajames@linux.ibm.com>
- <20200820161152.22751-3-eajames@linux.ibm.com>
- <20200901061108.GB1148@ninjato>
-Message-ID: <796de8d4-6771-a8da-ea93-6e7e08aa93b0@linux.ibm.com>
+From: Douglas Anderson <dianders@chromium.org>
+Date: Thu,  3 Sep 2020 16:24:40 -0700
+Subject: [PATCH 5/6] mmc: Set PROBE_PREFER_ASYNCHRONOUS for drivers that
+ existed in v5.4
+In-Reply-To: <20200903232441.2694866-1-dianders@chromium.org>
+References: <20200903232441.2694866-1-dianders@chromium.org>
+Message-ID: <20200903162412.5.I2b630c4d40ff4ea61d5b30b8ccfe95890e257100@changeid>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+This is like commit 3d3451124f3d ("mmc: sdhci-msm: Prefer asynchronous
+probe") but applied to a whole pile of drivers.  This batch converts
+the drivers that appeared to be around in the v5.4 timeframe.
 
-On 9/1/20 1:11 AM, Wolfram Sang wrote:
->> +	switch (event) {
->> +	case I2C_SLAVE_STOP:
->> +		command_size = panel->idx;
->> +		fallthrough;
->> +	case I2C_SLAVE_WRITE_REQUESTED:
->> +		panel->idx = 0;
->> +		break;
->> +	case I2C_SLAVE_WRITE_RECEIVED:
->> +		if (panel->idx < sizeof(panel->command))
->> +			panel->command[panel->idx++] = *val;
->> +		else
->> +			dev_dbg(&panel->input->dev, "command truncated\n");
-> Just double checking: Do you really want to process truncated commands?
-> Since you detect the state here, you could also choose to reject such
-> commands?
+Signed-off-by: Douglas Anderson <dianders@chromium.org>
+---
 
+ drivers/mmc/host/alcor.c           | 1 +
+ drivers/mmc/host/sdhci-of-aspeed.c | 2 ++
+ drivers/mmc/host/sdhci-sprd.c      | 1 +
+ drivers/mmc/host/sdhci_am654.c     | 1 +
+ drivers/mmc/host/uniphier-sd.c     | 1 +
+ 5 files changed, 6 insertions(+)
 
-Yes I suppose not. It could still be a valid command with extra bytes, 
-but unlikely, so probably better not to handle it.
+diff --git a/drivers/mmc/host/alcor.c b/drivers/mmc/host/alcor.c
+index 026ca9194ce5..bfb8efeb7eb8 100644
+--- a/drivers/mmc/host/alcor.c
++++ b/drivers/mmc/host/alcor.c
+@@ -1178,6 +1178,7 @@ static struct platform_driver alcor_pci_sdmmc_driver = {
+ 	.id_table	= alcor_pci_sdmmc_ids,
+ 	.driver		= {
+ 		.name	= DRV_NAME_ALCOR_PCI_SDMMC,
++		.probe_type = PROBE_PREFER_ASYNCHRONOUS,
+ 		.pm	= &alcor_mmc_pm_ops
+ 	},
+ };
+diff --git a/drivers/mmc/host/sdhci-of-aspeed.c b/drivers/mmc/host/sdhci-of-aspeed.c
+index a1bcc0f4ba9e..4f008ba3280e 100644
+--- a/drivers/mmc/host/sdhci-of-aspeed.c
++++ b/drivers/mmc/host/sdhci-of-aspeed.c
+@@ -240,6 +240,7 @@ static const struct of_device_id aspeed_sdhci_of_match[] = {
+ static struct platform_driver aspeed_sdhci_driver = {
+ 	.driver		= {
+ 		.name	= "sdhci-aspeed",
++		.probe_type = PROBE_PREFER_ASYNCHRONOUS,
+ 		.of_match_table = aspeed_sdhci_of_match,
+ 	},
+ 	.probe		= aspeed_sdhci_probe,
+@@ -318,6 +319,7 @@ MODULE_DEVICE_TABLE(of, aspeed_sdc_of_match);
+ static struct platform_driver aspeed_sdc_driver = {
+ 	.driver		= {
+ 		.name	= "sd-controller-aspeed",
++		.probe_type = PROBE_PREFER_ASYNCHRONOUS,
+ 		.pm	= &sdhci_pltfm_pmops,
+ 		.of_match_table = aspeed_sdc_of_match,
+ 	},
+diff --git a/drivers/mmc/host/sdhci-sprd.c b/drivers/mmc/host/sdhci-sprd.c
+index a910cb461ed7..f88d38e34a23 100644
+--- a/drivers/mmc/host/sdhci-sprd.c
++++ b/drivers/mmc/host/sdhci-sprd.c
+@@ -787,6 +787,7 @@ static struct platform_driver sdhci_sprd_driver = {
+ 	.remove = sdhci_sprd_remove,
+ 	.driver = {
+ 		.name = "sdhci_sprd_r11",
++		.probe_type = PROBE_PREFER_ASYNCHRONOUS,
+ 		.of_match_table = of_match_ptr(sdhci_sprd_of_match),
+ 		.pm = &sdhci_sprd_pm_ops,
+ 	},
+diff --git a/drivers/mmc/host/sdhci_am654.c b/drivers/mmc/host/sdhci_am654.c
+index c5f47197d177..a4c6d9d80e88 100644
+--- a/drivers/mmc/host/sdhci_am654.c
++++ b/drivers/mmc/host/sdhci_am654.c
+@@ -745,6 +745,7 @@ static int sdhci_am654_remove(struct platform_device *pdev)
+ static struct platform_driver sdhci_am654_driver = {
+ 	.driver = {
+ 		.name = "sdhci-am654",
++		.probe_type = PROBE_PREFER_ASYNCHRONOUS,
+ 		.of_match_table = sdhci_am654_of_match,
+ 	},
+ 	.probe = sdhci_am654_probe,
+diff --git a/drivers/mmc/host/uniphier-sd.c b/drivers/mmc/host/uniphier-sd.c
+index 55efd5c53249..3092466a99ab 100644
+--- a/drivers/mmc/host/uniphier-sd.c
++++ b/drivers/mmc/host/uniphier-sd.c
+@@ -685,6 +685,7 @@ static struct platform_driver uniphier_sd_driver = {
+ 	.remove = uniphier_sd_remove,
+ 	.driver = {
+ 		.name = "uniphier-sd",
++		.probe_type = PROBE_PREFER_ASYNCHRONOUS,
+ 		.of_match_table = uniphier_sd_match,
+ 	},
+ };
+-- 
+2.28.0.526.ge36021eeef-goog
 
-
-Thanks,
-
-Eddie
-
-
->
