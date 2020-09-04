@@ -1,77 +1,49 @@
-From: Daniel Vetter <daniel.vetter@ffwll.ch>
-Date: Fri,  4 Sep 2020 16:39:20 +0200
-Subject: [PATCH 03/24] drm/aspeed: Use managed drmm_mode_config_cleanup
-In-Reply-To: <20200904143941.110665-1-daniel.vetter@ffwll.ch>
-References: <20200904143941.110665-1-daniel.vetter@ffwll.ch>
-Message-ID: <20200904143941.110665-4-daniel.vetter@ffwll.ch>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Date: Fri,  4 Sep 2020 18:43:14 +0200
+Subject: [PATCH v2 1/2] mmc: host: Drop unneeded MMC dependency in Kconfig
+Message-ID: <20200904164315.24618-1-krzk@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Since aspeed doesn't use devm_kzalloc anymore we can use the managed
-mode config cleanup.
+All entries in Kconfig are already part of "if MMC", so there is no need
+for additional dependency on MMC.
 
-v2: Keep call order as suggested by Sam.
+Suggested-by: Micha? Miros?aw <mirq-linux@rere.qmqm.pl>
+Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
 
-Acked-by: Sam Ravnborg <sam@ravnborg.org>
-Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
-Cc: Joel Stanley <joel@jms.id.au>
-Cc: Andrew Jeffery <andrew@aj.id.au>
-Cc: linux-aspeed at lists.ozlabs.org
-Cc: linux-arm-kernel at lists.infradead.org
 ---
- drivers/gpu/drm/aspeed/aspeed_gfx_drv.c | 15 +++++++++++----
- 1 file changed, 11 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c b/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
-index 903f4f304647..2b424b2b85cc 100644
---- a/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
-+++ b/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
-@@ -63,15 +63,21 @@ static const struct drm_mode_config_funcs aspeed_gfx_mode_config_funcs = {
- 	.atomic_commit		= drm_atomic_helper_commit,
- };
+Changes since v1:
+1. New patch
+---
+ drivers/mmc/host/Kconfig | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/mmc/host/Kconfig b/drivers/mmc/host/Kconfig
+index b95f79f53395..eea01fde0591 100644
+--- a/drivers/mmc/host/Kconfig
++++ b/drivers/mmc/host/Kconfig
+@@ -422,7 +422,7 @@ config MMC_SDHCI_IPROC
  
--static void aspeed_gfx_setup_mode_config(struct drm_device *drm)
-+static int aspeed_gfx_setup_mode_config(struct drm_device *drm)
- {
--	drm_mode_config_init(drm);
-+	int ret;
-+
-+	ret = drmm_mode_config_init(drm);
-+	if (ret)
-+		return ret;
+ config MMC_MESON_GX
+ 	tristate "Amlogic S905/GX*/AXG SD/MMC Host Controller support"
+-	depends on ARCH_MESON && MMC
++	depends on ARCH_MESON
+ 	help
+ 	  This selects support for the Amlogic SD/MMC Host Controller
+ 	  found on the S905/GX*/AXG family of SoCs.  This controller is
+@@ -458,7 +458,7 @@ config MMC_MESON_MX_SDIO
  
- 	drm->mode_config.min_width = 0;
- 	drm->mode_config.min_height = 0;
- 	drm->mode_config.max_width = 800;
- 	drm->mode_config.max_height = 600;
- 	drm->mode_config.funcs = &aspeed_gfx_mode_config_funcs;
-+
-+	return ret;
- }
- 
- static irqreturn_t aspeed_gfx_irq_handler(int irq, void *data)
-@@ -144,7 +150,9 @@ static int aspeed_gfx_load(struct drm_device *drm)
- 	writel(0, priv->base + CRT_CTRL1);
- 	writel(0, priv->base + CRT_CTRL2);
- 
--	aspeed_gfx_setup_mode_config(drm);
-+	ret = aspeed_gfx_setup_mode_config(drm);
-+	if (ret < 0)
-+		return ret;
- 
- 	ret = drm_vblank_init(drm, 1);
- 	if (ret < 0) {
-@@ -179,7 +187,6 @@ static int aspeed_gfx_load(struct drm_device *drm)
- static void aspeed_gfx_unload(struct drm_device *drm)
- {
- 	drm_kms_helper_poll_fini(drm);
--	drm_mode_config_cleanup(drm);
- }
- 
- DEFINE_DRM_GEM_CMA_FOPS(fops);
+ config MMC_MOXART
+ 	tristate "MOXART SD/MMC Host Controller support"
+-	depends on ARCH_MOXART && MMC
++	depends on ARCH_MOXART
+ 	help
+ 	  This selects support for the MOXART SD/MMC Host Controller.
+ 	  MOXA provides one multi-functional card reader which can
 -- 
-2.28.0
+2.17.1
 
