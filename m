@@ -1,60 +1,54 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Date: Mon, 7 Sep 2020 12:07:21 +0200
-Subject: [PATCH v2 1/2] mmc: host: Drop unneeded MMC dependency in Kconfig
-In-Reply-To: <20200904164315.24618-1-krzk@kernel.org>
-References: <20200904164315.24618-1-krzk@kernel.org>
-Message-ID: <CAPDyKFrzDeNqvM4cc69iCdVW7QnF=O9C=v13+o5bGBSCSzZfWA@mail.gmail.com>
+From: Randy Dunlap <rdunlap@infradead.org>
+Date: Mon,  7 Sep 2020 15:52:38 -0700
+Subject: [PATCH] drm/aspeed: fix Kconfig warning & subsequent build errors
+Message-ID: <20200907225238.4790-1-rdunlap@infradead.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, 4 Sep 2020 at 18:43, Krzysztof Kozlowski <krzk@kernel.org> wrote:
->
-> All entries in Kconfig are already part of "if MMC", so there is no need
-> for additional dependency on MMC.
->
-> Suggested-by: Micha? Miros?aw <mirq-linux@rere.qmqm.pl>
-> Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
+kernel test robot reported build errors (undefined references)
+that didn't make much sense. After reproducing them, there is also
+a Kconfig warning that is the root cause of the build errors, so
+fix that Kconfig problem.
 
-Applied for next, thanks!
+Fixes this Kconfig warning:
+WARNING: unmet direct dependencies detected for CMA
+  Depends on [n]: MMU [=n]
+  Selected by [m]:
+  - DRM_ASPEED_GFX [=m] && HAS_IOMEM [=y] && DRM [=m] && OF [=y] && (COMPILE_TEST [=y] || ARCH_ASPEED) && HAVE_DMA_CONTIGUOUS [=y]
 
-Kind regards
-Uffe
+and these dependent build errors:
+(.text+0x10c8c): undefined reference to `start_isolate_page_range'
+microblaze-linux-ld: (.text+0x10f14): undefined reference to `test_pages_isolated'
+microblaze-linux-ld: (.text+0x10fd0): undefined reference to `undo_isolate_page_range'
 
+Fixes: 76356a966e33 ("drm: aspeed: Clean up Kconfig options")
+Reported-by: kernel test robot <lkp@intel.com>
+Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+Cc: Joel Stanley <joel@jms.id.au>
+Cc: Andrew Jeffery <andrew@aj.id.au>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Michal Simek <monstr@monstr.eu>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Mike Rapoport <rppt@linux.ibm.com>
+Cc: linux-mm at kvack.org
+Cc: linux-aspeed at lists.ozlabs.org
+Cc: linux-arm-kernel at lists.infradead.org
+---
+Feel free to fix the Kconfig warning some other way...
 
->
-> ---
->
-> Changes since v1:
-> 1. New patch
-> ---
->  drivers/mmc/host/Kconfig | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/mmc/host/Kconfig b/drivers/mmc/host/Kconfig
-> index b95f79f53395..eea01fde0591 100644
-> --- a/drivers/mmc/host/Kconfig
-> +++ b/drivers/mmc/host/Kconfig
-> @@ -422,7 +422,7 @@ config MMC_SDHCI_IPROC
->
->  config MMC_MESON_GX
->         tristate "Amlogic S905/GX*/AXG SD/MMC Host Controller support"
-> -       depends on ARCH_MESON && MMC
-> +       depends on ARCH_MESON
->         help
->           This selects support for the Amlogic SD/MMC Host Controller
->           found on the S905/GX*/AXG family of SoCs.  This controller is
-> @@ -458,7 +458,7 @@ config MMC_MESON_MX_SDIO
->
->  config MMC_MOXART
->         tristate "MOXART SD/MMC Host Controller support"
-> -       depends on ARCH_MOXART && MMC
-> +       depends on ARCH_MOXART
->         help
->           This selects support for the MOXART SD/MMC Host Controller.
->           MOXA provides one multi-functional card reader which can
-> --
-> 2.17.1
->
+ drivers/gpu/drm/aspeed/Kconfig |    1 +
+ 1 file changed, 1 insertion(+)
+
+--- lnx-59-rc3.orig/drivers/gpu/drm/aspeed/Kconfig
++++ lnx-59-rc3/drivers/gpu/drm/aspeed/Kconfig
+@@ -3,6 +3,7 @@ config DRM_ASPEED_GFX
+ 	tristate "ASPEED BMC Display Controller"
+ 	depends on DRM && OF
+ 	depends on (COMPILE_TEST || ARCH_ASPEED)
++	depends on MMU
+ 	select DRM_KMS_HELPER
+ 	select DRM_KMS_CMA_HELPER
+ 	select DMA_CMA if HAVE_DMA_CONTIGUOUS
