@@ -1,19 +1,17 @@
-From: Chen-Yu Tsai <wens@kernel.org>
-Date: Mon, 7 Sep 2020 12:07:55 +0800
+From: Chen-Yu Tsai <wens@csie.org>
+Date: Mon, 7 Sep 2020 12:04:53 +0800
 Subject: [PATCH 0/6] mmc: Set PROBE_PREFER_ASYNCHRONOUS for all host
  drivers
 In-Reply-To: <CANAwSgTv2ZAvPKG2aChs8NwZL32TF+MtcaFbehQWWSf_TFXF6A@mail.gmail.com>
 References: <20200903232441.2694866-1-dianders@chromium.org>
  <CAFBinCBcbEpHX7eUbznuDo6oKO_9JrOK2w+Bx1=e-bwuS609bw@mail.gmail.com>
  <CANAwSgTv2ZAvPKG2aChs8NwZL32TF+MtcaFbehQWWSf_TFXF6A@mail.gmail.com>
-Message-ID: <CAGb2v67dPaV9tP4piV9MHe9QeJAq0RyvOO3ypJ3ZBW1-ffpjKA@mail.gmail.com>
+Message-ID: <CAGb2v66URSyd4WPkM6bJ9wTeZdT-GwS+-R5UymywNxa7HW8pfg@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-
-(Resent from kernel.org)
 
 On Mon, Sep 7, 2020 at 11:57 AM Anand Moon <linux.amoon@gmail.com> wrote:
 >
