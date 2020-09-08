@@ -1,65 +1,76 @@
-From: Rob Herring <robh@kernel.org>
-Date: Tue, 8 Sep 2020 14:37:29 -0600
-Subject: [PATCH 1/5] dt-bindings: input: Add documentation for IBM
- Operation Panel
-In-Reply-To: <20200820161152.22751-2-eajames@linux.ibm.com>
-References: <20200820161152.22751-1-eajames@linux.ibm.com>
- <20200820161152.22751-2-eajames@linux.ibm.com>
-Message-ID: <20200908203729.GA872283@bogus>
+From: wsa@kernel.org <wsa@kernel.org>
+Date: Tue, 8 Sep 2020 22:40:51 +0200
+Subject: [PATCH v2 2/5] input: misc: Add IBM Operation Panel driver
+In-Reply-To: <20200908200101.64974-3-eajames@linux.ibm.com>
+References: <20200908200101.64974-1-eajames@linux.ibm.com>
+ <20200908200101.64974-3-eajames@linux.ibm.com>
+Message-ID: <20200908204051.GA46393@kunai>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Aug 20, 2020 at 11:11:48AM -0500, Eddie James wrote:
-> Document the bindings for the IBM Operation Panel, which provides
-> a simple interface to control a server. It has a display and three
-> buttons.
-> Also update MAINTAINERS for the new file.
-> 
-> Signed-off-by: Eddie James <eajames@linux.ibm.com>
-> ---
->  .../bindings/input/ibm,op-panel.yaml          | 38 +++++++++++++++++++
->  MAINTAINERS                                   |  6 +++
->  2 files changed, 44 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/input/ibm,op-panel.yaml
-> 
-> diff --git a/Documentation/devicetree/bindings/input/ibm,op-panel.yaml b/Documentation/devicetree/bindings/input/ibm,op-panel.yaml
-> new file mode 100644
-> index 000000000000..86a32e8f3ef0
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/input/ibm,op-panel.yaml
-> @@ -0,0 +1,38 @@
-> +# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
-> +%YAML 1.2
-> +---
-> +$id: http://devicetree.org/schemas/input/ibm,op-panel.yaml#
-> +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> +
-> +title: IBM Operation Panel
-> +
-> +maintainers:
-> +  - Eddie James <eajames@linux.ibm.com>
-> +
-> +description: |
-> +  The IBM Operation Panel provides a simple interface to control the connected
-> +  server. It has a display and three buttons: two directional arrows and one
-> +  'Enter' button.
-> +
-> +properties:
-> +  compatible:
-> +    const: ibm,op-panel
-> +
-> +  reg:
-> +    maxItems: 1
-> +
-> +required:
-> +  - compatible
-> +  - reg
+Hi Eddie,
 
-additionalProperties: false
+> +	switch (event) {
+> +	case I2C_SLAVE_STOP:
+> +		command_size = panel->idx;
+> +		fallthrough;
+> +	case I2C_SLAVE_WRITE_REQUESTED:
+> +		panel->idx = 0;
+> +		break;
+> +	case I2C_SLAVE_WRITE_RECEIVED:
+> +		if (panel->idx < sizeof(panel->command))
+> +			panel->command[panel->idx++] = *val;
+> +		else
+> +			/*
+> +			 * The command is too long and therefore invalid, so set the index
+> +			 * to it's largest possible value. When a STOP is finally received,
+> +			 * the command will be rejected upon processing.
+> +			 */
+> +			panel->idx = U8_MAX;
+> +		break;
+> +	default:
+> +		break;
+> +	}
 
-With that added,
+Sorry, I missed this in my last review. READ states are mandatory, so
+you will need something like this:
 
-Reviewed-by: Rob Herring <robh@kernel.org>
++	case I2C_SLAVE_READ_REQUESTED:
++	case I2C_SLAVE_READ_PROCESSED:
++		*val = 0xff;
++		break;
+
+
+> +	if (command_size)
+> +		ibm_panel_process_command(panel, command_size);
+
+I wondered if you could check for the correct command_size here, so no
+need to call into the function when the size doesn't match?
+
+> +       rc = i2c_slave_register(client, ibm_panel_i2c_slave_cb);
+> +       if (rc) {
+> +               input_unregister_device(panel->input);
+> +               dev_err(&client->dev,
+> +                       "Failed to register I2C slave device: %d\n", rc);
+
+This dev_err can go. The core will print messages if something goes
+wrong.
+
+The rest looks good from an I2C point of view.
+
+I'd think this all should go via the input tree?
+
+Kind regards,
+
+   Wolfram
+
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 833 bytes
+Desc: not available
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20200908/a04ca8c7/attachment.sig>
