@@ -1,59 +1,45 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Wed,  9 Sep 2020 21:13:12 +0930
-Subject: [PATCH 3/3] pinctrl: aspeed-g6: Add bias controls for 1.8V GPIO banks
-In-Reply-To: <20200909114312.2863675-1-andrew@aj.id.au>
-References: <20200909114312.2863675-1-andrew@aj.id.au>
-Message-ID: <20200909114312.2863675-4-andrew@aj.id.au>
+From: Eddie James <eajames@linux.ibm.com>
+Date: Wed,  9 Sep 2020 15:30:57 -0500
+Subject: [PATCH v3 3/5] i2c: aspeed: Mask IRQ status to relevant bits
+In-Reply-To: <20200909203059.23427-1-eajames@linux.ibm.com>
+References: <20200909203059.23427-1-eajames@linux.ibm.com>
+Message-ID: <20200909203059.23427-4-eajames@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-These were skipped in the original patches adding pinconf support for
-the AST2600.
+Mask the IRQ status to only the bits that the driver checks. This
+prevents excessive driver warnings when operating in slave mode
+when additional bits are set that the driver doesn't handle.
 
-Cc: Johnny Huang <johnny_huang@aspeedtech.com>
-Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
+Signed-off-by: Eddie James <eajames@linux.ibm.com>
+Reviewed-by: Tao Ren <rentao.bupt@gmail.com>
 ---
- drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c | 17 +++++++++++++++++
- 1 file changed, 17 insertions(+)
+ drivers/i2c/busses/i2c-aspeed.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c b/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
-index 7efe6dbe4398..34803a6c7664 100644
---- a/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
-+++ b/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
-@@ -19,6 +19,7 @@
+diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
+index 31268074c422..724bf30600d6 100644
+--- a/drivers/i2c/busses/i2c-aspeed.c
++++ b/drivers/i2c/busses/i2c-aspeed.c
+@@ -69,6 +69,7 @@
+  * These share bit definitions, so use the same values for the enable &
+  * status bits.
+  */
++#define ASPEED_I2CD_INTR_RECV_MASK			0xf000ffff
+ #define ASPEED_I2CD_INTR_SDA_DL_TIMEOUT			BIT(14)
+ #define ASPEED_I2CD_INTR_BUS_RECOVER_DONE		BIT(13)
+ #define ASPEED_I2CD_INTR_SLAVE_MATCH			BIT(7)
+@@ -604,6 +605,7 @@ static irqreturn_t aspeed_i2c_bus_irq(int irq, void *dev_id)
+ 	writel(irq_received & ~ASPEED_I2CD_INTR_RX_DONE,
+ 	       bus->base + ASPEED_I2C_INTR_STS_REG);
+ 	readl(bus->base + ASPEED_I2C_INTR_STS_REG);
++	irq_received &= ASPEED_I2CD_INTR_RECV_MASK;
+ 	irq_remaining = irq_received;
  
- #define SCU400		0x400 /* Multi-function Pin Control #1  */
- #define SCU404		0x404 /* Multi-function Pin Control #2  */
-+#define SCU40C		0x40C /* Multi-function Pin Control #3  */
- #define SCU410		0x410 /* Multi-function Pin Control #4  */
- #define SCU414		0x414 /* Multi-function Pin Control #5  */
- #define SCU418		0x418 /* Multi-function Pin Control #6  */
-@@ -2591,6 +2592,22 @@ static struct aspeed_pin_config aspeed_g6_configs[] = {
- 	/* MAC4 */
- 	{ PIN_CONFIG_POWER_SOURCE,   { F24, B24 }, SCU458, BIT_MASK(5)},
- 	{ PIN_CONFIG_DRIVE_STRENGTH, { F24, B24 }, SCU458, GENMASK(3, 2)},
-+
-+	/* GPIO18E */
-+	ASPEED_SB_PINCONF(PIN_CONFIG_BIAS_PULL_DOWN, Y1, Y4, SCU40C, 4),
-+	ASPEED_SB_PINCONF(PIN_CONFIG_BIAS_DISABLE,   Y1, Y4, SCU40C, 4),
-+	/* GPIO18D */
-+	ASPEED_SB_PINCONF(PIN_CONFIG_BIAS_PULL_DOWN, AB4, AC5, SCU40C, 3),
-+	ASPEED_SB_PINCONF(PIN_CONFIG_BIAS_DISABLE,   AB4, AC5, SCU40C, 3),
-+	/* GPIO18C */
-+	ASPEED_SB_PINCONF(PIN_CONFIG_BIAS_PULL_DOWN, E4, E1, SCU40C, 2),
-+	ASPEED_SB_PINCONF(PIN_CONFIG_BIAS_DISABLE,   E4, E1, SCU40C, 2),
-+	/* GPIO18B */
-+	ASPEED_SB_PINCONF(PIN_CONFIG_BIAS_PULL_DOWN, B2, D3, SCU40C, 1),
-+	ASPEED_SB_PINCONF(PIN_CONFIG_BIAS_DISABLE,   B2, D3, SCU40C, 1),
-+	/* GPIO18A */
-+	ASPEED_SB_PINCONF(PIN_CONFIG_BIAS_PULL_DOWN, C6, A2, SCU40C, 0),
-+	ASPEED_SB_PINCONF(PIN_CONFIG_BIAS_DISABLE,   C6, A2, SCU40C, 0),
- };
- 
- /**
+ #if IS_ENABLED(CONFIG_I2C_SLAVE)
 -- 
-2.25.1
+2.26.2
 
