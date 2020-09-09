@@ -1,76 +1,49 @@
-From: wsa@kernel.org <wsa@kernel.org>
-Date: Tue, 8 Sep 2020 22:40:51 +0200
-Subject: [PATCH v2 2/5] input: misc: Add IBM Operation Panel driver
-In-Reply-To: <20200908200101.64974-3-eajames@linux.ibm.com>
+From: Tao Ren <rentao.bupt@gmail.com>
+Date: Tue, 8 Sep 2020 19:59:22 -0700
+Subject: [PATCH v2 3/5] i2c: aspeed: Mask IRQ status to relevant bits
+In-Reply-To: <20200908200101.64974-4-eajames@linux.ibm.com>
 References: <20200908200101.64974-1-eajames@linux.ibm.com>
- <20200908200101.64974-3-eajames@linux.ibm.com>
-Message-ID: <20200908204051.GA46393@kunai>
+ <20200908200101.64974-4-eajames@linux.ibm.com>
+Message-ID: <20200909025921.GA3449@taoren-ubuntu-R90MNF91>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Eddie,
+On Tue, Sep 08, 2020 at 03:00:59PM -0500, Eddie James wrote:
+> Mask the IRQ status to only the bits that the driver checks. This
+> prevents excessive driver warnings when operating in slave mode
+> when additional bits are set that the driver doesn't handle.
+> 
+> Signed-off-by: Eddie James <eajames@linux.ibm.com>
 
-> +	switch (event) {
-> +	case I2C_SLAVE_STOP:
-> +		command_size = panel->idx;
-> +		fallthrough;
-> +	case I2C_SLAVE_WRITE_REQUESTED:
-> +		panel->idx = 0;
-> +		break;
-> +	case I2C_SLAVE_WRITE_RECEIVED:
-> +		if (panel->idx < sizeof(panel->command))
-> +			panel->command[panel->idx++] = *val;
-> +		else
-> +			/*
-> +			 * The command is too long and therefore invalid, so set the index
-> +			 * to it's largest possible value. When a STOP is finally received,
-> +			 * the command will be rejected upon processing.
-> +			 */
-> +			panel->idx = U8_MAX;
-> +		break;
-> +	default:
-> +		break;
-> +	}
+Reviewed-by: Tao Ren <rentao.bupt@gmail.com>
 
-Sorry, I missed this in my last review. READ states are mandatory, so
-you will need something like this:
-
-+	case I2C_SLAVE_READ_REQUESTED:
-+	case I2C_SLAVE_READ_PROCESSED:
-+		*val = 0xff;
-+		break;
-
-
-> +	if (command_size)
-> +		ibm_panel_process_command(panel, command_size);
-
-I wondered if you could check for the correct command_size here, so no
-need to call into the function when the size doesn't match?
-
-> +       rc = i2c_slave_register(client, ibm_panel_i2c_slave_cb);
-> +       if (rc) {
-> +               input_unregister_device(panel->input);
-> +               dev_err(&client->dev,
-> +                       "Failed to register I2C slave device: %d\n", rc);
-
-This dev_err can go. The core will print messages if something goes
-wrong.
-
-The rest looks good from an I2C point of view.
-
-I'd think this all should go via the input tree?
-
-Kind regards,
-
-   Wolfram
-
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 833 bytes
-Desc: not available
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20200908/a04ca8c7/attachment.sig>
+> ---
+>  drivers/i2c/busses/i2c-aspeed.c | 2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
+> index 31268074c422..2a388911038a 100644
+> --- a/drivers/i2c/busses/i2c-aspeed.c
+> +++ b/drivers/i2c/busses/i2c-aspeed.c
+> @@ -69,6 +69,7 @@
+>   * These share bit definitions, so use the same values for the enable &
+>   * status bits.
+>   */
+> +#define ASPEED_I2CD_INTR_ALL				0xf000ffff
+>  #define ASPEED_I2CD_INTR_SDA_DL_TIMEOUT			BIT(14)
+>  #define ASPEED_I2CD_INTR_BUS_RECOVER_DONE		BIT(13)
+>  #define ASPEED_I2CD_INTR_SLAVE_MATCH			BIT(7)
+> @@ -604,6 +605,7 @@ static irqreturn_t aspeed_i2c_bus_irq(int irq, void *dev_id)
+>  	writel(irq_received & ~ASPEED_I2CD_INTR_RX_DONE,
+>  	       bus->base + ASPEED_I2C_INTR_STS_REG);
+>  	readl(bus->base + ASPEED_I2C_INTR_STS_REG);
+> +	irq_received &= ASPEED_I2CD_INTR_ALL;
+>  	irq_remaining = irq_received;
+>  
+>  #if IS_ENABLED(CONFIG_I2C_SLAVE)
+> -- 
+> 2.26.2
+> 
