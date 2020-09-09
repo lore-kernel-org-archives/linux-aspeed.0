@@ -1,64 +1,51 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Wed, 9 Sep 2020 06:56:57 +0000
-Subject: [PATCH v2 4/5] ARM: dts: Aspeed: Tacoma: Add IBM Operation Panel
- I2C device
-In-Reply-To: <20200908200101.64974-5-eajames@linux.ibm.com>
-References: <20200908200101.64974-1-eajames@linux.ibm.com>
- <20200908200101.64974-5-eajames@linux.ibm.com>
-Message-ID: <CACPK8Xf0z4kz9JkTWPKveQsmEpKq0YtEQ+1Jracndu9g9UW7ZQ@mail.gmail.com>
+Date: Wed, 9 Sep 2020 07:22:19 +0000
+Subject: [PATCH] ARM: aspeed: g5: Do not set sirq polarity
+In-Reply-To: <1e56af7945b93a22e31ba6d81da82cbdb1b237b6.camel@ozlabs.org>
+References: <20200812112400.2406734-1-joel@jms.id.au>
+ <1e56af7945b93a22e31ba6d81da82cbdb1b237b6.camel@ozlabs.org>
+Message-ID: <CACPK8XfZ6hLv0Ls0g=b5wdr6A3ei3nzVKDgyOt5Su_Y8g8yQ7A@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, 8 Sep 2020 at 20:01, Eddie James <eajames@linux.ibm.com> wrote:
+On Thu, 27 Aug 2020 at 06:27, Jeremy Kerr <jk@ozlabs.org> wrote:
 >
-> Set I2C bus 0 to multi-master mode and add the panel device that will
-> register as a slave.
+> Hi Joel,
 >
-> Signed-off-by: Eddie James <eajames@linux.ibm.com>
-> Reviewed-by: Joel Stanley <joel@jms.id.au>
+> > A feature was added to the aspeed vuart driver to configure the vuart
+> > interrupt (sirq) polarity according to the LPC/eSPI strapping register.
+> >
+> > Systems that depend on a active low behaviour (sirq_polarity set to 0)
+> > such as OpenPower boxes also use LPC, so this relationship does not
+> > hold.
+> >
+> > The property was added for a Tyan S7106 system which is not supported
+> > in the kernel tree. Should this or other systems wish to use this
+> > feature of the driver they should add it to the machine specific device
+> > tree.
+> >
+> > Fixes: c791fc76bc72 ("arm: dts: aspeed: Add vuart aspeed,sirq-polarity-sense...")
+> > Cc: stable at vger.kernel.org
+> > Signed-off-by: Joel Stanley <joel@jms.id.au>
+>
+> LGTM. I've tested this on the s2600st, which is strapped for eSPI. All
+> good there too, as expected.
+>
+> Tested-by: Jeremy Kerr <jk@ozlabs.org>
+>
+> and/or:
+>
+> Reviewed-by: Jeremy Kerr <jk@ozlabs.org>
 
-I will take this and the rainier dts patch through the aspeed tree so
-we don't get conflicts.
+Thanks Jeremy. I have queued this for 5.10 and applied it to the openbmc tree.
 
-Eddie, when you send v3, you can omit them.
+We should also remove the code from the aspeed-vuart driver, as it is
+not correct. Better would be a property that is set according to the
+system's hardware design.
 
 Cheers,
 
 Joel
-
-> ---
->  arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts | 7 +++++++
->  1 file changed, 7 insertions(+)
->
-> diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts b/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts
-> index 5f4ee67ac787..4d070d6ba09f 100644
-> --- a/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts
-> +++ b/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts
-> @@ -4,6 +4,7 @@
->
->  #include "aspeed-g6.dtsi"
->  #include <dt-bindings/gpio/aspeed-gpio.h>
-> +#include <dt-bindings/i2c/i2c.h>
->  #include <dt-bindings/leds/leds-pca955x.h>
->
->  / {
-> @@ -438,7 +439,13 @@ aliases {
->  };
->
->  &i2c0 {
-> +       multi-master;
->         status = "okay";
-> +
-> +       ibm-panel at 62 {
-> +               compatible = "ibm,op-panel";
-> +               reg = <(0x62 | I2C_OWN_SLAVE_ADDRESS)>;
-> +       };
->  };
->
->  &i2c1 {
-> --
-> 2.26.2
->
