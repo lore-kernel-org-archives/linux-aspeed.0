@@ -1,9 +1,9 @@
 From: kernel test robot <lkp@intel.com>
-Date: Wed, 9 Sep 2020 15:59:12 +0800
+Date: Wed, 9 Sep 2020 16:01:21 +0800
 Subject: [PATCH v2 3/5] i2c: aspeed: Mask IRQ status to relevant bits
 In-Reply-To: <20200908200101.64974-4-eajames@linux.ibm.com>
 References: <20200908200101.64974-4-eajames@linux.ibm.com>
-Message-ID: <202009091551.SHV1AEmW%lkp@intel.com>
+Message-ID: <202009091553.1bGt9qmE%lkp@intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -23,28 +23,25 @@ https://git-scm.com/docs/git-format-patch]
 
 url:    https://github.com/0day-ci/linux/commits/Eddie-James/input-misc-Add-IBM-Operation-Panel-driver/20200909-120637
 base:   https://git.kernel.org/pub/scm/linux/kernel/git/joel/aspeed.git for-next
-config: x86_64-randconfig-a016-20200909 (attached as .config)
-compiler: clang version 12.0.0 (https://github.com/llvm/llvm-project 8893d0816ccdf8998d2e21b5430e9d6abe7ef465)
+config: h8300-randconfig-r016-20200909 (attached as .config)
+compiler: h8300-linux-gcc (GCC) 9.3.0
 reproduce (this is a W=1 build):
         wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
         chmod +x ~/bin/make.cross
-        # install x86_64 cross compiling tool for clang build
-        # apt-get install binutils-x86-64-linux-gnu
         # save the attached .config to linux build tree
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=clang make.cross ARCH=x86_64 
+        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-9.3.0 make.cross ARCH=h8300 
 
 If you fix the issue, kindly add following tag as appropriate
 Reported-by: kernel test robot <lkp@intel.com>
 
 All warnings (new ones prefixed by >>):
 
->> drivers/i2c/busses/i2c-aspeed.c:88:9: warning: 'ASPEED_I2CD_INTR_ALL' macro redefined [-Wmacro-redefined]
-   #define ASPEED_I2CD_INTR_ALL                                                   \
-           ^
-   drivers/i2c/busses/i2c-aspeed.c:72:9: note: previous definition is here
-   #define ASPEED_I2CD_INTR_ALL                            0xf000ffff
-           ^
-   1 warning generated.
+>> drivers/i2c/busses/i2c-aspeed.c:88: warning: "ASPEED_I2CD_INTR_ALL" redefined
+      88 | #define ASPEED_I2CD_INTR_ALL             \
+         | 
+   drivers/i2c/busses/i2c-aspeed.c:72: note: this is the location of the previous definition
+      72 | #define ASPEED_I2CD_INTR_ALL    0xf000ffff
+         | 
 
 # https://github.com/0day-ci/linux/commit/6d9e57527652ab1a348f68145e41e6a19d5dc0dc
 git remote add linux-review https://github.com/0day-ci/linux
@@ -94,6 +91,6 @@ https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
 A non-text attachment was scrubbed...
 Name: .config.gz
 Type: application/gzip
-Size: 37048 bytes
+Size: 29190 bytes
 Desc: not available
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20200909/d07b9eff/attachment-0001.gz>
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20200909/fe12b971/attachment-0001.gz>
