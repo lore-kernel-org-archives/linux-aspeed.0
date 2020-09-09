@@ -1,49 +1,64 @@
-From: Tao Ren <rentao.bupt@gmail.com>
-Date: Tue, 8 Sep 2020 19:59:22 -0700
-Subject: [PATCH v2 3/5] i2c: aspeed: Mask IRQ status to relevant bits
-In-Reply-To: <20200908200101.64974-4-eajames@linux.ibm.com>
+From: Joel Stanley <joel@jms.id.au>
+Date: Wed, 9 Sep 2020 06:56:57 +0000
+Subject: [PATCH v2 4/5] ARM: dts: Aspeed: Tacoma: Add IBM Operation Panel
+ I2C device
+In-Reply-To: <20200908200101.64974-5-eajames@linux.ibm.com>
 References: <20200908200101.64974-1-eajames@linux.ibm.com>
- <20200908200101.64974-4-eajames@linux.ibm.com>
-Message-ID: <20200909025921.GA3449@taoren-ubuntu-R90MNF91>
+ <20200908200101.64974-5-eajames@linux.ibm.com>
+Message-ID: <CACPK8Xf0z4kz9JkTWPKveQsmEpKq0YtEQ+1Jracndu9g9UW7ZQ@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Sep 08, 2020 at 03:00:59PM -0500, Eddie James wrote:
-> Mask the IRQ status to only the bits that the driver checks. This
-> prevents excessive driver warnings when operating in slave mode
-> when additional bits are set that the driver doesn't handle.
-> 
+On Tue, 8 Sep 2020 at 20:01, Eddie James <eajames@linux.ibm.com> wrote:
+>
+> Set I2C bus 0 to multi-master mode and add the panel device that will
+> register as a slave.
+>
 > Signed-off-by: Eddie James <eajames@linux.ibm.com>
+> Reviewed-by: Joel Stanley <joel@jms.id.au>
 
-Reviewed-by: Tao Ren <rentao.bupt@gmail.com>
+I will take this and the rainier dts patch through the aspeed tree so
+we don't get conflicts.
+
+Eddie, when you send v3, you can omit them.
+
+Cheers,
+
+Joel
 
 > ---
->  drivers/i2c/busses/i2c-aspeed.c | 2 ++
->  1 file changed, 2 insertions(+)
-> 
-> diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
-> index 31268074c422..2a388911038a 100644
-> --- a/drivers/i2c/busses/i2c-aspeed.c
-> +++ b/drivers/i2c/busses/i2c-aspeed.c
-> @@ -69,6 +69,7 @@
->   * These share bit definitions, so use the same values for the enable &
->   * status bits.
->   */
-> +#define ASPEED_I2CD_INTR_ALL				0xf000ffff
->  #define ASPEED_I2CD_INTR_SDA_DL_TIMEOUT			BIT(14)
->  #define ASPEED_I2CD_INTR_BUS_RECOVER_DONE		BIT(13)
->  #define ASPEED_I2CD_INTR_SLAVE_MATCH			BIT(7)
-> @@ -604,6 +605,7 @@ static irqreturn_t aspeed_i2c_bus_irq(int irq, void *dev_id)
->  	writel(irq_received & ~ASPEED_I2CD_INTR_RX_DONE,
->  	       bus->base + ASPEED_I2C_INTR_STS_REG);
->  	readl(bus->base + ASPEED_I2C_INTR_STS_REG);
-> +	irq_received &= ASPEED_I2CD_INTR_ALL;
->  	irq_remaining = irq_received;
->  
->  #if IS_ENABLED(CONFIG_I2C_SLAVE)
-> -- 
+>  arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts | 7 +++++++
+>  1 file changed, 7 insertions(+)
+>
+> diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts b/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts
+> index 5f4ee67ac787..4d070d6ba09f 100644
+> --- a/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts
+> +++ b/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts
+> @@ -4,6 +4,7 @@
+>
+>  #include "aspeed-g6.dtsi"
+>  #include <dt-bindings/gpio/aspeed-gpio.h>
+> +#include <dt-bindings/i2c/i2c.h>
+>  #include <dt-bindings/leds/leds-pca955x.h>
+>
+>  / {
+> @@ -438,7 +439,13 @@ aliases {
+>  };
+>
+>  &i2c0 {
+> +       multi-master;
+>         status = "okay";
+> +
+> +       ibm-panel at 62 {
+> +               compatible = "ibm,op-panel";
+> +               reg = <(0x62 | I2C_OWN_SLAVE_ADDRESS)>;
+> +       };
+>  };
+>
+>  &i2c1 {
+> --
 > 2.26.2
-> 
+>
