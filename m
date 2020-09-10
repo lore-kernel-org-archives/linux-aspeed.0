@@ -1,54 +1,67 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Thu, 10 Sep 2020 20:24:40 +0930
-Subject: [PATCH 3/3] ARM: dts: tacoma: Add data sample phase delay for eMMC
-In-Reply-To: <20200910105440.3087723-1-andrew@aj.id.au>
-References: <20200910105440.3087723-1-andrew@aj.id.au>
-Message-ID: <20200910105440.3087723-4-andrew@aj.id.au>
+From: Eddie James <eajames@linux.ibm.com>
+Date: Thu, 10 Sep 2020 08:55:38 -0500
+Subject: [PATCH v3 3/5] i2c: aspeed: Mask IRQ status to relevant bits
+In-Reply-To: <CAFd5g46ghV7ArmM8LnMkGa-Nip_fT934+3cPOkVxS-b5odZXYw@mail.gmail.com>
+References: <20200909203059.23427-1-eajames@linux.ibm.com>
+ <20200909203059.23427-4-eajames@linux.ibm.com>
+ <CAFd5g46ghV7ArmM8LnMkGa-Nip_fT934+3cPOkVxS-b5odZXYw@mail.gmail.com>
+Message-ID: <b092f884-9aa9-5d0b-1a90-36af558e43a8@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Adjust the phase delay to avoid data timeout splats like the following:
 
-[  731.368601] mmc0: Timeout waiting for hardware interrupt.
-[  731.374644] mmc0: sdhci: ============ SDHCI REGISTER DUMP ===========
-[  731.381828] mmc0: sdhci: Sys addr:  0x00000020 | Version:  0x00000002
-[  731.389012] mmc0: sdhci: Blk size:  0x00007200 | Blk cnt:  0x00000020
-[  731.396194] mmc0: sdhci: Argument:  0x00462a18 | Trn mode: 0x0000002b
-[  731.403377] mmc0: sdhci: Present:   0x01f70106 | Host ctl: 0x00000017
-[  731.410559] mmc0: sdhci: Power:     0x0000000f | Blk gap:  0x00000000
-[  731.417733] mmc0: sdhci: Wake-up:   0x00000000 | Clock:    0x00000107
-[  731.424915] mmc0: sdhci: Timeout:   0x0000000e | Int stat: 0x00000000
-[  731.432098] mmc0: sdhci: Int enab:  0x03ff008b | Sig enab: 0x03ff008b
-[  731.439282] mmc0: sdhci: ACmd stat: 0x00000000 | Slot int: 0x00000000
-[  731.446464] mmc0: sdhci: Caps:      0x01f80080 | Caps_1:   0x00000007
-[  731.453647] mmc0: sdhci: Cmd:       0x0000193a | Max curr: 0x001f0f08
-[  731.460829] mmc0: sdhci: Resp[0]:   0x00000900 | Resp[1]:  0xffffffff
-[  731.468013] mmc0: sdhci: Resp[2]:   0x320f5913 | Resp[3]:  0x00000900
-[  731.475195] mmc0: sdhci: Host ctl2: 0x0000008b
-[  731.480139] mmc0: sdhci: ADMA Err:  0x00000000 | ADMA Ptr: 0xbe040200
-[  731.487321] mmc0: sdhci: ============================================
+On 9/10/20 4:00 AM, Brendan Higgins wrote:
+> On Wed, Sep 9, 2020 at 1:31 PM Eddie James <eajames@linux.ibm.com> wrote:
+>> Mask the IRQ status to only the bits that the driver checks. This
+>> prevents excessive driver warnings when operating in slave mode
+>> when additional bits are set that the driver doesn't handle.
+>>
+>> Signed-off-by: Eddie James <eajames@linux.ibm.com>
+>> Reviewed-by: Tao Ren <rentao.bupt@gmail.com>
+> Sorry, looks like I didn't get my comment in in time.
+>
+> Looks good in principle. One minor comment below:
+>
+>> ---
+>>   drivers/i2c/busses/i2c-aspeed.c | 2 ++
+>>   1 file changed, 2 insertions(+)
+>>
+>> diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
+>> index 31268074c422..724bf30600d6 100644
+>> --- a/drivers/i2c/busses/i2c-aspeed.c
+>> +++ b/drivers/i2c/busses/i2c-aspeed.c
+>> @@ -69,6 +69,7 @@
+>>    * These share bit definitions, so use the same values for the enable &
+>>    * status bits.
+>>    */
+>> +#define ASPEED_I2CD_INTR_RECV_MASK                     0xf000ffff
+> Could we define ASPEED_I2CD_INTR_RECV_MASK to be ASPEED_I2CD_INTR_ALL ?
 
-Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
----
- arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts | 2 ++
- 1 file changed, 2 insertions(+)
 
-diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts b/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts
-index 5f4ee67ac787..94ec301ceb73 100644
---- a/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts
-@@ -179,6 +179,8 @@ &emmc_controller {
- 
- &emmc {
- 	status = "okay";
-+	aspeed,input-phase = <0x7>;
-+	aspeed,output-phase = <0x1f>;
- };
- 
- &fsim0 {
--- 
-2.25.1
+That was my original thought... there is another define for that already 
+a few lines down though.
 
+
+Thanks,
+
+Eddie
+
+
+>
+>>   #define ASPEED_I2CD_INTR_SDA_DL_TIMEOUT                        BIT(14)
+>>   #define ASPEED_I2CD_INTR_BUS_RECOVER_DONE              BIT(13)
+>>   #define ASPEED_I2CD_INTR_SLAVE_MATCH                   BIT(7)
+>> @@ -604,6 +605,7 @@ static irqreturn_t aspeed_i2c_bus_irq(int irq, void *dev_id)
+>>          writel(irq_received & ~ASPEED_I2CD_INTR_RX_DONE,
+>>                 bus->base + ASPEED_I2C_INTR_STS_REG);
+>>          readl(bus->base + ASPEED_I2C_INTR_STS_REG);
+>> +       irq_received &= ASPEED_I2CD_INTR_RECV_MASK;
+>>          irq_remaining = irq_received;
+>>
+>>   #if IS_ENABLED(CONFIG_I2C_SLAVE)
+>> --
+>> 2.26.2
+>>
