@@ -1,108 +1,56 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Thu, 10 Sep 2020 03:21:43 +0000
-Subject: [PATCH] ARM: config: aspeed: Fix selection of media drivers
-In-Reply-To: <20200826071916.3081953-1-joel@jms.id.au>
-References: <20200826071916.3081953-1-joel@jms.id.au>
-Message-ID: <CACPK8XcNc=O99Fuup=OnFacJJnRHd0bt0BiuSrYUCTSVs_shuw@mail.gmail.com>
+Date: Thu, 10 Sep 2020 03:57:02 +0000
+Subject: [PATCH 2/2] gpio/aspeed-sgpio: don't enable all interrupts by
+ default
+In-Reply-To: <20200715135418.3194860-2-jk@codeconstruct.com.au>
+References: <20200715135418.3194860-1-jk@codeconstruct.com.au>
+ <20200715135418.3194860-2-jk@codeconstruct.com.au>
+Message-ID: <CACPK8XdOTorJcNSON--LZU8XkWLh5kwXc8fkGWOBmXVnFiCnSQ@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 26 Aug 2020 at 07:19, Joel Stanley <joel@jms.id.au> wrote:
+On Wed, 15 Jul 2020 at 14:06, Jeremy Kerr <jk@codeconstruct.com.au> wrote:
 >
-> In the 5.7 merge window the media kconfig was restructued. For most
-> platforms these changes set CONFIG_MEDIA_SUPPORT_FILTER=y which keeps
-> unwanted drivers disabled.
+> Currently, the IRQ setup for the SGPIO driver enables all interrupts for
+> dual-edge trigger mode. Since the default handler is handle_bad_irq, any
+> state change on input GPIOs will trigger bad IRQ warnings.
 >
-> The exception is if a config sets EMBEDDED or EXPERT (see b0cd4fb27665).
-> In that case the filter is set to =n, causing a bunch of DVB tuner drivers
-> (MEDIA_TUNER_*) to be accidentally enabled. This was noticed as it blew
-> out the build time for the Aspeed defconfigs.
+> This change applies sensible (disabled) IRQ defaults.
 >
-> Enabling the filter means the Aspeed config also needs to set
-> CONFIG_MEDIA_PLATFORM_SUPPORT=y in order to have the CONFIG_VIDEO_ASPEED
-> driver enabled.
->
-> Fixes: 06b93644f4d1 ("media: Kconfig: add an option to filter in/out platform drivers")
-> Fixes: b0cd4fb27665 ("media: Kconfig: on !EMBEDDED && !EXPERT, enable driver filtering")
-> Cc: stable at vger.kernel.org
-> CC: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
-> Signed-off-by: Joel Stanley <joel@jms.id.au>
+> Signed-off-by: Jeremy Kerr <jk@codeconstruct.com.au>
 > ---
+>  drivers/gpio/gpio-aspeed-sgpio.c | 4 +---
+>  1 file changed, 1 insertion(+), 3 deletions(-)
 >
-> Another solution would be to revert b0cd4fb27665 ("media: Kconfig: on
-> !EMBEDDED && !EXPERT, enable driver filtering"). I assume this was done
-> to be helpful, but in practice it has enabled the TUNER drivers (and
-> others) for the following configs that didn't have them before:
+> diff --git a/drivers/gpio/gpio-aspeed-sgpio.c b/drivers/gpio/gpio-aspeed-sgpio.c
+> index 927d46f159b8..23a3a40901d6 100644
+> --- a/drivers/gpio/gpio-aspeed-sgpio.c
+> +++ b/drivers/gpio/gpio-aspeed-sgpio.c
 
-Mauro, did you have any thoughts here?
+I've re-ordered the lines in the diff to make it easier to review:
 
-Otherwise I'll merge the fix for the aspeed configs for 5.10.
+> @@ -451,9 +451,7 @@ static int aspeed_sgpio_setup_irqs(struct aspeed_sgpio *gpio,
+>                 /* trigger type is edge */
+>                 iowrite32(0x00000000, bank_reg(gpio, bank, reg_irq_type1));
+>                 /* dual edge trigger mode. */
+> -               iowrite32(0xffffffff, bank_reg(gpio, bank, reg_irq_type2));
+> +               iowrite32(0x00000000, bank_reg(gpio, bank, reg_irq_type2));
+
+You're changing the trigger mode from dual edge to single edge.
+
+> -               /* enable irq */
+> -               iowrite32(0xffffffff, bank_reg(gpio, bank, reg_irq_enable));
+
+And also removing the enabling of IRQs. This part makes sense, as it's
+what the commit message says.
+
+If you think a sensible default should be single edge (and I would
+agree with that change), perhaps update the comment to say "set single
+edge trigger mode" and mention it in your commit message.
 
 Cheers,
 
 Joel
-
->
-> $ git grep -lE "(CONFIG_EXPERT|CONFIG_EMBEDDED)"  arch/*/configs/ | xargs grep -l MEDIA_SUPPORT
-> arch/arm/configs/aspeed_g4_defconfig
-> arch/arm/configs/aspeed_g5_defconfig
-> arch/arm/configs/at91_dt_defconfig
-> arch/arm/configs/bcm2835_defconfig
-> arch/arm/configs/davinci_all_defconfig
-> arch/arm/configs/ezx_defconfig
-> arch/arm/configs/imote2_defconfig
-> arch/arm/configs/imx_v4_v5_defconfig
-> arch/arm/configs/imx_v6_v7_defconfig
-> arch/arm/configs/milbeaut_m10v_defconfig
-> arch/arm/configs/multi_v7_defconfig
-> arch/arm/configs/omap2plus_defconfig
-> arch/arm/configs/pxa_defconfig
-> arch/arm/configs/qcom_defconfig
-> arch/arm/configs/sama5_defconfig
-> arch/arm/configs/tegra_defconfig
-> arch/mips/configs/ci20_defconfig
-> arch/mips/configs/lemote2f_defconfig
-> arch/mips/configs/loongson3_defconfig
-> arch/mips/configs/pistachio_defconfig
->
-> I've cc'd the maintainers of these defconfigs so they are aware.
->
-> ---
->  arch/arm/configs/aspeed_g4_defconfig | 3 ++-
->  arch/arm/configs/aspeed_g5_defconfig | 3 ++-
->  2 files changed, 4 insertions(+), 2 deletions(-)
->
-> diff --git a/arch/arm/configs/aspeed_g4_defconfig b/arch/arm/configs/aspeed_g4_defconfig
-> index 303f75a3baec..58d293b63581 100644
-> --- a/arch/arm/configs/aspeed_g4_defconfig
-> +++ b/arch/arm/configs/aspeed_g4_defconfig
-> @@ -160,7 +160,8 @@ CONFIG_SENSORS_TMP421=y
->  CONFIG_SENSORS_W83773G=y
->  CONFIG_WATCHDOG_SYSFS=y
->  CONFIG_MEDIA_SUPPORT=y
-> -CONFIG_MEDIA_CAMERA_SUPPORT=y
-> +CONFIG_MEDIA_SUPPORT_FILTER=y
-> +CONFIG_MEDIA_PLATFORM_SUPPORT=y
->  CONFIG_V4L_PLATFORM_DRIVERS=y
->  CONFIG_VIDEO_ASPEED=y
->  CONFIG_DRM=y
-> diff --git a/arch/arm/configs/aspeed_g5_defconfig b/arch/arm/configs/aspeed_g5_defconfig
-> index b0d056d49abe..cc2449ed6e6d 100644
-> --- a/arch/arm/configs/aspeed_g5_defconfig
-> +++ b/arch/arm/configs/aspeed_g5_defconfig
-> @@ -175,7 +175,8 @@ CONFIG_SENSORS_TMP421=y
->  CONFIG_SENSORS_W83773G=y
->  CONFIG_WATCHDOG_SYSFS=y
->  CONFIG_MEDIA_SUPPORT=y
-> -CONFIG_MEDIA_CAMERA_SUPPORT=y
-> +CONFIG_MEDIA_SUPPORT_FILTER=y
-> +CONFIG_MEDIA_PLATFORM_SUPPORT=y
->  CONFIG_V4L_PLATFORM_DRIVERS=y
->  CONFIG_VIDEO_ASPEED=y
->  CONFIG_DRM=y
-> --
-> 2.28.0
->
