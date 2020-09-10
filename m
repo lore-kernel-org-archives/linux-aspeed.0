@@ -1,35 +1,30 @@
 From: Eddie James <eajames@linux.ibm.com>
-Date: Thu, 10 Sep 2020 10:18:39 -0500
-Subject: [PATCH 3/4] dt-bindings: fsi: Aspeed master: Add bus-frequency
- property
-In-Reply-To: <20200910151840.25333-1-eajames@linux.ibm.com>
-References: <20200910151840.25333-1-eajames@linux.ibm.com>
-Message-ID: <20200910151840.25333-4-eajames@linux.ibm.com>
+Date: Thu, 10 Sep 2020 10:18:36 -0500
+Subject: [PATCH 0/4] clk: AST2600 and FSI: Add APLL to control FSI bus
+ frequency
+Message-ID: <20200910151840.25333-1-eajames@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Document the bus-frequency property.
+Add functionality to control the APLL clock on the AST2600. The APLL provides
+the clock for the FSI master on the AST2600. Then add a devicetree property to
+set the AST2600 FSI master bus frequency.
 
-Signed-off-by: Eddie James <eajames@linux.ibm.com>
----
- Documentation/devicetree/bindings/fsi/fsi-master-aspeed.txt | 1 +
- 1 file changed, 1 insertion(+)
+Eddie James (4):
+  dt-bindings: clock: Add AST2600 APLLdivN definition
+  clk: ast2600: Add functionality to the APLL clock
+  dt-bindings: fsi: Aspeed master: Add bus-frequency property
+  fsi: Aspeed master: Set bus frequency from devicetree
 
-diff --git a/Documentation/devicetree/bindings/fsi/fsi-master-aspeed.txt b/Documentation/devicetree/bindings/fsi/fsi-master-aspeed.txt
-index a513e65ec0c9..d84bd19526ca 100644
---- a/Documentation/devicetree/bindings/fsi/fsi-master-aspeed.txt
-+++ b/Documentation/devicetree/bindings/fsi/fsi-master-aspeed.txt
-@@ -17,6 +17,7 @@ Optional properties:
- 
-  - fsi-routing-gpios: GPIO for setting the FSI mux (internal or cabled)
-  - fsi-mux-gpios: GPIO for detecting the desired FSI mux state
-+ - bus-frequency: the frequency of the FSI bus
- 
- 
- Examples:
+ .../bindings/fsi/fsi-master-aspeed.txt        |   1 +
+ drivers/clk/clk-ast2600.c                     | 177 ++++++++++++++++--
+ drivers/fsi/fsi-master-aspeed.c               |   5 +
+ include/dt-bindings/clock/ast2600-clock.h     |   1 +
+ 4 files changed, 172 insertions(+), 12 deletions(-)
+
 -- 
 2.26.2
 
