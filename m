@@ -1,48 +1,108 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Thu, 10 Sep 2020 03:19:34 +0000
-Subject: [PATCH] ARM: dts: rainier: Disable internal pull-downs on eMMC
- pins
-In-Reply-To: <20200910031143.2997298-1-andrew@aj.id.au>
-References: <20200910031143.2997298-1-andrew@aj.id.au>
-Message-ID: <CACPK8XeZe2n_a56LGJ16VswvPwRu7jWcSCTH+3grJ5zY9Wq38g@mail.gmail.com>
+Date: Thu, 10 Sep 2020 03:21:43 +0000
+Subject: [PATCH] ARM: config: aspeed: Fix selection of media drivers
+In-Reply-To: <20200826071916.3081953-1-joel@jms.id.au>
+References: <20200826071916.3081953-1-joel@jms.id.au>
+Message-ID: <CACPK8XcNc=O99Fuup=OnFacJJnRHd0bt0BiuSrYUCTSVs_shuw@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, 10 Sep 2020 at 03:12, Andrew Jeffery <andrew@aj.id.au> wrote:
+On Wed, 26 Aug 2020 at 07:19, Joel Stanley <joel@jms.id.au> wrote:
 >
-> There's a veritable tug-of-war going on in the design, so disable one of
-> the warring parties.
+> In the 5.7 merge window the media kconfig was restructued. For most
+> platforms these changes set CONFIG_MEDIA_SUPPORT_FILTER=y which keeps
+> unwanted drivers disabled.
 >
-> Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
+> The exception is if a config sets EMBEDDED or EXPERT (see b0cd4fb27665).
+> In that case the filter is set to =n, causing a bunch of DVB tuner drivers
+> (MEDIA_TUNER_*) to be accidentally enabled. This was noticed as it blew
+> out the build time for the Aspeed defconfigs.
+>
+> Enabling the filter means the Aspeed config also needs to set
+> CONFIG_MEDIA_PLATFORM_SUPPORT=y in order to have the CONFIG_VIDEO_ASPEED
+> driver enabled.
+>
+> Fixes: 06b93644f4d1 ("media: Kconfig: add an option to filter in/out platform drivers")
+> Fixes: b0cd4fb27665 ("media: Kconfig: on !EMBEDDED && !EXPERT, enable driver filtering")
+> Cc: stable at vger.kernel.org
+> CC: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
+> Signed-off-by: Joel Stanley <joel@jms.id.au>
+> ---
+>
+> Another solution would be to revert b0cd4fb27665 ("media: Kconfig: on
+> !EMBEDDED && !EXPERT, enable driver filtering"). I assume this was done
+> to be helpful, but in practice it has enabled the TUNER drivers (and
+> others) for the following configs that didn't have them before:
 
-Applied to the aspeed tree for 5.10.
+Mauro, did you have any thoughts here?
+
+Otherwise I'll merge the fix for the aspeed configs for 5.10.
 
 Cheers,
 
 Joel
 
+>
+> $ git grep -lE "(CONFIG_EXPERT|CONFIG_EMBEDDED)"  arch/*/configs/ | xargs grep -l MEDIA_SUPPORT
+> arch/arm/configs/aspeed_g4_defconfig
+> arch/arm/configs/aspeed_g5_defconfig
+> arch/arm/configs/at91_dt_defconfig
+> arch/arm/configs/bcm2835_defconfig
+> arch/arm/configs/davinci_all_defconfig
+> arch/arm/configs/ezx_defconfig
+> arch/arm/configs/imote2_defconfig
+> arch/arm/configs/imx_v4_v5_defconfig
+> arch/arm/configs/imx_v6_v7_defconfig
+> arch/arm/configs/milbeaut_m10v_defconfig
+> arch/arm/configs/multi_v7_defconfig
+> arch/arm/configs/omap2plus_defconfig
+> arch/arm/configs/pxa_defconfig
+> arch/arm/configs/qcom_defconfig
+> arch/arm/configs/sama5_defconfig
+> arch/arm/configs/tegra_defconfig
+> arch/mips/configs/ci20_defconfig
+> arch/mips/configs/lemote2f_defconfig
+> arch/mips/configs/loongson3_defconfig
+> arch/mips/configs/pistachio_defconfig
+>
+> I've cc'd the maintainers of these defconfigs so they are aware.
+>
 > ---
->  arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts | 4 ++++
->  1 file changed, 4 insertions(+)
+>  arch/arm/configs/aspeed_g4_defconfig | 3 ++-
+>  arch/arm/configs/aspeed_g5_defconfig | 3 ++-
+>  2 files changed, 4 insertions(+), 2 deletions(-)
 >
-> diff --git a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
-> index 1fa233d2da26..21ae880c7530 100644
-> --- a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
-> +++ b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
-> @@ -180,6 +180,10 @@ &emmc_controller {
->         status = "okay";
->  };
->
-> +&pinctrl_emmc_default {
-> +       bias-disable;
-> +};
-> +
->  &emmc {
->         status = "okay";
->  };
+> diff --git a/arch/arm/configs/aspeed_g4_defconfig b/arch/arm/configs/aspeed_g4_defconfig
+> index 303f75a3baec..58d293b63581 100644
+> --- a/arch/arm/configs/aspeed_g4_defconfig
+> +++ b/arch/arm/configs/aspeed_g4_defconfig
+> @@ -160,7 +160,8 @@ CONFIG_SENSORS_TMP421=y
+>  CONFIG_SENSORS_W83773G=y
+>  CONFIG_WATCHDOG_SYSFS=y
+>  CONFIG_MEDIA_SUPPORT=y
+> -CONFIG_MEDIA_CAMERA_SUPPORT=y
+> +CONFIG_MEDIA_SUPPORT_FILTER=y
+> +CONFIG_MEDIA_PLATFORM_SUPPORT=y
+>  CONFIG_V4L_PLATFORM_DRIVERS=y
+>  CONFIG_VIDEO_ASPEED=y
+>  CONFIG_DRM=y
+> diff --git a/arch/arm/configs/aspeed_g5_defconfig b/arch/arm/configs/aspeed_g5_defconfig
+> index b0d056d49abe..cc2449ed6e6d 100644
+> --- a/arch/arm/configs/aspeed_g5_defconfig
+> +++ b/arch/arm/configs/aspeed_g5_defconfig
+> @@ -175,7 +175,8 @@ CONFIG_SENSORS_TMP421=y
+>  CONFIG_SENSORS_W83773G=y
+>  CONFIG_WATCHDOG_SYSFS=y
+>  CONFIG_MEDIA_SUPPORT=y
+> -CONFIG_MEDIA_CAMERA_SUPPORT=y
+> +CONFIG_MEDIA_SUPPORT_FILTER=y
+> +CONFIG_MEDIA_PLATFORM_SUPPORT=y
+>  CONFIG_V4L_PLATFORM_DRIVERS=y
+>  CONFIG_VIDEO_ASPEED=y
+>  CONFIG_DRM=y
 > --
-> 2.25.1
+> 2.28.0
 >
