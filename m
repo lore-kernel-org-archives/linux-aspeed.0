@@ -1,30 +1,37 @@
 From: Eddie James <eajames@linux.ibm.com>
-Date: Thu, 10 Sep 2020 10:18:36 -0500
-Subject: [PATCH 0/4] clk: AST2600 and FSI: Add APLL to control FSI bus
- frequency
-Message-ID: <20200910151840.25333-1-eajames@linux.ibm.com>
+Date: Thu, 10 Sep 2020 10:18:37 -0500
+Subject: [PATCH 1/4] dt-bindings: clock: Add AST2600 APLLdivN definition
+In-Reply-To: <20200910151840.25333-1-eajames@linux.ibm.com>
+References: <20200910151840.25333-1-eajames@linux.ibm.com>
+Message-ID: <20200910151840.25333-2-eajames@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add functionality to control the APLL clock on the AST2600. The APLL provides
-the clock for the FSI master on the AST2600. Then add a devicetree property to
-set the AST2600 FSI master bus frequency.
+Add a new clock definition for the "APLLdivN" as described in the
+AST2600 specification. This clock is simply the APLL divided by a
+factor defined in the SCU registers. It is the input to the FSI
+bus.
 
-Eddie James (4):
-  dt-bindings: clock: Add AST2600 APLLdivN definition
-  clk: ast2600: Add functionality to the APLL clock
-  dt-bindings: fsi: Aspeed master: Add bus-frequency property
-  fsi: Aspeed master: Set bus frequency from devicetree
+Signed-off-by: Eddie James <eajames@linux.ibm.com>
+---
+ include/dt-bindings/clock/ast2600-clock.h | 1 +
+ 1 file changed, 1 insertion(+)
 
- .../bindings/fsi/fsi-master-aspeed.txt        |   1 +
- drivers/clk/clk-ast2600.c                     | 177 ++++++++++++++++--
- drivers/fsi/fsi-master-aspeed.c               |   5 +
- include/dt-bindings/clock/ast2600-clock.h     |   1 +
- 4 files changed, 172 insertions(+), 12 deletions(-)
-
+diff --git a/include/dt-bindings/clock/ast2600-clock.h b/include/dt-bindings/clock/ast2600-clock.h
+index 62b9520a00fd..5a9ae0a1d574 100644
+--- a/include/dt-bindings/clock/ast2600-clock.h
++++ b/include/dt-bindings/clock/ast2600-clock.h
+@@ -87,6 +87,7 @@
+ #define ASPEED_CLK_MAC2RCLK		68
+ #define ASPEED_CLK_MAC3RCLK		69
+ #define ASPEED_CLK_MAC4RCLK		70
++#define ASPEED_CLK_APLLN		71
+ 
+ /* Only list resets here that are not part of a gate */
+ #define ASPEED_RESET_ADC		55
 -- 
 2.26.2
 
