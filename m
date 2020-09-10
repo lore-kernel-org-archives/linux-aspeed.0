@@ -1,96 +1,74 @@
-From: kernel test robot <lkp@intel.com>
-Date: Wed, 9 Sep 2020 16:01:21 +0800
-Subject: [PATCH v2 3/5] i2c: aspeed: Mask IRQ status to relevant bits
-In-Reply-To: <20200908200101.64974-4-eajames@linux.ibm.com>
-References: <20200908200101.64974-4-eajames@linux.ibm.com>
-Message-ID: <202009091553.1bGt9qmE%lkp@intel.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Date: Thu, 10 Sep 2020 19:57:18 +0200
+Subject: [PATCH v2 00/15] ARM: dts: / gpio: Add dtschema for NXP PCA953x and
+ correct dts
+Message-ID: <20200910175733.11046-1-krzk@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Eddie,
+Hi,
 
-I love your patch! Perhaps something to improve:
+Changes since v1:
+1. Patch 1: Use additionalProperties, Add wakeup-source, Add hogs, Extend example with hogs.
+2. New patches: 3, 4, 5, 6, 7, 9, 10, 12, 14 and 15.
 
-[auto build test WARNING on joel-aspeed/for-next]
-[also build test WARNING on wsa/i2c/for-next linus/master v5.9-rc4 next-20200908]
-[cannot apply to input/next]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch]
+The patches could be picked up independently if dtschema makes sense.
+The fixes for pins make sense anyway, regardless of dtschema.
 
-url:    https://github.com/0day-ci/linux/commits/Eddie-James/input-misc-Add-IBM-Operation-Panel-driver/20200909-120637
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/joel/aspeed.git for-next
-config: h8300-randconfig-r016-20200909 (attached as .config)
-compiler: h8300-linux-gcc (GCC) 9.3.0
-reproduce (this is a W=1 build):
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        # save the attached .config to linux build tree
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-9.3.0 make.cross ARCH=h8300 
+Best regards,
+Krzysztof
 
-If you fix the issue, kindly add following tag as appropriate
-Reported-by: kernel test robot <lkp@intel.com>
 
-All warnings (new ones prefixed by >>):
+Krzysztof Kozlowski (15):
+  dt-bindings: gpio: convert bindings for NXP PCA953x family to dtschema
+  dt-bindings: gpio: convert bindings for Maxim MAX732x family to
+    dtschema
+  arm64: dts: mediatek: fix tca6416 reset GPIOs in pumpkin
+  arm64: dts: mediatek: align GPIO hog names with dtschema
+  arm64: dts: renesas: align GPIO hog names with dtschema
+  arm64: dts: ti: align GPIO hog names with dtschema
+  arm64: dts: xilinx: align GPIO hog names with dtschema
+  ARM: dts: am335x: lxm: fix PCA9539 GPIO expander properties
+  ARM: dts: am335x: t335: align GPIO hog names with dtschema
+  ARM: dts: am3874: iceboard: fix GPIO expander reset GPIOs
+  ARM: dts: aspeed: fix PCA95xx GPIO expander properties on Portwell
+  ARM: dts: aspeed: align GPIO hog names with dtschema
+  ARM: dts: dove: fix PCA95xx GPIO expander properties on A510
+  ARM: dts: armada: align GPIO hog names with dtschema
+  ARM: dts: imx6q: align GPIO hog names with dtschema
 
->> drivers/i2c/busses/i2c-aspeed.c:88: warning: "ASPEED_I2CD_INTR_ALL" redefined
-      88 | #define ASPEED_I2CD_INTR_ALL             \
-         | 
-   drivers/i2c/busses/i2c-aspeed.c:72: note: this is the location of the previous definition
-      72 | #define ASPEED_I2CD_INTR_ALL    0xf000ffff
-         | 
+ .../devicetree/bindings/gpio/gpio-max732x.txt |  58 -----
+ .../devicetree/bindings/gpio/gpio-pca953x.txt |  90 -------
+ .../bindings/gpio/gpio-pca95xx.yaml           | 234 ++++++++++++++++++
+ .../devicetree/bindings/trivial-devices.yaml  |   4 -
+ arch/arm/boot/dts/am335x-lxm.dts              |   4 +
+ arch/arm/boot/dts/am335x-sbc-t335.dts         |   4 +-
+ arch/arm/boot/dts/am3874-iceboard.dts         |   8 +-
+ arch/arm/boot/dts/armada-388-clearfog.dts     |   4 +-
+ arch/arm/boot/dts/armada-388-clearfog.dtsi    |  10 +-
+ arch/arm/boot/dts/armada-388-helios4.dts      |   6 +-
+ arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts  |   2 +-
+ arch/arm/boot/dts/aspeed-bmc-opp-mihawk.dts   |  16 +-
+ .../boot/dts/aspeed-bmc-portwell-neptune.dts  |   2 +
+ arch/arm/boot/dts/dove-sbc-a510.dts           |   1 +
+ arch/arm/boot/dts/imx6q-b450v3.dts            |  14 +-
+ arch/arm/boot/dts/imx6q-b650v3.dts            |  12 +-
+ arch/arm/boot/dts/imx6q-b850v3.dts            |   4 +-
+ arch/arm/boot/dts/imx6q-bx50v3.dtsi           |  12 +-
+ .../boot/dts/mediatek/pumpkin-common.dtsi     |  28 +--
+ .../boot/dts/renesas/r8a77951-salvator-xs.dts |   2 +-
+ .../boot/dts/renesas/r8a77965-salvator-xs.dts |   2 +-
+ arch/arm64/boot/dts/renesas/ulcb-kf.dtsi      |  14 +-
+ .../dts/ti/k3-j721e-common-proc-board.dts     |   4 +-
+ .../boot/dts/xilinx/zynqmp-zcu102-revA.dts    |   8 +-
+ 24 files changed, 316 insertions(+), 227 deletions(-)
+ delete mode 100644 Documentation/devicetree/bindings/gpio/gpio-max732x.txt
+ delete mode 100644 Documentation/devicetree/bindings/gpio/gpio-pca953x.txt
+ create mode 100644 Documentation/devicetree/bindings/gpio/gpio-pca95xx.yaml
 
-# https://github.com/0day-ci/linux/commit/6d9e57527652ab1a348f68145e41e6a19d5dc0dc
-git remote add linux-review https://github.com/0day-ci/linux
-git fetch --no-tags linux-review Eddie-James/input-misc-Add-IBM-Operation-Panel-driver/20200909-120637
-git checkout 6d9e57527652ab1a348f68145e41e6a19d5dc0dc
-vim +/ASPEED_I2CD_INTR_ALL +88 drivers/i2c/busses/i2c-aspeed.c
+-- 
+2.17.1
 
-f327c686d3ba44e Brendan Higgins 2017-06-20  65  
-f327c686d3ba44e Brendan Higgins 2017-06-20  66  /* 0x0c : I2CD Interrupt Control Register &
-f327c686d3ba44e Brendan Higgins 2017-06-20  67   * 0x10 : I2CD Interrupt Status Register
-f327c686d3ba44e Brendan Higgins 2017-06-20  68   *
-f327c686d3ba44e Brendan Higgins 2017-06-20  69   * These share bit definitions, so use the same values for the enable &
-f327c686d3ba44e Brendan Higgins 2017-06-20  70   * status bits.
-f327c686d3ba44e Brendan Higgins 2017-06-20  71   */
-6d9e57527652ab1 Eddie James     2020-09-08  72  #define ASPEED_I2CD_INTR_ALL				0xf000ffff
-f327c686d3ba44e Brendan Higgins 2017-06-20  73  #define ASPEED_I2CD_INTR_SDA_DL_TIMEOUT			BIT(14)
-f327c686d3ba44e Brendan Higgins 2017-06-20  74  #define ASPEED_I2CD_INTR_BUS_RECOVER_DONE		BIT(13)
-f9eb91350bb20b3 Brendan Higgins 2017-06-20  75  #define ASPEED_I2CD_INTR_SLAVE_MATCH			BIT(7)
-f327c686d3ba44e Brendan Higgins 2017-06-20  76  #define ASPEED_I2CD_INTR_SCL_TIMEOUT			BIT(6)
-f327c686d3ba44e Brendan Higgins 2017-06-20  77  #define ASPEED_I2CD_INTR_ABNORMAL			BIT(5)
-f327c686d3ba44e Brendan Higgins 2017-06-20  78  #define ASPEED_I2CD_INTR_NORMAL_STOP			BIT(4)
-f327c686d3ba44e Brendan Higgins 2017-06-20  79  #define ASPEED_I2CD_INTR_ARBIT_LOSS			BIT(3)
-f327c686d3ba44e Brendan Higgins 2017-06-20  80  #define ASPEED_I2CD_INTR_RX_DONE			BIT(2)
-f327c686d3ba44e Brendan Higgins 2017-06-20  81  #define ASPEED_I2CD_INTR_TX_NAK				BIT(1)
-f327c686d3ba44e Brendan Higgins 2017-06-20  82  #define ASPEED_I2CD_INTR_TX_ACK				BIT(0)
-3e9efc3299dd78a Jae Hyun Yoo    2018-08-23  83  #define ASPEED_I2CD_INTR_MASTER_ERRORS					       \
-3e9efc3299dd78a Jae Hyun Yoo    2018-08-23  84  		(ASPEED_I2CD_INTR_SDA_DL_TIMEOUT |			       \
-3e9efc3299dd78a Jae Hyun Yoo    2018-08-23  85  		 ASPEED_I2CD_INTR_SCL_TIMEOUT |				       \
-3e9efc3299dd78a Jae Hyun Yoo    2018-08-23  86  		 ASPEED_I2CD_INTR_ABNORMAL |				       \
-3e9efc3299dd78a Jae Hyun Yoo    2018-08-23  87  		 ASPEED_I2CD_INTR_ARBIT_LOSS)
-f327c686d3ba44e Brendan Higgins 2017-06-20 @88  #define ASPEED_I2CD_INTR_ALL						       \
-f327c686d3ba44e Brendan Higgins 2017-06-20  89  		(ASPEED_I2CD_INTR_SDA_DL_TIMEOUT |			       \
-f327c686d3ba44e Brendan Higgins 2017-06-20  90  		 ASPEED_I2CD_INTR_BUS_RECOVER_DONE |			       \
-f327c686d3ba44e Brendan Higgins 2017-06-20  91  		 ASPEED_I2CD_INTR_SCL_TIMEOUT |				       \
-f327c686d3ba44e Brendan Higgins 2017-06-20  92  		 ASPEED_I2CD_INTR_ABNORMAL |				       \
-f327c686d3ba44e Brendan Higgins 2017-06-20  93  		 ASPEED_I2CD_INTR_NORMAL_STOP |				       \
-f327c686d3ba44e Brendan Higgins 2017-06-20  94  		 ASPEED_I2CD_INTR_ARBIT_LOSS |				       \
-f327c686d3ba44e Brendan Higgins 2017-06-20  95  		 ASPEED_I2CD_INTR_RX_DONE |				       \
-f327c686d3ba44e Brendan Higgins 2017-06-20  96  		 ASPEED_I2CD_INTR_TX_NAK |				       \
-f327c686d3ba44e Brendan Higgins 2017-06-20  97  		 ASPEED_I2CD_INTR_TX_ACK)
-f327c686d3ba44e Brendan Higgins 2017-06-20  98  
-
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: .config.gz
-Type: application/gzip
-Size: 29190 bytes
-Desc: not available
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20200909/fe12b971/attachment-0001.gz>
