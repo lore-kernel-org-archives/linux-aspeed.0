@@ -1,49 +1,61 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Thu, 10 Sep 2020 11:45:30 +0930
-Subject: =?UTF-8?Q?Re:_[PATCH_1/3]_pinctrl:_aspeed:_Format_pinconf_debug_consiste?=
- =?UTF-8?Q?nt_with_pinmux?=
-In-Reply-To: <CACPK8XeOf1H2Cdo434DsAjDNGrohip_MZTSMMOh1nhspz2y7dA@mail.gmail.com>
-References: <20200909114312.2863675-1-andrew@aj.id.au>
- <20200909114312.2863675-2-andrew@aj.id.au>
- <CACPK8XeOf1H2Cdo434DsAjDNGrohip_MZTSMMOh1nhspz2y7dA@mail.gmail.com>
-Message-ID: <ec40306b-39d4-48cb-8e14-28e5ed615655@www.fastmail.com>
+From: Joel Stanley <joel@jms.id.au>
+Date: Thu, 10 Sep 2020 02:41:49 +0000
+Subject: [PATCH v3 4/5] ARM: dts: Aspeed: Tacoma: Add IBM Operation Panel
+ I2C device
+In-Reply-To: <20200909203059.23427-5-eajames@linux.ibm.com>
+References: <20200909203059.23427-1-eajames@linux.ibm.com>
+ <20200909203059.23427-5-eajames@linux.ibm.com>
+Message-ID: <CACPK8XdSUAiShnY2CZOb8_6YfaMxXnbUg0k=mWctYbRWEUpyBg@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+On Wed, 9 Sep 2020 at 20:31, Eddie James <eajames@linux.ibm.com> wrote:
+>
+> Set I2C bus 0 to multi-master mode and add the panel device that will
+> register as a slave.
+>
+> Signed-off-by: Eddie James <eajames@linux.ibm.com>
+> Reviewed-by: Joel Stanley <joel@jms.id.au>
 
+Applied to the aspeed tree for v5.10.
 
-On Thu, 10 Sep 2020, at 11:22, Joel Stanley wrote:
-> On Wed, 9 Sep 2020 at 11:43, Andrew Jeffery <andrew@aj.id.au> wrote:
-> >
-> > When displaying which pinconf register and field is being touched, format the
-> > field mask so that it's consistent with the way the pinmux portion
-> > formats the mask.
-> >
-> > Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
-> > ---
-> >  drivers/pinctrl/aspeed/pinctrl-aspeed.c | 6 +++---
-> >  1 file changed, 3 insertions(+), 3 deletions(-)
-> >
-> > diff --git a/drivers/pinctrl/aspeed/pinctrl-aspeed.c b/drivers/pinctrl/aspeed/pinctrl-aspeed.c
-> > index 53f3f8aec695..d8972911d505 100644
-> > --- a/drivers/pinctrl/aspeed/pinctrl-aspeed.c
-> > +++ b/drivers/pinctrl/aspeed/pinctrl-aspeed.c
-> > @@ -539,9 +539,9 @@ int aspeed_pin_config_set(struct pinctrl_dev *pctldev, unsigned int offset,
-> >                 if (rc < 0)
-> >                         return rc;
-> >
-> > -               pr_debug("%s: Set SCU%02X[%lu]=%d for param %d(=%d) on pin %d\n",
-> > -                               __func__, pconf->reg, __ffs(pconf->mask),
-> > -                               pmap->val, param, arg, offset);
-> > +               pr_debug("%s: Set SCU%02X[0x%08X]=%d for param %d(=%d) on pin %d\n",
-> 
-> 
-> The pr_debug in pinmux-aspeed.c prints val as 0x%X. Did you want to do
-> that here?
+Cheers,
 
-Fair point, I'll do a v2.
+Joel
 
-Andrew
+> ---
+>  arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts | 7 +++++++
+>  1 file changed, 7 insertions(+)
+>
+> diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts b/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts
+> index 5f4ee67ac787..4d070d6ba09f 100644
+> --- a/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts
+> +++ b/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts
+> @@ -4,6 +4,7 @@
+>
+>  #include "aspeed-g6.dtsi"
+>  #include <dt-bindings/gpio/aspeed-gpio.h>
+> +#include <dt-bindings/i2c/i2c.h>
+>  #include <dt-bindings/leds/leds-pca955x.h>
+>
+>  / {
+> @@ -438,7 +439,13 @@ aliases {
+>  };
+>
+>  &i2c0 {
+> +       multi-master;
+>         status = "okay";
+> +
+> +       ibm-panel at 62 {
+> +               compatible = "ibm,op-panel";
+> +               reg = <(0x62 | I2C_OWN_SLAVE_ADDRESS)>;
+> +       };
+>  };
+>
+>  &i2c1 {
+> --
+> 2.26.2
+>
