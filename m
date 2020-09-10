@@ -1,38 +1,44 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Thu, 10 Sep 2020 12:26:28 +0930
-Subject: [PATCH v2 0/3] pinctrl: aspeed: AST2600 pinconf fixes
-Message-ID: <20200910025631.2996342-1-andrew@aj.id.au>
+Date: Thu, 10 Sep 2020 12:26:29 +0930
+Subject: [PATCH v2 1/3] pinctrl: aspeed: Format pinconf debug consistent with
+ pinmux
+In-Reply-To: <20200910025631.2996342-1-andrew@aj.id.au>
+References: <20200910025631.2996342-1-andrew@aj.id.au>
+Message-ID: <20200910025631.2996342-2-andrew@aj.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello,
+When displaying which pinconf register and field is being touched,
+format the field mask so that it's consistent with the way the pinmux
+portion formats the mask.
 
-The AST2600 pinctrl driver was missing support for bias control on the 1.8V
-GPIO pins, and in the process of resolving that I discovered a couple of other
-bugs that are fixed in the first two patches of the series.
+Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
+---
+In v2: Format val with %X as suggested by Joel
+---
+ drivers/pinctrl/aspeed/pinctrl-aspeed.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-v2 Tweaks some of the debug output and adds Joel's Reviewed-by tags.
-
-v1 can be found here:
-
-https://lore.kernel.org/linux-gpio/20200909114312.2863675-1-andrew at aj.id.au/
-
-Please review!
-
-Andrew
-
-Andrew Jeffery (3):
-  pinctrl: aspeed: Format pinconf debug consistent with pinmux
-  pinctrl: aspeed: Use the right pinconf mask
-  pinctrl: aspeed-g6: Add bias controls for 1.8V GPIO banks
-
- drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c | 17 +++++++++++++++++
- drivers/pinctrl/aspeed/pinctrl-aspeed.c    |  8 ++++----
- 2 files changed, 21 insertions(+), 4 deletions(-)
-
+diff --git a/drivers/pinctrl/aspeed/pinctrl-aspeed.c b/drivers/pinctrl/aspeed/pinctrl-aspeed.c
+index 53f3f8aec695..2e0260c1a57c 100644
+--- a/drivers/pinctrl/aspeed/pinctrl-aspeed.c
++++ b/drivers/pinctrl/aspeed/pinctrl-aspeed.c
+@@ -539,9 +539,9 @@ int aspeed_pin_config_set(struct pinctrl_dev *pctldev, unsigned int offset,
+ 		if (rc < 0)
+ 			return rc;
+ 
+-		pr_debug("%s: Set SCU%02X[%lu]=%d for param %d(=%d) on pin %d\n",
+-				__func__, pconf->reg, __ffs(pconf->mask),
+-				pmap->val, param, arg, offset);
++		pr_debug("%s: Set SCU%02X[0x%08X]=0x%X for param %d(=%d) on pin %d\n",
++				__func__, pconf->reg, pconf->mask,
++				val, param, arg, offset);
+ 	}
+ 
+ 	return 0;
 -- 
 2.25.1
 
