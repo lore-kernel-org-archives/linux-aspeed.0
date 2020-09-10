@@ -1,37 +1,48 @@
-From: Eddie James <eajames@linux.ibm.com>
-Date: Thu, 10 Sep 2020 10:18:37 -0500
-Subject: [PATCH 1/4] dt-bindings: clock: Add AST2600 APLLdivN definition
-In-Reply-To: <20200910151840.25333-1-eajames@linux.ibm.com>
-References: <20200910151840.25333-1-eajames@linux.ibm.com>
-Message-ID: <20200910151840.25333-2-eajames@linux.ibm.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Date: Thu, 10 Sep 2020 18:53:08 +0200
+Subject: [PATCH 4/6] ARM: dts: aspeed: Fix PCA95xx GPIO expander
+ properties on Portwell
+In-Reply-To: <20200829094024.31842-4-krzk@kernel.org>
+References: <20200829094024.31842-1-krzk@kernel.org>
+ <20200829094024.31842-4-krzk@kernel.org>
+Message-ID: <20200910165308.GA11510@kozik-lap>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add a new clock definition for the "APLLdivN" as described in the
-AST2600 specification. This clock is simply the APLL divided by a
-factor defined in the SCU registers. It is the input to the FSI
-bus.
+On Sat, Aug 29, 2020 at 11:40:22AM +0200, Krzysztof Kozlowski wrote:
+> The PCA95xx GPIO expander requires GPIO controller properties to operate
+> properly.
+> 
+> Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
+> ---
+>  arch/arm/boot/dts/aspeed-bmc-portwell-neptune.dts | 2 ++
+>  1 file changed, 2 insertions(+)
 
-Signed-off-by: Eddie James <eajames@linux.ibm.com>
----
- include/dt-bindings/clock/ast2600-clock.h | 1 +
- 1 file changed, 1 insertion(+)
+Hi everyone,
 
-diff --git a/include/dt-bindings/clock/ast2600-clock.h b/include/dt-bindings/clock/ast2600-clock.h
-index 62b9520a00fd..5a9ae0a1d574 100644
---- a/include/dt-bindings/clock/ast2600-clock.h
-+++ b/include/dt-bindings/clock/ast2600-clock.h
-@@ -87,6 +87,7 @@
- #define ASPEED_CLK_MAC2RCLK		68
- #define ASPEED_CLK_MAC3RCLK		69
- #define ASPEED_CLK_MAC4RCLK		70
-+#define ASPEED_CLK_APLLN		71
- 
- /* Only list resets here that are not part of a gate */
- #define ASPEED_RESET_ADC		55
--- 
-2.26.2
+Any comments here?
 
+Best regards,
+Krzysztof
+
+
+> 
+> diff --git a/arch/arm/boot/dts/aspeed-bmc-portwell-neptune.dts b/arch/arm/boot/dts/aspeed-bmc-portwell-neptune.dts
+> index 4a1ca8f5b6a7..03c161493ffc 100644
+> --- a/arch/arm/boot/dts/aspeed-bmc-portwell-neptune.dts
+> +++ b/arch/arm/boot/dts/aspeed-bmc-portwell-neptune.dts
+> @@ -121,6 +121,8 @@
+>  	pca9555 at 27 {
+>  		compatible = "nxp,pca9555";
+>  		reg = <0x27>;
+> +		gpio-controller;
+> +		#gpio-cells = <2>;
+>  	};
+>  };
+>  
+> -- 
+> 2.17.1
+> 
