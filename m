@@ -1,42 +1,80 @@
 From: Chia-Wei, Wang <chiawei_wang@aspeedtech.com>
-Date: Fri, 11 Sep 2020 11:46:27 +0800
-Subject: [PATCH 0/4] Remove LPC register partitioning
-Message-ID: <20200911034631.8473-1-chiawei_wang@aspeedtech.com>
+Date: Fri, 11 Sep 2020 11:46:29 +0800
+Subject: [PATCH 2/4] soc: aspeed: Fix LPC register offsets
+In-Reply-To: <20200911034631.8473-1-chiawei_wang@aspeedtech.com>
+References: <20200911034631.8473-1-chiawei_wang@aspeedtech.com>
+Message-ID: <20200911034631.8473-3-chiawei_wang@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The LPC controller has no concept of the BMC and the Host partitions.
-The incorrect partitioning can impose unnecessary range restrictions
-on register access through the syscon regmap interface.
+The LPC register offsets are fixed to adapt to the LPC DTS change,
+where the LPC partitioning is removed.
 
-For instance, HICRB contains the I/O port address configuration
-of KCS channel 1/2. However, the KCS#1/#2 drivers cannot access
-HICRB as it is located at the other LPC partition.
+Signed-off-by: Chia-Wei, Wang <chiawei_wang@aspeedtech.com>
+---
+ drivers/soc/aspeed/aspeed-lpc-ctrl.c  |  6 +++---
+ drivers/soc/aspeed/aspeed-lpc-snoop.c | 11 +++++------
+ 2 files changed, 8 insertions(+), 9 deletions(-)
 
-In addition, to be backward compatible, the newly added HW control
-bits could be added at any reserved bits over the LPC addressing space.
-
-Thereby, this patch series aims to remove the LPC partitioning for
-better driver development and maintenance.
-
-Chia-Wei, Wang (4):
-  ARM: dts: Remove LPC BMC and Host partitions
-  soc: aspeed: Fix LPC register offsets
-  ipmi: kcs: aspeed: Fix LPC register offsets
-  pinctrl: aspeed-g5: Fix LPC register offsets
-
- arch/arm/boot/dts/aspeed-g4.dtsi           |  74 +++++------
- arch/arm/boot/dts/aspeed-g5.dtsi           | 135 +++++++++------------
- arch/arm/boot/dts/aspeed-g6.dtsi           | 135 +++++++++------------
- drivers/char/ipmi/kcs_bmc_aspeed.c         |  13 +-
- drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c |   2 +-
- drivers/soc/aspeed/aspeed-lpc-ctrl.c       |   6 +-
- drivers/soc/aspeed/aspeed-lpc-snoop.c      |  11 +-
- 7 files changed, 162 insertions(+), 214 deletions(-)
-
+diff --git a/drivers/soc/aspeed/aspeed-lpc-ctrl.c b/drivers/soc/aspeed/aspeed-lpc-ctrl.c
+index 01ed21e8bfee..36faa0618ada 100644
+--- a/drivers/soc/aspeed/aspeed-lpc-ctrl.c
++++ b/drivers/soc/aspeed/aspeed-lpc-ctrl.c
+@@ -17,12 +17,12 @@
+ 
+ #define DEVICE_NAME	"aspeed-lpc-ctrl"
+ 
+-#define HICR5 0x0
++#define HICR5 0x80
+ #define HICR5_ENL2H	BIT(8)
+ #define HICR5_ENFWH	BIT(10)
+ 
+-#define HICR7 0x8
+-#define HICR8 0xc
++#define HICR7 0x88
++#define HICR8 0x8c
+ 
+ struct aspeed_lpc_ctrl {
+ 	struct miscdevice	miscdev;
+diff --git a/drivers/soc/aspeed/aspeed-lpc-snoop.c b/drivers/soc/aspeed/aspeed-lpc-snoop.c
+index f3d8d53ab84d..7ce5c9fcc73c 100644
+--- a/drivers/soc/aspeed/aspeed-lpc-snoop.c
++++ b/drivers/soc/aspeed/aspeed-lpc-snoop.c
+@@ -28,26 +28,25 @@
+ #define NUM_SNOOP_CHANNELS 2
+ #define SNOOP_FIFO_SIZE 2048
+ 
+-#define HICR5	0x0
++#define HICR5	0x80
+ #define HICR5_EN_SNP0W		BIT(0)
+ #define HICR5_ENINT_SNP0W	BIT(1)
+ #define HICR5_EN_SNP1W		BIT(2)
+ #define HICR5_ENINT_SNP1W	BIT(3)
+-
+-#define HICR6	0x4
++#define HICR6	0x84
+ #define HICR6_STR_SNP0W		BIT(0)
+ #define HICR6_STR_SNP1W		BIT(1)
+-#define SNPWADR	0x10
++#define SNPWADR	0x90
+ #define SNPWADR_CH0_MASK	GENMASK(15, 0)
+ #define SNPWADR_CH0_SHIFT	0
+ #define SNPWADR_CH1_MASK	GENMASK(31, 16)
+ #define SNPWADR_CH1_SHIFT	16
+-#define SNPWDR	0x14
++#define SNPWDR	0x94
+ #define SNPWDR_CH0_MASK		GENMASK(7, 0)
+ #define SNPWDR_CH0_SHIFT	0
+ #define SNPWDR_CH1_MASK		GENMASK(15, 8)
+ #define SNPWDR_CH1_SHIFT	8
+-#define HICRB	0x80
++#define HICRB	0x100
+ #define HICRB_ENSNP0D		BIT(14)
+ #define HICRB_ENSNP1D		BIT(15)
+ 
 -- 
 2.17.1
 
