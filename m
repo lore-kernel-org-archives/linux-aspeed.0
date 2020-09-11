@@ -1,120 +1,35 @@
-From: Joel Stanley <joel@jms.id.au>
-Date: Fri, 11 Sep 2020 00:58:05 +0000
-Subject: [PATCH v2 12/15] ARM: dts: aspeed: align GPIO hog names with
- dtschema
-In-Reply-To: <20200910175733.11046-13-krzk@kernel.org>
-References: <20200910175733.11046-1-krzk@kernel.org>
- <20200910175733.11046-13-krzk@kernel.org>
-Message-ID: <CACPK8XfmDySpkCw8nkmns-euGQE6JTqZLVO6JhvFJiRqNosRuQ@mail.gmail.com>
+From: Jeremy Kerr <jk@codeconstruct.com.au>
+Date: Fri, 11 Sep 2020 09:12:11 +0800
+Subject: [PATCH 2/2] gpio/aspeed-sgpio: don't enable all interrupts by
+ default
+In-Reply-To: <CACPK8XdOTorJcNSON--LZU8XkWLh5kwXc8fkGWOBmXVnFiCnSQ@mail.gmail.com>
+References: <20200715135418.3194860-1-jk@codeconstruct.com.au>
+ <20200715135418.3194860-2-jk@codeconstruct.com.au>
+ <CACPK8XdOTorJcNSON--LZU8XkWLh5kwXc8fkGWOBmXVnFiCnSQ@mail.gmail.com>
+Message-ID: <5d953d84c8b84d182068329db124517f8c5603b8.camel@codeconstruct.com.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, 10 Sep 2020 at 17:59, Krzysztof Kozlowski <krzk@kernel.org> wrote:
->
-> dtschema for pca95xx expects GPIO hogs to end with 'hog' prefix.
+Hi Joel,
 
-This is a bit ugly. Do we have to go down this path?
+> And also removing the enabling of IRQs. This part makes sense, as
+> it's what the commit message says.
+> 
+> If you think a sensible default should be single edge (and I would
+> agree with that change), perhaps update the comment to say "set
+> single edge trigger mode" and mention it in your commit message.
+
+OK, shall do. That was my intention with the "reasonable defaults"
+reference, but being explicit about that better here.
+
+I'll send a v2 with an updated commit message.
+
+Cheers,
 
 
->
-> Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
-> ---
->  arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts |  2 +-
->  arch/arm/boot/dts/aspeed-bmc-opp-mihawk.dts  | 16 ++++++++--------
->  2 files changed, 9 insertions(+), 9 deletions(-)
->
-> diff --git a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
-> index 1fa233d2da26..0aa437486a0d 100644
-> --- a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
-> +++ b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
-> @@ -560,7 +560,7 @@
->                 gpio-controller;
->                 #gpio-cells = <2>;
->
-> -               smbus0 {
-> +               smbus0-hog {
->                         gpio-hog;
->                         gpios = <4 GPIO_ACTIVE_HIGH>;
->                         output-high;
-> diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-mihawk.dts b/arch/arm/boot/dts/aspeed-bmc-opp-mihawk.dts
-> index cb85168f6761..577c211c469e 100644
-> --- a/arch/arm/boot/dts/aspeed-bmc-opp-mihawk.dts
-> +++ b/arch/arm/boot/dts/aspeed-bmc-opp-mihawk.dts
-> @@ -827,7 +827,7 @@
->                                 gpio-controller;
->                                 #gpio-cells = <2>;
->
-> -                               smbus0 {
-> +                               smbus0-hog {
->                                         gpio-hog;
->                                         gpios = <4 GPIO_ACTIVE_HIGH>;
->                                         output-high;
-> @@ -852,7 +852,7 @@
->                                 gpio-controller;
->                                 #gpio-cells = <2>;
->
-> -                               smbus1 {
-> +                               smbus1-hog {
->                                         gpio-hog;
->                                         gpios = <4 GPIO_ACTIVE_HIGH>;
->                                         output-high;
-> @@ -900,7 +900,7 @@
->                                 gpio-controller;
->                                 #gpio-cells = <2>;
->
-> -                               smbus2 {
-> +                               smbus2-hog {
->                                         gpio-hog;
->                                         gpios = <4 GPIO_ACTIVE_HIGH>;
->                                         output-high;
-> @@ -925,7 +925,7 @@
->                                 gpio-controller;
->                                 #gpio-cells = <2>;
->
-> -                               smbus3 {
-> +                               smbus3-hog {
->                                         gpio-hog;
->                                         gpios = <4 GPIO_ACTIVE_HIGH>;
->                                         output-high;
-> @@ -992,7 +992,7 @@
->                                 gpio-controller;
->                                 #gpio-cells = <2>;
->
-> -                               smbus4 {
-> +                               smbus4-hog {
->                                         gpio-hog;
->                                         gpios = <4 GPIO_ACTIVE_HIGH>;
->                                         output-high;
-> @@ -1017,7 +1017,7 @@
->                                 gpio-controller;
->                                 #gpio-cells = <2>;
->
-> -                               smbus5 {
-> +                               smbus5-hog {
->                                         gpio-hog;
->                                         gpios = <4 GPIO_ACTIVE_HIGH>;
->                                         output-high;
-> @@ -1065,7 +1065,7 @@
->                                 gpio-controller;
->                                 #gpio-cells = <2>;
->
-> -                               smbus6 {
-> +                               smbus6-hog {
->                                         gpio-hog;
->                                         gpios = <4 GPIO_ACTIVE_HIGH>;
->                                         output-high;
-> @@ -1090,7 +1090,7 @@
->                                 gpio-controller;
->                                 #gpio-cells = <2>;
->
-> -                               smbus7 {
-> +                               smbus7-hog {
->                                         gpio-hog;
->                                         gpios = <4 GPIO_ACTIVE_HIGH>;
->                                         output-high;
-> --
-> 2.17.1
->
+Jeremy
+
+
