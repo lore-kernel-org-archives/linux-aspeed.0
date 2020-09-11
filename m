@@ -1,87 +1,331 @@
-From: ChiaWei Wang <chiawei_wang@aspeedtech.com>
-Date: Fri, 11 Sep 2020 08:21:17 +0000
-Subject: [PATCH 0/4] Remove LPC register partitioning
-In-Reply-To: <551926fc-7bd4-4a0e-8fcf-4675dcdba22b@www.fastmail.com>
-References: <20200911034631.8473-1-chiawei_wang@aspeedtech.com>
- <CACPK8XcYvUj3W-CPzXKugp3wx7rcLEJ_8f2-Bi6V7QHZpopBbA@mail.gmail.com>
- <551926fc-7bd4-4a0e-8fcf-4675dcdba22b@www.fastmail.com>
-Message-ID: <HK0PR06MB37796D91EC7290A69F2655E491240@HK0PR06MB3779.apcprd06.prod.outlook.com>
+From: Ryan Chen <ryan_chen@aspeedtech.com>
+Date: Fri, 11 Sep 2020 09:11:04 +0000
+Subject: [PATCH 2/4] clk: ast2600: Add functionality to the APLL clock
+In-Reply-To: <CACPK8XeMcf3B+5gt-d=+4dbNindiAHA4XjVdtOOcpU3Fr0191Q@mail.gmail.com>
+References: <20200910151840.25333-1-eajames@linux.ibm.com>
+ <20200910151840.25333-3-eajames@linux.ibm.com>
+ <CACPK8XeMcf3B+5gt-d=+4dbNindiAHA4XjVdtOOcpU3Fr0191Q@mail.gmail.com>
+Message-ID: <HK0PR06MB3380E5625ECFA5ECAAB76CE8F2240@HK0PR06MB3380.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello,
-
-Thanks for your prompt feedback.
+Hello Eddie,
+	For FSI design is request for two clock source. 
+	one for FSI core, one for FSI bus clock.
+	In AST2600 FSI core clk is apll, FSI bus clock need apll/4. 
+	So, you should fix for fsi clock input. Not set from fsi-master-driver. 
+	And fsi-master driver div from clock source apll/4. Should not set for apll from fsi-master driver.  
 
 > -----Original Message-----
-> From: Andrew Jeffery <andrew@aj.id.au>
-> Sent: Friday, September 11, 2020 12:46 PM
-> To: Joel Stanley <joel@jms.id.au>; ChiaWei Wang
-> <chiawei_wang@aspeedtech.com>
-> Subject: Re: [PATCH 0/4] Remove LPC register partitioning
+> From: Joel Stanley <joel@jms.id.au>
+> Sent: Friday, September 11, 2020 9:30 AM
+> To: Eddie James <eajames@linux.ibm.com>; Ryan Chen
+> <ryan_chen@aspeedtech.com>; Billy Tsai <billy_tsai@aspeedtech.com>
+> Cc: linux-clk at vger.kernel.org; Linux Kernel Mailing List
+> <linux-kernel@vger.kernel.org>; devicetree <devicetree@vger.kernel.org>;
+> linux-aspeed <linux-aspeed@lists.ozlabs.org>; linux-fsi at lists.ozlabs.org;
+> Andrew Jeffery <andrew@aj.id.au>; Rob Herring <robh+dt@kernel.org>;
+> Stephen Boyd <sboyd@kernel.org>; Michael Turquette
+> <mturquette@baylibre.com>; Alistair Popple <alistair@popple.id.au>; Jeremy
+> Kerr <jk@ozlabs.org>
+> Subject: Re: [PATCH 2/4] clk: ast2600: Add functionality to the APLL clock
+> 
+> Ryan,
+> 
+> This change adds support for setting the A-PLL in the 2600 so we can control
+> the FSI frequency. Can your team please review it? If it is okay please reply
+> with your Reviewed-by.
 > 
 > 
-> On Fri, 11 Sep 2020, at 13:33, Joel Stanley wrote:
-> > Hello,
+> On Thu, 10 Sep 2020 at 15:18, Eddie James <eajames@linux.ibm.com> wrote:
 > >
-> > On Fri, 11 Sep 2020 at 03:46, Chia-Wei, Wang
-> > <chiawei_wang@aspeedtech.com> wrote:
-> > >
-> > > The LPC controller has no concept of the BMC and the Host partitions.
-> > > The incorrect partitioning can impose unnecessary range restrictions
-> > > on register access through the syscon regmap interface.
-> > >
-> > > For instance, HICRB contains the I/O port address configuration of
-> > > KCS channel 1/2. However, the KCS#1/#2 drivers cannot access HICRB
-> > > as it is located at the other LPC partition.
-> 
-> Thanks for addressing this, I've regretted that choice for a while now.
-> 
-> The split was rooted in trying to support pinmux while not being across every
-> detail of the LPC controller, and so I made some poor decisions.
-> 
-> > >
-> > > In addition, to be backward compatible, the newly added HW control
-> > > bits could be added at any reserved bits over the LPC addressing space.
-> > >
-> > > Thereby, this patch series aims to remove the LPC partitioning for
-> > > better driver development and maintenance.
+> > Register a clock with it's own operations to describe the APLL on the
+> > AST2600. The clock is controlled by an SCU register containing a
+> > multiplier and divider of the 25MHz input clock.
+> > The functionality to change the APLL is necessary to finely control
+> > the FSI bus frequency.
 > >
-> > I support this cleanup. The only consideration is to be careful with
-> > breaking the driver/device-tree relationship. We either need to ensure
-> > the drivers remain compatible with  both device trees.
+> > Signed-off-by: Eddie James <eajames@linux.ibm.com>
+> > ---
+> >  drivers/clk/clk-ast2600.c | 177
+> > +++++++++++++++++++++++++++++++++++---
+> >  1 file changed, 165 insertions(+), 12 deletions(-)
 > >
-> > Another solution is to get agreement from all parties that for the LPC
-> > device the device tree is always the one shipped with the kernel, so
-> > it is okay to make incompatible changes.
-If it is possible, I would prefer this solution to avoid adding additional if-logic for the compatibility support in the driver implementation.
-As the patch can be less change made to register offset definitions and leave the core logic untouched.
+> > diff --git a/drivers/clk/clk-ast2600.c b/drivers/clk/clk-ast2600.c
+> > index 177368cac6dd..a147dffbaccc 100644
+> > --- a/drivers/clk/clk-ast2600.c
+> > +++ b/drivers/clk/clk-ast2600.c
+> > @@ -4,6 +4,7 @@
 > >
-> > While we are doing a cleanup, Andrew suggested we remove the detailed
-> > description of LPC out of the device tree. We would have the one LPC
-> > node, and create a LPC driver that creates all of the sub devices
-> > (snoop, FW cycles, kcs, bt, vuart). Andrew, can  you elaborate on this
-> > plan?
+> >  #define pr_fmt(fmt) "clk-ast2600: " fmt
+> >
+> > +#include <linux/kernel.h>
+> >  #include <linux/mfd/syscon.h>
+> >  #include <linux/of_address.h>
+> >  #include <linux/of_device.h>
+> > @@ -15,7 +16,7 @@
+> >
+> >  #include "clk-aspeed.h"
+> >
+> > -#define ASPEED_G6_NUM_CLKS             71
+> > +#define ASPEED_G6_NUM_CLKS             72
+> >
+> >  #define ASPEED_G6_SILICON_REV          0x004
+> >
+> > @@ -31,6 +32,7 @@
+> >  #define ASPEED_G6_CLK_SELECTION1       0x300
+> >  #define ASPEED_G6_CLK_SELECTION2       0x304
+> >  #define ASPEED_G6_CLK_SELECTION4       0x310
+> > +#define ASPEED_G6_CLK_SELECTION5       0x314
+> >
+> >  #define ASPEED_HPLL_PARAM              0x200
+> >  #define ASPEED_APLL_PARAM              0x210
+> > @@ -116,7 +118,7 @@ static const struct aspeed_gate_data
+> aspeed_g6_gates[] = {
+> >         [ASPEED_CLK_GATE_UART11CLK]     = { 59,  -1,
+> "uart11clk-gate",  "uartx", 0 },   /* UART11 */
+> >         [ASPEED_CLK_GATE_UART12CLK]     = { 60,  -1,
+> "uart12clk-gate",  "uartx", 0 },   /* UART12 */
+> >         [ASPEED_CLK_GATE_UART13CLK]     = { 61,  -1,
+> "uart13clk-gate",  "uartx", 0 },   /* UART13 */
+> > -       [ASPEED_CLK_GATE_FSICLK]        = { 62,  59, "fsiclk-gate",
+> NULL,    0 },   /* FSI */
+> > +       [ASPEED_CLK_GATE_FSICLK]        = { 62,  59, "fsiclk-gate",
+> "aplln", CLK_SET_RATE_PARENT }, /* FSI */
 > 
-> I dug up the conversation I had with Rob over a year ago about being unhappy
-> with what I'd cooked up.
+> Why do we call this apll*n* ?
 > 
-> https://lore.kernel.org/linux-arm-kernel/CAL_JsqJ+sFDG8eKbV3gvmqVHx+otW
-> bki4dY213apzXgfhbXXEw at mail.gmail.com/
+> I believe the apll is also the parent of the sdclk.
 > 
-> But I think you covered most of the idea there: We have the LPC driver create
-> the subdevices and that moves the details out of the devicetree.
-> However, I haven't thought about it more than that, and I think there are still
-> problems with that idea. For instance, how we manage configuration of those
-> devices, and how to enable only the devices a given platform actually cares
-> about (i.e. the problems that devicetree solves for us).
-Another concern to make centralized LPC driver implementation more complicated is the relationship with eSPI driver.
-AST2500 binds the reset control of LPC and eSPI together. If eSPI is used for the Host communication, the behavior in current "lpc-ctrl" should be skipped but not for KCS, BT, Snoop, etc.
-And this will be much easier to achieve by devicetree if LPC sub devices are individually described.
+> Designs that use FSI do not use the sdclk, but it should be added to the table
+> for completeness.
 > 
-> It may be that the only way to do that is with platform code, and that's not
-> really a direction we should be going either.
->
+> >  };
+> >
+> >  static const struct clk_div_table ast2600_eclk_div_table[] = { @@
+> > -187,24 +189,166 @@ static struct clk_hw *ast2600_calc_pll(const char
+> *name, u32 val)
+> >                         mult, div);
+> >  };
+> >
+> > -static struct clk_hw *ast2600_calc_apll(const char *name, u32 val)
+> > +/*
+> > + * APLL Frequency: F = 25MHz * (2 - od) * [(m + 2) / (n + 1)]  */
+> > +static void ast2600_apll_get_params(unsigned int *div, unsigned int
+> > +*mul)
+> >  {
+> > -       unsigned int mult, div;
+> > +       u32 val = readl(scu_g6_base + ASPEED_APLL_PARAM);
+> >
+> >         if (val & BIT(20)) {
+> >                 /* Pass through mode */
+> > -               mult = div = 1;
+> > +               *mul = *div = 1;
+> >         } else {
+> > -               /* F = 25Mhz * (2-od) * [(m + 2) / (n + 1)] */
+> >                 u32 m = (val >> 5) & 0x3f;
+> >                 u32 od = (val >> 4) & 0x1;
+> >                 u32 n = val & 0xf;
+> >
+> > -               mult = (2 - od) * (m + 2);
+> > -               div = n + 1;
+> > +               *mul = (2 - od) * (m + 2);
+> > +               *div = n + 1;
+> >         }
+> > -       return clk_hw_register_fixed_factor(NULL, name, "clkin", 0,
+> > -                       mult, div);
+> > +}
+> > +
+> > +static long ast2600_apll_best(unsigned long ul_rate, unsigned long
+> ul_prate,
+> > +                             unsigned int *out_div, unsigned int
+> *out_mul,
+> > +                             unsigned int *output_divider) {
+> 
+> I look to our clk maintainers for review of this bit. Eddie has done a good job,
+> but if there's a better way to do this then please let us know.
+> 
+> In practice we will run the APLL at one of two rates, so doing a search during
+> every boot seems unnecessary to me.
+> 
+> > +#define min_mult 2ULL
+> > +#define max_mult 65ULL
+> > +#define min_div 1ULL
+> > +#define max_div 16ULL
+> > +       int i;
+> > +       unsigned int bod = 0;
+> > +       unsigned long long rem = 1ULL;
+> > +       unsigned long long brem = ~(0ULL);
+> > +       unsigned long long bdiv = 1ULL;
+> > +       unsigned long long tdiv;
+> > +       unsigned long long bmul = 16ULL;
+> > +       unsigned long long tmul;
+> > +       long brate = -ERANGE;
+> > +       unsigned long long trate;
+> > +       unsigned long long rate = ul_rate;
+> > +       unsigned long long prate = ul_prate;
+> > +
+> > +       for (i = 0; i < 2; ++i, prate *= 2ULL) {
+> > +               for (tdiv = min_div; tdiv <= max_div; ++tdiv) {
+> > +                       tmul = DIV_ROUND_CLOSEST_ULL(rate * tdiv,
+> prate);
+> > +                       if (tmul <  min_mult || tmul > max_mult)
+> > +                               continue;
+> > +
+> > +                       trate = DIV_ROUND_CLOSEST_ULL(prate * tmul,
+> tdiv);
+> > +                       if (trate > rate)
+> > +                               rem = trate - rate;
+> > +                       else
+> > +                               rem = rate - trate;
+> > +
+> > +                       if (rem < brem) {
+> > +                               bod = !i;
+> > +                               brem = rem;
+> > +                               bdiv = tdiv;
+> > +                               bmul = tmul;
+> > +                               brate = (long)trate;
+> > +                       }
+> > +
+> > +                       if (!rem)
+> > +                               break;
+> > +               }
+> > +
+> > +               if (!rem)
+> > +                       break;
+> > +       }
+> > +
+> > +       if (out_div)
+> > +               *out_div = (unsigned int)bdiv;
+> > +
+> > +       if (out_mul)
+> > +               *out_mul = (unsigned int)bmul;
+> > +
+> > +       if (output_divider)
+> > +               *output_divider = bod;
+> > +
+> > +       return brate;
+> > +#undef min_mult
+> > +#undef max_mult
+> > +#undef min_div
+> > +#undef max_div
+> > +}
+> > +
+> > +static unsigned long ast2600_apll_recalc_rate(struct clk_hw *hw,
+> > +                                             unsigned long
+> > +parent_rate) {
+> > +       unsigned int div;
+> > +       unsigned int mul;
+> > +       unsigned long long rate;
+> > +       unsigned long long prate = (unsigned long long)parent_rate;
+> > +
+> > +       ast2600_apll_get_params(&div, &mul);
+> > +
+> > +       rate = DIV_ROUND_CLOSEST_ULL(prate * (unsigned long long)mul,
+> div);
+> > +       return (unsigned long)rate;
+> > +}
+> > +
+> > +static long ast2600_apll_round_rate(struct clk_hw *hw, unsigned long rate,
+> > +                                   unsigned long *parent_rate) {
+> > +       return ast2600_apll_best(rate, *parent_rate, NULL, NULL,
+> > +NULL); }
+> > +
+> > +static int ast2600_apll_set_rate(struct clk_hw *hw, unsigned long rate,
+> > +                                unsigned long parent_rate) {
+> > +       u32 val;
+> > +       unsigned int od;
+> > +       unsigned int div;
+> > +       unsigned int mul;
+> > +       long brate = ast2600_apll_best(rate, parent_rate, &div, &mul,
+> > +&od);
+> > +
+> > +       if (brate < 0)
+> > +               return brate;
+> > +
+> > +       val = readl(scu_g6_base + ASPEED_APLL_PARAM);
+> > +       val &= ~0x7ff;
+> > +       val |= (div - 1) & 0xf;
+> > +       val |= ((mul - 2) & 0x3f) << 5;
+> > +       if (od)
+> > +               val |= 0x10;
+> > +       writel(val, scu_g6_base + ASPEED_APLL_PARAM);
+> > +
+> > +       return 0;
+> > +}
+> > +
+> > +static const struct clk_ops ast2600_apll_ops = {
+> > +       .recalc_rate = ast2600_apll_recalc_rate,
+> > +       .round_rate = ast2600_apll_round_rate,
+> > +       .set_rate = ast2600_apll_set_rate, };
+> > +
+> > +static struct clk_hw *ast2600_create_apll(void) {
+> > +       int rc;
+> > +       const char *parent = "clkin";
+> > +       struct clk_init_data init = {
+> > +               .name = "apll",
+> > +               .ops = &ast2600_apll_ops,
+> > +               .parent_names = &parent,
+> > +               .parent_data = NULL,
+> > +               .parent_hws = NULL,
+> > +               .num_parents = 1,
+> > +               .flags = 0,
+> > +       };
+> > +       struct clk_hw *clk = kzalloc(sizeof(*clk), GFP_KERNEL);
+> > +
+> > +       if (!clk)
+> > +               return ERR_PTR(-ENOMEM);
+> > +
+> > +       clk->init = &init;
+> > +       rc = of_clk_hw_register(NULL, clk);
+> > +       if (rc) {
+> > +               kfree(clk);
+> > +               clk = ERR_PTR(rc);
+> > +       }
+> > +
+> > +       return clk;
+> >  };
+> >
+> >  static u32 get_bit(u8 idx)
+> > @@ -630,6 +774,16 @@ static int aspeed_g6_clk_probe(struct
+> platform_device *pdev)
+> >                 return PTR_ERR(hw);
+> >         aspeed_g6_clk_data->hws[ASPEED_CLK_ECLK] = hw;
+> >
+> > +       hw = clk_hw_register_divider_table(dev, "aplln", "apll",
+> > +                                          CLK_SET_RATE_PARENT,
+> > +                                          scu_g6_base +
+> ASPEED_G6_CLK_SELECTION5,
+> > +                                          28, 3,
+> CLK_DIVIDER_READ_ONLY,
+> > +                                          ast2600_eclk_div_table,
+> > +                                          &aspeed_g6_clk_lock);
+> > +       if (IS_ERR(hw))
+> > +               return PTR_ERR(hw);
+> > +       aspeed_g6_clk_data->hws[ASPEED_CLK_APLLN] = hw;
+> > +
+> >         for (i = 0; i < ARRAY_SIZE(aspeed_g6_gates); i++) {
+> >                 const struct aspeed_gate_data *gd =
+> &aspeed_g6_gates[i];
+> >                 u32 gate_flags;
+> > @@ -710,8 +864,7 @@ static void __init aspeed_g6_cc(struct regmap
+> *map)
+> >         regmap_read(map, ASPEED_EPLL_PARAM, &val);
+> >         aspeed_g6_clk_data->hws[ASPEED_CLK_EPLL] =
+> > ast2600_calc_pll("epll", val);
+> >
+> > -       regmap_read(map, ASPEED_APLL_PARAM, &val);
+> > -       aspeed_g6_clk_data->hws[ASPEED_CLK_APLL] =
+> ast2600_calc_apll("apll", val);
+> > +       aspeed_g6_clk_data->hws[ASPEED_CLK_APLL] =
+> > + ast2600_create_apll();
+> >
+> >         /* Strap bits 12:11 define the AXI/AHB clock frequency ratio (aka
+> HCLK)*/
+> >         regmap_read(map, ASPEED_G6_STRAP1, &val);
+> > --
+> > 2.26.2
+> >
