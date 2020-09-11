@@ -1,45 +1,57 @@
-From: Joel Stanley <joel@jms.id.au>
-Date: Fri, 11 Sep 2020 06:33:00 +0000
-Subject: [GIT PULL] ARM: aspeed: defconfig changes for 5.10
-Message-ID: <CACPK8XdFE2K1_cyrg=uaD6CaOm_p0RCRmjAsu6uyFKD4rnDggQ@mail.gmail.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Fri, 11 Sep 2020 08:41:52 +0200
+Subject: [PATCH v2 01/15] dt-bindings: gpio: convert bindings for NXP
+ PCA953x family to dtschema
+In-Reply-To: <CAJKOXPdQJz7aLu4sjds46SiZwxvB-VMBR=stjpUme+8iEo+d-w@mail.gmail.com>
+References: <20200910175733.11046-1-krzk@kernel.org>
+ <20200910175733.11046-2-krzk@kernel.org>
+ <20200910182814.veviax3n377undkv@akan>
+ <CAJKOXPdQJz7aLu4sjds46SiZwxvB-VMBR=stjpUme+8iEo+d-w@mail.gmail.com>
+Message-ID: <CAMuHMdVG6+BsTUxb4wcAwj1WK982S0k2RCxmb3x9gsOS2TphNw@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello Soc maintainers,
+Hi Krzysztof,
 
-Here are some ASPEED defconfig changes for 5.10. Please pull them!
+On Thu, Sep 10, 2020 at 8:54 PM Krzysztof Kozlowski <krzk@kernel.org> wrote:
+> On Thu, 10 Sep 2020 at 20:28, Nishanth Menon <nm@ti.com> wrote:
+> > On 19:57-20200910, Krzysztof Kozlowski wrote:
+> > [...]
+> > > +  wakeup-source:
+> > > +    $ref: /schemas/types.yaml#/definitions/flag
+> > > +
+> > > +patternProperties:
+> > > +  "^(hog-[0-9]+|.+-hog(-[0-9]+)?)$":
+> >
+> > I wonder if "hog" is too generic and might clash with "something-hog" in
+> > the future?
+>
+> This pattern is already used in
+> Documentation/devicetree/bindings/gpio/fsl-imx-gpio.yaml. It will
+> match only children and so far it did not find any other nodes in ARM
+> and ARM64 dts. I don't expect clashes. Also the question is then - if
+> one adds a child of GPIO expander named "foobar-hog" and it is not a
+> GPIO hog, then what is it?
 
-The following changes since commit 74976e861309e4bf7f3e7e93f56ca3a6e0e1eca9:
+Perhaps you didn't find any other nodes as children of pca953x
+controllers?
+There are other hog nodes in other types of GPIO controllers. Typically
+they're named after the purpose, e.g. "wifi-disable", "i2c3_mux_oe_n",
+"pcie_sata_switch", "lcd0_mux".
 
-  ARM: config: aspeed_g5: Enable IBM OP Panel driver (2020-09-11 15:25:24 +0930)
+IMHO it's a hog if it contains a "gpio-hog" property, regardless of node
+naming.
 
-are available in the Git repository at:
+Gr{oetje,eeting}s,
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/joel/aspeed.git
-tags/aspeed-5.10-defconfig
+                        Geert
 
-for you to fetch changes up to 74976e861309e4bf7f3e7e93f56ca3a6e0e1eca9:
+-- 
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert at linux-m68k.org
 
-  ARM: config: aspeed_g5: Enable IBM OP Panel driver (2020-09-11 15:25:24 +0930)
-
-----------------------------------------------------------------
-ASPEED defconfig updates for 5.10
-
- - Fix an issue with unwanted media drivers being enabled
-
- - New driver: IBM OP Panel, used on ast2600 systems. This requires
-   enabling I2C slave mode
-
- - Enable I2C MUX GPIO driver
-
-----------------------------------------------------------------
-Joel Stanley (3):
-      ARM: config: aspeed: Fix selection of media drivers
-      ARM: config: aspeed-g5: Enable I2C GPIO mux driver
-      ARM: config: aspeed_g5: Enable IBM OP Panel driver
-
- arch/arm/configs/aspeed_g5_defconfig | 15 +++++----------
- 1 file changed, 5 insertions(+), 10 deletions(-)
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
