@@ -1,60 +1,59 @@
-From: Joel Stanley <joel@jms.id.au>
-Date: Fri, 11 Sep 2020 02:03:58 +0000
-Subject: [PATCH 3/3] ARM: dts: tacoma: Add data sample phase delay for eMMC
-In-Reply-To: <20200910105440.3087723-4-andrew@aj.id.au>
-References: <20200910105440.3087723-1-andrew@aj.id.au>
- <20200910105440.3087723-4-andrew@aj.id.au>
-Message-ID: <CACPK8XcR72zuVTJXC840oYW9M1a=tKpn5z-4qJbv00LaA1qrqA@mail.gmail.com>
+From: Jeremy Kerr <jk@codeconstruct.com.au>
+Date: Fri, 11 Sep 2020 09:51:05 +0800
+Subject: [PATCH v2 2/2] gpio/aspeed-sgpio: don't enable all interrupts by
+ default
+In-Reply-To: <20200911015105.48581-1-jk@codeconstruct.com.au>
+References: <20200911015105.48581-1-jk@codeconstruct.com.au>
+Message-ID: <20200911015105.48581-2-jk@codeconstruct.com.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, 10 Sep 2020 at 10:55, Andrew Jeffery <andrew@aj.id.au> wrote:
->
-> Adjust the phase delay to avoid data timeout splats like the following:
->
-> [  731.368601] mmc0: Timeout waiting for hardware interrupt.
-> [  731.374644] mmc0: sdhci: ============ SDHCI REGISTER DUMP ===========
-> [  731.381828] mmc0: sdhci: Sys addr:  0x00000020 | Version:  0x00000002
-> [  731.389012] mmc0: sdhci: Blk size:  0x00007200 | Blk cnt:  0x00000020
-> [  731.396194] mmc0: sdhci: Argument:  0x00462a18 | Trn mode: 0x0000002b
-> [  731.403377] mmc0: sdhci: Present:   0x01f70106 | Host ctl: 0x00000017
-> [  731.410559] mmc0: sdhci: Power:     0x0000000f | Blk gap:  0x00000000
-> [  731.417733] mmc0: sdhci: Wake-up:   0x00000000 | Clock:    0x00000107
-> [  731.424915] mmc0: sdhci: Timeout:   0x0000000e | Int stat: 0x00000000
-> [  731.432098] mmc0: sdhci: Int enab:  0x03ff008b | Sig enab: 0x03ff008b
-> [  731.439282] mmc0: sdhci: ACmd stat: 0x00000000 | Slot int: 0x00000000
-> [  731.446464] mmc0: sdhci: Caps:      0x01f80080 | Caps_1:   0x00000007
-> [  731.453647] mmc0: sdhci: Cmd:       0x0000193a | Max curr: 0x001f0f08
-> [  731.460829] mmc0: sdhci: Resp[0]:   0x00000900 | Resp[1]:  0xffffffff
-> [  731.468013] mmc0: sdhci: Resp[2]:   0x320f5913 | Resp[3]:  0x00000900
-> [  731.475195] mmc0: sdhci: Host ctl2: 0x0000008b
-> [  731.480139] mmc0: sdhci: ADMA Err:  0x00000000 | ADMA Ptr: 0xbe040200
-> [  731.487321] mmc0: sdhci: ============================================
->
-> Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
+Currently, the IRQ setup for the SGPIO driver enables all interrupts in
+dual-edge trigger mode. Since the default handler is handle_bad_irq, any
+state change on input GPIOs will trigger bad IRQ warnings.
 
-Acked-by: Joel Stanley <joel@jms.id.au>
+This change applies sensible IRQ defaults: single-edge trigger, and all
+IRQs disabled.
 
-> ---
->  arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts | 2 ++
->  1 file changed, 2 insertions(+)
->
-> diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts b/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts
-> index 5f4ee67ac787..94ec301ceb73 100644
-> --- a/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts
-> +++ b/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts
-> @@ -179,6 +179,8 @@ &emmc_controller {
->
->  &emmc {
->         status = "okay";
-> +       aspeed,input-phase = <0x7>;
-> +       aspeed,output-phase = <0x1f>;
->  };
->
->  &fsim0 {
-> --
-> 2.25.1
->
+Signed-off-by: Jeremy Kerr <jk@codeconstruct.com.au>
+Fixes: 7db47faae79b ("gpio: aspeed: Add SGPIO driver")
+
+---
+v2:
+ - update comments to reflect trigger mode change
+ - tweak wording to reflect disabled state & single-edge trigger mode
+---
+ drivers/gpio/gpio-aspeed-sgpio.c | 8 +++-----
+ 1 file changed, 3 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/gpio/gpio-aspeed-sgpio.c b/drivers/gpio/gpio-aspeed-sgpio.c
+index a18ca52432e0..64e54f8c30d2 100644
+--- a/drivers/gpio/gpio-aspeed-sgpio.c
++++ b/drivers/gpio/gpio-aspeed-sgpio.c
+@@ -452,17 +452,15 @@ static int aspeed_sgpio_setup_irqs(struct aspeed_sgpio *gpio,
+ 	irq->parents = &gpio->irq;
+ 	irq->num_parents = 1;
+ 
+-	/* set IRQ settings and Enable Interrupt */
++	/* Apply default IRQ settings */
+ 	for (i = 0; i < ARRAY_SIZE(aspeed_sgpio_banks); i++) {
+ 		bank = &aspeed_sgpio_banks[i];
+ 		/* set falling or level-low irq */
+ 		iowrite32(0x00000000, bank_reg(gpio, bank, reg_irq_type0));
+ 		/* trigger type is edge */
+ 		iowrite32(0x00000000, bank_reg(gpio, bank, reg_irq_type1));
+-		/* dual edge trigger mode. */
+-		iowrite32(0xffffffff, bank_reg(gpio, bank, reg_irq_type2));
+-		/* enable irq */
+-		iowrite32(0xffffffff, bank_reg(gpio, bank, reg_irq_enable));
++		/* single edge trigger */
++		iowrite32(0x00000000, bank_reg(gpio, bank, reg_irq_type2));
+ 	}
+ 
+ 	return 0;
+-- 
+2.28.0
+
