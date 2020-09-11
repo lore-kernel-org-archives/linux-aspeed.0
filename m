@@ -1,94 +1,44 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Fri, 11 Sep 2020 01:15:02 +0000
-Subject: [PATCH 1/2] gpio/aspeed-sgpio: enable access to all 80 input &
- output sgpios
-In-Reply-To: <788526c84deb4763d874be1748fcc5a583f8f79d.camel@codeconstruct.com.au>
-References: <20200715135418.3194860-1-jk@codeconstruct.com.au>
- <CACPK8XcT02qv+1H=DDv8BRAdUmrBoweZ+Qb3aG34bQ9-UC08Xg@mail.gmail.com>
- <788526c84deb4763d874be1748fcc5a583f8f79d.camel@codeconstruct.com.au>
-Message-ID: <CACPK8XetpRt9gnfA3WbTzXOctqD5Anb0ugub3LaVzyyVnjycmQ@mail.gmail.com>
+Date: Fri, 11 Sep 2020 01:16:44 +0000
+Subject: [PATCH 3/4] dt-bindings: fsi: Aspeed master: Add bus-frequency
+ property
+In-Reply-To: <20200910151840.25333-4-eajames@linux.ibm.com>
+References: <20200910151840.25333-1-eajames@linux.ibm.com>
+ <20200910151840.25333-4-eajames@linux.ibm.com>
+Message-ID: <CACPK8XdTsDtDAvaNrz7e3hGXdcx_1=A0vPuTiXF7GhnWQrQi3g@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, 11 Sep 2020 at 01:10, Jeremy Kerr <jk@codeconstruct.com.au> wrote:
+On Thu, 10 Sep 2020 at 15:18, Eddie James <eajames@linux.ibm.com> wrote:
 >
-> Hi Joel,
+> Document the bus-frequency property.
 >
-> Thanks for the review!
->
-> > A Fixes: might be a good idea.
->
-> OK, given this isn't strictly (just) a fix, should I split that out?
+> Signed-off-by: Eddie James <eajames@linux.ibm.com>
 
-I assume anyone using the sgpio driver in anger would need this patch
-for it to work properly, so a fix tag will help them there. No need to
-break it down any further in my opinion.
+I think this is good terminology, and it's consistent with similar
+protocols such as i2c.
 
-Cheers,
+Reviewed-by: Joel Stanley <joel@jms.id.au>
 
-Joel
-
+> ---
+>  Documentation/devicetree/bindings/fsi/fsi-master-aspeed.txt | 1 +
+>  1 file changed, 1 insertion(+)
 >
-> > > -#define MAX_NR_SGPIO                   80
-> > > +#define MAX_NR_HW_SGPIO                        80
-> > > +#define SGPIO_OUTPUT_OFFSET            MAX_NR_HW_SGPIO
-> >
-> > A short comment explaining what's going on with these defines (as you
-> > did in your commit message) will help future reviewers.
+> diff --git a/Documentation/devicetree/bindings/fsi/fsi-master-aspeed.txt b/Documentation/devicetree/bindings/fsi/fsi-master-aspeed.txt
+> index a513e65ec0c9..d84bd19526ca 100644
+> --- a/Documentation/devicetree/bindings/fsi/fsi-master-aspeed.txt
+> +++ b/Documentation/devicetree/bindings/fsi/fsi-master-aspeed.txt
+> @@ -17,6 +17,7 @@ Optional properties:
 >
-> Sounds good, I'll add one.
->
-> >
-> > > +static void aspeed_sgpio_irq_init_valid_mask(struct gpio_chip *gc,
-> > > +               unsigned long *valid_mask, unsigned int ngpios)
-> > > +{
-> > > +       struct aspeed_sgpio *sgpio = gpiochip_get_data(gc);
-> > > +       int n = sgpio->n_sgpio;
-> > > +
-> > > +       WARN_ON(ngpios < MAX_NR_HW_SGPIO * 2);
-> > > +
-> > > +       /* input GPIOs in the lower range */
-> > > +       bitmap_set(valid_mask, 0, n);
-> > > +       bitmap_clear(valid_mask, n, ngpios - n);
-> > > +}
-> > > +
-> > > +static const bool aspeed_sgpio_is_input(unsigned int offset)
-> >
-> > The 0day bot complained about the 'const' here.
->
-> ack, will remove.
->
-> > > +{
-> > > +       return offset < SGPIO_OUTPUT_OFFSET;
-> > > +}
-> > >  static int aspeed_sgpio_dir_out(struct gpio_chip *gc, unsigned int offset, int val)
-> > >  {
-> > >         struct aspeed_sgpio *gpio = gpiochip_get_data(gc);
-> > >         unsigned long flags;
-> > > +       int rc;
-> > >
-> > > -       spin_lock_irqsave(&gpio->lock, flags);
-> > > -
-> > > -       gpio->dir_in[GPIO_BANK(offset)] &= ~GPIO_BIT(offset);
-> > > -       sgpio_set_value(gc, offset, val);
-> > > +       /* No special action is required for setting the direction; we'll
-> > > +        * error-out in sgpio_set_value if this isn't an output GPIO */
-> > >
-> > > +       spin_lock_irqsave(&gpio->lock, flags);
-> > > +       rc = sgpio_set_value(gc, offset, val);
-> > >         spin_unlock_irqrestore(&gpio->lock, flags);
-> > >
-> > >         return 0;
-> >
-> > I think this should be 'return rc'
->
-> Yup. I'll send a v2 with these changes.
->
-> Cheers,
+>   - fsi-routing-gpios: GPIO for setting the FSI mux (internal or cabled)
+>   - fsi-mux-gpios: GPIO for detecting the desired FSI mux state
+> + - bus-frequency: the frequency of the FSI bus
 >
 >
-> Jeremy
+>  Examples:
+> --
+> 2.26.2
 >
