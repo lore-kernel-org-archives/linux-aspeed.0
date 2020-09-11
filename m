@@ -1,60 +1,55 @@
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Date: Fri, 11 Sep 2020 08:54:40 +0200
-Subject: [PATCH v2 01/15] dt-bindings: gpio: convert bindings for NXP
- PCA953x family to dtschema
-In-Reply-To: <CAMuHMdVG6+BsTUxb4wcAwj1WK982S0k2RCxmb3x9gsOS2TphNw@mail.gmail.com>
-References: <20200910175733.11046-1-krzk@kernel.org>
- <20200910175733.11046-2-krzk@kernel.org>
- <20200910182814.veviax3n377undkv@akan>
- <CAJKOXPdQJz7aLu4sjds46SiZwxvB-VMBR=stjpUme+8iEo+d-w@mail.gmail.com>
- <CAMuHMdVG6+BsTUxb4wcAwj1WK982S0k2RCxmb3x9gsOS2TphNw@mail.gmail.com>
-Message-ID: <CAJKOXPcSUY6aqvix7R0YkzQL9Mze9O8jrWLLxKoRyjHTRhrYLA@mail.gmail.com>
+From: Andrew Jeffery <andrew@aj.id.au>
+Date: Fri, 11 Sep 2020 17:14:52 +0930
+Subject: [PATCH v2 3/3] ARM: dts: tacoma: Add phase delay for eMMC
+In-Reply-To: <20200911074452.3148259-1-andrew@aj.id.au>
+References: <20200911074452.3148259-1-andrew@aj.id.au>
+Message-ID: <20200911074452.3148259-4-andrew@aj.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, 11 Sep 2020 at 08:42, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
->
-> Hi Krzysztof,
->
-> On Thu, Sep 10, 2020 at 8:54 PM Krzysztof Kozlowski <krzk@kernel.org> wrote:
-> > On Thu, 10 Sep 2020 at 20:28, Nishanth Menon <nm@ti.com> wrote:
-> > > On 19:57-20200910, Krzysztof Kozlowski wrote:
-> > > [...]
-> > > > +  wakeup-source:
-> > > > +    $ref: /schemas/types.yaml#/definitions/flag
-> > > > +
-> > > > +patternProperties:
-> > > > +  "^(hog-[0-9]+|.+-hog(-[0-9]+)?)$":
-> > >
-> > > I wonder if "hog" is too generic and might clash with "something-hog" in
-> > > the future?
-> >
-> > This pattern is already used in
-> > Documentation/devicetree/bindings/gpio/fsl-imx-gpio.yaml. It will
-> > match only children and so far it did not find any other nodes in ARM
-> > and ARM64 dts. I don't expect clashes. Also the question is then - if
-> > one adds a child of GPIO expander named "foobar-hog" and it is not a
-> > GPIO hog, then what is it?
->
-> Perhaps you didn't find any other nodes as children of pca953x
-> controllers?
+Adjust the phase delay to avoid data timeout splats like the following:
 
-There shouldn't be.. unless one makes some i2c-gpio controller under
-such GPIO expander. But now it wouldn't be instantiated as expander is
-not a bus.
+[  731.368601] mmc0: Timeout waiting for hardware interrupt.
+[  731.374644] mmc0: sdhci: ============ SDHCI REGISTER DUMP ===========
+[  731.381828] mmc0: sdhci: Sys addr:  0x00000020 | Version:  0x00000002
+[  731.389012] mmc0: sdhci: Blk size:  0x00007200 | Blk cnt:  0x00000020
+[  731.396194] mmc0: sdhci: Argument:  0x00462a18 | Trn mode: 0x0000002b
+[  731.403377] mmc0: sdhci: Present:   0x01f70106 | Host ctl: 0x00000017
+[  731.410559] mmc0: sdhci: Power:     0x0000000f | Blk gap:  0x00000000
+[  731.417733] mmc0: sdhci: Wake-up:   0x00000000 | Clock:    0x00000107
+[  731.424915] mmc0: sdhci: Timeout:   0x0000000e | Int stat: 0x00000000
+[  731.432098] mmc0: sdhci: Int enab:  0x03ff008b | Sig enab: 0x03ff008b
+[  731.439282] mmc0: sdhci: ACmd stat: 0x00000000 | Slot int: 0x00000000
+[  731.446464] mmc0: sdhci: Caps:      0x01f80080 | Caps_1:   0x00000007
+[  731.453647] mmc0: sdhci: Cmd:       0x0000193a | Max curr: 0x001f0f08
+[  731.460829] mmc0: sdhci: Resp[0]:   0x00000900 | Resp[1]:  0xffffffff
+[  731.468013] mmc0: sdhci: Resp[2]:   0x320f5913 | Resp[3]:  0x00000900
+[  731.475195] mmc0: sdhci: Host ctl2: 0x0000008b
+[  731.480139] mmc0: sdhci: ADMA Err:  0x00000000 | ADMA Ptr: 0xbe040200
+[  731.487321] mmc0: sdhci: ============================================
 
-> There are other hog nodes in other types of GPIO controllers. Typically
-> they're named after the purpose, e.g. "wifi-disable", "i2c3_mux_oe_n",
-> "pcie_sata_switch", "lcd0_mux".
->
-> IMHO it's a hog if it contains a "gpio-hog" property, regardless of node
-> naming.
+Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
+Acked-by: Joel Stanley <joel@jms.id.au>
+---
+ arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts | 2 ++
+ 1 file changed, 2 insertions(+)
 
-Yes. The question is then whether to expect the "hog" in name. Just
-like we expect for all other device nodes to represent the class.
+diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts b/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts
+index 5f4ee67ac787..94ec301ceb73 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts
+@@ -179,6 +179,8 @@ &emmc_controller {
+ 
+ &emmc {
+ 	status = "okay";
++	aspeed,input-phase = <0x7>;
++	aspeed,output-phase = <0x1f>;
+ };
+ 
+ &fsim0 {
+-- 
+2.25.1
 
-Best regards,
-Krzysztof
