@@ -1,49 +1,43 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Date: Mon, 14 Sep 2020 11:41:34 +0200
-Subject: [PATCH 1/3] dt: bindings: mmc: Add phase control properties for
- the Aspeed SDHCI
-In-Reply-To: <20200910105440.3087723-2-andrew@aj.id.au>
-References: <20200910105440.3087723-1-andrew@aj.id.au>
- <20200910105440.3087723-2-andrew@aj.id.au>
-Message-ID: <CAPDyKFq+QYzJNT94eFt2EsQBVqQciUoqnMDdrr3DbbkpnHRpCw@mail.gmail.com>
+From: Grygorii Strashko <grygorii.strashko@ti.com>
+Date: Mon, 14 Sep 2020 12:04:53 +0300
+Subject: [PATCH v2 01/15] dt-bindings: gpio: convert bindings for NXP
+ PCA953x family to dtschema
+In-Reply-To: <CACRpkdbrrzkYVW13V89PJ5_WRGhxSL0rOxAHA_7hYSyw28Shvg@mail.gmail.com>
+References: <20200910175733.11046-1-krzk@kernel.org>
+ <20200910175733.11046-2-krzk@kernel.org>
+ <CACPK8XdocAX5mOXf3VP29cNXH+6unYunB9NiT3qFVKyzR6WXPg@mail.gmail.com>
+ <CAJKOXPe6Tf0B5W27XaD5zLk77OBzGCHpirhTdZjFH0oh8GvWgg@mail.gmail.com>
+ <c162b6ad-57f1-a75a-11e3-9c80c60bd845@ti.com>
+ <CACRpkdbrrzkYVW13V89PJ5_WRGhxSL0rOxAHA_7hYSyw28Shvg@mail.gmail.com>
+Message-ID: <1d295310-880a-0ca7-273b-ad07f1a0498b@ti.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, 10 Sep 2020 at 12:54, Andrew Jeffery <andrew@aj.id.au> wrote:
->
-> Add properties to control the phase delay for input and output data
-> sampling.
->
-> Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
-> ---
->  Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml | 8 ++++++++
->  1 file changed, 8 insertions(+)
->
-> diff --git a/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml b/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml
-> index 987b287f3bff..75effd411554 100644
-> --- a/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml
-> +++ b/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml
-> @@ -61,6 +61,14 @@ patternProperties:
->        sdhci,auto-cmd12:
->          type: boolean
->          description: Specifies that controller should use auto CMD12
-> +      "aspeed,input-phase":
-> +        $ref: '/schemas/types.yaml#/definitions/uint32'
-> +        description:
-> +          The input clock phase delay value.
-> +      "aspeed,output-phase":
-> +        $ref: '/schemas/types.yaml#/definitions/uint32'
-> +        description:
-> +          The output clock phase delay value.
 
-We already have a common mmc clk-phase* binding, see
-mmc-controller.yaml. As matter of fact, there is one binding per speed
-mode.
 
-Could that work for this case as well?
+On 12/09/2020 13:07, Linus Walleij wrote:
+> On Fri, Sep 11, 2020 at 11:54 AM Grygorii Strashko
+> <grygorii.strashko@ti.com> wrote:
+> 
+>> More over, there is already generic schema for gpio hogs: gpio-hog.yaml
+> 
+> Where is this? I don't have it in my GPIO devel branch for sure, and
+> it is not in linux-next either so not in Bartosz' tree.
+> 
+> I did suggest that I want a gpio-common.yaml file which includes the
+> hogs.
 
-Kind regards
-Uffe
+There it is (am I missing smth?):
+pip3 install git+https://github.com/devicetree-org/dt-schema.git at master
+
+as per:
+https://www.kernel.org/doc/html/latest/devicetree/writing-schema.html
+
+
+
+-- 
+Best regards,
+grygorii
