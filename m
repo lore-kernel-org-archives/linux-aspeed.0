@@ -1,52 +1,42 @@
 From: Rob Herring <robh@kernel.org>
-Date: Tue, 15 Sep 2020 13:47:40 -0600
+Date: Tue, 15 Sep 2020 13:56:56 -0600
 Subject: [PATCH v2 01/15] dt-bindings: gpio: convert bindings for NXP
  PCA953x family to dtschema
-In-Reply-To: <20200910191305.phjtijx2fhkhqavu@akan>
+In-Reply-To: <CACRpkdbrrzkYVW13V89PJ5_WRGhxSL0rOxAHA_7hYSyw28Shvg@mail.gmail.com>
 References: <20200910175733.11046-1-krzk@kernel.org>
  <20200910175733.11046-2-krzk@kernel.org>
- <20200910182814.veviax3n377undkv@akan>
- <CAJKOXPdQJz7aLu4sjds46SiZwxvB-VMBR=stjpUme+8iEo+d-w@mail.gmail.com>
- <20200910191305.phjtijx2fhkhqavu@akan>
-Message-ID: <20200915194740.GA2385241@bogus>
+ <CACPK8XdocAX5mOXf3VP29cNXH+6unYunB9NiT3qFVKyzR6WXPg@mail.gmail.com>
+ <CAJKOXPe6Tf0B5W27XaD5zLk77OBzGCHpirhTdZjFH0oh8GvWgg@mail.gmail.com>
+ <c162b6ad-57f1-a75a-11e3-9c80c60bd845@ti.com>
+ <CACRpkdbrrzkYVW13V89PJ5_WRGhxSL0rOxAHA_7hYSyw28Shvg@mail.gmail.com>
+Message-ID: <20200915195656.GB2385241@bogus>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Sep 10, 2020 at 02:13:05PM -0500, Nishanth Menon wrote:
-> On 20:53-20200910, Krzysztof Kozlowski wrote:
-> > On Thu, 10 Sep 2020 at 20:28, Nishanth Menon <nm@ti.com> wrote:
-> > >
-> > > On 19:57-20200910, Krzysztof Kozlowski wrote:
-> > > [...]
-> > > > +  wakeup-source:
-> > > > +    $ref: /schemas/types.yaml#/definitions/flag
-> > > > +
-> > > > +patternProperties:
-> > > > +  "^(hog-[0-9]+|.+-hog(-[0-9]+)?)$":
-> > >
-> > > I wonder if "hog" is too generic and might clash with "something-hog" in
-> > > the future?
-> > 
-> > This pattern is already used in
-> > Documentation/devicetree/bindings/gpio/fsl-imx-gpio.yaml. It will
-> > match only children and so far it did not find any other nodes in ARM
-> > and ARM64 dts. I don't expect clashes. Also the question is then - if
-> > one adds a child of GPIO expander named "foobar-hog" and it is not a
-> > GPIO hog, then what is it?
+On Sat, Sep 12, 2020 at 12:07:59PM +0200, Linus Walleij wrote:
+> On Fri, Sep 11, 2020 at 11:54 AM Grygorii Strashko
+> <grygorii.strashko@ti.com> wrote:
 > 
-> Probably a nitpick.. but then,.. I have'nt seen us depend on hierarchy
-> for uniqueness of naming.. we choose for example "bus" no matter where
-> in the hierarchy it falls in, as long it is a bus.. etc.. same argument
-> holds good for properties as well.. "gpio-hog;" is kinda redundant if
-> you think of it for a compatible that is already gpio ;)..
+> > More over, there is already generic schema for gpio hogs: gpio-hog.yaml
 > 
-> I did'nt mean to de-rail the discussion, but was curious what the DT
-> maintainers think..
+> Where is this? I don't have it in my GPIO devel branch for sure, and
+> it is not in linux-next either so not in Bartosz' tree.
 
-Not really a fan of gpio-hog binding to have another type of hog nor can 
-I imagine what that would be.
+https://github.com/devicetree-org/dt-schema/tree/master/schemas/gpio
+
+> 
+> I did suggest that I want a gpio-common.yaml file which includes the
+> hogs.
+
+Already there, but not wired together ATM.
+
+> > Originally, gpio bindings were defined without restricting gpio hog node names and,
+> > generic schema follows this.
+
+Originally, almost all node names were a free-for-all even for classes 
+defined 20 years ago. Now the names are getting enforced.
 
 Rob
