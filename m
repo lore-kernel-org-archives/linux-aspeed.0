@@ -1,42 +1,37 @@
 From: Rob Herring <robh@kernel.org>
-Date: Tue, 15 Sep 2020 13:56:56 -0600
+Date: Tue, 15 Sep 2020 13:59:45 -0600
 Subject: [PATCH v2 01/15] dt-bindings: gpio: convert bindings for NXP
  PCA953x family to dtschema
-In-Reply-To: <CACRpkdbrrzkYVW13V89PJ5_WRGhxSL0rOxAHA_7hYSyw28Shvg@mail.gmail.com>
+In-Reply-To: <20200910175733.11046-2-krzk@kernel.org>
 References: <20200910175733.11046-1-krzk@kernel.org>
  <20200910175733.11046-2-krzk@kernel.org>
- <CACPK8XdocAX5mOXf3VP29cNXH+6unYunB9NiT3qFVKyzR6WXPg@mail.gmail.com>
- <CAJKOXPe6Tf0B5W27XaD5zLk77OBzGCHpirhTdZjFH0oh8GvWgg@mail.gmail.com>
- <c162b6ad-57f1-a75a-11e3-9c80c60bd845@ti.com>
- <CACRpkdbrrzkYVW13V89PJ5_WRGhxSL0rOxAHA_7hYSyw28Shvg@mail.gmail.com>
-Message-ID: <20200915195656.GB2385241@bogus>
+Message-ID: <20200915195945.GA2407885@bogus>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sat, Sep 12, 2020 at 12:07:59PM +0200, Linus Walleij wrote:
-> On Fri, Sep 11, 2020 at 11:54 AM Grygorii Strashko
-> <grygorii.strashko@ti.com> wrote:
+On Thu, 10 Sep 2020 19:57:19 +0200, Krzysztof Kozlowski wrote:
+> Convert the NXP PCA953x family of GPIO expanders bindings to device tree
+> schema.
 > 
-> > More over, there is already generic schema for gpio hogs: gpio-hog.yaml
+> Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
 > 
-> Where is this? I don't have it in my GPIO devel branch for sure, and
-> it is not in linux-next either so not in Bartosz' tree.
-
-https://github.com/devicetree-org/dt-schema/tree/master/schemas/gpio
-
+> ---
 > 
-> I did suggest that I want a gpio-common.yaml file which includes the
-> hogs.
+> Changes since v1:
+> 1. Use additionalProperties.
+> 2. Add wakeup-source.
+> 3. Add hogs.
+> 4. Extend example with hogs.
+> ---
+>  .../devicetree/bindings/gpio/gpio-pca953x.txt |  90 ----------
+>  .../bindings/gpio/gpio-pca95xx.yaml           | 166 ++++++++++++++++++
+>  .../devicetree/bindings/trivial-devices.yaml  |   4 -
+>  3 files changed, 166 insertions(+), 94 deletions(-)
+>  delete mode 100644 Documentation/devicetree/bindings/gpio/gpio-pca953x.txt
+>  create mode 100644 Documentation/devicetree/bindings/gpio/gpio-pca95xx.yaml
+> 
 
-Already there, but not wired together ATM.
-
-> > Originally, gpio bindings were defined without restricting gpio hog node names and,
-> > generic schema follows this.
-
-Originally, almost all node names were a free-for-all even for classes 
-defined 20 years ago. Now the names are getting enforced.
-
-Rob
+Reviewed-by: Rob Herring <robh@kernel.org>
