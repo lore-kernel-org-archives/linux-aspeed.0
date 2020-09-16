@@ -1,60 +1,45 @@
-From: Borislav Petkov <bp@alien8.de>
-Date: Wed, 16 Sep 2020 19:22:38 +0200
-Subject: [PATCH -next] EDAC/aspeed: use module_platform_driver to
- simplify the code
-In-Reply-To: <20200914065358.3726216-1-liushixin2@huawei.com>
-References: <20200914065358.3726216-1-liushixin2@huawei.com>
-Message-ID: <20200916172238.GQ2643@zn.tnic>
+From: rentao.bupt@gmail.com <rentao.bupt@gmail.com>
+Date: Wed, 16 Sep 2020 13:42:16 -0700
+Subject: [PATCH] gpio: aspeed: fix ast2600 bank properties
+Message-ID: <20200916204216.9423-1-rentao.bupt@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Sep 14, 2020 at 02:53:58PM +0800, Liu Shixin wrote:
-> module_platform_driver() makes the code simpler by eliminating
-> boilerplate code.
-> 
-> Signed-off-by: Liu Shixin <liushixin2@huawei.com>
-> ---
->  drivers/edac/aspeed_edac.c | 18 +-----------------
->  1 file changed, 1 insertion(+), 17 deletions(-)
-> 
-> diff --git a/drivers/edac/aspeed_edac.c b/drivers/edac/aspeed_edac.c
-> index fbec28dc661d..fde809efc520 100644
-> --- a/drivers/edac/aspeed_edac.c
-> +++ b/drivers/edac/aspeed_edac.c
-> @@ -388,23 +388,7 @@ static struct platform_driver aspeed_driver = {
->  	.probe		= aspeed_probe,
->  	.remove		= aspeed_remove
->  };
-> -
-> -
-> -static int __init aspeed_init(void)
-> -{
-> -	return platform_driver_register(&aspeed_driver);
-> -}
-> -
-> -
-> -static void __exit aspeed_exit(void)
-> -{
-> -	platform_driver_unregister(&aspeed_driver);
-> -}
-> -
-> -
-> -module_init(aspeed_init);
-> -module_exit(aspeed_exit);
-> -
-> +module_platform_driver(aspeed_driver);
->  
->  MODULE_LICENSE("GPL");
->  MODULE_AUTHOR("Stefan Schaeckeler <sschaeck@cisco.com>");
-> -- 
+From: Tao Ren <rentao.bupt@gmail.com>
 
-Applied, thanks.
+GPIO_U is mapped to the least significant byte of input/output mask, and
+the byte in "output" mask should be 0 because GPIO_U is input only. All
+the other bits need to be 1 because GPIO_V/W/X support both input and
+output modes.
 
+Similarly, GPIO_Y/Z are mapped to the 2 least significant bytes, and the
+according bits need to be 1 because GPIO_Y/Z support both input and
+output modes.
+
+Fixes: ab4a85534c3e ("gpio: aspeed: Add in ast2600 details to Aspeed driver")
+Signed-off-by: Tao Ren <rentao.bupt@gmail.com>
+---
+ drivers/gpio/gpio-aspeed.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/gpio/gpio-aspeed.c b/drivers/gpio/gpio-aspeed.c
+index 879db23d8454..d07bf2c3f136 100644
+--- a/drivers/gpio/gpio-aspeed.c
++++ b/drivers/gpio/gpio-aspeed.c
+@@ -1114,8 +1114,8 @@ static const struct aspeed_gpio_config ast2500_config =
+ 
+ static const struct aspeed_bank_props ast2600_bank_props[] = {
+ 	/*     input	  output   */
+-	{5, 0xffffffff,  0x0000ffff}, /* U/V/W/X */
+-	{6, 0xffff0000,  0x0fff0000}, /* Y/Z */
++	{5, 0xffffffff,  0xffffff00}, /* U/V/W/X */
++	{6, 0x0000ffff,  0x0000ffff}, /* Y/Z */
+ 	{ },
+ };
+ 
 -- 
-Regards/Gruss,
-    Boris.
+2.17.1
 
-https://people.kernel.org/tglx/notes-about-netiquette
