@@ -1,60 +1,38 @@
-From: Daniel Vetter <daniel@ffwll.ch>
-Date: Wed, 16 Sep 2020 11:19:03 +0200
-Subject: [PATCH] MAINTAINERS: make linux-aspeed list remarks consistent
-In-Reply-To: <20200912183334.22683-1-lukas.bulwahn@gmail.com>
-References: <20200912183334.22683-1-lukas.bulwahn@gmail.com>
-Message-ID: <20200916091903.GZ438822@phenom.ffwll.local>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Date: Wed, 16 Sep 2020 13:09:15 +0200
+Subject: [PATCH v2 02/15] dt-bindings: gpio: convert bindings for Maxim
+ MAX732x family to dtschema
+In-Reply-To: <20200916061511.GA5719@kozik-lap>
+References: <20200910175733.11046-1-krzk@kernel.org>
+ <20200910175733.11046-3-krzk@kernel.org>
+ <CACRpkdZXu2J4z=1j-syxSbz2x-QiLeTBpwHSOVNfmZ31RgM6Ng@mail.gmail.com>
+ <20200916061511.GA5719@kozik-lap>
+Message-ID: <20200916110915.GA17710@kozik-lap>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sat, Sep 12, 2020 at 08:33:34PM +0200, Lukas Bulwahn wrote:
-> Commit f15a3ea80391 ("MAINTAINERS: Add ASPEED BMC GFX DRM driver entry")
-> does not mention that linux-aspeed at lists.ozlabs.org is moderated for
-> non-subscribers, but the other three entries for
-> linux-aspeed at lists.ozlabs.org do.
+On Wed, Sep 16, 2020 at 08:15:11AM +0200, Krzysztof Kozlowski wrote:
+> On Sat, Sep 12, 2020 at 11:58:22AM +0200, Linus Walleij wrote:
+> > On Thu, Sep 10, 2020 at 7:58 PM Krzysztof Kozlowski <krzk@kernel.org> wrote:
+> > 
+> > > Convert the Maxim MAX732x family of GPIO expanders bindings to device
+> > > tree schema by merging it with existing PCA95xx schema.  These are quite
+> > > similar so merging reduces duplication.
+> > >
+> > > Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
+> > 
+> > Can I just apply this one patch to the GPIO tree?
 > 
-> By 'majority vote' among entries, let us assume it was just missed here and
-> adjust it to be consistent with others.
+> No, this requires the previous one (1/15) because it merges the max732x
+> into pca95xx.
 > 
-> Signed-off-by: Lukas Bulwahn <lukas.bulwahn@gmail.com>
-> ---
-> applies cleanly on master and next-20200911
-> 
-> Joel, please ack.
-> David, Daniel, please pick this minor non-urgent clean-up patch.
+> Although now Rob reviewed both so you can pick them up.
 
-Pushed to drm-misc-next, thanks.
--Daniel
+I found now one comment from Rob so I will send a v3.
 
-> This patch submission will also show me if linux-aspeed is moderated or
-> not. I have not subscribed to linux-aspeed and if it shows up quickly in
-> the archive, the list is probably not moderated; and if it takes longer,
-> it is moderated, and hence, validating the patch.
-> 
->  MAINTAINERS | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 26af84f97353..f2561c3fc9db 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -5448,7 +5448,7 @@ F:	drivers/gpu/drm/panel/panel-arm-versatile.c
->  
->  DRM DRIVER FOR ASPEED BMC GFX
->  M:	Joel Stanley <joel@jms.id.au>
-> -L:	linux-aspeed at lists.ozlabs.org
-> +L:	linux-aspeed at lists.ozlabs.org (moderated for non-subscribers)
->  S:	Supported
->  T:	git git://anongit.freedesktop.org/drm/drm-misc
->  F:	Documentation/devicetree/bindings/gpu/aspeed-gfx.txt
-> -- 
-> 2.17.1
-> 
+Best regards,
+Krzysztof
 
--- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch
