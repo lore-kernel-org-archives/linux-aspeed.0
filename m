@@ -1,10 +1,10 @@
 From: Krzysztof Kozlowski <krzk@kernel.org>
-Date: Wed, 16 Sep 2020 17:57:04 +0200
-Subject: [PATCH v3 04/15] arm64: dts: mediatek: align GPIO hog names with
+Date: Wed, 16 Sep 2020 17:57:05 +0200
+Subject: [PATCH v3 05/15] arm64: dts: renesas: align GPIO hog names with
  dtschema
 In-Reply-To: <20200916155715.21009-1-krzk@kernel.org>
 References: <20200916155715.21009-1-krzk@kernel.org>
-Message-ID: <20200916155715.21009-5-krzk@kernel.org>
+Message-ID: <20200916155715.21009-6-krzk@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -16,118 +16,98 @@ dtschema for pca95xx expects GPIO hogs to end with 'hog' prefix.
 
 Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
 ---
- .../boot/dts/mediatek/pumpkin-common.dtsi     | 26 +++++++++----------
- 1 file changed, 13 insertions(+), 13 deletions(-)
+ .../boot/dts/renesas/r8a77951-salvator-xs.dts      |  2 +-
+ .../boot/dts/renesas/r8a77965-salvator-xs.dts      |  2 +-
+ arch/arm64/boot/dts/renesas/ulcb-kf.dtsi           | 14 +++++++-------
+ 3 files changed, 9 insertions(+), 9 deletions(-)
 
-diff --git a/arch/arm64/boot/dts/mediatek/pumpkin-common.dtsi b/arch/arm64/boot/dts/mediatek/pumpkin-common.dtsi
-index 29d8cf6df46b..351a1905a074 100644
---- a/arch/arm64/boot/dts/mediatek/pumpkin-common.dtsi
-+++ b/arch/arm64/boot/dts/mediatek/pumpkin-common.dtsi
-@@ -63,91 +63,91 @@
- 		gpio-controller;
- 		#gpio-cells = <2>;
+diff --git a/arch/arm64/boot/dts/renesas/r8a77951-salvator-xs.dts b/arch/arm64/boot/dts/renesas/r8a77951-salvator-xs.dts
+index cef9da4376a3..e5922329a4b8 100644
+--- a/arch/arm64/boot/dts/renesas/r8a77951-salvator-xs.dts
++++ b/arch/arm64/boot/dts/renesas/r8a77951-salvator-xs.dts
+@@ -118,7 +118,7 @@
+ };
  
--		eint20_mux_sel0 {
-+		eint20-mux-sel0-hog {
- 			gpio-hog;
- 			gpios = <0 0>;
- 			input;
- 			line-name = "eint20_mux_sel0";
- 		};
+ &pca9654 {
+-	pcie_sata_switch {
++	pcie-sata-switch-hog {
+ 		gpio-hog;
+ 		gpios = <7 GPIO_ACTIVE_HIGH>;
+ 		output-low; /* enable SATA by default */
+diff --git a/arch/arm64/boot/dts/renesas/r8a77965-salvator-xs.dts b/arch/arm64/boot/dts/renesas/r8a77965-salvator-xs.dts
+index 5cef64605464..d7e621101af7 100644
+--- a/arch/arm64/boot/dts/renesas/r8a77965-salvator-xs.dts
++++ b/arch/arm64/boot/dts/renesas/r8a77965-salvator-xs.dts
+@@ -55,7 +55,7 @@
+ };
  
--		expcon_mux_sel1 {
-+		expcon-mux-sel1-hog {
- 			gpio-hog;
- 			gpios = <1 0>;
- 			input;
- 			line-name = "expcon_mux_sel1";
- 		};
+ &pca9654 {
+-	pcie_sata_switch {
++	pcie-sata-switch-hog {
+ 		gpio-hog;
+ 		gpios = <7 GPIO_ACTIVE_HIGH>;
+ 		output-low; /* enable SATA by default */
+diff --git a/arch/arm64/boot/dts/renesas/ulcb-kf.dtsi b/arch/arm64/boot/dts/renesas/ulcb-kf.dtsi
+index 202177706cde..e9ed2597f1c2 100644
+--- a/arch/arm64/boot/dts/renesas/ulcb-kf.dtsi
++++ b/arch/arm64/boot/dts/renesas/ulcb-kf.dtsi
+@@ -143,49 +143,49 @@
+ 		interrupt-parent = <&gpio6>;
+ 		interrupts = <8 IRQ_TYPE_EDGE_FALLING>;
  
--		mrg_di_mux_sel2 {
-+		mrg-di-mux-sel2-hog {
+-		audio_out_off {
++		audio-out-off-hog {
  			gpio-hog;
- 			gpios = <2 0>;
- 			input;
- 			line-name = "mrg_di_mux_sel2";
- 		};
- 
--		sd_sdio_mux_sel3 {
-+		sd-sdio-mux-sel3-hog {
- 			gpio-hog;
- 			gpios = <3 0>;
- 			input;
- 			line-name = "sd_sdio_mux_sel3";
- 		};
- 
--		sd_sdio_mux_ctrl7 {
-+		sd-sdio-mux-ctrl7-hog {
- 			gpio-hog;
- 			gpios = <7 0>;
- 			output-low;
- 			line-name = "sd_sdio_mux_ctrl7";
- 		};
- 
--		hw_id0 {
-+		hw-id0-hog {
- 			gpio-hog;
- 			gpios = <8 0>;
- 			input;
- 			line-name = "hw_id0";
- 		};
- 
--		hw_id1 {
-+		hw-id1-hog {
- 			gpio-hog;
- 			gpios = <9 0>;
- 			input;
- 			line-name = "hw_id1";
- 		};
- 
--		hw_id2 {
-+		hw-id2-hog {
- 			gpio-hog;
- 			gpios = <10 0>;
- 			input;
- 			line-name = "hw_id2";
- 		};
- 
--		fg_int_n {
-+		fg-int-n-hog {
- 			gpio-hog;
- 			gpios = <11 0>;
- 			input;
- 			line-name = "fg_int_n";
- 		};
- 
--		usba_pwr_en {
-+		usba-pwr-en-hog {
- 			gpio-hog;
- 			gpios = <12 0>;
+ 			gpios = <0 GPIO_ACTIVE_HIGH>; /* P00 */
  			output-high;
- 			line-name = "usba_pwr_en";
+ 			line-name = "Audio_Out_OFF";
  		};
  
--		wifi_3v3_pg {
-+		wifi-3v3-pg-hog {
+-		hub_pwen {
++		hub-pwen-hog {
  			gpio-hog;
- 			gpios = <13 0>;
- 			input;
- 			line-name = "wifi_3v3_pg";
+ 			gpios = <6 GPIO_ACTIVE_HIGH>;
+ 			output-high;
+ 			line-name = "HUB pwen";
  		};
  
--		cam_rst {
-+		cam-rst-hog {
+-		hub_rst {
++		hub-rst-hog {
  			gpio-hog;
- 			gpios = <14 0>;
+ 			gpios = <7 GPIO_ACTIVE_HIGH>;
+ 			output-high;
+ 			line-name = "HUB rst";
+ 		};
+ 
+-		otg_extlpn {
++		otg-extlpn-hog {
+ 			gpio-hog;
+ 			gpios = <9 GPIO_ACTIVE_HIGH>;
+ 			output-high;
+ 			line-name = "OTG EXTLPn";
+ 		};
+ 
+-		otg_offvbusn {
++		otg-offvbusn-hog {
+ 			gpio-hog;
+ 			gpios = <8 GPIO_ACTIVE_HIGH>;
  			output-low;
- 			line-name = "cam_rst";
+ 			line-name = "OTG OFFVBUSn";
  		};
  
--		cam_pwdn {
-+		cam-pwdn-hog {
+-		sd-wifi-mux {
++		sd-wifi-mux-hog {
  			gpio-hog;
- 			gpios = <15 0>;
- 			output-low;
+ 			gpios = <5 GPIO_ACTIVE_HIGH>;
+ 			output-low;	/* Connect WL1837 */
+ 			line-name = "SD WiFi mux";
+ 		};
+ 
+-		snd_rst {
++		snd-rst-hog {
+ 			gpio-hog;
+ 			gpios = <15 GPIO_ACTIVE_HIGH>; /* P17 */
+ 			output-high;
 -- 
 2.17.1
 
