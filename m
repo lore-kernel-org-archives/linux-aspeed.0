@@ -1,137 +1,30 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Wed, 16 Sep 2020 18:04:13 +0930
-Subject: [PATCH] drm/aspeed: Add sysfs for output settings
-Message-ID: <20200916083413.777307-1-joel@jms.id.au>
+Date: Wed, 16 Sep 2020 18:17:00 +0930
+Subject: [PATCH 0/3] ARM: aspeed: Add socinfo driver
+Message-ID: <20200916084703.778386-1-joel@jms.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-These settings are used by an ASPEED BMC to determine when the host is
-trying to drive the display over PCIe (vga_pw) and to switch the
-output between PCIe and the internal graphics device (dac_mux).
+This adds a socinfo driver for the ASPEED BMCs. Please review!
 
-The valid values for the dac mux are:
+Joel Stanley (3):
+  dt-bindings: aspeed: Add silicon id node to SCU
+  soc: aspeed: Add soc info driver
+  ARM: dts: aspeed: Add silicon id node
 
- 00: VGA mode (default, aka PCIe)
- 01: Graphics CRT (aka BMC internal graphics, this driver)
- 10: Pass through mode from video input port A
- 11: Pass through mode from video input port B
+ .../devicetree/bindings/mfd/aspeed-scu.txt    |  23 +++
+ arch/arm/boot/dts/aspeed-g4.dtsi              |   5 +
+ arch/arm/boot/dts/aspeed-g5.dtsi              |   5 +
+ arch/arm/boot/dts/aspeed-g6.dtsi              |   5 +
+ drivers/soc/aspeed/Kconfig                    |   7 +
+ drivers/soc/aspeed/Makefile                   |   1 +
+ drivers/soc/aspeed/aspeed-socinfo.c           | 141 ++++++++++++++++++
+ 7 files changed, 187 insertions(+)
+ create mode 100644 drivers/soc/aspeed/aspeed-socinfo.c
 
-Values for the read-only vga password register are:
-
- 1: Host driving the display
- 0: Host not driving the display
-
-Signed-off-by: Joel Stanley <joel@jms.id.au>
----
- drivers/gpu/drm/aspeed/aspeed_gfx_drv.c | 71 +++++++++++++++++++++++++
- 1 file changed, 71 insertions(+)
-
-diff --git a/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c b/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
-index 903f4f304647..9e06a3683f8a 100644
---- a/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
-+++ b/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
-@@ -205,6 +205,69 @@ static const struct of_device_id aspeed_gfx_match[] = {
- 	{ }
- };
- 
-+#define ASPEED_SCU_VGA0		0x50
-+#define ASPEED_SCU_MISC_CTRL	0x2c
-+
-+static ssize_t dac_mux_store(struct device *dev, struct device_attribute *attr,
-+			     const char *buf, size_t count)
-+{
-+	struct aspeed_gfx *priv = dev_get_drvdata(dev);
-+	u32 val;
-+	int rc;
-+
-+	rc = kstrtou32(buf, 0, &val);
-+	if (rc)
-+		return rc;
-+
-+	if (val < 0 || val > 3)
-+		return -EINVAL;
-+
-+	rc = regmap_update_bits(priv->scu, ASPEED_SCU_MISC_CTRL, 0x30000, val << 16);
-+	if (rc < 0)
-+		return 0;
-+
-+	return count;
-+}
-+
-+static ssize_t dac_mux_show(struct device *dev, struct device_attribute *attr, char *buf)
-+{
-+	struct aspeed_gfx *priv = dev_get_drvdata(dev);
-+	u32 reg;
-+	int rc;
-+
-+	rc = regmap_read(priv->scu, ASPEED_SCU_MISC_CTRL, &reg);
-+	if (rc)
-+		return rc;
-+
-+	return sprintf(buf, "%u\n", (reg >> 16) & 0x3);
-+}
-+static DEVICE_ATTR_RW(dac_mux);
-+
-+static ssize_t
-+vga_pw_show(struct device *dev, struct device_attribute *attr, char *buf)
-+{
-+	struct aspeed_gfx *priv = dev_get_drvdata(dev);
-+	u32 reg;
-+	int rc;
-+
-+	rc = regmap_read(priv->scu, ASPEED_SCU_VGA0, &reg);
-+	if (rc)
-+		return rc;
-+
-+	return sprintf(buf, "%u\n", reg & 1);
-+}
-+static DEVICE_ATTR_RO(vga_pw);
-+
-+static struct attribute *aspeed_sysfs_entries[] = {
-+	&dev_attr_vga_pw.attr,
-+	&dev_attr_dac_mux.attr,
-+	NULL,
-+};
-+
-+static struct attribute_group aspeed_sysfs_attr_group = {
-+	.attrs = aspeed_sysfs_entries,
-+};
-+
- static int aspeed_gfx_probe(struct platform_device *pdev)
- {
- 	struct aspeed_gfx *priv;
-@@ -219,6 +282,12 @@ static int aspeed_gfx_probe(struct platform_device *pdev)
- 	if (ret)
- 		return ret;
- 
-+	dev_set_drvdata(&pdev->dev, priv);
-+
-+	ret = sysfs_create_group(&pdev->dev.kobj, &aspeed_sysfs_attr_group);
-+	if (ret)
-+		return ret;
-+
- 	ret = drm_dev_register(&priv->drm, 0);
- 	if (ret)
- 		goto err_unload;
-@@ -227,6 +296,7 @@ static int aspeed_gfx_probe(struct platform_device *pdev)
- 	return 0;
- 
- err_unload:
-+	sysfs_remove_group(&pdev->dev.kobj, &aspeed_sysfs_attr_group);
- 	aspeed_gfx_unload(&priv->drm);
- 
- 	return ret;
-@@ -236,6 +306,7 @@ static int aspeed_gfx_remove(struct platform_device *pdev)
- {
- 	struct drm_device *drm = platform_get_drvdata(pdev);
- 
-+	sysfs_remove_group(&pdev->dev.kobj, &aspeed_sysfs_attr_group);
- 	drm_dev_unregister(drm);
- 	aspeed_gfx_unload(drm);
- 
 -- 
 2.28.0
 
