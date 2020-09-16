@@ -1,10 +1,9 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Thu, 17 Sep 2020 09:10:33 +0930
-Subject: [PATCH 2/3] soc: aspeed: Add soc info driver
-In-Reply-To: <20200916084703.778386-3-joel@jms.id.au>
-References: <20200916084703.778386-1-joel@jms.id.au>
- <20200916084703.778386-3-joel@jms.id.au>
-Message-ID: <aabf960e-33b3-4094-ad03-8305ca1794c7@www.fastmail.com>
+Date: Thu, 17 Sep 2020 09:27:39 +0930
+Subject: [PATCH] drm/aspeed: Add sysfs for output settings
+In-Reply-To: <20200916083413.777307-1-joel@jms.id.au>
+References: <20200916083413.777307-1-joel@jms.id.au>
+Message-ID: <1c409963-bba0-42dd-adc7-67c6903204bf@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -13,258 +12,145 @@ Content-Transfer-Encoding: 7bit
 
 
 
-On Wed, 16 Sep 2020, at 18:17, Joel Stanley wrote:
-> This adds a SOC_BUS info driver for the ASPEED platform.
+On Wed, 16 Sep 2020, at 18:04, Joel Stanley wrote:
+> These settings are used by an ASPEED BMC to determine when the host is
+> trying to drive the display over PCIe (vga_pw) and to switch the
+> output between PCIe and the internal graphics device (dac_mux).
 > 
-> The full ID table is preserved in this commit message in case someone
-> finds a need to change the implemntation in the future.
+> The valid values for the dac mux are:
 > 
-> 	{ "AST1100-A0", 0x00000200 },
-> 	{ "AST1100-A1", 0x00000201 },
-> 	{ "AST1100-A2", 0x00000202 },
-> 	{ "AST1100-A3", 0x00000202 },
+>  00: VGA mode (default, aka PCIe)
+>  01: Graphics CRT (aka BMC internal graphics, this driver)
+>  10: Pass through mode from video input port A
+>  11: Pass through mode from video input port B
 > 
-> 	{ "AST2050-A0", 0x00000200 },
-> 	{ "AST2050-A1", 0x00000201 },
-> 	{ "AST2050-A2", 0x00000202 },
-> 	{ "AST2050-A3", 0x00000202 },
+> Values for the read-only vga password register are:
 > 
-> 	{ "AST2100-A0", 0x00000300 },
-> 	{ "AST2100-A1", 0x00000301 },
-> 	{ "AST2100-A2", 0x00000302 },
-> 	{ "AST2100-A3", 0x00000302 },
-> 
-> 	{ "AST2150-A0", 0x00000202 },
-> 	{ "AST2150-A1", 0x00000202 },
-> 
-> 	{ "AST2200-A0", 0x00000102 },
-> 	{ "AST2200-A1", 0x00000102 },
-> 
-> 	{ "AST2300-A0", 0x01000003 },
-> 	{ "AST2300-A1", 0x01010303 },
-> 
-> 	{ "AST1300-A1", 0x01010003 },
-> 	{ "AST1050-A1", 0x01010203 },
-> 
-> 	{ "AST2400-A0", 0x02000303 },
-> 	{ "AST2400-A1", 0x02010303 },
-> 	{ "AST1400-A1", 0x02010103 },
-> 	{ "AST1250-A1", 0x02010303 },
-> 
-> 	{ "AST2500-A0", 0x04000303 },
-> 	{ "AST2510-A0", 0x04000103 },
-> 	{ "AST2520-A0", 0x04000203 },
-> 	{ "AST2530-A0", 0x04000403 },
-> 	{ "AST2500-A1", 0x04010303 },
-> 	{ "AST2510-A1", 0x04010103 },
-> 	{ "AST2520-A1", 0x04010203 },
-> 	{ "AST2530-A1", 0x04010403 },
-> 	{ "AST2500-A2", 0x04030303 },
-> 	{ "AST2510-A2", 0x04030103 },
-> 	{ "AST2520-A2", 0x04030203 },
-> 	{ "AST2530-A2", 0x04030403 },
-> 
-> 	{ "AST2600-A0", 0x05000303 },
-> 	{ "AST2600-A1", 0x05010303 },
-> 	{ "AST2600-A2", 0x05020303 },
-> 	{ "AST2620-A1", 0x05010203 },
-> 	{ "AST2620-A2", 0x05020203 },
+>  1: Host driving the display
+>  0: Host not driving the display
 > 
 > Signed-off-by: Joel Stanley <joel@jms.id.au>
 > ---
->  drivers/soc/aspeed/Kconfig          |   7 ++
->  drivers/soc/aspeed/Makefile         |   1 +
->  drivers/soc/aspeed/aspeed-socinfo.c | 141 ++++++++++++++++++++++++++++
->  3 files changed, 149 insertions(+)
->  create mode 100644 drivers/soc/aspeed/aspeed-socinfo.c
+>  drivers/gpu/drm/aspeed/aspeed_gfx_drv.c | 71 +++++++++++++++++++++++++
+>  1 file changed, 71 insertions(+)
 > 
-> diff --git a/drivers/soc/aspeed/Kconfig b/drivers/soc/aspeed/Kconfig
-> index 3c03c255e6e9..be5a29e8b0dc 100644
-> --- a/drivers/soc/aspeed/Kconfig
-> +++ b/drivers/soc/aspeed/Kconfig
-> @@ -35,6 +35,13 @@ config ASPEED_P2A_CTRL
->  	  driver also provides an interface for userspace mappings to a
->  	  pre-defined region.
+> diff --git a/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c 
+> b/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
+> index 903f4f304647..9e06a3683f8a 100644
+> --- a/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
+> +++ b/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
+> @@ -205,6 +205,69 @@ static const struct of_device_id 
+> aspeed_gfx_match[] = {
+>  	{ }
+>  };
 >  
-> +config ASPEED_SOCINFO
-> +	bool "ASPEED SoC Information driver"
-> +	default ARCH_ASPEED
-> +	select SOC_BUS
-> +	help
-> +	  Say yes to support decoding of ASPEED BMC information.
+> +#define ASPEED_SCU_VGA0		0x50
+> +#define ASPEED_SCU_MISC_CTRL	0x2c
 > +
->  endmenu
->  
->  endif
-> diff --git a/drivers/soc/aspeed/Makefile b/drivers/soc/aspeed/Makefile
-> index b64be47f2b1f..fcab7192e1a4 100644
-> --- a/drivers/soc/aspeed/Makefile
-> +++ b/drivers/soc/aspeed/Makefile
-> @@ -2,3 +2,4 @@
->  obj-$(CONFIG_ASPEED_LPC_CTRL)	+= aspeed-lpc-ctrl.o
->  obj-$(CONFIG_ASPEED_LPC_SNOOP)	+= aspeed-lpc-snoop.o
->  obj-$(CONFIG_ASPEED_P2A_CTRL)	+= aspeed-p2a-ctrl.o
-> +obj-$(CONFIG_ASPEED_SOCINFO)	+= aspeed-socinfo.o
-> diff --git a/drivers/soc/aspeed/aspeed-socinfo.c 
-> b/drivers/soc/aspeed/aspeed-socinfo.c
-> new file mode 100644
-> index 000000000000..b72c449f7ccb
-> --- /dev/null
-> +++ b/drivers/soc/aspeed/aspeed-socinfo.c
-> @@ -0,0 +1,141 @@
-> +// SPDX-License-Identifier: GPL-2.0-or-later
-> +/* Copyright 2019 IBM Corp. */
+> +static ssize_t dac_mux_store(struct device *dev, struct 
+> device_attribute *attr,
+> +			     const char *buf, size_t count)
+> +{
+> +	struct aspeed_gfx *priv = dev_get_drvdata(dev);
+> +	u32 val;
+> +	int rc;
 > +
-> +#include <linux/io.h>
-> +#include <linux/of.h>
-> +#include <linux/of_address.h>
-> +#include <linux/of_platform.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/slab.h>
-> +#include <linux/sys_soc.h>
+> +	rc = kstrtou32(buf, 0, &val);
+> +	if (rc)
+> +		return rc;
 > +
-> +static struct {
-> +	const char *name;
-> +	const u32 id;
-> +} const rev_table[] = {
-> +	/* AST2400 */
-> +	{ "AST2400", 0x02000303 },
-> +	{ "AST1400", 0x02010103 },
-> +	{ "AST1250", 0x02010303 },
-> +	/* AST2500 */
-> +	{ "AST2500", 0x04000303 },
-> +	{ "AST2510", 0x04000103 },
-> +	{ "AST2520", 0x04000203 },
-> +	{ "AST2530", 0x04000403 },
-> +	/* AST2600 */
-> +	{ "AST2600", 0x05000303 },
-> +	{ "AST2620", 0x05010203 },
+> +	if (val < 0 || val > 3)
+
+val is unsigned so can't be less than zero.
+
+Otherwise,
+
+Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
+
+> +		return -EINVAL;
+> +
+> +	rc = regmap_update_bits(priv->scu, ASPEED_SCU_MISC_CTRL, 0x30000, val 
+> << 16);
+> +	if (rc < 0)
+> +		return 0;
+> +
+> +	return count;
+> +}
+> +
+> +static ssize_t dac_mux_show(struct device *dev, struct 
+> device_attribute *attr, char *buf)
+> +{
+> +	struct aspeed_gfx *priv = dev_get_drvdata(dev);
+> +	u32 reg;
+> +	int rc;
+> +
+> +	rc = regmap_read(priv->scu, ASPEED_SCU_MISC_CTRL, &reg);
+> +	if (rc)
+> +		return rc;
+> +
+> +	return sprintf(buf, "%u\n", (reg >> 16) & 0x3);
+> +}
+> +static DEVICE_ATTR_RW(dac_mux);
+> +
+> +static ssize_t
+> +vga_pw_show(struct device *dev, struct device_attribute *attr, char 
+> *buf)
+> +{
+> +	struct aspeed_gfx *priv = dev_get_drvdata(dev);
+> +	u32 reg;
+> +	int rc;
+> +
+> +	rc = regmap_read(priv->scu, ASPEED_SCU_VGA0, &reg);
+> +	if (rc)
+> +		return rc;
+> +
+> +	return sprintf(buf, "%u\n", reg & 1);
+> +}
+> +static DEVICE_ATTR_RO(vga_pw);
+> +
+> +static struct attribute *aspeed_sysfs_entries[] = {
+> +	&dev_attr_vga_pw.attr,
+> +	&dev_attr_dac_mux.attr,
+> +	NULL,
 > +};
 > +
-> +static const char *siliconid_to_name(u32 siliconid)
-> +{
-> +	unsigned int id = siliconid & 0xff00ffff;
-> +	unsigned int i;
+> +static struct attribute_group aspeed_sysfs_attr_group = {
+> +	.attrs = aspeed_sysfs_entries,
+> +};
 > +
-> +	for (i = 0 ; i < ARRAY_SIZE(rev_table) ; ++i) {
-> +		if (rev_table[i].id == id)
-> +			return rev_table[i].name;
-> +	}
+>  static int aspeed_gfx_probe(struct platform_device *pdev)
+>  {
+>  	struct aspeed_gfx *priv;
+> @@ -219,6 +282,12 @@ static int aspeed_gfx_probe(struct platform_device 
+> *pdev)
+>  	if (ret)
+>  		return ret;
+>  
+> +	dev_set_drvdata(&pdev->dev, priv);
 > +
-> +	return "Unknown";
-> +}
+> +	ret = sysfs_create_group(&pdev->dev.kobj, &aspeed_sysfs_attr_group);
+> +	if (ret)
+> +		return ret;
 > +
-> +static const char *siliconid_to_rev(u32 siliconid)
-> +{
-> +	unsigned int rev = (siliconid >> 16) & 0xff;
-> +
-> +	switch (rev) {
-> +	case 0:
-> +		return "A0";
-> +	case 1:
-> +		return "A1";
-> +	case 3:
-> +		return "A2";
-> +	};
-> +
-> +	return "??";
-> +}
-> +
-> +static int __init aspeed_socinfo_init(void)
-> +{
-> +	struct soc_device_attribute *attrs;
-> +	struct soc_device *soc_dev;
-> +	struct device_node *np;
-> +	void __iomem *reg;
-> +	bool has_chipid = false;
-> +	u32 siliconid;
-> +	u32 chipid[2];
-> +	const char *machine = NULL;
-> +
-> +	np = of_find_compatible_node(NULL, NULL, "aspeed,silicon-id");
-> +	if (!of_device_is_available(np)) {
-> +		of_node_put(np);
-> +		return -ENODEV;
-> +	}
-> +
-> +	reg = of_iomap(np, 0);
-> +	if (!reg)
-> +		return -ENODEV;
-> +	siliconid = readl(reg);
-> +	of_node_put(np);
-> +	iounmap(reg);
-> +
-> +	/* This is optional, the ast2400 does not have it */
-> +	reg = of_iomap(np, 1);
-
-Use of np after of_node_put(np) above.
-
-> +	if (reg) {
-> +		has_chipid = true;
-> +		chipid[0] = readl(reg);
-> +		chipid[1] = readl(reg + 4);
-> +		iounmap(reg);
-> +		of_node_put(np);
-
-Double of_node_put() of np.
-
-> +	}
-> +
-> +	attrs = kzalloc(sizeof(*attrs), GFP_KERNEL);
-> +	if (!attrs)
-> +		return -ENODEV;
-> +
-> +	/*
-> +	 * Machine: Romulus BMC
-> +	 * Family: AST2500
-> +	 * Revision: A1
-> +	 * SoC ID: raw silicon revision id
-> +	 * Serial Nnumber: 64-bit chipid
-> +	 */
-> +
-> +	np = of_find_node_by_path("/");
-> +	of_property_read_string(np, "model", &machine);
-> +	if (machine)
-> +		attrs->machine = kstrdup(machine, GFP_KERNEL);
-> +	of_node_put(np);
-> +
-> +	attrs->family = kasprintf(GFP_KERNEL, "%s",
-> +				  siliconid_to_name(siliconid));
-> +
-> +	attrs->revision = kasprintf(GFP_KERNEL, "%s",
-> +				    siliconid_to_rev(siliconid));
-
-`struct soc_device_attribute` declares these as `const char *` and the strings
-are constants in the driver, so is there any reason to use kasprintf() here?
-
-Andrew
-
-> +
-> +	attrs->soc_id = kasprintf(GFP_KERNEL, "%08x", siliconid);
-> +
-> +	if (has_chipid) {
-> +		attrs->serial_number = kasprintf(GFP_KERNEL, "%08x%08x",
-> +						 chipid[1], chipid[0]);
-> +	}
-> +
-> +	soc_dev = soc_device_register(attrs);
-> +	if (IS_ERR(soc_dev)) {
-> +		kfree(attrs->family);
-> +		kfree(attrs->revision);
-> +		kfree(attrs->soc_id);
-> +		kfree(attrs->serial_number);
-> +		kfree(attrs);
-> +		return PTR_ERR(soc_dev);
-> +	}
-> +
-> +	pr_info("ASPEED BMC %s rev %s (%s)\n",
-> +			attrs->family,
-> +			attrs->revision,
-> +			attrs->soc_id);
-> +
-> +	return 0;
-> +}
-> +early_initcall(aspeed_socinfo_init);
+>  	ret = drm_dev_register(&priv->drm, 0);
+>  	if (ret)
+>  		goto err_unload;
+> @@ -227,6 +296,7 @@ static int aspeed_gfx_probe(struct platform_device *pdev)
+>  	return 0;
+>  
+>  err_unload:
+> +	sysfs_remove_group(&pdev->dev.kobj, &aspeed_sysfs_attr_group);
+>  	aspeed_gfx_unload(&priv->drm);
+>  
+>  	return ret;
+> @@ -236,6 +306,7 @@ static int aspeed_gfx_remove(struct platform_device *pdev)
+>  {
+>  	struct drm_device *drm = platform_get_drvdata(pdev);
+>  
+> +	sysfs_remove_group(&pdev->dev.kobj, &aspeed_sysfs_attr_group);
+>  	drm_dev_unregister(drm);
+>  	aspeed_gfx_unload(drm);
+>  
 > -- 
 > 2.28.0
 > 
