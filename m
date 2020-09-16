@@ -1,9 +1,10 @@
 From: Krzysztof Kozlowski <krzk@kernel.org>
-Date: Wed, 16 Sep 2020 17:57:06 +0200
-Subject: [PATCH v3 06/15] arm64: dts: ti: align GPIO hog names with dtschema
+Date: Wed, 16 Sep 2020 17:57:07 +0200
+Subject: [PATCH v3 07/15] arm64: dts: xilinx: align GPIO hog names with
+ dtschema
 In-Reply-To: <20200916155715.21009-1-krzk@kernel.org>
 References: <20200916155715.21009-1-krzk@kernel.org>
-Message-ID: <20200916155715.21009-7-krzk@kernel.org>
+Message-ID: <20200916155715.21009-8-krzk@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -15,31 +16,43 @@ dtschema for pca95xx expects GPIO hogs to end with 'hog' prefix.
 
 Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
 ---
- arch/arm64/boot/dts/ti/k3-j721e-common-proc-board.dts | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/arm64/boot/dts/xilinx/zynqmp-zcu102-revA.dts | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/arch/arm64/boot/dts/ti/k3-j721e-common-proc-board.dts b/arch/arm64/boot/dts/ti/k3-j721e-common-proc-board.dts
-index 648267284582..456e7818b521 100644
---- a/arch/arm64/boot/dts/ti/k3-j721e-common-proc-board.dts
-+++ b/arch/arm64/boot/dts/ti/k3-j721e-common-proc-board.dts
-@@ -407,7 +407,7 @@
- 		gpio-controller;
- 		#gpio-cells = <2>;
- 
--		p09 {
-+		p09-hog {
- 			/* P11 - MCASP/TRACE_MUX_S0 */
+diff --git a/arch/arm64/boot/dts/xilinx/zynqmp-zcu102-revA.dts b/arch/arm64/boot/dts/xilinx/zynqmp-zcu102-revA.dts
+index 4f801721564f..f1255f635dfd 100644
+--- a/arch/arm64/boot/dts/xilinx/zynqmp-zcu102-revA.dts
++++ b/arch/arm64/boot/dts/xilinx/zynqmp-zcu102-revA.dts
+@@ -203,25 +203,25 @@
+ 		gpio-line-names = "PS_GTR_LAN_SEL0", "PS_GTR_LAN_SEL1", "PS_GTR_LAN_SEL2", "PS_GTR_LAN_SEL3",
+ 				"PCI_CLK_DIR_SEL", "IIC_MUX_RESET_B", "GEM3_EXP_RESET_B",
+ 				"", "", "", "", "", "", "", "", "";
+-		gtr-sel0 {
++		gtr-sel0-hog {
  			gpio-hog;
- 			gpios = <9 GPIO_ACTIVE_HIGH>;
-@@ -415,7 +415,7 @@
- 			line-name = "MCASP/TRACE_MUX_S0";
+ 			gpios = <0 0>;
+ 			output-low; /* PCIE = 0, DP = 1 */
+ 			line-name = "sel0";
  		};
- 
--		p10 {
-+		p10-hog {
- 			/* P12 - MCASP/TRACE_MUX_S1 */
+-		gtr-sel1 {
++		gtr-sel1-hog {
  			gpio-hog;
- 			gpios = <10 GPIO_ACTIVE_HIGH>;
+ 			gpios = <1 0>;
+ 			output-high; /* PCIE = 0, DP = 1 */
+ 			line-name = "sel1";
+ 		};
+-		gtr-sel2 {
++		gtr-sel2-hog {
+ 			gpio-hog;
+ 			gpios = <2 0>;
+ 			output-high; /* PCIE = 0, USB0 = 1 */
+ 			line-name = "sel2";
+ 		};
+-		gtr-sel3 {
++		gtr-sel3-hog {
+ 			gpio-hog;
+ 			gpios = <3 0>;
+ 			output-high; /* PCIE = 0, SATA = 1 */
 -- 
 2.17.1
 
