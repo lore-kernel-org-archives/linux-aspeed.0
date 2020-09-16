@@ -1,10 +1,10 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Thu, 17 Sep 2020 09:22:10 +0930
-Subject: [PATCH 3/3] ARM: dts: aspeed: Add silicon id node
-In-Reply-To: <20200916084703.778386-4-joel@jms.id.au>
+Date: Thu, 17 Sep 2020 09:10:33 +0930
+Subject: [PATCH 2/3] soc: aspeed: Add soc info driver
+In-Reply-To: <20200916084703.778386-3-joel@jms.id.au>
 References: <20200916084703.778386-1-joel@jms.id.au>
- <20200916084703.778386-4-joel@jms.id.au>
-Message-ID: <7e4e6a63-80a3-431b-a10c-a757fd1af2ad@www.fastmail.com>
+ <20200916084703.778386-3-joel@jms.id.au>
+Message-ID: <aabf960e-33b3-4094-ad03-8305ca1794c7@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -14,77 +14,257 @@ Content-Transfer-Encoding: 7bit
 
 
 On Wed, 16 Sep 2020, at 18:17, Joel Stanley wrote:
-> This register describes the silicon id and chip unique id. It varies
-> between CPU revisions, but is always part of the SCU.
+> This adds a SOC_BUS info driver for the ASPEED platform.
+> 
+> The full ID table is preserved in this commit message in case someone
+> finds a need to change the implemntation in the future.
+> 
+> 	{ "AST1100-A0", 0x00000200 },
+> 	{ "AST1100-A1", 0x00000201 },
+> 	{ "AST1100-A2", 0x00000202 },
+> 	{ "AST1100-A3", 0x00000202 },
+> 
+> 	{ "AST2050-A0", 0x00000200 },
+> 	{ "AST2050-A1", 0x00000201 },
+> 	{ "AST2050-A2", 0x00000202 },
+> 	{ "AST2050-A3", 0x00000202 },
+> 
+> 	{ "AST2100-A0", 0x00000300 },
+> 	{ "AST2100-A1", 0x00000301 },
+> 	{ "AST2100-A2", 0x00000302 },
+> 	{ "AST2100-A3", 0x00000302 },
+> 
+> 	{ "AST2150-A0", 0x00000202 },
+> 	{ "AST2150-A1", 0x00000202 },
+> 
+> 	{ "AST2200-A0", 0x00000102 },
+> 	{ "AST2200-A1", 0x00000102 },
+> 
+> 	{ "AST2300-A0", 0x01000003 },
+> 	{ "AST2300-A1", 0x01010303 },
+> 
+> 	{ "AST1300-A1", 0x01010003 },
+> 	{ "AST1050-A1", 0x01010203 },
+> 
+> 	{ "AST2400-A0", 0x02000303 },
+> 	{ "AST2400-A1", 0x02010303 },
+> 	{ "AST1400-A1", 0x02010103 },
+> 	{ "AST1250-A1", 0x02010303 },
+> 
+> 	{ "AST2500-A0", 0x04000303 },
+> 	{ "AST2510-A0", 0x04000103 },
+> 	{ "AST2520-A0", 0x04000203 },
+> 	{ "AST2530-A0", 0x04000403 },
+> 	{ "AST2500-A1", 0x04010303 },
+> 	{ "AST2510-A1", 0x04010103 },
+> 	{ "AST2520-A1", 0x04010203 },
+> 	{ "AST2530-A1", 0x04010403 },
+> 	{ "AST2500-A2", 0x04030303 },
+> 	{ "AST2510-A2", 0x04030103 },
+> 	{ "AST2520-A2", 0x04030203 },
+> 	{ "AST2530-A2", 0x04030403 },
+> 
+> 	{ "AST2600-A0", 0x05000303 },
+> 	{ "AST2600-A1", 0x05010303 },
+> 	{ "AST2600-A2", 0x05020303 },
+> 	{ "AST2620-A1", 0x05010203 },
+> 	{ "AST2620-A2", 0x05020203 },
 > 
 > Signed-off-by: Joel Stanley <joel@jms.id.au>
 > ---
->  arch/arm/boot/dts/aspeed-g4.dtsi | 5 +++++
->  arch/arm/boot/dts/aspeed-g5.dtsi | 5 +++++
->  arch/arm/boot/dts/aspeed-g6.dtsi | 5 +++++
->  3 files changed, 15 insertions(+)
+>  drivers/soc/aspeed/Kconfig          |   7 ++
+>  drivers/soc/aspeed/Makefile         |   1 +
+>  drivers/soc/aspeed/aspeed-socinfo.c | 141 ++++++++++++++++++++++++++++
+>  3 files changed, 149 insertions(+)
+>  create mode 100644 drivers/soc/aspeed/aspeed-socinfo.c
 > 
-> diff --git a/arch/arm/boot/dts/aspeed-g4.dtsi b/arch/arm/boot/dts/aspeed-g4.dtsi
-> index 82f0213e3a3c..bc580b75f801 100644
-> --- a/arch/arm/boot/dts/aspeed-g4.dtsi
-> +++ b/arch/arm/boot/dts/aspeed-g4.dtsi
-> @@ -192,6 +192,11 @@ p2a: p2a-control at 2c {
->  					status = "disabled";
->  				};
+> diff --git a/drivers/soc/aspeed/Kconfig b/drivers/soc/aspeed/Kconfig
+> index 3c03c255e6e9..be5a29e8b0dc 100644
+> --- a/drivers/soc/aspeed/Kconfig
+> +++ b/drivers/soc/aspeed/Kconfig
+> @@ -35,6 +35,13 @@ config ASPEED_P2A_CTRL
+>  	  driver also provides an interface for userspace mappings to a
+>  	  pre-defined region.
 >  
-> +                                silicon-id at 7c {
-> +                                        compatible = 
-> "aspeed,ast2400-silicon-id", "aspeed,silicon-id";
-> +					reg = <0x7c 0x4>;
-
-Looks like a whitespace/alignment issue here.
-
-> +                                };
+> +config ASPEED_SOCINFO
+> +	bool "ASPEED SoC Information driver"
+> +	default ARCH_ASPEED
+> +	select SOC_BUS
+> +	help
+> +	  Say yes to support decoding of ASPEED BMC information.
 > +
->  				pinctrl: pinctrl at 80 {
->  					reg = <0x80 0x18>, <0xa0 0x10>;
->  					compatible = "aspeed,ast2400-pinctrl";
-> diff --git a/arch/arm/boot/dts/aspeed-g5.dtsi 
-> b/arch/arm/boot/dts/aspeed-g5.dtsi
-> index 9c91afb2b404..c6862182313a 100644
-> --- a/arch/arm/boot/dts/aspeed-g5.dtsi
-> +++ b/arch/arm/boot/dts/aspeed-g5.dtsi
-> @@ -239,6 +239,11 @@ p2a: p2a-control at 2c {
->  					status = "disabled";
->  				};
+>  endmenu
 >  
-> +				silicon-id at 7c {
-> +					compatible = "aspeed,ast2500-silicon-id", "aspeed,silicon-id";
-> +					reg = <0x7c 0x4 0x150 0x8>;
+>  endif
+> diff --git a/drivers/soc/aspeed/Makefile b/drivers/soc/aspeed/Makefile
+> index b64be47f2b1f..fcab7192e1a4 100644
+> --- a/drivers/soc/aspeed/Makefile
+> +++ b/drivers/soc/aspeed/Makefile
+> @@ -2,3 +2,4 @@
+>  obj-$(CONFIG_ASPEED_LPC_CTRL)	+= aspeed-lpc-ctrl.o
+>  obj-$(CONFIG_ASPEED_LPC_SNOOP)	+= aspeed-lpc-snoop.o
+>  obj-$(CONFIG_ASPEED_P2A_CTRL)	+= aspeed-p2a-ctrl.o
+> +obj-$(CONFIG_ASPEED_SOCINFO)	+= aspeed-socinfo.o
+> diff --git a/drivers/soc/aspeed/aspeed-socinfo.c 
+> b/drivers/soc/aspeed/aspeed-socinfo.c
+> new file mode 100644
+> index 000000000000..b72c449f7ccb
+> --- /dev/null
+> +++ b/drivers/soc/aspeed/aspeed-socinfo.c
+> @@ -0,0 +1,141 @@
+> +// SPDX-License-Identifier: GPL-2.0-or-later
+> +/* Copyright 2019 IBM Corp. */
+> +
+> +#include <linux/io.h>
+> +#include <linux/of.h>
+> +#include <linux/of_address.h>
+> +#include <linux/of_platform.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/slab.h>
+> +#include <linux/sys_soc.h>
+> +
+> +static struct {
+> +	const char *name;
+> +	const u32 id;
+> +} const rev_table[] = {
+> +	/* AST2400 */
+> +	{ "AST2400", 0x02000303 },
+> +	{ "AST1400", 0x02010103 },
+> +	{ "AST1250", 0x02010303 },
+> +	/* AST2500 */
+> +	{ "AST2500", 0x04000303 },
+> +	{ "AST2510", 0x04000103 },
+> +	{ "AST2520", 0x04000203 },
+> +	{ "AST2530", 0x04000403 },
+> +	/* AST2600 */
+> +	{ "AST2600", 0x05000303 },
+> +	{ "AST2620", 0x05010203 },
+> +};
+> +
+> +static const char *siliconid_to_name(u32 siliconid)
+> +{
+> +	unsigned int id = siliconid & 0xff00ffff;
+> +	unsigned int i;
+> +
+> +	for (i = 0 ; i < ARRAY_SIZE(rev_table) ; ++i) {
+> +		if (rev_table[i].id == id)
+> +			return rev_table[i].name;
+> +	}
+> +
+> +	return "Unknown";
+> +}
+> +
+> +static const char *siliconid_to_rev(u32 siliconid)
+> +{
+> +	unsigned int rev = (siliconid >> 16) & 0xff;
+> +
+> +	switch (rev) {
+> +	case 0:
+> +		return "A0";
+> +	case 1:
+> +		return "A1";
+> +	case 3:
+> +		return "A2";
+> +	};
+> +
+> +	return "??";
+> +}
+> +
+> +static int __init aspeed_socinfo_init(void)
+> +{
+> +	struct soc_device_attribute *attrs;
+> +	struct soc_device *soc_dev;
+> +	struct device_node *np;
+> +	void __iomem *reg;
+> +	bool has_chipid = false;
+> +	u32 siliconid;
+> +	u32 chipid[2];
+> +	const char *machine = NULL;
+> +
+> +	np = of_find_compatible_node(NULL, NULL, "aspeed,silicon-id");
+> +	if (!of_device_is_available(np)) {
+> +		of_node_put(np);
+> +		return -ENODEV;
+> +	}
+> +
+> +	reg = of_iomap(np, 0);
+> +	if (!reg)
+> +		return -ENODEV;
+> +	siliconid = readl(reg);
+> +	of_node_put(np);
+> +	iounmap(reg);
+> +
+> +	/* This is optional, the ast2400 does not have it */
+> +	reg = of_iomap(np, 1);
 
-I think `reg = <0x7c 0x4>, <0x150 0x8>;` can be used here? I think it's a 
-readability improvement, but I'm not fussed. If you decide to change it
-then also fix the g6 devicetree.
+Use of np after of_node_put(np) above.
+
+> +	if (reg) {
+> +		has_chipid = true;
+> +		chipid[0] = readl(reg);
+> +		chipid[1] = readl(reg + 4);
+> +		iounmap(reg);
+> +		of_node_put(np);
+
+Double of_node_put() of np.
+
+> +	}
+> +
+> +	attrs = kzalloc(sizeof(*attrs), GFP_KERNEL);
+> +	if (!attrs)
+> +		return -ENODEV;
+> +
+> +	/*
+> +	 * Machine: Romulus BMC
+> +	 * Family: AST2500
+> +	 * Revision: A1
+> +	 * SoC ID: raw silicon revision id
+> +	 * Serial Nnumber: 64-bit chipid
+> +	 */
+> +
+> +	np = of_find_node_by_path("/");
+> +	of_property_read_string(np, "model", &machine);
+> +	if (machine)
+> +		attrs->machine = kstrdup(machine, GFP_KERNEL);
+> +	of_node_put(np);
+> +
+> +	attrs->family = kasprintf(GFP_KERNEL, "%s",
+> +				  siliconid_to_name(siliconid));
+> +
+> +	attrs->revision = kasprintf(GFP_KERNEL, "%s",
+> +				    siliconid_to_rev(siliconid));
+
+`struct soc_device_attribute` declares these as `const char *` and the strings
+are constants in the driver, so is there any reason to use kasprintf() here?
 
 Andrew
 
-
-> +				};
 > +
->  				pinctrl: pinctrl at 80 {
->  					compatible = "aspeed,ast2500-pinctrl";
->  					reg = <0x80 0x18>, <0xa0 0x10>;
-> diff --git a/arch/arm/boot/dts/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed-g6.dtsi
-> index b58220a49cbd..1ce3a1f06f7f 100644
-> --- a/arch/arm/boot/dts/aspeed-g6.dtsi
-> +++ b/arch/arm/boot/dts/aspeed-g6.dtsi
-> @@ -311,6 +311,11 @@ pinctrl: pinctrl {
->  					compatible = "aspeed,ast2600-pinctrl";
->  				};
->  
-> +				silicon-id at 14 {
-> +					compatible = "aspeed,ast2600-silicon-id", "aspeed,silicon-id";
-> +					reg = <0x14 0x4 0x5b0 0x8>;
-> +				};
+> +	attrs->soc_id = kasprintf(GFP_KERNEL, "%08x", siliconid);
 > +
->  				smp-memram at 180 {
->  					compatible = "aspeed,ast2600-smpmem";
->  					reg = <0x180 0x40>;
+> +	if (has_chipid) {
+> +		attrs->serial_number = kasprintf(GFP_KERNEL, "%08x%08x",
+> +						 chipid[1], chipid[0]);
+> +	}
+> +
+> +	soc_dev = soc_device_register(attrs);
+> +	if (IS_ERR(soc_dev)) {
+> +		kfree(attrs->family);
+> +		kfree(attrs->revision);
+> +		kfree(attrs->soc_id);
+> +		kfree(attrs->serial_number);
+> +		kfree(attrs);
+> +		return PTR_ERR(soc_dev);
+> +	}
+> +
+> +	pr_info("ASPEED BMC %s rev %s (%s)\n",
+> +			attrs->family,
+> +			attrs->revision,
+> +			attrs->soc_id);
+> +
+> +	return 0;
+> +}
+> +early_initcall(aspeed_socinfo_init);
 > -- 
 > 2.28.0
 > 
