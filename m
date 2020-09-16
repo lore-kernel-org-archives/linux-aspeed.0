@@ -1,50 +1,84 @@
-From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-Date: Wed, 16 Sep 2020 13:09:20 +0200
-Subject: [PATCH v2 1/2] gpio/aspeed-sgpio: enable access to all 80 input &
- output sgpios
-In-Reply-To: <CACPK8XeQWNTyS53M9PLwkud9RnGNp3j87X8_UXtg4ZHJrQqQSQ@mail.gmail.com>
-References: <20200911015105.48581-1-jk@codeconstruct.com.au>
- <CACPK8XdCkw7ix2J9WyOXDcwsMThXwQ62=E6cDLX+-9WJMsqrnA@mail.gmail.com>
- <CACPK8XeQWNTyS53M9PLwkud9RnGNp3j87X8_UXtg4ZHJrQqQSQ@mail.gmail.com>
-Message-ID: <CAMpxmJW+PMV1+q66ywEAiZhrOu+kiSPXQCK0mTGLLwW-yfisSg@mail.gmail.com>
+From: Joel Stanley <joel@jms.id.au>
+Date: Wed, 16 Sep 2020 22:27:31 +0930
+Subject: [PATCH] soc: aspeed: Improve kconfig
+Message-ID: <20200916125731.784527-1-joel@jms.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Sep 16, 2020 at 6:51 AM Joel Stanley <joel@jms.id.au> wrote:
->
-> Hi GPIO maintainers,
->
-> On Fri, 11 Sep 2020 at 02:20, Joel Stanley <joel@jms.id.au> wrote:
-> >
-> > On Fri, 11 Sep 2020 at 02:11, Jeremy Kerr <jk@codeconstruct.com.au> wrote:
-> > >
-> > > Currently, the aspeed-sgpio driver exposes up to 80 GPIO lines,
-> > > corresponding to the 80 status bits available in hardware. Each of these
-> > > lines can be configured as either an input or an output.
-> > >
-> > > However, each of these GPIOs is actually an input *and* an output; we
-> > > actually have 80 inputs plus 80 outputs.
-> > >
-> > > This change expands the maximum number of GPIOs to 160; the lower half
-> > > of this range are the input-only GPIOs, the upper half are the outputs.
-> > > We fix the GPIO directions to correspond to this mapping.
-> > >
-> > > This also fixes a bug when setting GPIOs - we were reading from the
-> > > input register, making it impossible to set more than one output GPIO.
-> > >
-> > > Signed-off-by: Jeremy Kerr <jk@codeconstruct.com.au>
-> > > Fixes: 7db47faae79b ("gpio: aspeed: Add SGPIO driver")
-> >
-> > Reviewed-by: Joel Stanley <joel@jms.id.au>
->
-> This series is good to go in for 5.10:
->
+Reword the kconfig text to be consistent and reflect that most drivers
+are available for all supported ASPEED chips (2400, 2500 and 2600).
 
-Hi Joel,
+Rearrange the symbols the SoC drivers depend on so the menu doesn't
+appear unless you are building for ASPEED for compile testing.
 
-I don't have this in my inbox. Did you copy me on this series?
+The SYSCON_MFD and REGMAP options are usually selected by drivers that
+need them, so do this.
 
-Bartosz
+Signed-off-by: Joel Stanley <joel@jms.id.au>
+---
+ drivers/soc/aspeed/Kconfig | 36 ++++++++++++++++++++----------------
+ 1 file changed, 20 insertions(+), 16 deletions(-)
+
+diff --git a/drivers/soc/aspeed/Kconfig b/drivers/soc/aspeed/Kconfig
+index c95fa30f1a76..9ce252445605 100644
+--- a/drivers/soc/aspeed/Kconfig
++++ b/drivers/soc/aspeed/Kconfig
+@@ -1,32 +1,36 @@
+ # SPDX-License-Identifier: GPL-2.0-only
+-menu "Aspeed SoC drivers"
+ 
+-config SOC_ASPEED
+-	def_bool y
+-	depends on ARCH_ASPEED || COMPILE_TEST
++if ARCH_ASPEED || COMPILE_TEST
++
++menu "ASPEED SoC drivers"
+ 
+ config ASPEED_LPC_CTRL
+-	depends on SOC_ASPEED && REGMAP && MFD_SYSCON
+-	tristate "Aspeed ast2400/2500 HOST LPC to BMC bridge control"
++	tristate "ASPEED LPC firmware cycle control"
++	select REGMAP
++	select MFD_SYSCON
+ 	help
+-	  Control Aspeed ast2400/2500 HOST LPC to BMC mappings through
+-	  ioctl()s, the driver also provides a read/write interface to a BMC ram
+-	  region where the host LPC read/write region can be buffered.
++	  Control LPC firmware cycle mappings through ioctl()s. The driver
++	  also provides a read/write interface to a BMC ram region where the
++	  host LPC read/write region can be buffered.
+ 
+ config ASPEED_LPC_SNOOP
+-	tristate "Aspeed ast2500 HOST LPC snoop support"
+-	depends on SOC_ASPEED && REGMAP && MFD_SYSCON
++	tristate "ASPEED LPC snoop support"
++	select REGMAP
++	select MFD_SYSCON
+ 	help
+ 	  Provides a driver to control the LPC snoop interface which
+ 	  allows the BMC to listen on and save the data written by
+ 	  the host to an arbitrary LPC I/O port.
+ 
+ config ASPEED_P2A_CTRL
+-	depends on SOC_ASPEED && REGMAP && MFD_SYSCON
+-	tristate "Aspeed ast2400/2500 HOST P2A VGA MMIO to BMC bridge control"
++	tristate "ASPEED P2A (VGA MMIO to BMC) bridge control"
++	select REGMAP
++	select MFD_SYSCON
+ 	help
+-	  Control Aspeed ast2400/2500 HOST P2A VGA MMIO to BMC mappings through
+-	  ioctl()s, the driver also provides an interface for userspace mappings to
+-	  a pre-defined region.
++	  Control ASPEED P2A VGA MMIO to BMC mappings through ioctl()s.  The
++	  driver also provides an interface for userspace mappings to a
++	  pre-defined region.
+ 
+ endmenu
++
++endif
+-- 
+2.28.0
+
