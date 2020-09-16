@@ -1,154 +1,90 @@
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Date: Wed, 16 Sep 2020 17:57:15 +0200
-Subject: [PATCH v3 15/15] ARM: dts: imx6q: align GPIO hog names with dtschema
-In-Reply-To: <20200916155715.21009-1-krzk@kernel.org>
-References: <20200916155715.21009-1-krzk@kernel.org>
-Message-ID: <20200916155715.21009-16-krzk@kernel.org>
+From: Cédric Le Goater <clg@kaod.org>
+Date: Wed, 16 Sep 2020 18:34:13 +0200
+Subject: [PATCH] soc: aspeed: Improve kconfig
+In-Reply-To: <20200916125731.784527-1-joel@jms.id.au>
+References: <20200916125731.784527-1-joel@jms.id.au>
+Message-ID: <9c38c586-9667-4052-66be-a6e03459068f@kaod.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-dtschema for pca95xx expects GPIO hogs to end with 'hog' prefix.  While
-touching the hogs, fix indentation (spaces -> tabs).
+On 9/16/20 2:57 PM, Joel Stanley wrote:
+> Reword the kconfig text to be consistent and reflect that most drivers
+> are available for all supported ASPEED chips (2400, 2500 and 2600).
+> 
+> Rearrange the symbols the SoC drivers depend on so the menu doesn't
+> appear unless you are building for ASPEED for compile testing.
+> 
+> The SYSCON_MFD and REGMAP options are usually selected by drivers that
+> need them, so do this.
+> 
+> Signed-off-by: Joel Stanley <joel@jms.id.au>
 
-Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
----
- arch/arm/boot/dts/imx6q-b450v3.dts  | 14 +++++++-------
- arch/arm/boot/dts/imx6q-b650v3.dts  | 12 ++++++------
- arch/arm/boot/dts/imx6q-b850v3.dts  |  4 ++--
- arch/arm/boot/dts/imx6q-bx50v3.dtsi | 12 ++++++------
- 4 files changed, 21 insertions(+), 21 deletions(-)
 
-diff --git a/arch/arm/boot/dts/imx6q-b450v3.dts b/arch/arm/boot/dts/imx6q-b450v3.dts
-index fb0980190aa0..604f2420370f 100644
---- a/arch/arm/boot/dts/imx6q-b450v3.dts
-+++ b/arch/arm/boot/dts/imx6q-b450v3.dts
-@@ -84,19 +84,19 @@
- };
- 
- &pca9539 {
--	P04 {
-+	P04-hog {
- 		gpio-hog;
- 		gpios = <4 0>;
- 		output-low;
- 		line-name = "PCA9539-P04";
- 	};
- 
--        P07 {
--                gpio-hog;
--                gpios = <7 0>;
--                output-low;
--                line-name = "PCA9539-P07";
--        };
-+	P07-hog {
-+		gpio-hog;
-+		gpios = <7 0>;
-+		output-low;
-+		line-name = "PCA9539-P07";
-+	};
- };
- 
- &pci_root {
-diff --git a/arch/arm/boot/dts/imx6q-b650v3.dts b/arch/arm/boot/dts/imx6q-b650v3.dts
-index 8f762d9c5ae9..56d2aeb1900c 100644
---- a/arch/arm/boot/dts/imx6q-b650v3.dts
-+++ b/arch/arm/boot/dts/imx6q-b650v3.dts
-@@ -84,12 +84,12 @@
- };
- 
- &pca9539 {
--        P07 {
--                gpio-hog;
--                gpios = <7 0>;
--                output-low;
--                line-name = "PCA9539-P07";
--        };
-+	P07-hog {
-+		gpio-hog;
-+		gpios = <7 0>;
-+		output-low;
-+		line-name = "PCA9539-P07";
-+	};
- };
- 
- &usbphy1 {
-diff --git a/arch/arm/boot/dts/imx6q-b850v3.dts b/arch/arm/boot/dts/imx6q-b850v3.dts
-index 1ea64ecf4291..3d6b757bf325 100644
---- a/arch/arm/boot/dts/imx6q-b850v3.dts
-+++ b/arch/arm/boot/dts/imx6q-b850v3.dts
-@@ -199,14 +199,14 @@
- };
- 
- &pca9539 {
--	P10 {
-+	P10-hog {
- 		gpio-hog;
- 		gpios = <8 0>;
- 		output-low;
- 		line-name = "PCA9539-P10";
- 	};
- 
--	P11 {
-+	P11-hog {
- 		gpio-hog;
- 		gpios = <9 0>;
- 		output-low;
-diff --git a/arch/arm/boot/dts/imx6q-bx50v3.dtsi b/arch/arm/boot/dts/imx6q-bx50v3.dtsi
-index 02812e6cb302..2a98cc657595 100644
---- a/arch/arm/boot/dts/imx6q-bx50v3.dtsi
-+++ b/arch/arm/boot/dts/imx6q-bx50v3.dtsi
-@@ -248,42 +248,42 @@
- 				interrupt-parent = <&gpio2>;
- 				interrupts = <3 IRQ_TYPE_LEVEL_LOW>;
- 
--				P12 {
-+				P12-hog {
- 					gpio-hog;
- 					gpios = <10 0>;
- 					output-low;
- 					line-name = "PCA9539-P12";
- 				};
- 
--				P13 {
-+				P13-hog {
- 					gpio-hog;
- 					gpios = <11 0>;
- 					output-low;
- 					line-name = "PCA9539-P13";
- 				};
- 
--				P14 {
-+				P14-hog {
- 					gpio-hog;
- 					gpios = <12 0>;
- 					output-low;
- 					line-name = "PCA9539-P14";
- 				};
- 
--				P15 {
-+				P15-hog {
- 					gpio-hog;
- 					gpios = <13 0>;
- 					output-low;
- 					line-name = "PCA9539-P15";
- 				};
- 
--				P16 {
-+				P16-hog {
- 					gpio-hog;
- 					gpios = <14 0>;
- 					output-low;
- 					line-name = "PCA9539-P16";
- 				};
- 
--				P17 {
-+				P17-hog {
- 					gpio-hog;
- 					gpios = <15 0>;
- 					output-low;
--- 
-2.17.1
+Reviewed-by: C?dric Le Goater <clg@kaod.org>
+
+> ---
+>  drivers/soc/aspeed/Kconfig | 36 ++++++++++++++++++++----------------
+>  1 file changed, 20 insertions(+), 16 deletions(-)
+> 
+> diff --git a/drivers/soc/aspeed/Kconfig b/drivers/soc/aspeed/Kconfig
+> index c95fa30f1a76..9ce252445605 100644
+> --- a/drivers/soc/aspeed/Kconfig
+> +++ b/drivers/soc/aspeed/Kconfig
+> @@ -1,32 +1,36 @@
+>  # SPDX-License-Identifier: GPL-2.0-only
+> -menu "Aspeed SoC drivers"
+>  
+> -config SOC_ASPEED
+> -	def_bool y
+> -	depends on ARCH_ASPEED || COMPILE_TEST
+> +if ARCH_ASPEED || COMPILE_TEST
+> +
+> +menu "ASPEED SoC drivers"
+>  
+>  config ASPEED_LPC_CTRL
+> -	depends on SOC_ASPEED && REGMAP && MFD_SYSCON
+> -	tristate "Aspeed ast2400/2500 HOST LPC to BMC bridge control"
+> +	tristate "ASPEED LPC firmware cycle control"
+> +	select REGMAP
+> +	select MFD_SYSCON
+>  	help
+> -	  Control Aspeed ast2400/2500 HOST LPC to BMC mappings through
+> -	  ioctl()s, the driver also provides a read/write interface to a BMC ram
+> -	  region where the host LPC read/write region can be buffered.
+> +	  Control LPC firmware cycle mappings through ioctl()s. The driver
+> +	  also provides a read/write interface to a BMC ram region where the
+> +	  host LPC read/write region can be buffered.
+>  
+>  config ASPEED_LPC_SNOOP
+> -	tristate "Aspeed ast2500 HOST LPC snoop support"
+> -	depends on SOC_ASPEED && REGMAP && MFD_SYSCON
+> +	tristate "ASPEED LPC snoop support"
+> +	select REGMAP
+> +	select MFD_SYSCON
+>  	help
+>  	  Provides a driver to control the LPC snoop interface which
+>  	  allows the BMC to listen on and save the data written by
+>  	  the host to an arbitrary LPC I/O port.
+>  
+>  config ASPEED_P2A_CTRL
+> -	depends on SOC_ASPEED && REGMAP && MFD_SYSCON
+> -	tristate "Aspeed ast2400/2500 HOST P2A VGA MMIO to BMC bridge control"
+> +	tristate "ASPEED P2A (VGA MMIO to BMC) bridge control"
+> +	select REGMAP
+> +	select MFD_SYSCON
+>  	help
+> -	  Control Aspeed ast2400/2500 HOST P2A VGA MMIO to BMC mappings through
+> -	  ioctl()s, the driver also provides an interface for userspace mappings to
+> -	  a pre-defined region.
+> +	  Control ASPEED P2A VGA MMIO to BMC mappings through ioctl()s.  The
+> +	  driver also provides an interface for userspace mappings to a
+> +	  pre-defined region.
+>  
+>  endmenu
+> +
+> +endif
+> 
 
