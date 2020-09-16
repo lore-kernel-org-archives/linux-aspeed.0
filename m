@@ -1,63 +1,38 @@
 From: Krzysztof Kozlowski <krzk@kernel.org>
-Date: Wed, 16 Sep 2020 17:57:10 +0200
-Subject: [PATCH v3 10/15] ARM: dts: am3874: iceboard: fix GPIO expander reset
- GPIOs
+Date: Wed, 16 Sep 2020 17:57:11 +0200
+Subject: [PATCH v3 11/15] ARM: dts: aspeed: fix PCA95xx GPIO expander
+ properties on Portwell
 In-Reply-To: <20200916155715.21009-1-krzk@kernel.org>
 References: <20200916155715.21009-1-krzk@kernel.org>
-Message-ID: <20200916155715.21009-11-krzk@kernel.org>
+Message-ID: <20200916155715.21009-12-krzk@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Correct the property for reset GPIOs of the GPIO expander.
+The PCA95xx GPIO expander requires GPIO controller properties to operate
+properly.
 
 Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
+Acked-by: Joel Stanley <joel@jms.id.au>
 ---
- arch/arm/boot/dts/am3874-iceboard.dts | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ arch/arm/boot/dts/aspeed-bmc-portwell-neptune.dts | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/arch/arm/boot/dts/am3874-iceboard.dts b/arch/arm/boot/dts/am3874-iceboard.dts
-index 1bb57019d082..9423e9feaa10 100644
---- a/arch/arm/boot/dts/am3874-iceboard.dts
-+++ b/arch/arm/boot/dts/am3874-iceboard.dts
-@@ -195,7 +195,7 @@
- 					"FMCA_PG_C2M", "FMCA_PRSNT_M2C_L", "FMCA_CLK_DIR", "SFP_LOS",
- 					"FMCB_EN_12V0", "FMCB_EN_3V3", "FMCB_EN_VADJ", "FMCB_PG_M2C",
- 					"FMCB_PG_C2M", "FMCB_PRSNT_M2C_L", "FMCB_CLK_DIR", "SFP_ModPrsL";
--				reset_gpios = <&gpio2 11 GPIO_ACTIVE_LOW>;
-+				reset-gpios = <&gpio2 11 GPIO_ACTIVE_LOW>;
- 			};
+diff --git a/arch/arm/boot/dts/aspeed-bmc-portwell-neptune.dts b/arch/arm/boot/dts/aspeed-bmc-portwell-neptune.dts
+index 4a1ca8f5b6a7..03c161493ffc 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-portwell-neptune.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-portwell-neptune.dts
+@@ -121,6 +121,8 @@
+ 	pca9555 at 27 {
+ 		compatible = "nxp,pca9555";
+ 		reg = <0x27>;
++		gpio-controller;
++		#gpio-cells = <2>;
+ 	};
+ };
  
- 			u42: pca9575 at 21 {
-@@ -208,7 +208,7 @@
- 					"QSFPA_LPMode", "QSFPB_ModPrsL", "QSFPB_IntL", "QSFPB_ResetL",
- 					"SFP_TxFault", "SFP_TxDisable", "SFP_RS0", "SFP_RS1",
- 					"QSFPB_ModSelL", "QSFPB_LPMode", "SEL_SFP", "ARM_MR";
--				reset_gpios = <&gpio2 11 GPIO_ACTIVE_LOW>;
-+				reset-gpios = <&gpio2 11 GPIO_ACTIVE_LOW>;
- 			};
- 
- 			u48: pca9575 at 22 {
-@@ -227,7 +227,7 @@
- 					"GP_SW5", "GP_SW6", "GP_SW7", "GP_SW8",
- 					"GP_LED8", "GP_LED7", "GP_LED6", "GP_LED5",
- 					"GP_LED4", "GP_LED3", "GP_LED2", "GP_LED1";
--				reset_gpios = <&gpio2 11 GPIO_ACTIVE_LOW>;
-+				reset-gpios = <&gpio2 11 GPIO_ACTIVE_LOW>;
- 			};
- 
- 			u59: pca9575 at 23 {
-@@ -240,7 +240,7 @@
- 					"GTX1V8PowerFault", "PHYAPowerFault", "PHYBPowerFault", "ArmPowerFault",
- 					"BP_SLOW_GPIO0", "BP_SLOW_GPIO1", "BP_SLOW_GPIO2", "BP_SLOW_GPIO3",
- 					"BP_SLOW_GPIO4", "BP_SLOW_GPIO5", "__unused_u59_p16", "__unused_u59_p17";
--				reset_gpios = <&gpio2 11 GPIO_ACTIVE_LOW>;
-+				reset-gpios = <&gpio2 11 GPIO_ACTIVE_LOW>;
- 			};
- 
- 			tmp100 at 48 { compatible = "ti,tmp100"; reg = <0x48>; };
 -- 
 2.17.1
 
