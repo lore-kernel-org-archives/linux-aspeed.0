@@ -1,75 +1,52 @@
-From: Joel Stanley <joel@jms.id.au>
-Date: Mon, 21 Sep 2020 18:46:44 +0930
-Subject: [PATCH v3 3/3] ARM: dts: aspeed: Add silicon id node
-In-Reply-To: <20200921091644.133107-1-joel@jms.id.au>
-References: <20200921091644.133107-1-joel@jms.id.au>
-Message-ID: <20200921091644.133107-4-joel@jms.id.au>
+From: Sasha Levin <sashal@kernel.org>
+Date: Mon, 21 Sep 2020 10:40:15 -0400
+Subject: [PATCH AUTOSEL 5.8 08/20] i2c: aspeed: Mask IRQ status to relevant
+ bits
+In-Reply-To: <20200921144027.2135390-1-sashal@kernel.org>
+References: <20200921144027.2135390-1-sashal@kernel.org>
+Message-ID: <20200921144027.2135390-8-sashal@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This register describes the silicon id and chip unique id. It varies
-between CPU revisions, but is always part of the SCU.
+From: Eddie James <eajames@linux.ibm.com>
 
-Signed-off-by: Joel Stanley <joel@jms.id.au>
----
-v2: Fix whitespace
----
- arch/arm/boot/dts/aspeed-g4.dtsi | 5 +++++
- arch/arm/boot/dts/aspeed-g5.dtsi | 5 +++++
- arch/arm/boot/dts/aspeed-g6.dtsi | 5 +++++
- 3 files changed, 15 insertions(+)
+[ Upstream commit 1a1d6db23ddacde0b15ea589e9103373e05af8de ]
 
-diff --git a/arch/arm/boot/dts/aspeed-g4.dtsi b/arch/arm/boot/dts/aspeed-g4.dtsi
-index 82f0213e3a3c..b3dafbc8caca 100644
---- a/arch/arm/boot/dts/aspeed-g4.dtsi
-+++ b/arch/arm/boot/dts/aspeed-g4.dtsi
-@@ -192,6 +192,11 @@ p2a: p2a-control at 2c {
- 					status = "disabled";
- 				};
+Mask the IRQ status to only the bits that the driver checks. This
+prevents excessive driver warnings when operating in slave mode
+when additional bits are set that the driver doesn't handle.
+
+Signed-off-by: Eddie James <eajames@linux.ibm.com>
+Reviewed-by: Tao Ren <rentao.bupt@gmail.com>
+Signed-off-by: Wolfram Sang <wsa@kernel.org>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/i2c/busses/i2c-aspeed.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
+index f51702d86a90e..1ad74efcab372 100644
+--- a/drivers/i2c/busses/i2c-aspeed.c
++++ b/drivers/i2c/busses/i2c-aspeed.c
+@@ -69,6 +69,7 @@
+  * These share bit definitions, so use the same values for the enable &
+  * status bits.
+  */
++#define ASPEED_I2CD_INTR_RECV_MASK			0xf000ffff
+ #define ASPEED_I2CD_INTR_SDA_DL_TIMEOUT			BIT(14)
+ #define ASPEED_I2CD_INTR_BUS_RECOVER_DONE		BIT(13)
+ #define ASPEED_I2CD_INTR_SLAVE_MATCH			BIT(7)
+@@ -604,6 +605,7 @@ static irqreturn_t aspeed_i2c_bus_irq(int irq, void *dev_id)
+ 	writel(irq_received & ~ASPEED_I2CD_INTR_RX_DONE,
+ 	       bus->base + ASPEED_I2C_INTR_STS_REG);
+ 	readl(bus->base + ASPEED_I2C_INTR_STS_REG);
++	irq_received &= ASPEED_I2CD_INTR_RECV_MASK;
+ 	irq_remaining = irq_received;
  
-+				silicon-id at 7c {
-+					compatible = "aspeed,ast2400-silicon-id", "aspeed,silicon-id";
-+					reg = <0x7c 0x4>;
-+				};
-+
- 				pinctrl: pinctrl at 80 {
- 					reg = <0x80 0x18>, <0xa0 0x10>;
- 					compatible = "aspeed,ast2400-pinctrl";
-diff --git a/arch/arm/boot/dts/aspeed-g5.dtsi b/arch/arm/boot/dts/aspeed-g5.dtsi
-index 9c91afb2b404..c6862182313a 100644
---- a/arch/arm/boot/dts/aspeed-g5.dtsi
-+++ b/arch/arm/boot/dts/aspeed-g5.dtsi
-@@ -239,6 +239,11 @@ p2a: p2a-control at 2c {
- 					status = "disabled";
- 				};
- 
-+				silicon-id at 7c {
-+					compatible = "aspeed,ast2500-silicon-id", "aspeed,silicon-id";
-+					reg = <0x7c 0x4 0x150 0x8>;
-+				};
-+
- 				pinctrl: pinctrl at 80 {
- 					compatible = "aspeed,ast2500-pinctrl";
- 					reg = <0x80 0x18>, <0xa0 0x10>;
-diff --git a/arch/arm/boot/dts/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed-g6.dtsi
-index b58220a49cbd..1ce3a1f06f7f 100644
---- a/arch/arm/boot/dts/aspeed-g6.dtsi
-+++ b/arch/arm/boot/dts/aspeed-g6.dtsi
-@@ -311,6 +311,11 @@ pinctrl: pinctrl {
- 					compatible = "aspeed,ast2600-pinctrl";
- 				};
- 
-+				silicon-id at 14 {
-+					compatible = "aspeed,ast2600-silicon-id", "aspeed,silicon-id";
-+					reg = <0x14 0x4 0x5b0 0x8>;
-+				};
-+
- 				smp-memram at 180 {
- 					compatible = "aspeed,ast2600-smpmem";
- 					reg = <0x180 0x40>;
+ #if IS_ENABLED(CONFIG_I2C_SLAVE)
 -- 
-2.28.0
+2.25.1
 
