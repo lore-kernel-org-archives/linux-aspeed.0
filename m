@@ -1,85 +1,67 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Mon, 21 Sep 2020 01:55:39 +0000
-Subject: [PATCH 2/3] soc: aspeed: Add soc info driver
-In-Reply-To: <aabf960e-33b3-4094-ad03-8305ca1794c7@www.fastmail.com>
+Date: Mon, 21 Sep 2020 01:56:40 +0000
+Subject: [PATCH 1/3] dt-bindings: aspeed: Add silicon id node to SCU
+In-Reply-To: <644a9acb-e1a6-4077-ac15-15dad58144dc@www.fastmail.com>
 References: <20200916084703.778386-1-joel@jms.id.au>
- <20200916084703.778386-3-joel@jms.id.au>
- <aabf960e-33b3-4094-ad03-8305ca1794c7@www.fastmail.com>
-Message-ID: <CACPK8Xdgd-PyfW1pTMW7pebLUVGcbco1XAC_=xBAsDfVsYUGUg@mail.gmail.com>
+ <20200916084703.778386-2-joel@jms.id.au>
+ <644a9acb-e1a6-4077-ac15-15dad58144dc@www.fastmail.com>
+Message-ID: <CACPK8Xc1wjjH1ki1hwhT3L=s8rrPyzcxZNfOQy72UwDM-SvbSQ@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 16 Sep 2020 at 23:41, Andrew Jeffery <andrew@aj.id.au> wrote:
+On Wed, 16 Sep 2020 at 23:45, Andrew Jeffery <andrew@aj.id.au> wrote:
 >
 >
 >
 > On Wed, 16 Sep 2020, at 18:17, Joel Stanley wrote:
+> > Different Aspeed families have various unique hardware silicon
+> > identifiers within the SoC.
+> >
+> > Signed-off-by: Joel Stanley <joel@jms.id.au>
+> > ---
+> >  .../devicetree/bindings/mfd/aspeed-scu.txt    | 23 +++++++++++++++++++
+> >  1 file changed, 23 insertions(+)
+> >
+> > diff --git a/Documentation/devicetree/bindings/mfd/aspeed-scu.txt
+> > b/Documentation/devicetree/bindings/mfd/aspeed-scu.txt
+> > index 4d92c0bb6687..fff3151f06ee 100644
+> > --- a/Documentation/devicetree/bindings/mfd/aspeed-scu.txt
+> > +++ b/Documentation/devicetree/bindings/mfd/aspeed-scu.txt
+> > @@ -20,3 +20,26 @@ syscon: syscon at 1e6e2000 {
+> >       #clock-cells = <1>;
+> >       #reset-cells = <1>;
+> >  };
+> > +
+> > +Silicon ID
+> > +-----------------
+> > +
+> > +Families have unique hardware silicon identifiers within the SoC.
+> > +
+> > +Required properties:
+> > +
+> > + - compatible:               "aspeed,silicon-id" or:
+> > +                     "aspeed,ast2400-silicon-id" or
+> > +                     "aspeed,ast2501-silicon-id" or
+>
+> aspeed,ast2510-silicon-id
 
-> > +     np = of_find_compatible_node(NULL, NULL, "aspeed,silicon-id");
-> > +     if (!of_device_is_available(np)) {
-> > +             of_node_put(np);
-> > +             return -ENODEV;
-> > +     }
-> > +
-> > +     reg = of_iomap(np, 0);
-> > +     if (!reg)
-> > +             return -ENODEV;
-> > +     siliconid = readl(reg);
-> > +     of_node_put(np);
-> > +     iounmap(reg);
-> > +
-> > +     /* This is optional, the ast2400 does not have it */
-> > +     reg = of_iomap(np, 1);
->
-> Use of np after of_node_put(np) above.
->
-> > +     if (reg) {
-> > +             has_chipid = true;
-> > +             chipid[0] = readl(reg);
-> > +             chipid[1] = readl(reg + 4);
-> > +             iounmap(reg);
-> > +             of_node_put(np);
->
-> Double of_node_put() of np.
-
-Good catch.
+It was supposed to be 2500. Good catch.
 
 >
-> > +     }
+> > +                     "aspeed,ast2600-silicon-id"
 > > +
-> > +     attrs = kzalloc(sizeof(*attrs), GFP_KERNEL);
-> > +     if (!attrs)
-> > +             return -ENODEV;
-> > +
-> > +     /*
-> > +      * Machine: Romulus BMC
-> > +      * Family: AST2500
-> > +      * Revision: A1
-> > +      * SoC ID: raw silicon revision id
-> > +      * Serial Nnumber: 64-bit chipid
-> > +      */
-> > +
-> > +     np = of_find_node_by_path("/");
-> > +     of_property_read_string(np, "model", &machine);
-> > +     if (machine)
-> > +             attrs->machine = kstrdup(machine, GFP_KERNEL);
-> > +     of_node_put(np);
-> > +
-> > +     attrs->family = kasprintf(GFP_KERNEL, "%s",
-> > +                               siliconid_to_name(siliconid));
-> > +
-> > +     attrs->revision = kasprintf(GFP_KERNEL, "%s",
-> > +                                 siliconid_to_rev(siliconid));
+> > + - reg:                      offset and length of the silicon id information
+> > +                     optionally, a second offset and length describes the unique chip id
 >
-> `struct soc_device_attribute` declares these as `const char *` and the strings
-> are constants in the driver, so is there any reason to use kasprintf() here?
+> What about chips with multiple silicon ID regs? I guess we just pick a sensible
+> one, though given recent events maybe we should make an explicit note for the
+> 2600?
 
-The first iteration of the driver had more complex strings here, so it
-was a hold over from that. As long as the strings returned from the
-helpers stick around forever then we can do that.
+I will add a note saying the 2600 should be the unique one, not
+useless backwards compatible one.
 
 Cheers,
 
