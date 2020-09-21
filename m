@@ -1,61 +1,33 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Mon, 21 Sep 2020 18:46:42 +0930
-Subject: [PATCH v3 1/3] dt-bindings: aspeed: Add silicon id node to SCU
-In-Reply-To: <20200921091644.133107-1-joel@jms.id.au>
-References: <20200921091644.133107-1-joel@jms.id.au>
-Message-ID: <20200921091644.133107-2-joel@jms.id.au>
+Date: Mon, 21 Sep 2020 18:46:41 +0930
+Subject: [PATCH v3 0/3] ARM: aspeed: Add socinfo driver
+Message-ID: <20200921091644.133107-1-joel@jms.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Different ASPEED families have various unique hardware silicon
-identifiers within the SoC.
+This adds a socinfo driver for the ASPEED BMCs. Please review!
 
-Signed-off-by: Joel Stanley <joel@jms.id.au>
----
-v2:
- - Fix 2500 string
- - Be explicit about which ast2600 register to use
----
- .../devicetree/bindings/mfd/aspeed-scu.txt    | 26 +++++++++++++++++++
- 1 file changed, 26 insertions(+)
+v3 removes some unncessary frees
+v2 addresses Andrew's review comments
 
-diff --git a/Documentation/devicetree/bindings/mfd/aspeed-scu.txt b/Documentation/devicetree/bindings/mfd/aspeed-scu.txt
-index 4d92c0bb6687..857ee33f7329 100644
---- a/Documentation/devicetree/bindings/mfd/aspeed-scu.txt
-+++ b/Documentation/devicetree/bindings/mfd/aspeed-scu.txt
-@@ -20,3 +20,29 @@ syscon: syscon at 1e6e2000 {
- 	#clock-cells = <1>;
- 	#reset-cells = <1>;
- };
-+
-+Silicon ID
-+-----------------
-+
-+Families have unique hardware silicon identifiers within the SoC.
-+
-+Required properties:
-+
-+ - compatible:		"aspeed,silicon-id" or:
-+			"aspeed,ast2400-silicon-id" or
-+			"aspeed,ast2500-silicon-id" or
-+			"aspeed,ast2600-silicon-id"
-+
-+ - reg:			offset and length of the silicon id information
-+			optionally, a second offset and length describes the unique chip id
-+
-+			The reg should be the unique silicon id register, and
-+			not backwards compatible one in eg. the 2600.
-+
-+Example:
-+
-+
-+silicon-id at 7c {
-+        compatible = "aspeed,ast2500-silicon-id", "aspeed,silicon-id";
-+        reg = <0x7c 0x4 0x150 0x8>;
-+};
+Joel Stanley (3):
+  dt-bindings: aspeed: Add silicon id node to SCU
+  soc: aspeed: Add soc info driver
+  ARM: dts: aspeed: Add silicon id node
+
+ .../devicetree/bindings/mfd/aspeed-scu.txt    |  26 ++++
+ arch/arm/boot/dts/aspeed-g4.dtsi              |   5 +
+ arch/arm/boot/dts/aspeed-g5.dtsi              |   5 +
+ arch/arm/boot/dts/aspeed-g6.dtsi              |   5 +
+ drivers/soc/aspeed/Kconfig                    |   7 +
+ drivers/soc/aspeed/Makefile                   |   1 +
+ drivers/soc/aspeed/aspeed-socinfo.c           | 133 ++++++++++++++++++
+ 7 files changed, 182 insertions(+)
+ create mode 100644 drivers/soc/aspeed/aspeed-socinfo.c
+
 -- 
 2.28.0
 
