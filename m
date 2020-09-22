@@ -1,52 +1,21 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Mon, 21 Sep 2020 10:40:46 -0400
-Subject: [PATCH AUTOSEL 5.4 07/15] i2c: aspeed: Mask IRQ status to relevant
- bits
-In-Reply-To: <20200921144054.2135602-1-sashal@kernel.org>
-References: <20200921144054.2135602-1-sashal@kernel.org>
-Message-ID: <20200921144054.2135602-7-sashal@kernel.org>
+From: Shawn Guo <shawnguo@kernel.org>
+Date: Tue, 22 Sep 2020 10:00:12 +0800
+Subject: [PATCH v3 15/15] ARM: dts: imx6q: align GPIO hog names with
+ dtschema
+In-Reply-To: <20200916155715.21009-16-krzk@kernel.org>
+References: <20200916155715.21009-1-krzk@kernel.org>
+ <20200916155715.21009-16-krzk@kernel.org>
+Message-ID: <20200922020011.GQ25109@dragon>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Eddie James <eajames@linux.ibm.com>
+On Wed, Sep 16, 2020 at 05:57:15PM +0200, Krzysztof Kozlowski wrote:
+> dtschema for pca95xx expects GPIO hogs to end with 'hog' prefix.  While
+> touching the hogs, fix indentation (spaces -> tabs).
+> 
+> Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
 
-[ Upstream commit 1a1d6db23ddacde0b15ea589e9103373e05af8de ]
-
-Mask the IRQ status to only the bits that the driver checks. This
-prevents excessive driver warnings when operating in slave mode
-when additional bits are set that the driver doesn't handle.
-
-Signed-off-by: Eddie James <eajames@linux.ibm.com>
-Reviewed-by: Tao Ren <rentao.bupt@gmail.com>
-Signed-off-by: Wolfram Sang <wsa@kernel.org>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/i2c/busses/i2c-aspeed.c | 2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
-index dad6e432de89f..bdcc3c9d0abe5 100644
---- a/drivers/i2c/busses/i2c-aspeed.c
-+++ b/drivers/i2c/busses/i2c-aspeed.c
-@@ -69,6 +69,7 @@
-  * These share bit definitions, so use the same values for the enable &
-  * status bits.
-  */
-+#define ASPEED_I2CD_INTR_RECV_MASK			0xf000ffff
- #define ASPEED_I2CD_INTR_SDA_DL_TIMEOUT			BIT(14)
- #define ASPEED_I2CD_INTR_BUS_RECOVER_DONE		BIT(13)
- #define ASPEED_I2CD_INTR_SLAVE_MATCH			BIT(7)
-@@ -604,6 +605,7 @@ static irqreturn_t aspeed_i2c_bus_irq(int irq, void *dev_id)
- 	writel(irq_received & ~ASPEED_I2CD_INTR_RX_DONE,
- 	       bus->base + ASPEED_I2C_INTR_STS_REG);
- 	readl(bus->base + ASPEED_I2C_INTR_STS_REG);
-+	irq_received &= ASPEED_I2CD_INTR_RECV_MASK;
- 	irq_remaining = irq_received;
- 
- #if IS_ENABLED(CONFIG_I2C_SLAVE)
--- 
-2.25.1
-
+Applied, thanks.
