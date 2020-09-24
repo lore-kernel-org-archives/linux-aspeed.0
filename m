@@ -1,69 +1,53 @@
 From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-Date: Thu, 24 Sep 2020 15:11:28 +0200
-Subject: [PATCH v2 1/2] gpio/aspeed-sgpio: enable access to all 80 input &
- output sgpios
-In-Reply-To: <CACPK8Xcqu3UN3o=9pZ269O6pxLOra98jYxZqVL7sfjkUZ4Wang@mail.gmail.com>
-References: <20200911015105.48581-1-jk@codeconstruct.com.au>
- <CACPK8XdCkw7ix2J9WyOXDcwsMThXwQ62=E6cDLX+-9WJMsqrnA@mail.gmail.com>
- <CACPK8XeQWNTyS53M9PLwkud9RnGNp3j87X8_UXtg4ZHJrQqQSQ@mail.gmail.com>
- <CAMpxmJW+PMV1+q66ywEAiZhrOu+kiSPXQCK0mTGLLwW-yfisSg@mail.gmail.com>
- <CACPK8Xcqu3UN3o=9pZ269O6pxLOra98jYxZqVL7sfjkUZ4Wang@mail.gmail.com>
-Message-ID: <CAMpxmJX7yg0Y2ibEdQaDb5MseT4Kr1-uG+RLxxKO_YF1BMkqEw@mail.gmail.com>
+Date: Thu, 24 Sep 2020 15:37:49 +0200
+Subject: [PATCH] gpio: aspeed: fix ast2600 bank properties
+In-Reply-To: <20200916204216.9423-1-rentao.bupt@gmail.com>
+References: <20200916204216.9423-1-rentao.bupt@gmail.com>
+Message-ID: <CAMpxmJWR7VqU9urj=-KypKLm3aFooMd9iyusYtr5dNY2oOgXQQ@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Sep 16, 2020 at 2:59 PM Joel Stanley <joel@jms.id.au> wrote:
+On Wed, Sep 16, 2020 at 10:42 PM <rentao.bupt@gmail.com> wrote:
 >
-> On Wed, 16 Sep 2020 at 11:09, Bartosz Golaszewski
-> <bgolaszewski@baylibre.com> wrote:
-> >
-> > On Wed, Sep 16, 2020 at 6:51 AM Joel Stanley <joel@jms.id.au> wrote:
-> > >
-> > > Hi GPIO maintainers,
-> > >
-> > > On Fri, 11 Sep 2020 at 02:20, Joel Stanley <joel@jms.id.au> wrote:
-> > > >
-> > > > On Fri, 11 Sep 2020 at 02:11, Jeremy Kerr <jk@codeconstruct.com.au> wrote:
-> > > > >
-> > > > > Currently, the aspeed-sgpio driver exposes up to 80 GPIO lines,
-> > > > > corresponding to the 80 status bits available in hardware. Each of these
-> > > > > lines can be configured as either an input or an output.
-> > > > >
-> > > > > However, each of these GPIOs is actually an input *and* an output; we
-> > > > > actually have 80 inputs plus 80 outputs.
-> > > > >
-> > > > > This change expands the maximum number of GPIOs to 160; the lower half
-> > > > > of this range are the input-only GPIOs, the upper half are the outputs.
-> > > > > We fix the GPIO directions to correspond to this mapping.
-> > > > >
-> > > > > This also fixes a bug when setting GPIOs - we were reading from the
-> > > > > input register, making it impossible to set more than one output GPIO.
-> > > > >
-> > > > > Signed-off-by: Jeremy Kerr <jk@codeconstruct.com.au>
-> > > > > Fixes: 7db47faae79b ("gpio: aspeed: Add SGPIO driver")
-> > > >
-> > > > Reviewed-by: Joel Stanley <joel@jms.id.au>
-> > >
-> > > This series is good to go in for 5.10:
-> > >
-> >
-> > Hi Joel,
-> >
-> > I don't have this in my inbox. Did you copy me on this series?
+> From: Tao Ren <rentao.bupt@gmail.com>
 >
-> I did not; I am not the author of the patches as you can see.
+> GPIO_U is mapped to the least significant byte of input/output mask, and
+> the byte in "output" mask should be 0 because GPIO_U is input only. All
+> the other bits need to be 1 because GPIO_V/W/X support both input and
+> output modes.
 >
-> I notice that Jeremy sent them to the linux-gpio list, but you were
-> not copied. Are you able to grab them from lore, or do you need him to
-> resend them?
+> Similarly, GPIO_Y/Z are mapped to the 2 least significant bytes, and the
+> according bits need to be 1 because GPIO_Y/Z support both input and
+> output modes.
 >
-> Cheers,
+> Fixes: ab4a85534c3e ("gpio: aspeed: Add in ast2600 details to Aspeed driver")
+> Signed-off-by: Tao Ren <rentao.bupt@gmail.com>
+> ---
+>  drivers/gpio/gpio-aspeed.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 >
-> Joel
+> diff --git a/drivers/gpio/gpio-aspeed.c b/drivers/gpio/gpio-aspeed.c
+> index 879db23d8454..d07bf2c3f136 100644
+> --- a/drivers/gpio/gpio-aspeed.c
+> +++ b/drivers/gpio/gpio-aspeed.c
+> @@ -1114,8 +1114,8 @@ static const struct aspeed_gpio_config ast2500_config =
+>
+>  static const struct aspeed_bank_props ast2600_bank_props[] = {
+>         /*     input      output   */
+> -       {5, 0xffffffff,  0x0000ffff}, /* U/V/W/X */
+> -       {6, 0xffff0000,  0x0fff0000}, /* Y/Z */
+> +       {5, 0xffffffff,  0xffffff00}, /* U/V/W/X */
+> +       {6, 0x0000ffff,  0x0000ffff}, /* Y/Z */
+>         { },
+>  };
+>
+> --
+> 2.17.1
+>
 
-Now queued, thanks.
+Queued for fixes, thanks!
 
 Bartosz
