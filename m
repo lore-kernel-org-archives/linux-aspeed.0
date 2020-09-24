@@ -1,22 +1,69 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Thu, 24 Sep 2020 16:27:43 +0930
-Subject: [PATCH v3 3/3] ARM: dts: aspeed: Add silicon id node
-In-Reply-To: <20200921091644.133107-4-joel@jms.id.au>
-References: <20200921091644.133107-1-joel@jms.id.au>
- <20200921091644.133107-4-joel@jms.id.au>
-Message-ID: <53bc663a-6788-43b2-bd4f-8336f3dd4a3b@www.fastmail.com>
+From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+Date: Thu, 24 Sep 2020 15:11:28 +0200
+Subject: [PATCH v2 1/2] gpio/aspeed-sgpio: enable access to all 80 input &
+ output sgpios
+In-Reply-To: <CACPK8Xcqu3UN3o=9pZ269O6pxLOra98jYxZqVL7sfjkUZ4Wang@mail.gmail.com>
+References: <20200911015105.48581-1-jk@codeconstruct.com.au>
+ <CACPK8XdCkw7ix2J9WyOXDcwsMThXwQ62=E6cDLX+-9WJMsqrnA@mail.gmail.com>
+ <CACPK8XeQWNTyS53M9PLwkud9RnGNp3j87X8_UXtg4ZHJrQqQSQ@mail.gmail.com>
+ <CAMpxmJW+PMV1+q66ywEAiZhrOu+kiSPXQCK0mTGLLwW-yfisSg@mail.gmail.com>
+ <CACPK8Xcqu3UN3o=9pZ269O6pxLOra98jYxZqVL7sfjkUZ4Wang@mail.gmail.com>
+Message-ID: <CAMpxmJX7yg0Y2ibEdQaDb5MseT4Kr1-uG+RLxxKO_YF1BMkqEw@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+On Wed, Sep 16, 2020 at 2:59 PM Joel Stanley <joel@jms.id.au> wrote:
+>
+> On Wed, 16 Sep 2020 at 11:09, Bartosz Golaszewski
+> <bgolaszewski@baylibre.com> wrote:
+> >
+> > On Wed, Sep 16, 2020 at 6:51 AM Joel Stanley <joel@jms.id.au> wrote:
+> > >
+> > > Hi GPIO maintainers,
+> > >
+> > > On Fri, 11 Sep 2020 at 02:20, Joel Stanley <joel@jms.id.au> wrote:
+> > > >
+> > > > On Fri, 11 Sep 2020 at 02:11, Jeremy Kerr <jk@codeconstruct.com.au> wrote:
+> > > > >
+> > > > > Currently, the aspeed-sgpio driver exposes up to 80 GPIO lines,
+> > > > > corresponding to the 80 status bits available in hardware. Each of these
+> > > > > lines can be configured as either an input or an output.
+> > > > >
+> > > > > However, each of these GPIOs is actually an input *and* an output; we
+> > > > > actually have 80 inputs plus 80 outputs.
+> > > > >
+> > > > > This change expands the maximum number of GPIOs to 160; the lower half
+> > > > > of this range are the input-only GPIOs, the upper half are the outputs.
+> > > > > We fix the GPIO directions to correspond to this mapping.
+> > > > >
+> > > > > This also fixes a bug when setting GPIOs - we were reading from the
+> > > > > input register, making it impossible to set more than one output GPIO.
+> > > > >
+> > > > > Signed-off-by: Jeremy Kerr <jk@codeconstruct.com.au>
+> > > > > Fixes: 7db47faae79b ("gpio: aspeed: Add SGPIO driver")
+> > > >
+> > > > Reviewed-by: Joel Stanley <joel@jms.id.au>
+> > >
+> > > This series is good to go in for 5.10:
+> > >
+> >
+> > Hi Joel,
+> >
+> > I don't have this in my inbox. Did you copy me on this series?
+>
+> I did not; I am not the author of the patches as you can see.
+>
+> I notice that Jeremy sent them to the linux-gpio list, but you were
+> not copied. Are you able to grab them from lore, or do you need him to
+> resend them?
+>
+> Cheers,
+>
+> Joel
 
+Now queued, thanks.
 
-On Mon, 21 Sep 2020, at 18:46, Joel Stanley wrote:
-> This register describes the silicon id and chip unique id. It varies
-> between CPU revisions, but is always part of the SCU.
-> 
-> Signed-off-by: Joel Stanley <joel@jms.id.au>
-
-Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
+Bartosz
