@@ -1,53 +1,103 @@
-From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-Date: Thu, 24 Sep 2020 15:37:49 +0200
-Subject: [PATCH] gpio: aspeed: fix ast2600 bank properties
-In-Reply-To: <20200916204216.9423-1-rentao.bupt@gmail.com>
-References: <20200916204216.9423-1-rentao.bupt@gmail.com>
-Message-ID: <CAMpxmJWR7VqU9urj=-KypKLm3aFooMd9iyusYtr5dNY2oOgXQQ@mail.gmail.com>
+From: Joel Stanley <joel@jms.id.au>
+Date: Fri, 25 Sep 2020 04:49:22 +0000
+Subject: [PATCH] soc: aspeed-lpc-ctrl: LPC to AHB mapping on ast2600
+In-Reply-To: <2f51b12e-3651-48e4-b733-01f41ca44b92@www.fastmail.com>
+References: <20200312121413.294384-1-joel@jms.id.au>
+ <2f51b12e-3651-48e4-b733-01f41ca44b92@www.fastmail.com>
+Message-ID: <CACPK8XcMiWP58vO39Fd_Qf9WZA43heMjx0eDktV3M8TGQC3HYA@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Sep 16, 2020 at 10:42 PM <rentao.bupt@gmail.com> wrote:
+On Mon, 16 Mar 2020 at 01:58, Andrew Jeffery <andrew@aj.id.au> wrote:
 >
-> From: Tao Ren <rentao.bupt@gmail.com>
 >
-> GPIO_U is mapped to the least significant byte of input/output mask, and
-> the byte in "output" mask should be 0 because GPIO_U is input only. All
-> the other bits need to be 1 because GPIO_V/W/X support both input and
-> output modes.
 >
-> Similarly, GPIO_Y/Z are mapped to the 2 least significant bytes, and the
-> according bits need to be 1 because GPIO_Y/Z support both input and
-> output modes.
+> On Thu, 12 Mar 2020, at 22:44, Joel Stanley wrote:
+> > The ast2600 disables the mapping of AHB memory regions by default,
+> > only allowing the LPC window to point to SPI NOR. In order to point the
+> > window to any AHB address, an ast2600 specific bit must be toggled.
+> >
+> > Signed-off-by: Joel Stanley <joel@jms.id.au>
+> > ---
+> >  drivers/soc/aspeed/aspeed-lpc-ctrl.c | 17 +++++++++++++++++
+> >  1 file changed, 17 insertions(+)
+> >
+> > diff --git a/drivers/soc/aspeed/aspeed-lpc-ctrl.c
+> > b/drivers/soc/aspeed/aspeed-lpc-ctrl.c
+> > index f4ac14c40518..142cb4cc85e7 100644
+> > --- a/drivers/soc/aspeed/aspeed-lpc-ctrl.c
+> > +++ b/drivers/soc/aspeed/aspeed-lpc-ctrl.c
+> > @@ -22,6 +22,9 @@
+> >  #define HICR5_ENL2H  BIT(8)
+> >  #define HICR5_ENFWH  BIT(10)
+> >
+> > +#define HICR6 0x4
 >
-> Fixes: ab4a85534c3e ("gpio: aspeed: Add in ast2600 details to Aspeed driver")
-> Signed-off-by: Tao Ren <rentao.bupt@gmail.com>
-> ---
->  drivers/gpio/gpio-aspeed.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+> Given you introduced this I assume we don't have anything else touching
+> the register, but if we ever do hopefully whoever it is that adds support is
+> conscious that they need to be doing an read/modify/write to correctly
+> clear the W1C registers without frobbing the bridge state.
 >
-> diff --git a/drivers/gpio/gpio-aspeed.c b/drivers/gpio/gpio-aspeed.c
-> index 879db23d8454..d07bf2c3f136 100644
-> --- a/drivers/gpio/gpio-aspeed.c
-> +++ b/drivers/gpio/gpio-aspeed.c
-> @@ -1114,8 +1114,8 @@ static const struct aspeed_gpio_config ast2500_config =
->
->  static const struct aspeed_bank_props ast2600_bank_props[] = {
->         /*     input      output   */
-> -       {5, 0xffffffff,  0x0000ffff}, /* U/V/W/X */
-> -       {6, 0xffff0000,  0x0fff0000}, /* Y/Z */
-> +       {5, 0xffffffff,  0xffffff00}, /* U/V/W/X */
-> +       {6, 0x0000ffff,  0x0000ffff}, /* Y/Z */
->         { },
->  };
->
-> --
-> 2.17.1
->
+> Looks like Aspeed should have introduced two bits to manage it :/
 
-Queued for fixes, thanks!
+Yes, it would have been nice to have a separate register.
 
-Bartosz
+>
+> > +#define SW_FWH2AHB   BIT(17)
+> > +
+> >  #define HICR7 0x8
+> >  #define HICR8 0xc
+> >
+> > @@ -33,6 +36,7 @@ struct aspeed_lpc_ctrl {
+> >       resource_size_t         mem_size;
+> >       u32             pnor_size;
+> >       u32             pnor_base;
+> > +     bool                    fwh2ahb;
+> >  };
+> >
+> >  static struct aspeed_lpc_ctrl *file_aspeed_lpc_ctrl(struct file *file)
+> > @@ -177,6 +181,16 @@ static long aspeed_lpc_ctrl_ioctl(struct file
+> > *file, unsigned int cmd,
+> >               if (rc)
+> >                       return rc;
+> >
+> > +             /*
+> > +              * Switch to FWH2AHB mode, AST2600 only.
+> > +              *
+> > +              * The other bits in this register are interrupt status bits
+> > +              * that are cleared by writing 1. As we don't want to clear
+> > +              * them, set only the bit of interest.
+> > +              */
+> > +             if (lpc_ctrl->fwh2ahb)
+> > +                     regmap_write(lpc_ctrl->regmap, HICR6, SW_FWH2AHB);
+> > +
+> >               /*
+> >                * Enable LPC FHW cycles. This is required for the host to
+> >                * access the regions specified.
+> > @@ -274,6 +288,9 @@ static int aspeed_lpc_ctrl_probe(struct
+> > platform_device *pdev)
+> >               return rc;
+> >       }
+> >
+> > +     if (of_device_is_compatible(dev->of_node, "aspeed,ast2600-lpc-ctrl"))
+> > +             lpc_ctrl->fwh2ahb = true;
+> > +
+>
+> This implies that we don't want the SPI-only behaviour by default, which is
+> true for our platforms but doesn't really reflect the hardware. What are your
+> thoughts on adding an explict devicetree property? use-fwh2ahb?
+
+I chose to do it this way as userspace that is calling the ioctl to
+set the mapping is probably expecting this behaviour. If someone in
+the future wants to enhance the driver to separate out "lpc2spi" from
+"lpc2ahb" then we could consider their patches.
+
+The other upside of this is it maintains backwards compatibility with
+the previous SoCs.
+
+Cheers,
+
+Joel
