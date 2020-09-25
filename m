@@ -1,31 +1,47 @@
-From: Nishanth Menon <nm@ti.com>
-Date: Fri, 25 Sep 2020 07:01:54 -0500
-Subject: [PATCH v3 06/15] arm64: dts: ti: align GPIO hog names with
- dtschema
-In-Reply-To: <20200916155715.21009-7-krzk@kernel.org>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Date: Fri, 25 Sep 2020 17:48:04 +0200
+Subject: [PATCH v3 01/15] dt-bindings: gpio: convert bindings for NXP
+ PCA953x family to dtschema
+In-Reply-To: <20200916155715.21009-2-krzk@kernel.org>
 References: <20200916155715.21009-1-krzk@kernel.org>
- <20200916155715.21009-7-krzk@kernel.org>
-Message-ID: <20200925120154.utjxncf4qs2usuo4@akan>
+ <20200916155715.21009-2-krzk@kernel.org>
+Message-ID: <20200925154804.GB16392@kozik-lap>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 17:57-20200916, Krzysztof Kozlowski wrote:
-> The convention for node names is to use hyphens, not underscores.
-> dtschema for pca95xx expects GPIO hogs to end with 'hog' prefix.
+On Wed, Sep 16, 2020 at 05:57:01PM +0200, Krzysztof Kozlowski wrote:
+> Convert the NXP PCA953x family of GPIO expanders bindings to device tree
+> schema.
 > 
 > Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
-> ---
->  arch/arm64/boot/dts/ti/k3-j721e-common-proc-board.dts | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+> Reviewed-by: Rob Herring <robh@kernel.org>
 > 
+> ---
+> 
+> Changes since v2:
+> 1. Add Rob's review tag
+> 
+> Changes since v1:
+> 1. Use additionalProperties.
+> 2. Add wakeup-source.
+> 3. Add hogs.
+> 4. Extend example with hogs.
+> ---
+>  .../devicetree/bindings/gpio/gpio-pca953x.txt |  90 ----------
+>  .../bindings/gpio/gpio-pca95xx.yaml           | 166 ++++++++++++++++++
+>  .../devicetree/bindings/trivial-devices.yaml  |   4 -
+>  3 files changed, 166 insertions(+), 94 deletions(-)
+>  delete mode 100644 Documentation/devicetree/bindings/gpio/gpio-pca953x.txt
+>  create mode 100644 Documentation/devicetree/bindings/gpio/gpio-pca95xx.yaml
 
-Applied to ti-k3-dts-next with minor update to $subject (added
-'k3-j721e-common-proc-board:')
+Hi Linus,
 
--- 
-Regards,
-Nishanth Menon
-Key (0xDDB5849D1736249D) / Fingerprint: F8A2 8693 54EB 8232 17A3  1A34 DDB5 849D 1736 249D
+The first two patches (bindings) have Rob's ack/review. Could you pick
+them via GPIO tree?
+
+Best regards,
+Krzysztof
+
