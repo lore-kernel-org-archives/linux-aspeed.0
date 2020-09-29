@@ -1,10 +1,11 @@
-From: Eddie James <eajames@linux.ibm.com>
-Date: Wed, 30 Sep 2020 08:38:31 -0500
-Subject: [PATCH] soc: aspeed: xdma: Return -EFAULT if copy_from_user()
- fails
-In-Reply-To: <20200930090334.GB621698@mwanda>
-References: <20200930090334.GB621698@mwanda>
-Message-ID: <65b1447e-8f37-69f9-4049-25d130a281f8@linux.ibm.com>
+From: Michal Simek <monstr@monstr.eu>
+Date: Tue, 29 Sep 2020 12:54:12 +0200
+Subject: [PATCH v3 07/15] arm64: dts: xilinx: align GPIO hog names with
+ dtschema
+In-Reply-To: <20200916155715.21009-8-krzk@kernel.org>
+References: <20200916155715.21009-1-krzk@kernel.org>
+ <20200916155715.21009-8-krzk@kernel.org>
+Message-ID: <2c479869-f082-c991-4fdd-833601698828@monstr.eu>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -12,37 +13,62 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 
-On 9/30/20 4:03 AM, Dan Carpenter wrote:
-> The copy_from_user() function returns the number of bytes remaining
-> which we weren't able to copy.  This should return -EFAULT to the
-> user.
 
+On 16. 09. 20 17:57, Krzysztof Kozlowski wrote:
+> The convention for node names is to use hyphens, not underscores.
+> dtschema for pca95xx expects GPIO hogs to end with 'hog' prefix.
+> 
+> Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
+> ---
+>  arch/arm64/boot/dts/xilinx/zynqmp-zcu102-revA.dts | 8 ++++----
+>  1 file changed, 4 insertions(+), 4 deletions(-)
+> 
+> diff --git a/arch/arm64/boot/dts/xilinx/zynqmp-zcu102-revA.dts b/arch/arm64/boot/dts/xilinx/zynqmp-zcu102-revA.dts
+> index 4f801721564f..f1255f635dfd 100644
+> --- a/arch/arm64/boot/dts/xilinx/zynqmp-zcu102-revA.dts
+> +++ b/arch/arm64/boot/dts/xilinx/zynqmp-zcu102-revA.dts
+> @@ -203,25 +203,25 @@
+>  		gpio-line-names = "PS_GTR_LAN_SEL0", "PS_GTR_LAN_SEL1", "PS_GTR_LAN_SEL2", "PS_GTR_LAN_SEL3",
+>  				"PCI_CLK_DIR_SEL", "IIC_MUX_RESET_B", "GEM3_EXP_RESET_B",
+>  				"", "", "", "", "", "", "", "", "";
+> -		gtr-sel0 {
+> +		gtr-sel0-hog {
+>  			gpio-hog;
+>  			gpios = <0 0>;
+>  			output-low; /* PCIE = 0, DP = 1 */
+>  			line-name = "sel0";
+>  		};
+> -		gtr-sel1 {
+> +		gtr-sel1-hog {
+>  			gpio-hog;
+>  			gpios = <1 0>;
+>  			output-high; /* PCIE = 0, DP = 1 */
+>  			line-name = "sel1";
+>  		};
+> -		gtr-sel2 {
+> +		gtr-sel2-hog {
+>  			gpio-hog;
+>  			gpios = <2 0>;
+>  			output-high; /* PCIE = 0, USB0 = 1 */
+>  			line-name = "sel2";
+>  		};
+> -		gtr-sel3 {
+> +		gtr-sel3-hog {
+>  			gpio-hog;
+>  			gpios = <3 0>;
+>  			output-high; /* PCIE = 0, SATA = 1 */
+> 
+
+Tony picked up some patches from this series that's why applied this one
+to my tree.
 
 Thanks,
+Michal
 
-Reviewed-by: Eddie James <eajames@linux.ibm.com>
+-- 
+Michal Simek, Ing. (M.Eng), OpenPGP -> KeyID: FE3D1F91
+w: www.monstr.eu p: +42-0-721842854
+Maintainer of Linux kernel - Xilinx Microblaze
+Maintainer of Linux kernel - Xilinx Zynq ARM and ZynqMP ARM64 SoCs
+U-Boot custodian - Xilinx Microblaze/Zynq/ZynqMP/Versal SoCs
 
-
->
-> Fixes: 86609baa4217 ("soc: aspeed: xdma: Add user interface")
-> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
-> ---
->   drivers/soc/aspeed/aspeed-xdma.c | 5 ++---
->   1 file changed, 2 insertions(+), 3 deletions(-)
->
-> diff --git a/drivers/soc/aspeed/aspeed-xdma.c b/drivers/soc/aspeed/aspeed-xdma.c
-> index 91b51a3de8df..e6b4744bda64 100644
-> --- a/drivers/soc/aspeed/aspeed-xdma.c
-> +++ b/drivers/soc/aspeed/aspeed-xdma.c
-> @@ -569,9 +569,8 @@ static ssize_t aspeed_xdma_write(struct file *file, const char __user *buf,
->   	if (len != sizeof(op))
->   		return -EINVAL;
->   
-> -	rc = copy_from_user(&op, buf, len);
-> -	if (rc)
-> -		return rc;
-> +	if (copy_from_user(&op, buf, len))
-> +		return -EFAULT;
->   
->   	if (!op.len || op.len > client->size ||
->   	    op.direction > ASPEED_XDMA_DIRECTION_UPSTREAM)
