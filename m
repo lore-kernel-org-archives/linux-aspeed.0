@@ -1,116 +1,97 @@
-From: Ryan Chen <ryan_chen@aspeedtech.com>
-Date: Mon, 28 Sep 2020 07:43:25 +0000
-Subject: [PATCH 0/4] Remove LPC register partitioning
-In-Reply-To: <HK0PR06MB37796D91EC7290A69F2655E491240@HK0PR06MB3779.apcprd06.prod.outlook.com>
-References: <20200911034631.8473-1-chiawei_wang@aspeedtech.com>
- <CACPK8XcYvUj3W-CPzXKugp3wx7rcLEJ_8f2-Bi6V7QHZpopBbA@mail.gmail.com>
- <551926fc-7bd4-4a0e-8fcf-4675dcdba22b@www.fastmail.com>
- <HK0PR06MB37796D91EC7290A69F2655E491240@HK0PR06MB3779.apcprd06.prod.outlook.com>
-Message-ID: <HK0PR06MB33800F282095AA96884B2FC0F2350@HK0PR06MB3380.apcprd06.prod.outlook.com>
+From: Joel Stanley <joel@jms.id.au>
+Date: Tue, 29 Sep 2020 08:04:04 +0000
+Subject: [PATCH 1/1] clk: aspeed: modify some default clks are critical
+In-Reply-To: <20200928070108.14040-2-ryan_chen@aspeedtech.com>
+References: <20200928070108.14040-1-ryan_chen@aspeedtech.com>
+ <20200928070108.14040-2-ryan_chen@aspeedtech.com>
+Message-ID: <CACPK8XcjmxBGUfDxE2WB3zBgG8OCoRMogfG=Fk5f+wNZu0pjMg@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello Joel & Andrew,
-	Those patches are more organize for ASPEED SOC LPC register layout. 
-	Does those patches have any feedback?
-	
-Ryan
+On Mon, 28 Sep 2020 at 07:01, Ryan Chen <ryan_chen@aspeedtech.com> wrote:
+>
+> In ASPEED SoC LCLK is LPC clock for all SuperIO device, UART1/UART2 are
+> default for Host SuperIO UART device, eSPI clk for Host eSPI bus access
+> eSPI slave channel, those clks can't be disable should keep default,
+> otherwise will affect Host side access SuperIO and SPI slave device.
+>
+> Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
+> ---
+>  drivers/clk/clk-aspeed.c  | 8 ++++----
+>  drivers/clk/clk-ast2600.c | 8 ++++----
+>  2 files changed, 8 insertions(+), 8 deletions(-)
+>
+> diff --git a/drivers/clk/clk-aspeed.c b/drivers/clk/clk-aspeed.c
+> index 411ff5fb2c07..d348c4fd3f9f 100644
+> --- a/drivers/clk/clk-aspeed.c
+> +++ b/drivers/clk/clk-aspeed.c
+> @@ -54,15 +54,15 @@ static const struct aspeed_gate_data aspeed_gates[] = {
+>         [ASPEED_CLK_GATE_DCLK] =        {  5, -1, "dclk-gate",          NULL,   CLK_IS_CRITICAL }, /* DAC */
+>         [ASPEED_CLK_GATE_REFCLK] =      {  6, -1, "refclk-gate",        "clkin", CLK_IS_CRITICAL },
+>         [ASPEED_CLK_GATE_USBPORT2CLK] = {  7,  3, "usb-port2-gate",     NULL,   0 }, /* USB2.0 Host port 2 */
+> -       [ASPEED_CLK_GATE_LCLK] =        {  8,  5, "lclk-gate",          NULL,   0 }, /* LPC */
+> +       [ASPEED_CLK_GATE_LCLK] =        {  8,  5, "lclk-gate",          NULL,   CLK_IS_CRITICAL }, /* LPC */
+>         [ASPEED_CLK_GATE_USBUHCICLK] =  {  9, 15, "usb-uhci-gate",      NULL,   0 }, /* USB1.1 (requires port 2 enabled) */
+>         [ASPEED_CLK_GATE_D1CLK] =       { 10, 13, "d1clk-gate",         NULL,   0 }, /* GFX CRT */
+>         [ASPEED_CLK_GATE_YCLK] =        { 13,  4, "yclk-gate",          NULL,   0 }, /* HAC */
+>         [ASPEED_CLK_GATE_USBPORT1CLK] = { 14, 14, "usb-port1-gate",     NULL,   0 }, /* USB2 hub/USB2 host port 1/USB1.1 dev */
+> -       [ASPEED_CLK_GATE_UART1CLK] =    { 15, -1, "uart1clk-gate",      "uart", 0 }, /* UART1 */
+> -       [ASPEED_CLK_GATE_UART2CLK] =    { 16, -1, "uart2clk-gate",      "uart", 0 }, /* UART2 */
+> +       [ASPEED_CLK_GATE_UART1CLK] =    { 15, -1, "uart1clk-gate",      "uart", CLK_IS_CRITICAL }, /* UART1 */
+> +       [ASPEED_CLK_GATE_UART2CLK] =    { 16, -1, "uart2clk-gate",      "uart", CLK_IS_CRITICAL }, /* UART2 */
+>         [ASPEED_CLK_GATE_UART5CLK] =    { 17, -1, "uart5clk-gate",      "uart", 0 }, /* UART5 */
+> -       [ASPEED_CLK_GATE_ESPICLK] =     { 19, -1, "espiclk-gate",       NULL,   0 }, /* eSPI */
+> +       [ASPEED_CLK_GATE_ESPICLK] =     { 19, -1, "espiclk-gate",       NULL,   CLK_IS_CRITICAL }, /* eSPI */
 
-> -----Original Message-----
-> From: ChiaWei Wang <chiawei_wang@aspeedtech.com>
-> Sent: Friday, September 11, 2020 4:21 PM
-> To: Andrew Jeffery <andrew@aj.id.au>; Joel Stanley <joel@jms.id.au>
-> Cc: Rob Herring <robh+dt@kernel.org>; Corey Minyard <minyard@acm.org>;
-> Linus Walleij <linus.walleij@linaro.org>; Haiyue Wang
-> <haiyue.wang@linux.intel.com>; Cyril Bur <cyrilbur@gmail.com>; Robert
-> Lippert <rlippert@google.com>; Linux ARM
-> <linux-arm-kernel@lists.infradead.org>; linux-aspeed
-> <linux-aspeed@lists.ozlabs.org>; Linux Kernel Mailing List
-> <linux-kernel@vger.kernel.org>; OpenBMC Maillist
-> <openbmc@lists.ozlabs.org>; Ryan Chen <ryan_chen@aspeedtech.com>
-> Subject: RE: [PATCH 0/4] Remove LPC register partitioning
-> 
-> Hello,
-> 
-> Thanks for your prompt feedback.
-> 
-> > -----Original Message-----
-> > From: Andrew Jeffery <andrew@aj.id.au>
-> > Sent: Friday, September 11, 2020 12:46 PM
-> > To: Joel Stanley <joel@jms.id.au>; ChiaWei Wang
-> > <chiawei_wang@aspeedtech.com>
-> > Subject: Re: [PATCH 0/4] Remove LPC register partitioning
-> >
-> >
-> > On Fri, 11 Sep 2020, at 13:33, Joel Stanley wrote:
-> > > Hello,
-> > >
-> > > On Fri, 11 Sep 2020 at 03:46, Chia-Wei, Wang
-> > > <chiawei_wang@aspeedtech.com> wrote:
-> > > >
-> > > > The LPC controller has no concept of the BMC and the Host partitions.
-> > > > The incorrect partitioning can impose unnecessary range
-> > > > restrictions on register access through the syscon regmap interface.
-> > > >
-> > > > For instance, HICRB contains the I/O port address configuration of
-> > > > KCS channel 1/2. However, the KCS#1/#2 drivers cannot access HICRB
-> > > > as it is located at the other LPC partition.
-> >
-> > Thanks for addressing this, I've regretted that choice for a while now.
-> >
-> > The split was rooted in trying to support pinmux while not being
-> > across every detail of the LPC controller, and so I made some poor decisions.
-> >
-> > > >
-> > > > In addition, to be backward compatible, the newly added HW control
-> > > > bits could be added at any reserved bits over the LPC addressing space.
-> > > >
-> > > > Thereby, this patch series aims to remove the LPC partitioning for
-> > > > better driver development and maintenance.
-> > >
-> > > I support this cleanup. The only consideration is to be careful with
-> > > breaking the driver/device-tree relationship. We either need to
-> > > ensure the drivers remain compatible with  both device trees.
-> > >
-> > > Another solution is to get agreement from all parties that for the
-> > > LPC device the device tree is always the one shipped with the
-> > > kernel, so it is okay to make incompatible changes.
-> If it is possible, I would prefer this solution to avoid adding additional if-logic
-> for the compatibility support in the driver implementation.
-> As the patch can be less change made to register offset definitions and leave
-> the core logic untouched.
-> > >
-> > > While we are doing a cleanup, Andrew suggested we remove the
-> > > detailed description of LPC out of the device tree. We would have
-> > > the one LPC node, and create a LPC driver that creates all of the
-> > > sub devices (snoop, FW cycles, kcs, bt, vuart). Andrew, can  you
-> > > elaborate on this plan?
-> >
-> > I dug up the conversation I had with Rob over a year ago about being
-> > unhappy with what I'd cooked up.
-> >
-> > https://lore.kernel.org/linux-arm-kernel/CAL_JsqJ+sFDG8eKbV3gvmqVHx+ot
-> > W
-> > bki4dY213apzXgfhbXXEw at mail.gmail.com/
-> >
-> > But I think you covered most of the idea there: We have the LPC driver
-> > create the subdevices and that moves the details out of the devicetree.
-> > However, I haven't thought about it more than that, and I think there
-> > are still problems with that idea. For instance, how we manage
-> > configuration of those devices, and how to enable only the devices a
-> > given platform actually cares about (i.e. the problems that devicetree solves
-> for us).
-> Another concern to make centralized LPC driver implementation more
-> complicated is the relationship with eSPI driver.
-> AST2500 binds the reset control of LPC and eSPI together. If eSPI is used for the
-> Host communication, the behavior in current "lpc-ctrl" should be skipped but
-> not for KCS, BT, Snoop, etc.
-> And this will be much easier to achieve by devicetree if LPC sub devices are
-> individually described.
-> >
-> > It may be that the only way to do that is with platform code, and
-> > that's not really a direction we should be going either.
-> >
+This is fine for systems that have eSPI. For systems that do not use
+eSPI, the clocks are not "required".
+
+I was sent a similar patch by Jae some time ago:
+
+ https://lore.kernel.org/openbmc/697a184b-ef99-a46e-bf98-4d339b3aafd8 at linux.intel.com/
+
+Better is to associate drivers with these clocks, and those drivers
+will ensure they are left enabled.
+
+Alternatively, we will need to come up with a device tree binding to
+describe the hardware requirement that these clocks are left on.
+
+Cheers,
+
+Joel
+
+>         [ASPEED_CLK_GATE_MAC1CLK] =     { 20, 11, "mac1clk-gate",       "mac",  0 }, /* MAC1 */
+>         [ASPEED_CLK_GATE_MAC2CLK] =     { 21, 12, "mac2clk-gate",       "mac",  0 }, /* MAC2 */
+>         [ASPEED_CLK_GATE_RSACLK] =      { 24, -1, "rsaclk-gate",        NULL,   0 }, /* RSA */
+> diff --git a/drivers/clk/clk-ast2600.c b/drivers/clk/clk-ast2600.c
+> index bbacaccad554..6802a2d5bbe2 100644
+> --- a/drivers/clk/clk-ast2600.c
+> +++ b/drivers/clk/clk-ast2600.c
+> @@ -86,8 +86,8 @@ static const struct aspeed_gate_data aspeed_g6_gates[] = {
+>         /* Reserved 26 */
+>         [ASPEED_CLK_GATE_EMMCCLK]       = { 27, 16, "emmcclk-gate",     NULL,    0 },   /* For card clk */
+>         /* Reserved 28/29/30 */
+> -       [ASPEED_CLK_GATE_LCLK]          = { 32, 32, "lclk-gate",        NULL,    0 }, /* LPC */
+> -       [ASPEED_CLK_GATE_ESPICLK]       = { 33, -1, "espiclk-gate",     NULL,    0 }, /* eSPI */
+> +       [ASPEED_CLK_GATE_LCLK]          = { 32, 32, "lclk-gate",        NULL,    CLK_IS_CRITICAL }, /* LPC */
+> +       [ASPEED_CLK_GATE_ESPICLK]       = { 33, -1, "espiclk-gate",     NULL,    CLK_IS_CRITICAL }, /* eSPI */
+>         [ASPEED_CLK_GATE_REF1CLK]       = { 34, -1, "ref1clk-gate",     "clkin", CLK_IS_CRITICAL },
+>         /* Reserved 35 */
+>         [ASPEED_CLK_GATE_SDCLK]         = { 36, 56, "sdclk-gate",       NULL,    0 },   /* SDIO/SD */
+> @@ -102,8 +102,8 @@ static const struct aspeed_gate_data aspeed_g6_gates[] = {
+>         [ASPEED_CLK_GATE_I3C5CLK]       = { 45,  45, "i3c5clk-gate",    NULL,    0 },   /* I3C5 */
+>         [ASPEED_CLK_GATE_I3C6CLK]       = { 46,  46, "i3c6clk-gate",    NULL,    0 },   /* I3C6 */
+>         [ASPEED_CLK_GATE_I3C7CLK]       = { 47,  47, "i3c7clk-gate",    NULL,    0 },   /* I3C7 */
+> -       [ASPEED_CLK_GATE_UART1CLK]      = { 48,  -1, "uart1clk-gate",   "uart",  0 },   /* UART1 */
+> -       [ASPEED_CLK_GATE_UART2CLK]      = { 49,  -1, "uart2clk-gate",   "uart",  0 },   /* UART2 */
+> +       [ASPEED_CLK_GATE_UART1CLK]      = { 48,  -1, "uart1clk-gate",   "uart",  CLK_IS_CRITICAL },     /* UART1 */
+> +       [ASPEED_CLK_GATE_UART2CLK]      = { 49,  -1, "uart2clk-gate",   "uart",  CLK_IS_CRITICAL },     /* UART2 */
+>         [ASPEED_CLK_GATE_UART3CLK]      = { 50,  -1, "uart3clk-gate",   "uart",  0 },   /* UART3 */
+>         [ASPEED_CLK_GATE_UART4CLK]      = { 51,  -1, "uart4clk-gate",   "uart",  0 },   /* UART4 */
+>         [ASPEED_CLK_GATE_MAC3CLK]       = { 52,  52, "mac3clk-gate",    "mac34", 0 },   /* MAC3 */
+> --
+> 2.17.1
+>
