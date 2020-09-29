@@ -1,24 +1,28 @@
 From: Linus Walleij <linus.walleij@linaro.org>
-Date: Tue, 29 Sep 2020 14:39:10 +0200
-Subject: [PATCH v2 0/3] pinctrl: aspeed: AST2600 pinconf fixes
-In-Reply-To: <20200910025631.2996342-1-andrew@aj.id.au>
-References: <20200910025631.2996342-1-andrew@aj.id.au>
-Message-ID: <CACRpkdaqtcPsinURk88GFYyPcDr2SdoRXWUCHMMn2cQtbBYyog@mail.gmail.com>
+Date: Tue, 29 Sep 2020 14:42:22 +0200
+Subject: [PATCH 4/4] pinctrl: aspeed-g5: Fix LPC register offsets
+In-Reply-To: <20200911034631.8473-5-chiawei_wang@aspeedtech.com>
+References: <20200911034631.8473-1-chiawei_wang@aspeedtech.com>
+ <20200911034631.8473-5-chiawei_wang@aspeedtech.com>
+Message-ID: <CACRpkdbn9294JnddMsmGooCe7KCxMiGbuAZ+OAuLwPkZUYD10A@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Sep 10, 2020 at 4:57 AM Andrew Jeffery <andrew@aj.id.au> wrote:
+On Fri, Sep 11, 2020 at 5:47 AM Chia-Wei, Wang
+<chiawei_wang@aspeedtech.com> wrote:
 
-> The AST2600 pinctrl driver was missing support for bias control on the 1.8V
-> GPIO pins, and in the process of resolving that I discovered a couple of other
-> bugs that are fixed in the first two patches of the series.
+> The LPC register offsets are fixed to adapt to the LPC DTS change,
+> where the LPC partitioning is removed.
 >
-> v2 Tweaks some of the debug output and adds Joel's Reviewed-by tags.
+> Signed-off-by: Chia-Wei, Wang <chiawei_wang@aspeedtech.com>
 
-Applied this v2 instead of v1.
+I can apply this one patch if I get a review from one of the
+Aspeed pinctrl maintainer.
 
-Thanks!
+Andrew?
+
+Yours,
 Linus Walleij
