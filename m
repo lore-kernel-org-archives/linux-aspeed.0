@@ -1,90 +1,37 @@
-From: Billy Tsai <billy_tsai@aspeedtech.com>
-Date: Wed, 30 Sep 2020 13:11:13 +0800
-Subject: [PATCH] ARM: dts: aspeed-g6: Add sgpiom/sgpios node
-Message-ID: <20200930051113.32465-1-billy_tsai@aspeedtech.com>
+From: Andrew Jeffery <andrew@aj.id.au>
+Date: Wed, 30 Sep 2020 15:41:41 +0930
+Subject: [PATCH 0/4] Remove LPC register partitioning
+In-Reply-To: <HK0PR06MB33800F282095AA96884B2FC0F2350@HK0PR06MB3380.apcprd06.prod.outlook.com>
+References: <20200911034631.8473-1-chiawei_wang@aspeedtech.com>
+ <CACPK8XcYvUj3W-CPzXKugp3wx7rcLEJ_8f2-Bi6V7QHZpopBbA@mail.gmail.com>
+ <551926fc-7bd4-4a0e-8fcf-4675dcdba22b@www.fastmail.com>
+ <HK0PR06MB37796D91EC7290A69F2655E491240@HK0PR06MB3779.apcprd06.prod.outlook.com>
+ <HK0PR06MB33800F282095AA96884B2FC0F2350@HK0PR06MB3380.apcprd06.prod.outlook.com>
+Message-ID: <485ec282-568f-458c-a91e-14c89415b8e5@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This commit add two sgpiom and two sgpios node into aspeed-g6.dtsi
-and change the register range of gpio0 to fix the hardware design.
 
-Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
----
- arch/arm/boot/dts/aspeed-g6.dtsi | 51 +++++++++++++++++++++++++++++++-
- 1 file changed, 50 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm/boot/dts/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed-g6.dtsi
-index 97ca743363d7..00237daec2a1 100644
---- a/arch/arm/boot/dts/aspeed-g6.dtsi
-+++ b/arch/arm/boot/dts/aspeed-g6.dtsi
-@@ -357,7 +357,7 @@
- 				#gpio-cells = <2>;
- 				gpio-controller;
- 				compatible = "aspeed,ast2600-gpio";
--				reg = <0x1e780000 0x800>;
-+				reg = <0x1e780000 0x500>;
- 				interrupts = <GIC_SPI 40 IRQ_TYPE_LEVEL_HIGH>;
- 				gpio-ranges = <&pinctrl 0 0 208>;
- 				ngpios = <208>;
-@@ -365,6 +365,55 @@
- 				interrupt-controller;
- 				#interrupt-cells = <2>;
- 			};
-+			sgpiom0: sgpiom at 1e780500 {
-+				#gpio-cells = <2>;
-+				gpio-controller;
-+				compatible = "aspeed,ast2600-sgpiom";
-+				reg = <0x1e780500 0x100>;
-+				interrupts = <GIC_SPI 51 IRQ_TYPE_LEVEL_HIGH>;
-+				ngpios = <128>;
-+				clocks = <&syscon ASPEED_CLK_APB2>;
-+				interrupt-controller;
-+				bus-frequency = <12000000>;
-+
-+				pinctrl-names = "default";
-+				pinctrl-0 = <&pinctrl_sgpm1_default>;
-+				status = "disabled";
-+			};
-+
-+			sgpiom1: sgpiom at 1e780600 {
-+				#gpio-cells = <2>;
-+				gpio-controller;
-+				compatible = "aspeed,ast2600-sgpiom";
-+				reg = <0x1e780600 0x100>;
-+				interrupts = <GIC_SPI 70 IRQ_TYPE_LEVEL_HIGH>;
-+				ngpios = <80>;
-+				clocks = <&syscon ASPEED_CLK_APB2>;
-+				interrupt-controller;
-+				bus-frequency = <12000000>;
-+
-+				pinctrl-names = "default";
-+				pinctrl-0 = <&pinctrl_sgpm2_default>;
-+				status = "disabled";
-+			};
-+
-+			sgpios0: sgpios at 1e780700 {
-+				#gpio-cells = <2>;
-+				gpio-controller;
-+				compatible = "aspeed,ast2600-sgpios";
-+				reg = <0x1e780700 0x40>;
-+				interrupts = <GIC_SPI 52 IRQ_TYPE_LEVEL_HIGH>;
-+				clocks = <&syscon ASPEED_CLK_APB2>;
-+			};
-+
-+			sgpios1: sgpios at 1e780740 {
-+				#gpio-cells = <2>;
-+				gpio-controller;
-+				compatible = "aspeed,ast2600-sgpios";
-+				reg = <0x1e780740 0x40>;
-+				interrupts = <GIC_SPI 71 IRQ_TYPE_LEVEL_HIGH>;
-+				clocks = <&syscon ASPEED_CLK_APB2>;
-+			};
+On Mon, 28 Sep 2020, at 17:13, Ryan Chen wrote:
+> Hello Joel & Andrew,
+> 	Those patches are more organize for ASPEED SOC LPC register layout. 
+> 	Does those patches have any feedback?
+
+I support getting the problem fixed. However, the series also needs to fix the 
+LPC devicetree binding at
  
- 			gpio1: gpio at 1e780800 {
- 				#gpio-cells = <2>;
--- 
-2.17.1
+Documentation/devicetree/bindings/mfd/aspeed-lpc.txt
 
+What's proposed isn't backwards compatible. We need to agree that a breaking 
+change is the way we want to go and get Rob's buy-in. Given the impact of the 
+change I'd prefer we don't try to maintain backwards compatibility. All known 
+users of the binding ship the dtb with the kernel.
+
+Can we get a v2 with the binding documentation fixed? That will probably need
+some review.
+
+Andrew
