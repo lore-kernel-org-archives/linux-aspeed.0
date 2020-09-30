@@ -1,39 +1,19 @@
-From: Troy Lee <troy_lee@aspeedtech.com>
-Date: Mon, 30 Nov 2020 16:33:44 +0800
-Subject: [PATCH 2/3] ARM: dts: aspeed: Add AST2600 edac into common devicetree
-In-Reply-To: <20201130083345.4814-1-troy_lee@aspeedtech.com>
-References: <20201130083345.4814-1-troy_lee@aspeedtech.com>
-Message-ID: <20201130083345.4814-2-troy_lee@aspeedtech.com>
+From: Tao Ren <rentao.bupt@gmail.com>
+Date: Wed, 30 Sep 2020 09:50:26 -0700
+Subject: [PATCH 1/3] configs: aspeed: enable UHCI driver in defconfig
+In-Reply-To: <20200930040823.26065-2-ryan_chen@aspeedtech.com>
+References: <20200930040823.26065-1-ryan_chen@aspeedtech.com>
+ <20200930040823.26065-2-ryan_chen@aspeedtech.com>
+Message-ID: <20200930165025.GA25872@taoren-ubuntu-R90MNF91>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Adding Aspeed AST2600 edac node into common devicetree.
+On Wed, Sep 30, 2020 at 12:08:21PM +0800, Ryan Chen wrote:
+> Enable UHCI driver in aspeed_g5_defconfig.
+> 
+> Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
 
-Signed-off-by: Troy Lee <troy_lee@aspeedtech.com>
----
- arch/arm/boot/dts/aspeed-g6.dtsi | 6 ++++++
- 1 file changed, 6 insertions(+)
-
-diff --git a/arch/arm/boot/dts/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed-g6.dtsi
-index 97ca743363d7..fb144515f397 100644
---- a/arch/arm/boot/dts/aspeed-g6.dtsi
-+++ b/arch/arm/boot/dts/aspeed-g6.dtsi
-@@ -69,6 +69,12 @@
- 		always-on;
- 	};
- 
-+	edac: sdram at 1e6e0000 {
-+		compatible = "aspeed,ast2600-sdram-edac", "syscon";
-+		reg = <0x1e6e0000 0x174>;
-+		interrupts = <GIC_SPI 0 IRQ_TYPE_LEVEL_HIGH>;
-+	};
-+
- 	ahb {
- 		compatible = "simple-bus";
- 		#address-cells = <1>;
--- 
-2.17.1
-
+Reviewed-by: Tao Ren <rentao.bupt@gmail.com>
