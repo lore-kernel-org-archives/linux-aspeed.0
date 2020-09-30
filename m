@@ -1,28 +1,26 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Date: Tue, 29 Sep 2020 14:42:22 +0200
-Subject: [PATCH 4/4] pinctrl: aspeed-g5: Fix LPC register offsets
-In-Reply-To: <20200911034631.8473-5-chiawei_wang@aspeedtech.com>
-References: <20200911034631.8473-1-chiawei_wang@aspeedtech.com>
- <20200911034631.8473-5-chiawei_wang@aspeedtech.com>
-Message-ID: <CACRpkdbn9294JnddMsmGooCe7KCxMiGbuAZ+OAuLwPkZUYD10A@mail.gmail.com>
+From: Ryan Chen <ryan_chen@aspeedtech.com>
+Date: Wed, 30 Sep 2020 12:08:20 +0800
+Subject: [PATCH 0/3] Enable USB host for AST2600
+Message-ID: <20200930040823.26065-1-ryan_chen@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Sep 11, 2020 at 5:47 AM Chia-Wei, Wang
-<chiawei_wang@aspeedtech.com> wrote:
+The patches enable UHCI driver in AST2600 and also enable
+USB host in aspeed-ast2600-evb.dts.
 
-> The LPC register offsets are fixed to adapt to the LPC DTS change,
-> where the LPC partitioning is removed.
->
-> Signed-off-by: Chia-Wei, Wang <chiawei_wang@aspeedtech.com>
+Ryan Chen (3):
+  configs: aspeed: enable UHCI driver in defconfig
+  usb: host: add uhci compatible support for ast2600-uhci
+  ARM: dts: add ehci uhci enable in evb dts
 
-I can apply this one patch if I get a review from one of the
-Aspeed pinctrl maintainer.
+ arch/arm/boot/dts/aspeed-ast2600-evb.dts | 8 ++++++++
+ arch/arm/configs/aspeed_g5_defconfig     | 1 +
+ drivers/usb/host/uhci-platform.c         | 3 ++-
+ 3 files changed, 11 insertions(+), 1 deletion(-)
 
-Andrew?
+-- 
+2.17.1
 
-Yours,
-Linus Walleij
