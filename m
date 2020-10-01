@@ -1,75 +1,37 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Thu, 01 Oct 2020 10:06:20 +0930
-Subject: [PATCH] ARM: dts: aspeed-g6: Add sgpiom/sgpios node
-In-Reply-To: <20200930051113.32465-1-billy_tsai@aspeedtech.com>
-References: <20200930051113.32465-1-billy_tsai@aspeedtech.com>
-Message-ID: <6bc40a50-8c21-4642-ad9e-e92f756aac25@www.fastmail.com>
+Date: Thu, 01 Oct 2020 10:12:30 +0930
+Subject: [PATCH 4/4] pinctrl: aspeed-g5: Fix LPC register offsets
+In-Reply-To: <CACRpkdbn9294JnddMsmGooCe7KCxMiGbuAZ+OAuLwPkZUYD10A@mail.gmail.com>
+References: <20200911034631.8473-1-chiawei_wang@aspeedtech.com>
+ <20200911034631.8473-5-chiawei_wang@aspeedtech.com>
+ <CACRpkdbn9294JnddMsmGooCe7KCxMiGbuAZ+OAuLwPkZUYD10A@mail.gmail.com>
+Message-ID: <3755eb41-e939-41b4-93ff-7bfcbdbc9f5b@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Billy,
 
-On Wed, 30 Sep 2020, at 14:41, Billy Tsai wrote:
-> This commit add two sgpiom and two sgpios node into aspeed-g6.dtsi
-> and change the register range of gpio0 to fix the hardware design.
-> 
-> Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
-> ---
->  arch/arm/boot/dts/aspeed-g6.dtsi | 51 +++++++++++++++++++++++++++++++-
->  1 file changed, 50 insertions(+), 1 deletion(-)
-> 
-> diff --git a/arch/arm/boot/dts/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed-g6.dtsi
-> index 97ca743363d7..00237daec2a1 100644
-> --- a/arch/arm/boot/dts/aspeed-g6.dtsi
-> +++ b/arch/arm/boot/dts/aspeed-g6.dtsi
-> @@ -357,7 +357,7 @@
->  				#gpio-cells = <2>;
->  				gpio-controller;
->  				compatible = "aspeed,ast2600-gpio";
-> -				reg = <0x1e780000 0x800>;
-> +				reg = <0x1e780000 0x500>;
->  				interrupts = <GIC_SPI 40 IRQ_TYPE_LEVEL_HIGH>;
->  				gpio-ranges = <&pinctrl 0 0 208>;
->  				ngpios = <208>;
-> @@ -365,6 +365,55 @@
->  				interrupt-controller;
->  				#interrupt-cells = <2>;
->  			};
-> +			sgpiom0: sgpiom at 1e780500 {
-> +				#gpio-cells = <2>;
-> +				gpio-controller;
-> +				compatible = "aspeed,ast2600-sgpiom";
-> +				reg = <0x1e780500 0x100>;
-> +				interrupts = <GIC_SPI 51 IRQ_TYPE_LEVEL_HIGH>;
-> +				ngpios = <128>;
-> +				clocks = <&syscon ASPEED_CLK_APB2>;
-> +				interrupt-controller;
-> +				bus-frequency = <12000000>;
-> +
-> +				pinctrl-names = "default";
-> +				pinctrl-0 = <&pinctrl_sgpm1_default>;
-> +				status = "disabled";
-> +			};
-> +
-> +			sgpiom1: sgpiom at 1e780600 {
-> +				#gpio-cells = <2>;
-> +				gpio-controller;
-> +				compatible = "aspeed,ast2600-sgpiom";
-> +				reg = <0x1e780600 0x100>;
-> +				interrupts = <GIC_SPI 70 IRQ_TYPE_LEVEL_HIGH>;
-> +				ngpios = <80>;
-> +				clocks = <&syscon ASPEED_CLK_APB2>;
-> +				interrupt-controller;
-> +				bus-frequency = <12000000>;
-> +
-> +				pinctrl-names = "default";
-> +				pinctrl-0 = <&pinctrl_sgpm2_default>;
 
-Have you tried building this on top of upstream? Because neither sgpm2 nor 
-sgps2 are supported by the pinctrl driver. If you have patches that implement 
-both mux configurations, can you post them too?
+On Tue, 29 Sep 2020, at 22:12, Linus Walleij wrote:
+> On Fri, Sep 11, 2020 at 5:47 AM Chia-Wei, Wang
+> <chiawei_wang@aspeedtech.com> wrote:
+> 
+> > The LPC register offsets are fixed to adapt to the LPC DTS change,
+> > where the LPC partitioning is removed.
+> >
+> > Signed-off-by: Chia-Wei, Wang <chiawei_wang@aspeedtech.com>
+> 
+> I can apply this one patch if I get a review from one of the
+> Aspeed pinctrl maintainer.
+> 
+> Andrew?
+
+There needs to be a v2 of the series that fixes the binding documentation, 
+which will drive some discussion about backwards compatibility. So lets not 
+apply this patch just yet.
+
+Thanks for touching base!
 
 Andrew
