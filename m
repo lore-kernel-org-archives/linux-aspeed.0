@@ -1,113 +1,49 @@
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Date: Fri,  2 Oct 2020 18:38:22 +0200
-Subject: [RESEND PATCH v3 2/2] ARM: dts: aspeed: align GPIO hog names with
- dtschema
-In-Reply-To: <20201002163822.7678-1-krzk@kernel.org>
-References: <20201002163822.7678-1-krzk@kernel.org>
-Message-ID: <20201002163822.7678-2-krzk@kernel.org>
+From: Olof Johansson <olof@lixom.net>
+Date: Sat, 3 Oct 2020 13:13:52 -0700
+Subject: [GIT PULL] ARM: aspeed: soc changes for 5.10
+In-Reply-To: <CACPK8XcP_j7q+jWN6_JGaEcfPy=zSQHyizp1LOw05zFB4L9iGQ@mail.gmail.com>
+References: <CACPK8XcP_j7q+jWN6_JGaEcfPy=zSQHyizp1LOw05zFB4L9iGQ@mail.gmail.com>
+Message-ID: <20201003201352.GI8203@lx2k>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-dtschema for pca95xx expects GPIO hogs to end with 'hog' suffix.
+Hi Joel,
 
-Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
----
- arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts |  2 +-
- arch/arm/boot/dts/aspeed-bmc-opp-mihawk.dts  | 16 ++++++++--------
- 2 files changed, 9 insertions(+), 9 deletions(-)
+On Fri, Sep 25, 2020 at 06:31:28AM +0000, Joel Stanley wrote:
+> Hello Soc maintainers,
+> 
+> Here are some ASPEED changes for the 5.10 merge window.
+> 
+> The following changes since commit e55f541e51b5136fc0ced0bdf2b33ee3cca3bc96:
+> 
+>   soc: aspeed: xdma: Add reset ioctl (2020-09-25 15:32:57 +0930)
+> 
+> are available in the Git repository at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/joel/aspeed.git
+> tags/aspeed-5.10-soc
+> 
+> for you to fetch changes up to e55f541e51b5136fc0ced0bdf2b33ee3cca3bc96:
+> 
+>   soc: aspeed: xdma: Add reset ioctl (2020-09-25 15:32:57 +0930)
+> 
+> ----------------------------------------------------------------
+> ASPEED soc driver updates for 5.10
+> 
+> New drivers:
+> 
+>  - XDMA driver for the BMC to host PCIe DMA device
 
-diff --git a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
-index 21ae880c7530..d5ac379c909e 100644
---- a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
-@@ -564,7 +564,7 @@
- 		gpio-controller;
- 		#gpio-cells = <2>;
- 
--		smbus0 {
-+		smbus0-hog {
- 			gpio-hog;
- 			gpios = <4 GPIO_ACTIVE_HIGH>;
- 			output-high;
-diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-mihawk.dts b/arch/arm/boot/dts/aspeed-bmc-opp-mihawk.dts
-index cb85168f6761..577c211c469e 100644
---- a/arch/arm/boot/dts/aspeed-bmc-opp-mihawk.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-opp-mihawk.dts
-@@ -827,7 +827,7 @@
- 				gpio-controller;
- 				#gpio-cells = <2>;
- 
--				smbus0 {
-+				smbus0-hog {
- 					gpio-hog;
- 					gpios = <4 GPIO_ACTIVE_HIGH>;
- 					output-high;
-@@ -852,7 +852,7 @@
- 				gpio-controller;
- 				#gpio-cells = <2>;
- 
--				smbus1 {
-+				smbus1-hog {
- 					gpio-hog;
- 					gpios = <4 GPIO_ACTIVE_HIGH>;
- 					output-high;
-@@ -900,7 +900,7 @@
- 				gpio-controller;
- 				#gpio-cells = <2>;
- 
--				smbus2 {
-+				smbus2-hog {
- 					gpio-hog;
- 					gpios = <4 GPIO_ACTIVE_HIGH>;
- 					output-high;
-@@ -925,7 +925,7 @@
- 				gpio-controller;
- 				#gpio-cells = <2>;
- 
--				smbus3 {
-+				smbus3-hog {
- 					gpio-hog;
- 					gpios = <4 GPIO_ACTIVE_HIGH>;
- 					output-high;
-@@ -992,7 +992,7 @@
- 				gpio-controller;
- 				#gpio-cells = <2>;
- 
--				smbus4 {
-+				smbus4-hog {
- 					gpio-hog;
- 					gpios = <4 GPIO_ACTIVE_HIGH>;
- 					output-high;
-@@ -1017,7 +1017,7 @@
- 				gpio-controller;
- 				#gpio-cells = <2>;
- 
--				smbus5 {
-+				smbus5-hog {
- 					gpio-hog;
- 					gpios = <4 GPIO_ACTIVE_HIGH>;
- 					output-high;
-@@ -1065,7 +1065,7 @@
- 				gpio-controller;
- 				#gpio-cells = <2>;
- 
--				smbus6 {
-+				smbus6-hog {
- 					gpio-hog;
- 					gpios = <4 GPIO_ACTIVE_HIGH>;
- 					output-high;
-@@ -1090,7 +1090,7 @@
- 				gpio-controller;
- 				#gpio-cells = <2>;
- 
--				smbus7 {
-+				smbus7-hog {
- 					gpio-hog;
- 					gpios = <4 GPIO_ACTIVE_HIGH>;
- 					output-high;
--- 
-2.17.1
+I don't think this driver belongs in drivers/soc, it's not "soc glue
+logic", and it has a userspace interface. Some of the commits even
+references it as a "misc driver". Mind resubmitting it for drivers/misc
+instead?
 
+
+Thanks,
+
+
+-Olof
