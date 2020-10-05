@@ -1,90 +1,80 @@
-From: Billy Tsai <billy_tsai@aspeedtech.com>
-Date: Mon, 5 Oct 2020 01:55:54 +0000
-Subject: [PATCH] ARM: dts: aspeed-g6: Add sgpiom/sgpios node
-In-Reply-To: <6bc40a50-8c21-4642-ad9e-e92f756aac25@www.fastmail.com>
-References: <20200930051113.32465-1-billy_tsai@aspeedtech.com>
- <6bc40a50-8c21-4642-ad9e-e92f756aac25@www.fastmail.com>
-Message-ID: <C4E8563D-DF4D-4BCE-97B3-F6396AD99020@aspeedtech.com>
+From: Chia-Wei, Wang <chiawei_wang@aspeedtech.com>
+Date: Mon, 5 Oct 2020 16:28:03 +0800
+Subject: [PATCH v2 2/5] soc: aspeed: Fix LPC register offsets
+In-Reply-To: <20201005082806.28899-1-chiawei_wang@aspeedtech.com>
+References: <20201005082806.28899-1-chiawei_wang@aspeedtech.com>
+Message-ID: <20201005082806.28899-3-chiawei_wang@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Andrew,
+The LPC register offsets are fixed to adapt to the LPC DTS change,
+where the LPC partitioning is removed.
 
-?On 2020/10/1, 8:36 AM, Andrew Jeffery wrote:
+Signed-off-by: Chia-Wei, Wang <chiawei_wang@aspeedtech.com>
+---
+ drivers/soc/aspeed/aspeed-lpc-ctrl.c  |  6 +++---
+ drivers/soc/aspeed/aspeed-lpc-snoop.c | 11 +++++------
+ 2 files changed, 8 insertions(+), 9 deletions(-)
 
-    Hi Billy,
-    
-    On Wed, 30 Sep 2020, at 14:41, Billy Tsai wrote:
-    > This commit add two sgpiom and two sgpios node into aspeed-g6.dtsi
-    > and change the register range of gpio0 to fix the hardware design.
-    > 
-    > Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
-    > ---
-    >  arch/arm/boot/dts/aspeed-g6.dtsi | 51 +++++++++++++++++++++++++++++++-
-    >  1 file changed, 50 insertions(+), 1 deletion(-)
-    > 
-    > diff --git a/arch/arm/boot/dts/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed-g6.dtsi
-    > index 97ca743363d7..00237daec2a1 100644
-    > --- a/arch/arm/boot/dts/aspeed-g6.dtsi
-    > +++ b/arch/arm/boot/dts/aspeed-g6.dtsi
-    > @@ -357,7 +357,7 @@
-    >  				#gpio-cells = <2>;
-    >  				gpio-controller;
-    >  				compatible = "aspeed,ast2600-gpio";
-    > -				reg = <0x1e780000 0x800>;
-    > +				reg = <0x1e780000 0x500>;
-    >  				interrupts = <GIC_SPI 40 IRQ_TYPE_LEVEL_HIGH>;
-    >  				gpio-ranges = <&pinctrl 0 0 208>;
-    >  				ngpios = <208>;
-    > @@ -365,6 +365,55 @@
-    >  				interrupt-controller;
-    >  				#interrupt-cells = <2>;
-    >  			};
-    > +			sgpiom0: sgpiom at 1e780500 {
-    > +				#gpio-cells = <2>;
-    > +				gpio-controller;
-    > +				compatible = "aspeed,ast2600-sgpiom";
-    > +				reg = <0x1e780500 0x100>;
-    > +				interrupts = <GIC_SPI 51 IRQ_TYPE_LEVEL_HIGH>;
-    > +				ngpios = <128>;
-    > +				clocks = <&syscon ASPEED_CLK_APB2>;
-    > +				interrupt-controller;
-    > +				bus-frequency = <12000000>;
-    > +
-    > +				pinctrl-names = "default";
-    > +				pinctrl-0 = <&pinctrl_sgpm1_default>;
-    > +				status = "disabled";
-    > +			};
-    > +
-    > +			sgpiom1: sgpiom at 1e780600 {
-    > +				#gpio-cells = <2>;
-    > +				gpio-controller;
-    > +				compatible = "aspeed,ast2600-sgpiom";
-    > +				reg = <0x1e780600 0x100>;
-    > +				interrupts = <GIC_SPI 70 IRQ_TYPE_LEVEL_HIGH>;
-    > +				ngpios = <80>;
-    > +				clocks = <&syscon ASPEED_CLK_APB2>;
-    > +				interrupt-controller;
-    > +				bus-frequency = <12000000>;
-    > +
-    > +				pinctrl-names = "default";
-    > +				pinctrl-0 = <&pinctrl_sgpm2_default>;
-    
-   > Have you tried building this on top of upstream? Because neither sgpm2 nor 
-   > sgps2 are supported by the pinctrl driver. If you have patches that implement 
-   > both mux configurations, can you post them too?
-    
-   > Andrew
-
-Sorry for that.
-
-I will resend another patch which includes pinctrl information to fix this error.
-  
-Best Regards,
-Billy Tsai
+diff --git a/drivers/soc/aspeed/aspeed-lpc-ctrl.c b/drivers/soc/aspeed/aspeed-lpc-ctrl.c
+index 01ed21e8bfee..36faa0618ada 100644
+--- a/drivers/soc/aspeed/aspeed-lpc-ctrl.c
++++ b/drivers/soc/aspeed/aspeed-lpc-ctrl.c
+@@ -17,12 +17,12 @@
  
-
+ #define DEVICE_NAME	"aspeed-lpc-ctrl"
+ 
+-#define HICR5 0x0
++#define HICR5 0x80
+ #define HICR5_ENL2H	BIT(8)
+ #define HICR5_ENFWH	BIT(10)
+ 
+-#define HICR7 0x8
+-#define HICR8 0xc
++#define HICR7 0x88
++#define HICR8 0x8c
+ 
+ struct aspeed_lpc_ctrl {
+ 	struct miscdevice	miscdev;
+diff --git a/drivers/soc/aspeed/aspeed-lpc-snoop.c b/drivers/soc/aspeed/aspeed-lpc-snoop.c
+index f3d8d53ab84d..7ce5c9fcc73c 100644
+--- a/drivers/soc/aspeed/aspeed-lpc-snoop.c
++++ b/drivers/soc/aspeed/aspeed-lpc-snoop.c
+@@ -28,26 +28,25 @@
+ #define NUM_SNOOP_CHANNELS 2
+ #define SNOOP_FIFO_SIZE 2048
+ 
+-#define HICR5	0x0
++#define HICR5	0x80
+ #define HICR5_EN_SNP0W		BIT(0)
+ #define HICR5_ENINT_SNP0W	BIT(1)
+ #define HICR5_EN_SNP1W		BIT(2)
+ #define HICR5_ENINT_SNP1W	BIT(3)
+-
+-#define HICR6	0x4
++#define HICR6	0x84
+ #define HICR6_STR_SNP0W		BIT(0)
+ #define HICR6_STR_SNP1W		BIT(1)
+-#define SNPWADR	0x10
++#define SNPWADR	0x90
+ #define SNPWADR_CH0_MASK	GENMASK(15, 0)
+ #define SNPWADR_CH0_SHIFT	0
+ #define SNPWADR_CH1_MASK	GENMASK(31, 16)
+ #define SNPWADR_CH1_SHIFT	16
+-#define SNPWDR	0x14
++#define SNPWDR	0x94
+ #define SNPWDR_CH0_MASK		GENMASK(7, 0)
+ #define SNPWDR_CH0_SHIFT	0
+ #define SNPWDR_CH1_MASK		GENMASK(15, 8)
+ #define SNPWDR_CH1_SHIFT	8
+-#define HICRB	0x80
++#define HICRB	0x100
+ #define HICRB_ENSNP0D		BIT(14)
+ #define HICRB_ENSNP1D		BIT(15)
+ 
+-- 
+2.17.1
 
