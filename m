@@ -1,49 +1,36 @@
 From: Chia-Wei, Wang <chiawei_wang@aspeedtech.com>
-Date: Mon, 5 Oct 2020 16:28:01 +0800
-Subject: [PATCH v2 0/5] Remove LPC register partitioning
-Message-ID: <20201005082806.28899-1-chiawei_wang@aspeedtech.com>
+Date: Mon, 5 Oct 2020 16:28:05 +0800
+Subject: [PATCH v2 4/5] pinctrl: aspeed-g5: Fix LPC register offsets
+In-Reply-To: <20201005082806.28899-1-chiawei_wang@aspeedtech.com>
+References: <20201005082806.28899-1-chiawei_wang@aspeedtech.com>
+Message-ID: <20201005082806.28899-5-chiawei_wang@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The LPC controller has no concept of the BMC and the Host partitions.
-The incorrect partitioning can impose unnecessary range restrictions
-on register access through the syscon regmap interface.
+The LPC register offsets are fixed to adapt to the LPC DTS change,
+where the LPC partitioning is removed.
 
-For instance, HICRB contains the I/O port address configuration
-of KCS channel 1/2. However, the KCS#1/#2 drivers cannot access
-HICRB as it is located at the other LPC partition.
+Signed-off-by: Chia-Wei, Wang <chiawei_wang@aspeedtech.com>
+---
+ drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-In addition, to be backward compatible, the newly added HW control
-bits could be located at any reserved bits over the LPC addressing
-space.
-
-Thereby, this patch series aims to remove the LPC partitioning for
-better driver development and maintenance.
-
-
-Changes since v1:
-	- Add the fix to the aspeed-lpc binding documentation.
-
-Chia-Wei, Wang (5):
-  ARM: dts: Remove LPC BMC and Host partitions
-  soc: aspeed: Fix LPC register offsets
-  ipmi: kcs: aspeed: Fix LPC register offsets
-  pinctrl: aspeed-g5: Fix LPC register offsets
-  dt-bindings: aspeed-lpc: Remove LPC partitioning
-
- .../devicetree/bindings/mfd/aspeed-lpc.txt    |  85 ++---------
- arch/arm/boot/dts/aspeed-g4.dtsi              |  74 ++++------
- arch/arm/boot/dts/aspeed-g5.dtsi              | 135 ++++++++----------
- arch/arm/boot/dts/aspeed-g6.dtsi              | 135 ++++++++----------
- drivers/char/ipmi/kcs_bmc_aspeed.c            |  13 +-
- drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c    |   2 +-
- drivers/soc/aspeed/aspeed-lpc-ctrl.c          |   6 +-
- drivers/soc/aspeed/aspeed-lpc-snoop.c         |  11 +-
- 8 files changed, 176 insertions(+), 285 deletions(-)
-
+diff --git a/drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c b/drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c
+index 0cab4c2576e2..98e62333fa54 100644
+--- a/drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c
++++ b/drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c
+@@ -60,7 +60,7 @@
+ #define COND2		{ ASPEED_IP_SCU, SCU94, GENMASK(1, 0), 0, 0 }
+ 
+ /* LHCR0 is offset from the end of the H8S/2168-compatible registers */
+-#define LHCR0		0x20
++#define LHCR0		0xa0
+ #define GFX064		0x64
+ 
+ #define B14 0
 -- 
 2.17.1
 
