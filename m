@@ -1,26 +1,58 @@
-From: Sergei Shtylyov <sergei.shtylyov@gmail.com>
-Date: Fri, 9 Oct 2020 11:22:38 +0300
-Subject: [PATCH v2 3/3] ARM: dts: add ehci uhci enable in evb dts
-In-Reply-To: <20201009024937.11246-4-ryan_chen@aspeedtech.com>
-References: <20200930040823.26065-4-ryan_chen@aspeedtech.com>
- <20201009024937.11246-1-ryan_chen@aspeedtech.com>
- <20201009024937.11246-4-ryan_chen@aspeedtech.com>
-Message-ID: <4efff4e7-27e0-35be-c112-5377f222a478@gmail.com>
+From: Randy Dunlap <rdunlap@infradead.org>
+Date: Sun, 11 Oct 2020 16:01:31 -0700
+Subject: [PATCH RESEND] drm/aspeed: fix Kconfig warning & subsequent build
+ errors
+Message-ID: <20201011230131.4922-1-rdunlap@infradead.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-HEllo!
+kernel test robot reported build errors (undefined references)
+that didn't make much sense. After reproducing them, there is also
+a Kconfig warning that is the root cause of the build errors, so
+fix that Kconfig problem.
 
-On 09.10.2020 5:49, Ryan Chen wrote:
+Fixes this Kconfig warning:
+WARNING: unmet direct dependencies detected for CMA
+  Depends on [n]: MMU [=n]
+  Selected by [m]:
+  - DRM_ASPEED_GFX [=m] && HAS_IOMEM [=y] && DRM [=m] && OF [=y] && (COMPILE_TEST [=y] || ARCH_ASPEED) && HAVE_DMA_CONTIGUOUS [=y]
 
-> Add EHCI UHCI enable build in aspeed-ast2600-evb.dts
+and these dependent build errors:
+(.text+0x10c8c): undefined reference to `start_isolate_page_range'
+microblaze-linux-ld: (.text+0x10f14): undefined reference to `test_pages_isolated'
+microblaze-linux-ld: (.text+0x10fd0): undefined reference to `undo_isolate_page_range'
 
-    Enable ECHI/UHCI for the  Aspeed AST2600 EVB, perhaps?
+Fixes: 76356a966e33 ("drm: aspeed: Clean up Kconfig options")
+Reported-by: kernel test robot <lkp@intel.com>
+Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+Cc: Joel Stanley <joel@jms.id.au>
+Cc: Andrew Jeffery <andrew@aj.id.au>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Michal Simek <monstr@monstr.eu>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Mike Rapoport <rppt@linux.ibm.com>
+Cc: linux-mm at kvack.org
+Cc: linux-aspeed at lists.ozlabs.org
+Cc: linux-arm-kernel at lists.infradead.org
+Cc: David Airlie <airlied@linux.ie>
+Cc: dri-devel at lists.freedesktop.org
+---
+First sent on 2020-09-07.
+Feel free to fix the Kconfig warning some other way...
 
-> Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
-[...]
+ drivers/gpu/drm/aspeed/Kconfig |    1 +
+ 1 file changed, 1 insertion(+)
 
-MBR, Sergei
+--- linux-next-20201009.orig/drivers/gpu/drm/aspeed/Kconfig
++++ linux-next-20201009/drivers/gpu/drm/aspeed/Kconfig
+@@ -3,6 +3,7 @@ config DRM_ASPEED_GFX
+ 	tristate "ASPEED BMC Display Controller"
+ 	depends on DRM && OF
+ 	depends on (COMPILE_TEST || ARCH_ASPEED)
++	depends on MMU
+ 	select DRM_KMS_HELPER
+ 	select DRM_KMS_CMA_HELPER
+ 	select DMA_CMA if HAVE_DMA_CONTIGUOUS
