@@ -1,74 +1,150 @@
-From: Joel Stanley <joel@jms.id.au>
-Date: Mon, 12 Oct 2020 04:38:56 +0000
-Subject: [PATCH RESEND] drm/aspeed: fix Kconfig warning & subsequent build
- errors
-In-Reply-To: <20201011230131.4922-1-rdunlap@infradead.org>
-References: <20201011230131.4922-1-rdunlap@infradead.org>
-Message-ID: <CACPK8Xej8SoJxrJBL2NB2PnGwjFQ8=oWsfALv2g2r7HxxP9xZQ@mail.gmail.com>
+From: Billy Tsai <billy_tsai@aspeedtech.com>
+Date: Mon, 12 Oct 2020 04:53:12 +0000
+Subject: [PATCH 2/3] Arm: dts: aspeed-g6: Add sgpio node
+In-Reply-To: <CACPK8XdYvSmwdAkBzAO3kC8_PYa3CtPkNb0VxcOhmb2UYz5zDA@mail.gmail.com>
+References: <20201012033150.21056-1-billy_tsai@aspeedtech.com>
+ <20201012033150.21056-3-billy_tsai@aspeedtech.com>
+ <CACPK8XdYvSmwdAkBzAO3kC8_PYa3CtPkNb0VxcOhmb2UYz5zDA@mail.gmail.com>
+Message-ID: <E0B8BD13-86F6-486E-95DF-1038D7F59A8B@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sun, 11 Oct 2020 at 23:01, Randy Dunlap <rdunlap@infradead.org> wrote:
->
-> kernel test robot reported build errors (undefined references)
-> that didn't make much sense. After reproducing them, there is also
-> a Kconfig warning that is the root cause of the build errors, so
-> fix that Kconfig problem.
->
-> Fixes this Kconfig warning:
-> WARNING: unmet direct dependencies detected for CMA
->   Depends on [n]: MMU [=n]
->   Selected by [m]:
->   - DRM_ASPEED_GFX [=m] && HAS_IOMEM [=y] && DRM [=m] && OF [=y] && (COMPILE_TEST [=y] || ARCH_ASPEED) && HAVE_DMA_CONTIGUOUS [=y]
->
-> and these dependent build errors:
-> (.text+0x10c8c): undefined reference to `start_isolate_page_range'
-> microblaze-linux-ld: (.text+0x10f14): undefined reference to `test_pages_isolated'
-> microblaze-linux-ld: (.text+0x10fd0): undefined reference to `undo_isolate_page_range'
->
-> Fixes: 76356a966e33 ("drm: aspeed: Clean up Kconfig options")
-> Reported-by: kernel test robot <lkp@intel.com>
-> Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-> Cc: Joel Stanley <joel@jms.id.au>
-> Cc: Andrew Jeffery <andrew@aj.id.au>
-> Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-> Cc: Michal Simek <monstr@monstr.eu>
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> Cc: Mike Rapoport <rppt@linux.ibm.com>
-> Cc: linux-mm at kvack.org
-> Cc: linux-aspeed at lists.ozlabs.org
-> Cc: linux-arm-kernel at lists.infradead.org
-> Cc: David Airlie <airlied@linux.ie>
-> Cc: dri-devel at lists.freedesktop.org
-> ---
-> First sent on 2020-09-07.
-> Feel free to fix the Kconfig warning some other way...
+Hi Joel,
 
-Reviewed-by: Joel Stanley <joel@jms.id.au>
+Thanks for the review.
 
-Thanks Randy. Sorry for missing it the first time around. I'll merge
-this into drm-misc-next.
+On 2020/10/12, 12:35 PM, Joel Stanley wrote:
 
-Cheers,
+    > On Mon, 12 Oct 2020 at 03:32, Billy Tsai <billy_tsai@aspeedtech.com> wrote:
+    > >
+    > > This patch is used to add sgpiom and sgpios nodes and add compatible
+    > > string for sgpiom.
+    > 
+    > You also need to add sgpios documentation to the bindings docs.
+    > 
+    > Whenever you add new device tree bindings to the kernel tree you
+    > should add documentation for them.
+    > 
+    > When preparing patches for submission, use scripts/checkpatch.pl to
+    > check for common issues. It will warn you if you are adding strings
+    > that are not documented.
+    > 
+    > Cheers,
+    > 
+    > Joel
+    > 
+   Because the driver of sgpios doesn't be implemented, so I don't know how to describe it at sgpio-aspeed.txt. 
+   Can I just add  compatible string " aspeed,ast2600-sgpios " to the document for bypassing the warning of checkpatch?
+    > >
+    > > Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
+    > > ---
+    > >  .../devicetree/bindings/gpio/sgpio-aspeed.txt |  8 +--
+    > >  arch/arm/boot/dts/aspeed-g6.dtsi              | 52 +++++++++++++++++++
+    > >  2 files changed, 57 insertions(+), 3 deletions(-)
+    > >
+    > > diff --git a/Documentation/devicetree/bindings/gpio/sgpio-aspeed.txt b/Documentation/devicetree/bindings/gpio/sgpio-aspeed.txt
+    > > index d4d83916c09d..815d9b5167a5 100644
+    > > --- a/Documentation/devicetree/bindings/gpio/sgpio-aspeed.txt
+    > > +++ b/Documentation/devicetree/bindings/gpio/sgpio-aspeed.txt
+    > > @@ -1,8 +1,10 @@
+    > >  Aspeed SGPIO controller Device Tree Bindings
+    > >  --------------------------------------------
+    > >
+    > > -This SGPIO controller is for ASPEED AST2500 SoC, it supports up to 80 full
+    > > -featured Serial GPIOs. Each of the Serial GPIO pins can be programmed to
+    > > +This SGPIO controller is for ASPEED AST2500/AST2600 SoC, it supports 2 master.
+    > > +One is up to 128 SGPIO input ports and 128 output ports concurrently(after AST2600A1)
+    > > +and Second one is up to 80.
+    > > +Each of the Serial GPIO pins can be programmed to
+    > >  support the following options:
+    > >  - Support interrupt option for each input port and various interrupt
+    > >    sensitivity option (level-high, level-low, edge-high, edge-low)
+    > > @@ -14,7 +16,7 @@ support the following options:
+    > >  Required properties:
+    > >
+    > >  - compatible : Should be one of
+    > > -  "aspeed,ast2400-sgpio", "aspeed,ast2500-sgpio"
+    > > +  "aspeed,ast2400-sgpio", "aspeed,ast2500-sgpio", "aspeed,ast2600-sgpiom"
+    > 
+    > I think we should add sgpiom strings for the ast2500 (and ast2400?)
+    > too, as this is how they should have been named in the first place:
+    > 
+   If I change the document whether I also need to send the patch for sgpio driver and g5/g4.dtsi?
+    > >  - compatible : Should be one of
+    > >    "aspeed,ast2400-sgpio", "aspeed,ast2500-sgpio"
+    > >   "aspeed,ast2400-sgpiom", "aspeed,ast2500-sgpiom", "aspeed,ast2600-sgpiom"
+    > 
+    > 
+    > >  - #gpio-cells : Should be 2, see gpio.txt
+    > >  - reg : Address and length of the register set for the device
+    > >  - gpio-controller : Marks the device node as a GPIO controller
+    > > diff --git a/arch/arm/boot/dts/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed-g6.dtsi
+    > > index ad19dce038ea..cb053a996e87 100644
+    > > --- a/arch/arm/boot/dts/aspeed-g6.dtsi
+    > > +++ b/arch/arm/boot/dts/aspeed-g6.dtsi
+    > > @@ -366,6 +366,58 @@
+    > >                                 #interrupt-cells = <2>;
+    > >                         };
+    > >
+    > > +                       sgpiom0: sgpiom at 1e780500 {
+    > > +                               #gpio-cells = <2>;
+    > > +                               gpio-controller;
+    > > +                               compatible = "aspeed,ast2600-sgpiom";
+    > > +                               reg = <0x1e780500 0x100>;
+    > > +                               interrupts = <GIC_SPI 51 IRQ_TYPE_LEVEL_HIGH>;
+    > > +                               ngpios = <128>;
+    > > +                               clocks = <&syscon ASPEED_CLK_APB2>;
+    > > +                               interrupt-controller;
+    > > +                               bus-frequency = <12000000>;
+    > > +
+    > > +                               pinctrl-names = "default";
+    > > +                               pinctrl-0 = <&pinctrl_sgpm1_default>;
+    > > +                               status = "disabled";
+    > > +                       };
+    > > +
+    > > +                       sgpiom1: sgpiom at 1e780600 {
+    > > +                               #gpio-cells = <2>;
+    > > +                               gpio-controller;
+    > > +                               compatible = "aspeed,ast2600-sgpiom";
+    > > +                               reg = <0x1e780600 0x100>;
+    > > +                               interrupts = <GIC_SPI 70 IRQ_TYPE_LEVEL_HIGH>;
+    > > +                               ngpios = <80>;
+    > > +                               clocks = <&syscon ASPEED_CLK_APB2>;
+    > > +                               interrupt-controller;
+    > > +                               bus-frequency = <12000000>;
+    > > +
+    > > +                               pinctrl-names = "default";
+    > > +                               pinctrl-0 = <&pinctrl_sgpm2_default>;
+    > > +                               status = "disabled";
+    > > +                       };
+    > > +
+    > > +                       sgpios0: sgpios at 1e780700 {
+    > > +                               #gpio-cells = <2>;
+    > > +                               gpio-controller;
+    > > +                               compatible = "aspeed,ast2600-sgpios";
+    > > +                               reg = <0x1e780700 0x40>;
+    > > +                               interrupts = <GIC_SPI 52 IRQ_TYPE_LEVEL_HIGH>;
+    > > +                               clocks = <&syscon ASPEED_CLK_APB2>;
+    > > +                               status = "disabled";
+    > > +                       };
+    > > +
+    > > +                       sgpios1: sgpios at 1e780740 {
+    > > +                               #gpio-cells = <2>;
+    > > +                               gpio-controller;
+    > > +                               compatible = "aspeed,ast2600-sgpios";
+    > > +                               reg = <0x1e780740 0x40>;
+    > > +                               interrupts = <GIC_SPI 71 IRQ_TYPE_LEVEL_HIGH>;
+    > > +                               clocks = <&syscon ASPEED_CLK_APB2>;
+    > > +                               status = "disabled";
+    > > +                       };
+    > > +
+    > >                         gpio1: gpio at 1e780800 {
+    > >                                 #gpio-cells = <2>;
+    > >                                 gpio-controller;
+    > > --
+    > > 2.17.1
+    > >
 
-Joel
-
-
-
->
->  drivers/gpu/drm/aspeed/Kconfig |    1 +
->  1 file changed, 1 insertion(+)
->
-> --- linux-next-20201009.orig/drivers/gpu/drm/aspeed/Kconfig
-> +++ linux-next-20201009/drivers/gpu/drm/aspeed/Kconfig
-> @@ -3,6 +3,7 @@ config DRM_ASPEED_GFX
->         tristate "ASPEED BMC Display Controller"
->         depends on DRM && OF
->         depends on (COMPILE_TEST || ARCH_ASPEED)
-> +       depends on MMU
->         select DRM_KMS_HELPER
->         select DRM_KMS_CMA_HELPER
->         select DMA_CMA if HAVE_DMA_CONTIGUOUS
