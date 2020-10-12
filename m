@@ -1,10 +1,10 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Mon, 12 Oct 2020 04:35:09 +0000
-Subject: [PATCH 2/3] Arm: dts: aspeed-g6: Add sgpio node
-In-Reply-To: <20201012033150.21056-3-billy_tsai@aspeedtech.com>
+Date: Mon, 12 Oct 2020 04:36:18 +0000
+Subject: [PATCH 3/3] pinctrl: aspeed-g6: Add sgpiom2 pinctrl setting
+In-Reply-To: <20201012033150.21056-4-billy_tsai@aspeedtech.com>
 References: <20201012033150.21056-1-billy_tsai@aspeedtech.com>
- <20201012033150.21056-3-billy_tsai@aspeedtech.com>
-Message-ID: <CACPK8XdYvSmwdAkBzAO3kC8_PYa3CtPkNb0VxcOhmb2UYz5zDA@mail.gmail.com>
+ <20201012033150.21056-4-billy_tsai@aspeedtech.com>
+Message-ID: <CACPK8Xc2vo6cvDHBiLN+a+k+wLG2VCynVHZgq6EtZjnNVjNNxA@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -13,127 +13,121 @@ Content-Transfer-Encoding: 7bit
 
 On Mon, 12 Oct 2020 at 03:32, Billy Tsai <billy_tsai@aspeedtech.com> wrote:
 >
-> This patch is used to add sgpiom and sgpios nodes and add compatiable
-> string for sgpiom.
-
-You also need to add sgpios documentation to the bindings docs.
-
-Whenever you add new device tree bindings to the kernel tree you
-should add documentation for them.
-
-When preparing patches for submission, use scripts/checkpatch.pl to
-check for common issues. It will warn you if you are adding strings
-that are not documented.
-
-Cheers,
-
-Joel
-
+> At ast2600a1 we change feature of master sgpio to 2 sets.
+> So this patch is used to add the pinctrl setting of the new sgpio.
 >
 > Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
+
+Reviewed-by: Joel Stanley <joel@jms.id.au>
+
+Linus, can you take this through the pinctrl tree? The patch to the
+will be fine to come through your tree as we rarely update that file.
+
 > ---
->  .../devicetree/bindings/gpio/sgpio-aspeed.txt |  8 +--
->  arch/arm/boot/dts/aspeed-g6.dtsi              | 52 +++++++++++++++++++
->  2 files changed, 57 insertions(+), 3 deletions(-)
+>  arch/arm/boot/dts/aspeed-g6-pinctrl.dtsi   |  5 ++++
+>  drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c | 30 +++++++++++++++++++---
+>  2 files changed, 31 insertions(+), 4 deletions(-)
 >
-> diff --git a/Documentation/devicetree/bindings/gpio/sgpio-aspeed.txt b/Documentation/devicetree/bindings/gpio/sgpio-aspeed.txt
-> index d4d83916c09d..815d9b5167a5 100644
-> --- a/Documentation/devicetree/bindings/gpio/sgpio-aspeed.txt
-> +++ b/Documentation/devicetree/bindings/gpio/sgpio-aspeed.txt
-> @@ -1,8 +1,10 @@
->  Aspeed SGPIO controller Device Tree Bindings
->  --------------------------------------------
+> diff --git a/arch/arm/boot/dts/aspeed-g6-pinctrl.dtsi b/arch/arm/boot/dts/aspeed-g6-pinctrl.dtsi
+> index 7028e21bdd98..a16ecf08e307 100644
+> --- a/arch/arm/boot/dts/aspeed-g6-pinctrl.dtsi
+> +++ b/arch/arm/boot/dts/aspeed-g6-pinctrl.dtsi
+> @@ -862,6 +862,11 @@
+>                 groups = "SGPM1";
+>         };
 >
-> -This SGPIO controller is for ASPEED AST2500 SoC, it supports up to 80 full
-> -featured Serial GPIOs. Each of the Serial GPIO pins can be programmed to
-> +This SGPIO controller is for ASPEED AST2500/AST2600 SoC, it supports 2 master.
-> +One is up to 128 SGPIO input ports and 128 output ports concurrently(after AST2600A1)
-> +and Second one is up to 80.
-> +Each of the Serial GPIO pins can be programmed to
->  support the following options:
->  - Support interrupt option for each input port and various interrupt
->    sensitivity option (level-high, level-low, edge-high, edge-low)
-> @@ -14,7 +16,7 @@ support the following options:
->  Required properties:
+> +       pinctrl_sgpm2_default: sgpm2_default {
+> +               function = "SGPM2";
+> +               groups = "SGPM2";
+> +       };
+> +
+>         pinctrl_sgps1_default: sgps1_default {
+>                 function = "SGPS1";
+>                 groups = "SGPS1";
+> diff --git a/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c b/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
+> index 34803a6c7664..b673a44ffa3b 100644
+> --- a/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
+> +++ b/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
+> @@ -46,8 +46,10 @@
+>  #define SCU620         0x620 /* Disable GPIO Internal Pull-Down #4 */
+>  #define SCU634         0x634 /* Disable GPIO Internal Pull-Down #5 */
+>  #define SCU638         0x638 /* Disable GPIO Internal Pull-Down #6 */
+> +#define SCU690         0x690 /* Multi-function Pin Control #24 */
+>  #define SCU694         0x694 /* Multi-function Pin Control #25 */
+>  #define SCU69C         0x69C /* Multi-function Pin Control #27 */
+> +#define SCU6D0         0x6D0 /* Multi-function Pin Control #28 */
+>  #define SCUC20         0xC20 /* PCIE configuration Setting Control */
 >
->  - compatible : Should be one of
-> -  "aspeed,ast2400-sgpio", "aspeed,ast2500-sgpio"
-> +  "aspeed,ast2400-sgpio", "aspeed,ast2500-sgpio", "aspeed,ast2600-sgpiom"
-
-I think we should add sgpiom strings for the ast2500 (and ast2400?)
-too, as this is how they should have been named in the first place:
-
->  - compatible : Should be one of
->    "aspeed,ast2400-sgpio", "aspeed,ast2500-sgpio"
->   "aspeed,ast2400-sgpiom", "aspeed,ast2500-sgpiom", "aspeed,ast2600-sgpiom"
-
-
->  - #gpio-cells : Should be 2, see gpio.txt
->  - reg : Address and length of the register set for the device
->  - gpio-controller : Marks the device node as a GPIO controller
-> diff --git a/arch/arm/boot/dts/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed-g6.dtsi
-> index ad19dce038ea..cb053a996e87 100644
-> --- a/arch/arm/boot/dts/aspeed-g6.dtsi
-> +++ b/arch/arm/boot/dts/aspeed-g6.dtsi
-> @@ -366,6 +366,58 @@
->                                 #interrupt-cells = <2>;
->                         };
+>  #define ASPEED_G6_NR_PINS 256
+> @@ -81,13 +83,21 @@ FUNC_GROUP_DECL(I2C12, L26, K24);
+>  #define K26 4
+>  SIG_EXPR_LIST_DECL_SESG(K26, MACLINK1, MACLINK1, SIG_DESC_SET(SCU410, 4));
+>  SIG_EXPR_LIST_DECL_SESG(K26, SCL13, I2C13, SIG_DESC_SET(SCU4B0, 4));
+> -PIN_DECL_2(K26, GPIOA4, MACLINK1, SCL13);
+> +/*SGPM2 is A1 Only */
+> +SIG_EXPR_LIST_DECL_SESG(K26, SGPM2CLK, SGPM2, SIG_DESC_SET(SCU6D0, 4),
+> +                         SIG_DESC_CLEAR(SCU410, 4), SIG_DESC_CLEAR(SCU4B0, 4),
+> +                         SIG_DESC_CLEAR(SCU690, 4));
+> +PIN_DECL_3(K26, GPIOA4, SGPM2CLK, MACLINK1, SCL13);
+>  FUNC_GROUP_DECL(MACLINK1, K26);
 >
-> +                       sgpiom0: sgpiom at 1e780500 {
-> +                               #gpio-cells = <2>;
-> +                               gpio-controller;
-> +                               compatible = "aspeed,ast2600-sgpiom";
-> +                               reg = <0x1e780500 0x100>;
-> +                               interrupts = <GIC_SPI 51 IRQ_TYPE_LEVEL_HIGH>;
-> +                               ngpios = <128>;
-> +                               clocks = <&syscon ASPEED_CLK_APB2>;
-> +                               interrupt-controller;
-> +                               bus-frequency = <12000000>;
-> +
-> +                               pinctrl-names = "default";
-> +                               pinctrl-0 = <&pinctrl_sgpm1_default>;
-> +                               status = "disabled";
-> +                       };
-> +
-> +                       sgpiom1: sgpiom at 1e780600 {
-> +                               #gpio-cells = <2>;
-> +                               gpio-controller;
-> +                               compatible = "aspeed,ast2600-sgpiom";
-> +                               reg = <0x1e780600 0x100>;
-> +                               interrupts = <GIC_SPI 70 IRQ_TYPE_LEVEL_HIGH>;
-> +                               ngpios = <80>;
-> +                               clocks = <&syscon ASPEED_CLK_APB2>;
-> +                               interrupt-controller;
-> +                               bus-frequency = <12000000>;
-> +
-> +                               pinctrl-names = "default";
-> +                               pinctrl-0 = <&pinctrl_sgpm2_default>;
-> +                               status = "disabled";
-> +                       };
-> +
-> +                       sgpios0: sgpios at 1e780700 {
-> +                               #gpio-cells = <2>;
-> +                               gpio-controller;
-> +                               compatible = "aspeed,ast2600-sgpios";
-> +                               reg = <0x1e780700 0x40>;
-> +                               interrupts = <GIC_SPI 52 IRQ_TYPE_LEVEL_HIGH>;
-> +                               clocks = <&syscon ASPEED_CLK_APB2>;
-> +                               status = "disabled";
-> +                       };
-> +
-> +                       sgpios1: sgpios at 1e780740 {
-> +                               #gpio-cells = <2>;
-> +                               gpio-controller;
-> +                               compatible = "aspeed,ast2600-sgpios";
-> +                               reg = <0x1e780740 0x40>;
-> +                               interrupts = <GIC_SPI 71 IRQ_TYPE_LEVEL_HIGH>;
-> +                               clocks = <&syscon ASPEED_CLK_APB2>;
-> +                               status = "disabled";
-> +                       };
-> +
->                         gpio1: gpio at 1e780800 {
->                                 #gpio-cells = <2>;
->                                 gpio-controller;
+>  #define L24 5
+>  SIG_EXPR_LIST_DECL_SESG(L24, MACLINK2, MACLINK2, SIG_DESC_SET(SCU410, 5));
+>  SIG_EXPR_LIST_DECL_SESG(L24, SDA13, I2C13, SIG_DESC_SET(SCU4B0, 5));
+> -PIN_DECL_2(L24, GPIOA5, MACLINK2, SDA13);
+> +/*SGPM2 is A1 Only */
+> +SIG_EXPR_LIST_DECL_SESG(L24, SGPM2LD, SGPM2, SIG_DESC_SET(SCU6D0, 5),
+> +                         SIG_DESC_CLEAR(SCU410, 5), SIG_DESC_CLEAR(SCU4B0, 5),
+> +                         SIG_DESC_CLEAR(SCU690, 5));
+> +PIN_DECL_3(L24, GPIOA5, SGPM2LD, MACLINK2, SDA13);
+>  FUNC_GROUP_DECL(MACLINK2, L24);
+>
+>  FUNC_GROUP_DECL(I2C13, K26, L24);
+> @@ -95,16 +105,26 @@ FUNC_GROUP_DECL(I2C13, K26, L24);
+>  #define L23 6
+>  SIG_EXPR_LIST_DECL_SESG(L23, MACLINK3, MACLINK3, SIG_DESC_SET(SCU410, 6));
+>  SIG_EXPR_LIST_DECL_SESG(L23, SCL14, I2C14, SIG_DESC_SET(SCU4B0, 6));
+> -PIN_DECL_2(L23, GPIOA6, MACLINK3, SCL14);
+> +/*SGPM2 is A1 Only */
+> +SIG_EXPR_LIST_DECL_SESG(L23, SGPM2O, SGPM2, SIG_DESC_SET(SCU6D0, 6),
+> +                         SIG_DESC_CLEAR(SCU410, 6), SIG_DESC_CLEAR(SCU4B0, 6),
+> +                         SIG_DESC_CLEAR(SCU690, 6));
+> +PIN_DECL_3(L23, GPIOA6, SGPM2O, MACLINK3, SCL14);
+>  FUNC_GROUP_DECL(MACLINK3, L23);
+>
+>  #define K25 7
+>  SIG_EXPR_LIST_DECL_SESG(K25, MACLINK4, MACLINK4, SIG_DESC_SET(SCU410, 7));
+>  SIG_EXPR_LIST_DECL_SESG(K25, SDA14, I2C14, SIG_DESC_SET(SCU4B0, 7));
+> -PIN_DECL_2(K25, GPIOA7, MACLINK4, SDA14);
+> +/*SGPM2 is A1 Only */
+> +SIG_EXPR_LIST_DECL_SESG(K25, SGPM2I, SGPM2, SIG_DESC_SET(SCU6D0, 7),
+> +                         SIG_DESC_CLEAR(SCU410, 7), SIG_DESC_CLEAR(SCU4B0, 7),
+> +                         SIG_DESC_CLEAR(SCU690, 7));
+> +PIN_DECL_3(K25, GPIOA7, SGPM2I, MACLINK4, SDA14);
+>  FUNC_GROUP_DECL(MACLINK4, K25);
+>
+>  FUNC_GROUP_DECL(I2C14, L23, K25);
+> +/*SGPM2 is A1 Only */
+> +FUNC_GROUP_DECL(SGPM2, K26, L24, L23, K25);
+>
+>  #define J26 8
+>  SIG_EXPR_LIST_DECL_SESG(J26, SALT1, SALT1, SIG_DESC_SET(SCU410, 8));
+> @@ -2060,6 +2080,7 @@ static const struct aspeed_pin_group aspeed_g6_groups[] = {
+>         ASPEED_PINCTRL_GROUP(EMMCG4),
+>         ASPEED_PINCTRL_GROUP(EMMCG8),
+>         ASPEED_PINCTRL_GROUP(SGPM1),
+> +       ASPEED_PINCTRL_GROUP(SGPM2),
+>         ASPEED_PINCTRL_GROUP(SGPS1),
+>         ASPEED_PINCTRL_GROUP(SIOONCTRL),
+>         ASPEED_PINCTRL_GROUP(SIOPBI),
+> @@ -2276,6 +2297,7 @@ static const struct aspeed_pin_function aspeed_g6_functions[] = {
+>         ASPEED_PINCTRL_FUNC(SD1),
+>         ASPEED_PINCTRL_FUNC(SD2),
+>         ASPEED_PINCTRL_FUNC(SGPM1),
+> +       ASPEED_PINCTRL_FUNC(SGPM2),
+>         ASPEED_PINCTRL_FUNC(SGPS1),
+>         ASPEED_PINCTRL_FUNC(SIOONCTRL),
+>         ASPEED_PINCTRL_FUNC(SIOPBI),
 > --
 > 2.17.1
 >
