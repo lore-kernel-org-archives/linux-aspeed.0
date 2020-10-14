@@ -1,110 +1,57 @@
-From: Dylan Hung <dylan_hung@aspeedtech.com>
-Date: Wed, 14 Oct 2020 07:58:44 +0000
-Subject: [PATCH 1/1] net: ftgmac100: Fix Aspeed ast2600 TX hang issue
-In-Reply-To: <CACPK8Xe_O44BUaPCEm2j3ZN+d4q6JbjEttLsiCLbWF6GnaqSPg@mail.gmail.com>
-References: <20201014060632.16085-1-dylan_hung@aspeedtech.com>
- <20201014060632.16085-2-dylan_hung@aspeedtech.com>
- <CACPK8Xe_O44BUaPCEm2j3ZN+d4q6JbjEttLsiCLbWF6GnaqSPg@mail.gmail.com>
-Message-ID: <PS1PR0601MB1849DAC59EDA6A9DB62B4EE09C050@PS1PR0601MB1849.apcprd06.prod.outlook.com>
+From: Stephen Boyd <sboyd@kernel.org>
+Date: Wed, 14 Oct 2020 10:16:13 -0700
+Subject: [PATCH 1/1] clk: aspeed: modify some default clks are critical
+In-Reply-To: <CACPK8Xe-_hTey7hTJjG2-EcDsTN0qOw3bWBcrZZohEK3QOJuvg@mail.gmail.com>
+References: <20200928070108.14040-1-ryan_chen@aspeedtech.com>
+ <20200928070108.14040-2-ryan_chen@aspeedtech.com>
+ <160264382296.310579.9835482254268204873@swboyd.mtv.corp.google.com>
+ <CACPK8Xe-_hTey7hTJjG2-EcDsTN0qOw3bWBcrZZohEK3QOJuvg@mail.gmail.com>
+Message-ID: <160269577311.884498.8429245140509326318@swboyd.mtv.corp.google.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Joel,
+Quoting Joel Stanley (2020-10-13 22:28:00)
+> On Wed, 14 Oct 2020 at 02:50, Stephen Boyd <sboyd@kernel.org> wrote:
+> >
+> > Quoting Ryan Chen (2020-09-28 00:01:08)
+> > > In ASPEED SoC LCLK is LPC clock for all SuperIO device, UART1/UART2 are
+> > > default for Host SuperIO UART device, eSPI clk for Host eSPI bus access
+> > > eSPI slave channel, those clks can't be disable should keep default,
+> > > otherwise will affect Host side access SuperIO and SPI slave device.
+> > >
+> > > Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
+> > > ---
+> >
+> > Is there resolution on this thread?
+> 
+> Not yet.
+> 
+> We have a system where the BMC (management controller) controls some
+> clocks, but the peripherals that it's clocking are outside the BMC's
+> control. In this case, the host processor us using some UARTs and what
+> not independent of any code running on the BMC.
+> 
+> Ryan wants to have them marked as critical so the BMC never powers them down.
+> 
+> However, there are systems that don't use this part of the soc, so for
+> those implementations they are not critical and Linux on the BMC can
+> turn them off.
+> 
+> Do you have any thoughts? Has anyone solved a similar problem already?
+> 
 
-> -----Original Message-----
-> From: Joel Stanley [mailto:joel at jms.id.au]
-> Sent: Wednesday, October 14, 2020 2:41 PM
-> To: Dylan Hung <dylan_hung@aspeedtech.com>
-> Cc: David S . Miller <davem@davemloft.net>; Jakub Kicinski
-> <kuba@kernel.org>; netdev at vger.kernel.org; Linux Kernel Mailing List
-> <linux-kernel@vger.kernel.org>; Po-Yu Chuang <ratbert@faraday-tech.com>;
-> linux-aspeed <linux-aspeed@lists.ozlabs.org>; OpenBMC Maillist
-> <openbmc@lists.ozlabs.org>; BMC-SW <BMC-SW@aspeedtech.com>
-> Subject: Re: [PATCH 1/1] net: ftgmac100: Fix Aspeed ast2600 TX hang issue
-> 
-> On Wed, 14 Oct 2020 at 06:07, Dylan Hung <dylan_hung@aspeedtech.com>
-> wrote:
-> >
-> > The new HW arbitration feature on Aspeed ast2600 will cause MAC TX to
-> > hang when handling scatter-gather DMA.  Disable the problematic
-> > feature by setting MAC register 0x58 bit28 and bit27.
-> 
-> Hi Dylan,
-> 
-> What are the symptoms of this issue? We are seeing this on our systems:
-> 
-> [29376.090637] WARNING: CPU: 0 PID: 9 at net/sched/sch_generic.c:442
-> dev_watchdog+0x2f0/0x2f4
-> [29376.099898] NETDEV WATCHDOG: eth0 (ftgmac100): transmit queue 0
-> timed out
-> 
+Is this critical clocks in DT? Where we want to have different DT for
+different device configurations to indicate that some clks should be
+marked critical so they're never turned off and other times they aren't
+so they're turned off?
 
-May I know your soc version? This issue happens on ast2600 version A1.  The registers to fix this issue are meaningless/reserved on A0 chip, so it is okay to set them on either A0 or A1.
-I was encountering this issue when I was running the iperf TX test.  The symptom is the TX descriptors are consumed, but no complete packet is sent out.
+It also sounds sort of like the protected-clocks binding. Where you
+don't want to touch certain clks depending on the usage configuration of
+the SoC. There is a patch to make that generic that I haven't applied
+because it looks wrong at first glance[1]. Maybe not registering those
+clks to the framework on the configuration that Ryan has is good enough?
 
-> > Signed-off-by: Dylan Hung <dylan_hung@aspeedtech.com>
-> 
-> This fixes support for the ast2600, so we can put:
-> 
-> Fixes: 39bfab8844a0 ("net: ftgmac100: Add support for DT phy-handle
-> property")
-> 
-> Reviewed-by: Joel Stanley <joel@jms.id.au>
-> 
-> > ---
-> >  drivers/net/ethernet/faraday/ftgmac100.c | 5 +++++
-> > drivers/net/ethernet/faraday/ftgmac100.h | 8 ++++++++
-> >  2 files changed, 13 insertions(+)
-> >
-> > diff --git a/drivers/net/ethernet/faraday/ftgmac100.c
-> > b/drivers/net/ethernet/faraday/ftgmac100.c
-> > index 87236206366f..00024dd41147 100644
-> > --- a/drivers/net/ethernet/faraday/ftgmac100.c
-> > +++ b/drivers/net/ethernet/faraday/ftgmac100.c
-> > @@ -1817,6 +1817,11 @@ static int ftgmac100_probe(struct
-> platform_device *pdev)
-> >                 priv->rxdes0_edorr_mask = BIT(30);
-> >                 priv->txdes0_edotr_mask = BIT(30);
-> >                 priv->is_aspeed = true;
-> > +               /* Disable ast2600 problematic HW arbitration */
-> > +               if (of_device_is_compatible(np, "aspeed,ast2600-mac"))
-> {
-> > +                       iowrite32(FTGMAC100_TM_DEFAULT,
-> > +                                 priv->base +
-> FTGMAC100_OFFSET_TM);
-> > +               }
-> >         } else {
-> >                 priv->rxdes0_edorr_mask = BIT(15);
-> >                 priv->txdes0_edotr_mask = BIT(15); diff --git
-> > a/drivers/net/ethernet/faraday/ftgmac100.h
-> > b/drivers/net/ethernet/faraday/ftgmac100.h
-> > index e5876a3fda91..63b3e02fab16 100644
-> > --- a/drivers/net/ethernet/faraday/ftgmac100.h
-> > +++ b/drivers/net/ethernet/faraday/ftgmac100.h
-> > @@ -169,6 +169,14 @@
-> >  #define FTGMAC100_MACCR_FAST_MODE      (1 << 19)
-> >  #define FTGMAC100_MACCR_SW_RST         (1 << 31)
-> >
-> > +/*
-> > + * test mode control register
-> > + */
-> > +#define FTGMAC100_TM_RQ_TX_VALID_DIS (1 << 28) #define
-> > +FTGMAC100_TM_RQ_RR_IDLE_PREV (1 << 27)
-> > +#define FTGMAC100_TM_DEFAULT
-> \
-> > +       (FTGMAC100_TM_RQ_TX_VALID_DIS |
-> FTGMAC100_TM_RQ_RR_IDLE_PREV)
-> 
-> Will aspeed issue an updated datasheet with this register documented?
-> 
-> 
-> > +
-> >  /*
-> >   * PHY control register
-> >   */
-> > --
-> > 2.17.1
-> >
+[1] https://lore.kernel.org/r/20200903040015.5627-2-samuel at sholland.org
