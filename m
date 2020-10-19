@@ -1,21 +1,35 @@
 From: Jakub Kicinski <kuba@kernel.org>
-Date: Fri, 16 Oct 2020 15:37:50 -0700
-Subject: [PATCH 1/1] net: ftgmac100: Fix Aspeed ast2600 TX hang issue
-In-Reply-To: <20201014060632.16085-2-dylan_hung@aspeedtech.com>
-References: <20201014060632.16085-1-dylan_hung@aspeedtech.com>
- <20201014060632.16085-2-dylan_hung@aspeedtech.com>
-Message-ID: <20201016153750.1c46de21@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+Date: Mon, 19 Oct 2020 12:00:40 -0700
+Subject: [PATCH] net: ftgmac100: Fix missing TX-poll issue
+In-Reply-To: <CACPK8Xfn+Gn0PHCfhX-vgLTA6e2=RT+D+fnLF67_1j1iwqh7yg@mail.gmail.com>
+References: <20201019073908.32262-1-dylan_hung@aspeedtech.com>
+ <CACPK8Xfn+Gn0PHCfhX-vgLTA6e2=RT+D+fnLF67_1j1iwqh7yg@mail.gmail.com>
+Message-ID: <20201019120040.3152ea0b@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 14 Oct 2020 14:06:32 +0800 Dylan Hung wrote:
-> The new HW arbitration feature on Aspeed ast2600 will cause MAC TX to
-> hang when handling scatter-gather DMA.  Disable the problematic feature
-> by setting MAC register 0x58 bit28 and bit27.
+On Mon, 19 Oct 2020 08:57:03 +0000 Joel Stanley wrote:
+> > diff --git a/drivers/net/ethernet/faraday/ftgmac100.c b/drivers/net/ethernet/faraday/ftgmac100.c
+> > index 00024dd41147..9a99a87f29f3 100644
+> > --- a/drivers/net/ethernet/faraday/ftgmac100.c
+> > +++ b/drivers/net/ethernet/faraday/ftgmac100.c
+> > @@ -804,7 +804,8 @@ static netdev_tx_t ftgmac100_hard_start_xmit(struct sk_buff *skb,
+> >          * before setting the OWN bit on the first descriptor.
+> >          */
+> >         dma_wmb();
+> > -       first->txdes0 = cpu_to_le32(f_ctl_stat);
+> > +       WRITE_ONCE(first->txdes0, cpu_to_le32(f_ctl_stat));
+> > +       READ_ONCE(first->txdes0);  
 > 
-> Signed-off-by: Dylan Hung <dylan_hung@aspeedtech.com>
+> I understand what you're trying to do here, but I'm not sure that this
+> is the correct way to go about it.
+> 
+> It does cause the compiler to produce a store and then a load.
 
-Applied, thank you.
++1 @first is system memory from dma_alloc_coherent(), right?
+
+You shouldn't have to do this. Is coherent DMA memory broken 
+on your platform?
