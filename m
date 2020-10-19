@@ -1,77 +1,108 @@
-From: Dylan Hung <dylan_hung@aspeedtech.com>
-Date: Mon, 19 Oct 2020 09:19:07 +0000
-Subject: [PATCH] net: ftgmac100: Fix missing TX-poll issue
-In-Reply-To: <CACPK8Xfn+Gn0PHCfhX-vgLTA6e2=RT+D+fnLF67_1j1iwqh7yg@mail.gmail.com>
-References: <20201019073908.32262-1-dylan_hung@aspeedtech.com>
- <CACPK8Xfn+Gn0PHCfhX-vgLTA6e2=RT+D+fnLF67_1j1iwqh7yg@mail.gmail.com>
-Message-ID: <PS1PR0601MB1849B2D01A2D9C2EEF6D58069C1E0@PS1PR0601MB1849.apcprd06.prod.outlook.com>
+From: Rob Herring <robh@kernel.org>
+Date: Mon, 19 Oct 2020 16:22:32 -0500
+Subject: [PATCH 3/3] dt-bindings: Change the meaning of clock-frequency
+In-Reply-To: <20201016062602.20014-4-billy_tsai@aspeedtech.com>
+References: <20201016062602.20014-1-billy_tsai@aspeedtech.com>
+ <20201016062602.20014-4-billy_tsai@aspeedtech.com>
+Message-ID: <20201019212232.GA3619458@bogus>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Joel,
+On Fri, Oct 16, 2020 at 02:26:02PM +0800, Billy Tsai wrote:
+> Integration of the usage of msg-timing and addr-timing to clock-frequency.
+> User can just set it to adjust the peci work efficient.
 
-> -----Original Message-----
-> From: Joel Stanley [mailto:joel at jms.id.au]
-> Sent: Monday, October 19, 2020 4:57 PM
-> To: Dylan Hung <dylan_hung@aspeedtech.com>; Benjamin Herrenschmidt
-> <benh@kernel.crashing.org>
-> Cc: David S . Miller <davem@davemloft.net>; Jakub Kicinski
-> <kuba@kernel.org>; netdev at vger.kernel.org; Linux Kernel Mailing List
-> <linux-kernel@vger.kernel.org>; Po-Yu Chuang <ratbert@faraday-tech.com>;
-> linux-aspeed <linux-aspeed@lists.ozlabs.org>; OpenBMC Maillist
-> <openbmc@lists.ozlabs.org>; BMC-SW <BMC-SW@aspeedtech.com>
-> Subject: Re: [PATCH] net: ftgmac100: Fix missing TX-poll issue
-> 
-> On Mon, 19 Oct 2020 at 07:39, Dylan Hung <dylan_hung@aspeedtech.com>
-> wrote:
-> >
-> > The cpu accesses the register and the memory via different bus/path on
-> > aspeed soc.  So we can not guarantee that the tx-poll command
-> 
-> Just the 2600, or other versions too?
-
-Just the 2600.  And this issue only occurred on Ethernet mac.
+You're breaking the ABI changing this.
 
 > 
-> > (register access) is always behind the tx descriptor (memory).  In
-> > other words, the HW may start working even the data is not yet ready.
-> > By
+> Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
+> ---
+>  .../devicetree/bindings/peci/peci-aspeed.yaml | 56 +++++++++----------
+>  1 file changed, 28 insertions(+), 28 deletions(-)
 > 
-> even if the
+> diff --git a/Documentation/devicetree/bindings/peci/peci-aspeed.yaml b/Documentation/devicetree/bindings/peci/peci-aspeed.yaml
+> index 0f5c2993fe9b..7c6c895784af 100644
+> --- a/Documentation/devicetree/bindings/peci/peci-aspeed.yaml
+> +++ b/Documentation/devicetree/bindings/peci/peci-aspeed.yaml
+> @@ -40,31 +40,33 @@ properties:
+>      maxItems: 1
+>  
+>    clock-frequency:
+> -    # Operation frequency of PECI controller in units of Hz.
+> -    minimum: 187500
+> -    maximum: 24000000
+> -
+> -  msg-timing:
+> -    description: |
+> -      Message timing negotiation period. This value will determine the period
+> -      of message timing negotiation to be issued by PECI controller. The unit
+> -      of the programmed value is four times of PECI clock period.
+> -    allOf:
+> -      - $ref: /schemas/types.yaml#/definitions/uint32
+> -      - minimum: 0
+> -        maximum: 255
+> -        default: 1
+> -
+> -  addr-timing:
+> -    description: |
+> -      Address timing negotiation period. This value will determine the period
+> -      of address timing negotiation to be issued by PECI controller. The unit
+> -      of the programmed value is four times of PECI clock period.
+> -    allOf:
+> -      - $ref: /schemas/types.yaml#/definitions/uint32
+> -      - minimum: 0
+> -        maximum: 255
+> -        default: 1
+> +    # The bit frequency of PECI negotiation stage in units of Hz.
+> +    # Driver will calculate the best divisor setting of msg-timing and
+> +    # addr-timing to meet the value.
+
+Use 'description' rather than comments.
+
+> +    minimum: 2000
+> +    maximum: 2000000
+> +
+> +  # msg-timing:
+> +  #   description: |
+> +  #     Message timing negotiation period. This value will determine the period
+> +  #     of message timing negotiation to be issued by PECI controller. The unit
+> +  #     of the programmed value is four times of PECI clock period.
+> +  #   allOf:
+> +  #     - $ref: /schemas/types.yaml#/definitions/uint32
+> +  #     - minimum: 0
+> +  #       maximum: 255
+> +  #       default: 1
+
+Why is this commented out?
+
+> +
+> +  # addr-timing:
+> +  #   description: |
+> +  #     Address timing negotiation period. This value will determine the period
+> +  #     of address timing negotiation to be issued by PECI controller. The unit
+> +  #     of the programmed value is four times of PECI clock period.
+> +  #   allOf:
+> +  #     - $ref: /schemas/types.yaml#/definitions/uint32
+> +  #     - minimum: 0
+> +  #       maximum: 255
+> +  #       default: 1
+>  
+>    rd-sampling-point:
+>      description: |
+> @@ -114,9 +116,7 @@ examples:
+>              interrupts = <GIC_SPI 38 IRQ_TYPE_LEVEL_HIGH>;
+>              clocks = <&syscon ASPEED_CLK_GATE_REF0CLK>;
+>              resets = <&syscon ASPEED_RESET_PECI>;
+> -            clock-frequency = <24000000>;
+> -            msg-timing = <1>;
+> -            addr-timing = <1>;
+> +            clock-frequency = <2000000>;
+>              rd-sampling-point = <8>;
+>              cmd-timeout-ms = <1000>;
+>          };
+> -- 
+> 2.17.1
 > 
-> > adding a dummy read after the last data write, we can ensure the data
-> > are pushed to the memory, then guarantee the processing sequence
-> >
-> > Signed-off-by: Dylan Hung <dylan_hung@aspeedtech.com>
-> > ---
-> >  drivers/net/ethernet/faraday/ftgmac100.c | 3 ++-
-> >  1 file changed, 2 insertions(+), 1 deletion(-)
-> >
-> > diff --git a/drivers/net/ethernet/faraday/ftgmac100.c
-> > b/drivers/net/ethernet/faraday/ftgmac100.c
-> > index 00024dd41147..9a99a87f29f3 100644
-> > --- a/drivers/net/ethernet/faraday/ftgmac100.c
-> > +++ b/drivers/net/ethernet/faraday/ftgmac100.c
-> > @@ -804,7 +804,8 @@ static netdev_tx_t
-> ftgmac100_hard_start_xmit(struct sk_buff *skb,
-> >          * before setting the OWN bit on the first descriptor.
-> >          */
-> >         dma_wmb();
-> > -       first->txdes0 = cpu_to_le32(f_ctl_stat);
-> > +       WRITE_ONCE(first->txdes0, cpu_to_le32(f_ctl_stat));
-> > +       READ_ONCE(first->txdes0);
-> 
-> I understand what you're trying to do here, but I'm not sure that this is the
-> correct way to go about it.
-> 
-> It does cause the compiler to produce a store and then a load.
-> 
-> >
-> >         /* Update next TX pointer */
-> >         priv->tx_pointer = pointer;
-> > --
-> > 2.17.1
-> >
