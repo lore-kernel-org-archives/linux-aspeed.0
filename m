@@ -1,55 +1,52 @@
-From: Jakub Kicinski <kuba@kernel.org>
-Date: Tue, 20 Oct 2020 10:24:15 -0700
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Tue, 20 Oct 2020 21:49:17 +0200
 Subject: [PATCH] net: ftgmac100: Fix missing TX-poll issue
-In-Reply-To: <3ebaa814fe21eb7b4b25a2c9455a34434e0207d6.camel@kernel.crashing.org>
+In-Reply-To: <PS1PR0601MB1849166CBF6D1678E6E1210C9C1F0@PS1PR0601MB1849.apcprd06.prod.outlook.com>
 References: <20201019073908.32262-1-dylan_hung@aspeedtech.com>
  <CACPK8Xfn+Gn0PHCfhX-vgLTA6e2=RT+D+fnLF67_1j1iwqh7yg@mail.gmail.com>
  <20201019120040.3152ea0b@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
- <1a02e57b6b7d425a19dc59f84091c38ca4edcf47.camel@kernel.crashing.org>
- <20201019195723.41a5591f@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
- <3ebaa814fe21eb7b4b25a2c9455a34434e0207d6.camel@kernel.crashing.org>
-Message-ID: <20201020102415.52b51895@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <PS1PR0601MB1849166CBF6D1678E6E1210C9C1F0@PS1PR0601MB1849.apcprd06.prod.outlook.com>
+Message-ID: <CAK8P3a2pEfbLDWTppVHmGxXduOWPCwBw-8bMY9h3EbEecsVfTA@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, 20 Oct 2020 17:15:42 +1100 Benjamin Herrenschmidt wrote:
-> On Mon, 2020-10-19 at 19:57 -0700, Jakub Kicinski wrote:
-> > > I suspect the problem is that the HW (and yes this would be a HW bug)
-> > > doesn't order the CPU -> memory and the CPU -> MMIO path.
-> > > 
-> > > What I think happens is that the store to txde0 is potentially still in
-> > > a buffer somewhere on its way to memory, gets bypassed by the store to
-> > > MMIO, causing the MAC to try to read the descriptor, and getting the
-> > > "old" data from memory.  
-> > 
-> > I see, but in general this sort of a problem should be resolved by
-> > adding an appropriate memory barrier. And in fact such barrier should
-> > (these days) be implied by a writel (I'm not 100% clear on why this
-> > driver uses iowrite, and if it matters).  
-> 
-> No, a barrier won't solve this I think.
-> 
-> This is a coherency problem at the fabric/interconnect level. I has to
-> do with the way they implemented the DMA path from memory to the
-> ethernet controller using a different "port" of the memory controller
-> than the one used by the CPU, separately from the MMIO path, with no
-> proper ordering between those busses. Old school design .... and
-> broken.
-> 
-> By doing a read back, they probably force the previous write to memory
-> to get past the point where it will be visible to a subsequent DMA read
-> by the ethernet controller.
+On Tue, Oct 20, 2020 at 11:37 AM Dylan Hung <dylan_hung@aspeedtech.com> wrote:
+> > +1 @first is system memory from dma_alloc_coherent(), right?
+> >
+> > You shouldn't have to do this. Is coherent DMA memory broken on your
+> > platform?
+>
+> It is about the arbitration on the DRAM controller.  There are two queues in the dram controller, one is for the CPU access and the other is for the HW engines.
+> When CPU issues a store command, the dram controller just acknowledges cpu's request and pushes the request into the queue.  Then CPU triggers the HW MAC engine, the HW engine starts to fetch the DMA memory.
+> But since the cpu's request may still stay in the queue, the HW engine may fetch the wrong data.
 
-Thanks for the explanation. How wonderful :/
+There is still something missing in the explanation: The iowrite32()
+only tells the
+device that it should check the queue, but not where the data is. I would expect
+the device to either see the correct data that was marked valid by the
+'dma_wmb();first->txdes0 = cpu_to_le32(f_ctl_stat);' operation, or it would see
+the old f_ctl_stat value telling it that the data is not yet valid and
+not look at
+the rest of the descriptor. In the second case you would see the data
+not getting sent out until the next start_xmit(), but the device should not
+fetch wrong data.
 
-It'd still be highly, highly preferable if the platform was conforming
-to the Linux memory model. IO successors (iowrite32 / writel) must
-ensure previous DRAM writes had completed. For performance sensitive
-ops, which don't require ordering we have writel_relaxed etc.
+There are two possible scenarios in which your patch would still help:
 
-I assume the DRAM controller queue is a straight FIFO and we don't have
-to worry about hitting the same address, so how about we add a read
-of some known uncached address in iowrite32 / writel?
+a) the dma_wmb() does not serialize the stores as seen by DMA the
+    way it is supposed to, so the device can observe the new value of txdec0
+    before it observes the correct data.
+
+b) The txdes0 field sometimes contains stale data that marks the
+    descriptor as valid before the correct data is written. This field
+    should have been set in ftgmac100_tx_complete_packet() earlier
+
+If either of the two is the case, then the READ_ONCE() would just
+introduce a long delay before the iowrite32() that makes it more likely
+that the data is there, but the inconsistent state would still be observable
+by the device if it is still working on previous frames.
+
+        Arnd
