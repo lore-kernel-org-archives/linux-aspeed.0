@@ -1,94 +1,43 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Tue, 20 Oct 2020 04:13:49 +0000
-Subject: [PATCH 1/4] ftgmac100: Fix race issue on TX descriptor[0]
-In-Reply-To: <be7a978c48c9f1c6c29583350dee6168385c3039.camel@kernel.crashing.org>
+Date: Tue, 20 Oct 2020 04:14:42 +0000
+Subject: [PATCH 4/4] ftgmac100: Restart MAC HW once
+In-Reply-To: <20201019085717.32413-5-dylan_hung@aspeedtech.com>
 References: <20201019085717.32413-1-dylan_hung@aspeedtech.com>
- <20201019085717.32413-2-dylan_hung@aspeedtech.com>
- <be7a978c48c9f1c6c29583350dee6168385c3039.camel@kernel.crashing.org>
-Message-ID: <CACPK8XdECaKwdQgWFQ=sRBiCjDLXHtMKo=o-xQZPmMZyevOukQ@mail.gmail.com>
+ <20201019085717.32413-5-dylan_hung@aspeedtech.com>
+Message-ID: <CACPK8Xc8NSBzN+LnZ=b5t7ODjLg9B6m2WDdR-C9SRWaDEXwOtQ@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, 19 Oct 2020 at 23:20, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
+On Mon, 19 Oct 2020 at 08:57, Dylan Hung <dylan_hung@aspeedtech.com> wrote:
 >
-> On Mon, 2020-10-19 at 16:57 +0800, Dylan Hung wrote:
-> > These rules must be followed when accessing the TX descriptor:
-> >
-> > 1. A TX descriptor is "cleanable" only when its value is non-zero
-> > and the owner bit is set to "software"
+> The interrupt handler may set the flag to reset the mac in the future,
+> but that flag is not cleared once the reset has occured.
 >
-> Can you elaborate ? What is the point of that change ? The owner bit
-> should be sufficient, why do we need to check other fields ?
+> Fixes: 10cbd6407609 ("ftgmac100: Rework NAPI & interrupts handling")
+> Signed-off-by: Dylan Hung <dylan_hung@aspeedtech.com>
+> Signed-off-by: Joel Stanley <joel@jms.id.au>
 
-I would like Dylan to clarify too. The datasheet has a footnote below
-the descriptor layout:
+Reviewed-by: Joel Stanley <joel@jms.id.au>
 
- - TXDES#0: Bits 27 ~ 14 are valid only when FTS = 1
- - TXDES#1: Bits 31 ~ 0 are valid only when FTS = 1
-
-So the ownership bit (31) is not valid unless FTS is set. However,
-this isn't what his patch does. It adds checks for EDOTR.
-
+> ---
+>  drivers/net/ethernet/faraday/ftgmac100.c | 1 +
+>  1 file changed, 1 insertion(+)
 >
-> > 2. A TX descriptor is "writable" only when its value is zero
-> > regardless the edotr mask.
+> diff --git a/drivers/net/ethernet/faraday/ftgmac100.c b/drivers/net/ethernet/faraday/ftgmac100.c
+> index 0c67fc3e27df..57736b049de3 100644
+> --- a/drivers/net/ethernet/faraday/ftgmac100.c
+> +++ b/drivers/net/ethernet/faraday/ftgmac100.c
+> @@ -1326,6 +1326,7 @@ static int ftgmac100_poll(struct napi_struct *napi, int budget)
+>          */
+>         if (unlikely(priv->need_mac_restart)) {
+>                 ftgmac100_start_hw(priv);
+> +               priv->need_mac_restart = false;
 >
-> Again, why is that ? Can you elaborate ? What race are you trying to
-> address here ?
->
-> Cheers,
-> Ben.
->
-> > Fixes: 52c0cae87465 ("ftgmac100: Remove tx descriptor accessors")
-> > Signed-off-by: Dylan Hung <dylan_hung@aspeedtech.com>
-> > Signed-off-by: Joel Stanley <joel@jms.id.au>
-> > ---
-> >  drivers/net/ethernet/faraday/ftgmac100.c | 10 ++++++++++
-> >  1 file changed, 10 insertions(+)
-> >
-> > diff --git a/drivers/net/ethernet/faraday/ftgmac100.c
-> > b/drivers/net/ethernet/faraday/ftgmac100.c
-> > index 00024dd41147..7cacbe4aecb7 100644
-> > --- a/drivers/net/ethernet/faraday/ftgmac100.c
-> > +++ b/drivers/net/ethernet/faraday/ftgmac100.c
-> > @@ -647,6 +647,9 @@ static bool ftgmac100_tx_complete_packet(struct
-> > ftgmac100 *priv)
-> >       if (ctl_stat & FTGMAC100_TXDES0_TXDMA_OWN)
-> >               return false;
-> >
-> > +     if ((ctl_stat & ~(priv->txdes0_edotr_mask)) == 0)
-> > +             return false;
-> > +
-> >       skb = priv->tx_skbs[pointer];
-> >       netdev->stats.tx_packets++;
-> >       netdev->stats.tx_bytes += skb->len;
-> > @@ -756,6 +759,9 @@ static netdev_tx_t
-> > ftgmac100_hard_start_xmit(struct sk_buff *skb,
-> >       pointer = priv->tx_pointer;
-> >       txdes = first = &priv->txdes[pointer];
-> >
-> > +     if (le32_to_cpu(txdes->txdes0) & ~priv->txdes0_edotr_mask)
-> > +             goto drop;
-> > +
-> >       /* Setup it up with the packet head. Don't write the head to
-> > the
-> >        * ring just yet
-> >        */
-> > @@ -787,6 +793,10 @@ static netdev_tx_t
-> > ftgmac100_hard_start_xmit(struct sk_buff *skb,
-> >               /* Setup descriptor */
-> >               priv->tx_skbs[pointer] = skb;
-> >               txdes = &priv->txdes[pointer];
-> > +
-> > +             if (le32_to_cpu(txdes->txdes0) & ~priv-
-> > >txdes0_edotr_mask)
-> > +                     goto dma_err;
-> > +
-> >               ctl_stat = ftgmac100_base_tx_ctlstat(priv, pointer);
-> >               ctl_stat |= FTGMAC100_TXDES0_TXDMA_OWN;
-> >               ctl_stat |= FTGMAC100_TXDES0_TXBUF_SIZE(len);
+>                 /* Re-enable "bad" interrupts */
+>                 ftgmac100_write(FTGMAC100_INT_BAD, priv->base + FTGMAC100_OFFSET_IER);
+> --
+> 2.17.1
 >
