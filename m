@@ -1,52 +1,44 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Tue, 20 Oct 2020 21:49:17 +0200
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Wed, 21 Oct 2020 09:05:34 +1100
 Subject: [PATCH] net: ftgmac100: Fix missing TX-poll issue
-In-Reply-To: <PS1PR0601MB1849166CBF6D1678E6E1210C9C1F0@PS1PR0601MB1849.apcprd06.prod.outlook.com>
+In-Reply-To: <f75555e09d47476a871669ffe017c4f8@AcuMS.aculab.com>
 References: <20201019073908.32262-1-dylan_hung@aspeedtech.com>
  <CACPK8Xfn+Gn0PHCfhX-vgLTA6e2=RT+D+fnLF67_1j1iwqh7yg@mail.gmail.com>
  <20201019120040.3152ea0b@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
  <PS1PR0601MB1849166CBF6D1678E6E1210C9C1F0@PS1PR0601MB1849.apcprd06.prod.outlook.com>
-Message-ID: <CAK8P3a2pEfbLDWTppVHmGxXduOWPCwBw-8bMY9h3EbEecsVfTA@mail.gmail.com>
+ <f75555e09d47476a871669ffe017c4f8@AcuMS.aculab.com>
+Message-ID: <7b44608bed9eccad80457cbfdfcca9043aae56f2.camel@kernel.crashing.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Oct 20, 2020 at 11:37 AM Dylan Hung <dylan_hung@aspeedtech.com> wrote:
-> > +1 @first is system memory from dma_alloc_coherent(), right?
-> >
-> > You shouldn't have to do this. Is coherent DMA memory broken on your
-> > platform?
->
-> It is about the arbitration on the DRAM controller.  There are two queues in the dram controller, one is for the CPU access and the other is for the HW engines.
-> When CPU issues a store command, the dram controller just acknowledges cpu's request and pushes the request into the queue.  Then CPU triggers the HW MAC engine, the HW engine starts to fetch the DMA memory.
-> But since the cpu's request may still stay in the queue, the HW engine may fetch the wrong data.
+On Tue, 2020-10-20 at 13:15 +0000, David Laight wrote:
+> That rather depends where the data is 'stuck'.
+> 
+> An old sparc cpu would flush the cpu store buffer before the read.
+> But a modern x86 cpu will satisfy the read from the store buffer
+> for cached data.
+> 
+> If the write is 'posted' on a PCI(e) bus then the read can't overtake it.
+> But that is a memory access so shouldn't be to a PCI(e) address.
+> 
+> Shouldn't dma_wb() actually force your 'cpu to dram' queue be flushed?
+> In which case you need one after writing the ring descriptor and
+> before the poke of the mac engine.
+> 
+> The barrier before the descriptor write only needs to guarantee
+> ordering of the writes - it can probably be a lighter barrier?
+> 
+> It might be that your dma_wmb() needs to do a write+read of
+> an uncached DRAM location in order to empty the cpu to dram queue.
 
-There is still something missing in the explanation: The iowrite32()
-only tells the
-device that it should check the queue, but not where the data is. I would expect
-the device to either see the correct data that was marked valid by the
-'dma_wmb();first->txdes0 = cpu_to_le32(f_ctl_stat);' operation, or it would see
-the old f_ctl_stat value telling it that the data is not yet valid and
-not look at
-the rest of the descriptor. In the second case you would see the data
-not getting sent out until the next start_xmit(), but the device should not
-fetch wrong data.
+This is a specific bug with how a specific IP block is hooked up in
+those SOCs, I wouldn't bloat the global dma_wmb for that. The read back
+in the driver with appropriate comment should be enough.
 
-There are two possible scenarios in which your patch would still help:
+Cheers,
+Ben.
 
-a) the dma_wmb() does not serialize the stores as seen by DMA the
-    way it is supposed to, so the device can observe the new value of txdec0
-    before it observes the correct data.
 
-b) The txdes0 field sometimes contains stale data that marks the
-    descriptor as valid before the correct data is written. This field
-    should have been set in ftgmac100_tx_complete_packet() earlier
-
-If either of the two is the case, then the READ_ONCE() would just
-introduce a long delay before the iowrite32() that makes it more likely
-that the data is there, but the inconsistent state would still be observable
-by the device if it is still working on previous frames.
-
-        Arnd
