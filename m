@@ -1,57 +1,50 @@
-From: Dylan Hung <dylan_hung@aspeedtech.com>
-Date: Tue, 20 Oct 2020 06:14:52 +0000
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Tue, 20 Oct 2020 17:15:42 +1100
 Subject: [PATCH] net: ftgmac100: Fix missing TX-poll issue
-In-Reply-To: <20201019120040.3152ea0b@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+In-Reply-To: <20201019195723.41a5591f@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
 References: <20201019073908.32262-1-dylan_hung@aspeedtech.com>
  <CACPK8Xfn+Gn0PHCfhX-vgLTA6e2=RT+D+fnLF67_1j1iwqh7yg@mail.gmail.com>
  <20201019120040.3152ea0b@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
-Message-ID: <PS1PR0601MB1849166CBF6D1678E6E1210C9C1F0@PS1PR0601MB1849.apcprd06.prod.outlook.com>
+ <1a02e57b6b7d425a19dc59f84091c38ca4edcf47.camel@kernel.crashing.org>
+ <20201019195723.41a5591f@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+Message-ID: <3ebaa814fe21eb7b4b25a2c9455a34434e0207d6.camel@kernel.crashing.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-> -----Original Message-----
-> From: Jakub Kicinski [mailto:kuba at kernel.org]
-> Sent: Tuesday, October 20, 2020 3:01 AM
-> To: Joel Stanley <joel@jms.id.au>
-> Cc: Dylan Hung <dylan_hung@aspeedtech.com>; Benjamin Herrenschmidt
-> <benh@kernel.crashing.org>; David S . Miller <davem@davemloft.net>;
-> netdev at vger.kernel.org; Linux Kernel Mailing List
-> <linux-kernel@vger.kernel.org>; Po-Yu Chuang <ratbert@faraday-tech.com>;
-> linux-aspeed <linux-aspeed@lists.ozlabs.org>; OpenBMC Maillist
-> <openbmc@lists.ozlabs.org>; BMC-SW <BMC-SW@aspeedtech.com>
-> Subject: Re: [PATCH] net: ftgmac100: Fix missing TX-poll issue
+On Mon, 2020-10-19 at 19:57 -0700, Jakub Kicinski wrote:
+> > I suspect the problem is that the HW (and yes this would be a HW bug)
+> > doesn't order the CPU -> memory and the CPU -> MMIO path.
+> > 
+> > What I think happens is that the store to txde0 is potentially still in
+> > a buffer somewhere on its way to memory, gets bypassed by the store to
+> > MMIO, causing the MAC to try to read the descriptor, and getting the
+> > "old" data from memory.
 > 
-> On Mon, 19 Oct 2020 08:57:03 +0000 Joel Stanley wrote:
-> > > diff --git a/drivers/net/ethernet/faraday/ftgmac100.c
-> > > b/drivers/net/ethernet/faraday/ftgmac100.c
-> > > index 00024dd41147..9a99a87f29f3 100644
-> > > --- a/drivers/net/ethernet/faraday/ftgmac100.c
-> > > +++ b/drivers/net/ethernet/faraday/ftgmac100.c
-> > > @@ -804,7 +804,8 @@ static netdev_tx_t
-> ftgmac100_hard_start_xmit(struct sk_buff *skb,
-> > >          * before setting the OWN bit on the first descriptor.
-> > >          */
-> > >         dma_wmb();
-> > > -       first->txdes0 = cpu_to_le32(f_ctl_stat);
-> > > +       WRITE_ONCE(first->txdes0, cpu_to_le32(f_ctl_stat));
-> > > +       READ_ONCE(first->txdes0);
-> >
-> > I understand what you're trying to do here, but I'm not sure that this
-> > is the correct way to go about it.
-> >
-> > It does cause the compiler to produce a store and then a load.
+> I see, but in general this sort of a problem should be resolved by
+> adding an appropriate memory barrier. And in fact such barrier should
+> (these days) be implied by a writel (I'm not 100% clear on why this
+> driver uses iowrite, and if it matters).
 
-Yes, the load instruction here is to guarantee the previous store is indeed pushed onto the physical memory.
+No, a barrier won't solve this I think.
 
-> 
-> +1 @first is system memory from dma_alloc_coherent(), right?
-> 
-> You shouldn't have to do this. Is coherent DMA memory broken on your
-> platform?
+This is a coherency problem at the fabric/interconnect level. I has to
+do with the way they implemented the DMA path from memory to the
+ethernet controller using a different "port" of the memory controller
+than the one used by the CPU, separately from the MMIO path, with no
+proper ordering between those busses. Old school design .... and
+broken.
 
-It is about the arbitration on the DRAM controller.  There are two queues in the dram controller, one is for the CPU access and the other is for the HW engines.
-When CPU issues a store command, the dram controller just acknowledges cpu's request and pushes the request into the queue.  Then CPU triggers the HW MAC engine, the HW engine starts to fetch the DMA memory.
-But since the cpu's request may still stay in the queue, the HW engine may fetch the wrong data.
+By doing a read back, they probably force the previous write to memory
+to get past the point where it will be visible to a subsequent DMA read
+by the ethernet controller.
+
+> > It's ... fishy, but that isn't the first time an Aspeed chip has that
+> > type of bug (there's a similar one in the USB device controler iirc).
+
+Cheers,
+Ben.
+
+
