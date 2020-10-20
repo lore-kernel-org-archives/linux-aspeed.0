@@ -1,60 +1,94 @@
-From: Jakub Kicinski <kuba@kernel.org>
-Date: Mon, 19 Oct 2020 19:57:23 -0700
-Subject: [PATCH] net: ftgmac100: Fix missing TX-poll issue
-In-Reply-To: <1a02e57b6b7d425a19dc59f84091c38ca4edcf47.camel@kernel.crashing.org>
-References: <20201019073908.32262-1-dylan_hung@aspeedtech.com>
- <CACPK8Xfn+Gn0PHCfhX-vgLTA6e2=RT+D+fnLF67_1j1iwqh7yg@mail.gmail.com>
- <20201019120040.3152ea0b@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
- <1a02e57b6b7d425a19dc59f84091c38ca4edcf47.camel@kernel.crashing.org>
-Message-ID: <20201019195723.41a5591f@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+From: Joel Stanley <joel@jms.id.au>
+Date: Tue, 20 Oct 2020 04:13:49 +0000
+Subject: [PATCH 1/4] ftgmac100: Fix race issue on TX descriptor[0]
+In-Reply-To: <be7a978c48c9f1c6c29583350dee6168385c3039.camel@kernel.crashing.org>
+References: <20201019085717.32413-1-dylan_hung@aspeedtech.com>
+ <20201019085717.32413-2-dylan_hung@aspeedtech.com>
+ <be7a978c48c9f1c6c29583350dee6168385c3039.camel@kernel.crashing.org>
+Message-ID: <CACPK8XdECaKwdQgWFQ=sRBiCjDLXHtMKo=o-xQZPmMZyevOukQ@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, 20 Oct 2020 10:23:41 +1100 Benjamin Herrenschmidt wrote:
-> On Mon, 2020-10-19 at 12:00 -0700, Jakub Kicinski wrote:
-> > On Mon, 19 Oct 2020 08:57:03 +0000 Joel Stanley wrote:  
-> > > > diff --git a/drivers/net/ethernet/faraday/ftgmac100.c
-> > > > b/drivers/net/ethernet/faraday/ftgmac100.c
-> > > > index 00024dd41147..9a99a87f29f3 100644
-> > > > --- a/drivers/net/ethernet/faraday/ftgmac100.c
-> > > > +++ b/drivers/net/ethernet/faraday/ftgmac100.c
-> > > > @@ -804,7 +804,8 @@ static netdev_tx_t
-> > > > ftgmac100_hard_start_xmit(struct sk_buff *skb,
-> > > >          * before setting the OWN bit on the first descriptor.
-> > > >          */
-> > > >         dma_wmb();
-> > > > -       first->txdes0 = cpu_to_le32(f_ctl_stat);
-> > > > +       WRITE_ONCE(first->txdes0, cpu_to_le32(f_ctl_stat));
-> > > > +       READ_ONCE(first->txdes0);    
-> > > 
-> > > I understand what you're trying to do here, but I'm not sure that
-> > > this
-> > > is the correct way to go about it.
-> > > 
-> > > It does cause the compiler to produce a store and then a load.  
-> > 
-> > +1 @first is system memory from dma_alloc_coherent(), right?
-> > 
-> > You shouldn't have to do this. Is coherent DMA memory broken 
-> > on your platform?  
-> 
-> I suspect the problem is that the HW (and yes this would be a HW bug)
-> doesn't order the CPU -> memory and the CPU -> MMIO path.
-> 
-> What I think happens is that the store to txde0 is potentially still in
-> a buffer somewhere on its way to memory, gets bypassed by the store to
-> MMIO, causing the MAC to try to read the descriptor, and getting the
-> "old" data from memory.
+On Mon, 19 Oct 2020 at 23:20, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+>
+> On Mon, 2020-10-19 at 16:57 +0800, Dylan Hung wrote:
+> > These rules must be followed when accessing the TX descriptor:
+> >
+> > 1. A TX descriptor is "cleanable" only when its value is non-zero
+> > and the owner bit is set to "software"
+>
+> Can you elaborate ? What is the point of that change ? The owner bit
+> should be sufficient, why do we need to check other fields ?
 
-I see, but in general this sort of a problem should be resolved by
-adding an appropriate memory barrier. And in fact such barrier should
-(these days) be implied by a writel (I'm not 100% clear on why this
-driver uses iowrite, and if it matters).
+I would like Dylan to clarify too. The datasheet has a footnote below
+the descriptor layout:
 
-> It's ... fishy, but that isn't the first time an Aspeed chip has that
-> type of bug (there's a similar one in the USB device controler iirc).
+ - TXDES#0: Bits 27 ~ 14 are valid only when FTS = 1
+ - TXDES#1: Bits 31 ~ 0 are valid only when FTS = 1
 
-Argh.
+So the ownership bit (31) is not valid unless FTS is set. However,
+this isn't what his patch does. It adds checks for EDOTR.
+
+>
+> > 2. A TX descriptor is "writable" only when its value is zero
+> > regardless the edotr mask.
+>
+> Again, why is that ? Can you elaborate ? What race are you trying to
+> address here ?
+>
+> Cheers,
+> Ben.
+>
+> > Fixes: 52c0cae87465 ("ftgmac100: Remove tx descriptor accessors")
+> > Signed-off-by: Dylan Hung <dylan_hung@aspeedtech.com>
+> > Signed-off-by: Joel Stanley <joel@jms.id.au>
+> > ---
+> >  drivers/net/ethernet/faraday/ftgmac100.c | 10 ++++++++++
+> >  1 file changed, 10 insertions(+)
+> >
+> > diff --git a/drivers/net/ethernet/faraday/ftgmac100.c
+> > b/drivers/net/ethernet/faraday/ftgmac100.c
+> > index 00024dd41147..7cacbe4aecb7 100644
+> > --- a/drivers/net/ethernet/faraday/ftgmac100.c
+> > +++ b/drivers/net/ethernet/faraday/ftgmac100.c
+> > @@ -647,6 +647,9 @@ static bool ftgmac100_tx_complete_packet(struct
+> > ftgmac100 *priv)
+> >       if (ctl_stat & FTGMAC100_TXDES0_TXDMA_OWN)
+> >               return false;
+> >
+> > +     if ((ctl_stat & ~(priv->txdes0_edotr_mask)) == 0)
+> > +             return false;
+> > +
+> >       skb = priv->tx_skbs[pointer];
+> >       netdev->stats.tx_packets++;
+> >       netdev->stats.tx_bytes += skb->len;
+> > @@ -756,6 +759,9 @@ static netdev_tx_t
+> > ftgmac100_hard_start_xmit(struct sk_buff *skb,
+> >       pointer = priv->tx_pointer;
+> >       txdes = first = &priv->txdes[pointer];
+> >
+> > +     if (le32_to_cpu(txdes->txdes0) & ~priv->txdes0_edotr_mask)
+> > +             goto drop;
+> > +
+> >       /* Setup it up with the packet head. Don't write the head to
+> > the
+> >        * ring just yet
+> >        */
+> > @@ -787,6 +793,10 @@ static netdev_tx_t
+> > ftgmac100_hard_start_xmit(struct sk_buff *skb,
+> >               /* Setup descriptor */
+> >               priv->tx_skbs[pointer] = skb;
+> >               txdes = &priv->txdes[pointer];
+> > +
+> > +             if (le32_to_cpu(txdes->txdes0) & ~priv-
+> > >txdes0_edotr_mask)
+> > +                     goto dma_err;
+> > +
+> >               ctl_stat = ftgmac100_base_tx_ctlstat(priv, pointer);
+> >               ctl_stat |= FTGMAC100_TXDES0_TXDMA_OWN;
+> >               ctl_stat |= FTGMAC100_TXDES0_TXBUF_SIZE(len);
+>
