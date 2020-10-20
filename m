@@ -1,79 +1,74 @@
-From: Joel Stanley <joel@jms.id.au>
-Date: Wed, 21 Oct 2020 08:36:39 +1030
-Subject: [PATCH] net: ftgmac100: Ensure tx descriptor updates are visible
-Message-ID: <20201020220639.130696-1-joel@jms.id.au>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Wed, 21 Oct 2020 09:10:02 +1100
+Subject: [PATCH] net: ftgmac100: Fix missing TX-poll issue
+In-Reply-To: <CAK8P3a2pEfbLDWTppVHmGxXduOWPCwBw-8bMY9h3EbEecsVfTA@mail.gmail.com>
+References: <20201019073908.32262-1-dylan_hung@aspeedtech.com>
+ <CACPK8Xfn+Gn0PHCfhX-vgLTA6e2=RT+D+fnLF67_1j1iwqh7yg@mail.gmail.com>
+ <20201019120040.3152ea0b@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <PS1PR0601MB1849166CBF6D1678E6E1210C9C1F0@PS1PR0601MB1849.apcprd06.prod.outlook.com>
+ <CAK8P3a2pEfbLDWTppVHmGxXduOWPCwBw-8bMY9h3EbEecsVfTA@mail.gmail.com>
+Message-ID: <32bfb619bbb3cd6f52f9e5da205673702fed228f.camel@kernel.crashing.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-We must ensure the tx descriptor updates are visible before updating
-the tx pointer.
+On Tue, 2020-10-20 at 21:49 +0200, Arnd Bergmann wrote:
+> On Tue, Oct 20, 2020 at 11:37 AM Dylan Hung <dylan_hung@aspeedtech.com> wrote:
+> > > +1 @first is system memory from dma_alloc_coherent(), right?
+> > > 
+> > > You shouldn't have to do this. Is coherent DMA memory broken on your
+> > > platform?
+> > 
+> > It is about the arbitration on the DRAM controller.  There are two queues in the dram controller, one is for the CPU access and the other is for the HW engines.
+> > When CPU issues a store command, the dram controller just acknowledges cpu's request and pushes the request into the queue.  Then CPU triggers the HW MAC engine, the HW engine starts to fetch the DMA memory.
+> > But since the cpu's request may still stay in the queue, the HW engine may fetch the wrong data.
 
-This resolves the tx hangs observed on the 2600 when running iperf:
+Actually, I take back what I said earlier, the above seems to imply
+this is more generic.
 
-root at ast2600:~# iperf3 -c 192.168.86.146 -R
-Connecting to host 192.168.86.146, port 5201
-Reverse mode, remote host 192.168.86.146 is sending
-[  5] local 192.168.86.173 port 43886 connected to 192.168.86.146 port 5201
-[ ID] Interval           Transfer     Bitrate
-[  5]   0.00-1.00   sec  90.7 MBytes   760 Mbits/sec
-[  5]   1.00-2.00   sec  91.7 MBytes   769 Mbits/sec
-[  5]   2.00-3.00   sec  91.7 MBytes   770 Mbits/sec
-[  5]   3.00-4.00   sec  91.7 MBytes   769 Mbits/sec
-[  5]   4.00-5.00   sec  91.8 MBytes   771 Mbits/sec
-[  5]   5.00-6.00   sec  91.8 MBytes   771 Mbits/sec
-[  5]   6.00-7.00   sec  91.9 MBytes   771 Mbits/sec
-[  5]   7.00-8.00   sec  91.4 MBytes   767 Mbits/sec
-[  5]   8.00-9.00   sec  91.3 MBytes   766 Mbits/sec
-[  5]   9.00-10.00  sec  91.9 MBytes   771 Mbits/sec
-[  5]  10.00-11.00  sec  91.8 MBytes   770 Mbits/sec
-[  5]  11.00-12.00  sec  91.8 MBytes   770 Mbits/sec
-[  5]  12.00-13.00  sec  90.6 MBytes   761 Mbits/sec
-[  5]  13.00-14.00  sec  45.2 KBytes   370 Kbits/sec
-[  5]  14.00-15.00  sec  0.00 Bytes  0.00 bits/sec
-[  5]  15.00-16.00  sec  0.00 Bytes  0.00 bits/sec
-[  5]  16.00-17.00  sec  0.00 Bytes  0.00 bits/sec
-[  5]  17.00-18.00  sec  0.00 Bytes  0.00 bits/sec
-[   67.031671] ------------[ cut here ]------------
-[   67.036870] WARNING: CPU: 1 PID: 0 at net/sched/sch_generic.c:442 dev_watchdog+0x2dc/0x300
-[   67.046123] NETDEV WATCHDOG: eth2 (ftgmac100): transmit queue 0 timed out
+Dylan, please confirm, does this affect *all* DMA capable devices ? If
+yes, then it's a really really bad design bug in your chips
+unfortunately and the proper fix is indeed to make dma_wmb() do a dummy
+read of some sort (what address though ? would any dummy non-cachable
+page do ?) to force the data out as *all* drivers will potentially be
+affected.
 
-Fixes: 52c0cae87465 ("ftgmac100: Remove tx descriptor accessors")
-Signed-off-by: Joel Stanley <joel@jms.id.au>
----
- drivers/net/ethernet/faraday/ftgmac100.c | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+I was under the impression that it was a specific timing issue in the
+vhub and ethernet parts, but if it's more generic then it needs to be
+fixed globally.
 
-diff --git a/drivers/net/ethernet/faraday/ftgmac100.c b/drivers/net/ethernet/faraday/ftgmac100.c
-index 331d4bdd4a67..15cdfeb135b0 100644
---- a/drivers/net/ethernet/faraday/ftgmac100.c
-+++ b/drivers/net/ethernet/faraday/ftgmac100.c
-@@ -653,6 +653,11 @@ static bool ftgmac100_tx_complete_packet(struct ftgmac100 *priv)
- 	ftgmac100_free_tx_packet(priv, pointer, skb, txdes, ctl_stat);
- 	txdes->txdes0 = cpu_to_le32(ctl_stat & priv->txdes0_edotr_mask);
- 
-+	/* Ensure the descriptor config is visible before setting the tx
-+	 * pointer.
-+	 */
-+	smp_wmb();
-+
- 	priv->tx_clean_pointer = ftgmac100_next_tx_pointer(priv, pointer);
- 
- 	return true;
-@@ -806,6 +811,11 @@ static netdev_tx_t ftgmac100_hard_start_xmit(struct sk_buff *skb,
- 	dma_wmb();
- 	first->txdes0 = cpu_to_le32(f_ctl_stat);
- 
-+	/* Ensure the descriptor config is visible before setting the tx
-+	 * pointer.
-+	 */
-+	smp_wmb();
-+
- 	/* Update next TX pointer */
- 	priv->tx_pointer = pointer;
- 
--- 
-2.28.0
+> There is still something missing in the explanation: The iowrite32()
+> only tells the
+> device that it should check the queue, but not where the data is. I would expect
+> the device to either see the correct data that was marked valid by the
+> 'dma_wmb();first->txdes0 = cpu_to_le32(f_ctl_stat);' operation, or it would see
+> the old f_ctl_stat value telling it that the data is not yet valid and
+> not look at
+> the rest of the descriptor. In the second case you would see the data
+> not getting sent out until the next start_xmit(), but the device should not
+> fetch wrong data.
+> 
+> There are two possible scenarios in which your patch would still help:
+> 
+> a) the dma_wmb() does not serialize the stores as seen by DMA the
+>     way it is supposed to, so the device can observe the new value of txdec0
+>     before it observes the correct data.
+> 
+> b) The txdes0 field sometimes contains stale data that marks the
+>     descriptor as valid before the correct data is written. This field
+>     should have been set in ftgmac100_tx_complete_packet() earlier
+> 
+> If either of the two is the case, then the READ_ONCE() would just
+> introduce a long delay before the iowrite32() that makes it more likely
+> that the data is there, but the inconsistent state would still be observable
+> by the device if it is still working on previous frames.
+
+I think it just get stuck until we try another packet, ie, it doesn't
+see the new descriptor valid bit. But Dylan can elaborate.
+
+Cheers,
+Ben.
+
 
