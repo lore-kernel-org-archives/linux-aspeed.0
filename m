@@ -1,69 +1,57 @@
-From: ChiaWei Wang <chiawei_wang@aspeedtech.com>
-Date: Tue, 20 Oct 2020 06:03:32 +0000
-Subject: [PATCH v2 0/5] Remove LPC register partitioning
-In-Reply-To: <20201005082806.28899-1-chiawei_wang@aspeedtech.com>
-References: <20201005082806.28899-1-chiawei_wang@aspeedtech.com>
-Message-ID: <HK0PR06MB377943740366AB328247C452911F0@HK0PR06MB3779.apcprd06.prod.outlook.com>
+From: Dylan Hung <dylan_hung@aspeedtech.com>
+Date: Tue, 20 Oct 2020 06:14:52 +0000
+Subject: [PATCH] net: ftgmac100: Fix missing TX-poll issue
+In-Reply-To: <20201019120040.3152ea0b@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+References: <20201019073908.32262-1-dylan_hung@aspeedtech.com>
+ <CACPK8Xfn+Gn0PHCfhX-vgLTA6e2=RT+D+fnLF67_1j1iwqh7yg@mail.gmail.com>
+ <20201019120040.3152ea0b@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+Message-ID: <PS1PR0601MB1849166CBF6D1678E6E1210C9C1F0@PS1PR0601MB1849.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi All,
-
-Do you have any comment on the v2 changes?
-Thanks.
-
-Chiawei
-
 > -----Original Message-----
-> From: ChiaWei Wang <chiawei_wang@aspeedtech.com>
-> Sent: Monday, October 5, 2020 4:28 PM
-> To: lee.jones at linaro.org; robh+dt at kernel.org; joel at jms.id.au;
-> andrew at aj.id.au; minyard at acm.org; arnd at arndb.de;
-> gregkh at linuxfoundation.org; linus.walleij at linaro.org;
-> haiyue.wang at linux.intel.com; cyrilbur at gmail.com; rlippert at google.com;
-> linux-arm-kernel at lists.infradead.org; linux-aspeed at lists.ozlabs.org;
-> linux-kernel at vger.kernel.org; openbmc at lists.ozlabs.org;
-> linux-gpio at vger.kernel.org
-> Subject: [PATCH v2 0/5] Remove LPC register partitioning
+> From: Jakub Kicinski [mailto:kuba at kernel.org]
+> Sent: Tuesday, October 20, 2020 3:01 AM
+> To: Joel Stanley <joel@jms.id.au>
+> Cc: Dylan Hung <dylan_hung@aspeedtech.com>; Benjamin Herrenschmidt
+> <benh@kernel.crashing.org>; David S . Miller <davem@davemloft.net>;
+> netdev at vger.kernel.org; Linux Kernel Mailing List
+> <linux-kernel@vger.kernel.org>; Po-Yu Chuang <ratbert@faraday-tech.com>;
+> linux-aspeed <linux-aspeed@lists.ozlabs.org>; OpenBMC Maillist
+> <openbmc@lists.ozlabs.org>; BMC-SW <BMC-SW@aspeedtech.com>
+> Subject: Re: [PATCH] net: ftgmac100: Fix missing TX-poll issue
 > 
-> The LPC controller has no concept of the BMC and the Host partitions.
-> The incorrect partitioning can impose unnecessary range restrictions on
-> register access through the syscon regmap interface.
-> 
-> For instance, HICRB contains the I/O port address configuration of KCS channel
-> 1/2. However, the KCS#1/#2 drivers cannot access HICRB as it is located at the
-> other LPC partition.
-> 
-> In addition, to be backward compatible, the newly added HW control bits could
-> be located at any reserved bits over the LPC addressing space.
-> 
-> Thereby, this patch series aims to remove the LPC partitioning for better driver
-> development and maintenance.
-> 
-> 
-> Changes since v1:
-> 	- Add the fix to the aspeed-lpc binding documentation.
-> 
-> Chia-Wei, Wang (5):
->   ARM: dts: Remove LPC BMC and Host partitions
->   soc: aspeed: Fix LPC register offsets
->   ipmi: kcs: aspeed: Fix LPC register offsets
->   pinctrl: aspeed-g5: Fix LPC register offsets
->   dt-bindings: aspeed-lpc: Remove LPC partitioning
-> 
->  .../devicetree/bindings/mfd/aspeed-lpc.txt    |  85 ++---------
->  arch/arm/boot/dts/aspeed-g4.dtsi              |  74 ++++------
->  arch/arm/boot/dts/aspeed-g5.dtsi              | 135 ++++++++----------
->  arch/arm/boot/dts/aspeed-g6.dtsi              | 135 ++++++++----------
->  drivers/char/ipmi/kcs_bmc_aspeed.c            |  13 +-
->  drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c    |   2 +-
->  drivers/soc/aspeed/aspeed-lpc-ctrl.c          |   6 +-
->  drivers/soc/aspeed/aspeed-lpc-snoop.c         |  11 +-
->  8 files changed, 176 insertions(+), 285 deletions(-)
-> 
-> --
-> 2.17.1
+> On Mon, 19 Oct 2020 08:57:03 +0000 Joel Stanley wrote:
+> > > diff --git a/drivers/net/ethernet/faraday/ftgmac100.c
+> > > b/drivers/net/ethernet/faraday/ftgmac100.c
+> > > index 00024dd41147..9a99a87f29f3 100644
+> > > --- a/drivers/net/ethernet/faraday/ftgmac100.c
+> > > +++ b/drivers/net/ethernet/faraday/ftgmac100.c
+> > > @@ -804,7 +804,8 @@ static netdev_tx_t
+> ftgmac100_hard_start_xmit(struct sk_buff *skb,
+> > >          * before setting the OWN bit on the first descriptor.
+> > >          */
+> > >         dma_wmb();
+> > > -       first->txdes0 = cpu_to_le32(f_ctl_stat);
+> > > +       WRITE_ONCE(first->txdes0, cpu_to_le32(f_ctl_stat));
+> > > +       READ_ONCE(first->txdes0);
+> >
+> > I understand what you're trying to do here, but I'm not sure that this
+> > is the correct way to go about it.
+> >
+> > It does cause the compiler to produce a store and then a load.
 
+Yes, the load instruction here is to guarantee the previous store is indeed pushed onto the physical memory.
+
+> 
+> +1 @first is system memory from dma_alloc_coherent(), right?
+> 
+> You shouldn't have to do this. Is coherent DMA memory broken on your
+> platform?
+
+It is about the arbitration on the DRAM controller.  There are two queues in the dram controller, one is for the CPU access and the other is for the HW engines.
+When CPU issues a store command, the dram controller just acknowledges cpu's request and pushes the request into the queue.  Then CPU triggers the HW MAC engine, the HW engine starts to fetch the DMA memory.
+But since the cpu's request may still stay in the queue, the HW engine may fetch the wrong data.
