@@ -1,9 +1,10 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Wed, 21 Oct 2020 04:51:17 +0000
-Subject: [PATCH 0/2] ARM: dts: Enable ramoops for Rainier and Tacoma
-In-Reply-To: <20201016043513.119841-1-andrew@aj.id.au>
+Date: Wed, 21 Oct 2020 05:05:11 +0000
+Subject: [PATCH 2/2] ARM: dts: tacoma: Add reserved memory for ramoops
+In-Reply-To: <20201016043513.119841-3-andrew@aj.id.au>
 References: <20201016043513.119841-1-andrew@aj.id.au>
-Message-ID: <CACPK8Xf1=YEApovVOCbE5dkM3uK0Lsx2iXnVK6nK3mx=+q4jpw@mail.gmail.com>
+ <20201016043513.119841-3-andrew@aj.id.au>
+Message-ID: <CACPK8XeiPBPyLu5pvjCgYquCKh+PynVKGyibUSAi+W_xw0Awfg@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -12,26 +13,45 @@ Content-Transfer-Encoding: 7bit
 
 On Fri, 16 Oct 2020 at 04:36, Andrew Jeffery <andrew@aj.id.au> wrote:
 >
-> Hi,
+> Reserve a 1.5MiB region of memory to record kmsg dumps, console and
+> userspace message state into 16kiB ring-buffer slots. The sizing allows
+> for up to 32 dumps to be captured and read out.
 >
-> We're looking to improve our crash data capture for the BMC on some IBM
-> platforms. This small series enables ramoops for Rainier and Tacoma.
+> Set max-reason to KMSG_DUMP_EMERG to capture bad-path reboots.
 >
-> Please review.
+> Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
+> ---
+>  arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts | 9 +++++++++
+>  1 file changed, 9 insertions(+)
+>
+> diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts b/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts
+> index 46f2f538baba..4f7e9b490e1a 100644
+> --- a/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts
+> +++ b/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts
+> @@ -26,6 +26,15 @@ reserved-memory {
+>                 #size-cells = <1>;
+>                 ranges;
+>
+> +               ramoops at b9e80000 {
+> +                       compatible = "ramoops";
+> +                       reg = <0xb9e80000 0x180000>;
 
-Reviewed-by: Joel Stanley <joel@jms.id.au>
+I take that r-b back. When booting, we see:
 
->
-> Andrew
->
-> Andrew Jeffery (2):
->   ARM: dts: rainier: Add reserved memory for ramoops
->   ARM: dts: tacoma: Add reserved memory for ramoops
->
->  arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts | 9 +++++++++
->  arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts  | 9 +++++++++
->  2 files changed, 18 insertions(+)
->
+[    0.000000] region at ba000000 (0xb8000000--0xbc000000) overlaps with
+ramoops at b9e80000 (0xb9e80000--0xba000000)
+
+Which appears to be a true statement.
+
+> +                       record-size = <0x4000>;
+> +                       console-size = <0x4000>;
+> +                       pmsg-size = <0x4000>;
+> +                       max-reason = <3>; /* KMSG_DUMP_EMERG */
+> +               };
+> +
+>                 flash_memory: region at ba000000 {
+>                         no-map;
+>                         reg = <0xb8000000 0x4000000>; /* 64M */
 > --
 > 2.25.1
 >
