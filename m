@@ -1,59 +1,67 @@
-From: Ryan Chen <ryan_chen@aspeedtech.com>
-Date: Thu, 22 Oct 2020 07:21:41 +0000
-Subject: [PATCH v2 3/3] ARM: dts: add ehci uhci enable in evb dts
-In-Reply-To: <fb508440-62dc-49d2-b252-7c65dd6696fe@www.fastmail.com>
-References: <20200930040823.26065-4-ryan_chen@aspeedtech.com>
- <20201009024937.11246-1-ryan_chen@aspeedtech.com>
- <20201009024937.11246-4-ryan_chen@aspeedtech.com>
- <4efff4e7-27e0-35be-c112-5377f222a478@gmail.com>
- <HK0PR06MB3380D499BCF164951167FCE2F2070@HK0PR06MB3380.apcprd06.prod.outlook.com>
- <fb508440-62dc-49d2-b252-7c65dd6696fe@www.fastmail.com>
-Message-ID: <HK0PR06MB338086FEB34FF63FE0950ECAF21D0@HK0PR06MB3380.apcprd06.prod.outlook.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Thu, 22 Oct 2020 18:37:58 +1100
+Subject: [PATCH] net: ftgmac100: Ensure tx descriptor updates are visible
+In-Reply-To: <dca2ce4487024eba9398426af86c761d@AcuMS.aculab.com>
+References: <20201020220639.130696-1-joel@jms.id.au>
+ <86480db3977cfbf6750209c34a28c8f042be55fb.camel@kernel.crashing.org>
+ <dca2ce4487024eba9398426af86c761d@AcuMS.aculab.com>
+Message-ID: <ef0d576f4eba266b60586b93c6ace79ed3cc7096.camel@kernel.crashing.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-> -----Original Message-----
-> From: Andrew Jeffery <andrew@aj.id.au>
-> Sent: Thursday, October 22, 2020 7:45 AM
-> To: Ryan Chen <ryan_chen@aspeedtech.com>; Sergei Shtylyov
-> <sergei.shtylyov@gmail.com>; Joel Stanley <joel@jms.id.au>;
-> linux-arm-kernel at lists.infradead.org; linux-aspeed at lists.ozlabs.org;
-> linux-kernel at vger.kernel.org; linux-usb at vger.kernel.org; BMC-SW
-> <BMC-SW@aspeedtech.com>; Alan Stern <stern@rowland.harvard.edu>
-> Subject: Re: [PATCH v2 3/3] ARM: dts: add ehci uhci enable in evb dts
+On Wed, 2020-10-21 at 08:18 +0000, David Laight wrote:
+> From: Benjamin Herrenschmidt
+> > Sent: 21 October 2020 01:00
+> > 
+> > On Wed, 2020-10-21 at 08:36 +1030, Joel Stanley wrote:
+> > > We must ensure the tx descriptor updates are visible before updating
+> > > the tx pointer.
+> > > 
+> > > This resolves the tx hangs observed on the 2600 when running iperf:
+> > 
+> > To clarify the comment here. This doesn't ensure they are visible to
+> > the hardware but to other CPUs. This is the ordering vs start_xmit and
+> > tx_complete.
 > 
-> Hi Ryan,
+> You need two barriers.
+> 1) after making the data buffers available before transferring
+> the descriptor ownership to the device.
+> 2) after transferring the ownership before 'kicking' the mac engine.
 > 
-> On Mon, 12 Oct 2020, at 11:13, Ryan Chen wrote:
-> > Hello Segei,
-> >
-> > > -----Original Message-----
-> > > From: Sergei Shtylyov <sergei.shtylyov@gmail.com>
-> > > Sent: Friday, October 9, 2020 4:23 PM
-> > > To: Ryan Chen <ryan_chen@aspeedtech.com>; Joel Stanley
-> > > <joel@jms.id.au>; Andrew Jeffery <andrew@aj.id.au>;
-> > > linux-arm-kernel at lists.infradead.org;
-> > > linux-aspeed at lists.ozlabs.org; linux-kernel at vger.kernel.org;
-> > > linux-usb at vger.kernel.org; BMC-SW <BMC-SW@aspeedtech.com>; Alan
-> > > Stern <stern@rowland.harvard.edu>
-> > > Subject: Re: [PATCH v2 3/3] ARM: dts: add ehci uhci enable in evb
-> > > dts
-> > >
-> > > HEllo!
-> > >
-> > > On 09.10.2020 5:49, Ryan Chen wrote:
-> > >
-> > > > Add EHCI UHCI enable build in aspeed-ast2600-evb.dts
-> > >
-> > >     Enable ECHI/UHCI for the  Aspeed AST2600 EVB, perhaps?
-> > >
-> >
-> > Yes, it is enable for AST2600 EVB.
+> The first is needed because the mac engine can poll the descriptors
+> at any time (eg on completing the previous transmit).
+> This stops it transmitting garbage.
 > 
-> I think Sergei was suggesting you change the wording of the commit message.
+> The second makes sure it finds the descriptor you've just set.
+> This stops delays before sending the packet.
+> (But it will get sent later.)
+
+The above is unrelated to this patch. This isn't about fixing any
+device <-> CPU ordering or interaction but purely about ensuring proper
+ordering between start_xmit and tx packet cleanup. IE. We are looking
+at two different issues with this driver.
+
+> For (2) dma_wmb() is the documented barrier.
 > 
-Thanks, will resend the patch with modification. 
+> I'm not sure which barrier you need for (1).
+> smp_wmb() would be right if the reader were another cpu,
+> but it is (at most) a compile barrier on UP kernels.
+> So you need something stronger than smp_wmb().
+
+There should already be sufficient barriers for that in the driver
+(except for the HW bug mentioned earlier).
+
+> On a TSO system (which yours probably is) a compile barrier
+> is probably sufficient, but if memory writes can get re-ordered
+> it needs to be a stronger barrier - but not necessarily as strong
+> as dma_wmb().
+> 
+> 	David
+> 
+> -
+> Registered Address Lakeside, Bramley Road, Mount Farm, Milton Keynes, MK1 1PT, UK
+> Registration No: 1397386 (Wales)
 
