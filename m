@@ -1,9 +1,9 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Thu, 22 Oct 2020 12:17:30 +1030
-Subject: [PATCH v2 5/6] ARM: dts: rainier: Add reserved memory for ramoops
+Date: Thu, 22 Oct 2020 12:17:31 +1030
+Subject: [PATCH v2 6/6] ARM: dts: tacoma: Add reserved memory for ramoops
 In-Reply-To: <20201022014731.2035438-1-andrew@aj.id.au>
 References: <20201022014731.2035438-1-andrew@aj.id.au>
-Message-ID: <20201022014731.2035438-6-andrew@aj.id.au>
+Message-ID: <20201022014731.2035438-7-andrew@aj.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -18,14 +18,14 @@ Set max-reason to KMSG_DUMP_EMERG to capture bad-path reboots.
 
 Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
 ---
- arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts | 9 +++++++++
+ arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts | 9 +++++++++
  1 file changed, 9 insertions(+)
 
-diff --git a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
-index 802027a3c43c..8431cf1b32e6 100644
---- a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
-@@ -55,6 +55,15 @@ flash_memory: region at B8000000 {
+diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts b/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts
+index 09b561429579..04efabe70d9f 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts
+@@ -34,6 +34,15 @@ flash_memory: region at b8000000 {
  
  		/* 48MB region from the end of flash to start of vga memory */
  
