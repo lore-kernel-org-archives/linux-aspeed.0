@@ -1,53 +1,51 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Thu, 22 Oct 2020 18:41:13 +1100
-Subject: [PATCH] net: ftgmac100: Ensure tx descriptor updates are visible
-In-Reply-To: <CAK8P3a3gz4rMSkvZZ+TPaBx3B1yHXcUVFDdMFQMGUtEi4xXzyg@mail.gmail.com>
-References: <20201020220639.130696-1-joel@jms.id.au>
- <CAK8P3a3gz4rMSkvZZ+TPaBx3B1yHXcUVFDdMFQMGUtEi4xXzyg@mail.gmail.com>
-Message-ID: <428dc31828795ce0b010509c8c30bf0049ad9190.camel@kernel.crashing.org>
+From: Arnd Bergmann <arnd@kernel.org>
+Date: Fri, 23 Oct 2020 10:39:32 +0200
+Subject: [PATCH] net: ftgmac100: Fix missing TX-poll issue
+In-Reply-To: <f3f4243408afb4e31a72b8ccb8cef4ba539c67a3.camel@kernel.crashing.org>
+References: <20201019073908.32262-1-dylan_hung@aspeedtech.com>
+ <CACPK8Xfn+Gn0PHCfhX-vgLTA6e2=RT+D+fnLF67_1j1iwqh7yg@mail.gmail.com>
+ <20201019120040.3152ea0b@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <PS1PR0601MB1849166CBF6D1678E6E1210C9C1F0@PS1PR0601MB1849.apcprd06.prod.outlook.com>
+ <CAK8P3a2pEfbLDWTppVHmGxXduOWPCwBw-8bMY9h3EbEecsVfTA@mail.gmail.com>
+ <32bfb619bbb3cd6f52f9e5da205673702fed228f.camel@kernel.crashing.org>
+ <CAK8P3a2j7fV5EFmC8UvSyvXixU8=Nmp6hrJco-fdP2Z+w8bLnA@mail.gmail.com>
+ <CAK8P3a0qzyb0z-OH-hGNJ8iQoLckVkkz4DQfYpFFd=UuXP3gwA@mail.gmail.com>
+ <f3f4243408afb4e31a72b8ccb8cef4ba539c67a3.camel@kernel.crashing.org>
+Message-ID: <CAK8P3a1JD57NSz+_ffyNwX-ERnDq56taNXryoVyV6ZXzEXft0g@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 2020-10-21 at 14:40 +0200, Arnd Bergmann wrote:
-> On Wed, Oct 21, 2020 at 12:39 PM Joel Stanley <joel@jms.id.au> wrote:
-> 
-> > 
-> > diff --git a/drivers/net/ethernet/faraday/ftgmac100.c b/drivers/net/ethernet/faraday/ftgmac100.c
-> > index 331d4bdd4a67..15cdfeb135b0 100644
-> > --- a/drivers/net/ethernet/faraday/ftgmac100.c
-> > +++ b/drivers/net/ethernet/faraday/ftgmac100.c
-> > @@ -653,6 +653,11 @@ static bool ftgmac100_tx_complete_packet(struct ftgmac100 *priv)
-> >         ftgmac100_free_tx_packet(priv, pointer, skb, txdes, ctl_stat);
-> >         txdes->txdes0 = cpu_to_le32(ctl_stat & priv->txdes0_edotr_mask);
-> > 
-> > +       /* Ensure the descriptor config is visible before setting the tx
-> > +        * pointer.
-> > +        */
-> > +       smp_wmb();
-> > +
-> >         priv->tx_clean_pointer = ftgmac100_next_tx_pointer(priv, pointer);
-> > 
-> >         return true;
-> > @@ -806,6 +811,11 @@ static netdev_tx_t ftgmac100_hard_start_xmit(struct sk_buff *skb,
-> >         dma_wmb();
-> >         first->txdes0 = cpu_to_le32(f_ctl_stat);
-> > 
-> > +       /* Ensure the descriptor config is visible before setting the tx
-> > +        * pointer.
-> > +        */
-> > +       smp_wmb();
-> > +
-> 
-> Shouldn't these be paired with smp_rmb() on the reader side?
+On Thu, Oct 22, 2020 at 9:41 AM Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+> On Wed, 2020-10-21 at 14:11 +0200, Arnd Bergmann wrote:
+>
+> > > At the moment, the only chips that need the heavy barrier are
+> > > omap4 and mstar_v7, and early l2 cache controllers (not the one
+> > > on Cortex-A7) have another synchronization callback that IIRC
+> > > is used for streaming mappings.
+>
+>  .../...
+>
+> > > Obviously, adding one of these for ast2600 would slow down every
+> > > mb() and writel() a lot, but if it is a chip-wide problem rather than
+> > > one isolated to the network device, it would be the correct solution,
+> > > provided that a correct code sequence can be found.
+>
+> I'm surprised that problem doesn't already exist on the ast2400 and
+> 2500 and I thus worry about the performance impact of such a workaround
+> applied generally to every MMIO writes....
+>
+> But we did kill mmiowb so ... ;-)
 
-(Not near the code right now) I *think* the reader already has them
-where it matters but I might have overlooked something when I quickly
-checked the other day.
+The real cost would have to be measured of course, and it depends a
+lot on how it's done. The read-from-uncached-memory as in the 1/4
+patch here seems fairly expensive, the mstarv7_mb() method (spinning
+on an mmio read) seems worse, but the omap4 method (a posted write
+to a mmio address in the memory controller to enforce a barrier between
+the two ports) doesn't seem that bad and would correspond to what
+the chip should be doing in the first place.
 
-Cheers,
-Ben.
-
-
+       Arnd
