@@ -1,43 +1,34 @@
-From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-Date: Mon, 26 Oct 2020 15:53:09 +0100
-Subject: [PATCH] gpio: aspeed: fix ast2600 bank properties
-In-Reply-To: <20201019045026.10732-1-billy_tsai@aspeedtech.com>
-References: <20201019045026.10732-1-billy_tsai@aspeedtech.com>
-Message-ID: <CAMpxmJXzku3+gfs3jnfpRzLxmQFx3QAJArXEJ0maRx=EKK4WTw@mail.gmail.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Tue, 27 Oct 2020 09:21:17 +1100
+Subject: [PATCH] net: ftgmac100: Fix missing TX-poll issue
+In-Reply-To: <PS1PR0601MB18498469F0263306A6E5183F9C1A0@PS1PR0601MB1849.apcprd06.prod.outlook.com>
+References: <20201019073908.32262-1-dylan_hung@aspeedtech.com>
+ <CACPK8Xfn+Gn0PHCfhX-vgLTA6e2=RT+D+fnLF67_1j1iwqh7yg@mail.gmail.com>
+ <20201019120040.3152ea0b@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <PS1PR0601MB1849166CBF6D1678E6E1210C9C1F0@PS1PR0601MB1849.apcprd06.prod.outlook.com>
+ <CAK8P3a2pEfbLDWTppVHmGxXduOWPCwBw-8bMY9h3EbEecsVfTA@mail.gmail.com>
+ <32bfb619bbb3cd6f52f9e5da205673702fed228f.camel@kernel.crashing.org>
+ <529612e1-c6c4-4d33-91df-2a30bf2e1675@www.fastmail.com>
+ <PS1PR0601MB18498469F0263306A6E5183F9C1A0@PS1PR0601MB1849.apcprd06.prod.outlook.com>
+Message-ID: <e6c8e96bb26a5505e967e697946d359c22ac68c5.camel@kernel.crashing.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Oct 19, 2020 at 6:50 AM Billy Tsai <billy_tsai@aspeedtech.com> wrote:
->
-> GPIO_T is mapped to the most significant byte of input/output mask, and
-> the byte in "output" mask should be 0 because GPIO_T is input only. All
-> the other bits need to be 1 because GPIO_Q/R/S support both input and
-> output modes.
->
-> Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
-> ---
->  drivers/gpio/gpio-aspeed.c | 1 +
->  1 file changed, 1 insertion(+)
->
-> diff --git a/drivers/gpio/gpio-aspeed.c b/drivers/gpio/gpio-aspeed.c
-> index d07bf2c3f136..f24754b3f6d1 100644
-> --- a/drivers/gpio/gpio-aspeed.c
-> +++ b/drivers/gpio/gpio-aspeed.c
-> @@ -1114,6 +1114,7 @@ static const struct aspeed_gpio_config ast2500_config =
->
->  static const struct aspeed_bank_props ast2600_bank_props[] = {
->         /*     input      output   */
-> +       {4, 0xffffffff,  0x00ffffff}, /* Q/R/S/T */
->         {5, 0xffffffff,  0xffffff00}, /* U/V/W/X */
->         {6, 0x0000ffff,  0x0000ffff}, /* Y/Z */
->         { },
-> --
-> 2.17.1
->
+On Fri, 2020-10-23 at 13:08 +0000, Dylan Hung wrote:
+> The issue was found on our test chip (ast2600 version A0) which is
+> just for testing and won't be mass-produced.  This HW bug has been
+> fixed on ast2600 A1 and later versions.
+> 
+> To verify the HW fix, I run overnight iperf and kvm tests on
+> ast2600A1 without this patch, and get stable result without hanging.
+> So I think we can discard this patch.
 
-Applied to fixes with reviews collected and added the Fixes: tag.
+This is great news. Thanks !
 
-Bartosz
+Cheers,
+Ben.
+
+
