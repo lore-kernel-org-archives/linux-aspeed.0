@@ -1,136 +1,197 @@
-From: Billy Tsai <billy_tsai@aspeedtech.com>
-Date: Mon, 26 Oct 2020 02:56:43 +0000
-Subject: [PATCH 3/3] pinctrl: aspeed-g6: Add sgpiom2 pinctrl setting
-In-Reply-To: <3fa4fda9-1ba9-4cb6-bd7f-0200bca06f52@www.fastmail.com>
-References: <20201012033150.21056-1-billy_tsai@aspeedtech.com>
- <20201012033150.21056-4-billy_tsai@aspeedtech.com>
- <ce3dce98-1daa-47bb-a688-0d5a743e45b2@www.fastmail.com>
- <82A00921-93ED-42A8-9B93-8F1E8025BA89@aspeedtech.com>
- <3fa4fda9-1ba9-4cb6-bd7f-0200bca06f52@www.fastmail.com>
-Message-ID: <148B6B46-D747-4B9C-A5C9-518C1AD16578@aspeedtech.com>
+From: Andrew Jeffery <andrew@aj.id.au>
+Date: Mon, 26 Oct 2020 13:42:08 +1030
+Subject: [PATCH v2 5/5] dt-bindings: aspeed-lpc: Remove LPC partitioning
+In-Reply-To: <20201005082806.28899-6-chiawei_wang@aspeedtech.com>
+References: <20201005082806.28899-1-chiawei_wang@aspeedtech.com>
+ <20201005082806.28899-6-chiawei_wang@aspeedtech.com>
+Message-ID: <2e2d3a02-6677-4b0e-b538-d3130a3b20d1@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+Hi Wang Chia-Wei,
 
-On 2020/10/26, 10:21 AM, Andrew Jeffery wrote:
+On Mon, 5 Oct 2020, at 18:58, Chia-Wei, Wang wrote:
+> The LPC controller has no concept of the BMC and the Host partitions.
+> This patch fixes the documentation by removing the description on LPC
+> partitions. The register offsets illustrated in the DTS node examples
+> are also fixed to adapt to the LPC DTS change.
+> 
+> Signed-off-by: Chia-Wei, Wang <chiawei_wang@aspeedtech.com>
 
-    
-    
-    On Mon, 26 Oct 2020, at 12:33, Billy Tsai wrote:
-    > 
-    > On 2020/10/26, 9:27 AM, Andrew Jeffery wrote:
-    >     
-    >     On Mon, 12 Oct 2020, at 14:01, Billy Tsai wrote:
-    >     > > At ast2600a1 we change feature of master sgpio to 2 sets.
-    >     > > So this patch is used to add the pinctrl setting of the new 
-    > sgpio.
-    >     > > 
-    >     > > Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
-    >     > > ---
-    >     > >  arch/arm/boot/dts/aspeed-g6-pinctrl.dtsi   |  5 ++++
-    >     > >  drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c | 30 
-    > +++++++++++++++++++---
-    >     > >  2 files changed, 31 insertions(+), 4 deletions(-)
-    >     > > 
-    >     > > diff --git a/arch/arm/boot/dts/aspeed-g6-pinctrl.dtsi 
-    >     > > b/arch/arm/boot/dts/aspeed-g6-pinctrl.dtsi
-    >     > > index 7028e21bdd98..a16ecf08e307 100644
-    >     > > --- a/arch/arm/boot/dts/aspeed-g6-pinctrl.dtsi
-    >     > > +++ b/arch/arm/boot/dts/aspeed-g6-pinctrl.dtsi
-    >     > > @@ -862,6 +862,11 @@
-    >     > >  		groups = "SGPM1";
-    >     > >  	};
-    >     > >  
-    >     > > +	pinctrl_sgpm2_default: sgpm2_default {
-    >     > > +		function = "SGPM2";
-    >     > > +		groups = "SGPM2";
-    >     > > +	};
-    >     > > +
-    >     > >  	pinctrl_sgps1_default: sgps1_default {
-    >     > >  		function = "SGPS1";
-    >     > >  		groups = "SGPS1";
-    >     > > diff --git a/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c 
-    >     > > b/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
-    >     > > index 34803a6c7664..b673a44ffa3b 100644
-    >     > > --- a/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
-    >     > > +++ b/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
-    >     > > @@ -46,8 +46,10 @@
-    >     > >  #define SCU620		0x620 /* Disable GPIO Internal Pull-Down #4 */
-    >     > >  #define SCU634		0x634 /* Disable GPIO Internal Pull-Down #5 */
-    >     > >  #define SCU638		0x638 /* Disable GPIO Internal Pull-Down #6 */
-    >     > > +#define SCU690		0x690 /* Multi-function Pin Control #24 */
-    >     > >  #define SCU694		0x694 /* Multi-function Pin Control #25 */
-    >     > >  #define SCU69C		0x69C /* Multi-function Pin Control #27 */
-    >     > > +#define SCU6D0		0x6D0 /* Multi-function Pin Control #28 */
-    >     > >  #define SCUC20		0xC20 /* PCIE configuration Setting Control */
-    >     > >  
-    >     > >  #define ASPEED_G6_NR_PINS 256
-    >     > > @@ -81,13 +83,21 @@ FUNC_GROUP_DECL(I2C12, L26, K24);
-    >     > >  #define K26 4
-    >     > >  SIG_EXPR_LIST_DECL_SESG(K26, MACLINK1, MACLINK1, 
-    > SIG_DESC_SET(SCU410, 4));
-    >     > >  SIG_EXPR_LIST_DECL_SESG(K26, SCL13, I2C13, 
-    > SIG_DESC_SET(SCU4B0, 4));
-    >     > > -PIN_DECL_2(K26, GPIOA4, MACLINK1, SCL13);
-    >     > > +/*SGPM2 is A1 Only */
-    >     > > +SIG_EXPR_LIST_DECL_SESG(K26, SGPM2CLK, SGPM2, 
-    > SIG_DESC_SET(SCU6D0, 4),
-    >     > > +			  SIG_DESC_CLEAR(SCU410, 4), SIG_DESC_CLEAR(SCU4B0, 4),
-    >     > > +			  SIG_DESC_CLEAR(SCU690, 4));
-    >     > > +PIN_DECL_3(K26, GPIOA4, SGPM2CLK, MACLINK1, SCL13);
-    >     > >  FUNC_GROUP_DECL(MACLINK1, K26);
-    >     > >  
-    >     > >  #define L24 5
-    >     > >  SIG_EXPR_LIST_DECL_SESG(L24, MACLINK2, MACLINK2, 
-    > SIG_DESC_SET(SCU410, 5));
-    >     > >  SIG_EXPR_LIST_DECL_SESG(L24, SDA13, I2C13, 
-    > SIG_DESC_SET(SCU4B0, 5));
-    >     > > -PIN_DECL_2(L24, GPIOA5, MACLINK2, SDA13);
-    >     > > +/*SGPM2 is A1 Only */
-    >     > > +SIG_EXPR_LIST_DECL_SESG(L24, SGPM2LD, SGPM2, 
-    > SIG_DESC_SET(SCU6D0, 5),
-    >     > > +			  SIG_DESC_CLEAR(SCU410, 5), SIG_DESC_CLEAR(SCU4B0, 5),
-    >     > > +			  SIG_DESC_CLEAR(SCU690, 5));
-    >     > 
-    >     > A few things:
-    >     > 
-    >     > 1. It looks like the Multi-function Pins Mapping and Control 
-    > table in section 5.1 of the datasheet only tells part of the story. It 
-    > lists SGPS2 on the pins you've modified in this patch but not SGPM2. 
-    > However, the table in section 2.1 (Pin Description) does outline SGPM2 
-    > and SGPS2 are routed via the same pins, though this does not listed the 
-    > associated registers and bit fields. Can we fix the table in 5.1 so 
-    > it's easier to review this patch?
-    
-    > You can see section 5.2 to find SGPIO master interface table. It lists 
-    > balls and register setting information of the SGPIOM1 and SGPIOM2.
-    
-    Yep, though typically I use the table in 5.1 to figure out the pinctrl details. 
-    It appears you'd need to add another two columns to the table to capture the 
-    info - is Aspeed planning to do that in a future release of the datasheet?
-Yes, we will update the datasheet to add another two columns.    
-    >     > 
-    >     > 2. We don't need to specify the _CLEAR() behaviour here as this 
-    > is implied by the process to disable the higher priority mux 
-    > configurations. It should be enough to do:
-    >     > 
-    >     > SIG_EXPR_LIST_DECL_SESG(L24, SGPM2LD, SGPM2, SIG_DESC_SET(SCU6D0, 
-    > 5));
-    >     > 
-    >     > However, this requires that we also define the priorities 
-    > correctly, so:
-    >     > 
-    >     > 3. Can we add both the SGPS2 and SGPM2 configurations so we have 
-    > a complete definition for the pins?
-    >     > 
-    > Thank you for your advice. I will complete the full configurations and 
-    > send the V2 patch.
-    
-    Thanks!
-    
-    Andrew
-    
+The documentation at [1] suggests this should probably be patch 1/5 rather than 
+5/5, so if you send the series again I'd probably rearrange it. Following the 
+steps outlined in [1] helps catch Rob's attention in the right way :)
 
+[1] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Documentation/devicetree/bindings/submitting-patches.rst?h=v5.9
+
+Rob:
+
+The changes here go some way towards cleaning up mistakes I made in the Aspeed 
+LPC controller binding. The proposed change is very much not backwards 
+compatible, but Joel and I don't want to live with the resulting mess in the 
+drivers of catering to both layouts. Another way we could avoid the driver mess 
+is to rev all the bindings and immediately drop support for the old compatibles 
+in the drivers. This creates a bit more churn in the bindings. What are you 
+willing to accommodate?
+
+All consumers I'm aware of ship the Aspeed BMC dtb in FIT images alongside the 
+kernel, so while backwards-incompatible changes are rightly frowned upon I feel 
+we probably wouldn't cause too much damage if we went that path.
+
+Andrew
+
+> ---
+>  .../devicetree/bindings/mfd/aspeed-lpc.txt    | 85 +++----------------
+>  1 file changed, 14 insertions(+), 71 deletions(-)
+> 
+> diff --git a/Documentation/devicetree/bindings/mfd/aspeed-lpc.txt 
+> b/Documentation/devicetree/bindings/mfd/aspeed-lpc.txt
+> index a92acf1dd491..866f54a09e09 100644
+> --- a/Documentation/devicetree/bindings/mfd/aspeed-lpc.txt
+> +++ b/Documentation/devicetree/bindings/mfd/aspeed-lpc.txt
+> @@ -9,13 +9,7 @@ primary use case of the Aspeed LPC controller is as a 
+> slave on the bus
+>  conditions it can also take the role of bus master.
+>  
+>  The LPC controller is represented as a multi-function device to account for the
+> -mix of functionality it provides. The principle split is between the register
+> -layout at the start of the I/O space which is, to quote the Aspeed datasheet,
+> -"basically compatible with the [LPC registers from the] popular BMC controller
+> -H8S/2168[1]", and everything else, where everything else is an eclectic
+> -collection of functions with a esoteric register layout. "Everything else",
+> -here labeled the "host" portion of the controller, includes, but is not limited
+> -to:
+> +mix of functionality, which includes, but is not limited to:
+>  
+>  * An IPMI Block Transfer[2] Controller
+>  
+> @@ -44,8 +38,8 @@ Required properties
+>  ===================
+>  
+>  - compatible:	One of:
+> -		"aspeed,ast2400-lpc", "simple-mfd"
+> -		"aspeed,ast2500-lpc", "simple-mfd"
+> +		"aspeed,ast2400-lpc", "simple-mfd", "syscon"
+> +		"aspeed,ast2500-lpc", "simple-mfd", "syscon"
+>  
+>  - reg:		contains the physical address and length values of the Aspeed
+>                  LPC memory region.
+> @@ -55,66 +49,17 @@ Required properties
+>  - ranges: 	Maps 0 to the physical address and length of the LPC memory
+>                  region
+>  
+> -Required LPC Child nodes
+> -========================
+> -
+> -BMC Node
+> ---------
+> -
+> -- compatible:	One of:
+> -		"aspeed,ast2400-lpc-bmc"
+> -		"aspeed,ast2500-lpc-bmc"
+> -
+> -- reg:		contains the physical address and length values of the
+> -                H8S/2168-compatible LPC controller memory region
+> -
+> -Host Node
+> ----------
+> -
+> -- compatible:   One of:
+> -		"aspeed,ast2400-lpc-host", "simple-mfd", "syscon"
+> -		"aspeed,ast2500-lpc-host", "simple-mfd", "syscon"
+> -
+> -- reg:		contains the address and length values of the host-related
+> -                register space for the Aspeed LPC controller
+> -
+> -- #address-cells: <1>
+> -- #size-cells:	<1>
+> -- ranges: 	Maps 0 to the address and length of the host-related LPC memory
+> -                region
+> -
+>  Example:
+>  
+>  lpc: lpc at 1e789000 {
+> -	compatible = "aspeed,ast2500-lpc", "simple-mfd";
+> +	compatible = "aspeed,ast2500-lpc", "simple-mfd", "syscon";
+>  	reg = <0x1e789000 0x1000>;
+>  
+>  	#address-cells = <1>;
+>  	#size-cells = <1>;
+>  	ranges = <0x0 0x1e789000 0x1000>;
+> -
+> -	lpc_bmc: lpc-bmc at 0 {
+> -		compatible = "aspeed,ast2500-lpc-bmc";
+> -		reg = <0x0 0x80>;
+> -	};
+> -
+> -	lpc_host: lpc-host at 80 {
+> -		compatible = "aspeed,ast2500-lpc-host", "simple-mfd", "syscon";
+> -		reg = <0x80 0x1e0>;
+> -		reg-io-width = <4>;
+> -
+> -		#address-cells = <1>;
+> -		#size-cells = <1>;
+> -		ranges = <0x0 0x80 0x1e0>;
+> -	};
+>  };
+>  
+> -BMC Node Children
+> -==================
+> -
+> -
+> -Host Node Children
+> -==================
+>  
+>  LPC Host Interface Controller
+>  -------------------
+> @@ -145,14 +90,12 @@ Optional properties:
+>  
+>  Example:
+>  
+> -lpc-host at 80 {
+> -	lpc_ctrl: lpc-ctrl at 0 {
+> -		compatible = "aspeed,ast2500-lpc-ctrl";
+> -		reg = <0x0 0x80>;
+> -		clocks = <&syscon ASPEED_CLK_GATE_LCLK>;
+> -		memory-region = <&flash_memory>;
+> -		flash = <&spi>;
+> -	};
+> +lpc_ctrl: lpc-ctrl at 80 {
+> +	compatible = "aspeed,ast2500-lpc-ctrl";
+> +	reg = <0x80 0x80>;
+> +	clocks = <&syscon ASPEED_CLK_GATE_LCLK>;
+> +	memory-region = <&flash_memory>;
+> +	flash = <&spi>;
+>  };
+>  
+>  LPC Host Controller
+> @@ -174,9 +117,9 @@ Required properties:
+>  
+>  Example:
+>  
+> -lhc: lhc at 20 {
+> +lhc: lhc at a0 {
+>  	compatible = "aspeed,ast2500-lhc";
+> -	reg = <0x20 0x24 0x48 0x8>;
+> +	reg = <0xa0 0x24 0xc8 0x8>;
+>  };
+>  
+>  LPC reset control
+> @@ -194,8 +137,8 @@ Required properties:
+>  
+>  Example:
+>  
+> -lpc_reset: reset-controller at 18 {
+> +lpc_reset: reset-controller at 98 {
+>          compatible = "aspeed,ast2500-lpc-reset";
+> -        reg = <0x18 0x4>;
+> +        reg = <0x98 0x4>;
+>          #reset-cells = <1>;
+>  };
+> -- 
+> 2.17.1
+> 
+>
