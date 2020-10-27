@@ -1,72 +1,61 @@
 From: Supreeth Venkatesh <supreeth.venkatesh@amd.com>
-Date: Tue, 27 Oct 2020 09:02:20 -0500
-Subject: [PATCH 3/3] ARM: dts: aspeed: amd-ethanolx: Enable devices for
- the iKVM functionality
-In-Reply-To: <20201027123722.2935-3-aladyshev22@gmail.com>
+Date: Tue, 27 Oct 2020 09:09:57 -0500
+Subject: [PATCH 1/3] ARM: dts: aspeed: amd-ethanolx: Update KCS nodes to
+ use v2 binding
+In-Reply-To: <20201027123722.2935-1-aladyshev22@gmail.com>
 References: <20201027123722.2935-1-aladyshev22@gmail.com>
- <20201027123722.2935-3-aladyshev22@gmail.com>
-Message-ID: <365d5623-6cdb-dafd-b42f-3ebe193ec18e@amd.com>
+Message-ID: <f35152af-34ad-178b-61db-0e57c8d19f3f@amd.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+These changes are already merged in https://github.com/openbmc/linux/blob/dev-5.8/arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts by Joel.
+Please abandon these changes.
 
+Thanks,
+Supreeth
 
 On 10/27/20 7:37 AM, Konstantin Aladyshev wrote:
 > [CAUTION: External Email]
 > 
-> Enable the USB 2.0 Virtual Hub Controller and
-> the Video Engine with it's reserved memory region for the implementation
-> of the iKVM functionality in the BMC.
+> KCS nodes compatible property in the 'aspeed-g5.dtsi' file was
+> changed to use v2 binding in the commit fa4c8ec6feaa
+> ("ARM: dts: aspeed: Change KCS nodes to v2 binding").
+> For the proper initialization of /dev/ipmi-kcs* devices
+> KCS node variables also need to be changed to use v2 binding.
 > 
 > Signed-off-by: Konstantin Aladyshev <aladyshev22@gmail.com>
-Reviewed-by: Supreeth Venkatesh <supreeth.venkatesh@amd.com>
-
 > ---
->  arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts | 22 +++++++++++++++++++
->  1 file changed, 22 insertions(+)
+>  arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts | 6 +++---
+>  1 file changed, 3 insertions(+), 3 deletions(-)
 > 
 > diff --git a/arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts b/arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts
-> index 2a86bda8afd8..b93ed44eba0c 100644
+> index 60ba86f3e5bc..89ddc3847222 100644
 > --- a/arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts
 > +++ b/arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts
-> @@ -13,6 +13,21 @@
->         memory at 80000000 {
->                 reg = <0x80000000 0x20000000>;
->         };
-> +
-> +       reserved-memory {
-> +               #address-cells = <1>;
-> +               #size-cells = <1>;
-> +               ranges;
-> +
-> +               video_engine_memory: jpegbuffer {
-> +                       size = <0x02000000>;    /* 32M */
-> +                       alignment = <0x01000000>;
-> +                       compatible = "shared-dma-pool";
-> +                       reusable;
-> +               };
-> +       };
-> +
-> +
->         aliases {
->                 serial0 = &uart1;
->                 serial4 = &uart5;
-> @@ -220,5 +235,12 @@
->         };
+> @@ -139,17 +139,17 @@
+> 
+>  &kcs1 {
+>         status = "okay";
+> -       kcs_addr = <0x60>;
+> +       aspeed,lpc-io-reg = <0x60>;
 >  };
 > 
-> +&video {
-> +       status = "okay";
-> +       memory-region = <&video_engine_memory>;
-> +};
+>  &kcs2 {
+>         status = "okay";
+> -       kcs_addr = <0x62>;
+> +       aspeed,lpc-io-reg = <0x62>;
+>  };
 > 
-> +&vhub {
-> +       status = "okay";
-> +};
+>  &kcs4 {
+>         status = "okay";
+> -       kcs_addr = <0x97DE>;
+> +       aspeed,lpc-io-reg = <0x97DE>;
+>  };
 > 
+>  &lpc_snoop {
 > --
 > 2.17.1
 > 
