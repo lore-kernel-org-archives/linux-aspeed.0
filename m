@@ -1,68 +1,69 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Wed, 28 Oct 2020 04:47:38 +0000
-Subject: [PATCH] net: ftgmac100: Ensure tx descriptor updates are visible
-In-Reply-To: <428dc31828795ce0b010509c8c30bf0049ad9190.camel@kernel.crashing.org>
-References: <20201020220639.130696-1-joel@jms.id.au>
- <CAK8P3a3gz4rMSkvZZ+TPaBx3B1yHXcUVFDdMFQMGUtEi4xXzyg@mail.gmail.com>
- <428dc31828795ce0b010509c8c30bf0049ad9190.camel@kernel.crashing.org>
-Message-ID: <CACPK8XfHaGWcDf7vDHoPhqgWQ4LEwxq9EBtbkBngEpHEzJk2SA@mail.gmail.com>
+Date: Wed, 28 Oct 2020 05:10:49 +0000
+Subject: [PATCH 2/3] Arm: dts: aspeed-g6: Add sgpio node
+In-Reply-To: <E0B8BD13-86F6-486E-95DF-1038D7F59A8B@aspeedtech.com>
+References: <20201012033150.21056-1-billy_tsai@aspeedtech.com>
+ <20201012033150.21056-3-billy_tsai@aspeedtech.com>
+ <CACPK8XdYvSmwdAkBzAO3kC8_PYa3CtPkNb0VxcOhmb2UYz5zDA@mail.gmail.com>
+ <E0B8BD13-86F6-486E-95DF-1038D7F59A8B@aspeedtech.com>
+Message-ID: <CACPK8Xeg_LRGv1EEm7cdDWK2xST0mBP=iG7=43UE5qmEMMDsHQ@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, 22 Oct 2020 at 07:41, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
+On Mon, 12 Oct 2020 at 04:56, Billy Tsai <billy_tsai@aspeedtech.com> wrote:
 >
-> On Wed, 2020-10-21 at 14:40 +0200, Arnd Bergmann wrote:
-> > On Wed, Oct 21, 2020 at 12:39 PM Joel Stanley <joel@jms.id.au> wrote:
-> >
-> > >
-> > > diff --git a/drivers/net/ethernet/faraday/ftgmac100.c b/drivers/net/ethernet/faraday/ftgmac100.c
-> > > index 331d4bdd4a67..15cdfeb135b0 100644
-> > > --- a/drivers/net/ethernet/faraday/ftgmac100.c
-> > > +++ b/drivers/net/ethernet/faraday/ftgmac100.c
-> > > @@ -653,6 +653,11 @@ static bool ftgmac100_tx_complete_packet(struct ftgmac100 *priv)
-> > >         ftgmac100_free_tx_packet(priv, pointer, skb, txdes, ctl_stat);
-> > >         txdes->txdes0 = cpu_to_le32(ctl_stat & priv->txdes0_edotr_mask);
-> > >
-> > > +       /* Ensure the descriptor config is visible before setting the tx
-> > > +        * pointer.
-> > > +        */
-> > > +       smp_wmb();
-> > > +
-> > >         priv->tx_clean_pointer = ftgmac100_next_tx_pointer(priv, pointer);
-> > >
-> > >         return true;
-> > > @@ -806,6 +811,11 @@ static netdev_tx_t ftgmac100_hard_start_xmit(struct sk_buff *skb,
-> > >         dma_wmb();
-> > >         first->txdes0 = cpu_to_le32(f_ctl_stat);
-> > >
-> > > +       /* Ensure the descriptor config is visible before setting the tx
-> > > +        * pointer.
-> > > +        */
-> > > +       smp_wmb();
-> > > +
-> >
-> > Shouldn't these be paired with smp_rmb() on the reader side?
+> Hi Joel,
 >
-> (Not near the code right now) I *think* the reader already has them
-> where it matters but I might have overlooked something when I quickly
-> checked the other day.
+> Thanks for the review.
+>
+> On 2020/10/12, 12:35 PM, Joel Stanley wrote:
+>
+>     > On Mon, 12 Oct 2020 at 03:32, Billy Tsai <billy_tsai@aspeedtech.com> wrote:
+>     > >
+>     > > This patch is used to add sgpiom and sgpios nodes and add compatible
+>     > > string for sgpiom.
+>     >
+>     > You also need to add sgpios documentation to the bindings docs.
+>     >
+>     > Whenever you add new device tree bindings to the kernel tree you
+>     > should add documentation for them.
+>     >
+>     > When preparing patches for submission, use scripts/checkpatch.pl to
+>     > check for common issues. It will warn you if you are adding strings
+>     > that are not documented.
+>     >
+>     > Cheers,
+>     >
+>     > Joel
+>     >
+>    Because the driver of sgpios doesn't be implemented, so I don't know how to describe it at sgpio-aspeed.txt.
+>    Can I just add  compatible string " aspeed,ast2600-sgpios " to the document for bypassing the warning of checkpatch?
 
-Do we need a read barrier at the start of ftgmac100_tx_complete_packet?
+Ignore the sgpios issue for now; we don't have a driver for it so
+there's no need to add strings. Drop that part from your dts patch.
 
-        pointer = priv->tx_clean_pointer;
-<--- here
-        txdes = &priv->txdes[pointer];
+>     > >
+>     > >  - compatible : Should be one of
+>     > > -  "aspeed,ast2400-sgpio", "aspeed,ast2500-sgpio"
+>     > > +  "aspeed,ast2400-sgpio", "aspeed,ast2500-sgpio", "aspeed,ast2600-sgpiom"
+>     >
+>     > I think we should add sgpiom strings for the ast2500 (and ast2400?)
+>     > too, as this is how they should have been named in the first place:
+>     >
+>    If I change the document whether I also need to send the patch for sgpio driver and g5/g4.dtsi?
 
-        ctl_stat = le32_to_cpu(txdes->txdes0);
-        if (ctl_stat & FTGMAC100_TXDES0_TXDMA_OWN)
-                return false;
+For the sgpiom? We already have a driver for that.
 
-This was the only spot I could see that might require one.
+As I said above, make this about fixing the sgpio master and put aside
+the sgpio slave issue for now.
 
 Cheers,
 
 Joel
+
+>     > >  - compatible : Should be one of
+>     > >    "aspeed,ast2400-sgpio", "aspeed,ast2500-sgpio"
+>     > >   "aspeed,ast2400-sgpiom", "aspeed,ast2500-sgpiom", "aspeed,ast2600-sgpiom"
