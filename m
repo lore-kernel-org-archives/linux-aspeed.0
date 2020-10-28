@@ -1,47 +1,45 @@
-From: Finn Thain <fthain@telegraphics.com.au>
-Date: Wed, 28 Oct 2020 14:26:12 +1100 (AEDT)
-Subject: [RFC] clang tooling cleanups
-In-Reply-To: <20201027164255.1573301-1-trix@redhat.com>
-References: <20201027164255.1573301-1-trix@redhat.com>
-Message-ID: <alpine.LNX.2.23.453.2010281344120.31@nippy.intranet>
+From: Joel Stanley <joel@jms.id.au>
+Date: Wed, 28 Oct 2020 04:27:36 +0000
+Subject: [PATCH 2/2] Arm: dts: aspeed-g6: Add sgpio node and pinctrl
+ setting
+In-Reply-To: <D35132A5-2676-4806-AF35-9110DF0CC88B@aspeedtech.com>
+References: <20201008015106.3198-1-billy_tsai@aspeedtech.com>
+ <20201008015106.3198-3-billy_tsai@aspeedtech.com>
+ <CACPK8XeKdmvVB_CTND7mSRvtTRz8i+Zw1=E06OP-=r3=pnh9gw@mail.gmail.com>
+ <D35132A5-2676-4806-AF35-9110DF0CC88B@aspeedtech.com>
+Message-ID: <CACPK8XccGJgd4eNiRyE8D2VphpuONZC4CmiC4tDk0pFYmaTdJA@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+On Mon, 12 Oct 2020 at 05:25, Billy Tsai <billy_tsai@aspeedtech.com> wrote:
+>
+> Hi Joel,
+>
+> On 2020/10/8, 11:49 AM, Joel Stanley wrote:
+>
+>     On Thu, 8 Oct 2020 at 01:51, Billy Tsai <billy_tsai@aspeedtech.com> wrote:
+>     > >
+>     > > This patch is used to add sgpiom and sgpios nodes and add pinctrl setting
+>     > > for sgpiom1
+>     >
+>     > The code looks good Billy.
+>     >
+>     > Please split the change in two: device tree changes (arch/arm/dts) in
+>     > one, and pinctrl in the second, as they go through different
+>     > maintainers.
+>     >
+>
+>     If I split the change in two, the patch of dts will have a compiler error.
+>     Because that the sgpiom1 node needs the pinctrl symbol "&pinctrl_sgpm2_default".
 
-On Tue, 27 Oct 2020, trix at redhat.com wrote:
+The drivers/pinctrl/ changes should be split from the
+arch/arm/boot/dts/ changes.
 
-> This rfc will describe
-> An upcoming treewide cleanup.
-> How clang tooling was used to programatically do the clean up.
-> Solicit opinions on how to generally use clang tooling.
-> 
+You should keep the arch/arm/boot/dts/ changes in the same patch.
 
-This tooling is very impressive. It makes possible an idea that I had a 
-while ago, to help make code review more efficient. It works like this. 
+Cheers,
 
-Suppose a patch, p, is the difference between the new tree, n, and the old 
-tree, o. That is, p = n - o.
-
-Now let clang-tidy be the transformation 't'. This gets you a much more 
-readable patch submission, P = t(n) - t(o).
-
-The only difficulty is that, if I submit P intead of p then 'git am' will 
-probably reject it. This is solved by a little tooling around git, such 
-that, should a patch P fail to apply, the relevant files are automatically 
-reformatted with the officially endorsed transformation t, to generate a 
-minimal cleanup patch, such that P can be automatically applied on top.
-
-If the patch submission process required* that every patch submission was 
-generated like P and not like p, it would immediately eliminate all 
-clean-up patches from the workload of all reviewers, and also make the 
-reviewers' job easier because all submissions are now formatted correctly, 
-and also avoid time lost to round-trips, such as, "you can have a 
-reviewed-by if you respin to fix some minor style issues".
-
-* Enforcing this, e.g. with checkpatch, is slightly more complicated, but 
-it works the same way: generate a minimal cleanup patch for the relevant 
-files, apply the patch-to-be-submitted, and finally confirm that the 
-modified files are unchanged under t.
+Joel
