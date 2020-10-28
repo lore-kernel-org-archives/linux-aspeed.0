@@ -1,69 +1,49 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Wed, 28 Oct 2020 05:32:43 +0000
-Subject: [PATCH 1/3] ARM: dts: aspeed: amd-ethanolx: Update KCS nodes to
- use v2 binding
-In-Reply-To: <CACPK8XcgKTEEfPL54Spd_AQTdJVm=xt+rqbteaYygLQw-GKRcQ@mail.gmail.com>
-References: <20201027123722.2935-1-aladyshev22@gmail.com>
- <CACPK8XcgKTEEfPL54Spd_AQTdJVm=xt+rqbteaYygLQw-GKRcQ@mail.gmail.com>
-Message-ID: <CACPK8XeO2Cin2bNkjoHz-oK22mRb0LBHSYRTtd56r5trmihP-g@mail.gmail.com>
+Date: Wed, 28 Oct 2020 05:51:18 +0000
+Subject: [PATCH] arm: dts: aspeed-bmc-tiogapass: enable second MAC
+In-Reply-To: <20200930192507.27847-1-fercerpav@gmail.com>
+References: <20200930192507.27847-1-fercerpav@gmail.com>
+Message-ID: <CACPK8XdMXBUYZxYnvLeZ1V=mT6=uMhy6rNZ9dsksw0_yf6obeA@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 28 Oct 2020 at 05:25, Joel Stanley <joel@jms.id.au> wrote:
+On Wed, 30 Sep 2020 at 19:27, Paul Fertser <fercerpav@gmail.com> wrote:
 >
-> On Tue, 27 Oct 2020 at 12:38, Konstantin Aladyshev
-> <aladyshev22@gmail.com> wrote:
-> >
-> > KCS nodes compatible property in the 'aspeed-g5.dtsi' file was
-> > changed to use v2 binding in the commit fa4c8ec6feaa
-> > ("ARM: dts: aspeed: Change KCS nodes to v2 binding").
-> > For the proper initialization of /dev/ipmi-kcs* devices
-> > KCS node variables also need to be changed to use v2 binding.
-> >
-> > Signed-off-by: Konstantin Aladyshev <aladyshev22@gmail.com>
+> Tioga Pass reference design includes Intel I210 Ethernet controller
+> connected to the BMC with NC/SI.
 >
-> Fixes: 09f5f680707e ("ipmi: kcs: aspeed: Implement v2 bindings")
-
-Actually, this is probably better:
-
-Fixes: fa4c8ec6feaa ("ARM: dts: aspeed: Change KCS nodes to v2 binding")
-
-I slightly reworked your commit message when applying.
-
-> Reviewed-by: Joel Stanley <joel@jms.id.au>
+> MAC readout is not supported.
 >
-> > ---
-> >  arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts | 6 +++---
-> >  1 file changed, 3 insertions(+), 3 deletions(-)
-> >
-> > diff --git a/arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts b/arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts
-> > index 60ba86f3e5bc..89ddc3847222 100644
-> > --- a/arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts
-> > +++ b/arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts
-> > @@ -139,17 +139,17 @@
-> >
-> >  &kcs1 {
-> >         status = "okay";
-> > -       kcs_addr = <0x60>;
-> > +       aspeed,lpc-io-reg = <0x60>;
-> >  };
-> >
-> >  &kcs2 {
-> >         status = "okay";
-> > -       kcs_addr = <0x62>;
-> > +       aspeed,lpc-io-reg = <0x62>;
-> >  };
-> >
-> >  &kcs4 {
-> >         status = "okay";
-> > -       kcs_addr = <0x97DE>;
-> > +       aspeed,lpc-io-reg = <0x97DE>;
-> >  };
-> >
-> >  &lpc_snoop {
-> > --
-> > 2.17.1
-> >
+> Signed-off-by: Paul Fertser <fercerpav@gmail.com>
+
+Vijay, can I get a review from you on this one please?
+
+> ---
+>  arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts | 8 ++++++++
+>  1 file changed, 8 insertions(+)
+>
+> diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
+> index 2d44d9ad4e40..b2ba798bf3c4 100644
+> --- a/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
+> +++ b/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
+> @@ -196,6 +196,14 @@
+>         use-ncsi;
+>  };
+>
+> +&mac1 {
+> +       status = "okay";
+> +
+> +       pinctrl-names = "default";
+> +       pinctrl-0 = <&pinctrl_rmii2_default>;
+> +       use-ncsi;
+> +};
+> +
+>  &adc {
+>         status = "okay";
+>  };
+> --
+> 2.17.1
+>
