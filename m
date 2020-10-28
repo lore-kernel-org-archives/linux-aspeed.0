@@ -1,32 +1,59 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Wed, 28 Oct 2020 05:12:56 +0000
-Subject: [PATCH 1/3] Arm: dts: aspeed-g6: Fix the register range of gpio
-In-Reply-To: <49ef1445-ddb5-41fb-b9f5-f885a1784e77@www.fastmail.com>
-References: <20201012033150.21056-1-billy_tsai@aspeedtech.com>
- <20201012033150.21056-2-billy_tsai@aspeedtech.com>
- <49ef1445-ddb5-41fb-b9f5-f885a1784e77@www.fastmail.com>
-Message-ID: <CACPK8Xc-rFMkv6_VVizF0F8uqQQC=rko=P_LhC0CphJH+_VFYA@mail.gmail.com>
+Date: Wed, 28 Oct 2020 05:25:54 +0000
+Subject: [PATCH 1/3] ARM: dts: aspeed: amd-ethanolx: Update KCS nodes to
+ use v2 binding
+In-Reply-To: <20201027123722.2935-1-aladyshev22@gmail.com>
+References: <20201027123722.2935-1-aladyshev22@gmail.com>
+Message-ID: <CACPK8XcgKTEEfPL54Spd_AQTdJVm=xt+rqbteaYygLQw-GKRcQ@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, 26 Oct 2020 at 01:05, Andrew Jeffery <andrew@aj.id.au> wrote:
+On Tue, 27 Oct 2020 at 12:38, Konstantin Aladyshev
+<aladyshev22@gmail.com> wrote:
 >
+> KCS nodes compatible property in the 'aspeed-g5.dtsi' file was
+> changed to use v2 binding in the commit fa4c8ec6feaa
+> ("ARM: dts: aspeed: Change KCS nodes to v2 binding").
+> For the proper initialization of /dev/ipmi-kcs* devices
+> KCS node variables also need to be changed to use v2 binding.
 >
+> Signed-off-by: Konstantin Aladyshev <aladyshev22@gmail.com>
+
+Fixes: 09f5f680707e ("ipmi: kcs: aspeed: Implement v2 bindings")
+Reviewed-by: Joel Stanley <joel@jms.id.au>
+
+> ---
+>  arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts | 6 +++---
+>  1 file changed, 3 insertions(+), 3 deletions(-)
 >
-> On Mon, 12 Oct 2020, at 14:01, Billy Tsai wrote:
-> > This patch is used to fix the memory range of gpio0
-> >
-> > Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
+> diff --git a/arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts b/arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts
+> index 60ba86f3e5bc..89ddc3847222 100644
+> --- a/arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts
+> +++ b/arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts
+> @@ -139,17 +139,17 @@
 >
-> Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
-
-I've applied this with:
-
-Fixes: 8dbcb5b709b9 ("ARM: dts: aspeed-g6: Add gpio devices")
-
-Cheers,
-
-Joel
+>  &kcs1 {
+>         status = "okay";
+> -       kcs_addr = <0x60>;
+> +       aspeed,lpc-io-reg = <0x60>;
+>  };
+>
+>  &kcs2 {
+>         status = "okay";
+> -       kcs_addr = <0x62>;
+> +       aspeed,lpc-io-reg = <0x62>;
+>  };
+>
+>  &kcs4 {
+>         status = "okay";
+> -       kcs_addr = <0x97DE>;
+> +       aspeed,lpc-io-reg = <0x97DE>;
+>  };
+>
+>  &lpc_snoop {
+> --
+> 2.17.1
+>
