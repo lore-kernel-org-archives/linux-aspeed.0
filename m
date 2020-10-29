@@ -1,63 +1,68 @@
-From: Supreeth Venkatesh <supreeth.venkatesh@amd.com>
-Date: Wed, 28 Oct 2020 10:59:45 -0500
-Subject: [PATCH 2/3] ARM: dts: aspeed: amd-ethanolx: Enable KCS channel 3
-In-Reply-To: <CACPK8XeaWbrWBKonxqW0Gu2AnB3mXBNXsEDmsEP_hzT1e8gX1w@mail.gmail.com>
-References: <20201027123722.2935-1-aladyshev22@gmail.com>
- <20201027123722.2935-2-aladyshev22@gmail.com>
- <CACPK8XeaWbrWBKonxqW0Gu2AnB3mXBNXsEDmsEP_hzT1e8gX1w@mail.gmail.com>
-Message-ID: <5e829382-3a6b-7905-52ea-3ae274dd60b1@amd.com>
+From: Samuel Holland <samuel@sholland.org>
+Date: Wed, 28 Oct 2020 21:25:14 -0500
+Subject: [PATCH 1/1] clk: aspeed: modify some default clks are critical
+In-Reply-To: <160269577311.884498.8429245140509326318@swboyd.mtv.corp.google.com>
+References: <20200928070108.14040-1-ryan_chen@aspeedtech.com>
+ <20200928070108.14040-2-ryan_chen@aspeedtech.com>
+ <160264382296.310579.9835482254268204873@swboyd.mtv.corp.google.com>
+ <CACPK8Xe-_hTey7hTJjG2-EcDsTN0qOw3bWBcrZZohEK3QOJuvg@mail.gmail.com>
+ <160269577311.884498.8429245140509326318@swboyd.mtv.corp.google.com>
+Message-ID: <adadc9ef-32ab-0a79-327c-c499c1c04093@sholland.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Thanks Konstantin for this patch.
-Thanks Joel for reviewing this.
+Stephen,
 
-On 10/28/20 12:28 AM, Joel Stanley wrote:
-> [CAUTION: External Email]
-> 
-> On Tue, 27 Oct 2020 at 12:41, Konstantin Aladyshev
-> <aladyshev22@gmail.com> wrote:
+On 10/14/20 12:16 PM, Stephen Boyd wrote:
+> Quoting Joel Stanley (2020-10-13 22:28:00)
+>> On Wed, 14 Oct 2020 at 02:50, Stephen Boyd <sboyd@kernel.org> wrote:
+>>>
+>>> Quoting Ryan Chen (2020-09-28 00:01:08)
+>>>> In ASPEED SoC LCLK is LPC clock for all SuperIO device, UART1/UART2 are
+>>>> default for Host SuperIO UART device, eSPI clk for Host eSPI bus access
+>>>> eSPI slave channel, those clks can't be disable should keep default,
+>>>> otherwise will affect Host side access SuperIO and SPI slave device.
+>>>>
+>>>> Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
+>>>> ---
+>>>
+>>> Is there resolution on this thread?
 >>
->> The KCS interface on the LPC channel 3 in the controller
->> is used for the in-band BMC<->BIOS IPMI communication.
->> 0xCA2 is a default host CPU LPC IO address for this
->> interface.
+>> Not yet.
 >>
->> Signed-off-by: Konstantin Aladyshev <aladyshev22@gmail.com>
+>> We have a system where the BMC (management controller) controls some
+>> clocks, but the peripherals that it's clocking are outside the BMC's
+>> control. In this case, the host processor us using some UARTs and what
+>> not independent of any code running on the BMC.
+>>
+>> Ryan wants to have them marked as critical so the BMC never powers them down.
+>>
+>> However, there are systems that don't use this part of the soc, so for
+>> those implementations they are not critical and Linux on the BMC can
+>> turn them off.
+>>
+>> Do you have any thoughts? Has anyone solved a similar problem already?
+>>
 > 
-> I don't have any docs on the platform so I'll wait for a review from
-> Supreeth before applying this one.
-Done.
+> Is this critical clocks in DT? Where we want to have different DT for
+> different device configurations to indicate that some clks should be
+> marked critical so they're never turned off and other times they aren't
+> so they're turned off?
 > 
-> It's a correct use of the bindings:
-> 
-> Reviewed-by: Joel Stanley <joel@jms.id.au>
-Reviewed-by: Supreeth Venkatesh <supreeth.venkatesh@amd.com>
+> It also sounds sort of like the protected-clocks binding. Where you
+> don't want to touch certain clks depending on the usage configuration of
+> the SoC. There is a patch to make that generic that I haven't applied
+> because it looks wrong at first glance[1]. Maybe not registering those
+> clks to the framework on the configuration that Ryan has is good enough?
 
-> 
->> ---
->>  arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts | 5 +++++
->>  1 file changed, 5 insertions(+)
->>
->> diff --git a/arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts b/arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts
->> index 89ddc3847222..2a86bda8afd8 100644
->> --- a/arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts
->> +++ b/arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts
->> @@ -147,6 +147,11 @@
->>         aspeed,lpc-io-reg = <0x62>;
->>  };
->>
->> +&kcs3 {
->> +       status = "okay";
->> +       aspeed,lpc-io-reg = <0xCA2>;
->> +};
->> +
->>  &kcs4 {
->>         status = "okay";
->>         aspeed,lpc-io-reg = <0x97DE>;
->> --
->> 2.17.1
->>
+Could you please be more specific than the patch "looks wrong"? I'm more than
+happy to update the patch to address your concerns, but I cannot do that unless
+I know what your concerns are.
+
+Regards,
+Samuel
+
+> [1] https://lore.kernel.org/r/20200903040015.5627-2-samuel at sholland.org
