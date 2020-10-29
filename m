@@ -1,68 +1,40 @@
-From: Samuel Holland <samuel@sholland.org>
-Date: Wed, 28 Oct 2020 21:25:14 -0500
-Subject: [PATCH 1/1] clk: aspeed: modify some default clks are critical
-In-Reply-To: <160269577311.884498.8429245140509326318@swboyd.mtv.corp.google.com>
-References: <20200928070108.14040-1-ryan_chen@aspeedtech.com>
- <20200928070108.14040-2-ryan_chen@aspeedtech.com>
- <160264382296.310579.9835482254268204873@swboyd.mtv.corp.google.com>
- <CACPK8Xe-_hTey7hTJjG2-EcDsTN0qOw3bWBcrZZohEK3QOJuvg@mail.gmail.com>
- <160269577311.884498.8429245140509326318@swboyd.mtv.corp.google.com>
-Message-ID: <adadc9ef-32ab-0a79-327c-c499c1c04093@sholland.org>
+From: Dylan Hung <dylan_hung@aspeedtech.com>
+Date: Thu, 29 Oct 2020 14:27:23 +0800
+Subject: [PATCH] ARM: dts: aspeed-g6: Fix HVI3C function-group in pinctrl dtsi
+Message-ID: <20201029062723.20798-1-dylan_hung@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Stephen,
+The HVI3C shall be a group of I3C function, not an independent function.
+Correct the function name from "HVI3C" to "I3C".
 
-On 10/14/20 12:16 PM, Stephen Boyd wrote:
-> Quoting Joel Stanley (2020-10-13 22:28:00)
->> On Wed, 14 Oct 2020 at 02:50, Stephen Boyd <sboyd@kernel.org> wrote:
->>>
->>> Quoting Ryan Chen (2020-09-28 00:01:08)
->>>> In ASPEED SoC LCLK is LPC clock for all SuperIO device, UART1/UART2 are
->>>> default for Host SuperIO UART device, eSPI clk for Host eSPI bus access
->>>> eSPI slave channel, those clks can't be disable should keep default,
->>>> otherwise will affect Host side access SuperIO and SPI slave device.
->>>>
->>>> Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
->>>> ---
->>>
->>> Is there resolution on this thread?
->>
->> Not yet.
->>
->> We have a system where the BMC (management controller) controls some
->> clocks, but the peripherals that it's clocking are outside the BMC's
->> control. In this case, the host processor us using some UARTs and what
->> not independent of any code running on the BMC.
->>
->> Ryan wants to have them marked as critical so the BMC never powers them down.
->>
->> However, there are systems that don't use this part of the soc, so for
->> those implementations they are not critical and Linux on the BMC can
->> turn them off.
->>
->> Do you have any thoughts? Has anyone solved a similar problem already?
->>
-> 
-> Is this critical clocks in DT? Where we want to have different DT for
-> different device configurations to indicate that some clks should be
-> marked critical so they're never turned off and other times they aren't
-> so they're turned off?
-> 
-> It also sounds sort of like the protected-clocks binding. Where you
-> don't want to touch certain clks depending on the usage configuration of
-> the SoC. There is a patch to make that generic that I haven't applied
-> because it looks wrong at first glance[1]. Maybe not registering those
-> clks to the framework on the configuration that Ryan has is good enough?
+Signed-off-by: Dylan Hung <dylan_hung@aspeedtech.com>
+---
+ arch/arm/boot/dts/aspeed-g6-pinctrl.dtsi | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Could you please be more specific than the patch "looks wrong"? I'm more than
-happy to update the patch to address your concerns, but I cannot do that unless
-I know what your concerns are.
+diff --git a/arch/arm/boot/dts/aspeed-g6-pinctrl.dtsi b/arch/arm/boot/dts/aspeed-g6-pinctrl.dtsi
+index 7028e21bdd98..910eacc8ad3b 100644
+--- a/arch/arm/boot/dts/aspeed-g6-pinctrl.dtsi
++++ b/arch/arm/boot/dts/aspeed-g6-pinctrl.dtsi
+@@ -208,12 +208,12 @@
+ 	};
+ 
+ 	pinctrl_hvi3c3_default: hvi3c3_default {
+-		function = "HVI3C3";
++		function = "I3C3";
+ 		groups = "HVI3C3";
+ 	};
+ 
+ 	pinctrl_hvi3c4_default: hvi3c4_default {
+-		function = "HVI3C4";
++		function = "I3C4";
+ 		groups = "HVI3C4";
+ 	};
+ 
+-- 
+2.17.1
 
-Regards,
-Samuel
-
-> [1] https://lore.kernel.org/r/20200903040015.5627-2-samuel at sholland.org
