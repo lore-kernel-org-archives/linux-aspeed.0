@@ -1,54 +1,55 @@
-From: Joel Stanley <joel@jms.id.au>
-Date: Fri, 30 Oct 2020 03:47:45 +0000
-Subject: [PATCH] ARM: dts: aspeed-g6: Fix HVI3C function-group in pinctrl
- dtsi
-In-Reply-To: <20201029062723.20798-1-dylan_hung@aspeedtech.com>
-References: <20201029062723.20798-1-dylan_hung@aspeedtech.com>
-Message-ID: <CACPK8XcJ6oWkj04kb3cjNkYY4q48Vk2p7zitCDp1_Q8etjFb1w@mail.gmail.com>
+From: Andrew Jeffery <andrew@aj.id.au>
+Date: Fri, 30 Oct 2020 14:58:21 +1030
+Subject: [PATCH] pinctrl: aspeed: Fix GPI only function problem.
+In-Reply-To: <20201027084417.10137-1-billy_tsai@aspeedtech.com>
+References: <20201027084417.10137-1-billy_tsai@aspeedtech.com>
+Message-ID: <0d5e5d0a-cc74-4cb7-aed0-bb8c62661339@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, 29 Oct 2020 at 06:28, Dylan Hung <dylan_hung@aspeedtech.com> wrote:
->
-> The HVI3C shall be a group of I3C function, not an independent function.
-> Correct the function name from "HVI3C" to "I3C".
->
-> Signed-off-by: Dylan Hung <dylan_hung@aspeedtech.com>
+Hi Billy,
 
-Fixes: f510f04c8c83 ("ARM: dts: aspeed: Add AST2600 pinmux nodes")
+On Tue, 27 Oct 2020, at 19:14, Billy Tsai wrote:
+> Some gpio pin at aspeed soc is input only and the prefix name of these
+> pin is "GPI" only. This patch fine-tune the condition of GPIO check from
+> "GPIO" to "GPI".
+> 
+> Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
 
-I have a few device tree fixes for 5.10 that I will include this in.
+I'd like it if we were a bit more specific in the commit message, and even 
+better if we update the comment in the code. A quick look at the code suggests 
+this issue affects GPIO banks D and E in the AST2400 and AST2500, and banks T 
+and U in the AST2600.
+
+Functionally I think the patch is fine.
 
 Cheers,
 
-Joel
+Andrew
 
 > ---
->  arch/arm/boot/dts/aspeed-g6-pinctrl.dtsi | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
->
-> diff --git a/arch/arm/boot/dts/aspeed-g6-pinctrl.dtsi b/arch/arm/boot/dts/aspeed-g6-pinctrl.dtsi
-> index 7028e21bdd98..910eacc8ad3b 100644
-> --- a/arch/arm/boot/dts/aspeed-g6-pinctrl.dtsi
-> +++ b/arch/arm/boot/dts/aspeed-g6-pinctrl.dtsi
-> @@ -208,12 +208,12 @@
->         };
->
->         pinctrl_hvi3c3_default: hvi3c3_default {
-> -               function = "HVI3C3";
-> +               function = "I3C3";
->                 groups = "HVI3C3";
->         };
->
->         pinctrl_hvi3c4_default: hvi3c4_default {
-> -               function = "HVI3C4";
-> +               function = "I3C4";
->                 groups = "HVI3C4";
->         };
->
-> --
+>  drivers/pinctrl/aspeed/pinctrl-aspeed.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/pinctrl/aspeed/pinctrl-aspeed.c 
+> b/drivers/pinctrl/aspeed/pinctrl-aspeed.c
+> index 53f3f8aec695..a2f5ede3f897 100644
+> --- a/drivers/pinctrl/aspeed/pinctrl-aspeed.c
+> +++ b/drivers/pinctrl/aspeed/pinctrl-aspeed.c
+> @@ -292,7 +292,7 @@ static bool aspeed_expr_is_gpio(const struct 
+> aspeed_sig_expr *expr)
+>  	 *
+>  	 * expr->signal might look like "GPIOT3" in the GPIO case.
+>  	 */
+> -	return strncmp(expr->signal, "GPIO", 4) == 0;
+> +	return strncmp(expr->signal, "GPI", 3) == 0;
+>  }
+>  
+>  static bool aspeed_gpio_in_exprs(const struct aspeed_sig_expr **exprs)
+> -- 
 > 2.17.1
+> 
 >
