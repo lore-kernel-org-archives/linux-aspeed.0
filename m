@@ -1,42 +1,44 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Sun, 1 Nov 2020 23:51:23 +0000
-Subject: [PATCH] soc: aspeed: remove unneeded semicolon
-In-Reply-To: <20201101150622.2288203-1-trix@redhat.com>
-References: <20201101150622.2288203-1-trix@redhat.com>
-Message-ID: <CACPK8XeCJpbh+F4EzfmGJRt2JJHPjKGK2dyqF9BV_NUFYgc=nw@mail.gmail.com>
+Date: Sun, 1 Nov 2020 23:58:44 +0000
+Subject: [PATCH] ARM: dts: aspeed: tiogapass: Remove vuart
+In-Reply-To: <20200813190431.3331026-1-vijaykhemka@fb.com>
+References: <20200813190431.3331026-1-vijaykhemka@fb.com>
+Message-ID: <CACPK8Xe8cfQO2=+66_xE3gVWnqThWqPkhVuELpOowdaXORZCbw@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sun, 1 Nov 2020 at 15:06, <trix@redhat.com> wrote:
+On Thu, 13 Aug 2020 at 19:04, Vijay Khemka <vijaykhemka@fb.com> wrote:
 >
-> From: Tom Rix <trix@redhat.com>
+> Removed vuart for facebook tiogapass platform as it uses uart2 and
+> uart3 pin with aspeed uart routing feature.
 >
-> A semicolon is not needed after a switch statement.
+> Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
 
-Thanks Tom. I will add this to the aspeed soc tree.
+Reviewed-by: Joel Stanley <joel@jms.id.au>
 
->
-> Signed-off-by: Tom Rix <trix@redhat.com>
 > ---
->  drivers/soc/aspeed/aspeed-socinfo.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts | 5 -----
+>  1 file changed, 5 deletions(-)
 >
-> diff --git a/drivers/soc/aspeed/aspeed-socinfo.c b/drivers/soc/aspeed/aspeed-socinfo.c
-> index 26db42ef6aae..20a1d4aeb051 100644
-> --- a/drivers/soc/aspeed/aspeed-socinfo.c
-> +++ b/drivers/soc/aspeed/aspeed-socinfo.c
-> @@ -51,7 +51,7 @@ static const char *siliconid_to_rev(u32 siliconid)
->                 return "A1";
->         case 3:
->                 return "A2";
-> -       };
-> +       }
+> diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
+> index 2d44d9ad4e40..e6ad821a8635 100644
+> --- a/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
+> +++ b/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
+> @@ -82,11 +82,6 @@ &lpc_ctrl {
+>         status = "okay";
+>  };
 >
->         return "??";
->  }
+> -&vuart {
+> -       // VUART Host Console
+> -       status = "okay";
+> -};
+> -
+>  &uart1 {
+>         // Host Console
+>         status = "okay";
 > --
-> 2.18.1
+> 2.24.1
 >
