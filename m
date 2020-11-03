@@ -1,58 +1,96 @@
-From: kernel test robot <lkp@intel.com>
-Date: Tue, 3 Nov 2020 08:33:30 +0800
-Subject: [PATCH 4/4] spi: aspeed: Add ASPEED FMC/SPI memory controller
- driver
-In-Reply-To: <20201102075213.32404-5-chin-ting_kuo@aspeedtech.com>
-References: <20201102075213.32404-5-chin-ting_kuo@aspeedtech.com>
-Message-ID: <202011030837.7N6VAUp7-lkp@intel.com>
+From: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
+Date: Tue, 3 Nov 2020 15:21:59 +0800
+Subject: [v2 1/4] dt-bindings: spi: Add binding file for ASPEED FMC/SPI memory
+ controller
+In-Reply-To: <20201103072202.24705-1-chin-ting_kuo@aspeedtech.com>
+References: <20201103072202.24705-1-chin-ting_kuo@aspeedtech.com>
+Message-ID: <20201103072202.24705-2-chin-ting_kuo@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Chin-Ting,
+Create binding file with YAML syntax for ASPEED FMC/SPI memory controller.
 
-Thank you for the patch! Perhaps something to improve:
-
-[auto build test WARNING on spi/for-next]
-[also build test WARNING on joel-aspeed/for-next robh/for-next v5.10-rc2 next-20201102]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch]
-
-url:    https://github.com/0day-ci/linux/commits/Chin-Ting-Kuo/Porting-ASPEED-FMC-SPI-memory-controller-driver/20201102-155338
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/spi.git for-next
-config: i386-randconfig-s002-20201103 (attached as .config)
-compiler: gcc-9 (Debian 9.3.0-15) 9.3.0
-reproduce:
-        # apt-get install sparse
-        # sparse version: v0.6.3-76-gf680124b-dirty
-        # https://github.com/0day-ci/linux/commit/ea03a6d2bc571f270832134f8fa4aa7d8df7db11
-        git remote add linux-review https://github.com/0day-ci/linux
-        git fetch --no-tags linux-review Chin-Ting-Kuo/Porting-ASPEED-FMC-SPI-memory-controller-driver/20201102-155338
-        git checkout ea03a6d2bc571f270832134f8fa4aa7d8df7db11
-        # save the attached .config to linux build tree
-        make W=1 C=1 CF='-fdiagnostic-prefix -D__CHECK_ENDIAN__' ARCH=i386 
-
-If you fix the issue, kindly add following tag as appropriate
-Reported-by: kernel test robot <lkp@intel.com>
-
-
-"sparse warnings: (new ones prefixed by >>)"
->> drivers/spi/spi-aspeed.c:147:10: sparse: sparse: symbol 'aspeed_spi_get_io_mode' was not declared. Should it be static?
->> drivers/spi/spi-aspeed.c:298:5: sparse: sparse: symbol 'aspeed_2600_spi_timing_calibration' was not declared. Should it be static?
->> drivers/spi/spi-aspeed.c:435:6: sparse: sparse: symbol 'aspeed_2600_adjust_decode_sz' was not declared. Should it be static?
-
-Please review and possibly fold the followup patch.
-
+Signed-off-by: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
 ---
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: .config.gz
-Type: application/gzip
-Size: 34023 bytes
-Desc: not available
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20201103/cde795f1/attachment-0001.gz>
+ .../bindings/spi/aspeed,spi-aspeed.yaml       | 66 +++++++++++++++++++
+ 1 file changed, 66 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/spi/aspeed,spi-aspeed.yaml
+
+diff --git a/Documentation/devicetree/bindings/spi/aspeed,spi-aspeed.yaml b/Documentation/devicetree/bindings/spi/aspeed,spi-aspeed.yaml
+new file mode 100644
+index 000000000000..41b9692c7226
+--- /dev/null
++++ b/Documentation/devicetree/bindings/spi/aspeed,spi-aspeed.yaml
+@@ -0,0 +1,66 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/spi/aspeed,spi-aspeed.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: SPI memory controller for ASPEED SoCs
++
++maintainers:
++  - Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
++
++description: |
++  There are three SPI memory controllers embedded in a ASPEED SoC.
++  They are usually connected to SPI NOR flashes. Each of them has
++  more than a chip select. They also support SPI single, dual and
++  quad IO modes for SPI NOR flash.
++
++allOf:
++  - $ref: /spi/spi-controller.yaml#
++
++properties:
++  compatible:
++    oneOf:
++      - items:
++          - enum:
++              - aspeed,ast2600-fmc
++              - aspeed,ast2600-spi
++
++  reg:
++    items:
++      - description: the control register location and length
++      - description: the flash memory mapping address and length
++
++  clocks:
++    description: AHB bus clock which will be converted to SPI bus clock
++
++required:
++  - compatible
++  - reg
++  - clocks
++  - num-cs
++
++unevaluatedProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/clock/ast2600-clock.h>
++    spi1: spi at 1e630000 {
++      compatible = "aspeed,ast2600-spi";
++      reg = <0x1e630000 0xc4>, <0x30000000 0x10000000>;
++      reg-names = "spi_ctrl_reg", "spi_mmap";
++      clocks = <&syscon ASPEED_CLK_AHB>;
++      num-cs = <2>;
++      #address-cells = <1>;
++      #size-cells = <0>;
++      flash at 0 {
++        compatible = "jedec,spi-nor";
++        reg = <0>;
++        spi-max-frequency = <50000000>;
++      };
++      flash at 1 {
++        compatible = "jedec,spi-nor";
++        reg = <1>;
++        spi-max-frequency = <50000000>;
++      };
++    };
+-- 
+2.17.1
+
