@@ -1,91 +1,29 @@
-From: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
-Date: Thu, 5 Nov 2020 20:03:29 +0800
-Subject: [v3 2/4] ARM: dts: aspeed: ast2600: Update FMC/SPI controller setting
- for spi-aspeed.c
-In-Reply-To: <20201105120331.9853-1-chin-ting_kuo@aspeedtech.com>
-References: <20201105120331.9853-1-chin-ting_kuo@aspeedtech.com>
-Message-ID: <20201105120331.9853-3-chin-ting_kuo@aspeedtech.com>
+From: Linus Walleij <linus.walleij@linaro.org>
+Date: Thu, 5 Nov 2020 15:34:59 +0100
+Subject: [PATCH v2] pinctrl: aspeed: Fix GPI only function problem.
+In-Reply-To: <20201030055450.29613-1-billy_tsai@aspeedtech.com>
+References: <20201027084417.10137-1-billy_tsai@aspeedtech.com>
+ <20201030055450.29613-1-billy_tsai@aspeedtech.com>
+Message-ID: <CACRpkdY+oOWoEVEn8ECckYkUcDUJw2Ts4JMAu0bCbVxs3WNvZg@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-- Adjust the value format of "reg" property:
-  Instead of platform_get_resource(),
-  platform_get_resource_byname() function can be used
-  for more human-readable.
-- Add "num-cs" property for FMC/SPI controller:
-  Each ASPEED FMC/SPI memory controller can support more
-  than a chip select. By "num-cs" property, FMC/SPI
-  controller driver can know how many chip select related
-  registers should be initialized at the probe stage.
-  Besdies, with this property, driver can avoid accessing
-  chip select which CS number is larger than the maximum
-  one supported by the controller.
+On Fri, Oct 30, 2020 at 6:55 AM Billy Tsai <billy_tsai@aspeedtech.com> wrote:
 
-Signed-off-by: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
----
- arch/arm/boot/dts/aspeed-g6.dtsi | 18 ++++++++++++------
- 1 file changed, 12 insertions(+), 6 deletions(-)
+> Some gpio pin at aspeed soc is input only and the prefix name of these
+> pin is "GPI" only.
+> This patch fine-tune the condition of GPIO check from "GPIO" to "GPI"
+> and it will fix the usage error of banks D and E in the AST2400/AST2500
+> and banks T and U in the AST2600.
+>
+> Fixes: 4d3d0e4272d8 ("pinctrl: Add core support for Aspeed SoCs")
+>
+> Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
 
-diff --git a/arch/arm/boot/dts/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed-g6.dtsi
-index b58220a49cbd..8a5c798db54e 100644
---- a/arch/arm/boot/dts/aspeed-g6.dtsi
-+++ b/arch/arm/boot/dts/aspeed-g6.dtsi
-@@ -89,14 +89,16 @@
- 			};
- 
- 		fmc: spi at 1e620000 {
--			reg = < 0x1e620000 0xc4
--				0x20000000 0x10000000 >;
-+			reg = <0x1e620000 0xc4>,
-+				<0x20000000 0x10000000>;
-+			reg-names = "spi_ctrl_reg", "spi_mmap";
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 			compatible = "aspeed,ast2600-fmc";
- 			clocks = <&syscon ASPEED_CLK_AHB>;
- 			status = "disabled";
- 			interrupts = <GIC_SPI 39 IRQ_TYPE_LEVEL_HIGH>;
-+			num-cs = <3>;
- 			flash at 0 {
- 				reg = < 0 >;
- 				compatible = "jedec,spi-nor";
-@@ -118,12 +120,14 @@
- 		};
- 
- 		spi1: spi at 1e630000 {
--			reg = < 0x1e630000 0xc4
--				0x30000000 0x10000000 >;
-+			reg = <0x1e630000 0xc4>,
-+				<0x30000000 0x10000000>;
-+			reg-names = "spi_ctrl_reg", "spi_mmap";
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 			compatible = "aspeed,ast2600-spi";
- 			clocks = <&syscon ASPEED_CLK_AHB>;
-+			num-cs = <2>;
- 			status = "disabled";
- 			flash at 0 {
- 				reg = < 0 >;
-@@ -140,12 +144,14 @@
- 		};
- 
- 		spi2: spi at 1e631000 {
--			reg = < 0x1e631000 0xc4
--				0x50000000 0x10000000 >;
-+			reg = < 0x1e631000 0xc4>,
-+				<0x50000000 0x10000000>;
-+			reg-names = "spi_ctrl_reg", "spi_mmap";
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 			compatible = "aspeed,ast2600-spi";
- 			clocks = <&syscon ASPEED_CLK_AHB>;
-+			num-cs = <3>;
- 			status = "disabled";
- 			flash at 0 {
- 				reg = < 0 >;
--- 
-2.17.1
+Thanks Billy, patch applied for fixes!
 
+Yours,
+Linus Walleij
