@@ -1,18 +1,18 @@
 From: Rob Herring <robh@kernel.org>
-Date: Thu, 5 Nov 2020 12:40:36 -0600
-Subject: [v2 1/4] dt-bindings: spi: Add binding file for ASPEED FMC/SPI
+Date: Thu, 5 Nov 2020 16:39:49 -0600
+Subject: [v3 1/4] dt-bindings: spi: Add binding file for ASPEED FMC/SPI
  memory controller
-In-Reply-To: <20201103072202.24705-2-chin-ting_kuo@aspeedtech.com>
-References: <20201103072202.24705-1-chin-ting_kuo@aspeedtech.com>
- <20201103072202.24705-2-chin-ting_kuo@aspeedtech.com>
-Message-ID: <20201105184036.GA1607865@bogus>
+In-Reply-To: <20201105120331.9853-2-chin-ting_kuo@aspeedtech.com>
+References: <20201105120331.9853-1-chin-ting_kuo@aspeedtech.com>
+ <20201105120331.9853-2-chin-ting_kuo@aspeedtech.com>
+Message-ID: <20201105223949.GA1927504@bogus>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Nov 03, 2020 at 03:21:59PM +0800, Chin-Ting Kuo wrote:
+On Thu, Nov 05, 2020 at 08:03:28PM +0800, Chin-Ting Kuo wrote:
 > Create binding file with YAML syntax for ASPEED FMC/SPI memory controller.
 > 
 > Signed-off-by: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
@@ -51,6 +51,9 @@ On Tue, Nov 03, 2020 at 03:21:59PM +0800, Chin-Ting Kuo wrote:
 > +  compatible:
 > +    oneOf:
 > +      - items:
+
+You can drop oneOf (there's only 1) and items.
+
 > +          - enum:
 > +              - aspeed,ast2600-fmc
 > +              - aspeed,ast2600-spi
@@ -63,7 +66,9 @@ On Tue, Nov 03, 2020 at 03:21:59PM +0800, Chin-Ting Kuo wrote:
 > +  clocks:
 > +    description: AHB bus clock which will be converted to SPI bus clock
 
-Need to define how many clocks (maxItems: 1).
+maxItems: 1
+
+Constraints on num-cs values? Or up to 2^32 is good?
 
 > +
 > +required:
