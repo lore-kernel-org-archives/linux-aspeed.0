@@ -1,96 +1,84 @@
 From: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
-Date: Thu, 5 Nov 2020 20:03:28 +0800
-Subject: [v3 1/4] dt-bindings: spi: Add binding file for ASPEED FMC/SPI memory
- controller
+Date: Thu, 5 Nov 2020 20:03:30 +0800
+Subject: [v3 3/4] ARM: dts: aspeed: ast2600-evb: Adjust SPI flash configuration
 In-Reply-To: <20201105120331.9853-1-chin-ting_kuo@aspeedtech.com>
 References: <20201105120331.9853-1-chin-ting_kuo@aspeedtech.com>
-Message-ID: <20201105120331.9853-2-chin-ting_kuo@aspeedtech.com>
+Message-ID: <20201105120331.9853-4-chin-ting_kuo@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Create binding file with YAML syntax for ASPEED FMC/SPI memory controller.
+- Enable FMC CS1 and SPI2 CS0 SPI NOR flashes since both of
+  these two flashes are mounted on AST2600 EVB by default.
+- Remove spi-max-frequency setting: 50MHz is usual SPI bus
+  frequency adopted on AST2600 EVB which has already been
+  configured in aspeed-g6.dtsi.
 
 Signed-off-by: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
 ---
- .../bindings/spi/aspeed,spi-aspeed.yaml       | 66 +++++++++++++++++++
- 1 file changed, 66 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/spi/aspeed,spi-aspeed.yaml
+ arch/arm/boot/dts/aspeed-ast2600-evb.dts | 26 ++++++++++++++++++++----
+ 1 file changed, 22 insertions(+), 4 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/spi/aspeed,spi-aspeed.yaml b/Documentation/devicetree/bindings/spi/aspeed,spi-aspeed.yaml
-new file mode 100644
-index 000000000000..41b9692c7226
---- /dev/null
-+++ b/Documentation/devicetree/bindings/spi/aspeed,spi-aspeed.yaml
-@@ -0,0 +1,66 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/spi/aspeed,spi-aspeed.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
+diff --git a/arch/arm/boot/dts/aspeed-ast2600-evb.dts b/arch/arm/boot/dts/aspeed-ast2600-evb.dts
+index 8d0f4656aa05..5a2e4612d155 100644
+--- a/arch/arm/boot/dts/aspeed-ast2600-evb.dts
++++ b/arch/arm/boot/dts/aspeed-ast2600-evb.dts
+@@ -96,12 +96,11 @@
+ 
+ &fmc {
+ 	status = "okay";
 +
-+title: SPI memory controller for ASPEED SoCs
+ 	flash at 0 {
+ 		status = "okay";
+ 		m25p,fast-read;
+ 		label = "bmc";
+-		spi-max-frequency = <50000000>;
+-
+ 		partitions {
+ 			compatible = "fixed-partitions";
+ 			#address-cells = <1>;
+@@ -133,18 +132,37 @@
+ 			};
+ 		};
+ 	};
 +
-+maintainers:
-+  - Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
++	flash at 1 {
++		status = "okay";
++		m25p,fast-read;
++		label = "fmc0:1";
++	};
+ };
+ 
+ &spi1 {
+ 	status = "okay";
 +
-+description: |
-+  There are three SPI memory controllers embedded in a ASPEED SoC.
-+  They are usually connected to SPI NOR flashes. Each of them has
-+  more than a chip select. They also support SPI single, dual and
-+  quad IO modes for SPI NOR flash.
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&pinctrl_spi1_default>;
+ 
+ 	flash at 0 {
+ 		status = "okay";
+ 		m25p,fast-read;
+-		label = "pnor";
+-		spi-max-frequency = <100000000>;
++		label = "spi1:0";
++	};
++};
 +
-+allOf:
-+  - $ref: /spi/spi-controller.yaml#
++&spi2 {
++	status = "okay";
 +
-+properties:
-+  compatible:
-+    oneOf:
-+      - items:
-+          - enum:
-+              - aspeed,ast2600-fmc
-+              - aspeed,ast2600-spi
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_spi2_default>;
 +
-+  reg:
-+    items:
-+      - description: the control register location and length
-+      - description: the flash memory mapping address and length
-+
-+  clocks:
-+    description: AHB bus clock which will be converted to SPI bus clock
-+
-+required:
-+  - compatible
-+  - reg
-+  - clocks
-+  - num-cs
-+
-+unevaluatedProperties: false
-+
-+examples:
-+  - |
-+    #include <dt-bindings/clock/ast2600-clock.h>
-+    spi1: spi at 1e630000 {
-+      compatible = "aspeed,ast2600-spi";
-+      reg = <0x1e630000 0xc4>, <0x30000000 0x10000000>;
-+      reg-names = "spi_ctrl_reg", "spi_mmap";
-+      clocks = <&syscon ASPEED_CLK_AHB>;
-+      num-cs = <2>;
-+      #address-cells = <1>;
-+      #size-cells = <0>;
-+      flash at 0 {
-+        compatible = "jedec,spi-nor";
-+        reg = <0>;
-+        spi-max-frequency = <50000000>;
-+      };
-+      flash at 1 {
-+        compatible = "jedec,spi-nor";
-+        reg = <1>;
-+        spi-max-frequency = <50000000>;
-+      };
-+    };
++	flash at 0 {
++		status = "okay";
++		m25p,fast-read;
++		label = "spi2:0";
+ 	};
+ };
+ 
 -- 
 2.17.1
 
