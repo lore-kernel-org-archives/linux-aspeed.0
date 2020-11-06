@@ -1,66 +1,125 @@
 From: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
-Date: Fri, 6 Nov 2020 09:01:42 +0000
-Subject: [v3 4/4] spi: aspeed: Add ASPEED FMC/SPI memory controller driver
-In-Reply-To: <20201105164312.GE4856@sirena.org.uk>
-References: <20201105120331.9853-1-chin-ting_kuo@aspeedtech.com>
- <20201105120331.9853-5-chin-ting_kuo@aspeedtech.com>
- <fd8fa472-53bb-c992-3dc2-5a984a439c07@kaod.org>
- <20201105161132.37eb3265@collabora.com> <20201105164312.GE4856@sirena.org.uk>
-Message-ID: <HK0PR06MB27865D494F91D29B61A5B15BB2ED0@HK0PR06MB2786.apcprd06.prod.outlook.com>
+Date: Fri, 6 Nov 2020 09:03:06 +0000
+Subject: [v2 1/4] dt-bindings: spi: Add binding file for ASPEED FMC/SPI
+ memory controller
+In-Reply-To: <20201105184036.GA1607865@bogus>
+References: <20201103072202.24705-1-chin-ting_kuo@aspeedtech.com>
+ <20201103072202.24705-2-chin-ting_kuo@aspeedtech.com>
+ <20201105184036.GA1607865@bogus>
+Message-ID: <HK0PR06MB27861E37623DDADE1FE5A472B2ED0@HK0PR06MB2786.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Mark,
+Hi Rob,
 
 > -----Original Message-----
-> From: Mark Brown <broonie@kernel.org>
-> Sent: Friday, November 6, 2020 12:43 AM
-> To: Boris Brezillon <boris.brezillon@collabora.com>
-> Subject: Re: [v3 4/4] spi: aspeed: Add ASPEED FMC/SPI memory controller
-> driver
+> From: Rob Herring <robh@kernel.org>
+> Sent: Friday, November 6, 2020 2:41 AM
+> To: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
+> Cc: broonie at kernel.org; joel at jms.id.au; andrew at aj.id.au; clg at kaod.org;
+> bbrezillon at kernel.org; devicetree at vger.kernel.org;
+> linux-kernel at vger.kernel.org; linux-aspeed at lists.ozlabs.org;
+> linux-spi at vger.kernel.org; BMC-SW <BMC-SW@aspeedtech.com>
+> Subject: Re: [v2 1/4] dt-bindings: spi: Add binding file for ASPEED FMC/SPI
+> memory controller
 > 
-> On Thu, Nov 05, 2020 at 04:11:32PM +0100, Boris Brezillon wrote:
-> > C?dric Le Goater <clg@kaod.org> wrote:
+> On Tue, Nov 03, 2020 at 03:21:59PM +0800, Chin-Ting Kuo wrote:
+> > Create binding file with YAML syntax for ASPEED FMC/SPI memory
+> controller.
+> >
+> > Signed-off-by: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
+> > ---
+> >  .../bindings/spi/aspeed,spi-aspeed.yaml       | 66
+> +++++++++++++++++++
+> >  1 file changed, 66 insertions(+)
+> >  create mode 100644
+> > Documentation/devicetree/bindings/spi/aspeed,spi-aspeed.yaml
+> >
+> > diff --git
+> > a/Documentation/devicetree/bindings/spi/aspeed,spi-aspeed.yaml
+> > b/Documentation/devicetree/bindings/spi/aspeed,spi-aspeed.yaml
+> > new file mode 100644
+> > index 000000000000..41b9692c7226
+> > --- /dev/null
+> > +++ b/Documentation/devicetree/bindings/spi/aspeed,spi-aspeed.yaml
+> > @@ -0,0 +1,66 @@
+> > +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause) %YAML 1.2
+> > +---
+> > +$id: http://devicetree.org/schemas/spi/aspeed,spi-aspeed.yaml#
+> > +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> > +
+> > +title: SPI memory controller for ASPEED SoCs
+> > +
+> > +maintainers:
+> > +  - Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
+> > +
+> > +description: |
+> > +  There are three SPI memory controllers embedded in a ASPEED SoC.
+> > +  They are usually connected to SPI NOR flashes. Each of them has
+> > +  more than a chip select. They also support SPI single, dual and
+> > +  quad IO modes for SPI NOR flash.
+> > +
+> > +allOf:
+> > +  - $ref: /spi/spi-controller.yaml#
+> > +
+> > +properties:
+> > +  compatible:
+> > +    oneOf:
+> > +      - items:
+> > +          - enum:
+> > +              - aspeed,ast2600-fmc
+> > +              - aspeed,ast2600-spi
+> > +
+> > +  reg:
+> > +    items:
+> > +      - description: the control register location and length
+> > +      - description: the flash memory mapping address and length
+> > +
+> > +  clocks:
+> > +    description: AHB bus clock which will be converted to SPI bus
+> > + clock
 > 
-> > > Thanks for this driver. It's much cleaner than the previous and we
-> > > should try adding support for the AST2500 SoC also. I guess we can
-> > > keep the old driver for the AST2400 which has a different register layout.
-> > >
-> > > On the patchset, I think we should split this patch in three :
-> > >
-> > >  - basic support
-> > >  - AHB window calculation depending on the flash size
-> > >  - read training support
-> 
-> > I didn't look closely at the implementation, but if the read training
-> > tries to read a section of the NOR, I'd recommend exposing that
-> > feature through spi-mem and letting the SPI-NOR framework trigger the
-> > training instead of doing that at dirmap creation time (remember that
-> > spi-mem is also used for SPI NANDs which use the dirmap API too, and
-> > this training is unlikely to work there).
-> 
-> > The SPI-NOR framework could pass a read op template and a reference
-> > pattern such that all the spi-mem driver has to do is execute the
-> > template op and compare the output to the reference buffer.
-> 
-> That seems like a good idea.
+> Need to define how many clocks (maxItems: 1).
 
-Yes, this idea will be implemented on the next patch version.
+Okay, it will be added on the next patch version.
 
-> 
-> > > We should avoid magic values when setting registers. This is
-> > > confusing and defines are much better.
-> 
-> It does depend a bit on documentation though, it's not a hard requirement.
-
-I will update it on the next patch version.
-
-
-
-Thanks.
+> > +
+> > +required:
+> > +  - compatible
+> > +  - reg
+> > +  - clocks
+> > +  - num-cs
+> > +
+> > +unevaluatedProperties: false
+> > +
+> > +examples:
+> > +  - |
+> > +    #include <dt-bindings/clock/ast2600-clock.h>
+> > +    spi1: spi at 1e630000 {
+> > +      compatible = "aspeed,ast2600-spi";
+> > +      reg = <0x1e630000 0xc4>, <0x30000000 0x10000000>;
+> > +      reg-names = "spi_ctrl_reg", "spi_mmap";
+> > +      clocks = <&syscon ASPEED_CLK_AHB>;
+> > +      num-cs = <2>;
+> > +      #address-cells = <1>;
+> > +      #size-cells = <0>;
+> > +      flash at 0 {
+> > +        compatible = "jedec,spi-nor";
+> > +        reg = <0>;
+> > +        spi-max-frequency = <50000000>;
+> > +      };
+> > +      flash at 1 {
+> > +        compatible = "jedec,spi-nor";
+> > +        reg = <1>;
+> > +        spi-max-frequency = <50000000>;
+> > +      };
+> > +    };
+> > --
+> > 2.17.1
+> >
 
 Best Wishes,
 Chin-Ting
