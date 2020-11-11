@@ -1,85 +1,167 @@
-From: Supreeth Venkatesh <supreeth.venkatesh@amd.com>
-Date: Wed, 11 Nov 2020 16:44:45 -0600
-Subject: [PATCH] ARM: dts: aspeed: amd-ethanolx: Add GPIO line names
-In-Reply-To: <20201111132133.1253-1-aladyshev22@gmail.com>
-References: <20201111132133.1253-1-aladyshev22@gmail.com>
-Message-ID: <1a223f4d-8654-89e9-3b39-97e4b1128700@amd.com>
+From: rentao.bupt@gmail.com <rentao.bupt@gmail.com>
+Date: Wed, 11 Nov 2020 15:23:28 -0800
+Subject: [PATCH 2/4] ARM: dts: aspeed: wedge40: Use common dtsi
+In-Reply-To: <20201111232330.30843-1-rentao.bupt@gmail.com>
+References: <20201111232330.30843-1-rentao.bupt@gmail.com>
+Message-ID: <20201111232330.30843-3-rentao.bupt@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+From: Tao Ren <rentao.bupt@gmail.com>
 
+Simplify the Wedge40 device tree by using the common dtsi.
 
-On 11/11/20 7:21 AM, Konstantin Aladyshev wrote:
-> [CAUTION: External Email]
-> 
-> Add GPIO line names for AMD EthanolX customer reference board.
-> It populates AST2500 GPIO lines (A0-A7 to AC0-AC7) with AMD EthanolX
-> designated names.
-> 
-> Signed-off-by: Konstantin Aladyshev <aladyshev22@gmail.com>
-Reviewed-by: Supreeth Venkatesh <supreeth.venkatesh@amd.com>
-> ---
->  arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts | 44 +++++++++++++++++++
->  1 file changed, 44 insertions(+)
-> 
-> diff --git a/arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts b/arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts
-> index b93ed44eba0c..96ff0aea64e5 100644
-> --- a/arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts
-> +++ b/arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts
-> @@ -97,6 +97,50 @@
->                      &pinctrl_adc4_default>;
->  };
-> 
-> +&gpio {
-> +       status = "okay";
-> +       gpio-line-names =
-> +       /*A0-A7*/       "","","FAULT_LED","CHASSIS_ID_LED","","","","",
-> +       /*B0-B7*/       "","","","","","","","",
-> +       /*C0-C7*/       "CHASSIS_ID_BTN","INTRUDER","AC_LOSS","","","","","",
-> +       /*D0-D7*/       "HDT_DBREQ","LOCAL_SPI_ROM_SEL","FPGA_SPI_ROM_SEL","JTAG_MUX_S",
-> +                       "JTAG_MUX_OE","HDT_SEL","ASERT_WARM_RST_BTN","FPGA_RSVD",
-> +       /*E0-E7*/       "","","MON_P0_PWR_BTN","MON_P0_RST_BTN","MON_P0_NMI_BTN",
-> +                       "MON_P0_PWR_GOOD","MON_PWROK","MON_RESET",
-> +       /*F0-F7*/       "MON_P0_PROCHOT","MON_P1_PROCHOT","MON_P0_THERMTRIP",
-> +                       "MON_P1_THERMTRIP","P0_PRESENT","P1_PRESENT","MON_ATX_PWR_OK","",
-> +       /*G0-G7*/       "BRD_REV_ID_3","BRD_REV_ID_2","BRD_REV_ID_1","BRD_REV_ID_0",
-> +                       "P0_APML_ALERT","P1_APML_ALERT","FPGA ALERT","",
-> +       /*H0-H7*/       "BRD_ID_0","BRD_ID_1","BRD_ID_2","BRD_ID_3",
-> +                       "PCIE_DISCONNECTED","USB_DISCONNECTED","SPARE_0","SPARE_1",
-> +       /*I0-I7*/       "","","","","","","","",
-> +       /*J0-J7*/       "","","","","","","","",
-> +       /*K0-K7*/       "","","","","","","","",
-> +       /*L0-L7*/       "","","","","","","","",
-> +       /*M0-M7*/       "ASSERT_PWR_BTN","ASSERT_RST_BTN","ASSERT_NMI_BTN",
-> +                       "ASSERT_LOCAL_LOCK","ASSERT_P0_PROCHOT","ASSERT_P1_PROCHOT",
-> +                       "ASSERT_CLR_CMOS","ASSERT_BMC_READY",
-> +       /*N0-N7*/       "","","","","","","","",
-> +       /*O0-O7*/       "","","","","","","","",
-> +       /*P0-P7*/       "P0_VDD_CORE_RUN_VRHOT","P0_VDD_SOC_RUN_VRHOT",
-> +                       "P0_VDD_MEM_ABCD_SUS_VRHOT","P0_VDD_MEM_EFGH_SUS_VRHOT",
-> +                       "P1_VDD_CORE_RUN_VRHOT","P1_VDD_SOC_RUN_VRHOT",
-> +                       "P1_VDD_MEM_ABCD_SUS_VRHOT","P1_VDD_MEM_EFGH_SUS_VRHOT",
-> +       /*Q0-Q7*/       "","","","","","","","",
-> +       /*R0-R7*/       "","","","","","","","",
-> +       /*S0-S7*/       "","","","","","","","",
-> +       /*T0-T7*/       "","","","","","","","",
-> +       /*U0-U7*/       "","","","","","","","",
-> +       /*V0-V7*/       "","","","","","","","",
-> +       /*W0-W7*/       "","","","","","","","",
-> +       /*X0-X7*/       "","","","","","","","",
-> +       /*Y0-Y7*/       "","","","","","","","",
-> +       /*Z0-Z7*/       "","","","","","","","",
-> +       /*AA0-AA7*/     "","SENSOR THERM","","","","","","",
-> +       /*AB0-AB7*/     "","","","","","","","",
-> +       /*AC0-AC7*/     "","","","","","","","";
-> +};
-> +
->  //APML for P0
->  &i2c0 {
->         status = "okay";
-> --
-> 2.17.1
-> 
+Signed-off-by: Tao Ren <rentao.bupt@gmail.com>
+---
+ .../boot/dts/aspeed-bmc-facebook-wedge40.dts  | 112 +-----------------
+ 1 file changed, 1 insertion(+), 111 deletions(-)
+
+diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-wedge40.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-wedge40.dts
+index 8c426ba2f8ab..2dcfeae3c92a 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-facebook-wedge40.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-facebook-wedge40.dts
+@@ -2,137 +2,27 @@
+ // Copyright (c) 2018 Facebook Inc.
+ /dts-v1/;
+ 
+-#include "aspeed-g4.dtsi"
++#include "ast2400-facebook-netbmc-common.dtsi"
+ 
+ / {
+ 	model = "Facebook Wedge 40 BMC";
+ 	compatible = "facebook,wedge40-bmc", "aspeed,ast2400";
+ 
+-	aliases {
+-		/*
+-		 * Override the default uart aliases to avoid breaking
+-		 * the legacy applications.
+-		 */
+-		serial0 = &uart5;
+-		serial1 = &uart1;
+-		serial2 = &uart3;
+-		serial3 = &uart4;
+-	};
+-
+ 	chosen {
+ 		stdout-path = &uart3;
+ 		bootargs = "console=ttyS2,9600n8 root=/dev/ram rw";
+ 	};
+ 
+-	memory at 40000000 {
+-		reg = <0x40000000 0x20000000>;
+-	};
+-
+ 	ast-adc-hwmon {
+ 		compatible = "iio-hwmon";
+ 		io-channels = <&adc 5>, <&adc 6>, <&adc 7>, <&adc 8>, <&adc 9>;
+ 	};
+ };
+ 
+-&wdt1 {
+-	status = "okay";
+-	aspeed,reset-type = "system";
+-};
+-
+ &wdt2 {
+ 	status = "disabled";
+ };
+ 
+-&fmc {
+-	status = "okay";
+-	flash at 0 {
+-		status = "okay";
+-		m25p,fast-read;
+-		label = "spi0.0";
+-#include "facebook-bmc-flash-layout.dtsi"
+-	};
+-};
+-
+-&uart1 {
+-	status = "okay";
+-	pinctrl-names = "default";
+-	pinctrl-0 = <&pinctrl_txd1_default
+-		     &pinctrl_rxd1_default>;
+-};
+-
+-&uart3 {
+-	status = "okay";
+-	pinctrl-names = "default";
+-	pinctrl-0 = <&pinctrl_txd3_default
+-		     &pinctrl_rxd3_default>;
+-};
+-
+-&uart4 {
+-	status = "okay";
+-	pinctrl-names = "default";
+-	pinctrl-0 = <&pinctrl_txd4_default
+-		     &pinctrl_rxd4_default
+-		     &pinctrl_ndts4_default>;
+-};
+-
+-&uart5 {
+-	status = "okay";
+-};
+-
+-&mac1 {
+-	status = "okay";
+-	pinctrl-names = "default";
+-	pinctrl-0 = <&pinctrl_rgmii2_default &pinctrl_mdio2_default>;
+-};
+-
+-&i2c0 {
+-	status = "okay";
+-};
+-
+-&i2c1 {
+-	status = "okay";
+-};
+-
+-&i2c2 {
+-	status = "okay";
+-};
+-
+-&i2c3 {
+-	status = "okay";
+-};
+-
+-&i2c4 {
+-	status = "okay";
+-};
+-
+-&i2c5 {
+-	status = "okay";
+-};
+-
+-&i2c6 {
+-	status = "okay";
+-};
+-
+-&i2c7 {
+-	status = "okay";
+-};
+-
+-&i2c8 {
+-	status = "okay";
+-};
+-
+-&i2c11 {
+-	status = "okay";
+-};
+-
+-&i2c12 {
+-	status = "okay";
+-};
+-
+-&vhub {
+-	status = "okay";
+-};
+-
+ &adc {
+ 	status = "okay";
+ };
+-- 
+2.17.1
+
