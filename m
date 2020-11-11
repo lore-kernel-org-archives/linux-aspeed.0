@@ -1,96 +1,56 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Wed, 11 Nov 2020 23:28:02 +0000
-Subject: [PATCH] ARM: dts: aspeed: amd-ethanolx: Add GPIO line names
-In-Reply-To: <1a223f4d-8654-89e9-3b39-97e4b1128700@amd.com>
-References: <20201111132133.1253-1-aladyshev22@gmail.com>
- <1a223f4d-8654-89e9-3b39-97e4b1128700@amd.com>
-Message-ID: <CACPK8Xehikj3ztsez-X-54MhacLKB-1xCnExWt49ELYfjTzecQ@mail.gmail.com>
+Date: Wed, 11 Nov 2020 23:34:10 +0000
+Subject: [PATCH 0/4] ARM: dts: aspeed: Add Facebook Galaxy100 BMC
+In-Reply-To: <20201111232330.30843-1-rentao.bupt@gmail.com>
+References: <20201111232330.30843-1-rentao.bupt@gmail.com>
+Message-ID: <CACPK8XdC8FRKOLQ9e583gVuDrL5829MOfx5L=O68dou6mjW_6g@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 11 Nov 2020 at 22:44, Supreeth Venkatesh
-<supreeth.venkatesh@amd.com> wrote:
+On Wed, 11 Nov 2020 at 23:23, <rentao.bupt@gmail.com> wrote:
 >
+> From: Tao Ren <rentao.bupt@gmail.com>
 >
+> The patch series adds the initial version of device tree for Facebook
+> Galaxy100 (AST2400) BMC.
 >
-> On 11/11/20 7:21 AM, Konstantin Aladyshev wrote:
-> > [CAUTION: External Email]
-> >
-> > Add GPIO line names for AMD EthanolX customer reference board.
-> > It populates AST2500 GPIO lines (A0-A7 to AC0-AC7) with AMD EthanolX
-> > designated names.
-> >
-> > Signed-off-by: Konstantin Aladyshev <aladyshev22@gmail.com>
-> Reviewed-by: Supreeth Venkatesh <supreeth.venkatesh@amd.com>
+> Patch #1 adds common dtsi to minimize duplicated device entries across
+> Facebook Network AST2400 BMC device trees.
+>
+> Patch #2 simplfies Wedge40 device tree by using the common dtsi.
+>
+> Patch #3 simplfies Wedge100 device tree by using the common dtsi.
+>
+> Patch #4 adds the initial version of device tree for Facebook Galaxy100
+> BMC.
 
-Applied to dt-for-v5.11.
+Nice. They look good to me.
 
-Thanks,
+Reviewed-by: Joel Stanley <joel@jms.id.au>
 
-Joel
+Is there another person familiar with the design you would like to
+review before I merge?
 
-> > ---
-> >  arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts | 44 +++++++++++++++++++
-> >  1 file changed, 44 insertions(+)
-> >
-> > diff --git a/arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts b/arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts
-> > index b93ed44eba0c..96ff0aea64e5 100644
-> > --- a/arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts
-> > +++ b/arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts
-> > @@ -97,6 +97,50 @@
-> >                      &pinctrl_adc4_default>;
-> >  };
-> >
-> > +&gpio {
-> > +       status = "okay";
-> > +       gpio-line-names =
-> > +       /*A0-A7*/       "","","FAULT_LED","CHASSIS_ID_LED","","","","",
-> > +       /*B0-B7*/       "","","","","","","","",
-> > +       /*C0-C7*/       "CHASSIS_ID_BTN","INTRUDER","AC_LOSS","","","","","",
-> > +       /*D0-D7*/       "HDT_DBREQ","LOCAL_SPI_ROM_SEL","FPGA_SPI_ROM_SEL","JTAG_MUX_S",
-> > +                       "JTAG_MUX_OE","HDT_SEL","ASERT_WARM_RST_BTN","FPGA_RSVD",
-> > +       /*E0-E7*/       "","","MON_P0_PWR_BTN","MON_P0_RST_BTN","MON_P0_NMI_BTN",
-> > +                       "MON_P0_PWR_GOOD","MON_PWROK","MON_RESET",
-> > +       /*F0-F7*/       "MON_P0_PROCHOT","MON_P1_PROCHOT","MON_P0_THERMTRIP",
-> > +                       "MON_P1_THERMTRIP","P0_PRESENT","P1_PRESENT","MON_ATX_PWR_OK","",
-> > +       /*G0-G7*/       "BRD_REV_ID_3","BRD_REV_ID_2","BRD_REV_ID_1","BRD_REV_ID_0",
-> > +                       "P0_APML_ALERT","P1_APML_ALERT","FPGA ALERT","",
-> > +       /*H0-H7*/       "BRD_ID_0","BRD_ID_1","BRD_ID_2","BRD_ID_3",
-> > +                       "PCIE_DISCONNECTED","USB_DISCONNECTED","SPARE_0","SPARE_1",
-> > +       /*I0-I7*/       "","","","","","","","",
-> > +       /*J0-J7*/       "","","","","","","","",
-> > +       /*K0-K7*/       "","","","","","","","",
-> > +       /*L0-L7*/       "","","","","","","","",
-> > +       /*M0-M7*/       "ASSERT_PWR_BTN","ASSERT_RST_BTN","ASSERT_NMI_BTN",
-> > +                       "ASSERT_LOCAL_LOCK","ASSERT_P0_PROCHOT","ASSERT_P1_PROCHOT",
-> > +                       "ASSERT_CLR_CMOS","ASSERT_BMC_READY",
-> > +       /*N0-N7*/       "","","","","","","","",
-> > +       /*O0-O7*/       "","","","","","","","",
-> > +       /*P0-P7*/       "P0_VDD_CORE_RUN_VRHOT","P0_VDD_SOC_RUN_VRHOT",
-> > +                       "P0_VDD_MEM_ABCD_SUS_VRHOT","P0_VDD_MEM_EFGH_SUS_VRHOT",
-> > +                       "P1_VDD_CORE_RUN_VRHOT","P1_VDD_SOC_RUN_VRHOT",
-> > +                       "P1_VDD_MEM_ABCD_SUS_VRHOT","P1_VDD_MEM_EFGH_SUS_VRHOT",
-> > +       /*Q0-Q7*/       "","","","","","","","",
-> > +       /*R0-R7*/       "","","","","","","","",
-> > +       /*S0-S7*/       "","","","","","","","",
-> > +       /*T0-T7*/       "","","","","","","","",
-> > +       /*U0-U7*/       "","","","","","","","",
-> > +       /*V0-V7*/       "","","","","","","","",
-> > +       /*W0-W7*/       "","","","","","","","",
-> > +       /*X0-X7*/       "","","","","","","","",
-> > +       /*Y0-Y7*/       "","","","","","","","",
-> > +       /*Z0-Z7*/       "","","","","","","","",
-> > +       /*AA0-AA7*/     "","SENSOR THERM","","","","","","",
-> > +       /*AB0-AB7*/     "","","","","","","","",
-> > +       /*AC0-AC7*/     "","","","","","","","";
-> > +};
-> > +
-> >  //APML for P0
-> >  &i2c0 {
-> >         status = "okay";
-> > --
-> > 2.17.1
-> >
+
+>
+> Tao Ren (4):
+>   ARM: dts: aspeed: Common dtsi for Facebook AST2400 Network BMCs
+>   ARM: dts: aspeed: wedge40: Use common dtsi
+>   ARM: dts: aspeed: wedge100: Use common dtsi
+>   ARM: dts: aspeed: Add Facebook Galaxy100 (AST2400) BMC
+>
+>  arch/arm/boot/dts/Makefile                    |   1 +
+>  .../dts/aspeed-bmc-facebook-galaxy100.dts     |  57 +++++++++
+>  .../boot/dts/aspeed-bmc-facebook-wedge100.dts | 120 +++---------------
+>  .../boot/dts/aspeed-bmc-facebook-wedge40.dts  | 112 +---------------
+>  .../dts/ast2400-facebook-netbmc-common.dtsi   | 117 +++++++++++++++++
+>  5 files changed, 191 insertions(+), 216 deletions(-)
+>  create mode 100644 arch/arm/boot/dts/aspeed-bmc-facebook-galaxy100.dts
+>  create mode 100644 arch/arm/boot/dts/ast2400-facebook-netbmc-common.dtsi
+>
+> --
+> 2.17.1
+>
