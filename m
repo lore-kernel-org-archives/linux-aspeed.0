@@ -1,18 +1,19 @@
-From: Tao Ren <rentao.bupt@gmail.com>
-Date: Wed, 11 Nov 2020 21:25:57 -0800
+From: Joel Stanley <joel@jms.id.au>
+Date: Thu, 12 Nov 2020 05:49:30 +0000
 Subject: [PATCH 0/4] ARM: dts: aspeed: Add Facebook Galaxy100 BMC
 In-Reply-To: <20201112031828.GA4495@heinlein>
 References: <20201111232330.30843-1-rentao.bupt@gmail.com>
  <CACPK8XdC8FRKOLQ9e583gVuDrL5829MOfx5L=O68dou6mjW_6g@mail.gmail.com>
  <20201112031828.GA4495@heinlein>
-Message-ID: <20201112052556.GA3533@taoren-ubuntu-R90MNF91>
+Message-ID: <CACPK8Xf07AZNb3K76sDsZDHNOPuhpkkUGST0=RTCTS5BXgncmA@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Nov 11, 2020 at 09:18:28PM -0600, Patrick Williams wrote:
+On Thu, 12 Nov 2020 at 03:18, Patrick Williams <patrick@stwcx.xyz> wrote:
+>
 > On Wed, Nov 11, 2020 at 11:34:10PM +0000, Joel Stanley wrote:
 > > On Wed, 11 Nov 2020 at 23:23, <rentao.bupt@gmail.com> wrote:
 > > >
@@ -30,23 +31,20 @@ On Wed, Nov 11, 2020 at 09:18:28PM -0600, Patrick Williams wrote:
 > > >
 > > > Patch #4 adds the initial version of device tree for Facebook Galaxy100
 > > > BMC.
-> > 
+> >
 > > Nice. They look good to me.
-> > 
+> >
 > > Reviewed-by: Joel Stanley <joel@jms.id.au>
-> > 
+> >
 > > Is there another person familiar with the design you would like to
 > > review before I merge?
-> 
+>
 > Also,
-> 
+>
 > Reviewed-by: Patrick Williams <patrick@stwcx.xyz>
-> 
-> -- 
-> Patrick Williams
 
-Thank you Patrick!
+Thanks. I have merged them into the aspeed tree for 5.11.
 
 Cheers,
 
-Tao
+Joel
