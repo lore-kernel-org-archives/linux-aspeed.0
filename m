@@ -1,10 +1,10 @@
-From: Tao Ren <rentao.bupt@gmail.com>
-Date: Wed, 11 Nov 2020 16:41:08 -0800
+From: Patrick Williams <patrick@stwcx.xyz>
+Date: Wed, 11 Nov 2020 21:18:28 -0600
 Subject: [PATCH 0/4] ARM: dts: aspeed: Add Facebook Galaxy100 BMC
 In-Reply-To: <CACPK8XdC8FRKOLQ9e583gVuDrL5829MOfx5L=O68dou6mjW_6g@mail.gmail.com>
 References: <20201111232330.30843-1-rentao.bupt@gmail.com>
  <CACPK8XdC8FRKOLQ9e583gVuDrL5829MOfx5L=O68dou6mjW_6g@mail.gmail.com>
-Message-ID: <20201112004107.GA31289@taoren-ubuntu-R90MNF91>
+Message-ID: <20201112031828.GA4495@heinlein>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -32,16 +32,20 @@ On Wed, Nov 11, 2020 at 11:34:10PM +0000, Joel Stanley wrote:
 > Nice. They look good to me.
 > 
 > Reviewed-by: Joel Stanley <joel@jms.id.au>
-
-Thanks a lot for the quick review, Joel.
-
+> 
 > Is there another person familiar with the design you would like to
 > review before I merge?
 
-Patrick Williams sometimes helps reviewing my patches although he doesn't
-work on Network BMCs. Let me see if he has bandwidth this time :)
+Also,
 
+Reviewed-by: Patrick Williams <patrick@stwcx.xyz>
 
-Cheers,
-
-Tao
+-- 
+Patrick Williams
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 833 bytes
+Desc: not available
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20201111/ef6252c4/attachment.sig>
