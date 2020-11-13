@@ -1,121 +1,73 @@
 From: Vishwanatha Subbanna <vishwa@linux.vnet.ibm.com>
-Date: Thu, 12 Nov 2020 23:59:23 -0600
-Subject: [PATCH 1/6] ARM: dts: aspeed: rainier: Add Operator Panel LEDs
-Message-ID: <1605247168-1028-1-git-send-email-vishwa@linux.vnet.ibm.com>
+Date: Thu, 12 Nov 2020 23:59:24 -0600
+Subject: [PATCH 2/6] ARM: dts: aspeed: rainier: Add directly controlled LEDs
+In-Reply-To: <1605247168-1028-1-git-send-email-vishwa@linux.vnet.ibm.com>
+References: <1605247168-1028-1-git-send-email-vishwa@linux.vnet.ibm.com>
+Message-ID: <1605247168-1028-2-git-send-email-vishwa@linux.vnet.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-These LEDs are on the operator panel and are connected via
-a PCA9551 I2C expander.
+These LEDs are directly connected to the BMC's GPIO bank.
 
 Signed-off-by: Vishwanatha Subbanna <vishwa@linux.vnet.ibm.com>
+Reviewed-by: Eddie James <eajames@linux.ibm.com>
+Signed-off-by: Joel Stanley <joel@jms.id.au>
 ---
- arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts | 82 ++++++++++++++++++++++++++++
- 1 file changed, 82 insertions(+)
+ arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts | 24 ++++++++++++++++++++++--
+ 1 file changed, 22 insertions(+), 2 deletions(-)
 
 diff --git a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
-index 21ae880..64d8748 100644
+index 64d8748..1da7389 100644
 --- a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
 +++ b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
-@@ -122,6 +122,38 @@
- 			reg = <3>;
- 		};
- 	};
-+
-+	leds {
-+		compatible = "gpio-leds";
-+
-+		/* System ID LED that is at front on Op Panel */
-+		front-sys-id0 {
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			gpios = <&pca_oppanel 0 GPIO_ACTIVE_LOW>;
-+		};
-+
-+		/* System Attention Indicator ID LED that is at front on Op Panel */
-+		front-check-log0 {
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			gpios = <&pca_oppanel 1 GPIO_ACTIVE_LOW>;
-+		};
-+
-+		/* Enclosure Fault LED that is at front on Op Panel */
-+		front-enc-fault1 {
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			gpios = <&pca_oppanel 2 GPIO_ACTIVE_LOW>;
-+		};
-+
-+		/* System PowerOn LED that is at front on Op Panel */
-+		front-sys-pwron0 {
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			gpios = <&pca_oppanel 3 GPIO_ACTIVE_LOW>;
-+		};
-+	};
- };
+@@ -126,6 +126,26 @@
+ 	leds {
+ 		compatible = "gpio-leds";
  
- &ehci1 {
-@@ -838,6 +870,56 @@
- 		};
- 	};
- 
-+	pca_oppanel: pca9551 at 60 {
-+		compatible = "nxp,pca9551";
-+		reg = <0x60>;
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+
-+		gpio at 0 {
-+			reg = <0>;
-+			type = <PCA955X_TYPE_GPIO>;
++		/* BMC Card fault LED at the back */
++		bmc-ingraham0 {
++			gpios = <&gpio0 ASPEED_GPIO(H, 1) GPIO_ACTIVE_LOW>;
 +		};
 +
-+		gpio at 1 {
-+			reg = <1>;
-+			type = <PCA955X_TYPE_GPIO>;
++		/* Enclosure ID LED at the back */
++		rear-enc-id0 {
++			gpios = <&gpio0 ASPEED_GPIO(H, 2) GPIO_ACTIVE_LOW>;
 +		};
 +
-+		gpio at 2 {
-+			reg = <2>;
-+			type = <PCA955X_TYPE_GPIO>;
++		/* Enclosure fault LED at the back */
++		rear-enc-fault0 {
++			gpios = <&gpio0 ASPEED_GPIO(H, 3) GPIO_ACTIVE_LOW>;
 +		};
 +
-+		gpio at 3 {
-+			reg = <3>;
-+			type = <PCA955X_TYPE_GPIO>;
++		/* PCIE slot power LED */
++		pcieslot-power {
++			gpios = <&gpio0 ASPEED_GPIO(P, 4) GPIO_ACTIVE_LOW>;
 +		};
 +
-+		gpio at 4 {
-+			reg = <4>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 5 {
-+			reg = <5>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 6 {
-+			reg = <6>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 7 {
-+			reg = <7>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+	};
-+
- 	ibm-panel at 62 {
- 		compatible = "ibm,op-panel";
- 		reg = <(0x62 | I2C_OWN_SLAVE_ADDRESS)>;
+ 		/* System ID LED that is at front on Op Panel */
+ 		front-sys-id0 {
+ 			retain-state-shutdown;
+@@ -169,7 +189,7 @@
+ 	/*E0-E7*/	"","","","","","","","",
+ 	/*F0-F7*/	"","","","","","","","",
+ 	/*G0-G7*/	"","","","","","","","",
+-	/*H0-H7*/	"","","","","","","","",
++	/*H0-H7*/	"","bmc-ingraham0","rear-enc-id0","rear-enc-fault0","","","","",
+ 	/*I0-I7*/	"","","","","","","","",
+ 	/*J0-J7*/	"","","","","","","","",
+ 	/*K0-K7*/	"","","","","","","","",
+@@ -177,7 +197,7 @@
+ 	/*M0-M7*/	"","","","","","","","",
+ 	/*N0-N7*/	"","","","","","","","",
+ 	/*O0-O7*/	"","","","usb-power","","","","",
+-	/*P0-P7*/	"","","","","","","","",
++	/*P0-P7*/	"","","","","pcieslot-power","","","",
+ 	/*Q0-Q7*/	"cfam-reset","","","","","","","",
+ 	/*R0-R7*/	"","","","","","","","",
+ 	/*S0-S7*/	"presence-ps0","presence-ps1","presence-ps2","presence-ps3",
 -- 
 1.8.3.1
 
