@@ -1,37 +1,44 @@
-From: Tao Ren <rentao.bupt@gmail.com>
-Date: Mon, 16 Nov 2020 17:16:03 -0800
-Subject: [PATCH] ARM: dts: aspeed: minipack: Fixup I2C tree
-In-Reply-To: <CACPK8Xcpj_LsYOJ=S0p1D5Wqof_2m7SLnPRantQen61B2_XjAA@mail.gmail.com>
-References: <20201110072446.8218-1-rentao.bupt@gmail.com>
- <CACPK8Xcpj_LsYOJ=S0p1D5Wqof_2m7SLnPRantQen61B2_XjAA@mail.gmail.com>
-Message-ID: <20201117011602.GA28529@taoren-ubuntu-R90MNF91>
+From: Joel Stanley <joel@jms.id.au>
+Date: Thu, 19 Nov 2020 05:16:40 +0000
+Subject: [PATCH v2 1/6] ARM: dts: tacoma: Fix node vs reg mismatch for
+ flash memory
+In-Reply-To: <20201022014731.2035438-2-andrew@aj.id.au>
+References: <20201022014731.2035438-1-andrew@aj.id.au>
+ <20201022014731.2035438-2-andrew@aj.id.au>
+Message-ID: <CACPK8XeGoJWt_DW0q-mZf7LKTM_mFPWf8odL+BUjA7FDzL=y3A@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Nov 16, 2020 at 03:33:45AM +0000, Joel Stanley wrote:
-> On Tue, 10 Nov 2020 at 07:24, <rentao.bupt@gmail.com> wrote:
-> >
-> > From: Tao Ren <rentao.bupt@gmail.com>
-> >
-> > Create all the i2c switches in device tree and use aliases to assign
-> > child channels with consistent bus numbers.
-> >
-> > Besides, "i2c-mux-idle-disconnect" is set for all the i2c switches to
-> > avoid potential conflicts when multiple devices (beind the switches) use
-> > the same device address.
-> >
-> > Signed-off-by: Tao Ren <rentao.bupt@gmail.com>
-> 
-> Reviewed-by: Joel Stanley <joel@jms.id.au>
-> 
-> I will apply for 5.11.
+On Thu, 22 Oct 2020 at 01:48, Andrew Jeffery <andrew@aj.id.au> wrote:
+>
+> The mismatch lead to a miscalculation of regions in another patch, and
+> shouldn't be mismatched anyway, so make them consistent.
+>
+> Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
 
-Great. Thank you Joel!
+Fixes: 575640201e66 ("ARM: dts: aspeed: tacoma: Use 64MB for firmware memory")
+Reviewed-by: Joel Stanley <joel@jms.id.au>
 
-
-Cheers,
-
-Tao
+> ---
+>  arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts b/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts
+> index 4d070d6ba09f..e86c22ce6d12 100644
+> --- a/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts
+> +++ b/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts
+> @@ -26,7 +26,7 @@ reserved-memory {
+>                 #size-cells = <1>;
+>                 ranges;
+>
+> -               flash_memory: region at ba000000 {
+> +               flash_memory: region at b8000000 {
+>                         no-map;
+>                         reg = <0xb8000000 0x4000000>; /* 64M */
+>                 };
+> --
+> 2.25.1
+>
