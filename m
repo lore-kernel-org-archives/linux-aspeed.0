@@ -1,10 +1,10 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Thu, 19 Nov 2020 05:17:32 +0000
-Subject: [PATCH v2 5/6] ARM: dts: rainier: Add reserved memory for ramoops
-In-Reply-To: <20201022014731.2035438-6-andrew@aj.id.au>
+Date: Thu, 19 Nov 2020 05:18:01 +0000
+Subject: [PATCH v2 6/6] ARM: dts: tacoma: Add reserved memory for ramoops
+In-Reply-To: <20201022014731.2035438-7-andrew@aj.id.au>
 References: <20201022014731.2035438-1-andrew@aj.id.au>
- <20201022014731.2035438-6-andrew@aj.id.au>
-Message-ID: <CACPK8XfaF_ZzhL1mQxK5Rcpkq9UmBtas+MzxJvFTFC3Bm2UGuw@mail.gmail.com>
+ <20201022014731.2035438-7-andrew@aj.id.au>
+Message-ID: <CACPK8XeU866qVx4hdv4s9ZM99WoWDL9Ek+SBbOQMqTsxV+8Hdg@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -24,14 +24,14 @@ On Thu, 22 Oct 2020 at 01:48, Andrew Jeffery <andrew@aj.id.au> wrote:
 Reviewed-by: Joel Stanley <joel@jms.id.au>
 
 > ---
->  arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts | 9 +++++++++
+>  arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts | 9 +++++++++
 >  1 file changed, 9 insertions(+)
 >
-> diff --git a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
-> index 802027a3c43c..8431cf1b32e6 100644
-> --- a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
-> +++ b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
-> @@ -55,6 +55,15 @@ flash_memory: region at B8000000 {
+> diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts b/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts
+> index 09b561429579..04efabe70d9f 100644
+> --- a/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts
+> +++ b/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts
+> @@ -34,6 +34,15 @@ flash_memory: region at b8000000 {
 >
 >                 /* 48MB region from the end of flash to start of vga memory */
 >
