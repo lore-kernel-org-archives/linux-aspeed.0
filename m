@@ -1,107 +1,161 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Thu, 26 Nov 2020 09:22:58 +1030
-Subject: [PATCH v3 1/3] mmc: sdhci-of-aspeed: Expose phase delay tuning
-In-Reply-To: <CAPDyKFrC9vp5gtpFC5L1K17uN059GsJ2zF4f7-_=sFEQ5BBRpw@mail.gmail.com>
-References: <20201123063004.337345-1-andrew@aj.id.au>
- <20201123063004.337345-2-andrew@aj.id.au>
- <CAPDyKFrC9vp5gtpFC5L1K17uN059GsJ2zF4f7-_=sFEQ5BBRpw@mail.gmail.com>
-Message-ID: <e3c4f1a8-4fa0-4e2a-be7c-763f733f0cdb@www.fastmail.com>
+Date: Thu, 26 Nov 2020 17:03:37 +1030
+Subject: [PATCH] pinctrl: aspeed: Fix GPIO requests on pass-through banks
+Message-ID: <20201126063337.489927-1-andrew@aj.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+Commit 6726fbff19bf ("pinctrl: aspeed: Fix GPI only function problem.")
+fixes access to GPIO banks T and U on the AST2600. Both banks contain
+input-only pins and the GPIO pin function is named GPITx and GPIUx
+respectively. Unfortunately the fix had a negative impact on GPIO banks
+D and E for the AST2400 and AST2500 where the GPIO pass-through
+functions take similar "GPI"-style names. The net effect on the older
+SoCs was that when the GPIO subsystem requested a pin in banks D or E be
+muxed for GPIO, they were instead muxed for pass-through mode.
+Mistakenly muxing pass-through mode e.g. breaks booting the host on
+IBM's Witherspoon (AC922) platform where GPIOE0 is used for FSI.
 
+Further exploit the names in the provided expression structure to
+differentiate pass-through from pin-specific GPIO modes.
 
-On Wed, 25 Nov 2020, at 00:42, Ulf Hansson wrote:
-> On Mon, 23 Nov 2020 at 07:30, Andrew Jeffery <andrew@aj.id.au> wrote:
-> >
-> > The Aspeed SD/eMMC controllers feature up to two SDHCIs alongside a
-> > a set of "global" configuration registers. The global configuration
-> > registers house controller-specific settings that aren't exposed by the
-> > SDHCI, one example being a register for phase tuning.
-> >
-> > The phase tuning feature is new in the AST2600 design. It's exposed as a
-> > single register in the global register set and controls both the input
-> > and output phase adjustment for each slot. As the settings are
-> > slot-specific, the values to program are extracted from properties in
-> > the SDHCI devicetree nodes.
-> >
-> > Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
-> 
-> [...]
-> 
-> >
-> > +static void
-> > +aspeed_sdhci_of_parse_phase(struct device_node *np, const char *prop,
-> > +                           struct aspeed_sdhci_phase_param *phase)
-> > +{
-> > +       int degrees[2] = {0};
-> > +       int rc;
-> > +
-> > +       rc = of_property_read_variable_u32_array(np, prop, degrees, 2, 0);
-> > +       phase->set = rc == 2;
-> > +       if (phase->set) {
-> > +               phase->in_deg = degrees[0];
-> > +               phase->out_deg = degrees[1];
-> > +       }
-> > +}
-> > +
-> > +static int aspeed_sdhci_of_parse(struct platform_device *pdev,
-> > +                                struct aspeed_sdhci *sdhci)
-> > +{
-> > +       struct device_node *np;
-> > +       struct device *dev;
-> > +
-> > +       if (!sdhci->phase_desc)
-> > +               return 0;
-> > +
-> > +       dev = &pdev->dev;
-> > +       np = dev->of_node;
-> > +
-> > +       aspeed_sdhci_of_parse_phase(np, "clk-phase-legacy",
-> > +                                   &sdhci->phase_param[MMC_TIMING_LEGACY]);
-> > +       aspeed_sdhci_of_parse_phase(np, "clk-phase-mmc-hs",
-> > +                                   &sdhci->phase_param[MMC_TIMING_MMC_HS]);
-> > +       aspeed_sdhci_of_parse_phase(np, "clk-phase-sd-hs",
-> > +                                   &sdhci->phase_param[MMC_TIMING_SD_HS]);
-> > +       aspeed_sdhci_of_parse_phase(np, "clk-phase-uhs-sdr12",
-> > +                                   &sdhci->phase_param[MMC_TIMING_UHS_SDR12]);
-> > +       aspeed_sdhci_of_parse_phase(np, "clk-phase-uhs-sdr25",
-> > +                                   &sdhci->phase_param[MMC_TIMING_UHS_SDR25]);
-> > +       aspeed_sdhci_of_parse_phase(np, "clk-phase-uhs-sdr50",
-> > +                                   &sdhci->phase_param[MMC_TIMING_UHS_SDR50]);
-> > +       aspeed_sdhci_of_parse_phase(np, "clk-phase-uhs-sdr104",
-> > +                                   &sdhci->phase_param[MMC_TIMING_UHS_SDR104]);
-> > +       aspeed_sdhci_of_parse_phase(np, "clk-phase-uhs-ddr50",
-> > +                                   &sdhci->phase_param[MMC_TIMING_UHS_DDR50]);
-> > +       aspeed_sdhci_of_parse_phase(np, "clk-phase-mmc-ddr52",
-> > +                                   &sdhci->phase_param[MMC_TIMING_MMC_DDR52]);
-> > +       aspeed_sdhci_of_parse_phase(np, "clk-phase-mmc-hs200",
-> > +                                   &sdhci->phase_param[MMC_TIMING_MMC_HS200]);
-> > +
-> > +       return 0;
-> > +}
-> 
-> If it's not too much to ask, would you mind adding a helper function
-> to the mmc core, as to let us avoid open coding? Then we should be
-> able to move the sdhci-of-arasan driver to use this as well.
+This follow-up fix gives the expected behaviour for the following tests:
 
-Yes, I can look at it and send a v4.
+Witherspoon BMC (AST2500):
 
-> 
-> Perhaps the definition of the helper could look something like this:
-> int mmc_of_parse_clk_phase(struct mmc_host *host, struct mmc_clk_phase
-> *phases) (or something along those lines)
-> 
-> I think the struct mmc_clk_phase could be something that is stored in
-> the host specific struct, rather than in the common struct mmc_host
-> (to avoid sprinkle it with unnecessary data).
-> 
-> Moreover, we should probably use the device_property_* APIs instead of
-> the DT specific of_property_*.
+1. Power-on the Witherspoon host
+2. Request GPIOD1 be muxed via /sys/class/gpio/export
+3. Request GPIOE1 be muxed via /sys/class/gpio/export
+4. Request the balls for GPIOs E2 and E3 be muxed as GPIO pass-through
+   ("GPIE2" mode) via a pinctrl hog in the devicetree
 
-Yep, thanks for the pointers.
+Rainier BMC (AST2600):
 
-Andrew
+5. Request GPIT0 be muxed via /sys/class/gpio/export
+6. Request GPIU0 be muxed via /sys/class/gpio/export
+
+Together the tests demonstrate that all three pieces of functionality
+(general GPIOs via 1, 2 and 3, input-only GPIOs via 5 and 6, pass-through
+mode via 4) operate as desired across old and new SoCs.
+
+Fixes: 6726fbff19bf ("pinctrl: aspeed: Fix GPI only function problem.")
+Cc: Billy Tsai <billy_tsai@aspeedtech.com>
+Cc: Joel Stanley <joel@jms.id.au>
+Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
+---
+ drivers/pinctrl/aspeed/pinctrl-aspeed.c | 74 +++++++++++++++++++++++--
+ drivers/pinctrl/aspeed/pinmux-aspeed.h  |  7 ++-
+ 2 files changed, 72 insertions(+), 9 deletions(-)
+
+diff --git a/drivers/pinctrl/aspeed/pinctrl-aspeed.c b/drivers/pinctrl/aspeed/pinctrl-aspeed.c
+index 1d603732903f..9c44ef11b567 100644
+--- a/drivers/pinctrl/aspeed/pinctrl-aspeed.c
++++ b/drivers/pinctrl/aspeed/pinctrl-aspeed.c
+@@ -286,14 +286,76 @@ int aspeed_pinmux_set_mux(struct pinctrl_dev *pctldev, unsigned int function,
+ static bool aspeed_expr_is_gpio(const struct aspeed_sig_expr *expr)
+ {
+ 	/*
+-	 * The signal type is GPIO if the signal name has "GPI" as a prefix.
+-	 * strncmp (rather than strcmp) is used to implement the prefix
+-	 * requirement.
++	 * We need to differentiate between GPIO and non-GPIO signals to
++	 * implement the gpio_request_enable() interface. For better or worse
++	 * the ASPEED pinctrl driver uses the expression names to determine
++	 * whether an expression will mux a pin for GPIO.
+ 	 *
+-	 * expr->signal might look like "GPIOB1" in the GPIO case.
+-	 * expr->signal might look like "GPIT0" in the GPI case.
++	 * Generally we have the following - A GPIO such as B1 has:
++	 *
++	 *    - expr->signal set to "GPIOB1"
++	 *    - expr->function set to "GPIOB1"
++	 *
++	 * Using this fact we can determine whether the provided expression is
++	 * a GPIO expression by testing the signal name for the string prefix
++	 * "GPIO".
++	 *
++	 * However, some GPIOs are input-only, and the ASPEED datasheets name
++	 * them differently. An input-only GPIO such as T0 has:
++	 *
++	 *    - expr->signal set to "GPIT0"
++	 *    - expr->function set to "GPIT0"
++	 *
++	 * It's tempting to generalise the prefix test from "GPIO" to "GPI" to
++	 * account for both GPIOs and GPIs, but in doing so we run aground on
++	 * another feature:
++	 *
++	 * Some pins in the ASPEED BMC SoCs have a "pass-through" GPIO
++	 * function where the input state of one pin is replicated as the
++	 * output state of another (as if they were shorted together - a mux
++	 * configuration that is typically enabled by hardware strapping).
++	 * This feature allows the BMC to pass e.g. power button state through
++	 * to the host while the BMC is yet to boot, but take control of the
++	 * button state once the BMC has booted by muxing each pin as a
++	 * separate, pin-specific GPIO.
++	 *
++	 * Conceptually this pass-through mode is a form of GPIO and is named
++	 * as such in the datasheets, e.g. "GPID0". This naming similarity
++	 * trips us up with the simple GPI-prefixed-signal-name scheme
++	 * discussed above, as the pass-through configuration is not what we
++	 * want when muxing a pin as GPIO for the GPIO subsystem.
++	 *
++	 * On e.g. the AST2400, a pass-through function "GPID0" is grouped on
++	 * balls A18 and D16, where we have:
++	 *
++	 *    For ball A18:
++	 *    - expr->signal set to "GPID0IN"
++	 *    - expr->function set to "GPID0"
++	 *
++	 *    For ball D16:
++	 *    - expr->signal set to "GPID0OUT"
++	 *    - expr->function set to "GPID0"
++	 *
++	 * By contrast, the pin-specific GPIO expressions for the same pins are
++	 * as follows:
++	 *
++	 *    For ball A18:
++	 *    - expr->signal looks like "GPIOD0"
++	 *    - expr->function looks like "GPIOD0"
++	 *
++	 *    For ball D16:
++	 *    - expr->signal looks like "GPIOD1"
++	 *    - expr->function looks like "GPIOD1"
++	 *
++	 * Testing both the signal _and_ function names gives us the means
++	 * differentiate the pass-through GPIO pinmux configuration from the
++	 * pin-specific configuration that the GPIO subsystem is after: An
++	 * expression is a pin-specific (non-pass-through) GPIO configuration
++	 * if the signal prefix is "GPI" and the signal name matches the
++	 * function name.
+ 	 */
+-	return strncmp(expr->signal, "GPI", 3) == 0;
++	return !strncmp(expr->signal, "GPI", 3) &&
++			!strcmp(expr->signal, expr->function);
+ }
+ 
+ static bool aspeed_gpio_in_exprs(const struct aspeed_sig_expr **exprs)
+diff --git a/drivers/pinctrl/aspeed/pinmux-aspeed.h b/drivers/pinctrl/aspeed/pinmux-aspeed.h
+index f86739e800c3..dba5875ff276 100644
+--- a/drivers/pinctrl/aspeed/pinmux-aspeed.h
++++ b/drivers/pinctrl/aspeed/pinmux-aspeed.h
+@@ -452,10 +452,11 @@ struct aspeed_sig_desc {
+  * evaluation of the descriptors.
+  *
+  * @signal: The signal name for the priority level on the pin. If the signal
+- *          type is GPIO, then the signal name must begin with the string
+- *          "GPIO", e.g. GPIOA0, GPIOT4 etc.
++ *          type is GPIO, then the signal name must begin with the
++ *          prefix "GPI", e.g. GPIOA0, GPIT0 etc.
+  * @function: The name of the function the signal participates in for the
+- *            associated expression
++ *            associated expression. For pin-specific GPIO, the function
++ *            name must match the signal name.
+  * @ndescs: The number of signal descriptors in the expression
+  * @descs: Pointer to an array of signal descriptors that comprise the
+  *         function expression
+-- 
+2.27.0
+
