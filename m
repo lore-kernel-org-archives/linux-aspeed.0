@@ -1,147 +1,360 @@
-From: Joel Stanley <joel@jms.id.au>
-Date: Thu, 26 Nov 2020 09:52:18 +0000
-Subject: [PATCH] pinctrl: aspeed: Fix GPIO requests on pass-through banks
-In-Reply-To: <20201126063337.489927-1-andrew@aj.id.au>
-References: <20201126063337.489927-1-andrew@aj.id.au>
-Message-ID: <CACPK8XeWH0269EGg6=CRSrsk0U5tQNJkmgNP=FKuRPpbE-vpeQ@mail.gmail.com>
+From: Andrew Jeffery <andrew@aj.id.au>
+Date: Mon, 30 Nov 2020 16:38:17 +1030
+Subject: =?UTF-8?Q?Re:_[PATCH_6/6]_ARM:_dts:_aspeed:_rainier:_Add_leds_that_are_o?=
+ =?UTF-8?Q?n_optional_PCI_cable_cards?=
+In-Reply-To: <CACPK8XfttMptuYFsocBaj2v4z1vzNjDUfe18FeDcAbmZjWKjfQ@mail.gmail.com>
+References: <1605247168-1028-1-git-send-email-vishwa@linux.vnet.ibm.com>
+ <1605247168-1028-6-git-send-email-vishwa@linux.vnet.ibm.com>
+ <CACPK8XfttMptuYFsocBaj2v4z1vzNjDUfe18FeDcAbmZjWKjfQ@mail.gmail.com>
+Message-ID: <a6855c9f-c843-4e54-bef0-469b5097d596@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, 26 Nov 2020 at 06:34, Andrew Jeffery <andrew@aj.id.au> wrote:
->
-> Commit 6726fbff19bf ("pinctrl: aspeed: Fix GPI only function problem.")
-> fixes access to GPIO banks T and U on the AST2600.
-
-...but caused a regression when muxing GPIOs.
 
 
-> Fixes: 6726fbff19bf ("pinctrl: aspeed: Fix GPI only function problem.")
-> Cc: Billy Tsai <billy_tsai@aspeedtech.com>
-> Cc: Joel Stanley <joel@jms.id.au>
-> Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
+On Mon, 16 Nov 2020, at 16:43, Joel Stanley wrote:
+> On Fri, 13 Nov 2020 at 05:59, Vishwanatha Subbanna
+> <vishwa@linux.vnet.ibm.com> wrote:
+> >
+> > These are LEDs on the cable cards that plug into PCIE slots.
+> > The LEDs are controlled by PCA9552 I2C expander
+> >
+> > Signed-off-by: Vishwanatha Subbanna <vishwa@linux.vnet.ibm.com>
+> > ---
+> >  arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts | 288 +++++++++++++++++++++++++++
+> >  1 file changed, 288 insertions(+)
+> >
+> > diff --git a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
+> > index 67c8c40..7de5f76 100644
+> > --- a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
+> > +++ b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
+> > @@ -696,6 +696,70 @@
+> >                         gpios = <&pca4 7 GPIO_ACTIVE_LOW>;
+> >                 };
+> >         };
+> > +
+> > +       leds-optional-cablecard0 {
+> 
+> Is it necessary to have separate nodes for each of the different GPIO devices?
 
-I didn't read all of the text, but the code change looks good. This
-should go to stable as the offending commit was also added to stable.
+Good question. Vishwa, what's the advantage either way here?
 
-Reviewed-by: Joel Stanley <joel@jms.id.au>
-Tested-by: Joel Stanley <joel@jms.id.au>
-Cc: stable at vger.kernel.org
+> 
+> Would it make sense to combine them, or is it better to be separate?
+> 
+> Andrew, Eddie, Brad: please review this one before I merge it.
+> 
+> > +               compatible = "gpio-leds";
+> > +
+> > +               cablecard0-cxp-top {
+> > +                       retain-state-shutdown;
+> > +                       default-state = "keep";
+> > +                       gpios = <&pca5 0 GPIO_ACTIVE_LOW>;
+> > +               };
+> > +
+> > +               cablecard0-cxp-bot {
+> > +                       retain-state-shutdown;
+> > +                       default-state = "keep";
+> > +                       gpios = <&pca5 1 GPIO_ACTIVE_LOW>;
+> > +               };
+> > +       };
+> > +
+> > +       leds-optional-cablecard3 {
+> > +               compatible = "gpio-leds";
+> > +
+> > +               cablecard3-cxp-top {
+> > +                       retain-state-shutdown;
+> > +                       default-state = "keep";
+> > +                       gpios = <&pca6 0 GPIO_ACTIVE_LOW>;
+> > +               };
+> > +
+> > +               cablecard3-cxp-bot {
+> > +                       retain-state-shutdown;
+> > +                       default-state = "keep";
+> > +                       gpios = <&pca6 1 GPIO_ACTIVE_LOW>;
+> > +               };
+> > +       };
+> > +
+> > +       leds-optional-cablecard4 {
+> > +               compatible = "gpio-leds";
+> > +
+> > +               cablecard4-cxp-top {
+> > +                       retain-state-shutdown;
+> > +                       default-state = "keep";
+> > +                       gpios = <&pca7 0 GPIO_ACTIVE_LOW>;
+> > +               };
+> > +
+> > +               cablecard4-cxp-bot {
+> > +                       retain-state-shutdown;
+> > +                       default-state = "keep";
+> > +                       gpios = <&pca7 1 GPIO_ACTIVE_LOW>;
+> > +               };
+> > +       };
+> > +
+> > +       leds-optional-cablecard10 {
+> > +               compatible = "gpio-leds";
+> > +
+> > +               cablecard10-cxp-top {
+> > +                       retain-state-shutdown;
+> > +                       default-state = "keep";
+> > +                       gpios = <&pca8 0 GPIO_ACTIVE_LOW>;
+> > +               };
+> > +
+> > +               cablecard10-cxp-bot {
+> > +                       retain-state-shutdown;
+> > +                       default-state = "keep";
+> > +                       gpios = <&pca8 1 GPIO_ACTIVE_LOW>;
+> > +               };
+> > +       };
+> >  };
+> >
+> >  &ehci1 {
+> > @@ -1212,6 +1276,180 @@
+> >                 compatible = "atmel,24c64";
+> >                 reg = <0x52>;
+> >         };
+> > +
+> > +       pca5: pca9551 at 60 {
+> > +               compatible = "nxp,pca9551";
+> > +               reg = <0x60>;
+> > +               #address-cells = <1>;
+> > +               #size-cells = <0>;
+> > +
+> > +               gpio-controller;
+> > +               #gpio-cells = <2>;
+> > +
+> > +               gpio at 0 {
+> > +                       reg = <0>;
+> > +                       type = <PCA955X_TYPE_GPIO>;
+> > +               };
+> > +
+> > +               gpio at 1 {
+> > +                       reg = <1>;
+> > +                       type = <PCA955X_TYPE_GPIO>;
+> > +               };
+> > +
+> > +               gpio at 2 {
+> > +                       reg = <2>;
+> > +                       type = <PCA955X_TYPE_GPIO>;
+> > +               };
+> > +
+> > +               gpio at 3 {
+> > +                       reg = <3>;
+> > +                       type = <PCA955X_TYPE_GPIO>;
+> > +               };
+> > +
+> > +               gpio at 4 {
+> > +                       reg = <4>;
+> > +                       type = <PCA955X_TYPE_GPIO>;
+> > +               };
+> > +
+> > +               gpio at 5 {
+> > +                       reg = <5>;
+> > +                       type = <PCA955X_TYPE_GPIO>;
+> > +               };
+> > +
+> > +               gpio at 6 {
+> > +                       reg = <6>;
+> > +                       type = <PCA955X_TYPE_GPIO>;
+> > +               };
+> > +
+> > +               gpio at 7 {
+> > +                       reg = <7>;
+> > +                       type = <PCA955X_TYPE_GPIO>;
+> > +               };
+> > +       };
+> > +};
+> > +
+> > +&i2c5 {
+> > +       status = "okay";
+> > +
+> > +       tmp275 at 48 {
+> > +               compatible = "ti,tmp275";
+> > +               reg = <0x48>;
+> > +       };
+> > +
+> > +       tmp275 at 49 {
+> > +               compatible = "ti,tmp275";
+> > +               reg = <0x49>;
+> > +       };
 
+These aren't LED devices.
 
-> ---
->  drivers/pinctrl/aspeed/pinctrl-aspeed.c | 74 +++++++++++++++++++++++--
->  drivers/pinctrl/aspeed/pinmux-aspeed.h  |  7 ++-
->  2 files changed, 72 insertions(+), 9 deletions(-)
->
-> diff --git a/drivers/pinctrl/aspeed/pinctrl-aspeed.c b/drivers/pinctrl/aspeed/pinctrl-aspeed.c
-> index 1d603732903f..9c44ef11b567 100644
-> --- a/drivers/pinctrl/aspeed/pinctrl-aspeed.c
-> +++ b/drivers/pinctrl/aspeed/pinctrl-aspeed.c
-> @@ -286,14 +286,76 @@ int aspeed_pinmux_set_mux(struct pinctrl_dev *pctldev, unsigned int function,
->  static bool aspeed_expr_is_gpio(const struct aspeed_sig_expr *expr)
->  {
->         /*
-> -        * The signal type is GPIO if the signal name has "GPI" as a prefix.
-> -        * strncmp (rather than strcmp) is used to implement the prefix
-> -        * requirement.
-> +        * We need to differentiate between GPIO and non-GPIO signals to
-> +        * implement the gpio_request_enable() interface. For better or worse
-> +        * the ASPEED pinctrl driver uses the expression names to determine
-> +        * whether an expression will mux a pin for GPIO.
->          *
-> -        * expr->signal might look like "GPIOB1" in the GPIO case.
-> -        * expr->signal might look like "GPIT0" in the GPI case.
-> +        * Generally we have the following - A GPIO such as B1 has:
-> +        *
-> +        *    - expr->signal set to "GPIOB1"
-> +        *    - expr->function set to "GPIOB1"
-> +        *
-> +        * Using this fact we can determine whether the provided expression is
-> +        * a GPIO expression by testing the signal name for the string prefix
-> +        * "GPIO".
-> +        *
-> +        * However, some GPIOs are input-only, and the ASPEED datasheets name
-> +        * them differently. An input-only GPIO such as T0 has:
-> +        *
-> +        *    - expr->signal set to "GPIT0"
-> +        *    - expr->function set to "GPIT0"
-> +        *
-> +        * It's tempting to generalise the prefix test from "GPIO" to "GPI" to
-> +        * account for both GPIOs and GPIs, but in doing so we run aground on
-> +        * another feature:
-> +        *
-> +        * Some pins in the ASPEED BMC SoCs have a "pass-through" GPIO
-> +        * function where the input state of one pin is replicated as the
-> +        * output state of another (as if they were shorted together - a mux
-> +        * configuration that is typically enabled by hardware strapping).
-> +        * This feature allows the BMC to pass e.g. power button state through
-> +        * to the host while the BMC is yet to boot, but take control of the
-> +        * button state once the BMC has booted by muxing each pin as a
-> +        * separate, pin-specific GPIO.
-> +        *
-> +        * Conceptually this pass-through mode is a form of GPIO and is named
-> +        * as such in the datasheets, e.g. "GPID0". This naming similarity
-> +        * trips us up with the simple GPI-prefixed-signal-name scheme
-> +        * discussed above, as the pass-through configuration is not what we
-> +        * want when muxing a pin as GPIO for the GPIO subsystem.
-> +        *
-> +        * On e.g. the AST2400, a pass-through function "GPID0" is grouped on
-> +        * balls A18 and D16, where we have:
-> +        *
-> +        *    For ball A18:
-> +        *    - expr->signal set to "GPID0IN"
-> +        *    - expr->function set to "GPID0"
-> +        *
-> +        *    For ball D16:
-> +        *    - expr->signal set to "GPID0OUT"
-> +        *    - expr->function set to "GPID0"
-> +        *
-> +        * By contrast, the pin-specific GPIO expressions for the same pins are
-> +        * as follows:
-> +        *
-> +        *    For ball A18:
-> +        *    - expr->signal looks like "GPIOD0"
-> +        *    - expr->function looks like "GPIOD0"
-> +        *
-> +        *    For ball D16:
-> +        *    - expr->signal looks like "GPIOD1"
-> +        *    - expr->function looks like "GPIOD1"
-> +        *
-> +        * Testing both the signal _and_ function names gives us the means
-> +        * differentiate the pass-through GPIO pinmux configuration from the
-> +        * pin-specific configuration that the GPIO subsystem is after: An
-> +        * expression is a pin-specific (non-pass-through) GPIO configuration
-> +        * if the signal prefix is "GPI" and the signal name matches the
-> +        * function name.
->          */
-> -       return strncmp(expr->signal, "GPI", 3) == 0;
-> +       return !strncmp(expr->signal, "GPI", 3) &&
-> +                       !strcmp(expr->signal, expr->function);
->  }
->
->  static bool aspeed_gpio_in_exprs(const struct aspeed_sig_expr **exprs)
-> diff --git a/drivers/pinctrl/aspeed/pinmux-aspeed.h b/drivers/pinctrl/aspeed/pinmux-aspeed.h
-> index f86739e800c3..dba5875ff276 100644
-> --- a/drivers/pinctrl/aspeed/pinmux-aspeed.h
-> +++ b/drivers/pinctrl/aspeed/pinmux-aspeed.h
-> @@ -452,10 +452,11 @@ struct aspeed_sig_desc {
->   * evaluation of the descriptors.
->   *
->   * @signal: The signal name for the priority level on the pin. If the signal
-> - *          type is GPIO, then the signal name must begin with the string
-> - *          "GPIO", e.g. GPIOA0, GPIOT4 etc.
-> + *          type is GPIO, then the signal name must begin with the
-> + *          prefix "GPI", e.g. GPIOA0, GPIT0 etc.
->   * @function: The name of the function the signal participates in for the
-> - *            associated expression
-> + *            associated expression. For pin-specific GPIO, the function
-> + *            name must match the signal name.
->   * @ndescs: The number of signal descriptors in the expression
->   * @descs: Pointer to an array of signal descriptors that comprise the
->   *         function expression
-> --
-> 2.27.0
->
+> > +
+> > +       eeprom at 50 {
+> > +               compatible = "atmel,24c64";
+> > +               reg = <0x50>;
+> > +       };
+> > +
+> > +       eeprom at 51 {
+> > +               compatible = "atmel,24c64";
+> > +               reg = <0x51>;
+> > +       };
+
+Neither are these.
+
+> > +
+> > +       pca6: pca9551 at 60 {
+> > +               compatible = "nxp,pca9551";
+> > +               reg = <0x60>;
+> > +               #address-cells = <1>;
+> > +               #size-cells = <0>;
+> > +
+> > +               gpio-controller;
+> > +               #gpio-cells = <2>;
+> > +
+> > +               gpio at 0 {
+> > +                       reg = <0>;
+> > +                       type = <PCA955X_TYPE_GPIO>;
+> > +               };
+> > +
+> > +               gpio at 1 {
+> > +                       reg = <1>;
+> > +                       type = <PCA955X_TYPE_GPIO>;
+> > +               };
+> > +
+> > +               gpio at 2 {
+> > +                       reg = <2>;
+> > +                       type = <PCA955X_TYPE_GPIO>;
+> > +               };
+> > +
+> > +               gpio at 3 {
+> > +                       reg = <3>;
+> > +                       type = <PCA955X_TYPE_GPIO>;
+> > +               };
+> > +
+> > +               gpio at 4 {
+> > +                       reg = <4>;
+> > +                       type = <PCA955X_TYPE_GPIO>;
+> > +               };
+> > +
+> > +               gpio at 5 {
+> > +                       reg = <5>;
+> > +                       type = <PCA955X_TYPE_GPIO>;
+> > +               };
+> > +
+> > +               gpio at 6 {
+> > +                       reg = <6>;
+> > +                       type = <PCA955X_TYPE_GPIO>;
+> > +               };
+> > +
+> > +               gpio at 7 {
+> > +                       reg = <7>;
+> > +                       type = <PCA955X_TYPE_GPIO>;
+> > +               };
+> > +       };
+> > +
+> > +       pca7: pca9551 at 61 {
+> > +               compatible = "nxp,pca9551";
+> > +               reg = <0x61>;
+> > +               #address-cells = <1>;
+> > +               #size-cells = <0>;
+> > +
+> > +               gpio-controller;
+> > +               #gpio-cells = <2>;
+> > +
+> > +               gpio at 0 {
+> > +                       reg = <0>;
+> > +                       type = <PCA955X_TYPE_GPIO>;
+> > +               };
+> > +
+> > +               gpio at 1 {
+> > +                       reg = <1>;
+> > +                       type = <PCA955X_TYPE_GPIO>;
+> > +               };
+> > +
+> > +               gpio at 2 {
+> > +                       reg = <2>;
+> > +                       type = <PCA955X_TYPE_GPIO>;
+> > +               };
+> > +
+> > +               gpio at 3 {
+> > +                       reg = <3>;
+> > +                       type = <PCA955X_TYPE_GPIO>;
+> > +               };
+> > +
+> > +               gpio at 4 {
+> > +                       reg = <4>;
+> > +                       type = <PCA955X_TYPE_GPIO>;
+> > +               };
+> > +
+> > +               gpio at 5 {
+> > +                       reg = <5>;
+> > +                       type = <PCA955X_TYPE_GPIO>;
+> > +               };
+> > +
+> > +               gpio at 6 {
+> > +                       reg = <6>;
+> > +                       type = <PCA955X_TYPE_GPIO>;
+> > +               };
+> > +
+> > +               gpio at 7 {
+> > +                       reg = <7>;
+> > +                       type = <PCA955X_TYPE_GPIO>;
+> > +               };
+> > +       };
+> >  };
+> >
+> >  &i2c5 {
+> > @@ -2028,6 +2266,56 @@
+> >                 compatible = "atmel,24c64";
+> >                 reg = <0x51>;
+> >         };
+> > +
+> > +       pca8: pca9551 at 60 {
+> > +               compatible = "nxp,pca9551";
+> > +               reg = <0x60>;
+> > +               #address-cells = <1>;
+> > +               #size-cells = <0>;
+> > +
+> > +               gpio-controller;
+> > +               #gpio-cells = <2>;
+> > +
+> > +               gpio at 0 {
+> > +                       reg = <0>;
+> > +                       type = <PCA955X_TYPE_GPIO>;
+> > +               };
+> > +
+> > +               gpio at 1 {
+> > +                       reg = <1>;
+> > +                       type = <PCA955X_TYPE_GPIO>;
+> > +               };
+> > +
+> > +               gpio at 2 {
+> > +                       reg = <2>;
+> > +                       type = <PCA955X_TYPE_GPIO>;
+> > +               };
+> > +
+> > +               gpio at 3 {
+> > +                       reg = <3>;
+> > +                       type = <PCA955X_TYPE_GPIO>;
+> > +               };
+> > +
+> > +               gpio at 4 {
+> > +                       reg = <4>;
+> > +                       type = <PCA955X_TYPE_GPIO>;
+> > +               };
+> > +
+> > +               gpio at 5 {
+> > +                       reg = <5>;
+> > +                       type = <PCA955X_TYPE_GPIO>;
+> > +               };
+> > +
+> > +               gpio at 6 {
+> > +                       reg = <6>;
+> > +                       type = <PCA955X_TYPE_GPIO>;
+> > +               };
+> > +
+> > +               gpio at 7 {
+> > +                       reg = <7>;
+> > +                       type = <PCA955X_TYPE_GPIO>;
+> > +               };
+> > +       };
+> >  };
+
+If we're adding LEDs, why aren't we using PCA955X_TYPE_LED? Why the indirection through the leds-gpio driver?
+
+Andrew
