@@ -1,360 +1,89 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Mon, 30 Nov 2020 16:38:17 +1030
-Subject: =?UTF-8?Q?Re:_[PATCH_6/6]_ARM:_dts:_aspeed:_rainier:_Add_leds_that_are_o?=
- =?UTF-8?Q?n_optional_PCI_cable_cards?=
-In-Reply-To: <CACPK8XfttMptuYFsocBaj2v4z1vzNjDUfe18FeDcAbmZjWKjfQ@mail.gmail.com>
-References: <1605247168-1028-1-git-send-email-vishwa@linux.vnet.ibm.com>
- <1605247168-1028-6-git-send-email-vishwa@linux.vnet.ibm.com>
- <CACPK8XfttMptuYFsocBaj2v4z1vzNjDUfe18FeDcAbmZjWKjfQ@mail.gmail.com>
-Message-ID: <a6855c9f-c843-4e54-bef0-469b5097d596@www.fastmail.com>
+From: Joel Stanley <joel@jms.id.au>
+Date: Mon, 30 Nov 2020 06:30:44 +0000
+Subject: [GIT PULL] ARM: aspeed: soc changes for 5.11
+Message-ID: <CACPK8Xfd7AmuEaUdFfYLu4ktcrpTnYUgwQSxUbC-McB02hvo_g@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+Hello Soc maintainers,
 
+Here are some ASPEED changes for the 5.11 merge window.
 
-On Mon, 16 Nov 2020, at 16:43, Joel Stanley wrote:
-> On Fri, 13 Nov 2020 at 05:59, Vishwanatha Subbanna
-> <vishwa@linux.vnet.ibm.com> wrote:
-> >
-> > These are LEDs on the cable cards that plug into PCIE slots.
-> > The LEDs are controlled by PCA9552 I2C expander
-> >
-> > Signed-off-by: Vishwanatha Subbanna <vishwa@linux.vnet.ibm.com>
-> > ---
-> >  arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts | 288 +++++++++++++++++++++++++++
-> >  1 file changed, 288 insertions(+)
-> >
-> > diff --git a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
-> > index 67c8c40..7de5f76 100644
-> > --- a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
-> > +++ b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
-> > @@ -696,6 +696,70 @@
-> >                         gpios = <&pca4 7 GPIO_ACTIVE_LOW>;
-> >                 };
-> >         };
-> > +
-> > +       leds-optional-cablecard0 {
-> 
-> Is it necessary to have separate nodes for each of the different GPIO devices?
+The following changes since commit 2ba56f464f0c1a7264160f8675063b3df92e7966:
 
-Good question. Vishwa, what's the advantage either way here?
+  ARM: dts: aspeed: ast2600evb: Add MAC0 (2020-11-19 22:31:18 +1030)
 
-> 
-> Would it make sense to combine them, or is it better to be separate?
-> 
-> Andrew, Eddie, Brad: please review this one before I merge it.
-> 
-> > +               compatible = "gpio-leds";
-> > +
-> > +               cablecard0-cxp-top {
-> > +                       retain-state-shutdown;
-> > +                       default-state = "keep";
-> > +                       gpios = <&pca5 0 GPIO_ACTIVE_LOW>;
-> > +               };
-> > +
-> > +               cablecard0-cxp-bot {
-> > +                       retain-state-shutdown;
-> > +                       default-state = "keep";
-> > +                       gpios = <&pca5 1 GPIO_ACTIVE_LOW>;
-> > +               };
-> > +       };
-> > +
-> > +       leds-optional-cablecard3 {
-> > +               compatible = "gpio-leds";
-> > +
-> > +               cablecard3-cxp-top {
-> > +                       retain-state-shutdown;
-> > +                       default-state = "keep";
-> > +                       gpios = <&pca6 0 GPIO_ACTIVE_LOW>;
-> > +               };
-> > +
-> > +               cablecard3-cxp-bot {
-> > +                       retain-state-shutdown;
-> > +                       default-state = "keep";
-> > +                       gpios = <&pca6 1 GPIO_ACTIVE_LOW>;
-> > +               };
-> > +       };
-> > +
-> > +       leds-optional-cablecard4 {
-> > +               compatible = "gpio-leds";
-> > +
-> > +               cablecard4-cxp-top {
-> > +                       retain-state-shutdown;
-> > +                       default-state = "keep";
-> > +                       gpios = <&pca7 0 GPIO_ACTIVE_LOW>;
-> > +               };
-> > +
-> > +               cablecard4-cxp-bot {
-> > +                       retain-state-shutdown;
-> > +                       default-state = "keep";
-> > +                       gpios = <&pca7 1 GPIO_ACTIVE_LOW>;
-> > +               };
-> > +       };
-> > +
-> > +       leds-optional-cablecard10 {
-> > +               compatible = "gpio-leds";
-> > +
-> > +               cablecard10-cxp-top {
-> > +                       retain-state-shutdown;
-> > +                       default-state = "keep";
-> > +                       gpios = <&pca8 0 GPIO_ACTIVE_LOW>;
-> > +               };
-> > +
-> > +               cablecard10-cxp-bot {
-> > +                       retain-state-shutdown;
-> > +                       default-state = "keep";
-> > +                       gpios = <&pca8 1 GPIO_ACTIVE_LOW>;
-> > +               };
-> > +       };
-> >  };
-> >
-> >  &ehci1 {
-> > @@ -1212,6 +1276,180 @@
-> >                 compatible = "atmel,24c64";
-> >                 reg = <0x52>;
-> >         };
-> > +
-> > +       pca5: pca9551 at 60 {
-> > +               compatible = "nxp,pca9551";
-> > +               reg = <0x60>;
-> > +               #address-cells = <1>;
-> > +               #size-cells = <0>;
-> > +
-> > +               gpio-controller;
-> > +               #gpio-cells = <2>;
-> > +
-> > +               gpio at 0 {
-> > +                       reg = <0>;
-> > +                       type = <PCA955X_TYPE_GPIO>;
-> > +               };
-> > +
-> > +               gpio at 1 {
-> > +                       reg = <1>;
-> > +                       type = <PCA955X_TYPE_GPIO>;
-> > +               };
-> > +
-> > +               gpio at 2 {
-> > +                       reg = <2>;
-> > +                       type = <PCA955X_TYPE_GPIO>;
-> > +               };
-> > +
-> > +               gpio at 3 {
-> > +                       reg = <3>;
-> > +                       type = <PCA955X_TYPE_GPIO>;
-> > +               };
-> > +
-> > +               gpio at 4 {
-> > +                       reg = <4>;
-> > +                       type = <PCA955X_TYPE_GPIO>;
-> > +               };
-> > +
-> > +               gpio at 5 {
-> > +                       reg = <5>;
-> > +                       type = <PCA955X_TYPE_GPIO>;
-> > +               };
-> > +
-> > +               gpio at 6 {
-> > +                       reg = <6>;
-> > +                       type = <PCA955X_TYPE_GPIO>;
-> > +               };
-> > +
-> > +               gpio at 7 {
-> > +                       reg = <7>;
-> > +                       type = <PCA955X_TYPE_GPIO>;
-> > +               };
-> > +       };
-> > +};
-> > +
-> > +&i2c5 {
-> > +       status = "okay";
-> > +
-> > +       tmp275 at 48 {
-> > +               compatible = "ti,tmp275";
-> > +               reg = <0x48>;
-> > +       };
-> > +
-> > +       tmp275 at 49 {
-> > +               compatible = "ti,tmp275";
-> > +               reg = <0x49>;
-> > +       };
+are available in the Git repository at:
 
-These aren't LED devices.
+  git://git.kernel.org/pub/scm/linux/kernel/git/joel/aspeed.git
+tags/aspeed-5.11-devicetree
 
-> > +
-> > +       eeprom at 50 {
-> > +               compatible = "atmel,24c64";
-> > +               reg = <0x50>;
-> > +       };
-> > +
-> > +       eeprom at 51 {
-> > +               compatible = "atmel,24c64";
-> > +               reg = <0x51>;
-> > +       };
+for you to fetch changes up to 2ba56f464f0c1a7264160f8675063b3df92e7966:
 
-Neither are these.
+  ARM: dts: aspeed: ast2600evb: Add MAC0 (2020-11-19 22:31:18 +1030)
 
-> > +
-> > +       pca6: pca9551 at 60 {
-> > +               compatible = "nxp,pca9551";
-> > +               reg = <0x60>;
-> > +               #address-cells = <1>;
-> > +               #size-cells = <0>;
-> > +
-> > +               gpio-controller;
-> > +               #gpio-cells = <2>;
-> > +
-> > +               gpio at 0 {
-> > +                       reg = <0>;
-> > +                       type = <PCA955X_TYPE_GPIO>;
-> > +               };
-> > +
-> > +               gpio at 1 {
-> > +                       reg = <1>;
-> > +                       type = <PCA955X_TYPE_GPIO>;
-> > +               };
-> > +
-> > +               gpio at 2 {
-> > +                       reg = <2>;
-> > +                       type = <PCA955X_TYPE_GPIO>;
-> > +               };
-> > +
-> > +               gpio at 3 {
-> > +                       reg = <3>;
-> > +                       type = <PCA955X_TYPE_GPIO>;
-> > +               };
-> > +
-> > +               gpio at 4 {
-> > +                       reg = <4>;
-> > +                       type = <PCA955X_TYPE_GPIO>;
-> > +               };
-> > +
-> > +               gpio at 5 {
-> > +                       reg = <5>;
-> > +                       type = <PCA955X_TYPE_GPIO>;
-> > +               };
-> > +
-> > +               gpio at 6 {
-> > +                       reg = <6>;
-> > +                       type = <PCA955X_TYPE_GPIO>;
-> > +               };
-> > +
-> > +               gpio at 7 {
-> > +                       reg = <7>;
-> > +                       type = <PCA955X_TYPE_GPIO>;
-> > +               };
-> > +       };
-> > +
-> > +       pca7: pca9551 at 61 {
-> > +               compatible = "nxp,pca9551";
-> > +               reg = <0x61>;
-> > +               #address-cells = <1>;
-> > +               #size-cells = <0>;
-> > +
-> > +               gpio-controller;
-> > +               #gpio-cells = <2>;
-> > +
-> > +               gpio at 0 {
-> > +                       reg = <0>;
-> > +                       type = <PCA955X_TYPE_GPIO>;
-> > +               };
-> > +
-> > +               gpio at 1 {
-> > +                       reg = <1>;
-> > +                       type = <PCA955X_TYPE_GPIO>;
-> > +               };
-> > +
-> > +               gpio at 2 {
-> > +                       reg = <2>;
-> > +                       type = <PCA955X_TYPE_GPIO>;
-> > +               };
-> > +
-> > +               gpio at 3 {
-> > +                       reg = <3>;
-> > +                       type = <PCA955X_TYPE_GPIO>;
-> > +               };
-> > +
-> > +               gpio at 4 {
-> > +                       reg = <4>;
-> > +                       type = <PCA955X_TYPE_GPIO>;
-> > +               };
-> > +
-> > +               gpio at 5 {
-> > +                       reg = <5>;
-> > +                       type = <PCA955X_TYPE_GPIO>;
-> > +               };
-> > +
-> > +               gpio at 6 {
-> > +                       reg = <6>;
-> > +                       type = <PCA955X_TYPE_GPIO>;
-> > +               };
-> > +
-> > +               gpio at 7 {
-> > +                       reg = <7>;
-> > +                       type = <PCA955X_TYPE_GPIO>;
-> > +               };
-> > +       };
-> >  };
-> >
-> >  &i2c5 {
-> > @@ -2028,6 +2266,56 @@
-> >                 compatible = "atmel,24c64";
-> >                 reg = <0x51>;
-> >         };
-> > +
-> > +       pca8: pca9551 at 60 {
-> > +               compatible = "nxp,pca9551";
-> > +               reg = <0x60>;
-> > +               #address-cells = <1>;
-> > +               #size-cells = <0>;
-> > +
-> > +               gpio-controller;
-> > +               #gpio-cells = <2>;
-> > +
-> > +               gpio at 0 {
-> > +                       reg = <0>;
-> > +                       type = <PCA955X_TYPE_GPIO>;
-> > +               };
-> > +
-> > +               gpio at 1 {
-> > +                       reg = <1>;
-> > +                       type = <PCA955X_TYPE_GPIO>;
-> > +               };
-> > +
-> > +               gpio at 2 {
-> > +                       reg = <2>;
-> > +                       type = <PCA955X_TYPE_GPIO>;
-> > +               };
-> > +
-> > +               gpio at 3 {
-> > +                       reg = <3>;
-> > +                       type = <PCA955X_TYPE_GPIO>;
-> > +               };
-> > +
-> > +               gpio at 4 {
-> > +                       reg = <4>;
-> > +                       type = <PCA955X_TYPE_GPIO>;
-> > +               };
-> > +
-> > +               gpio at 5 {
-> > +                       reg = <5>;
-> > +                       type = <PCA955X_TYPE_GPIO>;
-> > +               };
-> > +
-> > +               gpio at 6 {
-> > +                       reg = <6>;
-> > +                       type = <PCA955X_TYPE_GPIO>;
-> > +               };
-> > +
-> > +               gpio at 7 {
-> > +                       reg = <7>;
-> > +                       type = <PCA955X_TYPE_GPIO>;
-> > +               };
-> > +       };
-> >  };
+----------------------------------------------------------------
+ASPEED device tree updates for 5.11
 
-If we're adding LEDs, why aren't we using PCA955X_TYPE_LED? Why the indirection through the leds-gpio driver?
+ - New machines
 
-Andrew
+   * Bytedance G220A, an AST2500 BMC for an x86 server
+   * Facebook Galaxy100, an AST2400 BMC for a network switch
+   * IBM Rainier 4U, an AST2600 BMC for a PowerPC server
+
+ - Reworking of Facebook device trees to use common dtsi
+
+ - A 64MB flash layout used by the G220A
+
+ - Misc updates to tiogapass, ethanolx, s2600wf, tacoma and rainier
+
+----------------------------------------------------------------
+Andrew Jeffery (4):
+      ARM: dts: tacoma: Fix node vs reg mismatch for flash memory
+      ARM: dts: rainier: Add reserved memory for ramoops
+      ARM: dts: tacoma: Add reserved memory for ramoops
+      ARM: dts: aspeed: rainier: Don't shout addresses
+
+Billy Tsai (1):
+      ARM: dts: aspeed-g6: Fix the GPIO memory size
+
+Eddie James (2):
+      ARM: dts: aspeed: rainier: Add 4U device-tree
+      ARM: dts: aspeed: rainier: Mark FSI SPI controllers as restricted
+
+George Liu (1):
+      ARM: dts: Fix label address for 64MiB OpenBMC flash layout
+
+Joel Stanley (2):
+      ARM: dts: aspeed: s2600wf: Fix VGA memory region location
+      ARM: dts: aspeed: ast2600evb: Add MAC0
+
+John Wang (2):
+      ARM: dts: Add 64MiB OpenBMC flash layout
+      ARM: dts: aspeed: g220a: Add some gpios
+
+Konstantin Aladyshev (4):
+      ARM: dts: aspeed: amd-ethanolx: Update KCS nodes to use v2 binding
+      ARM: dts: aspeed: amd-ethanolx: Enable KCS channel 3
+      ARM: dts: aspeed: amd-ethanolx: Enable devices for the iKVM functionality
+      ARM: dts: aspeed: amd-ethanolx: Add GPIO line names
+
+Lotus Xu (1):
+      ARM: dts: aspeed: Add Bytedance g220a BMC machine
+
+Paul Fertser (1):
+      arm: dts: aspeed: tiogapass: Enable second MAC
+
+Tao Ren (6):
+      ARM: dts: aspeed: Common dtsi for Facebook AST2400 Network BMCs
+      ARM: dts: aspeed: wedge40: Use common dtsi
+      ARM: dts: aspeed: wedge100: Use common dtsi
+      ARM: dts: aspeed: Add Facebook Galaxy100 (AST2400) BMC
+      ARM: dts: aspeed: wedge400: Fix FMC flash0 layout
+      ARM: dts: aspeed: minipack: Fixup I2C tree
+
+Vijay Khemka (1):
+      ARM: dts: aspeed: tiogapass: Remove vuart
