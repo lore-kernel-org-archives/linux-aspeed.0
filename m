@@ -1,157 +1,305 @@
-From: Joel Stanley <joel@jms.id.au>
-Date: Mon, 15 Jan 2018 07:33:05 -0800
-Subject: [PATCH 1/2 v2] ARM: dts: Add Aspeed SoC USB controllers to
- device-tree
-In-Reply-To: <1515738064.31850.100.camel@kernel.crashing.org>
-References: <1515738064.31850.100.camel@kernel.crashing.org>
-Message-ID: <CACPK8XcWVDYhK9wFWKXzghV+H3nYH0xTyzTpUds4acKtcpty4g@mail.gmail.com>
+From: Andrew Jeffery <andrew@aj.id.au>
+Date: Tue, 01 Dec 2020 11:41:49 +1030
+Subject: [PATCH 3/3] edac: Supporting AST2400 and AST2600 edac driver
+In-Reply-To: <20201130083345.4814-3-troy_lee@aspeedtech.com>
+References: <20201130083345.4814-1-troy_lee@aspeedtech.com>
+ <20201130083345.4814-3-troy_lee@aspeedtech.com>
+Message-ID: <d6138f1e-f054-4a1e-8c49-f0c32a9352e8@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Jan 11, 2018 at 10:21 PM, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
-> This adds the USB controllers to the DT template of the
-> AST24xx and AST25xx SoCs.
->
-> This patch doesn't enable them by default on any board specific
-> .dts yet. This will be done when we have the necessary clock/reset
-> and pinmux support. In the meantime though, this will work if
-> u-boot configures things properly.
->
-> For the AST2400 I only added pinmux definition for port 1
-> which is dual USB1/USB2. There are additional USB1 only ports
-> that might require more work but I don't have HW to test at
-> hand so I'm leaving that to whoever cares.
->
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Hi Troy,
 
-Andrew, can you check the pinmux stuff for us please?
+I like the idea of expanding the driver's support to cover the other SoC 
+generations, but not at the cost of making the build of the driver 
+SoC-specific. I've made some comments below in this regard.
 
-The other parts look good.
+On Mon, 30 Nov 2020, at 19:03, Troy Lee wrote:
+> Adding AST2400 and AST2600 edac driver support.
+> 
+> Signed-off-by: Troy Lee <troy_lee@aspeedtech.com>
+> ---
+>  drivers/edac/Kconfig       |   6 +-
+>  drivers/edac/aspeed_edac.c | 114 +++++++++++++++++++++++++++++--------
+>  2 files changed, 94 insertions(+), 26 deletions(-)
+> 
+> diff --git a/drivers/edac/Kconfig b/drivers/edac/Kconfig
+> index fc30f2ef9782..8ea70746d0bf 100644
+> --- a/drivers/edac/Kconfig
+> +++ b/drivers/edac/Kconfig
+> @@ -508,10 +508,10 @@ config EDAC_QCOM
+>  	  health, you should probably say 'Y' here.
+>  
+>  config EDAC_ASPEED
+> -	tristate "Aspeed AST 2500 SoC"
+> -	depends on MACH_ASPEED_G5
+> +	tristate "Aspeed AST BMC SoC"
+> +	depends on (MACH_ASPEED_G4 || MACH_ASPEED_G5 || MACH_ASPEED_G6)
+>  	help
+> -	  Support for error detection and correction on the Aspeed AST 2500 SoC.
+> +	  Support for error detection and correction on the Aspeed AST BMC SoC.
+>  
+>  	  First, ECC must be configured in the bootloader. Then, this driver
+>  	  will expose error counters via the EDAC kernel framework.
+> diff --git a/drivers/edac/aspeed_edac.c b/drivers/edac/aspeed_edac.c
+> index fbec28dc661d..03a3c12f6bf6 100644
+> --- a/drivers/edac/aspeed_edac.c
+> +++ b/drivers/edac/aspeed_edac.c
+> @@ -14,12 +14,11 @@
+>  #include <linux/regmap.h>
+>  #include "edac_module.h"
+>  
+> -
+>  #define DRV_NAME "aspeed-edac"
+>  
+> -
+>  #define ASPEED_MCR_PROT        0x00 /* protection key register */
+>  #define ASPEED_MCR_CONF        0x04 /* configuration register */
+> +#define ASPEED_MCR_REQ         0x08 /* Graphics Memory Protection register */
+>  #define ASPEED_MCR_INTR_CTRL   0x50 /* interrupt control/status register */
+>  #define ASPEED_MCR_ADDR_UNREC  0x58 /* address of first un-recoverable error */
+>  #define ASPEED_MCR_ADDR_REC    0x5c /* address of last recoverable error */
+> @@ -34,10 +33,8 @@
+>  #define ASPEED_MCR_INTR_CTRL_CNT_UNREC GENMASK(15, 12)
+>  #define ASPEED_MCR_INTR_CTRL_ENABLE  (BIT(0) | BIT(1))
+>  
+> -
+>  static struct regmap *aspeed_regmap;
+>  
+> -
+>  static int regmap_reg_write(void *context, unsigned int reg, unsigned 
+> int val)
+>  {
+>  	void __iomem *regs = (void __iomem *)context;
+> @@ -53,7 +50,6 @@ static int regmap_reg_write(void *context, unsigned 
+> int reg, unsigned int val)
+>  	return 0;
+>  }
+>  
+> -
+>  static int regmap_reg_read(void *context, unsigned int reg, unsigned 
+> int *val)
+>  {
+>  	void __iomem *regs = (void __iomem *)context;
+> @@ -63,6 +59,76 @@ static int regmap_reg_read(void *context, unsigned 
+> int reg, unsigned int *val)
+>  	return 0;
+>  }
+>  
+> +extern void aspeed_sdmc_disable_mem_protection(u8 req)
+> +{
+> +	u32 req_val = 0;
+> +
+> +	regmap_read(aspeed_regmap, ASPEED_MCR_REQ, &req_val);
+> +
+> +	req_val &= ~BIT(req);
+> +
+> +	regmap_write(aspeed_regmap, ASPEED_MCR_REQ, req_val);
+> +}
+> +EXPORT_SYMBOL(aspeed_sdmc_disable_mem_protection);
+> +
+> +static const u32 ast2400_dram_table[] = {
+> +	0x04000000,	//64MB
+> +	0x08000000,	//128MB
+> +	0x10000000,	//256MB
+> +	0x20000000,	//512MB
+> +};
+
+You could perhaps save us from the size comments here by using e.g.
+
+static const u32 ast2400_dram_table[] = {
+    64 << 20,
+    128 << 20,
+    256 << 20,
+    512 << 20,
+};
+
+> +
+> +static const u32 ast2500_dram_table[] = {
+> +	0x08000000,	//128MB
+> +	0x10000000,	//256MB
+> +	0x20000000,	//512MB
+> +	0x40000000,	//1024MB
+> +};
+> +
+> +static const u32 ast2600_dram_table[] = {
+> +	0x10000000,	//256MB
+> +	0x20000000,	//512MB
+> +	0x40000000,	//1024MB
+> +	0x80000000,	//2048MB
+> +};
+> +
+> +extern u32 aspeed_get_dram_size(void)
+> +{
+> +	u32 reg04;
+> +	u32 size;
+> +
+> +	regmap_read(aspeed_regmap, ASPEED_MCR_CONF, &reg04);
+> +
+> +#if defined(CONFIG_MACH_ASPEED_G6)
+> +	size = ast2600_dram_table[reg04 & 0x3];
+> +#elif defined(CONFIG_MACH_ASPEED_G5)
+> +	size = ast2500_dram_table[reg04 & 0x3];
+> +#else
+> +	size = ast2400_dram_table[reg04 & 0x3];
+> +#endif
+> +	return size;
+> +}
+> +EXPORT_SYMBOL(aspeed_get_dram_size);
+
+The driver must support running on any of the SoC generations without being 
+recompiled. This requires the driver be compiled for a specific SoC generation.
+
+The right way to do this is to use the OF match table data. Please fix it.
+
+> +
+> +static const u32 aspeed_vga_table[] = {
+> +	0x800000,	//8MB
+> +	0x1000000,	//16MB
+> +	0x2000000,	//32MB
+> +	0x4000000,	//64MB
+> +};
+> +
+> +extern u32 aspeed_get_vga_size(void)
+> +{
+> +	u32 reg04;
+> +	u32 size;
+> +
+> +	regmap_read(aspeed_regmap, ASPEED_MCR_CONF, &reg04);
+> +
+> +	size = aspeed_vga_table[((reg04 & 0xC) >> 2)];
+> +	return size;
+> +}
+> +EXPORT_SYMBOL(aspeed_get_vga_size);
+> +
+>  static bool regmap_is_volatile(struct device *dev, unsigned int reg)
+>  {
+>  	switch (reg) {
+> @@ -209,8 +275,8 @@ static int config_irq(void *ctx, struct 
+> platform_device *pdev)
+>  	/* register interrupt handler */
+>  	irq = platform_get_irq(pdev, 0);
+>  	dev_dbg(&pdev->dev, "got irq %d\n", irq);
+> -	if (irq < 0)
+> -		return irq;
+> +	if (!irq)
+> +		return -ENODEV;
+
+The documentation for platform_get_irq() says "Return: IRQ number on success, negative error number on failure."
+
+So this change doesn't look right.
+
+>  
+>  	rc = devm_request_irq(&pdev->dev, irq, mcr_isr, IRQF_TRIGGER_HIGH,
+>  			      DRV_NAME, ctx);
+> @@ -239,7 +305,11 @@ static int init_csrows(struct mem_ctl_info *mci)
+>  	int rc;
+>  
+>  	/* retrieve info about physical memory from device tree */
+> -	np = of_find_node_by_path("/memory");
+> +#ifdef CONFIG_MACH_ASPEED_G4
+> +	np = of_find_node_by_path("/memory at 40000000");
+> +#else
+> +	np = of_find_node_by_path("/memory at 80000000");
+> +#endif
+
+Again, this makes the driver SoC-specific at compile time, and that's not going 
+to fly. If we need it, this should be solved with a phandle to the appropriate 
+memory node.
+
+>  	if (!np) {
+>  		dev_err(mci->pdev, "dt: missing /memory node\n");
+>  		return -ENODEV;
+> @@ -281,11 +351,19 @@ static int aspeed_probe(struct platform_device *pdev)
+>  	struct device *dev = &pdev->dev;
+>  	struct edac_mc_layer layers[2];
+>  	struct mem_ctl_info *mci;
+> +	struct device_node *np;
+> +	struct resource *res;
+>  	void __iomem *regs;
+> -	u32 reg04;
+>  	int rc;
+>  
+> -	regs = devm_platform_ioremap_resource(pdev, 0);
+> +	/* setup regmap */
+> +	np = dev->of_node;
+> +
+> +	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+> +	if (!res)
+> +		return -ENOENT;
+> +
+> +	regs = devm_ioremap_resource(dev, res);
+>  	if (IS_ERR(regs))
+>  		return PTR_ERR(regs);
+
+Why is this change necessary?
+
+>  
+> @@ -294,13 +372,6 @@ static int aspeed_probe(struct platform_device *pdev)
+>  	if (IS_ERR(aspeed_regmap))
+>  		return PTR_ERR(aspeed_regmap);
+>  
+> -	/* bail out if ECC mode is not configured */
+> -	regmap_read(aspeed_regmap, ASPEED_MCR_CONF, &reg04);
+> -	if (!(reg04 & ASPEED_MCR_CONF_ECC)) {
+> -		dev_err(&pdev->dev, "ECC mode is not configured in u-boot\n");
+> -		return -EPERM;
+> -	}
+> -
+
+Why shouldn't we do this check?
+
+>  	edac_op_state = EDAC_OPSTATE_INT;
+>  
+>  	/* allocate & init EDAC MC data structure */
+> @@ -373,13 +444,13 @@ static int aspeed_remove(struct platform_device *pdev)
+>  	return 0;
+>  }
+>  
+> -
+>  static const struct of_device_id aspeed_of_match[] = {
+> +	{ .compatible = "aspeed,ast2400-sdram-edac" },
+>  	{ .compatible = "aspeed,ast2500-sdram-edac" },
+> +	{ .compatible = "aspeed,ast2600-sdram-edac" },
+
+The .data member of struct of_device_id is where you need to attach your 
+SoC-generation-specific data.
 
 Cheers,
 
-Joel
+Andrew
 
-> ---
+>  	{},
+>  };
+>  
+> -
+>  static struct platform_driver aspeed_driver = {
+>  	.driver		= {
+>  		.name	= DRV_NAME,
+> @@ -395,18 +466,15 @@ static int __init aspeed_init(void)
+>  	return platform_driver_register(&aspeed_driver);
+>  }
+>  
+> -
+>  static void __exit aspeed_exit(void)
+>  {
+>  	platform_driver_unregister(&aspeed_driver);
+>  }
+>  
+> -
+>  module_init(aspeed_init);
+>  module_exit(aspeed_exit);
+>  
+> -
+>  MODULE_LICENSE("GPL");
+>  MODULE_AUTHOR("Stefan Schaeckeler <sschaeck@cisco.com>");
+> -MODULE_DESCRIPTION("Aspeed AST2500 EDAC driver");
+> +MODULE_DESCRIPTION("Aspeed EDAC driver");
+>  MODULE_VERSION("1.0");
+> -- 
+> 2.17.1
+> 
 >
-> v2: Previous patch was missing actually adding the nodes
->     (which was an old patch in my tree I had forgotten to
->     merge).
->
->  arch/arm/boot/dts/aspeed-g4.dtsi | 27 +++++++++++++++++++++++++++
->  arch/arm/boot/dts/aspeed-g5.dtsi | 40 ++++++++++++++++++++++++++++++++++++++++
->  2 files changed, 67 insertions(+)
->
-> diff --git a/arch/arm/boot/dts/aspeed-g4.dtsi b/arch/arm/boot/dts/aspeed-g4.dtsi
-> index b0d8431a3700..e55f2ad5de59 100644
-> --- a/arch/arm/boot/dts/aspeed-g4.dtsi
-> +++ b/arch/arm/boot/dts/aspeed-g4.dtsi
-> @@ -103,6 +103,23 @@
->                         status = "disabled";
->                 };
->
-> +               ehci0: usb at 1e6a1000 {
-> +                       compatible = "aspeed,ast2400-ehci", "generic-ehci";
-> +                       reg = <0x1e6a1000 0x100>;
-> +                       interrupts = <5>;
-> +                       clocks = <&syscon ASPEED_CLK_GATE_USBPORT1CLK>;
-> +                       status = "disabled";
-> +               };
-> +
-> +               uhci: usb at 1e6b0000 {
-> +                       compatible = "aspeed,ast2400-uhci", "generic-uhci";
-> +                       reg = <0x1e6b0000 0x100>;
-> +                       interrupts = <14>;
-> +                       #ports = <3>;
-> +                       clocks = <&syscon ASPEED_CLK_GATE_USBUHCICLK>;
-> +                       status = "disabled";
-> +               };
-> +
->                 apb {
->                         compatible = "simple-bus";
->                         #address-cells = <1>;
-> @@ -1227,6 +1244,16 @@
->                 groups = "USBCKI";
->         };
->
-> +       pinctrl_usb2h_default: usb2h_default {
-> +               function = "USB2H1";
-> +               groups = "USB2H1";
-> +       };
-> +
-> +       pinctrl_usb2d_default: usb2d_default {
-> +               function = "USB2D1";
-> +               groups = "USB2D1";
-> +       };
-> +
->         pinctrl_vgabios_rom_default: vgabios_rom_default {
->                 function = "VGABIOS_ROM";
->                 groups = "VGABIOS_ROM";
-> diff --git a/arch/arm/boot/dts/aspeed-g5.dtsi b/arch/arm/boot/dts/aspeed-g5.dtsi
-> index 40de3b66c33f..655258edee24 100644
-> --- a/arch/arm/boot/dts/aspeed-g5.dtsi
-> +++ b/arch/arm/boot/dts/aspeed-g5.dtsi
-> @@ -138,6 +138,31 @@
->                         status = "disabled";
->                 };
->
-> +               ehci0: usb at 1e6a1000 {
-> +                       compatible = "aspeed,ast2500-ehci", "generic-ehci";
-> +                       reg = <0x1e6a1000 0x100>;
-> +                       interrupts = <5>;
-> +                       clocks = <&syscon ASPEED_CLK_GATE_USBPORT1CLK>;
-> +                       status = "disabled";
-> +               };
-> +
-> +               ehci1: usb at 1e6a3000 {
-> +                       compatible = "aspeed,ast2500-ehci", "generic-ehci";
-> +                       reg = <0x1e6a3000 0x100>;
-> +                       interrupts = <13>;
-> +                       clocks = <&syscon ASPEED_CLK_GATE_USBPORT2CLK>;
-> +                       status = "disabled";
-> +               };
-> +
-> +               uhci: usb at 1e6b0000 {
-> +                       compatible = "aspeed,ast2500-uhci", "generic-uhci";
-> +                       reg = <0x1e6b0000 0x100>;
-> +                       interrupts = <14>;
-> +                       #ports = <2>;
-> +                       clocks = <&syscon ASPEED_CLK_GATE_USBUHCICLK>;
-> +                       status = "disabled";
-> +               };
-> +
->                 apb {
->                         compatible = "simple-bus";
->                         #address-cells = <1>;
-> @@ -1358,6 +1383,21 @@
->                 groups = "USBCKI";
->         };
->
-> +       pinctrl_usb2ah_default: usb2ah_default {
-> +               function = "USB2AH";
-> +               groups = "USB2AH";
-> +       };
-> +
-> +       pinctrl_usb11bhid_default: usb11bhid_default {
-> +               function = "USB11BHID";
-> +               groups = "USB11BHID";
-> +       };
-> +
-> +       pinctrl_usb2bh_default: usb2bh_default {
-> +               function = "USB2BH";
-> +               groups = "USB2BH";
-> +       };
-> +
->         pinctrl_vgabiosrom_default: vgabiosrom_default {
->                 function = "VGABIOSROM";
->                 groups = "VGABIOSROM";
->
->
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel at lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
