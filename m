@@ -1,22 +1,23 @@
 From: Mark Brown <broonie@kernel.org>
 Date: Tue, 01 Dec 2020 13:57:56 +0000
-Subject: [v2 0/4] Porting ASPEED FMC/SPI memory controller driver
-In-Reply-To: <20201103072202.24705-1-chin-ting_kuo@aspeedtech.com>
-References: <20201103072202.24705-1-chin-ting_kuo@aspeedtech.com>
-Message-ID: <160683107674.35139.14509237313835347013.b4-ty@kernel.org>
+Subject: [v3 0/4] Porting ASPEED FMC/SPI memory controller driver
+In-Reply-To: <20201105120331.9853-1-chin-ting_kuo@aspeedtech.com>
+References: <20201105120331.9853-1-chin-ting_kuo@aspeedtech.com>
+Message-ID: <160683107675.35139.15332656159104751022.b4-ty@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, 3 Nov 2020 15:21:58 +0800, Chin-Ting Kuo wrote:
+On Thu, 5 Nov 2020 20:03:27 +0800, Chin-Ting Kuo wrote:
 > This patch series aims to porting ASPEED FMC/SPI memory controller
 > driver with spi-mem interface. Adjust device tree setting of SPI NOR
 > flash in order to fit real AST2600 EVB and new SPI memory controller
 > driver. Also, this patch has been verified on AST2600-A1 EVB.
 > 
 > v2: Fix sparse warnings reported by kernel test robot <lkp@intel.com>.
+> v3: Fix build warnings with x86 allmodconfig.
 > 
 > [...]
 
