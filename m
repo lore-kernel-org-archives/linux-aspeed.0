@@ -1,63 +1,51 @@
-From: Troy Lee <troy_lee@aspeedtech.com>
-Date: Tue, 1 Dec 2020 10:04:51 +0000
-Subject: [PATCH 3/3] edac: Supporting AST2400 and AST2600 edac driver
-In-Reply-To: <4AD4AB7A-54E7-4922-9547-7E26D61F7C77@cisco.com>
-References: <20201130083345.4814-1-troy_lee@aspeedtech.com>
- <20201130083345.4814-3-troy_lee@aspeedtech.com>
- <4AD4AB7A-54E7-4922-9547-7E26D61F7C77@cisco.com>
-Message-ID: <PS1PR06MB26008D10C46C5DF0B47F81368AF40@PS1PR06MB2600.apcprd06.prod.outlook.com>
+From: Mark Brown <broonie@kernel.org>
+Date: Tue, 01 Dec 2020 13:57:56 +0000
+Subject: [v2 0/4] Porting ASPEED FMC/SPI memory controller driver
+In-Reply-To: <20201103072202.24705-1-chin-ting_kuo@aspeedtech.com>
+References: <20201103072202.24705-1-chin-ting_kuo@aspeedtech.com>
+Message-ID: <160683107674.35139.14509237313835347013.b4-ty@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Stefan,
+On Tue, 3 Nov 2020 15:21:58 +0800, Chin-Ting Kuo wrote:
+> This patch series aims to porting ASPEED FMC/SPI memory controller
+> driver with spi-mem interface. Adjust device tree setting of SPI NOR
+> flash in order to fit real AST2600 EVB and new SPI memory controller
+> driver. Also, this patch has been verified on AST2600-A1 EVB.
+> 
+> v2: Fix sparse warnings reported by kernel test robot <lkp@intel.com>.
+> 
+> [...]
 
-The driver was ported from latest ASPEED BSP, so I only test with ECC-on/off 
-from u-boot and check if driver runs correctly.
+Applied to
 
-The test doc you provided is very nice and detailed, I'll try to reproduce the 
-injection test in v2 patch.
+   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-next
+
+Thanks!
+
+[1/2] dt-bindings: spi: Add binding file for ASPEED FMC/SPI memory controller
+      (no commit info)
+[2/2] spi: aspeed: Add ASPEED FMC/SPI memory controller driver
+      (no commit info)
+
+All being well this means that it will be integrated into the linux-next
+tree (usually sometime in the next 24 hours) and sent to Linus during
+the next merge window (or sooner if it is a bug fix), however if
+problems are discovered then the patch may be dropped or reverted.
+
+You may get further e-mails resulting from automated or manual testing
+and review of the tree, please engage with people reporting problems and
+send followup patches addressing any issues that are reported if needed.
+
+If any updates are required or you are submitting further changes they
+should be sent as incremental updates against current git, existing
+patches will not be replaced.
+
+Please add any relevant lists and maintainers to the CCs when replying
+to this mail.
 
 Thanks,
-Troy Lee
-
-> -----Original Message-----
-> From: Stefan Schaeckeler (sschaeck) <sschaeck@cisco.com>
-> Sent: Monday, November 30, 2020 5:16 PM
-> To: Troy Lee <troy_lee@aspeedtech.com>; Rob Herring <robh+dt@kernel.org>;
-> Joel Stanley <joel@jms.id.au>; Andrew Jeffery <andrew@aj.id.au>; Borislav
-> Petkov <bp@alien8.de>; Mauro Carvalho Chehab <mchehab@kernel.org>;
-> Tony Luck <tony.luck@intel.com>; James Morse <james.morse@arm.com>;
-> Robert Richter <rrichter@marvell.com>; open list:OPEN FIRMWARE AND
-> FLATTENED DEVICE TREE BINDINGS <devicetree@vger.kernel.org>; moderated
-> list:ARM/ASPEED MACHINE SUPPORT <linux-arm-kernel@lists.infradead.org>;
-> moderated list:ARM/ASPEED MACHINE SUPPORT
-> <linux-aspeed@lists.ozlabs.org>; open list <linux-kernel@vger.kernel.org>;
-> open list:EDAC-CORE <linux-edac@vger.kernel.org>
-> Cc: leetroy at gmail.com; Ryan Chen <ryan_chen@aspeedtech.com>; Stefan
-> Schaeckeler <schaecsn@gmx.net>
-> Subject: Re: [PATCH 3/3] edac: Supporting AST2400 and AST2600 edac driver
-> 
-> Hello Troy,
-> 
-> > Adding AST2400 and AST2600 edac driver support.
-> >
-> > Signed-off-by: Troy Lee <troy_lee@aspeedtech.com>
-> > ---
-> > drivers/edac/Kconfig       |   6 +-
-> > drivers/edac/aspeed_edac.c | 114 +++++++++++++++++++++++++++++--------
-> > 2 files changed, 94 insertions(+), 26 deletions(-)
-> 
-> Uh, there are quite some non-trivial changes. I'll have a look over the coming
-> weekend.
-> 
-> Testing an edac driver comes with challenges. Did you test your code? If so,
-> how?
-> 
-> That's how I was testing my original edac 2500 driver
-> http://students.engr.scu.edu/~sschaeck/misc/aspeed-edac.html
-> 
->  Stefan
-
+Mark
