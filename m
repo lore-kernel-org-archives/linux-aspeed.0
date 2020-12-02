@@ -1,40 +1,53 @@
-From: Troy Lee <troy_lee@aspeedtech.com>
-Date: Wed, 2 Dec 2020 14:36:10 +0800
-Subject: [PATCH v2 2/3] ARM: dts: aspeed: Add AST2600 edac into common
- devicetree
+From: Joel Stanley <joel@jms.id.au>
+Date: Wed, 2 Dec 2020 06:40:47 +0000
+Subject: [PATCH v2 1/3] dt-bindings: edac: aspeed-sdram-edac: Add
+ ast2400/ast2600 support
 In-Reply-To: <20201202063612.21241-1-troy_lee@aspeedtech.com>
 References: <20201202063612.21241-1-troy_lee@aspeedtech.com>
-Message-ID: <20201202063612.21241-2-troy_lee@aspeedtech.com>
+Message-ID: <CACPK8XfySi5=r4e__djHg-LtFqhV7j+-Pp+t4zevro=KK0eBig@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Adding Aspeed AST2600 edac node into common devicetree.
+On Wed, 2 Dec 2020 at 06:37, Troy Lee <troy_lee@aspeedtech.com> wrote:
+>
+> Adding Aspeed AST2400 and AST2600 binding for edac driver.
+>
+> Signed-off-by: Troy Lee <troy_lee@aspeedtech.com>
 
-Signed-off-by: Troy Lee <troy_lee@aspeedtech.com>
----
- arch/arm/boot/dts/aspeed-g6.dtsi | 6 ++++++
- 1 file changed, 6 insertions(+)
+Acked-by: Joel Stanley <joel@jms.id.au>
 
-diff --git a/arch/arm/boot/dts/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed-g6.dtsi
-index 97ca743363d7..fb144515f397 100644
---- a/arch/arm/boot/dts/aspeed-g6.dtsi
-+++ b/arch/arm/boot/dts/aspeed-g6.dtsi
-@@ -69,6 +69,12 @@
- 		always-on;
- 	};
- 
-+	edac: sdram at 1e6e0000 {
-+		compatible = "aspeed,ast2600-sdram-edac", "syscon";
-+		reg = <0x1e6e0000 0x174>;
-+		interrupts = <GIC_SPI 0 IRQ_TYPE_LEVEL_HIGH>;
-+	};
-+
- 	ahb {
- 		compatible = "simple-bus";
- 		#address-cells = <1>;
--- 
-2.17.1
-
+> ---
+>  .../devicetree/bindings/edac/aspeed-sdram-edac.txt       | 9 ++++++---
+>  1 file changed, 6 insertions(+), 3 deletions(-)
+>
+> diff --git a/Documentation/devicetree/bindings/edac/aspeed-sdram-edac.txt b/Documentation/devicetree/bindings/edac/aspeed-sdram-edac.txt
+> index 6a0f3d90d682..8ca9e0a049d8 100644
+> --- a/Documentation/devicetree/bindings/edac/aspeed-sdram-edac.txt
+> +++ b/Documentation/devicetree/bindings/edac/aspeed-sdram-edac.txt
+> @@ -1,6 +1,6 @@
+> -Aspeed AST2500 SoC EDAC node
+> +Aspeed BMC SoC EDAC node
+>
+> -The Aspeed AST2500 SoC supports DDR3 and DDR4 memory with and without ECC (error
+> +The Aspeed BMC SoC supports DDR3 and DDR4 memory with and without ECC (error
+>  correction check).
+>
+>  The memory controller supports SECDED (single bit error correction, double bit
+> @@ -11,7 +11,10 @@ Note, the bootloader must configure ECC mode in the memory controller.
+>
+>
+>  Required properties:
+> -- compatible: should be "aspeed,ast2500-sdram-edac"
+> +- compatible: should be one of
+> +       - "aspeed,ast2400-sdram-edac"
+> +       - "aspeed,ast2500-sdram-edac"
+> +       - "aspeed,ast2600-sdram-edac"
+>  - reg:        sdram controller register set should be <0x1e6e0000 0x174>
+>  - interrupts: should be AVIC interrupt #0
+>
+> --
+> 2.17.1
+>
