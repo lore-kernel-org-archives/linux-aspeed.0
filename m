@@ -1,46 +1,103 @@
 From: Troy Lee <troy_lee@aspeedtech.com>
-Date: Wed, 2 Dec 2020 18:12:16 +0800
-Subject: [PATCH v3 1/3] dt-bindings: edac: aspeed-sdram-edac: Add
- ast2400/ast2600 support
-Message-ID: <20201202101218.18393-1-troy_lee@aspeedtech.com>
+Date: Wed, 2 Dec 2020 18:12:18 +0800
+Subject: [PATCH v3 3/3] edac: Supporting AST2400 and AST2600 edac driver
+In-Reply-To: <20201202101218.18393-1-troy_lee@aspeedtech.com>
+References: <20201202101218.18393-1-troy_lee@aspeedtech.com>
+Message-ID: <20201202101218.18393-3-troy_lee@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Adding Aspeed AST2400 and AST2600 binding for edac driver.
+Adding AST2400 and AST2600 edac driver support.
 
 Signed-off-by: Troy Lee <troy_lee@aspeedtech.com>
 ---
- .../devicetree/bindings/edac/aspeed-sdram-edac.txt       | 9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
+Changes since v2:
+- Remove cross dependencies export functions
+- Update Kconfig depends on ARCH_ASPEED
+- Patch create against latest Linux kernel mainline
 
-diff --git a/Documentation/devicetree/bindings/edac/aspeed-sdram-edac.txt b/Documentation/devicetree/bindings/edac/aspeed-sdram-edac.txt
-index 6a0f3d90d682..8ca9e0a049d8 100644
---- a/Documentation/devicetree/bindings/edac/aspeed-sdram-edac.txt
-+++ b/Documentation/devicetree/bindings/edac/aspeed-sdram-edac.txt
-@@ -1,6 +1,6 @@
--Aspeed AST2500 SoC EDAC node
-+Aspeed BMC SoC EDAC node
+---
+ drivers/edac/Kconfig       |  6 +++---
+ drivers/edac/aspeed_edac.c | 15 +++++----------
+ 2 files changed, 8 insertions(+), 13 deletions(-)
+
+diff --git a/drivers/edac/Kconfig b/drivers/edac/Kconfig
+index 7a47680d6f07..c410331e8ee8 100644
+--- a/drivers/edac/Kconfig
++++ b/drivers/edac/Kconfig
+@@ -515,10 +515,10 @@ config EDAC_QCOM
+ 	  health, you should probably say 'Y' here.
  
--The Aspeed AST2500 SoC supports DDR3 and DDR4 memory with and without ECC (error
-+The Aspeed BMC SoC supports DDR3 and DDR4 memory with and without ECC (error
- correction check).
+ config EDAC_ASPEED
+-	tristate "Aspeed AST 2500 SoC"
+-	depends on MACH_ASPEED_G5
++	tristate "Aspeed AST BMC SoC"
++	depends on ARCH_ASPEED
+ 	help
+-	  Support for error detection and correction on the Aspeed AST 2500 SoC.
++	  Support for error detection and correction on the Aspeed AST BMC SoC.
  
- The memory controller supports SECDED (single bit error correction, double bit
-@@ -11,7 +11,10 @@ Note, the bootloader must configure ECC mode in the memory controller.
+ 	  First, ECC must be configured in the bootloader. Then, this driver
+ 	  will expose error counters via the EDAC kernel framework.
+diff --git a/drivers/edac/aspeed_edac.c b/drivers/edac/aspeed_edac.c
+index fde809efc520..c9d1d8a8fcba 100644
+--- a/drivers/edac/aspeed_edac.c
++++ b/drivers/edac/aspeed_edac.c
+@@ -239,7 +239,7 @@ static int init_csrows(struct mem_ctl_info *mci)
+ 	int rc;
+ 
+ 	/* retrieve info about physical memory from device tree */
+-	np = of_find_node_by_path("/memory");
++	np = of_find_node_by_name(NULL, "memory");
+ 	if (!np) {
+ 		dev_err(mci->pdev, "dt: missing /memory node\n");
+ 		return -ENODEV;
+@@ -282,7 +282,6 @@ static int aspeed_probe(struct platform_device *pdev)
+ 	struct edac_mc_layer layers[2];
+ 	struct mem_ctl_info *mci;
+ 	void __iomem *regs;
+-	u32 reg04;
+ 	int rc;
+ 
+ 	regs = devm_platform_ioremap_resource(pdev, 0);
+@@ -294,13 +293,6 @@ static int aspeed_probe(struct platform_device *pdev)
+ 	if (IS_ERR(aspeed_regmap))
+ 		return PTR_ERR(aspeed_regmap);
+ 
+-	/* bail out if ECC mode is not configured */
+-	regmap_read(aspeed_regmap, ASPEED_MCR_CONF, &reg04);
+-	if (!(reg04 & ASPEED_MCR_CONF_ECC)) {
+-		dev_err(&pdev->dev, "ECC mode is not configured in u-boot\n");
+-		return -EPERM;
+-	}
+-
+ 	edac_op_state = EDAC_OPSTATE_INT;
+ 
+ 	/* allocate & init EDAC MC data structure */
+@@ -375,10 +367,13 @@ static int aspeed_remove(struct platform_device *pdev)
  
  
- Required properties:
--- compatible: should be "aspeed,ast2500-sdram-edac"
-+- compatible: should be one of
-+	- "aspeed,ast2400-sdram-edac"
-+	- "aspeed,ast2500-sdram-edac"
-+	- "aspeed,ast2600-sdram-edac"
- - reg:        sdram controller register set should be <0x1e6e0000 0x174>
- - interrupts: should be AVIC interrupt #0
+ static const struct of_device_id aspeed_of_match[] = {
++	{ .compatible = "aspeed,ast2400-sdram-edac" },
+ 	{ .compatible = "aspeed,ast2500-sdram-edac" },
++	{ .compatible = "aspeed,ast2600-sdram-edac" },
+ 	{},
+ };
  
++MODULE_DEVICE_TABLE(of, aspeed_of_match);
+ 
+ static struct platform_driver aspeed_driver = {
+ 	.driver		= {
+@@ -392,5 +387,5 @@ module_platform_driver(aspeed_driver);
+ 
+ MODULE_LICENSE("GPL");
+ MODULE_AUTHOR("Stefan Schaeckeler <sschaeck@cisco.com>");
+-MODULE_DESCRIPTION("Aspeed AST2500 EDAC driver");
++MODULE_DESCRIPTION("Aspeed BMC SoC EDAC driver");
+ MODULE_VERSION("1.0");
 -- 
 2.17.1
 
