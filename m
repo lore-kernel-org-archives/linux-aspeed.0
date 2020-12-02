@@ -1,52 +1,108 @@
-From: Mark Brown <broonie@kernel.org>
-Date: Tue, 01 Dec 2020 13:57:56 +0000
-Subject: [v3 0/4] Porting ASPEED FMC/SPI memory controller driver
-In-Reply-To: <20201105120331.9853-1-chin-ting_kuo@aspeedtech.com>
-References: <20201105120331.9853-1-chin-ting_kuo@aspeedtech.com>
-Message-ID: <160683107675.35139.15332656159104751022.b4-ty@kernel.org>
+From: John Wang <wangzhiqiang.bj@bytedance.com>
+Date: Wed,  2 Dec 2020 13:16:33 +0800
+Subject: [PATCH 1/2] misc: Add clock control logic into Aspeed LPC SNOOP driver
+Message-ID: <20201202051634.490-1-wangzhiqiang.bj@bytedance.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, 5 Nov 2020 20:03:27 +0800, Chin-Ting Kuo wrote:
-> This patch series aims to porting ASPEED FMC/SPI memory controller
-> driver with spi-mem interface. Adjust device tree setting of SPI NOR
-> flash in order to fit real AST2600 EVB and new SPI memory controller
-> driver. Also, this patch has been verified on AST2600-A1 EVB.
-> 
-> v2: Fix sparse warnings reported by kernel test robot <lkp@intel.com>.
-> v3: Fix build warnings with x86 allmodconfig.
-> 
-> [...]
+From: Jae Hyun Yoo <jae.hyun.yoo@intel.com>
 
-Applied to
+If LPC SNOOP driver is registered ahead of lpc-ctrl module, LPC
+SNOOP block will be enabled without heart beating of LCLK until
+lpc-ctrl enables the LCLK. This issue causes improper handling on
+host interrupts when the host sends interrupt in that time frame.
+Then kernel eventually forcibly disables the interrupt with
+dumping stack and printing a 'nobody cared this irq' message out.
 
-   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-next
+To prevent this issue, all LPC sub-nodes should enable LCLK
+individually so this patch adds clock control logic into the LPC
+SNOOP driver.
 
-Thanks!
+Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@intel.com>
+Signed-off-by: Vernon Mauery <vernon.mauery@linux.intel.com>
+Signed-off-by: John Wang <wangzhiqiang.bj@bytedance.com>
+---
+ drivers/soc/aspeed/aspeed-lpc-snoop.c | 30 ++++++++++++++++++++++++---
+ 1 file changed, 27 insertions(+), 3 deletions(-)
 
-[1/2] dt-bindings: spi: Add binding file for ASPEED FMC/SPI memory controller
-      (no commit info)
-[2/2] spi: aspeed: Add ASPEED FMC/SPI memory controller driver
-      (no commit info)
+diff --git a/drivers/soc/aspeed/aspeed-lpc-snoop.c b/drivers/soc/aspeed/aspeed-lpc-snoop.c
+index 682ba0eb4eba..20acac6342ef 100644
+--- a/drivers/soc/aspeed/aspeed-lpc-snoop.c
++++ b/drivers/soc/aspeed/aspeed-lpc-snoop.c
+@@ -11,6 +11,7 @@
+  */
+ 
+ #include <linux/bitops.h>
++#include <linux/clk.h>
+ #include <linux/interrupt.h>
+ #include <linux/fs.h>
+ #include <linux/kfifo.h>
+@@ -67,6 +68,7 @@ struct aspeed_lpc_snoop_channel {
+ struct aspeed_lpc_snoop {
+ 	struct regmap		*regmap;
+ 	int			irq;
++	struct clk		*clk;
+ 	struct aspeed_lpc_snoop_channel chan[NUM_SNOOP_CHANNELS];
+ };
+ 
+@@ -282,22 +284,42 @@ static int aspeed_lpc_snoop_probe(struct platform_device *pdev)
+ 		return -ENODEV;
+ 	}
+ 
++	lpc_snoop->clk = devm_clk_get(dev, NULL);
++	if (IS_ERR(lpc_snoop->clk)) {
++		rc = PTR_ERR(lpc_snoop->clk);
++		if (rc != -EPROBE_DEFER)
++			dev_err(dev, "couldn't get clock\n");
++		return rc;
++	}
++	rc = clk_prepare_enable(lpc_snoop->clk);
++	if (rc) {
++		dev_err(dev, "couldn't enable clock\n");
++		return rc;
++	}
++
+ 	rc = aspeed_lpc_snoop_config_irq(lpc_snoop, pdev);
+ 	if (rc)
+-		return rc;
++		goto err;
+ 
+ 	rc = aspeed_lpc_enable_snoop(lpc_snoop, dev, 0, port);
+ 	if (rc)
+-		return rc;
++		goto err;
+ 
+ 	/* Configuration of 2nd snoop channel port is optional */
+ 	if (of_property_read_u32_index(dev->of_node, "snoop-ports",
+ 				       1, &port) == 0) {
+ 		rc = aspeed_lpc_enable_snoop(lpc_snoop, dev, 1, port);
+-		if (rc)
++		if (rc) {
+ 			aspeed_lpc_disable_snoop(lpc_snoop, 0);
++			goto err;
++		}
+ 	}
+ 
++	return 0;
++
++err:
++	clk_disable_unprepare(lpc_snoop->clk);
++
+ 	return rc;
+ }
+ 
+@@ -309,6 +331,8 @@ static int aspeed_lpc_snoop_remove(struct platform_device *pdev)
+ 	aspeed_lpc_disable_snoop(lpc_snoop, 0);
+ 	aspeed_lpc_disable_snoop(lpc_snoop, 1);
+ 
++	clk_disable_unprepare(lpc_snoop->clk);
++
+ 	return 0;
+ }
+ 
+-- 
+2.25.1
 
-All being well this means that it will be integrated into the linux-next
-tree (usually sometime in the next 24 hours) and sent to Linus during
-the next merge window (or sooner if it is a bug fix), however if
-problems are discovered then the patch may be dropped or reverted.
-
-You may get further e-mails resulting from automated or manual testing
-and review of the tree, please engage with people reporting problems and
-send followup patches addressing any issues that are reported if needed.
-
-If any updates are required or you are submitting further changes they
-should be sent as incremental updates against current git, existing
-patches will not be replaced.
-
-Please add any relevant lists and maintainers to the CCs when replying
-to this mail.
-
-Thanks,
-Mark
