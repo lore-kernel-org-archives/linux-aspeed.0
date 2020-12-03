@@ -1,61 +1,74 @@
-From: Joel Stanley <joel@jms.id.au>
-Date: Wed, 2 Dec 2020 21:19:47 +0000
-Subject: [v2 0/4] Porting ASPEED FMC/SPI memory controller driver
-In-Reply-To: <160683107674.35139.14509237313835347013.b4-ty@kernel.org>
-References: <20201103072202.24705-1-chin-ting_kuo@aspeedtech.com>
- <160683107674.35139.14509237313835347013.b4-ty@kernel.org>
-Message-ID: <CACPK8Xe4TcRVBnZL7vtqGq1PTe5NEx1k4hvk4FDeYgJQ9HALFg@mail.gmail.com>
+From: Troy Lee <troy_lee@aspeedtech.com>
+Date: Thu, 3 Dec 2020 01:27:27 +0000
+Subject: [PATCH v2 3/3] edac: Supporting AST2400 and AST2600 edac driver
+In-Reply-To: <20201202182349.GJ2951@zn.tnic>
+References: <20201202063612.21241-1-troy_lee@aspeedtech.com>
+ <20201202063612.21241-3-troy_lee@aspeedtech.com>
+ <CACPK8XcBTm8-cAPmtswHbYAf2B+PdBiZ2s1XK1UqKA_NQX_-mw@mail.gmail.com>
+ <PS1PR06MB26008E4BCB805553EDEC45038AF30@PS1PR06MB2600.apcprd06.prod.outlook.com>
+ <b6dd3a91-abe7-4e9d-b801-6e54e4c88827@www.fastmail.com>
+ <20201202182349.GJ2951@zn.tnic>
+Message-ID: <PS1PR06MB2600D6A1E73D89EA0D0D59DC8AF20@PS1PR06MB2600.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, 1 Dec 2020 at 13:58, Mark Brown <broonie@kernel.org> wrote:
->
-> On Tue, 3 Nov 2020 15:21:58 +0800, Chin-Ting Kuo wrote:
-> > This patch series aims to porting ASPEED FMC/SPI memory controller
-> > driver with spi-mem interface. Adjust device tree setting of SPI NOR
-> > flash in order to fit real AST2600 EVB and new SPI memory controller
-> > driver. Also, this patch has been verified on AST2600-A1 EVB.
+Hi Broislav and Andrew,
+
+I removed these exported function and submitted v3 PATCH.
+
+Thanks,
+Troy Lee
+
+> -----Original Message-----
+> From: Borislav Petkov <bp@alien8.de>
+> Sent: Thursday, December 3, 2020 2:24 AM
+> To: Andrew Jeffery <andrew@aj.id.au>
+> Cc: Troy Lee <troy_lee@aspeedtech.com>; Joel Stanley <joel@jms.id.au>; open
+> list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS
+> <devicetree@vger.kernel.org>; Tony Luck <tony.luck@intel.com>; Ryan Chen
+> <ryan_chen@aspeedtech.com>; James Morse <james.morse@arm.com>;
+> moderated list:ARM/ASPEED MACHINE SUPPORT
+> <linux-aspeed@lists.ozlabs.org>; open list <linux-kernel@vger.kernel.org>;
+> Robert Richter <rrichter@marvell.com>; leetroy at gmail.com; Rob Herring
+> <robh+dt@kernel.org>; Stefan M Schaeckeler <sschaeck@cisco.com>; Mauro
+> Carvalho Chehab <mchehab@kernel.org>; moderated list:ARM/ASPEED
+> MACHINE SUPPORT <linux-arm-kernel@lists.infradead.org>; open
+> list:EDAC-CORE <linux-edac@vger.kernel.org>
+> Subject: Re: [PATCH v2 3/3] edac: Supporting AST2400 and AST2600 edac
+> driver
+> 
+> On Thu, Dec 03, 2020 at 01:32:44AM +1030, Andrew Jeffery wrote:
+> > On Wed, 2 Dec 2020, at 19:11, Troy Lee wrote:
+> > > Hi Joel,
+> > >
+> > > Thanks for the suggestion, I'll fix the review and create an new
+> > > patch against latest Linux branch. Those exported function will be
+> > > referenced in other driver yet to be upstream, so should I move
+> > > those exported functions out of this patch?
+> > >
 > >
-> > v2: Fix sparse warnings reported by kernel test robot <lkp@intel.com>.
-> >
-> > [...]
->
-> Applied to
->
->    https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-next
-
-Really? Or is there a bug in one of your scripts :)
-
-Cheers,
-
-Joel
-
->
-> Thanks!
->
-> [1/2] dt-bindings: spi: Add binding file for ASPEED FMC/SPI memory controller
->       (no commit info)
-> [2/2] spi: aspeed: Add ASPEED FMC/SPI memory controller driver
->       (no commit info)
->
-> All being well this means that it will be integrated into the linux-next
-> tree (usually sometime in the next 24 hours) and sent to Linus during
-> the next merge window (or sooner if it is a bug fix), however if
-> problems are discovered then the patch may be dropped or reverted.
->
-> You may get further e-mails resulting from automated or manual testing
-> and review of the tree, please engage with people reporting problems and
-> send followup patches addressing any issues that are reported if needed.
->
-> If any updates are required or you are submitting further changes they
-> should be sent as incremental updates against current git, existing
-> patches will not be replaced.
->
-> Please add any relevant lists and maintainers to the CCs when replying
-> to this mail.
->
-> Thanks,
-> Mark
+> > Yes, let's leave the exports out of this patch, and add them in when
+> > you send the patch that depends on them.
+> 
+> And when you do, almost all new exports are EXPORT_SYMBOL_GPL - not
+> EXPORT_SYMBOL.
+> 
+> Also, I'd like to see how those exports are going to be used. An EDAC driver
+> function exported to another driver sounds strange. We have only one other
+> case like this in the EDAC tree:
+> 
+> drivers/edac/amd64_edac.c:554:EXPORT_SYMBOL_GPL(amd64_get_dram_hol
+> e_info);
+> 
+> and even that is not really needed...
+> 
+> Thx.
+> 
+> --
+> Regards/Gruss,
+>     Boris.
+> 
+> https://people.kernel.org/tglx/notes-about-netiquette
