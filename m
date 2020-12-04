@@ -1,31 +1,36 @@
-From: Mark Brown <broonie@kernel.org>
-Date: Thu, 3 Dec 2020 10:32:27 +0000
-Subject: [v2 0/4] Porting ASPEED FMC/SPI memory controller driver
-In-Reply-To: <CACPK8Xe4TcRVBnZL7vtqGq1PTe5NEx1k4hvk4FDeYgJQ9HALFg@mail.gmail.com>
-References: <20201103072202.24705-1-chin-ting_kuo@aspeedtech.com>
- <160683107674.35139.14509237313835347013.b4-ty@kernel.org>
- <CACPK8Xe4TcRVBnZL7vtqGq1PTe5NEx1k4hvk4FDeYgJQ9HALFg@mail.gmail.com>
-Message-ID: <20201203103227.GC4700@sirena.org.uk>
+From: Xu Wang <vulab@iscas.ac.cn>
+Date: Fri,  4 Dec 2020 08:51:50 +0000
+Subject: [PATCH] usb: gadget: aspeed: Remove redundant null check before
+ clk_disable_unprepare
+Message-ID: <20201204085150.3063-1-vulab@iscas.ac.cn>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Dec 02, 2020 at 09:19:47PM +0000, Joel Stanley wrote:
-> On Tue, 1 Dec 2020 at 13:58, Mark Brown <broonie@kernel.org> wrote:
+Because clk_disable_unprepare() already checked NULL clock parameter,
+so the additional check is unnecessary, just remove it.
 
-> > Applied to
-> >
-> >    https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-next
+Signed-off-by: Xu Wang <vulab@iscas.ac.cn>
+---
+ drivers/usb/gadget/udc/aspeed-vhub/core.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-> Really? Or is there a bug in one of your scripts :)
+diff --git a/drivers/usb/gadget/udc/aspeed-vhub/core.c b/drivers/usb/gadget/udc/aspeed-vhub/core.c
+index be7bb64e3594..ea47f4b98de9 100644
+--- a/drivers/usb/gadget/udc/aspeed-vhub/core.c
++++ b/drivers/usb/gadget/udc/aspeed-vhub/core.c
+@@ -282,8 +282,7 @@ static int ast_vhub_remove(struct platform_device *pdev)
+ 	       VHUB_CTRL_PHY_RESET_DIS,
+ 	       vhub->regs + AST_VHUB_CTRL);
+ 
+-	if (vhub->clk)
+-		clk_disable_unprepare(vhub->clk);
++	clk_disable_unprepare(vhub->clk);
+ 
+ 	spin_unlock_irqrestore(&vhub->lock, flags);
+ 
+-- 
+2.17.1
 
-Not my scripts, b4!
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 488 bytes
-Desc: not available
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20201203/007fd885/attachment.sig>
