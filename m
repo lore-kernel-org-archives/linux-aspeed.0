@@ -1,7 +1,9 @@
 From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-Date: Mon,  7 Dec 2020 08:42:38 -0800
-Subject: [PATCH 0/2] Fix kernel panic issues caused by AST2500 Video Engine
-Message-ID: <20201207164240.15436-1-jae.hyun.yoo@linux.intel.com>
+Date: Mon,  7 Dec 2020 08:42:40 -0800
+Subject: [PATCH 2/2] media: aspeed: fix clock handling logic
+In-Reply-To: <20201207164240.15436-1-jae.hyun.yoo@linux.intel.com>
+References: <20201207164240.15436-1-jae.hyun.yoo@linux.intel.com>
+Message-ID: <20201207164240.15436-3-jae.hyun.yoo@linux.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -30,23 +32,49 @@ To fix this issue, this commit changes the clock handling logic to make
 the reset de-assertion triggered after enabling both eclk and vclk. Also,
 it adds clk_unprepare call for a case when probe fails.
 
-In case of AST2600, the video engine reset setting should be coupled with
-eclk to match it with the setting for previous Aspeed SoCs which is defined
-in clk-aspeed.c since all Aspeed SoCs are sharing a single video engine
-driver. Also, reset bit 6 is defined as 'Video Engine' reset in datasheet
-so it should be de-asserted when eclk is enabled. This commit fixes the
-setting too.
-
-Please review this patch series.
-
-Jae Hyun Yoo (2):
-  clk: ast2600: fix reset settings for eclk and vclk
-  media: aspeed: fix clock handling logic
-
- drivers/clk/clk-ast2600.c             | 4 ++--
+Fixes: d2b4387f3bdf ("media: platform: Add Aspeed Video Engine driver")
+Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+---
  drivers/media/platform/aspeed-video.c | 9 ++++++---
- 2 files changed, 8 insertions(+), 5 deletions(-)
+ 1 file changed, 6 insertions(+), 3 deletions(-)
 
+diff --git a/drivers/media/platform/aspeed-video.c b/drivers/media/platform/aspeed-video.c
+index c46a79eace98..db072ff2df70 100644
+--- a/drivers/media/platform/aspeed-video.c
++++ b/drivers/media/platform/aspeed-video.c
+@@ -514,8 +514,8 @@ static void aspeed_video_off(struct aspeed_video *video)
+ 	aspeed_video_write(video, VE_INTERRUPT_STATUS, 0xffffffff);
+ 
+ 	/* Turn off the relevant clocks */
+-	clk_disable(video->vclk);
+ 	clk_disable(video->eclk);
++	clk_disable(video->vclk);
+ 
+ 	clear_bit(VIDEO_CLOCKS_ON, &video->flags);
+ }
+@@ -526,8 +526,8 @@ static void aspeed_video_on(struct aspeed_video *video)
+ 		return;
+ 
+ 	/* Turn on the relevant clocks */
+-	clk_enable(video->eclk);
+ 	clk_enable(video->vclk);
++	clk_enable(video->eclk);
+ 
+ 	set_bit(VIDEO_CLOCKS_ON, &video->flags);
+ }
+@@ -1719,8 +1719,11 @@ static int aspeed_video_probe(struct platform_device *pdev)
+ 		return rc;
+ 
+ 	rc = aspeed_video_setup_video(video);
+-	if (rc)
++	if (rc) {
++		clk_unprepare(video->vclk);
++		clk_unprepare(video->eclk);
+ 		return rc;
++	}
+ 
+ 	return 0;
+ }
 -- 
 2.17.1
 
