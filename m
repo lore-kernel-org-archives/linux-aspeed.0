@@ -1,34 +1,52 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Tue,  8 Dec 2020 00:55:56 +1030
-Subject: [PATCH v4 6/6] ARM: dts: rainier: Add eMMC clock phase compensation
-In-Reply-To: <20201207142556.2045481-1-andrew@aj.id.au>
-References: <20201207142556.2045481-1-andrew@aj.id.au>
-Message-ID: <20201207142556.2045481-7-andrew@aj.id.au>
+From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+Date: Mon,  7 Dec 2020 08:42:38 -0800
+Subject: [PATCH 0/2] Fix kernel panic issues caused by AST2500 Video Engine
+Message-ID: <20201207164240.15436-1-jae.hyun.yoo@linux.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Determined by scope measurements at speed.
+Video engine uses eclk and vclk for its clock sources and its reset
+control is coupled with eclk so the current clock enabling sequence works
+like below.
 
-Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
----
- arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts | 1 +
- 1 file changed, 1 insertion(+)
+ Enable eclk
+ De-assert Video Engine reset
+ 10ms delay
+ Enable vclk
 
-diff --git a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
-index 21ae880c7530..ab8d37d49f30 100644
---- a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
-@@ -186,6 +186,7 @@ &pinctrl_emmc_default {
- 
- &emmc {
- 	status = "okay";
-+	clk-phase-mmc-hs200 = <180>, <180>;
- };
- 
- &fsim0 {
+It introduces improper reset on the Video Engine hardware and eventually
+the hardware generates unexpected DMA memory transfers that can corrupt
+memory region in random and sporadic patterns. This issue is observed
+very rarely on some specific AST2500 SoCs but it causes a critical
+kernel panic with making a various shape of signature so it's extremely
+hard to debug. Moreover, the issue is observed even when the video
+engine is not actively used because udevd turns on the video engine
+hardware for a short time to make a query in every boot.
+
+To fix this issue, this commit changes the clock handling logic to make
+the reset de-assertion triggered after enabling both eclk and vclk. Also,
+it adds clk_unprepare call for a case when probe fails.
+
+In case of AST2600, the video engine reset setting should be coupled with
+eclk to match it with the setting for previous Aspeed SoCs which is defined
+in clk-aspeed.c since all Aspeed SoCs are sharing a single video engine
+driver. Also, reset bit 6 is defined as 'Video Engine' reset in datasheet
+so it should be de-asserted when eclk is enabled. This commit fixes the
+setting too.
+
+Please review this patch series.
+
+Jae Hyun Yoo (2):
+  clk: ast2600: fix reset settings for eclk and vclk
+  media: aspeed: fix clock handling logic
+
+ drivers/clk/clk-ast2600.c             | 4 ++--
+ drivers/media/platform/aspeed-video.c | 9 ++++++---
+ 2 files changed, 8 insertions(+), 5 deletions(-)
+
 -- 
-2.27.0
+2.17.1
 
