@@ -1,42 +1,34 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Tue,  8 Dec 2020 00:55:55 +1030
-Subject: [PATCH v4 5/6] MAINTAINERS: Add entry for the ASPEED SD/MMC driver
+Date: Tue,  8 Dec 2020 00:55:56 +1030
+Subject: [PATCH v4 6/6] ARM: dts: rainier: Add eMMC clock phase compensation
 In-Reply-To: <20201207142556.2045481-1-andrew@aj.id.au>
 References: <20201207142556.2045481-1-andrew@aj.id.au>
-Message-ID: <20201207142556.2045481-6-andrew@aj.id.au>
+Message-ID: <20201207142556.2045481-7-andrew@aj.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add myself as the maintainer.
+Determined by scope measurements at speed.
 
 Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
 ---
- MAINTAINERS | 9 +++++++++
- 1 file changed, 9 insertions(+)
+ arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index e451dcce054f..eae4322aae67 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -2826,6 +2826,15 @@ F:	Documentation/devicetree/bindings/interrupt-controller/aspeed,ast2xxx-scu-ic.
- F:	drivers/irqchip/irq-aspeed-scu-ic.c
- F:	include/dt-bindings/interrupt-controller/aspeed-scu-ic.h
+diff --git a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
+index 21ae880c7530..ab8d37d49f30 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
+@@ -186,6 +186,7 @@ &pinctrl_emmc_default {
  
-+ASPEED SD/MMC DRIVER
-+M:	Andrew Jeffery <andrew@aj.id.au>
-+L:	linux-aspeed at lists.ozlabs.org (moderated for non-subscribers)
-+L:	openbmc at lists.ozlabs.org (moderated for non-subscribers)
-+L:	linux-mmc at vger.kernel.org
-+S:	Maintained
-+F:	Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml
-+F:	drivers/mmc/host/sdhci-of-aspeed*
-+
- ASPEED VIDEO ENGINE DRIVER
- M:	Eddie James <eajames@linux.ibm.com>
- L:	linux-media at vger.kernel.org
+ &emmc {
+ 	status = "okay";
++	clk-phase-mmc-hs200 = <180>, <180>;
+ };
+ 
+ &fsim0 {
 -- 
 2.27.0
 
