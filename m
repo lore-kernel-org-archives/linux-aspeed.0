@@ -1,96 +1,51 @@
-From: Eddie James <eajames@linux.ibm.com>
-Date: Mon, 07 Dec 2020 20:44:24 -0600
-Subject: [PATCH 2/2] media: aspeed: fix clock handling logic
-In-Reply-To: <20201207164240.15436-3-jae.hyun.yoo@linux.intel.com>
-References: <20201207164240.15436-1-jae.hyun.yoo@linux.intel.com>
- <20201207164240.15436-3-jae.hyun.yoo@linux.intel.com>
-Message-ID: <68107c4964e7590e59bf9bcaf84e6dc2ca62edc3.camel@linux.ibm.com>
+From: kernel test robot <lkp@intel.com>
+Date: Tue, 8 Dec 2020 00:55:41 +0800
+Subject: [PATCH v4 2/6] mmc: sdhci-of-aspeed: Expose clock phase controls
+In-Reply-To: <20201207142556.2045481-3-andrew@aj.id.au>
+References: <20201207142556.2045481-3-andrew@aj.id.au>
+Message-ID: <202012080031.ulKkOJTH-lkp@intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, 2020-12-07 at 08:42 -0800, Jae Hyun Yoo wrote:
-> Video engine uses eclk and vclk for its clock sources and its reset
-> control is coupled with eclk so the current clock enabling sequence
-> works
-> like below.
-> 
->  Enable eclk
->  De-assert Video Engine reset
->  10ms delay
->  Enable vclk
-> 
-> It introduces improper reset on the Video Engine hardware and
-> eventually
-> the hardware generates unexpected DMA memory transfers that can
-> corrupt
-> memory region in random and sporadic patterns. This issue is observed
-> very rarely on some specific AST2500 SoCs but it causes a critical
-> kernel panic with making a various shape of signature so it's
-> extremely
-> hard to debug. Moreover, the issue is observed even when the video
-> engine is not actively used because udevd turns on the video engine
-> hardware for a short time to make a query in every boot.
-> 
-> To fix this issue, this commit changes the clock handling logic to
-> make
-> the reset de-assertion triggered after enabling both eclk and vclk.
-> Also,
-> it adds clk_unprepare call for a case when probe fails.
+Hi Andrew,
 
-Thanks Jae, good find.
+I love your patch! Yet something to improve:
 
-Reviewed-by: Eddie James <eajames@linux.ibm.com>
+[auto build test ERROR on joel-aspeed/for-next]
+[also build test ERROR on linus/master v5.10-rc7 next-20201207]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch]
 
-> 
-> Fixes: d2b4387f3bdf ("media: platform: Add Aspeed Video Engine
-> driver")
-> Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-> ---
->  drivers/media/platform/aspeed-video.c | 9 ++++++---
->  1 file changed, 6 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/media/platform/aspeed-video.c
-> b/drivers/media/platform/aspeed-video.c
-> index c46a79eace98..db072ff2df70 100644
-> --- a/drivers/media/platform/aspeed-video.c
-> +++ b/drivers/media/platform/aspeed-video.c
-> @@ -514,8 +514,8 @@ static void aspeed_video_off(struct aspeed_video
-> *video)
->  	aspeed_video_write(video, VE_INTERRUPT_STATUS, 0xffffffff);
->  
->  	/* Turn off the relevant clocks */
-> -	clk_disable(video->vclk);
->  	clk_disable(video->eclk);
-> +	clk_disable(video->vclk);
->  
->  	clear_bit(VIDEO_CLOCKS_ON, &video->flags);
->  }
-> @@ -526,8 +526,8 @@ static void aspeed_video_on(struct aspeed_video
-> *video)
->  		return;
->  
->  	/* Turn on the relevant clocks */
-> -	clk_enable(video->eclk);
->  	clk_enable(video->vclk);
-> +	clk_enable(video->eclk);
->  
->  	set_bit(VIDEO_CLOCKS_ON, &video->flags);
->  }
-> @@ -1719,8 +1719,11 @@ static int aspeed_video_probe(struct
-> platform_device *pdev)
->  		return rc;
->  
->  	rc = aspeed_video_setup_video(video);
-> -	if (rc)
-> +	if (rc) {
-> +		clk_unprepare(video->vclk);
-> +		clk_unprepare(video->eclk);
->  		return rc;
-> +	}
->  
->  	return 0;
->  }
+url:    https://github.com/0day-ci/linux/commits/Andrew-Jeffery/mmc-sdhci-of-aspeed-Expose-phase-delay-tuning/20201207-223013
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/joel/aspeed.git for-next
+config: i386-randconfig-c001-20201207 (attached as .config)
+compiler: gcc-9 (Debian 9.3.0-15) 9.3.0
+reproduce (this is a W=1 build):
+        # https://github.com/0day-ci/linux/commit/32790700ff748c3f5b3bb32c29d7ed4478c2d6ac
+        git remote add linux-review https://github.com/0day-ci/linux
+        git fetch --no-tags linux-review Andrew-Jeffery/mmc-sdhci-of-aspeed-Expose-phase-delay-tuning/20201207-223013
+        git checkout 32790700ff748c3f5b3bb32c29d7ed4478c2d6ac
+        # save the attached .config to linux build tree
+        make W=1 ARCH=i386 
 
+If you fix the issue, kindly add following tag as appropriate
+Reported-by: kernel test robot <lkp@intel.com>
+
+All errors (new ones prefixed by >>, old ones prefixed by <<):
+
+>> ERROR: modpost: "mmc_of_parse_clk_phase" [drivers/mmc/host/sdhci-of-aspeed.ko] undefined!
+
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: .config.gz
+Type: application/gzip
+Size: 31915 bytes
+Desc: not available
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20201208/a4801f17/attachment-0001.gz>
