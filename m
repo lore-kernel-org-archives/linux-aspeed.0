@@ -1,33 +1,47 @@
-From: Stefan Schaeckeler (sschaeck) <sschaeck@cisco.com>
-Date: Mon, 7 Dec 2020 08:57:00 +0000
-Subject: [PATCH 3/3] edac: Supporting AST2400 and AST2600 edac driver
-In-Reply-To: <PS1PR06MB26008D10C46C5DF0B47F81368AF40@PS1PR06MB2600.apcprd06.prod.outlook.com>
-References: <20201130083345.4814-1-troy_lee@aspeedtech.com>
- <20201130083345.4814-3-troy_lee@aspeedtech.com>
- <4AD4AB7A-54E7-4922-9547-7E26D61F7C77@cisco.com>
- <PS1PR06MB26008D10C46C5DF0B47F81368AF40@PS1PR06MB2600.apcprd06.prod.outlook.com>
-Message-ID: <40547026-144F-443C-BF14-C7FA0E3229C5@cisco.com>
+From: Troy Lee <troy_lee@aspeedtech.com>
+Date: Mon, 7 Dec 2020 17:00:11 +0800
+Subject: [PATCH v4 1/3] dt-bindings: edac: aspeed-sdram-edac: Add
+ ast2400/ast2600 support
+Message-ID: <20201207090013.14145-1-troy_lee@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello Troy,
+Adding Aspeed AST2400 and AST2600 binding for edac driver.
 
-> Hi Stefan,
->
-> The driver was ported from latest ASPEED BSP, so I only test with ECC-on/off 
-> from u-boot and check if driver runs correctly.
+Signed-off-by: Troy Lee <troy_lee@aspeedtech.com>
+Acked-by: Joel Stanley <joel@jms.id.au>
+---
+ .../devicetree/bindings/edac/aspeed-sdram-edac.txt       | 9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
 
-I noticed now most changes are these "exports". As you removed them a later revision, the patch looks now lean and clean. I'll give you my Reviewed-by tag after you addressed Andrew's last comment.
-
-
-
-> The test doc you provided is very nice and detailed, I'll try to reproduce the 
-> injection test in v2 patch.
-
-It does not harm to redo the testing. That is time-consuming and with your current, now trivial changes, it's not really necessary.
-
- Stefan
+diff --git a/Documentation/devicetree/bindings/edac/aspeed-sdram-edac.txt b/Documentation/devicetree/bindings/edac/aspeed-sdram-edac.txt
+index 6a0f3d90d682..8ca9e0a049d8 100644
+--- a/Documentation/devicetree/bindings/edac/aspeed-sdram-edac.txt
++++ b/Documentation/devicetree/bindings/edac/aspeed-sdram-edac.txt
+@@ -1,6 +1,6 @@
+-Aspeed AST2500 SoC EDAC node
++Aspeed BMC SoC EDAC node
+ 
+-The Aspeed AST2500 SoC supports DDR3 and DDR4 memory with and without ECC (error
++The Aspeed BMC SoC supports DDR3 and DDR4 memory with and without ECC (error
+ correction check).
+ 
+ The memory controller supports SECDED (single bit error correction, double bit
+@@ -11,7 +11,10 @@ Note, the bootloader must configure ECC mode in the memory controller.
+ 
+ 
+ Required properties:
+-- compatible: should be "aspeed,ast2500-sdram-edac"
++- compatible: should be one of
++	- "aspeed,ast2400-sdram-edac"
++	- "aspeed,ast2500-sdram-edac"
++	- "aspeed,ast2600-sdram-edac"
+ - reg:        sdram controller register set should be <0x1e6e0000 0x174>
+ - interrupts: should be AVIC interrupt #0
+ 
+-- 
+2.17.1
 
