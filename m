@@ -1,130 +1,42 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Wed, 9 Dec 2020 02:17:40 +0000
-Subject: [PATCH v2 1/2] misc: Add clock control logic into Aspeed LPC
- SNOOP driver
-In-Reply-To: <20201208091748.1920-1-wangzhiqiang.bj@bytedance.com>
-References: <20201208091748.1920-1-wangzhiqiang.bj@bytedance.com>
-Message-ID: <CACPK8XePhJj8HzbLB4QgJQCjTuH_kPq=sWyOhdcGPmptqD6Aqw@mail.gmail.com>
+Date: Wed, 9 Dec 2020 02:19:04 +0000
+Subject: [PATCH 2/2] ARM: dts: aspeed: Add device tree for Ampere's Mt.
+ Jade BMC
+In-Reply-To: <CAJKOXPc2wY+tcXpZRkdKodr+SgQSbW=+qWYU6E1t8CXE0D9iNA@mail.gmail.com>
+References: <20201208043700.23098-1-quan@os.amperecomputing.com>
+ <20201208043700.23098-3-quan@os.amperecomputing.com>
+ <CACPK8XdsbgKKr=icLxV=PZB9U03ZGWXQwCWgFvoqgCj9K_fbVg@mail.gmail.com>
+ <CAJKOXPc2wY+tcXpZRkdKodr+SgQSbW=+qWYU6E1t8CXE0D9iNA@mail.gmail.com>
+Message-ID: <CACPK8Xc0pq3GW91+E4CwA8PSnF8=ouf6EpikMk3OaEwRh_88DQ@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, 8 Dec 2020 at 09:17, John Wang <wangzhiqiang.bj@bytedance.com> wrote:
+On Tue, 8 Dec 2020 at 08:09, Krzysztof Kozlowski <krzk@kernel.org> wrote:
 >
-> From: Jae Hyun Yoo <jae.hyun.yoo@intel.com>
+> On Tue, 8 Dec 2020 at 05:42, Joel Stanley <joel@jms.id.au> wrote:
+> >
+> > On Tue, 8 Dec 2020 at 04:37, Quan Nguyen <quan@os.amperecomputing.com> wrote:
+> > >
+> > > The Mt. Jade BMC is an ASPEED AST2500-based BMC for the Mt. Jade
+> > > hardware reference platform with Ampere's Altra Processor Family.
+> > >
+> > > Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
+> > > Reviewed-by: Joel Stanley <joel@jms.id.au>
+> > > Signed-off-by: Quan Nguyen <quan@os.amperecomputing.com>
+> > > Signed-off-by: Phong Vo <phong@os.amperecomputing.com>
+> > > Signed-off-by: Thang Q. Nguyen <thang@os.amperecomputing.com>
+> >
+> > Thanks, I've applied this to the aspeed tree.
 >
-> If LPC SNOOP driver is registered ahead of lpc-ctrl module, LPC
-> SNOOP block will be enabled without heart beating of LCLK until
-> lpc-ctrl enables the LCLK. This issue causes improper handling on
-> host interrupts when the host sends interrupt in that time frame.
-> Then kernel eventually forcibly disables the interrupt with
-> dumping stack and printing a 'nobody cared this irq' message out.
->
-> To prevent this issue, all LPC sub-nodes should enable LCLK
-> individually so this patch adds clock control logic into the LPC
-> SNOOP driver.
->
-> Fixes: 3772e5da4454 ("drivers/misc: Aspeed LPC snoop output using misc
-> chardev")
->
-> Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@intel.com>
-> Signed-off-by: Vernon Mauery <vernon.mauery@linux.intel.com>
-> Signed-off-by: John Wang <wangzhiqiang.bj@bytedance.com>
+> Did you review it already before (which would explain tags being there)?
 
-Reviewed-by: Joel Stanley <joel@jms.id.au>
+Correct, these were sent to the openbmc list initially:
 
-Arnd, can you merge this for v5.11, or would you prefer me to do a pull request?
-
-The device tree patch from this series also needs to be added.
+ https://lore.kernel.org/openbmc/CACPK8XdabEgp2Qi0Ud0BJ9oCK2BJ6L-F2Wg+OOEvzTALRLDadg at mail.gmail.com/
 
 Cheers,
 
 Joel
-
-> ---
-> v2:
->   reword: Add fixes line
-> ---
->  drivers/soc/aspeed/aspeed-lpc-snoop.c | 30 ++++++++++++++++++++++++---
->  1 file changed, 27 insertions(+), 3 deletions(-)
->
-> diff --git a/drivers/soc/aspeed/aspeed-lpc-snoop.c b/drivers/soc/aspeed/aspeed-lpc-snoop.c
-> index 682ba0eb4eba..20acac6342ef 100644
-> --- a/drivers/soc/aspeed/aspeed-lpc-snoop.c
-> +++ b/drivers/soc/aspeed/aspeed-lpc-snoop.c
-> @@ -11,6 +11,7 @@
->   */
->
->  #include <linux/bitops.h>
-> +#include <linux/clk.h>
->  #include <linux/interrupt.h>
->  #include <linux/fs.h>
->  #include <linux/kfifo.h>
-> @@ -67,6 +68,7 @@ struct aspeed_lpc_snoop_channel {
->  struct aspeed_lpc_snoop {
->         struct regmap           *regmap;
->         int                     irq;
-> +       struct clk              *clk;
->         struct aspeed_lpc_snoop_channel chan[NUM_SNOOP_CHANNELS];
->  };
->
-> @@ -282,22 +284,42 @@ static int aspeed_lpc_snoop_probe(struct platform_device *pdev)
->                 return -ENODEV;
->         }
->
-> +       lpc_snoop->clk = devm_clk_get(dev, NULL);
-> +       if (IS_ERR(lpc_snoop->clk)) {
-> +               rc = PTR_ERR(lpc_snoop->clk);
-> +               if (rc != -EPROBE_DEFER)
-> +                       dev_err(dev, "couldn't get clock\n");
-> +               return rc;
-> +       }
-> +       rc = clk_prepare_enable(lpc_snoop->clk);
-> +       if (rc) {
-> +               dev_err(dev, "couldn't enable clock\n");
-> +               return rc;
-> +       }
-> +
->         rc = aspeed_lpc_snoop_config_irq(lpc_snoop, pdev);
->         if (rc)
-> -               return rc;
-> +               goto err;
->
->         rc = aspeed_lpc_enable_snoop(lpc_snoop, dev, 0, port);
->         if (rc)
-> -               return rc;
-> +               goto err;
->
->         /* Configuration of 2nd snoop channel port is optional */
->         if (of_property_read_u32_index(dev->of_node, "snoop-ports",
->                                        1, &port) == 0) {
->                 rc = aspeed_lpc_enable_snoop(lpc_snoop, dev, 1, port);
-> -               if (rc)
-> +               if (rc) {
->                         aspeed_lpc_disable_snoop(lpc_snoop, 0);
-> +                       goto err;
-> +               }
->         }
->
-> +       return 0;
-> +
-> +err:
-> +       clk_disable_unprepare(lpc_snoop->clk);
-> +
->         return rc;
->  }
->
-> @@ -309,6 +331,8 @@ static int aspeed_lpc_snoop_remove(struct platform_device *pdev)
->         aspeed_lpc_disable_snoop(lpc_snoop, 0);
->         aspeed_lpc_disable_snoop(lpc_snoop, 1);
->
-> +       clk_disable_unprepare(lpc_snoop->clk);
-> +
->         return 0;
->  }
->
-> --
-> 2.25.1
->
