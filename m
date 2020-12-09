@@ -1,42 +1,48 @@
-From: Joel Stanley <joel@jms.id.au>
-Date: Wed, 9 Dec 2020 02:19:04 +0000
-Subject: [PATCH 2/2] ARM: dts: aspeed: Add device tree for Ampere's Mt.
- Jade BMC
-In-Reply-To: <CAJKOXPc2wY+tcXpZRkdKodr+SgQSbW=+qWYU6E1t8CXE0D9iNA@mail.gmail.com>
-References: <20201208043700.23098-1-quan@os.amperecomputing.com>
- <20201208043700.23098-3-quan@os.amperecomputing.com>
- <CACPK8XdsbgKKr=icLxV=PZB9U03ZGWXQwCWgFvoqgCj9K_fbVg@mail.gmail.com>
- <CAJKOXPc2wY+tcXpZRkdKodr+SgQSbW=+qWYU6E1t8CXE0D9iNA@mail.gmail.com>
-Message-ID: <CACPK8Xc0pq3GW91+E4CwA8PSnF8=ouf6EpikMk3OaEwRh_88DQ@mail.gmail.com>
+From: Arnd Bergmann <arnd@kernel.org>
+Date: Wed, 9 Dec 2020 07:41:41 +0100
+Subject: [PATCH v2 1/2] misc: Add clock control logic into Aspeed LPC
+ SNOOP driver
+In-Reply-To: <CACPK8XePhJj8HzbLB4QgJQCjTuH_kPq=sWyOhdcGPmptqD6Aqw@mail.gmail.com>
+References: <20201208091748.1920-1-wangzhiqiang.bj@bytedance.com>
+ <CACPK8XePhJj8HzbLB4QgJQCjTuH_kPq=sWyOhdcGPmptqD6Aqw@mail.gmail.com>
+Message-ID: <CAK8P3a0jPEjXnqGpeQ=A0Pd0esX+k4EHgbrGr+NAQAx1vO9Q7w@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, 8 Dec 2020 at 08:09, Krzysztof Kozlowski <krzk@kernel.org> wrote:
+On Wed, Dec 9, 2020 at 3:17 AM Joel Stanley <joel@jms.id.au> wrote:
 >
-> On Tue, 8 Dec 2020 at 05:42, Joel Stanley <joel@jms.id.au> wrote:
+> On Tue, 8 Dec 2020 at 09:17, John Wang <wangzhiqiang.bj@bytedance.com> wrote:
 > >
-> > On Tue, 8 Dec 2020 at 04:37, Quan Nguyen <quan@os.amperecomputing.com> wrote:
-> > >
-> > > The Mt. Jade BMC is an ASPEED AST2500-based BMC for the Mt. Jade
-> > > hardware reference platform with Ampere's Altra Processor Family.
-> > >
-> > > Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
-> > > Reviewed-by: Joel Stanley <joel@jms.id.au>
-> > > Signed-off-by: Quan Nguyen <quan@os.amperecomputing.com>
-> > > Signed-off-by: Phong Vo <phong@os.amperecomputing.com>
-> > > Signed-off-by: Thang Q. Nguyen <thang@os.amperecomputing.com>
+> > From: Jae Hyun Yoo <jae.hyun.yoo@intel.com>
 > >
-> > Thanks, I've applied this to the aspeed tree.
+> > If LPC SNOOP driver is registered ahead of lpc-ctrl module, LPC
+> > SNOOP block will be enabled without heart beating of LCLK until
+> > lpc-ctrl enables the LCLK. This issue causes improper handling on
+> > host interrupts when the host sends interrupt in that time frame.
+> > Then kernel eventually forcibly disables the interrupt with
+> > dumping stack and printing a 'nobody cared this irq' message out.
+> >
+> > To prevent this issue, all LPC sub-nodes should enable LCLK
+> > individually so this patch adds clock control logic into the LPC
+> > SNOOP driver.
+> >
+> > Fixes: 3772e5da4454 ("drivers/misc: Aspeed LPC snoop output using misc
+> > chardev")
+> >
+> > Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@intel.com>
+> > Signed-off-by: Vernon Mauery <vernon.mauery@linux.intel.com>
+> > Signed-off-by: John Wang <wangzhiqiang.bj@bytedance.com>
 >
-> Did you review it already before (which would explain tags being there)?
+> Reviewed-by: Joel Stanley <joel@jms.id.au>
+>
+> Arnd, can you merge this for v5.11, or would you prefer me to do a pull request?
+>
+> The device tree patch from this series also needs to be added.
 
-Correct, these were sent to the openbmc list initially:
+Sure, please forward the patches to soc at kernel.org so I can
+grab them from patchwork.
 
- https://lore.kernel.org/openbmc/CACPK8XdabEgp2Qi0Ud0BJ9oCK2BJ6L-F2Wg+OOEvzTALRLDadg at mail.gmail.com/
-
-Cheers,
-
-Joel
+      Arnd
