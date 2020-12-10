@@ -1,30 +1,28 @@
-From: Arnd Bergmann <arnd@kernel.org>
-Date: Wed,  9 Dec 2020 21:30:38 +0100
-Subject: [GIT PULL] ARM: aspeed: soc changes for 5.11
-In-Reply-To: <CACPK8Xfd7AmuEaUdFfYLu4ktcrpTnYUgwQSxUbC-McB02hvo_g@mail.gmail.com>
-References: <CACPK8Xfd7AmuEaUdFfYLu4ktcrpTnYUgwQSxUbC-McB02hvo_g@mail.gmail.com>
-Message-ID: <160754580117.2405127.13379631047169707253.b4-ty@arndb.de>
+From: Rob Herring <robh@kernel.org>
+Date: Wed, 9 Dec 2020 20:15:11 -0600
+Subject: [PATCH 1/2] dt-bindings: vendor-prefixes: Add an entry for
+ AmpereComputing.com
+In-Reply-To: <20201208043700.23098-2-quan@os.amperecomputing.com>
+References: <20201208043700.23098-1-quan@os.amperecomputing.com>
+ <20201208043700.23098-2-quan@os.amperecomputing.com>
+Message-ID: <20201210021511.GA1497753@robh.at.kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Arnd Bergmann <arnd@arndb.de>
-
-On Mon, 30 Nov 2020 06:30:44 +0000, Joel Stanley wrote:
-> Here are some ASPEED changes for the 5.11 merge window.
+On Tue, 08 Dec 2020 11:36:59 +0700, Quan Nguyen wrote:
+> Add "ampere" entry for Ampere Computing LLC: amperecomputing.com
 > 
-> The following changes since commit 2ba56f464f0c1a7264160f8675063b3df92e7966:
+> Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
+> Reviewed-by: Joel Stanley <joel@jms.id.au>
+> Signed-off-by: Quan Nguyen <quan@os.amperecomputing.com>
+> Signed-off-by: Phong Vo <phong@os.amperecomputing.com>
+> Signed-off-by: Thang Q. Nguyen <thang@os.amperecomputing.com>
+> ---
+>  Documentation/devicetree/bindings/vendor-prefixes.yaml | 2 ++
+>  1 file changed, 2 insertions(+)
 > 
->   ARM: dts: aspeed: ast2600evb: Add MAC0 (2020-11-19 22:31:18 +1030)
-> 
-> are available in the Git repository at:
-> 
-> [...]
 
-Merged into arm/dt, thanks!
-
-merge commit: 419fd286274e32c2533f1305d76b04b32ae49853
-
-       Arnd
+Applied, thanks!
