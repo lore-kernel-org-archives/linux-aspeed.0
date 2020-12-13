@@ -1,42 +1,45 @@
-From: Joel Stanley <joel@jms.id.au>
-Date: Fri, 11 Dec 2020 11:09:39 +0000
-Subject: [GIT PULL] ARM: aspeed: devicetree changes for 5.11, round two
-Message-ID: <CACPK8XfkZq51yKJUjyqgKD=R-WZiCR0J18GJBbo=tfMKMMddSQ@mail.gmail.com>
+From: Andrew Jeffery <andrew@aj.id.au>
+Date: Mon, 14 Dec 2020 10:08:42 +1030
+Subject: [PATCH] gpio: aspeed: Lock GPIO pin used as IRQ
+In-Reply-To: <CAHp75VcMuHiUFgSas26DA-Bh1gGA_G5FT+9cetK=En9Q_oMZtg@mail.gmail.com>
+References: <20201210065013.29348-1-troy_lee@aspeedtech.com>
+ <CAHp75VcMuHiUFgSas26DA-Bh1gGA_G5FT+9cetK=En9Q_oMZtg@mail.gmail.com>
+Message-ID: <5eec9b11-c0b7-4b77-8c03-ec2c7d52d828@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello Soc team,
 
-Here are some late changes for the aspeed boards. Most are fixes, and
-the addition of a new machine from Ampere.
 
-(Arnd, I realised when sending the LPC clock fix that we had a few
-others fixes, so he's a pull request instead)
+On Fri, 11 Dec 2020, at 00:44, Andy Shevchenko wrote:
+> On Thu, Dec 10, 2020 at 9:36 AM Troy Lee <troy_lee@aspeedtech.com> wrote:
+> >
+> > GPIO pins can be used as IRQ indicators. When they do,
+> > those pins should be flaged with locks to avoid kernel
+> 
+> flagged
+> 
+> > warning message.
+> 
+> ...
+> 
+> > @@ -651,6 +651,13 @@ static int aspeed_gpio_set_type(struct irq_data *d, unsigned int type)
+> 
+> > +       rc = gpiochip_lock_as_irq(&gpio->chip, d->hwirq);
+> > +       if (rc) {
+> > +               dev_err(gpio->chip.parent, "unable to lock GPIO %lu as IRQ\n",
+> > +                       d->hwirq);
+> > +               return rc;
+> > +       }
+> 
+> It's a copy'n'paste of generic code. Why do you need it in an unusual
+> place, i.e. ->irq_set_type() IIUC?
+> Can you elaborate about an issue, because this seems to be a hack?
 
-The following changes since commit 5124cff93d99bbfe1efc8deb0c0b3604cb9a6659:
+Yep - Troy please provide more information. What was the warning you saw? How
+were the GPIOs allocated on the system that triggered the warning? What did you
+do to trigger the warning?
 
-  ARM: dts: aspeed: g220a: Fix some gpio (2020-12-11 21:28:02 +1030)
-
-are available in the Git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/joel/aspeed.git
-tags/aspeed-5.11-devicetree-2
-
-for you to fetch changes up to 5124cff93d99bbfe1efc8deb0c0b3604cb9a6659:
-
-  ARM: dts: aspeed: g220a: Fix some gpio (2020-12-11 21:28:02 +1030)
-
-----------------------------------------------------------------
-ASPEED device tree updates for 5.11, round 2
-
- - New machine
-
-   * Ampere's Mt Jade, an AST2500 BMC for Ampere's Altra reference
-     platform
-
- - Fixes for eMMC, LPC clocking, and misc fixes for the g220a machine
-
-----------------------------------------------------------------
+Andrew
