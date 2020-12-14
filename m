@@ -1,97 +1,225 @@
-From: Billy Tsai <billy_tsai@aspeedtech.com>
-Date: Mon, 14 Dec 2020 09:27:00 +0800
-Subject: [PATCH v2] driver: aspeed: g6: Fix PWMG0 pinctrl setting
-In-Reply-To: <D9745FBC-BEA7-421E-B56C-21EA9AAE094E@aspeedtech.com>
-References: <D9745FBC-BEA7-421E-B56C-21EA9AAE094E@aspeedtech.com>
-Message-ID: <20201214012700.23560-1-billy_tsai@aspeedtech.com>
+From: ChiaWei Wang <chiawei_wang@aspeedtech.com>
+Date: Mon, 14 Dec 2020 02:44:22 +0000
+Subject: [PATCH v2 5/5] dt-bindings: aspeed-lpc: Remove LPC partitioning
+In-Reply-To: <2e2d3a02-6677-4b0e-b538-d3130a3b20d1@www.fastmail.com>
+References: <20201005082806.28899-1-chiawei_wang@aspeedtech.com>
+ <20201005082806.28899-6-chiawei_wang@aspeedtech.com>
+ <2e2d3a02-6677-4b0e-b538-d3130a3b20d1@www.fastmail.com>
+Message-ID: <HK0PR06MB3779F5B4B9629909DDF441F091C70@HK0PR06MB3779.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The SCU offset for signal PWM8 in group PWM8G0 is wrong, fix it from
-SCU414 to SCU4B4.
-Besides that, When PWM8~15 of PWMG0 set it needs to clear SCU414 bits
-at the same time.
+Hi Andrew & Rob,
 
-Fixes: 2eda1cdec49f ("pinctrl: aspeed: Add AST2600 pinmux support")
+Do you have any suggestion on this patch?
+Or should I send a v3 patch with the commits reordering for the review?
+Thanks.
 
-Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
----
- drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c | 24 ++++++++++++++--------
- 1 file changed, 16 insertions(+), 8 deletions(-)
+Chiawei
 
-diff --git a/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c b/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
-index b673a44ffa3b..1dfb12a5b2ce 100644
---- a/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
-+++ b/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
-@@ -367,49 +367,57 @@ FUNC_GROUP_DECL(RMII4, F24, E23, E24, E25, C25, C24, B26, B25, B24);
- 
- #define D22 40
- SIG_EXPR_LIST_DECL_SESG(D22, SD1CLK, SD1, SIG_DESC_SET(SCU414, 8));
--SIG_EXPR_LIST_DECL_SEMG(D22, PWM8, PWM8G0, PWM8, SIG_DESC_SET(SCU414, 8));
-+SIG_EXPR_LIST_DECL_SEMG(D22, PWM8, PWM8G0, PWM8, SIG_DESC_SET(SCU4B4, 8),
-+			SIG_DESC_CLEAR(SCU414, 8));
- PIN_DECL_2(D22, GPIOF0, SD1CLK, PWM8);
- GROUP_DECL(PWM8G0, D22);
- 
- #define E22 41
- SIG_EXPR_LIST_DECL_SESG(E22, SD1CMD, SD1, SIG_DESC_SET(SCU414, 9));
--SIG_EXPR_LIST_DECL_SEMG(E22, PWM9, PWM9G0, PWM9, SIG_DESC_SET(SCU4B4, 9));
-+SIG_EXPR_LIST_DECL_SEMG(E22, PWM9, PWM9G0, PWM9, SIG_DESC_SET(SCU4B4, 9),
-+			SIG_DESC_CLEAR(SCU414, 9));
- PIN_DECL_2(E22, GPIOF1, SD1CMD, PWM9);
- GROUP_DECL(PWM9G0, E22);
- 
- #define D23 42
- SIG_EXPR_LIST_DECL_SESG(D23, SD1DAT0, SD1, SIG_DESC_SET(SCU414, 10));
--SIG_EXPR_LIST_DECL_SEMG(D23, PWM10, PWM10G0, PWM10, SIG_DESC_SET(SCU4B4, 10));
-+SIG_EXPR_LIST_DECL_SEMG(D23, PWM10, PWM10G0, PWM10, SIG_DESC_SET(SCU4B4, 10),
-+			SIG_DESC_CLEAR(SCU414, 10));
- PIN_DECL_2(D23, GPIOF2, SD1DAT0, PWM10);
- GROUP_DECL(PWM10G0, D23);
- 
- #define C23 43
- SIG_EXPR_LIST_DECL_SESG(C23, SD1DAT1, SD1, SIG_DESC_SET(SCU414, 11));
--SIG_EXPR_LIST_DECL_SEMG(C23, PWM11, PWM11G0, PWM11, SIG_DESC_SET(SCU4B4, 11));
-+SIG_EXPR_LIST_DECL_SEMG(C23, PWM11, PWM11G0, PWM11, SIG_DESC_SET(SCU4B4, 11),
-+			SIG_DESC_CLEAR(SCU414, 11));
- PIN_DECL_2(C23, GPIOF3, SD1DAT1, PWM11);
- GROUP_DECL(PWM11G0, C23);
- 
- #define C22 44
- SIG_EXPR_LIST_DECL_SESG(C22, SD1DAT2, SD1, SIG_DESC_SET(SCU414, 12));
--SIG_EXPR_LIST_DECL_SEMG(C22, PWM12, PWM12G0, PWM12, SIG_DESC_SET(SCU4B4, 12));
-+SIG_EXPR_LIST_DECL_SEMG(C22, PWM12, PWM12G0, PWM12, SIG_DESC_SET(SCU4B4, 12),
-+			SIG_DESC_CLEAR(SCU414, 12));
- PIN_DECL_2(C22, GPIOF4, SD1DAT2, PWM12);
- GROUP_DECL(PWM12G0, C22);
- 
- #define A25 45
- SIG_EXPR_LIST_DECL_SESG(A25, SD1DAT3, SD1, SIG_DESC_SET(SCU414, 13));
--SIG_EXPR_LIST_DECL_SEMG(A25, PWM13, PWM13G0, PWM13, SIG_DESC_SET(SCU4B4, 13));
-+SIG_EXPR_LIST_DECL_SEMG(A25, PWM13, PWM13G0, PWM13, SIG_DESC_SET(SCU4B4, 13),
-+			SIG_DESC_CLEAR(SCU414, 13));
- PIN_DECL_2(A25, GPIOF5, SD1DAT3, PWM13);
- GROUP_DECL(PWM13G0, A25);
- 
- #define A24 46
- SIG_EXPR_LIST_DECL_SESG(A24, SD1CD, SD1, SIG_DESC_SET(SCU414, 14));
--SIG_EXPR_LIST_DECL_SEMG(A24, PWM14, PWM14G0, PWM14, SIG_DESC_SET(SCU4B4, 14));
-+SIG_EXPR_LIST_DECL_SEMG(A24, PWM14, PWM14G0, PWM14, SIG_DESC_SET(SCU4B4, 14),
-+			SIG_DESC_CLEAR(SCU414, 14));
- PIN_DECL_2(A24, GPIOF6, SD1CD, PWM14);
- GROUP_DECL(PWM14G0, A24);
- 
- #define A23 47
- SIG_EXPR_LIST_DECL_SESG(A23, SD1WP, SD1, SIG_DESC_SET(SCU414, 15));
--SIG_EXPR_LIST_DECL_SEMG(A23, PWM15, PWM15G0, PWM15, SIG_DESC_SET(SCU4B4, 15));
-+SIG_EXPR_LIST_DECL_SEMG(A23, PWM15, PWM15G0, PWM15, SIG_DESC_SET(SCU4B4, 15),
-+			SIG_DESC_CLEAR(SCU414, 15));
- PIN_DECL_2(A23, GPIOF7, SD1WP, PWM15);
- GROUP_DECL(PWM15G0, A23);
- 
--- 
-2.17.1
-
+> -----Original Message-----
+> From: Andrew Jeffery <andrew@aj.id.au>
+> Sent: Monday, October 26, 2020 11:12 AM
+> To: ChiaWei Wang <chiawei_wang@aspeedtech.com>; Rob Herring
+> <robh+dt@kernel.org>; Joel Stanley <joel@jms.id.au>
+> Cc: Ryan Chen <ryan_chen@aspeedtech.com>; Lee Jones
+> <lee.jones@linaro.org>; Corey Minyard <minyard@acm.org>; Arnd Bergmann
+> <arnd@arndb.de>; Greg Kroah-Hartman <gregkh@linuxfoundation.org>; Linus
+> Walleij <linus.walleij@linaro.org>; Haiyue Wang
+> <haiyue.wang@linux.intel.com>; Cyril Bur <cyrilbur@gmail.com>; Robert
+> Lippert <rlippert@google.com>; linux-arm-kernel at lists.infradead.org;
+> linux-aspeed at lists.ozlabs.org; linux-kernel at vger.kernel.org;
+> openbmc at lists.ozlabs.org; linux-gpio at vger.kernel.org
+> Subject: Re: [PATCH v2 5/5] dt-bindings: aspeed-lpc: Remove LPC partitioning
+> 
+> Hi Wang Chia-Wei,
+> 
+> On Mon, 5 Oct 2020, at 18:58, Chia-Wei, Wang wrote:
+> > The LPC controller has no concept of the BMC and the Host partitions.
+> > This patch fixes the documentation by removing the description on LPC
+> > partitions. The register offsets illustrated in the DTS node examples
+> > are also fixed to adapt to the LPC DTS change.
+> >
+> > Signed-off-by: Chia-Wei, Wang <chiawei_wang@aspeedtech.com>
+> 
+> The documentation at [1] suggests this should probably be patch 1/5 rather
+> than 5/5, so if you send the series again I'd probably rearrange it. Following the
+> steps outlined in [1] helps catch Rob's attention in the right way :)
+> 
+> [1]
+> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Docume
+> ntation/devicetree/bindings/submitting-patches.rst?h=v5.9
+> 
+> Rob:
+> 
+> The changes here go some way towards cleaning up mistakes I made in the
+> Aspeed LPC controller binding. The proposed change is very much not
+> backwards compatible, but Joel and I don't want to live with the resulting mess
+> in the drivers of catering to both layouts. Another way we could avoid the
+> driver mess is to rev all the bindings and immediately drop support for the old
+> compatibles in the drivers. This creates a bit more churn in the bindings. What
+> are you willing to accommodate?
+> 
+> All consumers I'm aware of ship the Aspeed BMC dtb in FIT images alongside
+> the kernel, so while backwards-incompatible changes are rightly frowned upon
+> I feel we probably wouldn't cause too much damage if we went that path.
+> 
+> Andrew
+> 
+> > ---
+> >  .../devicetree/bindings/mfd/aspeed-lpc.txt    | 85 +++----------------
+> >  1 file changed, 14 insertions(+), 71 deletions(-)
+> >
+> > diff --git a/Documentation/devicetree/bindings/mfd/aspeed-lpc.txt
+> > b/Documentation/devicetree/bindings/mfd/aspeed-lpc.txt
+> > index a92acf1dd491..866f54a09e09 100644
+> > --- a/Documentation/devicetree/bindings/mfd/aspeed-lpc.txt
+> > +++ b/Documentation/devicetree/bindings/mfd/aspeed-lpc.txt
+> > @@ -9,13 +9,7 @@ primary use case of the Aspeed LPC controller is as a
+> > slave on the bus  conditions it can also take the role of bus master.
+> >
+> >  The LPC controller is represented as a multi-function device to
+> > account for the -mix of functionality it provides. The principle split
+> > is between the register -layout at the start of the I/O space which
+> > is, to quote the Aspeed datasheet, -"basically compatible with the
+> > [LPC registers from the] popular BMC controller -H8S/2168[1]", and
+> > everything else, where everything else is an eclectic -collection of
+> > functions with a esoteric register layout. "Everything else", -here
+> > labeled the "host" portion of the controller, includes, but is not
+> > limited
+> > -to:
+> > +mix of functionality, which includes, but is not limited to:
+> >
+> >  * An IPMI Block Transfer[2] Controller
+> >
+> > @@ -44,8 +38,8 @@ Required properties
+> >  ===================
+> >
+> >  - compatible:	One of:
+> > -		"aspeed,ast2400-lpc", "simple-mfd"
+> > -		"aspeed,ast2500-lpc", "simple-mfd"
+> > +		"aspeed,ast2400-lpc", "simple-mfd", "syscon"
+> > +		"aspeed,ast2500-lpc", "simple-mfd", "syscon"
+> >
+> >  - reg:		contains the physical address and length values of the Aspeed
+> >                  LPC memory region.
+> > @@ -55,66 +49,17 @@ Required properties
+> >  - ranges: 	Maps 0 to the physical address and length of the LPC memory
+> >                  region
+> >
+> > -Required LPC Child nodes
+> > -========================
+> > -
+> > -BMC Node
+> > ---------
+> > -
+> > -- compatible:	One of:
+> > -		"aspeed,ast2400-lpc-bmc"
+> > -		"aspeed,ast2500-lpc-bmc"
+> > -
+> > -- reg:		contains the physical address and length values of the
+> > -                H8S/2168-compatible LPC controller memory region
+> > -
+> > -Host Node
+> > ----------
+> > -
+> > -- compatible:   One of:
+> > -		"aspeed,ast2400-lpc-host", "simple-mfd", "syscon"
+> > -		"aspeed,ast2500-lpc-host", "simple-mfd", "syscon"
+> > -
+> > -- reg:		contains the address and length values of the host-related
+> > -                register space for the Aspeed LPC controller
+> > -
+> > -- #address-cells: <1>
+> > -- #size-cells:	<1>
+> > -- ranges: 	Maps 0 to the address and length of the host-related LPC
+> memory
+> > -                region
+> > -
+> >  Example:
+> >
+> >  lpc: lpc at 1e789000 {
+> > -	compatible = "aspeed,ast2500-lpc", "simple-mfd";
+> > +	compatible = "aspeed,ast2500-lpc", "simple-mfd", "syscon";
+> >  	reg = <0x1e789000 0x1000>;
+> >
+> >  	#address-cells = <1>;
+> >  	#size-cells = <1>;
+> >  	ranges = <0x0 0x1e789000 0x1000>;
+> > -
+> > -	lpc_bmc: lpc-bmc at 0 {
+> > -		compatible = "aspeed,ast2500-lpc-bmc";
+> > -		reg = <0x0 0x80>;
+> > -	};
+> > -
+> > -	lpc_host: lpc-host at 80 {
+> > -		compatible = "aspeed,ast2500-lpc-host", "simple-mfd", "syscon";
+> > -		reg = <0x80 0x1e0>;
+> > -		reg-io-width = <4>;
+> > -
+> > -		#address-cells = <1>;
+> > -		#size-cells = <1>;
+> > -		ranges = <0x0 0x80 0x1e0>;
+> > -	};
+> >  };
+> >
+> > -BMC Node Children
+> > -==================
+> > -
+> > -
+> > -Host Node Children
+> > -==================
+> >
+> >  LPC Host Interface Controller
+> >  -------------------
+> > @@ -145,14 +90,12 @@ Optional properties:
+> >
+> >  Example:
+> >
+> > -lpc-host at 80 {
+> > -	lpc_ctrl: lpc-ctrl at 0 {
+> > -		compatible = "aspeed,ast2500-lpc-ctrl";
+> > -		reg = <0x0 0x80>;
+> > -		clocks = <&syscon ASPEED_CLK_GATE_LCLK>;
+> > -		memory-region = <&flash_memory>;
+> > -		flash = <&spi>;
+> > -	};
+> > +lpc_ctrl: lpc-ctrl at 80 {
+> > +	compatible = "aspeed,ast2500-lpc-ctrl";
+> > +	reg = <0x80 0x80>;
+> > +	clocks = <&syscon ASPEED_CLK_GATE_LCLK>;
+> > +	memory-region = <&flash_memory>;
+> > +	flash = <&spi>;
+> >  };
+> >
+> >  LPC Host Controller
+> > @@ -174,9 +117,9 @@ Required properties:
+> >
+> >  Example:
+> >
+> > -lhc: lhc at 20 {
+> > +lhc: lhc at a0 {
+> >  	compatible = "aspeed,ast2500-lhc";
+> > -	reg = <0x20 0x24 0x48 0x8>;
+> > +	reg = <0xa0 0x24 0xc8 0x8>;
+> >  };
+> >
+> >  LPC reset control
+> > @@ -194,8 +137,8 @@ Required properties:
+> >
+> >  Example:
+> >
+> > -lpc_reset: reset-controller at 18 {
+> > +lpc_reset: reset-controller at 98 {
+> >          compatible = "aspeed,ast2500-lpc-reset";
+> > -        reg = <0x18 0x4>;
+> > +        reg = <0x98 0x4>;
+> >          #reset-cells = <1>;
+> >  };
+> > --
+> > 2.17.1
+> >
+> >
