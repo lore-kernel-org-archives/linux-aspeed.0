@@ -1,225 +1,127 @@
-From: ChiaWei Wang <chiawei_wang@aspeedtech.com>
-Date: Mon, 14 Dec 2020 02:44:22 +0000
-Subject: [PATCH v2 5/5] dt-bindings: aspeed-lpc: Remove LPC partitioning
-In-Reply-To: <2e2d3a02-6677-4b0e-b538-d3130a3b20d1@www.fastmail.com>
-References: <20201005082806.28899-1-chiawei_wang@aspeedtech.com>
- <20201005082806.28899-6-chiawei_wang@aspeedtech.com>
- <2e2d3a02-6677-4b0e-b538-d3130a3b20d1@www.fastmail.com>
-Message-ID: <HK0PR06MB3779F5B4B9629909DDF441F091C70@HK0PR06MB3779.apcprd06.prod.outlook.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Date: Mon, 14 Dec 2020 16:48:54 +0100
+Subject: [PATCH v5 1/6] mmc: core: Add helper for parsing clock phase
+ properties
+In-Reply-To: <20201208012615.2717412-2-andrew@aj.id.au>
+References: <20201208012615.2717412-1-andrew@aj.id.au>
+ <20201208012615.2717412-2-andrew@aj.id.au>
+Message-ID: <CAPDyKFrceNPNz9+88p+mzbYEo-ZqWOwTBWaqycxPr3MQEFtbaA@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Andrew & Rob,
+On Tue, 8 Dec 2020 at 02:26, Andrew Jeffery <andrew@aj.id.au> wrote:
+>
+> Drivers for MMC hosts that accept phase corrections can take advantage
+> of the helper by embedding a mmc_clk_phase_map_t object in their
+> private data and invoking mmc_of_parse_clk_phase() to extract phase
+> parameters. It is the responsibility of the host driver to translate and
+> apply the extracted values to hardware as required.
+>
+> Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
+> ---
+>  drivers/mmc/core/host.c  | 44 ++++++++++++++++++++++++++++++++++++++++
+>  include/linux/mmc/host.h | 17 ++++++++++++++++
+>  2 files changed, 61 insertions(+)
+>
+> diff --git a/drivers/mmc/core/host.c b/drivers/mmc/core/host.c
+> index 96b2ca1f1b06..b1697f00c4b5 100644
+> --- a/drivers/mmc/core/host.c
+> +++ b/drivers/mmc/core/host.c
+> @@ -163,6 +163,50 @@ static void mmc_retune_timer(struct timer_list *t)
+>         mmc_retune_needed(host);
+>  }
+>
+> +static void mmc_of_parse_timing_phase(struct device *dev, const char *prop,
+> +                                     struct mmc_clk_phase *phase)
+> +{
+> +       int degrees[2] = {0};
+> +       int rc;
+> +
+> +       rc = device_property_read_u32_array(dev, prop, degrees, 2);
+> +       phase->valid = !rc;
+> +       if (phase->valid) {
+> +               phase->in_deg = degrees[0];
+> +               phase->out_deg = degrees[1];
+> +       }
+> +}
+> +
+> +void
+> +mmc_of_parse_clk_phase(struct mmc_host *host, mmc_clk_phase_map_t map)
 
-Do you have any suggestion on this patch?
-Or should I send a v3 patch with the commits reordering for the review?
-Thanks.
+Would you mind to change to pass a "struct mmc_clk_phase_map *map" to this?
 
-Chiawei
+See more comments below.
 
-> -----Original Message-----
-> From: Andrew Jeffery <andrew@aj.id.au>
-> Sent: Monday, October 26, 2020 11:12 AM
-> To: ChiaWei Wang <chiawei_wang@aspeedtech.com>; Rob Herring
-> <robh+dt@kernel.org>; Joel Stanley <joel@jms.id.au>
-> Cc: Ryan Chen <ryan_chen@aspeedtech.com>; Lee Jones
-> <lee.jones@linaro.org>; Corey Minyard <minyard@acm.org>; Arnd Bergmann
-> <arnd@arndb.de>; Greg Kroah-Hartman <gregkh@linuxfoundation.org>; Linus
-> Walleij <linus.walleij@linaro.org>; Haiyue Wang
-> <haiyue.wang@linux.intel.com>; Cyril Bur <cyrilbur@gmail.com>; Robert
-> Lippert <rlippert@google.com>; linux-arm-kernel at lists.infradead.org;
-> linux-aspeed at lists.ozlabs.org; linux-kernel at vger.kernel.org;
-> openbmc at lists.ozlabs.org; linux-gpio at vger.kernel.org
-> Subject: Re: [PATCH v2 5/5] dt-bindings: aspeed-lpc: Remove LPC partitioning
-> 
-> Hi Wang Chia-Wei,
-> 
-> On Mon, 5 Oct 2020, at 18:58, Chia-Wei, Wang wrote:
-> > The LPC controller has no concept of the BMC and the Host partitions.
-> > This patch fixes the documentation by removing the description on LPC
-> > partitions. The register offsets illustrated in the DTS node examples
-> > are also fixed to adapt to the LPC DTS change.
-> >
-> > Signed-off-by: Chia-Wei, Wang <chiawei_wang@aspeedtech.com>
-> 
-> The documentation at [1] suggests this should probably be patch 1/5 rather
-> than 5/5, so if you send the series again I'd probably rearrange it. Following the
-> steps outlined in [1] helps catch Rob's attention in the right way :)
-> 
-> [1]
-> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Docume
-> ntation/devicetree/bindings/submitting-patches.rst?h=v5.9
-> 
-> Rob:
-> 
-> The changes here go some way towards cleaning up mistakes I made in the
-> Aspeed LPC controller binding. The proposed change is very much not
-> backwards compatible, but Joel and I don't want to live with the resulting mess
-> in the drivers of catering to both layouts. Another way we could avoid the
-> driver mess is to rev all the bindings and immediately drop support for the old
-> compatibles in the drivers. This creates a bit more churn in the bindings. What
-> are you willing to accommodate?
-> 
-> All consumers I'm aware of ship the Aspeed BMC dtb in FIT images alongside
-> the kernel, so while backwards-incompatible changes are rightly frowned upon
-> I feel we probably wouldn't cause too much damage if we went that path.
-> 
-> Andrew
-> 
-> > ---
-> >  .../devicetree/bindings/mfd/aspeed-lpc.txt    | 85 +++----------------
-> >  1 file changed, 14 insertions(+), 71 deletions(-)
-> >
-> > diff --git a/Documentation/devicetree/bindings/mfd/aspeed-lpc.txt
-> > b/Documentation/devicetree/bindings/mfd/aspeed-lpc.txt
-> > index a92acf1dd491..866f54a09e09 100644
-> > --- a/Documentation/devicetree/bindings/mfd/aspeed-lpc.txt
-> > +++ b/Documentation/devicetree/bindings/mfd/aspeed-lpc.txt
-> > @@ -9,13 +9,7 @@ primary use case of the Aspeed LPC controller is as a
-> > slave on the bus  conditions it can also take the role of bus master.
-> >
-> >  The LPC controller is represented as a multi-function device to
-> > account for the -mix of functionality it provides. The principle split
-> > is between the register -layout at the start of the I/O space which
-> > is, to quote the Aspeed datasheet, -"basically compatible with the
-> > [LPC registers from the] popular BMC controller -H8S/2168[1]", and
-> > everything else, where everything else is an eclectic -collection of
-> > functions with a esoteric register layout. "Everything else", -here
-> > labeled the "host" portion of the controller, includes, but is not
-> > limited
-> > -to:
-> > +mix of functionality, which includes, but is not limited to:
-> >
-> >  * An IPMI Block Transfer[2] Controller
-> >
-> > @@ -44,8 +38,8 @@ Required properties
-> >  ===================
-> >
-> >  - compatible:	One of:
-> > -		"aspeed,ast2400-lpc", "simple-mfd"
-> > -		"aspeed,ast2500-lpc", "simple-mfd"
-> > +		"aspeed,ast2400-lpc", "simple-mfd", "syscon"
-> > +		"aspeed,ast2500-lpc", "simple-mfd", "syscon"
-> >
-> >  - reg:		contains the physical address and length values of the Aspeed
-> >                  LPC memory region.
-> > @@ -55,66 +49,17 @@ Required properties
-> >  - ranges: 	Maps 0 to the physical address and length of the LPC memory
-> >                  region
-> >
-> > -Required LPC Child nodes
-> > -========================
-> > -
-> > -BMC Node
-> > ---------
-> > -
-> > -- compatible:	One of:
-> > -		"aspeed,ast2400-lpc-bmc"
-> > -		"aspeed,ast2500-lpc-bmc"
-> > -
-> > -- reg:		contains the physical address and length values of the
-> > -                H8S/2168-compatible LPC controller memory region
-> > -
-> > -Host Node
-> > ----------
-> > -
-> > -- compatible:   One of:
-> > -		"aspeed,ast2400-lpc-host", "simple-mfd", "syscon"
-> > -		"aspeed,ast2500-lpc-host", "simple-mfd", "syscon"
-> > -
-> > -- reg:		contains the address and length values of the host-related
-> > -                register space for the Aspeed LPC controller
-> > -
-> > -- #address-cells: <1>
-> > -- #size-cells:	<1>
-> > -- ranges: 	Maps 0 to the address and length of the host-related LPC
-> memory
-> > -                region
-> > -
-> >  Example:
-> >
-> >  lpc: lpc at 1e789000 {
-> > -	compatible = "aspeed,ast2500-lpc", "simple-mfd";
-> > +	compatible = "aspeed,ast2500-lpc", "simple-mfd", "syscon";
-> >  	reg = <0x1e789000 0x1000>;
-> >
-> >  	#address-cells = <1>;
-> >  	#size-cells = <1>;
-> >  	ranges = <0x0 0x1e789000 0x1000>;
-> > -
-> > -	lpc_bmc: lpc-bmc at 0 {
-> > -		compatible = "aspeed,ast2500-lpc-bmc";
-> > -		reg = <0x0 0x80>;
-> > -	};
-> > -
-> > -	lpc_host: lpc-host at 80 {
-> > -		compatible = "aspeed,ast2500-lpc-host", "simple-mfd", "syscon";
-> > -		reg = <0x80 0x1e0>;
-> > -		reg-io-width = <4>;
-> > -
-> > -		#address-cells = <1>;
-> > -		#size-cells = <1>;
-> > -		ranges = <0x0 0x80 0x1e0>;
-> > -	};
-> >  };
-> >
-> > -BMC Node Children
-> > -==================
-> > -
-> > -
-> > -Host Node Children
-> > -==================
-> >
-> >  LPC Host Interface Controller
-> >  -------------------
-> > @@ -145,14 +90,12 @@ Optional properties:
-> >
-> >  Example:
-> >
-> > -lpc-host at 80 {
-> > -	lpc_ctrl: lpc-ctrl at 0 {
-> > -		compatible = "aspeed,ast2500-lpc-ctrl";
-> > -		reg = <0x0 0x80>;
-> > -		clocks = <&syscon ASPEED_CLK_GATE_LCLK>;
-> > -		memory-region = <&flash_memory>;
-> > -		flash = <&spi>;
-> > -	};
-> > +lpc_ctrl: lpc-ctrl at 80 {
-> > +	compatible = "aspeed,ast2500-lpc-ctrl";
-> > +	reg = <0x80 0x80>;
-> > +	clocks = <&syscon ASPEED_CLK_GATE_LCLK>;
-> > +	memory-region = <&flash_memory>;
-> > +	flash = <&spi>;
-> >  };
-> >
-> >  LPC Host Controller
-> > @@ -174,9 +117,9 @@ Required properties:
-> >
-> >  Example:
-> >
-> > -lhc: lhc at 20 {
-> > +lhc: lhc at a0 {
-> >  	compatible = "aspeed,ast2500-lhc";
-> > -	reg = <0x20 0x24 0x48 0x8>;
-> > +	reg = <0xa0 0x24 0xc8 0x8>;
-> >  };
-> >
-> >  LPC reset control
-> > @@ -194,8 +137,8 @@ Required properties:
-> >
-> >  Example:
-> >
-> > -lpc_reset: reset-controller at 18 {
-> > +lpc_reset: reset-controller at 98 {
-> >          compatible = "aspeed,ast2500-lpc-reset";
-> > -        reg = <0x18 0x4>;
-> > +        reg = <0x98 0x4>;
-> >          #reset-cells = <1>;
-> >  };
-> > --
-> > 2.17.1
-> >
-> >
+> +{
+> +       struct device *dev = host->parent;
+> +
+> +       mmc_of_parse_timing_phase(dev, "clk-phase-legacy",
+> +                                 &map[MMC_TIMING_LEGACY]);
+> +       mmc_of_parse_timing_phase(dev, "clk-phase-mmc-hs",
+> +                                 &map[MMC_TIMING_MMC_HS]);
+> +       mmc_of_parse_timing_phase(dev, "clk-phase-sd-hs",
+> +                                 &map[MMC_TIMING_SD_HS]);
+> +       mmc_of_parse_timing_phase(dev, "clk-phase-uhs-sdr12",
+> +                                 &map[MMC_TIMING_UHS_SDR12]);
+> +       mmc_of_parse_timing_phase(dev, "clk-phase-uhs-sdr25",
+> +                                 &map[MMC_TIMING_UHS_SDR25]);
+> +       mmc_of_parse_timing_phase(dev, "clk-phase-uhs-sdr50",
+> +                                 &map[MMC_TIMING_UHS_SDR50]);
+> +       mmc_of_parse_timing_phase(dev, "clk-phase-uhs-sdr104",
+> +                                 &map[MMC_TIMING_UHS_SDR104]);
+> +       mmc_of_parse_timing_phase(dev, "clk-phase-uhs-ddr50",
+> +                                 &map[MMC_TIMING_UHS_DDR50]);
+> +       mmc_of_parse_timing_phase(dev, "clk-phase-mmc-ddr52",
+> +                                 &map[MMC_TIMING_MMC_DDR52]);
+> +       mmc_of_parse_timing_phase(dev, "clk-phase-mmc-hs200",
+> +                                 &map[MMC_TIMING_MMC_HS200]);
+> +       mmc_of_parse_timing_phase(dev, "clk-phase-mmc-hs400",
+> +                                 &map[MMC_TIMING_MMC_HS400]);
+> +}
+> +EXPORT_SYMBOL(mmc_of_parse_clk_phase);
+> +
+>  /**
+>   *     mmc_of_parse() - parse host's device-tree node
+>   *     @host: host whose node should be parsed.
+> diff --git a/include/linux/mmc/host.h b/include/linux/mmc/host.h
+> index 01bba36545c5..bc4731c9738f 100644
+> --- a/include/linux/mmc/host.h
+> +++ b/include/linux/mmc/host.h
+> @@ -79,6 +79,22 @@ struct mmc_ios {
+>         bool enhanced_strobe;                   /* hs400es selection */
+>  };
+>
+> +struct mmc_clk_phase {
+> +       bool valid;
+> +       u16 in_deg;
+> +       u16 out_deg;
+> +};
+> +
+> +/*
+> + * Define a type to map between bus timings and phase correction values. To
+> + * avoid bloat in struct mmc_host we leave it to the host driver to define the
+> + * phase map object in its private data if it supports phase correction.
+> + * However, mmc_of_parse_clk_phase() is provided by the mmc core and needs the
+> + * provided array to be correctly sized, so typedef an appropriately sized
+> + * array to minimise the chance that the wrong size object is passed.
+> + */
+> +typedef struct mmc_clk_phase mmc_clk_phase_map_t[MMC_TIMING_MMC_HS400 + 1];
+> +
+
+Nitpick: I would appreciate if we could avoid using "typedefs", as I
+think they in many cases makes the code harder to read. How about
+doing this instead?
+
+#define MMC_NUM_CLK_PHASES (MMC_TIMING_MMC_HS400 + 1)
+
+struct mmc_clk_phase_map {
+        struct mmc_clk_phase phase[MMC_NUM_CLK_PHASES];
+};
+
+[...]
+
+Kind regards
+Uffe
