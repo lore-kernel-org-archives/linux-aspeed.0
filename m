@@ -1,28 +1,26 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Wed, 16 Dec 2020 09:17:36 +1030
-Subject: =?UTF-8?Q?Re:_[Aspeed, ncsi-rx,
- _v1_1/1]_net:_ftgmac100:_Fix_AST2600_EVB_N?= =?UTF-8?Q?CSI_RX_issue?=
-In-Reply-To: <20201215192323.24359-2-hongweiz@ami.com>
-References: <20201215192323.24359-1-hongweiz@ami.com>
- <20201215192323.24359-2-hongweiz@ami.com>
-Message-ID: <0a513b26-a4e4-4808-a02a-eb6ffc84f5ba@www.fastmail.com>
+From: Alex Xu (Hello71) <alex_y_xu@yahoo.ca>
+Date: Tue, 15 Dec 2020 18:39:17 -0500
+Subject: [RFC PATCH] treewide: remove bzip2 compression support
+In-Reply-To: <20201215190315.8681-1-alex_y_xu@yahoo.ca>
+References: <20201215190315.8681-1-alex_y_xu.ref@yahoo.ca>
+ <20201215190315.8681-1-alex_y_xu@yahoo.ca>
+Message-ID: <1608075451.ootu1tx25o.none@localhost>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+Excerpts from Alex Xu (Hello71)'s message of December 15, 2020 2:03 pm:
+> bzip2 is either slower or larger than every other supported algorithm,
+> according to benchmarks at [0]. It is far slower to decompress than any
+> other algorithm, and still larger than lzma, xz, and zstd.
+> 
+> [0] https://lore.kernel.org/lkml/1588791882.08g1378g67.none at localhost/
+> 
+> Signed-off-by: Alex Xu (Hello71) <alex_y_xu@yahoo.ca>
 
-
-On Wed, 16 Dec 2020, at 05:53, Hongwei Zhang wrote:
-> Fix AST2600 EVB NCSI RX timeout issue by removing FTGMAC100_RXDES0_RX_ERR bit
-> from macro RXDES0_ANY_ERROR.
-
-But why? What is wrong with the EVB that this change resolves? Which revision 
-of the EVB?
-
-The change affects all designs using the MAC, not just the AST2600 EVB. Why is 
-this patch an appropriate course of action? Can we not add a quirk targeting the
-specific board (e.g. a devicetree property)?
-
-Andrew
+Upon further research, I found that bzip2 removal was already 
+implemented as part of zstd addition, but were apparently abandoned in 
+an effort to get zstd in. I will check those patches and try sending 
+those instead. Thanks to all reviewers for comments on this patch.
