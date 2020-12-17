@@ -1,117 +1,130 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Thu, 17 Dec 2020 11:07:45 +1030
+From: Billy Tsai <billy_tsai@aspeedtech.com>
+Date: Thu, 17 Dec 2020 02:38:26 +0000
 Subject: [PATCH v2] driver: aspeed: g6: Fix PWMG0 pinctrl setting
-Message-ID: <1e823780-b1ef-42dd-bb60-321b4d482d31@www.fastmail.com>
+In-Reply-To: <1e823780-b1ef-42dd-bb60-321b4d482d31@www.fastmail.com>
+References: <1e823780-b1ef-42dd-bb60-321b4d482d31@www.fastmail.com>
+Message-ID: <E1023A72-F92B-410D-B2AD-15C053EA82A4@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-> The SCU offset for signal PWM8 in group PWM8G0 is wrong, fix it from
-> SCU414 to SCU4B4.
-> Besides that, When PWM8~15 of PWMG0 set it needs to clear SCU414 bits
-> at the same time.
+Hi Andrew,
 
-FYI, we don't need to explicitly clear SCU414[...] as part of the PWM mux 
-configuration as the these bits are cleared as part of disabling the SD1* 
-signal state on each pin[1]. You should be able to confirm this by compiling 
-with CONFIG_DEBUG_PINCTRL=y and "debug" on the kernel commandline.
+Best Regards,
+Billy Tsai
 
-That said, it would be neat if we had some kunit tests to exercise all this, 
-but it's not something I've thought deeply about.
+?On 2020/12/17, 8:38 AM, Andrew Jeffery wrote:
 
-[1] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/pinctrl/aspeed/pinctrl-aspeed.c?h=v5.10#n248
+    > The SCU offset for signal PWM8 in group PWM8G0 is wrong, fix it from
+    > SCU414 to SCU4B4.
+    > Besides that, When PWM8~15 of PWMG0 set it needs to clear SCU414 bits
+    > at the same time.
+    
+    FYI, we don't need to explicitly clear SCU414[...] as part of the PWM mux 
+    configuration as the these bits are cleared as part of disabling the SD1* 
+    signal state on each pin[1]. You should be able to confirm this by compiling 
+    with CONFIG_DEBUG_PINCTRL=y and "debug" on the kernel commandline.
+    
+    That said, it would be neat if we had some kunit tests to exercise all this, 
+    but it's not something I've thought deeply about.
 
->
-> Fixes: 2eda1cdec49f ("pinctrl: aspeed: Add AST2600 pinmux support")
->
-> Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
-> ---
->  drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c | 24 ++++++++++++++--------
->  1 file changed, 16 insertions(+), 8 deletions(-)
->
-> diff --git a/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c b/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
-> index b673a44ffa3b..1dfb12a5b2ce 100644
-> --- a/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
-> +++ b/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
-> @@ -367,49 +367,57 @@ FUNC_GROUP_DECL(RMII4, F24, E23, E24, E25, C25, C24, B26, B25, B24);
->
->  #define D22 40
->  SIG_EXPR_LIST_DECL_SESG(D22, SD1CLK, SD1, SIG_DESC_SET(SCU414, 8));
-> -SIG_EXPR_LIST_DECL_SEMG(D22, PWM8, PWM8G0, PWM8, SIG_DESC_SET(SCU414, 8));
-> +SIG_EXPR_LIST_DECL_SEMG(D22, PWM8, PWM8G0, PWM8, SIG_DESC_SET(SCU4B4, 8),
+Thanks for your remainder. I will send v3 to just fix the copy/paste error.
 
-Good catch, looks like a copy/paste fail on my part :)
+    [1] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/pinctrl/aspeed/pinctrl-aspeed.c?h=v5.10#n248
+    
+    >
+    > Fixes: 2eda1cdec49f ("pinctrl: aspeed: Add AST2600 pinmux support")
+    >
+    > Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
+    > ---
+    >  drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c | 24 ++++++++++++++--------
+    >  1 file changed, 16 insertions(+), 8 deletions(-)
+    >
+    > diff --git a/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c b/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
+    > index b673a44ffa3b..1dfb12a5b2ce 100644
+    > --- a/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
+    > +++ b/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
+    > @@ -367,49 +367,57 @@ FUNC_GROUP_DECL(RMII4, F24, E23, E24, E25, C25, C24, B26, B25, B24);
+    >
+    >  #define D22 40
+    >  SIG_EXPR_LIST_DECL_SESG(D22, SD1CLK, SD1, SIG_DESC_SET(SCU414, 8));
+    > -SIG_EXPR_LIST_DECL_SEMG(D22, PWM8, PWM8G0, PWM8, SIG_DESC_SET(SCU414, 8));
+    > +SIG_EXPR_LIST_DECL_SEMG(D22, PWM8, PWM8G0, PWM8, SIG_DESC_SET(SCU4B4, 8),
+    
+    Good catch, looks like a copy/paste fail on my part :)
+    
+    > +SIG_DESC_CLEAR(SCU414, 8));
+    
+    As above, this should be unnecessary.
+    
+    Can you confirm and remove the CLEAR()s for v3?
+    
+    Cheers,
+    
+    Andrew
+    
+    >  PIN_DECL_2(D22, GPIOF0, SD1CLK, PWM8);
+    >  GROUP_DECL(PWM8G0, D22);
+    >
+    >  #define E22 41
+    >  SIG_EXPR_LIST_DECL_SESG(E22, SD1CMD, SD1, SIG_DESC_SET(SCU414, 9));
+    > -SIG_EXPR_LIST_DECL_SEMG(E22, PWM9, PWM9G0, PWM9, SIG_DESC_SET(SCU4B4, 9));
+    > +SIG_EXPR_LIST_DECL_SEMG(E22, PWM9, PWM9G0, PWM9, SIG_DESC_SET(SCU4B4, 9),
+    > +SIG_DESC_CLEAR(SCU414, 9));
+    >  PIN_DECL_2(E22, GPIOF1, SD1CMD, PWM9);
+    >  GROUP_DECL(PWM9G0, E22);
+    >
+    >  #define D23 42
+    >  SIG_EXPR_LIST_DECL_SESG(D23, SD1DAT0, SD1, SIG_DESC_SET(SCU414, 10));
+    > -SIG_EXPR_LIST_DECL_SEMG(D23, PWM10, PWM10G0, PWM10, SIG_DESC_SET(SCU4B4, 10));
+    > +SIG_EXPR_LIST_DECL_SEMG(D23, PWM10, PWM10G0, PWM10, SIG_DESC_SET(SCU4B4, 10),
+    > +SIG_DESC_CLEAR(SCU414, 10));
+    >  PIN_DECL_2(D23, GPIOF2, SD1DAT0, PWM10);
+    >  GROUP_DECL(PWM10G0, D23);
+    >
+    >  #define C23 43
+    >  SIG_EXPR_LIST_DECL_SESG(C23, SD1DAT1, SD1, SIG_DESC_SET(SCU414, 11));
+    > -SIG_EXPR_LIST_DECL_SEMG(C23, PWM11, PWM11G0, PWM11, SIG_DESC_SET(SCU4B4, 11));
+    > +SIG_EXPR_LIST_DECL_SEMG(C23, PWM11, PWM11G0, PWM11, SIG_DESC_SET(SCU4B4, 11),
+    > +SIG_DESC_CLEAR(SCU414, 11));
+    >  PIN_DECL_2(C23, GPIOF3, SD1DAT1, PWM11);
+    >  GROUP_DECL(PWM11G0, C23);
+    >
+    >  #define C22 44
+    >  SIG_EXPR_LIST_DECL_SESG(C22, SD1DAT2, SD1, SIG_DESC_SET(SCU414, 12));
+    > -SIG_EXPR_LIST_DECL_SEMG(C22, PWM12, PWM12G0, PWM12, SIG_DESC_SET(SCU4B4, 12));
+    > +SIG_EXPR_LIST_DECL_SEMG(C22, PWM12, PWM12G0, PWM12, SIG_DESC_SET(SCU4B4, 12),
+    > +SIG_DESC_CLEAR(SCU414, 12));
+    >  PIN_DECL_2(C22, GPIOF4, SD1DAT2, PWM12);
+    >  GROUP_DECL(PWM12G0, C22);
+    >
+    >  #define A25 45
+    >  SIG_EXPR_LIST_DECL_SESG(A25, SD1DAT3, SD1, SIG_DESC_SET(SCU414, 13));
+    > -SIG_EXPR_LIST_DECL_SEMG(A25, PWM13, PWM13G0, PWM13, SIG_DESC_SET(SCU4B4, 13));
+    > +SIG_EXPR_LIST_DECL_SEMG(A25, PWM13, PWM13G0, PWM13, SIG_DESC_SET(SCU4B4, 13),
+    > +SIG_DESC_CLEAR(SCU414, 13));
+    >  PIN_DECL_2(A25, GPIOF5, SD1DAT3, PWM13);
+    >  GROUP_DECL(PWM13G0, A25);
+    >
+    >  #define A24 46
+    >  SIG_EXPR_LIST_DECL_SESG(A24, SD1CD, SD1, SIG_DESC_SET(SCU414, 14));
+    > -SIG_EXPR_LIST_DECL_SEMG(A24, PWM14, PWM14G0, PWM14, SIG_DESC_SET(SCU4B4, 14));
+    > +SIG_EXPR_LIST_DECL_SEMG(A24, PWM14, PWM14G0, PWM14, SIG_DESC_SET(SCU4B4, 14),
+    > +SIG_DESC_CLEAR(SCU414, 14));
+    >  PIN_DECL_2(A24, GPIOF6, SD1CD, PWM14);
+    >  GROUP_DECL(PWM14G0, A24);
+    >
+    >  #define A23 47
+    >  SIG_EXPR_LIST_DECL_SESG(A23, SD1WP, SD1, SIG_DESC_SET(SCU414, 15));
+    > -SIG_EXPR_LIST_DECL_SEMG(A23, PWM15, PWM15G0, PWM15, SIG_DESC_SET(SCU4B4, 15));
+    > +SIG_EXPR_LIST_DECL_SEMG(A23, PWM15, PWM15G0, PWM15, SIG_DESC_SET(SCU4B4, 15),
+    > +SIG_DESC_CLEAR(SCU414, 15));
+    >  PIN_DECL_2(A23, GPIOF7, SD1WP, PWM15);
+    >  GROUP_DECL(PWM15G0, A23);
+    >
+    > --
+    > 2.17.1
+    
 
-> +SIG_DESC_CLEAR(SCU414, 8));
-
-As above, this should be unnecessary.
-
-Can you confirm and remove the CLEAR()s for v3?
-
-Cheers,
-
-Andrew
-
->  PIN_DECL_2(D22, GPIOF0, SD1CLK, PWM8);
->  GROUP_DECL(PWM8G0, D22);
->
->  #define E22 41
->  SIG_EXPR_LIST_DECL_SESG(E22, SD1CMD, SD1, SIG_DESC_SET(SCU414, 9));
-> -SIG_EXPR_LIST_DECL_SEMG(E22, PWM9, PWM9G0, PWM9, SIG_DESC_SET(SCU4B4, 9));
-> +SIG_EXPR_LIST_DECL_SEMG(E22, PWM9, PWM9G0, PWM9, SIG_DESC_SET(SCU4B4, 9),
-> +SIG_DESC_CLEAR(SCU414, 9));
->  PIN_DECL_2(E22, GPIOF1, SD1CMD, PWM9);
->  GROUP_DECL(PWM9G0, E22);
->
->  #define D23 42
->  SIG_EXPR_LIST_DECL_SESG(D23, SD1DAT0, SD1, SIG_DESC_SET(SCU414, 10));
-> -SIG_EXPR_LIST_DECL_SEMG(D23, PWM10, PWM10G0, PWM10, SIG_DESC_SET(SCU4B4, 10));
-> +SIG_EXPR_LIST_DECL_SEMG(D23, PWM10, PWM10G0, PWM10, SIG_DESC_SET(SCU4B4, 10),
-> +SIG_DESC_CLEAR(SCU414, 10));
->  PIN_DECL_2(D23, GPIOF2, SD1DAT0, PWM10);
->  GROUP_DECL(PWM10G0, D23);
->
->  #define C23 43
->  SIG_EXPR_LIST_DECL_SESG(C23, SD1DAT1, SD1, SIG_DESC_SET(SCU414, 11));
-> -SIG_EXPR_LIST_DECL_SEMG(C23, PWM11, PWM11G0, PWM11, SIG_DESC_SET(SCU4B4, 11));
-> +SIG_EXPR_LIST_DECL_SEMG(C23, PWM11, PWM11G0, PWM11, SIG_DESC_SET(SCU4B4, 11),
-> +SIG_DESC_CLEAR(SCU414, 11));
->  PIN_DECL_2(C23, GPIOF3, SD1DAT1, PWM11);
->  GROUP_DECL(PWM11G0, C23);
->
->  #define C22 44
->  SIG_EXPR_LIST_DECL_SESG(C22, SD1DAT2, SD1, SIG_DESC_SET(SCU414, 12));
-> -SIG_EXPR_LIST_DECL_SEMG(C22, PWM12, PWM12G0, PWM12, SIG_DESC_SET(SCU4B4, 12));
-> +SIG_EXPR_LIST_DECL_SEMG(C22, PWM12, PWM12G0, PWM12, SIG_DESC_SET(SCU4B4, 12),
-> +SIG_DESC_CLEAR(SCU414, 12));
->  PIN_DECL_2(C22, GPIOF4, SD1DAT2, PWM12);
->  GROUP_DECL(PWM12G0, C22);
->
->  #define A25 45
->  SIG_EXPR_LIST_DECL_SESG(A25, SD1DAT3, SD1, SIG_DESC_SET(SCU414, 13));
-> -SIG_EXPR_LIST_DECL_SEMG(A25, PWM13, PWM13G0, PWM13, SIG_DESC_SET(SCU4B4, 13));
-> +SIG_EXPR_LIST_DECL_SEMG(A25, PWM13, PWM13G0, PWM13, SIG_DESC_SET(SCU4B4, 13),
-> +SIG_DESC_CLEAR(SCU414, 13));
->  PIN_DECL_2(A25, GPIOF5, SD1DAT3, PWM13);
->  GROUP_DECL(PWM13G0, A25);
->
->  #define A24 46
->  SIG_EXPR_LIST_DECL_SESG(A24, SD1CD, SD1, SIG_DESC_SET(SCU414, 14));
-> -SIG_EXPR_LIST_DECL_SEMG(A24, PWM14, PWM14G0, PWM14, SIG_DESC_SET(SCU4B4, 14));
-> +SIG_EXPR_LIST_DECL_SEMG(A24, PWM14, PWM14G0, PWM14, SIG_DESC_SET(SCU4B4, 14),
-> +SIG_DESC_CLEAR(SCU414, 14));
->  PIN_DECL_2(A24, GPIOF6, SD1CD, PWM14);
->  GROUP_DECL(PWM14G0, A24);
->
->  #define A23 47
->  SIG_EXPR_LIST_DECL_SESG(A23, SD1WP, SD1, SIG_DESC_SET(SCU414, 15));
-> -SIG_EXPR_LIST_DECL_SEMG(A23, PWM15, PWM15G0, PWM15, SIG_DESC_SET(SCU4B4, 15));
-> +SIG_EXPR_LIST_DECL_SEMG(A23, PWM15, PWM15G0, PWM15, SIG_DESC_SET(SCU4B4, 15),
-> +SIG_DESC_CLEAR(SCU414, 15));
->  PIN_DECL_2(A23, GPIOF7, SD1WP, PWM15);
->  GROUP_DECL(PWM15G0, A23);
->
-> --
-> 2.17.1
