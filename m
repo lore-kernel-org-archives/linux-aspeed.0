@@ -1,170 +1,42 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Fri, 18 Dec 2020 14:23:36 +1030
-Subject: [PATCH v6 4/6] mmc: sdhci-of-aspeed: Add KUnit tests for phase
- calculations
+Date: Fri, 18 Dec 2020 14:23:37 +1030
+Subject: [PATCH v6 5/6] MAINTAINERS: Add entry for the ASPEED SD/MMC driver
 In-Reply-To: <20201218035338.1130849-1-andrew@aj.id.au>
 References: <20201218035338.1130849-1-andrew@aj.id.au>
-Message-ID: <20201218035338.1130849-5-andrew@aj.id.au>
+Message-ID: <20201218035338.1130849-6-andrew@aj.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Converting degrees of phase to logic delays is irritating to test on
-hardware, so lets exercise the function using KUnit.
+Add myself as the maintainer.
 
 Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
 ---
- drivers/mmc/host/Kconfig                |  14 ++++
- drivers/mmc/host/Makefile               |   1 +
- drivers/mmc/host/sdhci-of-aspeed-test.c | 100 ++++++++++++++++++++++++
- 3 files changed, 115 insertions(+)
- create mode 100644 drivers/mmc/host/sdhci-of-aspeed-test.c
+ MAINTAINERS | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-diff --git a/drivers/mmc/host/Kconfig b/drivers/mmc/host/Kconfig
-index 596f32637315..d6f00d1d6251 100644
---- a/drivers/mmc/host/Kconfig
-+++ b/drivers/mmc/host/Kconfig
-@@ -168,6 +168,20 @@ config MMC_SDHCI_OF_ASPEED
+diff --git a/MAINTAINERS b/MAINTAINERS
+index e451dcce054f..eae4322aae67 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -2826,6 +2826,15 @@ F:	Documentation/devicetree/bindings/interrupt-controller/aspeed,ast2xxx-scu-ic.
+ F:	drivers/irqchip/irq-aspeed-scu-ic.c
+ F:	include/dt-bindings/interrupt-controller/aspeed-scu-ic.h
  
- 	  If unsure, say N.
- 
-+config MMC_SDHCI_OF_ASPEED_TEST
-+	bool "Tests for the ASPEED SDHCI driver"
-+	depends on MMC_SDHCI_OF_ASPEED && KUNIT=y
-+	help
-+	  Enable KUnit tests for the ASPEED SDHCI driver. Select this
-+	  option only if you will boot the kernel for the purpose of running
-+	  unit tests (e.g. under UML or qemu).
++ASPEED SD/MMC DRIVER
++M:	Andrew Jeffery <andrew@aj.id.au>
++L:	linux-aspeed at lists.ozlabs.org (moderated for non-subscribers)
++L:	openbmc at lists.ozlabs.org (moderated for non-subscribers)
++L:	linux-mmc at vger.kernel.org
++S:	Maintained
++F:	Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml
++F:	drivers/mmc/host/sdhci-of-aspeed*
 +
-+	  The KUnit tests generally exercise parts of the driver that do not
-+	  directly touch the hardware, for example, the phase correction
-+	  calculations.
-+
-+	  If unsure, say N.
-+
- config MMC_SDHCI_OF_AT91
- 	tristate "SDHCI OF support for the Atmel SDMMC controller"
- 	depends on MMC_SDHCI_PLTFM
-diff --git a/drivers/mmc/host/Makefile b/drivers/mmc/host/Makefile
-index 451c25fc2c69..3ee59d5802cf 100644
---- a/drivers/mmc/host/Makefile
-+++ b/drivers/mmc/host/Makefile
-@@ -90,6 +90,7 @@ obj-$(CONFIG_MMC_SDHCI_DOVE)		+= sdhci-dove.o
- obj-$(CONFIG_MMC_SDHCI_TEGRA)		+= sdhci-tegra.o
- obj-$(CONFIG_MMC_SDHCI_OF_ARASAN)	+= sdhci-of-arasan.o
- obj-$(CONFIG_MMC_SDHCI_OF_ASPEED)	+= sdhci-of-aspeed.o
-+obj-$(CONFIG_MMC_SDHCI_OF_ASPEED_TEST)	+= sdhci-of-aspeed-test.o
- obj-$(CONFIG_MMC_SDHCI_OF_AT91)		+= sdhci-of-at91.o
- obj-$(CONFIG_MMC_SDHCI_OF_ESDHC)	+= sdhci-of-esdhc.o
- obj-$(CONFIG_MMC_SDHCI_OF_HLWD)		+= sdhci-of-hlwd.o
-diff --git a/drivers/mmc/host/sdhci-of-aspeed-test.c b/drivers/mmc/host/sdhci-of-aspeed-test.c
-new file mode 100644
-index 000000000000..fb79b278fb81
---- /dev/null
-+++ b/drivers/mmc/host/sdhci-of-aspeed-test.c
-@@ -0,0 +1,100 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
-+/* Copyright (C) 2020 IBM Corp. */
-+
-+#include <kunit/test.h>
-+
-+#include "sdhci-of-aspeed.c"
-+
-+static void aspeed_sdhci_phase_ddr52(struct kunit *test)
-+{
-+	int rate = 52000000;
-+
-+	KUNIT_EXPECT_EQ(test, 0,
-+			aspeed_sdhci_phase_to_tap(NULL, rate, 0));
-+	KUNIT_EXPECT_EQ(test, 0,
-+			aspeed_sdhci_phase_to_tap(NULL, rate, 1));
-+	KUNIT_EXPECT_EQ(test, 1,
-+			aspeed_sdhci_phase_to_tap(NULL, rate, 2));
-+	KUNIT_EXPECT_EQ(test, 1,
-+			aspeed_sdhci_phase_to_tap(NULL, rate, 3));
-+	KUNIT_EXPECT_EQ(test, 2,
-+			aspeed_sdhci_phase_to_tap(NULL, rate, 4));
-+	KUNIT_EXPECT_EQ(test, 3,
-+			aspeed_sdhci_phase_to_tap(NULL, rate, 5));
-+	KUNIT_EXPECT_EQ(test, 14,
-+			aspeed_sdhci_phase_to_tap(NULL, rate, 23));
-+	KUNIT_EXPECT_EQ(test, 15,
-+			aspeed_sdhci_phase_to_tap(NULL, rate, 24));
-+	KUNIT_EXPECT_EQ(test, 15,
-+			aspeed_sdhci_phase_to_tap(NULL, rate, 25));
-+
-+	KUNIT_EXPECT_EQ(test, (int)ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 0,
-+			aspeed_sdhci_phase_to_tap(NULL, rate, 180));
-+	KUNIT_EXPECT_EQ(test, (int)ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 0,
-+			aspeed_sdhci_phase_to_tap(NULL, rate, 181));
-+	KUNIT_EXPECT_EQ(test, (int)ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 1,
-+			aspeed_sdhci_phase_to_tap(NULL, rate, 182));
-+	KUNIT_EXPECT_EQ(test, (int)ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 1,
-+			aspeed_sdhci_phase_to_tap(NULL, rate, 183));
-+	KUNIT_EXPECT_EQ(test, (int)ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 2,
-+			aspeed_sdhci_phase_to_tap(NULL, rate, 184));
-+	KUNIT_EXPECT_EQ(test, (int)ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 3,
-+			aspeed_sdhci_phase_to_tap(NULL, rate, 185));
-+	KUNIT_EXPECT_EQ(test, (int)ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 14,
-+			aspeed_sdhci_phase_to_tap(NULL, rate, 203));
-+	KUNIT_EXPECT_EQ(test, (int)ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 15,
-+			aspeed_sdhci_phase_to_tap(NULL, rate, 204));
-+	KUNIT_EXPECT_EQ(test, (int)ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 15,
-+			aspeed_sdhci_phase_to_tap(NULL, rate, 205));
-+}
-+
-+static void aspeed_sdhci_phase_hs200(struct kunit *test)
-+{
-+	int rate = 200000000;
-+
-+	KUNIT_EXPECT_EQ(test, 0,
-+			aspeed_sdhci_phase_to_tap(NULL, rate, 0));
-+	KUNIT_EXPECT_EQ(test, 0,
-+			aspeed_sdhci_phase_to_tap(NULL, rate, 5));
-+	KUNIT_EXPECT_EQ(test, 1,
-+			aspeed_sdhci_phase_to_tap(NULL, rate, 6));
-+	KUNIT_EXPECT_EQ(test, 1,
-+			aspeed_sdhci_phase_to_tap(NULL, rate, 7));
-+	KUNIT_EXPECT_EQ(test, 14,
-+			aspeed_sdhci_phase_to_tap(NULL, rate, 89));
-+	KUNIT_EXPECT_EQ(test, 15,
-+			aspeed_sdhci_phase_to_tap(NULL, rate, 90));
-+	KUNIT_EXPECT_EQ(test, 15,
-+			aspeed_sdhci_phase_to_tap(NULL, rate, 91));
-+	KUNIT_EXPECT_EQ(test, 15,
-+			aspeed_sdhci_phase_to_tap(NULL, rate, 96));
-+
-+	KUNIT_EXPECT_EQ(test, (int)ASPEED_SDHCI_TAP_PARAM_INVERT_CLK,
-+			aspeed_sdhci_phase_to_tap(NULL, rate, 180));
-+	KUNIT_EXPECT_EQ(test, (int)ASPEED_SDHCI_TAP_PARAM_INVERT_CLK,
-+			aspeed_sdhci_phase_to_tap(NULL, rate, 185));
-+	KUNIT_EXPECT_EQ(test, (int)ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 1,
-+			aspeed_sdhci_phase_to_tap(NULL, rate, 186));
-+	KUNIT_EXPECT_EQ(test, (int)ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 1,
-+			aspeed_sdhci_phase_to_tap(NULL, rate, 187));
-+	KUNIT_EXPECT_EQ(test, (int)ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 14,
-+			aspeed_sdhci_phase_to_tap(NULL, rate, 269));
-+	KUNIT_EXPECT_EQ(test, (int)ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 15,
-+			aspeed_sdhci_phase_to_tap(NULL, rate, 270));
-+	KUNIT_EXPECT_EQ(test, (int)ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 15,
-+			aspeed_sdhci_phase_to_tap(NULL, rate, 271));
-+	KUNIT_EXPECT_EQ(test, (int)ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 15,
-+			aspeed_sdhci_phase_to_tap(NULL, rate, 276));
-+}
-+
-+static struct kunit_case aspeed_sdhci_test_cases[] = {
-+	KUNIT_CASE(aspeed_sdhci_phase_ddr52),
-+	KUNIT_CASE(aspeed_sdhci_phase_hs200),
-+	{}
-+};
-+
-+static struct kunit_suite aspeed_sdhci_test_suite = {
-+	.name = "sdhci-of-aspeed",
-+	.test_cases = aspeed_sdhci_test_cases,
-+};
-+kunit_test_suite(aspeed_sdhci_test_suite);
+ ASPEED VIDEO ENGINE DRIVER
+ M:	Eddie James <eajames@linux.ibm.com>
+ L:	linux-media at vger.kernel.org
 -- 
 2.27.0
 
