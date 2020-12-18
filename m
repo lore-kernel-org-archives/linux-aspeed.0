@@ -1,48 +1,55 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Fri, 18 Dec 2020 12:33:50 +1030
-Subject: [PATCH v3] driver: aspeed: g6: Fix PWMG0 pinctrl setting
-In-Reply-To: <20201217024912.3198-1-billy_tsai@aspeedtech.com>
-References: <1e823780-b1ef-42dd-bb60-321b4d482d31@www.fastmail.com>
- <20201217024912.3198-1-billy_tsai@aspeedtech.com>
-Message-ID: <890073c1-3905-4602-83f7-b823c4a4ee13@www.fastmail.com>
+Date: Fri, 18 Dec 2020 14:23:32 +1030
+Subject: [PATCH v6 0/6] mmc: sdhci-of-aspeed: Expose phase delay tuning
+Message-ID: <20201218035338.1130849-1-andrew@aj.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+Hello,
 
+This series implements support for the MMC core clk-phase-* devicetree bindings
+in the Aspeed SD/eMMC driver. The relevant register was exposed on the AST2600
+and is present for both the SD/MMC controller and the dedicated eMMC
+controller.
 
-On Thu, 17 Dec 2020, at 13:19, Billy Tsai wrote:
-> The SCU offset for signal PWM8 in group PWM8G0 is wrong, fix it from
-> SCU414 to SCU4B4.
-> 
-> Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
+v6 simply removes the typedef from v5 in favour of a struct containing the
+phase array.
 
-Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
+I've just done a quick build test of v6 given the small change and more
+extensive testing done with v5. 
 
-Thanks Billy.
+v5 can be found here:
 
-> ---
->  drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c 
-> b/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
-> index b673a44ffa3b..aa53e9d3489b 100644
-> --- a/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
-> +++ b/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
-> @@ -367,7 +367,7 @@ FUNC_GROUP_DECL(RMII4, F24, E23, E24, E25, C25, 
-> C24, B26, B25, B24);
->  
->  #define D22 40
->  SIG_EXPR_LIST_DECL_SESG(D22, SD1CLK, SD1, SIG_DESC_SET(SCU414, 8));
-> -SIG_EXPR_LIST_DECL_SEMG(D22, PWM8, PWM8G0, PWM8, SIG_DESC_SET(SCU414, 8));
-> +SIG_EXPR_LIST_DECL_SEMG(D22, PWM8, PWM8G0, PWM8, SIG_DESC_SET(SCU4B4, 8));
->  PIN_DECL_2(D22, GPIOF0, SD1CLK, PWM8);
->  GROUP_DECL(PWM8G0, D22);
->  
-> -- 
-> 2.17.1
-> 
->
+https://lore.kernel.org/linux-mmc/20201208012615.2717412-1-andrew at aj.id.au/
+
+Please review!
+
+Cheers,
+
+Andrew
+
+Andrew Jeffery (6):
+  mmc: core: Add helper for parsing clock phase properties
+  mmc: sdhci-of-aspeed: Expose clock phase controls
+  mmc: sdhci-of-aspeed: Add AST2600 bus clock support
+  mmc: sdhci-of-aspeed: Add KUnit tests for phase calculations
+  MAINTAINERS: Add entry for the ASPEED SD/MMC driver
+  ARM: dts: rainier: Add eMMC clock phase compensation
+
+ MAINTAINERS                                  |   9 +
+ arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts |   1 +
+ drivers/mmc/core/host.c                      |  44 ++++
+ drivers/mmc/host/Kconfig                     |  14 ++
+ drivers/mmc/host/Makefile                    |   1 +
+ drivers/mmc/host/sdhci-of-aspeed-test.c      | 100 ++++++++
+ drivers/mmc/host/sdhci-of-aspeed.c           | 251 ++++++++++++++++++-
+ include/linux/mmc/host.h                     |  13 +
+ 8 files changed, 422 insertions(+), 11 deletions(-)
+ create mode 100644 drivers/mmc/host/sdhci-of-aspeed-test.c
+
+-- 
+2.27.0
+
