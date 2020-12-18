@@ -1,51 +1,48 @@
-From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-Date: Thu, 17 Dec 2020 11:54:15 -0800
-Subject: [PATCH 2/2] media: aspeed: fix clock handling logic
-In-Reply-To: <160820199393.1580929.9806429719720580479@swboyd.mtv.corp.google.com>
-References: <20201207164240.15436-1-jae.hyun.yoo@linux.intel.com>
- <20201207164240.15436-3-jae.hyun.yoo@linux.intel.com>
- <CACPK8Xd3dz1WLGNGqMiAZxhMEeGHbkPtvO2rYQ36Kbj=Uvy-jA@mail.gmail.com>
- <d3faea9e-e7d6-eba0-a6b2-c30bc9b6e147@linux.intel.com>
- <160820199393.1580929.9806429719720580479@swboyd.mtv.corp.google.com>
-Message-ID: <d3f2d76c-40d9-b167-7002-5a25ec81c73a@linux.intel.com>
+From: Andrew Jeffery <andrew@aj.id.au>
+Date: Fri, 18 Dec 2020 12:33:50 +1030
+Subject: [PATCH v3] driver: aspeed: g6: Fix PWMG0 pinctrl setting
+In-Reply-To: <20201217024912.3198-1-billy_tsai@aspeedtech.com>
+References: <1e823780-b1ef-42dd-bb60-321b4d482d31@www.fastmail.com>
+ <20201217024912.3198-1-billy_tsai@aspeedtech.com>
+Message-ID: <890073c1-3905-4602-83f7-b823c4a4ee13@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Stephen,
 
-On 12/17/2020 2:46 AM, Stephen Boyd wrote:
-> Quoting Jae Hyun Yoo (2020-12-08 09:16:29)
->> Hi Joel,
->>
->> On 12/7/2020 6:39 PM, Joel Stanley wrote:
->>> On Mon, 7 Dec 2020 at 16:33, Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com> wrote:
->>>>
->>>> Video engine uses eclk and vclk for its clock sources and its reset
->>>> control is coupled with eclk so the current clock enabling sequence works
->>>> like below.
->>>>
->>>>    Enable eclk
->>>>    De-assert Video Engine reset
->>>>    10ms delay
->>>>    Enable vclk
->>>
->>> This is the case after " clk: ast2600: fix reset settings for eclk and
->>> vclk" is applied, correct? Without that patch applied the reset
->>> sequence is correct by accident for the 2600, but it will be wrong for
->>> the 2500?
->>
->> Correct. Video Engine reset was coupled with eclk for AST2500 and vclk
->> for AST2600 so above sequence was observed only in AST2500. As you said,
->> AST2600 didn't make the issue by accident but the clk/reset pair should
->> be fixed by this patch series.
-> 
-> So should the two patches be squashed together and go through the
-> media tree?
-> 
 
-The first patch should go through clk tree, and the second one (this
-patch) should go through media tree. Both patches should be applied at
-the same time. Should I squash them in this case?
+On Thu, 17 Dec 2020, at 13:19, Billy Tsai wrote:
+> The SCU offset for signal PWM8 in group PWM8G0 is wrong, fix it from
+> SCU414 to SCU4B4.
+> 
+> Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
+
+Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
+
+Thanks Billy.
+
+> ---
+>  drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c 
+> b/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
+> index b673a44ffa3b..aa53e9d3489b 100644
+> --- a/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
+> +++ b/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
+> @@ -367,7 +367,7 @@ FUNC_GROUP_DECL(RMII4, F24, E23, E24, E25, C25, 
+> C24, B26, B25, B24);
+>  
+>  #define D22 40
+>  SIG_EXPR_LIST_DECL_SESG(D22, SD1CLK, SD1, SIG_DESC_SET(SCU414, 8));
+> -SIG_EXPR_LIST_DECL_SEMG(D22, PWM8, PWM8G0, PWM8, SIG_DESC_SET(SCU414, 8));
+> +SIG_EXPR_LIST_DECL_SEMG(D22, PWM8, PWM8G0, PWM8, SIG_DESC_SET(SCU4B4, 8));
+>  PIN_DECL_2(D22, GPIOF0, SD1CLK, PWM8);
+>  GROUP_DECL(PWM8G0, D22);
+>  
+> -- 
+> 2.17.1
+> 
+>
