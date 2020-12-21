@@ -1,70 +1,39 @@
-From: Hongwei Zhang <hongweiz@ami.com>
-Date: Mon, 21 Dec 2020 14:40:26 -0500
-Subject: [Aspeed, ncsi-rx,
- v2 1/1] net: ftgmac100: Fix AST2600 EVB NCSI RX issue
-In-Reply-To: <20201215192323.24359-1-hongweiz@ami.com>
-References: <20201215192323.24359-1-hongweiz@ami.com>
-Message-ID: <20201221194026.30715-2-hongweiz@ami.com>
+From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+Date: Mon, 21 Dec 2020 12:31:46 -0800
+Subject: [PATCH 2/2] media: aspeed: fix clock handling logic
+In-Reply-To: <160842289176.1580929.13125223155803124427@swboyd.mtv.corp.google.com>
+References: <20201207164240.15436-1-jae.hyun.yoo@linux.intel.com>
+ <20201207164240.15436-3-jae.hyun.yoo@linux.intel.com>
+ <CACPK8Xd3dz1WLGNGqMiAZxhMEeGHbkPtvO2rYQ36Kbj=Uvy-jA@mail.gmail.com>
+ <d3faea9e-e7d6-eba0-a6b2-c30bc9b6e147@linux.intel.com>
+ <160820199393.1580929.9806429719720580479@swboyd.mtv.corp.google.com>
+ <d3f2d76c-40d9-b167-7002-5a25ec81c73a@linux.intel.com>
+ <160842289176.1580929.13125223155803124427@swboyd.mtv.corp.google.com>
+Message-ID: <4b67f62c-012b-d6e9-cf98-1093175793c4@linux.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-When FTGMAC100 driver is used on other NCSI Ethernet controllers, few
-controllers have compatible issue, removing FTGMAC100_RXDES0_RX_ERR bit
-from RXDES0_ANY_ERROR can fix the issue.
+On 12/19/2020 4:08 PM, Stephen Boyd wrote:
+> Quoting Jae Hyun Yoo (2020-12-17 11:54:15)
+>> On 12/17/2020 2:46 AM, Stephen Boyd wrote:
+>>> Quoting Jae Hyun Yoo (2020-12-08 09:16:29)
+>>> So should the two patches be squashed together and go through the
+>>> media tree?
+>>>
+>>
+>> The first patch should go through clk tree, and the second one (this
+>> patch) should go through media tree. Both patches should be applied at
+>> the same time. Should I squash them in this case?
+> 
+> If one depends on the other, and having the first one breaks something
+> unless the second one is applied, then yes they should be squashed
+> together.
+> 
 
-Fixes: 7ee2d5b4d4340353 ("ARM: dts: nuvoton: Add Fii Kudo system")
-Signed-off-by: Hongwei Zhang <hongweiz@ami.com>
----
- drivers/net/ethernet/faraday/Kconfig     | 9 +++++++++
- drivers/net/ethernet/faraday/ftgmac100.h | 8 ++++++++
- 2 files changed, 17 insertions(+)
+Okay. Will send a squashed commit as v2.
 
-diff --git a/drivers/net/ethernet/faraday/Kconfig b/drivers/net/ethernet/faraday/Kconfig
-index c2677ec0564d..ccd0c30be0db 100644
---- a/drivers/net/ethernet/faraday/Kconfig
-+++ b/drivers/net/ethernet/faraday/Kconfig
-@@ -38,4 +38,13 @@ config FTGMAC100
- 	  from Faraday. It is used on Faraday A369, Andes AG102 and some
- 	  other ARM/NDS32 SoC's.
- 
-+config FTGMAC100_RXDES0_RX_ERR_CHK
-+	bool "Include FTGMAC100_RXDES0_RX_ERR in RXDES0_ANY_ERROR"
-+	default y
-+	depends on FTGMAC100
-+	help
-+	  Say N here if the NCSI controller on your platform has compatible
-+	  issue with FTGMAC100, thus always trigger RXDES0_RX_ERR. Exclude
-+	  this bit can fix the issue.
-+
- endif # NET_VENDOR_FARADAY
-diff --git a/drivers/net/ethernet/faraday/ftgmac100.h b/drivers/net/ethernet/faraday/ftgmac100.h
-index 63b3e02fab16..59e1bd52d261 100644
---- a/drivers/net/ethernet/faraday/ftgmac100.h
-+++ b/drivers/net/ethernet/faraday/ftgmac100.h
-@@ -251,12 +251,20 @@ struct ftgmac100_rxdes {
- #define FTGMAC100_RXDES0_RXPKT_RDY	(1 << 31)
- 
- /* Errors we care about for dropping packets */
-+#ifdef CONFIG_FTGMAC100_RXDES0_RX_ERR_CHK
- #define RXDES0_ANY_ERROR		( \
- 	FTGMAC100_RXDES0_RX_ERR		| \
- 	FTGMAC100_RXDES0_CRC_ERR	| \
- 	FTGMAC100_RXDES0_FTL		| \
- 	FTGMAC100_RXDES0_RUNT		| \
- 	FTGMAC100_RXDES0_RX_ODD_NB)
-+#else
-+#define RXDES0_ANY_ERROR		( \
-+	FTGMAC100_RXDES0_CRC_ERR	| \
-+	FTGMAC100_RXDES0_FTL		| \
-+	FTGMAC100_RXDES0_RUNT		| \
-+	FTGMAC100_RXDES0_RX_ODD_NB)
-+#endif
- 
- #define FTGMAC100_RXDES1_VLANTAG_CI	0xffff
- #define FTGMAC100_RXDES1_PROT_MASK	(0x3 << 20)
--- 
-2.17.1
-
+Thanks,
+Jae
