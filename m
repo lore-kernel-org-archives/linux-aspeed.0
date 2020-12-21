@@ -1,116 +1,78 @@
-From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-Date: Mon, 21 Dec 2020 14:32:25 -0800
-Subject: [PATCH v2 1/1] media: aspeed: fix clock handling logic
-In-Reply-To: <20201221223225.14723-1-jae.hyun.yoo@linux.intel.com>
-References: <20201221223225.14723-1-jae.hyun.yoo@linux.intel.com>
-Message-ID: <20201221223225.14723-2-jae.hyun.yoo@linux.intel.com>
+From: Heiner Kallweit <hkallweit1@gmail.com>
+Date: Mon, 21 Dec 2020 22:36:59 +0100
+Subject: [Aspeed, v1 1/1] net: ftgmac100: Change the order of getting MAC
+ address
+In-Reply-To: <20201221205157.31501-2-hongweiz@ami.com>
+References: <20201221205157.31501-1-hongweiz@ami.com>
+ <20201221205157.31501-2-hongweiz@ami.com>
+Message-ID: <55803a8a-7ec9-5d60-04bd-d1e163174250@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Video engine uses eclk and vclk for its clock sources and its reset
-control is coupled with eclk so the current clock enabling sequence works
-like below.
+Am 21.12.2020 um 21:51 schrieb Hongwei Zhang:
+> Change the order of reading MAC address, try to read it from MAC chip
+> first, if it's not availabe, then try to read it from device tree.
+> 
+This commit message leaves a number of questions. It seems the change
+isn't related at all to the change that it's supposed to fix.
 
- Enable eclk
- De-assert Video Engine reset
- 10ms delay
- Enable vclk
+- What is the issue that you're trying to fix?
+- And what is wrong with the original change?
 
-It introduces improper reset on the Video Engine hardware and eventually
-the hardware generates unexpected DMA memory transfers that can corrupt
-memory region in random and sporadic patterns. This issue is observed
-very rarely on some specific AST2500 SoCs but it causes a critical
-kernel panic with making a various shape of signature so it's extremely
-hard to debug. Moreover, the issue is observed even when the video
-engine is not actively used because udevd turns on the video engine
-hardware for a short time to make a query in every boot.
+> Fixes: 35c54922dc97 ("ARM: dts: tacoma: Add reserved memory for ramoops")
+> Signed-off-by: Hongwei Zhang <hongweiz@ami.com>
+> ---
+>  drivers/net/ethernet/faraday/ftgmac100.c | 22 +++++++++++++---------
+>  1 file changed, 13 insertions(+), 9 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/faraday/ftgmac100.c b/drivers/net/ethernet/faraday/ftgmac100.c
+> index 65cd25372020..9be69cbdab96 100644
+> --- a/drivers/net/ethernet/faraday/ftgmac100.c
+> +++ b/drivers/net/ethernet/faraday/ftgmac100.c
+> @@ -184,14 +184,7 @@ static void ftgmac100_initial_mac(struct ftgmac100 *priv)
+>  	unsigned int l;
+>  	void *addr;
+>  
+> -	addr = device_get_mac_address(priv->dev, mac, ETH_ALEN);
+> -	if (addr) {
+> -		ether_addr_copy(priv->netdev->dev_addr, mac);
+> -		dev_info(priv->dev, "Read MAC address %pM from device tree\n",
+> -			 mac);
+> -		return;
+> -	}
+> -
+> +	/* Read from Chip if not from chip */
 
-To fix this issue, this commit changes the clock handling logic to make
-the reset de-assertion triggered after enabling both eclk and vclk. Also,
-it adds clk_unprepare call for a case when probe fails.
+?!?
 
-Fixes: d2b4387f3bdf ("media: platform: Add Aspeed Video Engine driver")
-Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-Reviewed-by: Joel Stanley <joel@jms.id.au>
-Reviewed-by: Eddie James <eajames@linux.ibm.com>
+>  	m = ioread32(priv->base + FTGMAC100_OFFSET_MAC_MADR);
+>  	l = ioread32(priv->base + FTGMAC100_OFFSET_MAC_LADR);
+>  
+> @@ -205,7 +198,18 @@ static void ftgmac100_initial_mac(struct ftgmac100 *priv)
+>  	if (is_valid_ether_addr(mac)) {
+>  		ether_addr_copy(priv->netdev->dev_addr, mac);
+>  		dev_info(priv->dev, "Read MAC address %pM from chip\n", mac);
+> -	} else {
+> +		return;
+> +	}
+> +
+> +	/* Read from Chip if not from device tree */
 
-clk: ast2600: fix reset settings for eclk and vclk
+Isn't this how it works now?
 
-Video engine reset setting should be coupled with eclk to match it
-with the setting for previous Aspeed SoCs which is defined in
-clk-aspeed.c since all Aspeed SoCs are sharing a single video engine
-driver. Also, reset bit 6 is defined as 'Video Engine' reset in
-datasheet so it should be de-asserted when eclk is enabled. This
-commit fixes the setting.
-
-Fixes: d3d04f6c330a ("clk: Add support for AST2600 SoC")
-Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-Reviewed-by: Joel Stanley <joel@jms.id.au>
----
-Changes since v1:
-- Squashed two patches due to dependency.
-
- drivers/clk/clk-ast2600.c             | 4 ++--
- drivers/media/platform/aspeed-video.c | 9 ++++++---
- 2 files changed, 8 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/clk/clk-ast2600.c b/drivers/clk/clk-ast2600.c
-index 177368cac6dd..882da16575d4 100644
---- a/drivers/clk/clk-ast2600.c
-+++ b/drivers/clk/clk-ast2600.c
-@@ -60,10 +60,10 @@ static void __iomem *scu_g6_base;
- static const struct aspeed_gate_data aspeed_g6_gates[] = {
- 	/*				    clk rst  name		parent	 flags */
- 	[ASPEED_CLK_GATE_MCLK]		= {  0, -1, "mclk-gate",	"mpll",	 CLK_IS_CRITICAL }, /* SDRAM */
--	[ASPEED_CLK_GATE_ECLK]		= {  1, -1, "eclk-gate",	"eclk",	 0 },	/* Video Engine */
-+	[ASPEED_CLK_GATE_ECLK]		= {  1,  6, "eclk-gate",	"eclk",	 0 },	/* Video Engine */
- 	[ASPEED_CLK_GATE_GCLK]		= {  2,  7, "gclk-gate",	NULL,	 0 },	/* 2D engine */
- 	/* vclk parent - dclk/d1clk/hclk/mclk */
--	[ASPEED_CLK_GATE_VCLK]		= {  3,  6, "vclk-gate",	NULL,	 0 },	/* Video Capture */
-+	[ASPEED_CLK_GATE_VCLK]		= {  3, -1, "vclk-gate",	NULL,	 0 },	/* Video Capture */
- 	[ASPEED_CLK_GATE_BCLK]		= {  4,  8, "bclk-gate",	"bclk",	 0 }, /* PCIe/PCI */
- 	/* From dpll */
- 	[ASPEED_CLK_GATE_DCLK]		= {  5, -1, "dclk-gate",	NULL,	 CLK_IS_CRITICAL }, /* DAC */
-diff --git a/drivers/media/platform/aspeed-video.c b/drivers/media/platform/aspeed-video.c
-index c46a79eace98..db072ff2df70 100644
---- a/drivers/media/platform/aspeed-video.c
-+++ b/drivers/media/platform/aspeed-video.c
-@@ -514,8 +514,8 @@ static void aspeed_video_off(struct aspeed_video *video)
- 	aspeed_video_write(video, VE_INTERRUPT_STATUS, 0xffffffff);
- 
- 	/* Turn off the relevant clocks */
--	clk_disable(video->vclk);
- 	clk_disable(video->eclk);
-+	clk_disable(video->vclk);
- 
- 	clear_bit(VIDEO_CLOCKS_ON, &video->flags);
- }
-@@ -526,8 +526,8 @@ static void aspeed_video_on(struct aspeed_video *video)
- 		return;
- 
- 	/* Turn on the relevant clocks */
--	clk_enable(video->eclk);
- 	clk_enable(video->vclk);
-+	clk_enable(video->eclk);
- 
- 	set_bit(VIDEO_CLOCKS_ON, &video->flags);
- }
-@@ -1719,8 +1719,11 @@ static int aspeed_video_probe(struct platform_device *pdev)
- 		return rc;
- 
- 	rc = aspeed_video_setup_video(video);
--	if (rc)
-+	if (rc) {
-+		clk_unprepare(video->vclk);
-+		clk_unprepare(video->eclk);
- 		return rc;
-+	}
- 
- 	return 0;
- }
--- 
-2.17.1
+> +	addr = device_get_mac_address(priv->dev, mac, ETH_ALEN);
+> +	if (addr) {
+> +		ether_addr_copy(priv->netdev->dev_addr, mac);
+> +		dev_info(priv->dev, "Read MAC address %pM from device tree\n",
+> +				mac);
+> +		return;
+> +	}
+> +	else {
+>  		eth_hw_addr_random(priv->netdev);
+>  		dev_info(priv->dev, "Generated random MAC address %pM\n",
+>  			 priv->netdev->dev_addr);
+> 
 
