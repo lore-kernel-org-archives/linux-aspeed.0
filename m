@@ -1,31 +1,89 @@
-From: Stephen Boyd <sboyd@kernel.org>
-Date: Sat, 19 Dec 2020 16:08:11 -0800
-Subject: [PATCH 2/2] media: aspeed: fix clock handling logic
-In-Reply-To: <d3f2d76c-40d9-b167-7002-5a25ec81c73a@linux.intel.com>
-References: <20201207164240.15436-1-jae.hyun.yoo@linux.intel.com>
- <20201207164240.15436-3-jae.hyun.yoo@linux.intel.com>
- <CACPK8Xd3dz1WLGNGqMiAZxhMEeGHbkPtvO2rYQ36Kbj=Uvy-jA@mail.gmail.com>
- <d3faea9e-e7d6-eba0-a6b2-c30bc9b6e147@linux.intel.com>
- <160820199393.1580929.9806429719720580479@swboyd.mtv.corp.google.com>
- <d3f2d76c-40d9-b167-7002-5a25ec81c73a@linux.intel.com>
-Message-ID: <160842289176.1580929.13125223155803124427@swboyd.mtv.corp.google.com>
+From: Chia-Wei, Wang <chiawei_wang@aspeedtech.com>
+Date: Mon, 21 Dec 2020 13:56:21 +0800
+Subject: [PATCH v3 3/5] ipmi: kcs: aspeed: Adapt to new LPC DTS layout
+In-Reply-To: <20201221055623.31463-1-chiawei_wang@aspeedtech.com>
+References: <20201221055623.31463-1-chiawei_wang@aspeedtech.com>
+Message-ID: <20201221055623.31463-4-chiawei_wang@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Quoting Jae Hyun Yoo (2020-12-17 11:54:15)
-> On 12/17/2020 2:46 AM, Stephen Boyd wrote:
-> > Quoting Jae Hyun Yoo (2020-12-08 09:16:29)
-> > So should the two patches be squashed together and go through the
-> > media tree?
-> > 
-> 
-> The first patch should go through clk tree, and the second one (this
-> patch) should go through media tree. Both patches should be applied at
-> the same time. Should I squash them in this case?
+Add check against LPC device v2 compatible string to
+ensure that the fixed device tree layout is adopted.
+The LPC register offsets are also fixed accordingly.
 
-If one depends on the other, and having the first one breaks something
-unless the second one is applied, then yes they should be squashed
-together.
+Signed-off-by: Chia-Wei, Wang <chiawei_wang@aspeedtech.com>
+---
+ drivers/char/ipmi/kcs_bmc_aspeed.c | 35 ++++++++++++++++++------------
+ 1 file changed, 21 insertions(+), 14 deletions(-)
+
+diff --git a/drivers/char/ipmi/kcs_bmc_aspeed.c b/drivers/char/ipmi/kcs_bmc_aspeed.c
+index a140203c079b..6283bfef4ea7 100644
+--- a/drivers/char/ipmi/kcs_bmc_aspeed.c
++++ b/drivers/char/ipmi/kcs_bmc_aspeed.c
+@@ -27,7 +27,6 @@
+ 
+ #define KCS_CHANNEL_MAX     4
+ 
+-/* mapped to lpc-bmc at 0 IO space */
+ #define LPC_HICR0            0x000
+ #define     LPC_HICR0_LPC3E          BIT(7)
+ #define     LPC_HICR0_LPC2E          BIT(6)
+@@ -52,15 +51,13 @@
+ #define LPC_STR1             0x03C
+ #define LPC_STR2             0x040
+ #define LPC_STR3             0x044
+-
+-/* mapped to lpc-host at 80 IO space */
+-#define LPC_HICRB            0x080
++#define LPC_HICRB            0x100
+ #define     LPC_HICRB_IBFIF4         BIT(1)
+ #define     LPC_HICRB_LPC4E          BIT(0)
+-#define LPC_LADR4            0x090
+-#define LPC_IDR4             0x094
+-#define LPC_ODR4             0x098
+-#define LPC_STR4             0x09C
++#define LPC_LADR4            0x110
++#define LPC_IDR4             0x114
++#define LPC_ODR4             0x118
++#define LPC_STR4             0x11C
+ 
+ struct aspeed_kcs_bmc {
+ 	struct regmap *map;
+@@ -345,15 +342,25 @@ static int aspeed_kcs_probe(struct platform_device *pdev)
+ {
+ 	struct device *dev = &pdev->dev;
+ 	struct kcs_bmc *kcs_bmc;
+-	struct device_node *np;
++	struct device_node *kcs_np;
++	struct device_node *lpc_np;
+ 	int rc;
+ 
+-	np = pdev->dev.of_node;
+-	if (of_device_is_compatible(np, "aspeed,ast2400-kcs-bmc") ||
+-			of_device_is_compatible(np, "aspeed,ast2500-kcs-bmc"))
++	kcs_np = dev->of_node;
++	lpc_np = kcs_np->parent;
++
++	if (!of_device_is_compatible(lpc_np, "aspeed,ast2400-lpc-v2") &&
++	    !of_device_is_compatible(lpc_np, "aspeed,ast2500-lpc-v2") &&
++	    !of_device_is_compatible(lpc_np, "aspeed,ast2600-lpc-v2")) {
++		dev_err(dev, "unsupported LPC device binding\n");
++		return -ENODEV;
++	}
++
++	if (of_device_is_compatible(kcs_np, "aspeed,ast2400-kcs-bmc") ||
++			of_device_is_compatible(kcs_np, "aspeed,ast2500-kcs-bmc"))
+ 		kcs_bmc = aspeed_kcs_probe_of_v1(pdev);
+-	else if (of_device_is_compatible(np, "aspeed,ast2400-kcs-bmc-v2") ||
+-			of_device_is_compatible(np, "aspeed,ast2500-kcs-bmc-v2"))
++	else if (of_device_is_compatible(kcs_np, "aspeed,ast2400-kcs-bmc-v2") ||
++			of_device_is_compatible(kcs_np, "aspeed,ast2500-kcs-bmc-v2"))
+ 		kcs_bmc = aspeed_kcs_probe_of_v2(pdev);
+ 	else
+ 		return -EINVAL;
+-- 
+2.17.1
+
