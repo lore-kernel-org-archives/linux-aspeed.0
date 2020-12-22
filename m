@@ -1,11 +1,10 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Tue, 22 Dec 2020 04:47:37 +0000
-Subject: [PATCH 2/3] aspeed-video: clear spurious interrupt bits
- unconditionally
-In-Reply-To: <20201215024542.18888-3-zev@bewilderbeest.net>
+Date: Tue, 22 Dec 2020 04:49:00 +0000
+Subject: [PATCH 3/3] aspeed-video: add COMP_READY to VE_SPURIOUS_IRQS
+In-Reply-To: <20201215024542.18888-4-zev@bewilderbeest.net>
 References: <20201215024542.18888-1-zev@bewilderbeest.net>
- <20201215024542.18888-3-zev@bewilderbeest.net>
-Message-ID: <CACPK8XczCUgqOENABoDbc-qwbMxOh=1OUyBtuHSmDG_Zo571Wg@mail.gmail.com>
+ <20201215024542.18888-4-zev@bewilderbeest.net>
+Message-ID: <CACPK8XdAfYaAPeyDL4nsG+04xgr-u3+CQKNNdpHAQb4vG7=54g@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -14,64 +13,34 @@ Content-Transfer-Encoding: 7bit
 
 On Tue, 15 Dec 2020 at 02:46, Zev Weiss <zev@bewilderbeest.net> wrote:
 >
-> Instead of testing and conditionally clearing them one by one, we can
-> instead just unconditionally clear them all at once.
+> This joins CAPTURE_COMPLETE and FRAME_COMPLETE in the set of interrupts
+> that have been seen asserted by the hardware even when disabled, leading
+> to the interrupt eventually getting disabled as described in commit
+> 65d270acb2d662c3346793663ac3a759eb4491b8.
 >
 > Signed-off-by: Zev Weiss <zev@bewilderbeest.net>
 
-I had a poke at the assembly and it looks like GCC is clearing the
-bits unconditionally anyway, so removing the tests provides no change.
-
-Combining them is a good further optimization.
-
-Reviewed-by: Joel Stanley <joel@jms.id.au>
-
-A question unrelated to this patch: Do you know why the driver doesn't
-clear the status bits in the interrupt handler? I would expect it to
-write the value of sts back to the register to ack the pending
-interrupt.
+I have less experience with this part of the chip, so I defer to Jae
+or Ryan for an ack.
 
 > ---
->  drivers/media/platform/aspeed-video.c | 19 ++++++++++---------
->  1 file changed, 10 insertions(+), 9 deletions(-)
+>  drivers/media/platform/aspeed-video.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
 >
 > diff --git a/drivers/media/platform/aspeed-video.c b/drivers/media/platform/aspeed-video.c
-> index eb02043532e3..218aae3be809 100644
+> index 218aae3be809..48c52bf91a1b 100644
 > --- a/drivers/media/platform/aspeed-video.c
 > +++ b/drivers/media/platform/aspeed-video.c
-> @@ -558,6 +558,14 @@ static void aspeed_video_irq_res_change(struct aspeed_video *video, ulong delay)
->         schedule_delayed_work(&video->res_work, delay);
->  }
+> @@ -564,7 +564,8 @@ static void aspeed_video_irq_res_change(struct aspeed_video *video, ulong delay)
+>   * register.
+>   */
+>  #define VE_SPURIOUS_IRQS \
+> -       (VE_INTERRUPT_CAPTURE_COMPLETE | VE_INTERRUPT_FRAME_COMPLETE)
+> +       (VE_INTERRUPT_CAPTURE_COMPLETE | VE_INTERRUPT_FRAME_COMPLETE \
+> +        | VE_INTERRUPT_COMP_READY)
 >
-> +/*
-> + * Interrupts that we don't use but have to explicitly ignore because the
-> + * hardware asserts them even when they're disabled in the VE_INTERRUPT_CTRL
-> + * register.
-> + */
-> +#define VE_SPURIOUS_IRQS \
-> +       (VE_INTERRUPT_CAPTURE_COMPLETE | VE_INTERRUPT_FRAME_COMPLETE)
-> +
 >  static irqreturn_t aspeed_video_irq(int irq, void *arg)
 >  {
->         struct aspeed_video *video = arg;
-> @@ -630,15 +638,8 @@ static irqreturn_t aspeed_video_irq(int irq, void *arg)
->                         aspeed_video_start_frame(video);
->         }
->
-> -       /*
-> -        * CAPTURE_COMPLETE and FRAME_COMPLETE interrupts come even when these
-> -        * are disabled in the VE_INTERRUPT_CTRL register so clear them to
-> -        * prevent unnecessary interrupt calls.
-> -        */
-> -       if (sts & VE_INTERRUPT_CAPTURE_COMPLETE)
-> -               sts &= ~VE_INTERRUPT_CAPTURE_COMPLETE;
-> -       if (sts & VE_INTERRUPT_FRAME_COMPLETE)
-> -               sts &= ~VE_INTERRUPT_FRAME_COMPLETE;
-> +       /* Squash known bogus interrupts */
-> +       sts &= ~VE_SPURIOUS_IRQS;
->
->         if (sts)
->                 dev_err_ratelimited(video->dev, "unexpected interrupt asserted:"
 > --
 > 2.29.2
 >
