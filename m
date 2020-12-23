@@ -1,61 +1,82 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Tue, 22 Dec 2020 21:16:04 -0500
-Subject: [PATCH AUTOSEL 5.4 001/130] soc: aspeed-lpc-ctrl: Fail probe of
- lpc-ctrl if reserved memory is not aligned
-Message-ID: <20201223021813.2791612-1-sashal@kernel.org>
+From: Ryan Chen <ryan_chen@aspeedtech.com>
+Date: Wed, 23 Dec 2020 02:53:33 +0000
+Subject: [PATCH 2/3] aspeed-video: clear spurious interrupt bits
+ unconditionally
+In-Reply-To: <CACPK8XeOZEkpAKcyhZLeMdGzbwtFmdGEnL6QXp0VK1HL_O2pSg@mail.gmail.com>
+References: <20201215024542.18888-1-zev@bewilderbeest.net>
+ <20201215024542.18888-3-zev@bewilderbeest.net>
+ <CACPK8XczCUgqOENABoDbc-qwbMxOh=1OUyBtuHSmDG_Zo571Wg@mail.gmail.com>
+ <20201222191433.3dgnfwyrod4tnvaf@hatter.bewilderbeest.net>
+ <CACPK8XeOZEkpAKcyhZLeMdGzbwtFmdGEnL6QXp0VK1HL_O2pSg@mail.gmail.com>
+Message-ID: <HK0PR06MB338018668005D679C51EF69AF2DE0@HK0PR06MB3380.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Andrew Jeffery <andrew@aj.id.au>
+> -----Original Message-----
+> From: Joel Stanley <joel@jms.id.au>
+> Sent: Wednesday, December 23, 2020 9:07 AM
+> To: Zev Weiss <zev@bewilderbeest.net>; Ryan Chen
+> <ryan_chen@aspeedtech.com>
+> Cc: Eddie James <eajames@linux.ibm.com>; Mauro Carvalho Chehab
+> <mchehab@kernel.org>; Andrew Jeffery <andrew@aj.id.au>;
+> linux-media at vger.kernel.org; OpenBMC Maillist <openbmc@lists.ozlabs.org>;
+> Linux ARM <linux-arm-kernel@lists.infradead.org>; linux-aspeed
+> <linux-aspeed@lists.ozlabs.org>; Linux Kernel Mailing List
+> <linux-kernel@vger.kernel.org>; Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+> Subject: Re: [PATCH 2/3] aspeed-video: clear spurious interrupt bits
+> unconditionally
+> 
+> On Tue, 22 Dec 2020 at 19:14, Zev Weiss <zev@bewilderbeest.net> wrote:
+> >
+> > On Mon, Dec 21, 2020 at 10:47:37PM CST, Joel Stanley wrote:
+> > >On Tue, 15 Dec 2020 at 02:46, Zev Weiss <zev@bewilderbeest.net> wrote:
+> > >>
+> > >> Instead of testing and conditionally clearing them one by one, we
+> > >> can instead just unconditionally clear them all at once.
+> > >>
+> > >> Signed-off-by: Zev Weiss <zev@bewilderbeest.net>
+> > >
+> > >I had a poke at the assembly and it looks like GCC is clearing the
+> > >bits unconditionally anyway, so removing the tests provides no change.
+> > >
+> > >Combining them is a good further optimization.
+> > >
+> > >Reviewed-by: Joel Stanley <joel@jms.id.au>
+> > >
+> > >A question unrelated to this patch: Do you know why the driver
+> > >doesn't clear the status bits in the interrupt handler? I would
+> > >expect it to write the value of sts back to the register to ack the
+> > >pending interrupt.
+> > >
+> >
+> > No, I don't, and I was sort of wondering the same thing actually --
+> > I'm not deeply familiar with this hardware or driver though, so I was
+> > a bit hesitant to start messing with things.  (Though maybe doing so
+> > would address the "stickiness" aspect when it does manifest.)  Perhaps
+> > Eddie or Jae can shed some light here?
+> 
+> I think you're onto something here - this would be why the status bits seem to
+> stick until the device is reset.
+> 
+> Until Aspeed can clarify if this is a hardware or software issue, I suggest we ack
+> the bits and log a message when we see them, instead of always ignoring them
+> without taking any action.
+> 
+> Can you write a patch that changes the interrupt handler to ack status bits as it
+> handles each of them?
+> 
+Hello Zev, before the patch, do you met issue with irq handler? [continuous incoming?]
 
-[ Upstream commit 6bf4ddbe2b4805f0628922446a7e85e34013cd10 ]
+In aspeed_video_irq handler should only handle enable interrupt expected.
+   u32 sts = aspeed_video_read(video, VE_INTERRUPT_STATUS);
+ + sts &= aspeed_video_read(video, VE_INTERRUPT_CTRL);
 
-Alignment is a hardware constraint of the LPC2AHB bridge, and misaligned
-reserved memory will present as corrupted data.
+Ryan
 
-Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
-Reviewed-by: Joel Stanley <joel@jms.id.au>
-Link: https://lore.kernel.org/r/20191016233950.10100-1-andrew at aj.id.au
-Signed-off-by: Joel Stanley <joel@jms.id.au>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/soc/aspeed/aspeed-lpc-ctrl.c | 13 +++++++++++++
- 1 file changed, 13 insertions(+)
-
-diff --git a/drivers/soc/aspeed/aspeed-lpc-ctrl.c b/drivers/soc/aspeed/aspeed-lpc-ctrl.c
-index 01ed21e8bfee5..dd147af494fdf 100644
---- a/drivers/soc/aspeed/aspeed-lpc-ctrl.c
-+++ b/drivers/soc/aspeed/aspeed-lpc-ctrl.c
-@@ -4,6 +4,7 @@
-  */
- 
- #include <linux/clk.h>
-+#include <linux/log2.h>
- #include <linux/mfd/syscon.h>
- #include <linux/miscdevice.h>
- #include <linux/mm.h>
-@@ -241,6 +242,18 @@ static int aspeed_lpc_ctrl_probe(struct platform_device *pdev)
- 
- 		lpc_ctrl->mem_size = resource_size(&resm);
- 		lpc_ctrl->mem_base = resm.start;
-+
-+		if (!is_power_of_2(lpc_ctrl->mem_size)) {
-+			dev_err(dev, "Reserved memory size must be a power of 2, got %u\n",
-+			       (unsigned int)lpc_ctrl->mem_size);
-+			return -EINVAL;
-+		}
-+
-+		if (!IS_ALIGNED(lpc_ctrl->mem_base, lpc_ctrl->mem_size)) {
-+			dev_err(dev, "Reserved memory must be naturally aligned for size %u\n",
-+			       (unsigned int)lpc_ctrl->mem_size);
-+			return -EINVAL;
-+		}
- 	}
- 
- 	lpc_ctrl->regmap = syscon_node_to_regmap(
--- 
-2.27.0
-
+> >
+> >
+> > Zev
+> >
