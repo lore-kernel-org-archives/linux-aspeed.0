@@ -1,57 +1,59 @@
-From: Andrew Lunn <andrew@lunn.ch>
-Date: Tue, 22 Dec 2020 22:00:34 +0100
-Subject: [Aspeed, v2 2/2] net: ftgmac100: Change the order of getting MAC
- address
-In-Reply-To: <96c355a2-ab7e-3cf0-57e7-16369da78035@gmail.com>
-References: <20201221205157.31501-2-hongweiz@ami.com>
- <20201222201437.5588-3-hongweiz@ami.com>
- <96c355a2-ab7e-3cf0-57e7-16369da78035@gmail.com>
-Message-ID: <20201222210034.GC3198262@lunn.ch>
+From: Joel Stanley <joel@jms.id.au>
+Date: Wed, 23 Dec 2020 01:07:12 +0000
+Subject: [PATCH 2/3] aspeed-video: clear spurious interrupt bits
+ unconditionally
+In-Reply-To: <20201222191433.3dgnfwyrod4tnvaf@hatter.bewilderbeest.net>
+References: <20201215024542.18888-1-zev@bewilderbeest.net>
+ <20201215024542.18888-3-zev@bewilderbeest.net>
+ <CACPK8XczCUgqOENABoDbc-qwbMxOh=1OUyBtuHSmDG_Zo571Wg@mail.gmail.com>
+ <20201222191433.3dgnfwyrod4tnvaf@hatter.bewilderbeest.net>
+Message-ID: <CACPK8XeOZEkpAKcyhZLeMdGzbwtFmdGEnL6QXp0VK1HL_O2pSg@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Dec 22, 2020 at 09:46:52PM +0100, Heiner Kallweit wrote:
-> On 22.12.2020 21:14, Hongwei Zhang wrote:
-> > Dear Reviewer,
-> > 
-> > Use native MAC address is preferred over other choices, thus change the order
-> > of reading MAC address, try to read it from MAC chip first, if it's not
-> >  availabe, then try to read it from device tree.
-> > 
-> > 
-> > Hi Heiner,
-> > 
-> >> From:	Heiner Kallweit <hkallweit1@gmail.com>
-> >> Sent:	Monday, December 21, 2020 4:37 PM
-> >>> Change the order of reading MAC address, try to read it from MAC chip 
-> >>> first, if it's not availabe, then try to read it from device tree.
-> >>>
-> >> This commit message leaves a number of questions. It seems the change isn't related at all to the 
-> >> change that it's supposed to fix.
+On Tue, 22 Dec 2020 at 19:14, Zev Weiss <zev@bewilderbeest.net> wrote:
+>
+> On Mon, Dec 21, 2020 at 10:47:37PM CST, Joel Stanley wrote:
+> >On Tue, 15 Dec 2020 at 02:46, Zev Weiss <zev@bewilderbeest.net> wrote:
 > >>
-> >> - What is the issue that you're trying to fix?
-> >> - And what is wrong with the original change?
-> > 
-> > There is no bug or something wrong with the original code. This patch is for
-> > improving the code. We thought if the native MAC address is available, then
-> > it's preferred over MAC address from dts (assuming both sources are available).
-> > 
-> > One possible scenario, a MAC address is set in dts and the BMC image is 
-> > compiled and loaded into more than one platform, then the platforms will
-> > have network issue due to the same MAC address they read.
-> > 
-> 
-> Typically the DTS MAC address is overwritten by the boot loader, e.g. uboot.
-> And the boot loader can read it from chip registers. There are more drivers
-> trying to read the MAC address from DTS first. Eventually, I think, the code
-> here will read the same MAC address from chip registers as uboot did before.
+> >> Instead of testing and conditionally clearing them one by one, we can
+> >> instead just unconditionally clear them all at once.
+> >>
+> >> Signed-off-by: Zev Weiss <zev@bewilderbeest.net>
+> >
+> >I had a poke at the assembly and it looks like GCC is clearing the
+> >bits unconditionally anyway, so removing the tests provides no change.
+> >
+> >Combining them is a good further optimization.
+> >
+> >Reviewed-by: Joel Stanley <joel@jms.id.au>
+> >
+> >A question unrelated to this patch: Do you know why the driver doesn't
+> >clear the status bits in the interrupt handler? I would expect it to
+> >write the value of sts back to the register to ack the pending
+> >interrupt.
+> >
+>
+> No, I don't, and I was sort of wondering the same thing actually -- I'm
+> not deeply familiar with this hardware or driver though, so I was a bit
+> hesitant to start messing with things.  (Though maybe doing so would
+> address the "stickiness" aspect when it does manifest.)  Perhaps Eddie
+> or Jae can shed some light here?
 
-Do we need to worry about, the chip contains random junk, which passes
-the validitiy test? Before this patch the value from DT would be used,
-and the random junk is ignored. Is this change possibly going to cause
-a regression?
+I think you're onto something here - this would be why the status bits
+seem to stick until the device is reset.
 
-	Andrew
+Until Aspeed can clarify if this is a hardware or software issue, I
+suggest we ack the bits and log a message when we see them, instead of
+always ignoring them without taking any action.
+
+Can you write a patch that changes the interrupt handler to ack status
+bits as it handles each of them?
+
+>
+>
+> Zev
+>
