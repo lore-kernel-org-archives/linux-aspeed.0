@@ -1,8 +1,8 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Tue, 22 Dec 2020 21:12:50 -0500
-Subject: [PATCH AUTOSEL 5.10 001/217] soc: aspeed-lpc-ctrl: Fail probe of
+Date: Tue, 22 Dec 2020 21:16:04 -0500
+Subject: [PATCH AUTOSEL 5.4 001/130] soc: aspeed-lpc-ctrl: Fail probe of
  lpc-ctrl if reserved memory is not aligned
-Message-ID: <20201223021626.2790791-1-sashal@kernel.org>
+Message-ID: <20201223021813.2791612-1-sashal@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
