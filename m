@@ -1,10 +1,10 @@
 From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Mon, 28 Dec 2020 13:45:10 +0100
-Subject: [PATCH 5.4 074/453] drm/aspeed: Fix Kconfig warning & subsequent
+Date: Mon, 28 Dec 2020 13:40:02 +0100
+Subject: [PATCH 5.10 004/717] drm/aspeed: Fix Kconfig warning & subsequent
  build errors
-In-Reply-To: <20201228124937.240114599@linuxfoundation.org>
-References: <20201228124937.240114599@linuxfoundation.org>
-Message-ID: <20201228124940.799406977@linuxfoundation.org>
+In-Reply-To: <20201228125020.963311703@linuxfoundation.org>
+References: <20201228125020.963311703@linuxfoundation.org>
+Message-ID: <20201228125021.199023747@linuxfoundation.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
