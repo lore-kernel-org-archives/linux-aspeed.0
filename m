@@ -1,73 +1,66 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Mon, 28 Dec 2020 13:40:02 +0100
-Subject: [PATCH 5.10 004/717] drm/aspeed: Fix Kconfig warning & subsequent
- build errors
-In-Reply-To: <20201228125020.963311703@linuxfoundation.org>
-References: <20201228125020.963311703@linuxfoundation.org>
-Message-ID: <20201228125021.199023747@linuxfoundation.org>
+From: Jakub Kicinski <kuba@kernel.org>
+Date: Mon, 28 Dec 2020 14:01:15 -0800
+Subject: [Aspeed, v2 2/2] net: ftgmac100: Change the order of getting
+ MAC address
+In-Reply-To: <20201222210034.GC3198262@lunn.ch>
+References: <20201221205157.31501-2-hongweiz@ami.com>
+ <20201222201437.5588-3-hongweiz@ami.com>
+ <96c355a2-ab7e-3cf0-57e7-16369da78035@gmail.com>
+ <20201222210034.GC3198262@lunn.ch>
+Message-ID: <20201228140115.6af4d510@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Randy Dunlap <rdunlap@infradead.org>
+On Tue, 22 Dec 2020 22:00:34 +0100 Andrew Lunn wrote:
+> On Tue, Dec 22, 2020 at 09:46:52PM +0100, Heiner Kallweit wrote:
+> > On 22.12.2020 21:14, Hongwei Zhang wrote:  
+> > > Dear Reviewer,
+> > > 
+> > > Use native MAC address is preferred over other choices, thus change the order
+> > > of reading MAC address, try to read it from MAC chip first, if it's not
+> > >  availabe, then try to read it from device tree.
+> > > 
+> > > Hi Heiner,
+> > >   
+> > >> From:	Heiner Kallweit <hkallweit1@gmail.com>
+> > >> Sent:	Monday, December 21, 2020 4:37 PM  
+> > >>> Change the order of reading MAC address, try to read it from MAC chip 
+> > >>> first, if it's not availabe, then try to read it from device tree.
+> > >>>  
+> > >> This commit message leaves a number of questions. It seems the change isn't related at all to the 
+> > >> change that it's supposed to fix.
+> > >>
+> > >> - What is the issue that you're trying to fix?
+> > >> - And what is wrong with the original change?  
+> > > 
+> > > There is no bug or something wrong with the original code. This patch is for
+> > > improving the code. We thought if the native MAC address is available, then
+> > > it's preferred over MAC address from dts (assuming both sources are available).
+> > > 
+> > > One possible scenario, a MAC address is set in dts and the BMC image is 
+> > > compiled and loaded into more than one platform, then the platforms will
+> > > have network issue due to the same MAC address they read.
+> > >   
+> > 
+> > Typically the DTS MAC address is overwritten by the boot loader, e.g. uboot.
+> > And the boot loader can read it from chip registers. There are more drivers
+> > trying to read the MAC address from DTS first. Eventually, I think, the code
+> > here will read the same MAC address from chip registers as uboot did before.  
+> 
+> Do we need to worry about, the chip contains random junk, which passes
+> the validitiy test? Before this patch the value from DT would be used,
+> and the random junk is ignored. Is this change possibly going to cause
+> a regression?
 
-[ Upstream commit bf296b35489b46780b73b74ad984d06750ed5479 ]
+Hongwei, please address Andrew's questions.
 
-Kernel test robot reported build errors (undefined references)
-that didn't make much sense. After reproducing them, there is also
-a Kconfig warning that is the root cause of the build errors, so
-fix that Kconfig problem.
+Once the discussion is over please repost the patches as
+git-format-patch would generate them. The patch 2/2 of this 
+series is not really a patch, which confuses all patch handling 
+systems.
 
-Fixes this Kconfig warning:
-WARNING: unmet direct dependencies detected for CMA
-  Depends on [n]: MMU [=n]
-  Selected by [m]:
-  - DRM_ASPEED_GFX [=m] && HAS_IOMEM [=y] && DRM [=m] && OF [=y] && (COMPILE_TEST [=y] || ARCH_ASPEED) && HAVE_DMA_CONTIGUOUS [=y]
-
-and these dependent build errors:
-(.text+0x10c8c): undefined reference to `start_isolate_page_range'
-microblaze-linux-ld: (.text+0x10f14): undefined reference to `test_pages_isolated'
-microblaze-linux-ld: (.text+0x10fd0): undefined reference to `undo_isolate_page_range'
-
-Fixes: 76356a966e33 ("drm: aspeed: Clean up Kconfig options")
-Reported-by: kernel test robot <lkp@intel.com>
-Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-Reviewed-by: Joel Stanley <joel@jms.id.au>
-Cc: Joel Stanley <joel@jms.id.au>
-Cc: Andrew Jeffery <andrew@aj.id.au>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Michal Simek <monstr@monstr.eu>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Mike Rapoport <rppt@linux.ibm.com>
-Cc: linux-mm at kvack.org
-Cc: linux-aspeed at lists.ozlabs.org
-Cc: linux-arm-kernel at lists.infradead.org
-Cc: David Airlie <airlied@linux.ie>
-Cc: dri-devel at lists.freedesktop.org
-Signed-off-by: Joel Stanley <joel@jms.id.au>
-Link: https://patchwork.freedesktop.org/patch/msgid/20201011230131.4922-1-rdunlap at infradead.org
-Signed-off-by: Joel Stanley <joel@jms.id.au>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/gpu/drm/aspeed/Kconfig | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/drivers/gpu/drm/aspeed/Kconfig b/drivers/gpu/drm/aspeed/Kconfig
-index 018383cfcfa79..5e95bcea43e92 100644
---- a/drivers/gpu/drm/aspeed/Kconfig
-+++ b/drivers/gpu/drm/aspeed/Kconfig
-@@ -3,6 +3,7 @@ config DRM_ASPEED_GFX
- 	tristate "ASPEED BMC Display Controller"
- 	depends on DRM && OF
- 	depends on (COMPILE_TEST || ARCH_ASPEED)
-+	depends on MMU
- 	select DRM_KMS_HELPER
- 	select DRM_KMS_CMA_HELPER
- 	select DMA_CMA if HAVE_DMA_CONTIGUOUS
--- 
-2.27.0
-
-
-
+It also appears that 35c54922dc97 ("ARM: dts: tacoma: Add reserved
+memory for ramoops") does not exist upstream.
