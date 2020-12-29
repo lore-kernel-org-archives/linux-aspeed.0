@@ -1,444 +1,137 @@
 From: Chia-Wei, Wang <chiawei_wang@aspeedtech.com>
-Date: Tue, 29 Dec 2020 14:31:54 +0800
-Subject: [PATCH v4 2/5] ARM: dts: Remove LPC BMC and Host partitions
+Date: Tue, 29 Dec 2020 14:31:57 +0800
+Subject: [PATCH v4 5/5] soc: aspeed: Adapt to new LPC device tree layout
 In-Reply-To: <20201229063157.3587-1-chiawei_wang@aspeedtech.com>
 References: <20201229063157.3587-1-chiawei_wang@aspeedtech.com>
-Message-ID: <20201229063157.3587-3-chiawei_wang@aspeedtech.com>
+Message-ID: <20201229063157.3587-6-chiawei_wang@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The LPC controller has no concept of the BMC and the Host partitions.
-
-A concrete instance is that the HICRB[5:4] are for the I/O port address
-configurtaion of KCS channel 1/2. However, the KCS driver cannot access
-HICRB for channel 1/2 initialization via syscon regmap interface due to
-the parition boundary. (i.e. offset 80h)
-
-In addition, for the HW design backward compatiblity, a newly added HW
-control bit could be located at any reserved one over the LPC addressing
-space. Thereby, this patch removes the lpc-bmc and lpc-host child node
-and thus the LPC partitioning.
-
-Note that this change requires the synchronization between device tree
-change and the driver change. To prevent the misuse of old devicetrees
-with new drivers, or vice versa, the v2 compatible strings are adopted
-for the LPC device as listed:
-
-	"aspeed,ast2400-lpc-v2"
-	"aspeed,ast2500-lpc-v2"
-	"aspeed,ast2600-lpc-v2"
+Add check against LPC device v2 compatible string to
+ensure that the fixed device tree layout is adopted.
+The LPC register offsets are also fixed accordingly.
 
 Signed-off-by: Chia-Wei, Wang <chiawei_wang@aspeedtech.com>
 ---
- arch/arm/boot/dts/aspeed-g4.dtsi |  74 +++++++----------
- arch/arm/boot/dts/aspeed-g5.dtsi | 135 ++++++++++++++-----------------
- arch/arm/boot/dts/aspeed-g6.dtsi | 135 ++++++++++++++-----------------
- 3 files changed, 148 insertions(+), 196 deletions(-)
+ drivers/soc/aspeed/aspeed-lpc-ctrl.c  | 20 ++++++++++++++------
+ drivers/soc/aspeed/aspeed-lpc-snoop.c | 23 +++++++++++++++--------
+ 2 files changed, 29 insertions(+), 14 deletions(-)
 
-diff --git a/arch/arm/boot/dts/aspeed-g4.dtsi b/arch/arm/boot/dts/aspeed-g4.dtsi
-index b3dafbc8caca..ee22bc036440 100644
---- a/arch/arm/boot/dts/aspeed-g4.dtsi
-+++ b/arch/arm/boot/dts/aspeed-g4.dtsi
-@@ -343,58 +343,44 @@
- 			};
+diff --git a/drivers/soc/aspeed/aspeed-lpc-ctrl.c b/drivers/soc/aspeed/aspeed-lpc-ctrl.c
+index 439bcd6b8c4a..c557ffd0992c 100644
+--- a/drivers/soc/aspeed/aspeed-lpc-ctrl.c
++++ b/drivers/soc/aspeed/aspeed-lpc-ctrl.c
+@@ -18,15 +18,15 @@
  
- 			lpc: lpc at 1e789000 {
--				compatible = "aspeed,ast2400-lpc", "simple-mfd";
-+				compatible = "aspeed,ast2400-lpc-v2", "simple-mfd", "syscon";
- 				reg = <0x1e789000 0x1000>;
-+				reg-io-width = <4>;
+ #define DEVICE_NAME	"aspeed-lpc-ctrl"
  
- 				#address-cells = <1>;
- 				#size-cells = <1>;
- 				ranges = <0x0 0x1e789000 0x1000>;
+-#define HICR5 0x0
++#define HICR5 0x80
+ #define HICR5_ENL2H	BIT(8)
+ #define HICR5_ENFWH	BIT(10)
  
--				lpc_bmc: lpc-bmc at 0 {
--					compatible = "aspeed,ast2400-lpc-bmc";
--					reg = <0x0 0x80>;
-+				lpc_ctrl: lpc-ctrl at 80 {
-+					compatible = "aspeed,ast2400-lpc-ctrl";
-+					reg = <0x80 0x10>;
-+					clocks = <&syscon ASPEED_CLK_GATE_LCLK>;
-+					status = "disabled";
- 				};
+-#define HICR6 0x4
++#define HICR6 0x84
+ #define SW_FWH2AHB	BIT(17)
  
--				lpc_host: lpc-host at 80 {
--					compatible = "aspeed,ast2400-lpc-host", "simple-mfd", "syscon";
--					reg = <0x80 0x1e0>;
--					reg-io-width = <4>;
--
--					#address-cells = <1>;
--					#size-cells = <1>;
--					ranges = <0x0 0x80 0x1e0>;
--
--					lpc_ctrl: lpc-ctrl at 0 {
--						compatible = "aspeed,ast2400-lpc-ctrl";
--						reg = <0x0 0x10>;
--						clocks = <&syscon ASPEED_CLK_GATE_LCLK>;
--						status = "disabled";
--					};
--
--					lpc_snoop: lpc-snoop at 10 {
--						compatible = "aspeed,ast2400-lpc-snoop";
--						reg = <0x10 0x8>;
--						interrupts = <8>;
--						status = "disabled";
--					};
--
--					lhc: lhc at 20 {
--						compatible = "aspeed,ast2400-lhc";
--						reg = <0x20 0x24 0x48 0x8>;
--					};
--
--					lpc_reset: reset-controller at 18 {
--						compatible = "aspeed,ast2400-lpc-reset";
--						reg = <0x18 0x4>;
--						#reset-cells = <1>;
--					};
--
--					ibt: ibt at c0  {
--						compatible = "aspeed,ast2400-ibt-bmc";
--						reg = <0xc0 0x18>;
--						interrupts = <8>;
--						status = "disabled";
--					};
-+				lpc_snoop: lpc-snoop at 90 {
-+					compatible = "aspeed,ast2400-lpc-snoop";
-+					reg = <0x90 0x8>;
-+					interrupts = <8>;
-+					status = "disabled";
-+				};
-+
-+				lhc: lhc at a0 {
-+					compatible = "aspeed,ast2400-lhc";
-+					reg = <0xa0 0x24 0xc8 0x8>;
-+				};
-+
-+				lpc_reset: reset-controller at 98 {
-+					compatible = "aspeed,ast2400-lpc-reset";
-+					reg = <0x98 0x4>;
-+					#reset-cells = <1>;
-+				};
-+
-+				ibt: ibt at 140 {
-+					compatible = "aspeed,ast2400-ibt-bmc";
-+					reg = <0x140 0x18>;
-+					interrupts = <8>;
-+					status = "disabled";
- 				};
- 			};
+-#define HICR7 0x8
+-#define HICR8 0xc
++#define HICR7 0x88
++#define HICR8 0x8c
  
-diff --git a/arch/arm/boot/dts/aspeed-g5.dtsi b/arch/arm/boot/dts/aspeed-g5.dtsi
-index 5bc0de0f3365..10ca2100f69b 100644
---- a/arch/arm/boot/dts/aspeed-g5.dtsi
-+++ b/arch/arm/boot/dts/aspeed-g5.dtsi
-@@ -434,90 +434,73 @@
- 			};
+ struct aspeed_lpc_ctrl {
+ 	struct miscdevice	miscdev;
+@@ -215,6 +215,7 @@ static int aspeed_lpc_ctrl_probe(struct platform_device *pdev)
+ 	struct device_node *node;
+ 	struct resource resm;
+ 	struct device *dev;
++	struct device_node *np;
+ 	int rc;
  
- 			lpc: lpc at 1e789000 {
--				compatible = "aspeed,ast2500-lpc", "simple-mfd";
-+				compatible = "aspeed,ast2500-lpc-v2", "simple-mfd", "syscon";
- 				reg = <0x1e789000 0x1000>;
-+				reg-io-width = <4>;
+ 	dev = &pdev->dev;
+@@ -270,8 +271,15 @@ static int aspeed_lpc_ctrl_probe(struct platform_device *pdev)
+ 		}
+ 	}
  
- 				#address-cells = <1>;
- 				#size-cells = <1>;
- 				ranges = <0x0 0x1e789000 0x1000>;
+-	lpc_ctrl->regmap = syscon_node_to_regmap(
+-			pdev->dev.parent->of_node);
++	np = pdev->dev.parent->of_node;
++	if (!of_device_is_compatible(np, "aspeed,ast2400-lpc-v2") &&
++	    !of_device_is_compatible(np, "aspeed,ast2500-lpc-v2") &&
++	    !of_device_is_compatible(np, "aspeed,ast2600-lpc-v2")) {
++		dev_err(dev, "unsupported LPC device binding\n");
++		return -ENODEV;
++	}
++
++	lpc_ctrl->regmap = syscon_node_to_regmap(np);
+ 	if (IS_ERR(lpc_ctrl->regmap)) {
+ 		dev_err(dev, "Couldn't get regmap\n");
+ 		return -ENODEV;
+diff --git a/drivers/soc/aspeed/aspeed-lpc-snoop.c b/drivers/soc/aspeed/aspeed-lpc-snoop.c
+index 682ba0eb4eba..ab0f0a54fea6 100644
+--- a/drivers/soc/aspeed/aspeed-lpc-snoop.c
++++ b/drivers/soc/aspeed/aspeed-lpc-snoop.c
+@@ -28,26 +28,25 @@
+ #define NUM_SNOOP_CHANNELS 2
+ #define SNOOP_FIFO_SIZE 2048
  
--				lpc_bmc: lpc-bmc at 0 {
--					compatible = "aspeed,ast2500-lpc-bmc", "simple-mfd", "syscon";
--					reg = <0x0 0x80>;
--					reg-io-width = <4>;
+-#define HICR5	0x0
++#define HICR5	0x80
+ #define HICR5_EN_SNP0W		BIT(0)
+ #define HICR5_ENINT_SNP0W	BIT(1)
+ #define HICR5_EN_SNP1W		BIT(2)
+ #define HICR5_ENINT_SNP1W	BIT(3)
 -
--					#address-cells = <1>;
--					#size-cells = <1>;
--					ranges = <0x0 0x0 0x80>;
--
--					kcs1: kcs at 24 {
--						compatible = "aspeed,ast2500-kcs-bmc-v2";
--						reg = <0x24 0x1>, <0x30 0x1>, <0x3c 0x1>;
--						interrupts = <8>;
--						status = "disabled";
--					};
--					kcs2: kcs at 28 {
--						compatible = "aspeed,ast2500-kcs-bmc-v2";
--						reg = <0x28 0x1>, <0x34 0x1>, <0x40 0x1>;
--						interrupts = <8>;
--						status = "disabled";
--					};
--					kcs3: kcs at 2c {
--						compatible = "aspeed,ast2500-kcs-bmc-v2";
--						reg = <0x2c 0x1>, <0x38 0x1>, <0x44 0x1>;
--						interrupts = <8>;
--						status = "disabled";
--					};
-+				kcs1: kcs at 24 {
-+					compatible = "aspeed,ast2500-kcs-bmc-v2";
-+					reg = <0x24 0x1>, <0x30 0x1>, <0x3c 0x1>;
-+					interrupts = <8>;
-+					status = "disabled";
-+				};
-+
-+				kcs2: kcs at 28 {
-+					compatible = "aspeed,ast2500-kcs-bmc-v2";
-+					reg = <0x28 0x1>, <0x34 0x1>, <0x40 0x1>;
-+					interrupts = <8>;
-+					status = "disabled";
-+				};
-+
-+				kcs3: kcs at 2c {
-+					compatible = "aspeed,ast2500-kcs-bmc-v2";
-+					reg = <0x2c 0x1>, <0x38 0x1>, <0x44 0x1>;
-+					interrupts = <8>;
-+					status = "disabled";
-+				};
-+
-+				kcs4: kcs at 114 {
-+					compatible = "aspeed,ast2500-kcs-bmc-v2";
-+					reg = <0x114 0x1>, <0x118 0x1>, <0x11c 0x1>;
-+					interrupts = <8>;
-+					status = "disabled";
- 				};
+-#define HICR6	0x4
++#define HICR6	0x84
+ #define HICR6_STR_SNP0W		BIT(0)
+ #define HICR6_STR_SNP1W		BIT(1)
+-#define SNPWADR	0x10
++#define SNPWADR	0x90
+ #define SNPWADR_CH0_MASK	GENMASK(15, 0)
+ #define SNPWADR_CH0_SHIFT	0
+ #define SNPWADR_CH1_MASK	GENMASK(31, 16)
+ #define SNPWADR_CH1_SHIFT	16
+-#define SNPWDR	0x14
++#define SNPWDR	0x94
+ #define SNPWDR_CH0_MASK		GENMASK(7, 0)
+ #define SNPWDR_CH0_SHIFT	0
+ #define SNPWDR_CH1_MASK		GENMASK(15, 8)
+ #define SNPWDR_CH1_SHIFT	8
+-#define HICRB	0x80
++#define HICRB	0x100
+ #define HICRB_ENSNP0D		BIT(14)
+ #define HICRB_ENSNP1D		BIT(15)
  
--				lpc_host: lpc-host at 80 {
--					compatible = "aspeed,ast2500-lpc-host", "simple-mfd", "syscon";
--					reg = <0x80 0x1e0>;
--					reg-io-width = <4>;
--
--					#address-cells = <1>;
--					#size-cells = <1>;
--					ranges = <0x0 0x80 0x1e0>;
--
--					kcs4: kcs at 94 {
--						compatible = "aspeed,ast2500-kcs-bmc-v2";
--						reg = <0x94 0x1>, <0x98 0x1>, <0x9c 0x1>;
--						interrupts = <8>;
--						status = "disabled";
--					};
--
--					lpc_ctrl: lpc-ctrl at 0 {
--						compatible = "aspeed,ast2500-lpc-ctrl";
--						reg = <0x0 0x10>;
--						clocks = <&syscon ASPEED_CLK_GATE_LCLK>;
--						status = "disabled";
--					};
--
--					lpc_snoop: lpc-snoop at 10 {
--						compatible = "aspeed,ast2500-lpc-snoop";
--						reg = <0x10 0x8>;
--						interrupts = <8>;
--						status = "disabled";
--					};
--
--					lpc_reset: reset-controller at 18 {
--						compatible = "aspeed,ast2500-lpc-reset";
--						reg = <0x18 0x4>;
--						#reset-cells = <1>;
--					};
--
--					lhc: lhc at 20 {
--						compatible = "aspeed,ast2500-lhc";
--						reg = <0x20 0x24 0x48 0x8>;
--					};
--
--
--					ibt: ibt at c0 {
--						compatible = "aspeed,ast2500-ibt-bmc";
--						reg = <0xc0 0x18>;
--						interrupts = <8>;
--						status = "disabled";
--					};
-+				lpc_ctrl: lpc-ctrl at 80 {
-+					compatible = "aspeed,ast2500-lpc-ctrl";
-+					reg = <0x80 0x10>;
-+					clocks = <&syscon ASPEED_CLK_GATE_LCLK>;
-+					status = "disabled";
-+				};
-+
-+				lpc_snoop: lpc-snoop at 90 {
-+					compatible = "aspeed,ast2500-lpc-snoop";
-+					reg = <0x90 0x8>;
-+					interrupts = <8>;
-+					status = "disabled";
-+				};
-+
-+				lpc_reset: reset-controller at 98 {
-+					compatible = "aspeed,ast2500-lpc-reset";
-+					reg = <0x98 0x4>;
-+					#reset-cells = <1>;
-+				};
-+
-+				lhc: lhc at a0 {
-+					compatible = "aspeed,ast2500-lhc";
-+					reg = <0xa0 0x24 0xc8 0x8>;
-+				};
-+
-+
-+				ibt: ibt at 140 {
-+					compatible = "aspeed,ast2500-ibt-bmc";
-+					reg = <0x140 0x18>;
-+					interrupts = <8>;
-+					status = "disabled";
- 				};
- 			};
+@@ -258,6 +257,7 @@ static int aspeed_lpc_snoop_probe(struct platform_device *pdev)
+ {
+ 	struct aspeed_lpc_snoop *lpc_snoop;
+ 	struct device *dev;
++	struct device_node *np;
+ 	u32 port;
+ 	int rc;
  
-diff --git a/arch/arm/boot/dts/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed-g6.dtsi
-index 810b0676ab03..d91f48c3db62 100644
---- a/arch/arm/boot/dts/aspeed-g6.dtsi
-+++ b/arch/arm/boot/dts/aspeed-g6.dtsi
-@@ -460,90 +460,73 @@
- 			};
+@@ -267,8 +267,15 @@ static int aspeed_lpc_snoop_probe(struct platform_device *pdev)
+ 	if (!lpc_snoop)
+ 		return -ENOMEM;
  
- 			lpc: lpc at 1e789000 {
--				compatible = "aspeed,ast2600-lpc", "simple-mfd";
-+				compatible = "aspeed,ast2600-lpc-v2", "simple-mfd", "syscon";
- 				reg = <0x1e789000 0x1000>;
-+				reg-io-width = <4>;
- 
- 				#address-cells = <1>;
- 				#size-cells = <1>;
- 				ranges = <0x0 0x1e789000 0x1000>;
- 
--				lpc_bmc: lpc-bmc at 0 {
--					compatible = "aspeed,ast2600-lpc-bmc", "simple-mfd", "syscon";
--					reg = <0x0 0x80>;
--					reg-io-width = <4>;
--
--					#address-cells = <1>;
--					#size-cells = <1>;
--					ranges = <0x0 0x0 0x80>;
--
--					kcs1: kcs at 24 {
--						compatible = "aspeed,ast2500-kcs-bmc-v2";
--						reg = <0x24 0x1>, <0x30 0x1>, <0x3c 0x1>;
--						interrupts = <GIC_SPI 138 IRQ_TYPE_LEVEL_HIGH>;
--						kcs_chan = <1>;
--						status = "disabled";
--					};
--					kcs2: kcs at 28 {
--						compatible = "aspeed,ast2500-kcs-bmc-v2";
--						reg = <0x28 0x1>, <0x34 0x1>, <0x40 0x1>;
--						interrupts = <GIC_SPI 139 IRQ_TYPE_LEVEL_HIGH>;
--						status = "disabled";
--					};
--					kcs3: kcs at 2c {
--						compatible = "aspeed,ast2500-kcs-bmc-v2";
--						reg = <0x2c 0x1>, <0x38 0x1>, <0x44 0x1>;
--						interrupts = <GIC_SPI 140 IRQ_TYPE_LEVEL_HIGH>;
--						status = "disabled";
--					};
-+				kcs1: kcs at 24 {
-+					compatible = "aspeed,ast2500-kcs-bmc-v2";
-+					reg = <0x24 0x1>, <0x30 0x1>, <0x3c 0x1>;
-+					interrupts = <GIC_SPI 138 IRQ_TYPE_LEVEL_HIGH>;
-+					kcs_chan = <1>;
-+					status = "disabled";
-+				};
+-	lpc_snoop->regmap = syscon_node_to_regmap(
+-			pdev->dev.parent->of_node);
++	np = pdev->dev.parent->of_node;
++	if (!of_device_is_compatible(np, "aspeed,ast2400-lpc-v2") &&
++	    !of_device_is_compatible(np, "aspeed,ast2500-lpc-v2") &&
++	    !of_device_is_compatible(np, "aspeed,ast2600-lpc-v2")) {
++		dev_err(dev, "unsupported LPC device binding\n");
++		return -ENODEV;
++	}
 +
-+				kcs2: kcs at 28 {
-+					compatible = "aspeed,ast2500-kcs-bmc-v2";
-+					reg = <0x28 0x1>, <0x34 0x1>, <0x40 0x1>;
-+					interrupts = <GIC_SPI 139 IRQ_TYPE_LEVEL_HIGH>;
-+					status = "disabled";
-+				};
-+
-+				kcs3: kcs at 2c {
-+					compatible = "aspeed,ast2500-kcs-bmc-v2";
-+					reg = <0x2c 0x1>, <0x38 0x1>, <0x44 0x1>;
-+					interrupts = <GIC_SPI 140 IRQ_TYPE_LEVEL_HIGH>;
-+					status = "disabled";
-+				};
-+
-+				kcs4: kcs at 114 {
-+					compatible = "aspeed,ast2500-kcs-bmc-v2";
-+					reg = <0x114 0x1>, <0x118 0x1>, <0x11c 0x1>;
-+					interrupts = <GIC_SPI 141 IRQ_TYPE_LEVEL_HIGH>;
-+					status = "disabled";
-+				};
-+
-+				lpc_ctrl: lpc-ctrl at 80 {
-+					compatible = "aspeed,ast2600-lpc-ctrl";
-+					reg = <0x80 0x80>;
-+					clocks = <&syscon ASPEED_CLK_GATE_LCLK>;
-+					status = "disabled";
-+				};
-+
-+				lpc_snoop: lpc-snoop at 80 {
-+					compatible = "aspeed,ast2600-lpc-snoop";
-+					reg = <0x80 0x80>;
-+					interrupts = <GIC_SPI 144 IRQ_TYPE_LEVEL_HIGH>;
-+					status = "disabled";
- 				};
- 
--				lpc_host: lpc-host at 80 {
--					compatible = "aspeed,ast2600-lpc-host", "simple-mfd", "syscon";
--					reg = <0x80 0x1e0>;
--					reg-io-width = <4>;
--
--					#address-cells = <1>;
--					#size-cells = <1>;
--					ranges = <0x0 0x80 0x1e0>;
--
--					kcs4: kcs at 94 {
--						compatible = "aspeed,ast2500-kcs-bmc-v2";
--						reg = <0x94 0x1>, <0x98 0x1>, <0x9c 0x1>;
--						interrupts = <GIC_SPI 141 IRQ_TYPE_LEVEL_HIGH>;
--						status = "disabled";
--					};
--
--					lpc_ctrl: lpc-ctrl at 0 {
--						compatible = "aspeed,ast2600-lpc-ctrl";
--						reg = <0x0 0x80>;
--						clocks = <&syscon ASPEED_CLK_GATE_LCLK>;
--						status = "disabled";
--					};
--
--					lpc_snoop: lpc-snoop at 0 {
--						compatible = "aspeed,ast2600-lpc-snoop";
--						reg = <0x0 0x80>;
--						interrupts = <GIC_SPI 144 IRQ_TYPE_LEVEL_HIGH>;
--						status = "disabled";
--					};
--
--					lhc: lhc at 20 {
--						compatible = "aspeed,ast2600-lhc";
--						reg = <0x20 0x24 0x48 0x8>;
--					};
--
--					lpc_reset: reset-controller at 18 {
--						compatible = "aspeed,ast2600-lpc-reset";
--						reg = <0x18 0x4>;
--						#reset-cells = <1>;
--					};
--
--					ibt: ibt at c0 {
--						compatible = "aspeed,ast2600-ibt-bmc";
--						reg = <0xc0 0x18>;
--						interrupts = <GIC_SPI 143 IRQ_TYPE_LEVEL_HIGH>;
--						status = "disabled";
--					};
-+				lhc: lhc at a0 {
-+					compatible = "aspeed,ast2600-lhc";
-+					reg = <0xa0 0x24 0xc8 0x8>;
-+				};
-+
-+				lpc_reset: reset-controller at 98 {
-+					compatible = "aspeed,ast2600-lpc-reset";
-+					reg = <0x98 0x4>;
-+					#reset-cells = <1>;
-+				};
-+
-+				ibt: ibt at 140 {
-+					compatible = "aspeed,ast2600-ibt-bmc";
-+					reg = <0x140 0x18>;
-+					interrupts = <GIC_SPI 143 IRQ_TYPE_LEVEL_HIGH>;
-+					status = "disabled";
- 				};
- 			};
- 
++	lpc_snoop->regmap = syscon_node_to_regmap(np);
+ 	if (IS_ERR(lpc_snoop->regmap)) {
+ 		dev_err(dev, "Couldn't get regmap\n");
+ 		return -ENODEV;
 -- 
 2.17.1
 
