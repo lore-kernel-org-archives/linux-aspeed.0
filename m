@@ -1,66 +1,62 @@
-From: Jakub Kicinski <kuba@kernel.org>
-Date: Mon, 28 Dec 2020 14:01:15 -0800
-Subject: [Aspeed, v2 2/2] net: ftgmac100: Change the order of getting
- MAC address
-In-Reply-To: <20201222210034.GC3198262@lunn.ch>
-References: <20201221205157.31501-2-hongweiz@ami.com>
- <20201222201437.5588-3-hongweiz@ami.com>
- <96c355a2-ab7e-3cf0-57e7-16369da78035@gmail.com>
- <20201222210034.GC3198262@lunn.ch>
-Message-ID: <20201228140115.6af4d510@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+From: Chia-Wei, Wang <chiawei_wang@aspeedtech.com>
+Date: Tue, 29 Dec 2020 14:31:56 +0800
+Subject: [PATCH v4 4/5] pinctrl: aspeed-g5: Adapt to new LPC device tree layout
+In-Reply-To: <20201229063157.3587-1-chiawei_wang@aspeedtech.com>
+References: <20201229063157.3587-1-chiawei_wang@aspeedtech.com>
+Message-ID: <20201229063157.3587-5-chiawei_wang@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, 22 Dec 2020 22:00:34 +0100 Andrew Lunn wrote:
-> On Tue, Dec 22, 2020 at 09:46:52PM +0100, Heiner Kallweit wrote:
-> > On 22.12.2020 21:14, Hongwei Zhang wrote:  
-> > > Dear Reviewer,
-> > > 
-> > > Use native MAC address is preferred over other choices, thus change the order
-> > > of reading MAC address, try to read it from MAC chip first, if it's not
-> > >  availabe, then try to read it from device tree.
-> > > 
-> > > Hi Heiner,
-> > >   
-> > >> From:	Heiner Kallweit <hkallweit1@gmail.com>
-> > >> Sent:	Monday, December 21, 2020 4:37 PM  
-> > >>> Change the order of reading MAC address, try to read it from MAC chip 
-> > >>> first, if it's not availabe, then try to read it from device tree.
-> > >>>  
-> > >> This commit message leaves a number of questions. It seems the change isn't related at all to the 
-> > >> change that it's supposed to fix.
-> > >>
-> > >> - What is the issue that you're trying to fix?
-> > >> - And what is wrong with the original change?  
-> > > 
-> > > There is no bug or something wrong with the original code. This patch is for
-> > > improving the code. We thought if the native MAC address is available, then
-> > > it's preferred over MAC address from dts (assuming both sources are available).
-> > > 
-> > > One possible scenario, a MAC address is set in dts and the BMC image is 
-> > > compiled and loaded into more than one platform, then the platforms will
-> > > have network issue due to the same MAC address they read.
-> > >   
-> > 
-> > Typically the DTS MAC address is overwritten by the boot loader, e.g. uboot.
-> > And the boot loader can read it from chip registers. There are more drivers
-> > trying to read the MAC address from DTS first. Eventually, I think, the code
-> > here will read the same MAC address from chip registers as uboot did before.  
-> 
-> Do we need to worry about, the chip contains random junk, which passes
-> the validitiy test? Before this patch the value from DT would be used,
-> and the random junk is ignored. Is this change possibly going to cause
-> a regression?
+Add check against LPC device v2 compatible string to
+ensure that the fixed device tree layout is adopted.
+The LPC register offsets are also fixed accordingly.
 
-Hongwei, please address Andrew's questions.
+Signed-off-by: Chia-Wei, Wang <chiawei_wang@aspeedtech.com>
+---
+ drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c | 17 +++++++++++------
+ 1 file changed, 11 insertions(+), 6 deletions(-)
 
-Once the discussion is over please repost the patches as
-git-format-patch would generate them. The patch 2/2 of this 
-series is not really a patch, which confuses all patch handling 
-systems.
+diff --git a/drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c b/drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c
+index 0cab4c2576e2..996ebcba4d38 100644
+--- a/drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c
++++ b/drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c
+@@ -60,7 +60,7 @@
+ #define COND2		{ ASPEED_IP_SCU, SCU94, GENMASK(1, 0), 0, 0 }
+ 
+ /* LHCR0 is offset from the end of the H8S/2168-compatible registers */
+-#define LHCR0		0x20
++#define LHCR0		0xa0
+ #define GFX064		0x64
+ 
+ #define B14 0
+@@ -2648,14 +2648,19 @@ static struct regmap *aspeed_g5_acquire_regmap(struct aspeed_pinmux_data *ctx,
+ 	}
+ 
+ 	if (ip == ASPEED_IP_LPC) {
+-		struct device_node *node;
++		struct device_node *np;
+ 		struct regmap *map;
+ 
+-		node = of_parse_phandle(ctx->dev->of_node,
++		np = of_parse_phandle(ctx->dev->of_node,
+ 					"aspeed,external-nodes", 1);
+-		if (node) {
+-			map = syscon_node_to_regmap(node->parent);
+-			of_node_put(node);
++		if (np) {
++			if (!of_device_is_compatible(np->parent, "aspeed,ast2400-lpc-v2") &&
++			    !of_device_is_compatible(np->parent, "aspeed,ast2500-lpc-v2") &&
++			    !of_device_is_compatible(np->parent, "aspeed,ast2600-lpc-v2"))
++				return ERR_PTR(-ENODEV);
++
++			map = syscon_node_to_regmap(np->parent);
++			of_node_put(np);
+ 			if (IS_ERR(map))
+ 				return map;
+ 		} else
+-- 
+2.17.1
 
-It also appears that 35c54922dc97 ("ARM: dts: tacoma: Add reserved
-memory for ramoops") does not exist upstream.
