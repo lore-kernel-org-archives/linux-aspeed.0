@@ -1,44 +1,54 @@
-From: Benjamin Gaignard <benjamin.gaignard@collabora.com>
-Date: Mon, 27 Nov 2023 17:54:12 +0100
-Subject: [PATCH 13/55] media: aspeed: Stop abusing of min_buffers_needed field
-In-Reply-To: <20231127165454.166373-1-benjamin.gaignard@collabora.com>
-References: <20231127165454.166373-1-benjamin.gaignard@collabora.com>
-Message-ID: <20231127165454.166373-14-benjamin.gaignard@collabora.com>
+From: Joel Stanley <joel@jms.id.au>
+Date: Mon, 4 Jan 2021 02:12:58 +0000
+Subject: [PATCH] hwmon: (aspeed-pwm-tacho): Switch to using the new API
+ kobj_to_dev()
+In-Reply-To: <1609725945-13895-1-git-send-email-tiantao6@hisilicon.com>
+References: <1609725945-13895-1-git-send-email-tiantao6@hisilicon.com>
+Message-ID: <CACPK8XdvL9yacNKkZ4Ut8b2m9jFrMv=Ri-8qn1DSu0547ZecGw@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-'min_buffers_needed' is suppose to be used to indicate the number
-of buffers needed by DMA engine to start streaming.
-aspeed doesn't use DMA engine and just want to specify
-the minimum number of buffers to allocate when calling VIDIOC_REQBUFS.
-That 'min_reqbufs_allocation' field purpose so use it.
+On Mon, 4 Jan 2021 at 02:05, Tian Tao <tiantao6@hisilicon.com> wrote:
+>
+> fixed the following coccicheck:
+> drivers/hwmon/aspeed-pwm-tacho.c:634:60-61: WARNING opportunity for
+> kobj_to_dev()
+> drivers/hwmon/aspeed-pwm-tacho.c:623:60-61: WARNING opportunity for
+> kobj_to_dev()
+>
+> Signed-off-by: Tian Tao <tiantao6@hisilicon.com>
 
-Signed-off-by: Benjamin Gaignard <benjamin.gaignard@collabora.com>
-CC: Eddie James <eajames@linux.ibm.com> (maintainer:ASPEED VIDEO ENGINE DRIVER)
-CC: Joel Stanley <joel@jms.id.au> (supporter:ARM/ASPEED MACHINE SUPPORT)
-CC: Andrew Jeffery <andrew@codeconstruct.com.au> (reviewer:ARM/ASPEED MACHINE SUPPORT)
-CC: openbmc at lists.ozlabs.org (moderated list:ASPEED VIDEO ENGINE DRIVER)
-CC: linux-aspeed at lists.ozlabs.org (moderated list:ARM/ASPEED MACHINE SUPPORT)
----
- drivers/media/platform/aspeed/aspeed-video.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Acked-by: Joel Stanley <joel@jms.id.au>
 
-diff --git a/drivers/media/platform/aspeed/aspeed-video.c b/drivers/media/platform/aspeed/aspeed-video.c
-index d08aa7f73d4f..c28b10808cda 100644
---- a/drivers/media/platform/aspeed/aspeed-video.c
-+++ b/drivers/media/platform/aspeed/aspeed-video.c
-@@ -2034,7 +2034,7 @@ static int aspeed_video_setup_video(struct aspeed_video *video)
- 	vbq->drv_priv = video;
- 	vbq->buf_struct_size = sizeof(struct aspeed_video_buffer);
- 	vbq->timestamp_flags = V4L2_BUF_FLAG_TIMESTAMP_MONOTONIC;
--	vbq->min_buffers_needed = ASPEED_VIDEO_V4L2_MIN_BUF_REQ;
-+	vbq->min_reqbufs_allocation = ASPEED_VIDEO_V4L2_MIN_BUF_REQ;
- 
- 	rc = vb2_queue_init(vbq);
- 	if (rc) {
--- 
-2.39.2
-
+> ---
+>  drivers/hwmon/aspeed-pwm-tacho.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/hwmon/aspeed-pwm-tacho.c b/drivers/hwmon/aspeed-pwm-tacho.c
+> index 3d8239f..3cb88d6 100644
+> --- a/drivers/hwmon/aspeed-pwm-tacho.c
+> +++ b/drivers/hwmon/aspeed-pwm-tacho.c
+> @@ -620,7 +620,7 @@ static ssize_t rpm_show(struct device *dev, struct device_attribute *attr,
+>  static umode_t pwm_is_visible(struct kobject *kobj,
+>                               struct attribute *a, int index)
+>  {
+> -       struct device *dev = container_of(kobj, struct device, kobj);
+> +       struct device *dev = kobj_to_dev(kobj);
+>         struct aspeed_pwm_tacho_data *priv = dev_get_drvdata(dev);
+>
+>         if (!priv->pwm_present[index])
+> @@ -631,7 +631,7 @@ static umode_t pwm_is_visible(struct kobject *kobj,
+>  static umode_t fan_dev_is_visible(struct kobject *kobj,
+>                                   struct attribute *a, int index)
+>  {
+> -       struct device *dev = container_of(kobj, struct device, kobj);
+> +       struct device *dev = kobj_to_dev(kobj);
+>         struct aspeed_pwm_tacho_data *priv = dev_get_drvdata(dev);
+>
+>         if (!priv->fan_tach_present[index])
+> --
+> 2.7.4
+>
