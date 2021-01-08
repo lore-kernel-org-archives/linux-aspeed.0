@@ -1,128 +1,197 @@
-From: Hans Verkuil <hverkuil-cisco@xs4all.nl>
-Date: Thu, 7 Jan 2021 11:06:01 +0100
-Subject: [PATCH v2 1/1] media: aspeed: fix clock handling logic
-In-Reply-To: <20201221223225.14723-2-jae.hyun.yoo@linux.intel.com>
-References: <20201221223225.14723-1-jae.hyun.yoo@linux.intel.com>
- <20201221223225.14723-2-jae.hyun.yoo@linux.intel.com>
-Message-ID: <6cd30b60-87d9-0c92-4721-fdaa429acf3e@xs4all.nl>
+From: ChiaWei Wang <chiawei_wang@aspeedtech.com>
+Date: Fri, 8 Jan 2021 02:33:25 +0000
+Subject: [PATCH 4/6] irqchip/aspeed: Add Aspeed eSPI interrupt controller
+In-Reply-To: <beae3a8ba0a89ac6dff638df4e8b3211@kernel.org>
+References: <20210106055939.19386-1-chiawei_wang@aspeedtech.com>
+ <20210106055939.19386-5-chiawei_wang@aspeedtech.com>
+ <123bc25c72b3b17c0c4154d8bd8ce3b0@kernel.org>
+ <HK0PR06MB377957C33FDD43C5A7F5EA1691AF0@HK0PR06MB3779.apcprd06.prod.outlook.com>
+ <beae3a8ba0a89ac6dff638df4e8b3211@kernel.org>
+Message-ID: <HK0PR06MB377925CC8C39FF57B663A37C91AE0@HK0PR06MB3779.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Stephen,
+Hi Marc,
 
-On 21/12/2020 23:32, Jae Hyun Yoo wrote:
-> Video engine uses eclk and vclk for its clock sources and its reset
-> control is coupled with eclk so the current clock enabling sequence works
-> like below.
-> 
->  Enable eclk
->  De-assert Video Engine reset
->  10ms delay
->  Enable vclk
-> 
-> It introduces improper reset on the Video Engine hardware and eventually
-> the hardware generates unexpected DMA memory transfers that can corrupt
-> memory region in random and sporadic patterns. This issue is observed
-> very rarely on some specific AST2500 SoCs but it causes a critical
-> kernel panic with making a various shape of signature so it's extremely
-> hard to debug. Moreover, the issue is observed even when the video
-> engine is not actively used because udevd turns on the video engine
-> hardware for a short time to make a query in every boot.
-> 
-> To fix this issue, this commit changes the clock handling logic to make
-> the reset de-assertion triggered after enabling both eclk and vclk. Also,
-> it adds clk_unprepare call for a case when probe fails.
-> 
-> Fixes: d2b4387f3bdf ("media: platform: Add Aspeed Video Engine driver")
-> Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-> Reviewed-by: Joel Stanley <joel@jms.id.au>
-> Reviewed-by: Eddie James <eajames@linux.ibm.com>
-> 
-> clk: ast2600: fix reset settings for eclk and vclk
-> 
-> Video engine reset setting should be coupled with eclk to match it
-> with the setting for previous Aspeed SoCs which is defined in
-> clk-aspeed.c since all Aspeed SoCs are sharing a single video engine
-> driver. Also, reset bit 6 is defined as 'Video Engine' reset in
-> datasheet so it should be de-asserted when eclk is enabled. This
-> commit fixes the setting.
-> 
-> Fixes: d3d04f6c330a ("clk: Add support for AST2600 SoC")
-> Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-> Reviewed-by: Joel Stanley <joel@jms.id.au>
+I will revise the patch as suggested.
+Thanks for the feedback.
 
-I think it makes sense to merge this via the media subsystem.
+Chiawei
 
-Can you Ack this patch?
-
-Thanks!
-
-	Hans
-
-> ---
-> Changes since v1:
-> - Squashed two patches due to dependency.
+> -----Original Message-----
+> From: Marc Zyngier <maz@kernel.org>
+> Sent: Thursday, January 7, 2021 6:18 PM
+> To: ChiaWei Wang <chiawei_wang@aspeedtech.com>
+> <BMC-SW@aspeedtech.com>
+> Subject: Re: [PATCH 4/6] irqchip/aspeed: Add Aspeed eSPI interrupt controller
 > 
->  drivers/clk/clk-ast2600.c             | 4 ++--
->  drivers/media/platform/aspeed-video.c | 9 ++++++---
->  2 files changed, 8 insertions(+), 5 deletions(-)
+> On 2021-01-07 02:59, ChiaWei Wang wrote:
+> > Hi Marc,
+> >
+> >> -----Original Message-----
+> >> From: Marc Zyngier <maz@kernel.org>
+> >> Sent: Wednesday, January 6, 2021 6:59 PM
+> >> To: ChiaWei Wang <chiawei_wang@aspeedtech.com>
+> >> Subject: Re: [PATCH 4/6] irqchip/aspeed: Add Aspeed eSPI interrupt
+> >> controller
+> >>
+> >> On 2021-01-06 05:59, Chia-Wei, Wang wrote:
+> >> > The eSPI interrupt controller acts as a SW IRQ number decoder to
+> >> > correctly control/dispatch interrupts of the eSPI peripheral,
+> >> > virtual wire, out-of-band, and flash channels.
+> >> >
+> >> > Signed-off-by: Chia-Wei, Wang <chiawei_wang@aspeedtech.com>
+> >> > ---
+> >> >  drivers/irqchip/Makefile             |   2 +-
+> >> >  drivers/irqchip/irq-aspeed-espi-ic.c | 251 ++++++++++++++++++++++++
+> >> >  include/soc/aspeed/espi.h            | 279
+> >> +++++++++++++++++++++++++++
+> >> >  3 files changed, 531 insertions(+), 1 deletion(-)  create mode
+> >> > 100644 drivers/irqchip/irq-aspeed-espi-ic.c
+> >> >  create mode 100644 include/soc/aspeed/espi.h
+> >> >
+> >> > diff --git a/drivers/irqchip/Makefile b/drivers/irqchip/Makefile
+> >> > index
+> >> > 0ac93bfaec61..56da4a3123f8 100644
+> >> > --- a/drivers/irqchip/Makefile
+> >> > +++ b/drivers/irqchip/Makefile
+> >> > @@ -86,7 +86,7 @@ obj-$(CONFIG_MVEBU_PIC)			+=
+> >> irq-mvebu-pic.o
+> >> >  obj-$(CONFIG_MVEBU_SEI)			+= irq-mvebu-sei.o
+> >> >  obj-$(CONFIG_LS_EXTIRQ)			+= irq-ls-extirq.o
+> >> >  obj-$(CONFIG_LS_SCFG_MSI)		+= irq-ls-scfg-msi.o
+> >> > -obj-$(CONFIG_ARCH_ASPEED)		+= irq-aspeed-vic.o
+> irq-aspeed-i2c-ic.o
+> >> > irq-aspeed-scu-ic.o
+> >> > +obj-$(CONFIG_ARCH_ASPEED)		+= irq-aspeed-vic.o
+> irq-aspeed-i2c-ic.o
+> >> > irq-aspeed-scu-ic.o irq-aspeed-espi-ic.o
+> >> >  obj-$(CONFIG_STM32_EXTI) 		+= irq-stm32-exti.o
+> >> >  obj-$(CONFIG_QCOM_IRQ_COMBINER)		+= qcom-irq-combiner.o
+> >> >  obj-$(CONFIG_IRQ_UNIPHIER_AIDET)	+= irq-uniphier-aidet.o
+> >> > diff --git a/drivers/irqchip/irq-aspeed-espi-ic.c
+> >> > b/drivers/irqchip/irq-aspeed-espi-ic.c
+> >> > new file mode 100644
+> >> > index 000000000000..8a5cc8fe3f0c
+> >> > --- /dev/null
+> >> > +++ b/drivers/irqchip/irq-aspeed-espi-ic.c
+> >> > @@ -0,0 +1,251 @@
+> >> > +// SPDX-License-Identifier: GPL-2.0-or-later
+> >> > +/*
+> >> > + * Copyright (c) 2020 Aspeed Technology Inc.
+> >> > + */
+> >> > +#include <linux/bitops.h>
+> >> > +#include <linux/module.h>
+> >> > +#include <linux/irq.h>
+> >> > +#include <linux/irqchip.h>
+> >> > +#include <linux/irqchip/chained_irq.h> #include
+> >> > +<linux/irqdomain.h> #include <linux/interrupt.h> #include
+> >> > +<linux/mfd/syscon.h> #include <linux/regmap.h> #include
+> >> > +<linux/of.h> #include <linux/of_platform.h>
+> >> > +
+> >> > +#include <soc/aspeed/espi.h>
+> >> > +#include <dt-bindings/interrupt-controller/aspeed-espi-ic.h>
+> >> > +
+> >> > +#define DEVICE_NAME	"aspeed-espi-ic"
+> >> > +#define IRQCHIP_NAME	"eSPI-IC"
+> >> > +
+> >> > +#define ESPI_IC_IRQ_NUM	7
+> >> > +
+> >> > +struct aspeed_espi_ic {
+> >> > +	struct regmap *map;
+> >> > +	int irq;
+> >> > +	int gpio_irq;
+> >> > +	struct irq_domain *irq_domain;
+> >> > +};
+> >> > +
+> >> > +static void aspeed_espi_ic_gpio_isr(struct irq_desc *desc) {
+> >> > +	unsigned int irq;
+> >> > +	struct aspeed_espi_ic *espi_ic = irq_desc_get_handler_data(desc);
+> >> > +	struct irq_chip *chip = irq_desc_get_chip(desc);
+> >> > +
+> >> > +	chained_irq_enter(chip, desc);
+> >> > +
+> >> > +	irq = irq_find_mapping(espi_ic->irq_domain,
+> >> > +				   ASPEED_ESPI_IC_CTRL_RESET);
+> >> > +	generic_handle_irq(irq);
+> >> > +
+> >> > +	irq = irq_find_mapping(espi_ic->irq_domain,
+> >> > +				   ASPEED_ESPI_IC_CHAN_RESET);
+> >> > +	generic_handle_irq(irq);
+> >>
+> >> So for each mux interrupt, you generate two endpoints interrupt,
+> >> without even checking whether they are pending? That's no good.
+> >
+> > As the eSPI IC driver is chained to Aspeed GPIO IC, the pending is
+> > checked in the gpio-aspeed.c
 > 
-> diff --git a/drivers/clk/clk-ast2600.c b/drivers/clk/clk-ast2600.c
-> index 177368cac6dd..882da16575d4 100644
-> --- a/drivers/clk/clk-ast2600.c
-> +++ b/drivers/clk/clk-ast2600.c
-> @@ -60,10 +60,10 @@ static void __iomem *scu_g6_base;
->  static const struct aspeed_gate_data aspeed_g6_gates[] = {
->  	/*				    clk rst  name		parent	 flags */
->  	[ASPEED_CLK_GATE_MCLK]		= {  0, -1, "mclk-gate",	"mpll",	 CLK_IS_CRITICAL }, /* SDRAM */
-> -	[ASPEED_CLK_GATE_ECLK]		= {  1, -1, "eclk-gate",	"eclk",	 0 },	/* Video Engine */
-> +	[ASPEED_CLK_GATE_ECLK]		= {  1,  6, "eclk-gate",	"eclk",	 0 },	/* Video Engine */
->  	[ASPEED_CLK_GATE_GCLK]		= {  2,  7, "gclk-gate",	NULL,	 0 },	/* 2D engine */
->  	/* vclk parent - dclk/d1clk/hclk/mclk */
-> -	[ASPEED_CLK_GATE_VCLK]		= {  3,  6, "vclk-gate",	NULL,	 0 },	/* Video Capture */
-> +	[ASPEED_CLK_GATE_VCLK]		= {  3, -1, "vclk-gate",	NULL,	 0 },	/* Video Capture */
->  	[ASPEED_CLK_GATE_BCLK]		= {  4,  8, "bclk-gate",	"bclk",	 0 }, /* PCIe/PCI */
->  	/* From dpll */
->  	[ASPEED_CLK_GATE_DCLK]		= {  5, -1, "dclk-gate",	NULL,	 CLK_IS_CRITICAL }, /* DAC */
-> diff --git a/drivers/media/platform/aspeed-video.c b/drivers/media/platform/aspeed-video.c
-> index c46a79eace98..db072ff2df70 100644
-> --- a/drivers/media/platform/aspeed-video.c
-> +++ b/drivers/media/platform/aspeed-video.c
-> @@ -514,8 +514,8 @@ static void aspeed_video_off(struct aspeed_video *video)
->  	aspeed_video_write(video, VE_INTERRUPT_STATUS, 0xffffffff);
->  
->  	/* Turn off the relevant clocks */
-> -	clk_disable(video->vclk);
->  	clk_disable(video->eclk);
-> +	clk_disable(video->vclk);
->  
->  	clear_bit(VIDEO_CLOCKS_ON, &video->flags);
->  }
-> @@ -526,8 +526,8 @@ static void aspeed_video_on(struct aspeed_video *video)
->  		return;
->  
->  	/* Turn on the relevant clocks */
-> -	clk_enable(video->eclk);
->  	clk_enable(video->vclk);
-> +	clk_enable(video->eclk);
->  
->  	set_bit(VIDEO_CLOCKS_ON, &video->flags);
->  }
-> @@ -1719,8 +1719,11 @@ static int aspeed_video_probe(struct platform_device *pdev)
->  		return rc;
->  
->  	rc = aspeed_video_setup_video(video);
-> -	if (rc)
-> +	if (rc) {
-> +		clk_unprepare(video->vclk);
-> +		clk_unprepare(video->eclk);
->  		return rc;
-> +	}
->  
->  	return 0;
->  }
+> That's not the place to do that.
 > 
-
+> >
+> >> > +
+> >> > +	chained_irq_exit(chip, desc);
+> >> > +}
+> >> > +
+> >> > +static void aspeed_espi_ic_isr(struct irq_desc *desc) {
+> >> > +	unsigned int sts;
+> >> > +	unsigned int irq;
+> >> > +	struct aspeed_espi_ic *espi_ic = irq_desc_get_handler_data(desc);
+> >> > +	struct irq_chip *chip = irq_desc_get_chip(desc);
+> >> > +
+> >> > +	chained_irq_enter(chip, desc);
+> >> > +
+> >> > +	regmap_read(espi_ic->map, ESPI_INT_STS, &sts);
+> >> > +
+> >> > +	if (sts & ESPI_INT_STS_PERIF_BITS) {
+> >> > +		irq = irq_find_mapping(espi_ic->irq_domain,
+> >> > +				       ASPEED_ESPI_IC_PERIF_EVENT);
+> >> > +		generic_handle_irq(irq);
+> >> > +	}
+> >> > +
+> >> > +	if (sts & ESPI_INT_STS_VW_BITS) {
+> >> > +		irq = irq_find_mapping(espi_ic->irq_domain,
+> >> > +				       ASPEED_ESPI_IC_VW_EVENT);
+> >> > +		generic_handle_irq(irq);
+> >> > +	}
+> >> > +
+> >> > +	if (sts & ESPI_INT_STS_OOB_BITS) {
+> >> > +		irq = irq_find_mapping(espi_ic->irq_domain,
+> >> > +				       ASPEED_ESPI_IC_OOB_EVENT);
+> >> > +		generic_handle_irq(irq);
+> >> > +	}
+> >> > +
+> >> > +	if (sts & ESPI_INT_STS_FLASH_BITS) {
+> >> > +		irq = irq_find_mapping(espi_ic->irq_domain,
+> >> > +				       ASPEED_ESPI_IC_FLASH_EVENT);
+> >> > +		generic_handle_irq(irq);
+> >> > +	}
+> >> > +
+> >> > +	if (sts & ESPI_INT_STS_HW_RST_DEASSERT) {
+> >> > +		irq = irq_find_mapping(espi_ic->irq_domain,
+> >> > +				       ASPEED_ESPI_IC_CTRL_EVENT);
+> >> > +		generic_handle_irq(irq);
+> >> > +	}
+> >>
+> >> This is horrible. Why can't you just use fls() in a loop?
+> >
+> > The bits in the interrupt status register for a eSPI channel are not
+> > sequentially arranged.
+> > Using fls() may invoke an eSPI channel ISR multiple times.
+> > So I collected the bitmap for each channel, respectively, and call the
+> > ISR at once.
+> 
+> And that's equally wrong. You need to handle interrupts individually, as they
+> are different signal. If you are to implement an interrupt controller, please do it
+> properly.
+> 
+> Otherwise, get rid of it and move everything into your pet driver.
+> There is no need to do a half-baked job.
+> 
+> As it is, there is no way this code can be merged.
+> 
+>          M.
+> --
+> Jazz is not dead. It just smells funny...
