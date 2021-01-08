@@ -1,22 +1,30 @@
-From: Ryan Chen <ryan_chen@aspeedtech.com>
-Date: Fri, 8 Jan 2021 16:12:37 +0800
-Subject: [PATCH 0/1] Fix vhub engine stop dma register setting.
-Message-ID: <20210108081238.10199-1-ryan_chen@aspeedtech.com>
+From: Felipe Balbi <balbi@kernel.org>
+Date: Fri, 08 Jan 2021 14:21:14 +0200
+Subject: [PATCH 1/1] usb: gadget: aspeed: fix stop dma register setting.
+In-Reply-To: <20210108081238.10199-2-ryan_chen@aspeedtech.com>
+References: <20210108081238.10199-1-ryan_chen@aspeedtech.com>
+ <20210108081238.10199-2-ryan_chen@aspeedtech.com>
+Message-ID: <87h7nrwret.fsf@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This patch fixes vhub engine stop dma should have different register
-setting.
 
-Ryan Chen (1):
-  usb: gadget: aspeed: fix stop dma register setting.
+Hi,
 
- drivers/usb/gadget/udc/aspeed-vhub/epn.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+Ryan Chen <ryan_chen@aspeedtech.com> writes:
+> The vhub engine has two dma mode, one is descriptor list, another
+> is single stage DMA. Each mode has different stop register setting.
+> Descriptor list operation (bit2) : 0 disable reset, 1: enable reset
+> Single mode operation (bit0) : 0 : disable, 1: enable
+>
+> Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
+
+I don't have HW, but FWIW:
+
+Acked-by: Felipe Balbi <balbi@kernel.org>
 
 -- 
-2.17.1
-
+balbi
