@@ -1,30 +1,27 @@
-From: Felipe Balbi <balbi@kernel.org>
-Date: Fri, 08 Jan 2021 14:21:14 +0200
-Subject: [PATCH 1/1] usb: gadget: aspeed: fix stop dma register setting.
-In-Reply-To: <20210108081238.10199-2-ryan_chen@aspeedtech.com>
-References: <20210108081238.10199-1-ryan_chen@aspeedtech.com>
- <20210108081238.10199-2-ryan_chen@aspeedtech.com>
-Message-ID: <87h7nrwret.fsf@kernel.org>
+From: Guenter Roeck <linux@roeck-us.net>
+Date: Fri, 8 Jan 2021 07:35:40 -0800
+Subject: [PATCH] hwmon: (aspeed-pwm-tacho): Switch to using the new API
+ kobj_to_dev()
+In-Reply-To: <1609725945-13895-1-git-send-email-tiantao6@hisilicon.com>
+References: <1609725945-13895-1-git-send-email-tiantao6@hisilicon.com>
+Message-ID: <20210108153540.GA4766@roeck-us.net>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+On Mon, Jan 04, 2021 at 10:05:45AM +0800, Tian Tao wrote:
+> fixed the following coccicheck:
+> drivers/hwmon/aspeed-pwm-tacho.c:634:60-61: WARNING opportunity for
+> kobj_to_dev()
+> drivers/hwmon/aspeed-pwm-tacho.c:623:60-61: WARNING opportunity for
+> kobj_to_dev()
+> 
+> Signed-off-by: Tian Tao <tiantao6@hisilicon.com>
+> Acked-by: Joel Stanley <joel@jms.id.au>
 
-Hi,
+Applied.
 
-Ryan Chen <ryan_chen@aspeedtech.com> writes:
-> The vhub engine has two dma mode, one is descriptor list, another
-> is single stage DMA. Each mode has different stop register setting.
-> Descriptor list operation (bit2) : 0 disable reset, 1: enable reset
-> Single mode operation (bit0) : 0 : disable, 1: enable
->
-> Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
-
-I don't have HW, but FWIW:
-
-Acked-by: Felipe Balbi <balbi@kernel.org>
-
--- 
-balbi
+Thanks,
+Guenter
