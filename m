@@ -1,94 +1,58 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Mon, 11 Jan 2021 10:32:15 +1030
-Subject: =?UTF-8?Q?Re:_[PATCH_v6_4/6]_mmc:_sdhci-of-aspeed:_Add_KUnit_tests_for_p?=
- =?UTF-8?Q?hase_calculations?=
-In-Reply-To: <ff588027-0fbb-100e-05a9-4a804662d838@intel.com>
-References: <20201218035338.1130849-1-andrew@aj.id.au>
- <20201218035338.1130849-5-andrew@aj.id.au>
- <ff588027-0fbb-100e-05a9-4a804662d838@intel.com>
-Message-ID: <6f341a22-f5ce-4c38-9f42-358124468821@www.fastmail.com>
+From: Joel Stanley <joel@jms.id.au>
+Date: Mon, 11 Jan 2021 02:24:27 +0000
+Subject: [PATCH 1/1] usb: gadget: aspeed: fix stop dma register setting.
+In-Reply-To: <20210108081238.10199-2-ryan_chen@aspeedtech.com>
+References: <20210108081238.10199-1-ryan_chen@aspeedtech.com>
+ <20210108081238.10199-2-ryan_chen@aspeedtech.com>
+Message-ID: <CACPK8XdWKY4QmuojaZ13tmKR3MVEzU8MOV=bmqyTiotScaGfRA@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+On Fri, 8 Jan 2021 at 08:13, Ryan Chen <ryan_chen@aspeedtech.com> wrote:
+>
+> The vhub engine has two dma mode, one is descriptor list, another
+> is single stage DMA. Each mode has different stop register setting.
+> Descriptor list operation (bit2) : 0 disable reset, 1: enable reset
+> Single mode operation (bit0) : 0 : disable, 1: enable
+>
+> Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
+> ---
+>  drivers/usb/gadget/udc/aspeed-vhub/epn.c | 5 ++++-
+>  1 file changed, 4 insertions(+), 1 deletion(-)
+>
+> diff --git a/drivers/usb/gadget/udc/aspeed-vhub/epn.c b/drivers/usb/gadget/udc/aspeed-vhub/epn.c
+> index 0bd6b20435b8..02d8bfae58fb 100644
+> --- a/drivers/usb/gadget/udc/aspeed-vhub/epn.c
+> +++ b/drivers/usb/gadget/udc/aspeed-vhub/epn.c
+> @@ -420,7 +420,10 @@ static void ast_vhub_stop_active_req(struct ast_vhub_ep *ep,
+>         u32 state, reg, loops;
+>
+>         /* Stop DMA activity */
+> -       writel(0, ep->epn.regs + AST_VHUB_EP_DMA_CTLSTAT);
+> +       if (ep->epn.desc_mode)
+> +               writel(VHUB_EP_DMA_CTRL_RESET, ep->epn.regs + AST_VHUB_EP_DMA_CTLSTAT);
+> +       else
+> +               writel(0, ep->epn.regs + AST_VHUB_EP_DMA_CTLSTAT);
 
+This looks correct, as whenever the driver re-enables DMA it uses
+ep->epn.dma_conf for the value of this register. So we're not losing
+any configuration by setting it to 0.
 
-On Wed, 6 Jan 2021, at 00:17, Adrian Hunter wrote:
-> On 18/12/20 5:53 am, Andrew Jeffery wrote:
-> > Converting degrees of phase to logic delays is irritating to test on
-> > hardware, so lets exercise the function using KUnit.
-> > 
-> > Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
-> > ---
-> >  drivers/mmc/host/Kconfig                |  14 ++++
-> >  drivers/mmc/host/Makefile               |   1 +
-> >  drivers/mmc/host/sdhci-of-aspeed-test.c | 100 ++++++++++++++++++++++++
-> >  3 files changed, 115 insertions(+)
-> >  create mode 100644 drivers/mmc/host/sdhci-of-aspeed-test.c
-> > 
-> > diff --git a/drivers/mmc/host/Kconfig b/drivers/mmc/host/Kconfig
-> > index 596f32637315..d6f00d1d6251 100644
-> > --- a/drivers/mmc/host/Kconfig
-> > +++ b/drivers/mmc/host/Kconfig
-> > @@ -168,6 +168,20 @@ config MMC_SDHCI_OF_ASPEED
-> >  
-> >  	  If unsure, say N.
-> >  
-> > +config MMC_SDHCI_OF_ASPEED_TEST
-> > +	bool "Tests for the ASPEED SDHCI driver"
-> > +	depends on MMC_SDHCI_OF_ASPEED && KUNIT=y
-> > +	help
-> > +	  Enable KUnit tests for the ASPEED SDHCI driver. Select this
-> > +	  option only if you will boot the kernel for the purpose of running
-> > +	  unit tests (e.g. under UML or qemu).
-> > +
-> > +	  The KUnit tests generally exercise parts of the driver that do not
-> > +	  directly touch the hardware, for example, the phase correction
-> > +	  calculations.
-> > +
-> > +	  If unsure, say N.
-> > +
-> >  config MMC_SDHCI_OF_AT91
-> >  	tristate "SDHCI OF support for the Atmel SDMMC controller"
-> >  	depends on MMC_SDHCI_PLTFM
-> > diff --git a/drivers/mmc/host/Makefile b/drivers/mmc/host/Makefile
-> > index 451c25fc2c69..3ee59d5802cf 100644
-> > --- a/drivers/mmc/host/Makefile
-> > +++ b/drivers/mmc/host/Makefile
-> > @@ -90,6 +90,7 @@ obj-$(CONFIG_MMC_SDHCI_DOVE)		+= sdhci-dove.o
-> >  obj-$(CONFIG_MMC_SDHCI_TEGRA)		+= sdhci-tegra.o
-> >  obj-$(CONFIG_MMC_SDHCI_OF_ARASAN)	+= sdhci-of-arasan.o
-> >  obj-$(CONFIG_MMC_SDHCI_OF_ASPEED)	+= sdhci-of-aspeed.o
-> > +obj-$(CONFIG_MMC_SDHCI_OF_ASPEED_TEST)	+= sdhci-of-aspeed-test.o
-> >  obj-$(CONFIG_MMC_SDHCI_OF_AT91)		+= sdhci-of-at91.o
-> >  obj-$(CONFIG_MMC_SDHCI_OF_ESDHC)	+= sdhci-of-esdhc.o
-> >  obj-$(CONFIG_MMC_SDHCI_OF_HLWD)		+= sdhci-of-hlwd.o
-> > diff --git a/drivers/mmc/host/sdhci-of-aspeed-test.c b/drivers/mmc/host/sdhci-of-aspeed-test.c
-> > new file mode 100644
-> > index 000000000000..fb79b278fb81
-> > --- /dev/null
-> > +++ b/drivers/mmc/host/sdhci-of-aspeed-test.c
-> > @@ -0,0 +1,100 @@
-> > +// SPDX-License-Identifier: GPL-2.0-or-later
-> > +/* Copyright (C) 2020 IBM Corp. */
-> > +
-> > +#include <kunit/test.h>
-> > +
-> > +#include "sdhci-of-aspeed.c"
-> 
-> I am not sure including like that is advisable.
+Acked-by: Joel Stanley <joel@jms.id.au>
+Fixes: 7ecca2a4080c ("usb/gadget: Add driver for Aspeed SoC virtual hub")
 
-Yeah I wasn't convinced by it either, but I was just running the tests under 
-qemu and they did what I expected.
+I've cc'd Ben for his ack too.
 
-> Did you consider instead
-> doing it the other way around i.e. adding an include to the bottom of
-> sdhci-of-aspeed.c?
+Cheers,
 
-No, I didn't. I'll switch to this approach.
+Joel
 
-Thanks!
-
-Andrew
+>
+>         /* Wait for it to complete */
+>         for (loops = 0; loops < 1000; loops++) {
+> --
+> 2.17.1
+>
