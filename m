@@ -1,58 +1,31 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Mon, 11 Jan 2021 02:24:27 +0000
-Subject: [PATCH 1/1] usb: gadget: aspeed: fix stop dma register setting.
-In-Reply-To: <20210108081238.10199-2-ryan_chen@aspeedtech.com>
-References: <20210108081238.10199-1-ryan_chen@aspeedtech.com>
- <20210108081238.10199-2-ryan_chen@aspeedtech.com>
-Message-ID: <CACPK8XdWKY4QmuojaZ13tmKR3MVEzU8MOV=bmqyTiotScaGfRA@mail.gmail.com>
+Date: Mon, 11 Jan 2021 15:16:36 +1030
+Subject: [PATCH 0/2] drm: aspeed: Support more chip families
+Message-ID: <20210111044638.290909-1-joel@jms.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, 8 Jan 2021 at 08:13, Ryan Chen <ryan_chen@aspeedtech.com> wrote:
->
-> The vhub engine has two dma mode, one is descriptor list, another
-> is single stage DMA. Each mode has different stop register setting.
-> Descriptor list operation (bit2) : 0 disable reset, 1: enable reset
-> Single mode operation (bit0) : 0 : disable, 1: enable
->
-> Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
-> ---
->  drivers/usb/gadget/udc/aspeed-vhub/epn.c | 5 ++++-
->  1 file changed, 4 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/usb/gadget/udc/aspeed-vhub/epn.c b/drivers/usb/gadget/udc/aspeed-vhub/epn.c
-> index 0bd6b20435b8..02d8bfae58fb 100644
-> --- a/drivers/usb/gadget/udc/aspeed-vhub/epn.c
-> +++ b/drivers/usb/gadget/udc/aspeed-vhub/epn.c
-> @@ -420,7 +420,10 @@ static void ast_vhub_stop_active_req(struct ast_vhub_ep *ep,
->         u32 state, reg, loops;
->
->         /* Stop DMA activity */
-> -       writel(0, ep->epn.regs + AST_VHUB_EP_DMA_CTLSTAT);
-> +       if (ep->epn.desc_mode)
-> +               writel(VHUB_EP_DMA_CTRL_RESET, ep->epn.regs + AST_VHUB_EP_DMA_CTLSTAT);
-> +       else
-> +               writel(0, ep->epn.regs + AST_VHUB_EP_DMA_CTLSTAT);
+The out of tree vendor driver was recently updated to support the
+ast2400 and ast2600. These patches begin to add that support to the
+mainline driver.
 
-This looks correct, as whenever the driver re-enables DMA it uses
-ep->epn.dma_conf for the value of this register. So we're not losing
-any configuration by setting it to 0.
+With these two cleanups it should be easier to support different
+families of BMC system on chip with this driver.
 
-Acked-by: Joel Stanley <joel@jms.id.au>
-Fixes: 7ecca2a4080c ("usb/gadget: Add driver for Aspeed SoC virtual hub")
+I will merge them through drm-misc once they have been reviewed.
 
-I've cc'd Ben for his ack too.
+Joel Stanley (2):
+  drm/aspeed: Look up syscon by phandle
+  drm/aspeed: Use dt matching for default register values
 
-Cheers,
+ drivers/gpu/drm/aspeed/aspeed_gfx.h      |  7 +--
+ drivers/gpu/drm/aspeed/aspeed_gfx_crtc.c | 10 ++--
+ drivers/gpu/drm/aspeed/aspeed_gfx_drv.c  | 58 +++++++++++++++++++-----
+ 3 files changed, 56 insertions(+), 19 deletions(-)
 
-Joel
+-- 
+2.29.2
 
->
->         /* Wait for it to complete */
->         for (loops = 0; loops < 1000; loops++) {
-> --
-> 2.17.1
->
