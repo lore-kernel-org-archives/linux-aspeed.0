@@ -1,46 +1,26 @@
-From: Rob Herring <robh@kernel.org>
-Date: Wed, 13 Jan 2021 09:45:04 -0600
-Subject: [PATCH v2 1/4] dt-bindings: hwmon: Add Aspeed AST2600 PWM/Fan
-In-Reply-To: <20210113070850.1184506-2-troy_lee@aspeedtech.com>
-References: <20210113070850.1184506-1-troy_lee@aspeedtech.com>
- <20210113070850.1184506-2-troy_lee@aspeedtech.com>
-Message-ID: <1610552704.291941.2506185.nullmailer@robh.at.kernel.org>
+From: Hongwei Zhang <hongweiz@ami.com>
+Date: Wed, 13 Jan 2021 17:38:07 -0500
+Subject: [PATCH, v1 0/1] gpio: aspeed: Add gpio base address reading
+Message-ID: <20210113223808.31626-1-hongweiz@ami.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 13 Jan 2021 07:08:45 +0000, Troy Lee wrote:
-> We add binding for supporting a new AST2600 PWM/Fan hwmon driver.
-> 
-> Changes since v1:
-> - dt binding with DT schema format
-> 
-> Signed-off-by: Troy Lee <troy_lee@aspeedtech.com>
-> ---
->  .../hwmon/aspeed,ast2600-pwm-tachometer.yaml  | 137 ++++++++++++++++++
->  1 file changed, 137 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/hwmon/aspeed,ast2600-pwm-tachometer.yaml
-> 
+Dear Reviewer,
 
-My bot found errors running 'make dt_binding_check' on your patch:
+Add gpio base address reading in the driver; in old code, it just
+returns -1 to gpio->chip.base. In this patch, the code first try to
+read base address from of_property_read_u32(), if it fails, then
+return -1.
 
-yamllint warnings/errors:
-./Documentation/devicetree/bindings/hwmon/aspeed,ast2600-pwm-tachometer.yaml:108:2: [warning] wrong indentation: expected 2 but found 1 (indentation)
+Hongwei Zhang (1):
+  gpio: aspeed: Add gpio base address reading
 
-dtschema/dtc warnings/errors:
+ drivers/gpio/gpio-aspeed.c | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
-See https://patchwork.ozlabs.org/patch/1425628
-
-This check can fail if there are any dependencies. The base for a patch
-series is generally the most recent rc1.
-
-If you already ran 'make dt_binding_check' and didn't see the above
-error(s), then make sure 'yamllint' is installed and dt-schema is up to
-date:
-
-pip3 install dtschema --upgrade
-
-Please check and re-submit.
+-- 
+2.17.1
 
