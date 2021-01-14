@@ -1,34 +1,82 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Thu, 14 Jan 2021 13:44:33 +1030
-Subject: [PATCH v7 6/6] ARM: dts: rainier: Add eMMC clock phase compensation
-In-Reply-To: <20210114031433.2388532-1-andrew@aj.id.au>
-References: <20210114031433.2388532-1-andrew@aj.id.au>
-Message-ID: <20210114031433.2388532-7-andrew@aj.id.au>
+From: Chia-Wei, Wang <chiawei_wang@aspeedtech.com>
+Date: Thu, 14 Jan 2021 21:16:20 +0800
+Subject: [PATCH v5 3/5] ipmi: kcs: aspeed: Adapt to new LPC DTS layout
+In-Reply-To: <20210114131622.8951-1-chiawei_wang@aspeedtech.com>
+References: <20210114131622.8951-1-chiawei_wang@aspeedtech.com>
+Message-ID: <20210114131622.8951-4-chiawei_wang@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Determined by scope measurements at speed.
+Add check against LPC device v2 compatible string to
+ensure that the fixed device tree layout is adopted.
+The LPC register offsets are also fixed accordingly.
 
-Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
+Signed-off-by: Chia-Wei, Wang <chiawei_wang@aspeedtech.com>
+Acked-by: Haiyue Wang <haiyue.wang@linux.intel.com>
 ---
- arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/char/ipmi/kcs_bmc_aspeed.c | 27 ++++++++++++++++-----------
+ 1 file changed, 16 insertions(+), 11 deletions(-)
 
-diff --git a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
-index 21ae880c7530..ab8d37d49f30 100644
---- a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
-@@ -186,6 +186,7 @@ &pinctrl_emmc_default {
+diff --git a/drivers/char/ipmi/kcs_bmc_aspeed.c b/drivers/char/ipmi/kcs_bmc_aspeed.c
+index a140203c079b..eefe362f65f0 100644
+--- a/drivers/char/ipmi/kcs_bmc_aspeed.c
++++ b/drivers/char/ipmi/kcs_bmc_aspeed.c
+@@ -27,7 +27,6 @@
  
- &emmc {
- 	status = "okay";
-+	clk-phase-mmc-hs200 = <180>, <180>;
- };
+ #define KCS_CHANNEL_MAX     4
  
- &fsim0 {
+-/* mapped to lpc-bmc at 0 IO space */
+ #define LPC_HICR0            0x000
+ #define     LPC_HICR0_LPC3E          BIT(7)
+ #define     LPC_HICR0_LPC2E          BIT(6)
+@@ -52,15 +51,13 @@
+ #define LPC_STR1             0x03C
+ #define LPC_STR2             0x040
+ #define LPC_STR3             0x044
+-
+-/* mapped to lpc-host at 80 IO space */
+-#define LPC_HICRB            0x080
++#define LPC_HICRB            0x100
+ #define     LPC_HICRB_IBFIF4         BIT(1)
+ #define     LPC_HICRB_LPC4E          BIT(0)
+-#define LPC_LADR4            0x090
+-#define LPC_IDR4             0x094
+-#define LPC_ODR4             0x098
+-#define LPC_STR4             0x09C
++#define LPC_LADR4            0x110
++#define LPC_IDR4             0x114
++#define LPC_ODR4             0x118
++#define LPC_STR4             0x11C
+ 
+ struct aspeed_kcs_bmc {
+ 	struct regmap *map;
+@@ -348,12 +345,20 @@ static int aspeed_kcs_probe(struct platform_device *pdev)
+ 	struct device_node *np;
+ 	int rc;
+ 
+-	np = pdev->dev.of_node;
++	np = dev->of_node->parent;
++	if (!of_device_is_compatible(np, "aspeed,ast2400-lpc-v2") &&
++	    !of_device_is_compatible(np, "aspeed,ast2500-lpc-v2") &&
++	    !of_device_is_compatible(np, "aspeed,ast2600-lpc-v2")) {
++		dev_err(dev, "unsupported LPC device binding\n");
++		return -ENODEV;
++	}
++
++	np = dev->of_node;
+ 	if (of_device_is_compatible(np, "aspeed,ast2400-kcs-bmc") ||
+-			of_device_is_compatible(np, "aspeed,ast2500-kcs-bmc"))
++	    of_device_is_compatible(np, "aspeed,ast2500-kcs-bmc"))
+ 		kcs_bmc = aspeed_kcs_probe_of_v1(pdev);
+ 	else if (of_device_is_compatible(np, "aspeed,ast2400-kcs-bmc-v2") ||
+-			of_device_is_compatible(np, "aspeed,ast2500-kcs-bmc-v2"))
++		 of_device_is_compatible(np, "aspeed,ast2500-kcs-bmc-v2"))
+ 		kcs_bmc = aspeed_kcs_probe_of_v2(pdev);
+ 	else
+ 		return -EINVAL;
 -- 
-2.27.0
+2.17.1
 
