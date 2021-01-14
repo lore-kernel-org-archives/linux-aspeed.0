@@ -1,194 +1,201 @@
 From: Rob Herring <robh@kernel.org>
-Date: Thu, 14 Jan 2021 08:13:17 -0600
-Subject: [PATCH v2 1/4] dt-bindings: hwmon: Add Aspeed AST2600 PWM/Fan
-In-Reply-To: <20210113070850.1184506-2-troy_lee@aspeedtech.com>
-References: <20210113070850.1184506-1-troy_lee@aspeedtech.com>
- <20210113070850.1184506-2-troy_lee@aspeedtech.com>
-Message-ID: <20210114141317.GA2823834@robh.at.kernel.org>
+Date: Thu, 14 Jan 2021 13:34:16 -0600
+Subject: [PATCH v2 1/4] dt-bindings: i2c: aspeed: add buffer and DMA mode
+ transfer support
+In-Reply-To: <20210112003749.10565-2-jae.hyun.yoo@linux.intel.com>
+References: <20210112003749.10565-1-jae.hyun.yoo@linux.intel.com>
+ <20210112003749.10565-2-jae.hyun.yoo@linux.intel.com>
+Message-ID: <20210114193416.GA3432711@robh.at.kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Jan 13, 2021 at 07:08:45AM +0000, Troy Lee wrote:
-> We add binding for supporting a new AST2600 PWM/Fan hwmon driver.
+On Mon, Jan 11, 2021 at 04:37:46PM -0800, Jae Hyun Yoo wrote:
+> Append bindings to support buffer mode and DMA mode transfer.
 > 
-> Changes since v1:
-> - dt binding with DT schema format
-> 
-> Signed-off-by: Troy Lee <troy_lee@aspeedtech.com>
+> Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
 > ---
->  .../hwmon/aspeed,ast2600-pwm-tachometer.yaml  | 137 ++++++++++++++++++
->  1 file changed, 137 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/hwmon/aspeed,ast2600-pwm-tachometer.yaml
+> Changes since v1:
+> - Removed buffer reg settings from default device tree and added the settings
+>   into here to show the predefined buffer range per each bus.
 > 
-> diff --git a/Documentation/devicetree/bindings/hwmon/aspeed,ast2600-pwm-tachometer.yaml b/Documentation/devicetree/bindings/hwmon/aspeed,ast2600-pwm-tachometer.yaml
-> new file mode 100644
-> index 000000000000..b84076a4a338
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/hwmon/aspeed,ast2600-pwm-tachometer.yaml
-> @@ -0,0 +1,137 @@
-> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-> +%YAML 1.2
-> +---
+>  .../devicetree/bindings/i2c/i2c-aspeed.txt    | 126 +++++++++++++++++-
+>  1 file changed, 119 insertions(+), 7 deletions(-)
+> 
+> diff --git a/Documentation/devicetree/bindings/i2c/i2c-aspeed.txt b/Documentation/devicetree/bindings/i2c/i2c-aspeed.txt
+> index b47f6ccb196a..978e8402fdfc 100644
+> --- a/Documentation/devicetree/bindings/i2c/i2c-aspeed.txt
+> +++ b/Documentation/devicetree/bindings/i2c/i2c-aspeed.txt
+> @@ -3,7 +3,62 @@ Device tree configuration for the I2C busses on the AST24XX, AST25XX, and AST26X
+>  Required Properties:
+>  - #address-cells	: should be 1
+>  - #size-cells		: should be 0
+> -- reg			: address offset and range of bus
+> +- reg			: Address offset and range of bus registers.
 > +
-> +$id: http://devicetree.org/schemas/hwmon/aspeed,ast2600-pwm-tachometer.yaml#
-> +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> +
-> +title: ASPEED AST2600 PWM and Fan Tacho controller device driver
-> +
-> +maintainers:
-> +  - Ryan Chen <ryan_chen@aspeedtech.com>
-> +
-> +description: |
-> +  The ASPEED PWM controller can support upto 16 PWM outputs. The ASPEED Fan Tacho
-> +  controller can support upto 16 Fan tachometer inputs.
-> +  There can be upto 16 fans supported. Each fan can have one PWM output and
-> +  one Fan tach inputs.
-> +
-> +properties:
-> +  compatible:
-> +    const: aspeed,ast2600-pwm-tachometer
-> +
-> +  "#address-cells":
-> +    const: 1
-> +
-> +  "#size-cells":
-> +    const: 0
-> +
-> +  "#cooling-cells":
-> +    const: 2
-> +
-> +  reg:
-> +    description:
-> +      Address and length of the register set for the device.
+> +			  An additional SRAM buffer address offset and range is
+> +			  optional in case of enabling I2C dedicated SRAM for
+> +			  buffer mode transfer support. If the optional range
+> +			  is defined, buffer mode will be enabled.
+> +			  - AST2400
+> +			    &i2c0 { reg = <0x40 0x40>, <0x800 0x80>; };
+> +			    &i2c1 { reg = <0x80 0x40>, <0x880 0x80>; };
+> +			    &i2c2 { reg = <0xc0 0x40>, <0x900 0x80>; };
+> +			    &i2c3 { reg = <0x100 0x40>, <0x980 0x80>; };
+> +			    &i2c4 { reg = <0x140 0x40>, <0xa00 0x80>; };
+> +			    &i2c5 { reg = <0x180 0x40>, <0xa80 0x80>; };
+> +			    &i2c6 { reg = <0x1c0 0x40>, <0xb00 0x80>; };
+> +			    &i2c7 { reg = <0x300 0x40>, <0xb80 0x80>; };
+> +			    &i2c8 { reg = <0x340 0x40>, <0xc00 0x80>; };
+> +			    &i2c9 { reg = <0x380 0x40>, <0xc80 0x80>; };
+> +			    &i2c10 { reg = <0x3c0 0x40>, <0xd00 0x80>; };
+> +			    &i2c11 { reg = <0x400 0x40>, <0xd80 0x80>; };
+> +			    &i2c12 { reg = <0x440 0x40>, <0xe00 0x80>; };
+> +			    &i2c13 { reg = <0x480 0x40>, <0xe80 0x80>; };
 
-No need for generic descriptions. That's every 'reg'.
+All this information doesn't need to be in the binding.
 
-What you need is how many entries and what each one is if more than 1. 
-If only 1, then just 'maxItems: 1'
+It's also an oddly structured dts file if this is what you are doing...
 
 > +
-> +  clocks:
-> +    description:
-> +      phandle to clock provider with the clock number in the second cell
-
-Same here.
-
+> +			  - AST2500
+> +			    &i2c0 { reg = <0x40 0x40>, <0x200 0x10>; };
+> +			    &i2c1 { reg = <0x80 0x40>, <0x210 0x10>; };
+> +			    &i2c2 { reg = <0xc0 0x40>, <0x220 0x10>; };
+> +			    &i2c3 { reg = <0x100 0x40>, <0x230 0x10>; };
+> +			    &i2c4 { reg = <0x140 0x40>, <0x240 0x10>; };
+> +			    &i2c5 { reg = <0x180 0x40>, <0x250 0x10>; };
+> +			    &i2c6 { reg = <0x1c0 0x40>, <0x260 0x10>; };
+> +			    &i2c7 { reg = <0x300 0x40>, <0x270 0x10>; };
+> +			    &i2c8 { reg = <0x340 0x40>, <0x280 0x10>; };
+> +			    &i2c9 { reg = <0x380 0x40>, <0x290 0x10>; };
+> +			    &i2c10 { reg = <0x3c0 0x40>, <0x2a0 0x10>; };
+> +			    &i2c11 { reg = <0x400 0x40>, <0x2b0 0x10>; };
+> +			    &i2c12 { reg = <0x440 0x40>, <0x2c0 0x10>; };
+> +			    &i2c13 { reg = <0x480 0x40>, <0x2d0 0x10>; };
 > +
-> +  resets:
-> +    description:
-> +      phandle to reset controller with the reset number in the second cell
-
-And here.
-
+> +			  - AST2600
+> +			    &i2c0 { reg = <0x80 0x80>, <0xc00 0x20>; };
+> +			    &i2c1 { reg = <0x100 0x80>, <0xc20 0x20>; };
+> +			    &i2c2 { reg = <0x180 0x80>, <0xc40 0x20>; };
+> +			    &i2c3 { reg = <0x200 0x80>, <0xc60 0x20>; };
+> +			    &i2c4 { reg = <0x280 0x80>, <0xc80 0x20>; };
+> +			    &i2c5 { reg = <0x300 0x80>, <0xca0 0x20>; };
+> +			    &i2c6 { reg = <0x380 0x80>, <0xcc0 0x20>; };
+> +			    &i2c7 { reg = <0x400 0x80>, <0xce0 0x20>; };
+> +			    &i2c8 { reg = <0x480 0x80>, <0xd00 0x20>; };
+> +			    &i2c9 { reg = <0x500 0x80>, <0xd20 0x20>; };
+> +			    &i2c10 { reg = <0x580 0x80>, <0xd40 0x20>; };
+> +			    &i2c11 { reg = <0x600 0x80>, <0xd60 0x20>; };
+> +			    &i2c12 { reg = <0x680 0x80>, <0xd80 0x20>; };
+> +			    &i2c13 { reg = <0x700 0x80>, <0xda0 0x20>; };
+> +			    &i2c14 { reg = <0x780 0x80>, <0xdc0 0x20>; };
+> +			    &i2c15 { reg = <0x800 0x80>, <0xde0 0x20>; };
 > +
-> +patternProperties:
-> +  "@[0-9]+$":
+>  - compatible		: should be "aspeed,ast2400-i2c-bus"
+>  			  or "aspeed,ast2500-i2c-bus"
+>  			  or "aspeed,ast2600-i2c-bus"
+> @@ -17,6 +72,25 @@ Optional Properties:
+>  - bus-frequency	: frequency of the bus clock in Hz defaults to 100 kHz when not
+>  		  specified
+>  - multi-master	: states that there is another master active on this bus.
+> +- aspeed,dma-buf-size	: size of DMA buffer.
+> +			    AST2400: N/A
+> +			    AST2500: 2 ~ 4095
+> +			    AST2600: 2 ~ 4096
 
-If every node is a fan and there are up to 16:
-
-^fan@[0-9a-f]$
-
-> +    type: object
-> +    description:
-> +      Under fan subnode there can upto 16 child nodes, with each child node
-> +      representing a fan. There are 16 fans each fan can have one PWM port and one
-> +      Fan tach inputs.
-> +      For PWM port can be configured cooling-levels to create cooling device.
-> +      Cooling device could be bound to a thermal zone for the thermal control.
-> +
-> +    properties:
-> +      reg:
-> +        minimum: 0
-> +        maximum: 15
-> +        description:
-> +          This property identify the PWM control channel of this fan.
-> +
-> +      fan-tach-ch:
-> +        $ref: /schemas/types.yaml#/definitions/uint8
-> +        minimum: 0
-> +        maximum: 15
-> +        description:
-> +          This property identify the fan tach input channel.
-> +
-> +      pulses-per-revolution:
-> +        $ref: /schemas/types.yaml#/definitions/uint32
-> +        default: 2
-> +        minimum: 1
-> +        description:
-> +          Specify tacho pulse per revolution of the fan.
-> +
-> +      cooling-levels:
-> +        description:
-> +          PWM duty cycle values in a range from 0 to 255
-> +          which correspond to thermal cooling states.
-> +
-> +      aspeed,pwm-freq:
-> +        $ref: /schemas/types.yaml#/definitions/uint32
-> +        default: 25000
-> +        minimum: 24
-> +        maximum: 780000
-> +        description:
-> +          Specify the frequency of PWM.
-
-Units? Use a unit suffix and then drop the $ref.
+If based on the SoC, then all this can be implied from the compatible 
+string.
 
 > +
-> +      aspeed,inverse-pin:
-> +        type: boolean
-> +        description:
-> +          Inverse PWM output signal.
+> +			  If both DMA and buffer modes are enabled in device
+> +			  tree, DMA mode will be selected.
 > +
-> +      aspeed,falling-point:
-> +        $ref: /schemas/types.yaml#/definitions/uint8
-> +        default: 10
-> +        minimum: 0
-> +        maximum: 255
-
-0-255 is already the range of uint8, so drop.
-
-> +        description:
-> +          Initialize the pulse width.
+> +			  AST2500 has these restrictions:
+> +			    - If one of these controllers is enabled
+> +				* UHCI host controller
+> +				* MCTP controller
+> +			      I2C has to use buffer mode or byte mode instead
+> +			      since these controllers run only in DMA mode and
+> +			      I2C is sharing the same DMA H/W with them.
+> +			    - If one of these controllers uses DMA mode, I2C
+> +			      can't use DMA mode
+> +				* SD/eMMC
+> +				* Port80 snoop
+>  
+>  Example:
+>  
+> @@ -26,12 +100,21 @@ i2c {
+>  	#size-cells = <1>;
+>  	ranges = <0 0x1e78a000 0x1000>;
+>  
+> -	i2c_ic: interrupt-controller at 0 {
+> -		#interrupt-cells = <1>;
+> -		compatible = "aspeed,ast2400-i2c-ic";
+> +	i2c_gr: i2c-global-regs at 0 {
+> +		compatible = "aspeed,ast2500-i2c-gr", "syscon";
+>  		reg = <0x0 0x40>;
+> -		interrupts = <12>;
+> -		interrupt-controller;
 > +
-> +    required:
-> +      - fan-tach-ch
-> +      - reg
+> +		#address-cells = <1>;
+> +		#size-cells = <1>;
+> +		ranges = <0x0 0x0 0x40>;
 > +
-> +    additionalProperties: true
+> +		i2c_ic: interrupt-controller at 0 {
+> +			#interrupt-cells = <1>;
+> +			compatible = "aspeed,ast2500-i2c-ic";
+> +			reg = <0x0 0x4>;
+> +			interrupts = <12>;
+> +			interrupt-controller;
+> +		};
+>  	};
+>  
+>  	i2c0: i2c-bus at 40 {
+> @@ -39,11 +122,40 @@ i2c {
+>  		#size-cells = <0>;
+>  		#interrupt-cells = <1>;
+>  		reg = <0x40 0x40>;
+> -		compatible = "aspeed,ast2400-i2c-bus";
+> +		compatible = "aspeed,ast2500-i2c-bus";
+>  		clocks = <&syscon ASPEED_CLK_APB>;
+>  		resets = <&syscon ASPEED_RESET_I2C>;
+>  		bus-frequency = <100000>;
+>  		interrupts = <0>;
+>  		interrupt-parent = <&i2c_ic>;
+>  	};
 > +
-> +required:
-> + - compatible
-> + - reg
+> +	/* buffer mode transfer enabled */
+> +	i2c1: i2c-bus at 80 {
+> +		#address-cells = <1>;
+> +		#size-cells = <0>;
+> +		#interrupt-cells = <1>;
+> +		reg = <0x80 0x40>, <0x210 0x10>;
+> +		compatible = "aspeed,ast2500-i2c-bus";
+> +		clocks = <&syscon ASPEED_CLK_APB>;
+> +		resets = <&syscon ASPEED_RESET_I2C>;
+> +		bus-frequency = <100000>;
+> +		interrupts = <1>;
+> +		interrupt-parent = <&i2c_ic>;
+> +	};
 > +
-> +additionalProperties: false
-> +
-> +examples:
-> +  - |
-> +    pwm_tacho: pwm-tacho-controller at 1e610000 {
-> +        compatible = "aspeed,ast2600-pwm-tachometer";
-> +        #address-cells = <1>;
-> +        #size-cells = <0>;
-> +        reg = <0x1e610000 0x100>;
-> +
-> +        fan at 1 {
-> +            reg = <0x00>;
-> +            aspeed,pwm-freq = <25000>;
-> +            cooling-levels = /bits/ 8 <125 151 177 203 229 255>;
-> +            fan-tach-ch = /bits/ 8 <0x00>;
-> +            pulses-per-revolution = <2>;
-> +        };
-> +
-> +        fan at 2 {
-> +            reg = <0x01>;
-> +            aspeed,pwm-freq = <25000>;
-> +            cooling-levels = /bits/ 8 <125 151 177 203 229 255>;
-> +            fan-tach-ch = /bits/ 8 <0x01>;
-> +            pulses-per-revolution = <2>;
-> +        };
-> +    };
-> +...
+> +	/* DMA mode transfer enabled */
+> +	i2c2: i2c-bus at c0 {
+> +		#address-cells = <1>;
+> +		#size-cells = <0>;
+> +		#interrupt-cells = <1>;
+> +		reg = <0xc0 0x40>;
+> +		aspeed,dma-buf-size = <4095>;
+> +		compatible = "aspeed,ast2500-i2c-bus";
+> +		clocks = <&syscon ASPEED_CLK_APB>;
+> +		resets = <&syscon ASPEED_RESET_I2C>;
+> +		bus-frequency = <100000>;
+> +		interrupts = <2>;
+> +		interrupt-parent = <&i2c_ic>;
+> +	};
+>  };
 > -- 
-> 2.25.1
+> 2.17.1
 > 
