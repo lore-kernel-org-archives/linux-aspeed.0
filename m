@@ -1,55 +1,114 @@
-From: Troy Lee <troy_lee@aspeedtech.com>
-Date: Thu, 14 Jan 2021 01:35:35 +0000
-Subject: [PATCH v2 1/4] dt-bindings: hwmon: Add Aspeed AST2600 PWM/Fan
-In-Reply-To: <1610552704.291941.2506185.nullmailer@robh.at.kernel.org>
-References: <20210113070850.1184506-1-troy_lee@aspeedtech.com>
- <20210113070850.1184506-2-troy_lee@aspeedtech.com>
- <1610552704.291941.2506185.nullmailer@robh.at.kernel.org>
-Message-ID: <20210114013535.GB2151879@aspeedtech.com>
+From: Andrew Jeffery <andrew@aj.id.au>
+Date: Thu, 14 Jan 2021 13:44:28 +1030
+Subject: [PATCH v7 1/6] mmc: core: Add helper for parsing clock phase
+ properties
+In-Reply-To: <20210114031433.2388532-1-andrew@aj.id.au>
+References: <20210114031433.2388532-1-andrew@aj.id.au>
+Message-ID: <20210114031433.2388532-2-andrew@aj.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Rob,
-The 01/13/2021 23:45, Rob Herring wrote:
-> On Wed, 13 Jan 2021 07:08:45 +0000, Troy Lee wrote:
-> > We add binding for supporting a new AST2600 PWM/Fan hwmon driver.
-> > 
-> > Changes since v1:
-> > - dt binding with DT schema format
-> > 
-> > Signed-off-by: Troy Lee <troy_lee@aspeedtech.com>
-> > ---
-> >  .../hwmon/aspeed,ast2600-pwm-tachometer.yaml  | 137 ++++++++++++++++++
-> >  1 file changed, 137 insertions(+)
-> >  create mode 100644 Documentation/devicetree/bindings/hwmon/aspeed,ast2600-pwm-tachometer.yaml
-> > 
-> 
-> My bot found errors running 'make dt_binding_check' on your patch:
-> 
-> yamllint warnings/errors:
-> ./Documentation/devicetree/bindings/hwmon/aspeed,ast2600-pwm-tachometer.yaml:108:2: [warning] wrong indentation: expected 2 but found 1 (indentation)
-> 
-> dtschema/dtc warnings/errors:
-> 
-> See https://patchwork.ozlabs.org/patch/1425628
-> 
-> This check can fail if there are any dependencies. The base for a patch
-> series is generally the most recent rc1.
-> 
-> If you already ran 'make dt_binding_check' and didn't see the above
-> error(s), then make sure 'yamllint' is installed and dt-schema is up to
-> date:
-> 
-> pip3 install dtschema --upgrade
-> 
-> Please check and re-submit.
-> 
+Drivers for MMC hosts that accept phase corrections can take advantage
+of the helper by embedding an instance of struct mmc_clk_phase_map in
+their private data and invoking mmc_of_parse_clk_phase() to extract
+phase parameters. It is the responsibility of the host driver to
+translate and apply the extracted values to hardware as required.
 
-After install yamllint and ran 'make dt_binding_check' again, I can see
-the same issue. I'll fix it in v3 patch set.
+Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
+---
+ drivers/mmc/core/host.c  | 44 ++++++++++++++++++++++++++++++++++++++++
+ include/linux/mmc/host.h | 13 ++++++++++++
+ 2 files changed, 57 insertions(+)
 
-Thanks,
-Troy Lee
+diff --git a/drivers/mmc/core/host.c b/drivers/mmc/core/host.c
+index 96b2ca1f1b06..74e853bb6948 100644
+--- a/drivers/mmc/core/host.c
++++ b/drivers/mmc/core/host.c
+@@ -163,6 +163,50 @@ static void mmc_retune_timer(struct timer_list *t)
+ 	mmc_retune_needed(host);
+ }
+ 
++static void mmc_of_parse_timing_phase(struct device *dev, const char *prop,
++				      struct mmc_clk_phase *phase)
++{
++	int degrees[2] = {0};
++	int rc;
++
++	rc = device_property_read_u32_array(dev, prop, degrees, 2);
++	phase->valid = !rc;
++	if (phase->valid) {
++		phase->in_deg = degrees[0];
++		phase->out_deg = degrees[1];
++	}
++}
++
++void
++mmc_of_parse_clk_phase(struct mmc_host *host, struct mmc_clk_phase_map *map)
++{
++	struct device *dev = host->parent;
++
++	mmc_of_parse_timing_phase(dev, "clk-phase-legacy",
++				  &map->phase[MMC_TIMING_LEGACY]);
++	mmc_of_parse_timing_phase(dev, "clk-phase-mmc-hs",
++				  &map->phase[MMC_TIMING_MMC_HS]);
++	mmc_of_parse_timing_phase(dev, "clk-phase-sd-hs",
++				  &map->phase[MMC_TIMING_SD_HS]);
++	mmc_of_parse_timing_phase(dev, "clk-phase-uhs-sdr12",
++				  &map->phase[MMC_TIMING_UHS_SDR12]);
++	mmc_of_parse_timing_phase(dev, "clk-phase-uhs-sdr25",
++				  &map->phase[MMC_TIMING_UHS_SDR25]);
++	mmc_of_parse_timing_phase(dev, "clk-phase-uhs-sdr50",
++				  &map->phase[MMC_TIMING_UHS_SDR50]);
++	mmc_of_parse_timing_phase(dev, "clk-phase-uhs-sdr104",
++				  &map->phase[MMC_TIMING_UHS_SDR104]);
++	mmc_of_parse_timing_phase(dev, "clk-phase-uhs-ddr50",
++				  &map->phase[MMC_TIMING_UHS_DDR50]);
++	mmc_of_parse_timing_phase(dev, "clk-phase-mmc-ddr52",
++				  &map->phase[MMC_TIMING_MMC_DDR52]);
++	mmc_of_parse_timing_phase(dev, "clk-phase-mmc-hs200",
++				  &map->phase[MMC_TIMING_MMC_HS200]);
++	mmc_of_parse_timing_phase(dev, "clk-phase-mmc-hs400",
++				  &map->phase[MMC_TIMING_MMC_HS400]);
++}
++EXPORT_SYMBOL(mmc_of_parse_clk_phase);
++
+ /**
+  *	mmc_of_parse() - parse host's device-tree node
+  *	@host: host whose node should be parsed.
+diff --git a/include/linux/mmc/host.h b/include/linux/mmc/host.h
+index 01bba36545c5..8cf686d98a68 100644
+--- a/include/linux/mmc/host.h
++++ b/include/linux/mmc/host.h
+@@ -79,6 +79,17 @@ struct mmc_ios {
+ 	bool enhanced_strobe;			/* hs400es selection */
+ };
+ 
++struct mmc_clk_phase {
++	bool valid;
++	u16 in_deg;
++	u16 out_deg;
++};
++
++#define MMC_NUM_CLK_PHASES (MMC_TIMING_MMC_HS400 + 1)
++struct mmc_clk_phase_map {
++	struct mmc_clk_phase phase[MMC_NUM_CLK_PHASES];
++};
++
+ struct mmc_host;
+ 
+ struct mmc_host_ops {
+@@ -490,6 +501,8 @@ struct mmc_host *mmc_alloc_host(int extra, struct device *);
+ int mmc_add_host(struct mmc_host *);
+ void mmc_remove_host(struct mmc_host *);
+ void mmc_free_host(struct mmc_host *);
++void mmc_of_parse_clk_phase(struct mmc_host *host,
++			    struct mmc_clk_phase_map *map);
+ int mmc_of_parse(struct mmc_host *host);
+ int mmc_of_parse_voltage(struct device_node *np, u32 *mask);
+ 
+-- 
+2.27.0
+
