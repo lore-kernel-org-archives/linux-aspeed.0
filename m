@@ -1,191 +1,62 @@
 From: Chia-Wei, Wang <chiawei_wang@aspeedtech.com>
-Date: Thu, 14 Jan 2021 21:16:18 +0800
-Subject: [PATCH v5 1/5] dt-bindings: aspeed-lpc: Remove LPC partitioning
+Date: Thu, 14 Jan 2021 21:16:21 +0800
+Subject: [PATCH v5 4/5] pinctrl: aspeed-g5: Adapt to new LPC device tree layout
 In-Reply-To: <20210114131622.8951-1-chiawei_wang@aspeedtech.com>
 References: <20210114131622.8951-1-chiawei_wang@aspeedtech.com>
-Message-ID: <20210114131622.8951-2-chiawei_wang@aspeedtech.com>
+Message-ID: <20210114131622.8951-5-chiawei_wang@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The LPC controller has no concept of the BMC and the Host partitions.
-This patch fixes the documentation by removing the description on LPC
-partitions. The register offsets illustrated in the DTS node examples
-are also fixed to adapt to the LPC DTS change.
+Add check against LPC device v2 compatible string to
+ensure that the fixed device tree layout is adopted.
+The LPC register offsets are also fixed accordingly.
 
 Signed-off-by: Chia-Wei, Wang <chiawei_wang@aspeedtech.com>
 ---
- .../devicetree/bindings/mfd/aspeed-lpc.txt    | 100 +++++-------------
- 1 file changed, 25 insertions(+), 75 deletions(-)
+ drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c | 17 +++++++++++------
+ 1 file changed, 11 insertions(+), 6 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/mfd/aspeed-lpc.txt b/Documentation/devicetree/bindings/mfd/aspeed-lpc.txt
-index d0a38ba8b9ce..936aa108eab4 100644
---- a/Documentation/devicetree/bindings/mfd/aspeed-lpc.txt
-+++ b/Documentation/devicetree/bindings/mfd/aspeed-lpc.txt
-@@ -9,13 +9,7 @@ primary use case of the Aspeed LPC controller is as a slave on the bus
- conditions it can also take the role of bus master.
+diff --git a/drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c b/drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c
+index 0cab4c2576e2..996ebcba4d38 100644
+--- a/drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c
++++ b/drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c
+@@ -60,7 +60,7 @@
+ #define COND2		{ ASPEED_IP_SCU, SCU94, GENMASK(1, 0), 0, 0 }
  
- The LPC controller is represented as a multi-function device to account for the
--mix of functionality it provides. The principle split is between the register
--layout at the start of the I/O space which is, to quote the Aspeed datasheet,
--"basically compatible with the [LPC registers from the] popular BMC controller
--H8S/2168[1]", and everything else, where everything else is an eclectic
--collection of functions with a esoteric register layout. "Everything else",
--here labeled the "host" portion of the controller, includes, but is not limited
--to:
-+mix of functionality, which includes, but is not limited to:
+ /* LHCR0 is offset from the end of the H8S/2168-compatible registers */
+-#define LHCR0		0x20
++#define LHCR0		0xa0
+ #define GFX064		0x64
  
- * An IPMI Block Transfer[2] Controller
+ #define B14 0
+@@ -2648,14 +2648,19 @@ static struct regmap *aspeed_g5_acquire_regmap(struct aspeed_pinmux_data *ctx,
+ 	}
  
-@@ -44,80 +38,36 @@ Required properties
- ===================
+ 	if (ip == ASPEED_IP_LPC) {
+-		struct device_node *node;
++		struct device_node *np;
+ 		struct regmap *map;
  
- - compatible:	One of:
--		"aspeed,ast2400-lpc", "simple-mfd"
--		"aspeed,ast2500-lpc", "simple-mfd"
--		"aspeed,ast2600-lpc", "simple-mfd"
-+		"aspeed,ast2400-lpc-v2", "simple-mfd", "syscon"
-+		"aspeed,ast2500-lpc-v2", "simple-mfd", "syscon"
-+		"aspeed,ast2600-lpc-v2", "simple-mfd", "syscon"
- 
- - reg:		contains the physical address and length values of the Aspeed
-                 LPC memory region.
- 
- - #address-cells: <1>
- - #size-cells:	<1>
--- ranges: 	Maps 0 to the physical address and length of the LPC memory
--                region
--
--Required LPC Child nodes
--========================
--
--BMC Node
----------
--
--- compatible:	One of:
--		"aspeed,ast2400-lpc-bmc"
--		"aspeed,ast2500-lpc-bmc"
--		"aspeed,ast2600-lpc-bmc"
--
--- reg:		contains the physical address and length values of the
--                H8S/2168-compatible LPC controller memory region
--
--Host Node
-----------
--
--- compatible:   One of:
--		"aspeed,ast2400-lpc-host", "simple-mfd", "syscon"
--		"aspeed,ast2500-lpc-host", "simple-mfd", "syscon"
--		"aspeed,ast2600-lpc-host", "simple-mfd", "syscon"
--
--- reg:		contains the address and length values of the host-related
--                register space for the Aspeed LPC controller
--
--- #address-cells: <1>
--- #size-cells:	<1>
--- ranges: 	Maps 0 to the address and length of the host-related LPC memory
-+- ranges:	Maps 0 to the physical address and length of the LPC memory
-                 region
- 
- Example:
- 
- lpc: lpc at 1e789000 {
--	compatible = "aspeed,ast2500-lpc", "simple-mfd";
-+	compatible = "aspeed,ast2500-lpc-v2", "simple-mfd", "syscon";
- 	reg = <0x1e789000 0x1000>;
- 
- 	#address-cells = <1>;
- 	#size-cells = <1>;
- 	ranges = <0x0 0x1e789000 0x1000>;
- 
--	lpc_bmc: lpc-bmc at 0 {
--		compatible = "aspeed,ast2500-lpc-bmc";
-+	lpc_snoop: lpc-snoop at 0 {
-+		compatible = "aspeed,ast2600-lpc-snoop";
- 		reg = <0x0 0x80>;
--	};
--
--	lpc_host: lpc-host at 80 {
--		compatible = "aspeed,ast2500-lpc-host", "simple-mfd", "syscon";
--		reg = <0x80 0x1e0>;
--		reg-io-width = <4>;
--
--		#address-cells = <1>;
--		#size-cells = <1>;
--		ranges = <0x0 0x80 0x1e0>;
-+		interrupts = <GIC_SPI 144 IRQ_TYPE_LEVEL_HIGH>;
-+		snoop-ports = <0x80>;
- 	};
- };
- 
--BMC Node Children
--==================
--
--
--Host Node Children
--==================
- 
- LPC Host Interface Controller
- -------------------
-@@ -149,14 +99,12 @@ Optional properties:
- 
- Example:
- 
--lpc-host at 80 {
--	lpc_ctrl: lpc-ctrl at 0 {
--		compatible = "aspeed,ast2500-lpc-ctrl";
--		reg = <0x0 0x80>;
--		clocks = <&syscon ASPEED_CLK_GATE_LCLK>;
--		memory-region = <&flash_memory>;
--		flash = <&spi>;
--	};
-+lpc_ctrl: lpc-ctrl at 80 {
-+	compatible = "aspeed,ast2500-lpc-ctrl";
-+	reg = <0x80 0x80>;
-+	clocks = <&syscon ASPEED_CLK_GATE_LCLK>;
-+	memory-region = <&flash_memory>;
-+	flash = <&spi>;
- };
- 
- LPC Host Controller
-@@ -179,9 +127,9 @@ Required properties:
- 
- Example:
- 
--lhc: lhc at 20 {
-+lhc: lhc at a0 {
- 	compatible = "aspeed,ast2500-lhc";
--	reg = <0x20 0x24 0x48 0x8>;
-+	reg = <0xa0 0x24 0xc8 0x8>;
- };
- 
- LPC reset control
-@@ -192,16 +140,18 @@ state of the LPC bus. Some systems may chose to modify this configuration.
- 
- Required properties:
- 
-- - compatible:		"aspeed,ast2600-lpc-reset" or
--			"aspeed,ast2500-lpc-reset"
--			"aspeed,ast2400-lpc-reset"
-+ - compatible:		One of:
-+			"aspeed,ast2600-lpc-reset";
-+			"aspeed,ast2500-lpc-reset";
-+			"aspeed,ast2400-lpc-reset";
+-		node = of_parse_phandle(ctx->dev->of_node,
++		np = of_parse_phandle(ctx->dev->of_node,
+ 					"aspeed,external-nodes", 1);
+-		if (node) {
+-			map = syscon_node_to_regmap(node->parent);
+-			of_node_put(node);
++		if (np) {
++			if (!of_device_is_compatible(np->parent, "aspeed,ast2400-lpc-v2") &&
++			    !of_device_is_compatible(np->parent, "aspeed,ast2500-lpc-v2") &&
++			    !of_device_is_compatible(np->parent, "aspeed,ast2600-lpc-v2"))
++				return ERR_PTR(-ENODEV);
 +
-  - reg:			offset and length of the IP in the LHC memory region
-  - #reset-controller	indicates the number of reset cells expected
- 
- Example:
- 
--lpc_reset: reset-controller at 18 {
-+lpc_reset: reset-controller at 98 {
-         compatible = "aspeed,ast2500-lpc-reset";
--        reg = <0x18 0x4>;
-+        reg = <0x98 0x4>;
-         #reset-cells = <1>;
- };
++			map = syscon_node_to_regmap(np->parent);
++			of_node_put(np);
+ 			if (IS_ERR(map))
+ 				return map;
+ 		} else
 -- 
 2.17.1
 
