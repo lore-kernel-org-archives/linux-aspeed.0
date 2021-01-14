@@ -1,114 +1,54 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Thu, 14 Jan 2021 13:44:28 +1030
-Subject: [PATCH v7 1/6] mmc: core: Add helper for parsing clock phase
- properties
-In-Reply-To: <20210114031433.2388532-1-andrew@aj.id.au>
-References: <20210114031433.2388532-1-andrew@aj.id.au>
-Message-ID: <20210114031433.2388532-2-andrew@aj.id.au>
+Date: Thu, 14 Jan 2021 13:44:27 +1030
+Subject: [PATCH v7 0/6] mmc: sdhci-of-aspeed: Expose phase delay tuning
+Message-ID: <20210114031433.2388532-1-andrew@aj.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Drivers for MMC hosts that accept phase corrections can take advantage
-of the helper by embedding an instance of struct mmc_clk_phase_map in
-their private data and invoking mmc_of_parse_clk_phase() to extract
-phase parameters. It is the responsibility of the host driver to
-translate and apply the extracted values to hardware as required.
+Hello,
 
-Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
----
- drivers/mmc/core/host.c  | 44 ++++++++++++++++++++++++++++++++++++++++
- include/linux/mmc/host.h | 13 ++++++++++++
- 2 files changed, 57 insertions(+)
+This series implements support for the MMC core clk-phase-* devicetree bindings
+in the Aspeed SD/eMMC driver. The relevant register was exposed on the AST2600
+and is present for both the SD/MMC controller and the dedicated eMMC
+controller.
 
-diff --git a/drivers/mmc/core/host.c b/drivers/mmc/core/host.c
-index 96b2ca1f1b06..74e853bb6948 100644
---- a/drivers/mmc/core/host.c
-+++ b/drivers/mmc/core/host.c
-@@ -163,6 +163,50 @@ static void mmc_retune_timer(struct timer_list *t)
- 	mmc_retune_needed(host);
- }
- 
-+static void mmc_of_parse_timing_phase(struct device *dev, const char *prop,
-+				      struct mmc_clk_phase *phase)
-+{
-+	int degrees[2] = {0};
-+	int rc;
-+
-+	rc = device_property_read_u32_array(dev, prop, degrees, 2);
-+	phase->valid = !rc;
-+	if (phase->valid) {
-+		phase->in_deg = degrees[0];
-+		phase->out_deg = degrees[1];
-+	}
-+}
-+
-+void
-+mmc_of_parse_clk_phase(struct mmc_host *host, struct mmc_clk_phase_map *map)
-+{
-+	struct device *dev = host->parent;
-+
-+	mmc_of_parse_timing_phase(dev, "clk-phase-legacy",
-+				  &map->phase[MMC_TIMING_LEGACY]);
-+	mmc_of_parse_timing_phase(dev, "clk-phase-mmc-hs",
-+				  &map->phase[MMC_TIMING_MMC_HS]);
-+	mmc_of_parse_timing_phase(dev, "clk-phase-sd-hs",
-+				  &map->phase[MMC_TIMING_SD_HS]);
-+	mmc_of_parse_timing_phase(dev, "clk-phase-uhs-sdr12",
-+				  &map->phase[MMC_TIMING_UHS_SDR12]);
-+	mmc_of_parse_timing_phase(dev, "clk-phase-uhs-sdr25",
-+				  &map->phase[MMC_TIMING_UHS_SDR25]);
-+	mmc_of_parse_timing_phase(dev, "clk-phase-uhs-sdr50",
-+				  &map->phase[MMC_TIMING_UHS_SDR50]);
-+	mmc_of_parse_timing_phase(dev, "clk-phase-uhs-sdr104",
-+				  &map->phase[MMC_TIMING_UHS_SDR104]);
-+	mmc_of_parse_timing_phase(dev, "clk-phase-uhs-ddr50",
-+				  &map->phase[MMC_TIMING_UHS_DDR50]);
-+	mmc_of_parse_timing_phase(dev, "clk-phase-mmc-ddr52",
-+				  &map->phase[MMC_TIMING_MMC_DDR52]);
-+	mmc_of_parse_timing_phase(dev, "clk-phase-mmc-hs200",
-+				  &map->phase[MMC_TIMING_MMC_HS200]);
-+	mmc_of_parse_timing_phase(dev, "clk-phase-mmc-hs400",
-+				  &map->phase[MMC_TIMING_MMC_HS400]);
-+}
-+EXPORT_SYMBOL(mmc_of_parse_clk_phase);
-+
- /**
-  *	mmc_of_parse() - parse host's device-tree node
-  *	@host: host whose node should be parsed.
-diff --git a/include/linux/mmc/host.h b/include/linux/mmc/host.h
-index 01bba36545c5..8cf686d98a68 100644
---- a/include/linux/mmc/host.h
-+++ b/include/linux/mmc/host.h
-@@ -79,6 +79,17 @@ struct mmc_ios {
- 	bool enhanced_strobe;			/* hs400es selection */
- };
- 
-+struct mmc_clk_phase {
-+	bool valid;
-+	u16 in_deg;
-+	u16 out_deg;
-+};
-+
-+#define MMC_NUM_CLK_PHASES (MMC_TIMING_MMC_HS400 + 1)
-+struct mmc_clk_phase_map {
-+	struct mmc_clk_phase phase[MMC_NUM_CLK_PHASES];
-+};
-+
- struct mmc_host;
- 
- struct mmc_host_ops {
-@@ -490,6 +501,8 @@ struct mmc_host *mmc_alloc_host(int extra, struct device *);
- int mmc_add_host(struct mmc_host *);
- void mmc_remove_host(struct mmc_host *);
- void mmc_free_host(struct mmc_host *);
-+void mmc_of_parse_clk_phase(struct mmc_host *host,
-+			    struct mmc_clk_phase_map *map);
- int mmc_of_parse(struct mmc_host *host);
- int mmc_of_parse_voltage(struct device_node *np, u32 *mask);
- 
+v7 is just a small change to the the kunit testing in response to Adrian's
+feedback.
+
+I've just done a quick build test of v7 given the small change and more
+extensive testing done with v5. 
+
+v6 can be found here:
+
+https://lore.kernel.org/linux-mmc/20201218035338.1130849-1-andrew at aj.id.au/
+
+Please review!
+
+Cheers,
+
+Andrew
+
+Andrew Jeffery (6):
+  mmc: core: Add helper for parsing clock phase properties
+  mmc: sdhci-of-aspeed: Expose clock phase controls
+  mmc: sdhci-of-aspeed: Add AST2600 bus clock support
+  mmc: sdhci-of-aspeed: Add KUnit tests for phase calculations
+  MAINTAINERS: Add entry for the ASPEED SD/MMC driver
+  ARM: dts: rainier: Add eMMC clock phase compensation
+
+ MAINTAINERS                                  |   9 +
+ arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts |   1 +
+ drivers/mmc/core/host.c                      |  44 ++++
+ drivers/mmc/host/Kconfig                     |  14 +
+ drivers/mmc/host/sdhci-of-aspeed-test.c      |  98 +++++++
+ drivers/mmc/host/sdhci-of-aspeed.c           | 255 ++++++++++++++++++-
+ include/linux/mmc/host.h                     |  13 +
+ 7 files changed, 423 insertions(+), 11 deletions(-)
+ create mode 100644 drivers/mmc/host/sdhci-of-aspeed-test.c
+
 -- 
 2.27.0
 
