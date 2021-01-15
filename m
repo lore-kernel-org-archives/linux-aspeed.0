@@ -1,12 +1,11 @@
-From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-Date: Thu, 14 Jan 2021 12:05:26 -0800
-Subject: [PATCH v2 1/4] dt-bindings: i2c: aspeed: add buffer and DMA mode
- transfer support
-In-Reply-To: <20210114193416.GA3432711@robh.at.kernel.org>
-References: <20210112003749.10565-1-jae.hyun.yoo@linux.intel.com>
- <20210112003749.10565-2-jae.hyun.yoo@linux.intel.com>
- <20210114193416.GA3432711@robh.at.kernel.org>
-Message-ID: <4f67358e-58e5-65a5-3680-1cd8e9851faa@linux.intel.com>
+From: Troy Lee <troy_lee@aspeedtech.com>
+Date: Fri, 15 Jan 2021 01:46:31 +0000
+Subject: [PATCH v2 1/4] dt-bindings: hwmon: Add Aspeed AST2600 PWM/Fan
+In-Reply-To: <20210114141317.GA2823834@robh.at.kernel.org>
+References: <20210113070850.1184506-1-troy_lee@aspeedtech.com>
+ <20210113070850.1184506-2-troy_lee@aspeedtech.com>
+ <20210114141317.GA2823834@robh.at.kernel.org>
+Message-ID: <20210115014631.GA1391@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -15,62 +14,195 @@ Content-Transfer-Encoding: 7bit
 
 Hi Rob,
 
-On 1/14/2021 11:34 AM, Rob Herring wrote:
->> -- reg			: address offset and range of bus
->> +- reg			: Address offset and range of bus registers.
->> +
->> +			  An additional SRAM buffer address offset and range is
->> +			  optional in case of enabling I2C dedicated SRAM for
->> +			  buffer mode transfer support. If the optional range
->> +			  is defined, buffer mode will be enabled.
->> +			  - AST2400
->> +			    &i2c0 { reg = <0x40 0x40>, <0x800 0x80>; };
->> +			    &i2c1 { reg = <0x80 0x40>, <0x880 0x80>; };
->> +			    &i2c2 { reg = <0xc0 0x40>, <0x900 0x80>; };
->> +			    &i2c3 { reg = <0x100 0x40>, <0x980 0x80>; };
->> +			    &i2c4 { reg = <0x140 0x40>, <0xa00 0x80>; };
->> +			    &i2c5 { reg = <0x180 0x40>, <0xa80 0x80>; };
->> +			    &i2c6 { reg = <0x1c0 0x40>, <0xb00 0x80>; };
->> +			    &i2c7 { reg = <0x300 0x40>, <0xb80 0x80>; };
->> +			    &i2c8 { reg = <0x340 0x40>, <0xc00 0x80>; };
->> +			    &i2c9 { reg = <0x380 0x40>, <0xc80 0x80>; };
->> +			    &i2c10 { reg = <0x3c0 0x40>, <0xd00 0x80>; };
->> +			    &i2c11 { reg = <0x400 0x40>, <0xd80 0x80>; };
->> +			    &i2c12 { reg = <0x440 0x40>, <0xe00 0x80>; };
->> +			    &i2c13 { reg = <0x480 0x40>, <0xe80 0x80>; };
-> 
-> All this information doesn't need to be in the binding.
-> 
-> It's also an oddly structured dts file if this is what you are doing...
+Thanks for reviewing.
 
-I removed the default buffer mode settings that I added into
-'aspeed-g4.dtsi' and 'aspeed-g5.dtsi' in v1 to avoid touching of the
-default transfer mode setting, but each bus should use its dedicated
-SRAM buffer range for enabling buffer mode so I added this information
-at here as overriding examples instead. I thought that binding document
-is a right place for providing this information but looks like it's not.
-Any recommended place for it? Is it good enough if I add it just into
-the commit message?
-
->> @@ -17,6 +72,25 @@ Optional Properties:
->>   - bus-frequency	: frequency of the bus clock in Hz defaults to 100 kHz when not
->>   		  specified
->>   - multi-master	: states that there is another master active on this bus.
->> +- aspeed,dma-buf-size	: size of DMA buffer.
->> +			    AST2400: N/A
->> +			    AST2500: 2 ~ 4095
->> +			    AST2600: 2 ~ 4096
+The 01/14/2021 22:13, Rob Herring wrote:
+> On Wed, Jan 13, 2021 at 07:08:45AM +0000, Troy Lee wrote:
+> > We add binding for supporting a new AST2600 PWM/Fan hwmon driver.
+> > 
+> > Changes since v1:
+> > - dt binding with DT schema format
+> > 
+> > Signed-off-by: Troy Lee <troy_lee@aspeedtech.com>
+> > ---
+> >  .../hwmon/aspeed,ast2600-pwm-tachometer.yaml  | 137 ++++++++++++++++++
+> >  1 file changed, 137 insertions(+)
+> >  create mode 100644 Documentation/devicetree/bindings/hwmon/aspeed,ast2600-pwm-tachometer.yaml
+> > 
+> > diff --git a/Documentation/devicetree/bindings/hwmon/aspeed,ast2600-pwm-tachometer.yaml b/Documentation/devicetree/bindings/hwmon/aspeed,ast2600-pwm-tachometer.yaml
+> > new file mode 100644
+> > index 000000000000..b84076a4a338
+> > --- /dev/null
+> > +++ b/Documentation/devicetree/bindings/hwmon/aspeed,ast2600-pwm-tachometer.yaml
+> > @@ -0,0 +1,137 @@
+> > +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+> > +%YAML 1.2
+> > +---
+> > +
+> > +$id: http://devicetree.org/schemas/hwmon/aspeed,ast2600-pwm-tachometer.yaml#
+> > +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> > +
+> > +title: ASPEED AST2600 PWM and Fan Tacho controller device driver
+> > +
+> > +maintainers:
+> > +  - Ryan Chen <ryan_chen@aspeedtech.com>
+> > +
+> > +description: |
+> > +  The ASPEED PWM controller can support upto 16 PWM outputs. The ASPEED Fan Tacho
+> > +  controller can support upto 16 Fan tachometer inputs.
+> > +  There can be upto 16 fans supported. Each fan can have one PWM output and
+> > +  one Fan tach inputs.
+> > +
+> > +properties:
+> > +  compatible:
+> > +    const: aspeed,ast2600-pwm-tachometer
+> > +
+> > +  "#address-cells":
+> > +    const: 1
+> > +
+> > +  "#size-cells":
+> > +    const: 0
+> > +
+> > +  "#cooling-cells":
+> > +    const: 2
+> > +
+> > +  reg:
+> > +    description:
+> > +      Address and length of the register set for the device.
 > 
-> If based on the SoC, then all this can be implied from the compatible
-> string.
+> No need for generic descriptions. That's every 'reg'.
 > 
+> What you need is how many entries and what each one is if more than 1. 
+> If only 1, then just 'maxItems: 1'
+> 
+> > +
+> > +  clocks:
+> > +    description:
+> > +      phandle to clock provider with the clock number in the second cell
+> 
+> Same here.
+> 
+> > +
+> > +  resets:
+> > +    description:
+> > +      phandle to reset controller with the reset number in the second cell
+> 
+> And here.
+> 
+> > +
+> > +patternProperties:
+> > +  "@[0-9]+$":
+> 
+> If every node is a fan and there are up to 16:
+> 
+> ^fan@[0-9a-f]$
+> 
+I will update these in v3 patch set.
 
-Please help me to clarify your comment. Should I remove it from here
-with keeping the driver handling code for each SoC compatible string?
-Or should I change it like below?
-aspeed,ast2400-i2c-bus: N/A
-aspeed,ast2500-i2c-bus: 2 ~ 4095
-aspeed,ast2600-i2c-bus: 2 ~ 4096
+> > +    type: object
+> > +    description:
+> > +      Under fan subnode there can upto 16 child nodes, with each child node
+> > +      representing a fan. There are 16 fans each fan can have one PWM port and one
+> > +      Fan tach inputs.
+> > +      For PWM port can be configured cooling-levels to create cooling device.
+> > +      Cooling device could be bound to a thermal zone for the thermal control.
+> > +
+> > +    properties:
+> > +      reg:
+> > +        minimum: 0
+> > +        maximum: 15
+> > +        description:
+> > +          This property identify the PWM control channel of this fan.
+> > +
+> > +      fan-tach-ch:
+> > +        $ref: /schemas/types.yaml#/definitions/uint8
+> > +        minimum: 0
+> > +        maximum: 15
+> > +        description:
+> > +          This property identify the fan tach input channel.
+> > +
+> > +      pulses-per-revolution:
+> > +        $ref: /schemas/types.yaml#/definitions/uint32
+> > +        default: 2
+> > +        minimum: 1
+> > +        description:
+> > +          Specify tacho pulse per revolution of the fan.
+> > +
+> > +      cooling-levels:
+> > +        description:
+> > +          PWM duty cycle values in a range from 0 to 255
+> > +          which correspond to thermal cooling states.
+> > +
+> > +      aspeed,pwm-freq:
+> > +        $ref: /schemas/types.yaml#/definitions/uint32
+> > +        default: 25000
+> > +        minimum: 24
+> > +        maximum: 780000
+> > +        description:
+> > +          Specify the frequency of PWM.
+> 
+> Units? Use a unit suffix and then drop the $ref.
+> 
+I'll change it to pwm-freq-hz.
+
+> > +
+> > +      aspeed,inverse-pin:
+> > +        type: boolean
+> > +        description:
+> > +          Inverse PWM output signal.
+> > +
+> > +      aspeed,falling-point:
+> > +        $ref: /schemas/types.yaml#/definitions/uint8
+> > +        default: 10
+> > +        minimum: 0
+> > +        maximum: 255
+> 
+> 0-255 is already the range of uint8, so drop.
+> 
+I'll drop it in v3.
 
 Thanks,
-Jae
+Troy Lee
+> > +        description:
+> > +          Initialize the pulse width.
+> > +
+> > +    required:
+> > +      - fan-tach-ch
+> > +      - reg
+> > +
+> > +    additionalProperties: true
+> > +
+> > +required:
+> > + - compatible
+> > + - reg
+> > +
+> > +additionalProperties: false
+> > +
+> > +examples:
+> > +  - |
+> > +    pwm_tacho: pwm-tacho-controller at 1e610000 {
+> > +        compatible = "aspeed,ast2600-pwm-tachometer";
+> > +        #address-cells = <1>;
+> > +        #size-cells = <0>;
+> > +        reg = <0x1e610000 0x100>;
+> > +
+> > +        fan at 1 {
+> > +            reg = <0x00>;
+> > +            aspeed,pwm-freq = <25000>;
+> > +            cooling-levels = /bits/ 8 <125 151 177 203 229 255>;
+> > +            fan-tach-ch = /bits/ 8 <0x00>;
+> > +            pulses-per-revolution = <2>;
+> > +        };
+> > +
+> > +        fan at 2 {
+> > +            reg = <0x01>;
+> > +            aspeed,pwm-freq = <25000>;
+> > +            cooling-levels = /bits/ 8 <125 151 177 203 229 255>;
+> > +            fan-tach-ch = /bits/ 8 <0x01>;
+> > +            pulses-per-revolution = <2>;
+> > +        };
+> > +    };
+> > +...
+> > -- 
+> > 2.25.1
+> > 
