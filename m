@@ -1,59 +1,53 @@
-From: Ryan Chen <ryan_chen@aspeedtech.com>
-Date: Sat, 16 Jan 2021 01:03:11 +0000
-Subject: [PATCH v2 1/2] misc: Add clock control logic into Aspeed LPC
- SNOOP driver
-In-Reply-To: <CAK8P3a2WPvWokkqJB-yhfQH1ofofGNvibqPjUXPme+F2LCHjxw@mail.gmail.com>
-References: <20201208091748.1920-1-wangzhiqiang.bj@bytedance.com>
- <HK0PR06MB33807C054FCE9E355346E204F2D00@HK0PR06MB3380.apcprd06.prod.outlook.com>
- <CAK8P3a2WPvWokkqJB-yhfQH1ofofGNvibqPjUXPme+F2LCHjxw@mail.gmail.com>
-Message-ID: <HK0PR06MB3380A1F79CDE49FACC1A3E71F2A60@HK0PR06MB3380.apcprd06.prod.outlook.com>
+From: Troy Lee <troy_lee@aspeedtech.com>
+Date: Mon, 18 Jan 2021 06:50:48 +0000
+Subject: [PATCH v3 0/4] hwmon: aspeed2600-pwm-tacho: Add driver support
+Message-ID: <20210118065059.2478078-1-troy_lee@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-> -----Original Message-----
-> From: Arnd Bergmann <arnd@kernel.org>
-> Sent: Saturday, January 16, 2021 1:05 AM
-> To: Ryan Chen <ryan_chen@aspeedtech.com>
-> Cc: John Wang <wangzhiqiang.bj@bytedance.com>;
-> xuxiaohan at bytedance.com; yulei.sh at bytedance.com; Robert Lippert
-> <rlippert@google.com>; moderated list:ARM/ASPEED MACHINE SUPPORT
-> <linux-aspeed@lists.ozlabs.org>; Greg Kroah-Hartman
-> <gregkh@linuxfoundation.org>; Vernon Mauery
-> <vernon.mauery@linux.intel.com>; open list <linux-kernel@vger.kernel.org>;
-> Jae Hyun Yoo <jae.hyun.yoo@intel.com>; Patrick Venture
-> <venture@google.com>; moderated list:ARM/ASPEED MACHINE SUPPORT
-> <linux-arm-kernel@lists.infradead.org>
-> Subject: Re: [PATCH v2 1/2] misc: Add clock control logic into Aspeed LPC
-> SNOOP driver
-> 
-> On Wed, Jan 6, 2021 at 10:57 AM Ryan Chen <ryan_chen@aspeedtech.com>
-> wrote:
-> >
-> > Hello John, Joel, Jae,
-> >         For this should be set LCLK to be CRITICAL it will fix LPC related
-> driver. (KCS/BT/SNOOP)
-> >         I have send the patch before.
-> >
-> > https://patchwork.ozlabs.org/project/linux-aspeed/patch/20200928070108
-> > .14040-2-ryan_chen at aspeedtech.com/
-> >
-> > Hello Joel,
-> >         Will you consider this patch?
-> >         Beside KCS/BT/SNOOP, UART1/UART2 will be most related issue
-> for host side.
-> 
-> Sorry it did not make it into the merge window. The patch is still in patchwork.
-> I could just pick it up directly for v5.12, or wait for a combined pull request
-> with other work. 
+Aspeed AST2600 is a server management SoC which has 16 PWM channels and
+16 fan tacho channel.
 
-Hello Arnd,
-Thanks your update.
+This series of patch provides AST2600 PWM/Fan tacho support in hwmon
+class.
 
->Joel, please let me know what you prefer.
-> 
-Hello Joel,
-Could you help check on this patch? 
-https://patchwork.ozlabs.org/project/linux-aspeed/patch/20200928070108.14040-2-ryan_chen at aspeedtech.com/
+The driver provides a sysfs interface, and user can configure PWM duty
+cycle and read current FAN speed in RPM.
+
+Changes since v2:
+ - declare local function as static function
+ - fixed dt binding yamllint warnings/errors
+ - rename dt property property name from pwm-freq to pwm-freq-hz
+
+Changes since v1:
+ - dt-binding rewrote with dt schema format
+ - register hwmon driver with devm_hwmon_device_register_with_info()
+ - moving default configurations to device tree
+
+Troy Lee (4):
+  dt-bindings: hwmon: Add Aspeed AST2600 PWM/Fan
+  hwmon: Add Aspeed AST2600 support
+  ARM: dts: aspeed: Add Aspeed AST2600 PWM/Fan node in devicetree
+  hwmon: Support Aspeed AST2600 PWM/Fan tachometer
+
+ .../hwmon/aspeed,ast2600-pwm-tachometer.yaml  | 131 +++
+ .../hwmon/aspeed2600-pwm-tachometer.rst       |  27 +
+ Documentation/hwmon/index.rst                 |   1 +
+ arch/arm/boot/dts/aspeed-ast2600-evb.dts      | 152 ++++
+ arch/arm/boot/dts/aspeed-g6.dtsi              |  10 +
+ drivers/hwmon/Kconfig                         |  10 +
+ drivers/hwmon/Makefile                        |   1 +
+ drivers/hwmon/aspeed2600-pwm-tacho.c          | 756 ++++++++++++++++++
+ 8 files changed, 1088 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/hwmon/aspeed,ast2600-pwm-tachometer.yaml
+ create mode 100644 Documentation/hwmon/aspeed2600-pwm-tachometer.rst
+ create mode 100644 drivers/hwmon/aspeed2600-pwm-tacho.c
+
+
+base-commit: 1d011777cdbe7ae38a854a0cbeb6bdfbf724cce0
+-- 
+2.25.1
+
