@@ -1,37 +1,30 @@
 From: Linus Walleij <linus.walleij@linaro.org>
-Date: Mon, 18 Jan 2021 15:40:57 +0100
-Subject: [PATCH, v1 1/1] gpio: aspeed: Add gpio base address reading
-In-Reply-To: <20210113223808.31626-2-hongweiz@ami.com>
-References: <20210113223808.31626-1-hongweiz@ami.com>
- <20210113223808.31626-2-hongweiz@ami.com>
-Message-ID: <CACRpkdYpPkCvoEHH6Nu1LPv24JwRWANRTiwVa9cvjZaJeaa02Q@mail.gmail.com>
+Date: Mon, 18 Jan 2021 15:59:16 +0100
+Subject: [PATCH v5 4/5] pinctrl: aspeed-g5: Adapt to new LPC device tree
+ layout
+In-Reply-To: <20210114131622.8951-5-chiawei_wang@aspeedtech.com>
+References: <20210114131622.8951-1-chiawei_wang@aspeedtech.com>
+ <20210114131622.8951-5-chiawei_wang@aspeedtech.com>
+Message-ID: <CACRpkdbqJuKHH+sR3LfWV72kM7TEhimFVi1viuQGkP8DWOODow@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Jan 13, 2021 at 11:38 PM Hongwei Zhang <hongweiz@ami.com> wrote:
+On Thu, Jan 14, 2021 at 2:17 PM Chia-Wei, Wang
+<chiawei_wang@aspeedtech.com> wrote:
 
-> Add gpio base address reading in the driver; in old code, it just
-> returns -1 to gpio->chip.base.
+> Add check against LPC device v2 compatible string to
+> ensure that the fixed device tree layout is adopted.
+> The LPC register offsets are also fixed accordingly.
 >
-> Fixes: 7ee2d5b4d4340353 ("ARM: dts: nuvoton: Add Fii Kudo system")
-> Signed-off-by: Hongwei Zhang <hongweiz@ami.com>
+> Signed-off-by: Chia-Wei, Wang <chiawei_wang@aspeedtech.com>
 
-NAK, sorry.
+Acked-by: Linus Walleij <linus.walleij@linaro.org>
 
-We never allow the device tree to specify this.
-
-First, it is a Linux-only base so it would have to be a
-"linux,..." property.
-
-Even if it is a Linux-only property, it is a bad idea.
-
-Only people using sysfs should have any need to specify global
-GPIO numbers. Don't use sysfs. Use the GPIO character device
-instead. See further:
-https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/gpio/TODO
+I suppose the patches need to go in together. Tell me if you
+need me to apply this one patch to the pinctrl tree.
 
 Yours,
 Linus Walleij
