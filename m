@@ -1,10 +1,11 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Wed, 20 Jan 2021 15:32:55 +1030
-Subject: [PATCH v5 3/5] ipmi: kcs: aspeed: Adapt to new LPC DTS layout
-In-Reply-To: <20210114131622.8951-4-chiawei_wang@aspeedtech.com>
+Date: Wed, 20 Jan 2021 15:33:35 +1030
+Subject: =?UTF-8?Q?Re:_[PATCH_v5_4/5]_pinctrl:_aspeed-g5:_Adapt_to_new_LPC_device?=
+ =?UTF-8?Q?_tree_layout?=
+In-Reply-To: <20210114131622.8951-5-chiawei_wang@aspeedtech.com>
 References: <20210114131622.8951-1-chiawei_wang@aspeedtech.com>
- <20210114131622.8951-4-chiawei_wang@aspeedtech.com>
-Message-ID: <c8421730-f8a6-46a7-9e2c-9107eb979276@www.fastmail.com>
+ <20210114131622.8951-5-chiawei_wang@aspeedtech.com>
+Message-ID: <b337ffa3-3b11-4269-8d38-e358f0a6852f@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -19,6 +20,5 @@ On Thu, 14 Jan 2021, at 23:46, Chia-Wei, Wang wrote:
 > The LPC register offsets are also fixed accordingly.
 > 
 > Signed-off-by: Chia-Wei, Wang <chiawei_wang@aspeedtech.com>
-> Acked-by: Haiyue Wang <haiyue.wang@linux.intel.com>
 
 Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
