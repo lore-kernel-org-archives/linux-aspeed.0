@@ -1,83 +1,63 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Wed, 20 Jan 2021 17:07:56 +1030
-Subject: [PATCH v3 4/4] hwmon: Support Aspeed AST2600 PWM/Fan tachometer
-In-Reply-To: <HK0PR06MB338019E403823F0BF9962FE3F2A20@HK0PR06MB3380.apcprd06.prod.outlook.com>
-References: <20210118065059.2478078-1-troy_lee@aspeedtech.com>
- <20210118065059.2478078-5-troy_lee@aspeedtech.com>
- <2bf67d3a-cd5f-4f9c-b043-709b18a759d5@www.fastmail.com>
- <HK0PR06MB338019E403823F0BF9962FE3F2A20@HK0PR06MB3380.apcprd06.prod.outlook.com>
-Message-ID: <31ea8453-bbb1-4e68-8ee4-f7e524e38b88@beta.fastmail.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Date: Wed, 20 Jan 2021 14:56:55 +0100
+Subject: [PATCH v7 0/6] mmc: sdhci-of-aspeed: Expose phase delay tuning
+In-Reply-To: <20210114031433.2388532-1-andrew@aj.id.au>
+References: <20210114031433.2388532-1-andrew@aj.id.au>
+Message-ID: <CAPDyKFqBOWLBbAxZNhN5r=qjXTG9+3tX4nT8+Gz+Xbppsxh5_g@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-
-
-On Wed, 20 Jan 2021, at 15:53, Ryan Chen wrote:
-> > -----Original Message-----
-> > From: Andrew Jeffery <andrew@aj.id.au>
-> > Sent: Wednesday, January 20, 2021 1:16 PM
-> > To: Troy Lee <troy_lee@aspeedtech.com>; openbmc at lists.ozlabs.org; Joel
-> > Stanley <joel@jms.id.au>; Philipp Zabel <p.zabel@pengutronix.de>; open list
-> > <linux-kernel@vger.kernel.org>; moderated list:ARM/ASPEED MACHINE
-> > SUPPORT <linux-arm-kernel@lists.infradead.org>; moderated
-> > list:ARM/ASPEED MACHINE SUPPORT <linux-aspeed@lists.ozlabs.org>
-> > Cc: Ryan Chen <ryan_chen@aspeedtech.com>; ChiaWei Wang
-> > <chiawei_wang@aspeedtech.com>; Troy Lee <leetroy@gmail.com>; kbuild
-> > test robot <lkp@intel.com>
-> > Subject: Re: [PATCH v3 4/4] hwmon: Support Aspeed AST2600 PWM/Fan
-> > tachometer
-> > 
-> > Hi Troy,
-> > 
-> > On Mon, 18 Jan 2021, at 17:20, Troy Lee wrote:
-> > > Add Aspeed AST2600 PWM/Fan tacho driver. AST2600 has 16 PWM channel
-> > > and
-> > > 16 FAN tacho channel.
-> > >
-> > > Changes since v2:
-> > >  - declare local function as static function
-> > >
-> > > Changes since v1:
-> > >  - fixed review comments
-> > >  - fixed double-looped calculation of div_h and div_l
-> > >  - moving configuration to device tree
-> > >  - register hwmon driver with devm_hwmon_device_register_with_info()
-> > >
-> > > Signed-off-by: Troy Lee <troy_lee@aspeedtech.com>
-> > > Reported-by: kernel test robot <lkp@intel.com>
-> > > ---
-> > >  drivers/hwmon/Kconfig                |  10 +
-> > >  drivers/hwmon/Makefile               |   1 +
-> > >  drivers/hwmon/aspeed2600-pwm-tacho.c | 756
-> > > +++++++++++++++++++++++++++
-> > >  3 files changed, 767 insertions(+)
-> > >  create mode 100644 drivers/hwmon/aspeed2600-pwm-tacho.c
-> > 
-> > ...
-> > 
-> > > diff --git a/drivers/hwmon/Makefile b/drivers/hwmon/Makefile index
-> > > 09a86c5e1d29..1a415d493ffc 100644
-> > > --- a/drivers/hwmon/Makefile
-> > > +++ b/drivers/hwmon/Makefile
-> > > @@ -52,6 +52,7 @@ obj-$(CONFIG_SENSORS_ARM_SCPI)	+=
-> > scpi-hwmon.o
-> > >  obj-$(CONFIG_SENSORS_AS370)	+= as370-hwmon.o
-> > >  obj-$(CONFIG_SENSORS_ASC7621)	+= asc7621.o
-> > >  obj-$(CONFIG_SENSORS_ASPEED)	+= aspeed-pwm-tacho.o
-> > > +obj-$(CONFIG_SENSORS_ASPEED2600_PWM_TACHO)	+=
-> > aspeed2600-pwm-tacho.o
-> > 
-> > Why does this have to be a separate implementation from the existing ASPEED
-> > PWM/Tacho driver? Is there really nothing in common?
-> > 
-> Hello Andrew,
-> 	The register set is fully re-arrange. And it is new design at AST2600, 
-> can't be compatible with older PWM.  
+On Thu, 14 Jan 2021 at 04:14, Andrew Jeffery <andrew@aj.id.au> wrote:
+>
+> Hello,
+>
+> This series implements support for the MMC core clk-phase-* devicetree bindings
+> in the Aspeed SD/eMMC driver. The relevant register was exposed on the AST2600
+> and is present for both the SD/MMC controller and the dedicated eMMC
+> controller.
+>
+> v7 is just a small change to the the kunit testing in response to Adrian's
+> feedback.
+>
+> I've just done a quick build test of v7 given the small change and more
+> extensive testing done with v5.
+>
+> v6 can be found here:
+>
+> https://lore.kernel.org/linux-mmc/20201218035338.1130849-1-andrew at aj.id.au/
+>
+> Please review!
+>
+> Cheers,
+>
+> Andrew
+>
+> Andrew Jeffery (6):
+>   mmc: core: Add helper for parsing clock phase properties
+>   mmc: sdhci-of-aspeed: Expose clock phase controls
+>   mmc: sdhci-of-aspeed: Add AST2600 bus clock support
+>   mmc: sdhci-of-aspeed: Add KUnit tests for phase calculations
+>   MAINTAINERS: Add entry for the ASPEED SD/MMC driver
+>   ARM: dts: rainier: Add eMMC clock phase compensation
+>
+>  MAINTAINERS                                  |   9 +
+>  arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts |   1 +
+>  drivers/mmc/core/host.c                      |  44 ++++
+>  drivers/mmc/host/Kconfig                     |  14 +
+>  drivers/mmc/host/sdhci-of-aspeed-test.c      |  98 +++++++
+>  drivers/mmc/host/sdhci-of-aspeed.c           | 255 ++++++++++++++++++-
+>  include/linux/mmc/host.h                     |  13 +
+>  7 files changed, 423 insertions(+), 11 deletions(-)
+>  create mode 100644 drivers/mmc/host/sdhci-of-aspeed-test.c
 >
 
-Ah, okay. I hadn't looked. Thanks Ryan.
+Applied patch 1 to patch 5 applied for next (patch 6 should go via arm
+soc), thanks!
 
-Andrew
+Thanks for stepping and helping with maintenance as well!
+
+Kind regards
+Uffe
