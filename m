@@ -1,11 +1,10 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Wed, 20 Jan 2021 15:33:35 +1030
-Subject: =?UTF-8?Q?Re:_[PATCH_v5_4/5]_pinctrl:_aspeed-g5:_Adapt_to_new_LPC_device?=
- =?UTF-8?Q?_tree_layout?=
-In-Reply-To: <20210114131622.8951-5-chiawei_wang@aspeedtech.com>
+Date: Wed, 20 Jan 2021 15:27:43 +1030
+Subject: [PATCH v5 1/5] dt-bindings: aspeed-lpc: Remove LPC partitioning
+In-Reply-To: <20210114131622.8951-2-chiawei_wang@aspeedtech.com>
 References: <20210114131622.8951-1-chiawei_wang@aspeedtech.com>
- <20210114131622.8951-5-chiawei_wang@aspeedtech.com>
-Message-ID: <b337ffa3-3b11-4269-8d38-e358f0a6852f@www.fastmail.com>
+ <20210114131622.8951-2-chiawei_wang@aspeedtech.com>
+Message-ID: <096ac290-3c85-4b08-8741-6efc77745bc4@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -15,9 +14,10 @@ Content-Transfer-Encoding: 7bit
 
 
 On Thu, 14 Jan 2021, at 23:46, Chia-Wei, Wang wrote:
-> Add check against LPC device v2 compatible string to
-> ensure that the fixed device tree layout is adopted.
-> The LPC register offsets are also fixed accordingly.
+> The LPC controller has no concept of the BMC and the Host partitions.
+> This patch fixes the documentation by removing the description on LPC
+> partitions. The register offsets illustrated in the DTS node examples
+> are also fixed to adapt to the LPC DTS change.
 > 
 > Signed-off-by: Chia-Wei, Wang <chiawei_wang@aspeedtech.com>
 
