@@ -1,93 +1,119 @@
-From: Ryan Chen <ryan_chen@aspeedtech.com>
-Date: Fri, 22 Jan 2021 08:15:34 +0000
-Subject: [PATCH 1/1] clk: aspeed: modify some default clks are critical
-In-Reply-To: <adadc9ef-32ab-0a79-327c-c499c1c04093@sholland.org>
-References: <20200928070108.14040-1-ryan_chen@aspeedtech.com>
- <20200928070108.14040-2-ryan_chen@aspeedtech.com>
- <160264382296.310579.9835482254268204873@swboyd.mtv.corp.google.com>
- <CACPK8Xe-_hTey7hTJjG2-EcDsTN0qOw3bWBcrZZohEK3QOJuvg@mail.gmail.com>
- <160269577311.884498.8429245140509326318@swboyd.mtv.corp.google.com>
- <adadc9ef-32ab-0a79-327c-c499c1c04093@sholland.org>
-Message-ID: <HK0PR06MB338049BAE1D1DAE7567F620DF2A00@HK0PR06MB3380.apcprd06.prod.outlook.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Date: Fri, 22 Jan 2021 10:26:25 +0100
+Subject: [PATCH] mmc: sdhci-of-aspeed: Fix kunit-related build error
+In-Reply-To: <20210122032334.3663056-1-andrew@aj.id.au>
+References: <20210122032334.3663056-1-andrew@aj.id.au>
+Message-ID: <CAPDyKFoFBoeA0aqnFTNh83QGvb9j6QRwnacXcYFYzKMa_Y9iBg@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello,
-	How about this patch progress?
-	It does impact a lot of machine that when BMC boot at u-boot. 
-	SUART is work for Host. But after boot into kernel, due to the clk disabled. 
-	The SUART is not work for Host anymore. 
+On Fri, 22 Jan 2021 at 04:23, Andrew Jeffery <andrew@aj.id.au> wrote:
+>
+> Randy found that with the following Kconfig settings we have duplicate
+> definitions (e.g. __inittest()) in sdhci-of-aspeed due to competing
+> module_init()/module_exit() calls from kunit and driver the itself.
+>
+> ```
+> CONFIG_MMC_SDHCI_OF_ASPEED=m
+> CONFIG_MMC_SDHCI_OF_ASPEED_TEST=y
+> ```
+>
+> Conditionally open-code the kunit initialisation to avoid the error.
+>
+> Fixes: 7efa02a981d6 ("mmc: sdhci-of-aspeed: Add KUnit tests for phase calculations")
+> Reported-by: Randy Dunlap <rdunlap@infradead.org>
+> Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
+> ---
+>  drivers/mmc/host/sdhci-of-aspeed-test.c |  9 ++++++++-
+>  drivers/mmc/host/sdhci-of-aspeed.c      | 27 ++++++++++++++++++++-----
+>  2 files changed, 30 insertions(+), 6 deletions(-)
+>
+> diff --git a/drivers/mmc/host/sdhci-of-aspeed-test.c b/drivers/mmc/host/sdhci-of-aspeed-test.c
+> index 34070605b28b..e5edda6c6e60 100644
+> --- a/drivers/mmc/host/sdhci-of-aspeed-test.c
+> +++ b/drivers/mmc/host/sdhci-of-aspeed-test.c
+> @@ -95,4 +95,11 @@ static struct kunit_suite aspeed_sdhci_test_suite = {
+>         .name = "sdhci-of-aspeed",
+>         .test_cases = aspeed_sdhci_test_cases,
+>  };
+> -kunit_test_suite(aspeed_sdhci_test_suite);
+> +
+> +static struct kunit_suite *aspeed_sdhci_test_suite_array[] = {
+> +       &aspeed_sdhci_test_suite,
+> +       NULL,
+> +};
+> +
+> +static struct kunit_suite **aspeed_sdhci_test_suites
+> +       __used __section(".kunit_test_suites") = aspeed_sdhci_test_suite_array;
+> diff --git a/drivers/mmc/host/sdhci-of-aspeed.c b/drivers/mmc/host/sdhci-of-aspeed.c
+> index 3b0d381e1215..1446f23a2bfb 100644
+> --- a/drivers/mmc/host/sdhci-of-aspeed.c
+> +++ b/drivers/mmc/host/sdhci-of-aspeed.c
+> @@ -556,6 +556,10 @@ static struct platform_driver aspeed_sdc_driver = {
+>         .remove         = aspeed_sdc_remove,
+>  };
+>
+> +#if defined(CONFIG_MMC_SDHCI_OF_ASPEED_TEST)
+> +#include "sdhci-of-aspeed-test.c"
+> +#endif
+> +
+>  static int __init aspeed_sdc_init(void)
+>  {
+>         int rc;
+> @@ -566,7 +570,20 @@ static int __init aspeed_sdc_init(void)
+>
+>         rc = platform_driver_register(&aspeed_sdc_driver);
+>         if (rc < 0)
+> -               platform_driver_unregister(&aspeed_sdhci_driver);
+> +               goto cleanup_sdhci;
+> +
+> +#if defined(CONFIG_MMC_SDHCI_OF_ASPEED_TEST)
 
-Regards,
-Ryan
-> -----Original Message-----
-> From: Samuel Holland <samuel@sholland.org>
-> Sent: Thursday, October 29, 2020 10:25 AM
-> To: Stephen Boyd <sboyd@kernel.org>; Joel Stanley <joel@jms.id.au>
-> Cc: Andrew Jeffery <andrew@aj.id.au>; Michael Turquette
-> <mturquette@baylibre.com>; Ryan Chen <ryan_chen@aspeedtech.com>;
-> BMC-SW <BMC-SW@aspeedtech.com>; Linux ARM
-> <linux-arm-kernel@lists.infradead.org>; linux-aspeed
-> <linux-aspeed@lists.ozlabs.org>; linux-clk at vger.kernel.org; Linux Kernel
-> Mailing List <linux-kernel@vger.kernel.org>
-> Subject: Re: Re: [PATCH 1/1] clk: aspeed: modify some default clks are critical
-> 
-> Stephen,
-> 
-> On 10/14/20 12:16 PM, Stephen Boyd wrote:
-> > Quoting Joel Stanley (2020-10-13 22:28:00)
-> >> On Wed, 14 Oct 2020 at 02:50, Stephen Boyd <sboyd@kernel.org> wrote:
-> >>>
-> >>> Quoting Ryan Chen (2020-09-28 00:01:08)
-> >>>> In ASPEED SoC LCLK is LPC clock for all SuperIO device, UART1/UART2
-> >>>> are default for Host SuperIO UART device, eSPI clk for Host eSPI
-> >>>> bus access eSPI slave channel, those clks can't be disable should
-> >>>> keep default, otherwise will affect Host side access SuperIO and SPI slave
-> device.
-> >>>>
-> >>>> Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
-> >>>> ---
-> >>>
-> >>> Is there resolution on this thread?
-> >>
-> >> Not yet.
-> >>
-> >> We have a system where the BMC (management controller) controls some
-> >> clocks, but the peripherals that it's clocking are outside the BMC's
-> >> control. In this case, the host processor us using some UARTs and
-> >> what not independent of any code running on the BMC.
-> >>
-> >> Ryan wants to have them marked as critical so the BMC never powers them
-> down.
-> >>
-> >> However, there are systems that don't use this part of the soc, so
-> >> for those implementations they are not critical and Linux on the BMC
-> >> can turn them off.
-> >>
-> >> Do you have any thoughts? Has anyone solved a similar problem already?
-> >>
-> >
-> > Is this critical clocks in DT? Where we want to have different DT for
-> > different device configurations to indicate that some clks should be
-> > marked critical so they're never turned off and other times they
-> > aren't so they're turned off?
-> >
-> > It also sounds sort of like the protected-clocks binding. Where you
-> > don't want to touch certain clks depending on the usage configuration
-> > of the SoC. There is a patch to make that generic that I haven't
-> > applied because it looks wrong at first glance[1]. Maybe not
-> > registering those clks to the framework on the configuration that Ryan has is
-> good enough?
-> 
-> Could you please be more specific than the patch "looks wrong"? I'm more
-> than happy to update the patch to address your concerns, but I cannot do that
-> unless I know what your concerns are.
-> 
-> Regards,
-> Samuel
-> 
-> > [1]
-> > https://lore.kernel.org/r/20200903040015.5627-2-samuel at sholland.org
+I would like us to avoid #if defined" in code like this.
+
+Can you instead declare a function that you can stub in case
+CONFIG_MMC_SDHCI_OF_ASPEED_TEST is unset?
+
+> +       rc = __kunit_test_suites_init(aspeed_sdhci_test_suites);
+> +       if (rc < 0) {
+> +               platform_driver_unregister(&aspeed_sdc_driver);
+> +               goto cleanup_sdhci;
+> +       }
+> +#endif
+> +
+> +       return 0;
+> +
+> +cleanup_sdhci:
+> +       platform_driver_unregister(&aspeed_sdhci_driver);
+>
+>         return rc;
+>  }
+> @@ -574,15 +591,15 @@ module_init(aspeed_sdc_init);
+>
+>  static void __exit aspeed_sdc_exit(void)
+>  {
+> +#if defined(CONFIG_MMC_SDHCI_OF_ASPEED_TEST)
+> +       __kunit_test_suites_exit(aspeed_sdhci_test_suites);
+> +#endif
+> +
+>         platform_driver_unregister(&aspeed_sdc_driver);
+>         platform_driver_unregister(&aspeed_sdhci_driver);
+>  }
+>  module_exit(aspeed_sdc_exit);
+>
+> -#if defined(CONFIG_MMC_SDHCI_OF_ASPEED_TEST)
+> -#include "sdhci-of-aspeed-test.c"
+> -#endif
+> -
+>  MODULE_DESCRIPTION("Driver for the ASPEED SD/SDIO/SDHCI Controllers");
+>  MODULE_AUTHOR("Ryan Chen <ryan_chen@aspeedtech.com>");
+>  MODULE_AUTHOR("Andrew Jeffery <andrew@aj.id.au>");
+> --
+> 2.27.0
+>
+
+Kind regards
+Uffe
