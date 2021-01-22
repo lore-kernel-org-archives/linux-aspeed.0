@@ -1,40 +1,125 @@
-From: ChiaWei Wang <chiawei_wang@aspeedtech.com>
-Date: Fri, 22 Jan 2021 09:55:56 +0000
-Subject: [PATCH v5 3/5] ipmi: kcs: aspeed: Adapt to new LPC DTS layout
-In-Reply-To: <c8421730-f8a6-46a7-9e2c-9107eb979276@www.fastmail.com>
-References: <20210114131622.8951-1-chiawei_wang@aspeedtech.com>
- <20210114131622.8951-4-chiawei_wang@aspeedtech.com>
- <c8421730-f8a6-46a7-9e2c-9107eb979276@www.fastmail.com>
-Message-ID: <HK0PR06MB3779C3106D2FC593B5E5243F91A00@HK0PR06MB3779.apcprd06.prod.outlook.com>
+From: Andrew Jeffery <andrew@aj.id.au>
+Date: Fri, 22 Jan 2021 22:18:52 +1030
+Subject: [PATCH v2] mmc: sdhci-of-aspeed: Fix kunit-related build error
+Message-ID: <20210122114852.3790565-1-andrew@aj.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Corey,
+Randy found that with the following Kconfig settings we have duplicate
+definitions (e.g. __inittest()) in sdhci-of-aspeed due to competing
+module_init()/module_exit() calls from kunit and driver the itself.
 
-Could you help to review this patch to kcs_bmc_aspeed.c?
-It mainly fixes the register layout/offsets of Aspeed LPC controller.
+```
+CONFIG_MMC_SDHCI_OF_ASPEED=m
+CONFIG_MMC_SDHCI_OF_ASPEED_TEST=y
+```
 
-Thanks,
-Chiawei
+Conditionally open-code the kunit initialisation to avoid the error.
 
-> -----Original Message-----
-> From: Andrew Jeffery <andrew@aj.id.au>
-> Sent: Wednesday, January 20, 2021 1:03 PM
-> Subject: Re: [PATCH v5 3/5] ipmi: kcs: aspeed: Adapt to new LPC DTS layout
-> 
-> 
-> 
-> On Thu, 14 Jan 2021, at 23:46, Chia-Wei, Wang wrote:
-> > Add check against LPC device v2 compatible string to ensure that the
-> > fixed device tree layout is adopted.
-> > The LPC register offsets are also fixed accordingly.
-> >
-> > Signed-off-by: Chia-Wei, Wang <chiawei_wang@aspeedtech.com>
-> > Acked-by: Haiyue Wang <haiyue.wang@linux.intel.com>
-> 
-> Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
+Fixes: 7efa02a981d6 ("mmc: sdhci-of-aspeed: Add KUnit tests for phase calculations")
+Reported-by: Randy Dunlap <rdunlap@infradead.org>
+Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
+---
 
-Thanks for the review.
+v2:
+* Collapse the #ifdef-ery
+
+ drivers/mmc/host/sdhci-of-aspeed-test.c |  9 +++++-
+ drivers/mmc/host/sdhci-of-aspeed.c      | 42 ++++++++++++++++++++++---
+ 2 files changed, 45 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/mmc/host/sdhci-of-aspeed-test.c b/drivers/mmc/host/sdhci-of-aspeed-test.c
+index 34070605b28b..bb67d159b7d8 100644
+--- a/drivers/mmc/host/sdhci-of-aspeed-test.c
++++ b/drivers/mmc/host/sdhci-of-aspeed-test.c
+@@ -95,4 +95,11 @@ static struct kunit_suite aspeed_sdhci_test_suite = {
+ 	.name = "sdhci-of-aspeed",
+ 	.test_cases = aspeed_sdhci_test_cases,
+ };
+-kunit_test_suite(aspeed_sdhci_test_suite);
++
++static struct kunit_suite *aspeed_sdc_test_suite_array[] = {
++	&aspeed_sdhci_test_suite,
++	NULL,
++};
++
++static struct kunit_suite **aspeed_sdc_test_suites
++	__used __section(".kunit_test_suites") = aspeed_sdc_test_suite_array;
+diff --git a/drivers/mmc/host/sdhci-of-aspeed.c b/drivers/mmc/host/sdhci-of-aspeed.c
+index 3b0d381e1215..7d8692e90996 100644
+--- a/drivers/mmc/host/sdhci-of-aspeed.c
++++ b/drivers/mmc/host/sdhci-of-aspeed.c
+@@ -556,6 +556,29 @@ static struct platform_driver aspeed_sdc_driver = {
+ 	.remove		= aspeed_sdc_remove,
+ };
+ 
++#if defined(CONFIG_MMC_SDHCI_OF_ASPEED_TEST)
++#include "sdhci-of-aspeed-test.c"
++
++static inline int aspeed_sdc_tests_init(void)
++{
++	return __kunit_test_suites_init(aspeed_sdc_test_suites);
++}
++
++static inline void aspeed_sdc_tests_exit(void)
++{
++	__kunit_test_suites_exit(aspeed_sdc_test_suites);
++}
++#else
++static inline int aspeed_sdc_tests_init(void)
++{
++	return 0;
++}
++
++static inline void aspeed_sdc_tests_exit(void)
++{
++}
++#endif
++
+ static int __init aspeed_sdc_init(void)
+ {
+ 	int rc;
+@@ -566,7 +589,18 @@ static int __init aspeed_sdc_init(void)
+ 
+ 	rc = platform_driver_register(&aspeed_sdc_driver);
+ 	if (rc < 0)
+-		platform_driver_unregister(&aspeed_sdhci_driver);
++		goto cleanup_sdhci;
++
++	rc = aspeed_sdc_tests_init();
++	if (rc < 0) {
++		platform_driver_unregister(&aspeed_sdc_driver);
++		goto cleanup_sdhci;
++	}
++
++	return 0;
++
++cleanup_sdhci:
++	platform_driver_unregister(&aspeed_sdhci_driver);
+ 
+ 	return rc;
+ }
+@@ -574,15 +608,13 @@ module_init(aspeed_sdc_init);
+ 
+ static void __exit aspeed_sdc_exit(void)
+ {
++	aspeed_sdc_tests_exit();
++
+ 	platform_driver_unregister(&aspeed_sdc_driver);
+ 	platform_driver_unregister(&aspeed_sdhci_driver);
+ }
+ module_exit(aspeed_sdc_exit);
+ 
+-#if defined(CONFIG_MMC_SDHCI_OF_ASPEED_TEST)
+-#include "sdhci-of-aspeed-test.c"
+-#endif
+-
+ MODULE_DESCRIPTION("Driver for the ASPEED SD/SDIO/SDHCI Controllers");
+ MODULE_AUTHOR("Ryan Chen <ryan_chen@aspeedtech.com>");
+ MODULE_AUTHOR("Andrew Jeffery <andrew@aj.id.au>");
+-- 
+2.27.0
+
