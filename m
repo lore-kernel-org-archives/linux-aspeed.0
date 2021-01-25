@@ -1,10 +1,11 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Mon, 25 Jan 2021 14:42:45 +1030
-Subject: [PATCH v5 2/5] ARM: dts: Remove LPC BMC and Host partitions
-In-Reply-To: <20210114131622.8951-3-chiawei_wang@aspeedtech.com>
+Date: Mon, 25 Jan 2021 14:44:37 +1030
+Subject: =?UTF-8?Q?Re:_[PATCH_v5_4/5]_pinctrl:_aspeed-g5:_Adapt_to_new_LPC_device?=
+ =?UTF-8?Q?_tree_layout?=
+In-Reply-To: <20210114131622.8951-5-chiawei_wang@aspeedtech.com>
 References: <20210114131622.8951-1-chiawei_wang@aspeedtech.com>
- <20210114131622.8951-3-chiawei_wang@aspeedtech.com>
-Message-ID: <db4964a9-e78b-465b-850d-711c2a23e910@www.fastmail.com>
+ <20210114131622.8951-5-chiawei_wang@aspeedtech.com>
+Message-ID: <2ee34adb-ca7a-43f5-9101-f48909667962@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -14,34 +15,12 @@ Content-Transfer-Encoding: 7bit
 
 
 On Thu, 14 Jan 2021, at 23:46, Chia-Wei, Wang wrote:
-> The LPC controller has no concept of the BMC and the Host partitions.
-> 
-> A concrete instance is that the HICRB[5:4] are for the I/O port address
-> configurtaion of KCS channel 1/2. However, the KCS driver cannot access
-> HICRB for channel 1/2 initialization via syscon regmap interface due to
-> the parition boundary. (i.e. offset 80h)
-> 
-> In addition, for the HW design backward compatibility, a newly added HW
-> control bit could be located at any reserved one over the LPC addressing
-> space. Thereby, this patch removes the lpc-bmc and lpc-host child node
-> and thus the LPC partitioning.
-> 
-> Note that this change requires the synchronization between device tree
-> change and the driver change. To prevent the misuse of old devicetrees
-> with new drivers, or vice versa, the v2 compatible strings are adopted
-> for the LPC device as listed:
-> 
-> 	"aspeed,ast2400-lpc-v2"
-> 	"aspeed,ast2500-lpc-v2"
-> 	"aspeed,ast2600-lpc-v2"
+> Add check against LPC device v2 compatible string to
+> ensure that the fixed device tree layout is adopted.
+> The LPC register offsets are also fixed accordingly.
 > 
 > Signed-off-by: Chia-Wei, Wang <chiawei_wang@aspeedtech.com>
-> ---
->  arch/arm/boot/dts/aspeed-g4.dtsi |  74 +++++++----------
->  arch/arm/boot/dts/aspeed-g5.dtsi | 135 ++++++++++++++-----------------
->  arch/arm/boot/dts/aspeed-g6.dtsi | 135 ++++++++++++++-----------------
 
-I've booted a Witherspoon BMC and host with these patches applied, so for 
-aspeed-g5.dtsi:
+Using a Witherspoon (AST2500):
 
 Tested-by: Andrew Jeffery <andrew@aj.id.au>
