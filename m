@@ -1,51 +1,65 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Tue, 2 Feb 2021 05:00:00 +0000
-Subject: [PATCH 1/2] drm/aspeed: Look up syscon by phandle
-In-Reply-To: <8ff9f9d92271b25bd11cf473bf64466816efe93b.camel@ozlabs.org>
+Date: Tue, 2 Feb 2021 05:00:38 +0000
+Subject: [PATCH 2/2] drm/aspeed: Use dt matching for default register
+ values
+In-Reply-To: <21b49b6a6303bf8c188929bb2cb328ecea33520f.camel@ozlabs.org>
 References: <20210111044638.290909-1-joel@jms.id.au>
- <20210111044638.290909-2-joel@jms.id.au>
- <8ff9f9d92271b25bd11cf473bf64466816efe93b.camel@ozlabs.org>
-Message-ID: <CACPK8XeTZ7kNPL4dWUJT44Zd+69VJ3FCMb7K=t6L0apwQOM1kQ@mail.gmail.com>
+ <20210111044638.290909-3-joel@jms.id.au>
+ <21b49b6a6303bf8c188929bb2cb328ecea33520f.camel@ozlabs.org>
+Message-ID: <CACPK8Xes_Lch1W3NuqQ8HdPTrvJUamfQE9sf6dRcoat_UKohXg@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, 2 Feb 2021 at 04:39, Jeremy Kerr <jk@ozlabs.org> wrote:
+On Tue, 2 Feb 2021 at 04:46, Jeremy Kerr <jk@ozlabs.org> wrote:
 >
 > Hi Joel,
 >
-> Sounds like a good idea! One comment though:
->
-> > @@ -111,10 +112,13 @@ static int aspeed_gfx_load(struct drm_device *drm)
-> >         if (IS_ERR(priv->base))
-> >                 return PTR_ERR(priv->base);
+> > There are minor differences in the values for the threshold value and
+> > the scan line size between families of ASPEED SoC. Additionally the
+> > SCU register for the output control differs between families.
 > >
-> > -       priv->scu = syscon_regmap_lookup_by_compatible("aspeed,ast2500-scu");
-> > +       priv->scu = syscon_regmap_lookup_by_phandle(np, "syscon");
-> >         if (IS_ERR(priv->scu)) {
-> > -               dev_err(&pdev->dev, "failed to find SCU regmap\n");
-> > -               return PTR_ERR(priv->scu);
-> > +               priv->scu = syscon_regmap_lookup_by_compatible("aspeed,aspeed-scu");
+> > This adds device tree matching to parameterise these values, allowing
+> > us to add support for the AST2400 now, and in the future the AST2600.
 >
-> Is this (more generic) compatible value guaranteed to exist alongside
-> aspeed,ast2500-scu? The scu binding only specifies the model-specific
-> ones:
+> Looks good to me. Two super minor things:
 >
->     Documentation/devicetree/bindings/mfd/aspeed-scu.txt:
+> > --- a/drivers/gpu/drm/aspeed/aspeed_gfx_crtc.c
+> > +++ b/drivers/gpu/drm/aspeed/aspeed_gfx_crtc.c
+> > @@ -60,7 +60,8 @@ static void aspeed_gfx_enable_controller(struct
+> > aspeed_gfx *priv)
+> >         u32 ctrl2 = readl(priv->base + CRT_CTRL2);
+> >
+> >         /* SCU2C: set DAC source for display output to Graphics CRT (GFX) */
+> > -       regmap_update_bits(priv->scu, 0x2c, BIT(16), BIT(16));
+> > +       regmap_update_bits(priv->scu, priv->dac_reg, BIT(16), BIT(16));
 >
->     Required properties:
->     - compatible:       One of:
->                     "aspeed,ast2400-scu", "syscon", "simple-mfd"
->                     "aspeed,ast2500-scu", "syscon", "simple-mfd"
+> The comment references SCU2C; but you've implied that this will
+> change...
 >
-> - the only mention of the new compatible value that I can find is this
-> thread. Maybe we should retain the existing one to keep the fallback
-> case working?
+> > @@ -228,7 +258,7 @@ static ssize_t dac_mux_store(struct device *dev,
+> > struct device_attribute *attr,
+> >         if (val > 3)
+> >                 return -EINVAL;
+> >
+> > -       rc = regmap_update_bits(priv->scu, ASPEED_SCU_MISC_CTRL, 0x30000, val << 16);
+> > +       rc = regmap_update_bits(priv->scu, priv->dac_reg, 0x30000, val << 16);
+> >         if (rc < 0)
+> >                 return 0;
+> >
+> > @@ -241,7 +271,7 @@ static ssize_t dac_mux_show(struct device *dev,
+> > struct device_attribute *attr, c
+> >         u32 reg;
+> >         int rc;
+> >
+> > -       rc = regmap_read(priv->scu, ASPEED_SCU_MISC_CTRL, &reg);
+> > +       rc = regmap_read(priv->scu, priv->dac_reg, &reg);
+> >         if (rc)
+> >                 return rc;
+>
+> You've removed the only uses of ASPEED_SCU_MISC_CTRL here, maybe drop
+> the #define too?
 
-Yes, it was a mistake to change ast2500-scu to aspeed-scu. The only
-reason to keep the lookup_by_compatible was to decouple this patch
-from the device tree changes.
-
-I will send a v2 with syscon_regmap_lookup_by_compatible("aspeed,ast2500-scu").
+Good idea. I'll implement both of your suggestions.
