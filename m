@@ -1,133 +1,48 @@
-From: Ryan Chen <ryan_chen@aspeedtech.com>
-Date: Mon, 1 Feb 2021 07:16:37 +0000
-Subject: [PATCH 1/1] clk: aspeed: modify some default clks are critical
-In-Reply-To: <57a20436-5d12-4f7c-b413-0cd1908acf02@www.fastmail.com>
-References: <20200928070108.14040-1-ryan_chen@aspeedtech.com>
- <20200928070108.14040-2-ryan_chen@aspeedtech.com>
- <160264382296.310579.9835482254268204873@swboyd.mtv.corp.google.com>
- <CACPK8Xe-_hTey7hTJjG2-EcDsTN0qOw3bWBcrZZohEK3QOJuvg@mail.gmail.com>
- <160269577311.884498.8429245140509326318@swboyd.mtv.corp.google.com>
- <adadc9ef-32ab-0a79-327c-c499c1c04093@sholland.org>
- <HK0PR06MB338049BAE1D1DAE7567F620DF2A00@HK0PR06MB3380.apcprd06.prod.outlook.com>
- <57a20436-5d12-4f7c-b413-0cd1908acf02@www.fastmail.com>
-Message-ID: <HK0PR06MB33809710CB2D6300137BF92BF2B69@HK0PR06MB3380.apcprd06.prod.outlook.com>
+From: Jeremy Kerr <jk@ozlabs.org>
+Date: Tue, 02 Feb 2021 12:38:45 +0800
+Subject: [PATCH 1/2] drm/aspeed: Look up syscon by phandle
+In-Reply-To: <20210111044638.290909-2-joel@jms.id.au>
+References: <20210111044638.290909-1-joel@jms.id.au>
+ <20210111044638.290909-2-joel@jms.id.au>
+Message-ID: <8ff9f9d92271b25bd11cf473bf64466816efe93b.camel@ozlabs.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-> -----Original Message-----
-> From: Andrew Jeffery <andrew@aj.id.au>
-> Sent: Monday, January 25, 2021 8:47 AM
-> To: Ryan Chen <ryan_chen@aspeedtech.com>; Samuel Holland
-> <samuel@sholland.org>; Stephen Boyd <sboyd@kernel.org>; Joel Stanley
-> <joel@jms.id.au>
-> Cc: BMC-SW <BMC-SW@aspeedtech.com>; linux-aspeed
-> <linux-aspeed@lists.ozlabs.org>; Michael Turquette
-> <mturquette@baylibre.com>; Linux Kernel Mailing List
-> <linux-kernel@vger.kernel.org>; linux-clk at vger.kernel.org; Linux ARM
-> <linux-arm-kernel@lists.infradead.org>
-> Subject: Re: [PATCH 1/1] clk: aspeed: modify some default clks are critical
-> 
-> 
-> 
-> On Fri, 22 Jan 2021, at 18:45, Ryan Chen wrote:
-> > Hello,
-> > 	How about this patch progress?
-> > 	It does impact a lot of machine that when BMC boot at u-boot.
-> > 	SUART is work for Host. But after boot into kernel, due to the clk disabled.
-> > 	The SUART is not work for Host anymore.
-> 
-> Maybe it's worth taking Ryan's patch for now, and when the protected-clocks
-> binding gets merged we can rip out the CLK_IS_CRITICAL flags and convert the
-> Aspeed devicetrees to use protected-clocks instead?
-> 
-> The only issue I see with that plan is it becomes ambiguous as to which clock
-> each platform considers crititical/in-need-of-protection.
-> 
-Hello Joel,
-	Will you take this patch? Or you have another approach I may modify for it. 
+Hi Joel,
 
-Regards,
-Ryan
-> > > -----Original Message-----
-> > > From: Samuel Holland <samuel@sholland.org>
-> > > Sent: Thursday, October 29, 2020 10:25 AM
-> > > To: Stephen Boyd <sboyd@kernel.org>; Joel Stanley <joel@jms.id.au>
-> > > Cc: Andrew Jeffery <andrew@aj.id.au>; Michael Turquette
-> > > <mturquette@baylibre.com>; Ryan Chen <ryan_chen@aspeedtech.com>;
-> > > BMC-SW <BMC-SW@aspeedtech.com>; Linux ARM
-> > > <linux-arm-kernel@lists.infradead.org>; linux-aspeed
-> > > <linux-aspeed@lists.ozlabs.org>; linux-clk at vger.kernel.org; Linux
-> > > Kernel Mailing List <linux-kernel@vger.kernel.org>
-> > > Subject: Re: Re: [PATCH 1/1] clk: aspeed: modify some default clks
-> > > are critical
-> > >
-> > > Stephen,
-> > >
-> > > On 10/14/20 12:16 PM, Stephen Boyd wrote:
-> > > > Quoting Joel Stanley (2020-10-13 22:28:00)
-> > > >> On Wed, 14 Oct 2020 at 02:50, Stephen Boyd <sboyd@kernel.org>
-> wrote:
-> > > >>>
-> > > >>> Quoting Ryan Chen (2020-09-28 00:01:08)
-> > > >>>> In ASPEED SoC LCLK is LPC clock for all SuperIO device,
-> > > >>>> UART1/UART2 are default for Host SuperIO UART device, eSPI clk
-> > > >>>> for Host eSPI bus access eSPI slave channel, those clks can't
-> > > >>>> be disable should keep default, otherwise will affect Host side
-> > > >>>> access SuperIO and SPI slave
-> > > device.
-> > > >>>>
-> > > >>>> Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
-> > > >>>> ---
-> > > >>>
-> > > >>> Is there resolution on this thread?
-> > > >>
-> > > >> Not yet.
-> > > >>
-> > > >> We have a system where the BMC (management controller) controls
-> > > >> some clocks, but the peripherals that it's clocking are outside
-> > > >> the BMC's control. In this case, the host processor us using some
-> > > >> UARTs and what not independent of any code running on the BMC.
-> > > >>
-> > > >> Ryan wants to have them marked as critical so the BMC never
-> > > >> powers them
-> > > down.
-> > > >>
-> > > >> However, there are systems that don't use this part of the soc,
-> > > >> so for those implementations they are not critical and Linux on
-> > > >> the BMC can turn them off.
-> > > >>
-> > > >> Do you have any thoughts? Has anyone solved a similar problem
-> already?
-> > > >>
-> > > >
-> > > > Is this critical clocks in DT? Where we want to have different DT
-> > > > for different device configurations to indicate that some clks
-> > > > should be marked critical so they're never turned off and other
-> > > > times they aren't so they're turned off?
-> > > >
-> > > > It also sounds sort of like the protected-clocks binding. Where
-> > > > you don't want to touch certain clks depending on the usage
-> > > > configuration of the SoC. There is a patch to make that generic
-> > > > that I haven't applied because it looks wrong at first glance[1].
-> > > > Maybe not registering those clks to the framework on the
-> > > > configuration that Ryan has is
-> > > good enough?
-> > >
-> > > Could you please be more specific than the patch "looks wrong"? I'm
-> > > more than happy to update the patch to address your concerns, but I
-> > > cannot do that unless I know what your concerns are.
-> > >
-> > > Regards,
-> > > Samuel
-> > >
-> > > > [1]
-> > > > https://lore.kernel.org/r/20200903040015.5627-2-samuel at sholland.or
-> > > > g
-> > _______________________________________________
-> > linux-arm-kernel mailing list
-> > linux-arm-kernel at lists.infradead.org
-> > http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
-> >
+Sounds like a good idea! One comment though:
+
+> @@ -111,10 +112,13 @@ static int aspeed_gfx_load(struct drm_device *drm)
+> ????????if (IS_ERR(priv->base))
+> ????????????????return PTR_ERR(priv->base);
+> ?
+> -???????priv->scu = syscon_regmap_lookup_by_compatible("aspeed,ast2500-scu");
+> +???????priv->scu = syscon_regmap_lookup_by_phandle(np, "syscon");
+> ????????if (IS_ERR(priv->scu)) {
+> -???????????????dev_err(&pdev->dev, "failed to find SCU regmap\n");
+> -???????????????return PTR_ERR(priv->scu);
+> +???????????????priv->scu = syscon_regmap_lookup_by_compatible("aspeed,aspeed-scu");
+
+Is this (more generic) compatible value guaranteed to exist alongside
+aspeed,ast2500-scu? The scu binding only specifies the model-specific
+ones:
+
+    Documentation/devicetree/bindings/mfd/aspeed-scu.txt:
+
+    Required properties:
+    - compatible:	One of:
+                    "aspeed,ast2400-scu", "syscon", "simple-mfd"
+                    "aspeed,ast2500-scu", "syscon", "simple-mfd"
+
+- the only mention of the new compatible value that I can find is this
+thread. Maybe we should retain the existing one to keep the fallback
+case working?
+
+Cheers,
+
+
+Jeremy
+
