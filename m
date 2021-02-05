@@ -1,40 +1,40 @@
 From: Hongwei Zhang <hongweiz@ami.com>
-Date: Fri, 5 Feb 2021 11:34:50 -0500
+Date: Fri, 5 Feb 2021 11:34:51 -0500
 Subject: [PATCH, v1 1/1] gpio: aspeed: Add gpio base address reading
-In-Reply-To: <20210113223808.31626-1-hongweiz@ami.com> 
-References: <20210113223808.31626-1-hongweiz@ami.com> 
+In-Reply-To: <20210113223808.31626-1-hongweiz@ami.com>
+References: <20210113223808.31626-1-hongweiz@ami.com>
 Message-ID: <20210113223808.31626-2-hongweiz@ami.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Message-ID: <20210205163451.yCCcXYB_teZx9vYY4CbRgBJ-uGl9v_e-f14Z3v-spNE@z>
 
 
-> On Wed, Jan 13, 2021 at 11:38 PM Hongwei Zhang <hongweiz@ami.com> wrote:
+> Hello,
 > 
+> On Thu, 14 Jan 2021, at 09:08, Hongwei Zhang wrote:
 > > Add gpio base address reading in the driver; in old code, it just 
 > > returns -1 to gpio->chip.base.
-> >
-> > Fixes: 7ee2d5b4d4340353 ("ARM: dts: nuvoton: Add Fii Kudo system")
-> > Signed-off-by: Hongwei Zhang <hongweiz@ami.com>
 > 
-> NAK, sorry.
+> Why do you want to do this? It feels hacky. The base address only affects the legacy sysfs number-space, 
+> and even then if you're using the sysfs interface you can discover the base address for a specific gpiochip 
+> via the associated attribute. For example:
 > 
-> We never allow the device tree to specify this.
+> # cat /sys/bus/platform/devices/1e780000.gpio/gpio/gpiochip*/base
+> 816
 > 
-> First, it is a Linux-only base so it would have to be a "linux,..." property.
+> I feel that you should instead be changing your userspace not to assume a fixed value.
 > 
-> Even if it is a Linux-only property, it is a bad idea.
+> Finally, the base value is a linux-specific thing and doesn't belong in the devicetree, and if it did, you 
+> would also need to update the devicetree binding in Documentation/.
 > 
-> Only people using sysfs should have any need to specify global GPIO numbers. Don't use sysfs. Use the 
-> GPIO character device instead. See further:
-> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/gpio/TODO
+> Cheers,
 > 
-> Yours,
-> Linus Walleij
+> Andrew
 
-Hi Linus,
+Hi Andrew,
 
 Thanks for your review and advice.
 
