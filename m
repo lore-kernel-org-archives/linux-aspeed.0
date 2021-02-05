@@ -1,92 +1,42 @@
-From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-Date: Wed, 3 Feb 2021 15:03:15 -0800
-Subject: [PATCH v2 1/4] dt-bindings: i2c: aspeed: add buffer and DMA mode
- transfer support
-In-Reply-To: <1814b8d1-954c-0988-0745-e95129079708@linux.intel.com>
-References: <20210112003749.10565-1-jae.hyun.yoo@linux.intel.com>
- <20210112003749.10565-2-jae.hyun.yoo@linux.intel.com>
- <20210114193416.GA3432711@robh.at.kernel.org>
- <4f67358e-58e5-65a5-3680-1cd8e9851faa@linux.intel.com>
- <CACPK8XcZTE=bnCP1-E9PTA09WnXG9Eduwx0dm-QqmQJUDa_OrQ@mail.gmail.com>
- <1814b8d1-954c-0988-0745-e95129079708@linux.intel.com>
-Message-ID: <87ed4085-26e4-98f8-21e3-b1e3c16b0891@linux.intel.com>
+From: Hongwei Zhang <hongweiz@ami.com>
+Date: Fri, 5 Feb 2021 11:34:50 -0500
+Subject: [PATCH, v1 1/1] gpio: aspeed: Add gpio base address reading
+In-Reply-To: <20210113223808.31626-1-hongweiz@ami.com> 
+References: <20210113223808.31626-1-hongweiz@ami.com> 
+Message-ID: <20210113223808.31626-2-hongweiz@ami.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Joel
 
-On 1/28/2021 11:36 AM, Jae Hyun Yoo wrote:
-> Hi Joel
+> On Wed, Jan 13, 2021 at 11:38 PM Hongwei Zhang <hongweiz@ami.com> wrote:
 > 
-> On 1/27/2021 4:06 PM, Joel Stanley wrote:
->> On Thu, 14 Jan 2021 at 20:05, Jae Hyun Yoo 
->> <jae.hyun.yoo@linux.intel.com> wrote:
->>>
->>> Hi Rob,
->>>
->>> On 1/14/2021 11:34 AM, Rob Herring wrote:
->>>>> -- reg?????????????????????? : address offset and range of bus
->>>>> +- reg?????????????????????? : Address offset and range of bus 
->>>>> registers.
->>>>> +
->>>>> +????????????????????? An additional SRAM buffer address offset and 
->>>>> range is
->>>>> +????????????????????? optional in case of enabling I2C dedicated 
->>>>> SRAM for
->>>>> +????????????????????? buffer mode transfer support. If the 
->>>>> optional range
->>>>> +????????????????????? is defined, buffer mode will be enabled.
->>>>> +????????????????????? - AST2400
->>>>> +??????????????????????? &i2c0 { reg = <0x40 0x40>, <0x800 0x80>; };
->>>>> +??????????????????????? &i2c1 { reg = <0x80 0x40>, <0x880 0x80>; };
->>>>> +??????????????????????? &i2c2 { reg = <0xc0 0x40>, <0x900 0x80>; };
->>>>> +??????????????????????? &i2c3 { reg = <0x100 0x40>, <0x980 0x80>; };
->>>>> +??????????????????????? &i2c4 { reg = <0x140 0x40>, <0xa00 0x80>; };
->>>>> +??????????????????????? &i2c5 { reg = <0x180 0x40>, <0xa80 0x80>; };
->>>>> +??????????????????????? &i2c6 { reg = <0x1c0 0x40>, <0xb00 0x80>; };
->>>>> +??????????????????????? &i2c7 { reg = <0x300 0x40>, <0xb80 0x80>; };
->>>>> +??????????????????????? &i2c8 { reg = <0x340 0x40>, <0xc00 0x80>; };
->>>>> +??????????????????????? &i2c9 { reg = <0x380 0x40>, <0xc80 0x80>; };
->>>>> +??????????????????????? &i2c10 { reg = <0x3c0 0x40>, <0xd00 0x80>; };
->>>>> +??????????????????????? &i2c11 { reg = <0x400 0x40>, <0xd80 0x80>; };
->>>>> +??????????????????????? &i2c12 { reg = <0x440 0x40>, <0xe00 0x80>; };
->>>>> +??????????????????????? &i2c13 { reg = <0x480 0x40>, <0xe80 0x80>; };
->>>>
->>>> All this information doesn't need to be in the binding.
->>>>
->>>> It's also an oddly structured dts file if this is what you are doing...
->>>
->>> I removed the default buffer mode settings that I added into
->>> 'aspeed-g4.dtsi' and 'aspeed-g5.dtsi' in v1 to avoid touching of the
->>> default transfer mode setting, but each bus should use its dedicated
->>> SRAM buffer range for enabling buffer mode so I added this information
->>> at here as overriding examples instead. I thought that binding document
->>> is a right place for providing this information but looks like it's not.
->>> Any recommended place for it? Is it good enough if I add it just into
->>> the commit message?
->>
->> I agree with Rob, we don't need this described in the device tree
->> (binding or dts). We know what the layout is for a given aspeed
->> family, so the driver can have this information hard coded.
->>
->> (Correct me if I've misinterpted here Rob)
->>
+> > Add gpio base address reading in the driver; in old code, it just 
+> > returns -1 to gpio->chip.base.
+> >
+> > Fixes: 7ee2d5b4d4340353 ("ARM: dts: nuvoton: Add Fii Kudo system")
+> > Signed-off-by: Hongwei Zhang <hongweiz@ami.com>
 > 
-> Makes sense. Will add these settings into the driver module as hard
-> coded per each bus.
+> NAK, sorry.
 > 
+> We never allow the device tree to specify this.
+> 
+> First, it is a Linux-only base so it would have to be a "linux,..." property.
+> 
+> Even if it is a Linux-only property, it is a bad idea.
+> 
+> Only people using sysfs should have any need to specify global GPIO numbers. Don't use sysfs. Use the 
+> GPIO character device instead. See further:
+> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/gpio/TODO
+> 
+> Yours,
+> Linus Walleij
 
-Realized that the SRAM buffer range setting should be added into device
-tree because each bus module should get the dedicated IO resource range.
-So I'm going to add it to dtsi default reg setting for each I2C bus
-and will remove this description in binding. Also, I'll add a mode
-setting property instead to keep the current setting as byte mode.
+Hi Linus,
 
-Please let me know if you have any different thought.
+Thanks for your review and advice.
 
-Thanks,
-Jae
+--Hongwei
 
