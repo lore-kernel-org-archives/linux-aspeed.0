@@ -1,75 +1,112 @@
-From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-Date: Tue, 9 Feb 2021 11:17:29 -0800
-Subject: [PATCH v2 1/4] dt-bindings: i2c: aspeed: add buffer and DMA mode
- transfer support
-In-Reply-To: <CACPK8XekihpoXEeyUbWSXsRkVMbX1gKG-gSeYgWq=s3UR2gi1g@mail.gmail.com>
-References: <20210112003749.10565-1-jae.hyun.yoo@linux.intel.com>
- <20210112003749.10565-2-jae.hyun.yoo@linux.intel.com>
- <20210114193416.GA3432711@robh.at.kernel.org>
- <4f67358e-58e5-65a5-3680-1cd8e9851faa@linux.intel.com>
- <CACPK8XcZTE=bnCP1-E9PTA09WnXG9Eduwx0dm-QqmQJUDa_OrQ@mail.gmail.com>
- <1814b8d1-954c-0988-0745-e95129079708@linux.intel.com>
- <87ed4085-26e4-98f8-21e3-b1e3c16b0891@linux.intel.com>
- <CACPK8XekihpoXEeyUbWSXsRkVMbX1gKG-gSeYgWq=s3UR2gi1g@mail.gmail.com>
-Message-ID: <3cb75f5e-43d8-a06c-5149-e69823728325@linux.intel.com>
+From: Julia Lawall <Julia.Lawall@inria.fr>
+Date: Tue,  9 Feb 2021 22:13:04 +0100
+Subject: [PATCH] drm: use getter/setter functions
+Message-ID: <20210209211304.1261740-1-Julia.Lawall@inria.fr>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 2/9/2021 4:10 AM, Joel Stanley wrote:
-> On Wed, 3 Feb 2021 at 23:03, Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com> wrote:
->>
->> Hi Joel
->>
->> On 1/28/2021 11:36 AM, Jae Hyun Yoo wrote:
->>> Hi Joel
->>>
->>> On 1/27/2021 4:06 PM, Joel Stanley wrote:
->>>>>> All this information doesn't need to be in the binding.
->>>>>>
->>>>>> It's also an oddly structured dts file if this is what you are doing...
->>>>>
->>>>> I removed the default buffer mode settings that I added into
->>>>> 'aspeed-g4.dtsi' and 'aspeed-g5.dtsi' in v1 to avoid touching of the
->>>>> default transfer mode setting, but each bus should use its dedicated
->>>>> SRAM buffer range for enabling buffer mode so I added this information
->>>>> at here as overriding examples instead. I thought that binding document
->>>>> is a right place for providing this information but looks like it's not.
->>>>> Any recommended place for it? Is it good enough if I add it just into
->>>>> the commit message?
->>>>
->>>> I agree with Rob, we don't need this described in the device tree
->>>> (binding or dts). We know what the layout is for a given aspeed
->>>> family, so the driver can have this information hard coded.
->>>>
->>>> (Correct me if I've misinterpted here Rob)
->>>>
->>>
->>> Makes sense. Will add these settings into the driver module as hard
->>> coded per each bus.
->>>
->>
->> Realized that the SRAM buffer range setting should be added into device
->> tree because each bus module should get the dedicated IO resource range.
->> So I'm going to add it to dtsi default reg setting for each I2C bus
->> and will remove this description in binding. Also, I'll add a mode
->> setting property instead to keep the current setting as byte mode.
-> 
-> I don't understand. What do you propose adding?
-> 
+Use getter and setter functions, for platform_device structures and a
+mipi_dsi_device structure.
 
-I'm going to add reg resource for the SRAM buffer per each bus like
+Signed-off-by: Julia Lawall <Julia.Lawall@inria.fr>
 
-reg = <0x40 0x40>, <0x800 0x80>;
+---
+ drivers/gpu/drm/aspeed/aspeed_gfx_drv.c             |    2 +-
+ drivers/gpu/drm/bridge/cadence/cdns-mhdp8546-core.c |    2 +-
+ drivers/gpu/drm/panel/panel-lvds.c                  |    2 +-
+ drivers/gpu/drm/panel/panel-seiko-43wvf1g.c         |    4 ++--
+ drivers/gpu/drm/panel/panel-simple.c                |    2 +-
+ drivers/gpu/drm/rockchip/rockchip_lvds.c            |    2 +-
+ 6 files changed, 7 insertions(+), 7 deletions(-)
 
-into the aspeed-g*.dtsi but adding like this will not be a key for
-enabling buffer mode like this v2 does. Also, I'm going to remove the
-'aspeed,dma-buf-size' in this patch series and I'll add fixed DMA length
-as a configuration per each SoC. Instead, I'm going to add a xfer mode
-property e.g. 'aspeed,i2c-xfer-mode' to select 'byte', 'buffer' or 'dma'
-modes.
+diff --git a/drivers/gpu/drm/panel/panel-simple.c b/drivers/gpu/drm/panel/panel-simple.c
+index 4e2dad314c79..9858079f9e14 100644
+--- a/drivers/gpu/drm/panel/panel-simple.c
++++ b/drivers/gpu/drm/panel/panel-simple.c
+@@ -4800,7 +4800,7 @@ static int panel_simple_dsi_probe(struct mipi_dsi_device *dsi)
+ 
+ 	err = mipi_dsi_attach(dsi);
+ 	if (err) {
+-		struct panel_simple *panel = dev_get_drvdata(&dsi->dev);
++		struct panel_simple *panel = mipi_dsi_get_drvdata(dsi);
+ 
+ 		drm_panel_remove(&panel->base);
+ 	}
+diff --git a/drivers/gpu/drm/panel/panel-seiko-43wvf1g.c b/drivers/gpu/drm/panel/panel-seiko-43wvf1g.c
+index 0ee508576231..3939b25e6666 100644
+--- a/drivers/gpu/drm/panel/panel-seiko-43wvf1g.c
++++ b/drivers/gpu/drm/panel/panel-seiko-43wvf1g.c
+@@ -267,7 +267,7 @@ static int seiko_panel_probe(struct device *dev,
+ 
+ static int seiko_panel_remove(struct platform_device *pdev)
+ {
+-	struct seiko_panel *panel = dev_get_drvdata(&pdev->dev);
++	struct seiko_panel *panel = platform_get_drvdata(pdev);
+ 
+ 	drm_panel_remove(&panel->base);
+ 	drm_panel_disable(&panel->base);
+@@ -277,7 +277,7 @@ static int seiko_panel_remove(struct platform_device *pdev)
+ 
+ static void seiko_panel_shutdown(struct platform_device *pdev)
+ {
+-	struct seiko_panel *panel = dev_get_drvdata(&pdev->dev);
++	struct seiko_panel *panel = platform_get_drvdata(pdev);
+ 
+ 	drm_panel_disable(&panel->base);
+ }
+diff --git a/drivers/gpu/drm/rockchip/rockchip_lvds.c b/drivers/gpu/drm/rockchip/rockchip_lvds.c
+index 654bc52d9ff3..bd5ba10822c2 100644
+--- a/drivers/gpu/drm/rockchip/rockchip_lvds.c
++++ b/drivers/gpu/drm/rockchip/rockchip_lvds.c
+@@ -725,7 +725,7 @@ static int rockchip_lvds_probe(struct platform_device *pdev)
+ 
+ static int rockchip_lvds_remove(struct platform_device *pdev)
+ {
+-	struct rockchip_lvds *lvds = dev_get_drvdata(&pdev->dev);
++	struct rockchip_lvds *lvds = platform_get_drvdata(pdev);
+ 
+ 	component_del(&pdev->dev, &rockchip_lvds_component_ops);
+ 	clk_unprepare(lvds->pclk);
+diff --git a/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c b/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
+index 457ec04950f7..c7707338bfdb 100644
+--- a/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
++++ b/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
+@@ -284,7 +284,7 @@ static int aspeed_gfx_probe(struct platform_device *pdev)
+ 	if (ret)
+ 		return ret;
+ 
+-	dev_set_drvdata(&pdev->dev, priv);
++	platform_set_drvdata(pdev, priv);
+ 
+ 	ret = sysfs_create_group(&pdev->dev.kobj, &aspeed_sysfs_attr_group);
+ 	if (ret)
+diff --git a/drivers/gpu/drm/bridge/cadence/cdns-mhdp8546-core.c b/drivers/gpu/drm/bridge/cadence/cdns-mhdp8546-core.c
+index d0c65610ebb5..989a05bc8197 100644
+--- a/drivers/gpu/drm/bridge/cadence/cdns-mhdp8546-core.c
++++ b/drivers/gpu/drm/bridge/cadence/cdns-mhdp8546-core.c
+@@ -2457,7 +2457,7 @@ static int cdns_mhdp_probe(struct platform_device *pdev)
+ 
+ static int cdns_mhdp_remove(struct platform_device *pdev)
+ {
+-	struct cdns_mhdp_device *mhdp = dev_get_drvdata(&pdev->dev);
++	struct cdns_mhdp_device *mhdp = platform_get_drvdata(pdev);
+ 	unsigned long timeout = msecs_to_jiffies(100);
+ 	bool stop_fw = false;
+ 	int ret;
+diff --git a/drivers/gpu/drm/panel/panel-lvds.c b/drivers/gpu/drm/panel/panel-lvds.c
+index 66c7d765b8f7..59a8d99e777d 100644
+--- a/drivers/gpu/drm/panel/panel-lvds.c
++++ b/drivers/gpu/drm/panel/panel-lvds.c
+@@ -244,7 +244,7 @@ static int panel_lvds_probe(struct platform_device *pdev)
+ 
+ static int panel_lvds_remove(struct platform_device *pdev)
+ {
+-	struct panel_lvds *lvds = dev_get_drvdata(&pdev->dev);
++	struct panel_lvds *lvds = platform_get_drvdata(pdev);
+ 
+ 	drm_panel_remove(&lvds->panel);
+ 
 
-Thanks,
-Jae
