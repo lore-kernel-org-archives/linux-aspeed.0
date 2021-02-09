@@ -1,56 +1,58 @@
-From: Stephen Boyd <sboyd@kernel.org>
-Date: Mon, 08 Feb 2021 23:36:39 -0800
-Subject: [PATCH v2 1/1] media: aspeed: fix clock handling logic
-In-Reply-To: <20201221223225.14723-2-jae.hyun.yoo@linux.intel.com>
-References: <20201221223225.14723-1-jae.hyun.yoo@linux.intel.com>
- <20201221223225.14723-2-jae.hyun.yoo@linux.intel.com>
-Message-ID: <161285619930.76967.620222959363595605@swboyd.mtv.corp.google.com>
+From: Joel Stanley <joel@jms.id.au>
+Date: Tue, 9 Feb 2021 12:10:59 +0000
+Subject: [PATCH v2 1/4] dt-bindings: i2c: aspeed: add buffer and DMA mode
+ transfer support
+In-Reply-To: <87ed4085-26e4-98f8-21e3-b1e3c16b0891@linux.intel.com>
+References: <20210112003749.10565-1-jae.hyun.yoo@linux.intel.com>
+ <20210112003749.10565-2-jae.hyun.yoo@linux.intel.com>
+ <20210114193416.GA3432711@robh.at.kernel.org>
+ <4f67358e-58e5-65a5-3680-1cd8e9851faa@linux.intel.com>
+ <CACPK8XcZTE=bnCP1-E9PTA09WnXG9Eduwx0dm-QqmQJUDa_OrQ@mail.gmail.com>
+ <1814b8d1-954c-0988-0745-e95129079708@linux.intel.com>
+ <87ed4085-26e4-98f8-21e3-b1e3c16b0891@linux.intel.com>
+Message-ID: <CACPK8XekihpoXEeyUbWSXsRkVMbX1gKG-gSeYgWq=s3UR2gi1g@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Quoting Jae Hyun Yoo (2020-12-21 14:32:25)
-> Video engine uses eclk and vclk for its clock sources and its reset
-> control is coupled with eclk so the current clock enabling sequence works
-> like below.
-> 
->  Enable eclk
->  De-assert Video Engine reset
->  10ms delay
->  Enable vclk
-> 
-> It introduces improper reset on the Video Engine hardware and eventually
-> the hardware generates unexpected DMA memory transfers that can corrupt
-> memory region in random and sporadic patterns. This issue is observed
-> very rarely on some specific AST2500 SoCs but it causes a critical
-> kernel panic with making a various shape of signature so it's extremely
-> hard to debug. Moreover, the issue is observed even when the video
-> engine is not actively used because udevd turns on the video engine
-> hardware for a short time to make a query in every boot.
-> 
-> To fix this issue, this commit changes the clock handling logic to make
-> the reset de-assertion triggered after enabling both eclk and vclk. Also,
-> it adds clk_unprepare call for a case when probe fails.
-> 
-> Fixes: d2b4387f3bdf ("media: platform: Add Aspeed Video Engine driver")
-> Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-> Reviewed-by: Joel Stanley <joel@jms.id.au>
-> Reviewed-by: Eddie James <eajames@linux.ibm.com>
-> 
-> clk: ast2600: fix reset settings for eclk and vclk
-> 
-> Video engine reset setting should be coupled with eclk to match it
-> with the setting for previous Aspeed SoCs which is defined in
-> clk-aspeed.c since all Aspeed SoCs are sharing a single video engine
-> driver. Also, reset bit 6 is defined as 'Video Engine' reset in
-> datasheet so it should be de-asserted when eclk is enabled. This
-> commit fixes the setting.
-> 
-> Fixes: d3d04f6c330a ("clk: Add support for AST2600 SoC")
-> Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-> Reviewed-by: Joel Stanley <joel@jms.id.au>
-> ---
+On Wed, 3 Feb 2021 at 23:03, Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com> wrote:
+>
+> Hi Joel
+>
+> On 1/28/2021 11:36 AM, Jae Hyun Yoo wrote:
+> > Hi Joel
+> >
+> > On 1/27/2021 4:06 PM, Joel Stanley wrote:
+> >>>> All this information doesn't need to be in the binding.
+> >>>>
+> >>>> It's also an oddly structured dts file if this is what you are doing...
+> >>>
+> >>> I removed the default buffer mode settings that I added into
+> >>> 'aspeed-g4.dtsi' and 'aspeed-g5.dtsi' in v1 to avoid touching of the
+> >>> default transfer mode setting, but each bus should use its dedicated
+> >>> SRAM buffer range for enabling buffer mode so I added this information
+> >>> at here as overriding examples instead. I thought that binding document
+> >>> is a right place for providing this information but looks like it's not.
+> >>> Any recommended place for it? Is it good enough if I add it just into
+> >>> the commit message?
+> >>
+> >> I agree with Rob, we don't need this described in the device tree
+> >> (binding or dts). We know what the layout is for a given aspeed
+> >> family, so the driver can have this information hard coded.
+> >>
+> >> (Correct me if I've misinterpted here Rob)
+> >>
+> >
+> > Makes sense. Will add these settings into the driver module as hard
+> > coded per each bus.
+> >
+>
+> Realized that the SRAM buffer range setting should be added into device
+> tree because each bus module should get the dedicated IO resource range.
+> So I'm going to add it to dtsi default reg setting for each I2C bus
+> and will remove this description in binding. Also, I'll add a mode
+> setting property instead to keep the current setting as byte mode.
 
-Acked-by: Stephen Boyd <sboyd@kernel.org>
+I don't understand. What do you propose adding?
