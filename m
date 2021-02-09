@@ -1,34 +1,58 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Tue,  9 Feb 2021 23:07:32 +1030
-Subject: [PATCH v3 0/2] drm: aspeed: Support more chip families
-Message-ID: <20210209123734.130483-1-joel@jms.id.au>
+Date: Tue,  9 Feb 2021 23:07:33 +1030
+Subject: [PATCH v3 1/2] drm/aspeed: Look up syscon by phandle
+In-Reply-To: <20210209123734.130483-1-joel@jms.id.au>
+References: <20210209123734.130483-1-joel@jms.id.au>
+Message-ID: <20210209123734.130483-2-joel@jms.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The out of tree vendor driver was recently updated to support the
-ast2400 and ast2600. These patches begin to add that support to the
-mainline driver.
+This scales better to multiple families of SoC. The lookup by compatible
+can be removed in a future change.
 
-With these two cleanups it should be easier to support different
-families of BMC system on chip with this driver.
+The fallback path is for the ast2500 platform only. Other platforms will
+be added with the new style, so they won't need fallback paths.
 
-I will merge them through drm-misc once they have been reviewed.
+Signed-off-by: Joel Stanley <joel@jms.id.au>
+---
+v2: Fix fallback path to still find ast2500-scu. Thanks jk for the
+review
+---
+ drivers/gpu/drm/aspeed/aspeed_gfx_drv.c | 10 +++++++---
+ 1 file changed, 7 insertions(+), 3 deletions(-)
 
-v2 fixes review from Jeremy. Thanks!
-v3 fixes the dt match table declaration
-
-Joel Stanley (2):
-  drm/aspeed: Look up syscon by phandle
-  drm/aspeed: Use dt matching for default register values
-
- drivers/gpu/drm/aspeed/aspeed_gfx.h      |  8 +--
- drivers/gpu/drm/aspeed/aspeed_gfx_crtc.c | 11 ++--
- drivers/gpu/drm/aspeed/aspeed_gfx_drv.c  | 67 ++++++++++++++++++------
- 3 files changed, 62 insertions(+), 24 deletions(-)
-
+diff --git a/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c b/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
+index 457ec04950f7..54a6bda03c0e 100644
+--- a/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
++++ b/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
+@@ -103,6 +103,7 @@ static int aspeed_gfx_load(struct drm_device *drm)
+ {
+ 	struct platform_device *pdev = to_platform_device(drm->dev);
+ 	struct aspeed_gfx *priv = to_aspeed_gfx(drm);
++	struct device_node *np = pdev->dev.of_node;
+ 	struct resource *res;
+ 	int ret;
+ 
+@@ -111,10 +112,13 @@ static int aspeed_gfx_load(struct drm_device *drm)
+ 	if (IS_ERR(priv->base))
+ 		return PTR_ERR(priv->base);
+ 
+-	priv->scu = syscon_regmap_lookup_by_compatible("aspeed,ast2500-scu");
++	priv->scu = syscon_regmap_lookup_by_phandle(np, "syscon");
+ 	if (IS_ERR(priv->scu)) {
+-		dev_err(&pdev->dev, "failed to find SCU regmap\n");
+-		return PTR_ERR(priv->scu);
++		priv->scu = syscon_regmap_lookup_by_compatible("aspeed,ast2500-scu");
++		if (IS_ERR(priv->scu)) {
++			dev_err(&pdev->dev, "failed to find SCU regmap\n");
++			return PTR_ERR(priv->scu);
++		}
+ 	}
+ 
+ 	ret = of_reserved_mem_device_init(drm->dev);
 -- 
 2.30.0
 
