@@ -1,30 +1,66 @@
-From: Arnd Bergmann <arnd@kernel.org>
-Date: Thu, 11 Feb 2021 16:05:30 +0100
-Subject: [GIT PULL] ARM: aspeed: soc changes for 5.12
-In-Reply-To: <CACPK8Xf+4VkWC6rkHhsWdwhaLjy2Az=GAHaEe=SvOiUc_OGKSQ@mail.gmail.com>
-References: <CACPK8Xf+4VkWC6rkHhsWdwhaLjy2Az=GAHaEe=SvOiUc_OGKSQ@mail.gmail.com>
-Message-ID: <161305590367.259551.3441332889006792758.b4-ty@arndb.de>
+From: Eddie James <eajames@linux.ibm.com>
+Date: Thu, 11 Feb 2021 13:48:46 -0600
+Subject: [PATCH] fsi: Aspeed: Reduce poll timeout
+Message-ID: <20210211194846.35475-1-eajames@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Arnd Bergmann <arnd@arndb.de>
+The lengthy timeout previously used sometimes resulted in
+scheduling problems, detailed below. Therefore reduce the timeout
+to 500us. This timeout selection is supported by the benchmarks
+collected below with various clock dividers. This is purely the time
+spent polling (reported by ktime_get()).
 
-On Wed, 10 Feb 2021 12:30:27 +0000, Joel Stanley wrote:
-> A small pull request for the aspeed platform this time around.
-> 
-> The following changes since commit d0e72be77e7995923fac73f27cf7a75d3d1a4dec:
-> 
->   soc: aspeed: socinfo: Add new systems (2021-02-10 22:25:45 +1030)
-> 
-> are available in the Git repository at:
-> 
-> [...]
+div  1: max:150us avg:  2us
+div  2: max:155us avg:  3us
+div  4: max:149us avg:  7us
+div  8: max:153us avg: 13us
+div 16: max:197us avg: 21us
+div 32: max:181us avg: 50us
+div 64: max:262us avg:100us
 
-Merged into arm/drivers, thanks!
+Jan 22 01:27:21 rain27bmc kernel: rcu: INFO: rcu_sched self-detected stall on CPU
+Jan 22 01:27:21 rain27bmc kernel: rcu:         0-....: (2099 ticks this GP) idle=0ca/1/0x40000002 softirq=349573/349573 fqs=1048
+Jan 22 01:27:21 rain27bmc kernel:         (t=2100 jiffies g=841149 q=7163)
+Jan 22 01:27:21 rain27bmc kernel: NMI backtrace for cpu 0
+Jan 22 01:27:21 rain27bmc kernel: CPU: 0 PID: 5959 Comm: ibm-read-vpd Not tainted 5.8.17-a9b4ea8 #1
+Jan 22 01:27:21 rain27bmc kernel: Hardware name: Generic DT based system
+Jan 22 01:27:21 rain27bmc kernel: Backtrace:
+Jan 22 01:27:25 rain27bmc kernel: [<8010d92c>] (dump_backtrace) from [<8010db80>] (show_stack+0x20/0x24)
+...
+Jan 22 01:27:25 rain27bmc kernel: [<8010130c>] (gic_handle_irq) from [<80100b0c>] (__irq_svc+0x6c/0x90)
+Jan 22 01:27:25 rain27bmc kernel: Exception stack(0xb79159b0 to 0xb79159f8)
+Jan 22 01:27:25 rain27bmc kernel: 59a0:                                     9e88e5d5 00000559 00000559 00000018
+Jan 22 01:27:25 rain27bmc kernel: 59c0: 00000000 9f217c55 00000003 00000559 a0201c00 bfa4d048 bfa4d000 b7915a44
+Jan 22 01:27:25 rain27bmc kernel: 59e0: 40e88f8a b7915a00 3254e553 80734924 80030113 ffffffff
+Jan 22 01:27:25 rain27bmc kernel:  r9:b7914000 r8:a0201c00 r7:b79159e4 r6:ffffffff r5:80030113 r4:80734924
+Jan 22 01:27:25 rain27bmc kernel: [<807348b4>] (__opb_read) from [<80734d98>] (aspeed_master_read+0xbc/0xcc)
+Jan 22 01:27:25 rain27bmc kernel:  r10:00000004 r9:00000002 r8:80734cdc r7:bd33fa40 r6:00000004 r5:bd33f840
+Jan 22 01:27:25 rain27bmc kernel:  r4:00201c00
+Jan 22 01:27:25 rain27bmc kernel: [<80734cdc>] (aspeed_master_read) from [<807320f0>] (fsi_master_read+0x6c/0x1bc)
+...
 
-merge commit: 4f79a8b06fccec3dd68935db5a4662435c472abf
+Signed-off-by: Eddie James <eajames@linux.ibm.com>
+---
+ drivers/fsi/fsi-master-aspeed.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-       Arnd
+diff --git a/drivers/fsi/fsi-master-aspeed.c b/drivers/fsi/fsi-master-aspeed.c
+index 90dbe58ca1ed..03c61e50b299 100644
+--- a/drivers/fsi/fsi-master-aspeed.c
++++ b/drivers/fsi/fsi-master-aspeed.c
+@@ -92,7 +92,7 @@ static const u32 fsi_base = 0xa0000000;
+ static u16 aspeed_fsi_divisor = FSI_DIVISOR_DEFAULT;
+ module_param_named(bus_div,aspeed_fsi_divisor, ushort, 0);
+ 
+-#define OPB_POLL_TIMEOUT		10000
++#define OPB_POLL_TIMEOUT		500
+ 
+ static int __opb_write(struct fsi_master_aspeed *aspeed, u32 addr,
+ 		       u32 val, u32 transfer_size)
+-- 
+2.27.0
+
