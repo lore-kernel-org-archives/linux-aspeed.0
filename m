@@ -1,67 +1,106 @@
 From: Rob Herring <robh@kernel.org>
-Date: Fri, 5 Mar 2021 17:09:40 -0600
-Subject: [PATCH 17/19] dt-bindings: ipmi: Add optional SerIRQ property to
- ASPEED KCS devices
-In-Reply-To: <20210219142523.3464540-18-andrew@aj.id.au>
-References: <20210219142523.3464540-1-andrew@aj.id.au>
- <20210219142523.3464540-18-andrew@aj.id.au>
-Message-ID: <20210305230940.GA809870@robh.at.kernel.org>
+Date: Sat, 6 Mar 2021 13:30:11 -0700
+Subject: [PATCH v4 1/4] dt-bindings: i2c: aspeed: add transfer mode support
+In-Reply-To: <20210224191720.7724-2-jae.hyun.yoo@linux.intel.com>
+References: <20210224191720.7724-1-jae.hyun.yoo@linux.intel.com>
+ <20210224191720.7724-2-jae.hyun.yoo@linux.intel.com>
+Message-ID: <20210306203011.GA1152769@robh.at.kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sat, Feb 20, 2021 at 12:55:21AM +1030, Andrew Jeffery wrote:
-> Allocating IO and IRQ resources to LPC devices is in-theory an operation
-> for the host, however ASPEED don't appear to expose this capability
-> outside the BMC (e.g. SuperIO). Instead, we are left with BMC-internal
-> registers for managing these resources, so introduce a devicetree
-> property for KCS devices to describe SerIRQ properties.
+On Wed, Feb 24, 2021 at 11:17:17AM -0800, Jae Hyun Yoo wrote:
+> Append bindings to support transfer mode.
 > 
-> Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
+> Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+> Reviewed-by: Brendan Higgins <brendanhiggins@google.com>
 > ---
->  .../bindings/ipmi/aspeed,ast2400-kcs-bmc.yaml      | 14 ++++++++++++++
->  1 file changed, 14 insertions(+)
+> Changes since v3:
+> - None
 > 
-> diff --git a/Documentation/devicetree/bindings/ipmi/aspeed,ast2400-kcs-bmc.yaml b/Documentation/devicetree/bindings/ipmi/aspeed,ast2400-kcs-bmc.yaml
-> index 1c1cc4265948..808475a2c2ca 100644
-> --- a/Documentation/devicetree/bindings/ipmi/aspeed,ast2400-kcs-bmc.yaml
-> +++ b/Documentation/devicetree/bindings/ipmi/aspeed,ast2400-kcs-bmc.yaml
-> @@ -47,6 +47,18 @@ properties:
->        channels the status address is derived from the data address, but the
->        status address may be optionally provided.
->  
-> +  aspeed,lpc-interrupts:
-> +    $ref: "/schemas/types.yaml#/definitions/uint32-matrix"
-> +    minItems: 1
-> +    maxItems: 1
-> +    description: |
-> +      A 2-cell property expressing the LPC SerIRQ number and the interrupt
-> +      level/sense encoding (specified in the standard fashion).
-
-That would be uint32-array with 'maxItems: 2'.
-
+> Changes since v2:
+> - Moved SRAM resources back to default dtsi and added mode selection
+>   property.
+> 
+> Changes since v1:
+> - Removed buffer reg settings from default device tree and added the settings
+>   into here to show the predefined buffer range per each bus.
+> 
+>  .../devicetree/bindings/i2c/i2c-aspeed.txt    | 37 +++++++++++++++----
+>  1 file changed, 30 insertions(+), 7 deletions(-)
+> 
+> diff --git a/Documentation/devicetree/bindings/i2c/i2c-aspeed.txt b/Documentation/devicetree/bindings/i2c/i2c-aspeed.txt
+> index b47f6ccb196a..242343177324 100644
+> --- a/Documentation/devicetree/bindings/i2c/i2c-aspeed.txt
+> +++ b/Documentation/devicetree/bindings/i2c/i2c-aspeed.txt
+> @@ -17,6 +17,20 @@ Optional Properties:
+>  - bus-frequency	: frequency of the bus clock in Hz defaults to 100 kHz when not
+>  		  specified
+>  - multi-master	: states that there is another master active on this bus.
+> +- aspeed,i2c-xfer-mode	: should be "byte", "buf" or "dma" to select transfer
+> +			  mode defaults to "byte" mode when not specified.
 > +
-> +      Note that the generated interrupt is issued from the BMC to the host, and
-> +      thus the target interrupt controller is not captured by the BMC's
-> +      devicetree.
-> +
->    kcs_chan:
->      deprecated: true
->      $ref: '/schemas/types.yaml#/definitions/uint32'
-> @@ -84,9 +96,11 @@ allOf:
+> +			  I2C DMA mode on AST2500 has these restrictions:
+> +			    - If one of these controllers is enabled
+> +				* UHCI host controller
+> +				* MCTP controller
+> +			      I2C has to use buffer mode or byte mode instead
+> +			      since these controllers run only in DMA mode and
+> +			      I2C is sharing the same DMA H/W with them.
+> +			    - If one of these controllers uses DMA mode, I2C
+> +			      can't use DMA mode
+> +				* SD/eMMC
+> +				* Port80 snoop
+
+How does one decide between byte or buf mode? 
+
 >  
->  examples:
->    - |
-> +    #include <dt-bindings/interrupt-controller/irq.h>
->      kcs3: kcs at 24 {
->          compatible = "aspeed,ast2600-kcs-bmc";
->          reg = <0x24 0x1>, <0x30 0x1>, <0x3c 0x1>;
->          aspeed,lpc-io-reg = <0xca2>;
-> +        aspeed,lpc-interrupts = <11 IRQ_TYPE_LEVEL_LOW>;
->          interrupts = <8>;
->      };
+>  Example:
+>  
+> @@ -26,20 +40,29 @@ i2c {
+>  	#size-cells = <1>;
+>  	ranges = <0 0x1e78a000 0x1000>;
+>  
+> -	i2c_ic: interrupt-controller at 0 {
+> -		#interrupt-cells = <1>;
+> -		compatible = "aspeed,ast2400-i2c-ic";
+> +	i2c_gr: i2c-global-regs at 0 {
+> +		compatible = "aspeed,ast2500-i2c-gr", "syscon";
+>  		reg = <0x0 0x40>;
+> -		interrupts = <12>;
+> -		interrupt-controller;
+> +
+> +		#address-cells = <1>;
+> +		#size-cells = <1>;
+> +		ranges = <0x0 0x0 0x40>;
+> +
+> +		i2c_ic: interrupt-controller at 0 {
+> +			#interrupt-cells = <1>;
+> +			compatible = "aspeed,ast2500-i2c-ic";
+> +			reg = <0x0 0x4>;
+> +			interrupts = <12>;
+> +			interrupt-controller;
+> +		};
+>  	};
+>  
+>  	i2c0: i2c-bus at 40 {
+>  		#address-cells = <1>;
+>  		#size-cells = <0>;
+>  		#interrupt-cells = <1>;
+> -		reg = <0x40 0x40>;
+> -		compatible = "aspeed,ast2400-i2c-bus";
+> +		reg = <0x40 0x40>, <0x200 0x10>;
+> +		compatible = "aspeed,ast2500-i2c-bus";
+
+
+The example changes are all unrelated to adding the new property. Should 
+be a separate patch or just dropped.
+
+>  		clocks = <&syscon ASPEED_CLK_APB>;
+>  		resets = <&syscon ASPEED_RESET_I2C>;
+>  		bus-frequency = <100000>;
 > -- 
-> 2.27.0
+> 2.17.1
 > 
