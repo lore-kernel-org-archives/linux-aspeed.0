@@ -1,106 +1,149 @@
 From: Rob Herring <robh@kernel.org>
-Date: Sat, 6 Mar 2021 13:30:11 -0700
-Subject: [PATCH v4 1/4] dt-bindings: i2c: aspeed: add transfer mode support
-In-Reply-To: <20210224191720.7724-2-jae.hyun.yoo@linux.intel.com>
-References: <20210224191720.7724-1-jae.hyun.yoo@linux.intel.com>
- <20210224191720.7724-2-jae.hyun.yoo@linux.intel.com>
-Message-ID: <20210306203011.GA1152769@robh.at.kernel.org>
+Date: Sat, 6 Mar 2021 13:58:55 -0700
+Subject: [PATCH 1/4] dt-bindings: mfd: Add bindings for Ampere Altra
+ SMPro drivers
+In-Reply-To: <20210225101854.13896-2-quan@os.amperecomputing.com>
+References: <20210225101854.13896-1-quan@os.amperecomputing.com>
+ <20210225101854.13896-2-quan@os.amperecomputing.com>
+Message-ID: <20210306205855.GA1195877@robh.at.kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Feb 24, 2021 at 11:17:17AM -0800, Jae Hyun Yoo wrote:
-> Append bindings to support transfer mode.
+On Thu, Feb 25, 2021 at 05:18:51PM +0700, Quan Nguyen wrote:
+> Adds device tree bindings for SMPro drivers found on the Mt.Jade hardware
+> reference platform with Ampere's Altra Processor family.
 > 
-> Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-> Reviewed-by: Brendan Higgins <brendanhiggins@google.com>
+> Signed-off-by: Quan Nguyen <quan@os.amperecomputing.com>
 > ---
-> Changes since v3:
-> - None
+>  .../bindings/hwmon/ampere,ac01-hwmon.yaml     | 27 ++++++
+>  .../bindings/mfd/ampere,ac01-smpro.yaml       | 82 +++++++++++++++++++
+>  2 files changed, 109 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/hwmon/ampere,ac01-hwmon.yaml
+>  create mode 100644 Documentation/devicetree/bindings/mfd/ampere,ac01-smpro.yaml
 > 
-> Changes since v2:
-> - Moved SRAM resources back to default dtsi and added mode selection
->   property.
-> 
-> Changes since v1:
-> - Removed buffer reg settings from default device tree and added the settings
->   into here to show the predefined buffer range per each bus.
-> 
->  .../devicetree/bindings/i2c/i2c-aspeed.txt    | 37 +++++++++++++++----
->  1 file changed, 30 insertions(+), 7 deletions(-)
-> 
-> diff --git a/Documentation/devicetree/bindings/i2c/i2c-aspeed.txt b/Documentation/devicetree/bindings/i2c/i2c-aspeed.txt
-> index b47f6ccb196a..242343177324 100644
-> --- a/Documentation/devicetree/bindings/i2c/i2c-aspeed.txt
-> +++ b/Documentation/devicetree/bindings/i2c/i2c-aspeed.txt
-> @@ -17,6 +17,20 @@ Optional Properties:
->  - bus-frequency	: frequency of the bus clock in Hz defaults to 100 kHz when not
->  		  specified
->  - multi-master	: states that there is another master active on this bus.
-> +- aspeed,i2c-xfer-mode	: should be "byte", "buf" or "dma" to select transfer
-> +			  mode defaults to "byte" mode when not specified.
+> diff --git a/Documentation/devicetree/bindings/hwmon/ampere,ac01-hwmon.yaml b/Documentation/devicetree/bindings/hwmon/ampere,ac01-hwmon.yaml
+> new file mode 100644
+> index 000000000000..d13862ba646b
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/hwmon/ampere,ac01-hwmon.yaml
+> @@ -0,0 +1,27 @@
+> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+> +%YAML 1.2
+> +---
+> +$id: http://devicetree.org/schemas/hwmon/ampere,ac01-hwmon.yaml#
+> +$schema: http://devicetree.org/meta-schemas/core.yaml#
 > +
-> +			  I2C DMA mode on AST2500 has these restrictions:
-> +			    - If one of these controllers is enabled
-> +				* UHCI host controller
-> +				* MCTP controller
-> +			      I2C has to use buffer mode or byte mode instead
-> +			      since these controllers run only in DMA mode and
-> +			      I2C is sharing the same DMA H/W with them.
-> +			    - If one of these controllers uses DMA mode, I2C
-> +			      can't use DMA mode
-> +				* SD/eMMC
-> +				* Port80 snoop
-
-How does one decide between byte or buf mode? 
-
->  
->  Example:
->  
-> @@ -26,20 +40,29 @@ i2c {
->  	#size-cells = <1>;
->  	ranges = <0 0x1e78a000 0x1000>;
->  
-> -	i2c_ic: interrupt-controller at 0 {
-> -		#interrupt-cells = <1>;
-> -		compatible = "aspeed,ast2400-i2c-ic";
-> +	i2c_gr: i2c-global-regs at 0 {
-> +		compatible = "aspeed,ast2500-i2c-gr", "syscon";
->  		reg = <0x0 0x40>;
-> -		interrupts = <12>;
-> -		interrupt-controller;
+> +title: Hardware monitoring driver for the Ampere Altra SMPro
 > +
-> +		#address-cells = <1>;
-> +		#size-cells = <1>;
-> +		ranges = <0x0 0x0 0x40>;
+> +maintainers:
+> +  - Quan Nguyen <quan@os.amperecomputing.com>
 > +
-> +		i2c_ic: interrupt-controller at 0 {
-> +			#interrupt-cells = <1>;
-> +			compatible = "aspeed,ast2500-i2c-ic";
-> +			reg = <0x0 0x4>;
-> +			interrupts = <12>;
-> +			interrupt-controller;
-> +		};
->  	};
->  
->  	i2c0: i2c-bus at 40 {
->  		#address-cells = <1>;
->  		#size-cells = <0>;
->  		#interrupt-cells = <1>;
-> -		reg = <0x40 0x40>;
-> -		compatible = "aspeed,ast2400-i2c-bus";
-> +		reg = <0x40 0x40>, <0x200 0x10>;
-> +		compatible = "aspeed,ast2500-i2c-bus";
+> +description: |
+> +  This module is part of the Ampere Altra SMPro multi-function device. For more
+> +  details see ../mfd/ampere,ac01-smpro.yaml.
+> +
+> +properties:
+> +  compatible:
+> +    enum:
+> +      - ampere,ac01-hwmon
+> +
+> +  reg:
+> +    maxItems: 1
+> +
+> +required:
+> +  - compatible
+> +
+> +additionalProperties: false
+> diff --git a/Documentation/devicetree/bindings/mfd/ampere,ac01-smpro.yaml b/Documentation/devicetree/bindings/mfd/ampere,ac01-smpro.yaml
+> new file mode 100644
+> index 000000000000..06b0239413ae
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/mfd/ampere,ac01-smpro.yaml
+> @@ -0,0 +1,82 @@
+> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+> +%YAML 1.2
+> +---
+> +$id: http://devicetree.org/schemas/mfd/ampere,ac01-smpro.yaml#
+> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> +
+> +title: Ampere Altra SMPro firmware driver
+> +
+> +maintainers:
+> +  - Quan Nguyen <quan@os.amperecomputing.com>
+> +
+> +description: |
+> +  Ampere Altra SMPro firmware may contain different blocks like hardware
+> +  monitoring, error monitoring and other miscellaneous features.
+> +
+> +properties:
+> +  compatible:
+> +    const: ampere,ac01-smpro
+> +
+> +  reg:
+> +    description:
+> +      I2C device address.
+> +    maxItems: 1
+> +
+> +  "#address-cells":
+> +    const: 1
+> +
+> +  "#size-cells":
+> +    const: 0
+> +
+> +patternProperties:
+> +  "^hwmon(@[0-9a-f]+)?$":
+> +    $ref: ../hwmon/ampere,ac01-hwmon.yaml
+> +
+> +  "^misc(@[0-9a-f]+)?$":
+> +    type: object
+> +    description: Ampere Altra SMPro Misc driver
+> +    properties:
+> +      compatible:
+> +        const: "ampere,ac01-misc"
+> +
+> +  "^errmon(@[0-9a-f]+)?$":
+> +    type: object
+> +    description: Ampere Altra SMPro Error Monitor driver
+> +    properties:
+> +      compatible:
+> +        const: "ampere,ac01-errmon"
+> +
+> +required:
+> +  - "#address-cells"
+> +  - "#size-cells"
+> +  - compatible
+> +  - reg
+> +
+> +additionalProperties: false
+> +
+> +examples:
+> +  - |
+> +    i2c {
+> +        #address-cells = <1>;
+> +        #size-cells = <0>;
+> +
+> +        smpro at 4f {
+> +            compatible = "ampere,ac01-smpro";
+> +            reg = <0x4f>;
+> +            #address-cells = <1>;
+> +            #size-cells = <0>;
+> +
+> +            hwmon {
+> +                compatible = "ampere,ac01-hwmon";
+> +            };
+> +
+> +            misc {
+> +                compatible = "ampere,ac01-misc";
+> +            };
+> +
+> +            errmon {
+> +                compatible = "ampere,ac01-errmon";
+> +            };
 
+No of these have any properties or resources, why do you need them? DT 
+is not the only way to instantiate drivers...
 
-The example changes are all unrelated to adding the new property. Should 
-be a separate patch or just dropped.
-
->  		clocks = <&syscon ASPEED_CLK_APB>;
->  		resets = <&syscon ASPEED_RESET_I2C>;
->  		bus-frequency = <100000>;
-> -- 
-> 2.17.1
-> 
+Rob
