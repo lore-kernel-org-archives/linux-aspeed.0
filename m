@@ -1,12 +1,12 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Tue, 09 Mar 2021 13:14:52 +1030
-Subject: =?UTF-8?Q?Re:_[PATCH_17/19]_dt-bindings:_ipmi:_Add_optional_SerIRQ_prope?=
- =?UTF-8?Q?rty_to_ASPEED_KCS_devices?=
-In-Reply-To: <20210305230940.GA809870@robh.at.kernel.org>
+Date: Tue, 09 Mar 2021 13:15:55 +1030
+Subject: =?UTF-8?Q?Re:_[PATCH_16/19]_dt-bindings:_ipmi:_Convert_ASPEED_KCS_bindin?=
+ =?UTF-8?Q?g_to_schema?=
+In-Reply-To: <20210305230710.GA798530@robh.at.kernel.org>
 References: <20210219142523.3464540-1-andrew@aj.id.au>
- <20210219142523.3464540-18-andrew@aj.id.au>
- <20210305230940.GA809870@robh.at.kernel.org>
-Message-ID: <331c242b-cf22-4d0e-a08c-b9dbb06f2f32@www.fastmail.com>
+ <20210219142523.3464540-17-andrew@aj.id.au>
+ <20210305230710.GA798530@robh.at.kernel.org>
+Message-ID: <0fbc1435-1f0f-4c0e-935f-95874d438fbf@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -15,36 +15,109 @@ Content-Transfer-Encoding: 7bit
 
 
 
-On Sat, 6 Mar 2021, at 09:39, Rob Herring wrote:
-> On Sat, Feb 20, 2021 at 12:55:21AM +1030, Andrew Jeffery wrote:
-> > Allocating IO and IRQ resources to LPC devices is in-theory an operation
-> > for the host, however ASPEED don't appear to expose this capability
-> > outside the BMC (e.g. SuperIO). Instead, we are left with BMC-internal
-> > registers for managing these resources, so introduce a devicetree
-> > property for KCS devices to describe SerIRQ properties.
+On Sat, 6 Mar 2021, at 09:37, Rob Herring wrote:
+> On Sat, Feb 20, 2021 at 12:55:20AM +1030, Andrew Jeffery wrote:
+> > Given the deprecated binding, improve the ability to detect issues in
+> > the platform devicetrees. Further, a subsequent patch will introduce a
+> > new interrupts property for specifying SerIRQ behaviour, so convert
+> > before we do any further additions.
 > > 
 > > Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
 > > ---
-> >  .../bindings/ipmi/aspeed,ast2400-kcs-bmc.yaml      | 14 ++++++++++++++
-> >  1 file changed, 14 insertions(+)
+> >  .../bindings/ipmi/aspeed,ast2400-kcs-bmc.yaml | 92 +++++++++++++++++++
+> >  .../bindings/ipmi/aspeed-kcs-bmc.txt          | 33 -------
+> >  2 files changed, 92 insertions(+), 33 deletions(-)
+> >  create mode 100644 Documentation/devicetree/bindings/ipmi/aspeed,ast2400-kcs-bmc.yaml
+> >  delete mode 100644 Documentation/devicetree/bindings/ipmi/aspeed-kcs-bmc.txt
 > > 
 > > diff --git a/Documentation/devicetree/bindings/ipmi/aspeed,ast2400-kcs-bmc.yaml b/Documentation/devicetree/bindings/ipmi/aspeed,ast2400-kcs-bmc.yaml
-> > index 1c1cc4265948..808475a2c2ca 100644
-> > --- a/Documentation/devicetree/bindings/ipmi/aspeed,ast2400-kcs-bmc.yaml
+> > new file mode 100644
+> > index 000000000000..1c1cc4265948
+> > --- /dev/null
 > > +++ b/Documentation/devicetree/bindings/ipmi/aspeed,ast2400-kcs-bmc.yaml
-> > @@ -47,6 +47,18 @@ properties:
-> >        channels the status address is derived from the data address, but the
-> >        status address may be optionally provided.
-> >  
-> > +  aspeed,lpc-interrupts:
-> > +    $ref: "/schemas/types.yaml#/definitions/uint32-matrix"
-> > +    minItems: 1
+> > @@ -0,0 +1,92 @@
+> > +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+> > +%YAML 1.2
+> > +---
+> > +$id: http://devicetree.org/schemas/ipmi/aspeed,ast2400-kcs-bmc.yaml#
+> > +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> > +
+> > +title: ASPEED BMC KCS Devices
+> > +
+> > +maintainers:
+> > +  - Andrew Jeffery <andrew@aj.id.au>
+> > +
+> > +description: |
+> > +  The Aspeed BMC SoCs typically use the Keyboard-Controller-Style (KCS)
+> > +  interfaces on the LPC bus for in-band IPMI communication with their host.
+> > +
+> > +properties:
+> > +  compatible:
+> > +    oneOf:
+> > +      - description: Channel ID derived from reg
+> > +        items:
+> > +          enum:
+> > +            - aspeed,ast2400-kcs-bmc-v2
+> > +            - aspeed,ast2500-kcs-bmc-v2
+> > +            - aspeed,ast2600-kcs-bmc
+> > +
+> > +      - description: Old-style with explicit channel ID, no reg
+> > +        deprecated: true
+> > +        items:
+> > +          enum:
+> > +            - aspeed,ast2400-kcs-bmc
+> > +            - aspeed,ast2500-kcs-bmc
+> > +
+> > +  interrupts:
 > > +    maxItems: 1
-> > +    description: |
-> > +      A 2-cell property expressing the LPC SerIRQ number and the interrupt
-> > +      level/sense encoding (specified in the standard fashion).
+> > +
+> > +  reg:
+> > +    minItems: 3
+> > +    maxItems: 3
+> > +    description: IDR, ODR and STR register addresses
 > 
-> That would be uint32-array with 'maxItems: 2'.
-> 
+> items:
+>   - description: IDR register
+>   - description: ODR register
+>   - description: STR register
 
-Ah, thanks.
+Oh, neat.
+
+> 
+> > +
+> > +  aspeed,lpc-io-reg:
+> > +    $ref: '/schemas/types.yaml#/definitions/uint32'
+> > +    minItems: 1
+> > +    maxItems: 2
+> 
+> A uint32 can only have 1 item. uint32-array perhaps?
+
+That sounds more appropriate.
+
+> 
+> 
+> > +    description: |
+> > +      The host CPU LPC IO data and status addresses for the device. For most
+> > +      channels the status address is derived from the data address, but the
+> > +      status address may be optionally provided.
+> > +
+> > +  kcs_chan:
+> > +    deprecated: true
+> > +    $ref: '/schemas/types.yaml#/definitions/uint32'
+> > +    maxItems: 1
+> 
+> Drop
+
+Ack.
+
+> 
+> > +    description: The LPC channel number in the controller
+> > +
+> > +  kcs_addr:
+> > +    deprecated: true
+> > +    $ref: '/schemas/types.yaml#/definitions/uint32'
+> > +    maxItems: 1
+> 
+> Drop
+
+Ack.
