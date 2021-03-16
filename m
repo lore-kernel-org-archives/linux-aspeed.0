@@ -1,35 +1,114 @@
-From: David Miller <davem@davemloft.net>
-Date: Thu, 11 Mar 2021 16:28:45 -0800 (PST)
-Subject: [PATCH 4/4] ftgmac100: Restart MAC HW once
-In-Reply-To: <CACPK8XfMEy2o39v3CG4Zzj9H_kqSFBOddL3SC-_OryMqVXEjOw@mail.gmail.com>
-References: <20201019085717.32413-5-dylan_hung@aspeedtech.com>
- <CACPK8Xc8NSBzN+LnZ=b5t7ODjLg9B6m2WDdR-C9SRWaDEXwOtQ@mail.gmail.com>
- <CACPK8XfMEy2o39v3CG4Zzj9H_kqSFBOddL3SC-_OryMqVXEjOw@mail.gmail.com>
-Message-ID: <20210311.162845.1107113962810628804.davem@davemloft.net>
+From: Troy Lee <troy_lee@aspeedtech.com>
+Date: Tue, 16 Mar 2021 08:59:32 +0000
+Subject: [PATCH v1] ARM: dts: Fix 64MiB OpenBMC flash layout and
+ aspeed-ast2600-evb.dts
+Message-ID: <20210316085932.2601-1-troy_lee@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Joel Stanley <joel@jms.id.au>
-Date: Fri, 12 Mar 2021 00:26:43 +0000
+Aspeed AST2600 u-boot requires 600KiB+ flash space. Sharing the same
+openbmc-flash-layout-64.dtsi requires to resize the flash partition.
 
-> On Tue, 20 Oct 2020 at 04:14, Joel Stanley <joel@jms.id.au> wrote:
->>
->> On Mon, 19 Oct 2020 at 08:57, Dylan Hung <dylan_hung@aspeedtech.com> wrote:
->> >
->> > The interrupt handler may set the flag to reset the mac in the future,
->> > but that flag is not cleared once the reset has occured.
->> >
->> > Fixes: 10cbd6407609 ("ftgmac100: Rework NAPI & interrupts handling")
->> > Signed-off-by: Dylan Hung <dylan_hung@aspeedtech.com>
->> > Signed-off-by: Joel Stanley <joel@jms.id.au>
->>
->> Reviewed-by: Joel Stanley <joel@jms.id.au>
-> 
-> net maintainers, this one never made it into the tree. Do you need me
-> to re-send it?
+The updated flash layout as follows:
+- u-boot: 896 KiB
+- u-boot-env: 128 KiB
+- kernel: 9MiB
+- rofs: 32 MiB
+- rwfs: 22 MiB
 
-If it has been this long, definitely you need to resend.
+Signed-off-by: Troy Lee <troy_lee@aspeedtech.com>
+---
+ arch/arm/boot/dts/aspeed-ast2600-evb.dts      | 32 +------------------
+ .../arm/boot/dts/openbmc-flash-layout-64.dtsi | 18 +++++------
+ 2 files changed, 10 insertions(+), 40 deletions(-)
+
+diff --git a/arch/arm/boot/dts/aspeed-ast2600-evb.dts b/arch/arm/boot/dts/aspeed-ast2600-evb.dts
+index 89be13197780..2cfae9cfed3a 100644
+--- a/arch/arm/boot/dts/aspeed-ast2600-evb.dts
++++ b/arch/arm/boot/dts/aspeed-ast2600-evb.dts
+@@ -121,37 +121,7 @@ flash at 0 {
+ 		m25p,fast-read;
+ 		label = "bmc";
+ 		spi-max-frequency = <50000000>;
+-
+-		partitions {
+-			compatible = "fixed-partitions";
+-			#address-cells = <1>;
+-			#size-cells = <1>;
+-
+-			u-boot at 0 {
+-				reg = <0x0 0xe0000>; // 896KB
+-				label = "u-boot";
+-			};
+-
+-			u-boot-env at e0000 {
+-				reg = <0xe0000 0x20000>; // 128KB
+-				label = "u-boot-env";
+-			};
+-
+-			kernel at 100000 {
+-				reg = <0x100000 0x900000>; // 9MB
+-				label = "kernel";
+-			};
+-
+-			rofs at a00000 {
+-				reg = <0xa00000 0x2000000>; // 32MB
+-				label = "rofs";
+-			};
+-
+-			rwfs at 6000000 {
+-				reg = <0x2a00000 0x1600000>; // 22MB
+-				label = "rwfs";
+-			};
+-		};
++#include "openbmc-flash-layout-64.dtsi"
+ 	};
+ };
+ 
+diff --git a/arch/arm/boot/dts/openbmc-flash-layout-64.dtsi b/arch/arm/boot/dts/openbmc-flash-layout-64.dtsi
+index 91163867be34..31f59de5190b 100644
+--- a/arch/arm/boot/dts/openbmc-flash-layout-64.dtsi
++++ b/arch/arm/boot/dts/openbmc-flash-layout-64.dtsi
+@@ -9,27 +9,27 @@ partitions {
+ 	#size-cells = <1>;
+ 
+ 	u-boot at 0 {
+-		reg = <0x0 0x60000>; // 384KB
++		reg = <0x0 0xe0000>; // 896KB
+ 		label = "u-boot";
+ 	};
+ 
+-	u-boot-env at 60000 {
+-		reg = <0x60000 0x20000>; // 128KB
++	u-boot-env at e0000 {
++		reg = <0xe0000 0x20000>; // 128KB
+ 		label = "u-boot-env";
+ 	};
+ 
+-	kernel at 80000 {
+-		reg = <0x80000 0x500000>; // 5MB
++	kernel at 100000 {
++		reg = <0x100000 0x900000>; // 9MB
+ 		label = "kernel";
+ 	};
+ 
+-	rofs at 580000 {
+-		reg = <0x580000 0x2a80000>; // 42.5MB
++	rofs at a00000 {
++		reg = <0xa00000 0x2000000>; // 32MB
+ 		label = "rofs";
+ 	};
+ 
+-	rwfs at 3000000 {
+-		reg = <0x3000000 0x1000000>; // 16MB
++	rwfs at 6000000 {
++		reg = <0x2a00000 0x1600000>; // 22MB
+ 		label = "rwfs";
+ 	};
+ };
+-- 
+2.25.1
 
