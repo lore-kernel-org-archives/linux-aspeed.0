@@ -1,75 +1,67 @@
 From: Eddie James <eajames@linux.ibm.com>
-Date: Mon, 29 Mar 2021 10:00:00 -0500
-Subject: [PATCH 02/22] ARM: dts: aspeed: rainier: Add directly controlled LEDs
-In-Reply-To: <20210329150020.13632-1-eajames@linux.ibm.com>
-References: <20210329150020.13632-1-eajames@linux.ibm.com>
-Message-ID: <20210329150020.13632-3-eajames@linux.ibm.com>
+Date: Mon, 29 Mar 2021 09:59:58 -0500
+Subject: [PATCH 00/22] ARM: dts: aspeed: Updates for Rainier and Everest
+ machines
+Message-ID: <20210329150020.13632-1-eajames@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Vishwanatha Subbanna <vishwa@linux.ibm.com>
+This series updates the device trees for the Rainier and Everest system
+BMCs. For Rainier, the changes have been tested fairly extensively in
+hardware. Everest has largely been tested in simulation and some basic
+hardware verification testing.
 
-These LEDs are directly connected to the BMC's GPIO bank.
+Alpana Kumari (3):
+  ARM: dts: aspeed: rainier: Add presence GPIOs
+  ARM: dts: aspeed: everest: GPIOs support
+  ARM: dts: aspeed: rainier: Support pass 2 planar
 
-Signed-off-by: Vishwanatha Subbanna <vishwa@linux.ibm.com>
-Signed-off-by: Eddie James <eajames@linux.ibm.com>
-Signed-off-by: Joel Stanley <joel@jms.id.au>
----
- arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts | 24 ++++++++++++++++++--
- 1 file changed, 22 insertions(+), 2 deletions(-)
+Brandon Wyman (2):
+  ARM: dts: aspeed: rainier: Add gpio-keys-polled for fans
+  ARM: dts: aspeed: everest: Add power supply i2c devices
 
-diff --git a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
-index e775ad026d8b..1515f81a6c9f 100644
---- a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
-@@ -135,6 +135,26 @@ i2c2mux3: i2c at 3 {
- 	leds {
- 		compatible = "gpio-leds";
- 
-+		/* BMC Card fault LED at the back */
-+		bmc-ingraham0 {
-+			gpios = <&gpio0 ASPEED_GPIO(H, 1) GPIO_ACTIVE_LOW>;
-+		};
-+
-+		/* Enclosure ID LED at the back */
-+		rear-enc-id0 {
-+			gpios = <&gpio0 ASPEED_GPIO(H, 2) GPIO_ACTIVE_LOW>;
-+		};
-+
-+		/* Enclosure fault LED at the back */
-+		rear-enc-fault0 {
-+			gpios = <&gpio0 ASPEED_GPIO(H, 3) GPIO_ACTIVE_LOW>;
-+		};
-+
-+		/* PCIE slot power LED */
-+		pcieslot-power {
-+			gpios = <&gpio0 ASPEED_GPIO(P, 4) GPIO_ACTIVE_LOW>;
-+		};
-+
- 		/* System ID LED that is at front on Op Panel */
- 		front-sys-id0 {
- 			retain-state-shutdown;
-@@ -178,7 +198,7 @@ &gpio0 {
- 	/*E0-E7*/	"","","","","","","","",
- 	/*F0-F7*/	"","","","","","","","",
- 	/*G0-G7*/	"","","","","","","","",
--	/*H0-H7*/	"","","","","","","","",
-+	/*H0-H7*/	"","bmc-ingraham0","rear-enc-id0","rear-enc-fault0","","","","",
- 	/*I0-I7*/	"","","","","","","","",
- 	/*J0-J7*/	"","","","","","","","",
- 	/*K0-K7*/	"","","","","","","","",
-@@ -186,7 +206,7 @@ &gpio0 {
- 	/*M0-M7*/	"","","","","","","","",
- 	/*N0-N7*/	"","","","","","","","",
- 	/*O0-O7*/	"","","","usb-power","","","","",
--	/*P0-P7*/	"","","","","","","","",
-+	/*P0-P7*/	"","","","","pcieslot-power","","","",
- 	/*Q0-Q7*/	"cfam-reset","","","","","","","",
- 	/*R0-R7*/	"","","","","","","","",
- 	/*S0-S7*/	"presence-ps0","presence-ps1","presence-ps2","presence-ps3",
+Eddie James (7):
+  ARM: dts: aspeed: rainier: Add additional processor CFAMs
+  ARM: dts: aspeed: rainier: Enable fan watchdog
+  ARM: dts: aspeed: rainier 4U: Fix fan configuration
+  ARM: dts: Aspeed: Everest: Add FSI CFAMs and re-number engines
+  ARM: dts: Aspeed: Everest: Add RTC
+  ARM: dts: aspeed: everest: Enable fan watchdog
+  ARM: dts: aspeed: Add Rainier 1S4U machine
+
+Jim Wright (1):
+  ARM: dts: aspeed: everest: Add UCD90320 power sequencer
+
+Matthew Barth (2):
+  ARM: dts: Aspeed: Everest: Add max31785 fan controller device
+  ARM: dts: Aspeed: Everest: Add pca9552 fan presence
+
+PriyangaRamasamy (1):
+  ARM: dts: aspeed: Everest: Add I2C components
+
+Vishwanatha Subbanna (6):
+  ARM: dts: aspeed: rainier: Add Operator Panel LEDs
+  ARM: dts: aspeed: rainier: Add directly controlled LEDs
+  ARM: dts: aspeed: rainier: Add leds that are off PCA9552
+  ARM: dts: aspeed: rainier: Add leds that are off pic16f882
+  ARM: dts: aspeed: rainier: Add leds on optional DASD cards
+  ARM: dts: aspeed: rainier: Add leds on optional PCI cable cards
+
+ arch/arm/boot/dts/Makefile                    |    3 +
+ arch/arm/boot/dts/aspeed-bmc-ibm-everest.dts  | 1770 +++++++++++-
+ .../boot/dts/aspeed-bmc-ibm-rainier-1s4u.dts  |   14 +
+ .../boot/dts/aspeed-bmc-ibm-rainier-4u-v2.dts |  198 ++
+ .../boot/dts/aspeed-bmc-ibm-rainier-4u.dts    |   14 +
+ .../boot/dts/aspeed-bmc-ibm-rainier-v2.dts    |  198 ++
+ arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts  | 2367 +++++++++++++++--
+ 7 files changed, 4290 insertions(+), 274 deletions(-)
+ create mode 100644 arch/arm/boot/dts/aspeed-bmc-ibm-rainier-1s4u.dts
+ create mode 100644 arch/arm/boot/dts/aspeed-bmc-ibm-rainier-4u-v2.dts
+ create mode 100644 arch/arm/boot/dts/aspeed-bmc-ibm-rainier-v2.dts
+
 -- 
 2.27.0
 
