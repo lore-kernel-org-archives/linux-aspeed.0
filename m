@@ -1,148 +1,69 @@
 From: Quan Nguyen <quan@os.amperecomputing.com>
-Date: Mon, 29 Mar 2021 08:52:35 +0700
-Subject: [PATCH v2 1/4] dt-bindings: mfd: Add bindings for Ampere Altra SMPro
- drivers
+Date: Mon, 29 Mar 2021 08:52:36 +0700
+Subject: [PATCH v2 2/4] mfd: simple-mfd-i2c: Adds Ampere's Altra SMpro support
 In-Reply-To: <20210329015238.19474-1-quan@os.amperecomputing.com>
 References: <20210329015238.19474-1-quan@os.amperecomputing.com>
-Message-ID: <20210329015238.19474-2-quan@os.amperecomputing.com>
+Message-ID: <20210329015238.19474-3-quan@os.amperecomputing.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Adds device tree bindings for SMPro drivers found on the Mt.Jade hardware
-reference platform with Ampere's Altra Processor family.
+Adds an MFD driver for SMpro found on the Mt.Jade hardware reference
+platform with Ampere's Altra processor family.
 
 Signed-off-by: Quan Nguyen <quan@os.amperecomputing.com>
 ---
- .../bindings/hwmon/ampere,ac01-hwmon.yaml     | 27 ++++++
- .../devicetree/bindings/mfd/ampere,smpro.yaml | 82 +++++++++++++++++++
- 2 files changed, 109 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/hwmon/ampere,ac01-hwmon.yaml
- create mode 100644 Documentation/devicetree/bindings/mfd/ampere,smpro.yaml
+ drivers/mfd/Kconfig          | 10 ++++++++++
+ drivers/mfd/simple-mfd-i2c.c |  6 ++++++
+ 2 files changed, 16 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/hwmon/ampere,ac01-hwmon.yaml b/Documentation/devicetree/bindings/hwmon/ampere,ac01-hwmon.yaml
-new file mode 100644
-index 000000000000..015130a281f4
---- /dev/null
-+++ b/Documentation/devicetree/bindings/hwmon/ampere,ac01-hwmon.yaml
-@@ -0,0 +1,27 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/hwmon/ampere,ac01-hwmon.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
+diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
+index d07e8cf93286..f7a6460f7aa0 100644
+--- a/drivers/mfd/Kconfig
++++ b/drivers/mfd/Kconfig
+@@ -77,6 +77,16 @@ config MFD_AS3711
+ 	help
+ 	  Support for the AS3711 PMIC from AMS
+ 
++config MFD_SMPRO
++	tristate "Ampere Computing MFD SMpro core driver"
++	select MFD_SIMPLE_MFD_I2C
++	help
++	  Say yes here to enable SMpro driver support for Ampere's Altra
++	  processor family.
 +
-+title: Hardware monitoring driver for the Ampere Altra SMPro
++	  Ampere's Altra SMpro exposes an I2C regmap interface that can
++	  be accessed by child devices.
 +
-+maintainers:
-+  - Quan Nguyen <quan@os.amperecomputing.com>
+ config MFD_AS3722
+ 	tristate "ams AS3722 Power Management IC"
+ 	select MFD_CORE
+diff --git a/drivers/mfd/simple-mfd-i2c.c b/drivers/mfd/simple-mfd-i2c.c
+index 87f684cff9a1..9a44655f5592 100644
+--- a/drivers/mfd/simple-mfd-i2c.c
++++ b/drivers/mfd/simple-mfd-i2c.c
+@@ -21,6 +21,11 @@ static const struct regmap_config simple_regmap_config = {
+ 	.val_bits = 8,
+ };
+ 
++static const struct regmap_config simple_word_regmap_config = {
++	.reg_bits = 8,
++	.val_bits = 16,
++};
 +
-+description: |
-+  This module is part of the Ampere Altra SMPro multi-function device. For more
-+  details see ../mfd/ampere,smpro.yaml.
-+
-+properties:
-+  compatible:
-+    enum:
-+      - ampere,ac01-hwmon
-+
-+  reg:
-+    maxItems: 1
-+
-+required:
-+  - compatible
-+
-+additionalProperties: false
-diff --git a/Documentation/devicetree/bindings/mfd/ampere,smpro.yaml b/Documentation/devicetree/bindings/mfd/ampere,smpro.yaml
-new file mode 100644
-index 000000000000..bf789c8a3d7d
---- /dev/null
-+++ b/Documentation/devicetree/bindings/mfd/ampere,smpro.yaml
-@@ -0,0 +1,82 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/mfd/ampere,smpro.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: Ampere Altra SMPro firmware driver
-+
-+maintainers:
-+  - Quan Nguyen <quan@os.amperecomputing.com>
-+
-+description: |
-+  Ampere Altra SMPro firmware may contain different blocks like hardware
-+  monitoring, error monitoring and other miscellaneous features.
-+
-+properties:
-+  compatible:
-+    const: ampere,smpro
-+
-+  reg:
-+    description:
-+      I2C device address.
-+    maxItems: 1
-+
-+  "#address-cells":
-+    const: 1
-+
-+  "#size-cells":
-+    const: 0
-+
-+patternProperties:
-+  "^hwmon(@[0-9a-f]+)?$":
-+    $ref: ../hwmon/ampere,ac01-hwmon.yaml
-+
-+  "^misc(@[0-9a-f]+)?$":
-+    type: object
-+    description: Ampere Altra SMPro Misc driver
-+    properties:
-+      compatible:
-+        const: "ampere,ac01-misc"
-+
-+  "^errmon(@[0-9a-f]+)?$":
-+    type: object
-+    description: Ampere Altra SMPro Error Monitor driver
-+    properties:
-+      compatible:
-+        const: "ampere,ac01-errmon"
-+
-+required:
-+  - "#address-cells"
-+  - "#size-cells"
-+  - compatible
-+  - reg
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    i2c {
-+        #address-cells = <1>;
-+        #size-cells = <0>;
-+
-+        smpro at 4f {
-+            compatible = "ampere,smpro";
-+            reg = <0x4f>;
-+            #address-cells = <1>;
-+            #size-cells = <0>;
-+
-+            hwmon {
-+                compatible = "ampere,ac01-hwmon";
-+            };
-+
-+            misc {
-+                compatible = "ampere,ac01-misc";
-+            };
-+
-+            errmon {
-+                compatible = "ampere,ac01-errmon";
-+            };
-+
-+        };
-+    };
+ static int simple_mfd_i2c_probe(struct i2c_client *i2c)
+ {
+ 	const struct regmap_config *config;
+@@ -39,6 +44,7 @@ static int simple_mfd_i2c_probe(struct i2c_client *i2c)
+ 
+ static const struct of_device_id simple_mfd_i2c_of_match[] = {
+ 	{ .compatible = "kontron,sl28cpld" },
++	{ .compatible = "ampere,smpro", .data = &simple_word_regmap_config },
+ 	{}
+ };
+ MODULE_DEVICE_TABLE(of, simple_mfd_i2c_of_match);
 -- 
 2.28.0
 
