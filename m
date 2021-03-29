@@ -1,37 +1,51 @@
-From: Christoph Hellwig <hch@lst.de>
-Date: Mon, 29 Mar 2021 08:17:35 +0200
-Subject: [PATCH] usb: gadget: aspeed: set port_dev dma mask
-In-Reply-To: <20210327221759.GA2997@taoren-ubuntu-R90MNF91>
-References: <20210326070214.6719-1-rentao.bupt@gmail.com>
- <10920f34-289c-feac-79b6-71bff2aea67d@arm.com>
- <20210326120526.GA14169@lst.de>
- <20210327221759.GA2997@taoren-ubuntu-R90MNF91>
-Message-ID: <20210329061735.GA27510@lst.de>
+From: Rashmica Gupta <rashmica.g@gmail.com>
+Date: Mon, 29 Mar 2021 20:42:55 +1100
+Subject: [PATCH] ARM: dts: rainier: Update to access sensors via iio-hwmon
+Message-ID: <20210329094255.347713-1-rashmica.g@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sat, Mar 27, 2021 at 03:17:59PM -0700, Tao Ren wrote:
-> On Fri, Mar 26, 2021 at 01:05:26PM +0100, Christoph Hellwig wrote:
-> > On Fri, Mar 26, 2021 at 12:03:03PM +0000, Robin Murphy wrote:
-> > > This might happen to work out, but is far from correct. Just wait until you 
-> > > try it on a platform where the USB controller is behind an IOMMU...
-> > >
-> > > It looks like something is more fundamentally wrong here - the device 
-> > > passed to DMA API calls must be the actual hardware device performing the 
-> > > DMA, which in USB-land I believe means the controller's sysdev.
-> > 
-> > The shiny new usb_intf_get_dma_device API provides the device to use.
-> 
-> Thanks Robin and Christoph for the feedback.
-> 
-> If I understand correctly, usb_intf_get_dma_device API is mainly for usb
-> host drivers? I just found usb_gadget_map_request_by_dev API: does it
-> make sense to replace usb_gadget_map_request with
-> usb_gadget_map_request_by_dev so we can pass the actual DMA-capable
-> hardware device (aspeed-vhub platform device) to the API?
+Signed-off-by: Rashmica Gupta <rashmica.g@gmail.com>
+---
+ arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts | 13 ++++++++++++-
+ 1 file changed, 12 insertions(+), 1 deletion(-)
 
-Oh, right you're dealing with a gadget side driver.  Not sure about
-the API there, I'll let the relevant maintainers chime in.
+diff --git a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
+index fefb0b8fd6d5..2dc72de07906 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
+@@ -173,6 +173,16 @@ i2c2mux3: i2c at 3 {
+ 		};
+ 	};
+ 
++	iio-hwmon-dps310 {
++		compatible = "iio-hwmon";
++		io-channels = <&dps 0>;
++	};
++
++	iio-hwmon-si7020 {
++		compatible = "iio-hwmon";
++		io-channels = <&si 1>;
++	};
++
+ 	leds {
+ 		compatible = "gpio-leds";
+ 
+@@ -1972,9 +1982,10 @@ &i2c7 {
+ 	multi-master;
+ 	status = "okay";
+ 
+-	si7021-a20 at 20 {
++	si:si7021-a20 at 20 {
+ 		compatible = "silabs,si7020";
+ 		reg = <0x20>;
++		#io-channel-cells = <1>;
+ 	};
+ 
+ 	tmp275 at 48 {
+-- 
+2.26.3
+
