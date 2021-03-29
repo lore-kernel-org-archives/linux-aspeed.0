@@ -1,51 +1,56 @@
 From: Eddie James <eajames@linux.ibm.com>
-Date: Mon, 29 Mar 2021 10:00:18 -0500
-Subject: [PATCH 20/22] ARM: dts: aspeed: everest: Enable fan watchdog
+Date: Mon, 29 Mar 2021 10:00:14 -0500
+Subject: [PATCH 16/22] ARM: dts: aspeed: everest: Add power supply i2c devices
 In-Reply-To: <20210329150020.13632-1-eajames@linux.ibm.com>
 References: <20210329150020.13632-1-eajames@linux.ibm.com>
-Message-ID: <20210329150020.13632-21-eajames@linux.ibm.com>
+Message-ID: <20210329150020.13632-17-eajames@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Set watchdog 1 to pulse the fan watchdog circuit that drives the FAULT
-pin of the MAX31785, resulting in fans running at full speed, if at
-any point the BMC stops pulsing it, such as a BMC reboot at runtime.
-Enable watchdog 2 for BMC reboots.
+From: Brandon Wyman <bjwyman@gmail.com>
 
-Signed-off-by: Matthew Barth <msbarth@linux.ibm.com>
+Add the i2c/pmbus power supply devices to the everest device tree.
+
+Signed-off-by: Brandon Wyman <bjwyman@gmail.com>
 Signed-off-by: Eddie James <eajames@linux.ibm.com>
 ---
- arch/arm/boot/dts/aspeed-bmc-ibm-everest.dts | 14 ++++++++++++++
- 1 file changed, 14 insertions(+)
+ arch/arm/boot/dts/aspeed-bmc-ibm-everest.dts | 20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)
 
 diff --git a/arch/arm/boot/dts/aspeed-bmc-ibm-everest.dts b/arch/arm/boot/dts/aspeed-bmc-ibm-everest.dts
-index f33c22f824cd..4836750776d0 100644
+index d7f23b74dd4b..04c96a3fe506 100644
 --- a/arch/arm/boot/dts/aspeed-bmc-ibm-everest.dts
 +++ b/arch/arm/boot/dts/aspeed-bmc-ibm-everest.dts
-@@ -2335,6 +2335,20 @@ &mac3 {
- 	use-ncsi;
+@@ -228,6 +228,26 @@ eeprom at 54 {
+ 		compatible = "atmel,24c128";
+ 		reg = <0x54>;
+ 	};
++
++	power-supply at 68 {
++		compatible = "ibm,cffps";
++		reg = <0x68>;
++	};
++
++	power-supply at 69 {
++		compatible = "ibm,cffps";
++		reg = <0x69>;
++	};
++
++	power-supply at 6a {
++		compatible = "ibm,cffps";
++		reg = <0x6a>;
++	};
++
++	power-supply at 6b {
++		compatible = "ibm,cffps";
++		reg = <0x6b>;
++	};
  };
  
-+&wdt1 {
-+	aspeed,reset-type = "none";
-+	aspeed,external-signal;
-+	aspeed,ext-push-pull;
-+	aspeed,ext-active-high;
-+
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pinctrl_wdtrst1_default>;
-+};
-+
-+&wdt2 {
-+	status = "okay";
-+};
-+
- &xdma {
- 	status = "okay";
- 	memory-region = <&vga_memory>;
+ &i2c4 {
 -- 
 2.27.0
 
