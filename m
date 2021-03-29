@@ -1,485 +1,75 @@
 From: Eddie James <eajames@linux.ibm.com>
-Date: Mon, 29 Mar 2021 10:00:05 -0500
-Subject: [PATCH 07/22] ARM: dts: aspeed: rainier: Add leds on optional DASD
- cards
+Date: Mon, 29 Mar 2021 10:00:00 -0500
+Subject: [PATCH 02/22] ARM: dts: aspeed: rainier: Add directly controlled LEDs
 In-Reply-To: <20210329150020.13632-1-eajames@linux.ibm.com>
 References: <20210329150020.13632-1-eajames@linux.ibm.com>
-Message-ID: <20210329150020.13632-8-eajames@linux.ibm.com>
+Message-ID: <20210329150020.13632-3-eajames@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Vishwanatha Subbanna <vishwa@linux.vnet.ibm.com>
+From: Vishwanatha Subbanna <vishwa@linux.ibm.com>
 
-These cards are not hot pluggable and must be installed
-prior to boot. LEDs on these are controlled by PCA9552
-i2c expander
+These LEDs are directly connected to the BMC's GPIO bank.
 
-Signed-off-by: Vishwanatha Subbanna <vishwa@linux.vnet.ibm.com>
+Signed-off-by: Vishwanatha Subbanna <vishwa@linux.ibm.com>
 Signed-off-by: Eddie James <eajames@linux.ibm.com>
+Signed-off-by: Joel Stanley <joel@jms.id.au>
 ---
- arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts | 425 +++++++++++++++++++
- 1 file changed, 425 insertions(+)
+ arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts | 24 ++++++++++++++++++--
+ 1 file changed, 22 insertions(+), 2 deletions(-)
 
 diff --git a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
-index b47b7b995170..0a420170b3b4 100644
+index e775ad026d8b..1515f81a6c9f 100644
 --- a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
 +++ b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
-@@ -634,6 +634,161 @@ tpm-wilson {
- 		};
- 	};
+@@ -135,6 +135,26 @@ i2c2mux3: i2c at 3 {
+ 	leds {
+ 		compatible = "gpio-leds";
  
-+	leds-optional-dasd-pyramid0 {
-+		compatible = "gpio-leds";
-+
-+		nvme0 {
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			gpios = <&pca2 0 GPIO_ACTIVE_LOW>;
-+		};
-+
-+		nvme1 {
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			gpios = <&pca2 1 GPIO_ACTIVE_LOW>;
-+		};
-+
-+		nvme2 {
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			gpios = <&pca2 2 GPIO_ACTIVE_LOW>;
-+		};
-+
-+		nvme3 {
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			gpios = <&pca2 3 GPIO_ACTIVE_LOW>;
-+		};
-+
-+		nvme4 {
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			gpios = <&pca2 4 GPIO_ACTIVE_LOW>;
-+		};
-+
-+		nvme5 {
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			gpios = <&pca2 5 GPIO_ACTIVE_LOW>;
-+		};
-+
-+		nvme6 {
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			gpios = <&pca2 6 GPIO_ACTIVE_LOW>;
-+		};
-+
-+		nvme7 {
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			gpios = <&pca2 7 GPIO_ACTIVE_LOW>;
-+		};
-+	};
-+
-+	leds-optional-dasd-pyramid1 {
-+		compatible = "gpio-leds";
-+
-+		nvme8 {
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			gpios = <&pca3 0 GPIO_ACTIVE_LOW>;
-+		};
-+
-+		nvme9 {
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			gpios = <&pca3 1 GPIO_ACTIVE_LOW>;
-+		};
-+
-+		nvme10 {
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			gpios = <&pca3 2 GPIO_ACTIVE_LOW>;
-+		};
-+
-+		nvme11 {
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			gpios = <&pca3 3 GPIO_ACTIVE_LOW>;
-+		};
-+
-+		nvme12 {
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			gpios = <&pca3 4 GPIO_ACTIVE_LOW>;
-+		};
-+
-+		nvme13 {
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			gpios = <&pca3 5 GPIO_ACTIVE_LOW>;
-+		};
-+
-+		nvme14 {
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			gpios = <&pca3 6 GPIO_ACTIVE_LOW>;
-+		};
-+
-+		nvme15 {
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			gpios = <&pca3 7 GPIO_ACTIVE_LOW>;
-+		};
-+	};
-+
-+	leds-optional-dasd-pyramid2 {
-+		compatible = "gpio-leds";
-+
-+		nvme16 {
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			gpios = <&pca4 0 GPIO_ACTIVE_LOW>;
-+		};
-+
-+		nvme17 {
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			gpios = <&pca4 1 GPIO_ACTIVE_LOW>;
-+		};
-+
-+		nvme18 {
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			gpios = <&pca4 2 GPIO_ACTIVE_LOW>;
-+		};
-+
-+		nvme19 {
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			gpios = <&pca4 3 GPIO_ACTIVE_LOW>;
-+		};
-+
-+		nvme20 {
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			gpios = <&pca4 4 GPIO_ACTIVE_LOW>;
-+		};
-+
-+		nvme21 {
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			gpios = <&pca4 5 GPIO_ACTIVE_LOW>;
-+		};
-+
-+		nvme22 {
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			gpios = <&pca4 6 GPIO_ACTIVE_LOW>;
-+		};
-+
-+		nvme23 {
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			gpios = <&pca4 7 GPIO_ACTIVE_LOW>;
-+		};
-+	};
- };
- 
- &ehci1 {
-@@ -2218,6 +2373,96 @@ eeprom at 50 {
- 		compatible = "atmel,24c64";
- 		reg = <0x50>;
- 	};
-+
-+	pca2: pca9552 at 60 {
-+		compatible = "nxp,pca9552";
-+		reg = <0x60>;
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+
-+		gpio at 0 {
-+			reg = <0>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 1 {
-+			reg = <1>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 2 {
-+			reg = <2>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 3 {
-+			reg = <3>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 4 {
-+			reg = <4>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 5 {
-+			reg = <5>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 6 {
-+			reg = <6>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 7 {
-+			reg = <7>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 8 {
-+			reg = <8>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 9 {
-+			reg = <9>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 10 {
-+			reg = <10>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 11 {
-+			reg = <11>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 12 {
-+			reg = <12>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 13 {
-+			reg = <13>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 14 {
-+			reg = <14>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 15 {
-+			reg = <15>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+	};
- };
- 
- &i2c14 {
-@@ -2227,6 +2472,96 @@ eeprom at 50 {
- 		compatible = "atmel,24c64";
- 		reg = <0x50>;
- 	};
-+
-+	pca3: pca9552 at 60 {
-+		compatible = "nxp,pca9552";
-+		reg = <0x60>;
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+
-+		gpio at 0 {
-+			reg = <0>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 1 {
-+			reg = <1>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 2 {
-+			reg = <2>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 3 {
-+			reg = <3>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 4 {
-+			reg = <4>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 5 {
-+			reg = <5>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 6 {
-+			reg = <6>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 7 {
-+			reg = <7>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 8 {
-+			reg = <8>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 9 {
-+			reg = <9>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 10 {
-+			reg = <10>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 11 {
-+			reg = <11>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 12 {
-+			reg = <12>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 13 {
-+			reg = <13>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 14 {
-+			reg = <14>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 15 {
-+			reg = <15>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+	};
- };
- 
- &i2c15 {
-@@ -2236,6 +2571,96 @@ eeprom at 50 {
- 		compatible = "atmel,24c64";
- 		reg = <0x50>;
- 	};
-+
-+	pca4: pca9552 at 60 {
-+		compatible = "nxp,pca9552";
-+		reg = <0x60>;
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+
-+		gpio at 0 {
-+			reg = <0>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 1 {
-+			reg = <1>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 2 {
-+			reg = <2>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 3 {
-+			reg = <3>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 4 {
-+			reg = <4>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 5 {
-+			reg = <5>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 6 {
-+			reg = <6>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 7 {
-+			reg = <7>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 8 {
-+			reg = <8>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 9 {
-+			reg = <9>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 10 {
-+			reg = <10>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 11 {
-+			reg = <11>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 12 {
-+			reg = <12>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 13 {
-+			reg = <13>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 14 {
-+			reg = <14>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 15 {
-+			reg = <15>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+	};
- };
- 
- &vuart1 {
++		/* BMC Card fault LED at the back */
++		bmc-ingraham0 {
++			gpios = <&gpio0 ASPEED_GPIO(H, 1) GPIO_ACTIVE_LOW>;
++		};
++
++		/* Enclosure ID LED at the back */
++		rear-enc-id0 {
++			gpios = <&gpio0 ASPEED_GPIO(H, 2) GPIO_ACTIVE_LOW>;
++		};
++
++		/* Enclosure fault LED at the back */
++		rear-enc-fault0 {
++			gpios = <&gpio0 ASPEED_GPIO(H, 3) GPIO_ACTIVE_LOW>;
++		};
++
++		/* PCIE slot power LED */
++		pcieslot-power {
++			gpios = <&gpio0 ASPEED_GPIO(P, 4) GPIO_ACTIVE_LOW>;
++		};
++
+ 		/* System ID LED that is at front on Op Panel */
+ 		front-sys-id0 {
+ 			retain-state-shutdown;
+@@ -178,7 +198,7 @@ &gpio0 {
+ 	/*E0-E7*/	"","","","","","","","",
+ 	/*F0-F7*/	"","","","","","","","",
+ 	/*G0-G7*/	"","","","","","","","",
+-	/*H0-H7*/	"","","","","","","","",
++	/*H0-H7*/	"","bmc-ingraham0","rear-enc-id0","rear-enc-fault0","","","","",
+ 	/*I0-I7*/	"","","","","","","","",
+ 	/*J0-J7*/	"","","","","","","","",
+ 	/*K0-K7*/	"","","","","","","","",
+@@ -186,7 +206,7 @@ &gpio0 {
+ 	/*M0-M7*/	"","","","","","","","",
+ 	/*N0-N7*/	"","","","","","","","",
+ 	/*O0-O7*/	"","","","usb-power","","","","",
+-	/*P0-P7*/	"","","","","","","","",
++	/*P0-P7*/	"","","","","pcieslot-power","","","",
+ 	/*Q0-Q7*/	"cfam-reset","","","","","","","",
+ 	/*R0-R7*/	"","","","","","","","",
+ 	/*S0-S7*/	"presence-ps0","presence-ps1","presence-ps2","presence-ps3",
 -- 
 2.27.0
 
