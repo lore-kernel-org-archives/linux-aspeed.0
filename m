@@ -1,127 +1,451 @@
 From: Eddie James <eajames@linux.ibm.com>
-Date: Mon, 29 Mar 2021 09:59:59 -0500
-Subject: [PATCH 01/22] ARM: dts: aspeed: rainier: Add Operator Panel LEDs
+Date: Mon, 29 Mar 2021 10:00:10 -0500
+Subject: [PATCH 12/22] ARM: dts: aspeed: Everest: Add I2C components
 In-Reply-To: <20210329150020.13632-1-eajames@linux.ibm.com>
 References: <20210329150020.13632-1-eajames@linux.ibm.com>
-Message-ID: <20210329150020.13632-2-eajames@linux.ibm.com>
+Message-ID: <20210329150020.13632-13-eajames@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Vishwanatha Subbanna <vishwa@linux.ibm.com>
+From: PriyangaRamasamy <priyanga24@in.ibm.com>
 
-These LEDs are on the op-panel and are connected via a pca9551 i2c
-LED expander.
+Tested and able to bound the devices with i2c driver.
 
-Signed-off-by: Vishwanatha Subbanna <vishwa@linux.ibm.com>
+Signed-off-by: PriyangaRamasamy <priyanga24@in.ibm.com>
 Signed-off-by: Eddie James <eajames@linux.ibm.com>
-Signed-off-by: Joel Stanley <joel@jms.id.au>
 ---
- arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts | 82 ++++++++++++++++++++
- 1 file changed, 82 insertions(+)
+ arch/arm/boot/dts/aspeed-bmc-ibm-everest.dts | 408 +++++++++++++++++++
+ 1 file changed, 408 insertions(+)
 
-diff --git a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
-index 6c9804d2f3b4..e775ad026d8b 100644
---- a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
-@@ -131,6 +131,38 @@ i2c2mux3: i2c at 3 {
- 			reg = <3>;
- 		};
+diff --git a/arch/arm/boot/dts/aspeed-bmc-ibm-everest.dts b/arch/arm/boot/dts/aspeed-bmc-ibm-everest.dts
+index 6bd876657bb8..ab7be4d511a5 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-ibm-everest.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-ibm-everest.dts
+@@ -45,6 +45,25 @@ aliases {
+ 		i2c416 = &cfam3_i2c16;
+ 		i2c417 = &cfam3_i2c17;
+ 
++		i2c16 = &i2c4mux0chn0;
++		i2c17 = &i2c4mux0chn1;
++		i2c18 = &i2c4mux0chn2;
++		i2c19 = &i2c5mux0chn0;
++		i2c20 = &i2c5mux0chn1;
++		i2c21 = &i2c5mux0chn2;
++		i2c22 = &i2c5mux0chn3;
++		i2c23 = &i2c6mux0chn0;
++		i2c24 = &i2c6mux0chn1;
++		i2c25 = &i2c6mux0chn2;
++		i2c26 = &i2c6mux0chn3;
++		i2c27 = &i2c14mux0chn0;
++		i2c28 = &i2c14mux0chn1;
++		i2c29 = &i2c14mux0chn2;
++		i2c30 = &i2c14mux1chn0;
++		i2c31 = &i2c14mux1chn1;
++		i2c32 = &i2c14mux1chn2;
++		i2c33 = &i2c14mux1chn3;
++
+ 		serial4 = &uart5;
+ 
+ 		spi10 = &cfam0_spi0;
+@@ -105,6 +124,395 @@ vga_memory: region at bf000000 {
  	};
-+
-+	leds {
-+		compatible = "gpio-leds";
-+
-+		/* System ID LED that is at front on Op Panel */
-+		front-sys-id0 {
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			gpios = <&pca_oppanel 0 GPIO_ACTIVE_LOW>;
-+		};
-+
-+		/* System Attention Indicator ID LED that is at front on Op Panel */
-+		front-check-log0 {
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			gpios = <&pca_oppanel 1 GPIO_ACTIVE_LOW>;
-+		};
-+
-+		/* Enclosure Fault LED that is at front on Op Panel */
-+		front-enc-fault1 {
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			gpios = <&pca_oppanel 2 GPIO_ACTIVE_LOW>;
-+		};
-+
-+		/* System PowerOn LED that is at front on Op Panel */
-+		front-sys-pwron0 {
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			gpios = <&pca_oppanel 3 GPIO_ACTIVE_LOW>;
-+		};
-+	};
  };
  
- &ehci1 {
-@@ -849,6 +881,56 @@ ibm-panel at 62 {
- 		reg = <(0x62 | I2C_OWN_SLAVE_ADDRESS)>;
- 	};
- 
-+	pca_oppanel: pca9551 at 60 {
-+		compatible = "nxp,pca9551";
-+		reg = <0x60>;
++&i2c0 {
++	status = "okay";
++
++	eeprom at 51 {
++		compatible = "atmel,24c64";
++		reg = <0x51>;
++	};
++};
++
++&i2c1 {
++	status = "okay";
++};
++
++&i2c2 {
++	status = "okay";
++};
++
++&i2c3 {
++	status = "okay";
++
++	eeprom at 54 {
++		compatible = "atmel,24c128";
++		reg = <0x54>;
++	};
++};
++
++&i2c4 {
++	status = "okay";
++
++	i2c-switch at 70 {
++		compatible = "nxp,pca9546";
++		reg = <0x70>;
 +		#address-cells = <1>;
 +		#size-cells = <0>;
++		status = "okay";
++		i2c-mux-idle-disconnect;
 +
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+
-+		gpio at 0 {
++		i2c4mux0chn0: i2c at 0 {
++			#address-cells = <1>;
++			#size-cells = <0>;
 +			reg = <0>;
-+			type = <PCA955X_TYPE_GPIO>;
++			eeprom at 52 {
++				compatible = "atmel,24c64";
++				reg = <0x52>;
++			};
 +		};
 +
-+		gpio at 1 {
++		i2c4mux0chn1: i2c at 1 {
++			#address-cells = <1>;
++			#size-cells = <0>;
 +			reg = <1>;
-+			type = <PCA955X_TYPE_GPIO>;
++			eeprom at 50 {
++				compatible = "atmel,24c64";
++				reg = <0x50>;
++			};
 +		};
 +
-+		gpio at 2 {
++		i2c4mux0chn2: i2c at 2 {
++			#address-cells = <1>;
++			#size-cells = <0>;
 +			reg = <2>;
-+			type = <PCA955X_TYPE_GPIO>;
++			eeprom at 51 {
++				compatible = "atmel,24c64";
++				reg = <0x51>;
++			};
++		};
++	};
++};
++
++&i2c5 {
++	status = "okay";
++
++	i2c-switch at 70 {
++		compatible = "nxp,pca9546";
++		reg = <0x70>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++		status = "okay";
++		i2c-mux-idle-disconnect;
++
++		i2c5mux0chn0: i2c at 0 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0>;
++			eeprom at 50 {
++				compatible = "atmel,24c64";
++				reg = <0x50>;
++			};
 +		};
 +
-+		gpio at 3 {
++		i2c5mux0chn1: i2c at 1 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <1>;
++			eeprom at 51 {
++				compatible = "atmel,24c64";
++				reg = <0x51>;
++			};
++		};
++
++		i2c5mux0chn2: i2c at 2 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <2>;
++			eeprom at 52 {
++				compatible = "atmel,24c64";
++				reg = <0x52>;
++			};
++		};
++
++		i2c5mux0chn3: i2c at 3 {
++			#address-cells = <1>;
++			#size-cells = <0>;
 +			reg = <3>;
-+			type = <PCA955X_TYPE_GPIO>;
++			eeprom at 53 {
++				compatible = "atmel,24c64";
++				reg = <0x53>;
++			};
++		};
++	};
++};
++
++&i2c6 {
++	status = "okay";
++
++	i2c-switch at 70 {
++		compatible = "nxp,pca9546";
++		reg = <0x70>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++		status = "okay";
++		i2c-mux-idle-disconnect;
++
++		i2c6mux0chn0: i2c at 0 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0>;
++			eeprom at 50 {
++				compatible = "atmel,24c64";
++				reg = <0x50>;
++			};
 +		};
 +
-+		gpio at 4 {
-+			reg = <4>;
-+			type = <PCA955X_TYPE_GPIO>;
++		i2c6mux0chn1: i2c at 1 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <1>;
++			eeprom at 52 {
++				compatible = "atmel,24c64";
++				reg = <0x52>;
++			};
 +		};
 +
-+		gpio at 5 {
-+			reg = <5>;
-+			type = <PCA955X_TYPE_GPIO>;
++		i2c6mux0chn2: i2c at 2 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <2>;
++			eeprom at 53 {
++				compatible = "atmel,24c64";
++				reg = <0x53>;
++			};
 +		};
 +
-+		gpio at 6 {
-+			reg = <6>;
-+			type = <PCA955X_TYPE_GPIO>;
++		i2c6mux0chn3: i2c at 3 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <3>;
++			eeprom at 51 {
++				compatible = "atmel,24c64";
++				reg = <0x51>;
++			};
++		};
++	};
++};
++
++&i2c7 {
++	status = "okay";
++};
++
++&i2c8 {
++	status = "okay";
++
++	eeprom at 51 {
++		compatible = "atmel,24c64";
++		reg = <0x51>;
++	};
++
++	eeprom at 50 {
++		compatible = "atmel,24c128";
++		reg = <0x50>;
++	};
++};
++
++&i2c9 {
++	status = "okay";
++
++	eeprom at 50 {
++		compatible = "atmel,24c128";
++		reg = <0x50>;
++	};
++
++	eeprom at 51 {
++		compatible = "atmel,24c128";
++		reg = <0x51>;
++	};
++
++	eeprom at 53 {
++		compatible = "atmel,24c128";
++		reg = <0x53>;
++	};
++
++	eeprom at 52 {
++		compatible = "atmel,24c128";
++		reg = <0x52>;
++	};
++};
++
++&i2c10 {
++	status = "okay";
++
++	eeprom at 51 {
++		compatible = "atmel,24c128";
++		reg = <0x51>;
++	};
++
++	eeprom at 50 {
++		compatible = "atmel,24c128";
++		reg = <0x50>;
++	};
++
++	eeprom at 53 {
++		compatible = "atmel,24c128";
++		reg = <0x53>;
++	};
++
++	eeprom at 52 {
++		compatible = "atmel,24c128";
++		reg = <0x52>;
++	};
++};
++
++&i2c11 {
++	status = "okay";
++
++	eeprom at 51 {
++		compatible = "atmel,24c128";
++		reg = <0x51>;
++	};
++
++	eeprom at 50 {
++		compatible = "atmel,24c128";
++		reg = <0x50>;
++	};
++
++	eeprom at 53 {
++		compatible = "atmel,24c128";
++		reg = <0x53>;
++	};
++
++	eeprom at 52 {
++		compatible = "atmel,24c128";
++		reg = <0x52>;
++	};
++};
++
++&i2c12 {
++	status = "okay";
++};
++
++&i2c13 {
++	status = "okay";
++
++	eeprom at 51 {
++		compatible = "atmel,24c128";
++		reg = <0x51>;
++	};
++
++	eeprom at 50 {
++		compatible = "atmel,24c128";
++		reg = <0x50>;
++	};
++
++	eeprom at 53 {
++		compatible = "atmel,24c128";
++		reg = <0x53>;
++	};
++
++	eeprom at 52 {
++		compatible = "atmel,24c128";
++		reg = <0x52>;
++	};
++};
++
++&i2c14 {
++	status = "okay";
++
++	i2c-switch at 70 {
++		compatible = "nxp,pca9546";
++		reg = <0x70>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++		status = "okay";
++		i2c-mux-idle-disconnect;
++
++		i2c14mux0chn0: i2c at 0 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0>;
++			eeprom at 50 {
++				compatible = "atmel,24c64";
++				reg = <0x50>;
++			};
 +		};
 +
-+		gpio at 7 {
-+			reg = <7>;
-+			type = <PCA955X_TYPE_GPIO>;
++		i2c14mux0chn1: i2c at 1 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <1>;
++			eeprom at 51 {
++				compatible = "atmel,24c32";
++				reg = <0x51>;
++			};
++		};
++
++		i2c14mux0chn2: i2c at 2 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <2>;
++			eeprom at 50 {
++				compatible = "atmel,24c32";
++				reg = <0x50>;
++			};
 +		};
 +	};
 +
- 	dps: dps310 at 76 {
- 		compatible = "infineon,dps310";
- 		reg = <0x76>;
++	i2c-switch at 71 {
++		compatible = "nxp,pca9546";
++		reg = <0x71>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++		status = "okay";
++		i2c-mux-idle-disconnect;
++
++		i2c14mux1chn0: i2c at 0 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0>;
++			eeprom at 50 {
++				compatible = "atmel,24c32";
++				reg = <0x50>;
++			};
++		};
++
++		i2c14mux1chn1: i2c at 1 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <1>;
++			eeprom at 50 {
++				compatible = "atmel,24c32";
++				reg = <0x50>;
++			};
++		};
++
++		i2c14mux1chn2: i2c at 2 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <2>;
++			eeprom at 50 {
++				compatible = "atmel,24c32";
++				reg = <0x50>;
++			};
++		};
++
++		i2c14mux1chn3: i2c at 3 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <3>;
++			eeprom at 50 {
++				compatible = "atmel,24c32";
++				reg = <0x50>;
++			};
++		};
++	};
++};
++
++&i2c15 {
++	status = "okay";
++};
++
+ &ehci1 {
+ 	status = "okay";
+ };
 -- 
 2.27.0
 
