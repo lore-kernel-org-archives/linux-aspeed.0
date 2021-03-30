@@ -1,156 +1,53 @@
 From: Rob Herring <robh@kernel.org>
-Date: Tue, 30 Mar 2021 16:14:44 -0500
-Subject: [PATCH v2 1/4] dt-bindings: mfd: Add bindings for Ampere Altra
- SMPro drivers
-In-Reply-To: <20210329015238.19474-2-quan@os.amperecomputing.com>
-References: <20210329015238.19474-1-quan@os.amperecomputing.com>
- <20210329015238.19474-2-quan@os.amperecomputing.com>
-Message-ID: <20210330211443.GA326528@robh.at.kernel.org>
+Date: Tue, 30 Mar 2021 17:05:43 -0500
+Subject: [PATCH v1 3/3] bindings: ipmi: Add binding for Aspeed SSIF BMC
+ driver
+In-Reply-To: <20210329121759.5644-4-quan@os.amperecomputing.com>
+References: <20210329121759.5644-1-quan@os.amperecomputing.com>
+ <20210329121759.5644-4-quan@os.amperecomputing.com>
+Message-ID: <20210330220543.GA795792@robh.at.kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Mar 29, 2021 at 08:52:35AM +0700, Quan Nguyen wrote:
-> Adds device tree bindings for SMPro drivers found on the Mt.Jade hardware
-> reference platform with Ampere's Altra Processor family.
+On Mon, Mar 29, 2021 at 07:17:59PM +0700, Quan Nguyen wrote:
+> Add device tree binding document for the Aspeed SSIF BMC driver.
 > 
 > Signed-off-by: Quan Nguyen <quan@os.amperecomputing.com>
 > ---
->  .../bindings/hwmon/ampere,ac01-hwmon.yaml     | 27 ++++++
->  .../devicetree/bindings/mfd/ampere,smpro.yaml | 82 +++++++++++++++++++
->  2 files changed, 109 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/hwmon/ampere,ac01-hwmon.yaml
->  create mode 100644 Documentation/devicetree/bindings/mfd/ampere,smpro.yaml
+>  .../bindings/ipmi/aspeed-ssif-bmc.txt          | 18 ++++++++++++++++++
+
+Bindings should now be in DT schema format.
+
+>  1 file changed, 18 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/ipmi/aspeed-ssif-bmc.txt
 > 
-> diff --git a/Documentation/devicetree/bindings/hwmon/ampere,ac01-hwmon.yaml b/Documentation/devicetree/bindings/hwmon/ampere,ac01-hwmon.yaml
+> diff --git a/Documentation/devicetree/bindings/ipmi/aspeed-ssif-bmc.txt b/Documentation/devicetree/bindings/ipmi/aspeed-ssif-bmc.txt
 > new file mode 100644
-> index 000000000000..015130a281f4
+> index 000000000000..1616f0188db9
 > --- /dev/null
-> +++ b/Documentation/devicetree/bindings/hwmon/ampere,ac01-hwmon.yaml
-> @@ -0,0 +1,27 @@
-> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-> +%YAML 1.2
-> +---
-> +$id: http://devicetree.org/schemas/hwmon/ampere,ac01-hwmon.yaml#
-> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> +++ b/Documentation/devicetree/bindings/ipmi/aspeed-ssif-bmc.txt
+> @@ -0,0 +1,18 @@
+> +# Aspeed SSIF (SMBus system interface) IPMI BMC interface
 > +
-> +title: Hardware monitoring driver for the Ampere Altra SMPro
+> +The Aspeed AST2500 are commonly used as BMCs (Baseboard Management Controllers)
+> +and the SSIF slave interface can be used to perform in-band IPMI communication
+> +with their host.
 > +
-> +maintainers:
-> +  - Quan Nguyen <quan@os.amperecomputing.com>
+> +Required properties:
 > +
-> +description: |
-> +  This module is part of the Ampere Altra SMPro multi-function device. For more
-> +  details see ../mfd/ampere,smpro.yaml.
+> +- compatible : should be
+> +       "aspeed,ast2500-ssif-bmc"
+> +- reg: I2C address the registers
 > +
-> +properties:
-> +  compatible:
-> +    enum:
-> +      - ampere,ac01-hwmon
+> +Example:
 > +
-> +  reg:
-> +    maxItems: 1
-> +
-> +required:
-> +  - compatible
-> +
-> +additionalProperties: false
-> diff --git a/Documentation/devicetree/bindings/mfd/ampere,smpro.yaml b/Documentation/devicetree/bindings/mfd/ampere,smpro.yaml
-> new file mode 100644
-> index 000000000000..bf789c8a3d7d
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/mfd/ampere,smpro.yaml
-> @@ -0,0 +1,82 @@
-> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-> +%YAML 1.2
-> +---
-> +$id: http://devicetree.org/schemas/mfd/ampere,smpro.yaml#
-> +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> +
-> +title: Ampere Altra SMPro firmware driver
-> +
-> +maintainers:
-> +  - Quan Nguyen <quan@os.amperecomputing.com>
-> +
-> +description: |
-> +  Ampere Altra SMPro firmware may contain different blocks like hardware
-> +  monitoring, error monitoring and other miscellaneous features.
-> +
-> +properties:
-> +  compatible:
-> +    const: ampere,smpro
-
-Only 1 version of SMPro? Needs to be more specific or provide details on 
-how the exact version of firmware/hardware is discovered.
-
-> +
-> +  reg:
-> +    description:
-> +      I2C device address.
-> +    maxItems: 1
-> +
-> +  "#address-cells":
-> +    const: 1
-> +
-> +  "#size-cells":
-> +    const: 0
-> +
-> +patternProperties:
-> +  "^hwmon(@[0-9a-f]+)?$":
-> +    $ref: ../hwmon/ampere,ac01-hwmon.yaml
-> +
-> +  "^misc(@[0-9a-f]+)?$":
-> +    type: object
-> +    description: Ampere Altra SMPro Misc driver
-
-Bindings describe h/w, not drivers.
-
-> +    properties:
-> +      compatible:
-> +        const: "ampere,ac01-misc"
-> +
-> +  "^errmon(@[0-9a-f]+)?$":
-> +    type: object
-> +    description: Ampere Altra SMPro Error Monitor driver
-> +    properties:
-> +      compatible:
-> +        const: "ampere,ac01-errmon"
-> +
-> +required:
-> +  - "#address-cells"
-> +  - "#size-cells"
-> +  - compatible
-> +  - reg
-> +
-> +additionalProperties: false
-> +
-> +examples:
-> +  - |
-> +    i2c {
-> +        #address-cells = <1>;
-> +        #size-cells = <0>;
-> +
-> +        smpro at 4f {
-> +            compatible = "ampere,smpro";
-> +            reg = <0x4f>;
-> +            #address-cells = <1>;
-> +            #size-cells = <0>;
-> +
-> +            hwmon {
-> +                compatible = "ampere,ac01-hwmon";
-> +            };
-> +
-> +            misc {
-> +                compatible = "ampere,ac01-misc";
-> +            };
-> +
-> +            errmon {
-> +                compatible = "ampere,ac01-errmon";
-> +            };
-
-None of the child nodes have any resources in DT, so you don't need 
-them in DT.
-
-Rob
+> +       ssif-bmc at 10 {
+> +               compatible = "aspeed,ast2500-ssif-bmc";
+> +               reg = <0x10>;
+> +       };
+> -- 
+> 2.28.0
+> 
