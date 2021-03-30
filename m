@@ -1,64 +1,37 @@
 From: Zev Weiss <zev@bewilderbeest.net>
-Date: Mon, 29 Mar 2021 19:23:37 -0500
-Subject: [PATCH 2/3] dt-bindings: serial: 8250: update for aspeed,
- sirq-active-high
-In-Reply-To: <20210330002338.335-1-zev@bewilderbeest.net>
-References: <20210330002338.335-1-zev@bewilderbeest.net>
-Message-ID: <20210330002338.335-3-zev@bewilderbeest.net>
+Date: Mon, 29 Mar 2021 19:23:35 -0500
+Subject: [PATCH 0/3] simplify Aspeed VUART SIRQ polarity DT config,
+ add e3c246d4i BMC dts
+Message-ID: <20210330002338.335-1-zev@bewilderbeest.net>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Update DT bindings documentation for the new incarnation of the
-aspeed,sirq-polarity-sense property.
+This patch series reworks the existing aspeed,sirq-polarity-sense DT
+property as a simple boolean (aspeed,sirq-active-high) so as to
+disentangle the interrupt polarity from the eSPI/LPC strapping and
+updates the documentation accordingly.
 
-Signed-off-by: Zev Weiss <zev@bewilderbeest.net>
----
- Documentation/devicetree/bindings/serial/8250.yaml | 14 ++++++--------
- 1 file changed, 6 insertions(+), 8 deletions(-)
+The third patch adds an in-tree consumer of this property
+(aspeed,sirq-polarity-sense never really had one) in the form of a
+device tree for the ASRock E3C246D4I BMC, an OpenBMC target in
+progress at Equinix Metal (formerly known as Packet).
 
-diff --git a/Documentation/devicetree/bindings/serial/8250.yaml b/Documentation/devicetree/bindings/serial/8250.yaml
-index f54cae9ff7b2..0bbb7121f720 100644
---- a/Documentation/devicetree/bindings/serial/8250.yaml
-+++ b/Documentation/devicetree/bindings/serial/8250.yaml
-@@ -13,7 +13,7 @@ allOf:
-   - $ref: /schemas/serial.yaml#
-   - if:
-       required:
--        - aspeed,sirq-polarity-sense
-+        - aspeed,sirq-active-high
-     then:
-       properties:
-         compatible:
-@@ -181,13 +181,11 @@ properties:
-   rng-gpios: true
-   dcd-gpios: true
- 
--  aspeed,sirq-polarity-sense:
--    $ref: /schemas/types.yaml#/definitions/phandle-array
-+  aspeed,sirq-active-high:
-+    type: boolean
-     description: |
--      Phandle to aspeed,ast2500-scu compatible syscon alongside register
--      offset and bit number to identify how the SIRQ polarity should be
--      configured. One possible data source is the LPC/eSPI mode bit. Only
--      applicable to aspeed,ast2500-vuart.
-+      Set to indicate that the SIRQ polarity is active-high (default
-+      is active-low).  Only applicable to aspeed,ast2500-vuart.
- 
- required:
-   - reg
-@@ -227,7 +225,7 @@ examples:
-         interrupts = <8>;
-         clocks = <&syscon ASPEED_CLK_APB>;
-         no-loopback-test;
--        aspeed,sirq-polarity-sense = <&syscon 0x70 25>;
-+        aspeed,sirq-active-high;
-     };
- 
- ...
+
+Zev Weiss (3):
+  drivers/tty/serial/8250: simplify Aspeed VUART SIRQ polarity DT config
+  dt-bindings: serial: 8250: update for aspeed,sirq-active-high
+  ARM: dts: aspeed: add ASRock E3C246D4I BMC
+
+ .../devicetree/bindings/serial/8250.yaml      |  14 +-
+ .../boot/dts/aspeed-bmc-asrock-e3c246d4i.dts  | 188 ++++++++++++++++++
+ drivers/tty/serial/8250/8250_aspeed_vuart.c   |  39 +---
+ drivers/tty/serial/8250/Kconfig               |   1 -
+ 4 files changed, 196 insertions(+), 46 deletions(-)
+ create mode 100644 arch/arm/boot/dts/aspeed-bmc-asrock-e3c246d4i.dts
+
 -- 
 2.31.1
 
