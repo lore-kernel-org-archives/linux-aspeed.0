@@ -1,53 +1,71 @@
 From: Rob Herring <robh@kernel.org>
-Date: Tue, 30 Mar 2021 17:05:43 -0500
-Subject: [PATCH v1 3/3] bindings: ipmi: Add binding for Aspeed SSIF BMC
- driver
-In-Reply-To: <20210329121759.5644-4-quan@os.amperecomputing.com>
-References: <20210329121759.5644-1-quan@os.amperecomputing.com>
- <20210329121759.5644-4-quan@os.amperecomputing.com>
-Message-ID: <20210330220543.GA795792@robh.at.kernel.org>
+Date: Tue, 30 Mar 2021 17:39:02 -0500
+Subject: [PATCH 2/3] dt-bindings: serial: 8250: update for
+ aspeed,sirq-active-high
+In-Reply-To: <20210330002338.335-3-zev@bewilderbeest.net>
+References: <20210330002338.335-1-zev@bewilderbeest.net>
+ <20210330002338.335-3-zev@bewilderbeest.net>
+Message-ID: <20210330223902.GA837825@robh.at.kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Mar 29, 2021 at 07:17:59PM +0700, Quan Nguyen wrote:
-> Add device tree binding document for the Aspeed SSIF BMC driver.
+On Mon, Mar 29, 2021 at 07:23:37PM -0500, Zev Weiss wrote:
+> Update DT bindings documentation for the new incarnation of the
+> aspeed,sirq-polarity-sense property.
+
+Why?
+
+This isn't a compatible change.
+
 > 
-> Signed-off-by: Quan Nguyen <quan@os.amperecomputing.com>
+> Signed-off-by: Zev Weiss <zev@bewilderbeest.net>
 > ---
->  .../bindings/ipmi/aspeed-ssif-bmc.txt          | 18 ++++++++++++++++++
-
-Bindings should now be in DT schema format.
-
->  1 file changed, 18 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/ipmi/aspeed-ssif-bmc.txt
+>  Documentation/devicetree/bindings/serial/8250.yaml | 14 ++++++--------
+>  1 file changed, 6 insertions(+), 8 deletions(-)
 > 
-> diff --git a/Documentation/devicetree/bindings/ipmi/aspeed-ssif-bmc.txt b/Documentation/devicetree/bindings/ipmi/aspeed-ssif-bmc.txt
-> new file mode 100644
-> index 000000000000..1616f0188db9
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/ipmi/aspeed-ssif-bmc.txt
-> @@ -0,0 +1,18 @@
-> +# Aspeed SSIF (SMBus system interface) IPMI BMC interface
-> +
-> +The Aspeed AST2500 are commonly used as BMCs (Baseboard Management Controllers)
-> +and the SSIF slave interface can be used to perform in-band IPMI communication
-> +with their host.
-> +
-> +Required properties:
-> +
-> +- compatible : should be
-> +       "aspeed,ast2500-ssif-bmc"
-> +- reg: I2C address the registers
-> +
-> +Example:
-> +
-> +       ssif-bmc at 10 {
-> +               compatible = "aspeed,ast2500-ssif-bmc";
-> +               reg = <0x10>;
-> +       };
+> diff --git a/Documentation/devicetree/bindings/serial/8250.yaml b/Documentation/devicetree/bindings/serial/8250.yaml
+> index f54cae9ff7b2..0bbb7121f720 100644
+> --- a/Documentation/devicetree/bindings/serial/8250.yaml
+> +++ b/Documentation/devicetree/bindings/serial/8250.yaml
+> @@ -13,7 +13,7 @@ allOf:
+>    - $ref: /schemas/serial.yaml#
+>    - if:
+>        required:
+> -        - aspeed,sirq-polarity-sense
+> +        - aspeed,sirq-active-high
+>      then:
+>        properties:
+>          compatible:
+> @@ -181,13 +181,11 @@ properties:
+>    rng-gpios: true
+>    dcd-gpios: true
+>  
+> -  aspeed,sirq-polarity-sense:
+> -    $ref: /schemas/types.yaml#/definitions/phandle-array
+> +  aspeed,sirq-active-high:
+> +    type: boolean
+>      description: |
+> -      Phandle to aspeed,ast2500-scu compatible syscon alongside register
+> -      offset and bit number to identify how the SIRQ polarity should be
+> -      configured. One possible data source is the LPC/eSPI mode bit. Only
+> -      applicable to aspeed,ast2500-vuart.
+> +      Set to indicate that the SIRQ polarity is active-high (default
+> +      is active-low).  Only applicable to aspeed,ast2500-vuart.
+>  
+>  required:
+>    - reg
+> @@ -227,7 +225,7 @@ examples:
+>          interrupts = <8>;
+>          clocks = <&syscon ASPEED_CLK_APB>;
+>          no-loopback-test;
+> -        aspeed,sirq-polarity-sense = <&syscon 0x70 25>;
+> +        aspeed,sirq-active-high;
+>      };
+>  
+>  ...
 > -- 
-> 2.28.0
+> 2.31.1
 > 
