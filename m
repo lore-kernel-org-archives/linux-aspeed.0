@@ -1,90 +1,48 @@
-From: Joel Stanley <joel@jms.id.au>
-Date: Tue, 30 Mar 2021 23:26:56 +0000
-Subject: [PATCH 2/3] dt-bindings: serial: 8250: update for aspeed,
- sirq-active-high
-In-Reply-To: <20210330223902.GA837825@robh.at.kernel.org>
-References: <20210330002338.335-1-zev@bewilderbeest.net>
- <20210330002338.335-3-zev@bewilderbeest.net>
- <20210330223902.GA837825@robh.at.kernel.org>
-Message-ID: <CACPK8Xcfcsz7KCdfLuweGGbaxVKczhMb7+nxA9TMbsAbAbhi3g@mail.gmail.com>
+From: Tao Ren <rentao.bupt@gmail.com>
+Date: Tue, 30 Mar 2021 20:47:02 -0700
+Subject: [PATCH] usb: gadget: aspeed: set port_dev dma mask
+In-Reply-To: <20210329061735.GA27510@lst.de>
+References: <20210326070214.6719-1-rentao.bupt@gmail.com>
+ <10920f34-289c-feac-79b6-71bff2aea67d@arm.com>
+ <20210326120526.GA14169@lst.de>
+ <20210327221759.GA2997@taoren-ubuntu-R90MNF91>
+ <20210329061735.GA27510@lst.de>
+Message-ID: <20210331034701.GA3185@taoren-ubuntu-R90MNF91>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, 30 Mar 2021 at 22:39, Rob Herring <robh@kernel.org> wrote:
->
-> On Mon, Mar 29, 2021 at 07:23:37PM -0500, Zev Weiss wrote:
-> > Update DT bindings documentation for the new incarnation of the
-> > aspeed,sirq-polarity-sense property.
->
-> Why?
->
-> This isn't a compatible change.
+On Mon, Mar 29, 2021 at 08:17:35AM +0200, Christoph Hellwig wrote:
+> On Sat, Mar 27, 2021 at 03:17:59PM -0700, Tao Ren wrote:
+> > On Fri, Mar 26, 2021 at 01:05:26PM +0100, Christoph Hellwig wrote:
+> > > On Fri, Mar 26, 2021 at 12:03:03PM +0000, Robin Murphy wrote:
+> > > > This might happen to work out, but is far from correct. Just wait until you 
+> > > > try it on a platform where the USB controller is behind an IOMMU...
+> > > >
+> > > > It looks like something is more fundamentally wrong here - the device 
+> > > > passed to DMA API calls must be the actual hardware device performing the 
+> > > > DMA, which in USB-land I believe means the controller's sysdev.
+> > > 
+> > > The shiny new usb_intf_get_dma_device API provides the device to use.
+> > 
+> > Thanks Robin and Christoph for the feedback.
+> > 
+> > If I understand correctly, usb_intf_get_dma_device API is mainly for usb
+> > host drivers? I just found usb_gadget_map_request_by_dev API: does it
+> > make sense to replace usb_gadget_map_request with
+> > usb_gadget_map_request_by_dev so we can pass the actual DMA-capable
+> > hardware device (aspeed-vhub platform device) to the API?
+> 
+> Oh, right you're dealing with a gadget side driver.  Not sure about
+> the API there, I'll let the relevant maintainers chime in.
 
-We want to depreciate support for this property. It should have never
-been added to the bindings; in it's current form it describes a
-relationship that afaict doesn't exist ("This unrelated register over
-here dictates the polarity of your virtual serial port IRQ"). See
-https://lore.kernel.org/lkml/20200812112400.2406734-1-joel at jms.id.au/
+Given this is not the right path, I will drop the patch and work out a
+new fix soon (by calling usb_gadget_map_request_by_dev, and with
+modified subject).
 
-The intent is to remove it from both the bindings and the code.
-There's already no users of it in any device tree.
-
-How would you like Zev to go about doing this?
 
 Cheers,
 
-Joel
-
->
-> >
-> > Signed-off-by: Zev Weiss <zev@bewilderbeest.net>
-> > ---
-> >  Documentation/devicetree/bindings/serial/8250.yaml | 14 ++++++--------
-> >  1 file changed, 6 insertions(+), 8 deletions(-)
-> >
-> > diff --git a/Documentation/devicetree/bindings/serial/8250.yaml b/Documentation/devicetree/bindings/serial/8250.yaml
-> > index f54cae9ff7b2..0bbb7121f720 100644
-> > --- a/Documentation/devicetree/bindings/serial/8250.yaml
-> > +++ b/Documentation/devicetree/bindings/serial/8250.yaml
-> > @@ -13,7 +13,7 @@ allOf:
-> >    - $ref: /schemas/serial.yaml#
-> >    - if:
-> >        required:
-> > -        - aspeed,sirq-polarity-sense
-> > +        - aspeed,sirq-active-high
-> >      then:
-> >        properties:
-> >          compatible:
-> > @@ -181,13 +181,11 @@ properties:
-> >    rng-gpios: true
-> >    dcd-gpios: true
-> >
-> > -  aspeed,sirq-polarity-sense:
-> > -    $ref: /schemas/types.yaml#/definitions/phandle-array
-> > +  aspeed,sirq-active-high:
-> > +    type: boolean
-> >      description: |
-> > -      Phandle to aspeed,ast2500-scu compatible syscon alongside register
-> > -      offset and bit number to identify how the SIRQ polarity should be
-> > -      configured. One possible data source is the LPC/eSPI mode bit. Only
-> > -      applicable to aspeed,ast2500-vuart.
-> > +      Set to indicate that the SIRQ polarity is active-high (default
-> > +      is active-low).  Only applicable to aspeed,ast2500-vuart.
-> >
-> >  required:
-> >    - reg
-> > @@ -227,7 +225,7 @@ examples:
-> >          interrupts = <8>;
-> >          clocks = <&syscon ASPEED_CLK_APB>;
-> >          no-loopback-test;
-> > -        aspeed,sirq-polarity-sense = <&syscon 0x70 25>;
-> > +        aspeed,sirq-active-high;
-> >      };
-> >
-> >  ...
-> > --
-> > 2.31.1
-> >
+Tao
