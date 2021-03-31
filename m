@@ -1,64 +1,43 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Wed, 31 Mar 2021 07:48:23 +0000
-Subject: [PATCH] ARM: dts: rainier: Update to access sensors via iio-hwmon
-In-Reply-To: <20210329094255.347713-1-rashmica.g@gmail.com>
-References: <20210329094255.347713-1-rashmica.g@gmail.com>
-Message-ID: <CACPK8XchKxK9zbogk2rix6Hq5RW+XJuTq4YS4rBhdg+Uw_18Jg@mail.gmail.com>
+Date: Wed, 31 Mar 2021 07:50:32 +0000
+Subject: [PATCH 3/3] ARM: dts: aspeed: add ASRock E3C246D4I BMC
+In-Reply-To: <CACPK8XcwMYgc9R24KuGa0hqKQAxawDScHp1+y62aeEvcpvPiSw@mail.gmail.com>
+References: <20210330002338.335-1-zev@bewilderbeest.net>
+ <20210330002338.335-4-zev@bewilderbeest.net>
+ <CACPK8XcwMYgc9R24KuGa0hqKQAxawDScHp1+y62aeEvcpvPiSw@mail.gmail.com>
+Message-ID: <CACPK8XfBsq6H5qsSNgwqdRhHXTUYnNQKekSNMnxXoVaAzMc=MQ@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, 29 Mar 2021 at 09:43, Rashmica Gupta <rashmica.g@gmail.com> wrote:
+On Wed, 31 Mar 2021 at 07:41, Joel Stanley <joel@jms.id.au> wrote:
 >
+> On Tue, 30 Mar 2021 at 00:25, Zev Weiss <zev@bewilderbeest.net> wrote:
+> >
+> > This is a relatively low-cost AST2500-based Xeon E-2100/E-2200 series
+> > mini-ITX board that we hope can provide a decent platform for OpenBMC
+> > development.
+> >
+> > This initial device-tree provides the necessary configuration for
+> > basic BMC functionality such as host power control, serial console and
+> > KVM support, and POST code snooping.
+> >
+> > Signed-off-by: Zev Weiss <zev@bewilderbeest.net>
+>
+> Reviewed-by: Joel Stanley <joel@jms.id.au>
+>
+> > ---
+> >  .../boot/dts/aspeed-bmc-asrock-e3c246d4i.dts  | 188 ++++++++++++++++++
+> >  1 file changed, 188 insertions(+)
+> >  create mode 100644 arch/arm/boot/dts/aspeed-bmc-asrock-e3c246d4i.dts
+> >
+> > diff --git a/arch/arm/boot/dts/aspeed-bmc-asrock-e3c246d4i.dts b/arch/arm/boot/dts/aspeed-bmc-asrock-e3c246d4i.dts
+> > new file mode 100644
+> > index 000000000000..27b34c3cf67a
+> > --- /dev/null
+> > +++ b/arch/arm/boot/dts/aspeed-bmc-asrock-e3c246d4i.dts
 
-Can you add a brief message about why we're adding a iio-hwmon bridge
-for these sensors?
-
-> Signed-off-by: Rashmica Gupta <rashmica.g@gmail.com>
-> ---
->  arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts | 13 ++++++++++++-
->  1 file changed, 12 insertions(+), 1 deletion(-)
->
-> diff --git a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
-> index fefb0b8fd6d5..2dc72de07906 100644
-> --- a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
-> +++ b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
-> @@ -173,6 +173,16 @@ i2c2mux3: i2c at 3 {
->                 };
->         };
->
-> +       iio-hwmon-dps310 {
-> +               compatible = "iio-hwmon";
-> +               io-channels = <&dps 0>;
-> +       };
-> +
-> +       iio-hwmon-si7020 {
-> +               compatible = "iio-hwmon";
-> +               io-channels = <&si 1>;
-> +       };
-> +
->         leds {
->                 compatible = "gpio-leds";
->
-> @@ -1972,9 +1982,10 @@ &i2c7 {
->         multi-master;
->         status = "okay";
->
-> -       si7021-a20 at 20 {
-> +       si:si7021-a20 at 20 {
-
-That's a very short name. How about we call it humidity (or something else)?
-
-Convention is to put a space after the colon.
-
->                 compatible = "silabs,si7020";
->                 reg = <0x20>;
-> +               #io-channel-cells = <1>;
->         };
->
->         tmp275 at 48 {
-> --
-> 2.26.3
->
+When adding the device tree please also add it to the makefile in
+arch/arm/boot/dts.
