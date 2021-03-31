@@ -1,48 +1,85 @@
-From: Tao Ren <rentao.bupt@gmail.com>
-Date: Tue, 30 Mar 2021 20:47:02 -0700
-Subject: [PATCH] usb: gadget: aspeed: set port_dev dma mask
-In-Reply-To: <20210329061735.GA27510@lst.de>
-References: <20210326070214.6719-1-rentao.bupt@gmail.com>
- <10920f34-289c-feac-79b6-71bff2aea67d@arm.com>
- <20210326120526.GA14169@lst.de>
- <20210327221759.GA2997@taoren-ubuntu-R90MNF91>
- <20210329061735.GA27510@lst.de>
-Message-ID: <20210331034701.GA3185@taoren-ubuntu-R90MNF91>
+From: rentao.bupt@gmail.com <rentao.bupt@gmail.com>
+Date: Tue, 30 Mar 2021 21:58:31 -0700
+Subject: [PATCH] usb: gadget: aspeed: fix dma map failure
+Message-ID: <20210331045831.28700-1-rentao.bupt@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Mar 29, 2021 at 08:17:35AM +0200, Christoph Hellwig wrote:
-> On Sat, Mar 27, 2021 at 03:17:59PM -0700, Tao Ren wrote:
-> > On Fri, Mar 26, 2021 at 01:05:26PM +0100, Christoph Hellwig wrote:
-> > > On Fri, Mar 26, 2021 at 12:03:03PM +0000, Robin Murphy wrote:
-> > > > This might happen to work out, but is far from correct. Just wait until you 
-> > > > try it on a platform where the USB controller is behind an IOMMU...
-> > > >
-> > > > It looks like something is more fundamentally wrong here - the device 
-> > > > passed to DMA API calls must be the actual hardware device performing the 
-> > > > DMA, which in USB-land I believe means the controller's sysdev.
-> > > 
-> > > The shiny new usb_intf_get_dma_device API provides the device to use.
-> > 
-> > Thanks Robin and Christoph for the feedback.
-> > 
-> > If I understand correctly, usb_intf_get_dma_device API is mainly for usb
-> > host drivers? I just found usb_gadget_map_request_by_dev API: does it
-> > make sense to replace usb_gadget_map_request with
-> > usb_gadget_map_request_by_dev so we can pass the actual DMA-capable
-> > hardware device (aspeed-vhub platform device) to the API?
-> 
-> Oh, right you're dealing with a gadget side driver.  Not sure about
-> the API there, I'll let the relevant maintainers chime in.
+From: Tao Ren <rentao.bupt@gmail.com>
 
-Given this is not the right path, I will drop the patch and work out a
-new fix soon (by calling usb_gadget_map_request_by_dev, and with
-modified subject).
+Currently the virtual port_dev device is passed to DMA API, and this is
+wrong because the device passed to DMA API calls must be the actual
+hardware device performing the DMA.
 
+The patch replaces usb_gadget_map_request/usb_gadget_unmap_request APIs
+with usb_gadget_map_request_by_dev/usb_gadget_unmap_request_by_dev APIs
+so the DMA capable platform device can be passed to the DMA APIs.
 
-Cheers,
+The patch fixes below backtrace detected on Facebook AST2500 OpenBMC
+platforms:
 
-Tao
+[<80106550>] show_stack+0x20/0x24
+[<80106868>] dump_stack+0x28/0x30
+[<80823540>] __warn+0xfc/0x110
+[<8011ac30>] warn_slowpath_fmt+0xb0/0xc0
+[<8011ad44>] dma_map_page_attrs+0x24c/0x314
+[<8016a27c>] usb_gadget_map_request_by_dev+0x100/0x1e4
+[<805cedd8>] usb_gadget_map_request+0x1c/0x20
+[<805cefbc>] ast_vhub_epn_queue+0xa0/0x1d8
+[<7f02f710>] usb_ep_queue+0x48/0xc4
+[<805cd3e8>] ecm_do_notify+0xf8/0x248
+[<7f145920>] ecm_set_alt+0xc8/0x1d0
+[<7f145c34>] composite_setup+0x680/0x1d30
+[<7f00deb8>] ast_vhub_ep0_handle_setup+0xa4/0x1bc
+[<7f02ee94>] ast_vhub_dev_irq+0x58/0x84
+[<7f0309e0>] ast_vhub_irq+0xb0/0x1c8
+[<7f02e118>] __handle_irq_event_percpu+0x50/0x19c
+[<8015e5bc>] handle_irq_event_percpu+0x38/0x8c
+[<8015e758>] handle_irq_event+0x38/0x4c
+
+Signed-off-by: Tao Ren <rentao.bupt@gmail.com>
+---
+ drivers/usb/gadget/udc/aspeed-vhub/core.c | 3 ++-
+ drivers/usb/gadget/udc/aspeed-vhub/epn.c  | 2 +-
+ 2 files changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/usb/gadget/udc/aspeed-vhub/core.c b/drivers/usb/gadget/udc/aspeed-vhub/core.c
+index be7bb64e3594..d11d3d14313f 100644
+--- a/drivers/usb/gadget/udc/aspeed-vhub/core.c
++++ b/drivers/usb/gadget/udc/aspeed-vhub/core.c
+@@ -36,6 +36,7 @@ void ast_vhub_done(struct ast_vhub_ep *ep, struct ast_vhub_req *req,
+ 		   int status)
+ {
+ 	bool internal = req->internal;
++	struct ast_vhub *vhub = ep->vhub;
+ 
+ 	EPVDBG(ep, "completing request @%p, status %d\n", req, status);
+ 
+@@ -46,7 +47,7 @@ void ast_vhub_done(struct ast_vhub_ep *ep, struct ast_vhub_req *req,
+ 
+ 	if (req->req.dma) {
+ 		if (!WARN_ON(!ep->dev))
+-			usb_gadget_unmap_request(&ep->dev->gadget,
++			usb_gadget_unmap_request_by_dev(&vhub->pdev->dev,
+ 						 &req->req, ep->epn.is_in);
+ 		req->req.dma = 0;
+ 	}
+diff --git a/drivers/usb/gadget/udc/aspeed-vhub/epn.c b/drivers/usb/gadget/udc/aspeed-vhub/epn.c
+index 02d8bfae58fb..cb164c615e6f 100644
+--- a/drivers/usb/gadget/udc/aspeed-vhub/epn.c
++++ b/drivers/usb/gadget/udc/aspeed-vhub/epn.c
+@@ -376,7 +376,7 @@ static int ast_vhub_epn_queue(struct usb_ep* u_ep, struct usb_request *u_req,
+ 	if (ep->epn.desc_mode ||
+ 	    ((((unsigned long)u_req->buf & 7) == 0) &&
+ 	     (ep->epn.is_in || !(u_req->length & (u_ep->maxpacket - 1))))) {
+-		rc = usb_gadget_map_request(&ep->dev->gadget, u_req,
++		rc = usb_gadget_map_request_by_dev(&vhub->pdev->dev, u_req,
+ 					    ep->epn.is_in);
+ 		if (rc) {
+ 			dev_warn(&vhub->pdev->dev,
+-- 
+2.17.1
+
