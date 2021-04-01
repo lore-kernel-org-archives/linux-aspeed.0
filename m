@@ -1,56 +1,67 @@
 From: Zev Weiss <zev@bewilderbeest.net>
-Date: Wed, 31 Mar 2021 23:57:16 -0500
-Subject: [PATCH v2 3/3] dt-bindings: serial: 8250: add
- aspeed,sirq-active-high
-In-Reply-To: <d66753ee-7db2-41e5-9fe5-762b1ab678bc@www.fastmail.com>
+Date: Thu, 1 Apr 2021 00:18:51 -0500
+Subject: [PATCH v2 2/3] drivers/tty/serial/8250: add DT property for
+ aspeed vuart sirq polarity
+In-Reply-To: <CACPK8XdPVf1WMmo8C8RJtd-1cH5qV9odEDhDUHWRiMOk=dQNtg@mail.gmail.com>
 References: <YGOuhjD19SmjmQou@hatter.bewilderbeest.net>
  <20210401005702.28271-1-zev@bewilderbeest.net>
- <20210401005702.28271-4-zev@bewilderbeest.net>
- <d66753ee-7db2-41e5-9fe5-762b1ab678bc@www.fastmail.com>
-Message-ID: <YGVSrCo7mVkSJTeQ@hatter.bewilderbeest.net>
+ <20210401005702.28271-3-zev@bewilderbeest.net>
+ <CACPK8XdPVf1WMmo8C8RJtd-1cH5qV9odEDhDUHWRiMOk=dQNtg@mail.gmail.com>
+Message-ID: <YGVXuyqOyxc8kcQz@hatter.bewilderbeest.net>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Mar 31, 2021 at 11:04:44PM CDT, Andrew Jeffery wrote:
->
->
->On Thu, 1 Apr 2021, at 11:27, Zev Weiss wrote:
->> This provides a simpler, more direct alternative to the deprecated
->> aspeed,sirq-polarity-sense property for indicating the polarity of
->> the Aspeed VUART's SIRQ line.
+On Wed, Mar 31, 2021 at 11:15:44PM CDT, Joel Stanley wrote:
+>On Thu, 1 Apr 2021 at 00:57, Zev Weiss <zev@bewilderbeest.net> wrote:
+>>
+>> This provides a simple boolean to use instead of the deprecated
+>> aspeed,sirq-polarity-sense property.
 >>
 >> Signed-off-by: Zev Weiss <zev@bewilderbeest.net>
 >> ---
->>  Documentation/devicetree/bindings/serial/8250.yaml | 13 ++++++++++---
->>  1 file changed, 10 insertions(+), 3 deletions(-)
+>>  drivers/tty/serial/8250/8250_aspeed_vuart.c | 3 +++
+>>  1 file changed, 3 insertions(+)
 >>
->> diff --git a/Documentation/devicetree/bindings/serial/8250.yaml
->> b/Documentation/devicetree/bindings/serial/8250.yaml
->> index 491b9297432d..e79bb6ab9d2c 100644
->> --- a/Documentation/devicetree/bindings/serial/8250.yaml
->> +++ b/Documentation/devicetree/bindings/serial/8250.yaml
->> @@ -12,8 +12,9 @@ maintainers:
->>  allOf:
->>    - $ref: /schemas/serial.yaml#
->>    - if:
->> -      required:
->> -        - aspeed,sirq-polarity-sense
->> +      anyOf:
->> +        - required: [ aspeed,sirq-active-high ]
+>> diff --git a/drivers/tty/serial/8250/8250_aspeed_vuart.c b/drivers/tty/serial/8250/8250_aspeed_vuart.c
+>> index c33e02cbde93..e5ef9f957f9a 100644
+>> --- a/drivers/tty/serial/8250/8250_aspeed_vuart.c
+>> +++ b/drivers/tty/serial/8250/8250_aspeed_vuart.c
+>> @@ -482,6 +482,9 @@ static int aspeed_vuart_probe(struct platform_device *pdev)
+>>                 of_node_put(sirq_polarity_sense_args.np);
+>>         }
+>>
+>> +       if (of_property_read_bool(np, "aspeed,sirq-active-high"))
+>> +               aspeed_vuart_set_sirq_polarity(vuart, 1);
 >
->Do you think we could make use of the approach I put forward here?
+>This assumes the default is always low, so we don't need a property to
+>set it to that state?
 >
->https://lore.kernel.org/openbmc/20210319062752.145730-18-andrew at aj.id.au/T/#u
+>Would it make more sense to have the property describe if it's high or
+>low? (I'm happy for the answer to be "no", as we've gotten by for the
+>past few years without it).
 >
->Andrew
 
-If you mean using a u32 property (say aspeed,sirq-polarity) with an 
-explicit IRQ_TYPE_LEVEL_{LOW,HIGH} instead of a present/absent bool,
-sure, I guess that seems like a somewhat clearer, more orthogonal 
-arrangement.
+Yeah, that sounds like better way to approach it -- I think I'll 
+rearrange as Andrew suggested in 
+https://lore.kernel.org/openbmc/d66753ee-7db2-41e5-9fe5-762b1ab678bc at www.fastmail.com/
+
+>This brings up another point. We already have the sysfs file for
+>setting the lpc address, from userspace. In OpenBMC land this can be
+>set with obmc-console-client (/etc/obmc-console.conf). Should we add
+>support to that application for setting the irq polarity too, and do
+>away with device tree descriptions?
+>
+
+I guess I might lean slightly toward keeping the DT description so that 
+if for whatever reason obmc-console-server flakes out and doesn't start 
+you're better positioned to try banging on /dev/ttyS* manually if you're 
+desperate.  Though I suppose that in turn might imply that I'm arguing 
+for adding DT properties for lpc_address and sirq too, and if you're 
+really that desperate you can just fiddle with sysfs anyway, so...shrug?  
+I could be convinced either way fairly easily.
 
 
 Zev
