@@ -1,39 +1,38 @@
 From: Zev Weiss <zev@bewilderbeest.net>
-Date: Wed, 31 Mar 2021 19:56:59 -0500
-Subject: [PATCH v2 0/3] simplify Aspeed VUART SIRQ polarity DT config
-In-Reply-To: <YGOuhjD19SmjmQou@hatter.bewilderbeest.net>
+Date: Wed, 31 Mar 2021 19:57:00 -0500
+Subject: [PATCH v2 1/3] dt-bindings: serial: 8250: deprecate aspeed,
+ sirq-polarity-sense
+In-Reply-To: <20210401005702.28271-1-zev@bewilderbeest.net>
 References: <YGOuhjD19SmjmQou@hatter.bewilderbeest.net>
-Message-ID: <20210401005702.28271-1-zev@bewilderbeest.net>
+ <20210401005702.28271-1-zev@bewilderbeest.net>
+Message-ID: <20210401005702.28271-2-zev@bewilderbeest.net>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The aspeed,sirq-polarity-sense property was a bit of a design mistake
-in that it ties Aspeed VUART SIRQ polarity to SCU register bits that
-aren't really inherently related to it.
+This property ties SIRQ polarity to SCU register bits that don't
+necessarily have any direct relationship to it; the only use of it
+was removed in commit c82bf6e133d30e0f9172a20807814fa28aef0f67.
 
-This patch series deprecates that property (though we hope to
-eventually remove it) and adds a simple boolean property
-(aspeed,sirq-active-high) to use instead.
+Signed-off-by: Zev Weiss <zev@bewilderbeest.net>
+---
+ Documentation/devicetree/bindings/serial/8250.yaml | 1 +
+ 1 file changed, 1 insertion(+)
 
-
-Changes since v1:
- - deprecate and retain aspeed,sirq-polarity-sense instead of removing it
- - drop e3c246d4i dts addition from this series
-
-
-Zev Weiss (3):
-  dt-bindings: serial: 8250: deprecate aspeed,sirq-polarity-sense
-  drivers/tty/serial/8250: add DT property for aspeed vuart sirq
-    polarity
-  dt-bindings: serial: 8250: add aspeed,sirq-active-high
-
- Documentation/devicetree/bindings/serial/8250.yaml | 14 +++++++++++---
- drivers/tty/serial/8250/8250_aspeed_vuart.c        |  3 +++
- 2 files changed, 14 insertions(+), 3 deletions(-)
-
+diff --git a/Documentation/devicetree/bindings/serial/8250.yaml b/Documentation/devicetree/bindings/serial/8250.yaml
+index f54cae9ff7b2..491b9297432d 100644
+--- a/Documentation/devicetree/bindings/serial/8250.yaml
++++ b/Documentation/devicetree/bindings/serial/8250.yaml
+@@ -188,6 +188,7 @@ properties:
+       offset and bit number to identify how the SIRQ polarity should be
+       configured. One possible data source is the LPC/eSPI mode bit. Only
+       applicable to aspeed,ast2500-vuart.
++    deprecated: true
+ 
+ required:
+   - reg
 -- 
 2.31.1
 
