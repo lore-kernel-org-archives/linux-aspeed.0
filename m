@@ -1,82 +1,111 @@
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Date: Sat, 3 Apr 2021 10:40:05 +0300
-Subject: [PATCH v4 0/4] aspeed-vuart: generalized DT properties
-In-Reply-To: <20210402182724.20848-1-zev@bewilderbeest.net>
-References: <20210402182724.20848-1-zev@bewilderbeest.net>
-Message-ID: <CAHp75VfbPZ1Xh6_DdRYe=W1KRWg4ZDECDmH-Qeikbymr0hKY2g@mail.gmail.com>
+From: Zev Weiss <zweiss@equinix.com>
+Date: Thu, 1 Apr 2021 07:24:05 +0000
+Subject: [PATCH v2 00/21] ipmi: Allow raw access to KCS devices
+In-Reply-To: <20210319061952.145040-1-andrew@aj.id.au>
+References: <20210319061952.145040-1-andrew@aj.id.au>
+Message-ID: <YGV1FIKVX/4hxt1U@packtop>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Friday, April 2, 2021, Zev Weiss <zev@bewilderbeest.net> wrote:
+On Fri, Mar 19, 2021 at 01:19:30AM CDT, Andrew Jeffery wrote:
+>Hello,
+>
+>This series is a bit of a mix of things, but its primary purpose is to
+>expose BMC KCS IPMI devices to userspace in a way that enables userspace
+>to talk to host firmware using protocols that are not IPMI.
+>
+>v1 can be found here:
+>
+>https://lore.kernel.org/openbmc/20210219142523.3464540-1-andrew at aj.id.au/
+>
+>Changes in v2 include:
+>
+>* A rebase onto v5.12-rc2
+>* Incorporation of off-list feedback on SerIRQ configuration from
+>  Chiawei
+>* Further validation on hardware for ASPEED KCS devices 2, 3 and 4
+>* Lifting the existing single-open constraint of the IPMI chardev
+>* Fixes addressing Rob's feedback on the conversion of the ASPEED KCS
+>  binding to dt-schema
+>* Fixes addressing Rob's feedback on the new aspeed,lpc-interrupts
+>  property definition for the ASPEED KCS binding
+>
+>A new chardev device is added whose implementation exposes the Input
+>Data Register (IDR), Output Data Register (ODR) and Status Register
+>(STR) via read() and write(), and implements poll() for event
+>monitoring.
+>
+>The existing /dev/ipmi-kcs* chardev interface exposes the KCS devices in
+>a way which encoded the IPMI protocol in its behaviour. However, as
+>LPC[0] KCS devices give us bi-directional interrupts between the host
+>and a BMC with both a data and status byte, they are useful for purposes
+>beyond IPMI.
+>
+>As a concrete example, libmctp[1] implements a vendor-defined MCTP[2]
+>binding using a combination of LPC Firmware cycles for bulk data
+>transfer and a KCS device via LPC IO cycles for out-of-band protocol
+>control messages[3]. This gives a throughput improvement over the
+>standard KCS binding[4] while continuing to exploit the ease of setup of
+>the LPC bus for early boot firmware on the host processor.
+>
+>The series takes a bit of a winding path to achieve its aim:
+>
+>1. It begins with patches 1-5 put together by Chia-Wei, which I've
+>rebased on v5.12-rc2. These fix the ASPEED LPC bindings and other
+>non-KCS LPC-related ASPEED device drivers in a way that enables the
+>SerIRQ patches at the end of the series. With Joel's review I'm hoping
+>these 5 can go through the aspeed tree, and that the rest can go through
+>the IPMI tree.
+>
+>2. Next, patches 6-13 fairly heavily refactor the KCS support in the
+>IPMI part of the tree, re-architecting things such that it's possible to
+>support multiple chardev implementations sitting on top of the ASPEED
+>and Nuvoton device drivers. However, the KCS code didn't really have
+>great separation of concerns as it stood, so even if we disregard the
+>multiple-chardev support I think the cleanups are worthwhile.
+>
+>3. Patch 14 adds some interrupt management capabilities to the KCS
+>device drivers in preparation for patch 16, which introduces the new
+>"raw" KCS device interface. I'm not stoked about the device name/path,
+>so if people are looking to bikeshed something then feel free to lay
+>into that.
+>
+>4. The remaining patches switch the ASPEED KCS devicetree binding to
+>dt-schema, add a new interrupt property to describe the SerIRQ behaviour
+>of the device and finally clean up Serial IRQ support in the ASPEED KCS
+>driver.
+>
+>Rob: The dt-binding patches still come before the relevant driver
+>changes, I tried to keep the two close together in the series, hence the
+>bindings changes not being patches 1 and 2.
+>
+>I've exercised the series under qemu with the rainier-bmc machine plus
+>additional patches for KCS support[5]. I've also substituted this series in
+>place of a hacky out-of-tree driver that we've been using for the
+>libmctp stack and successfully booted the host processor under our
+>internal full-platform simulation tools for a Rainier system.
+>
+>Note that this work touches the Nuvoton driver as well as ASPEED's, but
+>I don't have the capability to test those changes or the IPMI chardev
+>path. Tested-by tags would be much appreciated if you can exercise one
+>or both.
+>
+>Please review!
+>
+>Andrew
+>
 
-> This series generalizes the aspeed-vuart driver's device tree
-> properties to cover all the attributes it currently exposes via sysfs.
->
-> The aspeed,sirq-polarity-sense property was a bit of a design mistake
-> in that it ties Aspeed VUART SIRQ polarity to SCU register bits that
-> aren't really inherently related to it; the first patch in this series
-> deprecates it (though we hope to eventually remove it).
->
-> The rest of the series adds two new properties, aspeed,lpc-io-reg and
-> aspeed,lpc-interrupts.  The latter allows describing the SIRQ polarity
-> (along with the interrupt number) directly, providing a simpler
-> replacement for aspeed,sirq-polarity-sense.
->
->
->
-Please, use better prefixes in the patches to avoid confusion, I.e.
+After rebasing the series onto the OpenBMC dev-5.10 kernel (with only a
+tiny conflict for the addition of the ast2600 entry in
+ast_kcs_bmc_match) and enabling CONFIG_IPMI_KCS_BMC_CDEV_IPMI, my
+e3c246d4i system booted healthily and handled some basic ipmitool
+operations as expected.
 
-?serial: 8250_aspeed_vuart: ?
-
-Instead of what you have now.
+Tested-by: Zev Weiss <zweiss@equinix.com>
 
 
-> Changes since v3 [2]:
->  - renamed properties to match aspeed,ast2400-kcs-bmc
->
-> Changes since v2 [0]:
->  - expanded to also handle sirq number and lpc address in addition to
->    sirq polarity
->  - added default settings if DT properties not specified
->  - refactored existing sysfs code slightly, adding range checks
->  - cleaned up 'make dt_binding_check' warnings
->
-> Changes since v1 [1]:
->  - deprecate and retain aspeed,sirq-polarity-sense instead of removing it
->  - drop e3c246d4i dts addition from this series
->
->
-> [0] https://lore.kernel.org/openbmc/20210401005702.28271-
-> 1-zev at bewilderbeest.net/
-> [1] https://lore.kernel.org/openbmc/20210330002338.335-1-
-> zev at bewilderbeest.net/
-> [2] https://lore.kernel.org/openbmc/20210402004716.15961-
-> 1-zev at bewilderbeest.net/
->
->
-> Zev Weiss (4):
->   dt-bindings: serial: 8250: deprecate aspeed,sirq-polarity-sense
->   drivers/tty/serial/8250: refactor sirq and lpc address setting code
->   drivers/tty/serial/8250: add aspeed,lpc-io-reg and
->     aspeed,lpc-interrupts DT properties
->   dt-bindings: serial: 8250: add aspeed,lpc-io-reg and
->     aspeed,lpc-interrupts
->
->  .../devicetree/bindings/serial/8250.yaml      | 28 +++++-
->  drivers/tty/serial/8250/8250_aspeed_vuart.c   | 95 +++++++++++++++----
->  2 files changed, 103 insertions(+), 20 deletions(-)
->
-> --
-> 2.31.1
->
->
+Zev
 
--- 
-With Best Regards,
-Andy Shevchenko
--------------- next part --------------
-An HTML attachment was scrubbed...
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20210403/3ed43506/attachment.htm>
