@@ -1,62 +1,59 @@
-From: Corey Minyard <minyard@acm.org>
-Date: Fri, 2 Apr 2021 09:21:24 -0500
-Subject: [PATCH v2 0/3] Add Aspeed SSIF BMC driver
-In-Reply-To: <20210330141029.20412-1-quan@os.amperecomputing.com>
-References: <20210330141029.20412-1-quan@os.amperecomputing.com>
-Message-ID: <20210402142124.GV507977@minyard.net>
+From: Zev Weiss <zev@bewilderbeest.net>
+Date: Fri,  2 Apr 2021 13:27:20 -0500
+Subject: [PATCH v4 0/4] aspeed-vuart: generalized DT properties
+Message-ID: <20210402182724.20848-1-zev@bewilderbeest.net>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Mar 30, 2021 at 09:10:26PM +0700, Quan Nguyen wrote:
-> This series add support for the Aspeed specific SSIF BMC driver which
-> is to perform in-band IPMI communication with the host in management
-> (BMC) side.
+This series generalizes the aspeed-vuart driver's device tree
+properties to cover all the attributes it currently exposes via sysfs.
 
-I don't have any specific feedback for this, but I'm wondering if it's
-really necessary.
+The aspeed,sirq-polarity-sense property was a bit of a design mistake
+in that it ties Aspeed VUART SIRQ polarity to SCU register bits that
+aren't really inherently related to it; the first patch in this series
+deprecates it (though we hope to eventually remove it).
 
-Why can't the BMC just open the I2C device and use it?  Is there any
-functionality that this provides that cannot be accomplished from
-userland access to the I2C device?  I don't see any.
+The rest of the series adds two new properties, aspeed,lpc-io-reg and
+aspeed,lpc-interrupts.  The latter allows describing the SIRQ polarity
+(along with the interrupt number) directly, providing a simpler
+replacement for aspeed,sirq-polarity-sense.
 
-If it tied into some existing framework to give abstract access to a BMC
-slave side interface, I'd be ok with this.  But I don't see that.
 
-Unless there is a big need to have this in the kernel, I'm against
-including this and would suggest you do all this work in userland.
-Perhaps write a library.  Sorry, but I'm trying to do my part to reduce
-unnecessary things in the kernel.
+Changes since v3 [2]:
+ - renamed properties to match aspeed,ast2400-kcs-bmc
 
-Thanks,
+Changes since v2 [0]:
+ - expanded to also handle sirq number and lpc address in addition to
+   sirq polarity
+ - added default settings if DT properties not specified
+ - refactored existing sysfs code slightly, adding range checks
+ - cleaned up 'make dt_binding_check' warnings
 
--corey
+Changes since v1 [1]:
+ - deprecate and retain aspeed,sirq-polarity-sense instead of removing it
+ - drop e3c246d4i dts addition from this series
 
-> 
-> v2:
->   + Fixed compiling error with COMPILE_TEST for arc
-> 
-> Quan Nguyen (3):
->   i2c: i2c-core-smbus: Expose PEC calculate function for generic use
->   drivers: char: ipmi: Add Aspeed SSIF BMC driver
->   bindings: ipmi: Add binding for Aspeed SSIF BMC driver
-> 
->  .../bindings/ipmi/aspeed-ssif-bmc.txt         |  18 +
->  drivers/char/ipmi/Kconfig                     |  22 +
->  drivers/char/ipmi/Makefile                    |   2 +
->  drivers/char/ipmi/ssif_bmc.c                  | 645 ++++++++++++++++++
->  drivers/char/ipmi/ssif_bmc.h                  |  92 +++
->  drivers/char/ipmi/ssif_bmc_aspeed.c           | 132 ++++
->  drivers/i2c/i2c-core-smbus.c                  |  12 +-
->  include/linux/i2c.h                           |   1 +
->  8 files changed, 922 insertions(+), 2 deletions(-)
->  create mode 100644 Documentation/devicetree/bindings/ipmi/aspeed-ssif-bmc.txt
->  create mode 100644 drivers/char/ipmi/ssif_bmc.c
->  create mode 100644 drivers/char/ipmi/ssif_bmc.h
->  create mode 100644 drivers/char/ipmi/ssif_bmc_aspeed.c
-> 
-> -- 
-> 2.28.0
-> 
+
+[0] https://lore.kernel.org/openbmc/20210401005702.28271-1-zev at bewilderbeest.net/
+[1] https://lore.kernel.org/openbmc/20210330002338.335-1-zev at bewilderbeest.net/
+[2] https://lore.kernel.org/openbmc/20210402004716.15961-1-zev at bewilderbeest.net/
+
+
+Zev Weiss (4):
+  dt-bindings: serial: 8250: deprecate aspeed,sirq-polarity-sense
+  drivers/tty/serial/8250: refactor sirq and lpc address setting code
+  drivers/tty/serial/8250: add aspeed,lpc-io-reg and
+    aspeed,lpc-interrupts DT properties
+  dt-bindings: serial: 8250: add aspeed,lpc-io-reg and
+    aspeed,lpc-interrupts
+
+ .../devicetree/bindings/serial/8250.yaml      | 28 +++++-
+ drivers/tty/serial/8250/8250_aspeed_vuart.c   | 95 +++++++++++++++----
+ 2 files changed, 103 insertions(+), 20 deletions(-)
+
+-- 
+2.31.1
+
