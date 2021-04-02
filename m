@@ -1,76 +1,62 @@
-From: Philipp Zabel <p.zabel@pengutronix.de>
-Date: Fri, 2 Apr 2021 14:01:37 +0200
-Subject: [PATCH v2 2/3] drivers: char: ipmi: Add Aspeed SSIF BMC driver
-In-Reply-To: <20210330141029.20412-3-quan@os.amperecomputing.com>
+From: Corey Minyard <minyard@acm.org>
+Date: Fri, 2 Apr 2021 09:21:24 -0500
+Subject: [PATCH v2 0/3] Add Aspeed SSIF BMC driver
+In-Reply-To: <20210330141029.20412-1-quan@os.amperecomputing.com>
 References: <20210330141029.20412-1-quan@os.amperecomputing.com>
- <20210330141029.20412-3-quan@os.amperecomputing.com>
-Message-ID: <20210402120137.GA26002@pengutronix.de>
+Message-ID: <20210402142124.GV507977@minyard.net>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Quan,
+On Tue, Mar 30, 2021 at 09:10:26PM +0700, Quan Nguyen wrote:
+> This series add support for the Aspeed specific SSIF BMC driver which
+> is to perform in-band IPMI communication with the host in management
+> (BMC) side.
 
-On Tue, Mar 30, 2021 at 09:10:28PM +0700, Quan Nguyen wrote:
-> The SMBus system interface (SSIF) IPMI BMC driver can be used to perform
-> in-band IPMI communication with their host in management (BMC) side.
+I don't have any specific feedback for this, but I'm wondering if it's
+really necessary.
+
+Why can't the BMC just open the I2C device and use it?  Is there any
+functionality that this provides that cannot be accomplished from
+userland access to the I2C device?  I don't see any.
+
+If it tied into some existing framework to give abstract access to a BMC
+slave side interface, I'd be ok with this.  But I don't see that.
+
+Unless there is a big need to have this in the kernel, I'm against
+including this and would suggest you do all this work in userland.
+Perhaps write a library.  Sorry, but I'm trying to do my part to reduce
+unnecessary things in the kernel.
+
+Thanks,
+
+-corey
+
 > 
-> This commits adds support specifically for Aspeed AST2500 which commonly
-> used as Board Management Controllers.
+> v2:
+>   + Fixed compiling error with COMPILE_TEST for arc
 > 
-> Signed-off-by: Quan Nguyen <quan@os.amperecomputing.com>
-> ---
-[...]
-> diff --git a/drivers/char/ipmi/ssif_bmc_aspeed.c b/drivers/char/ipmi/ssif_bmc_aspeed.c
-> new file mode 100644
-> index 000000000000..a563fcff5acc
-> --- /dev/null
-> +++ b/drivers/char/ipmi/ssif_bmc_aspeed.c
-> @@ -0,0 +1,132 @@
-> +// SPDX-License-Identifier: GPL-2.0+
-> +/*
-> + * The driver for BMC side of Aspeed SSIF interface
-> + *
-> + * Copyright (c) 2021, Ampere Computing LLC
-> + *
-> + * This program is free software; you can redistribute it and/or
-> + * modify it under the terms of the GNU General Public License as
-> + * published by the Free Software Foundation; either version 2 of
-> + * the License, or (at your option) any later version.
-> + *
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> + * GNU General Public License for more details.
-> + *
-> + * You should have received a copy of the GNU General Public License
-> + * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-> + */
-> +
-> +#include <linux/i2c.h>
-> +#include <linux/miscdevice.h>
-> +#include <linux/module.h>
-> +#include <linux/poll.h>
-> +#include <linux/iopoll.h>
-> +
-> +#include "ssif_bmc.h"
-> +
-> +struct aspeed_i2c_bus {
-> +	struct i2c_adapter              adap;
-> +	struct device                   *dev;
-
-This device handle is apparently unused.
-
-> +	void __iomem                    *base;
-> +	struct reset_control            *rst;
-
-This reset control handle is unused as well.
-
-> +	/* Synchronizes I/O mem access to base. */
-> +	spinlock_t                      lock;
-> +};
-
-regards
-Philipp
+> Quan Nguyen (3):
+>   i2c: i2c-core-smbus: Expose PEC calculate function for generic use
+>   drivers: char: ipmi: Add Aspeed SSIF BMC driver
+>   bindings: ipmi: Add binding for Aspeed SSIF BMC driver
+> 
+>  .../bindings/ipmi/aspeed-ssif-bmc.txt         |  18 +
+>  drivers/char/ipmi/Kconfig                     |  22 +
+>  drivers/char/ipmi/Makefile                    |   2 +
+>  drivers/char/ipmi/ssif_bmc.c                  | 645 ++++++++++++++++++
+>  drivers/char/ipmi/ssif_bmc.h                  |  92 +++
+>  drivers/char/ipmi/ssif_bmc_aspeed.c           | 132 ++++
+>  drivers/i2c/i2c-core-smbus.c                  |  12 +-
+>  include/linux/i2c.h                           |   1 +
+>  8 files changed, 922 insertions(+), 2 deletions(-)
+>  create mode 100644 Documentation/devicetree/bindings/ipmi/aspeed-ssif-bmc.txt
+>  create mode 100644 drivers/char/ipmi/ssif_bmc.c
+>  create mode 100644 drivers/char/ipmi/ssif_bmc.h
+>  create mode 100644 drivers/char/ipmi/ssif_bmc_aspeed.c
+> 
+> -- 
+> 2.28.0
+> 
