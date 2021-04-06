@@ -1,299 +1,276 @@
 From: ChiaWei Wang <chiawei_wang@aspeedtech.com>
-Date: Tue, 6 Apr 2021 06:07:34 +0000
-Subject: [PATCH v2 13/21] ipmi: kcs_bmc: Decouple the IPMI chardev from
- the core
-In-Reply-To: <20210319062752.145730-13-andrew@aj.id.au>
+Date: Tue, 6 Apr 2021 06:09:12 +0000
+Subject: [PATCH v2 21/21] ipmi: kcs_bmc_aspeed: Optionally apply status
+ address
+In-Reply-To: <20210319062752.145730-21-andrew@aj.id.au>
 References: <20210319062752.145730-1-andrew@aj.id.au>
- <20210319062752.145730-13-andrew@aj.id.au>
-Message-ID: <HK0PR06MB3779088F39332DA6AEA8B06B91769@HK0PR06MB3779.apcprd06.prod.outlook.com>
+ <20210319062752.145730-21-andrew@aj.id.au>
+Message-ID: <HK0PR06MB3779BE4C5C6E2758DC60FDCA91769@HK0PR06MB3779.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-I have tried this patch on Intel EGS CRB with AST2600 A1 as the BMC.
-Chiawei
-
-Tested-by: Chia-Wei Wang <chiawei_wang@aspeedtech.com>
+Reviewed-by: Chia-Wei Wang <chiawei_wang@aspeedtech.com>
 
 > -----Original Message-----
 > From: Andrew Jeffery <andrew@aj.id.au>
 > Sent: Friday, March 19, 2021 2:28 PM
 > To: openipmi-developer at lists.sourceforge.net; openbmc at lists.ozlabs.org;
 > minyard at acm.org
-> Subject: [PATCH v2 13/21] ipmi: kcs_bmc: Decouple the IPMI chardev from the
-> core
+> Subject: [PATCH v2 21/21] ipmi: kcs_bmc_aspeed: Optionally apply status
+> address
 > 
-> Now that we have untangled the data-structures, split the userspace interface
-> out into its own module. Userspace interfaces and drivers are registered to the
-> KCS BMC core to support arbitrary binding of either.
+> Some Aspeed KCS devices can derive the status register address from the
+> address of the data register. As such, the address of the status register can be
+> implicit in the configuration if desired. On the other hand, sometimes address
+> schemes might be requested that are incompatible with the default addressing
+> scheme. Allow these requests where possible if the devicetree specifies the
+> status register address.
 > 
 > Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
 > ---
->  drivers/char/ipmi/Kconfig             | 13 +++++
->  drivers/char/ipmi/Makefile            |  3 +-
->  drivers/char/ipmi/kcs_bmc.c           | 78
-> ++++++++++++++++++++++++++-
->  drivers/char/ipmi/kcs_bmc.h           |  4 --
->  drivers/char/ipmi/kcs_bmc_cdev_ipmi.c | 33 +++++++++---
->  drivers/char/ipmi/kcs_bmc_client.h    | 14 +++++
->  6 files changed, 132 insertions(+), 13 deletions(-)
+>  drivers/char/ipmi/kcs_bmc_aspeed.c | 113 +++++++++++++++++++++--------
+>  1 file changed, 81 insertions(+), 32 deletions(-)
 > 
-> diff --git a/drivers/char/ipmi/Kconfig b/drivers/char/ipmi/Kconfig index
-> 07847d9a459a..bc5f81899b62 100644
-> --- a/drivers/char/ipmi/Kconfig
-> +++ b/drivers/char/ipmi/Kconfig
-> @@ -124,6 +124,19 @@ config NPCM7XX_KCS_IPMI_BMC
->  	  This support is also available as a module.  If so, the module
->  	  will be called kcs_bmc_npcm7xx.
+> diff --git a/drivers/char/ipmi/kcs_bmc_aspeed.c
+> b/drivers/char/ipmi/kcs_bmc_aspeed.c
+> index 7334b1f51dcc..98789b837690 100644
+> --- a/drivers/char/ipmi/kcs_bmc_aspeed.c
+> +++ b/drivers/char/ipmi/kcs_bmc_aspeed.c
+> @@ -83,6 +83,8 @@
+>  #define LPC_STR2             0x040
+>  #define LPC_STR3             0x044
+>  #define LPC_HICRB            0x100
+> +#define     LPC_HICRB_EN16LADR2      BIT(5)
+> +#define     LPC_HICRB_EN16LADR1      BIT(4)
+>  #define     LPC_HICRB_IBFIE4         BIT(1)
+>  #define     LPC_HICRB_LPC4E          BIT(0)
+>  #define LPC_HICRC            0x104
+> @@ -96,6 +98,11 @@
+>  #define LPC_IDR4             0x114
+>  #define LPC_ODR4             0x118
+>  #define LPC_STR4             0x11C
+> +#define LPC_LSADR12	     0x120
+> +#define     LPC_LSADR12_LSADR2_MASK  GENMASK(31, 16)
+> +#define     LPC_LSADR12_LSADR2_SHIFT 16
+> +#define     LPC_LSADR12_LSADR1_MASK  GENMASK(15, 0)
+> +#define     LPC_LSADR12_LSADR1_SHIFT 0
 > 
-> +config IPMI_KCS_BMC_CDEV_IPMI
-> +	depends on IPMI_KCS_BMC
-> +	tristate "IPMI character device interface for BMC KCS devices"
-> +	help
-> +	  Provides a BMC-side character device implementing IPMI
-> +	  semantics for KCS IPMI devices.
-> +
-> +	  Say YES if you wish to expose KCS devices on the BMC for IPMI
-> +	  purposes.
-> +
-> +	  This support is also available as a module. The module will be
-> +	  called kcs_bmc_cdev_ipmi.
-> +
->  config ASPEED_BT_IPMI_BMC
->  	depends on ARCH_ASPEED || COMPILE_TEST
->  	depends on REGMAP && REGMAP_MMIO && MFD_SYSCON diff --git
-> a/drivers/char/ipmi/Makefile b/drivers/char/ipmi/Makefile index
-> a302bc865370..fcfa676afddb 100644
-> --- a/drivers/char/ipmi/Makefile
-> +++ b/drivers/char/ipmi/Makefile
-> @@ -22,7 +22,8 @@ obj-$(CONFIG_IPMI_SSIF) += ipmi_ssif.o
->  obj-$(CONFIG_IPMI_POWERNV) += ipmi_powernv.o
->  obj-$(CONFIG_IPMI_WATCHDOG) += ipmi_watchdog.o
->  obj-$(CONFIG_IPMI_POWEROFF) += ipmi_poweroff.o
-> -obj-$(CONFIG_IPMI_KCS_BMC) += kcs_bmc.o kcs_bmc_cdev_ipmi.o
-> +obj-$(CONFIG_IPMI_KCS_BMC) += kcs_bmc.o
-> +obj-$(CONFIG_IPMI_KCS_BMC_CDEV_IPMI) += kcs_bmc_cdev_ipmi.o
->  obj-$(CONFIG_ASPEED_BT_IPMI_BMC) += bt-bmc.o
->  obj-$(CONFIG_ASPEED_KCS_IPMI_BMC) += kcs_bmc_aspeed.o
->  obj-$(CONFIG_NPCM7XX_KCS_IPMI_BMC) += kcs_bmc_npcm7xx.o diff --git
-> a/drivers/char/ipmi/kcs_bmc.c b/drivers/char/ipmi/kcs_bmc.c index
-> 266ebec71d6f..694db6ee2a92 100644
-> --- a/drivers/char/ipmi/kcs_bmc.c
-> +++ b/drivers/char/ipmi/kcs_bmc.c
-> @@ -5,7 +5,9 @@
+>  #define OBE_POLL_PERIOD	     (HZ / 2)
+> 
+> @@ -123,7 +130,7 @@ struct aspeed_kcs_bmc {
+> 
+>  struct aspeed_kcs_of_ops {
+>  	int (*get_channel)(struct platform_device *pdev);
+> -	int (*get_io_address)(struct platform_device *pdev);
+> +	int (*get_io_address)(struct platform_device *pdev, u32 addrs[2]);
+>  };
+> 
+>  static inline struct aspeed_kcs_bmc *to_aspeed_kcs_bmc(struct
+> kcs_bmc_device *kcs_bmc) @@ -217,38 +224,64 @@ static void
+> aspeed_kcs_updateb(struct kcs_bmc_device *kcs_bmc, u32 reg, u8 mask,
+>   *     C. KCS4
+>   *        D / C : CA4h / CA5h
 >   */
-> 
->  #include <linux/device.h>
-> +#include <linux/list.h>
->  #include <linux/module.h>
-> +#include <linux/mutex.h>
-> 
->  #include "kcs_bmc.h"
-> 
-> @@ -13,6 +15,11 @@
->  #include "kcs_bmc_device.h"
->  #include "kcs_bmc_client.h"
-> 
-> +/* Record probed devices and cdevs */
-> +static DEFINE_MUTEX(kcs_bmc_lock);
-> +static LIST_HEAD(kcs_bmc_devices);
-> +static LIST_HEAD(kcs_bmc_cdevs);
-> +
->  /* Consumer data access */
-> 
->  u8 kcs_bmc_read_data(struct kcs_bmc_device *kcs_bmc) @@ -100,16
-> +107,83 @@ EXPORT_SYMBOL(kcs_bmc_disable_device);
-> 
->  int kcs_bmc_add_device(struct kcs_bmc_device *kcs_bmc)  {
-> -	return kcs_bmc_ipmi_attach_cdev(kcs_bmc);
-> +	struct kcs_bmc_cdev *cdev;
-> +	int rc;
-> +
-> +	spin_lock_init(&kcs_bmc->lock);
-> +	kcs_bmc->client = NULL;
-> +
-> +	mutex_lock(&kcs_bmc_lock);
-> +	list_add(&kcs_bmc->entry, &kcs_bmc_devices);
-> +	list_for_each_entry(cdev, &kcs_bmc_cdevs, entry) {
-> +		rc = cdev->ops->add_device(kcs_bmc);
-> +		if (rc)
-> +			dev_err(kcs_bmc->dev, "Failed to add chardev for KCS channel
-> %d: %d",
-> +				kcs_bmc->channel, rc);
-> +	}
-> +	mutex_unlock(&kcs_bmc_lock);
-> +
-> +	return 0;
->  }
->  EXPORT_SYMBOL(kcs_bmc_add_device);
-> 
->  int kcs_bmc_remove_device(struct kcs_bmc_device *kcs_bmc)  {
-> -	return kcs_bmc_ipmi_detach_cdev(kcs_bmc);
-> +	struct kcs_bmc_cdev *cdev;
-> +	int rc;
-> +
-> +	mutex_lock(&kcs_bmc_lock);
-> +	list_del(&kcs_bmc->entry);
-> +	list_for_each_entry(cdev, &kcs_bmc_cdevs, entry) {
-> +		rc = cdev->ops->remove_device(kcs_bmc);
-> +		if (rc)
-> +			dev_err(kcs_bmc->dev, "Failed to remove chardev for KCS
-> channel %d: %d",
-> +				kcs_bmc->channel, rc);
-> +	}
-> +	mutex_unlock(&kcs_bmc_lock);
-> +
-> +	return 0;
->  }
->  EXPORT_SYMBOL(kcs_bmc_remove_device);
-> 
-> +int kcs_bmc_register_cdev(struct kcs_bmc_cdev *cdev) {
-> +	struct kcs_bmc_device *kcs_bmc;
-> +	int rc;
-> +
-> +	mutex_lock(&kcs_bmc_lock);
-> +	list_add(&cdev->entry, &kcs_bmc_cdevs);
-> +	list_for_each_entry(kcs_bmc, &kcs_bmc_devices, entry) {
-> +		rc = cdev->ops->add_device(kcs_bmc);
-> +		if (rc)
-> +			dev_err(kcs_bmc->dev, "Failed to add chardev for KCS channel
-> %d: %d",
-> +				kcs_bmc->channel, rc);
-> +	}
-> +	mutex_unlock(&kcs_bmc_lock);
-> +
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL(kcs_bmc_register_cdev);
-> +
-> +int kcs_bmc_unregister_cdev(struct kcs_bmc_cdev *cdev) {
-> +	struct kcs_bmc_device *kcs_bmc;
-> +	int rc;
-> +
-> +	mutex_lock(&kcs_bmc_lock);
-> +	list_del(&cdev->entry);
-> +	list_for_each_entry(kcs_bmc, &kcs_bmc_devices, entry) {
-> +		rc = cdev->ops->remove_device(kcs_bmc);
-> +		if (rc)
-> +			dev_err(kcs_bmc->dev, "Failed to add chardev for KCS channel
-> %d: %d",
-> +				kcs_bmc->channel, rc);
-> +	}
-> +	mutex_unlock(&kcs_bmc_lock);
-> +
-> +	return rc;
-> +}
-> +EXPORT_SYMBOL(kcs_bmc_unregister_cdev);
-> +
->  MODULE_LICENSE("GPL v2");
->  MODULE_AUTHOR("Haiyue Wang <haiyue.wang@linux.intel.com>");
-> MODULE_AUTHOR("Andrew Jeffery <andrew@aj.id.au>"); diff --git
-> a/drivers/char/ipmi/kcs_bmc.h b/drivers/char/ipmi/kcs_bmc.h index
-> 3f266740c759..5deb9a0b8e60 100644
-> --- a/drivers/char/ipmi/kcs_bmc.h
-> +++ b/drivers/char/ipmi/kcs_bmc.h
-> @@ -42,8 +42,4 @@ struct kcs_bmc_device {
->  	spinlock_t lock;
->  	struct kcs_bmc_client *client;
->  };
-> -
-> -/* Temporary exports while refactoring */ -int
-> kcs_bmc_ipmi_attach_cdev(struct kcs_bmc_device *kcs_bmc); -int
-> kcs_bmc_ipmi_detach_cdev(struct kcs_bmc_device *kcs_bmc);  #endif /*
-> __KCS_BMC_H__ */ diff --git a/drivers/char/ipmi/kcs_bmc_cdev_ipmi.c
-> b/drivers/char/ipmi/kcs_bmc_cdev_ipmi.c
-> index 58c42e76483d..df83d67851ac 100644
-> --- a/drivers/char/ipmi/kcs_bmc_cdev_ipmi.c
-> +++ b/drivers/char/ipmi/kcs_bmc_cdev_ipmi.c
-> @@ -469,8 +469,7 @@ static const struct file_operations kcs_bmc_ipmi_fops
-> = {  static DEFINE_SPINLOCK(kcs_bmc_ipmi_instances_lock);
->  static LIST_HEAD(kcs_bmc_ipmi_instances);
-> 
-> -int kcs_bmc_ipmi_attach_cdev(struct kcs_bmc_device *kcs_bmc); -int
-> kcs_bmc_ipmi_attach_cdev(struct kcs_bmc_device *kcs_bmc)
-> +static int kcs_bmc_ipmi_attach_cdev(struct kcs_bmc_device *kcs_bmc)
+> -static void aspeed_kcs_set_address(struct kcs_bmc_device *kcs_bmc, u16
+> addr)
+> +static int aspeed_kcs_set_address(struct kcs_bmc_device *kcs_bmc, u32
+> +addrs[2], int nr_addrs)
 >  {
->  	struct kcs_bmc_ipmi *priv;
+>  	struct aspeed_kcs_bmc *priv = to_aspeed_kcs_bmc(kcs_bmc);
+> 
+> -	switch (kcs_bmc->channel) {
+> +	if (WARN_ON(nr_addrs < 1 || nr_addrs > 2))
+> +		return -EINVAL;
+> +
+> +	switch (priv->kcs_bmc.channel) {
+>  	case 1:
+> -		regmap_update_bits(priv->map, LPC_HICR4,
+> -				LPC_HICR4_LADR12AS, 0);
+> -		regmap_write(priv->map, LPC_LADR12H, addr >> 8);
+> -		regmap_write(priv->map, LPC_LADR12L, addr & 0xFF);
+> +		regmap_update_bits(priv->map, LPC_HICR4, LPC_HICR4_LADR12AS,
+> 0);
+> +		regmap_write(priv->map, LPC_LADR12H, addrs[0] >> 8);
+> +		regmap_write(priv->map, LPC_LADR12L, addrs[0] & 0xFF);
+> +		if (nr_addrs == 2) {
+> +			regmap_update_bits(priv->map, LPC_LSADR12,
+> LPC_LSADR12_LSADR1_MASK,
+> +					   addrs[1] << LPC_LSADR12_LSADR1_SHIFT);
+> +
+> +			regmap_update_bits(priv->map, LPC_HICRB,
+> LPC_HICRB_EN16LADR1,
+> +					   LPC_HICRB_EN16LADR1);
+> +		}
+>  		break;
+> 
+>  	case 2:
+> -		regmap_update_bits(priv->map, LPC_HICR4,
+> -				LPC_HICR4_LADR12AS, LPC_HICR4_LADR12AS);
+> -		regmap_write(priv->map, LPC_LADR12H, addr >> 8);
+> -		regmap_write(priv->map, LPC_LADR12L, addr & 0xFF);
+> +		regmap_update_bits(priv->map, LPC_HICR4, LPC_HICR4_LADR12AS,
+> LPC_HICR4_LADR12AS);
+> +		regmap_write(priv->map, LPC_LADR12H, addrs[0] >> 8);
+> +		regmap_write(priv->map, LPC_LADR12L, addrs[0] & 0xFF);
+> +		if (nr_addrs == 2) {
+> +			regmap_update_bits(priv->map, LPC_LSADR12,
+> LPC_LSADR12_LSADR2_MASK,
+> +					   addrs[1] << LPC_LSADR12_LSADR2_SHIFT);
+> +
+> +			regmap_update_bits(priv->map, LPC_HICRB,
+> LPC_HICRB_EN16LADR2,
+> +					   LPC_HICRB_EN16LADR2);
+> +		}
+>  		break;
+> 
+>  	case 3:
+> -		regmap_write(priv->map, LPC_LADR3H, addr >> 8);
+> -		regmap_write(priv->map, LPC_LADR3L, addr & 0xFF);
+> +		if (nr_addrs == 2) {
+> +			dev_err(priv->kcs_bmc.dev,
+> +				"Channel 3 only supports inferred status IO address\n");
+> +			return -EINVAL;
+> +		}
+> +
+> +		regmap_write(priv->map, LPC_LADR3H, addrs[0] >> 8);
+> +		regmap_write(priv->map, LPC_LADR3L, addrs[0] & 0xFF);
+>  		break;
+> 
+>  	case 4:
+> -		regmap_write(priv->map, LPC_LADR4, ((addr + 1) << 16) |
+> -			addr);
+> +		if (nr_addrs == 1)
+> +			regmap_write(priv->map, LPC_LADR4, ((addrs[0] + 1) << 16) |
+> addrs[0]);
+> +		else
+> +			regmap_write(priv->map, LPC_LADR4, (addrs[1] << 16) |
+> addrs[0]);
+> +
+>  		break;
+> 
+>  	default:
+> -		break;
+> +		return -EINVAL;
+>  	}
+> +
+> +	return 0;
+>  }
+> 
+>  static inline int aspeed_kcs_map_serirq_type(u32 dt_type) @@ -462,18
+> +495,18 @@ static int aspeed_kcs_of_v1_get_channel(struct platform_device
+> *pdev)
+>  	return channel;
+>  }
+> 
+> -static int aspeed_kcs_of_v1_get_io_address(struct platform_device *pdev)
+> +static int
+> +aspeed_kcs_of_v1_get_io_address(struct platform_device *pdev, u32
+> +addrs[2])
+>  {
+> -	u32 slave;
 >  	int rc;
-> @@ -512,10 +511,8 @@ int kcs_bmc_ipmi_attach_cdev(struct
-> kcs_bmc_device *kcs_bmc)
 > 
->  	return 0;
+> -	rc = of_property_read_u32(pdev->dev.of_node, "kcs_addr", &slave);
+> -	if (rc || slave > 0xffff) {
+> +	rc = of_property_read_u32(pdev->dev.of_node, "kcs_addr", addrs);
+> +	if (rc || addrs[0] > 0xffff) {
+>  		dev_err(&pdev->dev, "no valid 'kcs_addr' configured\n");
+>  		return -EINVAL;
+>  	}
+> 
+> -	return slave;
+> +	return 1;
 >  }
-> -EXPORT_SYMBOL(kcs_bmc_ipmi_attach_cdev);
 > 
-> -int kcs_bmc_ipmi_detach_cdev(struct kcs_bmc_device *kcs_bmc); -int
-> kcs_bmc_ipmi_detach_cdev(struct kcs_bmc_device *kcs_bmc)
-> +static int kcs_bmc_ipmi_detach_cdev(struct kcs_bmc_device *kcs_bmc)
+>  static int aspeed_kcs_of_v2_get_channel(struct platform_device *pdev) @@
+> -509,16 +542,27 @@ static int aspeed_kcs_of_v2_get_channel(struct
+> platform_device *pdev)
+>  	return -EINVAL;
+>  }
+> 
+> -static int aspeed_kcs_of_v2_get_io_address(struct platform_device *pdev)
+> +static int
+> +aspeed_kcs_of_v2_get_io_address(struct platform_device *pdev, u32
+> +addrs[2])
 >  {
->  	struct kcs_bmc_ipmi *priv = NULL, *pos;
+> -	uint32_t slave;
+>  	int rc;
 > 
-> @@ -541,7 +538,31 @@ int kcs_bmc_ipmi_detach_cdev(struct
-> kcs_bmc_device *kcs_bmc)
+> -	rc = of_property_read_u32(pdev->dev.of_node, "aspeed,lpc-io-reg",
+> &slave);
+> -	if (rc || slave > 0xffff)
+> +	rc = of_property_read_variable_u32_array(pdev->dev.of_node,
+> +						 "aspeed,lpc-io-reg",
+> +						 addrs, 1, 2);
+> +	if (rc < 0)
+> +		return rc;
+> +
+> +	if (WARN_ON(rc == 0))
+> +		return -EINVAL;
+> +
+> +	if (addrs[0] > 0xffff)
+> +		return -EINVAL;
+> +
+> +	if (rc == 2 && addrs[1] > 0xffff)
+>  		return -EINVAL;
+> 
+> -	return slave;
+> +	return rc;
+>  }
+> 
+>  static int aspeed_kcs_probe(struct platform_device *pdev) @@ -527,9
+> +571,11 @@ static int aspeed_kcs_probe(struct platform_device *pdev)
+>  	struct kcs_bmc_device *kcs_bmc;
+>  	struct aspeed_kcs_bmc *priv;
+>  	struct device_node *np;
+> -	int rc, channel, addr;
+>  	bool have_upstream_irq;
+>  	u32 upstream_irq[2];
+> +	int rc, channel;
+> +	int nr_addrs;
+> +	u32 addrs[2];
+> 
+>  	np = pdev->dev.of_node->parent;
+>  	if (!of_device_is_compatible(np, "aspeed,ast2400-lpc-v2") && @@ -547,9
+> +593,9 @@ static int aspeed_kcs_probe(struct platform_device *pdev)
+>  	if (channel < 0)
+>  		return channel;
+> 
+> -	addr = ops->get_io_address(pdev);
+> -	if (addr < 0)
+> -		return addr;
+> +	nr_addrs = ops->get_io_address(pdev, addrs);
+> +	if (nr_addrs < 0)
+> +		return nr_addrs;
+> 
+>  	np = pdev->dev.of_node;
+>  	rc = of_property_read_u32_array(np, "aspeed,lpc-interrupts",
+> upstream_irq, 2); @@ -578,7 +624,9 @@ static int aspeed_kcs_probe(struct
+> platform_device *pdev)
+>  	priv->obe.remove = false;
+>  	timer_setup(&priv->obe.timer, aspeed_kcs_check_obe, 0);
+> 
+> -	aspeed_kcs_set_address(kcs_bmc, addr);
+> +	rc = aspeed_kcs_set_address(kcs_bmc, addrs, nr_addrs);
+> +	if (rc)
+> +		return rc;
+> 
+>  	/* Host to BMC IRQ */
+>  	rc = aspeed_kcs_config_downstream_irq(kcs_bmc, pdev); @@ -600,7
+> +648,8 @@ static int aspeed_kcs_probe(struct platform_device *pdev)
+>  	if (rc < 0)
+>  		return rc;
+> 
+> -	dev_info(&pdev->dev, "Initialised channel %d at 0x%x\n",
+> kcs_bmc->channel, addr);
+> +	dev_info(&pdev->dev, "Initialised channel %d at 0x%x\n",
+> +			kcs_bmc->channel, addrs[0]);
 > 
 >  	return 0;
 >  }
-> -EXPORT_SYMBOL(kcs_bmc_ipmi_detach_cdev);
-> +
-> +static const struct kcs_bmc_cdev_ops kcs_bmc_ipmi_cdev_ops = {
-> +	.add_device = kcs_bmc_ipmi_attach_cdev,
-> +	.remove_device = kcs_bmc_ipmi_detach_cdev, };
-> +
-> +static struct kcs_bmc_cdev kcs_bmc_ipmi_cdev = {
-> +	.ops = &kcs_bmc_ipmi_cdev_ops,
-> +};
-> +
-> +static int kcs_bmc_ipmi_init(void)
-> +{
-> +	return kcs_bmc_register_cdev(&kcs_bmc_ipmi_cdev);
-> +}
-> +module_init(kcs_bmc_ipmi_init);
-> +
-> +static void kcs_bmc_ipmi_exit(void)
-> +{
-> +	int rc;
-> +
-> +	rc = kcs_bmc_unregister_cdev(&kcs_bmc_ipmi_cdev);
-> +	if (rc)
-> +		pr_warn("Failed to remove KCS BMC client: %d", rc); }
-> +module_exit(kcs_bmc_ipmi_exit);
-> 
->  MODULE_LICENSE("GPL v2");
->  MODULE_AUTHOR("Haiyue Wang <haiyue.wang@linux.intel.com>"); diff
-> --git a/drivers/char/ipmi/kcs_bmc_client.h
-> b/drivers/char/ipmi/kcs_bmc_client.h
-> index 2dd710f4b4aa..d0a7404ff584 100644
-> --- a/drivers/char/ipmi/kcs_bmc_client.h
-> +++ b/drivers/char/ipmi/kcs_bmc_client.h
-> @@ -10,6 +10,17 @@
-> 
->  #include "kcs_bmc.h"
-> 
-> +struct kcs_bmc_cdev_ops {
-> +	int (*add_device)(struct kcs_bmc_device *kcs_bmc);
-> +	int (*remove_device)(struct kcs_bmc_device *kcs_bmc); };
-> +
-> +struct kcs_bmc_cdev {
-> +	struct list_head entry;
-> +
-> +	const struct kcs_bmc_cdev_ops *ops;
-> +};
-> +
->  struct kcs_bmc_client_ops {
->  	int (*event)(struct kcs_bmc_client *client);  }; @@ -20,6 +31,9 @@
-> struct kcs_bmc_client {
->  	struct kcs_bmc_device *dev;
->  };
-> 
-> +int kcs_bmc_register_cdev(struct kcs_bmc_cdev *cdev); int
-> +kcs_bmc_unregister_cdev(struct kcs_bmc_cdev *cdev);
-> +
->  int kcs_bmc_enable_device(struct kcs_bmc_device *kcs_bmc, struct
-> kcs_bmc_client *client);  void kcs_bmc_disable_device(struct
-> kcs_bmc_device *kcs_bmc, struct kcs_bmc_client *client);
-> 
 > --
 > 2.27.0
 
