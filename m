@@ -1,617 +1,179 @@
 From: Quan Nguyen <quan@os.amperecomputing.com>
-Date: Wed, 7 Apr 2021 14:41:49 +0700
-Subject: [PATCH v2 3/4] hwmon: smpro: Add Ampere's Altra smpro-hwmon driver
-In-Reply-To: <bac92db0-3ef6-1615-0e92-aabd54fd0580@roeck-us.net>
+Date: Wed, 7 Apr 2021 16:42:04 +0700
+Subject: [PATCH v2 1/4] dt-bindings: mfd: Add bindings for Ampere Altra
+ SMPro drivers
+In-Reply-To: <20210330211443.GA326528@robh.at.kernel.org>
 References: <20210329015238.19474-1-quan@os.amperecomputing.com>
- <20210329015238.19474-4-quan@os.amperecomputing.com>
- <bac92db0-3ef6-1615-0e92-aabd54fd0580@roeck-us.net>
-Message-ID: <136d036c-1d10-cecd-abcb-d206a0c6fa51@os.amperecomputing.com>
+ <20210329015238.19474-2-quan@os.amperecomputing.com>
+ <20210330211443.GA326528@robh.at.kernel.org>
+Message-ID: <29f5f458-5694-aa70-ea90-2bb239e825b6@os.amperecomputing.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 30/03/2021 08:43, Guenter Roeck wrote:
-> On 3/28/21 6:52 PM, Quan Nguyen wrote:
->> This commit adds support for Ampere SMpro hwmon driver. This driver
->> supports accessing various CPU sensors provided by the SMpro co-processor
->> including temperature, power, voltages, and current.
+Hi Rob,
+Thank you for reviewing
+
+On 31/03/2021 04:14, Rob Herring wrote:
+> On Mon, Mar 29, 2021 at 08:52:35AM +0700, Quan Nguyen wrote:
+>> Adds device tree bindings for SMPro drivers found on the Mt.Jade hardware
+>> reference platform with Ampere's Altra Processor family.
 >>
 >> Signed-off-by: Quan Nguyen <quan@os.amperecomputing.com>
 >> ---
->>   drivers/hwmon/Kconfig       |   8 +
->>   drivers/hwmon/Makefile      |   1 +
->>   drivers/hwmon/smpro-hwmon.c | 494 ++++++++++++++++++++++++++++++++++++
->>   3 files changed, 503 insertions(+)
->>   create mode 100644 drivers/hwmon/smpro-hwmon.c
+>>   .../bindings/hwmon/ampere,ac01-hwmon.yaml     | 27 ++++++
+>>   .../devicetree/bindings/mfd/ampere,smpro.yaml | 82 +++++++++++++++++++
+>>   2 files changed, 109 insertions(+)
+>>   create mode 100644 Documentation/devicetree/bindings/hwmon/ampere,ac01-hwmon.yaml
+>>   create mode 100644 Documentation/devicetree/bindings/mfd/ampere,smpro.yaml
 >>
->> diff --git a/drivers/hwmon/Kconfig b/drivers/hwmon/Kconfig
->> index 0ddc974b102e..ba4b5a911baf 100644
->> --- a/drivers/hwmon/Kconfig
->> +++ b/drivers/hwmon/Kconfig
->> @@ -67,6 +67,14 @@ config SENSORS_ABITUGURU3
->>   	  This driver can also be built as a module. If so, the module
->>   	  will be called abituguru3.
->>   
->> +config SENSORS_SMPRO
->> +	tristate "Ampere's Altra SMpro hardware monitoring driver"
->> +	depends on MFD_SMPRO
->> +	help
->> +	  If you say yes here you get support for the thermal, voltage,
->> +	  current and power sensors of Ampere's Altra processor family SoC
->> +	  with SMpro co-processor.
->> +
->>   config SENSORS_AD7314
->>   	tristate "Analog Devices AD7314 and compatibles"
->>   	depends on SPI
->> diff --git a/drivers/hwmon/Makefile b/drivers/hwmon/Makefile
->> index 59e78bc212cf..b25391f9c651 100644
->> --- a/drivers/hwmon/Makefile
->> +++ b/drivers/hwmon/Makefile
->> @@ -174,6 +174,7 @@ obj-$(CONFIG_SENSORS_SHT3x)	+= sht3x.o
->>   obj-$(CONFIG_SENSORS_SHTC1)	+= shtc1.o
->>   obj-$(CONFIG_SENSORS_SIS5595)	+= sis5595.o
->>   obj-$(CONFIG_SENSORS_SMM665)	+= smm665.o
->> +obj-$(CONFIG_SENSORS_SMPRO)	+= smpro-hwmon.o
->>   obj-$(CONFIG_SENSORS_SMSC47B397)+= smsc47b397.o
->>   obj-$(CONFIG_SENSORS_SMSC47M1)	+= smsc47m1.o
->>   obj-$(CONFIG_SENSORS_SMSC47M192)+= smsc47m192.o
->> diff --git a/drivers/hwmon/smpro-hwmon.c b/drivers/hwmon/smpro-hwmon.c
+>> diff --git a/Documentation/devicetree/bindings/hwmon/ampere,ac01-hwmon.yaml b/Documentation/devicetree/bindings/hwmon/ampere,ac01-hwmon.yaml
 >> new file mode 100644
->> index 000000000000..4277736ebc6e
+>> index 000000000000..015130a281f4
 >> --- /dev/null
->> +++ b/drivers/hwmon/smpro-hwmon.c
->> @@ -0,0 +1,494 @@
->> +// SPDX-License-Identifier: GPL-2.0+
->> +/*
->> + * Ampere Computing SoC's SMPro Hardware Monitoring Driver
->> + *
->> + * Copyright (c) 2021, Ampere Computing LLC
->> + */
->> +#include <linux/bitfield.h>
->> +#include <linux/hwmon.h>
->> +#include <linux/hwmon-sysfs.h>
->> +#include <linux/kernel.h>
->> +#include <linux/mod_devicetable.h>
->> +#include <linux/module.h>
->> +#include <linux/platform_device.h>
->> +#include <linux/property.h>
->> +#include <linux/regmap.h>
+>> +++ b/Documentation/devicetree/bindings/hwmon/ampere,ac01-hwmon.yaml
+>> @@ -0,0 +1,27 @@
+>> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+>> +%YAML 1.2
+>> +---
+>> +$id: http://devicetree.org/schemas/hwmon/ampere,ac01-hwmon.yaml#
+>> +$schema: http://devicetree.org/meta-schemas/core.yaml#
 >> +
->> +/* Identification Registers */
->> +#define MANUFACTURER_ID_REG		0x02
->> +#define AMPERE_MANUFACTURER_ID		0xCD3A
+>> +title: Hardware monitoring driver for the Ampere Altra SMPro
 >> +
->> +/* Logical Power Sensor Registers */
->> +#define SOC_TEMP_REG			0x10
->> +#define SOC_VRD_TEMP_REG		0x11
->> +#define DIMM_VRD_TEMP_REG		0x12
->> +#define CORE_VRD_TEMP_REG		0x13
->> +#define CH0_DIMM_TEMP_REG		0x14
->> +#define CH1_DIMM_TEMP_REG		0x15
->> +#define CH2_DIMM_TEMP_REG		0x16
->> +#define CH3_DIMM_TEMP_REG		0x17
->> +#define CH4_DIMM_TEMP_REG		0x18
->> +#define CH5_DIMM_TEMP_REG		0x19
->> +#define CH6_DIMM_TEMP_REG		0x1A
->> +#define CH7_DIMM_TEMP_REG		0x1B
->> +#define RCA_VRD_TEMP_REG		0x1C
+>> +maintainers:
+>> +  - Quan Nguyen <quan@os.amperecomputing.com>
 >> +
->> +#define CORE_VRD_PWR_REG		0x20
->> +#define SOC_PWR_REG			0x21
->> +#define DIMM_VRD1_PWR_REG		0x22
->> +#define DIMM_VRD2_PWR_REG		0x23
->> +#define CORE_VRD_PWR_MW_REG		0x26
->> +#define SOC_PWR_MW_REG			0x27
->> +#define DIMM_VRD1_PWR_MW_REG		0x28
->> +#define DIMM_VRD2_PWR_MW_REG		0x29
->> +#define RCA_VRD_PWR_REG			0x2A
->> +#define RCA_VRD_PWR_MW_REG		0x2B
+>> +description: |
+>> +  This module is part of the Ampere Altra SMPro multi-function device. For more
+>> +  details see ../mfd/ampere,smpro.yaml.
 >> +
->> +#define MEM_HOT_THRESHOLD_REG		0x32
->> +#define SOC_VR_HOT_THRESHOLD_REG	0x33
->> +#define CORE_VRD_VOLT_REG		0x34
->> +#define SOC_VRD_VOLT_REG		0x35
->> +#define DIMM_VRD1_VOLT_REG		0x36
->> +#define DIMM_VRD2_VOLT_REG		0x37
->> +#define RCA_VRD_VOLT_REG		0x38
+>> +properties:
+>> +  compatible:
+>> +    enum:
+>> +      - ampere,ac01-hwmon
 >> +
->> +#define CORE_VRD_CURR_REG		0x39
->> +#define SOC_VRD_CURR_REG		0x3A
->> +#define DIMM_VRD1_CURR_REG		0x3B
->> +#define DIMM_VRD2_CURR_REG		0x3C
->> +#define RCA_VRD_CURR_REG		0x3D
+>> +  reg:
+>> +    maxItems: 1
 >> +
->> +struct smpro_hwmon {
->> +	struct regmap *regmap;
->> +};
+>> +required:
+>> +  - compatible
 >> +
->> +struct smpro_sensor {
->> +	const u8 reg;
->> +	const u8 reg_ext;
->> +	const char *label;
->> +};
+>> +additionalProperties: false
+>> diff --git a/Documentation/devicetree/bindings/mfd/ampere,smpro.yaml b/Documentation/devicetree/bindings/mfd/ampere,smpro.yaml
+>> new file mode 100644
+>> index 000000000000..bf789c8a3d7d
+>> --- /dev/null
+>> +++ b/Documentation/devicetree/bindings/mfd/ampere,smpro.yaml
+>> @@ -0,0 +1,82 @@
+>> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+>> +%YAML 1.2
+>> +---
+>> +$id: http://devicetree.org/schemas/mfd/ampere,smpro.yaml#
+>> +$schema: http://devicetree.org/meta-schemas/core.yaml#
 >> +
->> +static const struct smpro_sensor temperature[] = {
->> +	{
->> +		.reg = SOC_TEMP_REG,
->> +		.label = "temp1 SoC"
->> +	},
->> +	{
->> +		.reg = SOC_VRD_TEMP_REG,
->> +		.label = "temp2 SoC VRD"
->> +	},
->> +	{
->> +		.reg = DIMM_VRD_TEMP_REG,
->> +		.label = "temp3 DIMM VRD"
->> +	},
->> +	{
->> +		.reg = CORE_VRD_TEMP_REG,
->> +		.label = "temp4 CORE VRD"
->> +	},
->> +	{
->> +		.reg = CH0_DIMM_TEMP_REG,
->> +		.label = "temp5 CH0 DIMM"
->> +	},
->> +	{
->> +		.reg = CH1_DIMM_TEMP_REG,
->> +		.label = "temp6 CH1 DIMM"
->> +	},
->> +	{
->> +		.reg = CH2_DIMM_TEMP_REG,
->> +		.label = "temp7 CH2 DIMM"
->> +	},
->> +	{
->> +		.reg = CH3_DIMM_TEMP_REG,
->> +		.label = "temp8 CH3 DIMM"
->> +	},
->> +	{
->> +		.reg = CH4_DIMM_TEMP_REG,
->> +		.label = "temp9 CH4 DIMM"
->> +	},
->> +	{
->> +		.reg = CH5_DIMM_TEMP_REG,
->> +		.label = "temp10 CH5 DIMM"
->> +	},
->> +	{
->> +		.reg = CH6_DIMM_TEMP_REG,
->> +		.label = "temp11 CH6 DIMM"
->> +	},
->> +	{
->> +		.reg = CH7_DIMM_TEMP_REG,
->> +		.label = "temp12 CH7 DIMM"
->> +	},
->> +	{
->> +		.reg = RCA_VRD_TEMP_REG,
->> +		.label = "temp13 RCA VRD"
->> +	},
->> +};
+>> +title: Ampere Altra SMPro firmware driver
 >> +
->> +static const struct smpro_sensor voltage[] = {
->> +	{
->> +		.reg = CORE_VRD_VOLT_REG,
->> +		.label = "vout0 CORE VRD"
->> +	},
->> +	{
->> +		.reg = SOC_VRD_VOLT_REG,
->> +		.label = "vout1 SoC VRD"
->> +	},
->> +	{
->> +		.reg = DIMM_VRD1_VOLT_REG,
->> +		.label = "vout2 DIMM VRD1"
->> +	},
->> +	{
->> +		.reg = DIMM_VRD2_VOLT_REG,
->> +		.label = "vout3 DIMM VRD2"
->> +	},
->> +	{
->> +		.reg = RCA_VRD_VOLT_REG,
->> +		.label = "vout4 RCA VRD"
->> +	},
->> +};
+>> +maintainers:
+>> +  - Quan Nguyen <quan@os.amperecomputing.com>
 >> +
->> +static const struct smpro_sensor curr_sensor[] = {
->> +	{
->> +		.reg = CORE_VRD_CURR_REG,
->> +		.label = "iout1 CORE VRD"
->> +	},
->> +	{
->> +		.reg = SOC_VRD_CURR_REG,
->> +		.label = "iout2 SoC VRD"
->> +	},
->> +	{
->> +		.reg = DIMM_VRD1_CURR_REG,
->> +		.label = "iout3 DIMM VRD1"
->> +	},
->> +	{
->> +		.reg = DIMM_VRD2_CURR_REG,
->> +		.label = "iout4 DIMM VRD2"
->> +	},
->> +	{
->> +		.reg = RCA_VRD_CURR_REG,
->> +		.label = "iout5 RCA VRD"
->> +	},
->> +};
+>> +description: |
+>> +  Ampere Altra SMPro firmware may contain different blocks like hardware
+>> +  monitoring, error monitoring and other miscellaneous features.
 >> +
->> +static const struct smpro_sensor power[] = {
->> +	{
->> +		.reg = CORE_VRD_PWR_REG,
->> +		.reg_ext = CORE_VRD_PWR_MW_REG,
->> +		.label = "power1 CORE VRD"
->> +	},
->> +	{
->> +		.reg = SOC_PWR_REG,
->> +		.reg_ext = SOC_PWR_MW_REG,
->> +		.label = "power2 SoC"
->> +	},
->> +	{
->> +		.reg = DIMM_VRD1_PWR_REG,
->> +		.reg_ext = DIMM_VRD1_PWR_MW_REG,
->> +		.label = "power3 DIMM VRD1"
->> +	},
->> +	{
->> +		.reg = DIMM_VRD2_PWR_REG,
->> +		.reg_ext = DIMM_VRD2_PWR_MW_REG,
->> +		.label = "power4 DIMM VRD2"
->> +	},
->> +	{
->> +		.reg = RCA_VRD_PWR_REG,
->> +		.reg_ext = RCA_VRD_PWR_MW_REG,
->> +		.label = "power5 RCA VRD"
->> +	},
->> +};
->> +
->> +static int smpro_read_temp(struct device *dev, u32 attr, int channel, long *val)
->> +{
->> +	struct smpro_hwmon *hwmon = dev_get_drvdata(dev);
->> +	unsigned int value;
->> +	int ret;
->> +
->> +	switch (attr) {
->> +	case hwmon_temp_input:
->> +		ret = regmap_read(hwmon->regmap,
->> +				  temperature[channel].reg, &value);
->> +		if (ret)
->> +			return ret;
->> +		*val = (value & 0x1ff) * 1000;
->> +		break;
->> +	case hwmon_temp_crit:
->> +		if (temperature[channel].reg == SOC_VRD_TEMP_REG) {
->> +			ret = regmap_read(hwmon->regmap, SOC_VR_HOT_THRESHOLD_REG, &value);
->> +			if (ret)
->> +				return ret;
->> +			*val = (value & 0x1ff) * 1000;
->> +		} else {
->> +			/* Report same MEM HOT threshold across DIMM channels */
->> +			ret = regmap_read(hwmon->regmap, MEM_HOT_THRESHOLD_REG, &value);
->> +			if (ret)
->> +				return ret;
->> +			*val = (value & 0x1ff) * 1000;
->> +		}
+>> +properties:
+>> +  compatible:
+>> +    const: ampere,smpro
 > 
-> To avoid code duplication:
+> Only 1 version of SMPro? Needs to be more specific or provide details on
+> how the exact version of firmware/hardware is discovered.
 > 
-> 		reg = temperature[channel].reg == SOC_VRD_TEMP_REG ? SOC_VR_HOT_THRESHOLD_REG : MEM_HOT_THRESHOLD_REG;
-> 		ret = regmap_read(hwmon->regmap, reg, &value);
-> 		if (ret)
-> 			return ret;
-> 
-> But then why don't you just use reg_ext to store SOC_VR_HOT_THRESHOLD_REG
-> or MEM_HOT_THRESHOLD_REG ? It is already available, after all, and with it
-> the code could be simplified to
-> 
-> 		ret = regmap_read(hwmon->regmap, temperature[channel].reg_ext, &value);
-> 		if (ret)
-> 			return ret;
-> 
-Thank you for the comment.
+Will change to enum in next version.
 
-Will change code follow this suggestion, will include in next version
-
-> I don't have a datasheet, but I do wonder what is in bit 9..15. Any idea ?
-> Main question is if there is a sign bit, as theoretic as it may be.
-> 
-The original intention was to use this as 9-bit 2-complement value 
-follow LM75, but the fact is that the operation temperature is 0-125 C 
-degree, so we simply use it as-is.
-
->> +		break;
->> +	default:
->> +		return -EOPNOTSUPP;
->> +	}
->> +	return 0;
->> +}
->> +
->> +static int smpro_read_in(struct device *dev, u32 attr, int channel, long *val)
->> +{
->> +	struct smpro_hwmon *hwmon = dev_get_drvdata(dev);
->> +	unsigned int value;
->> +	int ret;
->> +
->> +	switch (attr) {
->> +	case hwmon_in_input:
->> +		ret = regmap_read(hwmon->regmap, voltage[channel].reg, &value);
->> +		if (ret < 0)
->> +			return ret;
->> +		/* Scale reported by the hardware is 1mV */
->> +		*val = value & 0x7fff;
-> 
-> What is in bit 15 ?
-> 
-This is 15-bit voltage in mV so the bit 15 (0-15) is unused.
-
->> +		return 0;
->> +	default:
->> +		return -EOPNOTSUPP;
->> +	}
->> +}
->> +
->> +static int smpro_read_curr(struct device *dev, u32 attr, int channel, long *val)
->> +{
->> +	struct smpro_hwmon *hwmon = dev_get_drvdata(dev);
->> +	unsigned int value;
->> +	int ret;
->> +
->> +	switch (attr) {
->> +	case hwmon_curr_input:
->> +		ret = regmap_read(hwmon->regmap, curr_sensor[channel].reg, &value);
->> +		if (ret < 0)
->> +			return ret;
->> +		/* Scale reported by the hardware is 1mA */
->> +		*val = value & 0x7fff;
->> +		return 0;
->> +	default:
->> +		return -EOPNOTSUPP;
->> +	}
->> +}
->> +
->> +static int smpro_read_power(struct device *dev, u32 attr, int channel, long *val_pwr)
->> +{
->> +	struct smpro_hwmon *hwmon = dev_get_drvdata(dev);
->> +	unsigned int val = 0, val_mw = 0;
->> +	int ret;
->> +
->> +	switch (attr) {
->> +	case hwmon_power_input:
->> +		ret = regmap_read(hwmon->regmap, power[channel].reg, &val);
->> +		if (ret)
->> +			return ret;
->> +
->> +		ret = regmap_read(hwmon->regmap, power[channel].reg_ext, &val_mw);
->> +		if (ret)
->> +			return ret;
->> +
->> +		*val_pwr = val * 1000000 + val_mw * 1000;
->> +		return 0;
->> +
->> +	default:
->> +		return -EOPNOTSUPP;
->> +	}
->> +}
->> +
->> +static int smpro_read(struct device *dev, enum hwmon_sensor_types type,
->> +		      u32 attr, int channel, long *val)
->> +{
->> +	switch (type) {
->> +	case hwmon_temp:
->> +		return smpro_read_temp(dev, attr, channel, val);
->> +	case hwmon_in:
->> +		return smpro_read_in(dev, attr, channel, val);
->> +	case hwmon_power:
->> +		return smpro_read_power(dev, attr, channel, val);
->> +	case hwmon_curr:
->> +		return smpro_read_curr(dev, attr, channel, val);
->> +	default:
->> +		return -EOPNOTSUPP;
->> +	}
->> +}
->> +
->> +static int smpro_write(struct device *dev, enum hwmon_sensor_types type,
->> +		       u32 attr, int channel, long val)
->> +{
->> +	return -EOPNOTSUPP;
->> +}
-> 
-> There are no writeable attributes, thus the write function is not needed.
-> 
-Agree, will remove in next version
+     enum:
+       - ampere,smpro
 
 >> +
->> +static int smpro_read_string(struct device *dev, enum hwmon_sensor_types type,
->> +			     u32 attr, int channel, const char **str)
->> +{
->> +	switch (type) {
->> +	case hwmon_temp:
->> +		switch (attr) {
->> +		case hwmon_temp_label:
->> +			*str = temperature[channel].label;
->> +			return 0;
->> +		default:
->> +			return -EOPNOTSUPP;
->> +		}
->> +		break;
+>> +  reg:
+>> +    description:
+>> +      I2C device address.
+>> +    maxItems: 1
 >> +
->> +	case hwmon_in:
->> +		switch (attr) {
->> +		case hwmon_in_label:
->> +			*str = voltage[channel].label;
->> +			return 0;
->> +		default:
->> +			return -EOPNOTSUPP;
->> +		}
->> +		break;
+>> +  "#address-cells":
+>> +    const: 1
 >> +
->> +	case hwmon_curr:
->> +		switch (attr) {
->> +		case hwmon_curr_label:
->> +			*str = curr_sensor[channel].label;
->> +			return 0;
->> +		default:
->> +			return -EOPNOTSUPP;
->> +		}
->> +		break;
+>> +  "#size-cells":
+>> +    const: 0
 >> +
->> +	case hwmon_power:
->> +		switch (attr) {
->> +		case hwmon_power_label:
->> +			*str = power[channel].label;
->> +			return 0;
->> +		default:
->> +			return -EOPNOTSUPP;
->> +		}
->> +		break;
->> +	default:
->> +		return -EOPNOTSUPP;
->> +	}
+>> +patternProperties:
+>> +  "^hwmon(@[0-9a-f]+)?$":
+>> +    $ref: ../hwmon/ampere,ac01-hwmon.yaml
 >> +
->> +	return -EOPNOTSUPP;
+>> +  "^misc(@[0-9a-f]+)?$":
+>> +    type: object
+>> +    description: Ampere Altra SMPro Misc driver
 > 
-> If you are returning -ENOPSUPP by default, might as well replace
-> all the same returns above with break;
-> 
-Yes, will fix as you suggested. Will include in next version
+> Bindings describe h/w, not drivers.
+>
+Will fix in next version
 
->> +}
+>> +    properties:
+>> +      compatible:
+>> +        const: "ampere,ac01-misc"
 >> +
->> +static umode_t smpro_is_visible(const void *data, enum hwmon_sensor_types type,
->> +				u32 attr, int channel)
->> +{
->> +	const struct smpro_hwmon *hwmon = data;
->> +	unsigned int value;
->> +	int ret;
+>> +  "^errmon(@[0-9a-f]+)?$":
+>> +    type: object
+>> +    description: Ampere Altra SMPro Error Monitor driver
+>> +    properties:
+>> +      compatible:
+>> +        const: "ampere,ac01-errmon"
 >> +
->> +	switch (type) {
->> +	case hwmon_temp:
->> +		switch (attr) {
->> +		case hwmon_temp_input:
->> +		case hwmon_temp_label:
->> +		case hwmon_temp_crit:
->> +			ret = regmap_read(hwmon->regmap, temperature[channel].reg, &value);
->> +			if (ret || value == 0xFFFF)
->> +				return 0;
->> +		break;
->> +		}
->> +	default:
->> +		break;
->> +	}
+>> +required:
+>> +  - "#address-cells"
+>> +  - "#size-cells"
+>> +  - compatible
+>> +  - reg
 >> +
->> +	return 0444;
->> +}
+>> +additionalProperties: false
 >> +
->> +static const struct hwmon_channel_info *smpro_info[] = {
->> +	HWMON_CHANNEL_INFO(temp,
->> +			   HWMON_T_INPUT | HWMON_T_LABEL,
->> +			   HWMON_T_INPUT | HWMON_T_LABEL | HWMON_T_CRIT,
->> +			   HWMON_T_INPUT | HWMON_T_LABEL,
->> +			   HWMON_T_INPUT | HWMON_T_LABEL,
->> +			   HWMON_T_INPUT | HWMON_T_LABEL | HWMON_T_CRIT,
->> +			   HWMON_T_INPUT | HWMON_T_LABEL | HWMON_T_CRIT,
->> +			   HWMON_T_INPUT | HWMON_T_LABEL | HWMON_T_CRIT,
->> +			   HWMON_T_INPUT | HWMON_T_LABEL | HWMON_T_CRIT,
->> +			   HWMON_T_INPUT | HWMON_T_LABEL | HWMON_T_CRIT,
->> +			   HWMON_T_INPUT | HWMON_T_LABEL | HWMON_T_CRIT,
->> +			   HWMON_T_INPUT | HWMON_T_LABEL | HWMON_T_CRIT,
->> +			   HWMON_T_INPUT | HWMON_T_LABEL | HWMON_T_CRIT,
->> +			   HWMON_T_INPUT | HWMON_T_LABEL),
->> +	HWMON_CHANNEL_INFO(in,
->> +			   HWMON_I_INPUT | HWMON_I_LABEL,
->> +			   HWMON_I_INPUT | HWMON_I_LABEL,
->> +			   HWMON_I_INPUT | HWMON_I_LABEL,
->> +			   HWMON_I_INPUT | HWMON_I_LABEL,
->> +			   HWMON_I_INPUT | HWMON_I_LABEL),
->> +	HWMON_CHANNEL_INFO(power,
->> +			   HWMON_P_INPUT | HWMON_P_LABEL,
->> +			   HWMON_P_INPUT | HWMON_P_LABEL,
->> +			   HWMON_P_INPUT | HWMON_P_LABEL,
->> +			   HWMON_P_INPUT | HWMON_P_LABEL,
->> +			   HWMON_P_INPUT | HWMON_P_LABEL),
->> +	HWMON_CHANNEL_INFO(curr,
->> +			   HWMON_C_INPUT | HWMON_C_LABEL,
->> +			   HWMON_C_INPUT | HWMON_C_LABEL,
->> +			   HWMON_C_INPUT | HWMON_C_LABEL,
->> +			   HWMON_C_INPUT | HWMON_C_LABEL,
->> +			   HWMON_C_INPUT | HWMON_C_LABEL),
->> +	NULL
->> +};
+>> +examples:
+>> +  - |
+>> +    i2c {
+>> +        #address-cells = <1>;
+>> +        #size-cells = <0>;
 >> +
->> +static const struct hwmon_ops smpro_hwmon_ops = {
->> +	.is_visible = smpro_is_visible,
->> +	.read = smpro_read,
->> +	.write = smpro_write,
->> +	.read_string = smpro_read_string,
->> +};
+>> +        smpro at 4f {
+>> +            compatible = "ampere,smpro";
+>> +            reg = <0x4f>;
+>> +            #address-cells = <1>;
+>> +            #size-cells = <0>;
 >> +
->> +static const struct hwmon_chip_info smpro_chip_info = {
->> +	.ops = &smpro_hwmon_ops,
->> +	.info = smpro_info,
->> +};
+>> +            hwmon {
+>> +                compatible = "ampere,ac01-hwmon";
+>> +            };
 >> +
->> +static bool is_valid_id(struct regmap *regmap)
->> +{
->> +	unsigned int val;
->> +	int ret;
+>> +            misc {
+>> +                compatible = "ampere,ac01-misc";
+>> +            };
 >> +
->> +	ret = regmap_read(regmap, MANUFACTURER_ID_REG, &val);
->> +
->> +	return  (ret || (val != AMPERE_MANUFACTURER_ID)) ? false : true;
+>> +            errmon {
+>> +                compatible = "ampere,ac01-errmon";
+>> +            };
 > 
-> I am quite concerned about this: The calling code will translate it to
-> -EPROBE_DEFER even if the manufacturer ID is wrong. It should return
-> -ENODEV in that case. There should be a better means to determine if the
-> controller is not available at all, or not yet.
+> None of the child nodes have any resources in DT, so you don't need
+> them in DT.
 > 
-Yes, I agree
-
-Will fix in next version:
-   + if the regmap_read return error, return -EPROBE_DEFER
-   + if manufacturer ID is wrong, return -ENODEV
-
->> +}
->> +
->> +static int smpro_hwmon_probe(struct platform_device *pdev)
->> +{
->> +	struct smpro_hwmon *hwmon;
->> +	struct device *hwmon_dev;
->> +
->> +	hwmon = devm_kzalloc(&pdev->dev, sizeof(struct smpro_hwmon), GFP_KERNEL);
->> +	if (!hwmon)
->> +		return -ENOMEM;
->> +
->> +	hwmon->regmap = dev_get_regmap(pdev->dev.parent, NULL);
->> +	if (!hwmon->regmap)
->> +		return -ENODEV;
->> +
->> +	/* Check for valid ID */
->> +	if (!is_valid_id(hwmon->regmap))
->> +		return -EPROBE_DEFER;
->> +
->> +	hwmon_dev = devm_hwmon_device_register_with_info(&pdev->dev, "smpro_hwmon",
->> +							 hwmon, &smpro_chip_info, NULL);
->> +
->> +	return PTR_ERR_OR_ZERO(hwmon_dev);
->> +}
->> +
->> +static const struct of_device_id smpro_hwmon_of_match[] = {
->> +	{ .compatible = "ampere,ac01-hwmon" },
->> +	{}
->> +};
->> +MODULE_DEVICE_TABLE(of, smpro_hwmon_of_match);
->> +
->> +static struct platform_driver smpro_hwmon_driver = {
->> +	.probe		= smpro_hwmon_probe,
->> +	.driver = {
->> +		.name	= "smpro-hwmon",
->> +		.of_match_table = smpro_hwmon_of_match,
->> +	},
->> +};
->> +
->> +module_platform_driver(smpro_hwmon_driver);
->> +
->> +MODULE_AUTHOR("Thu Nguyen <thu@os.amperecomputing.com>");
->> +MODULE_AUTHOR("Quan Nguyen <quan@os.amperecomputing.com>");
->> +MODULE_DESCRIPTION("Ampere Altra SMPro hwmon driver");
->> +MODULE_LICENSE("GPL v2");
->>
+> Rob
 > 
 
+The intention was to re-use the drivers/mfd/simple-mfd-i2c.c and dont 
+want to add extra codes to this driver just to instantiate these 
+children. So for this case, the child drivers will not be instantiated 
+if there are no child nodes in DT.
+
+One solution I have in mind is to introduce resource (reg offset) for 
+each child drivers.
+
+-Quan
