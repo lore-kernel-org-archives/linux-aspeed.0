@@ -1,179 +1,43 @@
-From: Quan Nguyen <quan@os.amperecomputing.com>
-Date: Wed, 7 Apr 2021 16:42:04 +0700
-Subject: [PATCH v2 1/4] dt-bindings: mfd: Add bindings for Ampere Altra
- SMPro drivers
-In-Reply-To: <20210330211443.GA326528@robh.at.kernel.org>
+From: Guenter Roeck <linux@roeck-us.net>
+Date: Wed, 7 Apr 2021 05:11:49 -0700
+Subject: [PATCH v2 3/4] hwmon: smpro: Add Ampere's Altra smpro-hwmon driver
+In-Reply-To: <136d036c-1d10-cecd-abcb-d206a0c6fa51@os.amperecomputing.com>
 References: <20210329015238.19474-1-quan@os.amperecomputing.com>
- <20210329015238.19474-2-quan@os.amperecomputing.com>
- <20210330211443.GA326528@robh.at.kernel.org>
-Message-ID: <29f5f458-5694-aa70-ea90-2bb239e825b6@os.amperecomputing.com>
+ <20210329015238.19474-4-quan@os.amperecomputing.com>
+ <bac92db0-3ef6-1615-0e92-aabd54fd0580@roeck-us.net>
+ <136d036c-1d10-cecd-abcb-d206a0c6fa51@os.amperecomputing.com>
+Message-ID: <d9ef40ea-e4ee-cea8-96df-90ffabdff53c@roeck-us.net>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Rob,
-Thank you for reviewing
-
-On 31/03/2021 04:14, Rob Herring wrote:
-> On Mon, Mar 29, 2021 at 08:52:35AM +0700, Quan Nguyen wrote:
->> Adds device tree bindings for SMPro drivers found on the Mt.Jade hardware
->> reference platform with Ampere's Altra Processor family.
+On 4/7/21 12:41 AM, Quan Nguyen wrote:
+[ ... ]
 >>
->> Signed-off-by: Quan Nguyen <quan@os.amperecomputing.com>
->> ---
->>   .../bindings/hwmon/ampere,ac01-hwmon.yaml     | 27 ++++++
->>   .../devicetree/bindings/mfd/ampere,smpro.yaml | 82 +++++++++++++++++++
->>   2 files changed, 109 insertions(+)
->>   create mode 100644 Documentation/devicetree/bindings/hwmon/ampere,ac01-hwmon.yaml
->>   create mode 100644 Documentation/devicetree/bindings/mfd/ampere,smpro.yaml
+>> But then why don't you just use reg_ext to store SOC_VR_HOT_THRESHOLD_REG
+>> or MEM_HOT_THRESHOLD_REG ? It is already available, after all, and with it
+>> the code could be simplified to
 >>
->> diff --git a/Documentation/devicetree/bindings/hwmon/ampere,ac01-hwmon.yaml b/Documentation/devicetree/bindings/hwmon/ampere,ac01-hwmon.yaml
->> new file mode 100644
->> index 000000000000..015130a281f4
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/hwmon/ampere,ac01-hwmon.yaml
->> @@ -0,0 +1,27 @@
->> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
->> +%YAML 1.2
->> +---
->> +$id: http://devicetree.org/schemas/hwmon/ampere,ac01-hwmon.yaml#
->> +$schema: http://devicetree.org/meta-schemas/core.yaml#
->> +
->> +title: Hardware monitoring driver for the Ampere Altra SMPro
->> +
->> +maintainers:
->> +  - Quan Nguyen <quan@os.amperecomputing.com>
->> +
->> +description: |
->> +  This module is part of the Ampere Altra SMPro multi-function device. For more
->> +  details see ../mfd/ampere,smpro.yaml.
->> +
->> +properties:
->> +  compatible:
->> +    enum:
->> +      - ampere,ac01-hwmon
->> +
->> +  reg:
->> +    maxItems: 1
->> +
->> +required:
->> +  - compatible
->> +
->> +additionalProperties: false
->> diff --git a/Documentation/devicetree/bindings/mfd/ampere,smpro.yaml b/Documentation/devicetree/bindings/mfd/ampere,smpro.yaml
->> new file mode 100644
->> index 000000000000..bf789c8a3d7d
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/mfd/ampere,smpro.yaml
->> @@ -0,0 +1,82 @@
->> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
->> +%YAML 1.2
->> +---
->> +$id: http://devicetree.org/schemas/mfd/ampere,smpro.yaml#
->> +$schema: http://devicetree.org/meta-schemas/core.yaml#
->> +
->> +title: Ampere Altra SMPro firmware driver
->> +
->> +maintainers:
->> +  - Quan Nguyen <quan@os.amperecomputing.com>
->> +
->> +description: |
->> +  Ampere Altra SMPro firmware may contain different blocks like hardware
->> +  monitoring, error monitoring and other miscellaneous features.
->> +
->> +properties:
->> +  compatible:
->> +    const: ampere,smpro
+>> ??????? ret = regmap_read(hwmon->regmap, temperature[channel].reg_ext, &value);
+>> ??????? if (ret)
+>> ??????????? return ret;
+>>
+> Thank you for the comment.
 > 
-> Only 1 version of SMPro? Needs to be more specific or provide details on
-> how the exact version of firmware/hardware is discovered.
+> Will change code follow this suggestion, will include in next version
 > 
-Will change to enum in next version.
-
-     enum:
-       - ampere,smpro
-
->> +
->> +  reg:
->> +    description:
->> +      I2C device address.
->> +    maxItems: 1
->> +
->> +  "#address-cells":
->> +    const: 1
->> +
->> +  "#size-cells":
->> +    const: 0
->> +
->> +patternProperties:
->> +  "^hwmon(@[0-9a-f]+)?$":
->> +    $ref: ../hwmon/ampere,ac01-hwmon.yaml
->> +
->> +  "^misc(@[0-9a-f]+)?$":
->> +    type: object
->> +    description: Ampere Altra SMPro Misc driver
-> 
-> Bindings describe h/w, not drivers.
->
-Will fix in next version
-
->> +    properties:
->> +      compatible:
->> +        const: "ampere,ac01-misc"
->> +
->> +  "^errmon(@[0-9a-f]+)?$":
->> +    type: object
->> +    description: Ampere Altra SMPro Error Monitor driver
->> +    properties:
->> +      compatible:
->> +        const: "ampere,ac01-errmon"
->> +
->> +required:
->> +  - "#address-cells"
->> +  - "#size-cells"
->> +  - compatible
->> +  - reg
->> +
->> +additionalProperties: false
->> +
->> +examples:
->> +  - |
->> +    i2c {
->> +        #address-cells = <1>;
->> +        #size-cells = <0>;
->> +
->> +        smpro at 4f {
->> +            compatible = "ampere,smpro";
->> +            reg = <0x4f>;
->> +            #address-cells = <1>;
->> +            #size-cells = <0>;
->> +
->> +            hwmon {
->> +                compatible = "ampere,ac01-hwmon";
->> +            };
->> +
->> +            misc {
->> +                compatible = "ampere,ac01-misc";
->> +            };
->> +
->> +            errmon {
->> +                compatible = "ampere,ac01-errmon";
->> +            };
-> 
-> None of the child nodes have any resources in DT, so you don't need
-> them in DT.
-> 
-> Rob
+>> I don't have a datasheet, but I do wonder what is in bit 9..15. Any idea ?
+>> Main question is if there is a sign bit, as theoretic as it may be.
+>>
+> The original intention was to use this as 9-bit 2-complement value follow LM75, but the fact is that the operation temperature is 0-125 C degree, so we simply use it as-is.
 > 
 
-The intention was to re-use the drivers/mfd/simple-mfd-i2c.c and dont 
-want to add extra codes to this driver just to instantiate these 
-children. So for this case, the child drivers will not be instantiated 
-if there are no child nodes in DT.
+The operational temperature is not the question here. The question is if the
+chip _reports_ a sign. If it does, it should be handled, even if it is outside
+the operational range. The reported range is relevant here, not the operational
+range. After all, the chip won't really blow apart at -1 degrees C.
 
-One solution I have in mind is to introduce resource (reg offset) for 
-each child drivers.
-
--Quan
+Thanks,
+Guenter
