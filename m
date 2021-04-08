@@ -1,88 +1,120 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Thu, 8 Apr 2021 14:12:33 +0200
-Subject: [PATCH v1 2/2] drivers/gpu/drm: don't select DMA_CMA or CMA from
- aspeed or etnaviv
-In-Reply-To: <3a2d64a7-8425-8daf-17ee-95b9f0c635f9@redhat.com>
-References: <20210408092011.52763-1-david@redhat.com>
- <20210408092011.52763-3-david@redhat.com>
- <CAK8P3a09LdJ-87ZrN28y=t8Sa0zL-3NOvEWhkStMY+2EbO7UAw@mail.gmail.com>
- <cd14d4b4-da82-b21c-2cd6-8e474d97b955@redhat.com>
- <CAK8P3a0Wg1mGZoBkD_RwMx-jzQNK2krrDxDQV5uhCHoyz-e=dw@mail.gmail.com>
- <7496ac87-9676-1b4e-3444-c2a662ec376b@redhat.com>
- <CAK8P3a1tVwkDbtvKi8atkrg1-CfoQHGrXLCzn_uo+=dfZJfdQA@mail.gmail.com>
- <3a2d64a7-8425-8daf-17ee-95b9f0c635f9@redhat.com>
-Message-ID: <CAK8P3a3v2aY3CNLED5NkONJ6bS74WgLu=KCTwr1pKjnAmDeSjw@mail.gmail.com>
+From: Corey Minyard <minyard@acm.org>
+Date: Thu, 8 Apr 2021 07:14:41 -0500
+Subject: [PATCH v2 00/21] ipmi: Allow raw access to KCS devices
+In-Reply-To: <2db77e16-3f44-4c02-a7ba-a4fac8141ae3@www.fastmail.com>
+References: <20210319061952.145040-1-andrew@aj.id.au>
+ <2db77e16-3f44-4c02-a7ba-a4fac8141ae3@www.fastmail.com>
+Message-ID: <20210408121441.GG7166@minyard.net>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Apr 8, 2021 at 2:00 PM David Hildenbrand <david@redhat.com> wrote:
->
-> On 08.04.21 13:44, Arnd Bergmann wrote:
-> > On Thu, Apr 8, 2021 at 1:00 PM David Hildenbrand <david@redhat.com> wrote:
-> >>>
-> >>> It is a somewhat awkward way to say "prevent this symbol from
-> >>> being =y if the dependency is =m".
-> >>
-> >> What would be the right thing to do in the case here then to achieve the
-> >> "if DRMA_ASPEED_GFX is enabled, also enable DMA_CMA id possible"?
-> >>
-> >> One approach could be to have for DMA_CMA
-> >>
-> >> default y if DRMA_ASPEED_GFX
-> >>
-> >> but it feels like the wrong way to tackle this.
-> >
-> > I'm still not sure what you are trying to achieve. Is the idea only to provide
-> > a useful default for DMA_CMA depending on which drivers are enabled?
->
-> "Random drivers should not override a user configuration of core knobs
-> (e.g., CONFIG_DMA_CMA=n)."
->
-> Let's assume I'm a distribution and want to set CONFIG_CMA=n or want to
-> set CONFIG_DMA_CMA=n with CONFIG_CMA=y; there is no way to do that with
-> e.g., DRMA_ASPEED_GFX=y because it will always override my (user!)
-> setting -- even though it doesn't really always need it. Using "select"
-> is the problem here.
+On Thu, Apr 08, 2021 at 10:27:46AM +0930, Andrew Jeffery wrote:
+> Hi Corey,
+> 
+> On Fri, 19 Mar 2021, at 16:49, Andrew Jeffery wrote:
+> > Hello,
+> > 
+> > This series is a bit of a mix of things, but its primary purpose is to
+> > expose BMC KCS IPMI devices to userspace in a way that enables userspace
+> > to talk to host firmware using protocols that are not IPMI.
+> > 
+> > v1 can be found here:
+> > 
+> > https://lore.kernel.org/openbmc/20210219142523.3464540-1-andrew at aj.id.au/
+> > 
+> > Changes in v2 include:
+> > 
+> > * A rebase onto v5.12-rc2
+> > * Incorporation of off-list feedback on SerIRQ configuration from
+> >   Chiawei
+> > * Further validation on hardware for ASPEED KCS devices 2, 3 and 4
+> > * Lifting the existing single-open constraint of the IPMI chardev
+> > * Fixes addressing Rob's feedback on the conversion of the ASPEED KCS
+> >   binding to dt-schema
+> > * Fixes addressing Rob's feedback on the new aspeed,lpc-interrupts
+> >   property definition for the ASPEED KCS binding
+> > 
+> > A new chardev device is added whose implementation exposes the Input
+> > Data Register (IDR), Output Data Register (ODR) and Status Register
+> > (STR) via read() and write(), and implements poll() for event
+> > monitoring.
+> > 
+> > The existing /dev/ipmi-kcs* chardev interface exposes the KCS devices in
+> > a way which encoded the IPMI protocol in its behaviour. However, as
+> > LPC[0] KCS devices give us bi-directional interrupts between the host
+> > and a BMC with both a data and status byte, they are useful for purposes
+> > beyond IPMI.
+> > 
+> > As a concrete example, libmctp[1] implements a vendor-defined MCTP[2]
+> > binding using a combination of LPC Firmware cycles for bulk data
+> > transfer and a KCS device via LPC IO cycles for out-of-band protocol
+> > control messages[3]. This gives a throughput improvement over the
+> > standard KCS binding[4] while continuing to exploit the ease of setup of
+> > the LPC bus for early boot firmware on the host processor.
+> > 
+> > The series takes a bit of a winding path to achieve its aim:
+> > 
+> > 1. It begins with patches 1-5 put together by Chia-Wei, which I've
+> > rebased on v5.12-rc2. These fix the ASPEED LPC bindings and other
+> > non-KCS LPC-related ASPEED device drivers in a way that enables the
+> > SerIRQ patches at the end of the series. With Joel's review I'm hoping
+> > these 5 can go through the aspeed tree, and that the rest can go through
+> > the IPMI tree.
+> > 
+> > 2. Next, patches 6-13 fairly heavily refactor the KCS support in the
+> > IPMI part of the tree, re-architecting things such that it's possible to
+> > support multiple chardev implementations sitting on top of the ASPEED
+> > and Nuvoton device drivers. However, the KCS code didn't really have
+> > great separation of concerns as it stood, so even if we disregard the
+> > multiple-chardev support I think the cleanups are worthwhile.
+> > 
+> > 3. Patch 14 adds some interrupt management capabilities to the KCS
+> > device drivers in preparation for patch 16, which introduces the new
+> > "raw" KCS device interface. I'm not stoked about the device name/path,
+> > so if people are looking to bikeshed something then feel free to lay
+> > into that.
+> > 
+> > 4. The remaining patches switch the ASPEED KCS devicetree binding to
+> > dt-schema, add a new interrupt property to describe the SerIRQ behaviour
+> > of the device and finally clean up Serial IRQ support in the ASPEED KCS
+> > driver.
+> > 
+> > Rob: The dt-binding patches still come before the relevant driver
+> > changes, I tried to keep the two close together in the series, hence the
+> > bindings changes not being patches 1 and 2.
+> > 
+> > I've exercised the series under qemu with the rainier-bmc machine plus
+> > additional patches for KCS support[5]. I've also substituted this series in
+> > place of a hacky out-of-tree driver that we've been using for the
+> > libmctp stack and successfully booted the host processor under our
+> > internal full-platform simulation tools for a Rainier system.
+> > 
+> > Note that this work touches the Nuvoton driver as well as ASPEED's, but
+> > I don't have the capability to test those changes or the IPMI chardev
+> > path. Tested-by tags would be much appreciated if you can exercise one
+> > or both.
+> > 
+> > Please review!
+> 
+> Unfortunately the cover letter got detached from the rest of the series.
+> 
+> Any chance you can take a look at the patches?
 
-I agree on the part of removing the 'select' if we don't need it. The
-part I couldn't figure out was what the 'imply' is supposed to help with.
-Most other users that added imply tried (and failed) to fix a build problem.
+There were some minor concerns that were unanswered, and there really
+was no review by others for many of the patches.
 
-> > This is something you could do using a hidden helper symbol like
-> >
-> > config DRMA_ASPEED_GFX
-> >         bool "Aspeed display driver"
-> >         select DRM_WANT_CMA
-> >
-> > config DRM_WANT_CMA
-> >         bool
-> >         help
-> >            Select this from any driver that benefits from CMA being enabled
-> >
-> > config DMA_CMA
-> >         bool "Use CMA helpers for DRM"
-> >         default DRM_WANT_CMA
-> >
-> >           Arnd
-> >
->
-> That's precisely what I had first, with an additional "WANT_CMA" --  but
-> looking at the number of such existing options (I was able to spot 1 !)
-> I wondered if there is a better approach to achieve the same; "imply"
-> sounded like a good candidate.
+I would like this patch set, it makes some good cleanups.  But I would
+like some more review and testing by others, if possible.  I'm fairly
+sure it has already been done, it just needs to be documented.
 
-I can probably find a couple more, but regardless of how many others
-exist, this would be a much clearer way of doing it than 'imply' since it
-has none of the ambiguity and misuse problems.
+-corey
 
-I think the reason we don't see more is that generally speaking, those
-defaults are widely ignored anyway. You almost always start out with
-a defconfig file that contains everything you know you need, and then
-you add bits to that. Having the default in any form only helps to
-make that defconfig file one line shorter, while requiring other users
-to add another line to turn it off when they do not want it.
-
-         Arnd
+> 
+> https://lore.kernel.org/linux-arm-kernel/20210319062752.145730-1-andrew at aj.id.au/
+> 
+> Cheers,
+> 
+> Andrew
