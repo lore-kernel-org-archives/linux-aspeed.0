@@ -1,84 +1,57 @@
-From: Zev Weiss <zev@bewilderbeest.net>
-Date: Wed,  7 Apr 2021 20:16:37 -0500
-Subject: [PATCH v5 4/4] dt-bindings: serial: 8250: add aspeed,
- lpc-io-reg and aspeed, lpc-interrupts
-In-Reply-To: <20210408011637.5361-1-zev@bewilderbeest.net>
-References: <20210408011637.5361-1-zev@bewilderbeest.net>
-Message-ID: <20210408011637.5361-5-zev@bewilderbeest.net>
+From: Joel Stanley <joel@jms.id.au>
+Date: Thu, 8 Apr 2021 01:31:01 +0000
+Subject: [PATCH 00/22] ARM: dts: aspeed: Updates for Rainier and Everest
+ machines
+In-Reply-To: <20210329150020.13632-1-eajames@linux.ibm.com>
+References: <20210329150020.13632-1-eajames@linux.ibm.com>
+Message-ID: <CACPK8Xdfuc1E8Rh=zgO6An+oJvikkDs_Ch1v0-v3rdC50WCZTA@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-These correspond to the existing lpc_address, sirq, and sirq_polarity
-sysfs attributes; the second element of aspeed,lpc-interrupts provides
-a replacement for the deprecated aspeed,sirq-polarity-sense property.
+On Mon, 29 Mar 2021 at 15:00, Eddie James <eajames@linux.ibm.com> wrote:
+>
+> This series updates the device trees for the Rainier and Everest system
+> BMCs. For Rainier, the changes have been tested fairly extensively in
+> hardware. Everest has largely been tested in simulation and some basic
+> hardware verification testing.
 
-Signed-off-by: Zev Weiss <zev@bewilderbeest.net>
----
- .../devicetree/bindings/serial/8250.yaml      | 27 ++++++++++++++++---
- 1 file changed, 24 insertions(+), 3 deletions(-)
+>   ARM: dts: aspeed: rainier: Support pass 2 planar
 
-diff --git a/Documentation/devicetree/bindings/serial/8250.yaml b/Documentation/devicetree/bindings/serial/8250.yaml
-index 491b9297432d..0e82b076e199 100644
---- a/Documentation/devicetree/bindings/serial/8250.yaml
-+++ b/Documentation/devicetree/bindings/serial/8250.yaml
-@@ -12,8 +12,13 @@ maintainers:
- allOf:
-   - $ref: /schemas/serial.yaml#
-   - if:
--      required:
--        - aspeed,sirq-polarity-sense
-+      anyOf:
-+        - required:
-+            - aspeed,lpc-io-reg
-+        - required:
-+            - aspeed,lpc-interrupts
-+        - required:
-+            - aspeed,sirq-polarity-sense
-     then:
-       properties:
-         compatible:
-@@ -190,6 +195,20 @@ properties:
-       applicable to aspeed,ast2500-vuart.
-     deprecated: true
- 
-+  aspeed,lpc-io-reg:
-+    $ref: '/schemas/types.yaml#/definitions/uint32'
-+    description: |
-+      The VUART LPC address.  Only applicable to aspeed,ast2500-vuart.
-+
-+  aspeed,lpc-interrupts:
-+    $ref: "/schemas/types.yaml#/definitions/uint32-array"
-+    minItems: 2
-+    maxItems: 2
-+    description: |
-+      A 2-cell property describing the VUART SIRQ number and SIRQ
-+      polarity (IRQ_TYPE_LEVEL_LOW or IRQ_TYPE_LEVEL_HIGH).  Only
-+      applicable to aspeed,ast2500-vuart.
-+
- required:
-   - reg
-   - interrupts
-@@ -221,6 +240,7 @@ examples:
-     };
-   - |
-     #include <dt-bindings/clock/aspeed-clock.h>
-+    #include <dt-bindings/interrupt-controller/irq.h>
-     serial at 1e787000 {
-         compatible = "aspeed,ast2500-vuart";
-         reg = <0x1e787000 0x40>;
-@@ -228,7 +248,8 @@ examples:
-         interrupts = <8>;
-         clocks = <&syscon ASPEED_CLK_APB>;
-         no-loopback-test;
--        aspeed,sirq-polarity-sense = <&syscon 0x70 25>;
-+        aspeed,lpc-io-reg = <0x3f8>;
-+        aspeed,lpc-interrupts = <4 IRQ_TYPE_LEVEL_LOW>;
-     };
- 
- ...
--- 
-2.31.1
+This patch does not build, suggesting it has not been tested. I fixed
+it by adding the extra fan nodes that rainier was missing.
 
+How about we support only the latest planar in the mainline tree, and
+support for older versions can be carried in the downstream tree?
+
+>   ARM: dts: Aspeed: Everest: Add max31785 fan controller device
+
+This has been applied, but without the properties that are not upstream.
+
+>   ARM: dts: aspeed: rainier: Add Operator Panel LEDs
+>   ARM: dts: aspeed: rainier: Add leds that are off PCA9552
+>   ARM: dts: aspeed: rainier: Add leds that are off pic16f882
+>   ARM: dts: aspeed: rainier: Add leds on optional DASD cards
+>   ARM: dts: aspeed: rainier: Add leds on optional PCI cable cards
+
+These need to be re-worked to use the PCA driver directly instead of
+exposing PCA LED devices as GPIO controllers and then attaching
+gpio-leds to those GPIOs.
+
+Country to previous concerns raised, there was no issue with "holes"
+in the layout but instead a desire to avoid the "pca955x:" prefix in
+sysfs. For now userspace will ignore that prefix when matching
+devices. I also have a proposed patch to remove them:
+
+https://lore.kernel.org/linux-leds/20210325005456.152469-1-joel at jms.id.au/
+
+The changes I have merged have been pushed here. Please double check
+that I've merged what you expected:
+
+https://git.kernel.org/pub/scm/linux/kernel/git/joel/aspeed.git/log/?h=for-next
+
+Cheers,
+
+Joel
