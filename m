@@ -1,103 +1,55 @@
-From: Steven Lee <steven_lee@aspeedtech.com>
-Date: Thu, 8 Apr 2021 09:52:17 +0800
-Subject: [PATCH v1 1/2] dt-bindings: mmc: sdhci-of-aspeed: Add power-gpio and
- power-switch-gpio
-In-Reply-To: <20210408015218.20560-1-steven_lee@aspeedtech.com>
-References: <20210408015218.20560-1-steven_lee@aspeedtech.com>
-Message-ID: <20210408015218.20560-2-steven_lee@aspeedtech.com>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Date: Thu, 8 Apr 2021 08:37:12 +0200
+Subject: [PATCH v4 1/4] dt-bindings: serial: 8250: deprecate
+ aspeed,sirq-polarity-sense
+In-Reply-To: <YG3yEeIRKgTjnDxz@hatter.bewilderbeest.net>
+References: <20210402182724.20848-1-zev@bewilderbeest.net>
+ <20210402182724.20848-2-zev@bewilderbeest.net>
+ <YG3NR4bGRjIGZhgx@kroah.com>
+ <YG3kJC+6gLC6RzzQ@hatter.bewilderbeest.net>
+ <YG3q9brKTC4pkQbs@kroah.com>
+ <YG3yEeIRKgTjnDxz@hatter.bewilderbeest.net>
+Message-ID: <YG6kmNBhGhe0JGwA@kroah.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-AST2600-A2 EVB provides the reference design for enabling SD bus power
-and toggling SD bus signal voltage by GPIO pins.
-Add the definition and example for power-gpio and power-switch-gpio
-properties.
+On Wed, Apr 07, 2021 at 12:55:29PM -0500, Zev Weiss wrote:
+> On Wed, Apr 07, 2021 at 12:25:09PM CDT, Greg Kroah-Hartman wrote:
+> > On Wed, Apr 07, 2021 at 11:56:04AM -0500, Zev Weiss wrote:
+> > > On Wed, Apr 07, 2021 at 10:18:31AM CDT, Greg Kroah-Hartman wrote:
+> > > > On Fri, Apr 02, 2021 at 01:27:21PM -0500, Zev Weiss wrote:
+> > > > > This property ties SIRQ polarity to SCU register bits that don't
+> > > > > necessarily have any direct relationship to it; the only use of it
+> > > > > was removed in commit c82bf6e133d30e0f9172a20807814fa28aef0f67.
+> > > >
+> > > > Please write that as:
+> > > > 	c82bf6e133d3 ("ARM: aspeed: g5: Do not set sirq polarity")
+> > > >
+> > > 
+> > > Ack, will do.
+> > > 
+> > > > > Signed-off-by: Zev Weiss <zev@bewilderbeest.net>
+> > > > > Reviewed-by: Joel Stanley <joel@jms.id.au>
+> > > > > ---
+> > > > >  Documentation/devicetree/bindings/serial/8250.yaml | 1 +
+> > > > >  1 file changed, 1 insertion(+)
+> > > >
+> > > > What changed from previous versions?  That always goes below the ---
+> > > > line.
+> > > >
+> > > 
+> > > I included an overview of that in the cover letter (https://lore.kernel.org/openbmc/20210402182724.20848-1-zev at bewilderbeest.net/);
+> > > is it desirable to also have that duplicated in the individual patches in
+> > > the series?
+> > 
+> > Any reason why you didn't include all of the relevant people and mailing
+> > lists in that cover letter?  I've never seen it before :)
+> > 
+> 
+> Ah -- is there a good rule of thumb (or git send-email trick) for that?
+> Set-union of get_maintainer.pl over all the patches in the series?
 
-In the reference design, GPIOV0 of AST2600-A2 EVB is connected to power
-load switch that providing 3.3v to SD1 bus vdd. GPIOV1 is connected to
-a 1.8v and a 3.3v power load switch that providing signal voltage to
-SD1 bus.
-If GPIOV0 is active high, SD1 bus is enabled. Otherwise, SD1 bus is
-disabled.
-If GPIOV1 is active high, 3.3v power load switch is enabled, SD1 signal
-voltage is 3.3v. Otherwise, 1.8v power load switch will be enabled, SD1
-signal voltage becomes 1.8v.
-
-AST2600-A2 EVB also support toggling signal voltage for SD2 bus.
-The design is the same as SD1 bus. It uses GPIOV2 as power-gpio and GPIOV3
-as power-switch-gpio.
-
-Signed-off-by: Steven Lee <steven_lee@aspeedtech.com>
----
- .../devicetree/bindings/mmc/aspeed,sdhci.yaml | 25 +++++++++++++++++++
- 1 file changed, 25 insertions(+)
-
-diff --git a/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml b/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml
-index 987b287f3bff..515a74614f3c 100644
---- a/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml
-+++ b/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml
-@@ -37,6 +37,14 @@ properties:
-   clocks:
-     maxItems: 1
-     description: The SD/SDIO controller clock gate
-+  power-gpio:
-+    description:
-+      The GPIO for enabling/disabling SD bus power.
-+    maxItems: 1
-+  power-switch-gpio:
-+    description:
-+      The GPIO for toggling the signal voltage between 3.3v and 1.8v.
-+    maxItems: 1
- 
- patternProperties:
-   "^sdhci@[0-9a-f]+$":
-@@ -61,6 +69,14 @@ patternProperties:
-       sdhci,auto-cmd12:
-         type: boolean
-         description: Specifies that controller should use auto CMD12
-+      power-gpio:
-+        description:
-+          The GPIO for enabling/disabling SD bus power.
-+        maxItems: 1
-+      power-switch-gpio:
-+        description:
-+          The GPIO for toggling the signal voltage between 3.3v and 1.8v.
-+        maxItems: 1
-     required:
-       - compatible
-       - reg
-@@ -80,6 +96,7 @@ required:
- examples:
-   - |
-     #include <dt-bindings/clock/aspeed-clock.h>
-+    #include <dt-bindings/gpio/aspeed-gpio.h>
-     sdc at 1e740000 {
-             compatible = "aspeed,ast2500-sd-controller";
-             reg = <0x1e740000 0x100>;
-@@ -94,6 +111,10 @@ examples:
-                     interrupts = <26>;
-                     sdhci,auto-cmd12;
-                     clocks = <&syscon ASPEED_CLK_SDIO>;
-+                    power-gpio = <&gpio0 ASPEED_GPIO(V, 0)
-+                                     GPIO_ACTIVE_HIGH>;
-+                    power-switch-gpio = <&gpio0 ASPEED_GPIO(V, 1)
-+                                     GPIO_ACTIVE_HIGH>;
-             };
- 
-             sdhci1: sdhci at 200 {
-@@ -102,5 +123,9 @@ examples:
-                     interrupts = <26>;
-                     sdhci,auto-cmd12;
-                     clocks = <&syscon ASPEED_CLK_SDIO>;
-+                    power-gpio = <&gpio0 ASPEED_GPIO(V, 2)
-+                                     GPIO_ACTIVE_HIGH>;
-+                    power-switch-gpio = <&gpio0 ASPEED_GPIO(V, 3)
-+                                     GPIO_ACTIVE_HIGH>;
-             };
-     };
--- 
-2.17.1
-
+There might be a git send-email trick, but I don't know it :(
