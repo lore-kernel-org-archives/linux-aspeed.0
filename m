@@ -1,17 +1,18 @@
 From: Mike Rapoport <rppt@kernel.org>
-Date: Thu, 8 Apr 2021 12:56:02 +0300
-Subject: [PATCH v1 1/2] drivers/video/fbdev: don't select DMA_CMA
-In-Reply-To: <20210408092011.52763-2-david@redhat.com>
+Date: Thu, 8 Apr 2021 12:56:53 +0300
+Subject: [PATCH v1 2/2] drivers/gpu/drm: don't select DMA_CMA or CMA from
+ aspeed or etnaviv
+In-Reply-To: <20210408092011.52763-3-david@redhat.com>
 References: <20210408092011.52763-1-david@redhat.com>
- <20210408092011.52763-2-david@redhat.com>
-Message-ID: <YG7TMt0cgGucCPUX@kernel.org>
+ <20210408092011.52763-3-david@redhat.com>
+Message-ID: <YG7TZa8VP458QS5y@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Apr 08, 2021 at 11:20:10AM +0200, David Hildenbrand wrote:
+On Thu, Apr 08, 2021 at 11:20:11AM +0200, David Hildenbrand wrote:
 > Random drivers should not override a user configuration of core knobs
 > (e.g., CONFIG_DMA_CMA=n). Use "imply" instead, to still respect
 > dependencies and manual overrides.
@@ -22,29 +23,50 @@ On Thu, Apr 08, 2021 at 11:20:10AM +0200, David Hildenbrand wrote:
 > 
 > Implying DRM_CMA should be sufficient, as that depends on CMA.
 
-	  ^ DMA_CMA ?
-
+          ^ DMA_CMA
+> 
 > Note: If this is a real dependency, we should use "depends on DMA_CMA"
 > instead -  but I assume the driver can work without CMA just fine --
-> esp. when we wouldn't have HAVE_DMA_CONTIGUOUS or CMA right now.
+> esp. when we wouldn't have HAVE_DMA_CONTIGUOUS right now.
 > 
 > Signed-off-by: David Hildenbrand <david@redhat.com>
 > ---
->  drivers/video/fbdev/Kconfig | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  drivers/gpu/drm/aspeed/Kconfig  | 3 +--
+>  drivers/gpu/drm/etnaviv/Kconfig | 3 +--
+>  2 files changed, 2 insertions(+), 4 deletions(-)
 > 
-> diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-> index 4f02db65dede..d37cd5341e1b 100644
-> --- a/drivers/video/fbdev/Kconfig
-> +++ b/drivers/video/fbdev/Kconfig
-> @@ -2186,7 +2186,7 @@ config FB_HYPERV
->  	select FB_CFB_COPYAREA
->  	select FB_CFB_IMAGEBLIT
->  	select FB_DEFERRED_IO
-> -	select DMA_CMA if HAVE_DMA_CONTIGUOUS && CMA
+> diff --git a/drivers/gpu/drm/aspeed/Kconfig b/drivers/gpu/drm/aspeed/Kconfig
+> index 5e95bcea43e9..a055f763d230 100644
+> --- a/drivers/gpu/drm/aspeed/Kconfig
+> +++ b/drivers/gpu/drm/aspeed/Kconfig
+> @@ -6,9 +6,8 @@ config DRM_ASPEED_GFX
+>  	depends on MMU
+>  	select DRM_KMS_HELPER
+>  	select DRM_KMS_CMA_HELPER
+> -	select DMA_CMA if HAVE_DMA_CONTIGUOUS
+> -	select CMA if HAVE_DMA_CONTIGUOUS
+>  	select MFD_SYSCON
+> +	imply DRM_CMA
+
+Ditto
+
+>  	help
+>  	  Chose this option if you have an ASPEED AST2500 SOC Display
+>  	  Controller (aka GFX).
+> diff --git a/drivers/gpu/drm/etnaviv/Kconfig b/drivers/gpu/drm/etnaviv/Kconfig
+> index faa7fc68b009..5f5576b7221a 100644
+> --- a/drivers/gpu/drm/etnaviv/Kconfig
+> +++ b/drivers/gpu/drm/etnaviv/Kconfig
+> @@ -9,9 +9,8 @@ config DRM_ETNAVIV
+>  	select THERMAL if DRM_ETNAVIV_THERMAL
+>  	select TMPFS
+>  	select WANT_DEV_COREDUMP
+> -	select CMA if HAVE_DMA_CONTIGUOUS
+> -	select DMA_CMA if HAVE_DMA_CONTIGUOUS
+>  	select DRM_SCHED
 > +	imply DMA_CMA
 >  	help
->  	  This framebuffer driver supports Microsoft Hyper-V Synthetic Video.
+>  	  DRM driver for Vivante GPUs.
 >  
 > -- 
 > 2.30.2
