@@ -1,56 +1,51 @@
-From: Daniel Vetter <daniel@ffwll.ch>
-Date: Thu, 8 Apr 2021 13:38:17 +0200
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Thu, 8 Apr 2021 13:44:22 +0200
 Subject: [PATCH v1 2/2] drivers/gpu/drm: don't select DMA_CMA or CMA from
  aspeed or etnaviv
-In-Reply-To: <CAK8P3a09LdJ-87ZrN28y=t8Sa0zL-3NOvEWhkStMY+2EbO7UAw@mail.gmail.com>
+In-Reply-To: <7496ac87-9676-1b4e-3444-c2a662ec376b@redhat.com>
 References: <20210408092011.52763-1-david@redhat.com>
  <20210408092011.52763-3-david@redhat.com>
  <CAK8P3a09LdJ-87ZrN28y=t8Sa0zL-3NOvEWhkStMY+2EbO7UAw@mail.gmail.com>
-Message-ID: <YG7rKfJkTDJorqvY@phenom.ffwll.local>
+ <cd14d4b4-da82-b21c-2cd6-8e474d97b955@redhat.com>
+ <CAK8P3a0Wg1mGZoBkD_RwMx-jzQNK2krrDxDQV5uhCHoyz-e=dw@mail.gmail.com>
+ <7496ac87-9676-1b4e-3444-c2a662ec376b@redhat.com>
+Message-ID: <CAK8P3a1tVwkDbtvKi8atkrg1-CfoQHGrXLCzn_uo+=dfZJfdQA@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Apr 08, 2021 at 12:20:50PM +0200, Arnd Bergmann wrote:
-> On Thu, Apr 8, 2021 at 11:22 AM David Hildenbrand <david@redhat.com> wrote:
+On Thu, Apr 8, 2021 at 1:00 PM David Hildenbrand <david@redhat.com> wrote:
 > >
-> > Random drivers should not override a user configuration of core knobs
-> > (e.g., CONFIG_DMA_CMA=n). Use "imply" instead, to still respect
-> > dependencies and manual overrides.
-> >
-> > "This is similar to "select" as it enforces a lower limit on another
-> >  symbol except that the "implied" symbol's value may still be set to n
-> >  from a direct dependency or with a visible prompt."
-> >
-> > Implying DRM_CMA should be sufficient, as that depends on CMA.
-> >
-> > Note: If this is a real dependency, we should use "depends on DMA_CMA"
-> > instead -  but I assume the driver can work without CMA just fine --
-> > esp. when we wouldn't have HAVE_DMA_CONTIGUOUS right now.
-> 
-> 'imply' is almost never the right solution, and it tends to cause more
-> problems than it solves.
-> 
-> In particular, it does not prevent a configuration with 'DRM_CMA=m'
-> and 'DRMA_ASPEED_GFX=y', or any build failures from such
-> a configuration.
-> 
-> If you want this kind of soft dependency, you need
-> 'depends on DRM_CMA || !DRM_CMA'.
+> > It is a somewhat awkward way to say "prevent this symbol from
+> > being =y if the dependency is =m".
+>
+> What would be the right thing to do in the case here then to achieve the
+> "if DRMA_ASPEED_GFX is enabled, also enable DMA_CMA id possible"?
+>
+> One approach could be to have for DMA_CMA
+>
+> default y if DRMA_ASPEED_GFX
+>
+> but it feels like the wrong way to tackle this.
 
-The problem is that depends on is a real pain for users to find their
-drivers. This is why we have a ton of select, because the kconfig ui tends
-to suck.
+I'm still not sure what you are trying to achieve. Is the idea only to provide
+a useful default for DMA_CMA depending on which drivers are enabled?
 
-If you want to change this, we need automatic conflict resolution like apt
-and other package managers have, with suggestions how to fix the config if
-you want to enable a driver, but some of its requirements are missing. The
-current approach of hiding driver symbols complete if any of their
-dependencies are off is really not great.
--Daniel
--- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch
+This is something you could do using a hidden helper symbol like
+
+config DRMA_ASPEED_GFX
+       bool "Aspeed display driver"
+       select DRM_WANT_CMA
+
+config DRM_WANT_CMA
+       bool
+       help
+          Select this from any driver that benefits from CMA being enabled
+
+config DMA_CMA
+       bool "Use CMA helpers for DRM"
+       default DRM_WANT_CMA
+
+         Arnd
