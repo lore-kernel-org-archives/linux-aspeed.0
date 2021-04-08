@@ -1,57 +1,347 @@
-From: Joel Stanley <joel@jms.id.au>
-Date: Thu, 8 Apr 2021 01:31:01 +0000
-Subject: [PATCH 00/22] ARM: dts: aspeed: Updates for Rainier and Everest
- machines
-In-Reply-To: <20210329150020.13632-1-eajames@linux.ibm.com>
-References: <20210329150020.13632-1-eajames@linux.ibm.com>
-Message-ID: <CACPK8Xdfuc1E8Rh=zgO6An+oJvikkDs_Ch1v0-v3rdC50WCZTA@mail.gmail.com>
+From: Steven Lee <steven_lee@aspeedtech.com>
+Date: Thu, 8 Apr 2021 09:52:18 +0800
+Subject: [PATCH v1 2/2] mmc: sdhci-of-aspeed: Support toggling SD bus signal
+ voltage by GPIO
+In-Reply-To: <20210408015218.20560-1-steven_lee@aspeedtech.com>
+References: <20210408015218.20560-1-steven_lee@aspeedtech.com>
+Message-ID: <20210408015218.20560-3-steven_lee@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, 29 Mar 2021 at 15:00, Eddie James <eajames@linux.ibm.com> wrote:
->
-> This series updates the device trees for the Rainier and Everest system
-> BMCs. For Rainier, the changes have been tested fairly extensively in
-> hardware. Everest has largely been tested in simulation and some basic
-> hardware verification testing.
+AST2600-A2 EVB provides reference design to support toggling signal
+voltage between 3.3v and 1.8v by power-switch-gpio pin that defined in
+the device tree. It also supporting enabling/disabling SD bus power by
+power-gpio.
 
->   ARM: dts: aspeed: rainier: Support pass 2 planar
+In the reference design, GPIOV0 of AST2600-A2 EVB is connected to power
+load switch that providing 3.3v to SD1 bus vdd. GPIOV1 is connected to
+a 1.8v and a 3.3v power load switch that providing signal voltage to
+SD1 bus.
+If GPIOV0 is active high, SD1 bus is enabled. Otherwise, SD1 bus is
+disabled.
+If GPIOV1 is active high, 3.3v power load switch is enabled, SD1 signal
+voltage is 3.3v, otherwise, 1.8v power load switch will be enabled, SD1
+signal voltage becomes 1.8v.
 
-This patch does not build, suggesting it has not been tested. I fixed
-it by adding the extra fan nodes that rainier was missing.
+AST2600-A2 EVB also support toggling signal voltage for SD2 bus.
+The design is the same as SD1 bus. It uses GPIOV2 as power-gpio and
+GPIOV3 as power-switch-gpio.
 
-How about we support only the latest planar in the mainline tree, and
-support for older versions can be carried in the downstream tree?
+Signed-off-by: Steven Lee <steven_lee@aspeedtech.com>
+---
+ drivers/mmc/host/sdhci-of-aspeed.c | 155 +++++++++++++++++++++++++----
+ 1 file changed, 137 insertions(+), 18 deletions(-)
 
->   ARM: dts: Aspeed: Everest: Add max31785 fan controller device
+diff --git a/drivers/mmc/host/sdhci-of-aspeed.c b/drivers/mmc/host/sdhci-of-aspeed.c
+index 7d8692e90996..a74a03d37915 100644
+--- a/drivers/mmc/host/sdhci-of-aspeed.c
++++ b/drivers/mmc/host/sdhci-of-aspeed.c
+@@ -5,6 +5,7 @@
+ #include <linux/clk.h>
+ #include <linux/delay.h>
+ #include <linux/device.h>
++#include <linux/gpio/consumer.h>
+ #include <linux/io.h>
+ #include <linux/math64.h>
+ #include <linux/mmc/host.h>
+@@ -30,6 +31,7 @@
+ #define   ASPEED_SDC_S0_PHASE_IN_EN	BIT(2)
+ #define   ASPEED_SDC_S0_PHASE_OUT_EN	GENMASK(1, 0)
+ #define   ASPEED_SDC_PHASE_MAX		31
++#define ASPEED_CLOCK_PHASE 0xf4
+ 
+ struct aspeed_sdc {
+ 	struct clk *clk;
+@@ -58,18 +60,21 @@ struct aspeed_sdhci_phase_desc {
+ 	struct aspeed_sdhci_tap_desc out;
+ };
+ 
+-struct aspeed_sdhci_pdata {
++struct aspeed_sdhci_data {
+ 	unsigned int clk_div_start;
+ 	const struct aspeed_sdhci_phase_desc *phase_desc;
+ 	size_t nr_phase_descs;
++	const struct sdhci_pltfm_data *pdata;
+ };
+ 
+ struct aspeed_sdhci {
+-	const struct aspeed_sdhci_pdata *pdata;
++	const struct aspeed_sdhci_data *data;
+ 	struct aspeed_sdc *parent;
+ 	u32 width_mask;
+ 	struct mmc_clk_phase_map phase_map;
+ 	const struct aspeed_sdhci_phase_desc *phase_desc;
++	struct gpio_desc *pwr_pin;
++	struct gpio_desc *pwr_sw_pin;
+ };
+ 
+ static void aspeed_sdc_configure_8bit_mode(struct aspeed_sdc *sdc,
+@@ -209,7 +214,6 @@ static void aspeed_sdhci_set_clock(struct sdhci_host *host, unsigned int clock)
+ 	sdhci = sdhci_pltfm_priv(pltfm_host);
+ 
+ 	parent = clk_get_rate(pltfm_host->clk);
+-
+ 	sdhci_writew(host, 0, SDHCI_CLOCK_CONTROL);
+ 
+ 	if (clock == 0)
+@@ -234,14 +238,13 @@ static void aspeed_sdhci_set_clock(struct sdhci_host *host, unsigned int clock)
+ 	 * supporting the value 0 in (EMMC12C[7:6], EMMC12C[15:8]), and capture
+ 	 * the 0-value capability in clk_div_start.
+ 	 */
+-	for (div = sdhci->pdata->clk_div_start; div < 256; div *= 2) {
++	for (div = sdhci->data->clk_div_start; div < 256; div *= 2) {
+ 		bus = parent / div;
+ 		if (bus <= clock)
+ 			break;
+ 	}
+ 
+ 	div >>= 1;
+-
+ 	clk = div << SDHCI_DIVIDER_SHIFT;
+ 
+ 	aspeed_sdhci_configure_phase(host, bus);
+@@ -292,8 +295,78 @@ static u32 aspeed_sdhci_readl(struct sdhci_host *host, int reg)
+ 	return val;
+ }
+ 
++static void sdhci_aspeed_set_power(struct sdhci_host *host, unsigned char mode,
++				   unsigned short vdd)
++{
++	struct sdhci_pltfm_host *pltfm_priv = sdhci_priv(host);
++	struct aspeed_sdhci *dev = sdhci_pltfm_priv(pltfm_priv);
++	u8 pwr = 0;
++
++	if (!dev->pwr_pin)
++		return sdhci_set_power(host, mode, vdd);
++
++	if (mode != MMC_POWER_OFF) {
++		switch (1 << vdd) {
++		case MMC_VDD_165_195:
++		/*
++		 * Without a regulator, SDHCI does not support 2.0v
++		 * so we only get here if the driver deliberately
++		 * added the 2.0v range to ocr_avail. Map it to 1.8v
++		 * for the purpose of turning on the power.
++		 */
++		case MMC_VDD_20_21:
++				pwr = SDHCI_POWER_180;
++				break;
++		case MMC_VDD_29_30:
++		case MMC_VDD_30_31:
++				pwr = SDHCI_POWER_300;
++				break;
++		case MMC_VDD_32_33:
++		case MMC_VDD_33_34:
++				pwr = SDHCI_POWER_330;
++				break;
++		default:
++				WARN(1, "%s: Invalid vdd %#x\n",
++				     mmc_hostname(host->mmc), vdd);
++				break;
++		}
++	}
++
++	if (host->pwr == pwr)
++		return;
++
++	host->pwr = pwr;
++
++	if (pwr == 0) {
++		gpiod_set_value(dev->pwr_pin, 0);
++		sdhci_writeb(host, 0, SDHCI_POWER_CONTROL);
++	} else {
++		gpiod_set_value(dev->pwr_pin, 1);
++
++		if (dev->pwr_sw_pin) {
++			if (pwr & SDHCI_POWER_330)
++				gpiod_set_value(dev->pwr_sw_pin, 1);
++			else if (pwr & SDHCI_POWER_180)
++				gpiod_set_value(dev->pwr_sw_pin, 0);
++		}
++		pwr |= SDHCI_POWER_ON;
++		sdhci_writeb(host, pwr, SDHCI_POWER_CONTROL);
++	}
++}
++
++static void aspeed_sdhci_voltage_switch(struct sdhci_host *host)
++{
++	struct sdhci_pltfm_host *pltfm_priv = sdhci_priv(host);
++	struct aspeed_sdhci *dev = sdhci_pltfm_priv(pltfm_priv);
++
++	if (dev->pwr_sw_pin)
++		gpiod_set_value(dev->pwr_sw_pin, 0);
++}
++
+ static const struct sdhci_ops aspeed_sdhci_ops = {
+ 	.read_l = aspeed_sdhci_readl,
++	.set_power = sdhci_aspeed_set_power,
++	.voltage_switch = aspeed_sdhci_voltage_switch,
+ 	.set_clock = aspeed_sdhci_set_clock,
+ 	.get_max_clock = aspeed_sdhci_get_max_clock,
+ 	.set_bus_width = aspeed_sdhci_set_bus_width,
+@@ -302,9 +375,14 @@ static const struct sdhci_ops aspeed_sdhci_ops = {
+ 	.set_uhs_signaling = sdhci_set_uhs_signaling,
+ };
+ 
+-static const struct sdhci_pltfm_data aspeed_sdhci_pdata = {
++static const struct sdhci_pltfm_data ast2400_sdhci_pdata = {
+ 	.ops = &aspeed_sdhci_ops,
+ 	.quirks = SDHCI_QUIRK_CAP_CLOCK_BASE_BROKEN,
++	.quirks2 = SDHCI_QUIRK2_CLOCK_DIV_ZERO_BROKEN | SDHCI_QUIRK2_PRESET_VALUE_BROKEN,
++};
++
++static const struct sdhci_pltfm_data ast2600_sdhci_pdata = {
++	.ops = &aspeed_sdhci_ops,
+ };
+ 
+ static inline int aspeed_sdhci_calculate_slot(struct aspeed_sdhci *dev,
+@@ -327,27 +405,28 @@ static inline int aspeed_sdhci_calculate_slot(struct aspeed_sdhci *dev,
+ 
+ static int aspeed_sdhci_probe(struct platform_device *pdev)
+ {
+-	const struct aspeed_sdhci_pdata *aspeed_pdata;
++	const struct aspeed_sdhci_data *aspeed_data;
+ 	struct sdhci_pltfm_host *pltfm_host;
+ 	struct aspeed_sdhci *dev;
+ 	struct sdhci_host *host;
+ 	struct resource *res;
++	u32 reg_val;
+ 	int slot;
+ 	int ret;
+ 
+-	aspeed_pdata = of_device_get_match_data(&pdev->dev);
+-	if (!aspeed_pdata) {
++	aspeed_data = of_device_get_match_data(&pdev->dev);
++	if (!aspeed_data) {
+ 		dev_err(&pdev->dev, "Missing platform configuration data\n");
+ 		return -EINVAL;
+ 	}
+ 
+-	host = sdhci_pltfm_init(pdev, &aspeed_sdhci_pdata, sizeof(*dev));
++	host = sdhci_pltfm_init(pdev, aspeed_data->pdata, sizeof(*dev));
+ 	if (IS_ERR(host))
+ 		return PTR_ERR(host);
+ 
+ 	pltfm_host = sdhci_priv(host);
+ 	dev = sdhci_pltfm_priv(pltfm_host);
+-	dev->pdata = aspeed_pdata;
++	dev->data = aspeed_data;
+ 	dev->parent = dev_get_drvdata(pdev->dev.parent);
+ 
+ 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+@@ -358,8 +437,8 @@ static int aspeed_sdhci_probe(struct platform_device *pdev)
+ 	else if (slot >= 2)
+ 		return -EINVAL;
+ 
+-	if (slot < dev->pdata->nr_phase_descs) {
+-		dev->phase_desc = &dev->pdata->phase_desc[slot];
++	if (slot < dev->data->nr_phase_descs) {
++		dev->phase_desc = &dev->data->phase_desc[slot];
+ 	} else {
+ 		dev_info(&pdev->dev,
+ 			 "Phase control not supported for slot %d\n", slot);
+@@ -372,6 +451,23 @@ static int aspeed_sdhci_probe(struct platform_device *pdev)
+ 
+ 	sdhci_get_of_property(pdev);
+ 
++	if (of_property_read_bool(pdev->dev.parent->of_node, "mmc-hs200-1_8v") ||
++	    of_property_read_bool(pdev->dev.parent->of_node, "sd-uhs-sdr104")) {
++		reg_val = readl(host->ioaddr + 0x40);
++		/* support 1.8V */
++		reg_val |= BIT(26);
++		/* write to sdhci140 or sdhci240 mirror register */
++		writel(reg_val, dev->parent->regs + (0x10 * (slot + 1)));
++	}
++
++	if (of_property_read_bool(pdev->dev.parent->of_node, "sd-uhs-sdr104")) {
++		reg_val = readl(host->ioaddr + 0x44);
++		/* SDR104 */
++		reg_val |= BIT(1);
++		/* write to sdhci144 or sdhci244 mirror register */
++		writel(reg_val, dev->parent->regs + (0x04 + (slot + 1) * 0x10));
++	}
++
+ 	pltfm_host->clk = devm_clk_get(&pdev->dev, NULL);
+ 	if (IS_ERR(pltfm_host->clk))
+ 		return PTR_ERR(pltfm_host->clk);
+@@ -389,6 +485,22 @@ static int aspeed_sdhci_probe(struct platform_device *pdev)
+ 	if (dev->phase_desc)
+ 		mmc_of_parse_clk_phase(host->mmc, &dev->phase_map);
+ 
++	dev->pwr_pin = devm_gpiod_get(&pdev->dev, "power", GPIOD_OUT_HIGH);
++	if (!IS_ERR(dev->pwr_pin)) {
++		gpiod_set_consumer_name(dev->pwr_pin, "mmc_pwr");
++		gpiod_direction_output(dev->pwr_pin, 1);
++	} else {
++		dev->pwr_pin = NULL;
++	}
++
++	dev->pwr_sw_pin = devm_gpiod_get(&pdev->dev, "power-switch", GPIOD_OUT_HIGH);
++	if (!IS_ERR(dev->pwr_sw_pin)) {
++		gpiod_set_consumer_name(dev->pwr_sw_pin, "mmc_pwr_sw");
++		gpiod_direction_output(dev->pwr_sw_pin, 0);
++	} else {
++		dev->pwr_sw_pin = NULL;
++	}
++
+ 	ret = sdhci_add_host(host);
+ 	if (ret)
+ 		goto err_sdhci_add;
+@@ -420,8 +532,9 @@ static int aspeed_sdhci_remove(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
+-static const struct aspeed_sdhci_pdata ast2400_sdhci_pdata = {
++static const struct aspeed_sdhci_data ast2400_sdhci_data = {
+ 	.clk_div_start = 2,
++	.pdata = &ast2400_sdhci_pdata,
+ };
+ 
+ static const struct aspeed_sdhci_phase_desc ast2600_sdhci_phase[] = {
+@@ -453,16 +566,17 @@ static const struct aspeed_sdhci_phase_desc ast2600_sdhci_phase[] = {
+ 	},
+ };
+ 
+-static const struct aspeed_sdhci_pdata ast2600_sdhci_pdata = {
++static const struct aspeed_sdhci_data ast2600_sdhci_data = {
+ 	.clk_div_start = 1,
+ 	.phase_desc = ast2600_sdhci_phase,
+ 	.nr_phase_descs = ARRAY_SIZE(ast2600_sdhci_phase),
++	.pdata = &ast2600_sdhci_pdata,
+ };
+ 
+ static const struct of_device_id aspeed_sdhci_of_match[] = {
+-	{ .compatible = "aspeed,ast2400-sdhci", .data = &ast2400_sdhci_pdata, },
+-	{ .compatible = "aspeed,ast2500-sdhci", .data = &ast2400_sdhci_pdata, },
+-	{ .compatible = "aspeed,ast2600-sdhci", .data = &ast2600_sdhci_pdata, },
++	{ .compatible = "aspeed,ast2400-sdhci", .data = &ast2400_sdhci_data, },
++	{ .compatible = "aspeed,ast2500-sdhci", .data = &ast2400_sdhci_data, },
++	{ .compatible = "aspeed,ast2600-sdhci", .data = &ast2600_sdhci_data, },
+ 	{ }
+ };
+ 
+@@ -482,6 +596,7 @@ static int aspeed_sdc_probe(struct platform_device *pdev)
+ 	struct device_node *parent, *child;
+ 	struct aspeed_sdc *sdc;
+ 	int ret;
++	u32 timing_phase;
+ 
+ 	sdc = devm_kzalloc(&pdev->dev, sizeof(*sdc), GFP_KERNEL);
+ 	if (!sdc)
+@@ -506,6 +621,10 @@ static int aspeed_sdc_probe(struct platform_device *pdev)
+ 		goto err_clk;
+ 	}
+ 
++	if (!of_property_read_u32(pdev->dev.of_node,
++				  "timing-phase", &timing_phase))
++		writel(timing_phase, sdc->regs + ASPEED_CLOCK_PHASE);
++
+ 	dev_set_drvdata(&pdev->dev, sdc);
+ 
+ 	parent = pdev->dev.of_node;
+-- 
+2.17.1
 
-This has been applied, but without the properties that are not upstream.
-
->   ARM: dts: aspeed: rainier: Add Operator Panel LEDs
->   ARM: dts: aspeed: rainier: Add leds that are off PCA9552
->   ARM: dts: aspeed: rainier: Add leds that are off pic16f882
->   ARM: dts: aspeed: rainier: Add leds on optional DASD cards
->   ARM: dts: aspeed: rainier: Add leds on optional PCI cable cards
-
-These need to be re-worked to use the PCA driver directly instead of
-exposing PCA LED devices as GPIO controllers and then attaching
-gpio-leds to those GPIOs.
-
-Country to previous concerns raised, there was no issue with "holes"
-in the layout but instead a desire to avoid the "pca955x:" prefix in
-sysfs. For now userspace will ignore that prefix when matching
-devices. I also have a proposed patch to remove them:
-
-https://lore.kernel.org/linux-leds/20210325005456.152469-1-joel at jms.id.au/
-
-The changes I have merged have been pushed here. Please double check
-that I've merged what you expected:
-
-https://git.kernel.org/pub/scm/linux/kernel/git/joel/aspeed.git/log/?h=for-next
-
-Cheers,
-
-Joel
