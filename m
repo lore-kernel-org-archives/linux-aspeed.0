@@ -1,64 +1,62 @@
 From: David Hildenbrand <david@redhat.com>
-Date: Thu, 8 Apr 2021 12:36:59 +0200
+Date: Thu, 8 Apr 2021 13:00:47 +0200
 Subject: [PATCH v1 2/2] drivers/gpu/drm: don't select DMA_CMA or CMA from
  aspeed or etnaviv
-In-Reply-To: <cd14d4b4-da82-b21c-2cd6-8e474d97b955@redhat.com>
+In-Reply-To: <CAK8P3a0Wg1mGZoBkD_RwMx-jzQNK2krrDxDQV5uhCHoyz-e=dw@mail.gmail.com>
 References: <20210408092011.52763-1-david@redhat.com>
  <20210408092011.52763-3-david@redhat.com>
  <CAK8P3a09LdJ-87ZrN28y=t8Sa0zL-3NOvEWhkStMY+2EbO7UAw@mail.gmail.com>
  <cd14d4b4-da82-b21c-2cd6-8e474d97b955@redhat.com>
-Message-ID: <0b1928a8-99c3-f1f1-ad66-40145199d9bc@redhat.com>
+ <CAK8P3a0Wg1mGZoBkD_RwMx-jzQNK2krrDxDQV5uhCHoyz-e=dw@mail.gmail.com>
+Message-ID: <7496ac87-9676-1b4e-3444-c2a662ec376b@redhat.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 08.04.21 12:27, David Hildenbrand wrote:
-> On 08.04.21 12:20, Arnd Bergmann wrote:
->> On Thu, Apr 8, 2021 at 11:22 AM David Hildenbrand <david@redhat.com> wrote:
->>>
->>> Random drivers should not override a user configuration of core knobs
->>> (e.g., CONFIG_DMA_CMA=n). Use "imply" instead, to still respect
->>> dependencies and manual overrides.
->>>
->>> "This is similar to "select" as it enforces a lower limit on another
->>>    symbol except that the "implied" symbol's value may still be set to n
->>>    from a direct dependency or with a visible prompt."
->>>
->>> Implying DRM_CMA should be sufficient, as that depends on CMA.
->>>
->>> Note: If this is a real dependency, we should use "depends on DMA_CMA"
->>> instead -  but I assume the driver can work without CMA just fine --
->>> esp. when we wouldn't have HAVE_DMA_CONTIGUOUS right now.
+>>> In particular, it does not prevent a configuration with 'DRM_CMA=m'
 >>
->> 'imply' is almost never the right solution, and it tends to cause more
->> problems than it solves.
+>> I assume you meant "DRM_CMA=n" ? DRM_CMA cannot be built as a module.
 > 
-> I thought that was the case with "select" :)
+> Ok, at least that makes it easier.
 > 
+>>> and 'DRMA_ASPEED_GFX=y', or any build failures from such
+>>> a configuration.
 >>
->> In particular, it does not prevent a configuration with 'DRM_CMA=m'
+>> I don't follow. "DRM_CMA=n" and 'DRMA_ASPEED_GFX=y' is supposed to work
+>> just fine (e.g., without HAVE_DMA_CONTIGUOUS) or what am I missing?
 > 
-> I assume you meant "DRM_CMA=n" ? DRM_CMA cannot be built as a module.
-> 
->> and 'DRMA_ASPEED_GFX=y', or any build failures from such
->> a configuration.
-> 
-> I don't follow. "DRM_CMA=n" and 'DRMA_ASPEED_GFX=y' is supposed to work
-> just fine (e.g., without HAVE_DMA_CONTIGUOUS) or what am I missing?
-> 
->>
->> If you want this kind of soft dependency, you need
->> 'depends on DRM_CMA || !DRM_CMA'.
-> 
-> Seriously? I think the point of imply is "please enable if possible and
-> not prevented by someone else". Your example looks more like a NOP - no?
-> Or will it have the same effect?
+> I thought you were trying to solve the problem where DRMA_ASPEED_GFX
+> can optionally link against CMA but would fail to build when the CMA code
+> is in a loadable module.
 
-I just tried (remove CONFIG_DMA_CMA from .config followed by make) and 
-the default will be set to "N" (when querying the user). So it indeed 
-looks like a NOP - unless I am missing something.
+Yes. I was trying to say: it works with this patch just fine. The issue 
+you described does not seem to apply (DRM_CMA=m).
+
+> 
+>> Your example looks more like a NOP - no?
+>> Or will it have the same effect?
+> 
+> The example I gave is only meaningful if both are tristate, which is
+> not the case here as you explain.
+
+Okay, thanks.
+
+> 
+> It is a somewhat awkward way to say "prevent this symbol from
+> being =y if the dependency is =m".
+
+What would be the right thing to do in the case here then to achieve the 
+"if DRMA_ASPEED_GFX is enabled, also enable DMA_CMA id possible"?
+
+One approach could be to have for DMA_CMA
+
+default y if DRMA_ASPEED_GFX
+
+but it feels like the wrong way to tackle this.
+
+Thanks!
 
 -- 
 Thanks,
