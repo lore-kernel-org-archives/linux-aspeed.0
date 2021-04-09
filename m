@@ -1,90 +1,111 @@
-From: David Hildenbrand <david@redhat.com>
-Date: Fri, 9 Apr 2021 15:39:47 +0200
-Subject: [PATCH v3] drivers: introduce and use WANT_DMA_CMA for soft
- dependencies on DMA_CMA
-In-Reply-To: <CAK8P3a31uKNcim0n99=yt3zjZ+LQSw4V4+8PS8daLsBdS0iSYg@mail.gmail.com>
-References: <20210409112035.27221-1-david@redhat.com>
- <CAK8P3a31uKNcim0n99=yt3zjZ+LQSw4V4+8PS8daLsBdS0iSYg@mail.gmail.com>
-Message-ID: <53ec94ac-ffe3-d0bc-d081-3489fa03daa1@redhat.com>
+From: Rob Herring <robh@kernel.org>
+Date: Fri, 9 Apr 2021 13:41:18 -0500
+Subject: [PATCH v1 1/2] dt-bindings: mmc: sdhci-of-aspeed: Add power-gpio
+ and power-switch-gpio
+In-Reply-To: <20210408015218.20560-2-steven_lee@aspeedtech.com>
+References: <20210408015218.20560-1-steven_lee@aspeedtech.com>
+ <20210408015218.20560-2-steven_lee@aspeedtech.com>
+Message-ID: <20210409184118.GA3934798@robh.at.kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 09.04.21 15:35, Arnd Bergmann wrote:
-> On Fri, Apr 9, 2021 at 1:21 PM David Hildenbrand <david@redhat.com> wrote:
->>
->> Random drivers should not override a user configuration of core knobs
->> (e.g., CONFIG_DMA_CMA=n). Applicable drivers would like to use DMA_CMA,
->> which depends on CMA, if possible; however, these drivers also have to
->> tolerate if DMA_CMA is not available/functioning, for example, if no CMA
->> area for DMA_CMA use has been setup via "cma=X". In the worst case, the
->> driver cannot do it's job properly in some configurations.
->>
->> For example, commit 63f5677544b3 ("drm/etnaviv: select CMA and DMA_CMA if
->> available") documents
->>          While this is no build dependency, etnaviv will only work correctly
->>          on most systems if CMA and DMA_CMA are enabled. Select both options
->>          if available to avoid users ending up with a non-working GPU due to
->>          a lacking kernel config.
->> So etnaviv really wants to have DMA_CMA, however, can deal with some cases
->> where it is not available.
->>
->> Let's introduce WANT_DMA_CMA and use it in most cases where drivers
->> select CMA/DMA_CMA, or depend on DMA_CMA (in a wrong way via CMA because
->> of recursive dependency issues).
->>
->> We'll assume that any driver that selects DRM_GEM_CMA_HELPER or
->> DRM_KMS_CMA_HELPER would like to use DMA_CMA if possible.
->>
->> With this change, distributions can disable CONFIG_CMA or
->> CONFIG_DMA_CMA, without it silently getting enabled again by random
->> drivers. Also, we'll now automatically try to enabled both, CONFIG_CMA
->> and CONFIG_DMA_CMA if they are unspecified and any driver is around that
->> selects WANT_DMA_CMA -- also implicitly via DRM_GEM_CMA_HELPER or
->> DRM_KMS_CMA_HELPER.
->>
->> For example, if any driver selects WANT_DMA_CMA and we do a
->> "make olddefconfig":
->>
->> 1. With "# CONFIG_CMA is not set" and no specification of
->>     "CONFIG_DMA_CMA"
->>
->> -> CONFIG_DMA_CMA won't be part of .config
->>
->> 2. With no specification of CONFIG_CMA or CONFIG_DMA_CMA
->>
->> Contiguous Memory Allocator (CMA) [Y/n/?] (NEW)
->> DMA Contiguous Memory Allocator (DMA_CMA) [Y/n/?] (NEW)
->>
->> 3. With "# CONFIG_CMA is not set" and "# CONFIG_DMA_CMA is not set"
->>
->> -> CONFIG_DMA_CMA will be removed from .config
->>
->> Note: drivers/remoteproc seems to be special; commit c51e882cd711
->> ("remoteproc/davinci: Update Kconfig to depend on DMA_CMA") explains that
->> there is a real dependency to DMA_CMA for it to work; leave that dependency
->> in place and don't convert it to a soft dependency.
+On Thu, Apr 08, 2021 at 09:52:17AM +0800, Steven Lee wrote:
+> AST2600-A2 EVB provides the reference design for enabling SD bus power
+> and toggling SD bus signal voltage by GPIO pins.
+> Add the definition and example for power-gpio and power-switch-gpio
+> properties.
 > 
-> I don't think this dependency is fundamentally different from the others,
-> though davinci machines tend to have less memory than a lot of the
-> other machines, so it's more likely to fail without CMA.
+> In the reference design, GPIOV0 of AST2600-A2 EVB is connected to power
+> load switch that providing 3.3v to SD1 bus vdd. GPIOV1 is connected to
+> a 1.8v and a 3.3v power load switch that providing signal voltage to
+> SD1 bus.
+> If GPIOV0 is active high, SD1 bus is enabled. Otherwise, SD1 bus is
+> disabled.
+> If GPIOV1 is active high, 3.3v power load switch is enabled, SD1 signal
+> voltage is 3.3v. Otherwise, 1.8v power load switch will be enabled, SD1
+> signal voltage becomes 1.8v.
 > 
-
-I was also unsure - and Lucas had similar thoughts. If you want, I can 
-send a v4 also taking care of this.
-
-Thanks!
-
-> Regardless of this,
+> AST2600-A2 EVB also support toggling signal voltage for SD2 bus.
+> The design is the same as SD1 bus. It uses GPIOV2 as power-gpio and GPIOV3
+> as power-switch-gpio.
 > 
-> Reviewed-by: Arnd Bergmann <arnd@arndb.de>
+> Signed-off-by: Steven Lee <steven_lee@aspeedtech.com>
+> ---
+>  .../devicetree/bindings/mmc/aspeed,sdhci.yaml | 25 +++++++++++++++++++
+>  1 file changed, 25 insertions(+)
 > 
+> diff --git a/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml b/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml
+> index 987b287f3bff..515a74614f3c 100644
+> --- a/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml
+> +++ b/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml
+> @@ -37,6 +37,14 @@ properties:
+>    clocks:
+>      maxItems: 1
+>      description: The SD/SDIO controller clock gate
+> +  power-gpio:
 
+'-gpios' is the preferred form even if just 1.
 
--- 
-Thanks,
+> +    description:
+> +      The GPIO for enabling/disabling SD bus power.
+> +    maxItems: 1
 
-David / dhildenb
+blank line
 
+> +  power-switch-gpio:
+> +    description:
+> +      The GPIO for toggling the signal voltage between 3.3v and 1.8v.
+> +    maxItems: 1
+>  
+>  patternProperties:
+>    "^sdhci@[0-9a-f]+$":
+> @@ -61,6 +69,14 @@ patternProperties:
+>        sdhci,auto-cmd12:
+>          type: boolean
+>          description: Specifies that controller should use auto CMD12
+> +      power-gpio:
+> +        description:
+> +          The GPIO for enabling/disabling SD bus power.
+> +        maxItems: 1
+> +      power-switch-gpio:
+> +        description:
+> +          The GPIO for toggling the signal voltage between 3.3v and 1.8v.
+> +        maxItems: 1
+>      required:
+>        - compatible
+>        - reg
+> @@ -80,6 +96,7 @@ required:
+>  examples:
+>    - |
+>      #include <dt-bindings/clock/aspeed-clock.h>
+> +    #include <dt-bindings/gpio/aspeed-gpio.h>
+>      sdc at 1e740000 {
+>              compatible = "aspeed,ast2500-sd-controller";
+>              reg = <0x1e740000 0x100>;
+> @@ -94,6 +111,10 @@ examples:
+>                      interrupts = <26>;
+>                      sdhci,auto-cmd12;
+>                      clocks = <&syscon ASPEED_CLK_SDIO>;
+> +                    power-gpio = <&gpio0 ASPEED_GPIO(V, 0)
+> +                                     GPIO_ACTIVE_HIGH>;
+> +                    power-switch-gpio = <&gpio0 ASPEED_GPIO(V, 1)
+> +                                     GPIO_ACTIVE_HIGH>;
+>              };
+>  
+>              sdhci1: sdhci at 200 {
+> @@ -102,5 +123,9 @@ examples:
+>                      interrupts = <26>;
+>                      sdhci,auto-cmd12;
+>                      clocks = <&syscon ASPEED_CLK_SDIO>;
+> +                    power-gpio = <&gpio0 ASPEED_GPIO(V, 2)
+> +                                     GPIO_ACTIVE_HIGH>;
+> +                    power-switch-gpio = <&gpio0 ASPEED_GPIO(V, 3)
+> +                                     GPIO_ACTIVE_HIGH>;
+>              };
+>      };
+> -- 
+> 2.17.1
+> 
