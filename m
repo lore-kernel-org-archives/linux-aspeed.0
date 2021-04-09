@@ -1,143 +1,152 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Fri, 09 Apr 2021 14:36:16 +0930
-Subject: =?UTF-8?Q?Re:_[PATCH_v5_2/4]_drivers/tty/serial/8250:_refactor_sirq_and_?=
- =?UTF-8?Q?lpc_address_setting_code?=
-In-Reply-To: <20210408011637.5361-3-zev@bewilderbeest.net>
-References: <20210408011637.5361-1-zev@bewilderbeest.net>
- <20210408011637.5361-3-zev@bewilderbeest.net>
-Message-ID: <db7271d8-8d13-4a8c-a7ba-564e4e769ea5@www.fastmail.com>
+From: Zev Weiss <zweiss@equinix.com>
+Date: Fri, 9 Apr 2021 05:07:11 +0000
+Subject: [PATCH v2 15/21] ipmi: kcs_bmc: Don't enforce single-open policy
+ in the kernel
+In-Reply-To: <20210319062752.145730-15-andrew@aj.id.au>
+References: <20210319062752.145730-1-andrew@aj.id.au>
+ <20210319062752.145730-15-andrew@aj.id.au>
+Message-ID: <YG/g/poZLwO34QH7@packtop>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+On Fri, Mar 19, 2021 at 01:27:46AM CDT, Andrew Jeffery wrote:
+>Soon it will be possible for one KCS device to have multiple associated
+>chardevs exposed to userspace (for IPMI and raw-style access). However,
+>don't prevent userspace from:
+>
+>1. Opening more than one chardev at a time, or
+>2. Opening the same chardev more than once.
+>
+>System behaviour is undefined for both classes of multiple access, so
+>userspace must manage itself accordingly.
+>
+>The implementation delivers IBF and OBF events to the first chardev
+>client to associate with the KCS device. An open on a related chardev
+>cannot associate its client with the KCS device and so will not
+>receive notification of events. However, any fd on any chardev may race
+>their accesses to the data and status registers.
+>
+>Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
+>---
+> drivers/char/ipmi/kcs_bmc.c         | 34 ++++++++++-------------------
+> drivers/char/ipmi/kcs_bmc_aspeed.c  |  3 +--
+> drivers/char/ipmi/kcs_bmc_npcm7xx.c |  3 +--
+> 3 files changed, 14 insertions(+), 26 deletions(-)
+>
+>diff --git a/drivers/char/ipmi/kcs_bmc.c b/drivers/char/ipmi/kcs_bmc.c
+>index 05bbb72418b2..2fafa9541934 100644
+>--- a/drivers/char/ipmi/kcs_bmc.c
+>+++ b/drivers/char/ipmi/kcs_bmc.c
+>@@ -55,24 +55,12 @@ EXPORT_SYMBOL(kcs_bmc_update_status);
+> int kcs_bmc_handle_event(struct kcs_bmc_device *kcs_bmc)
+> {
+> 	struct kcs_bmc_client *client;
+>-	int rc;
+>+	int rc = KCS_BMC_EVENT_NONE;
+>
+> 	spin_lock(&kcs_bmc->lock);
+> 	client = kcs_bmc->client;
+>-	if (client) {
+>+	if (!WARN_ON_ONCE(!client))
+> 		rc = client->ops->event(client);
 
+The double-negation split by a macro seems a bit confusing to me
+readability-wise; could we simplify to something like
 
-On Thu, 8 Apr 2021, at 10:46, Zev Weiss wrote:
-> This splits dedicated aspeed_vuart_set_{sirq,lpc_address}() functions
-> out of the sysfs store functions in preparation for adding DT
-> properties that will be poking the same registers.  While we're at it,
-> these functions now provide some basic bounds-checking on their
-> arguments.
-> 
-> Signed-off-by: Zev Weiss <zev@bewilderbeest.net>
-> ---
->  drivers/tty/serial/8250/8250_aspeed_vuart.c | 51 ++++++++++++++-------
->  1 file changed, 35 insertions(+), 16 deletions(-)
-> 
-> diff --git a/drivers/tty/serial/8250/8250_aspeed_vuart.c 
-> b/drivers/tty/serial/8250/8250_aspeed_vuart.c
-> index c33e02cbde93..8433f8dbb186 100644
-> --- a/drivers/tty/serial/8250/8250_aspeed_vuart.c
-> +++ b/drivers/tty/serial/8250/8250_aspeed_vuart.c
-> @@ -72,22 +72,31 @@ static ssize_t lpc_address_show(struct device *dev,
->  	return snprintf(buf, PAGE_SIZE - 1, "0x%x\n", addr);
->  }
->  
-> +static int aspeed_vuart_set_lpc_address(struct aspeed_vuart *vuart, u32 addr)
-> +{
-> +	if (addr > U16_MAX)
-> +		return -EINVAL;
-> +
-> +	writeb(addr >> 8, vuart->regs + ASPEED_VUART_ADDRH);
-> +	writeb(addr >> 0, vuart->regs + ASPEED_VUART_ADDRL);
-> +
-> +	return 0;
-> +}
-> +
->  static ssize_t lpc_address_store(struct device *dev,
->  				 struct device_attribute *attr,
->  				 const char *buf, size_t count)
->  {
->  	struct aspeed_vuart *vuart = dev_get_drvdata(dev);
-> -	unsigned long val;
-> +	u32 val;
->  	int err;
->  
-> -	err = kstrtoul(buf, 0, &val);
-> +	err = kstrtou32(buf, 0, &val);
->  	if (err)
->  		return err;
->  
-> -	writeb(val >> 8, vuart->regs + ASPEED_VUART_ADDRH);
-> -	writeb(val >> 0, vuart->regs + ASPEED_VUART_ADDRL);
-> -
-> -	return count;
-> +	err = aspeed_vuart_set_lpc_address(vuart, val);
-> +	return err ? : count;
->  }
->  
->  static DEVICE_ATTR_RW(lpc_address);
-> @@ -105,27 +114,37 @@ static ssize_t sirq_show(struct device *dev,
->  	return snprintf(buf, PAGE_SIZE - 1, "%u\n", reg);
->  }
->  
-> +static int aspeed_vuart_set_sirq(struct aspeed_vuart *vuart, u32 sirq)
-> +{
-> +	u8 reg;
-> +
-> +	if (sirq > (ASPEED_VUART_GCRB_HOST_SIRQ_MASK >> ASPEED_VUART_GCRB_HOST_SIRQ_SHIFT))
-> +		return -EINVAL;
-> +
-> +	sirq <<= ASPEED_VUART_GCRB_HOST_SIRQ_SHIFT;
-> +	sirq &= ASPEED_VUART_GCRB_HOST_SIRQ_MASK;
+	if (client)
+		rc = client->ops->event(client);
+	else
+		WARN_ONCE();
 
-This might be less verbose if we reordered things a little:
+?
 
-```
-sirq <<= ASPEED_VUART_GCRB_HOST_SIRQ_SHIFT;
-if (sirq & ASPEED_VUART_GCRB_HOST_SIRQ_MASK)
-	return -EINVAL;
-sirq &= ASPEED_VUART_GCRB_HOST_SIRQ_MASK;
-```
+>-	} else {
+>-		u8 status;
+>-
+>-		status = kcs_bmc_read_status(kcs_bmc);
+>-		if (status & KCS_BMC_STR_IBF) {
+>-			/* Ack the event by reading the data */
+>-			kcs_bmc_read_data(kcs_bmc);
+>-			rc = KCS_BMC_EVENT_HANDLED;
+>-		} else {
+>-			rc = KCS_BMC_EVENT_NONE;
+>-		}
+>-	}
+> 	spin_unlock(&kcs_bmc->lock);
+>
+> 	return rc;
+>@@ -81,26 +69,28 @@ EXPORT_SYMBOL(kcs_bmc_handle_event);
+>
+> int kcs_bmc_enable_device(struct kcs_bmc_device *kcs_bmc, struct kcs_bmc_client *client)
+> {
+>-	int rc;
+>-
+> 	spin_lock_irq(&kcs_bmc->lock);
+>-	if (kcs_bmc->client) {
+>-		rc = -EBUSY;
+>-	} else {
+>+	if (!kcs_bmc->client) {
+>+		u8 mask = KCS_BMC_EVENT_TYPE_IBF;
+>+
+> 		kcs_bmc->client = client;
+>-		rc = 0;
+>+		kcs_bmc_update_event_mask(kcs_bmc, mask, mask);
+> 	}
+> 	spin_unlock_irq(&kcs_bmc->lock);
+>
+>-	return rc;
+>+	return 0;
 
-But otherwise it looks okay, so
+Since this function appears to be infallible now, should it just return
+void?  (Might be more churn than it's worth...shrug.)
 
-Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
-
-> +
-> +	reg = readb(vuart->regs + ASPEED_VUART_GCRB);
-> +	reg &= ~ASPEED_VUART_GCRB_HOST_SIRQ_MASK;
-> +	reg |= sirq;
-> +	writeb(reg, vuart->regs + ASPEED_VUART_GCRB);
-> +
-> +	return 0;
-> +}
-> +
->  static ssize_t sirq_store(struct device *dev, struct device_attribute 
-> *attr,
->  			  const char *buf, size_t count)
->  {
->  	struct aspeed_vuart *vuart = dev_get_drvdata(dev);
->  	unsigned long val;
->  	int err;
-> -	u8 reg;
->  
->  	err = kstrtoul(buf, 0, &val);
->  	if (err)
->  		return err;
->  
-> -	val <<= ASPEED_VUART_GCRB_HOST_SIRQ_SHIFT;
-> -	val &= ASPEED_VUART_GCRB_HOST_SIRQ_MASK;
-> -
-> -	reg = readb(vuart->regs + ASPEED_VUART_GCRB);
-> -	reg &= ~ASPEED_VUART_GCRB_HOST_SIRQ_MASK;
-> -	reg |= val;
-> -	writeb(reg, vuart->regs + ASPEED_VUART_GCRB);
-> -
-> -	return count;
-> +	err = aspeed_vuart_set_sirq(vuart, val);
-> +	return err ? : count;
->  }
->  
->  static DEVICE_ATTR_RW(sirq);
-> -- 
-> 2.31.1
-> 
-> 
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel at lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+> }
+> EXPORT_SYMBOL(kcs_bmc_enable_device);
+>
+> void kcs_bmc_disable_device(struct kcs_bmc_device *kcs_bmc, struct kcs_bmc_client *client)
+> {
+> 	spin_lock_irq(&kcs_bmc->lock);
+>-	if (client == kcs_bmc->client)
+>+	if (client == kcs_bmc->client) {
+>+		u8 mask = KCS_BMC_EVENT_TYPE_IBF | KCS_BMC_EVENT_TYPE_OBE;
+>+
+>+		kcs_bmc_update_event_mask(kcs_bmc, mask, 0);
+> 		kcs_bmc->client = NULL;
+>+	}
+> 	spin_unlock_irq(&kcs_bmc->lock);
+> }
+> EXPORT_SYMBOL(kcs_bmc_disable_device);
+>diff --git a/drivers/char/ipmi/kcs_bmc_aspeed.c b/drivers/char/ipmi/kcs_bmc_aspeed.c
+>index 5f26471c038c..271845eb2e26 100644
+>--- a/drivers/char/ipmi/kcs_bmc_aspeed.c
+>+++ b/drivers/char/ipmi/kcs_bmc_aspeed.c
+>@@ -419,8 +419,7 @@ static int aspeed_kcs_probe(struct platform_device *pdev)
+>
+> 	platform_set_drvdata(pdev, priv);
+>
+>-	aspeed_kcs_irq_mask_update(kcs_bmc, (KCS_BMC_EVENT_TYPE_IBF | KCS_BMC_EVENT_TYPE_OBE),
+>-				   KCS_BMC_EVENT_TYPE_IBF);
+>+	aspeed_kcs_irq_mask_update(kcs_bmc, (KCS_BMC_EVENT_TYPE_IBF | KCS_BMC_EVENT_TYPE_OBE), 0);
+> 	aspeed_kcs_enable_channel(kcs_bmc, true);
+>
+> 	rc = kcs_bmc_add_device(&priv->kcs_bmc);
+>diff --git a/drivers/char/ipmi/kcs_bmc_npcm7xx.c b/drivers/char/ipmi/kcs_bmc_npcm7xx.c
+>index c2032728a03d..fdf35cad2eba 100644
+>--- a/drivers/char/ipmi/kcs_bmc_npcm7xx.c
+>+++ b/drivers/char/ipmi/kcs_bmc_npcm7xx.c
+>@@ -207,8 +207,7 @@ static int npcm7xx_kcs_probe(struct platform_device *pdev)
+> 	if (rc)
+> 		return rc;
+>
+>-	npcm7xx_kcs_irq_mask_update(kcs_bmc, (KCS_BMC_EVENT_TYPE_IBF | KCS_BMC_EVENT_TYPE_OBE),
+>-				    KCS_BMC_EVENT_TYPE_IBF);
+>+	npcm7xx_kcs_irq_mask_update(kcs_bmc, (KCS_BMC_EVENT_TYPE_IBF | KCS_BMC_EVENT_TYPE_OBE), 0);
+> 	npcm7xx_kcs_enable_channel(kcs_bmc, true);
+>
+> 	pr_info("channel=%u idr=0x%x odr=0x%x str=0x%x\n",
+>-- 
+>2.27.0
 >
