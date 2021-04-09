@@ -1,570 +1,110 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Fri, 09 Apr 2021 16:16:52 +0930
-Subject: =?UTF-8?Q?Re:_[PATCH_v2_16/21]_ipmi:_kcs=5Fbmc:_Add_a_"raw"_character_de?=
- =?UTF-8?Q?vice_interface?=
-In-Reply-To: <YG/jZyx3huwqewgX@packtop>
-References: <20210319062752.145730-1-andrew@aj.id.au>
- <20210319062752.145730-16-andrew@aj.id.au> <YG/jZyx3huwqewgX@packtop>
-Message-ID: <c24bdd7a-64f6-4f4b-bd40-640efea8b059@www.fastmail.com>
+From: Zev Weiss <zev@bewilderbeest.net>
+Date: Fri, 9 Apr 2021 02:01:04 -0500
+Subject: [PATCH v5 2/4] drivers/tty/serial/8250: refactor sirq and lpc
+ address setting code
+In-Reply-To: <db7271d8-8d13-4a8c-a7ba-564e4e769ea5@www.fastmail.com>
+References: <20210408011637.5361-1-zev@bewilderbeest.net>
+ <20210408011637.5361-3-zev@bewilderbeest.net>
+ <db7271d8-8d13-4a8c-a7ba-564e4e769ea5@www.fastmail.com>
+Message-ID: <YG/7sFv+2AlLKbZ5@hatter.bewilderbeest.net>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+On Fri, Apr 09, 2021 at 12:06:16AM CDT, Andrew Jeffery wrote:
+>
+>
+>On Thu, 8 Apr 2021, at 10:46, Zev Weiss wrote:
+>> This splits dedicated aspeed_vuart_set_{sirq,lpc_address}() functions
+>> out of the sysfs store functions in preparation for adding DT
+>> properties that will be poking the same registers.  While we're at it,
+>> these functions now provide some basic bounds-checking on their
+>> arguments.
+>>
+>> Signed-off-by: Zev Weiss <zev@bewilderbeest.net>
+>> ---
+>>  drivers/tty/serial/8250/8250_aspeed_vuart.c | 51 ++++++++++++++-------
+>>  1 file changed, 35 insertions(+), 16 deletions(-)
+>>
+>> diff --git a/drivers/tty/serial/8250/8250_aspeed_vuart.c
+>> b/drivers/tty/serial/8250/8250_aspeed_vuart.c
+>> index c33e02cbde93..8433f8dbb186 100644
+>> --- a/drivers/tty/serial/8250/8250_aspeed_vuart.c
+>> +++ b/drivers/tty/serial/8250/8250_aspeed_vuart.c
+>> @@ -72,22 +72,31 @@ static ssize_t lpc_address_show(struct device *dev,
+>>  	return snprintf(buf, PAGE_SIZE - 1, "0x%x\n", addr);
+>>  }
+>>
+>> +static int aspeed_vuart_set_lpc_address(struct aspeed_vuart *vuart, u32 addr)
+>> +{
+>> +	if (addr > U16_MAX)
+>> +		return -EINVAL;
+>> +
+>> +	writeb(addr >> 8, vuart->regs + ASPEED_VUART_ADDRH);
+>> +	writeb(addr >> 0, vuart->regs + ASPEED_VUART_ADDRL);
+>> +
+>> +	return 0;
+>> +}
+>> +
+>>  static ssize_t lpc_address_store(struct device *dev,
+>>  				 struct device_attribute *attr,
+>>  				 const char *buf, size_t count)
+>>  {
+>>  	struct aspeed_vuart *vuart = dev_get_drvdata(dev);
+>> -	unsigned long val;
+>> +	u32 val;
+>>  	int err;
+>>
+>> -	err = kstrtoul(buf, 0, &val);
+>> +	err = kstrtou32(buf, 0, &val);
+>>  	if (err)
+>>  		return err;
+>>
+>> -	writeb(val >> 8, vuart->regs + ASPEED_VUART_ADDRH);
+>> -	writeb(val >> 0, vuart->regs + ASPEED_VUART_ADDRL);
+>> -
+>> -	return count;
+>> +	err = aspeed_vuart_set_lpc_address(vuart, val);
+>> +	return err ? : count;
+>>  }
+>>
+>>  static DEVICE_ATTR_RW(lpc_address);
+>> @@ -105,27 +114,37 @@ static ssize_t sirq_show(struct device *dev,
+>>  	return snprintf(buf, PAGE_SIZE - 1, "%u\n", reg);
+>>  }
+>>
+>> +static int aspeed_vuart_set_sirq(struct aspeed_vuart *vuart, u32 sirq)
+>> +{
+>> +	u8 reg;
+>> +
+>> +	if (sirq > (ASPEED_VUART_GCRB_HOST_SIRQ_MASK >> ASPEED_VUART_GCRB_HOST_SIRQ_SHIFT))
+>> +		return -EINVAL;
+>> +
+>> +	sirq <<= ASPEED_VUART_GCRB_HOST_SIRQ_SHIFT;
+>> +	sirq &= ASPEED_VUART_GCRB_HOST_SIRQ_MASK;
+>
+>This might be less verbose if we reordered things a little:
+>
+>```
+>sirq <<= ASPEED_VUART_GCRB_HOST_SIRQ_SHIFT;
+>if (sirq & ASPEED_VUART_GCRB_HOST_SIRQ_MASK)
+>	return -EINVAL;
+>sirq &= ASPEED_VUART_GCRB_HOST_SIRQ_MASK;
+>```
 
+Hmm, that (or something similar, perhaps with a '~' on the mask in the 
+if condition?) does seem like it'd be a nice improvement, though I 
+suppose it'd also mean we'd fail to reject some way-out-of-range sirq 
+values (e.g. if it had its MSB set) -- so I think I'll leave it as is, 
+just in the name of thoroughness/paranoia?
 
-On Fri, 9 Apr 2021, at 14:47, Zev Weiss wrote:
-> On Fri, Mar 19, 2021 at 01:27:47AM CDT, Andrew Jeffery wrote:
-> >The existing IPMI chardev encodes IPMI behaviours as the name suggests.
-> >However, KCS devices are useful beyond IPMI (or keyboards), as they
-> >provide a means to generate IRQs and exchange arbitrary data between a
-> >BMC and its host system.
-> >
-> >Implement a "raw" KCS character device that exposes the IDR, ODR and STR
-> >registers to userspace via read() and write() implemented on a character
-> >device:
-> >
-> >+--------+--------+---------+
-> >| Offset | read() | write() |
-> >+--------+--------+---------+
-> >|   0    |   IDR  |   ODR   |
-> >+--------+--------+---------+
-> >|   1    |   STR  |   STR   |
-> >+--------+--------+---------+
-> >
-> >This interface allows userspace to implement arbitrary (though somewhat
-> >inefficient) protocols for exchanging information between a BMC and host
-> >firmware. Conceptually the KCS interface can be used as an out-of-band
-> >machanism for interrupt-signaled control messages while bulk data
-> 
-> Typo ("mechanism")
+>
+>But otherwise it looks okay, so
+>
+>Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
+>
 
-Ack.
+Thanks.
 
-> 
-> >transfers occur over more appropriate interfaces between the BMC and the
-> >host (which may lack their own interrupt mechanism, e.g. LPC FW cycles).
-> >
-> >poll() is provided, which will wait for IBF or OBE conditions for data
-> >reads and writes respectively. Reads of STR on its own never blocks,
-> >though accessing both offsets in the one system call may block if the
-> >data registers are not ready.
-> >
-> >Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
-> >---
-> > Documentation/ABI/testing/dev-raw-kcs |  25 ++
-> > drivers/char/ipmi/Kconfig             |  17 +
-> > drivers/char/ipmi/Makefile            |   1 +
-> > drivers/char/ipmi/kcs_bmc_cdev_raw.c  | 443 ++++++++++++++++++++++++++
-> > 4 files changed, 486 insertions(+)
-> > create mode 100644 Documentation/ABI/testing/dev-raw-kcs
-> > create mode 100644 drivers/char/ipmi/kcs_bmc_cdev_raw.c
-> >
-> >diff --git a/Documentation/ABI/testing/dev-raw-kcs b/Documentation/ABI/testing/dev-raw-kcs
-> >new file mode 100644
-> >index 000000000000..06e7e2071562
-> >--- /dev/null
-> >+++ b/Documentation/ABI/testing/dev-raw-kcs
-> >@@ -0,0 +1,25 @@
-> >+What:		/dev/raw-kcs*
-> >+Date:		2021-02-15
-> >+KernelVersion:	5.13
-> >+Contact:	openbmc at lists.ozlabs.org
-> >+Contact:	openipmi-developer at lists.sourceforge.net
-> >+Contact:	Andrew Jeffery <andrew@aj.id.au>
-> >+Description:	``/dev/raw-kcs*`` exposes to userspace the data and
-> >+		status registers of Keyboard-Controller-Style (KCS) IPMI
-> >+		interfaces via read() and write() syscalls. Direct
-> >+		exposure of the data and status registers enables
-> >+		inefficient but arbitrary protocols to be implemented
-> >+		over the device. A typical approach is to use KCS
-> >+		devices for out-of-band signalling for bulk data
-> >+		transfers over other interfaces between a Baseboard
-> >+		Management Controller and its host.
-> >+
-> >+		+--------+--------+---------+
-> >+		| Offset | read() | write() |
-> >+		+--------+--------+---------+
-> >+		|   0    |   IDR  |   ODR   |
-> >+		+--------+--------+---------+
-> >+		|   1    |   STR  |   STR   |
-> >+		+--------+--------+---------+
-> >+
-> >+Users:		libmctp: https://github.com/openbmc/libmctp
-> >diff --git a/drivers/char/ipmi/Kconfig b/drivers/char/ipmi/Kconfig
-> >index bc5f81899b62..273ac1a1f870 100644
-> >--- a/drivers/char/ipmi/Kconfig
-> >+++ b/drivers/char/ipmi/Kconfig
-> >@@ -137,6 +137,23 @@ config IPMI_KCS_BMC_CDEV_IPMI
-> > 	  This support is also available as a module. The module will be
-> > 	  called kcs_bmc_cdev_ipmi.
-> >
-> >+config IPMI_KCS_BMC_CDEV_RAW
-> >+	depends on IPMI_KCS_BMC
-> >+	tristate "Raw character device interface for BMC KCS devices"
-> >+	help
-> >+	  Provides a BMC-side character device directly exposing the
-> >+	  data and status registers of a KCS device to userspace. While
-> >+	  KCS devices are commonly used to implement IPMI message
-> >+	  passing, they provide a general interface for exchange of
-> >+	  interrupts, data and status information between the BMC and
-> >+	  its host.
-> >+
-> >+	  Say YES if you wish to use the KCS devices to implement
-> >+	  protocols that are not IPMI.
-> >+
-> >+	  This support is also available as a module. The module will be
-> >+	  called kcs_bmc_cdev_raw.
-> >+
-> > config ASPEED_BT_IPMI_BMC
-> > 	depends on ARCH_ASPEED || COMPILE_TEST
-> > 	depends on REGMAP && REGMAP_MMIO && MFD_SYSCON
-> >diff --git a/drivers/char/ipmi/Makefile b/drivers/char/ipmi/Makefile
-> >index fcfa676afddb..c8cc248ddd90 100644
-> >--- a/drivers/char/ipmi/Makefile
-> >+++ b/drivers/char/ipmi/Makefile
-> >@@ -24,6 +24,7 @@ obj-$(CONFIG_IPMI_WATCHDOG) += ipmi_watchdog.o
-> > obj-$(CONFIG_IPMI_POWEROFF) += ipmi_poweroff.o
-> > obj-$(CONFIG_IPMI_KCS_BMC) += kcs_bmc.o
-> > obj-$(CONFIG_IPMI_KCS_BMC_CDEV_IPMI) += kcs_bmc_cdev_ipmi.o
-> >+obj-$(CONFIG_IPMI_KCS_BMC_CDEV_RAW) += kcs_bmc_cdev_raw.o
-> > obj-$(CONFIG_ASPEED_BT_IPMI_BMC) += bt-bmc.o
-> > obj-$(CONFIG_ASPEED_KCS_IPMI_BMC) += kcs_bmc_aspeed.o
-> > obj-$(CONFIG_NPCM7XX_KCS_IPMI_BMC) += kcs_bmc_npcm7xx.o
-> >diff --git a/drivers/char/ipmi/kcs_bmc_cdev_raw.c b/drivers/char/ipmi/kcs_bmc_cdev_raw.c
-> >new file mode 100644
-> >index 000000000000..bdd258648c8e
-> >--- /dev/null
-> >+++ b/drivers/char/ipmi/kcs_bmc_cdev_raw.c
-> >@@ -0,0 +1,443 @@
-> >+// SPDX-License-Identifier: GPL-2.0-or-later
-> >+/* Copyright (c) 2021 IBM Corp. */
-> >+
-> >+#include <linux/delay.h>
-> >+#include <linux/device.h>
-> >+#include <linux/errno.h>
-> >+#include <linux/fs.h>
-> >+#include <linux/list.h>
-> >+#include <linux/miscdevice.h>
-> >+#include <linux/module.h>
-> >+#include <linux/poll.h>
-> >+
-> >+#include "kcs_bmc_client.h"
-> >+
-> >+#define DEVICE_NAME "raw-kcs"
-> >+
-> >+struct kcs_bmc_raw {
-> >+	struct list_head entry;
-> >+
-> >+	struct kcs_bmc_client client;
-> >+
-> >+	wait_queue_head_t queue;
-> >+	u8 events;
-> >+	bool writable;
-> >+	bool readable;
-> >+	u8 idr;
-> >+
-> >+	struct miscdevice miscdev;
-> >+};
-> >+
-> >+static inline struct kcs_bmc_raw *client_to_kcs_bmc_raw(struct kcs_bmc_client *client)
-> >+{
-> >+	return container_of(client, struct kcs_bmc_raw, client);
-> >+}
-> >+
-> >+/* Call under priv->queue.lock */
-> >+static void kcs_bmc_raw_update_event_mask(struct kcs_bmc_raw *priv, u8 mask, u8 state)
-> >+{
-> >+	kcs_bmc_update_event_mask(priv->client.dev, mask, state);
-> >+	priv->events &= ~mask;
-> >+	priv->events |= state & mask;
-> >+}
-> >+
-> >+static int kcs_bmc_raw_event(struct kcs_bmc_client *client)
-> >+{
-> >+	struct kcs_bmc_raw *priv;
-> >+	struct device *dev;
-> >+	u8 status, handled;
-> >+
-> >+	priv = client_to_kcs_bmc_raw(client);
-> >+	dev = priv->miscdev.this_device;
-> >+
-> >+	spin_lock(&priv->queue.lock);
-> >+
-> >+	status = kcs_bmc_read_status(client->dev);
-> >+	handled = 0;
-> >+
-> >+	if ((priv->events & KCS_BMC_EVENT_TYPE_IBF) && (status & KCS_BMC_STR_IBF)) {
-> >+		if (priv->readable)
-> >+			dev_err(dev, "Storm brewing!");
-> 
-> That seems a *touch* cryptic...
-
-Uh, yeah. That wasn't meant to be there in that form.
-
-> 
-> >+
-> >+		dev_dbg(dev, "Disabling IDR events for back-pressure\n");
-> >+		kcs_bmc_raw_update_event_mask(priv, KCS_BMC_EVENT_TYPE_IBF, 0);
-> >+		priv->idr = kcs_bmc_read_data(client->dev);
-> >+		priv->readable = true;
-> >+
-> >+		dev_dbg(dev, "IDR read, waking waiters\n");
-> >+		wake_up_locked(&priv->queue);
-> >+
-> >+		handled |= KCS_BMC_EVENT_TYPE_IBF;
-> >+	}
-> >+
-> >+	if ((priv->events & KCS_BMC_EVENT_TYPE_OBE) && !(status & KCS_BMC_STR_OBF)) {
-> >+		kcs_bmc_raw_update_event_mask(priv, KCS_BMC_EVENT_TYPE_OBE, 0);
-> >+		priv->writable = true;
-> >+
-> >+		dev_dbg(dev, "ODR writable, waking waiters\n");
-> >+		wake_up_locked(&priv->queue);
-> >+
-> >+		handled |= KCS_BMC_EVENT_TYPE_OBE;
-> >+	}
-> >+
-> >+	spin_unlock(&priv->queue.lock);
-> >+
-> >+	return handled ? KCS_BMC_EVENT_HANDLED : KCS_BMC_EVENT_NONE;
-> 
-> Hm, if we're just treating it as a boolean here, is there any need to
-> muck around with setting specific bits of 'handled' in the if-blocks
-> above?
-
-I don't think it matters? If we want to debug we can print the handled bitmask.
-
-> 
-> >+}
-> >+
-> >+static const struct kcs_bmc_client_ops kcs_bmc_raw_client_ops = {
-> >+	.event = kcs_bmc_raw_event,
-> >+};
-> >+
-> >+static inline struct kcs_bmc_raw *file_to_kcs_bmc_raw(struct file *filp)
-> >+{
-> >+	return container_of(filp->private_data, struct kcs_bmc_raw, miscdev);
-> >+}
-> >+
-> >+static int kcs_bmc_raw_open(struct inode *inode, struct file *filp)
-> >+{
-> >+	struct kcs_bmc_raw *priv = file_to_kcs_bmc_raw(filp);
-> >+
-> >+	return kcs_bmc_enable_device(priv->client.dev, &priv->client);
-> >+}
-> >+
-> >+static bool kcs_bmc_raw_prepare_obe(struct kcs_bmc_raw *priv)
-> >+{
-> >+	bool writable;
-> >+
-> >+	/* Enable the OBE event so we can catch the host clearing OBF */
-> >+	kcs_bmc_raw_update_event_mask(priv, KCS_BMC_EVENT_TYPE_OBE, KCS_BMC_EVENT_TYPE_OBE);
-> >+
-> >+	/* Now that we'll catch an OBE event, check if it's already occurred */
-> >+	writable = !(kcs_bmc_read_status(priv->client.dev) & KCS_BMC_STR_OBF);
-> >+
-> >+	/* If OBF is clear we've missed the OBE event, so disable it */
-> >+	if (writable)
-> >+		kcs_bmc_raw_update_event_mask(priv, KCS_BMC_EVENT_TYPE_OBE, 0);
-> >+
-> >+	return writable;
-> >+}
-> >+
-> >+static __poll_t kcs_bmc_raw_poll(struct file *filp, poll_table *wait)
-> >+{
-> >+	struct kcs_bmc_raw *priv;
-> >+	__poll_t events = 0;
-> >+
-> >+	priv = file_to_kcs_bmc_raw(filp);
-> >+
-> >+	poll_wait(filp, &priv->queue, wait);
-> >+
-> >+	spin_lock_irq(&priv->queue.lock);
-> >+	if (kcs_bmc_raw_prepare_obe(priv))
-> >+		events |= (EPOLLOUT | EPOLLWRNORM);
-> >+
-> >+	if (priv->readable || (kcs_bmc_read_status(priv->client.dev) & KCS_BMC_STR_IBF))
-> >+		events |= (EPOLLIN | EPOLLRDNORM);
-> >+	spin_unlock_irq(&priv->queue.lock);
-> >+
-> >+	return events;
-> >+}
-> >+
-> >+static ssize_t kcs_bmc_raw_read(struct file *filp, char __user *buf,
-> >+			     size_t count, loff_t *ppos)
-> >+{
-> >+	struct kcs_bmc_device *kcs_bmc;
-> >+	struct kcs_bmc_raw *priv;
-> >+	bool read_idr, read_str;
-> >+	struct device *dev;
-> >+	u8 idr, str;
-> >+	ssize_t rc;
-> >+
-> >+	priv = file_to_kcs_bmc_raw(filp);
-> >+	kcs_bmc = priv->client.dev;
-> >+	dev = priv->miscdev.this_device;
-> >+
-> >+	if (!count)
-> >+		return 0;
-> >+
-> >+	if (count > 2 || *ppos > 1)
-> >+		return -EINVAL;
-> >+
-> >+	if (*ppos + count > 2)
-> >+		return -EINVAL;
-> >+
-> >+	read_idr = (*ppos == 0);
-> >+	read_str = (*ppos == 1) || (count == 2);
-> >+
-> >+	spin_lock_irq(&priv->queue.lock);
-> >+	if (read_idr) {
-> >+		dev_dbg(dev, "Waiting for IBF\n");
-> >+		str = kcs_bmc_read_status(kcs_bmc);
-> >+		if ((filp->f_flags & O_NONBLOCK) && (str & KCS_BMC_STR_IBF)) {
-> >+			rc = -EWOULDBLOCK;
-> >+			goto out;
-> >+		}
-> >+
-> >+		rc = wait_event_interruptible_locked(priv->queue,
-> >+						     priv->readable || (str & KCS_BMC_STR_IBF));
-> >+		if (rc < 0)
-> >+			goto out;
-> >+
-> >+		if (signal_pending(current)) {
-> >+			dev_dbg(dev, "Interrupted waiting for IBF\n");
-> >+			rc = -EINTR;
-> >+			goto out;
-> >+		}
-> >+
-> >+		/*
-> >+		 * Re-enable events prior to possible read of IDR (which clears
-> >+		 * IBF) to ensure we receive interrupts for subsequent writes
-> >+		 * to IDR. Writes to IDR by the host should not occur while IBF
-> >+		 * is set.
-> >+		 */
-> >+		dev_dbg(dev, "Woken by IBF, enabling IRQ\n");
-> >+		kcs_bmc_raw_update_event_mask(priv, KCS_BMC_EVENT_TYPE_IBF,
-> >+					      KCS_BMC_EVENT_TYPE_IBF);
-> >+
-> >+		/* Read data out of IDR into internal storage if necessary */
-> >+		if (!priv->readable) {
-> >+			WARN(!(str & KCS_BMC_STR_IBF), "Unknown reason for wakeup!");
-> >+
-> >+			priv->idr = kcs_bmc_read_data(kcs_bmc);
-> >+		}
-> >+
-> >+		/* Copy data from internal storage to userspace */
-> >+		idr = priv->idr;
-> >+
-> >+		/* We're done consuming the internally stored value */
-> >+		priv->readable = false;
-> >+	}
-> >+
-> >+	if (read_str) {
-> >+		str = kcs_bmc_read_status(kcs_bmc);
-> >+		if (*ppos == 0 || priv->readable)
-> >+			/*
-> >+			 * If we got this far with `*ppos == 0` then we've read
-> >+			 * data out of IDR, so set IBF when reporting back to
-> >+			 * userspace so userspace knows the IDR value is valid.
-> >+			 */
-> >+			str |= KCS_BMC_STR_IBF;
-> >+
-> >+		dev_dbg(dev, "Read status 0x%x\n", str);
-> >+
-> >+	}
-> >+
-> >+	rc = count;
-> >+out:
-> >+	spin_unlock_irq(&priv->queue.lock);
-> >+
-> >+	if (rc < 0)
-> >+		return rc;
-> >+
-> >+	/* Now copy the data in to the userspace buffer */
-> >+
-> >+	if (read_idr)
-> >+		if (copy_to_user(buf++, &idr, sizeof(idr)))
-> >+			return -EFAULT;
-> >+
-> >+	if (read_str)
-> >+		if (copy_to_user(buf, &str, sizeof(str)))
-> >+			return -EFAULT;
-> >+
-> >+	return count;
-> >+}
-> >+
-> >+static ssize_t kcs_bmc_raw_write(struct file *filp, const char __user *buf,
-> >+			      size_t count, loff_t *ppos)
-> >+{
-> >+	struct kcs_bmc_device *kcs_bmc;
-> >+	bool write_odr, write_str;
-> >+	struct kcs_bmc_raw *priv;
-> >+	struct device *dev;
-> >+	uint8_t data[2];
-> >+	ssize_t result;
-> >+	u8 str;
-> >+
-> >+	priv = file_to_kcs_bmc_raw(filp);
-> >+	kcs_bmc = priv->client.dev;
-> >+	dev = priv->miscdev.this_device;
-> >+
-> >+	if (!count)
-> >+		return count;
-> >+
-> >+	if (count > 2)
-> >+		return -EINVAL;
-> >+
-> >+	if (*ppos >= 2)
-> >+		return -EINVAL;
-> >+
-> >+	if (*ppos + count > 2)
-> >+		return -EINVAL;
-> >+
-> >+	if (copy_from_user(data, buf, count))
-> >+		return -EFAULT;
-> >+
-> >+	write_odr = (*ppos == 0);
-> >+	write_str = (*ppos == 1) || (count == 2);
-> >+
-> >+	spin_lock_irq(&priv->queue.lock);
-> >+
-> >+	/* Always write status before data, we generate the SerIRQ by writing ODR */
-> >+	if (write_str) {
-> >+		/* The index of STR in the userspace buffer depends on whether ODR is written */
-> >+		str = data[*ppos == 0];
-> >+		if (!(str & KCS_BMC_STR_OBF))
-> >+			dev_warn(dev, "Clearing OBF with status write: 0x%x\n", str);
-> >+		dev_dbg(dev, "Writing status 0x%x\n", str);
-> >+		kcs_bmc_write_status(kcs_bmc, str);
-> >+	}
-> >+
-> >+	if (write_odr) {
-> >+		/* If we're writing ODR it's always the first byte in the buffer */
-> >+		u8 odr = data[0];
-> >+
-> >+		str = kcs_bmc_read_status(kcs_bmc);
-> >+		if (str & KCS_BMC_STR_OBF) {
-> >+			if (filp->f_flags & O_NONBLOCK) {
-> >+				result = -EWOULDBLOCK;
-> >+				goto out;
-> >+			}
-> >+
-> >+			priv->writable = kcs_bmc_raw_prepare_obe(priv);
-> >+
-> >+			/* Now either OBF is already clear, or we'll get an OBE event to wake us */
-> >+			dev_dbg(dev, "Waiting for OBF to clear\n");
-> >+			wait_event_interruptible_locked(priv->queue, priv->writable);
-> >+
-> >+			if (signal_pending(current)) {
-> >+				kcs_bmc_raw_update_event_mask(priv, KCS_BMC_EVENT_TYPE_OBE, 0);
-> >+				result = -EINTR;
-> >+				goto out;
-> >+			}
-> >+
-> >+			WARN_ON(kcs_bmc_read_status(kcs_bmc) & KCS_BMC_STR_OBF);
-> >+		}
-> >+
-> >+		dev_dbg(dev, "Writing 0x%x to ODR\n", odr);
-> >+		kcs_bmc_write_data(kcs_bmc, odr);
-> >+	}
-> >+
-> >+	result = count;
-> >+out:
-> >+	spin_unlock_irq(&priv->queue.lock);
-> >+
-> >+	return result;
-> >+}
-> >+
-> >+static int kcs_bmc_raw_release(struct inode *inode, struct file *filp)
-> >+{
-> >+	struct kcs_bmc_raw *priv = file_to_kcs_bmc_raw(filp);
-> >+
-> >+	kcs_bmc_disable_device(priv->client.dev, &priv->client);
-> >+
-> >+	return 0;
-> >+}
-> >+
-> >+static const struct file_operations kcs_bmc_raw_fops = {
-> >+	.owner          = THIS_MODULE,
-> >+	.open		= kcs_bmc_raw_open,
-> >+	.llseek		= no_seek_end_llseek,
-> >+	.read           = kcs_bmc_raw_read,
-> >+	.write          = kcs_bmc_raw_write,
-> >+	.poll		= kcs_bmc_raw_poll,
-> >+	.release	= kcs_bmc_raw_release,
-> >+};
-> >+
-> >+static DEFINE_SPINLOCK(kcs_bmc_raw_instances_lock);
-> >+static LIST_HEAD(kcs_bmc_raw_instances);
-> >+
-> >+static int kcs_bmc_raw_attach_cdev(struct kcs_bmc_device *kcs_bmc)
-> >+{
-> >+	struct kcs_bmc_raw *priv;
-> >+	int rc;
-> >+
-> >+	priv = devm_kzalloc(kcs_bmc->dev, sizeof(*priv), GFP_KERNEL);
-> >+	if (!priv)
-> >+		return -ENOMEM;
-> >+
-> >+	priv->client.dev = kcs_bmc;
-> >+	priv->client.ops = &kcs_bmc_raw_client_ops;
-> >+
-> >+	init_waitqueue_head(&priv->queue);
-> >+	priv->writable = false;
-> >+	priv->readable = false;
-> >+
-> >+	priv->miscdev.minor = MISC_DYNAMIC_MINOR;
-> >+	priv->miscdev.name = devm_kasprintf(kcs_bmc->dev, GFP_KERNEL, "%s%u", DEVICE_NAME,
-> >+					   kcs_bmc->channel);
-> >+	if (!priv->miscdev.name)
-> >+		return -EINVAL;
-> >+
-> >+	priv->miscdev.fops = &kcs_bmc_raw_fops;
-> >+
-> >+	/* Initialise our expected events. Listen for IBF but ignore OBE until necessary */
-> >+	kcs_bmc_raw_update_event_mask(priv, (KCS_BMC_EVENT_TYPE_IBF | KCS_BMC_EVENT_TYPE_OBE),
-> >+				      KCS_BMC_EVENT_TYPE_IBF);
-> >+
-> >+	rc = misc_register(&priv->miscdev);
-> >+	if (rc) {
-> >+		dev_err(kcs_bmc->dev, "Unable to register device\n");
-> >+		return rc;
-> >+	}
-> >+
-> >+	spin_lock_irq(&kcs_bmc_raw_instances_lock);
-> >+	list_add(&priv->entry, &kcs_bmc_raw_instances);
-> >+	spin_unlock_irq(&kcs_bmc_raw_instances_lock);
-> >+
-> >+	dev_info(kcs_bmc->dev, "Initialised raw client for channel %d", kcs_bmc->channel);
-> >+
-> >+	return 0;
-> >+}
-> >+
-> >+static int kcs_bmc_raw_detach_cdev(struct kcs_bmc_device *kcs_bmc)
-> >+{
-> >+	struct kcs_bmc_raw *priv = NULL, *pos;
-> >+
-> >+	spin_lock_irq(&kcs_bmc_raw_instances_lock);
-> >+	list_for_each_entry(pos, &kcs_bmc_raw_instances, entry) {
-> >+		if (pos->client.dev == kcs_bmc) {
-> >+			priv = pos;
-> >+			list_del(&pos->entry);
-> >+			break;
-> >+		}
-> >+	}
-> >+	spin_unlock_irq(&kcs_bmc_raw_instances_lock);
-> >+
-> >+	if (!priv)
-> >+		return 0;
-> 
-> Similarly to patch #12, might we want to indicate some sort of failure
-> here, or is this a normal/expected case?
-
-I replied on 12/21, I'll have another think about it.
-
-Cheers,
-
-Andrew
