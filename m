@@ -1,42 +1,86 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Fri, 9 Apr 2021 10:13:36 +0200
-Subject: [PATCH v2 00/21] ipmi: Allow raw access to KCS devices
-In-Reply-To: <CACPK8Xc5HC7TZ6cUDH6+uHQO1LQCZE0YeENua1sE8nDXs0R2mg@mail.gmail.com>
-References: <20210319061952.145040-1-andrew@aj.id.au>
- <2db77e16-3f44-4c02-a7ba-a4fac8141ae3@www.fastmail.com>
- <20210408121441.GG7166@minyard.net>
- <6ff29d26-543a-4790-abb4-ebaa3f8d0265@www.fastmail.com>
- <CACPK8Xc5HC7TZ6cUDH6+uHQO1LQCZE0YeENua1sE8nDXs0R2mg@mail.gmail.com>
-Message-ID: <CAK8P3a2ch82=QccNZboa-e1tVaotyJfGFTfqDuQCO0xPVitXgA@mail.gmail.com>
+From: Zev Weiss <zweiss@equinix.com>
+Date: Fri, 9 Apr 2021 08:46:38 +0000
+Subject: [PATCH v2 17/21] dt-bindings: ipmi: Convert ASPEED KCS binding to
+ schema
+In-Reply-To: <YG/ppKEAs5EBUao3@packtop>
+References: <20210319062752.145730-1-andrew@aj.id.au>
+ <20210319062752.145730-17-andrew@aj.id.au> <YG/i9lSxxCMIzkRs@packtop>
+ <29937129-3a17-4a32-a723-191b693a1e0c@www.fastmail.com>
+ <YG/ppKEAs5EBUao3@packtop>
+Message-ID: <YHAUbTeoxRFBUjMi@packtop>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Apr 9, 2021 at 6:09 AM Joel Stanley <joel@jms.id.au> wrote:
-> On Thu, 8 Apr 2021 at 23:47, Andrew Jeffery <andrew@aj.id.au> wrote:
-> > On Thu, 8 Apr 2021, at 21:44, Corey Minyard wrote:
-> > > On Thu, Apr 08, 2021 at 10:27:46AM +0930, Andrew Jeffery wrote:
-> > > There were some minor concerns that were unanswered, and there really
-> > > was no review by others for many of the patches.
-> >
-> > Right; I was planning to clean up the minor concerns once I'd received
-> > some more feedback. I could have done a better job of communicating
-> > that :)
+On Fri, Apr 09, 2021 at 12:44:04AM CDT, Zev Weiss wrote:
+>On Fri, Apr 09, 2021 at 12:33:10AM CDT, Andrew Jeffery wrote:
+>>
+>>
+>>On Fri, 9 Apr 2021, at 14:45, Zev Weiss wrote:
+>>>On Fri, Mar 19, 2021 at 01:27:48AM CDT, Andrew Jeffery wrote:
+>>>>Given the deprecated binding, improve the ability to detect issues in
+>>>>the platform devicetrees. Further, a subsequent patch will introduce a
+>>>>new interrupts property for specifying SerIRQ behaviour, so convert
+>>>>before we do any further additions.
+>>>>
+>>>>Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
+>>>>---
+>>>> .../bindings/ipmi/aspeed,ast2400-kcs-bmc.yaml | 92 +++++++++++++++++++
+>>>> .../bindings/ipmi/aspeed-kcs-bmc.txt          | 33 -------
+>>>> 2 files changed, 92 insertions(+), 33 deletions(-)
+>>>> create mode 100644 Documentation/devicetree/bindings/ipmi/aspeed,ast2400-kcs-bmc.yaml
+>>>> delete mode 100644 Documentation/devicetree/bindings/ipmi/aspeed-kcs-bmc.txt
+>>>>
+>>>>diff --git a/Documentation/devicetree/bindings/ipmi/aspeed,ast2400-kcs-bmc.yaml b/Documentation/devicetree/bindings/ipmi/aspeed,ast2400-kcs-bmc.yaml
+>>>>new file mode 100644
+>>>>index 000000000000..697ca575454f
+>>>>--- /dev/null
+>>>>+++ b/Documentation/devicetree/bindings/ipmi/aspeed,ast2400-kcs-bmc.yaml
+>>>>@@ -0,0 +1,92 @@
+>>>>+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+>>>>+%YAML 1.2
+>>>>+---
+>>>>+$id: http://devicetree.org/schemas/ipmi/aspeed,ast2400-kcs-bmc.yaml
+>>>>+$schema: http://devicetree.org/meta-schemas/core.yaml
+>>>>+
+>>>>+title: ASPEED BMC KCS Devices
+>>>>+
+>>>>+maintainers:
+>>>>+  - Andrew Jeffery <andrew@aj.id.au>
+>>>>+
+>>>>+description: |
+>>>>+  The Aspeed BMC SoCs typically use the Keyboard-Controller-Style (KCS)
+>>>>+  interfaces on the LPC bus for in-band IPMI communication with their host.
+>>>>+
+>>>>+properties:
+>>>>+  compatible:
+>>>>+    oneOf:
+>>>>+      - description: Channel ID derived from reg
+>>>>+        items:
+>>>>+          enum:
+>>>>+            - aspeed,ast2400-kcs-bmc-v2
+>>>>+            - aspeed,ast2500-kcs-bmc-v2
+>>>>+            - aspeed,ast2600-kcs-bmc
+>>>
+>>>Should this have a "-v2" suffix?
+>>
+>>Well, that was kind of a matter of perspective. The 2600 compatible was
+>>added after we'd done the v2 of the binding for the 2400 and 2500 so it
+>>never needed correcting. But it is a case of "don't use the deprecated
+>>properties with the 2600 compatible".
+>>
+>>I don't think a change is necessary?
+>>
 >
-> I'll merge the first five through the aspeed tree this coming merge
-> window. We have acks from the relevant maintainers.
+>It just looked inconsistent with the corresponding string in the
+>ast_kcs_bmc_match[] table; perhaps that should be changed instead then?
 >
-> Arnd: would you prefer that this come as it's own pull request, or as
-> part of the device tree branch?
 
-When you are unsure, it's almost never wrong to go for a separate
-branch, which gives you a chance to have a concise description
-of the contents in the tag. This would be particularly helpful if there
-are incompatible changes to the DT binding that require a justification.
+...except I realize now I only saw the 2600 v2 string in the match table
+because I put it there myself in the process of resolving a conflict
+when applying your series to the openbmc dev-5.10 branch for testing
+purposes.  So nevermind on this.
 
-If you are only adding a few DT nodes to existing files, then merging
-these through the regular branch is probably easier.
-
-       Arnd
+Reviewed-by: Zev Weiss <zweiss@equinix.com>
