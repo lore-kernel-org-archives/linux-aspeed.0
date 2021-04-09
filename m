@@ -1,96 +1,42 @@
-From: David Hildenbrand <david@redhat.com>
-Date: Fri, 9 Apr 2021 10:09:51 +0200
-Subject: [PATCH v1 2/2] drivers/gpu/drm: don't select DMA_CMA or CMA from
- aspeed or etnaviv
-In-Reply-To: <CAK8P3a3sqZBo8-zye1yiZuD2uMUr0oE_q_QfaK9K54TEgd1Cdw@mail.gmail.com>
-References: <20210408092011.52763-1-david@redhat.com>
- <20210408092011.52763-3-david@redhat.com>
- <CAK8P3a09LdJ-87ZrN28y=t8Sa0zL-3NOvEWhkStMY+2EbO7UAw@mail.gmail.com>
- <cd14d4b4-da82-b21c-2cd6-8e474d97b955@redhat.com>
- <CAK8P3a0Wg1mGZoBkD_RwMx-jzQNK2krrDxDQV5uhCHoyz-e=dw@mail.gmail.com>
- <7496ac87-9676-1b4e-3444-c2a662ec376b@redhat.com>
- <CAK8P3a1tVwkDbtvKi8atkrg1-CfoQHGrXLCzn_uo+=dfZJfdQA@mail.gmail.com>
- <3a2d64a7-8425-8daf-17ee-95b9f0c635f9@redhat.com>
- <CACRpkdYizKGhtYzE+22oZAduLNCOGP9Vbp=LQbXG1C-a+MyMcg@mail.gmail.com>
- <2ef3b65c-c0ef-7bbe-0e05-39ee8f2bae48@redhat.com>
- <CAK8P3a3sqZBo8-zye1yiZuD2uMUr0oE_q_QfaK9K54TEgd1Cdw@mail.gmail.com>
-Message-ID: <b78f2ec2-3c47-f435-6d5e-fb7330ff3907@redhat.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Fri, 9 Apr 2021 10:13:36 +0200
+Subject: [PATCH v2 00/21] ipmi: Allow raw access to KCS devices
+In-Reply-To: <CACPK8Xc5HC7TZ6cUDH6+uHQO1LQCZE0YeENua1sE8nDXs0R2mg@mail.gmail.com>
+References: <20210319061952.145040-1-andrew@aj.id.au>
+ <2db77e16-3f44-4c02-a7ba-a4fac8141ae3@www.fastmail.com>
+ <20210408121441.GG7166@minyard.net>
+ <6ff29d26-543a-4790-abb4-ebaa3f8d0265@www.fastmail.com>
+ <CACPK8Xc5HC7TZ6cUDH6+uHQO1LQCZE0YeENua1sE8nDXs0R2mg@mail.gmail.com>
+Message-ID: <CAK8P3a2ch82=QccNZboa-e1tVaotyJfGFTfqDuQCO0xPVitXgA@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 08.04.21 22:29, Arnd Bergmann wrote:
-> On Thu, Apr 8, 2021 at 6:45 PM David Hildenbrand <david@redhat.com> wrote:
->> On 08.04.21 14:49, Linus Walleij wrote:
->>> On Thu, Apr 8, 2021 at 2:01 PM David Hildenbrand <david@redhat.com> wrote:
->>>
->>>>> This is something you could do using a hidden helper symbol like
->>>>>
->>>>> config DRMA_ASPEED_GFX
->>>>>           bool "Aspeed display driver"
->>>>>           select DRM_WANT_CMA
->>>>>
->>>>> config DRM_WANT_CMA
->>>>>           bool
->>>>>           help
->>>>>              Select this from any driver that benefits from CMA being enabled
->>>>>
->>>>> config DMA_CMA
->>>>>           bool "Use CMA helpers for DRM"
->>>>>           default DRM_WANT_CMA
->>>>>
->>>>>             Arnd
->>>>>
->>>>
->>>> That's precisely what I had first, with an additional "WANT_CMA" --  but
->>>> looking at the number of such existing options (I was able to spot 1 !)
->>>
->>> If you do this it probably makes sense to fix a few other drivers
->>> Kconfig in the process. It's not just a problem with your driver.
->>> "my" drivers:
->>>
->>
->> :) I actually wanted to convert them to "depends on DMA_CMA" but ran
->> into recursive dependencies ...
->>
->>> drivers/gpu/drm/mcde/Kconfig
->>> drivers/gpu/drm/pl111/Kconfig
->>> drivers/gpu/drm/tve200/Kconfig
-> 
-> Right, this is the main problem caused by using 'select' to
-> force-enable symbols that other drivers depend on.
-> 
-> Usually, the answer is to be consistent about the use of 'select'
-> and 'depends on', using the former only to enable symbols that
-> are hidden, while using 'depends on' for anything that is an
-> actual build time dependency.
-> 
->> I was assuming these are "real" dependencies. Will it also work without
->> DMA_CMA?
-> 
-> I think in this case, it is fairly likely to work without DMA_CMA when the
-> probe function gets called during a fresh boot, but fairly likely to fail if
-> it gets called after the system has run for long enough to fragment the
-> free memory.
-> 
-> The point of DMA_CMA is to make it work reliably.
+On Fri, Apr 9, 2021 at 6:09 AM Joel Stanley <joel@jms.id.au> wrote:
+> On Thu, 8 Apr 2021 at 23:47, Andrew Jeffery <andrew@aj.id.au> wrote:
+> > On Thu, 8 Apr 2021, at 21:44, Corey Minyard wrote:
+> > > On Thu, Apr 08, 2021 at 10:27:46AM +0930, Andrew Jeffery wrote:
+> > > There were some minor concerns that were unanswered, and there really
+> > > was no review by others for many of the patches.
+> >
+> > Right; I was planning to clean up the minor concerns once I'd received
+> > some more feedback. I could have done a better job of communicating
+> > that :)
+>
+> I'll merge the first five through the aspeed tree this coming merge
+> window. We have acks from the relevant maintainers.
+>
+> Arnd: would you prefer that this come as it's own pull request, or as
+> part of the device tree branch?
 
-Right, and even at runtime there is no guarantee that DMA_CMA will do 
-anything -- especially if we don't reserve a CMA region (e.g., "cma=X").
+When you are unsure, it's almost never wrong to go for a separate
+branch, which gives you a chance to have a concise description
+of the contents in the tag. This would be particularly helpful if there
+are incompatible changes to the DT binding that require a justification.
 
-So this really sounds like a
+If you are only adding a few DT nodes to existing files, then merging
+these through the regular branch is probably easier.
 
-"desires DMA_CMA"
-
-and achieving that via an additional symbol or via "default y if ..." 
-for DMA_CMA sounds reasonable.
-
-Thanks!
-
--- 
-Thanks,
-
-David / dhildenb
-
+       Arnd
