@@ -1,125 +1,68 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Fri, 09 Apr 2021 09:16:35 +0930
-Subject: [PATCH v2 00/21] ipmi: Allow raw access to KCS devices
-In-Reply-To: <20210408121441.GG7166@minyard.net>
-References: <20210319061952.145040-1-andrew@aj.id.au>
- <2db77e16-3f44-4c02-a7ba-a4fac8141ae3@www.fastmail.com>
- <20210408121441.GG7166@minyard.net>
-Message-ID: <6ff29d26-543a-4790-abb4-ebaa3f8d0265@www.fastmail.com>
+From: Quan Nguyen <quan@os.amperecomputing.com>
+Date: Fri,  9 Apr 2021 10:13:28 +0700
+Subject: [PATCH v3 0/4] Add Ampere's Altra SMPro hwmon driver
+Message-ID: <20210409031332.21919-1-quan@os.amperecomputing.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+This patch series adds support for Ampere SMpro hwmon driver. This
+driver supports accessing various CPU sensors provided by the SMpro
+co-processor including temperature, power, voltages, and current found
+on Ampere Altra processor family.
 
+v3:
+  + Supported list of compatible string [Rob]
+  + Introduced reg property in DT to specify reg offset [Rob]
+  + Updated description and other minor changes in yaml file [Rob]
+  + Handled negative temperature value [Guenter]
+  + Returned -ENODEV if Manufacturer ID is wrong [Guenter]
+  + Refactored smpro_read_string() and smpro_temp_read() [Guenter]
+  + Removed smpro_write() function [Guenter]
+  + Added minor refactor changes [Quan]
 
-On Thu, 8 Apr 2021, at 21:44, Corey Minyard wrote:
-> On Thu, Apr 08, 2021 at 10:27:46AM +0930, Andrew Jeffery wrote:
-> > Hi Corey,
-> > 
-> > On Fri, 19 Mar 2021, at 16:49, Andrew Jeffery wrote:
-> > > Hello,
-> > > 
-> > > This series is a bit of a mix of things, but its primary purpose is to
-> > > expose BMC KCS IPMI devices to userspace in a way that enables userspace
-> > > to talk to host firmware using protocols that are not IPMI.
-> > > 
-> > > v1 can be found here:
-> > > 
-> > > https://lore.kernel.org/openbmc/20210219142523.3464540-1-andrew at aj.id.au/
-> > > 
-> > > Changes in v2 include:
-> > > 
-> > > * A rebase onto v5.12-rc2
-> > > * Incorporation of off-list feedback on SerIRQ configuration from
-> > >   Chiawei
-> > > * Further validation on hardware for ASPEED KCS devices 2, 3 and 4
-> > > * Lifting the existing single-open constraint of the IPMI chardev
-> > > * Fixes addressing Rob's feedback on the conversion of the ASPEED KCS
-> > >   binding to dt-schema
-> > > * Fixes addressing Rob's feedback on the new aspeed,lpc-interrupts
-> > >   property definition for the ASPEED KCS binding
-> > > 
-> > > A new chardev device is added whose implementation exposes the Input
-> > > Data Register (IDR), Output Data Register (ODR) and Status Register
-> > > (STR) via read() and write(), and implements poll() for event
-> > > monitoring.
-> > > 
-> > > The existing /dev/ipmi-kcs* chardev interface exposes the KCS devices in
-> > > a way which encoded the IPMI protocol in its behaviour. However, as
-> > > LPC[0] KCS devices give us bi-directional interrupts between the host
-> > > and a BMC with both a data and status byte, they are useful for purposes
-> > > beyond IPMI.
-> > > 
-> > > As a concrete example, libmctp[1] implements a vendor-defined MCTP[2]
-> > > binding using a combination of LPC Firmware cycles for bulk data
-> > > transfer and a KCS device via LPC IO cycles for out-of-band protocol
-> > > control messages[3]. This gives a throughput improvement over the
-> > > standard KCS binding[4] while continuing to exploit the ease of setup of
-> > > the LPC bus for early boot firmware on the host processor.
-> > > 
-> > > The series takes a bit of a winding path to achieve its aim:
-> > > 
-> > > 1. It begins with patches 1-5 put together by Chia-Wei, which I've
-> > > rebased on v5.12-rc2. These fix the ASPEED LPC bindings and other
-> > > non-KCS LPC-related ASPEED device drivers in a way that enables the
-> > > SerIRQ patches at the end of the series. With Joel's review I'm hoping
-> > > these 5 can go through the aspeed tree, and that the rest can go through
-> > > the IPMI tree.
-> > > 
-> > > 2. Next, patches 6-13 fairly heavily refactor the KCS support in the
-> > > IPMI part of the tree, re-architecting things such that it's possible to
-> > > support multiple chardev implementations sitting on top of the ASPEED
-> > > and Nuvoton device drivers. However, the KCS code didn't really have
-> > > great separation of concerns as it stood, so even if we disregard the
-> > > multiple-chardev support I think the cleanups are worthwhile.
-> > > 
-> > > 3. Patch 14 adds some interrupt management capabilities to the KCS
-> > > device drivers in preparation for patch 16, which introduces the new
-> > > "raw" KCS device interface. I'm not stoked about the device name/path,
-> > > so if people are looking to bikeshed something then feel free to lay
-> > > into that.
-> > > 
-> > > 4. The remaining patches switch the ASPEED KCS devicetree binding to
-> > > dt-schema, add a new interrupt property to describe the SerIRQ behaviour
-> > > of the device and finally clean up Serial IRQ support in the ASPEED KCS
-> > > driver.
-> > > 
-> > > Rob: The dt-binding patches still come before the relevant driver
-> > > changes, I tried to keep the two close together in the series, hence the
-> > > bindings changes not being patches 1 and 2.
-> > > 
-> > > I've exercised the series under qemu with the rainier-bmc machine plus
-> > > additional patches for KCS support[5]. I've also substituted this series in
-> > > place of a hacky out-of-tree driver that we've been using for the
-> > > libmctp stack and successfully booted the host processor under our
-> > > internal full-platform simulation tools for a Rainier system.
-> > > 
-> > > Note that this work touches the Nuvoton driver as well as ASPEED's, but
-> > > I don't have the capability to test those changes or the IPMI chardev
-> > > path. Tested-by tags would be much appreciated if you can exercise one
-> > > or both.
-> > > 
-> > > Please review!
-> > 
-> > Unfortunately the cover letter got detached from the rest of the series.
-> > 
-> > Any chance you can take a look at the patches?
-> 
-> There were some minor concerns that were unanswered, and there really
-> was no review by others for many of the patches.
+v2:
+  + Used 'struct of_device_id's .data attribute [Lee Jones]
+  + Removed "virtual" sensors [Guenter]
+  + Fixed typo "mili" to "milli", "nanoWatt" to "microWatt" [Guenter]
+  + Reported SOC_TDP as "Socket TDP" using max attributes [Guenter]
+  + Clarified "highest" meaning in documentation [Guenter]
+  + Corrected return error code when host is turn off [Guenter]
+  + Reported MEM HOT Threshold for all DIMMs as temp*_crit [Guenter]
+  + Removed license info as SPDX-License-Identifier existed [Guenter]
+  + Added is_visible() support [Guenter]
+  + Used HWMON_CHANNEL_INFO() macro and LABEL attributes [Guenter]
+  + Made is_valid_id() return boolean [Guenter]
+  + Returned -EPROBE_DEFER when smpro reg inaccessible [Guenter]
+  + Removed unnecessary error message when dev register fail [Guenter]
+  + Removed Socket TDP sensor [Quan]
+  + Changed "ampere,ac01-smpro" to "ampere,smpro" [Quan]
+  + Included sensor type and channel in labels [Quan]
+  + Refactorized code to fix checkpatch.pl --strict complaint [Quan]
 
-Right; I was planning to clean up the minor concerns once I'd received 
-some more feedback. I could have done a better job of communicating 
-that :)
+Quan Nguyen (4):
+  dt-bindings: mfd: Add bindings for Ampere Altra SMPro drivers
+  mfd: simple-mfd-i2c: Adds Ampere's Altra SMpro support
+  hwmon: smpro: Add Ampere's Altra smpro-hwmon driver
+  docs: hwmon: (smpro-hwmon) Add documentation
 
-> 
-> I would like this patch set, it makes some good cleanups.  But I would
-> like some more review and testing by others, if possible. 
+ .../bindings/hwmon/ampere,ac01-hwmon.yaml     |  28 +
+ .../devicetree/bindings/mfd/ampere,smpro.yaml | 105 ++++
+ Documentation/hwmon/index.rst                 |   1 +
+ Documentation/hwmon/smpro-hwmon.rst           | 101 ++++
+ drivers/hwmon/Kconfig                         |   8 +
+ drivers/hwmon/Makefile                        |   1 +
+ drivers/hwmon/smpro-hwmon.c                   | 491 ++++++++++++++++++
+ drivers/mfd/Kconfig                           |  10 +
+ drivers/mfd/simple-mfd-i2c.c                  |   6 +
+ 9 files changed, 751 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/hwmon/ampere,ac01-hwmon.yaml
+ create mode 100644 Documentation/devicetree/bindings/mfd/ampere,smpro.yaml
+ create mode 100644 Documentation/hwmon/smpro-hwmon.rst
+ create mode 100644 drivers/hwmon/smpro-hwmon.c
 
-No worries. I'm trying to rope some others in to take a look.
+-- 
+2.28.0
 
-Thanks for the response.
-
-Andrew
