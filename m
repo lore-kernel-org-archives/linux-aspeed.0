@@ -1,409 +1,309 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Fri, 09 Apr 2021 13:44:25 +0930
-Subject: =?UTF-8?Q?Re:_[PATCH_v1_2/2]_mmc:_sdhci-of-aspeed:_Support_toggling_SD_b?=
- =?UTF-8?Q?us_signal_voltage_by_GPIO?=
-In-Reply-To: <20210408015218.20560-3-steven_lee@aspeedtech.com>
-References: <20210408015218.20560-1-steven_lee@aspeedtech.com>
- <20210408015218.20560-3-steven_lee@aspeedtech.com>
-Message-ID: <acaa2cc2-9b12-442e-a767-3c4b41affa21@www.fastmail.com>
+From: Zev Weiss <zweiss@equinix.com>
+Date: Fri, 9 Apr 2021 04:35:30 +0000
+Subject: [PATCH v2 13/21] ipmi: kcs_bmc: Decouple the IPMI chardev from
+ the core
+In-Reply-To: <20210319062752.145730-13-andrew@aj.id.au>
+References: <20210319062752.145730-1-andrew@aj.id.au>
+ <20210319062752.145730-13-andrew@aj.id.au>
+Message-ID: <YG/ZkanVAypmjCba@packtop>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Steven,
+On Fri, Mar 19, 2021 at 01:27:44AM CDT, Andrew Jeffery wrote:
+>Now that we have untangled the data-structures, split the userspace
+>interface out into its own module. Userspace interfaces and drivers are
+>registered to the KCS BMC core to support arbitrary binding of either.
+>
+>Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
+>---
+> drivers/char/ipmi/Kconfig             | 13 +++++
+> drivers/char/ipmi/Makefile            |  3 +-
+> drivers/char/ipmi/kcs_bmc.c           | 78 ++++++++++++++++++++++++++-
+> drivers/char/ipmi/kcs_bmc.h           |  4 --
+> drivers/char/ipmi/kcs_bmc_cdev_ipmi.c | 33 +++++++++---
+> drivers/char/ipmi/kcs_bmc_client.h    | 14 +++++
+> 6 files changed, 132 insertions(+), 13 deletions(-)
+>
+>diff --git a/drivers/char/ipmi/Kconfig b/drivers/char/ipmi/Kconfig
+>index 07847d9a459a..bc5f81899b62 100644
+>--- a/drivers/char/ipmi/Kconfig
+>+++ b/drivers/char/ipmi/Kconfig
+>@@ -124,6 +124,19 @@ config NPCM7XX_KCS_IPMI_BMC
+> 	  This support is also available as a module.  If so, the module
+> 	  will be called kcs_bmc_npcm7xx.
+>
+>+config IPMI_KCS_BMC_CDEV_IPMI
+>+	depends on IPMI_KCS_BMC
+>+	tristate "IPMI character device interface for BMC KCS devices"
+>+	help
+>+	  Provides a BMC-side character device implementing IPMI
+>+	  semantics for KCS IPMI devices.
+>+
+>+	  Say YES if you wish to expose KCS devices on the BMC for IPMI
+>+	  purposes.
+>+
+>+	  This support is also available as a module. The module will be
+>+	  called kcs_bmc_cdev_ipmi.
+>+
+> config ASPEED_BT_IPMI_BMC
+> 	depends on ARCH_ASPEED || COMPILE_TEST
+> 	depends on REGMAP && REGMAP_MMIO && MFD_SYSCON
+>diff --git a/drivers/char/ipmi/Makefile b/drivers/char/ipmi/Makefile
+>index a302bc865370..fcfa676afddb 100644
+>--- a/drivers/char/ipmi/Makefile
+>+++ b/drivers/char/ipmi/Makefile
+>@@ -22,7 +22,8 @@ obj-$(CONFIG_IPMI_SSIF) += ipmi_ssif.o
+> obj-$(CONFIG_IPMI_POWERNV) += ipmi_powernv.o
+> obj-$(CONFIG_IPMI_WATCHDOG) += ipmi_watchdog.o
+> obj-$(CONFIG_IPMI_POWEROFF) += ipmi_poweroff.o
+>-obj-$(CONFIG_IPMI_KCS_BMC) += kcs_bmc.o kcs_bmc_cdev_ipmi.o
+>+obj-$(CONFIG_IPMI_KCS_BMC) += kcs_bmc.o
+>+obj-$(CONFIG_IPMI_KCS_BMC_CDEV_IPMI) += kcs_bmc_cdev_ipmi.o
+> obj-$(CONFIG_ASPEED_BT_IPMI_BMC) += bt-bmc.o
+> obj-$(CONFIG_ASPEED_KCS_IPMI_BMC) += kcs_bmc_aspeed.o
+> obj-$(CONFIG_NPCM7XX_KCS_IPMI_BMC) += kcs_bmc_npcm7xx.o
+>diff --git a/drivers/char/ipmi/kcs_bmc.c b/drivers/char/ipmi/kcs_bmc.c
+>index 266ebec71d6f..694db6ee2a92 100644
+>--- a/drivers/char/ipmi/kcs_bmc.c
+>+++ b/drivers/char/ipmi/kcs_bmc.c
+>@@ -5,7 +5,9 @@
+>  */
+>
+> #include <linux/device.h>
+>+#include <linux/list.h>
+> #include <linux/module.h>
+>+#include <linux/mutex.h>
+>
+> #include "kcs_bmc.h"
+>
+>@@ -13,6 +15,11 @@
+> #include "kcs_bmc_device.h"
+> #include "kcs_bmc_client.h"
+>
+>+/* Record probed devices and cdevs */
+>+static DEFINE_MUTEX(kcs_bmc_lock);
+>+static LIST_HEAD(kcs_bmc_devices);
+>+static LIST_HEAD(kcs_bmc_cdevs);
+>+
+> /* Consumer data access */
+>
+> u8 kcs_bmc_read_data(struct kcs_bmc_device *kcs_bmc)
+>@@ -100,16 +107,83 @@ EXPORT_SYMBOL(kcs_bmc_disable_device);
+>
+> int kcs_bmc_add_device(struct kcs_bmc_device *kcs_bmc)
+> {
+>-	return kcs_bmc_ipmi_attach_cdev(kcs_bmc);
+>+	struct kcs_bmc_cdev *cdev;
+>+	int rc;
+>+
+>+	spin_lock_init(&kcs_bmc->lock);
+>+	kcs_bmc->client = NULL;
+>+
+>+	mutex_lock(&kcs_bmc_lock);
+>+	list_add(&kcs_bmc->entry, &kcs_bmc_devices);
+>+	list_for_each_entry(cdev, &kcs_bmc_cdevs, entry) {
+>+		rc = cdev->ops->add_device(kcs_bmc);
+>+		if (rc)
+>+			dev_err(kcs_bmc->dev, "Failed to add chardev for KCS channel %d: %d",
+>+				kcs_bmc->channel, rc);
+>+	}
+>+	mutex_unlock(&kcs_bmc_lock);
+>+
+>+	return 0;
 
-On Thu, 8 Apr 2021, at 11:22, Steven Lee wrote:
-> AST2600-A2 EVB provides reference design to support toggling signal
-> voltage between 3.3v and 1.8v by power-switch-gpio pin that defined in
-> the device tree.
+We're ignoring failed ->add_device() calls here?
 
-Is this something you think we need support for beyond the EVB? It 
-sounds a lot like a knob to enable testing of different SD/MMC power 
-configurations and not something that you'd otherwise see in a system 
-design.
+> }
+> EXPORT_SYMBOL(kcs_bmc_add_device);
+>
+> int kcs_bmc_remove_device(struct kcs_bmc_device *kcs_bmc)
+> {
+>-	return kcs_bmc_ipmi_detach_cdev(kcs_bmc);
+>+	struct kcs_bmc_cdev *cdev;
+>+	int rc;
+>+
+>+	mutex_lock(&kcs_bmc_lock);
+>+	list_del(&kcs_bmc->entry);
+>+	list_for_each_entry(cdev, &kcs_bmc_cdevs, entry) {
+>+		rc = cdev->ops->remove_device(kcs_bmc);
+>+		if (rc)
+>+			dev_err(kcs_bmc->dev, "Failed to remove chardev for KCS channel %d: %d",
+>+				kcs_bmc->channel, rc);
+>+	}
+>+	mutex_unlock(&kcs_bmc_lock);
+>+
+>+	return 0;
 
-> It also supporting enabling/disabling SD bus power by
-> power-gpio.
+Similarly with the return value here...
 
-This sounds like it could be useful but I'll defer to Ulf with regards 
-to the binding.
+> }
+> EXPORT_SYMBOL(kcs_bmc_remove_device);
+>
+>+int kcs_bmc_register_cdev(struct kcs_bmc_cdev *cdev)
+>+{
+>+	struct kcs_bmc_device *kcs_bmc;
+>+	int rc;
+>+
+>+	mutex_lock(&kcs_bmc_lock);
+>+	list_add(&cdev->entry, &kcs_bmc_cdevs);
+>+	list_for_each_entry(kcs_bmc, &kcs_bmc_devices, entry) {
+>+		rc = cdev->ops->add_device(kcs_bmc);
+>+		if (rc)
+>+			dev_err(kcs_bmc->dev, "Failed to add chardev for KCS channel %d: %d",
+>+				kcs_bmc->channel, rc);
+>+	}
+>+	mutex_unlock(&kcs_bmc_lock);
+>+
+>+	return 0;
 
-> 
-> In the reference design, GPIOV0 of AST2600-A2 EVB is connected to power
-> load switch that providing 3.3v to SD1 bus vdd. GPIOV1 is connected to
-> a 1.8v and a 3.3v power load switch that providing signal voltage to
-> SD1 bus.
-> If GPIOV0 is active high, SD1 bus is enabled. Otherwise, SD1 bus is
-> disabled.
-> If GPIOV1 is active high, 3.3v power load switch is enabled, SD1 signal
-> voltage is 3.3v, otherwise, 1.8v power load switch will be enabled, SD1
-> signal voltage becomes 1.8v.
-> 
-> AST2600-A2 EVB also support toggling signal voltage for SD2 bus.
-> The design is the same as SD1 bus. It uses GPIOV2 as power-gpio and
-> GPIOV3 as power-switch-gpio.
-> 
-> Signed-off-by: Steven Lee <steven_lee@aspeedtech.com>
-> ---
->  drivers/mmc/host/sdhci-of-aspeed.c | 155 +++++++++++++++++++++++++----
->  1 file changed, 137 insertions(+), 18 deletions(-)
-> 
-> diff --git a/drivers/mmc/host/sdhci-of-aspeed.c 
-> b/drivers/mmc/host/sdhci-of-aspeed.c
-> index 7d8692e90996..a74a03d37915 100644
-> --- a/drivers/mmc/host/sdhci-of-aspeed.c
-> +++ b/drivers/mmc/host/sdhci-of-aspeed.c
-> @@ -5,6 +5,7 @@
->  #include <linux/clk.h>
->  #include <linux/delay.h>
->  #include <linux/device.h>
-> +#include <linux/gpio/consumer.h>
->  #include <linux/io.h>
->  #include <linux/math64.h>
->  #include <linux/mmc/host.h>
-> @@ -30,6 +31,7 @@
->  #define   ASPEED_SDC_S0_PHASE_IN_EN	BIT(2)
->  #define   ASPEED_SDC_S0_PHASE_OUT_EN	GENMASK(1, 0)
->  #define   ASPEED_SDC_PHASE_MAX		31
-> +#define ASPEED_CLOCK_PHASE 0xf4
+...return value again here...
 
-This isn't related to the power GPIOs, and we already have phase 
-support as suggested by the macros immediately above the one you've 
-added here.
+>+}
+>+EXPORT_SYMBOL(kcs_bmc_register_cdev);
+>+
+>+int kcs_bmc_unregister_cdev(struct kcs_bmc_cdev *cdev)
+>+{
+>+	struct kcs_bmc_device *kcs_bmc;
+>+	int rc;
+>+
+>+	mutex_lock(&kcs_bmc_lock);
+>+	list_del(&cdev->entry);
+>+	list_for_each_entry(kcs_bmc, &kcs_bmc_devices, entry) {
+>+		rc = cdev->ops->remove_device(kcs_bmc);
+>+		if (rc)
+>+			dev_err(kcs_bmc->dev, "Failed to add chardev for KCS channel %d: %d",
 
-Please remove it and make use of the existing mmc phase devicetree 
-binding and driver support.
+s/add/remove/
 
->  
->  struct aspeed_sdc {
->  	struct clk *clk;
-> @@ -58,18 +60,21 @@ struct aspeed_sdhci_phase_desc {
->  	struct aspeed_sdhci_tap_desc out;
->  };
->  
-> -struct aspeed_sdhci_pdata {
-> +struct aspeed_sdhci_data {
+Might also want to differentiate the *_device() error messages from the
+*_cdev() ones a bit more?
 
-Why are we renaming this? It looks like it creates a lot of noise in 
-the patch. The data it captured was platform data, hence 'pdata' in the 
-name. In my opinon it's fine if we also have a member called pdata.
+>+				kcs_bmc->channel, rc);
+>+	}
+>+	mutex_unlock(&kcs_bmc_lock);
+>+
+>+	return rc;
 
->  	unsigned int clk_div_start;
->  	const struct aspeed_sdhci_phase_desc *phase_desc;
->  	size_t nr_phase_descs;
-> +	const struct sdhci_pltfm_data *pdata;
->  };
->  
->  struct aspeed_sdhci {
-> -	const struct aspeed_sdhci_pdata *pdata;
-> +	const struct aspeed_sdhci_data *data;
->  	struct aspeed_sdc *parent;
->  	u32 width_mask;
->  	struct mmc_clk_phase_map phase_map;
->  	const struct aspeed_sdhci_phase_desc *phase_desc;
-> +	struct gpio_desc *pwr_pin;
-> +	struct gpio_desc *pwr_sw_pin;
->  };
->  
->  static void aspeed_sdc_configure_8bit_mode(struct aspeed_sdc *sdc,
-> @@ -209,7 +214,6 @@ static void aspeed_sdhci_set_clock(struct 
-> sdhci_host *host, unsigned int clock)
->  	sdhci = sdhci_pltfm_priv(pltfm_host);
->  
->  	parent = clk_get_rate(pltfm_host->clk);
-> -
+...but this one is a bit incongruous, propagating the return value of
+only the last ->remove_device() call.
 
-Unrelated whitespace cleanup.
+(I'd have expected this to trigger a warning about returning a
+potentially uninitialized 'rc', but in some manual testing it doesn't
+seem to do so for me...not certain why.)
 
->  	sdhci_writew(host, 0, SDHCI_CLOCK_CONTROL);
->  
->  	if (clock == 0)
-> @@ -234,14 +238,13 @@ static void aspeed_sdhci_set_clock(struct 
-> sdhci_host *host, unsigned int clock)
->  	 * supporting the value 0 in (EMMC12C[7:6], EMMC12C[15:8]), and 
-> capture
->  	 * the 0-value capability in clk_div_start.
->  	 */
-> -	for (div = sdhci->pdata->clk_div_start; div < 256; div *= 2) {
-> +	for (div = sdhci->data->clk_div_start; div < 256; div *= 2) {
->  		bus = parent / div;
->  		if (bus <= clock)
->  			break;
->  	}
->  
->  	div >>= 1;
-> -
-
-Unrelated whitespace cleanup.
-
->  	clk = div << SDHCI_DIVIDER_SHIFT;
->  
->  	aspeed_sdhci_configure_phase(host, bus);
-> @@ -292,8 +295,78 @@ static u32 aspeed_sdhci_readl(struct sdhci_host 
-> *host, int reg)
->  	return val;
->  }
->  
-> +static void sdhci_aspeed_set_power(struct sdhci_host *host, unsigned char mode,
-> +				   unsigned short vdd)
-> +{
-> +	struct sdhci_pltfm_host *pltfm_priv = sdhci_priv(host);
-> +	struct aspeed_sdhci *dev = sdhci_pltfm_priv(pltfm_priv);
-> +	u8 pwr = 0;
-> +
-> +	if (!dev->pwr_pin)
-> +		return sdhci_set_power(host, mode, vdd);
-> +
-> +	if (mode != MMC_POWER_OFF) {
-> +		switch (1 << vdd) {
-> +		case MMC_VDD_165_195:
-> +		/*
-> +		 * Without a regulator, SDHCI does not support 2.0v
-> +		 * so we only get here if the driver deliberately
-> +		 * added the 2.0v range to ocr_avail. Map it to 1.8v
-> +		 * for the purpose of turning on the power.
-> +		 */
-> +		case MMC_VDD_20_21:
-> +				pwr = SDHCI_POWER_180;
-> +				break;
-> +		case MMC_VDD_29_30:
-> +		case MMC_VDD_30_31:
-> +				pwr = SDHCI_POWER_300;
-> +				break;
-> +		case MMC_VDD_32_33:
-> +		case MMC_VDD_33_34:
-> +				pwr = SDHCI_POWER_330;
-> +				break;
-> +		default:
-> +				WARN(1, "%s: Invalid vdd %#x\n",
-> +				     mmc_hostname(host->mmc), vdd);
-> +				break;
-> +		}
-> +	}
-> +
-> +	if (host->pwr == pwr)
-> +		return;
-> +
-> +	host->pwr = pwr;
-> +
-> +	if (pwr == 0) {
-
-Shouldn't we be testing against an SDHCI_POWER_* macro?
-
-> +		gpiod_set_value(dev->pwr_pin, 0);
-> +		sdhci_writeb(host, 0, SDHCI_POWER_CONTROL);
-> +	} else {
-> +		gpiod_set_value(dev->pwr_pin, 1);
-> +
-> +		if (dev->pwr_sw_pin) {
-> +			if (pwr & SDHCI_POWER_330)
-> +				gpiod_set_value(dev->pwr_sw_pin, 1);
-> +			else if (pwr & SDHCI_POWER_180)
-> +				gpiod_set_value(dev->pwr_sw_pin, 0);
-> +		}
-> +		pwr |= SDHCI_POWER_ON;
-> +		sdhci_writeb(host, pwr, SDHCI_POWER_CONTROL);
-> +	}
-> +}
-> +
-> +static void aspeed_sdhci_voltage_switch(struct sdhci_host *host)
-> +{
-> +	struct sdhci_pltfm_host *pltfm_priv = sdhci_priv(host);
-> +	struct aspeed_sdhci *dev = sdhci_pltfm_priv(pltfm_priv);
-> +
-> +	if (dev->pwr_sw_pin)
-> +		gpiod_set_value(dev->pwr_sw_pin, 0);
-> +}
-> +
->  static const struct sdhci_ops aspeed_sdhci_ops = {
->  	.read_l = aspeed_sdhci_readl,
-> +	.set_power = sdhci_aspeed_set_power,
-> +	.voltage_switch = aspeed_sdhci_voltage_switch,
->  	.set_clock = aspeed_sdhci_set_clock,
->  	.get_max_clock = aspeed_sdhci_get_max_clock,
->  	.set_bus_width = aspeed_sdhci_set_bus_width,
-> @@ -302,9 +375,14 @@ static const struct sdhci_ops aspeed_sdhci_ops = {
->  	.set_uhs_signaling = sdhci_set_uhs_signaling,
->  };
->  
-> -static const struct sdhci_pltfm_data aspeed_sdhci_pdata = {
-> +static const struct sdhci_pltfm_data ast2400_sdhci_pdata = {
->  	.ops = &aspeed_sdhci_ops,
->  	.quirks = SDHCI_QUIRK_CAP_CLOCK_BASE_BROKEN,
-> +	.quirks2 = SDHCI_QUIRK2_CLOCK_DIV_ZERO_BROKEN | 
-> SDHCI_QUIRK2_PRESET_VALUE_BROKEN,
-> +};
-> +
-> +static const struct sdhci_pltfm_data ast2600_sdhci_pdata = {
-> +	.ops = &aspeed_sdhci_ops,
->  };
->  
->  static inline int aspeed_sdhci_calculate_slot(struct aspeed_sdhci *dev,
-> @@ -327,27 +405,28 @@ static inline int 
-> aspeed_sdhci_calculate_slot(struct aspeed_sdhci *dev,
->  
->  static int aspeed_sdhci_probe(struct platform_device *pdev)
->  {
-> -	const struct aspeed_sdhci_pdata *aspeed_pdata;
-> +	const struct aspeed_sdhci_data *aspeed_data;
->  	struct sdhci_pltfm_host *pltfm_host;
->  	struct aspeed_sdhci *dev;
->  	struct sdhci_host *host;
->  	struct resource *res;
-> +	u32 reg_val;
->  	int slot;
->  	int ret;
->  
-> -	aspeed_pdata = of_device_get_match_data(&pdev->dev);
-> -	if (!aspeed_pdata) {
-> +	aspeed_data = of_device_get_match_data(&pdev->dev);
-> +	if (!aspeed_data) {
->  		dev_err(&pdev->dev, "Missing platform configuration data\n");
->  		return -EINVAL;
->  	}
->  
-> -	host = sdhci_pltfm_init(pdev, &aspeed_sdhci_pdata, sizeof(*dev));
-> +	host = sdhci_pltfm_init(pdev, aspeed_data->pdata, sizeof(*dev));
->  	if (IS_ERR(host))
->  		return PTR_ERR(host);
->  
->  	pltfm_host = sdhci_priv(host);
->  	dev = sdhci_pltfm_priv(pltfm_host);
-> -	dev->pdata = aspeed_pdata;
-> +	dev->data = aspeed_data;
->  	dev->parent = dev_get_drvdata(pdev->dev.parent);
->  
->  	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> @@ -358,8 +437,8 @@ static int aspeed_sdhci_probe(struct platform_device *pdev)
->  	else if (slot >= 2)
->  		return -EINVAL;
->  
-> -	if (slot < dev->pdata->nr_phase_descs) {
-> -		dev->phase_desc = &dev->pdata->phase_desc[slot];
-> +	if (slot < dev->data->nr_phase_descs) {
-> +		dev->phase_desc = &dev->data->phase_desc[slot];
->  	} else {
->  		dev_info(&pdev->dev,
->  			 "Phase control not supported for slot %d\n", slot);
-> @@ -372,6 +451,23 @@ static int aspeed_sdhci_probe(struct platform_device *pdev)
->  
->  	sdhci_get_of_property(pdev);
->  
-> +	if (of_property_read_bool(pdev->dev.parent->of_node, "mmc-hs200-1_8v") ||
-> +	    of_property_read_bool(pdev->dev.parent->of_node, "sd-uhs-sdr104")) {
-> +		reg_val = readl(host->ioaddr + 0x40);
-
-Shouldn't this use  sdhci_readl()?
-
-> +		/* support 1.8V */
-> +		reg_val |= BIT(26);
-> +		/* write to sdhci140 or sdhci240 mirror register */
-> +		writel(reg_val, dev->parent->regs + (0x10 * (slot + 1)));
-
-I think I prefer a helper for this, like 
-aspeed_sdc_set_slot_capability(dev->parent, reg_val, slot, cap_idx), 
-rather than poking the global SD controller config space from the SDHCI 
-driver.
-
-> +	}
-> +
-> +	if (of_property_read_bool(pdev->dev.parent->of_node, "sd-uhs-sdr104")) {
-> +		reg_val = readl(host->ioaddr + 0x44);
-> +		/* SDR104 */
-> +		reg_val |= BIT(1);
-> +		/* write to sdhci144 or sdhci244 mirror register */
-> +		writel(reg_val, dev->parent->regs + (0x04 + (slot + 1) * 0x10));
-
-As above.
-
-> +	}
-> +
->  	pltfm_host->clk = devm_clk_get(&pdev->dev, NULL);
->  	if (IS_ERR(pltfm_host->clk))
->  		return PTR_ERR(pltfm_host->clk);
-> @@ -389,6 +485,22 @@ static int aspeed_sdhci_probe(struct platform_device *pdev)
->  	if (dev->phase_desc)
->  		mmc_of_parse_clk_phase(host->mmc, &dev->phase_map);
->  
-> +	dev->pwr_pin = devm_gpiod_get(&pdev->dev, "power", GPIOD_OUT_HIGH);
-
-Shouldn't this use devm_gpiod_get_optional()?
-
-> +	if (!IS_ERR(dev->pwr_pin)) {
-> +		gpiod_set_consumer_name(dev->pwr_pin, "mmc_pwr");
-> +		gpiod_direction_output(dev->pwr_pin, 1);
-> +	} else {
-> +		dev->pwr_pin = NULL;
-> +	}
-> +
-> +	dev->pwr_sw_pin = devm_gpiod_get(&pdev->dev, "power-switch", GPIOD_OUT_HIGH);
-
-Shouldn't this use devm_gpiod_get_optional()?
-
-> +	if (!IS_ERR(dev->pwr_sw_pin)) {
-> +		gpiod_set_consumer_name(dev->pwr_sw_pin, "mmc_pwr_sw");
-> +		gpiod_direction_output(dev->pwr_sw_pin, 0);
-> +	} else {
-> +		dev->pwr_sw_pin = NULL;
-> +	}
-> +
->  	ret = sdhci_add_host(host);
->  	if (ret)
->  		goto err_sdhci_add;
-> @@ -420,8 +532,9 @@ static int aspeed_sdhci_remove(struct platform_device *pdev)
->  	return 0;
->  }
->  
-> -static const struct aspeed_sdhci_pdata ast2400_sdhci_pdata = {
-> +static const struct aspeed_sdhci_data ast2400_sdhci_data = {
->  	.clk_div_start = 2,
-> +	.pdata = &ast2400_sdhci_pdata,
->  };
->  
->  static const struct aspeed_sdhci_phase_desc ast2600_sdhci_phase[] = {
-> @@ -453,16 +566,17 @@ static const struct aspeed_sdhci_phase_desc 
-> ast2600_sdhci_phase[] = {
->  	},
->  };
->  
-> -static const struct aspeed_sdhci_pdata ast2600_sdhci_pdata = {
-> +static const struct aspeed_sdhci_data ast2600_sdhci_data = {
->  	.clk_div_start = 1,
->  	.phase_desc = ast2600_sdhci_phase,
->  	.nr_phase_descs = ARRAY_SIZE(ast2600_sdhci_phase),
-> +	.pdata = &ast2600_sdhci_pdata,
->  };
->  
->  static const struct of_device_id aspeed_sdhci_of_match[] = {
-> -	{ .compatible = "aspeed,ast2400-sdhci", .data = &ast2400_sdhci_pdata, },
-> -	{ .compatible = "aspeed,ast2500-sdhci", .data = &ast2400_sdhci_pdata, },
-> -	{ .compatible = "aspeed,ast2600-sdhci", .data = &ast2600_sdhci_pdata, },
-> +	{ .compatible = "aspeed,ast2400-sdhci", .data = &ast2400_sdhci_data, },
-> +	{ .compatible = "aspeed,ast2500-sdhci", .data = &ast2400_sdhci_data, },
-> +	{ .compatible = "aspeed,ast2600-sdhci", .data = &ast2600_sdhci_data, },
->  	{ }
->  };
->  
-> @@ -482,6 +596,7 @@ static int aspeed_sdc_probe(struct platform_device *pdev)
->  	struct device_node *parent, *child;
->  	struct aspeed_sdc *sdc;
->  	int ret;
-> +	u32 timing_phase;
->  
->  	sdc = devm_kzalloc(&pdev->dev, sizeof(*sdc), GFP_KERNEL);
->  	if (!sdc)
-> @@ -506,6 +621,10 @@ static int aspeed_sdc_probe(struct platform_device *pdev)
->  		goto err_clk;
->  	}
->  
-> +	if (!of_property_read_u32(pdev->dev.of_node,
-> +				  "timing-phase", &timing_phase))
-> +		writel(timing_phase, sdc->regs + ASPEED_CLOCK_PHASE);
-
-As mentioned at the top, please use the existing phase bindings.
-
-Cheers,
-
-Andrew
+>+}
+>+EXPORT_SYMBOL(kcs_bmc_unregister_cdev);
+>+
+> MODULE_LICENSE("GPL v2");
+> MODULE_AUTHOR("Haiyue Wang <haiyue.wang@linux.intel.com>");
+> MODULE_AUTHOR("Andrew Jeffery <andrew@aj.id.au>");
+>diff --git a/drivers/char/ipmi/kcs_bmc.h b/drivers/char/ipmi/kcs_bmc.h
+>index 3f266740c759..5deb9a0b8e60 100644
+>--- a/drivers/char/ipmi/kcs_bmc.h
+>+++ b/drivers/char/ipmi/kcs_bmc.h
+>@@ -42,8 +42,4 @@ struct kcs_bmc_device {
+> 	spinlock_t lock;
+> 	struct kcs_bmc_client *client;
+> };
+>-
+>-/* Temporary exports while refactoring */
+>-int kcs_bmc_ipmi_attach_cdev(struct kcs_bmc_device *kcs_bmc);
+>-int kcs_bmc_ipmi_detach_cdev(struct kcs_bmc_device *kcs_bmc);
+> #endif /* __KCS_BMC_H__ */
+>diff --git a/drivers/char/ipmi/kcs_bmc_cdev_ipmi.c b/drivers/char/ipmi/kcs_bmc_cdev_ipmi.c
+>index 58c42e76483d..df83d67851ac 100644
+>--- a/drivers/char/ipmi/kcs_bmc_cdev_ipmi.c
+>+++ b/drivers/char/ipmi/kcs_bmc_cdev_ipmi.c
+>@@ -469,8 +469,7 @@ static const struct file_operations kcs_bmc_ipmi_fops = {
+> static DEFINE_SPINLOCK(kcs_bmc_ipmi_instances_lock);
+> static LIST_HEAD(kcs_bmc_ipmi_instances);
+>
+>-int kcs_bmc_ipmi_attach_cdev(struct kcs_bmc_device *kcs_bmc);
+>-int kcs_bmc_ipmi_attach_cdev(struct kcs_bmc_device *kcs_bmc)
+>+static int kcs_bmc_ipmi_attach_cdev(struct kcs_bmc_device *kcs_bmc)
+> {
+> 	struct kcs_bmc_ipmi *priv;
+> 	int rc;
+>@@ -512,10 +511,8 @@ int kcs_bmc_ipmi_attach_cdev(struct kcs_bmc_device *kcs_bmc)
+>
+> 	return 0;
+> }
+>-EXPORT_SYMBOL(kcs_bmc_ipmi_attach_cdev);
+>
+>-int kcs_bmc_ipmi_detach_cdev(struct kcs_bmc_device *kcs_bmc);
+>-int kcs_bmc_ipmi_detach_cdev(struct kcs_bmc_device *kcs_bmc)
+>+static int kcs_bmc_ipmi_detach_cdev(struct kcs_bmc_device *kcs_bmc)
+> {
+> 	struct kcs_bmc_ipmi *priv = NULL, *pos;
+>
+>@@ -541,7 +538,31 @@ int kcs_bmc_ipmi_detach_cdev(struct kcs_bmc_device *kcs_bmc)
+>
+> 	return 0;
+> }
+>-EXPORT_SYMBOL(kcs_bmc_ipmi_detach_cdev);
+>+
+>+static const struct kcs_bmc_cdev_ops kcs_bmc_ipmi_cdev_ops = {
+>+	.add_device = kcs_bmc_ipmi_attach_cdev,
+>+	.remove_device = kcs_bmc_ipmi_detach_cdev,
+>+};
+>+
+>+static struct kcs_bmc_cdev kcs_bmc_ipmi_cdev = {
+>+	.ops = &kcs_bmc_ipmi_cdev_ops,
+>+};
+>+
+>+static int kcs_bmc_ipmi_init(void)
+>+{
+>+	return kcs_bmc_register_cdev(&kcs_bmc_ipmi_cdev);
+>+}
+>+module_init(kcs_bmc_ipmi_init);
+>+
+>+static void kcs_bmc_ipmi_exit(void)
+>+{
+>+	int rc;
+>+
+>+	rc = kcs_bmc_unregister_cdev(&kcs_bmc_ipmi_cdev);
+>+	if (rc)
+>+		pr_warn("Failed to remove KCS BMC client: %d", rc);
+>+}
+>+module_exit(kcs_bmc_ipmi_exit);
+>
+> MODULE_LICENSE("GPL v2");
+> MODULE_AUTHOR("Haiyue Wang <haiyue.wang@linux.intel.com>");
+>diff --git a/drivers/char/ipmi/kcs_bmc_client.h b/drivers/char/ipmi/kcs_bmc_client.h
+>index 2dd710f4b4aa..d0a7404ff584 100644
+>--- a/drivers/char/ipmi/kcs_bmc_client.h
+>+++ b/drivers/char/ipmi/kcs_bmc_client.h
+>@@ -10,6 +10,17 @@
+>
+> #include "kcs_bmc.h"
+>
+>+struct kcs_bmc_cdev_ops {
+>+	int (*add_device)(struct kcs_bmc_device *kcs_bmc);
+>+	int (*remove_device)(struct kcs_bmc_device *kcs_bmc);
+>+};
+>+
+>+struct kcs_bmc_cdev {
+>+	struct list_head entry;
+>+
+>+	const struct kcs_bmc_cdev_ops *ops;
+>+};
+>+
+> struct kcs_bmc_client_ops {
+> 	int (*event)(struct kcs_bmc_client *client);
+> };
+>@@ -20,6 +31,9 @@ struct kcs_bmc_client {
+> 	struct kcs_bmc_device *dev;
+> };
+>
+>+int kcs_bmc_register_cdev(struct kcs_bmc_cdev *cdev);
+>+int kcs_bmc_unregister_cdev(struct kcs_bmc_cdev *cdev);
+>+
+> int kcs_bmc_enable_device(struct kcs_bmc_device *kcs_bmc, struct kcs_bmc_client *client);
+> void kcs_bmc_disable_device(struct kcs_bmc_device *kcs_bmc, struct kcs_bmc_client *client);
+>
+>-- 
+>2.27.0
+>
