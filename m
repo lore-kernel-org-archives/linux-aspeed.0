@@ -1,105 +1,174 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Fri, 09 Apr 2021 14:44:54 +0930
-Subject: =?UTF-8?Q?Re:_[PATCH_v5_3/4]_drivers/tty/serial/8250:_add_aspeed,
- _lpc-io?= =?UTF-8?Q?-reg_and_aspeed,_lpc-interrupts_DT_properties?=
-In-Reply-To: <20210408011637.5361-4-zev@bewilderbeest.net>
-References: <20210408011637.5361-1-zev@bewilderbeest.net>
- <20210408011637.5361-4-zev@bewilderbeest.net>
-Message-ID: <3eef2478-c5b8-4f14-a937-16bbe0a3e05a@www.fastmail.com>
+From: Zev Weiss <zweiss@equinix.com>
+Date: Fri, 9 Apr 2021 05:15:35 +0000
+Subject: [PATCH v2 17/21] dt-bindings: ipmi: Convert ASPEED KCS binding to
+ schema
+In-Reply-To: <20210319062752.145730-17-andrew@aj.id.au>
+References: <20210319062752.145730-1-andrew@aj.id.au>
+ <20210319062752.145730-17-andrew@aj.id.au>
+Message-ID: <YG/i9lSxxCMIzkRs@packtop>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Zev,
+On Fri, Mar 19, 2021 at 01:27:48AM CDT, Andrew Jeffery wrote:
+>Given the deprecated binding, improve the ability to detect issues in
+>the platform devicetrees. Further, a subsequent patch will introduce a
+>new interrupts property for specifying SerIRQ behaviour, so convert
+>before we do any further additions.
+>
+>Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
+>---
+> .../bindings/ipmi/aspeed,ast2400-kcs-bmc.yaml | 92 +++++++++++++++++++
+> .../bindings/ipmi/aspeed-kcs-bmc.txt          | 33 -------
+> 2 files changed, 92 insertions(+), 33 deletions(-)
+> create mode 100644 Documentation/devicetree/bindings/ipmi/aspeed,ast2400-kcs-bmc.yaml
+> delete mode 100644 Documentation/devicetree/bindings/ipmi/aspeed-kcs-bmc.txt
+>
+>diff --git a/Documentation/devicetree/bindings/ipmi/aspeed,ast2400-kcs-bmc.yaml b/Documentation/devicetree/bindings/ipmi/aspeed,ast2400-kcs-bmc.yaml
+>new file mode 100644
+>index 000000000000..697ca575454f
+>--- /dev/null
+>+++ b/Documentation/devicetree/bindings/ipmi/aspeed,ast2400-kcs-bmc.yaml
+>@@ -0,0 +1,92 @@
+>+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+>+%YAML 1.2
+>+---
+>+$id: http://devicetree.org/schemas/ipmi/aspeed,ast2400-kcs-bmc.yaml
+>+$schema: http://devicetree.org/meta-schemas/core.yaml
+>+
+>+title: ASPEED BMC KCS Devices
+>+
+>+maintainers:
+>+  - Andrew Jeffery <andrew@aj.id.au>
+>+
+>+description: |
+>+  The Aspeed BMC SoCs typically use the Keyboard-Controller-Style (KCS)
+>+  interfaces on the LPC bus for in-band IPMI communication with their host.
+>+
+>+properties:
+>+  compatible:
+>+    oneOf:
+>+      - description: Channel ID derived from reg
+>+        items:
+>+          enum:
+>+            - aspeed,ast2400-kcs-bmc-v2
+>+            - aspeed,ast2500-kcs-bmc-v2
+>+            - aspeed,ast2600-kcs-bmc
 
-A couple of minor comments:
+Should this have a "-v2" suffix?
 
-On Thu, 8 Apr 2021, at 10:46, Zev Weiss wrote:
-> These allow describing all the Aspeed VUART attributes currently
-> available via sysfs.  aspeed,sirq
+>+
+>+      - description: Old-style with explicit channel ID, no reg
+>+        deprecated: true
+>+        items:
+>+          enum:
+>+            - aspeed,ast2400-kcs-bmc
+>+            - aspeed,ast2500-kcs-bmc
+>+
+>+  interrupts:
+>+    maxItems: 1
+>+
+>+  reg:
+>+    # maxItems: 3
+>+    items:
+>+      - description: IDR register
+>+      - description: ODR register
+>+      - description: STR register
+>+
+>+  aspeed,lpc-io-reg:
+>+    $ref: '/schemas/types.yaml#/definitions/uint32-array'
+>+    minItems: 1
+>+    maxItems: 2
+>+    description: |
+>+      The host CPU LPC IO data and status addresses for the device. For most
+>+      channels the status address is derived from the data address, but the
+>+      status address may be optionally provided.
+>+
+>+  kcs_chan:
+>+    deprecated: true
+>+    $ref: '/schemas/types.yaml#/definitions/uint32'
+>+    description: The LPC channel number in the controller
+>+
+>+  kcs_addr:
+>+    deprecated: true
+>+    $ref: '/schemas/types.yaml#/definitions/uint32'
+>+    description: The host CPU IO map address
+>+
+>+required:
+>+  - compatible
+>+  - interrupts
+>+
+>+additionalProperties: false
+>+
+>+allOf:
+>+  - if:
+>+      properties:
+>+        compatible:
+>+          contains:
+>+            enum:
+>+              - aspeed,ast2400-kcs-bmc
+>+              - aspeed,ast2500-kcs-bmc
+>+    then:
+>+      required:
+>+        - kcs_chan
+>+        - kcs_addr
+>+    else:
+>+      required:
+>+        - reg
+>+        - aspeed,lpc-io-reg
+>+
+>+examples:
+>+  - |
+>+    kcs3: kcs at 24 {
+>+        compatible = "aspeed,ast2600-kcs-bmc";
 
-aspeed,lpc-interrupts now
+And likewise here.
 
-> provides a replacement for the
-> deprecated aspeed,sirq-polarity-sense property.
-> 
-> Signed-off-by: Zev Weiss <zev@bewilderbeest.net>
-> ---
->  drivers/tty/serial/8250/8250_aspeed_vuart.c | 44 ++++++++++++++++++++-
->  1 file changed, 43 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/tty/serial/8250/8250_aspeed_vuart.c 
-> b/drivers/tty/serial/8250/8250_aspeed_vuart.c
-> index 8433f8dbb186..75ef006fa24b 100644
-> --- a/drivers/tty/serial/8250/8250_aspeed_vuart.c
-> +++ b/drivers/tty/serial/8250/8250_aspeed_vuart.c
-> @@ -28,6 +28,10 @@
->  #define ASPEED_VUART_ADDRL		0x28
->  #define ASPEED_VUART_ADDRH		0x2c
->  
-> +#define ASPEED_VUART_DEFAULT_LPC_ADDR	0x3f8
-> +#define ASPEED_VUART_DEFAULT_SIRQ	4
-> +#define ASPEED_VUART_DEFAULT_SIRQ_POLARITY	IRQ_TYPE_LEVEL_LOW
-> +
->  struct aspeed_vuart {
->  	struct device		*dev;
->  	void __iomem		*regs;
-> @@ -393,7 +397,8 @@ static int aspeed_vuart_probe(struct platform_device *pdev)
->  	struct aspeed_vuart *vuart;
->  	struct device_node *np;
->  	struct resource *res;
-> -	u32 clk, prop;
-> +	u32 clk, prop, sirq[2];
-> +	bool sirq_polarity;
->  	int rc;
->  
->  	np = pdev->dev.of_node;
-> @@ -501,6 +506,43 @@ static int aspeed_vuart_probe(struct platform_device *pdev)
->  		of_node_put(sirq_polarity_sense_args.np);
->  	}
->  
-> +	rc = of_property_read_u32(np, "aspeed,lpc-io-reg", &prop);
-> +	if (rc < 0)
-> +		prop = ASPEED_VUART_DEFAULT_LPC_ADDR;
-> +
-> +	rc = aspeed_vuart_set_lpc_address(vuart, prop);
-> +	if (rc < 0) {
-> +		dev_err(&pdev->dev, "invalid value in aspeed,lpc-io-reg property\n");
-> +		goto err_clk_disable;
-> +	}
-> +
-> +	rc = of_property_read_u32_array(np, "aspeed,lpc-interrupts", sirq, 2);
-> +	if (rc < 0) {
-> +		sirq[0] = ASPEED_VUART_DEFAULT_SIRQ;
-> +		sirq[1] = ASPEED_VUART_DEFAULT_SIRQ_POLARITY;
-> +	}
-> +
-> +	rc = aspeed_vuart_set_sirq(vuart, sirq[0]);
-> +	if (rc < 0) {
-> +		dev_err(&pdev->dev, "invalid sirq number in aspeed,lpc-interrupts > property\n");
-> +		goto err_clk_disable;
-> +	}
-> +
-> +	switch (sirq[1]) {
-> +	case IRQ_TYPE_LEVEL_LOW:
-> +		sirq_polarity = false;
-> +		break;
-> +	case IRQ_TYPE_LEVEL_HIGH:
-> +		sirq_polarity = true;
-> +		break;
-> +	default:
-> +		dev_err(&pdev->dev, "invalid sirq polarity in aspeed,lpc-interrupts 
-> property\n");
-> +		rc = -EINVAL;
-> +		goto err_clk_disable;
-> +	}
-
-A bit ugly open-coding the mapping and error handling, maybe worth a helper?
-
-Looks okay otherwise.
-
-Cheers,
-
-Andrew
+>+        reg = <0x24 0x1>, <0x30 0x1>, <0x3c 0x1>;
+>+        aspeed,lpc-io-reg = <0xca2>;
+>+        interrupts = <8>;
+>+    };
+>diff --git a/Documentation/devicetree/bindings/ipmi/aspeed-kcs-bmc.txt b/Documentation/devicetree/bindings/ipmi/aspeed-kcs-bmc.txt
+>deleted file mode 100644
+>index 193e71ca96b0..000000000000
+>--- a/Documentation/devicetree/bindings/ipmi/aspeed-kcs-bmc.txt
+>+++ /dev/null
+>@@ -1,33 +0,0 @@
+>-# Aspeed KCS (Keyboard Controller Style) IPMI interface
+>-
+>-The Aspeed SOCs (AST2400 and AST2500) are commonly used as BMCs
+>-(Baseboard Management Controllers) and the KCS interface can be
+>-used to perform in-band IPMI communication with their host.
+>-
+>-## v1
+>-Required properties:
+>-- compatible : should be one of
+>-    "aspeed,ast2400-kcs-bmc"
+>-    "aspeed,ast2500-kcs-bmc"
+>-- interrupts : interrupt generated by the controller
+>-- kcs_chan : The LPC channel number in the controller
+>-- kcs_addr : The host CPU IO map address
+>-
+>-## v2
+>-Required properties:
+>-- compatible : should be one of
+>-    "aspeed,ast2400-kcs-bmc-v2"
+>-    "aspeed,ast2500-kcs-bmc-v2"
+>-- reg : The address and size of the IDR, ODR and STR registers
+>-- interrupts : interrupt generated by the controller
+>-- aspeed,lpc-io-reg : The host CPU LPC IO address for the device
+>-
+>-Example:
+>-
+>-    kcs3: kcs at 24 {
+>-        compatible = "aspeed,ast2500-kcs-bmc-v2";
+>-        reg = <0x24 0x1>, <0x30 0x1>, <0x3c 0x1>;
+>-        aspeed,lpc-reg = <0xca2>;
+>-        interrupts = <8>;
+>-        status = "okay";
+>-    };
+>-- 
+>2.27.0
+>
