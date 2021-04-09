@@ -1,143 +1,91 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Fri, 09 Apr 2021 15:36:48 +0930
-Subject: =?UTF-8?Q?Re:_[PATCH_v2_11/21]_ipmi:_kcs=5Fbmc:_Split_headers_into_devic?=
- =?UTF-8?Q?e_and_client?=
-In-Reply-To: <YG/RkB07Wh69/xdu@packtop>
-References: <20210319062752.145730-1-andrew@aj.id.au>
- <20210319062752.145730-11-andrew@aj.id.au> <YG/RkB07Wh69/xdu@packtop>
-Message-ID: <e5c84ec2-5fe7-4f29-866a-331f652edd79@www.fastmail.com>
+From: Joel Stanley <joel@jms.id.au>
+Date: Fri, 9 Apr 2021 06:14:27 +0000
+Subject: [GIT PULL] ARM: bmc: devicetree changes for 5.13
+Message-ID: <CACPK8Xe-KV5BeQwOH6NKC1++FCVqwwNCGBh7hEbBORfrmxfTtQ@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+Hello Soc maintainers,
 
+Here's a pull request from me for the ASPEED and Nuvoton changes
+targeting the v5.13 merge window. As you can see I've chosen to
+arrange the pull request as one single "BMC-related" set of changes.
+If we choose to continue with this, in the future I will cover the
+ASPEED, NPCM and soon to be merged WPCM (legacy Nuvoton) systems.
 
-On Fri, 9 Apr 2021, at 13:31, Zev Weiss wrote:
-> On Fri, Mar 19, 2021 at 01:27:42AM CDT, Andrew Jeffery wrote:
-> >Strengthen the distinction between code that abstracts the
-> >implementation of the KCS behaviours (device drivers) and code that
-> >exploits KCS behaviours (clients). Neither needs to know about the APIs
-> >required by the other, so provide separate headers.
-> >
-> >Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
-> >---
-> > drivers/char/ipmi/kcs_bmc.c           | 21 ++++++++++-----
-> > drivers/char/ipmi/kcs_bmc.h           | 30 ++++++++++-----------
-> > drivers/char/ipmi/kcs_bmc_aspeed.c    | 20 +++++++++-----
-> > drivers/char/ipmi/kcs_bmc_cdev_ipmi.c | 39 ++++++++++++++++++---------
-> > drivers/char/ipmi/kcs_bmc_client.h    | 29 ++++++++++++++++++++
-> > drivers/char/ipmi/kcs_bmc_device.h    | 19 +++++++++++++
-> > drivers/char/ipmi/kcs_bmc_npcm7xx.c   | 20 +++++++++-----
-> > 7 files changed, 129 insertions(+), 49 deletions(-)
-> > create mode 100644 drivers/char/ipmi/kcs_bmc_client.h
-> > create mode 100644 drivers/char/ipmi/kcs_bmc_device.h
-> >
-> >diff --git a/drivers/char/ipmi/kcs_bmc.c b/drivers/char/ipmi/kcs_bmc.c
-> >index 709b6bdec165..1046ce2bbefc 100644
-> >--- a/drivers/char/ipmi/kcs_bmc.c
-> >+++ b/drivers/char/ipmi/kcs_bmc.c
-> >@@ -1,46 +1,52 @@
-> > // SPDX-License-Identifier: GPL-2.0
-> > /*
-> >  * Copyright (c) 2015-2018, Intel Corporation.
-> >+ * Copyright (c) 2021, IBM Corp.
-> >  */
-> >
-> > #include <linux/module.h>
-> >
-> > #include "kcs_bmc.h"
-> >
-> >+/* Implement both the device and client interfaces here */
-> >+#include "kcs_bmc_device.h"
-> >+#include "kcs_bmc_client.h"
-> >+
-> >+/* Consumer data access */
-> >+
-> > u8 kcs_bmc_read_data(struct kcs_bmc *kcs_bmc)
-> > {
-> >-	return kcs_bmc->io_inputb(kcs_bmc, kcs_bmc->ioreg.idr);
-> >+	return kcs_bmc->ops->io_inputb(kcs_bmc, kcs_bmc->ioreg.idr);
-> > }
-> > EXPORT_SYMBOL(kcs_bmc_read_data);
-> >
-> > void kcs_bmc_write_data(struct kcs_bmc *kcs_bmc, u8 data)
-> > {
-> >-	kcs_bmc->io_outputb(kcs_bmc, kcs_bmc->ioreg.odr, data);
-> >+	kcs_bmc->ops->io_outputb(kcs_bmc, kcs_bmc->ioreg.odr, data);
-> > }
-> > EXPORT_SYMBOL(kcs_bmc_write_data);
-> >
-> > u8 kcs_bmc_read_status(struct kcs_bmc *kcs_bmc)
-> > {
-> >-	return kcs_bmc->io_inputb(kcs_bmc, kcs_bmc->ioreg.str);
-> >+	return kcs_bmc->ops->io_inputb(kcs_bmc, kcs_bmc->ioreg.str);
-> > }
-> > EXPORT_SYMBOL(kcs_bmc_read_status);
-> >
-> > void kcs_bmc_write_status(struct kcs_bmc *kcs_bmc, u8 data)
-> > {
-> >-	kcs_bmc->io_outputb(kcs_bmc, kcs_bmc->ioreg.str, data);
-> >+	kcs_bmc->ops->io_outputb(kcs_bmc, kcs_bmc->ioreg.str, data);
-> > }
-> > EXPORT_SYMBOL(kcs_bmc_write_status);
-> >
-> > void kcs_bmc_update_status(struct kcs_bmc *kcs_bmc, u8 mask, u8 val)
-> > {
-> >-	kcs_bmc->io_updateb(kcs_bmc, kcs_bmc->ioreg.str, mask, val);
-> >+	kcs_bmc->ops->io_updateb(kcs_bmc, kcs_bmc->ioreg.str, mask, val);
-> > }
-> > EXPORT_SYMBOL(kcs_bmc_update_status);
-> >
-> >-int kcs_bmc_ipmi_event(struct kcs_bmc *kcs_bmc);
-> > int kcs_bmc_handle_event(struct kcs_bmc *kcs_bmc)
-> > {
-> >-	return kcs_bmc_ipmi_event(kcs_bmc);
-> >+	return kcs_bmc->client.ops->event(&kcs_bmc->client);
-> > }
-> > EXPORT_SYMBOL(kcs_bmc_handle_event);
-> >
-> >@@ -60,4 +66,5 @@ EXPORT_SYMBOL(kcs_bmc_remove_device);
-> >
-> > MODULE_LICENSE("GPL v2");
-> > MODULE_AUTHOR("Haiyue Wang <haiyue.wang@linux.intel.com>");
-> >+MODULE_AUTHOR("Andrew Jeffery <andrew@aj.id.au>");
-> > MODULE_DESCRIPTION("KCS BMC to handle the IPMI request from system software");
-> >diff --git a/drivers/char/ipmi/kcs_bmc.h b/drivers/char/ipmi/kcs_bmc.h
-> >index bf0ae327997f..a1350e567723 100644
-> >--- a/drivers/char/ipmi/kcs_bmc.h
-> >+++ b/drivers/char/ipmi/kcs_bmc.h
-> >@@ -8,6 +8,15 @@
-> >
-> > #include <linux/miscdevice.h>
-> >
-> >+#include "kcs_bmc_client.h"
-> >+
-> >+#define KCS_BMC_EVENT_NONE	0
-> >+#define KCS_BMC_EVENT_HANDLED	1
-> 
-> Is there a particular reason we're introducing these macros and using an
-> int return type for kcs_bmc_client_ops.event instead of just having it
-> be irqreturn_t?  Other event types or outcomes we're anticipating needing
-> to handle maybe?
+The following changes since commit ee33e2fb3d70267de00f7c0b09e7e3b309a686df:
 
-In earlier iterations of the patches I was doing some extra work in the 
-event handling path and felt it was useful at the time. However I've 
-refactored things a little and this may have outlived its usefulness.
+  ARM: dts: nuvoton: Add Quanta GBS BMC Device Tree (2021-04-08 11:21:05 +0930)
 
-I'll reasses!
+are available in the Git repository at:
 
-> 
-> >+
-> >+#define KCS_BMC_STR_OBF		BIT(0)
-> >+#define KCS_BMC_STR_IBF		BIT(1)
-> >+#define KCS_BMC_STR_CMD_DAT	BIT(3)
-> 
-> The first two of these macros are used later in the series, but the third
-> doesn't end up used at all I think?
+  git://git.kernel.org/pub/scm/linux/kernel/git/joel/bmc.git
+tags/bmc-5.13-devicetree
 
-I think I just added it as documentation as the hardware-defined bits 
-aren't contiguous.
+for you to fetch changes up to ee33e2fb3d70267de00f7c0b09e7e3b309a686df:
 
-Andrew
+  ARM: dts: nuvoton: Add Quanta GBS BMC Device Tree (2021-04-08 11:21:05 +0930)
+
+----------------------------------------------------------------
+BMC device tree updates for 5.13
+
+The ASPEED and Nuvoton pull request now comes as a combined BMC pull
+request.
+
+ - New machines
+
+  * ASRock E3C246D4I, an AST2500 BMC for an Xeon E-2100/E-2200 mini-ITX
+    system
+  * Quanta GBS, an NPCM730 BMC for an x86 server
+
+ - Power10 BMC updates for Everest and Rainier
+
+ - GPIO line names for Mihawk
+
+----------------------------------------------------------------
+
+Alpana Kumari (2):
+      ARM: dts: aspeed: rainier: Add presence GPIOs
+      ARM: dts: aspeed: everest: GPIOs support
+
+Brandon Wyman (2):
+      ARM: dts: aspeed: rainier: Add gpio-keys-polled for fans
+      ARM: dts: aspeed: everest: Add power supply i2c devices
+
+Eddie James (7):
+      ARM: dts: aspeed: rainier: Add additional processor CFAMs
+      ARM: dts: aspeed: rainier: Enable fan watchdog
+      ARM: dts: aspeed: rainier 4U: Fix fan configuration
+      ARM: dts: aspeed: everest: Add FSI CFAMs and re-number engines
+      ARM: dts: aspeed: everest: Add RTC
+      ARM: dts: aspeed: everest: Enable fan watchdog
+      ARM: dts: aspeed: Add Rainier 1S4U machine
+
+George Hung (1):
+      ARM: dts: nuvoton: Add Quanta GBS BMC Device Tree
+
+Jim Wright (1):
+      ARM: dts: aspeed: everest: Add UCD90320 power sequencer
+
+Joel Stanley (2):
+      ARM: dts: aspeed: rainier: Add missing fan nodes
+      ARM: dts: aspeed: everest: Add size/address cells
+
+Matthew Barth (2):
+      ARM: dts: aspeed: everest: Add max31785 fan controller device
+      ARM: dts: aspeed: everest: Add pca9552 fan presence
+
+Nichole Wang (1):
+      ARM: dts: aspeed: mihawk: Add GPIO line names
+
+Priyanga Ramasamy (1):
+      ARM: dts: aspeed: everest: Add I2C components
+
+Vishwanatha Subbanna (1):
+      ARM: dts: aspeed: rainier: Add directly controlled LEDs
+
+Zev Weiss (1):
+      ARM: dts: aspeed: Add ASRock E3C246D4I BMC
