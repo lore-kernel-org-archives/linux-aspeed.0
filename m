@@ -1,206 +1,275 @@
-From: Joel Stanley <joel@jms.id.au>
-Date: Fri, 9 Apr 2021 03:18:55 +0000
-Subject: [PATCH v2 01/21] dt-bindings: aspeed-lpc: Remove LPC partitioning
-In-Reply-To: <20210319062752.145730-1-andrew@aj.id.au>
+From: Zev Weiss <zweiss@equinix.com>
+Date: Fri, 9 Apr 2021 03:24:49 +0000
+Subject: [PATCH v2 06/21] ipmi: kcs_bmc_aspeed: Use of match data to
+ extract KCS properties
+In-Reply-To: <20210319062752.145730-6-andrew@aj.id.au>
 References: <20210319062752.145730-1-andrew@aj.id.au>
-Message-ID: <CACPK8Xdw3+2Rt=tQ-ciusyK=W6BaP_DR4FSFp0qDuPq5z8MPBQ@mail.gmail.com>
+ <20210319062752.145730-6-andrew@aj.id.au>
+Message-ID: <YG/JAGZmzu7TlCxa@packtop>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, 19 Mar 2021 at 06:28, Andrew Jeffery <andrew@aj.id.au> wrote:
+On Fri, Mar 19, 2021 at 01:27:37AM CDT, Andrew Jeffery wrote:
+>Unpack and remove the aspeed_kcs_probe_of_v[12]() functions to aid
+>rearranging how the private device-driver memory is allocated.
 >
-> From: "Chia-Wei, Wang" <chiawei_wang@aspeedtech.com>
+>Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
+>---
+> drivers/char/ipmi/kcs_bmc_aspeed.c | 146 ++++++++++++++---------------
+> 1 file changed, 68 insertions(+), 78 deletions(-)
 >
-> The LPC controller has no concept of the BMC and the Host partitions.
-> This patch fixes the documentation by removing the description on LPC
-> partitions. The register offsets illustrated in the DTS node examples
-> are also fixed to adapt to the LPC DTS change.
+>diff --git a/drivers/char/ipmi/kcs_bmc_aspeed.c b/drivers/char/ipmi/kcs_bmc_aspeed.c
+>index eefe362f65f0..061f53676206 100644
+>--- a/drivers/char/ipmi/kcs_bmc_aspeed.c
+>+++ b/drivers/char/ipmi/kcs_bmc_aspeed.c
+>@@ -13,6 +13,7 @@
+> #include <linux/module.h>
+> #include <linux/of.h>
+> #include <linux/of_address.h>
+>+#include <linux/of_device.h>
+> #include <linux/platform_device.h>
+> #include <linux/poll.h>
+> #include <linux/regmap.h>
+>@@ -63,6 +64,10 @@ struct aspeed_kcs_bmc {
+> 	struct regmap *map;
+> };
+>
+>+struct aspeed_kcs_of_ops {
+>+	int (*get_channel)(struct platform_device *pdev);
+>+	int (*get_io_address)(struct platform_device *pdev);
+>+};
+>
+> static u8 aspeed_kcs_inb(struct kcs_bmc *kcs_bmc, u32 reg)
+> {
+>@@ -231,13 +236,10 @@ static const struct kcs_ioreg ast_kcs_bmc_ioregs[KCS_CHANNEL_MAX] = {
+> 	{ .idr = LPC_IDR4, .odr = LPC_ODR4, .str = LPC_STR4 },
+> };
+>
+>-static struct kcs_bmc *aspeed_kcs_probe_of_v1(struct platform_device *pdev)
+>+static int aspeed_kcs_of_v1_get_channel(struct platform_device *pdev)
+> {
+>-	struct aspeed_kcs_bmc *priv;
+> 	struct device_node *np;
+>-	struct kcs_bmc *kcs;
+> 	u32 channel;
+>-	u32 slave;
+> 	int rc;
+>
+> 	np = pdev->dev.of_node;
+>@@ -245,105 +247,78 @@ static struct kcs_bmc *aspeed_kcs_probe_of_v1(struct platform_device *pdev)
+> 	rc = of_property_read_u32(np, "kcs_chan", &channel);
+> 	if ((rc != 0) || (channel == 0 || channel > KCS_CHANNEL_MAX)) {
+> 		dev_err(&pdev->dev, "no valid 'kcs_chan' configured\n");
+>-		return ERR_PTR(-EINVAL);
+>+		return -EINVAL;
+> 	}
+>
+>-	kcs = kcs_bmc_alloc(&pdev->dev, sizeof(struct aspeed_kcs_bmc), channel);
+>-	if (!kcs)
+>-		return ERR_PTR(-ENOMEM);
+>+	return channel;
+>+}
+>
+>-	priv = kcs_bmc_priv(kcs);
+>-	priv->map = syscon_node_to_regmap(pdev->dev.parent->of_node);
+>-	if (IS_ERR(priv->map)) {
+>-		dev_err(&pdev->dev, "Couldn't get regmap\n");
+>-		return ERR_PTR(-ENODEV);
+>-	}
+>+static int aspeed_kcs_of_v1_get_io_address(struct platform_device *pdev)
+>+{
+>+	u32 slave;
+>+	int rc;
+>
+>-	rc = of_property_read_u32(np, "kcs_addr", &slave);
+>-	if (rc) {
+>+	rc = of_property_read_u32(pdev->dev.of_node, "kcs_addr", &slave);
+>+	if (rc || slave > 0xffff) {
+> 		dev_err(&pdev->dev, "no valid 'kcs_addr' configured\n");
+>-		return ERR_PTR(-EINVAL);
+>+		return -EINVAL;
+> 	}
+>
+>-	kcs->ioreg = ast_kcs_bmc_ioregs[channel - 1];
+>-	aspeed_kcs_set_address(kcs, slave);
+>-
+>-	return kcs;
+>-}
+>-
+>-static int aspeed_kcs_calculate_channel(const struct kcs_ioreg *regs)
+>-{
+>-	int i;
+>-
+>-	for (i = 0; i < ARRAY_SIZE(ast_kcs_bmc_ioregs); i++) {
+>-		if (!memcmp(&ast_kcs_bmc_ioregs[i], regs, sizeof(*regs)))
+>-			return i + 1;
+>-	}
+>-
+>-	return -EINVAL;
+>+	return slave;
+> }
+>
+>-static struct kcs_bmc *aspeed_kcs_probe_of_v2(struct platform_device *pdev)
+>+static int aspeed_kcs_of_v2_get_channel(struct platform_device *pdev)
+> {
+>-	struct aspeed_kcs_bmc *priv;
+> 	struct device_node *np;
+> 	struct kcs_ioreg ioreg;
+>-	struct kcs_bmc *kcs;
+> 	const __be32 *reg;
+>-	int channel;
+>-	u32 slave;
+>-	int rc;
+>+	int i;
+>
+> 	np = pdev->dev.of_node;
+>
+> 	/* Don't translate addresses, we want offsets for the regmaps */
+> 	reg = of_get_address(np, 0, NULL, NULL);
+> 	if (!reg)
+>-		return ERR_PTR(-EINVAL);
+>+		return -EINVAL;
+> 	ioreg.idr = be32_to_cpup(reg);
+>
+> 	reg = of_get_address(np, 1, NULL, NULL);
+> 	if (!reg)
+>-		return ERR_PTR(-EINVAL);
+>+		return -EINVAL;
+> 	ioreg.odr = be32_to_cpup(reg);
+>
+> 	reg = of_get_address(np, 2, NULL, NULL);
+> 	if (!reg)
+>-		return ERR_PTR(-EINVAL);
+>+		return -EINVAL;
+> 	ioreg.str = be32_to_cpup(reg);
+>
+>-	channel = aspeed_kcs_calculate_channel(&ioreg);
+>-	if (channel < 0)
+>-		return ERR_PTR(channel);
+>-
+>-	kcs = kcs_bmc_alloc(&pdev->dev, sizeof(struct aspeed_kcs_bmc), channel);
+>-	if (!kcs)
+>-		return ERR_PTR(-ENOMEM);
+>-
+>-	kcs->ioreg = ioreg;
+>-
+>-	priv = kcs_bmc_priv(kcs);
+>-	priv->map = syscon_node_to_regmap(pdev->dev.parent->of_node);
+>-	if (IS_ERR(priv->map)) {
+>-		dev_err(&pdev->dev, "Couldn't get regmap\n");
+>-		return ERR_PTR(-ENODEV);
+>+	for (i = 0; i < ARRAY_SIZE(ast_kcs_bmc_ioregs); i++) {
+>+		if (!memcmp(&ast_kcs_bmc_ioregs[i], &ioreg, sizeof(ioreg)))
+>+			return i + 1;
 
-Is this accurate:
+Did some patches perhaps get a bit jumbled during a rebase here or
+something?  This patch removes the only initialization of priv->map
+I can see, with patch #10 later reintroducing it, but in the interim
+it seems like it would be in a fairly broken state (I'm guessing its
+removal wasn't really intended to be part of this).
 
- The node examples change their reg address to be an offset from the
-LPC HC to be an offset from the base of the LPC region.
-
-Reviewed-by: Joel Stanley <joel@jms.id.au>
-
+> 	}
 >
-> Signed-off-by: Chia-Wei Wang <chiawei_wang@aspeedtech.com>
-> Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
-> Acked-by: Rob Herring <robh@kernel.org>
-> Acked-by: Lee Jones <lee.jones@linaro.org>
-> ---
->  .../devicetree/bindings/mfd/aspeed-lpc.txt    | 100 +++++-------------
->  1 file changed, 25 insertions(+), 75 deletions(-)
+>-	rc = of_property_read_u32(np, "aspeed,lpc-io-reg", &slave);
+>-	if (rc)
+>-		return ERR_PTR(rc);
+>+	return -EINVAL;
+>+}
 >
-> diff --git a/Documentation/devicetree/bindings/mfd/aspeed-lpc.txt b/Documentation/devicetree/bindings/mfd/aspeed-lpc.txt
-> index d0a38ba8b9ce..936aa108eab4 100644
-> --- a/Documentation/devicetree/bindings/mfd/aspeed-lpc.txt
-> +++ b/Documentation/devicetree/bindings/mfd/aspeed-lpc.txt
-> @@ -9,13 +9,7 @@ primary use case of the Aspeed LPC controller is as a slave on the bus
->  conditions it can also take the role of bus master.
+>-	aspeed_kcs_set_address(kcs, slave);
+>+static int aspeed_kcs_of_v2_get_io_address(struct platform_device *pdev)
+>+{
+>+	uint32_t slave;
+>+	int rc;
 >
->  The LPC controller is represented as a multi-function device to account for the
-> -mix of functionality it provides. The principle split is between the register
-> -layout at the start of the I/O space which is, to quote the Aspeed datasheet,
-> -"basically compatible with the [LPC registers from the] popular BMC controller
-> -H8S/2168[1]", and everything else, where everything else is an eclectic
-> -collection of functions with a esoteric register layout. "Everything else",
-> -here labeled the "host" portion of the controller, includes, but is not limited
-> -to:
-> +mix of functionality, which includes, but is not limited to:
+>-	return kcs;
+>+	rc = of_property_read_u32(pdev->dev.of_node, "aspeed,lpc-io-reg", &slave);
+>+	if (rc || slave > 0xffff)
+>+		return -EINVAL;
+>+
+>+	return slave;
+> }
 >
->  * An IPMI Block Transfer[2] Controller
+> static int aspeed_kcs_probe(struct platform_device *pdev)
+> {
+>+	const struct aspeed_kcs_of_ops *ops;
+> 	struct device *dev = &pdev->dev;
+> 	struct kcs_bmc *kcs_bmc;
+> 	struct device_node *np;
+>-	int rc;
+>+	int rc, channel, addr;
 >
-> @@ -44,80 +38,36 @@ Required properties
->  ===================
+> 	np = dev->of_node->parent;
+> 	if (!of_device_is_compatible(np, "aspeed,ast2400-lpc-v2") &&
+>@@ -352,23 +327,28 @@ static int aspeed_kcs_probe(struct platform_device *pdev)
+> 		dev_err(dev, "unsupported LPC device binding\n");
+> 		return -ENODEV;
+> 	}
+>-
+>-	np = dev->of_node;
+>-	if (of_device_is_compatible(np, "aspeed,ast2400-kcs-bmc") ||
+>-	    of_device_is_compatible(np, "aspeed,ast2500-kcs-bmc"))
+>-		kcs_bmc = aspeed_kcs_probe_of_v1(pdev);
+>-	else if (of_device_is_compatible(np, "aspeed,ast2400-kcs-bmc-v2") ||
+>-		 of_device_is_compatible(np, "aspeed,ast2500-kcs-bmc-v2"))
+>-		kcs_bmc = aspeed_kcs_probe_of_v2(pdev);
+>-	else
+>+	ops = of_device_get_match_data(&pdev->dev);
+>+	if (!ops)
+> 		return -EINVAL;
 >
->  - compatible:  One of:
-> -               "aspeed,ast2400-lpc", "simple-mfd"
-> -               "aspeed,ast2500-lpc", "simple-mfd"
-> -               "aspeed,ast2600-lpc", "simple-mfd"
-> +               "aspeed,ast2400-lpc-v2", "simple-mfd", "syscon"
-> +               "aspeed,ast2500-lpc-v2", "simple-mfd", "syscon"
-> +               "aspeed,ast2600-lpc-v2", "simple-mfd", "syscon"
+>-	if (IS_ERR(kcs_bmc))
+>-		return PTR_ERR(kcs_bmc);
+>+	channel = ops->get_channel(pdev);
+>+	if (channel < 0)
+>+		return channel;
 >
->  - reg:         contains the physical address and length values of the Aspeed
->                  LPC memory region.
+>+	kcs_bmc = kcs_bmc_alloc(&pdev->dev, sizeof(struct aspeed_kcs_bmc), channel);
+>+	if (!kcs_bmc)
+>+		return -ENOMEM;
+>+
+>+	kcs_bmc->ioreg = ast_kcs_bmc_ioregs[channel - 1];
+> 	kcs_bmc->io_inputb = aspeed_kcs_inb;
+> 	kcs_bmc->io_outputb = aspeed_kcs_outb;
 >
->  - #address-cells: <1>
->  - #size-cells: <1>
-> -- ranges:      Maps 0 to the physical address and length of the LPC memory
-> -                region
-> -
-> -Required LPC Child nodes
-> -========================
-> -
-> -BMC Node
-> ---------
-> -
-> -- compatible:  One of:
-> -               "aspeed,ast2400-lpc-bmc"
-> -               "aspeed,ast2500-lpc-bmc"
-> -               "aspeed,ast2600-lpc-bmc"
-> -
-> -- reg:         contains the physical address and length values of the
-> -                H8S/2168-compatible LPC controller memory region
-> -
-> -Host Node
-> ----------
-> -
-> -- compatible:   One of:
-> -               "aspeed,ast2400-lpc-host", "simple-mfd", "syscon"
-> -               "aspeed,ast2500-lpc-host", "simple-mfd", "syscon"
-> -               "aspeed,ast2600-lpc-host", "simple-mfd", "syscon"
-> -
-> -- reg:         contains the address and length values of the host-related
-> -                register space for the Aspeed LPC controller
-> -
-> -- #address-cells: <1>
-> -- #size-cells: <1>
-> -- ranges:      Maps 0 to the address and length of the host-related LPC memory
-> +- ranges:      Maps 0 to the physical address and length of the LPC memory
->                  region
+>+	addr = ops->get_io_address(pdev);
+>+	if (addr < 0)
+>+		return addr;
+>+
+>+	aspeed_kcs_set_address(kcs_bmc, addr);
+>+
+> 	rc = aspeed_kcs_config_irq(kcs_bmc, pdev);
+> 	if (rc)
+> 		return rc;
+>@@ -400,11 +380,21 @@ static int aspeed_kcs_remove(struct platform_device *pdev)
+> 	return 0;
+> }
 >
->  Example:
->
->  lpc: lpc at 1e789000 {
-> -       compatible = "aspeed,ast2500-lpc", "simple-mfd";
-> +       compatible = "aspeed,ast2500-lpc-v2", "simple-mfd", "syscon";
->         reg = <0x1e789000 0x1000>;
->
->         #address-cells = <1>;
->         #size-cells = <1>;
->         ranges = <0x0 0x1e789000 0x1000>;
->
-> -       lpc_bmc: lpc-bmc at 0 {
-> -               compatible = "aspeed,ast2500-lpc-bmc";
-> +       lpc_snoop: lpc-snoop at 0 {
-> +               compatible = "aspeed,ast2600-lpc-snoop";
->                 reg = <0x0 0x80>;
-> -       };
-> -
-> -       lpc_host: lpc-host at 80 {
-> -               compatible = "aspeed,ast2500-lpc-host", "simple-mfd", "syscon";
-> -               reg = <0x80 0x1e0>;
-> -               reg-io-width = <4>;
-> -
-> -               #address-cells = <1>;
-> -               #size-cells = <1>;
-> -               ranges = <0x0 0x80 0x1e0>;
-> +               interrupts = <GIC_SPI 144 IRQ_TYPE_LEVEL_HIGH>;
-> +               snoop-ports = <0x80>;
->         };
->  };
->
-> -BMC Node Children
-> -==================
-> -
-> -
-> -Host Node Children
-> -==================
->
->  LPC Host Interface Controller
->  -------------------
-> @@ -149,14 +99,12 @@ Optional properties:
->
->  Example:
->
-> -lpc-host at 80 {
-> -       lpc_ctrl: lpc-ctrl at 0 {
-> -               compatible = "aspeed,ast2500-lpc-ctrl";
-> -               reg = <0x0 0x80>;
-> -               clocks = <&syscon ASPEED_CLK_GATE_LCLK>;
-> -               memory-region = <&flash_memory>;
-> -               flash = <&spi>;
-> -       };
-> +lpc_ctrl: lpc-ctrl at 80 {
-> +       compatible = "aspeed,ast2500-lpc-ctrl";
-> +       reg = <0x80 0x80>;
-> +       clocks = <&syscon ASPEED_CLK_GATE_LCLK>;
-> +       memory-region = <&flash_memory>;
-> +       flash = <&spi>;
->  };
->
->  LPC Host Controller
-> @@ -179,9 +127,9 @@ Required properties:
->
->  Example:
->
-> -lhc: lhc at 20 {
-> +lhc: lhc at a0 {
->         compatible = "aspeed,ast2500-lhc";
-> -       reg = <0x20 0x24 0x48 0x8>;
-> +       reg = <0xa0 0x24 0xc8 0x8>;
->  };
->
->  LPC reset control
-> @@ -192,16 +140,18 @@ state of the LPC bus. Some systems may chose to modify this configuration.
->
->  Required properties:
->
-> - - compatible:         "aspeed,ast2600-lpc-reset" or
-> -                       "aspeed,ast2500-lpc-reset"
-> -                       "aspeed,ast2400-lpc-reset"
-> + - compatible:         One of:
-> +                       "aspeed,ast2600-lpc-reset";
-> +                       "aspeed,ast2500-lpc-reset";
-> +                       "aspeed,ast2400-lpc-reset";
-> +
->   - reg:                        offset and length of the IP in the LHC memory region
->   - #reset-controller   indicates the number of reset cells expected
->
->  Example:
->
-> -lpc_reset: reset-controller at 18 {
-> +lpc_reset: reset-controller at 98 {
->          compatible = "aspeed,ast2500-lpc-reset";
-> -        reg = <0x18 0x4>;
-> +        reg = <0x98 0x4>;
->          #reset-cells = <1>;
->  };
-> --
-> 2.27.0
+>+static const struct aspeed_kcs_of_ops of_v1_ops = {
+>+	.get_channel = aspeed_kcs_of_v1_get_channel,
+>+	.get_io_address = aspeed_kcs_of_v1_get_io_address,
+>+};
+>+
+>+static const struct aspeed_kcs_of_ops of_v2_ops = {
+>+	.get_channel = aspeed_kcs_of_v2_get_channel,
+>+	.get_io_address = aspeed_kcs_of_v2_get_io_address,
+>+};
+>+
+> static const struct of_device_id ast_kcs_bmc_match[] = {
+>-	{ .compatible = "aspeed,ast2400-kcs-bmc" },
+>-	{ .compatible = "aspeed,ast2500-kcs-bmc" },
+>-	{ .compatible = "aspeed,ast2400-kcs-bmc-v2" },
+>-	{ .compatible = "aspeed,ast2500-kcs-bmc-v2" },
+>+	{ .compatible = "aspeed,ast2400-kcs-bmc", .data = &of_v1_ops },
+>+	{ .compatible = "aspeed,ast2500-kcs-bmc", .data = &of_v1_ops },
+>+	{ .compatible = "aspeed,ast2400-kcs-bmc-v2", .data = &of_v2_ops },
+>+	{ .compatible = "aspeed,ast2500-kcs-bmc-v2", .data = &of_v2_ops },
+> 	{ }
+> };
+> MODULE_DEVICE_TABLE(of, ast_kcs_bmc_match);
+>-- 
+>2.27.0
 >
