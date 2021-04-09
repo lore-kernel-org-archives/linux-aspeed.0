@@ -1,38 +1,30 @@
-From: Zev Weiss <zev@bewilderbeest.net>
-Date: Fri, 9 Apr 2021 02:38:38 -0500
-Subject: [PATCH v5 2/4] drivers/tty/serial/8250: refactor sirq and lpc
- address setting code
-In-Reply-To: <CAHp75Vd6kk0E-kALEGOhsg=YHKhmKLY6cpCTdviOFenO4p1-2A@mail.gmail.com>
-References: <20210408011637.5361-1-zev@bewilderbeest.net>
- <20210408011637.5361-3-zev@bewilderbeest.net>
- <CAHp75Vd6kk0E-kALEGOhsg=YHKhmKLY6cpCTdviOFenO4p1-2A@mail.gmail.com>
-Message-ID: <YHAEfn4li6F8L9JC@hatter.bewilderbeest.net>
+From: Arnd Bergmann <arnd@kernel.org>
+Date: Fri, 9 Apr 2021 09:55:53 +0200
+Subject: [PATCH v2 16/21] ipmi: kcs_bmc: Add a "raw" character device
+ interface
+In-Reply-To: <20210319062752.145730-16-andrew@aj.id.au>
+References: <20210319062752.145730-1-andrew@aj.id.au>
+ <20210319062752.145730-16-andrew@aj.id.au>
+Message-ID: <CAK8P3a1HDQdbTAT4aRMLu-VFz720ynPqPHG5b22NZ5p5QfUqOw@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Apr 09, 2021 at 02:24:08AM CDT, Andy Shevchenko wrote:
->On Thursday, April 8, 2021, Zev Weiss <zev@bewilderbeest.net> wrote:
+On Fri, Mar 19, 2021 at 7:31 AM Andrew Jeffery <andrew@aj.id.au> wrote:
 >
->> This splits dedicated aspeed_vuart_set_{sirq,lpc_address}() functions
->> out of the sysfs store functions in preparation for adding DT
->> properties that will be poking the same registers.  While we're at it,
->> these functions now provide some basic bounds-checking on their
->> arguments.
->>
->>
->
->Please, use prefix ?serial: 8250_aspeed_vuart:? instead of what you have in
->the subject line. I think I have told this already
->
->
+> The existing IPMI chardev encodes IPMI behaviours as the name suggests.
+> However, KCS devices are useful beyond IPMI (or keyboards), as they
+> provide a means to generate IRQs and exchange arbitrary data between a
+> BMC and its host system.
 
-Ah, sorry -- I fixed the cover letter after your first comment (which 
-had definitely been under-tagged); for the patches themselves I was 
-following the example of the last patch in that particular area 
-(8d310c9107a2), though I guess that wasn't the right model to follow.  
-I'll use the requested format in the future.
+I only noticed the series after Joel asked about the DT changes on the arm
+side. One question though:
 
+How does this related to the drivers/input/serio/ framework that also talks
+to the keyboard controller for things that are not keyboards? Are these
+separate communication channels on adjacent I/O ports, or does there
+need to be some arbitration?
 
+       Arnd
