@@ -1,71 +1,261 @@
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Date: Fri, 9 Apr 2021 12:51:34 +0300
-Subject: [PATCH v5 2/4] drivers/tty/serial/8250: refactor sirq and lpc
- address setting code
-In-Reply-To: <YHAEfn4li6F8L9JC@hatter.bewilderbeest.net>
-References: <20210408011637.5361-1-zev@bewilderbeest.net>
- <20210408011637.5361-3-zev@bewilderbeest.net>
- <CAHp75Vd6kk0E-kALEGOhsg=YHKhmKLY6cpCTdviOFenO4p1-2A@mail.gmail.com>
- <YHAEfn4li6F8L9JC@hatter.bewilderbeest.net>
-Message-ID: <CAHp75VfpE-AvhzN216KwJvxQ25euGTN_kziJ0hKxYCOXXA2BTw@mail.gmail.com>
+From: David Hildenbrand <david@redhat.com>
+Date: Fri,  9 Apr 2021 13:20:35 +0200
+Subject: [PATCH v3] drivers: introduce and use WANT_DMA_CMA for soft
+ dependencies on DMA_CMA
+Message-ID: <20210409112035.27221-1-david@redhat.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Apr 9, 2021 at 10:38 AM Zev Weiss <zev@bewilderbeest.net> wrote:
->
-> On Fri, Apr 09, 2021 at 02:24:08AM CDT, Andy Shevchenko wrote:
-> >On Thursday, April 8, 2021, Zev Weiss <zev@bewilderbeest.net> wrote:
-> >
-> >> This splits dedicated aspeed_vuart_set_{sirq,lpc_address}() functions
-> >> out of the sysfs store functions in preparation for adding DT
-> >> properties that will be poking the same registers.  While we're at it,
-> >> these functions now provide some basic bounds-checking on their
-> >> arguments.
-> >>
-> >>
-> >
-> >Please, use prefix ?serial: 8250_aspeed_vuart:? instead of what you have in
-> >the subject line. I think I have told this already
-> >
-> >
->
-> Ah, sorry -- I fixed the cover letter after your first comment (which
-> had definitely been under-tagged); for the patches themselves I was
-> following the example of the last patch in that particular area
-> (8d310c9107a2), though I guess that wasn't the right model to follow.
-> I'll use the requested format in the future.
+Random drivers should not override a user configuration of core knobs
+(e.g., CONFIG_DMA_CMA=n). Applicable drivers would like to use DMA_CMA,
+which depends on CMA, if possible; however, these drivers also have to
+tolerate if DMA_CMA is not available/functioning, for example, if no CMA
+area for DMA_CMA use has been setup via "cma=X". In the worst case, the
+driver cannot do it's job properly in some configurations.
 
-Just random amount of most recent patches against 8250 driver:
+For example, commit 63f5677544b3 ("drm/etnaviv: select CMA and DMA_CMA if
+available") documents
+	While this is no build dependency, etnaviv will only work correctly
+	on most systems if CMA and DMA_CMA are enabled. Select both options
+	if available to avoid users ending up with a non-working GPU due to
+	a lacking kernel config.
+So etnaviv really wants to have DMA_CMA, however, can deal with some cases
+where it is not available.
 
-e47eb5241a8f serial: 8250: Avoid new transfers when shutting down
-e49950d3e737 serial: 8250_dma: use linear buffer for transmit
-34255381fabd serial: 8250_port: Try to run DMA Rx on timeout condition
-7d7dec450a66 8250_tegra: clean up tegra_uart_handle_break
-c3ae3dc896fa serial: 8250_pci: Drop bogus __refdata annotation
-d96f04d347e4 serial: 8250_omap: Avoid FIFO corruption caused by MDR1 access
-6e4e636e0e3e serial: 8250-mtk: Fix reference leak in mtk8250_probe
-a609c58086e3 tty: serial: 8250: 8250_port: Move prototypes to shared location
-6f9918504129 serial: 8250: 8250_omap: Fix unused variable warning
-d4548b14dd7e serial: 8250: 8250_omap: Fix possible array out of bounds access
-912ab37c7987 serial: 8250_mtk: Fix uart_get_baud_rate warning
-439c7183e5b9 serial: 8250: 8250_omap: Disable RX interrupt after DMA enable
-32ed248042d1 tty: serial: 8250: serial_cs: Remove unused/unchecked
-variable 'err'
-85985a3dcd74 serial: 8250_dw: Fix clk-notifier/port suspend deadlock
-c8dff3aa8241 serial: 8250: Skip uninitialized TTY port baud rate update
-7718453e3696 serial: 8250: Discard RTS/DTS setting from clock update method
-409cc4541ade serial: 8250_fsl: Fix TX interrupt handling condition
-3c5a87be170a serial: 8250_pci: Add Realtek 816a and 816b
-ea4de367e57d tty: serial: 8250_mtk: set regshift for mmio32
-57cee0713118 serial: 8250_pci: Remove unused function get_pci_irq()
-11361610b005 serial: 8250_fsl: Add ACPI support
+Let's introduce WANT_DMA_CMA and use it in most cases where drivers
+select CMA/DMA_CMA, or depend on DMA_CMA (in a wrong way via CMA because
+of recursive dependency issues).
 
+We'll assume that any driver that selects DRM_GEM_CMA_HELPER or
+DRM_KMS_CMA_HELPER would like to use DMA_CMA if possible.
 
+With this change, distributions can disable CONFIG_CMA or
+CONFIG_DMA_CMA, without it silently getting enabled again by random
+drivers. Also, we'll now automatically try to enabled both, CONFIG_CMA
+and CONFIG_DMA_CMA if they are unspecified and any driver is around that
+selects WANT_DMA_CMA -- also implicitly via DRM_GEM_CMA_HELPER or
+DRM_KMS_CMA_HELPER.
 
+For example, if any driver selects WANT_DMA_CMA and we do a
+"make olddefconfig":
 
+1. With "# CONFIG_CMA is not set" and no specification of
+   "CONFIG_DMA_CMA"
+
+-> CONFIG_DMA_CMA won't be part of .config
+
+2. With no specification of CONFIG_CMA or CONFIG_DMA_CMA
+
+Contiguous Memory Allocator (CMA) [Y/n/?] (NEW)
+DMA Contiguous Memory Allocator (DMA_CMA) [Y/n/?] (NEW)
+
+3. With "# CONFIG_CMA is not set" and "# CONFIG_DMA_CMA is not set"
+
+-> CONFIG_DMA_CMA will be removed from .config
+
+Note: drivers/remoteproc seems to be special; commit c51e882cd711
+("remoteproc/davinci: Update Kconfig to depend on DMA_CMA") explains that
+there is a real dependency to DMA_CMA for it to work; leave that dependency
+in place and don't convert it to a soft dependency.
+
+Cc: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
+Cc: Maxime Ripard <mripard@kernel.org>
+Cc: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: David Airlie <airlied@linux.ie>
+Cc: Daniel Vetter <daniel@ffwll.ch>
+Cc: Joel Stanley <joel@jms.id.au>
+Cc: Andrew Jeffery <andrew@aj.id.au>
+Cc: Lucas Stach <l.stach@pengutronix.de>
+Cc: Russell King <linux+etnaviv@armlinux.org.uk>
+Cc: Christian Gmeiner <christian.gmeiner@gmail.com>
+Cc: Paul Cercueil <paul@crapouillou.net>
+Cc: Linus Walleij <linus.walleij@linaro.org>
+Cc: Christoph Hellwig <hch@lst.de>
+Cc: Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: Robin Murphy <robin.murphy@arm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Mike Rapoport <rppt@kernel.org>
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Eric Anholt <eric@anholt.net>
+Cc: Michal Simek <michal.simek@xilinx.com>
+Cc: Masahiro Yamada <masahiroy@kernel.org>
+Cc: "Alexander A. Klimov" <grandmaster@al2klimov.de>
+Cc: Peter Collingbourne <pcc@google.com>
+Cc: Suman Anna <s-anna@ti.com>
+Cc: Jason Gunthorpe <jgg@ziepe.ca>
+Cc: dri-devel at lists.freedesktop.org
+Cc: linux-aspeed at lists.ozlabs.org
+Cc: linux-arm-kernel at lists.infradead.org
+Cc: etnaviv at lists.freedesktop.org
+Cc: linux-mips at vger.kernel.org
+Cc: linux-fbdev at vger.kernel.org
+Cc: iommu at lists.linux-foundation.org
+Signed-off-by: David Hildenbrand <david@redhat.com>
+---
+
+Let's see if this approach is better for soft dependencies (and if we
+actually have some hard dependencies in there). This is the follow-up
+of
+  https://lkml.kernel.org/r/20210408092011.52763-1-david at redhat.com
+  https://lkml.kernel.org/r/20210408100523.63356-1-david at redhat.com
+
+I was wondering if it would make sense in some drivers to warn if either
+CONFIG_DMA_CMA is not available or if DRM_CMA has not been configured
+properly - just to give people a heads up that something might more likely
+go wrong; that would, however, be future work.
+
+v2 -> v3:
+- Don't use "imply" but instead use a new WANT_DMA_CMA and make the default
+  of CMA and DMA_CMA depend on it.
+- Also adjust ingenic, mcde, tve200; these sound like soft dependencies as
+  well (although DMA_CMA is really desired)
+
+v1 -> v2:
+- Fix DRM_CMA -> DMA_CMA
+
+---
+ drivers/gpu/drm/Kconfig         | 2 ++
+ drivers/gpu/drm/aspeed/Kconfig  | 2 --
+ drivers/gpu/drm/etnaviv/Kconfig | 3 +--
+ drivers/gpu/drm/ingenic/Kconfig | 1 -
+ drivers/gpu/drm/mcde/Kconfig    | 1 -
+ drivers/gpu/drm/tve200/Kconfig  | 1 -
+ drivers/video/fbdev/Kconfig     | 2 +-
+ kernel/dma/Kconfig              | 7 +++++++
+ mm/Kconfig                      | 1 +
+ 9 files changed, 12 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/gpu/drm/Kconfig b/drivers/gpu/drm/Kconfig
+index 85b79a7fee63..6f9989adfa93 100644
+--- a/drivers/gpu/drm/Kconfig
++++ b/drivers/gpu/drm/Kconfig
+@@ -201,12 +201,14 @@ config DRM_TTM_HELPER
+ config DRM_GEM_CMA_HELPER
+ 	bool
+ 	depends on DRM
++	select WANT_DMA_CMA
+ 	help
+ 	  Choose this if you need the GEM CMA helper functions
+ 
+ config DRM_KMS_CMA_HELPER
+ 	bool
+ 	depends on DRM
++	select WANT_DMA_CMA
+ 	select DRM_GEM_CMA_HELPER
+ 	help
+ 	  Choose this if you need the KMS CMA helper functions
+diff --git a/drivers/gpu/drm/aspeed/Kconfig b/drivers/gpu/drm/aspeed/Kconfig
+index 5e95bcea43e9..e5ff33f85f21 100644
+--- a/drivers/gpu/drm/aspeed/Kconfig
++++ b/drivers/gpu/drm/aspeed/Kconfig
+@@ -6,8 +6,6 @@ config DRM_ASPEED_GFX
+ 	depends on MMU
+ 	select DRM_KMS_HELPER
+ 	select DRM_KMS_CMA_HELPER
+-	select DMA_CMA if HAVE_DMA_CONTIGUOUS
+-	select CMA if HAVE_DMA_CONTIGUOUS
+ 	select MFD_SYSCON
+ 	help
+ 	  Chose this option if you have an ASPEED AST2500 SOC Display
+diff --git a/drivers/gpu/drm/etnaviv/Kconfig b/drivers/gpu/drm/etnaviv/Kconfig
+index faa7fc68b009..a3e7649b44a7 100644
+--- a/drivers/gpu/drm/etnaviv/Kconfig
++++ b/drivers/gpu/drm/etnaviv/Kconfig
+@@ -9,8 +9,7 @@ config DRM_ETNAVIV
+ 	select THERMAL if DRM_ETNAVIV_THERMAL
+ 	select TMPFS
+ 	select WANT_DEV_COREDUMP
+-	select CMA if HAVE_DMA_CONTIGUOUS
+-	select DMA_CMA if HAVE_DMA_CONTIGUOUS
++	select WANT_DMA_CMA
+ 	select DRM_SCHED
+ 	help
+ 	  DRM driver for Vivante GPUs.
+diff --git a/drivers/gpu/drm/ingenic/Kconfig b/drivers/gpu/drm/ingenic/Kconfig
+index 3b57f8be007c..156b11b7bbb8 100644
+--- a/drivers/gpu/drm/ingenic/Kconfig
++++ b/drivers/gpu/drm/ingenic/Kconfig
+@@ -2,7 +2,6 @@ config DRM_INGENIC
+ 	tristate "DRM Support for Ingenic SoCs"
+ 	depends on MIPS || COMPILE_TEST
+ 	depends on DRM
+-	depends on CMA
+ 	depends on OF
+ 	depends on COMMON_CLK
+ 	select DRM_BRIDGE
+diff --git a/drivers/gpu/drm/mcde/Kconfig b/drivers/gpu/drm/mcde/Kconfig
+index 71c689b573c9..217d54c4babc 100644
+--- a/drivers/gpu/drm/mcde/Kconfig
++++ b/drivers/gpu/drm/mcde/Kconfig
+@@ -1,7 +1,6 @@
+ config DRM_MCDE
+ 	tristate "DRM Support for ST-Ericsson MCDE (Multichannel Display Engine)"
+ 	depends on DRM
+-	depends on CMA
+ 	depends on ARM || COMPILE_TEST
+ 	depends on OF
+ 	depends on COMMON_CLK
+diff --git a/drivers/gpu/drm/tve200/Kconfig b/drivers/gpu/drm/tve200/Kconfig
+index e2d163c74ed6..d04b7322c770 100644
+--- a/drivers/gpu/drm/tve200/Kconfig
++++ b/drivers/gpu/drm/tve200/Kconfig
+@@ -2,7 +2,6 @@
+ config DRM_TVE200
+ 	tristate "DRM Support for Faraday TV Encoder TVE200"
+ 	depends on DRM
+-	depends on CMA
+ 	depends on ARM || COMPILE_TEST
+ 	depends on OF
+ 	select DRM_BRIDGE
+diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+index 4f02db65dede..e8acd4f77d41 100644
+--- a/drivers/video/fbdev/Kconfig
++++ b/drivers/video/fbdev/Kconfig
+@@ -2186,7 +2186,7 @@ config FB_HYPERV
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+ 	select FB_DEFERRED_IO
+-	select DMA_CMA if HAVE_DMA_CONTIGUOUS && CMA
++	select WANT_DMA_CMA
+ 	help
+ 	  This framebuffer driver supports Microsoft Hyper-V Synthetic Video.
+ 
+diff --git a/kernel/dma/Kconfig b/kernel/dma/Kconfig
+index 77b405508743..928f16d2461d 100644
+--- a/kernel/dma/Kconfig
++++ b/kernel/dma/Kconfig
+@@ -103,8 +103,15 @@ config DMA_DIRECT_REMAP
+ 	select DMA_REMAP
+ 	select DMA_COHERENT_POOL
+ 
++config WANT_DMA_CMA
++	bool
++	help
++	  Drivers should "select" this option if they desire to use the
++	  DMA_CMA mechanism.
++
+ config DMA_CMA
+ 	bool "DMA Contiguous Memory Allocator"
++	default y if WANT_DMA_CMA
+ 	depends on HAVE_DMA_CONTIGUOUS && CMA
+ 	help
+ 	  This enables the Contiguous Memory Allocator which allows drivers
+diff --git a/mm/Kconfig b/mm/Kconfig
+index 24c045b24b95..169598ee56b1 100644
+--- a/mm/Kconfig
++++ b/mm/Kconfig
+@@ -485,6 +485,7 @@ config FRONTSWAP
+ 
+ config CMA
+ 	bool "Contiguous Memory Allocator"
++	default y if WANT_DMA_CMA
+ 	depends on MMU
+ 	select MIGRATION
+ 	select MEMORY_ISOLATION
 -- 
-With Best Regards,
-Andy Shevchenko
+2.30.2
+
