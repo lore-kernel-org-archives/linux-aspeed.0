@@ -1,110 +1,30 @@
-From: Zev Weiss <zev@bewilderbeest.net>
-Date: Fri, 9 Apr 2021 02:01:04 -0500
-Subject: [PATCH v5 2/4] drivers/tty/serial/8250: refactor sirq and lpc
- address setting code
-In-Reply-To: <db7271d8-8d13-4a8c-a7ba-564e4e769ea5@www.fastmail.com>
-References: <20210408011637.5361-1-zev@bewilderbeest.net>
- <20210408011637.5361-3-zev@bewilderbeest.net>
- <db7271d8-8d13-4a8c-a7ba-564e4e769ea5@www.fastmail.com>
-Message-ID: <YG/7sFv+2AlLKbZ5@hatter.bewilderbeest.net>
+From: Arnd Bergmann <arnd@kernel.org>
+Date: Fri,  9 Apr 2021 09:17:35 +0200
+Subject: [GIT PULL] ARM: bmc: devicetree changes for 5.13
+In-Reply-To: <CACPK8Xe-KV5BeQwOH6NKC1++FCVqwwNCGBh7hEbBORfrmxfTtQ@mail.gmail.com>
+References: <CACPK8Xe-KV5BeQwOH6NKC1++FCVqwwNCGBh7hEbBORfrmxfTtQ@mail.gmail.com>
+Message-ID: <161795265048.1749935.15830124997910239772.b4-ty@arndb.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Apr 09, 2021 at 12:06:16AM CDT, Andrew Jeffery wrote:
->
->
->On Thu, 8 Apr 2021, at 10:46, Zev Weiss wrote:
->> This splits dedicated aspeed_vuart_set_{sirq,lpc_address}() functions
->> out of the sysfs store functions in preparation for adding DT
->> properties that will be poking the same registers.  While we're at it,
->> these functions now provide some basic bounds-checking on their
->> arguments.
->>
->> Signed-off-by: Zev Weiss <zev@bewilderbeest.net>
->> ---
->>  drivers/tty/serial/8250/8250_aspeed_vuart.c | 51 ++++++++++++++-------
->>  1 file changed, 35 insertions(+), 16 deletions(-)
->>
->> diff --git a/drivers/tty/serial/8250/8250_aspeed_vuart.c
->> b/drivers/tty/serial/8250/8250_aspeed_vuart.c
->> index c33e02cbde93..8433f8dbb186 100644
->> --- a/drivers/tty/serial/8250/8250_aspeed_vuart.c
->> +++ b/drivers/tty/serial/8250/8250_aspeed_vuart.c
->> @@ -72,22 +72,31 @@ static ssize_t lpc_address_show(struct device *dev,
->>  	return snprintf(buf, PAGE_SIZE - 1, "0x%x\n", addr);
->>  }
->>
->> +static int aspeed_vuart_set_lpc_address(struct aspeed_vuart *vuart, u32 addr)
->> +{
->> +	if (addr > U16_MAX)
->> +		return -EINVAL;
->> +
->> +	writeb(addr >> 8, vuart->regs + ASPEED_VUART_ADDRH);
->> +	writeb(addr >> 0, vuart->regs + ASPEED_VUART_ADDRL);
->> +
->> +	return 0;
->> +}
->> +
->>  static ssize_t lpc_address_store(struct device *dev,
->>  				 struct device_attribute *attr,
->>  				 const char *buf, size_t count)
->>  {
->>  	struct aspeed_vuart *vuart = dev_get_drvdata(dev);
->> -	unsigned long val;
->> +	u32 val;
->>  	int err;
->>
->> -	err = kstrtoul(buf, 0, &val);
->> +	err = kstrtou32(buf, 0, &val);
->>  	if (err)
->>  		return err;
->>
->> -	writeb(val >> 8, vuart->regs + ASPEED_VUART_ADDRH);
->> -	writeb(val >> 0, vuart->regs + ASPEED_VUART_ADDRL);
->> -
->> -	return count;
->> +	err = aspeed_vuart_set_lpc_address(vuart, val);
->> +	return err ? : count;
->>  }
->>
->>  static DEVICE_ATTR_RW(lpc_address);
->> @@ -105,27 +114,37 @@ static ssize_t sirq_show(struct device *dev,
->>  	return snprintf(buf, PAGE_SIZE - 1, "%u\n", reg);
->>  }
->>
->> +static int aspeed_vuart_set_sirq(struct aspeed_vuart *vuart, u32 sirq)
->> +{
->> +	u8 reg;
->> +
->> +	if (sirq > (ASPEED_VUART_GCRB_HOST_SIRQ_MASK >> ASPEED_VUART_GCRB_HOST_SIRQ_SHIFT))
->> +		return -EINVAL;
->> +
->> +	sirq <<= ASPEED_VUART_GCRB_HOST_SIRQ_SHIFT;
->> +	sirq &= ASPEED_VUART_GCRB_HOST_SIRQ_MASK;
->
->This might be less verbose if we reordered things a little:
->
->```
->sirq <<= ASPEED_VUART_GCRB_HOST_SIRQ_SHIFT;
->if (sirq & ASPEED_VUART_GCRB_HOST_SIRQ_MASK)
->	return -EINVAL;
->sirq &= ASPEED_VUART_GCRB_HOST_SIRQ_MASK;
->```
+From: Arnd Bergmann <arnd@arndb.de>
 
-Hmm, that (or something similar, perhaps with a '~' on the mask in the 
-if condition?) does seem like it'd be a nice improvement, though I 
-suppose it'd also mean we'd fail to reject some way-out-of-range sirq 
-values (e.g. if it had its MSB set) -- so I think I'll leave it as is, 
-just in the name of thoroughness/paranoia?
+On Fri, 9 Apr 2021 06:14:27 +0000, Joel Stanley wrote:
+> Here's a pull request from me for the ASPEED and Nuvoton changes
+> targeting the v5.13 merge window. As you can see I've chosen to
+> arrange the pull request as one single "BMC-related" set of changes.
+> If we choose to continue with this, in the future I will cover the
+> ASPEED, NPCM and soon to be merged WPCM (legacy Nuvoton) systems.
+> 
+> The following changes since commit ee33e2fb3d70267de00f7c0b09e7e3b309a686df:
+> 
+> [...]
 
->
->But otherwise it looks okay, so
->
->Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
->
+Merged into arm/dt, thanks!
 
-Thanks.
+merge commit: e3bbc53ac8827babb5001037883e4edd2068168d
 
+       Arnd
