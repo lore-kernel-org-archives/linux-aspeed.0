@@ -1,152 +1,105 @@
-From: Zev Weiss <zweiss@equinix.com>
-Date: Fri, 9 Apr 2021 05:07:11 +0000
-Subject: [PATCH v2 15/21] ipmi: kcs_bmc: Don't enforce single-open policy
- in the kernel
-In-Reply-To: <20210319062752.145730-15-andrew@aj.id.au>
-References: <20210319062752.145730-1-andrew@aj.id.au>
- <20210319062752.145730-15-andrew@aj.id.au>
-Message-ID: <YG/g/poZLwO34QH7@packtop>
+From: Andrew Jeffery <andrew@aj.id.au>
+Date: Fri, 09 Apr 2021 14:44:54 +0930
+Subject: =?UTF-8?Q?Re:_[PATCH_v5_3/4]_drivers/tty/serial/8250:_add_aspeed,
+ _lpc-io?= =?UTF-8?Q?-reg_and_aspeed,_lpc-interrupts_DT_properties?=
+In-Reply-To: <20210408011637.5361-4-zev@bewilderbeest.net>
+References: <20210408011637.5361-1-zev@bewilderbeest.net>
+ <20210408011637.5361-4-zev@bewilderbeest.net>
+Message-ID: <3eef2478-c5b8-4f14-a937-16bbe0a3e05a@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Mar 19, 2021 at 01:27:46AM CDT, Andrew Jeffery wrote:
->Soon it will be possible for one KCS device to have multiple associated
->chardevs exposed to userspace (for IPMI and raw-style access). However,
->don't prevent userspace from:
->
->1. Opening more than one chardev at a time, or
->2. Opening the same chardev more than once.
->
->System behaviour is undefined for both classes of multiple access, so
->userspace must manage itself accordingly.
->
->The implementation delivers IBF and OBF events to the first chardev
->client to associate with the KCS device. An open on a related chardev
->cannot associate its client with the KCS device and so will not
->receive notification of events. However, any fd on any chardev may race
->their accesses to the data and status registers.
->
->Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
->---
-> drivers/char/ipmi/kcs_bmc.c         | 34 ++++++++++-------------------
-> drivers/char/ipmi/kcs_bmc_aspeed.c  |  3 +--
-> drivers/char/ipmi/kcs_bmc_npcm7xx.c |  3 +--
-> 3 files changed, 14 insertions(+), 26 deletions(-)
->
->diff --git a/drivers/char/ipmi/kcs_bmc.c b/drivers/char/ipmi/kcs_bmc.c
->index 05bbb72418b2..2fafa9541934 100644
->--- a/drivers/char/ipmi/kcs_bmc.c
->+++ b/drivers/char/ipmi/kcs_bmc.c
->@@ -55,24 +55,12 @@ EXPORT_SYMBOL(kcs_bmc_update_status);
-> int kcs_bmc_handle_event(struct kcs_bmc_device *kcs_bmc)
-> {
-> 	struct kcs_bmc_client *client;
->-	int rc;
->+	int rc = KCS_BMC_EVENT_NONE;
->
-> 	spin_lock(&kcs_bmc->lock);
-> 	client = kcs_bmc->client;
->-	if (client) {
->+	if (!WARN_ON_ONCE(!client))
-> 		rc = client->ops->event(client);
+Hi Zev,
 
-The double-negation split by a macro seems a bit confusing to me
-readability-wise; could we simplify to something like
+A couple of minor comments:
 
-	if (client)
-		rc = client->ops->event(client);
-	else
-		WARN_ONCE();
+On Thu, 8 Apr 2021, at 10:46, Zev Weiss wrote:
+> These allow describing all the Aspeed VUART attributes currently
+> available via sysfs.  aspeed,sirq
 
-?
+aspeed,lpc-interrupts now
 
->-	} else {
->-		u8 status;
->-
->-		status = kcs_bmc_read_status(kcs_bmc);
->-		if (status & KCS_BMC_STR_IBF) {
->-			/* Ack the event by reading the data */
->-			kcs_bmc_read_data(kcs_bmc);
->-			rc = KCS_BMC_EVENT_HANDLED;
->-		} else {
->-			rc = KCS_BMC_EVENT_NONE;
->-		}
->-	}
-> 	spin_unlock(&kcs_bmc->lock);
->
-> 	return rc;
->@@ -81,26 +69,28 @@ EXPORT_SYMBOL(kcs_bmc_handle_event);
->
-> int kcs_bmc_enable_device(struct kcs_bmc_device *kcs_bmc, struct kcs_bmc_client *client)
-> {
->-	int rc;
->-
-> 	spin_lock_irq(&kcs_bmc->lock);
->-	if (kcs_bmc->client) {
->-		rc = -EBUSY;
->-	} else {
->+	if (!kcs_bmc->client) {
->+		u8 mask = KCS_BMC_EVENT_TYPE_IBF;
->+
-> 		kcs_bmc->client = client;
->-		rc = 0;
->+		kcs_bmc_update_event_mask(kcs_bmc, mask, mask);
-> 	}
-> 	spin_unlock_irq(&kcs_bmc->lock);
->
->-	return rc;
->+	return 0;
+> provides a replacement for the
+> deprecated aspeed,sirq-polarity-sense property.
+> 
+> Signed-off-by: Zev Weiss <zev@bewilderbeest.net>
+> ---
+>  drivers/tty/serial/8250/8250_aspeed_vuart.c | 44 ++++++++++++++++++++-
+>  1 file changed, 43 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/tty/serial/8250/8250_aspeed_vuart.c 
+> b/drivers/tty/serial/8250/8250_aspeed_vuart.c
+> index 8433f8dbb186..75ef006fa24b 100644
+> --- a/drivers/tty/serial/8250/8250_aspeed_vuart.c
+> +++ b/drivers/tty/serial/8250/8250_aspeed_vuart.c
+> @@ -28,6 +28,10 @@
+>  #define ASPEED_VUART_ADDRL		0x28
+>  #define ASPEED_VUART_ADDRH		0x2c
+>  
+> +#define ASPEED_VUART_DEFAULT_LPC_ADDR	0x3f8
+> +#define ASPEED_VUART_DEFAULT_SIRQ	4
+> +#define ASPEED_VUART_DEFAULT_SIRQ_POLARITY	IRQ_TYPE_LEVEL_LOW
+> +
+>  struct aspeed_vuart {
+>  	struct device		*dev;
+>  	void __iomem		*regs;
+> @@ -393,7 +397,8 @@ static int aspeed_vuart_probe(struct platform_device *pdev)
+>  	struct aspeed_vuart *vuart;
+>  	struct device_node *np;
+>  	struct resource *res;
+> -	u32 clk, prop;
+> +	u32 clk, prop, sirq[2];
+> +	bool sirq_polarity;
+>  	int rc;
+>  
+>  	np = pdev->dev.of_node;
+> @@ -501,6 +506,43 @@ static int aspeed_vuart_probe(struct platform_device *pdev)
+>  		of_node_put(sirq_polarity_sense_args.np);
+>  	}
+>  
+> +	rc = of_property_read_u32(np, "aspeed,lpc-io-reg", &prop);
+> +	if (rc < 0)
+> +		prop = ASPEED_VUART_DEFAULT_LPC_ADDR;
+> +
+> +	rc = aspeed_vuart_set_lpc_address(vuart, prop);
+> +	if (rc < 0) {
+> +		dev_err(&pdev->dev, "invalid value in aspeed,lpc-io-reg property\n");
+> +		goto err_clk_disable;
+> +	}
+> +
+> +	rc = of_property_read_u32_array(np, "aspeed,lpc-interrupts", sirq, 2);
+> +	if (rc < 0) {
+> +		sirq[0] = ASPEED_VUART_DEFAULT_SIRQ;
+> +		sirq[1] = ASPEED_VUART_DEFAULT_SIRQ_POLARITY;
+> +	}
+> +
+> +	rc = aspeed_vuart_set_sirq(vuart, sirq[0]);
+> +	if (rc < 0) {
+> +		dev_err(&pdev->dev, "invalid sirq number in aspeed,lpc-interrupts > property\n");
+> +		goto err_clk_disable;
+> +	}
+> +
+> +	switch (sirq[1]) {
+> +	case IRQ_TYPE_LEVEL_LOW:
+> +		sirq_polarity = false;
+> +		break;
+> +	case IRQ_TYPE_LEVEL_HIGH:
+> +		sirq_polarity = true;
+> +		break;
+> +	default:
+> +		dev_err(&pdev->dev, "invalid sirq polarity in aspeed,lpc-interrupts 
+> property\n");
+> +		rc = -EINVAL;
+> +		goto err_clk_disable;
+> +	}
 
-Since this function appears to be infallible now, should it just return
-void?  (Might be more churn than it's worth...shrug.)
+A bit ugly open-coding the mapping and error handling, maybe worth a helper?
 
-> }
-> EXPORT_SYMBOL(kcs_bmc_enable_device);
->
-> void kcs_bmc_disable_device(struct kcs_bmc_device *kcs_bmc, struct kcs_bmc_client *client)
-> {
-> 	spin_lock_irq(&kcs_bmc->lock);
->-	if (client == kcs_bmc->client)
->+	if (client == kcs_bmc->client) {
->+		u8 mask = KCS_BMC_EVENT_TYPE_IBF | KCS_BMC_EVENT_TYPE_OBE;
->+
->+		kcs_bmc_update_event_mask(kcs_bmc, mask, 0);
-> 		kcs_bmc->client = NULL;
->+	}
-> 	spin_unlock_irq(&kcs_bmc->lock);
-> }
-> EXPORT_SYMBOL(kcs_bmc_disable_device);
->diff --git a/drivers/char/ipmi/kcs_bmc_aspeed.c b/drivers/char/ipmi/kcs_bmc_aspeed.c
->index 5f26471c038c..271845eb2e26 100644
->--- a/drivers/char/ipmi/kcs_bmc_aspeed.c
->+++ b/drivers/char/ipmi/kcs_bmc_aspeed.c
->@@ -419,8 +419,7 @@ static int aspeed_kcs_probe(struct platform_device *pdev)
->
-> 	platform_set_drvdata(pdev, priv);
->
->-	aspeed_kcs_irq_mask_update(kcs_bmc, (KCS_BMC_EVENT_TYPE_IBF | KCS_BMC_EVENT_TYPE_OBE),
->-				   KCS_BMC_EVENT_TYPE_IBF);
->+	aspeed_kcs_irq_mask_update(kcs_bmc, (KCS_BMC_EVENT_TYPE_IBF | KCS_BMC_EVENT_TYPE_OBE), 0);
-> 	aspeed_kcs_enable_channel(kcs_bmc, true);
->
-> 	rc = kcs_bmc_add_device(&priv->kcs_bmc);
->diff --git a/drivers/char/ipmi/kcs_bmc_npcm7xx.c b/drivers/char/ipmi/kcs_bmc_npcm7xx.c
->index c2032728a03d..fdf35cad2eba 100644
->--- a/drivers/char/ipmi/kcs_bmc_npcm7xx.c
->+++ b/drivers/char/ipmi/kcs_bmc_npcm7xx.c
->@@ -207,8 +207,7 @@ static int npcm7xx_kcs_probe(struct platform_device *pdev)
-> 	if (rc)
-> 		return rc;
->
->-	npcm7xx_kcs_irq_mask_update(kcs_bmc, (KCS_BMC_EVENT_TYPE_IBF | KCS_BMC_EVENT_TYPE_OBE),
->-				    KCS_BMC_EVENT_TYPE_IBF);
->+	npcm7xx_kcs_irq_mask_update(kcs_bmc, (KCS_BMC_EVENT_TYPE_IBF | KCS_BMC_EVENT_TYPE_OBE), 0);
-> 	npcm7xx_kcs_enable_channel(kcs_bmc, true);
->
-> 	pr_info("channel=%u idr=0x%x odr=0x%x str=0x%x\n",
->-- 
->2.27.0
->
+Looks okay otherwise.
+
+Cheers,
+
+Andrew
