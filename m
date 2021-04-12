@@ -1,119 +1,50 @@
-From: David Hildenbrand <david@redhat.com>
-Date: Mon, 12 Apr 2021 15:19:00 +0200
-Subject: [PATCH v3] drivers: introduce and use WANT_DMA_CMA for soft
- dependencies on DMA_CMA
-In-Reply-To: <34350446-0e0e-6947-40bd-fabdccdc835f@arm.com>
-References: <20210409112035.27221-1-david@redhat.com>
- <CAK8P3a31uKNcim0n99=yt3zjZ+LQSw4V4+8PS8daLsBdS0iSYg@mail.gmail.com>
- <53ec94ac-ffe3-d0bc-d081-3489fa03daa1@redhat.com>
- <34350446-0e0e-6947-40bd-fabdccdc835f@arm.com>
-Message-ID: <e996ca72-7857-ba50-0e7e-f0c3dab3a931@redhat.com>
+From: Rob Herring <robh@kernel.org>
+Date: Mon, 12 Apr 2021 08:20:00 -0500
+Subject: [PATCH 2/4] dt-bindings: Add bindings for aspeed pwm
+In-Reply-To: <20210412095457.15095-3-billy_tsai@aspeedtech.com>
+References: <20210412095457.15095-1-billy_tsai@aspeedtech.com>
+ <20210412095457.15095-3-billy_tsai@aspeedtech.com>
+Message-ID: <1618233600.223110.3757979.nullmailer@robh.at.kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 12.04.21 15:12, Robin Murphy wrote:
-> On 2021-04-09 14:39, David Hildenbrand wrote:
->> On 09.04.21 15:35, Arnd Bergmann wrote:
->>> On Fri, Apr 9, 2021 at 1:21 PM David Hildenbrand <david@redhat.com>
->>> wrote:
->>>>
->>>> Random drivers should not override a user configuration of core knobs
->>>> (e.g., CONFIG_DMA_CMA=n). Applicable drivers would like to use DMA_CMA,
->>>> which depends on CMA, if possible; however, these drivers also have to
->>>> tolerate if DMA_CMA is not available/functioning, for example, if no CMA
->>>> area for DMA_CMA use has been setup via "cma=X". In the worst case, the
->>>> driver cannot do it's job properly in some configurations.
->>>>
->>>> For example, commit 63f5677544b3 ("drm/etnaviv: select CMA and
->>>> DMA_CMA if
->>>> available") documents
->>>>  ???????? While this is no build dependency, etnaviv will only work
->>>> correctly
->>>>  ???????? on most systems if CMA and DMA_CMA are enabled. Select both
->>>> options
->>>>  ???????? if available to avoid users ending up with a non-working GPU
->>>> due to
->>>>  ???????? a lacking kernel config.
->>>> So etnaviv really wants to have DMA_CMA, however, can deal with some
->>>> cases
->>>> where it is not available.
->>>>
->>>> Let's introduce WANT_DMA_CMA and use it in most cases where drivers
->>>> select CMA/DMA_CMA, or depend on DMA_CMA (in a wrong way via CMA because
->>>> of recursive dependency issues).
->>>>
->>>> We'll assume that any driver that selects DRM_GEM_CMA_HELPER or
->>>> DRM_KMS_CMA_HELPER would like to use DMA_CMA if possible.
->>>>
->>>> With this change, distributions can disable CONFIG_CMA or
->>>> CONFIG_DMA_CMA, without it silently getting enabled again by random
->>>> drivers. Also, we'll now automatically try to enabled both, CONFIG_CMA
->>>> and CONFIG_DMA_CMA if they are unspecified and any driver is around that
->>>> selects WANT_DMA_CMA -- also implicitly via DRM_GEM_CMA_HELPER or
->>>> DRM_KMS_CMA_HELPER.
->>>>
->>>> For example, if any driver selects WANT_DMA_CMA and we do a
->>>> "make olddefconfig":
->>>>
->>>> 1. With "# CONFIG_CMA is not set" and no specification of
->>>>  ??? "CONFIG_DMA_CMA"
->>>>
->>>> -> CONFIG_DMA_CMA won't be part of .config
->>>>
->>>> 2. With no specification of CONFIG_CMA or CONFIG_DMA_CMA
->>>>
->>>> Contiguous Memory Allocator (CMA) [Y/n/?] (NEW)
->>>> DMA Contiguous Memory Allocator (DMA_CMA) [Y/n/?] (NEW)
->>>>
->>>> 3. With "# CONFIG_CMA is not set" and "# CONFIG_DMA_CMA is not set"
->>>>
->>>> -> CONFIG_DMA_CMA will be removed from .config
->>>>
->>>> Note: drivers/remoteproc seems to be special; commit c51e882cd711
->>>> ("remoteproc/davinci: Update Kconfig to depend on DMA_CMA") explains
->>>> that
->>>> there is a real dependency to DMA_CMA for it to work; leave that
->>>> dependency
->>>> in place and don't convert it to a soft dependency.
->>>
->>> I don't think this dependency is fundamentally different from the others,
->>> though davinci machines tend to have less memory than a lot of the
->>> other machines, so it's more likely to fail without CMA.
->>>
->>
->> I was also unsure - and Lucas had similar thoughts. If you want, I can
->> send a v4 also taking care of this.
+On Mon, 12 Apr 2021 17:54:55 +0800, Billy Tsai wrote:
+> This patch adds device bindings for aspeed pwm device which should be
+> the sub-node of aspeed,ast2600-pwm-tach.
 > 
-> TBH I think it should all just be removed. DMA_CMA is effectively an
-> internal feature of the DMA API, and drivers which simply use the DMA
-> API shouldn't really be trying to assume *how* things might be allocated
-> at runtime - CMA is hardly the only way. Platform-level assumptions
-> about the presence or not of IOMMUs, memory carveouts, etc., and whether
-> it even matters - e.g. a device with a tiny LCD may only need display
-> buffers which still fit in a regular MAX_ORDER allocation - could go in
-> platform-specific configs, but I really don't think they belong at the
-> generic subsystem level.
+> Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
+> ---
+>  .../bindings/pwm/aspeed,ast2600-pwm.yaml      | 47 +++++++++++++++++++
+>  1 file changed, 47 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/pwm/aspeed,ast2600-pwm.yaml
 > 
-> We already have various examples like I2S drivers that won't even probe
-> without a dmaengine provider being present, or host controller drivers
-> which are useless without their corresponding phy driver (and I'm
-> guessing you can probably also do higher-level things like include the
-> block layer but omit all filesystem drivers). I don't believe it's
-> Kconfig's job to try to guess whether a given configuration is *useful*,
-> only to enforce that's it's valid to build.
 
-That would mean: if it's not a built-time dependency, don't mention it 
-in Kconfig.
+My bot found errors running 'make DT_CHECKER_FLAGS=-m dt_binding_check'
+on your patch (DT_CHECKER_FLAGS is new in v5.13):
 
-If that were true, why do we have have defaults modeled in Kconfig then?
+yamllint warnings/errors:
 
-IMHO, some part of Kconfig is to give you sane defaults.
+dtschema/dtc warnings/errors:
+/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/pwm/aspeed,ast2600-pwm.yaml: Additional properties are not allowed ('pwm-cells' was unexpected)
+/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/pwm/aspeed,ast2600-pwm.yaml: Additional properties are not allowed ('pwm-cells' was unexpected)
+/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/pwm/aspeed,ast2600-pwm.yaml: ignoring, error in schema: 
+warning: no schema found in file: ./Documentation/devicetree/bindings/pwm/aspeed,ast2600-pwm.yaml
+Documentation/devicetree/bindings/pwm/aspeed,ast2600-pwm.example.dt.yaml:0:0: /example-0/pwm_tach at 1e610000: failed to match any schema with compatible: ['aspeed,ast2600-pwm-tach', 'simple-mfd', 'syscon']
+Documentation/devicetree/bindings/pwm/aspeed,ast2600-pwm.example.dt.yaml:0:0: /example-0/pwm_tach at 1e610000/pwm at 0: failed to match any schema with compatible: ['aspeed,ast2600-pwm']
 
--- 
-Thanks,
+See https://patchwork.ozlabs.org/patch/1465116
 
-David / dhildenb
+This check can fail if there are any dependencies. The base for a patch
+series is generally the most recent rc1.
+
+If you already ran 'make dt_binding_check' and didn't see the above
+error(s), then make sure 'yamllint' is installed and dt-schema is up to
+date:
+
+pip3 install dtschema --upgrade
+
+Please check and re-submit.
 
