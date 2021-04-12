@@ -1,121 +1,71 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Date: Mon, 12 Apr 2021 09:38:40 +0200
-Subject: [PATCH v1 1/2] dt-bindings: mmc: sdhci-of-aspeed: Add power-gpio
- and power-switch-gpio
-In-Reply-To: <20210408015218.20560-2-steven_lee@aspeedtech.com>
-References: <20210408015218.20560-1-steven_lee@aspeedtech.com>
- <20210408015218.20560-2-steven_lee@aspeedtech.com>
-Message-ID: <CAPDyKFr=Gtwu4v22FBaax5EjRbXTNez1N2ZQxP=v0LKGFTCovw@mail.gmail.com>
+From: Arnd Bergmann <arnd@kernel.org>
+Date: Mon, 12 Apr 2021 10:48:14 +0200
+Subject: [PATCH v2 16/21] ipmi: kcs_bmc: Add a "raw" character device
+ interface
+In-Reply-To: <ba63f830-4758-49aa-a63e-f204a8eec1b4@www.fastmail.com>
+References: <20210319062752.145730-1-andrew@aj.id.au>
+ <20210319062752.145730-16-andrew@aj.id.au>
+ <CAK8P3a1HDQdbTAT4aRMLu-VFz720ynPqPHG5b22NZ5p5QfUqOw@mail.gmail.com>
+ <ba63f830-4758-49aa-a63e-f204a8eec1b4@www.fastmail.com>
+Message-ID: <CAK8P3a3RXr5CR7DJgD9rEkN8owpPxXRgzRnPB_5LuQcHkzc4LA@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, 8 Apr 2021 at 03:52, Steven Lee <steven_lee@aspeedtech.com> wrote:
+On Mon, Apr 12, 2021 at 3:33 AM Andrew Jeffery <andrew@aj.id.au> wrote:
+> On Fri, 9 Apr 2021, at 17:25, Arnd Bergmann wrote:
+> > On Fri, Mar 19, 2021 at 7:31 AM Andrew Jeffery <andrew@aj.id.au> wrote:
+> > >
+> > > The existing IPMI chardev encodes IPMI behaviours as the name suggests.
+> > > However, KCS devices are useful beyond IPMI (or keyboards), as they
+> > > provide a means to generate IRQs and exchange arbitrary data between a
+> > > BMC and its host system.
+> >
+> > I only noticed the series after Joel asked about the DT changes on the arm
+> > side. One question though:
+> >
+> > How does this related to the drivers/input/serio/ framework that also talks
+> > to the keyboard controller for things that are not keyboards?
 >
-> AST2600-A2 EVB provides the reference design for enabling SD bus power
-> and toggling SD bus signal voltage by GPIO pins.
-> Add the definition and example for power-gpio and power-switch-gpio
-> properties.
+> I've taken a brief look and I feel they're somewhat closely related.
 >
-> In the reference design, GPIOV0 of AST2600-A2 EVB is connected to power
-> load switch that providing 3.3v to SD1 bus vdd. GPIOV1 is connected to
-> a 1.8v and a 3.3v power load switch that providing signal voltage to
-> SD1 bus.
-> If GPIOV0 is active high, SD1 bus is enabled. Otherwise, SD1 bus is
-> disabled.
-> If GPIOV1 is active high, 3.3v power load switch is enabled, SD1 signal
-> voltage is 3.3v. Otherwise, 1.8v power load switch will be enabled, SD1
-> signal voltage becomes 1.8v.
+> It's plausible that we could wrangle the code so the Aspeed and Nuvoton
+> KCS drivers move under drivers/input/serio. If you squint, the i8042
+> serio device driver has similarities with what the Aspeed and Nuvoton
+> device drivers are providing to the KCS IPMI stack.
+
+After looking some more into it, I finally understood that the two are
+rather complementary. While the  drivers/char/ipmi/kcs_bmc.c
+is the other (bmc) end of drivers/char/ipmi/ipmi_kcs_sm.c, it seems
+that the proposed kcs_bmc_cdev_raw.c interface would be
+what corresponds to the other side of
+drivers/input/serio/i8042.c+userio.c. Then again, these are also on
+separate ports (0x60 for the keyboard controller, 0xca2 for the BMC
+KCS), so they would never actually talk to one another.
+
+> Both the KCS IPMI and raw chardev I've implemented in this patch need
+> both read and write access to the status register (STR). serio could
+> potentially expose its value through serio_interrupt() using the
+> SERIO_OOB_DATA flag, but I haven't put any thought into it beyond this
+> sentence. We'd need some extra support for writing STR via the serio
+> API. I'm not sure that fits into the abstraction (unless we make
+> serio_write() take a flags argument?).
 >
-> AST2600-A2 EVB also support toggling signal voltage for SD2 bus.
-> The design is the same as SD1 bus. It uses GPIOV2 as power-gpio and GPIOV3
-> as power-switch-gpio.
-
-Thanks for sharing the details, it certainly helps while reviewing.
-
+> In that vein, the serio_raw interface is close to the functionality
+> that the raw chardev provides in this patch, though again serio_raw
+> lacks userspace access to STR. Flags are ignored in the ->interrupt()
+> callback so all values received via ->interrupt() are exposed as data.
+> The result is there's no way to take care of SERIO_OOB_DATA in the
+> read() path. Given that, I think we'd have to expose an ioctl() to
+> access the STR value after taking care of SERIO_OOB_DATA in
+> ->interrupt().
 >
-> Signed-off-by: Steven Lee <steven_lee@aspeedtech.com>
-> ---
->  .../devicetree/bindings/mmc/aspeed,sdhci.yaml | 25 +++++++++++++++++++
->  1 file changed, 25 insertions(+)
->
-> diff --git a/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml b/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml
-> index 987b287f3bff..515a74614f3c 100644
-> --- a/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml
-> +++ b/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml
-> @@ -37,6 +37,14 @@ properties:
->    clocks:
->      maxItems: 1
->      description: The SD/SDIO controller clock gate
-> +  power-gpio:
-> +    description:
-> +      The GPIO for enabling/disabling SD bus power.
-> +    maxItems: 1
-> +  power-switch-gpio:
-> +    description:
-> +      The GPIO for toggling the signal voltage between 3.3v and 1.8v.
-> +    maxItems: 1
+> I'm not sure where that lands us.
 
+Based on what I looked up, I think you can just forget about my original
+question. We have two separate interfaces that use an Intel 8042-style
+protocol, but they don't really interact.
 
->
->  patternProperties:
->    "^sdhci@[0-9a-f]+$":
-> @@ -61,6 +69,14 @@ patternProperties:
->        sdhci,auto-cmd12:
->          type: boolean
->          description: Specifies that controller should use auto CMD12
-> +      power-gpio:
-> +        description:
-> +          The GPIO for enabling/disabling SD bus power.
-> +        maxItems: 1
-> +      power-switch-gpio:
-> +        description:
-> +          The GPIO for toggling the signal voltage between 3.3v and 1.8v.
-> +        maxItems: 1
->      required:
-
-Please do not model these as GPIO pins like this. Instead, it's better
-to model them as gpio regulators, since the mmc core manages them as
-regulators.
-
-We have a vmmc regulator (corresponding to vdd) and a vqmmc regulator
-(corresponding the signal-voltage level). These are also described in
-the common mmc DT bindings, see
-Documentation/devicetree/bindings/mmc/mmc-controller.yaml.
-
->        - compatible
->        - reg
-> @@ -80,6 +96,7 @@ required:
->  examples:
->    - |
->      #include <dt-bindings/clock/aspeed-clock.h>
-> +    #include <dt-bindings/gpio/aspeed-gpio.h>
->      sdc at 1e740000 {
->              compatible = "aspeed,ast2500-sd-controller";
->              reg = <0x1e740000 0x100>;
-> @@ -94,6 +111,10 @@ examples:
->                      interrupts = <26>;
->                      sdhci,auto-cmd12;
->                      clocks = <&syscon ASPEED_CLK_SDIO>;
-> +                    power-gpio = <&gpio0 ASPEED_GPIO(V, 0)
-> +                                     GPIO_ACTIVE_HIGH>;
-> +                    power-switch-gpio = <&gpio0 ASPEED_GPIO(V, 1)
-> +                                     GPIO_ACTIVE_HIGH>;
->              };
->
->              sdhci1: sdhci at 200 {
-> @@ -102,5 +123,9 @@ examples:
->                      interrupts = <26>;
->                      sdhci,auto-cmd12;
->                      clocks = <&syscon ASPEED_CLK_SDIO>;
-> +                    power-gpio = <&gpio0 ASPEED_GPIO(V, 2)
-> +                                     GPIO_ACTIVE_HIGH>;
-> +                    power-switch-gpio = <&gpio0 ASPEED_GPIO(V, 3)
-> +                                     GPIO_ACTIVE_HIGH>;
->              };
->      };
-
-Kind regards
-Uffe
+      Arnd
