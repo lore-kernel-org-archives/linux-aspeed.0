@@ -1,262 +1,122 @@
-From: Eddie James <eajames@linux.ibm.com>
-Date: Tue, 13 Apr 2021 14:43:08 -0500
-Subject: [PATCH 4/4] ARM: dts: aspeed: Rainier: Update to pass 2 hardware
-In-Reply-To: <20210413194308.36930-1-eajames@linux.ibm.com>
-References: <20210413194308.36930-1-eajames@linux.ibm.com>
-Message-ID: <20210413194308.36930-5-eajames@linux.ibm.com>
+From: Brendan Higgins <brendanhiggins@google.com>
+Date: Tue, 13 Apr 2021 12:50:11 -0700
+Subject: [PATCH v4 1/4] dt-bindings: i2c: aspeed: add transfer mode support
+In-Reply-To: <fadf1244-ed6e-5973-ff1b-018bd20ff3b1@linux.intel.com>
+References: <20210224191720.7724-1-jae.hyun.yoo@linux.intel.com>
+ <20210224191720.7724-2-jae.hyun.yoo@linux.intel.com>
+ <20210306203011.GA1152769@robh.at.kernel.org>
+ <f6732348-d6c8-f49b-6123-afe542bb1f8c@linux.intel.com>
+ <CAL_Jsq+H2wCyTKhGcQvgiuyMtGW0hytQgw=948q0JGLSLOo9KA@mail.gmail.com>
+ <f1811747-3826-215a-d822-85170303a7c9@linux.intel.com>
+ <fadf1244-ed6e-5973-ff1b-018bd20ff3b1@linux.intel.com>
+Message-ID: <CAFd5g453L_+tu=vd0foiswJP16+repffPBEPCy6mpZQqnM50Ug@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add the muxes present in pass 2 and remove the eeproms that were
-removed.
+On Thu, Apr 8, 2021 at 10:50 AM Jae Hyun Yoo
+<jae.hyun.yoo@linux.intel.com> wrote:
+>
+> Ping.
+>
+> On 3/10/2021 7:55 AM, Jae Hyun Yoo wrote:
+> > On 3/9/2021 6:15 PM, Rob Herring wrote:
+> >> On Tue, Mar 9, 2021 at 10:02 AM Jae Hyun Yoo
+> >> <jae.hyun.yoo@linux.intel.com> wrote:
+> >>>
+> >>> Hi Rob,
+> >>>
+> >>> On 3/6/2021 12:30 PM, Rob Herring wrote:
+> >>>> On Wed, Feb 24, 2021 at 11:17:17AM -0800, Jae Hyun Yoo wrote:
+> >>>>> Append bindings to support transfer mode.
+> >>>>>
+> >>>>> Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+> >>>>> Reviewed-by: Brendan Higgins <brendanhiggins@google.com>
+> >>>>> ---
+> >>>>> Changes since v3:
+> >>>>> - None
+> >>>>>
+> >>>>> Changes since v2:
+> >>>>> - Moved SRAM resources back to default dtsi and added mode selection
+> >>>>>     property.
+> >>>>>
+> >>>>> Changes since v1:
+> >>>>> - Removed buffer reg settings from default device tree and added
+> >>>>> the settings
+> >>>>>     into here to show the predefined buffer range per each bus.
+> >>>>>
+> >>>>>    .../devicetree/bindings/i2c/i2c-aspeed.txt    | 37
+> >>>>> +++++++++++++++----
+> >>>>>    1 file changed, 30 insertions(+), 7 deletions(-)
+> >>>>>
+> >>>>> diff --git a/Documentation/devicetree/bindings/i2c/i2c-aspeed.txt
+> >>>>> b/Documentation/devicetree/bindings/i2c/i2c-aspeed.txt
+> >>>>> index b47f6ccb196a..242343177324 100644
+> >>>>> --- a/Documentation/devicetree/bindings/i2c/i2c-aspeed.txt
+> >>>>> +++ b/Documentation/devicetree/bindings/i2c/i2c-aspeed.txt
+> >>>>> @@ -17,6 +17,20 @@ Optional Properties:
+> >>>>>    - bus-frequency    : frequency of the bus clock in Hz defaults
+> >>>>> to 100 kHz when not
+> >>>>>                 specified
+> >>>>>    - multi-master     : states that there is another master active
+> >>>>> on this bus.
+> >>>>> +- aspeed,i2c-xfer-mode      : should be "byte", "buf" or "dma" to
+> >>>>> select transfer
+> >>>>> +                      mode defaults to "byte" mode when not
+> >>>>> specified.
+> >>>>> +
+> >>>>> +                      I2C DMA mode on AST2500 has these restrictions:
+> >>>>> +                        - If one of these controllers is enabled
+> >>>>> +                            * UHCI host controller
+> >>>>> +                            * MCTP controller
+> >>>>> +                          I2C has to use buffer mode or byte mode
+> >>>>> instead
+> >>>>> +                          since these controllers run only in DMA
+> >>>>> mode and
+> >>>>> +                          I2C is sharing the same DMA H/W with them.
+> >>>>> +                        - If one of these controllers uses DMA
+> >>>>> mode, I2C
+> >>>>> +                          can't use DMA mode
+> >>>>> +                            * SD/eMMC
+> >>>>> +                            * Port80 snoop
+> >>>>
+> >>>> How does one decide between byte or buf mode?
+> >>>
+> >>> If a given system makes just one byte r/w transactions most of the time
+> >>> then byte mode will be a right setting. Otherwise, buf mode is more
+> >>> efficient because it doesn't generate a bunch of interrupts on every
+> >>> byte handling.
+> >>
+> >> Then why doesn't the driver do byte transactions when it gets small
+> >> 1-4? byte transactions and buffer transactions when it gets larger
+> >> sized transactions.
+> >
+> > Good question and it could be an option of this implementation.
+> > Actually, each mode needs different register handling so we need to add
+> > additional conditional branches to make it dynamic mode change depends
+> > on the data size which can be a downside. Also, checked that small
+> > amount of data transfer efficiency in 'buf' transfer mode is almost same
+> > to 'byte' mode so there would be no big benefit from the dynamic mode
+> > change. Of course, we can remove the 'byte' transfer mode but we should
+> > also provide flexibility of configuration on what this hardware can
+> > support, IMO.
 
-Signed-off-by: Eddie James <eajames@linux.ibm.com>
----
- arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts | 193 +++++++++++++++----
- 1 file changed, 153 insertions(+), 40 deletions(-)
+I would rather set the choice in device tree or Kconfig, which the
+former is what I think you did here.
 
-diff --git a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
-index b13bd7ed18d1..941c0489479a 100644
---- a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
-@@ -50,6 +50,17 @@ aliases {
- 		i2c17 = &i2c2mux1;
- 		i2c18 = &i2c2mux2;
- 		i2c19 = &i2c2mux3;
-+		i2c20 = &i2c4mux0chn0;
-+		i2c21 = &i2c4mux0chn1;
-+		i2c22 = &i2c4mux0chn2;
-+		i2c23 = &i2c5mux0chn0;
-+		i2c24 = &i2c5mux0chn1;
-+		i2c25 = &i2c6mux0chn0;
-+		i2c26 = &i2c6mux0chn1;
-+		i2c27 = &i2c6mux0chn2;
-+		i2c28 = &i2c6mux0chn3;
-+		i2c29 = &i2c11mux0chn0;
-+		i2c30 = &i2c11mux0chn1;
- 
- 		spi10 = &cfam0_spi0;
- 		spi11 = &cfam0_spi1;
-@@ -1118,19 +1129,46 @@ tmp275 at 4a {
- 		reg = <0x4a>;
- 	};
- 
--	eeprom at 50 {
--		compatible = "atmel,24c64";
--		reg = <0x50>;
--	};
-+	pca9546 at 70 {
-+		compatible = "nxp,pca9546";
-+		reg = <0x70>;
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+		status = "okay";
-+		i2c-mux-idle-disconnect;
- 
--	eeprom at 51 {
--		compatible = "atmel,24c64";
--		reg = <0x51>;
--	};
-+		i2c4mux0chn0: i2c at 0 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <0>;
- 
--	eeprom at 52 {
--		compatible = "atmel,24c64";
--		reg = <0x52>;
-+			eeprom at 50 {
-+				compatible = "atmel,24c64";
-+				reg = <0x50>;
-+			};
-+		};
-+
-+		i2c4mux0chn1: i2c at 1 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <1>;
-+
-+			eeprom at 51 {
-+				compatible = "atmel,24c64";
-+				reg = <0x51>;
-+			};
-+		};
-+
-+		i2c4mux0chn2: i2c at 2 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <2>;
-+
-+			eeprom at 52 {
-+				compatible = "atmel,24c64";
-+				reg = <0x52>;
-+			};
-+		};
- 	};
- };
- 
-@@ -1147,14 +1185,35 @@ tmp275 at 49 {
- 		reg = <0x49>;
- 	};
- 
--	eeprom at 50 {
--		compatible = "atmel,24c64";
--		reg = <0x50>;
--	};
-+	pca9546 at 70 {
-+		compatible = "nxp,pca9546";
-+		reg = <0x70>;
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+		status = "okay";
-+		i2c-mux-idle-disconnect;
- 
--	eeprom at 51 {
--		compatible = "atmel,24c64";
--		reg = <0x51>;
-+		i2c5mux0chn0: i2c at 0 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <0>;
-+
-+			eeprom at 50 {
-+				compatible = "atmel,24c64";
-+				reg = <0x50>;
-+			};
-+		};
-+
-+		i2c5mux0chn1: i2c at 1 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <1>;
-+
-+			eeprom at 51 {
-+				compatible = "atmel,24c64";
-+				reg = <0x51>;
-+			};
-+		};
- 	};
- };
- 
-@@ -1176,24 +1235,57 @@ tmp275 at 4b {
- 		reg = <0x4b>;
- 	};
- 
--	eeprom at 50 {
--		compatible = "atmel,24c64";
--		reg = <0x50>;
--	};
-+	pca9546 at 70 {
-+		compatible = "nxp,pca9546";
-+		reg = <0x70>;
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+		status = "okay";
-+		i2c-mux-idle-disconnect;
- 
--	eeprom at 51 {
--		compatible = "atmel,24c64";
--		reg = <0x51>;
--	};
-+		i2c6mux0chn0: i2c at 0 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <0>;
- 
--	eeprom at 52 {
--		compatible = "atmel,24c64";
--		reg = <0x52>;
--	};
-+			eeprom at 53 {
-+				compatible = "atmel,24c64";
-+				reg = <0x53>;
-+			};
-+		};
- 
--	eeprom at 53 {
--		compatible = "atmel,24c64";
--		reg = <0x53>;
-+		i2c6mux0chn1: i2c at 1 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <1>;
-+
-+			eeprom at 52 {
-+				compatible = "atmel,24c64";
-+				reg = <0x52>;
-+			};
-+		};
-+
-+		i2c6mux0chn2: i2c at 2 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <2>;
-+
-+			eeprom at 50 {
-+				compatible = "atmel,24c64";
-+				reg = <0x50>;
-+			};
-+		};
-+
-+		i2c6mux0chn3: i2c at 3 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <3>;
-+
-+			eeprom at 51 {
-+				compatible = "atmel,24c64";
-+				reg = <0x51>;
-+			};
-+		};
- 	};
- };
- 
-@@ -1550,14 +1642,35 @@ tmp275 at 49 {
- 		reg = <0x49>;
- 	};
- 
--	eeprom at 50 {
--		compatible = "atmel,24c64";
--		reg = <0x50>;
--	};
-+	pca9546 at 70 {
-+		compatible = "nxp,pca9546";
-+		reg = <0x70>;
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+		status = "okay";
-+		i2c-mux-idle-disconnect;
- 
--	eeprom at 51 {
--		compatible = "atmel,24c64";
--		reg = <0x51>;
-+		i2c11mux0chn0: i2c at 0 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <0>;
-+
-+			eeprom at 50 {
-+				compatible = "atmel,24c64";
-+				reg = <0x50>;
-+			};
-+		};
-+
-+		i2c11mux0chn1: i2c at 1 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <1>;
-+
-+			eeprom at 51 {
-+				compatible = "atmel,24c64";
-+				reg = <0x51>;
-+			};
-+		};
- 	};
- };
- 
--- 
-2.27.0
+As for doing byte mode for small transactions and buffer/DMA for large
+transactions, I would prefer sticking to a single mode based on what
+is selected at build/boot time. Seems less error prone to me. Then
+again, Rob probably has more experience in this area than I do, so
+maybe this kind of thing is pretty common and I just don't realize it.
 
+In any case, as for getting rid of byte mode, I would support that,
+but not in this patch set. I would rather switch the default and get
+users on buffer/DMA mode before taking away a fallback option.
+
+My 2 cents, but I think the OzLabs and other active OpenBMC people are
+probably a little more up to date on this.
+
+Cheers
