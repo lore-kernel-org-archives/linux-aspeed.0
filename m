@@ -1,122 +1,98 @@
-From: Brendan Higgins <brendanhiggins@google.com>
-Date: Tue, 13 Apr 2021 12:50:11 -0700
-Subject: [PATCH v4 1/4] dt-bindings: i2c: aspeed: add transfer mode support
-In-Reply-To: <fadf1244-ed6e-5973-ff1b-018bd20ff3b1@linux.intel.com>
-References: <20210224191720.7724-1-jae.hyun.yoo@linux.intel.com>
- <20210224191720.7724-2-jae.hyun.yoo@linux.intel.com>
- <20210306203011.GA1152769@robh.at.kernel.org>
- <f6732348-d6c8-f49b-6123-afe542bb1f8c@linux.intel.com>
- <CAL_Jsq+H2wCyTKhGcQvgiuyMtGW0hytQgw=948q0JGLSLOo9KA@mail.gmail.com>
- <f1811747-3826-215a-d822-85170303a7c9@linux.intel.com>
- <fadf1244-ed6e-5973-ff1b-018bd20ff3b1@linux.intel.com>
-Message-ID: <CAFd5g453L_+tu=vd0foiswJP16+repffPBEPCy6mpZQqnM50Ug@mail.gmail.com>
+From: Eddie James <eajames@linux.ibm.com>
+Date: Tue, 13 Apr 2021 15:08:52 -0500
+Subject: [PATCH] fsi: aspeed: Emit fewer barriers in opb operations
+In-Reply-To: <20210223041737.171274-1-joel@jms.id.au>
+References: <20210223041737.171274-1-joel@jms.id.au>
+Message-ID: <bfb940efdba7d308cf5e91874604582cb5173ada.camel@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Apr 8, 2021 at 10:50 AM Jae Hyun Yoo
-<jae.hyun.yoo@linux.intel.com> wrote:
->
-> Ping.
->
-> On 3/10/2021 7:55 AM, Jae Hyun Yoo wrote:
-> > On 3/9/2021 6:15 PM, Rob Herring wrote:
-> >> On Tue, Mar 9, 2021 at 10:02 AM Jae Hyun Yoo
-> >> <jae.hyun.yoo@linux.intel.com> wrote:
-> >>>
-> >>> Hi Rob,
-> >>>
-> >>> On 3/6/2021 12:30 PM, Rob Herring wrote:
-> >>>> On Wed, Feb 24, 2021 at 11:17:17AM -0800, Jae Hyun Yoo wrote:
-> >>>>> Append bindings to support transfer mode.
-> >>>>>
-> >>>>> Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-> >>>>> Reviewed-by: Brendan Higgins <brendanhiggins@google.com>
-> >>>>> ---
-> >>>>> Changes since v3:
-> >>>>> - None
-> >>>>>
-> >>>>> Changes since v2:
-> >>>>> - Moved SRAM resources back to default dtsi and added mode selection
-> >>>>>     property.
-> >>>>>
-> >>>>> Changes since v1:
-> >>>>> - Removed buffer reg settings from default device tree and added
-> >>>>> the settings
-> >>>>>     into here to show the predefined buffer range per each bus.
-> >>>>>
-> >>>>>    .../devicetree/bindings/i2c/i2c-aspeed.txt    | 37
-> >>>>> +++++++++++++++----
-> >>>>>    1 file changed, 30 insertions(+), 7 deletions(-)
-> >>>>>
-> >>>>> diff --git a/Documentation/devicetree/bindings/i2c/i2c-aspeed.txt
-> >>>>> b/Documentation/devicetree/bindings/i2c/i2c-aspeed.txt
-> >>>>> index b47f6ccb196a..242343177324 100644
-> >>>>> --- a/Documentation/devicetree/bindings/i2c/i2c-aspeed.txt
-> >>>>> +++ b/Documentation/devicetree/bindings/i2c/i2c-aspeed.txt
-> >>>>> @@ -17,6 +17,20 @@ Optional Properties:
-> >>>>>    - bus-frequency    : frequency of the bus clock in Hz defaults
-> >>>>> to 100 kHz when not
-> >>>>>                 specified
-> >>>>>    - multi-master     : states that there is another master active
-> >>>>> on this bus.
-> >>>>> +- aspeed,i2c-xfer-mode      : should be "byte", "buf" or "dma" to
-> >>>>> select transfer
-> >>>>> +                      mode defaults to "byte" mode when not
-> >>>>> specified.
-> >>>>> +
-> >>>>> +                      I2C DMA mode on AST2500 has these restrictions:
-> >>>>> +                        - If one of these controllers is enabled
-> >>>>> +                            * UHCI host controller
-> >>>>> +                            * MCTP controller
-> >>>>> +                          I2C has to use buffer mode or byte mode
-> >>>>> instead
-> >>>>> +                          since these controllers run only in DMA
-> >>>>> mode and
-> >>>>> +                          I2C is sharing the same DMA H/W with them.
-> >>>>> +                        - If one of these controllers uses DMA
-> >>>>> mode, I2C
-> >>>>> +                          can't use DMA mode
-> >>>>> +                            * SD/eMMC
-> >>>>> +                            * Port80 snoop
-> >>>>
-> >>>> How does one decide between byte or buf mode?
-> >>>
-> >>> If a given system makes just one byte r/w transactions most of the time
-> >>> then byte mode will be a right setting. Otherwise, buf mode is more
-> >>> efficient because it doesn't generate a bunch of interrupts on every
-> >>> byte handling.
-> >>
-> >> Then why doesn't the driver do byte transactions when it gets small
-> >> 1-4? byte transactions and buffer transactions when it gets larger
-> >> sized transactions.
-> >
-> > Good question and it could be an option of this implementation.
-> > Actually, each mode needs different register handling so we need to add
-> > additional conditional branches to make it dynamic mode change depends
-> > on the data size which can be a downside. Also, checked that small
-> > amount of data transfer efficiency in 'buf' transfer mode is almost same
-> > to 'byte' mode so there would be no big benefit from the dynamic mode
-> > change. Of course, we can remove the 'byte' transfer mode but we should
-> > also provide flexibility of configuration on what this hardware can
-> > support, IMO.
+On Tue, 2021-02-23 at 14:47 +1030, Joel Stanley wrote:
+> When setting up a read or write to the OPB memory space, we must
+> perform
+> five or six AHB writes. The ordering of these up until the trigger
+> write
+> does not matter, so use writel_relaxed.
 
-I would rather set the choice in device tree or Kconfig, which the
-former is what I think you did here.
+Reviewed-by: Eddie James <eajames@linux.ibm.com>
 
-As for doing byte mode for small transactions and buffer/DMA for large
-transactions, I would prefer sticking to a single mode based on what
-is selected at build/boot time. Seems less error prone to me. Then
-again, Rob probably has more experience in this area than I do, so
-maybe this kind of thing is pretty common and I just don't realize it.
+I have also tested this patch on hardware, so
 
-In any case, as for getting rid of byte mode, I would support that,
-but not in this patch set. I would rather switch the default and get
-users on buffer/DMA mode before taking away a fallback option.
+Tested-by: Eddie James <eajames@linux.ibm.com>
 
-My 2 cents, but I think the OzLabs and other active OpenBMC people are
-probably a little more up to date on this.
+> 
+> The generated code goes from (Debian GCC 10.2.1-6):
+> 
+>         mov     r8, r3
+>         mcr     15, 0, sl, cr7, cr10, {4}
+>         str     sl, [r6, #20]
+>         mcr     15, 0, sl, cr7, cr10, {4}
+>         str     r3, [r6, #24]
+>         mcr     15, 0, sl, cr7, cr10, {4}
+>         str     r1, [r6, #28]
+>         mcr     15, 0, sl, cr7, cr10, {4}
+>         str     r2, [r6, #32]
+>         mcr     15, 0, sl, cr7, cr10, {4}
+>         mov     r1, #1
+>         str     r1, [r6, #64]   ; 0x40
+>         mcr     15, 0, sl, cr7, cr10, {4}
+>         str     r1, [r6, #4]
+> 
+> to this:
+> 
+>         str     r3, [r7, #20]
+>         str     r2, [r7, #24]
+>         str     r1, [r7, #28]
+>         str     r3, [r7, #64]
+>         mov     r8, #0
+>         mcr     15, 0, r8, cr7, cr10, {4}
+>         str     r3, [r7, #4]
+> 
+> Signed-off-by: Joel Stanley <joel@jms.id.au>
+> ---
+>  drivers/fsi/fsi-master-aspeed.c | 18 +++++++++---------
+>  1 file changed, 9 insertions(+), 9 deletions(-)
+> 
+> diff --git a/drivers/fsi/fsi-master-aspeed.c b/drivers/fsi/fsi-
+> master-aspeed.c
+> index 90dbe58ca1ed..09fff86b2bac 100644
+> --- a/drivers/fsi/fsi-master-aspeed.c
+> +++ b/drivers/fsi/fsi-master-aspeed.c
+> @@ -101,11 +101,11 @@ static int __opb_write(struct fsi_master_aspeed
+> *aspeed, u32 addr,
+>  	u32 reg, status;
+>  	int ret;
+>  
+> -	writel(CMD_WRITE, base + OPB0_RW);
+> -	writel(transfer_size, base + OPB0_XFER_SIZE);
+> -	writel(addr, base + OPB0_FSI_ADDR);
+> -	writel(val, base + OPB0_FSI_DATA_W);
+> -	writel(0x1, base + OPB_IRQ_CLEAR);
+> +	writel_relaxed(CMD_WRITE, base + OPB0_RW);
+> +	writel_relaxed(transfer_size, base + OPB0_XFER_SIZE);
+> +	writel_relaxed(addr, base + OPB0_FSI_ADDR);
+> +	writel_relaxed(val, base + OPB0_FSI_DATA_W);
+> +	writel_relaxed(0x1, base + OPB_IRQ_CLEAR);
+>  	writel(0x1, base + OPB_TRIGGER);
+>  
+>  	ret = readl_poll_timeout(base + OPB_IRQ_STATUS, reg,
+> @@ -149,10 +149,10 @@ static int __opb_read(struct fsi_master_aspeed
+> *aspeed, uint32_t addr,
+>  	u32 result, reg;
+>  	int status, ret;
+>  
+> -	writel(CMD_READ, base + OPB0_RW);
+> -	writel(transfer_size, base + OPB0_XFER_SIZE);
+> -	writel(addr, base + OPB0_FSI_ADDR);
+> -	writel(0x1, base + OPB_IRQ_CLEAR);
+> +	writel_relaxed(CMD_READ, base + OPB0_RW);
+> +	writel_relaxed(transfer_size, base + OPB0_XFER_SIZE);
+> +	writel_relaxed(addr, base + OPB0_FSI_ADDR);
+> +	writel_relaxed(0x1, base + OPB_IRQ_CLEAR);
+>  	writel(0x1, base + OPB_TRIGGER);
+>  
+>  	ret = readl_poll_timeout(base + OPB_IRQ_STATUS, reg,
 
-Cheers
