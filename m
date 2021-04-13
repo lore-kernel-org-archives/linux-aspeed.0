@@ -1,61 +1,80 @@
-From: Billy Tsai <billy_tsai@aspeedtech.com>
-Date: Tue, 13 Apr 2021 07:27:51 +0000
-Subject: [PATCH 2/4] dt-bindings: Add bindings for aspeed pwm
-In-Reply-To: <1618233600.223110.3757979.nullmailer@robh.at.kernel.org>
-References: <20210412095457.15095-1-billy_tsai@aspeedtech.com>
- <20210412095457.15095-3-billy_tsai@aspeedtech.com>
- <1618233600.223110.3757979.nullmailer@robh.at.kernel.org>
-Message-ID: <106D8276-51DF-4319-BDB4-68D1C0B2971A@aspeedtech.com>
+From: Arnd Bergmann <arnd@kernel.org>
+Date: Tue, 13 Apr 2021 10:22:11 +0200
+Subject: [PATCH v2 16/21] ipmi: kcs_bmc: Add a "raw" character device
+ interface
+In-Reply-To: <e2d7268b-bdaf-45bf-bb21-a5b9f7e985a4@www.fastmail.com>
+References: <20210319062752.145730-1-andrew@aj.id.au>
+ <20210319062752.145730-16-andrew@aj.id.au>
+ <CAK8P3a1HDQdbTAT4aRMLu-VFz720ynPqPHG5b22NZ5p5QfUqOw@mail.gmail.com>
+ <ba63f830-4758-49aa-a63e-f204a8eec1b4@www.fastmail.com>
+ <CAK8P3a3RXr5CR7DJgD9rEkN8owpPxXRgzRnPB_5LuQcHkzc4LA@mail.gmail.com>
+ <e2d7268b-bdaf-45bf-bb21-a5b9f7e985a4@www.fastmail.com>
+Message-ID: <CAK8P3a1VFKuewt65RUK6hFAhZYSFFVUX7_nuJLoZW2WoPXGVTw@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Rob,
+On Tue, Apr 13, 2021 at 1:45 AM Andrew Jeffery <andrew@aj.id.au> wrote:
+> On Mon, 12 Apr 2021, at 18:18, Arnd Bergmann wrote:
+> > On Mon, Apr 12, 2021 at 3:33 AM Andrew Jeffery <andrew@aj.id.au> wrote:
+> > > On Fri, 9 Apr 2021, at 17:25, Arnd Bergmann wrote:
+> > > > On Fri, Mar 19, 2021 at 7:31 AM Andrew Jeffery <andrew@aj.id.au> wrote:
+> > > > >
+> > > > > The existing IPMI chardev encodes IPMI behaviours as the name suggests.
+> > > > > However, KCS devices are useful beyond IPMI (or keyboards), as they
+> > > > > provide a means to generate IRQs and exchange arbitrary data between a
+> > > > > BMC and its host system.
+> > > >
+> > > > I only noticed the series after Joel asked about the DT changes on the arm
+> > > > side. One question though:
+> > > >
+> > > > How does this related to the drivers/input/serio/ framework that also talks
+> > > > to the keyboard controller for things that are not keyboards?
+> > >
+> > > I've taken a brief look and I feel they're somewhat closely related.
+> > >
+> > > It's plausible that we could wrangle the code so the Aspeed and Nuvoton
+> > > KCS drivers move under drivers/input/serio. If you squint, the i8042
+> > > serio device driver has similarities with what the Aspeed and Nuvoton
+> > > device drivers are providing to the KCS IPMI stack.
+> >
+> > After looking some more into it, I finally understood that the two are
+> > rather complementary. While the  drivers/char/ipmi/kcs_bmc.c
+> > is the other (bmc) end of drivers/char/ipmi/ipmi_kcs_sm.c, it seems
+> > that the proposed kcs_bmc_cdev_raw.c interface would be
+> > what corresponds to the other side of
+> > drivers/input/serio/i8042.c+userio.c.
+>
+> Right. I guess the question is should we be splitting kernel subsystems
+> along host/bmc lines? Doesn't feel intuitive, it's all Linux, but maybe
+> we can consolidate in the future if it makes sense?
 
-Best Regards,
-Billy Tsai
+We actually have a number of subsystems with somewhat overlapping
+functionality. I brought up serio, because it has an abstraction for multiple
+things that communicate over the keyboard controller and I thought
+the problem you were trying to solve was also related to the keyboard
+controller.
+It is also one of multiple abstractions that allow you to connect a device
+to a uart (along with serdev and tty_ldisc, probably at least one more that
+you can nest above or below these).
 
-On 2021/4/12, 9:20 PM,Rob Herringwrote:
+Consolidating the kcs_bmc.c interface into something that already
+exists would obviously be best, but it's not clear which of these that
+should be, that depends on the fundamental properties of the hardware
+interface.
 
-    On Mon, 12 Apr 2021 17:54:55 +0800, Billy Tsai wrote:
-    >> This patch adds device bindings for aspeed pwm device which should be
-    >> the sub-node of aspeed,ast2600-pwm-tach.
-    >> 
-    >> Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
-    >> ---
-    >>  .../bindings/pwm/aspeed,ast2600-pwm.yaml      | 47 +++++++++++++++++++
-    >>  1 file changed, 47 insertions(+)
-    >>  create mode 100644 Documentation/devicetree/bindings/pwm/aspeed,ast2600-pwm.yaml
-    >> 
+> > Then again, these are also on
+> > separate ports (0x60 for the keyboard controller, 0xca2 for the BMC
+> > KCS), so they would never actually talk to one another.
+>
+> Well, sort of I guess. On Power systems we don't use the keyboard
+> controller for IPMI or keyboards, so we're just kinda exploiting the
+> hardware for our own purposes.
 
-    > My bot found errors running 'make DT_CHECKER_FLAGS=-m dt_binding_check'
-    > on your patch (DT_CHECKER_FLAGS is new in v5.13):
+Can you describe in an abstract form what the hardware interface
+can do here and what you want from it? I wonder if it could be
+part of a higher-level interface such as drivers/mailbox/ instead.
 
-    > yamllint warnings/errors:
-
-    > dtschema/dtc warnings/errors:
-    > /builds/robherring/linux-dt-review/Documentation/devicetree/bindings/pwm/aspeed,ast2600-pwm.yaml: Additional properties are not allowed ('pwm-cells' was unexpected)
-    > /builds/robherring/linux-dt-review/Documentation/devicetree/bindings/pwm/aspeed,ast2600-pwm.yaml: Additional properties are not allowed ('pwm-cells' was unexpected)
-    > /builds/robherring/linux-dt-review/Documentation/devicetree/bindings/pwm/aspeed,ast2600-pwm.yaml: ignoring, error in schema: 
-    > warning: no schema found in file: ./Documentation/devicetree/bindings/pwm/aspeed,ast2600-pwm.yaml
-    > Documentation/devicetree/bindings/pwm/aspeed,ast2600-pwm.example.dt.yaml:0:0: /example-0/pwm_tach at 1e610000: failed to match any schema with compatible: ['aspeed,ast2600-pwm-tach', 'simple-mfd', 'syscon']
-    > Documentation/devicetree/bindings/pwm/aspeed,ast2600-pwm.example.dt.yaml:0:0: /example-0/pwm_tach at 1e610000/pwm at 0: failed to match any schema with compatible: ['aspeed,ast2600-pwm']
-
-The yaml file have dependencies with the first patch in these series. I will squash them.
-
-    > See https://patchwork.ozlabs.org/patch/1465116
-
-    > This check can fail if there are any dependencies. The base for a patch
-    > series is generally the most recent rc1.
-
-    > If you already ran 'make dt_binding_check' and didn't see the above
-    > error(s), then make sure 'yamllint' is installed and dt-schema is up to
-    > date:
-
-    > pip3 install dtschema --upgrade
-
-    > Please check and re-submit.
-
-
+         Arnd
