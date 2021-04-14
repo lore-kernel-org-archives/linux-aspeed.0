@@ -1,144 +1,73 @@
-From: Billy Tsai <billy_tsai@aspeedtech.com>
-Date: Wed, 14 Apr 2021 18:49:38 +0800
-Subject: [v2 1/2] dt-bindings: Add bindings for aspeed pwm-tach and pwm.
-In-Reply-To: <20210414104939.1093-1-billy_tsai@aspeedtech.com>
-References: <20210414104939.1093-1-billy_tsai@aspeedtech.com>
-Message-ID: <20210414104939.1093-2-billy_tsai@aspeedtech.com>
+From: Guenter Roeck <linux@roeck-us.net>
+Date: Wed, 14 Apr 2021 05:21:30 -0700
+Subject: [PATCH v3 2/4] mfd: simple-mfd-i2c: Adds Ampere's Altra SMpro
+ support
+In-Reply-To: <20210409031332.21919-3-quan@os.amperecomputing.com>
+References: <20210409031332.21919-1-quan@os.amperecomputing.com>
+ <20210409031332.21919-3-quan@os.amperecomputing.com>
+Message-ID: <20210414122130.GA113503@roeck-us.net>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This patch adds device bindings for aspeed pwm-tach device which is a
-multi-function device include pwn and tach function and pwm device which
-should be the sub-node of pwm-tach device.
+On Fri, Apr 09, 2021 at 10:13:30AM +0700, Quan Nguyen wrote:
+> Adds an MFD driver for SMpro found on the Mt.Jade hardware reference
+> platform with Ampere's Altra processor family.
+> 
+> Signed-off-by: Quan Nguyen <quan@os.amperecomputing.com>
+> Reported-by: kernel test robot <lkp@intel.com>
+> ---
+>  drivers/mfd/Kconfig          | 10 ++++++++++
+>  drivers/mfd/simple-mfd-i2c.c |  6 ++++++
+>  2 files changed, 16 insertions(+)
+> 
+> diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
+> index d07e8cf93286..f7a6460f7aa0 100644
+> --- a/drivers/mfd/Kconfig
+> +++ b/drivers/mfd/Kconfig
+> @@ -77,6 +77,16 @@ config MFD_AS3711
+>  	help
+>  	  Support for the AS3711 PMIC from AMS
+>  
+> +config MFD_SMPRO
+> +	tristate "Ampere Computing MFD SMpro core driver"
+> +	select MFD_SIMPLE_MFD_I2C
 
-Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
-Change-Id: I18d9dea14c3a04e1b7e38ffecd49d45917b9b545
----
- .../bindings/mfd/aspeed,ast2600-pwm-tach.yaml | 60 +++++++++++++++++++
- .../bindings/pwm/aspeed,ast2600-pwm.yaml      | 44 ++++++++++++++
- 2 files changed, 104 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.yaml
- create mode 100644 Documentation/devicetree/bindings/pwm/aspeed,ast2600-pwm.yaml
+This is missing "depends on I2C".
 
-diff --git a/Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.yaml b/Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.yaml
-new file mode 100644
-index 000000000000..eaf8bdf8d44e
---- /dev/null
-+++ b/Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.yaml
-@@ -0,0 +1,60 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+# Copyright (C) 2021 ASPEED, Inc.
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/mfd/aspeed,ast2600-pwm-tach.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: PWM Tach controller Device Tree Bindings
-+
-+description: |
-+  The PWM Tach controller is represented as a multi-function device which
-+  includes:
-+    PWM
-+    Tach
-+
-+maintainers:
-+  - Billy Tsai <billy_tsai@aspeedtech.com>
-+
-+properties:
-+  compatible:
-+    items:
-+      - enum:
-+          - aspeed,ast2600-pwm-tach
-+      - const: syscon
-+      - const: simple-mfd
-+  reg:
-+    maxItems: 1
-+  "#address-cells":
-+    const: 1
-+  "#size-cells":
-+    const: 1
-+
-+required:
-+  - compatible
-+  - reg
-+  - "#address-cells"
-+  - "#size-cells"
-+
-+additionalProperties:
-+  type: object
-+
-+examples:
-+  - |
-+    pwm_tach: pwm_tach at 1e610000 {
-+      compatible = "aspeed,ast2600-pwm-tach", "syscon", "simple-mfd";
-+      #address-cells = <1>;
-+      #size-cells = <1>;
-+      reg = <0x1e610000 0x100>;
-+
-+      pwm: pwm at 0 {
-+        compatible = "aspeed,ast2600-pwm";
-+        #pwm-cells = <3>;
-+        reg = <0x0 0x100>;
-+      };
-+
-+      tach: tach at 1 {
-+        compatible = "aspeed,ast2600-tach";
-+        reg = <0x0 0x100>;
-+      };
-+    };
-diff --git a/Documentation/devicetree/bindings/pwm/aspeed,ast2600-pwm.yaml b/Documentation/devicetree/bindings/pwm/aspeed,ast2600-pwm.yaml
-new file mode 100644
-index 000000000000..97923e68ccb9
---- /dev/null
-+++ b/Documentation/devicetree/bindings/pwm/aspeed,ast2600-pwm.yaml
-@@ -0,0 +1,44 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+# Copyright (C) 2021 ASPEED, Inc.
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/pwm/aspeed,ast2600-pwm.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: ASPEED AST2600 PWM controller
-+
-+maintainers:
-+  - Billy Tsai <billy_tsai@aspeedtech.com>
-+
-+description: |
-+  The ASPEED PWM controller can support upto 16 PWM outputs.
-+
-+properties:
-+  compatible:
-+    enum:
-+      - aspeed,ast2600-pwm
-+
-+  "#pwm-cells":
-+    const: 3
-+
-+  reg:
-+    maxItems: 1
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    // The PWM should be a subnode of a "aspeed,ast2600-pwm-tach" compatible
-+    // node.
-+    pwm_tach: pwm_tach at 1e610000 {
-+      compatible = "aspeed,ast2600-pwm-tach", "syscon", "simple-mfd";
-+      #address-cells = <1>;
-+      #size-cells = <1>;
-+      reg = <0x1e610000 0x100>;
-+
-+      pwm: pwm at 0 {
-+        compatible = "aspeed,ast2600-pwm";
-+        #pwm-cells = <3>;
-+        reg = <0x0 0x100>;
-+      };
-+    };
--- 
-2.25.1
-
+> +	help
+> +	  Say yes here to enable SMpro driver support for Ampere's Altra
+> +	  processor family.
+> +
+> +	  Ampere's Altra SMpro exposes an I2C regmap interface that can
+> +	  be accessed by child devices.
+> +
+>  config MFD_AS3722
+>  	tristate "ams AS3722 Power Management IC"
+>  	select MFD_CORE
+> diff --git a/drivers/mfd/simple-mfd-i2c.c b/drivers/mfd/simple-mfd-i2c.c
+> index 87f684cff9a1..9a44655f5592 100644
+> --- a/drivers/mfd/simple-mfd-i2c.c
+> +++ b/drivers/mfd/simple-mfd-i2c.c
+> @@ -21,6 +21,11 @@ static const struct regmap_config simple_regmap_config = {
+>  	.val_bits = 8,
+>  };
+>  
+> +static const struct regmap_config simple_word_regmap_config = {
+> +	.reg_bits = 8,
+> +	.val_bits = 16,
+> +};
+> +
+>  static int simple_mfd_i2c_probe(struct i2c_client *i2c)
+>  {
+>  	const struct regmap_config *config;
+> @@ -39,6 +44,7 @@ static int simple_mfd_i2c_probe(struct i2c_client *i2c)
+>  
+>  static const struct of_device_id simple_mfd_i2c_of_match[] = {
+>  	{ .compatible = "kontron,sl28cpld" },
+> +	{ .compatible = "ampere,smpro", .data = &simple_word_regmap_config },
+>  	{}
+>  };
+>  MODULE_DEVICE_TABLE(of, simple_mfd_i2c_of_match);
