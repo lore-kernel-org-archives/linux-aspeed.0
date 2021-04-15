@@ -1,156 +1,77 @@
-From: Rob Herring <robh@kernel.org>
-Date: Thu, 15 Apr 2021 09:43:42 -0500
-Subject: [v2 1/2] dt-bindings: Add bindings for aspeed pwm-tach and pwm.
-In-Reply-To: <B9287FE7-5EF5-40B3-BCB3-08DA11D6CDD7@aspeedtech.com>
-References: <20210414104939.1093-1-billy_tsai@aspeedtech.com>
- <20210414104939.1093-2-billy_tsai@aspeedtech.com>
- <20210414221553.GA56046@robh.at.kernel.org>
- <B9287FE7-5EF5-40B3-BCB3-08DA11D6CDD7@aspeedtech.com>
-Message-ID: <CAL_JsqLuswcRqQ-JQ9qgWQEhykPWCTsnVFLxCEPV6BbF86vWOw@mail.gmail.com>
+From: Konstantin Aladyshev <aladyshev22@gmail.com>
+Date: Thu, 15 Apr 2021 18:52:59 +0300
+Subject: [PATCH] ARM: dts: aspeed: amd-ethanolx: Enable all used I2C busses
+Message-ID: <20210415155300.1135-1-aladyshev22@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Apr 14, 2021 at 10:44 PM Billy Tsai <billy_tsai@aspeedtech.com> wrote:
->
-> Hi Rob,
->
-> On 2021/4/15, 6:16 AM,Rob Herringwrote:
->
->     On Wed, Apr 14, 2021 at 06:49:38PM +0800, Billy Tsai wrote:
->     >> This patch adds device bindings for aspeed pwm-tach device which is a
->     >> multi-function device include pwn and tach function and pwm device which
->     >> should be the sub-node of pwm-tach device.
->     >>
->     >> Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
->     >> Change-Id: I18d9dea14c3a04e1b7e38ffecd49d45917b9b545
->     >
->     >Drop
->     >
->     >> ---
->     >>  .../bindings/mfd/aspeed,ast2600-pwm-tach.yaml | 60 +++++++++++++++++++
->     >>  .../bindings/pwm/aspeed,ast2600-pwm.yaml      | 44 ++++++++++++++
->     >>  2 files changed, 104 insertions(+)
->     >>  create mode 100644 Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.yaml
->     >>  create mode 100644 Documentation/devicetree/bindings/pwm/aspeed,ast2600-pwm.yaml
->     >>
->     >> diff --git a/Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.yaml b/Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.yaml
->     >> new file mode 100644
->     >> index 000000000000..eaf8bdf8d44e
->     >> --- /dev/null
->     >> +++ b/Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.yaml
->     >> @@ -0,0 +1,60 @@
->     >> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
->     >> +# Copyright (C) 2021 ASPEED, Inc.
->     >> +%YAML 1.2
->     >> +---
->     >> +$id: http://devicetree.org/schemas/mfd/aspeed,ast2600-pwm-tach.yaml#
->     >> +$schema: http://devicetree.org/meta-schemas/core.yaml#
->     >> +
->     >> +title: PWM Tach controller Device Tree Bindings
->     >> +
->     >> +description: |
->     >> +  The PWM Tach controller is represented as a multi-function device which
->     >> +  includes:
->     >> +    PWM
->     >> +    Tach
->
->     > But is it really? A PWM and tach sounds like a fan controller. Look at
->
-> Our PWM is not only for fans but also used for the motor, led, buzzer, and so on.
-> So I want to split the function into two devices with a multi-function device.
-> One for PWM output and one for tach monitor.
->
->     > other existing PWM+tach bindings we have for fans.
->
-> I didn't see the PWM+tach bindings can you give some example for me, thanks.
+Enable all I2C busses that are used in AMD EthanolX CRB:
+ i2c0 - APML P0
+ i2c1 - APML P1
+ i2c2 - FPGA
+ i2c3 - 24LC128 EEPROM
+ i2c4 - P0 Power regulators
+ i2c5 - P1 Power regulators
+ i2c6 - P0/P1 Thermal diode
+ i2c7 - Thermal Sensors
+ i2c8 - BMC I2C
 
-Let me grep 'tach' for you:
+Signed-off-by: Konstantin Aladyshev <aladyshev22@gmail.com>
+---
+ arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts | 30 +++++++++++++++++++
+ 1 file changed, 30 insertions(+)
 
-Documentation/devicetree/bindings/hwmon/aspeed-pwm-tacho.txt
-Documentation/devicetree/bindings/hwmon/npcm750-pwm-fan.txt
+diff --git a/arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts b/arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts
+index ac2d04cfaf2f..6aeb47c44eba 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts
+@@ -151,6 +151,31 @@ &i2c1 {
+ 	status = "okay";
+ };
+ 
++//FPGA
++&i2c2 {
++	status = "okay";
++};
++
++//24LC128 EEPROM
++&i2c3 {
++	status = "okay";
++};
++
++//P0 Power regulators
++&i2c4 {
++	status = "okay";
++};
++
++//P1 Power regulators
++&i2c5 {
++	status = "okay";
++};
++
++//P0/P1 Thermal diode
++&i2c6 {
++	status = "okay";
++};
++
+ // Thermal Sensors
+ &i2c7 {
+ 	status = "okay";
+@@ -196,6 +221,11 @@ lm75a at 4f {
+ 	};
+ };
+ 
++//BMC I2C
++&i2c8 {
++	status = "okay";
++};
++
+ &kcs1 {
+ 	status = "okay";
+ 	aspeed,lpc-io-reg = <0x60>;
+-- 
+2.25.1
 
-Hey, look at that, there's already one for ASpeed. So the question is
-how is the newer h/w different?
-
->
->     >> +
->     >> +maintainers:
->     >> +  - Billy Tsai <billy_tsai@aspeedtech.com>
->     >> +
->     >> +properties:
->     >> +  compatible:
->     >> +    items:
->     >> +      - enum:
->     >> +          - aspeed,ast2600-pwm-tach
->     >> +      - const: syscon
->     >> +      - const: simple-mfd
->     >> +  reg:
->     >> +    maxItems: 1
->     >> +  "#address-cells":
->     >> +    const: 1
->     >> +  "#size-cells":
->     >> +    const: 1
->     >> +
->     >> +required:
->     >> +  - compatible
->     >> +  - reg
->     >> +  - "#address-cells"
->     >> +  - "#size-cells"
->     >> +
->     >> +additionalProperties:
->     >> +  type: object
->
->     > As you know the 2 node names, they should be documented. However, see
->     > below.
->
->     >> +
->     >> +examples:
->     >> +  - |
->     >> +    pwm_tach: pwm_tach at 1e610000 {
->     >> +      compatible = "aspeed,ast2600-pwm-tach", "syscon", "simple-mfd";
->     >> +      #address-cells = <1>;
->     >> +      #size-cells = <1>;
->     >> +      reg = <0x1e610000 0x100>;
->     >> +
->     >> +      pwm: pwm at 0 {
->     >> +        compatible = "aspeed,ast2600-pwm";
->     >> +        #pwm-cells = <3>;
->     >> +        reg = <0x0 0x100>;
->     >> +      };
->     >> +
->     >> +      tach: tach at 1 {
->     >> +        compatible = "aspeed,ast2600-tach";
->     >> +        reg = <0x0 0x100>;
->
->     > You have 2 nodes at the same address. Not valid.
->
-> Our pwm and tach is used the same base address and the offset is like below:
->
-> PWM0 used 0x0 0x4, Tach0 used 0x8 0xc
-> PWM1 used 0x10 0x14, Tach1 used 0x18 0x1c
-> ...
->
-> I will remove the reg property from pwm and tach node and remove the "#address-cells" and
-> "#size-cells" from the parent node.
-
-That's not really the solution...
-
->
->     >> +      };
->
->     > There's no real need for 2 child nodes. The parent node can be a PWM
->     > provider.
->
-> However, In our usage, the parent node is a mfd, not a simple PWM device only. I don't want to
-> combine the different functions with the one device node.
-
-Looks like a single h/w block to me. If you want to divide that up
-into multiple drivers, then that's an OS problem. A single node can be
-multiple providers. For example, on the existing aspeed binding, just
-add '#pwm-cells' to the node if you want to also expose it as a PWM
-provider.
-
-Rob
