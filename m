@@ -1,80 +1,130 @@
-From: Quan Nguyen <quan@os.amperecomputing.com>
-Date: Thu, 15 Apr 2021 11:15:48 +0700
-Subject: [PATCH v3 2/4] mfd: simple-mfd-i2c: Adds Ampere's Altra SMpro
- support
-In-Reply-To: <20210414122130.GA113503@roeck-us.net>
-References: <20210409031332.21919-1-quan@os.amperecomputing.com>
- <20210409031332.21919-3-quan@os.amperecomputing.com>
- <20210414122130.GA113503@roeck-us.net>
-Message-ID: <94a8cf49-2de2-ead5-8134-d18a90a6ad57@os.amperecomputing.com>
+From: Andy Shevchenko <andy.shevchenko@gmail.com>
+Date: Thu, 15 Apr 2021 13:46:37 +0300
+Subject: [PATCH v6 3/4] serial: 8250_aspeed_vuart: add aspeed,lpc-io-reg
+ and aspeed,lpc-interrupts DT properties
+In-Reply-To: <20210412034712.16778-4-zev@bewilderbeest.net>
+References: <20210412034712.16778-1-zev@bewilderbeest.net>
+ <20210412034712.16778-4-zev@bewilderbeest.net>
+Message-ID: <CAHp75VfCKRn+ER4bKf+PLhXHT0yZeN4JDufxfROa4UMf=Bc6bQ@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 14/04/2021 19:21, Guenter Roeck wrote:
-> On Fri, Apr 09, 2021 at 10:13:30AM +0700, Quan Nguyen wrote:
->> Adds an MFD driver for SMpro found on the Mt.Jade hardware reference
->> platform with Ampere's Altra processor family.
->>
->> Signed-off-by: Quan Nguyen <quan@os.amperecomputing.com>
->> Reported-by: kernel test robot <lkp@intel.com>
->> ---
->>   drivers/mfd/Kconfig          | 10 ++++++++++
->>   drivers/mfd/simple-mfd-i2c.c |  6 ++++++
->>   2 files changed, 16 insertions(+)
->>
->> diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
->> index d07e8cf93286..f7a6460f7aa0 100644
->> --- a/drivers/mfd/Kconfig
->> +++ b/drivers/mfd/Kconfig
->> @@ -77,6 +77,16 @@ config MFD_AS3711
->>   	help
->>   	  Support for the AS3711 PMIC from AMS
->>   
->> +config MFD_SMPRO
->> +	tristate "Ampere Computing MFD SMpro core driver"
->> +	select MFD_SIMPLE_MFD_I2C
-> 
-> This is missing "depends on I2C".
-> 
-Thanks Guenter to help pointing this out.
-This fixes the issue reported by kernel test robot. Will include this in 
-next version.
+On Mon, Apr 12, 2021 at 7:05 AM Zev Weiss <zev@bewilderbeest.net> wrote:
+>
+> These allow describing all the Aspeed VUART attributes currently
+> available via sysfs.  aspeed,lpc-interrupts provides a replacement for
+> the deprecated aspeed,sirq-polarity-sense property.
 
->> +	help
->> +	  Say yes here to enable SMpro driver support for Ampere's Altra
->> +	  processor family.
->> +
->> +	  Ampere's Altra SMpro exposes an I2C regmap interface that can
->> +	  be accessed by child devices.
->> +
->>   config MFD_AS3722
->>   	tristate "ams AS3722 Power Management IC"
->>   	select MFD_CORE
->> diff --git a/drivers/mfd/simple-mfd-i2c.c b/drivers/mfd/simple-mfd-i2c.c
->> index 87f684cff9a1..9a44655f5592 100644
->> --- a/drivers/mfd/simple-mfd-i2c.c
->> +++ b/drivers/mfd/simple-mfd-i2c.c
->> @@ -21,6 +21,11 @@ static const struct regmap_config simple_regmap_config = {
->>   	.val_bits = 8,
->>   };
->>   
->> +static const struct regmap_config simple_word_regmap_config = {
->> +	.reg_bits = 8,
->> +	.val_bits = 16,
->> +};
->> +
->>   static int simple_mfd_i2c_probe(struct i2c_client *i2c)
->>   {
->>   	const struct regmap_config *config;
->> @@ -39,6 +44,7 @@ static int simple_mfd_i2c_probe(struct i2c_client *i2c)
->>   
->>   static const struct of_device_id simple_mfd_i2c_of_match[] = {
->>   	{ .compatible = "kontron,sl28cpld" },
->> +	{ .compatible = "ampere,smpro", .data = &simple_word_regmap_config },
->>   	{}
->>   };
->>   MODULE_DEVICE_TABLE(of, simple_mfd_i2c_of_match);
+One nit-pick below.
 
+In any case it's fine.
+
+> Signed-off-by: Zev Weiss <zev@bewilderbeest.net>
+> ---
+>  drivers/tty/serial/8250/8250_aspeed_vuart.c | 51 ++++++++++++++++++++-
+>  1 file changed, 49 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/tty/serial/8250/8250_aspeed_vuart.c b/drivers/tty/serial/8250/8250_aspeed_vuart.c
+> index 8433f8dbb186..3c239d98747f 100644
+> --- a/drivers/tty/serial/8250/8250_aspeed_vuart.c
+> +++ b/drivers/tty/serial/8250/8250_aspeed_vuart.c
+> @@ -28,6 +28,10 @@
+>  #define ASPEED_VUART_ADDRL             0x28
+>  #define ASPEED_VUART_ADDRH             0x2c
+>
+> +#define ASPEED_VUART_DEFAULT_LPC_ADDR  0x3f8
+> +#define ASPEED_VUART_DEFAULT_SIRQ      4
+> +#define ASPEED_VUART_DEFAULT_SIRQ_POLARITY     IRQ_TYPE_LEVEL_LOW
+> +
+>  struct aspeed_vuart {
+>         struct device           *dev;
+>         void __iomem            *regs;
+> @@ -386,6 +390,18 @@ static void aspeed_vuart_auto_configure_sirq_polarity(
+>         aspeed_vuart_set_sirq_polarity(vuart, (value & reg_mask) == 0);
+>  }
+>
+> +static int aspeed_vuart_map_irq_polarity(u32 dt)
+> +{
+> +       switch (dt) {
+> +       case IRQ_TYPE_LEVEL_LOW:
+> +               return 0;
+> +       case IRQ_TYPE_LEVEL_HIGH:
+> +               return 1;
+> +       default:
+> +               return -EINVAL;
+> +       }
+> +}
+> +
+>  static int aspeed_vuart_probe(struct platform_device *pdev)
+>  {
+>         struct of_phandle_args sirq_polarity_sense_args;
+> @@ -393,8 +409,8 @@ static int aspeed_vuart_probe(struct platform_device *pdev)
+>         struct aspeed_vuart *vuart;
+>         struct device_node *np;
+>         struct resource *res;
+> -       u32 clk, prop;
+> -       int rc;
+> +       u32 clk, prop, sirq[2];
+> +       int rc, sirq_polarity;
+>
+>         np = pdev->dev.of_node;
+>
+> @@ -501,6 +517,37 @@ static int aspeed_vuart_probe(struct platform_device *pdev)
+>                 of_node_put(sirq_polarity_sense_args.np);
+>         }
+>
+> +       rc = of_property_read_u32(np, "aspeed,lpc-io-reg", &prop);
+> +       if (rc < 0)
+> +               prop = ASPEED_VUART_DEFAULT_LPC_ADDR;
+> +
+> +       rc = aspeed_vuart_set_lpc_address(vuart, prop);
+> +       if (rc < 0) {
+> +               dev_err(&pdev->dev, "invalid value in aspeed,lpc-io-reg property\n");
+> +               goto err_clk_disable;
+> +       }
+> +
+> +       rc = of_property_read_u32_array(np, "aspeed,lpc-interrupts", sirq, 2);
+> +       if (rc < 0) {
+> +               sirq[0] = ASPEED_VUART_DEFAULT_SIRQ;
+> +               sirq[1] = ASPEED_VUART_DEFAULT_SIRQ_POLARITY;
+> +       }
+> +
+> +       rc = aspeed_vuart_set_sirq(vuart, sirq[0]);
+> +       if (rc < 0) {
+> +               dev_err(&pdev->dev, "invalid sirq number in aspeed,lpc-interrupts property\n");
+> +               goto err_clk_disable;
+> +       }
+> +
+> +       sirq_polarity = aspeed_vuart_map_irq_polarity(sirq[1]);
+> +       if (sirq_polarity < 0) {
+> +               dev_err(&pdev->dev, "invalid sirq polarity in aspeed,lpc-interrupts property\n");
+
+> +               rc = sirq_polarity;
+> +               goto err_clk_disable;
+> +       }
+
+Why not to use the same pattern as above, i.e.
+
+       rc = aspeed_vuart_map_irq_polarity(sirq[1]);
+       if (rc < 0) {
+               dev_err(&pdev->dev, "invalid sirq polarity in
+aspeed,lpc-interrupts property\n");
+               goto err_clk_disable;
+       }
+       sirq_polarity = rc;
+
+?
+
+> +       aspeed_vuart_set_sirq_polarity(vuart, sirq_polarity);
+> +
+>         aspeed_vuart_set_enabled(vuart, true);
+>         aspeed_vuart_set_host_tx_discard(vuart, true);
+>         platform_set_drvdata(pdev, vuart);
+
+
+-- 
+With Best Regards,
+Andy Shevchenko
