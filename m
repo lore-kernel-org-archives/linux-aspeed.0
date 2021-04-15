@@ -1,130 +1,232 @@
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Date: Thu, 15 Apr 2021 13:46:37 +0300
-Subject: [PATCH v6 3/4] serial: 8250_aspeed_vuart: add aspeed,lpc-io-reg
- and aspeed,lpc-interrupts DT properties
-In-Reply-To: <20210412034712.16778-4-zev@bewilderbeest.net>
-References: <20210412034712.16778-1-zev@bewilderbeest.net>
- <20210412034712.16778-4-zev@bewilderbeest.net>
-Message-ID: <CAHp75VfCKRn+ER4bKf+PLhXHT0yZeN4JDufxfROa4UMf=Bc6bQ@mail.gmail.com>
+From: Quan Nguyen <quan@os.amperecomputing.com>
+Date: Thu, 15 Apr 2021 19:33:12 +0700
+Subject: [PATCH v3 1/4] dt-bindings: mfd: Add bindings for Ampere Altra
+ SMPro drivers
+In-Reply-To: <8eb27308-03e3-1a90-28a3-d8b3ad720cc4@os.amperecomputing.com>
+References: <20210409031332.21919-1-quan@os.amperecomputing.com>
+ <20210409031332.21919-2-quan@os.amperecomputing.com>
+ <20210413134906.GA1538655@robh.at.kernel.org>
+ <8eb27308-03e3-1a90-28a3-d8b3ad720cc4@os.amperecomputing.com>
+Message-ID: <3f227d50-1f4a-d5d4-eba1-dab1322c45d9@os.amperecomputing.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Apr 12, 2021 at 7:05 AM Zev Weiss <zev@bewilderbeest.net> wrote:
->
-> These allow describing all the Aspeed VUART attributes currently
-> available via sysfs.  aspeed,lpc-interrupts provides a replacement for
-> the deprecated aspeed,sirq-polarity-sense property.
+On 14/04/2021 15:28, Quan Nguyen wrote:
+> On 13/04/2021 20:49, Rob Herring wrote:
+>> On Fri, Apr 09, 2021 at 10:13:29AM +0700, Quan Nguyen wrote:
+>>> Adds device tree bindings for SMPro drivers found on the Mt.Jade 
+>>> hardware
+>>> reference platform with Ampere's Altra Processor family.
+>>>
+>>> Signed-off-by: Quan Nguyen <quan@os.amperecomputing.com>
+>>> ---
+>>> ? .../bindings/hwmon/ampere,ac01-hwmon.yaml???? |? 28 +++++
+>>> ? .../devicetree/bindings/mfd/ampere,smpro.yaml | 105 ++++++++++++++++++
+>>> ? 2 files changed, 133 insertions(+)
+>>> ? create mode 100644 
+>>> Documentation/devicetree/bindings/hwmon/ampere,ac01-hwmon.yaml
+>>> ? create mode 100644 
+>>> Documentation/devicetree/bindings/mfd/ampere,smpro.yaml
+>>>
+>>> diff --git 
+>>> a/Documentation/devicetree/bindings/hwmon/ampere,ac01-hwmon.yaml 
+>>> b/Documentation/devicetree/bindings/hwmon/ampere,ac01-hwmon.yaml
+>>> new file mode 100644
+>>> index 000000000000..fbf7ec754160
+>>> --- /dev/null
+>>> +++ b/Documentation/devicetree/bindings/hwmon/ampere,ac01-hwmon.yaml
+>>> @@ -0,0 +1,28 @@
+>>> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+>>> +%YAML 1.2
+>>> +---
+>>> +$id: http://devicetree.org/schemas/hwmon/ampere,ac01-hwmon.yaml#
+>>> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+>>> +
+>>> +title: Hardware monitoring driver for the Ampere Altra SMPro
+>>> +
+>>> +maintainers:
+>>> +? - Quan Nguyen <quan@os.amperecomputing.com>
+>>> +
+>>> +description: |
+>>> +? This module is part of the Ampere Altra SMPro multi-function 
+>>> device. For more
+>>> +? details see ../mfd/ampere,smpro.yaml.
+>>> +
+>>> +properties:
+>>> +? compatible:
+>>> +??? enum:
+>>> +????? - ampere,ac01-hwmon
+>>> +
+>>> +? reg:
+>>> +??? maxItems: 1
+>>> +
+>>> +required:
+>>> +? - compatible
+>>> +? - reg
+>>> +
+>>> +additionalProperties: false
+>>> diff --git a/Documentation/devicetree/bindings/mfd/ampere,smpro.yaml 
+>>> b/Documentation/devicetree/bindings/mfd/ampere,smpro.yaml
+>>> new file mode 100644
+>>> index 000000000000..5613c420869e
+>>> --- /dev/null
+>>> +++ b/Documentation/devicetree/bindings/mfd/ampere,smpro.yaml
+>>> @@ -0,0 +1,105 @@
+>>> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+>>> +%YAML 1.2
+>>> +---
+>>> +$id: http://devicetree.org/schemas/mfd/ampere,smpro.yaml#
+>>> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+>>> +
+>>> +title: Ampere Altra SMPro firmware driver
+>>> +
+>>> +maintainers:
+>>> +? - Quan Nguyen <quan@os.amperecomputing.com>
+>>> +
+>>> +description: |
+>>> +? Ampere Altra SMPro firmware may contain different blocks like 
+>>> hardware
+>>> +? monitoring, error monitoring and other miscellaneous features.
+>>> +
+>>> +properties:
+>>> +? compatible:
+>>> +??? enum:
+>>> +????? - ampere,smpro
+>>
+>> Again, not very specific. There's only 1 version of 'smpro' h/w or
+>> firmware? Are the firmware version and features discoverable? If not,
+>> you need to be more specific (or better yet, make them discoverable).
+>>
+> Hi Rob,
+> 
+> So far, there's nothing to guarantee this is the only version of SMPro 
+> and neither firmware version nor features that are discoverable.
+> 
+> In fact, it was "ampere,ac01-smpro" specifically in my v1. But this is 
+> the "ampere,smpro" in arch/arm/boot/dts/nuvoton-npcm730-kudo.dts, that 
+> is why it got changed to "ampere,smpro" to avoid changes in that dts file.
+> 
+> I'm thinking about change it back to "ampere,ac01-smpro" in next version 
+> to make this compatible string more specific.
+> 
 
-One nit-pick below.
+Hi Rob, I have a second thought on this.
 
-In any case it's fine.
+What MFD SMPro driver does is only to expose the register map for child 
+drivers to use. Child drivers are capable to handle the specific details 
+among SMPro version if necessary. Hence, even though we address the 
+SMPro specific here (ie: by using specific compatible string), 
+eventually, regardless of any version the SMPro might be, the MFD SMPro 
+driver still just to expose the register map for its child drivers.
 
-> Signed-off-by: Zev Weiss <zev@bewilderbeest.net>
-> ---
->  drivers/tty/serial/8250/8250_aspeed_vuart.c | 51 ++++++++++++++++++++-
->  1 file changed, 49 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/tty/serial/8250/8250_aspeed_vuart.c b/drivers/tty/serial/8250/8250_aspeed_vuart.c
-> index 8433f8dbb186..3c239d98747f 100644
-> --- a/drivers/tty/serial/8250/8250_aspeed_vuart.c
-> +++ b/drivers/tty/serial/8250/8250_aspeed_vuart.c
-> @@ -28,6 +28,10 @@
->  #define ASPEED_VUART_ADDRL             0x28
->  #define ASPEED_VUART_ADDRH             0x2c
->
-> +#define ASPEED_VUART_DEFAULT_LPC_ADDR  0x3f8
-> +#define ASPEED_VUART_DEFAULT_SIRQ      4
-> +#define ASPEED_VUART_DEFAULT_SIRQ_POLARITY     IRQ_TYPE_LEVEL_LOW
-> +
->  struct aspeed_vuart {
->         struct device           *dev;
->         void __iomem            *regs;
-> @@ -386,6 +390,18 @@ static void aspeed_vuart_auto_configure_sirq_polarity(
->         aspeed_vuart_set_sirq_polarity(vuart, (value & reg_mask) == 0);
->  }
->
-> +static int aspeed_vuart_map_irq_polarity(u32 dt)
-> +{
-> +       switch (dt) {
-> +       case IRQ_TYPE_LEVEL_LOW:
-> +               return 0;
-> +       case IRQ_TYPE_LEVEL_HIGH:
-> +               return 1;
-> +       default:
-> +               return -EINVAL;
-> +       }
-> +}
-> +
->  static int aspeed_vuart_probe(struct platform_device *pdev)
->  {
->         struct of_phandle_args sirq_polarity_sense_args;
-> @@ -393,8 +409,8 @@ static int aspeed_vuart_probe(struct platform_device *pdev)
->         struct aspeed_vuart *vuart;
->         struct device_node *np;
->         struct resource *res;
-> -       u32 clk, prop;
-> -       int rc;
-> +       u32 clk, prop, sirq[2];
-> +       int rc, sirq_polarity;
->
->         np = pdev->dev.of_node;
->
-> @@ -501,6 +517,37 @@ static int aspeed_vuart_probe(struct platform_device *pdev)
->                 of_node_put(sirq_polarity_sense_args.np);
->         }
->
-> +       rc = of_property_read_u32(np, "aspeed,lpc-io-reg", &prop);
-> +       if (rc < 0)
-> +               prop = ASPEED_VUART_DEFAULT_LPC_ADDR;
-> +
-> +       rc = aspeed_vuart_set_lpc_address(vuart, prop);
-> +       if (rc < 0) {
-> +               dev_err(&pdev->dev, "invalid value in aspeed,lpc-io-reg property\n");
-> +               goto err_clk_disable;
-> +       }
-> +
-> +       rc = of_property_read_u32_array(np, "aspeed,lpc-interrupts", sirq, 2);
-> +       if (rc < 0) {
-> +               sirq[0] = ASPEED_VUART_DEFAULT_SIRQ;
-> +               sirq[1] = ASPEED_VUART_DEFAULT_SIRQ_POLARITY;
-> +       }
-> +
-> +       rc = aspeed_vuart_set_sirq(vuart, sirq[0]);
-> +       if (rc < 0) {
-> +               dev_err(&pdev->dev, "invalid sirq number in aspeed,lpc-interrupts property\n");
-> +               goto err_clk_disable;
-> +       }
-> +
-> +       sirq_polarity = aspeed_vuart_map_irq_polarity(sirq[1]);
-> +       if (sirq_polarity < 0) {
-> +               dev_err(&pdev->dev, "invalid sirq polarity in aspeed,lpc-interrupts property\n");
+So, if that makes sense, I'd like to keep the "ampere,smpro" as 
+compatible string.
 
-> +               rc = sirq_polarity;
-> +               goto err_clk_disable;
-> +       }
+- Quan
 
-Why not to use the same pattern as above, i.e.
+>>> +
+>>> +? reg:
+>>> +??? description:
+>>> +????? I2C device address.
+>>> +??? maxItems: 1
+>>> +
+>>> +? "#address-cells":
+>>> +??? const: 1
+>>> +
+>>> +? "#size-cells":
+>>> +??? const: 0
+>>> +
+>>> +patternProperties:
+>>> +? "^hwmon(@[0-9a-f]+)?$":
+>>> +??? $ref: ../hwmon/ampere,ac01-hwmon.yaml
+>>> +
+>>> +? "^misc(@[0-9a-f]+)?$":
+>>
+>> You don't need these child nodes in DT if there are no resources
+>> associated with them. The parent driver can instantiate all the
+>> sub-functions.
+>>
+> 
+>  From v3, there is a "reg" property introduced for the child driver, 
+> especially for the misc driver. This is unavoidable because other 
+> properties might be introduced in future for other misc features.
+> 
+>>> +??? type: object
+>>> +??? description: |
+>>> +????? This module is part of the Ampere Altra SMPro multi-function 
+>>> device
+>>> +????? to support miscellaneous features
+>>> +??? properties:
+>>> +????? compatible:
+>>> +??????? enum:
+>>> +????????? - ampere,ac01-misc
+>>> +????? reg:
+>>> +??????? maxItems: 1
+>>> +
+>>> +??? required:
+>>> +????? - compatible
+>>> +????? - reg
+>>> +
+>>> +? "^errmon(@[0-9a-f]+)?$":
+>>> +??? type: object
+>>> +??? description: |
+>>> +????? This module is part of the Ampere Altra SMPro multi-function 
+>>> device
+>>> +????? that supports error monitoring feature.
+>>> +
+>>> +??? properties:
+>>> +????? compatible:
+>>> +??????? enum:
+>>> +????????? - ampere,ac01-errmon
+>>> +????? reg:
+>>> +??????? maxItems: 1
+>>> +
+>>> +??? required:
+>>> +????? - compatible
+>>> +????? - reg
+>>> +
+>>> +required:
+>>> +? - "#address-cells"
+>>> +? - "#size-cells"
+>>> +? - compatible
+>>> +? - reg
+>>> +
+>>> +additionalProperties: false
+>>> +
+>>> +examples:
+>>> +? - |
+>>> +??? i2c {
+>>> +??????? #address-cells = <1>;
+>>> +??????? #size-cells = <0>;
+>>> +
+>>> +??????? smpro at 4f {
+>>> +??????????? compatible = "ampere,smpro";
+>>> +??????????? reg = <0x4f>;
+>>> +??????????? #address-cells = <1>;
+>>> +??????????? #size-cells = <0>;
+>>> +
+>>> +??????????? hwmon at 10 {
+>>> +??????????????? compatible = "ampere,ac01-hwmon";
+>>> +??????????????? reg = <0x10>;
+>>> +??????????? };
+>>> +
+>>> +??????????? misc at b0 {
+>>> +??????????????? compatible = "ampere,ac01-misc";
+>>> +??????????????? reg = <0xb0>;
+>>> +??????????? };
+>>> +
+>>> +??????????? errmon at 80 {
+>>> +??????????????? compatible = "ampere,ac01-errmon";
+>>> +??????????????? reg = <0x80>;
+>>> +??????????? };
+>>> +
+>>> +??????? };
+>>> +??? };
+>>> -- 
+>>> 2.28.0
+>>>
+> 
 
-       rc = aspeed_vuart_map_irq_polarity(sirq[1]);
-       if (rc < 0) {
-               dev_err(&pdev->dev, "invalid sirq polarity in
-aspeed,lpc-interrupts property\n");
-               goto err_clk_disable;
-       }
-       sirq_polarity = rc;
-
-?
-
-> +       aspeed_vuart_set_sirq_polarity(vuart, sirq_polarity);
-> +
->         aspeed_vuart_set_enabled(vuart, true);
->         aspeed_vuart_set_host_tx_discard(vuart, true);
->         platform_set_drvdata(pdev, vuart);
-
-
--- 
-With Best Regards,
-Andy Shevchenko
