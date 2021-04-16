@@ -1,44 +1,30 @@
-From: rentao.bupt@gmail.com <rentao.bupt@gmail.com>
-Date: Thu, 15 Apr 2021 19:13:37 -0700
-Subject: [PATCH v2] watchdog: aspeed: fix integer overflow in set_timeout
- handler
-Message-ID: <20210416021337.18715-1-rentao.bupt@gmail.com>
+From: Joel Stanley <joel@jms.id.au>
+Date: Fri, 16 Apr 2021 02:47:35 +0000
+Subject: [PATCH 0/4] ARM: dts: aspeed: Rainier: Various fixes and update
+In-Reply-To: <20210413194308.36930-1-eajames@linux.ibm.com>
+References: <20210413194308.36930-1-eajames@linux.ibm.com>
+Message-ID: <CACPK8XcvMxsFFDvrN1ueRGwFGJ55Yp4N8vNBA9tdfaa5jqzw8A@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Tao Ren <rentao.bupt@gmail.com>
+On Tue, 13 Apr 2021 at 19:43, Eddie James <eajames@linux.ibm.com> wrote:
+>
+> This series fixes a number of issues introduced in the Rainier device tree.
+> It also brings the device tree up to date with the latest hardware revision.
+>
+> Eddie James (4):
+>   ARM: dts: aspeed: Rainier: Fix PCA9552 on bus 8
+>   ARM: dts: aspeed: Rainier: Fix humidity sensor bus address
+>   ARM: dts: aspeed: Rainier 1S4U: Fix fan nodes
+>   ARM: dts: aspeed: Rainier: Update to pass 2 hardware
 
-Fix the time comparison (timeout vs. max_hw_heartbeat_ms) in set_timeout
-handler to avoid potential integer overflow when the supplied timeout is
-greater than aspeed's maximum allowed timeout (4294 seconds).
+Reviewed-by: Joel Stanley <joel@jms.id.au>
 
-Fixes: efa859f7d786 ("watchdog: Add Aspeed watchdog driver")
-Reported-by: Amithash Prasad <amithash@fb.com>
-Signed-off-by: Tao Ren <rentao.bupt@gmail.com>
----
- Changes in v2:
-   - do not touch "wdd->timeout": only "max_hw_heartbeat_ms * 1000" is
-     updated to "max_hw_heartbeat_ms / 1000".
+I have applied these to send to mainline.
 
- drivers/watchdog/aspeed_wdt.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Cheers,
 
-diff --git a/drivers/watchdog/aspeed_wdt.c b/drivers/watchdog/aspeed_wdt.c
-index 7e00960651fa..507fd815d767 100644
---- a/drivers/watchdog/aspeed_wdt.c
-+++ b/drivers/watchdog/aspeed_wdt.c
-@@ -147,7 +147,7 @@ static int aspeed_wdt_set_timeout(struct watchdog_device *wdd,
- 
- 	wdd->timeout = timeout;
- 
--	actual = min(timeout, wdd->max_hw_heartbeat_ms * 1000);
-+	actual = min(timeout, wdd->max_hw_heartbeat_ms / 1000);
- 
- 	writel(actual * WDT_RATE_1MHZ, wdt->base + WDT_RELOAD_VALUE);
- 	writel(WDT_RESTART_MAGIC, wdt->base + WDT_RESTART);
--- 
-2.17.1
-
+Joel
