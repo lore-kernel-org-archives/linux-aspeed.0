@@ -1,53 +1,189 @@
-From: Zev Weiss <zev@bewilderbeest.net>
-Date: Fri, 16 Apr 2021 02:51:13 -0500
-Subject: [PATCH] ARM: dts: aspeed: update e3c246d4i vuart properties
-Message-ID: <20210416075113.18047-1-zev@bewilderbeest.net>
+From: Billy Tsai <billy_tsai@aspeedtech.com>
+Date: Fri, 16 Apr 2021 08:44:52 +0000
+Subject: [v2 1/2] dt-bindings: Add bindings for aspeed pwm-tach and pwm.
+In-Reply-To: <CAL_JsqLuswcRqQ-JQ9qgWQEhykPWCTsnVFLxCEPV6BbF86vWOw@mail.gmail.com>
+References: <20210414104939.1093-1-billy_tsai@aspeedtech.com>
+ <20210414104939.1093-2-billy_tsai@aspeedtech.com>
+ <20210414221553.GA56046@robh.at.kernel.org>
+ <B9287FE7-5EF5-40B3-BCB3-08DA11D6CDD7@aspeedtech.com>
+ <CAL_JsqLuswcRqQ-JQ9qgWQEhykPWCTsnVFLxCEPV6BbF86vWOw@mail.gmail.com>
+Message-ID: <C487E9FF-3DAD-4322-996A-8164861572CF@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This device-tree was merged with a provisional vuart IRQ-polarity
-property that was still under review and ended up taking a somewhat
-different form.  This patch updates it to match the final form of the
-new vuart properties, which additionally allow specifying the SIRQ
-number and LPC address.
 
-Signed-off-by: Zev Weiss <zev@bewilderbeest.net>
----
+On 2021/4/15, 10:44 PM,Rob Herringwrote:
 
-The relevant aspeed-vuart patches [0] have been merged into Greg KH's
-tty-next tree, so I figure it's probably okay to proceed with the
-corresponding dts adjustments now.
+    >On Wed, Apr 14, 2021 at 10:44 PM Billy Tsai <billy_tsai@aspeedtech.com> wrote:
+    >>
+    >> Hi Rob,
+    >>
+    >> On 2021/4/15, 6:16 AM,Rob Herringwrote:
+    >>
+    >>     On Wed, Apr 14, 2021 at 06:49:38PM +0800, Billy Tsai wrote:
+    >>     >> This patch adds device bindings for aspeed pwm-tach device which is a
+    >>     >> multi-function device include pwn and tach function and pwm device which
+    >>     >> should be the sub-node of pwm-tach device.
+    >>     >>
+    >>     >> Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
+    >>     >> Change-Id: I18d9dea14c3a04e1b7e38ffecd49d45917b9b545
+    >>     >
+    >>     >Drop
+    >>     >
+    >>     >> ---
+    >>     >>  .../bindings/mfd/aspeed,ast2600-pwm-tach.yaml | 60 +++++++++++++++++++
+    >>     >>  .../bindings/pwm/aspeed,ast2600-pwm.yaml      | 44 ++++++++++++++
+    >>     >>  2 files changed, 104 insertions(+)
+    >>     >>  create mode 100644 Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.yaml
+    >>     >>  create mode 100644 Documentation/devicetree/bindings/pwm/aspeed,ast2600-pwm.yaml
+    >>     >>
+    >>     >> diff --git a/Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.yaml b/Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.yaml
+    >>     >> new file mode 100644
+    >>     >> index 000000000000..eaf8bdf8d44e
+    >>     >> --- /dev/null
+    >>     >> +++ b/Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.yaml
+    >>     >> @@ -0,0 +1,60 @@
+    >>     >> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+    >>     >> +# Copyright (C) 2021 ASPEED, Inc.
+    >>     >> +%YAML 1.2
+    >>     >> +---
+    >>     >> +$id: http://devicetree.org/schemas/mfd/aspeed,ast2600-pwm-tach.yaml#
+    >>     >> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+    >>     >> +
+    >>     >> +title: PWM Tach controller Device Tree Bindings
+    >>     >> +
+    >>     >> +description: |
+    >>     >> +  The PWM Tach controller is represented as a multi-function device which
+    >>     >> +  includes:
+    >>     >> +    PWM
+    >>     >> +    Tach
+    >>
+    >>     > But is it really? A PWM and tach sounds like a fan controller. Look at
+    >>
+    >> Our PWM is not only for fans but also used for the motor, led, buzzer, and so on.
+    >> So I want to split the function into two devices with a multi-function device.
+    >> One for PWM output and one for tach monitor.
+    >>
+    >>     > other existing PWM+tach bindings we have for fans.
+    >>
+    >> I didn't see the PWM+tach bindings can you give some example for me, thanks.
+    >
+    >Let me grep 'tach' for you:
+    >
+    >Documentation/devicetree/bindings/hwmon/aspeed-pwm-tacho.txt
+    >Documentation/devicetree/bindings/hwmon/npcm750-pwm-fan.txt
+    >
+    >Hey, look at that, there's already one for ASpeed. So the question is
+    >how is the newer h/w different?
+    >>
+    >>     >> +
+    >>     >> +maintainers:
+    >>     >> +  - Billy Tsai <billy_tsai@aspeedtech.com>
+    >>     >> +
+    >>     >> +properties:
+    >>     >> +  compatible:
+    >>     >> +    items:
+    >>     >> +      - enum:
+    >>     >> +          - aspeed,ast2600-pwm-tach
+    >>     >> +      - const: syscon
+    >>     >> +      - const: simple-mfd
+    >>     >> +  reg:
+    >>     >> +    maxItems: 1
+    >>     >> +  "#address-cells":
+    >>     >> +    const: 1
+    >>     >> +  "#size-cells":
+    >>     >> +    const: 1
+    >>     >> +
+    >>     >> +required:
+    >>     >> +  - compatible
+    >>     >> +  - reg
+    >>     >> +  - "#address-cells"
+    >>     >> +  - "#size-cells"
+    >>     >> +
+    >>     >> +additionalProperties:
+    >>     >> +  type: object
+    >>
+    >>     > As you know the 2 node names, they should be documented. However, see
+    >>     > below.
+    >>
+    >>     >> +
+    >>     >> +examples:
+    >>     >> +  - |
+    >>     >> +    pwm_tach: pwm_tach at 1e610000 {
+    >>     >> +      compatible = "aspeed,ast2600-pwm-tach", "syscon", "simple-mfd";
+    >>     >> +      #address-cells = <1>;
+    >>     >> +      #size-cells = <1>;
+    >>     >> +      reg = <0x1e610000 0x100>;
+    >>     >> +
+    >>     >> +      pwm: pwm at 0 {
+    >>     >> +        compatible = "aspeed,ast2600-pwm";
+    >>     >> +        #pwm-cells = <3>;
+    >>     >> +        reg = <0x0 0x100>;
+    >>     >> +      };
+    >>     >> +
+    >>     >> +      tach: tach at 1 {
+    >>     >> +        compatible = "aspeed,ast2600-tach";
+    >>     >> +        reg = <0x0 0x100>;
+    >>
+    >>     > You have 2 nodes at the same address. Not valid.
+    >>
+    >> Our pwm and tach is used the same base address and the offset is like below:
+    >>
+    >> PWM0 used 0x0 0x4, Tach0 used 0x8 0xc
+    >> PWM1 used 0x10 0x14, Tach1 used 0x18 0x1c
+    >> ...
+    >>
+    >> I will remove the reg property from pwm and tach node and remove the "#address-cells" and
+    >> "#size-cells" from the parent node.
+    >
+    >That's not really the solution...
+    >
+    >>
+    >>     >> +      };
+    >>
+    >>     > There's no real need for 2 child nodes. The parent node can be a PWM
+    >>     > provider.
+    >>
+    >> However, In our usage, the parent node is a mfd, not a simple PWM device only. I don't want to
+    >> combine the different functions with the one device node.
+    >
+    >Looks like a single h/w block to me. If you want to divide that up
+    >into multiple drivers, then that's an OS problem. A single node can be
+    >multiple providers. For example, on the existing aspeed binding, just
+    >add '#pwm-cells' to the node if you want to also expose it as a PWM
+    >provider.
+    >
+    >Rob
 
-[0] https://lore.kernel.org/openbmc/20210412034712.16778-1-zev at bewilderbeest.net/
+I don't think the pwm/tach should be a single h/w block. 
+See the kontron,sl28cpld.yaml:
+hwmon at b {
+        compatible = "kontron,sl28cpld-fan";
+        reg = <0xb>;
+};
 
- arch/arm/boot/dts/aspeed-bmc-asrock-e3c246d4i.dts | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+pwm at c {
+        compatible = "kontron,sl28cpld-pwm";
+        reg = <0xc>;
+        #pwm-cells = <2>;
+};
+They can be the different function from the dts.
 
-diff --git a/arch/arm/boot/dts/aspeed-bmc-asrock-e3c246d4i.dts b/arch/arm/boot/dts/aspeed-bmc-asrock-e3c246d4i.dts
-index dcab6e78dfa4..8be40c8283af 100644
---- a/arch/arm/boot/dts/aspeed-bmc-asrock-e3c246d4i.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-asrock-e3c246d4i.dts
-@@ -4,6 +4,7 @@
- #include "aspeed-g5.dtsi"
- #include <dt-bindings/gpio/aspeed-gpio.h>
- #include <dt-bindings/i2c/i2c.h>
-+#include <dt-bindings/interrupt-controller/irq.h>
- 
- /{
- 	model = "ASRock E3C246D4I BMC";
-@@ -73,7 +74,8 @@ &uart5 {
- 
- &vuart {
- 	status = "okay";
--	aspeed,sirq-active-high;
-+	aspeed,lpc-io-reg = <0x2f8>;
-+	aspeed,lpc-interrupts = <3 IRQ_TYPE_LEVEL_HIGH>;
- };
- 
- &mac0 {
--- 
-2.31.1
+Documentation/devicetree/bindings/hwmon/aspeed-pwm-tacho.txt
+Documentation/devicetree/bindings/hwmon/npcm750-pwm-fan.txt
+
+These two devices are specific to the used for fan like
+Documentation/devicetree/bindings/hwmon/pwm-fan.txt, but with our usage,
+it doesn't just for the fan. In our scenario, the customer wants to
+create a pwm-beeper, so he needs one pwm input and he doesn't need the
+tach function. If I used the pwm-fan as the beeper's pwm input, it look
+weird.
+Therefore, I want to split these two functions into different devices.
+
+If my thinking is wrong, please let me know.
+
+Very appreciate.
 
