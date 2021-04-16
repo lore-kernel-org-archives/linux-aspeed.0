@@ -1,45 +1,53 @@
-From: Lei Yu <yulei.sh@bytedance.com>
-Date: Fri, 16 Apr 2021 15:35:01 +0800
-Subject: [External] Re: [PATCH v1] ARM: dts: Fix 64MiB OpenBMC flash
- layout and aspeed-ast2600-evb.dts
-In-Reply-To: <CACPK8XeYtaLLWDMR8xZhERrQ_WCUJ2RM_JZmZNQ6oZSvgSDM_w@mail.gmail.com>
-References: <20210316085932.2601-1-troy_lee@aspeedtech.com>
- <CACPK8XeYtaLLWDMR8xZhERrQ_WCUJ2RM_JZmZNQ6oZSvgSDM_w@mail.gmail.com>
-Message-ID: <CAGm54UHgQSMh8WLzRf7Swhv9mmzNBuEK6eKf9eX0ASp95hjARw@mail.gmail.com>
+From: Zev Weiss <zev@bewilderbeest.net>
+Date: Fri, 16 Apr 2021 02:51:13 -0500
+Subject: [PATCH] ARM: dts: aspeed: update e3c246d4i vuart properties
+Message-ID: <20210416075113.18047-1-zev@bewilderbeest.net>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Apr 16, 2021 at 11:03 AM Joel Stanley <joel@jms.id.au> wrote:
->
-> On Tue, 16 Mar 2021 at 08:59, Troy Lee <troy_lee@aspeedtech.com> wrote:
-> >
-> > Aspeed AST2600 u-boot requires 600KiB+ flash space. Sharing the same
-> > openbmc-flash-layout-64.dtsi requires to resize the flash partition.
-> >
-> > The updated flash layout as follows:
-> > - u-boot: 896 KiB
-> > - u-boot-env: 128 KiB
-> > - kernel: 9MiB
-> > - rofs: 32 MiB
-> > - rwfs: 22 MiB
->
-> Changing the 64MB layout will break the systems that are already using
-> this layout. I'll get the Bytedance people to chime in, as theirs is
-> the only system using this layout so far.
->
-> John, Lei?
+This device-tree was merged with a provisional vuart IRQ-polarity
+property that was still under review and ended up taking a somewhat
+different form.  This patch updates it to match the final form of the
+new vuart properties, which additionally allow specifying the SIRQ
+number and LPC address.
 
-Because the kernel's offset is updated, several other changes are required:
-1. The related offsets, which is already sent to
-https://gerrit.openbmc-project.xyz/c/openbmc/meta-phosphor/+/39343
-2. The u-boot patch to update the `bootm` address and make sure it
-only applies to the 64MiB layout.
+Signed-off-by: Zev Weiss <zev@bewilderbeest.net>
+---
 
-Without the above two changes, I would suggest holding the merge.
+The relevant aspeed-vuart patches [0] have been merged into Greg KH's
+tty-next tree, so I figure it's probably okay to proceed with the
+corresponding dts adjustments now.
 
+[0] https://lore.kernel.org/openbmc/20210412034712.16778-1-zev at bewilderbeest.net/
+
+ arch/arm/boot/dts/aspeed-bmc-asrock-e3c246d4i.dts | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/boot/dts/aspeed-bmc-asrock-e3c246d4i.dts b/arch/arm/boot/dts/aspeed-bmc-asrock-e3c246d4i.dts
+index dcab6e78dfa4..8be40c8283af 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-asrock-e3c246d4i.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-asrock-e3c246d4i.dts
+@@ -4,6 +4,7 @@
+ #include "aspeed-g5.dtsi"
+ #include <dt-bindings/gpio/aspeed-gpio.h>
+ #include <dt-bindings/i2c/i2c.h>
++#include <dt-bindings/interrupt-controller/irq.h>
+ 
+ /{
+ 	model = "ASRock E3C246D4I BMC";
+@@ -73,7 +74,8 @@ &uart5 {
+ 
+ &vuart {
+ 	status = "okay";
+-	aspeed,sirq-active-high;
++	aspeed,lpc-io-reg = <0x2f8>;
++	aspeed,lpc-interrupts = <3 IRQ_TYPE_LEVEL_HIGH>;
+ };
+ 
+ &mac0 {
 -- 
-BRs,
-Lei YU
+2.31.1
+
