@@ -1,77 +1,42 @@
-From: Konstantin Aladyshev <aladyshev22@gmail.com>
-Date: Thu, 15 Apr 2021 18:52:59 +0300
-Subject: [PATCH] ARM: dts: aspeed: amd-ethanolx: Enable all used I2C busses
-Message-ID: <20210415155300.1135-1-aladyshev22@gmail.com>
+From: rentao.bupt@gmail.com <rentao.bupt@gmail.com>
+Date: Thu, 15 Apr 2021 17:12:08 -0700
+Subject: [PATCH] watchdog: aspeed: fix integer overflow in set_timeout handler
+Message-ID: <20210416001208.16788-1-rentao.bupt@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Enable all I2C busses that are used in AMD EthanolX CRB:
- i2c0 - APML P0
- i2c1 - APML P1
- i2c2 - FPGA
- i2c3 - 24LC128 EEPROM
- i2c4 - P0 Power regulators
- i2c5 - P1 Power regulators
- i2c6 - P0/P1 Thermal diode
- i2c7 - Thermal Sensors
- i2c8 - BMC I2C
+From: Tao Ren <rentao.bupt@gmail.com>
 
-Signed-off-by: Konstantin Aladyshev <aladyshev22@gmail.com>
+Fix the time comparison (timeout vs. max_hw_heartbeat_ms) in set_timeout
+handler to avoid potential integer overflow when the supplied timeout is
+greater than aspeed's maximum allowed timeout (4294 seconds).
+
+Fixes: efa859f7d786 ("watchdog: Add Aspeed watchdog driver")
+Reported-by: Amithash Prasad <amithash@fb.com>
+Signed-off-by: Tao Ren <rentao.bupt@gmail.com>
 ---
- arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts | 30 +++++++++++++++++++
- 1 file changed, 30 insertions(+)
+ drivers/watchdog/aspeed_wdt.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
-diff --git a/arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts b/arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts
-index ac2d04cfaf2f..6aeb47c44eba 100644
---- a/arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts
-@@ -151,6 +151,31 @@ &i2c1 {
- 	status = "okay";
- };
+diff --git a/drivers/watchdog/aspeed_wdt.c b/drivers/watchdog/aspeed_wdt.c
+index 7e00960651fa..9f77272dc906 100644
+--- a/drivers/watchdog/aspeed_wdt.c
++++ b/drivers/watchdog/aspeed_wdt.c
+@@ -145,9 +145,8 @@ static int aspeed_wdt_set_timeout(struct watchdog_device *wdd,
+ 	struct aspeed_wdt *wdt = to_aspeed_wdt(wdd);
+ 	u32 actual;
  
-+//FPGA
-+&i2c2 {
-+	status = "okay";
-+};
-+
-+//24LC128 EEPROM
-+&i2c3 {
-+	status = "okay";
-+};
-+
-+//P0 Power regulators
-+&i2c4 {
-+	status = "okay";
-+};
-+
-+//P1 Power regulators
-+&i2c5 {
-+	status = "okay";
-+};
-+
-+//P0/P1 Thermal diode
-+&i2c6 {
-+	status = "okay";
-+};
-+
- // Thermal Sensors
- &i2c7 {
- 	status = "okay";
-@@ -196,6 +221,11 @@ lm75a at 4f {
- 	};
- };
+-	wdd->timeout = timeout;
+-
+-	actual = min(timeout, wdd->max_hw_heartbeat_ms * 1000);
++	actual = min(timeout, wdd->max_hw_heartbeat_ms / 1000);
++	wdd->timeout = actual;
  
-+//BMC I2C
-+&i2c8 {
-+	status = "okay";
-+};
-+
- &kcs1 {
- 	status = "okay";
- 	aspeed,lpc-io-reg = <0x60>;
+ 	writel(actual * WDT_RATE_1MHZ, wdt->base + WDT_RELOAD_VALUE);
+ 	writel(WDT_RESTART_MAGIC, wdt->base + WDT_RESTART);
 -- 
-2.25.1
+2.17.1
 
