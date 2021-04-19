@@ -1,44 +1,36 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Date: Fri, 16 Apr 2021 21:20:48 -0700
-Subject: [PATCH] watchdog: aspeed: fix hardware timeout calculation
-In-Reply-To: <20210417034249.5978-1-rentao.bupt@gmail.com>
-References: <20210417034249.5978-1-rentao.bupt@gmail.com>
-Message-ID: <20210417042048.GA109800@roeck-us.net>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Mon, 19 Apr 2021 16:44:39 +0200
+Subject: [GIT PULL] ARM: bmc: devicetree changes for 5.13, v2
+In-Reply-To: <CACPK8Xeet50bqWAY0jG_GRkgvKvFn94XtGDaq1gaVYVkyV_JUQ@mail.gmail.com>
+References: <CACPK8Xeet50bqWAY0jG_GRkgvKvFn94XtGDaq1gaVYVkyV_JUQ@mail.gmail.com>
+Message-ID: <CAK8P3a1rG6qKjVvr86G=6cgkhReQUbsvQAkdxg7A2HsJ7n499A@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Apr 16, 2021 at 08:42:49PM -0700, rentao.bupt at gmail.com wrote:
-> From: Tao Ren <rentao.bupt@gmail.com>
-> 
-> Fix hardware timeout calculation in aspeed_wdt_set_timeout function to
-> ensure the reload value does not exceed the hardware limit.
-> 
-> Fixes: efa859f7d786 ("watchdog: Add Aspeed watchdog driver")
-> Reported-by: Amithash Prasad <amithash@fb.com>
-> Signed-off-by: Tao Ren <rentao.bupt@gmail.com>
+On Fri, Apr 16, 2021 at 5:27 AM Joel Stanley <joel@jms.id.au> wrote:
+>
+> Hello Soc maintainers,
+>
+> Here are some fixes for the changes that have already been merged for v5.13.
+>
+> I also merged some changes that came in later. If you would prefer to
+> not take them then I can send a pull with just the fixes.
+>
+> The following changes since commit f0145db24e65f6cf13347a90ffb86e5ef2ff2ca2:
+>
+> for you to fetch changes up to f0145db24e65f6cf13347a90ffb86e5ef2ff2ca2:
 
-Reviewed-by: Guenter Roeck <linux@roeck-us.net>
+Hi Joel,
 
-> ---
->  drivers/watchdog/aspeed_wdt.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/watchdog/aspeed_wdt.c b/drivers/watchdog/aspeed_wdt.c
-> index 7e00960651fa..507fd815d767 100644
-> --- a/drivers/watchdog/aspeed_wdt.c
-> +++ b/drivers/watchdog/aspeed_wdt.c
-> @@ -147,7 +147,7 @@ static int aspeed_wdt_set_timeout(struct watchdog_device *wdd,
->  
->  	wdd->timeout = timeout;
->  
-> -	actual = min(timeout, wdd->max_hw_heartbeat_ms * 1000);
-> +	actual = min(timeout, wdd->max_hw_heartbeat_ms / 1000);
->  
->  	writel(actual * WDT_RATE_1MHZ, wdt->base + WDT_RELOAD_VALUE);
->  	writel(WDT_RESTART_MAGIC, wdt->base + WDT_RESTART);
-> -- 
-> 2.17.1
-> 
+something about this pull request doesn't add up, and 'b4' refuses
+to pull it since the 'since commit f0145db2' and 'up to f0145db2'
+references refer to the same commit.
+
+I assume this is just a copy-paste error on your end, but it would
+be nice if you could double-check and resend the pull request
+based on the ee33e2fb3d70 commit that I merged.
+
+       Arnd
