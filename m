@@ -1,54 +1,61 @@
-From: Joel Stanley <joel@jms.id.au>
-Date: Tue, 20 Apr 2021 07:14:07 +0000
-Subject: [RESEND GIT PULL] ARM: bmc: devicetree changes for 5.13, v2
-Message-ID: <CACPK8XeJdHmxyJn43Ju5hmxJ7+rJgHmx=ANFaL17YUmp+gOtJg@mail.gmail.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Tue, 20 Apr 2021 12:18:14 +0200
+Subject: [GIT PULL] ARM: bmc: devicetree changes for 5.13, v2
+In-Reply-To: <CACPK8XfkSQpMz9J+8xN7DP9Wabv=+DAgmX6NGL9742Ss3HsehA@mail.gmail.com>
+References: <CACPK8Xeet50bqWAY0jG_GRkgvKvFn94XtGDaq1gaVYVkyV_JUQ@mail.gmail.com>
+ <CAK8P3a1rG6qKjVvr86G=6cgkhReQUbsvQAkdxg7A2HsJ7n499A@mail.gmail.com>
+ <CACPK8XfkSQpMz9J+8xN7DP9Wabv=+DAgmX6NGL9742Ss3HsehA@mail.gmail.com>
+Message-ID: <CAK8P3a0OJhjF4R1zCm0jD_MUiS8TeDR2x9wTsTC5Apr5Mq_fSg@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello Arnd,
+On Tue, Apr 20, 2021 at 9:11 AM Joel Stanley <joel@jms.id.au> wrote:
+>
+> On Mon, 19 Apr 2021 at 14:44, Arnd Bergmann <arnd@arndb.de> wrote:
+> >
+> > On Fri, Apr 16, 2021 at 5:27 AM Joel Stanley <joel@jms.id.au> wrote:
+> > >
+> > > Hello Soc maintainers,
+> > >
+> > > Here are some fixes for the changes that have already been merged for v5.13.
+> > >
+> > > I also merged some changes that came in later. If you would prefer to
+> > > not take them then I can send a pull with just the fixes.
+> > >
+> > > The following changes since commit f0145db24e65f6cf13347a90ffb86e5ef2ff2ca2:
+> > >
+> > > for you to fetch changes up to f0145db24e65f6cf13347a90ffb86e5ef2ff2ca2:
+> >
+> > Hi Joel,
+> >
+> > something about this pull request doesn't add up, and 'b4' refuses
+> > to pull it since the 'since commit f0145db2' and 'up to f0145db2'
+> > references refer to the same commit.
+> >
+> > I assume this is just a copy-paste error on your end, but it would
+> > be nice if you could double-check and resend the pull request
+> > based on the ee33e2fb3d70 commit that I merged.
+>
+> Nice catch. It looks I've generated pull requests incorrectly from
+> v5.5 onwards, and this is the first time we've noticed. My bash
+> history shows I started generating them like this:
+>
+>  git request-pull tag url tag
 
-Here we go! The second try at a second set of changes for v5.13. I
-think I've sorted out the gremlins, thank you for your patience.
+Ah right. I'm surprised this resulted in the correct shortlog
+and diffstat, but that clearly explains it.
 
-The following changes since commit ee33e2fb3d70267de00f7c0b09e7e3b309a686df:
+> I'll try sending this one again now.
 
-  ARM: dts: nuvoton: Add Quanta GBS BMC Device Tree (2021-04-08 11:21:05 +0930)
+I only started using b4 recently, so I wouldn't have caught it in the past,
+as I wasn't paying close attention to the commit hashes. I usually
+tried to ensure that the contents match up with the description, and
+that worked fine. I've had sporadic problems in the past with b4 and
+it's possible that I just papered over it with a manual merge thinking
+that I did something wrong instead of b4 pointing out an actual
+problem.
 
-are available in the Git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/joel/bmc.git
-tags/bmc-5.13-devicetree-2
-
-for you to fetch changes up to f0145db24e65f6cf13347a90ffb86e5ef2ff2ca2:
-
-  ARM: dts: aspeed: tiogapass: add hotplug controller (2021-04-16
-12:28:38 +0930)
-
-----------------------------------------------------------------
-BMC device tree updates for 5.13, round two
-
- - Fixes to the first pull request for Rainier
-
- - Small changes for Rainier, EthanolX and Tiogapass
-
-----------------------------------------------------------------
-Eddie James (4):
-      ARM: dts: aspeed: Rainier: Fix PCA9552 on bus 8
-      ARM: dts: aspeed: Rainier: Fix humidity sensor bus address
-      ARM: dts: aspeed: Rainier 1S4U: Fix fan nodes
-      ARM: dts: aspeed: Rainier: Update to pass 2 hardware
-
-Konstantin Aladyshev (1):
-      ARM: dts: aspeed: amd-ethanolx: Enable all used I2C busses
-
-Paul Fertser (1):
-      ARM: dts: aspeed: tiogapass: add hotplug controller
-
- arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts      |  30 ++
- .../arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts |   5 +
- arch/arm/boot/dts/aspeed-bmc-ibm-rainier-1s4u.dts  |   2 +-
- arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts       | 306 +++++++++++----------
- 4 files changed, 201 insertions(+), 142 deletions(-)
+      Arnd
