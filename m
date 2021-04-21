@@ -1,25 +1,46 @@
-From: 种嘉鹏 <jiapeng.chong@linux.alibaba.com>
-Date: Wed, 21 Apr 2021 10:06:43 +0800
-Subject: [PATCH] usb: gadget: aspeed: Remove unnecessary version.h includes
-In-Reply-To: <YGvxAmHIgnRMcyuq@kroah.com>
-References: <1617681598-28165-1-git-send-email-jiapeng.chong@linux.alibaba.com>
- <YGvxAmHIgnRMcyuq@kroah.com>
-Message-ID: <971ce789-9633-1799-6c55-50b79f2f179e@linux.alibaba.com>
+From: Arnd Bergmann <arnd@kernel.org>
+Date: Wed, 21 Apr 2021 15:54:53 +0200
+Subject: [PATCH] EDAC/aspeed: use proper format string for printing resource
+Message-ID: <20210421135500.3518661-1-arnd@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 2021/4/6 13:26, Greg KH wrote:
-> On Tue, Apr 06, 2021 at 11:59:58AM +0800, Jiapeng Chong wrote:
->> "make versioncheck" shows:
->>
->> ./drivers/usb/gadget/udc/aspeed-vhub/hub.c: 33 linux/version.h not
->> needed.
-> 
-> Then you need to fix the tool, and always test-build patches before you
-> send them out, as this is obviously wrong :(
-> 
-Sorry for the noise. We'll do more test-build towards patches next time.
+From: Arnd Bergmann <arnd@arndb.de>
+
+On ARMv7, resource_size_t can be 64-bit, which breaks printing
+it as %x:
+
+drivers/edac/aspeed_edac.c: In function 'init_csrows':
+drivers/edac/aspeed_edac.c:257:28: error: format '%x' expects argument of type 'unsigned int', but argument 4 has type 'resource_size_t' {aka 'long long unsigned int'} [-Werror=format=]
+  257 |         dev_dbg(mci->pdev, "dt: /memory node resources: first page r.start=0x%x, resource_size=0x%x, PAGE_SHIFT macro=0x%x\n",
+
+Use the special %pR format string to pretty-print the entire
+resource instead.
+
+Fixes: edfc2d73ca45 ("EDAC/aspeed: Add support for AST2400 and AST2600")
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+ drivers/edac/aspeed_edac.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/edac/aspeed_edac.c b/drivers/edac/aspeed_edac.c
+index a46da56d6d54..6bd5f8815919 100644
+--- a/drivers/edac/aspeed_edac.c
++++ b/drivers/edac/aspeed_edac.c
+@@ -254,8 +254,8 @@ static int init_csrows(struct mem_ctl_info *mci)
+ 		return rc;
+ 	}
+ 
+-	dev_dbg(mci->pdev, "dt: /memory node resources: first page r.start=0x%x, resource_size=0x%x, PAGE_SHIFT macro=0x%x\n",
+-		r.start, resource_size(&r), PAGE_SHIFT);
++	dev_dbg(mci->pdev, "dt: /memory node resources: first page %pR, PAGE_SHIFT macro=0x%x\n",
++		&r, PAGE_SHIFT);
+ 
+ 	csrow->first_page = r.start >> PAGE_SHIFT;
+ 	nr_pages = resource_size(&r) >> PAGE_SHIFT;
+-- 
+2.29.2
 
