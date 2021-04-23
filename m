@@ -1,113 +1,38 @@
-From: Walter Harms <wharms@bfs.de>
-Date: Fri, 23 Apr 2021 11:03:30 +0000
+From: Sergey Organov <sorganov@gmail.com>
+Date: Fri, 23 Apr 2021 17:40:19 +0300
 Subject: AW: [PATCH] soc: aspeed: fix a ternary sign expansion bug
-In-Reply-To: <265e2d3accc74c89b5bab22eadb43808@AcuMS.aculab.com>
+In-Reply-To: <ebe4a1a6dd0748e28e6ca19aec20223e@bfs.de> (Walter Harms's message
+ of "Fri, 23 Apr 2021 11:03:30 +0000")
 References: <YIE90PSXsMTa2Y8n@mwanda>
  <59596244622c4a15ac8cc0747332d0be@AcuMS.aculab.com>
- <877dktuvmz.fsf@osv.gnss.ru>,
+ <877dktuvmz.fsf@osv.gnss.ru>
  <265e2d3accc74c89b5bab22eadb43808@AcuMS.aculab.com>
-Message-ID: <ebe4a1a6dd0748e28e6ca19aec20223e@bfs.de>
+ <ebe4a1a6dd0748e28e6ca19aec20223e@bfs.de>
+Message-ID: <878s59rrn0.fsf@osv.gnss.ru>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-as indepentent observer,
-i would go for Dans solution:
+Walter Harms <wharms@bfs.de> writes:
 
-ret = kfifo_to_user();
-/* if an error occurs just return */
-if (ret)
-   return ret;
-
-/* otherwise return the copied number of bytes */
-
-return copied;
-
-there is no need for any deeper language knowledge,
-
-jm2c
-re,
- wh
-________________________________________
-Von: David Laight <David.Laight@ACULAB.COM>
-Gesendet: Freitag, 23. April 2021 12:54:59
-An: 'Sergey Organov'
-Cc: 'Dan Carpenter'; Joel Stanley; Andrew Jeffery; Chia-Wei, Wang; Jae Hyun Yoo; John Wang; Brad Bishop; Patrick Venture; Benjamin Fair; Greg Kroah-Hartman; Robert Lippert; linux-aspeed at lists.ozlabs.org; linux-kernel at vger.kernel.org; kernel-janitors at vger.kernel.org
-Betreff: RE: [PATCH] soc: aspeed: fix a ternary sign expansion bug
-
-WARNUNG: Diese E-Mail kam von au?erhalb der Organisation. Klicken Sie nicht auf Links oder ?ffnen Sie keine Anh?nge, es sei denn, Sie kennen den/die Absender*in und wissen, dass der Inhalt sicher ist.
-
-
-From: Sergey Organov
-> Sent: 23 April 2021 11:46
+> as indepentent observer,
+> i would go for Dans solution:
 >
-> David Laight <David.Laight@ACULAB.COM> writes:
+> ret = kfifo_to_user();
+> /* if an error occurs just return */
+> if (ret)
+>    return ret;
 >
-> > From: Dan Carpenter
-> >> Sent: 22 April 2021 10:12
-> >>
-> >> The intent here was to return negative error codes but it actually
-> >> returns positive values.  The problem is that type promotion with
-> >> ternary operations is quite complicated.
-> >>
-> >> "ret" is an int.  "copied" is a u32.  And the snoop_file_read() function
-> >> returns long.  What happens is that "ret" is cast to u32 and becomes
-> >> positive then it's cast to long and it's still positive.
-> >>
-> >> Fix this by removing the ternary so that "ret" is type promoted directly
-> >> to long.
-> >>
-> >> Fixes: 3772e5da4454 ("drivers/misc: Aspeed LPC snoop output using misc chardev")
-> >> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
-> >> ---
-> >>  drivers/soc/aspeed/aspeed-lpc-snoop.c | 4 +++-
-> >>  1 file changed, 3 insertions(+), 1 deletion(-)
-> >>
-> >> diff --git a/drivers/soc/aspeed/aspeed-lpc-snoop.c b/drivers/soc/aspeed/aspeed-lpc-snoop.c
-> >> index 210455efb321..eceeaf8dfbeb 100644
-> >> --- a/drivers/soc/aspeed/aspeed-lpc-snoop.c
-> >> +++ b/drivers/soc/aspeed/aspeed-lpc-snoop.c
-> >> @@ -94,8 +94,10 @@ static ssize_t snoop_file_read(struct file *file, char __user *buffer,
-> >>                    return -EINTR;
-> >>    }
-> >>    ret = kfifo_to_user(&chan->fifo, buffer, count, &copied);
-> >> +  if (ret)
-> >> +          return ret;
-> >>
-> >> -  return ret ? ret : copied;
-> >> +  return copied;
-> >
-> > I wonder if changing it to:
-> >     return ret ? ret + 0L : copied;
-> >
-> > Might make people think in the future and not convert it back
-> > as an 'optimisation'.
+> /* otherwise return the copied number of bytes */
 >
-> It rather made me think: "what the heck is going on here?!"
+> return copied;
 >
-> Shouldn't it better be:
->
->       return ret ? ret : (long)copied;
->
-> or even:
->
->         return ret ?: (long)copied;
+> there is no need for any deeper language knowledge,
 
-Or change the return type to int ?
+Yep, but this is not idiomatic C, so one looking at this code would
+tend to convert it back to ternary, and the actual problem here is that
+the type of 'copied' does not match the return type of the function.
 
-The problem is that ?: doesn't behave the way most people expect.
-The two possible values have to be converted to the same type.
-
-Together with the broken decision of the original ANSI C committee
-to change from K&R's 'sign preserving' to 'value preserving'
-integer promotions causes grief here and elsewhere.
-(Not no mention breaking existing code!)
-
-        David
-
--
-Registered Address Lakeside, Bramley Road, Mount Farm, Milton Keynes, MK1 1PT, UK
-Registration No: 1397386 (Wales)
-
+-- Sergey Organov
