@@ -1,10 +1,9 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Tue, 27 Apr 2021 11:52:41 +0930
-Subject: =?UTF-8?Q?Re:_[PATCH]_EDAC/aspeed:_use_proper_format_string_for_printing?=
- =?UTF-8?Q?_resource?=
-In-Reply-To: <20210421135500.3518661-1-arnd@kernel.org>
-References: <20210421135500.3518661-1-arnd@kernel.org>
-Message-ID: <dd4286c6-c856-40c4-b1f8-060f76258d57@www.fastmail.com>
+Date: Tue, 27 Apr 2021 13:29:22 +0930
+Subject: [PATCH] ARM: dts: aspeed: update e3c246d4i vuart properties
+In-Reply-To: <20210416075113.18047-1-zev@bewilderbeest.net>
+References: <20210416075113.18047-1-zev@bewilderbeest.net>
+Message-ID: <201d989f-882f-4b73-ab06-5085f99301ed@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -13,41 +12,13 @@ Content-Transfer-Encoding: 7bit
 
 
 
-On Wed, 21 Apr 2021, at 23:24, Arnd Bergmann wrote:
-> From: Arnd Bergmann <arnd@arndb.de>
+On Fri, 16 Apr 2021, at 17:21, Zev Weiss wrote:
+> This device-tree was merged with a provisional vuart IRQ-polarity
+> property that was still under review and ended up taking a somewhat
+> different form.  This patch updates it to match the final form of the
+> new vuart properties, which additionally allow specifying the SIRQ
+> number and LPC address.
 > 
-> On ARMv7, resource_size_t can be 64-bit, which breaks printing
-> it as %x:
-> 
-> drivers/edac/aspeed_edac.c: In function 'init_csrows':
-> drivers/edac/aspeed_edac.c:257:28: error: format '%x' expects argument 
-> of type 'unsigned int', but argument 4 has type 'resource_size_t' {aka 
-> 'long long unsigned int'} [-Werror=format=]
->   257 |         dev_dbg(mci->pdev, "dt: /memory node resources: first 
-> page r.start=0x%x, resource_size=0x%x, PAGE_SHIFT macro=0x%x\n",
-> 
-> Use the special %pR format string to pretty-print the entire
-> resource instead.
-> 
-> Fixes: edfc2d73ca45 ("EDAC/aspeed: Add support for AST2400 and AST2600")
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> ---
->  drivers/edac/aspeed_edac.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/edac/aspeed_edac.c b/drivers/edac/aspeed_edac.c
-> index a46da56d6d54..6bd5f8815919 100644
-> --- a/drivers/edac/aspeed_edac.c
-> +++ b/drivers/edac/aspeed_edac.c
-> @@ -254,8 +254,8 @@ static int init_csrows(struct mem_ctl_info *mci)
->  		return rc;
->  	}
->  
-> -	dev_dbg(mci->pdev, "dt: /memory node resources: first page 
-> r.start=0x%x, resource_size=0x%x, PAGE_SHIFT macro=0x%x\n",
-> -		r.start, resource_size(&r), PAGE_SHIFT);
-> +	dev_dbg(mci->pdev, "dt: /memory node resources: first page %pR, PAGE_SHIFT macro=0x%x\n",
-
-Could probably drop the "first page " as well, but it's a dev_dbg() and not a big deal.
+> Signed-off-by: Zev Weiss <zev@bewilderbeest.net>
 
 Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
