@@ -1,54 +1,66 @@
 From: Zev Weiss <zev@bewilderbeest.net>
-Date: Thu,  6 May 2021 15:54:19 -0500
-Subject: [PATCH v2] i2c: aspeed: disable additional device addresses on
- ast2[56]xx
-Message-ID: <20210506205419.26294-1-zev@bewilderbeest.net>
+Date: Thu,  6 May 2021 18:40:48 -0500
+Subject: [PATCH v2] media: aspeed-video: ignore interrupts that aren't enabled
+Message-ID: <20210506234048.3214-1-zev@bewilderbeest.net>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The ast25xx and ast26xx have, respectively, two and three configurable
-slave device addresses to the ast24xx's one.  We only support using
-one at a time, but the others may come up in an indeterminate state
-depending on hardware/bootloader behavior, so we need to make sure we
-disable them so as to avoid ending up with phantom devices on the bus.
+As partially addressed in commit 65d270acb2d6, the ASpeed video engine
+sometimes asserts interrupts that the driver hasn't enabled.  In
+addition to the CAPTURE_COMPLETE and FRAME_COMPLETE interrupts
+addressed in that patch, COMP_READY has also been observed.  Instead
+of playing whack-a-mole with each one individually, we can instead
+just blanket ignore everything we haven't explicitly enabled.
 
 Signed-off-by: Zev Weiss <zev@bewilderbeest.net>
 ---
 
 Changes since v1 [0]:
- - reduced to simplified approach suggested by Joel
+ - dropped error message
+ - switched to a blanket-ignore approach as suggested by Ryan
 
-[0] https://lore.kernel.org/linux-arm-kernel/20200915184525.29665-1-zev at bewilderbeest.net/
+[0] https://lore.kernel.org/linux-arm-kernel/20201215024542.18888-1-zev at bewilderbeest.net/
 
- drivers/i2c/busses/i2c-aspeed.c | 12 ++++++++----
- 1 file changed, 8 insertions(+), 4 deletions(-)
+ drivers/media/platform/aspeed-video.c | 16 ++++++----------
+ 1 file changed, 6 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
-index 724bf30600d6..67e8b97c0c95 100644
---- a/drivers/i2c/busses/i2c-aspeed.c
-+++ b/drivers/i2c/busses/i2c-aspeed.c
-@@ -727,10 +727,14 @@ static void __aspeed_i2c_reg_slave(struct aspeed_i2c_bus *bus, u16 slave_addr)
- {
- 	u32 addr_reg_val, func_ctrl_reg_val;
+diff --git a/drivers/media/platform/aspeed-video.c b/drivers/media/platform/aspeed-video.c
+index 7bb6babdcade..77611c296a25 100644
+--- a/drivers/media/platform/aspeed-video.c
++++ b/drivers/media/platform/aspeed-video.c
+@@ -563,6 +563,12 @@ static irqreturn_t aspeed_video_irq(int irq, void *arg)
+ 	struct aspeed_video *video = arg;
+ 	u32 sts = aspeed_video_read(video, VE_INTERRUPT_STATUS);
  
--	/* Set slave addr. */
--	addr_reg_val = readl(bus->base + ASPEED_I2C_DEV_ADDR_REG);
--	addr_reg_val &= ~ASPEED_I2CD_DEV_ADDR_MASK;
--	addr_reg_val |= slave_addr & ASPEED_I2CD_DEV_ADDR_MASK;
 +	/*
-+	 * Set slave addr.  Reserved bits can all safely be written with zeros
-+	 * on all of ast2[456]00, so zero everything else to ensure we only
-+	 * enable a single slave address (ast2500 has two, ast2600 has three,
-+	 * the enable bits for which are also in this register) so that we don't
-+	 * end up with additional phantom devices responding on the bus.
++	 * Hardware sometimes asserts interrupts that we haven't actually
++	 * enabled; ignore them if so.
 +	 */
-+	addr_reg_val = slave_addr & ASPEED_I2CD_DEV_ADDR_MASK;
- 	writel(addr_reg_val, bus->base + ASPEED_I2C_DEV_ADDR_REG);
++	sts &= aspeed_video_read(video, VE_INTERRUPT_CTRL);
++
+ 	/*
+ 	 * Resolution changed or signal was lost; reset the engine and
+ 	 * re-initialize
+@@ -629,16 +635,6 @@ static irqreturn_t aspeed_video_irq(int irq, void *arg)
+ 			aspeed_video_start_frame(video);
+ 	}
  
- 	/* Turn on slave mode. */
+-	/*
+-	 * CAPTURE_COMPLETE and FRAME_COMPLETE interrupts come even when these
+-	 * are disabled in the VE_INTERRUPT_CTRL register so clear them to
+-	 * prevent unnecessary interrupt calls.
+-	 */
+-	if (sts & VE_INTERRUPT_CAPTURE_COMPLETE)
+-		sts &= ~VE_INTERRUPT_CAPTURE_COMPLETE;
+-	if (sts & VE_INTERRUPT_FRAME_COMPLETE)
+-		sts &= ~VE_INTERRUPT_FRAME_COMPLETE;
+-
+ 	return sts ? IRQ_NONE : IRQ_HANDLED;
+ }
+ 
 -- 
 2.31.1
 
