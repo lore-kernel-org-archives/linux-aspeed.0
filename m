@@ -1,108 +1,54 @@
-From: Philipp Zabel <p.zabel@pengutronix.de>
-Date: Thu, 6 May 2021 12:24:58 +0200
-Subject: [PATCH v3 5/5] mmc: sdhci-of-aspeed: Assert/Deassert reset
- signal before probing eMMC
-In-Reply-To: <20210506100312.1638-6-steven_lee@aspeedtech.com>
-References: <20210506100312.1638-1-steven_lee@aspeedtech.com>
- <20210506100312.1638-6-steven_lee@aspeedtech.com>
-Message-ID: <20210506102458.GA20777@pengutronix.de>
+From: Zev Weiss <zev@bewilderbeest.net>
+Date: Thu,  6 May 2021 15:54:19 -0500
+Subject: [PATCH v2] i2c: aspeed: disable additional device addresses on
+ ast2[56]xx
+Message-ID: <20210506205419.26294-1-zev@bewilderbeest.net>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Steven,
+The ast25xx and ast26xx have, respectively, two and three configurable
+slave device addresses to the ast24xx's one.  We only support using
+one at a time, but the others may come up in an indeterminate state
+depending on hardware/bootloader behavior, so we need to make sure we
+disable them so as to avoid ending up with phantom devices on the bus.
 
-On Thu, May 06, 2021 at 06:03:12PM +0800, Steven Lee wrote:
-> For cleaning up the AST2600 eMMC controller, the reset signal should be
-> asserted and deasserted before it is probed.
-> 
-> Signed-off-by: Steven Lee <steven_lee@aspeedtech.com>
-> ---
->  drivers/mmc/host/sdhci-of-aspeed.c | 49 ++++++++++++++++++++++++------
->  1 file changed, 40 insertions(+), 9 deletions(-)
-> 
-> diff --git a/drivers/mmc/host/sdhci-of-aspeed.c b/drivers/mmc/host/sdhci-of-aspeed.c
-> index 4979f98ffb52..8ef06f32abff 100644
-> --- a/drivers/mmc/host/sdhci-of-aspeed.c
-> +++ b/drivers/mmc/host/sdhci-of-aspeed.c
-[...]
-> @@ -533,11 +545,22 @@ static struct platform_driver aspeed_sdhci_driver = {
->  	.remove		= aspeed_sdhci_remove,
->  };
->  
-> +static const struct of_device_id aspeed_sdc_of_match[] = {
-> +	{ .compatible = "aspeed,ast2400-sd-controller", },
-> +	{ .compatible = "aspeed,ast2500-sd-controller", },
-> +	{ .compatible = "aspeed,ast2600-sd-controller", .data = &ast2600_sdc_info},
-> +	{ }
-> +};
-> +
-> +MODULE_DEVICE_TABLE(of, aspeed_sdc_of_match);
-> +
->  static int aspeed_sdc_probe(struct platform_device *pdev)
->  
->  {
->  	struct device_node *parent, *child;
->  	struct aspeed_sdc *sdc;
-> +	const struct of_device_id *match = NULL;
-> +	const struct aspeed_sdc_info *info = NULL;
+Signed-off-by: Zev Weiss <zev@bewilderbeest.net>
+---
 
-There is no need to initialize these variables to NULL, see below:
+Changes since v1 [0]:
+ - reduced to simplified approach suggested by Joel
 
->  	int ret;
->  
->  	sdc = devm_kzalloc(&pdev->dev, sizeof(*sdc), GFP_KERNEL);
-> @@ -546,6 +569,23 @@ static int aspeed_sdc_probe(struct platform_device *pdev)
->  
->  	spin_lock_init(&sdc->lock);
->  
-> +	match = of_match_device(aspeed_sdc_of_match, &pdev->dev);
+[0] https://lore.kernel.org/linux-arm-kernel/20200915184525.29665-1-zev at bewilderbeest.net/
 
-match is set unconditionally before it is used,
+ drivers/i2c/busses/i2c-aspeed.c | 12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
 
-> +	if (!match)
-> +		return -ENODEV;
-> +
-> +	if (match->data)
-> +		info = match->data;
+diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
+index 724bf30600d6..67e8b97c0c95 100644
+--- a/drivers/i2c/busses/i2c-aspeed.c
++++ b/drivers/i2c/busses/i2c-aspeed.c
+@@ -727,10 +727,14 @@ static void __aspeed_i2c_reg_slave(struct aspeed_i2c_bus *bus, u16 slave_addr)
+ {
+ 	u32 addr_reg_val, func_ctrl_reg_val;
+ 
+-	/* Set slave addr. */
+-	addr_reg_val = readl(bus->base + ASPEED_I2C_DEV_ADDR_REG);
+-	addr_reg_val &= ~ASPEED_I2CD_DEV_ADDR_MASK;
+-	addr_reg_val |= slave_addr & ASPEED_I2CD_DEV_ADDR_MASK;
++	/*
++	 * Set slave addr.  Reserved bits can all safely be written with zeros
++	 * on all of ast2[456]00, so zero everything else to ensure we only
++	 * enable a single slave address (ast2500 has two, ast2600 has three,
++	 * the enable bits for which are also in this register) so that we don't
++	 * end up with additional phantom devices responding on the bus.
++	 */
++	addr_reg_val = slave_addr & ASPEED_I2CD_DEV_ADDR_MASK;
+ 	writel(addr_reg_val, bus->base + ASPEED_I2C_DEV_ADDR_REG);
+ 
+ 	/* Turn on slave mode. */
+-- 
+2.31.1
 
-and info could be set unconditionally as well:
-
-	info = match->data;
-
-> +	if (info) {
-> +		if (info->flag & PROBE_AFTER_ASSET_DEASSERT) {
-> +			sdc->rst = devm_reset_control_get(&pdev->dev, NULL);
-
-Please use devm_reset_control_get_exclusive() or
-devm_reset_control_get_optional_exclusive().
-
-> +			if (!IS_ERR(sdc->rst)) {
-
-Please just return errors here instead of ignoring them.
-The reset_control_get_optional variants return NULL in case the
-device node doesn't contain a resets phandle, in case you really
-consider this reset to be optional even though the flag is set?
-
-> +				reset_control_assert(sdc->rst);
-> +				reset_control_deassert(sdc->rst);
-
-Is there no need for delays between assertion and deassertion or after
-the reset is deasserted?
-
-> +			}
-> +		}
-> +	}
-> +
->  	sdc->clk = devm_clk_get(&pdev->dev, NULL);
->  	if (IS_ERR(sdc->clk))
->  		return PTR_ERR(sdc->clk);
-
-In general, I would assert/deassert the reset only after all resources
-are successfully acquired. This might avoid unnecessary resets in case
-of probe deferrals.
-
-regards
-Philipp
