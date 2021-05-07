@@ -1,94 +1,166 @@
 From: Rob Herring <robh@kernel.org>
-Date: Thu, 6 May 2021 20:08:14 -0500
-Subject: [v3 1/2] dt-bindings: Add bindings for aspeed pwm-tach and pwm.
-In-Reply-To: <20210506061050.8001-2-billy_tsai@aspeedtech.com>
-References: <20210506061050.8001-1-billy_tsai@aspeedtech.com>
- <20210506061050.8001-2-billy_tsai@aspeedtech.com>
-Message-ID: <20210507010814.GB1110621@robh.at.kernel.org>
+Date: Thu, 6 May 2021 20:13:24 -0500
+Subject: [PATCH v3 1/5] dt-bindings: mmc: sdhci-of-aspeed: Add an example
+ for AST2600-A2 EVB
+In-Reply-To: <20210506100312.1638-2-steven_lee@aspeedtech.com>
+References: <20210506100312.1638-1-steven_lee@aspeedtech.com>
+ <20210506100312.1638-2-steven_lee@aspeedtech.com>
+Message-ID: <20210507011324.GA1119409@robh.at.kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, May 06, 2021 at 02:10:49PM +0800, Billy Tsai wrote:
-> This patch adds device bindings for aspeed pwm-tach device which is a
-> multi-function device include pwn and tach function and pwm device which
-> should be the sub-node of pwm-tach device.
+On Thu, May 06, 2021 at 06:03:08PM +0800, Steven Lee wrote:
+> AST2600-A2 EVB has the reference design for enabling SD bus
+> power and toggling SD bus signal voltage by GPIO pins.
 > 
-> Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
+> In the reference design, GPIOV0 of AST2600-A2 EVB is connected to
+> power load switch that providing 3.3v to SD1 bus vdd. GPIOV1 is
+> connected to a 1.8v and a 3.3v power load switch that providing
+> signal voltage to
+> SD1 bus.
+> 
+> If GPIOV0 is active high, SD1 bus is enabled. Otherwise, SD1 bus is
+> disabled.
+> If GPIOV1 is active high, 3.3v power load switch is enabled, SD1
+> signal voltage is 3.3v. Otherwise, 1.8v power load switch will be
+> enabled, SD1 signal voltage becomes 1.8v.
+> 
+> AST2600-A2 EVB also support toggling signal voltage for SD2 bus.
+> The design is the same as SD1 bus. It uses GPIOV2 as power-gpio and
+> GPIOV3 as power-switch-gpio.
+> 
+> Signed-off-by: Steven Lee <steven_lee@aspeedtech.com>
 > ---
->  .../bindings/mfd/aspeed,ast2600-pwm-tach.yaml | 55 +++++++++++++++++++
->  .../bindings/pwm/aspeed,ast2600-pwm.yaml      | 41 ++++++++++++++
->  2 files changed, 96 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.yaml
->  create mode 100644 Documentation/devicetree/bindings/pwm/aspeed,ast2600-pwm.yaml
+>  .../devicetree/bindings/mmc/aspeed,sdhci.yaml | 101 +++++++++++++++++-
+>  1 file changed, 97 insertions(+), 4 deletions(-)
 > 
-> diff --git a/Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.yaml b/Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.yaml
-> new file mode 100644
-> index 000000000000..9626bbd50acd
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.yaml
-> @@ -0,0 +1,55 @@
-> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-> +# Copyright (C) 2021 ASPEED, Inc.
-> +%YAML 1.2
-> +---
-> +$id: http://devicetree.org/schemas/mfd/aspeed,ast2600-pwm-tach.yaml#
-> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> diff --git a/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml b/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml
+> index 987b287f3bff..de7e61b3d37a 100644
+> --- a/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml
+> +++ b/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml
+> @@ -45,10 +45,16 @@ patternProperties:
+>  
+>      properties:
+>        compatible:
+> -        enum:
+> -          - aspeed,ast2400-sdhci
+> -          - aspeed,ast2500-sdhci
+> -          - aspeed,ast2600-sdhci
+> +        oneOf:
+> +          - items:
+> +              - enum:
+> +                  - aspeed,ast2400-sdhci
+> +                  - aspeed,ast2500-sdhci
+> +                  - aspeed,ast2600-sdhci
+> +          - items:
+> +              - enum:
+> +                  - aspeed,ast2600-sdhci
+> +              - const: sdhci
+
+Why are you adding 'sdhci'. That's not useful as a compatible given how 
+many quirks different implementations have.
+
+
+>        reg:
+>          maxItems: 1
+>          description: The SDHCI registers
+> @@ -104,3 +110,90 @@ examples:
+>                      clocks = <&syscon ASPEED_CLK_SDIO>;
+>              };
+>      };
 > +
-> +title: PWM Tach controller Device Tree Bindings
-> +
-> +description: |
-> +  The PWM Tach controller is represented as a multi-function device which
-> +  includes:
-> +    PWM
-> +    Tach
-> +
-> +maintainers:
-> +  - Billy Tsai <billy_tsai@aspeedtech.com>
-> +
-> +properties:
-> +  compatible:
-> +    items:
-> +      - enum:
-> +          - aspeed,ast2600-pwm-tach
-> +      - const: syscon
-> +      - const: simple-mfd
-> +  reg:
-> +    maxItems: 1
-> +  clocks:
-> +    maxItems: 1
-> +  resets:
-> +    maxItems: 1
-> +
-> +required:
-> +  - compatible
-> +  - reg
-> +  - clocks
-> +  - resets
-> +
-> +additionalProperties:
-> +  type: object
-> +
-> +examples:
 > +  - |
-> +    #include <dt-bindings/clock/ast2600-clock.h>
-> +    pwm_tach: pwm_tach at 1e610000 {
-> +      compatible = "aspeed,ast2600-pwm-tach", "syscon", "simple-mfd";
-> +      reg = <0x1e610000 0x100>;
-> +      clocks = <&syscon ASPEED_CLK_AHB>;
-> +      resets = <&syscon ASPEED_RESET_PWM>;
-> +
-> +      pwm: pwm {
-> +        compatible = "aspeed,ast2600-pwm";
-> +        #pwm-cells = <3>;
 
-There's no need for a child node here. Just put #pwm-cells in the 
-parent node.
+Why do we need another example?
 
-Of course this all looks incomplete if you ever plan to hook up fans and 
-have more than 1 PWM and Tach signal.
-
-> +      };
+> +    #include <dt-bindings/gpio/gpio.h>
+> +    #include <dt-bindings/clock/aspeed-clock.h>
+> +    #include <dt-bindings/interrupt-controller/irq.h>
+> +    #include <dt-bindings/interrupt-controller/arm-gic.h>
+> +    vcc_sdhci0: regulator-vcc-sdhci0 {
+> +            compatible = "regulator-fixed";
+> +            regulator-name = "SDHCI0 Vcc";
+> +            regulator-min-microvolt = <3300000>;
+> +            regulator-max-microvolt = <3300000>;
+> +            gpios = <&gpio0 168
+> +                            GPIO_ACTIVE_HIGH>;
+> +            enable-active-high;
 > +    };
+> +
+> +    vccq_sdhci0: regulator-vccq-sdhci0 {
+> +            compatible = "regulator-gpio";
+> +
+> +            regulator-name = "SDHCI0 VccQ";
+> +            regulator-min-microvolt = <1800000>;
+> +            regulator-max-microvolt = <3300000>;
+> +            gpios = <&gpio0 169
+> +                            GPIO_ACTIVE_HIGH>;
+> +            gpios-states = <1>;
+> +            states = <3300000 1>,
+> +                     <1800000 0>;
+> +    };
+> +
+> +    vcc_sdhci1: regulator-vcc-sdhci1 {
+> +            compatible = "regulator-fixed";
+> +
+> +            regulator-name = "SDHCI1 Vcc";
+> +            regulator-min-microvolt = <3300000>;
+> +            regulator-max-microvolt = <3300000>;
+> +            gpios = <&gpio0 170
+> +                            GPIO_ACTIVE_HIGH>;
+> +            enable-active-high;
+> +    };
+> +
+> +    vccq_sdhci1: regulator-vccq-sdhci1 {
+> +            compatible = "regulator-gpio";
+> +
+> +            regulator-name = "SDHCI1 VccQ";
+> +            regulator-min-microvolt = <1800000>;
+> +            regulator-max-microvolt = <3300000>;
+> +            gpios = <&gpio0 171
+> +                            GPIO_ACTIVE_HIGH>;
+> +            gpios-states = <1>;
+> +            states = <3300000 1>,
+> +                     <1800000 0>;
+> +    };
+> +
+> +    sdc at 1e740000 {
+> +            compatible = "aspeed,ast2600-sd-controller";
+> +            reg = <0x1e740000 0x100>;
+> +            #address-cells = <1>;
+> +            #size-cells = <1>;
+> +            ranges = <0 0x1e740000 0x20000>;
+> +            clocks = <&syscon ASPEED_CLK_GATE_SDCLK>;
+> +
+> +            sdhci at 1e740100 {
+> +                    compatible = "aspeed,ast2600-sdhci","sdhci";
+> +                    reg = <0x100 0x100>;
+> +                    interrupts = <GIC_SPI 43 IRQ_TYPE_LEVEL_HIGH>;
+> +                    sdhci,auto-cmd12;
+> +                    clocks = <&syscon ASPEED_CLK_SDIO>;
+> +                    vmmc-supply = <&vcc_sdhci0>;
+> +                    vqmmc-supply = <&vccq_sdhci0>;
+> +                    sd-uhs-sdr104;
+> +                    clk-phase-uhs-sdr104 = <180>, <180>;
+> +            };
+> +
+> +            sdhci at 1e740200 {
+> +                    compatible = "aspeed,ast2600-sdhci","sdhci";
+> +                    reg = <0x200 0x100>;
+> +                    interrupts = <GIC_SPI 43 IRQ_TYPE_LEVEL_HIGH>;
+> +                    sdhci,auto-cmd12;
+> +                    clocks = <&syscon ASPEED_CLK_SDIO>;
+> +                    vmmc-supply = <&vcc_sdhci1>;
+> +                    vqmmc-supply = <&vccq_sdhci1>;
+> +                    sd-uhs-sdr104;
+> +                    clk-phase-uhs-sdr104 = <0>, <0>;
+> +            };
+> +    };
+> +
+> +...
+> -- 
+> 2.17.1
+> 
