@@ -1,66 +1,61 @@
-From: Zev Weiss <zev@bewilderbeest.net>
-Date: Thu,  6 May 2021 18:40:48 -0500
-Subject: [PATCH v2] media: aspeed-video: ignore interrupts that aren't enabled
-Message-ID: <20210506234048.3214-1-zev@bewilderbeest.net>
+From: Rob Herring <robh@kernel.org>
+Date: Thu, 6 May 2021 20:06:01 -0500
+Subject: [v3 0/2] Support pwm driver for aspeed ast26xx
+In-Reply-To: <20210506061050.8001-1-billy_tsai@aspeedtech.com>
+References: <20210506061050.8001-1-billy_tsai@aspeedtech.com>
+Message-ID: <20210507010601.GA1110621@robh.at.kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-As partially addressed in commit 65d270acb2d6, the ASpeed video engine
-sometimes asserts interrupts that the driver hasn't enabled.  In
-addition to the CAPTURE_COMPLETE and FRAME_COMPLETE interrupts
-addressed in that patch, COMP_READY has also been observed.  Instead
-of playing whack-a-mole with each one individually, we can instead
-just blanket ignore everything we haven't explicitly enabled.
+On Thu, May 06, 2021 at 02:10:48PM +0800, Billy Tsai wrote:
+> The legacy driver of aspeed pwm is binding with tach controller and it
+> doesn't follow the pwm framworks usage. In addition, the pwm register
+> usage of the 6th generation of ast26xx has drastic change. So these
+> patch serials add the new aspeed pwm driver to fix up the problem above.
+> 
+> Changes since v2:
+> - Remove the tach node, #address-cells and #size-cells from pwm-tach.yaml
 
-Signed-off-by: Zev Weiss <zev@bewilderbeest.net>
----
+So you don't need tach functions, they don't need it to be described in 
+DT any more, or you plan to add them back later? The last one is not 
+acceptable.
 
-Changes since v1 [0]:
- - dropped error message
- - switched to a blanket-ignore approach as suggested by Ryan
-
-[0] https://lore.kernel.org/linux-arm-kernel/20201215024542.18888-1-zev at bewilderbeest.net/
-
- drivers/media/platform/aspeed-video.c | 16 ++++++----------
- 1 file changed, 6 insertions(+), 10 deletions(-)
-
-diff --git a/drivers/media/platform/aspeed-video.c b/drivers/media/platform/aspeed-video.c
-index 7bb6babdcade..77611c296a25 100644
---- a/drivers/media/platform/aspeed-video.c
-+++ b/drivers/media/platform/aspeed-video.c
-@@ -563,6 +563,12 @@ static irqreturn_t aspeed_video_irq(int irq, void *arg)
- 	struct aspeed_video *video = arg;
- 	u32 sts = aspeed_video_read(video, VE_INTERRUPT_STATUS);
- 
-+	/*
-+	 * Hardware sometimes asserts interrupts that we haven't actually
-+	 * enabled; ignore them if so.
-+	 */
-+	sts &= aspeed_video_read(video, VE_INTERRUPT_CTRL);
-+
- 	/*
- 	 * Resolution changed or signal was lost; reset the engine and
- 	 * re-initialize
-@@ -629,16 +635,6 @@ static irqreturn_t aspeed_video_irq(int irq, void *arg)
- 			aspeed_video_start_frame(video);
- 	}
- 
--	/*
--	 * CAPTURE_COMPLETE and FRAME_COMPLETE interrupts come even when these
--	 * are disabled in the VE_INTERRUPT_CTRL register so clear them to
--	 * prevent unnecessary interrupt calls.
--	 */
--	if (sts & VE_INTERRUPT_CAPTURE_COMPLETE)
--		sts &= ~VE_INTERRUPT_CAPTURE_COMPLETE;
--	if (sts & VE_INTERRUPT_FRAME_COMPLETE)
--		sts &= ~VE_INTERRUPT_FRAME_COMPLETE;
--
- 	return sts ? IRQ_NONE : IRQ_HANDLED;
- }
- 
--- 
-2.31.1
-
+> - Add clocks and reset properties to pwm-tach.yaml
+> - Kconfig/Makfile sorted alphabetically
+> - pwm-aspeed-g6.c suggested by Uwe Kleine-K?nig
+>   - Add more hardware descriptions at top of the driver.
+>   - Remove unused api request and free
+>   - Move the initialize settings of all pwm channel to probe.
+>   - Change the method of getting the approximate period.
+>   - Read the hardware register values to fill the state for .get_state()
+> 
+> Changes since v1:
+> - Fix the dt_binding_check fail suggested by Rob Herring
+> - Add depends to PWM_ASPEED_G6 configure suggested by Uwe Kleine-Konig
+> - pwm-aspeed-g6.c suggested by Uwe Kleine-K?nig
+>   - Fix license header
+>   - Use bitfiled.h macro to define register fields
+>   - Implement .remove device function
+>   - Implement .get_state pwm api
+> 
+> 
+> Billy Tsai (2):
+>   dt-bindings: Add bindings for aspeed pwm-tach and pwm.
+>   pwm: Add Aspeed ast2600 PWM support
+> 
+>  .../bindings/mfd/aspeed,ast2600-pwm-tach.yaml |  55 +++
+>  .../bindings/pwm/aspeed,ast2600-pwm.yaml      |  41 ++
+>  drivers/pwm/Kconfig                           |   8 +
+>  drivers/pwm/Makefile                          |   1 +
+>  drivers/pwm/pwm-aspeed-g6.c                   | 368 ++++++++++++++++++
+>  5 files changed, 473 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.yaml
+>  create mode 100644 Documentation/devicetree/bindings/pwm/aspeed,ast2600-pwm.yaml
+>  create mode 100644 drivers/pwm/pwm-aspeed-g6.c
+> 
+> -- 
+> 2.25.1
+> 
