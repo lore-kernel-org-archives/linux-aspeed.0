@@ -1,80 +1,82 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Fri, 07 May 2021 17:06:19 +0930
-Subject: =?UTF-8?Q?Re:_[PATCH_v3_5/5]_mmc:_sdhci-of-aspeed:_Assert/Deassert_reset?=
- =?UTF-8?Q?_signal_before_probing_eMMC?=
-In-Reply-To: <20210507062416.GD23749@aspeedtech.com>
+From: Rob Herring <robh@kernel.org>
+Date: Fri, 7 May 2021 12:21:45 -0500
+Subject: [PATCH v3 1/5] dt-bindings: mmc: sdhci-of-aspeed: Add an example
+ for AST2600-A2 EVB
+In-Reply-To: <20210507031348.GA23749@aspeedtech.com>
 References: <20210506100312.1638-1-steven_lee@aspeedtech.com>
- <20210506100312.1638-6-steven_lee@aspeedtech.com>
- <20210506102458.GA20777@pengutronix.de>
- <19a81e25-dfa1-4ad3-9628-19f43f4230d2@www.fastmail.com>
- <20210507062416.GD23749@aspeedtech.com>
-Message-ID: <2a339218-19d7-4eea-a734-8053dd553dbb@www.fastmail.com>
+ <20210506100312.1638-2-steven_lee@aspeedtech.com>
+ <20210507011324.GA1119409@robh.at.kernel.org>
+ <20210507031348.GA23749@aspeedtech.com>
+Message-ID: <CAL_JsqLywL6J_uVVquhOMevb6Geed-A2o7fzHQPKvVQxe4gscA@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+On Thu, May 6, 2021 at 10:14 PM Steven Lee <steven_lee@aspeedtech.com> wrote:
+>
+> The 05/07/2021 09:13, Rob Herring wrote:
+> > On Thu, May 06, 2021 at 06:03:08PM +0800, Steven Lee wrote:
+> > > AST2600-A2 EVB has the reference design for enabling SD bus
+> > > power and toggling SD bus signal voltage by GPIO pins.
+> > >
+> > > In the reference design, GPIOV0 of AST2600-A2 EVB is connected to
+> > > power load switch that providing 3.3v to SD1 bus vdd. GPIOV1 is
+> > > connected to a 1.8v and a 3.3v power load switch that providing
+> > > signal voltage to
+> > > SD1 bus.
+> > >
+> > > If GPIOV0 is active high, SD1 bus is enabled. Otherwise, SD1 bus is
+> > > disabled.
+> > > If GPIOV1 is active high, 3.3v power load switch is enabled, SD1
+> > > signal voltage is 3.3v. Otherwise, 1.8v power load switch will be
+> > > enabled, SD1 signal voltage becomes 1.8v.
+> > >
+> > > AST2600-A2 EVB also support toggling signal voltage for SD2 bus.
+> > > The design is the same as SD1 bus. It uses GPIOV2 as power-gpio and
+> > > GPIOV3 as power-switch-gpio.
+> > >
+> > > Signed-off-by: Steven Lee <steven_lee@aspeedtech.com>
+> > > ---
+> > >  .../devicetree/bindings/mmc/aspeed,sdhci.yaml | 101 +++++++++++++++++-
+> > >  1 file changed, 97 insertions(+), 4 deletions(-)
+> > >
+> > > diff --git a/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml b/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml
+> > > index 987b287f3bff..de7e61b3d37a 100644
+> > > --- a/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml
+> > > +++ b/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml
+> > > @@ -45,10 +45,16 @@ patternProperties:
+> > >
+> > >      properties:
+> > >        compatible:
+> > > -        enum:
+> > > -          - aspeed,ast2400-sdhci
+> > > -          - aspeed,ast2500-sdhci
+> > > -          - aspeed,ast2600-sdhci
+> > > +        oneOf:
+> > > +          - items:
+> > > +              - enum:
+> > > +                  - aspeed,ast2400-sdhci
+> > > +                  - aspeed,ast2500-sdhci
+> > > +                  - aspeed,ast2600-sdhci
+> > > +          - items:
+> > > +              - enum:
+> > > +                  - aspeed,ast2600-sdhci
+> > > +              - const: sdhci
+> >
+> > Why are you adding 'sdhci'. That's not useful as a compatible given how
+> > many quirks different implementations have.
+> >
+> >
+>
+> It is for passing the dtbs_check of the second example.
+> Without this definition, many device trees have the following
+> error:
+>
+> ['aspeed,ast2600-sdhci', 'sdhci'] is too long
+> Additional items are not allowed ('sdhci' was unexpected)
 
+I would probably fix the dts files then. Does anything depend on 'sdhci'?
 
-On Fri, 7 May 2021, at 15:54, Steven Lee wrote:
-> The 05/07/2021 09:32, Andrew Jeffery wrote:
-> > 
-> > 
-> > On Thu, 6 May 2021, at 19:54, Philipp Zabel wrote:
-> > > Hi Steven,
-> > > 
-> > > On Thu, May 06, 2021 at 06:03:12PM +0800, Steven Lee wrote:
-> > > > +	if (info) {
-> > > > +		if (info->flag & PROBE_AFTER_ASSET_DEASSERT) {
-> > > > +			sdc->rst = devm_reset_control_get(&pdev->dev, NULL);
-> > > 
-> > > Please use devm_reset_control_get_exclusive() or
-> > > devm_reset_control_get_optional_exclusive().
-> > > 
-> > > > +			if (!IS_ERR(sdc->rst)) {
-> > > 
-> > > Please just return errors here instead of ignoring them.
-> > > The reset_control_get_optional variants return NULL in case the
-> > > device node doesn't contain a resets phandle, in case you really
-> > > consider this reset to be optional even though the flag is set?
-> > 
-> > It feels like we should get rid of the flag and leave it to the 
-> > devicetree.
-> > 
-> 
-> Do you mean adding a flag, for instance, "mmc-reset" in the
-> device tree and call of_property_read_bool() in aspeed_sdc_probe()?
-> 
-> > I'm still kind of surprised it's not something we want to do for the 
-> > 2400 and 2500 as well.
-> > 
-> 
-> Per discussion with the chip designer, AST2400 and AST2500 doesn't need
-> this implementation since the chip design is different to AST2600.
-
-So digging a bit more deeply on this, it looks like the reset is 
-already taken care of by drivers/clk/clk-ast2600.c in the 
-clk_prepare_enable() path.
-
-clk-ast2600 handles resets when enabling the clock for most peripherals:
-
-https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/clk/clk-ast2600.c?h=v5.12#n276
-
-and this is true for both the SD controller and the eMMC controller:
-
-https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/clk/clk-ast2600.c?h=v5.12#n94
-https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/clk/clk-ast2600.c?h=v5.12#n88
-
-If this weren't the case you'd specify a reset property in the SD/eMMC 
-devicetree nodes for the 2600 and then use 
-devm_reset_control_get_optional_exclusive() as Philipp suggested. See 
-the reset binding here:
-
-https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Documentation/devicetree/bindings/reset/reset.txt?h=v5.12
-
-So on the surface it seems the reset handling in this patch is 
-unnecessary. Have you observed an issue with the SoC that means it's 
-required?
-
-Andrew
+Rob
