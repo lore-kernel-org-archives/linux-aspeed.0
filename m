@@ -1,109 +1,101 @@
-From: Steven Lee <steven_lee@aspeedtech.com>
-Date: Mon, 10 May 2021 10:32:28 +0800
-Subject: [PATCH v3 1/5] dt-bindings: mmc: sdhci-of-aspeed: Add an example
- for AST2600-A2 EVB
-In-Reply-To: <CAL_JsqLywL6J_uVVquhOMevb6Geed-A2o7fzHQPKvVQxe4gscA@mail.gmail.com>
-References: <20210506100312.1638-1-steven_lee@aspeedtech.com>
- <20210506100312.1638-2-steven_lee@aspeedtech.com>
- <20210507011324.GA1119409@robh.at.kernel.org>
- <20210507031348.GA23749@aspeedtech.com>
- <CAL_JsqLywL6J_uVVquhOMevb6Geed-A2o7fzHQPKvVQxe4gscA@mail.gmail.com>
-Message-ID: <20210510023228.GA6883@aspeedtech.com>
+From: Andrew Jeffery <andrew@aj.id.au>
+Date: Mon, 10 May 2021 15:11:57 +0930
+Subject: [PATCH v3 00/16] ipmi: Allow raw access to KCS devices
+Message-ID: <20210510054213.1610760-1-andrew@aj.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The 05/08/2021 01:21, Rob Herring wrote:
-> On Thu, May 6, 2021 at 10:14 PM Steven Lee <steven_lee@aspeedtech.com> wrote:
-> >
-> > The 05/07/2021 09:13, Rob Herring wrote:
-> > > On Thu, May 06, 2021 at 06:03:08PM +0800, Steven Lee wrote:
-> > > > AST2600-A2 EVB has the reference design for enabling SD bus
-> > > > power and toggling SD bus signal voltage by GPIO pins.
-> > > >
-> > > > In the reference design, GPIOV0 of AST2600-A2 EVB is connected to
-> > > > power load switch that providing 3.3v to SD1 bus vdd. GPIOV1 is
-> > > > connected to a 1.8v and a 3.3v power load switch that providing
-> > > > signal voltage to
-> > > > SD1 bus.
-> > > >
-> > > > If GPIOV0 is active high, SD1 bus is enabled. Otherwise, SD1 bus is
-> > > > disabled.
-> > > > If GPIOV1 is active high, 3.3v power load switch is enabled, SD1
-> > > > signal voltage is 3.3v. Otherwise, 1.8v power load switch will be
-> > > > enabled, SD1 signal voltage becomes 1.8v.
-> > > >
-> > > > AST2600-A2 EVB also support toggling signal voltage for SD2 bus.
-> > > > The design is the same as SD1 bus. It uses GPIOV2 as power-gpio and
-> > > > GPIOV3 as power-switch-gpio.
-> > > >
-> > > > Signed-off-by: Steven Lee <steven_lee@aspeedtech.com>
-> > > > ---
-> > > >  .../devicetree/bindings/mmc/aspeed,sdhci.yaml | 101 +++++++++++++++++-
-> > > >  1 file changed, 97 insertions(+), 4 deletions(-)
-> > > >
-> > > > diff --git a/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml b/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml
-> > > > index 987b287f3bff..de7e61b3d37a 100644
-> > > > --- a/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml
-> > > > +++ b/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml
-> > > > @@ -45,10 +45,16 @@ patternProperties:
-> > > >
-> > > >      properties:
-> > > >        compatible:
-> > > > -        enum:
-> > > > -          - aspeed,ast2400-sdhci
-> > > > -          - aspeed,ast2500-sdhci
-> > > > -          - aspeed,ast2600-sdhci
-> > > > +        oneOf:
-> > > > +          - items:
-> > > > +              - enum:
-> > > > +                  - aspeed,ast2400-sdhci
-> > > > +                  - aspeed,ast2500-sdhci
-> > > > +                  - aspeed,ast2600-sdhci
-> > > > +          - items:
-> > > > +              - enum:
-> > > > +                  - aspeed,ast2600-sdhci
-> > > > +              - const: sdhci
-> > >
-> > > Why are you adding 'sdhci'. That's not useful as a compatible given how
-> > > many quirks different implementations have.
-> > >
-> > >
-> >
-> > It is for passing the dtbs_check of the second example.
-> > Without this definition, many device trees have the following
-> > error:
-> >
-> > ['aspeed,ast2600-sdhci', 'sdhci'] is too long
-> > Additional items are not allowed ('sdhci' was unexpected)
-> 
-> I would probably fix the dts files then. Does anything depend on 'sdhci'?
-> 
+Hello,
 
-The build error is caused by my second example.
-My example is refer to the aspeed-g6.dtsi to append "sdhci" after
-"aspeed,ast2600-sdhci"
-https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/arch/arm/boot/dts/aspeed-g6.dtsi?h=v5.12#n561
+This is the 3rd spin of the series refactoring the keyboard-controller-style
+device drivers in the IPMI subsystem.
 
-As long as the second example is removed, the following error won't show in the dtbs_check result.
+v2 can be found (in two parts because yay patch workflow mistakes) at:
 
-```
-  SCHEMA  Documentation/devicetree/bindings/processed-schema.json
-  DTC     arch/arm/boot/dts/aspeed-ast2500-evb.dt.yaml
-  CHECK   arch/arm/boot/dts/aspeed-ast2500-evb.dt.yaml
-  DTC     arch/arm/boot/dts/aspeed-ast2600-evb.dt.yaml
-  CHECK   arch/arm/boot/dts/aspeed-ast2600-evb.dt.yaml
-/home/slee/aspeed/patch_up/linux/arch/arm/boot/dts/aspeed-ast2600-evb.dt.yaml: sdc at 1e740000: sdhci at 1e740100:compatible: ['aspeed,ast2600-sdhci', 'sdhci'] is too long
-        From schema: /home/slee/aspeed/patch_up/linux/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml
-/home/slee/aspeed/patch_up/linux/arch/arm/boot/dts/aspeed-ast2600-evb.dt.yaml: sdc at 1e740000: sdhci at 1e740100:compatible: Additional items are not allowed ('sdhci' was unexpected)
-        From schema: /home/slee/aspeed/patch_up/linux/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml
-/home/slee/aspeed/patch_up/linux/arch/arm/boot/dts/aspeed-ast2600-evb.dt.yaml: sdc at 1e740000: sdhci at 1e740200:compatible: ['aspeed,ast2600-sdhci', 'sdhci'] is too long
-        From schema: /home/slee/aspeed/patch_up/linux/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml
-/home/slee/aspeed/patch_up/linux/arch/arm/boot/dts/aspeed-ast2600-evb.dt.yaml: sdc at 1e740000: sdhci at 1e740200:compatible: Additional items are not allowed ('sdhci' was unexpected)
-        From schema: /home/slee/aspeed/patch_up/linux/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml
+Cover letter:
+https://lore.kernel.org/linux-arm-kernel/20210319061952.145040-1-andrew at aj.id.au/
 
-```
+Patches:
+https://lore.kernel.org/linux-arm-kernel/20210319062752.145730-1-andrew at aj.id.au/
 
-> Rob
+Several significant changes in v3:
+
+1. The series is rebased onto v5.13-rc1
+
+2. v5.13-rc1 includes Chiawei's patches reworking the LPC devicetree bindings,
+   so they're no-longer required in the series.
+
+3. After some discussion with Arnd[1] and investigating the serio subsystem,
+   I've replaced the "raw" KCS driver (patch 16/21 in v2) with a serio adaptor
+   (patch 11/16 in this series). The adaptor allows us to take advantage of the
+   existing chardevs provided by serio.
+
+[1] https://lore.kernel.org/linux-arm-kernel/37e75b07-a5c6-422f-84b3-54f2bea0b917 at www.fastmail.com/
+
+Finally, I've also addressed Zev Weiss' review comments where I thought it was
+required. These comments covered a lot of minor issues across (almost) all the
+patches, so it's best to review from a clean slate rather than attempt to review
+the differences between spins.
+
+Previously:
+
+Changes in v2 include:
+
+* A rebase onto v5.12-rc2
+* Incorporation of off-list feedback on SerIRQ configuration from
+  Chiawei
+* Further validation on hardware for ASPEED KCS devices 2, 3 and 4
+* Lifting the existing single-open constraint of the IPMI chardev
+* Fixes addressing Rob's feedback on the conversion of the ASPEED KCS
+  binding to dt-schema
+* Fixes addressing Rob's feedback on the new aspeed,lpc-interrupts
+  property definition for the ASPEED KCS binding
+
+Please test and review!
+
+Andrew
+
+Andrew Jeffery (16):
+  ipmi: kcs_bmc_aspeed: Use of match data to extract KCS properties
+  ipmi: kcs_bmc: Make status update atomic
+  ipmi: kcs_bmc: Rename {read,write}_{status,data}() functions
+  ipmi: kcs_bmc: Split out kcs_bmc_cdev_ipmi
+  ipmi: kcs_bmc: Turn the driver data-structures inside-out
+  ipmi: kcs_bmc: Split headers into device and client
+  ipmi: kcs_bmc: Strip private client data from struct kcs_bmc
+  ipmi: kcs_bmc: Decouple the IPMI chardev from the core
+  ipmi: kcs_bmc: Allow clients to control KCS IRQ state
+  ipmi: kcs_bmc: Don't enforce single-open policy in the kernel
+  ipmi: kcs_bmc: Add serio adaptor
+  dt-bindings: ipmi: Convert ASPEED KCS binding to schema
+  dt-bindings: ipmi: Add optional SerIRQ property to ASPEED KCS devices
+  ipmi: kcs_bmc_aspeed: Implement KCS SerIRQ configuration
+  ipmi: kcs_bmc_aspeed: Fix IBFIE typo from datasheet
+  ipmi: kcs_bmc_aspeed: Optionally apply status address
+
+ .../bindings/ipmi/aspeed,ast2400-kcs-bmc.yaml | 106 +++
+ .../bindings/ipmi/aspeed-kcs-bmc.txt          |  33 -
+ drivers/char/ipmi/Kconfig                     |  27 +
+ drivers/char/ipmi/Makefile                    |   2 +
+ drivers/char/ipmi/kcs_bmc.c                   | 526 ++++-----------
+ drivers/char/ipmi/kcs_bmc.h                   |  92 +--
+ drivers/char/ipmi/kcs_bmc_aspeed.c            | 635 +++++++++++++-----
+ drivers/char/ipmi/kcs_bmc_cdev_ipmi.c         | 568 ++++++++++++++++
+ drivers/char/ipmi/kcs_bmc_client.h            |  48 ++
+ drivers/char/ipmi/kcs_bmc_device.h            |  22 +
+ drivers/char/ipmi/kcs_bmc_npcm7xx.c           |  94 ++-
+ drivers/char/ipmi/kcs_bmc_serio.c             | 151 +++++
+ 12 files changed, 1582 insertions(+), 722 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/ipmi/aspeed,ast2400-kcs-bmc.yaml
+ delete mode 100644 Documentation/devicetree/bindings/ipmi/aspeed-kcs-bmc.txt
+ create mode 100644 drivers/char/ipmi/kcs_bmc_cdev_ipmi.c
+ create mode 100644 drivers/char/ipmi/kcs_bmc_client.h
+ create mode 100644 drivers/char/ipmi/kcs_bmc_device.h
+ create mode 100644 drivers/char/ipmi/kcs_bmc_serio.c
+
+-- 
+2.27.0
+
