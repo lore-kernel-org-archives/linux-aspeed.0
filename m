@@ -1,95 +1,59 @@
-From: Steven Lee <steven_lee@aspeedtech.com>
-Date: Mon, 10 May 2021 14:03:39 +0800
-Subject: [PATCH v3 5/5] mmc: sdhci-of-aspeed: Assert/Deassert reset
- signal before probing eMMC
-In-Reply-To: <2a339218-19d7-4eea-a734-8053dd553dbb@www.fastmail.com>
-References: <20210506100312.1638-1-steven_lee@aspeedtech.com>
- <20210506100312.1638-6-steven_lee@aspeedtech.com>
- <20210506102458.GA20777@pengutronix.de>
- <19a81e25-dfa1-4ad3-9628-19f43f4230d2@www.fastmail.com>
- <20210507062416.GD23749@aspeedtech.com>
- <2a339218-19d7-4eea-a734-8053dd553dbb@www.fastmail.com>
-Message-ID: <20210510060338.GB6883@aspeedtech.com>
+From: Billy Tsai <billy_tsai@aspeedtech.com>
+Date: Mon, 10 May 2021 15:35:09 +0800
+Subject: [v4 0/2] Support pwm driver for aspeed ast26xx
+Message-ID: <20210510073511.7291-1-billy_tsai@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The 05/07/2021 15:36, Andrew Jeffery wrote:
-> 
-> 
-> On Fri, 7 May 2021, at 15:54, Steven Lee wrote:
-> > The 05/07/2021 09:32, Andrew Jeffery wrote:
-> > > 
-> > > 
-> > > On Thu, 6 May 2021, at 19:54, Philipp Zabel wrote:
-> > > > Hi Steven,
-> > > > 
-> > > > On Thu, May 06, 2021 at 06:03:12PM +0800, Steven Lee wrote:
-> > > > > +	if (info) {
-> > > > > +		if (info->flag & PROBE_AFTER_ASSET_DEASSERT) {
-> > > > > +			sdc->rst = devm_reset_control_get(&pdev->dev, NULL);
-> > > > 
-> > > > Please use devm_reset_control_get_exclusive() or
-> > > > devm_reset_control_get_optional_exclusive().
-> > > > 
-> > > > > +			if (!IS_ERR(sdc->rst)) {
-> > > > 
-> > > > Please just return errors here instead of ignoring them.
-> > > > The reset_control_get_optional variants return NULL in case the
-> > > > device node doesn't contain a resets phandle, in case you really
-> > > > consider this reset to be optional even though the flag is set?
-> > > 
-> > > It feels like we should get rid of the flag and leave it to the 
-> > > devicetree.
-> > > 
-> > 
-> > Do you mean adding a flag, for instance, "mmc-reset" in the
-> > device tree and call of_property_read_bool() in aspeed_sdc_probe()?
-> > 
-> > > I'm still kind of surprised it's not something we want to do for the 
-> > > 2400 and 2500 as well.
-> > > 
-> > 
-> > Per discussion with the chip designer, AST2400 and AST2500 doesn't need
-> > this implementation since the chip design is different to AST2600.
-> 
-> So digging a bit more deeply on this, it looks like the reset is 
-> already taken care of by drivers/clk/clk-ast2600.c in the 
-> clk_prepare_enable() path.
-> 
-> clk-ast2600 handles resets when enabling the clock for most peripherals:
-> 
-> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/clk/clk-ast2600.c?h=v5.12#n276
-> 
-> and this is true for both the SD controller and the eMMC controller:
-> 
-> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/clk/clk-ast2600.c?h=v5.12#n94
-> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/clk/clk-ast2600.c?h=v5.12#n88
-> 
-> If this weren't the case you'd specify a reset property in the SD/eMMC 
-> devicetree nodes for the 2600 and then use 
-> devm_reset_control_get_optional_exclusive() as Philipp suggested. See 
-> the reset binding here:
-> 
-> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Documentation/devicetree/bindings/reset/reset.txt?h=v5.12
-> 
-> So on the surface it seems the reset handling in this patch is 
-> unnecessary. Have you observed an issue with the SoC that means it's 
-> required?
-> 
+The legacy driver of aspeed pwm is binding with tach controller and it
+doesn't follow the pwm framworks usage. In addition, the pwm register
+usage of the 6th generation of ast26xx has drastic change. So these
+patch serials add the new aspeed pwm driver to fix up the problem above.
 
-Yes, you are right, aspeed_sdc_probe() calls clk_prepare_enable(),
-aspeed_g6_clk_enable() does reset eMMC.
+Changes since v3:
+- Add the dt_binding for aspeed,ast2600-tach.
+- Describe the pwm/tach as child-node of pwm-tach mfd.
+- Complete the properties of pwm node.
 
-https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/mmc/host/sdhci-of-aspeed.c#n496
+Changes since v2:
+- Remove the tach node, #address-cells and #size-cells from pwm-tach.yaml
+- Add clocks and reset properties to pwm-tach.yaml
+- Kconfig/Makfile sorted alphabetically
+- pwm-aspeed-g6.c suggested by Uwe Kleine-K?nig
+  - Add more hardware descriptions at top of the driver.
+  - Remove unused api request and free
+  - Move the initialize settings of all pwm channel to probe.
+  - Change the method of getting the approximate period.
+  - Read the hardware register values to fill the state for .get_state()
 
-However, the clock of eMMC is enabled in my u-boot(2019.04).
-So it is retruned in the condition of aspeed_g6_clk_is_enabled() below
-and doesn't reset eMMC.
+Changes since v1:
+- Fix the dt_binding_check fail suggested by Rob Herring
+- Add depends to PWM_ASPEED_G6 configure suggested by Uwe Kleine-Konig
+- pwm-aspeed-g6.c suggested by Uwe Kleine-K?nig
+  - Fix license header
+  - Use bitfiled.h macro to define register fields
+  - Implement .remove device function
+  - Implement .get_state pwm api
 
-https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/clk/clk-ast2600.c?h=v5.12#n285
+Billy Tsai (2):
+  dt-bindings: Add bindings for aspeed pwm-tach.
+  pwm: Add Aspeed ast2600 PWM support
 
+ .../bindings/hwmon/aspeed,ast2600-tach.yaml   |  66 ++++
+ .../bindings/mfd/aspeed,ast2600-pwm-tach.yaml |  82 ++++
+ .../bindings/pwm/aspeed,ast2600-pwm.yaml      |  62 +++
+ drivers/pwm/Kconfig                           |   8 +
+ drivers/pwm/Makefile                          |   1 +
+ drivers/pwm/pwm-aspeed-g6.c                   | 368 ++++++++++++++++++
+ 6 files changed, 587 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/hwmon/aspeed,ast2600-tach.yaml
+ create mode 100644 Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.yaml
+ create mode 100644 Documentation/devicetree/bindings/pwm/aspeed,ast2600-pwm.yaml
+ create mode 100644 drivers/pwm/pwm-aspeed-g6.c
 
-> Andrew
+-- 
+2.25.1
+
