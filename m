@@ -1,222 +1,168 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Mon, 10 May 2021 15:12:08 +0930
-Subject: [PATCH v3 11/16] ipmi: kcs_bmc: Add serio adaptor
+Date: Mon, 10 May 2021 15:12:09 +0930
+Subject: [PATCH v3 12/16] dt-bindings: ipmi: Convert ASPEED KCS binding to
+ schema
 In-Reply-To: <20210510054213.1610760-1-andrew@aj.id.au>
 References: <20210510054213.1610760-1-andrew@aj.id.au>
-Message-ID: <20210510054213.1610760-12-andrew@aj.id.au>
+Message-ID: <20210510054213.1610760-13-andrew@aj.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-kcs_bmc_serio acts as a bridge between the KCS drivers in the IPMI
-subsystem and the existing userspace interfaces available through the
-serio subsystem. This is useful when userspace would like to make use of
-the BMC KCS devices for purposes that aren't IPMI.
+Given the deprecated binding, improve the ability to detect issues in
+the platform devicetrees. Further, a subsequent patch will introduce a
+new interrupts property for specifying SerIRQ behaviour, so convert
+before we do any further additions.
 
 Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
+Reviewed-by: Rob Herring <robh@kernel.org>
+Reviewed-by: Zev Weiss <zweiss@equinix.com>
 ---
- drivers/char/ipmi/Kconfig         |  14 +++
- drivers/char/ipmi/Makefile        |   1 +
- drivers/char/ipmi/kcs_bmc_serio.c | 151 ++++++++++++++++++++++++++++++
- 3 files changed, 166 insertions(+)
- create mode 100644 drivers/char/ipmi/kcs_bmc_serio.c
+ .../bindings/ipmi/aspeed,ast2400-kcs-bmc.yaml | 92 +++++++++++++++++++
+ .../bindings/ipmi/aspeed-kcs-bmc.txt          | 33 -------
+ 2 files changed, 92 insertions(+), 33 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/ipmi/aspeed,ast2400-kcs-bmc.yaml
+ delete mode 100644 Documentation/devicetree/bindings/ipmi/aspeed-kcs-bmc.txt
 
-diff --git a/drivers/char/ipmi/Kconfig b/drivers/char/ipmi/Kconfig
-index bc5f81899b62..249b31197eea 100644
---- a/drivers/char/ipmi/Kconfig
-+++ b/drivers/char/ipmi/Kconfig
-@@ -137,6 +137,20 @@ config IPMI_KCS_BMC_CDEV_IPMI
- 	  This support is also available as a module. The module will be
- 	  called kcs_bmc_cdev_ipmi.
- 
-+config IPMI_KCS_BMC_SERIO
-+	depends on IPMI_KCS_BMC && SERIO
-+	tristate "SerIO adaptor for BMC KCS devices"
-+	help
-+	  Adapts the BMC KCS device for the SerIO subsystem. This allows users
-+	  to take advantage of userspace interfaces provided by SerIO where
-+	  appropriate.
-+
-+	  Say YES if you wish to expose KCS devices on the BMC via SerIO
-+	  interfaces.
-+
-+	  This support is also available as a module. The module will be
-+	  called kcs_bmc_serio.
-+
- config ASPEED_BT_IPMI_BMC
- 	depends on ARCH_ASPEED || COMPILE_TEST
- 	depends on REGMAP && REGMAP_MMIO && MFD_SYSCON
-diff --git a/drivers/char/ipmi/Makefile b/drivers/char/ipmi/Makefile
-index fcfa676afddb..84f47d18007f 100644
---- a/drivers/char/ipmi/Makefile
-+++ b/drivers/char/ipmi/Makefile
-@@ -23,6 +23,7 @@ obj-$(CONFIG_IPMI_POWERNV) += ipmi_powernv.o
- obj-$(CONFIG_IPMI_WATCHDOG) += ipmi_watchdog.o
- obj-$(CONFIG_IPMI_POWEROFF) += ipmi_poweroff.o
- obj-$(CONFIG_IPMI_KCS_BMC) += kcs_bmc.o
-+obj-$(CONFIG_IPMI_KCS_BMC_SERIO) += kcs_bmc_serio.o
- obj-$(CONFIG_IPMI_KCS_BMC_CDEV_IPMI) += kcs_bmc_cdev_ipmi.o
- obj-$(CONFIG_ASPEED_BT_IPMI_BMC) += bt-bmc.o
- obj-$(CONFIG_ASPEED_KCS_IPMI_BMC) += kcs_bmc_aspeed.o
-diff --git a/drivers/char/ipmi/kcs_bmc_serio.c b/drivers/char/ipmi/kcs_bmc_serio.c
+diff --git a/Documentation/devicetree/bindings/ipmi/aspeed,ast2400-kcs-bmc.yaml b/Documentation/devicetree/bindings/ipmi/aspeed,ast2400-kcs-bmc.yaml
 new file mode 100644
-index 000000000000..30a2b7ab464b
+index 000000000000..697ca575454f
 --- /dev/null
-+++ b/drivers/char/ipmi/kcs_bmc_serio.c
-@@ -0,0 +1,151 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
-+/* Copyright (c) 2021 IBM Corp. */
++++ b/Documentation/devicetree/bindings/ipmi/aspeed,ast2400-kcs-bmc.yaml
+@@ -0,0 +1,92 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/ipmi/aspeed,ast2400-kcs-bmc.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
 +
-+#include <linux/delay.h>
-+#include <linux/device.h>
-+#include <linux/errno.h>
-+#include <linux/list.h>
-+#include <linux/module.h>
-+#include <linux/sched/signal.h>
-+#include <linux/serio.h>
-+#include <linux/slab.h>
++title: ASPEED BMC KCS Devices
 +
-+#include "kcs_bmc_client.h"
++maintainers:
++  - Andrew Jeffery <andrew@aj.id.au>
 +
-+struct kcs_bmc_serio {
-+	struct list_head entry;
++description: |
++  The Aspeed BMC SoCs typically use the Keyboard-Controller-Style (KCS)
++  interfaces on the LPC bus for in-band IPMI communication with their host.
 +
-+	struct kcs_bmc_client client;
-+	struct serio *port;
++properties:
++  compatible:
++    oneOf:
++      - description: Channel ID derived from reg
++        items:
++          enum:
++            - aspeed,ast2400-kcs-bmc-v2
++            - aspeed,ast2500-kcs-bmc-v2
++            - aspeed,ast2600-kcs-bmc
 +
-+	spinlock_t lock;
-+};
++      - description: Old-style with explicit channel ID, no reg
++        deprecated: true
++        items:
++          enum:
++            - aspeed,ast2400-kcs-bmc
++            - aspeed,ast2500-kcs-bmc
 +
-+static inline struct kcs_bmc_serio *client_to_kcs_bmc_serio(struct kcs_bmc_client *client)
-+{
-+	return container_of(client, struct kcs_bmc_serio, client);
-+}
++  interrupts:
++    maxItems: 1
 +
-+static irqreturn_t kcs_bmc_serio_event(struct kcs_bmc_client *client)
-+{
-+	struct kcs_bmc_serio *priv;
-+	u8 handled = IRQ_NONE;
-+	u8 status;
++  reg:
++    # maxItems: 3
++    items:
++      - description: IDR register
++      - description: ODR register
++      - description: STR register
 +
-+	priv = client_to_kcs_bmc_serio(client);
++  aspeed,lpc-io-reg:
++    $ref: '/schemas/types.yaml#/definitions/uint32-array'
++    minItems: 1
++    maxItems: 2
++    description: |
++      The host CPU LPC IO data and status addresses for the device. For most
++      channels the status address is derived from the data address, but the
++      status address may be optionally provided.
 +
-+	spin_lock(&priv->lock);
++  kcs_chan:
++    deprecated: true
++    $ref: '/schemas/types.yaml#/definitions/uint32'
++    description: The LPC channel number in the controller
 +
-+	status = kcs_bmc_read_status(client->dev);
++  kcs_addr:
++    deprecated: true
++    $ref: '/schemas/types.yaml#/definitions/uint32'
++    description: The host CPU IO map address
 +
-+	if (status & KCS_BMC_STR_IBF)
-+		handled = serio_interrupt(priv->port, kcs_bmc_read_data(client->dev), 0);
++required:
++  - compatible
++  - interrupts
 +
-+	spin_unlock(&priv->lock);
++additionalProperties: false
 +
-+	return handled;
-+}
++allOf:
++  - if:
++      properties:
++        compatible:
++          contains:
++            enum:
++              - aspeed,ast2400-kcs-bmc
++              - aspeed,ast2500-kcs-bmc
++    then:
++      required:
++        - kcs_chan
++        - kcs_addr
++    else:
++      required:
++        - reg
++        - aspeed,lpc-io-reg
 +
-+static const struct kcs_bmc_client_ops kcs_bmc_serio_client_ops = {
-+	.event = kcs_bmc_serio_event,
-+};
-+
-+static int kcs_bmc_serio_open(struct serio *port)
-+{
-+	struct kcs_bmc_serio *priv = port->port_data;
-+
-+	return kcs_bmc_enable_device(priv->client.dev, &priv->client);
-+}
-+
-+static void kcs_bmc_serio_close(struct serio *port)
-+{
-+	struct kcs_bmc_serio *priv = port->port_data;
-+
-+	kcs_bmc_disable_device(priv->client.dev, &priv->client);
-+}
-+
-+static DEFINE_SPINLOCK(kcs_bmc_serio_instances_lock);
-+static LIST_HEAD(kcs_bmc_serio_instances);
-+
-+static int kcs_bmc_serio_add_device(struct kcs_bmc_device *kcs_bmc)
-+{
-+	struct kcs_bmc_serio *priv;
-+	struct serio *port;
-+
-+	priv = devm_kzalloc(kcs_bmc->dev, sizeof(*priv), GFP_KERNEL);
-+	port = kzalloc(sizeof(*port), GFP_KERNEL);
-+	if (!(priv && port))
-+		return -ENOMEM;
-+
-+	port->id.type = SERIO_8042;
-+	port->open = kcs_bmc_serio_open;
-+	port->close = kcs_bmc_serio_close;
-+	port->port_data = priv;
-+	port->dev.parent = kcs_bmc->dev;
-+
-+	spin_lock_init(&priv->lock);
-+	priv->port = port;
-+	priv->client.dev = kcs_bmc;
-+	priv->client.ops = &kcs_bmc_serio_client_ops;
-+
-+	spin_lock_irq(&kcs_bmc_serio_instances_lock);
-+	list_add(&priv->entry, &kcs_bmc_serio_instances);
-+	spin_unlock_irq(&kcs_bmc_serio_instances_lock);
-+
-+	serio_register_port(port);
-+
-+	dev_info(kcs_bmc->dev, "Initialised serio client for channel %d", kcs_bmc->channel);
-+
-+	return 0;
-+}
-+
-+static int kcs_bmc_serio_remove_device(struct kcs_bmc_device *kcs_bmc)
-+{
-+	struct kcs_bmc_serio *priv = NULL, *pos;
-+
-+	spin_lock_irq(&kcs_bmc_serio_instances_lock);
-+	list_for_each_entry(pos, &kcs_bmc_serio_instances, entry) {
-+		if (pos->client.dev == kcs_bmc) {
-+			priv = pos;
-+			list_del(&pos->entry);
-+			break;
-+		}
-+	}
-+	spin_unlock_irq(&kcs_bmc_serio_instances_lock);
-+
-+	if (!priv)
-+		return -ENODEV;
-+
-+	serio_unregister_port(priv->port);
-+	kcs_bmc_disable_device(kcs_bmc, &priv->client);
-+	devm_kfree(priv->client.dev->dev, priv);
-+
-+	return 0;
-+}
-+
-+static const struct kcs_bmc_driver_ops kcs_bmc_serio_driver_ops = {
-+	.add_device = kcs_bmc_serio_add_device,
-+	.remove_device = kcs_bmc_serio_remove_device,
-+};
-+
-+static struct kcs_bmc_driver kcs_bmc_serio_driver = {
-+	.ops = &kcs_bmc_serio_driver_ops,
-+};
-+
-+static int kcs_bmc_serio_init(void)
-+{
-+	kcs_bmc_register_driver(&kcs_bmc_serio_driver);
-+
-+	return 0;
-+}
-+module_init(kcs_bmc_serio_init);
-+
-+static void kcs_bmc_serio_exit(void)
-+{
-+	kcs_bmc_unregister_driver(&kcs_bmc_serio_driver);
-+}
-+module_exit(kcs_bmc_serio_exit);
-+
-+MODULE_LICENSE("GPL v2");
-+MODULE_AUTHOR("Andrew Jeffery <andrew@aj.id.au>");
-+MODULE_DESCRIPTION("Adapter driver for serio access to BMC KCS devices");
++examples:
++  - |
++    kcs3: kcs at 24 {
++        compatible = "aspeed,ast2600-kcs-bmc";
++        reg = <0x24 0x1>, <0x30 0x1>, <0x3c 0x1>;
++        aspeed,lpc-io-reg = <0xca2>;
++        interrupts = <8>;
++    };
+diff --git a/Documentation/devicetree/bindings/ipmi/aspeed-kcs-bmc.txt b/Documentation/devicetree/bindings/ipmi/aspeed-kcs-bmc.txt
+deleted file mode 100644
+index 193e71ca96b0..000000000000
+--- a/Documentation/devicetree/bindings/ipmi/aspeed-kcs-bmc.txt
++++ /dev/null
+@@ -1,33 +0,0 @@
+-# Aspeed KCS (Keyboard Controller Style) IPMI interface
+-
+-The Aspeed SOCs (AST2400 and AST2500) are commonly used as BMCs
+-(Baseboard Management Controllers) and the KCS interface can be
+-used to perform in-band IPMI communication with their host.
+-
+-## v1
+-Required properties:
+-- compatible : should be one of
+-    "aspeed,ast2400-kcs-bmc"
+-    "aspeed,ast2500-kcs-bmc"
+-- interrupts : interrupt generated by the controller
+-- kcs_chan : The LPC channel number in the controller
+-- kcs_addr : The host CPU IO map address
+-
+-## v2
+-Required properties:
+-- compatible : should be one of
+-    "aspeed,ast2400-kcs-bmc-v2"
+-    "aspeed,ast2500-kcs-bmc-v2"
+-- reg : The address and size of the IDR, ODR and STR registers
+-- interrupts : interrupt generated by the controller
+-- aspeed,lpc-io-reg : The host CPU LPC IO address for the device
+-
+-Example:
+-
+-    kcs3: kcs at 24 {
+-        compatible = "aspeed,ast2500-kcs-bmc-v2";
+-        reg = <0x24 0x1>, <0x30 0x1>, <0x3c 0x1>;
+-        aspeed,lpc-reg = <0xca2>;
+-        interrupts = <8>;
+-        status = "okay";
+-    };
 -- 
 2.27.0
 
