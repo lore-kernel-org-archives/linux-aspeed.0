@@ -1,515 +1,84 @@
-From: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Date: Mon, 10 May 2021 14:08:57 +0200
-Subject: [v4 2/2] pwm: Add Aspeed ast2600 PWM support
-In-Reply-To: <20210510073511.7291-3-billy_tsai@aspeedtech.com>
+From: Rob Herring <robh@kernel.org>
+Date: Mon, 10 May 2021 09:01:39 -0500
+Subject: [v4 1/2] dt-bindings: Add bindings for aspeed pwm-tach.
+In-Reply-To: <20210510073511.7291-2-billy_tsai@aspeedtech.com>
 References: <20210510073511.7291-1-billy_tsai@aspeedtech.com>
- <20210510073511.7291-3-billy_tsai@aspeedtech.com>
-Message-ID: <20210510120857.fu573osgwj6oyqx3@pengutronix.de>
+ <20210510073511.7291-2-billy_tsai@aspeedtech.com>
+Message-ID: <1620655299.806171.41440.nullmailer@robh.at.kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello,
-
-On Mon, May 10, 2021 at 03:35:11PM +0800, Billy Tsai wrote:
-> This patch add the support of PWM controller which can be found at aspeed
-> ast2600 soc. The pwm supoorts up to 16 channels and it's part function
-> of multi-function device "pwm-tach controller".
+On Mon, 10 May 2021 15:35:10 +0800, Billy Tsai wrote:
+> This patch adds device binding for aspeed pwm-tach device which is a
+> multi-function device include pwm and tach function and pwm/tach device
+> bindings which should be the child-node of pwm-tach device.
 > 
 > Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
 > ---
->  drivers/pwm/Kconfig         |   8 +
->  drivers/pwm/Makefile        |   1 +
->  drivers/pwm/pwm-aspeed-g6.c | 368 ++++++++++++++++++++++++++++++++++++
->  3 files changed, 377 insertions(+)
->  create mode 100644 drivers/pwm/pwm-aspeed-g6.c
+>  .../bindings/hwmon/aspeed,ast2600-tach.yaml   | 66 +++++++++++++++
+>  .../bindings/mfd/aspeed,ast2600-pwm-tach.yaml | 82 +++++++++++++++++++
+>  .../bindings/pwm/aspeed,ast2600-pwm.yaml      | 62 ++++++++++++++
+>  3 files changed, 210 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/hwmon/aspeed,ast2600-tach.yaml
+>  create mode 100644 Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.yaml
+>  create mode 100644 Documentation/devicetree/bindings/pwm/aspeed,ast2600-pwm.yaml
 > 
-> diff --git a/drivers/pwm/Kconfig b/drivers/pwm/Kconfig
-> index 63be5362fd3a..b0964b9a3273 100644
-> --- a/drivers/pwm/Kconfig
-> +++ b/drivers/pwm/Kconfig
-> @@ -51,6 +51,14 @@ config PWM_AB8500
->  	  To compile this driver as a module, choose M here: the module
->  	  will be called pwm-ab8500.
->  
-> +config PWM_ASPEED_G6
-> +	tristate "ASPEEDG6 PWM support"
-> +	depends on ARCH_ASPEED || COMPILE_TEST
-> +	help
-> +	  Generic PWM framework driver for ASPEED G6 SoC.
-> +
-> +	  This driver provides support for ASPEED G6 PWM controllers.
-> +
->  config PWM_ATMEL
->  	tristate "Atmel PWM support"
->  	depends on OF
-> diff --git a/drivers/pwm/Makefile b/drivers/pwm/Makefile
-> index cbdcd55d69ee..29d22d806e68 100644
-> --- a/drivers/pwm/Makefile
-> +++ b/drivers/pwm/Makefile
-> @@ -2,6 +2,7 @@
->  obj-$(CONFIG_PWM)		+= core.o
->  obj-$(CONFIG_PWM_SYSFS)		+= sysfs.o
->  obj-$(CONFIG_PWM_AB8500)	+= pwm-ab8500.o
-> +obj-$(CONFIG_PWM_ASPEED_G6)	+= pwm-aspeed-g6.o
->  obj-$(CONFIG_PWM_ATMEL)		+= pwm-atmel.o
->  obj-$(CONFIG_PWM_ATMEL_HLCDC_PWM)	+= pwm-atmel-hlcdc.o
->  obj-$(CONFIG_PWM_ATMEL_TCB)	+= pwm-atmel-tcb.o
-> diff --git a/drivers/pwm/pwm-aspeed-g6.c b/drivers/pwm/pwm-aspeed-g6.c
-> new file mode 100644
-> index 000000000000..f5bb982c21e6
-> --- /dev/null
-> +++ b/drivers/pwm/pwm-aspeed-g6.c
-> @@ -0,0 +1,368 @@
-> +// SPDX-License-Identifier: GPL-2.0-or-later
-> +/*
-> + * Copyright (C) 2021 ASPEED Technology Inc.
-> + *
-> + * PWM controller driver for Aspeed ast26xx SoCs.
-> + * This drivers doesn't rollback to previous version of aspeed SoCs.
 
-Does that mean it doesn't support earlier versions of the IP?
+My bot found errors running 'make DT_CHECKER_FLAGS=-m dt_binding_check'
+on your patch (DT_CHECKER_FLAGS is new in v5.13):
 
-> + *
-> + * The formula of pwm frequency:
-> + * PWM frequency = CLK Source / ((DIV_L + 1) * BIT(DIV_H) * (PERIOD + 1))
-> + *
-> + * The software driver fixes the period to 256, which causes the high-frequency
-> + * precision of the PWM to be coarse, in exchange for the fineness of the duty cycle.
-> + *
-> + * Register usage:
-> + * PIN_ENABLE: When it is unset the pwm controller will always output low to the extern.
-> + * Use to determin PWM channel enable/disable.
+yamllint warnings/errors:
 
-s/determin PWM channel enable.disable/determine if the PWM channel is enabled or disabled/
+dtschema/dtc warnings/errors:
+/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/hwmon/aspeed,ast2600-tach.yaml: Additional properties are not allowed ('child-node' was unexpected)
+	hint: Keywords must be a subset of known json-schema keywords
+	from schema $id: http://devicetree.org/meta-schemas/keywords.yaml#
+/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/hwmon/aspeed,ast2600-tach.yaml: 'child-node' is not one of ['$id', '$schema', 'title', 'description', 'examples', 'required', 'allOf', 'anyOf', 'oneOf', 'definitions', '$defs', 'additionalProperties', 'dependencies', 'patternProperties', 'properties', 'if', 'then', 'else', 'unevaluatedProperties', 'deprecated', 'maintainers', 'select']
+	from schema $id: http://devicetree.org/meta-schemas/base.yaml#
+/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/hwmon/aspeed,ast2600-tach.yaml: 'additionalProperties' is a required property
+	hint: A schema without a "$ref" to another schema must define all properties and use "additionalProperties"
+	from schema $id: http://devicetree.org/meta-schemas/base.yaml#
+/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.yaml: Additional properties are not allowed ('child-node' was unexpected)
+	hint: Keywords must be a subset of known json-schema keywords
+	from schema $id: http://devicetree.org/meta-schemas/keywords.yaml#
+/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.yaml: 'child-node' is not one of ['$id', '$schema', 'title', 'description', 'examples', 'required', 'allOf', 'anyOf', 'oneOf', 'definitions', '$defs', 'additionalProperties', 'dependencies', 'patternProperties', 'properties', 'if', 'then', 'else', 'unevaluatedProperties', 'deprecated', 'maintainers', 'select']
+	from schema $id: http://devicetree.org/meta-schemas/base.yaml#
+/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.yaml: 'additionalProperties' is a required property
+	hint: A schema without a "$ref" to another schema must define all properties and use "additionalProperties"
+	from schema $id: http://devicetree.org/meta-schemas/base.yaml#
+schemas/pwm/aspeed,ast2600-pwm.yaml: ignoring, error in schema: 
+schemas/hwmon/aspeed,ast2600-tach.yaml: ignoring, error in schema: 
+/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/pwm/aspeed,ast2600-pwm.yaml: Additional properties are not allowed ('child-node' was unexpected)
+	hint: Keywords must be a subset of known json-schema keywords
+	from schema $id: http://devicetree.org/meta-schemas/keywords.yaml#
+/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/pwm/aspeed,ast2600-pwm.yaml: 'child-node' is not one of ['$id', '$schema', 'title', 'description', 'examples', 'required', 'allOf', 'anyOf', 'oneOf', 'definitions', '$defs', 'additionalProperties', 'dependencies', 'patternProperties', 'properties', 'if', 'then', 'else', 'unevaluatedProperties', 'deprecated', 'maintainers', 'select']
+	from schema $id: http://devicetree.org/meta-schemas/base.yaml#
+/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/pwm/aspeed,ast2600-pwm.yaml: 'additionalProperties' is a required property
+	hint: A schema without a "$ref" to another schema must define all properties and use "additionalProperties"
+	from schema $id: http://devicetree.org/meta-schemas/base.yaml#
+/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/hwmon/aspeed,ast2600-tach.yaml: ignoring, error in schema: 
+warning: no schema found in file: ./Documentation/devicetree/bindings/hwmon/aspeed,ast2600-tach.yaml
+/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/pwm/aspeed,ast2600-pwm.yaml: ignoring, error in schema: 
+warning: no schema found in file: ./Documentation/devicetree/bindings/pwm/aspeed,ast2600-pwm.yaml
+/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.yaml: ignoring, error in schema: 
+warning: no schema found in file: ./Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.yaml
+Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.example.dt.yaml:0:0: /example-0/pwm_tach at 1e610000: failed to match any schema with compatible: ['aspeed,ast2600-pwm-tach', 'syscon', 'simple-mfd']
+Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.example.dt.yaml:0:0: /example-0/pwm_tach at 1e610000/pwm: failed to match any schema with compatible: ['aspeed,ast2600-pwm']
+Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.example.dt.yaml:0:0: /example-0/pwm_tach at 1e610000/tach: failed to match any schema with compatible: ['aspeed,ast2600-tach']
 
-> + * CLK_ENABLE: When it is unset the pwm controller will reset the duty counter to 0 and
-> + * output low to the PIN_ENABLE mux after that the driver can still change the pwm period
-> + * and duty and the value will apply when CLK_ENABLE be set again.
-> + * Use to determin whether duty_cycle bigger than 0.
-> + * PWM_ASPEED_INVERSE: When it is toggled the output value will inverse immediately.
-> + *
-> + * Limitations:
-> + * - When changing both duty cycle and period, we cannot prevent in
-> + *   software that the output might produce a period with mixed
-> + *   settings.
-> + *
-> + * Improvements:
-> + * - When changing the duty cycle or period, our pwm controller will not
-> + *   generate the glitch, the configure will change at next cycle of pwm.
-> + *   This improvement can disable/enable through PWM_ASPEED_DUTY_SYNC_DISABLE.
-> + */
-> +
-> +#include <linux/clk.h>
-> +#include <linux/errno.h>
-> +#include <linux/delay.h>
-> +#include <linux/io.h>
-> +#include <linux/kernel.h>
-> +#include <linux/mfd/syscon.h>
-> +#include <linux/module.h>
-> +#include <linux/of_platform.h>
-> +#include <linux/of_device.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/sysfs.h>
-> +#include <linux/reset.h>
-> +#include <linux/regmap.h>
-> +#include <linux/bitfield.h>
-> +#include <linux/slab.h>
-> +#include <linux/pwm.h>
-> +
-> +/* The channel number of Aspeed pwm controller */
-> +#define PWM_ASPEED_NR_PWMS 16
-> +
-> +/* PWM Control Register */
-> +#define PWM_ASPEED_CTRL_CH(ch) (((ch * 0x10) + 0x00))
+See https://patchwork.ozlabs.org/patch/1476200
 
-Please put ch in parenthesis.
+This check can fail if there are any dependencies. The base for a patch
+series is generally the most recent rc1.
 
-> +#define PWM_ASPEED_LOAD_SEL_RISING_AS_WDT BIT(19)
-> +#define PWM_ASPEED_DUTY_LOAD_AS_WDT_ENABLE BIT(18)
-> +#define PWM_ASPEED_DUTY_SYNC_DISABLE BIT(17)
-> +#define PWM_ASPEED_CLK_ENABLE BIT(16)
-> +#define PWM_ASPEED_LEVEL_OUTPUT BIT(15)
-> +#define PWM_ASPEED_INVERSE BIT(14)
-> +#define PWM_ASPEED_OPEN_DRAIN_ENABLE BIT(13)
-> +#define PWM_ASPEED_PIN_ENABLE BIT(12)
-> +#define PWM_ASPEED_CLK_DIV_H GENMASK(11, 8)
-> +#define PWM_ASPEED_CLK_DIV_L GENMASK(7, 0)
+If you already ran 'make dt_binding_check' and didn't see the above
+error(s), then make sure 'yamllint' is installed and dt-schema is up to
+date:
 
-It would be great if the bit definitions contained the name of the
-register. This simplifies verifying that we're using a define for the
-expected register.
+pip3 install dtschema --upgrade
 
-> +/* PWM Duty Cycle Register */
-> +#define PWM_ASPEED_DUTY_CYCLE_CH(ch) (((ch * 0x10) + 0x04))
-> +#define PWM_ASPEED_PERIOD GENMASK(31, 24)
-> +#define PWM_ASPEED_POINT_AS_WDT GENMASK(23, 16)
-> +#define PWM_ASPEED_FALLING_POINT GENMASK(15, 8)
-> +#define PWM_ASPEED_RISING_POINT GENMASK(7, 0)
-> +
-> +/* PWM fixed value */
-> +#define PWM_ASPEED_FIXED_PERIOD 0xff
-> +
-> +struct aspeed_pwm_data {
-> +	struct pwm_chip chip;
-> +	struct clk *clk;
-> +	struct regmap *regmap;
-> +	struct reset_control *reset;
-> +};
-> +
-> +static inline struct aspeed_pwm_data *
-> +aspeed_pwm_chip_to_data(struct pwm_chip *c)
-> +{
-> +	return container_of(c, struct aspeed_pwm_data, chip);
-> +}
-> +
-> +static void aspeed_set_pwm_clk_enable(struct regmap *regmap, u8 pwm_channel,
-> +					  bool enable)
+Please check and re-submit.
 
-I'd call this function aspeed_pwm_set_clk_enable to use "aspeed_pwm_" as
-the common prefix for all functions. Similarly for the other functions.
-> +{
-> +	regmap_update_bits(regmap, PWM_ASPEED_CTRL_CH(pwm_channel),
-> +			   PWM_ASPEED_CLK_ENABLE,
-> +			   enable ? PWM_ASPEED_CLK_ENABLE : 0);
-
-There is only a single caller for this function, I'd recommend to fold
-it into this caller.
-
-> +}
-> +
-> +static u32 apseed_get_pwm_freq(struct pwm_chip *chip, struct pwm_device *pwm)
-> +{
-> +	struct aspeed_pwm_data *priv = aspeed_pwm_chip_to_data(chip);
-> +	unsigned long rate;
-> +	u32 index = pwm->hwpwm;
-> +	u32 div_h, div_l, cur_freq, val;
-> +
-> +	rate = clk_get_rate(priv->clk);
-> +	regmap_read(priv->regmap, PWM_ASPEED_CTRL_CH(index), &val);
-> +	div_h = FIELD_GET(PWM_ASPEED_CLK_DIV_H, val);
-> +	div_l = FIELD_GET(PWM_ASPEED_CLK_DIV_L, val);
-> +
-> +	cur_freq = DIV_ROUND_DOWN_ULL(rate, (BIT(div_h) * (div_l + 1) *
-> +					     (PWM_ASPEED_FIXED_PERIOD + 1)));
-> +	return cur_freq;
-> +}
-> +
-> +static int aspeed_set_pwm_freq(struct pwm_chip *chip, struct pwm_device *pwm,
-> +			       const struct pwm_state *state)
-> +{
-> +	struct device *dev = chip->dev;
-> +	struct aspeed_pwm_data *priv = aspeed_pwm_chip_to_data(chip);
-> +	unsigned long rate;
-> +	u32 div_h, div_l, freq;
-> +	u32 index = pwm->hwpwm;
-> +	/* Get the smallest value for div_h  */
-> +	freq = DIV_ROUND_UP_ULL(NSEC_PER_SEC, state->period);
-> +	rate = clk_get_rate(priv->clk);
-> +	div_h = DIV_ROUND_DOWN_ULL(rate,
-> +				   ((FIELD_MAX(PWM_ASPEED_CLK_DIV_L) + 1) *
-> +				    freq * (PWM_ASPEED_FIXED_PERIOD + 1)));
-
-Please don't divide by the result of a division.
-
-> +	div_h = order_base_2(div_h);
-> +	if (div_h > 0xf)
-> +		div_h = 0xf;
-> +
-> +	div_l = DIV_ROUND_DOWN_ULL(rate >> div_h,
-> +				   (freq * (PWM_ASPEED_FIXED_PERIOD + 1)));
-> +	if (div_l == 0) {
-> +		dev_err(dev, "Period too small, cannot implement it");
-> +		return -ERANGE;
-> +	}
-> +
-> +	div_l -= 1;
-> +
-> +	if (div_l > 255)
-> +		div_l = 255;
-> +
-> +	dev_dbg(dev, "clk source: %ld div h %x, l : %x\n", rate, div_h, div_l);
-> +
-> +	regmap_update_bits(priv->regmap, PWM_ASPEED_CTRL_CH(index),
-> +			   (PWM_ASPEED_CLK_DIV_H | PWM_ASPEED_CLK_DIV_L),
-> +			   FIELD_PREP(PWM_ASPEED_CLK_DIV_H, div_h) |
-> +				   FIELD_PREP(PWM_ASPEED_CLK_DIV_L, div_l));
-> +	return 0;
-> +}
-> +
-> +static void aspeed_set_pwm_duty(struct pwm_chip *chip, struct pwm_device *pwm,
-> +				const struct pwm_state *state)
-> +{
-> +	struct aspeed_pwm_data *priv = aspeed_pwm_chip_to_data(chip);
-> +	u32 duty_pt;
-> +	u32 index = pwm->hwpwm;
-> +	u32 cur_freq;
-> +	u64 cur_period;
-> +
-> +	cur_freq = apseed_get_pwm_freq(chip, pwm);
-
-s/apseed/aspeed/
-
-cur_freq is the result of a division ...
-
-> +	cur_period = DIV_ROUND_DOWN_ULL(NSEC_PER_SEC, cur_freq);
-
-... dividing through such a number loses precision.
-
-
-> +	duty_pt = DIV_ROUND_DOWN_ULL(
-> +		state->duty_cycle * (PWM_ASPEED_FIXED_PERIOD + 1), cur_period);
-> +	if (duty_pt == 0) {
-> +		aspeed_set_pwm_clk_enable(priv->regmap, index, false);
-> +	} else {
-> +		if (duty_pt >= (PWM_ASPEED_FIXED_PERIOD + 1))
-> +			duty_pt = 0;
-> +		/* When duty_pt = 0 it mean our duty cycle = 100% */
-
-Please put this comment above the code that it explains.
-
-> +		regmap_update_bits(
-> +			priv->regmap, PWM_ASPEED_DUTY_CYCLE_CH(index),
-> +			PWM_ASPEED_FALLING_POINT,
-> +			FIELD_PREP(PWM_ASPEED_FALLING_POINT, duty_pt));
-> +		aspeed_set_pwm_clk_enable(priv->regmap, index, true);
-> +	}
-> +}
-> +
-> +static void aspeed_set_pwm_polarity(struct pwm_chip *chip,
-> +				    struct pwm_device *pwm,
-> +				    const struct pwm_state *state)
-> +{
-> +	struct aspeed_pwm_data *priv = aspeed_pwm_chip_to_data(chip);
-> +	u32 index = pwm->hwpwm;
-> +
-> +	regmap_update_bits(priv->regmap, PWM_ASPEED_CTRL_CH(index),
-> +			   PWM_ASPEED_INVERSE,
-> +			   FIELD_PREP(PWM_ASPEED_INVERSE, state->polarity));
-> +}
-
-This function also only has a single caller and can better be folded
-into it.
-
-> +static void aspeed_pwm_get_state(struct pwm_chip *chip, struct pwm_device *pwm,
-> +				 struct pwm_state *state)
-> +{
-> +	struct device *dev = chip->dev;
-> +	struct aspeed_pwm_data *priv = aspeed_pwm_chip_to_data(chip);
-> +	u32 index = pwm->hwpwm;
-> +	bool polarity, ch_en, clk_en;
-> +	u32 duty_pt, val;
-> +	u32 cur_freq;
-> +
-> +	regmap_read(priv->regmap, PWM_ASPEED_CTRL_CH(index), &val);
-> +	polarity = FIELD_GET(PWM_ASPEED_INVERSE, val);
-> +	ch_en = FIELD_GET(PWM_ASPEED_PIN_ENABLE, val);
-> +	clk_en = FIELD_GET(PWM_ASPEED_CLK_ENABLE, val);
-> +	regmap_read(priv->regmap, PWM_ASPEED_DUTY_CYCLE_CH(index), &val);
-> +	duty_pt = FIELD_GET(PWM_ASPEED_FALLING_POINT, val);
-> +
-> +	cur_freq = apseed_get_pwm_freq(chip, pwm);
-> +
-> +	state->period = DIV_ROUND_DOWN_ULL(NSEC_PER_SEC, cur_freq);
-
-Please round up in .get_state().
-
-> +	if (clk_en && duty_pt)
-> +		state->duty_cycle = DIV_ROUND_DOWN_ULL(
-> +			state->period * duty_pt, PWM_ASPEED_FIXED_PERIOD + 1);
-> +	else
-> +		state->duty_cycle = clk_en ? state->period : 0;
-> +	state->polarity = polarity;
-> +	state->enabled = ch_en;
-> +	dev_dbg(dev, "get period: %lldns, duty_cycle: %lldns", state->period,
-> +		state->duty_cycle);
-> +}
-> +
-> +static int aspeed_pwm_apply(struct pwm_chip *chip, struct pwm_device *pwm,
-> +			    const struct pwm_state *state)
-> +{
-> +	struct device *dev = chip->dev;
-> +	struct aspeed_pwm_data *priv = aspeed_pwm_chip_to_data(chip);
-> +	u32 index = pwm->hwpwm;
-> +	struct pwm_state cur_state;
-> +	int ret;
-> +
-> +	aspeed_pwm_get_state(chip, pwm, &cur_state);
-> +	dev_dbg(dev, "cur period: %lldns, cur duty_cycle: %lldns",
-> +		cur_state.period, cur_state.duty_cycle);
-> +	dev_dbg(dev, "apply period: %lldns, duty_cycle: %lldns", state->period,
-> +		state->duty_cycle);
-> +	regmap_update_bits(priv->regmap, PWM_ASPEED_CTRL_CH(index),
-> +			   PWM_ASPEED_PIN_ENABLE,
-> +			   state->enabled ? PWM_ASPEED_PIN_ENABLE : 0);
-> +	if (cur_state.period != state->period) {
-> +		ret = aspeed_set_pwm_freq(chip, pwm, state);
-> +		if (ret)
-> +			return ret;
-> +		aspeed_set_pwm_duty(chip, pwm, state);
-> +	} else if (cur_state.duty_cycle != state->duty_cycle)
-> +		aspeed_set_pwm_duty(chip, pwm, state);
-
-In aspeed_set_pwm_duty() you call apseed_get_pwm_freq(), in one of the two
-cases above you already know the freq. If you ask me, just drop the
-cur_state.period != state->period check and calculate all the required
-settings unconditionally. Then you also don't need to call
-aspeed_pwm_get_state(). (Apart from that apseed_get_pwm_freq implements
-the wrong rounding for .apply().)
-
-> +	aspeed_set_pwm_polarity(chip, pwm, state);
-> +	return 0;
-> +}
-> +
-> +static const struct pwm_ops aspeed_pwm_ops = {
-> +	.apply = aspeed_pwm_apply,
-> +	.get_state = aspeed_pwm_get_state,
-> +	.owner = THIS_MODULE,
-> +};
-> +
-> +static int aspeed_pwm_probe(struct platform_device *pdev)
-> +{
-> +	struct device *dev = &pdev->dev;
-> +	int ret, index;
-> +	struct aspeed_pwm_data *priv;
-> +	struct device_node *np;
-> +
-> +	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
-> +	if (!priv)
-> +		return -ENOMEM;
-> +
-> +	np = pdev->dev.parent->of_node;
-> +	if (!of_device_is_compatible(np, "aspeed,ast2600-pwm-tach")) {
-> +		dev_err(dev, "unsupported pwm device binding\n");
-> +		return -ENODEV;
-> +	}
-> +
-> +	priv->regmap = syscon_node_to_regmap(np);
-> +	if (IS_ERR(priv->regmap)) {
-> +		dev_err(dev, "Couldn't get regmap\n");
-> +		return -ENODEV;
-
-Please return PTR_ERR(priv->regmap) here and use dev_err_probe for
-consistency.
-
-> +	}
-> +
-> +	priv->clk = of_clk_get(np, 0);
-
-Maybe use devm_clk_get() instead? (Otherwise you have to put the clock
-in the error paths.)
-
-> +	if (IS_ERR(priv->clk))
-> +		return dev_err_probe(dev, PTR_ERR(priv->clk),
-> +				     "get clock failed\n");
-> +
-> +	ret = clk_prepare_enable(priv->clk);
-> +	if (ret) {
-> +		dev_err(dev, "couldn't enable clock\n");
-> +		return ret;
-> +	}
-> +
-> +	priv->reset = of_reset_control_get_shared(np, NULL);
-> +	if (IS_ERR(priv->reset))
-> +		return dev_err_probe(dev, PTR_ERR(priv->reset),
-> +				     "get reset failed\n");
-> +
-> +	ret = reset_control_deassert(priv->reset);
-> +	if (ret) {
-> +		dev_err(dev, "cannot deassert reset control: %pe\n",
-> +			ERR_PTR(ret));
-> +		clk_disable_unprepare(priv->clk);
-
-Consider using goto for error handling. Then you don't have to repeat
-the same thing over and over again.
-
-> +		return ret;
-> +	}
-> +
-> +	priv->chip.dev = dev;
-> +	priv->chip.ops = &aspeed_pwm_ops;
-> +	priv->chip.npwm = PWM_ASPEED_NR_PWMS;
-> +	priv->chip.of_xlate = of_pwm_xlate_with_flags;
-> +	priv->chip.of_pwm_n_cells = 3;
-> +
-> +	/*
-> +	 * Fixed the period to the max value and rising point to 0
-> +	 * for high resolution and simplified frequency calculation.
-
-There is a stray non-printable char before "simplified".
-
-> +	 */
-> +	for (index = 0; index < PWM_ASPEED_NR_PWMS; index++) {
-> +		regmap_update_bits(
-> +			priv->regmap, PWM_ASPEED_DUTY_CYCLE_CH(index),
-> +			PWM_ASPEED_PERIOD,
-> +			FIELD_PREP(PWM_ASPEED_PERIOD, PWM_ASPEED_FIXED_PERIOD));
-> +		regmap_update_bits(priv->regmap,
-> +				   PWM_ASPEED_DUTY_CYCLE_CH(index),
-> +				   PWM_ASPEED_RISING_POINT, 0);
-> +	}
-
-Please don't modify the output in .probe. .apply is the only function
-that is supposed to do that.
-
-> +
-> +	ret = pwmchip_add(&priv->chip);
-> +	if (ret < 0) {
-> +		dev_err(dev, "failed to add PWM chip: %pe\n", ERR_PTR(ret));
-> +		reset_control_assert(priv->reset);
-> +		clk_disable_unprepare(priv->clk);
-> +		return ret;
-> +	}
-> +	dev_set_drvdata(dev, priv);
-> +	return ret;
-
-s/ret/0/
-
-> +}
-> +
-> +static int aspeed_pwm_remove(struct platform_device *dev)
-> +{
-> +	struct aspeed_pwm_data *priv = platform_get_drvdata(dev);
-> +
-> +	pwmchip_remove(&priv->chip);
-> +	reset_control_assert(priv->reset);
-> +	clk_disable_unprepare(priv->clk);
-> +
-> +	return 0;
-> +}
-> +
-> +static const struct of_device_id of_pwm_match_table[] = {
-> +	{
-> +		.compatible = "aspeed,ast2600-pwm",
-> +	},
-> +	{},
-> +};
-> +MODULE_DEVICE_TABLE(of, of_pwm_match_table);
-> +
-> +static struct platform_driver aspeed_pwm_driver = {
-> +	.probe		= aspeed_pwm_probe,
-> +	.remove		= aspeed_pwm_remove,
-> +	.driver		= {
-> +		.name	= "aspeed_pwm",
-> +		.of_match_table = of_pwm_match_table,
-> +	},
-> +};
-
-Please use alignment of = consistently. Either don't do it at all (my
-favourite) or do it for all structs in the same way.
-
-Best regards
-Uwe
-
--- 
-Pengutronix e.K.                           | Uwe Kleine-K?nig            |
-Industrial Linux Solutions                 | https://www.pengutronix.de/ |
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 488 bytes
-Desc: not available
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20210510/b24f7aac/attachment-0001.sig>
