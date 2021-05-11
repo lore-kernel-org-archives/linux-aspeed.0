@@ -1,84 +1,184 @@
-From: Rob Herring <robh@kernel.org>
-Date: Mon, 10 May 2021 09:01:39 -0500
-Subject: [v4 1/2] dt-bindings: Add bindings for aspeed pwm-tach.
-In-Reply-To: <20210510073511.7291-2-billy_tsai@aspeedtech.com>
-References: <20210510073511.7291-1-billy_tsai@aspeedtech.com>
- <20210510073511.7291-2-billy_tsai@aspeedtech.com>
-Message-ID: <1620655299.806171.41440.nullmailer@robh.at.kernel.org>
+From: Guenter Roeck <linux@roeck-us.net>
+Date: Tue, 11 May 2021 06:35:14 -0700
+Subject: [PATCH] watchdog: Use sysfs_emit() and sysfs_emit_at() in "show"
+ functions
+In-Reply-To: <20210511061812.480172-1-juergh@canonical.com>
+References: <20210511061812.480172-1-juergh@canonical.com>
+Message-ID: <dbb5b8ea-a62d-2d69-231f-06cc87551f5a@roeck-us.net>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, 10 May 2021 15:35:10 +0800, Billy Tsai wrote:
-> This patch adds device binding for aspeed pwm-tach device which is a
-> multi-function device include pwm and tach function and pwm/tach device
-> bindings which should be the child-node of pwm-tach device.
+On 5/10/21 11:18 PM, Juerg Haefliger wrote:
+> Convert sprintf() in sysfs "show" functions to sysfs_emit() and
+> sysfs_emit_at() in order to check for buffer overruns in sysfs outputs.
 > 
-> Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
+> Signed-off-by: Juerg Haefliger <juergh@canonical.com>
+
+Reviewed-by: Guenter Roeck <linux@roeck-us.net>
+
 > ---
->  .../bindings/hwmon/aspeed,ast2600-tach.yaml   | 66 +++++++++++++++
->  .../bindings/mfd/aspeed,ast2600-pwm-tach.yaml | 82 +++++++++++++++++++
->  .../bindings/pwm/aspeed,ast2600-pwm.yaml      | 62 ++++++++++++++
->  3 files changed, 210 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/hwmon/aspeed,ast2600-tach.yaml
->  create mode 100644 Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.yaml
->  create mode 100644 Documentation/devicetree/bindings/pwm/aspeed,ast2600-pwm.yaml
+>   drivers/watchdog/aspeed_wdt.c          |  4 ++--
+>   drivers/watchdog/watchdog_dev.c        | 19 ++++++++++---------
+>   drivers/watchdog/watchdog_pretimeout.c |  4 ++--
+>   drivers/watchdog/ziirave_wdt.c         | 12 +++++++-----
+>   4 files changed, 21 insertions(+), 18 deletions(-)
 > 
-
-My bot found errors running 'make DT_CHECKER_FLAGS=-m dt_binding_check'
-on your patch (DT_CHECKER_FLAGS is new in v5.13):
-
-yamllint warnings/errors:
-
-dtschema/dtc warnings/errors:
-/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/hwmon/aspeed,ast2600-tach.yaml: Additional properties are not allowed ('child-node' was unexpected)
-	hint: Keywords must be a subset of known json-schema keywords
-	from schema $id: http://devicetree.org/meta-schemas/keywords.yaml#
-/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/hwmon/aspeed,ast2600-tach.yaml: 'child-node' is not one of ['$id', '$schema', 'title', 'description', 'examples', 'required', 'allOf', 'anyOf', 'oneOf', 'definitions', '$defs', 'additionalProperties', 'dependencies', 'patternProperties', 'properties', 'if', 'then', 'else', 'unevaluatedProperties', 'deprecated', 'maintainers', 'select']
-	from schema $id: http://devicetree.org/meta-schemas/base.yaml#
-/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/hwmon/aspeed,ast2600-tach.yaml: 'additionalProperties' is a required property
-	hint: A schema without a "$ref" to another schema must define all properties and use "additionalProperties"
-	from schema $id: http://devicetree.org/meta-schemas/base.yaml#
-/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.yaml: Additional properties are not allowed ('child-node' was unexpected)
-	hint: Keywords must be a subset of known json-schema keywords
-	from schema $id: http://devicetree.org/meta-schemas/keywords.yaml#
-/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.yaml: 'child-node' is not one of ['$id', '$schema', 'title', 'description', 'examples', 'required', 'allOf', 'anyOf', 'oneOf', 'definitions', '$defs', 'additionalProperties', 'dependencies', 'patternProperties', 'properties', 'if', 'then', 'else', 'unevaluatedProperties', 'deprecated', 'maintainers', 'select']
-	from schema $id: http://devicetree.org/meta-schemas/base.yaml#
-/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.yaml: 'additionalProperties' is a required property
-	hint: A schema without a "$ref" to another schema must define all properties and use "additionalProperties"
-	from schema $id: http://devicetree.org/meta-schemas/base.yaml#
-schemas/pwm/aspeed,ast2600-pwm.yaml: ignoring, error in schema: 
-schemas/hwmon/aspeed,ast2600-tach.yaml: ignoring, error in schema: 
-/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/pwm/aspeed,ast2600-pwm.yaml: Additional properties are not allowed ('child-node' was unexpected)
-	hint: Keywords must be a subset of known json-schema keywords
-	from schema $id: http://devicetree.org/meta-schemas/keywords.yaml#
-/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/pwm/aspeed,ast2600-pwm.yaml: 'child-node' is not one of ['$id', '$schema', 'title', 'description', 'examples', 'required', 'allOf', 'anyOf', 'oneOf', 'definitions', '$defs', 'additionalProperties', 'dependencies', 'patternProperties', 'properties', 'if', 'then', 'else', 'unevaluatedProperties', 'deprecated', 'maintainers', 'select']
-	from schema $id: http://devicetree.org/meta-schemas/base.yaml#
-/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/pwm/aspeed,ast2600-pwm.yaml: 'additionalProperties' is a required property
-	hint: A schema without a "$ref" to another schema must define all properties and use "additionalProperties"
-	from schema $id: http://devicetree.org/meta-schemas/base.yaml#
-/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/hwmon/aspeed,ast2600-tach.yaml: ignoring, error in schema: 
-warning: no schema found in file: ./Documentation/devicetree/bindings/hwmon/aspeed,ast2600-tach.yaml
-/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/pwm/aspeed,ast2600-pwm.yaml: ignoring, error in schema: 
-warning: no schema found in file: ./Documentation/devicetree/bindings/pwm/aspeed,ast2600-pwm.yaml
-/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.yaml: ignoring, error in schema: 
-warning: no schema found in file: ./Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.yaml
-Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.example.dt.yaml:0:0: /example-0/pwm_tach at 1e610000: failed to match any schema with compatible: ['aspeed,ast2600-pwm-tach', 'syscon', 'simple-mfd']
-Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.example.dt.yaml:0:0: /example-0/pwm_tach at 1e610000/pwm: failed to match any schema with compatible: ['aspeed,ast2600-pwm']
-Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.example.dt.yaml:0:0: /example-0/pwm_tach at 1e610000/tach: failed to match any schema with compatible: ['aspeed,ast2600-tach']
-
-See https://patchwork.ozlabs.org/patch/1476200
-
-This check can fail if there are any dependencies. The base for a patch
-series is generally the most recent rc1.
-
-If you already ran 'make dt_binding_check' and didn't see the above
-error(s), then make sure 'yamllint' is installed and dt-schema is up to
-date:
-
-pip3 install dtschema --upgrade
-
-Please check and re-submit.
+> diff --git a/drivers/watchdog/aspeed_wdt.c b/drivers/watchdog/aspeed_wdt.c
+> index 7e00960651fa..933998e5a9de 100644
+> --- a/drivers/watchdog/aspeed_wdt.c
+> +++ b/drivers/watchdog/aspeed_wdt.c
+> @@ -175,8 +175,8 @@ static ssize_t access_cs0_show(struct device *dev,
+>   	struct aspeed_wdt *wdt = dev_get_drvdata(dev);
+>   	u32 status = readl(wdt->base + WDT_TIMEOUT_STATUS);
+>   
+> -	return sprintf(buf, "%u\n",
+> -		      !(status & WDT_TIMEOUT_STATUS_BOOT_SECONDARY));
+> +	return sysfs_emit(buf, "%u\n",
+> +			  !(status & WDT_TIMEOUT_STATUS_BOOT_SECONDARY));
+>   }
+>   
+>   static ssize_t access_cs0_store(struct device *dev,
+> diff --git a/drivers/watchdog/watchdog_dev.c b/drivers/watchdog/watchdog_dev.c
+> index 2946f3a63110..fe68a97973a5 100644
+> --- a/drivers/watchdog/watchdog_dev.c
+> +++ b/drivers/watchdog/watchdog_dev.c
+> @@ -451,7 +451,8 @@ static ssize_t nowayout_show(struct device *dev, struct device_attribute *attr,
+>   {
+>   	struct watchdog_device *wdd = dev_get_drvdata(dev);
+>   
+> -	return sprintf(buf, "%d\n", !!test_bit(WDOG_NO_WAY_OUT, &wdd->status));
+> +	return sysfs_emit(buf, "%d\n", !!test_bit(WDOG_NO_WAY_OUT,
+> +						  &wdd->status));
+>   }
+>   
+>   static ssize_t nowayout_store(struct device *dev, struct device_attribute *attr,
+> @@ -485,7 +486,7 @@ static ssize_t status_show(struct device *dev, struct device_attribute *attr,
+>   	status = watchdog_get_status(wdd);
+>   	mutex_unlock(&wd_data->lock);
+>   
+> -	return sprintf(buf, "0x%x\n", status);
+> +	return sysfs_emit(buf, "0x%x\n", status);
+>   }
+>   static DEVICE_ATTR_RO(status);
+>   
+> @@ -494,7 +495,7 @@ static ssize_t bootstatus_show(struct device *dev,
+>   {
+>   	struct watchdog_device *wdd = dev_get_drvdata(dev);
+>   
+> -	return sprintf(buf, "%u\n", wdd->bootstatus);
+> +	return sysfs_emit(buf, "%u\n", wdd->bootstatus);
+>   }
+>   static DEVICE_ATTR_RO(bootstatus);
+>   
+> @@ -510,7 +511,7 @@ static ssize_t timeleft_show(struct device *dev, struct device_attribute *attr,
+>   	status = watchdog_get_timeleft(wdd, &val);
+>   	mutex_unlock(&wd_data->lock);
+>   	if (!status)
+> -		status = sprintf(buf, "%u\n", val);
+> +		status = sysfs_emit(buf, "%u\n", val);
+>   
+>   	return status;
+>   }
+> @@ -521,7 +522,7 @@ static ssize_t timeout_show(struct device *dev, struct device_attribute *attr,
+>   {
+>   	struct watchdog_device *wdd = dev_get_drvdata(dev);
+>   
+> -	return sprintf(buf, "%u\n", wdd->timeout);
+> +	return sysfs_emit(buf, "%u\n", wdd->timeout);
+>   }
+>   static DEVICE_ATTR_RO(timeout);
+>   
+> @@ -530,7 +531,7 @@ static ssize_t pretimeout_show(struct device *dev,
+>   {
+>   	struct watchdog_device *wdd = dev_get_drvdata(dev);
+>   
+> -	return sprintf(buf, "%u\n", wdd->pretimeout);
+> +	return sysfs_emit(buf, "%u\n", wdd->pretimeout);
+>   }
+>   static DEVICE_ATTR_RO(pretimeout);
+>   
+> @@ -539,7 +540,7 @@ static ssize_t identity_show(struct device *dev, struct device_attribute *attr,
+>   {
+>   	struct watchdog_device *wdd = dev_get_drvdata(dev);
+>   
+> -	return sprintf(buf, "%s\n", wdd->info->identity);
+> +	return sysfs_emit(buf, "%s\n", wdd->info->identity);
+>   }
+>   static DEVICE_ATTR_RO(identity);
+>   
+> @@ -549,9 +550,9 @@ static ssize_t state_show(struct device *dev, struct device_attribute *attr,
+>   	struct watchdog_device *wdd = dev_get_drvdata(dev);
+>   
+>   	if (watchdog_active(wdd))
+> -		return sprintf(buf, "active\n");
+> +		return sysfs_emit(buf, "active\n");
+>   
+> -	return sprintf(buf, "inactive\n");
+> +	return sysfs_emit(buf, "inactive\n");
+>   }
+>   static DEVICE_ATTR_RO(state);
+>   
+> diff --git a/drivers/watchdog/watchdog_pretimeout.c b/drivers/watchdog/watchdog_pretimeout.c
+> index 01ca84be240f..7f257c3485cd 100644
+> --- a/drivers/watchdog/watchdog_pretimeout.c
+> +++ b/drivers/watchdog/watchdog_pretimeout.c
+> @@ -55,7 +55,7 @@ int watchdog_pretimeout_available_governors_get(char *buf)
+>   	mutex_lock(&governor_lock);
+>   
+>   	list_for_each_entry(priv, &governor_list, entry)
+> -		count += sprintf(buf + count, "%s\n", priv->gov->name);
+> +		count += sysfs_emit_at(buf, count, "%s\n", priv->gov->name);
+>   
+>   	mutex_unlock(&governor_lock);
+>   
+> @@ -68,7 +68,7 @@ int watchdog_pretimeout_governor_get(struct watchdog_device *wdd, char *buf)
+>   
+>   	spin_lock_irq(&pretimeout_lock);
+>   	if (wdd->gov)
+> -		count = sprintf(buf, "%s\n", wdd->gov->name);
+> +		count = sysfs_emit(buf, "%s\n", wdd->gov->name);
+>   	spin_unlock_irq(&pretimeout_lock);
+>   
+>   	return count;
+> diff --git a/drivers/watchdog/ziirave_wdt.c b/drivers/watchdog/ziirave_wdt.c
+> index 4297280807ca..6c9414d09684 100644
+> --- a/drivers/watchdog/ziirave_wdt.c
+> +++ b/drivers/watchdog/ziirave_wdt.c
+> @@ -445,8 +445,9 @@ static ssize_t ziirave_wdt_sysfs_show_firm(struct device *dev,
+>   	if (ret)
+>   		return ret;
+>   
+> -	ret = sprintf(buf, ZIIRAVE_FW_VERSION_FMT, w_priv->firmware_rev.major,
+> -		      w_priv->firmware_rev.minor);
+> +	ret = sysfs_emit(buf, ZIIRAVE_FW_VERSION_FMT,
+> +			 w_priv->firmware_rev.major,
+> +			 w_priv->firmware_rev.minor);
+>   
+>   	mutex_unlock(&w_priv->sysfs_mutex);
+>   
+> @@ -468,8 +469,9 @@ static ssize_t ziirave_wdt_sysfs_show_boot(struct device *dev,
+>   	if (ret)
+>   		return ret;
+>   
+> -	ret = sprintf(buf, ZIIRAVE_BL_VERSION_FMT, w_priv->bootloader_rev.major,
+> -		      w_priv->bootloader_rev.minor);
+> +	ret = sysfs_emit(buf, ZIIRAVE_BL_VERSION_FMT,
+> +			 w_priv->bootloader_rev.major,
+> +			 w_priv->bootloader_rev.minor);
+>   
+>   	mutex_unlock(&w_priv->sysfs_mutex);
+>   
+> @@ -491,7 +493,7 @@ static ssize_t ziirave_wdt_sysfs_show_reason(struct device *dev,
+>   	if (ret)
+>   		return ret;
+>   
+> -	ret = sprintf(buf, "%s", ziirave_reasons[w_priv->reset_reason]);
+> +	ret = sysfs_emit(buf, "%s", ziirave_reasons[w_priv->reset_reason]);
+>   
+>   	mutex_unlock(&w_priv->sysfs_mutex);
+>   
+> 
 
