@@ -1,179 +1,96 @@
-From: Juerg Haefliger <juerg.haefliger@canonical.com>
-Date: Tue, 11 May 2021 08:18:12 +0200
-Subject: [PATCH] watchdog: Use sysfs_emit() and sysfs_emit_at() in "show"
- functions
-Message-ID: <20210511061812.480172-1-juergh@canonical.com>
+From: David Gow <davidgow@google.com>
+Date: Thu, 13 May 2021 12:32:00 -0700
+Subject: [PATCH v2 06/10] mmc: sdhci-of-aspeed: Remove some unnecessary casts
+ from KUnit tests
+In-Reply-To: <20210513193204.816681-1-davidgow@google.com>
+References: <20210513193204.816681-1-davidgow@google.com>
+Message-ID: <20210513193204.816681-6-davidgow@google.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Convert sprintf() in sysfs "show" functions to sysfs_emit() and
-sysfs_emit_at() in order to check for buffer overruns in sysfs outputs.
+With KUnit's EXPECT macros no longer typechecking arguments as strictly,
+get rid of a number of now unnecessary casts.
 
-Signed-off-by: Juerg Haefliger <juergh@canonical.com>
+Signed-off-by: David Gow <davidgow@google.com>
 ---
- drivers/watchdog/aspeed_wdt.c          |  4 ++--
- drivers/watchdog/watchdog_dev.c        | 19 ++++++++++---------
- drivers/watchdog/watchdog_pretimeout.c |  4 ++--
- drivers/watchdog/ziirave_wdt.c         | 12 +++++++-----
- 4 files changed, 21 insertions(+), 18 deletions(-)
+This should be a no-op functionality wise, and while it depends on the
+first couple of patches in this series, it's otherwise independent from
+the others. I think this makes the test more readable, but if you
+particularly dislike it, I'm happy to drop it.
 
-diff --git a/drivers/watchdog/aspeed_wdt.c b/drivers/watchdog/aspeed_wdt.c
-index 7e00960651fa..933998e5a9de 100644
---- a/drivers/watchdog/aspeed_wdt.c
-+++ b/drivers/watchdog/aspeed_wdt.c
-@@ -175,8 +175,8 @@ static ssize_t access_cs0_show(struct device *dev,
- 	struct aspeed_wdt *wdt = dev_get_drvdata(dev);
- 	u32 status = readl(wdt->base + WDT_TIMEOUT_STATUS);
+ drivers/mmc/host/sdhci-of-aspeed-test.c | 34 ++++++++++++-------------
+ 1 file changed, 17 insertions(+), 17 deletions(-)
+
+diff --git a/drivers/mmc/host/sdhci-of-aspeed-test.c b/drivers/mmc/host/sdhci-of-aspeed-test.c
+index bb67d159b7d8..1ed4f86291f2 100644
+--- a/drivers/mmc/host/sdhci-of-aspeed-test.c
++++ b/drivers/mmc/host/sdhci-of-aspeed-test.c
+@@ -26,23 +26,23 @@ static void aspeed_sdhci_phase_ddr52(struct kunit *test)
+ 	KUNIT_EXPECT_EQ(test, 15,
+ 			aspeed_sdhci_phase_to_tap(NULL, rate, 25));
  
--	return sprintf(buf, "%u\n",
--		      !(status & WDT_TIMEOUT_STATUS_BOOT_SECONDARY));
-+	return sysfs_emit(buf, "%u\n",
-+			  !(status & WDT_TIMEOUT_STATUS_BOOT_SECONDARY));
+-	KUNIT_EXPECT_EQ(test, (int)ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 0,
++	KUNIT_EXPECT_EQ(test, ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 0,
+ 			aspeed_sdhci_phase_to_tap(NULL, rate, 180));
+-	KUNIT_EXPECT_EQ(test, (int)ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 0,
++	KUNIT_EXPECT_EQ(test, ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 0,
+ 			aspeed_sdhci_phase_to_tap(NULL, rate, 181));
+-	KUNIT_EXPECT_EQ(test, (int)ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 1,
++	KUNIT_EXPECT_EQ(test, ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 1,
+ 			aspeed_sdhci_phase_to_tap(NULL, rate, 182));
+-	KUNIT_EXPECT_EQ(test, (int)ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 1,
++	KUNIT_EXPECT_EQ(test, ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 1,
+ 			aspeed_sdhci_phase_to_tap(NULL, rate, 183));
+-	KUNIT_EXPECT_EQ(test, (int)ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 2,
++	KUNIT_EXPECT_EQ(test, ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 2,
+ 			aspeed_sdhci_phase_to_tap(NULL, rate, 184));
+-	KUNIT_EXPECT_EQ(test, (int)ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 3,
++	KUNIT_EXPECT_EQ(test, ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 3,
+ 			aspeed_sdhci_phase_to_tap(NULL, rate, 185));
+-	KUNIT_EXPECT_EQ(test, (int)ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 14,
++	KUNIT_EXPECT_EQ(test, ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 14,
+ 			aspeed_sdhci_phase_to_tap(NULL, rate, 203));
+-	KUNIT_EXPECT_EQ(test, (int)ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 15,
++	KUNIT_EXPECT_EQ(test, ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 15,
+ 			aspeed_sdhci_phase_to_tap(NULL, rate, 204));
+-	KUNIT_EXPECT_EQ(test, (int)ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 15,
++	KUNIT_EXPECT_EQ(test, ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 15,
+ 			aspeed_sdhci_phase_to_tap(NULL, rate, 205));
  }
  
- static ssize_t access_cs0_store(struct device *dev,
-diff --git a/drivers/watchdog/watchdog_dev.c b/drivers/watchdog/watchdog_dev.c
-index 2946f3a63110..fe68a97973a5 100644
---- a/drivers/watchdog/watchdog_dev.c
-+++ b/drivers/watchdog/watchdog_dev.c
-@@ -451,7 +451,8 @@ static ssize_t nowayout_show(struct device *dev, struct device_attribute *attr,
- {
- 	struct watchdog_device *wdd = dev_get_drvdata(dev);
+@@ -67,21 +67,21 @@ static void aspeed_sdhci_phase_hs200(struct kunit *test)
+ 	KUNIT_EXPECT_EQ(test, 15,
+ 			aspeed_sdhci_phase_to_tap(NULL, rate, 96));
  
--	return sprintf(buf, "%d\n", !!test_bit(WDOG_NO_WAY_OUT, &wdd->status));
-+	return sysfs_emit(buf, "%d\n", !!test_bit(WDOG_NO_WAY_OUT,
-+						  &wdd->status));
+-	KUNIT_EXPECT_EQ(test, (int)ASPEED_SDHCI_TAP_PARAM_INVERT_CLK,
++	KUNIT_EXPECT_EQ(test, ASPEED_SDHCI_TAP_PARAM_INVERT_CLK,
+ 			aspeed_sdhci_phase_to_tap(NULL, rate, 180));
+-	KUNIT_EXPECT_EQ(test, (int)ASPEED_SDHCI_TAP_PARAM_INVERT_CLK,
++	KUNIT_EXPECT_EQ(test, ASPEED_SDHCI_TAP_PARAM_INVERT_CLK,
+ 			aspeed_sdhci_phase_to_tap(NULL, rate, 185));
+-	KUNIT_EXPECT_EQ(test, (int)ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 1,
++	KUNIT_EXPECT_EQ(test, ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 1,
+ 			aspeed_sdhci_phase_to_tap(NULL, rate, 186));
+-	KUNIT_EXPECT_EQ(test, (int)ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 1,
++	KUNIT_EXPECT_EQ(test, ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 1,
+ 			aspeed_sdhci_phase_to_tap(NULL, rate, 187));
+-	KUNIT_EXPECT_EQ(test, (int)ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 14,
++	KUNIT_EXPECT_EQ(test, ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 14,
+ 			aspeed_sdhci_phase_to_tap(NULL, rate, 269));
+-	KUNIT_EXPECT_EQ(test, (int)ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 15,
++	KUNIT_EXPECT_EQ(test, ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 15,
+ 			aspeed_sdhci_phase_to_tap(NULL, rate, 270));
+-	KUNIT_EXPECT_EQ(test, (int)ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 15,
++	KUNIT_EXPECT_EQ(test, ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 15,
+ 			aspeed_sdhci_phase_to_tap(NULL, rate, 271));
+-	KUNIT_EXPECT_EQ(test, (int)ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 15,
++	KUNIT_EXPECT_EQ(test, ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 15,
+ 			aspeed_sdhci_phase_to_tap(NULL, rate, 276));
  }
- 
- static ssize_t nowayout_store(struct device *dev, struct device_attribute *attr,
-@@ -485,7 +486,7 @@ static ssize_t status_show(struct device *dev, struct device_attribute *attr,
- 	status = watchdog_get_status(wdd);
- 	mutex_unlock(&wd_data->lock);
- 
--	return sprintf(buf, "0x%x\n", status);
-+	return sysfs_emit(buf, "0x%x\n", status);
- }
- static DEVICE_ATTR_RO(status);
- 
-@@ -494,7 +495,7 @@ static ssize_t bootstatus_show(struct device *dev,
- {
- 	struct watchdog_device *wdd = dev_get_drvdata(dev);
- 
--	return sprintf(buf, "%u\n", wdd->bootstatus);
-+	return sysfs_emit(buf, "%u\n", wdd->bootstatus);
- }
- static DEVICE_ATTR_RO(bootstatus);
- 
-@@ -510,7 +511,7 @@ static ssize_t timeleft_show(struct device *dev, struct device_attribute *attr,
- 	status = watchdog_get_timeleft(wdd, &val);
- 	mutex_unlock(&wd_data->lock);
- 	if (!status)
--		status = sprintf(buf, "%u\n", val);
-+		status = sysfs_emit(buf, "%u\n", val);
- 
- 	return status;
- }
-@@ -521,7 +522,7 @@ static ssize_t timeout_show(struct device *dev, struct device_attribute *attr,
- {
- 	struct watchdog_device *wdd = dev_get_drvdata(dev);
- 
--	return sprintf(buf, "%u\n", wdd->timeout);
-+	return sysfs_emit(buf, "%u\n", wdd->timeout);
- }
- static DEVICE_ATTR_RO(timeout);
- 
-@@ -530,7 +531,7 @@ static ssize_t pretimeout_show(struct device *dev,
- {
- 	struct watchdog_device *wdd = dev_get_drvdata(dev);
- 
--	return sprintf(buf, "%u\n", wdd->pretimeout);
-+	return sysfs_emit(buf, "%u\n", wdd->pretimeout);
- }
- static DEVICE_ATTR_RO(pretimeout);
- 
-@@ -539,7 +540,7 @@ static ssize_t identity_show(struct device *dev, struct device_attribute *attr,
- {
- 	struct watchdog_device *wdd = dev_get_drvdata(dev);
- 
--	return sprintf(buf, "%s\n", wdd->info->identity);
-+	return sysfs_emit(buf, "%s\n", wdd->info->identity);
- }
- static DEVICE_ATTR_RO(identity);
- 
-@@ -549,9 +550,9 @@ static ssize_t state_show(struct device *dev, struct device_attribute *attr,
- 	struct watchdog_device *wdd = dev_get_drvdata(dev);
- 
- 	if (watchdog_active(wdd))
--		return sprintf(buf, "active\n");
-+		return sysfs_emit(buf, "active\n");
- 
--	return sprintf(buf, "inactive\n");
-+	return sysfs_emit(buf, "inactive\n");
- }
- static DEVICE_ATTR_RO(state);
- 
-diff --git a/drivers/watchdog/watchdog_pretimeout.c b/drivers/watchdog/watchdog_pretimeout.c
-index 01ca84be240f..7f257c3485cd 100644
---- a/drivers/watchdog/watchdog_pretimeout.c
-+++ b/drivers/watchdog/watchdog_pretimeout.c
-@@ -55,7 +55,7 @@ int watchdog_pretimeout_available_governors_get(char *buf)
- 	mutex_lock(&governor_lock);
- 
- 	list_for_each_entry(priv, &governor_list, entry)
--		count += sprintf(buf + count, "%s\n", priv->gov->name);
-+		count += sysfs_emit_at(buf, count, "%s\n", priv->gov->name);
- 
- 	mutex_unlock(&governor_lock);
- 
-@@ -68,7 +68,7 @@ int watchdog_pretimeout_governor_get(struct watchdog_device *wdd, char *buf)
- 
- 	spin_lock_irq(&pretimeout_lock);
- 	if (wdd->gov)
--		count = sprintf(buf, "%s\n", wdd->gov->name);
-+		count = sysfs_emit(buf, "%s\n", wdd->gov->name);
- 	spin_unlock_irq(&pretimeout_lock);
- 
- 	return count;
-diff --git a/drivers/watchdog/ziirave_wdt.c b/drivers/watchdog/ziirave_wdt.c
-index 4297280807ca..6c9414d09684 100644
---- a/drivers/watchdog/ziirave_wdt.c
-+++ b/drivers/watchdog/ziirave_wdt.c
-@@ -445,8 +445,9 @@ static ssize_t ziirave_wdt_sysfs_show_firm(struct device *dev,
- 	if (ret)
- 		return ret;
- 
--	ret = sprintf(buf, ZIIRAVE_FW_VERSION_FMT, w_priv->firmware_rev.major,
--		      w_priv->firmware_rev.minor);
-+	ret = sysfs_emit(buf, ZIIRAVE_FW_VERSION_FMT,
-+			 w_priv->firmware_rev.major,
-+			 w_priv->firmware_rev.minor);
- 
- 	mutex_unlock(&w_priv->sysfs_mutex);
- 
-@@ -468,8 +469,9 @@ static ssize_t ziirave_wdt_sysfs_show_boot(struct device *dev,
- 	if (ret)
- 		return ret;
- 
--	ret = sprintf(buf, ZIIRAVE_BL_VERSION_FMT, w_priv->bootloader_rev.major,
--		      w_priv->bootloader_rev.minor);
-+	ret = sysfs_emit(buf, ZIIRAVE_BL_VERSION_FMT,
-+			 w_priv->bootloader_rev.major,
-+			 w_priv->bootloader_rev.minor);
- 
- 	mutex_unlock(&w_priv->sysfs_mutex);
- 
-@@ -491,7 +493,7 @@ static ssize_t ziirave_wdt_sysfs_show_reason(struct device *dev,
- 	if (ret)
- 		return ret;
- 
--	ret = sprintf(buf, "%s", ziirave_reasons[w_priv->reset_reason]);
-+	ret = sysfs_emit(buf, "%s", ziirave_reasons[w_priv->reset_reason]);
- 
- 	mutex_unlock(&w_priv->sysfs_mutex);
  
 -- 
-2.27.0
+2.31.1.751.gd2f1c929bd-goog
 
