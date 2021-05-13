@@ -1,60 +1,74 @@
-From: Joe Perches <joe@perches.com>
-Date: Wed, 12 May 2021 21:48:37 -0700
-Subject: [PATCH] watchdog: Use sysfs_emit() and sysfs_emit_at() in
- "show" functions
-In-Reply-To: <20210511061812.480172-1-juergh@canonical.com>
-References: <20210511061812.480172-1-juergh@canonical.com>
-Message-ID: <f2e616645f311ccaf6e0acb996f8c4360a0480ec.camel@perches.com>
+From: Zou Wei <zou_wei@huawei.com>
+Date: Thu, 13 May 2021 16:57:29 +0800
+Subject: [PATCH -next] fsi: Add missing MODULE_DEVICE_TABLE
+Message-ID: <1620896249-52769-1-git-send-email-zou_wei@huawei.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, 2021-05-11 at 08:18 +0200, Juerg Haefliger wrote:
-> Convert sprintf() in sysfs "show" functions to sysfs_emit() and
-> sysfs_emit_at() in order to check for buffer overruns in sysfs outputs.
-[]
-> diff --git a/drivers/watchdog/ziirave_wdt.c b/drivers/watchdog/ziirave_wdt.c
-[]
-> @@ -445,8 +445,9 @@ static ssize_t ziirave_wdt_sysfs_show_firm(struct device *dev,
-> ?	if (ret)
-> ?		return ret;
-> ?
-> 
-> -	ret = sprintf(buf, ZIIRAVE_FW_VERSION_FMT, w_priv->firmware_rev.major,
-> -		      w_priv->firmware_rev.minor);
-> +	ret = sysfs_emit(buf, ZIIRAVE_FW_VERSION_FMT,
-> +			 w_priv->firmware_rev.major,
-> +			 w_priv->firmware_rev.minor);
-> ?
-> 
-> ?	mutex_unlock(&w_priv->sysfs_mutex);
-> ?
-> 
-> @@ -468,8 +469,9 @@ static ssize_t ziirave_wdt_sysfs_show_boot(struct device *dev,
-> ?	if (ret)
-> ?		return ret;
-> ?
-> 
-> -	ret = sprintf(buf, ZIIRAVE_BL_VERSION_FMT, w_priv->bootloader_rev.major,
-> -		      w_priv->bootloader_rev.minor);
-> +	ret = sysfs_emit(buf, ZIIRAVE_BL_VERSION_FMT,
-> +			 w_priv->bootloader_rev.major,
-> +			 w_priv->bootloader_rev.minor);
-> ?
-> 
-> ?	mutex_unlock(&w_priv->sysfs_mutex);
-> ?
-> 
-> @@ -491,7 +493,7 @@ static ssize_t ziirave_wdt_sysfs_show_reason(struct device *dev,
-> ?	if (ret)
-> ?		return ret;
-> ?
-> 
-> -	ret = sprintf(buf, "%s", ziirave_reasons[w_priv->reset_reason]);
-> +	ret = sysfs_emit(buf, "%s", ziirave_reasons[w_priv->reset_reason]);
+This patch adds missing MODULE_DEVICE_TABLE definition which generates
+correct modalias for automatic loading of this driver when it is built
+as an external module.
 
-All of these formats should probably end with a newline
-and the ZIIRAVE_<FOO>_VERSION_FMT defines are to me unnecessary.
+Reported-by: Hulk Robot <hulkci@huawei.com>
+Signed-off-by: Zou Wei <zou_wei@huawei.com>
+---
+ drivers/fsi/fsi-master-aspeed.c | 1 +
+ drivers/fsi/fsi-master-ast-cf.c | 1 +
+ drivers/fsi/fsi-master-gpio.c   | 1 +
+ drivers/fsi/fsi-occ.c           | 1 +
+ 4 files changed, 4 insertions(+)
+
+diff --git a/drivers/fsi/fsi-master-aspeed.c b/drivers/fsi/fsi-master-aspeed.c
+index 90dbe58..dbad731 100644
+--- a/drivers/fsi/fsi-master-aspeed.c
++++ b/drivers/fsi/fsi-master-aspeed.c
+@@ -645,6 +645,7 @@ static const struct of_device_id fsi_master_aspeed_match[] = {
+ 	{ .compatible = "aspeed,ast2600-fsi-master" },
+ 	{ },
+ };
++MODULE_DEVICE_TABLE(of, fsi_master_aspeed_match);
+ 
+ static struct platform_driver fsi_master_aspeed_driver = {
+ 	.driver = {
+diff --git a/drivers/fsi/fsi-master-ast-cf.c b/drivers/fsi/fsi-master-ast-cf.c
+index 57a779a..70c03e3 100644
+--- a/drivers/fsi/fsi-master-ast-cf.c
++++ b/drivers/fsi/fsi-master-ast-cf.c
+@@ -1427,6 +1427,7 @@ static const struct of_device_id fsi_master_acf_match[] = {
+ 	{ .compatible = "aspeed,ast2500-cf-fsi-master" },
+ 	{ },
+ };
++MODULE_DEVICE_TABLE(of, fsi_master_acf_match);
+ 
+ static struct platform_driver fsi_master_acf = {
+ 	.driver = {
+diff --git a/drivers/fsi/fsi-master-gpio.c b/drivers/fsi/fsi-master-gpio.c
+index aa97c4a..7d5f29b 100644
+--- a/drivers/fsi/fsi-master-gpio.c
++++ b/drivers/fsi/fsi-master-gpio.c
+@@ -882,6 +882,7 @@ static const struct of_device_id fsi_master_gpio_match[] = {
+ 	{ .compatible = "fsi-master-gpio" },
+ 	{ },
+ };
++MODULE_DEVICE_TABLE(of, fsi_master_gpio_match);
+ 
+ static struct platform_driver fsi_master_gpio_driver = {
+ 	.driver = {
+diff --git a/drivers/fsi/fsi-occ.c b/drivers/fsi/fsi-occ.c
+index 10ca2e2..f9a8808 100644
+--- a/drivers/fsi/fsi-occ.c
++++ b/drivers/fsi/fsi-occ.c
+@@ -635,6 +635,7 @@ static const struct of_device_id occ_match[] = {
+ 	},
+ 	{ },
+ };
++MODULE_DEVICE_TABLE(of, occ_match);
+ 
+ static struct platform_driver occ_driver = {
+ 	.driver = {
+-- 
+2.6.2
 
