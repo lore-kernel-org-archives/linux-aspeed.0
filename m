@@ -1,92 +1,130 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Fri, 14 May 2021 11:28:49 +0930
-Subject: =?UTF-8?Q?Re:_[PATCH_2/3]_serial:_8250=5Faspeed=5Fvuart:_initialize_vuar?=
- =?UTF-8?Q?t->port_in_aspeed=5Fvuart=5Fprobe()?=
-In-Reply-To: <YJ19LMLV1HXk6BMf@hatter.bewilderbeest.net>
-References: <20210510014231.647-1-zev@bewilderbeest.net>
- <20210510014231.647-3-zev@bewilderbeest.net>
- <6d4338e2-d9be-411a-aeb7-7d46121b73d4@www.fastmail.com>
- <YJ19LMLV1HXk6BMf@hatter.bewilderbeest.net>
-Message-ID: <6f530a9e-7d73-4ed8-90d4-29af079c0c2f@www.fastmail.com>
+From: Steven Lee <steven_lee@aspeedtech.com>
+Date: Fri, 14 May 2021 10:09:01 +0800
+Subject: [PATCH v3 5/5] mmc: sdhci-of-aspeed: Assert/Deassert reset
+ signal before probing eMMC
+In-Reply-To: <f063cb34-9a42-4373-a333-cad1d8a9c37b@www.fastmail.com>
+References: <20210506100312.1638-1-steven_lee@aspeedtech.com>
+ <20210506100312.1638-6-steven_lee@aspeedtech.com>
+ <20210506102458.GA20777@pengutronix.de>
+ <19a81e25-dfa1-4ad3-9628-19f43f4230d2@www.fastmail.com>
+ <20210507062416.GD23749@aspeedtech.com>
+ <2a339218-19d7-4eea-a734-8053dd553dbb@www.fastmail.com>
+ <20210510060338.GB6883@aspeedtech.com>
+ <f063cb34-9a42-4373-a333-cad1d8a9c37b@www.fastmail.com>
+Message-ID: <20210514020900.GB540@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-
-
-On Fri, 14 May 2021, at 04:55, Zev Weiss wrote:
-> On Wed, May 12, 2021 at 08:34:06PM CDT, Andrew Jeffery wrote:
-> >
-> >
-> >On Mon, 10 May 2021, at 11:12, Zev Weiss wrote:
-> >> Previously this had only been initialized if we hit the throttling path
-> >> in aspeed_vuart_handle_irq(); moving it to the probe function is a
-> >> slight consistency improvement and avoids redundant reinitialization in
-> >> the interrupt handler.  It also serves as preparation for converting the
-> >> driver's I/O accesses to use port->port.membase instead of its own
-> >> vuart->regs.
-> >>
-> >> Signed-off-by: Zev Weiss <zev@bewilderbeest.net>
-> >> ---
-> >>  drivers/tty/serial/8250/8250_aspeed_vuart.c | 5 ++---
-> >>  1 file changed, 2 insertions(+), 3 deletions(-)
-> >>
-> >> diff --git a/drivers/tty/serial/8250/8250_aspeed_vuart.c
-> >> b/drivers/tty/serial/8250/8250_aspeed_vuart.c
-> >> index 9e8b2e8e32b6..249164dc397b 100644
-> >> --- a/drivers/tty/serial/8250/8250_aspeed_vuart.c
-> >> +++ b/drivers/tty/serial/8250/8250_aspeed_vuart.c
-> >> @@ -349,11 +349,9 @@ static int aspeed_vuart_handle_irq(struct
-> >> uart_port *port)
-> >>  			struct aspeed_vuart *vuart = port->private_data;
-> >>  			__aspeed_vuart_set_throttle(up, true);
-> >>
-> >> -			if (!timer_pending(&vuart->unthrottle_timer)) {
-> >> -				vuart->port = up;
-> >> +			if (!timer_pending(&vuart->unthrottle_timer))
-> >>  				mod_timer(&vuart->unthrottle_timer,
-> >>  					  jiffies + unthrottle_timeout);
-> >> -			}
-> >>
-> >>  		} else {
-> >>  			count = min(space, 256);
-> >> @@ -511,6 +509,7 @@ static int aspeed_vuart_probe(struct platform_device *pdev)
-> >>  		goto err_clk_disable;
-> >>
-> >>  	vuart->line = rc;
-> >> +	vuart->port = serial8250_get_port(vuart->line);
-> >
-> >The documentation of serial8250_get_port() is somewhat concerning wrt
-> >the use:
-> >
-> >https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/tty/serial/8250/8250_core.c?h=v5.13-rc1#n399
+The 05/13/2021 08:42, Andrew Jeffery wrote:
 > 
-> Hmm, good point -- though despite that comment it looks like there is 
-> some existing code using it outside of suspend/resume callbacks (in 
-> 8250_pci.c and 8250_pnp.c).  I'm not certain if those would necessarily 
-> be considered good precedent to follow for this, but I don't see any 
-> obvious better way of getting hold of the corresponding uart_8250_port 
-> (or its port.membase).
 > 
-> I did receive a notification that Greg had added this series to his 
-> tty-testing branch; not sure if that means he thinks it's OK or if it 
-> just kind of slipped by unnoticed though.
-
-Yeah, I just highlighted it in case anyone else wanted to weigh in.
-
-Essentially I'm just deferring to Greg. If he's picked them up, great!
-
+> On Mon, 10 May 2021, at 15:33, Steven Lee wrote:
+> > The 05/07/2021 15:36, Andrew Jeffery wrote:
+> > > 
+> > > 
+> > > On Fri, 7 May 2021, at 15:54, Steven Lee wrote:
+> > > > The 05/07/2021 09:32, Andrew Jeffery wrote:
+> > > > > 
+> > > > > 
+> > > > > On Thu, 6 May 2021, at 19:54, Philipp Zabel wrote:
+> > > > > > Hi Steven,
+> > > > > > 
+> > > > > > On Thu, May 06, 2021 at 06:03:12PM +0800, Steven Lee wrote:
+> > > > > > > +	if (info) {
+> > > > > > > +		if (info->flag & PROBE_AFTER_ASSET_DEASSERT) {
+> > > > > > > +			sdc->rst = devm_reset_control_get(&pdev->dev, NULL);
+> > > > > > 
+> > > > > > Please use devm_reset_control_get_exclusive() or
+> > > > > > devm_reset_control_get_optional_exclusive().
+> > > > > > 
+> > > > > > > +			if (!IS_ERR(sdc->rst)) {
+> > > > > > 
+> > > > > > Please just return errors here instead of ignoring them.
+> > > > > > The reset_control_get_optional variants return NULL in case the
+> > > > > > device node doesn't contain a resets phandle, in case you really
+> > > > > > consider this reset to be optional even though the flag is set?
+> > > > > 
+> > > > > It feels like we should get rid of the flag and leave it to the 
+> > > > > devicetree.
+> > > > > 
+> > > > 
+> > > > Do you mean adding a flag, for instance, "mmc-reset" in the
+> > > > device tree and call of_property_read_bool() in aspeed_sdc_probe()?
+> > > > 
+> > > > > I'm still kind of surprised it's not something we want to do for the 
+> > > > > 2400 and 2500 as well.
+> > > > > 
+> > > > 
+> > > > Per discussion with the chip designer, AST2400 and AST2500 doesn't need
+> > > > this implementation since the chip design is different to AST2600.
+> > > 
+> > > So digging a bit more deeply on this, it looks like the reset is 
+> > > already taken care of by drivers/clk/clk-ast2600.c in the 
+> > > clk_prepare_enable() path.
+> > > 
+> > > clk-ast2600 handles resets when enabling the clock for most peripherals:
+> > > 
+> > > https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/clk/clk-ast2600.c?h=v5.12#n276
+> > > 
+> > > and this is true for both the SD controller and the eMMC controller:
+> > > 
+> > > https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/clk/clk-ast2600.c?h=v5.12#n94
+> > > https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/clk/clk-ast2600.c?h=v5.12#n88
+> > > 
+> > > If this weren't the case you'd specify a reset property in the SD/eMMC 
+> > > devicetree nodes for the 2600 and then use 
+> > > devm_reset_control_get_optional_exclusive() as Philipp suggested. See 
+> > > the reset binding here:
+> > > 
+> > > https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Documentation/devicetree/bindings/reset/reset.txt?h=v5.12
+> > > 
+> > > So on the surface it seems the reset handling in this patch is 
+> > > unnecessary. Have you observed an issue with the SoC that means it's 
+> > > required?
+> > > 
+> > 
+> > Yes, you are right, aspeed_sdc_probe() calls clk_prepare_enable(),
+> > aspeed_g6_clk_enable() does reset eMMC.
+> > 
+> > https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/mmc/host/sdhci-of-aspeed.c#n496
+> > 
+> > However, the clock of eMMC is enabled in my u-boot(2019.04).
+> > So it is retruned in the condition of aspeed_g6_clk_is_enabled() below
+> > and doesn't reset eMMC.
+> > 
+> > https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/clk/clk-ast2600.c?h=v5.12#n285
 > 
-> >
-> >However, given the existing behaviour it shouldn't be problematic?
-> >
+> Okay, so what's the issue that the patch addresses? Is there a bug? 
+> Presumably if u-boot isn't making use of the eMMC the clock won't be 
+> on, so we'll do the reset if the kernel wants to make use of the 
+> device. If u-boot _is_ using the eMMC, u-boot will have done the 
+> correct clock enable/reset sequence and so the controller should be 
+> ready to go?
 > 
-> "existing behaviour" referring to what here?
+> The only potential issue remaining is u-boot leaving the controller in 
+> a configuration the kernel isn't expecting when handing over. If that's 
+> the issue then we've forgotten to do some specific initialisation (i.e. 
+> not just reset the entire thing) of the controller in the driver probe 
+> path, right?
+> 
 
-Well, we were poking at the registers through vuart->regs anyway.
+If DMA engine is used before probing eMMC in kernel stage,
+eMMC controller may have unexpected behavior when re-exectuing
+identifying process.
+Thus, we need to reset at the beginning of kernel since
+kernel is a new stage. We should not assume some one do something
+before.
 
-So I don't think what you've done is any less correct.
+> FWIW I haven't recently seen any poor behaviour from the controller or 
+> driver. For us (IBM) it seems to be working well since we sorted out 
+> the phase configuration.
+> 
 
-Andrew
+Yes, you are right, everything work well currently. But, kernel is a new
+stage, we cannot assume eMMC controller is at initial state when
+entering kernel stage.
+
+> Andrew
