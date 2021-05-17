@@ -1,32 +1,27 @@
-From: Billy Tsai <billy_tsai@aspeedtech.com>
-Date: Mon, 17 May 2021 02:53:44 +0000
-Subject: [v5 2/2] pwm: Add Aspeed ast2600 PWM support
-In-Reply-To: <20210515151827.amiqh6j6brv44jif@pengutronix.de>
-References: <20210514024845.10531-1-billy_tsai@aspeedtech.com>
- <20210514024845.10531-3-billy_tsai@aspeedtech.com>
- <20210515151827.amiqh6j6brv44jif@pengutronix.de>
-Message-ID: <7A439233-C5FF-4BCA-8A5C-945EB847F487@aspeedtech.com>
+From: Quan Nguyen <quan@os.amperecomputing.com>
+Date: Mon, 17 May 2021 11:00:33 +0700
+Subject: [PATCH 0/3] Add support PSU and OCP card on Mt. Jade BMC
+Message-ID: <20210517040036.13667-1-quan@os.amperecomputing.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello,
+The Mt. Jade BMC is an ASPEED AST2500-based BMC for the Mt. Jade
+hardware reference platform with Ampere's Altra Processor family.
+This series adds support PSU and OCP card on the Ampere's Mt. Jade BMC
+and switch to use the 64MB flash layout as the 32MB layout will soon be
+exhausted.
 
-?On 2021/5/15, 11:57 PM,Uwe Kleine-K?nigwrote:
+Quan Nguyen (3):
+  ARM: dts: aspeed: mtjade: Enable OCP card support via NC-SI
+  ARM: dts: aspeed: mtjade: Add PSU support
+  ARM: dts: aspeed: mtjade: switch to 64MB flash layout
 
-	>	> +	div_h = DIV_ROUND_DOWN_ULL(div_h,
-	>	> +				   (FIELD_MAX(PWM_ASPEED_CTRL_CLK_DIV_L) + 1));
-	>	> +	div_h = DIV_ROUND_DOWN_ULL(div_h, NSEC_PER_SEC);
+ .../arm/boot/dts/aspeed-bmc-ampere-mtjade.dts | 57 +++++++++++++++++--
+ 1 file changed, 53 insertions(+), 4 deletions(-)
 
-	> As a division is an expensive operation you can better first multiply
-	> NSEC_PER_SEC and FIELD_MAX(PWM_ASPEED_CTRL_CLK_DIV_L) + 1 and divide by
-	> the result.
-
-When I multiply NSEC_PER_SEC and FIELD_MAX(PWM_ASPEED_CTRL_CLK_DIV_L) + 1 the result will overflow
-for 32-bits and the divisor type of do_div is 32-bits so I need to do div twice to avoid the issue.
-Can you give me some suggests?
-
-Thanks
+-- 
+2.28.0
 
