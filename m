@@ -1,83 +1,108 @@
-From: Greg KH <gregkh@linuxfoundation.org>
-Date: Mon, 17 May 2021 16:15:04 +0200
-Subject: [PATCH] tty: 8250: Add UART_BUG_TXRACE workaround for Aspeed VUART
-In-Reply-To: <20210517124105.3565860-1-andrew@aj.id.au>
-References: <20210517124105.3565860-1-andrew@aj.id.au>
-Message-ID: <YKJ6aP/xqAe1hW6A@kroah.com>
+From: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+Date: Mon, 17 May 2021 19:10:28 +0200
+Subject: [v5 2/2] pwm: Add Aspeed ast2600 PWM support
+In-Reply-To: <52C0ED72-65A7-4C39-820F-D4368191878B@aspeedtech.com>
+References: <20210514024845.10531-1-billy_tsai@aspeedtech.com>
+ <20210514024845.10531-3-billy_tsai@aspeedtech.com>
+ <20210515151827.amiqh6j6brv44jif@pengutronix.de>
+ <7A439233-C5FF-4BCA-8A5C-945EB847F487@aspeedtech.com>
+ <20210517060615.3hyifoebyrddsrta@pengutronix.de>
+ <C451B628-C0CC-47E9-84EF-42DB8518FE1E@aspeedtech.com>
+ <20210517063500.toxlb2wbtbqpczwl@pengutronix.de>
+ <52C0ED72-65A7-4C39-820F-D4368191878B@aspeedtech.com>
+Message-ID: <20210517171028.qioxg53dpzlq4izu@pengutronix.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, May 17, 2021 at 10:11:05PM +0930, Andrew Jeffery wrote:
-> Aspeed Virtual UARTs directly bridge e.g. the system console UART on the
-> LPC bus to the UART interface on the BMC's internal APB. As such there's
-> no RS-232 signalling involved - the UART interfaces on each bus are
-> directly connected as the producers and consumers of the one set of
-> FIFOs.
+On Mon, May 17, 2021 at 07:12:53AM +0000, Billy Tsai wrote:
+> Hi,
 > 
-> The APB in the AST2600 generally runs at 100MHz while the LPC bus peaks
-> at 33MHz. The difference in clock speeds exposes a race in the VUART
-> design where a Tx data burst on the APB interface can result in a byte
-> lost on the LPC interface. The symptom is LSR[DR] remains clear on the
-> LPC interface despite data being present in its Rx FIFO, while LSR[THRE]
-> remains clear on the APB interface as the host has not consumed the data
-> the BMC has transmitted. In this state, the UART has stalled and no
-> further data can be transmitted without manual intervention (e.g.
-> resetting the FIFOs, resulting in loss of data).
+>     > On 2021/5/17, 2:35 PM,Uwe Kleine-K?nigwrote:
 > 
-> The recommended work-around is to insert a read cycle on the APB
-> interface between writes to THR.
+>     >   On Mon, May 17, 2021 at 06:23:06AM +0000, Billy Tsai wrote:
+>     >   > Hi,
+>     >   > 	On 2021/5/17, 2:06 PM,Uwe Kleine-K?nigwrote:
+>     >   > 
+>     >   > 	On Mon, May 17, 2021 at 02:53:44AM +0000, Billy Tsai wrote:
+>     >   > 	>	> On 2021/5/15, 11:57 PM,Uwe Kleine-K?nigwrote:
+>     >   > 	>	> 
+>     >   > 	>	> 	>	> +	div_h = DIV_ROUND_DOWN_ULL(div_h,
+>     >   > 	>	> 	>	> +				   (FIELD_MAX(PWM_ASPEED_CTRL_CLK_DIV_L) + 1));
+>     >   > 	>	> 	>	> +	div_h = DIV_ROUND_DOWN_ULL(div_h, NSEC_PER_SEC);
+>     >   > 	>	> 
+>     >   > 	>	> 	> As a division is an expensive operation you can better first multiply
+>     >   > 	>	> 	> NSEC_PER_SEC and FIELD_MAX(PWM_ASPEED_CTRL_CLK_DIV_L) + 1 and divide by
+>     >   > 	>	> 	> the result.
+>     >   > 	>	> 
+>     >   > 	>	> When I multiply NSEC_PER_SEC and FIELD_MAX(PWM_ASPEED_CTRL_CLK_DIV_L) + 1 the result will overflow
+>     >   > 	>	> for 32-bits and the divisor type of do_div is 32-bits so I need to do div twice to avoid the issue.
+>     >   > 	>	> Can you give me some suggests?
+>     >   > 
+>     >   > 	> Hmm, you're right. There doesn't seem to be a div64_64, I thought there
+>     >   > 	> was one. Anyhow, while looking at the various divide functions I saw
+>     >   > 	> that dividing by a constant shouldn't be that expensive, so I think the
+>     >   > 	> sane way is to keep the two divisions and add a comment describing the
+>     >   > 	> problem.
+>     >   > According to our fixed value, I think that I can use bit shift to reduce one divide function:
+>     >   > 
+>     >   > rate = clk_get_rate(priv->clk);
+>     >   > /* Get the smallest value for div_h  */
+>     >   > div_h = rate * state->period;
+>     >   > div_h >>= (__fls(PWM_ASPEED_FIXED_PERIOD + 1) +
+>     >   > 	   __fls(FIELD_MAX(PWM_ASPEED_CTRL_CLK_DIV_L) + 1));
+>     >   > div_h = DIV_ROUND_DOWN_ULL(div_h, NSEC_PER_SEC);
 > 
-> Cc: ChiaWei Wang <chiawei_wang@aspeedtech.com>
-> Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
-> ---
->  drivers/tty/serial/8250/8250.h              | 1 +
->  drivers/tty/serial/8250/8250_aspeed_vuart.c | 1 +
->  drivers/tty/serial/8250/8250_port.c         | 2 ++
->  3 files changed, 4 insertions(+)
+>     > Did you check how this is compiled to code? I'd expect that it doesn't
+>     > result in better code than writing it as a division. Given that a
+>     > division is easier to understand for a human reader, I'd stick to that.
 > 
-> diff --git a/drivers/tty/serial/8250/8250.h b/drivers/tty/serial/8250/8250.h
-> index 52bb21205bb6..4d6f5e0ecd4c 100644
-> --- a/drivers/tty/serial/8250/8250.h
-> +++ b/drivers/tty/serial/8250/8250.h
-> @@ -88,6 +88,7 @@ struct serial8250_config {
->  #define UART_BUG_NOMSR	(1 << 2)	/* UART has buggy MSR status bits (Au1x00) */
->  #define UART_BUG_THRE	(1 << 3)	/* UART has buggy THRE reassertion */
->  #define UART_BUG_PARITY	(1 << 4)	/* UART mishandles parity if FIFO enabled */
-> +#define UART_BUG_TXRACE (1 << 5)	/* UART Tx fails to set remote DR */
+> I found that I can use div64_64 through #include <linux/math64.h> and use "div64_u64":
+> 
+> u64 div_h, div_l, divisor;
+> u32 index = pwm->hwpwm;
+> 
+> rate = clk_get_rate(priv->clk);
+> /* Get the smallest value for div_h  */
+> div_h = rate * state->period;
+> divisor = (u64)NSEC_PER_SEC * (PWM_ASPEED_FIXED_PERIOD + 1) *
+>                 (FIELD_MAX(PWM_ASPEED_CTRL_CLK_DIV_L) + 1);
+> div_h = div64_u64(div_h, divisor);
+> div_h = order_base_2(div_h);
+> if (div_h > 0xf)
+>         div_h = 0xf;
+> 
+> div_l = rate * state->period;
+> divisor = (u64)NSEC_PER_SEC * (PWM_ASPEED_FIXED_PERIOD + 1) *
+>                 BIT(div_h);
+> div_l = div64_u64(div_l, divisor);
+> 
+> Can I use this one?
 
-BUG()?
+Looks good to me. If you want to improve further you can expand the
+comment about div_h to somethink like:
 
->  #ifdef CONFIG_SERIAL_8250_SHARE_IRQ
-> diff --git a/drivers/tty/serial/8250/8250_aspeed_vuart.c b/drivers/tty/serial/8250/8250_aspeed_vuart.c
-> index a28a394ba32a..4caab8714e2c 100644
-> --- a/drivers/tty/serial/8250/8250_aspeed_vuart.c
-> +++ b/drivers/tty/serial/8250/8250_aspeed_vuart.c
-> @@ -440,6 +440,7 @@ static int aspeed_vuart_probe(struct platform_device *pdev)
->  	port.port.status = UPSTAT_SYNC_FIFO;
->  	port.port.dev = &pdev->dev;
->  	port.port.has_sysrq = IS_ENABLED(CONFIG_SERIAL_8250_CONSOLE);
-> +	port.bugs |= UART_BUG_TXRACE;
->  
->  	rc = sysfs_create_group(&vuart->dev->kobj, &aspeed_vuart_attr_group);
->  	if (rc < 0)
-> diff --git a/drivers/tty/serial/8250/8250_port.c b/drivers/tty/serial/8250/8250_port.c
-> index d45dab1ab316..6c032abfc321 100644
-> --- a/drivers/tty/serial/8250/8250_port.c
-> +++ b/drivers/tty/serial/8250/8250_port.c
-> @@ -1809,6 +1809,8 @@ void serial8250_tx_chars(struct uart_8250_port *up)
->  	count = up->tx_loadsz;
->  	do {
->  		serial_out(up, UART_TX, xmit->buf[xmit->tail]);
-> +		if (up->bugs & UART_BUG_TXRACE)
-> +			serial_in(up, UART_SCR);
+	/*
+	 * Pick a small value for div_h so that div_l can be big which
+	 * results in a finer resolution near the target period value.
+	 */
 
-Can you document why you are doing a call here to serial_in(), otherwise
-someone running "automated checking scripts" will remove it later as it
-seems to be doing nothing.
+Another detail I don't like much is that the name div_h is only
+justified after the last assignment. I don't have a good suggestion here
+though.
 
-thanks,
+Best regards
+Uwe
 
-greg k-h
+-- 
+Pengutronix e.K.                           | Uwe Kleine-K?nig            |
+Industrial Linux Solutions                 | https://www.pengutronix.de/ |
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 488 bytes
+Desc: not available
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20210517/c8715ded/attachment.sig>
