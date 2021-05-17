@@ -1,83 +1,107 @@
-From: Billy Tsai <billy_tsai@aspeedtech.com>
-Date: Mon, 17 May 2021 07:12:53 +0000
-Subject: [v5 2/2] pwm: Add Aspeed ast2600 PWM support
-In-Reply-To: <20210517063500.toxlb2wbtbqpczwl@pengutronix.de>
-References: <20210514024845.10531-1-billy_tsai@aspeedtech.com>
- <20210514024845.10531-3-billy_tsai@aspeedtech.com>
- <20210515151827.amiqh6j6brv44jif@pengutronix.de>
- <7A439233-C5FF-4BCA-8A5C-945EB847F487@aspeedtech.com>
- <20210517060615.3hyifoebyrddsrta@pengutronix.de>
- <C451B628-C0CC-47E9-84EF-42DB8518FE1E@aspeedtech.com>
- <20210517063500.toxlb2wbtbqpczwl@pengutronix.de>
-Message-ID: <52C0ED72-65A7-4C39-820F-D4368191878B@aspeedtech.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Date: Mon, 17 May 2021 11:22:47 +0200
+Subject: [PATCH v2 06/10] mmc: sdhci-of-aspeed: Remove some unnecessary
+ casts from KUnit tests
+In-Reply-To: <20210513193204.816681-6-davidgow@google.com>
+References: <20210513193204.816681-1-davidgow@google.com>
+ <20210513193204.816681-6-davidgow@google.com>
+Message-ID: <CAPDyKFoEeRUjHLZ3iSvPT4_0X107G3Xw+ujxJ9zsDk06dTxo7w@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi,
+On Thu, 13 May 2021 at 21:36, David Gow <davidgow@google.com> wrote:
+>
+> With KUnit's EXPECT macros no longer typechecking arguments as strictly,
+> get rid of a number of now unnecessary casts.
+>
+> Signed-off-by: David Gow <davidgow@google.com>
 
-    > On 2021/5/17, 2:35 PM,Uwe Kleine-K?nigwrote:
+I guess you will funnel this via another tree than the mmc?
 
-    >   On Mon, May 17, 2021 at 06:23:06AM +0000, Billy Tsai wrote:
-    >   > Hi,
-    >   > 	On 2021/5/17, 2:06 PM,Uwe Kleine-K?nigwrote:
-    >   > 
-    >   > 	On Mon, May 17, 2021 at 02:53:44AM +0000, Billy Tsai wrote:
-    >   > 	>	> On 2021/5/15, 11:57 PM,Uwe Kleine-K?nigwrote:
-    >   > 	>	> 
-    >   > 	>	> 	>	> +	div_h = DIV_ROUND_DOWN_ULL(div_h,
-    >   > 	>	> 	>	> +				   (FIELD_MAX(PWM_ASPEED_CTRL_CLK_DIV_L) + 1));
-    >   > 	>	> 	>	> +	div_h = DIV_ROUND_DOWN_ULL(div_h, NSEC_PER_SEC);
-    >   > 	>	> 
-    >   > 	>	> 	> As a division is an expensive operation you can better first multiply
-    >   > 	>	> 	> NSEC_PER_SEC and FIELD_MAX(PWM_ASPEED_CTRL_CLK_DIV_L) + 1 and divide by
-    >   > 	>	> 	> the result.
-    >   > 	>	> 
-    >   > 	>	> When I multiply NSEC_PER_SEC and FIELD_MAX(PWM_ASPEED_CTRL_CLK_DIV_L) + 1 the result will overflow
-    >   > 	>	> for 32-bits and the divisor type of do_div is 32-bits so I need to do div twice to avoid the issue.
-    >   > 	>	> Can you give me some suggests?
-    >   > 
-    >   > 	> Hmm, you're right. There doesn't seem to be a div64_64, I thought there
-    >   > 	> was one. Anyhow, while looking at the various divide functions I saw
-    >   > 	> that dividing by a constant shouldn't be that expensive, so I think the
-    >   > 	> sane way is to keep the two divisions and add a comment describing the
-    >   > 	> problem.
-    >   > According to our fixed value, I think that I can use bit shift to reduce one divide function:
-    >   > 
-    >   > rate = clk_get_rate(priv->clk);
-    >   > /* Get the smallest value for div_h  */
-    >   > div_h = rate * state->period;
-    >   > div_h >>= (__fls(PWM_ASPEED_FIXED_PERIOD + 1) +
-    >   > 	   __fls(FIELD_MAX(PWM_ASPEED_CTRL_CLK_DIV_L) + 1));
-    >   > div_h = DIV_ROUND_DOWN_ULL(div_h, NSEC_PER_SEC);
+Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
 
-    > Did you check how this is compiled to code? I'd expect that it doesn't
-    > result in better code than writing it as a division. Given that a
-    > division is easier to understand for a human reader, I'd stick to that.
+Kind regards
+Uffe
 
-I found that I can use div64_64 through #include <linux/math64.h> and use "div64_u64":
-
-u64 div_h, div_l, divisor;
-u32 index = pwm->hwpwm;
-
-rate = clk_get_rate(priv->clk);
-/* Get the smallest value for div_h  */
-div_h = rate * state->period;
-divisor = (u64)NSEC_PER_SEC * (PWM_ASPEED_FIXED_PERIOD + 1) *
-                (FIELD_MAX(PWM_ASPEED_CTRL_CLK_DIV_L) + 1);
-div_h = div64_u64(div_h, divisor);
-div_h = order_base_2(div_h);
-if (div_h > 0xf)
-        div_h = 0xf;
-
-div_l = rate * state->period;
-divisor = (u64)NSEC_PER_SEC * (PWM_ASPEED_FIXED_PERIOD + 1) *
-                BIT(div_h);
-div_l = div64_u64(div_l, divisor);
-
-Can I use this one?
-
-Thanks
-
+> ---
+> This should be a no-op functionality wise, and while it depends on the
+> first couple of patches in this series, it's otherwise independent from
+> the others. I think this makes the test more readable, but if you
+> particularly dislike it, I'm happy to drop it.
+>
+>  drivers/mmc/host/sdhci-of-aspeed-test.c | 34 ++++++++++++-------------
+>  1 file changed, 17 insertions(+), 17 deletions(-)
+>
+> diff --git a/drivers/mmc/host/sdhci-of-aspeed-test.c b/drivers/mmc/host/sdhci-of-aspeed-test.c
+> index bb67d159b7d8..1ed4f86291f2 100644
+> --- a/drivers/mmc/host/sdhci-of-aspeed-test.c
+> +++ b/drivers/mmc/host/sdhci-of-aspeed-test.c
+> @@ -26,23 +26,23 @@ static void aspeed_sdhci_phase_ddr52(struct kunit *test)
+>         KUNIT_EXPECT_EQ(test, 15,
+>                         aspeed_sdhci_phase_to_tap(NULL, rate, 25));
+>
+> -       KUNIT_EXPECT_EQ(test, (int)ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 0,
+> +       KUNIT_EXPECT_EQ(test, ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 0,
+>                         aspeed_sdhci_phase_to_tap(NULL, rate, 180));
+> -       KUNIT_EXPECT_EQ(test, (int)ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 0,
+> +       KUNIT_EXPECT_EQ(test, ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 0,
+>                         aspeed_sdhci_phase_to_tap(NULL, rate, 181));
+> -       KUNIT_EXPECT_EQ(test, (int)ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 1,
+> +       KUNIT_EXPECT_EQ(test, ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 1,
+>                         aspeed_sdhci_phase_to_tap(NULL, rate, 182));
+> -       KUNIT_EXPECT_EQ(test, (int)ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 1,
+> +       KUNIT_EXPECT_EQ(test, ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 1,
+>                         aspeed_sdhci_phase_to_tap(NULL, rate, 183));
+> -       KUNIT_EXPECT_EQ(test, (int)ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 2,
+> +       KUNIT_EXPECT_EQ(test, ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 2,
+>                         aspeed_sdhci_phase_to_tap(NULL, rate, 184));
+> -       KUNIT_EXPECT_EQ(test, (int)ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 3,
+> +       KUNIT_EXPECT_EQ(test, ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 3,
+>                         aspeed_sdhci_phase_to_tap(NULL, rate, 185));
+> -       KUNIT_EXPECT_EQ(test, (int)ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 14,
+> +       KUNIT_EXPECT_EQ(test, ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 14,
+>                         aspeed_sdhci_phase_to_tap(NULL, rate, 203));
+> -       KUNIT_EXPECT_EQ(test, (int)ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 15,
+> +       KUNIT_EXPECT_EQ(test, ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 15,
+>                         aspeed_sdhci_phase_to_tap(NULL, rate, 204));
+> -       KUNIT_EXPECT_EQ(test, (int)ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 15,
+> +       KUNIT_EXPECT_EQ(test, ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 15,
+>                         aspeed_sdhci_phase_to_tap(NULL, rate, 205));
+>  }
+>
+> @@ -67,21 +67,21 @@ static void aspeed_sdhci_phase_hs200(struct kunit *test)
+>         KUNIT_EXPECT_EQ(test, 15,
+>                         aspeed_sdhci_phase_to_tap(NULL, rate, 96));
+>
+> -       KUNIT_EXPECT_EQ(test, (int)ASPEED_SDHCI_TAP_PARAM_INVERT_CLK,
+> +       KUNIT_EXPECT_EQ(test, ASPEED_SDHCI_TAP_PARAM_INVERT_CLK,
+>                         aspeed_sdhci_phase_to_tap(NULL, rate, 180));
+> -       KUNIT_EXPECT_EQ(test, (int)ASPEED_SDHCI_TAP_PARAM_INVERT_CLK,
+> +       KUNIT_EXPECT_EQ(test, ASPEED_SDHCI_TAP_PARAM_INVERT_CLK,
+>                         aspeed_sdhci_phase_to_tap(NULL, rate, 185));
+> -       KUNIT_EXPECT_EQ(test, (int)ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 1,
+> +       KUNIT_EXPECT_EQ(test, ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 1,
+>                         aspeed_sdhci_phase_to_tap(NULL, rate, 186));
+> -       KUNIT_EXPECT_EQ(test, (int)ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 1,
+> +       KUNIT_EXPECT_EQ(test, ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 1,
+>                         aspeed_sdhci_phase_to_tap(NULL, rate, 187));
+> -       KUNIT_EXPECT_EQ(test, (int)ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 14,
+> +       KUNIT_EXPECT_EQ(test, ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 14,
+>                         aspeed_sdhci_phase_to_tap(NULL, rate, 269));
+> -       KUNIT_EXPECT_EQ(test, (int)ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 15,
+> +       KUNIT_EXPECT_EQ(test, ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 15,
+>                         aspeed_sdhci_phase_to_tap(NULL, rate, 270));
+> -       KUNIT_EXPECT_EQ(test, (int)ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 15,
+> +       KUNIT_EXPECT_EQ(test, ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 15,
+>                         aspeed_sdhci_phase_to_tap(NULL, rate, 271));
+> -       KUNIT_EXPECT_EQ(test, (int)ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 15,
+> +       KUNIT_EXPECT_EQ(test, ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 15,
+>                         aspeed_sdhci_phase_to_tap(NULL, rate, 276));
+>  }
+>
+> --
+> 2.31.1.751.gd2f1c929bd-goog
+>
