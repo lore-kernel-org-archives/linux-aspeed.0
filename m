@@ -1,108 +1,81 @@
-From: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Date: Mon, 17 May 2021 19:10:28 +0200
-Subject: [v5 2/2] pwm: Add Aspeed ast2600 PWM support
-In-Reply-To: <52C0ED72-65A7-4C39-820F-D4368191878B@aspeedtech.com>
-References: <20210514024845.10531-1-billy_tsai@aspeedtech.com>
- <20210514024845.10531-3-billy_tsai@aspeedtech.com>
- <20210515151827.amiqh6j6brv44jif@pengutronix.de>
- <7A439233-C5FF-4BCA-8A5C-945EB847F487@aspeedtech.com>
- <20210517060615.3hyifoebyrddsrta@pengutronix.de>
- <C451B628-C0CC-47E9-84EF-42DB8518FE1E@aspeedtech.com>
- <20210517063500.toxlb2wbtbqpczwl@pengutronix.de>
- <52C0ED72-65A7-4C39-820F-D4368191878B@aspeedtech.com>
-Message-ID: <20210517171028.qioxg53dpzlq4izu@pengutronix.de>
+From: Quan Nguyen <quan@os.amperecomputing.com>
+Date: Tue, 18 May 2021 06:36:13 +0700
+Subject: [PATCH v4 1/4] dt-bindings: mfd: Add bindings for Ampere Altra
+ SMPro drivers
+In-Reply-To: <52550615-ae38-d88e-a597-29dc9c71755a@os.amperecomputing.com>
+References: <20210422090843.4614-1-quan@os.amperecomputing.com>
+ <20210422090843.4614-2-quan@os.amperecomputing.com>
+ <20210430201918.GA3806853@robh.at.kernel.org>
+ <52550615-ae38-d88e-a597-29dc9c71755a@os.amperecomputing.com>
+Message-ID: <ee17c000-6f70-84d9-f7a1-0d30b03dafab@os.amperecomputing.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, May 17, 2021 at 07:12:53AM +0000, Billy Tsai wrote:
-> Hi,
+On 05/05/2021 15:44, Quan Nguyen wrote:
+> On 01/05/2021 03:19, Rob Herring wrote:
+>> On Thu, Apr 22, 2021 at 04:08:40PM +0700, Quan Nguyen wrote:
+>>> Adds device tree bindings for SMPro driver found on the Mt.Jade hardware
+>>> reference platform with Ampere's Altra Processor family.
+>>>
+>>> The SMpro co-processor on Ampere Altra processor family is to monitor
+>>> and report various data included hwmon-related info, RAS errors, and
+>>> other miscellaneous information. This parent SMPro MFD driver creates
+>>> a single simple register map to be shared by all sub-devices and leave
+>>> all the specific to be handled by the child drivers.
+>>
+>> Again, just because you have multiple functions aka MFD, that doesn't
+>> mean you need child nodes for each function. The only thing you have
+>> in DT is a register address. Does this vary? If so, how often? How many
+>> different versions of a DT do you currently or expect to have?
+>>
+> Hi Rob,
 > 
->     > On 2021/5/17, 2:35 PM,Uwe Kleine-K?nigwrote:
+> Thank you for your review.
+> I will try to explain what I think below and expect to receive more 
+> comments to improve these patches. And if any misundertood, please help 
+> correct me.
 > 
->     >   On Mon, May 17, 2021 at 06:23:06AM +0000, Billy Tsai wrote:
->     >   > Hi,
->     >   > 	On 2021/5/17, 2:06 PM,Uwe Kleine-K?nigwrote:
->     >   > 
->     >   > 	On Mon, May 17, 2021 at 02:53:44AM +0000, Billy Tsai wrote:
->     >   > 	>	> On 2021/5/15, 11:57 PM,Uwe Kleine-K?nigwrote:
->     >   > 	>	> 
->     >   > 	>	> 	>	> +	div_h = DIV_ROUND_DOWN_ULL(div_h,
->     >   > 	>	> 	>	> +				   (FIELD_MAX(PWM_ASPEED_CTRL_CLK_DIV_L) + 1));
->     >   > 	>	> 	>	> +	div_h = DIV_ROUND_DOWN_ULL(div_h, NSEC_PER_SEC);
->     >   > 	>	> 
->     >   > 	>	> 	> As a division is an expensive operation you can better first multiply
->     >   > 	>	> 	> NSEC_PER_SEC and FIELD_MAX(PWM_ASPEED_CTRL_CLK_DIV_L) + 1 and divide by
->     >   > 	>	> 	> the result.
->     >   > 	>	> 
->     >   > 	>	> When I multiply NSEC_PER_SEC and FIELD_MAX(PWM_ASPEED_CTRL_CLK_DIV_L) + 1 the result will overflow
->     >   > 	>	> for 32-bits and the divisor type of do_div is 32-bits so I need to do div twice to avoid the issue.
->     >   > 	>	> Can you give me some suggests?
->     >   > 
->     >   > 	> Hmm, you're right. There doesn't seem to be a div64_64, I thought there
->     >   > 	> was one. Anyhow, while looking at the various divide functions I saw
->     >   > 	> that dividing by a constant shouldn't be that expensive, so I think the
->     >   > 	> sane way is to keep the two divisions and add a comment describing the
->     >   > 	> problem.
->     >   > According to our fixed value, I think that I can use bit shift to reduce one divide function:
->     >   > 
->     >   > rate = clk_get_rate(priv->clk);
->     >   > /* Get the smallest value for div_h  */
->     >   > div_h = rate * state->period;
->     >   > div_h >>= (__fls(PWM_ASPEED_FIXED_PERIOD + 1) +
->     >   > 	   __fls(FIELD_MAX(PWM_ASPEED_CTRL_CLK_DIV_L) + 1));
->     >   > div_h = DIV_ROUND_DOWN_ULL(div_h, NSEC_PER_SEC);
+> The idea is to keep the SMPro MFD as a simple generic register map and 
+> expect not to change or to handle any specific in this parent device 
+> driver. This is why we see the simple_mfd_i2c fit in this case.
 > 
->     > Did you check how this is compiled to code? I'd expect that it doesn't
->     > result in better code than writing it as a division. Given that a
->     > division is easier to understand for a human reader, I'd stick to that.
+> And so, all the specific details will be handled in child devices driver 
+> and we expect to have child nodes for these child devices. If the child 
+> node exist we can then add any specific if necessary later.
 > 
-> I found that I can use div64_64 through #include <linux/math64.h> and use "div64_u64":
+> One case is that, each socket (ie: the Ampere Altra processor) has it 
+> own SMPro co-processor instance in form of register map and each socket 
+> could be either slave or master. Some function may not available in 
+> slave socket but exist in master socket and we simply choose not to 
+> define the child node if that function not existed.
 > 
-> u64 div_h, div_l, divisor;
-> u32 index = pwm->hwpwm;
+> The other case is that if there are multi instances of the same function 
+> in one SMPro MFD register map, then each instance might need to be 
+> differentiated by using is own register address or maybe a DT property. 
+> Then we can simply add them to the node of these instance.
 > 
-> rate = clk_get_rate(priv->clk);
-> /* Get the smallest value for div_h  */
-> div_h = rate * state->period;
-> divisor = (u64)NSEC_PER_SEC * (PWM_ASPEED_FIXED_PERIOD + 1) *
->                 (FIELD_MAX(PWM_ASPEED_CTRL_CLK_DIV_L) + 1);
-> div_h = div64_u64(div_h, divisor);
-> div_h = order_base_2(div_h);
-> if (div_h > 0xf)
->         div_h = 0xf;
+> For your specific questions:
 > 
-> div_l = rate * state->period;
-> divisor = (u64)NSEC_PER_SEC * (PWM_ASPEED_FIXED_PERIOD + 1) *
->                 BIT(div_h);
-> div_l = div64_u64(div_l, divisor);
+> + Does this vary ?
+> yes, I think so. The register address in each child nodes may vary if 
+> the SMPro co-processor firmware change its register map layout or maybe 
+> other instances of a function added. Child device drivers are expected 
+> to handle these changes if necessary.
 > 
-> Can I use this one?
+> + About how often ?
+> I actually can't say how often but the purpose of this SMPro register 
+> map is to provide the info to the BMC. The BMC will need more info from 
+> the host so I think changes will be unavoidable.
+> 
+> Please help with your comments
+> Thank you,
+> - Quan
+> 
+Dear Rob,
 
-Looks good to me. If you want to improve further you can expand the
-comment about div_h to somethink like:
+do you have any suggestion to improve this patch?
 
-	/*
-	 * Pick a small value for div_h so that div_l can be big which
-	 * results in a finer resolution near the target period value.
-	 */
-
-Another detail I don't like much is that the name div_h is only
-justified after the last assignment. I don't have a good suggestion here
-though.
-
-Best regards
-Uwe
-
--- 
-Pengutronix e.K.                           | Uwe Kleine-K?nig            |
-Industrial Linux Solutions                 | https://www.pengutronix.de/ |
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 488 bytes
-Desc: not available
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20210517/c8715ded/attachment.sig>
+- Quan
