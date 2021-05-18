@@ -1,118 +1,72 @@
-From: David Gow <davidgow@google.com>
-Date: Tue, 18 May 2021 12:29:22 +0800
-Subject: [PATCH v2 06/10] mmc: sdhci-of-aspeed: Remove some unnecessary
- casts from KUnit tests
-In-Reply-To: <CAPDyKFoEeRUjHLZ3iSvPT4_0X107G3Xw+ujxJ9zsDk06dTxo7w@mail.gmail.com>
-References: <20210513193204.816681-1-davidgow@google.com>
- <20210513193204.816681-6-davidgow@google.com>
- <CAPDyKFoEeRUjHLZ3iSvPT4_0X107G3Xw+ujxJ9zsDk06dTxo7w@mail.gmail.com>
-Message-ID: <CABVgOSmv6axdgXLPAwb=q0_RRL44Kbd73SLf=UogEM-k7WMNLw@mail.gmail.com>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Date: Tue, 18 May 2021 08:38:06 +0200
+Subject: [PATCH] tty: 8250: Add UART_BUG_TXRACE workaround for Aspeed VUART
+In-Reply-To: <d7918dcf-b938-498c-a012-3d93a748431b@www.fastmail.com>
+References: <20210517124105.3565860-1-andrew@aj.id.au>
+ <YKJ6aP/xqAe1hW6A@kroah.com>
+ <d7918dcf-b938-498c-a012-3d93a748431b@www.fastmail.com>
+Message-ID: <YKNgziMXms4zWRoY@kroah.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, May 17, 2021 at 5:23 PM Ulf Hansson <ulf.hansson@linaro.org> wrote:
->
-> On Thu, 13 May 2021 at 21:36, David Gow <davidgow@google.com> wrote:
-> >
-> > With KUnit's EXPECT macros no longer typechecking arguments as strictly,
-> > get rid of a number of now unnecessary casts.
-> >
-> > Signed-off-by: David Gow <davidgow@google.com>
->
-> I guess you will funnel this via another tree than the mmc?
->
-> Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
->
-> Kind regards
-> Uffe
->
+On Tue, May 18, 2021 at 11:00:39AM +0930, Andrew Jeffery wrote:
+> 
+> 
+> On Mon, 17 May 2021, at 23:45, Greg KH wrote:
+> > On Mon, May 17, 2021 at 10:11:05PM +0930, Andrew Jeffery wrote:
+> > > Aspeed Virtual UARTs directly bridge e.g. the system console UART on the
+> > > LPC bus to the UART interface on the BMC's internal APB. As such there's
+> > > no RS-232 signalling involved - the UART interfaces on each bus are
+> > > directly connected as the producers and consumers of the one set of
+> > > FIFOs.
+> > > 
+> > > The APB in the AST2600 generally runs at 100MHz while the LPC bus peaks
+> > > at 33MHz. The difference in clock speeds exposes a race in the VUART
+> > > design where a Tx data burst on the APB interface can result in a byte
+> > > lost on the LPC interface. The symptom is LSR[DR] remains clear on the
+> > > LPC interface despite data being present in its Rx FIFO, while LSR[THRE]
+> > > remains clear on the APB interface as the host has not consumed the data
+> > > the BMC has transmitted. In this state, the UART has stalled and no
+> > > further data can be transmitted without manual intervention (e.g.
+> > > resetting the FIFOs, resulting in loss of data).
+> > > 
+> > > The recommended work-around is to insert a read cycle on the APB
+> > > interface between writes to THR.
+> > > 
+> > > Cc: ChiaWei Wang <chiawei_wang@aspeedtech.com>
+> > > Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
+> > > ---
+> > >  drivers/tty/serial/8250/8250.h              | 1 +
+> > >  drivers/tty/serial/8250/8250_aspeed_vuart.c | 1 +
+> > >  drivers/tty/serial/8250/8250_port.c         | 2 ++
+> > >  3 files changed, 4 insertions(+)
+> > > 
+> > > diff --git a/drivers/tty/serial/8250/8250.h b/drivers/tty/serial/8250/8250.h
+> > > index 52bb21205bb6..4d6f5e0ecd4c 100644
+> > > --- a/drivers/tty/serial/8250/8250.h
+> > > +++ b/drivers/tty/serial/8250/8250.h
+> > > @@ -88,6 +88,7 @@ struct serial8250_config {
+> > >  #define UART_BUG_NOMSR	(1 << 2)	/* UART has buggy MSR status bits (Au1x00) */
+> > >  #define UART_BUG_THRE	(1 << 3)	/* UART has buggy THRE reassertion */
+> > >  #define UART_BUG_PARITY	(1 << 4)	/* UART mishandles parity if FIFO enabled */
+> > > +#define UART_BUG_TXRACE (1 << 5)	/* UART Tx fails to set remote DR */
+> > 
+> > BUG()?
+> 
+> Can you please expand on what you mean here? I don't follow.
+> 
+> At least, I think there might be a formatting issue (spaces vs tabs).
 
-Yeah: the plan is to have this whole series go through the
-kselftest/kunit tree so we don't have to worry about potentially
-temporarily introducing a bunch of compiler warnings.
+Ick, my fault, I meant "BIT()"?  To perhaps use that macro instead of the <<
+symbol.
 
-Cheers,
--- David
+And yes, tabs would be good as well :)
 
-> > ---
-> > This should be a no-op functionality wise, and while it depends on the
-> > first couple of patches in this series, it's otherwise independent from
-> > the others. I think this makes the test more readable, but if you
-> > particularly dislike it, I'm happy to drop it.
-> >
-> >  drivers/mmc/host/sdhci-of-aspeed-test.c | 34 ++++++++++++-------------
-> >  1 file changed, 17 insertions(+), 17 deletions(-)
-> >
-> > diff --git a/drivers/mmc/host/sdhci-of-aspeed-test.c b/drivers/mmc/host/sdhci-of-aspeed-test.c
-> > index bb67d159b7d8..1ed4f86291f2 100644
-> > --- a/drivers/mmc/host/sdhci-of-aspeed-test.c
-> > +++ b/drivers/mmc/host/sdhci-of-aspeed-test.c
-> > @@ -26,23 +26,23 @@ static void aspeed_sdhci_phase_ddr52(struct kunit *test)
-> >         KUNIT_EXPECT_EQ(test, 15,
-> >                         aspeed_sdhci_phase_to_tap(NULL, rate, 25));
-> >
-> > -       KUNIT_EXPECT_EQ(test, (int)ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 0,
-> > +       KUNIT_EXPECT_EQ(test, ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 0,
-> >                         aspeed_sdhci_phase_to_tap(NULL, rate, 180));
-> > -       KUNIT_EXPECT_EQ(test, (int)ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 0,
-> > +       KUNIT_EXPECT_EQ(test, ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 0,
-> >                         aspeed_sdhci_phase_to_tap(NULL, rate, 181));
-> > -       KUNIT_EXPECT_EQ(test, (int)ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 1,
-> > +       KUNIT_EXPECT_EQ(test, ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 1,
-> >                         aspeed_sdhci_phase_to_tap(NULL, rate, 182));
-> > -       KUNIT_EXPECT_EQ(test, (int)ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 1,
-> > +       KUNIT_EXPECT_EQ(test, ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 1,
-> >                         aspeed_sdhci_phase_to_tap(NULL, rate, 183));
-> > -       KUNIT_EXPECT_EQ(test, (int)ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 2,
-> > +       KUNIT_EXPECT_EQ(test, ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 2,
-> >                         aspeed_sdhci_phase_to_tap(NULL, rate, 184));
-> > -       KUNIT_EXPECT_EQ(test, (int)ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 3,
-> > +       KUNIT_EXPECT_EQ(test, ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 3,
-> >                         aspeed_sdhci_phase_to_tap(NULL, rate, 185));
-> > -       KUNIT_EXPECT_EQ(test, (int)ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 14,
-> > +       KUNIT_EXPECT_EQ(test, ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 14,
-> >                         aspeed_sdhci_phase_to_tap(NULL, rate, 203));
-> > -       KUNIT_EXPECT_EQ(test, (int)ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 15,
-> > +       KUNIT_EXPECT_EQ(test, ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 15,
-> >                         aspeed_sdhci_phase_to_tap(NULL, rate, 204));
-> > -       KUNIT_EXPECT_EQ(test, (int)ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 15,
-> > +       KUNIT_EXPECT_EQ(test, ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 15,
-> >                         aspeed_sdhci_phase_to_tap(NULL, rate, 205));
-> >  }
-> >
-> > @@ -67,21 +67,21 @@ static void aspeed_sdhci_phase_hs200(struct kunit *test)
-> >         KUNIT_EXPECT_EQ(test, 15,
-> >                         aspeed_sdhci_phase_to_tap(NULL, rate, 96));
-> >
-> > -       KUNIT_EXPECT_EQ(test, (int)ASPEED_SDHCI_TAP_PARAM_INVERT_CLK,
-> > +       KUNIT_EXPECT_EQ(test, ASPEED_SDHCI_TAP_PARAM_INVERT_CLK,
-> >                         aspeed_sdhci_phase_to_tap(NULL, rate, 180));
-> > -       KUNIT_EXPECT_EQ(test, (int)ASPEED_SDHCI_TAP_PARAM_INVERT_CLK,
-> > +       KUNIT_EXPECT_EQ(test, ASPEED_SDHCI_TAP_PARAM_INVERT_CLK,
-> >                         aspeed_sdhci_phase_to_tap(NULL, rate, 185));
-> > -       KUNIT_EXPECT_EQ(test, (int)ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 1,
-> > +       KUNIT_EXPECT_EQ(test, ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 1,
-> >                         aspeed_sdhci_phase_to_tap(NULL, rate, 186));
-> > -       KUNIT_EXPECT_EQ(test, (int)ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 1,
-> > +       KUNIT_EXPECT_EQ(test, ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 1,
-> >                         aspeed_sdhci_phase_to_tap(NULL, rate, 187));
-> > -       KUNIT_EXPECT_EQ(test, (int)ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 14,
-> > +       KUNIT_EXPECT_EQ(test, ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 14,
-> >                         aspeed_sdhci_phase_to_tap(NULL, rate, 269));
-> > -       KUNIT_EXPECT_EQ(test, (int)ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 15,
-> > +       KUNIT_EXPECT_EQ(test, ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 15,
-> >                         aspeed_sdhci_phase_to_tap(NULL, rate, 270));
-> > -       KUNIT_EXPECT_EQ(test, (int)ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 15,
-> > +       KUNIT_EXPECT_EQ(test, ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 15,
-> >                         aspeed_sdhci_phase_to_tap(NULL, rate, 271));
-> > -       KUNIT_EXPECT_EQ(test, (int)ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 15,
-> > +       KUNIT_EXPECT_EQ(test, ASPEED_SDHCI_TAP_PARAM_INVERT_CLK | 15,
-> >                         aspeed_sdhci_phase_to_tap(NULL, rate, 276));
-> >  }
-> >
-> > --
-> > 2.31.1.751.gd2f1c929bd-goog
-> >
+thanks,
+
+greg k-h
+
+
