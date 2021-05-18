@@ -1,72 +1,56 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Tue, 18 May 2021 08:38:06 +0200
-Subject: [PATCH] tty: 8250: Add UART_BUG_TXRACE workaround for Aspeed VUART
-In-Reply-To: <d7918dcf-b938-498c-a012-3d93a748431b@www.fastmail.com>
-References: <20210517124105.3565860-1-andrew@aj.id.au>
- <YKJ6aP/xqAe1hW6A@kroah.com>
- <d7918dcf-b938-498c-a012-3d93a748431b@www.fastmail.com>
-Message-ID: <YKNgziMXms4zWRoY@kroah.com>
+From: Borislav Petkov <bp@alien8.de>
+Date: Tue, 18 May 2021 16:51:34 +0200
+Subject: [PATCH] EDAC/aspeed: use proper format string for printing
+ resource
+In-Reply-To: <20210421135500.3518661-1-arnd@kernel.org>
+References: <20210421135500.3518661-1-arnd@kernel.org>
+Message-ID: <YKPUdhSE+kepi10j@zn.tnic>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, May 18, 2021 at 11:00:39AM +0930, Andrew Jeffery wrote:
+On Wed, Apr 21, 2021 at 03:54:53PM +0200, Arnd Bergmann wrote:
+> From: Arnd Bergmann <arnd@arndb.de>
 > 
+> On ARMv7, resource_size_t can be 64-bit, which breaks printing
+> it as %x:
 > 
-> On Mon, 17 May 2021, at 23:45, Greg KH wrote:
-> > On Mon, May 17, 2021 at 10:11:05PM +0930, Andrew Jeffery wrote:
-> > > Aspeed Virtual UARTs directly bridge e.g. the system console UART on the
-> > > LPC bus to the UART interface on the BMC's internal APB. As such there's
-> > > no RS-232 signalling involved - the UART interfaces on each bus are
-> > > directly connected as the producers and consumers of the one set of
-> > > FIFOs.
-> > > 
-> > > The APB in the AST2600 generally runs at 100MHz while the LPC bus peaks
-> > > at 33MHz. The difference in clock speeds exposes a race in the VUART
-> > > design where a Tx data burst on the APB interface can result in a byte
-> > > lost on the LPC interface. The symptom is LSR[DR] remains clear on the
-> > > LPC interface despite data being present in its Rx FIFO, while LSR[THRE]
-> > > remains clear on the APB interface as the host has not consumed the data
-> > > the BMC has transmitted. In this state, the UART has stalled and no
-> > > further data can be transmitted without manual intervention (e.g.
-> > > resetting the FIFOs, resulting in loss of data).
-> > > 
-> > > The recommended work-around is to insert a read cycle on the APB
-> > > interface between writes to THR.
-> > > 
-> > > Cc: ChiaWei Wang <chiawei_wang@aspeedtech.com>
-> > > Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
-> > > ---
-> > >  drivers/tty/serial/8250/8250.h              | 1 +
-> > >  drivers/tty/serial/8250/8250_aspeed_vuart.c | 1 +
-> > >  drivers/tty/serial/8250/8250_port.c         | 2 ++
-> > >  3 files changed, 4 insertions(+)
-> > > 
-> > > diff --git a/drivers/tty/serial/8250/8250.h b/drivers/tty/serial/8250/8250.h
-> > > index 52bb21205bb6..4d6f5e0ecd4c 100644
-> > > --- a/drivers/tty/serial/8250/8250.h
-> > > +++ b/drivers/tty/serial/8250/8250.h
-> > > @@ -88,6 +88,7 @@ struct serial8250_config {
-> > >  #define UART_BUG_NOMSR	(1 << 2)	/* UART has buggy MSR status bits (Au1x00) */
-> > >  #define UART_BUG_THRE	(1 << 3)	/* UART has buggy THRE reassertion */
-> > >  #define UART_BUG_PARITY	(1 << 4)	/* UART mishandles parity if FIFO enabled */
-> > > +#define UART_BUG_TXRACE (1 << 5)	/* UART Tx fails to set remote DR */
-> > 
-> > BUG()?
+> drivers/edac/aspeed_edac.c: In function 'init_csrows':
+> drivers/edac/aspeed_edac.c:257:28: error: format '%x' expects argument of type 'unsigned int', but argument 4 has type 'resource_size_t' {aka 'long long unsigned int'} [-Werror=format=]
+>   257 |         dev_dbg(mci->pdev, "dt: /memory node resources: first page r.start=0x%x, resource_size=0x%x, PAGE_SHIFT macro=0x%x\n",
 > 
-> Can you please expand on what you mean here? I don't follow.
+> Use the special %pR format string to pretty-print the entire
+> resource instead.
 > 
-> At least, I think there might be a formatting issue (spaces vs tabs).
+> Fixes: edfc2d73ca45 ("EDAC/aspeed: Add support for AST2400 and AST2600")
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> ---
+>  drivers/edac/aspeed_edac.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/edac/aspeed_edac.c b/drivers/edac/aspeed_edac.c
+> index a46da56d6d54..6bd5f8815919 100644
+> --- a/drivers/edac/aspeed_edac.c
+> +++ b/drivers/edac/aspeed_edac.c
+> @@ -254,8 +254,8 @@ static int init_csrows(struct mem_ctl_info *mci)
+>  		return rc;
+>  	}
+>  
+> -	dev_dbg(mci->pdev, "dt: /memory node resources: first page r.start=0x%x, resource_size=0x%x, PAGE_SHIFT macro=0x%x\n",
+> -		r.start, resource_size(&r), PAGE_SHIFT);
+> +	dev_dbg(mci->pdev, "dt: /memory node resources: first page %pR, PAGE_SHIFT macro=0x%x\n",
+> +		&r, PAGE_SHIFT);
+>  
+>  	csrow->first_page = r.start >> PAGE_SHIFT;
+>  	nr_pages = resource_size(&r) >> PAGE_SHIFT;
+> -- 
 
-Ick, my fault, I meant "BIT()"?  To perhaps use that macro instead of the <<
-symbol.
+Applied, thanks.
 
-And yes, tabs would be good as well :)
+-- 
+Regards/Gruss,
+    Boris.
 
-thanks,
-
-greg k-h
-
-
+https://people.kernel.org/tglx/notes-about-netiquette
