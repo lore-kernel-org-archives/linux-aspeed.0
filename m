@@ -1,81 +1,259 @@
-From: Quan Nguyen <quan@os.amperecomputing.com>
-Date: Tue, 18 May 2021 06:36:13 +0700
-Subject: [PATCH v4 1/4] dt-bindings: mfd: Add bindings for Ampere Altra
- SMPro drivers
-In-Reply-To: <52550615-ae38-d88e-a597-29dc9c71755a@os.amperecomputing.com>
-References: <20210422090843.4614-1-quan@os.amperecomputing.com>
- <20210422090843.4614-2-quan@os.amperecomputing.com>
- <20210430201918.GA3806853@robh.at.kernel.org>
- <52550615-ae38-d88e-a597-29dc9c71755a@os.amperecomputing.com>
-Message-ID: <ee17c000-6f70-84d9-f7a1-0d30b03dafab@os.amperecomputing.com>
+From: Billy Tsai <billy_tsai@aspeedtech.com>
+Date: Tue, 18 May 2021 08:55:16 +0800
+Subject: [v6 1/2] dt-bindings: Add bindings for aspeed pwm-tach.
+In-Reply-To: <20210518005517.9036-1-billy_tsai@aspeedtech.com>
+References: <20210518005517.9036-1-billy_tsai@aspeedtech.com>
+Message-ID: <20210518005517.9036-2-billy_tsai@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 05/05/2021 15:44, Quan Nguyen wrote:
-> On 01/05/2021 03:19, Rob Herring wrote:
->> On Thu, Apr 22, 2021 at 04:08:40PM +0700, Quan Nguyen wrote:
->>> Adds device tree bindings for SMPro driver found on the Mt.Jade hardware
->>> reference platform with Ampere's Altra Processor family.
->>>
->>> The SMpro co-processor on Ampere Altra processor family is to monitor
->>> and report various data included hwmon-related info, RAS errors, and
->>> other miscellaneous information. This parent SMPro MFD driver creates
->>> a single simple register map to be shared by all sub-devices and leave
->>> all the specific to be handled by the child drivers.
->>
->> Again, just because you have multiple functions aka MFD, that doesn't
->> mean you need child nodes for each function. The only thing you have
->> in DT is a register address. Does this vary? If so, how often? How many
->> different versions of a DT do you currently or expect to have?
->>
-> Hi Rob,
-> 
-> Thank you for your review.
-> I will try to explain what I think below and expect to receive more 
-> comments to improve these patches. And if any misundertood, please help 
-> correct me.
-> 
-> The idea is to keep the SMPro MFD as a simple generic register map and 
-> expect not to change or to handle any specific in this parent device 
-> driver. This is why we see the simple_mfd_i2c fit in this case.
-> 
-> And so, all the specific details will be handled in child devices driver 
-> and we expect to have child nodes for these child devices. If the child 
-> node exist we can then add any specific if necessary later.
-> 
-> One case is that, each socket (ie: the Ampere Altra processor) has it 
-> own SMPro co-processor instance in form of register map and each socket 
-> could be either slave or master. Some function may not available in 
-> slave socket but exist in master socket and we simply choose not to 
-> define the child node if that function not existed.
-> 
-> The other case is that if there are multi instances of the same function 
-> in one SMPro MFD register map, then each instance might need to be 
-> differentiated by using is own register address or maybe a DT property. 
-> Then we can simply add them to the node of these instance.
-> 
-> For your specific questions:
-> 
-> + Does this vary ?
-> yes, I think so. The register address in each child nodes may vary if 
-> the SMPro co-processor firmware change its register map layout or maybe 
-> other instances of a function added. Child device drivers are expected 
-> to handle these changes if necessary.
-> 
-> + About how often ?
-> I actually can't say how often but the purpose of this SMPro register 
-> map is to provide the info to the BMC. The BMC will need more info from 
-> the host so I think changes will be unavoidable.
-> 
-> Please help with your comments
-> Thank you,
-> - Quan
-> 
-Dear Rob,
+This patch adds device binding for aspeed pwm-tach device which is a
+multi-function device include pwm and tach function and pwm/tach device
+bindings which should be the child-node of pwm-tach device.
 
-do you have any suggestion to improve this patch?
+Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
+---
+ .../bindings/hwmon/aspeed,ast2600-tach.yaml   | 66 +++++++++++++++
+ .../bindings/mfd/aspeed,ast2600-pwm-tach.yaml | 84 +++++++++++++++++++
+ .../bindings/pwm/aspeed,ast2600-pwm.yaml      | 62 ++++++++++++++
+ 3 files changed, 212 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/hwmon/aspeed,ast2600-tach.yaml
+ create mode 100644 Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.yaml
+ create mode 100644 Documentation/devicetree/bindings/pwm/aspeed,ast2600-pwm.yaml
 
-- Quan
+diff --git a/Documentation/devicetree/bindings/hwmon/aspeed,ast2600-tach.yaml b/Documentation/devicetree/bindings/hwmon/aspeed,ast2600-tach.yaml
+new file mode 100644
+index 000000000000..0b23281e9f5c
+--- /dev/null
++++ b/Documentation/devicetree/bindings/hwmon/aspeed,ast2600-tach.yaml
+@@ -0,0 +1,66 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++# Copyright (C) 2021 ASPEED, Inc.
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/hwmon/aspeed,ast2600-tach.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: ASPEED AST2600 Tach controller
++
++maintainers:
++  - Billy Tsai <billy_tsai@aspeedtech.com>
++
++description: |
++  The ASPEED Tach controller can support upto 16 fan input.
++  This module is part of the ast2600-pwm-tach multi-function device. For more
++  details see ../mfd/aspeed,ast2600-pwm-tach.yaml.
++
++properties:
++  compatible:
++    enum:
++      - aspeed,ast2600-tach
++
++  "#address-cells":
++    const: 1
++
++  "#size-cells":
++    const: 0
++
++  pinctrl-0: true
++
++  pinctrl-names:
++    const: default
++
++
++required:
++  - compatible
++  - "#address-cells"
++  - "#size-cells"
++
++additionalProperties:
++  type: object
++  properties:
++    reg:
++      description:
++        The tach channel used for this fan.
++      maxItems: 1
++    aspeed,min-rpm:
++      description:
++        define the minimal revolutions per minute of the measure fan
++        used to calculate the sample period of tach
++      default: 1000
++    aspeed,pulse-pr:
++      description:
++        Value specifying the number of pulses per revolution of the
++        monitored FAN.
++      default: 2
++    aspeed,tach-div:
++      description:
++        define the tachometer clock divider as an integer. Formula of
++        tach clock = clock source / (2^tach-div)^2
++      minimum: 0
++      maximum: 15
++      # The value that should be used if the property is not present
++      default: 5
++  required:
++    - reg
+diff --git a/Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.yaml b/Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.yaml
+new file mode 100644
+index 000000000000..d742ccfcc003
+--- /dev/null
++++ b/Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.yaml
+@@ -0,0 +1,84 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++# Copyright (C) 2021 ASPEED, Inc.
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/mfd/aspeed,ast2600-pwm-tach.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: PWM Tach controller Device Tree Bindings
++
++description: |
++  The PWM Tach controller is represented as a multi-function device which
++  includes:
++    PWM
++    Tach
++
++maintainers:
++  - Billy Tsai <billy_tsai@aspeedtech.com>
++
++properties:
++  compatible:
++    items:
++      - enum:
++          - aspeed,ast2600-pwm-tach
++      - const: syscon
++      - const: simple-mfd
++  reg:
++    maxItems: 1
++  clocks:
++    maxItems: 1
++  resets:
++    maxItems: 1
++
++required:
++  - compatible
++  - reg
++  - clocks
++  - resets
++
++patternProperties:
++  "^pwm(@[0-9a-f]+)?$":
++    $ref: ../pwm/aspeed,ast2600-pwm.yaml
++
++  "^tach(@[0-9a-f]+)?$":
++    $ref: ../hwmon/aspeed,ast2600-tach.yaml
++
++additionalProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/clock/ast2600-clock.h>
++    pwm_tach: pwm_tach at 1e610000 {
++      compatible = "aspeed,ast2600-pwm-tach", "syscon", "simple-mfd";
++      reg = <0x1e610000 0x100>;
++      clocks = <&syscon ASPEED_CLK_AHB>;
++      resets = <&syscon ASPEED_RESET_PWM>;
++
++      pwm: pwm {
++        compatible = "aspeed,ast2600-pwm";
++        #address-cells = <1>;
++        #size-cells = <0>;
++        #pwm-cells = <3>;
++        pinctrl-names = "default";
++        pinctrl-0 = <&pinctrl_pwm0_default>;
++        pwm-ch at 0 {
++          reg = <0>;
++          aspeed,wdt-reload-enable;
++          aspeed,wdt-reload-duty-point = <32>;
++        };
++      };
++
++      tach: tach {
++        compatible = "aspeed,ast2600-tach";
++        #address-cells = <1>;
++        #size-cells = <0>;
++        pinctrl-names = "default";
++        pinctrl-0 = <&pinctrl_tach0_default>;
++        fan at 0 {
++          reg = <0>;
++          aspeed,min-rpm = <1000>;
++          aspeed,pulse-pr = <2>;
++          aspeed,tach-div = <5>;
++        };
++      };
++    };
+diff --git a/Documentation/devicetree/bindings/pwm/aspeed,ast2600-pwm.yaml b/Documentation/devicetree/bindings/pwm/aspeed,ast2600-pwm.yaml
+new file mode 100644
+index 000000000000..f1354c8d35b5
+--- /dev/null
++++ b/Documentation/devicetree/bindings/pwm/aspeed,ast2600-pwm.yaml
+@@ -0,0 +1,62 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++# Copyright (C) 2021 ASPEED, Inc.
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/pwm/aspeed,ast2600-pwm.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: ASPEED AST2600 PWM controller
++
++maintainers:
++  - Billy Tsai <billy_tsai@aspeedtech.com>
++
++description: |
++  The ASPEED PWM controller can support upto 16 PWM outputs.
++  This module is part of the ast2600-pwm-tach multi-function device. For more
++  details see ../mfd/aspeed,ast2600-pwm-tach.yaml.
++
++properties:
++  compatible:
++    enum:
++      - aspeed,ast2600-pwm
++
++  "#pwm-cells":
++    const: 3
++
++  "#address-cells":
++    const: 1
++
++  "#size-cells":
++    const: 0
++
++  pinctrl-0: true
++
++  pinctrl-names:
++    const: default
++
++
++required:
++  - compatible
++  - "#pwm-cells"
++  - "#address-cells"
++  - "#size-cells"
++
++additionalProperties:
++  description: Set extend properties for each pwm channel.
++  type: object
++  properties:
++    reg:
++      description:
++        The pwm channel index.
++      maxItems: 1
++    aspeed,wdt-reload-enable:
++      type: boolean
++      description:
++        Enable the function of wdt reset reload duty point.
++    aspeed,wdt-reload-duty-point:
++      description:
++        Define the duty point after wdt reset, 0 = 100%
++      minimum: 0
++      maximum: 255
++  required:
++    - reg
+-- 
+2.25.1
+
