@@ -1,28 +1,27 @@
 From: Rob Herring <robh@kernel.org>
 Date: Wed, 19 May 2021 10:29:24 -0500
-Subject: [PATCH v3 7/7] bindings: ipmi: Add binding for Aspeed SSIF BMC
- driver
-In-Reply-To: <20210519074934.20712-8-quan@os.amperecomputing.com>
-References: <20210519074934.20712-1-quan@os.amperecomputing.com>
- <20210519074934.20712-8-quan@os.amperecomputing.com>
-Message-ID: <1621438164.118346.3134230.nullmailer@robh.at.kernel.org>
+Subject: [PATCH 3/3] dt-bindings: aspeed-i2c: Convert txt to yaml format
+In-Reply-To: <20210519080436.18975-4-jamin_lin@aspeedtech.com>
+References: <20210519080436.18975-1-jamin_lin@aspeedtech.com>
+ <20210519080436.18975-4-jamin_lin@aspeedtech.com>
+Message-ID: <1621438164.132520.3134233.nullmailer@robh.at.kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 19 May 2021 14:49:34 +0700, Quan Nguyen wrote:
-> Add device tree binding document for the Aspeed SSIF BMC driver.
+On Wed, 19 May 2021 16:04:29 +0800, Jamin Lin wrote:
+> Add global-reg node for AST2600. Document the properties for
+> "aspeed,ast2600-i2c-global" compatible node.
 > 
-> Signed-off-by: Quan Nguyen <quan@os.amperecomputing.com>
+> Signed-off-by: Jamin Lin <jamin_lin@aspeedtech.com>
 > ---
-> v3:
->   + Switched to use DT schema format [Rob]
-> 
->  .../bindings/ipmi/aspeed-ssif-bmc.yaml        | 33 +++++++++++++++++++
->  1 file changed, 33 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/ipmi/aspeed-ssif-bmc.yaml
+>  .../devicetree/bindings/i2c/aspeed,i2c.yaml   | 89 +++++++++++++++++++
+>  .../devicetree/bindings/i2c/i2c-aspeed.txt    | 49 ----------
+>  2 files changed, 89 insertions(+), 49 deletions(-)
+>  create mode 100644 Documentation/devicetree/bindings/i2c/aspeed,i2c.yaml
+>  delete mode 100644 Documentation/devicetree/bindings/i2c/i2c-aspeed.txt
 > 
 
 My bot found errors running 'make DT_CHECKER_FLAGS=-m dt_binding_check'
@@ -31,16 +30,9 @@ on your patch (DT_CHECKER_FLAGS is new in v5.13):
 yamllint warnings/errors:
 
 dtschema/dtc warnings/errors:
-Documentation/devicetree/bindings/ipmi/aspeed-ssif-bmc.example.dts:21.13-26: Warning (reg_format): /example-0/ssif-bmc at 10:reg: property has invalid length (4 bytes) (#address-cells == 1, #size-cells == 1)
-Documentation/devicetree/bindings/ipmi/aspeed-ssif-bmc.example.dt.yaml: Warning (pci_device_reg): Failed prerequisite 'reg_format'
-Documentation/devicetree/bindings/ipmi/aspeed-ssif-bmc.example.dt.yaml: Warning (pci_device_bus_num): Failed prerequisite 'reg_format'
-Documentation/devicetree/bindings/ipmi/aspeed-ssif-bmc.example.dt.yaml: Warning (simple_bus_reg): Failed prerequisite 'reg_format'
-Documentation/devicetree/bindings/ipmi/aspeed-ssif-bmc.example.dt.yaml: Warning (i2c_bus_reg): Failed prerequisite 'reg_format'
-Documentation/devicetree/bindings/ipmi/aspeed-ssif-bmc.example.dt.yaml: Warning (spi_bus_reg): Failed prerequisite 'reg_format'
-/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/ipmi/aspeed-ssif-bmc.example.dt.yaml: example-0: ssif-bmc at 10:reg:0: [16] is too short
-	From schema: /usr/local/lib/python3.8/dist-packages/dtschema/schemas/reg.yaml
+Documentation/devicetree/bindings/i2c/aspeed,i2c.example.dt.yaml:0:0: /example-0/i2c-global-regs at 0: failed to match any schema with compatible: ['aspeed,ast2600-i2c-global', 'syscon']
 
-See https://patchwork.ozlabs.org/patch/1480727
+See https://patchwork.ozlabs.org/patch/1480769
 
 This check can fail if there are any dependencies. The base for a patch
 series is generally the most recent rc1.
