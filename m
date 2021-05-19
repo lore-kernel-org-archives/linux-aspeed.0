@@ -1,83 +1,64 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Wed, 19 May 2021 16:05:02 +0930
-Subject: [PATCH v2 2/2] serial: 8250: Use BIT(x) for UART_{CAP,BUG}_*
-In-Reply-To: <a67f0c95-7708-569f-099b-db9e2ad9616d@kernel.org>
-References: <20210519000704.3661773-1-andrew@aj.id.au>
- <20210519000704.3661773-3-andrew@aj.id.au>
- <56ec152a-560b-1eed-97e2-c12e4fed171a@kernel.org>
- <2bb7dfc4-a20e-4e3e-8fa5-74ff264c4e44@www.fastmail.com>
- <a67f0c95-7708-569f-099b-db9e2ad9616d@kernel.org>
-Message-ID: <53e8d6d3-bccc-4c80-8e7d-ea4d3f7ff488@www.fastmail.com>
+From: Quan Nguyen <quan@os.amperecomputing.com>
+Date: Wed, 19 May 2021 14:49:27 +0700
+Subject: [PATCH v3 0/7] Add Aspeed SSIF BMC driver
+Message-ID: <20210519074934.20712-1-quan@os.amperecomputing.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+This series add support for the Aspeed specific SSIF BMC driver which
+is to perform in-band IPMI communication with the host in management
+(BMC) side.
 
+v3:
+  + Switched binding doc to use DT schema format [Rob]
+  + Splited into generic ssif_bmc and aspeed-specific [Corey, Joel]
+  + Removed redundant license info [Joel]
+  + Switched to use traditional if-else [Joel]
+  + Removed unused ssif_bmc_ioctl() [Joel]
+  + Made handle_request()/complete_response() to return void [Joel]
+  + Refactored send_ssif_bmc_response()/receive_ssif_bmc_request() [Corey]
+  + Remove mutex [Corey]
+  + Use spin_lock/unlock_irqsave/restore in callback [Corey]
+  + Removed the unnecessary memset [Corey]
+  + Switch to use dev_err() [Corey]
+  + Combine mask/unmask two interrupts together [Corey]
+  + Fixed unhandled Tx done with NAK [Quan]
+  + Late ack'ed Tx done w/wo Ack irq [Quan]
+  + Use aspeed-specific exported aspeed_set_slave_busy() when slave busy
+to fix the deadlock [Graeme, Philipp, Quan]
+  + Clean buffer for last multipart read [Quan]
+  + Handle unknown incoming command [Quan]
 
-On Wed, 19 May 2021, at 16:02, Jiri Slaby wrote:
-> On 19. 05. 21, 8:27, Andrew Jeffery wrote:
-> > 
-> > 
-> > On Wed, 19 May 2021, at 15:44, Jiri Slaby wrote:
-> >> On 19. 05. 21, 2:07, Andrew Jeffery wrote:
-> >>> BIT(x) improves readability and safety with respect to shifts.
-> >>>
-> >>> Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
-> >>> ---
-> >>>    drivers/tty/serial/8250/8250.h | 33 +++++++++++++++++----------------
-> >>>    1 file changed, 17 insertions(+), 16 deletions(-)
-> >>>
-> >>> diff --git a/drivers/tty/serial/8250/8250.h b/drivers/tty/serial/8250/8250.h
-> >>> index 34aa2714f3c9..4fbf1088fad8 100644
-> >>> --- a/drivers/tty/serial/8250/8250.h
-> >>> +++ b/drivers/tty/serial/8250/8250.h
-> >>> @@ -7,6 +7,7 @@
-> >>>     *  Copyright (C) 2001 Russell King.
-> >>>     */
-> >>>    
-> >>> +#include <linux/bitops.h>
-> >>>    #include <linux/serial_8250.h>
-> >>>    #include <linux/serial_reg.h>
-> >>>    #include <linux/dmaengine.h>
-> >>> @@ -70,25 +71,25 @@ struct serial8250_config {
-> >>>    	unsigned int	flags;
-> >>>    };
-> >>>    
-> >>> -#define UART_CAP_FIFO	(1 << 8)	/* UART has FIFO */
-> >>> -#define UART_CAP_EFR	(1 << 9)	/* UART has EFR */
-> >>> -#define UART_CAP_SLEEP	(1 << 10)	/* UART has IER sleep */
-> >>> -#define UART_CAP_AFE	(1 << 11)	/* MCR-based hw flow control */
-> >>> -#define UART_CAP_UUE	(1 << 12)	/* UART needs IER bit 6 set (Xscale) */
-> >>> -#define UART_CAP_RTOIE	(1 << 13)	/* UART needs IER bit 4 set (Xscale, Tegra) */
-> >>> -#define UART_CAP_HFIFO	(1 << 14)	/* UART has a "hidden" FIFO */
-> >>> -#define UART_CAP_RPM	(1 << 15)	/* Runtime PM is active while idle */
-> >>> -#define UART_CAP_IRDA	(1 << 16)	/* UART supports IrDA line discipline */
-> >>> -#define UART_CAP_MINI	(1 << 17)	/* Mini UART on BCM283X family lacks:
-> >>> +#define UART_CAP_FIFO	BIT(8)	/* UART has FIFO */
-> >>> +#define UART_CAP_EFR	BIT(9)	/* UART has EFR */
-> >>> +#define UART_CAP_SLEEP	BIT(10)	/* UART has IER sleep */
-> >>
-> >>
-> >> Perfect, except the include: BIT is not defined in bitops.h, but in
-> >> bits.h (which includes vdso/bits.h). In fact, bitops.h includes bits.h
-> >> too, but it's superfluous to include all those bitops.
-> > 
-> > Maybe the recommendation in the checkpatch documentation should be
-> > fixed then?
-> 
-> +1 since:
-> 
-> commit 8bd9cb51daac89337295b6f037b0486911e1b408
-> Author: Will Deacon <will@kernel.org>
-> Date:   Tue Jun 19 13:53:08 2018 +0100
-> 
->      locking/atomics, asm-generic: Move some macros from 
-> <linux/bitops.h> to a new <linux/bits.h> file
-> 
-> So care to fix checkpatch too :)?
+v2:
+  + Fixed compiling error with COMPILE_TEST for arc
 
-Yeah, I'll sort that out.
+Quan Nguyen (7):
+  i2c: i2c-core-smbus: Expose PEC calculate function for generic use
+  ipmi: ssif_bmc: Add SSIF BMC driver
+  i2c: aspeed: Fix unhandled Tx done with NAK
+  i2c: aspeed: Acknowledge Tx done w/wo ACK irq late
+  i2c: aspeed: Add aspeed_set_slave_busy()
+  ipmi: ssif_bmc: Add Aspeed SSIF BMC driver
+  bindings: ipmi: Add binding for Aspeed SSIF BMC driver
 
-Andrew
+ .../bindings/ipmi/aspeed-ssif-bmc.yaml        |  33 +
+ drivers/char/ipmi/Kconfig                     |  22 +
+ drivers/char/ipmi/Makefile                    |   2 +
+ drivers/char/ipmi/ssif_bmc.c                  | 605 ++++++++++++++++++
+ drivers/char/ipmi/ssif_bmc.h                  |  93 +++
+ drivers/char/ipmi/ssif_bmc_aspeed.c           |  75 +++
+ drivers/i2c/busses/i2c-aspeed.c               |  51 +-
+ drivers/i2c/i2c-core-smbus.c                  |  12 +-
+ include/linux/i2c.h                           |   1 +
+ 9 files changed, 884 insertions(+), 10 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/ipmi/aspeed-ssif-bmc.yaml
+ create mode 100644 drivers/char/ipmi/ssif_bmc.c
+ create mode 100644 drivers/char/ipmi/ssif_bmc.h
+ create mode 100644 drivers/char/ipmi/ssif_bmc_aspeed.c
+
+-- 
+2.28.0
+
