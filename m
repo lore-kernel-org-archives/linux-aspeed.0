@@ -1,65 +1,73 @@
-From: Quan Nguyen <quan@os.amperecomputing.com>
-Date: Wed, 19 May 2021 14:49:34 +0700
-Subject: [PATCH v3 7/7] bindings: ipmi: Add binding for Aspeed SSIF BMC driver
-In-Reply-To: <20210519074934.20712-1-quan@os.amperecomputing.com>
-References: <20210519074934.20712-1-quan@os.amperecomputing.com>
-Message-ID: <20210519074934.20712-8-quan@os.amperecomputing.com>
+From: Jamin Lin <jamin_lin@aspeedtech.com>
+Date: Wed, 19 May 2021 16:04:27 +0800
+Subject: [PATCH 1/3] i2c: aspeed: avoid new registers definition of AST2600
+In-Reply-To: <20210519080436.18975-1-jamin_lin@aspeedtech.com>
+References: <20210519080436.18975-1-jamin_lin@aspeedtech.com>
+Message-ID: <20210519080436.18975-2-jamin_lin@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add device tree binding document for the Aspeed SSIF BMC driver.
+The register definition between AST2600 A2 and A3 is different.
+This patch avoid new registers definition of AST2600 to use
+this driver. We will submit the path for the new registers
+definition of AST2600.
 
-Signed-off-by: Quan Nguyen <quan@os.amperecomputing.com>
+Signed-off-by: Jamin Lin <jamin_lin@aspeedtech.com>
 ---
-v3:
-  + Switched to use DT schema format [Rob]
+ drivers/i2c/busses/i2c-aspeed.c | 22 ++++++++++++++++++++++
+ 1 file changed, 22 insertions(+)
 
- .../bindings/ipmi/aspeed-ssif-bmc.yaml        | 33 +++++++++++++++++++
- 1 file changed, 33 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/ipmi/aspeed-ssif-bmc.yaml
-
-diff --git a/Documentation/devicetree/bindings/ipmi/aspeed-ssif-bmc.yaml b/Documentation/devicetree/bindings/ipmi/aspeed-ssif-bmc.yaml
-new file mode 100644
-index 000000000000..8608041fbf7e
---- /dev/null
-+++ b/Documentation/devicetree/bindings/ipmi/aspeed-ssif-bmc.yaml
-@@ -0,0 +1,33 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/ipmi/aspeed-ssif-bmc.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
+diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
+index 724bf30600d6..007309077d9f 100644
+--- a/drivers/i2c/busses/i2c-aspeed.c
++++ b/drivers/i2c/busses/i2c-aspeed.c
+@@ -19,14 +19,20 @@
+ #include <linux/irqchip/chained_irq.h>
+ #include <linux/irqdomain.h>
+ #include <linux/kernel.h>
++#include <linux/mfd/syscon.h>
+ #include <linux/module.h>
+ #include <linux/of_address.h>
+ #include <linux/of_irq.h>
+ #include <linux/of_platform.h>
+ #include <linux/platform_device.h>
++#include <linux/regmap.h>
+ #include <linux/reset.h>
+ #include <linux/slab.h>
+ 
++/* I2C Global Registers */
++/* 0x0c : I2CG Global Control Register (AST2500)  */
++#define ASPEED_I2CG_GLOBAL_CTRL_REG			0x0c
 +
-+title: Aspeed SSIF IPMI interface
+ /* I2C Register */
+ #define ASPEED_I2C_FUN_CTRL_REG				0x00
+ #define ASPEED_I2C_AC_TIMING_REG1			0x04
+@@ -973,6 +979,22 @@ static int aspeed_i2c_probe_bus(struct platform_device *pdev)
+ 	struct resource *res;
+ 	int irq, ret;
+ 
++	if (of_device_is_compatible(pdev->dev.of_node,
++				    "aspeed,ast2600-i2c-bus")) {
++		u32 global_ctrl;
++		struct regmap *gr_regmap;
 +
-+description: SSIF IPMI device bindings for Aspeed
++		gr_regmap = syscon_regmap_lookup_by_compatible("aspeed,ast2600-i2c-global");
 +
-+maintainers:
-+  - Thang Nguyen <thang@os.amperecomputing.com>
++		if (IS_ERR(gr_regmap)) {
++			ret = PTR_ERR(gr_regmap);
++		} else {
++			regmap_read(gr_regmap, ASPEED_I2CG_GLOBAL_CTRL_REG, &global_ctrl);
++			if (global_ctrl & BIT(2))
++				return -EIO;
++		}
++	}
 +
-+properties:
-+  compatible:
-+    enum:
-+      - aspeed,ast2500-ssif-bmc
-+
-+  reg:
-+    maxItems: 1
-+
-+required:
-+  - compatible
-+  - reg
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    ssif-bmc at 10 {
-+        compatible = "aspeed,ast2500-ssif-bmc";
-+        reg = <0x10>;
-+    };
+ 	bus = devm_kzalloc(&pdev->dev, sizeof(*bus), GFP_KERNEL);
+ 	if (!bus)
+ 		return -ENOMEM;
 -- 
-2.28.0
+2.17.1
 
