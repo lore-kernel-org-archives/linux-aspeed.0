@@ -1,112 +1,75 @@
-From: ChiaWei Wang <chiawei_wang@aspeedtech.com>
-Date: Thu, 20 May 2021 05:42:19 +0000
-Subject: [PATCH v3 1/2] serial: 8250: Add UART_BUG_TXRACE workaround for
- Aspeed VUART
-In-Reply-To: <b8eed269-f30d-af69-dbc2-c9fa70009091@kernel.org>
-References: <20210520021334.497341-1-andrew@aj.id.au>
- <20210520021334.497341-2-andrew@aj.id.au>
- <b8eed269-f30d-af69-dbc2-c9fa70009091@kernel.org>
-Message-ID: <HK0PR06MB37798367F3F0321B15395DD3912A9@HK0PR06MB3779.apcprd06.prod.outlook.com>
+From: Juerg Haefliger <juerg.haefliger@canonical.com>
+Date: Thu, 20 May 2021 08:30:52 +0200
+Subject: [PATCH] watchdog: Use sysfs_emit() and sysfs_emit_at() in
+ "show" functions
+In-Reply-To: <f2e616645f311ccaf6e0acb996f8c4360a0480ec.camel@perches.com>
+References: <20210511061812.480172-1-juergh@canonical.com>
+ <f2e616645f311ccaf6e0acb996f8c4360a0480ec.camel@perches.com>
+Message-ID: <20210520083052.68a0e1d9@smeagol>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-> -----Original Message-----
-> From: Jiri Slaby <jirislaby@kernel.org>
-> Sent: Thursday, May 20, 2021 1:25 PM
-> 
-> On 20. 05. 21, 4:13, Andrew Jeffery wrote:
-> > Aspeed Virtual UARTs directly bridge e.g. the system console UART on
-> > the LPC bus to the UART interface on the BMC's internal APB. As such
-> > there's no RS-232 signalling involved - the UART interfaces on each
-> > bus are directly connected as the producers and consumers of the one
-> > set of FIFOs.
-> >
-> > The APB in the AST2600 generally runs at 100MHz while the LPC bus
-> > peaks at 33MHz. The difference in clock speeds exposes a race in the
-> > VUART design where a Tx data burst on the APB interface can result in
-> > a byte lost on the LPC interface. The symptom is LSR[DR] remains clear
-> > on the LPC interface despite data being present in its Rx FIFO, while
-> > LSR[THRE] remains clear on the APB interface as the host has not
-> > consumed the data the BMC has transmitted. In this state, the UART has
-> > stalled and no further data can be transmitted without manual intervention
-> (e.g.
-> > resetting the FIFOs, resulting in loss of data).
-> >
-> > The recommended work-around is to insert a read cycle on the APB
-> > interface between writes to THR.
-> >
-> > Cc: ChiaWei Wang <chiawei_wang@aspeedtech.com>
-> > Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
-> 
-> Reviewed-by: Jiri Slaby <jirislaby@kernel.org>
+On Wed, 12 May 2021 21:48:37 -0700
+Joe Perches <joe@perches.com> wrote:
 
-Tested-by: ChiaWei Wang <chiawei_wang@aspeedtech.com>
-
+> On Tue, 2021-05-11 at 08:18 +0200, Juerg Haefliger wrote:
+> > Convert sprintf() in sysfs "show" functions to sysfs_emit() and
+> > sysfs_emit_at() in order to check for buffer overruns in sysfs outputs.  
+> []
+> > diff --git a/drivers/watchdog/ziirave_wdt.c b/drivers/watchdog/ziirave_wdt.c  
+> []
+> > @@ -445,8 +445,9 @@ static ssize_t ziirave_wdt_sysfs_show_firm(struct device *dev,
+> > ?	if (ret)
+> > ?		return ret;
+> > ?
+> > 
+> > -	ret = sprintf(buf, ZIIRAVE_FW_VERSION_FMT, w_priv->firmware_rev.major,
+> > -		      w_priv->firmware_rev.minor);
+> > +	ret = sysfs_emit(buf, ZIIRAVE_FW_VERSION_FMT,
+> > +			 w_priv->firmware_rev.major,
+> > +			 w_priv->firmware_rev.minor);
+> > ?
+> > 
+> > ?	mutex_unlock(&w_priv->sysfs_mutex);
+> > ?
+> > 
+> > @@ -468,8 +469,9 @@ static ssize_t ziirave_wdt_sysfs_show_boot(struct device *dev,
+> > ?	if (ret)
+> > ?		return ret;
+> > ?
+> > 
+> > -	ret = sprintf(buf, ZIIRAVE_BL_VERSION_FMT, w_priv->bootloader_rev.major,
+> > -		      w_priv->bootloader_rev.minor);
+> > +	ret = sysfs_emit(buf, ZIIRAVE_BL_VERSION_FMT,
+> > +			 w_priv->bootloader_rev.major,
+> > +			 w_priv->bootloader_rev.minor);
+> > ?
+> > 
+> > ?	mutex_unlock(&w_priv->sysfs_mutex);
+> > ?
+> > 
+> > @@ -491,7 +493,7 @@ static ssize_t ziirave_wdt_sysfs_show_reason(struct device *dev,
+> > ?	if (ret)
+> > ?		return ret;
+> > ?
+> > 
+> > -	ret = sprintf(buf, "%s", ziirave_reasons[w_priv->reset_reason]);
+> > +	ret = sysfs_emit(buf, "%s", ziirave_reasons[w_priv->reset_reason]);  
 > 
-> > ---
-> >   drivers/tty/serial/8250/8250.h              |  1 +
-> >   drivers/tty/serial/8250/8250_aspeed_vuart.c |  1 +
-> >   drivers/tty/serial/8250/8250_port.c         | 12 ++++++++++++
-> >   3 files changed, 14 insertions(+)
-> >
-> > diff --git a/drivers/tty/serial/8250/8250.h
-> > b/drivers/tty/serial/8250/8250.h index 52bb21205bb6..34aa2714f3c9
-> > 100644
-> > --- a/drivers/tty/serial/8250/8250.h
-> > +++ b/drivers/tty/serial/8250/8250.h
-> > @@ -88,6 +88,7 @@ struct serial8250_config {
-> >   #define UART_BUG_NOMSR	(1 << 2)	/* UART has buggy MSR status
-> bits (Au1x00) */
-> >   #define UART_BUG_THRE	(1 << 3)	/* UART has buggy THRE
-> reassertion */
-> >   #define UART_BUG_PARITY	(1 << 4)	/* UART mishandles parity if FIFO
-> enabled */
-> > +#define UART_BUG_TXRACE	(1 << 5)	/* UART Tx fails to set remote DR
-> */
-> >
-> >
-> >   #ifdef CONFIG_SERIAL_8250_SHARE_IRQ
-> > diff --git a/drivers/tty/serial/8250/8250_aspeed_vuart.c
-> > b/drivers/tty/serial/8250/8250_aspeed_vuart.c
-> > index a28a394ba32a..4caab8714e2c 100644
-> > --- a/drivers/tty/serial/8250/8250_aspeed_vuart.c
-> > +++ b/drivers/tty/serial/8250/8250_aspeed_vuart.c
-> > @@ -440,6 +440,7 @@ static int aspeed_vuart_probe(struct
-> platform_device *pdev)
-> >   	port.port.status = UPSTAT_SYNC_FIFO;
-> >   	port.port.dev = &pdev->dev;
-> >   	port.port.has_sysrq = IS_ENABLED(CONFIG_SERIAL_8250_CONSOLE);
-> > +	port.bugs |= UART_BUG_TXRACE;
-> >
-> >   	rc = sysfs_create_group(&vuart->dev->kobj,
-> &aspeed_vuart_attr_group);
-> >   	if (rc < 0)
-> > diff --git a/drivers/tty/serial/8250/8250_port.c
-> > b/drivers/tty/serial/8250/8250_port.c
-> > index d45dab1ab316..fc5ab2032282 100644
-> > --- a/drivers/tty/serial/8250/8250_port.c
-> > +++ b/drivers/tty/serial/8250/8250_port.c
-> > @@ -1809,6 +1809,18 @@ void serial8250_tx_chars(struct uart_8250_port
-> *up)
-> >   	count = up->tx_loadsz;
-> >   	do {
-> >   		serial_out(up, UART_TX, xmit->buf[xmit->tail]);
-> > +		if (up->bugs & UART_BUG_TXRACE) {
-> > +			/*
-> > +			 * The Aspeed BMC virtual UARTs have a bug where data
-> > +			 * may get stuck in the BMC's Tx FIFO from bursts of
-> > +			 * writes on the APB interface.
-> > +			 *
-> > +			 * Delay back-to-back writes by a read cycle to avoid
-> > +			 * stalling the VUART. Read a register that won't have
-> > +			 * side-effects and discard the result.
-> > +			 */
-> > +			serial_in(up, UART_SCR);
-> > +		}
-> >   		xmit->tail = (xmit->tail + 1) & (UART_XMIT_SIZE - 1);
-> >   		port->icount.tx++;
-> >   		if (uart_circ_empty(xmit))
-> >
+> All of these formats should probably end with a newline
+> and the ZIIRAVE_<FOO>_VERSION_FMT defines are to me unnecessary.
+> 
+
+I'll send a follow-on patch for that.
+
+...Juerg
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: not available
+Type: application/pgp-signature
+Size: 833 bytes
+Desc: OpenPGP digital signature
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20210520/b53b0ef8/attachment-0001.sig>
