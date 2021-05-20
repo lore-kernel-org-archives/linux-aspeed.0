@@ -1,130 +1,84 @@
-From: Steven Lee <steven_lee@aspeedtech.com>
-Date: Thu, 20 May 2021 18:13:43 +0800
-Subject: [PATCH v4 1/3] ARM: dts: aspeed: ast2600evb: Add sdhci node and gpio
- regulator for A2 evb.
-In-Reply-To: <20210520101346.16772-1-steven_lee@aspeedtech.com>
-References: <20210520101346.16772-1-steven_lee@aspeedtech.com>
-Message-ID: <20210520101346.16772-2-steven_lee@aspeedtech.com>
+From: Ryan Chen <ryan_chen@aspeedtech.com>
+Date: Thu, 20 May 2021 11:06:36 +0000
+Subject: [PATCH v3 5/7] i2c: aspeed: Add aspeed_set_slave_busy()
+In-Reply-To: <20210519074934.20712-6-quan@os.amperecomputing.com>
+References: <20210519074934.20712-1-quan@os.amperecomputing.com>
+ <20210519074934.20712-6-quan@os.amperecomputing.com>
+Message-ID: <HK0PR06MB3380BFA9FD9EF8F51F9DCC23F22A9@HK0PR06MB3380.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-AST2600 A2(or newer) EVB has gpio regulators for toggling signal voltage
-between 3.3v and 1.8v, the patch adds sdhci node and gpio regulator in the
-new dts file and adds commment for describing the reference design.
+> -----Original Message-----
+> From: openbmc
+> <openbmc-bounces+ryan_chen=aspeedtech.com@lists.ozlabs.org> On Behalf
+> Of Quan Nguyen
+> Sent: Wednesday, May 19, 2021 3:50 PM
+> To: Corey Minyard <minyard@acm.org>; Rob Herring <robh+dt@kernel.org>;
+> Joel Stanley <joel@jms.id.au>; Andrew Jeffery <andrew@aj.id.au>; Brendan
+> Higgins <brendanhiggins@google.com>; Benjamin Herrenschmidt
+> <benh@kernel.crashing.org>; Wolfram Sang <wsa@kernel.org>; Philipp Zabel
+> <p.zabel@pengutronix.de>; openipmi-developer at lists.sourceforge.net;
+> devicetree at vger.kernel.org; linux-arm-kernel at lists.infradead.org;
+> linux-aspeed at lists.ozlabs.org; linux-kernel at vger.kernel.org;
+> linux-i2c at vger.kernel.org
+> Cc: Open Source Submission <patches@amperecomputing.com>; Thang Q .
+> Nguyen <thang@os.amperecomputing.com>; Phong Vo
+> <phong@os.amperecomputing.com>; openbmc at lists.ozlabs.org
+> Subject: [PATCH v3 5/7] i2c: aspeed: Add aspeed_set_slave_busy()
+> 
+> Slave i2c device on AST2500 received a lot of slave irq while it is busy
+> processing the response. To handle this case, adds and exports
+> aspeed_set_slave_busy() for controller to temporary stop slave irq while slave
+> is handling the response, and re-enable them again when the response is ready.
+> 
+> Signed-off-by: Quan Nguyen <quan@os.amperecomputing.com>
+> ---
+> v3:
+>   + First introduce in v3 [Quan]
+> 
+>  drivers/i2c/busses/i2c-aspeed.c | 20 ++++++++++++++++++++
+>  1 file changed, 20 insertions(+)
+> 
+> diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
+> index b2e9c8f0ddf7..9926d04831a2 100644
+> --- a/drivers/i2c/busses/i2c-aspeed.c
+> +++ b/drivers/i2c/busses/i2c-aspeed.c
+> @@ -944,6 +944,26 @@ static int aspeed_i2c_init(struct aspeed_i2c_bus
+> *bus,
+>  	return 0;
+>  }
+> 
+> +#if IS_ENABLED(CONFIG_I2C_SLAVE)
+> +void aspeed_set_slave_busy(struct i2c_adapter *adap, bool busy) {
+> +	struct aspeed_i2c_bus *bus = i2c_get_adapdata(adap);
+> +	unsigned long current_mask, flags;
+> +
+> +	spin_lock_irqsave(&bus->lock, flags);
+> +
+> +	current_mask = readl(bus->base + ASPEED_I2C_INTR_CTRL_REG);
+> +	if (busy)
+> +		current_mask &= ~(ASPEED_I2CD_INTR_RX_DONE |
+> ASPEED_I2CD_INTR_SLAVE_MATCH);
+> +	else
+> +		current_mask |= ASPEED_I2CD_INTR_RX_DONE |
+> ASPEED_I2CD_INTR_SLAVE_MATCH;
+> +	writel(current_mask, bus->base + ASPEED_I2C_INTR_CTRL_REG);
+> +
+> +	spin_unlock_irqrestore(&bus->lock, flags); }
+> +EXPORT_SYMBOL_GPL(aspeed_set_slave_busy);
+> +#endif
+> +
+>  static int aspeed_i2c_reset(struct aspeed_i2c_bus *bus)  {
+>  	struct platform_device *pdev = to_platform_device(bus->dev);
+> --
+> 2.28.0
 
-Signed-off-by: Steven Lee <steven_lee@aspeedtech.com>
----
- arch/arm/boot/dts/aspeed-ast2600-evb-a2.dts | 98 +++++++++++++++++++++
- 1 file changed, 98 insertions(+)
- create mode 100644 arch/arm/boot/dts/aspeed-ast2600-evb-a2.dts
-
-diff --git a/arch/arm/boot/dts/aspeed-ast2600-evb-a2.dts b/arch/arm/boot/dts/aspeed-ast2600-evb-a2.dts
-new file mode 100644
-index 000000000000..d581e8069a82
---- /dev/null
-+++ b/arch/arm/boot/dts/aspeed-ast2600-evb-a2.dts
-@@ -0,0 +1,98 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
-+// Copyright 2021 IBM Corp.
-+
-+#include "aspeed-ast2600-evb.dts"
-+#include <dt-bindings/gpio/gpio.h>
-+
-+/ {
-+	model = "AST2600 A2 EVB";
-+	compatible = "aspeed,ast2600";
-+
-+	vcc_sdhci0: regulator-vcc-sdhci0 {
-+		compatible = "regulator-fixed";
-+		regulator-name = "SDHCI0 Vcc";
-+		regulator-min-microvolt = <3300000>;
-+		regulator-max-microvolt = <3300000>;
-+		gpios = <&gpio0 168
-+			 GPIO_ACTIVE_HIGH>;
-+		enable-active-high;
-+	};
-+
-+	vccq_sdhci0: regulator-vccq-sdhci0 {
-+		compatible = "regulator-gpio";
-+		regulator-name = "SDHCI0 VccQ";
-+		regulator-min-microvolt = <1800000>;
-+		regulator-max-microvolt = <3300000>;
-+		gpios = <&gpio0 169
-+			 GPIO_ACTIVE_HIGH>;
-+		gpios-states = <1>;
-+		states = <3300000 1>,
-+			 <1800000 0>;
-+	};
-+
-+	vcc_sdhci1: regulator-vcc-sdhci1 {
-+		compatible = "regulator-fixed";
-+		regulator-name = "SDHCI1 Vcc";
-+		regulator-min-microvolt = <3300000>;
-+		regulator-max-microvolt = <3300000>;
-+		gpios = <&gpio0 170
-+			 GPIO_ACTIVE_HIGH>;
-+		enable-active-high;
-+	};
-+
-+	vccq_sdhci1: regulator-vccq-sdhci1 {
-+		compatible = "regulator-gpio";
-+		regulator-name = "SDHCI1 VccQ";
-+		regulator-min-microvolt = <1800000>;
-+		regulator-max-microvolt = <3300000>;
-+		gpios = <&gpio0 171
-+			 GPIO_ACTIVE_HIGH>;
-+		gpios-states = <1>;
-+		states = <3300000 1>,
-+			 <1800000 0>;
-+	};
-+};
-+
-+&sdc {
-+	status = "okay";
-+};
-+
-+/*
-+ * The signal voltage of sdhci0 and sdhci1 on AST2600-A2 EVB is able to be
-+ * toggled by GPIO pins.
-+ * In the reference design, GPIOV0 of AST2600-A2 EVB is connected to the
-+ * power load switch that providing 3.3v to sdhci0 vdd, GPIOV1 is connected to
-+ * a 1.8v and a 3.3v power load switch that providing signal voltage to
-+ * sdhci0 bus.
-+ * If GPIOV0 is active high, sdhci0 is enabled, otherwise, sdhci0 is disabled.
-+ * If GPIOV1 is active high, 3.3v power load switch is enabled, sdhci0 signal
-+ * voltage is 3.3v, otherwise, 1.8v power load switch will be enabled,
-+ * sdhci0 signal voltage becomes 1.8v.
-+ * AST2600-A2 EVB also support toggling signal voltage for sdhci1.
-+ * The design is the same as sdhci0, it uses GPIOV2 as power-gpio and GPIOV3
-+ * as power-switch-gpio.
-+ */
-+&sdhci0 {
-+	status = "okay";
-+	bus-width = <4>;
-+	max-frequency = <100000000>;
-+	sdhci-drive-type = /bits/ 8 <3>;
-+	sdhci-caps-mask = <0x7 0x0>;
-+	sdhci,wp-inverted;
-+	vmmc-supply = <&vcc_sdhci0>;
-+	vqmmc-supply = <&vccq_sdhci0>;
-+	clk-phase-sd-hs = <7>, <200>;
-+};
-+
-+&sdhci1 {
-+	status = "okay";
-+	bus-width = <4>;
-+	max-frequency = <100000000>;
-+	sdhci-drive-type = /bits/ 8 <3>;
-+	sdhci-caps-mask = <0x7 0x0>;
-+	sdhci,wp-inverted;
-+	vmmc-supply = <&vcc_sdhci1>;
-+	vqmmc-supply = <&vccq_sdhci1>;
-+	clk-phase-sd-hs = <7>, <200>;
-+};
-+
--- 
-2.17.1
+Hello,
+	The better idea is use disable i2c slave mode. 
+	Due to if i2c controller running in slave will get slave match, and latch the SCL.
+	Until cpu clear interrupt status. 
+Ryan
 
