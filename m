@@ -1,76 +1,53 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Thu, 20 May 2021 11:43:34 +0930
-Subject: [PATCH v3 2/2] serial: 8250: Use BIT(x) for UART_{CAP,BUG}_*
-In-Reply-To: <20210520021334.497341-1-andrew@aj.id.au>
-References: <20210520021334.497341-1-andrew@aj.id.au>
-Message-ID: <20210520021334.497341-3-andrew@aj.id.au>
+From: Jamin Lin <jamin_lin@aspeedtech.com>
+Date: Thu, 20 May 2021 11:16:08 +0800
+Subject: [PATCH 3/3] dt-bindings: aspeed-i2c: Convert txt to yaml format
+In-Reply-To: <1621438164.132520.3134233.nullmailer@robh.at.kernel.org>
+References: <20210519080436.18975-1-jamin_lin@aspeedtech.com>
+ <20210519080436.18975-4-jamin_lin@aspeedtech.com>
+ <1621438164.132520.3134233.nullmailer@robh.at.kernel.org>
+Message-ID: <20210520031608.GA3601@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-BIT(x) improves readability and safety with respect to shifts.
-
-Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
----
- drivers/tty/serial/8250/8250.h | 33 +++++++++++++++++----------------
- 1 file changed, 17 insertions(+), 16 deletions(-)
-
-diff --git a/drivers/tty/serial/8250/8250.h b/drivers/tty/serial/8250/8250.h
-index 34aa2714f3c9..6473361525d1 100644
---- a/drivers/tty/serial/8250/8250.h
-+++ b/drivers/tty/serial/8250/8250.h
-@@ -7,6 +7,7 @@
-  *  Copyright (C) 2001 Russell King.
-  */
- 
-+#include <linux/bits.h>
- #include <linux/serial_8250.h>
- #include <linux/serial_reg.h>
- #include <linux/dmaengine.h>
-@@ -70,25 +71,25 @@ struct serial8250_config {
- 	unsigned int	flags;
- };
- 
--#define UART_CAP_FIFO	(1 << 8)	/* UART has FIFO */
--#define UART_CAP_EFR	(1 << 9)	/* UART has EFR */
--#define UART_CAP_SLEEP	(1 << 10)	/* UART has IER sleep */
--#define UART_CAP_AFE	(1 << 11)	/* MCR-based hw flow control */
--#define UART_CAP_UUE	(1 << 12)	/* UART needs IER bit 6 set (Xscale) */
--#define UART_CAP_RTOIE	(1 << 13)	/* UART needs IER bit 4 set (Xscale, Tegra) */
--#define UART_CAP_HFIFO	(1 << 14)	/* UART has a "hidden" FIFO */
--#define UART_CAP_RPM	(1 << 15)	/* Runtime PM is active while idle */
--#define UART_CAP_IRDA	(1 << 16)	/* UART supports IrDA line discipline */
--#define UART_CAP_MINI	(1 << 17)	/* Mini UART on BCM283X family lacks:
-+#define UART_CAP_FIFO	BIT(8)	/* UART has FIFO */
-+#define UART_CAP_EFR	BIT(9)	/* UART has EFR */
-+#define UART_CAP_SLEEP	BIT(10)	/* UART has IER sleep */
-+#define UART_CAP_AFE	BIT(11)	/* MCR-based hw flow control */
-+#define UART_CAP_UUE	BIT(12)	/* UART needs IER bit 6 set (Xscale) */
-+#define UART_CAP_RTOIE	BIT(13)	/* UART needs IER bit 4 set (Xscale, Tegra) */
-+#define UART_CAP_HFIFO	BIT(14)	/* UART has a "hidden" FIFO */
-+#define UART_CAP_RPM	BIT(15)	/* Runtime PM is active while idle */
-+#define UART_CAP_IRDA	BIT(16)	/* UART supports IrDA line discipline */
-+#define UART_CAP_MINI	BIT(17)	/* Mini UART on BCM283X family lacks:
- 					 * STOP PARITY EPAR SPAR WLEN5 WLEN6
- 					 */
- 
--#define UART_BUG_QUOT	(1 << 0)	/* UART has buggy quot LSB */
--#define UART_BUG_TXEN	(1 << 1)	/* UART has buggy TX IIR status */
--#define UART_BUG_NOMSR	(1 << 2)	/* UART has buggy MSR status bits (Au1x00) */
--#define UART_BUG_THRE	(1 << 3)	/* UART has buggy THRE reassertion */
--#define UART_BUG_PARITY	(1 << 4)	/* UART mishandles parity if FIFO enabled */
--#define UART_BUG_TXRACE	(1 << 5)	/* UART Tx fails to set remote DR */
-+#define UART_BUG_QUOT	BIT(0)	/* UART has buggy quot LSB */
-+#define UART_BUG_TXEN	BIT(1)	/* UART has buggy TX IIR status */
-+#define UART_BUG_NOMSR	BIT(2)	/* UART has buggy MSR status bits (Au1x00) */
-+#define UART_BUG_THRE	BIT(3)	/* UART has buggy THRE reassertion */
-+#define UART_BUG_PARITY	BIT(4)	/* UART mishandles parity if FIFO enabled */
-+#define UART_BUG_TXRACE	BIT(5)	/* UART Tx fails to set remote DR */
- 
- 
- #ifdef CONFIG_SERIAL_8250_SHARE_IRQ
--- 
-2.30.2
-
+The 05/19/2021 15:29, Rob Herring wrote:
+> On Wed, 19 May 2021 16:04:29 +0800, Jamin Lin wrote:
+> > Add global-reg node for AST2600. Document the properties for
+> > "aspeed,ast2600-i2c-global" compatible node.
+> > 
+> > Signed-off-by: Jamin Lin <jamin_lin@aspeedtech.com>
+> > ---
+> >  .../devicetree/bindings/i2c/aspeed,i2c.yaml   | 89 +++++++++++++++++++
+> >  .../devicetree/bindings/i2c/i2c-aspeed.txt    | 49 ----------
+> >  2 files changed, 89 insertions(+), 49 deletions(-)
+> >  create mode 100644 Documentation/devicetree/bindings/i2c/aspeed,i2c.yaml
+> >  delete mode 100644 Documentation/devicetree/bindings/i2c/i2c-aspeed.txt
+> > 
+> 
+> My bot found errors running 'make DT_CHECKER_FLAGS=-m dt_binding_check'
+> on your patch (DT_CHECKER_FLAGS is new in v5.13):
+> 
+> yamllint warnings/errors:
+> 
+> dtschema/dtc warnings/errors:
+> Documentation/devicetree/bindings/i2c/aspeed,i2c.example.dt.yaml:0:0: /example-0/i2c-global-regs at 0: failed to match any schema with compatible: ['aspeed,ast2600-i2c-global', 'syscon']
+> 
+> See https://patchwork.ozlabs.org/patch/1480769
+> 
+> This check can fail if there are any dependencies. The base for a patch
+> series is generally the most recent rc1.
+> 
+> If you already ran 'make dt_binding_check' and didn't see the above
+> error(s), then make sure 'yamllint' is installed and dt-schema is up to
+> date:
+> 
+> pip3 install dtschema --upgrade
+> 
+> Please check and re-submit.
+>
+Thanks for your review.
+yes, I did not add "DT_CHECKER_FLAGS" to check my patch.
+I will re-sent this patch.
+Thanks
