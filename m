@@ -1,107 +1,130 @@
 From: Steven Lee <steven_lee@aspeedtech.com>
-Date: Thu, 20 May 2021 18:13:45 +0800
-Subject: [PATCH v4 3/3] mmc: sdhci-of-aspeed: Configure the SDHCIs as
- specified by the devicetree.
+Date: Thu, 20 May 2021 18:13:43 +0800
+Subject: [PATCH v4 1/3] ARM: dts: aspeed: ast2600evb: Add sdhci node and gpio
+ regulator for A2 evb.
 In-Reply-To: <20210520101346.16772-1-steven_lee@aspeedtech.com>
 References: <20210520101346.16772-1-steven_lee@aspeedtech.com>
-Message-ID: <20210520101346.16772-4-steven_lee@aspeedtech.com>
+Message-ID: <20210520101346.16772-2-steven_lee@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The hardware provides capability configuration registers for each SDHCI
-in the global configuration space for the SD controller. Writes to the
-global capability registers are mirrored to the capability registers in
-the associated SDHCI. Configuration of the capabilities must be written
-through the mirror registers prior to initialisation of the SDHCI.
+AST2600 A2(or newer) EVB has gpio regulators for toggling signal voltage
+between 3.3v and 1.8v, the patch adds sdhci node and gpio regulator in the
+new dts file and adds commment for describing the reference design.
 
 Signed-off-by: Steven Lee <steven_lee@aspeedtech.com>
 ---
- drivers/mmc/host/sdhci-of-aspeed.c | 48 ++++++++++++++++++++++++++++++
- 1 file changed, 48 insertions(+)
+ arch/arm/boot/dts/aspeed-ast2600-evb-a2.dts | 98 +++++++++++++++++++++
+ 1 file changed, 98 insertions(+)
+ create mode 100644 arch/arm/boot/dts/aspeed-ast2600-evb-a2.dts
 
-diff --git a/drivers/mmc/host/sdhci-of-aspeed.c b/drivers/mmc/host/sdhci-of-aspeed.c
-index d001c51074a0..65b5685f6c15 100644
---- a/drivers/mmc/host/sdhci-of-aspeed.c
-+++ b/drivers/mmc/host/sdhci-of-aspeed.c
-@@ -31,6 +31,11 @@
- #define   ASPEED_SDC_S0_PHASE_OUT_EN	GENMASK(1, 0)
- #define   ASPEED_SDC_PHASE_MAX		31
- 
-+/* SDIO{10,20} */
-+#define ASPEED_SDC_CAP1_1_8V           (0 * 32 + 26)
-+/* SDIO{14,24} */
-+#define ASPEED_SDC_CAP2_SDR104         (1 * 32 + 1)
+diff --git a/arch/arm/boot/dts/aspeed-ast2600-evb-a2.dts b/arch/arm/boot/dts/aspeed-ast2600-evb-a2.dts
+new file mode 100644
+index 000000000000..d581e8069a82
+--- /dev/null
++++ b/arch/arm/boot/dts/aspeed-ast2600-evb-a2.dts
+@@ -0,0 +1,98 @@
++// SPDX-License-Identifier: GPL-2.0-or-later
++// Copyright 2021 IBM Corp.
 +
- struct aspeed_sdc {
- 	struct clk *clk;
- 	struct resource *res;
-@@ -72,6 +77,37 @@ struct aspeed_sdhci {
- 	const struct aspeed_sdhci_phase_desc *phase_desc;
- };
- 
++#include "aspeed-ast2600-evb.dts"
++#include <dt-bindings/gpio/gpio.h>
++
++/ {
++	model = "AST2600 A2 EVB";
++	compatible = "aspeed,ast2600";
++
++	vcc_sdhci0: regulator-vcc-sdhci0 {
++		compatible = "regulator-fixed";
++		regulator-name = "SDHCI0 Vcc";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		gpios = <&gpio0 168
++			 GPIO_ACTIVE_HIGH>;
++		enable-active-high;
++	};
++
++	vccq_sdhci0: regulator-vccq-sdhci0 {
++		compatible = "regulator-gpio";
++		regulator-name = "SDHCI0 VccQ";
++		regulator-min-microvolt = <1800000>;
++		regulator-max-microvolt = <3300000>;
++		gpios = <&gpio0 169
++			 GPIO_ACTIVE_HIGH>;
++		gpios-states = <1>;
++		states = <3300000 1>,
++			 <1800000 0>;
++	};
++
++	vcc_sdhci1: regulator-vcc-sdhci1 {
++		compatible = "regulator-fixed";
++		regulator-name = "SDHCI1 Vcc";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		gpios = <&gpio0 170
++			 GPIO_ACTIVE_HIGH>;
++		enable-active-high;
++	};
++
++	vccq_sdhci1: regulator-vccq-sdhci1 {
++		compatible = "regulator-gpio";
++		regulator-name = "SDHCI1 VccQ";
++		regulator-min-microvolt = <1800000>;
++		regulator-max-microvolt = <3300000>;
++		gpios = <&gpio0 171
++			 GPIO_ACTIVE_HIGH>;
++		gpios-states = <1>;
++		states = <3300000 1>,
++			 <1800000 0>;
++	};
++};
++
++&sdc {
++	status = "okay";
++};
++
 +/*
-+ * The function sets the mirror register for updating
-+ * capbilities of the current slot.
-+ *
-+ *   slot | capability  | caps_reg | mirror_reg
-+ *   -----|-------------|----------|------------
-+ *     0  | CAP1_1_8V   | SDIO140  |   SDIO10
-+ *     0  | CAP2_SDR104 | SDIO144  |   SDIO14
-+ *     1  | CAP1_1_8V   | SDIO240  |   SDIO20
-+ *     1  | CAP2_SDR104 | SDIO244  |   SDIO24
++ * The signal voltage of sdhci0 and sdhci1 on AST2600-A2 EVB is able to be
++ * toggled by GPIO pins.
++ * In the reference design, GPIOV0 of AST2600-A2 EVB is connected to the
++ * power load switch that providing 3.3v to sdhci0 vdd, GPIOV1 is connected to
++ * a 1.8v and a 3.3v power load switch that providing signal voltage to
++ * sdhci0 bus.
++ * If GPIOV0 is active high, sdhci0 is enabled, otherwise, sdhci0 is disabled.
++ * If GPIOV1 is active high, 3.3v power load switch is enabled, sdhci0 signal
++ * voltage is 3.3v, otherwise, 1.8v power load switch will be enabled,
++ * sdhci0 signal voltage becomes 1.8v.
++ * AST2600-A2 EVB also support toggling signal voltage for sdhci1.
++ * The design is the same as sdhci0, it uses GPIOV2 as power-gpio and GPIOV3
++ * as power-switch-gpio.
 + */
-+static void aspeed_sdc_set_slot_capability(struct sdhci_host *host, struct aspeed_sdc *sdc,
-+					   int capability, bool enable, u8 slot)
-+{
-+	u32 mirror_reg_offset;
-+	u32 cap_val;
-+	u8 cap_reg;
++&sdhci0 {
++	status = "okay";
++	bus-width = <4>;
++	max-frequency = <100000000>;
++	sdhci-drive-type = /bits/ 8 <3>;
++	sdhci-caps-mask = <0x7 0x0>;
++	sdhci,wp-inverted;
++	vmmc-supply = <&vcc_sdhci0>;
++	vqmmc-supply = <&vccq_sdhci0>;
++	clk-phase-sd-hs = <7>, <200>;
++};
 +
-+	if (slot > 1)
-+		return;
++&sdhci1 {
++	status = "okay";
++	bus-width = <4>;
++	max-frequency = <100000000>;
++	sdhci-drive-type = /bits/ 8 <3>;
++	sdhci-caps-mask = <0x7 0x0>;
++	sdhci,wp-inverted;
++	vmmc-supply = <&vcc_sdhci1>;
++	vqmmc-supply = <&vccq_sdhci1>;
++	clk-phase-sd-hs = <7>, <200>;
++};
 +
-+	cap_reg = capability / 32;
-+	cap_val = sdhci_readl(host, 0x40 + (cap_reg * 4));
-+	if (enable)
-+		cap_val |= BIT(capability % 32);
-+	else
-+		cap_val &= ~BIT(capability % 32);
-+	mirror_reg_offset = ((slot + 1) * 0x10) + (cap_reg * 4);
-+	writel(cap_val, sdc->regs + mirror_reg_offset);
-+}
-+
- static void aspeed_sdc_configure_8bit_mode(struct aspeed_sdc *sdc,
- 					   struct aspeed_sdhci *sdhci,
- 					   bool bus8)
-@@ -328,6 +364,7 @@ static inline int aspeed_sdhci_calculate_slot(struct aspeed_sdhci *dev,
- static int aspeed_sdhci_probe(struct platform_device *pdev)
- {
- 	const struct aspeed_sdhci_pdata *aspeed_pdata;
-+	struct device_node *np = pdev->dev.of_node;
- 	struct sdhci_pltfm_host *pltfm_host;
- 	struct aspeed_sdhci *dev;
- 	struct sdhci_host *host;
-@@ -372,6 +409,17 @@ static int aspeed_sdhci_probe(struct platform_device *pdev)
- 
- 	sdhci_get_of_property(pdev);
- 
-+	if (of_property_read_bool(np, "mmc-hs200-1_8v") ||
-+	    of_property_read_bool(np, "sd-uhs-sdr104")) {
-+		aspeed_sdc_set_slot_capability(host, dev->parent, ASPEED_SDC_CAP1_1_8V,
-+					       true, slot);
-+	}
-+
-+	if (of_property_read_bool(np, "sd-uhs-sdr104")) {
-+		aspeed_sdc_set_slot_capability(host, dev->parent, ASPEED_SDC_CAP2_SDR104,
-+					       true, slot);
-+	}
-+
- 	pltfm_host->clk = devm_clk_get(&pdev->dev, NULL);
- 	if (IS_ERR(pltfm_host->clk))
- 		return PTR_ERR(pltfm_host->clk);
 -- 
 2.17.1
 
