@@ -1,53 +1,90 @@
 From: Jamin Lin <jamin_lin@aspeedtech.com>
-Date: Thu, 20 May 2021 11:16:08 +0800
-Subject: [PATCH 3/3] dt-bindings: aspeed-i2c: Convert txt to yaml format
-In-Reply-To: <1621438164.132520.3134233.nullmailer@robh.at.kernel.org>
+Date: Thu, 20 May 2021 11:31:41 +0800
+Subject: [PATCH 1/3] i2c: aspeed: avoid new registers definition of AST2600
+In-Reply-To: <CACPK8XdNXiGMQZOtsfMMK+w_PSvO20XT8B9MG+rGhdjYoV4ZuQ@mail.gmail.com>
 References: <20210519080436.18975-1-jamin_lin@aspeedtech.com>
- <20210519080436.18975-4-jamin_lin@aspeedtech.com>
- <1621438164.132520.3134233.nullmailer@robh.at.kernel.org>
-Message-ID: <20210520031608.GA3601@aspeedtech.com>
+ <20210519080436.18975-2-jamin_lin@aspeedtech.com>
+ <CACPK8XdNXiGMQZOtsfMMK+w_PSvO20XT8B9MG+rGhdjYoV4ZuQ@mail.gmail.com>
+Message-ID: <20210520033140.GA3656@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The 05/19/2021 15:29, Rob Herring wrote:
-> On Wed, 19 May 2021 16:04:29 +0800, Jamin Lin wrote:
-> > Add global-reg node for AST2600. Document the properties for
-> > "aspeed,ast2600-i2c-global" compatible node.
-> > 
+The 05/19/2021 22:59, Joel Stanley wrote:
+> On Wed, 19 May 2021 at 08:05, Jamin Lin <jamin_lin@aspeedtech.com> wrote:
+> >
+> > The register definition between AST2600 A2 and A3 is different.
+> > This patch avoid new registers definition of AST2600 to use
+> > this driver. We will submit the path for the new registers
+> > definition of AST2600.
+> 
+> The AST2600 v9 datasheet says that bit 2 selects between old and new
+> register sets, and that the old register set is the default.
+> 
+> Has the default changed for the A3?, and the datasheet is incorrect?
+> 
+> Does the A3 still support the old register set?
+> 
+We suggest user to use the new i2c driver for AST2600 and we will sumbit
+it. This driver is used to AST2500 and AST2400 SOCs. Change this
+driver to check global register of i2c to avoid user build the wrong driver. 
+
+> >
 > > Signed-off-by: Jamin Lin <jamin_lin@aspeedtech.com>
 > > ---
-> >  .../devicetree/bindings/i2c/aspeed,i2c.yaml   | 89 +++++++++++++++++++
-> >  .../devicetree/bindings/i2c/i2c-aspeed.txt    | 49 ----------
-> >  2 files changed, 89 insertions(+), 49 deletions(-)
-> >  create mode 100644 Documentation/devicetree/bindings/i2c/aspeed,i2c.yaml
-> >  delete mode 100644 Documentation/devicetree/bindings/i2c/i2c-aspeed.txt
-> > 
-> 
-> My bot found errors running 'make DT_CHECKER_FLAGS=-m dt_binding_check'
-> on your patch (DT_CHECKER_FLAGS is new in v5.13):
-> 
-> yamllint warnings/errors:
-> 
-> dtschema/dtc warnings/errors:
-> Documentation/devicetree/bindings/i2c/aspeed,i2c.example.dt.yaml:0:0: /example-0/i2c-global-regs at 0: failed to match any schema with compatible: ['aspeed,ast2600-i2c-global', 'syscon']
-> 
-> See https://patchwork.ozlabs.org/patch/1480769
-> 
-> This check can fail if there are any dependencies. The base for a patch
-> series is generally the most recent rc1.
-> 
-> If you already ran 'make dt_binding_check' and didn't see the above
-> error(s), then make sure 'yamllint' is installed and dt-schema is up to
-> date:
-> 
-> pip3 install dtschema --upgrade
-> 
-> Please check and re-submit.
->
-Thanks for your review.
-yes, I did not add "DT_CHECKER_FLAGS" to check my patch.
-I will re-sent this patch.
-Thanks
+> >  drivers/i2c/busses/i2c-aspeed.c | 22 ++++++++++++++++++++++
+> >  1 file changed, 22 insertions(+)
+> >
+> > diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
+> > index 724bf30600d6..007309077d9f 100644
+> > --- a/drivers/i2c/busses/i2c-aspeed.c
+> > +++ b/drivers/i2c/busses/i2c-aspeed.c
+> > @@ -19,14 +19,20 @@
+> >  #include <linux/irqchip/chained_irq.h>
+> >  #include <linux/irqdomain.h>
+> >  #include <linux/kernel.h>
+> > +#include <linux/mfd/syscon.h>
+> >  #include <linux/module.h>
+> >  #include <linux/of_address.h>
+> >  #include <linux/of_irq.h>
+> >  #include <linux/of_platform.h>
+> >  #include <linux/platform_device.h>
+> > +#include <linux/regmap.h>
+> >  #include <linux/reset.h>
+> >  #include <linux/slab.h>
+> >
+> > +/* I2C Global Registers */
+> > +/* 0x0c : I2CG Global Control Register (AST2500)  */
+> > +#define ASPEED_I2CG_GLOBAL_CTRL_REG                    0x0c
+> > +
+> >  /* I2C Register */
+> >  #define ASPEED_I2C_FUN_CTRL_REG                                0x00
+> >  #define ASPEED_I2C_AC_TIMING_REG1                      0x04
+> > @@ -973,6 +979,22 @@ static int aspeed_i2c_probe_bus(struct platform_device *pdev)
+> >         struct resource *res;
+> >         int irq, ret;
+> >
+> > +       if (of_device_is_compatible(pdev->dev.of_node,
+> > +                                   "aspeed,ast2600-i2c-bus")) {
+> > +               u32 global_ctrl;
+> > +               struct regmap *gr_regmap;
+> > +
+> > +               gr_regmap = syscon_regmap_lookup_by_compatible("aspeed,ast2600-i2c-global");
+> > +
+> > +               if (IS_ERR(gr_regmap)) {
+> > +                       ret = PTR_ERR(gr_regmap);
+> > +               } else {
+> > +                       regmap_read(gr_regmap, ASPEED_I2CG_GLOBAL_CTRL_REG, &global_ctrl);
+> > +                       if (global_ctrl & BIT(2))
+> > +                               return -EIO;
+> > +               }
+> > +       }
+> > +
+> >         bus = devm_kzalloc(&pdev->dev, sizeof(*bus), GFP_KERNEL);
+> >         if (!bus)
+> >                 return -ENOMEM;
+> > --
+> > 2.17.1
+> >
