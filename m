@@ -1,90 +1,76 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Thu, 20 May 2021 11:43:33 +0930
-Subject: [PATCH v3 1/2] serial: 8250: Add UART_BUG_TXRACE workaround for
- Aspeed VUART
+Date: Thu, 20 May 2021 11:43:34 +0930
+Subject: [PATCH v3 2/2] serial: 8250: Use BIT(x) for UART_{CAP,BUG}_*
 In-Reply-To: <20210520021334.497341-1-andrew@aj.id.au>
 References: <20210520021334.497341-1-andrew@aj.id.au>
-Message-ID: <20210520021334.497341-2-andrew@aj.id.au>
+Message-ID: <20210520021334.497341-3-andrew@aj.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Aspeed Virtual UARTs directly bridge e.g. the system console UART on the
-LPC bus to the UART interface on the BMC's internal APB. As such there's
-no RS-232 signalling involved - the UART interfaces on each bus are
-directly connected as the producers and consumers of the one set of
-FIFOs.
+BIT(x) improves readability and safety with respect to shifts.
 
-The APB in the AST2600 generally runs at 100MHz while the LPC bus peaks
-at 33MHz. The difference in clock speeds exposes a race in the VUART
-design where a Tx data burst on the APB interface can result in a byte
-lost on the LPC interface. The symptom is LSR[DR] remains clear on the
-LPC interface despite data being present in its Rx FIFO, while LSR[THRE]
-remains clear on the APB interface as the host has not consumed the data
-the BMC has transmitted. In this state, the UART has stalled and no
-further data can be transmitted without manual intervention (e.g.
-resetting the FIFOs, resulting in loss of data).
-
-The recommended work-around is to insert a read cycle on the APB
-interface between writes to THR.
-
-Cc: ChiaWei Wang <chiawei_wang@aspeedtech.com>
 Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
 ---
- drivers/tty/serial/8250/8250.h              |  1 +
- drivers/tty/serial/8250/8250_aspeed_vuart.c |  1 +
- drivers/tty/serial/8250/8250_port.c         | 12 ++++++++++++
- 3 files changed, 14 insertions(+)
+ drivers/tty/serial/8250/8250.h | 33 +++++++++++++++++----------------
+ 1 file changed, 17 insertions(+), 16 deletions(-)
 
 diff --git a/drivers/tty/serial/8250/8250.h b/drivers/tty/serial/8250/8250.h
-index 52bb21205bb6..34aa2714f3c9 100644
+index 34aa2714f3c9..6473361525d1 100644
 --- a/drivers/tty/serial/8250/8250.h
 +++ b/drivers/tty/serial/8250/8250.h
-@@ -88,6 +88,7 @@ struct serial8250_config {
- #define UART_BUG_NOMSR	(1 << 2)	/* UART has buggy MSR status bits (Au1x00) */
- #define UART_BUG_THRE	(1 << 3)	/* UART has buggy THRE reassertion */
- #define UART_BUG_PARITY	(1 << 4)	/* UART mishandles parity if FIFO enabled */
-+#define UART_BUG_TXRACE	(1 << 5)	/* UART Tx fails to set remote DR */
+@@ -7,6 +7,7 @@
+  *  Copyright (C) 2001 Russell King.
+  */
+ 
++#include <linux/bits.h>
+ #include <linux/serial_8250.h>
+ #include <linux/serial_reg.h>
+ #include <linux/dmaengine.h>
+@@ -70,25 +71,25 @@ struct serial8250_config {
+ 	unsigned int	flags;
+ };
+ 
+-#define UART_CAP_FIFO	(1 << 8)	/* UART has FIFO */
+-#define UART_CAP_EFR	(1 << 9)	/* UART has EFR */
+-#define UART_CAP_SLEEP	(1 << 10)	/* UART has IER sleep */
+-#define UART_CAP_AFE	(1 << 11)	/* MCR-based hw flow control */
+-#define UART_CAP_UUE	(1 << 12)	/* UART needs IER bit 6 set (Xscale) */
+-#define UART_CAP_RTOIE	(1 << 13)	/* UART needs IER bit 4 set (Xscale, Tegra) */
+-#define UART_CAP_HFIFO	(1 << 14)	/* UART has a "hidden" FIFO */
+-#define UART_CAP_RPM	(1 << 15)	/* Runtime PM is active while idle */
+-#define UART_CAP_IRDA	(1 << 16)	/* UART supports IrDA line discipline */
+-#define UART_CAP_MINI	(1 << 17)	/* Mini UART on BCM283X family lacks:
++#define UART_CAP_FIFO	BIT(8)	/* UART has FIFO */
++#define UART_CAP_EFR	BIT(9)	/* UART has EFR */
++#define UART_CAP_SLEEP	BIT(10)	/* UART has IER sleep */
++#define UART_CAP_AFE	BIT(11)	/* MCR-based hw flow control */
++#define UART_CAP_UUE	BIT(12)	/* UART needs IER bit 6 set (Xscale) */
++#define UART_CAP_RTOIE	BIT(13)	/* UART needs IER bit 4 set (Xscale, Tegra) */
++#define UART_CAP_HFIFO	BIT(14)	/* UART has a "hidden" FIFO */
++#define UART_CAP_RPM	BIT(15)	/* Runtime PM is active while idle */
++#define UART_CAP_IRDA	BIT(16)	/* UART supports IrDA line discipline */
++#define UART_CAP_MINI	BIT(17)	/* Mini UART on BCM283X family lacks:
+ 					 * STOP PARITY EPAR SPAR WLEN5 WLEN6
+ 					 */
+ 
+-#define UART_BUG_QUOT	(1 << 0)	/* UART has buggy quot LSB */
+-#define UART_BUG_TXEN	(1 << 1)	/* UART has buggy TX IIR status */
+-#define UART_BUG_NOMSR	(1 << 2)	/* UART has buggy MSR status bits (Au1x00) */
+-#define UART_BUG_THRE	(1 << 3)	/* UART has buggy THRE reassertion */
+-#define UART_BUG_PARITY	(1 << 4)	/* UART mishandles parity if FIFO enabled */
+-#define UART_BUG_TXRACE	(1 << 5)	/* UART Tx fails to set remote DR */
++#define UART_BUG_QUOT	BIT(0)	/* UART has buggy quot LSB */
++#define UART_BUG_TXEN	BIT(1)	/* UART has buggy TX IIR status */
++#define UART_BUG_NOMSR	BIT(2)	/* UART has buggy MSR status bits (Au1x00) */
++#define UART_BUG_THRE	BIT(3)	/* UART has buggy THRE reassertion */
++#define UART_BUG_PARITY	BIT(4)	/* UART mishandles parity if FIFO enabled */
++#define UART_BUG_TXRACE	BIT(5)	/* UART Tx fails to set remote DR */
  
  
  #ifdef CONFIG_SERIAL_8250_SHARE_IRQ
-diff --git a/drivers/tty/serial/8250/8250_aspeed_vuart.c b/drivers/tty/serial/8250/8250_aspeed_vuart.c
-index a28a394ba32a..4caab8714e2c 100644
---- a/drivers/tty/serial/8250/8250_aspeed_vuart.c
-+++ b/drivers/tty/serial/8250/8250_aspeed_vuart.c
-@@ -440,6 +440,7 @@ static int aspeed_vuart_probe(struct platform_device *pdev)
- 	port.port.status = UPSTAT_SYNC_FIFO;
- 	port.port.dev = &pdev->dev;
- 	port.port.has_sysrq = IS_ENABLED(CONFIG_SERIAL_8250_CONSOLE);
-+	port.bugs |= UART_BUG_TXRACE;
- 
- 	rc = sysfs_create_group(&vuart->dev->kobj, &aspeed_vuart_attr_group);
- 	if (rc < 0)
-diff --git a/drivers/tty/serial/8250/8250_port.c b/drivers/tty/serial/8250/8250_port.c
-index d45dab1ab316..fc5ab2032282 100644
---- a/drivers/tty/serial/8250/8250_port.c
-+++ b/drivers/tty/serial/8250/8250_port.c
-@@ -1809,6 +1809,18 @@ void serial8250_tx_chars(struct uart_8250_port *up)
- 	count = up->tx_loadsz;
- 	do {
- 		serial_out(up, UART_TX, xmit->buf[xmit->tail]);
-+		if (up->bugs & UART_BUG_TXRACE) {
-+			/*
-+			 * The Aspeed BMC virtual UARTs have a bug where data
-+			 * may get stuck in the BMC's Tx FIFO from bursts of
-+			 * writes on the APB interface.
-+			 *
-+			 * Delay back-to-back writes by a read cycle to avoid
-+			 * stalling the VUART. Read a register that won't have
-+			 * side-effects and discard the result.
-+			 */
-+			serial_in(up, UART_SCR);
-+		}
- 		xmit->tail = (xmit->tail + 1) & (UART_XMIT_SIZE - 1);
- 		port->icount.tx++;
- 		if (uart_circ_empty(xmit))
 -- 
 2.30.2
 
