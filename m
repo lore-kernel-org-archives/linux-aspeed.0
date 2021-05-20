@@ -1,108 +1,78 @@
-From: Ryan Chen <ryan_chen@aspeedtech.com>
-Date: Thu, 20 May 2021 11:28:58 +0000
-Subject: [PATCH v3 3/7] i2c: aspeed: Fix unhandled Tx done with NAK
-In-Reply-To: <CACPK8XeFsuEXeCvG9DC0z+tiri6ptjOFOXe3x+COEZTVqUbVFg@mail.gmail.com>
-References: <20210519074934.20712-1-quan@os.amperecomputing.com>
- <20210519074934.20712-4-quan@os.amperecomputing.com>
- <CACPK8XeFsuEXeCvG9DC0z+tiri6ptjOFOXe3x+COEZTVqUbVFg@mail.gmail.com>
-Message-ID: <HK0PR06MB3380D7B693922C3D6B3C14F0F22A9@HK0PR06MB3380.apcprd06.prod.outlook.com>
+From: Corey Minyard <minyard@acm.org>
+Date: Thu, 20 May 2021 08:33:33 -0500
+Subject: [PATCH v3 00/16] ipmi: Allow raw access to KCS devices
+In-Reply-To: <5b549fee-63b1-4c05-a1d6-f6a13e235e1e@www.fastmail.com>
+References: <20210510054213.1610760-1-andrew@aj.id.au>
+ <5b549fee-63b1-4c05-a1d6-f6a13e235e1e@www.fastmail.com>
+Message-ID: <20210520133333.GH2921206@minyard.net>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-> -----Original Message-----
-> From: Joel Stanley <joel@jms.id.au>
-> Sent: Thursday, May 20, 2021 7:29 AM
-> To: Quan Nguyen <quan@os.amperecomputing.com>; Ryan Chen
-> <ryan_chen@aspeedtech.com>
-> Cc: Corey Minyard <minyard@acm.org>; Rob Herring <robh+dt@kernel.org>;
-> Andrew Jeffery <andrew@aj.id.au>; Brendan Higgins
-> <brendanhiggins@google.com>; Benjamin Herrenschmidt
-> <benh@kernel.crashing.org>; Wolfram Sang <wsa@kernel.org>; Philipp Zabel
-> <p.zabel@pengutronix.de>; openipmi-developer at lists.sourceforge.net;
-> devicetree <devicetree@vger.kernel.org>; Linux ARM
-> <linux-arm-kernel@lists.infradead.org>; linux-aspeed
-> <linux-aspeed@lists.ozlabs.org>; Linux Kernel Mailing List
-> <linux-kernel@vger.kernel.org>; linux-i2c at vger.kernel.org; Open Source
-> Submission <patches@amperecomputing.com>; Phong Vo
-> <phong@os.amperecomputing.com>; Thang Q . Nguyen
-> <thang@os.amperecomputing.com>; OpenBMC Maillist
-> <openbmc@lists.ozlabs.org>
-> Subject: Re: [PATCH v3 3/7] i2c: aspeed: Fix unhandled Tx done with NAK
+On Thu, May 20, 2021 at 04:21:31PM +0930, Andrew Jeffery wrote:
+> Hi Corey,
 > 
-> Ryan, can you please review this change?
+> On Mon, 10 May 2021, at 15:11, Andrew Jeffery wrote:
+> > Hello,
+> > 
+> > This is the 3rd spin of the series refactoring the keyboard-controller-style
+> > device drivers in the IPMI subsystem.
+> > 
+> > v2 can be found (in two parts because yay patch workflow mistakes) at:
+> > 
+> > Cover letter:
+> > https://lore.kernel.org/linux-arm-kernel/20210319061952.145040-1-andrew at aj.id.au/
+> > 
+> > Patches:
+> > https://lore.kernel.org/linux-arm-kernel/20210319062752.145730-1-andrew at aj.id.au/
+> > 
+> > Several significant changes in v3:
+> > 
+> > 1. The series is rebased onto v5.13-rc1
+> > 
+> > 2. v5.13-rc1 includes Chiawei's patches reworking the LPC devicetree bindings,
+> >    so they're no-longer required in the series.
+> > 
+> > 3. After some discussion with Arnd[1] and investigating the serio subsystem,
+> >    I've replaced the "raw" KCS driver (patch 16/21 in v2) with a serio adaptor
+> >    (patch 11/16 in this series). The adaptor allows us to take advantage of the
+> >    existing chardevs provided by serio.
+> > 
+> > [1] 
+> > https://lore.kernel.org/linux-arm-kernel/37e75b07-a5c6-422f-84b3-54f2bea0b917 at www.fastmail.com/
+> > 
+> > Finally, I've also addressed Zev Weiss' review comments where I thought it was
+> > required. These comments covered a lot of minor issues across (almost) all the
+> > patches, so it's best to review from a clean slate rather than attempt to review
+> > the differences between spins.
 > 
-> On Wed, 19 May 2021 at 07:50, Quan Nguyen
-> <quan@os.amperecomputing.com> wrote:
-> >
-> > It is observed that in normal condition, when the last byte sent by
-> > slave, the Tx Done with NAK irq will raise.
-> > But it is also observed that sometimes master issues next transaction
-> > too quick while the slave irq handler is not yet invoked and Tx Done
-> > with NAK irq of last byte of previous READ PROCESSED was not ack'ed.
-> > This Tx Done with NAK irq is raised together with the Slave Match and
-> > Rx Done irq of the next coming transaction from master.
-> > Unfortunately, the current slave irq handler handles the Slave Match
-> > and Rx Done only in higher priority and ignore the Tx Done with NAK,
-> > causing the complain as below:
-> > "aspeed-i2c-bus 1e78a040.i2c-bus: irq handled != irq. expected
-> > 0x00000086, but was 0x00000084"
-> >
-> > This commit handles this case by emitting a Slave Stop event for the
-> > Tx Done with NAK before processing Slave Match and Rx Done for the
-> > coming transaction from master.
+> I backported this series for OpenBMC and posting those patches provoked
+> some feedback:
 > 
-> It sounds like this patch is independent of the rest of the series, and can go in
-> on it's own. Please send it separately to the i2c maintainers and add a suitable
-> Fixes line, such as:
+> * A bug identified in patch 9/18 for the Nuvoton driver where we enable
+>   the OBE interrupt:
 > 
->   Fixes: f9eb91350bb2 ("i2c: aspeed: added slave support for Aspeed I2C
-> driver")
+> https://lore.kernel.org/openbmc/HK2PR03MB4371F006185ADBBF812A5892AE509 at HK2PR03MB4371.apcprd03.prod.outlook.com/
 > 
-> >
-> > Signed-off-by: Quan Nguyen <quan@os.amperecomputing.com>
-> > ---
-> > v3:
-> >   + First introduce in v3 [Quan]
-> >
-> >  drivers/i2c/busses/i2c-aspeed.c | 5 +++++
-> >  1 file changed, 5 insertions(+)
-> >
-> > diff --git a/drivers/i2c/busses/i2c-aspeed.c
-> > b/drivers/i2c/busses/i2c-aspeed.c index 724bf30600d6..3fb37c3f23d4
-> > 100644
-> > --- a/drivers/i2c/busses/i2c-aspeed.c
-> > +++ b/drivers/i2c/busses/i2c-aspeed.c
-> > @@ -254,6 +254,11 @@ static u32 aspeed_i2c_slave_irq(struct
-> > aspeed_i2c_bus *bus, u32 irq_status)
-> >
-> >         /* Slave was requested, restart state machine. */
-> >         if (irq_status & ASPEED_I2CD_INTR_SLAVE_MATCH) {
+> * A discussion on patch 10/18 about lifting the single-open constraint
 > 
-> Can you explain why you need to do this handing inside the SLAVE_MATCH
-> case?
+> https://lore.kernel.org/openbmc/CAPnigKku-EjOnV9gsmnXzH=XZxSU78iLeccNbsK8k2_4b4UwSg at mail.gmail.com/
 > 
-> Could you instead move the TX_NAK handling to be above the SLAVE_MATCH
-> case?
-> 
-> > +               if (irq_status & ASPEED_I2CD_INTR_TX_NAK &&
-> > +                   bus->slave_state ==
-> > + ASPEED_I2C_SLAVE_READ_PROCESSED) {
-> 
-> Either way, this needs a comment to explain what we're working around.
-> 
-> > +                       irq_handled |= ASPEED_I2CD_INTR_TX_NAK;
-> > +                       i2c_slave_event(slave, I2C_SLAVE_STOP,
-> &value);
+> I need to do a v4 to fix the bug in the Nuvoton driver. Did you have any
+> feedback for the remaining patches or thoughts on the discussions linked
+> above?  I'd like to incorporate whatever I can into the series before
+> respinning.
 
-According the patch assume slave receive TX_NAK will be go to SLAVE_STOP state?
+This will take a little while to review, but I'll try to get to it
+today.
 
-> > +               }
-> >                 irq_handled |= ASPEED_I2CD_INTR_SLAVE_MATCH;
-> >                 bus->slave_state = ASPEED_I2C_SLAVE_START;
-> >         }
-> > --
-> > 2.28.0
-> >
+Thanks,
+
+-corey
+
+> 
+> Cheers,
+> 
+> Andrew
