@@ -1,454 +1,222 @@
-From: Zev Weiss <zweiss@equinix.com>
-Date: Fri, 21 May 2021 07:18:27 +0000
-Subject: [PATCH v3 06/16] ipmi: kcs_bmc: Split headers into device and
- client
-In-Reply-To: <20210510054213.1610760-7-andrew@aj.id.au>
-References: <20210510054213.1610760-1-andrew@aj.id.au>
- <20210510054213.1610760-7-andrew@aj.id.au>
-Message-ID: <YKdewrMOF41O70px@packtop>
+From: Daniel Vetter <daniel.vetter@ffwll.ch>
+Date: Fri, 21 May 2021 11:09:59 +0200
+Subject: [PATCH 11/11] drm/tiny: drm_gem_simple_display_pipe_prepare_fb is the
+ default
+In-Reply-To: <20210521090959.1663703-1-daniel.vetter@ffwll.ch>
+References: <20210521090959.1663703-1-daniel.vetter@ffwll.ch>
+Message-ID: <20210521090959.1663703-11-daniel.vetter@ffwll.ch>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, May 10, 2021 at 12:42:03AM CDT, Andrew Jeffery wrote:
->Strengthen the distinction between code that abstracts the
->implementation of the KCS behaviours (device drivers) and code that
->exploits KCS behaviours (clients). Neither needs to know about the APIs
->required by the other, so provide separate headers.
->
->Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
->---
-> drivers/char/ipmi/kcs_bmc.c           | 23 ++++++++++------
-> drivers/char/ipmi/kcs_bmc.h           | 27 +++++++++----------
-> drivers/char/ipmi/kcs_bmc_aspeed.c    | 17 ++++++------
-> drivers/char/ipmi/kcs_bmc_cdev_ipmi.c | 39 ++++++++++++++++++---------
-> drivers/char/ipmi/kcs_bmc_client.h    | 30 +++++++++++++++++++++
-> drivers/char/ipmi/kcs_bmc_device.h    | 19 +++++++++++++
-> drivers/char/ipmi/kcs_bmc_npcm7xx.c   | 17 ++++++------
-> 7 files changed, 120 insertions(+), 52 deletions(-)
-> create mode 100644 drivers/char/ipmi/kcs_bmc_client.h
-> create mode 100644 drivers/char/ipmi/kcs_bmc_device.h
->
->diff --git a/drivers/char/ipmi/kcs_bmc.c b/drivers/char/ipmi/kcs_bmc.c
->index 83da681bf49e..d3c11a46bca2 100644
->--- a/drivers/char/ipmi/kcs_bmc.c
->+++ b/drivers/char/ipmi/kcs_bmc.c
->@@ -1,46 +1,52 @@
-> // SPDX-License-Identifier: GPL-2.0
-> /*
->  * Copyright (c) 2015-2018, Intel Corporation.
->+ * Copyright (c) 2021, IBM Corp.
->  */
->
-> #include <linux/module.h>
->
-> #include "kcs_bmc.h"
->
->+/* Implement both the device and client interfaces here */
->+#include "kcs_bmc_device.h"
->+#include "kcs_bmc_client.h"
->+
->+/* Consumer data access */
->+
-> u8 kcs_bmc_read_data(struct kcs_bmc *kcs_bmc)
-> {
->-	return kcs_bmc->io_inputb(kcs_bmc, kcs_bmc->ioreg.idr);
->+	return kcs_bmc->ops->io_inputb(kcs_bmc, kcs_bmc->ioreg.idr);
-> }
-> EXPORT_SYMBOL(kcs_bmc_read_data);
->
-> void kcs_bmc_write_data(struct kcs_bmc *kcs_bmc, u8 data)
-> {
->-	kcs_bmc->io_outputb(kcs_bmc, kcs_bmc->ioreg.odr, data);
->+	kcs_bmc->ops->io_outputb(kcs_bmc, kcs_bmc->ioreg.odr, data);
-> }
-> EXPORT_SYMBOL(kcs_bmc_write_data);
->
-> u8 kcs_bmc_read_status(struct kcs_bmc *kcs_bmc)
-> {
->-	return kcs_bmc->io_inputb(kcs_bmc, kcs_bmc->ioreg.str);
->+	return kcs_bmc->ops->io_inputb(kcs_bmc, kcs_bmc->ioreg.str);
-> }
-> EXPORT_SYMBOL(kcs_bmc_read_status);
->
-> void kcs_bmc_write_status(struct kcs_bmc *kcs_bmc, u8 data)
-> {
->-	kcs_bmc->io_outputb(kcs_bmc, kcs_bmc->ioreg.str, data);
->+	kcs_bmc->ops->io_outputb(kcs_bmc, kcs_bmc->ioreg.str, data);
-> }
-> EXPORT_SYMBOL(kcs_bmc_write_status);
->
-> void kcs_bmc_update_status(struct kcs_bmc *kcs_bmc, u8 mask, u8 val)
-> {
->-	kcs_bmc->io_updateb(kcs_bmc, kcs_bmc->ioreg.str, mask, val);
->+	kcs_bmc->ops->io_updateb(kcs_bmc, kcs_bmc->ioreg.str, mask, val);
-> }
-> EXPORT_SYMBOL(kcs_bmc_update_status);
->
->-int kcs_bmc_ipmi_event(struct kcs_bmc *kcs_bmc);
->-int kcs_bmc_handle_event(struct kcs_bmc *kcs_bmc)
->+irqreturn_t kcs_bmc_handle_event(struct kcs_bmc *kcs_bmc)
-> {
->-	return kcs_bmc_ipmi_event(kcs_bmc);
->+	return kcs_bmc->client.ops->event(&kcs_bmc->client);
-> }
-> EXPORT_SYMBOL(kcs_bmc_handle_event);
->
->@@ -64,4 +70,5 @@ EXPORT_SYMBOL(kcs_bmc_remove_device);
->
-> MODULE_LICENSE("GPL v2");
-> MODULE_AUTHOR("Haiyue Wang <haiyue.wang@linux.intel.com>");
->+MODULE_AUTHOR("Andrew Jeffery <andrew@aj.id.au>");
-> MODULE_DESCRIPTION("KCS BMC to handle the IPMI request from system software");
->diff --git a/drivers/char/ipmi/kcs_bmc.h b/drivers/char/ipmi/kcs_bmc.h
->index b2e6b7a7fe62..f42843d240ed 100644
->--- a/drivers/char/ipmi/kcs_bmc.h
->+++ b/drivers/char/ipmi/kcs_bmc.h
->@@ -8,6 +8,12 @@
->
-> #include <linux/miscdevice.h>
->
->+#include "kcs_bmc_client.h"
->+
->+#define KCS_BMC_STR_OBF		BIT(0)
->+#define KCS_BMC_STR_IBF		BIT(1)
->+#define KCS_BMC_STR_CMD_DAT	BIT(3)
->+
-> /* Different phases of the KCS BMC module.
->  *  KCS_PHASE_IDLE:
->  *            BMC should not be expecting nor sending any data.
->@@ -66,19 +72,21 @@ struct kcs_ioreg {
-> 	u32 str;
-> };
->
->+struct kcs_bmc_device_ops;
->+
-> struct kcs_bmc {
-> 	struct device *dev;
->
->+	const struct kcs_bmc_device_ops *ops;
->+
->+	struct kcs_bmc_client client;
->+
-> 	spinlock_t lock;
->
-> 	u32 channel;
-> 	int running;
->
->-	/* Setup by BMC KCS controller driver */
-> 	struct kcs_ioreg ioreg;
->-	u8 (*io_inputb)(struct kcs_bmc *kcs_bmc, u32 reg);
->-	void (*io_outputb)(struct kcs_bmc *kcs_bmc, u32 reg, u8 b);
->-	void (*io_updateb)(struct kcs_bmc *kcs_bmc, u32 reg, u8 mask, u8 val);
->
-> 	enum kcs_phases phase;
-> 	enum kcs_errors error;
->@@ -97,15 +105,4 @@ struct kcs_bmc {
->
-> 	struct miscdevice miscdev;
-> };
->-
->-int kcs_bmc_handle_event(struct kcs_bmc *kcs_bmc);
->-void kcs_bmc_add_device(struct kcs_bmc *kcs_bmc);
->-void kcs_bmc_remove_device(struct kcs_bmc *kcs_bmc);
->-
->-u8 kcs_bmc_read_data(struct kcs_bmc *kcs_bmc);
->-void kcs_bmc_write_data(struct kcs_bmc *kcs_bmc, u8 data);
->-u8 kcs_bmc_read_status(struct kcs_bmc *kcs_bmc);
->-void kcs_bmc_write_status(struct kcs_bmc *kcs_bmc, u8 data);
->-void kcs_bmc_update_status(struct kcs_bmc *kcs_bmc, u8 mask, u8 val);
->-
-> #endif /* __KCS_BMC_H__ */
->diff --git a/drivers/char/ipmi/kcs_bmc_aspeed.c b/drivers/char/ipmi/kcs_bmc_aspeed.c
->index 5d433dea5714..337b69cea1da 100644
->--- a/drivers/char/ipmi/kcs_bmc_aspeed.c
->+++ b/drivers/char/ipmi/kcs_bmc_aspeed.c
->@@ -21,7 +21,7 @@
-> #include <linux/slab.h>
-> #include <linux/timer.h>
->
->-#include "kcs_bmc.h"
->+#include "kcs_bmc_device.h"
->
->
-> #define DEVICE_NAME     "ast-kcs-bmc"
->@@ -220,14 +220,17 @@ static void aspeed_kcs_enable_channel(struct kcs_bmc *kcs_bmc, bool enable)
-> 	}
-> }
->
->+static const struct kcs_bmc_device_ops aspeed_kcs_ops = {
->+	.io_inputb = aspeed_kcs_inb,
->+	.io_outputb = aspeed_kcs_outb,
->+	.io_updateb = aspeed_kcs_updateb,
->+};
->+
-> static irqreturn_t aspeed_kcs_irq(int irq, void *arg)
-> {
-> 	struct kcs_bmc *kcs_bmc = arg;
->
->-	if (!kcs_bmc_handle_event(kcs_bmc))
->-		return IRQ_HANDLED;
->-
->-	return IRQ_NONE;
->+	return kcs_bmc_handle_event(kcs_bmc);
-> }
->
-> static int aspeed_kcs_config_irq(struct kcs_bmc *kcs_bmc,
->@@ -362,9 +365,7 @@ static int aspeed_kcs_probe(struct platform_device *pdev)
-> 	kcs_bmc->dev = &pdev->dev;
-> 	kcs_bmc->channel = channel;
-> 	kcs_bmc->ioreg = ast_kcs_bmc_ioregs[channel - 1];
->-	kcs_bmc->io_inputb = aspeed_kcs_inb;
->-	kcs_bmc->io_outputb = aspeed_kcs_outb;
->-	kcs_bmc->io_updateb = aspeed_kcs_updateb;
->+	kcs_bmc->ops = &aspeed_kcs_ops;
->
-> 	priv->map = syscon_node_to_regmap(pdev->dev.parent->of_node);
-> 	if (IS_ERR(priv->map)) {
->diff --git a/drivers/char/ipmi/kcs_bmc_cdev_ipmi.c b/drivers/char/ipmi/kcs_bmc_cdev_ipmi.c
->index 5060643bf530..476ad6d541d5 100644
->--- a/drivers/char/ipmi/kcs_bmc_cdev_ipmi.c
->+++ b/drivers/char/ipmi/kcs_bmc_cdev_ipmi.c
->@@ -22,7 +22,6 @@
->
-> #define KCS_ZERO_DATA     0
->
->-
-> /* IPMI 2.0 - Table 9-1, KCS Interface Status Register Bits */
-> #define KCS_STATUS_STATE(state) (state << 6)
-> #define KCS_STATUS_STATE_MASK   GENMASK(7, 6)
->@@ -179,12 +178,19 @@ static void kcs_bmc_ipmi_handle_cmd(struct kcs_bmc *kcs_bmc)
-> 	}
-> }
->
->-int kcs_bmc_ipmi_event(struct kcs_bmc *kcs_bmc);
->-int kcs_bmc_ipmi_event(struct kcs_bmc *kcs_bmc)
->+static inline struct kcs_bmc *client_to_kcs_bmc(struct kcs_bmc_client *client)
-> {
->+	return container_of(client, struct kcs_bmc, client);
->+}
->+
->+static irqreturn_t kcs_bmc_ipmi_event(struct kcs_bmc_client *client)
->+{
->+	struct kcs_bmc *kcs_bmc;
-> 	unsigned long flags;
->-	int ret = -ENODATA;
-> 	u8 status;
->+	int ret;
->+
->+	kcs_bmc = client_to_kcs_bmc(client);
->
-> 	spin_lock_irqsave(&kcs_bmc->lock, flags);
->
->@@ -197,23 +203,28 @@ int kcs_bmc_ipmi_event(struct kcs_bmc *kcs_bmc)
-> 		else
-> 			kcs_bmc_ipmi_handle_data(kcs_bmc);
->
->-		ret = 0;
->+		ret = IRQ_HANDLED;
->+	} else {
->+		ret = IRQ_NONE;
-> 	}
->
-> 	spin_unlock_irqrestore(&kcs_bmc->lock, flags);
->
-> 	return ret;
-> }
->-EXPORT_SYMBOL(kcs_bmc_ipmi_event);
->
->-static inline struct kcs_bmc *to_kcs_bmc(struct file *filp)
->+static const struct kcs_bmc_client_ops kcs_bmc_ipmi_client_ops = {
->+	.event = kcs_bmc_ipmi_event,
->+};
->+
->+static inline struct kcs_bmc *file_to_kcs_bmc(struct file *filp)
-> {
-> 	return container_of(filp->private_data, struct kcs_bmc, miscdev);
-> }
->
-> static int kcs_bmc_ipmi_open(struct inode *inode, struct file *filp)
-> {
->-	struct kcs_bmc *kcs_bmc = to_kcs_bmc(filp);
->+	struct kcs_bmc *kcs_bmc = file_to_kcs_bmc(filp);
-> 	int ret = 0;
->
-> 	spin_lock_irq(&kcs_bmc->lock);
->@@ -228,7 +239,7 @@ static int kcs_bmc_ipmi_open(struct inode *inode, struct file *filp)
->
-> static __poll_t kcs_bmc_ipmi_poll(struct file *filp, poll_table *wait)
-> {
->-	struct kcs_bmc *kcs_bmc = to_kcs_bmc(filp);
->+	struct kcs_bmc *kcs_bmc = file_to_kcs_bmc(filp);
-> 	__poll_t mask = 0;
->
-> 	poll_wait(filp, &kcs_bmc->queue, wait);
->@@ -244,7 +255,7 @@ static __poll_t kcs_bmc_ipmi_poll(struct file *filp, poll_table *wait)
-> static ssize_t kcs_bmc_ipmi_read(struct file *filp, char __user *buf,
-> 			    size_t count, loff_t *ppos)
-> {
->-	struct kcs_bmc *kcs_bmc = to_kcs_bmc(filp);
->+	struct kcs_bmc *kcs_bmc = file_to_kcs_bmc(filp);
-> 	bool data_avail;
-> 	size_t data_len;
-> 	ssize_t ret;
->@@ -306,7 +317,7 @@ static ssize_t kcs_bmc_ipmi_read(struct file *filp, char __user *buf,
-> static ssize_t kcs_bmc_ipmi_write(struct file *filp, const char __user *buf,
-> 			     size_t count, loff_t *ppos)
-> {
->-	struct kcs_bmc *kcs_bmc = to_kcs_bmc(filp);
->+	struct kcs_bmc *kcs_bmc = file_to_kcs_bmc(filp);
-> 	ssize_t ret;
->
-> 	/* a minimum response size '3' : netfn + cmd + ccode */
->@@ -342,7 +353,7 @@ static ssize_t kcs_bmc_ipmi_write(struct file *filp, const char __user *buf,
-> static long kcs_bmc_ipmi_ioctl(struct file *filp, unsigned int cmd,
-> 			  unsigned long arg)
-> {
->-	struct kcs_bmc *kcs_bmc = to_kcs_bmc(filp);
->+	struct kcs_bmc *kcs_bmc = file_to_kcs_bmc(filp);
-> 	long ret = 0;
->
-> 	spin_lock_irq(&kcs_bmc->lock);
->@@ -372,7 +383,7 @@ static long kcs_bmc_ipmi_ioctl(struct file *filp, unsigned int cmd,
->
-> static int kcs_bmc_ipmi_release(struct inode *inode, struct file *filp)
-> {
->-	struct kcs_bmc *kcs_bmc = to_kcs_bmc(filp);
->+	struct kcs_bmc *kcs_bmc = file_to_kcs_bmc(filp);
->
-> 	spin_lock_irq(&kcs_bmc->lock);
-> 	kcs_bmc->running = 0;
->@@ -401,6 +412,8 @@ int kcs_bmc_ipmi_add_device(struct kcs_bmc *kcs_bmc)
-> 	mutex_init(&kcs_bmc->mutex);
-> 	init_waitqueue_head(&kcs_bmc->queue);
->
->+	kcs_bmc->client.dev = kcs_bmc;
->+	kcs_bmc->client.ops = &kcs_bmc_ipmi_client_ops;
-> 	kcs_bmc->data_in = devm_kmalloc(kcs_bmc->dev, KCS_MSG_BUFSIZ, GFP_KERNEL);
-> 	kcs_bmc->data_out = devm_kmalloc(kcs_bmc->dev, KCS_MSG_BUFSIZ, GFP_KERNEL);
-> 	kcs_bmc->kbuffer = devm_kmalloc(kcs_bmc->dev, KCS_MSG_BUFSIZ, GFP_KERNEL);
->diff --git a/drivers/char/ipmi/kcs_bmc_client.h b/drivers/char/ipmi/kcs_bmc_client.h
->new file mode 100644
->index 000000000000..b19a7ff64b80
->--- /dev/null
->+++ b/drivers/char/ipmi/kcs_bmc_client.h
->@@ -0,0 +1,30 @@
->+/* SPDX-License-Identifier: GPL-2.0 */
->+/* Copyright (c) 2021, IBM Corp. */
->+
->+#ifndef __KCS_BMC_CONSUMER_H__
->+#define __KCS_BMC_CONSUMER_H__
->+
->+#include <linux/irqreturn.h>
->+#include <linux/list.h>
->+#include <linux/notifier.h>
->+#include <stdbool.h>
+Goes through all the drivers and deletes the default hook since it's
+the default now.
 
-Unless there's something non-obvious going on here, I'd think just
-linux/irqreturn.h and linux/types.h would suffice for this header?  (I
-don't see any lists or notifiers or bools, anyway.)
+Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
+Cc: Joel Stanley <joel@jms.id.au>
+Cc: Andrew Jeffery <andrew@aj.id.au>
+Cc: "Noralf Tr?nnes" <noralf@tronnes.org>
+Cc: Linus Walleij <linus.walleij@linaro.org>
+Cc: Emma Anholt <emma@anholt.net>
+Cc: David Lechner <david@lechnology.com>
+Cc: Kamlesh Gurudasani <kamlesh.gurudasani@gmail.com>
+Cc: Oleksandr Andrushchenko <oleksandr_andrushchenko@epam.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Maxime Ripard <mripard@kernel.org>
+Cc: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: Sam Ravnborg <sam@ravnborg.org>
+Cc: Alex Deucher <alexander.deucher@amd.com>
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc: linux-aspeed at lists.ozlabs.org
+Cc: linux-arm-kernel at lists.infradead.org
+Cc: xen-devel at lists.xenproject.org
+---
+ drivers/gpu/drm/aspeed/aspeed_gfx_crtc.c | 1 -
+ drivers/gpu/drm/gud/gud_drv.c            | 1 -
+ drivers/gpu/drm/mcde/mcde_display.c      | 1 -
+ drivers/gpu/drm/pl111/pl111_display.c    | 1 -
+ drivers/gpu/drm/tiny/hx8357d.c           | 1 -
+ drivers/gpu/drm/tiny/ili9225.c           | 1 -
+ drivers/gpu/drm/tiny/ili9341.c           | 1 -
+ drivers/gpu/drm/tiny/ili9486.c           | 1 -
+ drivers/gpu/drm/tiny/mi0283qt.c          | 1 -
+ drivers/gpu/drm/tiny/repaper.c           | 1 -
+ drivers/gpu/drm/tiny/st7586.c            | 1 -
+ drivers/gpu/drm/tiny/st7735r.c           | 1 -
+ drivers/gpu/drm/tve200/tve200_display.c  | 1 -
+ drivers/gpu/drm/xen/xen_drm_front_kms.c  | 1 -
+ 14 files changed, 14 deletions(-)
 
-[...reads ahead...]
+diff --git a/drivers/gpu/drm/aspeed/aspeed_gfx_crtc.c b/drivers/gpu/drm/aspeed/aspeed_gfx_crtc.c
+index 098f96d4d50d..827e62c1daba 100644
+--- a/drivers/gpu/drm/aspeed/aspeed_gfx_crtc.c
++++ b/drivers/gpu/drm/aspeed/aspeed_gfx_crtc.c
+@@ -220,7 +220,6 @@ static const struct drm_simple_display_pipe_funcs aspeed_gfx_funcs = {
+ 	.enable		= aspeed_gfx_pipe_enable,
+ 	.disable	= aspeed_gfx_pipe_disable,
+ 	.update		= aspeed_gfx_pipe_update,
+-	.prepare_fb	= drm_gem_simple_display_pipe_prepare_fb,
+ 	.enable_vblank	= aspeed_gfx_enable_vblank,
+ 	.disable_vblank	= aspeed_gfx_disable_vblank,
+ };
+diff --git a/drivers/gpu/drm/gud/gud_drv.c b/drivers/gpu/drm/gud/gud_drv.c
+index e8b672dc9832..1925df9c0fb7 100644
+--- a/drivers/gpu/drm/gud/gud_drv.c
++++ b/drivers/gpu/drm/gud/gud_drv.c
+@@ -364,7 +364,6 @@ static void gud_debugfs_init(struct drm_minor *minor)
+ static const struct drm_simple_display_pipe_funcs gud_pipe_funcs = {
+ 	.check      = gud_pipe_check,
+ 	.update	    = gud_pipe_update,
+-	.prepare_fb = drm_gem_simple_display_pipe_prepare_fb,
+ };
+ 
+ static const struct drm_mode_config_funcs gud_mode_config_funcs = {
+diff --git a/drivers/gpu/drm/mcde/mcde_display.c b/drivers/gpu/drm/mcde/mcde_display.c
+index 4ddc55d58f38..ce12a36e2db4 100644
+--- a/drivers/gpu/drm/mcde/mcde_display.c
++++ b/drivers/gpu/drm/mcde/mcde_display.c
+@@ -1479,7 +1479,6 @@ static struct drm_simple_display_pipe_funcs mcde_display_funcs = {
+ 	.update = mcde_display_update,
+ 	.enable_vblank = mcde_display_enable_vblank,
+ 	.disable_vblank = mcde_display_disable_vblank,
+-	.prepare_fb = drm_gem_simple_display_pipe_prepare_fb,
+ };
+ 
+ int mcde_display_init(struct drm_device *drm)
+diff --git a/drivers/gpu/drm/pl111/pl111_display.c b/drivers/gpu/drm/pl111/pl111_display.c
+index 6fd7f13f1aca..b5a8859739a2 100644
+--- a/drivers/gpu/drm/pl111/pl111_display.c
++++ b/drivers/gpu/drm/pl111/pl111_display.c
+@@ -440,7 +440,6 @@ static struct drm_simple_display_pipe_funcs pl111_display_funcs = {
+ 	.enable = pl111_display_enable,
+ 	.disable = pl111_display_disable,
+ 	.update = pl111_display_update,
+-	.prepare_fb = drm_gem_simple_display_pipe_prepare_fb,
+ };
+ 
+ static int pl111_clk_div_choose_div(struct clk_hw *hw, unsigned long rate,
+diff --git a/drivers/gpu/drm/tiny/hx8357d.c b/drivers/gpu/drm/tiny/hx8357d.c
+index da5df93450de..9b33c05732aa 100644
+--- a/drivers/gpu/drm/tiny/hx8357d.c
++++ b/drivers/gpu/drm/tiny/hx8357d.c
+@@ -184,7 +184,6 @@ static const struct drm_simple_display_pipe_funcs hx8357d_pipe_funcs = {
+ 	.enable = yx240qv29_enable,
+ 	.disable = mipi_dbi_pipe_disable,
+ 	.update = mipi_dbi_pipe_update,
+-	.prepare_fb = drm_gem_simple_display_pipe_prepare_fb,
+ };
+ 
+ static const struct drm_display_mode yx350hv15_mode = {
+diff --git a/drivers/gpu/drm/tiny/ili9225.c b/drivers/gpu/drm/tiny/ili9225.c
+index 69265d8a3beb..976d3209f164 100644
+--- a/drivers/gpu/drm/tiny/ili9225.c
++++ b/drivers/gpu/drm/tiny/ili9225.c
+@@ -328,7 +328,6 @@ static const struct drm_simple_display_pipe_funcs ili9225_pipe_funcs = {
+ 	.enable		= ili9225_pipe_enable,
+ 	.disable	= ili9225_pipe_disable,
+ 	.update		= ili9225_pipe_update,
+-	.prepare_fb	= drm_gem_simple_display_pipe_prepare_fb,
+ };
+ 
+ static const struct drm_display_mode ili9225_mode = {
+diff --git a/drivers/gpu/drm/tiny/ili9341.c b/drivers/gpu/drm/tiny/ili9341.c
+index ad9ce7b4f76f..37e0c33399c8 100644
+--- a/drivers/gpu/drm/tiny/ili9341.c
++++ b/drivers/gpu/drm/tiny/ili9341.c
+@@ -140,7 +140,6 @@ static const struct drm_simple_display_pipe_funcs ili9341_pipe_funcs = {
+ 	.enable = yx240qv29_enable,
+ 	.disable = mipi_dbi_pipe_disable,
+ 	.update = mipi_dbi_pipe_update,
+-	.prepare_fb = drm_gem_simple_display_pipe_prepare_fb,
+ };
+ 
+ static const struct drm_display_mode yx240qv29_mode = {
+diff --git a/drivers/gpu/drm/tiny/ili9486.c b/drivers/gpu/drm/tiny/ili9486.c
+index 75aa1476c66c..e9a63f4b2993 100644
+--- a/drivers/gpu/drm/tiny/ili9486.c
++++ b/drivers/gpu/drm/tiny/ili9486.c
+@@ -153,7 +153,6 @@ static const struct drm_simple_display_pipe_funcs waveshare_pipe_funcs = {
+ 	.enable = waveshare_enable,
+ 	.disable = mipi_dbi_pipe_disable,
+ 	.update = mipi_dbi_pipe_update,
+-	.prepare_fb = drm_gem_simple_display_pipe_prepare_fb,
+ };
+ 
+ static const struct drm_display_mode waveshare_mode = {
+diff --git a/drivers/gpu/drm/tiny/mi0283qt.c b/drivers/gpu/drm/tiny/mi0283qt.c
+index 82fd1ad3413f..023de49e7a8e 100644
+--- a/drivers/gpu/drm/tiny/mi0283qt.c
++++ b/drivers/gpu/drm/tiny/mi0283qt.c
+@@ -144,7 +144,6 @@ static const struct drm_simple_display_pipe_funcs mi0283qt_pipe_funcs = {
+ 	.enable = mi0283qt_enable,
+ 	.disable = mipi_dbi_pipe_disable,
+ 	.update = mipi_dbi_pipe_update,
+-	.prepare_fb = drm_gem_simple_display_pipe_prepare_fb,
+ };
+ 
+ static const struct drm_display_mode mi0283qt_mode = {
+diff --git a/drivers/gpu/drm/tiny/repaper.c b/drivers/gpu/drm/tiny/repaper.c
+index 2cee07a2e00b..007d9d59f01c 100644
+--- a/drivers/gpu/drm/tiny/repaper.c
++++ b/drivers/gpu/drm/tiny/repaper.c
+@@ -861,7 +861,6 @@ static const struct drm_simple_display_pipe_funcs repaper_pipe_funcs = {
+ 	.enable = repaper_pipe_enable,
+ 	.disable = repaper_pipe_disable,
+ 	.update = repaper_pipe_update,
+-	.prepare_fb = drm_gem_simple_display_pipe_prepare_fb,
+ };
+ 
+ static int repaper_connector_get_modes(struct drm_connector *connector)
+diff --git a/drivers/gpu/drm/tiny/st7586.c b/drivers/gpu/drm/tiny/st7586.c
+index 05db980cc047..1be55bed609a 100644
+--- a/drivers/gpu/drm/tiny/st7586.c
++++ b/drivers/gpu/drm/tiny/st7586.c
+@@ -268,7 +268,6 @@ static const struct drm_simple_display_pipe_funcs st7586_pipe_funcs = {
+ 	.enable		= st7586_pipe_enable,
+ 	.disable	= st7586_pipe_disable,
+ 	.update		= st7586_pipe_update,
+-	.prepare_fb	= drm_gem_simple_display_pipe_prepare_fb,
+ };
+ 
+ static const struct drm_display_mode st7586_mode = {
+diff --git a/drivers/gpu/drm/tiny/st7735r.c b/drivers/gpu/drm/tiny/st7735r.c
+index ec9dc817a2cc..122320db5d38 100644
+--- a/drivers/gpu/drm/tiny/st7735r.c
++++ b/drivers/gpu/drm/tiny/st7735r.c
+@@ -136,7 +136,6 @@ static const struct drm_simple_display_pipe_funcs st7735r_pipe_funcs = {
+ 	.enable		= st7735r_pipe_enable,
+ 	.disable	= mipi_dbi_pipe_disable,
+ 	.update		= mipi_dbi_pipe_update,
+-	.prepare_fb	= drm_gem_simple_display_pipe_prepare_fb,
+ };
+ 
+ static const struct st7735r_cfg jd_t18003_t01_cfg = {
+diff --git a/drivers/gpu/drm/tve200/tve200_display.c b/drivers/gpu/drm/tve200/tve200_display.c
+index 50e1fb71869f..17b8c8dd169d 100644
+--- a/drivers/gpu/drm/tve200/tve200_display.c
++++ b/drivers/gpu/drm/tve200/tve200_display.c
+@@ -316,7 +316,6 @@ static const struct drm_simple_display_pipe_funcs tve200_display_funcs = {
+ 	.enable = tve200_display_enable,
+ 	.disable = tve200_display_disable,
+ 	.update = tve200_display_update,
+-	.prepare_fb = drm_gem_simple_display_pipe_prepare_fb,
+ 	.enable_vblank = tve200_display_enable_vblank,
+ 	.disable_vblank = tve200_display_disable_vblank,
+ };
+diff --git a/drivers/gpu/drm/xen/xen_drm_front_kms.c b/drivers/gpu/drm/xen/xen_drm_front_kms.c
+index 371202ebe900..cfda74490765 100644
+--- a/drivers/gpu/drm/xen/xen_drm_front_kms.c
++++ b/drivers/gpu/drm/xen/xen_drm_front_kms.c
+@@ -302,7 +302,6 @@ static const struct drm_simple_display_pipe_funcs display_funcs = {
+ 	.mode_valid = display_mode_valid,
+ 	.enable = display_enable,
+ 	.disable = display_disable,
+-	.prepare_fb = drm_gem_simple_display_pipe_prepare_fb,
+ 	.check = display_check,
+ 	.update = display_update,
+ };
+-- 
+2.31.0
 
-Ah, I guess eventually patch #8 adds a list_head, but I suppose it'd be
-preferable to add the list.h #include in that patch instead of this one.
-
->+
->+struct kcs_bmc;
->+struct kcs_bmc_client_ops;
->+
->+struct kcs_bmc_client {
->+	const struct kcs_bmc_client_ops *ops;
->+
->+	struct kcs_bmc *dev;
->+};
->+
->+struct kcs_bmc_client_ops {
->+	irqreturn_t (*event)(struct kcs_bmc_client *client);
->+};
->+
->+u8 kcs_bmc_read_data(struct kcs_bmc *kcs_bmc);
->+void kcs_bmc_write_data(struct kcs_bmc *kcs_bmc, u8 data);
->+u8 kcs_bmc_read_status(struct kcs_bmc *kcs_bmc);
->+void kcs_bmc_write_status(struct kcs_bmc *kcs_bmc, u8 data);
->+void kcs_bmc_update_status(struct kcs_bmc *kcs_bmc, u8 mask, u8 val);
->+#endif
->diff --git a/drivers/char/ipmi/kcs_bmc_device.h b/drivers/char/ipmi/kcs_bmc_device.h
->new file mode 100644
->index 000000000000..14f8d700a3d8
->--- /dev/null
->+++ b/drivers/char/ipmi/kcs_bmc_device.h
->@@ -0,0 +1,19 @@
->+/* SPDX-License-Identifier: GPL-2.0 */
->+/* Copyright (c) 2021, IBM Corp. */
->+
->+#ifndef __KCS_BMC_DEVICE_H__
->+#define __KCS_BMC_DEVICE_H__
->+
->+#include "kcs_bmc.h"
->+
->+struct kcs_bmc_device_ops {
->+	u8 (*io_inputb)(struct kcs_bmc *kcs_bmc, u32 reg);
->+	void (*io_outputb)(struct kcs_bmc *kcs_bmc, u32 reg, u8 b);
->+	void (*io_updateb)(struct kcs_bmc *kcs_bmc, u32 reg, u8 mask, u8 b);
->+};
->+
->+irqreturn_t kcs_bmc_handle_event(struct kcs_bmc *kcs_bmc);
->+void kcs_bmc_add_device(struct kcs_bmc *kcs_bmc);
->+void kcs_bmc_remove_device(struct kcs_bmc *kcs_bmc);
->+
->+#endif
->diff --git a/drivers/char/ipmi/kcs_bmc_npcm7xx.c b/drivers/char/ipmi/kcs_bmc_npcm7xx.c
->index f7b4e866f86e..203258b24708 100644
->--- a/drivers/char/ipmi/kcs_bmc_npcm7xx.c
->+++ b/drivers/char/ipmi/kcs_bmc_npcm7xx.c
->@@ -17,7 +17,7 @@
-> #include <linux/regmap.h>
-> #include <linux/slab.h>
->
->-#include "kcs_bmc.h"
->+#include "kcs_bmc_device.h"
->
-> #define DEVICE_NAME	"npcm-kcs-bmc"
-> #define KCS_CHANNEL_MAX	3
->@@ -128,10 +128,7 @@ static irqreturn_t npcm7xx_kcs_irq(int irq, void *arg)
-> {
-> 	struct kcs_bmc *kcs_bmc = arg;
->
->-	if (!kcs_bmc_handle_event(kcs_bmc))
->-		return IRQ_HANDLED;
->-
->-	return IRQ_NONE;
->+	return kcs_bmc_handle_event(kcs_bmc);
-> }
->
-> static int npcm7xx_kcs_config_irq(struct kcs_bmc *kcs_bmc,
->@@ -148,6 +145,12 @@ static int npcm7xx_kcs_config_irq(struct kcs_bmc *kcs_bmc,
-> 				dev_name(dev), kcs_bmc);
-> }
->
->+static const struct kcs_bmc_device_ops npcm7xx_kcs_ops = {
->+	.io_inputb = npcm7xx_kcs_inb,
->+	.io_outputb = npcm7xx_kcs_outb,
->+	.io_updateb = npcm7xx_kcs_updateb,
->+};
->+
-> static int npcm7xx_kcs_probe(struct platform_device *pdev)
-> {
-> 	struct device *dev = &pdev->dev;
->@@ -179,9 +182,7 @@ static int npcm7xx_kcs_probe(struct platform_device *pdev)
-> 	kcs_bmc->ioreg.idr = priv->reg->dib;
-> 	kcs_bmc->ioreg.odr = priv->reg->dob;
-> 	kcs_bmc->ioreg.str = priv->reg->sts;
->-	kcs_bmc->io_inputb = npcm7xx_kcs_inb;
->-	kcs_bmc->io_outputb = npcm7xx_kcs_outb;
->-	kcs_bmc->io_updateb = npcm7xx_kcs_updateb;
->+	kcs_bmc->ops = &npcm7xx_kcs_ops;
->
-> 	platform_set_drvdata(pdev, priv);
->
->-- 
->2.27.0
->
