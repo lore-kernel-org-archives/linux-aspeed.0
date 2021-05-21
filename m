@@ -1,57 +1,48 @@
 From: Tao Ren <rentao.bupt@gmail.com>
-Date: Thu, 20 May 2021 18:51:53 -0700
-Subject: [PATCH] watchdog: aspeed: fix hardware timeout calculation
-In-Reply-To: <20210417042048.GA109800@roeck-us.net>
-References: <20210417034249.5978-1-rentao.bupt@gmail.com>
- <20210417042048.GA109800@roeck-us.net>
-Message-ID: <20210521015153.GA19153@taoren-ubuntu-R90MNF91>
+Date: Thu, 20 May 2021 19:00:34 -0700
+Subject: [PATCH 1/3] i2c: aspeed: avoid new registers definition of AST2600
+In-Reply-To: <20210520033140.GA3656@aspeedtech.com>
+References: <20210519080436.18975-1-jamin_lin@aspeedtech.com>
+ <20210519080436.18975-2-jamin_lin@aspeedtech.com>
+ <CACPK8XdNXiGMQZOtsfMMK+w_PSvO20XT8B9MG+rGhdjYoV4ZuQ@mail.gmail.com>
+ <20210520033140.GA3656@aspeedtech.com>
+Message-ID: <20210521020033.GB19153@taoren-ubuntu-R90MNF91>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Wim,
+Hi Jamin,
 
-Not sure if I looked at the wrong repository/branch, and looks like the
-patch is not included. Do you have any further suggestions? Or should I
-send out v2 in case it's missed?
+On Thu, May 20, 2021 at 11:31:41AM +0800, Jamin Lin wrote:
+> The 05/19/2021 22:59, Joel Stanley wrote:
+> > On Wed, 19 May 2021 at 08:05, Jamin Lin <jamin_lin@aspeedtech.com> wrote:
+> > >
+> > > The register definition between AST2600 A2 and A3 is different.
+> > > This patch avoid new registers definition of AST2600 to use
+> > > this driver. We will submit the path for the new registers
+> > > definition of AST2600.
+> > 
+> > The AST2600 v9 datasheet says that bit 2 selects between old and new
+> > register sets, and that the old register set is the default.
+> > 
+> > Has the default changed for the A3?, and the datasheet is incorrect?
+> > 
+> > Does the A3 still support the old register set?
+> > 
+> We suggest user to use the new i2c driver for AST2600 and we will sumbit
+> it. This driver is used to AST2500 and AST2400 SOCs. Change this
+> driver to check global register of i2c to avoid user build the wrong driver. 
+
+If I understand correctly, the answer implies old register set is still
+supported in A3 although aspeed suggest people using the new driver/mode?
+
+Can you please share more context behind the suggestion? Such as new
+register mode has better performance? Or some known issues that were
+deteted in old mode are fixed in new register mode?
 
 
-Thanks,
+Cheers,
 
 Tao
-
-On Fri, Apr 16, 2021 at 09:20:48PM -0700, Guenter Roeck wrote:
-> On Fri, Apr 16, 2021 at 08:42:49PM -0700, rentao.bupt at gmail.com wrote:
-> > From: Tao Ren <rentao.bupt@gmail.com>
-> > 
-> > Fix hardware timeout calculation in aspeed_wdt_set_timeout function to
-> > ensure the reload value does not exceed the hardware limit.
-> > 
-> > Fixes: efa859f7d786 ("watchdog: Add Aspeed watchdog driver")
-> > Reported-by: Amithash Prasad <amithash@fb.com>
-> > Signed-off-by: Tao Ren <rentao.bupt@gmail.com>
-> 
-> Reviewed-by: Guenter Roeck <linux@roeck-us.net>
-> 
-> > ---
-> >  drivers/watchdog/aspeed_wdt.c | 2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > 
-> > diff --git a/drivers/watchdog/aspeed_wdt.c b/drivers/watchdog/aspeed_wdt.c
-> > index 7e00960651fa..507fd815d767 100644
-> > --- a/drivers/watchdog/aspeed_wdt.c
-> > +++ b/drivers/watchdog/aspeed_wdt.c
-> > @@ -147,7 +147,7 @@ static int aspeed_wdt_set_timeout(struct watchdog_device *wdd,
-> >  
-> >  	wdd->timeout = timeout;
-> >  
-> > -	actual = min(timeout, wdd->max_hw_heartbeat_ms * 1000);
-> > +	actual = min(timeout, wdd->max_hw_heartbeat_ms / 1000);
-> >  
-> >  	writel(actual * WDT_RATE_1MHZ, wdt->base + WDT_RELOAD_VALUE);
-> >  	writel(WDT_RESTART_MAGIC, wdt->base + WDT_RESTART);
-> > -- 
-> > 2.17.1
-> > 
