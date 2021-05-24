@@ -1,150 +1,109 @@
-From: Quan Nguyen <quan@os.amperecomputing.com>
-Date: Mon, 24 May 2021 17:48:38 +0700
-Subject: [PATCH v3 5/7] i2c: aspeed: Add aspeed_set_slave_busy()
-In-Reply-To: <HK0PR06MB338093E5E0D0DBA9EA7C1168F2269@HK0PR06MB3380.apcprd06.prod.outlook.com>
-References: <20210519074934.20712-1-quan@os.amperecomputing.com>
- <20210519074934.20712-6-quan@os.amperecomputing.com>
- <HK0PR06MB3380FD2B7649CFB48BEA2D4FF2269@HK0PR06MB3380.apcprd06.prod.outlook.com>
- <1648966e-3e45-9661-c5dc-5ac2f40e2581@os.amperecomputing.com>
- <HK0PR06MB338093E5E0D0DBA9EA7C1168F2269@HK0PR06MB3380.apcprd06.prod.outlook.com>
-Message-ID: <917237ce-98f8-df5f-32b6-b4145ac47ac9@os.amperecomputing.com>
+From: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+Date: Mon, 24 May 2021 13:02:57 +0200
+Subject: [v6 2/2] pwm: Add Aspeed ast2600 PWM support
+In-Reply-To: <9EA46360-8F43-4D1B-9004-3965A6182FA1@aspeedtech.com>
+References: <20210518005517.9036-1-billy_tsai@aspeedtech.com>
+ <20210518005517.9036-3-billy_tsai@aspeedtech.com>
+ <20210522160708.ryr7n7klapszu2da@pengutronix.de>
+ <9EA46360-8F43-4D1B-9004-3965A6182FA1@aspeedtech.com>
+Message-ID: <20210524110257.izcgx4kdmj5c7dou@pengutronix.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 24/05/2021 17:36, Ryan Chen wrote:
->> -----Original Message-----
->> From: Quan Nguyen <quan@os.amperecomputing.com>
->> Sent: Monday, May 24, 2021 6:20 PM
->> To: Ryan Chen <ryan_chen@aspeedtech.com>; Corey Minyard
->> <minyard@acm.org>; Rob Herring <robh+dt@kernel.org>; Joel Stanley
->> <joel@jms.id.au>; Andrew Jeffery <andrew@aj.id.au>; Brendan Higgins
->> <brendanhiggins@google.com>; Benjamin Herrenschmidt
->> <benh@kernel.crashing.org>; Wolfram Sang <wsa@kernel.org>; Philipp Zabel
->> <p.zabel@pengutronix.de>; openipmi-developer at lists.sourceforge.net;
->> devicetree at vger.kernel.org; linux-arm-kernel at lists.infradead.org;
->> linux-aspeed at lists.ozlabs.org; linux-kernel at vger.kernel.org;
->> linux-i2c at vger.kernel.org
->> Cc: Open Source Submission <patches@amperecomputing.com>; Thang Q .
->> Nguyen <thang@os.amperecomputing.com>; Phong Vo
->> <phong@os.amperecomputing.com>; openbmc at lists.ozlabs.org
->> Subject: Re: [PATCH v3 5/7] i2c: aspeed: Add aspeed_set_slave_busy()
->>
->> On 24/05/2021 17:06, Ryan Chen wrote:
->>>> -----Original Message-----
->>>> From: openbmc
->>>> <openbmc-bounces+ryan_chen=aspeedtech.com@lists.ozlabs.org> On
->> Behalf
->>>> Of Quan Nguyen
->>>> Sent: Wednesday, May 19, 2021 3:50 PM
->>>> To: Corey Minyard <minyard@acm.org>; Rob Herring
->>>> <robh+dt@kernel.org>; Joel Stanley <joel@jms.id.au>; Andrew Jeffery
->>>> <andrew@aj.id.au>; Brendan Higgins <brendanhiggins@google.com>;
->>>> Benjamin Herrenschmidt <benh@kernel.crashing.org>; Wolfram Sang
->>>> <wsa@kernel.org>; Philipp Zabel <p.zabel@pengutronix.de>;
->>>> openipmi-developer at lists.sourceforge.net;
->>>> devicetree at vger.kernel.org; linux-arm-kernel at lists.infradead.org;
->>>> linux-aspeed at lists.ozlabs.org; linux-kernel at vger.kernel.org;
->>>> linux-i2c at vger.kernel.org
->>>> Cc: Open Source Submission <patches@amperecomputing.com>; Thang Q .
->>>> Nguyen <thang@os.amperecomputing.com>; Phong Vo
->>>> <phong@os.amperecomputing.com>; openbmc at lists.ozlabs.org
->>>> Subject: [PATCH v3 5/7] i2c: aspeed: Add aspeed_set_slave_busy()
->>>>
->>>> Slave i2c device on AST2500 received a lot of slave irq while it is
->>>> busy processing the response. To handle this case, adds and exports
->>>> aspeed_set_slave_busy() for controller to temporary stop slave irq
->>>> while slave is handling the response, and re-enable them again when the
->> response is ready.
->>>>
->>>> Signed-off-by: Quan Nguyen <quan@os.amperecomputing.com>
->>>> ---
->>>> v3:
->>>>     + First introduce in v3 [Quan]
->>>>
->>>>    drivers/i2c/busses/i2c-aspeed.c | 20 ++++++++++++++++++++
->>>>    1 file changed, 20 insertions(+)
->>>>
->>>> diff --git a/drivers/i2c/busses/i2c-aspeed.c
->>>> b/drivers/i2c/busses/i2c-aspeed.c index b2e9c8f0ddf7..9926d04831a2
->>>> 100644
->>>> --- a/drivers/i2c/busses/i2c-aspeed.c
->>>> +++ b/drivers/i2c/busses/i2c-aspeed.c
->>>> @@ -944,6 +944,26 @@ static int aspeed_i2c_init(struct aspeed_i2c_bus
->>>> *bus,
->>>>    	return 0;
->>>>    }
->>>>
->>>> +#if IS_ENABLED(CONFIG_I2C_SLAVE)
->>>> +void aspeed_set_slave_busy(struct i2c_adapter *adap, bool busy) {
->>>> +	struct aspeed_i2c_bus *bus = i2c_get_adapdata(adap);
->>>> +	unsigned long current_mask, flags;
->>>> +
->>>> +	spin_lock_irqsave(&bus->lock, flags);
->>>> +
->>>> +	current_mask = readl(bus->base + ASPEED_I2C_INTR_CTRL_REG);
->>> Hello
->>> 	Where the bus->base to be remap?
->>>
->>
->> Hi Ryan,
->>
->> In "[PATCH v3 6/7] ipmi: ssif_bmc: Add Aspeed SSIF BMC driver", the
->> ->priv is retrieved by calling i2c_get_adapdata(client->adapter). And in
->> aspeed_set_ssif_bmc_status(), call the exported aspeed_set_slave_busy()
->> using ->priv pointer as code below.
->>
-> Yes, I see the probe function " ssif_bmc->priv = i2c_get_adapdata(client->adapter);" to get priv.
-> But my question I don?t see the bus->base address be assigned.
+Hi Billy,
+
+On Mon, May 24, 2021 at 01:56:19AM +0000, Billy Tsai wrote:
+> On 2021/5/23, 12:07 AM,Uwe Kleine-K?nigwrote:
+>     On Tue, May 18, 2021 at 08:55:17AM +0800, Billy Tsai wrote:
+>     >   > +static u64 aspeed_pwm_get_period(struct pwm_chip *chip, struct pwm_device *pwm)
+>     >   > +{
+>     >   > +	struct aspeed_pwm_data *priv = aspeed_pwm_chip_to_data(chip);
+>     >   > +	unsigned long rate;
+>     >   > +	u32 index = pwm->hwpwm;
+>     >   > +	u32 val;
+>     >   > +	u64 period, div_h, div_l, clk_period;
+>     >   > +
+>     >   > +	rate = clk_get_rate(priv->clk);
+>     >   > +	regmap_read(priv->regmap, PWM_ASPEED_CTRL_CH(index), &val);
+>     >   > +	div_h = FIELD_GET(PWM_ASPEED_CTRL_CLK_DIV_H, val);
+>     >   > +	div_l = FIELD_GET(PWM_ASPEED_CTRL_CLK_DIV_L, val);
+>     >   > +	regmap_read(priv->regmap, PWM_ASPEED_DUTY_CYCLE_CH(index), &val);
+>     >   > +	clk_period = FIELD_GET(PWM_ASPEED_DUTY_CYCLE_PERIOD, val);
+>     >   > +	period = (NSEC_PER_SEC * BIT(div_h) * (div_l + 1) * (clk_period + 1));
 > 
-Hi Ryan,
-
-In drivers/i2c/busses/i2c-aspeed.c:
-struct aspeed_i2c_bus {
-         struct i2c_adapter              adap;
-         struct device                   *dev;
-         void __iomem                    *base;
-         struct reset_control            *rst;
-         /* Synchronizes I/O mem access to base. */
-         spinlock_t                      lock;
-
-So when "struct aspeed_i2c_bus *bus = i2c_get_adapdata(adap);", the 
-bus->base should point to the base of the aspeed_i2c_bus, which is 
-already initialized by the aspeed i2c bus driver.
-
-Do I miss something?
-
-- Quan
-
-
->> +extern void aspeed_set_slave_busy(struct i2c_adapter *adap, bool busy);
->> +static void aspeed_set_ssif_bmc_status(struct ssif_bmc_ctx *ssif_bmc,
->> unsigned int status)
->> +{
->> +	if (status & SSIF_BMC_BUSY)
->> +		aspeed_set_slave_busy((struct i2c_adapter *)ssif_bmc->priv, true);
->> +	else if (status & SSIF_BMC_READY)
->> +		aspeed_set_slave_busy((struct i2c_adapter *)ssif_bmc->priv, false); }
->> +
->> +static int ssif_bmc_probe(struct i2c_client *client, const struct
->> i2c_device_id *id)
->> +{
->> +	struct ssif_bmc_ctx *ssif_bmc;
->> +
->> +	ssif_bmc = ssif_bmc_alloc(client, 0);
->> +	if (IS_ERR(ssif_bmc))
->> +		return PTR_ERR(ssif_bmc);
->> +
->> +	ssif_bmc->priv = i2c_get_adapdata(client->adapter);
->> +	ssif_bmc->set_ssif_bmc_status = aspeed_set_ssif_bmc_status;
->> +
->> +	return 0;
->> +}
->>
->> - Quan
->>
->>
+>     > The outer pair of parenthesis on the RHS isn't necessary. The maximal
+>     > value that period can have here is:
 > 
+>     >	1000000000 * 2**15 * 256 * 256
+> 
+>     > This fits into an u64, but as all but the last factor are 32 bit values
+>     > you might get an overflow here.
+> 
+> I don?t know in which case the value will overflow, when my parameter types are all u64.
+> Can you tell me what is "the last factor"?
 
+Ah, I missed that div_l is u64. NSEC_PER_SEC and BIT(div_h) are both
+long quantities only and 1000000000 * 2**15 might overflow that.
+
+>     >   > +static int aspeed_pwm_apply(struct pwm_chip *chip, struct pwm_device *pwm,
+>     >   > +			    const struct pwm_state *state)
+>     >   > +{
+>     >   > +	struct device *dev = chip->dev;
+>     >   > +	struct aspeed_pwm_data *priv = aspeed_pwm_chip_to_data(chip);
+>     >   > +	u32 index = pwm->hwpwm;
+>     >   > +	int ret;
+>     >   > +
+>     >   > +	dev_dbg(dev, "apply period: %lldns, duty_cycle: %lldns", state->period,
+>     >   > +		state->duty_cycle);
+>     >   > +
+>     >   > +	regmap_update_bits(priv->regmap, PWM_ASPEED_CTRL_CH(index),
+>     >   > +			   PWM_ASPEED_CTRL_PIN_ENABLE,
+>     >   > +			   state->enabled ? PWM_ASPEED_CTRL_PIN_ENABLE : 0);
+>     >   > +	/*
+>     >   > +	 * Fixed the period to the max value and rising point to 0
+>     >   > +	 * for high resolution and simplify frequency calculation.
+>     >   > +	 */
+>     >   > +	regmap_update_bits(priv->regmap, PWM_ASPEED_DUTY_CYCLE_CH(index),
+>     >   > +			   (PWM_ASPEED_DUTY_CYCLE_PERIOD |
+>     >   > +			    PWM_ASPEED_DUTY_CYCLE_RISING_POINT),
+>     >   > +			   FIELD_PREP(PWM_ASPEED_DUTY_CYCLE_PERIOD,
+>     >   > +				      PWM_ASPEED_FIXED_PERIOD));
+>     >   > +
+>     >   > +	ret = aspeed_pwm_set_period(chip, pwm, state);
+>     >   > +	if (ret)
+>     >   > +		return ret;
+>     >   > +	aspeed_pwm_set_duty(chip, pwm, state);
+> 
+>     > aspeed_pwm_set_duty calls aspeed_pwm_get_period() which is a bit
+>     > ineffective after just having set the period.
+> 
+> When I call aspeed_pwm_set_period it doesn't mean the period is equal to what I set (It may
+> lose some precision Ex: When I set the period 40000ns, the actual period I set is 39680ns) and
+> I didn't get this information when I call aspeed_pwm_set_period. Thus, I need to get the actual
+> period first before set duty.
+
+I'm aware it might lose precision. But calling aspeed_pwm_get_period()
+determines the setting from reading registers, if you reuse all
+information available in aspeed_pwm_set_period() this is cheaper. Also
+it might be beneficial to first compute all necessary register values
+and then write them in quick sequence to keep the window for glitches
+small. Given that aspeed_pwm_set_period and aspeed_pwm_set_duty both
+have only a single caller, doing both in a single function might be an
+idea.
+
+Best regards
+Uwe
+
+-- 
+Pengutronix e.K.                           | Uwe Kleine-K?nig            |
+Industrial Linux Solutions                 | https://www.pengutronix.de/ |
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 488 bytes
+Desc: not available
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20210524/b829d319/attachment.sig>
