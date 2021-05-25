@@ -1,40 +1,51 @@
 From: Steven Lee <steven_lee@aspeedtech.com>
-Date: Tue, 25 May 2021 12:27:33 +0800
-Subject: [PATCH v2 0/3] pinctrl: pinctrl-g6: Add the 2nd sgpio
-Message-ID: <20210525042736.10379-1-steven_lee@aspeedtech.com>
+Date: Tue, 25 May 2021 12:27:35 +0800
+Subject: [PATCH v2 2/3] ARM: dts: aspeed-g6: Add pinctrl settings
+In-Reply-To: <20210525042736.10379-1-steven_lee@aspeedtech.com>
+References: <20210525042736.10379-1-steven_lee@aspeedtech.com>
+Message-ID: <20210525042736.10379-3-steven_lee@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-AST2600 has 2 SGPIO master interfaces one with 128 pins and another one
-has 80 pins, it also supports 2 SGPIO slave interfaces.
-However, there is only the first sgpio master/slave interface defined in
-dtsi and pinctrl driver.
-The patch series adds the second SGPIO master and slave interfaces
-in dt-bindings, dtsi and pinctrl driver.
+AST2600 supports 2 SGPIO master interfaces and 2 SGPIO slave interfaces.
+Currently, only SGPIO master 1 and SGPIO slve 1 in the pinctrl dtsi.
+SGPIO master 2 and slave 2 should be added in pinctrl dtsi as well.
 
-Changes from v1:
-* Correct the function priority of multi-function pin.
-* Change the name of arguments of PIN_DECL_4.
+Signed-off-by: Steven Lee <steven_lee@aspeedtech.com>
+Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
+---
+ arch/arm/boot/dts/aspeed-g6-pinctrl.dtsi | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-Please help to review.
-
-Thanks,
-Steven
-
-Steven Lee (3):
-  dt-bindings: pinctrl: Update enum for adding SGPM2 and SGPS2
-  ARM: dts: aspeed-g6: Add pinctrl settings
-  pinctrl: pinctrl-aspeed-g6: Add sgpio pinctrl settings
-
- .../pinctrl/aspeed,ast2600-pinctrl.yaml       | 10 ++++----
- arch/arm/boot/dts/aspeed-g6-pinctrl.dtsi      | 10 ++++++++
- drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c    | 24 +++++++++++++++----
- drivers/pinctrl/aspeed/pinmux-aspeed.h        |  9 +++++++
- 4 files changed, 44 insertions(+), 9 deletions(-)
-
+diff --git a/arch/arm/boot/dts/aspeed-g6-pinctrl.dtsi b/arch/arm/boot/dts/aspeed-g6-pinctrl.dtsi
+index 7028e21bdd98..7e90d713f5e5 100644
+--- a/arch/arm/boot/dts/aspeed-g6-pinctrl.dtsi
++++ b/arch/arm/boot/dts/aspeed-g6-pinctrl.dtsi
+@@ -862,11 +862,21 @@
+ 		groups = "SGPM1";
+ 	};
+ 
++	pinctrl_sgpm2_default: sgpm2_default {
++		function = "SGPM2";
++		groups = "SGPM2";
++	};
++
+ 	pinctrl_sgps1_default: sgps1_default {
+ 		function = "SGPS1";
+ 		groups = "SGPS1";
+ 	};
+ 
++	pinctrl_sgps2_default: sgps2_default {
++		function = "SGPS2";
++		groups = "SGPS2";
++	};
++
+ 	pinctrl_sioonctrl_default: sioonctrl_default {
+ 		function = "SIOONCTRL";
+ 		groups = "SIOONCTRL";
 -- 
 2.17.1
 
