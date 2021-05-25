@@ -1,48 +1,66 @@
-From: Joel Stanley <joel@jms.id.au>
-Date: Tue, 25 May 2021 07:55:41 +0000
+From: Steven Lee <steven_lee@aspeedtech.com>
+Date: Tue, 25 May 2021 17:48:16 +0800
 Subject: [PATCH v5 0/4] mmc: sdhci-of-aspeed: Support toggling SD bus
  signal
-In-Reply-To: <20210524073308.9328-1-steven_lee@aspeedtech.com>
+In-Reply-To: <CACPK8XcfvUQD5xwb=2Va5Sr+bmaWfJMZkh61HK1=J1qLYc84zQ@mail.gmail.com>
 References: <20210524073308.9328-1-steven_lee@aspeedtech.com>
-Message-ID: <CACPK8XcfvUQD5xwb=2Va5Sr+bmaWfJMZkh61HK1=J1qLYc84zQ@mail.gmail.com>
+ <CACPK8XcfvUQD5xwb=2Va5Sr+bmaWfJMZkh61HK1=J1qLYc84zQ@mail.gmail.com>
+Message-ID: <20210525094815.GA8757@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, 24 May 2021 at 07:33, Steven Lee <steven_lee@aspeedtech.com> wrote:
->
-> AST2600-A2 EVB has the reference design for enabling SD bus
-> power and toggling SD bus signal voltage between 3.3v and 1.8v by
-> GPIO regulators.
-> This patch series adds sdhci node and gpio regulators in a new dts file
-> for AST2600-A2 EVB.
-> The description of the reference design of AST2600-A2 EVB is added
-> in the new dts file.
->
-> This patch also include a helper for updating AST2600 sdhci capability
-> registers.
+The 05/25/2021 15:55, Joel Stanley wrote:
+> On Mon, 24 May 2021 at 07:33, Steven Lee <steven_lee@aspeedtech.com> wrote:
+> >
+> > AST2600-A2 EVB has the reference design for enabling SD bus
+> > power and toggling SD bus signal voltage between 3.3v and 1.8v by
+> > GPIO regulators.
+> > This patch series adds sdhci node and gpio regulators in a new dts file
+> > for AST2600-A2 EVB.
+> > The description of the reference design of AST2600-A2 EVB is added
+> > in the new dts file.
+> >
+> > This patch also include a helper for updating AST2600 sdhci capability
+> > registers.
+> 
+> The device trees look good:
+> 
+> Reviewed-by: Joel Stanley <joel@jms.id.au>
+> 
+> I've applied patches 1-3 to the aspeed tree for v5.14. I made a little
+> fix to patch 3 as it needed to add the new device tree to the
+> makefile.
+> 
 
-The device trees look good:
+Thanks!
 
-Reviewed-by: Joel Stanley <joel@jms.id.au>
+> When I was testing on my A2 EVB I saw this:
+> 
+> [    1.436219] sdhci-aspeed 1e750100.sdhci: Requested out of range
+> phase tap 192 for 9 degrees of phase compensation at 1562500Hz,
+> clamping to tap 15
+> [    1.450913] sdhci-aspeed 1e750100.sdhci: Requested out of range
+> phase tap 963 for 45 degrees of phase compensation at 1562500Hz,
+> clamping to tap 15
+> 
+> Do you know what is happening there?
+> 
 
-I've applied patches 1-3 to the aspeed tree for v5.14. I made a little
-fix to patch 3 as it needed to add the new device tree to the
-makefile.
+Per MMC spec, eMMC bus speed is set as legacy mode(0~26MHz) at startup of
+eMMC initializtion flow. Clock phase calculation is triggered in set_clock()
+and it calculates taps based on phase_deg(<9>, <225>) in the dts file and the
+current speed(1562500Hz), which causes the warning message you mentioned.
+As the phase_deg in the dts file should be calculated with 100MHz.
 
-When I was testing on my A2 EVB I saw this:
+https://lkml.org/lkml/2021/5/24/95
 
-[    1.436219] sdhci-aspeed 1e750100.sdhci: Requested out of range
-phase tap 192 for 9 degrees of phase compensation at 1562500Hz,
-clamping to tap 15
-[    1.450913] sdhci-aspeed 1e750100.sdhci: Requested out of range
-phase tap 963 for 45 degrees of phase compensation at 1562500Hz,
-clamping to tap 15
+But after some initialization flow, eMMC bus speed will be set to
+correct speed(100MHz).
+Clock phase calculation will be triggered again to get correct taps.
 
-Do you know what is happening there?
-
-Cheers,
-
-Joel
+> Cheers,
+> 
+> Joel
