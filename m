@@ -1,119 +1,170 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Tue, 25 May 2021 09:42:34 +0930
-Subject: =?UTF-8?Q?Re:_[Openipmi-developer]_[PATCH_v3_05/16]_ipmi:_kcs=5Fbmc:_Tur?=
- =?UTF-8?Q?n_the_driver_data-structures_inside-out?=
-In-Reply-To: <20210524154119.GN2921206@minyard.net>
-References: <20210510054213.1610760-1-andrew@aj.id.au>
- <20210510054213.1610760-6-andrew@aj.id.au>
- <20210521171412.GI2921206@minyard.net>
- <79f3c6d1-1f74-46ec-99a0-37faf11517b6@www.fastmail.com>
- <20210524154119.GN2921206@minyard.net>
-Message-ID: <9a290af6-522f-4055-bd26-e5818cc97bcb@www.fastmail.com>
+Date: Tue, 25 May 2021 10:24:42 +0930
+Subject: =?UTF-8?Q?Re:_[PATCH_v1_3/3]_pinctrl:_pinctrl-aspeed-g6:_Add_sgpio_pinct?=
+ =?UTF-8?Q?rl_settings?=
+In-Reply-To: <20210524111338.16049-4-steven_lee@aspeedtech.com>
+References: <20210524111338.16049-1-steven_lee@aspeedtech.com>
+ <20210524111338.16049-4-steven_lee@aspeedtech.com>
+Message-ID: <43b00f2e-4381-4899-b561-da9a24347f8b@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+Hi Steven,
 
-
-On Tue, 25 May 2021, at 01:11, Corey Minyard wrote:
-> On Mon, May 24, 2021 at 10:23:36AM +0930, Andrew Jeffery wrote:
-> > 
-> > 
-> > On Sat, 22 May 2021, at 02:44, Corey Minyard wrote:
-> > > On Mon, May 10, 2021 at 03:12:02PM +0930, Andrew Jeffery wrote:
-> > > > Make the KCS device drivers responsible for allocating their own memory.
-> > > > 
-> > > > Until now the private data for the device driver was allocated internal
-> > > > to the private data for the chardev interface. This coupling required
-> > > > the slightly awkward API of passing through the struct size for the
-> > > > driver private data to the chardev constructor, and then retrieving a
-> > > > pointer to the driver private data from the allocated chardev memory.
-> > > > 
-> > > > In addition to being awkward, the arrangement prevents the
-> > > > implementation of alternative userspace interfaces as the device driver
-> > > > private data is not independent.
-> > > > 
-> > > > Peel a layer off the onion and turn the data-structures inside out by
-> > > > exploiting container_of() and embedding `struct kcs_device` in the
-> > > > driver private data.
-> > > 
-> > > All in all a very nice cleanup.  A few nits inline.
-> > > 
-> > > > 
-> > > > Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
-> > > > Reviewed-by: Zev Weiss <zweiss@equinix.com>
-> > > > ---
-> > > >  drivers/char/ipmi/kcs_bmc.c           | 19 +++++++--
-> > > >  drivers/char/ipmi/kcs_bmc.h           | 12 ++----
-> > > >  drivers/char/ipmi/kcs_bmc_aspeed.c    | 56 +++++++++++++------------
-> > > >  drivers/char/ipmi/kcs_bmc_cdev_ipmi.c | 60 ++++++++++++++++++---------
-> > > >  drivers/char/ipmi/kcs_bmc_npcm7xx.c   | 37 ++++++++++-------
-> > > >  5 files changed, 111 insertions(+), 73 deletions(-)
-> > > > 
-> > > > diff --git a/drivers/char/ipmi/kcs_bmc.c b/drivers/char/ipmi/kcs_bmc.c
-> > > > index ef5c48ffe74a..83da681bf49e 100644
-> > > > --- a/drivers/char/ipmi/kcs_bmc.c
-> > > > +++ b/drivers/char/ipmi/kcs_bmc.c
-> > > > @@ -44,12 +44,23 @@ int kcs_bmc_handle_event(struct kcs_bmc *kcs_bmc)
-> > > >  }
-> > > >  EXPORT_SYMBOL(kcs_bmc_handle_event);
-> > > >  
-> > > > -struct kcs_bmc *kcs_bmc_ipmi_alloc(struct device *dev, int sizeof_priv, u32 channel);
-> > > > -struct kcs_bmc *kcs_bmc_alloc(struct device *dev, int sizeof_priv, u32 channel)
-> > > > +int kcs_bmc_ipmi_add_device(struct kcs_bmc *kcs_bmc);
-> > > 
-> > > The above (and it's remove function) should be in an include file.
-> > 
-> > This is a short-term hack while I'm refactoring the code. It goes away 
-> > in a later patch when we switch to using an ops struct.
-> > 
-> > I didn't move it to a header as it's an implementation detail at the 
-> > end of the day. I see headers as describing a public interface, and in 
-> > the bigger picture this function isn't part of the public API. But 
-> > maybe it's too tricky by half. My approach here generated some 
-> > discussion with Zev as well.
-> > 
-> > > 
-> > > > +void kcs_bmc_add_device(struct kcs_bmc *kcs_bmc)
-> > > 
-> > > This should return an error so the probe can be failed and cleaned up
-> > > and so confusing message don't get printed after this in one case.
-> > 
-> > Hmm. I did this because the end result of the series is that we can 
-> > have multiple chardev interfaces in distinct modules exposing the one 
-> > KCS device in the one kernel. If more than one of the chardev modules 
-> > is configured in and one of them fails to initialise themselves with 
-> > respect to the device driver I didn't think it was right to fail the 
-> > probe of the device driver (and thus remove any chardev interfaces that 
-> > did succeed to initialise against it).
-> > 
-> > But this does limit the usefulness of the device driver instance in the 
-> > case that only one of the chardev interfaces is configured in and it 
-> > fails to initialise.
-> > 
-> > So I think we need to decide on the direction before I adjust the 
-> > interface here. The patches are architected around the idea of multiple 
-> > chardevs being configured in to the kernel build and all are exposed at 
-> > runtime.
+On Mon, 24 May 2021, at 20:43, Steven Lee wrote:
+> AST2600 supports 2 SGPIO master interfaces and 2 SGPIO slave interfaces.
+> Current pinctrl driver only define the first sgpio master and slave
+> interfaces.
+> The sencond SGPIO master and slave interfaces should be added in
+> pinctrl driver as well.
 > 
-> Ok, I understand.  The host IPMI driver will attempt to start all
-> interfaces, if none fail to come up it will return an error, but if any
-> come up it will not return an error.  So it's a similar situation.
-
-That sounds reasonable. I'll implement this strategy.
-
+> Signed-off-by: Steven Lee <steven_lee@aspeedtech.com>
+> ---
+>  drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c | 24 ++++++++++++++++++----
+>  drivers/pinctrl/aspeed/pinmux-aspeed.h     |  9 ++++++++
+>  2 files changed, 29 insertions(+), 4 deletions(-)
 > 
-> I stole that from something else, but I can't remember what.  I don't
-> know what the best policy is, really, that was kind of a compromise and
-> nobody has complained about it.
-> 
-> I will say that the success print in aspeed_kcs_probe() needs to not
-> happen if there is a failure, though.
+> diff --git a/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c 
+> b/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
+> index 5c1a109842a7..d0e9ab9d1a9c 100644
+> --- a/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
+> +++ b/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
+> @@ -46,8 +46,10 @@
+>  #define SCU620		0x620 /* Disable GPIO Internal Pull-Down #4 */
+>  #define SCU634		0x634 /* Disable GPIO Internal Pull-Down #5 */
+>  #define SCU638		0x638 /* Disable GPIO Internal Pull-Down #6 */
+> +#define SCU690		0x690 /* Multi-function Pin Control #24 */
+>  #define SCU694		0x694 /* Multi-function Pin Control #25 */
+>  #define SCU69C		0x69C /* Multi-function Pin Control #27 */
+> +#define SCU6D0		0x6D0 /* Multi-function Pin Control #29 */
+>  #define SCUC20		0xC20 /* PCIE configuration Setting Control */
+>  
+>  #define ASPEED_G6_NR_PINS 256
+> @@ -81,13 +83,17 @@ FUNC_GROUP_DECL(I2C12, L26, K24);
+>  #define K26 4
+>  SIG_EXPR_LIST_DECL_SESG(K26, MACLINK1, MACLINK1, SIG_DESC_SET(SCU410, 4));
+>  SIG_EXPR_LIST_DECL_SESG(K26, SCL13, I2C13, SIG_DESC_SET(SCU4B0, 4));
+> -PIN_DECL_2(K26, GPIOA4, MACLINK1, SCL13);
+> +SIG_EXPR_LIST_DECL_SESG(K26, SGPS2CK, SGPS2, SIG_DESC_SET(SCU690, 4));
+> +SIG_EXPR_LIST_DECL_SESG(K26, SGPM2CLK, SGPM2, SIG_DESC_SET(SCU6D0, 4));
+> +PIN_DECL_4(K26, GPIOA4, SGPM2CLK, SGPS2CK, MACLINK1, SCL13);
 
-With the strategy you outlined above that's easy enough.
+Is this the right priority order? Looking at the Multi-Function Pin 
+Mapping and Control table, function 1 is MACLINK1,
+function 2 is SCL13, function 3 is SGPS2CK, and I assume function 4 
+would be SGPM2CLK, except it's not documented in the table in v9 of the 
+datasheet (I hope it will be documented?).
 
-Thanks,
+If function 1 is the highest priority (which is what all the Aspeed 
+pinctrl drivers assume), then this should be:
+
+PIN_DECL_4(K26, GPIOA4, MACLINK1, SCL13, SGPS2CK, SGPM2CLK);
+
+Anyway, one of several things could be at fault here:
+
+1. I've made a wrong assumption about the priority order in how I've 
+implemented pinctrl support for Aspeed SoCs
+
+2. The Multi-Function Pin Mapping and Control table is out of date and 
+needs to be fixed (which it already does as it doesn't list SGPM2CLK).
+
+3. The patch needs to align with the assumptions of the Aspeed pinctrl 
+support.
+
+I don't think it's 1 as I haven't heard of any issues where we are 
+getting incorrect behaviour because of pinmux. I don't think it's 2 as 
+this patch makes a non-linear change to the ordering. So my hunch is
+the issue is 3, that the patch is putting the signals in the wrong order.
+In this case, you want the PIN_DECL_4(...) I outlined above.
+
+>  FUNC_GROUP_DECL(MACLINK1, K26);
+>  
+>  #define L24 5
+>  SIG_EXPR_LIST_DECL_SESG(L24, MACLINK2, MACLINK2, SIG_DESC_SET(SCU410, 5));
+>  SIG_EXPR_LIST_DECL_SESG(L24, SDA13, I2C13, SIG_DESC_SET(SCU4B0, 5));
+> -PIN_DECL_2(L24, GPIOA5, MACLINK2, SDA13);
+> +SIG_EXPR_LIST_DECL_SESG(L24, SGPS2LD, SGPS2, SIG_DESC_SET(SCU690, 5));
+> +SIG_EXPR_LIST_DECL_SESG(L24, SGPM2LD, SGPM2, SIG_DESC_SET(SCU6D0, 5));
+> +PIN_DECL_4(L24, GPIOA5, SGPM2LD, SGPS2LD, MACLINK2, SDA13);
+
+See above.
+
+>  FUNC_GROUP_DECL(MACLINK2, L24);
+>  
+>  FUNC_GROUP_DECL(I2C13, K26, L24);
+> @@ -95,16 +101,22 @@ FUNC_GROUP_DECL(I2C13, K26, L24);
+>  #define L23 6
+>  SIG_EXPR_LIST_DECL_SESG(L23, MACLINK3, MACLINK3, SIG_DESC_SET(SCU410, 6));
+>  SIG_EXPR_LIST_DECL_SESG(L23, SCL14, I2C14, SIG_DESC_SET(SCU4B0, 6));
+> -PIN_DECL_2(L23, GPIOA6, MACLINK3, SCL14);
+> +SIG_EXPR_LIST_DECL_SESG(L23, SGPS2O, SGPS2, SIG_DESC_SET(SCU690, 6));
+> +SIG_EXPR_LIST_DECL_SESG(L23, SGPM2O, SGPM2, SIG_DESC_SET(SCU6D0, 6));
+> +PIN_DECL_4(L23, GPIOA6, SGPM2O, SGPS2O, MACLINK3, SCL14);
+
+See above.
+
+>  FUNC_GROUP_DECL(MACLINK3, L23);
+>  
+>  #define K25 7
+>  SIG_EXPR_LIST_DECL_SESG(K25, MACLINK4, MACLINK4, SIG_DESC_SET(SCU410, 7));
+>  SIG_EXPR_LIST_DECL_SESG(K25, SDA14, I2C14, SIG_DESC_SET(SCU4B0, 7));
+> -PIN_DECL_2(K25, GPIOA7, MACLINK4, SDA14);
+> +SIG_EXPR_LIST_DECL_SESG(K25, SGPS2I, SGPS2, SIG_DESC_SET(SCU690, 7));
+> +SIG_EXPR_LIST_DECL_SESG(K25, SGPM2I, SGPM2, SIG_DESC_SET(SCU6D0, 7));
+> +PIN_DECL_4(K25, GPIOA7, SGPM2I, SGPS2I, MACLINK4, SDA14);
+
+See above.
+
+>  FUNC_GROUP_DECL(MACLINK4, K25);
+>  
+>  FUNC_GROUP_DECL(I2C14, L23, K25);
+> +FUNC_GROUP_DECL(SGPM2, K26, L24, L23, K25);
+> +FUNC_GROUP_DECL(SGPS2, K26, L24, L23, K25);
+>  
+>  #define J26 8
+>  SIG_EXPR_LIST_DECL_SESG(J26, SALT1, SALT1, SIG_DESC_SET(SCU410, 8));
+> @@ -2060,7 +2072,9 @@ static const struct aspeed_pin_group 
+> aspeed_g6_groups[] = {
+>  	ASPEED_PINCTRL_GROUP(EMMCG4),
+>  	ASPEED_PINCTRL_GROUP(EMMCG8),
+>  	ASPEED_PINCTRL_GROUP(SGPM1),
+> +	ASPEED_PINCTRL_GROUP(SGPM2),
+>  	ASPEED_PINCTRL_GROUP(SGPS1),
+> +	ASPEED_PINCTRL_GROUP(SGPS2),
+>  	ASPEED_PINCTRL_GROUP(SIOONCTRL),
+>  	ASPEED_PINCTRL_GROUP(SIOPBI),
+>  	ASPEED_PINCTRL_GROUP(SIOPBO),
+> @@ -2276,7 +2290,9 @@ static const struct aspeed_pin_function 
+> aspeed_g6_functions[] = {
+>  	ASPEED_PINCTRL_FUNC(SD1),
+>  	ASPEED_PINCTRL_FUNC(SD2),
+>  	ASPEED_PINCTRL_FUNC(SGPM1),
+> +	ASPEED_PINCTRL_FUNC(SGPM2),
+>  	ASPEED_PINCTRL_FUNC(SGPS1),
+> +	ASPEED_PINCTRL_FUNC(SGPS2),
+>  	ASPEED_PINCTRL_FUNC(SIOONCTRL),
+>  	ASPEED_PINCTRL_FUNC(SIOPBI),
+>  	ASPEED_PINCTRL_FUNC(SIOPBO),
+> diff --git a/drivers/pinctrl/aspeed/pinmux-aspeed.h 
+> b/drivers/pinctrl/aspeed/pinmux-aspeed.h
+> index dba5875ff276..125df796af36 100644
+> --- a/drivers/pinctrl/aspeed/pinmux-aspeed.h
+> +++ b/drivers/pinctrl/aspeed/pinmux-aspeed.h
+> @@ -730,6 +730,15 @@ struct aspeed_pin_desc {
+>  			SIG_EXPR_LIST_PTR(pin, low), \
+>  			SIG_EXPR_LIST_PTR(pin, other))
+>  
+> +#define PIN_DECL_4(pin, other, high, medium, low1, low2) \
+
+Bit of a nit pick, but we might as well drop identifying the priorities 
+as high, medium and low given we now have low1 and low2. Maybe 
+something like this:
+
+#define PIN_DECL_4(pin, other, prio1, prio2, prio3, prio4)
+
+Cheers,
 
 Andrew
