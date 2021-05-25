@@ -1,59 +1,48 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Tue, 25 May 2021 07:29:07 +0000
-Subject: [PATCH v3 2/3] ARM: dts: aspeed-g6: Add pinctrl settings
-In-Reply-To: <20210525055308.31069-3-steven_lee@aspeedtech.com>
-References: <20210525055308.31069-1-steven_lee@aspeedtech.com>
- <20210525055308.31069-3-steven_lee@aspeedtech.com>
-Message-ID: <CACPK8XcgqmYWw3uL=3zckweepnM0vMucuPU1THPCNowjCkka5w@mail.gmail.com>
+Date: Tue, 25 May 2021 07:55:41 +0000
+Subject: [PATCH v5 0/4] mmc: sdhci-of-aspeed: Support toggling SD bus
+ signal
+In-Reply-To: <20210524073308.9328-1-steven_lee@aspeedtech.com>
+References: <20210524073308.9328-1-steven_lee@aspeedtech.com>
+Message-ID: <CACPK8XcfvUQD5xwb=2Va5Sr+bmaWfJMZkh61HK1=J1qLYc84zQ@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, 25 May 2021 at 05:53, Steven Lee <steven_lee@aspeedtech.com> wrote:
+On Mon, 24 May 2021 at 07:33, Steven Lee <steven_lee@aspeedtech.com> wrote:
 >
-> AST2600 supports 2 SGPIO master interfaces and 2 SGPIO slave interfaces.
-> Currently, only SGPIO master 1 and SGPIO slve 1 in the pinctrl dtsi.
-> SGPIO master 2 and slave 2 should be added in pinctrl dtsi as well.
+> AST2600-A2 EVB has the reference design for enabling SD bus
+> power and toggling SD bus signal voltage between 3.3v and 1.8v by
+> GPIO regulators.
+> This patch series adds sdhci node and gpio regulators in a new dts file
+> for AST2600-A2 EVB.
+> The description of the reference design of AST2600-A2 EVB is added
+> in the new dts file.
 >
-> Signed-off-by: Steven Lee <steven_lee@aspeedtech.com>
-> Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
+> This patch also include a helper for updating AST2600 sdhci capability
+> registers.
 
-Acked-by: Joel Stanley <joel@jms.id.au>
+The device trees look good:
 
-Linus, feel free to take this entire series through your tree.
+Reviewed-by: Joel Stanley <joel@jms.id.au>
 
-> ---
->  arch/arm/boot/dts/aspeed-g6-pinctrl.dtsi | 10 ++++++++++
->  1 file changed, 10 insertions(+)
->
-> diff --git a/arch/arm/boot/dts/aspeed-g6-pinctrl.dtsi b/arch/arm/boot/dts/aspeed-g6-pinctrl.dtsi
-> index 7028e21bdd98..7e90d713f5e5 100644
-> --- a/arch/arm/boot/dts/aspeed-g6-pinctrl.dtsi
-> +++ b/arch/arm/boot/dts/aspeed-g6-pinctrl.dtsi
-> @@ -862,11 +862,21 @@
->                 groups = "SGPM1";
->         };
->
-> +       pinctrl_sgpm2_default: sgpm2_default {
-> +               function = "SGPM2";
-> +               groups = "SGPM2";
-> +       };
-> +
->         pinctrl_sgps1_default: sgps1_default {
->                 function = "SGPS1";
->                 groups = "SGPS1";
->         };
->
-> +       pinctrl_sgps2_default: sgps2_default {
-> +               function = "SGPS2";
-> +               groups = "SGPS2";
-> +       };
-> +
->         pinctrl_sioonctrl_default: sioonctrl_default {
->                 function = "SIOONCTRL";
->                 groups = "SIOONCTRL";
-> --
-> 2.17.1
->
+I've applied patches 1-3 to the aspeed tree for v5.14. I made a little
+fix to patch 3 as it needed to add the new device tree to the
+makefile.
+
+When I was testing on my A2 EVB I saw this:
+
+[    1.436219] sdhci-aspeed 1e750100.sdhci: Requested out of range
+phase tap 192 for 9 degrees of phase compensation at 1562500Hz,
+clamping to tap 15
+[    1.450913] sdhci-aspeed 1e750100.sdhci: Requested out of range
+phase tap 963 for 45 degrees of phase compensation at 1562500Hz,
+clamping to tap 15
+
+Do you know what is happening there?
+
+Cheers,
+
+Joel
