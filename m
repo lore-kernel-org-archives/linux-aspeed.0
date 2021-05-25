@@ -1,9 +1,9 @@
 From: Steven Lee <steven_lee@aspeedtech.com>
-Date: Tue, 25 May 2021 13:53:06 +0800
-Subject: [PATCH v3 2/3] ARM: dts: aspeed-g6: Add pinctrl settings
+Date: Tue, 25 May 2021 13:53:07 +0800
+Subject: [PATCH v3 3/3] pinctrl: pinctrl-aspeed-g6: Add sgpio pinctrl settings
 In-Reply-To: <20210525055308.31069-1-steven_lee@aspeedtech.com>
 References: <20210525055308.31069-1-steven_lee@aspeedtech.com>
-Message-ID: <20210525055308.31069-3-steven_lee@aspeedtech.com>
+Message-ID: <20210525055308.31069-4-steven_lee@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -11,41 +11,118 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 AST2600 supports 2 SGPIO master interfaces and 2 SGPIO slave interfaces.
-Currently, only SGPIO master 1 and SGPIO slve 1 in the pinctrl dtsi.
-SGPIO master 2 and slave 2 should be added in pinctrl dtsi as well.
+Current pinctrl driver only define the first sgpio master and slave
+interfaces.
+The second SGPIO master and slave interfaces should be added in
+pinctrl driver as well.
 
 Signed-off-by: Steven Lee <steven_lee@aspeedtech.com>
 Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
 ---
- arch/arm/boot/dts/aspeed-g6-pinctrl.dtsi | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+ drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c | 24 ++++++++++++++++++----
+ drivers/pinctrl/aspeed/pinmux-aspeed.h     |  9 ++++++++
+ 2 files changed, 29 insertions(+), 4 deletions(-)
 
-diff --git a/arch/arm/boot/dts/aspeed-g6-pinctrl.dtsi b/arch/arm/boot/dts/aspeed-g6-pinctrl.dtsi
-index 7028e21bdd98..7e90d713f5e5 100644
---- a/arch/arm/boot/dts/aspeed-g6-pinctrl.dtsi
-+++ b/arch/arm/boot/dts/aspeed-g6-pinctrl.dtsi
-@@ -862,11 +862,21 @@
- 		groups = "SGPM1";
- 	};
+diff --git a/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c b/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
+index 5c1a109842a7..36688793b3a0 100644
+--- a/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
++++ b/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
+@@ -46,8 +46,10 @@
+ #define SCU620		0x620 /* Disable GPIO Internal Pull-Down #4 */
+ #define SCU634		0x634 /* Disable GPIO Internal Pull-Down #5 */
+ #define SCU638		0x638 /* Disable GPIO Internal Pull-Down #6 */
++#define SCU690		0x690 /* Multi-function Pin Control #24 */
+ #define SCU694		0x694 /* Multi-function Pin Control #25 */
+ #define SCU69C		0x69C /* Multi-function Pin Control #27 */
++#define SCU6D0		0x6D0 /* Multi-function Pin Control #29 */
+ #define SCUC20		0xC20 /* PCIE configuration Setting Control */
  
-+	pinctrl_sgpm2_default: sgpm2_default {
-+		function = "SGPM2";
-+		groups = "SGPM2";
-+	};
-+
- 	pinctrl_sgps1_default: sgps1_default {
- 		function = "SGPS1";
- 		groups = "SGPS1";
- 	};
+ #define ASPEED_G6_NR_PINS 256
+@@ -81,13 +83,17 @@ FUNC_GROUP_DECL(I2C12, L26, K24);
+ #define K26 4
+ SIG_EXPR_LIST_DECL_SESG(K26, MACLINK1, MACLINK1, SIG_DESC_SET(SCU410, 4));
+ SIG_EXPR_LIST_DECL_SESG(K26, SCL13, I2C13, SIG_DESC_SET(SCU4B0, 4));
+-PIN_DECL_2(K26, GPIOA4, MACLINK1, SCL13);
++SIG_EXPR_LIST_DECL_SESG(K26, SGPS2CK, SGPS2, SIG_DESC_SET(SCU690, 4));
++SIG_EXPR_LIST_DECL_SESG(K26, SGPM2CLK, SGPM2, SIG_DESC_SET(SCU6D0, 4));
++PIN_DECL_4(K26, GPIOA4, MACLINK1, SCL13, SGPS2CK, SGPM2CLK);
+ FUNC_GROUP_DECL(MACLINK1, K26);
  
-+	pinctrl_sgps2_default: sgps2_default {
-+		function = "SGPS2";
-+		groups = "SGPS2";
-+	};
+ #define L24 5
+ SIG_EXPR_LIST_DECL_SESG(L24, MACLINK2, MACLINK2, SIG_DESC_SET(SCU410, 5));
+ SIG_EXPR_LIST_DECL_SESG(L24, SDA13, I2C13, SIG_DESC_SET(SCU4B0, 5));
+-PIN_DECL_2(L24, GPIOA5, MACLINK2, SDA13);
++SIG_EXPR_LIST_DECL_SESG(L24, SGPS2LD, SGPS2, SIG_DESC_SET(SCU690, 5));
++SIG_EXPR_LIST_DECL_SESG(L24, SGPM2LD, SGPM2, SIG_DESC_SET(SCU6D0, 5));
++PIN_DECL_4(L24, GPIOA5, MACLINK2, SDA13, SGPS2LD, SGPM2LD);
+ FUNC_GROUP_DECL(MACLINK2, L24);
+ 
+ FUNC_GROUP_DECL(I2C13, K26, L24);
+@@ -95,16 +101,22 @@ FUNC_GROUP_DECL(I2C13, K26, L24);
+ #define L23 6
+ SIG_EXPR_LIST_DECL_SESG(L23, MACLINK3, MACLINK3, SIG_DESC_SET(SCU410, 6));
+ SIG_EXPR_LIST_DECL_SESG(L23, SCL14, I2C14, SIG_DESC_SET(SCU4B0, 6));
+-PIN_DECL_2(L23, GPIOA6, MACLINK3, SCL14);
++SIG_EXPR_LIST_DECL_SESG(L23, SGPS2O, SGPS2, SIG_DESC_SET(SCU690, 6));
++SIG_EXPR_LIST_DECL_SESG(L23, SGPM2O, SGPM2, SIG_DESC_SET(SCU6D0, 6));
++PIN_DECL_4(L23, GPIOA6, MACLINK3, SCL14, SGPS2O, SGPM2O);
+ FUNC_GROUP_DECL(MACLINK3, L23);
+ 
+ #define K25 7
+ SIG_EXPR_LIST_DECL_SESG(K25, MACLINK4, MACLINK4, SIG_DESC_SET(SCU410, 7));
+ SIG_EXPR_LIST_DECL_SESG(K25, SDA14, I2C14, SIG_DESC_SET(SCU4B0, 7));
+-PIN_DECL_2(K25, GPIOA7, MACLINK4, SDA14);
++SIG_EXPR_LIST_DECL_SESG(K25, SGPS2I, SGPS2, SIG_DESC_SET(SCU690, 7));
++SIG_EXPR_LIST_DECL_SESG(K25, SGPM2I, SGPM2, SIG_DESC_SET(SCU6D0, 7));
++PIN_DECL_4(K25, GPIOA7, MACLINK4, SDA14, SGPS2I, SGPM2I);
+ FUNC_GROUP_DECL(MACLINK4, K25);
+ 
+ FUNC_GROUP_DECL(I2C14, L23, K25);
++FUNC_GROUP_DECL(SGPM2, K26, L24, L23, K25);
++FUNC_GROUP_DECL(SGPS2, K26, L24, L23, K25);
+ 
+ #define J26 8
+ SIG_EXPR_LIST_DECL_SESG(J26, SALT1, SALT1, SIG_DESC_SET(SCU410, 8));
+@@ -2060,7 +2072,9 @@ static const struct aspeed_pin_group aspeed_g6_groups[] = {
+ 	ASPEED_PINCTRL_GROUP(EMMCG4),
+ 	ASPEED_PINCTRL_GROUP(EMMCG8),
+ 	ASPEED_PINCTRL_GROUP(SGPM1),
++	ASPEED_PINCTRL_GROUP(SGPM2),
+ 	ASPEED_PINCTRL_GROUP(SGPS1),
++	ASPEED_PINCTRL_GROUP(SGPS2),
+ 	ASPEED_PINCTRL_GROUP(SIOONCTRL),
+ 	ASPEED_PINCTRL_GROUP(SIOPBI),
+ 	ASPEED_PINCTRL_GROUP(SIOPBO),
+@@ -2276,7 +2290,9 @@ static const struct aspeed_pin_function aspeed_g6_functions[] = {
+ 	ASPEED_PINCTRL_FUNC(SD1),
+ 	ASPEED_PINCTRL_FUNC(SD2),
+ 	ASPEED_PINCTRL_FUNC(SGPM1),
++	ASPEED_PINCTRL_FUNC(SGPM2),
+ 	ASPEED_PINCTRL_FUNC(SGPS1),
++	ASPEED_PINCTRL_FUNC(SGPS2),
+ 	ASPEED_PINCTRL_FUNC(SIOONCTRL),
+ 	ASPEED_PINCTRL_FUNC(SIOPBI),
+ 	ASPEED_PINCTRL_FUNC(SIOPBO),
+diff --git a/drivers/pinctrl/aspeed/pinmux-aspeed.h b/drivers/pinctrl/aspeed/pinmux-aspeed.h
+index dba5875ff276..b69ba6b360a2 100644
+--- a/drivers/pinctrl/aspeed/pinmux-aspeed.h
++++ b/drivers/pinctrl/aspeed/pinmux-aspeed.h
+@@ -730,6 +730,15 @@ struct aspeed_pin_desc {
+ 			SIG_EXPR_LIST_PTR(pin, low), \
+ 			SIG_EXPR_LIST_PTR(pin, other))
+ 
++#define PIN_DECL_4(pin, other, prio1, prio2, prio3, prio4) \
++	SIG_EXPR_LIST_DECL_SESG(pin, other, other); \
++	PIN_DECL_(pin, \
++			SIG_EXPR_LIST_PTR(pin, prio1), \
++			SIG_EXPR_LIST_PTR(pin, prio2), \
++			SIG_EXPR_LIST_PTR(pin, prio3), \
++			SIG_EXPR_LIST_PTR(pin, prio4), \
++			SIG_EXPR_LIST_PTR(pin, other))
 +
- 	pinctrl_sioonctrl_default: sioonctrl_default {
- 		function = "SIOONCTRL";
- 		groups = "SIOONCTRL";
+ #define GROUP_SYM(group) group_pins_ ## group
+ #define GROUP_DECL(group, ...) \
+ 	static const int GROUP_SYM(group)[] = { __VA_ARGS__ }
 -- 
 2.17.1
 
