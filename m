@@ -1,175 +1,64 @@
-From: Ryan Chen <ryan_chen@aspeedtech.com>
-Date: Tue, 25 May 2021 10:30:36 +0000
-Subject: [PATCH v3 5/7] i2c: aspeed: Add aspeed_set_slave_busy()
-In-Reply-To: <917237ce-98f8-df5f-32b6-b4145ac47ac9@os.amperecomputing.com>
-References: <20210519074934.20712-1-quan@os.amperecomputing.com>
- <20210519074934.20712-6-quan@os.amperecomputing.com>
- <HK0PR06MB3380FD2B7649CFB48BEA2D4FF2269@HK0PR06MB3380.apcprd06.prod.outlook.com>
- <1648966e-3e45-9661-c5dc-5ac2f40e2581@os.amperecomputing.com>
- <HK0PR06MB338093E5E0D0DBA9EA7C1168F2269@HK0PR06MB3380.apcprd06.prod.outlook.com>
- <917237ce-98f8-df5f-32b6-b4145ac47ac9@os.amperecomputing.com>
-Message-ID: <HK0PR06MB33805BB4A4D35192A0D95E59F2259@HK0PR06MB3380.apcprd06.prod.outlook.com>
+From: Joel Stanley <joel@jms.id.au>
+Date: Tue, 25 May 2021 12:56:03 +0000
+Subject: [PATCH v5 0/4] mmc: sdhci-of-aspeed: Support toggling SD bus
+ signal
+In-Reply-To: <20210525094815.GA8757@aspeedtech.com>
+References: <20210524073308.9328-1-steven_lee@aspeedtech.com>
+ <CACPK8XcfvUQD5xwb=2Va5Sr+bmaWfJMZkh61HK1=J1qLYc84zQ@mail.gmail.com>
+ <20210525094815.GA8757@aspeedtech.com>
+Message-ID: <CACPK8XfdYAcx=RX07hf1ar8A7th8G8390exvKbgh92X=ov8u2A@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-> -----Original Message-----
-> From: Quan Nguyen <quan@os.amperecomputing.com>
-> Sent: Monday, May 24, 2021 6:49 PM
-> To: Ryan Chen <ryan_chen@aspeedtech.com>; Corey Minyard
-> <minyard@acm.org>; Rob Herring <robh+dt@kernel.org>; Joel Stanley
-> <joel@jms.id.au>; Andrew Jeffery <andrew@aj.id.au>; Brendan Higgins
-> <brendanhiggins@google.com>; Benjamin Herrenschmidt
-> <benh@kernel.crashing.org>; Wolfram Sang <wsa@kernel.org>; Philipp Zabel
-> <p.zabel@pengutronix.de>; openipmi-developer at lists.sourceforge.net;
-> devicetree at vger.kernel.org; linux-arm-kernel at lists.infradead.org;
-> linux-aspeed at lists.ozlabs.org; linux-kernel at vger.kernel.org;
-> linux-i2c at vger.kernel.org
-> Cc: Open Source Submission <patches@amperecomputing.com>; Thang Q .
-> Nguyen <thang@os.amperecomputing.com>; Phong Vo
-> <phong@os.amperecomputing.com>; openbmc at lists.ozlabs.org
-> Subject: Re: [PATCH v3 5/7] i2c: aspeed: Add aspeed_set_slave_busy()
-> 
-> On 24/05/2021 17:36, Ryan Chen wrote:
-> >> -----Original Message-----
-> >> From: Quan Nguyen <quan@os.amperecomputing.com>
-> >> Sent: Monday, May 24, 2021 6:20 PM
-> >> To: Ryan Chen <ryan_chen@aspeedtech.com>; Corey Minyard
-> >> <minyard@acm.org>; Rob Herring <robh+dt@kernel.org>; Joel Stanley
-> >> <joel@jms.id.au>; Andrew Jeffery <andrew@aj.id.au>; Brendan Higgins
-> >> <brendanhiggins@google.com>; Benjamin Herrenschmidt
-> >> <benh@kernel.crashing.org>; Wolfram Sang <wsa@kernel.org>; Philipp
-> >> Zabel <p.zabel@pengutronix.de>;
-> >> openipmi-developer at lists.sourceforge.net;
-> >> devicetree at vger.kernel.org; linux-arm-kernel at lists.infradead.org;
-> >> linux-aspeed at lists.ozlabs.org; linux-kernel at vger.kernel.org;
-> >> linux-i2c at vger.kernel.org
-> >> Cc: Open Source Submission <patches@amperecomputing.com>; Thang Q .
-> >> Nguyen <thang@os.amperecomputing.com>; Phong Vo
-> >> <phong@os.amperecomputing.com>; openbmc at lists.ozlabs.org
-> >> Subject: Re: [PATCH v3 5/7] i2c: aspeed: Add aspeed_set_slave_busy()
-> >>
-> >> On 24/05/2021 17:06, Ryan Chen wrote:
-> >>>> -----Original Message-----
-> >>>> From: openbmc
-> >>>> <openbmc-bounces+ryan_chen=aspeedtech.com@lists.ozlabs.org> On
-> >> Behalf
-> >>>> Of Quan Nguyen
-> >>>> Sent: Wednesday, May 19, 2021 3:50 PM
-> >>>> To: Corey Minyard <minyard@acm.org>; Rob Herring
-> >>>> <robh+dt@kernel.org>; Joel Stanley <joel@jms.id.au>; Andrew Jeffery
-> >>>> <andrew@aj.id.au>; Brendan Higgins <brendanhiggins@google.com>;
-> >>>> Benjamin Herrenschmidt <benh@kernel.crashing.org>; Wolfram Sang
-> >>>> <wsa@kernel.org>; Philipp Zabel <p.zabel@pengutronix.de>;
-> >>>> openipmi-developer at lists.sourceforge.net;
-> >>>> devicetree at vger.kernel.org; linux-arm-kernel at lists.infradead.org;
-> >>>> linux-aspeed at lists.ozlabs.org; linux-kernel at vger.kernel.org;
-> >>>> linux-i2c at vger.kernel.org
-> >>>> Cc: Open Source Submission <patches@amperecomputing.com>; Thang
-> Q .
-> >>>> Nguyen <thang@os.amperecomputing.com>; Phong Vo
-> >>>> <phong@os.amperecomputing.com>; openbmc at lists.ozlabs.org
-> >>>> Subject: [PATCH v3 5/7] i2c: aspeed: Add aspeed_set_slave_busy()
-> >>>>
-> >>>> Slave i2c device on AST2500 received a lot of slave irq while it is
-> >>>> busy processing the response. To handle this case, adds and exports
-> >>>> aspeed_set_slave_busy() for controller to temporary stop slave irq
-> >>>> while slave is handling the response, and re-enable them again when
-> >>>> the
-> >> response is ready.
-> >>>>
-> >>>> Signed-off-by: Quan Nguyen <quan@os.amperecomputing.com>
-> >>>> ---
-> >>>> v3:
-> >>>>     + First introduce in v3 [Quan]
-> >>>>
-> >>>>    drivers/i2c/busses/i2c-aspeed.c | 20 ++++++++++++++++++++
-> >>>>    1 file changed, 20 insertions(+)
-> >>>>
-> >>>> diff --git a/drivers/i2c/busses/i2c-aspeed.c
-> >>>> b/drivers/i2c/busses/i2c-aspeed.c index b2e9c8f0ddf7..9926d04831a2
-> >>>> 100644
-> >>>> --- a/drivers/i2c/busses/i2c-aspeed.c
-> >>>> +++ b/drivers/i2c/busses/i2c-aspeed.c
-> >>>> @@ -944,6 +944,26 @@ static int aspeed_i2c_init(struct
-> >>>> aspeed_i2c_bus *bus,
-> >>>>    	return 0;
-> >>>>    }
-> >>>>
-> >>>> +#if IS_ENABLED(CONFIG_I2C_SLAVE)
-> >>>> +void aspeed_set_slave_busy(struct i2c_adapter *adap, bool busy) {
-> >>>> +	struct aspeed_i2c_bus *bus = i2c_get_adapdata(adap);
-> >>>> +	unsigned long current_mask, flags;
-> >>>> +
-> >>>> +	spin_lock_irqsave(&bus->lock, flags);
-> >>>> +
-> >>>> +	current_mask = readl(bus->base + ASPEED_I2C_INTR_CTRL_REG);
-> >>> Hello
-> >>> 	Where the bus->base to be remap?
-> >>>
-> >>
-> >> Hi Ryan,
-> >>
-> >> In "[PATCH v3 6/7] ipmi: ssif_bmc: Add Aspeed SSIF BMC driver", the
-> >> ->priv is retrieved by calling i2c_get_adapdata(client->adapter). And
-> >> ->in
-> >> aspeed_set_ssif_bmc_status(), call the exported
-> >> aspeed_set_slave_busy() using ->priv pointer as code below.
-> >>
-> > Yes, I see the probe function " ssif_bmc->priv =
-> i2c_get_adapdata(client->adapter);" to get priv.
-> > But my question I don?t see the bus->base address be assigned.
+On Tue, 25 May 2021 at 09:48, Steven Lee <steven_lee@aspeedtech.com> wrote:
+>
+> The 05/25/2021 15:55, Joel Stanley wrote:
+> > When I was testing on my A2 EVB I saw this:
 > >
-> Hi Ryan,
-> 
-> In drivers/i2c/busses/i2c-aspeed.c:
-> struct aspeed_i2c_bus {
->          struct i2c_adapter              adap;
->          struct device                   *dev;
->          void __iomem                    *base;
->          struct reset_control            *rst;
->          /* Synchronizes I/O mem access to base. */
->          spinlock_t                      lock;
-> 
-> So when "struct aspeed_i2c_bus *bus = i2c_get_adapdata(adap);", the
-> bus->base should point to the base of the aspeed_i2c_bus, which is
-> already initialized by the aspeed i2c bus driver.
-> 
-> Do I miss something?
-Hello Quan,
-	After study. I think the ssif_bmc_aspeed.c assume the priv data is the same struct.
-	That is trick.
-	Do we have a better for slave enable/disable call back to implement this?
-	If add call back in struct i2c_algorithm; is it workable?
-> 
-> >> +extern void aspeed_set_slave_busy(struct i2c_adapter *adap, bool busy);
-> >> +static void aspeed_set_ssif_bmc_status(struct ssif_bmc_ctx *ssif_bmc,
-> >> unsigned int status)
-> >> +{
-> >> +	if (status & SSIF_BMC_BUSY)
-> >> +		aspeed_set_slave_busy((struct i2c_adapter *)ssif_bmc->priv, true);
-> >> +	else if (status & SSIF_BMC_READY)
-> >> +		aspeed_set_slave_busy((struct i2c_adapter *)ssif_bmc->priv, false); }
-> >> +
-> >> +static int ssif_bmc_probe(struct i2c_client *client, const struct
-> >> i2c_device_id *id)
-> >> +{
-> >> +	struct ssif_bmc_ctx *ssif_bmc;
-> >> +
-> >> +	ssif_bmc = ssif_bmc_alloc(client, 0);
-> >> +	if (IS_ERR(ssif_bmc))
-> >> +		return PTR_ERR(ssif_bmc);
-> >> +
-> >> +	ssif_bmc->priv = i2c_get_adapdata(client->adapter);
-> >> +	ssif_bmc->set_ssif_bmc_status = aspeed_set_ssif_bmc_status;
-> >> +
-> >> +	return 0;
-> >> +}
-> >>
-> >> - Quan
-> >>
-> >>
+> > [    1.436219] sdhci-aspeed 1e750100.sdhci: Requested out of range
+> > phase tap 192 for 9 degrees of phase compensation at 1562500Hz,
+> > clamping to tap 15
+> > [    1.450913] sdhci-aspeed 1e750100.sdhci: Requested out of range
+> > phase tap 963 for 45 degrees of phase compensation at 1562500Hz,
+> > clamping to tap 15
 > >
+> > Do you know what is happening there?
+> >
+>
+> Per MMC spec, eMMC bus speed is set as legacy mode(0~26MHz) at startup of
+> eMMC initializtion flow. Clock phase calculation is triggered in set_clock()
+> and it calculates taps based on phase_deg(<9>, <225>) in the dts file and the
+> current speed(1562500Hz), which causes the warning message you mentioned.
+> As the phase_deg in the dts file should be calculated with 100MHz.
+>
+> https://lkml.org/lkml/2021/5/24/95
+>
+> But after some initialization flow, eMMC bus speed will be set to
+> correct speed(100MHz).
+> Clock phase calculation will be triggered again to get correct taps.
 
+Thanks for the explanation. I added another debug print and I can see
+it doing what you describe:
+
+[    1.465904] sdhci-aspeed 1e750100.sdhci: Requested out of range
+phase tap 192 for 9 degrees of phase compensation at 1562500Hz,
+clamping to tap 15
+[    1.480598] sdhci-aspeed 1e750100.sdhci: rate 1562500 phase 9 tap 15
+[    1.490316] sdhci-aspeed 1e750100.sdhci: Requested out of range
+phase tap 963 for 45 degrees of phase compensation at 1562500Hz,
+clamping to tap 15
+[    1.505077] sdhci-aspeed 1e750100.sdhci: rate 1562500 phase 45 tap 15
+[    1.515059] sdhci-aspeed 1e750100.sdhci: rate 100000000 phase 9 tap 3
+[    1.524886] sdhci-aspeed 1e750100.sdhci: rate 100000000 phase 45 tap 15
+[    1.534904] sdhci-aspeed 1e750100.sdhci: rate 100000000 phase 9 tap 3
+[    1.544713] sdhci-aspeed 1e750100.sdhci: rate 100000000 phase 45 tap 15
+
+We should change the "out of range" message to be dev_dbg, as it is
+expected on a normal boot.
+
+Cheers,
+
+Joel
