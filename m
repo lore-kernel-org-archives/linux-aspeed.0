@@ -1,92 +1,72 @@
-From: Steven Lee <steven_lee@aspeedtech.com>
-Date: Thu, 27 May 2021 10:58:37 +0800
-Subject: [PATCH v1 1/4] dt-bindings: aspeed-sgpio: Convert txt bindings
- to yaml.
-In-Reply-To: <f50dec3a8be8f8254321d22d784eba4f5a032887.camel@ozlabs.org>
+From: Andrew Jeffery <andrew@aj.id.au>
+Date: Thu, 27 May 2021 12:34:38 +0930
+Subject: [PATCH v1 4/4] gpio: gpio-aspeed-sgpio: Add AST2600 sgpio support
+In-Reply-To: <20210527023455.GA9971@aspeedtech.com>
 References: <20210526094609.14068-1-steven_lee@aspeedtech.com>
- <20210526094609.14068-2-steven_lee@aspeedtech.com>
- <f50dec3a8be8f8254321d22d784eba4f5a032887.camel@ozlabs.org>
-Message-ID: <20210527025836.GD9971@aspeedtech.com>
+ <20210526094609.14068-5-steven_lee@aspeedtech.com>
+ <0826dc6a-1c76-4301-985e-7885eb0e151d@www.fastmail.com>
+ <20210527023455.GA9971@aspeedtech.com>
+Message-ID: <3a9513fa-bdd2-45c9-bb4a-18ae3953d28a@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The 05/27/2021 09:42, Jeremy Kerr wrote:
-> Hi Steven,
+On Thu, 27 May 2021, at 12:04, Steven Lee wrote:
+> The 05/27/2021 09:26, Andrew Jeffery wrote:
+> > Hi Steven,
+> > 
+> > On Wed, 26 May 2021, at 19:16, Steven Lee wrote:
+> > >  	struct aspeed_sgpio *gpio = gpiochip_get_data(gc);
+> > > -	const struct aspeed_sgpio_bank *bank = to_bank(offset);
+> > >  	unsigned long flags;
+> > >  	enum aspeed_sgpio_reg reg;
+> > >  	int rc = 0;
+> > >  
+> > >  	spin_lock_irqsave(&gpio->lock, flags);
+> > >  
+> > > -	reg = aspeed_sgpio_is_input(offset) ? reg_val : reg_rdata;
+> > > -	rc = !!(ioread32(bank_reg(gpio, bank, reg)) & GPIO_BIT(offset));
+> > > +	reg = aspeed_sgpio_is_input(offset, gpio->max_ngpios) ? reg_val : 
+> > > reg_rdata;
+> > 
+> > We should just pass gpio here (i.e. make aspeed_sgpio_is_input take a 
+> > 'const struct aspeed_sgpio *' parameter), rather than open-coding 
+> > gpio->max_ngpios. This approach will make it easier to refactor the 
+> > implementation in the future (if necessary).
+> > 
 > 
-> > SGPIO bindings should be converted as yaml format.
-> > In addition to the file conversion, a new property max-ngpios is
-> > added in the yaml file as well.
-> > The new property is required by the enhanced sgpio driver for
-> > making the configuration of the max number of gpio pins more
-> > flexible.
-> 
-> There are a number of things going on here - you're doing the YAML
-> conversion, introducing the max-gpios property, and changing the
-> compatible value.
-> 
-> The first two make sense, but may be better split into separate
-> changes, so that the YAML conversion is a "linear" change.
-> 
+> I will rewrite the function to use aspeed_sgpio struct.
 
-Thanks for your suggestion, I will split them into 2 patches.
 
-> I'm not clear on why you're changing the compatible value though,
-> particularly as you're dropping support for the existing compatible
-> value anyway. How about we keep the old one, and use the default of 128
-> for cases where max-ngpios is absent? That way, we retain support for
-> the existing device trees.
+> > >  	struct aspeed_sgpio *gpio = gpiochip_get_data(gc);
+> > > -	const struct aspeed_sgpio_bank *bank = to_bank(offset);
+> > >  	void __iomem *addr_r, *addr_w;
+> > >  	u32 reg = 0;
+> > >  
+> > > -	if (aspeed_sgpio_is_input(offset))
+> > > +	if (aspeed_sgpio_is_input(offset, gpio->max_ngpios))
+> > >  		return -EINVAL;
+> > >  
+> > >  	/* Since this is an output, read the cached value from rdata, then
+> > > @@ -209,9 +214,9 @@ static int sgpio_set_value(struct gpio_chip *gc, 
+> > > unsigned int offset, int val)
+> > >  	reg = ioread32(addr_r);
+> > >  
+> > >  	if (val)
+> > > -		reg |= GPIO_BIT(offset);
+> > > +		reg |= GPIO_BIT(offset % gpio->max_ngpios);
+> > 
+> > Pass gpio through GPIO_BIT() too.
+> > 
 > 
+> I don't understand this comment.
+> Could you describe more?
 
-AST2600 support both SGPIO master and slave interfaces. So we decide to
-rename sgpio to sgpiom as it is the driver for sgpio master interface.
-Since Andrew also point out the compatibility issues, I will modify driver
-to keep the original design.
+Oh, sure, what I was suggesting was to make a similar change to 
+GPIO_BIT() as I suggested for aspeed_sgpio_is_input() above.
 
-> > +? max-ngpios:
-> > +??? description:
-> > +????? represents the number of actual hardware-supported GPIOs (ie,
-> > +????? slots within the clocked serial GPIO data). Since each HW GPIO is both an
-> > +????? input and an output, we provide max_ngpios * 2 lines on our gpiochip
-> > +????? device. We also use it to define the split between the inputs and
-> > +????? outputs; the inputs start at line 0, the outputs start at max_ngpios.
-> 
-> Most of this description is better suited to the ngpios property, which
-> controls the number of lines that the gpiochip will expose.
-> 
-> Also, minor nit: max_ngpios -> max-ngpios.
-> 
-> How about something like:
-> 
->   ngpios:
->     description:
->       Number of GPIO lines to expose. Since each HW GPIO is an input and an
->       output, we provide ngpios * 2 lines on our chip device. We also use it
->       to define the split between the inputs and outputs; the inputs start at
->       line 0, the outputs start at ngpios.
-> 
->   max-ngpios:
->     description:
->       Represents the number of actual hardware-supported GPIOs (ie, slots within
->       the clocked serial GPIO data), and therefore the maximum value for
->       the ngpios property
-> 
+Hope that helps.
 
-I will modify the description as you suggested.
-
-> > +??? minimum: 0
-> > +??? maximum: 128
-> 
-> Will this be the case for all (future) hardware? Can we leave this
-> unbound?
-> 
-
-Since the future hardware may supports more gpios, I will remove it.
-
-> Cheers,
-> 
-> 
-> Jeremy
-> 
+Andrew
