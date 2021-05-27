@@ -1,75 +1,45 @@
-From: Jeremy Kerr <jk@ozlabs.org>
-Date: Thu, 27 May 2021 09:42:51 +0800
-Subject: [PATCH v1 1/4] dt-bindings: aspeed-sgpio: Convert txt bindings
- to yaml.
-In-Reply-To: <20210526094609.14068-2-steven_lee@aspeedtech.com>
-References: <20210526094609.14068-1-steven_lee@aspeedtech.com>
- <20210526094609.14068-2-steven_lee@aspeedtech.com>
-Message-ID: <f50dec3a8be8f8254321d22d784eba4f5a032887.camel@ozlabs.org>
+From: Steven Lee <steven_lee@aspeedtech.com>
+Date: Thu, 27 May 2021 08:54:52 +0800
+Subject: [PATCH v2 3/4] ARM: dts: aspeed-g5: Modify sgpio node for the
+ enhanced sgpio driver.
+In-Reply-To: <20210527005455.25758-1-steven_lee@aspeedtech.com>
+References: <20210527005455.25758-1-steven_lee@aspeedtech.com>
+Message-ID: <20210527005455.25758-4-steven_lee@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Steven,
+The enhanced sgpio driver has changed the compatible name to sgpiom
+and reads the max number of sgpio pins that SoC supported from
+max-ngpios in dts.
 
-> SGPIO bindings should be converted as yaml format.
-> In addition to the file conversion, a new property max-ngpios is
-> added in the yaml file as well.
-> The new property is required by the enhanced sgpio driver for
-> making the configuration of the max number of gpio pins more
-> flexible.
+Signed-off-by: Steven Lee <steven_lee@aspeedtech.com>
+---
+ arch/arm/boot/dts/aspeed-g5.dtsi | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-There are a number of things going on here - you're doing the YAML
-conversion, introducing the max-gpios property, and changing the
-compatible value.
-
-The first two make sense, but may be better split into separate
-changes, so that the YAML conversion is a "linear" change.
-
-I'm not clear on why you're changing the compatible value though,
-particularly as you're dropping support for the existing compatible
-value anyway. How about we keep the old one, and use the default of 128
-for cases where max-ngpios is absent? That way, we retain support for
-the existing device trees.
-
-> +? max-ngpios:
-> +??? description:
-> +????? represents the number of actual hardware-supported GPIOs (ie,
-> +????? slots within the clocked serial GPIO data). Since each HW GPIO is both an
-> +????? input and an output, we provide max_ngpios * 2 lines on our gpiochip
-> +????? device. We also use it to define the split between the inputs and
-> +????? outputs; the inputs start at line 0, the outputs start at max_ngpios.
-
-Most of this description is better suited to the ngpios property, which
-controls the number of lines that the gpiochip will expose.
-
-Also, minor nit: max_ngpios -> max-ngpios.
-
-How about something like:
-
-  ngpios:
-    description:
-      Number of GPIO lines to expose. Since each HW GPIO is an input and an
-      output, we provide ngpios * 2 lines on our chip device. We also use it
-      to define the split between the inputs and outputs; the inputs start at
-      line 0, the outputs start at ngpios.
-
-  max-ngpios:
-    description:
-      Represents the number of actual hardware-supported GPIOs (ie, slots within
-      the clocked serial GPIO data), and therefore the maximum value for
-      the ngpios property
-
-> +??? minimum: 0
-> +??? maximum: 128
-
-Will this be the case for all (future) hardware? Can we leave this
-unbound?
-
-Cheers,
-
-
-Jeremy
+diff --git a/arch/arm/boot/dts/aspeed-g5.dtsi b/arch/arm/boot/dts/aspeed-g5.dtsi
+index d733c1f161c1..730cbd48eedb 100644
+--- a/arch/arm/boot/dts/aspeed-g5.dtsi
++++ b/arch/arm/boot/dts/aspeed-g5.dtsi
+@@ -345,13 +345,14 @@
+ 
+ 			sgpio: sgpio at 1e780200 {
+ 				#gpio-cells = <2>;
+-				compatible = "aspeed,ast2500-sgpio";
++				compatible = "aspeed,ast2500-sgpiom";
+ 				gpio-controller;
+ 				interrupts = <40>;
+ 				reg = <0x1e780200 0x0100>;
+ 				clocks = <&syscon ASPEED_CLK_APB>;
+ 				interrupt-controller;
+ 				ngpios = <8>;
++				max-ngpios = <80>;
+ 				bus-frequency = <12000000>;
+ 				pinctrl-names = "default";
+ 				pinctrl-0 = <&pinctrl_sgpm_default>;
+-- 
+2.17.1
 
