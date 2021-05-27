@@ -1,52 +1,92 @@
 From: Steven Lee <steven_lee@aspeedtech.com>
-Date: Thu, 27 May 2021 10:43:41 +0800
-Subject: [PATCH v2 0/4] ASPEED sgpio driver enhancement.
-In-Reply-To: <4d995f6e-b582-4f45-b87c-2cd795de8d14@www.fastmail.com>
-References: <20210527005455.25758-1-steven_lee@aspeedtech.com>
- <4d995f6e-b582-4f45-b87c-2cd795de8d14@www.fastmail.com>
-Message-ID: <20210527024341.GB9971@aspeedtech.com>
+Date: Thu, 27 May 2021 10:58:37 +0800
+Subject: [PATCH v1 1/4] dt-bindings: aspeed-sgpio: Convert txt bindings
+ to yaml.
+In-Reply-To: <f50dec3a8be8f8254321d22d784eba4f5a032887.camel@ozlabs.org>
+References: <20210526094609.14068-1-steven_lee@aspeedtech.com>
+ <20210526094609.14068-2-steven_lee@aspeedtech.com>
+ <f50dec3a8be8f8254321d22d784eba4f5a032887.camel@ozlabs.org>
+Message-ID: <20210527025836.GD9971@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The 05/27/2021 09:41, Andrew Jeffery wrote:
+The 05/27/2021 09:42, Jeremy Kerr wrote:
 > Hi Steven,
 > 
-> On Thu, 27 May 2021, at 10:24, Steven Lee wrote:
-> > AST2600 SoC has 2 SGPIO master interfaces one with 128 pins another one
-> > with 80 pins, AST2500/AST2400 SoC has 1 SGPIO master interface that
-> > supports up to 80 pins.
-> > In the current driver design, the max number of sgpio pins is hardcoded
-> > in macro MAX_NR_HW_SGPIO and the value is 80.
-> > 
-> > For supporting sgpio master interfaces of AST2600 SoC, the patch series
-> > contains the following enhancement:
-> > - Convert txt dt-bindings to yaml.
-> > - Update aspeed dtsi to support the enhanced sgpio.
-> > - Get the max number of sgpio that SoC supported from dts.
-> > - Support muiltiple SGPIO master interfaces.
-> > - Support up to 128 pins.
-> > 
-> > Changes from v1:
-> > * Fix yaml format issues.
-> > * Fix issues reported by kernel test robot.
-> > 
-> > Please help to review.
+> > SGPIO bindings should be converted as yaml format.
+> > In addition to the file conversion, a new property max-ngpios is
+> > added in the yaml file as well.
+> > The new property is required by the enhanced sgpio driver for
+> > making the configuration of the max number of gpio pins more
+> > flexible.
 > 
-> I think it's worth leaving a little more time between sending series.
+> There are a number of things going on here - you're doing the YAML
+> conversion, introducing the max-gpios property, and changing the
+> compatible value.
 > 
-> I've just sent a bunch of reviews on v1.
+> The first two make sense, but may be better split into separate
+> changes, so that the YAML conversion is a "linear" change.
 > 
 
-I am worried about the patch series may be drop by reviewers due to
-the report of kernel test robot.
+Thanks for your suggestion, I will split them into 2 patches.
 
-Regardless, thanks for the comment in v1 patch series.
+> I'm not clear on why you're changing the compatible value though,
+> particularly as you're dropping support for the existing compatible
+> value anyway. How about we keep the old one, and use the default of 128
+> for cases where max-ngpios is absent? That way, we retain support for
+> the existing device trees.
+> 
 
-Steven
+AST2600 support both SGPIO master and slave interfaces. So we decide to
+rename sgpio to sgpiom as it is the driver for sgpio master interface.
+Since Andrew also point out the compatibility issues, I will modify driver
+to keep the original design.
+
+> > +? max-ngpios:
+> > +??? description:
+> > +????? represents the number of actual hardware-supported GPIOs (ie,
+> > +????? slots within the clocked serial GPIO data). Since each HW GPIO is both an
+> > +????? input and an output, we provide max_ngpios * 2 lines on our gpiochip
+> > +????? device. We also use it to define the split between the inputs and
+> > +????? outputs; the inputs start at line 0, the outputs start at max_ngpios.
+> 
+> Most of this description is better suited to the ngpios property, which
+> controls the number of lines that the gpiochip will expose.
+> 
+> Also, minor nit: max_ngpios -> max-ngpios.
+> 
+> How about something like:
+> 
+>   ngpios:
+>     description:
+>       Number of GPIO lines to expose. Since each HW GPIO is an input and an
+>       output, we provide ngpios * 2 lines on our chip device. We also use it
+>       to define the split between the inputs and outputs; the inputs start at
+>       line 0, the outputs start at ngpios.
+> 
+>   max-ngpios:
+>     description:
+>       Represents the number of actual hardware-supported GPIOs (ie, slots within
+>       the clocked serial GPIO data), and therefore the maximum value for
+>       the ngpios property
+> 
+
+I will modify the description as you suggested.
+
+> > +??? minimum: 0
+> > +??? maximum: 128
+> 
+> Will this be the case for all (future) hardware? Can we leave this
+> unbound?
+> 
+
+Since the future hardware may supports more gpios, I will remove it.
 
 > Cheers,
 > 
-> Andrew
+> 
+> Jeremy
+> 
