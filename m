@@ -1,134 +1,147 @@
-From: Quan Nguyen <quan@os.amperecomputing.com>
-Date: Fri, 28 May 2021 08:00:09 +0700
-Subject: [PATCH v3 5/7] i2c: aspeed: Add aspeed_set_slave_busy()
-In-Reply-To: <HK0PR06MB3380CCA6A264A6D0E6E462FDF2299@HK0PR06MB3380.apcprd06.prod.outlook.com>
-References: <20210519074934.20712-1-quan@os.amperecomputing.com>
- <20210519074934.20712-6-quan@os.amperecomputing.com>
- <HK0PR06MB3380BFA9FD9EF8F51F9DCC23F22A9@HK0PR06MB3380.apcprd06.prod.outlook.com>
- <3eba7d01-2507-17c6-2b27-7f1a7e286413@os.amperecomputing.com>
- <HK0PR06MB3380CCA6A264A6D0E6E462FDF2299@HK0PR06MB3380.apcprd06.prod.outlook.com>
-Message-ID: <b39c7434-4926-4bb1-88d8-59c6464f3fb1@os.amperecomputing.com>
+From: Jamin Lin <jamin_lin@aspeedtech.com>
+Date: Fri, 28 May 2021 09:44:17 +0800
+Subject: [PATCH v2 1/1] dt-bindings: aspeed-i2c: Convert txt to yaml format
+In-Reply-To: <f7df6bb6-762d-4250-a4bc-076cbfc441eb@www.fastmail.com>
+References: <20210527102512.20684-1-jamin_lin@aspeedtech.com>
+ <20210527102512.20684-2-jamin_lin@aspeedtech.com>
+ <f7df6bb6-762d-4250-a4bc-076cbfc441eb@www.fastmail.com>
+Message-ID: <20210528014416.GA3195@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 21/05/2021 13:09, Ryan Chen wrote:
->> -----Original Message-----
->> From: Quan Nguyen <quan@os.amperecomputing.com>
->> Sent: Thursday, May 20, 2021 10:10 PM
->> To: Ryan Chen <ryan_chen@aspeedtech.com>; Corey Minyard
->> <minyard@acm.org>; Rob Herring <robh+dt@kernel.org>; Joel Stanley
->> <joel@jms.id.au>; Andrew Jeffery <andrew@aj.id.au>; Brendan Higgins
->> <brendanhiggins@google.com>; Benjamin Herrenschmidt
->> <benh@kernel.crashing.org>; Wolfram Sang <wsa@kernel.org>; Philipp Zabel
->> <p.zabel@pengutronix.de>; openipmi-developer at lists.sourceforge.net;
->> devicetree at vger.kernel.org; linux-arm-kernel at lists.infradead.org;
->> linux-aspeed at lists.ozlabs.org; linux-kernel at vger.kernel.org;
->> linux-i2c at vger.kernel.org
->> Cc: Open Source Submission <patches@amperecomputing.com>; Thang Q .
->> Nguyen <thang@os.amperecomputing.com>; Phong Vo
->> <phong@os.amperecomputing.com>; openbmc at lists.ozlabs.org
->> Subject: Re: [PATCH v3 5/7] i2c: aspeed: Add aspeed_set_slave_busy()
->>
->> On 20/05/2021 18:06, Ryan Chen wrote:
->>>> -----Original Message-----
->>>> From: openbmc
->>>> <openbmc-bounces+ryan_chen=aspeedtech.com@lists.ozlabs.org> On
->> Behalf
->>>> Of Quan Nguyen
->>>> Sent: Wednesday, May 19, 2021 3:50 PM
->>>> To: Corey Minyard <minyard@acm.org>; Rob Herring
->>>> <robh+dt@kernel.org>; Joel Stanley <joel@jms.id.au>; Andrew Jeffery
->>>> <andrew@aj.id.au>; Brendan Higgins <brendanhiggins@google.com>;
->>>> Benjamin Herrenschmidt <benh@kernel.crashing.org>; Wolfram Sang
->>>> <wsa@kernel.org>; Philipp Zabel <p.zabel@pengutronix.de>;
->>>> openipmi-developer at lists.sourceforge.net;
->>>> devicetree at vger.kernel.org; linux-arm-kernel at lists.infradead.org;
->>>> linux-aspeed at lists.ozlabs.org; linux-kernel at vger.kernel.org;
->>>> linux-i2c at vger.kernel.org
->>>> Cc: Open Source Submission <patches@amperecomputing.com>; Thang Q .
->>>> Nguyen <thang@os.amperecomputing.com>; Phong Vo
->>>> <phong@os.amperecomputing.com>; openbmc at lists.ozlabs.org
->>>> Subject: [PATCH v3 5/7] i2c: aspeed: Add aspeed_set_slave_busy()
->>>>
->>>> Slave i2c device on AST2500 received a lot of slave irq while it is
->>>> busy processing the response. To handle this case, adds and exports
->>>> aspeed_set_slave_busy() for controller to temporary stop slave irq
->>>> while slave is handling the response, and re-enable them again when the
->> response is ready.
->>>>
->>>> Signed-off-by: Quan Nguyen <quan@os.amperecomputing.com>
->>>> ---
->>>> v3:
->>>>     + First introduce in v3 [Quan]
->>>>
->>>>    drivers/i2c/busses/i2c-aspeed.c | 20 ++++++++++++++++++++
->>>>    1 file changed, 20 insertions(+)
->>>>
->>>> diff --git a/drivers/i2c/busses/i2c-aspeed.c
->>>> b/drivers/i2c/busses/i2c-aspeed.c index b2e9c8f0ddf7..9926d04831a2
->>>> 100644
->>>> --- a/drivers/i2c/busses/i2c-aspeed.c
->>>> +++ b/drivers/i2c/busses/i2c-aspeed.c
->>>> @@ -944,6 +944,26 @@ static int aspeed_i2c_init(struct aspeed_i2c_bus
->>>> *bus,
->>>>    	return 0;
->>>>    }
->>>>
->>>> +#if IS_ENABLED(CONFIG_I2C_SLAVE)
->>>> +void aspeed_set_slave_busy(struct i2c_adapter *adap, bool busy) {
->>>> +	struct aspeed_i2c_bus *bus = i2c_get_adapdata(adap);
->>>> +	unsigned long current_mask, flags;
->>>> +
->>>> +	spin_lock_irqsave(&bus->lock, flags);
->>>> +
->>>> +	current_mask = readl(bus->base + ASPEED_I2C_INTR_CTRL_REG);
->>>> +	if (busy)
->>>> +		current_mask &= ~(ASPEED_I2CD_INTR_RX_DONE |
->>>> ASPEED_I2CD_INTR_SLAVE_MATCH);
->>>> +	else
->>>> +		current_mask |= ASPEED_I2CD_INTR_RX_DONE |
->>>> ASPEED_I2CD_INTR_SLAVE_MATCH;
->>>> +	writel(current_mask, bus->base + ASPEED_I2C_INTR_CTRL_REG);
->>>> +
->>>> +	spin_unlock_irqrestore(&bus->lock, flags); }
->>>> +EXPORT_SYMBOL_GPL(aspeed_set_slave_busy);
->>>> +#endif
->>>> +
->>>>    static int aspeed_i2c_reset(struct aspeed_i2c_bus *bus)  {
->>>>    	struct platform_device *pdev = to_platform_device(bus->dev);
->>>> --
->>>> 2.28.0
->>>
->>> Hello,
->>> 	The better idea is use disable i2c slave mode.
->>> 	Due to if i2c controller running in slave will get slave match, and latch the
->> SCL.
->>> 	Until cpu clear interrupt status.
->>> Ryan
->>>
->> Thanks Ryan,
->>
->> Do you mean to enable/disable slave function as per example code below ?
-> Yes. it is.
+The 05/27/2021 23:20, Andrew Jeffery wrote:
+> 
+> 
+> On Thu, 27 May 2021, at 19:55, Jamin Lin wrote:
+> > Convert aspeed i2c to yaml.
+> > 
+> > Signed-off-by: Jamin Lin <jamin_lin@aspeedtech.com>
+> > ---
+> >  .../devicetree/bindings/i2c/aspeed,i2c.yaml   | 86 +++++++++++++++++++
+> >  .../devicetree/bindings/i2c/i2c-aspeed.txt    | 49 -----------
+> >  2 files changed, 86 insertions(+), 49 deletions(-)
+> >  create mode 100644 Documentation/devicetree/bindings/i2c/aspeed,i2c.yaml
+> >  delete mode 100644 Documentation/devicetree/bindings/i2c/i2c-aspeed.txt
+> > 
+> > diff --git a/Documentation/devicetree/bindings/i2c/aspeed,i2c.yaml 
+> > b/Documentation/devicetree/bindings/i2c/aspeed,i2c.yaml
+> > new file mode 100644
+> > index 000000000000..1f7064d77708
+> > --- /dev/null
+> > +++ b/Documentation/devicetree/bindings/i2c/aspeed,i2c.yaml
+> > @@ -0,0 +1,86 @@
+> > +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+> > +%YAML 1.2
+> > +---
+> > +$id: http://devicetree.org/schemas/i2c/aspeed,i2c.yaml#
+> > +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> > +
+> > +title: ASPEED I2C on the AST24XX, AST25XX, and AST26XX SoCs Device 
+> > Tree Bindings
+> > +
+> > +maintainers:
+> > +  - Rayn Chen <rayn_chen@aspeedtech.com>
+> > +
+> > +allOf:
+> > +  - $ref: /schemas/i2c/i2c-controller.yaml#
+> > +
+> > +properties:
+> > +  compatible:
+> > +    enum:
+> > +      - aspeed,ast2400-i2c-bus
+> > +      - aspeed,ast2500-i2c-bus
+> > +      - aspeed,ast2600-i2c-bus
+> > +
+> > +  "#size-cells":
+> > +    const: 0
+> > +
+> > +  "#address-cells":
+> > +    const: 1
+> > +
+> > +  reg:
+> > +    minItems: 1
+> > +    maxItems: 2
+> > +    items:
+> > +      - description: address offset and range of bus
+> > +      - description: address offset and range of bus buffer
+> > +
+> > +  interrupts:
+> > +    maxItems: 1
+> > +    description: interrupt number
+> > +
+> > +  clocks:
+> > +    maxItems: 1
+> > +    description:
+> > +      root clock of bus, should reference the APB
+> > +      clock in the second cell
+> > +
+> > +  reset:
+> > +    maxItems: 1
+> > +    description: phandle to reset controller with the reset number in
+> > +      the second cell
+> > +
+> > +  bus-frequency:
+> > +    minimum: 500
+> > +    maximum: 4000000
+> > +    default: 100000
+> > +    description: frequency of the bus clock in Hz defaults to 100 kHz 
+> > when not
+> > +      specified
+> > +
+> > +  multi-master:
+> > +    type: boolean
+> > +    description:
+> > +      states that there is another master active on this bus
+> > +
+> > +required:
+> > +  - reg
+> > +  - compatible
+> > +  - clocks
+> > +  - resets
+> > +
+> > +unevaluatedProperties: false
+> > +
+> > +examples:
+> > +  - |
+> > +    #include <dt-bindings/clock/aspeed-clock.h>
+> > +    i2c0: i2c-bus at 40 {
+> > +      #address-cells = <1>;
+> > +      #size-cells = <0>;
+> > +      #interrupt-cells = <1>;
+> > +      reg = <0x40 0x40>;
+> > +      compatible = "aspeed,ast2500-i2c-bus";
+> > +      clocks = <&syscon ASPEED_CLK_APB>;
+> > +      resets = <&syscon ASPEED_RESET_I2C>;
+> > +      bus-frequency = <100000>;
+> > +      interrupts = <0>;
+> > +      interrupt-parent = <&i2c_ic>;
+> > +      status = "disabled";
+> > +      /* Does not need pinctrl properties */
+> 
+> Note this actually isn't right and someone (me?) needs to send a patch 
+> to fix the devicetree(s) - the I2C mux properties for bus 0 and 1 just 
+> don't have a group, and so SCL and SDA need to be muxed individually.
+> 
+> I expect we wound up with this comment by a lack of a match for an 
+> erroneous grep.
+> 
+> Andrew
+Understand. Can I change the example as the following or can you give me
+any suggestion?
 
-Dear Ryan,
+i2c0: i2c-bus at 40 {
+  #address-cells = <1>;
+  #size-cells = <0>;
+  #interrupt-cells = <1>;
+  reg = <0x40 0x40>;
+  compatible = "aspeed,ast2500-i2c-bus";
+  clocks = <&syscon ASPEED_CLK_APB>;
+  resets = <&syscon ASPEED_RESET_I2C>;
+  bus-frequency = <100000>;
+  interrupts = <0>;
+  interrupt-parent = <&i2c_ic>;
 
-This solution looks good. I'll switch to use this way in next version.
-Thanks for the suggestion.
-
-- Quan
-
->>
->>           /* Turn on slave mode. */
->>           func_ctrl_reg_val = readl(bus->base +
->> ASPEED_I2C_FUN_CTRL_REG);
->>           func_ctrl_reg_val |= ASPEED_I2CD_SLAVE_EN;
->>           writel(func_ctrl_reg_val, bus->base +
->> ASPEED_I2C_FUN_CTRL_REG);
->>
->> Will try this idea.
->> - Quan
-
+Thanks-Jamin
