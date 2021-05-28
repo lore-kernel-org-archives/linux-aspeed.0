@@ -1,45 +1,42 @@
 From: Linus Walleij <linus.walleij@linaro.org>
-Date: Fri, 28 May 2021 01:51:35 +0200
-Subject: [PATCH v2 1/4] dt-bindings: aspeed-sgpio: Convert txt bindings to
- yaml.
-In-Reply-To: <20210527005455.25758-2-steven_lee@aspeedtech.com>
-References: <20210527005455.25758-1-steven_lee@aspeedtech.com>
- <20210527005455.25758-2-steven_lee@aspeedtech.com>
-Message-ID: <CACRpkdZFcFuT9rdrc8BfEBmhy0--9uLMSJWfr=A+nU117_BT8A@mail.gmail.com>
+Date: Fri, 28 May 2021 02:38:38 +0200
+Subject: [PATCH 11/11] drm/tiny: drm_gem_simple_display_pipe_prepare_fb is
+ the default
+In-Reply-To: <20210521090959.1663703-11-daniel.vetter@ffwll.ch>
+References: <20210521090959.1663703-1-daniel.vetter@ffwll.ch>
+ <20210521090959.1663703-11-daniel.vetter@ffwll.ch>
+Message-ID: <CACRpkdbZf_cTMppxfC4mM6XZ2YySH7dQ0NCY6v_pfwsdRzLPKA@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, May 27, 2021 at 2:55 AM Steven Lee <steven_lee@aspeedtech.com> wrote:
+On Fri, May 21, 2021 at 11:10 AM Daniel Vetter <daniel.vetter@ffwll.ch> wrote:
 
-> SGPIO bindings should be converted as yaml format.
-> In addition to the file conversion, a new property max-ngpios is
-> added in the yaml file as well.
-> The new property is required by the enhanced sgpio driver for
-> making the configuration of the max number of gpio pins more flexible.
+> Goes through all the drivers and deletes the default hook since it's
+> the default now.
 >
-> Signed-off-by: Steven Lee <steven_lee@aspeedtech.com>
-(...)
-> +  max-ngpios:
-> +    description:
-> +      represents the number of actual hardware-supported GPIOs (ie,
-> +      slots within the clocked serial GPIO data). Since each HW GPIO is both an
-> +      input and an output, we provide max_ngpios * 2 lines on our gpiochip
-> +      device. We also use it to define the split between the inputs and
-> +      outputs; the inputs start at line 0, the outputs start at max_ngpios.
-> +    minimum: 0
-> +    maximum: 128
+> Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
+> Cc: Joel Stanley <joel@jms.id.au>
+> Cc: Andrew Jeffery <andrew@aj.id.au>
+> Cc: "Noralf Tr?nnes" <noralf@tronnes.org>
+> Cc: Linus Walleij <linus.walleij@linaro.org>
+> Cc: Emma Anholt <emma@anholt.net>
+> Cc: David Lechner <david@lechnology.com>
+> Cc: Kamlesh Gurudasani <kamlesh.gurudasani@gmail.com>
+> Cc: Oleksandr Andrushchenko <oleksandr_andrushchenko@epam.com>
+> Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+> Cc: Maxime Ripard <mripard@kernel.org>
+> Cc: Thomas Zimmermann <tzimmermann@suse.de>
+> Cc: Sam Ravnborg <sam@ravnborg.org>
+> Cc: Alex Deucher <alexander.deucher@amd.com>
+> Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> Cc: linux-aspeed at lists.ozlabs.org
+> Cc: linux-arm-kernel at lists.infradead.org
+> Cc: xen-devel at lists.xenproject.org
 
-Why can this not be derived from the compatible value?
-
-Normally there should be one compatible per hardware variant
-of the block. And this should be aligned with that, should it not?
-
-If this is not the case, maybe more detailed compatible strings
-are needed, maybe double compatibles with compatible per
-family and SoC?
+Acked-by: Linus Walleij <linus.walleij@linaro.org>
 
 Yours,
 Linus Walleij
