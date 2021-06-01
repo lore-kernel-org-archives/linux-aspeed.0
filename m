@@ -1,48 +1,41 @@
-From: Vijay Khemka <vijaykhemka@fb.com>
-Date: Fri, 30 Oct 2020 06:16:23 +0000
-Subject: [PATCH] ARM: dts: aspeed: tiogapass: Remove vuart
-In-Reply-To: <20200813190431.3331026-1-vijaykhemka@fb.com>
-References: <20200813190431.3331026-1-vijaykhemka@fb.com>
-Message-ID: <6E9E8073-F918-4BBE-A41D-F0602A363CF4@fb.com>
+From: Linus Walleij <linus.walleij@linaro.org>
+Date: Tue, 1 Jun 2021 12:16:27 +0200
+Subject: [PATCH v2 1/4] dt-bindings: aspeed-sgpio: Convert txt bindings to
+ yaml.
+In-Reply-To: <20210531052318.GA3973@aspeedtech.com>
+References: <20210527005455.25758-1-steven_lee@aspeedtech.com>
+ <20210527005455.25758-2-steven_lee@aspeedtech.com>
+ <CACRpkdZFcFuT9rdrc8BfEBmhy0--9uLMSJWfr=A+nU117_BT8A@mail.gmail.com>
+ <20210528040934.GA28403@aspeedtech.com>
+ <CACRpkdYnvzOW_86QgLAsNpNXWZXpaMiE7g9_jHZ0ZsFyhOjjAg@mail.gmail.com>
+ <20210531052318.GA3973@aspeedtech.com>
+Message-ID: <CACRpkdbq5me7erKdzaDHrPP5QjY4-Oxqz20tg2rSn3yrWDrhYQ@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Joel,
-A quick reminder, can you please merge this patch in your next release.
+On Mon, May 31, 2021 at 7:23 AM Steven Lee <steven_lee@aspeedtech.com> wrote:
 
-Regards
--Vijay
+> The parameter max-ngpios is the maxmum number of gpio pins that SoC supported,
+> ngpios is the maximum number of gpio pins that sgpio devices(e.g. sgpio cards) supported.
 
-?On 8/13/20, 12:04 PM, "Vijay Khemka" <vijaykhemka@fb.com> wrote:
+When you put it like that you really make it sound like you already
+know, just looking at the compatible string, what max-ngpios is?
 
-    Removed vuart for facebook tiogapass platform as it uses uart2 and
-    uart3 pin with aspeed uart routing feature.
+I.e. do you know for these three:
 
-    Signed-off-by: Vijay Khemka <vijaykhemka@fb.com>
-    ---
-     arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts | 5 -----
-     1 file changed, 5 deletions(-)
+aspeed,ast2400-sgpiom
+aspeed,ast2500-sgpiom
+aspeed,ast2600-sgpiom
 
-    diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
-    index 2d44d9ad4e40..e6ad821a8635 100644
-    --- a/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
-    +++ b/arch/arm/boot/dts/aspeed-bmc-facebook-tiogapass.dts
-    @@ -82,11 +82,6 @@ &lpc_ctrl {
-     	status = "okay";
-     };
+the unique number of slots for each? A 1-to-1 correspondance?
 
-    -&vuart {
-    -	// VUART Host Console
-    -	status = "okay";
-    -};
-    -
-     &uart1 {
-     	// Host Console
-     	status = "okay";
-    -- 
-    2.24.1
+Then just add code to set this value from looking at the compatible
+in the driver. You can write some text in description in these bindings
+about how many slots each SoC has but there is no need to add any
+extra parameter if you already know this from the SoC.
 
-
+Yours,
+Linus Walleij
