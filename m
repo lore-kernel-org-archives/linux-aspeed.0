@@ -1,163 +1,184 @@
-From: Matt Johnston <matt@codeconstruct.com.au>
-Date: Wed,  2 Jun 2021 12:41:11 +0800
-Subject: [RFC PATCH 1/3] i2c: core: Allow 255 byte transfers for SMBus 3.x
-In-Reply-To: <20210602044113.1581347-1-matt@codeconstruct.com.au>
-References: <20210602044113.1581347-1-matt@codeconstruct.com.au>
-Message-ID: <20210602044113.1581347-2-matt@codeconstruct.com.au>
+From: Rob Herring <robh@kernel.org>
+Date: Wed, 2 Jun 2021 15:10:21 -0500
+Subject: [PATCH v2 1/4] dt-bindings: aspeed-sgpio: Convert txt bindings
+ to yaml.
+In-Reply-To: <20210527005455.25758-2-steven_lee@aspeedtech.com>
+References: <20210527005455.25758-1-steven_lee@aspeedtech.com>
+ <20210527005455.25758-2-steven_lee@aspeedtech.com>
+Message-ID: <20210602201021.GA3900491@robh.at.kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-SMBus 3.0 increased the maximum block transfer size from
-32 bytes to 255 bytes. We increase the size of
-struct i2c_smbus_data's block[] member.
+On Thu, May 27, 2021 at 08:54:50AM +0800, Steven Lee wrote:
+> SGPIO bindings should be converted as yaml format.
+> In addition to the file conversion, a new property max-ngpios is
+> added in the yaml file as well.
+> The new property is required by the enhanced sgpio driver for
+> making the configuration of the max number of gpio pins more flexible.
 
-i2c_smbus_xfer() and i2c_smbus_xfer_emulated() now support 255 byte
-block operations, other block functions remain limited to 32 bytes for
-compatibility with existing callers.
+The rest of the binding looks fine. Make this property a separate patch 
+if you don't end up dropping it.
 
-We allow adapters to indicate support for the larger size with
-I2C_FUNC_SMBUS_V3_BLOCK. Most emulated drivers should be able
-to use 255 byte blocks by replacing I2C_SMBUS_BLOCK_MAX
-with I2C_SMBUS_V3_BLOCK_MAX though some will have hardware limitations
-that need testing.
-
-Signed-off-by: Matt Johnston <matt@codeconstruct.com.au>
----
- drivers/i2c/i2c-core-smbus.c | 20 +++++++++++++-------
- include/linux/i2c.h          | 13 +++++++++++++
- include/uapi/linux/i2c.h     |  5 ++++-
- 3 files changed, 30 insertions(+), 8 deletions(-)
-
-diff --git a/drivers/i2c/i2c-core-smbus.c b/drivers/i2c/i2c-core-smbus.c
-index d2d32c0fd8c3..8b723d684f54 100644
---- a/drivers/i2c/i2c-core-smbus.c
-+++ b/drivers/i2c/i2c-core-smbus.c
-@@ -295,7 +295,8 @@ static void i2c_smbus_try_get_dmabuf(struct i2c_msg *msg, u8 init_val)
- 	bool is_read = msg->flags & I2C_M_RD;
- 	unsigned char *dma_buf;
- 
--	dma_buf = kzalloc(I2C_SMBUS_BLOCK_MAX + (is_read ? 2 : 3), GFP_KERNEL);
-+	dma_buf = kzalloc(I2C_SMBUS_V3_BLOCK_MAX + (is_read ? 2 : 3),
-+		GFP_KERNEL);
- 	if (!dma_buf)
- 		return;
- 
-@@ -321,9 +322,10 @@ static s32 i2c_smbus_xfer_emulated(struct i2c_adapter *adapter, u16 addr,
- 	 * initialize most things with sane defaults, to keep the code below
- 	 * somewhat simpler.
- 	 */
--	unsigned char msgbuf0[I2C_SMBUS_BLOCK_MAX+3];
--	unsigned char msgbuf1[I2C_SMBUS_BLOCK_MAX+2];
-+	unsigned char msgbuf0[I2C_SMBUS_V3_BLOCK_MAX+3];
-+	unsigned char msgbuf1[I2C_SMBUS_V3_BLOCK_MAX+2];
- 	int nmsgs = read_write == I2C_SMBUS_READ ? 2 : 1;
-+	u16 block_max;
- 	u8 partial_pec = 0;
- 	int status;
- 	struct i2c_msg msg[2] = {
-@@ -342,6 +344,10 @@ static s32 i2c_smbus_xfer_emulated(struct i2c_adapter *adapter, u16 addr,
- 	bool wants_pec = ((flags & I2C_CLIENT_PEC) && size != I2C_SMBUS_QUICK
- 			  && size != I2C_SMBUS_I2C_BLOCK_DATA);
- 
-+	/* Drivers must opt in to 255 byte max block size */
-+	block_max = i2c_check_functionality(adapter, I2C_FUNC_SMBUS_V3_BLOCK)
-+			? I2C_SMBUS_V3_BLOCK_MAX : I2C_SMBUS_BLOCK_MAX;
-+
- 	msgbuf0[0] = command;
- 	switch (size) {
- 	case I2C_SMBUS_QUICK:
-@@ -391,7 +397,7 @@ static s32 i2c_smbus_xfer_emulated(struct i2c_adapter *adapter, u16 addr,
- 			i2c_smbus_try_get_dmabuf(&msg[1], 0);
- 		} else {
- 			msg[0].len = data->block[0] + 2;
--			if (msg[0].len > I2C_SMBUS_BLOCK_MAX + 2) {
-+			if (msg[0].len > block_max + 2) {
- 				dev_err(&adapter->dev,
- 					"Invalid block write size %d\n",
- 					data->block[0]);
-@@ -405,7 +411,7 @@ static s32 i2c_smbus_xfer_emulated(struct i2c_adapter *adapter, u16 addr,
- 	case I2C_SMBUS_BLOCK_PROC_CALL:
- 		nmsgs = 2; /* Another special case */
- 		read_write = I2C_SMBUS_READ;
--		if (data->block[0] > I2C_SMBUS_BLOCK_MAX) {
-+		if (data->block[0] > block_max) {
- 			dev_err(&adapter->dev,
- 				"Invalid block write size %d\n",
- 				data->block[0]);
-@@ -422,7 +428,7 @@ static s32 i2c_smbus_xfer_emulated(struct i2c_adapter *adapter, u16 addr,
- 		i2c_smbus_try_get_dmabuf(&msg[1], 0);
- 		break;
- 	case I2C_SMBUS_I2C_BLOCK_DATA:
--		if (data->block[0] > I2C_SMBUS_BLOCK_MAX) {
-+		if (data->block[0] > block_max) {
- 			dev_err(&adapter->dev, "Invalid block %s size %d\n",
- 				read_write == I2C_SMBUS_READ ? "read" : "write",
- 				data->block[0]);
-@@ -490,7 +496,7 @@ static s32 i2c_smbus_xfer_emulated(struct i2c_adapter *adapter, u16 addr,
- 			break;
- 		case I2C_SMBUS_BLOCK_DATA:
- 		case I2C_SMBUS_BLOCK_PROC_CALL:
--			if (msg[1].buf[0] > I2C_SMBUS_BLOCK_MAX) {
-+			if (msg[1].buf[0] > block_max) {
- 				dev_err(&adapter->dev,
- 					"Invalid block size returned: %d\n",
- 					msg[1].buf[0]);
-diff --git a/include/linux/i2c.h b/include/linux/i2c.h
-index e8f2ac8c9c3d..57170468301e 100644
---- a/include/linux/i2c.h
-+++ b/include/linux/i2c.h
-@@ -50,6 +50,19 @@ typedef int (*i2c_slave_cb_t)(struct i2c_client *client,
- struct module;
- struct property_entry;
- 
-+/* SMBus 3.0 extends the maximum block read/write size to 255 (from 32).
-+ * The larger size is only supported by some drivers, indicated by
-+ * the I2C_FUNC_SMBUS_V3_BLOCK functionality bit.
-+ */
-+#define I2C_SMBUS_V3_BLOCK_MAX	255	/* As specified in SMBus 3.0 standard */
-+
-+/* Note compatibility definition in uapi header with 32 byte block */
-+union i2c_smbus_data {
-+	__u8 byte;
-+	__u16 word;
-+	__u8 block[I2C_SMBUS_V3_BLOCK_MAX + 1]; /* block[0] is used for length */
-+};
-+
- #if IS_ENABLED(CONFIG_I2C)
- /* Return the Frequency mode string based on the bus frequency */
- const char *i2c_freq_mode_string(u32 bus_freq_hz);
-diff --git a/include/uapi/linux/i2c.h b/include/uapi/linux/i2c.h
-index 92326ebde350..7b7d90b50cf0 100644
---- a/include/uapi/linux/i2c.h
-+++ b/include/uapi/linux/i2c.h
-@@ -108,6 +108,7 @@ struct i2c_msg {
- #define I2C_FUNC_SMBUS_READ_I2C_BLOCK	0x04000000 /* I2C-like block xfer  */
- #define I2C_FUNC_SMBUS_WRITE_I2C_BLOCK	0x08000000 /* w/ 1-byte reg. addr. */
- #define I2C_FUNC_SMBUS_HOST_NOTIFY	0x10000000 /* SMBus 2.0 or later */
-+#define I2C_FUNC_SMBUS_V3_BLOCK		0x20000000 /* Device supports 255 byte block */
- 
- #define I2C_FUNC_SMBUS_BYTE		(I2C_FUNC_SMBUS_READ_BYTE | \
- 					 I2C_FUNC_SMBUS_WRITE_BYTE)
-@@ -137,13 +138,15 @@ struct i2c_msg {
- /*
-  * Data for SMBus Messages
-  */
--#define I2C_SMBUS_BLOCK_MAX	32	/* As specified in SMBus standard */
-+#define I2C_SMBUS_BLOCK_MAX	32	/* As specified in SMBus 2.0 standard */
-+#ifndef __KERNEL__
- union i2c_smbus_data {
- 	__u8 byte;
- 	__u16 word;
- 	__u8 block[I2C_SMBUS_BLOCK_MAX + 2]; /* block[0] is used for length */
- 			       /* and one more for user-space compatibility */
- };
-+#endif
- 
- /* i2c_smbus_xfer read or write markers */
- #define I2C_SMBUS_READ	1
--- 
-2.30.2
-
+> 
+> Signed-off-by: Steven Lee <steven_lee@aspeedtech.com>
+> ---
+>  .../bindings/gpio/aspeed,sgpio.yaml           | 91 +++++++++++++++++++
+>  .../devicetree/bindings/gpio/sgpio-aspeed.txt | 46 ----------
+>  2 files changed, 91 insertions(+), 46 deletions(-)
+>  create mode 100644 Documentation/devicetree/bindings/gpio/aspeed,sgpio.yaml
+>  delete mode 100644 Documentation/devicetree/bindings/gpio/sgpio-aspeed.txt
+> 
+> diff --git a/Documentation/devicetree/bindings/gpio/aspeed,sgpio.yaml b/Documentation/devicetree/bindings/gpio/aspeed,sgpio.yaml
+> new file mode 100644
+> index 000000000000..02eb0c5023e9
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/gpio/aspeed,sgpio.yaml
+> @@ -0,0 +1,91 @@
+> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+> +%YAML 1.2
+> +---
+> +$id: http://devicetree.org/schemas/gpio/aspeed,sgpio.yaml#
+> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> +
+> +title: Aspeed SGPIO controller
+> +
+> +maintainers:
+> +  - Andrew Jeffery <andrew@aj.id.au>
+> +
+> +description:
+> +  This SGPIO controller is for ASPEED AST2400, AST2500 and AST2600 SoC,
+> +  AST2600 have two sgpio master one with 128 pins another one with 80 pins,
+> +  AST2500/AST2400 have one sgpio master with 80 pins. Each of the Serial
+> +  GPIO pins can be programmed to support the following options
+> +  - Support interrupt option for each input port and various interrupt
+> +    sensitivity option (level-high, level-low, edge-high, edge-low)
+> +  - Support reset tolerance option for each output port
+> +  - Directly connected to APB bus and its shift clock is from APB bus clock
+> +    divided by a programmable value.
+> +  - Co-work with external signal-chained TTL components (74LV165/74LV595)
+> +
+> +properties:
+> +  compatible:
+> +    enum:
+> +      - aspeed,ast2400-sgpiom
+> +      - aspeed,ast2500-sgpiom
+> +      - aspeed,ast2600-sgpiom
+> +
+> +  reg:
+> +    maxItems: 1
+> +
+> +  gpio-controller: true
+> +
+> +  '#gpio-cells':
+> +    const: 2
+> +
+> +  interrupts:
+> +    maxItems: 1
+> +
+> +  interrupt-controller: true
+> +
+> +  clocks:
+> +    maxItems: 1
+> +
+> +  ngpios:
+> +    minimum: 0
+> +    maximum: 128
+> +
+> +  max-ngpios:
+> +    description:
+> +      represents the number of actual hardware-supported GPIOs (ie,
+> +      slots within the clocked serial GPIO data). Since each HW GPIO is both an
+> +      input and an output, we provide max_ngpios * 2 lines on our gpiochip
+> +      device. We also use it to define the split between the inputs and
+> +      outputs; the inputs start at line 0, the outputs start at max_ngpios.
+> +    minimum: 0
+> +    maximum: 128
+> +
+> +  bus-frequency: true
+> +
+> +required:
+> +  - compatible
+> +  - reg
+> +  - gpio-controller
+> +  - '#gpio-cells'
+> +  - interrupts
+> +  - interrupt-controller
+> +  - ngpios
+> +  - max-ngpios
+> +  - clocks
+> +  - bus-frequency
+> +
+> +additionalProperties: false
+> +
+> +examples:
+> +  - |
+> +    #include <dt-bindings/clock/aspeed-clock.h>
+> +    sgpio: sgpio at 1e780200 {
+> +        #gpio-cells = <2>;
+> +        compatible = "aspeed,ast2500-sgpiom";
+> +        gpio-controller;
+> +        interrupts = <40>;
+> +        reg = <0x1e780200 0x0100>;
+> +        clocks = <&syscon ASPEED_CLK_APB>;
+> +        interrupt-controller;
+> +        ngpios = <8>;
+> +        max-ngpios = <80>;
+> +        bus-frequency = <12000000>;
+> +    };
+> diff --git a/Documentation/devicetree/bindings/gpio/sgpio-aspeed.txt b/Documentation/devicetree/bindings/gpio/sgpio-aspeed.txt
+> deleted file mode 100644
+> index be329ea4794f..000000000000
+> --- a/Documentation/devicetree/bindings/gpio/sgpio-aspeed.txt
+> +++ /dev/null
+> @@ -1,46 +0,0 @@
+> -Aspeed SGPIO controller Device Tree Bindings
+> ---------------------------------------------
+> -
+> -This SGPIO controller is for ASPEED AST2500 SoC, it supports up to 80 full
+> -featured Serial GPIOs. Each of the Serial GPIO pins can be programmed to
+> -support the following options:
+> -- Support interrupt option for each input port and various interrupt
+> -  sensitivity option (level-high, level-low, edge-high, edge-low)
+> -- Support reset tolerance option for each output port
+> -- Directly connected to APB bus and its shift clock is from APB bus clock
+> -  divided by a programmable value.
+> -- Co-work with external signal-chained TTL components (74LV165/74LV595)
+> -
+> -Required properties:
+> -
+> -- compatible : Should be one of
+> -  "aspeed,ast2400-sgpio", "aspeed,ast2500-sgpio"
+> -- #gpio-cells : Should be 2, see gpio.txt
+> -- reg : Address and length of the register set for the device
+> -- gpio-controller : Marks the device node as a GPIO controller
+> -- interrupts : Interrupt specifier, see interrupt-controller/interrupts.txt
+> -- interrupt-controller : Mark the GPIO controller as an interrupt-controller
+> -- ngpios : number of *hardware* GPIO lines, see gpio.txt. This will expose
+> -  2 software GPIOs per hardware GPIO: one for hardware input, one for hardware
+> -  output. Up to 80 pins, must be a multiple of 8.
+> -- clocks : A phandle to the APB clock for SGPM clock division
+> -- bus-frequency : SGPM CLK frequency
+> -
+> -The sgpio and interrupt properties are further described in their respective
+> -bindings documentation:
+> -
+> -- Documentation/devicetree/bindings/gpio/gpio.txt
+> -- Documentation/devicetree/bindings/interrupt-controller/interrupts.txt
+> -
+> -  Example:
+> -	sgpio: sgpio at 1e780200 {
+> -		#gpio-cells = <2>;
+> -		compatible = "aspeed,ast2500-sgpio";
+> -		gpio-controller;
+> -		interrupts = <40>;
+> -		reg = <0x1e780200 0x0100>;
+> -		clocks = <&syscon ASPEED_CLK_APB>;
+> -		interrupt-controller;
+> -		ngpios = <8>;
+> -		bus-frequency = <12000000>;
+> -	};
+> -- 
+> 2.17.1
