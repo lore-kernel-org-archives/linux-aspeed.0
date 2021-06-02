@@ -1,43 +1,48 @@
 From: Matt Johnston <matt@codeconstruct.com.au>
-Date: Wed,  2 Jun 2021 12:41:13 +0800
-Subject: [RFC PATCH 3/3] i2c: aspeed: allow 255 byte block transfers
-In-Reply-To: <20210602044113.1581347-1-matt@codeconstruct.com.au>
-References: <20210602044113.1581347-1-matt@codeconstruct.com.au>
-Message-ID: <20210602044113.1581347-4-matt@codeconstruct.com.au>
+Date: Wed,  2 Jun 2021 12:41:10 +0800
+Subject: [RFC PATCH 0/3] Increase SMBus max block size to 255
+Message-ID: <20210602044113.1581347-1-matt@codeconstruct.com.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Signed-off-by: Matt Johnston <matt@codeconstruct.com.au>
----
- drivers/i2c/busses/i2c-aspeed.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+This patch series increases the SMBus max block size from 32 to 255
+as per the SMBus 3.0 specification.
 
-diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
-index 724bf30600d6..04cb5d08daf5 100644
---- a/drivers/i2c/busses/i2c-aspeed.c
-+++ b/drivers/i2c/busses/i2c-aspeed.c
-@@ -533,7 +533,7 @@ static u32 aspeed_i2c_master_irq(struct aspeed_i2c_bus *bus, u32 irq_status)
- 		msg->buf[bus->buf_index++] = recv_byte;
- 
- 		if (msg->flags & I2C_M_RECV_LEN) {
--			if (unlikely(recv_byte > I2C_SMBUS_BLOCK_MAX)) {
-+			if (unlikely(recv_byte > I2C_SMBUS_V3_BLOCK_MAX)) {
- 				bus->cmd_err = -EPROTO;
- 				aspeed_i2c_do_stop(bus);
- 				goto out_no_complete;
-@@ -718,7 +718,8 @@ static int aspeed_i2c_master_xfer(struct i2c_adapter *adap,
- 
- static u32 aspeed_i2c_functionality(struct i2c_adapter *adap)
- {
--	return I2C_FUNC_I2C | I2C_FUNC_SMBUS_EMUL | I2C_FUNC_SMBUS_BLOCK_DATA;
-+	return I2C_FUNC_I2C | I2C_FUNC_SMBUS_EMUL |
-+		I2C_FUNC_SMBUS_BLOCK_DATA | I2C_FUNC_SMBUS_V3_BLOCK;
- }
- 
- #if IS_ENABLED(CONFIG_I2C_SLAVE)
+Userspace remains backwards compatible with the current 32 byte block
+for the I2C_SMBUS ioctl, and the block size limit remains for I2C_RDWR
+ioctl with I2C_M_RECV_LEN.
+
+It is separated into patches 1 & 2 though the userspace API isn't
+correct with only the first patch - maybe they should be squashed. The
+stack buffers in i2c_smbus_xfer_emulated() increase from ~70 bytes to
+~500 bytes - I'm not sure if that is a problem.
+
+I have tested with the Aspeed I2C controller, other drivers can add the
+functionality as needed. For most emulated drivers it looks like minimal
+changes are required.
+
+This is required for MCTP I2C transport which has a 64 byte baseline
+packet size.
+
+Cheers,
+Matt
+
+Matt Johnston (3):
+  i2c: core: Allow 255 byte transfers for SMBus 3.x
+  i2c: dev: Handle 255 byte blocks for i2c ioctl
+  i2c: aspeed: allow 255 byte block transfers
+
+ drivers/i2c/busses/i2c-aspeed.c |  5 +-
+ drivers/i2c/i2c-core-smbus.c    | 20 ++++---
+ drivers/i2c/i2c-dev.c           | 92 ++++++++++++++++++++++++++++-----
+ include/linux/i2c.h             | 13 +++++
+ include/uapi/linux/i2c-dev.h    |  2 +
+ include/uapi/linux/i2c.h        |  7 ++-
+ 6 files changed, 115 insertions(+), 24 deletions(-)
+
 -- 
 2.30.2
 
