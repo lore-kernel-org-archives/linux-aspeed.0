@@ -1,184 +1,135 @@
 From: Rob Herring <robh@kernel.org>
-Date: Wed, 2 Jun 2021 15:10:21 -0500
-Subject: [PATCH v2 1/4] dt-bindings: aspeed-sgpio: Convert txt bindings
- to yaml.
-In-Reply-To: <20210527005455.25758-2-steven_lee@aspeedtech.com>
-References: <20210527005455.25758-1-steven_lee@aspeedtech.com>
- <20210527005455.25758-2-steven_lee@aspeedtech.com>
-Message-ID: <20210602201021.GA3900491@robh.at.kernel.org>
+Date: Wed, 2 Jun 2021 15:17:20 -0500
+Subject: [PATCH v2 1/1] dt-bindings: aspeed-i2c: Convert txt to yaml format
+In-Reply-To: <20210527102512.20684-2-jamin_lin@aspeedtech.com>
+References: <20210527102512.20684-1-jamin_lin@aspeedtech.com>
+ <20210527102512.20684-2-jamin_lin@aspeedtech.com>
+Message-ID: <20210602201720.GA3910963@robh.at.kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, May 27, 2021 at 08:54:50AM +0800, Steven Lee wrote:
-> SGPIO bindings should be converted as yaml format.
-> In addition to the file conversion, a new property max-ngpios is
-> added in the yaml file as well.
-> The new property is required by the enhanced sgpio driver for
-> making the configuration of the max number of gpio pins more flexible.
-
-The rest of the binding looks fine. Make this property a separate patch 
-if you don't end up dropping it.
-
+On Thu, May 27, 2021 at 06:25:05PM +0800, Jamin Lin wrote:
+> Convert aspeed i2c to yaml.
 > 
-> Signed-off-by: Steven Lee <steven_lee@aspeedtech.com>
+> Signed-off-by: Jamin Lin <jamin_lin@aspeedtech.com>
 > ---
->  .../bindings/gpio/aspeed,sgpio.yaml           | 91 +++++++++++++++++++
->  .../devicetree/bindings/gpio/sgpio-aspeed.txt | 46 ----------
->  2 files changed, 91 insertions(+), 46 deletions(-)
->  create mode 100644 Documentation/devicetree/bindings/gpio/aspeed,sgpio.yaml
->  delete mode 100644 Documentation/devicetree/bindings/gpio/sgpio-aspeed.txt
+>  .../devicetree/bindings/i2c/aspeed,i2c.yaml   | 86 +++++++++++++++++++
+>  .../devicetree/bindings/i2c/i2c-aspeed.txt    | 49 -----------
+>  2 files changed, 86 insertions(+), 49 deletions(-)
+>  create mode 100644 Documentation/devicetree/bindings/i2c/aspeed,i2c.yaml
+>  delete mode 100644 Documentation/devicetree/bindings/i2c/i2c-aspeed.txt
 > 
-> diff --git a/Documentation/devicetree/bindings/gpio/aspeed,sgpio.yaml b/Documentation/devicetree/bindings/gpio/aspeed,sgpio.yaml
+> diff --git a/Documentation/devicetree/bindings/i2c/aspeed,i2c.yaml b/Documentation/devicetree/bindings/i2c/aspeed,i2c.yaml
 > new file mode 100644
-> index 000000000000..02eb0c5023e9
+> index 000000000000..1f7064d77708
 > --- /dev/null
-> +++ b/Documentation/devicetree/bindings/gpio/aspeed,sgpio.yaml
-> @@ -0,0 +1,91 @@
+> +++ b/Documentation/devicetree/bindings/i2c/aspeed,i2c.yaml
+> @@ -0,0 +1,86 @@
 > +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
 > +%YAML 1.2
 > +---
-> +$id: http://devicetree.org/schemas/gpio/aspeed,sgpio.yaml#
+> +$id: http://devicetree.org/schemas/i2c/aspeed,i2c.yaml#
 > +$schema: http://devicetree.org/meta-schemas/core.yaml#
 > +
-> +title: Aspeed SGPIO controller
+> +title: ASPEED I2C on the AST24XX, AST25XX, and AST26XX SoCs Device Tree Bindings
 > +
 > +maintainers:
-> +  - Andrew Jeffery <andrew@aj.id.au>
+> +  - Rayn Chen <rayn_chen@aspeedtech.com>
 > +
-> +description:
-> +  This SGPIO controller is for ASPEED AST2400, AST2500 and AST2600 SoC,
-> +  AST2600 have two sgpio master one with 128 pins another one with 80 pins,
-> +  AST2500/AST2400 have one sgpio master with 80 pins. Each of the Serial
-> +  GPIO pins can be programmed to support the following options
-> +  - Support interrupt option for each input port and various interrupt
-> +    sensitivity option (level-high, level-low, edge-high, edge-low)
-> +  - Support reset tolerance option for each output port
-> +  - Directly connected to APB bus and its shift clock is from APB bus clock
-> +    divided by a programmable value.
-> +  - Co-work with external signal-chained TTL components (74LV165/74LV595)
+> +allOf:
+> +  - $ref: /schemas/i2c/i2c-controller.yaml#
 > +
 > +properties:
 > +  compatible:
 > +    enum:
-> +      - aspeed,ast2400-sgpiom
-> +      - aspeed,ast2500-sgpiom
-> +      - aspeed,ast2600-sgpiom
+> +      - aspeed,ast2400-i2c-bus
+> +      - aspeed,ast2500-i2c-bus
+> +      - aspeed,ast2600-i2c-bus
+> +
+> +  "#size-cells":
+> +    const: 0
+> +
+> +  "#address-cells":
+> +    const: 1
+
+These 2 are covered by i2c-controller.yaml.
+
 > +
 > +  reg:
-> +    maxItems: 1
-> +
-> +  gpio-controller: true
-> +
-> +  '#gpio-cells':
-> +    const: 2
+> +    minItems: 1
+> +    maxItems: 2
+> +    items:
+> +      - description: address offset and range of bus
+> +      - description: address offset and range of bus buffer
 > +
 > +  interrupts:
 > +    maxItems: 1
-> +
-> +  interrupt-controller: true
+> +    description: interrupt number
+
+Drop. Not a useful description.
+
 > +
 > +  clocks:
 > +    maxItems: 1
-> +
-> +  ngpios:
-> +    minimum: 0
-> +    maximum: 128
-> +
-> +  max-ngpios:
 > +    description:
-> +      represents the number of actual hardware-supported GPIOs (ie,
-> +      slots within the clocked serial GPIO data). Since each HW GPIO is both an
-> +      input and an output, we provide max_ngpios * 2 lines on our gpiochip
-> +      device. We also use it to define the split between the inputs and
-> +      outputs; the inputs start at line 0, the outputs start at max_ngpios.
-> +    minimum: 0
-> +    maximum: 128
+> +      root clock of bus, should reference the APB
+> +      clock in the second cell
 > +
-> +  bus-frequency: true
+> +  reset:
+
+resets
+
+> +    maxItems: 1
+> +    description: phandle to reset controller with the reset number in
+> +      the second cell
+
+No need to describe the format of 'resets'.
+
+> +
+> +  bus-frequency:
+> +    minimum: 500
+> +    maximum: 4000000
+> +    default: 100000
+> +    description: frequency of the bus clock in Hz defaults to 100 kHz when not
+> +      specified
+> +
+> +  multi-master:
+> +    type: boolean
+> +    description:
+> +      states that there is another master active on this bus
 > +
 > +required:
-> +  - compatible
 > +  - reg
-> +  - gpio-controller
-> +  - '#gpio-cells'
-> +  - interrupts
-> +  - interrupt-controller
-> +  - ngpios
-> +  - max-ngpios
+> +  - compatible
 > +  - clocks
-> +  - bus-frequency
+> +  - resets
 > +
-> +additionalProperties: false
+> +unevaluatedProperties: false
 > +
 > +examples:
 > +  - |
 > +    #include <dt-bindings/clock/aspeed-clock.h>
-> +    sgpio: sgpio at 1e780200 {
-> +        #gpio-cells = <2>;
-> +        compatible = "aspeed,ast2500-sgpiom";
-> +        gpio-controller;
-> +        interrupts = <40>;
-> +        reg = <0x1e780200 0x0100>;
-> +        clocks = <&syscon ASPEED_CLK_APB>;
-> +        interrupt-controller;
-> +        ngpios = <8>;
-> +        max-ngpios = <80>;
-> +        bus-frequency = <12000000>;
+> +    i2c0: i2c-bus at 40 {
+> +      #address-cells = <1>;
+> +      #size-cells = <0>;
+> +      #interrupt-cells = <1>;
+> +      reg = <0x40 0x40>;
+> +      compatible = "aspeed,ast2500-i2c-bus";
+
+Convention is compatible first in the list of properties.
+
+> +      clocks = <&syscon ASPEED_CLK_APB>;
+> +      resets = <&syscon ASPEED_RESET_I2C>;
+> +      bus-frequency = <100000>;
+> +      interrupts = <0>;
+> +      interrupt-parent = <&i2c_ic>;
+> +      status = "disabled";
+
+Don't show status in examples especially when disabling disables some 
+validation...
+
+> +      /* Does not need pinctrl properties */
 > +    };
-> diff --git a/Documentation/devicetree/bindings/gpio/sgpio-aspeed.txt b/Documentation/devicetree/bindings/gpio/sgpio-aspeed.txt
-> deleted file mode 100644
-> index be329ea4794f..000000000000
-> --- a/Documentation/devicetree/bindings/gpio/sgpio-aspeed.txt
-> +++ /dev/null
-> @@ -1,46 +0,0 @@
-> -Aspeed SGPIO controller Device Tree Bindings
-> ---------------------------------------------
-> -
-> -This SGPIO controller is for ASPEED AST2500 SoC, it supports up to 80 full
-> -featured Serial GPIOs. Each of the Serial GPIO pins can be programmed to
-> -support the following options:
-> -- Support interrupt option for each input port and various interrupt
-> -  sensitivity option (level-high, level-low, edge-high, edge-low)
-> -- Support reset tolerance option for each output port
-> -- Directly connected to APB bus and its shift clock is from APB bus clock
-> -  divided by a programmable value.
-> -- Co-work with external signal-chained TTL components (74LV165/74LV595)
-> -
-> -Required properties:
-> -
-> -- compatible : Should be one of
-> -  "aspeed,ast2400-sgpio", "aspeed,ast2500-sgpio"
-> -- #gpio-cells : Should be 2, see gpio.txt
-> -- reg : Address and length of the register set for the device
-> -- gpio-controller : Marks the device node as a GPIO controller
-> -- interrupts : Interrupt specifier, see interrupt-controller/interrupts.txt
-> -- interrupt-controller : Mark the GPIO controller as an interrupt-controller
-> -- ngpios : number of *hardware* GPIO lines, see gpio.txt. This will expose
-> -  2 software GPIOs per hardware GPIO: one for hardware input, one for hardware
-> -  output. Up to 80 pins, must be a multiple of 8.
-> -- clocks : A phandle to the APB clock for SGPM clock division
-> -- bus-frequency : SGPM CLK frequency
-> -
-> -The sgpio and interrupt properties are further described in their respective
-> -bindings documentation:
-> -
-> -- Documentation/devicetree/bindings/gpio/gpio.txt
-> -- Documentation/devicetree/bindings/interrupt-controller/interrupts.txt
-> -
-> -  Example:
-> -	sgpio: sgpio at 1e780200 {
-> -		#gpio-cells = <2>;
-> -		compatible = "aspeed,ast2500-sgpio";
-> -		gpio-controller;
-> -		interrupts = <40>;
-> -		reg = <0x1e780200 0x0100>;
-> -		clocks = <&syscon ASPEED_CLK_APB>;
-> -		interrupt-controller;
-> -		ngpios = <8>;
-> -		bus-frequency = <12000000>;
-> -	};
-> -- 
-> 2.17.1
