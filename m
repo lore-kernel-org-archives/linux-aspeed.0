@@ -1,66 +1,64 @@
 From: Steven Lee <steven_lee@aspeedtech.com>
-Date: Thu, 3 Jun 2021 18:18:16 +0800
-Subject: [PATCH v3 0/5] ASPEED sgpio driver enhancement.
-Message-ID: <20210603101822.9645-1-steven_lee@aspeedtech.com>
+Date: Thu, 3 Jun 2021 18:18:18 +0800
+Subject: [PATCH v3 2/5] ARM: dts: aspeed-g6: Add SGPIO node.
+In-Reply-To: <20210603101822.9645-1-steven_lee@aspeedtech.com>
+References: <20210603101822.9645-1-steven_lee@aspeedtech.com>
+Message-ID: <20210603101822.9645-3-steven_lee@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-AST2600 SoC has 2 SGPIO master interfaces one with 128 pins another one
-with 80 pins, AST2500/AST2400 SoC has 1 SGPIO master interface that
-supports up to 80 pins.
-In the current driver design, the max number of sgpio pins is hardcoded
-in macro MAX_NR_HW_SGPIO and the value is 80.
+AST2600 supports 2 SGPIO master interfaces one with 128 pins another one
+with 80 pins.
 
-For supporting sgpio master interfaces of AST2600 SoC, the patch series
-contains the following enhancement:
-- Convert txt dt-bindings to yaml.
-- Update aspeed-g6 dtsi to support the enhanced sgpio.
-- Define max number of gpio pins in ast2600 platform data. Old chip
-  uses the original hardcoded value.
-- Support muiltiple SGPIO master interfaces.
-- Support up to 128 pins.
-- Support wdt reset tolerance.
-- Fix irq_chip issues which causes multiple sgpio devices use the same
-  irq_chip data.
+Signed-off-by: Steven Lee <steven_lee@aspeedtech.com>
+---
+ arch/arm/boot/dts/aspeed-g6.dtsi | 30 ++++++++++++++++++++++++++++++
+ 1 file changed, 30 insertions(+)
 
-Changes from v2:
-* Remove maximum/minimum of ngpios from bindings.
-* Remove max-ngpios from bindings and dtsi.
-* Remove ast2400-sgpiom and ast2500-sgpiom compatibles from dts and
-  driver.
-* Add ast2600-sgpiom1 and ast2600-sgpiom2 compatibles as their max
-  number of available gpio pins are different.
-* Modify functions to pass aspeed_sgpio struct instead of passing
-  max_ngpios.
-* Split sgpio driver patch to 3 patches
-
-Changes from v1:
-* Fix yaml format issues.
-* Fix issues reported by kernel test robot.
-
-Please help to review.
-
-Thanks,
-Steven
-
-Steven Lee (5):
-  dt-bindings: aspeed-sgpio: Convert txt bindings to yaml.
-  ARM: dts: aspeed-g6: Add SGPIO node.
-  gpio: gpio-aspeed-sgpio: Add AST2600 sgpio support
-  gpio: gpio-aspeed-sgpio: Add set_config function
-  gpio: gpio-aspeed-sgpio: Move irq_chip to aspeed-sgpio struct
-
- .../bindings/gpio/aspeed,sgpio.yaml           |  78 ++++++++
- .../devicetree/bindings/gpio/sgpio-aspeed.txt |  46 -----
- arch/arm/boot/dts/aspeed-g6.dtsi              |  30 +++
- drivers/gpio/gpio-aspeed-sgpio.c              | 182 +++++++++++++-----
- 4 files changed, 243 insertions(+), 93 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/gpio/aspeed,sgpio.yaml
- delete mode 100644 Documentation/devicetree/bindings/gpio/sgpio-aspeed.txt
-
+diff --git a/arch/arm/boot/dts/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed-g6.dtsi
+index f96607b7b4e2..e56e92e206f1 100644
+--- a/arch/arm/boot/dts/aspeed-g6.dtsi
++++ b/arch/arm/boot/dts/aspeed-g6.dtsi
+@@ -377,6 +377,36 @@
+ 				#interrupt-cells = <2>;
+ 			};
+ 
++			sgpiom0: sgpiom at 1e780500 {
++				#gpio-cells = <2>;
++				gpio-controller;
++				compatible = "aspeed,ast2600-sgpiom1";
++				reg = <0x1e780500 0x100>;
++				interrupts = <GIC_SPI 51 IRQ_TYPE_LEVEL_HIGH>;
++				ngpios = <128>;
++				clocks = <&syscon ASPEED_CLK_APB2>;
++				interrupt-controller;
++				bus-frequency = <12000000>;
++				pinctrl-names = "default";
++				pinctrl-0 = <&pinctrl_sgpm1_default>;
++				status = "disabled";
++			};
++
++			sgpiom1: sgpiom at 1e780600 {
++				#gpio-cells = <2>;
++				gpio-controller;
++				compatible = "aspeed,ast2600-sgpiom2";
++				reg = <0x1e780600 0x100>;
++				interrupts = <GIC_SPI 70 IRQ_TYPE_LEVEL_HIGH>;
++				ngpios = <80>;
++				clocks = <&syscon ASPEED_CLK_APB2>;
++				interrupt-controller;
++				bus-frequency = <12000000>;
++				pinctrl-names = "default";
++				pinctrl-0 = <&pinctrl_sgpm2_default>;
++				status = "disabled";
++			};
++
+ 			gpio1: gpio at 1e780800 {
+ 				#gpio-cells = <2>;
+ 				gpio-controller;
 -- 
 2.17.1
 
