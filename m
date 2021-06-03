@@ -1,55 +1,30 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Thu,  3 Jun 2021 13:39:06 +0930
-Subject: [PATCH] ARM: config: aspeed: Add DEBUG_FS and EXT4
-Message-ID: <20210603040906.125109-1-joel@jms.id.au>
+Date: Thu, 3 Jun 2021 04:12:33 +0000
+Subject: [PATCH v3 2/3] ARM: dts: aspeed-g6: Add pinctrl settings
+In-Reply-To: <CACRpkdZy0UwaJcYTiM9asVwNh4wuEYdMSrmqAPAiikbrvjtKpw@mail.gmail.com>
+References: <20210525055308.31069-1-steven_lee@aspeedtech.com>
+ <20210525055308.31069-3-steven_lee@aspeedtech.com>
+ <CACRpkdZy0UwaJcYTiM9asVwNh4wuEYdMSrmqAPAiikbrvjtKpw@mail.gmail.com>
+Message-ID: <CACPK8XfbpCWx_ZOPuUy0QCT2N9kj9_+WGZv4wEPXgUUoVDf+fQ@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-DEBUG_FS was lost way back in v5.5, and EXT4 is used by ast2600 systems
-that have MMC.
+On Thu, 27 May 2021 at 23:47, Linus Walleij <linus.walleij@linaro.org> wrote:
+>
+> On Tue, May 25, 2021 at 7:53 AM Steven Lee <steven_lee@aspeedtech.com> wrote:
+>
+> > AST2600 supports 2 SGPIO master interfaces and 2 SGPIO slave interfaces.
+> > Currently, only SGPIO master 1 and SGPIO slve 1 in the pinctrl dtsi.
+> > SGPIO master 2 and slave 2 should be added in pinctrl dtsi as well.
+> >
+> > Signed-off-by: Steven Lee <steven_lee@aspeedtech.com>
+> > Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
+>
+> Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+>
+> Please funnel this patch through the Aspeed/ARM SoC tree.
 
-Fixes: 0e4a459f56c3 ("tracing: Remove unnecessary DEBUG_FS dependency")
-Signed-off-by: Joel Stanley <joel@jms.id.au>
----
- arch/arm/configs/aspeed_g4_defconfig | 1 +
- arch/arm/configs/aspeed_g5_defconfig | 2 ++
- 2 files changed, 3 insertions(+)
-
-diff --git a/arch/arm/configs/aspeed_g4_defconfig b/arch/arm/configs/aspeed_g4_defconfig
-index 58d293b63581..a3ee647b1ebb 100644
---- a/arch/arm/configs/aspeed_g4_defconfig
-+++ b/arch/arm/configs/aspeed_g4_defconfig
-@@ -254,6 +254,7 @@ CONFIG_DEBUG_INFO_REDUCED=y
- CONFIG_DEBUG_INFO_DWARF4=y
- CONFIG_GDB_SCRIPTS=y
- CONFIG_STRIP_ASM_SYMS=y
-+CONFIG_DEBUG_FS=y
- CONFIG_SCHED_STACK_END_CHECK=y
- CONFIG_PANIC_ON_OOPS=y
- CONFIG_PANIC_TIMEOUT=-1
-diff --git a/arch/arm/configs/aspeed_g5_defconfig b/arch/arm/configs/aspeed_g5_defconfig
-index 047975eccefb..2db48438c5d2 100644
---- a/arch/arm/configs/aspeed_g5_defconfig
-+++ b/arch/arm/configs/aspeed_g5_defconfig
-@@ -247,6 +247,7 @@ CONFIG_FSI_MASTER_ASPEED=y
- CONFIG_FSI_SCOM=y
- CONFIG_FSI_SBEFIFO=y
- CONFIG_FSI_OCC=y
-+CONFIG_EXT4_FS=y
- CONFIG_FANOTIFY=y
- CONFIG_OVERLAY_FS=y
- CONFIG_TMPFS=y
-@@ -276,6 +277,7 @@ CONFIG_DEBUG_INFO_REDUCED=y
- CONFIG_DEBUG_INFO_DWARF4=y
- CONFIG_GDB_SCRIPTS=y
- CONFIG_STRIP_ASM_SYMS=y
-+CONFIG_DEBUG_FS=y
- CONFIG_SOFTLOCKUP_DETECTOR=y
- # CONFIG_DETECT_HUNG_TASK is not set
- CONFIG_WQ_WATCHDOG=y
--- 
-2.30.2
-
+Applied, thanks.
