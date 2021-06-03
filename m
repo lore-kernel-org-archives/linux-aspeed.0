@@ -1,30 +1,55 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Thu, 3 Jun 2021 04:12:33 +0000
-Subject: [PATCH v3 2/3] ARM: dts: aspeed-g6: Add pinctrl settings
-In-Reply-To: <CACRpkdZy0UwaJcYTiM9asVwNh4wuEYdMSrmqAPAiikbrvjtKpw@mail.gmail.com>
-References: <20210525055308.31069-1-steven_lee@aspeedtech.com>
- <20210525055308.31069-3-steven_lee@aspeedtech.com>
- <CACRpkdZy0UwaJcYTiM9asVwNh4wuEYdMSrmqAPAiikbrvjtKpw@mail.gmail.com>
-Message-ID: <CACPK8XfbpCWx_ZOPuUy0QCT2N9kj9_+WGZv4wEPXgUUoVDf+fQ@mail.gmail.com>
+Date: Thu, 3 Jun 2021 06:02:07 +0000
+Subject: [External] Re: [PATCH v1] ARM: dts: Fix 64MiB OpenBMC flash
+ layout and aspeed-ast2600-evb.dts
+In-Reply-To: <CAGm54UHgQSMh8WLzRf7Swhv9mmzNBuEK6eKf9eX0ASp95hjARw@mail.gmail.com>
+References: <20210316085932.2601-1-troy_lee@aspeedtech.com>
+ <CACPK8XeYtaLLWDMR8xZhERrQ_WCUJ2RM_JZmZNQ6oZSvgSDM_w@mail.gmail.com>
+ <CAGm54UHgQSMh8WLzRf7Swhv9mmzNBuEK6eKf9eX0ASp95hjARw@mail.gmail.com>
+Message-ID: <CACPK8XdgLP7XSH0Zkej87ynnKTbEUW+RUBiSMgDH1H-LD5VXhg@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, 27 May 2021 at 23:47, Linus Walleij <linus.walleij@linaro.org> wrote:
+On Fri, 16 Apr 2021 at 07:35, Lei Yu <yulei.sh@bytedance.com> wrote:
 >
-> On Tue, May 25, 2021 at 7:53 AM Steven Lee <steven_lee@aspeedtech.com> wrote:
->
-> > AST2600 supports 2 SGPIO master interfaces and 2 SGPIO slave interfaces.
-> > Currently, only SGPIO master 1 and SGPIO slve 1 in the pinctrl dtsi.
-> > SGPIO master 2 and slave 2 should be added in pinctrl dtsi as well.
+> On Fri, Apr 16, 2021 at 11:03 AM Joel Stanley <joel@jms.id.au> wrote:
 > >
-> > Signed-off-by: Steven Lee <steven_lee@aspeedtech.com>
-> > Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
+> > On Tue, 16 Mar 2021 at 08:59, Troy Lee <troy_lee@aspeedtech.com> wrote:
+> > >
+> > > Aspeed AST2600 u-boot requires 600KiB+ flash space. Sharing the same
+> > > openbmc-flash-layout-64.dtsi requires to resize the flash partition.
+> > >
+> > > The updated flash layout as follows:
+> > > - u-boot: 896 KiB
+> > > - u-boot-env: 128 KiB
+> > > - kernel: 9MiB
+> > > - rofs: 32 MiB
+> > > - rwfs: 22 MiB
+> >
+> > Changing the 64MB layout will break the systems that are already using
+> > this layout. I'll get the Bytedance people to chime in, as theirs is
+> > the only system using this layout so far.
+> >
+> > John, Lei?
 >
-> Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+> Because the kernel's offset is updated, several other changes are required:
+> 1. The related offsets, which is already sent to
+> https://gerrit.openbmc-project.xyz/c/openbmc/meta-phosphor/+/39343
+> 2. The u-boot patch to update the `bootm` address and make sure it
+> only applies to the 64MiB layout.
 >
-> Please funnel this patch through the Aspeed/ARM SoC tree.
+> Without the above two changes, I would suggest holding the merge.
 
-Applied, thanks.
+Reviewed-by: Joel Stanley <joel@jms.id.au>
+
+Just confirming that we are okay to go ahead with this change, as per
+the discussion on the openbmc list[1].
+
+[1] https://lore.kernel.org/openbmc/CACPK8XdVNXSfzDBPryjQh_4S0yU4Tp6VOOtju+L_DcfgHumPJw at mail.gmail.com/
+
+Cheers,
+
+Joel
