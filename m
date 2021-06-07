@@ -1,42 +1,27 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Mon,  7 Jun 2021 11:00:20 +0930
-Subject: [PATCH] mmc: sdhci-of-aspeed: Turn down a phase correction warning
-Message-ID: <20210607013020.85885-1-andrew@aj.id.au>
+From: Joel Stanley <joel@jms.id.au>
+Date: Mon,  7 Jun 2021 12:42:53 +0930
+Subject: [PATCH 0/6] ARM: dts: aspeed: Add Everest LED descriptions
+Message-ID: <20210607031259.475020-1-joel@jms.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The card timing and the bus frequency are not changed atomically with
-respect to calls to the set_clock() callback in the driver. The result
-is the driver sees a transient state where there's a mismatch between
-the two and thus the inputs to the phase correction calculation
-formula are garbage.
+This describes the various status LEDs attached to expanders on the
+Everest system.
 
-Switch from dev_warn() to dev_dbg() to avoid noise in the normal case,
-though the change does make bad configurations less likely to be
-noticed.
+Vishwanatha Subbanna (6):
+  ARM: dts: aspeed: everest: Add system level indicator leds
+  ARM: dts: aspeed: everest: Add nvme and fan indicator leds
+  ARM: dts: aspeed: everest: Add pcie slot indicator leds
+  ARM: dts: aspeed: everest: Add dimm indicator leds
+  ARM: dts: aspeed: everest: Add vrm and other indicator leds
+  ARM: dts: aspeed: everest: Add pcie cable card indicator leds
 
-Reported-by: Joel Stanley <joel@jms.id.au>
-Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
----
- drivers/mmc/host/sdhci-of-aspeed.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/arm/boot/dts/aspeed-bmc-ibm-everest.dts | 1997 ++++++++++++++++--
+ 1 file changed, 1866 insertions(+), 131 deletions(-)
 
-diff --git a/drivers/mmc/host/sdhci-of-aspeed.c b/drivers/mmc/host/sdhci-of-aspeed.c
-index d001c51074a0..e4665a438ec5 100644
---- a/drivers/mmc/host/sdhci-of-aspeed.c
-+++ b/drivers/mmc/host/sdhci-of-aspeed.c
-@@ -150,7 +150,7 @@ static int aspeed_sdhci_phase_to_tap(struct device *dev, unsigned long rate_hz,
- 
- 	tap = div_u64(phase_period_ps, prop_delay_ps);
- 	if (tap > ASPEED_SDHCI_NR_TAPS) {
--		dev_warn(dev,
-+		dev_dbg(dev,
- 			 "Requested out of range phase tap %d for %d degrees of phase compensation at %luHz, clamping to tap %d\n",
- 			 tap, phase_deg, rate_hz, ASPEED_SDHCI_NR_TAPS);
- 		tap = ASPEED_SDHCI_NR_TAPS;
 -- 
 2.30.2
 
