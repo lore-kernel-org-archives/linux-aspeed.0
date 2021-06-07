@@ -1,9 +1,10 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Mon,  7 Jun 2021 12:42:57 +0930
-Subject: [PATCH 4/6] ARM: dts: aspeed: everest: Add dimm indicator leds
+Date: Mon,  7 Jun 2021 12:42:58 +0930
+Subject: [PATCH 5/6] ARM: dts: aspeed: everest: Add vrm and other indicator
+ leds
 In-Reply-To: <20210607031259.475020-1-joel@jms.id.au>
 References: <20210607031259.475020-1-joel@jms.id.au>
-Message-ID: <20210607031259.475020-5-joel@jms.id.au>
+Message-ID: <20210607031259.475020-6-joel@jms.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -12,26 +13,28 @@ Content-Transfer-Encoding: 7bit
 
 From: Vishwanatha Subbanna <vishwa@linux.vnet.ibm.com>
 
-These are dimm indicator leds driven by PIC16F882.
+This commit adds indicator leds for vrms, processors, opencapi
+connectors, tpm, planar, power distribution card and dasd
+backplane and are driven by PIC16F882.
 
 Signed-off-by: Vishwanatha Subbanna <vishwa@linux.vnet.ibm.com>
 Signed-off-by: Joel Stanley <joel@jms.id.au>
 ---
- arch/arm/boot/dts/aspeed-bmc-ibm-everest.dts | 552 +++++++++++++++++++
- 1 file changed, 552 insertions(+)
+ arch/arm/boot/dts/aspeed-bmc-ibm-everest.dts | 270 +++++++++++++++++++
+ 1 file changed, 270 insertions(+)
 
 diff --git a/arch/arm/boot/dts/aspeed-bmc-ibm-everest.dts b/arch/arm/boot/dts/aspeed-bmc-ibm-everest.dts
-index aa960186796d..db8555e7abf9 100644
+index db8555e7abf9..2bac7d1f8a03 100644
 --- a/arch/arm/boot/dts/aspeed-bmc-ibm-everest.dts
 +++ b/arch/arm/boot/dts/aspeed-bmc-ibm-everest.dts
-@@ -848,6 +848,558 @@ gpio at 15 {
- 
- &i2c7 {
- 	status = "okay";
+@@ -1400,6 +1400,276 @@ led at 15 {
+ 			type = <PCA955X_TYPE_LED>;
+ 		};
+ 	};
 +
-+	pic0_dimm: pca9552 at 31 {
++	pic0_vrm_misc: pca9552 at 34 {
 +		compatible = "ibm,pca9552";
-+		reg = <0x31>;
++		reg = <0x34>;
 +		#address-cells = <1>;
 +		#size-cells = <0>;
 +
@@ -39,7 +42,7 @@ index aa960186796d..db8555e7abf9 100644
 +		#gpio-cells = <2>;
 +
 +		led at 0 {
-+			label = "ddimm0";
++			label = "planar";
 +			reg = <0>;
 +			retain-state-shutdown;
 +			default-state = "keep";
@@ -47,7 +50,7 @@ index aa960186796d..db8555e7abf9 100644
 +		};
 +
 +		led at 1 {
-+			label = "ddimm1";
++			label = "tpm";
 +			reg = <1>;
 +			retain-state-shutdown;
 +			default-state = "keep";
@@ -55,7 +58,7 @@ index aa960186796d..db8555e7abf9 100644
 +		};
 +
 +		led at 2 {
-+			label = "ddimm2";
++			label = "cpu3-c61";
 +			reg = <2>;
 +			retain-state-shutdown;
 +			default-state = "keep";
@@ -63,7 +66,7 @@ index aa960186796d..db8555e7abf9 100644
 +		};
 +
 +		led at 3 {
-+			label = "ddimm3";
++			label = "cpu0-c14";
 +			reg = <3>;
 +			retain-state-shutdown;
 +			default-state = "keep";
@@ -71,7 +74,7 @@ index aa960186796d..db8555e7abf9 100644
 +		};
 +
 +		led at 4 {
-+			label = "ddimm4";
++			label = "opencapi-connector3";
 +			reg = <4>;
 +			retain-state-shutdown;
 +			default-state = "keep";
@@ -79,7 +82,7 @@ index aa960186796d..db8555e7abf9 100644
 +		};
 +
 +		led at 5 {
-+			label = "ddimm5";
++			label = "opencapi-connector4";
 +			reg = <5>;
 +			retain-state-shutdown;
 +			default-state = "keep";
@@ -87,23 +90,20 @@ index aa960186796d..db8555e7abf9 100644
 +		};
 +
 +		led at 6 {
-+			label = "ddimm6";
++			label = "opencapi-connector5";
 +			reg = <6>;
 +			retain-state-shutdown;
 +			default-state = "keep";
 +			type = <PCA955X_TYPE_LED>;
 +		};
 +
-+		led at 7 {
-+			label = "ddimm7";
++		gpio at 7 {
 +			reg = <7>;
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			type = <PCA955X_TYPE_LED>;
++			type = <PCA955X_TYPE_GPIO>;
 +		};
 +
 +		led at 8 {
-+			label = "ddimm8";
++			label = "vrm4";
 +			reg = <8>;
 +			retain-state-shutdown;
 +			default-state = "keep";
@@ -111,7 +111,7 @@ index aa960186796d..db8555e7abf9 100644
 +		};
 +
 +		led at 9 {
-+			label = "ddimm9";
++			label = "vrm5";
 +			reg = <9>;
 +			retain-state-shutdown;
 +			default-state = "keep";
@@ -119,7 +119,7 @@ index aa960186796d..db8555e7abf9 100644
 +		};
 +
 +		led at 10 {
-+			label = "ddimm10";
++			label = "vrm6";
 +			reg = <10>;
 +			retain-state-shutdown;
 +			default-state = "keep";
@@ -127,7 +127,7 @@ index aa960186796d..db8555e7abf9 100644
 +		};
 +
 +		led at 11 {
-+			label = "ddimm11";
++			label = "vrm7";
 +			reg = <11>;
 +			retain-state-shutdown;
 +			default-state = "keep";
@@ -135,7 +135,7 @@ index aa960186796d..db8555e7abf9 100644
 +		};
 +
 +		led at 12 {
-+			label = "ddimm12";
++			label = "vrm12";
 +			reg = <12>;
 +			retain-state-shutdown;
 +			default-state = "keep";
@@ -143,7 +143,7 @@ index aa960186796d..db8555e7abf9 100644
 +		};
 +
 +		led at 13 {
-+			label = "ddimm13";
++			label = "vrm13";
 +			reg = <13>;
 +			retain-state-shutdown;
 +			default-state = "keep";
@@ -151,7 +151,7 @@ index aa960186796d..db8555e7abf9 100644
 +		};
 +
 +		led at 14 {
-+			label = "ddimm14";
++			label = "vrm14";
 +			reg = <14>;
 +			retain-state-shutdown;
 +			default-state = "keep";
@@ -159,7 +159,7 @@ index aa960186796d..db8555e7abf9 100644
 +		};
 +
 +		led at 15 {
-+			label = "ddimm15";
++			label = "vrm15";
 +			reg = <15>;
 +			retain-state-shutdown;
 +			default-state = "keep";
@@ -167,9 +167,9 @@ index aa960186796d..db8555e7abf9 100644
 +		};
 +	};
 +
-+	pic1_dimm: pca9552 at 32 {
++	pic1_vrm_misc: pca9552 at 35 {
 +		compatible = "ibm,pca9552";
-+		reg = <0x32>;
++		reg = <0x35>;
 +		#address-cells = <1>;
 +		#size-cells = <0>;
 +
@@ -177,7 +177,7 @@ index aa960186796d..db8555e7abf9 100644
 +		#gpio-cells = <2>;
 +
 +		led at 0 {
-+			label = "ddimm16";
++			label = "dasd-backplane";
 +			reg = <0>;
 +			retain-state-shutdown;
 +			default-state = "keep";
@@ -185,7 +185,7 @@ index aa960186796d..db8555e7abf9 100644
 +		};
 +
 +		led at 1 {
-+			label = "ddimm17";
++			label = "power-distribution";
 +			reg = <1>;
 +			retain-state-shutdown;
 +			default-state = "keep";
@@ -193,7 +193,7 @@ index aa960186796d..db8555e7abf9 100644
 +		};
 +
 +		led at 2 {
-+			label = "ddimm18";
++			label = "cpu1-c19";
 +			reg = <2>;
 +			retain-state-shutdown;
 +			default-state = "keep";
@@ -201,7 +201,7 @@ index aa960186796d..db8555e7abf9 100644
 +		};
 +
 +		led at 3 {
-+			label = "ddimm19";
++			label = "cpu2-c56";
 +			reg = <3>;
 +			retain-state-shutdown;
 +			default-state = "keep";
@@ -209,7 +209,7 @@ index aa960186796d..db8555e7abf9 100644
 +		};
 +
 +		led at 4 {
-+			label = "ddimm20";
++			label = "opencapi-connector0";
 +			reg = <4>;
 +			retain-state-shutdown;
 +			default-state = "keep";
@@ -217,7 +217,7 @@ index aa960186796d..db8555e7abf9 100644
 +		};
 +
 +		led at 5 {
-+			label = "ddimm21";
++			label = "opencapi-connector1";
 +			reg = <5>;
 +			retain-state-shutdown;
 +			default-state = "keep";
@@ -225,23 +225,20 @@ index aa960186796d..db8555e7abf9 100644
 +		};
 +
 +		led at 6 {
-+			label = "ddimm22";
++			label = "opencapi-connector2";
 +			reg = <6>;
 +			retain-state-shutdown;
 +			default-state = "keep";
 +			type = <PCA955X_TYPE_LED>;
 +		};
 +
-+		led at 7 {
-+			label = "ddimm23";
++		gpio at 7 {
 +			reg = <7>;
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			type = <PCA955X_TYPE_LED>;
++			type = <PCA955X_TYPE_GPIO>;
 +		};
 +
 +		led at 8 {
-+			label = "ddimm24";
++			label = "vrm0";
 +			reg = <8>;
 +			retain-state-shutdown;
 +			default-state = "keep";
@@ -249,7 +246,7 @@ index aa960186796d..db8555e7abf9 100644
 +		};
 +
 +		led at 9 {
-+			label = "ddimm25";
++			label = "vrm1";
 +			reg = <9>;
 +			retain-state-shutdown;
 +			default-state = "keep";
@@ -257,7 +254,7 @@ index aa960186796d..db8555e7abf9 100644
 +		};
 +
 +		led at 10 {
-+			label = "ddimm26";
++			label = "vrm2";
 +			reg = <10>;
 +			retain-state-shutdown;
 +			default-state = "keep";
@@ -265,7 +262,7 @@ index aa960186796d..db8555e7abf9 100644
 +		};
 +
 +		led at 11 {
-+			label = "ddimm27";
++			label = "vrm3";
 +			reg = <11>;
 +			retain-state-shutdown;
 +			default-state = "keep";
@@ -273,7 +270,7 @@ index aa960186796d..db8555e7abf9 100644
 +		};
 +
 +		led at 12 {
-+			label = "ddimm28";
++			label = "vrm8";
 +			reg = <12>;
 +			retain-state-shutdown;
 +			default-state = "keep";
@@ -281,7 +278,7 @@ index aa960186796d..db8555e7abf9 100644
 +		};
 +
 +		led at 13 {
-+			label = "ddimm29";
++			label = "vrm9";
 +			reg = <13>;
 +			retain-state-shutdown;
 +			default-state = "keep";
@@ -289,7 +286,7 @@ index aa960186796d..db8555e7abf9 100644
 +		};
 +
 +		led at 14 {
-+			label = "ddimm30";
++			label = "vrm10";
 +			reg = <14>;
 +			retain-state-shutdown;
 +			default-state = "keep";
@@ -297,283 +294,7 @@ index aa960186796d..db8555e7abf9 100644
 +		};
 +
 +		led at 15 {
-+			label = "ddimm31";
-+			reg = <15>;
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			type = <PCA955X_TYPE_LED>;
-+		};
-+	};
-+
-+	pic2_dimm: pca9552 at 33 {
-+		compatible = "ibm,pca9552";
-+		reg = <0x33>;
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+
-+		led at 0 {
-+			label = "ddimm32";
-+			reg = <0>;
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			type = <PCA955X_TYPE_LED>;
-+		};
-+
-+		led at 1 {
-+			label = "ddimm33";
-+			reg = <1>;
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			type = <PCA955X_TYPE_LED>;
-+		};
-+
-+		led at 2 {
-+			label = "ddimm34";
-+			reg = <2>;
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			type = <PCA955X_TYPE_LED>;
-+		};
-+
-+		led at 3 {
-+			label = "ddimm35";
-+			reg = <3>;
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			type = <PCA955X_TYPE_LED>;
-+		};
-+
-+		led at 4 {
-+			label = "ddimm36";
-+			reg = <4>;
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			type = <PCA955X_TYPE_LED>;
-+		};
-+
-+		led at 5 {
-+			label = "ddimm37";
-+			reg = <5>;
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			type = <PCA955X_TYPE_LED>;
-+		};
-+
-+		led at 6 {
-+			label = "ddimm38";
-+			reg = <6>;
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			type = <PCA955X_TYPE_LED>;
-+		};
-+
-+		led at 7 {
-+			label = "ddimm39";
-+			reg = <7>;
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			type = <PCA955X_TYPE_LED>;
-+		};
-+
-+		led at 8 {
-+			label = "ddimm40";
-+			reg = <8>;
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			type = <PCA955X_TYPE_LED>;
-+		};
-+
-+		led at 9 {
-+			label = "ddimm41";
-+			reg = <9>;
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			type = <PCA955X_TYPE_LED>;
-+		};
-+
-+		led at 10 {
-+			label = "ddimm42";
-+			reg = <10>;
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			type = <PCA955X_TYPE_LED>;
-+		};
-+
-+		led at 11 {
-+			label = "ddimm43";
-+			reg = <11>;
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			type = <PCA955X_TYPE_LED>;
-+		};
-+
-+		led at 12 {
-+			label = "ddimm44";
-+			reg = <12>;
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			type = <PCA955X_TYPE_LED>;
-+		};
-+
-+		led at 13 {
-+			label = "ddimm45";
-+			reg = <13>;
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			type = <PCA955X_TYPE_LED>;
-+		};
-+
-+		led at 14 {
-+			label = "ddimm46";
-+			reg = <14>;
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			type = <PCA955X_TYPE_LED>;
-+		};
-+
-+		led at 15 {
-+			label = "ddimm47";
-+			reg = <15>;
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			type = <PCA955X_TYPE_LED>;
-+		};
-+	};
-+
-+	pic3_dimm: pca9552 at 30 {
-+		compatible = "ibm,pca9552";
-+		reg = <0x30>;
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+
-+		led at 0 {
-+			label = "ddimm48";
-+			reg = <0>;
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			type = <PCA955X_TYPE_LED>;
-+		};
-+
-+		led at 1 {
-+			label = "ddimm49";
-+			reg = <1>;
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			type = <PCA955X_TYPE_LED>;
-+		};
-+
-+		led at 2 {
-+			label = "ddimm50";
-+			reg = <2>;
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			type = <PCA955X_TYPE_LED>;
-+		};
-+
-+		led at 3 {
-+			label = "ddimm51";
-+			reg = <3>;
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			type = <PCA955X_TYPE_LED>;
-+		};
-+
-+		led at 4 {
-+			label = "ddimm52";
-+			reg = <4>;
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			type = <PCA955X_TYPE_LED>;
-+		};
-+
-+		led at 5 {
-+			label = "ddimm53";
-+			reg = <5>;
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			type = <PCA955X_TYPE_LED>;
-+		};
-+
-+		led at 6 {
-+			label = "ddimm54";
-+			reg = <6>;
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			type = <PCA955X_TYPE_LED>;
-+		};
-+
-+		led at 7 {
-+			label = "ddimm55";
-+			reg = <7>;
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			type = <PCA955X_TYPE_LED>;
-+		};
-+
-+		led at 8 {
-+			label = "ddimm56";
-+			reg = <8>;
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			type = <PCA955X_TYPE_LED>;
-+		};
-+
-+		led at 9 {
-+			label = "ddimm57";
-+			reg = <9>;
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			type = <PCA955X_TYPE_LED>;
-+		};
-+
-+		led at 10 {
-+			label = "ddimm58";
-+			reg = <10>;
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			type = <PCA955X_TYPE_LED>;
-+		};
-+
-+		led at 11 {
-+			label = "ddimm59";
-+			reg = <11>;
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			type = <PCA955X_TYPE_LED>;
-+		};
-+
-+		led at 12 {
-+			label = "ddimm60";
-+			reg = <12>;
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			type = <PCA955X_TYPE_LED>;
-+		};
-+
-+		led at 13 {
-+			label = "ddimm61";
-+			reg = <13>;
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			type = <PCA955X_TYPE_LED>;
-+		};
-+
-+		led at 14 {
-+			label = "ddimm62";
-+			reg = <14>;
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			type = <PCA955X_TYPE_LED>;
-+		};
-+
-+		led at 15 {
-+			label = "ddimm63";
++			label = "vrm11";
 +			reg = <15>;
 +			retain-state-shutdown;
 +			default-state = "keep";
