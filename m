@@ -1,23 +1,25 @@
-From: Brendan Higgins <brendanhiggins@google.com>
-Date: Mon, 7 Jun 2021 12:50:07 -0700
-Subject: [RFC PATCH 3/3] i2c: aspeed: allow 255 byte block transfers
-In-Reply-To: <20210602044113.1581347-4-matt@codeconstruct.com.au>
-References: <20210602044113.1581347-1-matt@codeconstruct.com.au>
- <20210602044113.1581347-4-matt@codeconstruct.com.au>
-Message-ID: <CAFd5g44Hd8LbSPCs4CT=KAh-Z5jwuc9y62yVh-azbc8OU+p56A@mail.gmail.com>
+From: Andrew Jeffery <andrew@aj.id.au>
+Date: Tue, 08 Jun 2021 08:52:26 +0930
+Subject: =?UTF-8?Q?Re:_[PATCH_v4_2/7]_dt-bindings:_aspeed-sgpio:_Add_ast2600_sgpi?=
+ =?UTF-8?Q?o_compatibles.?=
+In-Reply-To: <20210607071514.11727-3-steven_lee@aspeedtech.com>
+References: <20210607071514.11727-1-steven_lee@aspeedtech.com>
+ <20210607071514.11727-3-steven_lee@aspeedtech.com>
+Message-ID: <578c8522-a182-427f-8587-746fc8ec93d5@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Jun 1, 2021 at 9:42 PM Matt Johnston <matt@codeconstruct.com.au> wrote:
->
-> Signed-off-by: Matt Johnston <matt@codeconstruct.com.au>
 
-Looks good to me. I have attempted much larger transfers than 255
-bytes in non-SMBus mode so this should work fine.
 
-Excited to see some of SMBus v3 support being added!
+On Mon, 7 Jun 2021, at 16:45, Steven Lee wrote:
+> AST2600 SoC has 2 SGPIO master interfaces one with 128 pins another one
+> with 80 pins. Add ast2600-sgpiom0-80 and ast2600-sgpiom-128 compatibles
+> and update descriptions to introduce the max number of available gpio
+> pins that AST2600 supported.
+> 
+> Signed-off-by: Steven Lee <steven_lee@aspeedtech.com>
 
-Reviewed-by: Brendan Higgins <brendanhiggins@google.com>
+Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
