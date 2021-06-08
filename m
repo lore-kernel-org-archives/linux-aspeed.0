@@ -1,94 +1,267 @@
 From: Billy Tsai <billy_tsai@aspeedtech.com>
-Date: Tue, 8 Jun 2021 14:46:56 +0800
-Subject: [v8 0/2] Support pwm driver for aspeed ast26xx
-Message-ID: <20210608064658.14262-1-billy_tsai@aspeedtech.com>
+Date: Tue, 8 Jun 2021 14:46:57 +0800
+Subject: [v8 1/2] dt-bindings: Add bindings for aspeed pwm-tach.
+In-Reply-To: <20210608064658.14262-1-billy_tsai@aspeedtech.com>
+References: <20210608064658.14262-1-billy_tsai@aspeedtech.com>
+Message-ID: <20210608064658.14262-2-billy_tsai@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The legacy driver of aspeed pwm is binding with tach controller and it
-doesn't follow the pwm framworks usage. In addition, the pwm register
-usage of the 6th generation of ast26xx has drastic change. So these
-patch serials add the new aspeed pwm driver to fix up the problem above.
+This patch adds device binding for aspeed pwm-tach device which is a
+multi-function device include pwm and tach function and pwm/tach device
+bindings which should be the child-node of pwm-tach device.
 
-Change since v7:
-- pwm-aspeed-g6.c
-  - Rename the driver: pwm-aspeed-g6.c -> pwm-aspeed-ast2600.c.
-  - Macro remove "_CH" part of the register name.
-  - Unroll the aspeed_pwm_get_period and remove it.
-  - Simplify the formula to get duty_pt
-  - Reduce the number of writting register. Organize all the fields and
-    write them at once.
-
-Change since v6:
-- dt-bindings:
-  - Add blank line between each DT property.
-  - Change the sub-node name from fan to tach-ch.
-- pwm-aspeed-g6.c
-  - Merge aspeed_pwm_set_period and aspeed_pwm_set_duty into .apply.
-  - Convert the factor type to u64 when calculating the period value.
-  - Using ROUND_UP strategy to calculate div_h for finer resolution.
-
-Change since v5:
-- pwm-aspeed-g6.c suggested by Uwe Kleine-K?nig
-  - Move the divide at the end of the calculation.
-  - Unified the prefix of the function name.
-  - Use div64_u64 to calculate the divider of frequency.
-
-Change since v4:
-- dt_binding:
-  - pwm/tach yaml: Replace child-node with additionalProperties
-  - pwm-tach yaml: Replace child-node with patternProperties
-- pwm-aspeed-g6.c suggested by Uwe Kleine-K?nig
-  - The bit definitions contained the name of the register.
-  - Remove single caller function and fold it to the caller.
-  - Avoid to divide by the result of a division.
-  - Remove unnecessary condition in .apply().
-  - Use goto for error handling
-
-Changes since v3:
-- Add the dt_binding for aspeed,ast2600-tach.
-- Describe the pwm/tach as child-node of pwm-tach mfd.
-- Complete the properties of pwm node.
-
-Changes since v2:
-- Remove the tach node, #address-cells and #size-cells from pwm-tach.yaml
-- Add clocks and reset properties to pwm-tach.yaml
-- Kconfig/Makfile sorted alphabetically
-- pwm-aspeed-g6.c suggested by Uwe Kleine-K?nig
-  - Add more hardware descriptions at top of the driver.
-  - Remove unused api request and free
-  - Move the initialize settings of all pwm channel to probe.
-  - Change the method of getting the approximate period.
-  - Read the hardware register values to fill the state for .get_state()
-
-Changes since v1:
-- Fix the dt_binding_check fail suggested by Rob Herring
-- Add depends to PWM_ASPEED_G6 configure suggested by Uwe Kleine-Konig
-- pwm-aspeed-g6.c suggested by Uwe Kleine-K?nig
-  - Fix license header
-  - Use bitfiled.h macro to define register fields
-  - Implement .remove device function
-  - Implement .get_state pwm api
-
-Billy Tsai (2):
-  dt-bindings: Add bindings for aspeed pwm-tach.
-  pwm: Add Aspeed ast2600 PWM support
-
- .../bindings/hwmon/aspeed,ast2600-tach.yaml   |  69 ++++
- .../bindings/mfd/aspeed,ast2600-pwm-tach.yaml |  87 +++++
- .../bindings/pwm/aspeed,ast2600-pwm.yaml      |  64 ++++
- drivers/pwm/Kconfig                           |   9 +
- drivers/pwm/Makefile                          |   1 +
- drivers/pwm/pwm-aspeed-ast2600.c              | 311 ++++++++++++++++++
- 6 files changed, 541 insertions(+)
+Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
+---
+ .../bindings/hwmon/aspeed,ast2600-tach.yaml   | 69 +++++++++++++++
+ .../bindings/mfd/aspeed,ast2600-pwm-tach.yaml | 87 +++++++++++++++++++
+ .../bindings/pwm/aspeed,ast2600-pwm.yaml      | 64 ++++++++++++++
+ 3 files changed, 220 insertions(+)
  create mode 100644 Documentation/devicetree/bindings/hwmon/aspeed,ast2600-tach.yaml
  create mode 100644 Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.yaml
  create mode 100644 Documentation/devicetree/bindings/pwm/aspeed,ast2600-pwm.yaml
- create mode 100644 drivers/pwm/pwm-aspeed-ast2600.c
 
+diff --git a/Documentation/devicetree/bindings/hwmon/aspeed,ast2600-tach.yaml b/Documentation/devicetree/bindings/hwmon/aspeed,ast2600-tach.yaml
+new file mode 100644
+index 000000000000..a08471f96a61
+--- /dev/null
++++ b/Documentation/devicetree/bindings/hwmon/aspeed,ast2600-tach.yaml
+@@ -0,0 +1,69 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++# Copyright (C) 2021 Aspeed, Inc.
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/hwmon/aspeed,ast2600-tach.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Aspeed Ast2600 Tach controller
++
++maintainers:
++  - Billy Tsai <billy_tsai@aspeedtech.com>
++
++description: |
++  The Aspeed Tach controller can support upto 16 fan input.
++  This module is part of the ast2600-pwm-tach multi-function device. For more
++  details see ../mfd/aspeed,ast2600-pwm-tach.yaml.
++
++properties:
++  compatible:
++    enum:
++      - aspeed,ast2600-tach
++
++  "#address-cells":
++    const: 1
++
++  "#size-cells":
++    const: 0
++
++  pinctrl-0: true
++
++  pinctrl-names:
++    const: default
++
++required:
++  - compatible
++  - "#address-cells"
++  - "#size-cells"
++
++additionalProperties:
++  type: object
++  properties:
++    reg:
++      description:
++        The tach channel used for this fan.
++      maxItems: 1
++
++    aspeed,min-rpm:
++      description:
++        define the minimal revolutions per minute of the measure fan
++        used to calculate the sample period of tach
++      default: 1000
++
++    aspeed,pulse-pr:
++      description:
++        Value specifying the number of pulses per revolution of the
++        monitored FAN.
++      default: 2
++
++    aspeed,tach-div:
++      description:
++        define the tachometer clock divider as an integer. Formula of
++        tach clock = clock source / (2^tach-div)^2
++      minimum: 0
++      maximum: 15
++      # The value that should be used if the property is not present
++      default: 5
++
++  required:
++    - reg
+diff --git a/Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.yaml b/Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.yaml
+new file mode 100644
+index 000000000000..ab49aff1928a
+--- /dev/null
++++ b/Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.yaml
+@@ -0,0 +1,87 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++# Copyright (C) 2021 Aspeed, Inc.
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/mfd/aspeed,ast2600-pwm-tach.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: PWM Tach controller Device Tree Bindings
++
++description: |
++  The PWM Tach controller is represented as a multi-function device which
++  includes:
++    PWM
++    Tach
++
++maintainers:
++  - Billy Tsai <billy_tsai@aspeedtech.com>
++
++properties:
++  compatible:
++    items:
++      - enum:
++          - aspeed,ast2600-pwm-tach
++      - const: syscon
++      - const: simple-mfd
++
++  reg:
++    maxItems: 1
++
++  clocks:
++    maxItems: 1
++
++  resets:
++    maxItems: 1
++
++required:
++  - compatible
++  - reg
++  - clocks
++  - resets
++
++patternProperties:
++  "^pwm(@[0-9a-f]+)?$":
++    $ref: ../pwm/aspeed,ast2600-pwm.yaml
++
++  "^tach(@[0-9a-f]+)?$":
++    $ref: ../hwmon/aspeed,ast2600-tach.yaml
++
++additionalProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/clock/ast2600-clock.h>
++    pwm_tach: pwm_tach at 1e610000 {
++      compatible = "aspeed,ast2600-pwm-tach", "syscon", "simple-mfd";
++      reg = <0x1e610000 0x100>;
++      clocks = <&syscon ASPEED_CLK_AHB>;
++      resets = <&syscon ASPEED_RESET_PWM>;
++
++      pwm: pwm {
++        compatible = "aspeed,ast2600-pwm";
++        #address-cells = <1>;
++        #size-cells = <0>;
++        #pwm-cells = <3>;
++        pinctrl-names = "default";
++        pinctrl-0 = <&pinctrl_pwm0_default>;
++        pwm-ch at 0 {
++          reg = <0>;
++          aspeed,wdt-reload-enable;
++          aspeed,wdt-reload-duty-point = <32>;
++        };
++      };
++
++      tach: tach {
++        compatible = "aspeed,ast2600-tach";
++        #address-cells = <1>;
++        #size-cells = <0>;
++        pinctrl-names = "default";
++        pinctrl-0 = <&pinctrl_tach0_default>;
++        tach-ch at 0 {
++          reg = <0>;
++          aspeed,min-rpm = <1000>;
++          aspeed,pulse-pr = <2>;
++          aspeed,tach-div = <5>;
++        };
++      };
++    };
+diff --git a/Documentation/devicetree/bindings/pwm/aspeed,ast2600-pwm.yaml b/Documentation/devicetree/bindings/pwm/aspeed,ast2600-pwm.yaml
+new file mode 100644
+index 000000000000..f501f8a769df
+--- /dev/null
++++ b/Documentation/devicetree/bindings/pwm/aspeed,ast2600-pwm.yaml
+@@ -0,0 +1,64 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++# Copyright (C) 2021 Aspeed, Inc.
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/pwm/aspeed,ast2600-pwm.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Aspeed Ast2600 PWM controller
++
++maintainers:
++  - Billy Tsai <billy_tsai@aspeedtech.com>
++
++description: |
++  The Aspeed PWM controller can support upto 16 PWM outputs.
++  This module is part of the ast2600-pwm-tach multi-function device. For more
++  details see ../mfd/aspeed,ast2600-pwm-tach.yaml.
++
++properties:
++  compatible:
++    enum:
++      - aspeed,ast2600-pwm
++
++  "#pwm-cells":
++    const: 3
++
++  "#address-cells":
++    const: 1
++
++  "#size-cells":
++    const: 0
++
++  pinctrl-0: true
++
++  pinctrl-names:
++    const: default
++
++required:
++  - compatible
++  - "#pwm-cells"
++  - "#address-cells"
++  - "#size-cells"
++
++additionalProperties:
++  description: Set extend properties for each pwm channel.
++  type: object
++  properties:
++    reg:
++      description:
++        The pwm channel index.
++      maxItems: 1
++
++    aspeed,wdt-reload-enable:
++      type: boolean
++      description:
++        Enable the function of wdt reset reload duty point.
++
++    aspeed,wdt-reload-duty-point:
++      description:
++        Define the duty point after wdt reset, 0 = 100%
++      minimum: 0
++      maximum: 255
++
++  required:
++    - reg
 -- 
 2.25.1
 
