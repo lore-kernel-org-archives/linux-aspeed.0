@@ -1,48 +1,28 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Date: Tue,  8 Jun 2021 23:02:47 +0100
-Subject: [PATCH] ARM: dts: aspeed: Drop wrong and inconsistent "sdhci"
- compatible
-Message-ID: <20210608220247.2237139-1-sudeep.holla@arm.com>
+From: Andrew Jeffery <andrew@aj.id.au>
+Date: Wed, 09 Jun 2021 09:13:26 +0930
+Subject: =?UTF-8?Q?Re:_[PATCH]_ARM:_dts:_aspeed:_Drop_wrong_and_inconsistent_"sdh?=
+ =?UTF-8?Q?ci"_compatible?=
+In-Reply-To: <20210608220247.2237139-1-sudeep.holla@arm.com>
+References: <20210608220247.2237139-1-sudeep.holla@arm.com>
+Message-ID: <88e0e13a-1497-49b9-8518-f3f94a92ba71@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-As per mmc/aspeed,sdhci.yaml, "sdhci" is not a valid compatible. In fact,
-it is not documented at all(including old txt bindings). Also it is
-pretty inconsistent within the same dtsi. Once instance of controller
-refers to it while the other doesn't.
 
-Fix it by dropping the wrong "sdhci" compatible.
 
-Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
----
- arch/arm/boot/dts/aspeed-g6.dtsi | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+On Wed, 9 Jun 2021, at 07:32, Sudeep Holla wrote:
+> As per mmc/aspeed,sdhci.yaml, "sdhci" is not a valid compatible. In fact,
+> it is not documented at all(including old txt bindings). Also it is
+> pretty inconsistent within the same dtsi. Once instance of controller
+> refers to it while the other doesn't.
+> 
+> Fix it by dropping the wrong "sdhci" compatible.
+> 
+> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
 
-diff --git a/arch/arm/boot/dts/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed-g6.dtsi
-index f96607b7b4e2..3488e8ba9df8 100644
---- a/arch/arm/boot/dts/aspeed-g6.dtsi
-+++ b/arch/arm/boot/dts/aspeed-g6.dtsi
-@@ -541,7 +541,7 @@ sdc: sdc at 1e740000 {
- 				status = "disabled";
- 
- 				sdhci0: sdhci at 1e740100 {
--					compatible = "aspeed,ast2600-sdhci", "sdhci";
-+					compatible = "aspeed,ast2600-sdhci";
- 					reg = <0x100 0x100>;
- 					interrupts = <GIC_SPI 43 IRQ_TYPE_LEVEL_HIGH>;
- 					sdhci,auto-cmd12;
-@@ -550,7 +550,7 @@ sdhci0: sdhci at 1e740100 {
- 				};
- 
- 				sdhci1: sdhci at 1e740200 {
--					compatible = "aspeed,ast2600-sdhci", "sdhci";
-+					compatible = "aspeed,ast2600-sdhci";
- 					reg = <0x200 0x100>;
- 					interrupts = <GIC_SPI 43 IRQ_TYPE_LEVEL_HIGH>;
- 					sdhci,auto-cmd12;
--- 
-2.25.1
+No idea what happened there. Thanks for the cleanup.
 
+Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
