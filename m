@@ -1,376 +1,70 @@
-From: Billy Tsai <billy_tsai@aspeedtech.com>
-Date: Tue, 8 Jun 2021 14:46:58 +0800
-Subject: [v8 2/2] pwm: Add Aspeed ast2600 PWM support
-In-Reply-To: <20210608064658.14262-1-billy_tsai@aspeedtech.com>
-References: <20210608064658.14262-1-billy_tsai@aspeedtech.com>
-Message-ID: <20210608064658.14262-3-billy_tsai@aspeedtech.com>
+From: Steven Lee <steven_lee@aspeedtech.com>
+Date: Tue, 8 Jun 2021 18:25:43 +0800
+Subject: [PATCH v5 08/10] gpio: gpio-aspeed-sgpio: Move irq_chip to
+ aspeed-sgpio struct
+In-Reply-To: <20210608102547.4880-1-steven_lee@aspeedtech.com>
+References: <20210608102547.4880-1-steven_lee@aspeedtech.com>
+Message-ID: <20210608102547.4880-9-steven_lee@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This patch add the support of PWM controller which can be found at aspeed
-ast2600 soc. The pwm supoorts up to 16 channels and it's part function
-of multi-function device "pwm-tach controller".
+The current design initializes irq->chip from a global irqchip struct,
+which causes multiple sgpio devices use the same irq_chip.
+The patch moves irq_chip to aspeed_sgpio struct for initializing
+irq_chip from their private gpio struct.
 
-Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
+Signed-off-by: Steven Lee <steven_lee@aspeedtech.com>
+Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
 ---
- drivers/pwm/Kconfig              |   9 +
- drivers/pwm/Makefile             |   1 +
- drivers/pwm/pwm-aspeed-ast2600.c | 311 +++++++++++++++++++++++++++++++
- 3 files changed, 321 insertions(+)
- create mode 100644 drivers/pwm/pwm-aspeed-ast2600.c
+ drivers/gpio/gpio-aspeed-sgpio.c | 17 ++++++++---------
+ 1 file changed, 8 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/pwm/Kconfig b/drivers/pwm/Kconfig
-index 63be5362fd3a..a5aac3ca4ac7 100644
---- a/drivers/pwm/Kconfig
-+++ b/drivers/pwm/Kconfig
-@@ -51,6 +51,15 @@ config PWM_AB8500
- 	  To compile this driver as a module, choose M here: the module
- 	  will be called pwm-ab8500.
+diff --git a/drivers/gpio/gpio-aspeed-sgpio.c b/drivers/gpio/gpio-aspeed-sgpio.c
+index 31475846c5fc..38f4900d84bd 100644
+--- a/drivers/gpio/gpio-aspeed-sgpio.c
++++ b/drivers/gpio/gpio-aspeed-sgpio.c
+@@ -30,6 +30,7 @@ struct aspeed_sgpio_pdata {
  
-+config PWM_ASPEED_AST2600
-+	tristate "Aspeed ast2600 PWM support"
-+	depends on ARCH_ASPEED || COMPILE_TEST
-+	help
-+	  This driver provides support for Aspeed ast2600 PWM controllers.
+ struct aspeed_sgpio {
+ 	struct gpio_chip chip;
++	struct irq_chip intc;
+ 	struct clk *pclk;
+ 	spinlock_t lock;
+ 	void __iomem *base;
+@@ -425,14 +426,6 @@ static void aspeed_sgpio_irq_handler(struct irq_desc *desc)
+ 	chained_irq_exit(ic, desc);
+ }
+ 
+-static struct irq_chip aspeed_sgpio_irqchip = {
+-	.name       = "aspeed-sgpio",
+-	.irq_ack    = aspeed_sgpio_irq_ack,
+-	.irq_mask   = aspeed_sgpio_irq_mask,
+-	.irq_unmask = aspeed_sgpio_irq_unmask,
+-	.irq_set_type   = aspeed_sgpio_set_type,
+-};
+-
+ static int aspeed_sgpio_setup_irqs(struct aspeed_sgpio *gpio,
+ 				   struct platform_device *pdev)
+ {
+@@ -455,8 +448,14 @@ static int aspeed_sgpio_setup_irqs(struct aspeed_sgpio *gpio,
+ 		iowrite32(0xffffffff, bank_reg(gpio, bank, reg_irq_status));
+ 	}
+ 
++	gpio->intc.name = dev_name(&pdev->dev);
++	gpio->intc.irq_ack = aspeed_sgpio_irq_ack;
++	gpio->intc.irq_mask = aspeed_sgpio_irq_mask;
++	gpio->intc.irq_unmask = aspeed_sgpio_irq_unmask;
++	gpio->intc.irq_set_type = aspeed_sgpio_set_type;
 +
-+	  To compile this driver as a module, choose M here: the module
-+	  will be called pwm-aspeed-ast2600.
-+
- config PWM_ATMEL
- 	tristate "Atmel PWM support"
- 	depends on OF
-diff --git a/drivers/pwm/Makefile b/drivers/pwm/Makefile
-index cbdcd55d69ee..ada454f9129a 100644
---- a/drivers/pwm/Makefile
-+++ b/drivers/pwm/Makefile
-@@ -2,6 +2,7 @@
- obj-$(CONFIG_PWM)		+= core.o
- obj-$(CONFIG_PWM_SYSFS)		+= sysfs.o
- obj-$(CONFIG_PWM_AB8500)	+= pwm-ab8500.o
-+obj-$(CONFIG_PWM_ASPEED_AST2600)	+= pwm-aspeed-ast2600.o
- obj-$(CONFIG_PWM_ATMEL)		+= pwm-atmel.o
- obj-$(CONFIG_PWM_ATMEL_HLCDC_PWM)	+= pwm-atmel-hlcdc.o
- obj-$(CONFIG_PWM_ATMEL_TCB)	+= pwm-atmel-tcb.o
-diff --git a/drivers/pwm/pwm-aspeed-ast2600.c b/drivers/pwm/pwm-aspeed-ast2600.c
-new file mode 100644
-index 000000000000..6ea0f7eb311f
---- /dev/null
-+++ b/drivers/pwm/pwm-aspeed-ast2600.c
-@@ -0,0 +1,311 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
-+/*
-+ * Copyright (C) 2021 Aspeed Technology Inc.
-+ *
-+ * PWM controller driver for Aspeed ast2600 SoCs.
-+ * This drivers doesn't support earlier version of the IP.
-+ *
-+ * The formula of pwm period duration:
-+ * period duration = ((DIV_L + 1) * BIT(DIV_H) * (PERIOD + 1)) / input-clk
-+ *
-+ * The software driver fixes the period to 255, which causes the high-frequency
-+ * precision of the PWM to be coarse, in exchange for the fineness of the duty cycle.
-+ *
-+ * Register usage:
-+ * PIN_ENABLE: When it is unset the pwm controller will always output low to the extern.
-+ * Use to determine whether the PWM channel is enabled or disabled
-+ * CLK_ENABLE: When it is unset the pwm controller will reset the duty counter to 0 and
-+ * output low to the PIN_ENABLE mux after that the driver can still change the pwm period
-+ * and duty and the value will apply when CLK_ENABLE be set again.
-+ * Use to determine whether duty_cycle bigger than 0.
-+ * PWM_ASPEED_CTRL_INVERSE: When it is toggled the output value will inverse immediately.
-+ * PWM_ASPEED_DUTY_CYCLE_FALLING_POINT/PWM_ASPEED_DUTY_CYCLE_RISING_POINT: When these two
-+ * values are equal it means the duty cycle = 100%.
-+ *
-+ * Limitations:
-+ * - When changing both duty cycle and period, we cannot prevent in
-+ *   software that the output might produce a period with mixed
-+ *   settings.
-+ * - Disabling the PWM doesn't complete the current period.
-+ *
-+ * Improvements:
-+ * - When only changing one of duty cycle or period, our pwm controller will not
-+ *   generate the glitch, the configure will change at next cycle of pwm.
-+ *   This improvement can disable/enable through PWM_ASPEED_CTRL_DUTY_SYNC_DISABLE.
-+ */
-+
-+#include <linux/clk.h>
-+#include <linux/errno.h>
-+#include <linux/io.h>
-+#include <linux/kernel.h>
-+#include <linux/mfd/syscon.h>
-+#include <linux/module.h>
-+#include <linux/of_platform.h>
-+#include <linux/of_device.h>
-+#include <linux/platform_device.h>
-+#include <linux/sysfs.h>
-+#include <linux/reset.h>
-+#include <linux/regmap.h>
-+#include <linux/bitfield.h>
-+#include <linux/slab.h>
-+#include <linux/pwm.h>
-+#include <linux/math64.h>
-+
-+/* The channel number of Aspeed pwm controller */
-+#define PWM_ASPEED_NR_PWMS 16
-+
-+/* PWM Control Register */
-+#define PWM_ASPEED_CTRL(ch) ((ch) * 0x10 + 0x00)
-+#define PWM_ASPEED_CTRL_LOAD_SEL_RISING_AS_WDT BIT(19)
-+#define PWM_ASPEED_CTRL_DUTY_LOAD_AS_WDT_ENABLE BIT(18)
-+#define PWM_ASPEED_CTRL_DUTY_SYNC_DISABLE BIT(17)
-+#define PWM_ASPEED_CTRL_CLK_ENABLE BIT(16)
-+#define PWM_ASPEED_CTRL_LEVEL_OUTPUT BIT(15)
-+#define PWM_ASPEED_CTRL_INVERSE BIT(14)
-+#define PWM_ASPEED_CTRL_OPEN_DRAIN_ENABLE BIT(13)
-+#define PWM_ASPEED_CTRL_PIN_ENABLE BIT(12)
-+#define PWM_ASPEED_CTRL_CLK_DIV_H GENMASK(11, 8)
-+#define PWM_ASPEED_CTRL_CLK_DIV_L GENMASK(7, 0)
-+
-+/* PWM Duty Cycle Register */
-+#define PWM_ASPEED_DUTY_CYCLE(ch) ((ch) * 0x10 + 0x04)
-+#define PWM_ASPEED_DUTY_CYCLE_PERIOD GENMASK(31, 24)
-+#define PWM_ASPEED_DUTY_CYCLE_POINT_AS_WDT GENMASK(23, 16)
-+#define PWM_ASPEED_DUTY_CYCLE_FALLING_POINT GENMASK(15, 8)
-+#define PWM_ASPEED_DUTY_CYCLE_RISING_POINT GENMASK(7, 0)
-+
-+/* PWM fixed value */
-+#define PWM_ASPEED_FIXED_PERIOD FIELD_MAX(PWM_ASPEED_DUTY_CYCLE_PERIOD)
-+
-+struct aspeed_pwm_data {
-+	struct pwm_chip chip;
-+	struct clk *clk;
-+	struct regmap *regmap;
-+	struct reset_control *reset;
-+};
-+
-+static inline struct aspeed_pwm_data *
-+aspeed_pwm_chip_to_data(struct pwm_chip *chip)
-+{
-+	return container_of(chip, struct aspeed_pwm_data, chip);
-+}
-+
-+static void aspeed_pwm_get_state(struct pwm_chip *chip, struct pwm_device *pwm,
-+				 struct pwm_state *state)
-+{
-+	struct device *dev = chip->dev;
-+	struct aspeed_pwm_data *priv = aspeed_pwm_chip_to_data(chip);
-+	u32 index = pwm->hwpwm;
-+	bool polarity, ch_en, clk_en;
-+	u32 duty_pt, val;
-+	unsigned long rate;
-+	u64 div_h, div_l, clk_period;
-+
-+	regmap_read(priv->regmap, PWM_ASPEED_CTRL(index), &val);
-+	polarity = FIELD_GET(PWM_ASPEED_CTRL_INVERSE, val);
-+	ch_en = FIELD_GET(PWM_ASPEED_CTRL_PIN_ENABLE, val);
-+	clk_en = FIELD_GET(PWM_ASPEED_CTRL_CLK_ENABLE, val);
-+	div_h = FIELD_GET(PWM_ASPEED_CTRL_CLK_DIV_H, val);
-+	div_l = FIELD_GET(PWM_ASPEED_CTRL_CLK_DIV_L, val);
-+	regmap_read(priv->regmap, PWM_ASPEED_DUTY_CYCLE(index), &val);
-+	duty_pt = FIELD_GET(PWM_ASPEED_DUTY_CYCLE_FALLING_POINT, val);
-+	clk_period = FIELD_GET(PWM_ASPEED_DUTY_CYCLE_PERIOD, val);
-+
-+	rate = clk_get_rate(priv->clk);
-+	state->period = DIV_ROUND_UP_ULL((u64)NSEC_PER_SEC * _BITULL(div_h) *
-+						 (div_l + 1) * (clk_period + 1),
-+					 rate);
-+
-+	if (clk_en && duty_pt)
-+		state->duty_cycle = DIV_ROUND_UP_ULL(
-+			state->period * duty_pt, clk_period + 1);
-+	else
-+		state->duty_cycle = clk_en ? state->period : 0;
-+	state->polarity = polarity;
-+	state->enabled = ch_en;
-+	dev_dbg(dev, "get period: %lldns, duty_cycle: %lldns", state->period,
-+		state->duty_cycle);
-+}
-+
-+static int aspeed_pwm_apply(struct pwm_chip *chip, struct pwm_device *pwm,
-+			    const struct pwm_state *state)
-+{
-+	struct device *dev = chip->dev;
-+	struct aspeed_pwm_data *priv = aspeed_pwm_chip_to_data(chip);
-+	u32 index = pwm->hwpwm, duty_pt;
-+	unsigned long rate;
-+	u64 div_h, div_l, divisor;
-+	bool clk_en;
-+
-+	dev_dbg(dev, "expect period: %lldns, duty_cycle: %lldns", state->period,
-+		state->duty_cycle);
-+
-+	rate = clk_get_rate(priv->clk);
-+	/*
-+	 * Pick the smallest value for div_h so that div_l can be the biggest
-+	 * which results in a finer resolution near the target period value.
-+	 */
-+	divisor = (u64)NSEC_PER_SEC * (PWM_ASPEED_FIXED_PERIOD + 1) *
-+		  (FIELD_MAX(PWM_ASPEED_CTRL_CLK_DIV_L) + 1);
-+	div_h = order_base_2(DIV64_U64_ROUND_UP(rate * state->period, divisor));
-+	if (div_h > 0xf)
-+		div_h = 0xf;
-+
-+	divisor = ((u64)NSEC_PER_SEC * (PWM_ASPEED_FIXED_PERIOD + 1)) << div_h;
-+	div_l = div64_u64(rate * state->period, divisor);
-+
-+	if (div_l == 0)
-+		return -ERANGE;
-+
-+	div_l -= 1;
-+
-+	if (div_l > 255)
-+		div_l = 255;
-+
-+	dev_dbg(dev, "clk source: %ld div_h %lld, div_l : %lld\n", rate, div_h,
-+		div_l);
-+	/* duty_pt = duty_cycle * (PERIOD + 1) / period */
-+	duty_pt = div64_u64(state->duty_cycle * rate,
-+			    (u64)NSEC_PER_SEC * _BITULL(div_h) * (div_l + 1));
-+	dev_dbg(dev, "duty_cycle = %lld, duty_pt = %d\n", state->duty_cycle,
-+		 duty_pt);
-+
-+	regmap_update_bits(priv->regmap, PWM_ASPEED_CTRL(index),
-+			   PWM_ASPEED_CTRL_PIN_ENABLE,
-+			   state->enabled ? PWM_ASPEED_CTRL_PIN_ENABLE : 0);
-+
-+	if (duty_pt == 0)
-+		clk_en = 0;
-+	else {
-+		clk_en = 1;
-+		if (duty_pt >= (PWM_ASPEED_FIXED_PERIOD + 1))
-+			duty_pt = 0;
-+		/*
-+		 * Fixed DUTY_CYCLE_PERIOD to its max value to get a
-+		 * fine-grained resolution for duty_cycle at the expense of a
-+		 * coarser period resolution.
-+		 */
-+		regmap_update_bits(priv->regmap, PWM_ASPEED_DUTY_CYCLE(index),
-+				PWM_ASPEED_DUTY_CYCLE_PERIOD |
-+				PWM_ASPEED_DUTY_CYCLE_RISING_POINT |
-+				PWM_ASPEED_DUTY_CYCLE_FALLING_POINT,
-+				FIELD_PREP(PWM_ASPEED_DUTY_CYCLE_PERIOD,
-+					PWM_ASPEED_FIXED_PERIOD) |
-+				FIELD_PREP(PWM_ASPEED_DUTY_CYCLE_FALLING_POINT,
-+				   duty_pt));
-+	}
-+
-+	regmap_update_bits(priv->regmap, PWM_ASPEED_CTRL(index),
-+			   PWM_ASPEED_CTRL_CLK_DIV_H |
-+			   PWM_ASPEED_CTRL_CLK_DIV_L |
-+			   PWM_ASPEED_CTRL_CLK_ENABLE |
-+			   PWM_ASPEED_CTRL_INVERSE,
-+			   FIELD_PREP(PWM_ASPEED_CTRL_CLK_DIV_H, div_h) |
-+			   FIELD_PREP(PWM_ASPEED_CTRL_CLK_DIV_L, div_l) |
-+			   FIELD_PREP(PWM_ASPEED_CTRL_CLK_ENABLE, clk_en) |
-+			   FIELD_PREP(PWM_ASPEED_CTRL_INVERSE,
-+			   state->polarity));
-+	return 0;
-+}
-+
-+static const struct pwm_ops aspeed_pwm_ops = {
-+	.apply = aspeed_pwm_apply,
-+	.get_state = aspeed_pwm_get_state,
-+	.owner = THIS_MODULE,
-+};
-+
-+static int aspeed_pwm_probe(struct platform_device *pdev)
-+{
-+	struct device *dev = &pdev->dev;
-+	int ret;
-+	struct aspeed_pwm_data *priv;
-+	struct device_node *np;
-+	struct platform_device *parent_dev;
-+
-+	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
-+	if (!priv)
-+		return -ENOMEM;
-+
-+	np = pdev->dev.parent->of_node;
-+	if (!of_device_is_compatible(np, "aspeed,ast2600-pwm-tach"))
-+		return dev_err_probe(dev, -ENODEV,
-+				     "unsupported pwm device binding\n");
-+
-+	priv->regmap = syscon_node_to_regmap(np);
-+	if (IS_ERR(priv->regmap))
-+		return dev_err_probe(dev, PTR_ERR(priv->regmap),
-+				     "couldn't get regmap\n");
-+
-+	parent_dev = of_find_device_by_node(np);
-+	priv->clk = devm_clk_get(&parent_dev->dev, 0);
-+	if (IS_ERR(priv->clk))
-+		return dev_err_probe(dev, PTR_ERR(priv->clk),
-+				     "couldn't get clock\n");
-+
-+	ret = clk_prepare_enable(priv->clk);
-+	if (ret)
-+		return dev_err_probe(dev, ret, "couldn't enable clock\n");
-+
-+	priv->reset = devm_reset_control_get_shared(&parent_dev->dev, NULL);
-+	if (IS_ERR(priv->reset)) {
-+		ret = dev_err_probe(dev, PTR_ERR(priv->reset),
-+				    "get reset failed\n");
-+		goto err_disable_clk;
-+	}
-+	ret = reset_control_deassert(priv->reset);
-+	if (ret) {
-+		dev_err_probe(dev, ret, "cannot deassert reset control\n");
-+		goto err_disable_clk;
-+	}
-+
-+	priv->chip.dev = dev;
-+	priv->chip.ops = &aspeed_pwm_ops;
-+	priv->chip.npwm = PWM_ASPEED_NR_PWMS;
-+
-+	ret = pwmchip_add(&priv->chip);
-+	if (ret < 0) {
-+		dev_err_probe(dev, ret, "failed to add PWM chip\n");
-+		goto err_assert_reset;
-+	}
-+	dev_set_drvdata(dev, priv);
-+	return 0;
-+err_assert_reset:
-+	reset_control_assert(priv->reset);
-+err_disable_clk:
-+	clk_disable_unprepare(priv->clk);
-+	return ret;
-+}
-+
-+static int aspeed_pwm_remove(struct platform_device *dev)
-+{
-+	struct aspeed_pwm_data *priv = platform_get_drvdata(dev);
-+
-+	pwmchip_remove(&priv->chip);
-+	reset_control_assert(priv->reset);
-+	clk_disable_unprepare(priv->clk);
-+
-+	return 0;
-+}
-+
-+static const struct of_device_id of_pwm_match_table[] = {
-+	{
-+		.compatible = "aspeed,ast2600-pwm",
-+	},
-+	{},
-+};
-+MODULE_DEVICE_TABLE(of, of_pwm_match_table);
-+
-+static struct platform_driver aspeed_pwm_driver = {
-+	.probe = aspeed_pwm_probe,
-+	.remove	= aspeed_pwm_remove,
-+	.driver	= {
-+		.name = "aspeed-pwm",
-+		.of_match_table = of_pwm_match_table,
-+	},
-+};
-+
-+module_platform_driver(aspeed_pwm_driver);
-+
-+MODULE_AUTHOR("Billy Tsai <billy_tsai@aspeedtech.com>");
-+MODULE_DESCRIPTION("Aspeed ast2600 PWM device driver");
-+MODULE_LICENSE("GPL v2");
+ 	irq = &gpio->chip.irq;
+-	irq->chip = &aspeed_sgpio_irqchip;
++	irq->chip = &gpio->intc;
+ 	irq->init_valid_mask = aspeed_sgpio_irq_init_valid_mask;
+ 	irq->handler = handle_bad_irq;
+ 	irq->default_type = IRQ_TYPE_NONE;
 -- 
-2.25.1
+2.17.1
 
