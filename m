@@ -1,285 +1,142 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Tue, 08 Jun 2021 12:52:24 +0930
-Subject: [PATCH v4 4/7] gpio: gpio-aspeed-sgpio: Add AST2600 sgpio support
-In-Reply-To: <20210608025033.GB2948@aspeedtech.com>
-References: <20210607071514.11727-1-steven_lee@aspeedtech.com>
- <20210607071514.11727-5-steven_lee@aspeedtech.com>
- <f3805ca3-3d77-4482-b75f-3e869625e0bc@www.fastmail.com>
- <20210608025033.GB2948@aspeedtech.com>
-Message-ID: <b8734d24-715c-46b3-ac70-e9c7c845a01b@www.fastmail.com>
+From: Billy Tsai <billy_tsai@aspeedtech.com>
+Date: Tue, 8 Jun 2021 04:26:24 +0000
+Subject: [v7 2/2] pwm: Add Aspeed ast2600 PWM support
+In-Reply-To: <20210607072459.mzanptd6mwvalh3n@pengutronix.de>
+References: <20210525043224.27998-1-billy_tsai@aspeedtech.com>
+ <20210525043224.27998-3-billy_tsai@aspeedtech.com>
+ <20210607072459.mzanptd6mwvalh3n@pengutronix.de>
+Message-ID: <A85AB108-192E-47BB-A6CA-C2013C605466@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+Hello,
 
+On 2021/6/7, 3:25 PM,Uwe Kleine-K?nigwrote:
 
-On Tue, 8 Jun 2021, at 12:20, Steven Lee wrote:
-> The 06/08/2021 07:43, Andrew Jeffery wrote:
-> > 
-> > 
-> > On Mon, 7 Jun 2021, at 16:45, Steven Lee wrote:
-> > > AST2600 SoC has 2 SGPIO master interfaces one with 128 pins another one
-> > > with 80 pins.
-> > > In the current driver, the maximum number of gpio pins of SoC is hardcoded
-> > > as 80 and the gpio pin count mask for GPIO Configuration register is
-> > > hardcode as GENMASK(9,6). In addition, some functions use the hardcoded
-> > > value to calculate the gpio offset.
-> > > The patch adds ast2600 compatibles and platform data that includes the
-> > > max number of gpio pins supported by ast2600 and gpio pin count mask for
-> > > GPIO Configuration register.
-> > > The patch also modifies some functions to pass aspeed_sgpio struct for
-> > > calculating gpio offset without using the hardcoded value.
-> > > 
-> > > Signed-off-by: Steven Lee <steven_lee@aspeedtech.com>
-> > > ---
-> > >  drivers/gpio/gpio-aspeed-sgpio.c | 110 +++++++++++++++++++++----------
-> > >  1 file changed, 76 insertions(+), 34 deletions(-)
-> > > 
-> > > diff --git a/drivers/gpio/gpio-aspeed-sgpio.c b/drivers/gpio/gpio-aspeed-sgpio.c
-> > > index 64e54f8c30d2..8b893356f0ca 100644
-> > > --- a/drivers/gpio/gpio-aspeed-sgpio.c
-> > > +++ b/drivers/gpio/gpio-aspeed-sgpio.c
-> > > @@ -35,12 +35,18 @@
-> > >  #define ASPEED_SGPIO_CLK_DIV_MASK	GENMASK(31, 16)
-> > >  #define ASPEED_SGPIO_ENABLE		BIT(0)
-> > >  
-> > > +struct aspeed_sgpio_pdata {
-> > > +	const u32 pin_mask;
-> > > +	int max_ngpios;
-> > > +};
-> > > +
-> > >  struct aspeed_sgpio {
-> > >  	struct gpio_chip chip;
-> > >  	struct clk *pclk;
-> > >  	spinlock_t lock;
-> > >  	void __iomem *base;
-> > >  	int irq;
-> > > +	int max_ngpios;
-> > >  	int n_sgpio;
-> > >  };
-> > >  
-> > > @@ -75,7 +81,13 @@ static const struct aspeed_sgpio_bank 
-> > > aspeed_sgpio_banks[] = {
-> > >  		.val_regs = 0x0038,
-> > >  		.rdata_reg = 0x0078,
-> > >  		.irq_regs = 0x003C,
-> > > -		.names = { "I", "J" },
-> > > +		.names = { "I", "J", "K", "L" },
-> > > +	},
-> > > +	{
-> > > +		.val_regs = 0x0090,
-> > > +		.rdata_reg = 0x007C,
-> > > +		.irq_regs = 0x0094,
-> > > +		.names = { "M", "N", "O", "P" },
-> > >  	},
-> > >  };
-> > >  
-> > > @@ -121,15 +133,15 @@ static void __iomem *bank_reg(struct aspeed_sgpio *gpio,
-> > >  	}
-> > >  }
-> > >  
-> > > -#define GPIO_BANK(x)    ((x % SGPIO_OUTPUT_OFFSET) >> 5)
-> > > -#define GPIO_OFFSET(x)  ((x % SGPIO_OUTPUT_OFFSET) & 0x1f)
-> > > -#define GPIO_BIT(x)     BIT(GPIO_OFFSET(x))
-> > > +#define GPIO_BANK(x, gpio)    ((x % (gpio)->max_ngpios) >> 5)
-> > 
-> > I couldn't stop myself from commenting on this: The 'context' parameter should be first (by convention), so:
-> > 
-> > #define GPIO_BANK(gpio, x) ((x % (gpio)->max_ngpios) >> 5)
-> > 
-> > There's another fix necessary here too - the x needs to be parenthesised:
-> > 
-> > #define GPIO_BANK(gpio, x) (((x) % (gpio)->max_ngpios) >> 5)
-> > 
-> > > +#define GPIO_OFFSET(x)        ((x) & GENMASK(4, 0))
-> > > +#define GPIO_BIT(x, gpio)     BIT(GPIO_OFFSET(x % (gpio)->max_ngpios))
-> > 
-> > Again, put the context parameter first. And again we should add the parentheses around x in the expression.
-> > 
-> > >  
-> > > -static const struct aspeed_sgpio_bank *to_bank(unsigned int offset)
-> > > +static const struct aspeed_sgpio_bank *to_bank(unsigned int offset, 
-> > > const struct aspeed_sgpio *gpio)
-> > >  {
-> > >  	unsigned int bank;
-> > >  
-> > > -	bank = GPIO_BANK(offset);
-> > > +	bank = GPIO_BANK(offset, gpio);
-> > >  
-> > >  	WARN_ON(bank >= ARRAY_SIZE(aspeed_sgpio_banks));
-> > >  	return &aspeed_sgpio_banks[bank];
-> > > @@ -139,18 +151,19 @@ static int aspeed_sgpio_init_valid_mask(struct 
-> > > gpio_chip *gc,
-> > >  		unsigned long *valid_mask, unsigned int ngpios)
-> > >  {
-> > >  	struct aspeed_sgpio *sgpio = gpiochip_get_data(gc);
-> > > +	int max_ngpios = sgpio->max_ngpios;
-> > >  	int n = sgpio->n_sgpio;
-> > > -	int c = SGPIO_OUTPUT_OFFSET - n;
-> > > +	int c = max_ngpios - n;
-> > >  
-> > > -	WARN_ON(ngpios < MAX_NR_HW_SGPIO * 2);
-> > > +	WARN_ON(ngpios < max_ngpios * 2);
-> > >  
-> > >  	/* input GPIOs in the lower range */
-> > >  	bitmap_set(valid_mask, 0, n);
-> > >  	bitmap_clear(valid_mask, n, c);
-> > >  
-> > > -	/* output GPIOS above SGPIO_OUTPUT_OFFSET */
-> > > -	bitmap_set(valid_mask, SGPIO_OUTPUT_OFFSET, n);
-> > > -	bitmap_clear(valid_mask, SGPIO_OUTPUT_OFFSET + n, c);
-> > > +	/* output GPIOS above max_ngpios */
-> > > +	bitmap_set(valid_mask, max_ngpios, n);
-> > > +	bitmap_clear(valid_mask, max_ngpios + n, c);
-> > >  
-> > >  	return 0;
-> > >  }
-> > > @@ -161,30 +174,30 @@ static void 
-> > > aspeed_sgpio_irq_init_valid_mask(struct gpio_chip *gc,
-> > >  	struct aspeed_sgpio *sgpio = gpiochip_get_data(gc);
-> > >  	int n = sgpio->n_sgpio;
-> > >  
-> > > -	WARN_ON(ngpios < MAX_NR_HW_SGPIO * 2);
-> > > +	WARN_ON(ngpios < sgpio->max_ngpios * 2);
-> > >  
-> > >  	/* input GPIOs in the lower range */
-> > >  	bitmap_set(valid_mask, 0, n);
-> > >  	bitmap_clear(valid_mask, n, ngpios - n);
-> > >  }
-> > >  
-> > > -static bool aspeed_sgpio_is_input(unsigned int offset)
-> > > +static bool aspeed_sgpio_is_input(unsigned int offset, const struct 
-> > > aspeed_sgpio *gpio)
-> > >  {
-> > > -	return offset < SGPIO_OUTPUT_OFFSET;
-> > > +	return offset < gpio->max_ngpios;
-> > >  }
-> > >  
-> > >  static int aspeed_sgpio_get(struct gpio_chip *gc, unsigned int offset)
-> > >  {
-> > >  	struct aspeed_sgpio *gpio = gpiochip_get_data(gc);
-> > > -	const struct aspeed_sgpio_bank *bank = to_bank(offset);
-> > > +	const struct aspeed_sgpio_bank *bank = to_bank(offset, gpio);
-> > >  	unsigned long flags;
-> > >  	enum aspeed_sgpio_reg reg;
-> > >  	int rc = 0;
-> > >  
-> > >  	spin_lock_irqsave(&gpio->lock, flags);
-> > >  
-> > > -	reg = aspeed_sgpio_is_input(offset) ? reg_val : reg_rdata;
-> > > -	rc = !!(ioread32(bank_reg(gpio, bank, reg)) & GPIO_BIT(offset));
-> > > +	reg = aspeed_sgpio_is_input(offset, gpio) ? reg_val : reg_rdata;
-> > > +	rc = !!(ioread32(bank_reg(gpio, bank, reg)) & GPIO_BIT(offset, gpio));
-> > >  
-> > >  	spin_unlock_irqrestore(&gpio->lock, flags);
-> > >  
-> > > @@ -194,11 +207,11 @@ static int aspeed_sgpio_get(struct gpio_chip *gc, 
-> > > unsigned int offset)
-> > >  static int sgpio_set_value(struct gpio_chip *gc, unsigned int offset, 
-> > > int val)
-> > >  {
-> > >  	struct aspeed_sgpio *gpio = gpiochip_get_data(gc);
-> > > -	const struct aspeed_sgpio_bank *bank = to_bank(offset);
-> > > +	const struct aspeed_sgpio_bank *bank = to_bank(offset, gpio);
-> > >  	void __iomem *addr_r, *addr_w;
-> > >  	u32 reg = 0;
-> > >  
-> > > -	if (aspeed_sgpio_is_input(offset))
-> > > +	if (aspeed_sgpio_is_input(offset, gpio))
-> > >  		return -EINVAL;
-> > >  
-> > >  	/* Since this is an output, read the cached value from rdata, then
-> > > @@ -209,9 +222,9 @@ static int sgpio_set_value(struct gpio_chip *gc, 
-> > > unsigned int offset, int val)
-> > >  	reg = ioread32(addr_r);
-> > >  
-> > >  	if (val)
-> > > -		reg |= GPIO_BIT(offset);
-> > > +		reg |= GPIO_BIT(offset, gpio);
-> > >  	else
-> > > -		reg &= ~GPIO_BIT(offset);
-> > > +		reg &= ~GPIO_BIT(offset, gpio);
-> > >  
-> > >  	iowrite32(reg, addr_w);
-> > >  
-> > > @@ -232,7 +245,9 @@ static void aspeed_sgpio_set(struct gpio_chip *gc, 
-> > > unsigned int offset, int val)
-> > >  
-> > >  static int aspeed_sgpio_dir_in(struct gpio_chip *gc, unsigned int offset)
-> > >  {
-> > > -	return aspeed_sgpio_is_input(offset) ? 0 : -EINVAL;
-> > > +	struct aspeed_sgpio *gpio = gpiochip_get_data(gc);
-> > > +
-> > > +	return aspeed_sgpio_is_input(offset, gpio) ? 0 : -EINVAL;
-> > >  }
-> > >  
-> > >  static int aspeed_sgpio_dir_out(struct gpio_chip *gc, unsigned int 
-> > > offset, int val)
-> > > @@ -253,7 +268,9 @@ static int aspeed_sgpio_dir_out(struct gpio_chip 
-> > > *gc, unsigned int offset, int v
-> > >  
-> > >  static int aspeed_sgpio_get_direction(struct gpio_chip *gc, unsigned 
-> > > int offset)
-> > >  {
-> > > -	return !!aspeed_sgpio_is_input(offset);
-> > > +	struct aspeed_sgpio *gpio = gpiochip_get_data(gc);
-> > > +
-> > > +	return !!aspeed_sgpio_is_input(offset, gpio);
-> > >  }
-> > >  
-> > >  static void irqd_to_aspeed_sgpio_data(struct irq_data *d,
-> > > @@ -268,8 +285,8 @@ static void irqd_to_aspeed_sgpio_data(struct irq_data *d,
-> > >  	WARN_ON(!internal);
-> > >  
-> > >  	*gpio = internal;
-> > > -	*bank = to_bank(*offset);
-> > > -	*bit = GPIO_BIT(*offset);
-> > > +	*bank = to_bank(*offset, internal);
-> > > +	*bit = GPIO_BIT(*offset, internal);
-> > >  }
-> > >  
-> > >  static void aspeed_sgpio_irq_ack(struct irq_data *d)
-> > > @@ -466,9 +483,21 @@ static int aspeed_sgpio_setup_irqs(struct 
-> > > aspeed_sgpio *gpio,
-> > >  	return 0;
-> > >  }
-> > >  
-> > > +static const struct aspeed_sgpio_pdata ast2600_sgpiom_128_pdata = {
-> > > +	.max_ngpios = 128,
-> > > +	.pin_mask = GENMASK(10, 6),
-> > > +};
-> > > +
-> > > +static const struct aspeed_sgpio_pdata ast2600_sgpiom_80_pdata = {
-> > > +	.max_ngpios = 80,
-> > > +	.pin_mask = GENMASK(10, 6),
-> > > +};
-> > > +
-> > >  static const struct of_device_id aspeed_sgpio_of_table[] = {
-> > >  	{ .compatible = "aspeed,ast2400-sgpio" },
-> > >  	{ .compatible = "aspeed,ast2500-sgpio" },
-> > 
-> > Add .data for these too.
-> > 
-> 
-> I was wondering if I can define a platform data for both ast2400 and
-> ast2500 as they have the same configurations.
-> 
-> For example:
-> 
-> static const struct aspeed_sgpio_pdata ast2400_sgpio_pdata = {
-> 	.max_ngpios = 80,
-> 	.pin_mask = GENMASK(9, 6),
-> };
-> 
-> static const struct of_device_id aspeed_sgpio_of_table[] = {
-> 	{ .compatible = "aspeed,ast2400-sgpio", .data = ast2400_sgpio_pdata, },
-> 	{ .compatible = "aspeed,ast2500-sgpio", .data = ast2400_sgpio_pdata, },
-> 
+    Hello,
 
-Yep, that's fine.
+    On Tue, May 25, 2021 at 12:32:24PM +0800, Billy Tsai wrote:
+    >> This patch add the support of PWM controller which can be found at aspeed
+    >> ast2600 soc. The pwm supoorts up to 16 channels and it's part function
+    >> of multi-function device "pwm-tach controller".
+    >> 
+    >> Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
+    >> ---
+    >>  drivers/pwm/Kconfig         |   9 +
+    >>  drivers/pwm/Makefile        |   1 +
+    >>  drivers/pwm/pwm-aspeed-g6.c | 334 ++++++++++++++++++++++++++++++++++++
 
-Cheers,
+    > This doesn't match the driver name which is only "aspeed_pwm". Can you
+    > please use matching names and pick the function prefix accordingly? What
+    > is the difference between g6 and ast2600?
 
-Andrew
+They are the same. I will use ast2600 to replace g6.
+
+    >> + * The software driver fixes the period to 255, which causes the high-frequency
+    >> + * precision of the PWM to be coarse, in exchange for the fineness of the duty cycle.
+    >> + *
+    >> + * Register usage:
+    >> + * PIN_ENABLE: When it is unset the pwm controller will always output low to the extern.
+    >> + * Use to determine whether the PWM channel is enabled or disabled
+    >> + * CLK_ENABLE: When it is unset the pwm controller will reset the duty counter to 0 and
+    >> + * output low to the PIN_ENABLE mux after that the driver can still change the pwm period
+    >> + * and duty and the value will apply when CLK_ENABLE be set again.
+    >> + * Use to determin whether duty_cycle bigger than 0.
+
+    > s/determin/determine/
+
+    > Unsetting CLK_ENABLE has an immediate effect, right? 
+
+Yes.
+
+    >> + * PWM_ASPEED_CTRL_INVERSE: When it is toggled the output value will inverse immediately.
+    >> + * PWM_ASPEED_DUTY_CYCLE_FALLING_POINT/PWM_ASPEED_DUTY_CYCLE_RISING_POINT: When these two
+    >> + * values are equal it means the duty cycle = 100%.
+
+    > Just for my understanding: These allow to implement a phase offset and
+    > so to implement inverse polarity you can either use
+    > PWM_ASPEED_CTRL_INVERSE or set these values accordingly, right?
+
+Yes.
+
+    >> +#include <linux/io.h>
+    >> +#include <linux/kernel.h>
+    >> +#include <linux/mfd/syscon.h>
+    >> +#include <linux/module.h>
+    >> +#include <linux/of_platform.h>
+    >> +#include <linux/of_device.h>
+    >> +#include <linux/platform_device.h>
+    >> +#include <linux/sysfs.h>
+    >> +#include <linux/reset.h>
+    >> +#include <linux/regmap.h>
+    >> +#include <linux/bitfield.h>
+    >> +#include <linux/slab.h>
+    >> +#include <linux/pwm.h>
+    >> +#include <linux/math64.h>
+    >> +
+    >> +/* The channel number of Aspeed pwm controller */
+
+    > Is there an officially correct spelling of "Aspeed" that your marketing
+    > section would be happy if it were to be used consistently? We have
+    > "Aspeed" and "ASPEED" in this patch set.
+
+I will use "Aspeed".
+
+    >> +static int aspeed_pwm_apply(struct pwm_chip *chip, struct pwm_device *pwm,
+    >> +			    const struct pwm_state *state)
+    >> +{
+    >> +	struct device *dev = chip->dev;
+    >> +	struct aspeed_pwm_data *priv = aspeed_pwm_chip_to_data(chip);
+    >> +	u32 index = pwm->hwpwm, duty_pt;
+    >> +	unsigned long rate;
+    >> +	u64 apply_period, div_h, div_l, divisor;
+    >> +
+    >> +	dev_dbg(dev, "expect period: %lldns, duty_cycle: %lldns", state->period,
+    >> +		state->duty_cycle);
+    >> +
+    >> +	rate = clk_get_rate(priv->clk);
+    >> +	/*
+    >> +	 * Pick the smallest value for div_h so that div_l can be the biggest
+    >> +	 * which results in a finer resolution near the target period value.
+    >> +	 */
+    >> +	divisor = (u64)NSEC_PER_SEC * (PWM_ASPEED_FIXED_PERIOD + 1) *
+    >> +		  (FIELD_MAX(PWM_ASPEED_CTRL_CLK_DIV_L) + 1);
+    >> +	div_h = order_base_2(DIV64_U64_ROUND_UP(rate * state->period, divisor));
+    >> +	if (div_h > 0xf)
+    >> +		div_h = 0xf;
+    >> +
+    >> +	divisor = ((u64)NSEC_PER_SEC * (PWM_ASPEED_FIXED_PERIOD + 1)) << div_h;
+    >> +	div_l = div64_u64(rate * state->period, divisor);
+    >> +
+    >> +	if (div_l == 0)
+    >> +		return -ERANGE;
+    >> +
+    >> +	div_l -= 1;
+    >> +
+    >> +	if (div_l > 255)
+    >> +		div_l = 255;
+    >> +
+    >> +	dev_dbg(dev, "clk source: %ld div_h %lld, div_l : %lld\n", rate, div_h,
+    >> +		div_l);
+    >> +
+    >> +	apply_period = DIV_ROUND_UP_ULL((u64)NSEC_PER_SEC * _BITULL(div_h) *
+    >> +						(div_l + 1) *
+    >> +						(PWM_ASPEED_FIXED_PERIOD + 1),
+    >> +					rate);
+    >> +	duty_pt = DIV_ROUND_DOWN_ULL(state->duty_cycle *
+    >> +					     (PWM_ASPEED_FIXED_PERIOD + 1),
+    >> +				     apply_period);
+
+    > Don't divide by the result of a division. So better use:
+
+    >	state->duty_cycle * rate
+    >	----------------------------------------
+    >	NSEC_PER_SEC * BITULL(div_h) * div_l + 1
+
+    > (Is it correct that PWM_ASPEED_FIXED_PERIOD doesn't appear here?)
+
+Yes, it is correct.
+
