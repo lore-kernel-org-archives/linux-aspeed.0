@@ -1,52 +1,48 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Date: Tue, 8 Jun 2021 15:15:57 +0200
-Subject: [PATCH] mmc: sdhci-of-aspeed: Turn down a phase correction warning
-In-Reply-To: <20210607013020.85885-1-andrew@aj.id.au>
-References: <20210607013020.85885-1-andrew@aj.id.au>
-Message-ID: <CAPDyKFrqKW9VwEga0bzY+H9Br57RbfXBnxJFP_-rWcfpic-0hA@mail.gmail.com>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Date: Tue,  8 Jun 2021 23:02:47 +0100
+Subject: [PATCH] ARM: dts: aspeed: Drop wrong and inconsistent "sdhci"
+ compatible
+Message-ID: <20210608220247.2237139-1-sudeep.holla@arm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, 7 Jun 2021 at 03:30, Andrew Jeffery <andrew@aj.id.au> wrote:
->
-> The card timing and the bus frequency are not changed atomically with
-> respect to calls to the set_clock() callback in the driver. The result
-> is the driver sees a transient state where there's a mismatch between
-> the two and thus the inputs to the phase correction calculation
-> formula are garbage.
->
-> Switch from dev_warn() to dev_dbg() to avoid noise in the normal case,
-> though the change does make bad configurations less likely to be
-> noticed.
->
-> Reported-by: Joel Stanley <joel@jms.id.au>
-> Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
+As per mmc/aspeed,sdhci.yaml, "sdhci" is not a valid compatible. In fact,
+it is not documented at all(including old txt bindings). Also it is
+pretty inconsistent within the same dtsi. Once instance of controller
+refers to it while the other doesn't.
 
-Applied for next, thanks!
+Fix it by dropping the wrong "sdhci" compatible.
 
-Kind regards
-Uffe
+Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
+---
+ arch/arm/boot/dts/aspeed-g6.dtsi | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-> ---
->  drivers/mmc/host/sdhci-of-aspeed.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/drivers/mmc/host/sdhci-of-aspeed.c b/drivers/mmc/host/sdhci-of-aspeed.c
-> index d001c51074a0..e4665a438ec5 100644
-> --- a/drivers/mmc/host/sdhci-of-aspeed.c
-> +++ b/drivers/mmc/host/sdhci-of-aspeed.c
-> @@ -150,7 +150,7 @@ static int aspeed_sdhci_phase_to_tap(struct device *dev, unsigned long rate_hz,
->
->         tap = div_u64(phase_period_ps, prop_delay_ps);
->         if (tap > ASPEED_SDHCI_NR_TAPS) {
-> -               dev_warn(dev,
-> +               dev_dbg(dev,
->                          "Requested out of range phase tap %d for %d degrees of phase compensation at %luHz, clamping to tap %d\n",
->                          tap, phase_deg, rate_hz, ASPEED_SDHCI_NR_TAPS);
->                 tap = ASPEED_SDHCI_NR_TAPS;
-> --
-> 2.30.2
->
+diff --git a/arch/arm/boot/dts/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed-g6.dtsi
+index f96607b7b4e2..3488e8ba9df8 100644
+--- a/arch/arm/boot/dts/aspeed-g6.dtsi
++++ b/arch/arm/boot/dts/aspeed-g6.dtsi
+@@ -541,7 +541,7 @@ sdc: sdc at 1e740000 {
+ 				status = "disabled";
+ 
+ 				sdhci0: sdhci at 1e740100 {
+-					compatible = "aspeed,ast2600-sdhci", "sdhci";
++					compatible = "aspeed,ast2600-sdhci";
+ 					reg = <0x100 0x100>;
+ 					interrupts = <GIC_SPI 43 IRQ_TYPE_LEVEL_HIGH>;
+ 					sdhci,auto-cmd12;
+@@ -550,7 +550,7 @@ sdhci0: sdhci at 1e740100 {
+ 				};
+ 
+ 				sdhci1: sdhci at 1e740200 {
+-					compatible = "aspeed,ast2600-sdhci", "sdhci";
++					compatible = "aspeed,ast2600-sdhci";
+ 					reg = <0x200 0x100>;
+ 					interrupts = <GIC_SPI 43 IRQ_TYPE_LEVEL_HIGH>;
+ 					sdhci,auto-cmd12;
+-- 
+2.25.1
+
