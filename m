@@ -1,11 +1,10 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Wed, 09 Jun 2021 10:12:33 +0930
-Subject: =?UTF-8?Q?Re:_[PATCH_v5_01/10]_dt-bindings:_aspeed-sgpio:_Convert_txt_bi?=
- =?UTF-8?Q?ndings_to_yaml.?=
-In-Reply-To: <20210608102547.4880-2-steven_lee@aspeedtech.com>
+Date: Wed, 09 Jun 2021 10:13:51 +0930
+Subject: [PATCH v5 03/10] ARM: dts: aspeed-g6: Add SGPIO node.
+In-Reply-To: <20210608102547.4880-4-steven_lee@aspeedtech.com>
 References: <20210608102547.4880-1-steven_lee@aspeedtech.com>
- <20210608102547.4880-2-steven_lee@aspeedtech.com>
-Message-ID: <1f34af33-0905-480e-8a55-e5e34d66216f@www.fastmail.com>
+ <20210608102547.4880-4-steven_lee@aspeedtech.com>
+Message-ID: <cef3e619-bd49-4318-bdcd-f844d2b80af7@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -15,77 +14,62 @@ Content-Transfer-Encoding: 7bit
 
 
 On Tue, 8 Jun 2021, at 19:55, Steven Lee wrote:
-> sgpio-aspeed bindings should be converted to yaml format.
+> AST2600 supports 2 SGPIO master interfaces one with 128 pins another one
+> with 80 pins.
 > 
 > Signed-off-by: Steven Lee <steven_lee@aspeedtech.com>
 > ---
->  .../bindings/gpio/aspeed,sgpio.yaml           | 75 +++++++++++++++++++
->  .../devicetree/bindings/gpio/sgpio-aspeed.txt | 46 ------------
->  2 files changed, 75 insertions(+), 46 deletions(-)
->  create mode 100644 Documentation/devicetree/bindings/gpio/aspeed,sgpio.yaml
->  delete mode 100644 Documentation/devicetree/bindings/gpio/sgpio-aspeed.txt
+>  arch/arm/boot/dts/aspeed-g6.dtsi | 28 ++++++++++++++++++++++++++++
+>  1 file changed, 28 insertions(+)
 > 
-> diff --git a/Documentation/devicetree/bindings/gpio/aspeed,sgpio.yaml 
-> b/Documentation/devicetree/bindings/gpio/aspeed,sgpio.yaml
-> new file mode 100644
-> index 000000000000..b2ae211411ff
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/gpio/aspeed,sgpio.yaml
-> @@ -0,0 +1,75 @@
-> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-> +%YAML 1.2
-> +---
-> +$id: http://devicetree.org/schemas/gpio/aspeed,sgpio.yaml#
-> +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> +
-> +title: Aspeed SGPIO controller
-> +
-> +maintainers:
-> +  - Andrew Jeffery <andrew@aj.id.au>
-> +
-> +description:
-> +  This SGPIO controller is for ASPEED AST2500 SoC, it supports up to 
-> 80 full
-> +  featured Serial GPIOs. Each of the Serial GPIO pins can be 
-> programmed to
-> +  support the following options
-> +  - Support interrupt option for each input port and various interrupt
-> +    sensitivity option (level-high, level-low, edge-high, edge-low)
-> +  - Support reset tolerance option for each output port
-> +  - Directly connected to APB bus and its shift clock is from APB bus 
-> clock
-> +    divided by a programmable value.
-> +  - Co-work with external signal-chained TTL components 
-> (74LV165/74LV595)
-> +
-> +properties:
-> +  compatible:
-> +    enum:
-> +      - aspeed,ast2400-sgpio
-> +      - aspeed,ast2500-sgpio
-> +
-> +  reg:
-> +    maxItems: 1
-> +
-> +  gpio-controller: true
-> +
-> +  '#gpio-cells':
-> +    const: 2
-> +
-> +  interrupts:
-> +    maxItems: 1
-> +
-> +  interrupt-controller: true
-> +
-> +  clocks:
-> +    maxItems: 1
-> +
-> +  ngpios: true
-> +
-> +  bus-frequency: true
+> diff --git a/arch/arm/boot/dts/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed-g6.dtsi
+> index f96607b7b4e2..c55baaf94314 100644
+> --- a/arch/arm/boot/dts/aspeed-g6.dtsi
+> +++ b/arch/arm/boot/dts/aspeed-g6.dtsi
+> @@ -377,6 +377,34 @@
+>  				#interrupt-cells = <2>;
+>  			};
+>  
+> +			sgpiom0: sgpiom at 1e780500 {
+> +				#gpio-cells = <2>;
+> +				gpio-controller;
+> +				compatible = "aspeed,ast2600-sgpiom-128";
+> +				reg = <0x1e780500 0x100>;
+> +				interrupts = <GIC_SPI 51 IRQ_TYPE_LEVEL_HIGH>;
+> +				clocks = <&syscon ASPEED_CLK_APB2>;
 
-I'm not familiar enough with dt-schema to know that this does what we need, so deferring to Rob.
+The example in the binding document used ASPEED_CLK_APB. Which is correct? I assume ASPEED_CLK_APB2?
 
-Looks good otherwise.
-
-Andrew
+> +				interrupt-controller;
+> +				bus-frequency = <12000000>;
+> +				pinctrl-names = "default";
+> +				pinctrl-0 = <&pinctrl_sgpm1_default>;
+> +				status = "disabled";
+> +			};
+> +
+> +			sgpiom1: sgpiom at 1e780600 {
+> +				#gpio-cells = <2>;
+> +				gpio-controller;
+> +				compatible = "aspeed,ast2600-sgpiom-80";
+> +				reg = <0x1e780600 0x100>;
+> +				interrupts = <GIC_SPI 70 IRQ_TYPE_LEVEL_HIGH>;
+> +				clocks = <&syscon ASPEED_CLK_APB2>;
+> +				interrupt-controller;
+> +				bus-frequency = <12000000>;
+> +				pinctrl-names = "default";
+> +				pinctrl-0 = <&pinctrl_sgpm2_default>;
+> +				status = "disabled";
+> +			};
+> +
+>  			gpio1: gpio at 1e780800 {
+>  				#gpio-cells = <2>;
+>  				gpio-controller;
+> -- 
+> 2.17.1
+> 
+> 
+> _______________________________________________
+> linux-arm-kernel mailing list
+> linux-arm-kernel at lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+> 
