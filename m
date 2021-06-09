@@ -1,31 +1,47 @@
 From: Linus Walleij <linus.walleij@linaro.org>
-Date: Wed, 9 Jun 2021 11:17:22 +0200
-Subject: [PATCH v3 1/5] dt-bindings: aspeed-sgpio: Convert txt bindings to
- yaml.
-In-Reply-To: <20210604033039.GC25112@aspeedtech.com>
-References: <20210603101822.9645-1-steven_lee@aspeedtech.com>
- <20210603101822.9645-2-steven_lee@aspeedtech.com>
- <516bb11a-b75f-49e1-ba79-e5a4c344a7ab@www.fastmail.com>
- <20210604033039.GC25112@aspeedtech.com>
-Message-ID: <CACRpkdawakx66Nix41h=FzhL--QEMZCcDX=a_hf_kTq+0DjpAg@mail.gmail.com>
+Date: Wed, 9 Jun 2021 12:54:37 +0200
+Subject: [PATCH v5 00/10] ASPEED sgpio driver enhancement.
+In-Reply-To: <20210608102547.4880-1-steven_lee@aspeedtech.com>
+References: <20210608102547.4880-1-steven_lee@aspeedtech.com>
+Message-ID: <CACRpkdZOStr+K9U9QTkAcsk4NxuSqBRVv_-9_VkGJbT69iSxmQ@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Jun 4, 2021 at 5:31 AM Steven Lee <steven_lee@aspeedtech.com> wrote:
+On Tue, Jun 8, 2021 at 12:26 PM Steven Lee <steven_lee@aspeedtech.com> wrote:
 
-> However, it might affect users who update kernel/driver from the
-> old kernel/driver as they may expect the gpio output pin base is start
-> from 80(MAX_NR_HW_SGPIO).
+> AST2600 SoC has 2 SGPIO master interfaces one with 128 pins another one
+> with 80 pins, AST2500/AST2400 SoC has 1 SGPIO master interface that
+> supports up to 80 pins.
+> In the current driver design, the max number of sgpio pins is hardcoded
+> in macro MAX_NR_HW_SGPIO and the value is 80.
+>
+> For supporting sgpio master interfaces of AST2600 SoC, the patch series
+> contains the following enhancement:
+> - Convert txt dt-bindings to yaml.
+> - Update aspeed-g6 dtsi to support the enhanced sgpio.
+> - Define max number of gpio pins in ast2600 platform data. Old chip
+>   uses the original hardcoded value.
+> - Support muiltiple SGPIO master interfaces.
+> - Support up to 128 pins.
+> - Support wdt reset tolerance.
+> - Fix irq_chip issues which causes multiple sgpio devices use the same
+>   irq_chip data.
+> - Replace all of_*() APIs with device_*().
+>
+> Changes from v4:
 
-Why? What users? In-kernel, out-of-tree-kernel or userspace users?
+v5 looks good to me!
 
-In-kernel users can be fixed, out-of-tree kernels we don't care about
-and userspace should be using the character device.
+I just need Rob's or another DT persons nod on the bindings (or timeout)
+before I merge it. Poke me if nothing happens.
 
-Just change it.
+>   ARM: dts: aspeed-g6: Add SGPIO node.
+>   ARM: dts: aspeed-g5: Remove ngpios from sgpio node.
+
+These two need to be merged through the SoC tree, the rest I will handle.
 
 Yours,
 Linus Walleij
