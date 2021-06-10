@@ -1,27 +1,56 @@
 From: Rob Herring <robh@kernel.org>
-Date: Thu, 10 Jun 2021 11:18:15 -0500
-Subject: [PATCH v5 01/10] dt-bindings: aspeed-sgpio: Convert txt bindings
- to yaml.
-In-Reply-To: <20210608102547.4880-2-steven_lee@aspeedtech.com>
+Date: Thu, 10 Jun 2021 11:23:20 -0500
+Subject: [PATCH v5 02/10] dt-bindings: aspeed-sgpio: Add ast2600 sgpio
+ compatibles.
+In-Reply-To: <20210608102547.4880-3-steven_lee@aspeedtech.com>
 References: <20210608102547.4880-1-steven_lee@aspeedtech.com>
- <20210608102547.4880-2-steven_lee@aspeedtech.com>
-Message-ID: <20210610161815.GA1910106@robh.at.kernel.org>
+ <20210608102547.4880-3-steven_lee@aspeedtech.com>
+Message-ID: <20210610162320.GA1910317@robh.at.kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, 08 Jun 2021 18:25:36 +0800, Steven Lee wrote:
-> sgpio-aspeed bindings should be converted to yaml format.
+On Tue, Jun 08, 2021 at 06:25:37PM +0800, Steven Lee wrote:
+> AST2600 SoC has 2 SGPIO master interfaces one with 128 pins another one
+> with 80 pins. Add ast2600-sgpiom0-80 and ast2600-sgpiom-128 compatibles
+> and update descriptions to introduce the max number of available gpio
+> pins that AST2600 supported.
 > 
 > Signed-off-by: Steven Lee <steven_lee@aspeedtech.com>
+> Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
 > ---
->  .../bindings/gpio/aspeed,sgpio.yaml           | 75 +++++++++++++++++++
->  .../devicetree/bindings/gpio/sgpio-aspeed.txt | 46 ------------
->  2 files changed, 75 insertions(+), 46 deletions(-)
->  create mode 100644 Documentation/devicetree/bindings/gpio/aspeed,sgpio.yaml
->  delete mode 100644 Documentation/devicetree/bindings/gpio/sgpio-aspeed.txt
+>  Documentation/devicetree/bindings/gpio/aspeed,sgpio.yaml | 9 ++++++---
+>  1 file changed, 6 insertions(+), 3 deletions(-)
 > 
+> diff --git a/Documentation/devicetree/bindings/gpio/aspeed,sgpio.yaml b/Documentation/devicetree/bindings/gpio/aspeed,sgpio.yaml
+> index b2ae211411ff..0e42eded3c1e 100644
+> --- a/Documentation/devicetree/bindings/gpio/aspeed,sgpio.yaml
+> +++ b/Documentation/devicetree/bindings/gpio/aspeed,sgpio.yaml
+> @@ -10,9 +10,10 @@ maintainers:
+>    - Andrew Jeffery <andrew@aj.id.au>
+>  
+>  description:
+> -  This SGPIO controller is for ASPEED AST2500 SoC, it supports up to 80 full
+> -  featured Serial GPIOs. Each of the Serial GPIO pins can be programmed to
+> -  support the following options
+> +  This SGPIO controller is for ASPEED AST2400, AST2500 and AST2600 SoC,
+> +  AST2600 have two sgpio master one with 128 pins another one with 80 pins,
+> +  AST2500/AST2400 have one sgpio master with 80 pins. Each of the Serial
+> +  GPIO pins can be programmed to support the following options
+>    - Support interrupt option for each input port and various interrupt
+>      sensitivity option (level-high, level-low, edge-high, edge-low)
+>    - Support reset tolerance option for each output port
+> @@ -25,6 +26,8 @@ properties:
+>      enum:
+>        - aspeed,ast2400-sgpio
+>        - aspeed,ast2500-sgpio
+> +      - aspeed,ast2600-sgpiom-80
+> +      - aspeed,ast2600-sgpiom-128
 
-Reviewed-by: Rob Herring <robh@kernel.org>
+If the number of GPIOs is the only difference, then I don't think you 
+should get rid of ngpios. It's one thing if it varies from one SoC to 
+the next, but if something is per instance we should have a property.
+
+Rob
