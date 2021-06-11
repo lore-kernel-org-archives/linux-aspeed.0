@@ -1,74 +1,127 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Fri, 11 Jun 2021 08:57:12 +0930
-Subject: =?UTF-8?Q?Re:_[PATCH_v5_02/10]_dt-bindings:_aspeed-sgpio:_Add_ast2600_sg?=
- =?UTF-8?Q?pio_compatibles.?=
-In-Reply-To: <20210610162320.GA1910317@robh.at.kernel.org>
+From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+Date: Fri, 11 Jun 2021 21:02:53 +0200
+Subject: [PATCH v5 06/10] gpio: gpio-aspeed-sgpio: Add AST2400 and AST2500
+ platform data.
+In-Reply-To: <1a4dc5a6-8035-4879-ba9d-b6d6afd48196@www.fastmail.com>
 References: <20210608102547.4880-1-steven_lee@aspeedtech.com>
- <20210608102547.4880-3-steven_lee@aspeedtech.com>
- <20210610162320.GA1910317@robh.at.kernel.org>
-Message-ID: <f639f1bb-fe53-4c15-a6dd-91b45ea7eef1@www.fastmail.com>
+ <20210608102547.4880-7-steven_lee@aspeedtech.com>
+ <6f87ccf4-9b8f-4c67-84a1-e83a2ee5103b@www.fastmail.com>
+ <20210609041227.GB14839@aspeedtech.com>
+ <1a4dc5a6-8035-4879-ba9d-b6d6afd48196@www.fastmail.com>
+Message-ID: <CAMpxmJUMQg2tsO+GLzNDNwoEtm6G3OHcK5M3zPOt9A4LDmCyYw@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+On Wed, Jun 9, 2021 at 8:46 AM Andrew Jeffery <andrew@aj.id.au> wrote:
+>
+>
+>
+> On Wed, 9 Jun 2021, at 13:42, Steven Lee wrote:
+> > The 06/09/2021 08:55, Andrew Jeffery wrote:
+> > >
+> > >
+> > > On Tue, 8 Jun 2021, at 19:55, Steven Lee wrote:
+> > > > We use platform data to store GPIO pin mask and the max number of
+> > > > available GPIO pins for AST2600.
+> > > > Refactor driver to also add the platform data for AST2400/AST2500 and
+> > > > remove unused MAX_NR_HW_SGPIO and ASPEED_SGPIO_PINS_MASK macros.
+> > > >
+> > > > Signed-off-by: Steven Lee <steven_lee@aspeedtech.com>
+> > > > ---
+> > > >  drivers/gpio/gpio-aspeed-sgpio.c | 34 +++++++++++---------------------
+> > > >  1 file changed, 12 insertions(+), 22 deletions(-)
+> > > >
+> > > > diff --git a/drivers/gpio/gpio-aspeed-sgpio.c b/drivers/gpio/gpio-aspeed-sgpio.c
+> > > > index ea20a0127748..7d0a4f6fd9d1 100644
+> > > > --- a/drivers/gpio/gpio-aspeed-sgpio.c
+> > > > +++ b/drivers/gpio/gpio-aspeed-sgpio.c
+> > > > @@ -17,21 +17,8 @@
+> > > >  #include <linux/spinlock.h>
+> > > >  #include <linux/string.h>
+> > > >
+> > > > -/*
+> > > > - * MAX_NR_HW_GPIO represents the number of actual hardware-supported GPIOs (ie,
+> > > > - * slots within the clocked serial GPIO data). Since each HW GPIO is both an
+> > > > - * input and an output, we provide MAX_NR_HW_GPIO * 2 lines on our gpiochip
+> > > > - * device.
+> > > > - *
+> > > > - * We use SGPIO_OUTPUT_OFFSET to define the split between the inputs and
+> > > > - * outputs; the inputs start at line 0, the outputs start at OUTPUT_OFFSET.
+> > > > - */
+> > > > -#define MAX_NR_HW_SGPIO                  80
+> > > > -#define SGPIO_OUTPUT_OFFSET              MAX_NR_HW_SGPIO
+> > > > -
+> > > >  #define ASPEED_SGPIO_CTRL                0x54
+> > > >
+> > > > -#define ASPEED_SGPIO_PINS_MASK           GENMASK(9, 6)
+> > > >  #define ASPEED_SGPIO_CLK_DIV_MASK        GENMASK(31, 16)
+> > > >  #define ASPEED_SGPIO_ENABLE              BIT(0)
+> > > >  #define ASPEED_SGPIO_PINS_SHIFT          6
+> > > > @@ -484,6 +471,11 @@ static int aspeed_sgpio_setup_irqs(struct
+> > > > aspeed_sgpio *gpio,
+> > > >   return 0;
+> > > >  }
+> > > >
+> > > > +static const struct aspeed_sgpio_pdata ast2400_sgpio_pdata = {
+> > > > + .max_ngpios = 80,
+> > > > + .pin_mask = GENMASK(9, 6),
+> > > > +};
+> > > > +
+> > > >  static const struct aspeed_sgpio_pdata ast2600_sgpiom_128_pdata = {
+> > > >   .max_ngpios = 128,
+> > > >   .pin_mask = GENMASK(10, 6),
+> > > > @@ -495,8 +487,8 @@ static const struct aspeed_sgpio_pdata
+> > > > ast2600_sgpiom_80_pdata = {
+> > > >  };
+> > > >
+> > > >  static const struct of_device_id aspeed_sgpio_of_table[] = {
+> > > > - { .compatible = "aspeed,ast2400-sgpio" },
+> > > > - { .compatible = "aspeed,ast2500-sgpio" },
+> > > > + { .compatible = "aspeed,ast2400-sgpio", .data = &ast2400_sgpio_pdata,
+> > > > },
+> > > > + { .compatible = "aspeed,ast2500-sgpio", .data = &ast2400_sgpio_pdata,
+> > > > },
+> > > >   { .compatible = "aspeed,ast2600-sgpiom-128", .data =
+> > > > &ast2600_sgpiom_128_pdata, },
+> > > >   { .compatible = "aspeed,ast2600-sgpiom-80", .data =
+> > > > &ast2600_sgpiom_80_pdata, },
+> > > >   {}
+> > > > @@ -521,13 +513,11 @@ static int __init aspeed_sgpio_probe(struct
+> > > > platform_device *pdev)
+> > > >           return PTR_ERR(gpio->base);
+> > > >
+> > > >   pdata = device_get_match_data(&pdev->dev);
+> > > > - if (pdata) {
+> > > > -         gpio->max_ngpios = pdata->max_ngpios;
+> > > > -         pin_mask = pdata->pin_mask;
+> > > > - } else {
+> > > > -         gpio->max_ngpios = MAX_NR_HW_SGPIO;
+> > > > -         pin_mask = ASPEED_SGPIO_PINS_MASK;
+> > > > - }
+> > > > + if (!pdata)
+> > > > +         return -EINVAL;
+> > > > +
+> > > > + gpio->max_ngpios = pdata->max_ngpios;
+> > > > + pin_mask = pdata->pin_mask;
+> > >
+> > > Hmm, okay, maybe just re-order the patches so this commit comes before the previous one. That way we don't immediately rip out this condition that we just introduced in the previous patch.
+> > >
+> > > I think I suggested squashing it into the previous patch, but with the removal of the comments and macros I think it's worth leaving it separate, just reordered.
+> > >
+> >
+> > I was wondering if I can squash patch-05 and patch-06 into one patch
+> > as this patch(patch-06) requires macros, structures, and functions that
+> > modified in the previous patch(patch-05).
+>
+> Yeah, fair enough. Just squash them.
+>
+> Cheers,
+>
+> Andrew
 
+I'm ready to pick this up as soon as you respin the series.
 
-On Fri, 11 Jun 2021, at 01:53, Rob Herring wrote:
-> On Tue, Jun 08, 2021 at 06:25:37PM +0800, Steven Lee wrote:
-> > AST2600 SoC has 2 SGPIO master interfaces one with 128 pins another one
-> > with 80 pins. Add ast2600-sgpiom0-80 and ast2600-sgpiom-128 compatibles
-> > and update descriptions to introduce the max number of available gpio
-> > pins that AST2600 supported.
-> > 
-> > Signed-off-by: Steven Lee <steven_lee@aspeedtech.com>
-> > Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
-> > ---
-> >  Documentation/devicetree/bindings/gpio/aspeed,sgpio.yaml | 9 ++++++---
-> >  1 file changed, 6 insertions(+), 3 deletions(-)
-> > 
-> > diff --git a/Documentation/devicetree/bindings/gpio/aspeed,sgpio.yaml b/Documentation/devicetree/bindings/gpio/aspeed,sgpio.yaml
-> > index b2ae211411ff..0e42eded3c1e 100644
-> > --- a/Documentation/devicetree/bindings/gpio/aspeed,sgpio.yaml
-> > +++ b/Documentation/devicetree/bindings/gpio/aspeed,sgpio.yaml
-> > @@ -10,9 +10,10 @@ maintainers:
-> >    - Andrew Jeffery <andrew@aj.id.au>
-> >  
-> >  description:
-> > -  This SGPIO controller is for ASPEED AST2500 SoC, it supports up to 80 full
-> > -  featured Serial GPIOs. Each of the Serial GPIO pins can be programmed to
-> > -  support the following options
-> > +  This SGPIO controller is for ASPEED AST2400, AST2500 and AST2600 SoC,
-> > +  AST2600 have two sgpio master one with 128 pins another one with 80 pins,
-> > +  AST2500/AST2400 have one sgpio master with 80 pins. Each of the Serial
-> > +  GPIO pins can be programmed to support the following options
-> >    - Support interrupt option for each input port and various interrupt
-> >      sensitivity option (level-high, level-low, edge-high, edge-low)
-> >    - Support reset tolerance option for each output port
-> > @@ -25,6 +26,8 @@ properties:
-> >      enum:
-> >        - aspeed,ast2400-sgpio
-> >        - aspeed,ast2500-sgpio
-> > +      - aspeed,ast2600-sgpiom-80
-> > +      - aspeed,ast2600-sgpiom-128
-> 
-> If the number of GPIOs is the only difference, then I don't think you 
-> should get rid of ngpios. It's one thing if it varies from one SoC to 
-> the next, but if something is per instance we should have a property.
-> 
-
-There are two issues:
-
-1. The maximum number of GPIOs supported by the controller
-2. The maximum number of GPIOs supported by the platform
-
-These are different because of what the controller does - here's some previous discussion on the topic:
-
-https://lore.kernel.org/linux-gpio/f2875111-9ba9-43b7-b2a4-d00c8725f5a0 at www.fastmail.com/
-
-We've used ngpios to describe 2; this decision was made prior to the 2600 design - the SGPIO controller for both the 2400 and 2500 supported a maximum of 80 GPIOs. With the 2600 we have to differentiate between the two SGPIO controllers because they support a different maximum number of GPIOs. The proposed approach of different compatibles keeps the behaviour of ngpios the same across all controller implementations.
-
-Cheers,
-
-Andrew
+Bart
