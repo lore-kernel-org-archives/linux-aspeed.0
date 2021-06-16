@@ -1,29 +1,38 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Wed, 16 Jun 2021 08:13:27 +0930
-Subject: [PATCH v4 00/16] ipmi: Allow raw access to KCS devices
-In-Reply-To: <20210615184657.GF2921206@minyard.net>
-References: <20210608104757.582199-1-andrew@aj.id.au>
- <20210615184657.GF2921206@minyard.net>
-Message-ID: <b1b7fd82-3edf-41a6-baa6-530bcf76c3ca@www.fastmail.com>
+From: Quan Nguyen <quan@os.amperecomputing.com>
+Date: Wed, 16 Jun 2021 10:10:44 +0700
+Subject: [PATCH v2 0/2] i2c: aspeed: Late ack Tx done irqs and fix unhandled
+ Tx done with NAK
+Message-ID: <20210616031046.2317-1-quan@os.amperecomputing.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+This series consists of two patches to fix the below issues observed
+when testing with slave mode:
+  + Unhandled Tx done with NAK
+  + Early ack'ed of Tx done (ACK and NAK) causing "Unexpected Ack on
+  read request".
 
+v2:
+  + Split these patches to separate series [Joel]
+  + Added the Fixes lines [Joel]
+  + Fixed multiline comment [Joel]
+  + Refactor irq clearing code [Joel, Guenter]
+  + Revised commit message [Joel, Quan]
 
-On Wed, 16 Jun 2021, at 04:16, Corey Minyard wrote:
-> On Tue, Jun 08, 2021 at 08:17:41PM +0930, Andrew Jeffery wrote:
-> > 
-> > Hello,
-> > 
-> > This is the 4th spin of the series refactoring the keyboard-controller-style
-> > device drivers in the IPMI subsystem.
-> 
-> Ok, no comments and everything looks good, I have this queued for the
-> next Linux release.
+v1:
+  + These patches are first introduced in
+  https://lkml.org/lkml/2021/5/19/205
 
-Thanks!
+Quan Nguyen (2):
+  i2c: aspeed: Fix unhandled Tx done with NAK
+  i2c: aspeed: Acknowledge Tx done with and without ACK irq late
 
-Andrew
+ drivers/i2c/busses/i2c-aspeed.c | 22 ++++++++++++++--------
+ 1 file changed, 14 insertions(+), 8 deletions(-)
+
+-- 
+2.28.0
+
