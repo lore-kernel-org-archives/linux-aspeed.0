@@ -1,35 +1,30 @@
 From: Zev Weiss <zweiss@equinix.com>
-Date: Fri, 18 Jun 2021 23:24:17 +0000
-Subject: [PATCH v4 06/16] ipmi: kcs_bmc: Split headers into device and
- client
-In-Reply-To: <20210608104757.582199-7-andrew@aj.id.au>
+Date: Fri, 18 Jun 2021 23:26:04 +0000
+Subject: [PATCH v4 08/16] ipmi: kcs_bmc: Decouple the IPMI chardev from
+ the core
+In-Reply-To: <20210608104757.582199-9-andrew@aj.id.au>
 References: <20210608104757.582199-1-andrew@aj.id.au>
- <20210608104757.582199-7-andrew@aj.id.au>
-Message-ID: <20210618232417.GB9658@hatter>
+ <20210608104757.582199-9-andrew@aj.id.au>
+Message-ID: <20210618232603.GC9658@hatter>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Jun 08, 2021 at 05:47:47AM CDT, Andrew Jeffery wrote:
->Strengthen the distinction between code that abstracts the
->implementation of the KCS behaviours (device drivers) and code that
->exploits KCS behaviours (clients). Neither needs to know about the APIs
->required by the other, so provide separate headers.
+On Tue, Jun 08, 2021 at 05:47:49AM CDT, Andrew Jeffery wrote:
+>Now that we have untangled the data-structures, split the userspace
+>interface out into its own module. Userspace interfaces and drivers are
+>registered to the KCS BMC core to support arbitrary binding of either.
 >
 >Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
 >---
-> drivers/char/ipmi/kcs_bmc.c           | 23 ++++++++++------
-> drivers/char/ipmi/kcs_bmc.h           | 27 +++++++++----------
-> drivers/char/ipmi/kcs_bmc_aspeed.c    | 17 ++++++------
-> drivers/char/ipmi/kcs_bmc_cdev_ipmi.c | 39 ++++++++++++++++++---------
-> drivers/char/ipmi/kcs_bmc_client.h    | 27 +++++++++++++++++++
-> drivers/char/ipmi/kcs_bmc_device.h    | 19 +++++++++++++
-> drivers/char/ipmi/kcs_bmc_npcm7xx.c   | 17 ++++++------
-> 7 files changed, 117 insertions(+), 52 deletions(-)
-> create mode 100644 drivers/char/ipmi/kcs_bmc_client.h
-> create mode 100644 drivers/char/ipmi/kcs_bmc_device.h
+> drivers/char/ipmi/Kconfig             | 13 +++++
+> drivers/char/ipmi/Makefile            |  3 +-
+> drivers/char/ipmi/kcs_bmc.c           | 80 +++++++++++++++++++++++++--
+> drivers/char/ipmi/kcs_bmc_cdev_ipmi.c | 31 +++++++++--
+> drivers/char/ipmi/kcs_bmc_client.h    | 14 +++++
+> 5 files changed, 128 insertions(+), 13 deletions(-)
 >
 
 Reviewed-by: Zev Weiss <zweiss@equinix.com>
