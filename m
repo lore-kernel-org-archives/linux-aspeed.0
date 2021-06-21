@@ -1,50 +1,48 @@
-From: Jamin Lin <jamin_lin@aspeedtech.com>
-Date: Mon, 21 Jun 2021 13:14:46 +0800
-Subject: [PATCH 3/3] i2c:support new register set for ast2600
-In-Reply-To: <YMxuz03aTijWH6uj@smile.fi.intel.com>
-References: <20210617094424.27123-1-jamin_lin@aspeedtech.com>
- <20210617094424.27123-4-jamin_lin@aspeedtech.com>
- <YMslyzUKp/7J0ncu@smile.fi.intel.com>
- <20210618035855.GB31659@aspeedtech.com>
- <YMxuz03aTijWH6uj@smile.fi.intel.com>
-Message-ID: <20210621051446.GB27876@aspeedtech.com>
+From: Eddie James <eajames@linux.ibm.com>
+Date: Mon, 21 Jun 2021 14:09:27 -0500
+Subject: [PATCH] ARM: dts: aspeed: Everest PSU #3 address change
+In-Reply-To: <20210610202940.3650554-1-bjwyman@gmail.com>
+References: <20210610202940.3650554-1-bjwyman@gmail.com>
+Message-ID: <d0e66d10765ae85b1bd939ddacc7f7d861190196.camel@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The 06/18/2021 10:00, Andy Shevchenko wrote:
-> On Fri, Jun 18, 2021 at 11:58:55AM +0800, Jamin Lin wrote:
-> > The 06/17/2021 10:36, Andy Shevchenko wrote:
-> > > On Thu, Jun 17, 2021 at 05:43:40PM +0800, Jamin Lin wrote:
-> > > > Add i2c new driver to support new register set for AST2600.
-> > > > AST2600 support three modes for data transfer which are
-> > > > byte mode, buffer mode and dma mode, respectively.
-> > > > The global driver of i2c is used to set the new register
-> > > > mode and define the base clock frequency
-> > > > of baseclk_1~baseclk_4.
+On Thu, 2021-06-10 at 20:29 +0000, Brandon Wyman wrote:
+> From: "B. J. Wyman" <bjwyman@gmail.com>
 > 
-> > >  - shrink the code base by at least ~15% (it's possible), i.e. -200 LOCs
-> > Can you describe it more detail?
-> > Do you mean I should separate the patch file to fix size limitation? 
+> The third power supply had an I2C address conflict with another
+> device
+> in the system. The device will have the address changed from 6Ah to
+> 6Dh.
+
+Thanks Brandon.
+
+Reviewed-by: Eddie James <eajames@linux.ibm.com>
+
 > 
-> No. Based on my brief review you introduce to many redundant LOCs (lines of
-> code). Remove them, refactor the code, make it small and neat and easy to read
-> and understand. It is possible to achieve!
->
-Will fix
-Thanks
-> > >  - rethink how you do calculations and bit operations
-> > >  - better code style
-> > >
-> > Thanks for your review and very good suggestion
-> > I will update them and sent patch again.
-> > By the way, I received test failed email from Robot due to compiling
-> > warning. I will fix them, too.
+> Signed-off-by: B. J. Wyman <bjwyman@gmail.com>
+> ---
+>  arch/arm/boot/dts/aspeed-bmc-ibm-everest.dts | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 > 
-> -- 
-> With Best Regards,
-> Andy Shevchenko
-> 
-> 
+> diff --git a/arch/arm/boot/dts/aspeed-bmc-ibm-everest.dts
+> b/arch/arm/boot/dts/aspeed-bmc-ibm-everest.dts
+> index 3295c8c7c05c..480cb6604c7d 100644
+> --- a/arch/arm/boot/dts/aspeed-bmc-ibm-everest.dts
+> +++ b/arch/arm/boot/dts/aspeed-bmc-ibm-everest.dts
+> @@ -536,9 +536,9 @@ power-supply at 69 {
+>  		reg = <0x69>;
+>  	};
+>  
+> -	power-supply at 6a {
+> +	power-supply at 6d {
+>  		compatible = "ibm,cffps";
+> -		reg = <0x6a>;
+> +		reg = <0x6d>;
+>  	};
+>  
+>  	power-supply at 6b {
+
