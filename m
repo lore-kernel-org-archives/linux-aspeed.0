@@ -1,34 +1,60 @@
-From: Billy Tsai <billy_tsai@aspeedtech.com>
-Date: Thu, 24 Jun 2021 11:58:21 +0800
-Subject: [PATCH] hwmon: (aspeed-pwm-tacho) Using falling edge.
-Message-ID: <20210624035821.25375-1-billy_tsai@aspeedtech.com>
+From: Joel Stanley <joel@jms.id.au>
+Date: Thu, 24 Jun 2021 18:37:42 +0930
+Subject: [PATCH] ARM: dts: aspeed: Fix AST2600 machines line names
+Message-ID: <20210624090742.56640-1-joel@jms.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The tach shouldn't use both edges to measure. When the tach input
-duty cycle isn't 50% the return value will inaccurate.
+Tacoma and Rainier both have a line-names array that is too long:
 
-Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
+ gpio gpiochip0: gpio-line-names is length 232 but should be at most length 208
+
+This was probably copied from an AST2500 device tree that did have more
+GPIOs on the controller.
+
+Fixes: e9b24b55ca4f ("ARM: dts: aspeed: rainier: Add gpio line names")
+Fixes: 2f68e4e7df67 ("ARM: dts: aspeed: tacoma: Add gpio line names")
+Signed-off-by: Joel Stanley <joel@jms.id.au>
 ---
- drivers/hwmon/aspeed-pwm-tacho.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts | 5 +----
+ arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts  | 5 +----
+ 2 files changed, 2 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/hwmon/aspeed-pwm-tacho.c b/drivers/hwmon/aspeed-pwm-tacho.c
-index 3d8239fd66ed..0a70a0e22acf 100644
---- a/drivers/hwmon/aspeed-pwm-tacho.c
-+++ b/drivers/hwmon/aspeed-pwm-tacho.c
-@@ -158,7 +158,7 @@
-  * 10: both
-  * 11: reserved.
-  */
--#define M_TACH_MODE 0x02 /* 10b */
-+#define M_TACH_MODE 0x00 /* 10b */
- #define M_TACH_UNIT 0x0210
- #define INIT_FAN_CTRL 0xFF
+diff --git a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
+index 941c0489479a..481d0ee1f85f 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
+@@ -280,10 +280,7 @@ &gpio0 {
+ 	/*W0-W7*/	"","","","","","","","",
+ 	/*X0-X7*/	"","","","","","","","",
+ 	/*Y0-Y7*/	"","","","","","","","",
+-	/*Z0-Z7*/	"","","","","","","","",
+-	/*AA0-AA7*/	"","","","","","","","",
+-	/*AB0-AB7*/	"","","","","","","","",
+-	/*AC0-AC7*/	"","","","","","","","";
++	/*Z0-Z7*/	"","","","","","","","";
  
+ 	pin_mclr_vpp {
+ 		gpio-hog;
+diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts b/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts
+index e863ec088970..48038b2ef3df 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts
+@@ -136,10 +136,7 @@ &gpio0 {
+ 	/*W0-W7*/	"","","","","","","","",
+ 	/*X0-X7*/	"","","","","","","","",
+ 	/*Y0-Y7*/	"","","","","","","","",
+-	/*Z0-Z7*/	"","","","","","","","",
+-	/*AA0-AA7*/	"","","","","","","","",
+-	/*AB0-AB7*/	"","","","","","","","",
+-	/*AC0-AC7*/	"","","","","","","","";
++	/*Z0-Z7*/	"","","","","","","","";
+ };
+ 
+ &fmc {
 -- 
-2.25.1
+2.32.0
 
