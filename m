@@ -1,60 +1,56 @@
-From: Joel Stanley <joel@jms.id.au>
-Date: Thu, 24 Jun 2021 18:37:42 +0930
-Subject: [PATCH] ARM: dts: aspeed: Fix AST2600 machines line names
-Message-ID: <20210624090742.56640-1-joel@jms.id.au>
+From: Guenter Roeck <linux@roeck-us.net>
+Date: Thu, 24 Jun 2021 05:44:28 -0700
+Subject: [PATCH] hwmon: (aspeed-pwm-tacho) Using falling edge.
+In-Reply-To: <20210624035821.25375-1-billy_tsai@aspeedtech.com>
+References: <20210624035821.25375-1-billy_tsai@aspeedtech.com>
+Message-ID: <20210624124428.GB1670703@roeck-us.net>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Tacoma and Rainier both have a line-names array that is too long:
+On Thu, Jun 24, 2021 at 11:58:21AM +0800, Billy Tsai wrote:
+> The tach shouldn't use both edges to measure. When the tach input
+> duty cycle isn't 50% the return value will inaccurate.
+> 
+A tachometer doesn't have a duty cycle. A pwm has a duty cycle, but that
+is completely independent of the pwm duty cycle used to set the fan speed.
+So this patch does not really make sense with the above explanation.
 
- gpio gpiochip0: gpio-line-names is length 232 but should be at most length 208
+The impact of this patch is likely that the reported fan speed is reduced
+by 50%. It may well be that the driver currently reports twice the real fan
+speed. I have no idea if that is the case, but if it is it should not be
+conditional. The description above states "when the tach input cycle isn't
+50%", suggesting that this is conditional on some other configuration.
+I don't know what that might be either.
 
-This was probably copied from an AST2500 device tree that did have more
-GPIOs on the controller.
+So, sorry, I can't accept this patch without a more detailed and accurate
+description and explanation why it is needed.
 
-Fixes: e9b24b55ca4f ("ARM: dts: aspeed: rainier: Add gpio line names")
-Fixes: 2f68e4e7df67 ("ARM: dts: aspeed: tacoma: Add gpio line names")
-Signed-off-by: Joel Stanley <joel@jms.id.au>
----
- arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts | 5 +----
- arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts  | 5 +----
- 2 files changed, 2 insertions(+), 8 deletions(-)
+> Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
+> ---
+>  drivers/hwmon/aspeed-pwm-tacho.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/hwmon/aspeed-pwm-tacho.c b/drivers/hwmon/aspeed-pwm-tacho.c
+> index 3d8239fd66ed..0a70a0e22acf 100644
+> --- a/drivers/hwmon/aspeed-pwm-tacho.c
+> +++ b/drivers/hwmon/aspeed-pwm-tacho.c
+> @@ -158,7 +158,7 @@
+>   * 10: both
+>   * 11: reserved.
+>   */
+> -#define M_TACH_MODE 0x02 /* 10b */
+> +#define M_TACH_MODE 0x00 /* 10b */
 
-diff --git a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
-index 941c0489479a..481d0ee1f85f 100644
---- a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
-@@ -280,10 +280,7 @@ &gpio0 {
- 	/*W0-W7*/	"","","","","","","","",
- 	/*X0-X7*/	"","","","","","","","",
- 	/*Y0-Y7*/	"","","","","","","","",
--	/*Z0-Z7*/	"","","","","","","","",
--	/*AA0-AA7*/	"","","","","","","","",
--	/*AB0-AB7*/	"","","","","","","","",
--	/*AC0-AC7*/	"","","","","","","","";
-+	/*Z0-Z7*/	"","","","","","","","";
- 
- 	pin_mclr_vpp {
- 		gpio-hog;
-diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts b/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts
-index e863ec088970..48038b2ef3df 100644
---- a/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts
-@@ -136,10 +136,7 @@ &gpio0 {
- 	/*W0-W7*/	"","","","","","","","",
- 	/*X0-X7*/	"","","","","","","","",
- 	/*Y0-Y7*/	"","","","","","","","",
--	/*Z0-Z7*/	"","","","","","","","",
--	/*AA0-AA7*/	"","","","","","","","",
--	/*AB0-AB7*/	"","","","","","","","",
--	/*AC0-AC7*/	"","","","","","","","";
-+	/*Z0-Z7*/	"","","","","","","","";
- };
- 
- &fmc {
--- 
-2.32.0
+That comment is now wrong.
 
+Guenter
+
+>  #define M_TACH_UNIT 0x0210
+>  #define INIT_FAN_CTRL 0xFF
+>  
+> -- 
+> 2.25.1
+> 
