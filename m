@@ -1,36 +1,30 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Fri, 25 Jun 2021 15:40:17 +0930
-Subject: [PATCH] ARM: dts: tacoma: Add phase corrections for eMMC
-Message-ID: <20210625061017.1149942-1-andrew@aj.id.au>
+From: Wolfram Sang <wsa@kernel.org>
+Date: Fri, 25 Jun 2021 17:02:19 +0200
+Subject: [PATCH v3 1/7] i2c: i2c-core-smbus: Expose PEC calculate
+ function for generic use
+In-Reply-To: <20210519074934.20712-2-quan@os.amperecomputing.com>
+References: <20210519074934.20712-1-quan@os.amperecomputing.com>
+ <20210519074934.20712-2-quan@os.amperecomputing.com>
+Message-ID: <YNXv+2SpsTLStsIE@shikoro>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The degree values were reversed out from the magic tap values of 7 (in)
-and 15 + inversion (out) initially suggested by Aspeed.
+On Wed, May 19, 2021 at 02:49:28PM +0700, Quan Nguyen wrote:
+> Expose the PEC calculation i2c_smbus_pec() for generic use.
+> 
+> Signed-off-by: Quan Nguyen <quan@os.amperecomputing.com>
 
-With the patch tacoma survives several gigabytes of reads and writes
-using dd while without it locks up randomly during the boot process.
+You are the second one who wanted this exported. I agree it makes sense
+for slave drivers. So, I'll skip the required user because two are in
+flight. Applied to for-next, thanks!
 
-Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
----
- arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts b/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts
-index c1478d2db602..670080bb80eb 100644
---- a/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts
-@@ -189,6 +189,7 @@ &emmc_controller {
- 
- &emmc {
- 	status = "okay";
-+	clk-phase-mmc-hs200 = <36>, <270>;
- };
- 
- &fsim0 {
--- 
-2.30.2
-
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 833 bytes
+Desc: not available
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20210625/99eb8b53/attachment.sig>
