@@ -1,147 +1,70 @@
-From: Rob Herring <robh@kernel.org>
-Date: Thu, 24 Jun 2021 15:28:53 -0600
-Subject: [PATCH 2/3] dt-bindings: i2c-new: Add bindings for AST2600 I2C
-In-Reply-To: <20210617094424.27123-3-jamin_lin@aspeedtech.com>
-References: <20210617094424.27123-1-jamin_lin@aspeedtech.com>
- <20210617094424.27123-3-jamin_lin@aspeedtech.com>
-Message-ID: <20210624212853.GA2013136@robh.at.kernel.org>
+From: Billy Tsai <billy_tsai@aspeedtech.com>
+Date: Fri, 25 Jun 2021 03:35:43 +0000
+Subject: [PATCH] hwmon: (aspeed-pwm-tacho) Using falling edge.
+In-Reply-To: <20210624124428.GB1670703@roeck-us.net>
+References: <20210624035821.25375-1-billy_tsai@aspeedtech.com>
+ <20210624124428.GB1670703@roeck-us.net>
+Message-ID: <51093C5F-61E2-4155-9C9A-035E330AEA1E@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Jun 17, 2021 at 05:43:39PM +0800, Jamin Lin wrote:
-> AST2600 support the new register set of I2C controller
-> Add bindings document to support the new driver of I2C
-> 
-> Signed-off-by: Jamin Lin <jamin_lin@aspeedtech.com>
-> ---
->  .../bindings/i2c/aspeed,new-i2c.yaml          | 107 ++++++++++++++++++
->  1 file changed, 107 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/i2c/aspeed,new-i2c.yaml
-> 
-> diff --git a/Documentation/devicetree/bindings/i2c/aspeed,new-i2c.yaml b/Documentation/devicetree/bindings/i2c/aspeed,new-i2c.yaml
-> new file mode 100644
-> index 000000000000..2c264596b138
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/i2c/aspeed,new-i2c.yaml
-> @@ -0,0 +1,107 @@
-> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-> +%YAML 1.2
-> +---
-> +$id: http://devicetree.org/schemas/i2c/aspeed,new-i2c.yaml#
-> +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> +
-> +title: ASPEED I2C on the AST26XX SoCs Device Tree Bindings
-> +
-> +description: |
-> +  ASPEED I2C controller support the new register set since AST26XX
-> +  The i2c-global-regs device is used to enable new register set
-> +
-> +maintainers:
-> +  - Ryan Chen <ryan_chen@aspeedtech.com>
-> +
-> +allOf:
-> +  - $ref: /schemas/i2c/i2c-controller.yaml#
-> +
-> +properties:
-> +  compatible:
-> +    oneOf:
-> +      - items:
-> +          - enum:
-> +              - aspeed,ast2600-i2c-bus
-> +      - items:
-> +          - enum:
-> +              - aspeed,ast2600-i2c-global
+On 2021/6/24, 8:44 PM, "Guenter Roeck" <groeck7 at gmail.com on behalf of linux@roeck-us.net> wrote:
 
-This is not an i2c controller and a separate block, so it belongs in 
-its own binding doc.
+    On Thu, Jun 24, 2021 at 11:58:21AM +0800, Billy Tsai wrote:
+    >> The tach shouldn't use both edges to measure. When the tach input
+    >> duty cycle isn't 50% the return value will inaccurate.
+    >> 
+    > A tachometer doesn't have a duty cycle. A pwm has a duty cycle, but that
+    > is completely independent of the pwm duty cycle used to set the fan speed.
+    > So this patch does not really make sense with the above explanation.
 
-> +          - const: syscon
-> +
-> +  reg:
-> +    minItems: 1
-> +    maxItems: 2
+The duty cycle means the waveform that reported from the fan tach pin not pwm signal.
 
-Drop maxItems. 2 is implied by items length.
+    > The impact of this patch is likely that the reported fan speed is reduced
+    > by 50%. It may well be that the driver currently reports twice the real fan
+    > speed. I have no idea if that is the case, but if it is it should not be
+    > conditional. The description above states "when the tach input cycle isn't
+    > 50%", suggesting that this is conditional on some other configuration.
+    > I don't know what that might be either.
 
-> +    items:
-> +      - description: address offset and range of bus
-> +      - description: address offset and range of bus buffer
-> +
-> +  interrupts:
-> +    maxItems: 1
-> +
-> +  clocks:
-> +    maxItems: 1
-> +    description:
-> +      root clock of bus, should reference the APB
-> +      clock in the second cell
-> +
-> +  resets:
-> +    maxItems: 1
-> +
-> +  bus-frequency:
-> +    minimum: 100
-> +    maximum: 5000000
-> +    default: 100000
-> +    description: frequency of the bus clock in Hz defaults to 100 kHz when not
-> +      specified
-> +
-> +  multi-master:
-> +    type: boolean
-> +    description:
-> +      states that there is another master active on this bus
-> +
-> +  buff-mode:
-> +    type: boolean
-> +    description:
-> +      buffer mode data transfer
-> +
-> +  byte-mode:
-> +    type: boolean
-> +    description:
-> +      byte mode tata transfer
-> +
-> +  smbus-alert:
-> +    type: boolean
-> +    description:
-> +      smbus alert protocol
-> +
-> +required:
-> +  - reg
-> +  - compatible
-> +  - clocks
-> +  - resets
-> +
-> +unevaluatedProperties: false
-> +
-> +examples:
-> +  - |
-> +    #include <dt-bindings/interrupt-controller/arm-gic.h>
-> +    #include <dt-bindings/interrupt-controller/aspeed-scu-ic.h>
-> +    #include <dt-bindings/clock/ast2600-clock.h>
-> +
-> +    i2c_gr: i2c-global-regs at 0 {
-> +      compatible = "aspeed,ast2600-i2c-global", "syscon";
-> +      reg = <0x0 0x20>;
-> +      clocks = <&syscon ASPEED_CLK_APB2>;
-> +      resets = <&syscon ASPEED_RESET_I2C>;
-> +    };
-> +
-> +    i2c0: i2c-bus at 80 {
-> +      compatible = "aspeed,ast2600-i2c-bus";
-> +      #address-cells = <1>;
-> +      #size-cells = <0>;
-> +      #interrupt-cells = <1>;
-> +      reg = <0x80 0x80>, <0xC00 0x20>;
-> +      clocks = <&syscon ASPEED_CLK_APB2>;
-> +      resets = <&syscon ASPEED_RESET_I2C>;
-> +      interrupts = <GIC_SPI 110 IRQ_TYPE_LEVEL_HIGH>;
-> +      bus-frequency = <100000>;
-> +    };
-> -- 
-> 2.17.1
-> 
-> 
+According to the tach mode, our tach controller will sample the time of once conditional meet and translate it to tach value.
+When the tach signal duty cycle isn't 50%, using both edges mode will get the tach value with error rate.
+In addition, the current report value of both edges will twice the result which will enlarge the error rate.
+Actually, the tach signal won't be a complete 50% duty cycle, so both edges mode isn't recommanded for the fan usage.
+With rising-to-rising mode the skew time of tach signal will also effect the accuracy.
+Thus, using the falling-to-falling mode is the better way for a fan tach monitor.
+But for flexibility, I think using dts property to control the tach mode is better the user can change the mode to adapter the monitor device.
+
+    > So, sorry, I can't accept this patch without a more detailed and accurate
+    > description and explanation why it is needed.
+
+    >> Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
+    >> ---
+    >>  drivers/hwmon/aspeed-pwm-tacho.c | 2 +-
+    >>  1 file changed, 1 insertion(+), 1 deletion(-)
+    >> 
+    >> diff --git a/drivers/hwmon/aspeed-pwm-tacho.c b/drivers/hwmon/aspeed-pwm-tacho.c
+    >> index 3d8239fd66ed..0a70a0e22acf 100644
+    >> --- a/drivers/hwmon/aspeed-pwm-tacho.c
+    >> +++ b/drivers/hwmon/aspeed-pwm-tacho.c
+    >> @@ -158,7 +158,7 @@
+    >>   * 10: both
+    >>   * 11: reserved.
+    >>   */
+    >> -#define M_TACH_MODE 0x02 /* 10b */
+    >> +#define M_TACH_MODE 0x00 /* 10b */
+
+    > That comment is now wrong.
+
+    > Guenter
+
+    >>  #define M_TACH_UNIT 0x0210
+    >>  #define INIT_FAN_CTRL 0xFF
+    >>  
+    >> -- 
+    >> 2.25.1
+    >>
+
