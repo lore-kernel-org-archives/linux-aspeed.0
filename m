@@ -1,30 +1,39 @@
-From: Wolfram Sang <wsa@kernel.org>
-Date: Fri, 25 Jun 2021 17:02:19 +0200
-Subject: [PATCH v3 1/7] i2c: i2c-core-smbus: Expose PEC calculate
- function for generic use
-In-Reply-To: <20210519074934.20712-2-quan@os.amperecomputing.com>
-References: <20210519074934.20712-1-quan@os.amperecomputing.com>
- <20210519074934.20712-2-quan@os.amperecomputing.com>
-Message-ID: <YNXv+2SpsTLStsIE@shikoro>
+From: Andrew Jeffery <andrew@aj.id.au>
+Date: Mon, 28 Jun 2021 11:06:05 +0930
+Subject: [PATCH] ARM: dts: everest: Add phase corrections for eMMC
+Message-ID: <20210628013605.1257346-1-andrew@aj.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, May 19, 2021 at 02:49:28PM +0700, Quan Nguyen wrote:
-> Expose the PEC calculation i2c_smbus_pec() for generic use.
-> 
-> Signed-off-by: Quan Nguyen <quan@os.amperecomputing.com>
+The values were determined experimentally via boot tests, not by
+measuring the bus behaviour with a scope. We plan to do scope
+measurements to confirm or refine the values and will update the
+devicetree if necessary once these have been obtained.
 
-You are the second one who wanted this exported. I agree it makes sense
-for slave drivers. So, I'll skip the required user because two are in
-flight. Applied to for-next, thanks!
+However, with the patch we can write and read data without issue, where
+as booting the system without the patch failed at the point of mounting
+the rootfs.
 
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 833 bytes
-Desc: not available
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20210625/99eb8b53/attachment.sig>
+Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
+---
+ arch/arm/boot/dts/aspeed-bmc-ibm-everest.dts | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/arch/arm/boot/dts/aspeed-bmc-ibm-everest.dts b/arch/arm/boot/dts/aspeed-bmc-ibm-everest.dts
+index 3295c8c7c05c..3274a1f9047f 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-ibm-everest.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-ibm-everest.dts
+@@ -1070,6 +1070,7 @@ &pinctrl_emmc_default {
+ 
+ &emmc {
+ 	status = "okay";
++	clk-phase-mmc-hs200 = <180>, <180>;
+ };
+ 
+ &fsim0 {
+-- 
+2.30.2
+
