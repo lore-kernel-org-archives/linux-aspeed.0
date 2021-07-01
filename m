@@ -1,63 +1,53 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Thu, 1 Jul 2021 03:12:07 +0000
-Subject: [PATCH] ARM: dts: aspeed: update e3c246d4i vuart properties
-In-Reply-To: <20210416075113.18047-1-zev@bewilderbeest.net>
-References: <20210416075113.18047-1-zev@bewilderbeest.net>
-Message-ID: <CACPK8XeRg5P8+W8kyxSNyOa7JBhua5QdP_oCVJALGPJQio0dhA@mail.gmail.com>
+Date: Thu, 1 Jul 2021 03:40:32 +0000
+Subject: [PATCH] ARM: dts: tacoma: Add phase corrections for eMMC
+In-Reply-To: <20210625061017.1149942-1-andrew@aj.id.au>
+References: <20210625061017.1149942-1-andrew@aj.id.au>
+Message-ID: <CACPK8Xd9tsMJaQ9BQSGL0Vfi4UpJ1iuOtMVmfKneydd-zYBhsw@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, 16 Apr 2021 at 07:52, Zev Weiss <zev@bewilderbeest.net> wrote:
+On Fri, 25 Jun 2021 at 06:10, Andrew Jeffery <andrew@aj.id.au> wrote:
 >
-> This device-tree was merged with a provisional vuart IRQ-polarity
-> property that was still under review and ended up taking a somewhat
-> different form.  This patch updates it to match the final form of the
-> new vuart properties, which additionally allow specifying the SIRQ
-> number and LPC address.
+> The degree values were reversed out from the magic tap values of 7 (in)
+> and 15 + inversion (out) initially suggested by Aspeed.
 >
-> Signed-off-by: Zev Weiss <zev@bewilderbeest.net>
+> With the patch tacoma survives several gigabytes of reads and writes
+> using dd while without it locks up randomly during the boot process.
+>
+> Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
 
+Thanks for the fix. Is this required due to "mmc: sdhci-of-aspeed: Add
+AST2600 bus clock support" or "mmc: sdhci-of-aspeed: Expose clock
+phase controls"?
 
-Fixes: ca03042f0f12 ("serial: 8250_aspeed_vuart: add aspeed,
-lpc-io-reg and aspeed, lpc-interrupts DT properties")
-Reviewed-by: Joel Stanley <joel@jms.id.au>
+On the topic of those patches, it would be good if we could operate
+the devices (with the slower speed?) when the device tree does not
+provide the phase values. Think about system bringup, or where you
+need the system booting in order to determine the phase calculations.
+
+What changes would be required to the host driver for it to work out of the box?
+
 
 > ---
+>  arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts | 1 +
+>  1 file changed, 1 insertion(+)
 >
-> The relevant aspeed-vuart patches [0] have been merged into Greg KH's
-> tty-next tree, so I figure it's probably okay to proceed with the
-> corresponding dts adjustments now.
+> diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts b/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts
+> index c1478d2db602..670080bb80eb 100644
+> --- a/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts
+> +++ b/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts
+> @@ -189,6 +189,7 @@ &emmc_controller {
 >
-> [0] https://lore.kernel.org/openbmc/20210412034712.16778-1-zev at bewilderbeest.net/
->
->  arch/arm/boot/dts/aspeed-bmc-asrock-e3c246d4i.dts | 4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
->
-> diff --git a/arch/arm/boot/dts/aspeed-bmc-asrock-e3c246d4i.dts b/arch/arm/boot/dts/aspeed-bmc-asrock-e3c246d4i.dts
-> index dcab6e78dfa4..8be40c8283af 100644
-> --- a/arch/arm/boot/dts/aspeed-bmc-asrock-e3c246d4i.dts
-> +++ b/arch/arm/boot/dts/aspeed-bmc-asrock-e3c246d4i.dts
-> @@ -4,6 +4,7 @@
->  #include "aspeed-g5.dtsi"
->  #include <dt-bindings/gpio/aspeed-gpio.h>
->  #include <dt-bindings/i2c/i2c.h>
-> +#include <dt-bindings/interrupt-controller/irq.h>
->
->  /{
->         model = "ASRock E3C246D4I BMC";
-> @@ -73,7 +74,8 @@ &uart5 {
->
->  &vuart {
+>  &emmc {
 >         status = "okay";
-> -       aspeed,sirq-active-high;
-> +       aspeed,lpc-io-reg = <0x2f8>;
-> +       aspeed,lpc-interrupts = <3 IRQ_TYPE_LEVEL_HIGH>;
+> +       clk-phase-mmc-hs200 = <36>, <270>;
 >  };
 >
->  &mac0 {
+>  &fsim0 {
 > --
-> 2.31.1
+> 2.30.2
 >
