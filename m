@@ -1,10 +1,10 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Sun,  4 Jul 2021 19:03:49 -0400
-Subject: [PATCH AUTOSEL 5.13 54/85] mmc: sdhci-of-aspeed: Turn down a phase
+Date: Sun,  4 Jul 2021 19:05:47 -0400
+Subject: [PATCH AUTOSEL 5.12 51/80] mmc: sdhci-of-aspeed: Turn down a phase
  correction warning
-In-Reply-To: <20210704230420.1488358-1-sashal@kernel.org>
-References: <20210704230420.1488358-1-sashal@kernel.org>
-Message-ID: <20210704230420.1488358-54-sashal@kernel.org>
+In-Reply-To: <20210704230616.1489200-1-sashal@kernel.org>
+References: <20210704230616.1489200-1-sashal@kernel.org>
+Message-ID: <20210704230616.1489200-51-sashal@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -36,7 +36,7 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/mmc/host/sdhci-of-aspeed.c b/drivers/mmc/host/sdhci-of-aspeed.c
-index d001c51074a0..e4665a438ec5 100644
+index 7d8692e90996..b6ac2af199b8 100644
 --- a/drivers/mmc/host/sdhci-of-aspeed.c
 +++ b/drivers/mmc/host/sdhci-of-aspeed.c
 @@ -150,7 +150,7 @@ static int aspeed_sdhci_phase_to_tap(struct device *dev, unsigned long rate_hz,
