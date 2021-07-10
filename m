@@ -1,9 +1,9 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Fri,  9 Jul 2021 22:16:50 -0400
-Subject: [PATCH AUTOSEL 5.13 056/114] fsi: Add missing MODULE_DEVICE_TABLE
-In-Reply-To: <20210710021748.3167666-1-sashal@kernel.org>
-References: <20210710021748.3167666-1-sashal@kernel.org>
-Message-ID: <20210710021748.3167666-56-sashal@kernel.org>
+Date: Fri,  9 Jul 2021 22:21:03 -0400
+Subject: [PATCH AUTOSEL 5.12 051/104] fsi: Add missing MODULE_DEVICE_TABLE
+In-Reply-To: <20210710022156.3168825-1-sashal@kernel.org>
+References: <20210710022156.3168825-1-sashal@kernel.org>
+Message-ID: <20210710022156.3168825-51-sashal@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
