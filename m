@@ -1,9 +1,9 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Fri,  9 Jul 2021 22:21:03 -0400
-Subject: [PATCH AUTOSEL 5.12 051/104] fsi: Add missing MODULE_DEVICE_TABLE
-In-Reply-To: <20210710022156.3168825-1-sashal@kernel.org>
-References: <20210710022156.3168825-1-sashal@kernel.org>
-Message-ID: <20210710022156.3168825-51-sashal@kernel.org>
+Date: Fri,  9 Jul 2021 22:23:42 -0400
+Subject: [PATCH AUTOSEL 5.10 48/93] fsi: Add missing MODULE_DEVICE_TABLE
+In-Reply-To: <20210710022428.3169839-1-sashal@kernel.org>
+References: <20210710022428.3169839-1-sashal@kernel.org>
+Message-ID: <20210710022428.3169839-48-sashal@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -67,11 +67,11 @@ index aa97c4a250cb..7d5f29b4b595 100644
  static struct platform_driver fsi_master_gpio_driver = {
  	.driver = {
 diff --git a/drivers/fsi/fsi-occ.c b/drivers/fsi/fsi-occ.c
-index 10ca2e290655..f9a88083e5f3 100644
+index 9eeb856c8905..01eb04d52bf0 100644
 --- a/drivers/fsi/fsi-occ.c
 +++ b/drivers/fsi/fsi-occ.c
-@@ -635,6 +635,7 @@ static const struct of_device_id occ_match[] = {
- 	},
+@@ -578,6 +578,7 @@ static const struct of_device_id occ_match[] = {
+ 	{ .compatible = "ibm,p9-occ" },
  	{ },
  };
 +MODULE_DEVICE_TABLE(of, occ_match);
