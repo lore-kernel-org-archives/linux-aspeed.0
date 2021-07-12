@@ -1,357 +1,462 @@
 From: Iwona Winiarska <iwona.winiarska@intel.com>
-Date: Tue, 13 Jul 2021 00:04:34 +0200
-Subject: [PATCH 01/14] x86/cpu: Move intel-family to arch-independent headers
+Date: Tue, 13 Jul 2021 00:04:39 +0200
+Subject: [PATCH 06/14] peci: Add core infrastructure
 In-Reply-To: <20210712220447.957418-1-iwona.winiarska@intel.com>
 References: <20210712220447.957418-1-iwona.winiarska@intel.com>
-Message-ID: <20210712220447.957418-2-iwona.winiarska@intel.com>
+Message-ID: <20210712220447.957418-7-iwona.winiarska@intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Baseboard management controllers (BMC) often run Linux but are usually
-implemented with non-X86 processors. They can use PECI to access package
-config space (PCS) registers on the host CPU and since some information,
-e.g. figuring out the core count, can be obtained using different
-registers on different CPU generations, they need to decode the family
-and model.
+Intel processors provide access for various services designed to support
+processor and DRAM thermal management, platform manageability and
+processor interface tuning and diagnostics.
+Those services are available via the Platform Environment Control
+Interface (PECI) that provides a communication channel between the
+processor and the Baseboard Management Controller (BMC) or other
+platform management device.
 
-Move the data from arch/x86/include/asm/intel-family.h into a new file
-include/linux/x86/intel-family.h so that it can be used by other
-architectures.
+This change introduces PECI subsystem by adding the initial core module
+and API for controller drivers.
 
+Co-developed-by: Jason M Bills <jason.m.bills@linux.intel.com>
+Signed-off-by: Jason M Bills <jason.m.bills@linux.intel.com>
+Co-developed-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
 Signed-off-by: Iwona Winiarska <iwona.winiarska@intel.com>
-Reviewed-by: Tony Luck <tony.luck@intel.com>
+Reviewed-by: Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>
 ---
-To limit tree-wide changes and help people that were expecting
-intel-family defines in arch/x86 to find it more easily without going
-through git history, we're not removing the original header
-completely, we're keeping it as a "stub" that includes the new one.
-If there is a consensus that the tree-wide option is better,
-we can choose this approach.
-
- MAINTAINERS                         |   1 +
- arch/x86/include/asm/intel-family.h | 141 +--------------------------
- include/linux/x86/intel-family.h    | 146 ++++++++++++++++++++++++++++
- 3 files changed, 148 insertions(+), 140 deletions(-)
- create mode 100644 include/linux/x86/intel-family.h
+ MAINTAINERS             |   9 +++
+ drivers/Kconfig         |   3 +
+ drivers/Makefile        |   1 +
+ drivers/peci/Kconfig    |  14 ++++
+ drivers/peci/Makefile   |   5 ++
+ drivers/peci/core.c     | 166 ++++++++++++++++++++++++++++++++++++++++
+ drivers/peci/internal.h |  20 +++++
+ drivers/peci/sysfs.c    |  48 ++++++++++++
+ include/linux/peci.h    |  82 ++++++++++++++++++++
+ 9 files changed, 348 insertions(+)
+ create mode 100644 drivers/peci/Kconfig
+ create mode 100644 drivers/peci/Makefile
+ create mode 100644 drivers/peci/core.c
+ create mode 100644 drivers/peci/internal.h
+ create mode 100644 drivers/peci/sysfs.c
+ create mode 100644 include/linux/peci.h
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index a61f4f3b78a9..ec5987a00800 100644
+index 6f77aaca2a30..47411e2b6336 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -9240,6 +9240,7 @@ M:	x86 at kernel.org
- L:	linux-kernel at vger.kernel.org
- S:	Supported
- F:	arch/x86/include/asm/intel-family.h
-+F:	include/linux/x86/intel-family.h
+@@ -14495,6 +14495,15 @@ L:	platform-driver-x86 at vger.kernel.org
+ S:	Maintained
+ F:	drivers/platform/x86/peaq-wmi.c
  
- INTEL DRM DRIVERS (excluding Poulsbo, Moorestown and derivative chipsets)
- M:	Jani Nikula <jani.nikula@linux.intel.com>
-diff --git a/arch/x86/include/asm/intel-family.h b/arch/x86/include/asm/intel-family.h
-index 27158436f322..0d4fe1b4e1f6 100644
---- a/arch/x86/include/asm/intel-family.h
-+++ b/arch/x86/include/asm/intel-family.h
-@@ -2,145 +2,6 @@
- #ifndef _ASM_X86_INTEL_FAMILY_H
- #define _ASM_X86_INTEL_FAMILY_H
++PECI SUBSYSTEM
++M:	Iwona Winiarska <iwona.winiarska@intel.com>
++R:	Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
++L:	openbmc at lists.ozlabs.org (moderated for non-subscribers)
++S:	Supported
++F:	Documentation/devicetree/bindings/peci/
++F:	drivers/peci/
++F:	include/linux/peci.h
++
+ PENSANDO ETHERNET DRIVERS
+ M:	Shannon Nelson <snelson@pensando.io>
+ M:	drivers at pensando.io
+diff --git a/drivers/Kconfig b/drivers/Kconfig
+index 8bad63417a50..f472b3d972b3 100644
+--- a/drivers/Kconfig
++++ b/drivers/Kconfig
+@@ -236,4 +236,7 @@ source "drivers/interconnect/Kconfig"
+ source "drivers/counter/Kconfig"
  
--/*
-- * "Big Core" Processors (Branded as Core, Xeon, etc...)
-- *
-- * While adding a new CPUID for a new microarchitecture, add a new
-- * group to keep logically sorted out in chronological order. Within
-- * that group keep the CPUID for the variants sorted by model number.
-- *
-- * The defined symbol names have the following form:
-- *	INTEL_FAM6{OPTFAMILY}_{MICROARCH}{OPTDIFF}
-- * where:
-- * OPTFAMILY	Describes the family of CPUs that this belongs to. Default
-- *		is assumed to be "_CORE" (and should be omitted). Other values
-- *		currently in use are _ATOM and _XEON_PHI
-- * MICROARCH	Is the code name for the micro-architecture for this core.
-- *		N.B. Not the platform name.
-- * OPTDIFF	If needed, a short string to differentiate by market segment.
-- *
-- *		Common OPTDIFFs:
-- *
-- *			- regular client parts
-- *		_L	- regular mobile parts
-- *		_G	- parts with extra graphics on
-- *		_X	- regular server parts
-- *		_D	- micro server parts
-- *
-- *		Historical OPTDIFFs:
-- *
-- *		_EP	- 2 socket server parts
-- *		_EX	- 4+ socket server parts
-- *
-- * The #define line may optionally include a comment including platform or core
-- * names. An exception is made for skylake/kabylake where steppings seem to have gotten
-- * their own names :-(
-- */
--
--/* Wildcard match for FAM6 so X86_MATCH_INTEL_FAM6_MODEL(ANY) works */
--#define INTEL_FAM6_ANY			X86_MODEL_ANY
--
--#define INTEL_FAM6_CORE_YONAH		0x0E
--
--#define INTEL_FAM6_CORE2_MEROM		0x0F
--#define INTEL_FAM6_CORE2_MEROM_L	0x16
--#define INTEL_FAM6_CORE2_PENRYN		0x17
--#define INTEL_FAM6_CORE2_DUNNINGTON	0x1D
--
--#define INTEL_FAM6_NEHALEM		0x1E
--#define INTEL_FAM6_NEHALEM_G		0x1F /* Auburndale / Havendale */
--#define INTEL_FAM6_NEHALEM_EP		0x1A
--#define INTEL_FAM6_NEHALEM_EX		0x2E
--
--#define INTEL_FAM6_WESTMERE		0x25
--#define INTEL_FAM6_WESTMERE_EP		0x2C
--#define INTEL_FAM6_WESTMERE_EX		0x2F
--
--#define INTEL_FAM6_SANDYBRIDGE		0x2A
--#define INTEL_FAM6_SANDYBRIDGE_X	0x2D
--#define INTEL_FAM6_IVYBRIDGE		0x3A
--#define INTEL_FAM6_IVYBRIDGE_X		0x3E
--
--#define INTEL_FAM6_HASWELL		0x3C
--#define INTEL_FAM6_HASWELL_X		0x3F
--#define INTEL_FAM6_HASWELL_L		0x45
--#define INTEL_FAM6_HASWELL_G		0x46
--
--#define INTEL_FAM6_BROADWELL		0x3D
--#define INTEL_FAM6_BROADWELL_G		0x47
--#define INTEL_FAM6_BROADWELL_X		0x4F
--#define INTEL_FAM6_BROADWELL_D		0x56
--
--#define INTEL_FAM6_SKYLAKE_L		0x4E	/* Sky Lake             */
--#define INTEL_FAM6_SKYLAKE		0x5E	/* Sky Lake             */
--#define INTEL_FAM6_SKYLAKE_X		0x55	/* Sky Lake             */
--/*                 CASCADELAKE_X	0x55	   Sky Lake -- s: 7     */
--/*                 COOPERLAKE_X		0x55	   Sky Lake -- s: 11    */
--
--#define INTEL_FAM6_KABYLAKE_L		0x8E	/* Sky Lake             */
--/*                 AMBERLAKE_L		0x8E	   Sky Lake -- s: 9     */
--/*                 COFFEELAKE_L		0x8E	   Sky Lake -- s: 10    */
--/*                 WHISKEYLAKE_L	0x8E       Sky Lake -- s: 11,12 */
--
--#define INTEL_FAM6_KABYLAKE		0x9E	/* Sky Lake             */
--/*                 COFFEELAKE		0x9E	   Sky Lake -- s: 10-13 */
--
--#define INTEL_FAM6_COMETLAKE		0xA5	/* Sky Lake             */
--#define INTEL_FAM6_COMETLAKE_L		0xA6	/* Sky Lake             */
--
--#define INTEL_FAM6_CANNONLAKE_L		0x66	/* Palm Cove */
--
--#define INTEL_FAM6_ICELAKE_X		0x6A	/* Sunny Cove */
--#define INTEL_FAM6_ICELAKE_D		0x6C	/* Sunny Cove */
--#define INTEL_FAM6_ICELAKE		0x7D	/* Sunny Cove */
--#define INTEL_FAM6_ICELAKE_L		0x7E	/* Sunny Cove */
--#define INTEL_FAM6_ICELAKE_NNPI		0x9D	/* Sunny Cove */
--
--#define INTEL_FAM6_LAKEFIELD		0x8A	/* Sunny Cove / Tremont */
--
--#define INTEL_FAM6_ROCKETLAKE		0xA7	/* Cypress Cove */
--
--#define INTEL_FAM6_TIGERLAKE_L		0x8C	/* Willow Cove */
--#define INTEL_FAM6_TIGERLAKE		0x8D	/* Willow Cove */
--
--#define INTEL_FAM6_SAPPHIRERAPIDS_X	0x8F	/* Golden Cove */
--
--#define INTEL_FAM6_ALDERLAKE		0x97	/* Golden Cove / Gracemont */
--#define INTEL_FAM6_ALDERLAKE_L		0x9A	/* Golden Cove / Gracemont */
--
--/* "Small Core" Processors (Atom) */
--
--#define INTEL_FAM6_ATOM_BONNELL		0x1C /* Diamondville, Pineview */
--#define INTEL_FAM6_ATOM_BONNELL_MID	0x26 /* Silverthorne, Lincroft */
--
--#define INTEL_FAM6_ATOM_SALTWELL	0x36 /* Cedarview */
--#define INTEL_FAM6_ATOM_SALTWELL_MID	0x27 /* Penwell */
--#define INTEL_FAM6_ATOM_SALTWELL_TABLET	0x35 /* Cloverview */
--
--#define INTEL_FAM6_ATOM_SILVERMONT	0x37 /* Bay Trail, Valleyview */
--#define INTEL_FAM6_ATOM_SILVERMONT_D	0x4D /* Avaton, Rangely */
--#define INTEL_FAM6_ATOM_SILVERMONT_MID	0x4A /* Merriefield */
--
--#define INTEL_FAM6_ATOM_AIRMONT		0x4C /* Cherry Trail, Braswell */
--#define INTEL_FAM6_ATOM_AIRMONT_MID	0x5A /* Moorefield */
--#define INTEL_FAM6_ATOM_AIRMONT_NP	0x75 /* Lightning Mountain */
--
--#define INTEL_FAM6_ATOM_GOLDMONT	0x5C /* Apollo Lake */
--#define INTEL_FAM6_ATOM_GOLDMONT_D	0x5F /* Denverton */
--
--/* Note: the micro-architecture is "Goldmont Plus" */
--#define INTEL_FAM6_ATOM_GOLDMONT_PLUS	0x7A /* Gemini Lake */
--
--#define INTEL_FAM6_ATOM_TREMONT_D	0x86 /* Jacobsville */
--#define INTEL_FAM6_ATOM_TREMONT		0x96 /* Elkhart Lake */
--#define INTEL_FAM6_ATOM_TREMONT_L	0x9C /* Jasper Lake */
--
--/* Xeon Phi */
--
--#define INTEL_FAM6_XEON_PHI_KNL		0x57 /* Knights Landing */
--#define INTEL_FAM6_XEON_PHI_KNM		0x85 /* Knights Mill */
--
--/* Family 5 */
--#define INTEL_FAM5_QUARK_X1000		0x09 /* Quark X1000 SoC */
-+#include <linux/x86/intel-family.h>
- 
- #endif /* _ASM_X86_INTEL_FAMILY_H */
-diff --git a/include/linux/x86/intel-family.h b/include/linux/x86/intel-family.h
+ source "drivers/most/Kconfig"
++
++source "drivers/peci/Kconfig"
++
+ endmenu
+diff --git a/drivers/Makefile b/drivers/Makefile
+index 27c018bdf4de..8d96f0c3dde5 100644
+--- a/drivers/Makefile
++++ b/drivers/Makefile
+@@ -189,3 +189,4 @@ obj-$(CONFIG_GNSS)		+= gnss/
+ obj-$(CONFIG_INTERCONNECT)	+= interconnect/
+ obj-$(CONFIG_COUNTER)		+= counter/
+ obj-$(CONFIG_MOST)		+= most/
++obj-$(CONFIG_PECI)		+= peci/
+diff --git a/drivers/peci/Kconfig b/drivers/peci/Kconfig
 new file mode 100644
-index 000000000000..ae4b075c1ab9
+index 000000000000..601cc3c3c852
 --- /dev/null
-+++ b/include/linux/x86/intel-family.h
-@@ -0,0 +1,146 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+#ifndef _LINUX_X86_INTEL_FAMILY_H
-+#define _LINUX_X86_INTEL_FAMILY_H
++++ b/drivers/peci/Kconfig
+@@ -0,0 +1,14 @@
++# SPDX-License-Identifier: GPL-2.0-only
 +
-+/*
-+ * "Big Core" Processors (Branded as Core, Xeon, etc...)
++menuconfig PECI
++	tristate "PECI support"
++	help
++	  The Platform Environment Control Interface (PECI) is an interface
++	  that provides a communication channel to Intel processors and
++	  chipset components from external monitoring or control devices.
++
++	  If you want PECI support, you should say Y here and also to the
++	  specific driver for your bus adapter(s) below.
++
++	  This support is also available as a module. If so, the module
++	  will be called peci.
+diff --git a/drivers/peci/Makefile b/drivers/peci/Makefile
+new file mode 100644
+index 000000000000..2bb2f51bcda7
+--- /dev/null
++++ b/drivers/peci/Makefile
+@@ -0,0 +1,5 @@
++# SPDX-License-Identifier: GPL-2.0-only
++
++# Core functionality
++peci-y := core.o sysfs.o
++obj-$(CONFIG_PECI) += peci.o
+diff --git a/drivers/peci/core.c b/drivers/peci/core.c
+new file mode 100644
+index 000000000000..0ad00110459d
+--- /dev/null
++++ b/drivers/peci/core.c
+@@ -0,0 +1,166 @@
++// SPDX-License-Identifier: GPL-2.0-only
++// Copyright (c) 2018-2021 Intel Corporation
++
++#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
++
++#include <linux/bug.h>
++#include <linux/device.h>
++#include <linux/export.h>
++#include <linux/idr.h>
++#include <linux/module.h>
++#include <linux/of.h>
++#include <linux/peci.h>
++#include <linux/pm_runtime.h>
++#include <linux/property.h>
++#include <linux/slab.h>
++
++#include "internal.h"
++
++static DEFINE_IDA(peci_controller_ida);
++
++static void peci_controller_dev_release(struct device *dev)
++{
++	struct peci_controller *controller = to_peci_controller(dev);
++
++	mutex_destroy(&controller->bus_lock);
++}
++
++struct device_type peci_controller_type = {
++	.release	= peci_controller_dev_release,
++};
++
++int peci_controller_scan_devices(struct peci_controller *controller)
++{
++	/* Just a stub, no support for actual devices yet */
++	return 0;
++}
++
++/**
++ * peci_controller_add() - Add PECI controller
++ * @controller: the PECI controller to be added
++ * @parent: device object to be registered as a parent
 + *
-+ * While adding a new CPUID for a new microarchitecture, add a new
-+ * group to keep logically sorted out in chronological order. Within
-+ * that group keep the CPUID for the variants sorted by model number.
++ * In final stage of its probe(), peci_controller driver should include calling
++ * peci_controller_add() to register itself with the PECI bus.
++ * The caller is responsible for allocating the struct peci_controller and
++ * managing its lifetime, calling peci_controller_remove() prior to releasing
++ * the allocation.
 + *
-+ * The defined symbol names have the following form:
-+ *	INTEL_FAM6{OPTFAMILY}_{MICROARCH}{OPTDIFF}
-+ * where:
-+ * OPTFAMILY	Describes the family of CPUs that this belongs to. Default
-+ *		is assumed to be "_CORE" (and should be omitted). Other values
-+ *		currently in use are _ATOM and _XEON_PHI
-+ * MICROARCH	Is the code name for the micro-architecture for this core.
-+ *		N.B. Not the platform name.
-+ * OPTDIFF	If needed, a short string to differentiate by market segment.
++ * It returns zero on success, else a negative error code (dropping the
++ * controller's refcount). After a successful return, the caller is responsible
++ * for calling peci_controller_remove().
 + *
-+ *		Common OPTDIFFs:
-+ *
-+ *			- regular client parts
-+ *		_L	- regular mobile parts
-+ *		_G	- parts with extra graphics on
-+ *		_X	- regular server parts
-+ *		_D	- micro server parts
-+ *
-+ *		Historical OPTDIFFs:
-+ *
-+ *		_EP	- 2 socket server parts
-+ *		_EX	- 4+ socket server parts
-+ *
-+ * The #define line may optionally include a comment including platform or core
-+ * names. An exception is made for skylake/kabylake where steppings seem to have gotten
-+ * their own names :-(
++ * Return: 0 if succeeded, other values in case errors.
 + */
++int peci_controller_add(struct peci_controller *controller, struct device *parent)
++{
++	struct fwnode_handle *node = fwnode_handle_get(dev_fwnode(parent));
++	int ret;
 +
-+/* Wildcard match for FAM6 so X86_MATCH_INTEL_FAM6_MODEL(ANY) works */
-+#define INTEL_FAM6_ANY			X86_MODEL_ANY
++	if (WARN_ON(!controller->xfer))
++		return -EINVAL;
 +
-+#define INTEL_FAM6_CORE_YONAH		0x0E
++	ret = ida_alloc_max(&peci_controller_ida, U8_MAX, GFP_KERNEL);
++	if (ret < 0)
++		return ret;
 +
-+#define INTEL_FAM6_CORE2_MEROM		0x0F
-+#define INTEL_FAM6_CORE2_MEROM_L	0x16
-+#define INTEL_FAM6_CORE2_PENRYN		0x17
-+#define INTEL_FAM6_CORE2_DUNNINGTON	0x1D
++	controller->id = ret;
 +
-+#define INTEL_FAM6_NEHALEM		0x1E
-+#define INTEL_FAM6_NEHALEM_G		0x1F /* Auburndale / Havendale */
-+#define INTEL_FAM6_NEHALEM_EP		0x1A
-+#define INTEL_FAM6_NEHALEM_EX		0x2E
++	mutex_init(&controller->bus_lock);
 +
-+#define INTEL_FAM6_WESTMERE		0x25
-+#define INTEL_FAM6_WESTMERE_EP		0x2C
-+#define INTEL_FAM6_WESTMERE_EX		0x2F
++	controller->dev.parent = parent;
++	controller->dev.bus = &peci_bus_type;
++	controller->dev.type = &peci_controller_type;
++	controller->dev.fwnode = node;
++	controller->dev.of_node = to_of_node(node);
 +
-+#define INTEL_FAM6_SANDYBRIDGE		0x2A
-+#define INTEL_FAM6_SANDYBRIDGE_X	0x2D
-+#define INTEL_FAM6_IVYBRIDGE		0x3A
-+#define INTEL_FAM6_IVYBRIDGE_X		0x3E
++	ret = dev_set_name(&controller->dev, "peci-%d", controller->id);
++	if (ret)
++		goto err_id;
 +
-+#define INTEL_FAM6_HASWELL		0x3C
-+#define INTEL_FAM6_HASWELL_X		0x3F
-+#define INTEL_FAM6_HASWELL_L		0x45
-+#define INTEL_FAM6_HASWELL_G		0x46
++	ret = device_register(&controller->dev);
++	if (ret)
++		goto err_put;
 +
-+#define INTEL_FAM6_BROADWELL		0x3D
-+#define INTEL_FAM6_BROADWELL_G		0x47
-+#define INTEL_FAM6_BROADWELL_X		0x4F
-+#define INTEL_FAM6_BROADWELL_D		0x56
++	pm_runtime_no_callbacks(&controller->dev);
++	pm_suspend_ignore_children(&controller->dev, true);
++	pm_runtime_enable(&controller->dev);
 +
-+#define INTEL_FAM6_SKYLAKE_L		0x4E	/* Sky Lake             */
-+#define INTEL_FAM6_SKYLAKE		0x5E	/* Sky Lake             */
-+#define INTEL_FAM6_SKYLAKE_X		0x55	/* Sky Lake             */
-+/*                 CASCADELAKE_X	0x55	   Sky Lake -- s: 7     */
-+/*                 COOPERLAKE_X		0x55	   Sky Lake -- s: 11    */
++	/*
++	 * Ignoring retval since failures during scan are non-critical for
++	 * controller itself.
++	 */
++	peci_controller_scan_devices(controller);
 +
-+#define INTEL_FAM6_KABYLAKE_L		0x8E	/* Sky Lake             */
-+/*                 AMBERLAKE_L		0x8E	   Sky Lake -- s: 9     */
-+/*                 COFFEELAKE_L		0x8E	   Sky Lake -- s: 10    */
-+/*                 WHISKEYLAKE_L	0x8E       Sky Lake -- s: 11,12 */
++	return 0;
 +
-+#define INTEL_FAM6_KABYLAKE		0x9E	/* Sky Lake             */
-+/*                 COFFEELAKE		0x9E	   Sky Lake -- s: 10-13 */
++err_put:
++	put_device(&controller->dev);
++err_id:
++	fwnode_handle_put(controller->dev.fwnode);
++	ida_free(&peci_controller_ida, controller->id);
 +
-+#define INTEL_FAM6_COMETLAKE		0xA5	/* Sky Lake             */
-+#define INTEL_FAM6_COMETLAKE_L		0xA6	/* Sky Lake             */
++	return ret;
++}
++EXPORT_SYMBOL_NS_GPL(peci_controller_add, PECI);
 +
-+#define INTEL_FAM6_CANNONLAKE_L		0x66	/* Palm Cove */
++static int _unregister(struct device *dev, void *dummy)
++{
++	/* Just a stub, no support for actual devices yet */
++	return 0;
++}
 +
-+#define INTEL_FAM6_ICELAKE_X		0x6A	/* Sunny Cove */
-+#define INTEL_FAM6_ICELAKE_D		0x6C	/* Sunny Cove */
-+#define INTEL_FAM6_ICELAKE		0x7D	/* Sunny Cove */
-+#define INTEL_FAM6_ICELAKE_L		0x7E	/* Sunny Cove */
-+#define INTEL_FAM6_ICELAKE_NNPI		0x9D	/* Sunny Cove */
++/**
++ * peci_controller_remove - Delete PECI controller
++ * @controller: the PECI controller to be removed
++ *
++ * This call is used only by PECI controller drivers, which are the only ones
++ * directly touching chip registers.
++ *
++ * Note that this function also drops a reference to the controller.
++ */
++void peci_controller_remove(struct peci_controller *controller)
++{
++	pm_runtime_disable(&controller->dev);
++	/*
++	 * Detach any active PECI devices. This can't fail, thus we do not
++	 * check the returned value.
++	 */
++	device_for_each_child_reverse(&controller->dev, NULL, _unregister);
 +
-+#define INTEL_FAM6_LAKEFIELD		0x8A	/* Sunny Cove / Tremont */
++	device_unregister(&controller->dev);
++	fwnode_handle_put(controller->dev.fwnode);
++	ida_free(&peci_controller_ida, controller->id);
++}
++EXPORT_SYMBOL_NS_GPL(peci_controller_remove, PECI);
 +
-+#define INTEL_FAM6_ROCKETLAKE		0xA7	/* Cypress Cove */
++struct bus_type peci_bus_type = {
++	.name		= "peci",
++	.bus_groups	= peci_bus_groups,
++};
 +
-+#define INTEL_FAM6_TIGERLAKE_L		0x8C	/* Willow Cove */
-+#define INTEL_FAM6_TIGERLAKE		0x8D	/* Willow Cove */
++static int __init peci_init(void)
++{
++	int ret;
 +
-+#define INTEL_FAM6_SAPPHIRERAPIDS_X	0x8F	/* Golden Cove */
++	ret = bus_register(&peci_bus_type);
++	if (ret < 0) {
++		pr_err("failed to register PECI bus type!\n");
++		return ret;
++	}
 +
-+#define INTEL_FAM6_ALDERLAKE		0x97	/* Golden Cove / Gracemont */
-+#define INTEL_FAM6_ALDERLAKE_L		0x9A	/* Golden Cove / Gracemont */
++	return 0;
++}
++subsys_initcall(peci_init);
 +
-+/* "Small Core" Processors (Atom) */
++static void __exit peci_exit(void)
++{
++	bus_unregister(&peci_bus_type);
++}
++module_exit(peci_exit);
 +
-+#define INTEL_FAM6_ATOM_BONNELL		0x1C /* Diamondville, Pineview */
-+#define INTEL_FAM6_ATOM_BONNELL_MID	0x26 /* Silverthorne, Lincroft */
++MODULE_AUTHOR("Jason M Bills <jason.m.bills@linux.intel.com>");
++MODULE_AUTHOR("Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>");
++MODULE_AUTHOR("Iwona Winiarska <iwona.winiarska@intel.com>");
++MODULE_DESCRIPTION("PECI bus core module");
++MODULE_LICENSE("GPL");
+diff --git a/drivers/peci/internal.h b/drivers/peci/internal.h
+new file mode 100644
+index 000000000000..80c61bcdfc6b
+--- /dev/null
++++ b/drivers/peci/internal.h
+@@ -0,0 +1,20 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/* Copyright (c) 2018-2021 Intel Corporation */
 +
-+#define INTEL_FAM6_ATOM_SALTWELL	0x36 /* Cedarview */
-+#define INTEL_FAM6_ATOM_SALTWELL_MID	0x27 /* Penwell */
-+#define INTEL_FAM6_ATOM_SALTWELL_TABLET	0x35 /* Cloverview */
++#ifndef __PECI_INTERNAL_H
++#define __PECI_INTERNAL_H
 +
-+#define INTEL_FAM6_ATOM_SILVERMONT	0x37 /* Bay Trail, Valleyview */
-+#define INTEL_FAM6_ATOM_SILVERMONT_D	0x4D /* Avaton, Rangely */
-+#define INTEL_FAM6_ATOM_SILVERMONT_MID	0x4A /* Merriefield */
++#include <linux/device.h>
++#include <linux/types.h>
 +
-+#define INTEL_FAM6_ATOM_AIRMONT		0x4C /* Cherry Trail, Braswell */
-+#define INTEL_FAM6_ATOM_AIRMONT_MID	0x5A /* Moorefield */
-+#define INTEL_FAM6_ATOM_AIRMONT_NP	0x75 /* Lightning Mountain */
++struct peci_controller;
++struct attribute_group;
 +
-+#define INTEL_FAM6_ATOM_GOLDMONT	0x5C /* Apollo Lake */
-+#define INTEL_FAM6_ATOM_GOLDMONT_D	0x5F /* Denverton */
++extern struct bus_type peci_bus_type;
++extern const struct attribute_group *peci_bus_groups[];
 +
-+/* Note: the micro-architecture is "Goldmont Plus" */
-+#define INTEL_FAM6_ATOM_GOLDMONT_PLUS	0x7A /* Gemini Lake */
++extern struct device_type peci_controller_type;
 +
-+#define INTEL_FAM6_ATOM_TREMONT_D	0x86 /* Jacobsville */
-+#define INTEL_FAM6_ATOM_TREMONT		0x96 /* Elkhart Lake */
-+#define INTEL_FAM6_ATOM_TREMONT_L	0x9C /* Jasper Lake */
++int peci_controller_scan_devices(struct peci_controller *controller);
 +
-+/* Xeon Phi */
++#endif /* __PECI_INTERNAL_H */
+diff --git a/drivers/peci/sysfs.c b/drivers/peci/sysfs.c
+new file mode 100644
+index 000000000000..36c5e2a18a92
+--- /dev/null
++++ b/drivers/peci/sysfs.c
+@@ -0,0 +1,48 @@
++// SPDX-License-Identifier: GPL-2.0-only
++// Copyright (c) 2021 Intel Corporation
 +
-+#define INTEL_FAM6_XEON_PHI_KNL		0x57 /* Knights Landing */
-+#define INTEL_FAM6_XEON_PHI_KNM		0x85 /* Knights Mill */
++#include <linux/peci.h>
 +
-+/* Family 5 */
-+#define INTEL_FAM5_QUARK_X1000		0x09 /* Quark X1000 SoC */
++#include "internal.h"
 +
-+#endif /* _LINUX_X86_INTEL_FAMILY_H */
++static int rescan_controller(struct device *dev, void *data)
++{
++	if (dev->type != &peci_controller_type)
++		return 0;
++
++	return peci_controller_scan_devices(to_peci_controller(dev));
++}
++
++static ssize_t rescan_store(struct bus_type *bus, const char *buf, size_t count)
++{
++	bool res;
++	int ret;
++
++	ret = kstrtobool(buf, &res);
++	if (ret)
++		return ret;
++
++	if (!res)
++		return count;
++
++	ret = bus_for_each_dev(&peci_bus_type, NULL, NULL, rescan_controller);
++	if (ret)
++		return ret;
++
++	return count;
++}
++static BUS_ATTR_WO(rescan);
++
++static struct attribute *peci_bus_attrs[] = {
++	&bus_attr_rescan.attr,
++	NULL
++};
++
++static const struct attribute_group peci_bus_group = {
++	.attrs = peci_bus_attrs,
++};
++
++const struct attribute_group *peci_bus_groups[] = {
++	&peci_bus_group,
++	NULL
++};
+diff --git a/include/linux/peci.h b/include/linux/peci.h
+new file mode 100644
+index 000000000000..cdf3008321fd
+--- /dev/null
++++ b/include/linux/peci.h
+@@ -0,0 +1,82 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/* Copyright (c) 2018-2021 Intel Corporation */
++
++#ifndef __LINUX_PECI_H
++#define __LINUX_PECI_H
++
++#include <linux/device.h>
++#include <linux/kernel.h>
++#include <linux/mutex.h>
++#include <linux/types.h>
++
++struct peci_request;
++
++/**
++ * struct peci_controller - PECI controller
++ * @dev: device object to register PECI controller to the device model
++ * @xfer: PECI transfer function
++ * @bus_lock: lock used to protect multiple callers
++ * @id: PECI controller ID
++ *
++ * PECI controllers usually connect to their drivers using non-PECI bus,
++ * such as the platform bus.
++ * Each PECI controller can communicate with one or more PECI devices.
++ */
++struct peci_controller {
++	struct device dev;
++	int (*xfer)(struct peci_controller *controller, u8 addr, struct peci_request *req);
++	struct mutex bus_lock; /* held for the duration of xfer */
++	u8 id;
++};
++
++int peci_controller_add(struct peci_controller *controller, struct device *parent);
++void peci_controller_remove(struct peci_controller *controller);
++
++static inline struct peci_controller *to_peci_controller(void *d)
++{
++	return container_of(d, struct peci_controller, dev);
++}
++
++/**
++ * struct peci_device - PECI device
++ * @dev: device object to register PECI device to the device model
++ * @controller: manages the bus segment hosting this PECI device
++ * @addr: address used on the PECI bus connected to the parent controller
++ *
++ * A peci_device identifies a single device (i.e. CPU) connected to a PECI bus.
++ * The behaviour exposed to the rest of the system is defined by the PECI driver
++ * managing the device.
++ */
++struct peci_device {
++	struct device dev;
++	struct peci_controller *controller;
++	u8 addr;
++};
++
++static inline struct peci_device *to_peci_device(struct device *d)
++{
++	return container_of(d, struct peci_device, dev);
++}
++
++/**
++ * struct peci_request - PECI request
++ * @device: PECI device to which the request is sent
++ * @tx: TX buffer specific data
++ * @tx.buf: pointer to TX buffer
++ * @tx.len: transfer data length in bytes
++ * @rx: RX buffer specific data
++ * @rx.buf: pointer to RX buffer
++ * @rx.len: received data length in bytes
++ *
++ * A peci_request represents a request issued by PECI originator (TX) and
++ * a response received from PECI responder (RX).
++ */
++struct peci_request {
++	struct peci_device *device;
++	struct {
++		u8 *buf;
++		u8 len;
++	} rx, tx;
++};
++
++#endif /* __LINUX_PECI_H */
 -- 
 2.31.1
 
