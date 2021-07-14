@@ -1,94 +1,96 @@
 From: Quan Nguyen <quan@os.amperecomputing.com>
-Date: Wed, 14 Jul 2021 10:38:30 +0700
-Subject: [PATCH v5 0/3] Add SSIF BMC driver
-Message-ID: <20210714033833.11640-1-quan@os.amperecomputing.com>
+Date: Wed, 14 Jul 2021 10:38:31 +0700
+Subject: [PATCH v5 1/3] i2c: aspeed: Add slave_enable() to toggle slave mode
+In-Reply-To: <20210714033833.11640-1-quan@os.amperecomputing.com>
+References: <20210714033833.11640-1-quan@os.amperecomputing.com>
+Message-ID: <20210714033833.11640-2-quan@os.amperecomputing.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This series add support the SSIF BMC driver which is to perform in-band
-IPMI communication with their host in management (BMC) side.
+Slave needs time to prepare the response data before Master could
+enquiry via read transaction. However, there is no mechanism for
+i2c-aspeed Slave to notify Master that it needs more time to process
+and this make Master side to time out when trying to get the response.
 
-SSIF BMC driver in this series is tested with Aspeed AST2500.
+This commit introduces the slave_enable() callback in struct
+i2c_algorithm for Slave to temporary stop the Slave mode while working
+on the response and re-enable the Slave when response data ready.
 
+Signed-off-by: Quan Nguyen <quan@os.amperecomputing.com>
+---
 v5:
-  + Correct the patches order to fix the bisect issue found by
-  kernel build robot
+  + None
 
 v4:
-  + Fix recursive spinlock                                      [Graeme]
-  + Send response with Completion code 0xFF when aborting         [Quan]
-  + Fix warning with dt_binding_check                              [Rob]
-  + Change aspeed-ssif-bmc.yaml to ssif-bmc.yaml                  [Quan]
-  + Added bounding check on SMBus writes and the whole request     [Dan]
-  + Moved buffer to end of struct ssif_bmc_ctx to avoid context
-    corruption if somehow buffer is written past the end           [Dan]
-  + Return -EINVAL if userspace buffer too small, dont
-    silence truncate                                       [Corey, Joel]
-  + Not necessary to check NONBLOCK in lock                      [Corey]
-  + Enforce one user at a time                                    [Joel]
-  + Reject write with invalid response length from userspace     [Corey]
-  + Add state machines for better ssif bmc state handling         [Quan]
-  + Drop ssif_bmc_aspeed.c and make ssif_bmc.c is generic
-    SSIF BMC driver                                               [Quan]
-  + Change compatible string "aspeed,ast2500-ssif-bmc" to
-    "ampere,ssif-bmc"                                             [Quan]
-  + Toggle Slave enable in i2c-aspeed to turn on/off slave mode   [Ryan]
-  + Added slave_enable() to struct i2c_algorithm to control
-    slave mode and to address the recursive spinlock      [Graeme, Ryan]
-  + Abort current request with invalid SMBus write or
-    invalid command                                               [Quan]
-  + Abort all request if there is pending response                [Quan]
-  + Changed validate_pec() to validate_request()                  [Quan]
-  + Add unsupported_smbus_cmd() to handle unknown SMBus command   [Quan]
-  + Print internal state string for ease investigating issue      [Quan]
-  + Move to READY state on SLAVE_STOP event                       [Quan]
-  + Change initilize_transfer() to process_smbus_cmd()            [Quan]
-  + Introduce functions for each slave event                      [Quan]
+  + First introduced follow Ryan's suggestion               [Ryan]
+  + Fix recursive spinlock issue in v3 (aspeed_set_slave_busy())
+  and apply in this patch                                 [Graeme]
 
-v3:
-  + Switched binding doc to use DT schema format [Rob]
-  + Splited into generic ssif_bmc and aspeed-specific [Corey, Joel]
-  + Removed redundant license info [Joel]
-  + Switched to use traditional if-else [Joel]
-  + Removed unused ssif_bmc_ioctl() [Joel]
-  + Made handle_request()/complete_response() to return void [Joel]
-  + Refactored send_ssif_bmc_response()/receive_ssif_bmc_request()
-  [Corey]
-  + Remove mutex [Corey]
-  + Use spin_lock/unlock_irqsave/restore in callback [Corey]
-  + Removed the unnecessary memset [Corey]
-  + Switch to use dev_err() [Corey]
-  + Combine mask/unmask two interrupts together [Corey]
-  + Fixed unhandled Tx done with NAK [Quan]
-  + Late ack'ed Tx done w/wo Ack irq [Quan]
-  + Use aspeed-specific exported aspeed_set_slave_busy() when slave busy
-  to fix the deadlock [Graeme, Philipp, Quan]
-  + Clean buffer for last multipart read [Quan]
-  + Handle unknown incoming command [Quan]
+ drivers/i2c/busses/i2c-aspeed.c | 20 ++++++++++++++++++++
+ include/linux/i2c.h             |  2 ++
+ 2 files changed, 22 insertions(+)
 
-v2:
-  + Fixed compiling error with COMPILE_TEST for arc
-
-Quan Nguyen (3):
-  i2c: aspeed: Add slave_enable() to toggle slave mode
-  ipmi: ssif_bmc: Add SSIF BMC driver
-  bindings: ipmi: Add binding for SSIF BMC driver
-
- .../devicetree/bindings/ipmi/ssif-bmc.yaml    |  38 +
- drivers/char/ipmi/Kconfig                     |  11 +
- drivers/char/ipmi/Makefile                    |   1 +
- drivers/char/ipmi/ssif_bmc.c                  | 781 ++++++++++++++++++
- drivers/char/ipmi/ssif_bmc.h                  | 106 +++
- drivers/i2c/busses/i2c-aspeed.c               |  20 +
- include/linux/i2c.h                           |   2 +
- 7 files changed, 959 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/ipmi/ssif-bmc.yaml
- create mode 100644 drivers/char/ipmi/ssif_bmc.c
- create mode 100644 drivers/char/ipmi/ssif_bmc.h
-
+diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
+index 67e8b97c0c95..a6a19dc8a501 100644
+--- a/drivers/i2c/busses/i2c-aspeed.c
++++ b/drivers/i2c/busses/i2c-aspeed.c
+@@ -785,6 +785,25 @@ static int aspeed_i2c_unreg_slave(struct i2c_client *client)
+ 
+ 	return 0;
+ }
++
++static int aspeed_i2c_slave_enable(struct i2c_client *client, bool enable)
++{
++	struct aspeed_i2c_bus *bus = i2c_get_adapdata(client->adapter);
++	u32 func_ctrl_reg_val;
++
++	if (!bus->slave)
++		return -EINVAL;
++
++	/* Toggle slave mode. */
++	func_ctrl_reg_val = readl(bus->base + ASPEED_I2C_FUN_CTRL_REG);
++	if (enable)
++		func_ctrl_reg_val |= ASPEED_I2CD_SLAVE_EN;
++	else
++		func_ctrl_reg_val &= ~ASPEED_I2CD_SLAVE_EN;
++	writel(func_ctrl_reg_val, bus->base + ASPEED_I2C_FUN_CTRL_REG);
++
++	return 0;
++}
+ #endif /* CONFIG_I2C_SLAVE */
+ 
+ static const struct i2c_algorithm aspeed_i2c_algo = {
+@@ -793,6 +812,7 @@ static const struct i2c_algorithm aspeed_i2c_algo = {
+ #if IS_ENABLED(CONFIG_I2C_SLAVE)
+ 	.reg_slave	= aspeed_i2c_reg_slave,
+ 	.unreg_slave	= aspeed_i2c_unreg_slave,
++	.slave_enable	= aspeed_i2c_slave_enable,
+ #endif /* CONFIG_I2C_SLAVE */
+ };
+ 
+diff --git a/include/linux/i2c.h b/include/linux/i2c.h
+index 3eb60a2e9e61..8c1765aa7e3f 100644
+--- a/include/linux/i2c.h
++++ b/include/linux/i2c.h
+@@ -520,6 +520,7 @@ i2c_register_board_info(int busnum, struct i2c_board_info const *info,
+  *   from the ``I2C_FUNC_*`` flags.
+  * @reg_slave: Register given client to I2C slave mode of this adapter
+  * @unreg_slave: Unregister given client from I2C slave mode of this adapter
++ * @slave_enable: Toggle enable slave mode for given client of this adapter
+  *
+  * The following structs are for those who like to implement new bus drivers:
+  * i2c_algorithm is the interface to a class of hardware solutions which can
+@@ -557,6 +558,7 @@ struct i2c_algorithm {
+ #if IS_ENABLED(CONFIG_I2C_SLAVE)
+ 	int (*reg_slave)(struct i2c_client *client);
+ 	int (*unreg_slave)(struct i2c_client *client);
++	int (*slave_enable)(struct i2c_client *client, bool enable);
+ #endif
+ };
+ 
 -- 
 2.28.0
 
