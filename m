@@ -1,19 +1,18 @@
 From: Winiarska, Iwona <iwona.winiarska@intel.com>
-Date: Thu, 15 Jul 2021 16:47:16 +0000
-Subject: [PATCH 01/14] x86/cpu: Move intel-family to arch-independent
- headers
-In-Reply-To: <32c71687f11fb418dafa45ecf15f7c6b50dd0397.camel@intel.com>
+Date: Thu, 15 Jul 2021 16:51:36 +0000
+Subject: [PATCH 02/14] x86/cpu: Extract cpuid helpers to arch-independent
+In-Reply-To: <c81be21327124c2269baa13741cacbd304120e7f.camel@intel.com>
 References: <20210712220447.957418-1-iwona.winiarska@intel.com>
- <20210712220447.957418-2-iwona.winiarska@intel.com>
- <32c71687f11fb418dafa45ecf15f7c6b50dd0397.camel@intel.com>
-Message-ID: <218ef97a68491e88d8012799385ee244544a157a.camel@intel.com>
+ <20210712220447.957418-3-iwona.winiarska@intel.com>
+ <c81be21327124c2269baa13741cacbd304120e7f.camel@intel.com>
+Message-ID: <87be3ed7be9949f6e929c2b185dc7d623d525f8e.camel@intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 2021-07-14 at 16:54 +0000, Williams, Dan J wrote:
+On Wed, 2021-07-14 at 16:58 +0000, Williams, Dan J wrote:
 > On Tue, 2021-07-13 at 00:04 +0200, Iwona Winiarska wrote:
 > > Baseboard management controllers (BMC) often run Linux but are
 > > usually
@@ -26,39 +25,203 @@ On Wed, 2021-07-14 at 16:54 +0000, Williams, Dan J wrote:
 > > family
 > > and model.
 > > 
-> > Move the data from arch/x86/include/asm/intel-family.h into a new
-> > file
-> > include/linux/x86/intel-family.h so that it can be used by other
-> > architectures.
+> > The format of Package Identifier PCS register that describes CPUID
+> > information has the same layout as CPUID_1.EAX, so let's allow to
+> > reuse
+> > cpuid helpers by making it available for other architectures as
+> > well.
 > 
-> At least it would make the diffstat smaller to allow for rename
-> detection when the old file is deleted in the same patch:
+> Just some minor comments below.
 > 
-> ?MAINTAINERS??????????????????????????????????????????????? | 1 +
-> ?{arch/x86/include/asm => include/linux/x86}/intel-family.h | 6 +++---
-> ?2 files changed, 4 insertions(+), 3 deletions(-)
-> 
-> ...one thing people have done in the past is include a conversion
-> script in the changelog that produced the diff. That way if a
-> maintainer wants to be sure to catch any new usage of the header at
-> the old location they just run the script.
-
-You mean like a simple s#asm/intel-family.h#linux/x86/intel-family.h#g
-?
-Operating on kernel tree? Or individual patches?
-
-Is including "old" header in new code that big of a deal? I guess it
-could break grepability (looking for users of the header, now that it
-can be pulled from two different places).
-It would be worse if someone decided to add new content to old header,
-but this should be easier to catch during review.
-
-> 
-> I am not aware of x86 maintainer preference here. Either way you decide
-> to go you can add:
+> You can go ahead and add:
 > 
 > Reviewed-by: Dan Williams <dan.j.williams@intel.com>
 > 
+> > 
+> > Signed-off-by: Iwona Winiarska <iwona.winiarska@intel.com>
+> > Reviewed-by: Tony Luck <tony.luck@intel.com>
+> > ---
+> > ?MAINTAINERS????????????????????? | 2 ++
+> > ?arch/x86/Kconfig???????????????? | 1 +
+> > ?arch/x86/include/asm/cpu.h?????? | 3 ---
+> > ?arch/x86/include/asm/microcode.h | 2 +-
+> > ?arch/x86/kvm/cpuid.h???????????? | 3 ++-
+> > ?arch/x86/lib/Makefile??????????? | 2 +-
+> > ?drivers/edac/mce_amd.c?????????? | 3 +--
+> > ?include/linux/x86/cpu.h????????? | 9 +++++++++
+> > ?lib/Kconfig????????????????????? | 5 +++++
+> > ?lib/Makefile???????????????????? | 2 ++
+> > ?lib/x86/Makefile???????????????? | 3 +++
+> > ?{arch/x86/lib => lib/x86}/cpu.c? | 2 +-
+> > ?12 files changed, 28 insertions(+), 9 deletions(-)
+> > ?create mode 100644 include/linux/x86/cpu.h
+> > ?create mode 100644 lib/x86/Makefile
+> > ?rename {arch/x86/lib => lib/x86}/cpu.c (95%)
+> > 
+> > diff --git a/MAINTAINERS b/MAINTAINERS
+> > index ec5987a00800..6f77aaca2a30 100644
+> > --- a/MAINTAINERS
+> > +++ b/MAINTAINERS
+> > @@ -20081,6 +20081,8 @@ T:??????git
+> > git://git.kernel.org/pub/scm/linux/kernel/git/tip/tip.git x86/core
+> > ?F:?????Documentation/devicetree/bindings/x86/
+> > ?F:?????Documentation/x86/
+> > ?F:?????arch/x86/
+> > +F:?????include/linux/x86/
+> 
+> Doesn't this technically belong in patch1 since that one introduced
+> the directory?
+
+In the first patch we are moving arch/x86/include/intel-family.h
+content to a new file, which is why I updated MAINTAINERS just for
+"INTEL CPU family model numbers".
+
+Here we're moving other content that was maintained under arch/x86
+which is why I extended "X86 ARCHITECTURE (32-BIT AND 64-BIT)".
+
+But I agree - "X86 ARCHITECTURE" includes "INTEL CPU family", so I
+guess it makes sense to add both in previous patch (otherwise
+get_maintainer.pl would produce different output for
+include/linux/x86/intel-family.h until this patch is applied).
 
 Thank you
 -Iwona
+
+> 
+> > +F:?????lib/x86/
+> > ?
+> > ?X86 ENTRY CODE
+> > ?M:?????Andy Lutomirski <luto@kernel.org>
+> > diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+> > index 49270655e827..750f9b896e4f 100644
+> > --- a/arch/x86/Kconfig
+> > +++ b/arch/x86/Kconfig
+> > @@ -141,6 +141,7 @@ config X86
+> > ????????select GENERIC_IRQ_PROBE
+> > ????????select GENERIC_IRQ_RESERVATION_MODE
+> > ????????select GENERIC_IRQ_SHOW
+> > +???????select GENERIC_LIB_X86
+> > ????????select GENERIC_PENDING_IRQ??????????????if SMP
+> > ????????select GENERIC_PTDUMP
+> > ????????select GENERIC_SMP_IDLE_THREAD
+> > diff --git a/arch/x86/include/asm/cpu.h
+> > b/arch/x86/include/asm/cpu.h
+> > index 33d41e350c79..2a663a05a795 100644
+> > --- a/arch/x86/include/asm/cpu.h
+> > +++ b/arch/x86/include/asm/cpu.h
+> > @@ -37,9 +37,6 @@ extern int _debug_hotplug_cpu(int cpu, int
+> > action);
+> > ?
+> > ?int mwait_usable(const struct cpuinfo_x86 *);
+> > ?
+> > -unsigned int x86_family(unsigned int sig);
+> > -unsigned int x86_model(unsigned int sig);
+> > -unsigned int x86_stepping(unsigned int sig);
+> > ?#ifdef CONFIG_CPU_SUP_INTEL
+> > ?extern void __init sld_setup(struct cpuinfo_x86 *c);
+> > ?extern void switch_to_sld(unsigned long tifn);
+> > diff --git a/arch/x86/include/asm/microcode.h
+> > b/arch/x86/include/asm/microcode.h
+> > index ab45a220fac4..4b0eabf63b98 100644
+> > --- a/arch/x86/include/asm/microcode.h
+> > +++ b/arch/x86/include/asm/microcode.h
+> > @@ -2,9 +2,9 @@
+> > ?#ifndef _ASM_X86_MICROCODE_H
+> > ?#define _ASM_X86_MICROCODE_H
+> > ?
+> > -#include <asm/cpu.h>
+> > ?#include <linux/earlycpio.h>
+> > ?#include <linux/initrd.h>
+> > +#include <linux/x86/cpu.h>
+> 
+> Has this patch set received a build success notification from the
+> kbuild robot? I.e. are you sure that this include was only here for
+> the
+> 
+> unsigned int x86_family(unsigned int sig);
+> unsigned int x86_model(unsigned int sig);
+> unsigned int x86_stepping(unsigned int sig);
+> 
+> ...helpers. All the other replacements look trivially verifiable as
+> only needing these 3 helpers.
+> 
+> > ?
+> > ?struct ucode_patch {
+> > ????????struct list_head plist;
+> > diff --git a/arch/x86/kvm/cpuid.h b/arch/x86/kvm/cpuid.h
+> > index c99edfff7f82..bf070d2a2175 100644
+> > --- a/arch/x86/kvm/cpuid.h
+> > +++ b/arch/x86/kvm/cpuid.h
+> > @@ -4,10 +4,11 @@
+> > ?
+> > ?#include "x86.h"
+> > ?#include "reverse_cpuid.h"
+> > -#include <asm/cpu.h>
+> > ?#include <asm/processor.h>
+> > ?#include <uapi/asm/kvm_para.h>
+> > ?
+> > +#include <linux/x86/cpu.h>
+> > +
+> > ?extern u32 kvm_cpu_caps[NR_KVM_CPU_CAPS] __read_mostly;
+> > ?void kvm_set_cpu_caps(void);
+> > ?
+> > diff --git a/arch/x86/lib/Makefile b/arch/x86/lib/Makefile
+> > index bad4dee4f0e4..fd73c1b72c3e 100644
+> > --- a/arch/x86/lib/Makefile
+> > +++ b/arch/x86/lib/Makefile
+> > @@ -41,7 +41,7 @@ clean-files := inat-tables.c
+> > ?
+> > ?obj-$(CONFIG_SMP) += msr-smp.o cache-smp.o
+> > ?
+> > -lib-y := delay.o misc.o cmdline.o cpu.o
+> > +lib-y := delay.o misc.o cmdline.o
+> > ?lib-y += usercopy_$(BITS).o usercopy.o getuser.o putuser.o
+> > ?lib-y += memcpy_$(BITS).o
+> > ?lib-$(CONFIG_ARCH_HAS_COPY_MC) += copy_mc.o copy_mc_64.o
+> > diff --git a/drivers/edac/mce_amd.c b/drivers/edac/mce_amd.c
+> > index 27d56920b469..f545f5fad02c 100644
+> > --- a/drivers/edac/mce_amd.c
+> > +++ b/drivers/edac/mce_amd.c
+> > @@ -1,8 +1,7 @@
+> > ?// SPDX-License-Identifier: GPL-2.0-only
+> > ?#include <linux/module.h>
+> > ?#include <linux/slab.h>
+> > -
+> > -#include <asm/cpu.h>
+> > +#include <linux/x86/cpu.h>
+> > ?
+> > ?#include "mce_amd.h"
+> > ?
+> > diff --git a/include/linux/x86/cpu.h b/include/linux/x86/cpu.h
+> > new file mode 100644
+> > index 000000000000..5f383d47886d
+> > --- /dev/null
+> > +++ b/include/linux/x86/cpu.h
+> > @@ -0,0 +1,9 @@
+> > +/* SPDX-License-Identifier: GPL-2.0-only */
+> > +#ifndef _LINUX_X86_CPU_H
+> > +#define _LINUX_X86_CPU_H
+> > +
+> > +unsigned int x86_family(unsigned int sig);
+> > +unsigned int x86_model(unsigned int sig);
+> > +unsigned int x86_stepping(unsigned int sig);
+> > +
+> > +#endif /* _LINUX_X86_CPU_H */
+> > diff --git a/lib/Kconfig b/lib/Kconfig
+> > index d241fe476fda..cc28bc1f2d84 100644
+> > --- a/lib/Kconfig
+> > +++ b/lib/Kconfig
+> > @@ -718,3 +718,8 @@ config PLDMFW
+> > ?
+> > ?config ASN1_ENCODER
+> > ??????? tristate
+> > +
+> > +config GENERIC_LIB_X86
+> > +???????bool
+> > +???????depends on X86
+> > +???????default n
+> 
+> No need for a "default n" line. Omitting a default is the same as
+> "default n".
+> 
+
