@@ -1,150 +1,185 @@
 From: Winiarska, Iwona <iwona.winiarska@intel.com>
-Date: Thu, 15 Jul 2021 16:58:28 +0000
-Subject: [PATCH 02/14] x86/cpu: Extract cpuid helpers to arch-independent
-In-Reply-To: <87be3ed7be9949f6e929c2b185dc7d623d525f8e.camel@intel.com>
+Date: Thu, 15 Jul 2021 17:33:34 +0000
+Subject: [PATCH 00/14] Introduce PECI subsystem
+In-Reply-To: <3b9cfe5f728c40c473a22070029c8790b452daf4.camel@intel.com>
 References: <20210712220447.957418-1-iwona.winiarska@intel.com>
- <20210712220447.957418-3-iwona.winiarska@intel.com>
- <c81be21327124c2269baa13741cacbd304120e7f.camel@intel.com>
- <87be3ed7be9949f6e929c2b185dc7d623d525f8e.camel@intel.com>
-Message-ID: <ae9654202758925d72f98e6ec14b106af39e5f3e.camel@intel.com>
+ <3b9cfe5f728c40c473a22070029c8790b452daf4.camel@intel.com>
+Message-ID: <fe9a5191e401b38325aaff11365b5970034d26cc.camel@intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, 2021-07-15 at 16:51 +0000, Winiarska, Iwona wrote:
-> On Wed, 2021-07-14 at 16:58 +0000, Williams, Dan J wrote:
-> > On Tue, 2021-07-13 at 00:04 +0200, Iwona Winiarska wrote:
-> > > diff --git a/arch/x86/include/asm/cpu.h
-> > > b/arch/x86/include/asm/cpu.h
-> > > index 33d41e350c79..2a663a05a795 100644
-> > > --- a/arch/x86/include/asm/cpu.h
-> > > +++ b/arch/x86/include/asm/cpu.h
-> > > @@ -37,9 +37,6 @@ extern int _debug_hotplug_cpu(int cpu, int
-> > > action);
-> > > ?
-> > > ?int mwait_usable(const struct cpuinfo_x86 *);
-> > > ?
-> > > -unsigned int x86_family(unsigned int sig);
-> > > -unsigned int x86_model(unsigned int sig);
-> > > -unsigned int x86_stepping(unsigned int sig);
-> > > ?#ifdef CONFIG_CPU_SUP_INTEL
-> > > ?extern void __init sld_setup(struct cpuinfo_x86 *c);
-> > > ?extern void switch_to_sld(unsigned long tifn);
-> > > diff --git a/arch/x86/include/asm/microcode.h
-> > > b/arch/x86/include/asm/microcode.h
-> > > index ab45a220fac4..4b0eabf63b98 100644
-> > > --- a/arch/x86/include/asm/microcode.h
-> > > +++ b/arch/x86/include/asm/microcode.h
-> > > @@ -2,9 +2,9 @@
-> > > ?#ifndef _ASM_X86_MICROCODE_H
-> > > ?#define _ASM_X86_MICROCODE_H
-> > > ?
-> > > -#include <asm/cpu.h>
-> > > ?#include <linux/earlycpio.h>
-> > > ?#include <linux/initrd.h>
-> > > +#include <linux/x86/cpu.h>
-> > 
-> > Has this patch set received a build success notification from the
-> > kbuild robot? I.e. are you sure that this include was only here for
-> > the
-> > 
-> > unsigned int x86_family(unsigned int sig);
-> > unsigned int x86_model(unsigned int sig);
-> > unsigned int x86_stepping(unsigned int sig);
-> > 
-> > ...helpers. All the other replacements look trivially verifiable as
-> > only needing these 3 helpers.
+On Wed, 2021-07-14 at 16:51 +0000, Williams, Dan J wrote:
+> On Tue, 2021-07-13 at 00:04 +0200, Iwona Winiarska wrote:
+> > Note: All changes to arch/x86 are contained within patches 01-02.
+> 
+> Hi Iwona,
+> 
+> One meta question first, who is this submission "To:"? Is there an
+> existing upstream maintainer path for OpenBMC changes? Are you
+> expecting contributions to this subsystem from others? While Greg
+> sometimes ends up as default maintainer for new stuff, I wonder if
+> someone from the OpenBMC commnuity should step up to fill this role?
+> 
 
-Missed the rest of your email in my previous post - sorry.
-Yes - and before that I ran this through allyesconfig on x86.
+The intention was to direct it to Greg, but I guess I didn't express
+that through the mail headers.
+I am expecting contributions - for example there is at least one other
+major BMC vendor which also ships PECI controllers.
 
-> > 
-> > > ?
-> > > ?struct ucode_patch {
-> > > ????????struct list_head plist;
-> > > diff --git a/arch/x86/kvm/cpuid.h b/arch/x86/kvm/cpuid.h
-> > > index c99edfff7f82..bf070d2a2175 100644
-> > > --- a/arch/x86/kvm/cpuid.h
-> > > +++ b/arch/x86/kvm/cpuid.h
-> > > @@ -4,10 +4,11 @@
-> > > ?
-> > > ?#include "x86.h"
-> > > ?#include "reverse_cpuid.h"
-> > > -#include <asm/cpu.h>
-> > > ?#include <asm/processor.h>
-> > > ?#include <uapi/asm/kvm_para.h>
-> > > ?
-> > > +#include <linux/x86/cpu.h>
-> > > +
-> > > ?extern u32 kvm_cpu_caps[NR_KVM_CPU_CAPS] __read_mostly;
-> > > ?void kvm_set_cpu_caps(void);
-> > > ?
-> > > diff --git a/arch/x86/lib/Makefile b/arch/x86/lib/Makefile
-> > > index bad4dee4f0e4..fd73c1b72c3e 100644
-> > > --- a/arch/x86/lib/Makefile
-> > > +++ b/arch/x86/lib/Makefile
-> > > @@ -41,7 +41,7 @@ clean-files := inat-tables.c
-> > > ?
-> > > ?obj-$(CONFIG_SMP) += msr-smp.o cache-smp.o
-> > > ?
-> > > -lib-y := delay.o misc.o cmdline.o cpu.o
-> > > +lib-y := delay.o misc.o cmdline.o
-> > > ?lib-y += usercopy_$(BITS).o usercopy.o getuser.o putuser.o
-> > > ?lib-y += memcpy_$(BITS).o
-> > > ?lib-$(CONFIG_ARCH_HAS_COPY_MC) += copy_mc.o copy_mc_64.o
-> > > diff --git a/drivers/edac/mce_amd.c b/drivers/edac/mce_amd.c
-> > > index 27d56920b469..f545f5fad02c 100644
-> > > --- a/drivers/edac/mce_amd.c
-> > > +++ b/drivers/edac/mce_amd.c
-> > > @@ -1,8 +1,7 @@
-> > > ?// SPDX-License-Identifier: GPL-2.0-only
-> > > ?#include <linux/module.h>
-> > > ?#include <linux/slab.h>
-> > > -
-> > > -#include <asm/cpu.h>
-> > > +#include <linux/x86/cpu.h>
-> > > ?
-> > > ?#include "mce_amd.h"
-> > > ?
-> > > diff --git a/include/linux/x86/cpu.h b/include/linux/x86/cpu.h
-> > > new file mode 100644
-> > > index 000000000000..5f383d47886d
-> > > --- /dev/null
-> > > +++ b/include/linux/x86/cpu.h
-> > > @@ -0,0 +1,9 @@
-> > > +/* SPDX-License-Identifier: GPL-2.0-only */
-> > > +#ifndef _LINUX_X86_CPU_H
-> > > +#define _LINUX_X86_CPU_H
-> > > +
-> > > +unsigned int x86_family(unsigned int sig);
-> > > +unsigned int x86_model(unsigned int sig);
-> > > +unsigned int x86_stepping(unsigned int sig);
-> > > +
-> > > +#endif /* _LINUX_X86_CPU_H */
-> > > diff --git a/lib/Kconfig b/lib/Kconfig
-> > > index d241fe476fda..cc28bc1f2d84 100644
-> > > --- a/lib/Kconfig
-> > > +++ b/lib/Kconfig
-> > > @@ -718,3 +718,8 @@ config PLDMFW
-> > > ?
-> > > ?config ASN1_ENCODER
-> > > ??????? tristate
-> > > +
-> > > +config GENERIC_LIB_X86
-> > > +???????bool
-> > > +???????depends on X86
-> > > +???????default n
-> > 
-> > No need for a "default n" line. Omitting a default is the same as
-> > "default n".
-
-Sure - I'll fix this in v2.
+From my perspective, the pieces that make up a BMC are pretty loosely
+connected (at least from the kernel perspective - scattered all over
+the kernel tree), so I don't see how that would work in practice.
 
 Thanks
 -Iwona
 
+
+> > 
+> > The Platform Environment Control Interface (PECI) is a communication
+> > interface between Intel processors and management controllers (e.g.
+> > Baseboard Management Controller, BMC).
+> > 
+> > This series adds a PECI subsystem and introduces drivers which run in
+> > the Linux instance on the management controller (not the main Intel
+> > processor) and is intended to be used by the OpenBMC [1], a Linux
+> > distribution for BMC devices.
+> > The information exposed over PECI (like processor and DIMM
+> > temperature) refers to the Intel processor and can be consumed by
+> > daemons running on the BMC to, for example, display the processor
+> > temperature in its web interface.
+> > 
+> > The PECI bus is collection of code that provides interface support
+> > between PECI devices (that actually represent processors) and PECI
+> > controllers (such as the "peci-aspeed" controller) that allow to
+> > access physical PECI interface. PECI devices are bound to PECI
+> > drivers that provides access to PECI services. This series introduces
+> > a generic "peci-cpu" driver that exposes hardware monitoring
+> > "cputemp"
+> > and "dimmtemp" using the auxiliary bus.
+> > 
+> > Exposing "raw" PECI to userspace, either to write userspace drivers
+> > or
+> > for debug/testing purpose was left out of this series to encourage
+> > writing kernel drivers instead, but may be pursued in the future.
+> > 
+> > Introducing PECI to upstream Linux was already attempted before [2].
+> > Since it's been over a year since last revision, and the series
+> > changed quite a bit in the meantime, I've decided to start from v1.
+> > 
+> > I would also like to give credit to everyone who helped me with
+> > different aspects of preliminary review:
+> > - Pierre-Louis Bossart,
+> > - Tony Luck, 
+> > - Andy Shevchenko,
+> > - Dave Hansen.
+> > 
+> > [1] https://github.com/openbmc/openbmc
+> > [2] 
+> > https://lore.kernel.org/openbmc/20191211194624.2872-1-jae.hyun.yoo at linux.intel.com/
+> > 
+> > Iwona Winiarska (12):
+> > ? x86/cpu: Move intel-family to arch-independent headers
+> > ? x86/cpu: Extract cpuid helpers to arch-independent
+> > ? dt-bindings: Add generic bindings for PECI
+> > ? dt-bindings: Add bindings for peci-aspeed
+> > ? ARM: dts: aspeed: Add PECI controller nodes
+> > ? peci: Add core infrastructure
+> > ? peci: Add device detection
+> > ? peci: Add support for PECI device drivers
+> > ? peci: Add peci-cpu driver
+> > ? hwmon: peci: Add cputemp driver
+> > ? hwmon: peci: Add dimmtemp driver
+> > ? docs: Add PECI documentation
+> > 
+> > Jae Hyun Yoo (2):
+> > ? peci: Add peci-aspeed controller driver
+> > ? docs: hwmon: Document PECI drivers
+> > 
+> > ?.../devicetree/bindings/peci/peci-aspeed.yaml | 111 ++++
+> > ?.../bindings/peci/peci-controller.yaml??????? |? 28 +
+> > ?Documentation/hwmon/index.rst???????????????? |?? 2 +
+> > ?Documentation/hwmon/peci-cputemp.rst????????? |? 93 ++++
+> > ?Documentation/hwmon/peci-dimmtemp.rst???????? |? 58 ++
+> > ?Documentation/index.rst?????????????????????? |?? 1 +
+> > ?Documentation/peci/index.rst????????????????? |? 16 +
+> > ?Documentation/peci/peci.rst?????????????????? |? 48 ++
+> > ?MAINTAINERS?????????????????????????????????? |? 32 ++
+> > ?arch/arm/boot/dts/aspeed-g4.dtsi????????????? |? 14 +
+> > ?arch/arm/boot/dts/aspeed-g5.dtsi????????????? |? 14 +
+> > ?arch/arm/boot/dts/aspeed-g6.dtsi????????????? |? 14 +
+> > ?arch/x86/Kconfig????????????????????????????? |?? 1 +
+> > ?arch/x86/include/asm/cpu.h??????????????????? |?? 3 -
+> > ?arch/x86/include/asm/intel-family.h?????????? | 141 +----
+> > ?arch/x86/include/asm/microcode.h????????????? |?? 2 +-
+> > ?arch/x86/kvm/cpuid.h????????????????????????? |?? 3 +-
+> > ?arch/x86/lib/Makefile???????????????????????? |?? 2 +-
+> > ?drivers/Kconfig?????????????????????????????? |?? 3 +
+> > ?drivers/Makefile????????????????????????????? |?? 1 +
+> > ?drivers/edac/mce_amd.c??????????????????????? |?? 3 +-
+> > ?drivers/hwmon/Kconfig???????????????????????? |?? 2 +
+> > ?drivers/hwmon/Makefile??????????????????????? |?? 1 +
+> > ?drivers/hwmon/peci/Kconfig??????????????????? |? 31 ++
+> > ?drivers/hwmon/peci/Makefile?????????????????? |?? 7 +
+> > ?drivers/hwmon/peci/common.h?????????????????? |? 46 ++
+> > ?drivers/hwmon/peci/cputemp.c????????????????? | 503
+> > +++++++++++++++++
+> > ?drivers/hwmon/peci/dimmtemp.c???????????????? | 508
+> > ++++++++++++++++++
+> > ?drivers/peci/Kconfig????????????????????????? |? 36 ++
+> > ?drivers/peci/Makefile???????????????????????? |? 10 +
+> > ?drivers/peci/controller/Kconfig?????????????? |? 12 +
+> > ?drivers/peci/controller/Makefile????????????? |?? 3 +
+> > ?drivers/peci/controller/peci-aspeed.c???????? | 501
+> > +++++++++++++++++
+> > ?drivers/peci/core.c?????????????????????????? | 224 ++++++++
+> > ?drivers/peci/cpu.c??????????????????????????? | 347 ++++++++++++
+> > ?drivers/peci/device.c???????????????????????? | 211 ++++++++
+> > ?drivers/peci/internal.h?????????????????????? | 137 +++++
+> > ?drivers/peci/request.c??????????????????????? | 502
+> > +++++++++++++++++
+> > ?drivers/peci/sysfs.c????????????????????????? |? 82 +++
+> > ?include/linux/peci-cpu.h????????????????????? |? 38 ++
+> > ?include/linux/peci.h????????????????????????? |? 93 ++++
+> > ?include/linux/x86/cpu.h?????????????????????? |?? 9 +
+> > ?include/linux/x86/intel-family.h????????????? | 146 +++++
+> > ?lib/Kconfig?????????????????????????????????? |?? 5 +
+> > ?lib/Makefile????????????????????????????????? |?? 2 +
+> > ?lib/x86/Makefile????????????????????????????? |?? 3 +
+> > ?{arch/x86/lib => lib/x86}/cpu.c?????????????? |?? 2 +-
+> > ?47 files changed, 3902 insertions(+), 149 deletions(-)
+> > ?create mode 100644 Documentation/devicetree/bindings/peci/peci-
+> > aspeed.yaml
+> > ?create mode 100644 Documentation/devicetree/bindings/peci/peci-
+> > controller.yaml
+> > ?create mode 100644 Documentation/hwmon/peci-cputemp.rst
+> > ?create mode 100644 Documentation/hwmon/peci-dimmtemp.rst
+> > ?create mode 100644 Documentation/peci/index.rst
+> > ?create mode 100644 Documentation/peci/peci.rst
+> > ?create mode 100644 drivers/hwmon/peci/Kconfig
+> > ?create mode 100644 drivers/hwmon/peci/Makefile
+> > ?create mode 100644 drivers/hwmon/peci/common.h
+> > ?create mode 100644 drivers/hwmon/peci/cputemp.c
+> > ?create mode 100644 drivers/hwmon/peci/dimmtemp.c
+> > ?create mode 100644 drivers/peci/Kconfig
+> > ?create mode 100644 drivers/peci/Makefile
+> > ?create mode 100644 drivers/peci/controller/Kconfig
+> > ?create mode 100644 drivers/peci/controller/Makefile
+> > ?create mode 100644 drivers/peci/controller/peci-aspeed.c
+> > ?create mode 100644 drivers/peci/core.c
+> > ?create mode 100644 drivers/peci/cpu.c
+> > ?create mode 100644 drivers/peci/device.c
+> > ?create mode 100644 drivers/peci/internal.h
+> > ?create mode 100644 drivers/peci/request.c
+> > ?create mode 100644 drivers/peci/sysfs.c
+> > ?create mode 100644 include/linux/peci-cpu.h
+> > ?create mode 100644 include/linux/peci.h
+> > ?create mode 100644 include/linux/x86/cpu.h
+> > ?create mode 100644 include/linux/x86/intel-family.h
+> > ?create mode 100644 lib/x86/Makefile
+> > ?rename {arch/x86/lib => lib/x86}/cpu.c (95%)
 > > 
 > 
 
