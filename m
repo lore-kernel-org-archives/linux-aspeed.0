@@ -1,111 +1,109 @@
-From: Quan Nguyen <quan@os.amperecomputing.com>
-Date: Fri, 16 Jul 2021 09:47:53 +0700
-Subject: [PATCH v5 0/3] Add SSIF BMC driver
-In-Reply-To: <20210715233248.GF3406@minyard.net>
-References: <20210714033833.11640-1-quan@os.amperecomputing.com>
- <20210715233248.GF3406@minyard.net>
-Message-ID: <1f5ac258-084b-a71d-735e-c9f81d838c19@os.amperecomputing.com>
+From: Billy Tsai <billy_tsai@aspeedtech.com>
+Date: Fri, 16 Jul 2021 11:14:10 +0800
+Subject: [v10 0/2] Support pwm driver for aspeed ast26xx
+Message-ID: <20210716031412.19258-1-billy_tsai@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 16/07/2021 06:32, Corey Minyard wrote:
-> On Wed, Jul 14, 2021 at 10:38:30AM +0700, Quan Nguyen wrote:
->> This series add support the SSIF BMC driver which is to perform in-band
->> IPMI communication with their host in management (BMC) side.
->>
->> SSIF BMC driver in this series is tested with Aspeed AST2500.
-> 
-> Ok, I have queued this and added Rob's review.  Five versions, you had
-> to work for this one :).
-> 
-> Thanks,
-> 
-> -corey
-> 
-Thank you very much for your help in these version :)
-- Quan
+The legacy driver of aspeed pwm is binding with tach controller and it
+doesn't follow the pwm framworks usage. In addition, the pwm register
+usage of the 6th generation of ast26xx has drastic change. So these
+patch serials add the new aspeed pwm driver to fix up the problem above.
 
->>
->> v5:
->>    + Correct the patches order to fix the bisect issue found by
->>    kernel build robot
->>
->> v4:
->>    + Fix recursive spinlock                                      [Graeme]
->>    + Send response with Completion code 0xFF when aborting         [Quan]
->>    + Fix warning with dt_binding_check                              [Rob]
->>    + Change aspeed-ssif-bmc.yaml to ssif-bmc.yaml                  [Quan]
->>    + Added bounding check on SMBus writes and the whole request     [Dan]
->>    + Moved buffer to end of struct ssif_bmc_ctx to avoid context
->>      corruption if somehow buffer is written past the end           [Dan]
->>    + Return -EINVAL if userspace buffer too small, dont
->>      silence truncate                                       [Corey, Joel]
->>    + Not necessary to check NONBLOCK in lock                      [Corey]
->>    + Enforce one user at a time                                    [Joel]
->>    + Reject write with invalid response length from userspace     [Corey]
->>    + Add state machines for better ssif bmc state handling         [Quan]
->>    + Drop ssif_bmc_aspeed.c and make ssif_bmc.c is generic
->>      SSIF BMC driver                                               [Quan]
->>    + Change compatible string "aspeed,ast2500-ssif-bmc" to
->>      "ampere,ssif-bmc"                                             [Quan]
->>    + Toggle Slave enable in i2c-aspeed to turn on/off slave mode   [Ryan]
->>    + Added slave_enable() to struct i2c_algorithm to control
->>      slave mode and to address the recursive spinlock      [Graeme, Ryan]
->>    + Abort current request with invalid SMBus write or
->>      invalid command                                               [Quan]
->>    + Abort all request if there is pending response                [Quan]
->>    + Changed validate_pec() to validate_request()                  [Quan]
->>    + Add unsupported_smbus_cmd() to handle unknown SMBus command   [Quan]
->>    + Print internal state string for ease investigating issue      [Quan]
->>    + Move to READY state on SLAVE_STOP event                       [Quan]
->>    + Change initilize_transfer() to process_smbus_cmd()            [Quan]
->>    + Introduce functions for each slave event                      [Quan]
->>
->> v3:
->>    + Switched binding doc to use DT schema format [Rob]
->>    + Splited into generic ssif_bmc and aspeed-specific [Corey, Joel]
->>    + Removed redundant license info [Joel]
->>    + Switched to use traditional if-else [Joel]
->>    + Removed unused ssif_bmc_ioctl() [Joel]
->>    + Made handle_request()/complete_response() to return void [Joel]
->>    + Refactored send_ssif_bmc_response()/receive_ssif_bmc_request()
->>    [Corey]
->>    + Remove mutex [Corey]
->>    + Use spin_lock/unlock_irqsave/restore in callback [Corey]
->>    + Removed the unnecessary memset [Corey]
->>    + Switch to use dev_err() [Corey]
->>    + Combine mask/unmask two interrupts together [Corey]
->>    + Fixed unhandled Tx done with NAK [Quan]
->>    + Late ack'ed Tx done w/wo Ack irq [Quan]
->>    + Use aspeed-specific exported aspeed_set_slave_busy() when slave busy
->>    to fix the deadlock [Graeme, Philipp, Quan]
->>    + Clean buffer for last multipart read [Quan]
->>    + Handle unknown incoming command [Quan]
->>
->> v2:
->>    + Fixed compiling error with COMPILE_TEST for arc
->>
->> Quan Nguyen (3):
->>    i2c: aspeed: Add slave_enable() to toggle slave mode
->>    ipmi: ssif_bmc: Add SSIF BMC driver
->>    bindings: ipmi: Add binding for SSIF BMC driver
->>
->>   .../devicetree/bindings/ipmi/ssif-bmc.yaml    |  38 +
->>   drivers/char/ipmi/Kconfig                     |  11 +
->>   drivers/char/ipmi/Makefile                    |   1 +
->>   drivers/char/ipmi/ssif_bmc.c                  | 781 ++++++++++++++++++
->>   drivers/char/ipmi/ssif_bmc.h                  | 106 +++
->>   drivers/i2c/busses/i2c-aspeed.c               |  20 +
->>   include/linux/i2c.h                           |   2 +
->>   7 files changed, 959 insertions(+)
->>   create mode 100644 Documentation/devicetree/bindings/ipmi/ssif-bmc.yaml
->>   create mode 100644 drivers/char/ipmi/ssif_bmc.c
->>   create mode 100644 drivers/char/ipmi/ssif_bmc.h
->>
->> -- 
->> 2.28.0
->>
+Change since v9:
+- dt-bindings:
+  - Change the naming of tach subnode channel setting property to
+  aspeed,tach-ch.
+- pwm-aspeed-ast2600.c
+  - Fix the naming of some parameters.
+  - Capitalise error messages.
+  - Handling potentially mult overflow when .apply
+
+Change since v8:
+- pwm-aspeed-ast2600.c
+  - Replace "* _BITULL(div_h)" to "<< div_h"
+  - Fix duty_cycle precision problem.
+  - Add the comment about the formula of duty_cycle.
+
+Change since v7:
+- pwm-aspeed-g6.c
+  - Rename the driver: pwm-aspeed-g6.c -> pwm-aspeed-ast2600.c.
+  - Macro remove "_CH" part of the register name.
+  - Unroll the aspeed_pwm_get_period and remove it.
+  - Simplify the formula to get duty_pt
+  - Reduce the number of writing register. Organize all the fields and
+    write them at once.
+
+Change since v6:
+- dt-bindings:
+  - Add blank line between each DT property.
+  - Change the sub-node name from fan to tach-ch.
+- pwm-aspeed-g6.c
+  - Merge aspeed_pwm_set_period and aspeed_pwm_set_duty into .apply.
+  - Convert the factor type to u64 when calculating the period value.
+  - Using ROUND_UP strategy to calculate div_h for finer resolution.
+
+Change since v5:
+- pwm-aspeed-g6.c suggested by Uwe Kleine-K?nig
+  - Move the divide at the end of the calculation.
+  - Unified the prefix of the function name.
+  - Use div64_u64 to calculate the divider of frequency.
+
+Change since v4:
+- dt_binding:
+  - pwm/tach yaml: Replace child-node with additionalProperties
+  - pwm-tach yaml: Replace child-node with patternProperties
+- pwm-aspeed-g6.c suggested by Uwe Kleine-K?nig
+  - The bit definitions contained the name of the register.
+  - Remove single caller function and fold it to the caller.
+  - Avoid to divide by the result of a division.
+  - Remove unnecessary condition in .apply().
+  - Use goto for error handling
+
+Changes since v3:
+- Add the dt_binding for aspeed,ast2600-tach.
+- Describe the pwm/tach as child-node of pwm-tach mfd.
+- Complete the properties of pwm node.
+
+Changes since v2:
+- Remove the tach node, #address-cells and #size-cells from pwm-tach.yaml
+- Add clocks and reset properties to pwm-tach.yaml
+- Kconfig/Makfile sorted alphabetically
+- pwm-aspeed-g6.c suggested by Uwe Kleine-K?nig
+  - Add more hardware descriptions at top of the driver.
+  - Remove unused api request and free
+  - Move the initialize settings of all pwm channel to probe.
+  - Change the method of getting the approximate period.
+  - Read the hardware register values to fill the state for .get_state()
+
+Changes since v1:
+- Fix the dt_binding_check fail suggested by Rob Herring
+- Add depends to PWM_ASPEED_G6 configure suggested by Uwe Kleine-Konig
+- pwm-aspeed-g6.c suggested by Uwe Kleine-K?nig
+  - Fix license header
+  - Use bitfiled.h macro to define register fields
+  - Implement .remove device function
+  - Implement .get_state pwm api
+
+Billy Tsai (2):
+  dt-bindings: Add bindings for aspeed pwm-tach.
+  pwm: Add Aspeed ast2600 PWM support
+
+ .../bindings/hwmon/aspeed,ast2600-tach.yaml   |  68 ++++
+ .../bindings/mfd/aspeed,ast2600-pwm-tach.yaml |  76 +++++
+ .../bindings/pwm/aspeed,ast2600-pwm.yaml      |  64 ++++
+ drivers/pwm/Kconfig                           |  10 +
+ drivers/pwm/Makefile                          |   1 +
+ drivers/pwm/pwm-aspeed-ast2600.c              | 322 ++++++++++++++++++
+ 6 files changed, 541 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/hwmon/aspeed,ast2600-tach.yaml
+ create mode 100644 Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.yaml
+ create mode 100644 Documentation/devicetree/bindings/pwm/aspeed,ast2600-pwm.yaml
+ create mode 100644 drivers/pwm/pwm-aspeed-ast2600.c
+
+-- 
+2.25.1
 
