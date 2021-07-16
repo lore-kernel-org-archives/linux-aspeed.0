@@ -1,414 +1,161 @@
 From: Winiarska, Iwona <iwona.winiarska@intel.com>
-Date: Fri, 16 Jul 2021 21:20:08 +0000
-Subject: [PATCH 08/14] peci: Add device detection
-In-Reply-To: <b8e5bfd209562d64c23631eea6425378c62a762b.camel@intel.com>
+Date: Fri, 16 Jul 2021 21:22:10 +0000
+Subject: [PATCH 04/14] dt-bindings: Add bindings for peci-aspeed
+In-Reply-To: <20210715162840.GA1187226@robh.at.kernel.org>
 References: <20210712220447.957418-1-iwona.winiarska@intel.com>
- <20210712220447.957418-9-iwona.winiarska@intel.com>
- <b8e5bfd209562d64c23631eea6425378c62a762b.camel@intel.com>
-Message-ID: <8b452cd32f297083228804f843bfea8ddb124dc0.camel@intel.com>
+ <20210712220447.957418-5-iwona.winiarska@intel.com>
+ <20210715162840.GA1187226@robh.at.kernel.org>
+Message-ID: <cabd7cbb2746bcf64f8fd8f8948cab54f1b148ef.camel@intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 2021-07-14 at 21:05 +0000, Williams, Dan J wrote:
-> On Tue, 2021-07-13 at 00:04 +0200, Iwona Winiarska wrote:
-> > Since PECI devices are discoverable, we can dynamically detect devices
-> > that are actually available in the system.
+On Thu, 2021-07-15 at 10:28 -0600, Rob Herring wrote:
+> On Tue, Jul 13, 2021 at 12:04:37AM +0200, Iwona Winiarska wrote:
+> > Add device tree bindings for the peci-aspeed controller driver.
 > > 
-> > This change complements the earlier implementation by rescanning PECI
-> > bus to detect available devices. For this purpose, it also introduces the
-> > minimal API for PECI requests.
-> > 
+> > Co-developed-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+> > Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
 > > Signed-off-by: Iwona Winiarska <iwona.winiarska@intel.com>
-> > Reviewed-by: Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>
 > > ---
-> > ?drivers/peci/Makefile?? |?? 2 +-
-> > ?drivers/peci/core.c???? |? 13 ++++-
-> > ?drivers/peci/device.c?? | 111 ++++++++++++++++++++++++++++++++++++++++
-> > ?drivers/peci/internal.h |? 15 ++++++
-> > ?drivers/peci/request.c? |? 74 +++++++++++++++++++++++++++
-> > ?drivers/peci/sysfs.c??? |? 34 ++++++++++++
-> > ?6 files changed, 246 insertions(+), 3 deletions(-)
-> > ?create mode 100644 drivers/peci/device.c
-> > ?create mode 100644 drivers/peci/request.c
+> > ?.../devicetree/bindings/peci/peci-aspeed.yaml | 111 ++++++++++++++++++
+> > ?1 file changed, 111 insertions(+)
+> > ?create mode 100644 Documentation/devicetree/bindings/peci/peci-aspeed.yaml
 > > 
-> > diff --git a/drivers/peci/Makefile b/drivers/peci/Makefile
-> > index 621a993e306a..917f689e147a 100644
-> > --- a/drivers/peci/Makefile
-> > +++ b/drivers/peci/Makefile
-> > @@ -1,7 +1,7 @@
-> > ?# SPDX-License-Identifier: GPL-2.0-only
-> > ?
-> > ?# Core functionality
-> > -peci-y := core.o sysfs.o
-> > +peci-y := core.o request.o device.o sysfs.o
-> > ?obj-$(CONFIG_PECI) += peci.o
-> > ?
-> > ?# Hardware specific bus drivers
-> > diff --git a/drivers/peci/core.c b/drivers/peci/core.c
-> > index 0ad00110459d..ae7a9572cdf3 100644
-> > --- a/drivers/peci/core.c
-> > +++ b/drivers/peci/core.c
-> > @@ -31,7 +31,15 @@ struct device_type peci_controller_type = {
-> > ?
-> > ?int peci_controller_scan_devices(struct peci_controller *controller)
-> > ?{
-> > -???????/* Just a stub, no support for actual devices yet */
-> > +???????int ret;
-> > +???????u8 addr;
-> > +
-> > +???????for (addr = PECI_BASE_ADDR; addr < PECI_BASE_ADDR + PECI_DEVICE_NUM_MAX; addr++) {
-> > +???????????????ret = peci_device_create(controller, addr);
-> > +???????????????if (ret)
-> > +???????????????????????return ret;
-> > +???????}
-> > +
-> 
-> This seems to be a behavior triggered at peci_controller_add and at the
-> request of userspace when touching the rescan attribute? A natural way
-> to handle this would be to have a driver for the peci_controller device
-> and have that driver issue scan at probe time. Otherwise, how does
-> userspace know when it is time to rescan the bus?
-> 
-
-peci_controller_add() is expected to be called during probe() of
-controller driver (otherwise the driver isn't really a controller
-driver).
-
-
-> > ????????return 0;
-> > ?}
-> > ?
-> > @@ -106,7 +114,8 @@ EXPORT_SYMBOL_NS_GPL(peci_controller_add, PECI);
-> > ?
-> > ?static int _unregister(struct device *dev, void *dummy)
-> > ?{
-> > -???????/* Just a stub, no support for actual devices yet */
-> > +???????peci_device_destroy(to_peci_device(dev));
-> 
-> As mentioned previously, this could be delegated to devm to unregister
-> when the original driver that added the controller goes through -
-> > remove().
-> 
-
-Ack.
-
-> > +
-> > ????????return 0;
-> > ?}
-> > ?
-> > diff --git a/drivers/peci/device.c b/drivers/peci/device.c
+> > diff --git a/Documentation/devicetree/bindings/peci/peci-aspeed.yaml b/Documentation/devicetree/bindings/peci/peci-aspeed.yaml
 > > new file mode 100644
-> > index 000000000000..1124862211e2
+> > index 000000000000..6061e06009fb
 > > --- /dev/null
-> > +++ b/drivers/peci/device.c
+> > +++ b/Documentation/devicetree/bindings/peci/peci-aspeed.yaml
 > > @@ -0,0 +1,111 @@
-> > +// SPDX-License-Identifier: GPL-2.0-only
-> > +// Copyright (c) 2018-2021 Intel Corporation
+> > +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+> > +%YAML 1.2
+> > +---
+> > +$id: http://devicetree.org/schemas/peci/peci-aspeed.yaml#
+> > +$schema: http://devicetree.org/meta-schemas/core.yaml#
 > > +
-> > +#include <linux/peci.h>
-> > +#include <linux/slab.h>
+> > +title: Aspeed PECI Bus Device Tree Bindings
 > > +
-> > +#include "internal.h"
+> > +maintainers:
+> > +  - Iwona Winiarska <iwona.winiarska@intel.com>
+> > +  - Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
 > > +
-> > +static int peci_detect(struct peci_controller *controller, u8 addr)
-> > +{
-> > +???????struct peci_request *req;
-> > +???????int ret;
+> > +allOf:
+> > +  - $ref: peci-controller.yaml#
 > > +
-> > +???????req = peci_request_alloc(NULL, 0, 0);
-> > +???????if (!req)
-> > +???????????????return -ENOMEM;
+> > +properties:
+> > +  compatible:
+> > +    enum:
+> > +      - aspeed,ast2400-peci
+> > +      - aspeed,ast2500-peci
+> > +      - aspeed,ast2600-peci
 > > +
-> > +???????mutex_lock(&controller->bus_lock);
+> > +  reg:
+> > +    maxItems: 1
+> > +
+> > +  interrupts:
+> > +    maxItems: 1
+> > +
+> > +  clocks:
+> > +    description: |
+> > +      Clock source for PECI controller. Should reference the external
+> > +      oscillator clock.
+> > +    maxItems: 1
+> > +
+> > +  resets:
+> > +    maxItems: 1
+> > +
+> > +  clock-divider:
+> > +    description: This value determines PECI controller internal clock
+> > +      dividing rate. The divider will be calculated as 2 raised to the
+> > +      power of the given value.
+> > +    $ref: /schemas/types.yaml#/definitions/uint32
+> > +    minimum: 0
+> > +    maximum: 7
+> > +    default: 0
+> > +
 > 
-> What is the underlying requirement to prevent 2 simultaneous ->xfer()
-> invocations?
+> > +  msg-timing:
+> > +    description: |
+> > +      Message timing negotiation period. This value will determine the period
+> > +      of message timing negotiation to be issued by PECI controller. The unit
+> > +      of the programmed value is four times of PECI clock period.
+> > +    $ref: /schemas/types.yaml#/definitions/uint32
+> > +    minimum: 0
+> > +    maximum: 255
+> > +    default: 1
+> > +
+> > +  addr-timing:
+> > +    description: |
+> > +      Address timing negotiation period. This value will determine the period
+> > +      of address timing negotiation to be issued by PECI controller. The unit
+> > +      of the programmed value is four times of PECI clock period.
+> > +    $ref: /schemas/types.yaml#/definitions/uint32
+> > +    minimum: 0
+> > +    maximum: 255
+> > +    default: 1
+> > +
+> > +  rd-sampling-point:
+> > +    description: |
+> > +      Read sampling point selection. The whole period of a bit time will be
+> > +      divided into 16 time frames. This value will determine the time frame
+> > +      in which the controller will sample PECI signal for data read back.
+> > +      Usually in the middle of a bit time is the best.
+> > +    $ref: /schemas/types.yaml#/definitions/uint32
+> > +    minimum: 0
+> > +    maximum: 15
+> > +    default: 8
+> > +
+> > +  cmd-timeout-ms:
+> > +    description: |
+> > +      Command timeout in units of ms.
+> > +    $ref: /schemas/types.yaml#/definitions/uint32
+> > +    minimum: 1
+> > +    maximum: 1000
+> > +    default: 1000
 > 
-
-It's PECI wire (physical layer) interface limitation.
-
-> > +???????ret = controller->xfer(controller, addr, req);
-> > +???????mutex_unlock(&controller->bus_lock);
-> > +
-> > +???????peci_request_free(req);
-> > +
-> > +???????return ret;
-> > +}
-> > +
-> > +static bool peci_addr_valid(u8 addr)
-> > +{
-> > +???????return addr >= PECI_BASE_ADDR && addr < PECI_BASE_ADDR + PECI_DEVICE_NUM_MAX;
-> > +}
-> > +
-> > +static int peci_dev_exists(struct device *dev, void *data)
-> > +{
-> > +???????struct peci_device *device = to_peci_device(dev);
-> > +???????u8 *addr = data;
-> > +
-> > +???????if (device->addr == *addr)
-> > +???????????????return -EBUSY;
-> > +
-> > +???????return 0;
-> > +}
-> > +
-> > +int peci_device_create(struct peci_controller *controller, u8 addr)
-> > +{
-> > +???????struct peci_device *device;
-> > +???????int ret;
-> > +
-> > +???????if (WARN_ON(!peci_addr_valid(addr)))
-> > +???????????????return -EINVAL;
-> > +
-> > +???????/* Check if we have already detected this device before. */
-> > +???????ret = device_for_each_child(&controller->dev, &addr, peci_dev_exists);
-> > +???????if (ret)
-> > +???????????????return 0;
-> > +
-> > +???????ret = peci_detect(controller, addr);
-> > +???????if (ret) {
-> > +???????????????/*
-> > +??????????????? * Device not present or host state doesn't allow successful
-> > +??????????????? * detection at this time.
-> > +??????????????? */
-> > +???????????????if (ret == -EIO || ret == -ETIMEDOUT)
-> > +???????????????????????return 0;
-> > +
-> > +???????????????return ret;
-> > +???????}
-> > +
-> > +???????device = kzalloc(sizeof(*device), GFP_KERNEL);
-> > +???????if (!device)
-> > +???????????????return -ENOMEM;
-> > +
-> > +???????device->controller = controller;
-> > +???????device->addr = addr;
-> > +???????device->dev.parent = &device->controller->dev;
-> > +???????device->dev.bus = &peci_bus_type;
-> > +???????device->dev.type = &peci_device_type;
-> > +
-> > +???????ret = dev_set_name(&device->dev, "%d-%02x", controller->id, device->addr);
-> > +???????if (ret)
-> > +???????????????goto err_free;
-> > +
-> > +???????ret = device_register(&device->dev);
-> 
-> There is a recent movement away from device_register() to an alloc+add
-> pattern [1]. I.e. have device_initialize() and device_add() steps. With
-> that you can unify the error exit to be put_device().
-> 
-> [1]: https://lore.kernel.org/r/20210712134233.GA141137 at ziepe.ca
+> Are all of these properties common for PECI or specific to this 
+> controller? The former needs to go into the common schema. The latter 
+> need vendor prefixes.
 > 
 
-It's just kfree in this case, but I agree. I'll modify this.
-
-> > +???????if (ret)
-> > +???????????????goto err_put;
-> > +
-> > +???????return 0;
-> > +
-> > +err_put:
-> > +???????put_device(&device->dev);
-> > +err_free:
-> > +???????kfree(device);
-> > +
-> > +???????return ret;
-> > +}
-> > +
-> > +void peci_device_destroy(struct peci_device *device)
-> > +{
-> > +???????device_unregister(&device->dev);
-> > +}
-> > +
-> > +static void peci_device_release(struct device *dev)
-> > +{
-> > +???????struct peci_device *device = to_peci_device(dev);
-> > +
-> > +???????kfree(device);
-> > +}
-> > +
-> > +struct device_type peci_device_type = {
-> > +???????.groups?????????= peci_device_groups,
-> > +???????.release????????= peci_device_release,
-> > +};
-> > diff --git a/drivers/peci/internal.h b/drivers/peci/internal.h
-> > index 80c61bcdfc6b..6b139adaf6b8 100644
-> > --- a/drivers/peci/internal.h
-> > +++ b/drivers/peci/internal.h
-> > @@ -9,6 +9,21 @@
-> > ?
-> > ?struct peci_controller;
-> > ?struct attribute_group;
-> > +struct peci_device;
-> > +struct peci_request;
-> > +
-> > +/* PECI CPU address range 0x30-0x37 */
-> > +#define PECI_BASE_ADDR?????????0x30
-> > +#define PECI_DEVICE_NUM_MAX????????????8
-> > +
-> > +struct peci_request *peci_request_alloc(struct peci_device *device, u8 tx_len, u8 rx_len);
-> > +void peci_request_free(struct peci_request *req);
-> > +
-> > +extern struct device_type peci_device_type;
-> > +extern const struct attribute_group *peci_device_groups[];
-> > +
-> > +int peci_device_create(struct peci_controller *controller, u8 addr);
-> > +void peci_device_destroy(struct peci_device *device);
-> > ?
-> > ?extern struct bus_type peci_bus_type;
-> > ?extern const struct attribute_group *peci_bus_groups[];
-> > diff --git a/drivers/peci/request.c b/drivers/peci/request.c
-> > new file mode 100644
-> > index 000000000000..78cee51dfae1
-> > --- /dev/null
-> > +++ b/drivers/peci/request.c
-> > @@ -0,0 +1,74 @@
-> > +// SPDX-License-Identifier: GPL-2.0-only
-> > +// Copyright (c) 2021 Intel Corporation
-> > +
-> > +#include <linux/export.h>
-> > +#include <linux/peci.h>
-> > +#include <linux/slab.h>
-> > +#include <linux/types.h>
-> > +
-> > +#include "internal.h"
-> > +
-> > +/**
-> > + * peci_request_alloc() - allocate &struct peci_request with buffers with given lengths
-> > + * @device: PECI device to which request is going to be sent
-> > + * @tx_len: requested TX buffer length
-> > + * @rx_len: requested RX buffer length
-> > + *
-> > + * Return: A pointer to a newly allocated &struct peci_request on success or NULL otherwise.
-> > + */
-> > +struct peci_request *peci_request_alloc(struct peci_device *device, u8 tx_len, u8 rx_len)
-> > +{
-> 
-> How big can these lengths be?
-
-PECI specification defines tx_len as a single byte, same thing for
-rx_len.
-Currently the largest we're using is 24 IIRC.
-
-> 
-> > +???????struct peci_request *req;
-> > +???????u8 *tx_buf, *rx_buf;
-> > +
-> > +???????req = kzalloc(sizeof(*req), GFP_KERNEL);
-> > +???????if (!req)
-> > +???????????????return NULL;
-> > +
-> > +???????req->device = device;
-> > +
-> > +???????/*
-> > +??????? * PECI controllers that we are using now don't support DMA, this
-> > +??????? * should be converted to DMA API once support for controllers that do
-> > +??????? * allow it is added to avoid an extra copy.
-> > +??????? */
-> > +???????if (tx_len) {
-> > +???????????????tx_buf = kzalloc(tx_len, GFP_KERNEL);
-> > +???????????????if (!tx_buf)
-> > +???????????????????????goto err_free_req;
-> > +
-> > +???????????????req->tx.buf = tx_buf;
-> > +???????????????req->tx.len = tx_len;
-> > +???????}
-> > +
-> > +???????if (rx_len) {
-> > +???????????????rx_buf = kzalloc(rx_len, GFP_KERNEL);
-> > +???????????????if (!rx_buf)
-> > +???????????????????????goto err_free_tx;
-> > +
-> > +???????????????req->rx.buf = rx_buf;
-> > +???????????????req->rx.len = rx_len;
-> > +???????}
-> > +
-> > +???????return req;
-> > +
-> > +err_free_tx:
-> > +???????kfree(req->tx.buf);
-> > +err_free_req:
-> > +???????kfree(req);
-> > +
-> > +???????return NULL;
-> > +}
-> > +EXPORT_SYMBOL_NS_GPL(peci_request_alloc, PECI);
-> > +
-> > +/**
-> > + * peci_request_free() - free peci_request
-> > + * @req: the PECI request to be freed
-> > + */
-> > +void peci_request_free(struct peci_request *req)
-> > +{
-> > +???????kfree(req->rx.buf);
-> > +???????kfree(req->tx.buf);
-> > +???????kfree(req);
-> > +}
-> > +EXPORT_SYMBOL_NS_GPL(peci_request_free, PECI);
-> > diff --git a/drivers/peci/sysfs.c b/drivers/peci/sysfs.c
-> > index 36c5e2a18a92..db9ef05776e3 100644
-> > --- a/drivers/peci/sysfs.c
-> > +++ b/drivers/peci/sysfs.c
-> > @@ -1,6 +1,8 @@
-> > ?// SPDX-License-Identifier: GPL-2.0-only
-> > ?// Copyright (c) 2021 Intel Corporation
-> > ?
-> > +#include <linux/device.h>
-> > +#include <linux/kernel.h>
-> > ?#include <linux/peci.h>
-> > ?
-> > ?#include "internal.h"
-> > @@ -46,3 +48,35 @@ const struct attribute_group *peci_bus_groups[] = {
-> > ????????&peci_bus_group,
-> > ????????NULL
-> > ?};
-> > +
-> > +static ssize_t remove_store(struct device *dev, struct device_attribute *attr,
-> > +?????????????????????????? const char *buf, size_t count)
-> > +{
-> > +???????struct peci_device *device = to_peci_device(dev);
-> > +???????bool res;
-> > +???????int ret;
-> > +
-> > +???????ret = kstrtobool(buf, &res);
-> > +???????if (ret)
-> > +???????????????return ret;
-> > +
-> > +???????if (res && device_remove_file_self(dev, attr))
-> > +???????????????peci_device_destroy(device);
-> > +
-> > +???????return count;
-> > +}
-> > +static DEVICE_ATTR_IGNORE_LOCKDEP(remove, 0200, NULL, remove_store);
-> 
-> Why does userspace need the ability to kick devices off the bus?
-> 
-> Do you have an example userspace tool that is using these sysfs APIs?
-
-Symmetry with adding devices (in this case rescan) - it's also useful
-for development and testing (e.g. kick off extra devices to leave a
-single one).
-Moreover, it looks like common pattern in other subsystems.
+The latter, I'll add vendor prefixes in v2.
 
 Thank you
 -Iwona
 
 > 
 > > +
-> > +static struct attribute *peci_device_attrs[] = {
-> > +???????&dev_attr_remove.attr,
-> > +???????NULL
-> > +};
+> > +required:
+> > +  - compatible
+> > +  - reg
+> > +  - interrupts
+> > +  - clocks
+> > +  - resets
 > > +
-> > +static const struct attribute_group peci_device_group = {
-> > +???????.attrs = peci_device_attrs,
-> > +};
+> > +additionalProperties: false
 > > +
-> > +const struct attribute_group *peci_device_groups[] = {
-> > +???????&peci_device_group,
-> > +???????NULL
-> > +};
-> 
+> > +examples:
+> > +  - |
+> > +    #include <dt-bindings/interrupt-controller/arm-gic.h>
+> > +    #include <dt-bindings/clock/ast2600-clock.h>
+> > +    peci-controller at 1e78b000 {
+> > +      compatible = "aspeed,ast2600-peci";
+> > +      reg = <0x1e78b000 0x100>;
+> > +      interrupts = <GIC_SPI 38 IRQ_TYPE_LEVEL_HIGH>;
+> > +      clocks = <&syscon ASPEED_CLK_GATE_REF0CLK>;
+> > +      resets = <&syscon ASPEED_RESET_PECI>;
+> > +      clock-divider = <0>;
+> > +      msg-timing = <1>;
+> > +      addr-timing = <1>;
+> > +      rd-sampling-point = <8>;
+> > +      cmd-timeout-ms = <1000>;
+> > +    };
+> > +...
+> > -- 
+> > 2.31.1
+> > 
+> > 
 
