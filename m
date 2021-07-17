@@ -1,47 +1,56 @@
-From: gregkh@linuxfoundation.org <gregkh@linuxfoundation.org>
-Date: Sat, 17 Jul 2021 08:12:52 +0200
-Subject: [PATCH 06/14] peci: Add core infrastructure
-In-Reply-To: <CAPcyv4ifjCZSUuk5H5qw6sjt5vdAkTfNzd+4imu+9e_iOt74gQ@mail.gmail.com>
-References: <20210712220447.957418-1-iwona.winiarska@intel.com>
- <20210712220447.957418-7-iwona.winiarska@intel.com>
- <59428599ef7efb2521bd62c49a3bc55c710f29de.camel@intel.com>
- <6807a14deb52956ad2fe390b1811dd98901a642a.camel@intel.com>
- <CAPcyv4ifjCZSUuk5H5qw6sjt5vdAkTfNzd+4imu+9e_iOt74gQ@mail.gmail.com>
-Message-ID: <YPJ05JUiOggKajIx@kroah.com>
+From: Quan Nguyen <quan@os.amperecomputing.com>
+Date: Sat, 17 Jul 2021 19:51:52 +0700
+Subject: [PATCH v5 1/4] dt-bindings: mfd: Add bindings for Ampere Altra
+ SMPro MFD driver
+In-Reply-To: <20210716173443.GA3643583@robh.at.kernel.org>
+References: <20210713060031.31568-1-quan@os.amperecomputing.com>
+ <20210713060031.31568-2-quan@os.amperecomputing.com>
+ <20210716173443.GA3643583@robh.at.kernel.org>
+Message-ID: <ece6e0ec-4566-0371-be57-89a69d425683@os.amperecomputing.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Jul 16, 2021 at 02:50:04PM -0700, Dan Williams wrote:
-> On Fri, Jul 16, 2021 at 2:08 PM Winiarska, Iwona
-> > > > +}
-> > > > +EXPORT_SYMBOL_NS_GPL(peci_controller_add, PECI);
-> > >
-> > > I think it's cleaner to declare symbol namespaces in the Makefile. In
-> > > this case, add:
-> > >
-> > > cflags-y += -DDEFAULT_SYMBOL_NAMESPACE=PECI
-> > >
-> > > ...and just use EXPORT_SYMBOL_GPL as normal in the C file.
-> > >
-> >
-> > I kind of prefer the more verbose EXPORT_SYMBOL_NS_GPL - it also
-> > doesn't "hide" the fact that we're using namespaces (everything is in
-> > the C file rather than mixed into Makefile), but it's not a strong
-> > opinion, so sure - I can change this.
-> >
+On 17/07/2021 00:34, Rob Herring wrote:
+> On Tue, 13 Jul 2021 13:00:28 +0700, Quan Nguyen wrote:
+>> Adds device tree bindings for SMPro MFD driver found on the Mt.Jade
+>> hardware reference platform with Ampere's Altra Processor family.
+>>
+>> The SMpro co-processor on Ampere Altra processor family is to monitor
+>> and report various data included hwmon-related info, RAS errors, and
+>> other miscellaneous information.
+>>
+>> Signed-off-by: Quan Nguyen <quan@os.amperecomputing.com>
+>> ---
+>> Changes in v5:
+>>    + Dropped ../bindings/hwmon/ampere,ac01-hwmon.yaml file [Quan]
+>>    + Removed patternProperties section and child DT nodes in example
+>>    section [Quan]
+>>    + Revised commit message [Quan]
+>>
+>> Changes in v4:
+>>    + Revised the commit message to clarify how the specific info will
+>>      be handled commented by Rob.
+>>
+>> Changes in v3:
+>>    + Supported list of compatible string [Rob]
+>>    + Introduced reg property in DT to specify reg offset [Rob]
+>>    + Updated description and other minor changes in yaml file [Rob]
+>>
+>> Changes in v2:
+>>    + Changed "ampere,ac01-smpro" to "ampere,smpro" [Quan]
+>>
+>>   .../devicetree/bindings/mfd/ampere,smpro.yaml | 52 +++++++++++++++++++
+>>   1 file changed, 52 insertions(+)
+>>   create mode 100644 Documentation/devicetree/bindings/mfd/ampere,smpro.yaml
+>>
 > 
-> Perhaps as a tie breaker, the maintainer you are submitting this to,
-> Greg, uses the -DDEFAULT_SYMBOL_NAMESPACE scheme in his subsystem,
-> drivers/usb/.
+> Reviewed-by: Rob Herring <robh@kernel.org>
+>
 
-We did that because namespaces were added _after_ the kernel code was
-already there.  For new code like this, the original use of
-EXPORT_SYMBOL_NS_GPL() is best as it is explicit and obvious.  No need
-to dig around in a Makefile to find out the namespace name.
+Thanks Rob for the review.
+- Quan
 
-thanks,
 
-greg k-h
