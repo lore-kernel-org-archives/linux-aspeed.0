@@ -1,7 +1,9 @@
 From: rentao.bupt@gmail.com <rentao.bupt@gmail.com>
-Date: Sun, 18 Jul 2021 17:17:20 -0700
-Subject: [PATCH 0/4] ARM: dts: aspeed: Enable ADC for wedge100 BMC
-Message-ID: <20210719001724.6410-1-rentao.bupt@gmail.com>
+Date: Sun, 18 Jul 2021 17:17:22 -0700
+Subject: [PATCH 2/4] ARM: dts: aspeed: wedge40: Remove redundant ADC device
+In-Reply-To: <20210719001724.6410-1-rentao.bupt@gmail.com>
+References: <20210719001724.6410-1-rentao.bupt@gmail.com>
+Message-ID: <20210719001724.6410-3-rentao.bupt@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -10,29 +12,29 @@ Content-Transfer-Encoding: 7bit
 
 From: Tao Ren <rentao.bupt@gmail.com>
 
-The patch series enables ADC for Facebook Wedge100 BMC platform.
+Remove ADC device from wedge40 device tree because the device is already
+enabled in "ast2400-facebook-netbmc-common.dtsi".
 
-Patch #1 enables ADC in Facebook AST2400 common dtsi because ADC is used
-on all the Facebook AST2400 Network BMC platforms.
+Signed-off-by: Tao Ren <rentao.bupt@gmail.com>
+---
+ arch/arm/boot/dts/aspeed-bmc-facebook-wedge40.dts | 4 ----
+ 1 file changed, 4 deletions(-)
 
-Patch #2 removes the redundant ADC entry from Wedge40 dts.
-
-Patch #3 removes the redundant ADC entry from Galaxy100 dts.
-
-Patch #4 enables the ADC voltage sensoring channels in Wedge100 dts.
-
-Tao Ren (4):
-  ARM: dts: aspeed: Enable ADC in Facebook AST2400 common dtsi
-  ARM: dts: aspeed: wedge40: Remove redundant ADC device
-  ARM: dts: aspeed: galaxy100: Remove redundant ADC device
-  ARM: dts: aspeed: wedge100: Enable ADC channels
-
- arch/arm/boot/dts/aspeed-bmc-facebook-galaxy100.dts   | 4 ----
- arch/arm/boot/dts/aspeed-bmc-facebook-wedge100.dts    | 5 +++++
- arch/arm/boot/dts/aspeed-bmc-facebook-wedge40.dts     | 4 ----
- arch/arm/boot/dts/ast2400-facebook-netbmc-common.dtsi | 4 ++++
- 4 files changed, 9 insertions(+), 8 deletions(-)
-
+diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-wedge40.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-wedge40.dts
+index 2dcfeae3c92a..6624855d8ebd 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-facebook-wedge40.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-facebook-wedge40.dts
+@@ -23,10 +23,6 @@
+ 	status = "disabled";
+ };
+ 
+-&adc {
+-	status = "okay";
+-};
+-
+ &pwm_tacho {
+ 	status = "okay";
+ 	pinctrl-names = "default";
 -- 
 2.17.1
 
