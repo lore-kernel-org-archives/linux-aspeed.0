@@ -1,110 +1,114 @@
 From: Billy Tsai <billy_tsai@aspeedtech.com>
-Date: Mon, 19 Jul 2021 16:06:07 +0800
-Subject: [v1 7/7] iio: adc: aspeed: Fix the calculate error of clock.
+Date: Mon, 19 Jul 2021 16:06:06 +0800
+Subject: [v1 6/7] iio: adc: aspeed: Add compensation phase.
 In-Reply-To: <20210719080607.28712-1-billy_tsai@aspeedtech.com>
 References: <20210719080607.28712-1-billy_tsai@aspeedtech.com>
-Message-ID: <20210719080607.28712-8-billy_tsai@aspeedtech.com>
+Message-ID: <20210719080607.28712-7-billy_tsai@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The adc clcok formula is
-ast2400/2500:
-ADC clock period = PCLK * 2 * (ADC0C[31:17] + 1) * (ADC0C[9:0] + 1)
-ast2600:
-ADC clock period = PCLK * 2 * (ADC0C[15:0] + 1)
-They all have one fixed divided 2 and the legacy driver didn't handle it.
-This patch register the fixed factory clock device as the parent of adc
-clock scaler to fix this issue.
+This patch adds a compensation phase to improve the accurate of adc
+measurement. This is the builtin function though input half of the
+reference voltage to get the adc offset.
 
 Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
 ---
- drivers/iio/adc/aspeed_adc.c | 28 +++++++++++++++++++++++-----
- 1 file changed, 23 insertions(+), 5 deletions(-)
+ drivers/iio/adc/aspeed_adc.c | 51 +++++++++++++++++++++++++++++++++++-
+ 1 file changed, 50 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/iio/adc/aspeed_adc.c b/drivers/iio/adc/aspeed_adc.c
-index b0d7a58cb7f5..2b96b57b5a80 100644
+index b33ff9f0a3af..b0d7a58cb7f5 100644
 --- a/drivers/iio/adc/aspeed_adc.c
 +++ b/drivers/iio/adc/aspeed_adc.c
-@@ -75,6 +75,7 @@ struct aspeed_adc_data {
- 	struct device		*dev;
- 	void __iomem		*base;
- 	spinlock_t		clk_lock;
-+	struct clk_hw		*fixed_div_clk;
- 	struct clk_hw		*clk_prescaler;
- 	struct clk_hw		*clk_scaler;
+@@ -56,6 +56,7 @@
+ #define ASPEED_ADC_INIT_POLLING_TIME	500
+ #define ASPEED_ADC_INIT_TIMEOUT		500000
+ #define ASPEED_ADC_DEF_SAMPLING_RATE	250000
++#define ASPEED_ADC_MAX_RAW_DATA		GENMASK(9, 0)
+ 
+ enum aspeed_adc_version {
+ 	aspeed_adc_ast2400,
+@@ -79,6 +80,7 @@ struct aspeed_adc_data {
  	struct reset_control	*rst;
-@@ -305,6 +306,7 @@ static int aspeed_adc_probe(struct platform_device *pdev)
- 	int ret;
- 	u32 adc_engine_control_reg_val;
- 	char scaler_clk_name[32];
-+	char fixed_div_clk_name[32];
+ 	int			vref;
+ 	u32			sample_period_ns;
++	int			cv;
+ };
  
- 	model_data = of_device_get_match_data(&pdev->dev);
- 	indio_dev = devm_iio_device_alloc(&pdev->dev, sizeof(*data));
-@@ -323,10 +325,15 @@ static int aspeed_adc_probe(struct platform_device *pdev)
- 	spin_lock_init(&data->clk_lock);
- 	clk_parent_name = of_clk_get_parent_name(pdev->dev.of_node, 0);
- 	if (model_data->version <= aspeed_adc_ast2500) {
-+		/* ADC clock period = PCLK * 2 * (ADC0C[31:17] + 1) * (ADC0C[9:0] + 1) */
-+		data->fixed_div_clk = clk_hw_register_fixed_factor(
-+			&pdev->dev, "fixed-div", clk_parent_name, 0, 1, 2);
-+		if (IS_ERR(data->fixed_div_clk))
-+			return PTR_ERR(data->fixed_div_clk);
- 		data->clk_prescaler = clk_hw_register_divider(
--					&pdev->dev, "prescaler", clk_parent_name, 0,
--					data->base + ASPEED_REG_CLOCK_CONTROL,
--					17, 15, 0, &data->clk_lock);
-+			&pdev->dev, "prescaler", "fixed-div", 0,
-+			data->base + ASPEED_REG_CLOCK_CONTROL, 17, 15, 0,
-+			&data->clk_lock);
- 		if (IS_ERR(data->clk_prescaler))
- 			return PTR_ERR(data->clk_prescaler);
+ #define ASPEED_CHAN(_idx, _data_reg_addr) {			\
+@@ -110,6 +112,48 @@ static const struct iio_chan_spec aspeed_adc_iio_channels[] = {
+ 	ASPEED_CHAN(15, 0x2E),
+ };
  
-@@ -344,14 +351,23 @@ static int aspeed_adc_probe(struct platform_device *pdev)
- 			goto scaler_error;
- 		}
- 	} else {
-+		/* ADC clock period = period of PCLK * 2 * (ADC0C[15:0] + 1) */
-+		snprintf(fixed_div_clk_name, sizeof(fixed_div_clk_name), "fixed-div-%s",
-+			 pdev->name);
-+		data->fixed_div_clk = clk_hw_register_fixed_factor(
-+			&pdev->dev, fixed_div_clk_name, clk_parent_name, 0, 1, 2);
-+		if (IS_ERR(data->fixed_div_clk))
-+			return PTR_ERR(data->fixed_div_clk);
- 		snprintf(scaler_clk_name, sizeof(scaler_clk_name), "scaler-%s",
- 			 pdev->name);
- 		data->clk_scaler = clk_hw_register_divider(
- 			&pdev->dev, scaler_clk_name, clk_parent_name, 0,
- 			data->base + ASPEED_REG_CLOCK_CONTROL, 0, 16, 0,
- 			&data->clk_lock);
--		if (IS_ERR(data->clk_scaler))
--			return PTR_ERR(data->clk_scaler);
-+		if (IS_ERR(data->clk_scaler)) {
-+			ret = PTR_ERR(data->clk_scaler);
-+			goto scaler_error;
-+		}
- 	}
++static int aspeed_adc_compensation(struct platform_device *pdev)
++{
++	struct iio_dev *indio_dev = platform_get_drvdata(pdev);
++	struct aspeed_adc_data *data = iio_priv(indio_dev);
++	u32 index, adc_raw = 0;
++	u32 adc_engine_control_reg_val =
++		readl(data->base + ASPEED_REG_ENGINE_CONTROL);
++	adc_engine_control_reg_val |=
++		(ASPEED_ADC_OPERATION_MODE_NORMAL | ASPEED_ADC_ENGINE_ENABLE);
++
++	/*
++	 * Enable compensating sensing:
++	 * After that, the input voltage of adc will force to half of the reference
++	 * voltage. So the expected reading raw data will become half of the max
++	 * value. We can get compensating value = 0x200 - adc read raw value.
++	 * It is recommended to average at least 10 samples to get a final CV.
++	 */
++	writel(adc_engine_control_reg_val | ASPEED_ADC_CTRL_COMPENSATION |
++		       ASPEED_ADC_CTRL_CHANNEL_ENABLE(0),
++	       data->base + ASPEED_REG_ENGINE_CONTROL);
++	/*
++	 * After enable compensating sensing mode need to wait some time for adc stable
++	 * Experiment result is 1ms.
++	 */
++	mdelay(1);
++
++	for (index = 0; index < 16; index++) {
++		/*
++		 * Waiting for the sampling period ensures that the value acquired
++		 * is fresh each time.
++		 */
++		ndelay(data->sample_period_ns);
++		adc_raw += readw(data->base + aspeed_adc_iio_channels[0].address);
++	}
++	adc_raw >>= 4;
++	data->cv = BIT(ASPEED_RESOLUTION_BITS - 1) - adc_raw;
++	writel(adc_engine_control_reg_val,
++	       data->base + ASPEED_REG_ENGINE_CONTROL);
++	dev_dbg(data->dev, "compensating value = %d\n", data->cv);
++	return 0;
++}
++
+ static int aspeed_adc_set_sampling_rate(struct iio_dev *indio_dev, u32 rate)
+ {
+ 	struct aspeed_adc_data *data = iio_priv(indio_dev);
+@@ -138,7 +182,11 @@ static int aspeed_adc_read_raw(struct iio_dev *indio_dev,
  
- 	data->rst = devm_reset_control_get_shared(&pdev->dev, NULL);
-@@ -421,6 +437,7 @@ static int aspeed_adc_probe(struct platform_device *pdev)
- scaler_error:
- 	if (model_data->version <= aspeed_adc_ast2500)
- 		clk_hw_unregister_divider(data->clk_prescaler);
-+	clk_hw_unregister_fixed_factor(data->fixed_div_clk);
- 	return ret;
- }
+ 	switch (mask) {
+ 	case IIO_CHAN_INFO_RAW:
+-		*val = readw(data->base + chan->address);
++		*val = readw(data->base + chan->address) + data->cv;
++		if (*val < 0)
++			*val = 0;
++		else if (*val >= ASPEED_ADC_MAX_RAW_DATA)
++			*val = ASPEED_ADC_MAX_RAW_DATA;
+ 		return IIO_VAL_INT;
  
-@@ -439,6 +456,7 @@ static int aspeed_adc_remove(struct platform_device *pdev)
- 	clk_hw_unregister_divider(data->clk_scaler);
- 	if (model_data->version <= aspeed_adc_ast2500)
- 		clk_hw_unregister_divider(data->clk_prescaler);
-+	clk_hw_unregister_fixed_factor(data->fixed_div_clk);
- 
- 	return 0;
- }
+ 	case IIO_CHAN_INFO_SCALE:
+@@ -338,6 +386,7 @@ static int aspeed_adc_probe(struct platform_device *pdev)
+ 	if (ret)
+ 		goto clk_enable_error;
+ 	aspeed_adc_set_sampling_rate(indio_dev, ASPEED_ADC_DEF_SAMPLING_RATE);
++	aspeed_adc_compensation(pdev);
+ 	adc_engine_control_reg_val =
+ 		readl(data->base + ASPEED_REG_ENGINE_CONTROL);
+ 	/* Start all channels in normal mode. */
 -- 
 2.25.1
 
