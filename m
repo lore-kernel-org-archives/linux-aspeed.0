@@ -1,39 +1,70 @@
-From: Tao Ren <rentao.bupt@gmail.com>
-Date: Sun, 18 Jul 2021 18:03:46 -0700
-Subject: [PATCH 0/4] ARM: dts: aspeed: Enable ADC for wedge100 BMC
-In-Reply-To: <CACPK8Xdgp50KbVvhSbhrwUiTB6MJ5PoBzV9n18ubZAAOprOGiw@mail.gmail.com>
-References: <20210719001724.6410-1-rentao.bupt@gmail.com>
- <CACPK8Xdgp50KbVvhSbhrwUiTB6MJ5PoBzV9n18ubZAAOprOGiw@mail.gmail.com>
-Message-ID: <20210719010346.GA6817@taoren-ubuntu-R90MNF91>
+From: Billy Tsai <billy_tsai@aspeedtech.com>
+Date: Mon, 19 Jul 2021 16:06:02 +0800
+Subject: [v1 2/7] dt-bindings: iio: adc: Binding ast2600 adc.
+In-Reply-To: <20210719080607.28712-1-billy_tsai@aspeedtech.com>
+References: <20210719080607.28712-1-billy_tsai@aspeedtech.com>
+Message-ID: <20210719080607.28712-3-billy_tsai@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Jul 19, 2021 at 12:21:20AM +0000, Joel Stanley wrote:
-> On Mon, 19 Jul 2021 at 00:17, <rentao.bupt@gmail.com> wrote:
-> >
-> > From: Tao Ren <rentao.bupt@gmail.com>
-> >
-> > The patch series enables ADC for Facebook Wedge100 BMC platform.
-> >
-> > Patch #1 enables ADC in Facebook AST2400 common dtsi because ADC is used
-> > on all the Facebook AST2400 Network BMC platforms.
-> >
-> > Patch #2 removes the redundant ADC entry from Wedge40 dts.
-> >
-> > Patch #3 removes the redundant ADC entry from Galaxy100 dts.
-> >
-> > Patch #4 enables the ADC voltage sensoring channels in Wedge100 dts.
-> 
-> Reviewed-by: Joel Stanley <joel@jms.id.au>
-> 
-> Thanks Tao, I will apply these for v5.15.
+This patch add more description about aspeed adc and add vref property
+for ast2600 to configure it reference voltage.
 
-Thanks Joel!
+Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
+---
+ .../bindings/iio/adc/aspeed,adc.yaml          | 23 +++++++++++++++++--
+ 1 file changed, 21 insertions(+), 2 deletions(-)
 
+diff --git a/Documentation/devicetree/bindings/iio/adc/aspeed,adc.yaml b/Documentation/devicetree/bindings/iio/adc/aspeed,adc.yaml
+index 7f534a933e92..67ff0b5c7ef2 100644
+--- a/Documentation/devicetree/bindings/iio/adc/aspeed,adc.yaml
++++ b/Documentation/devicetree/bindings/iio/adc/aspeed,adc.yaml
+@@ -10,14 +10,26 @@ maintainers:
+   - Joel Stanley <joel@jms.id.au>
+ 
+ description:
+-  This device is a 10-bit converter for 16 voltage channels.  All inputs are
+-  single ended.
++  ? 10-bits resolution for 16 voltage channels.
++  At ast2400/ast2500 the device has only one engine with 16 voltage channels.
++  At ast2600 the device split into two individual engine and each contains 8 voltage channels.
++  ? Channel scanning can be non-continuous.
++  ? Programmable ADC clock frequency.
++  ? Programmable upper and lower bound for each channels.
++  ? Interrupt when larger or less than bounds for each channels.
++  ? Support hysteresis for each channels.
++  ? Buildin a compensating method.
++  Additional feature at ast2600
++  ? Internal or External reference voltage.
++  ? Support 2 Internal reference voltage 1.2v or 2.5v.
++  ? Integrate dividing circuit for battery sensing.
+ 
+ properties:
+   compatible:
+     enum:
+       - aspeed,ast2400-adc
+       - aspeed,ast2500-adc
++      - aspeed,ast2600-adc
+ 
+   reg:
+     maxItems: 1
+@@ -33,6 +45,13 @@ properties:
+   "#io-channel-cells":
+     const: 1
+ 
++  vref:
++    minItems: 900
++    maxItems: 2700
++    default: 2500
++    description:
++      ADC Reference voltage in millivolts (only work at ast2600)
++
+ required:
+   - compatible
+   - reg
+-- 
+2.25.1
 
-Cheers,
-
-Tao
