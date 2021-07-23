@@ -1,55 +1,116 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Fri, 23 Jul 2021 17:28:54 +0930
-Subject: [RFC PATCH 2/6] pinctrl: Add hook for device-specific map parsing
+Date: Fri, 23 Jul 2021 17:28:55 +0930
+Subject: [RFC PATCH 3/6] leds: pca955x: Relocate chipdef-related descriptors
 In-Reply-To: <20210723075858.376378-1-andrew@aj.id.au>
 References: <20210723075858.376378-1-andrew@aj.id.au>
-Message-ID: <20210723075858.376378-3-andrew@aj.id.au>
+Message-ID: <20210723075858.376378-4-andrew@aj.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The devicetree binding for the PCA955x LED/GPIO expanders was not
-written with pinctrl in mind. To maintain compatibility with existing
-devicetrees while implementing pinctrl support for the PCA955x devices,
-add the ability to parse a custom device node layout to pinctrl.
+Reduce code-motion noise when implementing pinctrl.
 
 Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
 ---
- drivers/pinctrl/core.c          | 6 +++++-
- include/linux/pinctrl/pinctrl.h | 1 +
- 2 files changed, 6 insertions(+), 1 deletion(-)
+ drivers/leds/leds-pca955x.c | 76 ++++++++++++++++++-------------------
+ 1 file changed, 38 insertions(+), 38 deletions(-)
 
-diff --git a/drivers/pinctrl/core.c b/drivers/pinctrl/core.c
-index 9c788f0e2844..e4862552eb9b 100644
---- a/drivers/pinctrl/core.c
-+++ b/drivers/pinctrl/core.c
-@@ -1063,7 +1063,11 @@ static struct pinctrl *create_pinctrl(struct device *dev,
- 	INIT_LIST_HEAD(&p->states);
- 	INIT_LIST_HEAD(&p->dt_maps);
+diff --git a/drivers/leds/leds-pca955x.c b/drivers/leds/leds-pca955x.c
+index 7087ca4592fc..6614291b288e 100644
+--- a/drivers/leds/leds-pca955x.c
++++ b/drivers/leds/leds-pca955x.c
+@@ -75,44 +75,6 @@ struct pca955x_chipdef {
+ 	int			slv_addr_shift;	/* Number of bits to ignore */
+ };
  
--	ret = pinctrl_dt_to_map(p, pctldev);
-+	if (pctldev && pctldev->desc->pctlops->dt_dev_to_map) {
-+		ret = pctldev->desc->pctlops->dt_dev_to_map(pctldev, dev);
-+	} else {
-+		ret = pinctrl_dt_to_map(p, pctldev);
-+	}
- 	if (ret < 0) {
- 		kfree(p);
- 		return ERR_PTR(ret);
-diff --git a/include/linux/pinctrl/pinctrl.h b/include/linux/pinctrl/pinctrl.h
-index 1ceebc499cc4..2eeec0af61fe 100644
---- a/include/linux/pinctrl/pinctrl.h
-+++ b/include/linux/pinctrl/pinctrl.h
-@@ -95,6 +95,7 @@ struct pinctrl_ops {
- 			       unsigned *num_pins);
- 	void (*pin_dbg_show) (struct pinctrl_dev *pctldev, struct seq_file *s,
- 			  unsigned offset);
-+	int (*dt_dev_to_map) (struct pinctrl_dev *pctldev, struct device *dev);
- 	int (*dt_node_to_map) (struct pinctrl_dev *pctldev,
- 			       struct device_node *np_config,
- 			       struct pinctrl_map **map, unsigned *num_maps);
+-static struct pca955x_chipdef pca955x_chipdefs[] = {
+-	[pca9550] = {
+-		.bits		= 2,
+-		.slv_addr	= /* 110000x */ 0x60,
+-		.slv_addr_shift	= 1,
+-	},
+-	[pca9551] = {
+-		.bits		= 8,
+-		.slv_addr	= /* 1100xxx */ 0x60,
+-		.slv_addr_shift	= 3,
+-	},
+-	[pca9552] = {
+-		.bits		= 16,
+-		.slv_addr	= /* 1100xxx */ 0x60,
+-		.slv_addr_shift	= 3,
+-	},
+-	[ibm_pca9552] = {
+-		.bits		= 16,
+-		.slv_addr	= /* 0110xxx */ 0x30,
+-		.slv_addr_shift	= 3,
+-	},
+-	[pca9553] = {
+-		.bits		= 4,
+-		.slv_addr	= /* 110001x */ 0x62,
+-		.slv_addr_shift	= 1,
+-	},
+-};
+-
+-static const struct i2c_device_id pca955x_id[] = {
+-	{ "pca9550", pca9550 },
+-	{ "pca9551", pca9551 },
+-	{ "pca9552", pca9552 },
+-	{ "ibm-pca9552", ibm_pca9552 },
+-	{ "pca9553", pca9553 },
+-	{ }
+-};
+-MODULE_DEVICE_TABLE(i2c, pca955x_id);
+-
+ struct pca955x {
+ 	struct mutex lock;
+ 	struct pca955x_led *leds;
+@@ -415,6 +377,44 @@ pca955x_get_pdata(struct i2c_client *client, struct pca955x_chipdef *chip)
+ 	return pdata;
+ }
+ 
++static struct pca955x_chipdef pca955x_chipdefs[] = {
++	[pca9550] = {
++		.bits		= 2,
++		.slv_addr	= /* 110000x */ 0x60,
++		.slv_addr_shift	= 1,
++	},
++	[pca9551] = {
++		.bits		= 8,
++		.slv_addr	= /* 1100xxx */ 0x60,
++		.slv_addr_shift	= 3,
++	},
++	[pca9552] = {
++		.bits		= 16,
++		.slv_addr	= /* 1100xxx */ 0x60,
++		.slv_addr_shift	= 3,
++	},
++	[ibm_pca9552] = {
++		.bits		= 16,
++		.slv_addr	= /* 0110xxx */ 0x30,
++		.slv_addr_shift	= 3,
++	},
++	[pca9553] = {
++		.bits		= 4,
++		.slv_addr	= /* 110001x */ 0x62,
++		.slv_addr_shift	= 1,
++	},
++};
++
++static const struct i2c_device_id pca955x_id[] = {
++	{ "pca9550", pca9550 },
++	{ "pca9551", pca9551 },
++	{ "pca9552", pca9552 },
++	{ "ibm-pca9552", ibm_pca9552 },
++	{ "pca9553", pca9553 },
++	{ }
++};
++MODULE_DEVICE_TABLE(i2c, pca955x_id);
++
+ static const struct of_device_id of_pca955x_match[] = {
+ 	{ .compatible = "nxp,pca9550", .data = (void *)pca9550 },
+ 	{ .compatible = "nxp,pca9551", .data = (void *)pca9551 },
 -- 
 2.30.2
 
