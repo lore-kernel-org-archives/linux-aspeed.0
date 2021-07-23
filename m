@@ -1,132 +1,56 @@
 From: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
-Date: Fri, 23 Jul 2021 15:55:30 +0100
-Subject: [v2 3/8] iio: adc: aspeed: completes the bitfield declare.
-In-Reply-To: <20210723081621.29477-4-billy_tsai@aspeedtech.com>
+Date: Fri, 23 Jul 2021 15:44:56 +0100
+Subject: [v2 1/8] dt-bindings: iio: adc: rename the aspeed adc yaml
+In-Reply-To: <20210723081621.29477-2-billy_tsai@aspeedtech.com>
 References: <20210723081621.29477-1-billy_tsai@aspeedtech.com>
- <20210723081621.29477-4-billy_tsai@aspeedtech.com>
-Message-ID: <20210723155530.00000d1c@Huawei.com>
+ <20210723081621.29477-2-billy_tsai@aspeedtech.com>
+Message-ID: <20210723154456.00006744@Huawei.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, 23 Jul 2021 16:16:16 +0800
+On Fri, 23 Jul 2021 16:16:14 +0800
 Billy Tsai <billy_tsai@aspeedtech.com> wrote:
 
-> This patch completes the declare of adc register bitfields and uses the
-> same prefix ASPEED_ADC_* for these bitfields.
+> The aspeed,ast2400-adc.yaml not only descriptor the bindings of ast2400.
+> Rename it to aspeed,adc.yaml for all of the aspeed adc bindings.
 > 
 > Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
-Hi Billy
 
-See inline,
+We try to avoid 'wild' card type namings most of the time and instead
+name after a particular part number.  I say try because clearly
+we let a few in over the years :(
+
+It is very hard to know if this binding will apply to 'all' future
+aspeed ADCs.
+
+As such I'm not sure this particular rename makes sense.
 
 Thanks,
 
 Jonathan
 
 > ---
->  drivers/iio/adc/aspeed_adc.c | 40 ++++++++++++++++++++++++------------
->  1 file changed, 27 insertions(+), 13 deletions(-)
+>  .../iio/adc/{aspeed,ast2400-adc.yaml => aspeed,adc.yaml}        | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>  rename Documentation/devicetree/bindings/iio/adc/{aspeed,ast2400-adc.yaml => aspeed,adc.yaml} (93%)
 > 
-> diff --git a/drivers/iio/adc/aspeed_adc.c b/drivers/iio/adc/aspeed_adc.c
-> index 19efaa41bc34..99466a5924c7 100644
-> --- a/drivers/iio/adc/aspeed_adc.c
-> +++ b/drivers/iio/adc/aspeed_adc.c
-> @@ -16,6 +16,7 @@
->  #include <linux/reset.h>
->  #include <linux/spinlock.h>
->  #include <linux/types.h>
-> +#include <linux/bitfield.h>
+> diff --git a/Documentation/devicetree/bindings/iio/adc/aspeed,ast2400-adc.yaml b/Documentation/devicetree/bindings/iio/adc/aspeed,adc.yaml
+> similarity index 93%
+> rename from Documentation/devicetree/bindings/iio/adc/aspeed,ast2400-adc.yaml
+> rename to Documentation/devicetree/bindings/iio/adc/aspeed,adc.yaml
+> index 7f534a933e92..23f3da1ffca3 100644
+> --- a/Documentation/devicetree/bindings/iio/adc/aspeed,ast2400-adc.yaml
+> +++ b/Documentation/devicetree/bindings/iio/adc/aspeed,adc.yaml
+> @@ -1,7 +1,7 @@
+>  # SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
+>  %YAML 1.2
+>  ---
+> -$id: http://devicetree.org/schemas/iio/adc/aspeed,ast2400-adc.yaml#
+> +$id: http://devicetree.org/schemas/iio/adc/aspeed,adc.yaml#
+>  $schema: http://devicetree.org/meta-schemas/core.yaml#
 >  
->  #include <linux/iio/iio.h>
->  #include <linux/iio/driver.h>
-> @@ -28,15 +29,28 @@
->  #define ASPEED_REG_INTERRUPT_CONTROL	0x04
->  #define ASPEED_REG_VGA_DETECT_CONTROL	0x08
->  #define ASPEED_REG_CLOCK_CONTROL	0x0C
-> -#define ASPEED_REG_MAX			0xC0
-> -
-> -#define ASPEED_OPERATION_MODE_POWER_DOWN	(0x0 << 1)
-> -#define ASPEED_OPERATION_MODE_STANDBY		(0x1 << 1)
-> -#define ASPEED_OPERATION_MODE_NORMAL		(0x7 << 1)
-> -
-> -#define ASPEED_ENGINE_ENABLE		BIT(0)
-> -
-> -#define ASPEED_ADC_CTRL_INIT_RDY	BIT(8)
-> +#define ASPEED_REG_COMPENSATION_TRIM	0xC4
-> +#define ASPEED_REG_MAX			0xCC
-> +
-> +#define ASPEED_ADC_ENGINE_ENABLE		BIT(0)
-> +#define ASPEED_ADC_OPERATION_MODE		GENMASK(3, 1)
-> +#define ASPEED_ADC_OPERATION_MODE_POWER_DOWN	FIELD_PREP(ASPEED_ADC_OPERATION_MODE, 0)
-It's more common to have the FIELD_PREP at the location where it
-is used and just have defines here to be to the value of the field.
-
-Perhaps also consider some abbreviations as I think we can safely
-make them here without losing any meaning, given context.
-
-ASPEED_ADC_OP_MODE
-ASPEED_ADC_OP_MODE_PWR_DWN
-ASPEED_ADC_OP_MODE_STANDBY
-ASPEED_ADC_OP_MODE_NORMAL
-
-etc.
-
-> +#define ASPEED_ADC_OPERATION_MODE_STANDBY	FIELD_PREP(ASPEED_ADC_OPERATION_MODE, 1)
-> +#define ASPEED_ADC_OPERATION_MODE_NORMAL	FIELD_PREP(ASPEED_ADC_OPERATION_MODE, 7)
-> +#define ASPEED_ADC_CTRL_COMPENSATION		BIT(4)
-> +#define ASPEED_ADC_AUTO_COMPENSATION		BIT(5)
-> +#define ASPEED_ADC_REF_VOLTAGE			GENMASK(7, 6)
-> +#define ASPEED_ADC_REF_VOLTAGE_2500mV		FIELD_PREP(ASPEED_ADC_REF_VOLTAGE, 0)
-> +#define ASPEED_ADC_REF_VOLTAGE_1200mV		FIELD_PREP(ASPEED_ADC_REF_VOLTAGE, 1)
-> +#define ASPEED_ADC_REF_VOLTAGE_EXT_HIGH		FIELD_PREP(ASPEED_ADC_REF_VOLTAGE, 2)
-> +#define ASPEED_ADC_REF_VOLTAGE_EXT_LOW		FIELD_PREP(ASPEED_ADC_REF_VOLTAGE, 3)
-> +#define ASPEED_ADC_CTRL_INIT_RDY		BIT(8)
-> +#define ASPEED_ADC_CH7_MODE			BIT(12)
-> +#define ASPEED_ADC_CH7_NORMAL			FIELD_PREP(ASPEED_ADC_CH7_MODE, 0)
-> +#define ASPEED_ADC_CH7_BATTERY			FIELD_PREP(ASPEED_ADC_CH7_MODE, 1)
-> +#define ASPEED_ADC_BATTERY_SENSING_ENABLE	BIT(13)
-> +#define ASPEED_ADC_CTRL_CHANNEL			GENMASK(31, 16)
-> +#define ASPEED_ADC_CTRL_CHANNEL_ENABLE(ch)	FIELD_PREP(ASPEED_ADC_CTRL_CHANNEL, BIT(ch))
->  
->  #define ASPEED_ADC_INIT_POLLING_TIME	500
->  #define ASPEED_ADC_INIT_TIMEOUT		500000
-> @@ -226,7 +240,7 @@ static int aspeed_adc_probe(struct platform_device *pdev)
->  
->  	if (model_data->wait_init_sequence) {
->  		/* Enable engine in normal mode. */
-> -		writel(ASPEED_OPERATION_MODE_NORMAL | ASPEED_ENGINE_ENABLE,
-> +		writel(ASPEED_ADC_OPERATION_MODE_NORMAL | ASPEED_ADC_ENGINE_ENABLE,
->  		       data->base + ASPEED_REG_ENGINE_CONTROL);
->  
->  		/* Wait for initial sequence complete. */
-> @@ -246,7 +260,7 @@ static int aspeed_adc_probe(struct platform_device *pdev)
->  		goto clk_enable_error;
->  
->  	adc_engine_control_reg_val = GENMASK(31, 16) |
-> -		ASPEED_OPERATION_MODE_NORMAL | ASPEED_ENGINE_ENABLE;
-> +		ASPEED_ADC_OPERATION_MODE_NORMAL | ASPEED_ADC_ENGINE_ENABLE;
->  	writel(adc_engine_control_reg_val,
->  		data->base + ASPEED_REG_ENGINE_CONTROL);
->  
-> @@ -264,7 +278,7 @@ static int aspeed_adc_probe(struct platform_device *pdev)
->  	return 0;
->  
->  iio_register_error:
-> -	writel(ASPEED_OPERATION_MODE_POWER_DOWN,
-> +	writel(ASPEED_ADC_OPERATION_MODE_POWER_DOWN,
->  		data->base + ASPEED_REG_ENGINE_CONTROL);
->  	clk_disable_unprepare(data->clk_scaler->clk);
->  clk_enable_error:
-> @@ -283,7 +297,7 @@ static int aspeed_adc_remove(struct platform_device *pdev)
->  	struct aspeed_adc_data *data = iio_priv(indio_dev);
->  
->  	iio_device_unregister(indio_dev);
-> -	writel(ASPEED_OPERATION_MODE_POWER_DOWN,
-> +	writel(ASPEED_ADC_OPERATION_MODE_POWER_DOWN,
->  		data->base + ASPEED_REG_ENGINE_CONTROL);
->  	clk_disable_unprepare(data->clk_scaler->clk);
->  	reset_control_assert(data->rst);
+>  title: ADC that forms part of an ASPEED server management processor.
 
