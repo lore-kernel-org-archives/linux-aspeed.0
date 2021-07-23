@@ -1,85 +1,136 @@
-From: Billy Tsai <billy_tsai@aspeedtech.com>
-Date: Fri, 23 Jul 2021 04:23:23 +0000
-Subject: [v9 2/2] pwm: Add Aspeed ast2600 PWM support
-In-Reply-To: <20210721124859.clv6qlitbyomdz6s@pengutronix.de>
-References: <20210709065217.6153-1-billy_tsai@aspeedtech.com>
- <20210709065217.6153-3-billy_tsai@aspeedtech.com>
- <20210715150533.vppkw5oiomkxmfrn@pengutronix.de>
- <BD5B012C-B377-45E2-B04E-61D12B086670@aspeedtech.com>
- <20210716070943.ayxkz2irkwhgincz@pengutronix.de>
- <DD5590B4-11BC-411B-95BF-03AC26C078E4@aspeedtech.com>
- <20210716101301.l563tdwt5xuq5iq6@pengutronix.de>
- <3F12A498-DF5C-4954-8BCE-8C0C66BC9734@aspeedtech.com>
- <4BC9AEF6-31EA-4EDA-BCB2-7E4D44B6D5D2@aspeedtech.com>
- <20210721124859.clv6qlitbyomdz6s@pengutronix.de>
-Message-ID: <7F794DD8-0FC6-491D-B071-CAD6C216E044@aspeedtech.com>
+From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+Date: Fri, 23 Jul 2021 09:30:56 +0200
+Subject: [PATCH v6 0/9] ASPEED sgpio driver enhancement.
+In-Reply-To: <20210723031615.GA10457@aspeedtech.com>
+References: <20210712100317.23298-1-steven_lee@aspeedtech.com>
+ <CAMpxmJXfUterUdaGHOJT5hwcVJ+3cqgSQVdp-6Atuyyo36FxfQ@mail.gmail.com>
+ <20210723031615.GA10457@aspeedtech.com>
+Message-ID: <CAMpxmJU4jN-hpNYPLHLbjx4uZ6vDqcyuMVQXhHg1BWXOqyS22A@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 2021/7/23, 3:17 AM, "Uwe Kleine-K?nig" <u.kleine-koenig@pengutronix.de> wrote:
+On Fri, Jul 23, 2021 at 5:16 AM Steven Lee <steven_lee@aspeedtech.com> wrote:
+>
+> The 07/21/2021 21:27, Bartosz Golaszewski wrote:
+> > On Mon, Jul 12, 2021 at 12:03 PM Steven Lee <steven_lee@aspeedtech.com> wrote:
+> > >
+> > > AST2600 SoC has 2 SGPIO master interfaces one with 128 pins another one
+> > > with 80 pins, AST2500/AST2400 SoC has 1 SGPIO master interface that
+> > > supports up to 80 pins.
+> > > In the current driver design, the max number of sgpio pins is hardcoded
+> > > in macro MAX_NR_HW_SGPIO and the value is 80.
+> > >
+> > > For supporting sgpio master interfaces of AST2600 SoC, the patch series
+> > > contains the following enhancement:
+> > > - Convert txt dt-bindings to yaml.
+> > > - Update aspeed-g6 dtsi to support the enhanced sgpio.
+> > > - Support muiltiple SGPIO master interfaces.
+> > > - Support up to 128 pins by dts ngpios property.
+> > > - Pair input/output GPIOs instead of using 0 as GPIO input pin base and
+> > >   MAX_NR_HW_SGPIO as GPIO output pin base.
+> > > - Support wdt reset tolerance.
+> > > - Fix irq_chip issues which causes multiple sgpio devices use the same
+> > >   irq_chip data.
+> > > - Replace all of_*() APIs with device_*().
+> > >
+> > > Changes from v5:
+> > > * Squash v5 patch-05 and patch-06 to one patch.
+> > > * Remove MAX_NR_HW_SGPIO and corresponding design to make the gpio
+> > >   input/output pin base are determined by ngpios.
+> > >   For example, if MAX_NR_HW_SGPIO is 80 and ngpios is 10, the original
+> > >   pin order is as follows:
+> > >     Input:
+> > >     0 1 2 3 ... 9
+> > >     Output:
+> > >     80 81 82 ... 89
+> > >
+> > >   With the new design, pin order is changed as follows:
+> > >     Input:
+> > >     0 2 4 6 ... 18(ngpios * 2 - 2)
+> > >     Output:
+> > >     1 3 5 7 ... 19(ngpios * 2 - 1)
+> > > * Replace ast2600-sgpiom-128 and ast2600-sgpiom-80 compatibles by
+> > >   ast2600-sgpiom.
+> > > * Fix coding style issues.
+> > >
+> > > Changes from v4:
+> > > * Remove ngpios from dtsi
+> > > * Add ast2400 and ast2500 platform data.
+> > > * Remove unused macros.
+> > > * Add ngpios check in a separate patch.
+> > > * Fix coding style issues.
+> > >
+> > > Changes from v3:
+> > > * Split dt-bindings patch to 2 patches
+> > > * Rename ast2600-sgpiom1 compatible with ast2600-sgiom-128
+> > > * Rename ast2600-sgpiom2 compatible with ast2600-sgiom-80
+> > > * Correct the typo in commit messages.
+> > > * Fix coding style issues.
+> > > * Replace all of_*() APIs with device_*().
+> > >
+> > > Changes from v2:
+> > > * Remove maximum/minimum of ngpios from bindings.
+> > > * Remove max-ngpios from bindings and dtsi.
+> > > * Remove ast2400-sgpiom and ast2500-sgpiom compatibles from dts and
+> > >   driver.
+> > > * Add ast2600-sgpiom1 and ast2600-sgpiom2 compatibles as their max
+> > >   number of available gpio pins are different.
+> > > * Modify functions to pass aspeed_sgpio struct instead of passing
+> > >   max_ngpios.
+> > > * Split sgpio driver patch to 3 patches
+> > >
+> > > Changes from v1:
+> > > * Fix yaml format issues.
+> > > * Fix issues reported by kernel test robot.
+> > >
+> > > Please help to review.
+> > >
+> > > Thanks,
+> > > Steven
+> > >
+> > > Steven Lee (9):
+> > >   dt-bindings: aspeed-sgpio: Convert txt bindings to yaml.
+> > >   dt-bindings: aspeed-sgpio: Add ast2600 sgpio
+> > >   ARM: dts: aspeed-g6: Add SGPIO node.
+> > >   ARM: dts: aspeed-g5: Remove ngpios from sgpio node.
+> > >   gpio: gpio-aspeed-sgpio: Add AST2600 sgpio support
+> > >   gpio: gpio-aspeed-sgpio: Add set_config function
+> > >   gpio: gpio-aspeed-sgpio: Move irq_chip to aspeed-sgpio struct
+> > >   gpio: gpio-aspeed-sgpio: Use generic device property APIs
+> > >   gpio: gpio-aspeed-sgpio: Return error if ngpios is not multiple of 8.
+> > >
+> > >  .../bindings/gpio/aspeed,sgpio.yaml           |  77 ++++++++
+> > >  .../devicetree/bindings/gpio/sgpio-aspeed.txt |  46 -----
+> > >  arch/arm/boot/dts/aspeed-g5.dtsi              |   1 -
+> > >  arch/arm/boot/dts/aspeed-g6.dtsi              |  28 +++
+> > >  drivers/gpio/gpio-aspeed-sgpio.c              | 178 +++++++++++-------
+> > >  5 files changed, 215 insertions(+), 115 deletions(-)
+> > >  create mode 100644 Documentation/devicetree/bindings/gpio/aspeed,sgpio.yaml
+> > >  delete mode 100644 Documentation/devicetree/bindings/gpio/sgpio-aspeed.txt
+> > >
+> > > --
+> > > 2.17.1
+> > >
+> >
+> > The series looks good to me. Can the DTS and GPIO patches go into
+> > v5.15 separately?
+> >
+>
+> Hi Bart,
+>
+> Thanks for the review.
+> Shall we do anything to make the patches go into v5.15 or wait for picking-up?
+>
+> Steven
+>
+> > Bart
 
-    On Wed, Jul 21, 2021 at 10:52:21AM +0000, Billy Tsai wrote:
-    >> Hi Uwe,
-    >> 
-    >>     On 2021/7/16, 6:13 PM, "Uwe Kleine-K?nig" <u.kleine-koenig@pengutronix.de> wrote:
-    >> 
-    >>         On Fri, Jul 16, 2021 at 09:22:22AM +0000, Billy Tsai wrote:
-    >>         >> On 2021/7/16, 3:10 PM, "Uwe Kleine-K?nig" <u.kleine-koenig@pengutronix.de> wrote:
-    >>         >> 
-    >>         >>     On Fri, Jul 16, 2021 at 01:48:20AM +0000, Billy Tsai wrote:
-    >>         >>     >> On 2021/7/15, 11:06 PM, "Uwe Kleine-K?nig" <u.kleine-koenig@pengutronix.de>> wrote:
-    >>         >>     >>     > Another is: The PWM doesn't support duty_cycle 0, on such a request the
-    >>         >>     >>     > PWM is disabled which results in a constant inactive level.
-    >>         >>     >> 
-    >>         >>     >>     > (This is correct, is it? Or does it yield a constant 0 level?)
-    >>         >>     >> 
-    >>         >>     >> Our pwm can support duty_cycle 0 by unset CLK_ENABLE.
-    >>         >> 
-    >>         >>     > This has a slightly different semantic though. Some consumer might
-    >>         >>     > expect that the following sequence:
-    >>         >> 
-    >>         >>     >	pwm_apply(mypwm, { .period = 10000, .duty_cycle = 10000, .enabled = true })
-    >>         >>     >	pwm_apply(mypwm, { .period = 10000, .duty_cycle = 0, .enabled = true })
-    >>         >>     >	pwm_apply(mypwm, { .period = 10000, .duty_cycle = 10000, .enabled = true })
-    >>         >> 
-    >>         >>     > results in the output being low for an integer multiple of 10 ?s. This
-    >>         >>     > isn't given with setting CLK_ENABLE to zero, is it? (I didn't recheck,
-    >>         >>     > if the PWM doesn't complete periods on reconfiguration this doesn't
-    >>         >>     > matter much though.)
-    >>         >> Thanks for the explanation.
-    >>         >> Our hardware actually can only support duty from 1/256 to 256/256.
-    >>         >> For this situation I can do possible solution:
-    >>         >> We can though change polarity to meet this requirement. Inverse the pin and use
-    >>         >> duty_cycle 100. 
-    >>         >> But I think this is not a good solution for this problem right?
-    >> 
-    >>         > If this doesn't result in more glitches that would be fine for me.
-    >>         > (Assuming it is documented good enough in the code to be
-    >>         > understandable.)
-    >> 
-    >>     > The polarity of our pwm controller will affect the duty cycle range:
-    >>     > PWM_POLARITY_INVERSED : Support duty_cycle from 0% to 99%
-    >>     > PWM_POLARITY_NORMAL: Support duty_cycle from 1% to 100%
-    >>     > Dynamic change polarity will result in more glitches. Thus, this will become
-    >>     > a trade-off between 100% and 0% duty_cycle support for user to use our pwm device.
-    >>     > I will document it and send next patch.
-    >> 
-    >> For handling the situation that the user want to set the duty cycle to 0%, the driver can:
-    >> 1. Just return the error.
-    >> 2. Use the minimum duty cycle value.
-    >> I don't know which solution will be the better way or others.
-    >> I would be grateful if you can give me some suggestion about this problem.
+It's more of a question to the relevant SoC maintainers.
 
-    > I thought if you disable the PWM it emits the inactive level? Then this
-    > is the best you can do if duty_cycle = 0 is requested.
+Joel, Andrew: can I take the GPIO patches through the GPIO tree and
+you'll take the ARM patches separately into v5.15?
 
-Thanks for your quick reply.
-When duty_cycle = 0 is requested my driver currently will emit the inactive level.
-So, the next patch I need to do is to add the comment about this?
-
-Best Regards,
-Billy Tsai
-
+Bartosz
