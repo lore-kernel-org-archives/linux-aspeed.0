@@ -1,161 +1,79 @@
 From: Billy Tsai <billy_tsai@aspeedtech.com>
-Date: Mon, 26 Jul 2021 06:54:48 +0000
-Subject: [v2 8/8] iio: adc: aspeed: Support battery sensing.
-In-Reply-To: <20210723165629.00005610@Huawei.com>
+Date: Mon, 26 Jul 2021 07:21:29 +0000
+Subject: [v2 2/8] dt-bindings: iio: adc: Binding ast2600 adc.
+In-Reply-To: <20210723155141.000039ee@Huawei.com>
 References: <20210723081621.29477-1-billy_tsai@aspeedtech.com>
- <20210723081621.29477-9-billy_tsai@aspeedtech.com>
- <20210723165629.00005610@Huawei.com>
-Message-ID: <17A07548-B278-4572-A280-B19312471936@aspeedtech.com>
+ <20210723081621.29477-3-billy_tsai@aspeedtech.com>
+ <20210723155141.000039ee@Huawei.com>
+Message-ID: <8D93D26B-AE57-4E38-A1AD-FA62894F2947@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 2021/7/23, 11:57 PM, "Jonathan Cameron" <Jonathan.Cameron@Huawei.com> wrote:
-
-    On Fri, 23 Jul 2021 16:16:21 +0800
-    Billy Tsai <billy_tsai@aspeedtech.com> wrote:
-
-    >   > In ast2600, ADC integrate dividing circuit at last input channel for
-    >   > battery sensing. This patch use the dts property "battery-sensing" to
-    >   > enable this feature makes the last channel of each adc can tolerance
-
-    >   this feature allows the last channel of each ADC to tolerate a higher
-    >   voltage than the reference voltage.
-
-    >   > higher voltage than reference voltage.
-    >   > 
-    >   > Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
-    >   This looks fine otherwise, but one more general question inline.
-
 Hi Jonathan,
 
-I reply the question inline.
+Thanks for your review. I will fix them.
+About the vref I reply inline.
 
-Thanks,
+On 2021/7/23, 10:52 PM, "Jonathan Cameron" <Jonathan.Cameron@Huawei.com> wrote:
+
+    On Fri, 23 Jul 2021 16:16:15 +0800
+    Billy Tsai <billy_tsai@aspeedtech.com> wrote:
+
+    >   > +  ? Internal or External reference voltage.
+    >   > +  ? Support 2 Internal reference voltage 1.2v or 2.5v.
+    >   > +  ? Integrate dividing circuit for battery sensing.
+    >   >  
+    >   >  properties:
+    >   >    compatible:
+    >   >      enum:
+    >   >        - aspeed,ast2400-adc
+    >   >        - aspeed,ast2500-adc
+    >   > +      - aspeed,ast2600-adc
+    >   >  
+    >   >    reg:
+    >   >      maxItems: 1
+    >   > @@ -33,6 +45,18 @@ properties:
+    >   >    "#io-channel-cells":
+    >   >      const: 1
+    >   >  
+    >   > +  vref:
+    >   > +    minItems: 900
+    >   > +    maxItems: 2700
+    >   > +    default: 2500
+    >   > +    description:
+    >   > +      ADC Reference voltage in millivolts.
+
+    >   I'm not clear from this description.  Is this describing an externally
+    >   connected voltage reference?  If so it needs to be done as a regulator.
+    >   If it's a classic high precision reference, the dts can just use
+    >   a fixed regulator.
+
+In the ast2600, the ADC supports two internal reference voltages of 1.2v or 2.5v,
+as well as external voltages. When the user selects a voltage of 1.2v or 2.5v, my
+driver will first select to use the internal voltage. 
+As you mention at patch #4, you suggest to use two property to handle this feature.
+vref: indicate the regulator handler. Like other dt-bindings used.
+aspeed,int_vref_mv: indicate the chosen of 1.2v or 2.5v
+and use "model_data->vref_fixed" to exclude ast2400 and ast2500
+Is it right?
+
+Thanks
+
+    >   > +
+    >   > +  battery-sensing:
+    >   > +    type: boolean
+    >   > +    description:
+    >   > +      Inform the driver that last channel will be used to sensor battery.
+
+    >   This isn't (I think?) a standard dt binding, so it needs a manufacturer
+    >   prefix.
+
+    >   aspeed,battery-sensing
 
 Best Regards,
 Billy Tsai
 
-    >   Thanks,
-
-    >   Jonathan
-
-    >   > ---
-    >   >  drivers/iio/adc/aspeed_adc.c | 60 +++++++++++++++++++++++++++++++++---
-    >   >  1 file changed, 55 insertions(+), 5 deletions(-)
-    >   > 
-    >   > diff --git a/drivers/iio/adc/aspeed_adc.c b/drivers/iio/adc/aspeed_adc.c
-    >   > index 7e674b607e36..6c7e2bb7b1ac 100644
-    >   > --- a/drivers/iio/adc/aspeed_adc.c
-    >   > +++ b/drivers/iio/adc/aspeed_adc.c
-    >   > @@ -45,6 +45,9 @@
-    >   >  #define ASPEED_ADC_REF_VOLTAGE_1200mV		FIELD_PREP(ASPEED_ADC_REF_VOLTAGE, 1)
-    >   >  #define ASPEED_ADC_REF_VOLTAGE_EXT_HIGH		FIELD_PREP(ASPEED_ADC_REF_VOLTAGE, 2)
-    >   >  #define ASPEED_ADC_REF_VOLTAGE_EXT_LOW		FIELD_PREP(ASPEED_ADC_REF_VOLTAGE, 3)
-    >   > +#define ASPEED_ADC_BATTERY_SENSING_DIV		BIT(6)
-    >   > +#define ASPEED_ADC_BATTERY_SENSING_DIV_2_3	FIELD_PREP(ASPEED_ADC_BATTERY_SENSING_DIV, 0)
-    >   > +#define ASPEED_ADC_BATTERY_SENSING_DIV_1_3	FIELD_PREP(ASPEED_ADC_BATTERY_SENSING_DIV, 1)
-    >   >  #define ASPEED_ADC_CTRL_INIT_RDY		BIT(8)
-    >   >  #define ASPEED_ADC_CH7_MODE			BIT(12)
-    >   >  #define ASPEED_ADC_CH7_NORMAL			FIELD_PREP(ASPEED_ADC_CH7_MODE, 0)
-    >   > @@ -76,6 +79,11 @@ struct aspeed_adc_model_data {
-    >   >  	unsigned int num_channels;
-    >   >  };
-    >   >  
-    >   > +struct adc_gain {
-    >   > +	u8 mult;
-    >   > +	u8 div;
-    >   > +};
-    >   > +
-    >   >  struct aspeed_adc_data {
-    >   >  	struct device		*dev;
-    >   >  	void __iomem		*base;
-    >   > @@ -87,6 +95,8 @@ struct aspeed_adc_data {
-    >   >  	int			vref;
-    >   >  	u32			sample_period_ns;
-    >   >  	int			cv;
-    >   > +	bool			battery_sensing;
-    >   > +	struct adc_gain		battery_mode_gain;
-    >   >  };
-    >   >  
-    >   >  #define ASPEED_CHAN(_idx, _data_reg_addr) {			\
-    >   > @@ -185,14 +195,38 @@ static int aspeed_adc_read_raw(struct iio_dev *indio_dev,
-    >   >  			       int *val, int *val2, long mask)
-    >   >  {
-    >   >  	struct aspeed_adc_data *data = iio_priv(indio_dev);
-    >   > +	u32 adc_engine_control_reg_val;
-    >   >  
-    >   >  	switch (mask) {
-    >   >  	case IIO_CHAN_INFO_RAW:
-    >   > -		*val = readw(data->base + chan->address) + data->cv;
-    >   > -		if (*val < 0)
-    >   > -			*val = 0;
-    >   > -		else if (*val >= ASPEED_ADC_MAX_RAW_DATA)
-    >   > -			*val = ASPEED_ADC_MAX_RAW_DATA;
-
-    >   Not related to this patch, but can the device support a per channel
-    >   reference selection? I.e. some channels use different internal references or
-    >   external references from others?
-
-No, the device can only choice one reference voltage for all of the channels.
-
-    >   If so we should consider if it is necessary to expose that functionality
-    >   in the dt-binding.
-
-    >   > +		if (data->battery_sensing && chan->channel == 7) {
-    >   > +			adc_engine_control_reg_val =
-    >   > +				readl(data->base + ASPEED_REG_ENGINE_CONTROL);
-    >   > +			writel(adc_engine_control_reg_val |
-    >   > +				       ASPEED_ADC_CH7_BATTERY |
-    >   > +				       ASPEED_ADC_BATTERY_SENSING_ENABLE,
-    >   > +			       data->base + ASPEED_REG_ENGINE_CONTROL);
-    >   > +			/*
-    >   > +			 * After enable battery sensing mode need to wait some time for adc stable
-    >   > +			 * Experiment result is 1ms.
-    >   > +			 */
-    >   > +			mdelay(1);
-    >   > +			*val = readw(data->base + chan->address) + data->cv;
-    >   > +			if (*val < 0)
-    >   > +				*val = 0;
-    >   > +			else if (*val >= ASPEED_ADC_MAX_RAW_DATA)
-    >   > +				*val = ASPEED_ADC_MAX_RAW_DATA;
-    >   > +			*val = (*val * data->battery_mode_gain.mult) /
-    >   > +			       data->battery_mode_gain.div;
-    >   > +			writel(adc_engine_control_reg_val,
-    >   > +			       data->base + ASPEED_REG_ENGINE_CONTROL);
-    >   > +		} else {
-    >   > +			*val = readw(data->base + chan->address) + data->cv;
-    >   > +			if (*val < 0)
-    >   > +				*val = 0;
-    >   > +			else if (*val >= ASPEED_ADC_MAX_RAW_DATA)
-    >   > +				*val = ASPEED_ADC_MAX_RAW_DATA;
-    >   > +		}
-    >   >  		return IIO_VAL_INT;
-    >   >  
-    >   >  	case IIO_CHAN_INFO_SCALE:
-    >   > @@ -392,6 +426,22 @@ static int aspeed_adc_probe(struct platform_device *pdev)
-    >   >  	if (ret)
-    >   >  		goto vref_config_error;
-    >   >  
-    >   > +	if (of_find_property(data->dev->of_node, "battery-sensing", NULL)) {
-    >   > +		if (model_data->version >= aspeed_adc_ast2600) {
-    >   > +			data->battery_sensing = 1;
-    >   > +			if (readl(data->base + ASPEED_REG_ENGINE_CONTROL) &
-    >   > +			    ASPEED_ADC_BATTERY_SENSING_DIV_1_3) {
-    >   > +				data->battery_mode_gain.mult = 3;
-    >   > +				data->battery_mode_gain.div = 1;
-    >   > +			} else {
-    >   > +				data->battery_mode_gain.mult = 3;
-    >   > +				data->battery_mode_gain.div = 2;
-    >   > +			}
-    >   > +		} else
-    >   > +			dev_warn(&pdev->dev,
-    >   > +				 "Failed to enable battey-sensing mode\n");
-    >   > +	}
-    >   > +
-    >   >  	if (model_data->wait_init_sequence) {
-    >   >  		adc_engine_control_reg_val =
-    >   >  			readl(data->base + ASPEED_REG_ENGINE_CONTROL);
 
