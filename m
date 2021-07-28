@@ -1,74 +1,92 @@
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Date: Wed, 28 Jul 2021 12:13:06 +0300
-Subject: [RFC PATCH 0/6] leds: Fix pca955x GPIO pin mappings
-In-Reply-To: <d019990e-a725-4ef5-bb54-aadee9d18b86@www.fastmail.com>
-References: <20210723075858.376378-1-andrew@aj.id.au>
- <CAHp75VeQML7njMZ6x8kC-ZJVexC1xJ6n1cB3JneVMAVfuOJgWw@mail.gmail.com>
- <d019990e-a725-4ef5-bb54-aadee9d18b86@www.fastmail.com>
-Message-ID: <CAHp75Vc2W+WmwNj1AvH6EiT_80c+5gADV9QzK+asHxpd1Ucppw@mail.gmail.com>
+From: rentao.bupt@gmail.com <rentao.bupt@gmail.com>
+Date: Wed, 28 Jul 2021 16:37:50 -0700
+Subject: [PATCH 1/6] ARM: dts: Add Facebook BMC 128MB flash layout
+In-Reply-To: <20210728233755.17963-1-rentao.bupt@gmail.com>
+References: <20210728233755.17963-1-rentao.bupt@gmail.com>
+Message-ID: <20210728233755.17963-2-rentao.bupt@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Jul 28, 2021 at 8:43 AM Andrew Jeffery <andrew@aj.id.au> wrote:
-> On Fri, 23 Jul 2021, at 17:45, Andy Shevchenko wrote:
-> > On Friday, July 23, 2021, Andrew Jeffery <andrew@aj.id.au> wrote:
+From: Tao Ren <rentao.bupt@gmail.com>
 
-> > > This series does a bunch of crimes, so it's an RFC. I'm cross-posting to the
-> > > pinctrl/GPIO and LEDs lists because the PCA955x devices impact all of them. What
-> > > needs fixing is the leds-pca955x driver's failure to map the GPIO numberspace to
-> > > the pin numberspace of the PCA955x devices. The series solves that by
-> > > implementing pinctrl and pinmux in the leds-pca955x driver.
-> > >
-> > > Things I'm unsure about:
-> > >
-> > > 1. Patch 1: The pinctrl_gpio_as_pin() API feels a bit dirty, not sure what
-> > >    others thoughts are on that (Linus?).
-> > >
-> > > 2. Patch 2: I've added a new callback to hook the entirety of the pinctrl map
-> > >    parsing rather than supplying a subnode-specific callback. This was necessary
-> > >    to handle the PCA955x devicetree binding in a backwards compatible way.
-> > >
-> > > 3. Patch 4: The PCA955x devices don't actually have any pinmux hardware, but the
-> > >    properties of the pinctrl/pinmux subsystems in the kernel map nicely onto the
-> > >    problem we have. But it's quite a bit of code...
-> > >
-> > > 4. Patch 6: I also lost a bunch of time to overlooking the get_group_pins()
-> > >    callback for pinctrl, and it seems odd to me that it isn't required.
-> > >
-> > > Please review!
-> >
-> >
-> > Sounds like a hack.
->
-> Yes, possibly. Feedback like this is why I sent the series as an RFC.
->
-> > I was briefly looking into patches 1-4 and suddenly
-> > realized that the fix can be similar as in PCA9685 (PWM), I.e. we
-> > always have chips for the entire pin space and one may map them
-> > accordingly, requested in one realm (LED) in the other (GPIO)
-> > automatically is BUSY. Or I missed the point?
->
-> No, you haven't missed the point. I will look at the PCA9685 driver.
->
-> That said, my goal was to implement the behaviour intended by the
-> existing binding (i.e. fix a bug).
+This is the layout used by Facebook BMC systems. It describes the fixed
+flash layout of a 128MB mtd device.
 
-Okay, so it implies that this used to work at some point. What has
-changed from that point? Why can't we simply fix the culprit commit?
+Signed-off-by: Tao Ren <rentao.bupt@gmail.com>
+---
+ .../dts/facebook-bmc-flash-layout-128.dtsi    | 60 +++++++++++++++++++
+ 1 file changed, 60 insertions(+)
+ create mode 100644 arch/arm/boot/dts/facebook-bmc-flash-layout-128.dtsi
 
-> However, userspace would never have
-> got the results it expected with the existing driver implementation, so
-> I guess you could argue that no such (useful) userspace exists. Given
-> that, we could adopt the strategy of always defining a gpiochip
-> covering the whole pin space, and parts of the devicetree binding just
-> become redundant.
-
-I'm lost now. GPIO has its own userspace ABI, how does it work right
-now in application to this chip?
-
+diff --git a/arch/arm/boot/dts/facebook-bmc-flash-layout-128.dtsi b/arch/arm/boot/dts/facebook-bmc-flash-layout-128.dtsi
+new file mode 100644
+index 000000000000..7f3652dea550
+--- /dev/null
++++ b/arch/arm/boot/dts/facebook-bmc-flash-layout-128.dtsi
+@@ -0,0 +1,60 @@
++// SPDX-License-Identifier: GPL-2.0+
++// Copyright (c) 2020 Facebook Inc.
++
++partitions {
++	compatible = "fixed-partitions";
++	#address-cells = <1>;
++	#size-cells = <1>;
++
++	/*
++	 * u-boot partition: 896KB.
++	 */
++	u-boot at 0 {
++		reg = <0x0 0xe0000>;
++		label = "u-boot";
++	};
++
++	/*
++	 * u-boot environment variables: 64KB.
++	 */
++	u-boot-env at e0000 {
++		reg = <0xe0000 0x10000>;
++		label = "env";
++	};
++
++	/*
++	 * image metadata partition (64KB), used by Facebook internal
++	 * tools.
++	 */
++	image-meta at f0000 {
++		reg = <0xf0000 0x10000>;
++		label = "meta";
++	};
++
++	/*
++	 * FIT image: 119 MB.
++	 */
++	fit at 100000 {
++		reg = <0x100000 0x7700000>;
++		label = "fit";
++	};
++
++	/*
++	 * "data0" partition (8MB) is used by Facebook BMC platforms as
++	 * persistent data store.
++	 */
++	data0 at 7800000 {
++		reg = <0x7800000 0x800000>;
++		label = "data0";
++	};
++
++	/*
++	 * Although the master partition can be created by enabling
++	 * MTD_PARTITIONED_MASTER option, below "flash0" partition is
++	 * explicitly created to avoid breaking legacy applications.
++	 */
++	flash0 at 0 {
++		reg = <0x0 0x8000000>;
++		label = "flash0";
++	};
++};
 -- 
-With Best Regards,
-Andy Shevchenko
+2.17.1
+
