@@ -1,7 +1,9 @@
 From: rentao.bupt@gmail.com <rentao.bupt@gmail.com>
-Date: Wed, 28 Jul 2021 16:37:49 -0700
-Subject: [PATCH 0/6] ARM: dts: Add Facebook AST2600 BMCs
-Message-ID: <20210728233755.17963-1-rentao.bupt@gmail.com>
+Date: Wed, 28 Jul 2021 16:37:51 -0700
+Subject: [PATCH 2/6] ARM: dts: aspeed: wedge400: Use common flash layout
+In-Reply-To: <20210728233755.17963-1-rentao.bupt@gmail.com>
+References: <20210728233755.17963-1-rentao.bupt@gmail.com>
+Message-ID: <20210728233755.17963-3-rentao.bupt@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -10,45 +12,73 @@ Content-Transfer-Encoding: 7bit
 
 From: Tao Ren <rentao.bupt@gmail.com>
 
-The patch series introuces 3 new Facebook AST2600 Network BMC platforms.
+Simplify wedge400 flash layout by using the common layout defined in
+"facebook-bmc-flash-layout-128.dtsi".
 
-Patch #1 adds dtsi file to describe the fixed flash layout of 128MB mtd
-device. The flash layout is used by all the 3 AST2600 BMC as well as
-Wedge400 (AST2500).
+Signed-off-by: Tao Ren <rentao.bupt@gmail.com>
+---
+ .../boot/dts/aspeed-bmc-facebook-wedge400.dts | 48 +------------------
+ 1 file changed, 1 insertion(+), 47 deletions(-)
 
-Patch #2 simplies Wedge400 dts by including the flash layout dtsi.
-
-Patch #3 adds common dtsi which is included by all the new Facebook
-AST2600 Network BMC platforms.
-
-Patch #4 adds the device tree for Facebook Cloudripper (AST2600) BMC.
-
-Patch #5 adds the device tree for Facebook Elbert (AST2600) BMC.
-
-Patch #6 adds the device tree for Facebook Fuji (AST2600) BMC.
-
-Tao Ren (6):
-  ARM: dts: Add Facebook BMC 128MB flash layout
-  ARM: dts: aspeed: wedge400: Use common flash layout
-  ARM: dts: aspeed: Common dtsi for Facebook AST2600 Network BMCs
-  ARM: dts: aspeed: Add Facebook Cloudripper (AST2600) BMC
-  ARM: dts: aspeed: Add Facebook Elbert (AST2600) BMC
-  ARM: dts: aspeed: Add Facebook Fuji (AST2600) BMC
-
- arch/arm/boot/dts/Makefile                    |    3 +
- .../dts/aspeed-bmc-facebook-cloudripper.dts   |  564 ++++++++
- .../boot/dts/aspeed-bmc-facebook-elbert.dts   |  185 +++
- .../arm/boot/dts/aspeed-bmc-facebook-fuji.dts | 1276 +++++++++++++++++
- .../boot/dts/aspeed-bmc-facebook-wedge400.dts |   48 +-
- .../dts/ast2600-facebook-netbmc-common.dtsi   |  176 +++
- .../dts/facebook-bmc-flash-layout-128.dtsi    |   60 +
- 7 files changed, 2265 insertions(+), 47 deletions(-)
- create mode 100644 arch/arm/boot/dts/aspeed-bmc-facebook-cloudripper.dts
- create mode 100644 arch/arm/boot/dts/aspeed-bmc-facebook-elbert.dts
- create mode 100644 arch/arm/boot/dts/aspeed-bmc-facebook-fuji.dts
- create mode 100644 arch/arm/boot/dts/ast2600-facebook-netbmc-common.dtsi
- create mode 100644 arch/arm/boot/dts/facebook-bmc-flash-layout-128.dtsi
-
+diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-wedge400.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-wedge400.dts
+index 63a3dd548f30..a901c8be49b9 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-facebook-wedge400.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-facebook-wedge400.dts
+@@ -91,53 +91,7 @@
+  * Both firmware flashes are 128MB on Wedge400 BMC.
+  */
+ &fmc_flash0 {
+-	partitions {
+-		compatible = "fixed-partitions";
+-		#address-cells = <1>;
+-		#size-cells = <1>;
+-
+-		/*
+-		 * u-boot partition: 384KB.
+-		 */
+-		u-boot at 0 {
+-			reg = <0x0 0x60000>;
+-			label = "u-boot";
+-		};
+-
+-		/*
+-		 * u-boot environment variables: 128KB.
+-		 */
+-		u-boot-env at 60000 {
+-			reg = <0x60000 0x20000>;
+-			label = "env";
+-		};
+-
+-		/*
+-		 * FIT image: 123.5 MB.
+-		 */
+-		fit at 80000 {
+-			reg = <0x80000 0x7b80000>;
+-			label = "fit";
+-		};
+-
+-		/*
+-		 * "data0" partition (4MB) is reserved for persistent
+-		 * data store.
+-		 */
+-		data0 at 7c00000 {
+-			reg = <0x7c00000 0x400000>;
+-			label = "data0";
+-		};
+-
+-		/*
+-		 * "flash0" partition (covering the entire flash) is
+-		 * explicitly created to avoid breaking legacy applications.
+-		 */
+-		flash0 at 0 {
+-			reg = <0x0 0x8000000>;
+-			label = "flash0";
+-		};
+-	};
++#include "facebook-bmc-flash-layout-128.dtsi"
+ };
+ 
+ &fmc_flash1 {
 -- 
 2.17.1
 
