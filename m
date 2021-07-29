@@ -1,462 +1,738 @@
-From: Zev Weiss <zweiss@equinix.com>
-Date: Thu, 29 Jul 2021 20:50:13 +0000
-Subject: [PATCH 08/14] peci: Add device detection
-In-Reply-To: <47440a8329ce06c41ca9746db42cb1d66154ea46.camel@intel.com>
+From: Winiarska, Iwona <iwona.winiarska@intel.com>
+Date: Thu, 29 Jul 2021 21:17:06 +0000
+Subject: [PATCH 09/14] peci: Add support for PECI device drivers
+In-Reply-To: <20210727201028.GS8018@packtop>
 References: <20210712220447.957418-1-iwona.winiarska@intel.com>
- <20210712220447.957418-9-iwona.winiarska@intel.com>
- <20210727174900.GR8018@packtop>
- <47440a8329ce06c41ca9746db42cb1d66154ea46.camel@intel.com>
-Message-ID: <20210729205013.GW8018@packtop>
+ <20210712220447.957418-10-iwona.winiarska@intel.com>
+ <20210727201028.GS8018@packtop>
+Message-ID: <79f5b6ed4942ddeb66beea03907a58495376ccef.camel@intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Jul 29, 2021 at 01:55:19PM CDT, Winiarska, Iwona wrote:
->On Tue, 2021-07-27 at 17:49 +0000, Zev Weiss wrote:
->> On Mon, Jul 12, 2021 at 05:04:41PM CDT, Iwona Winiarska wrote:
->> > Since PECI devices are discoverable, we can dynamically detect devices
->> > that are actually available in the system.
->> >
->> > This change complements the earlier implementation by rescanning PECI
->> > bus to detect available devices. For this purpose, it also introduces the
->> > minimal API for PECI requests.
->> >
->> > Signed-off-by: Iwona Winiarska <iwona.winiarska@intel.com>
->> > Reviewed-by: Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>
->> > ---
->> > drivers/peci/Makefile?? |?? 2 +-
->> > drivers/peci/core.c???? |? 13 ++++-
->> > drivers/peci/device.c?? | 111 ++++++++++++++++++++++++++++++++++++++++
->> > drivers/peci/internal.h |? 15 ++++++
->> > drivers/peci/request.c? |? 74 +++++++++++++++++++++++++++
->> > drivers/peci/sysfs.c??? |? 34 ++++++++++++
->> > 6 files changed, 246 insertions(+), 3 deletions(-)
->> > create mode 100644 drivers/peci/device.c
->> > create mode 100644 drivers/peci/request.c
->> >
->> > diff --git a/drivers/peci/Makefile b/drivers/peci/Makefile
->> > index 621a993e306a..917f689e147a 100644
->> > --- a/drivers/peci/Makefile
->> > +++ b/drivers/peci/Makefile
->> > @@ -1,7 +1,7 @@
->> > # SPDX-License-Identifier: GPL-2.0-only
->> >
->> > # Core functionality
->> > -peci-y := core.o sysfs.o
->> > +peci-y := core.o request.o device.o sysfs.o
->> > obj-$(CONFIG_PECI) += peci.o
->> >
->> > # Hardware specific bus drivers
->> > diff --git a/drivers/peci/core.c b/drivers/peci/core.c
->> > index 0ad00110459d..ae7a9572cdf3 100644
->> > --- a/drivers/peci/core.c
->> > +++ b/drivers/peci/core.c
->> > @@ -31,7 +31,15 @@ struct device_type peci_controller_type = {
->> >
->> > int peci_controller_scan_devices(struct peci_controller *controller)
->> > {
->> > -???????/* Just a stub, no support for actual devices yet */
->> > +???????int ret;
->> > +???????u8 addr;
->> > +
->> > +???????for (addr = PECI_BASE_ADDR; addr < PECI_BASE_ADDR +
->> > PECI_DEVICE_NUM_MAX; addr++) {
->> > +???????????????ret = peci_device_create(controller, addr);
->> > +???????????????if (ret)
->> > +???????????????????????return ret;
->> > +???????}
->> > +
->> > ????????return 0;
->> > }
->> >
->> > @@ -106,7 +114,8 @@ EXPORT_SYMBOL_NS_GPL(peci_controller_add, PECI);
->> >
->> > static int _unregister(struct device *dev, void *dummy)
->> > {
->> > -???????/* Just a stub, no support for actual devices yet */
->> > +???????peci_device_destroy(to_peci_device(dev));
->> > +
->> > ????????return 0;
->> > }
->> >
->> > diff --git a/drivers/peci/device.c b/drivers/peci/device.c
->> > new file mode 100644
->> > index 000000000000..1124862211e2
->> > --- /dev/null
->> > +++ b/drivers/peci/device.c
->> > @@ -0,0 +1,111 @@
->> > +// SPDX-License-Identifier: GPL-2.0-only
->> > +// Copyright (c) 2018-2021 Intel Corporation
->> > +
->> > +#include <linux/peci.h>
->> > +#include <linux/slab.h>
->> > +
->> > +#include "internal.h"
->> > +
->> > +static int peci_detect(struct peci_controller *controller, u8 addr)
->> > +{
->> > +???????struct peci_request *req;
->> > +???????int ret;
->> > +
->> > +???????req = peci_request_alloc(NULL, 0, 0);
->> > +???????if (!req)
->> > +???????????????return -ENOMEM;
->> > +
->>
->> Might be worth a brief comment here noting that an empty request happens
->> to be the format of a PECI ping command (and/or change the name of the
->> function to peci_ping()).
->
->I'll add a comment:
->"We are using PECI Ping command to detect presence of PECI devices."
->
+On Tue, 2021-07-27 at 20:10 +0000, Zev Weiss wrote:
+> On Mon, Jul 12, 2021 at 05:04:42PM CDT, Iwona Winiarska wrote:
+> > Here we're adding support for PECI device drivers, which unlike PECI
+> > controller drivers are actually able to provide functionalities to
+> > userspace.
+> > 
+> > We're also extending peci_request API to allow querying more details
+> > about PECI device (e.g. model/family), that's going to be used to find
+> > a compatible peci_driver.
+> > 
+> > Signed-off-by: Iwona Winiarska <iwona.winiarska@intel.com>
+> > Reviewed-by: Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>
+> > ---
+> > drivers/peci/Kconfig??? |?? 1 +
+> > drivers/peci/core.c???? |? 49 +++++++++
+> > drivers/peci/device.c?? |? 99 ++++++++++++++++++
+> > drivers/peci/internal.h |? 75 ++++++++++++++
+> > drivers/peci/request.c? | 217 ++++++++++++++++++++++++++++++++++++++++
+> > include/linux/peci.h??? |? 19 ++++
+> > lib/Kconfig???????????? |?? 2 +-
+> > 7 files changed, 461 insertions(+), 1 deletion(-)
+> > 
+> > diff --git a/drivers/peci/Kconfig b/drivers/peci/Kconfig
+> > index 0d0ee8009713..27c31535843c 100644
+> > --- a/drivers/peci/Kconfig
+> > +++ b/drivers/peci/Kconfig
+> > @@ -2,6 +2,7 @@
+> > 
+> > menuconfig PECI
+> > ????????tristate "PECI support"
+> > +???????select GENERIC_LIB_X86
+> > ????????help
+> > ????????? The Platform Environment Control Interface (PECI) is an interface
+> > ????????? that provides a communication channel to Intel processors and
+> > diff --git a/drivers/peci/core.c b/drivers/peci/core.c
+> > index ae7a9572cdf3..94426b7f2618 100644
+> > --- a/drivers/peci/core.c
+> > +++ b/drivers/peci/core.c
+> > @@ -143,8 +143,57 @@ void peci_controller_remove(struct peci_controller
+> > *controller)
+> > }
+> > EXPORT_SYMBOL_NS_GPL(peci_controller_remove, PECI);
+> > 
+> > +static const struct peci_device_id *
+> > +peci_bus_match_device_id(const struct peci_device_id *id, struct
+> > peci_device *device)
+> > +{
+> > +???????while (id->family != 0) {
+> > +???????????????if (id->family == device->info.family &&
+> > +?????????????????? id->model == device->info.model)
+> > +???????????????????????return id;
+> > +???????????????id++;
+> > +???????}
+> > +
+> > +???????return NULL;
+> > +}
+> > +
+> > +static int peci_bus_device_match(struct device *dev, struct device_driver
+> > *drv)
+> > +{
+> > +???????struct peci_device *device = to_peci_device(dev);
+> > +???????struct peci_driver *peci_drv = to_peci_driver(drv);
+> > +
+> > +???????if (dev->type != &peci_device_type)
+> > +???????????????return 0;
+> > +
+> > +???????if (peci_bus_match_device_id(peci_drv->id_table, device))
+> > +???????????????return 1;
+> > +
+> > +???????return 0;
+> > +}
+> > +
+> > +static int peci_bus_device_probe(struct device *dev)
+> > +{
+> > +???????struct peci_device *device = to_peci_device(dev);
+> > +???????struct peci_driver *driver = to_peci_driver(dev->driver);
+> > +
+> > +???????return driver->probe(device, peci_bus_match_device_id(driver-
+> > >id_table, device));
+> > +}
+> > +
+> > +static int peci_bus_device_remove(struct device *dev)
+> > +{
+> > +???????struct peci_device *device = to_peci_device(dev);
+> > +???????struct peci_driver *driver = to_peci_driver(dev->driver);
+> > +
+> > +???????if (driver->remove)
+> > +???????????????driver->remove(device);
+> > +
+> > +???????return 0;
+> > +}
+> > +
+> > struct bus_type peci_bus_type = {
+> > ????????.name???????????= "peci",
+> > +???????.match??????????= peci_bus_device_match,
+> > +???????.probe??????????= peci_bus_device_probe,
+> > +???????.remove?????????= peci_bus_device_remove,
+> > ????????.bus_groups?????= peci_bus_groups,
+> > };
+> > 
+> > diff --git a/drivers/peci/device.c b/drivers/peci/device.c
+> > index 1124862211e2..8c4bd1ebbc29 100644
+> > --- a/drivers/peci/device.c
+> > +++ b/drivers/peci/device.c
+> > @@ -1,11 +1,79 @@
+> > // SPDX-License-Identifier: GPL-2.0-only
+> > // Copyright (c) 2018-2021 Intel Corporation
+> > 
+> > +#include <linux/bitfield.h>
+> > #include <linux/peci.h>
+> > #include <linux/slab.h>
+> > +#include <linux/x86/cpu.h>
+> > 
+> > #include "internal.h"
+> > 
+> > +#define REVISION_NUM_MASK GENMASK(15, 8)
+> > +static int peci_get_revision(struct peci_device *device, u8 *revision)
+> > +{
+> > +???????struct peci_request *req;
+> > +???????u64 dib;
+> > +
+> > +???????req = peci_get_dib(device);
+> > +???????if (IS_ERR(req))
+> > +???????????????return PTR_ERR(req);
+> > +
+> > +???????dib = peci_request_data_dib(req);
+> > +???????if (dib == 0) {
+> > +???????????????peci_request_free(req);
+> > +???????????????return -EIO;
+> 
+> Any particular reason to check for zero specifically here?? It looks
+> like that would be a case where the host CPU responds and everything's
+> otherwise fine, but the host just happened to send back a bunch of zeros
+> for whatever reason -- which may not be a valid PECI revision number,
+> but if it sent back a bunch of 0xff bytes instead wouldn't that be
+> equally invalid?
 
-Well, what I was more aiming to get at was that to someone not
-intimately familiar with the PECI protocol it's not immediately obvious
-from the code that it in fact implements a ping (there's no 'msg->cmd =
-PECI_CMD_PING' or anything), so I was hoping for something that would
-just make that slightly more explicit.
+The response with all 0's is possible (and defined) in certain device states. If
+that happens - we don't want to continue adding the device (with "invalid"
+revision 0), we just want to return error.
 
->>
->> > +???????mutex_lock(&controller->bus_lock);
->> > +???????ret = controller->xfer(controller, addr, req);
->> > +???????mutex_unlock(&controller->bus_lock);
->> > +
->> > +???????peci_request_free(req);
->> > +
->> > +???????return ret;
->> > +}
->> > +
->> > +static bool peci_addr_valid(u8 addr)
->> > +{
->> > +???????return addr >= PECI_BASE_ADDR && addr < PECI_BASE_ADDR +
->> > PECI_DEVICE_NUM_MAX;
->> > +}
->> > +
->> > +static int peci_dev_exists(struct device *dev, void *data)
->> > +{
->> > +???????struct peci_device *device = to_peci_device(dev);
->> > +???????u8 *addr = data;
->> > +
->> > +???????if (device->addr == *addr)
->> > +???????????????return -EBUSY;
->> > +
->> > +???????return 0;
->> > +}
->> > +
->> > +int peci_device_create(struct peci_controller *controller, u8 addr)
->> > +{
->> > +???????struct peci_device *device;
->> > +???????int ret;
->> > +
->> > +???????if (WARN_ON(!peci_addr_valid(addr)))
->> > +???????????????return -EINVAL;
->>
->> Wondering about the necessity of this check (and the peci_addr_valid()
->> function) -- as of the end of this patch series, there's only one caller
->> of peci_device_create(), and it's peci_controller_scan_devices() looping
->> from PECI_BASE_ADDR to PECI_BASE_ADDR + PECI_DEVICE_NUM_MAX, so
->> checking that the address is in that range seems a bit redundant.? Do we
->> anticipate that we might gain additional callers in the future that
->> could run a non-zero risk of passing a bad address?
->
->It's just a sanity check to avoid any surprises if the code changes in the
->future.
->
->>
->> > +
->> > +???????/* Check if we have already detected this device before. */
->> > +???????ret = device_for_each_child(&controller->dev, &addr,
->> > peci_dev_exists);
->> > +???????if (ret)
->> > +???????????????return 0;
->> > +
->> > +???????ret = peci_detect(controller, addr);
->> > +???????if (ret) {
->> > +???????????????/*
->> > +??????????????? * Device not present or host state doesn't allow successful
->> > +??????????????? * detection at this time.
->> > +??????????????? */
->> > +???????????????if (ret == -EIO || ret == -ETIMEDOUT)
->> > +???????????????????????return 0;
->>
->> Do we really want to be ignoring EIO here?? From a look at
->> aspeed_peci_xfer(), it looks like the only path that would produce that
->> is the non-timeout, non-CMD_DONE case, which I guess happens on
->> contention or FCS errors and such.? Should we maybe have some automatic
->> (limited) retry loop for cases like those?
->
->Yes, we want to ignore EIO here.
->It may be returned when we get "Bad Write FCS", after we try to ping non-
->existing PECI device.
->
->>
->> > +
->> > +???????????????return ret;
->> > +???????}
->> > +
->> > +???????device = kzalloc(sizeof(*device), GFP_KERNEL);
->> > +???????if (!device)
->> > +???????????????return -ENOMEM;
->> > +
->> > +???????device->controller = controller;
->> > +???????device->addr = addr;
->> > +???????device->dev.parent = &device->controller->dev;
->> > +???????device->dev.bus = &peci_bus_type;
->> > +???????device->dev.type = &peci_device_type;
->> > +
->> > +???????ret = dev_set_name(&device->dev, "%d-%02x", controller->id, device-
->> > >addr);
->> > +???????if (ret)
->> > +???????????????goto err_free;
->> > +
->> > +???????ret = device_register(&device->dev);
->> > +???????if (ret)
->> > +???????????????goto err_put;
->> > +
->> > +???????return 0;
->> > +
->> > +err_put:
->> > +???????put_device(&device->dev);
->> > +err_free:
->> > +???????kfree(device);
->> > +
->> > +???????return ret;
->> > +}
->> > +
->> > +void peci_device_destroy(struct peci_device *device)
->> > +{
->> > +???????device_unregister(&device->dev);
->> > +}
->> > +
->> > +static void peci_device_release(struct device *dev)
->> > +{
->> > +???????struct peci_device *device = to_peci_device(dev);
->> > +
->> > +???????kfree(device);
->> > +}
->> > +
->> > +struct device_type peci_device_type = {
->> > +???????.groups?????????= peci_device_groups,
->> > +???????.release????????= peci_device_release,
->> > +};
->> > diff --git a/drivers/peci/internal.h b/drivers/peci/internal.h
->> > index 80c61bcdfc6b..6b139adaf6b8 100644
->> > --- a/drivers/peci/internal.h
->> > +++ b/drivers/peci/internal.h
->> > @@ -9,6 +9,21 @@
->> >
->> > struct peci_controller;
->> > struct attribute_group;
->> > +struct peci_device;
->> > +struct peci_request;
->> > +
->> > +/* PECI CPU address range 0x30-0x37 */
->> > +#define PECI_BASE_ADDR?????????0x30
->> > +#define PECI_DEVICE_NUM_MAX????????????8
->> > +
->> > +struct peci_request *peci_request_alloc(struct peci_device *device, u8
->> > tx_len, u8 rx_len);
->> > +void peci_request_free(struct peci_request *req);
->> > +
->> > +extern struct device_type peci_device_type;
->> > +extern const struct attribute_group *peci_device_groups[];
->> > +
->> > +int peci_device_create(struct peci_controller *controller, u8 addr);
->> > +void peci_device_destroy(struct peci_device *device);
->> >
->> > extern struct bus_type peci_bus_type;
->> > extern const struct attribute_group *peci_bus_groups[];
->> > diff --git a/drivers/peci/request.c b/drivers/peci/request.c
->> > new file mode 100644
->> > index 000000000000..78cee51dfae1
->> > --- /dev/null
->> > +++ b/drivers/peci/request.c
->> > @@ -0,0 +1,74 @@
->> > +// SPDX-License-Identifier: GPL-2.0-only
->> > +// Copyright (c) 2021 Intel Corporation
->> > +
->> > +#include <linux/export.h>
->> > +#include <linux/peci.h>
->> > +#include <linux/slab.h>
->> > +#include <linux/types.h>
->> > +
->> > +#include "internal.h"
->> > +
->> > +/**
->> > + * peci_request_alloc() - allocate &struct peci_request with buffers with
->> > given lengths
->> > + * @device: PECI device to which request is going to be sent
->> > + * @tx_len: requested TX buffer length
->> > + * @rx_len: requested RX buffer length
->> > + *
->> > + * Return: A pointer to a newly allocated &struct peci_request on success
->> > or NULL otherwise.
->> > + */
->> > +struct peci_request *peci_request_alloc(struct peci_device *device, u8
->> > tx_len, u8 rx_len)
->> > +{
->> > +???????struct peci_request *req;
->> > +???????u8 *tx_buf, *rx_buf;
->> > +
->> > +???????req = kzalloc(sizeof(*req), GFP_KERNEL);
->> > +???????if (!req)
->> > +???????????????return NULL;
->> > +
->> > +???????req->device = device;
->> > +
->> > +???????/*
->> > +??????? * PECI controllers that we are using now don't support DMA, this
->> > +??????? * should be converted to DMA API once support for controllers that
->> > do
->> > +??????? * allow it is added to avoid an extra copy.
->> > +??????? */
->> > +???????if (tx_len) {
->> > +???????????????tx_buf = kzalloc(tx_len, GFP_KERNEL);
->> > +???????????????if (!tx_buf)
->> > +???????????????????????goto err_free_req;
->> > +
->> > +???????????????req->tx.buf = tx_buf;
->> > +???????????????req->tx.len = tx_len;
->> > +???????}
->> > +
->> > +???????if (rx_len) {
->> > +???????????????rx_buf = kzalloc(rx_len, GFP_KERNEL);
->> > +???????????????if (!rx_buf)
->> > +???????????????????????goto err_free_tx;
->> > +
->> > +???????????????req->rx.buf = rx_buf;
->> > +???????????????req->rx.len = rx_len;
->> > +???????}
->> > +
->>
->> As long as we're punting on DMA support, could we do the whole thing in
->> a single allocation instead of three?? It'd add some pointer arithmetic,
->> but would also simplify the error-handling/deallocation paths a bit.
->>
->> Or, given that the one controller we're currently supporting has a
->> hardware limit of 32 bytes per transfer anyway, maybe just inline
->> fixed-size rx/tx buffers into struct peci_request and have callers keep
->> them on the stack instead of kmalloc()-ing them?
->
->I disagree on error handling (it's not complicated) - however, one argument for
->doing a single alloc (or moving the buffers as fixed-size arrays inside struct
->peci_request) is that single kzalloc is going to be faster than 3. But I don't
->expect it to show up on any perf profiles for now (since peci-wire interface is
->not a speed demon).
->
->I wanted to avoid defining max size for TX and RX in peci-core.
->Do you have a strong opinion against multiple alloc? If yes, I can go with
->fixed-size arrays inside struct peci_request.
->
+> 
+> Also, given that the docs (the ones I have, at least) describe the DIB
+> as a collection of individual bytes, dealing with it as a combined u64
+> seems a bit confusing to me -- could we just return req->rx.buf[1]
+> instead?
 
-As is it's certainly not terribly complicated in an absolute sense, but
-comparatively speaking the cleanup path for a single allocation is still
-simpler, no?
+GetDIB returns 8-byte response, which is why we're treating it in this way
+(similar to other commands). We're pulling out the whole response and use
+FIELD_GET to obtain the data we need.
 
-Making it more efficient would definitely be a nice benefit too (perhaps
-a more significant one) -- in a typical deployment I'd guess this code
-path will see roughly socket_count + total_core_count executions per
-second?  On a big multi-socket system that could end up being a
-reasonably large number (>100), so while it may not end up as a major
-hot spot in a system-wide profile, it seems like it might be worth
-having it do 1/3 as many allocations if it's reasonably easy to do.
-(And while I don't think the kernel is generally at fault for this, from
-what I've seen of OpenBMC as a whole I think it might benefit from a bit
-more overall frugality with CPU cycles.)
+> 
+> > +???????}
+> > +
+> > +???????*revision = FIELD_GET(REVISION_NUM_MASK, dib);
+> > +
+> > +???????peci_request_free(req);
+> > +
+> > +???????return 0;
+> > +}
+> > +
+> > +static int peci_get_cpu_id(struct peci_device *device, u32 *cpu_id)
+> > +{
+> > +???????struct peci_request *req;
+> > +???????int ret;
+> > +
+> > +???????req = peci_pkg_cfg_readl(device, PECI_PCS_PKG_ID,
+> > PECI_PKG_ID_CPU_ID);
+> > +???????if (IS_ERR(req))
+> > +???????????????return PTR_ERR(req);
+> > +
+> > +???????ret = peci_request_status(req);
+> > +???????if (ret)
+> > +???????????????goto out_req_free;
+> > +
+> > +???????*cpu_id = peci_request_data_readl(req);
+> > +out_req_free:
+> 
+> As suggested on patch #8, I think it might be cleaner to stack-allocate
+> struct peci_request, which would obviate the need for explicit free
+> calls in functions like this and hence might simplify it away entirely,
+> but if this does remain like this we could just do
+> 
+> ????????if (!ret)
+> ????????????????*cpu_id = peci_request_data_readl(req);
+> 
+> instead of using a goto to skip a single line.
 
-As for a fixed max request size and inlined buffers, I definitely
-understand not wanting to put a cap on that in the generic PECI core --
-and actually, looking at the peci-npcm code from previous iterations of
-the PECI patchset, it looks like the Nuvoton hardware has significantly
-larger size limits (127 bytes if I'm reading things right) that might be
-a bit bulky for on-stack allocation.  So while that's appealing
-efficiency-wise and (IMO) aesthetically, perhaps it's not ultimately
-real viable.
+Please, see my response on patch 8.
 
-Hmm, though (thinking out loud) I suppose we could also get down to a
-zero-allocation common case by having the driver hold on to a request
-struct and reuse it across transfers, given that they're all serialized
-by a mutex anyway?
+I would prefer to operate on allocated objects rather than on local variables in
+case of peci requests.
 
->Thanks
->-Iwona
->
->>
->> > +???????return req;
->> > +
->> > +err_free_tx:
->> > +???????kfree(req->tx.buf);
->> > +err_free_req:
->> > +???????kfree(req);
->> > +
->> > +???????return NULL;
->> > +}
->> > +EXPORT_SYMBOL_NS_GPL(peci_request_alloc, PECI);
->> > +
->> > +/**
->> > + * peci_request_free() - free peci_request
->> > + * @req: the PECI request to be freed
->> > + */
->> > +void peci_request_free(struct peci_request *req)
->> > +{
->> > +???????kfree(req->rx.buf);
->> > +???????kfree(req->tx.buf);
->> > +???????kfree(req);
->> > +}
->> > +EXPORT_SYMBOL_NS_GPL(peci_request_free, PECI);
->> > diff --git a/drivers/peci/sysfs.c b/drivers/peci/sysfs.c
->> > index 36c5e2a18a92..db9ef05776e3 100644
->> > --- a/drivers/peci/sysfs.c
->> > +++ b/drivers/peci/sysfs.c
->> > @@ -1,6 +1,8 @@
->> > // SPDX-License-Identifier: GPL-2.0-only
->> > // Copyright (c) 2021 Intel Corporation
->> >
->> > +#include <linux/device.h>
->> > +#include <linux/kernel.h>
->> > #include <linux/peci.h>
->> >
->> > #include "internal.h"
->> > @@ -46,3 +48,35 @@ const struct attribute_group *peci_bus_groups[] = {
->> > ????????&peci_bus_group,
->> > ????????NULL
->> > };
->> > +
->> > +static ssize_t remove_store(struct device *dev, struct device_attribute
->> > *attr,
->> > +?????????????????????????? const char *buf, size_t count)
->> > +{
->> > +???????struct peci_device *device = to_peci_device(dev);
->> > +???????bool res;
->> > +???????int ret;
->> > +
->> > +???????ret = kstrtobool(buf, &res);
->> > +???????if (ret)
->> > +???????????????return ret;
->> > +
->> > +???????if (res && device_remove_file_self(dev, attr))
->> > +???????????????peci_device_destroy(device);
->> > +
->> > +???????return count;
->> > +}
->> > +static DEVICE_ATTR_IGNORE_LOCKDEP(remove, 0200, NULL, remove_store);
->> > +
->> > +static struct attribute *peci_device_attrs[] = {
->> > +???????&dev_attr_remove.attr,
->> > +???????NULL
->> > +};
->> > +
->> > +static const struct attribute_group peci_device_group = {
->> > +???????.attrs = peci_device_attrs,
->> > +};
->> > +
->> > +const struct attribute_group *peci_device_groups[] = {
->> > +???????&peci_device_group,
->> > +???????NULL
->> > +};
->> > --
->> > 2.31.1
->
+> 
+> > +???????peci_request_free(req);
+> > +
+> > +???????return ret;
+> > +}
+> > +
+> > +static int peci_device_info_init(struct peci_device *device)
+> > +{
+> > +???????u8 revision;
+> > +???????u32 cpu_id;
+> > +???????int ret;
+> > +
+> > +???????ret = peci_get_cpu_id(device, &cpu_id);
+> > +???????if (ret)
+> > +???????????????return ret;
+> > +
+> > +???????device->info.family = x86_family(cpu_id);
+> > +???????device->info.model = x86_model(cpu_id);
+> > +
+> > +???????ret = peci_get_revision(device, &revision);
+> > +???????if (ret)
+> > +???????????????return ret;
+> > +???????device->info.peci_revision = revision;
+> > +
+> > +???????device->info.socket_id = device->addr - PECI_BASE_ADDR;
+> > +
+> > +???????return 0;
+> > +}
+> > +
+> > static int peci_detect(struct peci_controller *controller, u8 addr)
+> > {
+> > ????????struct peci_request *req;
+> > @@ -75,6 +143,10 @@ int peci_device_create(struct peci_controller
+> > *controller, u8 addr)
+> > ????????device->dev.bus = &peci_bus_type;
+> > ????????device->dev.type = &peci_device_type;
+> > 
+> > +???????ret = peci_device_info_init(device);
+> > +???????if (ret)
+> > +???????????????goto err_free;
+> > +
+> > ????????ret = dev_set_name(&device->dev, "%d-%02x", controller->id, device-
+> > >addr);
+> > ????????if (ret)
+> > ????????????????goto err_free;
+> > @@ -98,6 +170,33 @@ void peci_device_destroy(struct peci_device *device)
+> > ????????device_unregister(&device->dev);
+> > }
+> > 
+> > +int __peci_driver_register(struct peci_driver *driver, struct module
+> > *owner,
+> > +????????????????????????? const char *mod_name)
+> > +{
+> > +???????driver->driver.bus = &peci_bus_type;
+> > +???????driver->driver.owner = owner;
+> > +???????driver->driver.mod_name = mod_name;
+> > +
+> > +???????if (!driver->probe) {
+> > +???????????????pr_err("peci: trying to register driver without probe
+> > callback\n");
+> > +???????????????return -EINVAL;
+> > +???????}
+> > +
+> > +???????if (!driver->id_table) {
+> > +???????????????pr_err("peci: trying to register driver without device id
+> > table\n");
+> > +???????????????return -EINVAL;
+> > +???????}
+> > +
+> > +???????return driver_register(&driver->driver);
+> > +}
+> > +EXPORT_SYMBOL_NS_GPL(__peci_driver_register, PECI);
+> > +
+> > +void peci_driver_unregister(struct peci_driver *driver)
+> > +{
+> > +???????driver_unregister(&driver->driver);
+> > +}
+> > +EXPORT_SYMBOL_NS_GPL(peci_driver_unregister, PECI);
+> > +
+> > static void peci_device_release(struct device *dev)
+> > {
+> > ????????struct peci_device *device = to_peci_device(dev);
+> > diff --git a/drivers/peci/internal.h b/drivers/peci/internal.h
+> > index 6b139adaf6b8..c891c93e077a 100644
+> > --- a/drivers/peci/internal.h
+> > +++ b/drivers/peci/internal.h
+> > @@ -19,6 +19,34 @@ struct peci_request;
+> > struct peci_request *peci_request_alloc(struct peci_device *device, u8
+> > tx_len, u8 rx_len);
+> > void peci_request_free(struct peci_request *req);
+> > 
+> > +int peci_request_status(struct peci_request *req);
+> > +u64 peci_request_data_dib(struct peci_request *req);
+> > +
+> > +u8 peci_request_data_readb(struct peci_request *req);
+> > +u16 peci_request_data_readw(struct peci_request *req);
+> > +u32 peci_request_data_readl(struct peci_request *req);
+> > +u64 peci_request_data_readq(struct peci_request *req);
+> > +
+> > +struct peci_request *peci_get_dib(struct peci_device *device);
+> > +struct peci_request *peci_get_temp(struct peci_device *device);
+> > +
+> > +struct peci_request *peci_pkg_cfg_readb(struct peci_device *device, u8
+> > index, u16 param);
+> > +struct peci_request *peci_pkg_cfg_readw(struct peci_device *device, u8
+> > index, u16 param);
+> > +struct peci_request *peci_pkg_cfg_readl(struct peci_device *device, u8
+> > index, u16 param);
+> > +struct peci_request *peci_pkg_cfg_readq(struct peci_device *device, u8
+> > index, u16 param);
+> > +
+> > +/**
+> > + * struct peci_device_id - PECI device data to match
+> > + * @data: pointer to driver private data specific to device
+> > + * @family: device family
+> > + * @model: device model
+> > + */
+> > +struct peci_device_id {
+> > +???????const void *data;
+> > +???????u16 family;
+> > +???????u8 model;
+> > +};
+> > +
+> > extern struct device_type peci_device_type;
+> > extern const struct attribute_group *peci_device_groups[];
+> > 
+> > @@ -28,6 +56,53 @@ void peci_device_destroy(struct peci_device *device);
+> > extern struct bus_type peci_bus_type;
+> > extern const struct attribute_group *peci_bus_groups[];
+> > 
+> > +/**
+> > + * struct peci_driver - PECI driver
+> > + * @driver: inherit device driver
+> > + * @probe: probe callback
+> > + * @remove: remove callback
+> > + * @id_table: PECI device match table to decide which device to bind
+> > + */
+> > +struct peci_driver {
+> > +???????struct device_driver driver;
+> > +???????int (*probe)(struct peci_device *device, const struct peci_device_id
+> > *id);
+> > +???????void (*remove)(struct peci_device *device);
+> > +???????const struct peci_device_id *id_table;
+> > +};
+> > +
+> > +static inline struct peci_driver *to_peci_driver(struct device_driver *d)
+> > +{
+> > +???????return container_of(d, struct peci_driver, driver);
+> > +}
+> > +
+> > +int __peci_driver_register(struct peci_driver *driver, struct module
+> > *owner,
+> > +????????????????????????? const char *mod_name);
+> > +/**
+> > + * peci_driver_register() - register PECI driver
+> > + * @driver: the driver to be registered
+> > + * @owner: owner module of the driver being registered
+> > + * @mod_name: module name string
+> > + *
+> > + * PECI drivers that don't need to do anything special in module init
+> > should
+> > + * use the convenience "module_peci_driver" macro instead
+> > + *
+> > + * Return: zero on success, else a negative error code.
+> > + */
+> > +#define peci_driver_register(driver) \
+> > +???????__peci_driver_register(driver, THIS_MODULE, KBUILD_MODNAME)
+> > +void peci_driver_unregister(struct peci_driver *driver);
+> > +
+> > +/**
+> > + * module_peci_driver() - Helper macro for registering a modular PECI
+> > driver
+> > + * @__peci_driver: peci_driver struct
+> > + *
+> > + * Helper macro for PECI drivers which do not do anything special in module
+> > + * init/exit. This eliminates a lot of boilerplate. Each module may only
+> > + * use this macro once, and calling it replaces module_init() and
+> > module_exit()
+> > + */
+> > +#define module_peci_driver(__peci_driver) \
+> > +???????module_driver(__peci_driver, peci_driver_register,
+> > peci_driver_unregister)
+> > +
+> > extern struct device_type peci_controller_type;
+> > 
+> > int peci_controller_scan_devices(struct peci_controller *controller);
+> > diff --git a/drivers/peci/request.c b/drivers/peci/request.c
+> > index 78cee51dfae1..48354455b554 100644
+> > --- a/drivers/peci/request.c
+> > +++ b/drivers/peci/request.c
+> > @@ -1,13 +1,142 @@
+> > // SPDX-License-Identifier: GPL-2.0-only
+> > // Copyright (c) 2021 Intel Corporation
+> > 
+> > +#include <linux/bug.h>
+> > #include <linux/export.h>
+> > #include <linux/peci.h>
+> > #include <linux/slab.h>
+> > #include <linux/types.h>
+> > 
+> > +#include <asm/unaligned.h>
+> > +
+> > #include "internal.h"
+> > 
+> > +#define PECI_GET_DIB_CMD???????????????0xf7
+> > +#define? PECI_GET_DIB_WR_LEN???????????1
+> > +#define? PECI_GET_DIB_RD_LEN???????????8
+> > +
+> > +#define PECI_RDPKGCFG_CMD??????????????0xa1
+> > +#define? PECI_RDPKGCFG_WRITE_LEN???????5
+> > +#define? PECI_RDPKGCFG_READ_LEN_BASE???1
+> > +#define PECI_WRPKGCFG_CMD??????????????0xa5
+> > +#define? PECI_WRPKGCFG_WRITE_LEN_BASE??6
+> > +#define? PECI_WRPKGCFG_READ_LEN????????????????1
+> > +
+> > +/* Device Specific Completion Code (CC) Definition */
+> > +#define PECI_CC_SUCCESS????????????????????????????????0x40
+> > +#define PECI_CC_NEED_RETRY?????????????????????0x80
+> > +#define PECI_CC_OUT_OF_RESOURCE????????????????????????0x81
+> > +#define PECI_CC_UNAVAIL_RESOURCE???????????????0x82
+> > +#define PECI_CC_INVALID_REQ????????????????????0x90
+> > +#define PECI_CC_MCA_ERROR??????????????????????0x91
+> > +#define PECI_CC_CATASTROPHIC_MCA_ERROR?????????0x93
+> > +#define PECI_CC_FATAL_MCA_ERROR????????????????????????0x94
+> > +#define PECI_CC_PARITY_ERR_GPSB_OR_PMSB????????????????0x98
+> > +#define PECI_CC_PARITY_ERR_GPSB_OR_PMSB_IERR???0x9B
+> > +#define PECI_CC_PARITY_ERR_GPSB_OR_PMSB_MCA????0x9C
+> > +
+> > +#define PECI_RETRY_BIT?????????????????BIT(0)
+> > +
+> > +#define PECI_RETRY_TIMEOUT?????????????msecs_to_jiffies(700)
+> > +#define PECI_RETRY_INTERVAL_MIN????????????????msecs_to_jiffies(1)
+> > +#define PECI_RETRY_INTERVAL_MAX????????????????msecs_to_jiffies(128)
+> > +
+> > +static u8 peci_request_data_cc(struct peci_request *req)
+> > +{
+> > +???????return req->rx.buf[0];
+> > +}
+> > +
+> > +/**
+> > + * peci_request_status() - return -errno based on PECI completion code
+> > + * @req: the PECI request that contains response data with completion code
+> > + *
+> > + * It can't be used for Ping(), GetDIB() and GetTemp() - for those commands
+> > we
+> > + * don't expect completion code in the response.
+> > + *
+> > + * Return: -errno
+> > + */
+> > +int peci_request_status(struct peci_request *req)
+> > +{
+> > +???????u8 cc = peci_request_data_cc(req);
+> > +
+> > +???????if (cc != PECI_CC_SUCCESS)
+> > +???????????????dev_dbg(&req->device->dev, "ret: %#02x\n", cc);
+> > +
+> > +???????switch (cc) {
+> > +???????case PECI_CC_SUCCESS:
+> > +???????????????return 0;
+> > +???????case PECI_CC_NEED_RETRY:
+> > +???????case PECI_CC_OUT_OF_RESOURCE:
+> > +???????case PECI_CC_UNAVAIL_RESOURCE:
+> > +???????????????return -EAGAIN;
+> > +???????case PECI_CC_INVALID_REQ:
+> > +???????????????return -EINVAL;
+> > +???????case PECI_CC_MCA_ERROR:
+> > +???????case PECI_CC_CATASTROPHIC_MCA_ERROR:
+> > +???????case PECI_CC_FATAL_MCA_ERROR:
+> > +???????case PECI_CC_PARITY_ERR_GPSB_OR_PMSB:
+> > +???????case PECI_CC_PARITY_ERR_GPSB_OR_PMSB_IERR:
+> > +???????case PECI_CC_PARITY_ERR_GPSB_OR_PMSB_MCA:
+> > +???????????????return -EIO;
+> > +???????}
+> > +
+> > +???????WARN_ONCE(1, "Unknown PECI completion code: %#02x\n", cc);
+> > +
+> > +???????return -EIO;
+> > +}
+> > +EXPORT_SYMBOL_NS_GPL(peci_request_status, PECI);
+> > +
+> > +static int peci_request_xfer(struct peci_request *req)
+> > +{
+> > +???????struct peci_device *device = req->device;
+> > +???????struct peci_controller *controller = device->controller;
+> > +???????int ret;
+> > +
+> > +???????mutex_lock(&controller->bus_lock);
+> > +???????ret = controller->xfer(controller, device->addr, req);
+> > +???????mutex_unlock(&controller->bus_lock);
+> > +
+> > +???????return ret;
+> > +}
+> > +
+> > +static int peci_request_xfer_retry(struct peci_request *req)
+> > +{
+> > +???????long wait_interval = PECI_RETRY_INTERVAL_MIN;
+> > +???????struct peci_device *device = req->device;
+> > +???????struct peci_controller *controller = device->controller;
+> > +???????unsigned long start = jiffies;
+> > +???????int ret;
+> > +
+> > +???????/* Don't try to use it for ping */
+> > +???????if (WARN_ON(!req->rx.buf))
+> > +???????????????return 0;
+> > +
+> > +???????do {
+> > +???????????????ret = peci_request_xfer(req);
+> > +???????????????if (ret) {
+> > +???????????????????????dev_dbg(&controller->dev, "xfer error: %d\n", ret);
+> > +???????????????????????return ret;
+> > +???????????????}
+> > +
+> > +???????????????if (peci_request_status(req) != -EAGAIN)
+> > +???????????????????????return 0;
+> > +
+> > +???????????????/* Set the retry bit to indicate a retry attempt */
+> > +???????????????req->tx.buf[1] |= PECI_RETRY_BIT;
+> > +
+> > +???????????????if (schedule_timeout_interruptible(wait_interval))
+> > +???????????????????????return -ERESTARTSYS;
+> > +
+> > +???????????????wait_interval *= 2;
+> > +???????????????if (wait_interval > PECI_RETRY_INTERVAL_MAX)
+> > +???????????????????????wait_interval = PECI_RETRY_INTERVAL_MAX;
+> 
+> wait_interval = min(wait_interval * 2, PECI_RETRY_INTERVAL_MAX) ?
+
+Ack.
+
+> 
+> > +???????} while (time_before(jiffies, start + PECI_RETRY_TIMEOUT));
+> > +
+> > +???????dev_dbg(&controller->dev, "request timed out\n");
+> > +
+> > +???????return -ETIMEDOUT;
+> > +}
+> > +
+> > /**
+> > ?* peci_request_alloc() - allocate &struct peci_request with buffers with
+> > given lengths
+> > ?* @device: PECI device to which request is going to be sent
+> > @@ -72,3 +201,91 @@ void peci_request_free(struct peci_request *req)
+> > ????????kfree(req);
+> > }
+> > EXPORT_SYMBOL_NS_GPL(peci_request_free, PECI);
+> > +
+> > +struct peci_request *peci_get_dib(struct peci_device *device)
+> > +{
+> > +???????struct peci_request *req;
+> > +???????int ret;
+> > +
+> > +???????req = peci_request_alloc(device, PECI_GET_DIB_WR_LEN,
+> > PECI_GET_DIB_RD_LEN);
+> > +???????if (!req)
+> > +???????????????return ERR_PTR(-ENOMEM);
+> > +
+> > +???????req->tx.buf[0] = PECI_GET_DIB_CMD;
+> > +
+> > +???????ret = peci_request_xfer(req);
+> > +???????if (ret) {
+> > +???????????????peci_request_free(req);
+> > +???????????????return ERR_PTR(ret);
+> > +???????}
+> > +
+> > +???????return req;
+> > +}
+> > +EXPORT_SYMBOL_NS_GPL(peci_get_dib, PECI);
+> > +
+> > +static struct peci_request *
+> > +__pkg_cfg_read(struct peci_device *device, u8 index, u16 param, u8 len)
+> > +{
+> > +???????struct peci_request *req;
+> > +???????int ret;
+> > +
+> > +???????req = peci_request_alloc(device, PECI_RDPKGCFG_WRITE_LEN,
+> > +??????????????????????????????? PECI_RDPKGCFG_READ_LEN_BASE + len);
+> > +???????if (!req)
+> > +???????????????return ERR_PTR(-ENOMEM);
+> > +
+> > +???????req->tx.buf[0] = PECI_RDPKGCFG_CMD;
+> > +???????req->tx.buf[1] = 0;
+> > +???????req->tx.buf[2] = index;
+> > +???????put_unaligned_le16(param, &req->tx.buf[3]);
+> > +
+> > +???????ret = peci_request_xfer_retry(req);
+> > +???????if (ret) {
+> > +???????????????peci_request_free(req);
+> > +???????????????return ERR_PTR(ret);
+> > +???????}
+> > +
+> > +???????return req;
+> > +}
+> > +
+> > +u8 peci_request_data_readb(struct peci_request *req)
+> > +{
+> > +???????return req->rx.buf[1];
+> > +}
+> > +EXPORT_SYMBOL_NS_GPL(peci_request_data_readb, PECI);
+> > +
+> > +u16 peci_request_data_readw(struct peci_request *req)
+> > +{
+> > +???????return get_unaligned_le16(&req->rx.buf[1]);
+> > +}
+> > +EXPORT_SYMBOL_NS_GPL(peci_request_data_readw, PECI);
+> > +
+> > +u32 peci_request_data_readl(struct peci_request *req)
+> > +{
+> > +???????return get_unaligned_le32(&req->rx.buf[1]);
+> > +}
+> > +EXPORT_SYMBOL_NS_GPL(peci_request_data_readl, PECI);
+> > +
+> > +u64 peci_request_data_readq(struct peci_request *req)
+> > +{
+> > +???????return get_unaligned_le64(&req->rx.buf[1]);
+> > +}
+> > +EXPORT_SYMBOL_NS_GPL(peci_request_data_readq, PECI);
+> > +
+> > +u64 peci_request_data_dib(struct peci_request *req)
+> > +{
+> > +???????return get_unaligned_le64(&req->rx.buf[0]);
+> > +}
+> > +EXPORT_SYMBOL_NS_GPL(peci_request_data_dib, PECI);
+> > +
+> > +#define __read_pkg_config(x, type) \
+> > +struct peci_request *peci_pkg_cfg_##x(struct peci_device *device, u8 index,
+> > u16 param) \
+> > +{ \
+> > +???????return __pkg_cfg_read(device, index, param, sizeof(type)); \
+> > +} \
+> 
+> Is there a reason for this particular API?? I'd think a more natural one
+> that would offload a bit of boilerplate from callers would look more like
+> 
+> int peci_pkg_cfg_##x(struct peci_device *device, u8 index, u16 param, type
+> *outp),
+> 
+> returning peci_request_status() and writing the requested data to *outp
+> if that status is zero.
+
+We provide a consistent lower-level API for "internal" usage (for code in
+drivers/peci), operating on requests and allowing access to full request,
+including completion code, etc.
+Then - we wrap that with "external" API (e.g. include/linux/peci-cpu.h) which is
+the "more natural" one - it pulls out the necessary data from requests, deals
+with error handling in an appropriate way converting completion codes to errno
+values (abstracting away the PECI-specific details).
+
+> 
+> > +EXPORT_SYMBOL_NS_GPL(peci_pkg_cfg_##x, PECI)
+> > +
+> > +__read_pkg_config(readb, u8);
+> > +__read_pkg_config(readw, u16);
+> > +__read_pkg_config(readl, u32);
+> > +__read_pkg_config(readq, u64);
+> > diff --git a/include/linux/peci.h b/include/linux/peci.h
+> > index cdf3008321fd..f9f37b874011 100644
+> > --- a/include/linux/peci.h
+> > +++ b/include/linux/peci.h
+> > @@ -9,6 +9,14 @@
+> > #include <linux/mutex.h>
+> > #include <linux/types.h>
+> > 
+> > +#define PECI_PCS_PKG_ID????????????????????????0? /* Package Identifier
+> > Read */
+> > +#define? PECI_PKG_ID_CPU_ID????????????0x0000? /* CPUID Info */
+> > +#define? PECI_PKG_ID_PLATFORM_ID???????0x0001? /* Platform ID */
+> > +#define? PECI_PKG_ID_DEVICE_ID?????????0x0002? /* Uncore Device ID */
+> > +#define? PECI_PKG_ID_MAX_THREAD_ID?????0x0003? /* Max Thread ID */
+> > +#define? PECI_PKG_ID_MICROCODE_REV?????0x0004? /* CPU Microcode Update
+> > Revision */
+> > +#define? PECI_PKG_ID_MCA_ERROR_LOG?????0x0005? /* Machine Check Status */
+> > +
+> > struct peci_request;
+> > 
+> > /**
+> > @@ -41,6 +49,11 @@ static inline struct peci_controller
+> > *to_peci_controller(void *d)
+> > ?* struct peci_device - PECI device
+> > ?* @dev: device object to register PECI device to the device model
+> > ?* @controller: manages the bus segment hosting this PECI device
+> > + * @info: PECI device characteristics
+> > + * @info.family: device family
+> > + * @info.model: device model
+> > + * @info.peci_revision: PECI revision supported by the PECI device
+> > + * @info.socket_id: the socket ID represented by the PECI device
+> > ?* @addr: address used on the PECI bus connected to the parent controller
+> > ?*
+> > ?* A peci_device identifies a single device (i.e. CPU) connected to a PECI
+> > bus.
+> > @@ -50,6 +63,12 @@ static inline struct peci_controller
+> > *to_peci_controller(void *d)
+> > struct peci_device {
+> > ????????struct device dev;
+> > ????????struct peci_controller *controller;
+> > +???????struct {
+> > +???????????????u16 family;
+> > +???????????????u8 model;
+> > +???????????????u8 peci_revision;
+> 
+> This field gets set but doesn't seem to end up used anywhere; is it
+> useful?
+
+The idea was to have mechanism to validate the revision number retrieved via
+GetDIB with revision expected by the driver (since it uses commands that are
+PECI revision dependent), and warn if there's a mismatch.
+It seems I dropped the "validate and warn" part when doing the split on the
+series. Good catch - I'll fix this in v2.
+
+Thanks
+-Iwona
+
+> 
+> > +???????????????u8 socket_id;
+> > +???????} info;
+> > ????????u8 addr;
+> > };
+> > 
+> > diff --git a/lib/Kconfig b/lib/Kconfig
+> > index cc28bc1f2d84..a74e6c0fa75c 100644
+> > --- a/lib/Kconfig
+> > +++ b/lib/Kconfig
+> > @@ -721,5 +721,5 @@ config ASN1_ENCODER
+> > 
+> > config GENERIC_LIB_X86
+> > ????????bool
+> > -???????depends on X86
+> > +???????depends on X86 || PECI
+> > ????????default n
+> > -- 
+> > 2.31.1
+
