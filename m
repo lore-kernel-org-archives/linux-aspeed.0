@@ -1,172 +1,119 @@
 From: Winiarska, Iwona <iwona.winiarska@intel.com>
-Date: Fri, 30 Jul 2021 20:10:22 +0000
-Subject: [PATCH 08/14] peci: Add device detection
-In-Reply-To: <20210729205013.GW8018@packtop>
+Date: Fri, 30 Jul 2021 20:13:14 +0000
+Subject: [PATCH 09/14] peci: Add support for PECI device drivers
+In-Reply-To: <20210729232205.GX8018@packtop>
 References: <20210712220447.957418-1-iwona.winiarska@intel.com>
- <20210712220447.957418-9-iwona.winiarska@intel.com>
- <20210727174900.GR8018@packtop>
- <47440a8329ce06c41ca9746db42cb1d66154ea46.camel@intel.com>
- <20210729205013.GW8018@packtop>
-Message-ID: <e09a84385be48304d01584c6d629c0f56caad8a1.camel@intel.com>
+ <20210712220447.957418-10-iwona.winiarska@intel.com>
+ <20210727201028.GS8018@packtop>
+ <79f5b6ed4942ddeb66beea03907a58495376ccef.camel@intel.com>
+ <20210729232205.GX8018@packtop>
+Message-ID: <5476aacfd0c83fbe69c9eb2af3327ff29a03674d.camel@intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, 2021-07-29 at 20:50 +0000, Zev Weiss wrote:
-> On Thu, Jul 29, 2021 at 01:55:19PM CDT, Winiarska, Iwona wrote:
-> > On Tue, 2021-07-27 at 17:49 +0000, Zev Weiss wrote:
-> > > On Mon, Jul 12, 2021 at 05:04:41PM CDT, Iwona Winiarska wrote:
+On Thu, 2021-07-29 at 23:22 +0000, Zev Weiss wrote:
+> On Thu, Jul 29, 2021 at 04:17:06PM CDT, Winiarska, Iwona wrote:
+> > On Tue, 2021-07-27 at 20:10 +0000, Zev Weiss wrote:
+> > > On Mon, Jul 12, 2021 at 05:04:42PM CDT, Iwona Winiarska wrote:
 > > > > 
-> > > > +
-> > > > +static int peci_detect(struct peci_controller *controller, u8 addr)
+> > > > 
+> > > > +#define REVISION_NUM_MASK GENMASK(15, 8)
+> > > > +static int peci_get_revision(struct peci_device *device, u8 *revision)
 > > > > +{
 > > > > +???????struct peci_request *req;
-> > > > +???????int ret;
+> > > > +???????u64 dib;
 > > > > +
-> > > > +???????req = peci_request_alloc(NULL, 0, 0);
-> > > > +???????if (!req)
-> > > > +???????????????return -ENOMEM;
+> > > > +???????req = peci_get_dib(device);
+> > > > +???????if (IS_ERR(req))
+> > > > +???????????????return PTR_ERR(req);
 > > > > +
+> > > > +???????dib = peci_request_data_dib(req);
+> > > > +???????if (dib == 0) {
+> > > > +???????????????peci_request_free(req);
+> > > > +???????????????return -EIO;
 > > > 
-> > > Might be worth a brief comment here noting that an empty request happens
-> > > to be the format of a PECI ping command (and/or change the name of the
-> > > function to peci_ping()).
+> > > Any particular reason to check for zero specifically here?? It looks
+> > > like that would be a case where the host CPU responds and everything's
+> > > otherwise fine, but the host just happened to send back a bunch of zeros
+> > > for whatever reason -- which may not be a valid PECI revision number,
+> > > but if it sent back a bunch of 0xff bytes instead wouldn't that be
+> > > equally invalid?
 > > 
-> > I'll add a comment:
-> > "We are using PECI Ping command to detect presence of PECI devices."
+> > The response with all 0's is possible (and defined) in certain device
+> > states. If
+> > that happens - we don't want to continue adding the device (with "invalid"
+> > revision 0), we just want to return error.
 > > 
 > 
-> Well, what I was more aiming to get at was that to someone not
-> intimately familiar with the PECI protocol it's not immediately obvious
-> from the code that it in fact implements a ping (there's no 'msg->cmd =
-> PECI_CMD_PING' or anything), so I was hoping for something that would
-> just make that slightly more explicit.
+> Okay, that's reasonable -- maybe worth a brief comment though.
 
 /*
- * PECI Ping is a command encoded by tx_len = 0, rx_len = 0.
- * We expect correct Write FCS if the device at the target address is
- * able to respond.
+ * PECI device may be in a state where it is unable to return a proper DIB,
+ * in which case it returns 0 as DIB value.
+ * Let's treat this as an error to avoid carrying on with the detection using
+ * invalid revision.
  */
 
-I would like to avoid doing a peci_ping wrapper that doesn't operate on
-peci_device - note that at this point we don't have a struct peci_device yet,
-we're using ping to figure out whether we should create one.
-
-> > > > +
-> > > > +/**
-> > > > + * peci_request_alloc() - allocate &struct peci_request with buffers
-> > > > with
-> > > > given lengths
-> > > > + * @device: PECI device to which request is going to be sent
-> > > > + * @tx_len: requested TX buffer length
-> > > > + * @rx_len: requested RX buffer length
-> > > > + *
-> > > > + * Return: A pointer to a newly allocated &struct peci_request on
-> > > > success
-> > > > or NULL otherwise.
-> > > > + */
-> > > > +struct peci_request *peci_request_alloc(struct peci_device *device, u8
-> > > > tx_len, u8 rx_len)
-> > > > +{
-> > > > +???????struct peci_request *req;
-> > > > +???????u8 *tx_buf, *rx_buf;
-> > > > +
-> > > > +???????req = kzalloc(sizeof(*req), GFP_KERNEL);
-> > > > +???????if (!req)
-> > > > +???????????????return NULL;
-> > > > +
-> > > > +???????req->device = device;
-> > > > +
-> > > > +???????/*
-> > > > +??????? * PECI controllers that we are using now don't support DMA,
-> > > > this
-> > > > +??????? * should be converted to DMA API once support for controllers
-> > > > that
-> > > > do
-> > > > +??????? * allow it is added to avoid an extra copy.
-> > > > +??????? */
-> > > > +???????if (tx_len) {
-> > > > +???????????????tx_buf = kzalloc(tx_len, GFP_KERNEL);
-> > > > +???????????????if (!tx_buf)
-> > > > +???????????????????????goto err_free_req;
-> > > > +
-> > > > +???????????????req->tx.buf = tx_buf;
-> > > > +???????????????req->tx.len = tx_len;
-> > > > +???????}
-> > > > +
-> > > > +???????if (rx_len) {
-> > > > +???????????????rx_buf = kzalloc(rx_len, GFP_KERNEL);
-> > > > +???????????????if (!rx_buf)
-> > > > +???????????????????????goto err_free_tx;
-> > > > +
-> > > > +???????????????req->rx.buf = rx_buf;
-> > > > +???????????????req->rx.len = rx_len;
-> > > > +???????}
-> > > > +
+> 
 > > > 
-> > > As long as we're punting on DMA support, could we do the whole thing in
-> > > a single allocation instead of three?? It'd add some pointer arithmetic,
-> > > but would also simplify the error-handling/deallocation paths a bit.
-> > > 
-> > > Or, given that the one controller we're currently supporting has a
-> > > hardware limit of 32 bytes per transfer anyway, maybe just inline
-> > > fixed-size rx/tx buffers into struct peci_request and have callers keep
-> > > them on the stack instead of kmalloc()-ing them?
+> > > Also, given that the docs (the ones I have, at least) describe the DIB
+> > > as a collection of individual bytes, dealing with it as a combined u64
+> > > seems a bit confusing to me -- could we just return req->rx.buf[1]
+> > > instead?
 > > 
-> > I disagree on error handling (it's not complicated) - however, one argument
-> > for
-> > doing a single alloc (or moving the buffers as fixed-size arrays inside
-> > struct
-> > peci_request) is that single kzalloc is going to be faster than 3. But I
-> > don't
-> > expect it to show up on any perf profiles for now (since peci-wire interface
-> > is
-> > not a speed demon).
-> > 
-> > I wanted to avoid defining max size for TX and RX in peci-core.
-> > Do you have a strong opinion against multiple alloc? If yes, I can go with
-> > fixed-size arrays inside struct peci_request.
+> > GetDIB returns 8-byte response, which is why we're treating it in this way
+> > (similar to other commands). We're pulling out the whole response and use
+> > FIELD_GET to obtain the data we need.
 > > 
 > 
-> As is it's certainly not terribly complicated in an absolute sense, but
-> comparatively speaking the cleanup path for a single allocation is still
-> simpler, no?
+> Sure -- but since the 8 bytes that GetDIB retrieves are a device info
+> byte, a revision number byte, and six reserved bytes (at least as of the
+> documentation I have access to), I'm not sure why we want to pack that
+> all up into a u64 only to unpack a single byte from it a moment later
+> with FIELD_GET(), when we've already got it in a convenient
+> array-of-bytes form (req->rx.buf).? I could understand wanting a u64 if
+> the 8 bytes were all a single value, or if it had sub-fields that
+> spanned byte boundaries in awkward ways or something, but given the
+> format of the response data a byte array seems like the most natural way
+> of dealing with it.
 > 
-> Making it more efficient would definitely be a nice benefit too (perhaps
-> a more significant one) -- in a typical deployment I'd guess this code
-> path will see roughly socket_count + total_core_count executions per
-> second?? On a big multi-socket system that could end up being a
-> reasonably large number (>100), so while it may not end up as a major
-> hot spot in a system-wide profile, it seems like it might be worth
-> having it do 1/3 as many allocations if it's reasonably easy to do.
-> (And while I don't think the kernel is generally at fault for this, from
-> what I've seen of OpenBMC as a whole I think it might benefit from a bit
-> more overall frugality with CPU cycles.)
-> 
-> As for a fixed max request size and inlined buffers, I definitely
-> understand not wanting to put a cap on that in the generic PECI core --
-> and actually, looking at the peci-npcm code from previous iterations of
-> the PECI patchset, it looks like the Nuvoton hardware has significantly
-> larger size limits (127 bytes if I'm reading things right) that might be
-> a bit bulky for on-stack allocation.? So while that's appealing
-> efficiency-wise and (IMO) aesthetically, perhaps it's not ultimately
-> real viable.
-> 
-> Hmm, though (thinking out loud) I suppose we could also get down to a
-> zero-allocation common case by having the driver hold on to a request
-> struct and reuse it across transfers, given that they're all serialized
-> by a mutex anyway?
+> I suppose it facilitates an easy zero check, but that could also be
+> written as !memchr_inv(req->rx.buf, 0, 8) in the non-u64 case.
 
-With the "zero-allocation" case we still need some memory to copy the necessary
-data from the "request area" (now "global" - per-controller).
+What you suggest would look like this:
 
-After more consideration, I think this doesn't have to rely on controller
-capabilities, we can just define a max value based on the commands we're using
-and use that with single alloc (with rx and tx having fixed size arrays).
-I'll change it in v2.
+static int peci_get_revision(struct peci_device *device, u8 *revision)
+{
+        struct peci_request *req;
 
-Thank you
+        req = peci_get_dib(device);
+        if (IS_ERR(req))
+                return PTR_ERR(req);
+
+        if (!memchr_inv(req->rx.buf, 0, PECI_GET_DIB_RD_LEN)) {
+                peci_request_free(req);
+                return -EIO;
+        }
+        *revision = req->rx.buf[1];
+
+        peci_request_free(req);
+
+        return 0;
+}
+
+Note that the caller (device.c) now needs to know read length -
+PECI_GET_DIB_RD_LEN (which currently is internal to the request.c) and is
+digging into rx.buf directly (rather than using helper from internal.h).
+
+By forcing the callers to use helper functions, we can make things consistent
+across various commands and avoid exporting everything to everyone using a giant
+header with all definitions.
+
+I would prefer to keep peci_get_revision() as is.
+
+Thanks
 -Iwona
-> 
+
