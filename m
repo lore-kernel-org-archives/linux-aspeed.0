@@ -1,36 +1,63 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Thu, 30 Apr 2020 20:55:48 +1000
-Subject: [PATCH v0 linux master] i2c/busses: Avoid i2c interrupt status
- clear race condition.
-In-Reply-To: <20200429090355.GA2891@kunai>
-References: <20200429033737.2781-1-ryan_chen@aspeedtech.com>
- <20200429075357.GA1957@kunai>
- <56add9c6e6b5410986325a1360466e4b@TWMBX02.aspeed.com>
- <20200429090355.GA2891@kunai>
-Message-ID: <232b9fac588beb4d024ab496b118c51af2b0ecba.camel@kernel.crashing.org>
+From: Jonathan Cameron <jic23@kernel.org>
+Date: Sat, 31 Jul 2021 18:27:14 +0100
+Subject: [v2 1/8] dt-bindings: iio: adc: rename the aspeed adc yaml
+In-Reply-To: <YQMQJ15KpM0eeLIb@robh.at.kernel.org>
+References: <20210723081621.29477-1-billy_tsai@aspeedtech.com>
+ <20210723081621.29477-2-billy_tsai@aspeedtech.com>
+ <20210723154456.00006744@Huawei.com>
+ <E650AFD8-FFD1-4D87-87B0-42D20D9C3BB4@aspeedtech.com>
+ <YQMQJ15KpM0eeLIb@robh.at.kernel.org>
+Message-ID: <20210731182714.7197bdcc@jic23-huawei>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 2020-04-29 at 11:03 +0200, Wolfram Sang wrote:
-> > And is there maybe a Fixes: tag for it?
-> > [Ryan Chen] Yes it is a fix patch.
+On Thu, 29 Jul 2021 14:31:35 -0600
+Rob Herring <robh@kernel.org> wrote:
+
+> On Mon, Jul 26, 2021 at 06:53:07AM +0000, Billy Tsai wrote:
+> > Hi Jonathan,
+> > 
+> > On 2021/7/23, 10:45 PM, "Jonathan Cameron" <Jonathan.Cameron@Huawei.com> wrote:
+> > 
+> >     On Fri, 23 Jul 2021 16:16:14 +0800
+> >     Billy Tsai <billy_tsai@aspeedtech.com> wrote:
+> >   
+> >     >   > The aspeed,ast2400-adc.yaml not only descriptor the bindings of ast2400.
+> >     >   > Rename it to aspeed,adc.yaml for all of the aspeed adc bindings.
+> >     >   > 
+> >     >   > Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>  
+> >   
+> >     >   We try to avoid 'wild' card type namings most of the time and instead
+> >     >   name after a particular part number.  I say try because clearly
+> >     >   we let a few in over the years :(  
+> >   
+> >     >   It is very hard to know if this binding will apply to 'all' future
+> >     >   aspeed ADCs.  
+> >   
+> >     >   As such I'm not sure this particular rename makes sense.  
+> > 
+> > If I want to extend the yaml file to compatible more versions of the aspeed adc.
+> > Would you suggest to add new files call aspeed,ast2600-adc.yaml or just append it
+> > to the aspeed,ast2400-adc.yaml?  
 > 
-> I meant this (from submitting-patches.rst):
+> If 2600 is not backwards compatible with 2400, then probably a new 
+> schema file. Given you are adding new properties (which only apply to 
+> 2600?), then most likely a new schema file. Depends at which point there 
+> are too many conditional (if/then/else) schemas.
 
-It fixes the original implementation of the driver basically. It's just
-a classic posted-write fix. The write to clear the pending interrupt is
-asynchronous, so you can get spurrious ones if you return from the
-handler before it has percolated to the HW.
+Agreed.  It's a judgement call you need to make on when it is worth the new file.
+Note that doesn't have anything to do with splitting the driver.  We have mulitple
+binding files for single drivers and for that matter multiple drivers for single binding
+files.
 
-I assume it's just more visible on the 2600 because of the cores are
-significantly faster but the IO bus is still as dumb.
+If it is 'compatible' enough to not make the file to complex, then add to the existing
+ast2400 file without renaming.
 
-Ryan: You could always add a Fixed-by: tag that specifies the commit
-that added the initial driver...
+Jonathan
 
-Cheers,
-Ben.
+> 
+> Rob
 
