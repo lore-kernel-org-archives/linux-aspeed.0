@@ -1,113 +1,76 @@
-From: Jonathan Cameron <jic23@kernel.org>
-Date: Sat, 31 Jul 2021 18:24:29 +0100
-Subject: [v2 2/8] dt-bindings: iio: adc: Binding ast2600 adc.
-In-Reply-To: <8D93D26B-AE57-4E38-A1AD-FA62894F2947@aspeedtech.com>
-References: <20210723081621.29477-1-billy_tsai@aspeedtech.com>
- <20210723081621.29477-3-billy_tsai@aspeedtech.com>
- <20210723155141.000039ee@Huawei.com>
- <8D93D26B-AE57-4E38-A1AD-FA62894F2947@aspeedtech.com>
-Message-ID: <20210731182334.2be68876@jic23-huawei>
+From: Andy Shevchenko <andy.shevchenko@gmail.com>
+Date: Tue, 3 Aug 2021 13:33:38 +0300
+Subject: [RFC PATCH 0/6] leds: Fix pca955x GPIO pin mappings
+In-Reply-To: <50aaf381-8cda-4656-9222-f23fda75d3bc@www.fastmail.com>
+References: <20210723075858.376378-1-andrew@aj.id.au>
+ <CAHp75VeQML7njMZ6x8kC-ZJVexC1xJ6n1cB3JneVMAVfuOJgWw@mail.gmail.com>
+ <d019990e-a725-4ef5-bb54-aadee9d18b86@www.fastmail.com>
+ <CAHp75Vc2W+WmwNj1AvH6EiT_80c+5gADV9QzK+asHxpd1Ucppw@mail.gmail.com>
+ <6cc64039-f82a-4c1e-ad2c-16fad7aa3178@www.fastmail.com>
+ <CAHp75Vdx9QA7dmSWK8GHxBBxP0uYjrz=Gm=75yqaWbBX6k3v=w@mail.gmail.com>
+ <50aaf381-8cda-4656-9222-f23fda75d3bc@www.fastmail.com>
+Message-ID: <CAHp75Ve-6zKE9UX+LR022cGAA6xvd8CeLnnKE_fT3snnzmNusA@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, 26 Jul 2021 07:21:29 +0000
-Billy Tsai <billy_tsai@aspeedtech.com> wrote:
+On Tue, Aug 3, 2021 at 7:07 AM Andrew Jeffery <andrew@aj.id.au> wrote:
+> On Thu, 29 Jul 2021, at 17:10, Andy Shevchenko wrote:
+> > On Thu, Jul 29, 2021 at 3:39 AM Andrew Jeffery <andrew@aj.id.au> wrote:
+> > > On Wed, 28 Jul 2021, at 18:43, Andy Shevchenko wrote:
+> > > > On Wed, Jul 28, 2021 at 8:43 AM Andrew Jeffery <andrew@aj.id.au> wrote:
+> > > > > However, userspace would never have
+> > > > > got the results it expected with the existing driver implementation, so
+> > > > > I guess you could argue that no such (useful) userspace exists. Given
+> > > > > that, we could adopt the strategy of always defining a gpiochip
+> > > > > covering the whole pin space, and parts of the devicetree binding just
+> > > > > become redundant.
+> > > >
+> > > > I'm lost now. GPIO has its own userspace ABI, how does it work right
+> > > > now in application to this chip?
+> > >
+> > > As above, it "works" if the GPIOs specified in the devicetree are
+> > > contiguous from line 0. It's broken if they're not.
+> >
+> > So, "it never works" means there is no bug. Now, what we need is to
+> > keep the same enumeration scheme, but if you wish to be used half/half
+> > (or any other ratio), the driver should do like the above mentioned
+> > PWM, i.e. register entire space and depending on the requestor either
+> > proceed with a line or mark it as BUSY.
+> >
+> > Ideally, looking into what the chip can do, this should be indeed
+> > converted to some like pin control + PWM + LED + GPIO drivers. Then
+> > the function in pin mux configuration can show what exactly is enabled
+> > on the certain line(s).
+>
+> So just to clarify, you want both solutions here?
+>
+> 1. A gpiochip that covers the entire pin space
+> 2. A pinmux implementation that manages pin allocation to the different drivers
+>
+> In that case we can largely leave this series as is? We only need to
+> adjust how we configure the gpiochip by dropping the pin-mapping
+> implementation?
 
-> Hi Jonathan,
-> 
-> Thanks for your review. I will fix them.
-> About the vref I reply inline.
-> 
-> On 2021/7/23, 10:52 PM, "Jonathan Cameron" <Jonathan.Cameron@Huawei.com> wrote:
-> 
->     On Fri, 23 Jul 2021 16:16:15 +0800
->     Billy Tsai <billy_tsai@aspeedtech.com> wrote:
-> 
->     >   > +  ? Internal or External reference voltage.
->     >   > +  ? Support 2 Internal reference voltage 1.2v or 2.5v.
->     >   > +  ? Integrate dividing circuit for battery sensing.
->     >   >  
->     >   >  properties:
->     >   >    compatible:
->     >   >      enum:
->     >   >        - aspeed,ast2400-adc
->     >   >        - aspeed,ast2500-adc
->     >   > +      - aspeed,ast2600-adc
->     >   >  
->     >   >    reg:
->     >   >      maxItems: 1
->     >   > @@ -33,6 +45,18 @@ properties:
->     >   >    "#io-channel-cells":
->     >   >      const: 1
->     >   >  
->     >   > +  vref:
->     >   > +    minItems: 900
->     >   > +    maxItems: 2700
->     >   > +    default: 2500
->     >   > +    description:
->     >   > +      ADC Reference voltage in millivolts.  
-> 
->     >   I'm not clear from this description.  Is this describing an externally
->     >   connected voltage reference?  If so it needs to be done as a regulator.
->     >   If it's a classic high precision reference, the dts can just use
->     >   a fixed regulator.  
-> 
-> In the ast2600, the ADC supports two internal reference voltages of 1.2v or 2.5v,
-> as well as external voltages. When the user selects a voltage of 1.2v or 2.5v, my
-> driver will first select to use the internal voltage. 
+Nope. It's far from what I think of. Re-reading again your cover
+letter it points out that pin mux per se does not exist in the
+hardware. In this case things become a bit too complicated, but we
+still may manage to handle them. Before I was thinking about this
+hierarchy
 
-Understood.
+1. pinmux driver (which is actually the main driver here)
+2. LED driver (using regmap API)
+3. GPIO driver (via gpio-regmap)
+4. PWM driver.
 
-> As you mention at patch #4, you suggest to use two property to handle this feature.
-> vref: indicate the regulator handler. Like other dt-bindings used.
+Now what we need here is some kind of "virtual" pinmux. Do I
+understand correctly?
 
-vref-supply would be the binding but otherwise yes.
+To be clear: I do not like putting everything into one driver when the
+logical parts may be separated.
 
-> aspeed,int_vref_mv: indicate the chosen of 1.2v or 2.5v
-> and use "model_data->vref_fixed" to exclude ast2400 and ast2500
-> Is it right?
-Ideally you would check in the driver and also use something here
-to allow device trees to be checked automatically.  Something like
-
-allOf:
- - if:
-     not:
-       properties:
-         compatible:
-           contains: const: aspeed,ast2600-adc
-             then:
-               int_vref_mv: false
-
-that will ensure the property is only used for the ast2600.
-
-Note the above is from memory, so may well have incorrect syntax.
-I've never found yaml intuitive!
-
-Thanks,
-
-
-Jonathan
-
-         
-> 
-> Thanks
-> 
->     >   > +
->     >   > +  battery-sensing:
->     >   > +    type: boolean
->     >   > +    description:
->     >   > +      Inform the driver that last channel will be used to sensor battery.  
-> 
->     >   This isn't (I think?) a standard dt binding, so it needs a manufacturer
->     >   prefix.  
-> 
->     >   aspeed,battery-sensing  
-> 
-> Best Regards,
-> Billy Tsai
-> 
-> 
-
+-- 
+With Best Regards,
+Andy Shevchenko
