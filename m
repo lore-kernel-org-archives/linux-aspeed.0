@@ -1,144 +1,60 @@
-From: Winiarska, Iwona <iwona.winiarska@intel.com>
-Date: Mon, 2 Aug 2021 11:39:36 +0000
-Subject: [PATCH 13/14] docs: hwmon: Document PECI drivers
-In-Reply-To: <0521a076-9772-532f-2eab-8870464ca211@roeck-us.net>
-References: <20210712220447.957418-1-iwona.winiarska@intel.com>
- <20210712220447.957418-14-iwona.winiarska@intel.com>
- <20210727225808.GU8018@packtop>
- <0521a076-9772-532f-2eab-8870464ca211@roeck-us.net>
-Message-ID: <ad6b0ccbed7ad3e4a8b8519571f5c23cca22a12d.camel@intel.com>
+From: Andrew Jeffery <andrew@aj.id.au>
+Date: Tue, 03 Aug 2021 13:37:07 +0930
+Subject: [RFC PATCH 0/6] leds: Fix pca955x GPIO pin mappings
+In-Reply-To: <CAHp75Vdx9QA7dmSWK8GHxBBxP0uYjrz=Gm=75yqaWbBX6k3v=w@mail.gmail.com>
+References: <20210723075858.376378-1-andrew@aj.id.au>
+ <CAHp75VeQML7njMZ6x8kC-ZJVexC1xJ6n1cB3JneVMAVfuOJgWw@mail.gmail.com>
+ <d019990e-a725-4ef5-bb54-aadee9d18b86@www.fastmail.com>
+ <CAHp75Vc2W+WmwNj1AvH6EiT_80c+5gADV9QzK+asHxpd1Ucppw@mail.gmail.com>
+ <6cc64039-f82a-4c1e-ad2c-16fad7aa3178@www.fastmail.com>
+ <CAHp75Vdx9QA7dmSWK8GHxBBxP0uYjrz=Gm=75yqaWbBX6k3v=w@mail.gmail.com>
+Message-ID: <50aaf381-8cda-4656-9222-f23fda75d3bc@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, 2021-07-27 at 17:49 -0700, Guenter Roeck wrote:
-> On 7/27/21 3:58 PM, Zev Weiss wrote:
-> > On Mon, Jul 12, 2021 at 05:04:46PM CDT, Iwona Winiarska wrote:
-> > > From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-> > > 
-> > > Add documentation for peci-cputemp driver that provides DTS thermal
-> > > readings for CPU packages and CPU cores and peci-dimmtemp driver that
-> > > provides DTS thermal readings for DIMMs.
-> > > 
-> > > Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-> > > Co-developed-by: Iwona Winiarska <iwona.winiarska@intel.com>
-> > > Signed-off-by: Iwona Winiarska <iwona.winiarska@intel.com>
-> > > Reviewed-by: Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>
-> > > ---
-> > > Documentation/hwmon/index.rst???????? |? 2 +
-> > > Documentation/hwmon/peci-cputemp.rst? | 93 +++++++++++++++++++++++++++
-> > > Documentation/hwmon/peci-dimmtemp.rst | 58 +++++++++++++++++
-> > > MAINTAINERS?????????????????????????? |? 2 +
-> > > 4 files changed, 155 insertions(+)
-> > > create mode 100644 Documentation/hwmon/peci-cputemp.rst
-> > > create mode 100644 Documentation/hwmon/peci-dimmtemp.rst
-> > > 
-> > > diff --git a/Documentation/hwmon/index.rst b/Documentation/hwmon/index.rst
-> > > index bc01601ea81a..cc76b5b3f791 100644
-> > > --- a/Documentation/hwmon/index.rst
-> > > +++ b/Documentation/hwmon/index.rst
-> > > @@ -154,6 +154,8 @@ Hardware Monitoring Kernel Drivers
-> > > ??? pcf8591
-> > > ??? pim4328
-> > > ??? pm6764tr
-> > > +?? peci-cputemp
-> > > +?? peci-dimmtemp
-> > > ??? pmbus
-> > > ??? powr1220
-> > > ??? pxe1610
-> > > diff --git a/Documentation/hwmon/peci-cputemp.rst
-> > > b/Documentation/hwmon/peci-cputemp.rst
-> > > new file mode 100644
-> > > index 000000000000..d3a218ba810a
-> > > --- /dev/null
-> > > +++ b/Documentation/hwmon/peci-cputemp.rst
-> > > @@ -0,0 +1,93 @@
-> > > +.. SPDX-License-Identifier: GPL-2.0-only
-> > > +
-> > > +Kernel driver peci-cputemp
-> > > +==========================
-> > > +
-> > > +Supported chips:
-> > > +???????One of Intel server CPUs listed below which is connected to a PECI
-> > > bus.
-> > > +???????????????* Intel Xeon E5/E7 v3 server processors
-> > > +???????????????????????Intel Xeon E5-14xx v3 family
-> > > +???????????????????????Intel Xeon E5-24xx v3 family
-> > > +???????????????????????Intel Xeon E5-16xx v3 family
-> > > +???????????????????????Intel Xeon E5-26xx v3 family
-> > > +???????????????????????Intel Xeon E5-46xx v3 family
-> > > +???????????????????????Intel Xeon E7-48xx v3 family
-> > > +???????????????????????Intel Xeon E7-88xx v3 family
-> > > +???????????????* Intel Xeon E5/E7 v4 server processors
-> > > +???????????????????????Intel Xeon E5-16xx v4 family
-> > > +???????????????????????Intel Xeon E5-26xx v4 family
-> > > +???????????????????????Intel Xeon E5-46xx v4 family
-> > > +???????????????????????Intel Xeon E7-48xx v4 family
-> > > +???????????????????????Intel Xeon E7-88xx v4 family
-> > > +???????????????* Intel Xeon Scalable server processors
-> > > +???????????????????????Intel Xeon D family
-> > > +???????????????????????Intel Xeon Bronze family
-> > > +???????????????????????Intel Xeon Silver family
-> > > +???????????????????????Intel Xeon Gold family
-> > > +???????????????????????Intel Xeon Platinum family
-> > > +
-> > > +???????Datasheet: Available from http://www.intel.com/design/literature.htm
-> > > +
-> > > +Author: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-> > > +
-> > > +Description
-> > > +-----------
-> > > +
-> > > +This driver implements a generic PECI hwmon feature which provides Digital
-> > > +Thermal Sensor (DTS) thermal readings of the CPU package and CPU cores that
-> > > are
-> > > +accessible via the processor PECI interface.
-> > > +
-> > > +All temperature values are given in millidegree Celsius and will be
-> > > measurable
-> > > +only when the target CPU is powered on.
-> > > +
-> > > +Sysfs interface
-> > > +-------------------
-> > > +
-> > > +=======================
-> > > =======================================================
-> > > +temp1_label????????????"Die"
-> > > +temp1_input????????????Provides current die temperature of the CPU package.
-> > > +temp1_max??????????????Provides thermal control temperature of the CPU
-> > > package
-> > > +???????????????????????which is also known as Tcontrol.
-> > > +temp1_crit?????????????Provides shutdown temperature of the CPU package
-> > > which
-> > > +???????????????????????is also known as the maximum processor junction
-> > > +???????????????????????temperature, Tjmax or Tprochot.
-> > > +temp1_crit_hyst????????????????Provides the hysteresis value from Tcontrol
-> > > to Tjmax of
-> > > +???????????????????????the CPU package.
-> > > +
-> > > +temp2_label????????????"DTS"
-> > > +temp2_input????????????Provides current DTS temperature of the CPU package.
-> > 
-> > Would this be a good place to note the slightly counter-intuitive nature
-> > of DTS readings?? i.e. add something along the lines of "The DTS sensor
-> > produces a delta relative to Tjmax, so negative values are normal and
-> > values approaching zero are hot."? (In my experience people who aren't
-> > already familiar with it tend to think something's wrong when a CPU
-> > temperature reading shows -50C.)
-> > 
-> 
-> All attributes shall follow the ABI, and the driver must translate reported
-> values to degrees C. If those sensors do not follow the ABI and report something
-> else, I won't accept the driver.
-> 
-> Guenter
 
-Sure, I believe all attributes already follow the ABI and the reported values
-are in millidegree Celsius.
 
-Thanks
--Iwona
+On Thu, 29 Jul 2021, at 17:10, Andy Shevchenko wrote:
+> On Thu, Jul 29, 2021 at 3:39 AM Andrew Jeffery <andrew@aj.id.au> wrote:
+> > On Wed, 28 Jul 2021, at 18:43, Andy Shevchenko wrote:
+> > > On Wed, Jul 28, 2021 at 8:43 AM Andrew Jeffery <andrew@aj.id.au> wrote:
+> > > > However, userspace would never have
+> > > > got the results it expected with the existing driver implementation, so
+> > > > I guess you could argue that no such (useful) userspace exists. Given
+> > > > that, we could adopt the strategy of always defining a gpiochip
+> > > > covering the whole pin space, and parts of the devicetree binding just
+> > > > become redundant.
+> > >
+> > > I'm lost now. GPIO has its own userspace ABI, how does it work right
+> > > now in application to this chip?
+> >
+> > As above, it "works" if the GPIOs specified in the devicetree are
+> > contiguous from line 0. It's broken if they're not.
 > 
+> So, "it never works" means there is no bug. Now, what we need is to
+> keep the same enumeration scheme, but if you wish to be used half/half
+> (or any other ratio), the driver should do like the above mentioned
+> PWM, i.e. register entire space and depending on the requestor either
+> proceed with a line or mark it as BUSY.
+> 
+> Ideally, looking into what the chip can do, this should be indeed
+> converted to some like pin control + PWM + LED + GPIO drivers. Then
+> the function in pin mux configuration can show what exactly is enabled
+> on the certain line(s).
 
+So just to clarify, you want both solutions here?
+
+1. A gpiochip that covers the entire pin space
+2. A pinmux implementation that manages pin allocation to the different drivers
+
+In that case we can largely leave this series as is? We only need to 
+adjust how we configure the gpiochip by dropping the pin-mapping 
+implementation?
+
+I don't have a need to implement a PWM driver for it right now but that 
+would make sense to do at some point.
+
+Andrew
