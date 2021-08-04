@@ -1,98 +1,349 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Wed, 04 Aug 2021 14:25:29 +0930
-Subject: [RFC PATCH 0/6] leds: Fix pca955x GPIO pin mappings
-In-Reply-To: <CAHp75Ve-6zKE9UX+LR022cGAA6xvd8CeLnnKE_fT3snnzmNusA@mail.gmail.com>
-References: <20210723075858.376378-1-andrew@aj.id.au>
- <CAHp75VeQML7njMZ6x8kC-ZJVexC1xJ6n1cB3JneVMAVfuOJgWw@mail.gmail.com>
- <d019990e-a725-4ef5-bb54-aadee9d18b86@www.fastmail.com>
- <CAHp75Vc2W+WmwNj1AvH6EiT_80c+5gADV9QzK+asHxpd1Ucppw@mail.gmail.com>
- <6cc64039-f82a-4c1e-ad2c-16fad7aa3178@www.fastmail.com>
- <CAHp75Vdx9QA7dmSWK8GHxBBxP0uYjrz=Gm=75yqaWbBX6k3v=w@mail.gmail.com>
- <50aaf381-8cda-4656-9222-f23fda75d3bc@www.fastmail.com>
- <CAHp75Ve-6zKE9UX+LR022cGAA6xvd8CeLnnKE_fT3snnzmNusA@mail.gmail.com>
-Message-ID: <7c20e892-1675-47b6-874f-5e42e7bd73ef@www.fastmail.com>
+From: Guenter Roeck <linux@roeck-us.net>
+Date: Wed, 4 Aug 2021 10:33:35 -0700
+Subject: [PATCH v2 13/15] hwmon: peci: Add dimmtemp driver
+In-Reply-To: <a576f7075625a476c613b5feb2c4c7033d6c0375.camel@intel.com>
+References: <20210803113134.2262882-1-iwona.winiarska@intel.com>
+ <20210803113134.2262882-14-iwona.winiarska@intel.com>
+ <20210803153937.GA337938@roeck-us.net>
+ <a576f7075625a476c613b5feb2c4c7033d6c0375.camel@intel.com>
+Message-ID: <ff8f8b20-33af-08a0-6036-03429bf69730@roeck-us.net>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-
-
-On Tue, 3 Aug 2021, at 20:03, Andy Shevchenko wrote:
-> On Tue, Aug 3, 2021 at 7:07 AM Andrew Jeffery <andrew@aj.id.au> wrote:
-> > On Thu, 29 Jul 2021, at 17:10, Andy Shevchenko wrote:
-> > > On Thu, Jul 29, 2021 at 3:39 AM Andrew Jeffery <andrew@aj.id.au> wrote:
-> > > > On Wed, 28 Jul 2021, at 18:43, Andy Shevchenko wrote:
-> > > > > On Wed, Jul 28, 2021 at 8:43 AM Andrew Jeffery <andrew@aj.id.au> wrote:
-> > > > > > However, userspace would never have
-> > > > > > got the results it expected with the existing driver implementation, so
-> > > > > > I guess you could argue that no such (useful) userspace exists. Given
-> > > > > > that, we could adopt the strategy of always defining a gpiochip
-> > > > > > covering the whole pin space, and parts of the devicetree binding just
-> > > > > > become redundant.
-> > > > >
-> > > > > I'm lost now. GPIO has its own userspace ABI, how does it work right
-> > > > > now in application to this chip?
-> > > >
-> > > > As above, it "works" if the GPIOs specified in the devicetree are
-> > > > contiguous from line 0. It's broken if they're not.
-> > >
-> > > So, "it never works" means there is no bug. Now, what we need is to
-> > > keep the same enumeration scheme, but if you wish to be used half/half
-> > > (or any other ratio), the driver should do like the above mentioned
-> > > PWM, i.e. register entire space and depending on the requestor either
-> > > proceed with a line or mark it as BUSY.
-> > >
-> > > Ideally, looking into what the chip can do, this should be indeed
-> > > converted to some like pin control + PWM + LED + GPIO drivers. Then
-> > > the function in pin mux configuration can show what exactly is enabled
-> > > on the certain line(s).
-> >
-> > So just to clarify, you want both solutions here?
-> >
-> > 1. A gpiochip that covers the entire pin space
-> > 2. A pinmux implementation that manages pin allocation to the different drivers
-> >
-> > In that case we can largely leave this series as is? We only need to
-> > adjust how we configure the gpiochip by dropping the pin-mapping
-> > implementation?
+On 8/4/21 3:46 AM, Winiarska, Iwona wrote:
+> On Tue, 2021-08-03 at 08:39 -0700, Guenter Roeck wrote:
+>> On Tue, Aug 03, 2021 at 01:31:32PM +0200, Iwona Winiarska wrote:
+>>> Add peci-dimmtemp driver for Temperature Sensor on DIMM readings that
+>>> are accessible via the processor PECI interface.
+>>>
+>>> The main use case for the driver (and PECI interface) is out-of-band
+>>> management, where we're able to obtain thermal readings from an external
+>>> entity connected with PECI, e.g. BMC on server platforms.
+>>>
+>>> Co-developed-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+>>> Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+>>> Signed-off-by: Iwona Winiarska <iwona.winiarska@intel.com>
+>>> Reviewed-by: Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>
+>>> ---
+>>> Note that the timeout was completely removed - we're going to probe
+>>> for detected DIMMs every 5 seconds until we reach "stable" state of
+>>> either getting correct DIMM data or getting all -EINVAL (which
+>>> suggest that the CPU doesn't have any DIMMs).
+>>>
+>>>  ?drivers/hwmon/peci/Kconfig??? |? 13 +
+>>>  ?drivers/hwmon/peci/Makefile?? |?? 2 +
+>>>  ?drivers/hwmon/peci/dimmtemp.c | 614 ++++++++++++++++++++++++++++++++++
+>>>  ?3 files changed, 629 insertions(+)
+>>>  ?create mode 100644 drivers/hwmon/peci/dimmtemp.c
+>>>
+>>> diff --git a/drivers/hwmon/peci/Kconfig b/drivers/hwmon/peci/Kconfig
+>>> index e10eed68d70a..9d32a57badfe 100644
+>>> --- a/drivers/hwmon/peci/Kconfig
+>>> +++ b/drivers/hwmon/peci/Kconfig
+>>> @@ -14,5 +14,18 @@ config SENSORS_PECI_CPUTEMP
+>>>  ????????? This driver can also be built as a module. If so, the module
+>>>  ????????? will be called peci-cputemp.
+>>>   
+>>> +config SENSORS_PECI_DIMMTEMP
+>>> +???????tristate "PECI DIMM temperature monitoring client"
+>>> +???????depends on PECI
+>>> +???????select SENSORS_PECI
+>>> +???????select PECI_CPU
+>>> +???????help
+>>> +???????? If you say yes here you get support for the generic Intel PECI
+>>> hwmon
+>>> +???????? driver which provides Temperature Sensor on DIMM readings that are
+>>> +???????? accessible via the processor PECI interface.
+>>> +
+>>> +???????? This driver can also be built as a module. If so, the module
+>>> +???????? will be called peci-dimmtemp.
+>>> +
+>>>  ?config SENSORS_PECI
+>>>  ????????tristate
+>>> diff --git a/drivers/hwmon/peci/Makefile b/drivers/hwmon/peci/Makefile
+>>> index e8a0ada5ab1f..191cfa0227f3 100644
+>>> --- a/drivers/hwmon/peci/Makefile
+>>> +++ b/drivers/hwmon/peci/Makefile
+>>> @@ -1,5 +1,7 @@
+>>>  ?# SPDX-License-Identifier: GPL-2.0-only
+>>>   
+>>>  ?peci-cputemp-y := cputemp.o
+>>> +peci-dimmtemp-y := dimmtemp.o
+>>>   
+>>>  ?obj-$(CONFIG_SENSORS_PECI_CPUTEMP)?????+= peci-cputemp.o
+>>> +obj-$(CONFIG_SENSORS_PECI_DIMMTEMP)????+= peci-dimmtemp.o
+>>> diff --git a/drivers/hwmon/peci/dimmtemp.c b/drivers/hwmon/peci/dimmtemp.c
+>>> new file mode 100644
+>>> index 000000000000..6264c29bb6c0
+>>> --- /dev/null
+>>> +++ b/drivers/hwmon/peci/dimmtemp.c
+>>> @@ -0,0 +1,614 @@
+>>> +// SPDX-License-Identifier: GPL-2.0-only
+>>> +// Copyright (c) 2018-2021 Intel Corporation
+>>> +
+>>> +#include <linux/auxiliary_bus.h>
+>>> +#include <linux/bitfield.h>
+>>> +#include <linux/bitops.h>
+>>> +#include <linux/hwmon.h>
+>>> +#include <linux/jiffies.h>
+>>> +#include <linux/module.h>
+>>> +#include <linux/peci.h>
+>>> +#include <linux/peci-cpu.h>
+>>> +#include <linux/units.h>
+>>> +#include <linux/workqueue.h>
+>>> +#include <linux/x86/intel-family.h>
+>>> +
+>>> +#include "common.h"
+>>> +
+>>> +#define DIMM_MASK_CHECK_DELAY_JIFFIES??msecs_to_jiffies(5000)
+>>> +
+>>> +/* Max number of channel ranks and DIMM index per channel */
+>>> +#define CHAN_RANK_MAX_ON_HSX???8
+>>> +#define DIMM_IDX_MAX_ON_HSX????3
+>>> +#define CHAN_RANK_MAX_ON_BDX???4
+>>> +#define DIMM_IDX_MAX_ON_BDX????3
+>>> +#define CHAN_RANK_MAX_ON_BDXD??2
+>>> +#define DIMM_IDX_MAX_ON_BDXD???2
+>>> +#define CHAN_RANK_MAX_ON_SKX???6
+>>> +#define DIMM_IDX_MAX_ON_SKX????2
+>>> +#define CHAN_RANK_MAX_ON_ICX???8
+>>> +#define DIMM_IDX_MAX_ON_ICX????2
+>>> +#define CHAN_RANK_MAX_ON_ICXD??4
+>>> +#define DIMM_IDX_MAX_ON_ICXD???2
+>>> +
+>>> +#define CHAN_RANK_MAX??????????CHAN_RANK_MAX_ON_HSX
+>>> +#define DIMM_IDX_MAX???????????DIMM_IDX_MAX_ON_HSX
+>>> +#define DIMM_NUMS_MAX??????????(CHAN_RANK_MAX * DIMM_IDX_MAX)
+>>> +
+>>> +#define CPU_SEG_MASK???????????GENMASK(23, 16)
+>>> +#define GET_CPU_SEG(x)?????????(((x) & CPU_SEG_MASK) >> 16)
+>>> +#define CPU_BUS_MASK???????????GENMASK(7, 0)
+>>> +#define GET_CPU_BUS(x)?????????((x) & CPU_BUS_MASK)
+>>> +
+>>> +#define DIMM_TEMP_MAX??????????GENMASK(15, 8)
+>>> +#define DIMM_TEMP_CRIT?????????GENMASK(23, 16)
+>>> +#define GET_TEMP_MAX(x)????????????????(((x) & DIMM_TEMP_MAX) >> 8)
+>>> +#define GET_TEMP_CRIT(x)???????(((x) & DIMM_TEMP_CRIT) >> 16)
+>>> +
+>>> +struct peci_dimmtemp;
+>>> +
+>>> +struct dimm_info {
+>>> +???????int chan_rank_max;
+>>> +???????int dimm_idx_max;
+>>> +???????u8 min_peci_revision;
+>>> +???????int (*read_thresholds)(struct peci_dimmtemp *priv, int dimm_order,
+>>> +????????????????????????????? int chan_rank, u32 *data);
+>>> +};
+>>> +
+>>> +struct peci_dimm_thresholds {
+>>> +???????long temp_max;
+>>> +???????long temp_crit;
+>>> +???????struct peci_sensor_state state;
+>>> +};
+>>> +
+>>> +enum peci_dimm_threshold_type {
+>>> +???????temp_max_type,
+>>> +???????temp_crit_type,
+>>> +};
+>>> +
+>>> +struct peci_dimmtemp {
+>>> +???????struct peci_device *peci_dev;
+>>> +???????struct device *dev;
+>>> +???????const char *name;
+>>> +???????const struct dimm_info *gen_info;
+>>> +???????struct delayed_work detect_work;
+>>> +???????struct {
+>>> +???????????????struct peci_sensor_data temp;
+>>> +???????????????struct peci_dimm_thresholds thresholds;
+>>> +???????} dimm[DIMM_NUMS_MAX];
+>>> +???????char **dimmtemp_label;
+>>> +???????DECLARE_BITMAP(dimm_mask, DIMM_NUMS_MAX);
+>>> +};
+>>> +
+>>> +static u8 __dimm_temp(u32 reg, int dimm_order)
+>>> +{
+>>> +???????return (reg >> (dimm_order * 8)) & 0xff;
+>>> +}
+>>> +
+>>> +static int get_dimm_temp(struct peci_dimmtemp *priv, int dimm_no, long
+>>> *val)
+>>> +{
+>>> +???????int dimm_order = dimm_no % priv->gen_info->dimm_idx_max;
+>>> +???????int chan_rank = dimm_no / priv->gen_info->dimm_idx_max;
+>>> +???????u32 data;
+>>> +???????int ret;
+>>
+>>  ????????int ret = 0;
+>>
+>>> +
+>>> +???????mutex_lock(&priv->dimm[dimm_no].temp.state.lock);
+>>> +???????if (!peci_sensor_need_update(&priv->dimm[dimm_no].temp.state))
+>>> +???????????????goto skip_update;
+>>> +
+>>> +???????ret = peci_pcs_read(priv->peci_dev, PECI_PCS_DDR_DIMM_TEMP,
+>>> chan_rank, &data);
+>>> +???????if (ret) {
+>>> +???????????????mutex_unlock(&priv->dimm[dimm_no].temp.state.lock);
+>>> +???????????????return ret;
+>>> +???????}
+>>
+>>  ????????if (ret)
+>>  ????????????????goto unlock;
+>>
+>>> +
+>>> +???????priv->dimm[dimm_no].temp.value = __dimm_temp(data, dimm_order) *
+>>> MILLIDEGREE_PER_DEGREE;
+>>> +
+>>> +???????peci_sensor_mark_updated(&priv->dimm[dimm_no].temp.state);
+>>> +
+>>> +skip_update:
+>>> +???????*val = priv->dimm[dimm_no].temp.value;
+>>
+>> unlock:
+>>> +???????mutex_unlock(&priv->dimm[dimm_no].temp.state.lock);
+>>> +???????return 0;
+>>
+>>  ????????return ret;
 > 
-> Nope. It's far from what I think of. Re-reading again your cover
-> letter it points out that pin mux per se does not exist in the
-> hardware. In this case things become a bit too complicated, but we
-> still may manage to handle them. Before I was thinking about this
-> hierarchy
+> Ack.
 > 
-> 1. pinmux driver (which is actually the main driver here)
-> 2. LED driver (using regmap API)
-> 3. GPIO driver (via gpio-regmap)
-> 4. PWM driver.
-
-Okay - I need to look at gpio-regmap, this wasn't something I was aware 
-of.
-
+>>
+>>> +}
+>>> +
+>>> +static int update_thresholds(struct peci_dimmtemp *priv, int dimm_no)
+>>> +{
+>>> +???????int dimm_order = dimm_no % priv->gen_info->dimm_idx_max;
+>>> +???????int chan_rank = dimm_no / priv->gen_info->dimm_idx_max;
+>>> +???????u32 data;
+>>> +???????int ret;
+>>> +
+>>> +???????if (!peci_sensor_need_update(&priv->dimm[dimm_no].thresholds.state))
+>>> +???????????????return 0;
+>>> +
+>>> +???????ret = priv->gen_info->read_thresholds(priv, dimm_order, chan_rank,
+>>> &data);
+>>> +???????if (ret == -ENODATA) /* Use default or previous value */
+>>> +???????????????return 0;
+>>> +???????if (ret)
+>>> +???????????????return ret;
+>>> +
+>>> +???????priv->dimm[dimm_no].thresholds.temp_max = GET_TEMP_MAX(data) *
+>>> MILLIDEGREE_PER_DEGREE;
+>>> +???????priv->dimm[dimm_no].thresholds.temp_crit = GET_TEMP_CRIT(data) *
+>>> MILLIDEGREE_PER_DEGREE;
+>>> +
+>>> +???????peci_sensor_mark_updated(&priv->dimm[dimm_no].thresholds.state);
+>>> +
+>>> +???????return 0;
+>>> +}
+>>> +
+>>> +static int get_dimm_thresholds(struct peci_dimmtemp *priv, enum
+>>> peci_dimm_threshold_type type,
+>>> +????????????????????????????? int dimm_no, long *val)
+>>> +{
+>>> +???????int ret;
+>>> +
+>>> +???????mutex_lock(&priv->dimm[dimm_no].thresholds.state.lock);
+>>> +???????ret = update_thresholds(priv, dimm_no);
+>>> +???????if (ret)
+>>> +???????????????goto unlock;
+>>> +
+>>> +???????switch (type) {
+>>> +???????case temp_max_type:
+>>> +???????????????*val = priv->dimm[dimm_no].thresholds.temp_max;
+>>> +???????????????break;
+>>> +???????case temp_crit_type:
+>>> +???????????????*val = priv->dimm[dimm_no].thresholds.temp_crit;
+>>> +???????????????break;
+>>> +???????default:
+>>> +???????????????ret = -EOPNOTSUPP;
+>>> +???????????????break;
+>>> +???????}
+>>> +unlock:
+>>> +???????mutex_unlock(&priv->dimm[dimm_no].thresholds.state.lock);
+>>> +
+>>> +???????return ret;
+>>> +}
+>>> +
+>>> +static int dimmtemp_read_string(struct device *dev,
+>>> +???????????????????????????????enum hwmon_sensor_types type,
+>>> +???????????????????????????????u32 attr, int channel, const char **str)
+>>> +{
+>>> +???????struct peci_dimmtemp *priv = dev_get_drvdata(dev);
+>>> +
+>>> +???????if (attr != hwmon_temp_label)
+>>> +???????????????return -EOPNOTSUPP;
+>>> +
+>>> +???????*str = (const char *)priv->dimmtemp_label[channel];
+>>> +
+>>> +???????return 0;
+>>> +}
+>>> +
+>>> +static int dimmtemp_read(struct device *dev, enum hwmon_sensor_types type,
+>>> +??????????????????????? u32 attr, int channel, long *val)
+>>> +{
+>>> +???????struct peci_dimmtemp *priv = dev_get_drvdata(dev);
+>>> +
+>>> +???????switch (attr) {
+>>> +???????case hwmon_temp_input:
+>>> +???????????????return get_dimm_temp(priv, channel, val);
+>>> +???????case hwmon_temp_max:
+>>> +???????????????return get_dimm_thresholds(priv, temp_max_type, channel,
+>>> val);
+>>> +???????case hwmon_temp_crit:
+>>> +???????????????return get_dimm_thresholds(priv, temp_crit_type, channel,
+>>> val);
+>>> +???????default:
+>>> +???????????????break;
+>>> +???????}
+>>> +
+>>> +???????return -EOPNOTSUPP;
+>>> +}
+>>> +
+>>> +static umode_t dimmtemp_is_visible(const void *data, enum
+>>> hwmon_sensor_types type,
+>>> +????????????????????????????????? u32 attr, int channel)
+>>> +{
+>>> +???????const struct peci_dimmtemp *priv = data;
+>>> +
+>>> +???????if (test_bit(channel, priv->dimm_mask))
+>>> +???????????????return 0444;
+>>> +
+>>> +???????return 0;
+>>> +}
+>>> +
+>>> +static const struct hwmon_ops peci_dimmtemp_ops = {
+>>> +???????.is_visible = dimmtemp_is_visible,
+>>> +???????.read_string = dimmtemp_read_string,
+>>> +???????.read = dimmtemp_read,
+>>> +};
+>>> +
+>>> +static int check_populated_dimms(struct peci_dimmtemp *priv)
+>>> +{
+>>> +???????int chan_rank_max = priv->gen_info->chan_rank_max;
+>>> +???????int dimm_idx_max = priv->gen_info->dimm_idx_max;
+>>> +???????u32 chan_rank_empty = 0;
+>>> +???????u64 dimm_mask = 0;
+>>> +???????int chan_rank, dimm_idx, ret;
+>>> +???????u32 pcs;
+>>> +
+>>> +???????BUILD_BUG_ON(CHAN_RANK_MAX > 32);
+>>> +???????BUILD_BUG_ON(DIMM_NUMS_MAX > 64);
+>>
+>> I don't immediately see the value of those build bugs. What happens if
+>> CHAN_RANK_MAX > 32 or DIMM_NUMS_MAX > 64 ? Where do those limits come
+>> from ?
 > 
-> Now what we need here is some kind of "virtual" pinmux. Do I
-> understand correctly?
-
-Possibly. My thoughts went to pinctrl as part of its job is mutual 
-exclusion *and* pin mapping, plus we get the nice debugfs interface 
-with the pin allocation details. The need for pin mapping came from 
-trying to stay true to the intent of the existing devicetree binding. 
-If we throw that out and have the gpiochip cover the pin space for the 
-chip then using pinctrl only gives us mutual exclusion and the debugfs 
-interface. pinctrl seems pretty heavy-weight to use *just* for mutual 
-exclusion - with no requirement for pin mapping I feel whether or not 
-we go this way hinges on the utility of debugfs.
-
-As outlined earlier, there's no mux hardware, the only thing that 
-changes is software's intent.
-
+> Supported HW doesn't come near the limit for now - it's just an "artificial"
+> limit imposed by variables we're using (u64 for dimm_mask and u32 for
+> chan_rank_empty).
 > 
-> To be clear: I do not like putting everything into one driver when the
-> logical parts may be separated.
 
-Right, its already a bit unwieldy.
+Please use a value derived from the size of those variables for the check
+to clarify and explain the constraints.
 
-Andrew
+Thanks,
+Guenter
