@@ -1,1303 +1,839 @@
-From: rentao.bupt@gmail.com <rentao.bupt@gmail.com>
-Date: Thu,  5 Aug 2021 15:28:18 -0700
-Subject: [PATCH v2 6/6] ARM: dts: aspeed: Add Facebook Fuji (AST2600) BMC
-In-Reply-To: <20210805222818.8391-1-rentao.bupt@gmail.com>
-References: <20210805222818.8391-1-rentao.bupt@gmail.com>
-Message-ID: <20210805222818.8391-7-rentao.bupt@gmail.com>
+From: Winiarska, Iwona <iwona.winiarska@intel.com>
+Date: Wed, 4 Aug 2021 10:43:31 +0000
+Subject: [PATCH v2 12/15] hwmon: peci: Add cputemp driver
+In-Reply-To: <cd7e15fb-04ba-1eb3-e6b9-43f6d904125e@roeck-us.net>
+References: <20210803113134.2262882-1-iwona.winiarska@intel.com>
+ <20210803113134.2262882-13-iwona.winiarska@intel.com>
+ <cd7e15fb-04ba-1eb3-e6b9-43f6d904125e@roeck-us.net>
+Message-ID: <7271a56f22ef33cf178683456dbb7c216951018b.camel@intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Tao Ren <rentao.bupt@gmail.com>
+On Tue, 2021-08-03 at 08:24 -0700, Guenter Roeck wrote:
+> On 8/3/21 4:31 AM, Iwona Winiarska wrote:
+> > Add peci-cputemp driver for Digital Thermal Sensor (DTS) thermal
+> > readings of the processor package and processor cores that are
+> > accessible via the PECI interface.
+> > 
+> > The main use case for the driver (and PECI interface) is out-of-band
+> > management, where we're able to obtain the DTS readings from an external
+> > entity connected with PECI, e.g. BMC on server platforms.
+> > 
+> > Co-developed-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+> > Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+> > Signed-off-by: Iwona Winiarska <iwona.winiarska@intel.com>
+> > Reviewed-by: Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>
+> > ---
+> > ? MAINTAINERS????????????????? |?? 7 +
+> > ? drivers/hwmon/Kconfig??????? |?? 2 +
+> > ? drivers/hwmon/Makefile?????? |?? 1 +
+> > ? drivers/hwmon/peci/Kconfig?? |? 18 ++
+> > ? drivers/hwmon/peci/Makefile? |?? 5 +
+> > ? drivers/hwmon/peci/common.h? |? 58 ++++
+> > ? drivers/hwmon/peci/cputemp.c | 591 +++++++++++++++++++++++++++++++++++
+> > ? 7 files changed, 682 insertions(+)
+> > ? create mode 100644 drivers/hwmon/peci/Kconfig
+> > ? create mode 100644 drivers/hwmon/peci/Makefile
+> > ? create mode 100644 drivers/hwmon/peci/common.h
+> > ? create mode 100644 drivers/hwmon/peci/cputemp.c
+> > 
+> > diff --git a/MAINTAINERS b/MAINTAINERS
+> > index 3f5d48e1d143..e36b5c0824e3 100644
+> > --- a/MAINTAINERS
+> > +++ b/MAINTAINERS
+> > @@ -14512,6 +14512,13 @@ L:?????platform-driver-x86 at vger.kernel.org
+> > ? S:????Maintained
+> > ? F:????drivers/platform/x86/peaq-wmi.c
+> > ? 
+> > +PECI HARDWARE MONITORING DRIVERS
+> > +M:?????Iwona Winiarska <iwona.winiarska@intel.com>
+> > +R:?????Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+> > +L:?????linux-hwmon at vger.kernel.org
+> > +S:?????Supported
+> > +F:?????drivers/hwmon/peci/
+> > +
+> > ? PECI SUBSYSTEM
+> > ? M:????Iwona Winiarska <iwona.winiarska@intel.com>
+> > ? R:????Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+> > diff --git a/drivers/hwmon/Kconfig b/drivers/hwmon/Kconfig
+> > index e3675377bc5d..61c0e3404415 100644
+> > --- a/drivers/hwmon/Kconfig
+> > +++ b/drivers/hwmon/Kconfig
+> > @@ -1507,6 +1507,8 @@ config SENSORS_PCF8591
+> > ????????? These devices are hard to detect and rarely found on mainstream
+> > ????????? hardware. If unsure, say N.
+> > ? 
+> > +source "drivers/hwmon/peci/Kconfig"
+> > +
+> > ? source "drivers/hwmon/pmbus/Kconfig"
+> > ? 
+> > ? config SENSORS_PWM_FAN
+> > diff --git a/drivers/hwmon/Makefile b/drivers/hwmon/Makefile
+> > index d712c61c1f5e..f52331f212ed 100644
+> > --- a/drivers/hwmon/Makefile
+> > +++ b/drivers/hwmon/Makefile
+> > @@ -202,6 +202,7 @@ obj-$(CONFIG_SENSORS_WM8350)????????+= wm8350-hwmon.o
+> > ? obj-$(CONFIG_SENSORS_XGENE)???+= xgene-hwmon.o
+> > ? 
+> > ? obj-$(CONFIG_SENSORS_OCC)?????+= occ/
+> > +obj-$(CONFIG_SENSORS_PECI)?????+= peci/
+> > ? obj-$(CONFIG_PMBUS)???????????+= pmbus/
+> > ? 
+> > ? ccflags-$(CONFIG_HWMON_DEBUG_CHIP) := -DDEBUG
+> > diff --git a/drivers/hwmon/peci/Kconfig b/drivers/hwmon/peci/Kconfig
+> > new file mode 100644
+> > index 000000000000..e10eed68d70a
+> > --- /dev/null
+> > +++ b/drivers/hwmon/peci/Kconfig
+> > @@ -0,0 +1,18 @@
+> > +# SPDX-License-Identifier: GPL-2.0-only
+> > +
+> > +config SENSORS_PECI_CPUTEMP
+> > +???????tristate "PECI CPU temperature monitoring client"
+> > +???????depends on PECI
+> > +???????select SENSORS_PECI
+> > +???????select PECI_CPU
+> > +???????help
+> > +???????? If you say yes here you get support for the generic Intel PECI
+> > +???????? cputemp driver which provides Digital Thermal Sensor (DTS) thermal
+> > +???????? readings of the CPU package and CPU cores that are accessible via
+> > +???????? the processor PECI interface.
+> > +
+> > +???????? This driver can also be built as a module. If so, the module
+> > +???????? will be called peci-cputemp.
+> > +
+> > +config SENSORS_PECI
+> > +???????tristate
+> > diff --git a/drivers/hwmon/peci/Makefile b/drivers/hwmon/peci/Makefile
+> > new file mode 100644
+> > index 000000000000..e8a0ada5ab1f
+> > --- /dev/null
+> > +++ b/drivers/hwmon/peci/Makefile
+> > @@ -0,0 +1,5 @@
+> > +# SPDX-License-Identifier: GPL-2.0-only
+> > +
+> > +peci-cputemp-y := cputemp.o
+> > +
+> > +obj-$(CONFIG_SENSORS_PECI_CPUTEMP)?????+= peci-cputemp.o
+> > diff --git a/drivers/hwmon/peci/common.h b/drivers/hwmon/peci/common.h
+> > new file mode 100644
+> > index 000000000000..734506b0eca2
+> > --- /dev/null
+> > +++ b/drivers/hwmon/peci/common.h
+> > @@ -0,0 +1,58 @@
+> > +/* SPDX-License-Identifier: GPL-2.0-only */
+> > +/* Copyright (c) 2021 Intel Corporation */
+> > +
+> > +#include <linux/mutex.h>
+> > +#include <linux/types.h>
+> > +
+> > +#ifndef __PECI_HWMON_COMMON_H
+> > +#define __PECI_HWMON_COMMON_H
+> > +
+> > +#define PECI_HWMON_UPDATE_INTERVAL?????HZ
+> > +
+> > +/**
+> > + * struct peci_sensor_state - PECI state information
+> > + * @valid: flag to indicate the sensor value is valid
+> > + * @last_updated: time of the last update in jiffies
+> > + * @lock: mutex to protect sensor access
+> > + */
+> > +struct peci_sensor_state {
+> > +???????bool valid;
+> > +???????unsigned long last_updated;
+> > +???????struct mutex lock; /* protect sensor access */
+> > +};
+> > +
+> > +/**
+> > + * struct peci_sensor_data - PECI sensor information
+> > + * @value: sensor value in milli units
+> > + * @state: sensor update state
+> > + */
+> > +
+> > +struct peci_sensor_data {
+> > +???????s32 value;
+> > +???????struct peci_sensor_state state;
+> > +};
+> > +
+> > +/**
+> > + * peci_sensor_need_update() - check whether sensor update is needed or not
+> > + * @sensor: pointer to sensor data struct
+> > + *
+> > + * Return: true if update is needed, false if not.
+> > + */
+> > +
+> > +static inline bool peci_sensor_need_update(struct peci_sensor_state *state)
+> > +{
+> > +???????return !state->valid ||
+> > +????????????? time_after(jiffies, state->last_updated +
+> > PECI_HWMON_UPDATE_INTERVAL);
+> > +}
+> > +
+> > +/**
+> > + * peci_sensor_mark_updated() - mark the sensor is updated
+> > + * @sensor: pointer to sensor data struct
+> > + */
+> > +static inline void peci_sensor_mark_updated(struct peci_sensor_state
+> > *state)
+> > +{
+> > +???????state->valid = true;
+> > +???????state->last_updated = jiffies;
+> > +}
+> > +
+> > +#endif /* __PECI_HWMON_COMMON_H */
+> > diff --git a/drivers/hwmon/peci/cputemp.c b/drivers/hwmon/peci/cputemp.c
+> > new file mode 100644
+> > index 000000000000..9c6858a9fb6d
+> > --- /dev/null
+> > +++ b/drivers/hwmon/peci/cputemp.c
+> > @@ -0,0 +1,591 @@
+> > +// SPDX-License-Identifier: GPL-2.0-only
+> > +// Copyright (c) 2018-2021 Intel Corporation
+> > +
+> > +#include <linux/auxiliary_bus.h>
+> > +#include <linux/bitfield.h>
+> > +#include <linux/bitops.h>
+> > +#include <linux/hwmon.h>
+> > +#include <linux/jiffies.h>
+> > +#include <linux/module.h>
+> > +#include <linux/peci.h>
+> > +#include <linux/peci-cpu.h>
+> > +#include <linux/units.h>
+> > +#include <linux/x86/intel-family.h>
+> > +
+> > +#include "common.h"
+> > +
+> > +#define CORE_NUMS_MAX??????????64
+> > +
+> > +#define BASE_CHANNEL_NUMS??????5
+> > +#define CPUTEMP_CHANNEL_NUMS???(BASE_CHANNEL_NUMS + CORE_NUMS_MAX)
+> > +
+> > +#define TEMP_TARGET_FAN_TEMP_MASK??????GENMASK(15, 8)
+> > +#define TEMP_TARGET_REF_TEMP_MASK??????GENMASK(23, 16)
+> > +#define TEMP_TARGET_TJ_OFFSET_MASK?????GENMASK(29, 24)
+> > +
+> > +#define DTS_MARGIN_MASK????????????????GENMASK(15, 0)
+> > +#define PCS_MODULE_TEMP_MASK???GENMASK(15, 0)
+> > +
+> > +#define DTS_FIXED_POINT_FRACTION???????64
+> > +
+> > +struct resolved_cores_reg {
+> > +???????u8 bus;
+> > +???????u8 dev;
+> > +???????u8 func;
+> > +???????u8 offset;
+> > +};
+> > +
+> > +struct cpu_info {
+> > +???????struct resolved_cores_reg *reg;
+> > +???????u8 min_peci_revision;
+> > +};
+> > +
+> > +struct peci_temp_target {
+> > +???????s32 tcontrol;
+> > +???????s32 tthrottle;
+> > +???????s32 tjmax;
+> > +???????struct peci_sensor_state state;
+> > +};
+> > +
+> > +enum peci_temp_target_type {
+> > +???????tcontrol_type,
+> > +???????tthrottle_type,
+> > +???????tjmax_type,
+> > +???????crit_hyst_type,
+> > +};
+> > +
+> > +struct peci_cputemp {
+> > +???????struct peci_device *peci_dev;
+> > +???????struct device *dev;
+> > +???????const char *name;
+> > +???????const struct cpu_info *gen_info;
+> > +???????struct {
+> > +???????????????struct peci_temp_target target;
+> > +???????????????struct peci_sensor_data die;
+> > +???????????????struct peci_sensor_data dts;
+> > +???????????????struct peci_sensor_data core[CORE_NUMS_MAX];
+> > +???????} temp;
+> > +???????const char **coretemp_label;
+> > +???????DECLARE_BITMAP(core_mask, CORE_NUMS_MAX);
+> > +};
+> > +
+> > +enum cputemp_channels {
+> > +???????channel_die,
+> > +???????channel_dts,
+> > +???????channel_tcontrol,
+> > +???????channel_tthrottle,
+> > +???????channel_tjmax,
+> > +???????channel_core,
+> > +};
+> > +
+> > +static const char * const cputemp_label[BASE_CHANNEL_NUMS] = {
+> > +???????"Die",
+> > +???????"DTS",
+> > +???????"Tcontrol",
+> > +???????"Tthrottle",
+> > +???????"Tjmax",
+> > +};
+> > +
+> > +static int update_temp_target(struct peci_cputemp *priv)
+> > +{
+> > +???????s32 tthrottle_offset, tcontrol_margin;
+> > +???????u32 pcs;
+> > +???????int ret;
+> > +
+> > +???????if (!peci_sensor_need_update(&priv->temp.target.state))
+> > +???????????????return 0;
+> > +
+> > +???????ret = peci_pcs_read(priv->peci_dev, PECI_PCS_TEMP_TARGET, 0, &pcs);
+> > +???????if (ret)
+> > +???????????????return ret;
+> > +
+> > +???????priv->temp.target.tjmax =
+> > +???????????????FIELD_GET(TEMP_TARGET_REF_TEMP_MASK, pcs) *
+> > MILLIDEGREE_PER_DEGREE;
+> > +
+> > +???????tcontrol_margin = FIELD_GET(TEMP_TARGET_FAN_TEMP_MASK, pcs);
+> > +???????tcontrol_margin = sign_extend32(tcontrol_margin, 7) *
+> > MILLIDEGREE_PER_DEGREE;
+> > +???????priv->temp.target.tcontrol = priv->temp.target.tjmax -
+> > tcontrol_margin;
+> > +
+> > +???????tthrottle_offset = FIELD_GET(TEMP_TARGET_TJ_OFFSET_MASK, pcs) *
+> > MILLIDEGREE_PER_DEGREE;
+> > +???????priv->temp.target.tthrottle = priv->temp.target.tjmax -
+> > tthrottle_offset;
+> > +
+> > +???????peci_sensor_mark_updated(&priv->temp.target.state);
+> > +
+> > +???????return 0;
+> > +}
+> > +
+> > +static int get_temp_target(struct peci_cputemp *priv, enum
+> > peci_temp_target_type type, long *val)
+> > +{
+> > +???????int ret;
+> > +
+> > +???????mutex_lock(&priv->temp.target.state.lock);
+> > +
+> > +???????ret = update_temp_target(priv);
+> > +???????if (ret)
+> > +???????????????goto unlock;
+> > +
+> > +???????switch (type) {
+> > +???????case tcontrol_type:
+> > +???????????????*val = priv->temp.target.tcontrol;
+> > +???????????????break;
+> > +???????case tthrottle_type:
+> > +???????????????*val = priv->temp.target.tthrottle;
+> > +???????????????break;
+> > +???????case tjmax_type:
+> > +???????????????*val = priv->temp.target.tjmax;
+> > +???????????????break;
+> > +???????case crit_hyst_type:
+> > +???????????????*val = priv->temp.target.tjmax - priv->temp.target.tcontrol;
+> > +???????????????break;
+> > +???????default:
+> > +???????????????ret = -EOPNOTSUPP;
+> > +???????????????break;
+> > +???????}
+> > +unlock:
+> > +???????mutex_unlock(&priv->temp.target.state.lock);
+> > +
+> > +???????return ret;
+> > +}
+> > +
+> > +/*
+> > + * Processors return a value of DTS reading in S10.6 fixed point format
+> > + * (16 bits: 10-bit signed magnitude, 6-bit fraction).
+> > + * Error codes:
+> > + *?? 0x8000: General sensor error
+> > + *?? 0x8001: Reserved
+> > + *?? 0x8002: Underflow on reading value
+> > + *?? 0x8003-0x81ff: Reserved
+> > + */
+> > +static bool dts_valid(s32 val)
+> > +{
+> > +???????return val < 0x8000 || val > 0x81ff;
+> > +}
+> > +
+> > +static s32 dts_to_millidegree(s32 val)
+> > +{
+> > +???????return sign_extend32(val, 15) * MILLIDEGREE_PER_DEGREE /
+> > DTS_FIXED_POINT_FRACTION;
+> > +}
+> > +
+> > +static int get_die_temp(struct peci_cputemp *priv, long *val)
+> > +{
+> > +???????long tjmax;
+> > +???????s16 temp;
+> > +???????int ret;
+> > +
+> > +???????mutex_lock(&priv->temp.die.state.lock);
+> > +???????if (!peci_sensor_need_update(&priv->temp.die.state))
+> > +???????????????goto skip_update;
+> > +
+> > +???????ret = peci_temp_read(priv->peci_dev, &temp);
+> > +???????if (ret)
+> > +???????????????goto err_unlock;
+> > +
+> > +???????if (!dts_valid(temp)) {
+> > +???????????????ret = -EIO;
+> > +???????????????goto err_unlock;
+> > +???????}
+> > +
+> > +???????ret = get_temp_target(priv, tjmax_type, &tjmax);
+> > +???????if (ret)
+> > +???????????????goto err_unlock;
+> > +
+> > +???????priv->temp.die.value = (s32)tjmax + dts_to_millidegree(temp);
+> > +
+> > +???????peci_sensor_mark_updated(&priv->temp.die.state);
+> > +
+> > +skip_update:
+> > +???????*val = priv->temp.die.value;
+> > +???????mutex_unlock(&priv->temp.die.state.lock);
+> > +
+> > +???????return 0;
+> > +
+> > +err_unlock:
+> > +???????mutex_unlock(&priv->temp.die.state.lock);
+> > +???????return ret;
+> > +}
+> > +
+> > +static int get_dts(struct peci_cputemp *priv, long *val)
+> > +{
+> > +???????s32 dts_margin;
+> > +???????long tcontrol;
+> > +???????u32 pcs;
+> > +???????int ret;
+> > +
+> > +???????mutex_lock(&priv->temp.dts.state.lock);
+> > +???????if (!peci_sensor_need_update(&priv->temp.dts.state))
+> > +???????????????goto skip_update;
+> > +
+> > +???????ret = peci_pcs_read(priv->peci_dev, PECI_PCS_THERMAL_MARGIN, 0,
+> > &pcs);
+> > +???????if (ret)
+> > +???????????????goto err_unlock;
+> > +
+> > +???????dts_margin = FIELD_GET(DTS_MARGIN_MASK, pcs);
+> > +???????if (!dts_valid(dts_margin)) {
+> > +???????????????ret = -EIO;
+> > +???????????????goto err_unlock;
+> > +???????}
+> > +
+> > +???????ret = get_temp_target(priv, tcontrol_type, &tcontrol);
+> > +???????if (ret)
+> > +???????????????goto err_unlock;
+> > +
+> > +???????/* Note that the tcontrol should be available before calling it */
+> > +???????priv->temp.dts.value = (s32)tcontrol -
+> > dts_to_millidegree(dts_margin);
+> > +
+> > +???????peci_sensor_mark_updated(&priv->temp.dts.state);
+> > +
+> > +skip_update:
+> > +???????*val = priv->temp.dts.value;
+> > +???????mutex_unlock(&priv->temp.dts.state.lock);
+> > +
+> > +???????return 0;
+> > +
+> > +err_unlock:
+> > +???????mutex_unlock(&priv->temp.dts.state.lock);
+> > +???????return ret;
+> 
+> Simplify (see below)
+> 
+> > +}
+> > +
+> > +static int get_core_temp(struct peci_cputemp *priv, int core_index, long
+> > *val)
+> > +{
+> > +???????s32 core_dts_margin;
+> > +???????long tjmax;
+> > +???????u32 pcs;
+> > +???????int ret;
+> 
+> ????????int ret = 0;
+> 
+> to handle simplification below.
+> 
+> > +
+> > +???????mutex_lock(&priv->temp.core[core_index].state.lock);
+> > +???????if (!peci_sensor_need_update(&priv->temp.core[core_index].state))
+> > +???????????????goto skip_update;
+> > +
+> > +???????ret = peci_pcs_read(priv->peci_dev, PECI_PCS_MODULE_TEMP,
+> > core_index, &pcs);
+> > +???????if (ret)
+> > +???????????????goto err_unlock;
+> > +
+> > +???????core_dts_margin = FIELD_GET(PCS_MODULE_TEMP_MASK, pcs);
+> > +???????if (!dts_valid(core_dts_margin)) {
+> > +???????????????ret = -EIO;
+> > +???????????????goto err_unlock;
+> > +???????}
+> > +
+> > +???????ret = get_temp_target(priv, tjmax_type, &tjmax);
+> > +???????if (ret)
+> > +???????????????goto err_unlock;
+> > +
+> > +???????/* Note that the tjmax should be available before calling it */
+> > +???????priv->temp.core[core_index].value = (s32)tjmax +
+> > dts_to_millidegree(core_dts_margin);
+> > +
+> > +???????peci_sensor_mark_updated(&priv->temp.core[core_index].state);
+> > +
+> > +skip_update:
+> > +???????*val = priv->temp.core[core_index].value;
+> > +???????mutex_unlock(&priv->temp.core[core_index].state.lock);
+> > +
+> > +???????return 0;
+> > +
+> > +err_unlock:
+> > +???????mutex_unlock(&priv->temp.core[core_index].state.lock);
+> > +???????return ret;
+> 
+> Simplify:
+> 
+> skip_update:
+> ????????*val = priv->temp.core[core_index].value;
+> err_unlock:
+> ????????mutex_unlock(&priv->temp.core[core_index].state.lock);
+> ????????return ret;
 
-Add initial version of device tree for Facebook Fuji (AST2600) BMC.
+Sure, I'll use the same pattern in other places as well.
 
-Fuji is Facebook's next generation switch platform with an AST2600 BMC
-integrated for health monitoring purpose.
+Thank you
+-Iwona
 
-Signed-off-by: Tao Ren <rentao.bupt@gmail.com>
----
- Changes in v2:
-  - added more notes about the new platform in patch description.
-  - "spi1" was removed as the driver is not ready.
-  - "mac3" properties were updated with pinctrl, and etc.
-
- arch/arm/boot/dts/Makefile                    |    1 +
- .../arm/boot/dts/aspeed-bmc-facebook-fuji.dts | 1251 +++++++++++++++++
- 2 files changed, 1252 insertions(+)
- create mode 100644 arch/arm/boot/dts/aspeed-bmc-facebook-fuji.dts
-
-diff --git a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
-index 7cbb982a7c8b..9765e2ff5bfe 100644
---- a/arch/arm/boot/dts/Makefile
-+++ b/arch/arm/boot/dts/Makefile
-@@ -1412,6 +1412,7 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
- 	aspeed-bmc-facebook-cloudripper.dtb \
- 	aspeed-bmc-facebook-cmm.dtb \
- 	aspeed-bmc-facebook-elbert.dtb \
-+	aspeed-bmc-facebook-fuji.dtb \
- 	aspeed-bmc-facebook-galaxy100.dtb \
- 	aspeed-bmc-facebook-minipack.dtb \
- 	aspeed-bmc-facebook-tiogapass.dtb \
-diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-fuji.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-fuji.dts
-new file mode 100644
-index 000000000000..af58a73bbc49
---- /dev/null
-+++ b/arch/arm/boot/dts/aspeed-bmc-facebook-fuji.dts
-@@ -0,0 +1,1251 @@
-+// SPDX-License-Identifier: GPL-2.0+
-+// Copyright (c) 2020 Facebook Inc.
-+
-+/dts-v1/;
-+
-+#include <dt-bindings/leds/common.h>
-+#include "ast2600-facebook-netbmc-common.dtsi"
-+
-+/ {
-+	model = "Facebook Fuji BMC";
-+	compatible = "facebook,fuji-bmc", "aspeed,ast2600";
-+
-+	aliases {
-+		/*
-+		 * PCA9548 (2-0070) provides 8 channels connecting to
-+		 * SCM (System Controller Module).
-+		 */
-+		i2c16 = &imux16;
-+		i2c17 = &imux17;
-+		i2c18 = &imux18;
-+		i2c19 = &imux19;
-+		i2c20 = &imux20;
-+		i2c21 = &imux21;
-+		i2c22 = &imux22;
-+		i2c23 = &imux23;
-+
-+		/*
-+		 * PCA9548 (8-0070) provides 8 channels connecting to
-+		 * SMB (Switch Main Board).
-+		 */
-+		i2c24 = &imux24;
-+		i2c25 = &imux25;
-+		i2c26 = &imux26;
-+		i2c27 = &imux27;
-+		i2c28 = &imux28;
-+		i2c29 = &imux29;
-+		i2c30 = &imux30;
-+		i2c31 = &imux31;
-+
-+		/*
-+		 * PCA9548 (11-0077) provides 8 channels connecting to
-+		 * SMB (Switch Main Board).
-+		 */
-+		i2c40 = &imux40;
-+		i2c41 = &imux41;
-+		i2c42 = &imux42;
-+		i2c43 = &imux43;
-+		i2c44 = &imux44;
-+		i2c45 = &imux45;
-+		i2c46 = &imux46;
-+		i2c47 = &imux47;
-+
-+		/*
-+		 * PCA9548 (24-0071) provides 8 channels connecting to
-+		 * PDB-Left.
-+		 */
-+		i2c48 = &imux48;
-+		i2c49 = &imux49;
-+		i2c50 = &imux50;
-+		i2c51 = &imux51;
-+		i2c52 = &imux52;
-+		i2c53 = &imux53;
-+		i2c54 = &imux54;
-+		i2c55 = &imux55;
-+
-+		/*
-+		 * PCA9548 (25-0072) provides 8 channels connecting to
-+		 * PDB-Right.
-+		 */
-+		i2c56 = &imux56;
-+		i2c57 = &imux57;
-+		i2c58 = &imux58;
-+		i2c59 = &imux59;
-+		i2c60 = &imux60;
-+		i2c61 = &imux61;
-+		i2c62 = &imux62;
-+		i2c63 = &imux63;
-+
-+		/*
-+		 * PCA9548 (26-0076) provides 8 channels connecting to
-+		 * FCM1.
-+		 */
-+		i2c64 = &imux64;
-+		i2c65 = &imux65;
-+		i2c66 = &imux66;
-+		i2c67 = &imux67;
-+		i2c68 = &imux68;
-+		i2c69 = &imux69;
-+		i2c70 = &imux70;
-+		i2c71 = &imux71;
-+
-+		/*
-+		 * PCA9548 (27-0076) provides 8 channels connecting to
-+		 * FCM2.
-+		 */
-+		i2c72 = &imux72;
-+		i2c73 = &imux73;
-+		i2c74 = &imux74;
-+		i2c75 = &imux75;
-+		i2c76 = &imux76;
-+		i2c77 = &imux77;
-+		i2c78 = &imux78;
-+		i2c79 = &imux79;
-+
-+		/*
-+		 * PCA9548 (40-0076) provides 8 channels connecting to
-+		 * PIM1.
-+		 */
-+		i2c80 = &imux80;
-+		i2c81 = &imux81;
-+		i2c82 = &imux82;
-+		i2c83 = &imux83;
-+		i2c84 = &imux84;
-+		i2c85 = &imux85;
-+		i2c86 = &imux86;
-+		i2c87 = &imux87;
-+
-+		/*
-+		 * PCA9548 (41-0076) provides 8 channels connecting to
-+		 * PIM2.
-+		 */
-+		i2c88 = &imux88;
-+		i2c89 = &imux89;
-+		i2c90 = &imux90;
-+		i2c91 = &imux91;
-+		i2c92 = &imux92;
-+		i2c93 = &imux93;
-+		i2c94 = &imux94;
-+		i2c95 = &imux95;
-+
-+		/*
-+		 * PCA9548 (42-0076) provides 8 channels connecting to
-+		 * PIM3.
-+		 */
-+		i2c96 = &imux96;
-+		i2c97 = &imux97;
-+		i2c98 = &imux98;
-+		i2c99 = &imux99;
-+		i2c100 = &imux100;
-+		i2c101 = &imux101;
-+		i2c102 = &imux102;
-+		i2c103 = &imux103;
-+
-+		/*
-+		 * PCA9548 (43-0076) provides 8 channels connecting to
-+		 * PIM4.
-+		 */
-+		i2c104 = &imux104;
-+		i2c105 = &imux105;
-+		i2c106 = &imux106;
-+		i2c107 = &imux107;
-+		i2c108 = &imux108;
-+		i2c109 = &imux109;
-+		i2c110 = &imux110;
-+		i2c111 = &imux111;
-+
-+		/*
-+		 * PCA9548 (44-0076) provides 8 channels connecting to
-+		 * PIM5.
-+		 */
-+		i2c112 = &imux112;
-+		i2c113 = &imux113;
-+		i2c114 = &imux114;
-+		i2c115 = &imux115;
-+		i2c116 = &imux116;
-+		i2c117 = &imux117;
-+		i2c118 = &imux118;
-+		i2c119 = &imux119;
-+
-+		/*
-+		 * PCA9548 (45-0076) provides 8 channels connecting to
-+		 * PIM6.
-+		 */
-+		i2c120 = &imux120;
-+		i2c121 = &imux121;
-+		i2c122 = &imux122;
-+		i2c123 = &imux123;
-+		i2c124 = &imux124;
-+		i2c125 = &imux125;
-+		i2c126 = &imux126;
-+		i2c127 = &imux127;
-+
-+		/*
-+		 * PCA9548 (46-0076) provides 8 channels connecting to
-+		 * PIM7.
-+		 */
-+		i2c128 = &imux128;
-+		i2c129 = &imux129;
-+		i2c130 = &imux130;
-+		i2c131 = &imux131;
-+		i2c132 = &imux132;
-+		i2c133 = &imux133;
-+		i2c134 = &imux134;
-+		i2c135 = &imux135;
-+
-+		/*
-+		 * PCA9548 (47-0076) provides 8 channels connecting to
-+		 * PIM8.
-+		 */
-+		i2c136 = &imux136;
-+		i2c137 = &imux137;
-+		i2c138 = &imux138;
-+		i2c139 = &imux139;
-+		i2c140 = &imux140;
-+		i2c141 = &imux141;
-+		i2c142 = &imux142;
-+		i2c143 = &imux143;
-+	};
-+
-+	spi_gpio: spi-gpio {
-+		num-chipselects = <3>;
-+		cs-gpios = <&gpio0 ASPEED_GPIO(X, 0) GPIO_ACTIVE_LOW>,
-+			   <0>,	/* device reg=<1> does not exist */
-+			   <&gpio0 ASPEED_GPIO(X, 2) GPIO_ACTIVE_HIGH>;
-+
-+		eeprom at 2 {
-+			compatible = "atmel,at93c46d";
-+			spi-max-frequency = <250000>;
-+			data-size = <16>;
-+			spi-cs-high;
-+			reg = <2>;
-+		};
-+	};
-+};
-+
-+&i2c0 {
-+	multi-master;
-+	bus-frequency = <1000000>;
-+};
-+
-+&i2c2 {
-+	/*
-+	 * PCA9548 (2-0070) provides 8 channels connecting to SCM (System
-+	 * Controller Module).
-+	 */
-+	i2c-switch at 70 {
-+		compatible = "nxp,pca9548";
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+		reg = <0x70>;
-+		i2c-mux-idle-disconnect;
-+
-+		imux16: i2c at 0 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <0>;
-+
-+			adm1278 at 10 {
-+				compatible = "adi,adm1278";
-+				reg = <0x10>;
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				shunt-resistor-micro-ohms = <1500>;
-+			};
-+		};
-+
-+		imux17: i2c at 1 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <1>;
-+		};
-+
-+		imux18: i2c at 2 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <2>;
-+		};
-+
-+		imux19: i2c at 3 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <3>;
-+		};
-+
-+		imux20: i2c at 4 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <4>;
-+		};
-+
-+		imux21: i2c at 5 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <5>;
-+		};
-+
-+		imux22: i2c at 6 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <6>;
-+		};
-+
-+		imux23: i2c at 7 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <7>;
-+		};
-+	};
-+};
-+
-+&i2c8 {
-+	/*
-+	 * PCA9548 (8-0070) provides 8 channels connecting to SMB (Switch
-+	 * Main Board).
-+	 */
-+	i2c-switch at 70 {
-+		compatible = "nxp,pca9548";
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+		reg = <0x70>;
-+		i2c-mux-idle-disconnect;
-+
-+		imux24: i2c at 0 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <0>;
-+
-+			i2c-switch at 71 {
-+				compatible = "nxp,pca9548";
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				reg = <0x71>;
-+				i2c-mux-idle-disconnect;
-+
-+				imux48: i2c at 0 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <0>;
-+				};
-+
-+				imux49: i2c at 1 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <1>;
-+				};
-+
-+				imux50: i2c at 2 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <2>;
-+
-+					lp5012 at 14 {
-+						compatible = "ti,lp5012";
-+						reg = <0x14>;
-+						#address-cells = <1>;
-+						#size-cells = <0>;
-+
-+						multi-led at 0 {
-+							#address-cells = <1>;
-+							#size-cells = <0>;
-+							reg = <0>;
-+							color = <LED_COLOR_ID_MULTI>;
-+							function = LED_FUNCTION_ACTIVITY;
-+							label = "sys";
-+
-+							led at 0 {
-+								reg = <0>;
-+								color = <LED_COLOR_ID_RED>;
-+							};
-+
-+							led at 1 {
-+								reg = <1>;
-+								color = <LED_COLOR_ID_BLUE>;
-+							};
-+
-+							led at 2 {
-+								reg = <2>;
-+								color = <LED_COLOR_ID_GREEN>;
-+							};
-+						};
-+
-+						multi-led at 1 {
-+							#address-cells = <1>;
-+							#size-cells = <0>;
-+							reg = <1>;
-+							color = <LED_COLOR_ID_MULTI>;
-+							function = LED_FUNCTION_ACTIVITY;
-+							label = "fan";
-+
-+							led at 0 {
-+								reg = <0>;
-+								color = <LED_COLOR_ID_RED>;
-+							};
-+
-+							led at 1 {
-+								reg = <1>;
-+								color = <LED_COLOR_ID_BLUE>;
-+							};
-+
-+							led at 2 {
-+								reg = <2>;
-+								color = <LED_COLOR_ID_GREEN>;
-+							};
-+						};
-+
-+						multi-led at 2 {
-+							#address-cells = <1>;
-+							#size-cells = <0>;
-+							reg = <2>;
-+							color = <LED_COLOR_ID_MULTI>;
-+							function = LED_FUNCTION_ACTIVITY;
-+							label = "psu";
-+
-+							led at 0 {
-+								reg = <0>;
-+								color = <LED_COLOR_ID_RED>;
-+							};
-+
-+							led at 1 {
-+								reg = <1>;
-+								color = <LED_COLOR_ID_BLUE>;
-+							};
-+
-+							led at 2 {
-+								reg = <2>;
-+								color = <LED_COLOR_ID_GREEN>;
-+							};
-+						};
-+
-+						multi-led at 3 {
-+							#address-cells = <1>;
-+							#size-cells = <0>;
-+							reg = <3>;
-+							color = <LED_COLOR_ID_MULTI>;
-+							function = LED_FUNCTION_ACTIVITY;
-+							label = "smb";
-+
-+							led at 0 {
-+								reg = <0>;
-+								color = <LED_COLOR_ID_RED>;
-+							};
-+
-+							led at 1 {
-+								reg = <1>;
-+								color = <LED_COLOR_ID_BLUE>;
-+							};
-+
-+							led at 2 {
-+								reg = <2>;
-+								color = <LED_COLOR_ID_GREEN>;
-+							};
-+						};
-+					};
-+				};
-+
-+				imux51: i2c at 3 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <3>;
-+				};
-+
-+				imux52: i2c at 4 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <4>;
-+				};
-+
-+				imux53: i2c at 5 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <5>;
-+				};
-+
-+				imux54: i2c at 6 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <6>;
-+				};
-+
-+				imux55: i2c at 7 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <7>;
-+				};
-+			};
-+
-+		};
-+
-+		imux25: i2c at 1 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <1>;
-+
-+			i2c-switch at 72 {
-+				compatible = "nxp,pca9548";
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				reg = <0x72>;
-+				i2c-mux-idle-disconnect;
-+
-+				imux56: i2c at 0 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <0>;
-+				};
-+
-+				imux57: i2c at 1 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <1>;
-+				};
-+
-+				imux58: i2c at 2 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <2>;
-+				};
-+
-+				imux59: i2c at 3 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <3>;
-+				};
-+
-+				imux60: i2c at 4 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <4>;
-+				};
-+
-+				imux61: i2c at 5 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <5>;
-+				};
-+
-+				imux62: i2c at 6 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <6>;
-+				};
-+
-+				imux63: i2c at 7 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <7>;
-+				};
-+			};
-+
-+		};
-+
-+		imux26: i2c at 2 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <2>;
-+
-+			i2c-switch at 76 {
-+				compatible = "nxp,pca9548";
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				reg = <0x76>;
-+				i2c-mux-idle-disconnect;
-+
-+				imux64: i2c at 0 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <0>;
-+				};
-+
-+				imux65: i2c at 1 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <1>;
-+				};
-+
-+				imux66: i2c at 2 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <2>;
-+				};
-+
-+				imux67: i2c at 3 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <3>;
-+
-+					adm1278 at 10 {
-+						compatible = "adi,adm1278";
-+						reg = <0x10>;
-+						#address-cells = <1>;
-+						#size-cells = <0>;
-+						shunt-resistor-micro-ohms = <250>;
-+					};
-+				};
-+
-+				imux68: i2c at 4 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <4>;
-+				};
-+
-+				imux69: i2c at 5 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <5>;
-+				};
-+
-+				imux70: i2c at 6 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <6>;
-+				};
-+
-+				imux71: i2c at 7 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <7>;
-+				};
-+			};
-+
-+		};
-+
-+		imux27: i2c at 3 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <3>;
-+
-+			i2c-switch at 76 {
-+				compatible = "nxp,pca9548";
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				reg = <0x76>;
-+				i2c-mux-idle-disconnect;
-+
-+				imux72: i2c at 0 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <0>;
-+				};
-+
-+				imux73: i2c at 1 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <1>;
-+				};
-+
-+				imux74: i2c at 2 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <2>;
-+				};
-+
-+				imux75: i2c at 3 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <3>;
-+
-+					adm1278 at 10 {
-+						compatible = "adi,adm1278";
-+						reg = <0x10>;
-+						#address-cells = <1>;
-+						#size-cells = <0>;
-+						shunt-resistor-micro-ohms = <250>;
-+					};
-+				};
-+
-+				imux76: i2c at 4 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <4>;
-+				};
-+
-+				imux77: i2c at 5 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <5>;
-+				};
-+
-+				imux78: i2c at 6 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <6>;
-+				};
-+
-+				imux79: i2c at 7 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <7>;
-+				};
-+			};
-+
-+		};
-+
-+		imux28: i2c at 4 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <4>;
-+		};
-+
-+		imux29: i2c at 5 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <5>;
-+		};
-+
-+		imux30: i2c at 6 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <6>;
-+		};
-+
-+		imux31: i2c at 7 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <7>;
-+		};
-+
-+	};
-+};
-+
-+&i2c11 {
-+	status = "okay";
-+
-+	/*
-+	 * PCA9548 (11-0077) provides 8 channels connecting to SMB (Switch
-+	 * Main Board).
-+	 */
-+	i2c-switch at 77 {
-+		compatible = "nxp,pca9548";
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+		reg = <0x77>;
-+		i2c-mux-idle-disconnect;
-+
-+		imux40: i2c at 0 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <0>;
-+
-+			i2c-switch at 76 {
-+				compatible = "nxp,pca9548";
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				reg = <0x76>;
-+				i2c-mux-idle-disconnect;
-+
-+				imux80: i2c at 0 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <0>;
-+				};
-+
-+				imux81: i2c at 1 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <1>;
-+				};
-+
-+				imux82: i2c at 2 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <2>;
-+				};
-+
-+				imux83: i2c at 3 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <3>;
-+				};
-+
-+				imux84: i2c at 4 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <4>;
-+				};
-+
-+				imux85: i2c at 5 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <5>;
-+				};
-+
-+				imux86: i2c at 6 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <6>;
-+				};
-+
-+				imux87: i2c at 7 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <7>;
-+				};
-+			};
-+
-+		};
-+
-+		imux41: i2c at 1 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <1>;
-+
-+			i2c-switch at 76 {
-+				compatible = "nxp,pca9548";
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				reg = <0x76>;
-+				i2c-mux-idle-disconnect;
-+
-+				imux88: i2c at 0 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <0>;
-+				};
-+
-+				imux89: i2c at 1 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <1>;
-+				};
-+
-+				imux90: i2c at 2 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <2>;
-+				};
-+
-+				imux91: i2c at 3 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <3>;
-+				};
-+
-+				imux92: i2c at 4 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <4>;
-+				};
-+
-+				imux93: i2c at 5 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <5>;
-+				};
-+
-+				imux94: i2c at 6 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <6>;
-+				};
-+
-+				imux95: i2c at 7 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <7>;
-+				};
-+			};
-+
-+		};
-+
-+		imux42: i2c at 2 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <2>;
-+
-+			i2c-switch at 76 {
-+				compatible = "nxp,pca9548";
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				reg = <0x76>;
-+				i2c-mux-idle-disconnect;
-+
-+				imux96: i2c at 0 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <0>;
-+				};
-+
-+				imux97: i2c at 1 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <1>;
-+				};
-+
-+				imux98: i2c at 2 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <2>;
-+				};
-+
-+				imux99: i2c at 3 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <3>;
-+				};
-+
-+				imux100: i2c at 4 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <4>;
-+				};
-+
-+				imux101: i2c at 5 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <5>;
-+				};
-+
-+				imux102: i2c at 6 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <6>;
-+				};
-+
-+				imux103: i2c at 7 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <7>;
-+				};
-+			};
-+
-+		};
-+
-+		imux43: i2c at 3 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <3>;
-+
-+			i2c-switch at 76 {
-+				compatible = "nxp,pca9548";
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				reg = <0x76>;
-+				i2c-mux-idle-disconnect;
-+
-+				imux104: i2c at 0 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <0>;
-+				};
-+
-+				imux105: i2c at 1 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <1>;
-+				};
-+
-+				imux106: i2c at 2 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <2>;
-+				};
-+
-+				imux107: i2c at 3 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <3>;
-+				};
-+
-+				imux108: i2c at 4 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <4>;
-+				};
-+
-+				imux109: i2c at 5 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <5>;
-+				};
-+
-+				imux110: i2c at 6 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <6>;
-+				};
-+
-+				imux111: i2c at 7 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <7>;
-+				};
-+			};
-+
-+		};
-+
-+		imux44: i2c at 4 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <4>;
-+
-+			i2c-switch at 76 {
-+				compatible = "nxp,pca9548";
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				reg = <0x76>;
-+				i2c-mux-idle-disconnect;
-+
-+				imux112: i2c at 0 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <0>;
-+				};
-+
-+				imux113: i2c at 1 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <1>;
-+				};
-+
-+				imux114: i2c at 2 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <2>;
-+				};
-+
-+				imux115: i2c at 3 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <3>;
-+				};
-+
-+				imux116: i2c at 4 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <4>;
-+				};
-+
-+				imux117: i2c at 5 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <5>;
-+				};
-+
-+				imux118: i2c at 6 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <6>;
-+				};
-+
-+				imux119: i2c at 7 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <7>;
-+				};
-+			};
-+
-+		};
-+
-+		imux45: i2c at 5 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <5>;
-+
-+			i2c-switch at 76 {
-+				compatible = "nxp,pca9548";
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				reg = <0x76>;
-+				i2c-mux-idle-disconnect;
-+
-+				imux120: i2c at 0 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <0>;
-+				};
-+
-+				imux121: i2c at 1 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <1>;
-+				};
-+
-+				imux122: i2c at 2 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <2>;
-+				};
-+
-+				imux123: i2c at 3 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <3>;
-+				};
-+
-+				imux124: i2c at 4 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <4>;
-+				};
-+
-+				imux125: i2c at 5 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <5>;
-+				};
-+
-+				imux126: i2c at 6 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <6>;
-+				};
-+
-+				imux127: i2c at 7 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <7>;
-+				};
-+			};
-+
-+		};
-+
-+		imux46: i2c at 6 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <6>;
-+
-+			i2c-switch at 76 {
-+				compatible = "nxp,pca9548";
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				reg = <0x76>;
-+				i2c-mux-idle-disconnect;
-+
-+				imux128: i2c at 0 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <0>;
-+				};
-+
-+				imux129: i2c at 1 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <1>;
-+				};
-+
-+				imux130: i2c at 2 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <2>;
-+				};
-+
-+				imux131: i2c at 3 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <3>;
-+				};
-+
-+				imux132: i2c at 4 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <4>;
-+				};
-+
-+				imux133: i2c at 5 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <5>;
-+				};
-+
-+				imux134: i2c at 6 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <6>;
-+				};
-+
-+				imux135: i2c at 7 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <7>;
-+				};
-+			};
-+
-+		};
-+
-+		imux47: i2c at 7 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <7>;
-+
-+			i2c-switch at 76 {
-+				compatible = "nxp,pca9548";
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				reg = <0x76>;
-+				i2c-mux-idle-disconnect;
-+
-+				imux136: i2c at 0 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <0>;
-+				};
-+
-+				imux137: i2c at 1 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <1>;
-+				};
-+
-+				imux138: i2c at 2 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <2>;
-+				};
-+
-+				imux139: i2c at 3 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <3>;
-+				};
-+
-+				imux140: i2c at 4 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <4>;
-+				};
-+
-+				imux141: i2c at 5 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <5>;
-+				};
-+
-+				imux142: i2c at 6 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <6>;
-+				};
-+
-+				imux143: i2c at 7 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <7>;
-+				};
-+			};
-+
-+		};
-+
-+	};
-+};
-+
-+&ehci1 {
-+	status = "okay";
-+};
-+
-+&mdio1 {
-+	status = "okay";
-+
-+	ethphy3: ethernet-phy at 13 {
-+		compatible = "ethernet-phy-ieee802.3-c22";
-+		reg = <0x0d>;
-+	};
-+};
-+
-+&mac3 {
-+	status = "okay";
-+	phy-mode = "rgmii";
-+	phy-handle = <&ethphy3>;
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pinctrl_rgmii4_default>;
-+};
--- 
-2.17.1
+> 
+> > +}
+> > +
+> > +static int cputemp_read_string(struct device *dev, enum hwmon_sensor_types
+> > type,
+> > +????????????????????????????? u32 attr, int channel, const char **str)
+> > +{
+> > +???????struct peci_cputemp *priv = dev_get_drvdata(dev);
+> > +
+> > +???????if (attr != hwmon_temp_label)
+> > +???????????????return -EOPNOTSUPP;
+> > +
+> > +???????*str = channel < channel_core ?
+> > +???????????????cputemp_label[channel] : priv->coretemp_label[channel -
+> > channel_core];
+> > +
+> > +???????return 0;
+> > +}
+> > +
+> > +static int cputemp_read(struct device *dev, enum hwmon_sensor_types type,
+> > +???????????????????????u32 attr, int channel, long *val)
+> > +{
+> > +???????struct peci_cputemp *priv = dev_get_drvdata(dev);
+> > +
+> > +???????switch (attr) {
+> > +???????case hwmon_temp_input:
+> > +???????????????switch (channel) {
+> > +???????????????case channel_die:
+> > +???????????????????????return get_die_temp(priv, val);
+> > +???????????????case channel_dts:
+> > +???????????????????????return get_dts(priv, val);
+> > +???????????????case channel_tcontrol:
+> > +???????????????????????return get_temp_target(priv, tcontrol_type, val);
+> > +???????????????case channel_tthrottle:
+> > +???????????????????????return get_temp_target(priv, tthrottle_type, val);
+> > +???????????????case channel_tjmax:
+> > +???????????????????????return get_temp_target(priv, tjmax_type, val);
+> > +???????????????default:
+> > +???????????????????????return get_core_temp(priv, channel - channel_core,
+> > val);
+> > +???????????????}
+> > +???????????????break;
+> > +???????case hwmon_temp_max:
+> > +???????????????return get_temp_target(priv, tcontrol_type, val);
+> > +???????case hwmon_temp_crit:
+> > +???????????????return get_temp_target(priv, tjmax_type, val);
+> > +???????case hwmon_temp_crit_hyst:
+> > +???????????????return get_temp_target(priv, crit_hyst_type, val);
+> > +???????default:
+> > +???????????????return -EOPNOTSUPP;
+> > +???????}
+> > +
+> > +???????return 0;
+> > +}
+> > +
+> > +static umode_t cputemp_is_visible(const void *data, enum hwmon_sensor_types
+> > type,
+> > +???????????????????????????????? u32 attr, int channel)
+> > +{
+> > +???????const struct peci_cputemp *priv = data;
+> > +
+> > +???????if (channel > CPUTEMP_CHANNEL_NUMS)
+> > +???????????????return 0;
+> > +
+> > +???????if (channel < channel_core)
+> > +???????????????return 0444;
+> > +
+> > +???????if (test_bit(channel - channel_core, priv->core_mask))
+> > +???????????????return 0444;
+> > +
+> > +???????return 0;
+> > +}
+> > +
+> > +static int init_core_mask(struct peci_cputemp *priv)
+> > +{
+> > +???????struct peci_device *peci_dev = priv->peci_dev;
+> > +???????struct resolved_cores_reg *reg = priv->gen_info->reg;
+> > +???????u64 core_mask;
+> > +???????u32 data;
+> > +???????int ret;
+> > +
+> > +???????/* Get the RESOLVED_CORES register value */
+> > +???????switch (peci_dev->info.model) {
+> > +???????case INTEL_FAM6_ICELAKE_X:
+> > +???????case INTEL_FAM6_ICELAKE_D:
+> > +???????????????ret = peci_ep_pci_local_read(peci_dev, 0, reg->bus, reg-
+> > >dev,
+> > +??????????????????????????????????????????? reg->func, reg->offset + 4,
+> > &data);
+> > +???????????????if (ret)
+> > +???????????????????????return ret;
+> > +
+> > +???????????????core_mask = (u64)data << 32;
+> > +
+> > +???????????????ret = peci_ep_pci_local_read(peci_dev, 0, reg->bus, reg-
+> > >dev,
+> > +??????????????????????????????????????????? reg->func, reg->offset, &data);
+> > +???????????????if (ret)
+> > +???????????????????????return ret;
+> > +
+> > +???????????????core_mask |= data;
+> > +
+> > +???????????????break;
+> > +???????default:
+> > +???????????????ret = peci_pci_local_read(peci_dev, reg->bus, reg->dev,
+> > +???????????????????????????????????????? reg->func, reg->offset, &data);
+> > +???????????????if (ret)
+> > +???????????????????????return ret;
+> > +
+> > +???????????????core_mask = data;
+> > +
+> > +???????????????break;
+> > +???????}
+> > +
+> > +???????if (!core_mask)
+> > +???????????????return -EIO;
+> > +
+> > +???????bitmap_from_u64(priv->core_mask, core_mask);
+> > +
+> > +???????return 0;
+> > +}
+> > +
+> > +static int create_temp_label(struct peci_cputemp *priv)
+> > +{
+> > +???????unsigned long core_max = find_last_bit(priv->core_mask,
+> > CORE_NUMS_MAX);
+> > +???????int i;
+> > +
+> > +???????priv->coretemp_label = devm_kzalloc(priv->dev, core_max *
+> > sizeof(char *), GFP_KERNEL);
+> > +???????if (!priv->coretemp_label)
+> > +???????????????return -ENOMEM;
+> > +
+> > +???????for_each_set_bit(i, priv->core_mask, CORE_NUMS_MAX) {
+> > +???????????????priv->coretemp_label[i] = devm_kasprintf(priv->dev,
+> > GFP_KERNEL, "Core %d", i);
+> > +???????????????if (!priv->coretemp_label[i])
+> > +???????????????????????return -ENOMEM;
+> > +???????}
+> > +
+> > +???????return 0;
+> > +}
+> > +
+> > +static void check_resolved_cores(struct peci_cputemp *priv)
+> > +{
+> > +???????/*
+> > +??????? * Failure to resolve cores is non-critical, we're still able to
+> > +??????? * provide other sensor data.
+> > +??????? */
+> > +
+> > +???????if (init_core_mask(priv))
+> > +???????????????return;
+> > +
+> > +???????if (create_temp_label(priv))
+> > +???????????????bitmap_zero(priv->core_mask, CORE_NUMS_MAX);
+> > +}
+> > +
+> > +static void sensor_init(struct peci_cputemp *priv)
+> > +{
+> > +???????int i;
+> > +
+> > +???????mutex_init(&priv->temp.target.state.lock);
+> > +???????mutex_init(&priv->temp.die.state.lock);
+> > +???????mutex_init(&priv->temp.dts.state.lock);
+> > +
+> > +???????for_each_set_bit(i, priv->core_mask, CORE_NUMS_MAX)
+> > +???????????????mutex_init(&priv->temp.core[i].state.lock);
+> > +}
+> > +
+> > +static const struct hwmon_ops peci_cputemp_ops = {
+> > +???????.is_visible = cputemp_is_visible,
+> > +???????.read_string = cputemp_read_string,
+> > +???????.read = cputemp_read,
+> > +};
+> > +
+> > +static const u32 peci_cputemp_temp_channel_config[] = {
+> > +???????/* Die temperature */
+> > +???????HWMON_T_LABEL | HWMON_T_INPUT | HWMON_T_MAX | HWMON_T_CRIT |
+> > HWMON_T_CRIT_HYST,
+> > +???????/* DTS margin */
+> > +???????HWMON_T_LABEL | HWMON_T_INPUT | HWMON_T_MAX | HWMON_T_CRIT |
+> > HWMON_T_CRIT_HYST,
+> > +???????/* Tcontrol temperature */
+> > +???????HWMON_T_LABEL | HWMON_T_INPUT | HWMON_T_CRIT,
+> > +???????/* Tthrottle temperature */
+> > +???????HWMON_T_LABEL | HWMON_T_INPUT,
+> > +???????/* Tjmax temperature */
+> > +???????HWMON_T_LABEL | HWMON_T_INPUT,
+> > +???????/* Core temperature - for all core channels */
+> > +???????[channel_core ... CPUTEMP_CHANNEL_NUMS - 1] = HWMON_T_LABEL |
+> > HWMON_T_INPUT,
+> > +???????0
+> > +};
+> > +
+> > +static const struct hwmon_channel_info peci_cputemp_temp_channel = {
+> > +???????.type = hwmon_temp,
+> > +???????.config = peci_cputemp_temp_channel_config,
+> > +};
+> > +
+> > +static const struct hwmon_channel_info *peci_cputemp_info[] = {
+> > +???????&peci_cputemp_temp_channel,
+> > +???????NULL
+> > +};
+> > +
+> > +static const struct hwmon_chip_info peci_cputemp_chip_info = {
+> > +???????.ops = &peci_cputemp_ops,
+> > +???????.info = peci_cputemp_info,
+> > +};
+> > +
+> > +static int peci_cputemp_probe(struct auxiliary_device *adev,
+> > +???????????????????????????? const struct auxiliary_device_id *id)
+> > +{
+> > +???????struct device *dev = &adev->dev;
+> > +???????struct peci_device *peci_dev = to_peci_device(dev->parent);
+> > +???????struct peci_cputemp *priv;
+> > +???????struct device *hwmon_dev;
+> > +
+> > +???????priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
+> > +???????if (!priv)
+> > +???????????????return -ENOMEM;
+> > +
+> > +???????priv->name = devm_kasprintf(dev, GFP_KERNEL, "peci_cputemp.cpu%d",
+> > +?????????????????????????????????? peci_dev->info.socket_id);
+> > +???????if (!priv->name)
+> > +???????????????return -ENOMEM;
+> > +
+> > +???????priv->dev = dev;
+> > +???????priv->peci_dev = peci_dev;
+> > +???????priv->gen_info = (const struct cpu_info *)id->driver_data;
+> > +
+> > +???????/*
+> > +??????? * This is just a sanity check. Since we're using commands that are
+> > +??????? * guaranteed to be supported on a given platform, we should never
+> > see
+> > +??????? * revision lower than expected.
+> > +??????? */
+> > +???????if (peci_dev->info.peci_revision < priv->gen_info-
+> > >min_peci_revision)
+> > +???????????????dev_warn(priv->dev,
+> > +??????????????????????? "Unexpected PECI revision %#x, some features may be
+> > unavailable\n",
+> > +??????????????????????? peci_dev->info.peci_revision);
+> > +
+> > +???????check_resolved_cores(priv);
+> > +
+> > +???????sensor_init(priv);
+> > +
+> > +???????hwmon_dev = devm_hwmon_device_register_with_info(priv->dev, priv-
+> > >name,
+> > +??????????????????????????????????????????????????????? priv,
+> > &peci_cputemp_chip_info, NULL);
+> > +
+> > +???????return PTR_ERR_OR_ZERO(hwmon_dev);
+> > +}
+> > +
+> > +/*
+> > + * RESOLVED_CORES PCI configuration register may have different location on
+> > + * different platforms.
+> > + */
+> > +static struct resolved_cores_reg resolved_cores_reg_hsx = {
+> > +???????.bus = 1,
+> > +???????.dev = 30,
+> > +???????.func = 3,
+> > +???????.offset = 0xb4,
+> > +};
+> > +
+> > +static struct resolved_cores_reg resolved_cores_reg_icx = {
+> > +???????.bus = 14,
+> > +???????.dev = 30,
+> > +???????.func = 3,
+> > +???????.offset = 0xd0,
+> > +};
+> > +
+> > +static const struct cpu_info cpu_hsx = {
+> > +???????.reg????????????= &resolved_cores_reg_hsx,
+> > +???????.min_peci_revision = 0x33,
+> > +};
+> > +
+> > +static const struct cpu_info cpu_icx = {
+> > +???????.reg????????????= &resolved_cores_reg_icx,
+> > +???????.min_peci_revision = 0x40,
+> > +};
+> > +
+> > +static const struct auxiliary_device_id peci_cputemp_ids[] = {
+> > +???????{
+> > +???????????????.name = "peci_cpu.cputemp.hsx",
+> > +???????????????.driver_data = (kernel_ulong_t)&cpu_hsx,
+> > +???????},
+> > +???????{
+> > +???????????????.name = "peci_cpu.cputemp.bdx",
+> > +???????????????.driver_data = (kernel_ulong_t)&cpu_hsx,
+> > +???????},
+> > +???????{
+> > +???????????????.name = "peci_cpu.cputemp.bdxd",
+> > +???????????????.driver_data = (kernel_ulong_t)&cpu_hsx,
+> > +???????},
+> > +???????{
+> > +???????????????.name = "peci_cpu.cputemp.skx",
+> > +???????????????.driver_data = (kernel_ulong_t)&cpu_hsx,
+> > +???????},
+> > +???????{
+> > +???????????????.name = "peci_cpu.cputemp.icx",
+> > +???????????????.driver_data = (kernel_ulong_t)&cpu_icx,
+> > +???????},
+> > +???????{
+> > +???????????????.name = "peci_cpu.cputemp.icxd",
+> > +???????????????.driver_data = (kernel_ulong_t)&cpu_icx,
+> > +???????},
+> > +???????{ }
+> > +};
+> > +MODULE_DEVICE_TABLE(auxiliary, peci_cputemp_ids);
+> > +
+> > +static struct auxiliary_driver peci_cputemp_driver = {
+> > +???????.probe??????????= peci_cputemp_probe,
+> > +???????.id_table???????= peci_cputemp_ids,
+> > +};
+> > +
+> > +module_auxiliary_driver(peci_cputemp_driver);
+> > +
+> > +MODULE_AUTHOR("Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>");
+> > +MODULE_AUTHOR("Iwona Winiarska <iwona.winiarska@intel.com>");
+> > +MODULE_DESCRIPTION("PECI cputemp driver");
+> > +MODULE_LICENSE("GPL");
+> > +MODULE_IMPORT_NS(PECI_CPU);
+> > 
+> 
 
