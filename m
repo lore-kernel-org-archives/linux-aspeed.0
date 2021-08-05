@@ -1,160 +1,87 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Date: Wed, 4 Aug 2021 11:05:48 -0700
-Subject: [PATCH 13/14] docs: hwmon: Document PECI drivers
-In-Reply-To: <20210804175203.GY8018@packtop>
-References: <20210712220447.957418-1-iwona.winiarska@intel.com>
- <20210712220447.957418-14-iwona.winiarska@intel.com>
- <20210727225808.GU8018@packtop>
- <ea5621698508a800cea59b5533f8845b9f0befc6.camel@intel.com>
- <20210804175203.GY8018@packtop>
-Message-ID: <4e840768-0315-6241-e988-9a3165a31a86@roeck-us.net>
+From: Joel Stanley <joel@jms.id.au>
+Date: Thu, 5 Aug 2021 00:28:02 +0000
+Subject: [PATCH 6/6] ARM: dts: aspeed: Add Facebook Fuji (AST2600) BMC
+In-Reply-To: <20210728233755.17963-7-rentao.bupt@gmail.com>
+References: <20210728233755.17963-1-rentao.bupt@gmail.com>
+ <20210728233755.17963-7-rentao.bupt@gmail.com>
+Message-ID: <CACPK8XemZkV7nK_b4883DN+dJKhL=tXfqK6=DpHQe=fZRu_ETQ@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 8/4/21 10:52 AM, Zev Weiss wrote:
-> On Mon, Aug 02, 2021 at 06:37:30AM CDT, Winiarska, Iwona wrote:
->> On Tue, 2021-07-27 at 22:58 +0000, Zev Weiss wrote:
->>> On Mon, Jul 12, 2021 at 05:04:46PM CDT, Iwona Winiarska wrote:
->>>> From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
->>>>
->>>> Add documentation for peci-cputemp driver that provides DTS thermal
->>>> readings for CPU packages and CPU cores and peci-dimmtemp driver that
->>>> provides DTS thermal readings for DIMMs.
->>>>
->>>> Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
->>>> Co-developed-by: Iwona Winiarska <iwona.winiarska@intel.com>
->>>> Signed-off-by: Iwona Winiarska <iwona.winiarska@intel.com>
->>>> Reviewed-by: Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>
->>>> ---
->>>> Documentation/hwmon/index.rst???????? |? 2 +
->>>> Documentation/hwmon/peci-cputemp.rst? | 93 +++++++++++++++++++++++++++
->>>> Documentation/hwmon/peci-dimmtemp.rst | 58 +++++++++++++++++
->>>> MAINTAINERS?????????????????????????? |? 2 +
->>>> 4 files changed, 155 insertions(+)
->>>> create mode 100644 Documentation/hwmon/peci-cputemp.rst
->>>> create mode 100644 Documentation/hwmon/peci-dimmtemp.rst
->>>>
->>>> diff --git a/Documentation/hwmon/index.rst b/Documentation/hwmon/index.rst
->>>> index bc01601ea81a..cc76b5b3f791 100644
->>>> --- a/Documentation/hwmon/index.rst
->>>> +++ b/Documentation/hwmon/index.rst
->>>> @@ -154,6 +154,8 @@ Hardware Monitoring Kernel Drivers
->>>>  ?? pcf8591
->>>>  ?? pim4328
->>>>  ?? pm6764tr
->>>> +?? peci-cputemp
->>>> +?? peci-dimmtemp
->>>>  ?? pmbus
->>>>  ?? powr1220
->>>>  ?? pxe1610
->>>> diff --git a/Documentation/hwmon/peci-cputemp.rst
->>>> b/Documentation/hwmon/peci-cputemp.rst
->>>> new file mode 100644
->>>> index 000000000000..d3a218ba810a
->>>> --- /dev/null
->>>> +++ b/Documentation/hwmon/peci-cputemp.rst
->>>> @@ -0,0 +1,93 @@
->>>> +.. SPDX-License-Identifier: GPL-2.0-only
->>>> +
->>>> +Kernel driver peci-cputemp
->>>> +==========================
->>>> +
->>>> +Supported chips:
->>>> +???????One of Intel server CPUs listed below which is connected to a PECI
->>>> bus.
->>>> +???????????????* Intel Xeon E5/E7 v3 server processors
->>>> +???????????????????????Intel Xeon E5-14xx v3 family
->>>> +???????????????????????Intel Xeon E5-24xx v3 family
->>>> +???????????????????????Intel Xeon E5-16xx v3 family
->>>> +???????????????????????Intel Xeon E5-26xx v3 family
->>>> +???????????????????????Intel Xeon E5-46xx v3 family
->>>> +???????????????????????Intel Xeon E7-48xx v3 family
->>>> +???????????????????????Intel Xeon E7-88xx v3 family
->>>> +???????????????* Intel Xeon E5/E7 v4 server processors
->>>> +???????????????????????Intel Xeon E5-16xx v4 family
->>>> +???????????????????????Intel Xeon E5-26xx v4 family
->>>> +???????????????????????Intel Xeon E5-46xx v4 family
->>>> +???????????????????????Intel Xeon E7-48xx v4 family
->>>> +???????????????????????Intel Xeon E7-88xx v4 family
->>>> +???????????????* Intel Xeon Scalable server processors
->>>> +???????????????????????Intel Xeon D family
->>>> +???????????????????????Intel Xeon Bronze family
->>>> +???????????????????????Intel Xeon Silver family
->>>> +???????????????????????Intel Xeon Gold family
->>>> +???????????????????????Intel Xeon Platinum family
->>>> +
->>>> +???????Datasheet: Available from http://www.intel.com/design/literature.htm
->>>> +
->>>> +Author: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
->>>> +
->>>> +Description
->>>> +-----------
->>>> +
->>>> +This driver implements a generic PECI hwmon feature which provides Digital
->>>> +Thermal Sensor (DTS) thermal readings of the CPU package and CPU cores that
->>>> are
->>>> +accessible via the processor PECI interface.
->>>> +
->>>> +All temperature values are given in millidegree Celsius and will be
->>>> measurable
->>>> +only when the target CPU is powered on.
->>>> +
->>>> +Sysfs interface
->>>> +-------------------
->>>> +
->>>> +=======================
->>>> =======================================================
->>>> +temp1_label????????????"Die"
->>>> +temp1_input????????????Provides current die temperature of the CPU package.
->>>> +temp1_max??????????????Provides thermal control temperature of the CPU
->>>> package
->>>> +???????????????????????which is also known as Tcontrol.
->>>> +temp1_crit?????????????Provides shutdown temperature of the CPU package
->>>> which
->>>> +???????????????????????is also known as the maximum processor junction
->>>> +???????????????????????temperature, Tjmax or Tprochot.
->>>> +temp1_crit_hyst????????????????Provides the hysteresis value from Tcontrol
->>>> to Tjmax of
->>>> +???????????????????????the CPU package.
->>>> +
->>>> +temp2_label????????????"DTS"
->>>> +temp2_input????????????Provides current DTS temperature of the CPU package.
->>>
->>> Would this be a good place to note the slightly counter-intuitive nature
->>> of DTS readings?? i.e. add something along the lines of "The DTS sensor
->>> produces a delta relative to Tjmax, so negative values are normal and
->>> values approaching zero are hot."? (In my experience people who aren't
->>> already familiar with it tend to think something's wrong when a CPU
->>> temperature reading shows -50C.)
->>
->> I believe that what you're referring to is a result of "GetTemp", and we're
->> using it to calculate "Die" sensor values (temp1).
->> The sensor value is absolute - we don't expose "raw" thermal sensor value
->> (delta) anywhere.
->>
->> DTS sensor is exposing temperature value scaled to fit DTS 2.0 thermal profile:
->> https://www.intel.com/content/www/us/en/processors/xeon/scalable/xeon-scalable-thermal-guide.html
->> (section 5.2.3.2)
->>
->> Similar to "Die" sensor - it's also exposed in absolute form.
->>
->> I'll try to change description to avoid confusion.
->>
-> 
-> When I tested the patch series by applying it to my OpenBMC kernel, the
-> temp2_input sysfs file produced negative numbers (as has been the case
-> with previous iterations of the PECI patchset).  Is that expected?  From
-> what Guenter has said it sounds like that's going to need to change so
-> that the temperature readings are all in "normal" millidegrees C
-> (that is, relative to the freezing point of water).
-> 
+On Wed, 28 Jul 2021 at 23:38, <rentao.bupt@gmail.com> wrote:
+>
+> From: Tao Ren <rentao.bupt@gmail.com>
+>
+> Add initial version of device tree for Facebook Fuji (AST2600) BMC.
 
-Correct, the temperature is expected to be reported in millidegrees C
-per hwmon ABI. Everything else is unacceptable. That makes me wonder what
-"raw" and "absolute" means. Negative numbers suggest that, whatever is
-reported today, it is not millidegrees C.
+I like to read what kind of platform the BMC is going into if you can
+add that detail, but it's not essential.
 
-Guenter
+> +&spi1 {
+> +       status = "okay";
+> +
+> +       /*
+> +        * Customize spi1 flash memory size to 32MB (maximum flash size on
+> +        * the bus) to save vmalloc space.
+> +        */
+> +       reg = < 0x1e630000 0xc4
+> +               0x30000000 0x2000000 >;
+
+Which driver supports this?
+
+It would be great to see Facebook work to get the SPI NOR driver for
+the ast2600 merged to mainline.
+
+I doubt the IBM team will get to this, as we are using eMMC instead.
+
+> +
+> +       flash at 0 {
+> +               status = "okay";
+> +               m25p,fast-read;
+> +               label = "spi1.0";
+> +               spi-max-frequency = <5000000>;
+> +
+> +               partitions {
+> +                       compatible = "fixed-partitions";
+> +                       #address-cells = <1>;
+> +                       #size-cells = <1>;
+> +
+> +                       flash1 at 0 {
+> +                               reg = <0x0 0x2000000>;
+> +                               label = "system-flash";
+> +                       };
+> +               };
+> +       };
+> +};
+
+> +&ehci1 {
+> +       status = "okay";
+> +};
+
+Have you verified that USB works with mainline? I've had reports of it
+working on 5.8 but it seems to have regressed as of v5.10.
+
+
+> +&mdio1 {
+> +       status = "okay";
+> +
+> +       ethphy3: ethernet-phy at 13 {
+> +               compatible = "ethernet-phy-ieee802.3-c22";
+> +               reg = <0x0d>;
+> +       };
+> +};
+> +
+> +&mac3 {
+> +       phy-handle = <&ethphy3>;
+
+status = okay?
+
+You should specify the pinmux too I think, even if the default happens
+to work, so that other devices cannot claim the pins.
+
+Cheers,
+
+Joel
