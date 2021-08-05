@@ -1,7 +1,9 @@
 From: rentao.bupt@gmail.com <rentao.bupt@gmail.com>
-Date: Thu,  5 Aug 2021 15:28:12 -0700
-Subject: [PATCH v2 0/6] ARM: dts: Add Facebook AST2600 BMCs
-Message-ID: <20210805222818.8391-1-rentao.bupt@gmail.com>
+Date: Thu,  5 Aug 2021 15:28:13 -0700
+Subject: [PATCH v2 1/6] ARM: dts: Add Facebook BMC 128MB flash layout
+In-Reply-To: <20210805222818.8391-1-rentao.bupt@gmail.com>
+References: <20210805222818.8391-1-rentao.bupt@gmail.com>
+Message-ID: <20210805222818.8391-2-rentao.bupt@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -10,46 +12,84 @@ Content-Transfer-Encoding: 7bit
 
 From: Tao Ren <rentao.bupt@gmail.com>
 
-The patch series introuces 3 new BMC platforms for the Facebook's next
-generation switch platforms: Cloudripper, Elbert and Fuji.
+This is the layout used by Facebook BMC systems. It describes the fixed
+flash layout of a 128MB mtd device.
 
-Patch #1 adds dtsi file to describe the fixed flash layout of 128MB mtd
-device. The flash layout is used by all the 3 AST2600 BMC as well as
-Wedge400 (AST2500).
+Signed-off-by: Tao Ren <rentao.bupt@gmail.com>
+---
+ Changes in v2:
+  - None.
 
-Patch #2 simplies Wedge400 dts by including the flash layout dtsi.
-
-Patch #3 adds common dtsi which is included by all the new Facebook
-AST2600 Network BMC platforms.
-
-Patch #4 adds the device tree for Facebook Cloudripper (AST2600) BMC.
-
-Patch #5 adds the device tree for Facebook Elbert (AST2600) BMC.
-
-Patch #6 adds the device tree for Facebook Fuji (AST2600) BMC.
-
-Tao Ren (6):
-  ARM: dts: Add Facebook BMC 128MB flash layout
-  ARM: dts: aspeed: wedge400: Use common flash layout
-  ARM: dts: aspeed: Common dtsi for Facebook AST2600 Network BMCs
-  ARM: dts: aspeed: Add Facebook Cloudripper (AST2600) BMC
-  ARM: dts: aspeed: Add Facebook Elbert (AST2600) BMC
-  ARM: dts: aspeed: Add Facebook Fuji (AST2600) BMC
-
- arch/arm/boot/dts/Makefile                    |    3 +
- .../dts/aspeed-bmc-facebook-cloudripper.dts   |  539 +++++++
- .../boot/dts/aspeed-bmc-facebook-elbert.dts   |  185 +++
- .../arm/boot/dts/aspeed-bmc-facebook-fuji.dts | 1251 +++++++++++++++++
- .../boot/dts/aspeed-bmc-facebook-wedge400.dts |   48 +-
- .../dts/ast2600-facebook-netbmc-common.dtsi   |  169 +++
- .../dts/facebook-bmc-flash-layout-128.dtsi    |   60 +
- 7 files changed, 2208 insertions(+), 47 deletions(-)
- create mode 100644 arch/arm/boot/dts/aspeed-bmc-facebook-cloudripper.dts
- create mode 100644 arch/arm/boot/dts/aspeed-bmc-facebook-elbert.dts
- create mode 100644 arch/arm/boot/dts/aspeed-bmc-facebook-fuji.dts
- create mode 100644 arch/arm/boot/dts/ast2600-facebook-netbmc-common.dtsi
+ .../dts/facebook-bmc-flash-layout-128.dtsi    | 60 +++++++++++++++++++
+ 1 file changed, 60 insertions(+)
  create mode 100644 arch/arm/boot/dts/facebook-bmc-flash-layout-128.dtsi
 
+diff --git a/arch/arm/boot/dts/facebook-bmc-flash-layout-128.dtsi b/arch/arm/boot/dts/facebook-bmc-flash-layout-128.dtsi
+new file mode 100644
+index 000000000000..7f3652dea550
+--- /dev/null
++++ b/arch/arm/boot/dts/facebook-bmc-flash-layout-128.dtsi
+@@ -0,0 +1,60 @@
++// SPDX-License-Identifier: GPL-2.0+
++// Copyright (c) 2020 Facebook Inc.
++
++partitions {
++	compatible = "fixed-partitions";
++	#address-cells = <1>;
++	#size-cells = <1>;
++
++	/*
++	 * u-boot partition: 896KB.
++	 */
++	u-boot at 0 {
++		reg = <0x0 0xe0000>;
++		label = "u-boot";
++	};
++
++	/*
++	 * u-boot environment variables: 64KB.
++	 */
++	u-boot-env at e0000 {
++		reg = <0xe0000 0x10000>;
++		label = "env";
++	};
++
++	/*
++	 * image metadata partition (64KB), used by Facebook internal
++	 * tools.
++	 */
++	image-meta at f0000 {
++		reg = <0xf0000 0x10000>;
++		label = "meta";
++	};
++
++	/*
++	 * FIT image: 119 MB.
++	 */
++	fit at 100000 {
++		reg = <0x100000 0x7700000>;
++		label = "fit";
++	};
++
++	/*
++	 * "data0" partition (8MB) is used by Facebook BMC platforms as
++	 * persistent data store.
++	 */
++	data0 at 7800000 {
++		reg = <0x7800000 0x800000>;
++		label = "data0";
++	};
++
++	/*
++	 * Although the master partition can be created by enabling
++	 * MTD_PARTITIONED_MASTER option, below "flash0" partition is
++	 * explicitly created to avoid breaking legacy applications.
++	 */
++	flash0 at 0 {
++		reg = <0x0 0x8000000>;
++		label = "flash0";
++	};
++};
 -- 
 2.17.1
 
