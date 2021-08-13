@@ -1,64 +1,55 @@
-From: Tao Ren <rentao.bupt@gmail.com>
-Date: Thu, 12 Aug 2021 23:24:35 -0700
-Subject: [PATCH] ARM: dts: aspeed: minipack: Update flash partition table
-In-Reply-To: <20210720002704.7390-1-rentao.bupt@gmail.com>
-References: <20210720002704.7390-1-rentao.bupt@gmail.com>
-Message-ID: <20210813062435.GA24497@taoren-ubuntu-R90MNF91>
+From: Philipp Zabel <p.zabel@pengutronix.de>
+Date: Fri, 13 Aug 2021 12:02:15 +0200
+Subject: [v11 2/2] pwm: Add Aspeed ast2600 PWM support
+In-Reply-To: <20210812040942.5365-3-billy_tsai@aspeedtech.com>
+References: <20210812040942.5365-1-billy_tsai@aspeedtech.com>
+ <20210812040942.5365-3-billy_tsai@aspeedtech.com>
+Message-ID: <5da35c2030e57621fa56795cd193e727f53205fe.camel@pengutronix.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Joel,
+Hi Billy,
 
-Looks like the patch is not included in "dt-for-v5.15". Any comments? Or
-should I send v2 if the email was not delivered?
-
-
-Cheers,
-
-Tao
-
-On Mon, Jul 19, 2021 at 05:27:04PM -0700, rentao.bupt at gmail.com wrote:
-> From: Tao Ren <rentao.bupt@gmail.com>
+On Thu, 2021-08-12 at 12:09 +0800, Billy Tsai wrote:
+> This patch add the support of PWM controller which can be found at aspeed
+> ast2600 soc. The pwm supoorts up to 16 channels and it's part function
+> of multi-function device "pwm-tach controller".
 > 
-> Update firmware flash "data0" partition size from 4MB to 8MB for larger
-> persistent storage on minipack BMC.
-> 
-> Signed-off-by: Tao Ren <rentao.bupt@gmail.com>
+> Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
 > ---
->  arch/arm/boot/dts/aspeed-bmc-facebook-minipack.dts | 8 ++++----
->  1 file changed, 4 insertions(+), 4 deletions(-)
-> 
-> diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-minipack.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-minipack.dts
-> index 9eb23e874f19..230d16cd9967 100644
-> --- a/arch/arm/boot/dts/aspeed-bmc-facebook-minipack.dts
-> +++ b/arch/arm/boot/dts/aspeed-bmc-facebook-minipack.dts
-> @@ -265,19 +265,19 @@
->  		};
->  
->  		/*
-> -		 * FIT image: 59.5 MB.
-> +		 * FIT image: 55.5 MB.
->  		 */
->  		fit at 80000 {
-> -			reg = <0x80000 0x3b80000>;
-> +			reg = <0x80000 0x3780000>;
->  			label = "fit";
->  		};
->  
->  		/*
-> -		 * "data0" partition (4MB) is reserved for persistent
-> +		 * "data0" partition (8MB) is reserved for persistent
->  		 * data store.
->  		 */
->  		data0 at 3800000 {
-> -			reg = <0x3c00000 0x400000>;
-> +			reg = <0x3800000 0x800000>;
->  			label = "data0";
->  		};
->  
-> -- 
-> 2.17.1
-> 
+[...]
+> diff --git a/drivers/pwm/pwm-aspeed-ast2600.c b/drivers/pwm/pwm-aspeed-ast2600.c
+> new file mode 100644
+> index 000000000000..f89ce1d4cd67
+> --- /dev/null
+> +++ b/drivers/pwm/pwm-aspeed-ast2600.c
+> @@ -0,0 +1,327 @@
+[...]
+> +static int aspeed_pwm_probe(struct platform_device *pdev)
+> +{
+[...]
+> +	priv->clk = devm_clk_get(&parent_dev->dev, 0);
+> +	if (IS_ERR(priv->clk))
+> +		return dev_err_probe(dev, PTR_ERR(priv->clk),
+> +				     "Couldn't get clock\n");
+> +
+> +	ret = clk_prepare_enable(priv->clk);
+> +	if (ret)
+> +		return dev_err_probe(dev, ret, "Couldn't enable clock\n");
+> +
+> +	priv->reset = devm_reset_control_get_shared(&parent_dev->dev, NULL);
+> +	if (IS_ERR(priv->reset)) {
+> +		ret = dev_err_probe(dev, PTR_ERR(priv->reset),
+> +				    "Get reset failed\n");
+> +		goto err_disable_clk;
+> +	}
+
+I suggest to request the reset control before enabling the clock. That
+way you can simplify the error path and avoid enabling the clock in case
+of reset_control_get failure.
+
+regards
+Philipp
