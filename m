@@ -1,34 +1,128 @@
 From: Billy Tsai <billy_tsai@aspeedtech.com>
-Date: Mon, 16 Aug 2021 18:48:34 +0800
-Subject: [v3 03/15] iio: adc: aspeed: set driver data when adc probe.
+Date: Mon, 16 Aug 2021 18:48:32 +0800
+Subject: [v3 01/15] dt-bindings: iio: adc: Add ast2600-adc bindings
 In-Reply-To: <20210816104846.13155-1-billy_tsai@aspeedtech.com>
 References: <20210816104846.13155-1-billy_tsai@aspeedtech.com>
-Message-ID: <20210816104846.13155-4-billy_tsai@aspeedtech.com>
+Message-ID: <20210816104846.13155-2-billy_tsai@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Fix the issue when adc remove will get the null driver data.
+Add device tree bindings document for the aspeed ast2600 adc device
+driver.
 
 Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
 ---
- drivers/iio/adc/aspeed_adc.c | 1 +
- 1 file changed, 1 insertion(+)
+ .../bindings/iio/adc/aspeed,ast2600-adc.yaml  | 98 +++++++++++++++++++
+ 1 file changed, 98 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/iio/adc/aspeed,ast2600-adc.yaml
 
-diff --git a/drivers/iio/adc/aspeed_adc.c b/drivers/iio/adc/aspeed_adc.c
-index 7010d56ac3b9..20462cf659e4 100644
---- a/drivers/iio/adc/aspeed_adc.c
-+++ b/drivers/iio/adc/aspeed_adc.c
-@@ -201,6 +201,7 @@ static int aspeed_adc_probe(struct platform_device *pdev)
- 
- 	data = iio_priv(indio_dev);
- 	data->dev = &pdev->dev;
-+	platform_set_drvdata(pdev, indio_dev);
- 
- 	data->base = devm_platform_ioremap_resource(pdev, 0);
- 	if (IS_ERR(data->base))
+diff --git a/Documentation/devicetree/bindings/iio/adc/aspeed,ast2600-adc.yaml b/Documentation/devicetree/bindings/iio/adc/aspeed,ast2600-adc.yaml
+new file mode 100644
+index 000000000000..28bff89e0d75
+--- /dev/null
++++ b/Documentation/devicetree/bindings/iio/adc/aspeed,ast2600-adc.yaml
+@@ -0,0 +1,98 @@
++# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/iio/adc/aspeed,ast2600-adc.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: ADC that forms part of an ASPEED server management processor.
++
++maintainers:
++  - Billy Tsai <billy_tsai@aspeedtech.com>
++
++description: |
++  ? 10-bits resolution for 16 voltage channels.
++  ? The device split into two individual engine and each contains 8 voltage
++  channels.
++  ? Channel scanning can be non-continuous.
++  ? Programmable ADC clock frequency.
++  ? Programmable upper and lower threshold for each channels.
++  ? Interrupt when larger or less than threshold for each channels.
++  ? Support hysteresis for each channels.
++  ? Built-in a compensating method.
++  ? Built-in a register to trim internal reference voltage.
++  ? Internal or External reference voltage.
++  ? Support 2 Internal reference voltage 1.2v or 2.5v.
++  ? Integrate dividing circuit for battery sensing.
++
++properties:
++  compatible:
++    enum:
++      - aspeed,ast2600-adc0
++      - aspeed,ast2600-adc1
++
++  reg:
++    maxItems: 1
++
++  clocks:
++    description:
++      Input clock used to derive the sample clock. Expected to be the
++      SoC's APB clock.
++
++  resets:
++    maxItems: 1
++
++  "#io-channel-cells":
++    const: 1
++
++  vref-supply:
++    description:
++      The external regulator supply ADC reference voltage.
++
++  aspeed,int_vref_mv:
++    enum:
++      - 1200
++      - 2500
++    description:
++      ADC internal reference voltage in millivolts.
++
++  aspeed,battery-sensing:
++    type: boolean
++    description:
++      Inform the driver that last channel will be used to sensor battery.
++
++  aspeed,trim-data-valid:
++    type: boolean
++    description: |
++      The ADC reference voltage can be calibrated to obtain the trimming
++      data which will be stored in otp. This property informs the driver that
++      the data store in the otp is valid.
++
++required:
++  - compatible
++  - reg
++  - clocks
++  - resets
++  - "#io-channel-cells"
++
++additionalProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/clock/ast2600-clock.h>
++    adc0: adc at 1e6e9000 {
++        compatible = "aspeed,ast2600-adc0";
++        reg = <0x1e6e9000 0x100>;
++        clocks = <&syscon ASPEED_CLK_APB2>;
++        resets = <&syscon ASPEED_RESET_ADC>;
++        #io-channel-cells = <1>;
++        aspeed,int_vref_mv = <2500>;
++    };
++    adc1: adc at 1e6e9100 {
++        compatible = "aspeed,ast2600-adc1";
++        reg = <0x1e6e9100 0x100>;
++        clocks = <&syscon ASPEED_CLK_APB2>;
++        resets = <&syscon ASPEED_RESET_ADC>;
++        #io-channel-cells = <1>;
++        aspeed,int_vref_mv = <2500>;
++    };
++...
 -- 
 2.25.1
 
