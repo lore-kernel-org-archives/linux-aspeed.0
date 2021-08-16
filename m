@@ -1,87 +1,56 @@
-From: Billy Tsai <billy_tsai@aspeedtech.com>
-Date: Mon, 16 Aug 2021 18:48:42 +0800
-Subject: [v3 11/15] iio: adc: aspeed: Fix the calculate error of clock.
-In-Reply-To: <20210816104846.13155-1-billy_tsai@aspeedtech.com>
-References: <20210816104846.13155-1-billy_tsai@aspeedtech.com>
-Message-ID: <20210816104846.13155-12-billy_tsai@aspeedtech.com>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Mon, 16 Aug 2021 12:40:55 +0300
+Subject: [PATCH 1/2] soc: aspeed: Add LPC mailbox support
+In-Reply-To: <20210813054758.13189-2-chiawei_wang@aspeedtech.com>
+Message-ID: <202108160813.GOZ1P4Y8-lkp@intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The adc clcok formula is
-ast2400/2500:
-ADC clock period = PCLK * 2 * (ADC0C[31:17] + 1) * (ADC0C[9:0] + 1)
-ast2600:
-ADC clock period = PCLK * 2 * (ADC0C[15:0] + 1)
-They all have one fixed divided 2 and the legacy driver didn't handle it.
-This patch register the fixed factory clock device as the parent of adc
-clock scaler to fix this issue.
+Hi Chia-Wei,
 
-Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
+url:    https://github.com/0day-ci/linux/commits/Chia-Wei-Wang/aspeed-Add-LPC-mailbox-support/20210813-134908
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/joel/aspeed.git for-next
+config: openrisc-randconfig-m031-20210816 (attached as .config)
+compiler: or1k-linux-gcc (GCC) 11.2.0
+
+If you fix the issue, kindly add following tag as appropriate
+Reported-by: kernel test robot <lkp@intel.com>
+Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
+
+smatch warnings:
+drivers/soc/aspeed/aspeed-lpc-mbox.c:230 aspeed_mbox_ioctl() warn: maybe return -EFAULT instead of the bytes remaining?
+
+vim +230 drivers/soc/aspeed/aspeed-lpc-mbox.c
+
+72c5a69dc779f5 Chia-Wei Wang 2021-08-13  214  static long aspeed_mbox_ioctl(struct file *file, unsigned int cmd,
+72c5a69dc779f5 Chia-Wei Wang 2021-08-13  215  				 unsigned long param)
+72c5a69dc779f5 Chia-Wei Wang 2021-08-13  216  {
+72c5a69dc779f5 Chia-Wei Wang 2021-08-13  217  	struct aspeed_mbox *mbox = file_mbox(file);
+72c5a69dc779f5 Chia-Wei Wang 2021-08-13  218  	const struct aspeed_mbox_model *model = mbox->model;
+72c5a69dc779f5 Chia-Wei Wang 2021-08-13  219  	struct aspeed_mbox_ioctl_data data;
+72c5a69dc779f5 Chia-Wei Wang 2021-08-13  220  	long ret;
+72c5a69dc779f5 Chia-Wei Wang 2021-08-13  221  
+72c5a69dc779f5 Chia-Wei Wang 2021-08-13  222  	switch (cmd) {
+72c5a69dc779f5 Chia-Wei Wang 2021-08-13  223  	case ASPEED_MBOX_IOCTL_GET_SIZE:
+72c5a69dc779f5 Chia-Wei Wang 2021-08-13  224  		data.data = model->dr_num;
+72c5a69dc779f5 Chia-Wei Wang 2021-08-13  225  		ret = copy_to_user((void __user *)param, &data, sizeof(data));
+
+This should be:
+
+	if (copy_to_user((void __user *)param, &data, sizeof(data)))
+		return -EFAULT;
+
+72c5a69dc779f5 Chia-Wei Wang 2021-08-13  226  		break;
+72c5a69dc779f5 Chia-Wei Wang 2021-08-13  227  	default:
+72c5a69dc779f5 Chia-Wei Wang 2021-08-13  228  		ret = -ENOTTY;
+72c5a69dc779f5 Chia-Wei Wang 2021-08-13  229  	}
+72c5a69dc779f5 Chia-Wei Wang 2021-08-13 @230  	return ret;
+72c5a69dc779f5 Chia-Wei Wang 2021-08-13  231  }
+
 ---
- drivers/iio/adc/aspeed_adc.c | 26 ++++++++++++++++++++++++++
- 1 file changed, 26 insertions(+)
-
-diff --git a/drivers/iio/adc/aspeed_adc.c b/drivers/iio/adc/aspeed_adc.c
-index ea3e9a52fcc9..8fe7da1a651f 100644
---- a/drivers/iio/adc/aspeed_adc.c
-+++ b/drivers/iio/adc/aspeed_adc.c
-@@ -4,6 +4,12 @@
-  *
-  * Copyright (C) 2017 Google, Inc.
-  * Copyright (C) 2021 Aspeed Technology Inc.
-+ *
-+ * ADC clock formula:
-+ * Ast2400/Ast2500:
-+ * clock period = period of PCLK * 2 * (ADC0C[31:17] + 1) * (ADC0C[9:0] + 1)
-+ * Ast2600:
-+ * clock period = period of PCLK * 2 * (ADC0C[15:0] + 1)
-  */
- 
- #include <linux/clk.h>
-@@ -77,6 +83,7 @@ struct aspeed_adc_data {
- 	struct regulator	*regulator;
- 	void __iomem		*base;
- 	spinlock_t		clk_lock;
-+	struct clk_hw		*fixed_div_clk;
- 	struct clk_hw		*clk_prescaler;
- 	struct clk_hw		*clk_scaler;
- 	struct reset_control	*rst;
-@@ -196,6 +203,13 @@ static void aspeed_adc_unregister_divider(void *data)
- 	clk_hw_unregister_divider(clk);
- }
- 
-+static void aspeed_adc_unregister_fixed_divider(void *data)
-+{
-+	struct clk_hw *clk = data;
-+
-+	clk_hw_unregister_fixed_factor(clk);
-+}
-+
- static void aspeed_adc_reset_assert(void *data)
- {
- 	struct reset_control *rst = data;
-@@ -312,6 +326,18 @@ static int aspeed_adc_probe(struct platform_device *pdev)
- 	/* Register ADC clock prescaler with source specified by device tree. */
- 	spin_lock_init(&data->clk_lock);
- 	snprintf(clk_parent_name, 32, of_clk_get_parent_name(pdev->dev.of_node, 0));
-+	snprintf(clk_name, 32, "%s-fixed-div", data->model_data->model_name);
-+	data->fixed_div_clk = clk_hw_register_fixed_factor(
-+		&pdev->dev, clk_name, clk_parent_name, 0, 1, 2);
-+	if (IS_ERR(data->fixed_div_clk))
-+		return PTR_ERR(data->fixed_div_clk);
-+
-+	ret = devm_add_action_or_reset(data->dev,
-+				       aspeed_adc_unregister_fixed_divider,
-+				       data->clk_prescaler);
-+	if (ret)
-+		return ret;
-+	snprintf(clk_parent_name, 32, clk_name);
- 	if (data->model_data->need_prescaler) {
- 		snprintf(clk_name, 32, "%s-prescaler",
- 			 data->model_data->model_name);
--- 
-2.25.1
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
 
