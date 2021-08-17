@@ -1,82 +1,85 @@
-From: ChiaWei Wang <chiawei_wang@aspeedtech.com>
-Date: Tue, 17 Aug 2021 02:37:13 +0000
-Subject: [PATCH 1/2] soc: aspeed: Add LPC mailbox support
-In-Reply-To: <202108160813.GOZ1P4Y8-lkp@intel.com>
-References: <20210813054758.13189-2-chiawei_wang@aspeedtech.com>
- <202108160813.GOZ1P4Y8-lkp@intel.com>
-Message-ID: <HK0PR06MB3779008AC59C277899C95D1291FE9@HK0PR06MB3779.apcprd06.prod.outlook.com>
+From: Chia-Wei Wang <chiawei_wang@aspeedtech.com>
+Date: Tue, 17 Aug 2021 10:58:48 +0800
+Subject: [PATCH v2 2/2] ARM: dts: aspeed: Add mailbox to device tree
+In-Reply-To: <20210817025848.19914-1-chiawei_wang@aspeedtech.com>
+References: <20210817025848.19914-1-chiawei_wang@aspeedtech.com>
+Message-ID: <20210817025848.19914-3-chiawei_wang@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Dan,
+Add mailbox to the device tree for Aspeed AST24xx/AST25xx/AST26xx SoCs.
 
-> -----Original Message-----
-> From: Dan Carpenter <dan.carpenter@oracle.com>
-> Sent: Monday, August 16, 2021 5:41 PM
-> 
-> Hi Chia-Wei,
-> 
-> url:
-> https://github.com/0day-ci/linux/commits/Chia-Wei-Wang/aspeed-Add-LPC-m
-> ailbox-support/20210813-134908
-> base:   https://git.kernel.org/pub/scm/linux/kernel/git/joel/aspeed.git
-> for-next
-> config: openrisc-randconfig-m031-20210816 (attached as .config)
-> compiler: or1k-linux-gcc (GCC) 11.2.0
-> 
-> If you fix the issue, kindly add following tag as appropriate
-> Reported-by: kernel test robot <lkp@intel.com>
-> Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
-> 
-> smatch warnings:
-> drivers/soc/aspeed/aspeed-lpc-mbox.c:230 aspeed_mbox_ioctl() warn: maybe
-> return -EFAULT instead of the bytes remaining?
-> 
-> vim +230 drivers/soc/aspeed/aspeed-lpc-mbox.c
-> 
-> 72c5a69dc779f5 Chia-Wei Wang 2021-08-13  214  static long
-> aspeed_mbox_ioctl(struct file *file, unsigned int cmd,
-> 72c5a69dc779f5 Chia-Wei Wang 2021-08-13  215
-> unsigned long param)
-> 72c5a69dc779f5 Chia-Wei Wang 2021-08-13  216  {
-> 72c5a69dc779f5 Chia-Wei Wang 2021-08-13  217  	struct aspeed_mbox
-> *mbox = file_mbox(file);
-> 72c5a69dc779f5 Chia-Wei Wang 2021-08-13  218  	const struct
-> aspeed_mbox_model *model = mbox->model;
-> 72c5a69dc779f5 Chia-Wei Wang 2021-08-13  219  	struct
-> aspeed_mbox_ioctl_data data;
-> 72c5a69dc779f5 Chia-Wei Wang 2021-08-13  220  	long ret;
-> 72c5a69dc779f5 Chia-Wei Wang 2021-08-13  221
-> 72c5a69dc779f5 Chia-Wei Wang 2021-08-13  222  	switch (cmd) {
-> 72c5a69dc779f5 Chia-Wei Wang 2021-08-13  223  	case
-> ASPEED_MBOX_IOCTL_GET_SIZE:
-> 72c5a69dc779f5 Chia-Wei Wang 2021-08-13  224  		data.data =
-> model->dr_num;
-> 72c5a69dc779f5 Chia-Wei Wang 2021-08-13  225  		ret =
-> copy_to_user((void __user *)param, &data, sizeof(data));
-> 
-> This should be:
-> 
-> 	if (copy_to_user((void __user *)param, &data, sizeof(data)))
-> 		return -EFAULT;
+Signed-off-by: Chia-Wei Wang <chiawei_wang@aspeedtech.com>
+---
+ arch/arm/boot/dts/aspeed-g4.dtsi | 7 +++++++
+ arch/arm/boot/dts/aspeed-g5.dtsi | 8 +++++++-
+ arch/arm/boot/dts/aspeed-g6.dtsi | 7 +++++++
+ 3 files changed, 21 insertions(+), 1 deletion(-)
 
-Will be fixed in v2 patch. Thanks for the review.
-
-Regards,
-Chiawei
-
-> 
-> 72c5a69dc779f5 Chia-Wei Wang 2021-08-13  226  		break;
-> 72c5a69dc779f5 Chia-Wei Wang 2021-08-13  227  	default:
-> 72c5a69dc779f5 Chia-Wei Wang 2021-08-13  228  		ret = -ENOTTY;
-> 72c5a69dc779f5 Chia-Wei Wang 2021-08-13  229  	}
-> 72c5a69dc779f5 Chia-Wei Wang 2021-08-13 @230  	return ret;
-> 72c5a69dc779f5 Chia-Wei Wang 2021-08-13  231  }
-> 
-> ---
-> 0-DAY CI Kernel Test Service, Intel Corporation
-> https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+diff --git a/arch/arm/boot/dts/aspeed-g4.dtsi b/arch/arm/boot/dts/aspeed-g4.dtsi
+index c5aeb3cf3a09..6298d69df415 100644
+--- a/arch/arm/boot/dts/aspeed-g4.dtsi
++++ b/arch/arm/boot/dts/aspeed-g4.dtsi
+@@ -383,6 +383,13 @@
+ 					interrupts = <8>;
+ 					status = "disabled";
+ 				};
++
++				mbox: mbox at 200 {
++					compatible = "aspeed,ast2500-mbox";
++					reg = <0x200 0x30>;
++					interrupts = <46>;
++					status = "disabled";
++				};
+ 			};
+ 
+ 			uart2: serial at 1e78d000 {
+diff --git a/arch/arm/boot/dts/aspeed-g5.dtsi b/arch/arm/boot/dts/aspeed-g5.dtsi
+index 329eaeef66fb..ab9453d7803c 100644
+--- a/arch/arm/boot/dts/aspeed-g5.dtsi
++++ b/arch/arm/boot/dts/aspeed-g5.dtsi
+@@ -497,13 +497,19 @@
+ 					reg = <0xa0 0x24 0xc8 0x8>;
+ 				};
+ 
+-
+ 				ibt: ibt at 140 {
+ 					compatible = "aspeed,ast2500-ibt-bmc";
+ 					reg = <0x140 0x18>;
+ 					interrupts = <8>;
+ 					status = "disabled";
+ 				};
++
++				mbox: mbox at 200 {
++					compatible = "aspeed,ast2500-mbox";
++					reg = <0x200 0x30>;
++					interrupts = <46>;
++					status = "disabled";
++				};
+ 			};
+ 
+ 			uart2: serial at 1e78d000 {
+diff --git a/arch/arm/boot/dts/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed-g6.dtsi
+index f96607b7b4e2..09b286f2ece2 100644
+--- a/arch/arm/boot/dts/aspeed-g6.dtsi
++++ b/arch/arm/boot/dts/aspeed-g6.dtsi
+@@ -529,6 +529,13 @@
+ 					interrupts = <GIC_SPI 143 IRQ_TYPE_LEVEL_HIGH>;
+ 					status = "disabled";
+ 				};
++
++				mbox: mbox at 200 {
++					compatible = "aspeed,ast2600-mbox";
++					reg = <0x200 0xc0>;
++					interrupts = <GIC_SPI 54 IRQ_TYPE_LEVEL_HIGH>;
++					status = "disabled";
++				};
+ 			};
+ 
+ 			sdc: sdc at 1e740000 {
+-- 
+2.17.1
 
