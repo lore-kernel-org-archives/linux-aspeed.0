@@ -1,46 +1,58 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Tue, 17 Aug 2021 08:21:04 +0000
-Subject: [PATCH] ARM: dts: aspeed: cloudripper: Add comments for "mdio1"
-In-Reply-To: <20210813061900.24539-1-rentao.bupt@gmail.com>
-References: <20210813061900.24539-1-rentao.bupt@gmail.com>
-Message-ID: <CACPK8Xei0K2vcEGc3Qr5zcb1SHMgNbJ+4_fVd6u-FiOHt4PxSg@mail.gmail.com>
+Date: Tue, 17 Aug 2021 08:22:31 +0000
+Subject: [PATCH linux dev-5.10] ARM: dts: aspeed: p10bmc: Add power
+ control pins
+In-Reply-To: <20210816160002.18645-1-jlwright@us.ibm.com>
+References: <20210816160002.18645-1-jlwright@us.ibm.com>
+Message-ID: <CACPK8XcgFkcA4cpqzTmwS-tpauWeAeFHqzhjyxOWvggKSOJFQw@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, 13 Aug 2021 at 06:19, <rentao.bupt@gmail.com> wrote:
+On Mon, 16 Aug 2021 at 16:01, Jim Wright <jlwright@us.ibm.com> wrote:
 >
-> From: Tao Ren <rentao.bupt@gmail.com>
+> Add to p10bmc systems the GPIO line names used in chassis power on / off
+> control and chassis power good monitoring. Names used are as documented at [1].
 >
-> Add some comments to explain the purpose of "mdio1" controller: it's
-> connected to the MDC/MDIO interface of the on-board management switch.
+> [1] https://github.com/openbmc/docs/blob/master/designs/device-tree-gpio-naming.md
 >
-> Signed-off-by: Tao Ren <rentao.bupt@gmail.com>
+> Signed-off-by: Jim Wright <jlwright@us.ibm.com>
 
 Thanks, applied.
 
 > ---
->  arch/arm/boot/dts/aspeed-bmc-facebook-cloudripper.dts | 5 +++++
->  1 file changed, 5 insertions(+)
+>  arch/arm/boot/dts/aspeed-bmc-ibm-everest.dts | 2 +-
+>  arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts | 2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
 >
-> diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-cloudripper.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-cloudripper.dts
-> index 01ec3ce0a29d..9c6271a17ae8 100644
-> --- a/arch/arm/boot/dts/aspeed-bmc-facebook-cloudripper.dts
-> +++ b/arch/arm/boot/dts/aspeed-bmc-facebook-cloudripper.dts
-> @@ -96,6 +96,11 @@
->         status = "okay";
->  };
->
-> +/*
-> + * "mdio1" is connected to the MDC/MDIO interface of the on-board
-> + * management switch (whose ports are connected to BMC, Host and front
-> + * panel ethernet port).
-> + */
->  &mdio1 {
->         status = "okay";
->  };
+> diff --git a/arch/arm/boot/dts/aspeed-bmc-ibm-everest.dts b/arch/arm/boot/dts/aspeed-bmc-ibm-everest.dts
+> index 01a0b2b03ddd..941efff7c943 100644
+> --- a/arch/arm/boot/dts/aspeed-bmc-ibm-everest.dts
+> +++ b/arch/arm/boot/dts/aspeed-bmc-ibm-everest.dts
+> @@ -253,7 +253,7 @@ &gpio0 {
+>         /*O0-O7*/       "","","","","","","","",
+>         /*P0-P7*/       "","","","","led-pcieslot-power","","","",
+>         /*Q0-Q7*/       "","","","","","","","",
+> -       /*R0-R7*/       "","","","","","I2C_FLASH_MICRO_N","","",
+> +       /*R0-R7*/       "","power-chassis-control","power-chassis-good","","","I2C_FLASH_MICRO_N","","",
+>         /*S0-S7*/       "","","","","","","","",
+>         /*T0-T7*/       "","","","","","","","",
+>         /*U0-U7*/       "","","","","","","","",
+> diff --git a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
+> index f87bc5dc8aba..605ad80ef967 100644
+> --- a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
+> +++ b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
+> @@ -243,7 +243,7 @@ &gpio0 {
+>         /*O0-O7*/       "","","","usb-power","","","","",
+>         /*P0-P7*/       "","","","","pcieslot-power","","","",
+>         /*Q0-Q7*/       "cfam-reset","","","","","","","",
+> -       /*R0-R7*/       "","","","","","","","",
+> +       /*R0-R7*/       "","power-chassis-control","power-chassis-good","","","","","",
+>         /*S0-S7*/       "presence-ps0","presence-ps1","presence-ps2","presence-ps3",
+>                                 "","","","",
+>         /*T0-T7*/       "","","","","","","","",
 > --
-> 2.17.1
+> 2.32.0
 >
