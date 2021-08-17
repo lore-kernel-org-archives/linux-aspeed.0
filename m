@@ -1,25 +1,82 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Tue, 17 Aug 2021 11:19:16 +0930
-Subject: =?UTF-8?Q?Re:_[PATCH_linux_dev-5.10]_ARM:_dts:_aspeed:_p10bmc:_Add_power?=
- =?UTF-8?Q?_control_pins?=
-In-Reply-To: <20210816160002.18645-1-jlwright@us.ibm.com>
-References: <20210816160002.18645-1-jlwright@us.ibm.com>
-Message-ID: <f7e626b5-bd7c-4e8a-85fb-84e9de6a017a@www.fastmail.com>
+From: ChiaWei Wang <chiawei_wang@aspeedtech.com>
+Date: Tue, 17 Aug 2021 02:37:13 +0000
+Subject: [PATCH 1/2] soc: aspeed: Add LPC mailbox support
+In-Reply-To: <202108160813.GOZ1P4Y8-lkp@intel.com>
+References: <20210813054758.13189-2-chiawei_wang@aspeedtech.com>
+ <202108160813.GOZ1P4Y8-lkp@intel.com>
+Message-ID: <HK0PR06MB3779008AC59C277899C95D1291FE9@HK0PR06MB3779.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+Hi Dan,
 
-
-On Tue, 17 Aug 2021, at 01:30, Jim Wright wrote:
-> Add to p10bmc systems the GPIO line names used in chassis power on / off
-> control and chassis power good monitoring. Names used are as documented at [1].
+> -----Original Message-----
+> From: Dan Carpenter <dan.carpenter@oracle.com>
+> Sent: Monday, August 16, 2021 5:41 PM
 > 
-> [1] 
-> https://github.com/openbmc/docs/blob/master/designs/device-tree-gpio-naming.md
+> Hi Chia-Wei,
 > 
-> Signed-off-by: Jim Wright <jlwright@us.ibm.com>
+> url:
+> https://github.com/0day-ci/linux/commits/Chia-Wei-Wang/aspeed-Add-LPC-m
+> ailbox-support/20210813-134908
+> base:   https://git.kernel.org/pub/scm/linux/kernel/git/joel/aspeed.git
+> for-next
+> config: openrisc-randconfig-m031-20210816 (attached as .config)
+> compiler: or1k-linux-gcc (GCC) 11.2.0
+> 
+> If you fix the issue, kindly add following tag as appropriate
+> Reported-by: kernel test robot <lkp@intel.com>
+> Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
+> 
+> smatch warnings:
+> drivers/soc/aspeed/aspeed-lpc-mbox.c:230 aspeed_mbox_ioctl() warn: maybe
+> return -EFAULT instead of the bytes remaining?
+> 
+> vim +230 drivers/soc/aspeed/aspeed-lpc-mbox.c
+> 
+> 72c5a69dc779f5 Chia-Wei Wang 2021-08-13  214  static long
+> aspeed_mbox_ioctl(struct file *file, unsigned int cmd,
+> 72c5a69dc779f5 Chia-Wei Wang 2021-08-13  215
+> unsigned long param)
+> 72c5a69dc779f5 Chia-Wei Wang 2021-08-13  216  {
+> 72c5a69dc779f5 Chia-Wei Wang 2021-08-13  217  	struct aspeed_mbox
+> *mbox = file_mbox(file);
+> 72c5a69dc779f5 Chia-Wei Wang 2021-08-13  218  	const struct
+> aspeed_mbox_model *model = mbox->model;
+> 72c5a69dc779f5 Chia-Wei Wang 2021-08-13  219  	struct
+> aspeed_mbox_ioctl_data data;
+> 72c5a69dc779f5 Chia-Wei Wang 2021-08-13  220  	long ret;
+> 72c5a69dc779f5 Chia-Wei Wang 2021-08-13  221
+> 72c5a69dc779f5 Chia-Wei Wang 2021-08-13  222  	switch (cmd) {
+> 72c5a69dc779f5 Chia-Wei Wang 2021-08-13  223  	case
+> ASPEED_MBOX_IOCTL_GET_SIZE:
+> 72c5a69dc779f5 Chia-Wei Wang 2021-08-13  224  		data.data =
+> model->dr_num;
+> 72c5a69dc779f5 Chia-Wei Wang 2021-08-13  225  		ret =
+> copy_to_user((void __user *)param, &data, sizeof(data));
+> 
+> This should be:
+> 
+> 	if (copy_to_user((void __user *)param, &data, sizeof(data)))
+> 		return -EFAULT;
 
-Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
+Will be fixed in v2 patch. Thanks for the review.
+
+Regards,
+Chiawei
+
+> 
+> 72c5a69dc779f5 Chia-Wei Wang 2021-08-13  226  		break;
+> 72c5a69dc779f5 Chia-Wei Wang 2021-08-13  227  	default:
+> 72c5a69dc779f5 Chia-Wei Wang 2021-08-13  228  		ret = -ENOTTY;
+> 72c5a69dc779f5 Chia-Wei Wang 2021-08-13  229  	}
+> 72c5a69dc779f5 Chia-Wei Wang 2021-08-13 @230  	return ret;
+> 72c5a69dc779f5 Chia-Wei Wang 2021-08-13  231  }
+> 
+> ---
+> 0-DAY CI Kernel Test Service, Intel Corporation
+> https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+
