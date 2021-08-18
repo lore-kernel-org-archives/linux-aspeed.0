@@ -1,37 +1,30 @@
-From: Joel Stanley <joel@jms.id.au>
-Date: Wed, 18 Aug 2021 10:35:34 +0930
-Subject: [PATCH] soc: aspeed: socinfo: Add AST2625 variant
-Message-ID: <20210818010534.2508122-1-joel@jms.id.au>
+From: Arnd Bergmann <arnd@kernel.org>
+Date: Wed, 18 Aug 2021 14:59:25 +0200
+Subject: [GIT PULL] ARM: aspeed: devicetree changes for 5.15
+In-Reply-To: <CACPK8XdWRBb9cuDWGQPfK8R8TsZuydJQHsL4_e2w=HvCKAMogg@mail.gmail.com>
+References: <CACPK8XdWRBb9cuDWGQPfK8R8TsZuydJQHsL4_e2w=HvCKAMogg@mail.gmail.com>
+Message-ID: <162929137186.372162.11203697127775599651.b4-ty@arndb.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add AST26XX series AST2625-A3 SOC ID, taken from the vendor u-boot SDK:
+From: Arnd Bergmann <arnd@arndb.de>
 
- arch/arm/mach-aspeed/ast2600/scu_info.c
- +       SOC_ID("AST2625-A3", 0x0503040305030403),
+On Tue, 17 Aug 2021 07:51:54 +0000, Joel Stanley wrote:
+> Here are the aspeed changes for 5.15.
+> 
+> The following changes since commit 2734d6c1b1a089fb593ef6a23d4b70903526fe0c:
+> 
+>   Linux 5.14-rc2 (2021-07-18 14:13:49 -0700)
+> 
+> are available in the Git repository at:
+> 
+> [...]
 
-Signed-off-by: Joel Stanley <joel@jms.id.au>
----
-Dylan, can you please review this for me?
+Merged into arm/dt, thanks!
 
- drivers/soc/aspeed/aspeed-socinfo.c | 1 +
- 1 file changed, 1 insertion(+)
+merge commit: c872138c2c7166dc95c778f4decc165bace9cb33
 
-diff --git a/drivers/soc/aspeed/aspeed-socinfo.c b/drivers/soc/aspeed/aspeed-socinfo.c
-index e3215f826d17..1ca140356a08 100644
---- a/drivers/soc/aspeed/aspeed-socinfo.c
-+++ b/drivers/soc/aspeed/aspeed-socinfo.c
-@@ -26,6 +26,7 @@ static struct {
- 	{ "AST2600", 0x05000303 },
- 	{ "AST2620", 0x05010203 },
- 	{ "AST2605", 0x05030103 },
-+	{ "AST2625", 0x05030403 },
- };
- 
- static const char *siliconid_to_name(u32 siliconid)
--- 
-2.32.0
-
+       Arnd
