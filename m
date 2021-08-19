@@ -1,7 +1,7 @@
 From: George Liu <liuxiwei1013@gmail.com>
-Date: Thu, 19 Aug 2021 13:49:08 +0800
-Subject: [PATCH] ARM: dtd: fp5280g2: ENable KCS 3 for MCTP binding
-Message-ID: <20210819054908.140514-1-liuxiwei@inspur.com>
+Date: Thu, 19 Aug 2021 13:52:27 +0800
+Subject: [PATCH] ARM: dts: fp5280g2: Enable KCS 3 for MCTP binding
+Message-ID: <20210819055227.140980-1-liuxiwei@inspur.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
