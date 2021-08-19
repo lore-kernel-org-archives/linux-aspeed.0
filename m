@@ -1,44 +1,43 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Thu, 19 Aug 2021 16:22:01 +0930
-Subject: [PATCH 2/4] ARM: config: aspeed: Enable KCS adapter for raw SerIO
+Date: Thu, 19 Aug 2021 16:22:02 +0930
+Subject: [PATCH 3/4] ARM: config: aspeed_g4: Enable EDAC and SPGIO
 In-Reply-To: <20210819065203.2620911-1-joel@jms.id.au>
 References: <20210819065203.2620911-1-joel@jms.id.au>
-Message-ID: <20210819065203.2620911-3-joel@jms.id.au>
+Message-ID: <20210819065203.2620911-4-joel@jms.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Raw SerIO is used by the OpenBMC debug-trigger application to take
-signals from the host that applications are unresponsive on the BMC.
+These two devices are part of the AST2400 and the drivers have support
+for that version of the soc.
 
 Signed-off-by: Joel Stanley <joel@jms.id.au>
 ---
- arch/arm/configs/aspeed_g5_defconfig | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ arch/arm/configs/aspeed_g4_defconfig | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/arch/arm/configs/aspeed_g5_defconfig b/arch/arm/configs/aspeed_g5_defconfig
-index 3f81146a9c0e..6ba30b212bda 100644
---- a/arch/arm/configs/aspeed_g5_defconfig
-+++ b/arch/arm/configs/aspeed_g5_defconfig
-@@ -130,7 +130,7 @@ CONFIG_KEYBOARD_GPIO_POLLED=y
- # CONFIG_INPUT_MOUSE is not set
- CONFIG_INPUT_MISC=y
- CONFIG_INPUT_IBM_PANEL=y
--# CONFIG_SERIO is not set
-+CONFIG_SERIO_RAW=y
- # CONFIG_VT is not set
- # CONFIG_LEGACY_PTYS is not set
- CONFIG_SERIAL_8250=y
-@@ -144,6 +144,7 @@ CONFIG_SERIAL_8250_SHARE_IRQ=y
- CONFIG_SERIAL_8250_DW=y
- CONFIG_SERIAL_OF_PLATFORM=y
- CONFIG_ASPEED_KCS_IPMI_BMC=y
-+CONFIG_IPMI_KCS_BMC_SERIO=y
- CONFIG_ASPEED_BT_IPMI_BMC=y
- CONFIG_HW_RANDOM_TIMERIOMEM=y
- # CONFIG_I2C_COMPAT is not set
+diff --git a/arch/arm/configs/aspeed_g4_defconfig b/arch/arm/configs/aspeed_g4_defconfig
+index 397c57e94743..a578865c2d96 100644
+--- a/arch/arm/configs/aspeed_g4_defconfig
++++ b/arch/arm/configs/aspeed_g4_defconfig
+@@ -141,6 +141,7 @@ CONFIG_SPI=y
+ CONFIG_GPIOLIB=y
+ CONFIG_GPIO_SYSFS=y
+ CONFIG_GPIO_ASPEED=y
++CONFIG_GPIO_ASPEED_SGPIO=y
+ CONFIG_W1=y
+ CONFIG_W1_MASTER_GPIO=y
+ CONFIG_W1_SLAVE_THERM=y
+@@ -205,6 +206,7 @@ CONFIG_LEDS_TRIGGER_TIMER=y
+ CONFIG_LEDS_TRIGGER_HEARTBEAT=y
+ CONFIG_LEDS_TRIGGER_DEFAULT_ON=y
+ CONFIG_EDAC=y
++CONFIG_EDAC_ASPEED=y
+ CONFIG_RTC_CLASS=y
+ CONFIG_RTC_DRV_DS1307=y
+ CONFIG_RTC_DRV_PCF8523=y
 -- 
 2.32.0
 
