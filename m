@@ -1,50 +1,41 @@
-From: Joel Stanley <joel@jms.id.au>
-Date: Thu, 19 Aug 2021 05:31:53 +0000
-Subject: [GIT PULL] ARM: aspeed: soc changes for 5.15
-Message-ID: <CACPK8XdyT0rCkoeE7x2EQyvFy1Z7ZwFNdm1SQfCG9yC_Z7UbxA@mail.gmail.com>
+From: George Liu <liuxiwei1013@gmail.com>
+Date: Thu, 19 Aug 2021 13:49:08 +0800
+Subject: [PATCH] ARM: dtd: fp5280g2: ENable KCS 3 for MCTP binding
+Message-ID: <20210819054908.140514-1-liuxiwei@inspur.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello Soc maintainers,
+Signed-off-by: George Liu <liuxiwei@inspur.com>
+---
+ arch/arm/boot/dts/aspeed-bmc-inspur-fp5280g2.dts | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-Here are some soc changes for 5.15.
+diff --git a/arch/arm/boot/dts/aspeed-bmc-inspur-fp5280g2.dts b/arch/arm/boot/dts/aspeed-bmc-inspur-fp5280g2.dts
+index 1752f3250e44..d0c3acbf6c8c 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-inspur-fp5280g2.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-inspur-fp5280g2.dts
+@@ -3,6 +3,7 @@
+ #include "aspeed-g5.dtsi"
+ #include <dt-bindings/gpio/aspeed-gpio.h>
+ #include <dt-bindings/leds/leds-pca955x.h>
++#include <dt-bindings/interrupt-controller/irq.h>
+ 
+ / {
+ 	model = "FP5280G2 BMC";
+@@ -902,4 +903,10 @@ fan at 7 {
+ 
+ };
+ 
++&kcs3 {
++	status = "okay";
++	aspeed,lpc-io-reg = <0xca2>;
++	aspeed,lpc-interrupts = <11 IRQ_TYPE_LEVEL_LOW>;
++};
++
+ #include "ibm-power9-dual.dtsi"
+-- 
+2.30.2
 
-The following changes since commit 2734d6c1b1a089fb593ef6a23d4b70903526fe0c:
-
-  Linux 5.14-rc2 (2021-07-18 14:13:49 -0700)
-
-are available in the Git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/joel/bmc.git
-tags/aspeed-5.15-soc
-
-for you to fetch changes up to 2f9b25fa668218f22a85ebe8c55d1d132fc0019d:
-
-  soc: aspeed: Re-enable FWH2AHB on AST2600 (2021-08-19 13:59:28 +0930)
-
-----------------------------------------------------------------
-ASPEED soc updates for 5.15
-
- * Two fixes for drivers that control the mapping of BMC memory over
-   PCIe and LPC
-
- * Re-enable FWH2AHB on systems that have it closed off by default
-
- * A new id for the AST2625, an AST2600 variant
-
-----------------------------------------------------------------
-Iwona Winiarska (2):
-      soc: aspeed: lpc-ctrl: Fix boundary check for mmap
-      soc: aspeed: p2a-ctrl: Fix boundary check for mmap
-
-Joel Stanley (2):
-      soc: aspeed: socinfo: Add AST2625 variant
-      soc: aspeed: Re-enable FWH2AHB on AST2600
-
- drivers/soc/aspeed/aspeed-lpc-ctrl.c | 31 ++++++++++++++++++++++++-------
- drivers/soc/aspeed/aspeed-p2a-ctrl.c |  2 +-
- drivers/soc/aspeed/aspeed-socinfo.c  |  1 +
- 3 files changed, 26 insertions(+), 8 deletions(-)
