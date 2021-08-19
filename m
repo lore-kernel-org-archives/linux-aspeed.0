@@ -1,50 +1,50 @@
-From: Dylan Hung <dylan_hung@aspeedtech.com>
-Date: Thu, 19 Aug 2021 03:29:27 +0000
-Subject: [PATCH] soc: aspeed: socinfo: Add AST2625 variant
-In-Reply-To: <20210818010534.2508122-1-joel@jms.id.au>
-References: <20210818010534.2508122-1-joel@jms.id.au>
-Message-ID: <HK0PR06MB28347997935D31D1F0799C8B9CC09@HK0PR06MB2834.apcprd06.prod.outlook.com>
+From: Joel Stanley <joel@jms.id.au>
+Date: Thu, 19 Aug 2021 05:31:53 +0000
+Subject: [GIT PULL] ARM: aspeed: soc changes for 5.15
+Message-ID: <CACPK8XdyT0rCkoeE7x2EQyvFy1Z7ZwFNdm1SQfCG9yC_Z7UbxA@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-> -----Original Message-----
-> From: joel.stan at gmail.com [mailto:joel.stan at gmail.com] On Behalf Of Joel
-> Stanley
-> Sent: 2021?8?18? 9:06 AM
-> To: Dylan Hung <dylan_hung@aspeedtech.com>; Andrew Jeffery
-> <andrew@aj.id.au>
-> Cc: linux-arm-kernel at lists.infradead.org; linux-aspeed at lists.ozlabs.org
-> Subject: [PATCH] soc: aspeed: socinfo: Add AST2625 variant
-> 
-> Add AST26XX series AST2625-A3 SOC ID, taken from the vendor u-boot SDK:
-> 
->  arch/arm/mach-aspeed/ast2600/scu_info.c
->  +       SOC_ID("AST2625-A3", 0x0503040305030403),
-> 
-> Signed-off-by: Joel Stanley <joel@jms.id.au>
-> ---
-> Dylan, can you please review this for me?
-> 
->  drivers/soc/aspeed/aspeed-socinfo.c | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/drivers/soc/aspeed/aspeed-socinfo.c
-> b/drivers/soc/aspeed/aspeed-socinfo.c
-> index e3215f826d17..1ca140356a08 100644
-> --- a/drivers/soc/aspeed/aspeed-socinfo.c
-> +++ b/drivers/soc/aspeed/aspeed-socinfo.c
-> @@ -26,6 +26,7 @@ static struct {
->  	{ "AST2600", 0x05000303 },
->  	{ "AST2620", 0x05010203 },
->  	{ "AST2605", 0x05030103 },
-> +	{ "AST2625", 0x05030403 },
->  };
-> 
->  static const char *siliconid_to_name(u32 siliconid)
-> --
-> 2.32.0
+Hello Soc maintainers,
 
-Reviewed-by: Dylan Hung <dylan_hung@aspeedtech.com>
+Here are some soc changes for 5.15.
+
+The following changes since commit 2734d6c1b1a089fb593ef6a23d4b70903526fe0c:
+
+  Linux 5.14-rc2 (2021-07-18 14:13:49 -0700)
+
+are available in the Git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/joel/bmc.git
+tags/aspeed-5.15-soc
+
+for you to fetch changes up to 2f9b25fa668218f22a85ebe8c55d1d132fc0019d:
+
+  soc: aspeed: Re-enable FWH2AHB on AST2600 (2021-08-19 13:59:28 +0930)
+
+----------------------------------------------------------------
+ASPEED soc updates for 5.15
+
+ * Two fixes for drivers that control the mapping of BMC memory over
+   PCIe and LPC
+
+ * Re-enable FWH2AHB on systems that have it closed off by default
+
+ * A new id for the AST2625, an AST2600 variant
+
+----------------------------------------------------------------
+Iwona Winiarska (2):
+      soc: aspeed: lpc-ctrl: Fix boundary check for mmap
+      soc: aspeed: p2a-ctrl: Fix boundary check for mmap
+
+Joel Stanley (2):
+      soc: aspeed: socinfo: Add AST2625 variant
+      soc: aspeed: Re-enable FWH2AHB on AST2600
+
+ drivers/soc/aspeed/aspeed-lpc-ctrl.c | 31 ++++++++++++++++++++++++-------
+ drivers/soc/aspeed/aspeed-p2a-ctrl.c |  2 +-
+ drivers/soc/aspeed/aspeed-socinfo.c  |  1 +
+ 3 files changed, 26 insertions(+), 8 deletions(-)
