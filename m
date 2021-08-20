@@ -1,50 +1,51 @@
-From: Rob Herring <robh@kernel.org>
-Date: Thu, 19 Aug 2021 07:49:09 -0500
-Subject: [PATCH v2 1/5] dt-bindings: aspeed: Add eSPI controller
-In-Reply-To: <20210819080040.31242-2-chiawei_wang@aspeedtech.com>
-References: <20210819080040.31242-1-chiawei_wang@aspeedtech.com>
- <20210819080040.31242-2-chiawei_wang@aspeedtech.com>
-Message-ID: <1629377349.157361.288210.nullmailer@robh.at.kernel.org>
+From: Joel Stanley <joel@jms.id.au>
+Date: Fri, 20 Aug 2021 06:57:24 +0000
+Subject: [GIT PULL] ARM: aspeed: defconfig changes for 5.15
+Message-ID: <CACPK8XdzKdnyrpjKukGWieBhLgQnBs+y=LuSr_weot=Ovy3+9A@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, 19 Aug 2021 16:00:36 +0800, Chia-Wei Wang wrote:
-> Add dt-bindings for Aspeed eSPI controller
-> 
-> Signed-off-by: Chia-Wei Wang <chiawei_wang@aspeedtech.com>
-> ---
->  .../devicetree/bindings/soc/aspeed/espi.yaml  | 158 ++++++++++++++++++
->  1 file changed, 158 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/soc/aspeed/espi.yaml
-> 
+Dear Soc maintainers,
 
-My bot found errors running 'make DT_CHECKER_FLAGS=-m dt_binding_check'
-on your patch (DT_CHECKER_FLAGS is new in v5.13):
+This is the last of the aspeed pull requests for v5.15.
 
-yamllint warnings/errors:
+Apologies for drip feeding them, I was pressed for time so I started
+with the most important and worked down the list.
 
-dtschema/dtc warnings/errors:
-Error: Documentation/devicetree/bindings/soc/aspeed/espi.example.dts:35.35-36 syntax error
-FATAL ERROR: Unable to parse input tree
-make[1]: *** [scripts/Makefile.lib:380: Documentation/devicetree/bindings/soc/aspeed/espi.example.dt.yaml] Error 1
-make[1]: *** Waiting for unfinished jobs....
-make: *** [Makefile:1419: dt_binding_check] Error 2
+The following changes since commit 2734d6c1b1a089fb593ef6a23d4b70903526fe0c:
 
-doc reference errors (make refcheckdocs):
+  Linux 5.14-rc2 (2021-07-18 14:13:49 -0700)
 
-See https://patchwork.ozlabs.org/patch/1518493
+are available in the Git repository at:
 
-This check can fail if there are any dependencies. The base for a patch
-series is generally the most recent rc1.
+  git://git.kernel.org/pub/scm/linux/kernel/git/joel/bmc.git
+tags/aspeed-5.15-defconfig
 
-If you already ran 'make dt_binding_check' and didn't see the above
-error(s), then make sure 'yamllint' is installed and dt-schema is up to
-date:
+for you to fetch changes up to a4836d5ad127fe31fecb29878d81f2e9b4a5591c:
 
-pip3 install dtschema --upgrade
+  ARM: config: aspeed: Regenerate defconfigs (2021-08-19 16:33:43 +0930)
 
-Please check and re-submit.
+----------------------------------------------------------------
+ASPEED defconfig updates for 5.15
 
+ - Enable new KCS SerIO driver
+
+ - Enable SGPIO and EDAC for AST2400 now they are supported there
+
+ - Switch to SLUB and enable SLAB_FREELIST_HARDENED
+
+ - Regenerate defconfigs atop v5.14-rc2
+
+----------------------------------------------------------------
+Joel Stanley (4):
+      ARM: config: aspeed: Enable hardened allocator feature
+      ARM: config: aspeed: Enable KCS adapter for raw SerIO
+      ARM: config: aspeed_g4: Enable EDAC and SPGIO
+      ARM: config: aspeed: Regenerate defconfigs
+
+ arch/arm/configs/aspeed_g4_defconfig | 16 +++++-----------
+ arch/arm/configs/aspeed_g5_defconfig | 25 +++++++++----------------
+ 2 files changed, 14 insertions(+), 27 deletions(-)
