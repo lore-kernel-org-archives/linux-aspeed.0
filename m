@@ -1,50 +1,38 @@
-From: Chia-Wei Wang <chiawei_wang@aspeedtech.com>
-Date: Thu, 26 Aug 2021 14:16:23 +0800
-Subject: [PATCH v3 4/4] ARM: dts: aspeed: Add eSPI node
-In-Reply-To: <20210826061623.6352-1-chiawei_wang@aspeedtech.com>
-References: <20210826061623.6352-1-chiawei_wang@aspeedtech.com>
-Message-ID: <20210826061623.6352-5-chiawei_wang@aspeedtech.com>
+From: Yang Yingliang <yangyingliang@huawei.com>
+Date: Mon, 23 Aug 2021 21:00:43 +0800
+Subject: [PATCH -next] soc: aspeed-lpc-ctrl: Fix missing
+ clk_disable_unprepare() on error in aspeed_lpc_ctrl_probe()
+Message-ID: <20210823130043.1087204-1-yangyingliang@huawei.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add eSPI to the device tree for Aspeed 5/6th generation SoCs.
+Fix the missing clk_disable_unprepare() before return
+from aspeed_lpc_ctrl_probe() in the error handling case.
 
-Signed-off-by: Chia-Wei Wang <chiawei_wang@aspeedtech.com>
+Fixes: 2f9b25fa6682 ("soc: aspeed: Re-enable FWH2AHB on AST2600")
+Reported-by: Hulk Robot <hulkci@huawei.com>
+Signed-off-by: Yang Yingliang <yangyingliang@huawei.com>
 ---
- arch/arm/boot/dts/aspeed-g6.dtsi | 17 +++++++++++++++++
- 1 file changed, 17 insertions(+)
+ drivers/soc/aspeed/aspeed-lpc-ctrl.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm/boot/dts/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed-g6.dtsi
-index f96607b7b4e2..47dc0b3993d1 100644
---- a/arch/arm/boot/dts/aspeed-g6.dtsi
-+++ b/arch/arm/boot/dts/aspeed-g6.dtsi
-@@ -364,6 +364,23 @@
- 				status = "disabled";
- 			};
+diff --git a/drivers/soc/aspeed/aspeed-lpc-ctrl.c b/drivers/soc/aspeed/aspeed-lpc-ctrl.c
+index 6893c5ec3259..f4c989584d6b 100644
+--- a/drivers/soc/aspeed/aspeed-lpc-ctrl.c
++++ b/drivers/soc/aspeed/aspeed-lpc-ctrl.c
+@@ -312,7 +312,8 @@ static int aspeed_lpc_ctrl_probe(struct platform_device *pdev)
+ 		lpc_ctrl->scu = syscon_regmap_lookup_by_compatible("aspeed,ast2600-scu");
+ 		if (IS_ERR(lpc_ctrl->scu)) {
+ 			dev_err(dev, "couldn't find scu\n");
+-			return PTR_ERR(lpc_ctrl->scu);
++			rc = PTR_ERR(lpc_ctrl->scu);
++			goto err;
+ 		}
+ 	}
  
-+			espi: espi at 1e6ee000 {
-+				compatible = "aspeed,ast2600-espi", "simple-mfd", "syscon";
-+				reg = <0x1e6ee000 0x1000>;
-+
-+				#address-cells = <1>;
-+				#size-cells = <1>;
-+				ranges = <0x0 0x1e6ee000 0x1000>;
-+
-+				espi_ctrl: espi-ctrl at 0 {
-+					compatible = "aspeed,ast2600-espi-ctrl";
-+					reg = <0x0 0x800>;
-+					interrupts = <GIC_SPI 42 IRQ_TYPE_LEVEL_HIGH>;
-+					clocks = <&syscon ASPEED_CLK_GATE_ESPICLK>;
-+					status = "disabled";
-+				};
-+			};
-+
- 			gpio0: gpio at 1e780000 {
- 				#gpio-cells = <2>;
- 				gpio-controller;
 -- 
-2.17.1
+2.25.1
 
