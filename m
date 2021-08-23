@@ -1,73 +1,104 @@
-From: Billy Tsai <billy_tsai@aspeedtech.com>
-Date: Mon, 23 Aug 2021 15:02:31 +0800
-Subject: [v4 06/15] iio: adc: aspeed: Add vref config function
-In-Reply-To: <20210823070240.12600-1-billy_tsai@aspeedtech.com>
-References: <20210823070240.12600-1-billy_tsai@aspeedtech.com>
-Message-ID: <20210823070240.12600-7-billy_tsai@aspeedtech.com>
+From: Cai Huoqing <caihuoqing@baidu.com>
+Date: Mon, 23 Aug 2021 12:58:07 +0800
+Subject: [PATCH] usb: gadget: aspeed: Remove repeated verbose license text
+Message-ID: <20210823045807.49-1-caihuoqing@baidu.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add the function to check the vref_fixed and set the value to driver
-data.
+remove it because SPDX-License-Identifier is already used
 
-Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
+Signed-off-by: Cai Huoqing <caihuoqing@baidu.com>
 ---
- drivers/iio/adc/aspeed_adc.c | 18 +++++++++++++++++-
- 1 file changed, 17 insertions(+), 1 deletion(-)
+ drivers/usb/gadget/udc/aspeed-vhub/core.c | 5 -----
+ drivers/usb/gadget/udc/aspeed-vhub/dev.c  | 5 -----
+ drivers/usb/gadget/udc/aspeed-vhub/ep0.c  | 5 -----
+ drivers/usb/gadget/udc/aspeed-vhub/epn.c  | 5 -----
+ drivers/usb/gadget/udc/aspeed-vhub/hub.c  | 5 -----
+ 5 files changed, 25 deletions(-)
 
-diff --git a/drivers/iio/adc/aspeed_adc.c b/drivers/iio/adc/aspeed_adc.c
-index f03c7921d534..f260e40ab9b2 100644
---- a/drivers/iio/adc/aspeed_adc.c
-+++ b/drivers/iio/adc/aspeed_adc.c
-@@ -122,7 +122,7 @@ static int aspeed_adc_read_raw(struct iio_dev *indio_dev,
- 		return IIO_VAL_INT;
+diff --git a/drivers/usb/gadget/udc/aspeed-vhub/core.c b/drivers/usb/gadget/udc/aspeed-vhub/core.c
+index d11d3d14313f..7a635c499777 100644
+--- a/drivers/usb/gadget/udc/aspeed-vhub/core.c
++++ b/drivers/usb/gadget/udc/aspeed-vhub/core.c
+@@ -5,11 +5,6 @@
+  * core.c - Top level support
+  *
+  * Copyright 2017 IBM Corporation
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License as published by
+- * the Free Software Foundation; either version 2 of the License, or
+- * (at your option) any later version.
+  */
  
- 	case IIO_CHAN_INFO_SCALE:
--		*val = data->model_data->vref_fixed;
-+		*val = data->vref;
- 		*val2 = ASPEED_RESOLUTION_BITS;
- 		return IIO_VAL_FRACTIONAL_LOG2;
+ #include <linux/kernel.h>
+diff --git a/drivers/usb/gadget/udc/aspeed-vhub/dev.c b/drivers/usb/gadget/udc/aspeed-vhub/dev.c
+index d268306a7bfe..d918e8b2af3c 100644
+--- a/drivers/usb/gadget/udc/aspeed-vhub/dev.c
++++ b/drivers/usb/gadget/udc/aspeed-vhub/dev.c
+@@ -5,11 +5,6 @@
+  * dev.c - Individual device/gadget management (ie, a port = a gadget)
+  *
+  * Copyright 2017 IBM Corporation
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License as published by
+- * the Free Software Foundation; either version 2 of the License, or
+- * (at your option) any later version.
+  */
  
-@@ -187,6 +187,17 @@ static const struct iio_info aspeed_adc_iio_info = {
- 	.debugfs_reg_access = aspeed_adc_reg_access,
- };
+ #include <linux/kernel.h>
+diff --git a/drivers/usb/gadget/udc/aspeed-vhub/ep0.c b/drivers/usb/gadget/udc/aspeed-vhub/ep0.c
+index 022b777b85f8..74ea36c19b1e 100644
+--- a/drivers/usb/gadget/udc/aspeed-vhub/ep0.c
++++ b/drivers/usb/gadget/udc/aspeed-vhub/ep0.c
+@@ -5,11 +5,6 @@
+  * ep0.c - Endpoint 0 handling
+  *
+  * Copyright 2017 IBM Corporation
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License as published by
+- * the Free Software Foundation; either version 2 of the License, or
+- * (at your option) any later version.
+  */
  
-+static int aspeed_adc_vref_config(struct iio_dev *indio_dev)
-+{
-+	struct aspeed_adc_data *data = iio_priv(indio_dev);
-+
-+	if (data->model_data->vref_fixed) {
-+		data->vref = data->model_data->vref_fixed;
-+		return 0;
-+	}
-+	return 0;
-+}
-+
- static int aspeed_adc_probe(struct platform_device *pdev)
- {
- 	struct iio_dev *indio_dev;
-@@ -242,6 +253,10 @@ static int aspeed_adc_probe(struct platform_device *pdev)
- 	}
- 	reset_control_deassert(data->rst);
+ #include <linux/kernel.h>
+diff --git a/drivers/usb/gadget/udc/aspeed-vhub/epn.c b/drivers/usb/gadget/udc/aspeed-vhub/epn.c
+index cb164c615e6f..917892ca8753 100644
+--- a/drivers/usb/gadget/udc/aspeed-vhub/epn.c
++++ b/drivers/usb/gadget/udc/aspeed-vhub/epn.c
+@@ -5,11 +5,6 @@
+  * epn.c - Generic endpoints management
+  *
+  * Copyright 2017 IBM Corporation
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License as published by
+- * the Free Software Foundation; either version 2 of the License, or
+- * (at your option) any later version.
+  */
  
-+	ret = aspeed_adc_vref_config(indio_dev);
-+	if (ret)
-+		goto vref_config_error;
-+
- 	if (data->model_data->wait_init_sequence) {
- 		/* Enable engine in normal mode. */
- 		writel(FIELD_PREP(ASPEED_ADC_OP_MODE,
-@@ -290,6 +305,7 @@ static int aspeed_adc_probe(struct platform_device *pdev)
- 	clk_disable_unprepare(data->clk_scaler->clk);
- clk_enable_error:
- poll_timeout_error:
-+vref_config_error:
- 	reset_control_assert(data->rst);
- reset_error:
- 	clk_hw_unregister_divider(data->clk_scaler);
+ #include <linux/kernel.h>
+diff --git a/drivers/usb/gadget/udc/aspeed-vhub/hub.c b/drivers/usb/gadget/udc/aspeed-vhub/hub.c
+index 5c7dea5e0ff1..b9960fdd8a51 100644
+--- a/drivers/usb/gadget/udc/aspeed-vhub/hub.c
++++ b/drivers/usb/gadget/udc/aspeed-vhub/hub.c
+@@ -5,11 +5,6 @@
+  * hub.c - virtual hub handling
+  *
+  * Copyright 2017 IBM Corporation
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License as published by
+- * the Free Software Foundation; either version 2 of the License, or
+- * (at your option) any later version.
+  */
+ 
+ #include <linux/kernel.h>
 -- 
 2.25.1
 
