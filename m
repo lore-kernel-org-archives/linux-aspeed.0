@@ -1,73 +1,127 @@
 From: Billy Tsai <billy_tsai@aspeedtech.com>
-Date: Tue, 24 Aug 2021 17:12:34 +0800
-Subject: [RESEND v4 06/15] iio: adc: aspeed: Add vref config function
+Date: Tue, 24 Aug 2021 17:12:29 +0800
+Subject: [RESEND v4 01/15] dt-bindings: iio: adc: Add ast2600-adc bindings
 In-Reply-To: <20210824091243.9393-1-billy_tsai@aspeedtech.com>
 References: <20210824091243.9393-1-billy_tsai@aspeedtech.com>
-Message-ID: <20210824091243.9393-7-billy_tsai@aspeedtech.com>
+Message-ID: <20210824091243.9393-2-billy_tsai@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add the function to check the vref_fixed and set the value to driver
-data.
+Add device tree bindings document for the aspeed ast2600 adc device
+driver.
 
 Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
 ---
- drivers/iio/adc/aspeed_adc.c | 18 +++++++++++++++++-
- 1 file changed, 17 insertions(+), 1 deletion(-)
+ .../bindings/iio/adc/aspeed,ast2600-adc.yaml  | 97 +++++++++++++++++++
+ 1 file changed, 97 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/iio/adc/aspeed,ast2600-adc.yaml
 
-diff --git a/drivers/iio/adc/aspeed_adc.c b/drivers/iio/adc/aspeed_adc.c
-index f03c7921d534..f260e40ab9b2 100644
---- a/drivers/iio/adc/aspeed_adc.c
-+++ b/drivers/iio/adc/aspeed_adc.c
-@@ -122,7 +122,7 @@ static int aspeed_adc_read_raw(struct iio_dev *indio_dev,
- 		return IIO_VAL_INT;
- 
- 	case IIO_CHAN_INFO_SCALE:
--		*val = data->model_data->vref_fixed;
-+		*val = data->vref;
- 		*val2 = ASPEED_RESOLUTION_BITS;
- 		return IIO_VAL_FRACTIONAL_LOG2;
- 
-@@ -187,6 +187,17 @@ static const struct iio_info aspeed_adc_iio_info = {
- 	.debugfs_reg_access = aspeed_adc_reg_access,
- };
- 
-+static int aspeed_adc_vref_config(struct iio_dev *indio_dev)
-+{
-+	struct aspeed_adc_data *data = iio_priv(indio_dev);
+diff --git a/Documentation/devicetree/bindings/iio/adc/aspeed,ast2600-adc.yaml b/Documentation/devicetree/bindings/iio/adc/aspeed,ast2600-adc.yaml
+new file mode 100644
+index 000000000000..248cda7d91e9
+--- /dev/null
++++ b/Documentation/devicetree/bindings/iio/adc/aspeed,ast2600-adc.yaml
+@@ -0,0 +1,97 @@
++# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/iio/adc/aspeed,ast2600-adc.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
 +
-+	if (data->model_data->vref_fixed) {
-+		data->vref = data->model_data->vref_fixed;
-+		return 0;
-+	}
-+	return 0;
-+}
++title: ADC that forms part of an ASPEED server management processor.
 +
- static int aspeed_adc_probe(struct platform_device *pdev)
- {
- 	struct iio_dev *indio_dev;
-@@ -242,6 +253,10 @@ static int aspeed_adc_probe(struct platform_device *pdev)
- 	}
- 	reset_control_deassert(data->rst);
- 
-+	ret = aspeed_adc_vref_config(indio_dev);
-+	if (ret)
-+		goto vref_config_error;
++maintainers:
++  - Billy Tsai <billy_tsai@aspeedtech.com>
 +
- 	if (data->model_data->wait_init_sequence) {
- 		/* Enable engine in normal mode. */
- 		writel(FIELD_PREP(ASPEED_ADC_OP_MODE,
-@@ -290,6 +305,7 @@ static int aspeed_adc_probe(struct platform_device *pdev)
- 	clk_disable_unprepare(data->clk_scaler->clk);
- clk_enable_error:
- poll_timeout_error:
-+vref_config_error:
- 	reset_control_assert(data->rst);
- reset_error:
- 	clk_hw_unregister_divider(data->clk_scaler);
++description: |
++  ? 10-bits resolution for 16 voltage channels.
++  ? The device split into two individual engine and each contains 8 voltage
++  channels.
++  ? Channel scanning can be non-continuous.
++  ? Programmable ADC clock frequency.
++  ? Programmable upper and lower threshold for each channels.
++  ? Interrupt when larger or less than threshold for each channels.
++  ? Support hysteresis for each channels.
++  ? Built-in a compensating method.
++  ? Built-in a register to trim internal reference voltage.
++  ? Internal or External reference voltage.
++  ? Support 2 Internal reference voltage 1.2v or 2.5v.
++  ? Integrate dividing circuit for battery sensing.
++
++properties:
++  compatible:
++    enum:
++      - aspeed,ast2600-adc0
++      - aspeed,ast2600-adc1
++
++  reg:
++    maxItems: 1
++
++  clocks:
++    description:
++      Input clock used to derive the sample clock. Expected to be the
++      SoC's APB clock.
++
++  resets:
++    maxItems: 1
++
++  "#io-channel-cells":
++    const: 1
++
++  vref-supply:
++    description:
++      The external regulator supply ADC reference voltage.
++
++  aspeed,int_vref_mv:
++    $ref: /schemas/types.yaml#/definitions/uint32
++    enum: [1200, 2500]
++    description:
++      ADC internal reference voltage in millivolts.
++
++  aspeed,battery-sensing:
++    type: boolean
++    description:
++      Inform the driver that last channel will be used to sensor battery.
++
++  aspeed,trim-data-valid:
++    type: boolean
++    description: |
++      The ADC reference voltage can be calibrated to obtain the trimming
++      data which will be stored in otp. This property informs the driver that
++      the data store in the otp is valid.
++
++required:
++  - compatible
++  - reg
++  - clocks
++  - resets
++  - "#io-channel-cells"
++
++additionalProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/clock/ast2600-clock.h>
++    adc0: adc at 1e6e9000 {
++        compatible = "aspeed,ast2600-adc0";
++        reg = <0x1e6e9000 0x100>;
++        clocks = <&syscon ASPEED_CLK_APB2>;
++        resets = <&syscon ASPEED_RESET_ADC>;
++        #io-channel-cells = <1>;
++        aspeed,int_vref_mv = <2500>;
++    };
++    adc1: adc at 1e6e9100 {
++        compatible = "aspeed,ast2600-adc1";
++        reg = <0x1e6e9100 0x100>;
++        clocks = <&syscon ASPEED_CLK_APB2>;
++        resets = <&syscon ASPEED_RESET_ADC>;
++        #io-channel-cells = <1>;
++        aspeed,int_vref_mv = <2500>;
++    };
++...
 -- 
 2.25.1
 
