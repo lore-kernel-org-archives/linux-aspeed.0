@@ -1,104 +1,44 @@
-From: Cai Huoqing <caihuoqing@baidu.com>
-Date: Mon, 23 Aug 2021 12:58:07 +0800
-Subject: [PATCH] usb: gadget: aspeed: Remove repeated verbose license text
-Message-ID: <20210823045807.49-1-caihuoqing@baidu.com>
+From: Joel Stanley <joel@jms.id.au>
+Date: Tue, 24 Aug 2021 04:52:13 +0000
+Subject: [PATCH -next] soc: aspeed-lpc-ctrl: Fix missing
+ clk_disable_unprepare() on error in aspeed_lpc_ctrl_probe()
+In-Reply-To: <20210823130043.1087204-1-yangyingliang@huawei.com>
+References: <20210823130043.1087204-1-yangyingliang@huawei.com>
+Message-ID: <CACPK8XeUJV2cCaCu+xnX-pGkHVxV9vp3LPj8dJbJbi8SC4Bazw@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-remove it because SPDX-License-Identifier is already used
+On Mon, 23 Aug 2021 at 12:55, Yang Yingliang <yangyingliang@huawei.com> wrote:
+>
+> Fix the missing clk_disable_unprepare() before return
+> from aspeed_lpc_ctrl_probe() in the error handling case.
+>
+> Fixes: 2f9b25fa6682 ("soc: aspeed: Re-enable FWH2AHB on AST2600")
+> Reported-by: Hulk Robot <hulkci@huawei.com>
+> Signed-off-by: Yang Yingliang <yangyingliang@huawei.com>
+> ---
+>  drivers/soc/aspeed/aspeed-lpc-ctrl.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+>
+> diff --git a/drivers/soc/aspeed/aspeed-lpc-ctrl.c b/drivers/soc/aspeed/aspeed-lpc-ctrl.c
+> index 6893c5ec3259..f4c989584d6b 100644
+> --- a/drivers/soc/aspeed/aspeed-lpc-ctrl.c
+> +++ b/drivers/soc/aspeed/aspeed-lpc-ctrl.c
+> @@ -312,7 +312,8 @@ static int aspeed_lpc_ctrl_probe(struct platform_device *pdev)
+>                 lpc_ctrl->scu = syscon_regmap_lookup_by_compatible("aspeed,ast2600-scu");
+>                 if (IS_ERR(lpc_ctrl->scu)) {
+>                         dev_err(dev, "couldn't find scu\n");
+> -                       return PTR_ERR(lpc_ctrl->scu);
+> +                       rc = PTR_ERR(lpc_ctrl->scu);
+> +                       goto err;
 
-Signed-off-by: Cai Huoqing <caihuoqing@baidu.com>
----
- drivers/usb/gadget/udc/aspeed-vhub/core.c | 5 -----
- drivers/usb/gadget/udc/aspeed-vhub/dev.c  | 5 -----
- drivers/usb/gadget/udc/aspeed-vhub/ep0.c  | 5 -----
- drivers/usb/gadget/udc/aspeed-vhub/epn.c  | 5 -----
- drivers/usb/gadget/udc/aspeed-vhub/hub.c  | 5 -----
- 5 files changed, 25 deletions(-)
+Thanks for the patch. Alternatively, we could move this code above the
+devm_clk_get/clk_prepare_enable. I would prefer that option, if you
+want to send a v2.
 
-diff --git a/drivers/usb/gadget/udc/aspeed-vhub/core.c b/drivers/usb/gadget/udc/aspeed-vhub/core.c
-index d11d3d14313f..7a635c499777 100644
---- a/drivers/usb/gadget/udc/aspeed-vhub/core.c
-+++ b/drivers/usb/gadget/udc/aspeed-vhub/core.c
-@@ -5,11 +5,6 @@
-  * core.c - Top level support
-  *
-  * Copyright 2017 IBM Corporation
-- *
-- * This program is free software; you can redistribute it and/or modify
-- * it under the terms of the GNU General Public License as published by
-- * the Free Software Foundation; either version 2 of the License, or
-- * (at your option) any later version.
-  */
- 
- #include <linux/kernel.h>
-diff --git a/drivers/usb/gadget/udc/aspeed-vhub/dev.c b/drivers/usb/gadget/udc/aspeed-vhub/dev.c
-index d268306a7bfe..d918e8b2af3c 100644
---- a/drivers/usb/gadget/udc/aspeed-vhub/dev.c
-+++ b/drivers/usb/gadget/udc/aspeed-vhub/dev.c
-@@ -5,11 +5,6 @@
-  * dev.c - Individual device/gadget management (ie, a port = a gadget)
-  *
-  * Copyright 2017 IBM Corporation
-- *
-- * This program is free software; you can redistribute it and/or modify
-- * it under the terms of the GNU General Public License as published by
-- * the Free Software Foundation; either version 2 of the License, or
-- * (at your option) any later version.
-  */
- 
- #include <linux/kernel.h>
-diff --git a/drivers/usb/gadget/udc/aspeed-vhub/ep0.c b/drivers/usb/gadget/udc/aspeed-vhub/ep0.c
-index 022b777b85f8..74ea36c19b1e 100644
---- a/drivers/usb/gadget/udc/aspeed-vhub/ep0.c
-+++ b/drivers/usb/gadget/udc/aspeed-vhub/ep0.c
-@@ -5,11 +5,6 @@
-  * ep0.c - Endpoint 0 handling
-  *
-  * Copyright 2017 IBM Corporation
-- *
-- * This program is free software; you can redistribute it and/or modify
-- * it under the terms of the GNU General Public License as published by
-- * the Free Software Foundation; either version 2 of the License, or
-- * (at your option) any later version.
-  */
- 
- #include <linux/kernel.h>
-diff --git a/drivers/usb/gadget/udc/aspeed-vhub/epn.c b/drivers/usb/gadget/udc/aspeed-vhub/epn.c
-index cb164c615e6f..917892ca8753 100644
---- a/drivers/usb/gadget/udc/aspeed-vhub/epn.c
-+++ b/drivers/usb/gadget/udc/aspeed-vhub/epn.c
-@@ -5,11 +5,6 @@
-  * epn.c - Generic endpoints management
-  *
-  * Copyright 2017 IBM Corporation
-- *
-- * This program is free software; you can redistribute it and/or modify
-- * it under the terms of the GNU General Public License as published by
-- * the Free Software Foundation; either version 2 of the License, or
-- * (at your option) any later version.
-  */
- 
- #include <linux/kernel.h>
-diff --git a/drivers/usb/gadget/udc/aspeed-vhub/hub.c b/drivers/usb/gadget/udc/aspeed-vhub/hub.c
-index 5c7dea5e0ff1..b9960fdd8a51 100644
---- a/drivers/usb/gadget/udc/aspeed-vhub/hub.c
-+++ b/drivers/usb/gadget/udc/aspeed-vhub/hub.c
-@@ -5,11 +5,6 @@
-  * hub.c - virtual hub handling
-  *
-  * Copyright 2017 IBM Corporation
-- *
-- * This program is free software; you can redistribute it and/or modify
-- * it under the terms of the GNU General Public License as published by
-- * the Free Software Foundation; either version 2 of the License, or
-- * (at your option) any later version.
-  */
- 
- #include <linux/kernel.h>
--- 
-2.25.1
+Cheers,
 
+Joel
