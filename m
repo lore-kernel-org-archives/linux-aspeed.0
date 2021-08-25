@@ -1,35 +1,71 @@
-From: Billy Tsai <billy_tsai@aspeedtech.com>
-Date: Wed, 25 Aug 2021 00:06:47 +0000
-Subject: [v4 01/15] dt-bindings: iio: adc: Add ast2600-adc bindings
-In-Reply-To: <YSTiUPQa+HYSA63t@robh.at.kernel.org>
-References: <20210823070240.12600-1-billy_tsai@aspeedtech.com>
- <20210823070240.12600-2-billy_tsai@aspeedtech.com>
- <YSTiUPQa+HYSA63t@robh.at.kernel.org>
-Message-ID: <DEB9D606-6489-4993-A5E7-6E4F3226EE5A@aspeedtech.com>
+From: Joel Stanley <joel@jms.id.au>
+Date: Wed, 25 Aug 2021 00:07:55 +0000
+Subject: [PATCH -next v2] soc: aspeed-lpc-ctrl: Fix missing
+ clk_disable_unprepare() on error in aspeed_lpc_ctrl_probe()
+In-Reply-To: <20210824085522.1849410-1-yangyingliang@huawei.com>
+References: <20210824085522.1849410-1-yangyingliang@huawei.com>
+Message-ID: <CACPK8Xc9kfB1wYPOsitP1PAoF9dZtB-N1c=XTaaS2zPNONnv5w@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Rob,
+On Tue, 24 Aug 2021 at 08:49, Yang Yingliang <yangyingliang@huawei.com> wrote:
+>
+> Move syscon_regmap_lookup_by_compatible() above the
+> devm_clk_get() to avoid missing clk_disable_unprepare().
+>
+> Fixes: 2f9b25fa6682 ("soc: aspeed: Re-enable FWH2AHB on AST2600")
+> Reported-by: Hulk Robot <hulkci@huawei.com>
+> Signed-off-by: Yang Yingliang <yangyingliang@huawei.com>
 
-On 2021/8/24, 8:13 PM, "Rob Herring" <robh@kernel.org> wrote:
+Reviewed-by: Joel Stanley <joel@jms.id.au>
 
-    On Mon, Aug 23, 2021 at 03:02:26PM +0800, Billy Tsai wrote:
-    >   > +properties:
-    >   > +  compatible:
-    >   > +    enum:
-    >   > +      - aspeed,ast2600-adc0
-    >   > +      - aspeed,ast2600-adc1
+Thanks for the patch. I will send it to the soc maintainers for merging.
 
-    > What's the difference between 0 and 1?
-
-Their trimming data, which is used to calibrate internal reference volage,
-locates in different address of OTP.
-
-Best Regards,
-Billy Tsai
-
- 
-
+> ---
+>  drivers/soc/aspeed/aspeed-lpc-ctrl.c | 20 ++++++++++----------
+>  1 file changed, 10 insertions(+), 10 deletions(-)
+>
+> diff --git a/drivers/soc/aspeed/aspeed-lpc-ctrl.c b/drivers/soc/aspeed/aspeed-lpc-ctrl.c
+> index 6893c5ec3259..72771e018c42 100644
+> --- a/drivers/soc/aspeed/aspeed-lpc-ctrl.c
+> +++ b/drivers/soc/aspeed/aspeed-lpc-ctrl.c
+> @@ -295,6 +295,16 @@ static int aspeed_lpc_ctrl_probe(struct platform_device *pdev)
+>                 return -ENODEV;
+>         }
+>
+> +       if (of_device_is_compatible(dev->of_node, "aspeed,ast2600-lpc-ctrl")) {
+> +               lpc_ctrl->fwh2ahb = true;
+> +
+> +               lpc_ctrl->scu = syscon_regmap_lookup_by_compatible("aspeed,ast2600-scu");
+> +               if (IS_ERR(lpc_ctrl->scu)) {
+> +                       dev_err(dev, "couldn't find scu\n");
+> +                       return PTR_ERR(lpc_ctrl->scu);
+> +               }
+> +       }
+> +
+>         lpc_ctrl->clk = devm_clk_get(dev, NULL);
+>         if (IS_ERR(lpc_ctrl->clk)) {
+>                 dev_err(dev, "couldn't get clock\n");
+> @@ -306,16 +316,6 @@ static int aspeed_lpc_ctrl_probe(struct platform_device *pdev)
+>                 return rc;
+>         }
+>
+> -       if (of_device_is_compatible(dev->of_node, "aspeed,ast2600-lpc-ctrl")) {
+> -               lpc_ctrl->fwh2ahb = true;
+> -
+> -               lpc_ctrl->scu = syscon_regmap_lookup_by_compatible("aspeed,ast2600-scu");
+> -               if (IS_ERR(lpc_ctrl->scu)) {
+> -                       dev_err(dev, "couldn't find scu\n");
+> -                       return PTR_ERR(lpc_ctrl->scu);
+> -               }
+> -       }
+> -
+>         lpc_ctrl->miscdev.minor = MISC_DYNAMIC_MINOR;
+>         lpc_ctrl->miscdev.name = DEVICE_NAME;
+>         lpc_ctrl->miscdev.fops = &aspeed_lpc_ctrl_fops;
+> --
+> 2.25.1
+>
