@@ -1,9 +1,9 @@
 From: kernel test robot <lkp@intel.com>
-Date: Fri, 27 Aug 2021 04:05:57 +0800
+Date: Fri, 27 Aug 2021 07:30:06 +0800
 Subject: [PATCH v3 3/4] soc: aspeed: Add eSPI driver
 In-Reply-To: <20210826061623.6352-4-chiawei_wang@aspeedtech.com>
 References: <20210826061623.6352-4-chiawei_wang@aspeedtech.com>
-Message-ID: <202108270339.2LOAeemT-lkp@intel.com>
+Message-ID: <202108270732.OvBQ4K3D-lkp@intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -12,10 +12,10 @@ Content-Transfer-Encoding: 7bit
 
 Hi Chia-Wei,
 
-I love your patch! Perhaps something to improve:
+I love your patch! Yet something to improve:
 
-[auto build test WARNING on robh/for-next]
-[also build test WARNING on arm/for-next keystone/next soc/for-next rockchip/for-next arm64/for-next/core linus/master joel-aspeed/for-next v5.14-rc7 next-20210826]
+[auto build test ERROR on robh/for-next]
+[also build test ERROR on arm/for-next keystone/next soc/for-next rockchip/for-next arm64/for-next/core linus/master joel-aspeed/for-next v5.14-rc7 next-20210826]
 [cannot apply to xlnx/master]
 [If your patch is applied to the wrong git tree, kindly drop us a note.
 And when submitting patch, we suggest to use '--base' as documented in
@@ -23,125 +23,137 @@ https://git-scm.com/docs/git-format-patch]
 
 url:    https://github.com/0day-ci/linux/commits/Chia-Wei-Wang/arm-aspeed-Add-eSPI-support/20210826-141737
 base:   https://git.kernel.org/pub/scm/linux/kernel/git/robh/linux.git for-next
-config: arm64-randconfig-r025-20210826 (attached as .config)
-compiler: clang version 14.0.0 (https://github.com/llvm/llvm-project ea08c4cd1c0869ec5024a8bb3f5cdf06ab03ae83)
+config: arm64-randconfig-r002-20210826 (attached as .config)
+compiler: aarch64-linux-gcc (GCC) 11.2.0
 reproduce (this is a W=1 build):
         wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
         chmod +x ~/bin/make.cross
-        # install arm64 cross compiling tool for clang build
-        # apt-get install binutils-aarch64-linux-gnu
         # https://github.com/0day-ci/linux/commit/2980a1777c50754fe145f2e73ded8739931c0712
         git remote add linux-review https://github.com/0day-ci/linux
         git fetch --no-tags linux-review Chia-Wei-Wang/arm-aspeed-Add-eSPI-support/20210826-141737
         git checkout 2980a1777c50754fe145f2e73ded8739931c0712
         # save the attached .config to linux build tree
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=clang make.cross ARCH=arm64 
+        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-11.2.0 make.cross ARCH=arm64 
 
 If you fix the issue, kindly add following tag as appropriate
 Reported-by: kernel test robot <lkp@intel.com>
 
-All warnings (new ones prefixed by >>):
+All errors (new ones prefixed by >>):
 
    In file included from drivers/soc/aspeed/aspeed-espi-ctrl.c:22:
-   drivers/soc/aspeed/aspeed-espi-perif.h:446:8: error: incompatible pointer types passing 'phys_addr_t *' (aka 'unsigned long long *') to parameter of type 'u32 *' (aka 'unsigned int *') [-Werror,-Wincompatible-pointer-types]
-                                             &espi_perif->mcyc_saddr);
-                                             ^~~~~~~~~~~~~~~~~~~~~~~
-   include/linux/of.h:1249:17: note: passing argument to parameter 'out_value' here
-                                          u32 *out_value)
-                                               ^
->> drivers/soc/aspeed/aspeed-espi-ctrl.c:98:23: warning: cast to smaller integer type 'uint32_t' (aka 'unsigned int') from 'const void *' [-Wvoid-pointer-to-int-cast]
-           espi_ctrl->version = (uint32_t)of_device_get_match_data(dev);
-                                ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-   1 warning and 1 error generated.
+   drivers/soc/aspeed/aspeed-espi-perif.h: In function 'aspeed_espi_perif_alloc':
+>> drivers/soc/aspeed/aspeed-espi-perif.h:446:43: error: passing argument 3 of 'of_property_read_u32' from incompatible pointer type [-Werror=incompatible-pointer-types]
+     446 |                                           &espi_perif->mcyc_saddr);
+         |                                           ^~~~~~~~~~~~~~~~~~~~~~~
+         |                                           |
+         |                                           phys_addr_t * {aka long long unsigned int *}
+   In file included from include/linux/of_device.h:9,
+                    from drivers/soc/aspeed/aspeed-espi-ctrl.c:9:
+   include/linux/of.h:1249:45: note: expected 'u32 *' {aka 'unsigned int *'} but argument is of type 'phys_addr_t *' {aka 'long long unsigned int *'}
+    1249 |                                        u32 *out_value)
+         |                                        ~~~~~^~~~~~~~~
+   drivers/soc/aspeed/aspeed-espi-ctrl.c: In function 'aspeed_espi_ctrl_probe':
+   drivers/soc/aspeed/aspeed-espi-ctrl.c:98:30: warning: cast from pointer to integer of different size [-Wpointer-to-int-cast]
+      98 |         espi_ctrl->version = (uint32_t)of_device_get_match_data(dev);
+         |                              ^
+   cc1: some warnings being treated as errors
 
 
-vim +98 drivers/soc/aspeed/aspeed-espi-ctrl.c
+vim +/of_property_read_u32 +446 drivers/soc/aspeed/aspeed-espi-perif.h
 
-    87	
-    88	static int aspeed_espi_ctrl_probe(struct platform_device *pdev)
-    89	{
-    90		int rc = 0;
-    91		struct aspeed_espi_ctrl *espi_ctrl;
-    92		struct device *dev = &pdev->dev;
-    93	
-    94		espi_ctrl = devm_kzalloc(dev, sizeof(*espi_ctrl), GFP_KERNEL);
-    95		if (!espi_ctrl)
-    96			return -ENOMEM;
-    97	
-  > 98		espi_ctrl->version = (uint32_t)of_device_get_match_data(dev);
-    99	
-   100		espi_ctrl->map = syscon_node_to_regmap(dev->parent->of_node);
-   101		if (IS_ERR(espi_ctrl->map)) {
-   102			dev_err(dev, "cannot get remap\n");
-   103			return -ENODEV;
-   104		}
-   105	
-   106		espi_ctrl->irq = platform_get_irq(pdev, 0);
-   107		if (espi_ctrl->irq < 0)
-   108			return espi_ctrl->irq;
-   109	
-   110		espi_ctrl->clk = devm_clk_get(dev, NULL);
-   111		if (IS_ERR(espi_ctrl->clk)) {
-   112			dev_err(dev, "cannot get clock\n");
-   113			return -ENODEV;
-   114		}
-   115	
-   116		rc = clk_prepare_enable(espi_ctrl->clk);
-   117		if (rc) {
-   118			dev_err(dev, "cannot enable clock\n");
-   119			return rc;
-   120		}
-   121	
-   122		espi_ctrl->perif = aspeed_espi_perif_alloc(dev, espi_ctrl);
-   123		if (IS_ERR(espi_ctrl->perif)) {
-   124			dev_err(dev, "failed to allocate peripheral channel\n");
-   125			return PTR_ERR(espi_ctrl->perif);
-   126		}
-   127	
-   128		espi_ctrl->vw = aspeed_espi_vw_alloc(dev, espi_ctrl);
-   129		if (IS_ERR(espi_ctrl->vw)) {
-   130			dev_err(dev, "failed to allocate virtual wire channel\n");
-   131			return PTR_ERR(espi_ctrl->vw);
-   132		}
-   133	
-   134		espi_ctrl->oob = aspeed_espi_oob_alloc(dev, espi_ctrl);
-   135		if (IS_ERR(espi_ctrl->oob)) {
-   136			dev_err(dev, "failed to allocate out-of-band channel\n");
-   137			return PTR_ERR(espi_ctrl->oob);
-   138		}
-   139	
-   140		espi_ctrl->flash = aspeed_espi_flash_alloc(dev, espi_ctrl);
-   141		if (rc) {
-   142			dev_err(dev, "failed to allocate flash channel\n");
-   143			return PTR_ERR(espi_ctrl->flash);
-   144		}
-   145	
-   146		regmap_write(espi_ctrl->map, ESPI_SYSEVT_INT_T0, 0x0);
-   147		regmap_write(espi_ctrl->map, ESPI_SYSEVT_INT_T1, 0x0);
-   148		regmap_write(espi_ctrl->map, ESPI_SYSEVT_INT_EN, 0xffffffff);
-   149	
-   150		regmap_write(espi_ctrl->map, ESPI_SYSEVT1_INT_T0, 0x1);
-   151		regmap_write(espi_ctrl->map, ESPI_SYSEVT1_INT_EN, 0x1);
-   152	
-   153		rc = devm_request_irq(dev, espi_ctrl->irq,
-   154				      aspeed_espi_ctrl_isr,
-   155				      0, DEVICE_NAME, espi_ctrl);
-   156		if (rc) {
-   157			dev_err(dev, "failed to request IRQ\n");
-   158			return rc;
-   159		}
-   160	
-   161		regmap_update_bits(espi_ctrl->map, ESPI_INT_EN,
-   162				   ESPI_INT_EN_HW_RST_DEASSERT,
-   163				   ESPI_INT_EN_HW_RST_DEASSERT);
-   164	
-   165		dev_set_drvdata(dev, espi_ctrl);
-   166	
-   167		dev_info(dev, "module loaded\n");
-   168	
-   169		return 0;
-   170	}
-   171	
+   422	
+   423	static void *aspeed_espi_perif_alloc(struct device *dev, struct aspeed_espi_ctrl *espi_ctrl)
+   424	{
+   425		int rc;
+   426		struct aspeed_espi_perif *espi_perif;
+   427		struct aspeed_espi_perif_dma *dma;
+   428	
+   429		espi_perif = devm_kzalloc(dev, sizeof(*espi_perif), GFP_KERNEL);
+   430		if (!espi_perif)
+   431			return ERR_PTR(-ENOMEM);
+   432	
+   433		espi_perif->ctrl = espi_ctrl;
+   434	
+   435		init_waitqueue_head(&espi_perif->wq);
+   436	
+   437		spin_lock_init(&espi_perif->lock);
+   438	
+   439		mutex_init(&espi_perif->pc_rx_mtx);
+   440		mutex_init(&espi_perif->pc_tx_mtx);
+   441		mutex_init(&espi_perif->np_tx_mtx);
+   442	
+   443		espi_perif->mcyc_enable = of_property_read_bool(dev->of_node, "perif,memcyc-enable");
+   444		if (espi_perif->mcyc_enable) {
+   445			rc = of_property_read_u32(dev->of_node, "perif,memcyc-src-addr",
+ > 446						  &espi_perif->mcyc_saddr);
+   447			if (rc) {
+   448				dev_err(dev, "cannot get Host source address for memory cycle\n");
+   449				return ERR_PTR(-ENODEV);
+   450			}
+   451	
+   452			rc = of_property_read_u32(dev->of_node, "perif,memcyc-size",
+   453						  &espi_perif->mcyc_size);
+   454			if (rc) {
+   455				dev_err(dev, "cannot get size for memory cycle\n");
+   456				return ERR_PTR(-ENODEV);
+   457			}
+   458	
+   459			if (espi_perif->mcyc_size < PERIF_MEMCYC_SIZE_MIN)
+   460				espi_perif->mcyc_size = PERIF_MEMCYC_SIZE_MIN;
+   461			else
+   462				espi_perif->mcyc_size = roundup_pow_of_two(espi_perif->mcyc_size);
+   463	
+   464			espi_perif->mcyc_mask = ~(espi_perif->mcyc_size - 1);
+   465			espi_perif->mcyc_virt = dma_alloc_coherent(dev, espi_perif->mcyc_size,
+   466								   &espi_perif->mcyc_taddr, GFP_KERNEL);
+   467			if (!espi_perif->mcyc_virt) {
+   468				dev_err(dev, "cannot allocate memory cycle region\n");
+   469				return ERR_PTR(-ENOMEM);
+   470			}
+   471		}
+   472	
+   473		if (of_property_read_bool(dev->of_node, "perif,dma-mode")) {
+   474			dma = &espi_perif->dma;
+   475	
+   476			dma->pc_tx_virt = dma_alloc_coherent(dev, PAGE_SIZE,
+   477							     &dma->pc_tx_addr, GFP_KERNEL);
+   478			if (!dma->pc_tx_virt) {
+   479				dev_err(dev, "cannot allocate posted TX DMA buffer\n");
+   480				return ERR_PTR(-ENOMEM);
+   481			}
+   482	
+   483			dma->pc_rx_virt = dma_alloc_coherent(dev, PAGE_SIZE,
+   484							     &dma->pc_rx_addr, GFP_KERNEL);
+   485			if (!dma->pc_rx_virt) {
+   486				dev_err(dev, "cannot allocate posted RX DMA buffer\n");
+   487				return ERR_PTR(-ENOMEM);
+   488			}
+   489	
+   490			dma->np_tx_virt = dma_alloc_coherent(dev, PAGE_SIZE,
+   491					&dma->np_tx_addr, GFP_KERNEL);
+   492			if (!dma->np_tx_virt) {
+   493				dev_err(dev, "cannot allocate non-posted TX DMA buffer\n");
+   494				return ERR_PTR(-ENOMEM);
+   495			}
+   496	
+   497			espi_perif->dma_mode = 1;
+   498		}
+   499	
+   500		espi_perif->mdev.parent = dev;
+   501		espi_perif->mdev.minor = MISC_DYNAMIC_MINOR;
+   502		espi_perif->mdev.name = devm_kasprintf(dev, GFP_KERNEL, "%s", PERIF_MDEV_NAME);
+   503		espi_perif->mdev.fops = &aspeed_espi_perif_fops;
+   504		rc = misc_register(&espi_perif->mdev);
+   505		if (rc) {
+   506			dev_err(dev, "cannot register device\n");
+   507			return ERR_PTR(rc);
+   508		}
+   509	
+   510		aspeed_espi_perif_enable(espi_perif);
+   511	
+   512		return espi_perif;
+   513	}
+   514	
 
 ---
 0-DAY CI Kernel Test Service, Intel Corporation
@@ -150,6 +162,6 @@ https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
 A non-text attachment was scrubbed...
 Name: .config.gz
 Type: application/gzip
-Size: 35430 bytes
+Size: 42142 bytes
 Desc: not available
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20210827/0435282b/attachment-0001.gz>
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20210827/b00a950a/attachment-0001.gz>
