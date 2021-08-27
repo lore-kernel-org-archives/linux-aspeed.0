@@ -1,34 +1,92 @@
 From: ChiaWei Wang <chiawei_wang@aspeedtech.com>
-Date: Fri, 27 Aug 2021 08:49:16 +0000
+Date: Fri, 27 Aug 2021 08:49:13 +0000
 Subject: [PATCH v3 3/4] soc: aspeed: Add eSPI driver
-In-Reply-To: <CACPK8Xf1g2fp5X3ELBUyjzP6Fmvt1XWLU_UgCKdZaDVjdyKryQ@mail.gmail.com>
-References: <20210826061623.6352-4-chiawei_wang@aspeedtech.com>
- <202108270732.OvBQ4K3D-lkp@intel.com>
- <HK0PR06MB377927BDCA9CC79B598251B291C89@HK0PR06MB3779.apcprd06.prod.outlook.com>
- <CACPK8Xf1g2fp5X3ELBUyjzP6Fmvt1XWLU_UgCKdZaDVjdyKryQ@mail.gmail.com>
-Message-ID: <HK0PR06MB3779B6CD28A84D3DC651211191C89@HK0PR06MB3779.apcprd06.prod.outlook.com>
+In-Reply-To: <3f2feea6c2fb21c2fdcb419cdc7ceddf3ade06ee.camel@codeconstruct.com.au>
+References: <20210826061623.6352-1-chiawei_wang@aspeedtech.com>
+ <20210826061623.6352-4-chiawei_wang@aspeedtech.com>
+ <7e7378c49ecfb21fef6a0640f92c1b3a7a5878d0.camel@codeconstruct.com.au>
+ <HK0PR06MB377997422D9508894936E39691C89@HK0PR06MB3779.apcprd06.prod.outlook.com>
+ <3f2feea6c2fb21c2fdcb419cdc7ceddf3ade06ee.camel@codeconstruct.com.au>
+Message-ID: <HK0PR06MB3779859F4193D2F34759AFEC91C89@HK0PR06MB3779.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-> From: Joel Stanley <joel@jms.id.au>
-> Sent: Friday, August 27, 2021 1:49 PM
-> 
-> On Fri, 27 Aug 2021 at 03:52, ChiaWei Wang
-> <chiawei_wang@aspeedtech.com> wrote:
-> >
-> > Aspeed 5th and 6th generation SoCs are based on the ARM 32-bits
-> architecture.
-> > Should we follow the report to make the driver 64-bits compatible?
-> > Or revise the driver to use more specific data types?
-> 
-> Yes, in general it's expected your driver will compile cleanly for 64-bit
-> architectures. This helps with testing and static analysis, where CI builds all the
-> drivers for x86.
+Hi Jeremy
 
-Understood. Will fix the data type issue in the next submission.
-Thanks.
+> From: Jeremy Kerr <jk@codeconstruct.com.au>
+> Sent: Friday, August 27, 2021 12:37 PM
+> 
+> Hi Chiawei,
+> 
+> > The eSPI slave device comprises four channels, where each of them has
+> > individual functionality.  Putting the four channels driver code into
+> > a single file makes it hard to maintain and trace.
+> 
+> Yep, understood.
+> 
+> > We did consider to make them standard .c files.
+> > But it requires to export channel functions into kernel space although
+> > they are dedicated only to this eSPI driver.
+> 
+> What do you mean by "export into kernel space" here? The function prototypes
+
+The channel functions will be visible to all kernel driver files.
+
+> need to be available to your main (-ctrl.c) file, regardless of whether you're
+> putting the entire functions in a header file, or just the prototype. There's
+> doesn't need to be any difference in visibility outside of your own module if
+> you were to do this the usual way.
+
+Maybe I was trying to make channels function visible only to espi-ctrl.c too far.
+I will revise the driver to present in the usual .c way.
+
+> 
+> > As espi-ctrl needs to invoke corresponding channel functions when it
+> > is interrupted by eSPI events.
+> >
+> > To avoid polluting kernel space, we decided to put driver code in
+> > header files and make the channel functions 'static'.
+> >
+> > BTW, I once encountered .c file inclusion in other projects. Is it
+> > proper for Linux driver development?
+> 
+> It can be, just that in this case it's a bit unusual, and I can't see a good reason
+> for doing so. This could just be a standard multiple-source-file module.
+> 
+> > eSPI communication is based on the its cycle packet format.
+> > We intended to let userspace decided how to interpret and compose
+> > TX/RX packets including header, tag, length (encoded), and data.
+> > IOCTL comes to our first mind as it also works in the 'packet' like
+> > paradigm.
+> 
+> But you're not always exposing a packet-like interface for this. For example,
+> your virtual-wire interface just has a get/set interface for bits in a register
+> (plus some PCH event handling, which may not be applicable to all
+> platforms...).
+> 
+> The other channels do look like more of a packet interface though, but in that
+> case I'm not convinced that an ioctl interface is the best way to go for that.
+> You're essentially sending a (length, pointer) pair over the ioctls there, which
+> sounds more like a write() than an ioctl().
+
+In most cases, yes. 
+Currently only the peripheral channel has more than the 2 (put tx/get rx) IOCTL code.
+We think it might be a good idea to make the user interfaces of all channels consistent using IOCTL.
+
+> 
+> Regardless of the choice of interface though, this will definitely need some
+> documentation or description of the API, and the ioc header to be somewhere
+> useful for userspace to consume.
+> 
+> With that documented, we'd have a better idea of how the new ABI is
+> supposed to work.
+
+Sure. more comments will be added in aspeed-espi-ioc.h to describe the usage and the purpose.
+
+Thanks for your feedback.
 
 Chiawei
+
