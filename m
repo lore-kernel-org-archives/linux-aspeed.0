@@ -1,112 +1,117 @@
 From: Jonathan Cameron <jic23@kernel.org>
-Date: Sun, 29 Aug 2021 16:13:18 +0100
-Subject: [RESEND v4 05/15] iio: adc: aspeed: Refactory model data structure
-In-Reply-To: <20210824091243.9393-6-billy_tsai@aspeedtech.com>
+Date: Sun, 29 Aug 2021 16:20:22 +0100
+Subject: [RESEND v4 08/15] iio: adc: aspeed: Use model_data to set clk
+ scaler.
+In-Reply-To: <202108250006.17P06IgG097015@twspam01.aspeedtech.com>
 References: <20210824091243.9393-1-billy_tsai@aspeedtech.com>
- <20210824091243.9393-6-billy_tsai@aspeedtech.com>
-Message-ID: <20210829161318.54997151@jic23-huawei>
+ <202108250006.17P06IgG097015@twspam01.aspeedtech.com>
+Message-ID: <20210829162022.7ee18854@jic23-huawei>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, 24 Aug 2021 17:12:33 +0800
+On Tue, 24 Aug 2021 17:12:36 +0800
 Billy Tsai <billy_tsai@aspeedtech.com> wrote:
 
-> This patch refactory the model data structure to distinguish the
-> function form differnet version of aspeed adc.
-
-from different versions 
-
-> - Rename the vref_voltag to vref_fixed and add vref driver data
-
-vref_voltage
-
-> When driver probe will check vref_fixed value and store it
-> to vref which isn't const value.
-> - Add num_channels
-> Make num_channles of iio device can be changed by differnet model_data
-
-different
-
-> - Add need_prescaler flag and scaler_bit_width
-> The need_prescaler flag used to tell the driver the clock divider needs
-> another prescaler and the scaler_bit_width to set the clock divider
-> bitfiled width.
-
-bitfield?
-
+> This patch use need_prescaler and scaler_bit_width to set the adc clock
+> scaler.
 > 
 > Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
+Hi Billy,
+
+One minor comment inline.
+
+Thanks,
+
+Jonathan
+
 > ---
->  drivers/iio/adc/aspeed_adc.c | 18 ++++++++++++++----
->  1 file changed, 14 insertions(+), 4 deletions(-)
+>  drivers/iio/adc/aspeed_adc.c | 39 +++++++++++++++++++++---------------
+>  1 file changed, 23 insertions(+), 16 deletions(-)
 > 
 > diff --git a/drivers/iio/adc/aspeed_adc.c b/drivers/iio/adc/aspeed_adc.c
-> index d85aa31ee3b1..f03c7921d534 100644
+> index 2d6215a91f99..52db38be9699 100644
 > --- a/drivers/iio/adc/aspeed_adc.c
 > +++ b/drivers/iio/adc/aspeed_adc.c
-> @@ -63,8 +63,11 @@ struct aspeed_adc_model_data {
->  	const char *model_name;
->  	unsigned int min_sampling_rate;	// Hz
->  	unsigned int max_sampling_rate;	// Hz
-> -	unsigned int vref_voltage;	// mV
-> +	unsigned int vref_fixed;	// mV
+> @@ -202,9 +202,10 @@ static int aspeed_adc_probe(struct platform_device *pdev)
+>  {
+>  	struct iio_dev *indio_dev;
+>  	struct aspeed_adc_data *data;
+> -	const char *clk_parent_name;
+>  	int ret;
+>  	u32 adc_engine_control_reg_val;
+> +	unsigned long scaler_flags = 0;
+> +	char clk_name[32], clk_parent_name[32];
+>  
+>  	indio_dev = devm_iio_device_alloc(&pdev->dev, sizeof(*data));
+>  	if (!indio_dev)
+> @@ -221,24 +222,28 @@ static int aspeed_adc_probe(struct platform_device *pdev)
+>  
+>  	/* Register ADC clock prescaler with source specified by device tree. */
+>  	spin_lock_init(&data->clk_lock);
+> -	clk_parent_name = of_clk_get_parent_name(pdev->dev.of_node, 0);
+> -
+> -	data->clk_prescaler = clk_hw_register_divider(
+> -				&pdev->dev, "prescaler", clk_parent_name, 0,
+> -				data->base + ASPEED_REG_CLOCK_CONTROL,
+> -				17, 15, 0, &data->clk_lock);
+> -	if (IS_ERR(data->clk_prescaler))
+> -		return PTR_ERR(data->clk_prescaler);
+> -
+> +	snprintf(clk_parent_name, 32, of_clk_get_parent_name(pdev->dev.of_node, 0));
 
-Whilst here, you could make the name carry the information of the units.
-e.g. vref_fixed_mv;  That way we always know what the units are without having
-to spot this comment.
+ARRAY_SIZE(clk_parent_name) instead of 32.
+Same for other places this pattern occurs.
 
->  	bool wait_init_sequence;
-> +	bool need_prescaler;
-> +	u8 scaler_bit_width;
-> +	unsigned int num_channels;
->  };
+
+> +	if (data->model_data->need_prescaler) {
+> +		snprintf(clk_name, 32, "%s-prescaler",
+> +			 data->model_data->model_name);
+> +		data->clk_prescaler = clk_hw_register_divider(
+> +			&pdev->dev, clk_name, clk_parent_name, 0,
+> +			data->base + ASPEED_REG_CLOCK_CONTROL, 17, 15, 0,
+> +			&data->clk_lock);
+> +		if (IS_ERR(data->clk_prescaler))
+> +			return PTR_ERR(data->clk_prescaler);
+> +		snprintf(clk_parent_name, 32, clk_name);
+> +		scaler_flags = CLK_SET_RATE_PARENT;
+> +	}
+>  	/*
+>  	 * Register ADC clock scaler downstream from the prescaler. Allow rate
+>  	 * setting to adjust the prescaler as well.
+>  	 */
+> +	snprintf(clk_name, 32, "%s-scaler", data->model_data->model_name);
+>  	data->clk_scaler = clk_hw_register_divider(
+> -				&pdev->dev, "scaler", "prescaler",
+> -				CLK_SET_RATE_PARENT,
+> -				data->base + ASPEED_REG_CLOCK_CONTROL,
+> -				0, 10, 0, &data->clk_lock);
+> +		&pdev->dev, clk_name, clk_parent_name, scaler_flags,
+> +		data->base + ASPEED_REG_CLOCK_CONTROL, 0,
+> +		data->model_data->scaler_bit_width, 0, &data->clk_lock);
+>  	if (IS_ERR(data->clk_scaler)) {
+>  		ret = PTR_ERR(data->clk_scaler);
+>  		goto scaler_error;
+> @@ -310,7 +315,8 @@ static int aspeed_adc_probe(struct platform_device *pdev)
+>  reset_error:
+>  	clk_hw_unregister_divider(data->clk_scaler);
+>  scaler_error:
+> -	clk_hw_unregister_divider(data->clk_prescaler);
+> +	if (data->model_data->need_prescaler)
+> +		clk_hw_unregister_divider(data->clk_prescaler);
+>  	return ret;
+>  }
 >  
->  struct aspeed_adc_data {
-> @@ -75,6 +78,7 @@ struct aspeed_adc_data {
->  	struct clk_hw		*clk_prescaler;
->  	struct clk_hw		*clk_scaler;
->  	struct reset_control	*rst;
-> +	int			vref;
-vref_mv as above perhaps?
->  };
+> @@ -325,7 +331,8 @@ static int aspeed_adc_remove(struct platform_device *pdev)
+>  	clk_disable_unprepare(data->clk_scaler->clk);
+>  	reset_control_assert(data->rst);
+>  	clk_hw_unregister_divider(data->clk_scaler);
+> -	clk_hw_unregister_divider(data->clk_prescaler);
+> +	if (data->model_data->need_prescaler)
+> +		clk_hw_unregister_divider(data->clk_prescaler);
 >  
->  #define ASPEED_CHAN(_idx, _data_reg_addr) {			\
-> @@ -118,7 +122,7 @@ static int aspeed_adc_read_raw(struct iio_dev *indio_dev,
->  		return IIO_VAL_INT;
->  
->  	case IIO_CHAN_INFO_SCALE:
-> -		*val = data->model_data->vref_voltage;
-> +		*val = data->model_data->vref_fixed;
->  		*val2 = ASPEED_RESOLUTION_BITS;
->  		return IIO_VAL_FRACTIONAL_LOG2;
->  
-> @@ -312,17 +316,23 @@ static int aspeed_adc_remove(struct platform_device *pdev)
->  
->  static const struct aspeed_adc_model_data ast2400_model_data = {
->  	.model_name = "ast2400-adc",
-> -	.vref_voltage = 2500, // mV
-> +	.vref_fixed = 2500, // mV
->  	.min_sampling_rate = 10000,
->  	.max_sampling_rate = 500000,
-> +	.need_prescaler = true,
-> +	.scaler_bit_width = 10,
-> +	.num_channels = 16,
->  };
->  
->  static const struct aspeed_adc_model_data ast2500_model_data = {
->  	.model_name = "ast2500-adc",
-> -	.vref_voltage = 1800, // mV
-> +	.vref_fixed = 1800, // mV
->  	.min_sampling_rate = 1,
->  	.max_sampling_rate = 1000000,
->  	.wait_init_sequence = true,
-> +	.need_prescaler = true,
-> +	.scaler_bit_width = 10,
-> +	.num_channels = 16,
->  };
->  
->  static const struct of_device_id aspeed_adc_matches[] = {
+>  	return 0;
+>  }
 
