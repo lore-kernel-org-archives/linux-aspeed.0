@@ -1,78 +1,73 @@
 From: Billy Tsai <billy_tsai@aspeedtech.com>
-Date: Tue, 31 Aug 2021 15:14:43 +0800
-Subject: [v5 00/15] Add support for ast2600 ADC
-Message-ID: <20210831071458.2334-1-billy_tsai@aspeedtech.com>
+Date: Tue, 31 Aug 2021 15:14:49 +0800
+Subject: [v5 06/15] iio: adc: aspeed: Add vref config function
+In-Reply-To: <20210831071458.2334-1-billy_tsai@aspeedtech.com>
+References: <20210831071458.2334-1-billy_tsai@aspeedtech.com>
+Message-ID: <20210831071458.2334-7-billy_tsai@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This patch serials make aspeed_adc.c can support ast2600 and backward
-compatible.
+Add the function to check the vref_fixed_mv and set the value to driver
+data.
 
-Change since v4:
-dt-bindings:
-  - Add clocks maxItems.
-  - Rename the property to meet the property-units.yaml.
-  - Add the description for the difference between adc0 and adc1.
-aspeed_adc.c:
-  - Use new property name to get internal reference voltage: units from mv to
-  uv.
-  - Fix -Wnonnull warning caused by snprintf parameters.
-  - Add suffix mv to the vref parameters.
-  - Use ARRAY_SIZE instead of 32.
-  - Add a reset action for ADC power down and Use devm_iio_device_register.
-  - Fix typo error.
-  - Separate the offset interface of ch7 when battery sensing enable
+Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
+---
+ drivers/iio/adc/aspeed_adc.c | 18 +++++++++++++++++-
+ 1 file changed, 17 insertions(+), 1 deletion(-)
 
-Change since v3:
-dt-bindings:
-  - Fix properties:aspeed,int_vref_mv type error.
-
-Change since v2:
-dt-bindings:
-  - Create a new dt-bindings for ast2600 adc
-aspeed_adc.c:
-  - Splits the patch for more details
-  - Remove version enum and use the flags in model data to distinguish
-  hardware feature
-  - Support trimming data get and set.
-  - Use devm_add_action_or_reset to simplify probe error handling.
-
-Changes since v1:
-dt-bindings:
-  - Fix the aspeed,adc.yaml check error.
-  - Add battery-sensing property.
-aspeed_adc.c:
-  - Change the init flow:
-    Clock and reference voltage setting should be completed before adc
-    engine enable.
-  - Change the default sampling rate to meet most user case.
-  - Add patch #8 to suppoert battery sensing mode.
-
-Billy Tsai (15):
-  iio: adc: aspeed: set driver data when adc probe.
-  dt-bindings: iio: adc: Add ast2600-adc bindings
-  iio: adc: aspeed: completes the bitfield declare.
-  iio: adc: aspeed: Keep model data to driver data.
-  iio: adc: aspeed: Refactory model data structure
-  iio: adc: aspeed: Add vref config function
-  iio: adc: aspeed: Set num_channels with model data
-  iio: adc: aspeed: Use model_data to set clk scaler.
-  iio: adc: aspeed: Use devm_add_action_or_reset.
-  iio: adc: aspeed: Support ast2600 adc.
-  iio: adc: aspeed: Fix the calculate error of clock.
-  iio: adc: aspeed: Add func to set sampling rate.
-  iio: adc: aspeed: Add compensation phase.
-  iio: adc: aspeed: Support battery sensing.
-  iio: adc: aspeed: Get and set trimming data.
-
- .../bindings/iio/adc/aspeed,ast2600-adc.yaml  | 100 +++
- drivers/iio/adc/aspeed_adc.c                  | 617 +++++++++++++++---
- 2 files changed, 619 insertions(+), 98 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/iio/adc/aspeed,ast2600-adc.yaml
-
+diff --git a/drivers/iio/adc/aspeed_adc.c b/drivers/iio/adc/aspeed_adc.c
+index 6ce2f676c54a..01df24f6d3f1 100644
+--- a/drivers/iio/adc/aspeed_adc.c
++++ b/drivers/iio/adc/aspeed_adc.c
+@@ -130,7 +130,7 @@ static int aspeed_adc_read_raw(struct iio_dev *indio_dev,
+ 		return IIO_VAL_INT;
+ 
+ 	case IIO_CHAN_INFO_SCALE:
+-		*val = data->model_data->vref_fixed_mv;
++		*val = data->vref_mv;
+ 		*val2 = ASPEED_RESOLUTION_BITS;
+ 		return IIO_VAL_FRACTIONAL_LOG2;
+ 
+@@ -195,6 +195,17 @@ static const struct iio_info aspeed_adc_iio_info = {
+ 	.debugfs_reg_access = aspeed_adc_reg_access,
+ };
+ 
++static int aspeed_adc_vref_config(struct iio_dev *indio_dev)
++{
++	struct aspeed_adc_data *data = iio_priv(indio_dev);
++
++	if (data->model_data->vref_fixed_mv) {
++		data->vref_mv = data->model_data->vref_fixed_mv;
++		return 0;
++	}
++	return 0;
++}
++
+ static int aspeed_adc_probe(struct platform_device *pdev)
+ {
+ 	struct iio_dev *indio_dev;
+@@ -250,6 +261,10 @@ static int aspeed_adc_probe(struct platform_device *pdev)
+ 	}
+ 	reset_control_deassert(data->rst);
+ 
++	ret = aspeed_adc_vref_config(indio_dev);
++	if (ret)
++		goto vref_config_error;
++
+ 	if (data->model_data->wait_init_sequence) {
+ 		/* Enable engine in normal mode. */
+ 		writel(FIELD_PREP(ASPEED_ADC_OP_MODE,
+@@ -298,6 +313,7 @@ static int aspeed_adc_probe(struct platform_device *pdev)
+ 	clk_disable_unprepare(data->clk_scaler->clk);
+ clk_enable_error:
+ poll_timeout_error:
++vref_config_error:
+ 	reset_control_assert(data->rst);
+ reset_error:
+ 	clk_hw_unregister_divider(data->clk_scaler);
 -- 
 2.25.1
 
