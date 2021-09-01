@@ -1,50 +1,27 @@
 From: Chia-Wei Wang <chiawei_wang@aspeedtech.com>
-Date: Wed, 1 Sep 2021 11:30:15 +0800
-Subject: [PATCH v4 4/4] ARM: dts: aspeed: Add eSPI node
-In-Reply-To: <20210901033015.910-1-chiawei_wang@aspeedtech.com>
-References: <20210901033015.910-1-chiawei_wang@aspeedtech.com>
-Message-ID: <20210901033015.910-5-chiawei_wang@aspeedtech.com>
+Date: Wed, 1 Sep 2021 14:22:14 +0800
+Subject: [PATCH 0/2] arm: aspeed: Add LPC uart routing support
+Message-ID: <20210901062216.32675-1-chiawei_wang@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add eSPI to the device tree for Aspeed 5/6th generation SoCs.
+Add LPC uart routing driver and the device tree nodes.
 
-Signed-off-by: Chia-Wei Wang <chiawei_wang@aspeedtech.com>
----
- arch/arm/boot/dts/aspeed-g6.dtsi | 17 +++++++++++++++++
- 1 file changed, 17 insertions(+)
+Chia-Wei Wang (2):
+  soc: aspeed: Add LPC UART routing support
+  ARM: dts: aspeed: Add uart routing to device tree
 
-diff --git a/arch/arm/boot/dts/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed-g6.dtsi
-index f96607b7b4e2..47dc0b3993d1 100644
---- a/arch/arm/boot/dts/aspeed-g6.dtsi
-+++ b/arch/arm/boot/dts/aspeed-g6.dtsi
-@@ -364,6 +364,23 @@
- 				status = "disabled";
- 			};
- 
-+			espi: espi at 1e6ee000 {
-+				compatible = "aspeed,ast2600-espi", "simple-mfd", "syscon";
-+				reg = <0x1e6ee000 0x1000>;
-+
-+				#address-cells = <1>;
-+				#size-cells = <1>;
-+				ranges = <0x0 0x1e6ee000 0x1000>;
-+
-+				espi_ctrl: espi-ctrl at 0 {
-+					compatible = "aspeed,ast2600-espi-ctrl";
-+					reg = <0x0 0x800>;
-+					interrupts = <GIC_SPI 42 IRQ_TYPE_LEVEL_HIGH>;
-+					clocks = <&syscon ASPEED_CLK_GATE_ESPICLK>;
-+					status = "disabled";
-+				};
-+			};
-+
- 			gpio0: gpio at 1e780000 {
- 				#gpio-cells = <2>;
- 				gpio-controller;
+ arch/arm/boot/dts/aspeed-g5.dtsi             |   6 +
+ arch/arm/boot/dts/aspeed-g6.dtsi             |   6 +
+ drivers/soc/aspeed/Kconfig                   |  11 +
+ drivers/soc/aspeed/Makefile                  |   9 +-
+ drivers/soc/aspeed/aspeed-lpc-uart-routing.c | 621 +++++++++++++++++++
+ 5 files changed, 649 insertions(+), 4 deletions(-)
+ create mode 100644 drivers/soc/aspeed/aspeed-lpc-uart-routing.c
+
 -- 
 2.17.1
 
