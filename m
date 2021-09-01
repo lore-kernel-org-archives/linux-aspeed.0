@@ -1,25 +1,71 @@
-From: Rob Herring <robh@kernel.org>
-Date: Tue, 31 Aug 2021 20:38:36 -0500
-Subject: [v5 02/15] dt-bindings: iio: adc: Add ast2600-adc bindings
-In-Reply-To: <20210831071458.2334-3-billy_tsai@aspeedtech.com>
-References: <20210831071458.2334-1-billy_tsai@aspeedtech.com>
- <20210831071458.2334-3-billy_tsai@aspeedtech.com>
-Message-ID: <YS7ZnG05pZvfA/7m@robh.at.kernel.org>
+From: Chia-Wei Wang <chiawei_wang@aspeedtech.com>
+Date: Wed, 1 Sep 2021 11:30:11 +0800
+Subject: [PATCH v4 0/4] arm: aspeed: Add eSPI support
+Message-ID: <20210901033015.910-1-chiawei_wang@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, 31 Aug 2021 15:14:45 +0800, Billy Tsai wrote:
-> Add device tree bindings document for the aspeed ast2600 adc device
-> driver.
-> 
-> Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
-> ---
->  .../bindings/iio/adc/aspeed,ast2600-adc.yaml  | 100 ++++++++++++++++++
->  1 file changed, 100 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/iio/adc/aspeed,ast2600-adc.yaml
-> 
+This patch series add the driver support for the eSPI controller
+of Aspeed 5/6th generation SoCs. This controller is a slave device
+communicating with a master over Enhanced Serial Peripheral Interface (eSPI).
+It supports all of the 4 eSPI channels, namely peripheral, virtual wire,
+out-of-band, and flash, and operates at max frequency of 66MHz.
 
-Reviewed-by: Rob Herring <robh@kernel.org>
+v4:
+ - fix dt-bindgins error with patternProperties
+ - fix data type warning for ARM64 compilation
+ - replace header based implementation with .c files
+ - add more description for the ioctl interface
+
+v3:
+ - remove the redundant patch "clk: aspeed: Add eSPI reset bit"
+ - fix missing header inclusion reported by test bot
+ - fix dt-bindings error reported by yamllint
+
+v2:
+ - remove irqchip implementation
+ - merge per-channel drivers into single one to avoid the racing issue
+   among eSPI handshake process and driver probing.
+
+Chia-Wei Wang (4):
+  dt-bindings: aspeed: Add eSPI controller
+  MAINTAINER: Add ASPEED eSPI driver entry
+  soc: aspeed: Add eSPI driver
+  ARM: dts: aspeed: Add eSPI node
+
+ .../devicetree/bindings/soc/aspeed/espi.yaml  | 162 +++++
+ MAINTAINERS                                   |   9 +
+ arch/arm/boot/dts/aspeed-g6.dtsi              |  17 +
+ drivers/soc/aspeed/Kconfig                    |  11 +
+ drivers/soc/aspeed/Makefile                   |   5 +
+ drivers/soc/aspeed/aspeed-espi-ctrl.c         | 214 +++++++
+ drivers/soc/aspeed/aspeed-espi-ctrl.h         | 308 ++++++++++
+ drivers/soc/aspeed/aspeed-espi-flash.c        | 352 +++++++++++
+ drivers/soc/aspeed/aspeed-espi-flash.h        |  45 ++
+ drivers/soc/aspeed/aspeed-espi-ioc.h          | 195 ++++++
+ drivers/soc/aspeed/aspeed-espi-oob.c          | 558 ++++++++++++++++++
+ drivers/soc/aspeed/aspeed-espi-oob.h          |  70 +++
+ drivers/soc/aspeed/aspeed-espi-perif.c        | 511 ++++++++++++++++
+ drivers/soc/aspeed/aspeed-espi-perif.h        |  45 ++
+ drivers/soc/aspeed/aspeed-espi-vw.c           | 137 +++++
+ drivers/soc/aspeed/aspeed-espi-vw.h           |  21 +
+ 16 files changed, 2660 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/soc/aspeed/espi.yaml
+ create mode 100644 drivers/soc/aspeed/aspeed-espi-ctrl.c
+ create mode 100644 drivers/soc/aspeed/aspeed-espi-ctrl.h
+ create mode 100644 drivers/soc/aspeed/aspeed-espi-flash.c
+ create mode 100644 drivers/soc/aspeed/aspeed-espi-flash.h
+ create mode 100644 drivers/soc/aspeed/aspeed-espi-ioc.h
+ create mode 100644 drivers/soc/aspeed/aspeed-espi-oob.c
+ create mode 100644 drivers/soc/aspeed/aspeed-espi-oob.h
+ create mode 100644 drivers/soc/aspeed/aspeed-espi-perif.c
+ create mode 100644 drivers/soc/aspeed/aspeed-espi-perif.h
+ create mode 100644 drivers/soc/aspeed/aspeed-espi-vw.c
+ create mode 100644 drivers/soc/aspeed/aspeed-espi-vw.h
+
+-- 
+2.17.1
+
