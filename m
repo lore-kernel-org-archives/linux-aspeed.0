@@ -1,215 +1,87 @@
-From: ChiaWei Wang <chiawei_wang@aspeedtech.com>
-Date: Wed, 1 Sep 2021 09:43:30 +0000
-Subject: [PATCH 1/2] soc: aspeed: Add LPC UART routing support
-In-Reply-To: <CACPK8XerokBaLMZ3J=9rcRLD5eFqmNOSsXYGgf_Ze01=X6NwPA@mail.gmail.com>
-References: <20210901062216.32675-1-chiawei_wang@aspeedtech.com>
- <20210901062216.32675-2-chiawei_wang@aspeedtech.com>
- <CACPK8XerokBaLMZ3J=9rcRLD5eFqmNOSsXYGgf_Ze01=X6NwPA@mail.gmail.com>
-Message-ID: <KL1PR0601MB378153208F9557A2B6B78B2491CD9@KL1PR0601MB3781.apcprd06.prod.outlook.com>
+From: Eddie James <eajames@linux.ibm.com>
+Date: Wed, 01 Sep 2021 10:07:24 -0500
+Subject: [PATCH v3] media: aspeed-video: ignore interrupts that aren't
+ enabled
+In-Reply-To: <20210617220229.7352-1-zev@bewilderbeest.net>
+References: <20210617220229.7352-1-zev@bewilderbeest.net>
+Message-ID: <46edf81d60a38747f7d2511f840253a1c6867652.camel@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-> -----Original Message-----
-> From: Joel Stanley <joel@jms.id.au>
-> Sent: Wednesday, September 1, 2021 3:37 PM
-> 
-> On Wed, 1 Sept 2021 at 06:22, Chia-Wei Wang
-> <chiawei_wang@aspeedtech.com> wrote:
-> >
-> > Add driver support for the LPC UART routing control. Users can perform
-> 
-> As we discussed, remove the "LPC" part of the name.
-> 
-> > runtime configuration of the RX muxes among the UART controllers and
-> > the UART TXD/RXD IO pins. This is achieved through the exported sysfs
-> interface.
-> >
-> > Signed-off-by: Chia-Wei Wang <chiawei_wang@aspeedtech.com>
-> 
-> It would be good to have some example of how to use it, and the output from
-> sysfs.
-> 
-> You should also add a patch to document the sysfs files in Documentation/ABI.
-> 
+On Thu, 2021-06-17 at 17:02 -0500, Zev Weiss wrote:
+> As partially addressed in commit 65d270acb2d6 ("media: aspeed: clear
+> garbage interrupts"), the ASpeed video engine sometimes asserts
+> interrupts that the driver hasn't enabled.  In addition to the
+> CAPTURE_COMPLETE and FRAME_COMPLETE interrupts dealt with in that
+> patch, COMP_READY has also been observed.  Instead of playing
+> whack-a-mole with each one individually, we can instead just blanket
+> ignore everything we haven't explicitly enabled.
 
-Will add a new commit for the sysfs description.
+Suspect this will fix an intermittent problem on AST2500 with
+screensaver. Change looks good, thanks!
 
-> > +++ b/drivers/soc/aspeed/aspeed-lpc-uart-routing.c
-> > @@ -0,0 +1,621 @@
-> > +// SPDX-License-Identifier: GPL-2.0+
-> > +/*
-> > + * Copyright (c) 2018 Google LLC
-> > + * Copyright (c) 2021 Aspeed Technology Inc.
-> > + */
-> > +#include <linux/device.h>
-> > +#include <linux/module.h>
-> > +#include <linux/of_device.h>
-> > +#include <linux/of_address.h>
-> 
-> You can drop this one.
-
-Revised as suggested.
+Reviewed-by: Eddie James <eajames@linux.ibm.com>
 
 > 
-> > +#include <linux/of_platform.h>
-> > +#include <linux/mfd/syscon.h>
-> > +#include <linux/regmap.h>
-> > +#include <linux/platform_device.h>
-> > +
-> > +/* register offsets */
-> > +#define HICR9  0x98
-> > +#define HICRA  0x9c
-> > +
-> > +/* attributes options */
-> > +#define UART_ROUTING_IO1       "io1"
-> > +#define UART_ROUTING_IO2       "io2"
-> > +#define UART_ROUTING_IO3       "io3"
-> > +#define UART_ROUTING_IO4       "io4"
-> > +#define UART_ROUTING_IO5       "io5"
-> > +#define UART_ROUTING_IO6       "io6"
-> > +#define UART_ROUTING_IO10      "io10"
-> > +#define UART_ROUTING_UART1     "uart1"
-> > +#define UART_ROUTING_UART2     "uart2"
-> > +#define UART_ROUTING_UART3     "uart3"
-> > +#define UART_ROUTING_UART4     "uart4"
-> > +#define UART_ROUTING_UART5     "uart5"
-> > +#define UART_ROUTING_UART6     "uart6"
-> > +#define UART_ROUTING_UART10    "uart10"
-> > +#define UART_ROUTING_RES       "reserved"
-> > +
-> > +struct aspeed_uart_routing {
-> > +       struct regmap *map;
-> > +       spinlock_t lock;
-> > +       struct attribute_group const *attr_grp; };
-> > +
-> > +struct aspeed_uart_routing_selector {
-> > +       struct device_attribute dev_attr;
-> > +       uint32_t reg;
-> > +       uint32_t mask;
-> > +       uint32_t shift;
+> Signed-off-by: Zev Weiss <zev@bewilderbeest.net>
+> ---
 > 
-> These can be u8.
-
-Revised as suggested.
-
+> Changes since v2 [1]:
+>  - minor commit message improvements
 > 
-> > +static ssize_t aspeed_uart_routing_show(struct device *dev,
-> > +                                       struct device_attribute
-> *attr,
-> > +                                       char *buf) {
-> > +       struct aspeed_uart_routing *uart_routing = dev_get_drvdata(dev);
-> > +       struct aspeed_uart_routing_selector *sel =
-> to_routing_selector(attr);
-> > +       int val, pos, len;
-> > +
-> > +       regmap_read(uart_routing->map, sel->reg, &val);
-> > +       val = (val >> sel->shift) & sel->mask;
-> > +
-> > +       len = 0;
-> > +       for (pos = 0; sel->options[pos] != NULL; ++pos) {
-> > +               if (pos == val) {
-> > +                       len += snprintf(buf + len, PAGE_SIZE - 1 - len,
-> > +                                       "[%s] ", sel->options[pos]);
-> > +               } else {
-> > +                       len += snprintf(buf + len, PAGE_SIZE - 1 - len,
-> > +                                       "%s ", sel->options[pos]);
+> Changes since v1 [0]:
+>  - dropped error message
+>  - switched to a blanket-ignore approach as suggested by Ryan
 > 
-> The kernel prefers sysfs_emit and sysfs_emit_at insteading of using snprintf
-> directly.
-
-Revised as suggested.
-
+> [0] 
+> https://lore.kernel.org/linux-arm-kernel/20201215024542.18888-1-zev at bewilderbeest.net/
+> [1] 
+> https://lore.kernel.org/openbmc/20210506234048.3214-1-zev at bewilderbeest.net/
 > 
-> > +               }
-> > +       }
-> > +
-> > +       if (val >= pos) {
-> > +               len += snprintf(buf + len, PAGE_SIZE - 1 - len,
-> > +                               "[unknown(%d)]", val);
-> > +       }
-> > +
-> > +       len += snprintf(buf + len, PAGE_SIZE - 1 - len, "\n");
-> > +
-> > +       return len;
-> > +}
-> > +
-> > +static ssize_t aspeed_uart_routing_store(struct device *dev,
-> > +                                        struct device_attribute
-> *attr,
-> > +                                        const char *buf, size_t
-> > +count) {
-> > +       unsigned long flags;
-> > +       struct aspeed_uart_routing *uart_routing = dev_get_drvdata(dev);
-> > +       struct aspeed_uart_routing_selector *sel =
-> to_routing_selector(attr);
-> > +       int val;
-> > +
-> > +       val = match_string(sel->options, -1, buf);
-> > +       if (val < 0) {
-> > +               dev_err(dev, "invalid value \"%s\"\n", buf);
-> > +               return -EINVAL;
-> > +       }
-> > +
-> > +       spin_lock_irqsave(&uart_routing->lock, flags);
+>  drivers/media/platform/aspeed-video.c | 16 ++++++----------
+>  1 file changed, 6 insertions(+), 10 deletions(-)
 > 
-> I can't see why you would need a spinlock here. The regmap has it's own
-> locking so it will protect against concurrent updates to the registers.
+> diff --git a/drivers/media/platform/aspeed-video.c
+> b/drivers/media/platform/aspeed-video.c
+> index 7bb6babdcade..77611c296a25 100644
+> --- a/drivers/media/platform/aspeed-video.c
+> +++ b/drivers/media/platform/aspeed-video.c
+> @@ -563,6 +563,12 @@ static irqreturn_t aspeed_video_irq(int irq,
+> void *arg)
+>  	struct aspeed_video *video = arg;
+>  	u32 sts = aspeed_video_read(video, VE_INTERRUPT_STATUS);
+>  
+> +	/*
+> +	 * Hardware sometimes asserts interrupts that we haven't
+> actually
+> +	 * enabled; ignore them if so.
+> +	 */
+> +	sts &= aspeed_video_read(video, VE_INTERRUPT_CTRL);
+> +
+>  	/*
+>  	 * Resolution changed or signal was lost; reset the engine and
+>  	 * re-initialize
+> @@ -629,16 +635,6 @@ static irqreturn_t aspeed_video_irq(int irq,
+> void *arg)
+>  			aspeed_video_start_frame(video);
+>  	}
+>  
+> -	/*
+> -	 * CAPTURE_COMPLETE and FRAME_COMPLETE interrupts come even
+> when these
+> -	 * are disabled in the VE_INTERRUPT_CTRL register so clear them
+> to
+> -	 * prevent unnecessary interrupt calls.
+> -	 */
+> -	if (sts & VE_INTERRUPT_CAPTURE_COMPLETE)
+> -		sts &= ~VE_INTERRUPT_CAPTURE_COMPLETE;
+> -	if (sts & VE_INTERRUPT_FRAME_COMPLETE)
+> -		sts &= ~VE_INTERRUPT_FRAME_COMPLETE;
+> -
+>  	return sts ? IRQ_NONE : IRQ_HANDLED;
+>  }
+>  
 
-You are right. Lock is not needed here. Will removed it as suggested.
-
-> 
-> > +
-> > +       regmap_update_bits(uart_routing->map, sel->reg,
-> > +                       (sel->mask << sel->shift),
-> > +                       (val & sel->mask) << sel->shift);
-> > +
-> > +       spin_unlock_irqrestore(&uart_routing->lock, flags);
-> > +
-> > +       return count;
-> > +}
-> > +
-> > +static int aspeed_uart_routing_probe(struct platform_device *pdev) {
-> > +       int rc;
-> > +       struct device *dev = &pdev->dev;
-> > +       struct aspeed_uart_routing *uart_routing;
-> > +
-> > +       uart_routing = devm_kzalloc(&pdev->dev,
-> > +                                   sizeof(*uart_routing),
-> > +                                   GFP_KERNEL);
-> 
-> You can reformat this file to have longer lines; the kernel is ok with up to 100
-> columsn these days.
-> 
-> > +       if (!uart_routing) {
-> > +               dev_err(dev, "cannot allocate memory\n");
-> 
-> I'd drop this error message.
-
-Revised as suggested
-
-> 
-> > +               return -ENOMEM;
-> > +       }
-> > +
-> > +       uart_routing->map =
-> syscon_node_to_regmap(dev->parent->of_node);
-> > +       if (IS_ERR(uart_routing->map)) {
-> > +               dev_err(dev, "cannot get regmap\n");
-> > +               return PTR_ERR(uart_routing->map);
-> > +       }
-> > +
-> > +       uart_routing->attr_grp = of_device_get_match_data(dev);
-> > +
-> > +       spin_lock_init(&uart_routing->lock);
-> 
-> I don't think you need the lock at all.
-
-Same as above.
-
-Thanks for reviewing this.
-The v2 patch will include the driver refactoring and additional documentation.
-
-Chiawei
