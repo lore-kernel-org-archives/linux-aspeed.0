@@ -1,21 +1,21 @@
 From: Chia-Wei Wang <chiawei_wang@aspeedtech.com>
-Date: Thu, 2 Sep 2021 10:18:16 +0800
-Subject: [PATCH v2 2/3] soc: aspeed: Add UART routing support
+Date: Thu, 2 Sep 2021 10:18:15 +0800
+Subject: [PATCH v2 2/3] soc: aspeed: Add LPC UART routing support
 In-Reply-To: <20210902021817.17506-1-chiawei_wang@aspeedtech.com>
 References: <20210902021817.17506-1-chiawei_wang@aspeedtech.com>
-Message-ID: <20210902021817.17506-4-chiawei_wang@aspeedtech.com>
+Message-ID: <20210902021817.17506-3-chiawei_wang@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add driver support for the UART routing control. Users can perform
-runtime configuration of the RX muxes among the UART controllers and
-the UART IO pins.
+Add driver support for the LPC UART routing control. Users can perform
+runtime configuration of the RX muxes among the UART controllers and the
+UART IO pins.
 
-The sysfs interface is also exported for the convenience of routing paths
-check and update.
+A sysfs interface is also exported for the convenience of routing paths
+check and configuration.
 
 Signed-off-by: Chia-Wei Wang <chiawei_wang@aspeedtech.com>
 ---
