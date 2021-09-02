@@ -1,87 +1,54 @@
-From: Eddie James <eajames@linux.ibm.com>
-Date: Wed, 01 Sep 2021 10:07:24 -0500
-Subject: [PATCH v3] media: aspeed-video: ignore interrupts that aren't
- enabled
-In-Reply-To: <20210617220229.7352-1-zev@bewilderbeest.net>
-References: <20210617220229.7352-1-zev@bewilderbeest.net>
-Message-ID: <46edf81d60a38747f7d2511f840253a1c6867652.camel@linux.ibm.com>
+From: Chia-Wei Wang <chiawei_wang@aspeedtech.com>
+Date: Thu, 2 Sep 2021 10:18:14 +0800
+Subject: [PATCH v2 1/3] dt-bindings: aspeed-lpc: Add UART routing compatible
+ string
+In-Reply-To: <20210902021817.17506-1-chiawei_wang@aspeedtech.com>
+References: <20210902021817.17506-1-chiawei_wang@aspeedtech.com>
+Message-ID: <20210902021817.17506-2-chiawei_wang@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, 2021-06-17 at 17:02 -0500, Zev Weiss wrote:
-> As partially addressed in commit 65d270acb2d6 ("media: aspeed: clear
-> garbage interrupts"), the ASpeed video engine sometimes asserts
-> interrupts that the driver hasn't enabled.  In addition to the
-> CAPTURE_COMPLETE and FRAME_COMPLETE interrupts dealt with in that
-> patch, COMP_READY has also been observed.  Instead of playing
-> whack-a-mole with each one individually, we can instead just blanket
-> ignore everything we haven't explicitly enabled.
+Add the compatible string and the device tree description for the
+Aspeed AST25xx/AST26xx UART routing control.
 
-Suspect this will fix an intermittent problem on AST2500 with
-screensaver. Change looks good, thanks!
+Signed-off-by: Chia-Wei Wang <chiawei_wang@aspeedtech.com>
+---
+ .../devicetree/bindings/mfd/aspeed-lpc.txt    | 22 +++++++++++++++++++
+ 1 file changed, 22 insertions(+)
 
-Reviewed-by: Eddie James <eajames@linux.ibm.com>
-
-> 
-> Signed-off-by: Zev Weiss <zev@bewilderbeest.net>
-> ---
-> 
-> Changes since v2 [1]:
->  - minor commit message improvements
-> 
-> Changes since v1 [0]:
->  - dropped error message
->  - switched to a blanket-ignore approach as suggested by Ryan
-> 
-> [0] 
-> https://lore.kernel.org/linux-arm-kernel/20201215024542.18888-1-zev at bewilderbeest.net/
-> [1] 
-> https://lore.kernel.org/openbmc/20210506234048.3214-1-zev at bewilderbeest.net/
-> 
->  drivers/media/platform/aspeed-video.c | 16 ++++++----------
->  1 file changed, 6 insertions(+), 10 deletions(-)
-> 
-> diff --git a/drivers/media/platform/aspeed-video.c
-> b/drivers/media/platform/aspeed-video.c
-> index 7bb6babdcade..77611c296a25 100644
-> --- a/drivers/media/platform/aspeed-video.c
-> +++ b/drivers/media/platform/aspeed-video.c
-> @@ -563,6 +563,12 @@ static irqreturn_t aspeed_video_irq(int irq,
-> void *arg)
->  	struct aspeed_video *video = arg;
->  	u32 sts = aspeed_video_read(video, VE_INTERRUPT_STATUS);
->  
-> +	/*
-> +	 * Hardware sometimes asserts interrupts that we haven't
-> actually
-> +	 * enabled; ignore them if so.
-> +	 */
-> +	sts &= aspeed_video_read(video, VE_INTERRUPT_CTRL);
-> +
->  	/*
->  	 * Resolution changed or signal was lost; reset the engine and
->  	 * re-initialize
-> @@ -629,16 +635,6 @@ static irqreturn_t aspeed_video_irq(int irq,
-> void *arg)
->  			aspeed_video_start_frame(video);
->  	}
->  
-> -	/*
-> -	 * CAPTURE_COMPLETE and FRAME_COMPLETE interrupts come even
-> when these
-> -	 * are disabled in the VE_INTERRUPT_CTRL register so clear them
-> to
-> -	 * prevent unnecessary interrupt calls.
-> -	 */
-> -	if (sts & VE_INTERRUPT_CAPTURE_COMPLETE)
-> -		sts &= ~VE_INTERRUPT_CAPTURE_COMPLETE;
-> -	if (sts & VE_INTERRUPT_FRAME_COMPLETE)
-> -		sts &= ~VE_INTERRUPT_FRAME_COMPLETE;
-> -
->  	return sts ? IRQ_NONE : IRQ_HANDLED;
->  }
->  
+diff --git a/Documentation/devicetree/bindings/mfd/aspeed-lpc.txt b/Documentation/devicetree/bindings/mfd/aspeed-lpc.txt
+index 936aa108eab4..45d44f812e5e 100644
+--- a/Documentation/devicetree/bindings/mfd/aspeed-lpc.txt
++++ b/Documentation/devicetree/bindings/mfd/aspeed-lpc.txt
+@@ -155,3 +155,25 @@ lpc_reset: reset-controller at 98 {
+         reg = <0x98 0x4>;
+         #reset-cells = <1>;
+ };
++
++UART routing control
++--------------------
++
++The UART routing control manages the RX muxes among the UART controllers
++and the I/O pins. This is typicall used for the Serial-Over-Lan (SOL)
++service.
++
++Required properties:
++
++ - compatible:		One of:
++			"aspeed,ast2500-uart-routing";
++			"aspeed,ast2600-uart-routing";
++
++ - reg:			offset and length of the IP in the LPC memory region
++
++Example:
++
++uart_routing: uart-routing at 98 {
++	compatible = "aspeed,ast2600-uart-routing";
++	reg = <0x98 0x8>;
++};
+-- 
+2.17.1
 
