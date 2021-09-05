@@ -1,101 +1,130 @@
 From: Jonathan Cameron <jic23@kernel.org>
-Date: Sun, 5 Sep 2021 15:47:36 +0100
-Subject: [v5 11/15] iio: adc: aspeed: Fix the calculate error of clock.
-In-Reply-To: <20210831071458.2334-12-billy_tsai@aspeedtech.com>
+Date: Sun, 5 Sep 2021 15:50:29 +0100
+Subject: [v5 04/15] iio: adc: aspeed: Keep model data to driver data.
+In-Reply-To: <20210905153339.751732cc@jic23-huawei>
 References: <20210831071458.2334-1-billy_tsai@aspeedtech.com>
- <20210831071458.2334-12-billy_tsai@aspeedtech.com>
-Message-ID: <20210905154737.6c41bae0@jic23-huawei>
+ <20210831071458.2334-5-billy_tsai@aspeedtech.com>
+ <20210905153339.751732cc@jic23-huawei>
+Message-ID: <20210905155029.3faa2c04@jic23-huawei>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, 31 Aug 2021 15:14:54 +0800
-Billy Tsai <billy_tsai@aspeedtech.com> wrote:
+On Sun, 5 Sep 2021 15:33:39 +0100
+Jonathan Cameron <jic23@kernel.org> wrote:
 
-> The ADC clock formula is
-> ast2400/2500:
-> ADC clock period = PCLK * 2 * (ADC0C[31:17] + 1) * (ADC0C[9:0] + 1)
-> ast2600:
-> ADC clock period = PCLK * 2 * (ADC0C[15:0] + 1)
-> They all have one fixed divided 2 and the legacy driver didn't handle it.
-> This patch register the fixed factory clock device as the parent of ADC
-> clock scaler to fix this issue.
+> On Tue, 31 Aug 2021 15:14:47 +0800
+> Billy Tsai <billy_tsai@aspeedtech.com> wrote:
 > 
-> Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
-> ---
->  drivers/iio/adc/aspeed_adc.c | 27 +++++++++++++++++++++++++++
->  1 file changed, 27 insertions(+)
+> > Keep the model data pointer to driver data for reducing the usage of
+> > of_device_get_match_data().
+> > 
+> > Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>  
+> This one starts to be impacted by the fix (as its in the context).
+> Rather than making a mess of things for linux-next etc I'll hold
+> off on these until that fix is upstream in a few weeks.
 > 
-> diff --git a/drivers/iio/adc/aspeed_adc.c b/drivers/iio/adc/aspeed_adc.c
-> index 40b7ba58c1dc..349377b9fac0 100644
-> --- a/drivers/iio/adc/aspeed_adc.c
-> +++ b/drivers/iio/adc/aspeed_adc.c
-> @@ -4,6 +4,12 @@
->   *
->   * Copyright (C) 2017 Google, Inc.
->   * Copyright (C) 2021 Aspeed Technology Inc.
-> + *
-> + * ADC clock formula:
-> + * Ast2400/Ast2500:
-> + * clock period = period of PCLK * 2 * (ADC0C[31:17] + 1) * (ADC0C[9:0] + 1)
-> + * Ast2600:
-> + * clock period = period of PCLK * 2 * (ADC0C[15:0] + 1)
->   */
->  
->  #include <linux/clk.h>
-> @@ -85,6 +91,7 @@ struct aspeed_adc_data {
->  	struct regulator	*regulator;
->  	void __iomem		*base;
->  	spinlock_t		clk_lock;
-> +	struct clk_hw		*fixed_div_clk;
->  	struct clk_hw		*clk_prescaler;
->  	struct clk_hw		*clk_scaler;
->  	struct reset_control	*rst;
-> @@ -204,6 +211,13 @@ static void aspeed_adc_unregister_divider(void *data)
->  	clk_hw_unregister_divider(clk);
->  }
->  
-> +static void aspeed_adc_unregister_fixed_divider(void *data)
-> +{
-> +	struct clk_hw *clk = data;
-> +
-> +	clk_hw_unregister_fixed_factor(clk);
-> +}
-> +
->  static void aspeed_adc_reset_assert(void *data)
->  {
->  	struct reset_control *rst = data;
-> @@ -328,6 +342,19 @@ static int aspeed_adc_probe(struct platform_device *pdev)
->  	spin_lock_init(&data->clk_lock);
->  	snprintf(clk_parent_name, ARRAY_SIZE(clk_parent_name), "%s",
->  		 of_clk_get_parent_name(pdev->dev.of_node, 0));
-> +	snprintf(clk_name, ARRAY_SIZE(clk_name), "%s-fixed-div",
-> +		 data->model_data->model_name);
-> +	data->fixed_div_clk = clk_hw_register_fixed_factor(
-> +		&pdev->dev, clk_name, clk_parent_name, 0, 1, 2);
+> If I seem to have lost it (it's been known to happen :( ) then
+> feel free to poke me!
 
-Obvious follow on from Philipp's review - there is a devm_ version of
-this as well which you can use rather than rolling a custom version.
-As a side note, I'm fairly sure you could refactor all those devm_clk_hw
-functions to use devm_add_action_or_reset() internally and simplify that
-code nicely.
+Having taken another look at the rest of the series (and Philipp's review)
+please do a v6 starting from this patch.
 
-A recent series did the same for all the similar functions in IIO.
+Thanks,
+Jonathan
 
-
-
-> +	if (IS_ERR(data->fixed_div_clk))
-> +		return PTR_ERR(data->fixed_div_clk);
-> +
-> +	ret = devm_add_action_or_reset(data->dev,
-> +				       aspeed_adc_unregister_fixed_divider,
-> +				       data->clk_prescaler);
-> +	if (ret)
-> +		return ret;
-> +	snprintf(clk_parent_name, ARRAY_SIZE(clk_parent_name), clk_name);
->  
->  	if (data->model_data->need_prescaler) {
->  		snprintf(clk_name, ARRAY_SIZE(clk_name), "%s-prescaler",
+> 
+> Thanks,
+> 
+> Jonathan
+> > ---
+> >  drivers/iio/adc/aspeed_adc.c | 20 +++++++-------------
+> >  1 file changed, 7 insertions(+), 13 deletions(-)
+> > 
+> > diff --git a/drivers/iio/adc/aspeed_adc.c b/drivers/iio/adc/aspeed_adc.c
+> > index f055fe7b2c40..76ae1c3f584b 100644
+> > --- a/drivers/iio/adc/aspeed_adc.c
+> > +++ b/drivers/iio/adc/aspeed_adc.c
+> > @@ -77,6 +77,7 @@ struct aspeed_adc_model_data {
+> >  
+> >  struct aspeed_adc_data {
+> >  	struct device		*dev;
+> > +	const struct aspeed_adc_model_data *model_data;
+> >  	void __iomem		*base;
+> >  	spinlock_t		clk_lock;
+> >  	struct clk_hw		*clk_prescaler;
+> > @@ -118,8 +119,6 @@ static int aspeed_adc_read_raw(struct iio_dev *indio_dev,
+> >  			       int *val, int *val2, long mask)
+> >  {
+> >  	struct aspeed_adc_data *data = iio_priv(indio_dev);
+> > -	const struct aspeed_adc_model_data *model_data =
+> > -			of_device_get_match_data(data->dev);
+> >  
+> >  	switch (mask) {
+> >  	case IIO_CHAN_INFO_RAW:
+> > @@ -127,7 +126,7 @@ static int aspeed_adc_read_raw(struct iio_dev *indio_dev,
+> >  		return IIO_VAL_INT;
+> >  
+> >  	case IIO_CHAN_INFO_SCALE:
+> > -		*val = model_data->vref_voltage;
+> > +		*val = data->model_data->vref_voltage;
+> >  		*val2 = ASPEED_RESOLUTION_BITS;
+> >  		return IIO_VAL_FRACTIONAL_LOG2;
+> >  
+> > @@ -146,13 +145,11 @@ static int aspeed_adc_write_raw(struct iio_dev *indio_dev,
+> >  				int val, int val2, long mask)
+> >  {
+> >  	struct aspeed_adc_data *data = iio_priv(indio_dev);
+> > -	const struct aspeed_adc_model_data *model_data =
+> > -			of_device_get_match_data(data->dev);
+> >  
+> >  	switch (mask) {
+> >  	case IIO_CHAN_INFO_SAMP_FREQ:
+> > -		if (val < model_data->min_sampling_rate ||
+> > -			val > model_data->max_sampling_rate)
+> > +		if (val < data->model_data->min_sampling_rate ||
+> > +			val > data->model_data->max_sampling_rate)
+> >  			return -EINVAL;
+> >  
+> >  		clk_set_rate(data->clk_scaler->clk,
+> > @@ -198,7 +195,6 @@ static int aspeed_adc_probe(struct platform_device *pdev)
+> >  {
+> >  	struct iio_dev *indio_dev;
+> >  	struct aspeed_adc_data *data;
+> > -	const struct aspeed_adc_model_data *model_data;
+> >  	const char *clk_parent_name;
+> >  	int ret;
+> >  	u32 adc_engine_control_reg_val;
+> > @@ -209,6 +205,7 @@ static int aspeed_adc_probe(struct platform_device *pdev)
+> >  
+> >  	data = iio_priv(indio_dev);
+> >  	data->dev = &pdev->dev;
+> > +	data->model_data = of_device_get_match_data(&pdev->dev);
+> >  	platform_set_drvdata(pdev, indio_dev);
+> >  
+> >  	data->base = devm_platform_ioremap_resource(pdev, 0);
+> > @@ -249,9 +246,7 @@ static int aspeed_adc_probe(struct platform_device *pdev)
+> >  	}
+> >  	reset_control_deassert(data->rst);
+> >  
+> > -	model_data = of_device_get_match_data(&pdev->dev);
+> > -
+> > -	if (model_data->wait_init_sequence) {
+> > +	if (data->model_data->wait_init_sequence) {
+> >  		/* Enable engine in normal mode. */
+> >  		writel(FIELD_PREP(ASPEED_ADC_OP_MODE,
+> >  				  ASPEED_ADC_OP_MODE_NORMAL) |
+> > @@ -281,8 +276,7 @@ static int aspeed_adc_probe(struct platform_device *pdev)
+> >  	writel(adc_engine_control_reg_val,
+> >  	       data->base + ASPEED_REG_ENGINE_CONTROL);
+> >  
+> > -	model_data = of_device_get_match_data(&pdev->dev);
+> > -	indio_dev->name = model_data->model_name;
+> > +	indio_dev->name = data->model_data->model_name;
+> >  	indio_dev->info = &aspeed_adc_iio_info;
+> >  	indio_dev->modes = INDIO_DIRECT_MODE;
+> >  	indio_dev->channels = aspeed_adc_iio_channels;  
+> 
 
