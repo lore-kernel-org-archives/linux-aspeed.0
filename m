@@ -1,43 +1,42 @@
 From: Jonathan Cameron <jic23@kernel.org>
-Date: Sun, 5 Sep 2021 15:25:01 +0100
-Subject: [v5 01/15] iio: adc: aspeed: set driver data when adc probe.
-In-Reply-To: <20210831071458.2334-2-billy_tsai@aspeedtech.com>
+Date: Sun, 5 Sep 2021 15:27:38 +0100
+Subject: [v5 02/15] dt-bindings: iio: adc: Add ast2600-adc bindings
+In-Reply-To: <YS7ZnG05pZvfA/7m@robh.at.kernel.org>
 References: <20210831071458.2334-1-billy_tsai@aspeedtech.com>
- <20210831071458.2334-2-billy_tsai@aspeedtech.com>
-Message-ID: <20210905152501.2c45d43a@jic23-huawei>
+ <20210831071458.2334-3-billy_tsai@aspeedtech.com>
+ <YS7ZnG05pZvfA/7m@robh.at.kernel.org>
+Message-ID: <20210905152738.2645b531@jic23-huawei>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, 31 Aug 2021 15:14:44 +0800
-Billy Tsai <billy_tsai@aspeedtech.com> wrote:
+On Tue, 31 Aug 2021 20:38:36 -0500
+Rob Herring <robh@kernel.org> wrote:
 
-> Fix the issue when adc remove will get the null driver data.
+> On Tue, 31 Aug 2021 15:14:45 +0800, Billy Tsai wrote:
+> > Add device tree bindings document for the aspeed ast2600 adc device
+> > driver.
+> > 
+> > Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
+> > ---
+> >  .../bindings/iio/adc/aspeed,ast2600-adc.yaml  | 100 ++++++++++++++++++
+> >  1 file changed, 100 insertions(+)
+> >  create mode 100644 Documentation/devicetree/bindings/iio/adc/aspeed,ast2600-adc.yaml
+> >   
 > 
-> Fixed: commit 573803234e72 ("iio: Aspeed ADC")
-> Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
-Thanks Billy
+> Reviewed-by: Rob Herring <robh@kernel.org>
 
-Applied to the fixes-togreg branch of iio.git and marked for stable.
+I'm going to push on with this series until I hit anything that needs to wait
+for the fix to be available.  If that happens I'll have to wait until that's
+in Linus' tree before taking the rest.
+
+Applied to the togreg branch of iio.git and pushed out as testing for 0-day
+to work it's magic.
+
+Thanks,
 
 Jonathan
 
-> ---
->  drivers/iio/adc/aspeed_adc.c | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/drivers/iio/adc/aspeed_adc.c b/drivers/iio/adc/aspeed_adc.c
-> index 19efaa41bc34..34ec0c28b2df 100644
-> --- a/drivers/iio/adc/aspeed_adc.c
-> +++ b/drivers/iio/adc/aspeed_adc.c
-> @@ -183,6 +183,7 @@ static int aspeed_adc_probe(struct platform_device *pdev)
->  
->  	data = iio_priv(indio_dev);
->  	data->dev = &pdev->dev;
-> +	platform_set_drvdata(pdev, indio_dev);
->  
->  	data->base = devm_platform_ioremap_resource(pdev, 0);
->  	if (IS_ERR(data->base))
 
