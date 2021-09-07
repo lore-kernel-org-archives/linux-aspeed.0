@@ -1,39 +1,61 @@
-From: Steven Lee <steven_lee@aspeedtech.com>
-Date: Tue, 7 Sep 2021 17:55:25 +0800
-Subject: [PATCH -next v1 1/1] gpio: gpio-aspeed-sgpio: Fix wrong hwirq in irq
- handler.
-In-Reply-To: <20210907095525.24668-1-steven_lee@aspeedtech.com>
-References: <20210907095525.24668-1-steven_lee@aspeedtech.com>
-Message-ID: <20210907095525.24668-2-steven_lee@aspeedtech.com>
+From: Rob Herring <robh@kernel.org>
+Date: Tue, 7 Sep 2021 13:46:55 -0500
+Subject: [PATCH v2 1/3] dt-bindings: aspeed-lpc: Add UART routing
+ compatible string
+In-Reply-To: <20210902021817.17506-2-chiawei_wang@aspeedtech.com>
+References: <20210902021817.17506-1-chiawei_wang@aspeedtech.com>
+ <20210902021817.17506-2-chiawei_wang@aspeedtech.com>
+Message-ID: <YTezn1TDatYs2FMd@robh.at.kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The current hwirq is calculated based on the old GPIO pin order(input
-GPIO range is from 0 to ngpios - 1).
-It should be calculated based on the current GPIO input pin order(input
-GPIOs are 0, 2, 4, ..., (ngpios - 1) * 2).
+On Thu, Sep 02, 2021 at 10:18:14AM +0800, Chia-Wei Wang wrote:
+> Add the compatible string and the device tree description for the
+> Aspeed AST25xx/AST26xx UART routing control.
+> 
+> Signed-off-by: Chia-Wei Wang <chiawei_wang@aspeedtech.com>
+> ---
+>  .../devicetree/bindings/mfd/aspeed-lpc.txt    | 22 +++++++++++++++++++
+>  1 file changed, 22 insertions(+)
 
-Signed-off-by: Steven Lee <steven_lee@aspeedtech.com>
----
- drivers/gpio/gpio-aspeed-sgpio.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Either convert aspeed-lpc.txt to DT schema or make this a separate 
+schema doc.
 
-diff --git a/drivers/gpio/gpio-aspeed-sgpio.c b/drivers/gpio/gpio-aspeed-sgpio.c
-index 10f303d15225..3d6ef37a7702 100644
---- a/drivers/gpio/gpio-aspeed-sgpio.c
-+++ b/drivers/gpio/gpio-aspeed-sgpio.c
-@@ -395,7 +395,7 @@ static void aspeed_sgpio_irq_handler(struct irq_desc *desc)
- 		reg = ioread32(bank_reg(data, bank, reg_irq_status));
- 
- 		for_each_set_bit(p, &reg, 32)
--			generic_handle_domain_irq(gc->irq.domain, i * 32 + p);
-+			generic_handle_domain_irq(gc->irq.domain, i * 32 + p * 2);
- 	}
- 
- 	chained_irq_exit(ic, desc);
--- 
-2.17.1
-
+> 
+> diff --git a/Documentation/devicetree/bindings/mfd/aspeed-lpc.txt b/Documentation/devicetree/bindings/mfd/aspeed-lpc.txt
+> index 936aa108eab4..45d44f812e5e 100644
+> --- a/Documentation/devicetree/bindings/mfd/aspeed-lpc.txt
+> +++ b/Documentation/devicetree/bindings/mfd/aspeed-lpc.txt
+> @@ -155,3 +155,25 @@ lpc_reset: reset-controller at 98 {
+>          reg = <0x98 0x4>;
+>          #reset-cells = <1>;
+>  };
+> +
+> +UART routing control
+> +--------------------
+> +
+> +The UART routing control manages the RX muxes among the UART controllers
+> +and the I/O pins. This is typicall used for the Serial-Over-Lan (SOL)
+> +service.
+> +
+> +Required properties:
+> +
+> + - compatible:		One of:
+> +			"aspeed,ast2500-uart-routing";
+> +			"aspeed,ast2600-uart-routing";
+> +
+> + - reg:			offset and length of the IP in the LPC memory region
+> +
+> +Example:
+> +
+> +uart_routing: uart-routing at 98 {
+> +	compatible = "aspeed,ast2600-uart-routing";
+> +	reg = <0x98 0x8>;
+> +};
+> -- 
+> 2.17.1
+> 
+> 
