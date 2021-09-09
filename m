@@ -1,100 +1,43 @@
 From: Chia-Wei Wang <chiawei_wang@aspeedtech.com>
-Date: Thu, 9 Sep 2021 18:29:05 +0800
-Subject: [PATCH v3 1/3] dt-bindings: aspeed: Add UART routing controller
-In-Reply-To: <20210909102907.32037-1-chiawei_wang@aspeedtech.com>
-References: <20210909102907.32037-1-chiawei_wang@aspeedtech.com>
-Message-ID: <20210909102907.32037-2-chiawei_wang@aspeedtech.com>
+Date: Thu, 9 Sep 2021 18:29:04 +0800
+Subject: [PATCH v3 0/3] arm: aspeed: Add UART routing support
+Message-ID: <20210909102907.32037-1-chiawei_wang@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add dt-bindings for Aspeed UART routing controller.
+Add UART routing driver and the device tree nodes.
 
-Signed-off-by: Oskar Senft <osk@google.com>
-Signed-off-by: Chia-Wei Wang <chiawei_wang@aspeedtech.com>
----
- .../bindings/soc/aspeed/uart-routing.yaml     | 70 +++++++++++++++++++
- 1 file changed, 70 insertions(+)
+v3:
+ - Add individual bindings in YAML
+ - Add support for AST24xx (AST25xx shares the same design)
+ - Add more explanation for the sysfs ABI
+
+v2:
+ - Add dt-bindings
+ - Add ABI documents for the exported sysfs interface
+ - Revise driver implementation suggested by Joel
+
+Chia-Wei Wang (3):
+  dt-bindings: aspeed: Add UART routing controller
+  soc: aspeed: Add UART routing support
+  ARM: dts: aspeed: Add uart routing to device tree
+
+ .../testing/sysfs-driver-aspeed-uart-routing  |  15 +
+ .../bindings/soc/aspeed/uart-routing.yaml     |  70 ++
+ arch/arm/boot/dts/aspeed-g4.dtsi              |   6 +
+ arch/arm/boot/dts/aspeed-g5.dtsi              |   6 +
+ arch/arm/boot/dts/aspeed-g6.dtsi              |   6 +
+ drivers/soc/aspeed/Kconfig                    |  10 +
+ drivers/soc/aspeed/Makefile                   |   9 +-
+ drivers/soc/aspeed/aspeed-uart-routing.c      | 603 ++++++++++++++++++
+ 8 files changed, 721 insertions(+), 4 deletions(-)
+ create mode 100644 Documentation/ABI/testing/sysfs-driver-aspeed-uart-routing
  create mode 100644 Documentation/devicetree/bindings/soc/aspeed/uart-routing.yaml
+ create mode 100644 drivers/soc/aspeed/aspeed-uart-routing.c
 
-diff --git a/Documentation/devicetree/bindings/soc/aspeed/uart-routing.yaml b/Documentation/devicetree/bindings/soc/aspeed/uart-routing.yaml
-new file mode 100644
-index 000000000000..e7071f1abc03
---- /dev/null
-+++ b/Documentation/devicetree/bindings/soc/aspeed/uart-routing.yaml
-@@ -0,0 +1,70 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+# # Copyright (c) 2018 Google LLC
-+# # Copyright (c) 2021 Aspeed Technology Inc.
-+%YAML 1.2
-+---
-+$id: "http://devicetree.org/schemas/soc/aspeed/uart-routing.yaml#"
-+$schema: "http://devicetree.org/meta-schemas/core.yaml#"
-+
-+title: Aspeed UART Routing Controller
-+
-+maintainers:
-+  - Oskar Senft <osk@google.com>
-+  - Chia-Wei Wang <chiawei_wang@aspeedtech.com>
-+
-+description:
-+  The Aspeed UART routing control allow to dynamically route the inputs for
-+  the built-in UARTS and physical serial I/O ports.
-+
-+  This allows, for example, to connect the output of UART to another UART.
-+  This can be used to enable Host <-> BMC communication via UARTs, e.g. to
-+  allow access to the Host's serial console.
-+
-+  This driver is for the BMC side. The sysfs files allow the BMC userspace
-+  which owns the system configuration policy, to configure how UARTs and
-+  physical serial I/O ports are routed.
-+
-+  Two types of files, uart* and io*, are presented in sysfs. The uart*
-+  configures the input signal of a UART controller whereas io* configures
-+  that of a physical serial port.
-+
-+  When read, each file shows the list of available options with currently
-+  selected option marked by brackets "[]". The list of available options
-+  depends on the selected file.
-+
-+  e.g.
-+  cat /sys/bus/platform/drivers/aspeed-uart-routing/*.uart_routing/uart1
-+  [io1] io2 io3 io4 uart2 uart3 uart4 io6
-+
-+  In this case, UART1 gets its input from IO1 (physical serial port 1).
-+
-+properties:
-+  compatible:
-+    items:
-+      - enum:
-+          - aspeed,ast2400-uart-routing
-+          - aspeed,ast2500-uart-routing
-+          - aspeed,ast2600-uart-routing
-+  reg:
-+    maxItems: 1
-+
-+required:
-+  - compatible
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    lpc: lpc at 1e789000 {
-+        compatible = "aspeed,ast2600-lpc-v2", "simple-mfd", "syscon";
-+        reg = <0x1e789000 0x1000>;
-+
-+        #address-cells = <1>;
-+        #size-cells = <1>;
-+        ranges = <0x0 0x1e789000 0x1000>;
-+
-+        uart_routing: espi-routing at 98 {
-+            compatible = "aspeed,ast2600-uart-routing";
-+            reg = <0x98 0x8>;
-+        };
-+    };
 -- 
 2.17.1
 
