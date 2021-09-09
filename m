@@ -1,65 +1,100 @@
-From: ChiaWei Wang <chiawei_wang@aspeedtech.com>
-Date: Thu, 9 Sep 2021 08:32:34 +0000
-Subject: [External] [PATCH v2 0/3] arm: aspeed: Add UART routing support
-In-Reply-To: <CAGm54UERFkOLXtG3wwL9x1-HAXjmRoaG4ZRbZZOLjP1bLZ=LSg@mail.gmail.com>
-References: <20210902021817.17506-1-chiawei_wang@aspeedtech.com>
- <CAGm54UERFkOLXtG3wwL9x1-HAXjmRoaG4ZRbZZOLjP1bLZ=LSg@mail.gmail.com>
-Message-ID: <HK0PR06MB3779FBC72887BCC2D915EBCA91D59@HK0PR06MB3779.apcprd06.prod.outlook.com>
+From: Chia-Wei Wang <chiawei_wang@aspeedtech.com>
+Date: Thu, 9 Sep 2021 18:29:05 +0800
+Subject: [PATCH v3 1/3] dt-bindings: aspeed: Add UART routing controller
+In-Reply-To: <20210909102907.32037-1-chiawei_wang@aspeedtech.com>
+References: <20210909102907.32037-1-chiawei_wang@aspeedtech.com>
+Message-ID: <20210909102907.32037-2-chiawei_wang@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Lei,
+Add dt-bindings for Aspeed UART routing controller.
 
-Thanks for the Tested-by tag.
-Will include it in the upcoming v3 patch.
+Signed-off-by: Oskar Senft <osk@google.com>
+Signed-off-by: Chia-Wei Wang <chiawei_wang@aspeedtech.com>
+---
+ .../bindings/soc/aspeed/uart-routing.yaml     | 70 +++++++++++++++++++
+ 1 file changed, 70 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/soc/aspeed/uart-routing.yaml
 
-> From: Lei Yu <yulei.sh@bytedance.com>
-> Sent: Thursday, September 9, 2021 2:52 PM
-> 
-> The patches are tested on meta-g220a build and it works fine with some
-> changes in the sysfs path[1].
-> 
-> Tested-by: Lei YU <yulei.sh@bytedance.com>
-> 
-> [1]:
-> https://github.com/openbmc/meta-bytedance/blob/master/meta-g220a/recip
-> es-phosphor/console/obmc-console/obmc-console%40.service#L7-L10
-> 
-> On Thu, Sep 2, 2021 at 10:20 AM Chia-Wei Wang
-> <chiawei_wang@aspeedtech.com> wrote:
-> >
-> > Add UART routing driver and the device tree nodes.
-> >
-> > v2:
-> >  - Add dt-bindings
-> >  - Add ABI documents for the exported sysfs interface
-> >  - Revise driver implementation suggested by Joel
-> >
-> > Chia-Wei Wang (3):
-> >   dt-bindings: aspeed-lpc: Add UART routing compatible string
-> >   soc: aspeed: Add UART routing support
-> >   ARM: dts: aspeed: Add uart routing to device tree
-> >
-> >  .../testing/sysfs-driver-aspeed-uart-routing  |  15 +
-> >  .../devicetree/bindings/mfd/aspeed-lpc.txt    |  22 +
-> >  arch/arm/boot/dts/aspeed-g5.dtsi              |   6 +
-> >  arch/arm/boot/dts/aspeed-g6.dtsi              |   6 +
-> >  drivers/soc/aspeed/Kconfig                    |  10 +
-> >  drivers/soc/aspeed/Makefile                   |   9 +-
-> >  drivers/soc/aspeed/aspeed-uart-routing.c      | 601
-> ++++++++++++++++++
-> >  7 files changed, 665 insertions(+), 4 deletions(-)  create mode
-> > 100644 Documentation/ABI/testing/sysfs-driver-aspeed-uart-routing
-> >  create mode 100644 drivers/soc/aspeed/aspeed-uart-routing.c
-> >
-> > --
-> > 2.17.1
-> >
-> 
-> 
-> --
-> BRs,
-> Lei YU
+diff --git a/Documentation/devicetree/bindings/soc/aspeed/uart-routing.yaml b/Documentation/devicetree/bindings/soc/aspeed/uart-routing.yaml
+new file mode 100644
+index 000000000000..e7071f1abc03
+--- /dev/null
++++ b/Documentation/devicetree/bindings/soc/aspeed/uart-routing.yaml
+@@ -0,0 +1,70 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++# # Copyright (c) 2018 Google LLC
++# # Copyright (c) 2021 Aspeed Technology Inc.
++%YAML 1.2
++---
++$id: "http://devicetree.org/schemas/soc/aspeed/uart-routing.yaml#"
++$schema: "http://devicetree.org/meta-schemas/core.yaml#"
++
++title: Aspeed UART Routing Controller
++
++maintainers:
++  - Oskar Senft <osk@google.com>
++  - Chia-Wei Wang <chiawei_wang@aspeedtech.com>
++
++description:
++  The Aspeed UART routing control allow to dynamically route the inputs for
++  the built-in UARTS and physical serial I/O ports.
++
++  This allows, for example, to connect the output of UART to another UART.
++  This can be used to enable Host <-> BMC communication via UARTs, e.g. to
++  allow access to the Host's serial console.
++
++  This driver is for the BMC side. The sysfs files allow the BMC userspace
++  which owns the system configuration policy, to configure how UARTs and
++  physical serial I/O ports are routed.
++
++  Two types of files, uart* and io*, are presented in sysfs. The uart*
++  configures the input signal of a UART controller whereas io* configures
++  that of a physical serial port.
++
++  When read, each file shows the list of available options with currently
++  selected option marked by brackets "[]". The list of available options
++  depends on the selected file.
++
++  e.g.
++  cat /sys/bus/platform/drivers/aspeed-uart-routing/*.uart_routing/uart1
++  [io1] io2 io3 io4 uart2 uart3 uart4 io6
++
++  In this case, UART1 gets its input from IO1 (physical serial port 1).
++
++properties:
++  compatible:
++    items:
++      - enum:
++          - aspeed,ast2400-uart-routing
++          - aspeed,ast2500-uart-routing
++          - aspeed,ast2600-uart-routing
++  reg:
++    maxItems: 1
++
++required:
++  - compatible
++
++additionalProperties: false
++
++examples:
++  - |
++    lpc: lpc at 1e789000 {
++        compatible = "aspeed,ast2600-lpc-v2", "simple-mfd", "syscon";
++        reg = <0x1e789000 0x1000>;
++
++        #address-cells = <1>;
++        #size-cells = <1>;
++        ranges = <0x0 0x1e789000 0x1000>;
++
++        uart_routing: espi-routing at 98 {
++            compatible = "aspeed,ast2600-uart-routing";
++            reg = <0x98 0x8>;
++        };
++    };
+-- 
+2.17.1
+
