@@ -1,138 +1,52 @@
-From: Adriana Kobylak <anoo@linux.ibm.com>
-Date: Fri, 10 Sep 2021 13:59:30 +0000
-Subject: [PATCH] ARM: dts: aspeed: rainier: Add N_MODE_VREF gpio
-Message-ID: <20210910135930.2094695-1-anoo@linux.ibm.com>
+From: Rob Herring <robh@kernel.org>
+Date: Fri, 10 Sep 2021 10:57:43 -0500
+Subject: [PATCH v3 1/3] dt-bindings: aspeed: Add UART routing controller
+In-Reply-To: <HK0PR06MB3779990AF1A5BF5300DC9B0E91D69@HK0PR06MB3779.apcprd06.prod.outlook.com>
+References: <20210909102907.32037-1-chiawei_wang@aspeedtech.com>
+ <20210909102907.32037-2-chiawei_wang@aspeedtech.com>
+ <1631190773.304300.200343.nullmailer@robh.at.kernel.org>
+ <HK0PR06MB3779990AF1A5BF5300DC9B0E91D69@HK0PR06MB3779.apcprd06.prod.outlook.com>
+Message-ID: <CAL_JsqLdT3U2k8Znjo0LHUtC41vPidR4ZDDhcRPpxDC7atgEug@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Adriana Kobylak <anoo@us.ibm.com>
+On Thu, Sep 9, 2021 at 8:38 PM ChiaWei Wang <chiawei_wang@aspeedtech.com> wrote:
+>
+> Hi Rob,
+>
+> > From: Rob Herring <robh@kernel.org>
+> > Sent: Thursday, September 9, 2021 8:33 PM
+> >
+> > On Thu, 09 Sep 2021 18:29:05 +0800, Chia-Wei Wang wrote:
+> > > Add dt-bindings for Aspeed UART routing controller.
+> > >
+> > > Signed-off-by: Oskar Senft <osk@google.com>
+> > > Signed-off-by: Chia-Wei Wang <chiawei_wang@aspeedtech.com>
+> > > ---
+> > >  .../bindings/soc/aspeed/uart-routing.yaml     | 70
+> > +++++++++++++++++++
+> > >  1 file changed, 70 insertions(+)
+> > >  create mode 100644
+> > > Documentation/devicetree/bindings/soc/aspeed/uart-routing.yaml
+> > >
+> >
+> > My bot found errors running 'make DT_CHECKER_FLAGS=-m
+> > dt_binding_check'
+> > on your patch (DT_CHECKER_FLAGS is new in v5.13):
+> >
+> > yamllint warnings/errors:
+> >
+> > dtschema/dtc warnings/errors:
+> > Documentation/devicetree/bindings/soc/aspeed/uart-routing.example.dt.yaml:
+> > 0:0: /example-0/lpc at 1e789000: failed to match any schema with compatible:
+> > ['aspeed,ast2600-lpc-v2', 'simple-mfd', 'syscon']
+>
+> The "aspeed,ast2600-lpc-v2" compatible string is described in the .txt file 'aspeed-lpc.txt'.
+> Do we have to firstly convert the text file into YAML one to resolve this dependency issue?
 
-The N_MODE_VREF gpio is designed to be used to notify the Onboard Chip
-Controller how many power supplies the system should have (2 or 4). This
-gpio is on a 9552, populate all the gpios on that chip for completeness.
+Yes. This is a significant change to the LPC block binding.
 
-Signed-off-by: Adriana Kobylak <anoo@us.ibm.com>
----
- arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts | 103 +++++++++++++++++++
- 1 file changed, 103 insertions(+)
-
-diff --git a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
-index 6fd3ddf97a21..d5eea86dc260 100644
---- a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
-@@ -1502,6 +1502,109 @@ eeprom at 51 {
- 		reg = <0x51>;
- 	};
- 
-+	pca_pres3: pca9552 at 60 {
-+		compatible = "nxp,pca9552";
-+		reg = <0x60>;
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+
-+		gpio-line-names =
-+			"",
-+			"APSS_RESET_N",
-+			"", "", "", "",
-+			"P10_DCM0_PRES",
-+			"P10_DCM1_PRES",
-+			"", "",
-+			"N_MODE_CPU_N",
-+			"",
-+			"PRESENT_VRM_DCM0_N",
-+			"PRESENT_VRM_DCM1_N",
-+			"N_MODE_VREF",
-+			"";
-+
-+		gpio at 0 {
-+			reg = <0>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 1 {
-+			reg = <1>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 2 {
-+			reg = <2>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 3 {
-+			reg = <3>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 4 {
-+			reg = <4>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 5 {
-+			reg = <5>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 6 {
-+			reg = <6>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 7 {
-+			reg = <7>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 8 {
-+			reg = <8>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 9 {
-+			reg = <9>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 10 {
-+			reg = <10>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 11 {
-+			reg = <11>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 12 {
-+			reg = <12>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 13 {
-+			reg = <13>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 14 {
-+			reg = <14>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+
-+		gpio at 15 {
-+			reg = <15>;
-+			type = <PCA955X_TYPE_GPIO>;
-+		};
-+	};
-+
- 	pca_pres2: pca9552 at 61 {
- 		compatible = "nxp,pca9552";
- 		reg = <0x61>;
--- 
-2.25.1
-
+Rob
