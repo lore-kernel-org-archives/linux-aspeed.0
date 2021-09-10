@@ -1,101 +1,138 @@
-From: ChiaWei Wang <chiawei_wang@aspeedtech.com>
-Date: Fri, 10 Sep 2021 03:23:26 +0000
-Subject: [PATCH v4 3/4] soc: aspeed: Add eSPI driver
-In-Reply-To: <9fa4ae962c185e0e4f07f0299356969c17ae5ea5.camel@codeconstruct.com.au>
-References: <20210901033015.910-1-chiawei_wang@aspeedtech.com>
- <20210901033015.910-4-chiawei_wang@aspeedtech.com>
- <20c13b9bb023091758cac3a07fb4037b7d796578.camel@codeconstruct.com.au>
- <HK0PR06MB37792273A075533C2570002391CE9@HK0PR06MB3779.apcprd06.prod.outlook.com>
- <513cb05f8d83d08a5c1e491dc0a9b6784195e7dd.camel@codeconstruct.com.au>
- <HK0PR06MB37799C48533B084CF864E49D91D29@HK0PR06MB3779.apcprd06.prod.outlook.com>
- <6593206c0bc90186f255c6ea86339576576f70dc.camel@codeconstruct.com.au>
- <HK0PR06MB377924CFCBFE9BD40E1C4A5D91D49@HK0PR06MB3779.apcprd06.prod.outlook.com>
- <9fa4ae962c185e0e4f07f0299356969c17ae5ea5.camel@codeconstruct.com.au>
-Message-ID: <HK0PR06MB37793C268FEB0E33A5547D0791D69@HK0PR06MB3779.apcprd06.prod.outlook.com>
+From: Adriana Kobylak <anoo@linux.ibm.com>
+Date: Fri, 10 Sep 2021 13:59:30 +0000
+Subject: [PATCH] ARM: dts: aspeed: rainier: Add N_MODE_VREF gpio
+Message-ID: <20210910135930.2094695-1-anoo@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Jeremy,
+From: Adriana Kobylak <anoo@us.ibm.com>
 
-> From: Jeremy Kerr <jk@codeconstruct.com.au>
-> Sent: Thursday, September 9, 2021 9:53 AM
->  
-> > Yes, there is security concern using HW mode.
-> > Our designer is considering to remove the HW mode support in the next
-> > generation of Aspeed SoCs.
-> > So far we haven't encountered a scenario demanding HW mode.
-> 
-> Great to hear :) can we unconditionally set ESPI000[9] in the driver then?
+The N_MODE_VREF gpio is designed to be used to notify the Onboard Chip
+Controller how many power supplies the system should have (2 or 4). This
+gpio is on a 9552, populate all the gpios on that chip for completeness.
 
-Yes for the v5 revision. As HW mode is going to be eliminated in the future.
-A brief explanation will also be added.
+Signed-off-by: Adriana Kobylak <anoo@us.ibm.com>
+---
+ arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts | 103 +++++++++++++++++++
+ 1 file changed, 103 insertions(+)
 
-> 
-> > > With than in mind, if we're disabling hardware mode - what does the
-> > > direction control setting effect when we're in software mode
-> > > (ESPICTRL[9] == 1)? Does it even matter?
-> >
-> > Yes, the direction matters even in SW mode.
-> > When the direction is 'master-to-slave' and the GPIO value is updated
-> > by the Host through PUT_VW, a VW interrupt is trigger to notify BMC.
-> > For the 'slave-to-master' GPIO, a alert is generated to notify the
-> > Host to issue GET_VW for the GPIO value updated by the BMC by ESPI09C.
-> 
-> OK, but the datasheet mentions that ESPICFG804 is only applicable when
-> ESPI000[9] = 0, or is that not the case?
+diff --git a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
+index 6fd3ddf97a21..d5eea86dc260 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
+@@ -1502,6 +1502,109 @@ eeprom at 51 {
+ 		reg = <0x51>;
+ 	};
+ 
++	pca_pres3: pca9552 at 60 {
++		compatible = "nxp,pca9552";
++		reg = <0x60>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++		gpio-controller;
++		#gpio-cells = <2>;
++
++		gpio-line-names =
++			"",
++			"APSS_RESET_N",
++			"", "", "", "",
++			"P10_DCM0_PRES",
++			"P10_DCM1_PRES",
++			"", "",
++			"N_MODE_CPU_N",
++			"",
++			"PRESENT_VRM_DCM0_N",
++			"PRESENT_VRM_DCM1_N",
++			"N_MODE_VREF",
++			"";
++
++		gpio at 0 {
++			reg = <0>;
++			type = <PCA955X_TYPE_GPIO>;
++		};
++
++		gpio at 1 {
++			reg = <1>;
++			type = <PCA955X_TYPE_GPIO>;
++		};
++
++		gpio at 2 {
++			reg = <2>;
++			type = <PCA955X_TYPE_GPIO>;
++		};
++
++		gpio at 3 {
++			reg = <3>;
++			type = <PCA955X_TYPE_GPIO>;
++		};
++
++		gpio at 4 {
++			reg = <4>;
++			type = <PCA955X_TYPE_GPIO>;
++		};
++
++		gpio at 5 {
++			reg = <5>;
++			type = <PCA955X_TYPE_GPIO>;
++		};
++
++		gpio at 6 {
++			reg = <6>;
++			type = <PCA955X_TYPE_GPIO>;
++		};
++
++		gpio at 7 {
++			reg = <7>;
++			type = <PCA955X_TYPE_GPIO>;
++		};
++
++		gpio at 8 {
++			reg = <8>;
++			type = <PCA955X_TYPE_GPIO>;
++		};
++
++		gpio at 9 {
++			reg = <9>;
++			type = <PCA955X_TYPE_GPIO>;
++		};
++
++		gpio at 10 {
++			reg = <10>;
++			type = <PCA955X_TYPE_GPIO>;
++		};
++
++		gpio at 11 {
++			reg = <11>;
++			type = <PCA955X_TYPE_GPIO>;
++		};
++
++		gpio at 12 {
++			reg = <12>;
++			type = <PCA955X_TYPE_GPIO>;
++		};
++
++		gpio at 13 {
++			reg = <13>;
++			type = <PCA955X_TYPE_GPIO>;
++		};
++
++		gpio at 14 {
++			reg = <14>;
++			type = <PCA955X_TYPE_GPIO>;
++		};
++
++		gpio at 15 {
++			reg = <15>;
++			type = <PCA955X_TYPE_GPIO>;
++		};
++	};
++
+ 	pca_pres2: pca9552 at 61 {
+ 		compatible = "nxp,pca9552";
+ 		reg = <0x61>;
+-- 
+2.25.1
 
-Yes, ESPICFG804 is applicable only on HW mode (ESPI000[9]=0).
-When the HW mode is selected, the eSPI slave forwards GPIO update in PUT_VW packet sent by the Host to the physical GPIO based on the ESPICFG804 mapping.
-This is purely done by HW. No interrupts will be generated to notify SW.
-
-> 
-> But based on what you've said: yes, it sounds like the generic gpiodev parts
-> won't be useful for this.
-> 
-> > > Separate from this: I'm also proposing that we represent the system
-> > > event VWs as gpiodevs as well.
-> > >
-> > > > A raw packet, primitive interface should have better flexibility
-> > > > to manage MCTP packets over the OOB channel.
-> > >
-> > > OK, let me phrase this differently: can the OOB channel be used for
-> > > anything other than SMBus messaging? Is it useful to provide an
-> > > interface that isn't a standard SMBus/i2c device?
-> >
-> > Yes, the PCH spec. also defines two additional packet format for an
-> > eSPI slave to retrieve PCH Temperature Data and RTC time.
-> > It should be trivial to prepare a byte buffer in that format and send
-> > it through the raw packet interface.
-> 
-> OK, understood.
-> 
-> > > If you need custom uapi definitions for this driver, that might be
-> > > okay, but it's going to be more work for you (to define an interface
-> > > that can be supported long-term), rather than using standard
-> > > infrastructure that already exists.
-> >
-> > Thus I suggested that we can refer to the IPMI KCS BMC driver, which
-> > supports the selection of different user interfaces, RAW or IPMI.
-> 
-> Yep, but the KCS "raw" register set is standardised as part of the IPMI spec too,
-> which helps to define a stable user API. We don't have that in this case.
-> 
-> Overall though, if you want to start with the "low-level" API, then introduce
-> "enhanced" functionality - like an actual SMBus driver - alongside that, then
-> that sounds like an OK approach.
-> 
-> > If IOCTL is considered to be not user friendly or magic code
-> > polluting, file-based read/write on the miscdevice node is also an
-> > option.
-> 
-> It's not really my decision to make, but a read/write event interface would
-> seem to be more consistent to me. Is there an obvious event format that would
-> be common across all channels, perhaps? We'd probably also need a poll too -
-> to make use of incoming events, like master-to-slave VW changes, perhaps?
-
-A file-based read/write/poll interface is OK to me as well. The main concern is about the peripheral and the VW channels.
-For the peripheral channel, it takes two miscdevice to export TX/RX interfaces for posted and non-posted packets, respectively.
-And for the VW channel, the settings GPIO direction is RO and that of GPIO value is RW. And these two should be exported individually.
