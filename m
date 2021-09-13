@@ -1,88 +1,52 @@
-From: Billy Tsai <billy_tsai@aspeedtech.com>
-Date: Mon, 13 Sep 2021 15:53:33 +0800
-Subject: [v6 07/11] iio: adc: aspeed: Fix the calculate error of clock.
-In-Reply-To: <20210913075337.19991-1-billy_tsai@aspeedtech.com>
-References: <20210913075337.19991-1-billy_tsai@aspeedtech.com>
-Message-ID: <20210913075337.19991-8-billy_tsai@aspeedtech.com>
+From: Rob Herring <robh@kernel.org>
+Date: Mon, 13 Sep 2021 07:18:43 -0500
+Subject: [PATCH v4 1/4] dt-bindings: mfd: aspeed-lpc: Convert to YAML
+ schema
+In-Reply-To: <20210913060231.15619-2-chiawei_wang@aspeedtech.com>
+References: <20210913060231.15619-1-chiawei_wang@aspeedtech.com>
+ <20210913060231.15619-2-chiawei_wang@aspeedtech.com>
+Message-ID: <1631535523.196891.444718.nullmailer@robh.at.kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The ADC clock formula is
-ast2400/2500:
-ADC clock period = PCLK * 2 * (ADC0C[31:17] + 1) * (ADC0C[9:0] + 1)
-ast2600:
-ADC clock period = PCLK * 2 * (ADC0C[15:0] + 1)
-They all have one fixed divided 2 and the legacy driver didn't handle it.
-This patch register the fixed factory clock device as the parent of ADC
-clock scaler to fix this issue.
+On Mon, 13 Sep 2021 14:02:28 +0800, Chia-Wei Wang wrote:
+> Convert the bindings of Aspeed LPC from text file into YAML schema.
+> 
+> Signed-off-by: Chia-Wei Wang <chiawei_wang@aspeedtech.com>
+> ---
+>  .../devicetree/bindings/mfd/aspeed-lpc.txt    | 157 ---------------
+>  .../devicetree/bindings/mfd/aspeed-lpc.yaml   | 187 ++++++++++++++++++
+>  2 files changed, 187 insertions(+), 157 deletions(-)
+>  delete mode 100644 Documentation/devicetree/bindings/mfd/aspeed-lpc.txt
+>  create mode 100644 Documentation/devicetree/bindings/mfd/aspeed-lpc.yaml
+> 
 
-Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
----
- drivers/iio/adc/aspeed_adc.c | 27 +++++++++++++++++++++++++++
- 1 file changed, 27 insertions(+)
+My bot found errors running 'make DT_CHECKER_FLAGS=-m dt_binding_check'
+on your patch (DT_CHECKER_FLAGS is new in v5.13):
 
-diff --git a/drivers/iio/adc/aspeed_adc.c b/drivers/iio/adc/aspeed_adc.c
-index 3ec4e1a2ddd3..262b5f80c728 100644
---- a/drivers/iio/adc/aspeed_adc.c
-+++ b/drivers/iio/adc/aspeed_adc.c
-@@ -4,6 +4,12 @@
-  *
-  * Copyright (C) 2017 Google, Inc.
-  * Copyright (C) 2021 Aspeed Technology Inc.
-+ *
-+ * ADC clock formula:
-+ * Ast2400/Ast2500:
-+ * clock period = period of PCLK * 2 * (ADC0C[31:17] + 1) * (ADC0C[9:0] + 1)
-+ * Ast2600:
-+ * clock period = period of PCLK * 2 * (ADC0C[15:0] + 1)
-  */
- 
- #include <linux/clk.h>
-@@ -85,6 +91,7 @@ struct aspeed_adc_data {
- 	struct regulator	*regulator;
- 	void __iomem		*base;
- 	spinlock_t		clk_lock;
-+	struct clk_hw		*fixed_div_clk;
- 	struct clk_hw		*clk_prescaler;
- 	struct clk_hw		*clk_scaler;
- 	struct reset_control	*rst;
-@@ -197,6 +204,13 @@ static const struct iio_info aspeed_adc_iio_info = {
- 	.debugfs_reg_access = aspeed_adc_reg_access,
- };
- 
-+static void aspeed_adc_unregister_fixed_divider(void *data)
-+{
-+	struct clk_hw *clk = data;
-+
-+	clk_hw_unregister_fixed_factor(clk);
-+}
-+
- static void aspeed_adc_reset_assert(void *data)
- {
- 	struct reset_control *rst = data;
-@@ -321,6 +335,19 @@ static int aspeed_adc_probe(struct platform_device *pdev)
- 	spin_lock_init(&data->clk_lock);
- 	snprintf(clk_parent_name, ARRAY_SIZE(clk_parent_name), "%s",
- 		 of_clk_get_parent_name(pdev->dev.of_node, 0));
-+	snprintf(clk_name, ARRAY_SIZE(clk_name), "%s-fixed-div",
-+		 data->model_data->model_name);
-+	data->fixed_div_clk = clk_hw_register_fixed_factor(
-+		&pdev->dev, clk_name, clk_parent_name, 0, 1, 2);
-+	if (IS_ERR(data->fixed_div_clk))
-+		return PTR_ERR(data->fixed_div_clk);
-+
-+	ret = devm_add_action_or_reset(data->dev,
-+				       aspeed_adc_unregister_fixed_divider,
-+				       data->clk_prescaler);
-+	if (ret)
-+		return ret;
-+	snprintf(clk_parent_name, ARRAY_SIZE(clk_parent_name), clk_name);
- 
- 	if (data->model_data->need_prescaler) {
- 		snprintf(clk_name, ARRAY_SIZE(clk_name), "%s-prescaler",
--- 
-2.25.1
+yamllint warnings/errors:
+
+dtschema/dtc warnings/errors:
+Documentation/devicetree/bindings/mfd/aspeed-lpc.example.dts:30.35-36.15: Warning (unique_unit_address): /example-0/lpc at 1e789000/lpc-ctrl at 80: duplicate unit-address (also used in node /example-0/lpc at 1e789000/lpc-snoop at 80)
+Documentation/devicetree/bindings/mfd/aspeed-lpc.example.dt.yaml:0:0: /example-0/lpc at 1e789000/lpc-ctrl at 80: failed to match any schema with compatible: ['aspeed,ast2600-lpc-ctrl']
+Documentation/devicetree/bindings/mfd/aspeed-lpc.example.dt.yaml:0:0: /example-0/lpc at 1e789000/reset-controller at 98: failed to match any schema with compatible: ['aspeed,ast2600-lpc-reset']
+Documentation/devicetree/bindings/mfd/aspeed-lpc.example.dt.yaml:0:0: /example-0/lpc at 1e789000/lpc-snoop at 80: failed to match any schema with compatible: ['aspeed,ast2600-lpc-snoop']
+
+doc reference errors (make refcheckdocs):
+
+See https://patchwork.ozlabs.org/patch/1527193
+
+This check can fail if there are any dependencies. The base for a patch
+series is generally the most recent rc1.
+
+If you already ran 'make dt_binding_check' and didn't see the above
+error(s), then make sure 'yamllint' is installed and dt-schema is up to
+date:
+
+pip3 install dtschema --upgrade
+
+Please check and re-submit.
 
