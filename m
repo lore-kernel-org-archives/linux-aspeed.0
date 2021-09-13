@@ -1,73 +1,206 @@
 From: Billy Tsai <billy_tsai@aspeedtech.com>
-Date: Mon, 13 Sep 2021 15:53:29 +0800
-Subject: [v6 03/11] iio: adc: aspeed: Add vref config function
+Date: Mon, 13 Sep 2021 15:53:31 +0800
+Subject: [v6 05/11] iio: adc: aspeed: Use devm_add_action_or_reset.
 In-Reply-To: <20210913075337.19991-1-billy_tsai@aspeedtech.com>
 References: <20210913075337.19991-1-billy_tsai@aspeedtech.com>
-Message-ID: <20210913075337.19991-4-billy_tsai@aspeedtech.com>
+Message-ID: <20210913075337.19991-6-billy_tsai@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add the function to check the vref_fixed_mv and set the value to driver
-data.
+This patch use devm_add_action_or_reset to handle the error in probe
+phase.
 
 Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
 ---
- drivers/iio/adc/aspeed_adc.c | 18 +++++++++++++++++-
- 1 file changed, 17 insertions(+), 1 deletion(-)
+ drivers/iio/adc/aspeed_adc.c | 113 +++++++++++++++++------------------
+ 1 file changed, 55 insertions(+), 58 deletions(-)
 
 diff --git a/drivers/iio/adc/aspeed_adc.c b/drivers/iio/adc/aspeed_adc.c
-index cc808ec89a0f..aec335956310 100644
+index e53d1541ad1d..0a18893c47f0 100644
 --- a/drivers/iio/adc/aspeed_adc.c
 +++ b/drivers/iio/adc/aspeed_adc.c
-@@ -130,7 +130,7 @@ static int aspeed_adc_read_raw(struct iio_dev *indio_dev,
- 		return IIO_VAL_INT;
- 
- 	case IIO_CHAN_INFO_SCALE:
--		*val = data->model_data->vref_fixed_mv;
-+		*val = data->vref_mv;
- 		*val2 = ASPEED_RESOLUTION_BITS;
- 		return IIO_VAL_FRACTIONAL_LOG2;
- 
-@@ -195,6 +195,17 @@ static const struct iio_info aspeed_adc_iio_info = {
+@@ -195,6 +195,28 @@ static const struct iio_info aspeed_adc_iio_info = {
  	.debugfs_reg_access = aspeed_adc_reg_access,
  };
  
-+static int aspeed_adc_vref_config(struct iio_dev *indio_dev)
++static void aspeed_adc_reset_assert(void *data)
 +{
-+	struct aspeed_adc_data *data = iio_priv(indio_dev);
++	struct reset_control *rst = data;
 +
-+	if (data->model_data->vref_fixed_mv) {
-+		data->vref_mv = data->model_data->vref_fixed_mv;
-+		return 0;
-+	}
-+	return 0;
++	reset_control_assert(rst);
 +}
 +
- static int aspeed_adc_probe(struct platform_device *pdev)
++static void aspeed_adc_clk_disable_unprepare(void *data)
++{
++	struct clk *clk = data;
++
++	clk_disable_unprepare(clk);
++}
++
++static void aspeed_adc_power_down(void *data)
++{
++	struct aspeed_adc_data *priv_data = data;
++
++	writel(FIELD_PREP(ASPEED_ADC_OP_MODE, ASPEED_ADC_OP_MODE_PWR_DOWN),
++	       priv_data->base + ASPEED_REG_ENGINE_CONTROL);
++}
++
+ static int aspeed_adc_vref_config(struct iio_dev *indio_dev)
  {
- 	struct iio_dev *indio_dev;
-@@ -250,6 +261,10 @@ static int aspeed_adc_probe(struct platform_device *pdev)
+ 	struct aspeed_adc_data *data = iio_priv(indio_dev);
+@@ -236,7 +258,7 @@ static int aspeed_adc_probe(struct platform_device *pdev)
+ 	if (data->model_data->need_prescaler) {
+ 		snprintf(clk_name, ARRAY_SIZE(clk_name), "%s-prescaler",
+ 			 data->model_data->model_name);
+-		data->clk_prescaler = clk_hw_register_divider(
++		data->clk_prescaler = devm_clk_hw_register_divider(
+ 			&pdev->dev, clk_name, clk_parent_name, 0,
+ 			data->base + ASPEED_REG_CLOCK_CONTROL, 17, 15, 0,
+ 			&data->clk_lock);
+@@ -252,35 +274,41 @@ static int aspeed_adc_probe(struct platform_device *pdev)
+ 	 */
+ 	snprintf(clk_name, ARRAY_SIZE(clk_name), "%s-scaler",
+ 		 data->model_data->model_name);
+-	data->clk_scaler = clk_hw_register_divider(
++	data->clk_scaler = devm_clk_hw_register_divider(
+ 		&pdev->dev, clk_name, clk_parent_name, scaler_flags,
+ 		data->base + ASPEED_REG_CLOCK_CONTROL, 0,
+ 		data->model_data->scaler_bit_width, 0, &data->clk_lock);
+-	if (IS_ERR(data->clk_scaler)) {
+-		ret = PTR_ERR(data->clk_scaler);
+-		goto scaler_error;
+-	}
++	if (IS_ERR(data->clk_scaler))
++		return PTR_ERR(data->clk_scaler);
+ 
+ 	data->rst = devm_reset_control_get_exclusive(&pdev->dev, NULL);
+ 	if (IS_ERR(data->rst)) {
+ 		dev_err(&pdev->dev,
+ 			"invalid or missing reset controller device tree entry");
+-		ret = PTR_ERR(data->rst);
+-		goto reset_error;
++		return PTR_ERR(data->rst);
  	}
  	reset_control_deassert(data->rst);
  
-+	ret = aspeed_adc_vref_config(indio_dev);
++	ret = devm_add_action_or_reset(data->dev, aspeed_adc_reset_assert,
++				       data->rst);
 +	if (ret)
-+		goto vref_config_error;
++		return ret;
 +
- 	if (data->model_data->wait_init_sequence) {
- 		/* Enable engine in normal mode. */
- 		writel(FIELD_PREP(ASPEED_ADC_OP_MODE,
-@@ -298,6 +313,7 @@ static int aspeed_adc_probe(struct platform_device *pdev)
- 	clk_disable_unprepare(data->clk_scaler->clk);
- clk_enable_error:
- poll_timeout_error:
-+vref_config_error:
- 	reset_control_assert(data->rst);
- reset_error:
- 	clk_hw_unregister_divider(data->clk_scaler);
+ 	ret = aspeed_adc_vref_config(indio_dev);
+ 	if (ret)
+-		goto vref_config_error;
++		return ret;
+ 
+-	if (data->model_data->wait_init_sequence) {
+-		/* Enable engine in normal mode. */
+-		writel(FIELD_PREP(ASPEED_ADC_OP_MODE,
+-				  ASPEED_ADC_OP_MODE_NORMAL) |
+-			       ASPEED_ADC_ENGINE_ENABLE,
+-		       data->base + ASPEED_REG_ENGINE_CONTROL);
++	/* Enable engine in normal mode. */
++	writel(FIELD_PREP(ASPEED_ADC_OP_MODE, ASPEED_ADC_OP_MODE_NORMAL) |
++		       ASPEED_ADC_ENGINE_ENABLE,
++	       data->base + ASPEED_REG_ENGINE_CONTROL);
++
++	ret = devm_add_action_or_reset(data->dev, aspeed_adc_power_down,
++					data);
++	if (ret)
++		return ret;
+ 
++	if (data->model_data->wait_init_sequence) {
+ 		/* Wait for initial sequence complete. */
+ 		ret = readl_poll_timeout(data->base + ASPEED_REG_ENGINE_CONTROL,
+ 					 adc_engine_control_reg_val,
+@@ -289,18 +317,23 @@ static int aspeed_adc_probe(struct platform_device *pdev)
+ 					 ASPEED_ADC_INIT_POLLING_TIME,
+ 					 ASPEED_ADC_INIT_TIMEOUT);
+ 		if (ret)
+-			goto poll_timeout_error;
++			return ret;
+ 	}
+ 
+-	/* Start all channels in normal mode. */
+ 	ret = clk_prepare_enable(data->clk_scaler->clk);
+ 	if (ret)
+-		goto clk_enable_error;
++		return ret;
+ 
++	ret = devm_add_action_or_reset(data->dev,
++				       aspeed_adc_clk_disable_unprepare,
++				       data->clk_scaler->clk);
++	if (ret)
++		return ret;
++
++	/* Start all channels in normal mode. */
+ 	adc_engine_control_reg_val =
+-		ASPEED_ADC_CTRL_CHANNEL |
+-		FIELD_PREP(ASPEED_ADC_OP_MODE, ASPEED_ADC_OP_MODE_NORMAL) |
+-		ASPEED_ADC_ENGINE_ENABLE;
++		readl(data->base + ASPEED_REG_ENGINE_CONTROL);
++	adc_engine_control_reg_val |= ASPEED_ADC_CTRL_CHANNEL;
+ 	writel(adc_engine_control_reg_val,
+ 	       data->base + ASPEED_REG_ENGINE_CONTROL);
+ 
+@@ -310,45 +343,10 @@ static int aspeed_adc_probe(struct platform_device *pdev)
+ 	indio_dev->channels = aspeed_adc_iio_channels;
+ 	indio_dev->num_channels = data->model_data->num_channels;
+ 
+-	ret = iio_device_register(indio_dev);
+-	if (ret)
+-		goto iio_register_error;
+-
+-	return 0;
+-
+-iio_register_error:
+-	writel(FIELD_PREP(ASPEED_ADC_OP_MODE, ASPEED_ADC_OP_MODE_PWR_DOWN),
+-	       data->base + ASPEED_REG_ENGINE_CONTROL);
+-	clk_disable_unprepare(data->clk_scaler->clk);
+-clk_enable_error:
+-poll_timeout_error:
+-vref_config_error:
+-	reset_control_assert(data->rst);
+-reset_error:
+-	clk_hw_unregister_divider(data->clk_scaler);
+-scaler_error:
+-	if (data->model_data->need_prescaler)
+-		clk_hw_unregister_divider(data->clk_prescaler);
++	ret = devm_iio_device_register(data->dev, indio_dev);
+ 	return ret;
+ }
+ 
+-static int aspeed_adc_remove(struct platform_device *pdev)
+-{
+-	struct iio_dev *indio_dev = platform_get_drvdata(pdev);
+-	struct aspeed_adc_data *data = iio_priv(indio_dev);
+-
+-	iio_device_unregister(indio_dev);
+-	writel(FIELD_PREP(ASPEED_ADC_OP_MODE, ASPEED_ADC_OP_MODE_PWR_DOWN),
+-	       data->base + ASPEED_REG_ENGINE_CONTROL);
+-	clk_disable_unprepare(data->clk_scaler->clk);
+-	reset_control_assert(data->rst);
+-	clk_hw_unregister_divider(data->clk_scaler);
+-	if (data->model_data->need_prescaler)
+-		clk_hw_unregister_divider(data->clk_prescaler);
+-
+-	return 0;
+-}
+-
+ static const struct aspeed_adc_model_data ast2400_model_data = {
+ 	.model_name = "ast2400-adc",
+ 	.vref_fixed_mv = 2500,
+@@ -379,7 +377,6 @@ MODULE_DEVICE_TABLE(of, aspeed_adc_matches);
+ 
+ static struct platform_driver aspeed_adc_driver = {
+ 	.probe = aspeed_adc_probe,
+-	.remove = aspeed_adc_remove,
+ 	.driver = {
+ 		.name = KBUILD_MODNAME,
+ 		.of_match_table = aspeed_adc_matches,
 -- 
 2.25.1
 
