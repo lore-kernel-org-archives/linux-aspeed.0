@@ -1,77 +1,101 @@
-From: Chia-Wei Wang <chiawei_wang@aspeedtech.com>
-Date: Mon, 13 Sep 2021 14:02:31 +0800
-Subject: [PATCH v4 4/4] ARM: dts: aspeed: Add uart routing to device tree
-In-Reply-To: <20210913060231.15619-1-chiawei_wang@aspeedtech.com>
-References: <20210913060231.15619-1-chiawei_wang@aspeedtech.com>
-Message-ID: <20210913060231.15619-5-chiawei_wang@aspeedtech.com>
+From: Billy Tsai <billy_tsai@aspeedtech.com>
+Date: Mon, 13 Sep 2021 15:53:28 +0800
+Subject: [v6 02/11] iio: adc: aspeed: Restructure the model data
+In-Reply-To: <20210913075337.19991-1-billy_tsai@aspeedtech.com>
+References: <20210913075337.19991-1-billy_tsai@aspeedtech.com>
+Message-ID: <20210913075337.19991-3-billy_tsai@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add LPC uart routing to the device tree for Aspeed SoCs.
+This patch refactors the model data structure to distinguish the
+function form different versions of aspeed ADC.
+- Rename the vref_voltage to vref_fixed_mv and add vref_mv driver data
+When driver probe will check vref_fixed_mv value and store it to vref_mv
+which isn't const value.
+- Add num_channels
+Make num_channles of iio device can be changed by different model_data
+- Add need_prescaler flag and scaler_bit_width
+The need_prescaler flag is used to tell the driver the clock divider needs
+another Prescaler and the scaler_bit_width to set the clock divider
+bitfield width.
 
-Signed-off-by: Oskar Senft <osk@google.com>
-Signed-off-by: Chia-Wei Wang <chiawei_wang@aspeedtech.com>
-Tested-by: Lei YU <yulei.sh@bytedance.com>
+Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
 ---
- arch/arm/boot/dts/aspeed-g4.dtsi | 6 ++++++
- arch/arm/boot/dts/aspeed-g5.dtsi | 6 ++++++
- arch/arm/boot/dts/aspeed-g6.dtsi | 6 ++++++
- 3 files changed, 18 insertions(+)
+ drivers/iio/adc/aspeed_adc.c | 20 +++++++++++++++-----
+ 1 file changed, 15 insertions(+), 5 deletions(-)
 
-diff --git a/arch/arm/boot/dts/aspeed-g4.dtsi b/arch/arm/boot/dts/aspeed-g4.dtsi
-index c5aeb3cf3a09..b313a1cf5f73 100644
---- a/arch/arm/boot/dts/aspeed-g4.dtsi
-+++ b/arch/arm/boot/dts/aspeed-g4.dtsi
-@@ -383,6 +383,12 @@
- 					interrupts = <8>;
- 					status = "disabled";
- 				};
-+
-+				uart_routing: uart-routing at 9c {
-+					compatible = "aspeed,ast2400-uart-routing";
-+					reg = <0x9c 0x4>;
-+					status = "disabled";
-+				};
- 			};
+diff --git a/drivers/iio/adc/aspeed_adc.c b/drivers/iio/adc/aspeed_adc.c
+index 76ae1c3f584b..cc808ec89a0f 100644
+--- a/drivers/iio/adc/aspeed_adc.c
++++ b/drivers/iio/adc/aspeed_adc.c
+@@ -71,8 +71,11 @@ struct aspeed_adc_model_data {
+ 	const char *model_name;
+ 	unsigned int min_sampling_rate;	// Hz
+ 	unsigned int max_sampling_rate;	// Hz
+-	unsigned int vref_voltage;	// mV
++	unsigned int vref_fixed_mv;
+ 	bool wait_init_sequence;
++	bool need_prescaler;
++	u8 scaler_bit_width;
++	unsigned int num_channels;
+ };
  
- 			uart2: serial at 1e78d000 {
-diff --git a/arch/arm/boot/dts/aspeed-g5.dtsi b/arch/arm/boot/dts/aspeed-g5.dtsi
-index 73ca1ec6fc24..c7049454c7cb 100644
---- a/arch/arm/boot/dts/aspeed-g5.dtsi
-+++ b/arch/arm/boot/dts/aspeed-g5.dtsi
-@@ -491,6 +491,12 @@
- 					#reset-cells = <1>;
- 				};
+ struct aspeed_adc_data {
+@@ -83,6 +86,7 @@ struct aspeed_adc_data {
+ 	struct clk_hw		*clk_prescaler;
+ 	struct clk_hw		*clk_scaler;
+ 	struct reset_control	*rst;
++	int			vref_mv;
+ };
  
-+				uart_routing: uart-routing at 9c {
-+					compatible = "aspeed,ast2500-uart-routing";
-+					reg = <0x9c 0x4>;
-+					status = "disabled";
-+				};
-+
- 				lhc: lhc at a0 {
- 					compatible = "aspeed,ast2500-lhc";
- 					reg = <0xa0 0x24 0xc8 0x8>;
-diff --git a/arch/arm/boot/dts/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed-g6.dtsi
-index 1b47be1704f8..cdc59c5d86fe 100644
---- a/arch/arm/boot/dts/aspeed-g6.dtsi
-+++ b/arch/arm/boot/dts/aspeed-g6.dtsi
-@@ -551,6 +551,12 @@
- 					#reset-cells = <1>;
- 				};
+ #define ASPEED_CHAN(_idx, _data_reg_addr) {			\
+@@ -126,7 +130,7 @@ static int aspeed_adc_read_raw(struct iio_dev *indio_dev,
+ 		return IIO_VAL_INT;
  
-+				uart_routing: uart-routing at 98 {
-+					compatible = "aspeed,ast2600-uart-routing";
-+					reg = <0x98 0x8>;
-+					status = "disabled";
-+				};
-+
- 				ibt: ibt at 140 {
- 					compatible = "aspeed,ast2600-ibt-bmc";
- 					reg = <0x140 0x18>;
+ 	case IIO_CHAN_INFO_SCALE:
+-		*val = data->model_data->vref_voltage;
++		*val = data->model_data->vref_fixed_mv;
+ 		*val2 = ASPEED_RESOLUTION_BITS;
+ 		return IIO_VAL_FRACTIONAL_LOG2;
+ 
+@@ -280,7 +284,7 @@ static int aspeed_adc_probe(struct platform_device *pdev)
+ 	indio_dev->info = &aspeed_adc_iio_info;
+ 	indio_dev->modes = INDIO_DIRECT_MODE;
+ 	indio_dev->channels = aspeed_adc_iio_channels;
+-	indio_dev->num_channels = ARRAY_SIZE(aspeed_adc_iio_channels);
++	indio_dev->num_channels = data->model_data->num_channels;
+ 
+ 	ret = iio_device_register(indio_dev);
+ 	if (ret)
+@@ -320,17 +324,23 @@ static int aspeed_adc_remove(struct platform_device *pdev)
+ 
+ static const struct aspeed_adc_model_data ast2400_model_data = {
+ 	.model_name = "ast2400-adc",
+-	.vref_voltage = 2500, // mV
++	.vref_fixed_mv = 2500,
+ 	.min_sampling_rate = 10000,
+ 	.max_sampling_rate = 500000,
++	.need_prescaler = true,
++	.scaler_bit_width = 10,
++	.num_channels = 16,
+ };
+ 
+ static const struct aspeed_adc_model_data ast2500_model_data = {
+ 	.model_name = "ast2500-adc",
+-	.vref_voltage = 1800, // mV
++	.vref_fixed_mv = 1800,
+ 	.min_sampling_rate = 1,
+ 	.max_sampling_rate = 1000000,
+ 	.wait_init_sequence = true,
++	.need_prescaler = true,
++	.scaler_bit_width = 10,
++	.num_channels = 16,
+ };
+ 
+ static const struct of_device_id aspeed_adc_matches[] = {
 -- 
-2.17.1
+2.25.1
 
