@@ -1,155 +1,65 @@
-From: Joel Stanley <joel@jms.id.au>
-Date: Tue, 14 Sep 2021 08:49:11 +0000
-Subject: [PATCH v2] ARM: dts: aspeed: rainier: Add N_MODE_VREF gpio
-In-Reply-To: <20210910195417.2838841-1-anoo@linux.ibm.com>
-References: <20210910195417.2838841-1-anoo@linux.ibm.com>
-Message-ID: <CACPK8XfjF+aiEMLocscMEOw8ebKoT2MK8djvv4voyFOBjumXRg@mail.gmail.com>
+From: George Liu <liuxiwei1013@gmail.com>
+Date: Tue, 14 Sep 2021 16:55:55 +0800
+Subject: [PATCH] ARM: dts: fp5280g2: Enable KCS 3 for MCTP binding
+In-Reply-To: <CACPK8XfbJbU8zPzTri3o+zbSf82iUuGUXmFL5TwsdPHKLnTNTQ@mail.gmail.com>
+References: <20210819055227.140980-1-liuxiwei@inspur.com>
+ <CANFuQ7A5jLXftmfLn_W93MuDF8heL88BPQRL_rkYk+bj0_Db0w@mail.gmail.com>
+ <CACPK8XfbJbU8zPzTri3o+zbSf82iUuGUXmFL5TwsdPHKLnTNTQ@mail.gmail.com>
+Message-ID: <CANFuQ7A6xbM571ds+aq-QUmLxUZ-FUjKukPqGV-irt8X_j=fkw@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, 10 Sept 2021 at 19:54, Adriana Kobylak <anoo@linux.ibm.com> wrote:
->
-> From: Adriana Kobylak <anoo@us.ibm.com>
->
-> The N_MODE_VREF gpio is designed to be used to specify how many power
-> supplies the system should have (2 or 4).  If enough power supplies fail
-> so that the system no longer has redundancy (no longer n+1), the
-> hardware will signal to the Onboard Chip Controller that the system may
-> be oversubscribed, and performance may need to be reduced so the system
-> can maintain it's powered on state. This gpio is on a 9552, populate all
-> the gpios on that chip for completeness.
->
-> Signed-off-by: Adriana Kobylak <anoo@us.ibm.com>
-> ---
->
-> v2: Update commit message.
->
->  arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts | 103 +++++++++++++++++++
->  1 file changed, 103 insertions(+)
->
-> diff --git a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
-> index 6fd3ddf97a21..d5eea86dc260 100644
-> --- a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
-> +++ b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
-> @@ -1502,6 +1502,109 @@ eeprom at 51 {
->                 reg = <0x51>;
->         };
->
-> +       pca_pres3: pca9552 at 60 {
-> +               compatible = "nxp,pca9552";
-> +               reg = <0x60>;
-> +               #address-cells = <1>;
-> +               #size-cells = <0>;
-> +               gpio-controller;
-> +               #gpio-cells = <2>;
-> +
-> +               gpio-line-names =
-> +                       "",
-> +                       "APSS_RESET_N",
-> +                       "", "", "", "",
-> +                       "P10_DCM0_PRES",
-> +                       "P10_DCM1_PRES",
-> +                       "", "",
-> +                       "N_MODE_CPU_N",
-> +                       "",
-> +                       "PRESENT_VRM_DCM0_N",
-> +                       "PRESENT_VRM_DCM1_N",
-> +                       "N_MODE_VREF",
+Thanks!
 
-Should any (all?) of these names be documented?
-
-https://github.com/openbmc/docs/blob/master/designs/device-tree-gpio-naming.md
-
-
-> +                       "";
-> +
-> +               gpio at 0 {
-> +                       reg = <0>;
-> +                       type = <PCA955X_TYPE_GPIO>;
-> +               };
-> +
-> +               gpio at 1 {
-> +                       reg = <1>;
-> +                       type = <PCA955X_TYPE_GPIO>;
-> +               };
-> +
-> +               gpio at 2 {
-> +                       reg = <2>;
-> +                       type = <PCA955X_TYPE_GPIO>;
-> +               };
-> +
-> +               gpio at 3 {
-> +                       reg = <3>;
-> +                       type = <PCA955X_TYPE_GPIO>;
-> +               };
-> +
-> +               gpio at 4 {
-> +                       reg = <4>;
-> +                       type = <PCA955X_TYPE_GPIO>;
-> +               };
-> +
-> +               gpio at 5 {
-> +                       reg = <5>;
-> +                       type = <PCA955X_TYPE_GPIO>;
-> +               };
-> +
-> +               gpio at 6 {
-> +                       reg = <6>;
-> +                       type = <PCA955X_TYPE_GPIO>;
-> +               };
-> +
-> +               gpio at 7 {
-> +                       reg = <7>;
-> +                       type = <PCA955X_TYPE_GPIO>;
-> +               };
-> +
-> +               gpio at 8 {
-> +                       reg = <8>;
-> +                       type = <PCA955X_TYPE_GPIO>;
-> +               };
-> +
-> +               gpio at 9 {
-> +                       reg = <9>;
-> +                       type = <PCA955X_TYPE_GPIO>;
-> +               };
-> +
-> +               gpio at 10 {
-> +                       reg = <10>;
-> +                       type = <PCA955X_TYPE_GPIO>;
-> +               };
-> +
-> +               gpio at 11 {
-> +                       reg = <11>;
-> +                       type = <PCA955X_TYPE_GPIO>;
-> +               };
-> +
-> +               gpio at 12 {
-> +                       reg = <12>;
-> +                       type = <PCA955X_TYPE_GPIO>;
-> +               };
-> +
-> +               gpio at 13 {
-> +                       reg = <13>;
-> +                       type = <PCA955X_TYPE_GPIO>;
-> +               };
-> +
-> +               gpio at 14 {
-> +                       reg = <14>;
-> +                       type = <PCA955X_TYPE_GPIO>;
-> +               };
-> +
-> +               gpio at 15 {
-> +                       reg = <15>;
-> +                       type = <PCA955X_TYPE_GPIO>;
-> +               };
-> +       };
-> +
->         pca_pres2: pca9552 at 61 {
->                 compatible = "nxp,pca9552";
->                 reg = <0x61>;
-> --
-> 2.25.1
+On Tue, Sep 14, 2021 at 4:45 PM Joel Stanley <joel@jms.id.au> wrote:
 >
+> On Tue, 14 Sept 2021 at 08:16, George Liu <liuxiwei1013@gmail.com> wrote:
+> >
+> > Hey Joel:
+> > do you have any comments at this patch?
+> >
+> > Thx -- George Liu
+> >
+> > On Thu, Aug 19, 2021 at 1:52 PM George Liu <liuxiwei1013@gmail.com> wrote:
+> > >
+> > > Signed-off-by: George Liu <liuxiwei@inspur.com>
+>
+> It looks okay to me.
+>
+> Reviewed-by: Joel Stanley <joel@jms.id.au>
+>
+> I have applied it for 5.16.
+>
+> > > ---
+> > >  arch/arm/boot/dts/aspeed-bmc-inspur-fp5280g2.dts | 7 +++++++
+> > >  1 file changed, 7 insertions(+)
+> > >
+> > > diff --git a/arch/arm/boot/dts/aspeed-bmc-inspur-fp5280g2.dts b/arch/arm/boot/dts/aspeed-bmc-inspur-fp5280g2.dts
+> > > index 1752f3250e44..d0c3acbf6c8c 100644
+> > > --- a/arch/arm/boot/dts/aspeed-bmc-inspur-fp5280g2.dts
+> > > +++ b/arch/arm/boot/dts/aspeed-bmc-inspur-fp5280g2.dts
+> > > @@ -3,6 +3,7 @@
+> > >  #include "aspeed-g5.dtsi"
+> > >  #include <dt-bindings/gpio/aspeed-gpio.h>
+> > >  #include <dt-bindings/leds/leds-pca955x.h>
+> > > +#include <dt-bindings/interrupt-controller/irq.h>
+> > >
+> > >  / {
+> > >         model = "FP5280G2 BMC";
+> > > @@ -902,4 +903,10 @@ fan at 7 {
+> > >
+> > >  };
+> > >
+> > > +&kcs3 {
+> > > +       status = "okay";
+> > > +       aspeed,lpc-io-reg = <0xca2>;
+> > > +       aspeed,lpc-interrupts = <11 IRQ_TYPE_LEVEL_LOW>;
+> > > +};
+> > > +
+> > >  #include "ibm-power9-dual.dtsi"
+> > > --
+> > > 2.30.2
+> > >
