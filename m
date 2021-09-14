@@ -1,79 +1,50 @@
-From: ChiaWei Wang <chiawei_wang@aspeedtech.com>
-Date: Tue, 14 Sep 2021 01:33:54 +0000
-Subject: [PATCH v4 1/4] dt-bindings: mfd: aspeed-lpc: Convert to YAML
- schema
-In-Reply-To: <1631535523.196891.444718.nullmailer@robh.at.kernel.org>
-References: <20210913060231.15619-1-chiawei_wang@aspeedtech.com>
- <20210913060231.15619-2-chiawei_wang@aspeedtech.com>
- <1631535523.196891.444718.nullmailer@robh.at.kernel.org>
-Message-ID: <HK0PR06MB377931A31F7A51B443AC3B3291DA9@HK0PR06MB3779.apcprd06.prod.outlook.com>
+From: George Liu <liuxiwei1013@gmail.com>
+Date: Tue, 14 Sep 2021 16:15:14 +0800
+Subject: [PATCH] ARM: dts: fp5280g2: Enable KCS 3 for MCTP binding
+In-Reply-To: <20210819055227.140980-1-liuxiwei@inspur.com>
+References: <20210819055227.140980-1-liuxiwei@inspur.com>
+Message-ID: <CANFuQ7A5jLXftmfLn_W93MuDF8heL88BPQRL_rkYk+bj0_Db0w@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-> From: Rob Herring <robh@kernel.org>
-> Sent: Monday, September 13, 2021 8:19 PM
-> 
-> On Mon, 13 Sep 2021 14:02:28 +0800, Chia-Wei Wang wrote:
-> > Convert the bindings of Aspeed LPC from text file into YAML schema.
-> >
-> > Signed-off-by: Chia-Wei Wang <chiawei_wang@aspeedtech.com>
-> > ---
-> >  .../devicetree/bindings/mfd/aspeed-lpc.txt    | 157 ---------------
-> >  .../devicetree/bindings/mfd/aspeed-lpc.yaml   | 187
-> ++++++++++++++++++
-> >  2 files changed, 187 insertions(+), 157 deletions(-)  delete mode
-> > 100644 Documentation/devicetree/bindings/mfd/aspeed-lpc.txt
-> >  create mode 100644
-> > Documentation/devicetree/bindings/mfd/aspeed-lpc.yaml
-> >
-> 
-> My bot found errors running 'make DT_CHECKER_FLAGS=-m
-> dt_binding_check'
-> on your patch (DT_CHECKER_FLAGS is new in v5.13):
-> 
-> yamllint warnings/errors:
-> 
-> dtschema/dtc warnings/errors:
-> Documentation/devicetree/bindings/mfd/aspeed-lpc.example.dts:30.35-36.15:
-> Warning (unique_unit_address): /example-0/lpc at 1e789000/lpc-ctrl at 80:
-> duplicate unit-address (also used in node
-> /example-0/lpc at 1e789000/lpc-snoop at 80)
-> Documentation/devicetree/bindings/mfd/aspeed-lpc.example.dt.yaml:0:0:
-> /example-0/lpc at 1e789000/lpc-ctrl at 80: failed to match any schema with
-> compatible: ['aspeed,ast2600-lpc-ctrl']
-> Documentation/devicetree/bindings/mfd/aspeed-lpc.example.dt.yaml:0:0:
-> /example-0/lpc at 1e789000/reset-controller at 98: failed to match any schema
-> with compatible: ['aspeed,ast2600-lpc-reset']
-> Documentation/devicetree/bindings/mfd/aspeed-lpc.example.dt.yaml:0:0:
-> /example-0/lpc at 1e789000/lpc-snoop at 80: failed to match any schema with
-> compatible: ['aspeed,ast2600-lpc-snoop']
-> 
+Hey Joel:
+do you have any comments at this patch?
 
-I also encountered this error locally.
-However, I couldn't find the root cause as these three compatible strings have been described in the same YAML file.
-Could you guys help to give me some hints to resolve this issue? Greatly appreciate that.
+Thx -- George Liu
 
-> doc reference errors (make refcheckdocs):
-> 
-> See https://patchwork.ozlabs.org/patch/1527193
-> 
-> This check can fail if there are any dependencies. The base for a patch series is
-> generally the most recent rc1.
-> 
-> If you already ran 'make dt_binding_check' and didn't see the above error(s),
-> then make sure 'yamllint' is installed and dt-schema is up to
-> date:
-> 
-> pip3 install dtschema --upgrade
-> 
-> Please check and re-submit.
-
-My dtschema & yamllint version:
-dtschema-2021.7
-yamllint-1.26.3
-
-Regards,
-Chiawei
+On Thu, Aug 19, 2021 at 1:52 PM George Liu <liuxiwei1013@gmail.com> wrote:
+>
+> Signed-off-by: George Liu <liuxiwei@inspur.com>
+> ---
+>  arch/arm/boot/dts/aspeed-bmc-inspur-fp5280g2.dts | 7 +++++++
+>  1 file changed, 7 insertions(+)
+>
+> diff --git a/arch/arm/boot/dts/aspeed-bmc-inspur-fp5280g2.dts b/arch/arm/boot/dts/aspeed-bmc-inspur-fp5280g2.dts
+> index 1752f3250e44..d0c3acbf6c8c 100644
+> --- a/arch/arm/boot/dts/aspeed-bmc-inspur-fp5280g2.dts
+> +++ b/arch/arm/boot/dts/aspeed-bmc-inspur-fp5280g2.dts
+> @@ -3,6 +3,7 @@
+>  #include "aspeed-g5.dtsi"
+>  #include <dt-bindings/gpio/aspeed-gpio.h>
+>  #include <dt-bindings/leds/leds-pca955x.h>
+> +#include <dt-bindings/interrupt-controller/irq.h>
+>
+>  / {
+>         model = "FP5280G2 BMC";
+> @@ -902,4 +903,10 @@ fan at 7 {
+>
+>  };
+>
+> +&kcs3 {
+> +       status = "okay";
+> +       aspeed,lpc-io-reg = <0xca2>;
+> +       aspeed,lpc-interrupts = <11 IRQ_TYPE_LEVEL_LOW>;
+> +};
+> +
+>  #include "ibm-power9-dual.dtsi"
+> --
+> 2.30.2
+>
