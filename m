@@ -1,77 +1,49 @@
-From: Chia-Wei Wang <chiawei_wang@aspeedtech.com>
-Date: Thu, 16 Sep 2021 17:25:15 +0800
-Subject: [PATCH v5 4/4] ARM: dts: aspeed: Add uart routing to device tree
-In-Reply-To: <20210916092515.10553-1-chiawei_wang@aspeedtech.com>
+From: Rob Herring <robh@kernel.org>
+Date: Thu, 16 Sep 2021 07:21:53 -0500
+Subject: [PATCH v5 1/4] dt-bindings: mfd: aspeed-lpc: Convert to YAML
+ schema
+In-Reply-To: <20210916092515.10553-2-chiawei_wang@aspeedtech.com>
 References: <20210916092515.10553-1-chiawei_wang@aspeedtech.com>
-Message-ID: <20210916092515.10553-5-chiawei_wang@aspeedtech.com>
+ <20210916092515.10553-2-chiawei_wang@aspeedtech.com>
+Message-ID: <1631794913.526068.1119423.nullmailer@robh.at.kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add LPC uart routing to the device tree for Aspeed SoCs.
+On Thu, 16 Sep 2021 17:25:12 +0800, Chia-Wei Wang wrote:
+> Convert the bindings of Aspeed LPC from text file into YAML schema.
+> 
+> Signed-off-by: Chia-Wei Wang <chiawei_wang@aspeedtech.com>
+> ---
+>  .../devicetree/bindings/mfd/aspeed-lpc.txt    | 157 ---------------
+>  .../devicetree/bindings/mfd/aspeed-lpc.yaml   | 187 ++++++++++++++++++
+>  2 files changed, 187 insertions(+), 157 deletions(-)
+>  delete mode 100644 Documentation/devicetree/bindings/mfd/aspeed-lpc.txt
+>  create mode 100644 Documentation/devicetree/bindings/mfd/aspeed-lpc.yaml
+> 
 
-Signed-off-by: Oskar Senft <osk@google.com>
-Signed-off-by: Chia-Wei Wang <chiawei_wang@aspeedtech.com>
-Tested-by: Lei YU <yulei.sh@bytedance.com>
----
- arch/arm/boot/dts/aspeed-g4.dtsi | 6 ++++++
- arch/arm/boot/dts/aspeed-g5.dtsi | 6 ++++++
- arch/arm/boot/dts/aspeed-g6.dtsi | 6 ++++++
- 3 files changed, 18 insertions(+)
+My bot found errors running 'make DT_CHECKER_FLAGS=-m dt_binding_check'
+on your patch (DT_CHECKER_FLAGS is new in v5.13):
 
-diff --git a/arch/arm/boot/dts/aspeed-g4.dtsi b/arch/arm/boot/dts/aspeed-g4.dtsi
-index c5aeb3cf3a09..b313a1cf5f73 100644
---- a/arch/arm/boot/dts/aspeed-g4.dtsi
-+++ b/arch/arm/boot/dts/aspeed-g4.dtsi
-@@ -383,6 +383,12 @@
- 					interrupts = <8>;
- 					status = "disabled";
- 				};
-+
-+				uart_routing: uart-routing at 9c {
-+					compatible = "aspeed,ast2400-uart-routing";
-+					reg = <0x9c 0x4>;
-+					status = "disabled";
-+				};
- 			};
- 
- 			uart2: serial at 1e78d000 {
-diff --git a/arch/arm/boot/dts/aspeed-g5.dtsi b/arch/arm/boot/dts/aspeed-g5.dtsi
-index 73ca1ec6fc24..c7049454c7cb 100644
---- a/arch/arm/boot/dts/aspeed-g5.dtsi
-+++ b/arch/arm/boot/dts/aspeed-g5.dtsi
-@@ -491,6 +491,12 @@
- 					#reset-cells = <1>;
- 				};
- 
-+				uart_routing: uart-routing at 9c {
-+					compatible = "aspeed,ast2500-uart-routing";
-+					reg = <0x9c 0x4>;
-+					status = "disabled";
-+				};
-+
- 				lhc: lhc at a0 {
- 					compatible = "aspeed,ast2500-lhc";
- 					reg = <0xa0 0x24 0xc8 0x8>;
-diff --git a/arch/arm/boot/dts/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed-g6.dtsi
-index 1b47be1704f8..cdc59c5d86fe 100644
---- a/arch/arm/boot/dts/aspeed-g6.dtsi
-+++ b/arch/arm/boot/dts/aspeed-g6.dtsi
-@@ -551,6 +551,12 @@
- 					#reset-cells = <1>;
- 				};
- 
-+				uart_routing: uart-routing at 98 {
-+					compatible = "aspeed,ast2600-uart-routing";
-+					reg = <0x98 0x8>;
-+					status = "disabled";
-+				};
-+
- 				ibt: ibt at 140 {
- 					compatible = "aspeed,ast2600-ibt-bmc";
- 					reg = <0x140 0x18>;
--- 
-2.17.1
+yamllint warnings/errors:
+
+dtschema/dtc warnings/errors:
+Documentation/devicetree/bindings/mfd/aspeed-lpc.example.dt.yaml:0:0: /example-0/lpc at 1e789000/lpc-snoop at 90: failed to match any schema with compatible: ['aspeed,ast2600-lpc-snoop']
+
+doc reference errors (make refcheckdocs):
+
+See https://patchwork.ozlabs.org/patch/1528736
+
+This check can fail if there are any dependencies. The base for a patch
+series is generally the most recent rc1.
+
+If you already ran 'make dt_binding_check' and didn't see the above
+error(s), then make sure 'yamllint' is installed and dt-schema is up to
+date:
+
+pip3 install dtschema --upgrade
+
+Please check and re-submit.
 
