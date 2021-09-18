@@ -1,68 +1,110 @@
 From: Jonathan Cameron <jic23@kernel.org>
-Date: Sat, 18 Sep 2021 18:55:30 +0100
-Subject: [v5 04/15] iio: adc: aspeed: Keep model data to driver data.
-In-Reply-To: <CACPK8Xe4KifkDxm0H6LtpCJZ1n07GLvxR_nF4Cfy5+4WXn9Z6g@mail.gmail.com>
-References: <20210831071458.2334-1-billy_tsai@aspeedtech.com>
- <20210831071458.2334-5-billy_tsai@aspeedtech.com>
- <20210905153339.751732cc@jic23-huawei>
- <20210905155029.3faa2c04@jic23-huawei>
- <CACPK8Xe4KifkDxm0H6LtpCJZ1n07GLvxR_nF4Cfy5+4WXn9Z6g@mail.gmail.com>
-Message-ID: <20210918185530.4f667796@jic23-huawei>
+Date: Sat, 18 Sep 2021 18:57:10 +0100
+Subject: [v6 07/11] iio: adc: aspeed: Fix the calculate error of clock.
+In-Reply-To: <1A7A8472-1AAA-4F51-A9CF-08BF1837F9EB@aspeedtech.com>
+References: <20210913075337.19991-1-billy_tsai@aspeedtech.com>
+ <20210913075337.19991-8-billy_tsai@aspeedtech.com>
+ <1A7A8472-1AAA-4F51-A9CF-08BF1837F9EB@aspeedtech.com>
+Message-ID: <20210918185710.52725301@jic23-huawei>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, 16 Sep 2021 03:52:24 +0000
-Joel Stanley <joel@jms.id.au> wrote:
+On Fri, 17 Sep 2021 01:12:13 +0000
+Billy Tsai <billy_tsai@aspeedtech.com> wrote:
 
-> On Sun, 5 Sept 2021 at 14:47, Jonathan Cameron <jic23@kernel.org> wrote:
-> >
-> > On Sun, 5 Sep 2021 15:33:39 +0100
-> > Jonathan Cameron <jic23@kernel.org> wrote:
-> >  
-> > > On Tue, 31 Aug 2021 15:14:47 +0800
-> > > Billy Tsai <billy_tsai@aspeedtech.com> wrote:
-> > >  
-> > > > Keep the model data pointer to driver data for reducing the usage of
-> > > > of_device_get_match_data().
-> > > >
-> > > > Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>  
-> > > This one starts to be impacted by the fix (as its in the context).
-> > > Rather than making a mess of things for linux-next etc I'll hold
-> > > off on these until that fix is upstream in a few weeks.
-> > >
-> > > If I seem to have lost it (it's been known to happen :( ) then
-> > > feel free to poke me!  
-> >
-> > Having taken another look at the rest of the series (and Philipp's review)
-> > please do a v6 starting from this patch.  
+> On 2021/9/13, 3:51 PM, "Billy Tsai" <billy_tsai@aspeedtech.com> wrote:
 > 
-> I'd recommend against the practice of half applying a series. I have
-> just spent a good chunk of time looking at v6, and wondering why it
-> won't apply to any tags in Linus tree nor to next.
-
-Hi Joel,
-
-In this particular case it may been unwise, but in general it allows me to
-handle a higher volume of patches than would otherwise be possible.
-There are of course other approaches, but this one works well for me.
-I did express to what tree and branch these were being applied
-+ exposed for build tests.
-
+>     > The ADC clock formula is
+>     > ast2400/2500:
+>     > ADC clock period = PCLK * 2 * (ADC0C[31:17] + 1) * (ADC0C[9:0] + 1)
+>     > ast2600:
+>     > ADC clock period = PCLK * 2 * (ADC0C[15:0] + 1)
+>     > They all have one fixed divided 2 and the legacy driver didn't handle it.
+>     > This patch register the fixed factory clock device as the parent of ADC
+>     > clock scaler to fix this issue.  
 > 
-> (It was made worse by the branch you applied them to not being part of
-> linux-next.)
+>     > Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
+>     > ---
+>     >  drivers/iio/adc/aspeed_adc.c | 27 +++++++++++++++++++++++++++
+>     >  1 file changed, 27 insertions(+)  
+> 
+>     > diff --git a/drivers/iio/adc/aspeed_adc.c b/drivers/iio/adc/aspeed_adc.c
+>     > index 3ec4e1a2ddd3..262b5f80c728 100644
+>     > --- a/drivers/iio/adc/aspeed_adc.c
+>     > +++ b/drivers/iio/adc/aspeed_adc.c
+>     > @@ -4,6 +4,12 @@
+>     >   *
+>     >   * Copyright (C) 2017 Google, Inc.
+>     >   * Copyright (C) 2021 Aspeed Technology Inc.
+>     > + *
+>     > + * ADC clock formula:
+>     > + * Ast2400/Ast2500:
+>     > + * clock period = period of PCLK * 2 * (ADC0C[31:17] + 1) * (ADC0C[9:0] + 1)
+>     > + * Ast2600:
+>     > + * clock period = period of PCLK * 2 * (ADC0C[15:0] + 1)
+>     >   */  
+> 
+>     >  #include <linux/clk.h>
+>     > @@ -85,6 +91,7 @@ struct aspeed_adc_data {
+>     >  	struct regulator	*regulator;
+>     >  	void __iomem		*base;
+>     >  	spinlock_t		clk_lock;
+>     > +	struct clk_hw		*fixed_div_clk;
+>     >  	struct clk_hw		*clk_prescaler;
+>     >  	struct clk_hw		*clk_scaler;
+>     >  	struct reset_control	*rst;
+>     > @@ -197,6 +204,13 @@ static const struct iio_info aspeed_adc_iio_info = {
+>     >  	.debugfs_reg_access = aspeed_adc_reg_access,
+>     >  };  
+>  
+>     > +static void aspeed_adc_unregister_fixed_divider(void *data)
+>     > +{
+>     > +	struct clk_hw *clk = data;
+>     > +
+>     > +	clk_hw_unregister_fixed_factor(clk);
+>     > +}
+>     > +
+>     >  static void aspeed_adc_reset_assert(void *data)
+>     >  {
+>     >  	struct reset_control *rst = data;
+>     > @@ -321,6 +335,19 @@ static int aspeed_adc_probe(struct platform_device *pdev)
+>     >  	spin_lock_init(&data->clk_lock);
+>     >  	snprintf(clk_parent_name, ARRAY_SIZE(clk_parent_name), "%s",
+>     >  		 of_clk_get_parent_name(pdev->dev.of_node, 0));
+>     > +	snprintf(clk_name, ARRAY_SIZE(clk_name), "%s-fixed-div",
+>     > +		 data->model_data->model_name);
+>     > +	data->fixed_div_clk = clk_hw_register_fixed_factor(
+>     > +		&pdev->dev, clk_name, clk_parent_name, 0, 1, 2);
+>     > +	if (IS_ERR(data->fixed_div_clk))
+>     > +		return PTR_ERR(data->fixed_div_clk);
+>     > +
+>     > +	ret = devm_add_action_or_reset(data->dev,
+>     > +				       aspeed_adc_unregister_fixed_divider,
+>     > +				       data->clk_prescaler);  
+> 
+> I found that the parameter aspeed_adc_unregister_fixed_divider is wrong.
+> I will send patch v7 after the other patches are reviewed.
 
-It will be shortly. That was just unfortunate timing because of the end of the
-merge window and a some issues that 0-day found in other patches in the tree
-that needed to be fixed up before making a mess in next.
+I took another look at the series and I'm happy with all of them so will
+(almost certainly) pick them up at v7 unless other reviews come in.
+
+Thanks,
 
 Jonathan
 
 > 
-> Cheers,
+> Thanks
 > 
-> Joel
+>     > +	if (ret)
+>     > +		return ret;
+>     > +	snprintf(clk_parent_name, ARRAY_SIZE(clk_parent_name), clk_name);  
+> 
+>     >  	if (data->model_data->need_prescaler) {
+>     >  		snprintf(clk_name, ARRAY_SIZE(clk_name), "%s-prescaler",
+>     > -- 
+>     > 2.25.1  
+> 
 
