@@ -1,110 +1,57 @@
-From: Jonathan Cameron <jic23@kernel.org>
-Date: Sat, 18 Sep 2021 18:57:10 +0100
-Subject: [v6 07/11] iio: adc: aspeed: Fix the calculate error of clock.
-In-Reply-To: <1A7A8472-1AAA-4F51-A9CF-08BF1837F9EB@aspeedtech.com>
-References: <20210913075337.19991-1-billy_tsai@aspeedtech.com>
- <20210913075337.19991-8-billy_tsai@aspeedtech.com>
- <1A7A8472-1AAA-4F51-A9CF-08BF1837F9EB@aspeedtech.com>
-Message-ID: <20210918185710.52725301@jic23-huawei>
+From: Andrew Jeffery <andrew@aj.id.au>
+Date: Tue, 21 Sep 2021 14:09:34 +0930
+Subject: [PATCH 0/2] leds: pca955x: Expose GPIOs for all pins
+Message-ID: <20210921043936.468001-1-andrew@aj.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, 17 Sep 2021 01:12:13 +0000
-Billy Tsai <billy_tsai@aspeedtech.com> wrote:
+Hello,
 
-> On 2021/9/13, 3:51 PM, "Billy Tsai" <billy_tsai@aspeedtech.com> wrote:
-> 
->     > The ADC clock formula is
->     > ast2400/2500:
->     > ADC clock period = PCLK * 2 * (ADC0C[31:17] + 1) * (ADC0C[9:0] + 1)
->     > ast2600:
->     > ADC clock period = PCLK * 2 * (ADC0C[15:0] + 1)
->     > They all have one fixed divided 2 and the legacy driver didn't handle it.
->     > This patch register the fixed factory clock device as the parent of ADC
->     > clock scaler to fix this issue.  
-> 
->     > Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
->     > ---
->     >  drivers/iio/adc/aspeed_adc.c | 27 +++++++++++++++++++++++++++
->     >  1 file changed, 27 insertions(+)  
-> 
->     > diff --git a/drivers/iio/adc/aspeed_adc.c b/drivers/iio/adc/aspeed_adc.c
->     > index 3ec4e1a2ddd3..262b5f80c728 100644
->     > --- a/drivers/iio/adc/aspeed_adc.c
->     > +++ b/drivers/iio/adc/aspeed_adc.c
->     > @@ -4,6 +4,12 @@
->     >   *
->     >   * Copyright (C) 2017 Google, Inc.
->     >   * Copyright (C) 2021 Aspeed Technology Inc.
->     > + *
->     > + * ADC clock formula:
->     > + * Ast2400/Ast2500:
->     > + * clock period = period of PCLK * 2 * (ADC0C[31:17] + 1) * (ADC0C[9:0] + 1)
->     > + * Ast2600:
->     > + * clock period = period of PCLK * 2 * (ADC0C[15:0] + 1)
->     >   */  
-> 
->     >  #include <linux/clk.h>
->     > @@ -85,6 +91,7 @@ struct aspeed_adc_data {
->     >  	struct regulator	*regulator;
->     >  	void __iomem		*base;
->     >  	spinlock_t		clk_lock;
->     > +	struct clk_hw		*fixed_div_clk;
->     >  	struct clk_hw		*clk_prescaler;
->     >  	struct clk_hw		*clk_scaler;
->     >  	struct reset_control	*rst;
->     > @@ -197,6 +204,13 @@ static const struct iio_info aspeed_adc_iio_info = {
->     >  	.debugfs_reg_access = aspeed_adc_reg_access,
->     >  };  
->  
->     > +static void aspeed_adc_unregister_fixed_divider(void *data)
->     > +{
->     > +	struct clk_hw *clk = data;
->     > +
->     > +	clk_hw_unregister_fixed_factor(clk);
->     > +}
->     > +
->     >  static void aspeed_adc_reset_assert(void *data)
->     >  {
->     >  	struct reset_control *rst = data;
->     > @@ -321,6 +335,19 @@ static int aspeed_adc_probe(struct platform_device *pdev)
->     >  	spin_lock_init(&data->clk_lock);
->     >  	snprintf(clk_parent_name, ARRAY_SIZE(clk_parent_name), "%s",
->     >  		 of_clk_get_parent_name(pdev->dev.of_node, 0));
->     > +	snprintf(clk_name, ARRAY_SIZE(clk_name), "%s-fixed-div",
->     > +		 data->model_data->model_name);
->     > +	data->fixed_div_clk = clk_hw_register_fixed_factor(
->     > +		&pdev->dev, clk_name, clk_parent_name, 0, 1, 2);
->     > +	if (IS_ERR(data->fixed_div_clk))
->     > +		return PTR_ERR(data->fixed_div_clk);
->     > +
->     > +	ret = devm_add_action_or_reset(data->dev,
->     > +				       aspeed_adc_unregister_fixed_divider,
->     > +				       data->clk_prescaler);  
-> 
-> I found that the parameter aspeed_adc_unregister_fixed_divider is wrong.
-> I will send patch v7 after the other patches are reviewed.
+This is a rework of a Rube Goldberg-inspired RFC I posted previously:
 
-I took another look at the series and I'm happy with all of them so will
-(almost certainly) pick them up at v7 unless other reviews come in.
+https://lore.kernel.org/lkml/20210723075858.376378-1-andrew at aj.id.au/
 
-Thanks,
+This time around there's a lot less Rube - the series:
 
-Jonathan
+1. Contains no (ab)use of pinctrl
+2. Always exposes all pins as GPIOs
+3. Internally tracks the active pins
 
-> 
-> Thanks
-> 
->     > +	if (ret)
->     > +		return ret;
->     > +	snprintf(clk_parent_name, ARRAY_SIZE(clk_parent_name), clk_name);  
-> 
->     >  	if (data->model_data->need_prescaler) {
->     >  		snprintf(clk_name, ARRAY_SIZE(clk_name), "%s-prescaler",
->     > -- 
->     > 2.25.1  
-> 
+Without these patches the driver limits the number of pins exposed on
+the gpiochip to the number of pins specified as GPIO in the devicetree,
+but doesn't map between the GPIO and pin number spaces. The result is
+that specifying offset or interleaved GPIOs in the devicetree gives
+unexpected behaviour in userspace.
+
+By always exposing all pins as GPIOs the patches resolve the lack of
+mapping between GPIO offsets and pins on the package in the driver by
+ensuring we always have a 1-to-1 mapping.
+
+The issue is primarily addressed by patch 1/2. Patch 2/2 makes it
+possible to not expose any pins as LEDs (and therefore make them all
+accessible as GPIOs). This has a follow-on effect of allowing the driver
+to bind to a device instantiated at runtime without requiring a
+description in the devicetree.
+
+I've tested the series under qemu to inspect the various interactions
+between LEDs vs GPIOs as well as conflicting GPIO requests.
+
+Please review!
+
+Andrew
+
+Andrew Jeffery (2):
+  leds: pca955x: Make the gpiochip always expose all pins
+  leds: pca955x: Allow zero LEDs to be specified
+
+ drivers/leds/leds-pca955x.c | 65 +++++++++++++++++++------------------
+ 1 file changed, 34 insertions(+), 31 deletions(-)
+
+
+base-commit: 239f32b4f161c1584cd4b386d6ab8766432a6ede
+-- 
+2.30.2
 
