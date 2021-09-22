@@ -1,58 +1,77 @@
 From: Chia-Wei Wang <chiawei_wang@aspeedtech.com>
-Date: Wed, 22 Sep 2021 15:32:37 +0800
-Subject: [PATCH v6 0/4] arm: aspeed: Add UART routing support
-Message-ID: <20210922073241.14119-1-chiawei_wang@aspeedtech.com>
+Date: Wed, 22 Sep 2021 15:32:41 +0800
+Subject: [PATCH v6 4/4] ARM: dts: aspeed: Add uart routing to device tree
+In-Reply-To: <20210922073241.14119-1-chiawei_wang@aspeedtech.com>
+References: <20210922073241.14119-1-chiawei_wang@aspeedtech.com>
+Message-ID: <20210922073241.14119-5-chiawei_wang@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add UART routing driver and the device tree nodes.
+Add LPC uart routing to the device tree for Aspeed SoCs.
 
-v6:
- - Fix another typo in YAML file
- - Move sysfs description from bindings to ABI document
+Signed-off-by: Oskar Senft <osk@google.com>
+Signed-off-by: Chia-Wei Wang <chiawei_wang@aspeedtech.com>
+Tested-by: Lei YU <yulei.sh@bytedance.com>
+---
+ arch/arm/boot/dts/aspeed-g4.dtsi | 6 ++++++
+ arch/arm/boot/dts/aspeed-g5.dtsi | 6 ++++++
+ arch/arm/boot/dts/aspeed-g6.dtsi | 6 ++++++
+ 3 files changed, 18 insertions(+)
 
-v5:
- - Fix typo in YAML file to solve the compatible string not found error
-
-v4:
- - Convert aspeed-lpc bindings to YAML schema to resolve dependecy issues
-
-v3:
- - Add individual bindings in YAML
- - Add support for AST24xx (AST25xx shares the same design)
- - Add more explanation for the sysfs ABI
-
-v2:
- - Add dt-bindings
- - Add ABI documents for the exported sysfs interface
- - Revise driver implementation suggested by Joel
-
-Chia-Wei Wang (4):
-  dt-bindings: mfd: aspeed-lpc: Convert to YAML schema
-  dt-bindings: aspeed: Add UART routing controller
-  soc: aspeed: Add UART routing support
-  ARM: dts: aspeed: Add uart routing to device tree
-
- .../testing/sysfs-driver-aspeed-uart-routing  |  27 +
- .../devicetree/bindings/mfd/aspeed-lpc.txt    | 157 -----
- .../devicetree/bindings/mfd/aspeed-lpc.yaml   | 191 ++++++
- .../bindings/soc/aspeed/uart-routing.yaml     |  56 ++
- arch/arm/boot/dts/aspeed-g4.dtsi              |   6 +
- arch/arm/boot/dts/aspeed-g5.dtsi              |   6 +
- arch/arm/boot/dts/aspeed-g6.dtsi              |   6 +
- drivers/soc/aspeed/Kconfig                    |  10 +
- drivers/soc/aspeed/Makefile                   |   9 +-
- drivers/soc/aspeed/aspeed-uart-routing.c      | 603 ++++++++++++++++++
- 10 files changed, 910 insertions(+), 161 deletions(-)
- create mode 100644 Documentation/ABI/testing/sysfs-driver-aspeed-uart-routing
- delete mode 100644 Documentation/devicetree/bindings/mfd/aspeed-lpc.txt
- create mode 100644 Documentation/devicetree/bindings/mfd/aspeed-lpc.yaml
- create mode 100644 Documentation/devicetree/bindings/soc/aspeed/uart-routing.yaml
- create mode 100644 drivers/soc/aspeed/aspeed-uart-routing.c
-
+diff --git a/arch/arm/boot/dts/aspeed-g4.dtsi b/arch/arm/boot/dts/aspeed-g4.dtsi
+index c5aeb3cf3a09..b313a1cf5f73 100644
+--- a/arch/arm/boot/dts/aspeed-g4.dtsi
++++ b/arch/arm/boot/dts/aspeed-g4.dtsi
+@@ -383,6 +383,12 @@
+ 					interrupts = <8>;
+ 					status = "disabled";
+ 				};
++
++				uart_routing: uart-routing at 9c {
++					compatible = "aspeed,ast2400-uart-routing";
++					reg = <0x9c 0x4>;
++					status = "disabled";
++				};
+ 			};
+ 
+ 			uart2: serial at 1e78d000 {
+diff --git a/arch/arm/boot/dts/aspeed-g5.dtsi b/arch/arm/boot/dts/aspeed-g5.dtsi
+index 73ca1ec6fc24..c7049454c7cb 100644
+--- a/arch/arm/boot/dts/aspeed-g5.dtsi
++++ b/arch/arm/boot/dts/aspeed-g5.dtsi
+@@ -491,6 +491,12 @@
+ 					#reset-cells = <1>;
+ 				};
+ 
++				uart_routing: uart-routing at 9c {
++					compatible = "aspeed,ast2500-uart-routing";
++					reg = <0x9c 0x4>;
++					status = "disabled";
++				};
++
+ 				lhc: lhc at a0 {
+ 					compatible = "aspeed,ast2500-lhc";
+ 					reg = <0xa0 0x24 0xc8 0x8>;
+diff --git a/arch/arm/boot/dts/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed-g6.dtsi
+index 1b47be1704f8..cdc59c5d86fe 100644
+--- a/arch/arm/boot/dts/aspeed-g6.dtsi
++++ b/arch/arm/boot/dts/aspeed-g6.dtsi
+@@ -551,6 +551,12 @@
+ 					#reset-cells = <1>;
+ 				};
+ 
++				uart_routing: uart-routing at 98 {
++					compatible = "aspeed,ast2600-uart-routing";
++					reg = <0x98 0x8>;
++					status = "disabled";
++				};
++
+ 				ibt: ibt at 140 {
+ 					compatible = "aspeed,ast2600-ibt-bmc";
+ 					reg = <0x140 0x18>;
 -- 
 2.17.1
 
