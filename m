@@ -1,131 +1,165 @@
 From: Billy Tsai <billy_tsai@aspeedtech.com>
-Date: Wed, 22 Sep 2021 16:15:17 +0800
-Subject: [v7 08/11] iio: adc: aspeed: Add func to set sampling rate.
+Date: Wed, 22 Sep 2021 16:15:20 +0800
+Subject: [v7 11/11] iio: adc: aspeed: Get and set trimming data.
 In-Reply-To: <20210922081520.30580-1-billy_tsai@aspeedtech.com>
 References: <20210922081520.30580-1-billy_tsai@aspeedtech.com>
-Message-ID: <20210922081520.30580-9-billy_tsai@aspeedtech.com>
+Message-ID: <20210922081520.30580-12-billy_tsai@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add the function to set the sampling rate and keep the sampling period
-for a driver used to wait the fresh value.
-In addition, since the ADC clock is required when initializing the ADC
-device, move clk_prepare_enable ahead of the initialization phase.
+The ADC controller has a trimming register for fine-tune the reference
+voltage. The trimming value comes from the OTP register which will be
+written during chip production. This patch will read this OTP value and
+configure it to the ADC register when the ADC controller probes and using
+dts property "aspeed,trim-data-valid" to determine whether to execute this
+flow.
 
 Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
 ---
- drivers/iio/adc/aspeed_adc.c | 58 ++++++++++++++++++++++++------------
- 1 file changed, 39 insertions(+), 19 deletions(-)
+ drivers/iio/adc/aspeed_adc.c | 71 ++++++++++++++++++++++++++++++++++++
+ 1 file changed, 71 insertions(+)
 
 diff --git a/drivers/iio/adc/aspeed_adc.c b/drivers/iio/adc/aspeed_adc.c
-index a24be2a4f69c..f2226ba3144d 100644
+index e22c59f6c3d0..c7e15c0c1951 100644
 --- a/drivers/iio/adc/aspeed_adc.c
 +++ b/drivers/iio/adc/aspeed_adc.c
-@@ -73,6 +73,12 @@
+@@ -25,6 +25,8 @@
+ #include <linux/spinlock.h>
+ #include <linux/types.h>
+ #include <linux/bitfield.h>
++#include <linux/regmap.h>
++#include <linux/mfd/syscon.h>
  
- #define ASPEED_ADC_INIT_POLLING_TIME	500
- #define ASPEED_ADC_INIT_TIMEOUT		500000
-+/*
-+ * When the sampling rate is too high, the ADC may not have enough charging
-+ * time, resulting in a low voltage value. Thus, the default uses a slow
-+ * sampling rate for most use cases.
-+ */
-+#define ASPEED_ADC_DEF_SAMPLING_RATE	65000
+ #include <linux/iio/iio.h>
+ #include <linux/iio/driver.h>
+@@ -80,6 +82,11 @@
+  */
+ #define ASPEED_ADC_DEF_SAMPLING_RATE	65000
  
++struct aspeed_adc_trim_locate {
++	const unsigned int offset;
++	const unsigned int field;
++};
++
  struct aspeed_adc_model_data {
  	const char *model_name;
-@@ -96,6 +102,7 @@ struct aspeed_adc_data {
- 	struct clk_hw		*clk_scaler;
- 	struct reset_control	*rst;
- 	int			vref_mv;
-+	u32			sample_period_ns;
+ 	unsigned int min_sampling_rate;	// Hz
+@@ -90,6 +97,7 @@ struct aspeed_adc_model_data {
+ 	bool bat_sense_sup;
+ 	u8 scaler_bit_width;
+ 	unsigned int num_channels;
++	const struct aspeed_adc_trim_locate *trim_locate;
  };
  
- #define ASPEED_CHAN(_idx, _data_reg_addr) {			\
-@@ -127,6 +134,24 @@ static const struct iio_chan_spec aspeed_adc_iio_channels[] = {
- 	ASPEED_CHAN(15, 0x2E),
+ struct adc_gain {
+@@ -165,6 +173,44 @@ static const struct iio_chan_spec aspeed_adc_iio_bat_channels[] = {
+ 	ASPEED_BAT_CHAN(7, 0x1E),
  };
  
-+static int aspeed_adc_set_sampling_rate(struct iio_dev *indio_dev, u32 rate)
++static int aspeed_adc_set_trim_data(struct iio_dev *indio_dev)
 +{
++	struct device_node *syscon;
++	struct regmap *scu;
++	u32 scu_otp, trimming_val;
 +	struct aspeed_adc_data *data = iio_priv(indio_dev);
 +
-+	if (rate < data->model_data->min_sampling_rate ||
-+	    rate > data->model_data->max_sampling_rate)
-+		return -EINVAL;
-+	/* Each sampling needs 12 clocks to convert.*/
-+	clk_set_rate(data->clk_scaler->clk, rate * ASPEED_CLOCKS_PER_SAMPLE);
-+	rate = clk_get_rate(data->clk_scaler->clk);
-+	data->sample_period_ns = DIV_ROUND_UP_ULL(
-+		(u64)NSEC_PER_SEC * ASPEED_CLOCKS_PER_SAMPLE, rate);
-+	dev_dbg(data->dev, "Adc clock = %d sample period = %d ns", rate,
-+		data->sample_period_ns);
-+
++	syscon = of_find_node_by_name(NULL, "syscon");
++	if (syscon == NULL) {
++		dev_warn(data->dev, "Couldn't find syscon node\n");
++		return -EOPNOTSUPP;
++	}
++	scu = syscon_node_to_regmap(syscon);
++	if (IS_ERR(scu)) {
++		dev_warn(data->dev, "Failed to get syscon regmap\n");
++		return -EOPNOTSUPP;
++	}
++	if (data->model_data->trim_locate) {
++		if (regmap_read(scu, data->model_data->trim_locate->offset,
++				&scu_otp)) {
++			dev_warn(data->dev,
++				 "Failed to get adc trimming data\n");
++			trimming_val = 0x8;
++		} else {
++			trimming_val =
++				((scu_otp) &
++				 (data->model_data->trim_locate->field)) >>
++				__ffs(data->model_data->trim_locate->field);
++		}
++		dev_dbg(data->dev,
++			"trimming val = %d, offset = %08x, fields = %08x\n",
++			trimming_val, data->model_data->trim_locate->offset,
++			data->model_data->trim_locate->field);
++		writel(trimming_val, data->base + ASPEED_REG_COMPENSATION_TRIM);
++	}
 +	return 0;
 +}
 +
- static int aspeed_adc_read_raw(struct iio_dev *indio_dev,
- 			       struct iio_chan_spec const *chan,
- 			       int *val, int *val2, long mask)
-@@ -157,17 +182,9 @@ static int aspeed_adc_write_raw(struct iio_dev *indio_dev,
- 				struct iio_chan_spec const *chan,
- 				int val, int val2, long mask)
+ static int aspeed_adc_compensation(struct iio_dev *indio_dev)
  {
--	struct aspeed_adc_data *data = iio_priv(indio_dev);
--
- 	switch (mask) {
- 	case IIO_CHAN_INFO_SAMP_FREQ:
--		if (val < data->model_data->min_sampling_rate ||
--			val > data->model_data->max_sampling_rate)
--			return -EINVAL;
--
--		clk_set_rate(data->clk_scaler->clk,
--				val * ASPEED_CLOCKS_PER_SAMPLE);
--		return 0;
-+		return aspeed_adc_set_sampling_rate(indio_dev, val);
- 
- 	case IIO_CHAN_INFO_SCALE:
- 	case IIO_CHAN_INFO_RAW:
-@@ -392,6 +409,19 @@ static int aspeed_adc_probe(struct platform_device *pdev)
+ 	struct aspeed_adc_data *data = iio_priv(indio_dev);
+@@ -514,6 +560,13 @@ static int aspeed_adc_probe(struct platform_device *pdev)
  	if (ret)
  		return ret;
  
-+	ret = clk_prepare_enable(data->clk_scaler->clk);
-+	if (ret)
-+		return ret;
-+	ret = devm_add_action_or_reset(data->dev,
-+				       aspeed_adc_clk_disable_unprepare,
-+				       data->clk_scaler->clk);
-+	if (ret)
-+		return ret;
-+	ret = aspeed_adc_set_sampling_rate(indio_dev,
-+					   ASPEED_ADC_DEF_SAMPLING_RATE);
-+	if (ret)
-+		return ret;
++	if (of_find_property(data->dev->of_node, "aspeed,trim-data-valid",
++			     NULL)) {
++		ret = aspeed_adc_set_trim_data(indio_dev);
++		if (ret)
++			return ret;
++	}
 +
- 	adc_engine_control_reg_val =
- 		readl(data->base + ASPEED_REG_ENGINE_CONTROL);
- 	adc_engine_control_reg_val |=
-@@ -418,16 +448,6 @@ static int aspeed_adc_probe(struct platform_device *pdev)
- 			return ret;
- 	}
+ 	if (of_find_property(data->dev->of_node, "aspeed,battery-sensing",
+ 			     NULL)) {
+ 		if (data->model_data->bat_sense_sup) {
+@@ -590,6 +643,21 @@ static int aspeed_adc_probe(struct platform_device *pdev)
+ 	return ret;
+ }
  
--	ret = clk_prepare_enable(data->clk_scaler->clk);
--	if (ret)
--		return ret;
--
--	ret = devm_add_action_or_reset(data->dev,
--				       aspeed_adc_clk_disable_unprepare,
--				       data->clk_scaler->clk);
--	if (ret)
--		return ret;
--
- 	/* Start all channels in normal mode. */
- 	adc_engine_control_reg_val =
- 		readl(data->base + ASPEED_REG_ENGINE_CONTROL);
++static const struct aspeed_adc_trim_locate ast2500_adc_trim = {
++	.offset = 0x154,
++	.field = GENMASK(31, 28),
++};
++
++static const struct aspeed_adc_trim_locate ast2600_adc0_trim = {
++	.offset = 0x5d0,
++	.field = GENMASK(3, 0),
++};
++
++static const struct aspeed_adc_trim_locate ast2600_adc1_trim = {
++	.offset = 0x5d0,
++	.field = GENMASK(7, 4),
++};
++
+ static const struct aspeed_adc_model_data ast2400_model_data = {
+ 	.model_name = "ast2400-adc",
+ 	.vref_fixed_mv = 2500,
+@@ -609,6 +677,7 @@ static const struct aspeed_adc_model_data ast2500_model_data = {
+ 	.need_prescaler = true,
+ 	.scaler_bit_width = 10,
+ 	.num_channels = 16,
++	.trim_locate = &ast2500_adc_trim,
+ };
+ 
+ static const struct aspeed_adc_model_data ast2600_adc0_model_data = {
+@@ -619,6 +688,7 @@ static const struct aspeed_adc_model_data ast2600_adc0_model_data = {
+ 	.bat_sense_sup = true,
+ 	.scaler_bit_width = 16,
+ 	.num_channels = 8,
++	.trim_locate = &ast2600_adc0_trim,
+ };
+ 
+ static const struct aspeed_adc_model_data ast2600_adc1_model_data = {
+@@ -629,6 +699,7 @@ static const struct aspeed_adc_model_data ast2600_adc1_model_data = {
+ 	.bat_sense_sup = true,
+ 	.scaler_bit_width = 16,
+ 	.num_channels = 8,
++	.trim_locate = &ast2600_adc1_trim,
+ };
+ 
+ static const struct of_device_id aspeed_adc_matches[] = {
 -- 
 2.25.1
 
