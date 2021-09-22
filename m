@@ -1,57 +1,44 @@
 From: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
-Date: Wed, 22 Sep 2021 18:31:08 +0800
-Subject: [PATCH 02/10] sdhci: aspeed: Add SDR50 support
-In-Reply-To: <20210922103116.30652-1-chin-ting_kuo@aspeedtech.com>
-References: <20210922103116.30652-1-chin-ting_kuo@aspeedtech.com>
-Message-ID: <20210922103116.30652-3-chin-ting_kuo@aspeedtech.com>
+Date: Wed, 22 Sep 2021 18:31:06 +0800
+Subject: [PATCH 00/10] ASPEED SD/eMMC controller clock configuration
+Message-ID: <20210922103116.30652-1-chin-ting_kuo@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From the analog waveform analysis result, SD/SDIO controller
-of AST2600 cannot always work well with 200MHz. The upper bound
-stable frequency for SD/SDIO controller is 100MHz. Thus, SDR50
-supported bit, instead of SDR104, in capability 2 register
-should be set in advance.
+This patch series aims to configure SD and eMMC controllers' clock
+frequency and clock phase parameters. The main modification is the
+clock phase calculation method which has been checked with the HW IP
+designer. Also, the clock source detection method is updated for
+AST2600-A2/A3. This patch series has been verified on AST2600-A3 EVB.
 
-Signed-off-by: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
----
- drivers/mmc/host/sdhci-of-aspeed.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
+Chin-Ting Kuo (10):
+  clk: aspeed: ast2600: Porting sdhci clock source
+  sdhci: aspeed: Add SDR50 support
+  dts: aspeed: ast2600: Support SDR50 for SD device
+  mmc: Add invert flag for clock phase signedness
+  mmc: aspeed: Adjust delay taps calculation method
+  arm: dts: aspeed: Change eMMC device compatible
+  arm: dts: aspeed: Adjust clock phase parameter
+  arm: dts: ibm: Adjust clock phase parameter
+  dt-bindings: mmc: aspeed: Add max-tap-delay property
+  dt-bindings: mmc: aspeed: Add a new compatible string
 
-diff --git a/drivers/mmc/host/sdhci-of-aspeed.c b/drivers/mmc/host/sdhci-of-aspeed.c
-index 6e4e132903a6..c6eaeb02e3f9 100644
---- a/drivers/mmc/host/sdhci-of-aspeed.c
-+++ b/drivers/mmc/host/sdhci-of-aspeed.c
-@@ -35,6 +35,8 @@
- #define ASPEED_SDC_CAP1_1_8V           (0 * 32 + 26)
- /* SDIO{14,24} */
- #define ASPEED_SDC_CAP2_SDR104         (1 * 32 + 1)
-+/* SDIO{14,24} */
-+#define ASPEED_SDC_CAP2_SDR50          (1 * 32 + 0)
- 
- struct aspeed_sdc {
- 	struct clk *clk;
-@@ -410,11 +412,17 @@ static int aspeed_sdhci_probe(struct platform_device *pdev)
- 	sdhci_get_of_property(pdev);
- 
- 	if (of_property_read_bool(np, "mmc-hs200-1_8v") ||
-+		of_property_read_bool(np, "sd-uhs-sdr50") ||
- 	    of_property_read_bool(np, "sd-uhs-sdr104")) {
- 		aspeed_sdc_set_slot_capability(host, dev->parent, ASPEED_SDC_CAP1_1_8V,
- 					       true, slot);
- 	}
- 
-+	if (of_property_read_bool(np, "sd-uhs-sdr50")) {
-+		aspeed_sdc_set_slot_capability(host, dev->parent, ASPEED_SDC_CAP2_SDR50,
-+					       true, slot);
-+	}
-+
- 	if (of_property_read_bool(np, "sd-uhs-sdr104")) {
- 		aspeed_sdc_set_slot_capability(host, dev->parent, ASPEED_SDC_CAP2_SDR104,
- 					       true, slot);
+ .../devicetree/bindings/mmc/aspeed,sdhci.yaml |   4 +
+ arch/arm/boot/dts/aspeed-ast2600-evb-a1.dts   |   8 ++
+ arch/arm/boot/dts/aspeed-ast2600-evb.dts      |  11 +-
+ arch/arm/boot/dts/aspeed-bmc-ibm-everest.dts  |   3 +-
+ arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts  |   3 +-
+ arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts   |   3 +-
+ arch/arm/boot/dts/aspeed-g6.dtsi              |   2 +-
+ drivers/clk/clk-ast2600.c                     |  69 ++++++++--
+ drivers/mmc/core/host.c                       |  10 +-
+ drivers/mmc/host/sdhci-of-aspeed.c            | 123 ++++++++++++++----
+ include/linux/mmc/host.h                      |   2 +
+ 11 files changed, 193 insertions(+), 45 deletions(-)
+
 -- 
 2.17.1
 
