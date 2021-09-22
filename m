@@ -1,106 +1,131 @@
 From: Billy Tsai <billy_tsai@aspeedtech.com>
-Date: Wed, 22 Sep 2021 16:15:13 +0800
-Subject: [v7 04/11] iio: adc: aspeed: Use model_data to set clk scaler.
+Date: Wed, 22 Sep 2021 16:15:17 +0800
+Subject: [v7 08/11] iio: adc: aspeed: Add func to set sampling rate.
 In-Reply-To: <20210922081520.30580-1-billy_tsai@aspeedtech.com>
 References: <20210922081520.30580-1-billy_tsai@aspeedtech.com>
-Message-ID: <20210922081520.30580-5-billy_tsai@aspeedtech.com>
+Message-ID: <20210922081520.30580-9-billy_tsai@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This patch uses need_prescaler and scaler_bit_width to set the ADC clock
-scaler.
+Add the function to set the sampling rate and keep the sampling period
+for a driver used to wait the fresh value.
+In addition, since the ADC clock is required when initializing the ADC
+device, move clk_prepare_enable ahead of the initialization phase.
 
-Reported-by: kernel test robot <lkp@intel.com>
 Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
 ---
- drivers/iio/adc/aspeed_adc.c | 43 ++++++++++++++++++++++--------------
- 1 file changed, 27 insertions(+), 16 deletions(-)
+ drivers/iio/adc/aspeed_adc.c | 58 ++++++++++++++++++++++++------------
+ 1 file changed, 39 insertions(+), 19 deletions(-)
 
 diff --git a/drivers/iio/adc/aspeed_adc.c b/drivers/iio/adc/aspeed_adc.c
-index aec335956310..e53d1541ad1d 100644
+index a24be2a4f69c..f2226ba3144d 100644
 --- a/drivers/iio/adc/aspeed_adc.c
 +++ b/drivers/iio/adc/aspeed_adc.c
-@@ -210,9 +210,10 @@ static int aspeed_adc_probe(struct platform_device *pdev)
- {
- 	struct iio_dev *indio_dev;
- 	struct aspeed_adc_data *data;
--	const char *clk_parent_name;
- 	int ret;
- 	u32 adc_engine_control_reg_val;
-+	unsigned long scaler_flags = 0;
-+	char clk_name[32], clk_parent_name[32];
+@@ -73,6 +73,12 @@
  
- 	indio_dev = devm_iio_device_alloc(&pdev->dev, sizeof(*data));
- 	if (!indio_dev)
-@@ -229,24 +230,32 @@ static int aspeed_adc_probe(struct platform_device *pdev)
+ #define ASPEED_ADC_INIT_POLLING_TIME	500
+ #define ASPEED_ADC_INIT_TIMEOUT		500000
++/*
++ * When the sampling rate is too high, the ADC may not have enough charging
++ * time, resulting in a low voltage value. Thus, the default uses a slow
++ * sampling rate for most use cases.
++ */
++#define ASPEED_ADC_DEF_SAMPLING_RATE	65000
  
- 	/* Register ADC clock prescaler with source specified by device tree. */
- 	spin_lock_init(&data->clk_lock);
--	clk_parent_name = of_clk_get_parent_name(pdev->dev.of_node, 0);
--
--	data->clk_prescaler = clk_hw_register_divider(
--				&pdev->dev, "prescaler", clk_parent_name, 0,
--				data->base + ASPEED_REG_CLOCK_CONTROL,
--				17, 15, 0, &data->clk_lock);
--	if (IS_ERR(data->clk_prescaler))
--		return PTR_ERR(data->clk_prescaler);
--
-+	snprintf(clk_parent_name, ARRAY_SIZE(clk_parent_name), "%s",
-+		 of_clk_get_parent_name(pdev->dev.of_node, 0));
+ struct aspeed_adc_model_data {
+ 	const char *model_name;
+@@ -96,6 +102,7 @@ struct aspeed_adc_data {
+ 	struct clk_hw		*clk_scaler;
+ 	struct reset_control	*rst;
+ 	int			vref_mv;
++	u32			sample_period_ns;
+ };
+ 
+ #define ASPEED_CHAN(_idx, _data_reg_addr) {			\
+@@ -127,6 +134,24 @@ static const struct iio_chan_spec aspeed_adc_iio_channels[] = {
+ 	ASPEED_CHAN(15, 0x2E),
+ };
+ 
++static int aspeed_adc_set_sampling_rate(struct iio_dev *indio_dev, u32 rate)
++{
++	struct aspeed_adc_data *data = iio_priv(indio_dev);
 +
-+	if (data->model_data->need_prescaler) {
-+		snprintf(clk_name, ARRAY_SIZE(clk_name), "%s-prescaler",
-+			 data->model_data->model_name);
-+		data->clk_prescaler = clk_hw_register_divider(
-+			&pdev->dev, clk_name, clk_parent_name, 0,
-+			data->base + ASPEED_REG_CLOCK_CONTROL, 17, 15, 0,
-+			&data->clk_lock);
-+		if (IS_ERR(data->clk_prescaler))
-+			return PTR_ERR(data->clk_prescaler);
-+		snprintf(clk_parent_name, ARRAY_SIZE(clk_parent_name),
-+			 clk_name);
-+		scaler_flags = CLK_SET_RATE_PARENT;
-+	}
- 	/*
- 	 * Register ADC clock scaler downstream from the prescaler. Allow rate
- 	 * setting to adjust the prescaler as well.
- 	 */
-+	snprintf(clk_name, ARRAY_SIZE(clk_name), "%s-scaler",
-+		 data->model_data->model_name);
- 	data->clk_scaler = clk_hw_register_divider(
--				&pdev->dev, "scaler", "prescaler",
--				CLK_SET_RATE_PARENT,
--				data->base + ASPEED_REG_CLOCK_CONTROL,
--				0, 10, 0, &data->clk_lock);
-+		&pdev->dev, clk_name, clk_parent_name, scaler_flags,
-+		data->base + ASPEED_REG_CLOCK_CONTROL, 0,
-+		data->model_data->scaler_bit_width, 0, &data->clk_lock);
- 	if (IS_ERR(data->clk_scaler)) {
- 		ret = PTR_ERR(data->clk_scaler);
- 		goto scaler_error;
-@@ -318,7 +327,8 @@ static int aspeed_adc_probe(struct platform_device *pdev)
- reset_error:
- 	clk_hw_unregister_divider(data->clk_scaler);
- scaler_error:
--	clk_hw_unregister_divider(data->clk_prescaler);
-+	if (data->model_data->need_prescaler)
-+		clk_hw_unregister_divider(data->clk_prescaler);
- 	return ret;
- }
++	if (rate < data->model_data->min_sampling_rate ||
++	    rate > data->model_data->max_sampling_rate)
++		return -EINVAL;
++	/* Each sampling needs 12 clocks to convert.*/
++	clk_set_rate(data->clk_scaler->clk, rate * ASPEED_CLOCKS_PER_SAMPLE);
++	rate = clk_get_rate(data->clk_scaler->clk);
++	data->sample_period_ns = DIV_ROUND_UP_ULL(
++		(u64)NSEC_PER_SEC * ASPEED_CLOCKS_PER_SAMPLE, rate);
++	dev_dbg(data->dev, "Adc clock = %d sample period = %d ns", rate,
++		data->sample_period_ns);
++
++	return 0;
++}
++
+ static int aspeed_adc_read_raw(struct iio_dev *indio_dev,
+ 			       struct iio_chan_spec const *chan,
+ 			       int *val, int *val2, long mask)
+@@ -157,17 +182,9 @@ static int aspeed_adc_write_raw(struct iio_dev *indio_dev,
+ 				struct iio_chan_spec const *chan,
+ 				int val, int val2, long mask)
+ {
+-	struct aspeed_adc_data *data = iio_priv(indio_dev);
+-
+ 	switch (mask) {
+ 	case IIO_CHAN_INFO_SAMP_FREQ:
+-		if (val < data->model_data->min_sampling_rate ||
+-			val > data->model_data->max_sampling_rate)
+-			return -EINVAL;
+-
+-		clk_set_rate(data->clk_scaler->clk,
+-				val * ASPEED_CLOCKS_PER_SAMPLE);
+-		return 0;
++		return aspeed_adc_set_sampling_rate(indio_dev, val);
  
-@@ -333,7 +343,8 @@ static int aspeed_adc_remove(struct platform_device *pdev)
- 	clk_disable_unprepare(data->clk_scaler->clk);
- 	reset_control_assert(data->rst);
- 	clk_hw_unregister_divider(data->clk_scaler);
--	clk_hw_unregister_divider(data->clk_prescaler);
-+	if (data->model_data->need_prescaler)
-+		clk_hw_unregister_divider(data->clk_prescaler);
+ 	case IIO_CHAN_INFO_SCALE:
+ 	case IIO_CHAN_INFO_RAW:
+@@ -392,6 +409,19 @@ static int aspeed_adc_probe(struct platform_device *pdev)
+ 	if (ret)
+ 		return ret;
  
- 	return 0;
- }
++	ret = clk_prepare_enable(data->clk_scaler->clk);
++	if (ret)
++		return ret;
++	ret = devm_add_action_or_reset(data->dev,
++				       aspeed_adc_clk_disable_unprepare,
++				       data->clk_scaler->clk);
++	if (ret)
++		return ret;
++	ret = aspeed_adc_set_sampling_rate(indio_dev,
++					   ASPEED_ADC_DEF_SAMPLING_RATE);
++	if (ret)
++		return ret;
++
+ 	adc_engine_control_reg_val =
+ 		readl(data->base + ASPEED_REG_ENGINE_CONTROL);
+ 	adc_engine_control_reg_val |=
+@@ -418,16 +448,6 @@ static int aspeed_adc_probe(struct platform_device *pdev)
+ 			return ret;
+ 	}
+ 
+-	ret = clk_prepare_enable(data->clk_scaler->clk);
+-	if (ret)
+-		return ret;
+-
+-	ret = devm_add_action_or_reset(data->dev,
+-				       aspeed_adc_clk_disable_unprepare,
+-				       data->clk_scaler->clk);
+-	if (ret)
+-		return ret;
+-
+ 	/* Start all channels in normal mode. */
+ 	adc_engine_control_reg_val =
+ 		readl(data->base + ASPEED_REG_ENGINE_CONTROL);
 -- 
 2.25.1
 
