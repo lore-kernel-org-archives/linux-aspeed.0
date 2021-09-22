@@ -1,101 +1,82 @@
 From: Billy Tsai <billy_tsai@aspeedtech.com>
-Date: Wed, 22 Sep 2021 16:15:11 +0800
-Subject: [v7 02/11] iio: adc: aspeed: Restructure the model data
-In-Reply-To: <20210922081520.30580-1-billy_tsai@aspeedtech.com>
-References: <20210922081520.30580-1-billy_tsai@aspeedtech.com>
-Message-ID: <20210922081520.30580-3-billy_tsai@aspeedtech.com>
+Date: Wed, 22 Sep 2021 16:15:09 +0800
+Subject: [v7 00/11] Add support for ast2600 ADC
+Message-ID: <20210922081520.30580-1-billy_tsai@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This patch refactors the model data structure to distinguish the
-function form different versions of aspeed ADC.
-- Rename the vref_voltage to vref_fixed_mv and add vref_mv driver data
-When driver probe will check vref_fixed_mv value and store it to vref_mv
-which isn't const value.
-- Add num_channels
-Make num_channles of iio device can be changed by different model_data
-- Add need_prescaler flag and scaler_bit_width
-The need_prescaler flag is used to tell the driver the clock divider needs
-another Prescaler and the scaler_bit_width to set the clock divider
-bitfield width.
+This patch serials make aspeed_adc.c can support ast2600 and backward
+compatible.
 
-Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
----
- drivers/iio/adc/aspeed_adc.c | 20 +++++++++++++++-----
- 1 file changed, 15 insertions(+), 5 deletions(-)
+Change since v6:
+aspeed_adc.c:
+ - Fix the parameter error for aspeed_adc_unregister_fixed_divider.
 
-diff --git a/drivers/iio/adc/aspeed_adc.c b/drivers/iio/adc/aspeed_adc.c
-index 76ae1c3f584b..cc808ec89a0f 100644
---- a/drivers/iio/adc/aspeed_adc.c
-+++ b/drivers/iio/adc/aspeed_adc.c
-@@ -71,8 +71,11 @@ struct aspeed_adc_model_data {
- 	const char *model_name;
- 	unsigned int min_sampling_rate;	// Hz
- 	unsigned int max_sampling_rate;	// Hz
--	unsigned int vref_voltage;	// mV
-+	unsigned int vref_fixed_mv;
- 	bool wait_init_sequence;
-+	bool need_prescaler;
-+	u8 scaler_bit_width;
-+	unsigned int num_channels;
- };
- 
- struct aspeed_adc_data {
-@@ -83,6 +86,7 @@ struct aspeed_adc_data {
- 	struct clk_hw		*clk_prescaler;
- 	struct clk_hw		*clk_scaler;
- 	struct reset_control	*rst;
-+	int			vref_mv;
- };
- 
- #define ASPEED_CHAN(_idx, _data_reg_addr) {			\
-@@ -126,7 +130,7 @@ static int aspeed_adc_read_raw(struct iio_dev *indio_dev,
- 		return IIO_VAL_INT;
- 
- 	case IIO_CHAN_INFO_SCALE:
--		*val = data->model_data->vref_voltage;
-+		*val = data->model_data->vref_fixed_mv;
- 		*val2 = ASPEED_RESOLUTION_BITS;
- 		return IIO_VAL_FRACTIONAL_LOG2;
- 
-@@ -280,7 +284,7 @@ static int aspeed_adc_probe(struct platform_device *pdev)
- 	indio_dev->info = &aspeed_adc_iio_info;
- 	indio_dev->modes = INDIO_DIRECT_MODE;
- 	indio_dev->channels = aspeed_adc_iio_channels;
--	indio_dev->num_channels = ARRAY_SIZE(aspeed_adc_iio_channels);
-+	indio_dev->num_channels = data->model_data->num_channels;
- 
- 	ret = iio_device_register(indio_dev);
- 	if (ret)
-@@ -320,17 +324,23 @@ static int aspeed_adc_remove(struct platform_device *pdev)
- 
- static const struct aspeed_adc_model_data ast2400_model_data = {
- 	.model_name = "ast2400-adc",
--	.vref_voltage = 2500, // mV
-+	.vref_fixed_mv = 2500,
- 	.min_sampling_rate = 10000,
- 	.max_sampling_rate = 500000,
-+	.need_prescaler = true,
-+	.scaler_bit_width = 10,
-+	.num_channels = 16,
- };
- 
- static const struct aspeed_adc_model_data ast2500_model_data = {
- 	.model_name = "ast2500-adc",
--	.vref_voltage = 1800, // mV
-+	.vref_fixed_mv = 1800,
- 	.min_sampling_rate = 1,
- 	.max_sampling_rate = 1000000,
- 	.wait_init_sequence = true,
-+	.need_prescaler = true,
-+	.scaler_bit_width = 10,
-+	.num_channels = 16,
- };
- 
- static const struct of_device_id aspeed_adc_matches[] = {
+Change since v5:
+aspeed_adc.c:
+  - Use devm_clk_hw_register_divider()
+  - Enabling and setting the ADC to normal mode is a necessary flow, so
+  take it out of the condition.
+
+Change since v4:
+dt-bindings:
+  - Add clocks maxItems.
+  - Rename the property to meet the property-units.yaml.
+  - Add the description for the difference between adc0 and adc1.
+aspeed_adc.c:
+  - Use new property name to get internal reference voltage: units from mv
+  to uv.
+  - Fix -Wnonnull warning caused by snprintf parameters.
+  - Add suffix mv to the vref parameters.
+  - Use ARRAY_SIZE instead of 32.
+  - Add a reset action for ADC power down and Use devm_iio_device_register.
+  - Fix typo error.
+  - Separate the offset interface of ch7 when battery sensing enable
+
+Change since v3:
+dt-bindings:
+  - Fix properties:aspeed,int_vref_mv type error.
+
+Change since v2:
+dt-bindings:
+  - Create a new dt-bindings for ast2600 adc
+aspeed_adc.c:
+  - Splits the patch for more details
+  - Remove version enum and use the flags in model data to distinguish
+  hardware feature
+  - Support trimming data get and set.
+  - Use devm_add_action_or_reset to simplify probe error handling.
+
+Changes since v1:
+dt-bindings:
+  - Fix the aspeed,adc.yaml check error.
+  - Add battery-sensing property.
+aspeed_adc.c:
+  - Change the init flow:
+    Clock and reference voltage setting should be completed before adc
+    engine enable.
+  - Change the default sampling rate to meet most user case.
+  - Add patch #8 to suppoert battery sensing mode.
+
+Billy Tsai (11):
+  iio: adc: aspeed: Keep model data to driver data.
+  iio: adc: aspeed: Restructure the model data
+  iio: adc: aspeed: Add vref config function
+  iio: adc: aspeed: Use model_data to set clk scaler.
+  iio: adc: aspeed: Use devm_add_action_or_reset.
+  iio: adc: aspeed: Support ast2600 adc.
+  iio: adc: aspeed: Fix the calculate error of clock.
+  iio: adc: aspeed: Add func to set sampling rate.
+  iio: adc: aspeed: Add compensation phase.
+  iio: adc: aspeed: Support battery sensing.
+  iio: adc: aspeed: Get and set trimming data.
+
+ drivers/iio/adc/aspeed_adc.c | 554 +++++++++++++++++++++++++++++------
+ 1 file changed, 459 insertions(+), 95 deletions(-)
+
 -- 
 2.25.1
 
