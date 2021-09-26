@@ -1,73 +1,99 @@
-From: Cédric Le Goater <clg@kaod.org>
-Date: Fri, 24 Sep 2021 08:41:21 +0200
-Subject: [PATCH 0/2] leds: pca955x: Expose GPIOs for all pins
-In-Reply-To: <20210921043936.468001-1-andrew@aj.id.au>
-References: <20210921043936.468001-1-andrew@aj.id.au>
-Message-ID: <d2b85ad7-aef7-6088-03f5-cbd6e0bcab5d@kaod.org>
+From: Jonathan Cameron <jic23@kernel.org>
+Date: Sun, 26 Sep 2021 12:27:34 +0100
+Subject: [v7 00/11] Add support for ast2600 ADC
+In-Reply-To: <20210922081520.30580-1-billy_tsai@aspeedtech.com>
+References: <20210922081520.30580-1-billy_tsai@aspeedtech.com>
+Message-ID: <20210926122734.2fccf55a@jic23-huawei>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 9/21/21 06:39, Andrew Jeffery wrote:
-> Hello,
-> 
-> This is a rework of a Rube Goldberg-inspired RFC I posted previously:
-> 
-> https://lore.kernel.org/lkml/20210723075858.376378-1-andrew at aj.id.au/
-> 
-> This time around there's a lot less Rube - the series:
-> 
-> 1. Contains no (ab)use of pinctrl
-> 2. Always exposes all pins as GPIOs
-> 3. Internally tracks the active pins
-> 
-> Without these patches the driver limits the number of pins exposed on
-> the gpiochip to the number of pins specified as GPIO in the devicetree,
-> but doesn't map between the GPIO and pin number spaces. The result is
-> that specifying offset or interleaved GPIOs in the devicetree gives
-> unexpected behaviour in userspace.
-> 
-> By always exposing all pins as GPIOs the patches resolve the lack of
-> mapping between GPIO offsets and pins on the package in the driver by
-> ensuring we always have a 1-to-1 mapping.
-> 
-> The issue is primarily addressed by patch 1/2. Patch 2/2 makes it
-> possible to not expose any pins as LEDs (and therefore make them all
-> accessible as GPIOs). This has a follow-on effect of allowing the driver
-> to bind to a device instantiated at runtime without requiring a
-> description in the devicetree.
-> 
-> I've tested the series under qemu to inspect the various interactions
-> between LEDs vs GPIOs as well as conflicting GPIO requests.
+On Wed, 22 Sep 2021 16:15:09 +0800
+Billy Tsai <billy_tsai@aspeedtech.com> wrote:
 
-I was wondering what kind of tests you did.
+> This patch serials make aspeed_adc.c can support ast2600 and backward
+> compatible.
 
-Did you cold plug 'pca995x' devices in a QEMU Aspeed EVB* machine running
-with a custom DTB adding different layouts of the pca955x ?
+Hi Billy,
 
-> Please review!
+Series applied to the togreg branch of iio.git and pushed out as testing for
+0-day to poke at it.
 
-This is simpler than the 'ngpio' business we had before.
-
-Reviewed-by: C?dric Le Goater <clg@kaod.org>
+Note the fix for platform_set_drvdata() is in the fixes branch so there will
+be a bit of mess around context for patch 1 but that should all resolve in
+a trivial fashion.
 
 Thanks,
 
-C.
+Jonathan
 
-
-> Andrew
 > 
-> Andrew Jeffery (2):
->    leds: pca955x: Make the gpiochip always expose all pins
->    leds: pca955x: Allow zero LEDs to be specified
+> Change since v6:
+> aspeed_adc.c:
+>  - Fix the parameter error for aspeed_adc_unregister_fixed_divider.
 > 
->   drivers/leds/leds-pca955x.c | 65 +++++++++++++++++++------------------
->   1 file changed, 34 insertions(+), 31 deletions(-)
+> Change since v5:
+> aspeed_adc.c:
+>   - Use devm_clk_hw_register_divider()
+>   - Enabling and setting the ADC to normal mode is a necessary flow, so
+>   take it out of the condition.
 > 
+> Change since v4:
+> dt-bindings:
+>   - Add clocks maxItems.
+>   - Rename the property to meet the property-units.yaml.
+>   - Add the description for the difference between adc0 and adc1.
+> aspeed_adc.c:
+>   - Use new property name to get internal reference voltage: units from mv
+>   to uv.
+>   - Fix -Wnonnull warning caused by snprintf parameters.
+>   - Add suffix mv to the vref parameters.
+>   - Use ARRAY_SIZE instead of 32.
+>   - Add a reset action for ADC power down and Use devm_iio_device_register.
+>   - Fix typo error.
+>   - Separate the offset interface of ch7 when battery sensing enable
 > 
-> base-commit: 239f32b4f161c1584cd4b386d6ab8766432a6ede
+> Change since v3:
+> dt-bindings:
+>   - Fix properties:aspeed,int_vref_mv type error.
+> 
+> Change since v2:
+> dt-bindings:
+>   - Create a new dt-bindings for ast2600 adc
+> aspeed_adc.c:
+>   - Splits the patch for more details
+>   - Remove version enum and use the flags in model data to distinguish
+>   hardware feature
+>   - Support trimming data get and set.
+>   - Use devm_add_action_or_reset to simplify probe error handling.
+> 
+> Changes since v1:
+> dt-bindings:
+>   - Fix the aspeed,adc.yaml check error.
+>   - Add battery-sensing property.
+> aspeed_adc.c:
+>   - Change the init flow:
+>     Clock and reference voltage setting should be completed before adc
+>     engine enable.
+>   - Change the default sampling rate to meet most user case.
+>   - Add patch #8 to suppoert battery sensing mode.
+> 
+> Billy Tsai (11):
+>   iio: adc: aspeed: Keep model data to driver data.
+>   iio: adc: aspeed: Restructure the model data
+>   iio: adc: aspeed: Add vref config function
+>   iio: adc: aspeed: Use model_data to set clk scaler.
+>   iio: adc: aspeed: Use devm_add_action_or_reset.
+>   iio: adc: aspeed: Support ast2600 adc.
+>   iio: adc: aspeed: Fix the calculate error of clock.
+>   iio: adc: aspeed: Add func to set sampling rate.
+>   iio: adc: aspeed: Add compensation phase.
+>   iio: adc: aspeed: Support battery sensing.
+>   iio: adc: aspeed: Get and set trimming data.
+> 
+>  drivers/iio/adc/aspeed_adc.c | 554 +++++++++++++++++++++++++++++------
+>  1 file changed, 459 insertions(+), 95 deletions(-)
 > 
 
