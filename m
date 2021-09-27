@@ -1,99 +1,285 @@
-From: Jonathan Cameron <jic23@kernel.org>
-Date: Sun, 26 Sep 2021 12:27:34 +0100
-Subject: [v7 00/11] Add support for ast2600 ADC
-In-Reply-To: <20210922081520.30580-1-billy_tsai@aspeedtech.com>
-References: <20210922081520.30580-1-billy_tsai@aspeedtech.com>
-Message-ID: <20210926122734.2fccf55a@jic23-huawei>
+From: ChiaWei Wang <chiawei_wang@aspeedtech.com>
+Date: Mon, 27 Sep 2021 01:16:52 +0000
+Subject: [PATCH v6 1/4] dt-bindings: mfd: aspeed-lpc: Convert to YAML
+ schema
+In-Reply-To: <CAL_JsqLDztZpw9wWfCCKn8rBZxKcsh_idc903kEUDAuh_31OQw@mail.gmail.com>
+References: <20210922073241.14119-1-chiawei_wang@aspeedtech.com>
+ <20210922073241.14119-2-chiawei_wang@aspeedtech.com>
+ <CAL_JsqLDztZpw9wWfCCKn8rBZxKcsh_idc903kEUDAuh_31OQw@mail.gmail.com>
+Message-ID: <HK0PR06MB3779D4CE9C043C42DA958A3091A79@HK0PR06MB3779.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 22 Sep 2021 16:15:09 +0800
-Billy Tsai <billy_tsai@aspeedtech.com> wrote:
+Hi Rob,
 
-> This patch serials make aspeed_adc.c can support ast2600 and backward
-> compatible.
+> From: Rob Herring <robh+dt@kernel.org>
+> Sent: Wednesday, September 22, 2021 9:15 PM
+> 
+> On Wed, Sep 22, 2021 at 2:32 AM Chia-Wei Wang
+> <chiawei_wang@aspeedtech.com> wrote:
+> >
+> > Convert the bindings of Aspeed LPC from text file into YAML schema.
+> >
+> > Signed-off-by: Chia-Wei Wang <chiawei_wang@aspeedtech.com>
+> > ---
+> >  .../devicetree/bindings/mfd/aspeed-lpc.txt    | 157 ---------------
+> >  .../devicetree/bindings/mfd/aspeed-lpc.yaml   | 187
+> ++++++++++++++++++
+> >  2 files changed, 187 insertions(+), 157 deletions(-)  delete mode
+> > 100644 Documentation/devicetree/bindings/mfd/aspeed-lpc.txt
+> >  create mode 100644
+> > Documentation/devicetree/bindings/mfd/aspeed-lpc.yaml
+> 
+> This has lots of warnings with 'make dtbs_check':
+> 
+> /builds/robherring/linux-dt-review/arch/arm/boot/dts/aspeed-ast2500-evb.dt.y
+> aml:
+> lpc at 1e789000: 'ibt at 140', 'kcs at 114', 'kcs at 24', 'kcs at 28', 'kcs at 2c', 'lhc at a0',
+> 'reg-io-width' do not match any of the regexes:
+> '^lpc-ctrl@[0-9a-f]+$', '^lpc-snoop@[0-9a-f]+$', '^reset-controller@[0-9a-f]+$',
+> 'pinctrl-[0-9]+'
+> From schema:
+> /builds/robherring/linux-dt-review/Documentation/devicetree/bindings/mfd/as
+> peed-lpc.yaml
+> 
+> Is 'reg-io-width' valid?
 
-Hi Billy,
-
-Series applied to the togreg branch of iio.git and pushed out as testing for
-0-day to poke at it.
-
-Note the fix for platform_set_drvdata() is in the fixes branch so there will
-be a bit of mess around context for patch 1 but that should all resolve in
-a trivial fashion.
-
-Thanks,
-
-Jonathan
+I think that 'reg-io-width' can be removed along with this YAML conversion.
+The LPC drivers does not refer to this property (Andrew, correct me if I missed something).
 
 > 
-> Change since v6:
-> aspeed_adc.c:
->  - Fix the parameter error for aspeed_adc_unregister_fixed_divider.
+> You can quiet all the child nodes with:
 > 
-> Change since v5:
-> aspeed_adc.c:
->   - Use devm_clk_hw_register_divider()
->   - Enabling and setting the ADC to normal mode is a necessary flow, so
->   take it out of the condition.
+> additionalProperties:
+>   type: object
 > 
-> Change since v4:
-> dt-bindings:
->   - Add clocks maxItems.
->   - Rename the property to meet the property-units.yaml.
->   - Add the description for the difference between adc0 and adc1.
-> aspeed_adc.c:
->   - Use new property name to get internal reference voltage: units from mv
->   to uv.
->   - Fix -Wnonnull warning caused by snprintf parameters.
->   - Add suffix mv to the vref parameters.
->   - Use ARRAY_SIZE instead of 32.
->   - Add a reset action for ADC power down and Use devm_iio_device_register.
->   - Fix typo error.
->   - Separate the offset interface of ch7 when battery sensing enable
-> 
-> Change since v3:
-> dt-bindings:
->   - Fix properties:aspeed,int_vref_mv type error.
-> 
-> Change since v2:
-> dt-bindings:
->   - Create a new dt-bindings for ast2600 adc
-> aspeed_adc.c:
->   - Splits the patch for more details
->   - Remove version enum and use the flags in model data to distinguish
->   hardware feature
->   - Support trimming data get and set.
->   - Use devm_add_action_or_reset to simplify probe error handling.
-> 
-> Changes since v1:
-> dt-bindings:
->   - Fix the aspeed,adc.yaml check error.
->   - Add battery-sensing property.
-> aspeed_adc.c:
->   - Change the init flow:
->     Clock and reference voltage setting should be completed before adc
->     engine enable.
->   - Change the default sampling rate to meet most user case.
->   - Add patch #8 to suppoert battery sensing mode.
-> 
-> Billy Tsai (11):
->   iio: adc: aspeed: Keep model data to driver data.
->   iio: adc: aspeed: Restructure the model data
->   iio: adc: aspeed: Add vref config function
->   iio: adc: aspeed: Use model_data to set clk scaler.
->   iio: adc: aspeed: Use devm_add_action_or_reset.
->   iio: adc: aspeed: Support ast2600 adc.
->   iio: adc: aspeed: Fix the calculate error of clock.
->   iio: adc: aspeed: Add func to set sampling rate.
->   iio: adc: aspeed: Add compensation phase.
->   iio: adc: aspeed: Support battery sensing.
->   iio: adc: aspeed: Get and set trimming data.
-> 
->  drivers/iio/adc/aspeed_adc.c | 554 +++++++++++++++++++++++++++++------
->  1 file changed, 459 insertions(+), 95 deletions(-)
-> 
+> (They will still warn about undocumented compatibles, so we don't lose any
+> todo list).
 
+Thanks!
+I will add this and run the checks for the v7 revision.
+
+Regards,
+Chiawei
+
+> 
+> 
+> > diff --git a/Documentation/devicetree/bindings/mfd/aspeed-lpc.yaml
+> > b/Documentation/devicetree/bindings/mfd/aspeed-lpc.yaml
+> > new file mode 100644
+> > index 000000000000..9c66795a1fb6
+> > --- /dev/null
+> > +++ b/Documentation/devicetree/bindings/mfd/aspeed-lpc.yaml
+> > @@ -0,0 +1,187 @@
+> > +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause) # #
+> > +Copyright (c) 2021 Aspeed Tehchnology Inc.
+> > +%YAML 1.2
+> > +---
+> > +$id: http://devicetree.org/schemas/mfd/aspeed-lpc.yaml#
+> > +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> > +
+> > +title: Aspeed Low Pin Count (LPC) Bus Controller
+> > +
+> > +maintainers:
+> > +  - Andrew Jeffery <andrew@aj.id.au>
+> > +  - Chia-Wei Wang <chiawei_wang@aspeedtech.com>
+> > +
+> > +description:
+> 
+> You need '|' to preserve paragraphs.
+> 
+> > +  The LPC bus is a means to bridge a host CPU to a number of
+> > + low-bandwidth  peripheral devices, replacing the use of the ISA bus
+> > + in the age of PCI[0]. The  primary use case of the Aspeed LPC
+> > + controller is as a slave on the bus  (typically in a Baseboard
+> > + Management Controller SoC), but under certain  conditions it can also
+> take the role of bus master.
+> > +
+> > +  The LPC controller is represented as a multi-function device to
+> > + account for the  mix of functionality, which includes, but is not
+> > + limited to
+> > +
+> > +  * An IPMI Block Transfer[2] Controller
+> > +
+> > +  * An LPC Host Interface Controller manages functions exposed to the host
+> such
+> > +    as LPC firmware hub cycles, configuration of the LPC-to-AHB mapping,
+> UART
+> > +    management and bus snoop configuration.
+> > +
+> > +  * A set of SuperIO[3] scratch registers enableing implementation of e.g.
+> custom
+> > +    hardware management protocols for handover between the host and
+> baseboard
+> > +    management controller.
+> > +
+> > +  Additionally the state of the LPC controller influences the pinmux
+> > + configuration, therefore the host portion of the controller is
+> > + exposed as a  syscon as a means to arbitrate access.
+> > +
+> > +properties:
+> > +  compatible:
+> > +    items:
+> > +      - enum:
+> > +          - aspeed,ast2400-lpc-v2
+> > +          - aspeed,ast2500-lpc-v2
+> > +          - aspeed,ast2600-lpc-v2
+> > +      - const: simple-mfd
+> > +      - const: syscon
+> > +
+> > +  reg:
+> > +    maxItems: 1
+> > +
+> > +  "#address-cells":
+> > +    const: 1
+> > +
+> > +  "#size-cells":
+> > +    const: 1
+> > +
+> > +  ranges: true
+> > +
+> > +patternProperties:
+> > +  "^lpc-ctrl@[0-9a-f]+$":
+> > +    type: object
+> > +
+> > +    description:
+> > +      The LPC Host Interface Controller manages functions exposed to the
+> host such as
+> > +      LPC firmware hub cycles, configuration of the LPC-to-AHB mapping,
+> UART management
+> > +      and bus snoop configuration.
+> > +
+> > +    properties:
+> > +      compatible:
+> > +        items:
+> > +          - enum:
+> > +              - aspeed,ast2400-lpc-ctrl
+> > +              - aspeed,ast2500-lpc-ctrl
+> > +              - aspeed,ast2600-lpc-ctrl
+> > +
+> > +      reg:
+> > +        maxItems: 1
+> > +
+> > +      clocks:
+> > +        maxItems: 1
+> > +
+> > +      memory-region:
+> > +        $ref: /schemas/types.yaml#/definitions/phandle
+> 
+> Already has a type. Needs how many entries (maxItems: 1).
+> 
+> > +        description: A reserved_memory region to be used for the LPC
+> > + to AHB mapping
+> > +
+> > +      flash:
+> > +        $ref: /schemas/types.yaml#/definitions/phandle
+> > +        description: The SPI flash controller containing the flash to
+> > + be exposed over the LPC to AHB mapping
+> > +
+> > +    required:
+> > +      - compatible
+> > +      - clocks
+> > +
+> > +  "^reset-controller@[0-9a-f]+$":
+> > +    type: object
+> > +
+> > +    description:
+> > +      The UARTs present in the ASPEED SoC can have their resets tied to
+> the reset
+> > +      state of the LPC bus. Some systems may chose to modify this
+> > + configuration
+> > +
+> > +    properties:
+> > +      compatible:
+> > +        items:
+> > +          - enum:
+> > +              - aspeed,ast2400-lpc-reset
+> > +              - aspeed,ast2500-lpc-reset
+> > +              - aspeed,ast2600-lpc-reset
+> > +
+> > +      reg:
+> > +        maxItems: 1
+> > +
+> > +    required:
+> > +      - compatible
+> > +
+> > +  "^lpc-snoop@[0-9a-f]+$":
+> > +    type: object
+> > +
+> > +    description:
+> > +      The LPC snoop interface allows the BMC to listen on and record the
+> data
+> > +      bytes written by the Host to the targeted LPC I/O pots.
+> > +
+> > +    properties:
+> > +      compatible:
+> > +        items:
+> > +          - enum:
+> > +              - aspeed,ast2400-lpc-snoop
+> > +              - aspeed,ast2500-lpc-snoop
+> > +              - aspeed,ast2600-lpc-snoop
+> > +
+> > +      reg:
+> > +        maxItems: 1
+> > +
+> > +      interrupts:
+> > +        maxItems: 1
+> > +
+> > +      snoop-ports:
+> > +        $ref: /schemas/types.yaml#/definitions/uint32-array
+> > +        description: The LPC I/O ports to snoop
+> > +
+> > +    required:
+> > +      - compatible
+> > +      - interrupts
+> > +      - snoop-ports
+> > +
+> > +required:
+> > +  - compatible
+> > +  - reg
+> > +  - "#address-cells"
+> > +  - "#size-cells"
+> > +  - ranges
+> > +
+> > +additionalProperties: false
+> > +
+> > +examples:
+> > +  - |
+> > +    #include <dt-bindings/interrupt-controller/arm-gic.h>
+> > +    #include <dt-bindings/clock/ast2600-clock.h>
+> > +
+> > +    lpc: lpc at 1e789000 {
+> > +        compatible = "aspeed,ast2600-lpc-v2", "simple-mfd", "syscon";
+> > +        reg = <0x1e789000 0x1000>;
+> > +
+> > +        #address-cells = <1>;
+> > +        #size-cells = <1>;
+> > +        ranges = <0x0 0x1e789000 0x1000>;
+> > +
+> > +        lpc_ctrl: lpc-ctrl at 80 {
+> > +            compatible = "aspeed,ast2600-lpc-ctrl";
+> > +            reg = <0x80 0x80>;
+> > +            clocks = <&syscon ASPEED_CLK_GATE_LCLK>;
+> > +            memory-region = <&flash_memory>;
+> > +            flash = <&spi>;
+> > +        };
+> > +
+> > +        lpc_reset: reset-controller at 98 {
+> > +            compatible = "aspeed,ast2600-lpc-reset";
+> > +            reg = <0x98 0x4>;
+> > +            #reset-cells = <1>;
+> > +        };
+> > +
+> > +        lpc_snoop: lpc-snoop at 90 {
+> > +            compatible = "aspeed,ast2600-lpc-snoop";
+> > +            reg = <0x90 0x8>;
+> > +            interrupts = <GIC_SPI 144 IRQ_TYPE_LEVEL_HIGH>;
+> > +            snoop-ports = <0x80>;
+> > +        };
+> > +    };
+> > --
+> > 2.17.1
+> >
