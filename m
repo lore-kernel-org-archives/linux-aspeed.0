@@ -1,68 +1,62 @@
-From: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
-Date: Tue, 28 Sep 2021 02:50:59 +0000
-Subject: [PATCH 10/10] dt-bindings: mmc: aspeed: Add a new compatible
- string
-In-Reply-To: <YVIUf7/4ukMcrOb9@robh.at.kernel.org>
-References: <20210922103116.30652-1-chin-ting_kuo@aspeedtech.com>
- <20210922103116.30652-11-chin-ting_kuo@aspeedtech.com>
- <YVIUf7/4ukMcrOb9@robh.at.kernel.org>
-Message-ID: <HK0PR06MB2786DAAA2D6E58EA2E2FCB6BB2A89@HK0PR06MB2786.apcprd06.prod.outlook.com>
+From: Zev Weiss <zev@bewilderbeest.net>
+Date: Tue, 28 Sep 2021 11:57:03 -0700
+Subject: [PATCH v3] media: aspeed-video: ignore interrupts that aren't
+ enabled
+In-Reply-To: <CACPK8XfE6zB9BWYq7e8WbXkPFp2Cicwv2x2dc8h6jNaR2qZV0g@mail.gmail.com>
+References: <20210617220229.7352-1-zev@bewilderbeest.net>
+ <46edf81d60a38747f7d2511f840253a1c6867652.camel@linux.ibm.com>
+ <HK0PR06MB338081E134AA6F43ECBCBA4DF2D29@HK0PR06MB3380.apcprd06.prod.outlook.com>
+ <CACPK8XfE6zB9BWYq7e8WbXkPFp2Cicwv2x2dc8h6jNaR2qZV0g@mail.gmail.com>
+Message-ID: <YVNlfwLUDNxtp0fs@hatter.bewilderbeest.net>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Rob,
+On Mon, Sep 06, 2021 at 04:47:14AM PDT, Joel Stanley wrote:
+>Hi Mauro,
+>
+>On Mon, 6 Sept 2021 at 10:10, Ryan Chen <ryan_chen@aspeedtech.com> wrote:
+>> > Subject: Re: [PATCH v3] media: aspeed-video: ignore interrupts that aren't
+>> > enabled
+>> >
+>> > On Thu, 2021-06-17 at 17:02 -0500, Zev Weiss wrote:
+>> > > As partially addressed in commit 65d270acb2d6 ("media: aspeed: clear
+>> > > garbage interrupts"), the ASpeed video engine sometimes asserts
+>> > > interrupts that the driver hasn't enabled.  In addition to the
+>> > > CAPTURE_COMPLETE and FRAME_COMPLETE interrupts dealt with in that
+>> > > patch, COMP_READY has also been observed.  Instead of playing
+>> > > whack-a-mole with each one individually, we can instead just blanket
+>> > > ignore everything we haven't explicitly enabled.
+>> >
+>> > Suspect this will fix an intermittent problem on AST2500 with screensaver.
+>> > Change looks good, thanks!
+>> >
+>> > Reviewed-by: Eddie James <eajames@linux.ibm.com>
+>> >
+>> Reviewed-by: Ryan Chen <ryan_chen@aspeedtech.com>
+>> > >
+>> > > Signed-off-by: Zev Weiss <zev@bewilderbeest.net>
+>
+>I notice this wasn't merged in the pull request you sent for v5.15.
+>Would you be able to ensure it makes it in the next pull request you
+>send?
+>
+>It can have some fixes tags too:
+>
+>Fixes: 65d270acb2d6 ("media: aspeed: clear garbage interrupts")
+>Fixes: d2b4387f3bdf ("media: platform: Add Aspeed Video Engine driver")
+>Acked-by: Joel Stanley <joel@jms.id.au>
+>
+>Cheers,
+>
+>Joel
+>
 
-> -----Original Message-----
-> From: Rob Herring <robh@kernel.org>
-> Sent: Tuesday, September 28, 2021 2:59 AM
-> To: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
-> Subject: Re: [PATCH 10/10] dt-bindings: mmc: aspeed: Add a new compatible
-> string
-> 
-> On Wed, Sep 22, 2021 at 06:31:16PM +0800, Chin-Ting Kuo wrote:
-> > Add "aspeed,ast2600-emmc" compatible string for the sake of
-> > distinguishing between SD and eMMC device.
-> 
-> Why?
-> 
-> Is the h/w block different? We already have properties to handle some of the
-> eMMC specifics. Also, you can have a child node for the eMMC device if you
-> need that.
+Also not in the recent merge of the media/v5.15-2 tag it looks like -- ping?
 
-There are two SD/SDIO controllers in a AST2600 SoC.
-One is for SD card and the other is for eMMC.
-Although both of them are embedded in the same SoC, the design of delay cell and
-the manufacture process are different. The delay phase is definitely different and, thus,
-we need a flag, compatible, to distinguish the device, SD or eMMC.
 
-Without "aspeed,ast2600-emmc" compatible, of course, eMMC device can work with original
-sdhci driver and device tree setting. But, for ultra-speed or HS200 case, AST2600 SoC needs some
-phase delay which (maximum) value is different between SD and eMMC device.
+Thanks,
+Zev
 
-> 
-> >
-> > Signed-off-by: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
-> > ---
-> >  Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml | 1 +
-> >  1 file changed, 1 insertion(+)
-> >
-> > diff --git a/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml
-> > b/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml
-> > index 5bb66849df65..41105cd104c6 100644
-> > --- a/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml
-> > +++ b/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml
-> > @@ -52,6 +52,7 @@ patternProperties:
-> >            - aspeed,ast2400-sdhci
-> >            - aspeed,ast2500-sdhci
-> >            - aspeed,ast2600-sdhci
-> > +          - aspeed,ast2600-emmc
-> >        reg:
-> >          maxItems: 1
-> >          description: The SDHCI registers
-> > --
-> > 2.17.1
-> >
-> >
