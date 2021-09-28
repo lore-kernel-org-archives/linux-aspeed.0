@@ -1,9 +1,9 @@
 From: tommy-huang <tommy_huang@aspeedtech.com>
-Date: Tue, 28 Sep 2021 10:57:00 +0800
-Subject: [PATCH 3/6] drm/aspeed: Add AST2600 support
+Date: Tue, 28 Sep 2021 10:57:02 +0800
+Subject: [PATCH 5/6] HACK: drm/aspeed: Paramterise modes
 In-Reply-To: <20210928025703.10909-1-tommy_huang@aspeedtech.com>
 References: <20210928025703.10909-1-tommy_huang@aspeedtech.com>
-Message-ID: <20210928025703.10909-4-tommy_huang@aspeedtech.com>
+Message-ID: <20210928025703.10909-6-tommy_huang@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -12,39 +12,47 @@ Content-Transfer-Encoding: 7bit
 
 From: Joel Stanley <joel@jms.id.au>
 
-The values for the threshold and scan line size come from the ASPEED
-SDK.
-
-The DAC register is SCUC0 in the AST2600 datasheet. It has the same
-layout as the previous generations.
+The AST2600 will run at 1024x868.
 
 Signed-off-by: Joel Stanley <joel@jms.id.au>
 Signed-off-by: tommy-huang <tommy_huang@aspeedtech.com>
 ---
- drivers/gpu/drm/aspeed/aspeed_gfx_drv.c | 7 +++++++
- 1 file changed, 7 insertions(+)
+ drivers/gpu/drm/aspeed/aspeed_gfx_drv.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c b/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
-index b53fee6f1c17..ea9cb0a4f16c 100644
+index 33095477cc03..11a44b08bd3f 100644
 --- a/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
 +++ b/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
-@@ -79,9 +79,16 @@ static const struct aspeed_gfx_config ast2500_config = {
- 	.scan_line_max = 128,
+@@ -99,7 +99,7 @@ static const struct drm_mode_config_funcs aspeed_gfx_mode_config_funcs = {
+ 	.atomic_commit		= drm_atomic_helper_commit,
  };
  
-+static const struct aspeed_gfx_config ast2600_config = {
-+	.dac_reg = 0xc0,
-+	.throd_val = CRT_THROD_LOW(0x50) | CRT_THROD_HIGH(0x70),
-+	.scan_line_max = 128,
-+};
-+
- static const struct of_device_id aspeed_gfx_match[] = {
- 	{ .compatible = "aspeed,ast2400-gfx", .data = &ast2400_config },
- 	{ .compatible = "aspeed,ast2500-gfx", .data = &ast2500_config },
-+	{ .compatible = "aspeed,ast2600-gfx", .data = &ast2600_config },
- 	{ },
- };
- MODULE_DEVICE_TABLE(of, aspeed_gfx_match);
+-static int aspeed_gfx_setup_mode_config(struct drm_device *drm)
++static int aspeed_gfx_setup_mode_config(struct drm_device *drm, int width, int height)
+ {
+ 	int ret;
+ 
+@@ -109,8 +109,8 @@ static int aspeed_gfx_setup_mode_config(struct drm_device *drm)
+ 
+ 	drm->mode_config.min_width = 0;
+ 	drm->mode_config.min_height = 0;
+-	drm->mode_config.max_width = 800;
+-	drm->mode_config.max_height = 600;
++	drm->mode_config.max_width = width;
++	drm->mode_config.max_height = height;
+ 	drm->mode_config.funcs = &aspeed_gfx_mode_config_funcs;
+ 
+ 	return ret;
+@@ -201,7 +201,7 @@ static int aspeed_gfx_load(struct drm_device *drm)
+ 	writel(0, priv->base + CRT_CTRL1);
+ 	writel(0, priv->base + CRT_CTRL2);
+ 
+-	ret = aspeed_gfx_setup_mode_config(drm);
++	ret = aspeed_gfx_setup_mode_config(drm, 800, 600);
+ 	if (ret < 0)
+ 		return ret;
+ 
 -- 
 2.17.1
 
