@@ -1,31 +1,40 @@
 From: tommy-huang <tommy_huang@aspeedtech.com>
-Date: Tue, 28 Sep 2021 10:56:57 +0800
-Subject: [PATCH 0/6] *** Add AST2600 GFX node ***
-Message-ID: <20210928025703.10909-1-tommy_huang@aspeedtech.com>
+Date: Tue, 28 Sep 2021 10:57:01 +0800
+Subject: [PATCH 4/6] HACK: drm/aspeed: INTR_STS hadndling
+In-Reply-To: <20210928025703.10909-1-tommy_huang@aspeedtech.com>
+References: <20210928025703.10909-1-tommy_huang@aspeedtech.com>
+Message-ID: <20210928025703.10909-5-tommy_huang@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add AST2600 GFX support first.
+From: Joel Stanley <joel@jms.id.au>
 
-Joel Stanley (5):
-  ARM: dts: aspeed: Add GFX node to AST2600
-  ARM: dts: aspeed: ast2600-evb: Enable GFX device
-  drm/aspeed: Add AST2600 support
-  HACK: drm/aspeed: INTR_STS hadndling
-  HACK: drm/aspeed: Paramterise modes
+The 2600 uses this register differently. THis is a TODO to come up with
+a method of handling that.
 
-tommy-huang (1):
-  dt-bindings: gpu: Add ASPEED GFX bindings document
+Signed-off-by: Joel Stanley <joel@jms.id.au>
+Signed-off-by: tommy-huang <tommy_huang@aspeedtech.com>
+---
+ drivers/gpu/drm/aspeed/aspeed_gfx_drv.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
- .../devicetree/bindings/gpu/aspeed-gfx.txt     |  1 +
- arch/arm/boot/dts/aspeed-ast2600-evb.dts       | 13 +++++++++++++
- arch/arm/boot/dts/aspeed-g6.dtsi               | 11 +++++++++++
- drivers/gpu/drm/aspeed/aspeed_gfx_drv.c        | 18 +++++++++++++-----
- 4 files changed, 38 insertions(+), 5 deletions(-)
-
+diff --git a/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c b/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
+index ea9cb0a4f16c..33095477cc03 100644
+--- a/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
++++ b/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
+@@ -126,7 +126,8 @@ static irqreturn_t aspeed_gfx_irq_handler(int irq, void *data)
+ 
+ 	if (reg & CRT_CTRL_VERTICAL_INTR_STS) {
+ 		drm_crtc_handle_vblank(&priv->pipe.crtc);
+-		writel(reg, priv->base + CRT_CTRL1);
++		/* TODO */
++		writel(CRT_CTRL_VERTICAL_INTR_STS, priv->base + CRT_STATUS);
+ 		return IRQ_HANDLED;
+ 	}
+ 
 -- 
 2.17.1
 
