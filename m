@@ -1,9 +1,9 @@
 From: tommy-huang <tommy_huang@aspeedtech.com>
-Date: Tue, 28 Sep 2021 10:57:01 +0800
-Subject: [PATCH 4/6] HACK: drm/aspeed: INTR_STS hadndling
+Date: Tue, 28 Sep 2021 10:56:58 +0800
+Subject: [PATCH 1/6] ARM: dts: aspeed: Add GFX node to AST2600
 In-Reply-To: <20210928025703.10909-1-tommy_huang@aspeedtech.com>
 References: <20210928025703.10909-1-tommy_huang@aspeedtech.com>
-Message-ID: <20210928025703.10909-5-tommy_huang@aspeedtech.com>
+Message-ID: <20210928025703.10909-2-tommy_huang@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -12,29 +12,36 @@ Content-Transfer-Encoding: 7bit
 
 From: Joel Stanley <joel@jms.id.au>
 
-The 2600 uses this register differently. THis is a TODO to come up with
-a method of handling that.
+The GFX device is present in the AST2600 SoC.
 
 Signed-off-by: Joel Stanley <joel@jms.id.au>
 Signed-off-by: tommy-huang <tommy_huang@aspeedtech.com>
 ---
- drivers/gpu/drm/aspeed/aspeed_gfx_drv.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ arch/arm/boot/dts/aspeed-g6.dtsi | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
-diff --git a/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c b/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
-index ea9cb0a4f16c..33095477cc03 100644
---- a/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
-+++ b/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
-@@ -126,7 +126,8 @@ static irqreturn_t aspeed_gfx_irq_handler(int irq, void *data)
+diff --git a/arch/arm/boot/dts/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed-g6.dtsi
+index 1b47be1704f8..e38c3742761b 100644
+--- a/arch/arm/boot/dts/aspeed-g6.dtsi
++++ b/arch/arm/boot/dts/aspeed-g6.dtsi
+@@ -351,6 +351,17 @@
+ 				quality = <100>;
+ 			};
  
- 	if (reg & CRT_CTRL_VERTICAL_INTR_STS) {
- 		drm_crtc_handle_vblank(&priv->pipe.crtc);
--		writel(reg, priv->base + CRT_CTRL1);
-+		/* TODO */
-+		writel(CRT_CTRL_VERTICAL_INTR_STS, priv->base + CRT_STATUS);
- 		return IRQ_HANDLED;
- 	}
- 
++			gfx: display at 1e6e6000 {
++				compatible = "aspeed,ast2600-gfx", "aspeed,ast2500-gfx", "syscon";
++				reg = <0x1e6e6000 0x1000>;
++				reg-io-width = <4>;
++				clocks = <&syscon ASPEED_CLK_GATE_D1CLK>;
++				resets = <&syscon ASPEED_RESET_GRAPHICS>;
++				syscon = <&syscon>;
++				status = "disabled";
++				interrupts = <GIC_SPI 14 IRQ_TYPE_LEVEL_HIGH>;
++			};
++
+ 			xdma: xdma at 1e6e7000 {
+ 				compatible = "aspeed,ast2600-xdma";
+ 				reg = <0x1e6e7000 0x100>;
 -- 
 2.17.1
 
