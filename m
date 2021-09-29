@@ -1,166 +1,76 @@
 From: Zev Weiss <zev@bewilderbeest.net>
-Date: Wed, 29 Sep 2021 04:54:05 -0700
-Subject: [PATCH 3/6] mtd: spi-nor: aspeed: Refactor registration/unregistration
-In-Reply-To: <20210929115409.21254-1-zev@bewilderbeest.net>
-References: <20210929115409.21254-1-zev@bewilderbeest.net>
-Message-ID: <20210929115409.21254-4-zev@bewilderbeest.net>
+Date: Wed, 29 Sep 2021 04:54:02 -0700
+Subject: [PATCH 0/6] Dynamic aspeed-smc flash chips via "reserved" DT status
+Message-ID: <20210929115409.21254-1-zev@bewilderbeest.net>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-We now have separate functions for registering and unregistering
-individual flash chips, instead of the entire controller.  This is a
-preparatory step for allowing userspace to request that a specific
-chip be attached or detached at runtime.
+Hello,
 
-Signed-off-by: Zev Weiss <zev@bewilderbeest.net>
----
- drivers/mtd/spi-nor/controllers/aspeed-smc.c | 73 ++++++++++++--------
- 1 file changed, 45 insertions(+), 28 deletions(-)
+This patch series aims to improve a scenario that arises in OpenBMC
+and which isn't handled very well at the moment.  Certain devices, the
+example at hand being the flash chip used to store the host's firmware
+(e.g. the BIOS), may be shared between the BMC and the host system but
+only available to one or the other at any given time.  The device may
+thus be effectively off-limits to the BMC when it boots, and only
+usable after userspace performs the necessary steps to coordinate
+appropriately with the host (tracking its power state, twiddling
+GPIOs, sending IPMI commands, etc.).
 
-diff --git a/drivers/mtd/spi-nor/controllers/aspeed-smc.c b/drivers/mtd/spi-nor/controllers/aspeed-smc.c
-index 7225870e8b18..3c153104a905 100644
---- a/drivers/mtd/spi-nor/controllers/aspeed-smc.c
-+++ b/drivers/mtd/spi-nor/controllers/aspeed-smc.c
-@@ -107,9 +107,10 @@ struct aspeed_smc_controller {
- 	const struct aspeed_smc_info *info;	/* type info of controller */
- 	void __iomem *regs;			/* controller registers */
- 	void __iomem *ahb_base;			/* per-chip windows resource */
-+	struct resource *ahb_res;		/* resource for AHB address space */
- 	u32 ahb_window_size;			/* full mapping window size */
- 
--	struct aspeed_smc_chip *chips[];	/* pointers to attached chips */
-+	struct aspeed_smc_chip *chips[];	/* pointers to connected chips */
- };
- 
- /*
-@@ -399,15 +400,24 @@ static ssize_t aspeed_smc_write_user(struct spi_nor *nor, loff_t to,
- 	return len;
- }
- 
-+static int aspeed_smc_unregister_chip(struct aspeed_smc_chip *chip)
-+{
-+	return mtd_device_unregister(&chip->nor.mtd);
-+}
-+
- static int aspeed_smc_unregister(struct aspeed_smc_controller *controller)
- {
- 	struct aspeed_smc_chip *chip;
--	int n;
-+	int n, ret;
- 
- 	for (n = 0; n < controller->info->nce; n++) {
- 		chip = controller->chips[n];
--		if (chip)
--			mtd_device_unregister(&chip->nor.mtd);
-+		if (chip) {
-+			ret = aspeed_smc_unregister_chip(chip);
-+			if (ret)
-+				dev_warn(controller->dev, "failed to unregister CS%d: %d\n",
-+				         n, ret);
-+		}
- 	}
- 
- 	return 0;
-@@ -756,14 +766,39 @@ static const struct spi_nor_controller_ops aspeed_smc_controller_ops = {
- 	.write = aspeed_smc_write_user,
- };
- 
--static int aspeed_smc_setup_flash(struct aspeed_smc_controller *controller,
--				  struct device_node *np, struct resource *r)
-+static int aspeed_smc_register_chip(struct aspeed_smc_chip *chip)
- {
--	const struct spi_nor_hwcaps hwcaps = {
-+	static const struct spi_nor_hwcaps hwcaps = {
- 		.mask = SNOR_HWCAPS_READ |
- 			SNOR_HWCAPS_READ_FAST |
- 			SNOR_HWCAPS_PP,
- 	};
-+	int ret;
-+
-+	ret = aspeed_smc_chip_setup_init(chip, chip->controller->ahb_res);
-+	if (ret)
-+		goto out;
-+
-+	/*
-+	 * TODO: Add support for Dual and Quad SPI protocols attach when board
-+	 * support is present as determined by of property.
-+	 */
-+	ret = spi_nor_scan(&chip->nor, NULL, &hwcaps);
-+	if (ret)
-+		goto out;
-+
-+	ret = aspeed_smc_chip_setup_finish(chip);
-+	if (ret)
-+		goto out;
-+
-+	ret = mtd_device_register(&chip->nor.mtd, NULL, 0);
-+out:
-+	return ret;
-+}
-+
-+static int aspeed_smc_setup_flash(struct aspeed_smc_controller *controller,
-+				  struct device_node *np, struct resource *r)
-+{
- 	const struct aspeed_smc_info *info = controller->info;
- 	struct device *dev = controller->dev;
- 	struct device_node *child;
-@@ -773,7 +808,6 @@ static int aspeed_smc_setup_flash(struct aspeed_smc_controller *controller,
- 	for_each_available_child_of_node(np, child) {
- 		struct aspeed_smc_chip *chip;
- 		struct spi_nor *nor;
--		struct mtd_info *mtd;
- 
- 		/* This driver does not support NAND or NOR flash devices. */
- 		if (!of_device_is_compatible(child, "jedec,spi-nor"))
-@@ -810,35 +844,17 @@ static int aspeed_smc_setup_flash(struct aspeed_smc_controller *controller,
- 		chip->cs = cs;
- 
- 		nor = &chip->nor;
--		mtd = &nor->mtd;
- 
- 		nor->dev = dev;
- 		nor->priv = chip;
- 		spi_nor_set_flash_node(nor, child);
- 		nor->controller_ops = &aspeed_smc_controller_ops;
- 
--		ret = aspeed_smc_chip_setup_init(chip, r);
--		if (ret)
--			break;
--
--		/*
--		 * TODO: Add support for Dual and Quad SPI protocols
--		 * attach when board support is present as determined
--		 * by of property.
--		 */
--		ret = spi_nor_scan(nor, NULL, &hwcaps);
--		if (ret)
--			break;
--
--		ret = aspeed_smc_chip_setup_finish(chip);
--		if (ret)
--			break;
-+		controller->chips[cs] = chip;
- 
--		ret = mtd_device_register(mtd, NULL, 0);
-+		ret = aspeed_smc_register_chip(chip);
- 		if (ret)
- 			break;
--
--		controller->chips[cs] = chip;
- 	}
- 
- 	if (ret) {
-@@ -881,6 +897,7 @@ static int aspeed_smc_probe(struct platform_device *pdev)
- 		return PTR_ERR(controller->regs);
- 
- 	res = platform_get_resource(pdev, IORESOURCE_MEM, 1);
-+	controller->ahb_res = res;
- 	controller->ahb_base = devm_ioremap_resource(dev, res);
- 	if (IS_ERR(controller->ahb_base))
- 		return PTR_ERR(controller->ahb_base);
+Neither the "okay" nor the "disabled" device-tree status values works
+nicely for the flash device this case -- an "okay" device gets probed
+automatically as soon as the device and a driver for it are available,
+and a "disabled" one gets forgotten about entirely, whereas we want
+the BMC's kernel to be aware of the existence of the device, but not
+try to actually do anything with it (i.e. probe it) until explicitly
+requested to do so by userspace.
+
+However, while there's no support for it currently in the kernel tree,
+the device-tree spec [0] also lists "reserved" as a possible status
+value, and its description seems like a fairly reasonable fit for this
+situation:
+
+  Indicates that the device is operational, but should not be used.
+  Typically this is used for devices that are controlled by another
+  software component, such as platform firmware.
+
+These patches start making use of this status value in the aspeed-smc
+driver.  The first patch adds a companion routine to
+of_device_is_available() that checks for a "reserved" status instead
+of "okay".  The second patch is a small MTD adjustment to allow an
+unregistered device to be cleanly re-registered.  Patches 3 through 5
+modify the aspeed-smc driver to allow individual chips to be attached
+and detached at runtime, and to avoid automatically attaching any
+marked as reserved.  Finally, patch 6 employs the newly-supported
+status in adding support for the BIOS flash device to the ASRock Rack
+e3c246d4i BMC.
+
+
+Thanks,
+Zev
+
+[0] https://github.com/devicetree-org/devicetree-specification/releases/download/v0.3/devicetree-specification-v0.3.pdf
+
+Zev Weiss (6):
+  of: base: Add function to check for status = "reserved"
+  mtd: core: clear out unregistered devices a bit more
+  mtd: spi-nor: aspeed: Refactor registration/unregistration
+  mtd: spi-nor: aspeed: Allow attaching & detaching chips at runtime
+  mtd: spi-nor: aspeed: Don't automatically attach reserved chips
+  ARM: dts: aspeed: Add e3c246d4i BIOS flash device
+
+ .../ABI/stable/sysfs-driver-aspeed-smc        |  17 ++
+ .../boot/dts/aspeed-bmc-asrock-e3c246d4i.dts  |  16 ++
+ drivers/mtd/mtdcore.c                         |   7 +-
+ drivers/mtd/spi-nor/controllers/aspeed-smc.c  | 177 +++++++++++++++---
+ drivers/of/base.c                             |  53 +++++-
+ include/linux/of.h                            |   6 +
+ 6 files changed, 238 insertions(+), 38 deletions(-)
+ create mode 100644 Documentation/ABI/stable/sysfs-driver-aspeed-smc
+
 -- 
 2.33.0
 
