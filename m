@@ -1,76 +1,206 @@
 From: Zev Weiss <zev@bewilderbeest.net>
-Date: Wed, 29 Sep 2021 04:54:02 -0700
-Subject: [PATCH 0/6] Dynamic aspeed-smc flash chips via "reserved" DT status
-Message-ID: <20210929115409.21254-1-zev@bewilderbeest.net>
+Date: Wed, 29 Sep 2021 04:54:06 -0700
+Subject: [PATCH 4/6] mtd: spi-nor: aspeed: Allow attaching & detaching chips
+ at runtime
+In-Reply-To: <20210929115409.21254-1-zev@bewilderbeest.net>
+References: <20210929115409.21254-1-zev@bewilderbeest.net>
+Message-ID: <20210929115409.21254-5-zev@bewilderbeest.net>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello,
+There are now two new sysfs attributes, attach_chip and detach_chip,
+into which a chip select number can be written to attach or detach the
+corresponding chip.
 
-This patch series aims to improve a scenario that arises in OpenBMC
-and which isn't handled very well at the moment.  Certain devices, the
-example at hand being the flash chip used to store the host's firmware
-(e.g. the BIOS), may be shared between the BMC and the host system but
-only available to one or the other at any given time.  The device may
-thus be effectively off-limits to the BMC when it boots, and only
-usable after userspace performs the necessary steps to coordinate
-appropriately with the host (tracking its power state, twiddling
-GPIOs, sending IPMI commands, etc.).
-
-Neither the "okay" nor the "disabled" device-tree status values works
-nicely for the flash device this case -- an "okay" device gets probed
-automatically as soon as the device and a driver for it are available,
-and a "disabled" one gets forgotten about entirely, whereas we want
-the BMC's kernel to be aware of the existence of the device, but not
-try to actually do anything with it (i.e. probe it) until explicitly
-requested to do so by userspace.
-
-However, while there's no support for it currently in the kernel tree,
-the device-tree spec [0] also lists "reserved" as a possible status
-value, and its description seems like a fairly reasonable fit for this
-situation:
-
-  Indicates that the device is operational, but should not be used.
-  Typically this is used for devices that are controlled by another
-  software component, such as platform firmware.
-
-These patches start making use of this status value in the aspeed-smc
-driver.  The first patch adds a companion routine to
-of_device_is_available() that checks for a "reserved" status instead
-of "okay".  The second patch is a small MTD adjustment to allow an
-unregistered device to be cleanly re-registered.  Patches 3 through 5
-modify the aspeed-smc driver to allow individual chips to be attached
-and detached at runtime, and to avoid automatically attaching any
-marked as reserved.  Finally, patch 6 employs the newly-supported
-status in adding support for the BIOS flash device to the ASRock Rack
-e3c246d4i BMC.
-
-
-Thanks,
-Zev
-
-[0] https://github.com/devicetree-org/devicetree-specification/releases/download/v0.3/devicetree-specification-v0.3.pdf
-
-Zev Weiss (6):
-  of: base: Add function to check for status = "reserved"
-  mtd: core: clear out unregistered devices a bit more
-  mtd: spi-nor: aspeed: Refactor registration/unregistration
-  mtd: spi-nor: aspeed: Allow attaching & detaching chips at runtime
-  mtd: spi-nor: aspeed: Don't automatically attach reserved chips
-  ARM: dts: aspeed: Add e3c246d4i BIOS flash device
-
- .../ABI/stable/sysfs-driver-aspeed-smc        |  17 ++
- .../boot/dts/aspeed-bmc-asrock-e3c246d4i.dts  |  16 ++
- drivers/mtd/mtdcore.c                         |   7 +-
- drivers/mtd/spi-nor/controllers/aspeed-smc.c  | 177 +++++++++++++++---
- drivers/of/base.c                             |  53 +++++-
- include/linux/of.h                            |   6 +
- 6 files changed, 238 insertions(+), 38 deletions(-)
+Signed-off-by: Zev Weiss <zev@bewilderbeest.net>
+---
+ .../ABI/stable/sysfs-driver-aspeed-smc        |  17 +++
+ drivers/mtd/spi-nor/controllers/aspeed-smc.c  | 101 +++++++++++++++++-
+ 2 files changed, 115 insertions(+), 3 deletions(-)
  create mode 100644 Documentation/ABI/stable/sysfs-driver-aspeed-smc
 
+diff --git a/Documentation/ABI/stable/sysfs-driver-aspeed-smc b/Documentation/ABI/stable/sysfs-driver-aspeed-smc
+new file mode 100644
+index 000000000000..871b4d65ccb2
+--- /dev/null
++++ b/Documentation/ABI/stable/sysfs-driver-aspeed-smc
+@@ -0,0 +1,17 @@
++What:		/sys/bus/platform/drivers/aspeed-smc/*/attach_chip
++Date:		September 2021
++Contact:	Zev Weiss <zev@bewilderbeest.net>
++Description:	A chip select number may be written into this file to
++		request that the corresponding chip be attached by the
++		driver.
++Users:		OpenBMC.  Proposed changes should be mailed to
++		openbmc at lists.ozlabs.org
++
++What:		/sys/bus/platform/drivers/aspeed-smc/*/detach_chip
++Date:		September 2021
++Contact:	Zev Weiss <zev@bewilderbeest.net>
++Description:	A chip select number may be written into this file to
++		request that the corresponding chip be detached by the
++		driver.
++Users:		OpenBMC.  Proposed changes should be mailed to
++		openbmc at lists.ozlabs.org
+diff --git a/drivers/mtd/spi-nor/controllers/aspeed-smc.c b/drivers/mtd/spi-nor/controllers/aspeed-smc.c
+index 3c153104a905..da49192a8220 100644
+--- a/drivers/mtd/spi-nor/controllers/aspeed-smc.c
++++ b/drivers/mtd/spi-nor/controllers/aspeed-smc.c
+@@ -91,6 +91,7 @@ struct aspeed_smc_controller;
+ 
+ struct aspeed_smc_chip {
+ 	int cs;
++	bool attached;
+ 	struct aspeed_smc_controller *controller;
+ 	void __iomem *ctl;			/* control register */
+ 	void __iomem *ahb_base;			/* base of chip window */
+@@ -402,7 +403,15 @@ static ssize_t aspeed_smc_write_user(struct spi_nor *nor, loff_t to,
+ 
+ static int aspeed_smc_unregister_chip(struct aspeed_smc_chip *chip)
+ {
+-	return mtd_device_unregister(&chip->nor.mtd);
++	int ret = -ENOENT;
++	mutex_lock(&chip->controller->mutex);
++	if (chip->attached) {
++		ret = mtd_device_unregister(&chip->nor.mtd);
++		if (!ret)
++			chip->attached = false;
++	}
++	mutex_unlock(&chip->controller->mutex);
++	return ret;
+ }
+ 
+ static int aspeed_smc_unregister(struct aspeed_smc_controller *controller)
+@@ -412,7 +421,7 @@ static int aspeed_smc_unregister(struct aspeed_smc_controller *controller)
+ 
+ 	for (n = 0; n < controller->info->nce; n++) {
+ 		chip = controller->chips[n];
+-		if (chip) {
++		if (chip && chip->attached) {
+ 			ret = aspeed_smc_unregister_chip(chip);
+ 			if (ret)
+ 				dev_warn(controller->dev, "failed to unregister CS%d: %d\n",
+@@ -775,6 +784,13 @@ static int aspeed_smc_register_chip(struct aspeed_smc_chip *chip)
+ 	};
+ 	int ret;
+ 
++	mutex_lock(&chip->controller->mutex);
++
++	if (chip->attached) {
++		ret = -EEXIST;
++		goto out;
++	}
++
+ 	ret = aspeed_smc_chip_setup_init(chip, chip->controller->ahb_res);
+ 	if (ret)
+ 		goto out;
+@@ -792,7 +808,12 @@ static int aspeed_smc_register_chip(struct aspeed_smc_chip *chip)
+ 		goto out;
+ 
+ 	ret = mtd_device_register(&chip->nor.mtd, NULL, 0);
++	if (ret)
++		goto out;
++
++	chip->attached = true;
+ out:
++	mutex_unlock(&chip->controller->mutex);
+ 	return ret;
+ }
+ 
+@@ -865,6 +886,72 @@ static int aspeed_smc_setup_flash(struct aspeed_smc_controller *controller,
+ 	return ret;
+ }
+ 
++static inline struct aspeed_smc_controller *to_aspeed_smc_controller(struct device *dev)
++{
++	struct platform_device *pdev = container_of(dev, struct platform_device, dev);
++	return platform_get_drvdata(pdev);
++}
++
++static ssize_t attach_chip_store(struct device *dev, struct device_attribute *attr,
++                                 const char *buf, size_t count)
++{
++	unsigned long cs;
++	struct aspeed_smc_controller *controller;
++	struct aspeed_smc_chip *chip;
++	ssize_t ret = kstrtoul(buf, 0, &cs);
++	if (ret)
++		return ret;
++
++	controller = to_aspeed_smc_controller(dev);
++	if (cs >= controller->info->nce)
++		return -EINVAL;
++
++	chip = controller->chips[cs];
++
++	if (!chip)
++		return -ENODEV;
++
++	ret = aspeed_smc_register_chip(chip);
++
++	return ret ? ret : count;
++}
++static DEVICE_ATTR_WO(attach_chip);
++
++static ssize_t detach_chip_store(struct device *dev, struct device_attribute *attr,
++                                 const char *buf, size_t count)
++{
++	unsigned long cs;
++	struct aspeed_smc_controller *controller;
++	struct aspeed_smc_chip *chip;
++	ssize_t ret = kstrtoul(buf, 0, &cs);
++	if (ret)
++		return ret;
++
++	controller = to_aspeed_smc_controller(dev);
++	if (cs >= controller->info->nce)
++		return -EINVAL;
++
++	chip = controller->chips[cs];
++
++	if (!chip)
++		return -ENODEV;
++
++	ret = aspeed_smc_unregister_chip(chip);
++
++	return ret ? ret : count;
++}
++static DEVICE_ATTR_WO(detach_chip);
++
++static struct attribute *aspeed_smc_sysfs_attrs[] = {
++	&dev_attr_attach_chip.attr,
++	&dev_attr_detach_chip.attr,
++	NULL,
++};
++
++static const struct attribute_group aspeed_smc_sysfs_attr_group = {
++	.attrs = aspeed_smc_sysfs_attrs,
++};
++
+ static int aspeed_smc_probe(struct platform_device *pdev)
+ {
+ 	struct device_node *np = pdev->dev.of_node;
+@@ -905,8 +992,16 @@ static int aspeed_smc_probe(struct platform_device *pdev)
+ 	controller->ahb_window_size = resource_size(res);
+ 
+ 	ret = aspeed_smc_setup_flash(controller, np, res);
+-	if (ret)
++	if (ret) {
+ 		dev_err(dev, "Aspeed SMC probe failed %d\n", ret);
++		return ret;
++	}
++
++	ret = devm_device_add_group(dev, &aspeed_smc_sysfs_attr_group);
++	if (ret) {
++		dev_err(dev, "Failed to create sysfs files\n");
++		aspeed_smc_unregister(controller);
++	}
+ 
+ 	return ret;
+ }
 -- 
 2.33.0
 
