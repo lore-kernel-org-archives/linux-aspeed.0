@@ -1,43 +1,22 @@
-From: ChiaWei Wang <chiawei_wang@aspeedtech.com>
-Date: Thu, 30 Sep 2021 01:55:20 +0000
-Subject: [PATCH v7 3/5] dt-bindings: aspeed: Add UART routing controller
-In-Reply-To: <YVTkjKdXcyIVImmP@robh.at.kernel.org>
-References: <20210927023053.6728-1-chiawei_wang@aspeedtech.com>
- <20210927023053.6728-4-chiawei_wang@aspeedtech.com>
- <YVTkjKdXcyIVImmP@robh.at.kernel.org>
-Message-ID: <HK0PR06MB377971D66A2ABA4929D3646791AA9@HK0PR06MB3779.apcprd06.prod.outlook.com>
+From: Zev Weiss <zweiss@equinix.com>
+Date: Thu, 30 Sep 2021 02:44:48 +0000
+Subject: [PATCH v4 0/4] i2c: aspeed: Add buffer and DMA modes support
+In-Reply-To: <20210224191720.7724-1-jae.hyun.yoo@linux.intel.com>
+References: <20210224191720.7724-1-jae.hyun.yoo@linux.intel.com>
+Message-ID: <20210930024448.GU17315@packtop>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-> From: Rob Herring <robh@kernel.org>
-> Sent: Thursday, September 30, 2021 6:11 AM
-> 
-> On Mon, 27 Sep 2021 10:30:51 +0800, Chia-Wei Wang wrote:
-> > Add dt-bindings for Aspeed UART routing controller.
-> >
-> > Signed-off-by: Oskar Senft <osk@google.com>
-> > Signed-off-by: Chia-Wei Wang <chiawei_wang@aspeedtech.com>
-> > Reviewed-by: Rob Herring <robh@kernel.org>
-> > ---
-> >  .../devicetree/bindings/mfd/aspeed-lpc.yaml   |  4 ++
-> >  .../bindings/soc/aspeed/uart-routing.yaml     | 56
-> +++++++++++++++++++
-> >  2 files changed, 60 insertions(+)
-> >  create mode 100644
-> Documentation/devicetree/bindings/soc/aspeed/uart-routing.yaml
-> >
-> 
-> Applied, thanks!
+On Wed, Feb 24, 2021 at 11:17:16AM PST, Jae Hyun Yoo wrote:
+>This patch series adds buffer mode and DMA mode transfer support for the
+>Aspeed I2C driver. With this change, buffer mode and DMA mode can be
+>selectively used depend on platform configuration.
+>
 
-Thanks!
+Any updates on these patches?  They provide a welcome performance
+improvement for some stuff I've been doing -- for the v4 series:
 
-Hi Joel,
-
-Could you help to review the rest patches to see if they are ready to be merged into the linux-aspeed tree?
-Thanks.
-
-Regards,
-Chiawei
+Tested-by: Zev Weiss <zweiss@equinix.com>
