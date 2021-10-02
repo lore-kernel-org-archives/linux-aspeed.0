@@ -1,33 +1,45 @@
-From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-Date: Fri, 1 Oct 2021 10:06:47 -0700
-Subject: [PATCH v4 0/4] i2c: aspeed: Add buffer and DMA modes support
-In-Reply-To: <20210930024448.GU17315@packtop>
-References: <20210224191720.7724-1-jae.hyun.yoo@linux.intel.com>
- <20210930024448.GU17315@packtop>
-Message-ID: <95dd9359-7dc0-00ce-2867-b35c3b4ebb2f@linux.intel.com>
+From: Jonathan Cameron <jic23@kernel.org>
+Date: Sat, 2 Oct 2021 17:11:40 +0100
+Subject: [PATCH][next] iio: adc: aspeed: Fix spelling mistake "battey"
+ -> "battery"
+In-Reply-To: <20211001120018.17570-1-colin.king@canonical.com>
+References: <20211001120018.17570-1-colin.king@canonical.com>
+Message-ID: <20211002171140.1af667ef@jic23-huawei>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Zev,
+On Fri,  1 Oct 2021 13:00:18 +0100
+Colin King <colin.king@canonical.com> wrote:
 
-On 9/29/2021 7:44 PM, Zev Weiss wrote:
-> On Wed, Feb 24, 2021 at 11:17:16AM PST, Jae Hyun Yoo wrote:
->> This patch series adds buffer mode and DMA mode transfer support for the
->> Aspeed I2C driver. With this change, buffer mode and DMA mode can be
->> selectively used depend on platform configuration.
->>
+> From: Colin Ian King <colin.king@canonical.com>
 > 
-> Any updates on these patches?  They provide a welcome performance
-> improvement for some stuff I've been doing -- for the v4 series:
+> There is a spelling mistake in a dev_warn message. Fix it.
 > 
-> Tested-by: Zev Weiss <zweiss@equinix.com>
+> Signed-off-by: Colin Ian King <colin.king@canonical.com>
+Hi Colin,
 
-Thanks for sharing your test result.
+Thanks and applied.
 
-I'm bringing this patch set back to discussion.
+Jonathan
 
-Thanks,
-Jae
+> ---
+>  drivers/iio/adc/aspeed_adc.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/iio/adc/aspeed_adc.c b/drivers/iio/adc/aspeed_adc.c
+> index 3e9850a43372..a957cad1bfab 100644
+> --- a/drivers/iio/adc/aspeed_adc.c
+> +++ b/drivers/iio/adc/aspeed_adc.c
+> @@ -581,7 +581,7 @@ static int aspeed_adc_probe(struct platform_device *pdev)
+>  			}
+>  		} else
+>  			dev_warn(&pdev->dev,
+> -				 "Failed to enable battey-sensing mode\n");
+> +				 "Failed to enable battery-sensing mode\n");
+>  	}
+>  
+>  	ret = clk_prepare_enable(data->clk_scaler->clk);
+
