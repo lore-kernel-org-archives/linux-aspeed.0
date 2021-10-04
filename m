@@ -1,45 +1,40 @@
-From: Jonathan Cameron <jic23@kernel.org>
-Date: Sat, 2 Oct 2021 17:11:40 +0100
-Subject: [PATCH][next] iio: adc: aspeed: Fix spelling mistake "battey"
- -> "battery"
-In-Reply-To: <20211001120018.17570-1-colin.king@canonical.com>
-References: <20211001120018.17570-1-colin.king@canonical.com>
-Message-ID: <20211002171140.1af667ef@jic23-huawei>
+From: Billy Tsai <billy_tsai@aspeedtech.com>
+Date: Mon, 4 Oct 2021 01:46:01 +0000
+Subject: [v9 1/2] dt-bindings: Add bindings for aspeed pwm-tach.
+In-Reply-To: <029CA29B-1488-4F73-A9E7-FB9BCD0B987F@aspeedtech.com>
+References: <20210709065217.6153-1-billy_tsai@aspeedtech.com>
+ <20210709065217.6153-2-billy_tsai@aspeedtech.com>
+ <20210713221431.GA936073@robh.at.kernel.org>
+ <029CA29B-1488-4F73-A9E7-FB9BCD0B987F@aspeedtech.com>
+Message-ID: <A7C9DA11-6880-46EC-BD71-2E1984EBA294@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri,  1 Oct 2021 13:00:18 +0100
-Colin King <colin.king@canonical.com> wrote:
+Hi Rob,
 
-> From: Colin Ian King <colin.king@canonical.com>
-> 
-> There is a spelling mistake in a dev_warn message. Fix it.
-> 
-> Signed-off-by: Colin Ian King <colin.king@canonical.com>
-Hi Colin,
+On 2021/7/14, 12:02 PM, "Billy Tsai" <billy_tsai@aspeedtech.com> wrote:
 
-Thanks and applied.
+    On 2021/7/14, 6:14 AM, "Rob Herring" <robh@kernel.org> wrote:
 
-Jonathan
+        On Fri, Jul 09, 2021 at 02:52:16PM +0800, Billy Tsai wrote:
+        >>> This patch adds device binding for aspeed pwm-tach device which is a
+        >>> multi-function device include pwm and tach function and pwm/tach device
+        >>> bindings which should be the child-node of pwm-tach device.
 
-> ---
->  drivers/iio/adc/aspeed_adc.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/iio/adc/aspeed_adc.c b/drivers/iio/adc/aspeed_adc.c
-> index 3e9850a43372..a957cad1bfab 100644
-> --- a/drivers/iio/adc/aspeed_adc.c
-> +++ b/drivers/iio/adc/aspeed_adc.c
-> @@ -581,7 +581,7 @@ static int aspeed_adc_probe(struct platform_device *pdev)
->  			}
->  		} else
->  			dev_warn(&pdev->dev,
-> -				 "Failed to enable battey-sensing mode\n");
-> +				 "Failed to enable battery-sensing mode\n");
->  	}
->  
->  	ret = clk_prepare_enable(data->clk_scaler->clk);
+        >>I'll say it again, the fan control h/w needs some common bindings for 
+        >>describing fans and fan connections to pwm and tach. I'm not going to 
+        >>sign off on more fan bindings just doing their own thing.
+
+    > This patch doesn't use to binding the fan control h/w. It is used to binding the two independent h/w blocks.
+    > One is used to provide pwm output and another is used to monitor the speed of the input.
+    > It is different from "aspeed-pwm-tacho.txt" and "npcm750-pwm-fan.txt" which only focus on fan usage.
+    > It is more like the "kontron,sl28cpld.yaml" the device includes a fan monitor and PWM output devices.
+
+Can you give me more suggestions about this patch?
+
+Thanks
+
 
