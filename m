@@ -1,49 +1,58 @@
-From: Borislav Petkov <bp@alien8.de>
-Date: Mon, 4 Oct 2021 21:03:55 +0200
-Subject: [PATCH v2 01/15] x86/cpu: Move intel-family to arch-independent
- headers
-In-Reply-To: <20210803113134.2262882-2-iwona.winiarska@intel.com>
-References: <20210803113134.2262882-1-iwona.winiarska@intel.com>
- <20210803113134.2262882-2-iwona.winiarska@intel.com>
-Message-ID: <YVtQG+idmwKn0qLe@zn.tnic>
+From: Adriana Kobylak <anoo@linux.ibm.com>
+Date: Tue,  5 Oct 2021 19:22:26 +0000
+Subject: [PATCH v3] ARM: dts: aspeed: rainier: Add power-config-full-load gpio
+Message-ID: <20211005192226.213539-1-anoo@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Aug 03, 2021 at 01:31:20PM +0200, Iwona Winiarska wrote:
-> Baseboard management controllers (BMC) often run Linux but are usually
-> implemented with non-X86 processors. They can use PECI to access package
-> config space (PCS) registers on the host CPU and since some information,
-> e.g. figuring out the core count, can be obtained using different
-> registers on different CPU generations, they need to decode the family
-> and model.
-> 
-> Move the data from arch/x86/include/asm/intel-family.h into a new file
-> include/linux/x86/intel-family.h so that it can be used by other
-> architectures.
-> 
-> Signed-off-by: Iwona Winiarska <iwona.winiarska@intel.com>
-> Reviewed-by: Tony Luck <tony.luck@intel.com>
-> Reviewed-by: Dan Williams <dan.j.williams@intel.com>
-> ---
-> To limit tree-wide changes and help people that were expecting
-> intel-family defines in arch/x86 to find it more easily without going
-> through git history, we're not removing the original header
-> completely, we're keeping it as a "stub" that includes the new one.
-> If there is a consensus that the tree-wide option is better,
-> we can choose this approach.
+From: Adriana Kobylak <anoo@us.ibm.com>
 
-Why can't the linux/ namespace header include the x86 one so that
-nothing changes for arch/x86/?
+Add the power-config-full-load described in:
+https://github.com/openbmc/docs/blob/master/designs/device-tree-gpio-naming.md#power-config-full-load
 
-And if it is really only a handful of families you need, you might just
-as well copy them into the peci headers and slap a comment above it
-saying where they come from and save yourself all that churn...
+The power-config-full-load gpio is designed to be used to specify how
+many power supplies the system should have, in rainier it is 2 or 4.  If
+enough power supplies fail so that the system no longer has redundancy
+(no longer n+1), the hardware will signal to the Onboard Chip Controller
+that the system may be oversubscribed, and performance may need to be
+reduced so the system can maintain it's powered on state.
 
+Signed-off-by: Adriana Kobylak <anoo@us.ibm.com>
+---
+
+v2: Update commit message.
+v3: Updated gpio name to power-config-full-load to match design doc.
+
+ arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+
+diff --git a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
+index 33fae8ad1305..10bde77fb847 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
+@@ -1998,6 +1998,19 @@ eeprom at 51 {
+ 		reg = <0x51>;
+ 	};
+ 
++	pca_pres3: pca9552 at 60 {
++		compatible = "nxp,pca9552";
++		reg = <0x60>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++		gpio-controller;
++		#gpio-cells = <2>;
++
++		gpio-line-names =
++			"", "", "", "", "", "", "", "",
++			"", "", "", "", "", "", "power-config-full-load", "";
++	};
++
+ 	pca_pres2: pca9552 at 61 {
+ 		compatible = "nxp,pca9552";
+ 		reg = <0x61>;
 -- 
-Regards/Gruss,
-    Boris.
+2.25.1
 
-https://people.kernel.org/tglx/notes-about-netiquette
