@@ -1,59 +1,54 @@
-From: Zev Weiss <zev@bewilderbeest.net>
-Date: Wed,  6 Oct 2021 17:09:54 -0700
-Subject: [PATCH 9/9] ARM: dts: aspeed: Add e3c246d4i BIOS flash device
+From: Florian Fainelli <f.fainelli@gmail.com>
+Date: Wed, 6 Oct 2021 19:46:08 -0700
+Subject: [PATCH 0/9] Dynamic DT device nodes
 In-Reply-To: <20211007000954.30621-1-zev@bewilderbeest.net>
 References: <20211007000954.30621-1-zev@bewilderbeest.net>
-Message-ID: <20211007000954.30621-10-zev@bewilderbeest.net>
+Message-ID: <99b43bbf-b63e-d684-dd61-3087e9f22dc4@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This uses a dynamic DT node because the BIOS SPI flash requires
-significant coordination with the host system (power state tracking,
-GPIOs, IPMI messages) before the BMC can touch it, and needs to be
-relinquished back to the host when the BMC is done accessing it.
 
-Signed-off-by: Zev Weiss <zev@bewilderbeest.net>
----
- .../boot/dts/aspeed-bmc-asrock-e3c246d4i.dts  | 23 +++++++++++++++++++
- 1 file changed, 23 insertions(+)
 
-diff --git a/arch/arm/boot/dts/aspeed-bmc-asrock-e3c246d4i.dts b/arch/arm/boot/dts/aspeed-bmc-asrock-e3c246d4i.dts
-index 9b4cf5ebe6d5..428198703824 100644
---- a/arch/arm/boot/dts/aspeed-bmc-asrock-e3c246d4i.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-asrock-e3c246d4i.dts
-@@ -68,6 +68,29 @@ flash at 0 {
- 	};
- };
- 
-+&spi1 {
-+	/*
-+	 * The BIOS SPI flash is shared with the host via an external mux, and
-+	 * is not accessible by the BMC by default (hence reserved/dynamic
-+	 * here rather than okay).  This would ideally be done on the flash at 0
-+	 * node instead of the spi1 controller, but the driver infrastructure
-+	 * to support dynamic devices at that level of the device tree isn't
-+	 * currently in place, and it's the only flash chip on this
-+	 * controller, so we can get away with the coarser granularity here
-+	 * until support for making individual flash chips dynamic is
-+	 * available.
-+	 */
-+	status = "reserved";
-+	dynamic;
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pinctrl_spi1_default>;
-+	flash at 0 {
-+		status = "okay";
-+		label = "bios";
-+		m25p,fast-read;
-+	};
-+};
-+
- &uart5 {
- 	status = "okay";
- };
+On 10/6/2021 5:09 PM, Zev Weiss wrote:
+> Hello,
+> 
+> This patch series is in some ways kind of a v2 for the "Dynamic
+> aspeed-smc flash chips via 'reserved' DT status" series I posted
+> previously [0], but takes a fairly different approach suggested by Rob
+> Herring [1] and doesn't actually touch the aspeed-smc driver or
+> anything in the MTD subsystem, so I haven't marked it as such.
+> 
+> To recap a bit of the context from that series, in OpenBMC there's a
+> need for certain devices (described by device-tree nodes) to be able
+> to be attached and detached at runtime (for example the SPI flash for
+> the host's firmware, which is shared between the BMC and the host but
+> can only be accessed by one or the other at a time).  To provide that
+> ability, this series adds support for a new common device-tree
+> property, a boolean "dynamic" that indicates that the device may come
+> and go at runtime.  When present on a node, the sysfs file for that
+> node's "status" property is made writable, allowing userspace to do
+> things like:
+> 
+>    $ echo okay > /sys/firmware/devicetree/.../status
+>    $ echo reserved > /sys/firmware/devicetree/.../status
+> 
+> to activate and deactivate a dynamic device.
+
+This is a completely drive by comment here, but cannot you already 
+achieve what you want today by making the SPI-NOR to be loaded as a 
+module, probe it when you need it from the BMC, and unbind or rmmod the 
+drive when you need it on the server/host attached to the BMC?
+
+Looking at [0] there appears to be enough signaling visible by the BMC's 
+user-space that it ought to be possible?
+
+Assuming that there may be multiple flash chips and you somehow need to 
+access one in order to complete the BMC device boot, but not the other 
+one(s), you could imagine unbinding the spi-nor driver from the ones you 
+don't want to drive and wait until you have appropriate signaling made 
+available to your or is there a risk of racing with the host in doing so?
 -- 
-2.33.0
-
+Florian
