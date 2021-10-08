@@ -1,95 +1,77 @@
-From: Rob Herring <robh+dt@kernel.org>
-Date: Thu, 7 Oct 2021 15:03:43 -0500
-Subject: [PATCH 0/9] Dynamic DT device nodes
-In-Reply-To: <YV8VGeMreR6NJad4@hatter.bewilderbeest.net>
-References: <20211007000954.30621-1-zev@bewilderbeest.net>
- <CAHp75VdYBB_FaMr-uKswdvDBdobTYZkiE6ncoALuG+YYVoMwyw@mail.gmail.com>
- <YV64ZbcsHvBObH2j@hatter.bewilderbeest.net> <YV7Miz9RMMx/17A0@kroah.com>
- <YV8VGeMreR6NJad4@hatter.bewilderbeest.net>
-Message-ID: <CAL_JsqLk-CqKVgWp3=XccHrCdQgdGoezB6=HAXMDe1Q5R4-0HA@mail.gmail.com>
+From: Joel Stanley <joel@jms.id.au>
+Date: Fri, 8 Oct 2021 04:22:21 +0000
+Subject: [PATCH v3] ARM: dts: aspeed: rainier: Add power-config-full-load
+ gpio
+In-Reply-To: <20211005192226.213539-1-anoo@linux.ibm.com>
+References: <20211005192226.213539-1-anoo@linux.ibm.com>
+Message-ID: <CACPK8XdnMfDD6FHOuwyxz5S-wzaY1uSBEso6ov6OKQ0r2H7cTg@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Oct 7, 2021 at 10:41 AM Zev Weiss <zev@bewilderbeest.net> wrote:
+Hi Adriana,
+
+On Tue, 5 Oct 2021 at 19:22, Adriana Kobylak <anoo@linux.ibm.com> wrote:
 >
-> On Thu, Oct 07, 2021 at 03:31:39AM PDT, Greg Kroah-Hartman wrote:
-> >On Thu, Oct 07, 2021 at 02:05:41AM -0700, Zev Weiss wrote:
-> >> On Thu, Oct 07, 2021 at 12:04:41AM PDT, Andy Shevchenko wrote:
-> >> > On Thu, Oct 7, 2021 at 3:10 AM Zev Weiss <zev@bewilderbeest.net> wrote:
-> >> > > This patch series is in some ways kind of a v2 for the "Dynamic
-> >> > > aspeed-smc flash chips via 'reserved' DT status" series I posted
-> >> > > previously [0], but takes a fairly different approach suggested by Rob
-> >> > > Herring [1] and doesn't actually touch the aspeed-smc driver or
-> >> > > anything in the MTD subsystem, so I haven't marked it as such.
-> >> > >
-> >> > > To recap a bit of the context from that series, in OpenBMC there's a
-> >> > > need for certain devices (described by device-tree nodes) to be able
-> >> > > to be attached and detached at runtime (for example the SPI flash for
-> >> > > the host's firmware, which is shared between the BMC and the host but
-> >> > > can only be accessed by one or the other at a time).
-> >> >
-> >> > This seems quite dangerous. Why do you need that?
-> >>
-> >> Sometimes the host needs access to the flash (it's the host's firmware,
-> >> after all), sometimes the BMC needs access to it (e.g. to perform an
-> >> out-of-band update to the host's firmware).  To achieve the latter, the
-> >> flash needs to be attached to the BMC, but that requires some careful
-> >> coordination with the host to arbitrate which one actually has access to it
-> >> (that coordination is handled by userspace, which then tells the kernel
-> >> explicitly when the flash should be attached and detached).
-> >>
-> >> What seems dangerous?
-> >>
-> >> > Why can't device tree overlays be used?
-> >>
-> >> I'm hoping to stay closer to mainline.  The OpenBMC kernel has a documented
-> >> policy strongly encouraging upstream-first development:
-> >> https://github.com/openbmc/docs/blob/master/kernel-development.md
-> >>
-> >> I doubt Joel (the OpenBMC kernel maintainer) would be eager to start
-> >> carrying the DT overlay patches; I'd likewise strongly prefer to avoid
-> >> carrying them myself as additional downstream patches.  Hence the attempt at
-> >> getting a solution to the problem upstream.
-> >
-> >Then why not work to get device tree overlays to be merged properly?
-
-TBC, it's 'just' the general purpose userspace interface to apply
-overlays that's missing.
-
-I did suggest what's done here as overlays are kind of an overkill for
-this usecase. Much easier to write to a sysfs file than write an
-overlay, compile it with dtc, and provide it to the kernel all just to
-enable a device.
-
-Perhaps this could also be supported in the driver model directly.
-Given the "what about ACPI question", that is probably what should be
-done unless the answer is we don't care. I think we'd just need a flag
-to create devices, but not bind automatically. Or maybe abusing
-driver_override can accomplish that.
-
-> >Don't work on a half-of-a-solution when the real solution is already
-> >here.
-> >
+> From: Adriana Kobylak <anoo@us.ibm.com>
 >
-> I had been under the impression that the overlay patches had very dim
-> prospects of ever being accepted and that this might be a more tractable
-> alternative, but apparently was mistaken -- I'll look into what the
-> outstanding issues were with that and perhaps take a stab at addressing
-> them.
+> Add the power-config-full-load described in:
+> https://github.com/openbmc/docs/blob/master/designs/device-tree-gpio-naming.md#power-config-full-load
+>
+> The power-config-full-load gpio is designed to be used to specify how
+> many power supplies the system should have, in rainier it is 2 or 4.  If
+> enough power supplies fail so that the system no longer has redundancy
+> (no longer n+1), the hardware will signal to the Onboard Chip Controller
+> that the system may be oversubscribed, and performance may need to be
+> reduced so the system can maintain it's powered on state.
+>
+> Signed-off-by: Adriana Kobylak <anoo@us.ibm.com>
 
-What's dim is the patches allowing any modification to any part of the
-DT. Any changes to a DT need to work (i.e. have some effect). For
-example, randomly changing/adding/removing properties wouldn't have
-any effect because they've probably already be read and used.
+This looks good. I think the name is much easier to understand now.
 
-What I've suggested before is some sort of registration of nodes
-allowed to apply child nodes and properties to. That would serve the
-add-on board usecases which have been the main driver of this to date.
-That also got hung up on defining interface nodes to add-on boards.
-Your scope is more limited and can be limited to that scope while
-using the same configfs interface.
+I notice you've dropped all of the other names. Do you not need them?
 
-Rob
+It would be great if one of the people you cc'd could provide a
+reviewed-by before I merge this.
+
+Cheers,
+
+Joel
+
+> ---
+>
+> v2: Update commit message.
+> v3: Updated gpio name to power-config-full-load to match design doc.
+>
+>  arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts | 13 +++++++++++++
+>  1 file changed, 13 insertions(+)
+>
+> diff --git a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
+> index 33fae8ad1305..10bde77fb847 100644
+> --- a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
+> +++ b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
+> @@ -1998,6 +1998,19 @@ eeprom at 51 {
+>                 reg = <0x51>;
+>         };
+>
+> +       pca_pres3: pca9552 at 60 {
+> +               compatible = "nxp,pca9552";
+> +               reg = <0x60>;
+> +               #address-cells = <1>;
+> +               #size-cells = <0>;
+> +               gpio-controller;
+> +               #gpio-cells = <2>;
+> +
+> +               gpio-line-names =
+> +                       "", "", "", "", "", "", "", "",
+> +                       "", "", "", "", "", "", "power-config-full-load", "";
+> +       };
+> +
+>         pca_pres2: pca9552 at 61 {
+>                 compatible = "nxp,pca9552";
+>                 reg = <0x61>;
+> --
+> 2.25.1
+>
