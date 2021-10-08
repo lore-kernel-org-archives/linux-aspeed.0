@@ -1,77 +1,75 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Fri, 8 Oct 2021 04:22:21 +0000
-Subject: [PATCH v3] ARM: dts: aspeed: rainier: Add power-config-full-load
- gpio
-In-Reply-To: <20211005192226.213539-1-anoo@linux.ibm.com>
-References: <20211005192226.213539-1-anoo@linux.ibm.com>
-Message-ID: <CACPK8XdnMfDD6FHOuwyxz5S-wzaY1uSBEso6ov6OKQ0r2H7cTg@mail.gmail.com>
+Date: Fri, 8 Oct 2021 04:35:31 +0000
+Subject: [PATCH v7 1/5] ARM: dts: aspeed: Drop reg-io-width from LPC nodes
+In-Reply-To: <20210927023053.6728-2-chiawei_wang@aspeedtech.com>
+References: <20210927023053.6728-1-chiawei_wang@aspeedtech.com>
+ <20210927023053.6728-2-chiawei_wang@aspeedtech.com>
+Message-ID: <CACPK8Xc+9yFJn_pO1sAVQJu_FWkA1U9XnbB+TLYgfdbHi1TyaQ@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Adriana,
-
-On Tue, 5 Oct 2021 at 19:22, Adriana Kobylak <anoo@linux.ibm.com> wrote:
+On Mon, 27 Sept 2021 at 02:31, Chia-Wei Wang
+<chiawei_wang@aspeedtech.com> wrote:
 >
-> From: Adriana Kobylak <anoo@us.ibm.com>
+> The 'reg-io-width' properties are not used by LPC drivers
+> nor documented as part of bindings. Therefore drop them.
+
+I assume they are there due to the lpc having a 'syscon' compatible.
+THey are documented in the syscon bindings:
+
+Documentation/devicetree/bindings/mfd/syscon.yaml
+
+Andrew, do you have any comments?
+
 >
-> Add the power-config-full-load described in:
-> https://github.com/openbmc/docs/blob/master/designs/device-tree-gpio-naming.md#power-config-full-load
+> This is in preparation to move aspeed-lpc.txt to YAML schema.
 >
-> The power-config-full-load gpio is designed to be used to specify how
-> many power supplies the system should have, in rainier it is 2 or 4.  If
-> enough power supplies fail so that the system no longer has redundancy
-> (no longer n+1), the hardware will signal to the Onboard Chip Controller
-> that the system may be oversubscribed, and performance may need to be
-> reduced so the system can maintain it's powered on state.
->
-> Signed-off-by: Adriana Kobylak <anoo@us.ibm.com>
-
-This looks good. I think the name is much easier to understand now.
-
-I notice you've dropped all of the other names. Do you not need them?
-
-It would be great if one of the people you cc'd could provide a
-reviewed-by before I merge this.
-
-Cheers,
-
-Joel
-
+> Signed-off-by: Chia-Wei Wang <chiawei_wang@aspeedtech.com>
 > ---
+>  arch/arm/boot/dts/aspeed-g4.dtsi | 1 -
+>  arch/arm/boot/dts/aspeed-g5.dtsi | 1 -
+>  arch/arm/boot/dts/aspeed-g6.dtsi | 1 -
+>  3 files changed, 3 deletions(-)
 >
-> v2: Update commit message.
-> v3: Updated gpio name to power-config-full-load to match design doc.
+> diff --git a/arch/arm/boot/dts/aspeed-g4.dtsi b/arch/arm/boot/dts/aspeed-g4.dtsi
+> index c5aeb3cf3a09..45a25eb4baa4 100644
+> --- a/arch/arm/boot/dts/aspeed-g4.dtsi
+> +++ b/arch/arm/boot/dts/aspeed-g4.dtsi
+> @@ -345,7 +345,6 @@
+>                         lpc: lpc at 1e789000 {
+>                                 compatible = "aspeed,ast2400-lpc-v2", "simple-mfd", "syscon";
+>                                 reg = <0x1e789000 0x1000>;
+> -                               reg-io-width = <4>;
 >
->  arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts | 13 +++++++++++++
->  1 file changed, 13 insertions(+)
+>                                 #address-cells = <1>;
+>                                 #size-cells = <1>;
+> diff --git a/arch/arm/boot/dts/aspeed-g5.dtsi b/arch/arm/boot/dts/aspeed-g5.dtsi
+> index 73ca1ec6fc24..8e1d00d8445e 100644
+> --- a/arch/arm/boot/dts/aspeed-g5.dtsi
+> +++ b/arch/arm/boot/dts/aspeed-g5.dtsi
+> @@ -436,7 +436,6 @@
+>                         lpc: lpc at 1e789000 {
+>                                 compatible = "aspeed,ast2500-lpc-v2", "simple-mfd", "syscon";
+>                                 reg = <0x1e789000 0x1000>;
+> -                               reg-io-width = <4>;
 >
-> diff --git a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
-> index 33fae8ad1305..10bde77fb847 100644
-> --- a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
-> +++ b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
-> @@ -1998,6 +1998,19 @@ eeprom at 51 {
->                 reg = <0x51>;
->         };
+>                                 #address-cells = <1>;
+>                                 #size-cells = <1>;
+> diff --git a/arch/arm/boot/dts/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed-g6.dtsi
+> index 1b47be1704f8..0d1aae6887cd 100644
+> --- a/arch/arm/boot/dts/aspeed-g6.dtsi
+> +++ b/arch/arm/boot/dts/aspeed-g6.dtsi
+> @@ -490,7 +490,6 @@
+>                         lpc: lpc at 1e789000 {
+>                                 compatible = "aspeed,ast2600-lpc-v2", "simple-mfd", "syscon";
+>                                 reg = <0x1e789000 0x1000>;
+> -                               reg-io-width = <4>;
 >
-> +       pca_pres3: pca9552 at 60 {
-> +               compatible = "nxp,pca9552";
-> +               reg = <0x60>;
-> +               #address-cells = <1>;
-> +               #size-cells = <0>;
-> +               gpio-controller;
-> +               #gpio-cells = <2>;
-> +
-> +               gpio-line-names =
-> +                       "", "", "", "", "", "", "", "",
-> +                       "", "", "", "", "", "", "power-config-full-load", "";
-> +       };
-> +
->         pca_pres2: pca9552 at 61 {
->                 compatible = "nxp,pca9552";
->                 reg = <0x61>;
+>                                 #address-cells = <1>;
+>                                 #size-cells = <1>;
 > --
-> 2.25.1
+> 2.17.1
 >
