@@ -1,73 +1,65 @@
-From: Greg KH <gregkh@linuxfoundation.org>
-Date: Fri, 8 Oct 2021 07:45:22 +0200
-Subject: [PATCH v3] media: aspeed-video: ignore interrupts that aren't
- enabled
-In-Reply-To: <CACPK8Xfowe6k8KOucveUd-O3vMC4n7qyF8uoowcpWj-Sugqhbw@mail.gmail.com>
-References: <20210617220229.7352-1-zev@bewilderbeest.net>
- <46edf81d60a38747f7d2511f840253a1c6867652.camel@linux.ibm.com>
- <HK0PR06MB338081E134AA6F43ECBCBA4DF2D29@HK0PR06MB3380.apcprd06.prod.outlook.com>
- <CACPK8XfE6zB9BWYq7e8WbXkPFp2Cicwv2x2dc8h6jNaR2qZV0g@mail.gmail.com>
- <YVNlfwLUDNxtp0fs@hatter.bewilderbeest.net>
- <CACPK8Xfowe6k8KOucveUd-O3vMC4n7qyF8uoowcpWj-Sugqhbw@mail.gmail.com>
-Message-ID: <YV/a8k2vI8TjJR2z@kroah.com>
+From: Eddie James <eajames@linux.ibm.com>
+Date: Fri, 8 Oct 2021 07:27:49 -0500
+Subject: [PATCH v3] ARM: dts: aspeed: rainier: Add power-config-full-load
+ gpio
+In-Reply-To: <20211005192226.213539-1-anoo@linux.ibm.com>
+References: <20211005192226.213539-1-anoo@linux.ibm.com>
+Message-ID: <897fb30d-966a-f2e0-cf9d-0275f1f1f630@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Oct 08, 2021 at 04:43:24AM +0000, Joel Stanley wrote:
-> Hi Greg,
-> 
-> On Tue, 28 Sept 2021 at 18:57, Zev Weiss <zev@bewilderbeest.net> wrote:
-> >
-> > On Mon, Sep 06, 2021 at 04:47:14AM PDT, Joel Stanley wrote:
-> > >Hi Mauro,
-> > >
-> > >On Mon, 6 Sept 2021 at 10:10, Ryan Chen <ryan_chen@aspeedtech.com> wrote:
-> > >> > Subject: Re: [PATCH v3] media: aspeed-video: ignore interrupts that aren't
-> > >> > enabled
-> > >> >
-> > >> > On Thu, 2021-06-17 at 17:02 -0500, Zev Weiss wrote:
-> > >> > > As partially addressed in commit 65d270acb2d6 ("media: aspeed: clear
-> > >> > > garbage interrupts"), the ASpeed video engine sometimes asserts
-> > >> > > interrupts that the driver hasn't enabled.  In addition to the
-> > >> > > CAPTURE_COMPLETE and FRAME_COMPLETE interrupts dealt with in that
-> > >> > > patch, COMP_READY has also been observed.  Instead of playing
-> > >> > > whack-a-mole with each one individually, we can instead just blanket
-> > >> > > ignore everything we haven't explicitly enabled.
-> > >> >
-> > >> > Suspect this will fix an intermittent problem on AST2500 with screensaver.
-> > >> > Change looks good, thanks!
-> > >> >
-> > >> > Reviewed-by: Eddie James <eajames@linux.ibm.com>
-> > >> >
-> > >> Reviewed-by: Ryan Chen <ryan_chen@aspeedtech.com>
-> > >> > >
-> > >> > > Signed-off-by: Zev Weiss <zev@bewilderbeest.net>
-> > >
-> > >I notice this wasn't merged in the pull request you sent for v5.15.
-> > >Would you be able to ensure it makes it in the next pull request you
-> > >send?
-> > >
-> > >It can have some fixes tags too:
-> > >
-> > >Fixes: 65d270acb2d6 ("media: aspeed: clear garbage interrupts")
-> > >Fixes: d2b4387f3bdf ("media: platform: Add Aspeed Video Engine driver")
-> > >Acked-by: Joel Stanley <joel@jms.id.au>
-> > >
-> > >Cheers,
-> > >
-> > >Joel
-> > >
-> >
-> > Also not in the recent merge of the media/v5.15-2 tag it looks like -- ping?
-> 
-> We're struggling to get a hold of the media maintainers to merge this
-> fix. Have you heard from them recently?
 
-I have seen them on the mailing list, yes.
+On 10/5/21 2:22 PM, Adriana Kobylak wrote:
+> From: Adriana Kobylak <anoo@us.ibm.com>
+>
+> Add the power-config-full-load described in:
+> https://github.com/openbmc/docs/blob/master/designs/device-tree-gpio-naming.md#power-config-full-load
+>
+> The power-config-full-load gpio is designed to be used to specify how
+> many power supplies the system should have, in rainier it is 2 or 4.  If
+> enough power supplies fail so that the system no longer has redundancy
+> (no longer n+1), the hardware will signal to the Onboard Chip Controller
+> that the system may be oversubscribed, and performance may need to be
+> reduced so the system can maintain it's powered on state.
 
-good luck!
 
-greg k-h
+Reviewed-by: Eddie James <eajames@linux.ibm.com>
+
+
+>
+> Signed-off-by: Adriana Kobylak <anoo@us.ibm.com>
+> ---
+>
+> v2: Update commit message.
+> v3: Updated gpio name to power-config-full-load to match design doc.
+>
+>   arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts | 13 +++++++++++++
+>   1 file changed, 13 insertions(+)
+>
+> diff --git a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
+> index 33fae8ad1305..10bde77fb847 100644
+> --- a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
+> +++ b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
+> @@ -1998,6 +1998,19 @@ eeprom at 51 {
+>   		reg = <0x51>;
+>   	};
+>   
+> +	pca_pres3: pca9552 at 60 {
+> +		compatible = "nxp,pca9552";
+> +		reg = <0x60>;
+> +		#address-cells = <1>;
+> +		#size-cells = <0>;
+> +		gpio-controller;
+> +		#gpio-cells = <2>;
+> +
+> +		gpio-line-names =
+> +			"", "", "", "", "", "", "", "",
+> +			"", "", "", "", "", "", "power-config-full-load", "";
+> +	};
+> +
+>   	pca_pres2: pca9552 at 61 {
+>   		compatible = "nxp,pca9552";
+>   		reg = <0x61>;
