@@ -1,53 +1,67 @@
-From: Dave Hansen <dave.hansen@intel.com>
-Date: Mon, 11 Oct 2021 12:40:18 -0700
+From: Borislav Petkov <bp@alien8.de>
+Date: Mon, 11 Oct 2021 23:31:45 +0200
 Subject: [PATCH v2 01/15] x86/cpu: Move intel-family to arch-independent
  headers
-In-Reply-To: <58ef4107e9b2c60a2605aac0d2fb6670a95bc9e0.camel@intel.com>
+In-Reply-To: <337b6332312ea63862aedd09279417c9e1c7e11f.camel@intel.com>
 References: <20210803113134.2262882-1-iwona.winiarska@intel.com>
  <20210803113134.2262882-2-iwona.winiarska@intel.com>
  <YVtQG+idmwKn0qLe@zn.tnic>
  <58ef4107e9b2c60a2605aac0d2fb6670a95bc9e0.camel@intel.com>
-Message-ID: <67f2cfda-c78b-6282-f5a3-2f345f8e2849@intel.com>
+ <YWSZTq8NWWcCMXtA@zn.tnic>
+ <337b6332312ea63862aedd09279417c9e1c7e11f.camel@intel.com>
+Message-ID: <YWStQSrRJQ09KXVY@zn.tnic>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 10/11/21 12:21 PM, Winiarska, Iwona wrote:
-> On Mon, 2021-10-04 at 21:03 +0200, Borislav Petkov wrote:
->> On Tue, Aug 03, 2021 at 01:31:20PM +0200, Iwona Winiarska wrote:
->>> Baseboard management controllers (BMC) often run Linux but are usually
->>> implemented with non-X86 processors. They can use PECI to access package
->>> config space (PCS) registers on the host CPU and since some information,
->>> e.g. figuring out the core count, can be obtained using different
->>> registers on different CPU generations, they need to decode the family
->>> and model.
->>>
->>> Move the data from arch/x86/include/asm/intel-family.h into a new file
->>> include/linux/x86/intel-family.h so that it can be used by other
->>> architectures.
->>>
->>> Signed-off-by: Iwona Winiarska <iwona.winiarska@intel.com>
->>> Reviewed-by: Tony Luck <tony.luck@intel.com>
->>> Reviewed-by: Dan Williams <dan.j.williams@intel.com>
->>> ---
->>> To limit tree-wide changes and help people that were expecting
->>> intel-family defines in arch/x86 to find it more easily without going
->>> through git history, we're not removing the original header
->>> completely, we're keeping it as a "stub" that includes the new one.
->>> If there is a consensus that the tree-wide option is better,
->>> we can choose this approach.
->> Why can't the linux/ namespace header include the x86 one so that
->> nothing changes for arch/x86/?
-> Same reason why PECI can't just include arch/x86 directly (we're building for
-> ARM, not x86).
-If you're in include/linux/x86-hacks.h, what prevents you from doing
+On Mon, Oct 11, 2021 at 08:38:43PM +0000, Winiarska, Iwona wrote:
+> Everything that's part of this series runs on the BMC (Baseboard
+> Management Controller). There's nothing ARM specific to it - it's just
+> that the BMC hardware we're currently supporting is ARM-based. PECI is
+> an interface that's exposed by some x86 CPUs - but that's a hardware
+> interface (available completely independent from whatever is actually
+> running on the x86 CPU).
 
-#include "../../arch/x86/include/asm/intel-family.h"
+Aha, I think I got it: so this whole PECI pile is supposed to run on
+the BMC - which can be ARM but doesn't have to be, i.e., code should be
+generic enough - and the interfaces to the x86 CPU do get exposed to the
+Linux running on the BMC.
 
-?
+Which brings me to the answer to your other mail:
 
-In the end, to the compiler, it's just a file in a weird location in the
-tree.  I think I'd prefer one weird include to moving that file out of
-arch/x86.
+On Mon, Oct 11, 2021 at 07:32:38PM +0000, Winiarska, Iwona wrote:
+> Nothing wrong - just a trade-off between churn and keeping things tidy
+> and not duplicated, similar to patch 1. And just like in patch 1, if
+> you have a strong opinion against it - we can duplicate.
+
+So it is not about strong opinion. Rather, it is about whether this
+exporting would be disadvantageous for x86 freedom. And I think it will
+be:
+
+Because if you exported those and then we went and changed those
+interfaces and defines (changed their naming, function arguments,
+whatever) and something outside of x86 used them, we will break that
+something.
+
+And usually we go and fix those users too but I doubt anyone has access
+to that PECI hw to actually test fixes, etc, etc.
+
+So I'd prefer the small amount of duplication vs external stuff using
+x86 facilities any day of the week. And so I'd suggest you simply copy
+the handful of functions and defines you're gonna be needing and the
+defines and be done with it.
+
+Dave's idea makes sense to me too but lately it keeps happening that
+we change something in x86-land and it turns out something "from the
+outside" is using it and it breaks, so it is a lot easier if things are
+independent.
+
+Thx.
+
+-- 
+Regards/Gruss,
+    Boris.
+
+https://people.kernel.org/tglx/notes-about-netiquette
