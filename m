@@ -1,64 +1,66 @@
 From: Winiarska, Iwona <iwona.winiarska@intel.com>
-Date: Mon, 11 Oct 2021 20:38:43 +0000
+Date: Mon, 11 Oct 2021 20:53:51 +0000
 Subject: [PATCH v2 01/15] x86/cpu: Move intel-family to arch-independent
  headers
-In-Reply-To: <YWSZTq8NWWcCMXtA@zn.tnic>
+In-Reply-To: <67f2cfda-c78b-6282-f5a3-2f345f8e2849@intel.com>
 References: <20210803113134.2262882-1-iwona.winiarska@intel.com>
  <20210803113134.2262882-2-iwona.winiarska@intel.com>
  <YVtQG+idmwKn0qLe@zn.tnic>
  <58ef4107e9b2c60a2605aac0d2fb6670a95bc9e0.camel@intel.com>
- <YWSZTq8NWWcCMXtA@zn.tnic>
-Message-ID: <337b6332312ea63862aedd09279417c9e1c7e11f.camel@intel.com>
+ <67f2cfda-c78b-6282-f5a3-2f345f8e2849@intel.com>
+Message-ID: <43e367e452c6c8d9c6a275299d7ff6f2bb26b8e3.camel@intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, 2021-10-11 at 22:06 +0200, Borislav Petkov wrote:
-> On Mon, Oct 11, 2021 at 07:21:26PM +0000, Winiarska, Iwona wrote:
+On Mon, 2021-10-11 at 12:40 -0700, Dave Hansen wrote:
+> On 10/11/21 12:21 PM, Winiarska, Iwona wrote:
+> > On Mon, 2021-10-04 at 21:03 +0200, Borislav Petkov wrote:
+> > > On Tue, Aug 03, 2021 at 01:31:20PM +0200, Iwona Winiarska wrote:
+> > > > Baseboard management controllers (BMC) often run Linux but are usually
+> > > > implemented with non-X86 processors. They can use PECI to access package
+> > > > config space (PCS) registers on the host CPU and since some information,
+> > > > e.g. figuring out the core count, can be obtained using different
+> > > > registers on different CPU generations, they need to decode the family
+> > > > and model.
+> > > > 
+> > > > Move the data from arch/x86/include/asm/intel-family.h into a new file
+> > > > include/linux/x86/intel-family.h so that it can be used by other
+> > > > architectures.
+> > > > 
+> > > > Signed-off-by: Iwona Winiarska <iwona.winiarska@intel.com>
+> > > > Reviewed-by: Tony Luck <tony.luck@intel.com>
+> > > > Reviewed-by: Dan Williams <dan.j.williams@intel.com>
+> > > > ---
+> > > > To limit tree-wide changes and help people that were expecting
+> > > > intel-family defines in arch/x86 to find it more easily without going
+> > > > through git history, we're not removing the original header
+> > > > completely, we're keeping it as a "stub" that includes the new one.
+> > > > If there is a consensus that the tree-wide option is better,
+> > > > we can choose this approach.
+> > > Why can't the linux/ namespace header include the x86 one so that
+> > > nothing changes for arch/x86/?
 > > Same reason why PECI can't just include arch/x86 directly (we're building
 > > for
 > > ARM, not x86).
+> If you're in include/linux/x86-hacks.h, what prevents you from doing
 > 
-> Aha.
+> #include "../../arch/x86/include/asm/intel-family.h"
 > 
-> So what do you need those INTEL_FAM6* defines for?
-
-To identify the x86 CPU and use that as a match for binding PECI drivers.
-
-> I see peci_cpu_device_ids[] which are used to match the CPU so at least
-> that thing must be loading on x86 hardware... reading your 0th message,
-> it sounds like that peci-cpu thing is loaded on an x86 CPU and it then
-> exposes those interfaces which a PECI controller accesses.
-
-Everything that's part of this series runs on the BMC (Baseboard Management
-Controller). There's nothing ARM specific to it - it's just that the BMC
-hardware we're currently supporting is ARM-based.
-PECI is an interface that's exposed by some x86 CPUs - but that's a hardware
-interface (available completely independent from whatever is actually running on
-the x86 CPU).
-
+> ?
 > 
-> And then I see in init_core_mask() the single usage of INTEL_FAM6* and
-> that drivers/hwmon/peci/cputemp.c is a CPU temp monitoring client so
-> that thing probably runs on x86 too.
+> In the end, to the compiler, it's just a file in a weird location in the
+> tree.? I think I'd prefer one weird include to moving that file out of
+> arch/x86.
 
-That also runs on BMC, it uses functionality offered by peci-cpu to expose hwmon
-interface to userspace.
-Userspace that makes use of that hwmon interface also runs on the BMC and
-exposes sensor data to user (via redfish API, or web-based interface).
+Using relative includes in include/linux is uncommon (I can see just one usage
+in libfdt.h pulling stuff from scripts), so I thought I can't use it in this way
+(seems slightly hacky to pull stuff from outside include path).
 
-> Or?
-> 
-> If it does, then you don't need the code move.
-> 
-> But it looks like I'm missing something...
-> 
-
-I'm sorry - it looks that my description in the cover letter wasn't clear
-enough.
+But if that would be ok, it looks like a good alternative to avoid duplication
+in this case.
 
 Thanks
 -Iwona
-
