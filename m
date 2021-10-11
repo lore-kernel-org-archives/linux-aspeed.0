@@ -1,67 +1,94 @@
-From: Borislav Petkov <bp@alien8.de>
-Date: Mon, 11 Oct 2021 23:31:45 +0200
-Subject: [PATCH v2 01/15] x86/cpu: Move intel-family to arch-independent
- headers
-In-Reply-To: <337b6332312ea63862aedd09279417c9e1c7e11f.camel@intel.com>
-References: <20210803113134.2262882-1-iwona.winiarska@intel.com>
- <20210803113134.2262882-2-iwona.winiarska@intel.com>
- <YVtQG+idmwKn0qLe@zn.tnic>
- <58ef4107e9b2c60a2605aac0d2fb6670a95bc9e0.camel@intel.com>
- <YWSZTq8NWWcCMXtA@zn.tnic>
- <337b6332312ea63862aedd09279417c9e1c7e11f.camel@intel.com>
-Message-ID: <YWStQSrRJQ09KXVY@zn.tnic>
+From: Adriana Kobylak <anoo@linux.ibm.com>
+Date: Mon, 11 Oct 2021 16:54:05 -0500
+Subject: [PATCH v3] ARM: dts: aspeed: rainier: Add power-config-full-load
+ gpio
+In-Reply-To: <CACPK8XdnMfDD6FHOuwyxz5S-wzaY1uSBEso6ov6OKQ0r2H7cTg@mail.gmail.com>
+References: <20211005192226.213539-1-anoo@linux.ibm.com>
+ <CACPK8XdnMfDD6FHOuwyxz5S-wzaY1uSBEso6ov6OKQ0r2H7cTg@mail.gmail.com>
+Message-ID: <15085868-FAE6-4FC7-A2BB-C786E7EFBDD4@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Oct 11, 2021 at 08:38:43PM +0000, Winiarska, Iwona wrote:
-> Everything that's part of this series runs on the BMC (Baseboard
-> Management Controller). There's nothing ARM specific to it - it's just
-> that the BMC hardware we're currently supporting is ARM-based. PECI is
-> an interface that's exposed by some x86 CPUs - but that's a hardware
-> interface (available completely independent from whatever is actually
-> running on the x86 CPU).
 
-Aha, I think I got it: so this whole PECI pile is supposed to run on
-the BMC - which can be ARM but doesn't have to be, i.e., code should be
-generic enough - and the interfaces to the x86 CPU do get exposed to the
-Linux running on the BMC.
 
-Which brings me to the answer to your other mail:
+> On Oct 7, 2021, at 11:22 PM, Joel Stanley <joel@jms.id.au> wrote:
+> 
+> Hi Adriana,
+> 
+> On Tue, 5 Oct 2021 at 19:22, Adriana Kobylak <anoo at linux.ibm.com <mailto:anoo@linux.ibm.com>> wrote:
+>> 
+>> From: Adriana Kobylak <anoo@us.ibm.com>
+>> 
+>> Add the power-config-full-load described in:
+>> https://github.com/openbmc/docs/blob/master/designs/device-tree-gpio-naming.md#power-config-full-load
+>> 
+>> The power-config-full-load gpio is designed to be used to specify how
+>> many power supplies the system should have, in rainier it is 2 or 4.  If
+>> enough power supplies fail so that the system no longer has redundancy
+>> (no longer n+1), the hardware will signal to the Onboard Chip Controller
+>> that the system may be oversubscribed, and performance may need to be
+>> reduced so the system can maintain it's powered on state.
+>> 
+>> Signed-off-by: Adriana Kobylak <anoo@us.ibm.com>
+> 
+> This looks good. I think the name is much easier to understand now.
 
-On Mon, Oct 11, 2021 at 07:32:38PM +0000, Winiarska, Iwona wrote:
-> Nothing wrong - just a trade-off between churn and keeping things tidy
-> and not duplicated, similar to patch 1. And just like in patch 1, if
-> you have a strong opinion against it - we can duplicate.
+Thanks, yeah agree is clearer now.
 
-So it is not about strong opinion. Rather, it is about whether this
-exporting would be disadvantageous for x86 freedom. And I think it will
-be:
+> 
+> I notice you've dropped all of the other names. Do you not need them?
 
-Because if you exported those and then we went and changed those
-interfaces and defines (changed their naming, function arguments,
-whatever) and something outside of x86 used them, we will break that
-something.
+Right, don?t need them. If we ever do, we?ll go through the same process of proposing adequate names for them in the openbmc design doc.
 
-And usually we go and fix those users too but I doubt anyone has access
-to that PECI hw to actually test fixes, etc, etc.
+> 
+> It would be great if one of the people you cc'd could provide a
+> reviewed-by before I merge this.
 
-So I'd prefer the small amount of duplication vs external stuff using
-x86 facilities any day of the week. And so I'd suggest you simply copy
-the handful of functions and defines you're gonna be needing and the
-defines and be done with it.
+Sure, seems Eddie just reviewed it.
 
-Dave's idea makes sense to me too but lately it keeps happening that
-we change something in x86-land and it turns out something "from the
-outside" is using it and it breaks, so it is a lot easier if things are
-independent.
+> 
+> Cheers,
+> 
+> Joel
+> 
+>> ---
+>> 
+>> v2: Update commit message.
+>> v3: Updated gpio name to power-config-full-load to match design doc.
+>> 
+>> arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts | 13 +++++++++++++
+>> 1 file changed, 13 insertions(+)
+>> 
+>> diff --git a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
+>> index 33fae8ad1305..10bde77fb847 100644
+>> --- a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
+>> +++ b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
+>> @@ -1998,6 +1998,19 @@ eeprom at 51 {
+>>                reg = <0x51>;
+>>        };
+>> 
+>> +       pca_pres3: pca9552 at 60 {
+>> +               compatible = "nxp,pca9552";
+>> +               reg = <0x60>;
+>> +               #address-cells = <1>;
+>> +               #size-cells = <0>;
+>> +               gpio-controller;
+>> +               #gpio-cells = <2>;
+>> +
+>> +               gpio-line-names =
+>> +                       "", "", "", "", "", "", "", "",
+>> +                       "", "", "", "", "", "", "power-config-full-load", "";
+>> +       };
+>> +
+>>        pca_pres2: pca9552 at 61 {
+>>                compatible = "nxp,pca9552";
+>>                reg = <0x61>;
+>> --
+>> 2.25.1
 
-Thx.
-
--- 
-Regards/Gruss,
-    Boris.
-
-https://people.kernel.org/tglx/notes-about-netiquette
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20211011/e21df504/attachment-0001.htm>
