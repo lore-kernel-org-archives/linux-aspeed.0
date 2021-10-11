@@ -1,94 +1,39 @@
-From: Adriana Kobylak <anoo@linux.ibm.com>
-Date: Mon, 11 Oct 2021 16:54:05 -0500
-Subject: [PATCH v3] ARM: dts: aspeed: rainier: Add power-config-full-load
- gpio
-In-Reply-To: <CACPK8XdnMfDD6FHOuwyxz5S-wzaY1uSBEso6ov6OKQ0r2H7cTg@mail.gmail.com>
-References: <20211005192226.213539-1-anoo@linux.ibm.com>
- <CACPK8XdnMfDD6FHOuwyxz5S-wzaY1uSBEso6ov6OKQ0r2H7cTg@mail.gmail.com>
-Message-ID: <15085868-FAE6-4FC7-A2BB-C786E7EFBDD4@linux.ibm.com>
+From: Dave Hansen <dave.hansen@intel.com>
+Date: Mon, 11 Oct 2021 16:12:20 -0700
+Subject: [PATCH v2 01/15] x86/cpu: Move intel-family to arch-independent
+ headers
+In-Reply-To: <43e367e452c6c8d9c6a275299d7ff6f2bb26b8e3.camel@intel.com>
+References: <20210803113134.2262882-1-iwona.winiarska@intel.com>
+ <20210803113134.2262882-2-iwona.winiarska@intel.com>
+ <YVtQG+idmwKn0qLe@zn.tnic>
+ <58ef4107e9b2c60a2605aac0d2fb6670a95bc9e0.camel@intel.com>
+ <67f2cfda-c78b-6282-f5a3-2f345f8e2849@intel.com>
+ <43e367e452c6c8d9c6a275299d7ff6f2bb26b8e3.camel@intel.com>
+Message-ID: <18cd5f4a-452b-f043-5686-fc5af47eb5ac@intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-
-
-> On Oct 7, 2021, at 11:22 PM, Joel Stanley <joel@jms.id.au> wrote:
+On 10/11/21 1:53 PM, Winiarska, Iwona wrote:
+>> If you're in include/linux/x86-hacks.h, what prevents you from doing
+>>
+>> #include "../../arch/x86/include/asm/intel-family.h"
+>>
+>> ?
+>>
+>> In the end, to the compiler, it's just a file in a weird location in the
+>> tree.  I think I'd prefer one weird include to moving that file out of
+>> arch/x86.
+> Using relative includes in include/linux is uncommon (I can see just one usage
+> in libfdt.h pulling stuff from scripts), so I thought I can't use it in this way
+> (seems slightly hacky to pull stuff from outside include path).
 > 
-> Hi Adriana,
-> 
-> On Tue, 5 Oct 2021 at 19:22, Adriana Kobylak <anoo at linux.ibm.com <mailto:anoo@linux.ibm.com>> wrote:
->> 
->> From: Adriana Kobylak <anoo@us.ibm.com>
->> 
->> Add the power-config-full-load described in:
->> https://github.com/openbmc/docs/blob/master/designs/device-tree-gpio-naming.md#power-config-full-load
->> 
->> The power-config-full-load gpio is designed to be used to specify how
->> many power supplies the system should have, in rainier it is 2 or 4.  If
->> enough power supplies fail so that the system no longer has redundancy
->> (no longer n+1), the hardware will signal to the Onboard Chip Controller
->> that the system may be oversubscribed, and performance may need to be
->> reduced so the system can maintain it's powered on state.
->> 
->> Signed-off-by: Adriana Kobylak <anoo@us.ibm.com>
-> 
-> This looks good. I think the name is much easier to understand now.
+> But if that would be ok, it looks like a good alternative to avoid duplication
+> in this case.
 
-Thanks, yeah agree is clearer now.
+If you don't want to do it from a header, you can also do it directly
+from a .c file that's outside of arch/x86.
 
-> 
-> I notice you've dropped all of the other names. Do you not need them?
-
-Right, don?t need them. If we ever do, we?ll go through the same process of proposing adequate names for them in the openbmc design doc.
-
-> 
-> It would be great if one of the people you cc'd could provide a
-> reviewed-by before I merge this.
-
-Sure, seems Eddie just reviewed it.
-
-> 
-> Cheers,
-> 
-> Joel
-> 
->> ---
->> 
->> v2: Update commit message.
->> v3: Updated gpio name to power-config-full-load to match design doc.
->> 
->> arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts | 13 +++++++++++++
->> 1 file changed, 13 insertions(+)
->> 
->> diff --git a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
->> index 33fae8ad1305..10bde77fb847 100644
->> --- a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
->> +++ b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
->> @@ -1998,6 +1998,19 @@ eeprom at 51 {
->>                reg = <0x51>;
->>        };
->> 
->> +       pca_pres3: pca9552 at 60 {
->> +               compatible = "nxp,pca9552";
->> +               reg = <0x60>;
->> +               #address-cells = <1>;
->> +               #size-cells = <0>;
->> +               gpio-controller;
->> +               #gpio-cells = <2>;
->> +
->> +               gpio-line-names =
->> +                       "", "", "", "", "", "", "", "",
->> +                       "", "", "", "", "", "", "power-config-full-load", "";
->> +       };
->> +
->>        pca_pres2: pca9552 at 61 {
->>                compatible = "nxp,pca9552";
->>                reg = <0x61>;
->> --
->> 2.25.1
-
--------------- next part --------------
-An HTML attachment was scrubbed...
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20211011/e21df504/attachment-0001.htm>
+I think that's a much better alternative than moving stuff elsewhere.
