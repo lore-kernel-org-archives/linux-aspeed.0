@@ -1,120 +1,37 @@
-From: Samuel Mendoza-Jonas <sam@mendozajonas.com>
-Date: Tue, 12 Oct 2021 19:46:28 -0700
-Subject: [PATCH] net: ncsi: Adding padding bytes in the payload
-In-Reply-To: <CACPK8XcJudWoKgXORvRzGAbtBwHm3a56RULriVABfERZgNgt9w@mail.gmail.com>
-References: <20211012062240.GA5761@gmail.com>
- <CACPK8XcJudWoKgXORvRzGAbtBwHm3a56RULriVABfERZgNgt9w@mail.gmail.com>
-Message-ID: <dd6df3ee84110649d901f041883c3d44c0798cda.camel@mendozajonas.com>
+From: Borislav Petkov <bp@alien8.de>
+Date: Wed, 13 Oct 2021 08:42:06 +0200
+Subject: [PATCH v2 01/15] x86/cpu: Move intel-family to arch-independent
+ headers
+In-Reply-To: <15d81463b631e03b00a7031510304d5598fc246c.camel@intel.com>
+References: <20210803113134.2262882-1-iwona.winiarska@intel.com>
+ <20210803113134.2262882-2-iwona.winiarska@intel.com>
+ <YVtQG+idmwKn0qLe@zn.tnic>
+ <58ef4107e9b2c60a2605aac0d2fb6670a95bc9e0.camel@intel.com>
+ <YWSZTq8NWWcCMXtA@zn.tnic>
+ <337b6332312ea63862aedd09279417c9e1c7e11f.camel@intel.com>
+ <YWStQSrRJQ09KXVY@zn.tnic>
+ <15d81463b631e03b00a7031510304d5598fc246c.camel@intel.com>
+Message-ID: <YWZ/vqHXibwOWtDu@zn.tnic>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, 2021-10-12 at 22:44 +0000, Joel Stanley wrote:
-> On Tue, 12 Oct 2021 at 06:23, Kumar Thangavel
-> <kumarthangavel.hcl@gmail.com> wrote:
-> > 
-> > Update NC-SI command handler (both standard and OEM) to take into
-> > account of payload paddings in allocating skb (in case of payload
-> > size is not 32-bit aligned).
-> > 
-> > The checksum field follows payload field, without taking payload
-> > padding into account can cause checksum being truncated, leading to
-> > dropped packets.
-> 
-> Can you help us review this by pointing out where this is described in
-> the NCSI spec?
-> 
-> We've been running this code for a number of years now and I wonder
-> why this hasn't been a problem so far.
+On Tue, Oct 12, 2021 at 11:15:00PM +0000, Winiarska, Iwona wrote:
+> We (OpenBMC) do have PECI HW, so that shouldn't be a problem.
 
-I'm assuming this is referencing section 8.2.2.2:
-If the payload is present and does not end on a 32-bit boundary, one to
-three padding bytes equal to 0x00 shall be present to align the
-checksum field to a 32-bit boundary.
+Yeah, don't take it personally, but asking people to test stuff for you
+doesn't really work, in practice.
 
-But I'm also surprised this hasn't caused issues so far if we've been
-getting it wrong. Is there an example that reproduces the issue?
+> Both CPUID.EAX=1 decoding and definitions in intel-family are pretty "well-
+> defined".
 
-Cheers,
-Sam
+Sure, they are "well-defined" until we change them for whatever reason.
+Then they will be "well-defined" again. But different.
 
-> 
-> Cheers,
-> 
-> Joel
-> 
-> > 
-> > Signed-off-by: Kumar Thangavel <thangavel.k@hcl.com>
-> > 
-> > ---
-> > ?net/ncsi/ncsi-cmd.c | 21 +++++++++++++++++----
-> > ?1 file changed, 17 insertions(+), 4 deletions(-)
-> > 
-> > diff --git a/net/ncsi/ncsi-cmd.c b/net/ncsi/ncsi-cmd.c
-> > index ba9ae482141b..4625fc935603 100644
-> > --- a/net/ncsi/ncsi-cmd.c
-> > +++ b/net/ncsi/ncsi-cmd.c
-> > @@ -214,11 +214,19 @@ static int ncsi_cmd_handler_oem(struct sk_buff
-> > *skb,
-> > ??????? struct ncsi_cmd_oem_pkt *cmd;
-> > ??????? unsigned int len;
-> > 
-> > +?????? /* NC-SI spec requires payload to be padded with 0
-> > +??????? * to 32-bit boundary before the checksum field.
-> > +??????? * Ensure the padding bytes are accounted for in
-> > +??????? * skb allocation
-> > +??????? */
-> > +
-> > +?????? unsigned short payload = ALIGN(nca->payload, 4);
-> > +
-> > ??????? len = sizeof(struct ncsi_cmd_pkt_hdr) + 4;
-> > -?????? if (nca->payload < 26)
-> > +?????? if (payload < 26)
-> > ??????????????? len += 26;
-> > ??????? else
-> > -?????????????? len += nca->payload;
-> > +?????????????? len += payload;
-> > 
-> > ??????? cmd = skb_put_zero(skb, len);
-> > ??????? memcpy(&cmd->mfr_id, nca->data, nca->payload);
-> > @@ -272,6 +280,7 @@ static struct ncsi_request
-> > *ncsi_alloc_command(struct ncsi_cmd_arg *nca)
-> > ??????? struct net_device *dev = nd->dev;
-> > ??????? int hlen = LL_RESERVED_SPACE(dev);
-> > ??????? int tlen = dev->needed_tailroom;
-> > +?????? int payload;
-> > ??????? int len = hlen + tlen;
-> > ??????? struct sk_buff *skb;
-> > ??????? struct ncsi_request *nr;
-> > @@ -281,14 +290,18 @@ static struct ncsi_request
-> > *ncsi_alloc_command(struct ncsi_cmd_arg *nca)
-> > ??????????????? return NULL;
-> > 
-> > ??????? /* NCSI command packet has 16-bytes header, payload, 4 bytes
-> > checksum.
-> > +??????? * Payload needs padding so that the checksum field follwoing
-> > payload is
-> > +??????? * aligned to 32bit boundary.
-> > ???????? * The packet needs padding if its payload is less than 26
-> > bytes to
-> > ???????? * meet 64 bytes minimal ethernet frame length.
-> > ???????? */
-> > ??????? len += sizeof(struct ncsi_cmd_pkt_hdr) + 4;
-> > -?????? if (nca->payload < 26)
-> > +
-> > +?????? payload = ALIGN(nca->payload, 4);
-> > +?????? if (payload < 26)
-> > ??????????????? len += 26;
-> > ??????? else
-> > -?????????????? len += nca->payload;
-> > +?????????????? len += payload;
-> > 
-> > ??????? /* Allocate skb */
-> > ??????? skb = alloc_skb(len, GFP_ATOMIC);
-> > --
-> > 2.17.1
-> > 
+-- 
+Regards/Gruss,
+    Boris.
 
-
+https://people.kernel.org/tglx/notes-about-netiquette
