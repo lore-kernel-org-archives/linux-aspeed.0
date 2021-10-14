@@ -1,109 +1,340 @@
-From: Jammy Huang <jammy_huang@aspeedtech.com>
-Date: Thu, 14 Oct 2021 11:48:18 +0800
-Subject: [PATCH 5/6] media: aspeed: add comments and macro
-In-Reply-To: <20211014034819.2283-1-jammy_huang@aspeedtech.com>
+From: Paul Menzel <pmenzel@molgen.mpg.de>
+Date: Thu, 14 Oct 2021 08:28:21 +0200
+Subject: [PATCH 2/6] media: aspeed: add dprintk for more detailed log
+ control
+In-Reply-To: <20211014034819.2283-3-jammy_huang@aspeedtech.com>
 References: <20211014034819.2283-1-jammy_huang@aspeedtech.com>
-Message-ID: <20211014034819.2283-6-jammy_huang@aspeedtech.com>
+ <20211014034819.2283-3-jammy_huang@aspeedtech.com>
+Message-ID: <5b8f81aa-9d08-dc42-8bd5-e9e7560f37f6@molgen.mpg.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add comments to describe video-stat and 'struct aspeed_video'.
-Add macro, ASPEED_VIDEO_V4L2_MIN_BUF_REQ, to describe the buffers
-needed.
+[Cc: +Steven, +Ingo for tracing questions]
 
-Signed-off-by: Jammy Huang <jammy_huang@aspeedtech.com>
----
- drivers/media/platform/aspeed-video.c | 39 ++++++++++++++++++++++++---
- 1 file changed, 36 insertions(+), 3 deletions(-)
+Dear Jammy,
 
-diff --git a/drivers/media/platform/aspeed-video.c b/drivers/media/platform/aspeed-video.c
-index 6b887fcaab7c..e1031fd09ac6 100644
---- a/drivers/media/platform/aspeed-video.c
-+++ b/drivers/media/platform/aspeed-video.c
-@@ -37,6 +37,8 @@
- #define V4L2_CID_ASPEED_HQ_MODE			(ASPEED_CID_CUSTOM_BASE  + 3)
- #define V4L2_CID_ASPEED_HQ_JPEG_QUALITY		(ASPEED_CID_CUSTOM_BASE  + 4)
- 
-+#define ASPEED_VIDEO_V4L2_MIN_BUF_REQ 3
-+
- #define LOG_REG		BIT(4)
- #define LOG_DEBUG	BIT(3)
- #define LOG_TRACE	BIT(2)
-@@ -213,6 +215,15 @@
- #define VE_MEM_RESTRICT_START		0x310
- #define VE_MEM_RESTRICT_END		0x314
- 
-+/*
-+ * @VIDEO_MODE_DETECT_DONE:	a flag raised if signal lock
-+ * @VIDEO_RES_CHANGE:		a flag raised if res_change work on-going
-+ * @VIDEO_RES_DETECT:		a flag raised if res. detection on-going
-+ * @VIDEO_STREAMING:		a flag raised if user requires stream-on
-+ * @VIDEO_FRAME_INPRG:		a flag raised if hw working on a frame
-+ * @VIDEO_STOPPED:		a flag raised if device release
-+ * @VIDEO_CLOCKS_ON:		a flag raised if clk is on
-+ */
- enum {
- 	VIDEO_MODE_DETECT_DONE,
- 	VIDEO_RES_CHANGE,
-@@ -245,6 +256,28 @@ struct aspeed_video_perf {
- #define to_aspeed_video_buffer(x) \
- 	container_of((x), struct aspeed_video_buffer, vb)
- 
-+/**
-+ * struct aspeed_video - driver data
-+ *
-+ * @flags:		holds the state of video
-+ * @sequence:		holds the last number of frame completed
-+ * @max_compressed_size:holds max compressed stream's size
-+ * @srcs:		holds the buffer information for srcs
-+ * @jpeg:		holds the buffer information for jpeg header
-+ * @bcd:		holds the buffer information for bcd work
-+ * @yuv420:		a flag raised if JPEG subsampling is 420
-+ * @partial_jpeg:	a flag raised if JPEG supports partial capture
-+ * @hq_mode:		a flag raised if HQ is enabled. Only for partial_jpeg
-+ * @frame_rate:		holds the frame_rate
-+ * @jpeg_quality:	holds jpeq's quality (0~11)
-+ * @jpeg_hq_quality:	holds hq's quality (0~11) only if hq_mode enabled
-+ * @compression_mode:	holds jpeg compression mode
-+ * @frame_bottom:	end position of video data in vertical direction
-+ * @frame_left:		start position of video data in horizontal direction
-+ * @frame_right:	end position of video data in horizontal direction
-+ * @frame_top:		start position of video data in vertical direction
-+ * @perf:		holds the statistics primary for debugfs
-+ */
- struct aspeed_video {
- 	void __iomem *base;
- 	struct clk *eclk;
-@@ -1250,7 +1283,7 @@ static int aspeed_video_get_parm(struct file *file, void *fh,
- 	struct aspeed_video *video = video_drvdata(file);
- 
- 	a->parm.capture.capability = V4L2_CAP_TIMEPERFRAME;
--	a->parm.capture.readbuffers = 3;
-+	a->parm.capture.readbuffers = ASPEED_VIDEO_V4L2_MIN_BUF_REQ;
- 	a->parm.capture.timeperframe.numerator = 1;
- 	if (!video->frame_rate)
- 		a->parm.capture.timeperframe.denominator = MAX_FRAME_RATE;
-@@ -1267,7 +1300,7 @@ static int aspeed_video_set_parm(struct file *file, void *fh,
- 	struct aspeed_video *video = video_drvdata(file);
- 
- 	a->parm.capture.capability = V4L2_CAP_TIMEPERFRAME;
--	a->parm.capture.readbuffers = 3;
-+	a->parm.capture.readbuffers = ASPEED_VIDEO_V4L2_MIN_BUF_REQ;
- 
- 	if (a->parm.capture.timeperframe.numerator)
- 		frame_rate = a->parm.capture.timeperframe.denominator /
-@@ -1876,7 +1909,7 @@ static int aspeed_video_setup_video(struct aspeed_video *video)
- 	vbq->drv_priv = video;
- 	vbq->buf_struct_size = sizeof(struct aspeed_video_buffer);
- 	vbq->timestamp_flags = V4L2_BUF_FLAG_TIMESTAMP_MONOTONIC;
--	vbq->min_buffers_needed = 3;
-+	vbq->min_buffers_needed = ASPEED_VIDEO_V4L2_MIN_BUF_REQ;
- 
- 	rc = vb2_queue_init(vbq);
- 	if (rc) {
--- 
-2.25.1
 
+Am 14.10.21 um 05:48 schrieb Jammy Huang:
+> Add dprintk to categorize the log into NOTICE/INFO/TRACE/IRQ/REG.
+> The on/off is controlled by module_param, debug.
+
+Currently dev_dbg is dynamic debug, which can be controlled using the 
+Linux kernel command line or debugfs already?
+
+ From your patch:
+
+> +MODULE_PARM_DESC(debug, "set debugging level (0=reg,2=irq,4=trace,8=info(|-able)).");
+
+What does (|-able) mean? Maybe give some examples in the commit message 
+as documentation?
+
+Lastly, instead of parameter name `debug`, I?d use `log_level`, which 
+would be more accurate.
+
+Why is more granularity needed/useful, and not just debug and non-debug, 
+where the existing Linux kernel levels `pr_info`, `pr_warn`, ? are used? 
+Looking at the amount of log messages, the granularity does not look needed.
+
+> Signed-off-by: Jammy Huang <jammy_huang@aspeedtech.com>
+> ---
+>   drivers/media/platform/aspeed-video.c | 73 ++++++++++++++++++++++-----
+>   1 file changed, 60 insertions(+), 13 deletions(-)
+> 
+> diff --git a/drivers/media/platform/aspeed-video.c b/drivers/media/platform/aspeed-video.c
+> index 6259cf17a7cc..7b8129b0ca5f 100644
+> --- a/drivers/media/platform/aspeed-video.c
+> +++ b/drivers/media/platform/aspeed-video.c
+> @@ -31,6 +31,19 @@
+>   #include <media/v4l2-ioctl.h>
+>   #include <media/videobuf2-dma-contig.h>
+>   
+> +
+> +#define LOG_REG		BIT(4)
+> +#define LOG_DEBUG	BIT(3)
+> +#define LOG_TRACE	BIT(2)
+
+Could ftrace be used for this? It looks like there are static functions. 
+No idea, if there is already a ?native? Linux kernel solution for this.
+
+> +#define LOG_INFO	BIT(1)
+> +#define LOG_NOTICE	BIT(0)
+> +
+> +#define dprintk(level, fmt, arg...) do {					\
+> +	if (debug & level)							\
+> +		pr_debug(pr_fmt("[%s]: " fmt), DEVICE_NAME, ##arg);		\
+> +} while (0)
+> +
+> +
+>   #define DEVICE_NAME			"aspeed-video"
+>   
+>   #define ASPEED_VIDEO_JPEG_NUM_QUALITIES	12
+> @@ -390,6 +403,8 @@ static const struct v4l2_dv_timings_cap aspeed_video_timings_cap = {
+>   	},
+>   };
+>   
+> +static unsigned int debug;
+> +
+>   static void aspeed_video_init_jpeg_table(u32 *table, bool yuv420)
+>   {
+>   	int i;
+> @@ -437,7 +452,7 @@ static void aspeed_video_update(struct aspeed_video *video, u32 reg, u32 clear,
+>   	t &= ~clear;
+>   	t |= bits;
+>   	writel(t, video->base + reg);
+> -	dev_dbg(video->dev, "update %03x[%08x -> %08x]\n", reg, before,
+> +	dprintk(LOG_REG, "update %03x[%08x -> %08x]\n", reg, before,
+>   		readl(video->base + reg));
+>   }
+>   
+> @@ -445,14 +460,14 @@ static u32 aspeed_video_read(struct aspeed_video *video, u32 reg)
+>   {
+>   	u32 t = readl(video->base + reg);
+>   
+> -	dev_dbg(video->dev, "read %03x[%08x]\n", reg, t);
+> +	dprintk(LOG_REG, "read %03x[%08x]\n", reg, t);
+>   	return t;
+>   }
+>   
+>   static void aspeed_video_write(struct aspeed_video *video, u32 reg, u32 val)
+>   {
+>   	writel(val, video->base + reg);
+> -	dev_dbg(video->dev, "write %03x[%08x]\n", reg,
+> +	dprintk(LOG_REG, "write %03x[%08x]\n", reg,
+>   		readl(video->base + reg));
+>   }
+>   
+> @@ -474,13 +489,13 @@ static int aspeed_video_start_frame(struct aspeed_video *video)
+>   	u32 seq_ctrl = aspeed_video_read(video, VE_SEQ_CTRL);
+>   
+>   	if (video->v4l2_input_status) {
+> -		dev_dbg(video->dev, "No signal; don't start frame\n");
+> +		dprintk(LOG_NOTICE, "No signal; don't start frame\n");
+>   		return 0;
+>   	}
+>   
+>   	if (!(seq_ctrl & VE_SEQ_CTRL_COMP_BUSY) ||
+>   	    !(seq_ctrl & VE_SEQ_CTRL_CAP_BUSY)) {
+> -		dev_dbg(video->dev, "Engine busy; don't start frame\n");
+> +		dprintk(LOG_NOTICE, "Engine busy; don't start frame\n");
+>   		return -EBUSY;
+>   	}
+>   
+> @@ -489,7 +504,7 @@ static int aspeed_video_start_frame(struct aspeed_video *video)
+>   				       struct aspeed_video_buffer, link);
+>   	if (!buf) {
+>   		spin_unlock_irqrestore(&video->lock, flags);
+> -		dev_dbg(video->dev, "No buffers; don't start frame\n");
+> +		dprintk(LOG_NOTICE, "No buffers; don't start frame\n");
+>   		return -EPROTO;
+>   	}
+>   
+> @@ -565,7 +580,7 @@ static void aspeed_video_bufs_done(struct aspeed_video *video,
+>   
+>   static void aspeed_video_irq_res_change(struct aspeed_video *video, ulong delay)
+>   {
+> -	dev_dbg(video->dev, "Resolution changed; resetting\n");
+> +	dprintk(LOG_INFO, "Resolution changed; resetting\n");
+>   
+>   	set_bit(VIDEO_RES_CHANGE, &video->flags);
+>   	clear_bit(VIDEO_FRAME_INPRG, &video->flags);
+> @@ -590,6 +605,12 @@ static irqreturn_t aspeed_video_irq(int irq, void *arg)
+>   	struct aspeed_video *video = arg;
+>   	u32 sts = aspeed_video_read(video, VE_INTERRUPT_STATUS);
+>   
+> +	dprintk(LOG_DEBUG, "irq sts=%#x %s%s%s%s\n", sts,
+> +		sts & VE_INTERRUPT_MODE_DETECT_WD ? ", unlock" : "",
+> +		sts & VE_INTERRUPT_MODE_DETECT ? ", lock" : "",
+> +		sts & VE_INTERRUPT_CAPTURE_COMPLETE ? ", capture-done" : "",
+> +		sts & VE_INTERRUPT_COMP_COMPLETE ? ", comp-done" : "");
+> +
+
+Please split adding new log messages out into a separate commit.
+
+>   	/*
+>   	 * Resolution changed or signal was lost; reset the engine and
+>   	 * re-initialize
+> @@ -766,7 +787,7 @@ static void aspeed_video_calc_compressed_size(struct aspeed_video *video,
+>   	aspeed_video_write(video, VE_STREAM_BUF_SIZE,
+>   			   compression_buffer_size_reg);
+>   
+> -	dev_dbg(video->dev, "Max compressed size: %x\n",
+> +	dprintk(LOG_INFO, "Max compressed size: %#x\n",
+>   		video->max_compressed_size);
+>   }
+>   
+> @@ -804,7 +825,7 @@ static void aspeed_video_get_resolution(struct aspeed_video *video)
+>   						      res_check(video),
+>   						      MODE_DETECT_TIMEOUT);
+>   		if (!rc) {
+> -			dev_dbg(video->dev, "Timed out; first mode detect\n");
+> +			dprintk(LOG_INFO, "Timed out; first mode detect\n");
+>   			clear_bit(VIDEO_RES_DETECT, &video->flags);
+>   			return;
+>   		}
+> @@ -822,7 +843,7 @@ static void aspeed_video_get_resolution(struct aspeed_video *video)
+>   						      MODE_DETECT_TIMEOUT);
+>   		clear_bit(VIDEO_RES_DETECT, &video->flags);
+>   		if (!rc) {
+> -			dev_dbg(video->dev, "Timed out; second mode detect\n");
+> +			dprintk(LOG_INFO, "Timed out; second mode detect\n");
+>   			return;
+>   		}
+>   
+> @@ -856,7 +877,7 @@ static void aspeed_video_get_resolution(struct aspeed_video *video)
+>   	} while (invalid_resolution && (tries++ < INVALID_RESOLUTION_RETRIES));
+>   
+>   	if (invalid_resolution) {
+> -		dev_dbg(video->dev, "Invalid resolution detected\n");
+> +		dprintk(LOG_NOTICE, "Invalid resolution detected\n");
+>   		return;
+>   	}
+>   
+> @@ -873,7 +894,7 @@ static void aspeed_video_get_resolution(struct aspeed_video *video)
+>   	aspeed_video_update(video, VE_SEQ_CTRL, 0,
+>   			    VE_SEQ_CTRL_AUTO_COMP | VE_SEQ_CTRL_EN_WATCHDOG);
+>   
+> -	dev_dbg(video->dev, "Got resolution: %dx%d\n", det->width,
+> +	dprintk(LOG_INFO, "Got resolution: %dx%d\n", det->width,
+>   		det->height);
+>   }
+>   
+> @@ -907,6 +928,7 @@ static void aspeed_video_set_resolution(struct aspeed_video *video)
+>   
+>   	/* Don't use direct mode below 1024 x 768 (irqs don't fire) */
+>   	if (size < DIRECT_FETCH_THRESHOLD) {
+> +		dprintk(LOG_INFO, "Capture: Sync Mode\n");
+>   		aspeed_video_write(video, VE_TGS_0,
+>   				   FIELD_PREP(VE_TGS_FIRST,
+>   					      video->frame_left - 1) |
+> @@ -918,6 +940,7 @@ static void aspeed_video_set_resolution(struct aspeed_video *video)
+>   					      video->frame_bottom + 1));
+>   		aspeed_video_update(video, VE_CTRL, 0, VE_CTRL_INT_DE);
+>   	} else {
+> +		dprintk(LOG_INFO, "Capture: Direct Mode\n");
+>   		aspeed_video_update(video, VE_CTRL, 0, VE_CTRL_DIRECT_FETCH);
+>   	}
+>   
+> @@ -934,6 +957,10 @@ static void aspeed_video_set_resolution(struct aspeed_video *video)
+>   		if (!aspeed_video_alloc_buf(video, &video->srcs[1], size))
+>   			goto err_mem;
+>   
+> +		dprintk(LOG_INFO, "src buf0 addr(%#x) size(%d)\n",
+> +			video->srcs[0].dma, video->srcs[0].size);
+> +		dprintk(LOG_INFO, "src buf1 addr(%#x) size(%d)\n",
+> +			video->srcs[1].dma, video->srcs[1].size);
+>   		aspeed_video_write(video, VE_SRC0_ADDR, video->srcs[0].dma);
+>   		aspeed_video_write(video, VE_SRC1_ADDR, video->srcs[1].dma);
+>   	}
+> @@ -1010,6 +1037,8 @@ static void aspeed_video_start(struct aspeed_video *video)
+>   
+>   static void aspeed_video_stop(struct aspeed_video *video)
+>   {
+> +	dprintk(LOG_TRACE, "%s\n", __func__);
+> +
+>   	set_bit(VIDEO_STOPPED, &video->flags);
+>   	cancel_delayed_work_sync(&video->res_work);
+>   
+> @@ -1198,6 +1227,9 @@ static int aspeed_video_set_dv_timings(struct file *file, void *fh,
+>   
+>   	timings->type = V4L2_DV_BT_656_1120;
+>   
+> +	dprintk(LOG_INFO, "set new timings(%dx%d)\n", timings->bt.width,
+> +		timings->bt.height);
+> +
+>   	return 0;
+>   }
+>   
+> @@ -1362,6 +1394,8 @@ static void aspeed_video_resolution_work(struct work_struct *work)
+>   						  res_work);
+>   	u32 input_status = video->v4l2_input_status;
+>   
+> +	dprintk(LOG_TRACE, "%s+\n", __func__);
+> +
+>   	aspeed_video_on(video);
+>   
+>   	/* Exit early in case no clients remain */
+> @@ -1380,6 +1414,7 @@ static void aspeed_video_resolution_work(struct work_struct *work)
+>   			.u.src_change.changes = V4L2_EVENT_SRC_CH_RESOLUTION,
+>   		};
+>   
+> +		dprintk(LOG_INFO, "fire source change event\n");
+>   		v4l2_event_queue(&video->vdev, &ev);
+>   	} else if (test_bit(VIDEO_STREAMING, &video->flags)) {
+>   		/* No resolution change so just restart streaming */
+> @@ -1389,6 +1424,8 @@ static void aspeed_video_resolution_work(struct work_struct *work)
+>   done:
+>   	clear_bit(VIDEO_RES_CHANGE, &video->flags);
+>   	wake_up_interruptible_all(&video->wait);
+> +
+> +	dprintk(LOG_TRACE, "%s-\n", __func__);
+>   }
+>   
+>   static int aspeed_video_open(struct file *file)
+> @@ -1476,6 +1513,7 @@ static int aspeed_video_start_streaming(struct vb2_queue *q,
+>   	int rc;
+>   	struct aspeed_video *video = vb2_get_drv_priv(q);
+>   
+> +	dprintk(LOG_TRACE, "%s\n", __func__);
+>   	video->sequence = 0;
+>   	video->perf.duration_max = 0;
+>   	video->perf.duration_min = 0xffffffff;
+> @@ -1495,13 +1533,15 @@ static void aspeed_video_stop_streaming(struct vb2_queue *q)
+>   	int rc;
+>   	struct aspeed_video *video = vb2_get_drv_priv(q);
+>   
+> +	dprintk(LOG_TRACE, "%s+\n", __func__);
+> +
+>   	clear_bit(VIDEO_STREAMING, &video->flags);
+>   
+>   	rc = wait_event_timeout(video->wait,
+>   				!test_bit(VIDEO_FRAME_INPRG, &video->flags),
+>   				STOP_TIMEOUT);
+>   	if (!rc) {
+> -		dev_dbg(video->dev, "Timed out when stopping streaming\n");
+> +		dprintk(LOG_NOTICE, "Timed out when stopping streaming\n");
+>   
+>   		/*
+>   		 * Need to force stop any DMA and try and get HW into a good
+> @@ -1516,6 +1556,7 @@ static void aspeed_video_stop_streaming(struct vb2_queue *q)
+>   	}
+>   
+>   	aspeed_video_bufs_done(video, VB2_BUF_STATE_ERROR);
+> +	dprintk(LOG_TRACE, "%s-\n", __func__);
+>   }
+>   
+>   static void aspeed_video_buf_queue(struct vb2_buffer *vb)
+> @@ -1715,6 +1756,7 @@ static int aspeed_video_init(struct aspeed_video *video)
+>   		dev_err(dev, "Unable to request IRQ %d\n", irq);
+>   		return rc;
+>   	}
+> +	dev_info(video->dev, "irq %d\n", irq);
+>   
+>   	video->eclk = devm_clk_get(dev, "eclk");
+>   	if (IS_ERR(video->eclk)) {
+> @@ -1751,6 +1793,8 @@ static int aspeed_video_init(struct aspeed_video *video)
+>   		rc = -ENOMEM;
+>   		goto err_release_reserved_mem;
+>   	}
+> +	dev_info(video->dev, "alloc mem size(%d) at %#x for jpeg header\n",
+> +		 VE_JPEG_HEADER_SIZE, video->jpeg.dma);
+>   
+>   	aspeed_video_init_jpeg_table(video->jpeg.virt, video->yuv420);
+>   
+> @@ -1856,6 +1900,9 @@ static struct platform_driver aspeed_video_driver = {
+>   
+>   module_platform_driver(aspeed_video_driver);
+>   
+> +module_param(debug, int, 0644);
+> +MODULE_PARM_DESC(debug, "set debugging level (0=reg,2=irq,4=trace,8=info(|-able)).");
+> +
+>   MODULE_DESCRIPTION("ASPEED Video Engine Driver");
+>   MODULE_AUTHOR("Eddie James");
+>   MODULE_LICENSE("GPL v2");
+
+
+Kind regards,
+
+Paul
