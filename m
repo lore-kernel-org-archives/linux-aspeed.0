@@ -1,89 +1,189 @@
-From: Joel Stanley <joel@jms.id.au>
-Date: Fri, 15 Oct 2021 04:01:30 +0000
-Subject: [GIT PULL] ARM: aspeed: devicetree changes for 5.16
-Message-ID: <CACPK8XdrMzY9tzdof7KpzxKquTo7GcWW4N9Zqwtmmu73C7htXA@mail.gmail.com>
+From: Jammy Huang <jammy_huang@aspeedtech.com>
+Date: Fri, 15 Oct 2021 13:39:08 +0800
+Subject: [PATCH 3/6] media: aspeed: refine to centerize format/compress
+ settings
+In-Reply-To: <27ddf165-4a7c-2d41-bddc-16baf4a3db8f@molgen.mpg.de>
+References: <20211014034819.2283-1-jammy_huang@aspeedtech.com>
+ <20211014034819.2283-4-jammy_huang@aspeedtech.com>
+ <27ddf165-4a7c-2d41-bddc-16baf4a3db8f@molgen.mpg.de>
+Message-ID: <5dea4d70-5c20-b427-9d48-c07f36a5245e@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello Soc maintainers,
+Dear Paul,
 
-Here are the aspeed device tree changes for v5.16.
 
-The following changes since commit 6880fa6c56601bb8ed59df6c30fd390cc5f6dd8f:
+On 2021/10/14 ?? 02:36, Paul Menzel wrote:
+> Dear Jammy,
+>
+>
+> Am 14.10.21 um 05:48 schrieb Jammy Huang:
+>
+>> [PATCH 3/6] media: aspeed: refine to centerize format/compress settings
+> Do you mean to ?refactor?? Maybe:
+>
+>> Refactor format/compress settings into dedicated function
+>> Add API, aspeed_video_update_regs(), to centerize format/compress settings
+>> which are controlled by user.
+> I do not know ?centerize?. Maybe somebody else has an idea.
+Sorry, I mean 'gather' here.
+>> ? to control format/compress settings controlled by the user.
+> Could you please paste the new log messages?
+Sure.
+>
+>> Signed-off-by: Jammy Huang <jammy_huang@aspeedtech.com>
+>> ---
+>>    drivers/media/platform/aspeed-video.c | 68 +++++++++++++--------------
+>>    1 file changed, 34 insertions(+), 34 deletions(-)
+>>
+>> diff --git a/drivers/media/platform/aspeed-video.c b/drivers/media/platform/aspeed-video.c
+>> index 7b8129b0ca5f..3b5a3935325d 100644
+>> --- a/drivers/media/platform/aspeed-video.c
+>> +++ b/drivers/media/platform/aspeed-video.c
+>> @@ -974,20 +974,41 @@ static void aspeed_video_set_resolution(struct aspeed_video *video)
+>>    		aspeed_video_free_buf(video, &video->srcs[0]);
+>>    }
+>>    
+>> -static void aspeed_video_init_regs(struct aspeed_video *video)
+>> +static void aspeed_video_update_regs(struct aspeed_video *video)
+>>    {
+>>    	u32 comp_ctrl = VE_COMP_CTRL_RSVD |
+>>    		FIELD_PREP(VE_COMP_CTRL_DCT_LUM, video->jpeg_quality) |
+>>    		FIELD_PREP(VE_COMP_CTRL_DCT_CHR, video->jpeg_quality | 0x10);
+>> -	u32 ctrl = VE_CTRL_AUTO_OR_CURSOR;
+>> +	u32 ctrl = 0;
+>>    	u32 seq_ctrl = VE_SEQ_CTRL_JPEG_MODE;
+>>    
+>> +	dprintk(LOG_INFO, "framerate(%d)\n", video->frame_rate);
+>> +	dprintk(LOG_INFO, "subsample(%s)\n",
+>> +		video->yuv420 ? "420" : "444");
+>> +	dprintk(LOG_INFO, "compression quality(%d)\n",
+>> +		video->jpeg_quality);
+>> +
+>>    	if (video->frame_rate)
+>>    		ctrl |= FIELD_PREP(VE_CTRL_FRC, video->frame_rate);
+>>    
+>>    	if (video->yuv420)
+>>    		seq_ctrl |= VE_SEQ_CTRL_YUV420;
+>>    
+>> +	if (video->jpeg.virt)
+>> +		aspeed_video_update_jpeg_table(video->jpeg.virt, video->yuv420);
+>> +
+>> +	/* Set control registers */
+>> +	aspeed_video_update(video, VE_SEQ_CTRL,
+>> +			    VE_SEQ_CTRL_JPEG_MODE | VE_SEQ_CTRL_YUV420,
+>> +			    seq_ctrl);
+>> +	aspeed_video_update(video, VE_CTRL, VE_CTRL_FRC, ctrl);
+>> +	aspeed_video_update(video, VE_COMP_CTRL,
+>> +			    VE_COMP_CTRL_DCT_LUM | VE_COMP_CTRL_DCT_CHR,
+>> +			    comp_ctrl);
+>> +}
+>> +
+>> +static void aspeed_video_init_regs(struct aspeed_video *video)
+>> +{
+>>    	/* Unlock VE registers */
+>>    	aspeed_video_write(video, VE_PROTECTION_KEY, VE_PROTECTION_KEY_UNLOCK);
+>>    
+>> @@ -1002,9 +1023,8 @@ static void aspeed_video_init_regs(struct aspeed_video *video)
+>>    	aspeed_video_write(video, VE_JPEG_ADDR, video->jpeg.dma);
+>>    
+>>    	/* Set control registers */
+>> -	aspeed_video_write(video, VE_SEQ_CTRL, seq_ctrl);
+>> -	aspeed_video_write(video, VE_CTRL, ctrl);
+>> -	aspeed_video_write(video, VE_COMP_CTRL, comp_ctrl);
+>> +	aspeed_video_write(video, VE_CTRL, VE_CTRL_AUTO_OR_CURSOR);
+>> +	aspeed_video_write(video, VE_COMP_CTRL, VE_COMP_CTRL_RSVD);
+> Why is this changed?
 
-  Linux 5.15-rc1 (2021-09-12 16:28:37 -0700)
+Previously, there are 2 places, aspeed_video_init_regs() and 
+aspeed_video_update_jpeg_quality(),
+to modify reg-value for 'jpeg_quality'. Same condition for 
+'subsampling'. There will be more parameters
+related to capture/compress settings in later patch for aspeed-format. 
+So I want to have these reg-value
+modification codes happen at once and at one place.
 
-are available in the Git repository at:
+In above code, I separate aspeed_video_update_regs() from 
+aspeed_video_init_regs().
+aspeed_video_init_regs() only gives default settings for VE_CTRL & 
+VE_COMP_CTRL now.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/joel/bmc.git
-tags/aspeed-5.16-devicetree
-
-for you to fetch changes up to 4eb7fe3333a021c8d0f35bcb5cd7c4e42800df62:
-
-  ARM: dts: aspeed: fp5280g2: Use the 64M layout (2021-10-14 18:25:17 +1030)
-
-----------------------------------------------------------------
-ASPEED device tree updates for 5.15
-
- - New machines:
-
-  * TYAN S7106 BMC, a x86 server from about four years ago
-
- - Descriptions for the AST2600 ADC, which now has an upstream driver
-
- - Lots of GPIO line names. The OpenBMC project has adopted a scheme for
-   naming the lines, and new additions will follow this guide
-
- - New I2C devices for Rainier, Everest, EthanolX, Mt Jade
-
- - Fixes for fp5280g2 which has seen some recent development, including
-   the addtion of a QEmu machine for testing
-
-----------------------------------------------------------------
-Adriana Kobylak (1):
-      ARM: dts: aspeed: rainier: Add power-config-full-load gpio
-
-Ben Tyner (3):
-      ARM: dts: rainier: Define name for gpio line Q2
-      ARM: dts: everest: Define name for gpio line Q2
-      ARM: dts: everest: Define name for gpio line B6
-
-Eddie James (3):
-      ARM: dts: aspeed: rainier: Add system LEDs
-      ARM: dts: aspeed: everest: Add I2C bus 15 muxes
-      ARM: dts: aspeed: Add ADC for AST2600 and enable for Rainier and Everest
-
-George Liu (1):
-      ARM: dts: fp5280g2: Enable KCS 3 for MCTP binding
-
-Isaac Kurth (1):
-      ARM: dts: everest: Add 'factory-reset-toggle' as GPIOF6
-
-Joel Stanley (1):
-      ARM: dts: aspeed: p10bmc: Define secure boot gpio
-
-John Wang (1):
-      ARM: dts: aspeed: fp5280g2: Use the 64M layout
-
-Konstantin Aladyshev (1):
-      ARM: dts: aspeed: amd-ethanolx: Add FRU EEPROM
-
-Oskar Senft (1):
-      ARM: dts: aspeed: Add TYAN S7106 BMC machine
-
-Quan Nguyen (1):
-      ARM: dts: aspeed: mtjade: Add some gpios
-
- arch/arm/boot/dts/Makefile                       |    3 +-
- arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts    |    5 +
- arch/arm/boot/dts/aspeed-bmc-ampere-mtjade.dts   |   21 +-
- arch/arm/boot/dts/aspeed-bmc-ibm-everest.dts     |  182 ++-
- arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts     | 1571 +++++++++++++++++++---
- arch/arm/boot/dts/aspeed-bmc-inspur-fp5280g2.dts |    9 +-
- arch/arm/boot/dts/aspeed-bmc-tyan-s7106.dts      |  488 +++++++
- arch/arm/boot/dts/aspeed-g6.dtsi                 |   20 +
- 8 files changed, 2075 insertions(+), 224 deletions(-)
- create mode 100644 arch/arm/boot/dts/aspeed-bmc-tyan-s7106.dts
+>
+>>    
+>>    	/* Don't downscale */
+>>    	aspeed_video_write(video, VE_SCALING_FACTOR, 0x10001000);
+>> @@ -1335,27 +1355,6 @@ static const struct v4l2_ioctl_ops aspeed_video_ioctl_ops = {
+>>    	.vidioc_unsubscribe_event = v4l2_event_unsubscribe,
+>>    };
+>>    
+>> -static void aspeed_video_update_jpeg_quality(struct aspeed_video *video)
+>> -{
+>> -	u32 comp_ctrl = FIELD_PREP(VE_COMP_CTRL_DCT_LUM, video->jpeg_quality) |
+>> -		FIELD_PREP(VE_COMP_CTRL_DCT_CHR, video->jpeg_quality | 0x10);
+>> -
+>> -	aspeed_video_update(video, VE_COMP_CTRL,
+>> -			    VE_COMP_CTRL_DCT_LUM | VE_COMP_CTRL_DCT_CHR,
+>> -			    comp_ctrl);
+>> -}
+>> -
+>> -static void aspeed_video_update_subsampling(struct aspeed_video *video)
+>> -{
+>> -	if (video->jpeg.virt)
+>> -		aspeed_video_update_jpeg_table(video->jpeg.virt, video->yuv420);
+>> -
+>> -	if (video->yuv420)
+>> -		aspeed_video_update(video, VE_SEQ_CTRL, 0, VE_SEQ_CTRL_YUV420);
+>> -	else
+>> -		aspeed_video_update(video, VE_SEQ_CTRL, VE_SEQ_CTRL_YUV420, 0);
+>> -}
+>> -
+>>    static int aspeed_video_set_ctrl(struct v4l2_ctrl *ctrl)
+>>    {
+>>    	struct aspeed_video *video = container_of(ctrl->handler,
+>> @@ -1365,16 +1364,13 @@ static int aspeed_video_set_ctrl(struct v4l2_ctrl *ctrl)
+>>    	switch (ctrl->id) {
+>>    	case V4L2_CID_JPEG_COMPRESSION_QUALITY:
+>>    		video->jpeg_quality = ctrl->val;
+>> -		aspeed_video_update_jpeg_quality(video);
+>> +		if (test_bit(VIDEO_STREAMING, &video->flags))
+>> +			aspeed_video_update_regs(video);
+>>    		break;
+>>    	case V4L2_CID_JPEG_CHROMA_SUBSAMPLING:
+>> -		if (ctrl->val == V4L2_JPEG_CHROMA_SUBSAMPLING_420) {
+>> -			video->yuv420 = true;
+>> -			aspeed_video_update_subsampling(video);
+>> -		} else {
+>> -			video->yuv420 = false;
+>> -			aspeed_video_update_subsampling(video);
+>> -		}
+>> +		video->yuv420 = (ctrl->val == V4L2_JPEG_CHROMA_SUBSAMPLING_420);
+>> +		if (test_bit(VIDEO_STREAMING, &video->flags))
+>> +			aspeed_video_update_regs(video);
+>>    		break;
+>>    	default:
+>>    		return -EINVAL;
+>> @@ -1404,6 +1400,8 @@ static void aspeed_video_resolution_work(struct work_struct *work)
+>>    
+>>    	aspeed_video_init_regs(video);
+>>    
+>> +	aspeed_video_update_regs(video);
+>> +
+>>    	aspeed_video_get_resolution(video);
+>>    
+>>    	if (video->detected_timings.width != video->active_timings.width ||
+>> @@ -1518,6 +1516,8 @@ static int aspeed_video_start_streaming(struct vb2_queue *q,
+>>    	video->perf.duration_max = 0;
+>>    	video->perf.duration_min = 0xffffffff;
+>>    
+>> +	aspeed_video_update_regs(video);
+>> +
+>>    	rc = aspeed_video_start_frame(video);
+>>    	if (rc) {
+>>    		aspeed_video_bufs_done(video, VB2_BUF_STATE_QUEUED);
+>>
+> Kind regards,
+>
+> Paul
