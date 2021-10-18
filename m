@@ -1,77 +1,129 @@
 From: Jammy Huang <jammy_huang@aspeedtech.com>
-Date: Mon, 18 Oct 2021 17:22:01 +0800
-Subject: [PATCH v2 1/7] media: aspeed: move err-handling together to the bottom
+Date: Mon, 18 Oct 2021 17:22:07 +0800
+Subject: [PATCH v2 7/7] media: aspeed: Extend debug message
 In-Reply-To: <20211018092207.13336-1-jammy_huang@aspeedtech.com>
 References: <20211018092207.13336-1-jammy_huang@aspeedtech.com>
-Message-ID: <20211018092207.13336-2-jammy_huang@aspeedtech.com>
+Message-ID: <20211018092207.13336-8-jammy_huang@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-refine aspeed_video_setup_video() flow.
+updated as below:
+
+Capture:
+  Mode                : Direct fetch
+  VGA bpp mode        : 32
+  Signal              : lock
+  Width               : 1920
+  Height              : 1080
+  FRC                 : 0
+
+Compression:
+  Format              : JPEG
+  Subsampling         : 444
+  Quality             : 4
+  HQ Mode             : N/A
+  HQ Quality          : 0
+  Mode                : N/A
+
+Performance:
+  Frame#              : 4
+  Frame Duration(ms)  :
+    Now               : 22
+    Min               : 21
+    Max               : 22
+  FPS                 : 47
 
 Signed-off-by: Jammy Huang <jammy_huang@aspeedtech.com>
 ---
- drivers/media/platform/aspeed-video.c | 24 +++++++++++-------------
- 1 file changed, 11 insertions(+), 13 deletions(-)
+ drivers/media/platform/aspeed-video.c | 41 +++++++++++++++++++++++++--
+ 1 file changed, 38 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/media/platform/aspeed-video.c b/drivers/media/platform/aspeed-video.c
-index 491447bf5186..6259cf17a7cc 100644
+index 070654a8419b..8ed5a382ea43 100644
 --- a/drivers/media/platform/aspeed-video.c
 +++ b/drivers/media/platform/aspeed-video.c
-@@ -1644,11 +1644,8 @@ static int aspeed_video_setup_video(struct aspeed_video *video)
+@@ -453,6 +453,9 @@ static const struct v4l2_dv_timings_cap aspeed_video_timings_cap = {
+ 	},
+ };
  
- 	rc = video->ctrl_handler.error;
- 	if (rc) {
--		v4l2_ctrl_handler_free(&video->ctrl_handler);
--		v4l2_device_unregister(v4l2_dev);
--
- 		dev_err(video->dev, "Failed to init controls: %d\n", rc);
--		return rc;
-+		goto err_ctrl_init;
- 	}
- 
- 	v4l2_dev->ctrl_handler = &video->ctrl_handler;
-@@ -1666,11 +1663,8 @@ static int aspeed_video_setup_video(struct aspeed_video *video)
- 
- 	rc = vb2_queue_init(vbq);
- 	if (rc) {
--		v4l2_ctrl_handler_free(&video->ctrl_handler);
--		v4l2_device_unregister(v4l2_dev);
--
- 		dev_err(video->dev, "Failed to init vb2 queue\n");
--		return rc;
-+		goto err_vb2_init;
- 	}
- 
- 	vdev->queue = vbq;
-@@ -1688,15 +1682,19 @@ static int aspeed_video_setup_video(struct aspeed_video *video)
- 	video_set_drvdata(vdev, video);
- 	rc = video_register_device(vdev, VFL_TYPE_GRABBER, 0);
- 	if (rc) {
--		vb2_queue_release(vbq);
--		v4l2_ctrl_handler_free(&video->ctrl_handler);
--		v4l2_device_unregister(v4l2_dev);
--
- 		dev_err(video->dev, "Failed to register video device\n");
--		return rc;
-+		goto err_video_reg;
- 	}
- 
- 	return 0;
++static const char * const compress_mode_str[] = {"DCT Only",
++	"DCT VQ mix 2-color", "DCT VQ mix 4-color"};
 +
-+err_video_reg:
-+	vb2_queue_release(vbq);
-+err_vb2_init:
-+err_ctrl_init:
-+	v4l2_ctrl_handler_free(&video->ctrl_handler);
-+	v4l2_device_unregister(v4l2_dev);
-+	return rc;
+ static unsigned int debug;
+ 
+ static void aspeed_video_init_jpeg_table(u32 *table, bool yuv420)
+@@ -1071,8 +1074,6 @@ static void aspeed_video_set_resolution(struct aspeed_video *video)
+ 
+ static void aspeed_video_update_regs(struct aspeed_video *video)
+ {
+-	static const char * const compress_mode_str[] = {"DCT Only",
+-		"DCT VQ mix 2-color", "DCT VQ mix 4-color"};
+ 	u32 comp_ctrl =	FIELD_PREP(VE_COMP_CTRL_DCT_LUM, video->jpeg_quality) |
+ 		FIELD_PREP(VE_COMP_CTRL_DCT_CHR, video->jpeg_quality | 0x10) |
+ 		FIELD_PREP(VE_COMP_CTRL_EN_HQ, video->hq_mode) |
+@@ -1783,9 +1784,29 @@ static const struct vb2_ops aspeed_video_vb2_ops = {
+ static int aspeed_video_debugfs_show(struct seq_file *s, void *data)
+ {
+ 	struct aspeed_video *v = s->private;
++	u32 val08;
+ 
+ 	seq_puts(s, "\n");
+ 
++	val08 = aspeed_video_read(v, VE_CTRL);
++	seq_puts(s, "Capture:\n");
++	if (FIELD_GET(VE_CTRL_DIRECT_FETCH, val08)) {
++		seq_printf(s, "  %-20s:\tDirect fetch\n", "Mode");
++		seq_printf(s, "  %-20s:\t%s\n", "VGA bpp mode",
++			   FIELD_GET(VE_CTRL_INT_DE, val08) ? "16" : "32");
++	} else {
++		seq_printf(s, "  %-20s:\tSync\n", "Mode");
++		seq_printf(s, "  %-20s:\t%s\n", "Video source",
++			   FIELD_GET(VE_CTRL_SOURCE, val08) ?
++			   "external" : "internal");
++		seq_printf(s, "  %-20s:\t%s\n", "DE source",
++			   FIELD_GET(VE_CTRL_INT_DE, val08) ?
++			   "internal" : "external");
++		seq_printf(s, "  %-20s:\t%s\n", "Cursor overlay",
++			   FIELD_GET(VE_CTRL_AUTO_OR_CURSOR, val08) ?
++			   "Without" : "With");
++	}
++
+ 	seq_printf(s, "  %-20s:\t%s\n", "Signal",
+ 		   v->v4l2_input_status ? "Unlock" : "Lock");
+ 	seq_printf(s, "  %-20s:\t%d\n", "Width", v->pix_fmt.width);
+@@ -1794,6 +1815,21 @@ static int aspeed_video_debugfs_show(struct seq_file *s, void *data)
+ 
+ 	seq_puts(s, "\n");
+ 
++	seq_puts(s, "Compression:\n");
++	seq_printf(s, "  %-20s:\t%s\n", "Format",
++		   v->partial_jpeg ? "Aspeed" : "JPEG");
++	seq_printf(s, "  %-20s:\t%s\n", "Subsampling",
++		   v->yuv420 ? "420" : "444");
++	seq_printf(s, "  %-20s:\t%d\n", "Quality", v->jpeg_quality);
++	seq_printf(s, "  %-20s:\t%s\n", "HQ Mode",
++		   v->partial_jpeg ? (v->hq_mode ? "on" : "off") : "N/A");
++	seq_printf(s, "  %-20s:\t%d\n", "HQ Quality", v->jpeg_hq_quality);
++	seq_printf(s, "  %-20s:\t%s\n", "Mode",
++		   v->partial_jpeg ? compress_mode_str[v->compression_mode]
++				   : "N/A");
++
++	seq_puts(s, "\n");
++
+ 	seq_puts(s, "Performance:\n");
+ 	seq_printf(s, "  %-20s:\t%d\n", "Frame#", v->sequence);
+ 	seq_printf(s, "  %-20s:\n", "Frame Duration(ms)");
+@@ -1802,7 +1838,6 @@ static int aspeed_video_debugfs_show(struct seq_file *s, void *data)
+ 	seq_printf(s, "    %-18s:\t%d\n", "Max", v->perf.duration_max);
+ 	seq_printf(s, "  %-20s:\t%d\n", "FPS", 1000/(v->perf.totaltime/v->sequence));
+ 
+-
+ 	return 0;
  }
  
- static int aspeed_video_init(struct aspeed_video *video)
 -- 
 2.25.1
 
