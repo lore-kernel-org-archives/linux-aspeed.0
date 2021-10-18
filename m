@@ -1,394 +1,491 @@
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-Date: Fri, 15 Oct 2021 10:29:16 +0200
-Subject: [PATCH 2/6] media: aspeed: add dprintk for more detailed log
- control
-In-Reply-To: <c367c670-5e57-4bf2-06ab-06c4af0853c7@aspeedtech.com>
+From: Jammy Huang <jammy_huang@aspeedtech.com>
+Date: Mon, 18 Oct 2021 16:51:27 +0800
+Subject: [PATCH 4/6] media: aspeed: Support aspeed mode to reduce
+ compressed data
+In-Reply-To: <ddb1e6dc-6b4f-4f67-9122-dae3dab1ae65@molgen.mpg.de>
 References: <20211014034819.2283-1-jammy_huang@aspeedtech.com>
- <20211014034819.2283-3-jammy_huang@aspeedtech.com>
- <5b8f81aa-9d08-dc42-8bd5-e9e7560f37f6@molgen.mpg.de>
- <c367c670-5e57-4bf2-06ab-06c4af0853c7@aspeedtech.com>
-Message-ID: <ca3b21b1-a982-cc9a-bda4-800033cc1d5f@molgen.mpg.de>
+ <20211014034819.2283-5-jammy_huang@aspeedtech.com>
+ <ddb1e6dc-6b4f-4f67-9122-dae3dab1ae65@molgen.mpg.de>
+Message-ID: <5675befe-48df-9f09-f30f-d407538ad070@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Dear Jammy,
+Dear Paul,
 
+On 2021/10/14 ?? 02:47, Paul Menzel wrote:
+> Dear Jammy,
+>
+>
+> Am 14.10.21 um 05:48 schrieb Jammy Huang:
+>> aspeed support differential jpeg format which only compress the parts
+> support*s*
+>
+>> which are changed. In this way, it reduces both the amount of data to be
+>> transferred by network and those to be decoded on the client side.
+> Please mention the datasheet name and revision and section, where this
+> functionality is described.
 
-Thank you for your reply.
+Sorry but our datasheet is confidential. The basic idea of this feature 
+is that we can
+just compress the blocks which is different with previous frame rather 
+than full frame.
+This idea is similar to the I & P frame in multimedia.
 
-Am 15.10.21 um 04:16 schrieb Jammy Huang:
+> Which chips support it?
+AST2400/2500/2600 all support it.
+>
+>> 4 new ctrls are added:
+>> *Aspeed JPEG Format: to control aspeed's partial jpeg on/off
+>> *Aspeed Compression Mode: to control aspeed's compression mode
+>> *Aspeed HQ Mode: to control aspeed's HQ mode on/off
+>> *Aspeed HQ Quality: to control the quality of aspeed's HQ mode
+> Please add a space after the bullet points.
+>
+> Excuse my ignorance, how can these options be controlled?
 
-> I will try to come out another patch which uses either 
-> v4l2_info/v4l2_err/v4l2_warn/v4l2_dbg
-> or other 'native' Linux kernel solution.
-> 
-> On 2021/10/14 ?? 02:28, Paul Menzel wrote:
->> [Cc: +Steven, +Ingo for tracing questions]
+* Aspeed JPEG Format: to control jpeg format
+   0: standard jpeg, 1: aspeed jpeg
+* Aspeed Compression Mode: to control aspeed's compression mode
+   0: DCT Only, 1: DCT VQ mix 2-color, 2: DCT VQ mix 4-color
+   This is AST2400 only. It will adapt JPEG or VQ encoding method according
+   to the context automatically.
+* Aspeed HQ Mode: to control aspeed's HQ mode on/off
+   0: disabled, 1: enabled
+* Aspeed HQ Quality: to control the quality(0~11) of aspeed's HQ mode,
+   only usefull if Aspeed HQ mode is enabled
+
+>
+>> Aspeed JPEG Format requires an additional buffer, called bcd, to store
+>> the information that which macro block in the new frame is different
+> s/that which/which/
+>
+>> from the old one.
 >>
->> Dear Jammy,
+>> To have bcd correctly working, we need to swap the buffers for src0/1 to
+>> make src1 refer to previous frame and src0 to the coming new frame.
+> How did you test it? What do the clients need to support?
+>
+> Did you test, how much bandwidth is saved? Some numbers would be nice.
+I tested it by aspeed's kvm client which support decoding the aspeed format.
+Currently, I am porting this feature to novnc to have openbmc support it.
+
+The bandwidth saved is variant. It depends on how many blocks is 
+different between
+new and old frame.If the new frame is identical with the previous one, 
+the compressed
+frame only needs 12 Bytes.
+
+>
+>> Signed-off-by: Jammy Huang <jammy_huang@aspeedtech.com>
+>> ---
+>>    drivers/media/platform/aspeed-video.c | 210 +++++++++++++++++++++++---
+>>    1 file changed, 193 insertions(+), 17 deletions(-)
 >>
+>> diff --git a/drivers/media/platform/aspeed-video.c b/drivers/media/platform/aspeed-video.c
+>> index 3b5a3935325d..6b887fcaab7c 100644
+>> --- a/drivers/media/platform/aspeed-video.c
+>> +++ b/drivers/media/platform/aspeed-video.c
+>> @@ -31,6 +31,11 @@
+>>    #include <media/v4l2-ioctl.h>
+>>    #include <media/videobuf2-dma-contig.h>
+>>    
+>> +#define ASPEED_CID_CUSTOM_BASE			(V4L2_CID_USER_BASE | 0xf000)
+>> +#define V4L2_CID_ASPEED_FORMAT			(ASPEED_CID_CUSTOM_BASE  + 1)
+>> +#define V4L2_CID_ASPEED_COMPRESSION_MODE	(ASPEED_CID_CUSTOM_BASE  + 2)
+>> +#define V4L2_CID_ASPEED_HQ_MODE			(ASPEED_CID_CUSTOM_BASE  + 3)
+>> +#define V4L2_CID_ASPEED_HQ_JPEG_QUALITY		(ASPEED_CID_CUSTOM_BASE  + 4)
+>>    
+>>    #define LOG_REG		BIT(4)
+>>    #define LOG_DEBUG	BIT(3)
+>> @@ -67,6 +72,7 @@
+>>    
+>>    #define VE_MAX_SRC_BUFFER_SIZE		0x8ca000 /* 1920 * 1200, 32bpp */
+>>    #define VE_JPEG_HEADER_SIZE		0x006000 /* 512 * 12 * 4 */
+>> +#define VE_BCD_BUFF_SIZE		0x100000
+>>    
+>>    #define VE_PROTECTION_KEY		0x000
+>>    #define  VE_PROTECTION_KEY_UNLOCK	0x1a038aa8
+>> @@ -120,6 +126,13 @@
+>>    #define VE_SCALING_FILTER2		0x020
+>>    #define VE_SCALING_FILTER3		0x024
+>>    
+>> +#define VE_BCD_CTRL			0x02C
+>> +#define  VE_BCD_CTRL_EN_BCD		BIT(0)
+>> +#define  VE_BCD_CTRL_EN_ABCD		BIT(1)
+>> +#define  VE_BCD_CTRL_EN_CB		BIT(2)
+>> +#define  VE_BCD_CTRL_THR		GENMASK(23, 16)
+>> +#define  VE_BCD_CTRL_ABCD_THR		GENMASK(31, 24)
+>> +
+>>    #define VE_CAP_WINDOW			0x030
+>>    #define VE_COMP_WINDOW			0x034
+>>    #define VE_COMP_PROC_OFFSET		0x038
+>> @@ -128,6 +141,7 @@
+>>    #define VE_SRC0_ADDR			0x044
+>>    #define VE_SRC_SCANLINE_OFFSET		0x048
+>>    #define VE_SRC1_ADDR			0x04c
+>> +#define VE_BCD_ADDR			0x050
+>>    #define VE_COMP_ADDR			0x054
+>>    
+>>    #define VE_STREAM_BUF_SIZE		0x058
+>> @@ -148,6 +162,8 @@
+>>    #define  VE_COMP_CTRL_HQ_DCT_CHR	GENMASK(26, 22)
+>>    #define  VE_COMP_CTRL_HQ_DCT_LUM	GENMASK(31, 27)
+>>    
+>> +#define VE_CB_ADDR			0x06C
+>> +
+>>    #define VE_OFFSET_COMP_STREAM		0x078
+>>    
+>>    #define VE_JPEG_COMP_SIZE_READ_BACK	0x084
+>> @@ -255,10 +271,15 @@ struct aspeed_video {
+>>    	unsigned int max_compressed_size;
+>>    	struct aspeed_video_addr srcs[2];
+>>    	struct aspeed_video_addr jpeg;
+>> +	struct aspeed_video_addr bcd;
+>>    
+>>    	bool yuv420;
+>> +	bool partial_jpeg;
+>> +	bool hq_mode;
+>>    	unsigned int frame_rate;
+>>    	unsigned int jpeg_quality;
+>> +	unsigned int jpeg_hq_quality;
+>> +	unsigned int compression_mode;
+>>    
+>>    	unsigned int frame_bottom;
+>>    	unsigned int frame_left;
+>> @@ -270,6 +291,13 @@ struct aspeed_video {
+>>    
+>>    #define to_aspeed_video(x) container_of((x), struct aspeed_video, v4l2_dev)
+>>    
+>> +static bool aspeed_video_alloc_buf(struct aspeed_video *video,
+>> +				   struct aspeed_video_addr *addr,
+>> +				   unsigned int size);
+>> +
+>> +static void aspeed_video_free_buf(struct aspeed_video *video,
+>> +				  struct aspeed_video_addr *addr);
+>> +
+>>    static const u32 aspeed_video_jpeg_header[ASPEED_VIDEO_JPEG_HEADER_SIZE] = {
+>>    	0xe0ffd8ff, 0x464a1000, 0x01004649, 0x60000101, 0x00006000, 0x0f00feff,
+>>    	0x00002d05, 0x00000000, 0x00000000, 0x00dbff00
+>> @@ -499,6 +527,20 @@ static int aspeed_video_start_frame(struct aspeed_video *video)
+>>    		return -EBUSY;
+>>    	}
+>>    
+>> +	if (video->partial_jpeg && !video->bcd.size) {
+>> +		if (!aspeed_video_alloc_buf(video, &video->bcd,
+>> +					    VE_BCD_BUFF_SIZE)) {
+>> +			dev_err(video->dev, "Failed to allocate BCD buffer\n");
+>> +			dev_err(video->dev, "don't start frame\n");
+> Why not use only one line?
+>
+>> +			return -ENOMEM;
+>> +		}
+>> +		aspeed_video_write(video, VE_BCD_ADDR, video->bcd.dma);
+>> +		dprintk(LOG_INFO, "bcd addr(%#x) size(%d)\n",
+>> +			video->bcd.dma, video->bcd.size);
+> Sounds more like debug information to me.
+>
+>> +	} else if (!video->partial_jpeg && video->bcd.size) {
+>> +		aspeed_video_free_buf(video, &video->bcd);
+>> +	}
+>> +
+>>    	spin_lock_irqsave(&video->lock, flags);
+>>    	buf = list_first_entry_or_null(&video->buffers,
+>>    				       struct aspeed_video_buffer, link);
+>> @@ -642,6 +684,7 @@ static irqreturn_t aspeed_video_irq(int irq, void *arg)
+>>    
+>>    	if (sts & VE_INTERRUPT_COMP_COMPLETE) {
+>>    		struct aspeed_video_buffer *buf;
+>> +		bool empty = true;
+>>    		u32 frame_size = aspeed_video_read(video,
+>>    						   VE_JPEG_COMP_SIZE_READ_BACK);
+>>    
+>> @@ -655,13 +698,23 @@ static irqreturn_t aspeed_video_irq(int irq, void *arg)
+>>    		if (buf) {
+>>    			vb2_set_plane_payload(&buf->vb.vb2_buf, 0, frame_size);
+>>    
+>> -			if (!list_is_last(&buf->link, &video->buffers)) {
+>> +			/*
+>> +			 * partial_jpeg requires continuous update.
+>> +			 * On the contrary, standard jpeg can keep last buffer
+>> +			 * to always have the latest result.
+>> +			 */
+>> +			if (!video->partial_jpeg &&
+>> +			    list_is_last(&buf->link, &video->buffers)) {
+>> +				empty = false;
+>> +				dprintk(LOG_NOTICE, "skip to keep last frame updated\n");
+> Also debug information?
+>
+>> +			} else {
+>>    				buf->vb.vb2_buf.timestamp = ktime_get_ns();
+>>    				buf->vb.sequence = video->sequence++;
+>>    				buf->vb.field = V4L2_FIELD_NONE;
+>>    				vb2_buffer_done(&buf->vb.vb2_buf,
+>>    						VB2_BUF_STATE_DONE);
+>>    				list_del(&buf->link);
+>> +				empty = list_empty(&video->buffers);
+>>    			}
+>>    		}
+>>    		spin_unlock(&video->lock);
+>> @@ -675,7 +728,18 @@ static irqreturn_t aspeed_video_irq(int irq, void *arg)
+>>    		aspeed_video_write(video, VE_INTERRUPT_STATUS,
+>>    				   VE_INTERRUPT_COMP_COMPLETE);
+>>    		sts &= ~VE_INTERRUPT_COMP_COMPLETE;
+>> -		if (test_bit(VIDEO_STREAMING, &video->flags) && buf)
+>> +
+>> +		// swap src buffer if partial_jpeg
+> Use C89 style comments consistently?
+>
+>> +		if (video->partial_jpeg) {
+>> +			u32 src0, src1;
+>> +
+>> +			src0 = aspeed_video_read(video, VE_SRC0_ADDR);
+>> +			src1 = aspeed_video_read(video, VE_SRC1_ADDR);
+>> +			aspeed_video_write(video, VE_SRC0_ADDR, src1);
+>> +			aspeed_video_write(video, VE_SRC1_ADDR, src0);
+>> +		}
+>> +
+>> +		if (test_bit(VIDEO_STREAMING, &video->flags) && !empty)
+>>    			aspeed_video_start_frame(video);
+>>    	}
+>>    
+>> @@ -938,10 +1002,14 @@ static void aspeed_video_set_resolution(struct aspeed_video *video)
+>>    				   FIELD_PREP(VE_TGS_FIRST, video->frame_top) |
+>>    				   FIELD_PREP(VE_TGS_LAST,
+>>    					      video->frame_bottom + 1));
+>> -		aspeed_video_update(video, VE_CTRL, 0, VE_CTRL_INT_DE);
+>> +		aspeed_video_update(video, VE_CTRL,
+>> +				    VE_CTRL_INT_DE | VE_CTRL_DIRECT_FETCH,
+>> +				    VE_CTRL_INT_DE);
+>>    	} else {
+>>    		dprintk(LOG_INFO, "Capture: Direct Mode\n");
+>> -		aspeed_video_update(video, VE_CTRL, 0, VE_CTRL_DIRECT_FETCH);
+>> +		aspeed_video_update(video, VE_CTRL,
+>> +				    VE_CTRL_INT_DE | VE_CTRL_DIRECT_FETCH,
+>> +				    VE_CTRL_DIRECT_FETCH);
+>>    	}
+>>    
+>>    	size *= 4;
+>> @@ -976,34 +1044,68 @@ static void aspeed_video_set_resolution(struct aspeed_video *video)
+>>    
+>>    static void aspeed_video_update_regs(struct aspeed_video *video)
+>>    {
+>> -	u32 comp_ctrl = VE_COMP_CTRL_RSVD |
+>> -		FIELD_PREP(VE_COMP_CTRL_DCT_LUM, video->jpeg_quality) |
+>> -		FIELD_PREP(VE_COMP_CTRL_DCT_CHR, video->jpeg_quality | 0x10);
+>> +	static const char * const compress_mode_str[] = {"DCT Only",
+>> +		"DCT VQ mix 2-color", "DCT VQ mix 4-color"};
+>> +	u32 comp_ctrl =	FIELD_PREP(VE_COMP_CTRL_DCT_LUM, video->jpeg_quality) |
+>> +		FIELD_PREP(VE_COMP_CTRL_DCT_CHR, video->jpeg_quality | 0x10) |
+>> +		FIELD_PREP(VE_COMP_CTRL_EN_HQ, video->hq_mode) |
+>> +		FIELD_PREP(VE_COMP_CTRL_HQ_DCT_LUM, video->jpeg_hq_quality) |
+>> +		FIELD_PREP(VE_COMP_CTRL_HQ_DCT_CHR, video->jpeg_hq_quality |
+>> +			   0x10);
+>>    	u32 ctrl = 0;
+>> -	u32 seq_ctrl = VE_SEQ_CTRL_JPEG_MODE;
+>> +	u32 seq_ctrl = 0;
+>>    
+>>    	dprintk(LOG_INFO, "framerate(%d)\n", video->frame_rate);
+>> -	dprintk(LOG_INFO, "subsample(%s)\n",
+>> +	dprintk(LOG_INFO, "jpeg format(%s) subsample(%s)\n",
+>> +		video->partial_jpeg ? "partial" : "standard",
+>>    		video->yuv420 ? "420" : "444");
+>> -	dprintk(LOG_INFO, "compression quality(%d)\n",
+>> -		video->jpeg_quality);
+>> +	dprintk(LOG_INFO, "compression quality(%d) hq(%s) hq_quality(%d)\n",
+>> +		video->jpeg_quality, video->hq_mode ? "on" : "off",
+>> +		video->jpeg_hq_quality);
+>> +	dprintk(LOG_INFO, "compression mode(%s)\n",
+>> +		compress_mode_str[video->compression_mode]);
+>> +
+>> +	if (video->partial_jpeg)
+>> +		aspeed_video_update(video, VE_BCD_CTRL, 0, VE_BCD_CTRL_EN_BCD);
+>> +	else
+>> +		aspeed_video_update(video, VE_BCD_CTRL, VE_BCD_CTRL_EN_BCD, 0);
+>>    
+>>    	if (video->frame_rate)
+>>    		ctrl |= FIELD_PREP(VE_CTRL_FRC, video->frame_rate);
+>>    
+>> +	if (!video->partial_jpeg) {
+>> +		comp_ctrl &= ~FIELD_PREP(VE_COMP_CTRL_EN_HQ, video->hq_mode);
+>> +		seq_ctrl |= VE_SEQ_CTRL_JPEG_MODE;
+>> +	}
+>> +
+>>    	if (video->yuv420)
+>>    		seq_ctrl |= VE_SEQ_CTRL_YUV420;
+>>    
+>>    	if (video->jpeg.virt)
+>>    		aspeed_video_update_jpeg_table(video->jpeg.virt, video->yuv420);
+>>    
+>> +	switch (video->compression_mode) {
+>> +	case 0:	//DCT only
+> Please add a space after `//`.
+>
+>> +		comp_ctrl |= VE_COMP_CTRL_VQ_DCT_ONLY;
+>> +		break;
+>> +	case 1:	//DCT VQ mix 2-color
+>> +		comp_ctrl &= ~(VE_COMP_CTRL_VQ_4COLOR | VE_COMP_CTRL_VQ_DCT_ONLY);
+>> +		break;
+>> +	case 2:	//DCT VQ mix 4-color
+>> +		comp_ctrl |= VE_COMP_CTRL_VQ_4COLOR;
+>> +		break;
+>> +	}
+>> +
+>>    	/* Set control registers */
+>>    	aspeed_video_update(video, VE_SEQ_CTRL,
+>>    			    VE_SEQ_CTRL_JPEG_MODE | VE_SEQ_CTRL_YUV420,
+>>    			    seq_ctrl);
+>>    	aspeed_video_update(video, VE_CTRL, VE_CTRL_FRC, ctrl);
+>>    	aspeed_video_update(video, VE_COMP_CTRL,
+>> -			    VE_COMP_CTRL_DCT_LUM | VE_COMP_CTRL_DCT_CHR,
+>> +			    VE_COMP_CTRL_DCT_LUM | VE_COMP_CTRL_DCT_CHR |
+>> +			    VE_COMP_CTRL_EN_HQ | VE_COMP_CTRL_HQ_DCT_LUM |
+>> +			    VE_COMP_CTRL_HQ_DCT_CHR | VE_COMP_CTRL_VQ_4COLOR |
+>> +			    VE_COMP_CTRL_VQ_DCT_ONLY,
+>>    			    comp_ctrl);
+>>    }
+>>    
+>> @@ -1035,6 +1137,8 @@ static void aspeed_video_init_regs(struct aspeed_video *video)
+>>    
+>>    	/* Set mode detection defaults */
+>>    	aspeed_video_write(video, VE_MODE_DETECT, 0x22666500);
+>> +
+>> +	aspeed_video_write(video, VE_BCD_CTRL, 0);
+>>    }
+>>    
+>>    static void aspeed_video_start(struct aspeed_video *video)
+>> @@ -1070,6 +1174,9 @@ static void aspeed_video_stop(struct aspeed_video *video)
+>>    	if (video->srcs[1].size)
+>>    		aspeed_video_free_buf(video, &video->srcs[1]);
+>>    
+>> +	if (video->bcd.size)
+>> +		aspeed_video_free_buf(video, &video->bcd);
+>> +
+>>    	video->v4l2_input_status = V4L2_IN_ST_NO_SIGNAL;
+>>    	video->flags = 0;
+>>    }
+>> @@ -1372,6 +1479,26 @@ static int aspeed_video_set_ctrl(struct v4l2_ctrl *ctrl)
+>>    		if (test_bit(VIDEO_STREAMING, &video->flags))
+>>    			aspeed_video_update_regs(video);
+>>    		break;
+>> +	case V4L2_CID_ASPEED_FORMAT:
+>> +		video->partial_jpeg = ctrl->val;
+>> +		if (test_bit(VIDEO_STREAMING, &video->flags))
+>> +			aspeed_video_update_regs(video);
+>> +		break;
+>> +	case V4L2_CID_ASPEED_COMPRESSION_MODE:
+>> +		video->compression_mode = ctrl->val;
+>> +		if (test_bit(VIDEO_STREAMING, &video->flags))
+>> +			aspeed_video_update_regs(video);
+>> +		break;
+>> +	case V4L2_CID_ASPEED_HQ_MODE:
+>> +		video->hq_mode = ctrl->val;
+>> +		if (test_bit(VIDEO_STREAMING, &video->flags))
+>> +			aspeed_video_update_regs(video);
+>> +		break;
+>> +	case V4L2_CID_ASPEED_HQ_JPEG_QUALITY:
+>> +		video->jpeg_hq_quality = ctrl->val;
+>> +		if (test_bit(VIDEO_STREAMING, &video->flags))
+>> +			aspeed_video_update_regs(video);
+>> +		break;
+>>    	default:
+>>    		return -EINVAL;
+>>    	}
+>> @@ -1383,6 +1510,50 @@ static const struct v4l2_ctrl_ops aspeed_video_ctrl_ops = {
+>>    	.s_ctrl = aspeed_video_set_ctrl,
+>>    };
+>>    
+>> +static const struct v4l2_ctrl_config aspeed_ctrl_format = {
+>> +	.ops = &aspeed_video_ctrl_ops,
+>> +	.id = V4L2_CID_ASPEED_FORMAT,
+>> +	.name = "Aspeed JPEG Format",
+>> +	.type = V4L2_CTRL_TYPE_BOOLEAN,
+>> +	.min = false,
+>> +	.max = true,
+>> +	.step = 1,
+>> +	.def = false,
+>> +};
+>> +
+>> +static const struct v4l2_ctrl_config aspeed_ctrl_compression_mode = {
+>> +	.ops = &aspeed_video_ctrl_ops,
+>> +	.id = V4L2_CID_ASPEED_COMPRESSION_MODE,
+>> +	.name = "Aspeed Compression Mode",
+>> +	.type = V4L2_CTRL_TYPE_INTEGER,
+>> +	.min = 0,
+>> +	.max = 2,
+>> +	.step = 1,
+>> +	.def = 0,
+>> +};
+>> +
+>> +static const struct v4l2_ctrl_config aspeed_ctrl_HQ_mode = {
+>> +	.ops = &aspeed_video_ctrl_ops,
+>> +	.id = V4L2_CID_ASPEED_HQ_MODE,
+>> +	.name = "Aspeed HQ Mode",
+>> +	.type = V4L2_CTRL_TYPE_BOOLEAN,
+>> +	.min = false,
+>> +	.max = true,
+>> +	.step = 1,
+>> +	.def = false,
+>> +};
+>> +
+>> +static const struct v4l2_ctrl_config aspeed_ctrl_HQ_jpeg_quality = {
+>> +	.ops = &aspeed_video_ctrl_ops,
+>> +	.id = V4L2_CID_ASPEED_HQ_JPEG_QUALITY,
+>> +	.name = "Aspeed HQ Quality",
+>> +	.type = V4L2_CTRL_TYPE_INTEGER,
+>> +	.min = 0,
+>> +	.max = ASPEED_VIDEO_JPEG_NUM_QUALITIES - 1,
+>> +	.step = 1,
+>> +	.def = 0,
+>> +};
+>> +
+>>    static void aspeed_video_resolution_work(struct work_struct *work)
+>>    {
+>>    	struct delayed_work *dwork = to_delayed_work(work);
+>> @@ -1660,6 +1831,7 @@ static int aspeed_video_setup_video(struct aspeed_video *video)
+>>    	struct v4l2_device *v4l2_dev = &video->v4l2_dev;
+>>    	struct vb2_queue *vbq = &video->queue;
+>>    	struct video_device *vdev = &video->vdev;
+>> +	struct v4l2_ctrl_handler *hdl = &video->ctrl_handler;
+>>    	int rc;
+>>    
+>>    	video->pix_fmt.pixelformat = V4L2_PIX_FMT_JPEG;
+>> @@ -1674,22 +1846,26 @@ static int aspeed_video_setup_video(struct aspeed_video *video)
+>>    		return rc;
+>>    	}
+>>    
+>> -	v4l2_ctrl_handler_init(&video->ctrl_handler, 2);
+>> -	v4l2_ctrl_new_std(&video->ctrl_handler, &aspeed_video_ctrl_ops,
+>> +	v4l2_ctrl_handler_init(hdl, 6);
+>> +	v4l2_ctrl_new_std(hdl, &aspeed_video_ctrl_ops,
+>>    			  V4L2_CID_JPEG_COMPRESSION_QUALITY, 0,
+>>    			  ASPEED_VIDEO_JPEG_NUM_QUALITIES - 1, 1, 0);
+>> -	v4l2_ctrl_new_std_menu(&video->ctrl_handler, &aspeed_video_ctrl_ops,
+>> +	v4l2_ctrl_new_std_menu(hdl, &aspeed_video_ctrl_ops,
+>>    			       V4L2_CID_JPEG_CHROMA_SUBSAMPLING,
+>>    			       V4L2_JPEG_CHROMA_SUBSAMPLING_420, mask,
+>>    			       V4L2_JPEG_CHROMA_SUBSAMPLING_444);
+>> +	v4l2_ctrl_new_custom(hdl, &aspeed_ctrl_format, NULL);
+>> +	v4l2_ctrl_new_custom(hdl, &aspeed_ctrl_compression_mode, NULL);
+>> +	v4l2_ctrl_new_custom(hdl, &aspeed_ctrl_HQ_mode, NULL);
+>> +	v4l2_ctrl_new_custom(hdl, &aspeed_ctrl_HQ_jpeg_quality, NULL);
+>>    
+>> -	rc = video->ctrl_handler.error;
+>> +	rc = hdl->error;
+>>    	if (rc) {
+>>    		dev_err(video->dev, "Failed to init controls: %d\n", rc);
+>>    		goto err_ctrl_init;
+>>    	}
+>>    
+>> -	v4l2_dev->ctrl_handler = &video->ctrl_handler;
+>> +	v4l2_dev->ctrl_handler = hdl;
+>>    
+>>    	vbq->type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+>>    	vbq->io_modes = VB2_MMAP | VB2_READ | VB2_DMABUF;
 >>
->> Am 14.10.21 um 05:48 schrieb Jammy Huang:
->>> Add dprintk to categorize the log into NOTICE/INFO/TRACE/IRQ/REG.
->>> The on/off is controlled by module_param, debug.
->> Currently dev_dbg is dynamic debug, which can be controlled using the
->> Linux kernel command line or debugfs already?
->>
->> ? From your patch:
->>
->>> +MODULE_PARM_DESC(debug, "set debugging level 
->>> (0=reg,2=irq,4=trace,8=info(|-able)).");
->> What does (|-able) mean? Maybe give some examples in the commit message
->> as documentation?
-> I will modify the description to make this more clear.
->>
->> Lastly, instead of parameter name `debug`, I?d use `log_level`, which
->> would be more accurate.
-> Your consideration is understood, but please refer to the following 2 
-> cases:
-> 
-> 1. "include/media/v4l2-common.h"
-> 
->  ?70 #define v4l2_dbg(level, debug, dev, fmt, arg...)??????????????????????? \
->  ?71???????? do {??????????????????????????????????????????????????????????? \
->  ?72???????????????? if (debug >= (level))?????????????????????????????????? \
->  ?73???????????????????????? v4l2_printk(KERN_DEBUG, dev, fmt , ## arg);???? \
->  ?74???????? } while (0)
-
-Searching for `v4l2_dbg` in `drivers/media` that seems to quite commonly 
-used, though certain drivers also use their own debugging facility.
-
-> 2. "drivers/media/platform/vivid/vivid-core.c"
-> 
-> 135 unsigned vivid_debug;
-> 136 module_param(vivid_debug, uint, 0644);
-> 137 MODULE_PARM_DESC(vivid_debug, " activates debug info");
-
-That seems to be used like a boolean, and dynamic debug could replace it?
-
->> Why is more granularity needed/useful, and not just debug and non-debug,
->> where the existing Linux kernel levels `pr_info`, `pr_warn`, ? are used?
->> Looking at the amount of log messages, the granularity does not look 
->> needed.
-> 
-> As you said, there isn't large amount of log messages currently. But 
-> during the development of the aspeed-jpeg support, the amount of log
-> increased. That is why I want to add this log control. Besides, the
-> log of reg-access, aspeed_video_read/aspeed_video_write/ 
-> aspeed_video_update,is too noisy.
-
-I would have thought that it?s easily selectable by using tools like 
-grep. No idea, if the log messages are only going to be used by 
-developers, or also for normal users.
-
-Each driver seems to define their own parameter, and it often not 
-(userfriendly) documented, what the values mean. (Your patch does 
-document it.)
-
- From `drivers/media/platform/mtk-jpeg/mtk_jpeg_core.c`:
-
-     static int debug;
-     module_param(debug, int, 0644);
-
-I guess, I was mostly confused by the info level, and would move that 
-outside the debugging, or rename it, so it?s more clear.
-
-As written, for developers, tracing using ftrace could be a solution 
-too, but probably not for normal users.
-
-Anyway, I just wanted to provide a user level view. If the maintainers 
-are fine with it, the current solution is also good.
-
-
-Kind regards,
-
-Paul
-
-
->>> Signed-off-by: Jammy Huang <jammy_huang@aspeedtech.com>
->>> ---
->>> ?? drivers/media/platform/aspeed-video.c | 73 ++++++++++++++++++++++-----
->>> ?? 1 file changed, 60 insertions(+), 13 deletions(-)
->>>
->>> diff --git a/drivers/media/platform/aspeed-video.c 
->>> b/drivers/media/platform/aspeed-video.c
->>> index 6259cf17a7cc..7b8129b0ca5f 100644
->>> --- a/drivers/media/platform/aspeed-video.c
->>> +++ b/drivers/media/platform/aspeed-video.c
->>> @@ -31,6 +31,19 @@
->>> ?? #include <media/v4l2-ioctl.h>
->>> ?? #include <media/videobuf2-dma-contig.h>
->>> +
->>> +#define LOG_REG??????? BIT(4)
->>> +#define LOG_DEBUG??? BIT(3)
->>> +#define LOG_TRACE??? BIT(2)
->> Could ftrace be used for this? It looks like there are static functions.
->> No idea, if there is already a ?native? Linux kernel solution for this.
->>
->>> +#define LOG_INFO??? BIT(1)
->>> +#define LOG_NOTICE??? BIT(0)
->>> +
->>> +#define dprintk(level, fmt, arg...) do {??????????????????? \
->>> +??? if (debug & level)??????????????????????????? \
->>> +??????? pr_debug(pr_fmt("[%s]: " fmt), DEVICE_NAME, ##arg);??????? \
->>> +} while (0)
->>> +
->>> +
->>> ?? #define DEVICE_NAME??????????? "aspeed-video"
->>> ?? #define ASPEED_VIDEO_JPEG_NUM_QUALITIES??? 12
->>> @@ -390,6 +403,8 @@ static const struct v4l2_dv_timings_cap 
->>> aspeed_video_timings_cap = {
->>> ?????? },
->>> ?? };
->>> +static unsigned int debug;
->>> +
->>> ?? static void aspeed_video_init_jpeg_table(u32 *table, bool yuv420)
->>> ?? {
->>> ?????? int i;
->>> @@ -437,7 +452,7 @@ static void aspeed_video_update(struct 
->>> aspeed_video *video, u32 reg, u32 clear,
->>> ?????? t &= ~clear;
->>> ?????? t |= bits;
->>> ?????? writel(t, video->base + reg);
->>> -??? dev_dbg(video->dev, "update %03x[%08x -> %08x]\n", reg, before,
->>> +??? dprintk(LOG_REG, "update %03x[%08x -> %08x]\n", reg, before,
->>> ?????????? readl(video->base + reg));
->>> ?? }
->>> @@ -445,14 +460,14 @@ static u32 aspeed_video_read(struct 
->>> aspeed_video *video, u32 reg)
->>> ?? {
->>> ?????? u32 t = readl(video->base + reg);
->>> -??? dev_dbg(video->dev, "read %03x[%08x]\n", reg, t);
->>> +??? dprintk(LOG_REG, "read %03x[%08x]\n", reg, t);
->>> ?????? return t;
->>> ?? }
->>> ?? static void aspeed_video_write(struct aspeed_video *video, u32 
->>> reg, u32 val)
->>> ?? {
->>> ?????? writel(val, video->base + reg);
->>> -??? dev_dbg(video->dev, "write %03x[%08x]\n", reg,
->>> +??? dprintk(LOG_REG, "write %03x[%08x]\n", reg,
->>> ?????????? readl(video->base + reg));
->>> ?? }
->>> @@ -474,13 +489,13 @@ static int aspeed_video_start_frame(struct 
->>> aspeed_video *video)
->>> ?????? u32 seq_ctrl = aspeed_video_read(video, VE_SEQ_CTRL);
->>> ?????? if (video->v4l2_input_status) {
->>> -??????? dev_dbg(video->dev, "No signal; don't start frame\n");
->>> +??????? dprintk(LOG_NOTICE, "No signal; don't start frame\n");
->>> ?????????? return 0;
->>> ?????? }
->>> ?????? if (!(seq_ctrl & VE_SEQ_CTRL_COMP_BUSY) ||
->>> ?????????? !(seq_ctrl & VE_SEQ_CTRL_CAP_BUSY)) {
->>> -??????? dev_dbg(video->dev, "Engine busy; don't start frame\n");
->>> +??????? dprintk(LOG_NOTICE, "Engine busy; don't start frame\n");
->>> ?????????? return -EBUSY;
->>> ?????? }
->>> @@ -489,7 +504,7 @@ static int aspeed_video_start_frame(struct 
->>> aspeed_video *video)
->>> ????????????????????????? struct aspeed_video_buffer, link);
->>> ?????? if (!buf) {
->>> ?????????? spin_unlock_irqrestore(&video->lock, flags);
->>> -??????? dev_dbg(video->dev, "No buffers; don't start frame\n");
->>> +??????? dprintk(LOG_NOTICE, "No buffers; don't start frame\n");
->>> ?????????? return -EPROTO;
->>> ?????? }
->>> @@ -565,7 +580,7 @@ static void aspeed_video_bufs_done(struct 
->>> aspeed_video *video,
->>> ?? static void aspeed_video_irq_res_change(struct aspeed_video 
->>> *video, ulong delay)
->>> ?? {
->>> -??? dev_dbg(video->dev, "Resolution changed; resetting\n");
->>> +??? dprintk(LOG_INFO, "Resolution changed; resetting\n");
->>> ?????? set_bit(VIDEO_RES_CHANGE, &video->flags);
->>> ?????? clear_bit(VIDEO_FRAME_INPRG, &video->flags);
->>> @@ -590,6 +605,12 @@ static irqreturn_t aspeed_video_irq(int irq, 
->>> void *arg)
->>> ?????? struct aspeed_video *video = arg;
->>> ?????? u32 sts = aspeed_video_read(video, VE_INTERRUPT_STATUS);
->>> +??? dprintk(LOG_DEBUG, "irq sts=%#x %s%s%s%s\n", sts,
->>> +??????? sts & VE_INTERRUPT_MODE_DETECT_WD ? ", unlock" : "",
->>> +??????? sts & VE_INTERRUPT_MODE_DETECT ? ", lock" : "",
->>> +??????? sts & VE_INTERRUPT_CAPTURE_COMPLETE ? ", capture-done" : "",
->>> +??????? sts & VE_INTERRUPT_COMP_COMPLETE ? ", comp-done" : "");
->>> +
->> Please split adding new log messages out into a separate commit.
->>
->>> ?????? /*
->>> ??????? * Resolution changed or signal was lost; reset the engine and
->>> ??????? * re-initialize
->>> @@ -766,7 +787,7 @@ static void 
->>> aspeed_video_calc_compressed_size(struct aspeed_video *video,
->>> ?????? aspeed_video_write(video, VE_STREAM_BUF_SIZE,
->>> ????????????????? compression_buffer_size_reg);
->>> -??? dev_dbg(video->dev, "Max compressed size: %x\n",
->>> +??? dprintk(LOG_INFO, "Max compressed size: %#x\n",
->>> ?????????? video->max_compressed_size);
->>> ?? }
->>> @@ -804,7 +825,7 @@ static void aspeed_video_get_resolution(struct 
->>> aspeed_video *video)
->>> ???????????????????????????????? res_check(video),
->>> ???????????????????????????????? MODE_DETECT_TIMEOUT);
->>> ?????????? if (!rc) {
->>> -??????????? dev_dbg(video->dev, "Timed out; first mode detect\n");
->>> +??????????? dprintk(LOG_INFO, "Timed out; first mode detect\n");
->>> ?????????????? clear_bit(VIDEO_RES_DETECT, &video->flags);
->>> ?????????????? return;
->>> ?????????? }
->>> @@ -822,7 +843,7 @@ static void aspeed_video_get_resolution(struct 
->>> aspeed_video *video)
->>> ???????????????????????????????? MODE_DETECT_TIMEOUT);
->>> ?????????? clear_bit(VIDEO_RES_DETECT, &video->flags);
->>> ?????????? if (!rc) {
->>> -??????????? dev_dbg(video->dev, "Timed out; second mode detect\n");
->>> +??????????? dprintk(LOG_INFO, "Timed out; second mode detect\n");
->>> ?????????????? return;
->>> ?????????? }
->>> @@ -856,7 +877,7 @@ static void aspeed_video_get_resolution(struct 
->>> aspeed_video *video)
->>> ?????? } while (invalid_resolution && (tries++ < 
->>> INVALID_RESOLUTION_RETRIES));
->>> ?????? if (invalid_resolution) {
->>> -??????? dev_dbg(video->dev, "Invalid resolution detected\n");
->>> +??????? dprintk(LOG_NOTICE, "Invalid resolution detected\n");
->>> ?????????? return;
->>> ?????? }
->>> @@ -873,7 +894,7 @@ static void aspeed_video_get_resolution(struct 
->>> aspeed_video *video)
->>> ?????? aspeed_video_update(video, VE_SEQ_CTRL, 0,
->>> ?????????????????? VE_SEQ_CTRL_AUTO_COMP | VE_SEQ_CTRL_EN_WATCHDOG);
->>> -??? dev_dbg(video->dev, "Got resolution: %dx%d\n", det->width,
->>> +??? dprintk(LOG_INFO, "Got resolution: %dx%d\n", det->width,
->>> ?????????? det->height);
->>> ?? }
->>> @@ -907,6 +928,7 @@ static void aspeed_video_set_resolution(struct 
->>> aspeed_video *video)
->>> ?????? /* Don't use direct mode below 1024 x 768 (irqs don't fire) */
->>> ?????? if (size < DIRECT_FETCH_THRESHOLD) {
->>> +??????? dprintk(LOG_INFO, "Capture: Sync Mode\n");
->>> ?????????? aspeed_video_write(video, VE_TGS_0,
->>> ????????????????????? FIELD_PREP(VE_TGS_FIRST,
->>> ???????????????????????????? video->frame_left - 1) |
->>> @@ -918,6 +940,7 @@ static void aspeed_video_set_resolution(struct 
->>> aspeed_video *video)
->>> ???????????????????????????? video->frame_bottom + 1));
->>> ?????????? aspeed_video_update(video, VE_CTRL, 0, VE_CTRL_INT_DE);
->>> ?????? } else {
->>> +??????? dprintk(LOG_INFO, "Capture: Direct Mode\n");
->>> ?????????? aspeed_video_update(video, VE_CTRL, 0, VE_CTRL_DIRECT_FETCH);
->>> ?????? }
->>> @@ -934,6 +957,10 @@ static void aspeed_video_set_resolution(struct 
->>> aspeed_video *video)
->>> ?????????? if (!aspeed_video_alloc_buf(video, &video->srcs[1], size))
->>> ?????????????? goto err_mem;
->>> +??????? dprintk(LOG_INFO, "src buf0 addr(%#x) size(%d)\n",
->>> +??????????? video->srcs[0].dma, video->srcs[0].size);
->>> +??????? dprintk(LOG_INFO, "src buf1 addr(%#x) size(%d)\n",
->>> +??????????? video->srcs[1].dma, video->srcs[1].size);
->>> ?????????? aspeed_video_write(video, VE_SRC0_ADDR, video->srcs[0].dma);
->>> ?????????? aspeed_video_write(video, VE_SRC1_ADDR, video->srcs[1].dma);
->>> ?????? }
->>> @@ -1010,6 +1037,8 @@ static void aspeed_video_start(struct 
->>> aspeed_video *video)
->>> ?? static void aspeed_video_stop(struct aspeed_video *video)
->>> ?? {
->>> +??? dprintk(LOG_TRACE, "%s\n", __func__);
->>> +
->>> ?????? set_bit(VIDEO_STOPPED, &video->flags);
->>> ?????? cancel_delayed_work_sync(&video->res_work);
->>> @@ -1198,6 +1227,9 @@ static int aspeed_video_set_dv_timings(struct 
->>> file *file, void *fh,
->>> ?????? timings->type = V4L2_DV_BT_656_1120;
->>> +??? dprintk(LOG_INFO, "set new timings(%dx%d)\n", timings->bt.width,
->>> +??????? timings->bt.height);
->>> +
->>> ?????? return 0;
->>> ?? }
->>> @@ -1362,6 +1394,8 @@ static void aspeed_video_resolution_work(struct 
->>> work_struct *work)
->>> ???????????????????????????? res_work);
->>> ?????? u32 input_status = video->v4l2_input_status;
->>> +??? dprintk(LOG_TRACE, "%s+\n", __func__);
->>> +
->>> ?????? aspeed_video_on(video);
->>> ?????? /* Exit early in case no clients remain */
->>> @@ -1380,6 +1414,7 @@ static void aspeed_video_resolution_work(struct 
->>> work_struct *work)
->>> ?????????????? .u.src_change.changes = V4L2_EVENT_SRC_CH_RESOLUTION,
->>> ?????????? };
->>> +??????? dprintk(LOG_INFO, "fire source change event\n");
->>> ?????????? v4l2_event_queue(&video->vdev, &ev);
->>> ?????? } else if (test_bit(VIDEO_STREAMING, &video->flags)) {
->>> ?????????? /* No resolution change so just restart streaming */
->>> @@ -1389,6 +1424,8 @@ static void aspeed_video_resolution_work(struct 
->>> work_struct *work)
->>> ?? done:
->>> ?????? clear_bit(VIDEO_RES_CHANGE, &video->flags);
->>> ?????? wake_up_interruptible_all(&video->wait);
->>> +
->>> +??? dprintk(LOG_TRACE, "%s-\n", __func__);
->>> ?? }
->>> ?? static int aspeed_video_open(struct file *file)
->>> @@ -1476,6 +1513,7 @@ static int aspeed_video_start_streaming(struct 
->>> vb2_queue *q,
->>> ?????? int rc;
->>> ?????? struct aspeed_video *video = vb2_get_drv_priv(q);
->>> +??? dprintk(LOG_TRACE, "%s\n", __func__);
->>> ?????? video->sequence = 0;
->>> ?????? video->perf.duration_max = 0;
->>> ?????? video->perf.duration_min = 0xffffffff;
->>> @@ -1495,13 +1533,15 @@ static void 
->>> aspeed_video_stop_streaming(struct vb2_queue *q)
->>> ?????? int rc;
->>> ?????? struct aspeed_video *video = vb2_get_drv_priv(q);
->>> +??? dprintk(LOG_TRACE, "%s+\n", __func__);
->>> +
->>> ?????? clear_bit(VIDEO_STREAMING, &video->flags);
->>> ?????? rc = wait_event_timeout(video->wait,
->>> ?????????????????? !test_bit(VIDEO_FRAME_INPRG, &video->flags),
->>> ?????????????????? STOP_TIMEOUT);
->>> ?????? if (!rc) {
->>> -??????? dev_dbg(video->dev, "Timed out when stopping streaming\n");
->>> +??????? dprintk(LOG_NOTICE, "Timed out when stopping streaming\n");
->>> ?????????? /*
->>> ??????????? * Need to force stop any DMA and try and get HW into a good
->>> @@ -1516,6 +1556,7 @@ static void aspeed_video_stop_streaming(struct 
->>> vb2_queue *q)
->>> ?????? }
->>> ?????? aspeed_video_bufs_done(video, VB2_BUF_STATE_ERROR);
->>> +??? dprintk(LOG_TRACE, "%s-\n", __func__);
->>> ?? }
->>> ?? static void aspeed_video_buf_queue(struct vb2_buffer *vb)
->>> @@ -1715,6 +1756,7 @@ static int aspeed_video_init(struct 
->>> aspeed_video *video)
->>> ?????????? dev_err(dev, "Unable to request IRQ %d\n", irq);
->>> ?????????? return rc;
->>> ?????? }
->>> +??? dev_info(video->dev, "irq %d\n", irq);
->>> ?????? video->eclk = devm_clk_get(dev, "eclk");
->>> ?????? if (IS_ERR(video->eclk)) {
->>> @@ -1751,6 +1793,8 @@ static int aspeed_video_init(struct 
->>> aspeed_video *video)
->>> ?????????? rc = -ENOMEM;
->>> ?????????? goto err_release_reserved_mem;
->>> ?????? }
->>> +??? dev_info(video->dev, "alloc mem size(%d) at %#x for jpeg header\n",
->>> +???????? VE_JPEG_HEADER_SIZE, video->jpeg.dma);
->>> ?????? aspeed_video_init_jpeg_table(video->jpeg.virt, video->yuv420);
->>> @@ -1856,6 +1900,9 @@ static struct platform_driver 
->>> aspeed_video_driver = {
->>> ?? module_platform_driver(aspeed_video_driver);
->>> +module_param(debug, int, 0644);
->>> +MODULE_PARM_DESC(debug, "set debugging level 
->>> (0=reg,2=irq,4=trace,8=info(|-able)).");
->>> +
->>> ?? MODULE_DESCRIPTION("ASPEED Video Engine Driver");
->>> ?? MODULE_AUTHOR("Eddie James");
->>> ?? MODULE_LICENSE("GPL v2");
->>
->> Kind regards,
->>
->> Paul
+>
+> Kind regards,
+>
+> Paul
