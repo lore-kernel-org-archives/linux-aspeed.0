@@ -1,32 +1,46 @@
 From: Quan Nguyen <quan@os.amperecomputing.com>
-Date: Tue, 19 Oct 2021 13:01:52 +0700
-Subject: [PATCH v2 0/3] Update gpios, nvme i2c busses and uefi partition
-Message-ID: <20211019060155.945-1-quan@os.amperecomputing.com>
+Date: Tue, 19 Oct 2021 13:01:55 +0700
+Subject: [PATCH v2 3/3] ARM: dts: aspeed: mtjade: Add uefi partition
+In-Reply-To: <20211019060155.945-1-quan@os.amperecomputing.com>
+References: <20211019060155.945-1-quan@os.amperecomputing.com>
+Message-ID: <20211019060155.945-4-quan@os.amperecomputing.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This patchset adds gpios, i2c configuration busses for NVMe
-slots and uefi spi nor partition for BMC on Mt.Jade hardware
-reference platform.
+Add SPI NOR partition for uefi.
 
-v2: 
-  + Added changes for NVMe slot i2c busses and uefi partition [Quan]
+Signed-off-by: Thang Q. Nguyen <thang@os.amperecomputing.com>
+Signed-off-by: Quan Nguyen <quan@os.amperecomputing.com>
+---
+v2:
+  + Introdued in v2
 
-v1:
-  + Add some gpios                                            [Quan]
-  https://lore.kernel.org/r/all/20210917082945.19111-1-quan at os.amperecomputing.com
+ arch/arm/boot/dts/aspeed-bmc-ampere-mtjade.dts | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-Quan Nguyen (3):
-  ARM: dts: aspeed: mtjade: Add some gpios
-  ARM: dts: aspeed: mtjade: Add I2C buses for NVMe devices
-  ARM: dts: aspeed: mtjade: Add uefi partition
-
- .../arm/boot/dts/aspeed-bmc-ampere-mtjade.dts | 288 +++++++++++++++++-
- 1 file changed, 287 insertions(+), 1 deletion(-)
-
+diff --git a/arch/arm/boot/dts/aspeed-bmc-ampere-mtjade.dts b/arch/arm/boot/dts/aspeed-bmc-ampere-mtjade.dts
+index 723c7063c223..4c3c3f1a12ea 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-ampere-mtjade.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-ampere-mtjade.dts
+@@ -374,6 +374,15 @@ flash at 0 {
+ 		m25p,fast-read;
+ 		label = "pnor";
+ 		/* spi-max-frequency = <100000000>; */
++		partitions {
++			compatible = "fixed-partitions";
++			#address-cells = <1>;
++			#size-cells = <1>;
++			uefi at 400000 {
++				reg = <0x400000 0x1C00000>;
++				label = "pnor-uefi";
++			};
++		};
+ 	};
+ };
+ 
 -- 
 2.28.0
 
