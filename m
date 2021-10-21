@@ -1,62 +1,84 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Thu, 21 Oct 2021 06:54:26 +0000
-Subject: [PATCH v7 1/5] ARM: dts: aspeed: Drop reg-io-width from LPC nodes
-In-Reply-To: <CACPK8Xc2wzx1dthFYC_0vm4mj9e1BbL+Kwkqc_PvPFj4sqjOJg@mail.gmail.com>
-References: <20210927023053.6728-1-chiawei_wang@aspeedtech.com>
- <20210927023053.6728-2-chiawei_wang@aspeedtech.com>
- <CACPK8Xc+9yFJn_pO1sAVQJu_FWkA1U9XnbB+TLYgfdbHi1TyaQ@mail.gmail.com>
- <CACPK8Xfj=wJBCX5ogyf02pLJsLrooVWBJ92GJ1E+jxQW5wiFEw@mail.gmail.com>
- <HK0PR06MB3779F430883E60E7E47849BE91BF9@HK0PR06MB3779.apcprd06.prod.outlook.com>
- <CACPK8Xc2wzx1dthFYC_0vm4mj9e1BbL+Kwkqc_PvPFj4sqjOJg@mail.gmail.com>
-Message-ID: <CACPK8Xfc+vuqbnw8xuXGtGwKRLnb7EwYZYE0Z-+g3fUM28yc6w@mail.gmail.com>
+Date: Thu, 21 Oct 2021 06:59:10 +0000
+Subject: [GIT PULL] ARM: aspeed: devicetree changes for 5.16, round 2
+Message-ID: <CACPK8Xd=eAMk-S3akhGgL4i_K190Nz9t=_CrdHQMJ+nbW172mg@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, 21 Oct 2021 at 06:48, Joel Stanley <joel@jms.id.au> wrote:
->
-> On Thu, 21 Oct 2021 at 06:37, ChiaWei Wang <chiawei_wang@aspeedtech.com> wrote:
-> > However, like Rob mentioned, when doing 'make dtbs_check', there is a warning:
-> >
-> > /builds/robherring/linux-dt-review/arch/arm/boot/dts/aspeed-ast2500-evb.dt.yaml:
-> > lpc at 1e789000: 'ibt at 140', 'kcs at 114', 'kcs at 24', 'kcs at 28', 'kcs at 2c', 'lhc at a0', 'reg-io-width' do not match any of the regexes:
-> > '^lpc-ctrl@[0-9a-f]+$', '^lpc-snoop@[0-9a-f]+$', '^reset-controller@[0-9a-f]+$', 'pinctrl-[0-9]+'
-> > From schema: /builds/robherring/linux-dt-review/Documentation/devicetree/bindings/mfd/aspeed-lpc.yaml
-> >
-> > As part of this series has been applied, maybe we can fix this later?
+Hello soc maintainers,
 
-FWIW, this fixes the warnings for me;
+Hot on the heels of you merging my first pull request, here's a second
+one with some changes I missed the first time, and some patches that
+came in since.
 
---- a/Documentation/devicetree/bindings/mfd/aspeed-lpc.yaml
-+++ b/Documentation/devicetree/bindings/mfd/aspeed-lpc.yaml
-@@ -56,6 +56,9 @@ properties:
+Of note the two IBM P10 platforms now have all of their device tree
+changes in mainline, so that's a milestone for them. They are our
+biggest Aspeed BMC device trees, coming in at 2400 and 3600 lines of
+description.
 
-   ranges: true
+The following changes since commit 4eb7fe3333a021c8d0f35bcb5cd7c4e42800df62:
 
-+  reg-io-width:
-+    const: 4
-+
- patternProperties:
-   "^lpc-ctrl@[0-9a-f]+$":
-     type: object
-@@ -144,6 +147,9 @@ patternProperties:
-         $ref: /schemas/types.yaml#/definitions/uint32-array
-         description: The LPC I/O ports to snoop
+  ARM: dts: aspeed: fp5280g2: Use the 64M layout (2021-10-14 18:25:17 +1030)
 
-+      clocks:
-+        maxItems: 1
-+
-     required:
-       - compatible
-       - interrupts
+are available in the Git repository at:
 
-make ARCH=arm CROSS_COMPILE="arm-linux-gnueabi-" dtbs_check
-DT_SCHEMA_FILES=Documentation/devicetree/bindings/mfd/aspeed-lpc.yaml
+  git://git.kernel.org/pub/scm/linux/kernel/git/joel/bmc.git
+tags/aspeed-5.16-devicetree-2
 
-If you are able to test this and send a patch that would be appreciated.
+for you to fetch changes up to f9241fe8b9652e6751f4ae684efe0148e3c157c7:
 
-Cheers,
+  ARM: dts: aspeed: Add uart routing to device tree (2021-10-21 16:59:53 +1030)
 
-Joel
+----------------------------------------------------------------
+ASPEED device tree updates for 5.16, round 2
+
+ - New machines:
+
+  * Inventec Transformers, an x86 family server with an AST2600 BMC
+
+ - Updates to the Everest and Rainier sensors, gpios and KCS devices
+
+ - New UART routing device tree description
+
+----------------------------------------------------------------
+Andrew Jeffery (2):
+      ARM: dts: aspeed: p10bmc: Use KCS 3 for MCTP binding
+      ARM: dts: aspeed: p10bmc: Enable KCS channel 2
+
+B. J. Wyman (1):
+      ARM: dts: aspeed: rainier: Remove PSU gpio-keys
+
+Chia-Wei Wang (1):
+      ARM: dts: aspeed: Add uart routing to device tree
+
+Eddie James (7):
+      ARM: dts: aspeed: p10bmc: Fix ADC iio-hwmon battery node name
+      ARM: dts: aspeed: rainier and everest: Remove PCA gpio specification
+      ARM: dts: aspeed: everest: Add I2C switch on bus 8
+      ARM: dts: aspeed: everest: Add IBM Operation Panel I2C device
+      ARM: dts: aspeed: everest: Fix bus 15 muxed eeproms
+      ARM: dts: aspeed: rainier: Add eeprom on bus 12
+      ARM: dts: aspeed: rainier: Remove gpio hog for GPIOP7
+
+Isaac Kurth (1):
+      ARM: dts: aspeed: rainier: Add 'factory-reset-toggle' as GPIOF6
+
+Joel Stanley (2):
+      ARM: dts: aspeed: rainier: Add front panel LEDs
+      ARM: dts: aspeed: rainier: Enable earlycon
+
+Lin.TommySC ??? TAO (1):
+      ARM: dts: aspeed: Adding Inventec Transformers BMC
+
+ arch/arm/boot/dts/Makefile                         |   1 +
+ arch/arm/boot/dts/aspeed-bmc-ibm-everest.dts       | 735 ++-------------------
+ arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts       | 634 ++----------------
+ .../boot/dts/aspeed-bmc-inventec-transformers.dts  | 328 +++++++++
+ arch/arm/boot/dts/aspeed-g4.dtsi                   |   6 +
+ arch/arm/boot/dts/aspeed-g5.dtsi                   |   6 +
+ arch/arm/boot/dts/aspeed-g6.dtsi                   |   6 +
+ 7 files changed, 470 insertions(+), 1246 deletions(-)
+ create mode 100644 arch/arm/boot/dts/aspeed-bmc-inventec-transformers.dts
