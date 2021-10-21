@@ -1,50 +1,82 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Thu, 21 Oct 2021 05:34:39 +0000
-Subject: [GIT PULL] ARM: aspeed: defconfig changes for 5.16
-Message-ID: <CACPK8Xd0mVn2Cy7d=VBTDMpU=WHrftsiihwH224ekFSDGKAbyA@mail.gmail.com>
+Date: Thu, 21 Oct 2021 06:28:56 +0000
+Subject: [PATCH v7 1/5] ARM: dts: aspeed: Drop reg-io-width from LPC nodes
+In-Reply-To: <CACPK8Xc+9yFJn_pO1sAVQJu_FWkA1U9XnbB+TLYgfdbHi1TyaQ@mail.gmail.com>
+References: <20210927023053.6728-1-chiawei_wang@aspeedtech.com>
+ <20210927023053.6728-2-chiawei_wang@aspeedtech.com>
+ <CACPK8Xc+9yFJn_pO1sAVQJu_FWkA1U9XnbB+TLYgfdbHi1TyaQ@mail.gmail.com>
+Message-ID: <CACPK8Xfj=wJBCX5ogyf02pLJsLrooVWBJ92GJ1E+jxQW5wiFEw@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello Soc maintainers,
+On Fri, 8 Oct 2021 at 04:35, Joel Stanley <joel@jms.id.au> wrote:
+>
+> On Mon, 27 Sept 2021 at 02:31, Chia-Wei Wang
+> <chiawei_wang@aspeedtech.com> wrote:
+> >
+> > The 'reg-io-width' properties are not used by LPC drivers
+> > nor documented as part of bindings. Therefore drop them.
+>
+> I assume they are there due to the lpc having a 'syscon' compatible.
+> THey are documented in the syscon bindings:
+>
+> Documentation/devicetree/bindings/mfd/syscon.yaml
+>
+> Andrew, do you have any comments?
 
-Here are aspeed defconfig changes for v5.16.
+Andrew indicated to me that he agreed with my observation: the
+properties should be present as they are used by the regmap/syscon.
 
-The following changes since commit 6880fa6c56601bb8ed59df6c30fd390cc5f6dd8f:
-
-  Linux 5.15-rc1 (2021-09-12 16:28:37 -0700)
-
-are available in the Git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/joel/bmc.git
-tags/aspeed-5.16-defconfig
-
-for you to fetch changes up to 52a490e0efac02f236295cf43e136a1cb3a786f7:
-
-  ARM: configs: aspeed: Remove unused USB gadget devices (2021-10-15
-15:02:32 +1030)
-
-----------------------------------------------------------------
-ASPEED defconfig updates for 5.16
-
- - Add options that are enabled in the common OpenBMC kernel
-
- - Re-enable DRM_FBDEV_EMULATION
-
- - Turn on the various sensor drivers that are used in BMC systems,
- so we can boot test where they are modelled in Qemu
-
-----------------------------------------------------------------
-Joel Stanley (6):
-      ARM: configs: aspeed_g5: Reneable DRM_FBDEV_EMULATION
-      ARM: configs: aspeed: Disable IPV6 SIT device
-      ARM: configs: aspeed: Enable commonly used drivers
-      ARM: configs: aspeed: Enable pstore and lockup detectors
-      ARM: config: aspeed: Enable Network Block Device
-      ARM: configs: aspeed: Remove unused USB gadget devices
-
- arch/arm/configs/aspeed_g4_defconfig |  1 +
- arch/arm/configs/aspeed_g5_defconfig | 35 ++++++++++++++++++++++-------------
- 2 files changed, 23 insertions(+), 13 deletions(-)
+>
+> >
+> > This is in preparation to move aspeed-lpc.txt to YAML schema.
+> >
+> > Signed-off-by: Chia-Wei Wang <chiawei_wang@aspeedtech.com>
+> > ---
+> >  arch/arm/boot/dts/aspeed-g4.dtsi | 1 -
+> >  arch/arm/boot/dts/aspeed-g5.dtsi | 1 -
+> >  arch/arm/boot/dts/aspeed-g6.dtsi | 1 -
+> >  3 files changed, 3 deletions(-)
+> >
+> > diff --git a/arch/arm/boot/dts/aspeed-g4.dtsi b/arch/arm/boot/dts/aspeed-g4.dtsi
+> > index c5aeb3cf3a09..45a25eb4baa4 100644
+> > --- a/arch/arm/boot/dts/aspeed-g4.dtsi
+> > +++ b/arch/arm/boot/dts/aspeed-g4.dtsi
+> > @@ -345,7 +345,6 @@
+> >                         lpc: lpc at 1e789000 {
+> >                                 compatible = "aspeed,ast2400-lpc-v2", "simple-mfd", "syscon";
+> >                                 reg = <0x1e789000 0x1000>;
+> > -                               reg-io-width = <4>;
+> >
+> >                                 #address-cells = <1>;
+> >                                 #size-cells = <1>;
+> > diff --git a/arch/arm/boot/dts/aspeed-g5.dtsi b/arch/arm/boot/dts/aspeed-g5.dtsi
+> > index 73ca1ec6fc24..8e1d00d8445e 100644
+> > --- a/arch/arm/boot/dts/aspeed-g5.dtsi
+> > +++ b/arch/arm/boot/dts/aspeed-g5.dtsi
+> > @@ -436,7 +436,6 @@
+> >                         lpc: lpc at 1e789000 {
+> >                                 compatible = "aspeed,ast2500-lpc-v2", "simple-mfd", "syscon";
+> >                                 reg = <0x1e789000 0x1000>;
+> > -                               reg-io-width = <4>;
+> >
+> >                                 #address-cells = <1>;
+> >                                 #size-cells = <1>;
+> > diff --git a/arch/arm/boot/dts/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed-g6.dtsi
+> > index 1b47be1704f8..0d1aae6887cd 100644
+> > --- a/arch/arm/boot/dts/aspeed-g6.dtsi
+> > +++ b/arch/arm/boot/dts/aspeed-g6.dtsi
+> > @@ -490,7 +490,6 @@
+> >                         lpc: lpc at 1e789000 {
+> >                                 compatible = "aspeed,ast2600-lpc-v2", "simple-mfd", "syscon";
+> >                                 reg = <0x1e789000 0x1000>;
+> > -                               reg-io-width = <4>;
+> >
+> >                                 #address-cells = <1>;
+> >                                 #size-cells = <1>;
+> > --
+> > 2.17.1
+> >
