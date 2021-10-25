@@ -1,109 +1,217 @@
-From: kernel test robot <lkp@intel.com>
-Date: Wed, 20 Oct 2021 08:27:05 +0800
-Subject: [PATCH v2] Add payload to be 32-bit aligned to fix dropped packets
-In-Reply-To: <20211019144127.GA12978@gmail.com>
-References: <20211019144127.GA12978@gmail.com>
-Message-ID: <202110200839.EJJlwzor-lkp@intel.com>
+From: Greg KH <gregkh@linuxfoundation.org>
+Date: Mon, 25 Oct 2021 09:59:54 +0200
+Subject: [PATCH v2] media: aspeed: add debugfs
+In-Reply-To: <20210929090024.8499-1-jammy_huang@aspeedtech.com>
+References: <20210929090024.8499-1-jammy_huang@aspeedtech.com>
+Message-ID: <YXZj+m/fdYyPsIIK@kroah.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Kumar,
+On Wed, Sep 29, 2021 at 05:00:25PM +0800, Jammy Huang wrote:
+> To show video real-time information as below:
+> 
+> Caputre:
+>   Signal              : Unlock
+>   Width               : 1920
+>   Height              : 1080
+>   FRC                 : 30
+> 
+> Performance:
+>   Frame#              : 0
+>   Frame Duration      :
+>     Now               : 0
+>     Min               : 0
+>     Max               : 0
+>   FPS(ms)             : 0
+> 
+> Change-Id: I483740c4df6db07a9261c18440472a0356512bb7
+> Signed-off-by: Jammy Huang <jammy_huang@aspeedtech.com>
+> ---
+>  drivers/media/platform/aspeed-video.c | 101 ++++++++++++++++++++++++++
+>  1 file changed, 101 insertions(+)
+> 
+> diff --git a/drivers/media/platform/aspeed-video.c b/drivers/media/platform/aspeed-video.c
+> index 8b3939b8052d..c5c413844441 100644
+> --- a/drivers/media/platform/aspeed-video.c
+> +++ b/drivers/media/platform/aspeed-video.c
+> @@ -21,6 +21,8 @@
+>  #include <linux/videodev2.h>
+>  #include <linux/wait.h>
+>  #include <linux/workqueue.h>
+> +#include <linux/debugfs.h>
+> +#include <linux/ktime.h>
+>  #include <media/v4l2-ctrls.h>
+>  #include <media/v4l2-dev.h>
+>  #include <media/v4l2-device.h>
+> @@ -203,6 +205,14 @@ struct aspeed_video_buffer {
+>  	struct list_head link;
+>  };
+>  
+> +struct aspeed_video_perf {
+> +	ktime_t last_sample;
+> +	u32 totaltime;
+> +	u32 duration;
+> +	u32 duration_min;
+> +	u32 duration_max;
+> +};
+> +
+>  #define to_aspeed_video_buffer(x) \
+>  	container_of((x), struct aspeed_video_buffer, vb)
+>  
+> @@ -241,6 +251,8 @@ struct aspeed_video {
+>  	unsigned int frame_left;
+>  	unsigned int frame_right;
+>  	unsigned int frame_top;
+> +
+> +	struct aspeed_video_perf perf;
+>  };
+>  
+>  #define to_aspeed_video(x) container_of((x), struct aspeed_video, v4l2_dev)
+> @@ -444,6 +456,16 @@ static void aspeed_video_write(struct aspeed_video *video, u32 reg, u32 val)
+>  		readl(video->base + reg));
+>  }
+>  
+> +static void update_perf(struct aspeed_video_perf *p)
+> +{
+> +	p->duration =
+> +		ktime_to_ms(ktime_sub(ktime_get(),  p->last_sample));
+> +	p->totaltime += p->duration;
+> +
+> +	p->duration_max = max(p->duration, p->duration_max);
+> +	p->duration_min = min(p->duration, p->duration_min);
+> +}
+> +
+>  static int aspeed_video_start_frame(struct aspeed_video *video)
+>  {
+>  	dma_addr_t addr;
+> @@ -482,6 +504,8 @@ static int aspeed_video_start_frame(struct aspeed_video *video)
+>  	aspeed_video_update(video, VE_INTERRUPT_CTRL, 0,
+>  			    VE_INTERRUPT_COMP_COMPLETE);
+>  
+> +	video->perf.last_sample = ktime_get();
+> +
+>  	aspeed_video_update(video, VE_SEQ_CTRL, 0,
+>  			    VE_SEQ_CTRL_TRIG_CAPTURE | VE_SEQ_CTRL_TRIG_COMP);
+>  
+> @@ -600,6 +624,8 @@ static irqreturn_t aspeed_video_irq(int irq, void *arg)
+>  		u32 frame_size = aspeed_video_read(video,
+>  						   VE_JPEG_COMP_SIZE_READ_BACK);
+>  
+> +		update_perf(&video->perf);
+> +
+>  		spin_lock(&video->lock);
+>  		clear_bit(VIDEO_FRAME_INPRG, &video->flags);
+>  		buf = list_first_entry_or_null(&video->buffers,
+> @@ -760,6 +786,7 @@ static void aspeed_video_get_resolution(struct aspeed_video *video)
+>  	det->width = MIN_WIDTH;
+>  	det->height = MIN_HEIGHT;
+>  	video->v4l2_input_status = V4L2_IN_ST_NO_SIGNAL;
+> +	memset(&video->perf, 0, sizeof(video->perf));
+>  
+>  	do {
+>  		if (tries) {
+> @@ -1450,6 +1477,8 @@ static int aspeed_video_start_streaming(struct vb2_queue *q,
+>  	struct aspeed_video *video = vb2_get_drv_priv(q);
+>  
+>  	video->sequence = 0;
+> +	video->perf.duration_max = 0;
+> +	video->perf.duration_min = 0xffffffff;
+>  
+>  	rc = aspeed_video_start_frame(video);
+>  	if (rc) {
+> @@ -1517,6 +1546,72 @@ static const struct vb2_ops aspeed_video_vb2_ops = {
+>  	.buf_queue =  aspeed_video_buf_queue,
+>  };
+>  
+> +#ifdef CONFIG_DEBUG_FS
+> +static int aspeed_video_debugfs_show(struct seq_file *s, void *data)
+> +{
+> +	struct aspeed_video *v = s->private;
+> +
+> +	seq_puts(s, "\n");
+> +
+> +	seq_printf(s, "  %-20s:\t%s\n", "Signal",
+> +		   v->v4l2_input_status ? "Unlock" : "Lock");
+> +	seq_printf(s, "  %-20s:\t%d\n", "Width", v->pix_fmt.width);
+> +	seq_printf(s, "  %-20s:\t%d\n", "Height", v->pix_fmt.height);
+> +	seq_printf(s, "  %-20s:\t%d\n", "FRC", v->frame_rate);
+> +
+> +	seq_puts(s, "\n");
+> +
+> +	seq_puts(s, "Performance:\n");
+> +	seq_printf(s, "  %-20s:\t%d\n", "Frame#", v->sequence);
+> +	seq_printf(s, "  %-20s:\n", "Frame Duration");
+> +	seq_printf(s, "    %-18s:\t%d\n", "Now", v->perf.duration);
+> +	seq_printf(s, "    %-18s:\t%d\n", "Min", v->perf.duration_min);
+> +	seq_printf(s, "    %-18s:\t%d\n", "Max", v->perf.duration_max);
+> +	seq_printf(s, "  %-20s:\t%d\n", "FPS(ms)", 1000/(v->perf.totaltime/v->sequence));
+> +
+> +
+> +	return 0;
+> +}
+> +
+> +int aspeed_video_proc_open(struct inode *inode, struct file *file)
+> +{
+> +	return single_open(file, aspeed_video_debugfs_show, inode->i_private);
+> +}
+> +
+> +static struct file_operations aspeed_video_debugfs_ops = {
+> +	.owner   = THIS_MODULE,
+> +	.open    = aspeed_video_proc_open,
+> +	.read    = seq_read,
+> +	.llseek  = seq_lseek,
+> +	.release = single_release,
+> +};
+> +
+> +static struct dentry *debugfs_entry;
+> +
+> +static void aspeed_video_debugfs_remove(struct aspeed_video *video)
+> +{
+> +	debugfs_remove_recursive(debugfs_entry);
+> +	debugfs_entry = NULL;
+> +}
+> +
+> +static int aspeed_video_debugfs_create(struct aspeed_video *video)
+> +{
+> +	debugfs_entry = debugfs_create_file(DEVICE_NAME, 0444, NULL,
+> +						   video,
+> +						   &aspeed_video_debugfs_ops);
+> +	if (!debugfs_entry)
+> +		aspeed_video_debugfs_remove(video);
 
-Thank you for the patch! Yet something to improve:
+This check will never happen, why are you making it?
 
-[auto build test ERROR on linus/master]
-[also build test ERROR on v5.15-rc6 next-20211019]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch]
+There's no need to care if debugfs works or not, just create the file
+and move on.  This function should not return anything.
 
-url:    https://github.com/0day-ci/linux/commits/Kumar-Thangavel/Add-payload-to-be-32-bit-aligned-to-fix-dropped-packets/20211019-225018
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git 519d81956ee277b4419c723adfb154603c2565ba
-config: i386-randconfig-a005-20211019 (attached as .config)
-compiler: clang version 14.0.0 (https://github.com/llvm/llvm-project b37efed957ed0a0193d80020aefd55cb587dfc1f)
-reproduce (this is a W=1 build):
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        # https://github.com/0day-ci/linux/commit/177d89a1966a0830ac30b8962ac9af76c1d675ae
-        git remote add linux-review https://github.com/0day-ci/linux
-        git fetch --no-tags linux-review Kumar-Thangavel/Add-payload-to-be-32-bit-aligned-to-fix-dropped-packets/20211019-225018
-        git checkout 177d89a1966a0830ac30b8962ac9af76c1d675ae
-        # save the attached .config to linux build tree
-        mkdir build_dir
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=clang make.cross W=1 O=build_dir ARCH=i386 SHELL=/bin/bash net/
+> +
+> +	return debugfs_entry == NULL ? -EIO : 0;
+> +}
+> +#else
+> +static void aspeed_video_debugfs_remove(struct aspeed_video *video) { }
+> +static int aspeed_video_debugfs_create(struct aspeed_video *video)
+> +{
+> +	return 0;
+> +}
+> +#endif /* CONFIG_DEBUG_FS */
+> +
+>  static int aspeed_video_setup_video(struct aspeed_video *video)
+>  {
+>  	const u64 mask = ~(BIT(V4L2_JPEG_CHROMA_SUBSAMPLING_444) |
+> @@ -1708,6 +1803,10 @@ static int aspeed_video_probe(struct platform_device *pdev)
+>  		return rc;
+>  	}
+>  
+> +	rc = aspeed_video_debugfs_create(video);
+> +	if (rc)
+> +		dev_err(video->dev, "debugfs create failed\n");
 
-If you fix the issue, kindly add following tag as appropriate
-Reported-by: kernel test robot <lkp@intel.com>
+As proof of this, you don't care if this doesn't work, you just print
+out a message that was already printed out :(
 
-All errors (new ones prefixed by >>):
+thanks,
 
->> net/ncsi/ncsi-cmd.c:298:34: error: expected ';' after expression
-           payload = ALIGN(nca->payload, 4)
-                                           ^
-                                           ;
-   1 error generated.
-
-
-vim +298 net/ncsi/ncsi-cmd.c
-
-   274	
-   275	static struct ncsi_request *ncsi_alloc_command(struct ncsi_cmd_arg *nca)
-   276	{
-   277		struct ncsi_dev_priv *ndp = nca->ndp;
-   278		struct ncsi_dev *nd = &ndp->ndev;
-   279		struct net_device *dev = nd->dev;
-   280		int hlen = LL_RESERVED_SPACE(dev);
-   281		int tlen = dev->needed_tailroom;
-   282		int payload;
-   283		int len = hlen + tlen;
-   284		struct sk_buff *skb;
-   285		struct ncsi_request *nr;
-   286	
-   287		nr = ncsi_alloc_request(ndp, nca->req_flags);
-   288		if (!nr)
-   289			return NULL;
-   290	
-   291		/* NCSI command packet has 16-bytes header, payload, 4 bytes checksum.
-   292		 * Payload needs padding so that the checksum field following payload is
-   293		 * aligned to 32-bit boundary.
-   294		 * The packet needs padding if its payload is less than 26 bytes to
-   295		 * meet 64 bytes minimal ethernet frame length.
-   296		 */
-   297		len += sizeof(struct ncsi_cmd_pkt_hdr) + 4;
- > 298		payload = ALIGN(nca->payload, 4)
-   299		if (payload < 26)
-   300			len += 26;
-   301		else
-   302			len += payload;
-   303	
-   304		/* Allocate skb */
-   305		skb = alloc_skb(len, GFP_ATOMIC);
-   306		if (!skb) {
-   307			ncsi_free_request(nr);
-   308			return NULL;
-   309		}
-   310	
-   311		nr->cmd = skb;
-   312		skb_reserve(skb, hlen);
-   313		skb_reset_network_header(skb);
-   314	
-   315		skb->dev = dev;
-   316		skb->protocol = htons(ETH_P_NCSI);
-   317	
-   318		return nr;
-   319	}
-   320	
-
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: .config.gz
-Type: application/gzip
-Size: 34495 bytes
-Desc: not available
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20211020/7ef21e4c/attachment-0001.gz>
+greg k-h
