@@ -1,153 +1,123 @@
-From: Jammy Huang <jammy_huang@aspeedtech.com>
-Date: Fri, 22 Oct 2021 14:55:36 +0800
-Subject: [PATCH v3 4/7] media: aspeed: refactor to gather format/compress
- settings
-In-Reply-To: <20211022065539.12392-1-jammy_huang@aspeedtech.com>
-References: <20211022065539.12392-1-jammy_huang@aspeedtech.com>
-Message-ID: <20211022065539.12392-5-jammy_huang@aspeedtech.com>
+From: Quan Nguyen <quan@os.amperecomputing.com>
+Date: Mon, 25 Oct 2021 11:44:04 +0700
+Subject: [PATCH v2 1/3] ARM: dts: aspeed: mtjade: Add some gpios
+In-Reply-To: <CACPK8Xcp0ruL-7p3AA+yvba3Drrwm-=-hMnMpd=a1aHwQHnE1A@mail.gmail.com>
+References: <20211019060155.945-1-quan@os.amperecomputing.com>
+ <20211019060155.945-2-quan@os.amperecomputing.com>
+ <CACPK8Xcp0ruL-7p3AA+yvba3Drrwm-=-hMnMpd=a1aHwQHnE1A@mail.gmail.com>
+Message-ID: <87d82a93-cdc2-d95a-4ab9-085ff31c4387@os.amperecomputing.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add API, aspeed_video_update_regs(), to gather format/compress settings
-which are controlled by user.
+On 19/10/2021 13:46, Joel Stanley wrote:
+> On Tue, 19 Oct 2021 at 06:02, Quan Nguyen <quan@os.amperecomputing.com> wrote:
+>>
+>> Add S0_SCP_AUTH_FAIL, S1_SCP_AUTH_FAIL gpios to indicates firmware
+>> authentication fail on each socket.
+> 
+> These use the gpio-keys API to expose the GPIOs. I think OpenBMC is
+> moving away from this abstraction, and instead reading the GPIOs with
+> the gpio chardev interface.
+> 
+Thanks Joel for the review,
+Yes, will switch to use gpio chardev interface and will remove these 
+gpio-keys defined in next version
 
-Signed-off-by: Jammy Huang <jammy_huang@aspeedtech.com>
----
- drivers/media/platform/aspeed-video.c | 69 ++++++++++++++-------------
- 1 file changed, 35 insertions(+), 34 deletions(-)
+>>
+>> Add gpio RTC_BAT_SEN_EN to enable RTC battery adc sensor.
+>>
+>> Add BMC_I2C4_O_EN gpio to go high at boot to enable access to I2C4 bus.
+> 
+> OpenBMC has started a process to document GPIOs that are exposed to
+> userspace, initially so a common userspace can be used across
+> machines. I like doing it for the additional reason that it provides
+> consistency in the naming.
+> 
+> https://github.com/openbmc/docs/blob/master/designs/device-tree-gpio-naming.md
+> 
+> If you could take a look at that document and add your GPIOs where
+> possible, and then update the device tree.
+> 
 
-diff --git a/drivers/media/platform/aspeed-video.c b/drivers/media/platform/aspeed-video.c
-index 328f3ec125e2..cafbffe1ef69 100644
---- a/drivers/media/platform/aspeed-video.c
-+++ b/drivers/media/platform/aspeed-video.c
-@@ -967,20 +967,42 @@ static void aspeed_video_set_resolution(struct aspeed_video *video)
- 		aspeed_video_free_buf(video, &video->srcs[0]);
- }
- 
--static void aspeed_video_init_regs(struct aspeed_video *video)
-+static void aspeed_video_update_regs(struct aspeed_video *video)
- {
- 	u32 comp_ctrl = VE_COMP_CTRL_RSVD |
- 		FIELD_PREP(VE_COMP_CTRL_DCT_LUM, video->jpeg_quality) |
- 		FIELD_PREP(VE_COMP_CTRL_DCT_CHR, video->jpeg_quality | 0x10);
--	u32 ctrl = VE_CTRL_AUTO_OR_CURSOR;
-+	u32 ctrl = 0;
- 	u32 seq_ctrl = VE_SEQ_CTRL_JPEG_MODE;
- 
-+	v4l2_dbg(1, debug, &video->v4l2_dev, "framerate(%d)\n",
-+		 video->frame_rate);
-+	v4l2_dbg(1, debug, &video->v4l2_dev, "subsample(%s)\n",
-+		 video->yuv420 ? "420" : "444");
-+	v4l2_dbg(1, debug, &video->v4l2_dev, "compression quality(%d)\n",
-+		 video->jpeg_quality);
-+
- 	if (video->frame_rate)
- 		ctrl |= FIELD_PREP(VE_CTRL_FRC, video->frame_rate);
- 
- 	if (video->yuv420)
- 		seq_ctrl |= VE_SEQ_CTRL_YUV420;
- 
-+	if (video->jpeg.virt)
-+		aspeed_video_update_jpeg_table(video->jpeg.virt, video->yuv420);
-+
-+	/* Set control registers */
-+	aspeed_video_update(video, VE_SEQ_CTRL,
-+			    VE_SEQ_CTRL_JPEG_MODE | VE_SEQ_CTRL_YUV420,
-+			    seq_ctrl);
-+	aspeed_video_update(video, VE_CTRL, VE_CTRL_FRC, ctrl);
-+	aspeed_video_update(video, VE_COMP_CTRL,
-+			    VE_COMP_CTRL_DCT_LUM | VE_COMP_CTRL_DCT_CHR,
-+			    comp_ctrl);
-+}
-+
-+static void aspeed_video_init_regs(struct aspeed_video *video)
-+{
- 	/* Unlock VE registers */
- 	aspeed_video_write(video, VE_PROTECTION_KEY, VE_PROTECTION_KEY_UNLOCK);
- 
-@@ -995,9 +1017,8 @@ static void aspeed_video_init_regs(struct aspeed_video *video)
- 	aspeed_video_write(video, VE_JPEG_ADDR, video->jpeg.dma);
- 
- 	/* Set control registers */
--	aspeed_video_write(video, VE_SEQ_CTRL, seq_ctrl);
--	aspeed_video_write(video, VE_CTRL, ctrl);
--	aspeed_video_write(video, VE_COMP_CTRL, comp_ctrl);
-+	aspeed_video_write(video, VE_CTRL, VE_CTRL_AUTO_OR_CURSOR);
-+	aspeed_video_write(video, VE_COMP_CTRL, VE_COMP_CTRL_RSVD);
- 
- 	/* Don't downscale */
- 	aspeed_video_write(video, VE_SCALING_FACTOR, 0x10001000);
-@@ -1326,27 +1347,6 @@ static const struct v4l2_ioctl_ops aspeed_video_ioctl_ops = {
- 	.vidioc_unsubscribe_event = v4l2_event_unsubscribe,
- };
- 
--static void aspeed_video_update_jpeg_quality(struct aspeed_video *video)
--{
--	u32 comp_ctrl = FIELD_PREP(VE_COMP_CTRL_DCT_LUM, video->jpeg_quality) |
--		FIELD_PREP(VE_COMP_CTRL_DCT_CHR, video->jpeg_quality | 0x10);
--
--	aspeed_video_update(video, VE_COMP_CTRL,
--			    VE_COMP_CTRL_DCT_LUM | VE_COMP_CTRL_DCT_CHR,
--			    comp_ctrl);
--}
--
--static void aspeed_video_update_subsampling(struct aspeed_video *video)
--{
--	if (video->jpeg.virt)
--		aspeed_video_update_jpeg_table(video->jpeg.virt, video->yuv420);
--
--	if (video->yuv420)
--		aspeed_video_update(video, VE_SEQ_CTRL, 0, VE_SEQ_CTRL_YUV420);
--	else
--		aspeed_video_update(video, VE_SEQ_CTRL, VE_SEQ_CTRL_YUV420, 0);
--}
--
- static int aspeed_video_set_ctrl(struct v4l2_ctrl *ctrl)
- {
- 	struct aspeed_video *video = container_of(ctrl->handler,
-@@ -1356,16 +1356,13 @@ static int aspeed_video_set_ctrl(struct v4l2_ctrl *ctrl)
- 	switch (ctrl->id) {
- 	case V4L2_CID_JPEG_COMPRESSION_QUALITY:
- 		video->jpeg_quality = ctrl->val;
--		aspeed_video_update_jpeg_quality(video);
-+		if (test_bit(VIDEO_STREAMING, &video->flags))
-+			aspeed_video_update_regs(video);
- 		break;
- 	case V4L2_CID_JPEG_CHROMA_SUBSAMPLING:
--		if (ctrl->val == V4L2_JPEG_CHROMA_SUBSAMPLING_420) {
--			video->yuv420 = true;
--			aspeed_video_update_subsampling(video);
--		} else {
--			video->yuv420 = false;
--			aspeed_video_update_subsampling(video);
--		}
-+		video->yuv420 = (ctrl->val == V4L2_JPEG_CHROMA_SUBSAMPLING_420);
-+		if (test_bit(VIDEO_STREAMING, &video->flags))
-+			aspeed_video_update_regs(video);
- 		break;
- 	default:
- 		return -EINVAL;
-@@ -1393,6 +1390,8 @@ static void aspeed_video_resolution_work(struct work_struct *work)
- 
- 	aspeed_video_init_regs(video);
- 
-+	aspeed_video_update_regs(video);
-+
- 	aspeed_video_get_resolution(video);
- 
- 	if (video->detected_timings.width != video->active_timings.width ||
-@@ -1504,6 +1503,8 @@ static int aspeed_video_start_streaming(struct vb2_queue *q,
- 	video->perf.duration_max = 0;
- 	video->perf.duration_min = 0xffffffff;
- 
-+	aspeed_video_update_regs(video);
-+
- 	rc = aspeed_video_start_frame(video);
- 	if (rc) {
- 		aspeed_video_bufs_done(video, VB2_BUF_STATE_QUEUED);
--- 
-2.25.1
+There is on-going discussion about naming of the RTC voltage sensing 
+enable gpio pin in [1], So I'd like to address this change later in 
+separate patch when this is settled. Hence, I will remove this changes 
+in next version.
+
+[1] https://gerrit.openbmc-project.xyz/c/openbmc/docs/+/48018
+
+About the BMC_I2C4_O_EN, this is needed as gpio-hog to make the i2c bus 
+accessible at boot time so I will keep this in next version.
+In fact, I'm still a bit of confuse if this pin needs a common name as 
+it is just to enable the bus access and does not serve for any 
+particular common purpose.
+
+Thanks,
+- Quan
+
+>>
+>> Signed-off-by: Quan Nguyen <quan@os.amperecomputing.com>
+>> Signed-off-by: Thang Nguyen <thang@os.amperecomputing.com>
+>> ---
+>> v2:
+>>    - None
+>>
+>>   .../arm/boot/dts/aspeed-bmc-ampere-mtjade.dts | 21 ++++++++++++++++++-
+>>   1 file changed, 20 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/arch/arm/boot/dts/aspeed-bmc-ampere-mtjade.dts b/arch/arm/boot/dts/aspeed-bmc-ampere-mtjade.dts
+>> index 57b0c45a2298..3515d55bd312 100644
+>> --- a/arch/arm/boot/dts/aspeed-bmc-ampere-mtjade.dts
+>> +++ b/arch/arm/boot/dts/aspeed-bmc-ampere-mtjade.dts
+>> @@ -86,6 +86,18 @@ S0_cpu_fault {
+>>                          linux,code = <ASPEED_GPIO(J, 1)>;
+>>                  };
+>>
+>> +               S0_scp_auth_fail {
+>> +                       label = "S0_SCP_AUTH_FAIL";
+>> +                       gpios = <&gpio ASPEED_GPIO(J, 2) GPIO_ACTIVE_LOW>;
+>> +                       linux,code = <ASPEED_GPIO(J, 2)>;
+>> +               };
+>> +
+>> +               S1_scp_auth_fail {
+>> +                       label = "S1_SCP_AUTH_FAIL";
+>> +                       gpios = <&gpio ASPEED_GPIO(Z, 5) GPIO_ACTIVE_LOW>;
+>> +                       linux,code = <ASPEED_GPIO(Z, 5)>;
+>> +               };
+>> +
+>>                  S1_overtemp {
+>>                          label = "S1_OVERTEMP";
+>>                          gpios = <&gpio ASPEED_GPIO(Z, 6) GPIO_ACTIVE_LOW>;
+>> @@ -590,7 +602,7 @@ &gpio {
+>>          /*Q0-Q7*/       "","","","","","UID_BUTTON","","",
+>>          /*R0-R7*/       "","","BMC_EXT_HIGHTEMP_L","OCP_AUX_PWREN",
+>>                          "OCP_MAIN_PWREN","RESET_BUTTON","","",
+>> -       /*S0-S7*/       "","","","","","","","",
+>> +       /*S0-S7*/       "","","","","RTC_BAT_SEN_EN","","","",
+> 
+> I suggest you create a proposal to call this one
+> battery-voltage-read-enable. I know that some of the IBM machines
+> intend to have this same GPIO.
+> 
+>>          /*T0-T7*/       "","","","","","","","",
+>>          /*U0-U7*/       "","","","","","","","",
+>>          /*V0-V7*/       "","","","","","","","",
+>> @@ -604,4 +616,11 @@ &gpio {
+>>                          "S1_BMC_DDR_ADR","","","","",
+>>          /*AC0-AC7*/     "SYS_PWR_GD","","","","","BMC_READY","SLAVE_PRESENT_L",
+>>                          "BMC_OCP_PG";
+>> +
+>> +       i2c4_o_en {
+>> +               gpio-hog;
+>> +               gpios = <ASPEED_GPIO(Y, 2) GPIO_ACTIVE_HIGH>;
+>> +               output-high;
+>> +               line-name = "BMC_I2C4_O_EN";
+>> +       };
+>>   };
+>> --
+>> 2.28.0
+>>
 
