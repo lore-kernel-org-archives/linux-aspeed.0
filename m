@@ -1,97 +1,89 @@
-From: Kumar Thangavel <kumarthangavel.hcl@gmail.com>
-Date: Thu, 28 Oct 2021 15:20:48 +0530
-Subject: [PATCH v4] Add payload to be 32-bit aligned to fix dropped packets
-Message-ID: <20211028095047.GA15236@gmail.com>
+From: Andrew Jeffery <andrew@aj.id.au>
+Date: Fri, 29 Oct 2021 15:14:51 +1030
+Subject: [PATCH] clk/ast2600: Fix soc revision for AHB
+In-Reply-To: <20210922235449.213631-1-joel@jms.id.au>
+References: <20210922235449.213631-1-joel@jms.id.au>
+Message-ID: <8588b86d-7f46-4ce4-bd6e-432499bbc0eb@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Update NC-SI command handler (both standard and OEM) to take into
-account of payload paddings in allocating skb (in case of payload
-size is not 32-bit aligned).
 
-The checksum field follows payload field, without taking payload
-padding into account can cause checksum being truncated, leading to
-dropped packets.
 
-Signed-off-by: Kumar Thangavel <thangavel.k@hcl.com>
-Acked-by: Samuel Mendoza-Jonas <sam@mendozajonas.com>
-Reviewed-by: Paul Menzel <pmenzel@molgen.mpg.de>
+On Thu, 23 Sep 2021, at 09:24, Joel Stanley wrote:
+> Move the soc revision parsing to the initial probe, saving the driver
+> from parsing the register multiple times.
+>
+> Use this variable to select the correct divisor table for the AHB clock.
+> Before this fix the A2 would have used the A0 table.
+>
+> Fixes: 2d491066ccd4 ("clk: ast2600: Fix AHB clock divider for A1")
+> Signed-off-by: Joel Stanley <joel@jms.id.au>
 
----
-  v4:
-   - Updated existing macro for max function
+Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
 
-  v3:
-   - Added Macro for MAX
-   - Fixed the missed semicolon
+> ---
+>  drivers/clk/clk-ast2600.c | 12 +++++++-----
+>  1 file changed, 7 insertions(+), 5 deletions(-)
+>
+> diff --git a/drivers/clk/clk-ast2600.c b/drivers/clk/clk-ast2600.c
+> index bc3be5f3eae1..24dab2312bc6 100644
+> --- a/drivers/clk/clk-ast2600.c
+> +++ b/drivers/clk/clk-ast2600.c
+> @@ -51,6 +51,8 @@ static DEFINE_SPINLOCK(aspeed_g6_clk_lock);
+>  static struct clk_hw_onecell_data *aspeed_g6_clk_data;
+> 
+>  static void __iomem *scu_g6_base;
+> +/* AST2600 revision: A0, A1, A2, etc */
+> +static u8 soc_rev;
+> 
+>  /*
+>   * Clocks marked with CLK_IS_CRITICAL:
+> @@ -191,9 +193,8 @@ static struct clk_hw *ast2600_calc_pll(const char 
+> *name, u32 val)
+>  static struct clk_hw *ast2600_calc_apll(const char *name, u32 val)
+>  {
+>  	unsigned int mult, div;
+> -	u32 chip_id = readl(scu_g6_base + ASPEED_G6_SILICON_REV);
+> 
+> -	if (((chip_id & CHIP_REVISION_ID) >> 16) >= 2) {
+> +	if (soc_rev >= 2) {
+>  		if (val & BIT(24)) {
+>  			/* Pass through mode */
+>  			mult = div = 1;
+> @@ -707,7 +708,7 @@ static const u32 ast2600_a1_axi_ahb200_tbl[] = {
+>  static void __init aspeed_g6_cc(struct regmap *map)
+>  {
+>  	struct clk_hw *hw;
+> -	u32 val, div, divbits, chip_id, axi_div, ahb_div;
+> +	u32 val, div, divbits, axi_div, ahb_div;
+> 
+>  	clk_hw_register_fixed_rate(NULL, "clkin", NULL, 0, 25000000);
+> 
+> @@ -738,8 +739,7 @@ static void __init aspeed_g6_cc(struct regmap *map)
+>  		axi_div = 2;
+> 
+>  	divbits = (val >> 11) & 0x3;
+> -	regmap_read(map, ASPEED_G6_SILICON_REV, &chip_id);
+> -	if (chip_id & BIT(16)) {
+> +	if (soc_rev >= 1) {
 
-  v2:
-   - Added NC-SI spec version and section
-   - Removed blank line
-   - corrected spellings
+This is hidden in the noise a bit, but the patch also isn't that big.
 
-  v1:
-   - Initial draft
-
----
- net/ncsi/ncsi-cmd.c | 21 +++++++++++++--------
- 1 file changed, 13 insertions(+), 8 deletions(-)
-
-diff --git a/net/ncsi/ncsi-cmd.c b/net/ncsi/ncsi-cmd.c
-index ba9ae482141b..e44fe138c20f 100644
---- a/net/ncsi/ncsi-cmd.c
-+++ b/net/ncsi/ncsi-cmd.c
-@@ -213,12 +213,16 @@ static int ncsi_cmd_handler_oem(struct sk_buff *skb,
- {
- 	struct ncsi_cmd_oem_pkt *cmd;
- 	unsigned int len;
-+	/* NC-SI spec DSP_0222_1.2.0, section 8.2.2.2
-+	 * requires payload to be padded with 0 to
-+	 * 32-bit boundary before the checksum field.
-+	 * Ensure the padding bytes are accounted for in
-+	 * skb allocation
-+	 */
- 
-+	unsigned short payload = ALIGN(nca->payload, 4);
- 	len = sizeof(struct ncsi_cmd_pkt_hdr) + 4;
--	if (nca->payload < 26)
--		len += 26;
--	else
--		len += nca->payload;
-+	len += max(payload, 26);
- 
- 	cmd = skb_put_zero(skb, len);
- 	memcpy(&cmd->mfr_id, nca->data, nca->payload);
-@@ -272,6 +276,7 @@ static struct ncsi_request *ncsi_alloc_command(struct ncsi_cmd_arg *nca)
- 	struct net_device *dev = nd->dev;
- 	int hlen = LL_RESERVED_SPACE(dev);
- 	int tlen = dev->needed_tailroom;
-+	int payload;
- 	int len = hlen + tlen;
- 	struct sk_buff *skb;
- 	struct ncsi_request *nr;
-@@ -281,14 +286,14 @@ static struct ncsi_request *ncsi_alloc_command(struct ncsi_cmd_arg *nca)
- 		return NULL;
- 
- 	/* NCSI command packet has 16-bytes header, payload, 4 bytes checksum.
-+	 * Payload needs padding so that the checksum field following payload is
-+	 * aligned to 32-bit boundary.
- 	 * The packet needs padding if its payload is less than 26 bytes to
- 	 * meet 64 bytes minimal ethernet frame length.
- 	 */
- 	len += sizeof(struct ncsi_cmd_pkt_hdr) + 4;
--	if (nca->payload < 26)
--		len += 26;
--	else
--		len += nca->payload;
-+	payload = ALIGN(nca->payload, 4);
-+	len += max(payload, 26);
- 
- 	/* Allocate skb */
- 	skb = alloc_skb(len, GFP_ATOMIC);
--- 
-2.17.1
-
+>  		if (!divbits) {
+>  			ahb_div = ast2600_a1_axi_ahb200_tbl[(val >> 8) & 0x3];
+>  			if (val & BIT(16))
+> @@ -784,6 +784,8 @@ static void __init aspeed_g6_cc_init(struct device_node *np)
+>  	if (!scu_g6_base)
+>  		return;
+> 
+> +	soc_rev = (readl(scu_g6_base + ASPEED_G6_SILICON_REV) & 
+> CHIP_REVISION_ID) >> 16;
+> +
+>  	aspeed_g6_clk_data = kzalloc(struct_size(aspeed_g6_clk_data, hws,
+>  				      ASPEED_G6_NUM_CLKS), GFP_KERNEL);
+>  	if (!aspeed_g6_clk_data)
+> -- 
+> 2.33.0
