@@ -1,11 +1,11 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Mon, 1 Nov 2021 23:33:37 +0000
-Subject: [PATCH -next 1/4] ARM: dts: aspeed: add LCLK setting into LPC IBT
- node
-In-Reply-To: <20211101233751.49222-2-jae.hyun.yoo@intel.com>
+Date: Mon, 1 Nov 2021 23:34:11 +0000
+Subject: [PATCH -next 3/4] ARM: dts: aspeed: add LCLK setting into LPC KCS
+ nodes
+In-Reply-To: <20211101233751.49222-4-jae.hyun.yoo@intel.com>
 References: <20211101233751.49222-1-jae.hyun.yoo@intel.com>
- <20211101233751.49222-2-jae.hyun.yoo@intel.com>
-Message-ID: <CACPK8XcAN-SsKDS2E_Cnv=5-Rq=9sAWYyb88i2Ub-iX0WH6aZw@mail.gmail.com>
+ <20211101233751.49222-4-jae.hyun.yoo@intel.com>
+Message-ID: <CACPK8XcVUEdxjJTOQDf2S-VL3rbwMctQH=v3teyrEgCk__1MVg@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -16,57 +16,90 @@ On Mon, 1 Nov 2021 at 23:18, <jae.hyun.yoo@intel.com> wrote:
 >
 > From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
 >
-> Add LCLK clock setting into LPC IBT node to enable the LCLK by
+> Add LCLK clock setting into LPC KCS nodes to enable the LCLK by
 > individual LPC sub drivers.
 >
 > Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
 
 Reviewed-by: Joel Stanley <joel@jms.id.au>
 
-Do you need to update the bindings too?
-
 > ---
->  arch/arm/boot/dts/aspeed-g4.dtsi | 1 +
->  arch/arm/boot/dts/aspeed-g5.dtsi | 1 +
->  arch/arm/boot/dts/aspeed-g6.dtsi | 1 +
->  3 files changed, 3 insertions(+)
->
-> diff --git a/arch/arm/boot/dts/aspeed-g4.dtsi b/arch/arm/boot/dts/aspeed-g4.dtsi
-> index b313a1cf5f73..f14dace34c5a 100644
-> --- a/arch/arm/boot/dts/aspeed-g4.dtsi
-> +++ b/arch/arm/boot/dts/aspeed-g4.dtsi
-> @@ -381,6 +381,7 @@ ibt: ibt at 140 {
->                                         compatible = "aspeed,ast2400-ibt-bmc";
->                                         reg = <0x140 0x18>;
->                                         interrupts = <8>;
-> +                                       clocks = <&syscon ASPEED_CLK_GATE_LCLK>;
->                                         status = "disabled";
->                                 };
+>  arch/arm/boot/dts/aspeed-g5.dtsi | 4 ++++
+>  arch/arm/boot/dts/aspeed-g6.dtsi | 4 ++++
+>  2 files changed, 8 insertions(+)
 >
 > diff --git a/arch/arm/boot/dts/aspeed-g5.dtsi b/arch/arm/boot/dts/aspeed-g5.dtsi
-> index c7049454c7cb..d0cc4be2de59 100644
+> index d0cc4be2de59..7495f93c5069 100644
 > --- a/arch/arm/boot/dts/aspeed-g5.dtsi
 > +++ b/arch/arm/boot/dts/aspeed-g5.dtsi
-> @@ -507,6 +507,7 @@ ibt: ibt at 140 {
->                                         compatible = "aspeed,ast2500-ibt-bmc";
->                                         reg = <0x140 0x18>;
+> @@ -446,6 +446,7 @@ kcs1: kcs at 24 {
+>                                         compatible = "aspeed,ast2500-kcs-bmc-v2";
+>                                         reg = <0x24 0x1>, <0x30 0x1>, <0x3c 0x1>;
 >                                         interrupts = <8>;
 > +                                       clocks = <&syscon ASPEED_CLK_GATE_LCLK>;
 >                                         status = "disabled";
 >                                 };
->                         };
-> diff --git a/arch/arm/boot/dts/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed-g6.dtsi
-> index 5106a424f1ce..465c3549fdc3 100644
-> --- a/arch/arm/boot/dts/aspeed-g6.dtsi
-> +++ b/arch/arm/boot/dts/aspeed-g6.dtsi
-> @@ -581,6 +581,7 @@ ibt: ibt at 140 {
->                                         compatible = "aspeed,ast2600-ibt-bmc";
->                                         reg = <0x140 0x18>;
->                                         interrupts = <GIC_SPI 143 IRQ_TYPE_LEVEL_HIGH>;
+>
+> @@ -453,6 +454,7 @@ kcs2: kcs at 28 {
+>                                         compatible = "aspeed,ast2500-kcs-bmc-v2";
+>                                         reg = <0x28 0x1>, <0x34 0x1>, <0x40 0x1>;
+>                                         interrupts = <8>;
 > +                                       clocks = <&syscon ASPEED_CLK_GATE_LCLK>;
 >                                         status = "disabled";
 >                                 };
->                         };
+>
+> @@ -460,6 +462,7 @@ kcs3: kcs at 2c {
+>                                         compatible = "aspeed,ast2500-kcs-bmc-v2";
+>                                         reg = <0x2c 0x1>, <0x38 0x1>, <0x44 0x1>;
+>                                         interrupts = <8>;
+> +                                       clocks = <&syscon ASPEED_CLK_GATE_LCLK>;
+>                                         status = "disabled";
+>                                 };
+>
+> @@ -467,6 +470,7 @@ kcs4: kcs at 114 {
+>                                         compatible = "aspeed,ast2500-kcs-bmc-v2";
+>                                         reg = <0x114 0x1>, <0x118 0x1>, <0x11c 0x1>;
+>                                         interrupts = <8>;
+> +                                       clocks = <&syscon ASPEED_CLK_GATE_LCLK>;
+>                                         status = "disabled";
+>                                 };
+>
+> diff --git a/arch/arm/boot/dts/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed-g6.dtsi
+> index 465c3549fdc3..891b862363a7 100644
+> --- a/arch/arm/boot/dts/aspeed-g6.dtsi
+> +++ b/arch/arm/boot/dts/aspeed-g6.dtsi
+> @@ -520,6 +520,7 @@ kcs1: kcs at 24 {
+>                                         compatible = "aspeed,ast2500-kcs-bmc-v2";
+>                                         reg = <0x24 0x1>, <0x30 0x1>, <0x3c 0x1>;
+>                                         interrupts = <GIC_SPI 138 IRQ_TYPE_LEVEL_HIGH>;
+> +                                       clocks = <&syscon ASPEED_CLK_GATE_LCLK>;
+>                                         kcs_chan = <1>;
+>                                         status = "disabled";
+>                                 };
+> @@ -528,6 +529,7 @@ kcs2: kcs at 28 {
+>                                         compatible = "aspeed,ast2500-kcs-bmc-v2";
+>                                         reg = <0x28 0x1>, <0x34 0x1>, <0x40 0x1>;
+>                                         interrupts = <GIC_SPI 139 IRQ_TYPE_LEVEL_HIGH>;
+> +                                       clocks = <&syscon ASPEED_CLK_GATE_LCLK>;
+>                                         status = "disabled";
+>                                 };
+>
+> @@ -535,6 +537,7 @@ kcs3: kcs at 2c {
+>                                         compatible = "aspeed,ast2500-kcs-bmc-v2";
+>                                         reg = <0x2c 0x1>, <0x38 0x1>, <0x44 0x1>;
+>                                         interrupts = <GIC_SPI 140 IRQ_TYPE_LEVEL_HIGH>;
+> +                                       clocks = <&syscon ASPEED_CLK_GATE_LCLK>;
+>                                         status = "disabled";
+>                                 };
+>
+> @@ -542,6 +545,7 @@ kcs4: kcs at 114 {
+>                                         compatible = "aspeed,ast2500-kcs-bmc-v2";
+>                                         reg = <0x114 0x1>, <0x118 0x1>, <0x11c 0x1>;
+>                                         interrupts = <GIC_SPI 141 IRQ_TYPE_LEVEL_HIGH>;
+> +                                       clocks = <&syscon ASPEED_CLK_GATE_LCLK>;
+>                                         status = "disabled";
+>                                 };
+>
 > --
 > 2.25.1
 >
