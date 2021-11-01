@@ -1,10 +1,10 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Mon, 1 Nov 2021 23:32:25 +0000
-Subject: [PATCH -next 2/4] ipmi: bt: add clock control logic
-In-Reply-To: <20211101233751.49222-3-jae.hyun.yoo@intel.com>
+Date: Mon, 1 Nov 2021 23:33:08 +0000
+Subject: [PATCH -next 4/4] ipmi: kcs_bmc_aspeed: add clock control logic
+In-Reply-To: <20211101233751.49222-5-jae.hyun.yoo@intel.com>
 References: <20211101233751.49222-1-jae.hyun.yoo@intel.com>
- <20211101233751.49222-3-jae.hyun.yoo@intel.com>
-Message-ID: <CACPK8XeF2UZDmhXE69pgXXRzJW6Ni=86O=QRNCo2Y1+wyf0YwQ@mail.gmail.com>
+ <20211101233751.49222-5-jae.hyun.yoo@intel.com>
+Message-ID: <CACPK8Xc-NVyZ31+_L8oL3aaGHX9TLRxJy9666570ZOuirUYw_w@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -15,8 +15,8 @@ On Mon, 1 Nov 2021 at 23:18, <jae.hyun.yoo@intel.com> wrote:
 >
 > From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
 >
-> If LPC BT driver is registered ahead of lpc-ctrl module, LPC BT
-> hardware block will be enabled without heart beating of LCLK until
+> If LPC KCS driver is registered ahead of lpc-ctrl module, LPC
+> KCS block will be enabled without heart beating of LCLK until
 > lpc-ctrl enables the LCLK. This issue causes improper handling on
 > host interrupts when the host sends interrupts in that time frame.
 > Then kernel eventually forcibly disables the interrupt with
@@ -24,87 +24,108 @@ On Mon, 1 Nov 2021 at 23:18, <jae.hyun.yoo@intel.com> wrote:
 >
 > To prevent this issue, all LPC sub drivers should enable LCLK
 > individually so this patch adds clock control logic into the LPC
-> BT driver.
+> KCS driver.
 >
-> Fixes: 54f9c4d0778b ("ipmi: add an Aspeed BT IPMI BMC driver")
+> Fixes: be2ed207e374 ("ipmi: add an Aspeed KCS IPMI BMC driver")
 > Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
 
 Reviewed-by: Joel Stanley <joel@jms.id.au>
 
 > ---
->  drivers/char/ipmi/bt-bmc.c | 24 +++++++++++++++++++++++-
->  1 file changed, 23 insertions(+), 1 deletion(-)
+>  drivers/char/ipmi/kcs_bmc_aspeed.c | 31 ++++++++++++++++++++++++++----
+>  1 file changed, 27 insertions(+), 4 deletions(-)
 >
-> diff --git a/drivers/char/ipmi/bt-bmc.c b/drivers/char/ipmi/bt-bmc.c
-> index 7450904e330a..a20f92cc7b18 100644
-> --- a/drivers/char/ipmi/bt-bmc.c
-> +++ b/drivers/char/ipmi/bt-bmc.c
-> @@ -5,6 +5,7 @@
+> diff --git a/drivers/char/ipmi/kcs_bmc_aspeed.c b/drivers/char/ipmi/kcs_bmc_aspeed.c
+> index 92a37b33494c..00706472cc4d 100644
+> --- a/drivers/char/ipmi/kcs_bmc_aspeed.c
+> +++ b/drivers/char/ipmi/kcs_bmc_aspeed.c
+> @@ -6,6 +6,7 @@
+>  #define pr_fmt(fmt) "aspeed-kcs-bmc: " fmt
 >
 >  #include <linux/atomic.h>
->  #include <linux/bt-bmc.h>
 > +#include <linux/clk.h>
 >  #include <linux/errno.h>
 >  #include <linux/interrupt.h>
 >  #include <linux/io.h>
-> @@ -62,6 +63,7 @@ struct bt_bmc {
->         wait_queue_head_t       queue;
->         struct timer_list       poll_timer;
->         struct mutex            mutex;
-> +       struct clk              *clk;
+> @@ -126,6 +127,8 @@ struct aspeed_kcs_bmc {
+>                 bool remove;
+>                 struct timer_list timer;
+>         } obe;
+> +
+> +       struct clk *clk;
 >  };
 >
->  static atomic_t open_count = ATOMIC_INIT(0);
-> @@ -423,6 +425,19 @@ static int bt_bmc_probe(struct platform_device *pdev)
->         if (IS_ERR(bt_bmc->base))
->                 return PTR_ERR(bt_bmc->base);
+>  struct aspeed_kcs_of_ops {
+> @@ -620,24 +623,37 @@ static int aspeed_kcs_probe(struct platform_device *pdev)
+>                 return -ENODEV;
+>         }
 >
-> +       bt_bmc->clk = devm_clk_get(dev, NULL);
-> +       if (IS_ERR(bt_bmc->clk)) {
-> +               rc = PTR_ERR(bt_bmc->clk);
+> +       priv->clk = devm_clk_get(&pdev->dev, NULL);
+> +       if (IS_ERR(priv->clk)) {
+> +               rc = PTR_ERR(priv->clk);
 > +               if (rc != -EPROBE_DEFER)
-> +                       dev_err(dev, "Unable to get clock\n");
+> +                       dev_err(&pdev->dev, "Couldn't get clock\n");
 > +               return rc;
 > +       }
-> +       rc = clk_prepare_enable(bt_bmc->clk);
+> +       rc = clk_prepare_enable(priv->clk);
 > +       if (rc) {
-> +               dev_err(dev, "Unable to enable clock\n");
+> +               dev_err(&pdev->dev, "Couldn't enable clock\n");
 > +               return rc;
 > +       }
 > +
->         mutex_init(&bt_bmc->mutex);
->         init_waitqueue_head(&bt_bmc->queue);
+>         spin_lock_init(&priv->obe.lock);
+>         priv->obe.remove = false;
+>         timer_setup(&priv->obe.timer, aspeed_kcs_check_obe, 0);
 >
-> @@ -433,7 +448,7 @@ static int bt_bmc_probe(struct platform_device *pdev)
->         rc = misc_register(&bt_bmc->miscdev);
+>         rc = aspeed_kcs_set_address(kcs_bmc, addrs, nr_addrs);
+>         if (rc)
+> -               return rc;
+> +               goto err;
+>
+>         /* Host to BMC IRQ */
+>         rc = aspeed_kcs_config_downstream_irq(kcs_bmc, pdev);
+>         if (rc)
+> -               return rc;
+> +               goto err;
+>
+>         /* BMC to Host IRQ */
+>         if (have_upstream_irq) {
+>                 rc = aspeed_kcs_config_upstream_irq(priv, upstream_irq[0], upstream_irq[1]);
+>                 if (rc < 0)
+> -                       return rc;
+> +                       goto err;
+>         } else {
+>                 priv->upstream_irq.mode = aspeed_kcs_irq_none;
+>         }
+> @@ -650,13 +666,19 @@ static int aspeed_kcs_probe(struct platform_device *pdev)
+>         rc = kcs_bmc_add_device(&priv->kcs_bmc);
 >         if (rc) {
->                 dev_err(dev, "Unable to register misc device\n");
+>                 dev_warn(&pdev->dev, "Failed to register channel %d: %d\n", kcs_bmc->channel, rc);
 > -               return rc;
 > +               goto err;
 >         }
 >
->         bt_bmc_config_irq(bt_bmc, pdev);
-> @@ -457,6 +472,11 @@ static int bt_bmc_probe(struct platform_device *pdev)
->         clr_b_busy(bt_bmc);
+>         dev_info(&pdev->dev, "Initialised channel %d at 0x%x\n",
+>                         kcs_bmc->channel, addrs[0]);
 >
 >         return 0;
 > +
 > +err:
-> +       clk_disable_unprepare(bt_bmc->clk);
+> +       aspeed_kcs_enable_channel(kcs_bmc, false);
+> +       clk_disable_unprepare(priv->clk);
 > +
 > +       return rc;
 >  }
 >
->  static int bt_bmc_remove(struct platform_device *pdev)
-> @@ -466,6 +486,8 @@ static int bt_bmc_remove(struct platform_device *pdev)
->         misc_deregister(&bt_bmc->miscdev);
->         if (bt_bmc->irq < 0)
->                 del_timer_sync(&bt_bmc->poll_timer);
-> +       clk_disable_unprepare(bt_bmc->clk);
-> +
->         return 0;
->  }
+>  static int aspeed_kcs_remove(struct platform_device *pdev)
+> @@ -664,6 +686,7 @@ static int aspeed_kcs_remove(struct platform_device *pdev)
+>         struct aspeed_kcs_bmc *priv = platform_get_drvdata(pdev);
+>         struct kcs_bmc_device *kcs_bmc = &priv->kcs_bmc;
 >
+> +       clk_disable_unprepare(priv->clk);
+>         kcs_bmc_remove_device(kcs_bmc);
+>
+>         aspeed_kcs_enable_channel(kcs_bmc, false);
 > --
 > 2.25.1
 >
