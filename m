@@ -1,10 +1,9 @@
 From: jae.hyun.yoo@intel.com <jae.hyun.yoo@intel.com>
-Date: Mon,  1 Nov 2021 16:37:50 -0700
-Subject: [PATCH -next 3/4] ARM: dts: aspeed: add LCLK setting into LPC KCS
- nodes
+Date: Mon,  1 Nov 2021 16:37:51 -0700
+Subject: [PATCH -next 4/4] ipmi: kcs_bmc_aspeed: add clock control logic
 In-Reply-To: <20211101233751.49222-1-jae.hyun.yoo@intel.com>
 References: <20211101233751.49222-1-jae.hyun.yoo@intel.com>
-Message-ID: <20211101233751.49222-4-jae.hyun.yoo@intel.com>
+Message-ID: <20211101233751.49222-5-jae.hyun.yoo@intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -13,87 +12,114 @@ Content-Transfer-Encoding: 7bit
 
 From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
 
-Add LCLK clock setting into LPC KCS nodes to enable the LCLK by
-individual LPC sub drivers.
+If LPC KCS driver is registered ahead of lpc-ctrl module, LPC
+KCS block will be enabled without heart beating of LCLK until
+lpc-ctrl enables the LCLK. This issue causes improper handling on
+host interrupts when the host sends interrupts in that time frame.
+Then kernel eventually forcibly disables the interrupt with
+dumping stack and printing a 'nobody cared this irq' message out.
 
+To prevent this issue, all LPC sub drivers should enable LCLK
+individually so this patch adds clock control logic into the LPC
+KCS driver.
+
+Fixes: be2ed207e374 ("ipmi: add an Aspeed KCS IPMI BMC driver")
 Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
 ---
- arch/arm/boot/dts/aspeed-g5.dtsi | 4 ++++
- arch/arm/boot/dts/aspeed-g6.dtsi | 4 ++++
- 2 files changed, 8 insertions(+)
+ drivers/char/ipmi/kcs_bmc_aspeed.c | 31 ++++++++++++++++++++++++++----
+ 1 file changed, 27 insertions(+), 4 deletions(-)
 
-diff --git a/arch/arm/boot/dts/aspeed-g5.dtsi b/arch/arm/boot/dts/aspeed-g5.dtsi
-index d0cc4be2de59..7495f93c5069 100644
---- a/arch/arm/boot/dts/aspeed-g5.dtsi
-+++ b/arch/arm/boot/dts/aspeed-g5.dtsi
-@@ -446,6 +446,7 @@ kcs1: kcs at 24 {
- 					compatible = "aspeed,ast2500-kcs-bmc-v2";
- 					reg = <0x24 0x1>, <0x30 0x1>, <0x3c 0x1>;
- 					interrupts = <8>;
-+					clocks = <&syscon ASPEED_CLK_GATE_LCLK>;
- 					status = "disabled";
- 				};
+diff --git a/drivers/char/ipmi/kcs_bmc_aspeed.c b/drivers/char/ipmi/kcs_bmc_aspeed.c
+index 92a37b33494c..00706472cc4d 100644
+--- a/drivers/char/ipmi/kcs_bmc_aspeed.c
++++ b/drivers/char/ipmi/kcs_bmc_aspeed.c
+@@ -6,6 +6,7 @@
+ #define pr_fmt(fmt) "aspeed-kcs-bmc: " fmt
  
-@@ -453,6 +454,7 @@ kcs2: kcs at 28 {
- 					compatible = "aspeed,ast2500-kcs-bmc-v2";
- 					reg = <0x28 0x1>, <0x34 0x1>, <0x40 0x1>;
- 					interrupts = <8>;
-+					clocks = <&syscon ASPEED_CLK_GATE_LCLK>;
- 					status = "disabled";
- 				};
+ #include <linux/atomic.h>
++#include <linux/clk.h>
+ #include <linux/errno.h>
+ #include <linux/interrupt.h>
+ #include <linux/io.h>
+@@ -126,6 +127,8 @@ struct aspeed_kcs_bmc {
+ 		bool remove;
+ 		struct timer_list timer;
+ 	} obe;
++
++	struct clk *clk;
+ };
  
-@@ -460,6 +462,7 @@ kcs3: kcs at 2c {
- 					compatible = "aspeed,ast2500-kcs-bmc-v2";
- 					reg = <0x2c 0x1>, <0x38 0x1>, <0x44 0x1>;
- 					interrupts = <8>;
-+					clocks = <&syscon ASPEED_CLK_GATE_LCLK>;
- 					status = "disabled";
- 				};
+ struct aspeed_kcs_of_ops {
+@@ -620,24 +623,37 @@ static int aspeed_kcs_probe(struct platform_device *pdev)
+ 		return -ENODEV;
+ 	}
  
-@@ -467,6 +470,7 @@ kcs4: kcs at 114 {
- 					compatible = "aspeed,ast2500-kcs-bmc-v2";
- 					reg = <0x114 0x1>, <0x118 0x1>, <0x11c 0x1>;
- 					interrupts = <8>;
-+					clocks = <&syscon ASPEED_CLK_GATE_LCLK>;
- 					status = "disabled";
- 				};
++	priv->clk = devm_clk_get(&pdev->dev, NULL);
++	if (IS_ERR(priv->clk)) {
++		rc = PTR_ERR(priv->clk);
++		if (rc != -EPROBE_DEFER)
++			dev_err(&pdev->dev, "Couldn't get clock\n");
++		return rc;
++	}
++	rc = clk_prepare_enable(priv->clk);
++	if (rc) {
++		dev_err(&pdev->dev, "Couldn't enable clock\n");
++		return rc;
++	}
++
+ 	spin_lock_init(&priv->obe.lock);
+ 	priv->obe.remove = false;
+ 	timer_setup(&priv->obe.timer, aspeed_kcs_check_obe, 0);
  
-diff --git a/arch/arm/boot/dts/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed-g6.dtsi
-index 465c3549fdc3..891b862363a7 100644
---- a/arch/arm/boot/dts/aspeed-g6.dtsi
-+++ b/arch/arm/boot/dts/aspeed-g6.dtsi
-@@ -520,6 +520,7 @@ kcs1: kcs at 24 {
- 					compatible = "aspeed,ast2500-kcs-bmc-v2";
- 					reg = <0x24 0x1>, <0x30 0x1>, <0x3c 0x1>;
- 					interrupts = <GIC_SPI 138 IRQ_TYPE_LEVEL_HIGH>;
-+					clocks = <&syscon ASPEED_CLK_GATE_LCLK>;
- 					kcs_chan = <1>;
- 					status = "disabled";
- 				};
-@@ -528,6 +529,7 @@ kcs2: kcs at 28 {
- 					compatible = "aspeed,ast2500-kcs-bmc-v2";
- 					reg = <0x28 0x1>, <0x34 0x1>, <0x40 0x1>;
- 					interrupts = <GIC_SPI 139 IRQ_TYPE_LEVEL_HIGH>;
-+					clocks = <&syscon ASPEED_CLK_GATE_LCLK>;
- 					status = "disabled";
- 				};
+ 	rc = aspeed_kcs_set_address(kcs_bmc, addrs, nr_addrs);
+ 	if (rc)
+-		return rc;
++		goto err;
  
-@@ -535,6 +537,7 @@ kcs3: kcs at 2c {
- 					compatible = "aspeed,ast2500-kcs-bmc-v2";
- 					reg = <0x2c 0x1>, <0x38 0x1>, <0x44 0x1>;
- 					interrupts = <GIC_SPI 140 IRQ_TYPE_LEVEL_HIGH>;
-+					clocks = <&syscon ASPEED_CLK_GATE_LCLK>;
- 					status = "disabled";
- 				};
+ 	/* Host to BMC IRQ */
+ 	rc = aspeed_kcs_config_downstream_irq(kcs_bmc, pdev);
+ 	if (rc)
+-		return rc;
++		goto err;
  
-@@ -542,6 +545,7 @@ kcs4: kcs at 114 {
- 					compatible = "aspeed,ast2500-kcs-bmc-v2";
- 					reg = <0x114 0x1>, <0x118 0x1>, <0x11c 0x1>;
- 					interrupts = <GIC_SPI 141 IRQ_TYPE_LEVEL_HIGH>;
-+					clocks = <&syscon ASPEED_CLK_GATE_LCLK>;
- 					status = "disabled";
- 				};
+ 	/* BMC to Host IRQ */
+ 	if (have_upstream_irq) {
+ 		rc = aspeed_kcs_config_upstream_irq(priv, upstream_irq[0], upstream_irq[1]);
+ 		if (rc < 0)
+-			return rc;
++			goto err;
+ 	} else {
+ 		priv->upstream_irq.mode = aspeed_kcs_irq_none;
+ 	}
+@@ -650,13 +666,19 @@ static int aspeed_kcs_probe(struct platform_device *pdev)
+ 	rc = kcs_bmc_add_device(&priv->kcs_bmc);
+ 	if (rc) {
+ 		dev_warn(&pdev->dev, "Failed to register channel %d: %d\n", kcs_bmc->channel, rc);
+-		return rc;
++		goto err;
+ 	}
  
+ 	dev_info(&pdev->dev, "Initialised channel %d at 0x%x\n",
+ 			kcs_bmc->channel, addrs[0]);
+ 
+ 	return 0;
++
++err:
++	aspeed_kcs_enable_channel(kcs_bmc, false);
++	clk_disable_unprepare(priv->clk);
++
++	return rc;
+ }
+ 
+ static int aspeed_kcs_remove(struct platform_device *pdev)
+@@ -664,6 +686,7 @@ static int aspeed_kcs_remove(struct platform_device *pdev)
+ 	struct aspeed_kcs_bmc *priv = platform_get_drvdata(pdev);
+ 	struct kcs_bmc_device *kcs_bmc = &priv->kcs_bmc;
+ 
++	clk_disable_unprepare(priv->clk);
+ 	kcs_bmc_remove_device(kcs_bmc);
+ 
+ 	aspeed_kcs_enable_channel(kcs_bmc, false);
 -- 
 2.25.1
 
