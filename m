@@ -1,47 +1,29 @@
-From: tommy-huang <tommy_huang@aspeedtech.com>
-Date: Mon, 1 Nov 2021 19:01:04 +0800
-Subject: [PATCH 1/4] ARM: dts: aspeed: Add GFX node to AST2600
-In-Reply-To: <20211101110107.29010-1-tommy_huang@aspeedtech.com>
+From: Rob Herring <robh@kernel.org>
+Date: Mon, 1 Nov 2021 15:01:55 -0500
+Subject: [PATCH 4/4] dt-bindings: gpu: Add ASPEED GFX bindings document
+In-Reply-To: <20211101110107.29010-5-tommy_huang@aspeedtech.com>
 References: <20211101110107.29010-1-tommy_huang@aspeedtech.com>
-Message-ID: <20211101110107.29010-2-tommy_huang@aspeedtech.com>
+ <20211101110107.29010-5-tommy_huang@aspeedtech.com>
+Message-ID: <YYBHsy3Ed3Ss9281@robh.at.kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Joel Stanley <joel@jms.id.au>
+On Mon, 01 Nov 2021 19:01:07 +0800, tommy-huang wrote:
+> Add ast2600-gfx description for gfx driver.
+> 
+> Signed-off-by: tommy-huang <tommy_huang@aspeedtech.com>
+> ---
+>  Documentation/devicetree/bindings/gpu/aspeed-gfx.txt | 1 +
+>  1 file changed, 1 insertion(+)
+> 
 
-The GFX device is present in the AST2600 SoC.
 
-Signed-off-by: Joel Stanley <joel@jms.id.au>
-Signed-off-by: tommy-huang <tommy_huang@aspeedtech.com>
----
- arch/arm/boot/dts/aspeed-g6.dtsi | 11 +++++++++++
- 1 file changed, 11 insertions(+)
+Please add Acked-by/Reviewed-by tags when posting new versions. However,
+there's no need to repost patches *only* to add the tags. The upstream
+maintainer will do that for acks received on the version they apply.
 
-diff --git a/arch/arm/boot/dts/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed-g6.dtsi
-index 1b47be1704f8..e38c3742761b 100644
---- a/arch/arm/boot/dts/aspeed-g6.dtsi
-+++ b/arch/arm/boot/dts/aspeed-g6.dtsi
-@@ -351,6 +351,17 @@
- 				quality = <100>;
- 			};
- 
-+			gfx: display at 1e6e6000 {
-+				compatible = "aspeed,ast2600-gfx", "aspeed,ast2500-gfx", "syscon";
-+				reg = <0x1e6e6000 0x1000>;
-+				reg-io-width = <4>;
-+				clocks = <&syscon ASPEED_CLK_GATE_D1CLK>;
-+				resets = <&syscon ASPEED_RESET_GRAPHICS>;
-+				syscon = <&syscon>;
-+				status = "disabled";
-+				interrupts = <GIC_SPI 14 IRQ_TYPE_LEVEL_HIGH>;
-+			};
-+
- 			xdma: xdma at 1e6e7000 {
- 				compatible = "aspeed,ast2600-xdma";
- 				reg = <0x1e6e7000 0x100>;
--- 
-2.17.1
+If a tag was not added on purpose, please state why and what changed.
 
