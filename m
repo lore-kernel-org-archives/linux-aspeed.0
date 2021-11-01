@@ -1,55 +1,110 @@
-From: kernel test robot <lkp@intel.com>
-Date: Mon, 1 Nov 2021 23:59:15 +0800
-Subject: [PATCH 2/2] drm: Remove CONFIG_DRM_KMS_CMA_HELPER option
-In-Reply-To: <20211101081751.24613-3-tzimmermann@suse.de>
-References: <20211101081751.24613-3-tzimmermann@suse.de>
-Message-ID: <202111012344.tYv3YxkG-lkp@intel.com>
+From: Joel Stanley <joel@jms.id.au>
+Date: Mon, 1 Nov 2021 23:32:25 +0000
+Subject: [PATCH -next 2/4] ipmi: bt: add clock control logic
+In-Reply-To: <20211101233751.49222-3-jae.hyun.yoo@intel.com>
+References: <20211101233751.49222-1-jae.hyun.yoo@intel.com>
+ <20211101233751.49222-3-jae.hyun.yoo@intel.com>
+Message-ID: <CACPK8XeF2UZDmhXE69pgXXRzJW6Ni=86O=QRNCo2Y1+wyf0YwQ@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Thomas,
+On Mon, 1 Nov 2021 at 23:18, <jae.hyun.yoo@intel.com> wrote:
+>
+> From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+>
+> If LPC BT driver is registered ahead of lpc-ctrl module, LPC BT
+> hardware block will be enabled without heart beating of LCLK until
+> lpc-ctrl enables the LCLK. This issue causes improper handling on
+> host interrupts when the host sends interrupts in that time frame.
+> Then kernel eventually forcibly disables the interrupt with
+> dumping stack and printing a 'nobody cared this irq' message out.
+>
+> To prevent this issue, all LPC sub drivers should enable LCLK
+> individually so this patch adds clock control logic into the LPC
+> BT driver.
+>
+> Fixes: 54f9c4d0778b ("ipmi: add an Aspeed BT IPMI BMC driver")
+> Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
 
-I love your patch! Yet something to improve:
+Reviewed-by: Joel Stanley <joel@jms.id.au>
 
-[auto build test ERROR on next-20211029]
-[cannot apply to drm/drm-next shawnguo/for-next pinchartl-media/drm/du/next v5.15 v5.15-rc7 v5.15-rc6 v5.15]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch]
-
-url:    https://github.com/0day-ci/linux/commits/Thomas-Zimmermann/drm-Small-CMA-cleanups/20211101-161911
-base:    bdcc9f6a568275aed4cc32fd2312432d2ff1b704
-config: x86_64-randconfig-a004-20211101 (attached as .config)
-compiler: clang version 14.0.0 (https://github.com/llvm/llvm-project 82ed106567063ea269c6d5669278b733e173a42f)
-reproduce (this is a W=1 build):
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        # https://github.com/0day-ci/linux/commit/c3c7ec5f9ccd90e78f0f2d3143505db4060bbf17
-        git remote add linux-review https://github.com/0day-ci/linux
-        git fetch --no-tags linux-review Thomas-Zimmermann/drm-Small-CMA-cleanups/20211101-161911
-        git checkout c3c7ec5f9ccd90e78f0f2d3143505db4060bbf17
-        # save the attached .config to linux build tree
-        mkdir build_dir
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=clang make.cross W=1 O=build_dir ARCH=x86_64 SHELL=/bin/bash
-
-If you fix the issue, kindly add following tag as appropriate
-Reported-by: kernel test robot <lkp@intel.com>
-
-All errors (new ones prefixed by >>, old ones prefixed by <<):
-
->> ERROR: modpost: module drm_cma_helper uses symbol dma_buf_vmap from namespace DMA_BUF, but does not import it.
->> ERROR: modpost: module drm_cma_helper uses symbol dma_buf_vunmap from namespace DMA_BUF, but does not import it.
-
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: .config.gz
-Type: application/gzip
-Size: 39190 bytes
-Desc: not available
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20211101/e7ceeb41/attachment-0001.gz>
+> ---
+>  drivers/char/ipmi/bt-bmc.c | 24 +++++++++++++++++++++++-
+>  1 file changed, 23 insertions(+), 1 deletion(-)
+>
+> diff --git a/drivers/char/ipmi/bt-bmc.c b/drivers/char/ipmi/bt-bmc.c
+> index 7450904e330a..a20f92cc7b18 100644
+> --- a/drivers/char/ipmi/bt-bmc.c
+> +++ b/drivers/char/ipmi/bt-bmc.c
+> @@ -5,6 +5,7 @@
+>
+>  #include <linux/atomic.h>
+>  #include <linux/bt-bmc.h>
+> +#include <linux/clk.h>
+>  #include <linux/errno.h>
+>  #include <linux/interrupt.h>
+>  #include <linux/io.h>
+> @@ -62,6 +63,7 @@ struct bt_bmc {
+>         wait_queue_head_t       queue;
+>         struct timer_list       poll_timer;
+>         struct mutex            mutex;
+> +       struct clk              *clk;
+>  };
+>
+>  static atomic_t open_count = ATOMIC_INIT(0);
+> @@ -423,6 +425,19 @@ static int bt_bmc_probe(struct platform_device *pdev)
+>         if (IS_ERR(bt_bmc->base))
+>                 return PTR_ERR(bt_bmc->base);
+>
+> +       bt_bmc->clk = devm_clk_get(dev, NULL);
+> +       if (IS_ERR(bt_bmc->clk)) {
+> +               rc = PTR_ERR(bt_bmc->clk);
+> +               if (rc != -EPROBE_DEFER)
+> +                       dev_err(dev, "Unable to get clock\n");
+> +               return rc;
+> +       }
+> +       rc = clk_prepare_enable(bt_bmc->clk);
+> +       if (rc) {
+> +               dev_err(dev, "Unable to enable clock\n");
+> +               return rc;
+> +       }
+> +
+>         mutex_init(&bt_bmc->mutex);
+>         init_waitqueue_head(&bt_bmc->queue);
+>
+> @@ -433,7 +448,7 @@ static int bt_bmc_probe(struct platform_device *pdev)
+>         rc = misc_register(&bt_bmc->miscdev);
+>         if (rc) {
+>                 dev_err(dev, "Unable to register misc device\n");
+> -               return rc;
+> +               goto err;
+>         }
+>
+>         bt_bmc_config_irq(bt_bmc, pdev);
+> @@ -457,6 +472,11 @@ static int bt_bmc_probe(struct platform_device *pdev)
+>         clr_b_busy(bt_bmc);
+>
+>         return 0;
+> +
+> +err:
+> +       clk_disable_unprepare(bt_bmc->clk);
+> +
+> +       return rc;
+>  }
+>
+>  static int bt_bmc_remove(struct platform_device *pdev)
+> @@ -466,6 +486,8 @@ static int bt_bmc_remove(struct platform_device *pdev)
+>         misc_deregister(&bt_bmc->miscdev);
+>         if (bt_bmc->irq < 0)
+>                 del_timer_sync(&bt_bmc->poll_timer);
+> +       clk_disable_unprepare(bt_bmc->clk);
+> +
+>         return 0;
+>  }
+>
+> --
+> 2.25.1
+>
