@@ -1,58 +1,39 @@
 From: tommy-huang <tommy_huang@aspeedtech.com>
-Date: Mon, 1 Nov 2021 19:01:05 +0800
-Subject: [PATCH 2/4] ARM: dts: aspeed: ast2600-evb: Enable GFX device
-In-Reply-To: <20211101110107.29010-1-tommy_huang@aspeedtech.com>
-References: <20211101110107.29010-1-tommy_huang@aspeedtech.com>
-Message-ID: <20211101110107.29010-3-tommy_huang@aspeedtech.com>
+Date: Mon, 1 Nov 2021 19:01:03 +0800
+Subject: [PATCH 0/4] Add Aspeed AST2600 soc display support
+Message-ID: <20211101110107.29010-1-tommy_huang@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Joel Stanley <joel@jms.id.au>
+The Aspeed AST2600 soc diaplay support is added in this patch.
+Because some hw designed is changed in this version, add them 
+in this patch.
 
-Enable the GFX device with a framebuffer memory region.
+v2:
+  Remove some unnecessary patch.
+  Refine for reviwer request.
 
-Signed-off-by: Joel Stanley <joel@jms.id.au>
-Signed-off-by: tommy-huang <tommy_huang@aspeedtech.com>
----
- arch/arm/boot/dts/aspeed-ast2600-evb.dts | 18 ++++++++++++++++++
- 1 file changed, 18 insertions(+)
+v1:
+  First add patch.
 
-diff --git a/arch/arm/boot/dts/aspeed-ast2600-evb.dts b/arch/arm/boot/dts/aspeed-ast2600-evb.dts
-index b7eb552640cb..e223dad2abd0 100644
---- a/arch/arm/boot/dts/aspeed-ast2600-evb.dts
-+++ b/arch/arm/boot/dts/aspeed-ast2600-evb.dts
-@@ -23,6 +23,19 @@
- 		reg = <0x80000000 0x80000000>;
- 	};
- 
-+	reserved-memory {
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		ranges;
-+
-+		gfx_memory: framebuffer {
-+			size = <0x01000000>;
-+			alignment = <0x01000000>;
-+			compatible = "shared-dma-pool";
-+			reusable;
-+		};
-+	};
-+
- 	vcc_sdhci0: regulator-vcc-sdhci0 {
- 		compatible = "regulator-fixed";
- 		regulator-name = "SDHCI0 Vcc";
-@@ -300,3 +313,8 @@
- 	vqmmc-supply = <&vccq_sdhci1>;
- 	clk-phase-sd-hs = <7>, <200>;
- };
-+
-+&gfx {
-+	status = "okay";
-+	memory-region = <&gfx_memory>;
-+};
+Joel Stanley (2):
+  ARM: dts: aspeed: Add GFX node to AST2600
+  ARM: dts: aspeed: ast2600-evb: Enable GFX device
+
+tommy-huang (2):
+  drm/aspeed: Update INTR_STS handling
+  dt-bindings: gpu: Add ASPEED GFX bindings document
+
+ .../devicetree/bindings/gpu/aspeed-gfx.txt    |  1 +
+ arch/arm/boot/dts/aspeed-ast2600-evb.dts      | 18 +++++++++++++
+ arch/arm/boot/dts/aspeed-g6.dtsi              | 11 ++++++++
+ drivers/gpu/drm/aspeed/aspeed_gfx.h           |  2 ++
+ drivers/gpu/drm/aspeed/aspeed_gfx_drv.c       | 26 ++++++++++++++++---
+ 5 files changed, 55 insertions(+), 3 deletions(-)
+
 -- 
 2.17.1
 
