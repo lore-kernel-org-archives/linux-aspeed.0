@@ -1,60 +1,51 @@
-From: Joel Stanley <joel@jms.id.au>
-Date: Tue, 2 Nov 2021 03:28:57 +0000
-Subject: [PATCH -next 4/4] ipmi: kcs_bmc_aspeed: add clock control logic
-In-Reply-To: <HK0PR06MB3779F8E273396ED805EE5D81918B9@HK0PR06MB3779.apcprd06.prod.outlook.com>
-References: <20211101233751.49222-1-jae.hyun.yoo@intel.com>
- <20211101233751.49222-5-jae.hyun.yoo@intel.com>
- <HK0PR06MB3779F8E273396ED805EE5D81918B9@HK0PR06MB3779.apcprd06.prod.outlook.com>
-Message-ID: <CACPK8XesLdb+Cbi3ZYrOahRHbXQi3L=cQXax=RV2=PrjiPQBew@mail.gmail.com>
+From: Jammy Huang <jammy_huang@aspeedtech.com>
+Date: Tue, 2 Nov 2021 15:13:37 +0800
+Subject: [PATCH] media: aspeed: fix mode-detect always timeout at 2nd run
+Message-ID: <20211102071337.5983-1-jammy_huang@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, 2 Nov 2021 at 03:16, ChiaWei Wang <chiawei_wang@aspeedtech.com> wrote:
->
-> Hi Jae,
->
-> > From: linux-arm-kernel <linux-arm-kernel-bounces@lists.infradead.org> On
-> >
-> > From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-> >
-> > If LPC KCS driver is registered ahead of lpc-ctrl module, LPC KCS block will be
-> > enabled without heart beating of LCLK until lpc-ctrl enables the LCLK. This
-> > issue causes improper handling on host interrupts when the host sends
-> > interrupts in that time frame.
-> > Then kernel eventually forcibly disables the interrupt with dumping stack and
-> > printing a 'nobody cared this irq' message out.
-> >
-> > To prevent this issue, all LPC sub drivers should enable LCLK individually so this
-> > patch adds clock control logic into the LPC KCS driver.
->
-> Have all LPC sub drivers could result in entire LPC block down if any of them disables the clock (e.g. driver unload).
-> The LPC devices such as SIO can be used before kernel booting, even without any BMC firmware.
-> Thereby, we recommend to make LCLK critical or guarded by protected clock instead of having all LPC sub drivers hold the LCLK control.
->
-> The previous discussion for your reference:
-> https://lkml.org/lkml/2020/9/28/153
+aspeed_video_get_resolution() will try to do res-detect again if the
+timing got in last try is invalid. But it will always timeout because
+VE_SEQ_CTRL_TRIG_MODE_DET only cleared after 1st mode-detect.
 
-Please read the entire thread. The conclusion:
+To fix the problem, just clear VE_SEQ_CTRL_TRIG_MODE_DET before set in
+aspeed_video_enable_mode_detect().
 
-https://lore.kernel.org/all/CACPK8XdBmkhZ8mcSFmDAFV8k7Qj7ajBL8TVKfK8c+5aneUMHZw at mail.gmail.com/
+Signed-off-by: Jammy Huang <jammy_huang@aspeedtech.com>
+---
+ drivers/media/platform/aspeed-video.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-That is, for the devices that have a driver loaded can enable the
-clock. When they are unloaded, they will reduce the reference count
-until the last driver is unloaded. eg:
+diff --git a/drivers/media/platform/aspeed-video.c b/drivers/media/platform/aspeed-video.c
+index cd2b71c81e31..b470f4b68aa0 100644
+--- a/drivers/media/platform/aspeed-video.c
++++ b/drivers/media/platform/aspeed-video.c
+@@ -611,6 +611,10 @@ static void aspeed_video_enable_mode_detect(struct aspeed_video *video)
+ 	aspeed_video_update(video, VE_INTERRUPT_CTRL, 0,
+ 			    VE_INTERRUPT_MODE_DETECT);
+ 
++	/* Disable mode detect in order to re-trigger */
++	aspeed_video_update(video, VE_SEQ_CTRL,
++			    VE_SEQ_CTRL_TRIG_MODE_DET, 0);
++
+ 	/* Trigger mode detect */
+ 	aspeed_video_update(video, VE_SEQ_CTRL, 0, VE_SEQ_CTRL_TRIG_MODE_DET);
+ }
+@@ -930,10 +934,6 @@ static void aspeed_video_get_resolution(struct aspeed_video *video)
+ 			return;
+ 		}
+ 
+-		/* Disable mode detect in order to re-trigger */
+-		aspeed_video_update(video, VE_SEQ_CTRL,
+-				    VE_SEQ_CTRL_TRIG_MODE_DET, 0);
+-
+ 		aspeed_video_check_and_set_polarity(video);
+ 
+ 		aspeed_video_enable_mode_detect(video);
+-- 
+2.25.1
 
-https://elixir.bootlin.com/linux/latest/source/drivers/clk/clk.c#L945
-
-There was another fork to the thread, where we suggested that a
-protected clocks binding could be added:
-
-https://lore.kernel.org/all/160269577311.884498.8429245140509326318 at swboyd.mtv.corp.google.com/
-
-If you wish to use this mechanism for eg. SIO clocks, then I encourage
-Aspeed to submit a patch to do that.
-
-Cheers,
-
-Joel
