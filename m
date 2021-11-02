@@ -1,82 +1,114 @@
-From: Corey Minyard <minyard@acm.org>
-Date: Tue, 2 Nov 2021 07:22:41 -0500
-Subject: [PATCH -next 0/4] Add LCLK control into Aspeed LPC sub drivers
-In-Reply-To: <CACPK8XfBi+jY5ftLqsEVXHe01SQBNpTSwo+WtXN3=YUQnXACtw@mail.gmail.com>
+From: Cédric Le Goater <clg@kaod.org>
+Date: Tue, 2 Nov 2021 10:35:46 +0100
+Subject: [PATCH -next 2/4] ipmi: bt: add clock control logic
+In-Reply-To: <20211101233751.49222-3-jae.hyun.yoo@intel.com>
 References: <20211101233751.49222-1-jae.hyun.yoo@intel.com>
- <CACPK8XfBi+jY5ftLqsEVXHe01SQBNpTSwo+WtXN3=YUQnXACtw@mail.gmail.com>
-Message-ID: <20211102122241.GK4667@minyard.net>
+ <20211101233751.49222-3-jae.hyun.yoo@intel.com>
+Message-ID: <194999c0-e9b3-1b0d-3739-faa2b7f72391@kaod.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Nov 01, 2021 at 11:36:38PM +0000, Joel Stanley wrote:
-> On Mon, 1 Nov 2021 at 23:18, <jae.hyun.yoo@intel.com> wrote:
-> >
-> > From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-> >
-> > Hello all,
-> >
-> > This series is for appliying below fix to all Aspped LPC sub drivers.
-> > https://lore.kernel.org/all/20201208091748.1920-1-wangzhiqiang.bj at bytedance.com/
-> >
-> > An LPC sub driver can be enabled without using the lpc-ctrl driver or it
-> > can be registered ahead of lpc-ctrl depends on each system configuration and
-> > this difference introduces that LPC can be enabled without heart beating of
-> > LCLK so it causes improper handling on host interrupts when the host sends
-> > interrupts in that time frame. Then kernel eventually forcibly disables the
-> > interrupt with dumping stack and printing a 'nobody cared this irq' message
-> > out.
-> >
-> > To prevent this issue, all LPC sub drivers should enable LCLK individually
-> > so this patch adds clock control logic into the remaining Aspeed LPC sub
-> > drivers.
+On 11/2/21 00:37, jae.hyun.yoo at intel.com wrote:
+> From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
 > 
-> Thanks for sending this out!
+> If LPC BT driver is registered ahead of lpc-ctrl module, LPC BT
+> hardware block will be enabled without heart beating of LCLK until
+> lpc-ctrl enables the LCLK. This issue causes improper handling on
+> host interrupts when the host sends interrupts in that time frame.
+> Then kernel eventually forcibly disables the interrupt with
+> dumping stack and printing a 'nobody cared this irq' message out.
 > 
-> This will resolve a few of the issues we have in the issue tracker:
+> To prevent this issue, all LPC sub drivers should enable LCLK
+> individually so this patch adds clock control logic into the LPC
+> BT driver.
 > 
-> https://github.com/openbmc/linux/issues/210
-> https://github.com/openbmc/linux/issues/130
-> 
-> The patches look good to me. I think you've just missed Corey's PR for
-> v5.16, but I will stick them in the openbmc tree once they've had a
-> review.
+> Fixes: 54f9c4d0778b ("ipmi: add an Aspeed BT IPMI BMC driver")
+> Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
 
-We can still get them in to 5.16 if it's important for that; this is a
-bug fix, after all, and it's early.  I just need to know the urgency.
+LGTM,
 
-Get the Reviewed-by's in and add the bindings and I can get it into the
-next tree for a bit, then I can submit.  We may be in rc1 by then, but
-that's ok.
+Reviewed-by: C?dric Le Goater <clg@kaod.org>
 
--corey
+Thanks,
 
+C.
+
+> ---
+>   drivers/char/ipmi/bt-bmc.c | 24 +++++++++++++++++++++++-
+>   1 file changed, 23 insertions(+), 1 deletion(-)
 > 
-> Cheers,
+> diff --git a/drivers/char/ipmi/bt-bmc.c b/drivers/char/ipmi/bt-bmc.c
+> index 7450904e330a..a20f92cc7b18 100644
+> --- a/drivers/char/ipmi/bt-bmc.c
+> +++ b/drivers/char/ipmi/bt-bmc.c
+> @@ -5,6 +5,7 @@
+>   
+>   #include <linux/atomic.h>
+>   #include <linux/bt-bmc.h>
+> +#include <linux/clk.h>
+>   #include <linux/errno.h>
+>   #include <linux/interrupt.h>
+>   #include <linux/io.h>
+> @@ -62,6 +63,7 @@ struct bt_bmc {
+>   	wait_queue_head_t	queue;
+>   	struct timer_list	poll_timer;
+>   	struct mutex		mutex;
+> +	struct clk		*clk;
+>   };
+>   
+>   static atomic_t open_count = ATOMIC_INIT(0);
+> @@ -423,6 +425,19 @@ static int bt_bmc_probe(struct platform_device *pdev)
+>   	if (IS_ERR(bt_bmc->base))
+>   		return PTR_ERR(bt_bmc->base);
+>   
+> +	bt_bmc->clk = devm_clk_get(dev, NULL);
+> +	if (IS_ERR(bt_bmc->clk)) {
+> +		rc = PTR_ERR(bt_bmc->clk);
+> +		if (rc != -EPROBE_DEFER)
+> +			dev_err(dev, "Unable to get clock\n");
+> +		return rc;
+> +	}
+> +	rc = clk_prepare_enable(bt_bmc->clk);
+> +	if (rc) {
+> +		dev_err(dev, "Unable to enable clock\n");
+> +		return rc;
+> +	}
+> +
+>   	mutex_init(&bt_bmc->mutex);
+>   	init_waitqueue_head(&bt_bmc->queue);
+>   
+> @@ -433,7 +448,7 @@ static int bt_bmc_probe(struct platform_device *pdev)
+>   	rc = misc_register(&bt_bmc->miscdev);
+>   	if (rc) {
+>   		dev_err(dev, "Unable to register misc device\n");
+> -		return rc;
+> +		goto err;
+>   	}
+>   
+>   	bt_bmc_config_irq(bt_bmc, pdev);
+> @@ -457,6 +472,11 @@ static int bt_bmc_probe(struct platform_device *pdev)
+>   	clr_b_busy(bt_bmc);
+>   
+>   	return 0;
+> +
+> +err:
+> +	clk_disable_unprepare(bt_bmc->clk);
+> +
+> +	return rc;
+>   }
+>   
+>   static int bt_bmc_remove(struct platform_device *pdev)
+> @@ -466,6 +486,8 @@ static int bt_bmc_remove(struct platform_device *pdev)
+>   	misc_deregister(&bt_bmc->miscdev);
+>   	if (bt_bmc->irq < 0)
+>   		del_timer_sync(&bt_bmc->poll_timer);
+> +	clk_disable_unprepare(bt_bmc->clk);
+> +
+>   	return 0;
+>   }
+>   
 > 
-> Joel
-> 
-> >
-> > Please review this series.
-> >
-> > Thanks,
-> > Jae
-> >
-> > Jae Hyun Yoo (4):
-> >   ARM: dts: aspeed: add LCLK setting into LPC IBT node
-> >   ipmi: bt: add clock control logic
-> >   ARM: dts: aspeed: add LCLK setting into LPC KCS nodes
-> >   ipmi: kcs_bmc_aspeed: add clock control logic
-> >
-> >  arch/arm/boot/dts/aspeed-g4.dtsi   |  1 +
-> >  arch/arm/boot/dts/aspeed-g5.dtsi   |  5 +++++
-> >  arch/arm/boot/dts/aspeed-g6.dtsi   |  5 +++++
-> >  drivers/char/ipmi/bt-bmc.c         | 24 ++++++++++++++++++++++-
-> >  drivers/char/ipmi/kcs_bmc_aspeed.c | 31 ++++++++++++++++++++++++++----
-> >  5 files changed, 61 insertions(+), 5 deletions(-)
-> >
-> > --
-> > 2.25.1
-> >
+
