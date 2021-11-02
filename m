@@ -1,11 +1,10 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Wed, 03 Nov 2021 08:52:09 +1030
-Subject: [PATCH -next 3/4] ARM: dts: aspeed: add LCLK setting into LPC KCS
- nodes
-In-Reply-To: <20211101233751.49222-4-jae.hyun.yoo@intel.com>
-References: <20211101233751.49222-1-jae.hyun.yoo@intel.com>
- <20211101233751.49222-4-jae.hyun.yoo@intel.com>
-Message-ID: <372dc598-4ee0-482d-8d1a-ff34eb8cde7d@www.fastmail.com>
+Date: Wed, 03 Nov 2021 09:16:30 +1030
+Subject: [PATCH] pinctrl: aspeed: fix unmet dependencies on MFD_SYSCON for
+ PINCTRL_ASPEED
+In-Reply-To: <20211029212157.14230-1-julianbraha@gmail.com>
+References: <20211029212157.14230-1-julianbraha@gmail.com>
+Message-ID: <3fc55e2b-05cb-438d-b1cb-0d62f26c5411@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -14,12 +13,85 @@ Content-Transfer-Encoding: 7bit
 
 
 
-On Tue, 2 Nov 2021, at 10:07, jae.hyun.yoo at intel.com wrote:
-> From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+On Sat, 30 Oct 2021, at 07:51, Julian Braha wrote:
+> When PINCTRL_ASPEED_G* is selected,
+> and MFD_SYSCON is not selected,
+> Kbuild gives the following warnings:
 >
-> Add LCLK clock setting into LPC KCS nodes to enable the LCLK by
-> individual LPC sub drivers.
+> WARNING: unmet direct dependencies detected for PINCTRL_ASPEED
+>   Depends on [n]: PINCTRL [=y] && (ARCH_ASPEED [=n] || COMPILE_TEST 
+> [=y]) && OF [=y] && MFD_SYSCON [=n]
+>   Selected by [y]:
+>   - PINCTRL_ASPEED_G4 [=y] && PINCTRL [=y] && (MACH_ASPEED_G4 [=n] || 
+> COMPILE_TEST [=y]) && OF [=y]
 >
-> Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+> WARNING: unmet direct dependencies detected for PINCTRL_ASPEED
+>   Depends on [n]: PINCTRL [=y] && (ARCH_ASPEED [=n] || COMPILE_TEST 
+> [=y]) && OF [=y] && MFD_S>
+>   Selected by [y]:
+>   - PINCTRL_ASPEED_G5 [=y] && PINCTRL [=y] && (MACH_ASPEED_G5 [=n] || 
+> COMPILE_TEST [=y]) && O>
+>
+> WARNING: unmet direct dependencies detected for PINCTRL_ASPEED
+>   Depends on [n]: PINCTRL [=y] && (ARCH_ASPEED [=n] || COMPILE_TEST 
+> [=y]) && OF [=y] && MFD_S>
+>   Selected by [y]:
+>   - PINCTRL_ASPEED_G6 [=y] && PINCTRL [=y] && (MACH_ASPEED_G6 [=n] || 
+> COMPILE_TEST [=y]) && O>
+>
+> This is because PINCTRL_ASPEED_G* selects PINCTRL_ASPEED,
+> without selecting or depending on MFD_SYSCON, despite
+> PINCTRL_ASPEED depending on MFD_SYSCON.
+>
+> These unmet dependency bugs were detected by Kismet,
+> a static analysis tool for Kconfig. Please advise
+> if this is not the appropriate solution.
+>
+> Signed-off-by: Julian Braha <julianbraha@gmail.com>
 
-Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
+From a system-level perspective MFD_SYSCON is selected by ARCH_ASPEED, 
+then the MACH_ASPEED_G* symbols depend on ARCH_ASPEED.
+
+However, that doesn't help the COMPILE_TEST case, so we need some 
+solution. Since MFD_SYSCON is required by all the relevant drivers and 
+the aspeed pinctrl core, maybe it would be best just to add as a select to 
+PINCTRL_ASPEED? Unless there's an argument for depends instead?
+
+Thanks for the patch and report!
+
+Andrew
+
+> ---
+>  drivers/pinctrl/aspeed/Kconfig | 3 +++
+>  1 file changed, 3 insertions(+)
+>
+> diff --git a/drivers/pinctrl/aspeed/Kconfig b/drivers/pinctrl/aspeed/Kconfig
+> index de8b185c4fee..b0bae6144fc2 100644
+> --- a/drivers/pinctrl/aspeed/Kconfig
+> +++ b/drivers/pinctrl/aspeed/Kconfig
+> @@ -11,6 +11,7 @@ config PINCTRL_ASPEED
+>  config PINCTRL_ASPEED_G4
+>  	bool "Aspeed G4 SoC pin control"
+>  	depends on (MACH_ASPEED_G4 || COMPILE_TEST) && OF
+> +	depends on MFD_SYSCON
+>  	select PINCTRL_ASPEED
+>  	help
+>  	  Say Y here to enable pin controller support for Aspeed's 4th
+> @@ -19,6 +20,7 @@ config PINCTRL_ASPEED_G4
+>  config PINCTRL_ASPEED_G5
+>  	bool "Aspeed G5 SoC pin control"
+>  	depends on (MACH_ASPEED_G5 || COMPILE_TEST) && OF
+> +	depends on MFD_SYSCON
+>  	select PINCTRL_ASPEED
+>  	help
+>  	  Say Y here to enable pin controller support for Aspeed's 5th
+> @@ -27,6 +29,7 @@ config PINCTRL_ASPEED_G5
+>  config PINCTRL_ASPEED_G6
+>  	bool "Aspeed G6 SoC pin control"
+>  	depends on (MACH_ASPEED_G6 || COMPILE_TEST) && OF
+> +	depends on MFD_SYSCON
+>  	select PINCTRL_ASPEED
+>  	help
+>  	  Say Y here to enable pin controller support for Aspeed's 6th
+> -- 
+> 2.30.2
