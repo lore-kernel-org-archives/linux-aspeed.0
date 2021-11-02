@@ -1,93 +1,89 @@
 From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-Date: Tue, 2 Nov 2021 09:35:31 -0700
-Subject: [PATCH -next 4/4] ipmi: kcs_bmc_aspeed: add clock control logic
-In-Reply-To: <CACPK8XesLdb+Cbi3ZYrOahRHbXQi3L=cQXax=RV2=PrjiPQBew@mail.gmail.com>
+Date: Tue, 2 Nov 2021 09:38:24 -0700
+Subject: [PATCH -next 0/4] Add LCLK control into Aspeed LPC sub drivers
+In-Reply-To: <20211102122241.GK4667@minyard.net>
 References: <20211101233751.49222-1-jae.hyun.yoo@intel.com>
- <20211101233751.49222-5-jae.hyun.yoo@intel.com>
- <HK0PR06MB3779F8E273396ED805EE5D81918B9@HK0PR06MB3779.apcprd06.prod.outlook.com>
- <CACPK8XesLdb+Cbi3ZYrOahRHbXQi3L=cQXax=RV2=PrjiPQBew@mail.gmail.com>
-Message-ID: <edaeb540-aa31-d143-4320-cb2a73f0070f@linux.intel.com>
+ <CACPK8XfBi+jY5ftLqsEVXHe01SQBNpTSwo+WtXN3=YUQnXACtw@mail.gmail.com>
+ <20211102122241.GK4667@minyard.net>
+Message-ID: <3ad1f139-1951-b99e-3df0-4a34a2044809@linux.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 11/1/2021 8:28 PM, Joel Stanley wrote:
-> On Tue, 2 Nov 2021 at 03:16, ChiaWei Wang <chiawei_wang@aspeedtech.com> wrote:
->>
->> Hi Jae,
->>
->>> From: linux-arm-kernel <linux-arm-kernel-bounces@lists.infradead.org> On
+On 11/2/2021 5:22 AM, Corey Minyard wrote:
+> On Mon, Nov 01, 2021 at 11:36:38PM +0000, Joel Stanley wrote:
+>> On Mon, 1 Nov 2021 at 23:18, <jae.hyun.yoo@intel.com> wrote:
 >>>
 >>> From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
 >>>
->>> If LPC KCS driver is registered ahead of lpc-ctrl module, LPC KCS block will be
->>> enabled without heart beating of LCLK until lpc-ctrl enables the LCLK. This
->>> issue causes improper handling on host interrupts when the host sends
->>> interrupts in that time frame.
->>> Then kernel eventually forcibly disables the interrupt with dumping stack and
->>> printing a 'nobody cared this irq' message out.
+>>> Hello all,
 >>>
->>> To prevent this issue, all LPC sub drivers should enable LCLK individually so this
->>> patch adds clock control logic into the LPC KCS driver.
+>>> This series is for appliying below fix to all Aspped LPC sub drivers.
+>>> https://lore.kernel.org/all/20201208091748.1920-1-wangzhiqiang.bj at bytedance.com/
+>>>
+>>> An LPC sub driver can be enabled without using the lpc-ctrl driver or it
+>>> can be registered ahead of lpc-ctrl depends on each system configuration and
+>>> this difference introduces that LPC can be enabled without heart beating of
+>>> LCLK so it causes improper handling on host interrupts when the host sends
+>>> interrupts in that time frame. Then kernel eventually forcibly disables the
+>>> interrupt with dumping stack and printing a 'nobody cared this irq' message
+>>> out.
+>>>
+>>> To prevent this issue, all LPC sub drivers should enable LCLK individually
+>>> so this patch adds clock control logic into the remaining Aspeed LPC sub
+>>> drivers.
 >>
->> Have all LPC sub drivers could result in entire LPC block down if any of them disables the clock (e.g. driver unload).
->> The LPC devices such as SIO can be used before kernel booting, even without any BMC firmware.
->> Thereby, we recommend to make LCLK critical or guarded by protected clock instead of having all LPC sub drivers hold the LCLK control.
+>> Thanks for sending this out!
 >>
->> The previous discussion for your reference:
->> https://lkml.org/lkml/2020/9/28/153
+>> This will resolve a few of the issues we have in the issue tracker:
+>>
+>> https://github.com/openbmc/linux/issues/210
+>> https://github.com/openbmc/linux/issues/130
+>>
+>> The patches look good to me. I think you've just missed Corey's PR for
+>> v5.16, but I will stick them in the openbmc tree once they've had a
+>> review.
 > 
-> Please read the entire thread. The conclusion:
+> We can still get them in to 5.16 if it's important for that; this is a
+> bug fix, after all, and it's early.  I just need to know the urgency.
 > 
-> https://lore.kernel.org/all/CACPK8XdBmkhZ8mcSFmDAFV8k7Qj7ajBL8TVKfK8c+5aneUMHZw at mail.gmail.com/
-> 
-> That is, for the devices that have a driver loaded can enable the
-> clock. When they are unloaded, they will reduce the reference count
-> until the last driver is unloaded. eg:
-> 
-> https://elixir.bootlin.com/linux/latest/source/drivers/clk/clk.c#L945
-> 
-> There was another fork to the thread, where we suggested that a
-> protected clocks binding could be added:
-> 
-> https://lore.kernel.org/all/160269577311.884498.8429245140509326318 at swboyd.mtv.corp.google.com/
-> 
-> If you wish to use this mechanism for eg. SIO clocks, then I encourage
-> Aspeed to submit a patch to do that.
+> Get the Reviewed-by's in and add the bindings and I can get it into the
+> next tree for a bit, then I can submit.  We may be in rc1 by then, but
+> that's ok.
 
-We are revisiting the aged discussion. Thanks for bringing it back.
+Thanks Corey! I'll submit v2 soon.
 
-I agree with Joel that a clock should be enabled only on systems that
-need the clock actually so it should be configurable by a device driver
-or through device tree setting,?not by the static setting in
-clk-ast2600.c code. So that's the reason why I stopped upstreaming below
-change for making BCLK as a critical clock.
-
-https://www.spinics.net/lists/linux-clk/msg44836.html
-
-Instead, I submitted these two changes to make it configurable through
-device tree setting.
-
-https://lists.ozlabs.org/pipermail/linux-aspeed/2020-January/003394.html
-https://lists.ozlabs.org/pipermail/linux-aspeed/2020-January/003339.html
-
-But these were not accepted too.
-
-And recently, Samuel introduced a better and more generic way.
-
-https://lore.kernel.org/all/20200903040015.5627-2-samuel at sholland.org/
-
-But it's not accepted?yet either.
-
-
-Chiawei,
-
-Please refine the mechanism and submit a change to make SIO clocks
-configurable through device tree setting. I believe?that we can keep
-this patch series even with the change, or it can be modified and
-adjusted if needed after the SIO clocks fix is accepted.
-
-Thanks,
 Jae
+
+> 
+> -corey
+> 
+>>
+>> Cheers,
+>>
+>> Joel
+>>
+>>>
+>>> Please review this series.
+>>>
+>>> Thanks,
+>>> Jae
+>>>
+>>> Jae Hyun Yoo (4):
+>>>    ARM: dts: aspeed: add LCLK setting into LPC IBT node
+>>>    ipmi: bt: add clock control logic
+>>>    ARM: dts: aspeed: add LCLK setting into LPC KCS nodes
+>>>    ipmi: kcs_bmc_aspeed: add clock control logic
+>>>
+>>>   arch/arm/boot/dts/aspeed-g4.dtsi   |  1 +
+>>>   arch/arm/boot/dts/aspeed-g5.dtsi   |  5 +++++
+>>>   arch/arm/boot/dts/aspeed-g6.dtsi   |  5 +++++
+>>>   drivers/char/ipmi/bt-bmc.c         | 24 ++++++++++++++++++++++-
+>>>   drivers/char/ipmi/kcs_bmc_aspeed.c | 31 ++++++++++++++++++++++++++----
+>>>   5 files changed, 61 insertions(+), 5 deletions(-)
+>>>
+>>> --
+>>> 2.25.1
+>>>
