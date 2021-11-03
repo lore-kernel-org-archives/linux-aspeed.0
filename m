@@ -1,126 +1,117 @@
-From: Patrick Williams <patrick@stwcx.xyz>
-Date: Wed, 3 Nov 2021 09:20:36 -0500
-Subject: [PATCH v1] ARM: dts: aspeed: Adding Facebook Bletchley BMC
-In-Reply-To: <20211103071417.388388-1-howard.chiu@quantatw.com>
-References: <20211103071417.388388-1-howard.chiu@quantatw.com>
-Message-ID: <YYKatBCCroiYxLew@heinlein>
+From: Kumar Thangavel <kumarthangavel.hcl@gmail.com>
+Date: Wed, 3 Nov 2021 20:41:56 +0530
+Subject: [PATCH v4] Add payload to be 32-bit aligned to fix dropped packets
+In-Reply-To: <20211028095047.GA15236@gmail.com>
+References: <20211028095047.GA15236@gmail.com>
+Message-ID: <CAA7TbctGtHBuVOsamFH1sQq_C5BvtsRyCM+b0Z7W=fS_eb8ATA@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello Howard,
+Hi All,
 
-Thanks for supplying this.  I have a few comments below.
+    Could you please review the patch and provide your feedback?
 
-On Wed, Nov 03, 2021 at 03:14:18PM +0800, Howard Chiu wrote:
-> Initial introduction of Facebook Bletchley equipped with
-> Aspeed 2600 BMC SoC.
-> 
-> Signed-off-by: Howard Chiu <howard.chiu@quantatw.com>
+Thanks,
+Kumar.
+
+On Thu, Oct 28, 2021 at 3:20 PM Kumar Thangavel <
+kumarthangavel.hcl@gmail.com> wrote:
+
+> Update NC-SI command handler (both standard and OEM) to take into
+> account of payload paddings in allocating skb (in case of payload
+> size is not 32-bit aligned).
+>
+> The checksum field follows payload field, without taking payload
+> padding into account can cause checksum being truncated, leading to
+> dropped packets.
+>
+> Signed-off-by: Kumar Thangavel <thangavel.k@hcl.com>
+> Acked-by: Samuel Mendoza-Jonas <sam@mendozajonas.com>
+> Reviewed-by: Paul Menzel <pmenzel@molgen.mpg.de>
+>
 > ---
->  arch/arm/boot/dts/Makefile                    |    1 +
->  .../dts/aspeed-bmc-facebook-bletchley.dts     | 1160 +++++++++++++++++
->  2 files changed, 1161 insertions(+)
->  create mode 100644 arch/arm/boot/dts/aspeed-bmc-facebook-bletchley.dts
-> 
-> diff --git a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
-> index 7e0934180724..2cc2d804e75a 100644
-> --- a/arch/arm/boot/dts/Makefile
-> +++ b/arch/arm/boot/dts/Makefile
-> @@ -1474,6 +1474,7 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
->  	aspeed-bmc-facebook-wedge400.dtb \
->  	aspeed-bmc-facebook-yamp.dtb \
->  	aspeed-bmc-facebook-yosemitev2.dtb \
-> +	aspeed-bmc-facebook-bletchley.dtb \
->  	aspeed-bmc-ibm-everest.dtb \
->  	aspeed-bmc-ibm-rainier.dtb \
->  	aspeed-bmc-ibm-rainier-1s4u.dtb \
-
-I believe the preference is to keep these sorted.
-
-> diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-bletchley.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-bletchley.dts
-> new file mode 100644
-> index 000000000000..af30be95fb23
-> --- /dev/null
-> +++ b/arch/arm/boot/dts/aspeed-bmc-facebook-bletchley.dts
-
-> +
-> +	chosen {
-> +		bootargs = "console=ttyS4,115200n8";
-> +	};
-
-Do we want this to be 115200 or 57600?
-
-> +		fan1_ember {
-> +			retain-state-shutdown;
-> +			default-state = "off";
-> +			gpios = <&fan_ioexp 13 GPIO_ACTIVE_HIGH>;
-
-I see a number of references to 'ember'/'EMBER'.  I think the intention is
-'amber'.
-
-    amber: a honey-yellow color typical of amber 
-           or a yellow light used as a cautionary signal
-
-    ember: a small piece of burning or glowing coal or wood in a dying fire.
-
-
-> +&fmc {
-> +	status = "okay";
-> +	flash at 0 {
-> +		status = "okay";
-> +		m25p,fast-read;
-> +		label = "bmc";
-> +		spi-max-frequency = <50000000>;
-> +#include "openbmc-flash-layout-64.dtsi"
-
-Is this board using 64MB or 128MB modules?  Many of the newer systems have been
-starting to use 128MB.  I just want to confirm this is correct.
-
-> +	sled0_ioexp: pca9539 at 76 {
-> +		compatible = "nxp,pca9539";
-> +		reg = <0x76>;
-> +		#address-cells = <1>;
-> +		#size-cells = <0>;
-> +		gpio-controller;
-> +		#gpio-cells = <2>;
-> +
-> +		gpio-line-names =
-> +		"","SLED0_BMC_CCG5_INT","SLED0_INA230_ALERT","SLED0_P12V_STBY_ALERT",
-> +		"SLED0_SSD_ALERT","SLED0_MS_DETECT","SLED0_MD_REF_PWM","",
-> +		"SLED0_MD_STBY_RESET","SLED0_MD_IOEXP_EN_FAULT","SLED0_MD_DIR","SLED0_MD_DECAY",
-> +		"SLED0_MD_MODE1","SLED0_MD_MODE2","SLED0_MD_MODE3","SLED0_AC_PWR_EN";
-
-In general, in OpenBMC, we have a preference for the GPIOs to not be schematic
-names but to be named based on their [software-oriented] function.  Please take
-a look at:
-
-    https://github.com/openbmc/docs/blob/master/designs/device-tree-gpio-naming.md
-
-Any function you see that isn't documented there we should try to get documented
-before fixing the GPIO name to match it.
-
-> +		gpio-line-names =
-> +		"SLED0_EMBER_LED","SLED0_BLUE_LED","SLED0_RST_IOEXP","",
-
-The LEDs are ones I know are already documented in the above linked file.
-
-> +&i2c13 {
-> +	multi-master;
-> +	aspeed,hw-timeout-ms = <1000>;
-> +	status = "okay";
-> +};
-
-Was this intentional to have defined a multi-master bus with nothing on it?
-
--- 
-Patrick Williams
+>   v4:
+>    - Updated existing macro for max function
+>
+>   v3:
+>    - Added Macro for MAX
+>    - Fixed the missed semicolon
+>
+>   v2:
+>    - Added NC-SI spec version and section
+>    - Removed blank line
+>    - corrected spellings
+>
+>   v1:
+>    - Initial draft
+>
+> ---
+>  net/ncsi/ncsi-cmd.c | 21 +++++++++++++--------
+>  1 file changed, 13 insertions(+), 8 deletions(-)
+>
+> diff --git a/net/ncsi/ncsi-cmd.c b/net/ncsi/ncsi-cmd.c
+> index ba9ae482141b..e44fe138c20f 100644
+> --- a/net/ncsi/ncsi-cmd.c
+> +++ b/net/ncsi/ncsi-cmd.c
+> @@ -213,12 +213,16 @@ static int ncsi_cmd_handler_oem(struct sk_buff *skb,
+>  {
+>         struct ncsi_cmd_oem_pkt *cmd;
+>         unsigned int len;
+> +       /* NC-SI spec DSP_0222_1.2.0, section 8.2.2.2
+> +        * requires payload to be padded with 0 to
+> +        * 32-bit boundary before the checksum field.
+> +        * Ensure the padding bytes are accounted for in
+> +        * skb allocation
+> +        */
+>
+> +       unsigned short payload = ALIGN(nca->payload, 4);
+>         len = sizeof(struct ncsi_cmd_pkt_hdr) + 4;
+> -       if (nca->payload < 26)
+> -               len += 26;
+> -       else
+> -               len += nca->payload;
+> +       len += max(payload, 26);
+>
+>         cmd = skb_put_zero(skb, len);
+>         memcpy(&cmd->mfr_id, nca->data, nca->payload);
+> @@ -272,6 +276,7 @@ static struct ncsi_request *ncsi_alloc_command(struct
+> ncsi_cmd_arg *nca)
+>         struct net_device *dev = nd->dev;
+>         int hlen = LL_RESERVED_SPACE(dev);
+>         int tlen = dev->needed_tailroom;
+> +       int payload;
+>         int len = hlen + tlen;
+>         struct sk_buff *skb;
+>         struct ncsi_request *nr;
+> @@ -281,14 +286,14 @@ static struct ncsi_request
+> *ncsi_alloc_command(struct ncsi_cmd_arg *nca)
+>                 return NULL;
+>
+>         /* NCSI command packet has 16-bytes header, payload, 4 bytes
+> checksum.
+> +        * Payload needs padding so that the checksum field following
+> payload is
+> +        * aligned to 32-bit boundary.
+>          * The packet needs padding if its payload is less than 26 bytes to
+>          * meet 64 bytes minimal ethernet frame length.
+>          */
+>         len += sizeof(struct ncsi_cmd_pkt_hdr) + 4;
+> -       if (nca->payload < 26)
+> -               len += 26;
+> -       else
+> -               len += nca->payload;
+> +       payload = ALIGN(nca->payload, 4);
+> +       len += max(payload, 26);
+>
+>         /* Allocate skb */
+>         skb = alloc_skb(len, GFP_ATOMIC);
+> --
+> 2.17.1
+>
+>
 -------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 833 bytes
-Desc: not available
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20211103/bb996475/attachment.sig>
+An HTML attachment was scrubbed...
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20211103/ab2594b0/attachment-0001.htm>
