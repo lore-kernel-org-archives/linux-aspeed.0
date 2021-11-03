@@ -1,28 +1,29 @@
-From: Jakub Kicinski <kuba@kernel.org>
-Date: Wed, 3 Nov 2021 09:16:20 -0700
-Subject: [PATCH v4] Add payload to be 32-bit aligned to fix dropped packets
-In-Reply-To: <CAA7Tbcu7rOxhP45m0tkQBKWxUFGwtQ3Z485wyCtS-wVaTtq2=g@mail.gmail.com>
-References: <20211028095047.GA15236@gmail.com>
- <CAA7TbctGtHBuVOsamFH1sQq_C5BvtsRyCM+b0Z7W=fS_eb8ATA@mail.gmail.com>
- <20211103084939.04f6813f@kicinski-fedora-PC1C0HJN>
- <CAA7Tbcu7rOxhP45m0tkQBKWxUFGwtQ3Z485wyCtS-wVaTtq2=g@mail.gmail.com>
-Message-ID: <20211103091620.718b4e11@kicinski-fedora-PC1C0HJN>
+From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+Date: Wed, 3 Nov 2021 09:15:50 -0700
+Subject: [PATCH -next 3/4] ARM: dts: aspeed: add LCLK setting into LPC KCS
+ nodes
+In-Reply-To: <372dc598-4ee0-482d-8d1a-ff34eb8cde7d@www.fastmail.com>
+References: <20211101233751.49222-1-jae.hyun.yoo@intel.com>
+ <20211101233751.49222-4-jae.hyun.yoo@intel.com>
+ <372dc598-4ee0-482d-8d1a-ff34eb8cde7d@www.fastmail.com>
+Message-ID: <2aeffcdf-0bb7-98f1-5d4e-909b7d86c44a@linux.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 3 Nov 2021 21:43:03 +0530 Kumar Thangavel wrote:
-> Hi Jakub,
+On 11/2/2021 3:22 PM, Andrew Jeffery wrote:
 > 
-> Thanks for your response.
 > 
-> Somehow, My mails are not delivered to netdev at vger.kernel.org.
+> On Tue, 2 Nov 2021, at 10:07, jae.hyun.yoo at intel.com wrote:
+>> From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+>>
+>> Add LCLK clock setting into LPC KCS nodes to enable the LCLK by
+>> individual LPC sub drivers.
+>>
+>> Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
 > 
-> So, I removed it in my last 2 patchsets.
-> 
-> I will try again to CCing netdev at vger.kernel.org.
+> Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
 
-For normal replies you need to use plain text, not HTML. The mailing
-list rejects HTML emails. But the patch should go thru, we'll see.
+Thanks Andrew for your review!
