@@ -1,53 +1,35 @@
-From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-Date: Wed, 3 Nov 2021 16:32:49 -0700
-Subject: [PATCH] soc: aspeed: lpc-ctrl: Block error printing on probe
- defer cases
-In-Reply-To: <7e0bcb8b36bd6af1cadd30a18bf5e28d48b80c0c.camel@intel.com>
-References: <20211103215430.192229-1-jae.hyun.yoo@intel.com>
- <7e0bcb8b36bd6af1cadd30a18bf5e28d48b80c0c.camel@intel.com>
-Message-ID: <659f5704-6492-351d-94e3-2790e4b1748c@linux.intel.com>
+From: Zev Weiss <zev@bewilderbeest.net>
+Date: Wed, 3 Nov 2021 18:48:32 -0700
+Subject: [PATCH -next 0/4] Add LCLK control into Aspeed LPC sub drivers
+In-Reply-To: <768252cc-2466-3b4b-9087-549b83e00a81@linux.intel.com>
+References: <20211101233751.49222-1-jae.hyun.yoo@intel.com>
+ <CACPK8XfBi+jY5ftLqsEVXHe01SQBNpTSwo+WtXN3=YUQnXACtw@mail.gmail.com>
+ <YYHSHoELvKRI4Zh1@hatter.bewilderbeest.net>
+ <d2a18e3b-cb02-37b5-cad8-45c3e8ff3bb4@linux.intel.com>
+ <YYHYMKDD7hz15ceR@hatter.bewilderbeest.net>
+ <63678f47-8b4a-1385-a755-bc7c2316ca0d@linux.intel.com>
+ <YYHhMGm4C0srTW1x@hatter.bewilderbeest.net>
+ <768252cc-2466-3b4b-9087-549b83e00a81@linux.intel.com>
+Message-ID: <YYM78OxYMYwiFzWD@hatter.bewilderbeest.net>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 11/3/2021 4:05 PM, Winiarska, Iwona wrote:
-> On Wed, 2021-11-03 at 14:54 -0700, jae.hyun.yoo at intel.com wrote:
->> From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
->>
->> Add a checking code when it gets -EPROBE_DEFER while getting a clock
->> resource. In this case, it doesn't need to print out an error message
->> because the probing will be re-visited.
->>
->> Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
->> ---
->>  ?drivers/soc/aspeed/aspeed-lpc-ctrl.c | 6 ++++--
->>  ?1 file changed, 4 insertions(+), 2 deletions(-)
->>
->> diff --git a/drivers/soc/aspeed/aspeed-lpc-ctrl.c b/drivers/soc/aspeed/aspeed-
->> lpc-ctrl.c
->> index 72771e018c42..e2262dbc7cf6 100644
->> --- a/drivers/soc/aspeed/aspeed-lpc-ctrl.c
->> +++ b/drivers/soc/aspeed/aspeed-lpc-ctrl.c
->> @@ -307,8 +307,10 @@ static int aspeed_lpc_ctrl_probe(struct platform_device
->> *pdev)
->>   
->>  ????????lpc_ctrl->clk = devm_clk_get(dev, NULL);
->>  ????????if (IS_ERR(lpc_ctrl->clk)) {
->> -???????????????dev_err(dev, "couldn't get clock\n");
->> -???????????????return PTR_ERR(lpc_ctrl->clk);
->> +???????????????rc = PTR_ERR(lpc_ctrl->clk);
->> +???????????????if (rc != -EPROBE_DEFER)
->> +???????????????????????dev_err(dev, "couldn't get clock\n");
->> +???????????????return rc;
->>  ????????}
->>  ????????rc = clk_prepare_enable(lpc_ctrl->clk);
->>  ????????if (rc) {
-> 
-> This pattern should be handled using dev_err_probe()
+On Wed, Nov 03, 2021 at 08:56:10AM PDT, Jae Hyun Yoo wrote:
+>
+>Hi Zev,
+>
+>Not sure but looks like one of LPC functions is enabled while kernel
+>booting. 
+>
 
-Yes, that is a neater way. Will fix it using dev_err_probe().
+Looks like that was exactly the clue I needed -- obvious in retrospect, 
+but I realize now that I'm only seeing this happen when I bypass the 
+normal shutdown sequence via 'reboot -f'; with a plain 'reboot' I don't 
+hit any problems.  Can you reproduce it that way?
 
-Thanks,
-Jae
+
+Zev
+
