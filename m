@@ -1,54 +1,27 @@
 From: Oskar Senft <osk@google.com>
-Date: Thu,  4 Nov 2021 20:59:55 -0400
-Subject: [PATCH v2] ARM: dts: aspeed: tyan-s7106: Update nct7802 config
-Message-ID: <20211105005955.107419-1-osk@google.com>
+Date: Thu, 4 Nov 2021 21:01:35 -0400
+Subject: [PATCH] ARM: dts: aspeed: tyan-s7106: Update nct7802 config
+In-Reply-To: <CACPK8XfXuU4i4khbpo8rxqxT9zz021N_m=s8uinoT+nHbCa_Yg@mail.gmail.com>
+References: <20211104210914.4160448-1-osk@google.com>
+ <CACPK8XfXuU4i4khbpo8rxqxT9zz021N_m=s8uinoT+nHbCa_Yg@mail.gmail.com>
+Message-ID: <CABoTLcQkds=-RjoY+fTVKyR1r+7Axb2-kFC7DiqMcEQTtJgk6g@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This change updates the configuration for the nct7802 hardware
-monitor to correctly configure its temperature sensors.
+Hi Joel
 
-Signed-off-by: Oskar Senft <osk@google.com>
----
-Changes from PATCH v1:
-- Removed superfluous "status" from channels.
----
- arch/arm/boot/dts/aspeed-bmc-tyan-s7106.dts | 19 +++++++++++++++++++
- 1 file changed, 19 insertions(+)
+> > +               channel at 0 { /* LTD */
+> > +                       reg = <0>;
+> > +                       status = "okay";
+>
+> The status = "okay" should be redundant; as long as  you don't specify
+> a status, a node is assumed to be enabled.
 
-diff --git a/arch/arm/boot/dts/aspeed-bmc-tyan-s7106.dts b/arch/arm/boot/dts/aspeed-bmc-tyan-s7106.dts
-index 68f332ee1886..66734e4e2ea1 100644
---- a/arch/arm/boot/dts/aspeed-bmc-tyan-s7106.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-tyan-s7106.dts
-@@ -213,6 +213,25 @@ &i2c0 {
- 	nct7802 at 28 {
- 		compatible = "nuvoton,nct7802";
- 		reg = <0x28>;
-+		channel at 0 { /* LTD */
-+			reg = <0>;
-+		};
-+		channel at 1 { /* RTD1 */
-+			reg = <1>;
-+			sensor-type = "temperature";
-+			temperature-mode = "thermistor";
-+		};
-+
-+		channel at 2 { /* RTD2 */
-+			reg = <2>;
-+			sensor-type = "temperature";
-+			temperature-mode = "thermistor";
-+		};
-+
-+		channel at 3 { /* RTD3 */
-+			reg = <3>;
-+			sensor-type = "temperature";
-+		};
- 	};
- 
- 	/* Also connected to:
--- 
-2.34.0.rc0.344.g81b53c2807-goog
+My apologies! I know you mentioned something similar for the DTS
+binding patch. I didn't realize that this was a generic statement,
+rather than limited to the example in the binding. Fixed in PATCH v2.
 
+Oskar.
