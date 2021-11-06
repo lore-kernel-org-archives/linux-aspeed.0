@@ -1,65 +1,98 @@
-From: Daniel Vetter <daniel@ffwll.ch>
-Date: Fri, 5 Nov 2021 18:59:11 +0100
-Subject: [PATCH 2/2] drm: Remove CONFIG_DRM_KMS_CMA_HELPER option
-In-Reply-To: <202111012344.tYv3YxkG-lkp@intel.com>
-References: <20211101081751.24613-3-tzimmermann@suse.de>
- <202111012344.tYv3YxkG-lkp@intel.com>
-Message-ID: <YYVw70934dYhyGVZ@phenom.ffwll.local>
+From: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
+Date: Sat, 6 Nov 2021 10:01:23 +0000
+Subject: [PATCH 02/10] sdhci: aspeed: Add SDR50 support
+In-Reply-To: <125453f3-55d5-4b2a-afe8-6e76b268ce01@www.fastmail.com>
+References: <20210922103116.30652-1-chin-ting_kuo@aspeedtech.com>
+ <20210922103116.30652-3-chin-ting_kuo@aspeedtech.com>
+ <125453f3-55d5-4b2a-afe8-6e76b268ce01@www.fastmail.com>
+Message-ID: <HK0PR06MB27868D14ED8DF7550246674CB28F9@HK0PR06MB2786.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Nov 01, 2021 at 11:59:15PM +0800, kernel test robot wrote:
-> Hi Thomas,
-> 
-> I love your patch! Yet something to improve:
-> 
-> [auto build test ERROR on next-20211029]
-> [cannot apply to drm/drm-next shawnguo/for-next pinchartl-media/drm/du/next v5.15 v5.15-rc7 v5.15-rc6 v5.15]
-> [If your patch is applied to the wrong git tree, kindly drop us a note.
-> And when submitting patch, we suggest to use '--base' as documented in
-> https://git-scm.com/docs/git-format-patch]
-> 
-> url:    https://github.com/0day-ci/linux/commits/Thomas-Zimmermann/drm-Small-CMA-cleanups/20211101-161911
-> base:    bdcc9f6a568275aed4cc32fd2312432d2ff1b704
-> config: x86_64-randconfig-a004-20211101 (attached as .config)
-> compiler: clang version 14.0.0 (https://github.com/llvm/llvm-project 82ed106567063ea269c6d5669278b733e173a42f)
-> reproduce (this is a W=1 build):
->         wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
->         chmod +x ~/bin/make.cross
->         # https://github.com/0day-ci/linux/commit/c3c7ec5f9ccd90e78f0f2d3143505db4060bbf17
->         git remote add linux-review https://github.com/0day-ci/linux
->         git fetch --no-tags linux-review Thomas-Zimmermann/drm-Small-CMA-cleanups/20211101-161911
->         git checkout c3c7ec5f9ccd90e78f0f2d3143505db4060bbf17
->         # save the attached .config to linux build tree
->         mkdir build_dir
->         COMPILER_INSTALL_PATH=$HOME/0day COMPILER=clang make.cross W=1 O=build_dir ARCH=x86_64 SHELL=/bin/bash
-> 
-> If you fix the issue, kindly add following tag as appropriate
-> Reported-by: kernel test robot <lkp@intel.com>
-> 
-> All errors (new ones prefixed by >>, old ones prefixed by <<):
-> 
-> >> ERROR: modpost: module drm_cma_helper uses symbol dma_buf_vmap from namespace DMA_BUF, but does not import it.
-> >> ERROR: modpost: module drm_cma_helper uses symbol dma_buf_vunmap from namespace DMA_BUF, but does not import it.
+Hi Andrew,
 
-I guess this is simply because kbuild tests on top of linux-next, where
-the namespacing is a bit funny. We might need a fixup when we backmerge.
+Thanks for the review.
 
-Either way this looks like a good simplification to me, on the series:
+> -----Original Message-----
+> From: Andrew Jeffery <andrew@aj.id.au>
+> Sent: Tuesday, October 26, 2021 8:31 AM
+> Subject: Re: [PATCH 02/10] sdhci: aspeed: Add SDR50 support
+> 
+> Hi Chin-Ting,
+> 
+> Sorry for the delay in looking at your series.
+> 
+> On Wed, 22 Sep 2021, at 20:01, Chin-Ting Kuo wrote:
+> > From the analog waveform analysis result, SD/SDIO controller of
+> > AST2600 cannot always work well with 200MHz. The upper bound stable
+> > frequency for SD/SDIO controller is 100MHz. Thus, SDR50 supported bit,
+> > instead of SDR104, in capability 2 register should be set in advance.
+> >
+> > Signed-off-by: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
+> > ---
+> >  drivers/mmc/host/sdhci-of-aspeed.c | 8 ++++++++
+> >  1 file changed, 8 insertions(+)
+> >
+> > diff --git a/drivers/mmc/host/sdhci-of-aspeed.c
+> > b/drivers/mmc/host/sdhci-of-aspeed.c
+> > index 6e4e132903a6..c6eaeb02e3f9 100644
+> > --- a/drivers/mmc/host/sdhci-of-aspeed.c
+> > +++ b/drivers/mmc/host/sdhci-of-aspeed.c
+> > @@ -35,6 +35,8 @@
+> >  #define ASPEED_SDC_CAP1_1_8V           (0 * 32 + 26)
+> >  /* SDIO{14,24} */
+> >  #define ASPEED_SDC_CAP2_SDR104         (1 * 32 + 1)
+> > +/* SDIO{14,24} */
+> 
+> I don't think we need to duplicate this comment.
 
-Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+Okay, it will be modified in the next patch version.
 
 > 
-> ---
-> 0-DAY CI Kernel Test Service, Intel Corporation
-> https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+> > +#define ASPEED_SDC_CAP2_SDR50          (1 * 32 + 0)
+> 
+> Can we keep the defines in increasing bit order (i.e. put
+> ASPEED_SDC_CAP2_SDR50 above ASPEED_SDC_CAP2_SDR104)?
+> 
 
+Okay.
 
+> >
+> >  struct aspeed_sdc {
+> >  	struct clk *clk;
+> > @@ -410,11 +412,17 @@ static int aspeed_sdhci_probe(struct
+> > platform_device *pdev)
+> >  	sdhci_get_of_property(pdev);
+> >
+> >  	if (of_property_read_bool(np, "mmc-hs200-1_8v") ||
+> > +		of_property_read_bool(np, "sd-uhs-sdr50") ||
+> 
+> Minor formatting issue, but can you make sure all the conditions are aligned
+> vertically from the left?
+> 
 
--- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch
+It will also be updated in the next patch version.
+
+> >  	    of_property_read_bool(np, "sd-uhs-sdr104")) {
+> >  		aspeed_sdc_set_slot_capability(host, dev->parent,
+> ASPEED_SDC_CAP1_1_8V,
+> >  					       true, slot);
+> >  	}
+> >
+> > +	if (of_property_read_bool(np, "sd-uhs-sdr50")) {
+> > +		aspeed_sdc_set_slot_capability(host, dev->parent,
+> ASPEED_SDC_CAP2_SDR50,
+> > +					       true, slot);
+> > +	}
+> > +
+> >  	if (of_property_read_bool(np, "sd-uhs-sdr104")) {
+> >  		aspeed_sdc_set_slot_capability(host, dev->parent,
+> ASPEED_SDC_CAP2_SDR104,
+> >  					       true, slot);
+> > --
+> > 2.17.1
+
+Chin-Ting
