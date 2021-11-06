@@ -1,11 +1,11 @@
 From: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
-Date: Sat, 6 Nov 2021 10:02:55 +0000
-Subject: [PATCH 04/10] mmc: Add invert flag for clock phase signedness
-In-Reply-To: <5a235916-f250-48ac-b931-6ec2c5c2ea5d@www.fastmail.com>
+Date: Sat, 6 Nov 2021 10:05:07 +0000
+Subject: [PATCH 05/10] mmc: aspeed: Adjust delay taps calculation method
+In-Reply-To: <95669b37-d512-4439-86cb-418ab085118f@www.fastmail.com>
 References: <20210922103116.30652-1-chin-ting_kuo@aspeedtech.com>
- <20210922103116.30652-5-chin-ting_kuo@aspeedtech.com>
- <5a235916-f250-48ac-b931-6ec2c5c2ea5d@www.fastmail.com>
-Message-ID: <HK0PR06MB27861518CA84A9DC8D204AC1B28F9@HK0PR06MB2786.apcprd06.prod.outlook.com>
+ <20210922103116.30652-6-chin-ting_kuo@aspeedtech.com>
+ <95669b37-d512-4439-86cb-418ab085118f@www.fastmail.com>
+Message-ID: <HK0PR06MB2786C1ED2463764EAAEA7166B28F9@HK0PR06MB2786.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -16,66 +16,350 @@ Hi Andrew,
 
 > -----Original Message-----
 > From: Andrew Jeffery <andrew@aj.id.au>
-> Sent: Tuesday, October 26, 2021 8:53 AM
-> Subject: Re: [PATCH 04/10] mmc: Add invert flag for clock phase signedness
+> Sent: Tuesday, October 26, 2021 11:10 AM
+> Subject: Re: [PATCH 05/10] mmc: aspeed: Adjust delay taps calculation method
+> 
+> Hi Chin-Ting,
+> 
+> I think we can split this up a bit:
 > 
 > On Wed, 22 Sep 2021, at 20:01, Chin-Ting Kuo wrote:
-> > The clock phase degree may be between -360 to 360.
-> > If the data signal is leading to the clock, the signedness of clock
-> > phase is postive, otherwise, the signedness is negative.
+> > - The maximum tap delay may be slightly different on
+> >   different platforms. It may also be different due to
+> >   different SoC processes or different manufacturers.
+> >   Thus, the maximum tap delay should be gotten from the
+> >   device tree through max-tap-delay property.
+> 
+> I think this could be a patch on its own
+
+Okay.
+
+> 
+> > - The delay time for each tap is an absolute value which
+> >   is independent of clock frequency. But, in order to combine
+> >   this principle with "phase" concept, clock frequency is took
+> >   into consideration during calculating delay taps.
+> > - The delay cell of eMMC device is non-uniform.
+> >   The time period of the first tap is two times of others.
+> 
+> Again, this could be a patch of its own
+
+Okay.
+
+> 
+> > - The clock phase degree range is from -360 to 360.
+> >   But, if the clock phase signedness is negative, clock signal
+> >   is output from the falling edge first by default and thus, clock
+> >   signal is leading to data signal by 90 degrees at least.
+> 
+> This line of development is impacted by my comment on an earlier patch in
+> the series, so should be its own patch.
+> 
+
+Okay.
+
 > >
 > > Signed-off-by: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
-> 
-> The implementation here can't be changed without a change to the binding
-> documentation:
-> 
-
-Okay, the binding document will be changed in the next patch version.
-
-> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Docume
-> ntation/devicetree/bindings/mmc/mmc-controller.yaml?h=v5.15-rc7#n345
-> 
 > > ---
-> >  drivers/mmc/core/host.c  | 10 ++++++----  include/linux/mmc/host.h |
-> > 2 ++
-> >  2 files changed, 8 insertions(+), 4 deletions(-)
+> >  drivers/mmc/host/sdhci-of-aspeed.c | 115
+> > ++++++++++++++++++++++-------
+> >  1 file changed, 89 insertions(+), 26 deletions(-)
 > >
-> > diff --git a/drivers/mmc/core/host.c b/drivers/mmc/core/host.c index
-> > d4683b1d263f..c2de7cbc7838 100644
-> > --- a/drivers/mmc/core/host.c
-> > +++ b/drivers/mmc/core/host.c
-> > @@ -214,14 +214,16 @@ static void mmc_retune_timer(struct timer_list
-> > *t)  static void mmc_of_parse_timing_phase(struct device *dev, const char
-> *prop,
-> >  				      struct mmc_clk_phase *phase)  {
-> > -	int degrees[2] = {0};
-> > +	int degrees[4] = {0};
-> >  	int rc;
+> > diff --git a/drivers/mmc/host/sdhci-of-aspeed.c
+> > b/drivers/mmc/host/sdhci-of-aspeed.c
+> > index c6eaeb02e3f9..739c9503a5ed 100644
+> > --- a/drivers/mmc/host/sdhci-of-aspeed.c
+> > +++ b/drivers/mmc/host/sdhci-of-aspeed.c
+> > @@ -44,6 +44,7 @@ struct aspeed_sdc {
 > >
-> > -	rc = device_property_read_u32_array(dev, prop, degrees, 2);
-> > +	rc = device_property_read_u32_array(dev, prop, degrees, 4);
-> >  	phase->valid = !rc;
-> >  	if (phase->valid) {
-> > -		phase->in_deg = degrees[0];
-> > -		phase->out_deg = degrees[1];
-> > +		phase->inv_in_deg = degrees[0] ? true : false;
-> > +		phase->in_deg = degrees[1];
-> > +		phase->inv_out_deg = degrees[2] ? true : false;
-> > +		phase->out_deg = degrees[3];
+> >  	spinlock_t lock;
+> >  	void __iomem *regs;
+> > +	u32 max_tap_delay_ps;
+> >  };
+> >
+> >  struct aspeed_sdhci_tap_param {
+> > @@ -63,6 +64,7 @@ struct aspeed_sdhci_tap_desc {  struct
+> > aspeed_sdhci_phase_desc {
+> >  	struct aspeed_sdhci_tap_desc in;
+> >  	struct aspeed_sdhci_tap_desc out;
+> > +	u32 nr_taps;
+> >  };
+> >
+> >  struct aspeed_sdhci_pdata {
+> > @@ -158,43 +160,60 @@ aspeed_sdc_set_phase_taps(struct aspeed_sdc
+> > *sdc,  }
+> >
+> >  #define PICOSECONDS_PER_SECOND		1000000000000ULL
+> > -#define ASPEED_SDHCI_NR_TAPS		15
+> > -/* Measured value with *handwave* environmentals and static loading */
+> > -#define ASPEED_SDHCI_MAX_TAP_DELAY_PS	1253
+> > +#define ASPEED_SDHCI_MAX_TAPS		15
 > 
-> This fundamentally breaks any in-tree users. We can't do this.
+> Why are we renaming this? It looks to cause a bit of noise in the diff.
 > 
-> In terms of the binding, if negative phase values are something we must do,
-> we can just extend the value range to include [-359, -1] right?
 
-Yes, agree it and I tried it before. But, it seems that the device tree doesn't support
-negative value with "-" prefixed and there is no device tree related API used to get
-the negative value from .dts. Thus, I tried to add an additional flag to present
-negative value.
+Okay, it can be changed back to the original one in the next patch version.
 
-> That avoids changing the type of the value positions in the manner this patch
-> does.
+> > +
+> >  static int aspeed_sdhci_phase_to_tap(struct device *dev, unsigned long
+> rate_hz,
+> > -				     int phase_deg)
+> > +				     bool invert, int phase_deg, u32 nr_taps)
 > 
+> Hmm.
+> 
+
+It will also be modified.
+
+> >  {
+> >  	u64 phase_period_ps;
+> >  	u64 prop_delay_ps;
+> >  	u64 clk_period_ps;
+> > -	unsigned int tap;
+> > -	u8 inverted;
+> > +	u32 tap = 0;
+> > +	struct aspeed_sdc *sdc = dev_get_drvdata(dev->parent);
+> >
+> > -	phase_deg %= 360;
+> > +	if (sdc->max_tap_delay_ps == 0)
+> > +		return 0;
+> 
+> I don't think just silently returning 0 here is the right thing to do.
+> 
+> What about -EINVAL, or printing a warning and using the old hard-coded
+> value?
+> 
+
+Agree, both -EINVAL and printing a warning are better.
+
+> >
+> > -	if (phase_deg >= 180) {
+> > -		inverted = ASPEED_SDHCI_TAP_PARAM_INVERT_CLK;
+> > -		phase_deg -= 180;
+> > -		dev_dbg(dev,
+> > -			"Inverting clock to reduce phase correction from %d to %d
+> degrees\n",
+> > -			phase_deg + 180, phase_deg);
+> > -	} else {
+> > -		inverted = 0;
+> > +	prop_delay_ps = sdc->max_tap_delay_ps / nr_taps;
+> > +	clk_period_ps = div_u64(PICOSECONDS_PER_SECOND, (u64)rate_hz);
+> > +
+> > +	/*
+> > +	 * For ast2600, if clock phase degree is negative, clock signal is
+> > +	 * output from falling edge first by default. Namely, clock signal
+> > +	 * is leading to data signal by 90 degrees at least.
+> > +	 */
+> 
+> Have I missed something about a asymmetric clock timings? Otherwise the
+> falling edge is 180 degrees away from the rising edge? I'm still not clear on
+> why 90 degrees is used here.
+> 
+
+Oh, you are right. It should be 180 degrees.
+
+> > +	if (invert) {
+> > +		if (phase_deg >= 90)
+> > +			phase_deg -= 90;
+> > +		else
+> > +			phase_deg = 0;
+> 
+> Why are we throwing away information?
+> 
+
+With the above correction, it should be modified as below.
+If the "invert" is needed, we expect that its value should be greater than 180
+degrees. We clear "phase_deg" if its value is unexpected. Maybe, a warning
+should be shown and -EINVAL can be returned.
+
+if (invert) {
+	if (phase_deg >= 180)
+		phase_deg -= 180;
+	else
+		phase_deg = 0;
+}
+
+> >  	}
+> >
+> > -	prop_delay_ps = ASPEED_SDHCI_MAX_TAP_DELAY_PS /
+> ASPEED_SDHCI_NR_TAPS;
+> > -	clk_period_ps = div_u64(PICOSECONDS_PER_SECOND, (u64)rate_hz);
+> >  	phase_period_ps = div_u64((u64)phase_deg * clk_period_ps, 360ULL);
+> >
+> > -	tap = div_u64(phase_period_ps, prop_delay_ps);
+> > -	if (tap > ASPEED_SDHCI_NR_TAPS) {
+> > +	/*
+> > +	 * The delay cell is non-uniform for eMMC controller.
+> > +	 * The time period of the first tap is two times of others.
+> > +	 */
+> > +	if (nr_taps == 16 && phase_period_ps > prop_delay_ps * 2) {
+> > +		phase_period_ps -= prop_delay_ps * 2;
+> > +		tap++;
+> > +	}
+> > +
+> > +	tap += div_u64(phase_period_ps, prop_delay_ps);
+> > +	if (tap > ASPEED_SDHCI_MAX_TAPS) {
+> >  		dev_dbg(dev,
+> >  			 "Requested out of range phase tap %d for %d degrees of phase
+> > compensation at %luHz, clamping to tap %d\n",
+> > -			 tap, phase_deg, rate_hz, ASPEED_SDHCI_NR_TAPS);
+> > -		tap = ASPEED_SDHCI_NR_TAPS;
+> > +			 tap, phase_deg, rate_hz, ASPEED_SDHCI_MAX_TAPS);
+> > +		tap = ASPEED_SDHCI_MAX_TAPS;
+> >  	}
+> >
+> > -	return inverted | tap;
+> > +	if (invert) {
+> > +		dev_info(dev, "invert the clock\n");
+> 
+> I prefer we drop this message
+> 
+
+Okay.
+
+> > +		tap |= ASPEED_SDHCI_TAP_PARAM_INVERT_CLK;
+> > +	}
+> > +
+> > +	return tap;
+> >  }
+> >
+> >  static void
+> > @@ -202,13 +221,19 @@ aspeed_sdhci_phases_to_taps(struct device *dev,
+> > unsigned long rate,
+> >  			    const struct mmc_clk_phase *phases,
+> >  			    struct aspeed_sdhci_tap_param *taps)  {
+> > +	struct sdhci_host *host = dev->driver_data;
+> > +	struct aspeed_sdhci *sdhci;
+> > +
+> > +	sdhci = sdhci_pltfm_priv(sdhci_priv(host));
+> >  	taps->valid = phases->valid;
+> >
+> >  	if (!phases->valid)
+> >  		return;
+> >
+> > -	taps->in = aspeed_sdhci_phase_to_tap(dev, rate, phases->in_deg);
+> > -	taps->out = aspeed_sdhci_phase_to_tap(dev, rate, phases->out_deg);
+> > +	taps->in = aspeed_sdhci_phase_to_tap(dev, rate, phases->inv_in_deg,
+> > +				phases->in_deg, sdhci->phase_desc->nr_taps);
+> > +	taps->out = aspeed_sdhci_phase_to_tap(dev, rate, phases->inv_out_deg,
+> > +				phases->out_deg, sdhci->phase_desc->nr_taps);
+> >  }
+> >
+> >  static void
+> > @@ -230,8 +255,8 @@ aspeed_sdhci_configure_phase(struct sdhci_host
+> > *host, unsigned long rate)
+> >  	aspeed_sdc_set_phase_taps(sdhci->parent, sdhci->phase_desc, taps);
+> >  	dev_dbg(dev,
+> >  		"Using taps [%d, %d] for [%d, %d] degrees of phase correction at
+> > %luHz (%d)\n",
+> > -		taps->in & ASPEED_SDHCI_NR_TAPS,
+> > -		taps->out & ASPEED_SDHCI_NR_TAPS,
+> > +		taps->in & ASPEED_SDHCI_MAX_TAPS,
+> > +		taps->out & ASPEED_SDHCI_MAX_TAPS,
+> >  		params->in_deg, params->out_deg, rate, host->timing);  }
+> >
+> > @@ -493,6 +518,7 @@ static const struct aspeed_sdhci_phase_desc
+> > ast2600_sdhci_phase[] = {
+> >  			.enable_mask = ASPEED_SDC_S0_PHASE_OUT_EN,
+> >  			.enable_value = 3,
+> >  		},
+> > +		.nr_taps = 15,
+> >  	},
+> >  	/* SDHCI/Slot 1 */
+> >  	[1] = {
+> > @@ -506,6 +532,31 @@ static const struct aspeed_sdhci_phase_desc
+> > ast2600_sdhci_phase[] = {
+> >  			.enable_mask = ASPEED_SDC_S1_PHASE_OUT_EN,
+> >  			.enable_value = 3,
+> >  		},
+> > +		.nr_taps = 15,
+> > +	},
+> > +};
+> > +
+> > +static const struct aspeed_sdhci_phase_desc ast2600_emmc_phase[] = {
+> > +	/* eMMC slot 0 */
+> > +	[0] = {
+> > +		.in = {
+> > +			.tap_mask = ASPEED_SDC_S0_PHASE_IN,
+> > +			.enable_mask = ASPEED_SDC_S0_PHASE_IN_EN,
+> > +			.enable_value = 1,
+> > +		},
+> > +		.out = {
+> > +			.tap_mask = ASPEED_SDC_S0_PHASE_OUT,
+> > +			.enable_mask = ASPEED_SDC_S0_PHASE_OUT_EN,
+> > +			.enable_value = 3,
+> > +		},
+> > +
+> > +		/*
+> > +		 * There are 15 taps recorded in AST2600 datasheet.
+> > +		 * But, actually, the time period of the first tap
+> > +		 * is two times of others. Thus, 16 tap is used to
+> > +		 * emulate this situation.
+> > +		 */
+> > +		.nr_taps = 16,
+> 
+> I think this is a very indirect way to communicate the problem. The only time
+> we look at nr_taps is in a test that explicitly compensates for the non-uniform
+> delay. I think we should just have a boolean struct member called
+> 'non_uniform_delay' rather than 'nr_taps', as the number of taps isn't what's
+> changing. But also see the discussion below about a potential
+> aspeed,tap-delays property.
+> 
+
+A new property may be the better choice.
+
+> >  	},
+> >  };
+> >
+> > @@ -515,10 +566,17 @@ static const struct aspeed_sdhci_pdata
+> > ast2600_sdhci_pdata = {
+> >  	.nr_phase_descs = ARRAY_SIZE(ast2600_sdhci_phase),  };
+> >
+> > +static const struct aspeed_sdhci_pdata ast2600_emmc_pdata = {
+> > +	.clk_div_start = 1,
+> > +	.phase_desc = ast2600_emmc_phase,
+> > +	.nr_phase_descs = ARRAY_SIZE(ast2600_emmc_phase), };
+> > +
+> >  static const struct of_device_id aspeed_sdhci_of_match[] = {
+> >  	{ .compatible = "aspeed,ast2400-sdhci", .data = &ast2400_sdhci_pdata, },
+> >  	{ .compatible = "aspeed,ast2500-sdhci", .data = &ast2400_sdhci_pdata, },
+> >  	{ .compatible = "aspeed,ast2600-sdhci", .data =
+> > &ast2600_sdhci_pdata, },
+> > +	{ .compatible = "aspeed,ast2600-emmc", .data = &ast2600_emmc_pdata,
+> > +},
+> 
+> This needs to be documented (and binding documentation patches need to be
+> the first patches in the series). 
+
+Okay.
+
+> Something further to consider is whether we
+> separate the compatibles or add e.g. an aspeed,tap-delays property that
+> specifies the specific delay of each logic element. This might take the place of
+> e.g. the max-tap-delay property?
+> 
+
+Yes, an additional property may be better.
+
 > Andrew
+> 
+> >  	{ }
+> >  };
+> >
+> > @@ -562,6 +620,11 @@ static int aspeed_sdc_probe(struct platform_device
+> *pdev)
+> >  		goto err_clk;
+> >  	}
+> >
+> > +	ret = of_property_read_u32(pdev->dev.of_node, "max-tap-delay",
+> > +			&sdc->max_tap_delay_ps);
+> > +	if (ret)
+> > +		sdc->max_tap_delay_ps = 0;
+> > +
+> >  	dev_set_drvdata(&pdev->dev, sdc);
+> >
+> >  	parent = pdev->dev.of_node;
+> > --
+> > 2.17.1
 
 Chin-Ting
