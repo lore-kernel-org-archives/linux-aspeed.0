@@ -1,9 +1,10 @@
 From: jae.hyun.yoo@intel.com <jae.hyun.yoo@intel.com>
-Date: Mon,  8 Nov 2021 11:01:58 -0800
-Subject: [PATCH v3 4/6] ARM: dts: aspeed: add LCLK setting into LPC KCS nodes
+Date: Mon,  8 Nov 2021 11:01:59 -0800
+Subject: [PATCH v3 5/6] dt-bindings: ipmi: aspeed,
+ kcs-bmc: add 'clocks' as a required property
 In-Reply-To: <20211108190200.290957-1-jae.hyun.yoo@intel.com>
 References: <20211108190200.290957-1-jae.hyun.yoo@intel.com>
-Message-ID: <20211108190200.290957-5-jae.hyun.yoo@intel.com>
+Message-ID: <20211108190200.290957-6-jae.hyun.yoo@intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -20,100 +21,62 @@ Then kernel eventually forcibly disables the interrupt with
 dumping stack and printing a 'nobody cared this irq' message out.
 
 To prevent this issue, all LPC sub drivers should enable LCLK
-individually so this patch adds 'clocks' property setting into LPC
-KCS node as one of required properties to enable the LCLK by the
-LPC KCS driver.
+individually so this patch adds 'clocks' property as one of
+required properties to enable the LCLK by the LPC KCS driver.
 
-Note: dtbs should be re-compiled after applying this change since
+Note: dtsi change in this patch series should be applied along with,
+and dtbs should be re-compiled after applying this series since
 it's adding a new required property otherwise the driver will not
 be probed correctly.
 
 Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-Reviewed-by: Joel Stanley <joel@jms.id.au>
-Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
 ---
 v2 -> v3:
  * Made commit message more descriptive.
 
 v1 -> v2:
- * No change.
+Changes sinve v1:
+ * Added 'clocks' property into kcs-bmc bindings using
+   'aspeed,ast2400-kcs-bmc.yaml' because it's not merged into
+   'aspeed-lpc.yaml' yet. The bindings merging could be done using a
+   separate patch later.
 
- arch/arm/boot/dts/aspeed-g5.dtsi | 4 ++++
- arch/arm/boot/dts/aspeed-g6.dtsi | 4 ++++
- 2 files changed, 8 insertions(+)
+ .../devicetree/bindings/ipmi/aspeed,ast2400-kcs-bmc.yaml   | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-diff --git a/arch/arm/boot/dts/aspeed-g5.dtsi b/arch/arm/boot/dts/aspeed-g5.dtsi
-index d0cc4be2de59..7495f93c5069 100644
---- a/arch/arm/boot/dts/aspeed-g5.dtsi
-+++ b/arch/arm/boot/dts/aspeed-g5.dtsi
-@@ -446,6 +446,7 @@ kcs1: kcs at 24 {
- 					compatible = "aspeed,ast2500-kcs-bmc-v2";
- 					reg = <0x24 0x1>, <0x30 0x1>, <0x3c 0x1>;
- 					interrupts = <8>;
-+					clocks = <&syscon ASPEED_CLK_GATE_LCLK>;
- 					status = "disabled";
- 				};
+diff --git a/Documentation/devicetree/bindings/ipmi/aspeed,ast2400-kcs-bmc.yaml b/Documentation/devicetree/bindings/ipmi/aspeed,ast2400-kcs-bmc.yaml
+index 4ff6fabfcb30..92ec0da047f4 100644
+--- a/Documentation/devicetree/bindings/ipmi/aspeed,ast2400-kcs-bmc.yaml
++++ b/Documentation/devicetree/bindings/ipmi/aspeed,ast2400-kcs-bmc.yaml
+@@ -71,9 +71,14 @@ properties:
+     $ref: '/schemas/types.yaml#/definitions/uint32'
+     description: The host CPU IO map address
  
-@@ -453,6 +454,7 @@ kcs2: kcs at 28 {
- 					compatible = "aspeed,ast2500-kcs-bmc-v2";
- 					reg = <0x28 0x1>, <0x34 0x1>, <0x40 0x1>;
- 					interrupts = <8>;
-+					clocks = <&syscon ASPEED_CLK_GATE_LCLK>;
- 					status = "disabled";
- 				};
++  clocks:
++    maxItems: 1
++    description: Reference clock for the LPC controller
++
+ required:
+   - compatible
+   - interrupts
++  - clocks
  
-@@ -460,6 +462,7 @@ kcs3: kcs at 2c {
- 					compatible = "aspeed,ast2500-kcs-bmc-v2";
- 					reg = <0x2c 0x1>, <0x38 0x1>, <0x44 0x1>;
- 					interrupts = <8>;
-+					clocks = <&syscon ASPEED_CLK_GATE_LCLK>;
- 					status = "disabled";
- 				};
+ additionalProperties: false
  
-@@ -467,6 +470,7 @@ kcs4: kcs at 114 {
- 					compatible = "aspeed,ast2500-kcs-bmc-v2";
- 					reg = <0x114 0x1>, <0x118 0x1>, <0x11c 0x1>;
- 					interrupts = <8>;
-+					clocks = <&syscon ASPEED_CLK_GATE_LCLK>;
- 					status = "disabled";
- 				};
+@@ -96,6 +101,7 @@ allOf:
  
-diff --git a/arch/arm/boot/dts/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed-g6.dtsi
-index 465c3549fdc3..891b862363a7 100644
---- a/arch/arm/boot/dts/aspeed-g6.dtsi
-+++ b/arch/arm/boot/dts/aspeed-g6.dtsi
-@@ -520,6 +520,7 @@ kcs1: kcs at 24 {
- 					compatible = "aspeed,ast2500-kcs-bmc-v2";
- 					reg = <0x24 0x1>, <0x30 0x1>, <0x3c 0x1>;
- 					interrupts = <GIC_SPI 138 IRQ_TYPE_LEVEL_HIGH>;
-+					clocks = <&syscon ASPEED_CLK_GATE_LCLK>;
- 					kcs_chan = <1>;
- 					status = "disabled";
- 				};
-@@ -528,6 +529,7 @@ kcs2: kcs at 28 {
- 					compatible = "aspeed,ast2500-kcs-bmc-v2";
- 					reg = <0x28 0x1>, <0x34 0x1>, <0x40 0x1>;
- 					interrupts = <GIC_SPI 139 IRQ_TYPE_LEVEL_HIGH>;
-+					clocks = <&syscon ASPEED_CLK_GATE_LCLK>;
- 					status = "disabled";
- 				};
- 
-@@ -535,6 +537,7 @@ kcs3: kcs at 2c {
- 					compatible = "aspeed,ast2500-kcs-bmc-v2";
- 					reg = <0x2c 0x1>, <0x38 0x1>, <0x44 0x1>;
- 					interrupts = <GIC_SPI 140 IRQ_TYPE_LEVEL_HIGH>;
-+					clocks = <&syscon ASPEED_CLK_GATE_LCLK>;
- 					status = "disabled";
- 				};
- 
-@@ -542,6 +545,7 @@ kcs4: kcs at 114 {
- 					compatible = "aspeed,ast2500-kcs-bmc-v2";
- 					reg = <0x114 0x1>, <0x118 0x1>, <0x11c 0x1>;
- 					interrupts = <GIC_SPI 141 IRQ_TYPE_LEVEL_HIGH>;
-+					clocks = <&syscon ASPEED_CLK_GATE_LCLK>;
- 					status = "disabled";
- 				};
- 
+ examples:
+   - |
++    #include <dt-bindings/clock/aspeed-clock.h>
+     #include <dt-bindings/interrupt-controller/irq.h>
+     kcs3: kcs at 24 {
+         compatible = "aspeed,ast2600-kcs-bmc";
+@@ -103,4 +109,5 @@ examples:
+         aspeed,lpc-io-reg = <0xca2>;
+         aspeed,lpc-interrupts = <11 IRQ_TYPE_LEVEL_LOW>;
+         interrupts = <8>;
++        clocks = <&syscon ASPEED_CLK_GATE_LCLK>;
+     };
 -- 
 2.25.1
 
