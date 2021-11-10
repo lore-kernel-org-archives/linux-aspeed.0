@@ -1,97 +1,98 @@
-From: Hans Verkuil <hverkuil@xs4all.nl>
-Date: Wed, 10 Nov 2021 09:23:57 +0100
-Subject: [PATCH v3 5/7] media: aspeed: Support aspeed mode to reduce
- compressed data
-In-Reply-To: <fb546475-8e61-b847-67c4-466dee57b318@aspeedtech.com>
-References: <20211022065539.12392-1-jammy_huang@aspeedtech.com>
- <20211022065539.12392-6-jammy_huang@aspeedtech.com>
- <75ea5824-e241-6548-bdc2-7ac9ec6346b6@xs4all.nl>
- <7d6ced4a-fea1-1163-40cb-65b4ea929a51@aspeedtech.com>
- <34ce1814-349b-d7a9-6118-341eea9ecf5f@xs4all.nl>
- <fb546475-8e61-b847-67c4-466dee57b318@aspeedtech.com>
-Message-ID: <f62d9fce-cb0b-42f2-ff69-71e79dcd51a2@xs4all.nl>
+From: Kumar Thangavel <kumarthangavel.hcl@gmail.com>
+Date: Wed, 10 Nov 2021 15:24:32 +0530
+Subject: [PATCH v4] Add payload to be 32-bit aligned to fix dropped packets
+Message-ID: <20211110095432.GA9571@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 10/11/2021 03:40, Jammy Huang wrote:
-> Dear Hans,
-> 
-> On 2021/11/9 ?? 06:17, Hans Verkuil wrote:
->> On 11/9/21 2:56 AM, Jammy Huang wrote:
->>> Dear Hans,
->>>
->>> Thanks for your review.
->>>
->>> On 2021/11/8 ?? 05:09, Hans Verkuil wrote:
->>>> On 22/10/2021 08:55, Jammy Huang wrote:
->>>>> aspeed supports differential jpeg format which only compress the parts
->>>>> which are changed. In this way, it reduces both the amount of data to be
->>>>> transferred by network and those to be decoded on the client side.
->>>>>
->>>>> 4 new ctrls are added:
->>>>> * Aspeed JPEG Format: to control aspeed's partial jpeg on/off
->>>>>     0: standard jpeg, 1: aspeed jpeg
->>>> What exactly is 'aspeed jpeg'?
->>> 'aspeed jpeg' is aspeed proprietary compression format. It will compare
->>> the new frame
->>> with previous one to decide which macroblock's data is changed, and only
->>> the changed
->>> macroblock will be compressed. In this way, the amount of compressed data is
->>> significantly reduced. This is similar to the concept of I/P-frames of
->>> video compression.
->> Right, but that makes this a new vendor-specific pixelformat, not a control.
-> OK, I will add a new vendor-specific pixelformat for this.
->>
->>> For example, the video is static in first 3 frames and then a object in
->>> the video moved in
->>> 4th frame.
->>>
->>>   ?? ???? Frame Content????? | ?? Standard??? |??? Aspeed
->>> -----------------------------------------------------------------------
->>> 1th??? ??? ? ?? ?? ????? ??? ??? ?? |??? Full??? ??? ?? ? | Full
->>> 2th??? identical with 1st ? |??? Full??? ??? ? ?? | ? none (only about
->>> 12 Bytes for header data)
->>> 3th??? identical with 1st?? |??? Full??? ??? ???? | ? none
->>> 4th??? a object moved ??? |??? Full??? ??? ???? |?? Only the Macroblocks
->>> that have data changed are compressed
->>>
->>> I have implemented a javascript aspeed decoder in novnc to support this
->>> format, but
->>> the performance isn't good enough. I am working on a web-assembly to
->>> improve it.
->> Is this format documented in a datasheet or something similar, ideally freely
->> available?
-> This format is documented in ast2400/2500/2600's datasheet, but it's not 
-> freely available.
+Update NC-SI command handler (both standard and OEM) to take into
+account of payload paddings in allocating skb (in case of payload
+size is not 32-bit aligned).
 
-OK. Make sure to document the new pixelformat in
-Documentation/userspace-api/media/v4l/pixfmt-reserved.rst with a reference to where it
-is defined in the datasheet.
+The checksum field follows payload field, without taking payload
+padding into account can cause checksum being truncated, leading to
+dropped packets.
 
-If there is publicly available source code that converts it to 'normal' JPEG, then
-a reference to that would be very nice as well.
+Signed-off-by: Kumar Thangavel <thangavel.k@hcl.com>
+Acked-by: Samuel Mendoza-Jonas <sam@mendozajonas.com>
+Reviewed-by: Paul Menzel <pmenzel@molgen.mpg.de>
 
->>
->>>>> * Aspeed Compression Mode: to control aspeed's compression mode
->>>>>     0: DCT Only, 1: DCT VQ mix 2-color, 2: DCT VQ mix 4-color
->>>>>     This is AST2400 only. It will adapt JPEG or VQ encoding method according
->>>>>     to the context automatically.
->>>> What exactly does this do?
->>>>
->>>> Is this very aspeed-specific, or could this be a standard JPEG control?
->>> Yes, this is aspeed-specific. Its compression algorithm is a modified
->>> JPEG algorithm.
->> Is this specific to the aspeed jpeg format, or also to the 'regular' jpeg format?
-> 
-> It's specific to the aspeed jpeg format. Regular jpeg is based on DCT 
-> and doesn't support VQ
-> compression
+---
+  v4:
+   - Updated existing macro for max function
 
-OK, that makes it an aspeed-specific control. Good to know.
+  v3:
+   - Added Macro for MAX
+   - Fixed the missed semicolon
 
-Regards,
+  v2:
+   - Added NC-SI spec version and section
+   - Removed blank line
+   - corrected spellings
 
-	Hans
+  v1:
+   - Initial draft
+
+---
+---
+ net/ncsi/ncsi-cmd.c | 21 +++++++++++++--------
+ 1 file changed, 13 insertions(+), 8 deletions(-)
+
+diff --git a/net/ncsi/ncsi-cmd.c b/net/ncsi/ncsi-cmd.c
+index ba9ae482141b..e44fe138c20f 100644
+--- a/net/ncsi/ncsi-cmd.c
++++ b/net/ncsi/ncsi-cmd.c
+@@ -213,12 +213,16 @@ static int ncsi_cmd_handler_oem(struct sk_buff *skb,
+ {
+ 	struct ncsi_cmd_oem_pkt *cmd;
+ 	unsigned int len;
++	/* NC-SI spec DSP_0222_1.2.0, section 8.2.2.2
++	 * requires payload to be padded with 0 to
++	 * 32-bit boundary before the checksum field.
++	 * Ensure the padding bytes are accounted for in
++	 * skb allocation
++	 */
+ 
++	unsigned short payload = ALIGN(nca->payload, 4);
+ 	len = sizeof(struct ncsi_cmd_pkt_hdr) + 4;
+-	if (nca->payload < 26)
+-		len += 26;
+-	else
+-		len += nca->payload;
++	len += max(payload, 26);
+ 
+ 	cmd = skb_put_zero(skb, len);
+ 	memcpy(&cmd->mfr_id, nca->data, nca->payload);
+@@ -272,6 +276,7 @@ static struct ncsi_request *ncsi_alloc_command(struct ncsi_cmd_arg *nca)
+ 	struct net_device *dev = nd->dev;
+ 	int hlen = LL_RESERVED_SPACE(dev);
+ 	int tlen = dev->needed_tailroom;
++	int payload;
+ 	int len = hlen + tlen;
+ 	struct sk_buff *skb;
+ 	struct ncsi_request *nr;
+@@ -281,14 +286,14 @@ static struct ncsi_request *ncsi_alloc_command(struct ncsi_cmd_arg *nca)
+ 		return NULL;
+ 
+ 	/* NCSI command packet has 16-bytes header, payload, 4 bytes checksum.
++	 * Payload needs padding so that the checksum field following payload is
++	 * aligned to 32-bit boundary.
+ 	 * The packet needs padding if its payload is less than 26 bytes to
+ 	 * meet 64 bytes minimal ethernet frame length.
+ 	 */
+ 	len += sizeof(struct ncsi_cmd_pkt_hdr) + 4;
+-	if (nca->payload < 26)
+-		len += 26;
+-	else
+-		len += nca->payload;
++	payload = ALIGN(nca->payload, 4);
++	len += max(payload, 26);
+ 
+ 	/* Allocate skb */
+ 	skb = alloc_skb(len, GFP_ATOMIC);
+-- 
+2.17.1
+
