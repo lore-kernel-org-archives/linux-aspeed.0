@@ -1,42 +1,26 @@
-From: Jammy Huang <jammy_huang@aspeedtech.com>
-Date: Wed, 10 Nov 2021 16:00:12 +0800
-Subject: [PATCH v2 2/2] media: aspeed: Fix incorrect resolution detected
-In-Reply-To: <20211110080012.20759-1-jammy_huang@aspeedtech.com>
-References: <20211110080012.20759-1-jammy_huang@aspeedtech.com>
-Message-ID: <20211110080012.20759-3-jammy_huang@aspeedtech.com>
+From: Greg KH <gregkh@linuxfoundation.org>
+Date: Wed, 10 Nov 2021 09:10:46 +0100
+Subject: [PATCH] serial: 8250_aspeed_vuart: Replace snprintf in show
+ functions with  sysfs_emit
+In-Reply-To: <20211110024028.135887-1-yao.jing2@zte.com.cn>
+References: <20211110024028.135887-1-yao.jing2@zte.com.cn>
+Message-ID: <YYt+hmfOPSDg0NVM@kroah.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-During successive timing-change, resolution detected could be incorrect,
-for example. Using remote KVM to do Centos-8.2 installation, the timing
-detected could be only 1920x471 for 1920x1200.
+On Wed, Nov 10, 2021 at 02:40:28AM +0000, cgel.zte at gmail.com wrote:
+> From: Jing Yao <yao.jing2@zte.com.cn>
+> 
+> coccicheck complains about the use of snprintf() in sysfs show
+> functions:
+> WARNING use scnprintf or sprintf
+> 
+> Use sysfs_emit instead of scnprintf, snprintf or sprintf makes more
+> sense.
 
-Increase min-required-count of stable signal to fix the problem.
-
-Fixes: d2b4387f3bdf ("media: platform: Add Aspeed Video Engine driver")
-Signed-off-by: Jammy Huang <jammy_huang@aspeedtech.com>
----
- drivers/media/platform/aspeed-video.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/media/platform/aspeed-video.c b/drivers/media/platform/aspeed-video.c
-index 996afbb87ee9..625a77ddb479 100644
---- a/drivers/media/platform/aspeed-video.c
-+++ b/drivers/media/platform/aspeed-video.c
-@@ -1208,8 +1208,8 @@ static void aspeed_video_init_regs(struct aspeed_video *video)
- 	aspeed_video_write(video, VE_MODE_DETECT,
- 			   FIELD_PREP(VE_MODE_DT_HOR_TOLER, 2) |
- 			   FIELD_PREP(VE_MODE_DT_VER_TOLER, 2) |
--			   FIELD_PREP(VE_MODE_DT_HOR_STABLE, 6) |
--			   FIELD_PREP(VE_MODE_DT_VER_STABLE, 6) |
-+			   FIELD_PREP(VE_MODE_DT_HOR_STABLE, 10) |
-+			   FIELD_PREP(VE_MODE_DT_VER_STABLE, 10) |
- 			   FIELD_PREP(VE_MODE_DT_EDG_THROD, 0x65));
- 
- 	aspeed_video_write(video, VE_BCD_CTRL, 0);
--- 
-2.25.1
+Same subject and changelog comments as the staging driver change you
+sent in :(
 
