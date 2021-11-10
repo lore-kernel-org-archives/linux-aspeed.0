@@ -1,98 +1,60 @@
-From: Kumar Thangavel <kumarthangavel.hcl@gmail.com>
-Date: Wed, 10 Nov 2021 15:24:32 +0530
-Subject: [PATCH v4] Add payload to be 32-bit aligned to fix dropped packets
-Message-ID: <20211110095432.GA9571@gmail.com>
+From: cgel.zte@gmail.com <cgel.zte@gmail.com>
+Date: Wed, 10 Nov 2021 02:40:28 +0000
+Subject: [PATCH] serial: 8250_aspeed_vuart: Replace snprintf in show functions
+ with sysfs_emit
+Message-ID: <20211110024028.135887-1-yao.jing2@zte.com.cn>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Update NC-SI command handler (both standard and OEM) to take into
-account of payload paddings in allocating skb (in case of payload
-size is not 32-bit aligned).
+From: Jing Yao <yao.jing2@zte.com.cn>
 
-The checksum field follows payload field, without taking payload
-padding into account can cause checksum being truncated, leading to
-dropped packets.
+coccicheck complains about the use of snprintf() in sysfs show
+functions:
+WARNING use scnprintf or sprintf
 
-Signed-off-by: Kumar Thangavel <thangavel.k@hcl.com>
-Acked-by: Samuel Mendoza-Jonas <sam@mendozajonas.com>
-Reviewed-by: Paul Menzel <pmenzel@molgen.mpg.de>
+Use sysfs_emit instead of scnprintf, snprintf or sprintf makes more
+sense.
 
+Reported-by: Zeal Robot <zealci@zte.com.cn>
+Signed-off-by: Jing Yao <yao.jing2@zte.com.cn>
 ---
-  v4:
-   - Updated existing macro for max function
+ drivers/tty/serial/8250/8250_aspeed_vuart.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-  v3:
-   - Added Macro for MAX
-   - Fixed the missed semicolon
-
-  v2:
-   - Added NC-SI spec version and section
-   - Removed blank line
-   - corrected spellings
-
-  v1:
-   - Initial draft
-
----
----
- net/ncsi/ncsi-cmd.c | 21 +++++++++++++--------
- 1 file changed, 13 insertions(+), 8 deletions(-)
-
-diff --git a/net/ncsi/ncsi-cmd.c b/net/ncsi/ncsi-cmd.c
-index ba9ae482141b..e44fe138c20f 100644
---- a/net/ncsi/ncsi-cmd.c
-+++ b/net/ncsi/ncsi-cmd.c
-@@ -213,12 +213,16 @@ static int ncsi_cmd_handler_oem(struct sk_buff *skb,
- {
- 	struct ncsi_cmd_oem_pkt *cmd;
- 	unsigned int len;
-+	/* NC-SI spec DSP_0222_1.2.0, section 8.2.2.2
-+	 * requires payload to be padded with 0 to
-+	 * 32-bit boundary before the checksum field.
-+	 * Ensure the padding bytes are accounted for in
-+	 * skb allocation
-+	 */
+diff --git a/drivers/tty/serial/8250/8250_aspeed_vuart.c b/drivers/tty/serial/8250/8250_aspeed_vuart.c
+index 2350fb3bb5e4..36c39b8ea7af 100644
+--- a/drivers/tty/serial/8250/8250_aspeed_vuart.c
++++ b/drivers/tty/serial/8250/8250_aspeed_vuart.c
+@@ -82,7 +82,7 @@ static ssize_t lpc_address_show(struct device *dev,
+ 	addr = (aspeed_vuart_readb(vuart, ASPEED_VUART_ADDRH) << 8) |
+ 		(aspeed_vuart_readb(vuart, ASPEED_VUART_ADDRL));
  
-+	unsigned short payload = ALIGN(nca->payload, 4);
- 	len = sizeof(struct ncsi_cmd_pkt_hdr) + 4;
--	if (nca->payload < 26)
--		len += 26;
--	else
--		len += nca->payload;
-+	len += max(payload, 26);
+-	return snprintf(buf, PAGE_SIZE - 1, "0x%x\n", addr);
++	return sysfs_emit(buf, "0x%x\n", addr);
+ }
  
- 	cmd = skb_put_zero(skb, len);
- 	memcpy(&cmd->mfr_id, nca->data, nca->payload);
-@@ -272,6 +276,7 @@ static struct ncsi_request *ncsi_alloc_command(struct ncsi_cmd_arg *nca)
- 	struct net_device *dev = nd->dev;
- 	int hlen = LL_RESERVED_SPACE(dev);
- 	int tlen = dev->needed_tailroom;
-+	int payload;
- 	int len = hlen + tlen;
- 	struct sk_buff *skb;
- 	struct ncsi_request *nr;
-@@ -281,14 +286,14 @@ static struct ncsi_request *ncsi_alloc_command(struct ncsi_cmd_arg *nca)
- 		return NULL;
+ static int aspeed_vuart_set_lpc_address(struct aspeed_vuart *vuart, u32 addr)
+@@ -124,7 +124,7 @@ static ssize_t sirq_show(struct device *dev,
+ 	reg &= ASPEED_VUART_GCRB_HOST_SIRQ_MASK;
+ 	reg >>= ASPEED_VUART_GCRB_HOST_SIRQ_SHIFT;
  
- 	/* NCSI command packet has 16-bytes header, payload, 4 bytes checksum.
-+	 * Payload needs padding so that the checksum field following payload is
-+	 * aligned to 32-bit boundary.
- 	 * The packet needs padding if its payload is less than 26 bytes to
- 	 * meet 64 bytes minimal ethernet frame length.
- 	 */
- 	len += sizeof(struct ncsi_cmd_pkt_hdr) + 4;
--	if (nca->payload < 26)
--		len += 26;
--	else
--		len += nca->payload;
-+	payload = ALIGN(nca->payload, 4);
-+	len += max(payload, 26);
+-	return snprintf(buf, PAGE_SIZE - 1, "%u\n", reg);
++	return sysfs_emit(buf, "%u\n", reg);
+ }
  
- 	/* Allocate skb */
- 	skb = alloc_skb(len, GFP_ATOMIC);
+ static int aspeed_vuart_set_sirq(struct aspeed_vuart *vuart, u32 sirq)
+@@ -171,7 +171,7 @@ static ssize_t sirq_polarity_show(struct device *dev,
+ 	reg = aspeed_vuart_readb(vuart, ASPEED_VUART_GCRA);
+ 	reg &= ASPEED_VUART_GCRA_HOST_SIRQ_POLARITY;
+ 
+-	return snprintf(buf, PAGE_SIZE - 1, "%u\n", reg ? 1 : 0);
++	return sysfs_emit(buf, "%u\n", reg ? 1 : 0);
+ }
+ 
+ static void aspeed_vuart_set_sirq_polarity(struct aspeed_vuart *vuart,
 -- 
-2.17.1
+2.25.1
 
