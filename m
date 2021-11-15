@@ -1,133 +1,37 @@
-From: Iwona Winiarska <iwona.winiarska@intel.com>
-Date: Mon, 15 Nov 2021 19:25:52 +0100
-Subject: [PATCH v3 13/13] docs: Add PECI documentation
-In-Reply-To: <20211115182552.3830849-1-iwona.winiarska@intel.com>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Date: Mon, 15 Nov 2021 19:49:57 +0100
+Subject: [PATCH v3 06/13] peci: Add device detection
+In-Reply-To: <20211115182552.3830849-7-iwona.winiarska@intel.com>
 References: <20211115182552.3830849-1-iwona.winiarska@intel.com>
-Message-ID: <20211115182552.3830849-14-iwona.winiarska@intel.com>
+ <20211115182552.3830849-7-iwona.winiarska@intel.com>
+Message-ID: <YZKr1Rqfx6Cmw+Ok@kroah.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add a brief overview of PECI and PECI wire interface.
-The documentation also contains kernel-doc for PECI subsystem internals
-and PECI CPU Driver API.
+On Mon, Nov 15, 2021 at 07:25:45PM +0100, Iwona Winiarska wrote:
+> +void peci_device_destroy(struct peci_device *device)
+> +{
+> +	bool killed;
+> +
+> +	device_lock(&device->dev);
+> +	killed = kill_device(&device->dev);
 
-Signed-off-by: Iwona Winiarska <iwona.winiarska@intel.com>
-Reviewed-by: Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>
----
- Documentation/index.rst      |  1 +
- Documentation/peci/index.rst | 16 +++++++++++
- Documentation/peci/peci.rst  | 51 ++++++++++++++++++++++++++++++++++++
- MAINTAINERS                  |  1 +
- 4 files changed, 69 insertions(+)
- create mode 100644 Documentation/peci/index.rst
- create mode 100644 Documentation/peci/peci.rst
+Eeek, why call this?
 
-diff --git a/Documentation/index.rst b/Documentation/index.rst
-index 54ce34fd6fbd..7671f2cd474f 100644
---- a/Documentation/index.rst
-+++ b/Documentation/index.rst
-@@ -137,6 +137,7 @@ needed).
-    misc-devices/index
-    scheduler/index
-    mhi/index
-+   peci/index
- 
- Architecture-agnostic documentation
- -----------------------------------
-diff --git a/Documentation/peci/index.rst b/Documentation/peci/index.rst
-new file mode 100644
-index 000000000000..989de10416e7
---- /dev/null
-+++ b/Documentation/peci/index.rst
-@@ -0,0 +1,16 @@
-+.. SPDX-License-Identifier: GPL-2.0-only
-+
-+====================
-+Linux PECI Subsystem
-+====================
-+
-+.. toctree::
-+
-+   peci
-+
-+.. only::  subproject and html
-+
-+   Indices
-+   =======
-+
-+   * :ref:`genindex`
-diff --git a/Documentation/peci/peci.rst b/Documentation/peci/peci.rst
-new file mode 100644
-index 000000000000..331b1ec00e22
---- /dev/null
-+++ b/Documentation/peci/peci.rst
-@@ -0,0 +1,51 @@
-+.. SPDX-License-Identifier: GPL-2.0-only
-+
-+========
-+Overview
-+========
-+
-+The Platform Environment Control Interface (PECI) is a communication
-+interface between Intel processor and management controllers
-+(e.g. Baseboard Management Controller, BMC).
-+PECI provides services that allow the management controller to
-+configure, monitor and debug platform by accessing various registers.
-+It defines a dedicated command protocol, where the management
-+controller is acting as a PECI originator and the processor - as
-+a PECI responder.
-+PECI can be used in both single processor and multiple-processor based
-+systems.
-+
-+NOTE:
-+Intel PECI specification is not released as a dedicated document,
-+instead it is a part of External Design Specification (EDS) for given
-+Intel CPU. External Design Specifications are usually not publicly
-+available.
-+
-+PECI Wire
-+---------
-+
-+PECI Wire interface uses a single wire for self-clocking and data
-+transfer. It does not require any additional control lines - the
-+physical layer is a self-clocked one-wire bus signal that begins each
-+bit with a driven, rising edge from an idle near zero volts. The
-+duration of the signal driven high allows to determine whether the bit
-+value is logic '0' or logic '1'. PECI Wire also includes variable data
-+rate established with every message.
-+
-+For PECI Wire, each processor package will utilize unique, fixed
-+addresses within a defined range and that address should
-+have a fixed relationship with the processor socket ID - if one of the
-+processors is removed, it does not affect addresses of remaining
-+processors.
-+
-+PECI subsystem internals
-+------------------------
-+
-+.. kernel-doc:: include/linux/peci.h
-+.. kernel-doc:: drivers/peci/internal.h
-+.. kernel-doc:: drivers/peci/core.c
-+.. kernel-doc:: drivers/peci/request.c
-+
-+PECI CPU Driver API
-+-------------------
-+.. kernel-doc:: drivers/peci/cpu.c
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 0f7216644bd5..4db4979db60a 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -14935,6 +14935,7 @@ R:	Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
- L:	openbmc at lists.ozlabs.org (moderated for non-subscribers)
- S:	Supported
- F:	Documentation/devicetree/bindings/peci/
-+F:	Documentation/peci/
- F:	drivers/peci/
- F:	include/linux/peci-cpu.h
- F:	include/linux/peci.h
--- 
-2.31.1
+> +	device_unlock(&device->dev);
+> +
+> +	if (!killed)
+> +		return;
 
+What happened if something changed after you unlocked it?
+
+Why is kill_device() required at all?  That's a very rare function to
+call, and one that only one "bus" calls today because it is very
+special (i.e. crazy and broken...)
+
+thanks,
+
+greg k-h
