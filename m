@@ -1,98 +1,96 @@
-From: kernel test robot <lkp@intel.com>
-Date: Mon, 15 Nov 2021 13:28:53 +0800
-Subject: [PATCH v4] Add payload to be 32-bit aligned to fix dropped packets
-In-Reply-To: <20211110095432.GA9571@gmail.com>
-References: <20211110095432.GA9571@gmail.com>
-Message-ID: <202111151359.VChHnFdM-lkp@intel.com>
+From: Sakari Ailus <sakari.ailus@linux.intel.com>
+Date: Mon, 15 Nov 2021 10:19:46 +0200
+Subject: [PATCH v4 7/9] media: aspeed: Support aspeed mode to reduce
+ compressed data
+In-Reply-To: <20211115074437.28079-8-jammy_huang@aspeedtech.com>
+References: <20211115074437.28079-1-jammy_huang@aspeedtech.com>
+ <20211115074437.28079-8-jammy_huang@aspeedtech.com>
+Message-ID: <YZIYIsURV0Gv1bc6@paasikivi.fi.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Kumar,
+Hi Jammy,
 
-Thank you for the patch! Perhaps something to improve:
+Thanks for the patch. A few comments below...
 
-[auto build test WARNING on linus/master]
-[also build test WARNING on v5.16-rc1 next-20211115]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch]
+On Mon, Nov 15, 2021 at 03:44:35PM +0800, Jammy Huang wrote:
+> @@ -969,35 +1045,70 @@ static void aspeed_video_set_resolution(struct aspeed_video *video)
+>  
+>  static void aspeed_video_update_regs(struct aspeed_video *video)
+>  {
+> -	u32 comp_ctrl = VE_COMP_CTRL_RSVD |
+> -		FIELD_PREP(VE_COMP_CTRL_DCT_LUM, video->jpeg_quality) |
+> -		FIELD_PREP(VE_COMP_CTRL_DCT_CHR, video->jpeg_quality | 0x10);
+> +	u8 jpeg_hq_quality = clamp((int)video->jpeg_hq_quality - 1, 0,
+> +				   ASPEED_VIDEO_JPEG_NUM_QUALITIES - 1);
+> +	u32 comp_ctrl =	FIELD_PREP(VE_COMP_CTRL_DCT_LUM, video->jpeg_quality) |
+> +		FIELD_PREP(VE_COMP_CTRL_DCT_CHR, video->jpeg_quality | 0x10) |
+> +		FIELD_PREP(VE_COMP_CTRL_EN_HQ, video->hq_mode) |
+> +		FIELD_PREP(VE_COMP_CTRL_HQ_DCT_LUM, jpeg_hq_quality) |
+> +		FIELD_PREP(VE_COMP_CTRL_HQ_DCT_CHR, jpeg_hq_quality |
+> +			   0x10);
+>  	u32 ctrl = 0;
+> -	u32 seq_ctrl = VE_SEQ_CTRL_JPEG_MODE;
+> +	u32 seq_ctrl = 0;
+>  
+> -	v4l2_dbg(1, debug, &video->v4l2_dev, "framerate(%d)\n",
+> -		 video->frame_rate);
+> -	v4l2_dbg(1, debug, &video->v4l2_dev, "subsample(%s)\n",
+> +	v4l2_dbg(1, debug, &video->v4l2_dev, "framerate(%d)\n", video->frame_rate);
+> +	v4l2_dbg(1, debug, &video->v4l2_dev, "jpeg format(%s) subsample(%s)\n",
+> +		 format_str[video->format],
+>  		 video->yuv420 ? "420" : "444");
+> -	v4l2_dbg(1, debug, &video->v4l2_dev, "compression quality(%d)\n",
+> -		 video->jpeg_quality);
+> +	v4l2_dbg(1, debug, &video->v4l2_dev, "compression quality(%d) hq(%s) hq_quality(%d)\n",
+> +		 video->jpeg_quality, video->hq_mode ? "on" : "off",
+> +		 video->jpeg_hq_quality);
+> +	v4l2_dbg(1, debug, &video->v4l2_dev, "compression mode(%s)\n",
+> +		 compress_mode_str[video->compression_mode]);
+> +
+> +	if (video->format == VIDEO_FMT_ASPEED)
+> +		aspeed_video_update(video, VE_BCD_CTRL, 0, VE_BCD_CTRL_EN_BCD);
+> +	else
+> +		aspeed_video_update(video, VE_BCD_CTRL, VE_BCD_CTRL_EN_BCD, 0);
+>  
+>  	if (video->frame_rate)
+>  		ctrl |= FIELD_PREP(VE_CTRL_FRC, video->frame_rate);
+>  
+> +	if (video->format == VIDEO_FMT_STANDARD) {
+> +		comp_ctrl &= ~FIELD_PREP(VE_COMP_CTRL_EN_HQ, video->hq_mode);
+> +		seq_ctrl |= VE_SEQ_CTRL_JPEG_MODE;
+> +	}
+> +
+>  	if (video->yuv420)
+>  		seq_ctrl |= VE_SEQ_CTRL_YUV420;
+>  
+>  	if (video->jpeg.virt)
+>  		aspeed_video_update_jpeg_table(video->jpeg.virt, video->yuv420);
+>  
+> +#ifdef CONFIG_MACH_ASPEED_G4
 
-url:    https://github.com/0day-ci/linux/commits/Kumar-Thangavel/Add-payload-to-be-32-bit-aligned-to-fix-dropped-packets/20211110-175537
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git cb690f5238d71f543f4ce874aa59237cf53a877c
-config: riscv-buildonly-randconfig-r006-20211115 (attached as .config)
-compiler: clang version 14.0.0 (https://github.com/llvm/llvm-project fbe72e41b99dc7994daac300d208a955be3e4a0a)
-reproduce (this is a W=1 build):
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        # install riscv cross compiling tool for clang build
-        # apt-get install binutils-riscv64-linux-gnu
-        # https://github.com/0day-ci/linux/commit/263eaf647698f405f4f9905c947bf73b87c55b79
-        git remote add linux-review https://github.com/0day-ci/linux
-        git fetch --no-tags linux-review Kumar-Thangavel/Add-payload-to-be-32-bit-aligned-to-fix-dropped-packets/20211110-175537
-        git checkout 263eaf647698f405f4f9905c947bf73b87c55b79
-        # save the attached .config to linux build tree
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=clang make.cross W=1 ARCH=riscv 
+This would be better done based on the device recognised, not the selected
+compile target. The same goes for the rest of the conditional pre-processor
+bits.
 
-If you fix the issue, kindly add following tag as appropriate
-Reported-by: kernel test robot <lkp@intel.com>
+> +	switch (video->compression_mode) {
+> +	case 0:	//DCT only
+> +		comp_ctrl |= VE_COMP_CTRL_VQ_DCT_ONLY;
+> +		break;
+> +	case 1:	//DCT VQ mix 2-color
+> +		comp_ctrl &= ~(VE_COMP_CTRL_VQ_4COLOR | VE_COMP_CTRL_VQ_DCT_ONLY);
+> +		break;
+> +	case 2:	//DCT VQ mix 4-color
+> +		comp_ctrl |= VE_COMP_CTRL_VQ_4COLOR;
+> +		break;
+> +	}
+> +#endif
+> +
 
-All warnings (new ones prefixed by >>):
+-- 
+Kind regards,
 
->> net/ncsi/ncsi-cmd.c:225:9: warning: comparison of distinct pointer types ('typeof (payload) *' (aka 'unsigned short *') and 'typeof (26) *' (aka 'int *')) [-Wcompare-distinct-pointer-types]
-           len += max(payload, 26);
-                  ^~~~~~~~~~~~~~~~
-   include/linux/minmax.h:52:19: note: expanded from macro 'max'
-   #define max(x, y)       __careful_cmp(x, y, >)
-                           ^~~~~~~~~~~~~~~~~~~~~~
-   include/linux/minmax.h:36:24: note: expanded from macro '__careful_cmp'
-           __builtin_choose_expr(__safe_cmp(x, y), \
-                                 ^~~~~~~~~~~~~~~~
-   include/linux/minmax.h:26:4: note: expanded from macro '__safe_cmp'
-                   (__typecheck(x, y) && __no_side_effects(x, y))
-                    ^~~~~~~~~~~~~~~~~
-   include/linux/minmax.h:20:28: note: expanded from macro '__typecheck'
-           (!!(sizeof((typeof(x) *)1 == (typeof(y) *)1)))
-                      ~~~~~~~~~~~~~~ ^  ~~~~~~~~~~~~~~
-   1 warning generated.
-
-
-vim +225 net/ncsi/ncsi-cmd.c
-
-   210	
-   211	static int ncsi_cmd_handler_oem(struct sk_buff *skb,
-   212					struct ncsi_cmd_arg *nca)
-   213	{
-   214		struct ncsi_cmd_oem_pkt *cmd;
-   215		unsigned int len;
-   216		/* NC-SI spec DSP_0222_1.2.0, section 8.2.2.2
-   217		 * requires payload to be padded with 0 to
-   218		 * 32-bit boundary before the checksum field.
-   219		 * Ensure the padding bytes are accounted for in
-   220		 * skb allocation
-   221		 */
-   222	
-   223		unsigned short payload = ALIGN(nca->payload, 4);
-   224		len = sizeof(struct ncsi_cmd_pkt_hdr) + 4;
- > 225		len += max(payload, 26);
-   226	
-   227		cmd = skb_put_zero(skb, len);
-   228		memcpy(&cmd->mfr_id, nca->data, nca->payload);
-   229		ncsi_cmd_build_header(&cmd->cmd.common, nca);
-   230	
-   231		return 0;
-   232	}
-   233	
-
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: .config.gz
-Type: application/gzip
-Size: 32159 bytes
-Desc: not available
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20211115/440ab55e/attachment-0001.gz>
+Sakari Ailus
