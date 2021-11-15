@@ -1,40 +1,81 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Mon, 15 Nov 2021 10:56:33 +1030
-Subject: [PATCH] ARM: configs: aspeed: Add support for USB flash drives
-In-Reply-To: <20211113002948.GE14774@packtop>
-References: <20211112202931.2379145-1-anoo@linux.ibm.com>
- <20211113002948.GE14774@packtop>
-Message-ID: <65620ec1-94fb-48f7-a8f8-8e9f409b0fc8@www.fastmail.com>
+From: Jammy Huang <jammy_huang@aspeedtech.com>
+Date: Mon, 15 Nov 2021 15:44:33 +0800
+Subject: [PATCH v4 5/9] media: v4l: Add definition for the Aspeed JPEG format
+In-Reply-To: <20211115074437.28079-1-jammy_huang@aspeedtech.com>
+References: <20211115074437.28079-1-jammy_huang@aspeedtech.com>
+Message-ID: <20211115074437.28079-6-jammy_huang@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+This introduces support for the Aspeed JPEG format, where the new frame
+can refer to previous frame to reduce the amount of compressed data. The
+concept is similar to I/P frame of video compression. I will compare the
+new frame with previous one to decide which macroblock's data is
+changed, and only the changed macroblocks will be compressed.
 
+This Aspeed JPEG format is used by the video engine on Aspeed platforms,
+which is generally adapted for remote KVM.
 
-On Sat, 13 Nov 2021, at 10:59, Zev Weiss wrote:
-> On Fri, Nov 12, 2021 at 12:29:31PM PST, Adriana Kobylak wrote:
->>From: Adriana Kobylak <anoo@us.ibm.com>
->>
->>Add support to detect USB flash drives and create the /dev/sd* devices.
->>Also add support for vfat to support USB drives formatted as FAT32.
->>This support will be used to enable firmware updates via USB flash
->>drives where the firmware image is stored in the USB drive and it's
->>plugged into the BMC USB port.
->>
->
-> Hmm, how common is it for BMCs to have a USB port?  Perhaps it's more so
-> than I realize, but at least in my (admittedly somewhat limited)
-> experience I've yet to encounter one that does, so I'm wondering how
-> appropriate these options are for the aspeed-g5 defconfig if they might
-> just end up as a bunch of code that's never executed on most BMCs.
+Signed-off-by: Jammy Huang <jammy_huang@aspeedtech.com>
+---
+v4:
+  - new
+---
+ Documentation/media/uapi/v4l/pixfmt-reserved.rst | 12 ++++++++++++
+ drivers/media/v4l2-core/v4l2-ioctl.c             |  1 +
+ include/uapi/linux/videodev2.h                   |  1 +
+ 3 files changed, 14 insertions(+)
 
-The intent with the Aspeed defconfigs was to enable options that 
-provide a broad coverage of features used by e.g. upstream OpenBMC 
-systems. This aids kernel maintenance for OpenBMC. The platform 
-configuration in OpenBMC should provide a kernel config that only 
-enables options relevant to that specific platform. With this in mind I 
-think it's fine that USB support is enabled in the defconfigs.
+diff --git a/Documentation/media/uapi/v4l/pixfmt-reserved.rst b/Documentation/media/uapi/v4l/pixfmt-reserved.rst
+index b2cd155e691b..23c05063133d 100644
+--- a/Documentation/media/uapi/v4l/pixfmt-reserved.rst
++++ b/Documentation/media/uapi/v4l/pixfmt-reserved.rst
+@@ -264,6 +264,18 @@ please make a proposal on the linux-media mailing list.
+ 	of tiles, resulting in 32-aligned resolutions for the luminance plane
+ 	and 16-aligned resolutions for the chrominance plane (with 2x2
+ 	subsampling).
++    * .. _V4L2-PIX-FMT-AJPG:
++
++      - ``V4L2_PIX_FMT_AJPG``
++      - 'AJPG'
++      - ASPEED JPEG format used by the aspeed-video driver on Aspeed platforms,
++        which is generally adapted for remote KVM.
++        On each frame compression, I will compare the new frame with previous
++        one to decide which macroblock's data is changed, and only the changed
++        macroblocks will be compressed.
++
++        You could reference to chapter 36, Video Engine, of AST2600's datasheet
++        for more information.
+ 
+ .. tabularcolumns:: |p{6.6cm}|p{2.2cm}|p{8.7cm}|
+ 
+diff --git a/drivers/media/v4l2-core/v4l2-ioctl.c b/drivers/media/v4l2-core/v4l2-ioctl.c
+index 24db33f803c0..00dde01d2f97 100644
+--- a/drivers/media/v4l2-core/v4l2-ioctl.c
++++ b/drivers/media/v4l2-core/v4l2-ioctl.c
+@@ -1378,6 +1378,7 @@ static void v4l_fill_fmtdesc(struct v4l2_fmtdesc *fmt)
+ 		case V4L2_PIX_FMT_S5C_UYVY_JPG:	descr = "S5C73MX interleaved UYVY/JPEG"; break;
+ 		case V4L2_PIX_FMT_MT21C:	descr = "Mediatek Compressed Format"; break;
+ 		case V4L2_PIX_FMT_SUNXI_TILED_NV12: descr = "Sunxi Tiled NV12 Format"; break;
++		case V4L2_PIX_FMT_AJPG:		descr = "Aspeed JPEG"; break;
+ 		default:
+ 			if (fmt->description[0])
+ 				return;
+diff --git a/include/uapi/linux/videodev2.h b/include/uapi/linux/videodev2.h
+index 3210b3c82a4a..994eb6155ea9 100644
+--- a/include/uapi/linux/videodev2.h
++++ b/include/uapi/linux/videodev2.h
+@@ -726,6 +726,7 @@ struct v4l2_pix_format {
+ #define V4L2_PIX_FMT_INZI     v4l2_fourcc('I', 'N', 'Z', 'I') /* Intel Planar Greyscale 10-bit and Depth 16-bit */
+ #define V4L2_PIX_FMT_SUNXI_TILED_NV12 v4l2_fourcc('S', 'T', '1', '2') /* Sunxi Tiled NV12 Format */
+ #define V4L2_PIX_FMT_CNF4     v4l2_fourcc('C', 'N', 'F', '4') /* Intel 4-bit packed depth confidence information */
++#define V4L2_PIX_FMT_AJPG     v4l2_fourcc('A', 'J', 'P', 'G') /* Aspeed JPEG */
+ 
+ /* 10bit raw bayer packed, 32 bytes for every 25 pixels, last LSB 6 bits unused */
+ #define V4L2_PIX_FMT_IPU3_SBGGR10	v4l2_fourcc('i', 'p', '3', 'b') /* IPU3 packed 10-bit BGGR bayer */
+-- 
+2.25.1
 
-Andrew
