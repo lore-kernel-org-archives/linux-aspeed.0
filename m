@@ -1,102 +1,103 @@
-From: Joel Stanley <joel@jms.id.au>
-Date: Tue, 16 Nov 2021 03:07:48 +0000
-Subject: [PATCH v2] ARM: dts: aspeed: Adding Facebook Bletchley BMC
-In-Reply-To: <20211110062656.3041994-1-howard.chiu@quantatw.com>
-References: <20211110062656.3041994-1-howard.chiu@quantatw.com>
-Message-ID: <CACPK8Xc6wV4KbMAT_ekyMTTbfNqx2ox_d7mEFGVT4OvBDDadBQ@mail.gmail.com>
+From: Jammy Huang <jammy_huang@aspeedtech.com>
+Date: Tue, 16 Nov 2021 12:15:25 +0800
+Subject: [PATCH v4 7/9] media: aspeed: Support aspeed mode to reduce
+ compressed data
+In-Reply-To: <YZIYIsURV0Gv1bc6@paasikivi.fi.intel.com>
+References: <20211115074437.28079-1-jammy_huang@aspeedtech.com>
+ <20211115074437.28079-8-jammy_huang@aspeedtech.com>
+ <YZIYIsURV0Gv1bc6@paasikivi.fi.intel.com>
+Message-ID: <67e3be3a-7e18-115b-18b7-b3d5419e0992@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Howard,
+Hi Sakari,
 
-On Wed, 10 Nov 2021 at 06:29, Howard Chiu <howard10703049@gmail.com> wrote:
+OK, I will add a patch which uses data in device table to tell the 
+differences between
+SoC to the series. Thanks for your advice.
+
+On 2021/11/15 ?? 04:19, Sakari Ailus wrote:
+> Hi Jammy,
 >
-> Initial introduction of Facebook Bletchley equipped with
-> Aspeed 2600 BMC SoC.
+> Thanks for the patch. A few comments below...
 >
-> Signed-off-by: Howard Chiu <howard.chiu@quantatw.com>
-> ---
+> On Mon, Nov 15, 2021 at 03:44:35PM +0800, Jammy Huang wrote:
+>> @@ -969,35 +1045,70 @@ static void aspeed_video_set_resolution(struct aspeed_video *video)
+>>   
+>>   static void aspeed_video_update_regs(struct aspeed_video *video)
+>>   {
+>> -	u32 comp_ctrl = VE_COMP_CTRL_RSVD |
+>> -		FIELD_PREP(VE_COMP_CTRL_DCT_LUM, video->jpeg_quality) |
+>> -		FIELD_PREP(VE_COMP_CTRL_DCT_CHR, video->jpeg_quality | 0x10);
+>> +	u8 jpeg_hq_quality = clamp((int)video->jpeg_hq_quality - 1, 0,
+>> +				   ASPEED_VIDEO_JPEG_NUM_QUALITIES - 1);
+>> +	u32 comp_ctrl =	FIELD_PREP(VE_COMP_CTRL_DCT_LUM, video->jpeg_quality) |
+>> +		FIELD_PREP(VE_COMP_CTRL_DCT_CHR, video->jpeg_quality | 0x10) |
+>> +		FIELD_PREP(VE_COMP_CTRL_EN_HQ, video->hq_mode) |
+>> +		FIELD_PREP(VE_COMP_CTRL_HQ_DCT_LUM, jpeg_hq_quality) |
+>> +		FIELD_PREP(VE_COMP_CTRL_HQ_DCT_CHR, jpeg_hq_quality |
+>> +			   0x10);
+>>   	u32 ctrl = 0;
+>> -	u32 seq_ctrl = VE_SEQ_CTRL_JPEG_MODE;
+>> +	u32 seq_ctrl = 0;
+>>   
+>> -	v4l2_dbg(1, debug, &video->v4l2_dev, "framerate(%d)\n",
+>> -		 video->frame_rate);
+>> -	v4l2_dbg(1, debug, &video->v4l2_dev, "subsample(%s)\n",
+>> +	v4l2_dbg(1, debug, &video->v4l2_dev, "framerate(%d)\n", video->frame_rate);
+>> +	v4l2_dbg(1, debug, &video->v4l2_dev, "jpeg format(%s) subsample(%s)\n",
+>> +		 format_str[video->format],
+>>   		 video->yuv420 ? "420" : "444");
+>> -	v4l2_dbg(1, debug, &video->v4l2_dev, "compression quality(%d)\n",
+>> -		 video->jpeg_quality);
+>> +	v4l2_dbg(1, debug, &video->v4l2_dev, "compression quality(%d) hq(%s) hq_quality(%d)\n",
+>> +		 video->jpeg_quality, video->hq_mode ? "on" : "off",
+>> +		 video->jpeg_hq_quality);
+>> +	v4l2_dbg(1, debug, &video->v4l2_dev, "compression mode(%s)\n",
+>> +		 compress_mode_str[video->compression_mode]);
+>> +
+>> +	if (video->format == VIDEO_FMT_ASPEED)
+>> +		aspeed_video_update(video, VE_BCD_CTRL, 0, VE_BCD_CTRL_EN_BCD);
+>> +	else
+>> +		aspeed_video_update(video, VE_BCD_CTRL, VE_BCD_CTRL_EN_BCD, 0);
+>>   
+>>   	if (video->frame_rate)
+>>   		ctrl |= FIELD_PREP(VE_CTRL_FRC, video->frame_rate);
+>>   
+>> +	if (video->format == VIDEO_FMT_STANDARD) {
+>> +		comp_ctrl &= ~FIELD_PREP(VE_COMP_CTRL_EN_HQ, video->hq_mode);
+>> +		seq_ctrl |= VE_SEQ_CTRL_JPEG_MODE;
+>> +	}
+>> +
+>>   	if (video->yuv420)
+>>   		seq_ctrl |= VE_SEQ_CTRL_YUV420;
+>>   
+>>   	if (video->jpeg.virt)
+>>   		aspeed_video_update_jpeg_table(video->jpeg.virt, video->yuv420);
+>>   
+>> +#ifdef CONFIG_MACH_ASPEED_G4
+> This would be better done based on the device recognised, not the selected
+> compile target. The same goes for the rest of the conditional pre-processor
+> bits.
+>
+>> +	switch (video->compression_mode) {
+>> +	case 0:	//DCT only
+>> +		comp_ctrl |= VE_COMP_CTRL_VQ_DCT_ONLY;
+>> +		break;
+>> +	case 1:	//DCT VQ mix 2-color
+>> +		comp_ctrl &= ~(VE_COMP_CTRL_VQ_4COLOR | VE_COMP_CTRL_VQ_DCT_ONLY);
+>> +		break;
+>> +	case 2:	//DCT VQ mix 4-color
+>> +		comp_ctrl |= VE_COMP_CTRL_VQ_4COLOR;
+>> +		break;
+>> +	}
+>> +#endif
+>> +
 
-Please use this area to document the differences between versions of
-your patch. Let us know what you've fixed, and what you've decided not
-to change based on review.
+-- 
+Best Regards
+Jammy
 
-> +&uart5 {
-> +       // Workaround for A0
-> +       compatible = "snps,dw-apb-uart";
-> +};
-
-Are you still using a0 boards?
-
-> +
-> +&i2c0 {
-> +       status = "okay";
-> +       /* TODO: Add HSC MP5023 */
-> +       /* TODO: Add ADC INA230 */
-> +
-> +       tmp421 at 4f {
-> +               compatible = "ti,tmp421";
-> +               reg = <0x4f>;
-> +       };
-> +
-> +       sled0_ioexp: pca9539 at 76 {
-> +               compatible = "nxp,pca9539";
-> +               reg = <0x76>;
-> +               #address-cells = <1>;
-> +               #size-cells = <0>;
-> +               gpio-controller;
-> +               #gpio-cells = <2>;
-> +
-> +               gpio-line-names =
-> +               "","SLED0_BMC_CCG5_INT","SLED0_INA230_ALERT","SLED0_P12V_STBY_ALERT",
-> +               "SLED0_SSD_ALERT","SLED0_MS_DETECT","SLED0_MD_REF_PWM","",
-> +               "SLED0_MD_STBY_RESET","SLED0_MD_IOEXP_EN_FAULT","SLED0_MD_DIR","SLED0_MD_DECAY",
-> +               "SLED0_MD_MODE1","SLED0_MD_MODE2","SLED0_MD_MODE3","SLED0_AC_PWR_EN";
-
-I'll wait for Patrick's review on these. I would prefer you follow the
-openbmc naming scheme that he mentioned in v1 of your patch.
-
-> +
-> +               gpio at 0 {
-> +                       reg = <0>;
-> +               };
-
-I think this is incorrect, you would need to specify:
-
-type = <PCA955X_TYPE_GPIO>
-
-However with this change, there's no need to specify the individual gpio nodes:
-
-https://lore.kernel.org/all/20210921043936.468001-2-andrew at aj.id.au/
-
-
-> +
-> +&i2c4 {
-> +       status = "okay";
-> +       /* TODO: Add HSC MP5023 */
-> +       /* TODO: Add ADC INA230 */
-> +
-> +       tmp421 at 4f {
-> +               compatible = "ti,tmp421";
-> +               reg = <0x4f>;
-> +       };
-> +
-> +       sled4_ioexp: pca9539 at 76 {
-> +               compatible = "nxp,pca9539";
-> +               reg = <0x76>;
-> +               #address-cells = <1>;
-> +               #size-cells = <0>;
-> +               gpio-controller;
-> +               #gpio-cells = <2>;
-> +
-> +               gpio-line-names =
-> +               "","SLED4_BMC_CCG5_INT","SLED4_INA230_ALERT","SLED4_P12V_STBY_ALERT",
-> +               "SLED4_SSD_ALERT","SLED4_MS_DETECT","SLED4_MD_REF_PWM","",
-> +               "SLED4_MD_STBY_RESET","SLED4_MD_IOEXP_EN_FAULT","SLED4_MD_DIR","SLED4_MD_DECAY",
-> +               "SLED4_MD_MODE1","SLED4_MD_MODE2","SLED4_MD_MODE3","SLED4_AC_PWR_EN";
-
-As Patrick mentioned, I think we want to have a convention for
-multi-node machines in the GPIO naming.
