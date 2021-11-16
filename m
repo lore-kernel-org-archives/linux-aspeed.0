@@ -1,118 +1,91 @@
-From: kernel test robot <lkp@intel.com>
-Date: Tue, 16 Nov 2021 09:01:52 +0800
-Subject: [PATCH v5] Add payload to be 32-bit aligned to fix dropped packets
-In-Reply-To: <20211115144846.GA12078@gmail.com>
-References: <20211115144846.GA12078@gmail.com>
-Message-ID: <202111160915.9clkkfsH-lkp@intel.com>
+From: Joel Stanley <joel@jms.id.au>
+Date: Tue, 16 Nov 2021 02:44:00 +0000
+Subject: [PATCH 1/2] leds: pca955x: Make the gpiochip always expose all
+ pins
+In-Reply-To: <CACRpkdZRWzq_j_UsU+eZurv1wT7muB1V4ktui1-Q0mHV3xw58A@mail.gmail.com>
+References: <20210921043936.468001-1-andrew@aj.id.au>
+ <20210921043936.468001-2-andrew@aj.id.au>
+ <CACRpkdZRWzq_j_UsU+eZurv1wT7muB1V4ktui1-Q0mHV3xw58A@mail.gmail.com>
+Message-ID: <CACPK8Xef1hVFFAJS-tHa+fjR0SgNZ7d5W04KwOYi-CvQdpnJww@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Kumar,
+Hello Pavel and Arnd,
 
-Thank you for the patch! Perhaps something to improve:
+This one has slipped through the cracks. Andrew asked for a follow up
+and Linus sent a review, but we haven't heard from Pavel at all.
 
-[auto build test WARNING on linus/master]
-[also build test WARNING on v5.16-rc1 next-20211115]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch]
+We've merged device tree changes through the soc tree in v5.16 that
+depend on this patch. Ideally I would like to see it applied to fix
+those device trees, instead of sending reverts for the device trees.
 
-url:    https://github.com/0day-ci/linux/commits/Kumar-Thangavel/Add-payload-to-be-32-bit-aligned-to-fix-dropped-packets/20211115-224945
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git 8ab774587903771821b59471cc723bba6d893942
-config: riscv-randconfig-r026-20211115 (attached as .config)
-compiler: clang version 14.0.0 (https://github.com/llvm/llvm-project fbe72e41b99dc7994daac300d208a955be3e4a0a)
-reproduce (this is a W=1 build):
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        # install riscv cross compiling tool for clang build
-        # apt-get install binutils-riscv64-linux-gnu
-        # https://github.com/0day-ci/linux/commit/dc2cde90f4de825ff92f0ad81bc70e132c6ad6ec
-        git remote add linux-review https://github.com/0day-ci/linux
-        git fetch --no-tags linux-review Kumar-Thangavel/Add-payload-to-be-32-bit-aligned-to-fix-dropped-packets/20211115-224945
-        git checkout dc2cde90f4de825ff92f0ad81bc70e132c6ad6ec
-        # save the attached .config to linux build tree
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=clang make.cross W=1 ARCH=riscv 
+Additionally, I'm now reviewing changes for v5.17 and want to decide
+which direction we should take.
 
-If you fix the issue, kindly add following tag as appropriate
-Reported-by: kernel test robot <lkp@intel.com>
+Pavel, are you happy with the change?
 
-All warnings (new ones prefixed by >>):
+If so, would you consider merging it as a fix for v5.16?
 
->> net/ncsi/ncsi-cmd.c:298:9: warning: comparison of distinct pointer types ('typeof (payload) *' (aka 'int *') and 'typeof (padding_bytes) *' (aka 'const unsigned short *')) [-Wcompare-distinct-pointer-types]
-           len += max(payload, padding_bytes);
-                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~
-   include/linux/minmax.h:52:19: note: expanded from macro 'max'
-   #define max(x, y)       __careful_cmp(x, y, >)
-                           ^~~~~~~~~~~~~~~~~~~~~~
-   include/linux/minmax.h:36:24: note: expanded from macro '__careful_cmp'
-           __builtin_choose_expr(__safe_cmp(x, y), \
-                                 ^~~~~~~~~~~~~~~~
-   include/linux/minmax.h:26:4: note: expanded from macro '__safe_cmp'
-                   (__typecheck(x, y) && __no_side_effects(x, y))
-                    ^~~~~~~~~~~~~~~~~
-   include/linux/minmax.h:20:28: note: expanded from macro '__typecheck'
-           (!!(sizeof((typeof(x) *)1 == (typeof(y) *)1)))
-                      ~~~~~~~~~~~~~~ ^  ~~~~~~~~~~~~~~
-   1 warning generated.
+Cheers,
 
+Joel
 
-vim +298 net/ncsi/ncsi-cmd.c
-
-   273	
-   274	static struct ncsi_request *ncsi_alloc_command(struct ncsi_cmd_arg *nca)
-   275	{
-   276		struct ncsi_dev_priv *ndp = nca->ndp;
-   277		struct ncsi_dev *nd = &ndp->ndev;
-   278		struct net_device *dev = nd->dev;
-   279		int hlen = LL_RESERVED_SPACE(dev);
-   280		int tlen = dev->needed_tailroom;
-   281		int payload;
-   282		int len = hlen + tlen;
-   283		struct sk_buff *skb;
-   284		struct ncsi_request *nr;
-   285	
-   286		nr = ncsi_alloc_request(ndp, nca->req_flags);
-   287		if (!nr)
-   288			return NULL;
-   289	
-   290		/* NCSI command packet has 16-bytes header, payload, 4 bytes checksum.
-   291		 * Payload needs padding so that the checksum field following payload is
-   292		 * aligned to 32-bit boundary.
-   293		 * The packet needs padding if its payload is less than 26 bytes to
-   294		 * meet 64 bytes minimal ethernet frame length.
-   295		 */
-   296		len += sizeof(struct ncsi_cmd_pkt_hdr) + 4;
-   297		payload = ALIGN(nca->payload, 4);
- > 298		len += max(payload, padding_bytes);
-   299	
-   300		/* Allocate skb */
-   301		skb = alloc_skb(len, GFP_ATOMIC);
-   302		if (!skb) {
-   303			ncsi_free_request(nr);
-   304			return NULL;
-   305		}
-   306	
-   307		nr->cmd = skb;
-   308		skb_reserve(skb, hlen);
-   309		skb_reset_network_header(skb);
-   310	
-   311		skb->dev = dev;
-   312		skb->protocol = htons(ETH_P_NCSI);
-   313	
-   314		return nr;
-   315	}
-   316	
-
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: .config.gz
-Type: application/gzip
-Size: 43898 bytes
-Desc: not available
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20211116/a34a92d1/attachment-0001.gz>
+On Tue, 9 Nov 2021 at 11:03, Linus Walleij <linus.walleij@linaro.org> wrote:
+>
+> On Tue, Sep 21, 2021 at 6:40 AM Andrew Jeffery <andrew@aj.id.au> wrote:
+>
+> > The devicetree binding allows specifying which pins are GPIO vs LED.
+> > Limiting the instantiated gpiochip to just these pins as the driver
+> > currently does requires an arbitrary mapping between pins and GPIOs, but
+> > such a mapping is not implemented by the driver. As a result,
+> > specifying GPIOs in such a way that they don't map 1-to-1 to pin indexes
+> > does not function as expected.
+> >
+> > Establishing such a mapping is more complex than not and even if we did,
+> > doing so leads to a slightly hairy userspace experience as the behaviour
+> > of the PCA955x gpiochip would depend on how the pins are assigned in the
+> > devicetree. Instead, always expose all pins via the gpiochip to provide
+> > a stable interface and track which pins are in use.
+> >
+> > Specifying a pin as `type = <PCA955X_TYPE_GPIO>;` in the devicetree
+> > becomes a no-op.
+> >
+> > I've assessed the impact of this change by looking through all of the
+> > affected devicetrees as of the tag leds-5.15-rc1:
+> >
+> > ```
+> > $ git grep -l 'pca955[0123]' $(find . -name dts -type d)
+> > arch/arm/boot/dts/aspeed-bmc-ibm-everest.dts
+> > arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
+> > arch/arm/boot/dts/aspeed-bmc-opp-mihawk.dts
+> > arch/arm/boot/dts/aspeed-bmc-opp-mowgli.dts
+> > arch/arm/boot/dts/aspeed-bmc-opp-swift.dts
+> > arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts
+> > arch/arm/boot/dts/aspeed-bmc-opp-witherspoon.dts
+> > ```
+> >
+> > These are all IBM-associated platforms. I've analysed both the
+> > devicetrees and schematics where necessary to determine whether any
+> > systems hit the hazard of the current broken behaviour. For the most
+> > part, the systems specify the pins as either all LEDs or all GPIOs, or
+> > at least do so in a way such that the broken behaviour isn't exposed.
+> >
+> > The main counter-point to this observation is the Everest system whose
+> > devicetree describes a large number of PCA955x devices and in some cases
+> > has pin assignments that hit the hazard. However, there does not seem to
+> > be any use of the affected GPIOs in the userspace associated with
+> > Everest.
+> >
+> > Regardless, any use of the hazardous GPIOs in Everest is already broken,
+> > so let's fix the interface and then fix any already broken userspace
+> > with it.
+> >
+> > Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
+>
+> Acked-by: Linus Walleij <linus.walleij@linaro.org>
+>
+> Yours,
+> Linus Walleij
