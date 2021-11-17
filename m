@@ -1,84 +1,71 @@
 From: Oskar Senft <osk@google.com>
-Date: Tue, 16 Nov 2021 09:40:22 -0500
+Date: Tue, 16 Nov 2021 19:54:20 -0500
 Subject: vga_pw sysfs file
-Message-ID: <CABoTLcR2bHQCgV+ooVGE5GJ5NOeK1irDgg0P-rfErA=xbit0vg@mail.gmail.com>
+In-Reply-To: <4aa8906bdd429c878dd73139319e07f36ea584c2.camel@codeconstruct.com.au>
+References: <CABoTLcR2bHQCgV+ooVGE5GJ5NOeK1irDgg0P-rfErA=xbit0vg@mail.gmail.com>
+ <4aa8906bdd429c878dd73139319e07f36ea584c2.camel@codeconstruct.com.au>
+Message-ID: <CABoTLcQ4VQCiEUyXtSQu-L4La=83btT4zB7iKBumtfH0V8eQpg@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi everyone
+Hi
 
-I'm currently upgrading from Linux kernel 4.10 to to 5.15 and found
-that uart_render_controller [1] can no longer detect whether the host
-is driving the Aspeed's VGA output.
+Jeremy, Thanks for the explanation!
 
-I tracked it down to a difference on how the VGA scratch register used
-to be read by aspeed-bmc-misc.c vs. how it's now read by the
-aspeed_gfx_drv.c driver:
-- In aspeed-bmc-misc.c we ended up with the full contents of SCU50 in sysfs.
-- With aspeed_gfx_drv.c we now only get bit 0 [2]. Unfortunately, at
-least in my BIOS, the VGA scratch register never has bit 0 set.
+I think the problem is that the gfx driver effectively changed the
+semantic of the "vga_pw": In the past this was merely the contents of
+said register. With the new driver, it claims to report "1" if the
+host is driving the VGA, 0 otherwise. From what I can tell, it's not
+possible to make such a statement just from the VGA scratch registers.
+This is evident in that the uart_render_controller uses additional
+signals (i.e. the "power" / run state of the host) to make a
+determination on whether the host is driving VGA or not.
 
-In uart_render_controller, however, we're checking whether the bottom
-8 bit equal to 0xa8 (why are we not checking for != 0 here?)
+No that you mentioned it, I do remember from testing a couple of years
+ago, that the register does not reliably return to 0 when the host is
+rebooting.
 
-For a test, I read both the SCU50 register via devmem as well as the
-vga_pw sysfs file with this script: while true; do sleep 0.1; echo
-$(cat /proc/uptime) - $(devmem 0x1e6e2050 32) - $(cat
-/sys/devices/platform/ahb/ahb:apb/1e6e6000.display/vga_pw); done
+With that, I suggest changing the gfx driver's "vga_pw" back to just
+reporting the contents of the register and leaving it to a user space
+process (like uart_render_controller) to use a variety of signals to
+make a determination.
 
-# Host is powered on or is rebooted
-1128.58 847.22 - 0x00000000
-...
-1159.38 853.16 - 0x00000000 - 0
-1159.73 853.16 - 0x00000000 - 0
-1159.98 853.16 - 0x00000000 - 0
-1160.20 853.16 - 0x00000000 - 0
-
-# BIOS starts VGA driver
-1160.42 853.16 - 0x3F0A00A8 - 0
-1160.68 853.16 - 0x3F0A00A8 - 0
-1160.97 853.16 - 0x3F0A00A8 - 0
-1161.20 853.16 - 0x3F0A00A8 - 0
-1161.46 853.16 - 0x3F0A00A8 - 0
-1161.68 853.16 - 0x3F0A00A8 - 0
-1161.91 853.16 - 0x3F0A00A8 - 0
-
-# VGA driver initialized
-1162.26 853.16 - 0x3F0A0000 - 0
-1162.56 853.16 - 0x3F0A0000 - 0
-1162.77 853.25 - 0x3F0A0000 - 0
-1162.96 853.31 - 0x3F0A0000 - 0
-1163.17 853.38 - 0x3F0A0000 - 0
-1163.41 853.43 - 0x3F0A0000 - 0
-1163.72 853.50 - 0x3F0A0000 - 0
-...
-
-# Host powered off or is rebooted
-1193.26 861.68 - 0x00000000 - 0
-1193.58 861.76 - 0x00000000 - 0
-1193.76 861.84 - 0x00000000 - 0
-1193.94 861.94 - 0x00000000 - 0
-1194.12 861.96 - 0x00000000 - 0
-1194.33 862.00 - 0x00000000 - 0
-
-As I understand, we want to detect the moment where the BIOS
-initialized the VGA driver
-
-To restore the previous functionality, the "easiest" option might be
-to just return SCU50[31..0] as is, without trying to interpret it.
-
-Another option would be to check whether it's != 0  (instead of & ) -
-I think this would work in my example, too. If that's an option, I'll
-test it.
-
-For the check in [2], what BIOS was this tested with? Would a != 0
-check work there?
+Joel, if I sent such a patch, would you accept that? If it's easier to
+argue with the actual patch in hand, I'd be happy to prep it real
+quick.
 
 Thanks
 Oskar.
 
-[1]: https://github.com/jk-ozlabs/uart-render-controller/tree/master
-[2]: https://github.com/torvalds/linux/blob/master/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c#L294
+
+On Tue, Nov 16, 2021 at 7:48 PM Jeremy Kerr <jk@codeconstruct.com.au> wrote:
+>
+> Hi Oskar,
+>
+> I think Joel will send some details on the gfx driver side, but:
+>
+> > In uart_render_controller, however, we're checking whether the bottom
+> > 8 bit equal to 0xa8 (why are we not checking for != 0 here?)
+>
+> This is because we want to ensure that we're in the init process of the
+> host-side GPU driver, and not some arbitrary other access; it's been a
+> while since working on this, but I *think* I remember seeing other areas
+> of the scratch reg at non-zero values (granted, not the lower 8 bits
+> though...).
+>
+> [There was some discussion with aspeed about the init value
+> of 0x0 not being guaranteed on some part of the scratch register
+> interface, but I don't recall what that applied to]
+>
+> We could change this to != 0, but there's a solid convention that the
+> host-side driver is writing 0xa8 as the first part of init, so I think
+> the current behaviour would provide a more solid check.
+>
+> Cheers,
+>
+>
+> Jeremy
+>
