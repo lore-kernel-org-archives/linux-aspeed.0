@@ -1,33 +1,43 @@
-From: Oskar Senft <osk@google.com>
-Date: Tue, 16 Nov 2021 19:59:28 -0500
-Subject: vga_pw sysfs file
-In-Reply-To: <CACPK8Xc_B4T-xAcQ7sSqOuVLpwBw69mmj7=5T_opr2AqUs7ThQ@mail.gmail.com>
-References: <CABoTLcR2bHQCgV+ooVGE5GJ5NOeK1irDgg0P-rfErA=xbit0vg@mail.gmail.com>
- <CACPK8Xc_B4T-xAcQ7sSqOuVLpwBw69mmj7=5T_opr2AqUs7ThQ@mail.gmail.com>
-Message-ID: <CABoTLcQP+kSD2zO2O-_U23Xmi1e1YrjqVDRy3sCviXJ5K9pruw@mail.gmail.com>
+From: Joel Stanley <joel@jms.id.au>
+Date: Wed, 17 Nov 2021 09:01:45 +0800
+Subject: [PATCH] drm/aspeed: Fix vga_pw sysfs output
+Message-ID: <20211117010145.297253-1-joel@jms.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Joel
+Before the drm driver had support for this file there was a driver that
+exposed the contents of the vga password register to userspace. It would
+present the entire register instead of interpreting it.
 
-> > In uart_render_controller, however, we're checking whether the bottom
-> > 8 bit equal to 0xa8 (why are we not checking for != 0 here?)
->
-> I think you found a mistake in the new sysfs file. I can't recall why
-> I masked the value the way I did.
+The drm implementation chose to mask of the lower bit, without explaining
+why. This breaks the existing userspace, which is looking for 0xa8 in
+the lower byte.
 
-Ha, and I thought I'd have to argue my case ;-)
+Change our implementation to expose the entire register.
 
-> Thanks for investigating this. I'll send a patch to the kernel and if
-> you could test it that would be appreciated.
+Fixes: 696029eb36c0 ("drm/aspeed: Add sysfs for output settings")
+Reported-by: Oskar Senft <osk@google.com>
+Signed-off-by: Joel Stanley <joel@jms.id.au>
+---
+ drivers/gpu/drm/aspeed/aspeed_gfx_drv.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Absolutely. I assume this will just be a 1-liner. I have the system
-setup and can test at any time.
+diff --git a/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c b/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
+index b53fee6f1c17..65f172807a0d 100644
+--- a/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
++++ b/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
+@@ -291,7 +291,7 @@ vga_pw_show(struct device *dev, struct device_attribute *attr, char *buf)
+ 	if (rc)
+ 		return rc;
+ 
+-	return sprintf(buf, "%u\n", reg & 1);
++	return sprintf(buf, "%u\n", reg);
+ }
+ static DEVICE_ATTR_RO(vga_pw);
+ 
+-- 
+2.33.0
 
-Alternatively, I'd also be happy to send it through.
-
-Thanks
-Oskar.
