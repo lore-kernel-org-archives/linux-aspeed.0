@@ -1,47 +1,62 @@
-From: tommy-huang <tommy_huang@aspeedtech.com>
-Date: Wed, 17 Nov 2021 13:45:15 +0800
-Subject: [PATCH v3 1/4] ARM: dts: aspeed: Add GFX node to AST2600
+From: Joel Stanley <joel@jms.id.au>
+Date: Wed, 17 Nov 2021 06:06:10 +0000
+Subject: [PATCH v3 0/4] Add Aspeed AST2600 soc display support
 In-Reply-To: <20211117054518.3555-1-tommy_huang@aspeedtech.com>
 References: <20211117054518.3555-1-tommy_huang@aspeedtech.com>
-Message-ID: <20211117054518.3555-2-tommy_huang@aspeedtech.com>
+Message-ID: <CACPK8XdUHZBAwcwT96Su+Fa_nenYSa75vCNpskh864Cvx04y8Q@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Joel Stanley <joel@jms.id.au>
+On Wed, 17 Nov 2021 at 05:45, tommy-huang <tommy_huang@aspeedtech.com> wrote:
+>
+> v3:
+>   Refine the patch for clear separate purpose.
+>   Skip to send devicetree patch
 
-The GFX device is present in the AST2600 SoC.
+Thanks Tommy. A few things:
 
-Signed-off-by: Joel Stanley <joel@jms.id.au>
-Signed-off-by: tommy-huang <tommy_huang@aspeedtech.com>
----
- arch/arm/boot/dts/aspeed-g6.dtsi | 11 +++++++++++
- 1 file changed, 11 insertions(+)
+ - Set up your authorship in git:
 
-diff --git a/arch/arm/boot/dts/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed-g6.dtsi
-index 1b47be1704f8..e38c3742761b 100644
---- a/arch/arm/boot/dts/aspeed-g6.dtsi
-+++ b/arch/arm/boot/dts/aspeed-g6.dtsi
-@@ -351,6 +351,17 @@
- 				quality = <100>;
- 			};
- 
-+			gfx: display at 1e6e6000 {
-+				compatible = "aspeed,ast2600-gfx", "aspeed,ast2500-gfx", "syscon";
-+				reg = <0x1e6e6000 0x1000>;
-+				reg-io-width = <4>;
-+				clocks = <&syscon ASPEED_CLK_GATE_D1CLK>;
-+				resets = <&syscon ASPEED_RESET_GRAPHICS>;
-+				syscon = <&syscon>;
-+				status = "disabled";
-+				interrupts = <GIC_SPI 14 IRQ_TYPE_LEVEL_HIGH>;
-+			};
-+
- 			xdma: xdma at 1e6e7000 {
- 				compatible = "aspeed,ast2600-xdma";
- 				reg = <0x1e6e7000 0x100>;
--- 
-2.17.1
+ git config --global user.name "Tommy Haung"
 
+- The "Add AST2600 chip support" patch is the same as the one I sent,
+you can put mine back in your series now
+
+- We should add a device tree bindings document
+
+Can you confirm you tested these changes on both the ast2500 and the
+ast2600? How did you test?
+
+Cheers,
+
+Joel
+
+
+>
+> v2:
+>   Remove some unnecessary patch.
+>   Refine for reviwer request.
+>
+> v1:
+>   First add patch.
+>
+> Joel Stanley (2):
+>   ARM: dts: aspeed: Add GFX node to AST2600
+>   ARM: dts: aspeed: ast2600-evb: Enable GFX device
+>
+> tommy-huang (2):
+>   drm/aspeed: Update INTR_STS handling
+>   drm/aspeed: Add AST2600 chip support
+>
+>  arch/arm/boot/dts/aspeed-ast2600-evb.dts | 18 ++++++++++++++++++
+>  arch/arm/boot/dts/aspeed-g6.dtsi         | 11 +++++++++++
+>  drivers/gpu/drm/aspeed/aspeed_gfx.h      |  1 +
+>  drivers/gpu/drm/aspeed/aspeed_gfx_drv.c  | 15 ++++++++++++++-
+>  4 files changed, 44 insertions(+), 1 deletion(-)
+>
+> --
+> 2.17.1
+>
