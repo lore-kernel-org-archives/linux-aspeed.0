@@ -1,80 +1,56 @@
 From: Winiarska, Iwona <iwona.winiarska@intel.com>
-Date: Wed, 17 Nov 2021 23:19:44 +0000
-Subject: [PATCH v3 06/13] peci: Add device detection
-In-Reply-To: <YZNPFGPXfCLfJMq3@kroah.com>
+Date: Wed, 17 Nov 2021 23:25:35 +0000
+Subject: [PATCH v3 00/13] Introduce PECI subsystem
+In-Reply-To: <20211117035642.GH14774@packtop>
 References: <20211115182552.3830849-1-iwona.winiarska@intel.com>
- <20211115182552.3830849-7-iwona.winiarska@intel.com>
- <YZKr1Rqfx6Cmw+Ok@kroah.com>
- <368c990c30c5bacde15ac4bce5db8389aea3ec9c.camel@intel.com>
- <YZNPFGPXfCLfJMq3@kroah.com>
-Message-ID: <93b78525b47e31664da362773f7c46e9cf77e1fa.camel@intel.com>
+ <20211117035642.GH14774@packtop>
+Message-ID: <74100d46dc362cccaca5ce6b780dfa3d99fd96df.camel@intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, 2021-11-16 at 07:26 +0100, gregkh at linuxfoundation.org wrote:
-> On Mon, Nov 15, 2021 at 10:35:23PM +0000, Winiarska, Iwona wrote:
-> > On Mon, 2021-11-15 at 19:49 +0100, Greg Kroah-Hartman wrote:
-> > > On Mon, Nov 15, 2021 at 07:25:45PM +0100, Iwona Winiarska wrote:
-> > > > +void peci_device_destroy(struct peci_device *device)
-> > > > +{
-> > > > +???????bool killed;
-> > > > +
-> > > > +???????device_lock(&device->dev);
-> > > > +???????killed = kill_device(&device->dev);
-> > > 
-> > > Eeek, why call this?
-> > > 
-> > > > +???????device_unlock(&device->dev);
-> > > > +
-> > > > +???????if (!killed)
-> > > > +???????????????return;
-> > > 
-> > > What happened if something changed after you unlocked it?
+On Wed, 2021-11-17 at 03:56 +0000, Zev Weiss wrote:
+> On Mon, Nov 15, 2021 at 10:25:39AM PST, Iwona Winiarska wrote:
+> > Hi,
 > > 
-> > We either killed it, or the other caller killed it.
+> > This is a third round of patches introducing PECI subsystem.
+> > Sorry for the delay between v2 and v3.
 > > 
-> > > 
-> > > Why is kill_device() required at all?? That's a very rare function to
-> > > call, and one that only one "bus" calls today because it is very
-> > > special (i.e. crazy and broken...)
-> > 
-> > It's used to avoid double-delete in case of races between peci_controller
-> > unregister and "manually" removing the device using sysfs (pointed out by Dan
-> > in
-> > v2). We're calling peci_device_destroy() in both callsites.
-> > Other way to solve it would be to just have a peci-specific lock, but
-> > kill_device seemed to be well suited for the problem at hand.
-> > Do you suggest to remove it and just go with the lock?
 > 
-> Yes please, remove it and use the lock.
+> Hi Iwona,
+> 
+> I've done some testing of these patches on my AST2500/E-2778G OpenBMC
+> platform -- I had to do a small bit of hacking to add support for
+> INTEL_FAM6_KABYLAKE, but with that in place the newly-added code for the
+> 8.8 format seems to work as it should.? Thanks!
 
-Ack.
+Thanks for the report and testing :)
 
 > 
-> Also, why are you required to have a sysfs file that can remove the
-> device?? Who wants that?
+> In poking at it a bit further I encountered some sub-optimal behavior
+> w.r.t. to host power state transitions and timeouts though --
+> essentially, if I ever hit a timeout in aspeed_peci_xfer() (for example
+> on a read of a hwmon tempX_input file after an unexpected host
+> shutdown), it seems to get stuck in a state where even if the host comes
+> back online, all attempted PECI transfers continue just timing out.
+> (Rebooting the BMC seems to resolve the problem.)? This also happens if
+> I remove the peci client device via the 'remove' sysfs file, shut down
+> the host, and then do a rescan via sysfs while the host is off (i.e.
+> another operation that times out).
+> 
+> Let me know if there's any other info that would be helpful for
+> debugging.
 
-From the following patch:
-
-"PECI devices may not be discoverable at the time when PECI controller is
-being added (e.g. BMC can boot up when the Host system is still in S5).
-Since we currently don't have the capabilities to figure out the Host
-system state inside the PECI subsystem itself, we have to rely on
-userspace to do it for us."
-
-That's about rescan, but userspace might also want to remove the devices e.g.
-when Host goes into S5.
-It's also useful for development and debug purposes (and also allows us to have
-a nice bit of symmetry with rescan).
+That's unexpected. I do have an idea what might have caused that. Let me fix it
+in v4.
 
 Thanks
 -Iwona
 
 > 
-> thanks,
 > 
-> greg k-h
+> Thanks,
+> Zev
 
