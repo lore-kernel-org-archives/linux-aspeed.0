@@ -1,43 +1,80 @@
-From: Zev Weiss <zweiss@equinix.com>
-Date: Wed, 17 Nov 2021 03:56:43 +0000
-Subject: [PATCH v3 00/13] Introduce PECI subsystem
-In-Reply-To: <20211115182552.3830849-1-iwona.winiarska@intel.com>
-References: <20211115182552.3830849-1-iwona.winiarska@intel.com>
-Message-ID: <20211117035642.GH14774@packtop>
+From: tommy-huang <tommy_huang@aspeedtech.com>
+Date: Wed, 17 Nov 2021 13:45:17 +0800
+Subject: [PATCH v3 3/4] drm/aspeed: Update INTR_STS handling
+In-Reply-To: <20211117054518.3555-1-tommy_huang@aspeedtech.com>
+References: <20211117054518.3555-1-tommy_huang@aspeedtech.com>
+Message-ID: <20211117054518.3555-4-tommy_huang@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Nov 15, 2021 at 10:25:39AM PST, Iwona Winiarska wrote:
->Hi,
->
->This is a third round of patches introducing PECI subsystem.
->Sorry for the delay between v2 and v3.
->
+Add interrupt clear register define for further chip support.
 
-Hi Iwona,
+Signed-off-by: tommy-huang <tommy_huang@aspeedtech.com>
+---
+ drivers/gpu/drm/aspeed/aspeed_gfx.h     | 1 +
+ drivers/gpu/drm/aspeed/aspeed_gfx_drv.c | 6 +++++-
+ 2 files changed, 6 insertions(+), 1 deletion(-)
 
-I've done some testing of these patches on my AST2500/E-2778G OpenBMC
-platform -- I had to do a small bit of hacking to add support for
-INTEL_FAM6_KABYLAKE, but with that in place the newly-added code for the
-8.8 format seems to work as it should.  Thanks!
+diff --git a/drivers/gpu/drm/aspeed/aspeed_gfx.h b/drivers/gpu/drm/aspeed/aspeed_gfx.h
+index 96501152bafa..4e6a442c3886 100644
+--- a/drivers/gpu/drm/aspeed/aspeed_gfx.h
++++ b/drivers/gpu/drm/aspeed/aspeed_gfx.h
+@@ -12,6 +12,7 @@ struct aspeed_gfx {
+ 	struct regmap			*scu;
+ 
+ 	u32				dac_reg;
++	u32				int_clr_reg;
+ 	u32				vga_scratch_reg;
+ 	u32				throd_val;
+ 	u32				scan_line_max;
+diff --git a/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c b/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
+index b53fee6f1c17..d4b56b3c7597 100644
+--- a/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
++++ b/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
+@@ -60,6 +60,7 @@
+ 
+ struct aspeed_gfx_config {
+ 	u32 dac_reg;		/* DAC register in SCU */
++	u32 int_clear_reg;	/* Interrupt clear register */
+ 	u32 vga_scratch_reg;	/* VGA scratch register in SCU */
+ 	u32 throd_val;		/* Default Threshold Seting */
+ 	u32 scan_line_max;	/* Max memory size of one scan line */
+@@ -67,6 +68,7 @@ struct aspeed_gfx_config {
+ 
+ static const struct aspeed_gfx_config ast2400_config = {
+ 	.dac_reg = 0x2c,
++	.int_clear_reg = 0x60,
+ 	.vga_scratch_reg = 0x50,
+ 	.throd_val = CRT_THROD_LOW(0x1e) | CRT_THROD_HIGH(0x12),
+ 	.scan_line_max = 64,
+@@ -74,6 +76,7 @@ static const struct aspeed_gfx_config ast2400_config = {
+ 
+ static const struct aspeed_gfx_config ast2500_config = {
+ 	.dac_reg = 0x2c,
++	.int_clear_reg = 0x60,
+ 	.vga_scratch_reg = 0x50,
+ 	.throd_val = CRT_THROD_LOW(0x24) | CRT_THROD_HIGH(0x3c),
+ 	.scan_line_max = 128,
+@@ -119,7 +122,7 @@ static irqreturn_t aspeed_gfx_irq_handler(int irq, void *data)
+ 
+ 	if (reg & CRT_CTRL_VERTICAL_INTR_STS) {
+ 		drm_crtc_handle_vblank(&priv->pipe.crtc);
+-		writel(reg, priv->base + CRT_CTRL1);
++		writel(reg, priv->base + priv->int_clr_reg);
+ 		return IRQ_HANDLED;
+ 	}
+ 
+@@ -147,6 +150,7 @@ static int aspeed_gfx_load(struct drm_device *drm)
+ 	config = match->data;
+ 
+ 	priv->dac_reg = config->dac_reg;
++	priv->int_clr_reg = config->int_clear_reg;
+ 	priv->vga_scratch_reg = config->vga_scratch_reg;
+ 	priv->throd_val = config->throd_val;
+ 	priv->scan_line_max = config->scan_line_max;
+-- 
+2.17.1
 
-In poking at it a bit further I encountered some sub-optimal behavior
-w.r.t. to host power state transitions and timeouts though --
-essentially, if I ever hit a timeout in aspeed_peci_xfer() (for example
-on a read of a hwmon tempX_input file after an unexpected host
-shutdown), it seems to get stuck in a state where even if the host comes
-back online, all attempted PECI transfers continue just timing out.
-(Rebooting the BMC seems to resolve the problem.)  This also happens if
-I remove the peci client device via the 'remove' sysfs file, shut down
-the host, and then do a rescan via sysfs while the host is off (i.e.
-another operation that times out).
-
-Let me know if there's any other info that would be helpful for
-debugging.
-
-
-Thanks,
-Zev
