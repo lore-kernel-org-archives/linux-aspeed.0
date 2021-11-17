@@ -1,28 +1,27 @@
-From: Oskar Senft <osk@google.com>
-Date: Tue, 16 Nov 2021 21:29:27 -0500
-Subject: vga_pw sysfs file
-In-Reply-To: <CACPK8Xed0JN9drM6Apz=k24K06KT-gnooBjWeu8MAwNjxUNh3g@mail.gmail.com>
-References: <CABoTLcR2bHQCgV+ooVGE5GJ5NOeK1irDgg0P-rfErA=xbit0vg@mail.gmail.com>
- <CACPK8Xc_B4T-xAcQ7sSqOuVLpwBw69mmj7=5T_opr2AqUs7ThQ@mail.gmail.com>
- <CABoTLcQP+kSD2zO2O-_U23Xmi1e1YrjqVDRy3sCviXJ5K9pruw@mail.gmail.com>
- <CACPK8Xed0JN9drM6Apz=k24K06KT-gnooBjWeu8MAwNjxUNh3g@mail.gmail.com>
-Message-ID: <CABoTLcT2pxEVKQ=wsoTZ4qs_yo79r3g3otO_OuEm+SuaffRt4A@mail.gmail.com>
+From: Joel Stanley <joel@jms.id.au>
+Date: Wed, 17 Nov 2021 11:51:03 +0800
+Subject: [PATCH 0/3] ARM: aspeed: Secure Boot Controller support
+Message-ID: <20211117035106.321454-1-joel@jms.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-> > Absolutely. I assume this will just be a 1-liner. I have the system
-> > setup and can test at any time.
->
-> Here we go:
->
->  https://lore.kernel.org/all/20211117010145.297253-1-joel at jms.id.au/
-Thank you! Works for me on a TYAN S7106.
+This adds the reporting of the secure boot state to the ASPEED socinfo
+driver.
 
-> Thanks for the detailed bug report. Please reply to that mail with
-> your tested-by once you've confirmed this works.
-Done.
+Joel Stanley (3):
+  dt-bindings: aspeed: Add Secure Boot Controller bindings
+  ARM: dts: aspeed: Add secure boot controller node
+  ARM: aspeed: Add secure boot controller support
 
-Oskar.
+ .../bindings/arm/aspeed/aspeed,sbc.yaml       | 37 ++++++++++
+ arch/arm/boot/dts/aspeed-g6.dtsi              |  5 ++
+ drivers/soc/aspeed/aspeed-socinfo.c           | 73 +++++++++++++++++++
+ 3 files changed, 115 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/arm/aspeed/aspeed,sbc.yaml
+
+-- 
+2.33.0
+
