@@ -1,163 +1,185 @@
 From: Jammy Huang <jammy_huang@aspeedtech.com>
-Date: Thu, 18 Nov 2021 15:40:25 +0800
-Subject: [PATCH v5 04/10] media: aspeed: refactor to gather format/compress
- settings
+Date: Thu, 18 Nov 2021 15:40:28 +0800
+Subject: [PATCH v5 07/10] media: aspeed: Use runtime configuration
 In-Reply-To: <20211118074030.685-1-jammy_huang@aspeedtech.com>
 References: <20211118074030.685-1-jammy_huang@aspeedtech.com>
-Message-ID: <20211118074030.685-5-jammy_huang@aspeedtech.com>
+Message-ID: <20211118074030.685-8-jammy_huang@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add API, aspeed_video_update_regs(), to gather format/compress settings
-which are controlled by user.
+The aspeed video IP has some differences between SoC families. Currently
+the driver decides which registers to use at compile time, which means
+a single kernel can not be used between platforms.
 
+Switch to using runtime configuration of the registers that vary between
+SoC families.
+
+Signed-off-by: Joel Stanley <joel@jms.id.au>
 Signed-off-by: Jammy Huang <jammy_huang@aspeedtech.com>
 ---
-v5:
-  - no update
-v4:
-  - no update
-v3:
-  - no update
-v2:
-  - update commit message
-  - update log to use v4l2_dbg rather than dprintk
+v5
+  - new
 ---
- drivers/media/platform/aspeed-video.c | 69 ++++++++++++++-------------
- 1 file changed, 35 insertions(+), 34 deletions(-)
+ drivers/media/platform/aspeed-video.c | 71 ++++++++++++++++++++-------
+ 1 file changed, 52 insertions(+), 19 deletions(-)
 
 diff --git a/drivers/media/platform/aspeed-video.c b/drivers/media/platform/aspeed-video.c
-index e8dd0a7ebfc7..d2335d669fb3 100644
+index d2335d669fb3..ba8ee82b38c3 100644
 --- a/drivers/media/platform/aspeed-video.c
 +++ b/drivers/media/platform/aspeed-video.c
-@@ -967,20 +967,42 @@ static void aspeed_video_set_resolution(struct aspeed_video *video)
- 		aspeed_video_free_buf(video, &video->srcs[0]);
- }
+@@ -75,11 +75,8 @@
+ #define  VE_SEQ_CTRL_CAP_BUSY		BIT(16)
+ #define  VE_SEQ_CTRL_COMP_BUSY		BIT(18)
  
--static void aspeed_video_init_regs(struct aspeed_video *video)
-+static void aspeed_video_update_regs(struct aspeed_video *video)
- {
- 	u32 comp_ctrl = VE_COMP_CTRL_RSVD |
+-#ifdef CONFIG_MACH_ASPEED_G4
+-#define  VE_SEQ_CTRL_JPEG_MODE		BIT(8)	/* AST2400 */
+-#else
+-#define  VE_SEQ_CTRL_JPEG_MODE		BIT(13)	/* AST2500/2600 */
+-#endif
++#define AST2500_VE_SEQ_CTRL_JPEG_MODE	BIT(13)
++#define AST2400_VE_SEQ_CTRL_JPEG_MODE	BIT(8)
+ 
+ #define VE_CTRL				0x008
+ #define  VE_CTRL_HSYNC_POL		BIT(0)
+@@ -136,9 +133,8 @@
+ #define  VE_COMP_CTRL_HQ_DCT_CHR	GENMASK(26, 22)
+ #define  VE_COMP_CTRL_HQ_DCT_LUM	GENMASK(31, 27)
+ 
+-#define VE_OFFSET_COMP_STREAM		0x078
+-
+-#define VE_JPEG_COMP_SIZE_READ_BACK	0x084
++#define AST2400_VE_COMP_SIZE_READ_BACK	0x078
++#define AST2600_VE_COMP_SIZE_READ_BACK	0x084
+ 
+ #define VE_SRC_LR_EDGE_DET		0x090
+ #define  VE_SRC_LR_EDGE_DET_LEFT	GENMASK(11, 0)
+@@ -233,6 +229,8 @@ struct aspeed_video {
+ 	struct video_device vdev;
+ 	struct mutex video_lock;	/* v4l2 and videobuf2 lock */
+ 
++	struct aspeed_video_config config;
++
+ 	wait_queue_head_t wait;
+ 	spinlock_t lock;		/* buffer list lock */
+ 	struct delayed_work res_work;
+@@ -258,6 +256,30 @@ struct aspeed_video {
+ 
+ #define to_aspeed_video(x) container_of((x), struct aspeed_video, v4l2_dev)
+ 
++struct aspeed_video_config {
++	u32 version;
++	u32 jpeg_mode;
++	u32 comp_size_read;
++};
++
++static const struct aspeed_video_config ast2400_config = {
++	.version = 4,
++	.jpeg_mode = AST2400_VE_SEQ_CTRL_JPEG_MODE,
++	.comp_size_read = AST2400_VE_COMP_SIZE_READ_BACK,
++};
++
++static const struct aspeed_video_config ast2500_config = {
++	.version = 5,
++	.jpeg_mode = AST2500_VE_SEQ_CTRL_JPEG_MODE,
++	.comp_size_read = AST2400_VE_COMP_SIZE_READ_BACK,
++};
++
++static const struct aspeed_video_config ast2600_config = {
++	.version = 6,
++	.jpeg_mode = AST2500_VE_SEQ_CTRL_JPEG_MODE,
++	.comp_size_read = AST2600_VE_COMP_SIZE_READ_BACK,
++};
++
+ static const u32 aspeed_video_jpeg_header[ASPEED_VIDEO_JPEG_HEADER_SIZE] = {
+ 	0xe0ffd8ff, 0x464a1000, 0x01004649, 0x60000101, 0x00006000, 0x0f00feff,
+ 	0x00002d05, 0x00000000, 0x00000000, 0x00dbff00
+@@ -640,7 +662,7 @@ static irqreturn_t aspeed_video_irq(int irq, void *arg)
+ 	if (sts & VE_INTERRUPT_COMP_COMPLETE) {
+ 		struct aspeed_video_buffer *buf;
+ 		u32 frame_size = aspeed_video_read(video,
+-						   VE_JPEG_COMP_SIZE_READ_BACK);
++						   video->config.comp_size_read);
+ 
+ 		update_perf(&video->perf);
+ 
+@@ -973,7 +995,7 @@ static void aspeed_video_update_regs(struct aspeed_video *video)
  		FIELD_PREP(VE_COMP_CTRL_DCT_LUM, video->jpeg_quality) |
  		FIELD_PREP(VE_COMP_CTRL_DCT_CHR, video->jpeg_quality | 0x10);
--	u32 ctrl = VE_CTRL_AUTO_OR_CURSOR;
-+	u32 ctrl = 0;
- 	u32 seq_ctrl = VE_SEQ_CTRL_JPEG_MODE;
+ 	u32 ctrl = 0;
+-	u32 seq_ctrl = VE_SEQ_CTRL_JPEG_MODE;
++	u32 seq_ctrl = video->config.jpeg_mode;
  
-+	v4l2_dbg(1, debug, &video->v4l2_dev, "framerate(%d)\n",
-+		 video->frame_rate);
-+	v4l2_dbg(1, debug, &video->v4l2_dev, "subsample(%s)\n",
-+		 video->yuv420 ? "420" : "444");
-+	v4l2_dbg(1, debug, &video->v4l2_dev, "compression quality(%d)\n",
-+		 video->jpeg_quality);
-+
- 	if (video->frame_rate)
- 		ctrl |= FIELD_PREP(VE_CTRL_FRC, video->frame_rate);
- 
- 	if (video->yuv420)
- 		seq_ctrl |= VE_SEQ_CTRL_YUV420;
- 
-+	if (video->jpeg.virt)
-+		aspeed_video_update_jpeg_table(video->jpeg.virt, video->yuv420);
-+
-+	/* Set control registers */
-+	aspeed_video_update(video, VE_SEQ_CTRL,
-+			    VE_SEQ_CTRL_JPEG_MODE | VE_SEQ_CTRL_YUV420,
-+			    seq_ctrl);
-+	aspeed_video_update(video, VE_CTRL, VE_CTRL_FRC, ctrl);
-+	aspeed_video_update(video, VE_COMP_CTRL,
-+			    VE_COMP_CTRL_DCT_LUM | VE_COMP_CTRL_DCT_CHR,
-+			    comp_ctrl);
-+}
-+
-+static void aspeed_video_init_regs(struct aspeed_video *video)
-+{
- 	/* Unlock VE registers */
- 	aspeed_video_write(video, VE_PROTECTION_KEY, VE_PROTECTION_KEY_UNLOCK);
- 
-@@ -995,9 +1017,8 @@ static void aspeed_video_init_regs(struct aspeed_video *video)
- 	aspeed_video_write(video, VE_JPEG_ADDR, video->jpeg.dma);
+ 	v4l2_dbg(1, debug, &video->v4l2_dev, "framerate(%d)\n",
+ 		 video->frame_rate);
+@@ -993,7 +1015,7 @@ static void aspeed_video_update_regs(struct aspeed_video *video)
  
  	/* Set control registers */
--	aspeed_video_write(video, VE_SEQ_CTRL, seq_ctrl);
--	aspeed_video_write(video, VE_CTRL, ctrl);
--	aspeed_video_write(video, VE_COMP_CTRL, comp_ctrl);
-+	aspeed_video_write(video, VE_CTRL, VE_CTRL_AUTO_OR_CURSOR);
-+	aspeed_video_write(video, VE_COMP_CTRL, VE_COMP_CTRL_RSVD);
+ 	aspeed_video_update(video, VE_SEQ_CTRL,
+-			    VE_SEQ_CTRL_JPEG_MODE | VE_SEQ_CTRL_YUV420,
++			    video->config.jpeg_mode | VE_SEQ_CTRL_YUV420,
+ 			    seq_ctrl);
+ 	aspeed_video_update(video, VE_CTRL, VE_CTRL_FRC, ctrl);
+ 	aspeed_video_update(video, VE_COMP_CTRL,
+@@ -1790,8 +1812,18 @@ static int aspeed_video_init(struct aspeed_video *video)
+ 	return rc;
+ }
  
- 	/* Don't downscale */
- 	aspeed_video_write(video, VE_SCALING_FACTOR, 0x10001000);
-@@ -1326,27 +1347,6 @@ static const struct v4l2_ioctl_ops aspeed_video_ioctl_ops = {
- 	.vidioc_unsubscribe_event = v4l2_event_unsubscribe,
- };
- 
--static void aspeed_video_update_jpeg_quality(struct aspeed_video *video)
--{
--	u32 comp_ctrl = FIELD_PREP(VE_COMP_CTRL_DCT_LUM, video->jpeg_quality) |
--		FIELD_PREP(VE_COMP_CTRL_DCT_CHR, video->jpeg_quality | 0x10);
--
--	aspeed_video_update(video, VE_COMP_CTRL,
--			    VE_COMP_CTRL_DCT_LUM | VE_COMP_CTRL_DCT_CHR,
--			    comp_ctrl);
--}
--
--static void aspeed_video_update_subsampling(struct aspeed_video *video)
--{
--	if (video->jpeg.virt)
--		aspeed_video_update_jpeg_table(video->jpeg.virt, video->yuv420);
--
--	if (video->yuv420)
--		aspeed_video_update(video, VE_SEQ_CTRL, 0, VE_SEQ_CTRL_YUV420);
--	else
--		aspeed_video_update(video, VE_SEQ_CTRL, VE_SEQ_CTRL_YUV420, 0);
--}
--
- static int aspeed_video_set_ctrl(struct v4l2_ctrl *ctrl)
++static const struct of_device_id aspeed_video_of_match[] = {
++	{ .compatible = "aspeed,ast2400-video-engine", .data = &ast2400_config },
++	{ .compatible = "aspeed,ast2500-video-engine", .data = &ast2500_config },
++	{ .compatible = "aspeed,ast2600-video-engine", .data = &ast2600_config },
++	{}
++};
++MODULE_DEVICE_TABLE(of, aspeed_video_of_match);
++
+ static int aspeed_video_probe(struct platform_device *pdev)
  {
- 	struct aspeed_video *video = container_of(ctrl->handler,
-@@ -1356,16 +1356,13 @@ static int aspeed_video_set_ctrl(struct v4l2_ctrl *ctrl)
- 	switch (ctrl->id) {
- 	case V4L2_CID_JPEG_COMPRESSION_QUALITY:
- 		video->jpeg_quality = ctrl->val;
--		aspeed_video_update_jpeg_quality(video);
-+		if (test_bit(VIDEO_STREAMING, &video->flags))
-+			aspeed_video_update_regs(video);
- 		break;
- 	case V4L2_CID_JPEG_CHROMA_SUBSAMPLING:
--		if (ctrl->val == V4L2_JPEG_CHROMA_SUBSAMPLING_420) {
--			video->yuv420 = true;
--			aspeed_video_update_subsampling(video);
--		} else {
--			video->yuv420 = false;
--			aspeed_video_update_subsampling(video);
--		}
-+		video->yuv420 = (ctrl->val == V4L2_JPEG_CHROMA_SUBSAMPLING_420);
-+		if (test_bit(VIDEO_STREAMING, &video->flags))
-+			aspeed_video_update_regs(video);
- 		break;
- 	default:
- 		return -EINVAL;
-@@ -1393,6 +1390,8 @@ static void aspeed_video_resolution_work(struct work_struct *work)
++	const struct aspeed_video_config *config;
++	const struct of_device_id *match;
+ 	int rc;
+ 	struct resource *res;
+ 	struct aspeed_video *video =
+@@ -1815,6 +1847,13 @@ static int aspeed_video_probe(struct platform_device *pdev)
+ 	if (IS_ERR(video->base))
+ 		return PTR_ERR(video->base);
  
- 	aspeed_video_init_regs(video);
- 
-+	aspeed_video_update_regs(video);
++	match = of_match_node(aspeed_video_of_match, pdev->dev.of_node);
++	if (!match)
++		return -EINVAL;
 +
- 	aspeed_video_get_resolution(video);
- 
- 	if (video->detected_timings.width != video->active_timings.width ||
-@@ -1504,6 +1503,8 @@ static int aspeed_video_start_streaming(struct vb2_queue *q,
- 	video->perf.duration_max = 0;
- 	video->perf.duration_min = 0xffffffff;
- 
-+	aspeed_video_update_regs(video);
++	config = match->data;
++	video->config = *config;
 +
- 	rc = aspeed_video_start_frame(video);
- 	if (rc) {
- 		aspeed_video_bufs_done(video, VB2_BUF_STATE_QUEUED);
+ 	rc = aspeed_video_init(video);
+ 	if (rc)
+ 		return rc;
+@@ -1828,6 +1867,8 @@ static int aspeed_video_probe(struct platform_device *pdev)
+ 
+ 	aspeed_video_debugfs_create(video);
+ 
++	dev_info(video->dev, "compatible for g%d\n", config->version);
++
+ 	return 0;
+ }
+ 
+@@ -1860,14 +1901,6 @@ static int aspeed_video_remove(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
+-static const struct of_device_id aspeed_video_of_match[] = {
+-	{ .compatible = "aspeed,ast2400-video-engine" },
+-	{ .compatible = "aspeed,ast2500-video-engine" },
+-	{ .compatible = "aspeed,ast2600-video-engine" },
+-	{}
+-};
+-MODULE_DEVICE_TABLE(of, aspeed_video_of_match);
+-
+ static struct platform_driver aspeed_video_driver = {
+ 	.driver = {
+ 		.name = DEVICE_NAME,
 -- 
 2.25.1
 
