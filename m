@@ -1,7 +1,7 @@
 From: Kumar Thangavel <kumarthangavel.hcl@gmail.com>
-Date: Thu, 18 Nov 2021 21:03:38 +0530
+Date: Thu, 18 Nov 2021 21:33:02 +0530
 Subject: [PATCH v7] Add payload to be 32-bit aligned to fix dropped packets
-Message-ID: <20211118153338.GA18435@gmail.com>
+Message-ID: <20211118160301.GA19542@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
