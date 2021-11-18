@@ -1,7 +1,7 @@
 From: Howard Chiu <howard10703049@gmail.com>
-Date: Thu, 18 Nov 2021 10:56:27 +0800
-Subject: [PATCH v4] ARM: dts: aspeed: Adding Facebook Bletchley BMC
-Message-ID: <20211118025627.3517958-1-howard.chiu@quantatw.com>
+Date: Thu, 18 Nov 2021 14:24:09 +0800
+Subject: [PATCH v5] ARM: dts: aspeed: Adding Facebook Bletchley BMC
+Message-ID: <20211118062409.3519367-1-howard.chiu@quantatw.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -13,7 +13,10 @@ Aspeed 2600 BMC SoC.
 
 Signed-off-by: Howard Chiu <howard.chiu@quantatw.com>
 
-change since v3:
+Change since v4:
+- Change address of TMP421 on i2c-12 to 0x4d
+
+Change since v3:
 - Add a TMP421 on i2c-10
 
 Change since v2:
@@ -47,7 +50,7 @@ index 0de64f237cd8..b804b577010a 100644
  	aspeed-bmc-facebook-elbert.dtb \
 diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-bletchley.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-bletchley.dts
 new file mode 100644
-index 000000000000..e6eaf3b4d27a
+index 000000000000..1603b0b30d9f
 --- /dev/null
 +++ b/arch/arm/boot/dts/aspeed-bmc-facebook-bletchley.dts
 @@ -0,0 +1,736 @@
@@ -701,9 +704,9 @@ index 000000000000..e6eaf3b4d27a
 +		reg = <0x4c>;
 +	};
 +
-+	tmp421 at 4f {
++	tmp421 at 4d {
 +		compatible = "ti,tmp421";
-+		reg = <0x4f>;
++		reg = <0x4d>;
 +	};
 +
 +	fan_ioexp: pca9552 at 67 {
