@@ -1,51 +1,46 @@
 From: Jammy Huang <jammy_huang@aspeedtech.com>
-Date: Thu, 18 Nov 2021 15:40:21 +0800
-Subject: [PATCH v5 00/10] add aspeed-jpeg support for aspeed-video
-Message-ID: <20211118074030.685-1-jammy_huang@aspeedtech.com>
+Date: Thu, 18 Nov 2021 15:40:27 +0800
+Subject: [PATCH v5 06/10] media: v4l2-ctrls: Reserve controls for ASPEED
+In-Reply-To: <20211118074030.685-1-jammy_huang@aspeedtech.com>
+References: <20211118074030.685-1-jammy_huang@aspeedtech.com>
+Message-ID: <20211118074030.685-7-jammy_huang@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The aim of this series is to add aspeed-jpeg support for aspeed-video
-driver.
+Reserve controls for ASPEED video family. Aspeed video engine contains a
+few features which improve video quality, reduce amount of compressed
+data, and etc. Hence, 16 controls are reserved for these aspeed
+proprietary features.
 
-To achieve this major goal some refactors are included.
+Signed-off-by: Jammy Huang <jammy_huang@aspeedtech.com>
+---
+v5:
+  - no update
+v4:
+  - new
+---
+ include/uapi/linux/v4l2-controls.h | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-In the last, debugfs information is also updated per this change.
-
-Changes in v5:
- - Use model data to tell different soc
-
-Changes in v4:
- - Add definition for the Aspeed JPEG format
- - Reserve controls for ASPEED
- - Use s_fmt to update format rather than new control
- - Update aspeed hq quality range, 1 ~ 12
-
-
-Jammy Huang (10):
-  media: aspeed: move err-handling together to the bottom
-  media: aspeed: use v4l2_info/v4l2_warn/v4l2_dbg for log
-  media: aspeed: add more debug log messages
-  media: aspeed: refactor to gather format/compress settings
-  media: v4l: Add definition for the Aspeed JPEG format
-  media: v4l2-ctrls: Reserve controls for ASPEED
-  media: aspeed: use model-data
-  media: aspeed: Support aspeed mode to reduce compressed data
-  media: aspeed: add comments and macro
-  media: aspeed: Extend debug message
-
- .../media/uapi/v4l/pixfmt-reserved.rst        |  12 +
- drivers/media/platform/aspeed-video.c         | 534 ++++++++++++++----
- drivers/media/v4l2-core/v4l2-ioctl.c          |   1 +
- include/uapi/linux/aspeed-video.h             |  15 +
- include/uapi/linux/v4l2-controls.h            |   5 +
- include/uapi/linux/videodev2.h                |   1 +
- 6 files changed, 467 insertions(+), 101 deletions(-)
- create mode 100644 include/uapi/linux/aspeed-video.h
-
+diff --git a/include/uapi/linux/v4l2-controls.h b/include/uapi/linux/v4l2-controls.h
+index a2669b79b294..e7c425a6fa9f 100644
+--- a/include/uapi/linux/v4l2-controls.h
++++ b/include/uapi/linux/v4l2-controls.h
+@@ -192,6 +192,11 @@ enum v4l2_colorfx {
+  * We reserve 16 controls for this driver. */
+ #define V4L2_CID_USER_IMX_BASE			(V4L2_CID_USER_BASE + 0x10b0)
+ 
++/* The base for the aspeed driver controls.
++ * We reserve 16 controls for this driver.
++ */
++#define V4L2_CID_USER_ASPEED_BASE		(V4L2_CID_USER_BASE + 0x10c0)
++
+ /* MPEG-class control IDs */
+ /* The MPEG controls are applicable to all codec controls
+  * and the 'MPEG' part of the define is historical */
 -- 
 2.25.1
 
