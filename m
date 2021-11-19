@@ -1,161 +1,85 @@
-From: Kumar Thangavel <kumarthangavel.hcl@gmail.com>
-Date: Fri, 19 Nov 2021 13:45:39 +0530
-Subject: [PATCH v7] Add payload to be 32-bit aligned to fix dropped packets
-In-Reply-To: <ad44434c-0356-701e-d355-174efc1917b5@gmail.com>
-References: <20211118160301.GA19542@gmail.com>
- <ad44434c-0356-701e-d355-174efc1917b5@gmail.com>
-Message-ID: <CAA7Tbcv480RvyL+J8pf2DvqdfFMoGpAdi=x-isEgOWyQ8N7Pkw@mail.gmail.com>
+From: Paul Menzel <pmenzel@molgen.mpg.de>
+Date: Fri, 19 Nov 2021 09:39:18 +0100
+Subject: [PATCH v5 05/10] media: v4l: Add definition for the Aspeed JPEG
+ format
+In-Reply-To: <0bed6093-0af6-4fc4-716f-6cf8b1302320@aspeedtech.com>
+References: <20211118074030.685-1-jammy_huang@aspeedtech.com>
+ <20211118074030.685-6-jammy_huang@aspeedtech.com>
+ <YZZIDNCLJXwrqY4W@paasikivi.fi.intel.com>
+ <0bed6093-0af6-4fc4-716f-6cf8b1302320@aspeedtech.com>
+Message-ID: <1cc9afa7-397e-64a0-9f1b-b4d3bd85a8f0@molgen.mpg.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Nov 18, 2021 at 10:44 PM Eric Dumazet <eric.dumazet@gmail.com>
-wrote:
 
->
->
-> On 11/18/21 8:03 AM, Kumar Thangavel wrote:
-> > Update NC-SI command handler (both standard and OEM) to take into
-> > account of payload paddings in allocating skb (in case of payload
-> > size is not 32-bit aligned).
-> >
-> > The checksum field follows payload field, without taking payload
-> > padding into account can cause checksum being truncated, leading to
-> > dropped packets.
-> >
->
-> Patch title should start with a prefix, identifying which layer/driver is
-> involved.
->
-> Probably in this case
->
-> net/ncsi: Add payload to be 32-bit aligned to fix dropped packets
->
-ACK.
-
->
-> > Fixes: fb4ee67529ff ("net/ncsi: Add NCSI OEM command support")
-> > Signed-off-by: Kumar Thangavel <thangavel.k@hcl.com>
-> > Acked-by: Samuel Mendoza-Jonas <sam@mendozajonas.com>
-> > Reviewed-by: Paul Menzel <pmenzel@molgen.mpg.de>
-> >
-> > ---
-> >   v7:
-> >    - Updated padding_bytes as const static int variable
-> >
-> >   v6:
-> >    - Updated type of padding_bytes variable
-> >    - Updated type of payload
-> >    - Seperated variable declarations and code
-> >
-> >   v5:
-> >    - Added Fixes tag
-> >    - Added const variable for padding_bytes
-> >
-> >   v4:
-> >    - Used existing macro for max function
-> >
-> >   v3:
-> >    - Added Macro for MAX
-> >    - Fixed the missed semicolon
-> >
-> >   v2:
-> >    - Added NC-SI spec version and section
-> >    - Removed blank line
-> >    - corrected spellings
-> >
-> >   v1:
-> >    - Initial draft
-> >
-> > ---
-> > ---
-> >  net/ncsi/ncsi-cmd.c | 24 ++++++++++++++++--------
-> >  1 file changed, 16 insertions(+), 8 deletions(-)
-> >
-> > diff --git a/net/ncsi/ncsi-cmd.c b/net/ncsi/ncsi-cmd.c
-> > index ba9ae482141b..9a6f10f4833e 100644
-> > --- a/net/ncsi/ncsi-cmd.c
-> > +++ b/net/ncsi/ncsi-cmd.c
-> > @@ -18,6 +18,8 @@
-> >  #include "internal.h"
-> >  #include "ncsi-pkt.h"
-> >
-> > +const static int padding_bytes = 26;
->
-> It would be nice to have some kind of reference, to explain
-> what is this magic value.
->
-> ACK.
+Dear Jammy,
 
 
-> Moving the comment [1] here might make sense.
->
->
-> > +
-> >  u32 ncsi_calculate_checksum(unsigned char *data, int len)
-> >  {
-> >       u32 checksum = 0;
-> > @@ -213,12 +215,17 @@ static int ncsi_cmd_handler_oem(struct sk_buff
-> *skb,
-> >  {
-> >       struct ncsi_cmd_oem_pkt *cmd;
-> >       unsigned int len;
-> > +     int payload;
->
-> [1] This comment could be moved before @padding_bytes
->
-> > +     /* NC-SI spec DSP_0222_1.2.0, section 8.2.2.2
-> > +      * requires payload to be padded with 0 to
-> > +      * 32-bit boundary before the checksum field.
-> > +      * Ensure the padding bytes are accounted for in
-> > +      * skb allocation
-> > +      */
-> >
-> > +     payload = ALIGN(nca->payload, 4);
-> >       len = sizeof(struct ncsi_cmd_pkt_hdr) + 4;
-> > -     if (nca->payload < 26)
-> > -             len += 26;
-> > -     else
-> > -             len += nca->payload;
-> > +     len += max(payload, padding_bytes);
-> >
-> >       cmd = skb_put_zero(skb, len);
-> >       memcpy(&cmd->mfr_id, nca->data, nca->payload);
-> > @@ -272,6 +279,7 @@ static struct ncsi_request
-> *ncsi_alloc_command(struct ncsi_cmd_arg *nca)
-> >       struct net_device *dev = nd->dev;
-> >       int hlen = LL_RESERVED_SPACE(dev);
-> >       int tlen = dev->needed_tailroom;
-> > +     int payload;
-> >       int len = hlen + tlen;
-> >       struct sk_buff *skb;
-> >       struct ncsi_request *nr;
-> > @@ -281,14 +289,14 @@ static struct ncsi_request
-> *ncsi_alloc_command(struct ncsi_cmd_arg *nca)
-> >               return NULL;
-> >
-> >       /* NCSI command packet has 16-bytes header, payload, 4 bytes
-> checksum.
-> > +      * Payload needs padding so that the checksum field following
-> payload is
-> > +      * aligned to 32-bit boundary.
-> >        * The packet needs padding if its payload is less than 26 bytes to
-> >        * meet 64 bytes minimal ethernet frame length.
-> >        */
-> >       len += sizeof(struct ncsi_cmd_pkt_hdr) + 4;
-> > -     if (nca->payload < 26)
-> > -             len += 26;
-> > -     else
-> > -             len += nca->payload;
-> > +     payload = ALIGN(nca->payload, 4);
-> > +     len += max(payload, padding_bytes);
-> >
-> >       /* Allocate skb */
-> >       skb = alloc_skb(len, GFP_ATOMIC);
-> >
->
--------------- next part --------------
-An HTML attachment was scrubbed...
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20211119/8b5ae39a/attachment-0001.htm>
+Am 19.11.21 um 03:02 schrieb Jammy Huang:
+
+> On 2021/11/18 ?? 08:33, Sakari Ailus wrote:
+
+>> On Thu, Nov 18, 2021 at 03:40:26PM +0800, Jammy Huang wrote:
+>>> This introduces support for the Aspeed JPEG format, where the new frame
+>>> can refer to previous frame to reduce the amount of compressed data. The
+>>> concept is similar to I/P frame of video compression. I will compare the
+>>> new frame with previous one to decide which macroblock's data is
+>>> changed, and only the changed macroblocks will be compressed.
+>>>
+>>> This Aspeed JPEG format is used by the video engine on Aspeed platforms,
+>>> which is generally adapted for remote KVM.
+>>>
+>>> Signed-off-by: Jammy Huang <jammy_huang@aspeedtech.com>
+>>> ---
+>>> v5:
+>>> ?? - no update
+>>> v4:
+>>> ?? - new
+>>> ---
+>>> ? Documentation/media/uapi/v4l/pixfmt-reserved.rst | 12 ++++++++++++
+>>> ? drivers/media/v4l2-core/v4l2-ioctl.c???????????? |? 1 +
+>>> ? include/uapi/linux/videodev2.h?????????????????? |? 1 +
+>>> ? 3 files changed, 14 insertions(+)
+>>>
+>>> diff --git a/Documentation/media/uapi/v4l/pixfmt-reserved.rst 
+>>> b/Documentation/media/uapi/v4l/pixfmt-reserved.rst
+>>> index b2cd155e691b..23c05063133d 100644
+>>> --- a/Documentation/media/uapi/v4l/pixfmt-reserved.rst
+>>> +++ b/Documentation/media/uapi/v4l/pixfmt-reserved.rst
+>>> @@ -264,6 +264,18 @@ please make a proposal on the linux-media 
+>>> mailing list.
+>>> ????? of tiles, resulting in 32-aligned resolutions for the luminance 
+>>> plane
+>>> ????? and 16-aligned resolutions for the chrominance plane (with 2x2
+>>> ????? subsampling).
+>>> +??? * .. _V4L2-PIX-FMT-AJPG:
+>>> +
+>>> +????? - ``V4L2_PIX_FMT_AJPG``
+>>> +????? - 'AJPG'
+>>> +????? - ASPEED JPEG format used by the aspeed-video driver on Aspeed platforms,
+>>> +??????? which is generally adapted for remote KVM.
+>>> +??????? On each frame compression, I will compare the new frame with previous
+>>> +??????? one to decide which macroblock's data is changed, and only the changed
+>>> +??????? macroblocks will be compressed.
+>>> +
+>>> +??????? You could reference to chapter 36, Video Engine, of AST2600's datasheet
+>>> +??????? for more information.
+>> Is this datasheet publicly available? Do you have a URL?
+> 
+> Sorry, this datasheet is not publicly available.
+> Hans mentioned this as well in the discussion below:
+> 
+> https://lkml.org/lkml/2021/11/10/101
+
+If questions come up during review, please also add the answers to the 
+commit message of the next iteration. ;-) Maybe:
+
+> The implementation is based on datasheet *Name goes here*, revision
+> X, which is not publicly available.
+
+Kind regards,
+
+Paul
