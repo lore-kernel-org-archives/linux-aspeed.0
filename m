@@ -1,142 +1,40 @@
-From: Eric Dumazet <eric.dumazet@gmail.com>
-Date: Thu, 18 Nov 2021 09:14:00 -0800
-Subject: [PATCH v7] Add payload to be 32-bit aligned to fix dropped packets
-In-Reply-To: <20211118160301.GA19542@gmail.com>
-References: <20211118160301.GA19542@gmail.com>
-Message-ID: <ad44434c-0356-701e-d355-174efc1917b5@gmail.com>
+From: Joel Stanley <joel@jms.id.au>
+Date: Fri, 19 Nov 2021 07:07:39 +0000
+Subject: [PATCH] drm/aspeed: Fix vga_pw sysfs output
+In-Reply-To: <483e616cb69c780f6102ae058a26704a0443d38f.camel@codeconstruct.com.au>
+References: <20211117010145.297253-1-joel@jms.id.au>
+ <483e616cb69c780f6102ae058a26704a0443d38f.camel@codeconstruct.com.au>
+Message-ID: <CACPK8XeKqpLdNQp8Em1ZSPPcJA111SyCSb_NhoKNER209toLCQ@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+Hi David, Daniel,
 
+On Fri, 19 Nov 2021 at 06:54, Jeremy Kerr <jk@codeconstruct.com.au> wrote:
+>
+> Hi Joel,
+>
+> > Before the drm driver had support for this file there was a driver
+> > that exposed the contents of the vga password register to userspace.
+> > It would present the entire register instead of interpreting it.
+> >
+> > The drm implementation chose to mask of the lower bit, without
+> > explaining why. This breaks the existing userspace, which is looking
+> > for 0xa8 in the lower byte.
+> >
+> > Change our implementation to expose the entire register.
+>
+> As a userspace consumer of this:
+>
+> Reviewed-by: Jeremy Kerr <jk@codeconstruct.com.au>
 
-On 11/18/21 8:03 AM, Kumar Thangavel wrote:
-> Update NC-SI command handler (both standard and OEM) to take into
-> account of payload paddings in allocating skb (in case of payload
-> size is not 32-bit aligned).
-> 
-> The checksum field follows payload field, without taking payload
-> padding into account can cause checksum being truncated, leading to
-> dropped packets.
-> 
+Am I okay to apply this to drm-misc-fixes? I've not applied a patch to
+the fixes tree before, so I wanted to check if there is some process
+I've missed.
 
-Patch title should start with a prefix, identifying which layer/driver is
-involved.
+Cheers,
 
-Probably in this case
-
-net/ncsi: Add payload to be 32-bit aligned to fix dropped packets
-
-> Fixes: fb4ee67529ff ("net/ncsi: Add NCSI OEM command support")
-> Signed-off-by: Kumar Thangavel <thangavel.k@hcl.com>
-> Acked-by: Samuel Mendoza-Jonas <sam@mendozajonas.com>
-> Reviewed-by: Paul Menzel <pmenzel@molgen.mpg.de>
-> 
-> ---
->   v7:
->    - Updated padding_bytes as const static int variable
-> 
->   v6:
->    - Updated type of padding_bytes variable
->    - Updated type of payload
->    - Seperated variable declarations and code
-> 
->   v5:
->    - Added Fixes tag
->    - Added const variable for padding_bytes
-> 
->   v4:
->    - Used existing macro for max function
-> 
->   v3:
->    - Added Macro for MAX
->    - Fixed the missed semicolon
-> 
->   v2:
->    - Added NC-SI spec version and section
->    - Removed blank line
->    - corrected spellings
-> 
->   v1:
->    - Initial draft
-> 
-> ---
-> ---
->  net/ncsi/ncsi-cmd.c | 24 ++++++++++++++++--------
->  1 file changed, 16 insertions(+), 8 deletions(-)
-> 
-> diff --git a/net/ncsi/ncsi-cmd.c b/net/ncsi/ncsi-cmd.c
-> index ba9ae482141b..9a6f10f4833e 100644
-> --- a/net/ncsi/ncsi-cmd.c
-> +++ b/net/ncsi/ncsi-cmd.c
-> @@ -18,6 +18,8 @@
->  #include "internal.h"
->  #include "ncsi-pkt.h"
->  
-> +const static int padding_bytes = 26;
-
-It would be nice to have some kind of reference, to explain
-what is this magic value.
-
-Moving the comment [1] here might make sense.
-
-
-> +
->  u32 ncsi_calculate_checksum(unsigned char *data, int len)
->  {
->  	u32 checksum = 0;
-> @@ -213,12 +215,17 @@ static int ncsi_cmd_handler_oem(struct sk_buff *skb,
->  {
->  	struct ncsi_cmd_oem_pkt *cmd;
->  	unsigned int len;
-> +	int payload;
-
-[1] This comment could be moved before @padding_bytes
-
-> +	/* NC-SI spec DSP_0222_1.2.0, section 8.2.2.2
-> +	 * requires payload to be padded with 0 to
-> +	 * 32-bit boundary before the checksum field.
-> +	 * Ensure the padding bytes are accounted for in
-> +	 * skb allocation
-> +	 */
->  
-> +	payload = ALIGN(nca->payload, 4);
->  	len = sizeof(struct ncsi_cmd_pkt_hdr) + 4;
-> -	if (nca->payload < 26)
-> -		len += 26;
-> -	else
-> -		len += nca->payload;
-> +	len += max(payload, padding_bytes);
->  
->  	cmd = skb_put_zero(skb, len);
->  	memcpy(&cmd->mfr_id, nca->data, nca->payload);
-> @@ -272,6 +279,7 @@ static struct ncsi_request *ncsi_alloc_command(struct ncsi_cmd_arg *nca)
->  	struct net_device *dev = nd->dev;
->  	int hlen = LL_RESERVED_SPACE(dev);
->  	int tlen = dev->needed_tailroom;
-> +	int payload;
->  	int len = hlen + tlen;
->  	struct sk_buff *skb;
->  	struct ncsi_request *nr;
-> @@ -281,14 +289,14 @@ static struct ncsi_request *ncsi_alloc_command(struct ncsi_cmd_arg *nca)
->  		return NULL;
->  
->  	/* NCSI command packet has 16-bytes header, payload, 4 bytes checksum.
-> +	 * Payload needs padding so that the checksum field following payload is
-> +	 * aligned to 32-bit boundary.
->  	 * The packet needs padding if its payload is less than 26 bytes to
->  	 * meet 64 bytes minimal ethernet frame length.
->  	 */
->  	len += sizeof(struct ncsi_cmd_pkt_hdr) + 4;
-> -	if (nca->payload < 26)
-> -		len += 26;
-> -	else
-> -		len += nca->payload;
-> +	payload = ALIGN(nca->payload, 4);
-> +	len += max(payload, padding_bytes);
->  
->  	/* Allocate skb */
->  	skb = alloc_skb(len, GFP_ATOMIC);
-> 
+Joel
