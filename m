@@ -1,73 +1,62 @@
-From: Jammy Huang <jammy_huang@aspeedtech.com>
-Date: Fri, 19 Nov 2021 10:02:40 +0800
-Subject: [PATCH v5 05/10] media: v4l: Add definition for the Aspeed JPEG
- format
-In-Reply-To: <YZZIDNCLJXwrqY4W@paasikivi.fi.intel.com>
-References: <20211118074030.685-1-jammy_huang@aspeedtech.com>
- <20211118074030.685-6-jammy_huang@aspeedtech.com>
- <YZZIDNCLJXwrqY4W@paasikivi.fi.intel.com>
-Message-ID: <0bed6093-0af6-4fc4-716f-6cf8b1302320@aspeedtech.com>
+From: kernel test robot <lkp@intel.com>
+Date: Fri, 19 Nov 2021 11:15:17 +0800
+Subject: [PATCH v7] Add payload to be 32-bit aligned to fix dropped packets
+In-Reply-To: <20211118160301.GA19542@gmail.com>
+References: <20211118160301.GA19542@gmail.com>
+Message-ID: <202111191127.YohreYbs-lkp@intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Sakari,
+Hi Kumar,
 
-On 2021/11/18 ?? 08:33, Sakari Ailus wrote:
-> Hi Jammy,
->
-> On Thu, Nov 18, 2021 at 03:40:26PM +0800, Jammy Huang wrote:
->> This introduces support for the Aspeed JPEG format, where the new frame
->> can refer to previous frame to reduce the amount of compressed data. The
->> concept is similar to I/P frame of video compression. I will compare the
->> new frame with previous one to decide which macroblock's data is
->> changed, and only the changed macroblocks will be compressed.
->>
->> This Aspeed JPEG format is used by the video engine on Aspeed platforms,
->> which is generally adapted for remote KVM.
->>
->> Signed-off-by: Jammy Huang <jammy_huang@aspeedtech.com>
->> ---
->> v5:
->>    - no update
->> v4:
->>    - new
->> ---
->>   Documentation/media/uapi/v4l/pixfmt-reserved.rst | 12 ++++++++++++
->>   drivers/media/v4l2-core/v4l2-ioctl.c             |  1 +
->>   include/uapi/linux/videodev2.h                   |  1 +
->>   3 files changed, 14 insertions(+)
->>
->> diff --git a/Documentation/media/uapi/v4l/pixfmt-reserved.rst b/Documentation/media/uapi/v4l/pixfmt-reserved.rst
->> index b2cd155e691b..23c05063133d 100644
->> --- a/Documentation/media/uapi/v4l/pixfmt-reserved.rst
->> +++ b/Documentation/media/uapi/v4l/pixfmt-reserved.rst
->> @@ -264,6 +264,18 @@ please make a proposal on the linux-media mailing list.
->>   	of tiles, resulting in 32-aligned resolutions for the luminance plane
->>   	and 16-aligned resolutions for the chrominance plane (with 2x2
->>   	subsampling).
->> +    * .. _V4L2-PIX-FMT-AJPG:
->> +
->> +      - ``V4L2_PIX_FMT_AJPG``
->> +      - 'AJPG'
->> +      - ASPEED JPEG format used by the aspeed-video driver on Aspeed platforms,
->> +        which is generally adapted for remote KVM.
->> +        On each frame compression, I will compare the new frame with previous
->> +        one to decide which macroblock's data is changed, and only the changed
->> +        macroblocks will be compressed.
->> +
->> +        You could reference to chapter 36, Video Engine, of AST2600's datasheet
->> +        for more information.
-> Is this datasheet publicly available? Do you have a URL?
+Thank you for the patch! Perhaps something to improve:
 
-Sorry, this datasheet is not publicly available.
-Hans mentioned this as well in the discussion below:
+[auto build test WARNING on linus/master]
+[also build test WARNING on v5.16-rc1 next-20211118]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch]
 
-https://lkml.org/lkml/2021/11/10/101
+url:    https://github.com/0day-ci/linux/commits/Kumar-Thangavel/Add-payload-to-be-32-bit-aligned-to-fix-dropped-packets/20211119-000541
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git 42eb8fdac2fc5d62392dcfcf0253753e821a97b0
+config: m68k-randconfig-r005-20211118 (attached as .config)
+compiler: m68k-linux-gcc (GCC) 11.2.0
+reproduce (this is a W=1 build):
+        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        # https://github.com/0day-ci/linux/commit/f4e0a51f25ba398ad7f2e3efa5076b2e0ad24e3b
+        git remote add linux-review https://github.com/0day-ci/linux
+        git fetch --no-tags linux-review Kumar-Thangavel/Add-payload-to-be-32-bit-aligned-to-fix-dropped-packets/20211119-000541
+        git checkout f4e0a51f25ba398ad7f2e3efa5076b2e0ad24e3b
+        # save the attached .config to linux build tree
+        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-11.2.0 make.cross ARCH=m68k 
 
--- 
-Best Regards
-Jammy
+If you fix the issue, kindly add following tag as appropriate
+Reported-by: kernel test robot <lkp@intel.com>
 
+All warnings (new ones prefixed by >>):
+
+>> net/ncsi/ncsi-cmd.c:21:1: warning: 'static' is not at beginning of declaration [-Wold-style-declaration]
+      21 | const static int padding_bytes = 26;
+         | ^~~~~
+
+
+vim +/static +21 net/ncsi/ncsi-cmd.c
+
+    20	
+  > 21	const static int padding_bytes = 26;
+    22	
+
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: .config.gz
+Type: application/gzip
+Size: 28516 bytes
+Desc: not available
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20211119/1480de93/attachment-0001.gz>
