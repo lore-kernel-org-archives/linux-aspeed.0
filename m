@@ -1,30 +1,161 @@
 From: Kumar Thangavel <kumarthangavel.hcl@gmail.com>
-Date: Fri, 19 Nov 2021 13:44:42 +0530
+Date: Fri, 19 Nov 2021 13:45:39 +0530
 Subject: [PATCH v7] Add payload to be 32-bit aligned to fix dropped packets
-In-Reply-To: <20211118223228.7edfeade@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+In-Reply-To: <ad44434c-0356-701e-d355-174efc1917b5@gmail.com>
 References: <20211118160301.GA19542@gmail.com>
- <20211118223228.7edfeade@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
-Message-ID: <CAA7TbctSATJ3w_4y+btdfbjs7GTx9BptGZ3QKUjjX_Up+15thA@mail.gmail.com>
+ <ad44434c-0356-701e-d355-174efc1917b5@gmail.com>
+Message-ID: <CAA7Tbcv480RvyL+J8pf2DvqdfFMoGpAdi=x-isEgOWyQ8N7Pkw@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Nov 19, 2021 at 12:02 PM Jakub Kicinski <kuba@kernel.org> wrote:
+On Thu, Nov 18, 2021 at 10:44 PM Eric Dumazet <eric.dumazet@gmail.com>
+wrote:
 
-> On Thu, 18 Nov 2021 21:33:02 +0530 Kumar Thangavel wrote:
-> > +const static int padding_bytes = 26;
 >
-> /net/ncsi/ncsi-cmd.c:21:1: warning: ?static? is not at beginning of
-> declaration [-Wold-style-declaration]
->    21 | const static int padding_bytes = 26;
 >
-
+> On 11/18/21 8:03 AM, Kumar Thangavel wrote:
+> > Update NC-SI command handler (both standard and OEM) to take into
+> > account of payload paddings in allocating skb (in case of payload
+> > size is not 32-bit aligned).
+> >
+> > The checksum field follows payload field, without taking payload
+> > padding into account can cause checksum being truncated, leading to
+> > dropped packets.
+> >
+>
+> Patch title should start with a prefix, identifying which layer/driver is
+> involved.
+>
+> Probably in this case
+>
+> net/ncsi: Add payload to be 32-bit aligned to fix dropped packets
+>
 ACK.
 
->       | ^~~~~
+>
+> > Fixes: fb4ee67529ff ("net/ncsi: Add NCSI OEM command support")
+> > Signed-off-by: Kumar Thangavel <thangavel.k@hcl.com>
+> > Acked-by: Samuel Mendoza-Jonas <sam@mendozajonas.com>
+> > Reviewed-by: Paul Menzel <pmenzel@molgen.mpg.de>
+> >
+> > ---
+> >   v7:
+> >    - Updated padding_bytes as const static int variable
+> >
+> >   v6:
+> >    - Updated type of padding_bytes variable
+> >    - Updated type of payload
+> >    - Seperated variable declarations and code
+> >
+> >   v5:
+> >    - Added Fixes tag
+> >    - Added const variable for padding_bytes
+> >
+> >   v4:
+> >    - Used existing macro for max function
+> >
+> >   v3:
+> >    - Added Macro for MAX
+> >    - Fixed the missed semicolon
+> >
+> >   v2:
+> >    - Added NC-SI spec version and section
+> >    - Removed blank line
+> >    - corrected spellings
+> >
+> >   v1:
+> >    - Initial draft
+> >
+> > ---
+> > ---
+> >  net/ncsi/ncsi-cmd.c | 24 ++++++++++++++++--------
+> >  1 file changed, 16 insertions(+), 8 deletions(-)
+> >
+> > diff --git a/net/ncsi/ncsi-cmd.c b/net/ncsi/ncsi-cmd.c
+> > index ba9ae482141b..9a6f10f4833e 100644
+> > --- a/net/ncsi/ncsi-cmd.c
+> > +++ b/net/ncsi/ncsi-cmd.c
+> > @@ -18,6 +18,8 @@
+> >  #include "internal.h"
+> >  #include "ncsi-pkt.h"
+> >
+> > +const static int padding_bytes = 26;
+>
+> It would be nice to have some kind of reference, to explain
+> what is this magic value.
+>
+> ACK.
+
+
+> Moving the comment [1] here might make sense.
+>
+>
+> > +
+> >  u32 ncsi_calculate_checksum(unsigned char *data, int len)
+> >  {
+> >       u32 checksum = 0;
+> > @@ -213,12 +215,17 @@ static int ncsi_cmd_handler_oem(struct sk_buff
+> *skb,
+> >  {
+> >       struct ncsi_cmd_oem_pkt *cmd;
+> >       unsigned int len;
+> > +     int payload;
+>
+> [1] This comment could be moved before @padding_bytes
+>
+> > +     /* NC-SI spec DSP_0222_1.2.0, section 8.2.2.2
+> > +      * requires payload to be padded with 0 to
+> > +      * 32-bit boundary before the checksum field.
+> > +      * Ensure the padding bytes are accounted for in
+> > +      * skb allocation
+> > +      */
+> >
+> > +     payload = ALIGN(nca->payload, 4);
+> >       len = sizeof(struct ncsi_cmd_pkt_hdr) + 4;
+> > -     if (nca->payload < 26)
+> > -             len += 26;
+> > -     else
+> > -             len += nca->payload;
+> > +     len += max(payload, padding_bytes);
+> >
+> >       cmd = skb_put_zero(skb, len);
+> >       memcpy(&cmd->mfr_id, nca->data, nca->payload);
+> > @@ -272,6 +279,7 @@ static struct ncsi_request
+> *ncsi_alloc_command(struct ncsi_cmd_arg *nca)
+> >       struct net_device *dev = nd->dev;
+> >       int hlen = LL_RESERVED_SPACE(dev);
+> >       int tlen = dev->needed_tailroom;
+> > +     int payload;
+> >       int len = hlen + tlen;
+> >       struct sk_buff *skb;
+> >       struct ncsi_request *nr;
+> > @@ -281,14 +289,14 @@ static struct ncsi_request
+> *ncsi_alloc_command(struct ncsi_cmd_arg *nca)
+> >               return NULL;
+> >
+> >       /* NCSI command packet has 16-bytes header, payload, 4 bytes
+> checksum.
+> > +      * Payload needs padding so that the checksum field following
+> payload is
+> > +      * aligned to 32-bit boundary.
+> >        * The packet needs padding if its payload is less than 26 bytes to
+> >        * meet 64 bytes minimal ethernet frame length.
+> >        */
+> >       len += sizeof(struct ncsi_cmd_pkt_hdr) + 4;
+> > -     if (nca->payload < 26)
+> > -             len += 26;
+> > -     else
+> > -             len += nca->payload;
+> > +     payload = ALIGN(nca->payload, 4);
+> > +     len += max(payload, padding_bytes);
+> >
+> >       /* Allocate skb */
+> >       skb = alloc_skb(len, GFP_ATOMIC);
+> >
 >
 -------------- next part --------------
 An HTML attachment was scrubbed...
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20211119/44ad68ca/attachment.htm>
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20211119/8b5ae39a/attachment-0001.htm>
