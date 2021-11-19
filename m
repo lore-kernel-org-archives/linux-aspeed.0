@@ -1,40 +1,30 @@
-From: Joel Stanley <joel@jms.id.au>
-Date: Fri, 19 Nov 2021 07:07:39 +0000
-Subject: [PATCH] drm/aspeed: Fix vga_pw sysfs output
-In-Reply-To: <483e616cb69c780f6102ae058a26704a0443d38f.camel@codeconstruct.com.au>
-References: <20211117010145.297253-1-joel@jms.id.au>
- <483e616cb69c780f6102ae058a26704a0443d38f.camel@codeconstruct.com.au>
-Message-ID: <CACPK8XeKqpLdNQp8Em1ZSPPcJA111SyCSb_NhoKNER209toLCQ@mail.gmail.com>
+From: Kumar Thangavel <kumarthangavel.hcl@gmail.com>
+Date: Fri, 19 Nov 2021 13:44:42 +0530
+Subject: [PATCH v7] Add payload to be 32-bit aligned to fix dropped packets
+In-Reply-To: <20211118223228.7edfeade@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+References: <20211118160301.GA19542@gmail.com>
+ <20211118223228.7edfeade@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+Message-ID: <CAA7TbctSATJ3w_4y+btdfbjs7GTx9BptGZ3QKUjjX_Up+15thA@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi David, Daniel,
+On Fri, Nov 19, 2021 at 12:02 PM Jakub Kicinski <kuba@kernel.org> wrote:
 
-On Fri, 19 Nov 2021 at 06:54, Jeremy Kerr <jk@codeconstruct.com.au> wrote:
+> On Thu, 18 Nov 2021 21:33:02 +0530 Kumar Thangavel wrote:
+> > +const static int padding_bytes = 26;
 >
-> Hi Joel,
+> /net/ncsi/ncsi-cmd.c:21:1: warning: ?static? is not at beginning of
+> declaration [-Wold-style-declaration]
+>    21 | const static int padding_bytes = 26;
 >
-> > Before the drm driver had support for this file there was a driver
-> > that exposed the contents of the vga password register to userspace.
-> > It would present the entire register instead of interpreting it.
-> >
-> > The drm implementation chose to mask of the lower bit, without
-> > explaining why. This breaks the existing userspace, which is looking
-> > for 0xa8 in the lower byte.
-> >
-> > Change our implementation to expose the entire register.
->
-> As a userspace consumer of this:
->
-> Reviewed-by: Jeremy Kerr <jk@codeconstruct.com.au>
 
-Am I okay to apply this to drm-misc-fixes? I've not applied a patch to
-the fixes tree before, so I wanted to check if there is some process
-I've missed.
+ACK.
 
-Cheers,
-
-Joel
+>       | ^~~~~
+>
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20211119/44ad68ca/attachment.htm>
