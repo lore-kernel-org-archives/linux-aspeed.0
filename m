@@ -1,102 +1,128 @@
 From: Geert Uytterhoeven <geert+renesas@glider.be>
-Date: Mon, 22 Nov 2021 16:53:54 +0100
-Subject: [PATCH 01/17] bitfield: Add non-constant field_{prep,get}() helpers
+Date: Mon, 22 Nov 2021 16:54:09 +0100
+Subject: [PATCH/RFC 16/17] ALSA: ice1724: Use bitfield helpers
 In-Reply-To: <cover.1637592133.git.geert+renesas@glider.be>
 References: <cover.1637592133.git.geert+renesas@glider.be>
-Message-ID: <3a54a6703879d10f08cf0275a2a69297ebd2b1d4.1637592133.git.geert+renesas@glider.be>
+Message-ID: <45fa162856814176045ffbb49ee64cf0ea7e00bc.1637592133.git.geert+renesas@glider.be>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The existing FIELD_{GET,PREP}() macros are limited to compile-time
-constants.  However, it is very common to prepare or extract bitfield
-elements where the bitfield mask is not a compile-time constant.
-
-To avoid this limitation, the AT91 clock driver already has its own
-field_{prep,get}() macros.  Make them available for general use by
-moving them to <linux/bitfield.h>, and improve them slightly:
-  1. Avoid evaluating macro parameters more than once,
-  2. Replace "ffs() - 1" by "__ffs()", as the latter operates on
-     "unsigned long", just like BIT() and GENMASK().
+Use the field_{get,prep}() helpers, instead of open-coding the same
+operations.
 
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
-Using __ffs() actually reduces code size (16 bytes for each of
-drivers/clk/at91/clk-{generated,peripheral}.o), as __ffs() doesn't
-need to verify that the value passed is non-zero.
+Compile-tested only.
+Marked RFC, as this depends on [PATCH 01/17], but follows a different
+path to upstream.
 ---
- drivers/clk/at91/clk-peripheral.c |  1 +
- drivers/clk/at91/pmc.h            |  3 ---
- include/linux/bitfield.h          | 30 ++++++++++++++++++++++++++++++
- 3 files changed, 31 insertions(+), 3 deletions(-)
+ sound/pci/ice1712/wm8766.c | 14 +++++++-------
+ sound/pci/ice1712/wm8776.c | 14 +++++++-------
+ 2 files changed, 14 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/clk/at91/clk-peripheral.c b/drivers/clk/at91/clk-peripheral.c
-index e14fa5ac734cead7..e2f33498139a1b8c 100644
---- a/drivers/clk/at91/clk-peripheral.c
-+++ b/drivers/clk/at91/clk-peripheral.c
-@@ -3,6 +3,7 @@
-  *  Copyright (C) 2013 Boris BREZILLON <b.brezillon@overkiz.com>
+diff --git a/sound/pci/ice1712/wm8766.c b/sound/pci/ice1712/wm8766.c
+index fe3e243b38549035..3e4d7f8f692785b0 100644
+--- a/sound/pci/ice1712/wm8766.c
++++ b/sound/pci/ice1712/wm8766.c
+@@ -7,6 +7,7 @@
+  *	Copyright (c) 2012 Ondrej Zary <linux@rainbow-software.org>
   */
  
 +#include <linux/bitfield.h>
- #include <linux/bitops.h>
- #include <linux/clk-provider.h>
- #include <linux/clkdev.h>
-diff --git a/drivers/clk/at91/pmc.h b/drivers/clk/at91/pmc.h
-index 3a1bf6194c287d09..1256e1ab91526a25 100644
---- a/drivers/clk/at91/pmc.h
-+++ b/drivers/clk/at91/pmc.h
-@@ -114,9 +114,6 @@ struct at91_clk_pms {
- 	unsigned int parent;
- };
+ #include <linux/delay.h>
+ #include <sound/core.h>
+ #include <sound/control.h>
+@@ -212,11 +213,10 @@ static int snd_wm8766_ctl_get(struct snd_kcontrol *kcontrol,
+ 	if (wm->ctl[n].get)
+ 		wm->ctl[n].get(wm, &val1, &val2);
+ 	else {
+-		val1 = wm->regs[wm->ctl[n].reg1] & wm->ctl[n].mask1;
+-		val1 >>= __ffs(wm->ctl[n].mask1);
++		val1 = field_get(wm->ctl[n].mask1, wm->regs[wm->ctl[n].reg1]);
+ 		if (wm->ctl[n].flags & WM8766_FLAG_STEREO) {
+-			val2 = wm->regs[wm->ctl[n].reg2] & wm->ctl[n].mask2;
+-			val2 >>= __ffs(wm->ctl[n].mask2);
++			val2 = field_get(wm->ctl[n].mask2,
++					 wm->regs[wm->ctl[n].reg2]);
+ 			if (wm->ctl[n].flags & WM8766_FLAG_VOL_UPDATE)
+ 				val2 &= ~WM8766_VOL_UPDATE;
+ 		}
+@@ -251,19 +251,19 @@ static int snd_wm8766_ctl_put(struct snd_kcontrol *kcontrol,
+ 		wm->ctl[n].set(wm, regval1, regval2);
+ 	else {
+ 		val = wm->regs[wm->ctl[n].reg1] & ~wm->ctl[n].mask1;
+-		val |= regval1 << __ffs(wm->ctl[n].mask1);
++		val |= field_prep(wm->ctl[n].mask1, regval1);
+ 		/* both stereo controls in one register */
+ 		if (wm->ctl[n].flags & WM8766_FLAG_STEREO &&
+ 				wm->ctl[n].reg1 == wm->ctl[n].reg2) {
+ 			val &= ~wm->ctl[n].mask2;
+-			val |= regval2 << __ffs(wm->ctl[n].mask2);
++			val |= field_prep(wm->ctl[n].mask2, regval2);
+ 		}
+ 		snd_wm8766_write(wm, wm->ctl[n].reg1, val);
+ 		/* stereo controls in different registers */
+ 		if (wm->ctl[n].flags & WM8766_FLAG_STEREO &&
+ 				wm->ctl[n].reg1 != wm->ctl[n].reg2) {
+ 			val = wm->regs[wm->ctl[n].reg2] & ~wm->ctl[n].mask2;
+-			val |= regval2 << __ffs(wm->ctl[n].mask2);
++			val |= field_prep(wm->ctl[n].mask2, regval2);
+ 			if (wm->ctl[n].flags & WM8766_FLAG_VOL_UPDATE)
+ 				val |= WM8766_VOL_UPDATE;
+ 			snd_wm8766_write(wm, wm->ctl[n].reg2, val);
+diff --git a/sound/pci/ice1712/wm8776.c b/sound/pci/ice1712/wm8776.c
+index 6eda86119dff60b3..b4edf8a03c342351 100644
+--- a/sound/pci/ice1712/wm8776.c
++++ b/sound/pci/ice1712/wm8776.c
+@@ -7,6 +7,7 @@
+  *	Copyright (c) 2012 Ondrej Zary <linux@rainbow-software.org>
+  */
  
--#define field_get(_mask, _reg) (((_reg) & (_mask)) >> (ffs(_mask) - 1))
--#define field_prep(_mask, _val) (((_val) << (ffs(_mask) - 1)) & (_mask))
--
- #define ndck(a, s) (a[s - 1].id + 1)
- #define nck(a) (a[ARRAY_SIZE@ - 1].id + 1)
- struct pmc_data *pmc_data_allocate(unsigned int ncore, unsigned int nsystem,
-diff --git a/include/linux/bitfield.h b/include/linux/bitfield.h
-index 4e035aca6f7e6000..f03b0712e4babec1 100644
---- a/include/linux/bitfield.h
-+++ b/include/linux/bitfield.h
-@@ -156,4 +156,34 @@ __MAKE_OP(64)
- #undef __MAKE_OP
- #undef ____MAKE_OP
- 
-+/**
-+ * field_prep() - prepare a bitfield element
-+ * @_mask: shifted mask defining the field's length and position
-+ * @_val:  value to put in the field
-+ *
-+ * field_prep() masks and shifts up the value.  The result should be
-+ * combined with other fields of the bitfield using logical OR.
-+ * Unlike FIELD_PREP(), @_mask is not limited to a compile-time constant.
-+ */
-+#define field_prep(_mask, _val)						\
-+	({								\
-+		typeof(_mask) ___mask = (_mask);			\
-+		(((_val) << __ffs(___mask)) & (___mask));		\
-+	})
-+
-+/**
-+ * field_get() - extract a bitfield element
-+ * @_mask: shifted mask defining the field's length and position
-+ * @_reg:  value of entire bitfield
-+ *
-+ * field_get() extracts the field specified by @_mask from the
-+ * bitfield passed in as @_reg by masking and shifting it down.
-+ * Unlike FIELD_GET(), @_mask is not limited to a compile-time constant.
-+ */
-+#define field_get(_mask, _reg)						\
-+	({								\
-+		typeof(_mask) ___mask = _mask;				\
-+		(((_reg) & (___mask)) >> __ffs(___mask));		\
-+	})
-+
- #endif
++#include <linux/bitfield.h>
+ #include <linux/delay.h>
+ #include <sound/core.h>
+ #include <sound/control.h>
+@@ -486,11 +487,10 @@ static int snd_wm8776_ctl_get(struct snd_kcontrol *kcontrol,
+ 	if (wm->ctl[n].get)
+ 		wm->ctl[n].get(wm, &val1, &val2);
+ 	else {
+-		val1 = wm->regs[wm->ctl[n].reg1] & wm->ctl[n].mask1;
+-		val1 >>= __ffs(wm->ctl[n].mask1);
++		val1 = field_get(wm->ctl[n].mask1, wm->regs[wm->ctl[n].reg1]);
+ 		if (wm->ctl[n].flags & WM8776_FLAG_STEREO) {
+-			val2 = wm->regs[wm->ctl[n].reg2] & wm->ctl[n].mask2;
+-			val2 >>= __ffs(wm->ctl[n].mask2);
++			val2 = field_get(wm->ctl[n].mask2,
++					 wm->regs[wm->ctl[n].reg2]);
+ 			if (wm->ctl[n].flags & WM8776_FLAG_VOL_UPDATE)
+ 				val2 &= ~WM8776_VOL_UPDATE;
+ 		}
+@@ -525,19 +525,19 @@ static int snd_wm8776_ctl_put(struct snd_kcontrol *kcontrol,
+ 		wm->ctl[n].set(wm, regval1, regval2);
+ 	else {
+ 		val = wm->regs[wm->ctl[n].reg1] & ~wm->ctl[n].mask1;
+-		val |= regval1 << __ffs(wm->ctl[n].mask1);
++		val |= field_prep(wm->ctl[n].mask1, regval1);
+ 		/* both stereo controls in one register */
+ 		if (wm->ctl[n].flags & WM8776_FLAG_STEREO &&
+ 				wm->ctl[n].reg1 == wm->ctl[n].reg2) {
+ 			val &= ~wm->ctl[n].mask2;
+-			val |= regval2 << __ffs(wm->ctl[n].mask2);
++			val |= field_prep(wm->ctl[n].mask2, regval2);
+ 		}
+ 		snd_wm8776_write(wm, wm->ctl[n].reg1, val);
+ 		/* stereo controls in different registers */
+ 		if (wm->ctl[n].flags & WM8776_FLAG_STEREO &&
+ 				wm->ctl[n].reg1 != wm->ctl[n].reg2) {
+ 			val = wm->regs[wm->ctl[n].reg2] & ~wm->ctl[n].mask2;
+-			val |= regval2 << __ffs(wm->ctl[n].mask2);
++			val |= field_prep(wm->ctl[n].mask2, regval2);
+ 			if (wm->ctl[n].flags & WM8776_FLAG_VOL_UPDATE)
+ 				val |= WM8776_VOL_UPDATE;
+ 			snd_wm8776_write(wm, wm->ctl[n].reg2, val);
 -- 
 2.25.1
 
