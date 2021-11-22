@@ -1,158 +1,125 @@
-From: Alexandre Belloni <alexandre.belloni@bootlin.com>
-Date: Mon, 22 Nov 2021 18:50:19 +0100
-Subject: [PATCH 00/17] Non-const bitfield helper conversions
-In-Reply-To: <cover.1637592133.git.geert+renesas@glider.be>
+From: Larry Finger <Larry.Finger@lwfinger.net>
+Date: Mon, 22 Nov 2021 12:38:41 -0600
+Subject: [PATCH/RFC 17/17] rtw89: Use bitfield helpers
+In-Reply-To: <f7b81122f7596fa004188bfae68f25a68c2d2392.1637592133.git.geert+renesas@glider.be>
 References: <cover.1637592133.git.geert+renesas@glider.be>
-Message-ID: <YZvYW1ElW7ZYZNTC@piout.net>
+ <f7b81122f7596fa004188bfae68f25a68c2d2392.1637592133.git.geert+renesas@glider.be>
+Message-ID: <a18f44bf-e590-0ebe-00c0-5658f3a51d86@lwfinger.net>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 22/11/2021 16:53:53+0100, Geert Uytterhoeven wrote:
-> 	Hi all,
+On 11/22/21 09:54, Geert Uytterhoeven wrote:
+> Use the field_{get,prep}() helpers, instead of open-coding the same
+> operations.
 > 
-> <linux/bitfield.h> contains various helpers for accessing bitfields, as
-> typically used in hardware registers for memory-mapped I/O blocks. These
-> helpers ensure type safety, and deduce automatically shift values from
-> mask values, avoiding mistakes due to inconsistent shifts and masks, and
-> leading to a reduction in source code size.
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> ---
+> Compile-tested only.
+> Marked RFC, as this depends on [PATCH 01/17], but follows a different
+> path to upstream.
+> ---
+>   drivers/net/wireless/realtek/rtw89/core.h | 38 ++++-------------------
+>   1 file changed, 6 insertions(+), 32 deletions(-)
+
+Tested-by: Larry Finger <Larry,Finger@lwfinger.net>
+
+Larry
+
 > 
-> I have already submitted a few conversions to the FIELD_{GET,PREP}()
-> helpers that were fixes for real bugs:
->   - [PATCH] mips: cm: Convert to bitfield API to fix out-of-bounds
->     access
->     https://lore.kernel.org/r/0471c545117c5fa05bd9c73005cda9b74608a61e.1635501373.git.geert+renesas at glider.be
->   - [PATCH] drm/armada: Fix off-by-one error in
->     armada_overlay_get_property()
->     https://lore.kernel.org/r/5818c8b04834e6a9525441bc181580a230354b69.1635501237.git.geert+renesas at glider.be
-> 
-> Plus several patches for normal conversions:
->   - [PATCH] ARM: ptrace: Use bitfield helpers
->     https://lore.kernel.org/r/a1445d3abb45cfc95cb1b03180fd53caf122035b.1637593297.git.geert+renesas at glider.be
->   - [PATCH] MIPS: CPC: Use bitfield helpers
->     https://lore.kernel.org/r/35f0f17e3d987afaa9cd09cdcb8131d42a53c3e1.1637593297.git.geert+renesas at glider.be
->   - [PATCH] MIPS: CPS: Use bitfield helpers
->     https://lore.kernel.org/r/8bd8b1b9a3787e594285addcf2057754540d0a5f.1637593297.git.geert+renesas at glider.be
->   - [PATCH] crypto: sa2ul - Use bitfield helpers
->     https://lore.kernel.org/r/ca89d204ef2e40193479db2742eadf0d9cf3c0ff.1637593297.git.geert+renesas at glider.be
->   - [PATCH] dmaengine: stm32-mdma: Use bitfield helpers
->     https://lore.kernel.org/r/36ceab242a594233dc7dc6f1dddb4ac32d1e846f.1637593297.git.geert+renesas at glider.be
->   - [PATCH] intel_th: Use bitfield helpers
->     https://lore.kernel.org/r/b1e4f027aa88acfbdfaa771b0920bd1d977828ba.1637593297.git.geert+renesas at glider.be
->   - [PATCH] Input: palmas-pwrbutton - use bitfield helpers
->     https://lore.kernel.org/r/f8831b88346b36fc6e01e0910d0db6c94287d2b4.1637593297.git.geert+renesas at glider.be
->   - [PATCH] irqchip/mips-gic: Use bitfield helpers
->     https://lore.kernel.org/r/74f9d126961a90d3e311b92a54870eaac5b3ae57.1637593297.git.geert+renesas at glider.be
->   - [PATCH] mfd: mc13xxx: Use bitfield helpers
->     https://lore.kernel.org/r/afa46868cf8c1666e9cbbbec42767ca2294b024d.1637593297.git.geert+renesas at glider.be
->   - [PATCH] regulator: lp873x: Use bitfield helpers
->     https://lore.kernel.org/r/44d60384b640c8586b4ca7edbc9287a34ce21c5b.1637593297.git.geert+renesas at glider.be
->   - [PATCH] regulator: lp87565: Use bitfield helpers
->     https://lore.kernel.org/r/941c2dfd5b5b124b8950bcce42db4c343dfe9821.1637593297.git.geert+renesas at glider.be
-> 
-> The existing FIELD_{GET,PREP}() macros are limited to compile-time
-> constants.  However, it is very common to prepare or extract bitfield
-> elements where the bitfield mask is not a compile-time constant.
-> To avoid this limitation, the AT91 clock driver already has its own
-> field_{prep,get}() macros.
+> diff --git a/drivers/net/wireless/realtek/rtw89/core.h b/drivers/net/wireless/realtek/rtw89/core.h
+> index c2885e4dd882f045..f9c0300ec373aaf2 100644
+> --- a/drivers/net/wireless/realtek/rtw89/core.h
+> +++ b/drivers/net/wireless/realtek/rtw89/core.h
+> @@ -2994,81 +2994,55 @@ rtw89_write32_clr(struct rtw89_dev *rtwdev, u32 addr, u32 bit)
+>   static inline u32
+>   rtw89_read32_mask(struct rtw89_dev *rtwdev, u32 addr, u32 mask)
+>   {
+> -	u32 shift = __ffs(mask);
+> -	u32 orig;
+> -	u32 ret;
+> -
+> -	orig = rtw89_read32(rtwdev, addr);
+> -	ret = (orig & mask) >> shift;
+> -
+> -	return ret;
+> +	return field_get(mask, rtw89_read32(rtwdev, addr));
+>   }
+>   
+>   static inline u16
+>   rtw89_read16_mask(struct rtw89_dev *rtwdev, u32 addr, u32 mask)
+>   {
+> -	u32 shift = __ffs(mask);
+> -	u32 orig;
+> -	u32 ret;
+> -
+> -	orig = rtw89_read16(rtwdev, addr);
+> -	ret = (orig & mask) >> shift;
+> -
+> -	return ret;
+> +	return field_get(mask, rtw89_read16(rtwdev, addr));
+>   }
+>   
+>   static inline u8
+>   rtw89_read8_mask(struct rtw89_dev *rtwdev, u32 addr, u32 mask)
+>   {
+> -	u32 shift = __ffs(mask);
+> -	u32 orig;
+> -	u32 ret;
+> -
+> -	orig = rtw89_read8(rtwdev, addr);
+> -	ret = (orig & mask) >> shift;
+> -
+> -	return ret;
+> +	return field_get(mask, rtw89_read8(rtwdev, addr));
+>   }
+>   
+>   static inline void
+>   rtw89_write32_mask(struct rtw89_dev *rtwdev, u32 addr, u32 mask, u32 data)
+>   {
+> -	u32 shift = __ffs(mask);
+>   	u32 orig;
+>   	u32 set;
+>   
+>   	WARN(addr & 0x3, "should be 4-byte aligned, addr = 0x%08x\n", addr);
+>   
+>   	orig = rtw89_read32(rtwdev, addr);
+> -	set = (orig & ~mask) | ((data << shift) & mask);
+> +	set = (orig & ~mask) | field_prep(mask, data);
+>   	rtw89_write32(rtwdev, addr, set);
+>   }
+>   
+>   static inline void
+>   rtw89_write16_mask(struct rtw89_dev *rtwdev, u32 addr, u32 mask, u16 data)
+>   {
+> -	u32 shift;
+>   	u16 orig, set;
+>   
+>   	mask &= 0xffff;
+> -	shift = __ffs(mask);
+>   
+>   	orig = rtw89_read16(rtwdev, addr);
+> -	set = (orig & ~mask) | ((data << shift) & mask);
+> +	set = (orig & ~mask) | field_prep(mask, data);
+>   	rtw89_write16(rtwdev, addr, set);
+>   }
+>   
+>   static inline void
+>   rtw89_write8_mask(struct rtw89_dev *rtwdev, u32 addr, u32 mask, u8 data)
+>   {
+> -	u32 shift;
+>   	u8 orig, set;
+>   
+>   	mask &= 0xff;
+> -	shift = __ffs(mask);
+>   
+>   	orig = rtw89_read8(rtwdev, addr);
+> -	set = (orig & ~mask) | ((data << shift) & mask);
+> +	set = (orig & ~mask) | field_prep(mask, data);
+>   	rtw89_write8(rtwdev, addr, set);
+>   }
+>   
 > 
 
-My understanding was that this (being compile time only) was actually
-done on purpose. Did I misunderstand?
-
-> This patch series makes them available for general use, and converts
-> several drivers to the existing FIELD_{GET,PREP}() and the new
-> field_{get,prep}() helpers.
-> 
-> I can take the first two patches through the reneas-clk tree for v5.17,
-> but probably it is best for the remaining patches to be postponed to
-> v5.18.
-> 
-> Thanks for your comments!
-> 
-> Geert Uytterhoeven (17):
->   bitfield: Add non-constant field_{prep,get}() helpers
->   clk: renesas: Use bitfield helpers
->   [RFC] soc: renesas: Use bitfield helpers
->   [RFC] ARM: OMAP2+: Use bitfield helpers
->   [RFC] bus: omap_l3_noc: Use bitfield helpers
->   [RFC] clk: ti: Use bitfield helpers
->   [RFC] iio: st_sensors: Use bitfield helpers
->   [RFC] iio: humidity: hts221: Use bitfield helpers
->   [RFC] iio: imu: st_lsm6dsx: Use bitfield helpers
->   [RFC] media: ti-vpe: cal: Use bitfield helpers
->   [RFC] mmc: sdhci-of-aspeed: Use bitfield helpers
->   [RFC] pinctrl: aspeed: Use bitfield helpers
->   [RFC] pinctl: ti: iodelay: Use bitfield helpers
->   [RFC] regulator: ti-abb: Use bitfield helpers
->   [RFC] thermal/ti-soc-thermal: Use bitfield helpers
->   [RFC] ALSA: ice1724: Use bitfield helpers
->   [RFC] rtw89: Use bitfield helpers
-> 
->  arch/arm/mach-omap2/clkt2xxx_dpllcore.c       |  5 +-
->  arch/arm/mach-omap2/cm2xxx.c                  | 11 ++-
->  arch/arm/mach-omap2/cm2xxx_3xxx.h             |  9 +--
->  arch/arm/mach-omap2/cm33xx.c                  |  9 +--
->  arch/arm/mach-omap2/cm3xxx.c                  |  7 +-
->  arch/arm/mach-omap2/cminst44xx.c              |  9 +--
->  arch/arm/mach-omap2/powerdomains3xxx_data.c   |  3 +-
->  arch/arm/mach-omap2/prm.h                     |  2 -
->  arch/arm/mach-omap2/prm2xxx.c                 |  4 +-
->  arch/arm/mach-omap2/prm2xxx_3xxx.c            |  7 +-
->  arch/arm/mach-omap2/prm2xxx_3xxx.h            |  9 +--
->  arch/arm/mach-omap2/prm33xx.c                 | 53 +++++-------
->  arch/arm/mach-omap2/prm3xxx.c                 |  3 +-
->  arch/arm/mach-omap2/prm44xx.c                 | 53 ++++--------
->  arch/arm/mach-omap2/vc.c                      | 12 +--
->  arch/arm/mach-omap2/vp.c                      | 11 +--
->  drivers/bus/omap_l3_noc.c                     |  4 +-
->  drivers/clk/at91/clk-peripheral.c             |  1 +
->  drivers/clk/at91/pmc.h                        |  3 -
->  drivers/clk/renesas/clk-div6.c                |  6 +-
->  drivers/clk/renesas/r8a779a0-cpg-mssr.c       |  9 +--
->  drivers/clk/renesas/rcar-gen3-cpg.c           | 15 ++--
->  drivers/clk/ti/apll.c                         | 25 +++---
->  drivers/clk/ti/dpll3xxx.c                     | 81 ++++++++-----------
->  .../iio/common/st_sensors/st_sensors_core.c   |  5 +-
->  drivers/iio/humidity/hts221_core.c            |  8 +-
->  drivers/iio/imu/st_lsm6dsx/st_lsm6dsx.h       |  1 -
->  .../iio/imu/st_lsm6dsx/st_lsm6dsx_buffer.c    |  7 +-
->  drivers/iio/imu/st_lsm6dsx/st_lsm6dsx_core.c  | 45 +++++------
->  drivers/iio/imu/st_lsm6dsx/st_lsm6dsx_shub.c  | 11 +--
->  drivers/media/platform/ti-vpe/cal.h           |  4 +-
->  drivers/mmc/host/sdhci-of-aspeed.c            |  5 +-
->  drivers/net/wireless/realtek/rtw89/core.h     | 38 ++-------
->  drivers/pinctrl/aspeed/pinctrl-aspeed-g4.c    |  3 +-
->  drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c    |  3 +-
->  drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c    |  3 +-
->  drivers/pinctrl/aspeed/pinctrl-aspeed.c       |  5 +-
->  drivers/pinctrl/aspeed/pinmux-aspeed.c        |  6 +-
->  drivers/pinctrl/ti/pinctrl-ti-iodelay.c       | 35 +++-----
->  drivers/regulator/ti-abb-regulator.c          |  7 +-
->  drivers/soc/renesas/renesas-soc.c             |  4 +-
->  drivers/thermal/ti-soc-thermal/ti-bandgap.c   | 11 ++-
->  include/linux/bitfield.h                      | 30 +++++++
->  sound/pci/ice1712/wm8766.c                    | 14 ++--
->  sound/pci/ice1712/wm8776.c                    | 14 ++--
->  45 files changed, 263 insertions(+), 347 deletions(-)
-> 
-> -- 
-> 2.25.1
-> 
-> Gr{oetje,eeting}s,
-> 
-> 						Geert
-> 
-> --
-> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert at linux-m68k.org
-> 
-> In personal conversations with technical people, I call myself a hacker. But
-> when I'm talking to journalists I just say "programmer" or something like that.
-> 							    -- Linus Torvalds
-
--- 
-Alexandre Belloni, co-owner and COO, Bootlin
-Embedded Linux and Kernel engineering
-https://bootlin.com
