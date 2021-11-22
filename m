@@ -1,17 +1,17 @@
 From: Geert Uytterhoeven <geert+renesas@glider.be>
-Date: Mon, 22 Nov 2021 16:54:06 +0100
-Subject: [PATCH/RFC 13/17] pinctl: ti: iodelay: Use bitfield helpers
+Date: Mon, 22 Nov 2021 16:54:10 +0100
+Subject: [PATCH/RFC 17/17] rtw89: Use bitfield helpers
 In-Reply-To: <cover.1637592133.git.geert+renesas@glider.be>
 References: <cover.1637592133.git.geert+renesas@glider.be>
-Message-ID: <60257a3c5b567fb5b14d6f9adb770899bce88f7a.1637592133.git.geert+renesas@glider.be>
+Message-ID: <f7b81122f7596fa004188bfae68f25a68c2d2392.1637592133.git.geert+renesas@glider.be>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Use the field_{get,prep}() helpers, instead of defining a custom
-function, or open-coding the same operations.
+Use the field_{get,prep}() helpers, instead of open-coding the same
+operations.
 
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
@@ -19,104 +19,101 @@ Compile-tested only.
 Marked RFC, as this depends on [PATCH 01/17], but follows a different
 path to upstream.
 ---
- drivers/pinctrl/ti/pinctrl-ti-iodelay.c | 35 +++++++------------------
- 1 file changed, 10 insertions(+), 25 deletions(-)
+ drivers/net/wireless/realtek/rtw89/core.h | 38 ++++-------------------
+ 1 file changed, 6 insertions(+), 32 deletions(-)
 
-diff --git a/drivers/pinctrl/ti/pinctrl-ti-iodelay.c b/drivers/pinctrl/ti/pinctrl-ti-iodelay.c
-index 4e2382778d38f557..b220dcd9215520db 100644
---- a/drivers/pinctrl/ti/pinctrl-ti-iodelay.c
-+++ b/drivers/pinctrl/ti/pinctrl-ti-iodelay.c
-@@ -9,6 +9,7 @@
-  * warranty of any kind, whether express or implied.
-  */
- 
-+#include <linux/bitfield.h>
- #include <linux/err.h>
- #include <linux/init.h>
- #include <linux/io.h>
-@@ -155,18 +156,6 @@ struct ti_iodelay_device {
- 	struct ti_iodelay_reg_values reg_init_conf_values;
- };
- 
--/**
-- * ti_iodelay_extract() - extract bits for a field
-- * @val: Register value
-- * @mask: Mask
-- *
-- * Return: extracted value which is appropriately shifted
-- */
--static inline u32 ti_iodelay_extract(u32 val, u32 mask)
--{
--	return (val & mask) >> __ffs(mask);
--}
+diff --git a/drivers/net/wireless/realtek/rtw89/core.h b/drivers/net/wireless/realtek/rtw89/core.h
+index c2885e4dd882f045..f9c0300ec373aaf2 100644
+--- a/drivers/net/wireless/realtek/rtw89/core.h
++++ b/drivers/net/wireless/realtek/rtw89/core.h
+@@ -2994,81 +2994,55 @@ rtw89_write32_clr(struct rtw89_dev *rtwdev, u32 addr, u32 bit)
+ static inline u32
+ rtw89_read32_mask(struct rtw89_dev *rtwdev, u32 addr, u32 mask)
+ {
+-	u32 shift = __ffs(mask);
+-	u32 orig;
+-	u32 ret;
 -
- /**
-  * ti_iodelay_compute_dpe() - Compute equation for delay parameter
-  * @period: Period to use
-@@ -233,10 +222,10 @@ static int ti_iodelay_pinconf_set(struct ti_iodelay_device *iod,
- 	}
+-	orig = rtw89_read32(rtwdev, addr);
+-	ret = (orig & mask) >> shift;
+-
+-	return ret;
++	return field_get(mask, rtw89_read32(rtwdev, addr));
+ }
  
- 	reg_mask = reg->signature_mask;
--	reg_val = reg->signature_value << __ffs(reg->signature_mask);
-+	reg_val = field_prep(reg->signature_mask, reg->signature_value);
+ static inline u16
+ rtw89_read16_mask(struct rtw89_dev *rtwdev, u32 addr, u32 mask)
+ {
+-	u32 shift = __ffs(mask);
+-	u32 orig;
+-	u32 ret;
+-
+-	orig = rtw89_read16(rtwdev, addr);
+-	ret = (orig & mask) >> shift;
+-
+-	return ret;
++	return field_get(mask, rtw89_read16(rtwdev, addr));
+ }
  
- 	reg_mask |= reg->binary_data_coarse_mask;
--	tmp_val = c_elements << __ffs(reg->binary_data_coarse_mask);
-+	tmp_val = field_prep(reg->binary_data_coarse_mask, c_elements);
- 	if (tmp_val & ~reg->binary_data_coarse_mask) {
- 		dev_err(dev, "Masking overflow of coarse elements %08x\n",
- 			tmp_val);
-@@ -245,7 +234,7 @@ static int ti_iodelay_pinconf_set(struct ti_iodelay_device *iod,
- 	reg_val |= tmp_val;
+ static inline u8
+ rtw89_read8_mask(struct rtw89_dev *rtwdev, u32 addr, u32 mask)
+ {
+-	u32 shift = __ffs(mask);
+-	u32 orig;
+-	u32 ret;
+-
+-	orig = rtw89_read8(rtwdev, addr);
+-	ret = (orig & mask) >> shift;
+-
+-	return ret;
++	return field_get(mask, rtw89_read8(rtwdev, addr));
+ }
  
- 	reg_mask |= reg->binary_data_fine_mask;
--	tmp_val = f_elements << __ffs(reg->binary_data_fine_mask);
-+	tmp_val = field_prep(reg->binary_data_fine_mask, f_elements);
- 	if (tmp_val & ~reg->binary_data_fine_mask) {
- 		dev_err(dev, "Masking overflow of fine elements %08x\n",
- 			tmp_val);
-@@ -260,7 +249,7 @@ static int ti_iodelay_pinconf_set(struct ti_iodelay_device *iod,
- 	 * impacting iodelay configuration. Use with care!
- 	 */
- 	reg_mask |= reg->lock_mask;
--	reg_val |= reg->unlock_val << __ffs(reg->lock_mask);
-+	reg_val |= field_prep(reg->lock_mask, reg->unlock_val);
- 	r = regmap_update_bits(iod->regmap, cfg->offset, reg_mask, reg_val);
+ static inline void
+ rtw89_write32_mask(struct rtw89_dev *rtwdev, u32 addr, u32 mask, u32 data)
+ {
+-	u32 shift = __ffs(mask);
+ 	u32 orig;
+ 	u32 set;
  
- 	dev_dbg(dev, "Set reg 0x%x Delay(a: %d g: %d), Elements(C=%d F=%d)0x%x\n",
-@@ -296,16 +285,14 @@ static int ti_iodelay_pinconf_init_dev(struct ti_iodelay_device *iod)
- 	r = regmap_read(iod->regmap, reg->reg_refclk_offset, &val);
- 	if (r)
- 		return r;
--	ival->ref_clk_period = ti_iodelay_extract(val, reg->refclk_period_mask);
-+	ival->ref_clk_period = field_get(reg->refclk_period_mask, val);
- 	dev_dbg(dev, "refclk_period=0x%04x\n", ival->ref_clk_period);
+ 	WARN(addr & 0x3, "should be 4-byte aligned, addr = 0x%08x\n", addr);
  
- 	r = regmap_read(iod->regmap, reg->reg_coarse_offset, &val);
- 	if (r)
- 		return r;
--	ival->coarse_ref_count =
--	    ti_iodelay_extract(val, reg->coarse_ref_count_mask);
--	ival->coarse_delay_count =
--	    ti_iodelay_extract(val, reg->coarse_delay_count_mask);
-+	ival->coarse_ref_count = field_get(reg->coarse_ref_count_mask, val);
-+	ival->coarse_delay_count = field_get(reg->coarse_delay_count_mask, val);
- 	if (!ival->coarse_delay_count) {
- 		dev_err(dev, "Invalid Coarse delay count (0) (reg=0x%08x)\n",
- 			val);
-@@ -326,10 +313,8 @@ static int ti_iodelay_pinconf_init_dev(struct ti_iodelay_device *iod)
- 	r = regmap_read(iod->regmap, reg->reg_fine_offset, &val);
- 	if (r)
- 		return r;
--	ival->fine_ref_count =
--	    ti_iodelay_extract(val, reg->fine_ref_count_mask);
--	ival->fine_delay_count =
--	    ti_iodelay_extract(val, reg->fine_delay_count_mask);
-+	ival->fine_ref_count = field_get(reg->fine_ref_count_mask, val);
-+	ival->fine_delay_count = field_get(reg->fine_delay_count_mask, val);
- 	if (!ival->fine_delay_count) {
- 		dev_err(dev, "Invalid Fine delay count (0) (reg=0x%08x)\n",
- 			val);
+ 	orig = rtw89_read32(rtwdev, addr);
+-	set = (orig & ~mask) | ((data << shift) & mask);
++	set = (orig & ~mask) | field_prep(mask, data);
+ 	rtw89_write32(rtwdev, addr, set);
+ }
+ 
+ static inline void
+ rtw89_write16_mask(struct rtw89_dev *rtwdev, u32 addr, u32 mask, u16 data)
+ {
+-	u32 shift;
+ 	u16 orig, set;
+ 
+ 	mask &= 0xffff;
+-	shift = __ffs(mask);
+ 
+ 	orig = rtw89_read16(rtwdev, addr);
+-	set = (orig & ~mask) | ((data << shift) & mask);
++	set = (orig & ~mask) | field_prep(mask, data);
+ 	rtw89_write16(rtwdev, addr, set);
+ }
+ 
+ static inline void
+ rtw89_write8_mask(struct rtw89_dev *rtwdev, u32 addr, u32 mask, u8 data)
+ {
+-	u32 shift;
+ 	u8 orig, set;
+ 
+ 	mask &= 0xff;
+-	shift = __ffs(mask);
+ 
+ 	orig = rtw89_read8(rtwdev, addr);
+-	set = (orig & ~mask) | ((data << shift) & mask);
++	set = (orig & ~mask) | field_prep(mask, data);
+ 	rtw89_write8(rtwdev, addr, set);
+ }
+ 
 -- 
 2.25.1
 
