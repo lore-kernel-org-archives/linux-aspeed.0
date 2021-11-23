@@ -1,59 +1,31 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Tue, 23 Nov 2021 09:38:51 +0100
-Subject: [PATCH 01/17] bitfield: Add non-constant field_{prep,
- get}() helpers
-In-Reply-To: <5936f811-fa48-33e9-2a1a-66c68f74aa5e@ieee.org>
+From: Takashi Iwai <tiwai@suse.de>
+Date: Tue, 23 Nov 2021 12:24:41 +0100
+Subject: [PATCH/RFC 16/17] ALSA: ice1724: Use bitfield helpers
+In-Reply-To: <45fa162856814176045ffbb49ee64cf0ea7e00bc.1637592133.git.geert+renesas@glider.be>
 References: <cover.1637592133.git.geert+renesas@glider.be>
- <3a54a6703879d10f08cf0275a2a69297ebd2b1d4.1637592133.git.geert+renesas@glider.be>
- <01b44b38c087c151171f8d45a2090474c2559306.camel@sipsolutions.net>
- <5936f811-fa48-33e9-2a1a-66c68f74aa5e@ieee.org>
-Message-ID: <CAMuHMdX4C0EgkGXR=MwSuBOFoj7O9xx8xwH5dP8rWzN1ckejQA@mail.gmail.com>
+ <45fa162856814176045ffbb49ee64cf0ea7e00bc.1637592133.git.geert+renesas@glider.be>
+Message-ID: <s5hwnkz9ksm.wl-tiwai@suse.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Alex,
+On Mon, 22 Nov 2021 16:54:09 +0100,
+Geert Uytterhoeven wrote:
+> 
+> Use the field_{get,prep}() helpers, instead of open-coding the same
+> operations.
+> 
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> ---
+> Compile-tested only.
+> Marked RFC, as this depends on [PATCH 01/17], but follows a different
+> path to upstream.
 
-On Tue, Nov 23, 2021 at 2:52 AM Alex Elder <elder@ieee.org> wrote:
-> On 11/22/21 10:32 AM, Johannes Berg wrote:
-> > On Mon, 2021-11-22 at 16:53 +0100, Geert Uytterhoeven wrote:
-> >> The existing FIELD_{GET,PREP}() macros are limited to compile-time
-> >> constants.  However, it is very common to prepare or extract bitfield
-> >> elements where the bitfield mask is not a compile-time constant.
-> >
-> > I'm not sure it's really a good idea to add a third API here?
-> >
-> > We have the upper-case (constant) versions, and already
-> > {u32,...}_get_bits()/etc.
->
-> I've used these a lot (and personally prefer the lower-case ones).
->
-> Your new macros don't do anything to ensure the field mask is
-> of the right form, which is basically:  (2 ^ width - 1) << shift
+Acked-by: Takashi Iwai <tiwai@suse.de>
 
-> I really like the property that the field mask must be constant.
 
-That's correct. How to enforce that in the non-const case?
-BUG()/WARN() is not an option ;-)
+thanks,
 
-> That being said, I've had to use some strange coding patterns
-> in order to adhere to the "const only" rule in a few cases.
-> So if you can come up with a satisfactory naming scheme I'm
-> all for it.
-
-There are plenty of drivers that handle masks stored in a data
-structure, so it would be good if they can use a suitable helper,
-as open-coding is prone to errors.
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert at linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Takashi
