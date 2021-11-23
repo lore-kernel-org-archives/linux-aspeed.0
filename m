@@ -1,125 +1,81 @@
-From: Larry Finger <Larry.Finger@lwfinger.net>
-Date: Mon, 22 Nov 2021 12:38:41 -0600
-Subject: [PATCH/RFC 17/17] rtw89: Use bitfield helpers
-In-Reply-To: <f7b81122f7596fa004188bfae68f25a68c2d2392.1637592133.git.geert+renesas@glider.be>
-References: <cover.1637592133.git.geert+renesas@glider.be>
- <f7b81122f7596fa004188bfae68f25a68c2d2392.1637592133.git.geert+renesas@glider.be>
-Message-ID: <a18f44bf-e590-0ebe-00c0-5658f3a51d86@lwfinger.net>
+From: Sakari Ailus <sakari.ailus@linux.intel.com>
+Date: Tue, 23 Nov 2021 12:23:56 +0200
+Subject: [PATCH v5 05/10] media: v4l: Add definition for the Aspeed JPEG
+ format
+In-Reply-To: <0bed6093-0af6-4fc4-716f-6cf8b1302320@aspeedtech.com>
+References: <20211118074030.685-1-jammy_huang@aspeedtech.com>
+ <20211118074030.685-6-jammy_huang@aspeedtech.com>
+ <YZZIDNCLJXwrqY4W@paasikivi.fi.intel.com>
+ <0bed6093-0af6-4fc4-716f-6cf8b1302320@aspeedtech.com>
+Message-ID: <YZzBPFHZ7MPwTWSm@paasikivi.fi.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 11/22/21 09:54, Geert Uytterhoeven wrote:
-> Use the field_{get,prep}() helpers, instead of open-coding the same
-> operations.
+Hi Jammy,
+
+On Fri, Nov 19, 2021 at 10:02:40AM +0800, Jammy Huang wrote:
+> Hi Sakari,
 > 
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> ---
-> Compile-tested only.
-> Marked RFC, as this depends on [PATCH 01/17], but follows a different
-> path to upstream.
-> ---
->   drivers/net/wireless/realtek/rtw89/core.h | 38 ++++-------------------
->   1 file changed, 6 insertions(+), 32 deletions(-)
-
-Tested-by: Larry Finger <Larry,Finger@lwfinger.net>
-
-Larry
-
+> On 2021/11/18 ?? 08:33, Sakari Ailus wrote:
+> > Hi Jammy,
+> > 
+> > On Thu, Nov 18, 2021 at 03:40:26PM +0800, Jammy Huang wrote:
+> > > This introduces support for the Aspeed JPEG format, where the new frame
+> > > can refer to previous frame to reduce the amount of compressed data. The
+> > > concept is similar to I/P frame of video compression. I will compare the
+> > > new frame with previous one to decide which macroblock's data is
+> > > changed, and only the changed macroblocks will be compressed.
+> > > 
+> > > This Aspeed JPEG format is used by the video engine on Aspeed platforms,
+> > > which is generally adapted for remote KVM.
+> > > 
+> > > Signed-off-by: Jammy Huang <jammy_huang@aspeedtech.com>
+> > > ---
+> > > v5:
+> > >    - no update
+> > > v4:
+> > >    - new
+> > > ---
+> > >   Documentation/media/uapi/v4l/pixfmt-reserved.rst | 12 ++++++++++++
+> > >   drivers/media/v4l2-core/v4l2-ioctl.c             |  1 +
+> > >   include/uapi/linux/videodev2.h                   |  1 +
+> > >   3 files changed, 14 insertions(+)
+> > > 
+> > > diff --git a/Documentation/media/uapi/v4l/pixfmt-reserved.rst b/Documentation/media/uapi/v4l/pixfmt-reserved.rst
+> > > index b2cd155e691b..23c05063133d 100644
+> > > --- a/Documentation/media/uapi/v4l/pixfmt-reserved.rst
+> > > +++ b/Documentation/media/uapi/v4l/pixfmt-reserved.rst
+> > > @@ -264,6 +264,18 @@ please make a proposal on the linux-media mailing list.
+> > >   	of tiles, resulting in 32-aligned resolutions for the luminance plane
+> > >   	and 16-aligned resolutions for the chrominance plane (with 2x2
+> > >   	subsampling).
+> > > +    * .. _V4L2-PIX-FMT-AJPG:
+> > > +
+> > > +      - ``V4L2_PIX_FMT_AJPG``
+> > > +      - 'AJPG'
+> > > +      - ASPEED JPEG format used by the aspeed-video driver on Aspeed platforms,
+> > > +        which is generally adapted for remote KVM.
+> > > +        On each frame compression, I will compare the new frame with previous
+> > > +        one to decide which macroblock's data is changed, and only the changed
+> > > +        macroblocks will be compressed.
+> > > +
+> > > +        You could reference to chapter 36, Video Engine, of AST2600's datasheet
+> > > +        for more information.
+> > Is this datasheet publicly available? Do you have a URL?
 > 
-> diff --git a/drivers/net/wireless/realtek/rtw89/core.h b/drivers/net/wireless/realtek/rtw89/core.h
-> index c2885e4dd882f045..f9c0300ec373aaf2 100644
-> --- a/drivers/net/wireless/realtek/rtw89/core.h
-> +++ b/drivers/net/wireless/realtek/rtw89/core.h
-> @@ -2994,81 +2994,55 @@ rtw89_write32_clr(struct rtw89_dev *rtwdev, u32 addr, u32 bit)
->   static inline u32
->   rtw89_read32_mask(struct rtw89_dev *rtwdev, u32 addr, u32 mask)
->   {
-> -	u32 shift = __ffs(mask);
-> -	u32 orig;
-> -	u32 ret;
-> -
-> -	orig = rtw89_read32(rtwdev, addr);
-> -	ret = (orig & mask) >> shift;
-> -
-> -	return ret;
-> +	return field_get(mask, rtw89_read32(rtwdev, addr));
->   }
->   
->   static inline u16
->   rtw89_read16_mask(struct rtw89_dev *rtwdev, u32 addr, u32 mask)
->   {
-> -	u32 shift = __ffs(mask);
-> -	u32 orig;
-> -	u32 ret;
-> -
-> -	orig = rtw89_read16(rtwdev, addr);
-> -	ret = (orig & mask) >> shift;
-> -
-> -	return ret;
-> +	return field_get(mask, rtw89_read16(rtwdev, addr));
->   }
->   
->   static inline u8
->   rtw89_read8_mask(struct rtw89_dev *rtwdev, u32 addr, u32 mask)
->   {
-> -	u32 shift = __ffs(mask);
-> -	u32 orig;
-> -	u32 ret;
-> -
-> -	orig = rtw89_read8(rtwdev, addr);
-> -	ret = (orig & mask) >> shift;
-> -
-> -	return ret;
-> +	return field_get(mask, rtw89_read8(rtwdev, addr));
->   }
->   
->   static inline void
->   rtw89_write32_mask(struct rtw89_dev *rtwdev, u32 addr, u32 mask, u32 data)
->   {
-> -	u32 shift = __ffs(mask);
->   	u32 orig;
->   	u32 set;
->   
->   	WARN(addr & 0x3, "should be 4-byte aligned, addr = 0x%08x\n", addr);
->   
->   	orig = rtw89_read32(rtwdev, addr);
-> -	set = (orig & ~mask) | ((data << shift) & mask);
-> +	set = (orig & ~mask) | field_prep(mask, data);
->   	rtw89_write32(rtwdev, addr, set);
->   }
->   
->   static inline void
->   rtw89_write16_mask(struct rtw89_dev *rtwdev, u32 addr, u32 mask, u16 data)
->   {
-> -	u32 shift;
->   	u16 orig, set;
->   
->   	mask &= 0xffff;
-> -	shift = __ffs(mask);
->   
->   	orig = rtw89_read16(rtwdev, addr);
-> -	set = (orig & ~mask) | ((data << shift) & mask);
-> +	set = (orig & ~mask) | field_prep(mask, data);
->   	rtw89_write16(rtwdev, addr, set);
->   }
->   
->   static inline void
->   rtw89_write8_mask(struct rtw89_dev *rtwdev, u32 addr, u32 mask, u8 data)
->   {
-> -	u32 shift;
->   	u8 orig, set;
->   
->   	mask &= 0xff;
-> -	shift = __ffs(mask);
->   
->   	orig = rtw89_read8(rtwdev, addr);
-> -	set = (orig & ~mask) | ((data << shift) & mask);
-> +	set = (orig & ~mask) | field_prep(mask, data);
->   	rtw89_write8(rtwdev, addr, set);
->   }
->   
+> Sorry, this datasheet is not publicly available.
+> Hans mentioned this as well in the discussion below:
 > 
+> https://lkml.org/lkml/2021/11/10/101
 
+If the vendor documentation is not publicly available, you'll need to have
+the format documented here. Alternatively an open source implementation
+(e.g. LGPL) is presumably fine, too.
+
+-- 
+Regards,
+
+Sakari Ailus
