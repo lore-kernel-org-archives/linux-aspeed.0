@@ -1,36 +1,48 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Tue, 23 Nov 2021 09:20:23 +0100
-Subject: [PATCH 00/17] Non-const bitfield helper conversions
-In-Reply-To: <YZvYW1ElW7ZYZNTC@piout.net>
+Date: Tue, 23 Nov 2021 09:30:14 +0100
+Subject: [PATCH 01/17] bitfield: Add non-constant field_{prep,
+ get}() helpers
+In-Reply-To: <01b44b38c087c151171f8d45a2090474c2559306.camel@sipsolutions.net>
 References: <cover.1637592133.git.geert+renesas@glider.be>
- <YZvYW1ElW7ZYZNTC@piout.net>
-Message-ID: <CAMuHMdWKHoBWm2XQmKwB0q8Ya8KzpCgA29D0igXJrGY8=3e8_A@mail.gmail.com>
+ <3a54a6703879d10f08cf0275a2a69297ebd2b1d4.1637592133.git.geert+renesas@glider.be>
+ <01b44b38c087c151171f8d45a2090474c2559306.camel@sipsolutions.net>
+Message-ID: <CAMuHMdUnBgFpqhgjf5AA0LH9MZOFALeC=YinZ4Tv_V+Y9hkRSg@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Alexandre,
+Hi Johannes,
 
-On Mon, Nov 22, 2021 at 6:50 PM Alexandre Belloni
-<alexandre.belloni@bootlin.com> wrote:
-> On 22/11/2021 16:53:53+0100, Geert Uytterhoeven wrote:
+On Mon, Nov 22, 2021 at 5:33 PM Johannes Berg <johannes@sipsolutions.net> wrote:
+> On Mon, 2021-11-22 at 16:53 +0100, Geert Uytterhoeven wrote:
 > > The existing FIELD_{GET,PREP}() macros are limited to compile-time
 > > constants.  However, it is very common to prepare or extract bitfield
 > > elements where the bitfield mask is not a compile-time constant.
-> > To avoid this limitation, the AT91 clock driver already has its own
-> > field_{prep,get}() macros.
+> >
 >
-> My understanding was that this (being compile time only) was actually
-> done on purpose. Did I misunderstand?
+> I'm not sure it's really a good idea to add a third API here?
+>
+> We have the upper-case (constant) versions, and already
+> {u32,...}_get_bits()/etc.
 
-Yes, it was done on purpose, to maximize type safety.
+These don't work for non-const masks.
 
-However, this imposes a severe limitation: we cannot use them in case
-the mask is non-const (i.e. stored in some data structure).  This
-is a quite common use-case, given the examples I found and converted,
-and given you added field_{get,prep}() to the AT91 clock driver.
+> Also, you're using __ffs(), which doesn't work for 64-bit on 32-bit
+> architectures (afaict), so that seems a bit awkward.
+
+That's a valid comment. Can be fixed by using a wrapper macro
+that checks if typeof(mask) == u64, and uses an __ffs64() version when
+needed.
+
+> Maybe we can make {u32,...}_get_bits() be doing compile-time only checks
+> if it is indeed a constant? The __field_overflow() usage is already only
+> done if __builtin_constant_p(v), so I guess we can do the same with
+> __bad_mask()?
+
+Are all compilers smart enough to replace the division by
+field_multiplier(field) by a shift?
 
 Gr{oetje,eeting}s,
 
