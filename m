@@ -1,133 +1,28 @@
-From: Iwona Winiarska <iwona.winiarska@intel.com>
-Date: Tue, 23 Nov 2021 15:07:06 +0100
-Subject: [PATCH v4 13/13] docs: Add PECI documentation
-In-Reply-To: <20211123140706.2945700-1-iwona.winiarska@intel.com>
+From: Guenter Roeck <linux@roeck-us.net>
+Date: Tue, 23 Nov 2021 07:51:04 -0800
+Subject: [PATCH v4 10/13] hwmon: peci: Add cputemp driver
+In-Reply-To: <20211123140706.2945700-11-iwona.winiarska@intel.com>
 References: <20211123140706.2945700-1-iwona.winiarska@intel.com>
-Message-ID: <20211123140706.2945700-14-iwona.winiarska@intel.com>
+ <20211123140706.2945700-11-iwona.winiarska@intel.com>
+Message-ID: <20211123155104.GB2184678@roeck-us.net>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add a brief overview of PECI and PECI wire interface.
-The documentation also contains kernel-doc for PECI subsystem internals
-and PECI CPU Driver API.
+On Tue, Nov 23, 2021 at 03:07:03PM +0100, Iwona Winiarska wrote:
+> Add peci-cputemp driver for Digital Thermal Sensor (DTS) thermal
+> readings of the processor package and processor cores that are
+> accessible via the PECI interface.
+> 
+> The main use case for the driver (and PECI interface) is out-of-band
+> management, where we're able to obtain the DTS readings from an external
+> entity connected with PECI, e.g. BMC on server platforms.
+> 
+> Co-developed-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+> Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+> Signed-off-by: Iwona Winiarska <iwona.winiarska@intel.com>
+> Reviewed-by: Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>
 
-Signed-off-by: Iwona Winiarska <iwona.winiarska@intel.com>
-Reviewed-by: Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>
----
- Documentation/index.rst      |  1 +
- Documentation/peci/index.rst | 16 +++++++++++
- Documentation/peci/peci.rst  | 51 ++++++++++++++++++++++++++++++++++++
- MAINTAINERS                  |  1 +
- 4 files changed, 69 insertions(+)
- create mode 100644 Documentation/peci/index.rst
- create mode 100644 Documentation/peci/peci.rst
-
-diff --git a/Documentation/index.rst b/Documentation/index.rst
-index 54ce34fd6fbd..7671f2cd474f 100644
---- a/Documentation/index.rst
-+++ b/Documentation/index.rst
-@@ -137,6 +137,7 @@ needed).
-    misc-devices/index
-    scheduler/index
-    mhi/index
-+   peci/index
- 
- Architecture-agnostic documentation
- -----------------------------------
-diff --git a/Documentation/peci/index.rst b/Documentation/peci/index.rst
-new file mode 100644
-index 000000000000..989de10416e7
---- /dev/null
-+++ b/Documentation/peci/index.rst
-@@ -0,0 +1,16 @@
-+.. SPDX-License-Identifier: GPL-2.0-only
-+
-+====================
-+Linux PECI Subsystem
-+====================
-+
-+.. toctree::
-+
-+   peci
-+
-+.. only::  subproject and html
-+
-+   Indices
-+   =======
-+
-+   * :ref:`genindex`
-diff --git a/Documentation/peci/peci.rst b/Documentation/peci/peci.rst
-new file mode 100644
-index 000000000000..331b1ec00e22
---- /dev/null
-+++ b/Documentation/peci/peci.rst
-@@ -0,0 +1,51 @@
-+.. SPDX-License-Identifier: GPL-2.0-only
-+
-+========
-+Overview
-+========
-+
-+The Platform Environment Control Interface (PECI) is a communication
-+interface between Intel processor and management controllers
-+(e.g. Baseboard Management Controller, BMC).
-+PECI provides services that allow the management controller to
-+configure, monitor and debug platform by accessing various registers.
-+It defines a dedicated command protocol, where the management
-+controller is acting as a PECI originator and the processor - as
-+a PECI responder.
-+PECI can be used in both single processor and multiple-processor based
-+systems.
-+
-+NOTE:
-+Intel PECI specification is not released as a dedicated document,
-+instead it is a part of External Design Specification (EDS) for given
-+Intel CPU. External Design Specifications are usually not publicly
-+available.
-+
-+PECI Wire
-+---------
-+
-+PECI Wire interface uses a single wire for self-clocking and data
-+transfer. It does not require any additional control lines - the
-+physical layer is a self-clocked one-wire bus signal that begins each
-+bit with a driven, rising edge from an idle near zero volts. The
-+duration of the signal driven high allows to determine whether the bit
-+value is logic '0' or logic '1'. PECI Wire also includes variable data
-+rate established with every message.
-+
-+For PECI Wire, each processor package will utilize unique, fixed
-+addresses within a defined range and that address should
-+have a fixed relationship with the processor socket ID - if one of the
-+processors is removed, it does not affect addresses of remaining
-+processors.
-+
-+PECI subsystem internals
-+------------------------
-+
-+.. kernel-doc:: include/linux/peci.h
-+.. kernel-doc:: drivers/peci/internal.h
-+.. kernel-doc:: drivers/peci/core.c
-+.. kernel-doc:: drivers/peci/request.c
-+
-+PECI CPU Driver API
-+-------------------
-+.. kernel-doc:: drivers/peci/cpu.c
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 6266e996dca0..78af9c92f27a 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -14932,6 +14932,7 @@ M:	Iwona Winiarska <iwona.winiarska@intel.com>
- L:	openbmc at lists.ozlabs.org (moderated for non-subscribers)
- S:	Supported
- F:	Documentation/devicetree/bindings/peci/
-+F:	Documentation/peci/
- F:	drivers/peci/
- F:	include/linux/peci-cpu.h
- F:	include/linux/peci.h
--- 
-2.31.1
-
+Acked-by: Guenter Roeck <linux@roeck-us.net>
