@@ -1,52 +1,66 @@
-From: Johannes Berg <johannes@sipsolutions.net>
-Date: Wed, 24 Nov 2021 09:03:24 +0100
-Subject: [PATCH 01/17] bitfield: Add non-constant field_{prep,get}()
- helpers
-In-Reply-To: <20211123154922.600fd3b5@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+From: Kalle Valo <kvalo@codeaurora.org>
+Date: Wed, 24 Nov 2021 10:24:02 +0200
+Subject: [PATCH 01/17] bitfield: Add non-constant field_{prep,
+ get}() helpers
+In-Reply-To: <CAMuHMdUnBgFpqhgjf5AA0LH9MZOFALeC=YinZ4Tv_V+Y9hkRSg@mail.gmail.com>
+ (Geert Uytterhoeven's message of "Tue, 23 Nov 2021 09:30:14 +0100")
 References: <cover.1637592133.git.geert+renesas@glider.be>
  <3a54a6703879d10f08cf0275a2a69297ebd2b1d4.1637592133.git.geert+renesas@glider.be>
  <01b44b38c087c151171f8d45a2090474c2559306.camel@sipsolutions.net>
- <20211122171739.03848154@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
- <CAMuHMdWAAGrQUZN18cnDTDUUhuPNTZTFkRMe2Sbf+s7CedPSxA@mail.gmail.com>
- <637a4183861a1f2cdab52b7652bfa7ed33fbcdd2.camel@sipsolutions.net>
- <20211123154922.600fd3b5@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
-Message-ID: <05d4673a0343bfd83824d307e9cf8bf92e3814a6.camel@sipsolutions.net>
+ <CAMuHMdUnBgFpqhgjf5AA0LH9MZOFALeC=YinZ4Tv_V+Y9hkRSg@mail.gmail.com>
+Message-ID: <87sfvm55ct.fsf@codeaurora.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, 2021-11-23 at 15:49 -0800, Jakub Kicinski wrote:
-> On Tue, 23 Nov 2021 17:24:15 +0100 Johannes Berg wrote:
-> > > (*_replace_bits() seems to be useful, though)  
-> > 
-> > Indeed.
-> > 
-> > Also as I said in my other mail, the le32/be32/... variants are
-> > tremendously useful, and they fundamentally cannot be expressed with the
-> > FIELD_GET() or field_get() macros. IMHO this is a clear advantage to the
-> 
-> Can you elaborate?
+Geert Uytterhoeven <geert@linux-m68k.org> writes:
 
-Well, the way I see it, the only advantage of FIELD_GET() is that it
-will auto-determine the type (based on the mask type.) This cannot work
-if you need be/le conversions, because the be/le type annotations are
-invisible to the compiler.
+> Hi Johannes,
+>
+> On Mon, Nov 22, 2021 at 5:33 PM Johannes Berg <johannes@sipsolutions.net> wrote:
+>> On Mon, 2021-11-22 at 16:53 +0100, Geert Uytterhoeven wrote:
+>> > The existing FIELD_{GET,PREP}() macros are limited to compile-time
+>> > constants.  However, it is very common to prepare or extract bitfield
+>> > elements where the bitfield mask is not a compile-time constant.
+>> >
+>>
+>> I'm not sure it's really a good idea to add a third API here?
+>>
+>> We have the upper-case (constant) versions, and already
+>> {u32,...}_get_bits()/etc.
+>
+> These don't work for non-const masks.
+>
+>> Also, you're using __ffs(), which doesn't work for 64-bit on 32-bit
+>> architectures (afaict), so that seems a bit awkward.
+>
+> That's a valid comment. Can be fixed by using a wrapper macro
+> that checks if typeof(mask) == u64, and uses an __ffs64() version when
+> needed.
+>
+>> Maybe we can make {u32,...}_get_bits() be doing compile-time only checks
+>> if it is indeed a constant? The __field_overflow() usage is already only
+>> done if __builtin_constant_p(v), so I guess we can do the same with
+>> __bad_mask()?
+>
+> Are all compilers smart enough to replace the division by
+> field_multiplier(field) by a shift?
 
-So obviously you could write a BE32_FIELD_GET(), but then really that's
-equivalent to be32_get_bits() - note you you have to actually specify
-the type in the macro name. I guess in theory you could make macros
-where the type is an argument (like FIELD_GET_TYPE(be32, ...)), but I
-don't see how that gains anything.
+It looks like the answer is no as few weeks back I received a comment
+internally that a team is seeing a slow down with u32_get_bits():
 
-> > typed versions, and if you ask me we should get rid of the FIELD_GETand
-> > FIELD_PREP entirely - difficult now, but at least let's not propagate
-> > that?
-> 
-> I don't see why.
+"Time taken for executing both the macros/inline function (in terms of microseconds)
+(out of 3 Trails)
+FIELD_GET	: 32, 31, 32
+u32_get_bits	: 6379, 6664, 6558"
 
-Just for being more regular, in the spirit of "there's exactly one
-correct way of doing it" :)
+Sadly I didn't realise to ask what compiler they were using. But I still
+prefer {u32,...}_get_bits() over FIELD_GET(), they are just so much
+cleaner to use.
 
-johannes
+-- 
+https://patchwork.kernel.org/project/linux-wireless/list/
+
+https://wireless.wiki.kernel.org/en/developers/documentation/submittingpatches
