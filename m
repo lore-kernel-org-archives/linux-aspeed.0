@@ -1,44 +1,48 @@
-From: Johannes Berg <johannes@sipsolutions.net>
-Date: Tue, 23 Nov 2021 17:24:15 +0100
-Subject: [PATCH 01/17] bitfield: Add non-constant field_{prep,get}()
- helpers
-In-Reply-To: <CAMuHMdWAAGrQUZN18cnDTDUUhuPNTZTFkRMe2Sbf+s7CedPSxA@mail.gmail.com>
-References: <cover.1637592133.git.geert+renesas@glider.be>
- <3a54a6703879d10f08cf0275a2a69297ebd2b1d4.1637592133.git.geert+renesas@glider.be>
- <01b44b38c087c151171f8d45a2090474c2559306.camel@sipsolutions.net>
- <20211122171739.03848154@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
- <CAMuHMdWAAGrQUZN18cnDTDUUhuPNTZTFkRMe2Sbf+s7CedPSxA@mail.gmail.com>
-Message-ID: <637a4183861a1f2cdab52b7652bfa7ed33fbcdd2.camel@sipsolutions.net>
+From: Dylan Hung <dylan_hung@aspeedtech.com>
+Date: Wed, 24 Nov 2021 14:10:57 +0800
+Subject: [PATCH] net:phy: Fix "Link is Down" issue
+Message-ID: <20211124061057.12555-1-dylan_hung@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, 2021-11-23 at 09:36 +0100, Geert Uytterhoeven wrote:
+The issue happened randomly in runtime.  The message "Link is Down" is
+popped but soon it recovered to "Link is Up".
 
+The "Link is Down" results from the incorrect read data for reading the
+PHY register via MDIO bus.  The correct sequence for reading the data
+shall be:
+1. fire the command
+2. wait for command done (this step was missing)
+3. wait for data idle
+4. read data from data register
 
-Ah, here's your comment wrt. which one is nicer :)
+Fixes: a9770eac511a ("net: mdio: Move MDIO drivers into a new subdirectory")
+Signed-off-by: Dylan Hung <dylan_hung@aspeedtech.com>
+---
+ drivers/net/mdio/mdio-aspeed.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-> > > We have the upper-case (constant) versions, and already
-> > > {u32,...}_get_bits()/etc.
-> 
-> TBH, I don't like the *_get_bits() API: in general, u32_get_bits() does
-> the same as FIELD_GET(), but the order of the parameters is different?
+diff --git a/drivers/net/mdio/mdio-aspeed.c b/drivers/net/mdio/mdio-aspeed.c
+index cad820568f75..966c3b4ad59d 100644
+--- a/drivers/net/mdio/mdio-aspeed.c
++++ b/drivers/net/mdio/mdio-aspeed.c
+@@ -61,6 +61,13 @@ static int aspeed_mdio_read(struct mii_bus *bus, int addr, int regnum)
+ 
+ 	iowrite32(ctrl, ctx->base + ASPEED_MDIO_CTRL);
+ 
++	rc = readl_poll_timeout(ctx->base + ASPEED_MDIO_CTRL, ctrl,
++				!(ctrl & ASPEED_MDIO_CTRL_FIRE),
++				ASPEED_MDIO_INTERVAL_US,
++				ASPEED_MDIO_TIMEOUT_US);
++	if (rc < 0)
++		return rc;
++
+ 	rc = readl_poll_timeout(ctx->base + ASPEED_MDIO_DATA, data,
+ 				data & ASPEED_MDIO_DATA_IDLE,
+ 				ASPEED_MDIO_INTERVAL_US,
+-- 
+2.25.1
 
-I don't really see how "the order of parameters is different" is a
-downside? Yeah it means if you're used to FIELD_GET() then you'll
-retrain, but ...?
-
-> (*_replace_bits() seems to be useful, though)
-
-Indeed.
-
-Also as I said in my other mail, the le32/be32/... variants are
-tremendously useful, and they fundamentally cannot be expressed with the
-FIELD_GET() or field_get() macros. IMHO this is a clear advantage to the
-typed versions, and if you ask me we should get rid of the FIELD_GETand
-FIELD_PREP entirely - difficult now, but at least let's not propagate
-that?
-
-johannes
