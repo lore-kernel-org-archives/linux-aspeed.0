@@ -1,39 +1,60 @@
-From: patchwork-bot+netdevbpf@kernel.org <patchwork-bot+netdevbpf@kernel.org>
-Date: Wed, 24 Nov 2021 12:00:08 +0000
-Subject: [PATCH v8] net/ncsi : Add payload to be 32-bit aligned to fix
- dropped packets
-In-Reply-To: <20211122163818.GA11306@gmail.com>
-References: <20211122163818.GA11306@gmail.com>
-Message-ID: <163775520854.1662.10651574507891086617.git-patchwork-notify@kernel.org>
+From: Jakub Kicinski <kuba@kernel.org>
+Date: Wed, 24 Nov 2021 05:59:35 -0800
+Subject: [PATCH 01/17] bitfield: Add non-constant field_{prep,get}()
+ helpers
+In-Reply-To: <05d4673a0343bfd83824d307e9cf8bf92e3814a6.camel@sipsolutions.net>
+References: <cover.1637592133.git.geert+renesas@glider.be>
+ <3a54a6703879d10f08cf0275a2a69297ebd2b1d4.1637592133.git.geert+renesas@glider.be>
+ <01b44b38c087c151171f8d45a2090474c2559306.camel@sipsolutions.net>
+ <20211122171739.03848154@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <CAMuHMdWAAGrQUZN18cnDTDUUhuPNTZTFkRMe2Sbf+s7CedPSxA@mail.gmail.com>
+ <637a4183861a1f2cdab52b7652bfa7ed33fbcdd2.camel@sipsolutions.net>
+ <20211123154922.600fd3b5@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <05d4673a0343bfd83824d307e9cf8bf92e3814a6.camel@sipsolutions.net>
+Message-ID: <20211124055935.416dc472@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello:
-
-This patch was applied to netdev/net.git (master)
-by David S. Miller <davem@davemloft.net>:
-
-On Mon, 22 Nov 2021 22:08:18 +0530 you wrote:
-> Update NC-SI command handler (both standard and OEM) to take into
-> account of payload paddings in allocating skb (in case of payload
-> size is not 32-bit aligned).
+On Wed, 24 Nov 2021 09:03:24 +0100 Johannes Berg wrote:
+> On Tue, 2021-11-23 at 15:49 -0800, Jakub Kicinski wrote:
+> > > Indeed.
+> > > 
+> > > Also as I said in my other mail, the le32/be32/... variants are
+> > > tremendously useful, and they fundamentally cannot be expressed with the
+> > > FIELD_GET() or field_get() macros. IMHO this is a clear advantage to the  
+> > 
+> > Can you elaborate?  
 > 
-> The checksum field follows payload field, without taking payload
-> padding into account can cause checksum being truncated, leading to
-> dropped packets.
+> Well, the way I see it, the only advantage of FIELD_GET() is that it
+> will auto-determine the type (based on the mask type.) This cannot work
+> if you need be/le conversions, because the be/le type annotations are
+> invisible to the compiler.
 > 
-> [...]
+> So obviously you could write a BE32_FIELD_GET(), but then really that's
+> equivalent to be32_get_bits() - note you you have to actually specify
+> the type in the macro name. I guess in theory you could make macros
+> where the type is an argument (like FIELD_GET_TYPE(be32, ...)), but I
+> don't see how that gains anything.
 
-Here is the summary with links:
-  - [v8] net/ncsi : Add payload to be 32-bit aligned to fix dropped packets
-    https://git.kernel.org/netdev/net/c/ac132852147a
+Ah, that's what you meant! Thanks for spelling it out.
 
-You are awesome, thank you!
--- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/patchwork/pwbot.html
+FWIW I never found the be/le versions useful. Most of the time the data
+comes from bus accessors which swap or is unaligned so you have to do
+be/le_get_unaligned, which swaps. Plus if you access/set multiple
+fields you'd swap them one by one which seems wasteful.
 
+> > > typed versions, and if you ask me we should get rid of the FIELD_GETand
+> > > FIELD_PREP entirely - difficult now, but at least let's not propagate
+> > > that?  
+> > 
+> > I don't see why.  
+> 
+> Just for being more regular, in the spirit of "there's exactly one
+> correct way of doing it" :)
 
+Right now it seems the uppercase macros are more prevalent.
+
+Could just be because of the way the "swapping ones" are defined.
