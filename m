@@ -1,51 +1,65 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Wed, 24 Nov 2021 09:50:01 +0000
-Subject: [PATCH] irqchip: Replace update_bits with write_bits.
-In-Reply-To: <20211124094348.11621-1-billy_tsai@aspeedtech.com>
-References: <20211124094348.11621-1-billy_tsai@aspeedtech.com>
-Message-ID: <CACPK8XeyCbKzjPF6sSj=CZOd3dYmyAzhZDFRRDERMHykwvSMAg@mail.gmail.com>
+Date: Wed, 24 Nov 2021 10:05:45 +0000
+Subject: [PATCH] net:phy: Fix "Link is Down" issue
+In-Reply-To: <20211124061057.12555-1-dylan_hung@aspeedtech.com>
+References: <20211124061057.12555-1-dylan_hung@aspeedtech.com>
+Message-ID: <CACPK8Xc8aD8nY0M442=BdvrpRhYNS1HW7BNQgAQ+ExTfQMsMyQ@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 24 Nov 2021 at 09:43, Billy Tsai <billy_tsai@aspeedtech.com> wrote:
+On Wed, 24 Nov 2021 at 06:11, Dylan Hung <dylan_hung@aspeedtech.com> wrote:
 >
-> The interrupt status bits are cleared by writing 1, we should force a
-> write to clear the interrupt without checking if the value has changed.
+> The issue happened randomly in runtime.  The message "Link is Down" is
+> popped but soon it recovered to "Link is Up".
 >
-> Fixes: 04f605906ff0 ("irqchip: Add Aspeed SCU interrupt controller")
-> Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
+> The "Link is Down" results from the incorrect read data for reading the
+> PHY register via MDIO bus.  The correct sequence for reading the data
+> shall be:
+> 1. fire the command
+> 2. wait for command done (this step was missing)
+> 3. wait for data idle
+> 4. read data from data register
 
-Good catch. This should go to stable too.
+I consulted the datasheet and it doesn't mention this. Perhaps
+something to be added?
 
 Reviewed-by: Joel Stanley <joel@jms.id.au>
 
-Is there any reason to use the regmap abstraction in this driver?
-AFAICT the registers aren't shared, so we could replace the regmap
-calls with readl/writel. Such a cleanup probably wouldn't be
-backported, so this patch is still useful.
+>
+> Fixes: a9770eac511a ("net: mdio: Move MDIO drivers into a new subdirectory")
 
+I think this should be:
+
+Fixes: f160e99462c6 ("net: phy: Add mdio-aspeed")
+
+We should cc stable too.
+
+> Signed-off-by: Dylan Hung <dylan_hung@aspeedtech.com>
 > ---
->  drivers/irqchip/irq-aspeed-scu-ic.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+>  drivers/net/mdio/mdio-aspeed.c | 7 +++++++
+>  1 file changed, 7 insertions(+)
 >
-> diff --git a/drivers/irqchip/irq-aspeed-scu-ic.c b/drivers/irqchip/irq-aspeed-scu-ic.c
-> index f3c6855a4cef..18b77c3e6db4 100644
-> --- a/drivers/irqchip/irq-aspeed-scu-ic.c
-> +++ b/drivers/irqchip/irq-aspeed-scu-ic.c
-> @@ -76,8 +76,8 @@ static void aspeed_scu_ic_irq_handler(struct irq_desc *desc)
->                 generic_handle_domain_irq(scu_ic->irq_domain,
->                                           bit - scu_ic->irq_shift);
+> diff --git a/drivers/net/mdio/mdio-aspeed.c b/drivers/net/mdio/mdio-aspeed.c
+> index cad820568f75..966c3b4ad59d 100644
+> --- a/drivers/net/mdio/mdio-aspeed.c
+> +++ b/drivers/net/mdio/mdio-aspeed.c
+> @@ -61,6 +61,13 @@ static int aspeed_mdio_read(struct mii_bus *bus, int addr, int regnum)
 >
-> -               regmap_update_bits(scu_ic->scu, scu_ic->reg, mask,
-> -                                  BIT(bit + ASPEED_SCU_IC_STATUS_SHIFT));
-> +               regmap_write_bits(scu_ic->scu, scu_ic->reg, mask,
-> +                                 BIT(bit + ASPEED_SCU_IC_STATUS_SHIFT));
->         }
+>         iowrite32(ctrl, ctx->base + ASPEED_MDIO_CTRL);
 >
->         chained_irq_exit(chip, desc);
+> +       rc = readl_poll_timeout(ctx->base + ASPEED_MDIO_CTRL, ctrl,
+> +                               !(ctrl & ASPEED_MDIO_CTRL_FIRE),
+> +                               ASPEED_MDIO_INTERVAL_US,
+> +                               ASPEED_MDIO_TIMEOUT_US);
+> +       if (rc < 0)
+> +               return rc;
+> +
+>         rc = readl_poll_timeout(ctx->base + ASPEED_MDIO_DATA, data,
+>                                 data & ASPEED_MDIO_DATA_IDLE,
+>                                 ASPEED_MDIO_INTERVAL_US,
 > --
 > 2.25.1
 >
