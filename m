@@ -1,34 +1,52 @@
-From: Jakub Kicinski <kuba@kernel.org>
-Date: Wed, 24 Nov 2021 18:10:43 -0800
-Subject: [PATCH] net:phy: Fix "Link is Down" issue
-In-Reply-To: <HK0PR06MB2834A8D8845F53F6CE228F019C629@HK0PR06MB2834.apcprd06.prod.outlook.com>
-References: <20211124061057.12555-1-dylan_hung@aspeedtech.com>
- <20211124153042.54d164dd@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
- <HK0PR06MB2834A8D8845F53F6CE228F019C629@HK0PR06MB2834.apcprd06.prod.outlook.com>
-Message-ID: <20211124181043.26c9a8a0@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+From: Dylan Hung <dylan_hung@aspeedtech.com>
+Date: Thu, 25 Nov 2021 10:44:32 +0800
+Subject: [PATCH v2] mdio: aspeed: Fix "Link is Down" issue
+Message-ID: <20211125024432.15809-1-dylan_hung@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, 25 Nov 2021 01:42:08 +0000 Dylan Hung wrote:
-> > -----Original Message-----
-> > From: Jakub Kicinski [mailto:kuba at kernel.org]
-> > Sent: 2021?11?25? 7:31 AM
-> > To: Dylan Hung <dylan_hung@aspeedtech.com>
-> > Cc: linux-kernel at vger.kernel.org; linux-aspeed at lists.ozlabs.org;
-> > linux-arm-kernel at lists.infradead.org; netdev at vger.kernel.org;
-> > andrew at aj.id.au; joel at jms.id.au; davem at davemloft.net;
-> > linux at armlinux.org.uk; hkallweit1 at gmail.com; andrew at lunn.ch; BMC-SW
-> > <BMC-SW@aspeedtech.com>
-> > Subject: Re: [PATCH] net:phy: Fix "Link is Down" issue
-> > 
-> > On Wed, 24 Nov 2021 14:10:57 +0800 Dylan Hung wrote:  
-> > > Subject: [PATCH] net:phy: Fix "Link is Down" issue  
-> > 
-> > Since there will be v2, please also add a space between net: and phy:.  
-> 
-> Should I use "net: mdio: " instead of "net: phy: "? Since this file was moved from net/phy to net/mdio by commit a9770eac511a.
+The issue happened randomly in runtime.  The message "Link is Down" is
+popped but soon it recovered to "Link is Up".
 
-Since you asked, I'd go for mdio: aspeed:, without the net part.
+The "Link is Down" results from the incorrect read data for reading the
+PHY register via MDIO bus.  The correct sequence for reading the data
+shall be:
+1. fire the command
+2. wait for command done (this step was missing)
+3. wait for data idle
+4. read data from data register
+
+Fixes: f160e99462c6 ("net: phy: Add mdio-aspeed")
+Cc: stable at vger.kernel.org
+Reviewed-by: Joel Stanley <joel@jms.id.au>
+Signed-off-by: Dylan Hung <dylan_hung@aspeedtech.com>
+---
+v2: revise commit message
+
+ drivers/net/mdio/mdio-aspeed.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/drivers/net/mdio/mdio-aspeed.c b/drivers/net/mdio/mdio-aspeed.c
+index cad820568f75..966c3b4ad59d 100644
+--- a/drivers/net/mdio/mdio-aspeed.c
++++ b/drivers/net/mdio/mdio-aspeed.c
+@@ -61,6 +61,13 @@ static int aspeed_mdio_read(struct mii_bus *bus, int addr, int regnum)
+ 
+ 	iowrite32(ctrl, ctx->base + ASPEED_MDIO_CTRL);
+ 
++	rc = readl_poll_timeout(ctx->base + ASPEED_MDIO_CTRL, ctrl,
++				!(ctrl & ASPEED_MDIO_CTRL_FIRE),
++				ASPEED_MDIO_INTERVAL_US,
++				ASPEED_MDIO_TIMEOUT_US);
++	if (rc < 0)
++		return rc;
++
+ 	rc = readl_poll_timeout(ctx->base + ASPEED_MDIO_DATA, data,
+ 				data & ASPEED_MDIO_DATA_IDLE,
+ 				ASPEED_MDIO_INTERVAL_US,
+-- 
+2.25.1
+
