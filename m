@@ -1,70 +1,41 @@
-From: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
-Date: Wed, 24 Nov 2021 15:21:12 +0000
-Subject: [PATCH/RFC 08/17] iio: humidity: hts221: Use bitfield helpers
-In-Reply-To: <c906f7449c0210cefba53eab2c2d87105d5c8599.1637592133.git.geert+renesas@glider.be>
-References: <cover.1637592133.git.geert+renesas@glider.be>
- <c906f7449c0210cefba53eab2c2d87105d5c8599.1637592133.git.geert+renesas@glider.be>
-Message-ID: <20211124152112.000078bf@Huawei.com>
+From: patchwork-bot+netdevbpf@kernel.org <patchwork-bot+netdevbpf@kernel.org>
+Date: Thu, 25 Nov 2021 16:00:10 +0000
+Subject: [PATCH v2] mdio: aspeed: Fix "Link is Down" issue
+In-Reply-To: <20211125024432.15809-1-dylan_hung@aspeedtech.com>
+References: <20211125024432.15809-1-dylan_hung@aspeedtech.com>
+Message-ID: <163785601008.7926.14064362154729889685.git-patchwork-notify@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, 22 Nov 2021 16:54:01 +0100
-Geert Uytterhoeven <geert+renesas@glider.be> wrote:
+Hello:
 
-> Use the field_prep() helper, instead of open-coding the same operation.
+This patch was applied to netdev/net.git (master)
+by Jakub Kicinski <kuba@kernel.org>:
+
+On Thu, 25 Nov 2021 10:44:32 +0800 you wrote:
+> The issue happened randomly in runtime.  The message "Link is Down" is
+> popped but soon it recovered to "Link is Up".
 > 
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-Hi Geert,
-
-If this should got forwards, looks like a nice cleanup for the two IIO
-ones, so I'll be happy to pick them up once infrastructure in place
-(ideally have the infrastructure an immutable branch to save having
-to revisit in 3+ months time!)
-
-Jonathan
-
-> ---
-> Compile-tested only.
-> Marked RFC, as this depends on [PATCH 01/17], but follows a different
-> path to upstream.
-> ---
->  drivers/iio/humidity/hts221_core.c | 8 ++++----
->  1 file changed, 4 insertions(+), 4 deletions(-)
+> The "Link is Down" results from the incorrect read data for reading the
+> PHY register via MDIO bus.  The correct sequence for reading the data
+> shall be:
+> 1. fire the command
+> 2. wait for command done (this step was missing)
+> 3. wait for data idle
+> 4. read data from data register
 > 
-> diff --git a/drivers/iio/humidity/hts221_core.c b/drivers/iio/humidity/hts221_core.c
-> index 6a39615b696114cd..749aedc469ede5c1 100644
-> --- a/drivers/iio/humidity/hts221_core.c
-> +++ b/drivers/iio/humidity/hts221_core.c
-> @@ -7,6 +7,7 @@
->   * Lorenzo Bianconi <lorenzo.bianconi@st.com>
->   */
->  
-> +#include <linux/bitfield.h>
->  #include <linux/kernel.h>
->  #include <linux/module.h>
->  #include <linux/device.h>
-> @@ -171,7 +172,7 @@ static int hts221_update_avg(struct hts221_hw *hw,
->  			     u16 val)
->  {
->  	const struct hts221_avg *avg = &hts221_avg_list[type];
-> -	int i, err, data;
-> +	int i, err;
->  
->  	for (i = 0; i < HTS221_AVG_DEPTH; i++)
->  		if (avg->avg_avl[i] == val)
-> @@ -180,9 +181,8 @@ static int hts221_update_avg(struct hts221_hw *hw,
->  	if (i == HTS221_AVG_DEPTH)
->  		return -EINVAL;
->  
-> -	data = ((i << __ffs(avg->mask)) & avg->mask);
-> -	err = regmap_update_bits(hw->regmap, avg->addr,
-> -				 avg->mask, data);
-> +	err = regmap_update_bits(hw->regmap, avg->addr, avg->mask,
-> +				 field_prep(avg->mask, i));
->  	if (err < 0)
->  		return err;
->  
+> [...]
+
+Here is the summary with links:
+  - [v2] mdio: aspeed: Fix "Link is Down" issue
+    https://git.kernel.org/netdev/net/c/9dbe33cf371b
+
+You are awesome, thank you!
+-- 
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/patchwork/pwbot.html
+
 
