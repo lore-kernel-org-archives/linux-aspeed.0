@@ -1,9 +1,9 @@
-From: Andrew Lunn <andrew@lunn.ch>
-Date: Thu, 25 Nov 2021 15:47:10 +0100
+From: Russell King (Oracle) <linux@armlinux.org.uk>
+Date: Thu, 25 Nov 2021 15:35:36 +0000
 Subject: [PATCH v2] mdio: aspeed: Fix "Link is Down" issue
 In-Reply-To: <20211125024432.15809-1-dylan_hung@aspeedtech.com>
 References: <20211125024432.15809-1-dylan_hung@aspeedtech.com>
-Message-ID: <YZ+h7qXTLvRRXpj0@lunn.ch>
+Message-ID: <YZ+tSMT4Z6CpOgJ3@shell.armlinux.org.uk>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -27,6 +27,10 @@ On Thu, Nov 25, 2021 at 10:44:32AM +0800, Dylan Hung wrote:
 > Reviewed-by: Joel Stanley <joel@jms.id.au>
 > Signed-off-by: Dylan Hung <dylan_hung@aspeedtech.com>
 
-Reviewed-by: Andrew Lunn <andrew@lunn.ch>
+Reviewed-by: Russell King (Oracle) <rmk+kernel@armlinux.org.uk>
 
-    Andrew
+Thanks.
+
+-- 
+RMK's Patch system: https://www.armlinux.org.uk/developer/patches/
+FTTP is here! 40Mbps down 10Mbps up. Decent connectivity at last!
