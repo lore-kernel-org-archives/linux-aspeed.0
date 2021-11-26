@@ -1,55 +1,43 @@
-From: Philipp Zabel <p.zabel@pengutronix.de>
-Date: Fri, 26 Nov 2021 11:10:52 +0100
-Subject: [v12 2/2] pwm: Add Aspeed ast2600 PWM support
-In-Reply-To: <20210906024339.21124-3-billy_tsai@aspeedtech.com>
-References: <20210906024339.21124-1-billy_tsai@aspeedtech.com>
- <20210906024339.21124-3-billy_tsai@aspeedtech.com>
-Message-ID: <727777874f925c0d862887589a868859a95d3649.camel@pengutronix.de>
+From: Neal Liu <neal_liu@aspeedtech.com>
+Date: Fri, 26 Nov 2021 19:09:54 +0800
+Subject: [PATCH 3/3] usb: aspeed-vhub: fix ep0 OUT ack received wrong length
+ issue
+In-Reply-To: <20211126110954.2677627-1-neal_liu@aspeedtech.com>
+References: <20211126110954.2677627-1-neal_liu@aspeedtech.com>
+Message-ID: <20211126110954.2677627-4-neal_liu@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Billy,
+If multiple devices in vhub are enumerated simultaneously, ep0 OUT
+ack might received wrong data length. Using expected data length
+instead.
 
-On Mon, 2021-09-06 at 10:43 +0800, Billy Tsai wrote:
-[...]
-> +static int aspeed_pwm_probe(struct platform_device *pdev)
-> +{
-> +	struct device *dev = &pdev->dev;
-> +	int ret;
-> +	struct aspeed_pwm_data *priv;
-> +	struct device_node *np;
-> +	struct platform_device *parent_dev;
-> +
-> +	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
-> +	if (!priv)
-> +		return -ENOMEM;
-> +
-> +	np = pdev->dev.parent->of_node;
-> +	if (!of_device_is_compatible(np, "aspeed,ast2600-pwm-tach"))
-> +		return dev_err_probe(dev, -ENODEV,
-> +				     "Unsupported pwm device binding\n");
-> +
-> +	priv->regmap = syscon_node_to_regmap(np);
-> +	if (IS_ERR(priv->regmap))
-> +		return dev_err_probe(dev, PTR_ERR(priv->regmap),
-> +				     "Couldn't get regmap\n");
-> +
-> +	parent_dev = of_find_device_by_node(np);
-> +	priv->clk = devm_clk_get(&parent_dev->dev, 0);
-> +	if (IS_ERR(priv->clk))
-> +		return dev_err_probe(dev, PTR_ERR(priv->clk),
-> +				     "Couldn't get clock\n");
-> +
-> +	priv->reset = devm_reset_control_get_shared(&parent_dev->dev, NULL);
-> +	if (IS_ERR(priv->reset)) {
-> +		return dev_err_probe(dev, PTR_ERR(priv->reset),
-> +				     "Couldn't get reset control\n");
-> +	}
+Signed-off-by: Neal Liu <neal_liu@aspeedtech.com>
+---
+ drivers/usb/gadget/udc/aspeed-vhub/ep0.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-I'd remove these curly braces for consistency with the code above.
+diff --git a/drivers/usb/gadget/udc/aspeed-vhub/ep0.c b/drivers/usb/gadget/udc/aspeed-vhub/ep0.c
+index 74ea36c19b1e..bea9cbb191a2 100644
+--- a/drivers/usb/gadget/udc/aspeed-vhub/ep0.c
++++ b/drivers/usb/gadget/udc/aspeed-vhub/ep0.c
+@@ -251,6 +251,13 @@ static void ast_vhub_ep0_do_receive(struct ast_vhub_ep *ep, struct ast_vhub_req
+ 		len = remain;
+ 		rc = -EOVERFLOW;
+ 	}
++
++	/* HW return wrong data len */
++	if (len < ep->ep.maxpacket && len != remain) {
++		EPDBG(ep, "using expected data len instead\n");
++		len = remain;
++	}
++
+ 	if (len && req->req.buf)
+ 		memcpy(req->req.buf + req->req.actual, ep->buf, len);
+ 	req->req.actual += len;
+-- 
+2.25.1
 
-regards
-Philipp
