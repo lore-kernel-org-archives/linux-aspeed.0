@@ -1,91 +1,83 @@
 From: Jammy Huang <jammy_huang@aspeedtech.com>
-Date: Fri, 26 Nov 2021 16:08:50 +0800
-Subject: [PATCH v5 05/10] media: v4l: Add definition for the Aspeed JPEG
- format
-In-Reply-To: <YZzBPFHZ7MPwTWSm@paasikivi.fi.intel.com>
+Date: Fri, 26 Nov 2021 16:17:20 +0800
+Subject: [PATCH v5 00/10] add aspeed-jpeg support for aspeed-video
+In-Reply-To: <5ab806d1-e407-1fa4-83ec-93ebe8df7db4@xs4all.nl>
 References: <20211118074030.685-1-jammy_huang@aspeedtech.com>
- <20211118074030.685-6-jammy_huang@aspeedtech.com>
- <YZZIDNCLJXwrqY4W@paasikivi.fi.intel.com>
- <0bed6093-0af6-4fc4-716f-6cf8b1302320@aspeedtech.com>
- <YZzBPFHZ7MPwTWSm@paasikivi.fi.intel.com>
-Message-ID: <b66655ac-eac8-835a-7917-0c1d035d5309@aspeedtech.com>
+ <5ab806d1-e407-1fa4-83ec-93ebe8df7db4@xs4all.nl>
+Message-ID: <b6ba49f3-a9ed-f5e6-959c-309db8cce7f6@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Sakari,
+Hi Hans,
 
-On 2021/11/23 ?? 06:23, Sakari Ailus wrote:
+Please refer to Page 132, 'Video stream data format ? ASPEED mode compression' of
+https://github.com/AspeedTech-BMC/openbmc/releases/download/v07.02/SDK_User_Guide_v07.02.pdf
+
+Is above information enough??
+Or maybe we can postpone this series until the source code for this format ready.
+I think I can accomplish it by the end of this year.
+
+On 2021/11/25 ?? 10:31, Hans Verkuil wrote:
 > Hi Jammy,
 >
-> On Fri, Nov 19, 2021 at 10:02:40AM +0800, Jammy Huang wrote:
->> Hi Sakari,
+> I suggest posting a v3 that moves the patches that deal with the
+> Aspeed JPEG format to the end of the series. That way I can easily
+> merge the patches up to that point, and the Aspeed JPEG support can
+> be handled separately.
+>
+> I'm not sure if it can be merged without that format being documented,
+> either in pixfmt-reserved.rst, by implementing support for it in
+> libv4lconvert from v4l-utils, or by providing a URL to some other
+> publicly available source code. We really don't like adding pixel
+> formats that cannot be interpreted by someone without access to the
+> datasheets.
+>
+> Regards,
+>
+> 	Hans
+>
+> On 18/11/2021 08:40, Jammy Huang wrote:
+>> The aim of this series is to add aspeed-jpeg support for aspeed-video
+>> driver.
 >>
->> On 2021/11/18 ?? 08:33, Sakari Ailus wrote:
->>> Hi Jammy,
->>>
->>> On Thu, Nov 18, 2021 at 03:40:26PM +0800, Jammy Huang wrote:
->>>> This introduces support for the Aspeed JPEG format, where the new frame
->>>> can refer to previous frame to reduce the amount of compressed data. The
->>>> concept is similar to I/P frame of video compression. I will compare the
->>>> new frame with previous one to decide which macroblock's data is
->>>> changed, and only the changed macroblocks will be compressed.
->>>>
->>>> This Aspeed JPEG format is used by the video engine on Aspeed platforms,
->>>> which is generally adapted for remote KVM.
->>>>
->>>> Signed-off-by: Jammy Huang <jammy_huang@aspeedtech.com>
->>>> ---
->>>> v5:
->>>>     - no update
->>>> v4:
->>>>     - new
->>>> ---
->>>>    Documentation/media/uapi/v4l/pixfmt-reserved.rst | 12 ++++++++++++
->>>>    drivers/media/v4l2-core/v4l2-ioctl.c             |  1 +
->>>>    include/uapi/linux/videodev2.h                   |  1 +
->>>>    3 files changed, 14 insertions(+)
->>>>
->>>> diff --git a/Documentation/media/uapi/v4l/pixfmt-reserved.rst b/Documentation/media/uapi/v4l/pixfmt-reserved.rst
->>>> index b2cd155e691b..23c05063133d 100644
->>>> --- a/Documentation/media/uapi/v4l/pixfmt-reserved.rst
->>>> +++ b/Documentation/media/uapi/v4l/pixfmt-reserved.rst
->>>> @@ -264,6 +264,18 @@ please make a proposal on the linux-media mailing list.
->>>>    	of tiles, resulting in 32-aligned resolutions for the luminance plane
->>>>    	and 16-aligned resolutions for the chrominance plane (with 2x2
->>>>    	subsampling).
->>>> +    * .. _V4L2-PIX-FMT-AJPG:
->>>> +
->>>> +      - ``V4L2_PIX_FMT_AJPG``
->>>> +      - 'AJPG'
->>>> +      - ASPEED JPEG format used by the aspeed-video driver on Aspeed platforms,
->>>> +        which is generally adapted for remote KVM.
->>>> +        On each frame compression, I will compare the new frame with previous
->>>> +        one to decide which macroblock's data is changed, and only the changed
->>>> +        macroblocks will be compressed.
->>>> +
->>>> +        You could reference to chapter 36, Video Engine, of AST2600's datasheet
->>>> +        for more information.
->>> Is this datasheet publicly available? Do you have a URL?
->> Sorry, this datasheet is not publicly available.
->> Hans mentioned this as well in the discussion below:
+>> To achieve this major goal some refactors are included.
 >>
->> https://lkml.org/lkml/2021/11/10/101
-> If the vendor documentation is not publicly available, you'll need to have
-> the format documented here. Alternatively an open source implementation
-> (e.g. LGPL) is presumably fine, too.
-Please refer to 
-https://github.com/AspeedTech-BMC/openbmc/releases/download/v07.02/SDK_User_Guide_v07.02.pdf.
-At Page 132, 'Video stream data format ? ASPEED mode compression' 
-describes the data format.
-Is above information? enough??
-
-Besides, I have already had openbmc's kvm support this aspeed format.
-The source code of the implementation will be released after performance 
-tuning finished.
-
+>> In the last, debugfs information is also updated per this change.
+>>
+>> Changes in v5:
+>>   - Use model data to tell different soc
+>>
+>> Changes in v4:
+>>   - Add definition for the Aspeed JPEG format
+>>   - Reserve controls for ASPEED
+>>   - Use s_fmt to update format rather than new control
+>>   - Update aspeed hq quality range, 1 ~ 12
+>>
+>>
+>> Jammy Huang (10):
+>>    media: aspeed: move err-handling together to the bottom
+>>    media: aspeed: use v4l2_info/v4l2_warn/v4l2_dbg for log
+>>    media: aspeed: add more debug log messages
+>>    media: aspeed: refactor to gather format/compress settings
+>>    media: v4l: Add definition for the Aspeed JPEG format
+>>    media: v4l2-ctrls: Reserve controls for ASPEED
+>>    media: aspeed: use model-data
+>>    media: aspeed: Support aspeed mode to reduce compressed data
+>>    media: aspeed: add comments and macro
+>>    media: aspeed: Extend debug message
+>>
+>>   .../media/uapi/v4l/pixfmt-reserved.rst        |  12 +
+>>   drivers/media/platform/aspeed-video.c         | 534 ++++++++++++++----
+>>   drivers/media/v4l2-core/v4l2-ioctl.c          |   1 +
+>>   include/uapi/linux/aspeed-video.h             |  15 +
+>>   include/uapi/linux/v4l2-controls.h            |   5 +
+>>   include/uapi/linux/videodev2.h                |   1 +
+>>   6 files changed, 467 insertions(+), 101 deletions(-)
+>>   create mode 100644 include/uapi/linux/aspeed-video.h
+>>
 -- 
 Best Regards
 Jammy
