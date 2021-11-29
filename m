@@ -1,10 +1,11 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Tue, 30 Nov 2021 10:45:44 +1100
-Subject: [PATCH 2/3] usb: aspeed-vhub: support remote wakeup feature
-In-Reply-To: <20211126110954.2677627-3-neal_liu@aspeedtech.com>
+Date: Tue, 30 Nov 2021 10:48:48 +1100
+Subject: [PATCH 3/3] usb: aspeed-vhub: fix ep0 OUT ack received wrong
+ length issue
+In-Reply-To: <20211126110954.2677627-4-neal_liu@aspeedtech.com>
 References: <20211126110954.2677627-1-neal_liu@aspeedtech.com>
- <20211126110954.2677627-3-neal_liu@aspeedtech.com>
-Message-ID: <279c42970790787e928ed017149e300835085235.camel@kernel.crashing.org>
+ <20211126110954.2677627-4-neal_liu@aspeedtech.com>
+Message-ID: <12cf11dc4326922ceb67ede7b63a53fe1840b6fd.camel@kernel.crashing.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -12,35 +13,31 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 On Fri, 2021-11-26 at 19:09 +0800, Neal Liu wrote:
-> Remote wakeup signaling will be automatically issued
-> whenever any write commands has been received in suspend
-> state.
-
-> --- a/drivers/usb/gadget/udc/aspeed-vhub/core.c
-> +++ b/drivers/usb/gadget/udc/aspeed-vhub/core.c
-> @@ -240,6 +240,9 @@ void ast_vhub_init_hw(struct ast_vhub *vhub)
->  	if (vhub->force_usb1)
->  		ctrl |= VHUB_CTRL_FULL_SPEED_ONLY;
->  
-> +	/* Enable auto remote wakeup */
-> +	ctrl |= VHUB_CTRL_AUTO_REMOTE_WAKEUP;
+> 
+> diff --git a/drivers/usb/gadget/udc/aspeed-vhub/ep0.c
+> b/drivers/usb/gadget/udc/aspeed-vhub/ep0.c
+> index 74ea36c19b1e..bea9cbb191a2 100644
+> --- a/drivers/usb/gadget/udc/aspeed-vhub/ep0.c
+> +++ b/drivers/usb/gadget/udc/aspeed-vhub/ep0.c
+> @@ -251,6 +251,13 @@ static void ast_vhub_ep0_do_receive(struct
+> ast_vhub_ep *ep, struct ast_vhub_req
+>  		len = remain;
+>  		rc = -EOVERFLOW;
+>  	}
 > +
->  	ctrl |= VHUB_CTRL_UPSTREAM_CONNECT;
->  	writel(ctrl, vhub->regs + AST_VHUB_CTRL);
+> +	/* HW return wrong data len */
+> +	if (len < ep->ep.maxpacket && len != remain) {
+> +		EPDBG(ep, "using expected data len instead\n");
+> +		len = remain;
+> +	}
+> +
 
-Should this  be controlled by d->wakeup_en ? IE, we have a feature for
-the host to enable/disable remote wakeup, should we honor it ?
- 
-> +	} else if (wValue == USB_DEVICE_TEST_MODE) {
-> +		val = readl(d->vhub->regs + AST_VHUB_CTRL);
-> +		val &= ~GENMASK(10, 8);
-> +		val |= VHUB_CTRL_SET_TEST_MODE((wIndex >> 8) & 0x7);
-> +		writel(val, d->vhub->regs + AST_VHUB_CTRL);
+Wow, that is a nasty hw bug ! Patch looks good, I had to swap some of
+that logic back into my brain but it looks like it won't break any
+normal case :-)
 
-This is unrelated to remote wakeup is it ? In which case it should
-probably be a separate patch.
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
 Cheers,
 Ben.
-
 
