@@ -1,10 +1,10 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Tue, 30 Nov 2021 10:40:59 +1100
-Subject: [PATCH 1/3] usb: aspeed-vhub: add qualifier descriptor
-In-Reply-To: <20211126110954.2677627-2-neal_liu@aspeedtech.com>
+Date: Tue, 30 Nov 2021 10:45:44 +1100
+Subject: [PATCH 2/3] usb: aspeed-vhub: support remote wakeup feature
+In-Reply-To: <20211126110954.2677627-3-neal_liu@aspeedtech.com>
 References: <20211126110954.2677627-1-neal_liu@aspeedtech.com>
- <20211126110954.2677627-2-neal_liu@aspeedtech.com>
-Message-ID: <84b2d2c6b530d0a3a9b86b0ffcbfa70935bdb0a9.camel@kernel.crashing.org>
+ <20211126110954.2677627-3-neal_liu@aspeedtech.com>
+Message-ID: <279c42970790787e928ed017149e300835085235.camel@kernel.crashing.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -12,23 +12,33 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 On Fri, 2021-11-26 at 19:09 +0800, Neal Liu wrote:
-> 
-> @@ -417,10 +435,9 @@ enum std_req_rc ast_vhub_std_hub_request(struct ast_vhub_ep *ep,
+> Remote wakeup signaling will be automatically issued
+> whenever any write commands has been received in suspend
+> state.
+
+> --- a/drivers/usb/gadget/udc/aspeed-vhub/core.c
+> +++ b/drivers/usb/gadget/udc/aspeed-vhub/core.c
+> @@ -240,6 +240,9 @@ void ast_vhub_init_hw(struct ast_vhub *vhub)
+>  	if (vhub->force_usb1)
+>  		ctrl |= VHUB_CTRL_FULL_SPEED_ONLY;
 >  
->  		/* GET/SET_CONFIGURATION */
->  	case DeviceRequest | USB_REQ_GET_CONFIGURATION:
-> -		return ast_vhub_simple_reply(ep, 1);
-> +		return ast_vhub_simple_reply(ep, vhub->current_config);
->  	case DeviceOutRequest | USB_REQ_SET_CONFIGURATION:
-> -		if (wValue != 1)
-> -			return std_req_stall;
-> +		vhub->current_config = wValue;
->  		return std_req_complete;
+> +	/* Enable auto remote wakeup */
+> +	ctrl |= VHUB_CTRL_AUTO_REMOTE_WAKEUP;
+> +
+>  	ctrl |= VHUB_CTRL_UPSTREAM_CONNECT;
+>  	writel(ctrl, vhub->regs + AST_VHUB_CTRL);
 
-This is odd.. why should we support arbitrary SET_CONFIGURATION for
-configs we don't support ?
+Should this  be controlled by d->wakeup_en ? IE, we have a feature for
+the host to enable/disable remote wakeup, should we honor it ?
+ 
+> +	} else if (wValue == USB_DEVICE_TEST_MODE) {
+> +		val = readl(d->vhub->regs + AST_VHUB_CTRL);
+> +		val &= ~GENMASK(10, 8);
+> +		val |= VHUB_CTRL_SET_TEST_MODE((wIndex >> 8) & 0x7);
+> +		writel(val, d->vhub->regs + AST_VHUB_CTRL);
 
-Otherwise looks good.
+This is unrelated to remote wakeup is it ? In which case it should
+probably be a separate patch.
 
 Cheers,
 Ben.
