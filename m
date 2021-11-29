@@ -1,51 +1,71 @@
-From: Wolfram Sang <wsa@kernel.org>
-Date: Mon, 29 Nov 2021 20:20:20 +0100
-Subject: [PATCH v2 0/2] i2c: aspeed: Late ack Tx done irqs and fix
- unhandled Tx done with NAK
-In-Reply-To: <20210616031046.2317-1-quan@os.amperecomputing.com>
-References: <20210616031046.2317-1-quan@os.amperecomputing.com>
-Message-ID: <YaUn9HO4STM+LmAD@kunai>
+From: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+Date: Mon, 29 Nov 2021 21:51:54 +0100
+Subject: [v13 2/2] pwm: Add Aspeed ast2600 PWM support
+In-Reply-To: <20211129064329.27006-3-billy_tsai@aspeedtech.com>
+References: <20211129064329.27006-1-billy_tsai@aspeedtech.com>
+ <20211129064329.27006-3-billy_tsai@aspeedtech.com>
+Message-ID: <20211129205154.jtm4ehvvfo52toth@pengutronix.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Jun 16, 2021 at 10:10:44AM +0700, Quan Nguyen wrote:
-> This series consists of two patches to fix the below issues observed
-> when testing with slave mode:
->   + Unhandled Tx done with NAK
->   + Early ack'ed of Tx done (ACK and NAK) causing "Unexpected Ack on
->   read request".
-> 
+Hello Billy,
 
-aspeed maintainers, are you happy with this series now?
+just two minor thing left to criticise:
 
-> v2:
->   + Split these patches to separate series [Joel]
->   + Added the Fixes lines [Joel]
->   + Fixed multiline comment [Joel]
->   + Refactor irq clearing code [Joel, Guenter]
->   + Revised commit message [Joel, Quan]
-> 
-> v1:
->   + These patches are first introduced in
->   https://lkml.org/lkml/2021/5/19/205
-> 
-> Quan Nguyen (2):
->   i2c: aspeed: Fix unhandled Tx done with NAK
->   i2c: aspeed: Acknowledge Tx done with and without ACK irq late
-> 
->  drivers/i2c/busses/i2c-aspeed.c | 22 ++++++++++++++--------
->  1 file changed, 14 insertions(+), 8 deletions(-)
-> 
-> -- 
-> 2.28.0
-> 
+On Mon, Nov 29, 2021 at 02:43:29PM +0800, Billy Tsai wrote:
+> +	if (clk_en && duty_pt) {
+> +		dividend = (u64)NSEC_PER_SEC * (div_l + 1) * duty_pt
+> +				 << div_h;
+> +		state->duty_cycle = DIV_ROUND_UP_ULL(dividend, rate);
+> +	} else
+> +		state->duty_cycle = clk_en ? state->period : 0;
+
+I wonder about checkpatch not criticising this construct. See
+Documentation/process/coding-style.rst:
+
+	Do not unnecessarily use braces where a single statement will
+	do. [...] This does not apply if only one branch of a
+	conditional statement is a single statement; in the latter case
+	use braces in both branches
+
+> [...]
+> +static int aspeed_pwm_apply(struct pwm_chip *chip, struct pwm_device *pwm,
+> +			    const struct pwm_state *state)
+> +{
+> +	struct device *dev = chip->dev;
+> +	struct aspeed_pwm_data *priv = aspeed_pwm_chip_to_data(chip);
+> +	u32 hwpwm = pwm->hwpwm, duty_pt;
+> +	unsigned long rate;
+> +	u64 div_h, div_l, divisor, expect_period;
+> +	bool clk_en;
+> +
+> +	expect_period = state->period;
+> +	dev_dbg(dev, "expect period: %lldns, duty_cycle: %lldns", expect_period,
+> +		state->duty_cycle);
+> +
+> +	rate = clk_get_rate(priv->clk);
+> +	if (expect_period > div64_u64(ULLONG_MAX, (u64)rate))
+> +		expect_period = div64_u64(ULLONG_MAX, (u64)rate);
+
+If you write that as
+
+	expect_period = min(div64_u64(ULLONG_MAX, (u64)rate), expect_period);
+
+you make sure that the division is only calculated once.
+
+Best regards
+Uwe
+
+-- 
+Pengutronix e.K.                           | Uwe Kleine-K?nig            |
+Industrial Linux Solutions                 | https://www.pengutronix.de/ |
 -------------- next part --------------
 A non-text attachment was scrubbed...
 Name: signature.asc
 Type: application/pgp-signature
-Size: 833 bytes
+Size: 488 bytes
 Desc: not available
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20211129/c46f05c2/attachment.sig>
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20211129/4c8503dc/attachment.sig>
