@@ -1,42 +1,51 @@
 From: Wolfram Sang <wsa@kernel.org>
-Date: Mon, 29 Nov 2021 20:22:32 +0100
-Subject: [PATCH v5 1/3] i2c: aspeed: Add slave_enable() to toggle slave
- mode
-In-Reply-To: <YRTQP9sX0hkTJMTx@shikoro>
-References: <20210714033833.11640-1-quan@os.amperecomputing.com>
- <20210714033833.11640-2-quan@os.amperecomputing.com>
- <YRTQP9sX0hkTJMTx@shikoro>
-Message-ID: <YaUoeFZn6zLNoGed@kunai>
+Date: Mon, 29 Nov 2021 20:20:20 +0100
+Subject: [PATCH v2 0/2] i2c: aspeed: Late ack Tx done irqs and fix
+ unhandled Tx done with NAK
+In-Reply-To: <20210616031046.2317-1-quan@os.amperecomputing.com>
+References: <20210616031046.2317-1-quan@os.amperecomputing.com>
+Message-ID: <YaUn9HO4STM+LmAD@kunai>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi,
+On Wed, Jun 16, 2021 at 10:10:44AM +0700, Quan Nguyen wrote:
+> This series consists of two patches to fix the below issues observed
+> when testing with slave mode:
+>   + Unhandled Tx done with NAK
+>   + Early ack'ed of Tx done (ACK and NAK) causing "Unexpected Ack on
+>   read request".
+> 
 
-I still wonder if we can't get the SSIF BMC driver upstream...
+aspeed maintainers, are you happy with this series now?
 
-> @all: Plus, I neither like the API (because it doesn't look generic to
-> me but mostly handling one issue needed here) nor do I fully understand
-> the use case. Normally, when a read is requested and the backend needs
-> time to deliver the data, the hardware should stretch the SCL clock
-> until some data register is finally written to. If it doesn't do it for
-> whatever reason, this is a quirky hardware in my book and needs handling
-> in the driver only. So, what is special with this HW? Can't we solve it
-> differently?
-
-... for that, it would be great if somebody could answer my questions
-here :)
-
-Happy hacking,
-
-   Wolfram
-
+> v2:
+>   + Split these patches to separate series [Joel]
+>   + Added the Fixes lines [Joel]
+>   + Fixed multiline comment [Joel]
+>   + Refactor irq clearing code [Joel, Guenter]
+>   + Revised commit message [Joel, Quan]
+> 
+> v1:
+>   + These patches are first introduced in
+>   https://lkml.org/lkml/2021/5/19/205
+> 
+> Quan Nguyen (2):
+>   i2c: aspeed: Fix unhandled Tx done with NAK
+>   i2c: aspeed: Acknowledge Tx done with and without ACK irq late
+> 
+>  drivers/i2c/busses/i2c-aspeed.c | 22 ++++++++++++++--------
+>  1 file changed, 14 insertions(+), 8 deletions(-)
+> 
+> -- 
+> 2.28.0
+> 
 -------------- next part --------------
 A non-text attachment was scrubbed...
 Name: signature.asc
 Type: application/pgp-signature
 Size: 833 bytes
 Desc: not available
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20211129/6638444e/attachment.sig>
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20211129/c46f05c2/attachment.sig>
