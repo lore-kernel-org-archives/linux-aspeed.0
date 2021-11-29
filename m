@@ -1,112 +1,255 @@
-From: Neal Liu <neal_liu@aspeedtech.com>
-Date: Fri, 26 Nov 2021 19:09:53 +0800
-Subject: [PATCH 2/3] usb: aspeed-vhub: support remote wakeup feature
-In-Reply-To: <20211126110954.2677627-1-neal_liu@aspeedtech.com>
-References: <20211126110954.2677627-1-neal_liu@aspeedtech.com>
-Message-ID: <20211126110954.2677627-3-neal_liu@aspeedtech.com>
+From: Billy Tsai <billy_tsai@aspeedtech.com>
+Date: Mon, 29 Nov 2021 14:43:28 +0800
+Subject: [v13 1/2] dt-bindings: Add bindings for aspeed pwm-tach.
+In-Reply-To: <20211129064329.27006-1-billy_tsai@aspeedtech.com>
+References: <20211129064329.27006-1-billy_tsai@aspeedtech.com>
+Message-ID: <20211129064329.27006-2-billy_tsai@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Remote wakeup signaling will be automatically issued
-whenever any write commands has been received in suspend
-state.
+This patch adds device binding for aspeed pwm-tach device which is a
+multi-function device include pwm and tach function and pwm/tach device
+bindings which should be the child-node of pwm-tach device.
 
-Signed-off-by: Neal Liu <neal_liu@aspeedtech.com>
+Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
 ---
- drivers/usb/gadget/udc/aspeed-vhub/core.c |  3 +++
- drivers/usb/gadget/udc/aspeed-vhub/dev.c  | 18 ++++++++++++++----
- drivers/usb/gadget/udc/aspeed-vhub/hub.c  | 22 ++++++++++++++++------
- 3 files changed, 33 insertions(+), 10 deletions(-)
+ .../bindings/hwmon/aspeed,ast2600-tach.yaml   | 68 +++++++++++++++++
+ .../bindings/mfd/aspeed,ast2600-pwm-tach.yaml | 76 +++++++++++++++++++
+ .../bindings/pwm/aspeed,ast2600-pwm.yaml      | 64 ++++++++++++++++
+ 3 files changed, 208 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/hwmon/aspeed,ast2600-tach.yaml
+ create mode 100644 Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.yaml
+ create mode 100644 Documentation/devicetree/bindings/pwm/aspeed,ast2600-pwm.yaml
 
-diff --git a/drivers/usb/gadget/udc/aspeed-vhub/core.c b/drivers/usb/gadget/udc/aspeed-vhub/core.c
-index 7a635c499777..122ee7ef0b03 100644
---- a/drivers/usb/gadget/udc/aspeed-vhub/core.c
-+++ b/drivers/usb/gadget/udc/aspeed-vhub/core.c
-@@ -240,6 +240,9 @@ void ast_vhub_init_hw(struct ast_vhub *vhub)
- 	if (vhub->force_usb1)
- 		ctrl |= VHUB_CTRL_FULL_SPEED_ONLY;
- 
-+	/* Enable auto remote wakeup */
-+	ctrl |= VHUB_CTRL_AUTO_REMOTE_WAKEUP;
+diff --git a/Documentation/devicetree/bindings/hwmon/aspeed,ast2600-tach.yaml b/Documentation/devicetree/bindings/hwmon/aspeed,ast2600-tach.yaml
+new file mode 100644
+index 000000000000..dded50a049fb
+--- /dev/null
++++ b/Documentation/devicetree/bindings/hwmon/aspeed,ast2600-tach.yaml
+@@ -0,0 +1,68 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++# Copyright (C) 2021 Aspeed, Inc.
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/hwmon/aspeed,ast2600-tach.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
 +
- 	ctrl |= VHUB_CTRL_UPSTREAM_CONNECT;
- 	writel(ctrl, vhub->regs + AST_VHUB_CTRL);
- 
-diff --git a/drivers/usb/gadget/udc/aspeed-vhub/dev.c b/drivers/usb/gadget/udc/aspeed-vhub/dev.c
-index d918e8b2af3c..4462f4b73b04 100644
---- a/drivers/usb/gadget/udc/aspeed-vhub/dev.c
-+++ b/drivers/usb/gadget/udc/aspeed-vhub/dev.c
-@@ -110,15 +110,25 @@ static int ast_vhub_dev_feature(struct ast_vhub_dev *d,
- 				u16 wIndex, u16 wValue,
- 				bool is_set)
- {
-+	u32 val;
++title: Aspeed Ast2600 Tach controller
 +
- 	DDBG(d, "%s_FEATURE(dev val=%02x)\n",
- 	     is_set ? "SET" : "CLEAR", wValue);
- 
--	if (wValue != USB_DEVICE_REMOTE_WAKEUP)
--		return std_req_driver;
-+	if (wValue == USB_DEVICE_REMOTE_WAKEUP) {
-+		d->wakeup_en = is_set;
-+		return std_req_complete;
- 
--	d->wakeup_en = is_set;
-+	} else if (wValue == USB_DEVICE_TEST_MODE) {
-+		val = readl(d->vhub->regs + AST_VHUB_CTRL);
-+		val &= ~GENMASK(10, 8);
-+		val |= VHUB_CTRL_SET_TEST_MODE((wIndex >> 8) & 0x7);
-+		writel(val, d->vhub->regs + AST_VHUB_CTRL);
- 
--	return std_req_complete;
-+		return std_req_complete;
-+	}
++maintainers:
++  - Billy Tsai <billy_tsai@aspeedtech.com>
 +
-+	return std_req_driver;
- }
- 
- static int ast_vhub_ep_feature(struct ast_vhub_dev *d,
-diff --git a/drivers/usb/gadget/udc/aspeed-vhub/hub.c b/drivers/usb/gadget/udc/aspeed-vhub/hub.c
-index d76f83bc7762..ac589d3ba7a2 100644
---- a/drivers/usb/gadget/udc/aspeed-vhub/hub.c
-+++ b/drivers/usb/gadget/udc/aspeed-vhub/hub.c
-@@ -212,17 +212,27 @@ static int ast_vhub_hub_dev_feature(struct ast_vhub_ep *ep,
- 				    u16 wIndex, u16 wValue,
- 				    bool is_set)
- {
-+	u32 val;
++description: |
++  The Aspeed Tach controller can support upto 16 fan input.
++  This module is part of the ast2600-pwm-tach multi-function device. For more
++  details see ../mfd/aspeed,ast2600-pwm-tach.yaml.
 +
- 	EPDBG(ep, "%s_FEATURE(dev val=%02x)\n",
- 	      is_set ? "SET" : "CLEAR", wValue);
- 
--	if (wValue != USB_DEVICE_REMOTE_WAKEUP)
--		return std_req_stall;
-+	if (wValue == USB_DEVICE_REMOTE_WAKEUP) {
-+		ep->vhub->wakeup_en = is_set;
-+		EPDBG(ep, "Hub remote wakeup %s\n",
-+		      is_set ? "enabled" : "disabled");
-+		return std_req_complete;
- 
--	ep->vhub->wakeup_en = is_set;
--	EPDBG(ep, "Hub remote wakeup %s\n",
--	      is_set ? "enabled" : "disabled");
-+	} else if (wValue == USB_DEVICE_TEST_MODE) {
-+		val = readl(ep->vhub->regs + AST_VHUB_CTRL);
-+		val &= ~GENMASK(10, 8);
-+		val |= VHUB_CTRL_SET_TEST_MODE((wIndex >> 8) & 0x7);
-+		writel(val, ep->vhub->regs + AST_VHUB_CTRL);
- 
--	return std_req_complete;
-+		return std_req_complete;
-+	}
++properties:
++  compatible:
++    enum:
++      - aspeed,ast2600-tach
 +
-+	return std_req_stall;
- }
- 
- static int ast_vhub_hub_ep_feature(struct ast_vhub_ep *ep,
++  "#address-cells":
++    const: 1
++
++  "#size-cells":
++    const: 0
++
++  pinctrl-0: true
++
++  pinctrl-names:
++    const: default
++
++required:
++  - compatible
++  - "#address-cells"
++  - "#size-cells"
++
++additionalProperties:
++  type: object
++  properties:
++    aspeed,tach-ch:
++      description:
++        The tach channel used for this node.
++      maxItems: 1
++
++    aspeed,min-rpm:
++      description:
++        define the minimal revolutions per minute of the measure fan
++        used to calculate the sample period of tach
++      default: 1000
++
++    aspeed,pulse-pr:
++      description:
++        Value specifying the number of pulses per revolution of the
++        monitored FAN.
++      default: 2
++
++    aspeed,tach-div:
++      description:
++        define the tachometer clock divider as an integer. Formula of
++        tach clock = clock source / (2^tach-div)^2
++      minimum: 0
++      maximum: 15
++      default: 5
++
++  required:
++    - reg
+diff --git a/Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.yaml b/Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.yaml
+new file mode 100644
+index 000000000000..1eaf6fab2752
+--- /dev/null
++++ b/Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.yaml
+@@ -0,0 +1,76 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++# Copyright (C) 2021 Aspeed, Inc.
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/mfd/aspeed,ast2600-pwm-tach.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: PWM Tach controller Device Tree Bindings
++
++description: |
++  The PWM Tach controller is represented as a multi-function device which
++  includes:
++    PWM
++    Tach
++
++maintainers:
++  - Billy Tsai <billy_tsai@aspeedtech.com>
++
++properties:
++  compatible:
++    items:
++      - enum:
++          - aspeed,ast2600-pwm-tach
++      - const: syscon
++      - const: simple-mfd
++
++  reg:
++    maxItems: 1
++
++  clocks:
++    maxItems: 1
++
++  resets:
++    maxItems: 1
++
++required:
++  - compatible
++  - reg
++  - clocks
++  - resets
++
++patternProperties:
++  "^pwm(@[0-9a-f]+)?$":
++    $ref: ../pwm/aspeed,ast2600-pwm.yaml
++
++  "^tach(@[0-9a-f]+)?$":
++    $ref: ../hwmon/aspeed,ast2600-tach.yaml
++
++additionalProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/clock/ast2600-clock.h>
++    pwm_tach: pwm_tach at 1e610000 {
++      compatible = "aspeed,ast2600-pwm-tach", "syscon", "simple-mfd";
++      reg = <0x1e610000 0x100>;
++      clocks = <&syscon ASPEED_CLK_AHB>;
++      resets = <&syscon ASPEED_RESET_PWM>;
++
++      pwm: pwm {
++        compatible = "aspeed,ast2600-pwm";
++        #address-cells = <1>;
++        #size-cells = <0>;
++        #pwm-cells = <3>;
++        pinctrl-names = "default";
++        pinctrl-0 = <&pinctrl_pwm0_default>;
++      };
++
++      tach: tach {
++        compatible = "aspeed,ast2600-tach";
++        #address-cells = <1>;
++        #size-cells = <0>;
++        pinctrl-names = "default";
++        pinctrl-0 = <&pinctrl_tach0_default>;
++      };
++    };
+diff --git a/Documentation/devicetree/bindings/pwm/aspeed,ast2600-pwm.yaml b/Documentation/devicetree/bindings/pwm/aspeed,ast2600-pwm.yaml
+new file mode 100644
+index 000000000000..f501f8a769df
+--- /dev/null
++++ b/Documentation/devicetree/bindings/pwm/aspeed,ast2600-pwm.yaml
+@@ -0,0 +1,64 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++# Copyright (C) 2021 Aspeed, Inc.
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/pwm/aspeed,ast2600-pwm.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Aspeed Ast2600 PWM controller
++
++maintainers:
++  - Billy Tsai <billy_tsai@aspeedtech.com>
++
++description: |
++  The Aspeed PWM controller can support upto 16 PWM outputs.
++  This module is part of the ast2600-pwm-tach multi-function device. For more
++  details see ../mfd/aspeed,ast2600-pwm-tach.yaml.
++
++properties:
++  compatible:
++    enum:
++      - aspeed,ast2600-pwm
++
++  "#pwm-cells":
++    const: 3
++
++  "#address-cells":
++    const: 1
++
++  "#size-cells":
++    const: 0
++
++  pinctrl-0: true
++
++  pinctrl-names:
++    const: default
++
++required:
++  - compatible
++  - "#pwm-cells"
++  - "#address-cells"
++  - "#size-cells"
++
++additionalProperties:
++  description: Set extend properties for each pwm channel.
++  type: object
++  properties:
++    reg:
++      description:
++        The pwm channel index.
++      maxItems: 1
++
++    aspeed,wdt-reload-enable:
++      type: boolean
++      description:
++        Enable the function of wdt reset reload duty point.
++
++    aspeed,wdt-reload-duty-point:
++      description:
++        Define the duty point after wdt reset, 0 = 100%
++      minimum: 0
++      maximum: 255
++
++  required:
++    - reg
 -- 
 2.25.1
 
