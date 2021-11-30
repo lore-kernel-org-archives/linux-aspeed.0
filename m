@@ -1,9 +1,9 @@
 From: Neal Liu <neal_liu@aspeedtech.com>
-Date: Tue, 30 Nov 2021 19:38:44 +0800
-Subject: [PATCH v2 1/4] usb: aspeed-vhub: add qualifier descriptor
+Date: Tue, 30 Nov 2021 19:38:47 +0800
+Subject: [PATCH v2 4/4] usb: aspeed-vhub: support test mode feature
 In-Reply-To: <20211130113847.1405873-1-neal_liu@aspeedtech.com>
 References: <20211130113847.1405873-1-neal_liu@aspeedtech.com>
-Message-ID: <20211130113847.1405873-2-neal_liu@aspeedtech.com>
+Message-ID: <20211130113847.1405873-5-neal_liu@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -13,92 +13,86 @@ Content-Transfer-Encoding: 7bit
 +Ben.
 ---
 
-Support qualifier descriptor to pass USB30CV compliance test.
+Support aspeed usb vhub set feature to test mode.
 
 Signed-off-by: Neal Liu <neal_liu@aspeedtech.com>
 ---
- drivers/usb/gadget/udc/aspeed-vhub/hub.c  | 24 +++++++++++++++++++++++
- drivers/usb/gadget/udc/aspeed-vhub/vhub.h |  1 +
- 2 files changed, 25 insertions(+)
+ drivers/usb/gadget/udc/aspeed-vhub/dev.c | 18 ++++++++++++++----
+ drivers/usb/gadget/udc/aspeed-vhub/hub.c | 22 ++++++++++++++++------
+ 2 files changed, 30 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/usb/gadget/udc/aspeed-vhub/hub.c b/drivers/usb/gadget/udc/aspeed-vhub/hub.c
-index b9960fdd8a51..93f27a745760 100644
---- a/drivers/usb/gadget/udc/aspeed-vhub/hub.c
-+++ b/drivers/usb/gadget/udc/aspeed-vhub/hub.c
-@@ -68,6 +68,18 @@ static const struct usb_device_descriptor ast_vhub_dev_desc = {
- 	.bNumConfigurations	= 1,
- };
- 
-+static const struct usb_qualifier_descriptor ast_vhub_qual_desc = {
-+	.bLength = 0xA,
-+	.bDescriptorType = USB_DT_DEVICE_QUALIFIER,
-+	.bcdUSB = cpu_to_le16(0x0200),
-+	.bDeviceClass = USB_CLASS_HUB,
-+	.bDeviceSubClass = 0,
-+	.bDeviceProtocol = 0,
-+	.bMaxPacketSize0 = 64,
-+	.bNumConfigurations = 1,
-+	.bRESERVED = 0,
-+};
+diff --git a/drivers/usb/gadget/udc/aspeed-vhub/dev.c b/drivers/usb/gadget/udc/aspeed-vhub/dev.c
+index d918e8b2af3c..4462f4b73b04 100644
+--- a/drivers/usb/gadget/udc/aspeed-vhub/dev.c
++++ b/drivers/usb/gadget/udc/aspeed-vhub/dev.c
+@@ -110,15 +110,25 @@ static int ast_vhub_dev_feature(struct ast_vhub_dev *d,
+ 				u16 wIndex, u16 wValue,
+ 				bool is_set)
+ {
++	u32 val;
 +
- /*
-  * Configuration descriptor: same comments as above
-  * regarding handling USB1 mode.
-@@ -271,9 +283,11 @@ static int ast_vhub_rep_desc(struct ast_vhub_ep *ep,
- 		BUILD_BUG_ON(dsize > sizeof(vhub->vhub_dev_desc));
- 		BUILD_BUG_ON(USB_DT_DEVICE_SIZE >= AST_VHUB_EP0_MAX_PACKET);
- 		break;
-+	case USB_DT_OTHER_SPEED_CONFIG:
- 	case USB_DT_CONFIG:
- 		dsize = AST_VHUB_CONF_DESC_SIZE;
- 		memcpy(ep->buf, &vhub->vhub_conf_desc, dsize);
-+		((u8 *)ep->buf)[1] = desc_type;
- 		BUILD_BUG_ON(dsize > sizeof(vhub->vhub_conf_desc));
- 		BUILD_BUG_ON(AST_VHUB_CONF_DESC_SIZE >= AST_VHUB_EP0_MAX_PACKET);
- 		break;
-@@ -283,6 +297,10 @@ static int ast_vhub_rep_desc(struct ast_vhub_ep *ep,
- 		BUILD_BUG_ON(dsize > sizeof(vhub->vhub_hub_desc));
- 		BUILD_BUG_ON(AST_VHUB_HUB_DESC_SIZE >= AST_VHUB_EP0_MAX_PACKET);
- 		break;
-+	case USB_DT_DEVICE_QUALIFIER:
-+		dsize = sizeof(vhub->vhub_qual_desc);
-+		memcpy(ep->buf, &vhub->vhub_qual_desc, dsize);
-+		break;
- 	default:
- 		return std_req_stall;
- 	}
-@@ -428,6 +446,8 @@ enum std_req_rc ast_vhub_std_hub_request(struct ast_vhub_ep *ep,
- 		switch (wValue >> 8) {
- 		case USB_DT_DEVICE:
- 		case USB_DT_CONFIG:
-+		case USB_DT_DEVICE_QUALIFIER:
-+		case USB_DT_OTHER_SPEED_CONFIG:
- 			return ast_vhub_rep_desc(ep, wValue >> 8,
- 						 wLength);
- 		case USB_DT_STRING:
-@@ -1033,6 +1053,10 @@ static int ast_vhub_init_desc(struct ast_vhub *vhub)
- 	else
- 		ret = ast_vhub_str_alloc_add(vhub, &ast_vhub_strings);
+ 	DDBG(d, "%s_FEATURE(dev val=%02x)\n",
+ 	     is_set ? "SET" : "CLEAR", wValue);
  
-+	/* Initialize vhub Qualifier Descriptor. */
-+	memcpy(&vhub->vhub_qual_desc, &ast_vhub_qual_desc,
-+		sizeof(vhub->vhub_qual_desc));
+-	if (wValue != USB_DEVICE_REMOTE_WAKEUP)
+-		return std_req_driver;
++	if (wValue == USB_DEVICE_REMOTE_WAKEUP) {
++		d->wakeup_en = is_set;
++		return std_req_complete;
+ 
+-	d->wakeup_en = is_set;
++	} else if (wValue == USB_DEVICE_TEST_MODE) {
++		val = readl(d->vhub->regs + AST_VHUB_CTRL);
++		val &= ~GENMASK(10, 8);
++		val |= VHUB_CTRL_SET_TEST_MODE((wIndex >> 8) & 0x7);
++		writel(val, d->vhub->regs + AST_VHUB_CTRL);
+ 
+-	return std_req_complete;
++		return std_req_complete;
++	}
 +
- 	return ret;
++	return std_req_driver;
  }
  
-diff --git a/drivers/usb/gadget/udc/aspeed-vhub/vhub.h b/drivers/usb/gadget/udc/aspeed-vhub/vhub.h
-index 87a5dea12d3c..6b9dfa6e10eb 100644
---- a/drivers/usb/gadget/udc/aspeed-vhub/vhub.h
-+++ b/drivers/usb/gadget/udc/aspeed-vhub/vhub.h
-@@ -425,6 +425,7 @@ struct ast_vhub {
- 	struct ast_vhub_full_cdesc	vhub_conf_desc;
- 	struct usb_hub_descriptor	vhub_hub_desc;
- 	struct list_head		vhub_str_desc;
-+	struct usb_qualifier_descriptor	vhub_qual_desc;
- };
+ static int ast_vhub_ep_feature(struct ast_vhub_dev *d,
+diff --git a/drivers/usb/gadget/udc/aspeed-vhub/hub.c b/drivers/usb/gadget/udc/aspeed-vhub/hub.c
+index 93f27a745760..e52805fbdebd 100644
+--- a/drivers/usb/gadget/udc/aspeed-vhub/hub.c
++++ b/drivers/usb/gadget/udc/aspeed-vhub/hub.c
+@@ -212,17 +212,27 @@ static int ast_vhub_hub_dev_feature(struct ast_vhub_ep *ep,
+ 				    u16 wIndex, u16 wValue,
+ 				    bool is_set)
+ {
++	u32 val;
++
+ 	EPDBG(ep, "%s_FEATURE(dev val=%02x)\n",
+ 	      is_set ? "SET" : "CLEAR", wValue);
  
- /* Standard request handlers result codes */
+-	if (wValue != USB_DEVICE_REMOTE_WAKEUP)
+-		return std_req_stall;
++	if (wValue == USB_DEVICE_REMOTE_WAKEUP) {
++		ep->vhub->wakeup_en = is_set;
++		EPDBG(ep, "Hub remote wakeup %s\n",
++		      is_set ? "enabled" : "disabled");
++		return std_req_complete;
+ 
+-	ep->vhub->wakeup_en = is_set;
+-	EPDBG(ep, "Hub remote wakeup %s\n",
+-	      is_set ? "enabled" : "disabled");
++	} else if (wValue == USB_DEVICE_TEST_MODE) {
++		val = readl(ep->vhub->regs + AST_VHUB_CTRL);
++		val &= ~GENMASK(10, 8);
++		val |= VHUB_CTRL_SET_TEST_MODE((wIndex >> 8) & 0x7);
++		writel(val, ep->vhub->regs + AST_VHUB_CTRL);
+ 
+-	return std_req_complete;
++		return std_req_complete;
++	}
++
++	return std_req_stall;
+ }
+ 
+ static int ast_vhub_hub_ep_feature(struct ast_vhub_ep *ep,
 -- 
 2.25.1
 
