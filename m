@@ -1,42 +1,64 @@
-From: Yangtao Li <tiny.windzz@gmail.com>
-Date: Sat, 28 Dec 2019 19:06:31 +0000
-Subject: [PATCH] fsi: aspeed: convert to devm_platform_ioremap_resource
-Message-ID: <20191228190631.26777-1-tiny.windzz@gmail.com>
+From: Oskar Senft <osk@google.com>
+Date: Tue, 30 Nov 2021 13:48:55 -0500
+Subject: [PATCH] ARM: dts: aspeed: tyan-s7106: Add uart_routing and fix vuart
+ config
+Message-ID: <20211130184855.1779353-1-osk@google.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Use devm_platform_ioremap_resource() to simplify code.
+Configure the vuart in such a way that it does not inhibit the SuperIO's
+UART from functioning correctly. This allows the same DTS to be used for
+both configurations with SuperIO and VUART (depending on the BIOS
+build). The decision on whether to actually enable VUART can then be
+made at runtime.
 
-Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
+This change also enables the new uart_routing driver for the SuperIO
+case.
+
+Signed-off-by: Oskar Senft <osk@google.com>
 ---
- drivers/fsi/fsi-master-aspeed.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+ arch/arm/boot/dts/aspeed-bmc-tyan-s7106.dts | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
 
-diff --git a/drivers/fsi/fsi-master-aspeed.c b/drivers/fsi/fsi-master-aspeed.c
-index f49742b310c2..edd0b287e7b7 100644
---- a/drivers/fsi/fsi-master-aspeed.c
-+++ b/drivers/fsi/fsi-master-aspeed.c
-@@ -422,7 +422,6 @@ static int aspeed_master_init(struct fsi_master_aspeed *aspeed)
- static int fsi_master_aspeed_probe(struct platform_device *pdev)
- {
- 	struct fsi_master_aspeed *aspeed;
--	struct resource *res;
- 	int rc, links, reg;
- 	__be32 raw;
+diff --git a/arch/arm/boot/dts/aspeed-bmc-tyan-s7106.dts b/arch/arm/boot/dts/aspeed-bmc-tyan-s7106.dts
+index 60ac6d3f03b5..aff27c1d4b06 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-tyan-s7106.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-tyan-s7106.dts
+@@ -3,6 +3,7 @@
  
-@@ -432,8 +431,7 @@ static int fsi_master_aspeed_probe(struct platform_device *pdev)
+ #include "aspeed-g5.dtsi"
+ #include <dt-bindings/gpio/aspeed-gpio.h>
++#include <dt-bindings/interrupt-controller/irq.h>
  
- 	aspeed->dev = &pdev->dev;
+ / {
+ 	model = "Tyan S7106 BMC";
+@@ -127,8 +128,23 @@ &uart5 {
+ 	status = "okay";
+ };
  
--	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
--	aspeed->base = devm_ioremap_resource(&pdev->dev, res);
-+	aspeed->base = devm_platform_ioremap_resource(pdev, 0);
- 	if (IS_ERR(aspeed->base))
- 		return PTR_ERR(aspeed->base);
++&uart_routing {
++	status = "okay";
++};
++
+ &vuart {
+ 	status = "okay";
++
++	/* We enable the VUART here, but leave it in a state that does
++	 * not interfere with the SuperIO. The goal is to have both the
++	 * VUART and the SuperIO available and decide at runtime whether
++	 * the VUART should actually be used. For that reason, configure
++	 * an "invalid" IO address and an IRQ that is not used by the
++	 * BMC.
++	 */
++
++	aspeed,lpc-io-reg = <0xffff>;
++	aspeed,lpc-interrupts = <15 IRQ_TYPE_LEVEL_HIGH>;
+ };
  
+ &lpc_ctrl {
 -- 
-2.17.1
+2.34.0.rc2.393.gf8c9666880-goog
 
