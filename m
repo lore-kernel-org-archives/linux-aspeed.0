@@ -1,43 +1,53 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Tue, 30 Nov 2021 10:48:48 +1100
-Subject: [PATCH 3/3] usb: aspeed-vhub: fix ep0 OUT ack received wrong
- length issue
-In-Reply-To: <20211126110954.2677627-4-neal_liu@aspeedtech.com>
-References: <20211126110954.2677627-1-neal_liu@aspeedtech.com>
- <20211126110954.2677627-4-neal_liu@aspeedtech.com>
-Message-ID: <12cf11dc4326922ceb67ede7b63a53fe1840b6fd.camel@kernel.crashing.org>
+From: Quan Nguyen <quan@os.amperecomputing.com>
+Date: Tue, 30 Nov 2021 09:08:05 +0700
+Subject: [PATCH v5 1/3] i2c: aspeed: Add slave_enable() to toggle slave
+ mode
+In-Reply-To: <YaUoeFZn6zLNoGed@kunai>
+References: <20210714033833.11640-1-quan@os.amperecomputing.com>
+ <20210714033833.11640-2-quan@os.amperecomputing.com>
+ <YRTQP9sX0hkTJMTx@shikoro> <YaUoeFZn6zLNoGed@kunai>
+Message-ID: <b8ee3be7-c0f6-d1fd-1ba1-13066b329ee3@os.amperecomputing.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, 2021-11-26 at 19:09 +0800, Neal Liu wrote:
+On 30/11/2021 02:22, Wolfram Sang wrote:
+> Hi,
 > 
-> diff --git a/drivers/usb/gadget/udc/aspeed-vhub/ep0.c
-> b/drivers/usb/gadget/udc/aspeed-vhub/ep0.c
-> index 74ea36c19b1e..bea9cbb191a2 100644
-> --- a/drivers/usb/gadget/udc/aspeed-vhub/ep0.c
-> +++ b/drivers/usb/gadget/udc/aspeed-vhub/ep0.c
-> @@ -251,6 +251,13 @@ static void ast_vhub_ep0_do_receive(struct
-> ast_vhub_ep *ep, struct ast_vhub_req
->  		len = remain;
->  		rc = -EOVERFLOW;
->  	}
-> +
-> +	/* HW return wrong data len */
-> +	if (len < ep->ep.maxpacket && len != remain) {
-> +		EPDBG(ep, "using expected data len instead\n");
-> +		len = remain;
-> +	}
-> +
+> I still wonder if we can't get the SSIF BMC driver upstream...
+> 
 
-Wow, that is a nasty hw bug ! Patch looks good, I had to swap some of
-that logic back into my brain but it looks like it won't break any
-normal case :-)
+Thanks Wolfram to help bring this up,
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+This driver was tested with Aspeed ast2500 and we have tried many way to 
+avoid using slave_enable() to toggle slave mode but there is no progress.
+Our expectation is still to have this driver upstream'ed and I'm 
+thinking about testing this driver on other HW and re-post the driver.
 
-Cheers,
-Ben.
+>> @all: Plus, I neither like the API (because it doesn't look generic to
+>> me but mostly handling one issue needed here) nor do I fully understand
+>> the use case. Normally, when a read is requested and the backend needs
+>> time to deliver the data, the hardware should stretch the SCL clock
+>> until some data register is finally written to. If it doesn't do it for
+>> whatever reason, this is a quirky hardware in my book and needs handling
+>> in the driver only. So, what is special with this HW? Can't we solve it
+>> differently?
+> 
+> ... for that, it would be great if somebody could answer my questions
+> here :)
+> 
+
+I have to admit that you are all right with the above comments. The fact 
+is we still not be able to find any way to solve this differently. We 
+don't own this HW and dont know what happen on this particular issue. 
+The SCL clock stretching on this HW does not work as expected and the 
+slave_enable() is the only solution for now. I hope if someone could 
+help with the issue as well.
+
+Best regards,
+- Quan
+
+
 
