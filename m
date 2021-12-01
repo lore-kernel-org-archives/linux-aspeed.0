@@ -1,76 +1,55 @@
-From: Neal Liu <neal_liu@aspeedtech.com>
-Date: Wed, 1 Dec 2021 06:31:21 +0000
-Subject: [PATCH v2 1/4] usb: aspeed-vhub: add qualifier descriptor
-In-Reply-To: <YacTpI7k5gTDQ4Ki@kroah.com>
-References: <20211130104256.3106797-1-neal_liu@aspeedtech.com>
- <20211130104256.3106797-2-neal_liu@aspeedtech.com>
- <YaYOvgCaO4FJ8r+z@kroah.com>
- <HK0PR06MB3202436CA49363FD3F60212380689@HK0PR06MB3202.apcprd06.prod.outlook.com>
- <YacTpI7k5gTDQ4Ki@kroah.com>
-Message-ID: <HK0PR06MB3202BD13E356FA86B1A5CAEE80689@HK0PR06MB3202.apcprd06.prod.outlook.com>
+From: Philipp Zabel <p.zabel@pengutronix.de>
+Date: Wed, 01 Dec 2021 10:11:42 +0100
+Subject: [v13 2/2] pwm: Add Aspeed ast2600 PWM support
+In-Reply-To: <CDB0374F-3835-4501-964E-DB771588114D@aspeedtech.com>
+References: <20211129064329.27006-1-billy_tsai@aspeedtech.com>
+ <20211129064329.27006-3-billy_tsai@aspeedtech.com>
+ <e28a5d5de9b940717e6444f019eab63ab1bb0b75.camel@pengutronix.de>
+ <CDB0374F-3835-4501-964E-DB771588114D@aspeedtech.com>
+Message-ID: <3b80b2a52362cbadb26052685566e2c1f75a0b68.camel@pengutronix.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-> -----Original Message-----
-> From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> Sent: Wednesday, December 1, 2021 2:18 PM
-> To: Neal Liu <neal_liu@aspeedtech.com>
-> Cc: Felipe Balbi <balbi@kernel.org>; Joel Stanley <joel@jms.id.au>; Andrew
-> Jeffery <andrew@aj.id.au>; Cai Huoqing <caihuoqing@baidu.com>; Tao Ren
-> <rentao.bupt@gmail.com>; Julia Lawall <julia.lawall@inria.fr>; kernel test
-> robot <lkp@intel.com>; Sasha Levin <sashal@kernel.org>;
-> linux-usb at vger.kernel.org; linux-kernel at vger.kernel.org;
-> linux-arm-kernel at lists.infradead.org; linux-aspeed at lists.ozlabs.org; BMC-SW
-> <BMC-SW@aspeedtech.com>
-> Subject: Re: [PATCH v2 1/4] usb: aspeed-vhub: add qualifier descriptor
-> 
-> On Wed, Dec 01, 2021 at 05:43:16AM +0000, Neal Liu wrote:
-> > > -----Original Message-----
-> > > From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> > > Sent: Tuesday, November 30, 2021 7:45 PM
-> > > To: Neal Liu <neal_liu@aspeedtech.com>
-> > > Cc: Felipe Balbi <balbi@kernel.org>; Joel Stanley <joel@jms.id.au>;
-> > > Andrew Jeffery <andrew@aj.id.au>; Cai Huoqing
-> > > <caihuoqing@baidu.com>; Tao Ren <rentao.bupt@gmail.com>; Julia
-> > > Lawall <julia.lawall@inria.fr>; kernel test robot <lkp@intel.com>;
-> > > Sasha Levin <sashal@kernel.org>; linux-usb at vger.kernel.org;
-> > > linux-kernel at vger.kernel.org; linux-arm-kernel at lists.infradead.org;
-> > > linux-aspeed at lists.ozlabs.org; BMC-SW <BMC-SW@aspeedtech.com>
-> > > Subject: Re: [PATCH v2 1/4] usb: aspeed-vhub: add qualifier
-> > > descriptor
-> > >
-> > > On Tue, Nov 30, 2021 at 06:42:53PM +0800, Neal Liu wrote:
-> > > > Support qualifier descriptor to pass USB30CV compliance test.
-> > >
-> > > Please provide more information here in this description.  This does
-> > > not explain what is happening here very well.
-> > >
-> > > Also, what is "USB30CV"?
-> > >
-> >
-> > USB 3 Command Verifier (USB3CV) is the official tool for USB 3 Hub and
-> Device Framework testing.
-> > The USB3CV tool includes the xHCI Compliance Drivers for use with the
-> USB3CV.
-> 
-> Please put that information in the changelog text.
-> 
-> > We would like to pass USB3CV - Chapter 9 Test [USB 2 devices] - Device
-> Qualifier Tests.
-> > A high-speed capable device that has different device information for
-> > full-speed and high-speed must have a Device Qualifier Descriptor.
-> > This patch is to support device qualifier, and the host will retrieve it through
-> Get Descriptor request.
-> 
-> Again, this type of information needs to go into the changelog text.
-> 
-> thanks,
-> 
-> greg k-h
+Hi Billy,
 
-Okay, I'll put it in next patch. Thanks
+On Wed, 2021-12-01 at 03:30 +0000, Billy Tsai wrote:
+> Hi Philipp,
+> 
+> On 2021/11/30, 5:52 PM, "Philipp Zabel" <p.zabel@pengutronix.de> wrote:
+> 
+> ????On Mon, 2021-11-29 at 14:43 +0800, Billy Tsai wrote:
+> ????[...]
+> ????>   > +	ret = clk_prepare_enable(priv->clk);
+> ????>   > +	if (ret)
+> ????>   > +		return dev_err_probe(dev, ret, "Couldn't enable clock\n");
+> ????>   > +
+> ????>   > +	ret = reset_control_deassert(priv->reset);
+> ????>   > +	if (ret) {
+> ????>   > +		dev_err_probe(dev, ret, "Couldn't deassert reset control\n");
+> ????>   > +		goto err_disable_clk;
+> ????>   > +	}
+> 
+> ????>   Is there any reason to keep the clocks running and the controller out of
+> ????>   reset while the PWM outputs are disabled?
+> 
+> Can you tell me about your concerns with this process?
 
--Neal
+No particular concerns, just curiosity.
+
+> In my opinion, they are used to provide the clock and de-assert the reset of the PWM engine. If we didn't release
+> them in probe stage the CPU can't and shouldn't read the register of the PWM engine when call the get_state.
+> Assume that we want to adjust them dynamically, the driver needs to add more conditions to check and keep the status
+> of each PWM channel, which is not a good deal for the server platform.
+
+Thanks. I don't know the hardware, so I have no idea whether disabling
+the clocks would even save a measurable (let alone appreciable) amount
+of power.
+
+I've just seen other PWM drivers use runtime PM or enable/disable clocks
+dynamically, and wondered why this one doesn't.
+
+regards
+Philipp
