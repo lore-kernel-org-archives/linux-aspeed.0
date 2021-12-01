@@ -1,66 +1,45 @@
-From: Neal Liu <neal_liu@aspeedtech.com>
-Date: Wed, 1 Dec 2021 02:17:01 +0000
-Subject: [PATCH v2 3/4] usb: aspeed-vhub: fix ep0 OUT ack received wrong
- length issue
-In-Reply-To: <YaYPUfFTNkh+zpqz@kroah.com>
-References: <20211130104256.3106797-1-neal_liu@aspeedtech.com>
- <20211130104256.3106797-4-neal_liu@aspeedtech.com>
- <YaYPUfFTNkh+zpqz@kroah.com>
-Message-ID: <HK0PR06MB32023684D218259A6236C78C80689@HK0PR06MB3202.apcprd06.prod.outlook.com>
+From: Billy Tsai <billy_tsai@aspeedtech.com>
+Date: Wed, 1 Dec 2021 03:30:00 +0000
+Subject: [v13 2/2] pwm: Add Aspeed ast2600 PWM support
+In-Reply-To: <e28a5d5de9b940717e6444f019eab63ab1bb0b75.camel@pengutronix.de>
+References: <20211129064329.27006-1-billy_tsai@aspeedtech.com>
+ <20211129064329.27006-3-billy_tsai@aspeedtech.com>
+ <e28a5d5de9b940717e6444f019eab63ab1bb0b75.camel@pengutronix.de>
+Message-ID: <CDB0374F-3835-4501-964E-DB771588114D@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-> -----Original Message-----
-> From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> Sent: Tuesday, November 30, 2021 7:47 PM
-> To: Neal Liu <neal_liu@aspeedtech.com>
-> Cc: Felipe Balbi <balbi@kernel.org>; Joel Stanley <joel@jms.id.au>; Andrew
-> Jeffery <andrew@aj.id.au>; Cai Huoqing <caihuoqing@baidu.com>; Tao Ren
-> <rentao.bupt@gmail.com>; Julia Lawall <julia.lawall@inria.fr>; kernel test
-> robot <lkp@intel.com>; Sasha Levin <sashal@kernel.org>;
-> linux-usb at vger.kernel.org; linux-kernel at vger.kernel.org;
-> linux-arm-kernel at lists.infradead.org; linux-aspeed at lists.ozlabs.org; BMC-SW
-> <BMC-SW@aspeedtech.com>; Benjamin Herrenschmidt
-> <benh@kernel.crashing.org>
-> Subject: Re: [PATCH v2 3/4] usb: aspeed-vhub: fix ep0 OUT ack received wrong
-> length issue
-> 
-> On Tue, Nov 30, 2021 at 06:42:55PM +0800, Neal Liu wrote:
-> > If multiple devices in vhub are enumerated simultaneously, ep0 OUT ack
-> > might received wrong data length. Using expected data length instead.
-> >
-> > Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> > Signed-off-by: Neal Liu <neal_liu@aspeedtech.com>
-> > ---
-> >  drivers/usb/gadget/udc/aspeed-vhub/ep0.c | 7 +++++++
-> >  1 file changed, 7 insertions(+)
-> >
-> > diff --git a/drivers/usb/gadget/udc/aspeed-vhub/ep0.c
-> > b/drivers/usb/gadget/udc/aspeed-vhub/ep0.c
-> > index 74ea36c19b1e..bea9cbb191a2 100644
-> > --- a/drivers/usb/gadget/udc/aspeed-vhub/ep0.c
-> > +++ b/drivers/usb/gadget/udc/aspeed-vhub/ep0.c
-> > @@ -251,6 +251,13 @@ static void ast_vhub_ep0_do_receive(struct
-> ast_vhub_ep *ep, struct ast_vhub_req
-> >  		len = remain;
-> >  		rc = -EOVERFLOW;
-> >  	}
-> > +
-> > +	/* HW return wrong data len */
-> 
-> Please spell out "Hardware"?
-> 
-> thanks,
-> 
-> greg k-h
+Hi Philipp,
 
-Sure, I'll fix it in next patch.
+On 2021/11/30, 5:52 PM, "Philipp Zabel" <p.zabel@pengutronix.de> wrote:
+
+    On Mon, 2021-11-29 at 14:43 +0800, Billy Tsai wrote:
+    [...]
+    >   > +	ret = clk_prepare_enable(priv->clk);
+    >   > +	if (ret)
+    >   > +		return dev_err_probe(dev, ret, "Couldn't enable clock\n");
+    >   > +
+    >   > +	ret = reset_control_deassert(priv->reset);
+    >   > +	if (ret) {
+    >   > +		dev_err_probe(dev, ret, "Couldn't deassert reset control\n");
+    >   > +		goto err_disable_clk;
+    >   > +	}
+
+    >   Is there any reason to keep the clocks running and the controller out of
+    >   reset while the PWM outputs are disabled?
+
+Can you tell me about your concerns with this process?
+In my opinion, they are used to provide the clock and de-assert the reset of the PWM engine. If we didn't release
+them in probe stage the CPU can't and shouldn't read the register of the PWM engine when call the get_state.
+Assume that we want to adjust them dynamically, the driver needs to add more conditions to check and keep the status
+of each PWM channel, which is not a good deal for the server platform.
+
 Thanks
 
 Best Regards,
--Neal
+Billy Tsai
 
 
