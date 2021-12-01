@@ -1,45 +1,113 @@
-From: Billy Tsai <billy_tsai@aspeedtech.com>
-Date: Wed, 1 Dec 2021 03:30:00 +0000
-Subject: [v13 2/2] pwm: Add Aspeed ast2600 PWM support
-In-Reply-To: <e28a5d5de9b940717e6444f019eab63ab1bb0b75.camel@pengutronix.de>
-References: <20211129064329.27006-1-billy_tsai@aspeedtech.com>
- <20211129064329.27006-3-billy_tsai@aspeedtech.com>
- <e28a5d5de9b940717e6444f019eab63ab1bb0b75.camel@pengutronix.de>
-Message-ID: <CDB0374F-3835-4501-964E-DB771588114D@aspeedtech.com>
+From: Neal Liu <neal_liu@aspeedtech.com>
+Date: Wed, 1 Dec 2021 03:36:58 +0000
+Subject: [PATCH v2 4/4] usb: aspeed-vhub: support test mode feature
+In-Reply-To: <YaYPOAB3Anfhh5AA@kroah.com>
+References: <20211130104256.3106797-1-neal_liu@aspeedtech.com>
+ <20211130104256.3106797-5-neal_liu@aspeedtech.com>
+ <YaYPOAB3Anfhh5AA@kroah.com>
+Message-ID: <HK0PR06MB3202B6ED02866DFDC2037B6280689@HK0PR06MB3202.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Philipp,
+> -----Original Message-----
+> From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Sent: Tuesday, November 30, 2021 7:47 PM
+> To: Neal Liu <neal_liu@aspeedtech.com>
+> Cc: Felipe Balbi <balbi@kernel.org>; Joel Stanley <joel@jms.id.au>; Andrew
+> Jeffery <andrew@aj.id.au>; Cai Huoqing <caihuoqing@baidu.com>; Tao Ren
+> <rentao.bupt@gmail.com>; Julia Lawall <julia.lawall@inria.fr>; kernel test
+> robot <lkp@intel.com>; Sasha Levin <sashal@kernel.org>;
+> linux-usb at vger.kernel.org; linux-kernel at vger.kernel.org;
+> linux-arm-kernel at lists.infradead.org; linux-aspeed at lists.ozlabs.org; BMC-SW
+> <BMC-SW@aspeedtech.com>
+> Subject: Re: [PATCH v2 4/4] usb: aspeed-vhub: support test mode feature
+> 
+> On Tue, Nov 30, 2021 at 06:42:56PM +0800, Neal Liu wrote:
+> > Support aspeed usb vhub set feature to test mode.
+> >
+> > Signed-off-by: Neal Liu <neal_liu@aspeedtech.com>
+> > ---
+> >  drivers/usb/gadget/udc/aspeed-vhub/dev.c | 18 ++++++++++++++----
+> > drivers/usb/gadget/udc/aspeed-vhub/hub.c | 22 ++++++++++++++++------
+> >  2 files changed, 30 insertions(+), 10 deletions(-)
+> >
+> > diff --git a/drivers/usb/gadget/udc/aspeed-vhub/dev.c
+> > b/drivers/usb/gadget/udc/aspeed-vhub/dev.c
+> > index d918e8b2af3c..4462f4b73b04 100644
+> > --- a/drivers/usb/gadget/udc/aspeed-vhub/dev.c
+> > +++ b/drivers/usb/gadget/udc/aspeed-vhub/dev.c
+> > @@ -110,15 +110,25 @@ static int ast_vhub_dev_feature(struct
+> ast_vhub_dev *d,
+> >  				u16 wIndex, u16 wValue,
+> >  				bool is_set)
+> >  {
+> > +	u32 val;
+> > +
+> >  	DDBG(d, "%s_FEATURE(dev val=%02x)\n",
+> >  	     is_set ? "SET" : "CLEAR", wValue);
+> >
+> > -	if (wValue != USB_DEVICE_REMOTE_WAKEUP)
+> > -		return std_req_driver;
+> > +	if (wValue == USB_DEVICE_REMOTE_WAKEUP) {
+> > +		d->wakeup_en = is_set;
+> > +		return std_req_complete;
+> >
+> > -	d->wakeup_en = is_set;
+> > +	} else if (wValue == USB_DEVICE_TEST_MODE) {
+> 
+> If you return, no need for an else statement, right?
+> 
+> 
+> > +		val = readl(d->vhub->regs + AST_VHUB_CTRL);
+> > +		val &= ~GENMASK(10, 8);
+> > +		val |= VHUB_CTRL_SET_TEST_MODE((wIndex >> 8) & 0x7);
+> > +		writel(val, d->vhub->regs + AST_VHUB_CTRL);
+> >
+> > -	return std_req_complete;
+> > +		return std_req_complete;
+> > +	}
+> > +
+> > +	return std_req_driver;
+> >  }
+> >
+> >  static int ast_vhub_ep_feature(struct ast_vhub_dev *d, diff --git
+> > a/drivers/usb/gadget/udc/aspeed-vhub/hub.c
+> > b/drivers/usb/gadget/udc/aspeed-vhub/hub.c
+> > index 93f27a745760..e52805fbdebd 100644
+> > --- a/drivers/usb/gadget/udc/aspeed-vhub/hub.c
+> > +++ b/drivers/usb/gadget/udc/aspeed-vhub/hub.c
+> > @@ -212,17 +212,27 @@ static int ast_vhub_hub_dev_feature(struct
+> ast_vhub_ep *ep,
+> >  				    u16 wIndex, u16 wValue,
+> >  				    bool is_set)
+> >  {
+> > +	u32 val;
+> > +
+> >  	EPDBG(ep, "%s_FEATURE(dev val=%02x)\n",
+> >  	      is_set ? "SET" : "CLEAR", wValue);
+> >
+> > -	if (wValue != USB_DEVICE_REMOTE_WAKEUP)
+> > -		return std_req_stall;
+> > +	if (wValue == USB_DEVICE_REMOTE_WAKEUP) {
+> > +		ep->vhub->wakeup_en = is_set;
+> > +		EPDBG(ep, "Hub remote wakeup %s\n",
+> > +		      is_set ? "enabled" : "disabled");
+> > +		return std_req_complete;
+> >
+> > -	ep->vhub->wakeup_en = is_set;
+> > -	EPDBG(ep, "Hub remote wakeup %s\n",
+> > -	      is_set ? "enabled" : "disabled");
+> > +	} else if (wValue == USB_DEVICE_TEST_MODE) {
+> 
+> Same here, no need for else.
+> 
+> thanks,
+> 
+> greg k-h
 
-On 2021/11/30, 5:52 PM, "Philipp Zabel" <p.zabel@pengutronix.de> wrote:
+Okay, I'll fix it in next patch. Thanks
 
-    On Mon, 2021-11-29 at 14:43 +0800, Billy Tsai wrote:
-    [...]
-    >   > +	ret = clk_prepare_enable(priv->clk);
-    >   > +	if (ret)
-    >   > +		return dev_err_probe(dev, ret, "Couldn't enable clock\n");
-    >   > +
-    >   > +	ret = reset_control_deassert(priv->reset);
-    >   > +	if (ret) {
-    >   > +		dev_err_probe(dev, ret, "Couldn't deassert reset control\n");
-    >   > +		goto err_disable_clk;
-    >   > +	}
-
-    >   Is there any reason to keep the clocks running and the controller out of
-    >   reset while the PWM outputs are disabled?
-
-Can you tell me about your concerns with this process?
-In my opinion, they are used to provide the clock and de-assert the reset of the PWM engine. If we didn't release
-them in probe stage the CPU can't and shouldn't read the register of the PWM engine when call the get_state.
-Assume that we want to adjust them dynamically, the driver needs to add more conditions to check and keep the status
-of each PWM channel, which is not a good deal for the server platform.
-
-Thanks
-
-Best Regards,
-Billy Tsai
-
-
+-Neal
