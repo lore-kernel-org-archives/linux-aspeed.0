@@ -1,131 +1,66 @@
-From: Jammy Huang <jammy_huang@aspeedtech.com>
-Date: Thu, 2 Dec 2021 09:29:25 +0800
-Subject: [PATCH v5 00/10] add aspeed-jpeg support for aspeed-video
-In-Reply-To: <6e0da74e-ddce-3c94-42a1-f98833489d60@xs4all.nl>
-References: <20211118074030.685-1-jammy_huang@aspeedtech.com>
- <5ab806d1-e407-1fa4-83ec-93ebe8df7db4@xs4all.nl>
- <b6ba49f3-a9ed-f5e6-959c-309db8cce7f6@aspeedtech.com>
- <6e0da74e-ddce-3c94-42a1-f98833489d60@xs4all.nl>
-Message-ID: <549aaf9a-cd72-e200-0329-30f6c71b8ed7@aspeedtech.com>
+From: Zev Weiss <zweiss@equinix.com>
+Date: Thu, 2 Dec 2021 01:54:56 +0000
+Subject: [PATCH v4 02/13] dt-bindings: Add bindings for peci-aspeed
+In-Reply-To: <DDB2E224-472B-41CC-A5C6-BEADB4BF2041@aspeedtech.com>
+References: <20211123140706.2945700-1-iwona.winiarska@intel.com>
+ <20211123140706.2945700-3-iwona.winiarska@intel.com>
+ <DDB2E224-472B-41CC-A5C6-BEADB4BF2041@aspeedtech.com>
+Message-ID: <20211202015455.GB25091@packtop>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Hans,
-
-Thanks for your review and suggestions.
-
-On 2021/11/26 ?? 05:51, Hans Verkuil wrote:
-> On 26/11/2021 09:17, Jammy Huang wrote:
->> Hi Hans,
->>
->> Please refer to Page 132, 'Video stream data format ? ASPEED mode compression' of
->> https://github.com/AspeedTech-BMC/openbmc/releases/download/v07.02/SDK_User_Guide_v07.02.pdf
->>
->> Is above information enough??
-> Hmm, close. It would need some additional information, possibly documented in the source
-> code:
+On Wed, Dec 01, 2021 at 02:38:04AM PST, Billy Tsai wrote:
+>Hi,
 >
-> - What is the Frame Header? (the doc just says that it is different, but not what it actually is)
-> - What is the EOI code? Is it equal to 'FEND'? (not quite clear to me)
+>On 2021/11/23, 10:10 PM, "openbmc on behalf of Iwona Winiarska" <openbmc-bounces+billy_tsai=aspeedtech.com at lists.ozlabs.org on behalf of iwona.winiarska@intel.com> wrote:
 >
-> I think the documentation looks sufficient once those two items are addressed.
-Information you mentioned will be included in next revision, 
-"SDK_User_Guide_v07.03.pdf".
-The releases will be updated to 
-https://github.com/AspeedTech-BMC/openbmc/releases
->> Or maybe we can postpone this series until the source code for this format ready.
->> I think I can accomplish it by the end of this year.
-> That's quite soon, so perhaps that would be the best approach. That way you also
-> know exactly what information is missing from the SDK User Guide, and if that is
-> documented, then this format can be used in the kernel.
+>    Add device tree bindings for the peci-aspeed controller driver.
 >
-> But several of the patches in the series are independent of the new jpeg format,
-> so it might be useful to get those in first.
-
-Understood. For the patches below, I will resend except for patch 
-5/6/8/10 which are closely
-relative to aspeed jpeg format.
-
-    1. media: aspeed: move err-handling together to the bottom
-    2. media: aspeed: use v4l2_info/v4l2_warn/v4l2_dbg for log
-    3. media: aspeed: add more debug log messages
-    4. media: aspeed: refactor to gather format/compress settings
-    5. media: v4l: Add definition for the Aspeed JPEG format
-    6. media: v4l2-ctrls: Reserve controls for ASPEED
-    7. media: aspeed: use model-data
-    8. media: aspeed: Support aspeed mode to reduce compressed data
-    9. media: aspeed: add comments and macro
-    10.media: aspeed: Extend debug message
-
-
-
+>    >   +  aspeed,clock-divider:
+>    >   +    description:
+>    >   +      This value determines PECI controller internal clock dividing
+>    >   +      rate. The divider will be calculated as 2 raised to the power of
+>    >   +      the given value.
+>    >   +    $ref: /schemas/types.yaml#/definitions/uint32
+>    >   +    minimum: 0
+>    >   +    maximum: 7
+>    >   +    default: 0
+>    >   +
+>    >   +  aspeed,msg-timing:
+>    >   +    description:
+>    >   +      Message timing negotiation period. This value will determine the period
+>    >   +      of message timing negotiation to be issued by PECI controller. The unit
+>    >   +      of the programmed value is four times of PECI clock period.
+>    >   +    $ref: /schemas/types.yaml#/definitions/uint32
+>    >   +    minimum: 0
+>    >   +    maximum: 255
+>    >   +    default: 1
+>    >   +
+>    >   +  aspeed,addr-timing:
+>    >   +    description:
+>    >   +      Address timing negotiation period. This value will determine the period
+>    >   +      of address timing negotiation to be issued by PECI controller. The unit
+>    >   +      of the programmed value is four times of PECI clock period.
+>    >   +    $ref: /schemas/types.yaml#/definitions/uint32
+>    >   +    minimum: 0
+>    >   +    maximum: 255
+>    >   +    default: 1
+>I suggest deleting these three properties and replacing them with the following
 >
-> Regards,
+>aspeed,peci-bit-time:
+>        description:
+>          The bit time driven by PECI controller. The unit of the value is Hz.
+>    minimum: 2000
+>    maximum: 1000000
 >
-> 	Hans
+>And the driver should use this property to caculate the appropriate clock-divider,
+>msg-timing and addr-timing, instead of exposing hardware registers to dts.
 >
->> On 2021/11/25 ?? 10:31, Hans Verkuil wrote:
->>> Hi Jammy,
->>>
->>> I suggest posting a v3 that moves the patches that deal with the
->>> Aspeed JPEG format to the end of the series. That way I can easily
->>> merge the patches up to that point, and the Aspeed JPEG support can
->>> be handled separately.
->>>
->>> I'm not sure if it can be merged without that format being documented,
->>> either in pixfmt-reserved.rst, by implementing support for it in
->>> libv4lconvert from v4l-utils, or by providing a URL to some other
->>> publicly available source code. We really don't like adding pixel
->>> formats that cannot be interpreted by someone without access to the
->>> datasheets.
->>>
->>> Regards,
->>>
->>> 	Hans
->>>
->>> On 18/11/2021 08:40, Jammy Huang wrote:
->>>> The aim of this series is to add aspeed-jpeg support for aspeed-video
->>>> driver.
->>>>
->>>> To achieve this major goal some refactors are included.
->>>>
->>>> In the last, debugfs information is also updated per this change.
->>>>
->>>> Changes in v5:
->>>>    - Use model data to tell different soc
->>>>
->>>> Changes in v4:
->>>>    - Add definition for the Aspeed JPEG format
->>>>    - Reserve controls for ASPEED
->>>>    - Use s_fmt to update format rather than new control
->>>>    - Update aspeed hq quality range, 1 ~ 12
->>>>
->>>>
->>>> Jammy Huang (10):
->>>>     media: aspeed: move err-handling together to the bottom
->>>>     media: aspeed: use v4l2_info/v4l2_warn/v4l2_dbg for log
->>>>     media: aspeed: add more debug log messages
->>>>     media: aspeed: refactor to gather format/compress settings
->>>>     media: v4l: Add definition for the Aspeed JPEG format
->>>>     media: v4l2-ctrls: Reserve controls for ASPEED
->>>>     media: aspeed: use model-data
->>>>     media: aspeed: Support aspeed mode to reduce compressed data
->>>>     media: aspeed: add comments and macro
->>>>     media: aspeed: Extend debug message
->>>>
->>>>    .../media/uapi/v4l/pixfmt-reserved.rst        |  12 +
->>>>    drivers/media/platform/aspeed-video.c         | 534 ++++++++++++++----
->>>>    drivers/media/v4l2-core/v4l2-ioctl.c          |   1 +
->>>>    include/uapi/linux/aspeed-video.h             |  15 +
->>>>    include/uapi/linux/v4l2-controls.h            |   5 +
->>>>    include/uapi/linux/videodev2.h                |   1 +
->>>>    6 files changed, 467 insertions(+), 101 deletions(-)
->>>>    create mode 100644 include/uapi/linux/aspeed-video.h
->>>>
--- 
-Best Regards
-Jammy
 
+Or perhaps just 'bus-frequency' a la i2c-aspeed, gpio-aspeed-sgpio, etc?
+
+
+Zev
