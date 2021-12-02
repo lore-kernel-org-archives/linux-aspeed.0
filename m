@@ -1,66 +1,77 @@
-From: Zev Weiss <zweiss@equinix.com>
-Date: Thu, 2 Dec 2021 01:54:56 +0000
+From: Billy Tsai <billy_tsai@aspeedtech.com>
+Date: Thu, 2 Dec 2021 02:31:58 +0000
 Subject: [PATCH v4 02/13] dt-bindings: Add bindings for peci-aspeed
-In-Reply-To: <DDB2E224-472B-41CC-A5C6-BEADB4BF2041@aspeedtech.com>
+In-Reply-To: <20211202015455.GB25091@packtop>
 References: <20211123140706.2945700-1-iwona.winiarska@intel.com>
  <20211123140706.2945700-3-iwona.winiarska@intel.com>
  <DDB2E224-472B-41CC-A5C6-BEADB4BF2041@aspeedtech.com>
-Message-ID: <20211202015455.GB25091@packtop>
+ <20211202015455.GB25091@packtop>
+Message-ID: <4B35121C-3BF3-4EF2-BBE6-AA76FA1920E3@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Dec 01, 2021 at 02:38:04AM PST, Billy Tsai wrote:
->Hi,
->
->On 2021/11/23, 10:10 PM, "openbmc on behalf of Iwona Winiarska" <openbmc-bounces+billy_tsai=aspeedtech.com at lists.ozlabs.org on behalf of iwona.winiarska@intel.com> wrote:
->
->    Add device tree bindings for the peci-aspeed controller driver.
->
->    >   +  aspeed,clock-divider:
->    >   +    description:
->    >   +      This value determines PECI controller internal clock dividing
->    >   +      rate. The divider will be calculated as 2 raised to the power of
->    >   +      the given value.
->    >   +    $ref: /schemas/types.yaml#/definitions/uint32
->    >   +    minimum: 0
->    >   +    maximum: 7
->    >   +    default: 0
->    >   +
->    >   +  aspeed,msg-timing:
->    >   +    description:
->    >   +      Message timing negotiation period. This value will determine the period
->    >   +      of message timing negotiation to be issued by PECI controller. The unit
->    >   +      of the programmed value is four times of PECI clock period.
->    >   +    $ref: /schemas/types.yaml#/definitions/uint32
->    >   +    minimum: 0
->    >   +    maximum: 255
->    >   +    default: 1
->    >   +
->    >   +  aspeed,addr-timing:
->    >   +    description:
->    >   +      Address timing negotiation period. This value will determine the period
->    >   +      of address timing negotiation to be issued by PECI controller. The unit
->    >   +      of the programmed value is four times of PECI clock period.
->    >   +    $ref: /schemas/types.yaml#/definitions/uint32
->    >   +    minimum: 0
->    >   +    maximum: 255
->    >   +    default: 1
->I suggest deleting these three properties and replacing them with the following
->
->aspeed,peci-bit-time:
->        description:
->          The bit time driven by PECI controller. The unit of the value is Hz.
->    minimum: 2000
->    maximum: 1000000
->
->And the driver should use this property to caculate the appropriate clock-divider,
->msg-timing and addr-timing, instead of exposing hardware registers to dts.
->
+Hi Zev,
 
-Or perhaps just 'bus-frequency' a la i2c-aspeed, gpio-aspeed-sgpio, etc?
+On 2021/12/2, 9:55 AM, "Zev Weiss" <zweiss@equinix.com> wrote:
+
+    On Wed, Dec 01, 2021 at 02:38:04AM PST, Billy Tsai wrote:
+    >   >Hi,
+    >   >
+    >   >On 2021/11/23, 10:10 PM, "openbmc on behalf of Iwona Winiarska" <openbmc-bounces+billy_tsai=aspeedtech.com at lists.ozlabs.org on behalf of iwona.winiarska@intel.com> wrote:
+    >   >
+    >   >    Add device tree bindings for the peci-aspeed controller driver.
+    >   >
+    >   >    >   +  aspeed,clock-divider:
+    >   >    >   +    description:
+    >   >    >   +      This value determines PECI controller internal clock dividing
+    >   >    >   +      rate. The divider will be calculated as 2 raised to the power of
+    >   >    >   +      the given value.
+    >   >    >   +    $ref: /schemas/types.yaml#/definitions/uint32
+    >   >    >   +    minimum: 0
+    >   >    >   +    maximum: 7
+    >   >    >   +    default: 0
+    >   >    >   +
+    >   >    >   +  aspeed,msg-timing:
+    >   >    >   +    description:
+    >   >    >   +      Message timing negotiation period. This value will determine the period
+    >   >    >   +      of message timing negotiation to be issued by PECI controller. The unit
+    >   >    >   +      of the programmed value is four times of PECI clock period.
+    >   >    >   +    $ref: /schemas/types.yaml#/definitions/uint32
+    >   >    >   +    minimum: 0
+    >   >    >   +    maximum: 255
+    >   >    >   +    default: 1
+    >   >    >   +
+    >   >    >   +  aspeed,addr-timing:
+    >   >    >   +    description:
+    >   >    >   +      Address timing negotiation period. This value will determine the period
+    >   >    >   +      of address timing negotiation to be issued by PECI controller. The unit
+    >   >    >   +      of the programmed value is four times of PECI clock period.
+    >   >    >   +    $ref: /schemas/types.yaml#/definitions/uint32
+    >   >    >   +    minimum: 0
+    >   >    >   +    maximum: 255
+    >   >    >   +    default: 1
+    >   >I suggest deleting these three properties and replacing them with the following
+    >   >
+    >   >aspeed,peci-bit-time:
+    >   >        description:
+    >   >          The bit time driven by PECI controller. The unit of the value is Hz.
+    >   >    minimum: 2000
+    >   >    maximum: 1000000
+    >   >
+    >   >And the driver should use this property to caculate the appropriate clock-divider,
+    >   >msg-timing and addr-timing, instead of exposing hardware registers to dts.
+    >   >
+
+    >   Or perhaps just 'bus-frequency' a la i2c-aspeed, gpio-aspeed-sgpio, etc?
+
+It's a good ideal for the consistency.
+
+Thanks
+
+Best Regards,
+Billy Tsai
 
 
-Zev
