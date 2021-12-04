@@ -1,45 +1,49 @@
-From: Arnd Bergmann <arnd@kernel.org>
-Date: Sat,  4 Dec 2021 18:46:23 +0100
-Subject: [PATCH 2/2] drm: aspeed: select CONFIG_DRM_GEM_CMA_HELPER
-In-Reply-To: <20211204174637.1160725-1-arnd@kernel.org>
-References: <20211204174637.1160725-1-arnd@kernel.org>
-Message-ID: <20211204174637.1160725-2-arnd@kernel.org>
+From: kernel test robot <lkp@intel.com>
+Date: Sun, 5 Dec 2021 04:45:48 +0800
+Subject: [PATCH v7] ARM: dts: aspeed: Adding Facebook Bletchley BMC
+In-Reply-To: <20211202091303.979044-1-howard.chiu@quantatw.com>
+References: <20211202091303.979044-1-howard.chiu@quantatw.com>
+Message-ID: <202112050427.TQfPqAXr-lkp@intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Arnd Bergmann <arnd@arndb.de>
+Hi Howard,
 
-The aspeed driver uses the gem_cma_helper code, but does
-noto enforce enabling this through Kconfig:
+Thank you for the patch! Yet something to improve:
 
-x86_64-linux-ld: drivers/gpu/drm/aspeed/aspeed_gfx_drv.o:(.rodata+0x2c8): undefined reference to `drm_gem_cma_prime_import_sg_table'
-x86_64-linux-ld: drivers/gpu/drm/aspeed/aspeed_gfx_drv.o:(.rodata+0x2d8): undefined reference to `drm_gem_cma_dumb_create'
-x86_64-linux-ld: drivers/gpu/drm/aspeed/aspeed_gfx_crtc.o: in function `aspeed_gfx_pipe_update':
-aspeed_gfx_crtc.c:(.text+0xe5): undefined reference to `drm_fb_cma_get_gem_obj'
+[auto build test ERROR on soc/for-next]
+[also build test ERROR on v5.16-rc3 next-20211203]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch]
 
-Add the same 'select' that is used in other such drivers.
+url:    https://github.com/0day-ci/linux/commits/Howard-Chiu/ARM-dts-aspeed-Adding-Facebook-Bletchley-BMC/20211202-171524
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/soc/soc.git for-next
+config: arm-randconfig-c002-20211202 (https://download.01.org/0day-ci/archive/20211205/202112050427.TQfPqAXr-lkp at intel.com/config)
+compiler: arm-linux-gnueabi-gcc (GCC) 11.2.0
+reproduce (this is a W=1 build):
+        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        # https://github.com/0day-ci/linux/commit/4c77c422c22eee6a98c7e5f25325ab535a06c4c5
+        git remote add linux-review https://github.com/0day-ci/linux
+        git fetch --no-tags linux-review Howard-Chiu/ARM-dts-aspeed-Adding-Facebook-Bletchley-BMC/20211202-171524
+        git checkout 4c77c422c22eee6a98c7e5f25325ab535a06c4c5
+        # save the config file to linux build tree
+        mkdir build_dir
+        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-11.2.0 make.cross O=build_dir ARCH=arm SHELL=/bin/bash
 
-Fixes: 09717af7d13d ("drm: Remove CONFIG_DRM_KMS_CMA_HELPER option")
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+If you fix the issue, kindly add following tag as appropriate
+Reported-by: kernel test robot <lkp@intel.com>
+
+All errors (new ones prefixed by >>):
+
+>> Error: arch/arm/boot/dts/aspeed-bmc-facebook-bletchley.dts:810.1-5 Label or path pwm not found
+>> Error: arch/arm/boot/dts/aspeed-bmc-facebook-bletchley.dts:820.1-6 Label or path tach not found
+>> FATAL ERROR: Syntax error parsing input tree
+
 ---
- drivers/gpu/drm/aspeed/Kconfig | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/drivers/gpu/drm/aspeed/Kconfig b/drivers/gpu/drm/aspeed/Kconfig
-index 36c4a7e86981..024ccab14f88 100644
---- a/drivers/gpu/drm/aspeed/Kconfig
-+++ b/drivers/gpu/drm/aspeed/Kconfig
-@@ -5,6 +5,7 @@ config DRM_ASPEED_GFX
- 	depends on (COMPILE_TEST || ARCH_ASPEED)
- 	depends on MMU
- 	select DRM_KMS_HELPER
-+	select DRM_GEM_CMA_HELPER
- 	select DMA_CMA if HAVE_DMA_CONTIGUOUS
- 	select CMA if HAVE_DMA_CONTIGUOUS
- 	select MFD_SYSCON
--- 
-2.29.2
-
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
