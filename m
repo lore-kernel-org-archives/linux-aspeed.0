@@ -1,61 +1,76 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Mon, 06 Dec 2021 11:08:42 +1100
-Subject: [PATCH 2/3] usb: aspeed-vhub: support remote wakeup feature
-In-Reply-To: <HK0PR06MB3202F55EEE02B9931D9CD4AD80699@HK0PR06MB3202.apcprd06.prod.outlook.com>
-References: <20211126110954.2677627-1-neal_liu@aspeedtech.com>
- <20211126110954.2677627-3-neal_liu@aspeedtech.com>
- <279c42970790787e928ed017149e300835085235.camel@kernel.crashing.org>
- <HK0PR06MB3202A1F0710655B3E8EA709580679@HK0PR06MB3202.apcprd06.prod.outlook.com>
- <5d234a400a89f64ad183020b93b68f478f1addc7.camel@kernel.crashing.org>
- <HK0PR06MB3202F55EEE02B9931D9CD4AD80699@HK0PR06MB3202.apcprd06.prod.outlook.com>
-Message-ID: <07472b315d6adecb874f29128e9b5fe3eadad590.camel@kernel.crashing.org>
+From: Jammy Huang <jammy_huang@aspeedtech.com>
+Date: Mon, 6 Dec 2021 08:22:09 +0800
+Subject: [PATCH] media: aspeed: move err-handling together to the bottom
+Message-ID: <20211206002209.412-1-jammy_huang@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, 2021-12-02 at 03:03 +0000, Neal Liu wrote:
-> > 
-> Let's me describe more details for our hardware behavior and hope you
-> understand.
-> 
-> HUB00[3]: MANUAL_REMOTE_WAKEUP
-> HUB00[4]: AUTO_REMOTE_WAKEUP
-> 
-> Set HUB00[3] implies USB device will do remote wakeup if any write
-> command to vhub register.
-> Set HUB00[4] implies USB device will do remote wakeup. It can only be
-> set in suspend state.
-> 
-> For current design, d->wakeup_en only controls whether HUB00[4] can
-> be set through usb_gadget_ops.wakeup().
-> If some applications (take KVM as example) want to wakeup host by
-> sending a packet, it won't go through sb_gadget_ops.wakeup().
-> We enable HUB00[3] to fix this problem. It won't override above
-> mentioned behavior.
-> If host has enabled the USB_DEVICE_REMOTE_WAKEUP feature, it has 2
-> ways to wakeup host.
-> 1. set srp 1 (/sys/device/platform/xxxxxxxxx/udc/xxxxxx/srp)
-> 2. emulated device has activity
-> If host has disabled the USB_DEVICE_REMOTE_WAKEUP feature, these 2
-> ways still cannot wakeup host even if USB bus is in resume state.
-> Thanks
+refine aspeed_video_setup_video() flow.
 
-So what you are saying is that currently, the various gadgets aren't
-calling usb_gadget_wakeup() ?
+Change-Id: Icc7bcec800d5a9d478ead1b283fdb3aa15a86b80
+Signed-off-by: Jammy Huang <jammy_huang@aspeedtech.com>
+---
+ drivers/media/platform/aspeed-video.c | 24 +++++++++++-------------
+ 1 file changed, 11 insertions(+), 13 deletions(-)
 
-Ie. it should be a gadget policy to decide when to wake-up I suppose,
-but it's true that nothing in the core nor the existing gadgets seem to
-handle that.
-
-I think what you propose is a band-aid. The real problem is that the
-gadget drivers should trigger wakeups (or the core should do so on
-activity).
-
-That said, for now, I don't object to adding that "auto" bit, but I
-would prefer if that behaviour was use configurable.
-
-Cheers,
-Ben.
+diff --git a/drivers/media/platform/aspeed-video.c b/drivers/media/platform/aspeed-video.c
+index fea5e4d0927e..f5c40d6b4ece 100644
+--- a/drivers/media/platform/aspeed-video.c
++++ b/drivers/media/platform/aspeed-video.c
+@@ -1641,11 +1641,8 @@ static int aspeed_video_setup_video(struct aspeed_video *video)
+ 
+ 	rc = video->ctrl_handler.error;
+ 	if (rc) {
+-		v4l2_ctrl_handler_free(&video->ctrl_handler);
+-		v4l2_device_unregister(v4l2_dev);
+-
+ 		dev_err(video->dev, "Failed to init controls: %d\n", rc);
+-		return rc;
++		goto err_ctrl_init;
+ 	}
+ 
+ 	v4l2_dev->ctrl_handler = &video->ctrl_handler;
+@@ -1663,11 +1660,8 @@ static int aspeed_video_setup_video(struct aspeed_video *video)
+ 
+ 	rc = vb2_queue_init(vbq);
+ 	if (rc) {
+-		v4l2_ctrl_handler_free(&video->ctrl_handler);
+-		v4l2_device_unregister(v4l2_dev);
+-
+ 		dev_err(video->dev, "Failed to init vb2 queue\n");
+-		return rc;
++		goto err_vb2_init;
+ 	}
+ 
+ 	vdev->queue = vbq;
+@@ -1685,15 +1679,19 @@ static int aspeed_video_setup_video(struct aspeed_video *video)
+ 	video_set_drvdata(vdev, video);
+ 	rc = video_register_device(vdev, VFL_TYPE_GRABBER, 0);
+ 	if (rc) {
+-		vb2_queue_release(vbq);
+-		v4l2_ctrl_handler_free(&video->ctrl_handler);
+-		v4l2_device_unregister(v4l2_dev);
+-
+ 		dev_err(video->dev, "Failed to register video device\n");
+-		return rc;
++		goto err_video_reg;
+ 	}
+ 
+ 	return 0;
++
++err_video_reg:
++	vb2_queue_release(vbq);
++err_vb2_init:
++err_ctrl_init:
++	v4l2_ctrl_handler_free(&video->ctrl_handler);
++	v4l2_device_unregister(v4l2_dev);
++	return rc;
+ }
+ 
+ static int aspeed_video_init(struct aspeed_video *video)
+-- 
+2.25.1
 
