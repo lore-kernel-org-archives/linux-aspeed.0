@@ -1,7 +1,7 @@
 From: Jammy Huang <jammy_huang@aspeedtech.com>
-Date: Mon, 6 Dec 2021 08:22:09 +0800
-Subject: [PATCH] media: aspeed: move err-handling together to the bottom
-Message-ID: <20211206002209.412-1-jammy_huang@aspeedtech.com>
+Date: Mon, 6 Dec 2021 08:48:11 +0800
+Subject: [PATCH v2] media: aspeed: move err-handling together to the bottom
+Message-ID: <20211206004811.1118-1-jammy_huang@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -10,8 +10,10 @@ Content-Transfer-Encoding: 7bit
 
 refine aspeed_video_setup_video() flow.
 
-Change-Id: Icc7bcec800d5a9d478ead1b283fdb3aa15a86b80
 Signed-off-by: Jammy Huang <jammy_huang@aspeedtech.com>
+---
+v2:
+ - remove change-id in comment
 ---
  drivers/media/platform/aspeed-video.c | 24 +++++++++++-------------
  1 file changed, 11 insertions(+), 13 deletions(-)
