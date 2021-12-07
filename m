@@ -1,28 +1,104 @@
 From: Jammy Huang <jammy_huang@aspeedtech.com>
-Date: Tue, 7 Dec 2021 09:41:45 +0800
-Subject: [PATCH 0/2] Use v4l2_info/v4l2_warn/v4l2_dbg for log
-Message-ID: <20211207014147.226-1-jammy_huang@aspeedtech.com>
+Date: Tue, 7 Dec 2021 09:54:11 +0800
+Subject: [PATCH] media: aspeed: add comments and macro
+Message-ID: <20211207015411.1619-1-jammy_huang@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-In this seris, v4l2_xxx log macro will be adapted.
-With v4l2_dbg, the debug level can be set with the module parameter
-called debug. In this way, we won't have to see all debug logs together.
-To many log could have bad influence on the rate to reproduce some
-issues as well.
+Add comments to describe video-stat and 'struct aspeed_video'.
+Add macro, ASPEED_VIDEO_V4L2_MIN_BUF_REQ, to describe the buffers
+needed.
 
-Some logs are added, and more is coming for aspeed-format.
+Signed-off-by: Jammy Huang <jammy_huang@aspeedtech.com>
+---
+ drivers/media/platform/aspeed-video.c | 36 ++++++++++++++++++++++++---
+ 1 file changed, 33 insertions(+), 3 deletions(-)
 
-Jammy Huang (2):
-  media: aspeed: use v4l2_info/v4l2_warn/v4l2_dbg for log
-  media: aspeed: add more debug log messages
-
- drivers/media/platform/aspeed-video.c | 64 ++++++++++++++++++++-------
- 1 file changed, 47 insertions(+), 17 deletions(-)
-
+diff --git a/drivers/media/platform/aspeed-video.c b/drivers/media/platform/aspeed-video.c
+index d2335d669fb3..e17ad102f064 100644
+--- a/drivers/media/platform/aspeed-video.c
++++ b/drivers/media/platform/aspeed-video.c
+@@ -32,6 +32,8 @@
+ #include <media/videobuf2-dma-contig.h>
+ #include <linux/videodev2.h>
+ 
++#define ASPEED_VIDEO_V4L2_MIN_BUF_REQ 3
++
+ #define DEVICE_NAME			"aspeed-video"
+ 
+ #define ASPEED_VIDEO_JPEG_NUM_QUALITIES	12
+@@ -185,6 +187,15 @@
+ #define VE_MEM_RESTRICT_START		0x310
+ #define VE_MEM_RESTRICT_END		0x314
+ 
++/*
++ * @VIDEO_MODE_DETECT_DONE:	a flag raised if signal lock
++ * @VIDEO_RES_CHANGE:		a flag raised if res_change work on-going
++ * @VIDEO_RES_DETECT:		a flag raised if res. detection on-going
++ * @VIDEO_STREAMING:		a flag raised if user requires stream-on
++ * @VIDEO_FRAME_INPRG:		a flag raised if hw working on a frame
++ * @VIDEO_STOPPED:		a flag raised if device release
++ * @VIDEO_CLOCKS_ON:		a flag raised if clk is on
++ */
+ enum {
+ 	VIDEO_MODE_DETECT_DONE,
+ 	VIDEO_RES_CHANGE,
+@@ -217,6 +228,25 @@ struct aspeed_video_perf {
+ #define to_aspeed_video_buffer(x) \
+ 	container_of((x), struct aspeed_video_buffer, vb)
+ 
++/**
++ * struct aspeed_video - driver data
++ *
++ * @res_work:           holds the delayed_work for res-detection if unlock
++ * @buffers:            holds the list of buffer queued from user
++ * @flags:		holds the state of video
++ * @sequence:		holds the last number of frame completed
++ * @max_compressed_size:holds max compressed stream's size
++ * @srcs:		holds the buffer information for srcs
++ * @jpeg:		holds the buffer information for jpeg header
++ * @yuv420:		a flag raised if JPEG subsampling is 420
++ * @frame_rate:		holds the frame_rate
++ * @jpeg_quality:	holds jpeq's quality (0~11)
++ * @frame_bottom:	end position of video data in vertical direction
++ * @frame_left:		start position of video data in horizontal direction
++ * @frame_right:	end position of video data in horizontal direction
++ * @frame_top:		start position of video data in vertical direction
++ * @perf:		holds the statistics primary for debugfs
++ */
+ struct aspeed_video {
+ 	void __iomem *base;
+ 	struct clk *eclk;
+@@ -1135,7 +1165,7 @@ static int aspeed_video_get_parm(struct file *file, void *fh,
+ 	struct aspeed_video *video = video_drvdata(file);
+ 
+ 	a->parm.capture.capability = V4L2_CAP_TIMEPERFRAME;
+-	a->parm.capture.readbuffers = 3;
++	a->parm.capture.readbuffers = ASPEED_VIDEO_V4L2_MIN_BUF_REQ;
+ 	a->parm.capture.timeperframe.numerator = 1;
+ 	if (!video->frame_rate)
+ 		a->parm.capture.timeperframe.denominator = MAX_FRAME_RATE;
+@@ -1152,7 +1182,7 @@ static int aspeed_video_set_parm(struct file *file, void *fh,
+ 	struct aspeed_video *video = video_drvdata(file);
+ 
+ 	a->parm.capture.capability = V4L2_CAP_TIMEPERFRAME;
+-	a->parm.capture.readbuffers = 3;
++	a->parm.capture.readbuffers = ASPEED_VIDEO_V4L2_MIN_BUF_REQ;
+ 
+ 	if (a->parm.capture.timeperframe.numerator)
+ 		frame_rate = a->parm.capture.timeperframe.denominator /
+@@ -1681,7 +1711,7 @@ static int aspeed_video_setup_video(struct aspeed_video *video)
+ 	vbq->drv_priv = video;
+ 	vbq->buf_struct_size = sizeof(struct aspeed_video_buffer);
+ 	vbq->timestamp_flags = V4L2_BUF_FLAG_TIMESTAMP_MONOTONIC;
+-	vbq->min_buffers_needed = 3;
++	vbq->min_buffers_needed = ASPEED_VIDEO_V4L2_MIN_BUF_REQ;
+ 
+ 	rc = vb2_queue_init(vbq);
+ 	if (rc) {
 -- 
 2.25.1
 
