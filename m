@@ -1,7 +1,7 @@
 From: Howard Chiu <howard10703049@gmail.com>
-Date: Tue,  7 Dec 2021 15:26:03 +0800
-Subject: [PATCH v7] ARM: dts: aspeed: Adding Facebook Bletchley BMC
-Message-ID: <20211207072601.354274-1-howard.chiu@quantatw.com>
+Date: Tue,  7 Dec 2021 17:49:24 +0800
+Subject: [PATCH v8] ARM: dts: aspeed: Adding Facebook Bletchley BMC
+Message-ID: <20211207094923.422422-1-howard.chiu@quantatw.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -13,13 +13,16 @@ Aspeed 2600 BMC SoC.
 
 Signed-off-by: Howard Chiu <howard.chiu@quantatw.com>
 ---
+Change since v7:
+- Add switchphy mode back due to unknown failure
+
 Change since v6:
 - Fix FUSB302 node warnings
 - Remove switchphy node.
 - Remvoe status property from spi-gpio node
 - Remove interrupt pin of FUSB302 temporally due to hardware issue
 - Add more gpio-line-name
-- Replace MP5023 device driver with "mps,mp5023"
+- Replace MP5023 device drivr with "mps,mp5023"
 
 Change since v5:
 - Add an EEPROM on i2c-7
@@ -46,8 +49,8 @@ Change since v1:
 - Use openbmc-flash-layout-128.dtsi
 
  arch/arm/boot/dts/Makefile                    |   1 +
- .../dts/aspeed-bmc-facebook-bletchley.dts     | 751 ++++++++++++++++++
- 2 files changed, 752 insertions(+)
+ .../dts/aspeed-bmc-facebook-bletchley.dts     | 756 ++++++++++++++++++
+ 2 files changed, 757 insertions(+)
  create mode 100644 arch/arm/boot/dts/aspeed-bmc-facebook-bletchley.dts
 
 diff --git a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
@@ -64,10 +67,10 @@ index 0de64f237cd8..b804b577010a 100644
  	aspeed-bmc-facebook-elbert.dtb \
 diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-bletchley.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-bletchley.dts
 new file mode 100644
-index 000000000000..af14f3172c6f
+index 000000000000..f973ea883b97
 --- /dev/null
 +++ b/arch/arm/boot/dts/aspeed-bmc-facebook-bletchley.dts
-@@ -0,0 +1,751 @@
+@@ -0,0 +1,756 @@
 +// SPDX-License-Identifier: GPL-2.0+
 +// Copyright (c) 2021 Facebook Inc.
 +/dts-v1/;
@@ -117,6 +120,10 @@ index 000000000000..af14f3172c6f
 +			spi-max-frequency = <33000000>;
 +			reg = <0>;
 +		};
++	};
++
++	switchphy: ethernet-phy at 0 {
++		// Fixed link
 +	};
 +
 +	leds {
@@ -233,6 +240,7 @@ index 000000000000..af14f3172c6f
 +&mac2 {
 +	status = "okay";
 +	phy-mode = "rgmii";
++	phy-handle = <&switchphy>;
 +	pinctrl-names = "default";
 +	pinctrl-0 = <&pinctrl_rgmii3_default>;
 +
