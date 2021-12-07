@@ -1,105 +1,49 @@
-From: Winiarska, Iwona <iwona.winiarska@intel.com>
-Date: Tue, 7 Dec 2021 18:15:11 +0000
-Subject: [PATCH v4 02/13] dt-bindings: Add bindings for peci-aspeed
-In-Reply-To: <4B35121C-3BF3-4EF2-BBE6-AA76FA1920E3@aspeedtech.com>
-References: <20211123140706.2945700-1-iwona.winiarska@intel.com>
- <20211123140706.2945700-3-iwona.winiarska@intel.com>
- <DDB2E224-472B-41CC-A5C6-BEADB4BF2041@aspeedtech.com>
- <20211202015455.GB25091@packtop>
- <4B35121C-3BF3-4EF2-BBE6-AA76FA1920E3@aspeedtech.com>
-Message-ID: <0a82b85608ea13424c601a4a6364652d2a411675.camel@intel.com>
+From: kernel test robot <lkp@intel.com>
+Date: Wed, 8 Dec 2021 04:05:15 +0800
+Subject: [PATCH v4 6/6] arm:boot:dts:aspeed-g6 Add more gfx reset control
+In-Reply-To: <20211207102749.18118-8-tommy_huang@aspeedtech.com>
+References: <20211207102749.18118-8-tommy_huang@aspeedtech.com>
+Message-ID: <202112080327.zlIz9vRq-lkp@intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, 2021-12-02 at 02:31 +0000, Billy Tsai wrote:
-> Hi Zev,
-> 
-> On 2021/12/2, 9:55 AM, "Zev Weiss" <zweiss@equinix.com> wrote:
-> 
-> ??? On Wed, Dec 01, 2021 at 02:38:04AM PST, Billy Tsai wrote:
-> ??? >?? >Hi,
-> ??? >?? >
-> ??? >?? >On 2021/11/23, 10:10 PM, "openbmc on behalf of Iwona Winiarska"
-> <openbmc-bounces+billy_tsai=aspeedtech.com@lists.ozlabs.org?on behalf of
-> iwona.winiarska at intel.com> wrote:
-> ??? >?? >
-> ??? >?? >??? Add device tree bindings for the peci-aspeed controller driver.
-> ??? >?? >
-> ??? >?? >??? >?? +? aspeed,clock-divider:
-> ??? >?? >??? >?? +??? description:
-> ??? >?? >??? >?? +????? This value determines PECI controller internal clock
-> dividing
-> ??? >?? >??? >?? +????? rate. The divider will be calculated as 2 raised to
-> the power of
-> ??? >?? >??? >?? +????? the given value.
-> ??? >?? >??? >?? +??? $ref: /schemas/types.yaml#/definitions/uint32
-> ??? >?? >??? >?? +??? minimum: 0
-> ??? >?? >??? >?? +??? maximum: 7
-> ??? >?? >??? >?? +??? default: 0
-> ??? >?? >??? >?? +
-> ??? >?? >??? >?? +? aspeed,msg-timing:
-> ??? >?? >??? >?? +??? description:
-> ??? >?? >??? >?? +????? Message timing negotiation period. This value will
-> determine the period
-> ??? >?? >??? >?? +????? of message timing negotiation to be issued by PECI
-> controller. The unit
-> ??? >?? >??? >?? +????? of the programmed value is four times of PECI clock
-> period.
-> ??? >?? >??? >?? +??? $ref: /schemas/types.yaml#/definitions/uint32
-> ??? >?? >??? >?? +??? minimum: 0
-> ??? >?? >??? >?? +??? maximum: 255
-> ??? >?? >??? >?? +??? default: 1
-> ??? >?? >??? >?? +
-> ??? >?? >??? >?? +? aspeed,addr-timing:
-> ??? >?? >??? >?? +??? description:
-> ??? >?? >??? >?? +????? Address timing negotiation period. This value will
-> determine the period
-> ??? >?? >??? >?? +????? of address timing negotiation to be issued by PECI
-> controller. The unit
-> ??? >?? >??? >?? +????? of the programmed value is four times of PECI clock
-> period.
-> ??? >?? >??? >?? +??? $ref: /schemas/types.yaml#/definitions/uint32
-> ??? >?? >??? >?? +??? minimum: 0
-> ??? >?? >??? >?? +??? maximum: 255
-> ??? >?? >??? >?? +??? default: 1
-> ??? >?? >I suggest deleting these three properties and replacing them with the
-> following
-> ??? >?? >
-> ??? >?? >aspeed,peci-bit-time:
-> ??? >?? >??????? description:
-> ??? >?? >????????? The bit time driven by PECI controller. The unit of the
-> value is Hz.
-> ??? >?? >??? minimum: 2000
-> ??? >?? >??? maximum: 1000000
-> ??? >?? >
-> ??? >?? >And the driver should use this property to caculate the appropriate
-> clock-divider,
-> ??? >?? >msg-timing and addr-timing, instead of exposing hardware registers to
-> dts.
-> ??? >?? >
-> 
-> ??? >?? Or perhaps just 'bus-frequency' a la i2c-aspeed, gpio-aspeed-sgpio,
-> etc?
-> 
-> It's a good ideal for the consistency.
+Hi Tommy,
 
-If we want to go with passing frequency - I would prefer to go with "clock-
-frequency" and use clock framework for exposing it to peci-aspeed (as I
-mentioned in reply to patch 05).
+Thank you for the patch! Yet something to improve:
 
-What do you think?
+[auto build test ERROR on v5.16-rc4]
+[also build test ERROR on next-20211207]
+[cannot apply to joel-aspeed/for-next]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch]
 
-Thanks
--Iwona
+url:    https://github.com/0day-ci/linux/commits/Tommy-Haung/Add-Aspeed-AST2600-soc-display-support/20211207-183100
+base:    0fcfb00b28c0b7884635dacf38e46d60bf3d4eb1
+config: arm-defconfig (https://download.01.org/0day-ci/archive/20211208/202112080327.zlIz9vRq-lkp at intel.com/config)
+compiler: arm-linux-gnueabi-gcc (GCC) 11.2.0
+reproduce (this is a W=1 build):
+        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        # https://github.com/0day-ci/linux/commit/1f021d3aa80957f6bd0434bf4b5d66898b8d2e9c
+        git remote add linux-review https://github.com/0day-ci/linux
+        git fetch --no-tags linux-review Tommy-Haung/Add-Aspeed-AST2600-soc-display-support/20211207-183100
+        git checkout 1f021d3aa80957f6bd0434bf4b5d66898b8d2e9c
+        # save the config file to linux build tree
+        mkdir build_dir
+        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-11.2.0 make.cross O=build_dir ARCH=arm SHELL=/bin/bash
 
-> 
-> Thanks
-> 
-> Best Regards,
-> Billy Tsai
-> 
-> 
+If you fix the issue, kindly add following tag as appropriate
+Reported-by: kernel test robot <lkp@intel.com>
 
+All errors (new ones prefixed by >>):
+
+>> Error: arch/arm/boot/dts/aspeed-g6.dtsi:359.23-24 syntax error
+   FATAL ERROR: Unable to parse input tree
+
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
