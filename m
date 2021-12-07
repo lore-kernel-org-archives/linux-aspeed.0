@@ -1,32 +1,49 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Mon, 13 Dec 2021 15:01:33 +0100
-Subject: [PATCH v3 2/4] usb: aspeed-vhub: fix remote wakeup failure in
- iKVM use case
-In-Reply-To: <20211208100545.1441397-3-neal_liu@aspeedtech.com>
-References: <20211208100545.1441397-1-neal_liu@aspeedtech.com>
- <20211208100545.1441397-3-neal_liu@aspeedtech.com>
-Message-ID: <YbdSPWX2pnp5pT9G@kroah.com>
+From: Thierry Reding <thierry.reding@gmail.com>
+Date: Tue, 7 Dec 2021 09:49:11 +0100
+Subject: [PATCH] dt-bindings: i2c: aspeed: Drop stray '#interrupt-cells'
+In-Reply-To: <20211206174237.2298580-1-robh@kernel.org>
+References: <20211206174237.2298580-1-robh@kernel.org>
+Message-ID: <Ya8gB4mu3yFYCbhp@orome.fritz.box>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Dec 08, 2021 at 06:05:43PM +0800, Neal Liu wrote:
-> Signaling remote wakeup if an emulated USB device has any activity
-> if the device is allowed by host.
+On Mon, Dec 06, 2021 at 11:42:37AM -0600, Rob Herring wrote:
+> '#interrupt-cells' is not documented which causes a warning when
+> 'unevaluatedProperties' is implemented. Unless the I2C controller is
+> also an interrupt controller, '#interrupt-cells' is not valid. This
+> doesn't appear to be the case from the driver, so just remove it from
+> the example.
 > 
-> Signed-off-by: Neal Liu <neal_liu@aspeedtech.com>
+> Cc: Brendan Higgins <brendanhiggins@google.com>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Joel Stanley <joel@jms.id.au>
+> Cc: Andrew Jeffery <andrew@aj.id.au>
+> Cc: Rayn Chen <rayn_chen@aspeedtech.com>
+> Cc: linux-i2c at vger.kernel.org
+> Cc: openbmc at lists.ozlabs.org
+> Cc: linux-arm-kernel at lists.infradead.org
+> Cc: linux-aspeed at lists.ozlabs.org
+> Signed-off-by: Rob Herring <robh@kernel.org>
 > ---
->  drivers/usb/gadget/udc/aspeed-vhub/epn.c | 5 +++++
->  1 file changed, 5 insertions(+)
+>  Documentation/devicetree/bindings/i2c/aspeed,i2c.yaml | 1 -
+>  1 file changed, 1 deletion(-)
 
-What commit does this fix?
+Interestingly I have a patch for this as well but it does the opposite
+and adds interrupt-controller and #interrupt-cells. Upon closer
+inspection I was tricked into this because the i2c-aspeed driver
+includes linux/irqchip/chained_irq.h and linux/irqdomain.h and therefore
+I assumed that it was indeed implementing an interrupt controller. But
+none of the symbols in those files are ever used, so your version seems
+to be correct.
 
-Does it need to go to stable kernels?
-
-Should it be independent of this patch series that adds new features?
-
-thanks,
-
-greg k-h
+Reviewed-by: Thierry Reding <treding@nvidia.com>
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 833 bytes
+Desc: not available
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20211207/233b17ff/attachment.sig>
