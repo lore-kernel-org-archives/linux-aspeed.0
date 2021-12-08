@@ -1,108 +1,58 @@
 From: Billy Tsai <billy_tsai@aspeedtech.com>
-Date: Wed, 8 Dec 2021 02:23:16 +0000
-Subject: [PATCH v4 02/13] dt-bindings: Add bindings for peci-aspeed
-In-Reply-To: <0a82b85608ea13424c601a4a6364652d2a411675.camel@intel.com>
-References: <20211123140706.2945700-1-iwona.winiarska@intel.com>
- <20211123140706.2945700-3-iwona.winiarska@intel.com>
- <DDB2E224-472B-41CC-A5C6-BEADB4BF2041@aspeedtech.com>
- <20211202015455.GB25091@packtop>
- <4B35121C-3BF3-4EF2-BBE6-AA76FA1920E3@aspeedtech.com>
- <0a82b85608ea13424c601a4a6364652d2a411675.camel@intel.com>
-Message-ID: <1398354F-F251-4CEA-8E92-7C442287F6BC@aspeedtech.com>
+Date: Wed, 8 Dec 2021 04:02:22 +0000
+Subject: [v14 0/2] Support pwm driver for aspeed ast26xx
+In-Reply-To: <Ya/P+4CNTnUUqlG9@robh.at.kernel.org>
+References: <20211130055933.32708-1-billy_tsai@aspeedtech.com>
+ <CACPK8XfM4C7v3keXaxMs9SkqNzb8XWbZ6QvcZXWcy3ZKJCrvWQ@mail.gmail.com>
+ <Ya/P+4CNTnUUqlG9@robh.at.kernel.org>
+Message-ID: <ADD1E8B8-60F0-442A-BEF1-1AA304454963@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+Hi Rob,
 
-Hi Iwona,
+On 2021/12/8, 5:20 AM, "Rob Herring" <robh@kernel.org> wrote:
 
-On 2021/12/8, 2:30 AM, "Winiarska, Iwona" <iwona.winiarska@intel.com> wrote:
-
-    On Thu, 2021-12-02 at 02:31 +0000, Billy Tsai wrote:
-    >   > Hi Zev,
+    On Tue, Dec 07, 2021 at 06:45:47AM +0000, Joel Stanley wrote:
+    >   > Hi Billy,
     >   > 
-    >   > On 2021/12/2, 9:55 AM, "Zev Weiss" <zweiss@equinix.com> wrote:
+    >   > On Tue, 30 Nov 2021 at 05:58, Billy Tsai <billy_tsai@aspeedtech.com> wrote:
+    >   > >
+    >   > > The legacy driver of aspeed pwm is binding with tach controller and it
+    >   > > doesn't follow the pwm framworks usage. In addition, the pwm register
+    >   > > usage of the 6th generation of ast26xx has drastic change. So these
+    >   > > patch serials add the new aspeed pwm driver to fix up the problem above.
     >   > 
-    >   >     On Wed, Dec 01, 2021 at 02:38:04AM PST, Billy Tsai wrote:
-    >   >     >   >Hi,
-    >   >     >   >
-    >   >     >   >On 2021/11/23, 10:10 PM, "openbmc on behalf of Iwona Winiarska"
-    >   > <openbmc-bounces+billy_tsai=aspeedtech.com@lists.ozlabs.org on behalf of
-    >   > iwona.winiarska at intel.com> wrote:
-    >   >     >   >
-    >   >     >   >    Add device tree bindings for the peci-aspeed controller driver.
-    >   >     >   >
-    >   >     >   >    >   +  aspeed,clock-divider:
-    >   >     >   >    >   +    description:
-    >   >     >   >    >   +      This value determines PECI controller internal clock
-    >   > dividing
-    >   >     >   >    >   +      rate. The divider will be calculated as 2 raised to
-    >   > the power of
-    >   >     >   >    >   +      the given value.
-    >   >     >   >    >   +    $ref: /schemas/types.yaml#/definitions/uint32
-    >   >     >   >    >   +    minimum: 0
-    >   >     >   >    >   +    maximum: 7
-    >   >     >   >    >   +    default: 0
-    >   >     >   >    >   +
-    >   >     >   >    >   +  aspeed,msg-timing:
-    >   >     >   >    >   +    description:
-    >   >     >   >    >   +      Message timing negotiation period. This value will
-    >   > determine the period
-    >   >     >   >    >   +      of message timing negotiation to be issued by PECI
-    >   > controller. The unit
-    >   >     >   >    >   +      of the programmed value is four times of PECI clock
-    >   > period.
-    >   >     >   >    >   +    $ref: /schemas/types.yaml#/definitions/uint32
-    >   >     >   >    >   +    minimum: 0
-    >   >     >   >    >   +    maximum: 255
-    >   >     >   >    >   +    default: 1
-    >   >     >   >    >   +
-    >   >     >   >    >   +  aspeed,addr-timing:
-    >   >     >   >    >   +    description:
-    >   >     >   >    >   +      Address timing negotiation period. This value will
-    >   > determine the period
-    >   >     >   >    >   +      of address timing negotiation to be issued by PECI
-    >   > controller. The unit
-    >   >     >   >    >   +      of the programmed value is four times of PECI clock
-    >   > period.
-    >   >     >   >    >   +    $ref: /schemas/types.yaml#/definitions/uint32
-    >   >     >   >    >   +    minimum: 0
-    >   >     >   >    >   +    maximum: 255
-    >   >     >   >    >   +    default: 1
-    >   >     >   >I suggest deleting these three properties and replacing them with the
-    >   > following
-    >   >     >   >
-    >   >     >   >aspeed,peci-bit-time:
-    >   >     >   >        description:
-    >   >     >   >          The bit time driven by PECI controller. The unit of the
-    >   > value is Hz.
-    >   >     >   >    minimum: 2000
-    >   >     >   >    maximum: 1000000
-    >   >     >   >
-    >   >     >   >And the driver should use this property to caculate the appropriate
-    >   > clock-divider,
-    >   >     >   >msg-timing and addr-timing, instead of exposing hardware registers to
-    >   > dts.
-    >   >     >   >
+    >   > Sorry for not taking a look earlier. Well done on making it this far.
     >   > 
-    >   >     >   Or perhaps just 'bus-frequency' a la i2c-aspeed, gpio-aspeed-sgpio,
-    >   > etc?
+    >   > There's a few things that need to be addressed before merging this.
     >   > 
-    >   > It's a good ideal for the consistency.
+    >   > Firstly, the bindings need fixing up. I think these should be the one
+    >   > file. The device tree bindings are supposed to describe the hardware,
+    >   > and it doesn't make sense to separate them out just because we plan on
+    >   > using two subsystems to implement the functionality.
+    >   > 
+    >   > Rob, please chime in if you would prefer something different.
 
-    >   If we want to go with passing frequency - I would prefer to go with "clock-
-    >   frequency" and use clock framework for exposing it to peci-aspeed (as I
-    >   mentioned in reply to patch 05).
+    >   I prefer to see a common binding for fans which I said multiple times 
+    >   on this series. As the same thing keeps getting posted, I've stopped 
+    >   looking at this one.
 
-    >   What do you think?
-
-Good.
-It looks that "clock-frequency" is more common usage.
+Sorry to have bothered you so many times.
+As I mention in v9:
+"This patch doesn't use to binding the fan control h/w. It is used to binding the two independent h/w blocks.
+One is used to provide pwm output and another is used to monitor the speed of the input.
+It is different from "aspeed-pwm-tacho.txt" and "npcm750-pwm-fan.txt" which only focus on fan usage.
+It is more like the "kontron,sl28cpld.yaml" the device includes a fan monitor and PWM output devices."
+My purpose is to give more flexibility to our drivers and can use the existing driver "pwm-fan" to control
+the fan instead of creating the code like XXX-pwm-fan to do the same thing.
 
 Thanks
 
 Best Regards,
 Billy Tsai
+
 
