@@ -1,73 +1,82 @@
 From: Tommy Haung <tommy_huang@aspeedtech.com>
-Date: Wed, 8 Dec 2021 09:33:30 +0800
-Subject: [PATCH v5 0/7] Add Aspeed AST2600 soc display support
-Message-ID: <20211208013337.13806-1-tommy_huang@aspeedtech.com>
+Date: Wed, 8 Dec 2021 09:33:33 +0800
+Subject: [PATCH v5 3/7] drm/aspeed: Update INTR_STS handling
+In-Reply-To: <20211208013337.13806-1-tommy_huang@aspeedtech.com>
+References: <20211208013337.13806-1-tommy_huang@aspeedtech.com>
+Message-ID: <20211208013337.13806-4-tommy_huang@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-v5:
-  Add lost reset define.
+From: tommy-huang <tommy_huang@aspeedtech.com>
 
-v4:
-  Add necessary reset control for ast2600.
-  Add chip caps for futher use.
-  These code are test on AST2500 and AST2600 by below steps.
+Add interrupt clear register define for further chip support.
 
-  1. Add below config to turn VT and LOGO on.
+Signed-off-by: tommy-huang <tommy_huang@aspeedtech.com>
+---
+ drivers/gpu/drm/aspeed/aspeed_gfx.h     | 1 +
+ drivers/gpu/drm/aspeed/aspeed_gfx_drv.c | 6 +++++-
+ 2 files changed, 6 insertions(+), 1 deletion(-)
 
-	CONFIG_TTY=y
-	CONFIG_VT=y
-	CONFIG_CONSOLE_TRANSLATIONS=y
-	CONFIG_VT_CONSOLE=y
-	CONFIG_VT_CONSOLE_SLEEP=y
-	CONFIG_HW_CONSOLE=y
-	CONFIG_VT_HW_CONSOLE_BINDING=y
-	CONFIG_UNIX98_PTYS=y
-	CONFIG_LDISC_AUTOLOAD=y
-	CONFIG_DEVMEM=y
-	CONFIG_DUMMY_CONSOLE=y
-	CONFIG_FRAMEBUFFER_CONSOLE=y
-	CONFIG_FRAMEBUFFER_CONSOLE_DETECT_PRIMARY=y
-	CONFIG_LOGO=y
-	CONFIG_LOGO_LINUX_CLUT224=y
-
-  2. The Linux logo will be shown on the screen, when the BMC boot in Linux.
-
-v3:
-  Refine the patch for clear separate purpose.
-  Skip to send devicetree patch
-
-v2:
-  Remove some unnecessary patch.
-  Refine for reviwer request.
-
-v1:
-  First add patch.
-
-Joel Stanley (2):
-  ARM: dts: aspeed: Add GFX node to AST2600
-  ARM: dts: aspeed: ast2600-evb: Enable GFX device
-
-Tommy Haung (1):
-  dt-bindings:ast2600-clock Add CRT reset define
-
-tommy-huang (4):
-  drm/aspeed: Update INTR_STS handling
-  drm/aspeed: Add AST2600 chip support
-  drm/aspeed: Add reset and clock for AST2600
-  arm:boot:dts:aspeed-g6 Add more gfx reset control
-
- arch/arm/boot/dts/aspeed-ast2600-evb.dts  | 18 +++++++
- arch/arm/boot/dts/aspeed-g6.dtsi          | 13 +++++
- drivers/gpu/drm/aspeed/aspeed_gfx.h       | 17 +++++-
- drivers/gpu/drm/aspeed/aspeed_gfx_crtc.c  | 16 ++++++
- drivers/gpu/drm/aspeed/aspeed_gfx_drv.c   | 65 +++++++++++++++++++++--
- include/dt-bindings/clock/ast2600-clock.h |  1 +
- 6 files changed, 124 insertions(+), 6 deletions(-)
-
+diff --git a/drivers/gpu/drm/aspeed/aspeed_gfx.h b/drivers/gpu/drm/aspeed/aspeed_gfx.h
+index 96501152bafa..4e6a442c3886 100644
+--- a/drivers/gpu/drm/aspeed/aspeed_gfx.h
++++ b/drivers/gpu/drm/aspeed/aspeed_gfx.h
+@@ -12,6 +12,7 @@ struct aspeed_gfx {
+ 	struct regmap			*scu;
+ 
+ 	u32				dac_reg;
++	u32				int_clr_reg;
+ 	u32				vga_scratch_reg;
+ 	u32				throd_val;
+ 	u32				scan_line_max;
+diff --git a/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c b/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
+index b53fee6f1c17..d4b56b3c7597 100644
+--- a/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
++++ b/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
+@@ -60,6 +60,7 @@
+ 
+ struct aspeed_gfx_config {
+ 	u32 dac_reg;		/* DAC register in SCU */
++	u32 int_clear_reg;	/* Interrupt clear register */
+ 	u32 vga_scratch_reg;	/* VGA scratch register in SCU */
+ 	u32 throd_val;		/* Default Threshold Seting */
+ 	u32 scan_line_max;	/* Max memory size of one scan line */
+@@ -67,6 +68,7 @@ struct aspeed_gfx_config {
+ 
+ static const struct aspeed_gfx_config ast2400_config = {
+ 	.dac_reg = 0x2c,
++	.int_clear_reg = 0x60,
+ 	.vga_scratch_reg = 0x50,
+ 	.throd_val = CRT_THROD_LOW(0x1e) | CRT_THROD_HIGH(0x12),
+ 	.scan_line_max = 64,
+@@ -74,6 +76,7 @@ static const struct aspeed_gfx_config ast2400_config = {
+ 
+ static const struct aspeed_gfx_config ast2500_config = {
+ 	.dac_reg = 0x2c,
++	.int_clear_reg = 0x60,
+ 	.vga_scratch_reg = 0x50,
+ 	.throd_val = CRT_THROD_LOW(0x24) | CRT_THROD_HIGH(0x3c),
+ 	.scan_line_max = 128,
+@@ -119,7 +122,7 @@ static irqreturn_t aspeed_gfx_irq_handler(int irq, void *data)
+ 
+ 	if (reg & CRT_CTRL_VERTICAL_INTR_STS) {
+ 		drm_crtc_handle_vblank(&priv->pipe.crtc);
+-		writel(reg, priv->base + CRT_CTRL1);
++		writel(reg, priv->base + priv->int_clr_reg);
+ 		return IRQ_HANDLED;
+ 	}
+ 
+@@ -147,6 +150,7 @@ static int aspeed_gfx_load(struct drm_device *drm)
+ 	config = match->data;
+ 
+ 	priv->dac_reg = config->dac_reg;
++	priv->int_clr_reg = config->int_clear_reg;
+ 	priv->vga_scratch_reg = config->vga_scratch_reg;
+ 	priv->throd_val = config->throd_val;
+ 	priv->scan_line_max = config->scan_line_max;
 -- 
 2.17.1
 
