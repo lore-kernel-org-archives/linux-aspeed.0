@@ -1,97 +1,28 @@
-From: Neal Liu <neal_liu@aspeedtech.com>
-Date: Wed, 8 Dec 2021 18:05:45 +0800
-Subject: [PATCH v3 4/4] usb: aspeed-vhub: support test mode feature
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Date: Wed, 8 Dec 2021 13:21:42 +0100
+Subject: [PATCH v3 0/4] Refactor Aspeed USB vhub driver
 In-Reply-To: <20211208100545.1441397-1-neal_liu@aspeedtech.com>
 References: <20211208100545.1441397-1-neal_liu@aspeedtech.com>
-Message-ID: <20211208100545.1441397-5-neal_liu@aspeedtech.com>
+Message-ID: <YbCjVqAie/d84oBm@kroah.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Support aspeed usb vhub set feature to test mode.
+On Wed, Dec 08, 2021 at 06:05:41PM +0800, Neal Liu wrote:
+> These patch series include 2 parts. One is adding more features
+> to pass USB30CV compliance test, the other is fixing hw issues.
+> More detail descriptions are included below patchsets.
+> 
+> Change since v2:
+> - Add more description in changelog.
+> - Fix remote wakeup issue patch and make it more configurable.
+> 
+> Change since v1:
+> - Remove unnecessary configs for SET_CONFIGURATION.
+> - Separate supporting test mode to new patch.
+> 
+> *** BLURB HERE ***
 
-Signed-off-by: Neal Liu <neal_liu@aspeedtech.com>
----
- drivers/usb/gadget/udc/aspeed-vhub/dev.c | 19 +++++++++++++++----
- drivers/usb/gadget/udc/aspeed-vhub/hub.c | 23 +++++++++++++++++------
- 2 files changed, 32 insertions(+), 10 deletions(-)
-
-diff --git a/drivers/usb/gadget/udc/aspeed-vhub/dev.c b/drivers/usb/gadget/udc/aspeed-vhub/dev.c
-index d918e8b2af3c..b0dfca43fbdc 100644
---- a/drivers/usb/gadget/udc/aspeed-vhub/dev.c
-+++ b/drivers/usb/gadget/udc/aspeed-vhub/dev.c
-@@ -110,15 +110,26 @@ static int ast_vhub_dev_feature(struct ast_vhub_dev *d,
- 				u16 wIndex, u16 wValue,
- 				bool is_set)
- {
-+	u32 val;
-+
- 	DDBG(d, "%s_FEATURE(dev val=%02x)\n",
- 	     is_set ? "SET" : "CLEAR", wValue);
- 
--	if (wValue != USB_DEVICE_REMOTE_WAKEUP)
--		return std_req_driver;
-+	if (wValue == USB_DEVICE_REMOTE_WAKEUP) {
-+		d->wakeup_en = is_set;
-+		return std_req_complete;
-+	}
- 
--	d->wakeup_en = is_set;
-+	if (wValue == USB_DEVICE_TEST_MODE) {
-+		val = readl(d->vhub->regs + AST_VHUB_CTRL);
-+		val &= ~GENMASK(10, 8);
-+		val |= VHUB_CTRL_SET_TEST_MODE((wIndex >> 8) & 0x7);
-+		writel(val, d->vhub->regs + AST_VHUB_CTRL);
- 
--	return std_req_complete;
-+		return std_req_complete;
-+	}
-+
-+	return std_req_driver;
- }
- 
- static int ast_vhub_ep_feature(struct ast_vhub_dev *d,
-diff --git a/drivers/usb/gadget/udc/aspeed-vhub/hub.c b/drivers/usb/gadget/udc/aspeed-vhub/hub.c
-index 93f27a745760..65cd4e46f031 100644
---- a/drivers/usb/gadget/udc/aspeed-vhub/hub.c
-+++ b/drivers/usb/gadget/udc/aspeed-vhub/hub.c
-@@ -212,17 +212,28 @@ static int ast_vhub_hub_dev_feature(struct ast_vhub_ep *ep,
- 				    u16 wIndex, u16 wValue,
- 				    bool is_set)
- {
-+	u32 val;
-+
- 	EPDBG(ep, "%s_FEATURE(dev val=%02x)\n",
- 	      is_set ? "SET" : "CLEAR", wValue);
- 
--	if (wValue != USB_DEVICE_REMOTE_WAKEUP)
--		return std_req_stall;
-+	if (wValue == USB_DEVICE_REMOTE_WAKEUP) {
-+		ep->vhub->wakeup_en = is_set;
-+		EPDBG(ep, "Hub remote wakeup %s\n",
-+		      is_set ? "enabled" : "disabled");
-+		return std_req_complete;
-+	}
- 
--	ep->vhub->wakeup_en = is_set;
--	EPDBG(ep, "Hub remote wakeup %s\n",
--	      is_set ? "enabled" : "disabled");
-+	if (wValue == USB_DEVICE_TEST_MODE) {
-+		val = readl(ep->vhub->regs + AST_VHUB_CTRL);
-+		val &= ~GENMASK(10, 8);
-+		val |= VHUB_CTRL_SET_TEST_MODE((wIndex >> 8) & 0x7);
-+		writel(val, ep->vhub->regs + AST_VHUB_CTRL);
- 
--	return std_req_complete;
-+		return std_req_complete;
-+	}
-+
-+	return std_req_stall;
- }
- 
- static int ast_vhub_hub_ep_feature(struct ast_vhub_ep *ep,
--- 
-2.25.1
-
+Blurb is missing :(
