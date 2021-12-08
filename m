@@ -1,47 +1,35 @@
 From: Tommy Haung <tommy_huang@aspeedtech.com>
-Date: Wed, 8 Dec 2021 09:33:34 +0800
-Subject: [PATCH v5 4/7] drm/aspeed: Add AST2600 chip support
+Date: Wed, 8 Dec 2021 09:33:37 +0800
+Subject: [PATCH v5 7/7] dt-bindings:ast2600-clock Add CRT reset define
 In-Reply-To: <20211208013337.13806-1-tommy_huang@aspeedtech.com>
 References: <20211208013337.13806-1-tommy_huang@aspeedtech.com>
-Message-ID: <20211208013337.13806-5-tommy_huang@aspeedtech.com>
+Message-ID: <20211208013337.13806-8-tommy_huang@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: tommy-huang <tommy_huang@aspeedtech.com>
+Add new CRT reset define for ast2600.
 
-Add AST2600 chip support and setting.
-
-Signed-off-by: tommy-huang <tommy_huang@aspeedtech.com>
+Reported-by: kernel test robot <lkp@intel.com>
+Signed-off-by: Tommy Haung <tommy_huang@aspeedtech.com>
 ---
- drivers/gpu/drm/aspeed/aspeed_gfx_drv.c | 9 +++++++++
- 1 file changed, 9 insertions(+)
+ include/dt-bindings/clock/ast2600-clock.h | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c b/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
-index d4b56b3c7597..d10246b1d1c2 100644
---- a/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
-+++ b/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
-@@ -82,9 +82,18 @@ static const struct aspeed_gfx_config ast2500_config = {
- 	.scan_line_max = 128,
- };
- 
-+static const struct aspeed_gfx_config ast2600_config = {
-+	.dac_reg = 0xc0,
-+	.int_clear_reg = 0x68,
-+	.vga_scratch_reg = 0x50,
-+	.throd_val = CRT_THROD_LOW(0x50) | CRT_THROD_HIGH(0x70),
-+	.scan_line_max = 128,
-+};
-+
- static const struct of_device_id aspeed_gfx_match[] = {
- 	{ .compatible = "aspeed,ast2400-gfx", .data = &ast2400_config },
- 	{ .compatible = "aspeed,ast2500-gfx", .data = &ast2500_config },
-+	{ .compatible = "aspeed,ast2600-gfx", .data = &ast2600_config },
- 	{ },
- };
- MODULE_DEVICE_TABLE(of, aspeed_gfx_match);
+diff --git a/include/dt-bindings/clock/ast2600-clock.h b/include/dt-bindings/clock/ast2600-clock.h
+index 62b9520a00fd..f8bee338a00f 100644
+--- a/include/dt-bindings/clock/ast2600-clock.h
++++ b/include/dt-bindings/clock/ast2600-clock.h
+@@ -110,6 +110,7 @@
+ #define ASPEED_RESET_PCIE_DEV_OEN	20
+ #define ASPEED_RESET_PCIE_RC_O		19
+ #define ASPEED_RESET_PCIE_RC_OEN	18
++#define ASPEED_RESET_CRT		13
+ #define ASPEED_RESET_PCI_DP		5
+ #define ASPEED_RESET_AHB		1
+ #define ASPEED_RESET_SDRAM		0
 -- 
 2.17.1
 
