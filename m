@@ -1,24 +1,32 @@
-From: Rob Herring <robh@kernel.org>
-Date: Fri, 10 Dec 2021 15:18:55 -0600
-Subject: [PATCH v5 7/7] dt-bindings:ast2600-clock Add CRT reset define
-In-Reply-To: <20211208013337.13806-8-tommy_huang@aspeedtech.com>
-References: <20211208013337.13806-1-tommy_huang@aspeedtech.com>
- <20211208013337.13806-8-tommy_huang@aspeedtech.com>
-Message-ID: <YbPEP9VoYdDWitez@robh.at.kernel.org>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Date: Mon, 13 Dec 2021 15:01:33 +0100
+Subject: [PATCH v3 2/4] usb: aspeed-vhub: fix remote wakeup failure in
+ iKVM use case
+In-Reply-To: <20211208100545.1441397-3-neal_liu@aspeedtech.com>
+References: <20211208100545.1441397-1-neal_liu@aspeedtech.com>
+ <20211208100545.1441397-3-neal_liu@aspeedtech.com>
+Message-ID: <YbdSPWX2pnp5pT9G@kroah.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 08 Dec 2021 09:33:37 +0800, Tommy Haung wrote:
-> Add new CRT reset define for ast2600.
+On Wed, Dec 08, 2021 at 06:05:43PM +0800, Neal Liu wrote:
+> Signaling remote wakeup if an emulated USB device has any activity
+> if the device is allowed by host.
 > 
-> Reported-by: kernel test robot <lkp@intel.com>
-> Signed-off-by: Tommy Haung <tommy_huang@aspeedtech.com>
+> Signed-off-by: Neal Liu <neal_liu@aspeedtech.com>
 > ---
->  include/dt-bindings/clock/ast2600-clock.h | 1 +
->  1 file changed, 1 insertion(+)
-> 
+>  drivers/usb/gadget/udc/aspeed-vhub/epn.c | 5 +++++
+>  1 file changed, 5 insertions(+)
 
-Acked-by: Rob Herring <robh@kernel.org>
+What commit does this fix?
+
+Does it need to go to stable kernels?
+
+Should it be independent of this patch series that adds new features?
+
+thanks,
+
+greg k-h
