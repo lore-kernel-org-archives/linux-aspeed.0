@@ -1,33 +1,28 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Tue, 14 Dec 2021 13:35:35 +1100
-Subject: [PATCH v3 2/4] usb: aspeed-vhub: fix remote wakeup failure in
- iKVM use case
-In-Reply-To: <HK0PR06MB320271524E51BDFA922F070780709@HK0PR06MB3202.apcprd06.prod.outlook.com>
-References: <20211208100545.1441397-1-neal_liu@aspeedtech.com>
- <20211208100545.1441397-3-neal_liu@aspeedtech.com>
- <391323f136e49387797d43e89b6e42cd95d916c2.camel@kernel.crashing.org>
- <HK0PR06MB320271524E51BDFA922F070780709@HK0PR06MB3202.apcprd06.prod.outlook.com>
-Message-ID: <0888eb83c8b2bd53d4c3e2355019052d0ab40db6.camel@kernel.crashing.org>
+From: Steven Lee <steven_lee@aspeedtech.com>
+Date: Tue, 14 Dec 2021 12:02:37 +0800
+Subject: [PATCH v1 0/1] gpio: gpio-aspeed-sgpio: Fix wrong hwirq base in irq
+Message-ID: <20211214040239.8977-1-steven_lee@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, 2021-12-09 at 02:37 +0000, Neal Liu wrote:
-> I'm confused. Signaling Wakeup when wakeup_en is set if it has any ep
-> activities is not exactly what you said?
-> 
-> wakeup_en is set only if host allows this device have wakeup
-> capability and bus being suspended.
-> 
-> Normal ep activities would not write the MMIO because wakeup_en is
-> not set.
+Each aspeed sgpio bank has 64 gpio pins(32 input pins and 32 output pins)
+The hwirq base for each sgpio bank should be multiples of 64 rather than
+multiples of 32.
 
-Hrm... I didn't think wakeup_en was limited to the bus being suspended,
-but maybe I misremember, it's been a while.
+This patch series contains a patch for fixing wrong hwirq base in
+irq handler.
 
-Cheers,
-Ben.
+Please help to review.
 
+Steven Lee (1):
+  gpio: gpio-aspeed-sgpio: Fix wrong hwirq base in irq handler
+
+ drivers/gpio/gpio-aspeed-sgpio.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+-- 
+2.17.1
 
