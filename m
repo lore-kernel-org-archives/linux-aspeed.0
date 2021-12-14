@@ -1,45 +1,33 @@
-From: Joel Stanley <joel@jms.id.au>
-Date: Mon, 13 Dec 2021 23:12:55 +0000
-Subject: [PATCH] i2c: aspeed: Remove unused includes
-In-Reply-To: <20211207141722.440213-1-thierry.reding@gmail.com>
-References: <20211207141722.440213-1-thierry.reding@gmail.com>
-Message-ID: <CACPK8XfKp1fDLjVPHb0bO-fi2JryOP5H6Jh1bmovt68Qne+D9Q@mail.gmail.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Tue, 14 Dec 2021 13:35:35 +1100
+Subject: [PATCH v3 2/4] usb: aspeed-vhub: fix remote wakeup failure in
+ iKVM use case
+In-Reply-To: <HK0PR06MB320271524E51BDFA922F070780709@HK0PR06MB3202.apcprd06.prod.outlook.com>
+References: <20211208100545.1441397-1-neal_liu@aspeedtech.com>
+ <20211208100545.1441397-3-neal_liu@aspeedtech.com>
+ <391323f136e49387797d43e89b6e42cd95d916c2.camel@kernel.crashing.org>
+ <HK0PR06MB320271524E51BDFA922F070780709@HK0PR06MB3202.apcprd06.prod.outlook.com>
+Message-ID: <0888eb83c8b2bd53d4c3e2355019052d0ab40db6.camel@kernel.crashing.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, 13 Dec 2021 at 22:22, Thierry Reding <thierry.reding@gmail.com> wrote:
->
-> From: Thierry Reding <treding@nvidia.com>
->
-> No symbols from the linux/irqchip/chained_irq.h and linux/irqdomain.h
-> headers are used in the driver, so they can be removed.
->
-> Signed-off-by: Thierry Reding <treding@nvidia.com>
+On Thu, 2021-12-09 at 02:37 +0000, Neal Liu wrote:
+> I'm confused. Signaling Wakeup when wakeup_en is set if it has any ep
+> activities is not exactly what you said?
+> 
+> wakeup_en is set only if host allows this device have wakeup
+> capability and bus being suspended.
+> 
+> Normal ep activities would not write the MMIO because wakeup_en is
+> not set.
 
-Agreed, it looks like these were added in the initial commit and never used.
+Hrm... I didn't think wakeup_en was limited to the bus being suspended,
+but maybe I misremember, it's been a while.
 
-Reviewed-by: Joel Stanley <joel@jms.id.au>
+Cheers,
+Ben.
 
-> ---
->  drivers/i2c/busses/i2c-aspeed.c | 2 --
->  1 file changed, 2 deletions(-)
->
-> diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
-> index 67e8b97c0c95..771e53d3d197 100644
-> --- a/drivers/i2c/busses/i2c-aspeed.c
-> +++ b/drivers/i2c/busses/i2c-aspeed.c
-> @@ -16,8 +16,6 @@
->  #include <linux/interrupt.h>
->  #include <linux/io.h>
->  #include <linux/irq.h>
-> -#include <linux/irqchip/chained_irq.h>
-> -#include <linux/irqdomain.h>
->  #include <linux/kernel.h>
->  #include <linux/module.h>
->  #include <linux/of_address.h>
-> --
-> 2.33.1
->
+
