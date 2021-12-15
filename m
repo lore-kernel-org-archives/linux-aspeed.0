@@ -1,36 +1,58 @@
-From: Patrick Williams <patrick@stwcx.xyz>
-Date: Wed, 15 Dec 2021 11:05:47 -0600
-Subject: [PATCH] ARM: dts: Add openbmc-flash-layout-64-alt.dtsi
-In-Reply-To: <20211210093443.2140557-1-yulei.sh@bytedance.com>
-References: <20211210093443.2140557-1-yulei.sh@bytedance.com>
-Message-ID: <Yboga8RUoYrXoPB1@heinlein>
+From: Julian Braha <julianbraha@gmail.com>
+Date: Wed, 15 Dec 2021 16:40:22 -0500
+Subject: [PATCH v1] pinctrl: aspeed: fix unmet dependencies on MFD_SYSCON for
+ PINCTRL_ASPEED
+Message-ID: <20211215214022.146391-1-julianbraha@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Dec 10, 2021 at 05:34:43PM +0800, Lei YU wrote:
-> Add openbmc-flash-layout-64-alt.dtsi to describe the partitions of the
-> secondary flash for OpenBMC's 64M static layout.
-> The layout is the same as openbmc-flash-layout-64.dtsi and the labels
-> are prepended with "alt-" for the partitions.
-> 
-> Signed-off-by: Lei YU <yulei.sh@bytedance.com>
-> ---
->  .../boot/dts/openbmc-flash-layout-64-alt.dtsi | 35 +++++++++++++++++++
->  1 file changed, 35 insertions(+)
->  create mode 100644 arch/arm/boot/dts/openbmc-flash-layout-64-alt.dtsi
-> 
+When PINCTRL_ASPEED_G* is selected,
+and MFD_SYSCON is not selected,
+Kbuild gives the following warnings:
 
-Reviewed-by: Patrick Williams <patrick@stwcx.xyz>
+WARNING: unmet direct dependencies detected for PINCTRL_ASPEED
+  Depends on [n]: PINCTRL [=y] && (ARCH_ASPEED [=n] || COMPILE_TEST [=y]) && OF [=y] && MFD_SYSCON [=n]
+  Selected by [y]:
+  - PINCTRL_ASPEED_G4 [=y] && PINCTRL [=y] && (MACH_ASPEED_G4 [=n] || COMPILE_TEST [=y]) && OF [=y]
 
+WARNING: unmet direct dependencies detected for PINCTRL_ASPEED
+  Depends on [n]: PINCTRL [=y] && (ARCH_ASPEED [=n] || COMPILE_TEST [=y]) && OF [=y] && MFD_S>
+  Selected by [y]:
+  - PINCTRL_ASPEED_G5 [=y] && PINCTRL [=y] && (MACH_ASPEED_G5 [=n] || COMPILE_TEST [=y]) && O>
+
+WARNING: unmet direct dependencies detected for PINCTRL_ASPEED
+  Depends on [n]: PINCTRL [=y] && (ARCH_ASPEED [=n] || COMPILE_TEST [=y]) && OF [=y] && MFD_S>
+  Selected by [y]:
+  - PINCTRL_ASPEED_G6 [=y] && PINCTRL [=y] && (MACH_ASPEED_G6 [=n] || COMPILE_TEST [=y]) && O>
+
+This is because MACH_ASPEED_G* depend on (ARCH_ASPEED || COMPILE_TEST).
+ARCH_ASPEED enables the MFD_SYSCON dependency, but COMPILE_TEST doesn't.
+
+These unmet dependency bugs were detected by Kismet,
+a static analysis tool for Kconfig. Please advise
+if this is not the appropriate solution.
+
+Signed-off-by: Julian Braha <julianbraha@gmail.com>
+---
+ drivers/pinctrl/aspeed/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/pinctrl/aspeed/Kconfig b/drivers/pinctrl/aspeed/Kconfig
+index de8b185c4fee..1a4e5b9ed471 100644
+--- a/drivers/pinctrl/aspeed/Kconfig
++++ b/drivers/pinctrl/aspeed/Kconfig
+@@ -2,7 +2,7 @@
+ config PINCTRL_ASPEED
+ 	bool
+ 	depends on (ARCH_ASPEED || COMPILE_TEST) && OF
+-	depends on MFD_SYSCON
++	select MFD_SYSCON
+ 	select PINMUX
+ 	select PINCONF
+ 	select GENERIC_PINCONF
 -- 
-Patrick Williams
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 833 bytes
-Desc: not available
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20211215/82a4e8d2/attachment.sig>
+2.32.0
+
