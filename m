@@ -1,89 +1,114 @@
 From: Jammy Huang <jammy_huang@aspeedtech.com>
-Date: Mon, 20 Dec 2021 10:01:40 +0800
-Subject: [PATCH v7 1/4] media: v4l: Add definition for the Aspeed JPEG format
+Date: Mon, 20 Dec 2021 10:01:43 +0800
+Subject: [PATCH v7 4/4] media: aspeed: Extend debug message
 In-Reply-To: <20211220020143.1216-1-jammy_huang@aspeedtech.com>
 References: <20211220020143.1216-1-jammy_huang@aspeedtech.com>
-Message-ID: <20211220020143.1216-2-jammy_huang@aspeedtech.com>
+Message-ID: <20211220020143.1216-5-jammy_huang@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This introduces support for the Aspeed JPEG format, where the new frame
-can refer to previous frame to reduce the amount of compressed data. The
-concept is similar to I/P frame of video compression. It will compare the
-new frame with previous one to decide which macroblock's data is
-changed, and only the changed macroblocks will be compressed.
+updated as below:
 
-This Aspeed JPEG format is used by the video engine on Aspeed platforms,
-which is generally adapted for remote KVM.
+Capture:
+  Mode                : Direct fetch
+  VGA bpp mode        : 32
+  Signal              : lock
+  Width               : 1920
+  Height              : 1080
+  FRC                 : 0
+
+Compression:
+  Format              : JPEG
+  Subsampling         : 444
+  Quality             : 4
+
+Performance:
+  Frame#              : 4
+  Frame Duration(ms)  :
+    Now               : 22
+    Min               : 21
+    Max               : 22
+  FPS                 : 45
 
 Signed-off-by: Jammy Huang <jammy_huang@aspeedtech.com>
 ---
 v7:
-  - Add more information for aspeed-jpeg
+  - update debugfs message. Aspeed-jpeg's compression parameters only shown
+    if it's aspeed jpeg now
 v6:
-  - Update description for new format, aspeed-jpeg, in Documentation.
+  - no update
 v5:
   - no update
 v4:
-  - new
+  - update debugfs log
+v3:
+  - no update
+v2:
+  - update commit message
 ---
- Documentation/media/uapi/v4l/pixfmt-reserved.rst | 14 ++++++++++++++
- drivers/media/v4l2-core/v4l2-ioctl.c             |  1 +
- include/uapi/linux/videodev2.h                   |  1 +
- 3 files changed, 16 insertions(+)
+ drivers/media/platform/aspeed-video.c | 35 +++++++++++++++++++++++++++
+ 1 file changed, 35 insertions(+)
 
-diff --git a/Documentation/media/uapi/v4l/pixfmt-reserved.rst b/Documentation/media/uapi/v4l/pixfmt-reserved.rst
-index b2cd155e691b..7677c321bc6a 100644
---- a/Documentation/media/uapi/v4l/pixfmt-reserved.rst
-+++ b/Documentation/media/uapi/v4l/pixfmt-reserved.rst
-@@ -264,6 +264,20 @@ please make a proposal on the linux-media mailing list.
- 	of tiles, resulting in 32-aligned resolutions for the luminance plane
- 	and 16-aligned resolutions for the chrominance plane (with 2x2
- 	subsampling).
-+    * .. _V4L2-PIX-FMT-AJPG:
+diff --git a/drivers/media/platform/aspeed-video.c b/drivers/media/platform/aspeed-video.c
+index c0cfcf98659d..b388bc56ce81 100644
+--- a/drivers/media/platform/aspeed-video.c
++++ b/drivers/media/platform/aspeed-video.c
+@@ -1835,10 +1835,29 @@ static const struct vb2_ops aspeed_video_vb2_ops = {
+ static int aspeed_video_debugfs_show(struct seq_file *s, void *data)
+ {
+ 	struct aspeed_video *v = s->private;
++	u32 val08;
+ 
+ 	seq_puts(s, "\n");
+ 
+ 	seq_puts(s, "Capture:\n");
++	val08 = aspeed_video_read(v, VE_CTRL);
++	if (FIELD_GET(VE_CTRL_DIRECT_FETCH, val08)) {
++		seq_printf(s, "  %-20s:\tDirect fetch\n", "Mode");
++		seq_printf(s, "  %-20s:\t%s\n", "VGA bpp mode",
++			   FIELD_GET(VE_CTRL_INT_DE, val08) ? "16" : "32");
++	} else {
++		seq_printf(s, "  %-20s:\tSync\n", "Mode");
++		seq_printf(s, "  %-20s:\t%s\n", "Video source",
++			   FIELD_GET(VE_CTRL_SOURCE, val08) ?
++			   "external" : "internal");
++		seq_printf(s, "  %-20s:\t%s\n", "DE source",
++			   FIELD_GET(VE_CTRL_INT_DE, val08) ?
++			   "internal" : "external");
++		seq_printf(s, "  %-20s:\t%s\n", "Cursor overlay",
++			   FIELD_GET(VE_CTRL_AUTO_OR_CURSOR, val08) ?
++			   "Without" : "With");
++	}
 +
-+      - ``V4L2_PIX_FMT_AJPG``
-+      - 'AJPG'
-+      - ASPEED JPEG format used by the aspeed-video driver on Aspeed platforms,
-+        which is generally adapted for remote KVM.
-+        On each frame compression, I will compare the new frame with previous
-+        one to decide which macroblock's data is changed, and only the changed
-+        macroblocks will be compressed.
+ 	seq_printf(s, "  %-20s:\t%s\n", "Signal",
+ 		   v->v4l2_input_status ? "Unlock" : "Lock");
+ 	seq_printf(s, "  %-20s:\t%d\n", "Width", v->pix_fmt.width);
+@@ -1847,6 +1866,22 @@ static int aspeed_video_debugfs_show(struct seq_file *s, void *data)
+ 
+ 	seq_puts(s, "\n");
+ 
++	seq_puts(s, "Compression:\n");
++	seq_printf(s, "  %-20s:\t%s\n", "Format", format_str[v->format]);
++	seq_printf(s, "  %-20s:\t%s\n", "Subsampling",
++		   v->yuv420 ? "420" : "444");
++	seq_printf(s, "  %-20s:\t%d\n", "Quality", v->jpeg_quality);
++	if (v->format == VIDEO_FMT_ASPEED) {
++		seq_printf(s, "  %-20s:\t%s\n", "HQ Mode",
++			   v->hq_mode ? "on" : "off");
++		seq_printf(s, "  %-20s:\t%d\n", "HQ Quality",
++			   v->hq_mode ? v->jpeg_hq_quality : 0);
++		seq_printf(s, "  %-20s:\t%s\n", "Coding Scheme",
++			   compress_scheme_str[v->compression_scheme]);
++	}
 +
-+        The implementation is based on AST2600 A3 datasheet, revision 0.9, which
-+        is not publicly available. Or you can reference Video stream data format
-+        ? ASPEED mode compression of SDK_User_Guide which available on
-+        AspeedTech-BMC/openbmc/releases.
- 
- .. tabularcolumns:: |p{6.6cm}|p{2.2cm}|p{8.7cm}|
- 
-diff --git a/drivers/media/v4l2-core/v4l2-ioctl.c b/drivers/media/v4l2-core/v4l2-ioctl.c
-index 24db33f803c0..00dde01d2f97 100644
---- a/drivers/media/v4l2-core/v4l2-ioctl.c
-+++ b/drivers/media/v4l2-core/v4l2-ioctl.c
-@@ -1378,6 +1378,7 @@ static void v4l_fill_fmtdesc(struct v4l2_fmtdesc *fmt)
- 		case V4L2_PIX_FMT_S5C_UYVY_JPG:	descr = "S5C73MX interleaved UYVY/JPEG"; break;
- 		case V4L2_PIX_FMT_MT21C:	descr = "Mediatek Compressed Format"; break;
- 		case V4L2_PIX_FMT_SUNXI_TILED_NV12: descr = "Sunxi Tiled NV12 Format"; break;
-+		case V4L2_PIX_FMT_AJPG:		descr = "Aspeed JPEG"; break;
- 		default:
- 			if (fmt->description[0])
- 				return;
-diff --git a/include/uapi/linux/videodev2.h b/include/uapi/linux/videodev2.h
-index 3210b3c82a4a..994eb6155ea9 100644
---- a/include/uapi/linux/videodev2.h
-+++ b/include/uapi/linux/videodev2.h
-@@ -726,6 +726,7 @@ struct v4l2_pix_format {
- #define V4L2_PIX_FMT_INZI     v4l2_fourcc('I', 'N', 'Z', 'I') /* Intel Planar Greyscale 10-bit and Depth 16-bit */
- #define V4L2_PIX_FMT_SUNXI_TILED_NV12 v4l2_fourcc('S', 'T', '1', '2') /* Sunxi Tiled NV12 Format */
- #define V4L2_PIX_FMT_CNF4     v4l2_fourcc('C', 'N', 'F', '4') /* Intel 4-bit packed depth confidence information */
-+#define V4L2_PIX_FMT_AJPG     v4l2_fourcc('A', 'J', 'P', 'G') /* Aspeed JPEG */
- 
- /* 10bit raw bayer packed, 32 bytes for every 25 pixels, last LSB 6 bits unused */
- #define V4L2_PIX_FMT_IPU3_SBGGR10	v4l2_fourcc('i', 'p', '3', 'b') /* IPU3 packed 10-bit BGGR bayer */
++	seq_puts(s, "\n");
++
+ 	seq_puts(s, "Performance:\n");
+ 	seq_printf(s, "  %-20s:\t%d\n", "Frame#", v->sequence);
+ 	seq_printf(s, "  %-20s:\n", "Frame Duration(ms)");
 -- 
 2.25.1
 
