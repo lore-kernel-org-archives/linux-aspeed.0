@@ -1,72 +1,50 @@
 From: Jammy Huang <jammy_huang@aspeedtech.com>
-Date: Fri, 17 Dec 2021 17:54:00 +0800
-Subject: [PATCH 1/4] media: aspeed: Correct value for h-total-pixels
-In-Reply-To: <20211217095403.2618-1-jammy_huang@aspeedtech.com>
-References: <20211217095403.2618-1-jammy_huang@aspeedtech.com>
-Message-ID: <20211217095403.2618-2-jammy_huang@aspeedtech.com>
+Date: Mon, 20 Dec 2021 10:01:41 +0800
+Subject: [PATCH v7 2/4] media: v4l2-ctrls: Reserve controls for ASPEED
+In-Reply-To: <20211220020143.1216-1-jammy_huang@aspeedtech.com>
+References: <20211220020143.1216-1-jammy_huang@aspeedtech.com>
+Message-ID: <20211220020143.1216-3-jammy_huang@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Previous reg-field, 0x98[11:0], stands for the period of the detected
-hsync signal.
-Use the correct reg, 0xa0, to get h-total in pixels.
+Reserve controls for ASPEED video family. Aspeed video engine contains a
+few features which improve video quality, reduce amount of compressed
+data, and etc. Hence, 16 controls are reserved for these aspeed
+proprietary features.
 
 Signed-off-by: Jammy Huang <jammy_huang@aspeedtech.com>
 ---
- drivers/media/platform/aspeed-video.c | 9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
+v7:
+  - no update
+v6:
+  - no update
+v5:
+  - no update
+v4:
+  - new
+---
+ include/uapi/linux/v4l2-controls.h | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/drivers/media/platform/aspeed-video.c b/drivers/media/platform/aspeed-video.c
-index b388bc56ce81..d5f77b205175 100644
---- a/drivers/media/platform/aspeed-video.c
-+++ b/drivers/media/platform/aspeed-video.c
-@@ -166,7 +166,7 @@
- #define  VE_SRC_TB_EDGE_DET_BOT		GENMASK(28, VE_SRC_TB_EDGE_DET_BOT_SHF)
+diff --git a/include/uapi/linux/v4l2-controls.h b/include/uapi/linux/v4l2-controls.h
+index a2669b79b294..e7c425a6fa9f 100644
+--- a/include/uapi/linux/v4l2-controls.h
++++ b/include/uapi/linux/v4l2-controls.h
+@@ -192,6 +192,11 @@ enum v4l2_colorfx {
+  * We reserve 16 controls for this driver. */
+ #define V4L2_CID_USER_IMX_BASE			(V4L2_CID_USER_BASE + 0x10b0)
  
- #define VE_MODE_DETECT_STATUS		0x098
--#define  VE_MODE_DETECT_H_PIXELS	GENMASK(11, 0)
-+#define  VE_MODE_DETECT_H_PERIOD	GENMASK(11, 0)
- #define  VE_MODE_DETECT_V_LINES_SHF	16
- #define  VE_MODE_DETECT_V_LINES		GENMASK(27, VE_MODE_DETECT_V_LINES_SHF)
- #define  VE_MODE_DETECT_STATUS_VSYNC	BIT(28)
-@@ -177,6 +177,8 @@
- #define  VE_SYNC_STATUS_VSYNC_SHF	16
- #define  VE_SYNC_STATUS_VSYNC		GENMASK(27, VE_SYNC_STATUS_VSYNC_SHF)
- 
-+#define VE_H_TOTAL_PIXELS		0x0A0
++/* The base for the aspeed driver controls.
++ * We reserve 16 controls for this driver.
++ */
++#define V4L2_CID_USER_ASPEED_BASE		(V4L2_CID_USER_BASE + 0x10c0)
 +
- #define VE_INTERRUPT_CTRL		0x304
- #define VE_INTERRUPT_STATUS		0x308
- #define  VE_INTERRUPT_MODE_DETECT_WD	BIT(0)
-@@ -938,6 +940,7 @@ static void aspeed_video_get_resolution(struct aspeed_video *video)
- 	u32 src_lr_edge;
- 	u32 src_tb_edge;
- 	u32 sync;
-+	u32 htotal;
- 	struct v4l2_bt_timings *det = &video->detected_timings;
- 
- 	det->width = MIN_WIDTH;
-@@ -983,6 +986,7 @@ static void aspeed_video_get_resolution(struct aspeed_video *video)
- 		src_tb_edge = aspeed_video_read(video, VE_SRC_TB_EDGE_DET);
- 		mds = aspeed_video_read(video, VE_MODE_DETECT_STATUS);
- 		sync = aspeed_video_read(video, VE_SYNC_STATUS);
-+		htotal = aspeed_video_read(video, VE_H_TOTAL_PIXELS);
- 
- 		video->frame_bottom = (src_tb_edge & VE_SRC_TB_EDGE_DET_BOT) >>
- 			VE_SRC_TB_EDGE_DET_BOT_SHF;
-@@ -999,8 +1003,7 @@ static void aspeed_video_get_resolution(struct aspeed_video *video)
- 			VE_SRC_LR_EDGE_DET_RT_SHF;
- 		video->frame_left = src_lr_edge & VE_SRC_LR_EDGE_DET_LEFT;
- 		det->hfrontporch = video->frame_left;
--		det->hbackporch = (mds & VE_MODE_DETECT_H_PIXELS) -
--			video->frame_right;
-+		det->hbackporch = htotal - video->frame_right;
- 		det->hsync = sync & VE_SYNC_STATUS_HSYNC;
- 		if (video->frame_left > video->frame_right)
- 			continue;
+ /* MPEG-class control IDs */
+ /* The MPEG controls are applicable to all codec controls
+  * and the 'MPEG' part of the define is historical */
 -- 
 2.25.1
 
