@@ -1,79 +1,111 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Wed, 22 Dec 2021 00:54:09 +0000
-Subject: [PATCH 1/4] media: aspeed: Correct value for h-total-pixels
-In-Reply-To: <20211217095403.2618-2-jammy_huang@aspeedtech.com>
+Date: Wed, 22 Dec 2021 00:59:58 +0000
+Subject: [PATCH 2/4] media: aspeed: Use FIELD_GET to improve readability
+In-Reply-To: <20211217095403.2618-3-jammy_huang@aspeedtech.com>
 References: <20211217095403.2618-1-jammy_huang@aspeedtech.com>
- <20211217095403.2618-2-jammy_huang@aspeedtech.com>
-Message-ID: <CACPK8XfTme51V3uB=7T9=1pzQVZnamP+7nL9h1jOiqiD66=MNw@mail.gmail.com>
+ <20211217095403.2618-3-jammy_huang@aspeedtech.com>
+Message-ID: <CACPK8XcmcP=vu8pWVKdiQVokPyh39Tuy0mfmgPSzb0wb0tcJuA@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, 17 Dec 2021 at 09:54, Jammy Huang <jammy_huang@aspeedtech.com> wrote:
+On Fri, 17 Dec 2021 at 09:53, Jammy Huang <jammy_huang@aspeedtech.com> wrote:
 >
-> Previous reg-field, 0x98[11:0], stands for the period of the detected
-> hsync signal.
-> Use the correct reg, 0xa0, to get h-total in pixels.
+> Use the bitfield macro FIELD_GET, and GENMASK to do the shift and mask in
+> one go for reg values.
 >
 > Signed-off-by: Jammy Huang <jammy_huang@aspeedtech.com>
-
-Fixes: d2b4387f3bdf ("media: platform: Add Aspeed Video Engine driver")
-Reviewed-by: Joel Stanley <joel@jms.id.au>
-
 > ---
->  drivers/media/platform/aspeed-video.c | 9 ++++++---
->  1 file changed, 6 insertions(+), 3 deletions(-)
+>  drivers/media/platform/aspeed-video.c | 35 ++++++++++++---------------
+>  1 file changed, 16 insertions(+), 19 deletions(-)
 >
 > diff --git a/drivers/media/platform/aspeed-video.c b/drivers/media/platform/aspeed-video.c
-> index b388bc56ce81..d5f77b205175 100644
+> index d5f77b205175..581a4261f9b7 100644
 > --- a/drivers/media/platform/aspeed-video.c
 > +++ b/drivers/media/platform/aspeed-video.c
-> @@ -166,7 +166,7 @@
->  #define  VE_SRC_TB_EDGE_DET_BOT                GENMASK(28, VE_SRC_TB_EDGE_DET_BOT_SHF)
+> @@ -156,26 +156,22 @@
+>  #define  VE_SRC_LR_EDGE_DET_NO_H       BIT(13)
+>  #define  VE_SRC_LR_EDGE_DET_NO_DISP    BIT(14)
+>  #define  VE_SRC_LR_EDGE_DET_NO_CLK     BIT(15)
+> -#define  VE_SRC_LR_EDGE_DET_RT_SHF     16
+> -#define  VE_SRC_LR_EDGE_DET_RT         GENMASK(27, VE_SRC_LR_EDGE_DET_RT_SHF)
+> +#define  VE_SRC_LR_EDGE_DET_RT         GENMASK(27, 16)
+>  #define  VE_SRC_LR_EDGE_DET_INTERLACE  BIT(31)
+>
+>  #define VE_SRC_TB_EDGE_DET             0x094
+>  #define  VE_SRC_TB_EDGE_DET_TOP                GENMASK(12, 0)
+> -#define  VE_SRC_TB_EDGE_DET_BOT_SHF    16
+> -#define  VE_SRC_TB_EDGE_DET_BOT                GENMASK(28, VE_SRC_TB_EDGE_DET_BOT_SHF)
+> +#define  VE_SRC_TB_EDGE_DET_BOT                GENMASK(28, 16)
 >
 >  #define VE_MODE_DETECT_STATUS          0x098
-> -#define  VE_MODE_DETECT_H_PIXELS       GENMASK(11, 0)
-> +#define  VE_MODE_DETECT_H_PERIOD       GENMASK(11, 0)
->  #define  VE_MODE_DETECT_V_LINES_SHF    16
->  #define  VE_MODE_DETECT_V_LINES                GENMASK(27, VE_MODE_DETECT_V_LINES_SHF)
+>  #define  VE_MODE_DETECT_H_PERIOD       GENMASK(11, 0)
+> -#define  VE_MODE_DETECT_V_LINES_SHF    16
+> -#define  VE_MODE_DETECT_V_LINES                GENMASK(27, VE_MODE_DETECT_V_LINES_SHF)
+> +#define  VE_MODE_DETECT_V_LINES                GENMASK(27, 16)
 >  #define  VE_MODE_DETECT_STATUS_VSYNC   BIT(28)
-> @@ -177,6 +177,8 @@
->  #define  VE_SYNC_STATUS_VSYNC_SHF      16
->  #define  VE_SYNC_STATUS_VSYNC          GENMASK(27, VE_SYNC_STATUS_VSYNC_SHF)
+>  #define  VE_MODE_DETECT_STATUS_HSYNC   BIT(29)
 >
-> +#define VE_H_TOTAL_PIXELS              0x0A0
-> +
->  #define VE_INTERRUPT_CTRL              0x304
->  #define VE_INTERRUPT_STATUS            0x308
->  #define  VE_INTERRUPT_MODE_DETECT_WD   BIT(0)
-> @@ -938,6 +940,7 @@ static void aspeed_video_get_resolution(struct aspeed_video *video)
->         u32 src_lr_edge;
->         u32 src_tb_edge;
->         u32 sync;
-> +       u32 htotal;
->         struct v4l2_bt_timings *det = &video->detected_timings;
+>  #define VE_SYNC_STATUS                 0x09c
+>  #define  VE_SYNC_STATUS_HSYNC          GENMASK(11, 0)
+> -#define  VE_SYNC_STATUS_VSYNC_SHF      16
+> -#define  VE_SYNC_STATUS_VSYNC          GENMASK(27, VE_SYNC_STATUS_VSYNC_SHF)
+> +#define  VE_SYNC_STATUS_VSYNC          GENMASK(27, 16)
 >
->         det->width = MIN_WIDTH;
-> @@ -983,6 +986,7 @@ static void aspeed_video_get_resolution(struct aspeed_video *video)
->                 src_tb_edge = aspeed_video_read(video, VE_SRC_TB_EDGE_DET);
->                 mds = aspeed_video_read(video, VE_MODE_DETECT_STATUS);
+>  #define VE_H_TOTAL_PIXELS              0x0A0
+>
+> @@ -988,23 +984,24 @@ static void aspeed_video_get_resolution(struct aspeed_video *video)
 >                 sync = aspeed_video_read(video, VE_SYNC_STATUS);
-> +               htotal = aspeed_video_read(video, VE_H_TOTAL_PIXELS);
+>                 htotal = aspeed_video_read(video, VE_H_TOTAL_PIXELS);
 >
->                 video->frame_bottom = (src_tb_edge & VE_SRC_TB_EDGE_DET_BOT) >>
->                         VE_SRC_TB_EDGE_DET_BOT_SHF;
-> @@ -999,8 +1003,7 @@ static void aspeed_video_get_resolution(struct aspeed_video *video)
->                         VE_SRC_LR_EDGE_DET_RT_SHF;
->                 video->frame_left = src_lr_edge & VE_SRC_LR_EDGE_DET_LEFT;
+> -               video->frame_bottom = (src_tb_edge & VE_SRC_TB_EDGE_DET_BOT) >>
+> -                       VE_SRC_TB_EDGE_DET_BOT_SHF;
+> -               video->frame_top = src_tb_edge & VE_SRC_TB_EDGE_DET_TOP;
+> +               video->frame_bottom = FIELD_GET(VE_SRC_TB_EDGE_DET_BOT,
+> +                                               src_tb_edge);
+> +               video->frame_top = FIELD_GET(VE_SRC_TB_EDGE_DET_TOP,
+> +                                            src_tb_edge);
+>                 det->vfrontporch = video->frame_top;
+> -               det->vbackporch = ((mds & VE_MODE_DETECT_V_LINES) >>
+> -                       VE_MODE_DETECT_V_LINES_SHF) - video->frame_bottom;
+> -               det->vsync = (sync & VE_SYNC_STATUS_VSYNC) >>
+> -                       VE_SYNC_STATUS_VSYNC_SHF;
+> +               det->vbackporch = FIELD_GET(VE_MODE_DETECT_V_LINES, mds) -
+> +                       video->frame_bottom;
+> +               det->vsync = FIELD_GET(VE_SYNC_STATUS_VSYNC, sync);
+>                 if (video->frame_top > video->frame_bottom)
+>                         continue;
+>
+> -               video->frame_right = (src_lr_edge & VE_SRC_LR_EDGE_DET_RT) >>
+> -                       VE_SRC_LR_EDGE_DET_RT_SHF;
+> -               video->frame_left = src_lr_edge & VE_SRC_LR_EDGE_DET_LEFT;
+> +               video->frame_right = FIELD_GET(VE_SRC_LR_EDGE_DET_RT,
+> +                                              src_lr_edge);
+> +               video->frame_left = FIELD_GET(VE_SRC_LR_EDGE_DET_LEFT,
+> +                                             src_lr_edge);
+
+I suggest putting these on one line to further improve readability:
+
+               video->frame_right = FIELD_GET(VE_SRC_LR_EDGE_DET_RT,
+src_lr_edge);
+               video->frame_left = FIELD_GET(VE_SRC_LR_EDGE_DET_LEFT,
+src_lr_edge);
+
+The same for the other lines you've changed above.
+
+And then add:
+
+Reviewed-by: Joel Stanley <joel@jms.id.au>
+
 >                 det->hfrontporch = video->frame_left;
-> -               det->hbackporch = (mds & VE_MODE_DETECT_H_PIXELS) -
-> -                       video->frame_right;
-> +               det->hbackporch = htotal - video->frame_right;
->                 det->hsync = sync & VE_SYNC_STATUS_HSYNC;
+>                 det->hbackporch = htotal - video->frame_right;
+> -               det->hsync = sync & VE_SYNC_STATUS_HSYNC;
+> +               det->hsync = FIELD_GET(VE_SYNC_STATUS_HSYNC, sync);
 >                 if (video->frame_left > video->frame_right)
 >                         continue;
+>
 > --
 > 2.25.1
 >
