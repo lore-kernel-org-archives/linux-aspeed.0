@@ -1,40 +1,79 @@
-From: Patrick Williams <patrick@stwcx.xyz>
-Date: Tue, 21 Dec 2021 09:43:45 -0600
-Subject: [PATCH v8] ARM: dts: aspeed: Adding Facebook Bletchley BMC
-In-Reply-To: <CACPK8XddhFn3PreJM3D=djkREgqGD7yZhS7YoqxxXsNfhZpLhQ@mail.gmail.com>
-References: <20211207094923.422422-1-howard.chiu@quantatw.com>
- <CACPK8XddhFn3PreJM3D=djkREgqGD7yZhS7YoqxxXsNfhZpLhQ@mail.gmail.com>
-Message-ID: <YcH2MSByPLAvw5mI@heinlein>
+From: Joel Stanley <joel@jms.id.au>
+Date: Wed, 22 Dec 2021 00:54:09 +0000
+Subject: [PATCH 1/4] media: aspeed: Correct value for h-total-pixels
+In-Reply-To: <20211217095403.2618-2-jammy_huang@aspeedtech.com>
+References: <20211217095403.2618-1-jammy_huang@aspeedtech.com>
+ <20211217095403.2618-2-jammy_huang@aspeedtech.com>
+Message-ID: <CACPK8XfTme51V3uB=7T9=1pzQVZnamP+7nL9h1jOiqiD66=MNw@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Dec 21, 2021 at 04:37:55AM +0000, Joel Stanley wrote:
-> Hi Patrick,
-> 
-> On Tue, 7 Dec 2021 at 09:52, Howard Chiu <howard10703049@gmail.com> wrote:
-> >
-> > Initial introduction of Facebook Bletchley equipped with
-> > Aspeed 2600 BMC SoC.
-> >
-> > Signed-off-by: Howard Chiu <howard.chiu@quantatw.com>
-> 
-> Are you ok for this one to go in for v5.17?
+On Fri, 17 Dec 2021 at 09:54, Jammy Huang <jammy_huang@aspeedtech.com> wrote:
+>
+> Previous reg-field, 0x98[11:0], stands for the period of the detected
+> hsync signal.
+> Use the correct reg, 0xa0, to get h-total in pixels.
+>
+> Signed-off-by: Jammy Huang <jammy_huang@aspeedtech.com>
 
-Yes.
+Fixes: d2b4387f3bdf ("media: platform: Add Aspeed Video Engine driver")
+Reviewed-by: Joel Stanley <joel@jms.id.au>
 
-Reviewed-by: Patrick Williams <patrick@stwcx.xyz>
-
-Would also appreciate if you could apply to your Aspeed tree for OpenBMC.
-
--- 
-Patrick Williams
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 833 bytes
-Desc: not available
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20211221/93f1064a/attachment.sig>
+> ---
+>  drivers/media/platform/aspeed-video.c | 9 ++++++---
+>  1 file changed, 6 insertions(+), 3 deletions(-)
+>
+> diff --git a/drivers/media/platform/aspeed-video.c b/drivers/media/platform/aspeed-video.c
+> index b388bc56ce81..d5f77b205175 100644
+> --- a/drivers/media/platform/aspeed-video.c
+> +++ b/drivers/media/platform/aspeed-video.c
+> @@ -166,7 +166,7 @@
+>  #define  VE_SRC_TB_EDGE_DET_BOT                GENMASK(28, VE_SRC_TB_EDGE_DET_BOT_SHF)
+>
+>  #define VE_MODE_DETECT_STATUS          0x098
+> -#define  VE_MODE_DETECT_H_PIXELS       GENMASK(11, 0)
+> +#define  VE_MODE_DETECT_H_PERIOD       GENMASK(11, 0)
+>  #define  VE_MODE_DETECT_V_LINES_SHF    16
+>  #define  VE_MODE_DETECT_V_LINES                GENMASK(27, VE_MODE_DETECT_V_LINES_SHF)
+>  #define  VE_MODE_DETECT_STATUS_VSYNC   BIT(28)
+> @@ -177,6 +177,8 @@
+>  #define  VE_SYNC_STATUS_VSYNC_SHF      16
+>  #define  VE_SYNC_STATUS_VSYNC          GENMASK(27, VE_SYNC_STATUS_VSYNC_SHF)
+>
+> +#define VE_H_TOTAL_PIXELS              0x0A0
+> +
+>  #define VE_INTERRUPT_CTRL              0x304
+>  #define VE_INTERRUPT_STATUS            0x308
+>  #define  VE_INTERRUPT_MODE_DETECT_WD   BIT(0)
+> @@ -938,6 +940,7 @@ static void aspeed_video_get_resolution(struct aspeed_video *video)
+>         u32 src_lr_edge;
+>         u32 src_tb_edge;
+>         u32 sync;
+> +       u32 htotal;
+>         struct v4l2_bt_timings *det = &video->detected_timings;
+>
+>         det->width = MIN_WIDTH;
+> @@ -983,6 +986,7 @@ static void aspeed_video_get_resolution(struct aspeed_video *video)
+>                 src_tb_edge = aspeed_video_read(video, VE_SRC_TB_EDGE_DET);
+>                 mds = aspeed_video_read(video, VE_MODE_DETECT_STATUS);
+>                 sync = aspeed_video_read(video, VE_SYNC_STATUS);
+> +               htotal = aspeed_video_read(video, VE_H_TOTAL_PIXELS);
+>
+>                 video->frame_bottom = (src_tb_edge & VE_SRC_TB_EDGE_DET_BOT) >>
+>                         VE_SRC_TB_EDGE_DET_BOT_SHF;
+> @@ -999,8 +1003,7 @@ static void aspeed_video_get_resolution(struct aspeed_video *video)
+>                         VE_SRC_LR_EDGE_DET_RT_SHF;
+>                 video->frame_left = src_lr_edge & VE_SRC_LR_EDGE_DET_LEFT;
+>                 det->hfrontporch = video->frame_left;
+> -               det->hbackporch = (mds & VE_MODE_DETECT_H_PIXELS) -
+> -                       video->frame_right;
+> +               det->hbackporch = htotal - video->frame_right;
+>                 det->hsync = sync & VE_SYNC_STATUS_HSYNC;
+>                 if (video->frame_left > video->frame_right)
+>                         continue;
+> --
+> 2.25.1
+>
