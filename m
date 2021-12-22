@@ -1,127 +1,66 @@
 From: Jammy Huang <jammy_huang@aspeedtech.com>
-Date: Wed, 22 Dec 2021 16:21:38 +0800
-Subject: [PATCH v2 3/4] media: aspeed: Correct values for detected timing
+Date: Wed, 22 Dec 2021 16:21:39 +0800
+Subject: [PATCH v2 4/4] media: aspeed: Fix timing polarity incorrect
 In-Reply-To: <20211222082139.26933-1-jammy_huang@aspeedtech.com>
 References: <20211222082139.26933-1-jammy_huang@aspeedtech.com>
-Message-ID: <20211222082139.26933-4-jammy_huang@aspeedtech.com>
+Message-ID: <20211222082139.26933-5-jammy_huang@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Correct timing's fp/sync/bp value based on the information below.
-It should be noticed that the calculation formula should be changed
-per sync polarity.
-
-The sequence of signal: sync - backporch - video data - frontporch
-
-The following registers start counting from sync's rising edge:
-1. VR090: frame edge's left and right
-2. VR094: frame edge's top and bottom
-3. VR09C: counting from sync's rising edge to falling edge
-
-[Vertical timing]
-            +--+     +-------------------+     +--+
-            |  |     |    v i d e o      |     |  |
-         +--+  +-----+                   +-----+  +---+
-
-       vsync+--+
-   frame_top+--------+
-frame_bottom+----------------------------+
-
-                  +-------------------+
-                  |    v i d e o      |
-      +--+  +-----+                   +-----+  +---+
-         |  |                               |  |
-         +--+                               +--+
-       vsync+-------------------------------+
-   frame_top+-----+
-frame_bottom+-------------------------+
-
-[Horizontal timing]
-            +--+     +-------------------+     +--+
-            |  |     |    v i d e o      |     |  |
-         +--+  +-----+                   +-----+  +---+
-
-       hsync+--+
-  frame_left+--------+
- frame_right+----------------------------+
-
-                  +-------------------+
-                  |    v i d e o      |
-      +--+  +-----+                   +-----+  +---+
-         |  |                               |  |
-         +--+                               +--+
-       hsync+-------------------------------+
-  frame_left+-----+
- frame_right+-------------------------+
+This is a workaround for sync polarity unstable.
+Sync value get by VR09C counts from sync's rising edge, which means
+sync's polarity is negative if sync value is bigger than total/2.
 
 Signed-off-by: Jammy Huang <jammy_huang@aspeedtech.com>
 ---
  v2:
-  - Code refined per Joel's suggestion
-  - Update commit message to have name matching variable
+  - Use 'total/2' rather than 'total<<1'
+  - Update comment
 ---
- drivers/media/platform/aspeed-video.c | 30 ++++++++++++++++++++-------
- 1 file changed, 22 insertions(+), 8 deletions(-)
+ drivers/media/platform/aspeed-video.c | 20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)
 
 diff --git a/drivers/media/platform/aspeed-video.c b/drivers/media/platform/aspeed-video.c
-index c241038ee27c..7c50567f5ab0 100644
+index 7c50567f5ab0..c3e3343d91e1 100644
 --- a/drivers/media/platform/aspeed-video.c
 +++ b/drivers/media/platform/aspeed-video.c
-@@ -936,7 +936,7 @@ static void aspeed_video_get_resolution(struct aspeed_video *video)
- 	u32 src_lr_edge;
- 	u32 src_tb_edge;
- 	u32 sync;
--	u32 htotal;
-+	u32 htotal, vtotal, vsync, hsync;
- 	struct v4l2_bt_timings *det = &video->detected_timings;
- 
- 	det->width = MIN_WIDTH;
-@@ -983,21 +983,35 @@ static void aspeed_video_get_resolution(struct aspeed_video *video)
- 		mds = aspeed_video_read(video, VE_MODE_DETECT_STATUS);
- 		sync = aspeed_video_read(video, VE_SYNC_STATUS);
- 		htotal = aspeed_video_read(video, VE_H_TOTAL_PIXELS);
-+		vtotal = FIELD_GET(VE_MODE_DETECT_V_LINES, mds);
-+		vsync = FIELD_GET(VE_SYNC_STATUS_VSYNC, sync);
-+		hsync = FIELD_GET(VE_SYNC_STATUS_HSYNC, sync);
+@@ -989,6 +989,16 @@ static void aspeed_video_get_resolution(struct aspeed_video *video)
  
  		video->frame_bottom = FIELD_GET(VE_SRC_TB_EDGE_DET_BOT, src_tb_edge);
  		video->frame_top = FIELD_GET(VE_SRC_TB_EDGE_DET_TOP, src_tb_edge);
--		det->vfrontporch = video->frame_top;
--		det->vbackporch = FIELD_GET(VE_MODE_DETECT_V_LINES, mds) -
--			video->frame_bottom;
--		det->vsync = FIELD_GET(VE_SYNC_STATUS_VSYNC, sync);
-+		if (det->polarities & V4L2_DV_VSYNC_POS_POL) {
-+			det->vbackporch = video->frame_top - vsync;
-+			det->vfrontporch = vtotal - video->frame_bottom;
-+			det->vsync = vsync;
-+		} else {
-+			det->vbackporch = video->frame_top;
-+			det->vfrontporch = vsync - video->frame_bottom;
-+			det->vsync = vtotal - vsync;
-+		}
- 		if (video->frame_top > video->frame_bottom)
- 			continue;
++
++		/*
++		 * This is a workaround for polarity detection when the sync
++		 * value is larger than half.
++		 */
++		if (vsync > (vtotal / 2))
++			det->polarities &= ~V4L2_DV_VSYNC_POS_POL;
++		else
++			det->polarities |= V4L2_DV_VSYNC_POS_POL;
++
+ 		if (det->polarities & V4L2_DV_VSYNC_POS_POL) {
+ 			det->vbackporch = video->frame_top - vsync;
+ 			det->vfrontporch = vtotal - video->frame_bottom;
+@@ -1003,6 +1013,16 @@ static void aspeed_video_get_resolution(struct aspeed_video *video)
  
  		video->frame_right = FIELD_GET(VE_SRC_LR_EDGE_DET_RT, src_lr_edge);
  		video->frame_left = FIELD_GET(VE_SRC_LR_EDGE_DET_LEFT, src_lr_edge);
--		det->hfrontporch = video->frame_left;
--		det->hbackporch = htotal - video->frame_right;
--		det->hsync = FIELD_GET(VE_SYNC_STATUS_HSYNC, sync);
-+		if (det->polarities & V4L2_DV_HSYNC_POS_POL) {
-+			det->hbackporch = video->frame_left - hsync;
-+			det->hfrontporch = htotal - video->frame_right;
-+			det->hsync = hsync;
-+		} else {
-+			det->hbackporch = video->frame_left;
-+			det->hfrontporch = hsync - video->frame_right;
-+			det->hsync = htotal - hsync;
-+		}
- 		if (video->frame_left > video->frame_right)
- 			continue;
- 
++
++		/*
++		 * This is a workaround for polarity detection when the sync
++		 * value is larger than half.
++		 */
++		if (hsync > (htotal / 2))
++			det->polarities &= ~V4L2_DV_HSYNC_POS_POL;
++		else
++			det->polarities |= V4L2_DV_HSYNC_POS_POL;
++
+ 		if (det->polarities & V4L2_DV_HSYNC_POS_POL) {
+ 			det->hbackporch = video->frame_left - hsync;
+ 			det->hfrontporch = htotal - video->frame_right;
 -- 
 2.25.1
 
