@@ -1,66 +1,45 @@
-From: Jammy Huang <jammy_huang@aspeedtech.com>
-Date: Wed, 22 Dec 2021 16:21:39 +0800
-Subject: [PATCH v2 4/4] media: aspeed: Fix timing polarity incorrect
-In-Reply-To: <20211222082139.26933-1-jammy_huang@aspeedtech.com>
-References: <20211222082139.26933-1-jammy_huang@aspeedtech.com>
-Message-ID: <20211222082139.26933-5-jammy_huang@aspeedtech.com>
+From: Bartosz Golaszewski <brgl@bgdev.pl>
+Date: Wed, 22 Dec 2021 10:18:31 +0100
+Subject: [PATCH v1 1/1] gpio: gpio-aspeed-sgpio: Fix wrong hwirq base in
+ irq handler
+In-Reply-To: <20211214040239.8977-2-steven_lee@aspeedtech.com>
+References: <20211214040239.8977-1-steven_lee@aspeedtech.com>
+ <20211214040239.8977-2-steven_lee@aspeedtech.com>
+Message-ID: <CAMRc=MdAgK7zKuJ=7cA2T-mSTJD3tWSW2aEB6G=0Tz4X+iHcZQ@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This is a workaround for sync polarity unstable.
-Sync value get by VR09C counts from sync's rising edge, which means
-sync's polarity is negative if sync value is bigger than total/2.
+On Tue, Dec 14, 2021 at 5:03 AM Steven Lee <steven_lee@aspeedtech.com> wrote:
+>
+> Each aspeed sgpio bank has 64 gpio pins(32 input pins and 32 output pins).
+> The hwirq base for each sgpio bank should be multiples of 64 rather than
+> multiples of 32.
+>
+> Signed-off-by: Steven Lee <steven_lee@aspeedtech.com>
+> ---
+>  drivers/gpio/gpio-aspeed-sgpio.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/gpio/gpio-aspeed-sgpio.c b/drivers/gpio/gpio-aspeed-sgpio.c
+> index 3d6ef37a7702..b3a9b8488f11 100644
+> --- a/drivers/gpio/gpio-aspeed-sgpio.c
+> +++ b/drivers/gpio/gpio-aspeed-sgpio.c
+> @@ -395,7 +395,7 @@ static void aspeed_sgpio_irq_handler(struct irq_desc *desc)
+>                 reg = ioread32(bank_reg(data, bank, reg_irq_status));
+>
+>                 for_each_set_bit(p, &reg, 32)
+> -                       generic_handle_domain_irq(gc->irq.domain, i * 32 + p * 2);
+> +                       generic_handle_domain_irq(gc->irq.domain, (i * 32 + p) * 2);
+>         }
+>
+>         chained_irq_exit(ic, desc);
+> --
+> 2.17.1
+>
 
-Signed-off-by: Jammy Huang <jammy_huang@aspeedtech.com>
----
- v2:
-  - Use 'total/2' rather than 'total<<1'
-  - Update comment
----
- drivers/media/platform/aspeed-video.c | 20 ++++++++++++++++++++
- 1 file changed, 20 insertions(+)
+Joel, Andrew: any comments on this? I'd like to send it upstream tomorrow.
 
-diff --git a/drivers/media/platform/aspeed-video.c b/drivers/media/platform/aspeed-video.c
-index 7c50567f5ab0..c3e3343d91e1 100644
---- a/drivers/media/platform/aspeed-video.c
-+++ b/drivers/media/platform/aspeed-video.c
-@@ -989,6 +989,16 @@ static void aspeed_video_get_resolution(struct aspeed_video *video)
- 
- 		video->frame_bottom = FIELD_GET(VE_SRC_TB_EDGE_DET_BOT, src_tb_edge);
- 		video->frame_top = FIELD_GET(VE_SRC_TB_EDGE_DET_TOP, src_tb_edge);
-+
-+		/*
-+		 * This is a workaround for polarity detection when the sync
-+		 * value is larger than half.
-+		 */
-+		if (vsync > (vtotal / 2))
-+			det->polarities &= ~V4L2_DV_VSYNC_POS_POL;
-+		else
-+			det->polarities |= V4L2_DV_VSYNC_POS_POL;
-+
- 		if (det->polarities & V4L2_DV_VSYNC_POS_POL) {
- 			det->vbackporch = video->frame_top - vsync;
- 			det->vfrontporch = vtotal - video->frame_bottom;
-@@ -1003,6 +1013,16 @@ static void aspeed_video_get_resolution(struct aspeed_video *video)
- 
- 		video->frame_right = FIELD_GET(VE_SRC_LR_EDGE_DET_RT, src_lr_edge);
- 		video->frame_left = FIELD_GET(VE_SRC_LR_EDGE_DET_LEFT, src_lr_edge);
-+
-+		/*
-+		 * This is a workaround for polarity detection when the sync
-+		 * value is larger than half.
-+		 */
-+		if (hsync > (htotal / 2))
-+			det->polarities &= ~V4L2_DV_HSYNC_POS_POL;
-+		else
-+			det->polarities |= V4L2_DV_HSYNC_POS_POL;
-+
- 		if (det->polarities & V4L2_DV_HSYNC_POS_POL) {
- 			det->hbackporch = video->frame_left - hsync;
- 			det->hfrontporch = htotal - video->frame_right;
--- 
-2.25.1
-
+Bart
