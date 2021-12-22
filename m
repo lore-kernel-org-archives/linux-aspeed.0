@@ -1,58 +1,35 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Wed, 22 Dec 2021 01:37:53 +0000
-Subject: [PATCH] ARM: dts: aspeed: g220a: Enable secondary flash
-In-Reply-To: <20211210093623.2140640-1-yulei.sh@bytedance.com>
-References: <20211210093623.2140640-1-yulei.sh@bytedance.com>
-Message-ID: <CACPK8XeK977rY33Kt3-vhEbqa68iXbG6vbRAfRGYxC94tE=t_g@mail.gmail.com>
+Date: Wed, 22 Dec 2021 01:42:02 +0000
+Subject: [PATCH v8] ARM: dts: aspeed: Adding Facebook Bletchley BMC
+In-Reply-To: <YcH2MSByPLAvw5mI@heinlein>
+References: <20211207094923.422422-1-howard.chiu@quantatw.com>
+ <CACPK8XddhFn3PreJM3D=djkREgqGD7yZhS7YoqxxXsNfhZpLhQ@mail.gmail.com>
+ <YcH2MSByPLAvw5mI@heinlein>
+Message-ID: <CACPK8XcNSO9pwJiL_-0jyCSZ5jxdY6HdU5MDReByMcRbyeA6yQ@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Lei,
+On Tue, 21 Dec 2021 at 15:43, Patrick Williams <patrick@stwcx.xyz> wrote:
+>
+> On Tue, Dec 21, 2021 at 04:37:55AM +0000, Joel Stanley wrote:
+> > Hi Patrick,
+> >
+> > On Tue, 7 Dec 2021 at 09:52, Howard Chiu <howard10703049@gmail.com> wrote:
+> > >
+> > > Initial introduction of Facebook Bletchley equipped with
+> > > Aspeed 2600 BMC SoC.
+> > >
+> > > Signed-off-by: Howard Chiu <howard.chiu@quantatw.com>
+> >
+> > Are you ok for this one to go in for v5.17?
+>
+> Yes.
+>
+> Reviewed-by: Patrick Williams <patrick@stwcx.xyz>
+>
+> Would also appreciate if you could apply to your Aspeed tree for OpenBMC.
 
-On Fri, 10 Dec 2021 at 09:36, Lei YU <yulei.sh@bytedance.com> wrote:
->
-> Enable the secondary flash of the g220a's BMC and the wdt2.
->
-> Signed-off-by: Lei YU <yulei.sh@bytedance.com>
-
-I've applied this and the layout patch for v5.17, and to the openbmc tree.
-
-> ---
->  arch/arm/boot/dts/aspeed-bmc-bytedance-g220a.dts | 11 +++++++++++
->  1 file changed, 11 insertions(+)
->
-> diff --git a/arch/arm/boot/dts/aspeed-bmc-bytedance-g220a.dts b/arch/arm/boot/dts/aspeed-bmc-bytedance-g220a.dts
-> index 01dace8f5e5f..05f392f42960 100644
-> --- a/arch/arm/boot/dts/aspeed-bmc-bytedance-g220a.dts
-> +++ b/arch/arm/boot/dts/aspeed-bmc-bytedance-g220a.dts
-> @@ -260,6 +260,13 @@ flash at 0 {
->                 spi-max-frequency = <50000000>;
->  #include "openbmc-flash-layout-64.dtsi"
->         };
-> +       flash at 1 {
-> +               status = "okay";
-> +               label = "alt-bmc";
-> +               m25p,fast-read;
-> +               spi-max-frequency = <50000000>;
-> +#include "openbmc-flash-layout-64-alt.dtsi"
-> +       };
->  };
->
->  &spi1 {
-> @@ -278,6 +285,10 @@ &adc {
->         status = "okay";
->  };
->
-> +&wdt2 {
-> +       aspeed,alt-boot;
-> +};
-> +
->  &gpio {
->         status = "okay";
->         gpio-line-names =
-> --
-> 2.25.1
->
+Thanks. I've done both.
