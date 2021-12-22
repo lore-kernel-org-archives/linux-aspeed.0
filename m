@@ -1,44 +1,120 @@
-From: Joel Stanley <joel@jms.id.au>
-Date: Wed, 22 Dec 2021 01:55:38 +0000
-Subject: [GIT PULL] ARM: aspeed: soc changes for 5.17
-Message-ID: <CACPK8Xc6q=N6iFLnHt8RHhxvBhqu73WN9jBvitbwU3L6SJv85Q@mail.gmail.com>
+From: Jammy Huang <jammy_huang@aspeedtech.com>
+Date: Wed, 22 Dec 2021 14:10:12 +0800
+Subject: [PATCH 2/4] media: aspeed: Use FIELD_GET to improve readability
+In-Reply-To: <CACPK8XcmcP=vu8pWVKdiQVokPyh39Tuy0mfmgPSzb0wb0tcJuA@mail.gmail.com>
+References: <20211217095403.2618-1-jammy_huang@aspeedtech.com>
+ <20211217095403.2618-3-jammy_huang@aspeedtech.com>
+ <CACPK8XcmcP=vu8pWVKdiQVokPyh39Tuy0mfmgPSzb0wb0tcJuA@mail.gmail.com>
+Message-ID: <203e9233-c32d-1c16-be0e-3d95ef1c3829@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello Soc maintainers,
+Hi Joel,
 
-Here are the aspeed soc changes for v5.17.
+OK, I will update in next patch as you advised.
+Thanks for your review.
 
-The following changes since commit fa55b7dcdc43c1aa1ba12bca9d2dd4318c2a0dbf:
+On 2021/12/22 ?? 08:59, Joel Stanley wrote:
+> On Fri, 17 Dec 2021 at 09:53, Jammy Huang <jammy_huang@aspeedtech.com> wrote:
+>> Use the bitfield macro FIELD_GET, and GENMASK to do the shift and mask in
+>> one go for reg values.
+>>
+>> Signed-off-by: Jammy Huang <jammy_huang@aspeedtech.com>
+>> ---
+>>   drivers/media/platform/aspeed-video.c | 35 ++++++++++++---------------
+>>   1 file changed, 16 insertions(+), 19 deletions(-)
+>>
+>> diff --git a/drivers/media/platform/aspeed-video.c b/drivers/media/platform/aspeed-video.c
+>> index d5f77b205175..581a4261f9b7 100644
+>> --- a/drivers/media/platform/aspeed-video.c
+>> +++ b/drivers/media/platform/aspeed-video.c
+>> @@ -156,26 +156,22 @@
+>>   #define  VE_SRC_LR_EDGE_DET_NO_H       BIT(13)
+>>   #define  VE_SRC_LR_EDGE_DET_NO_DISP    BIT(14)
+>>   #define  VE_SRC_LR_EDGE_DET_NO_CLK     BIT(15)
+>> -#define  VE_SRC_LR_EDGE_DET_RT_SHF     16
+>> -#define  VE_SRC_LR_EDGE_DET_RT         GENMASK(27, VE_SRC_LR_EDGE_DET_RT_SHF)
+>> +#define  VE_SRC_LR_EDGE_DET_RT         GENMASK(27, 16)
+>>   #define  VE_SRC_LR_EDGE_DET_INTERLACE  BIT(31)
+>>
+>>   #define VE_SRC_TB_EDGE_DET             0x094
+>>   #define  VE_SRC_TB_EDGE_DET_TOP                GENMASK(12, 0)
+>> -#define  VE_SRC_TB_EDGE_DET_BOT_SHF    16
+>> -#define  VE_SRC_TB_EDGE_DET_BOT                GENMASK(28, VE_SRC_TB_EDGE_DET_BOT_SHF)
+>> +#define  VE_SRC_TB_EDGE_DET_BOT                GENMASK(28, 16)
+>>
+>>   #define VE_MODE_DETECT_STATUS          0x098
+>>   #define  VE_MODE_DETECT_H_PERIOD       GENMASK(11, 0)
+>> -#define  VE_MODE_DETECT_V_LINES_SHF    16
+>> -#define  VE_MODE_DETECT_V_LINES                GENMASK(27, VE_MODE_DETECT_V_LINES_SHF)
+>> +#define  VE_MODE_DETECT_V_LINES                GENMASK(27, 16)
+>>   #define  VE_MODE_DETECT_STATUS_VSYNC   BIT(28)
+>>   #define  VE_MODE_DETECT_STATUS_HSYNC   BIT(29)
+>>
+>>   #define VE_SYNC_STATUS                 0x09c
+>>   #define  VE_SYNC_STATUS_HSYNC          GENMASK(11, 0)
+>> -#define  VE_SYNC_STATUS_VSYNC_SHF      16
+>> -#define  VE_SYNC_STATUS_VSYNC          GENMASK(27, VE_SYNC_STATUS_VSYNC_SHF)
+>> +#define  VE_SYNC_STATUS_VSYNC          GENMASK(27, 16)
+>>
+>>   #define VE_H_TOTAL_PIXELS              0x0A0
+>>
+>> @@ -988,23 +984,24 @@ static void aspeed_video_get_resolution(struct aspeed_video *video)
+>>                  sync = aspeed_video_read(video, VE_SYNC_STATUS);
+>>                  htotal = aspeed_video_read(video, VE_H_TOTAL_PIXELS);
+>>
+>> -               video->frame_bottom = (src_tb_edge & VE_SRC_TB_EDGE_DET_BOT) >>
+>> -                       VE_SRC_TB_EDGE_DET_BOT_SHF;
+>> -               video->frame_top = src_tb_edge & VE_SRC_TB_EDGE_DET_TOP;
+>> +               video->frame_bottom = FIELD_GET(VE_SRC_TB_EDGE_DET_BOT,
+>> +                                               src_tb_edge);
+>> +               video->frame_top = FIELD_GET(VE_SRC_TB_EDGE_DET_TOP,
+>> +                                            src_tb_edge);
+>>                  det->vfrontporch = video->frame_top;
+>> -               det->vbackporch = ((mds & VE_MODE_DETECT_V_LINES) >>
+>> -                       VE_MODE_DETECT_V_LINES_SHF) - video->frame_bottom;
+>> -               det->vsync = (sync & VE_SYNC_STATUS_VSYNC) >>
+>> -                       VE_SYNC_STATUS_VSYNC_SHF;
+>> +               det->vbackporch = FIELD_GET(VE_MODE_DETECT_V_LINES, mds) -
+>> +                       video->frame_bottom;
+>> +               det->vsync = FIELD_GET(VE_SYNC_STATUS_VSYNC, sync);
+>>                  if (video->frame_top > video->frame_bottom)
+>>                          continue;
+>>
+>> -               video->frame_right = (src_lr_edge & VE_SRC_LR_EDGE_DET_RT) >>
+>> -                       VE_SRC_LR_EDGE_DET_RT_SHF;
+>> -               video->frame_left = src_lr_edge & VE_SRC_LR_EDGE_DET_LEFT;
+>> +               video->frame_right = FIELD_GET(VE_SRC_LR_EDGE_DET_RT,
+>> +                                              src_lr_edge);
+>> +               video->frame_left = FIELD_GET(VE_SRC_LR_EDGE_DET_LEFT,
+>> +                                             src_lr_edge);
+> I suggest putting these on one line to further improve readability:
+>
+>                 video->frame_right = FIELD_GET(VE_SRC_LR_EDGE_DET_RT,
+> src_lr_edge);
+>                 video->frame_left = FIELD_GET(VE_SRC_LR_EDGE_DET_LEFT,
+> src_lr_edge);
+>
+> The same for the other lines you've changed above.
+>
+> And then add:
+>
+> Reviewed-by: Joel Stanley <joel@jms.id.au>
+>
+>>                  det->hfrontporch = video->frame_left;
+>>                  det->hbackporch = htotal - video->frame_right;
+>> -               det->hsync = sync & VE_SYNC_STATUS_HSYNC;
+>> +               det->hsync = FIELD_GET(VE_SYNC_STATUS_HSYNC, sync);
+>>                  if (video->frame_left > video->frame_right)
+>>                          continue;
+>>
+>> --
+>> 2.25.1
+>>
+-- 
+Best Regards
+Jammy
 
-  Linux 5.16-rc1 (2021-11-14 13:56:52 -0800)
-
-are available in the Git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/joel/bmc.git
-tags/aspeed-5.17-soc
-
-for you to fetch changes up to 79ee56da2e4f49adf174dd7a2e10ce488506c865:
-
-  ARM: aspeed: Add secure boot controller support (2021-12-21 15:56:30 +1030)
-
-----------------------------------------------------------------
-ASPEED soc updates for 5.17
-
- * Fix for deferred probing of LPC clock
-
- * Display secure boot status when on AST2600
-
-----------------------------------------------------------------
-Jae Hyun Yoo (1):
-      soc: aspeed: lpc-ctrl: Block error printing on probe defer cases
-
-Joel Stanley (1):
-      ARM: aspeed: Add secure boot controller support
-
- drivers/soc/aspeed/aspeed-lpc-ctrl.c |  7 ++--
- drivers/soc/aspeed/aspeed-socinfo.c  | 73 ++++++++++++++++++++++++++++++++++++
- 2 files changed, 76 insertions(+), 4 deletions(-)
