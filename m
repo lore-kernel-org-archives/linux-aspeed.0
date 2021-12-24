@@ -1,256 +1,128 @@
 From: Quan Nguyen <quan@os.amperecomputing.com>
-Date: Fri, 24 Dec 2021 11:13:51 +0700
-Subject: [PATCH v6 8/9] misc: smpro-misc: Add Ampere's Altra SMpro misc driver
+Date: Fri, 24 Dec 2021 11:13:52 +0700
+Subject: [PATCH v6 9/9] docs: misc-devices: (smpro-misc) Add documentation
 In-Reply-To: <20211224041352.29405-1-quan@os.amperecomputing.com>
 References: <20211224041352.29405-1-quan@os.amperecomputing.com>
-Message-ID: <20211224041352.29405-9-quan@os.amperecomputing.com>
+Message-ID: <20211224041352.29405-10-quan@os.amperecomputing.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This commit adds driver support for accessing various information
-reported by Ampere's SMpro co-processor such as Boot Progress and
-other miscellaneous data.
+Adds documentation for the Ampere(R)'s Altra(R) SMpro misc driver.
 
+Signed-off-by: Thu Nguyen <thu@os.amperecomputing.com>
 Signed-off-by: Quan Nguyen <quan@os.amperecomputing.com>
 ---
 Change in v6:
   + First introduced in v6 [Quan]
 
- drivers/mfd/smpro-mfd.c   |   1 +
- drivers/misc/Kconfig      |   7 ++
- drivers/misc/Makefile     |   1 +
- drivers/misc/smpro-misc.c | 177 ++++++++++++++++++++++++++++++++++++++
- 4 files changed, 186 insertions(+)
- create mode 100644 drivers/misc/smpro-misc.c
+ Documentation/misc-devices/index.rst      |  1 +
+ Documentation/misc-devices/smpro-misc.rst | 82 +++++++++++++++++++++++
+ 2 files changed, 83 insertions(+)
+ create mode 100644 Documentation/misc-devices/smpro-misc.rst
 
-diff --git a/drivers/mfd/smpro-mfd.c b/drivers/mfd/smpro-mfd.c
-index a7cd64bf9eaa..5611dd30f8f4 100644
---- a/drivers/mfd/smpro-mfd.c
-+++ b/drivers/mfd/smpro-mfd.c
-@@ -28,6 +28,7 @@ static const struct regmap_config simple_word_regmap_config = {
- static const struct mfd_cell smpro_devs[] = {
- 	MFD_CELL_NAME("smpro-hwmon"),
- 	MFD_CELL_NAME("smpro-errmon"),
-+	MFD_CELL_NAME("smpro-misc"),
- };
- 
- static int smpro_mfd_probe(struct i2c_client *i2c)
-diff --git a/drivers/misc/Kconfig b/drivers/misc/Kconfig
-index 0cbd8a2561a7..df53cbf62931 100644
---- a/drivers/misc/Kconfig
-+++ b/drivers/misc/Kconfig
-@@ -183,6 +183,13 @@ config SMPRO_ERRMON
- 	  If you say yes here you get support for error monitor function
- 	  provides by Ampere Computing's SoC with SMpro processor.
- 
-+config SMPRO_MISC
-+	tristate "Ampere Computing SMPro miscellaneous driver"
-+	depends on MFD_SMPRO || COMPILE_TEST
-+	help
-+	  If you say yes here you get support for the miscellaleous function
-+	  provides by Ampere Computing's SoC with SMpro processor.
-+
- config CS5535_MFGPT
- 	tristate "CS5535/CS5536 Geode Multi-Function General Purpose Timer (MFGPT) support"
- 	depends on MFD_CS5535
-diff --git a/drivers/misc/Makefile b/drivers/misc/Makefile
-index 8ec9961b941b..bbfee81499de 100644
---- a/drivers/misc/Makefile
-+++ b/drivers/misc/Makefile
-@@ -24,6 +24,7 @@ obj-$(CONFIG_KGDB_TESTS)	+= kgdbts.o
- obj-$(CONFIG_SGI_XP)		+= sgi-xp/
- obj-$(CONFIG_SGI_GRU)		+= sgi-gru/
- obj-$(CONFIG_SMPRO_ERRMON)	+= smpro-errmon.o
-+obj-$(CONFIG_SMPRO_MISC)	+= smpro-misc.o
- obj-$(CONFIG_CS5535_MFGPT)	+= cs5535-mfgpt.o
- obj-$(CONFIG_GEHC_ACHC)		+= gehc-achc.o
- obj-$(CONFIG_HP_ILO)		+= hpilo.o
-diff --git a/drivers/misc/smpro-misc.c b/drivers/misc/smpro-misc.c
+diff --git a/Documentation/misc-devices/index.rst b/Documentation/misc-devices/index.rst
+index 7a6a6263cbab..284568eca747 100644
+--- a/Documentation/misc-devices/index.rst
++++ b/Documentation/misc-devices/index.rst
+@@ -27,6 +27,7 @@ fit into other categories.
+    max6875
+    pci-endpoint-test
+    smpro-errmon
++   smpro-misc
+    spear-pcie-gadget
+    uacce
+    xilinx_sdfec
+diff --git a/Documentation/misc-devices/smpro-misc.rst b/Documentation/misc-devices/smpro-misc.rst
 new file mode 100644
-index 000000000000..6fe9d25ce31c
+index 000000000000..7c856eb1a7f3
 --- /dev/null
-+++ b/drivers/misc/smpro-misc.c
-@@ -0,0 +1,177 @@
-+// SPDX-License-Identifier: GPL-2.0+
-+/*
-+ * Ampere Computing SoC's SMpro Misc Driver
-+ *
-+ * Copyright (c) 2021, Ampere Computing LLC
-+ */
-+#include <linux/mod_devicetable.h>
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/regmap.h>
++++ b/Documentation/misc-devices/smpro-misc.rst
+@@ -0,0 +1,82 @@
++.. SPDX-License-Identifier: GPL-2.0-or-later
 +
-+/* Boot Stage/Progress Registers */
-+#define BOOTSTAGE_SELECT	0xB0
-+#define BOOTSTAGE_STATUS_LO	0xB1
-+#define BOOTSTAGE_CUR_STAGE	0xB2
-+#define BOOTSTAGE_STATUS_HI	0xB3
++Kernel driver Ampere(R) Altra(R) SMpro miscellaneous
++====================================================
 +
-+/* SOC State Registers */
-+#define SOC_POWER_LIMIT		0xE5
++Supported chips:
 +
-+/* Boot stages */
-+enum {
-+	BOOTSTAGE_SMPRO = 0,
-+	BOOTSTAGE_PMPRO,
-+	BOOTSTAGE_ATF_BL1,
-+	BOOTSTAGE_DDR_INIT,
-+	BOOTSTAGE_DDR_INIT_PROGRESS,
-+	BOOTSTAGE_ATF_BL2,
-+	BOOTSTAGE_ATF_BL31,
-+	BOOTSTAGE_ATF_BL32,
-+	BOOTSTAGE_UEFI,
-+	BOOTSTAGE_OS,
-+	BOOTSTAGE_MAX
-+};
++  * Ampere(R) Altra(R)
 +
-+struct smpro_misc {
-+	struct regmap *regmap;
-+};
++    Prefix: 'smpro'
 +
-+static int boot_progress_show(struct device *dev, struct device_attribute *da, char *buf)
-+{
-+	struct smpro_misc *misc = dev_get_drvdata(dev);
-+	u32 boot_progress;
-+	u8 current_stage;
-+	u8 boot_status;
-+	u8 boot_stage;
-+	u32 select;
-+	u32 reg_lo;
-+	u32 reg;
-+	int ret;
++    Reference: Altra SoC BMC Interface Specification
 +
-+	/* Read current boot stage */
-+	ret = regmap_read(misc->regmap, BOOTSTAGE_CUR_STAGE, &reg);
-+	if (ret)
-+		return ret;
++Author: Thu Nguyen <thu@os.amperecomputing.com>
 +
-+	current_stage = reg & 0xff;
++Description
++-----------
 +
-+	/* Read the boot progress */
-+	ret = regmap_read(misc->regmap, BOOTSTAGE_SELECT, &select);
-+	if (ret)
-+		return ret;
++This driver support the monitoring and configuration of various miscellaneous
++data provided by Ampere(R) Altra(R) SMpro processor.
++At this time, these include:
 +
-+	boot_stage = (select >> 8) & 0xff;
-+	boot_status = select & 0xff;
++  * Reading Boot Progress information
++  * Configuring SoC Power Limit
 +
-+	if (boot_stage > current_stage)
-+		return -EINVAL;
++Sysfs entries
++-------------
 +
-+	ret = regmap_read(misc->regmap,	BOOTSTAGE_STATUS_LO, &reg_lo);
-+	if (!ret)
-+		ret = regmap_read(misc->regmap, BOOTSTAGE_STATUS_HI, &reg);
-+	if (ret)
-+		return ret;
++1) Boot progress
 +
-+	boot_progress = swab16(reg) << 16 | swab16(reg_lo);
++SMpro misc driver creates the sysfs files ``boot_progress``.
++The format of ``boot_progress`` file is as below::
 +
-+	/* Tell firmware to provide next boot stage next time */
-+	if (boot_stage < current_stage) {
-+		ret = regmap_write(misc->regmap, BOOTSTAGE_SELECT, ((select & 0xff00) | 0x1));
-+		if (ret)
-+			return ret;
-+	}
++<boot stage> <boot status> <boot progress>
 +
-+	return snprintf(buf, PAGE_SIZE, "0x%02x 0x%02x 0x%08x\n",
-+			boot_stage, boot_status, boot_progress);
-+}
++Where:
 +
-+static DEVICE_ATTR_RO(boot_progress);
++* Boot stage::
 +
-+static int soc_power_limit_show(struct device *dev, struct device_attribute *da, char *buf)
-+{
-+	struct smpro_misc *misc = dev_get_drvdata(dev);
-+	unsigned int value;
-+	int ret;
++    0: SMpro firmware booting.
++    1: PMpro firmware booting.
++    2: ATF BL1 firmware booting.
++    3: DDR initialization.
++    4: DDR training report status.
++    5: ATF BL2 firmware booting.
++    6: ATF BL31 firmware booting.
++    7: ATF BL32 firmware booting.
++    8: UEFI firmware booting.
++    9: OS booting.
 +
-+	ret = regmap_read(misc->regmap, SOC_POWER_LIMIT, &value);
-+	if (ret)
-+		return ret;
++* Boot status::
 +
-+	return snprintf(buf, PAGE_SIZE, "%d\n", value);
-+}
++    0: Not started.
++    1: Started.
++    2: Complete without error.
++    3: Failure.
 +
-+static int soc_power_limit_store(struct device *dev, struct device_attribute *da,
-+				 const char *buf, size_t count)
-+{
-+	struct smpro_misc *misc = dev_get_drvdata(dev);
-+	unsigned long val;
-+	s32 ret;
++* boot progress: 32 bits boot progress code
 +
-+	ret = kstrtoul(buf, 0, &val);
-+	if (ret)
-+		return ret;
++The sysfs ``boot_progress`` only reports the boot state when the host is booting.
++If the host is already booted, it returns latest state.
 +
-+	ret = regmap_write(misc->regmap, SOC_POWER_LIMIT, (unsigned int)val);
-+	if (ret)
-+		return -EPROTO;
++Example::
 +
-+	return count;
-+}
++    #cat boot_progress
++    0x01 0x02 0x808454A8
 +
-+static DEVICE_ATTR_RW(soc_power_limit);
++2) SoC Power Limit
 +
-+static struct attribute *smpro_misc_attrs[] = {
-+	&dev_attr_boot_progress.attr,
-+	&dev_attr_soc_power_limit.attr,
-+	NULL
-+};
++SMpro misc driver creates the sysfs file ``soc_power_limit`` to get/set the SoC Power Limit.
 +
-+static const struct attribute_group smpro_misc_attr_group = {
-+	.attrs = smpro_misc_attrs
-+};
++Reading this sysfs return the current setting of SoC Power Limit (W) in decimal string.
++Writing the desired value in decimal string to set the SoC Power Limit in Watt (W).
++The range of SoC Power Limit is 90-500(W) and will be ignored if out of range.
 +
-+static int smpro_misc_probe(struct platform_device *pdev)
-+{
-+	struct smpro_misc *misc;
-+	int ret;
++Example::
 +
-+	misc = devm_kzalloc(&pdev->dev, sizeof(struct smpro_misc), GFP_KERNEL);
-+	if (!misc)
-+		return -ENOMEM;
-+
-+	platform_set_drvdata(pdev, misc);
-+
-+	misc->regmap = dev_get_regmap(pdev->dev.parent, NULL);
-+	if (!misc->regmap)
-+		return -ENODEV;
-+
-+	ret = sysfs_create_group(&pdev->dev.kobj, &smpro_misc_attr_group);
-+	if (ret)
-+		dev_err(&pdev->dev, "SMPro misc sysfs registration failed\n");
-+
-+	return 0;
-+}
-+
-+static int smpro_misc_remove(struct platform_device *pdev)
-+{
-+	sysfs_remove_group(&pdev->dev.kobj, &smpro_misc_attr_group);
-+	pr_info("SMPro misc sysfs entries removed");
-+
-+	return 0;
-+}
-+
-+static struct platform_driver smpro_misc_driver = {
-+	.probe		= smpro_misc_probe,
-+	.remove		= smpro_misc_remove,
-+	.driver = {
-+		.name	= "smpro-misc",
-+	},
-+};
-+
-+module_platform_driver(smpro_misc_driver);
-+
-+MODULE_AUTHOR("Tung Nguyen <tungnguyen@os.amperecomputing.com>");
-+MODULE_AUTHOR("Quan Nguyen <quan@os.amperecomputing.com>");
-+MODULE_DESCRIPTION("Ampere Altra SMpro Misc driver");
-+MODULE_LICENSE("GPL");
++    #cat soc_power_limit
++    90
++    #echo 95 > soc_power_limit
++    #cat soc_power_limit
++    95
 -- 
 2.28.0
 
