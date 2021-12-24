@@ -1,252 +1,256 @@
 From: Quan Nguyen <quan@os.amperecomputing.com>
-Date: Fri, 24 Dec 2021 11:13:50 +0700
-Subject: [PATCH v6 7/9] docs: misc-devices: (smpro-errmon) Add documentation
+Date: Fri, 24 Dec 2021 11:13:51 +0700
+Subject: [PATCH v6 8/9] misc: smpro-misc: Add Ampere's Altra SMpro misc driver
 In-Reply-To: <20211224041352.29405-1-quan@os.amperecomputing.com>
 References: <20211224041352.29405-1-quan@os.amperecomputing.com>
-Message-ID: <20211224041352.29405-8-quan@os.amperecomputing.com>
+Message-ID: <20211224041352.29405-9-quan@os.amperecomputing.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Adds documentation for Ampere(R)'s Altra(R) SMpro errmon driver.
+This commit adds driver support for accessing various information
+reported by Ampere's SMpro co-processor such as Boot Progress and
+other miscellaneous data.
 
-Signed-off-by: Thu Nguyen <thu@os.amperecomputing.com>
 Signed-off-by: Quan Nguyen <quan@os.amperecomputing.com>
 ---
 Change in v6:
   + First introduced in v6 [Quan]
 
- Documentation/misc-devices/index.rst        |   1 +
- Documentation/misc-devices/smpro-errmon.rst | 206 ++++++++++++++++++++
- 2 files changed, 207 insertions(+)
- create mode 100644 Documentation/misc-devices/smpro-errmon.rst
+ drivers/mfd/smpro-mfd.c   |   1 +
+ drivers/misc/Kconfig      |   7 ++
+ drivers/misc/Makefile     |   1 +
+ drivers/misc/smpro-misc.c | 177 ++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 186 insertions(+)
+ create mode 100644 drivers/misc/smpro-misc.c
 
-diff --git a/Documentation/misc-devices/index.rst b/Documentation/misc-devices/index.rst
-index 30ac58f81901..7a6a6263cbab 100644
---- a/Documentation/misc-devices/index.rst
-+++ b/Documentation/misc-devices/index.rst
-@@ -26,6 +26,7 @@ fit into other categories.
-    lis3lv02d
-    max6875
-    pci-endpoint-test
-+   smpro-errmon
-    spear-pcie-gadget
-    uacce
-    xilinx_sdfec
-diff --git a/Documentation/misc-devices/smpro-errmon.rst b/Documentation/misc-devices/smpro-errmon.rst
+diff --git a/drivers/mfd/smpro-mfd.c b/drivers/mfd/smpro-mfd.c
+index a7cd64bf9eaa..5611dd30f8f4 100644
+--- a/drivers/mfd/smpro-mfd.c
++++ b/drivers/mfd/smpro-mfd.c
+@@ -28,6 +28,7 @@ static const struct regmap_config simple_word_regmap_config = {
+ static const struct mfd_cell smpro_devs[] = {
+ 	MFD_CELL_NAME("smpro-hwmon"),
+ 	MFD_CELL_NAME("smpro-errmon"),
++	MFD_CELL_NAME("smpro-misc"),
+ };
+ 
+ static int smpro_mfd_probe(struct i2c_client *i2c)
+diff --git a/drivers/misc/Kconfig b/drivers/misc/Kconfig
+index 0cbd8a2561a7..df53cbf62931 100644
+--- a/drivers/misc/Kconfig
++++ b/drivers/misc/Kconfig
+@@ -183,6 +183,13 @@ config SMPRO_ERRMON
+ 	  If you say yes here you get support for error monitor function
+ 	  provides by Ampere Computing's SoC with SMpro processor.
+ 
++config SMPRO_MISC
++	tristate "Ampere Computing SMPro miscellaneous driver"
++	depends on MFD_SMPRO || COMPILE_TEST
++	help
++	  If you say yes here you get support for the miscellaleous function
++	  provides by Ampere Computing's SoC with SMpro processor.
++
+ config CS5535_MFGPT
+ 	tristate "CS5535/CS5536 Geode Multi-Function General Purpose Timer (MFGPT) support"
+ 	depends on MFD_CS5535
+diff --git a/drivers/misc/Makefile b/drivers/misc/Makefile
+index 8ec9961b941b..bbfee81499de 100644
+--- a/drivers/misc/Makefile
++++ b/drivers/misc/Makefile
+@@ -24,6 +24,7 @@ obj-$(CONFIG_KGDB_TESTS)	+= kgdbts.o
+ obj-$(CONFIG_SGI_XP)		+= sgi-xp/
+ obj-$(CONFIG_SGI_GRU)		+= sgi-gru/
+ obj-$(CONFIG_SMPRO_ERRMON)	+= smpro-errmon.o
++obj-$(CONFIG_SMPRO_MISC)	+= smpro-misc.o
+ obj-$(CONFIG_CS5535_MFGPT)	+= cs5535-mfgpt.o
+ obj-$(CONFIG_GEHC_ACHC)		+= gehc-achc.o
+ obj-$(CONFIG_HP_ILO)		+= hpilo.o
+diff --git a/drivers/misc/smpro-misc.c b/drivers/misc/smpro-misc.c
 new file mode 100644
-index 000000000000..e05d19412c07
+index 000000000000..6fe9d25ce31c
 --- /dev/null
-+++ b/Documentation/misc-devices/smpro-errmon.rst
-@@ -0,0 +1,206 @@
-+.. SPDX-License-Identifier: GPL-2.0-or-later
++++ b/drivers/misc/smpro-misc.c
+@@ -0,0 +1,177 @@
++// SPDX-License-Identifier: GPL-2.0+
++/*
++ * Ampere Computing SoC's SMpro Misc Driver
++ *
++ * Copyright (c) 2021, Ampere Computing LLC
++ */
++#include <linux/mod_devicetable.h>
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/regmap.h>
 +
-+Kernel driver Ampere(R)'s Altra(R) SMpro errmon
-+===============================================
++/* Boot Stage/Progress Registers */
++#define BOOTSTAGE_SELECT	0xB0
++#define BOOTSTAGE_STATUS_LO	0xB1
++#define BOOTSTAGE_CUR_STAGE	0xB2
++#define BOOTSTAGE_STATUS_HI	0xB3
 +
-+Supported chips:
++/* SOC State Registers */
++#define SOC_POWER_LIMIT		0xE5
 +
-+  * Ampere(R) Altra(R)
++/* Boot stages */
++enum {
++	BOOTSTAGE_SMPRO = 0,
++	BOOTSTAGE_PMPRO,
++	BOOTSTAGE_ATF_BL1,
++	BOOTSTAGE_DDR_INIT,
++	BOOTSTAGE_DDR_INIT_PROGRESS,
++	BOOTSTAGE_ATF_BL2,
++	BOOTSTAGE_ATF_BL31,
++	BOOTSTAGE_ATF_BL32,
++	BOOTSTAGE_UEFI,
++	BOOTSTAGE_OS,
++	BOOTSTAGE_MAX
++};
 +
-+    Prefix: 'smpro'
++struct smpro_misc {
++	struct regmap *regmap;
++};
 +
-+    Preference: Altra SoC BMC Interface Specification
++static int boot_progress_show(struct device *dev, struct device_attribute *da, char *buf)
++{
++	struct smpro_misc *misc = dev_get_drvdata(dev);
++	u32 boot_progress;
++	u8 current_stage;
++	u8 boot_status;
++	u8 boot_stage;
++	u32 select;
++	u32 reg_lo;
++	u32 reg;
++	int ret;
 +
-+Author: Thu Nguyen <thu@os.amperecomputing.com>
++	/* Read current boot stage */
++	ret = regmap_read(misc->regmap, BOOTSTAGE_CUR_STAGE, &reg);
++	if (ret)
++		return ret;
 +
-+Description
-+-----------
++	current_stage = reg & 0xff;
 +
-+This driver supports hardware monitoring for Ampere(R) Altra(R) SoC's based on the
-+SMpro co-processor (SMpro).
-+The following SoC alert/event types are supported by the errmon driver:
++	/* Read the boot progress */
++	ret = regmap_read(misc->regmap, BOOTSTAGE_SELECT, &select);
++	if (ret)
++		return ret;
 +
-+* Core CE/UE errors
-+* Memory CE/UE errors
-+* PCIe CE/UE errors
-+* Other CE/UE errors
-+* Internal SMpro/PMpro errors
-+* VRD hot
-+* VRD warn/fault
-+* DIMM Hot
-+* DIMM 2x refresh rate
++	boot_stage = (select >> 8) & 0xff;
++	boot_status = select & 0xff;
 +
-+The SMpro interface provides the registers to query the status of the SoC alerts/events
-+and their data and export to userspace by this driver.
++	if (boot_stage > current_stage)
++		return -EINVAL;
 +
-+Usage Notes
-+-----------
++	ret = regmap_read(misc->regmap,	BOOTSTAGE_STATUS_LO, &reg_lo);
++	if (!ret)
++		ret = regmap_read(misc->regmap, BOOTSTAGE_STATUS_HI, &reg);
++	if (ret)
++		return ret;
 +
-+SMpro errmon driver creates the sysfs files for each host alert/event type.
-+Example: ``errors_core_ce`` to get Core CE error type.
++	boot_progress = swab16(reg) << 16 | swab16(reg_lo);
 +
-+To get a host alert/event type, the user will read the corresponding sysfs file.
++	/* Tell firmware to provide next boot stage next time */
++	if (boot_stage < current_stage) {
++		ret = regmap_write(misc->regmap, BOOTSTAGE_SELECT, ((select & 0xff00) | 0x1));
++		if (ret)
++			return ret;
++	}
 +
-+* If the alert/event is absented, the sysfs file returns empty.
-+* If the alerts/events are presented, the existing alerts/events will be reported as the error lines.
++	return snprintf(buf, PAGE_SIZE, "0x%02x 0x%02x 0x%08x\n",
++			boot_stage, boot_status, boot_progress);
++}
 +
-+The format of the error lines is defended on the alert/event type.
++static DEVICE_ATTR_RO(boot_progress);
 +
-+1) Type 1 for Core/Memory/PCIe/Other CE/UE alert types::
++static int soc_power_limit_show(struct device *dev, struct device_attribute *da, char *buf)
++{
++	struct smpro_misc *misc = dev_get_drvdata(dev);
++	unsigned int value;
++	int ret;
 +
-+    <Error Type> <Error SubType> <Instance> <Error Status> <Error Address> <Error Misc 0> <Error Misc 1> <Error Misc2> <Error Misc 3>
++	ret = regmap_read(misc->regmap, SOC_POWER_LIMIT, &value);
++	if (ret)
++		return ret;
 +
-+    Where:
-+    * Error Type: The hardwares cause the errors in format of two hex characters.
-+    * SubType: Sub type of error in the specified hardware error in format of two hex characters.
-+    * Instance: Combination of the socket, channel, slot cause the error in format of four hex characters.
-+    * Error Status: Encode of error status in format of eight hex characters.
-+    * Error Address: The address in device causes the errors in format of sixteen hex characters.
-+    * Error Misc 0/1/2/3: Addition info about the errors. Each field is in format of sixteen hex characters.
++	return snprintf(buf, PAGE_SIZE, "%d\n", value);
++}
 +
-+    Example:
-+    # cat errors_other_ce
-+    0a 02 0000 000030e4 0000000000000080 0000020000000000 0000000000000000 0000000000000000 0000000000000000
-+    0a 01 0000 000030e4 0000000000000080 0000020000000000 0000000000000000 0000000000000000 0000000000000000
++static int soc_power_limit_store(struct device *dev, struct device_attribute *da,
++				 const char *buf, size_t count)
++{
++	struct smpro_misc *misc = dev_get_drvdata(dev);
++	unsigned long val;
++	s32 ret;
 +
-+    The size of the alert buffer for this error type is 8 alerts.
-+    When the buffer is overflowed, the errmon driver will be added the overflowed alert line to sysfs output.
++	ret = kstrtoul(buf, 0, &val);
++	if (ret)
++		return ret;
 +
-+    ff ff 0000 00000000 0000000000000080 0000000000000000 0000000000000000 0000000000000000 0000000000000000
++	ret = regmap_write(misc->regmap, SOC_POWER_LIMIT, (unsigned int)val);
++	if (ret)
++		return -EPROTO;
 +
-+Below table defines the value of Error types, Sub Types, Sub component and instance:
++	return count;
++}
 +
-+    ============   ==========    =========   ===============  ================
-+    Error Group    Error Type    Sub type    Sub component    Instance
-+    CPM            0             0           Snoop-Logic      CPM #
-+    CPM            0             2           Armv8 Core 1     CPM #
-+    MCU            1             1           ERR1             MCU # | SLOT << 11
-+    MCU            1             2           ERR2             MCU # | SLOT << 11
-+    MCU            1             3           ERR3             MCU #
-+    MCU            1             4           ERR4             MCU #
-+    MCU            1             5           ERR5             MCU #
-+    MCU            1             6           ERR6             MCU #
-+    MCU            1             7           Link Error       MCU #
-+    Mesh           2             0           Cross Point      X | (Y << 5) | NS <<11
-+    Mesh           2             1           Home Node(IO)    X | (Y << 5) | NS <<11
-+    Mesh           2             2           Home Node(Mem)   X | (Y << 5) | NS <<11 | device<<12
-+    Mesh           2             4           CCIX Node        X | (Y << 5) | NS <<11
-+    2P Link        3             0           N/A              Altra 2P Link #
-+    GIC            5             0           ERR0             0
-+    GIC            5             1           ERR1             0
-+    GIC            5             2           ERR2             0
-+    GIC            5             3           ERR3             0
-+    GIC            5             4           ERR4             0
-+    GIC            5             5           ERR5             0
-+    GIC            5             6           ERR6             0
-+    GIC            5             7           ERR7             0
-+    GIC            5             8           ERR8             0
-+    GIC            5             9           ERR9             0
-+    GIC            5             10          ERR10            0
-+    GIC            5             11          ERR11            0
-+    GIC            5             12          ERR12            0
-+    GIC            5             13-21       ERR13            RC# + 1
-+    SMMU           6             TCU         100              RC #
-+    SMMU           6             TBU0        0                RC #
-+    SMMU           6             TBU1        1                RC #
-+    SMMU           6             TBU2        2                RC #
-+    SMMU           6             TBU3        3                RC #
-+    SMMU           6             TBU4        4                RC #
-+    SMMU           6             TBU5        5                RC #
-+    SMMU           6             TBU6        6                RC #
-+    SMMU           6             TBU7        7                RC #
-+    SMMU           6             TBU8        8                RC #
-+    SMMU           6             TBU9        9                RC #
-+    PCIe AER       7             Root        0                RC #
-+    PCIe AER       7             Device      1                RC #
-+    PCIe RC        8             RCA HB      0                RC #
-+    PCIe RC        8             RCB HB      1                RC #
-+    PCIe RC        8             RASDP       8                RC #
-+    OCM            9             ERR0        0                0
-+    OCM            9             ERR1        1                0
-+    OCM            9             ERR2        2                0
-+    SMpro          10            ERR0        0                0
-+    SMpro          10            ERR1        1                0
-+    SMpro          10            MPA_ERR     2                0
-+    PMpro          11            ERR0        0                0
-+    PMpro          11            ERR1        1                0
-+    PMpro          11            MPA_ERR     2                0
-+    =============  ==========    =========   ===============  ================
++static DEVICE_ATTR_RW(soc_power_limit);
 +
++static struct attribute *smpro_misc_attrs[] = {
++	&dev_attr_boot_progress.attr,
++	&dev_attr_soc_power_limit.attr,
++	NULL
++};
 +
-+2) Type 2 for the Internal SMpro/PMpro alert types::
++static const struct attribute_group smpro_misc_attr_group = {
++	.attrs = smpro_misc_attrs
++};
 +
-+    <Error Type> <Error SubType> <Direction> <Error Location> <Error Code> <Error Data>
++static int smpro_misc_probe(struct platform_device *pdev)
++{
++	struct smpro_misc *misc;
++	int ret;
 +
-+    Where:
-+    * Error Type: SMpro/PMpro Error types in format of two hex characters.
-+      + 1: Warning
-+      + 2: Error
-+      + 4: Error with data
-+    * Error SubType: SMpro/PMpro Image Code in format of two hex characters.
-+    * Direction: Direction in format of two hex characters.
-+      + 0: Enter
-+      + 1: Exit
-+    * Error Location: SMpro/PMpro Module Location code in format of two hex characters.
-+    * Error Code: SMpro/PMpro Error code in format of four hex characters.
-+    * Error Data: Extensive datae in format of eight hex characters.
-+      All bits are 0 when Error Type is warning or error.
++	misc = devm_kzalloc(&pdev->dev, sizeof(struct smpro_misc), GFP_KERNEL);
++	if (!misc)
++		return -ENOMEM;
 +
-+    Example:
-+    # cat errors_smpro
-+    01 04 01 08 0035 00000000
++	platform_set_drvdata(pdev, misc);
 +
-+3) Type 3 for the VRD hot, VRD /warn/fault, DIMM Hot, DIMM 2x refresh rate event::
++	misc->regmap = dev_get_regmap(pdev->dev.parent, NULL);
++	if (!misc->regmap)
++		return -ENODEV;
 +
-+    <Event Type> <Event SubType> <Direction> <Event Location> [Event Data]
++	ret = sysfs_create_group(&pdev->dev.kobj, &smpro_misc_attr_group);
++	if (ret)
++		dev_err(&pdev->dev, "SMPro misc sysfs registration failed\n");
 +
-+    Where:
-+    * Event Type: event type in format of two hex characters.
-+    * Event SubType: event sub type in format of two hex characters.
-+    * Direction: Direction in format of two hex characters.
-+      + 0: Asserted
-+      + 1: De-asserted
-+    * Event Location: The index of component cause the alert in format of two hex characters.
-+    * Event Data: Extensive data if have in format of four hex characters.
++	return 0;
++}
 +
-+    Example:
-+    #cat event_vr_hot
-+    00 02 00 00 -> /* DIMM VRD hot event is asserted at channel 0 */
-+    00 02 01 00 -> /* DIMM VRD hot event is de-asserted at channel 0 */
-+    00 01 00 03 -> /* Core VRD hot event is asserted at channel 3 */
-+    00 00 00 00 -> /* SoC  VRD hot event is asserted */
-+    00 00 00 00 -> /* SoC  VRD hot event is de-asserted */
-+    00 02 00 06 -> /* DIMM VRD hot event is de-asserted at channel 6 */
++static int smpro_misc_remove(struct platform_device *pdev)
++{
++	sysfs_remove_group(&pdev->dev.kobj, &smpro_misc_attr_group);
++	pr_info("SMPro misc sysfs entries removed");
 +
-+Sysfs entries
-+-------------
++	return 0;
++}
 +
-+The following sysfs files are supported:
++static struct platform_driver smpro_misc_driver = {
++	.probe		= smpro_misc_probe,
++	.remove		= smpro_misc_remove,
++	.driver = {
++		.name	= "smpro-misc",
++	},
++};
 +
-+* Ampere(R) Altra(R):
++module_platform_driver(smpro_misc_driver);
 +
-+Alert Types:
-+
-+    ================= =============== =========================================================== =======
-+    Alert Type        Sysfs name      Description                                                 Format
-+    Core CE Errors    errors_core_ce  Triggered by CPU when Core has an CE error                  1
-+    Core UE Errors    errors_core_ue  Triggered by CPU when Core has an UE error                  1
-+    Memory CE Errors  errors_mem_ce   Triggered by CPU when Memory has an CE error                1
-+    Memory UE Errors  errors_mem_ue   Triggered by CPU when Memory has an UE error                1
-+    PCIe CE Errors    errors_pcie_ce  Triggered by CPU when any PCIe controller has any CE error  1
-+    PCIe UE Errors    errors_pcie_ue  Triggered by CPU when any PCIe controller has any UE error  1
-+    Other CE Errors   errors_other_ce Triggered by CPU when any Others CE error                   1
-+    Other UE Errors   errors_other_ue Triggered by CPU when any Others UE error                   1
-+    SMpro Errors      errors_smpro    Triggered by CPU when system have SMpro error               2
-+    PMpro Errors      errors_pmpro    Triggered by CPU when system have PMpro error               2
-+    ================= =============== =========================================================== =======
-+
-+Event Type:
-+
-+    ============================ ========================== =========== ========================
-+    Event Type                   Sysfs name                 Event Type  Sub Type
-+    VRD HOT                      event_vrd_hot              0           0: SoC, 1: Core, 2: DIMM
-+    VR Warn/Fault                event_vrd_warn_fault       1           0: SoC, 1: Core, 2: DIMM
-+    DIMM Hot                     event_dimm_hot             2           NA (Default 0)
-+    DIMM 2x refresh rate status  event_dimm_2x_refresh      3           NA (Default 0)
-+    ============================ ========================== =========== ========================
++MODULE_AUTHOR("Tung Nguyen <tungnguyen@os.amperecomputing.com>");
++MODULE_AUTHOR("Quan Nguyen <quan@os.amperecomputing.com>");
++MODULE_DESCRIPTION("Ampere Altra SMpro Misc driver");
++MODULE_LICENSE("GPL");
 -- 
 2.28.0
 
