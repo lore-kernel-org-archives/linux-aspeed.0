@@ -1,105 +1,163 @@
 From: Quan Nguyen <quan@os.amperecomputing.com>
-Date: Fri, 24 Dec 2021 11:13:44 +0700
-Subject: [PATCH v6 1/9] dt-bindings: mfd: Add bindings for Ampere Altra SMPro
- MFD driver
+Date: Fri, 24 Dec 2021 11:13:45 +0700
+Subject: [PATCH v6 2/9] mfd: smpro-mfd: Adds Ampere's Altra SMpro MFD driver
 In-Reply-To: <20211224041352.29405-1-quan@os.amperecomputing.com>
 References: <20211224041352.29405-1-quan@os.amperecomputing.com>
-Message-ID: <20211224041352.29405-2-quan@os.amperecomputing.com>
+Message-ID: <20211224041352.29405-3-quan@os.amperecomputing.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Adds device tree bindings for SMPro MFD driver found on the Mt.Jade
-hardware reference platform with Ampere's Altra Processor family.
-
-The SMpro co-processor on Ampere Altra processor family is to monitor
-and report various data included hwmon-related info, RAS errors, and
-other miscellaneous information.
+Adds Multi-function devices driver for SMpro co-processor found on the
+Mt.Jade hardware reference platform with Ampere's Altra processor family.
 
 Signed-off-by: Quan Nguyen <quan@os.amperecomputing.com>
-Reviewed-by: Rob Herring <robh@kernel.org>
 ---
 Changes in v6:
-  + None
+  + Update license part to reflect that this driver is clone from
+  simple-mfd-i2c driver [Quan]
 
 Changes in v5:
-  + Dropped ../bindings/hwmon/ampere,ac01-hwmon.yaml file [Quan]
-  + Removed patternProperties section and child DT nodes in example
-  section [Quan]
+  + Dropped the use of simple-mfd-i2c driver [Quan]
+  + Introduced drivers/mfd/smpro-mfd.c driver to instantiate
+  sub-devices. This is to avoid DT nodes without resource issue [Quan]
   + Revised commit message [Quan]
 
 Changes in v4:
-  + Revised the commit message to clarify how the specific info will
-    be handled commented by Rob.
+  + Add "depends on I2C" to fix build issue found by kernel test
+  robot [Guenter]
 
 Changes in v3:
-  + Supported list of compatible string [Rob]
-  + Introduced reg property in DT to specify reg offset [Rob]
-  + Updated description and other minor changes in yaml file [Rob]
+  + None
 
 Changes in v2:
-  + Changed "ampere,ac01-smpro" to "ampere,smpro" [Quan]
+  + Used 'struct of_device_id's .data attribute [Lee Jones]
 
- .../devicetree/bindings/mfd/ampere,smpro.yaml | 48 +++++++++++++++++++
- 1 file changed, 48 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/mfd/ampere,smpro.yaml
+ drivers/mfd/Kconfig     | 12 +++++++
+ drivers/mfd/Makefile    |  1 +
+ drivers/mfd/smpro-mfd.c | 76 +++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 89 insertions(+)
+ create mode 100644 drivers/mfd/smpro-mfd.c
 
-diff --git a/Documentation/devicetree/bindings/mfd/ampere,smpro.yaml b/Documentation/devicetree/bindings/mfd/ampere,smpro.yaml
+diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
+index a21cbdf89477..a886da5018b1 100644
+--- a/drivers/mfd/Kconfig
++++ b/drivers/mfd/Kconfig
+@@ -77,6 +77,18 @@ config MFD_AS3711
+ 	help
+ 	  Support for the AS3711 PMIC from AMS
+ 
++config MFD_SMPRO
++	tristate "Ampere Computing MFD SMpro core driver"
++	depends on I2C
++	select MFD_CORE
++	select REGMAP_I2C
++	help
++	  Say yes here to enable SMpro driver support for Ampere's Altra
++	  processor family.
++
++	  Ampere's Altra SMpro exposes an I2C regmap interface that can
++	  be accessed by child devices.
++
+ config MFD_AS3722
+ 	tristate "ams AS3722 Power Management IC"
+ 	select MFD_CORE
+diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
+index 4d53e951a92d..fbcd09dce5ce 100644
+--- a/drivers/mfd/Makefile
++++ b/drivers/mfd/Makefile
+@@ -267,6 +267,7 @@ obj-$(CONFIG_MFD_QCOM_PM8008)	+= qcom-pm8008.o
+ 
+ obj-$(CONFIG_SGI_MFD_IOC3)	+= ioc3.o
+ obj-$(CONFIG_MFD_SIMPLE_MFD_I2C)	+= simple-mfd-i2c.o
++obj-$(CONFIG_MFD_SMPRO)		+= smpro-mfd.o
+ obj-$(CONFIG_MFD_INTEL_M10_BMC)   += intel-m10-bmc.o
+ 
+ obj-$(CONFIG_MFD_ATC260X)	+= atc260x-core.o
+diff --git a/drivers/mfd/smpro-mfd.c b/drivers/mfd/smpro-mfd.c
 new file mode 100644
-index 000000000000..c29d975c1bc3
+index 000000000000..132d4e2dde12
 --- /dev/null
-+++ b/Documentation/devicetree/bindings/mfd/ampere,smpro.yaml
-@@ -0,0 +1,48 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/mfd/ampere,smpro.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
++++ b/drivers/mfd/smpro-mfd.c
+@@ -0,0 +1,76 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Ampere Altra Family SMPro MFD - I2C
++ *
++ * Copyright (c) 2021, Ampere Computing LLC
++ * Author: Quan Nguyen <quan@os.amperecomputing..com>
++ *
++ * Based on simple-mfd-i2c.c:
++ * Copyright (c) by Michael Walle <michael@walle.cc>
++ */
 +
-+title: Ampere Altra SMPro firmware driver
++#include <linux/i2c.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/of_platform.h>
++#include <linux/mfd/core.h>
++#include <linux/regmap.h>
 +
-+maintainers:
-+  - Quan Nguyen <quan@os.amperecomputing.com>
++/* Identification Registers */
++#define MANUFACTURER_ID_REG     0x02
++#define AMPERE_MANUFACTURER_ID  0xCD3A
 +
-+description: |
-+  Ampere Altra SMPro firmware may contain different blocks like hardware
-+  monitoring, error monitoring and other miscellaneous features.
++static const struct regmap_config simple_word_regmap_config = {
++	.reg_bits = 8,
++	.val_bits = 16,
++};
 +
-+properties:
-+  compatible:
-+    enum:
-+      - ampere,smpro
++static const struct mfd_cell smpro_devs[] = {
++	MFD_CELL_NAME("smpro-hwmon"),
++};
 +
-+  reg:
-+    description:
-+      I2C device address.
-+    maxItems: 1
++static int smpro_mfd_probe(struct i2c_client *i2c)
++{
++	const struct regmap_config *config;
++	struct regmap *regmap;
++	unsigned int val;
++	int ret;
 +
-+  "#address-cells":
-+    const: 1
++	config = device_get_match_data(&i2c->dev);
++	if (!config)
++		config = &simple_word_regmap_config;
 +
-+  "#size-cells":
-+    const: 0
++	regmap = devm_regmap_init_i2c(i2c, config);
++	if (IS_ERR(regmap))
++		return PTR_ERR(regmap);
 +
-+required:
-+  - compatible
-+  - reg
++	/* Check for valid ID */
++	ret = regmap_read(regmap, MANUFACTURER_ID_REG, &val);
++	if (ret)
++		return ret;
 +
-+additionalProperties: false
++	if (val != AMPERE_MANUFACTURER_ID)
++		return -ENODEV;
 +
-+examples:
-+  - |
-+    i2c {
-+        #address-cells = <1>;
-+        #size-cells = <0>;
++	return devm_mfd_add_devices(&i2c->dev, PLATFORM_DEVID_AUTO,
++				    smpro_devs, ARRAY_SIZE(smpro_devs), NULL, 0, NULL);
++}
 +
-+        smpro at 4f {
-+            compatible = "ampere,smpro";
-+            reg = <0x4f>;
-+        };
-+    };
++static const struct of_device_id smpro_mfd_of_match[] = {
++	{ .compatible = "ampere,smpro", .data = &simple_word_regmap_config },
++	{}
++};
++MODULE_DEVICE_TABLE(of, smpro_mfd_of_match);
++
++static struct i2c_driver smpro_mfd_driver = {
++	.probe_new = smpro_mfd_probe,
++	.driver = {
++		.name = "smpro-mfd-i2c",
++		.of_match_table = smpro_mfd_of_match,
++	},
++};
++module_i2c_driver(smpro_mfd_driver);
++
++MODULE_AUTHOR("Quan Nguyen <quan@os.amperecomputing.com>");
++MODULE_DESCRIPTION("SMPRO MFD - I2C driver");
++MODULE_LICENSE("GPL v2");
 -- 
 2.28.0
 
