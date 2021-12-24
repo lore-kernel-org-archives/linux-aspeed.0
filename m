@@ -1,94 +1,114 @@
-From: Jammy Huang <jammy_huang@aspeedtech.com>
-Date: Fri, 24 Dec 2021 09:27:35 +0800
-Subject: [PATCH v8 1/4] media: v4l: Add definition for the Aspeed JPEG format
-In-Reply-To: <20211224012738.1551-1-jammy_huang@aspeedtech.com>
-References: <20211224012738.1551-1-jammy_huang@aspeedtech.com>
-Message-ID: <20211224012738.1551-2-jammy_huang@aspeedtech.com>
+From: Quan Nguyen <quan@os.amperecomputing.com>
+Date: Fri, 24 Dec 2021 11:13:43 +0700
+Subject: [PATCH v6 0/9] Add Ampere's Altra SMPro MFD and its child drivers
+Message-ID: <20211224041352.29405-1-quan@os.amperecomputing.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This introduces support for the Aspeed JPEG format, where the new frame
-can refer to previous frame to reduce the amount of compressed data. The
-concept is similar to I/P frame of video compression. It will compare the
-new frame with previous one to decide which macroblock's data is
-changed, and only the changed macroblocks will be compressed.
+The SMpro co-processor on Ampere Altra processor family is to monitor
+and report various data included hwmon-related info, RAS errors, and
+other miscellaneous information. The SMPro MFD driver intializes the
+register map and instantiates all sub-devices. All the specifics will
+be handled in the child drivers.
 
-This Aspeed JPEG format is used by the video engine on Aspeed platforms,
-which is generally adapted for remote KVM.
+This patch set includes support for Ampere SMpro hwmon, errmon, and
+misc as the child drivers. The hwmon driver supports accessing various
+CPU sensors provided by the SMpro co-processor including temperature,
+power, voltages, and current found on Ampere Altra processor family.
+The errmon driver supports monitoring and reporting RAS-related errors.
+The misc driver is to support reporting boot progress and other
+miscellaneous information.
 
-Signed-off-by: Jammy Huang <jammy_huang@aspeedtech.com>
----
-v8:
-  - Add decoder information for aspeed-jpeg
-v7:
-  - Add more information for aspeed-jpeg
 v6:
-  - Update description for new format, aspeed-jpeg, in Documentation.
-v5:
-  - no update
-v4:
-  - new
----
- .../media/uapi/v4l/pixfmt-reserved.rst          | 17 +++++++++++++++++
- drivers/media/v4l2-core/v4l2-ioctl.c            |  1 +
- include/uapi/linux/videodev2.h                  |  1 +
- 3 files changed, 19 insertions(+)
+  + Introduced smpro-errmon, smpro-misc as smpro-mfd sub-device [Quan]
+  + Comments for v5: https://lkml.org/lkml/2021/7/13/49
 
-diff --git a/Documentation/media/uapi/v4l/pixfmt-reserved.rst b/Documentation/media/uapi/v4l/pixfmt-reserved.rst
-index b2cd155e691b..1d0dc8d86ed7 100644
---- a/Documentation/media/uapi/v4l/pixfmt-reserved.rst
-+++ b/Documentation/media/uapi/v4l/pixfmt-reserved.rst
-@@ -264,6 +264,23 @@ please make a proposal on the linux-media mailing list.
- 	of tiles, resulting in 32-aligned resolutions for the luminance plane
- 	and 16-aligned resolutions for the chrominance plane (with 2x2
- 	subsampling).
-+    * .. _V4L2-PIX-FMT-AJPG:
-+
-+      - ``V4L2_PIX_FMT_AJPG``
-+      - 'AJPG'
-+      - ASPEED JPEG format used by the aspeed-video driver on Aspeed platforms,
-+        which is generally adapted for remote KVM.
-+        On each frame compression, I will compare the new frame with previous
-+        one to decide which macroblock's data is changed, and only the changed
-+        macroblocks will be compressed.
-+
-+        The implementation is based on AST2600 A3 datasheet, revision 0.9, which
-+        is not publicly available. Or you can reference Video stream data format
-+        ? ASPEED mode compression of SDK_User_Guide which available on
-+        AspeedTech-BMC/openbmc/releases.
-+
-+        Decoder's implementation can be found here,
-+        `https://github.com/AspeedTech-BMC/aspeed_codec/ <https://github.com/AspeedTech-BMC/aspeed_codec/>`__
- 
- .. tabularcolumns:: |p{6.6cm}|p{2.2cm}|p{8.7cm}|
- 
-diff --git a/drivers/media/v4l2-core/v4l2-ioctl.c b/drivers/media/v4l2-core/v4l2-ioctl.c
-index 24db33f803c0..00dde01d2f97 100644
---- a/drivers/media/v4l2-core/v4l2-ioctl.c
-+++ b/drivers/media/v4l2-core/v4l2-ioctl.c
-@@ -1378,6 +1378,7 @@ static void v4l_fill_fmtdesc(struct v4l2_fmtdesc *fmt)
- 		case V4L2_PIX_FMT_S5C_UYVY_JPG:	descr = "S5C73MX interleaved UYVY/JPEG"; break;
- 		case V4L2_PIX_FMT_MT21C:	descr = "Mediatek Compressed Format"; break;
- 		case V4L2_PIX_FMT_SUNXI_TILED_NV12: descr = "Sunxi Tiled NV12 Format"; break;
-+		case V4L2_PIX_FMT_AJPG:		descr = "Aspeed JPEG"; break;
- 		default:
- 			if (fmt->description[0])
- 				return;
-diff --git a/include/uapi/linux/videodev2.h b/include/uapi/linux/videodev2.h
-index 3210b3c82a4a..994eb6155ea9 100644
---- a/include/uapi/linux/videodev2.h
-+++ b/include/uapi/linux/videodev2.h
-@@ -726,6 +726,7 @@ struct v4l2_pix_format {
- #define V4L2_PIX_FMT_INZI     v4l2_fourcc('I', 'N', 'Z', 'I') /* Intel Planar Greyscale 10-bit and Depth 16-bit */
- #define V4L2_PIX_FMT_SUNXI_TILED_NV12 v4l2_fourcc('S', 'T', '1', '2') /* Sunxi Tiled NV12 Format */
- #define V4L2_PIX_FMT_CNF4     v4l2_fourcc('C', 'N', 'F', '4') /* Intel 4-bit packed depth confidence information */
-+#define V4L2_PIX_FMT_AJPG     v4l2_fourcc('A', 'J', 'P', 'G') /* Aspeed JPEG */
- 
- /* 10bit raw bayer packed, 32 bytes for every 25 pixels, last LSB 6 bits unused */
- #define V4L2_PIX_FMT_IPU3_SBGGR10	v4l2_fourcc('i', 'p', '3', 'b') /* IPU3 packed 10-bit BGGR bayer */
+v5:
+  + Introduced the smpro-mfd driver and drop the use of
+  simple-mfd-i2c driver to avoid DT node with no resource in child
+  device DT nodes [Rob]
+  + Removed the use of reg DT property in child driver [Quan]
+  + Validated ManufactureID when probing smpro-mfd drivers [Quan]
+  + As child devices are instantiated by SMPro MFD driver, drop the
+  ManufacturerID checking in child driver, ie: smpro-hwmon [Quan]
+  + Revised commit messages [Quan]
+
+v4:
+  + Revised commit message [Quan]
+  + Fixed build issue found by kernel test robot [Guenter]
+  + Returned regmap_read() error code [Guenter]
+
+v3:
+  + Supported list of compatible string [Rob]
+  + Introduced reg property in DT to specify reg offset [Rob]
+  + Updated description and other minor changes in yaml file [Rob]
+  + Handled negative temperature value [Guenter]
+  + Returned -ENODEV if Manufacturer ID is wrong [Guenter]
+  + Refactored smpro_read_string() and smpro_temp_read() [Guenter]
+  + Removed smpro_write() function [Guenter]
+  + Added minor refactor changes [Quan]
+
+v2:
+  + Used 'struct of_device_id's .data attribute [Lee Jones]
+  + Removed "virtual" sensors [Guenter]
+  + Fixed typo "mili" to "milli", "nanoWatt" to "microWatt" [Guenter]
+  + Reported SOC_TDP as "Socket TDP" using max attributes [Guenter]
+  + Clarified "highest" meaning in documentation [Guenter]
+  + Corrected return error code when host is turn off [Guenter]
+  + Reported MEM HOT Threshold for all DIMMs as temp*_crit [Guenter]
+  + Removed license info as SPDX-License-Identifier existed [Guenter]
+  + Added is_visible() support [Guenter]
+  + Used HWMON_CHANNEL_INFO() macro and LABEL attributes [Guenter]
+  + Made is_valid_id() return boolean [Guenter]
+  + Returned -EPROBE_DEFER when smpro reg inaccessible [Guenter]
+  + Removed unnecessary error message when dev register fail [Guenter]
+  + Removed Socket TDP sensor [Quan]
+  + Changed "ampere,ac01-smpro" to "ampere,smpro" [Quan]
+  + Included sensor type and channel in labels [Quan]
+  + Refactorized code to fix checkpatch.pl --strict complaint [Quan]
+
+Quan Nguyen (9):
+  dt-bindings: mfd: Add bindings for Ampere Altra SMPro MFD driver
+  mfd: smpro-mfd: Adds Ampere's Altra SMpro MFD driver
+  hwmon: smpro: Add Ampere's Altra smpro-hwmon driver
+  docs: hwmon: (smpro-hwmon) Add documentation
+  regmap: Introduces regmap lock helpers
+  misc: smpro-errmon: Add Ampere's SMpro error monitor driver
+  docs: misc-devices: (smpro-errmon) Add documentation
+  misc: smpro-misc: Add Ampere's Altra SMpro misc driver
+  docs: misc-devices: (smpro-misc) Add documentation
+
+ .../devicetree/bindings/mfd/ampere,smpro.yaml |  48 ++
+ Documentation/hwmon/index.rst                 |   1 +
+ Documentation/hwmon/smpro-hwmon.rst           | 101 ++++
+ Documentation/misc-devices/index.rst          |   2 +
+ Documentation/misc-devices/smpro-errmon.rst   | 206 +++++++
+ Documentation/misc-devices/smpro-misc.rst     |  82 +++
+ drivers/base/regmap/regmap.c                  |  12 +
+ drivers/hwmon/Kconfig                         |   8 +
+ drivers/hwmon/Makefile                        |   1 +
+ drivers/hwmon/smpro-hwmon.c                   | 463 ++++++++++++++
+ drivers/mfd/Kconfig                           |  12 +
+ drivers/mfd/Makefile                          |   1 +
+ drivers/mfd/smpro-mfd.c                       |  78 +++
+ drivers/misc/Kconfig                          |  14 +
+ drivers/misc/Makefile                         |   2 +
+ drivers/misc/smpro-errmon.c                   | 571 ++++++++++++++++++
+ drivers/misc/smpro-misc.c                     | 177 ++++++
+ include/linux/regmap.h                        |   2 +
+ 18 files changed, 1781 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/mfd/ampere,smpro.yaml
+ create mode 100644 Documentation/hwmon/smpro-hwmon.rst
+ create mode 100644 Documentation/misc-devices/smpro-errmon.rst
+ create mode 100644 Documentation/misc-devices/smpro-misc.rst
+ create mode 100644 drivers/hwmon/smpro-hwmon.c
+ create mode 100644 drivers/mfd/smpro-mfd.c
+ create mode 100644 drivers/misc/smpro-errmon.c
+ create mode 100644 drivers/misc/smpro-misc.c
+
 -- 
-2.25.1
+2.28.0
 
