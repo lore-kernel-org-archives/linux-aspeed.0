@@ -1,45 +1,52 @@
-From: Bartosz Golaszewski <brgl@bgdev.pl>
-Date: Wed, 22 Dec 2021 10:18:31 +0100
-Subject: [PATCH v1 1/1] gpio: gpio-aspeed-sgpio: Fix wrong hwirq base in
- irq handler
-In-Reply-To: <20211214040239.8977-2-steven_lee@aspeedtech.com>
-References: <20211214040239.8977-1-steven_lee@aspeedtech.com>
- <20211214040239.8977-2-steven_lee@aspeedtech.com>
-Message-ID: <CAMRc=MdAgK7zKuJ=7cA2T-mSTJD3tWSW2aEB6G=0Tz4X+iHcZQ@mail.gmail.com>
+From: Jammy Huang <jammy_huang@aspeedtech.com>
+Date: Fri, 24 Dec 2021 09:27:36 +0800
+Subject: [PATCH v8 2/4] media: v4l2-ctrls: Reserve controls for ASPEED
+In-Reply-To: <20211224012738.1551-1-jammy_huang@aspeedtech.com>
+References: <20211224012738.1551-1-jammy_huang@aspeedtech.com>
+Message-ID: <20211224012738.1551-3-jammy_huang@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Dec 14, 2021 at 5:03 AM Steven Lee <steven_lee@aspeedtech.com> wrote:
->
-> Each aspeed sgpio bank has 64 gpio pins(32 input pins and 32 output pins).
-> The hwirq base for each sgpio bank should be multiples of 64 rather than
-> multiples of 32.
->
-> Signed-off-by: Steven Lee <steven_lee@aspeedtech.com>
-> ---
->  drivers/gpio/gpio-aspeed-sgpio.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/drivers/gpio/gpio-aspeed-sgpio.c b/drivers/gpio/gpio-aspeed-sgpio.c
-> index 3d6ef37a7702..b3a9b8488f11 100644
-> --- a/drivers/gpio/gpio-aspeed-sgpio.c
-> +++ b/drivers/gpio/gpio-aspeed-sgpio.c
-> @@ -395,7 +395,7 @@ static void aspeed_sgpio_irq_handler(struct irq_desc *desc)
->                 reg = ioread32(bank_reg(data, bank, reg_irq_status));
->
->                 for_each_set_bit(p, &reg, 32)
-> -                       generic_handle_domain_irq(gc->irq.domain, i * 32 + p * 2);
-> +                       generic_handle_domain_irq(gc->irq.domain, (i * 32 + p) * 2);
->         }
->
->         chained_irq_exit(ic, desc);
-> --
-> 2.17.1
->
+Reserve controls for ASPEED video family. Aspeed video engine contains a
+few features which improve video quality, reduce amount of compressed
+data, and etc. Hence, 16 controls are reserved for these aspeed
+proprietary features.
 
-Joel, Andrew: any comments on this? I'd like to send it upstream tomorrow.
+Signed-off-by: Jammy Huang <jammy_huang@aspeedtech.com>
+---
+v8:
+  - no update
+v7:
+  - no update
+v6:
+  - no update
+v5:
+  - no update
+v4:
+  - new
+---
+ include/uapi/linux/v4l2-controls.h | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-Bart
+diff --git a/include/uapi/linux/v4l2-controls.h b/include/uapi/linux/v4l2-controls.h
+index a2669b79b294..e7c425a6fa9f 100644
+--- a/include/uapi/linux/v4l2-controls.h
++++ b/include/uapi/linux/v4l2-controls.h
+@@ -192,6 +192,11 @@ enum v4l2_colorfx {
+  * We reserve 16 controls for this driver. */
+ #define V4L2_CID_USER_IMX_BASE			(V4L2_CID_USER_BASE + 0x10b0)
+ 
++/* The base for the aspeed driver controls.
++ * We reserve 16 controls for this driver.
++ */
++#define V4L2_CID_USER_ASPEED_BASE		(V4L2_CID_USER_BASE + 0x10c0)
++
+ /* MPEG-class control IDs */
+ /* The MPEG controls are applicable to all codec controls
+  * and the 'MPEG' part of the define is historical */
+-- 
+2.25.1
+
