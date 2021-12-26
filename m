@@ -1,50 +1,57 @@
-From: Patrick Williams <patrick@stwcx.xyz>
-Date: Thu, 30 Dec 2021 09:29:46 -0600
-Subject: [PATCH] mtd: aspeed-smc: improve probe resilience
-In-Reply-To: <20211229173411.l2bipmi4x3arqjoo@ti.com>
-References: <20211229143334.297305-1-patrick@stwcx.xyz>
- <20211229173411.l2bipmi4x3arqjoo@ti.com>
-Message-ID: <Yc3Qav+ULNdF5zRT@heinlein>
+From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Date: Sun, 26 Dec 2021 17:56:02 +0100
+Subject: [PATCH] fsi: Aspeed: Fix a potential double free
+Message-ID: <2cafa0607ca171ebd00ac6c7e073b46808e24f00.1640537669.git.christophe.jaillet@wanadoo.fr>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Dec 29, 2021 at 11:04:13PM +0530, Pratyush Yadav wrote:
-> Hi,
-> 
-> On 29/12/21 08:33AM, Patrick Williams wrote:
+'aspeed' is a devm_alloc'ed, so there is no need to free it explicitly or
+there will be a double free().
+
+Remove the 'release' function that is wrong and unneeded.
+
+Fixes: 606397d67f41 ("fsi: Add ast2600 master driver")
+Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+---
+This patch is completely theoretical. It looks good to me, but there is a
+little too much indirections for me. I'm also not that familiar with
+fixing issue related to 'release' function...
+
+... So review with care :)
+---
+ drivers/fsi/fsi-master-aspeed.c | 9 ---------
+ 1 file changed, 9 deletions(-)
+
+diff --git a/drivers/fsi/fsi-master-aspeed.c b/drivers/fsi/fsi-master-aspeed.c
+index 8606e55c1721..4a745ccb60cf 100644
+--- a/drivers/fsi/fsi-master-aspeed.c
++++ b/drivers/fsi/fsi-master-aspeed.c
+@@ -373,14 +373,6 @@ static int aspeed_master_break(struct fsi_master *master, int link)
+ 	return aspeed_master_write(master, link, 0, addr, &cmd, 4);
+ }
  
-> The patch itself looks fine to me but we no longer want to maintain 
-> drivers under drivers/mtd/spi-nor/controllers/. They should be moved to 
-> implement the SPI MEM API (under drivers/spi/).
-
-Is the linux-aspeed community aware of this?  Are you saying you don't want to
-take fixes for their driver into the MTD tree?  Can it be pulled into the Aspeed
-tree?
-
-> Could you please volunteer to do the conversion for this driver?
-
-I'm not personally going to be able to get to it for at least the next 3 months.
-
-It looks like we don't have a dedicated maintainer for this driver other than
-Joel by nature of him being listed as the maintainer of "ARM/ASPEED MACHINE
-SUPPORT".  I'm not sure if Aspeed themselves are planning on doing the necessary
-refactoring here.
-
-
-Joel, are you aware of this driver using a deprecated implementation?  Were
-there anyone planning to do the reworks that you are aware of?  I'd like to get
-this fix at least into the OpenBMC kernel tree because I'm seeing this fail in
-the real world.
-
+-static void aspeed_master_release(struct device *dev)
+-{
+-	struct fsi_master_aspeed *aspeed =
+-		to_fsi_master_aspeed(dev_to_fsi_master(dev));
+-
+-	kfree(aspeed);
+-}
+-
+ /* mmode encoders */
+ static inline u32 fsi_mmode_crs0(u32 x)
+ {
+@@ -603,7 +595,6 @@ static int fsi_master_aspeed_probe(struct platform_device *pdev)
+ 	dev_info(&pdev->dev, "hub version %08x (%d links)\n", reg, links);
+ 
+ 	aspeed->master.dev.parent = &pdev->dev;
+-	aspeed->master.dev.release = aspeed_master_release;
+ 	aspeed->master.dev.of_node = of_node_get(dev_of_node(&pdev->dev));
+ 
+ 	aspeed->master.n_links = links;
 -- 
-Patrick Williams
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 833 bytes
-Desc: not available
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20211230/76fca388/attachment.sig>
+2.32.0
+
