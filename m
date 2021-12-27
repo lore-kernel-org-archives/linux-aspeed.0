@@ -1,51 +1,77 @@
-From: Mark Brown <broonie@kernel.org>
-Date: Fri, 24 Dec 2021 13:28:57 +0000
-Subject: [PATCH v6 6/9] misc: smpro-errmon: Add Ampere's SMpro error
- monitor driver
-In-Reply-To: <20211224041352.29405-7-quan@os.amperecomputing.com>
-References: <20211224041352.29405-1-quan@os.amperecomputing.com>
- <20211224041352.29405-7-quan@os.amperecomputing.com>
-Message-ID: <YcXLGYWx4gYq/Y+J@sirena.org.uk>
+From: Neal Liu <neal_liu@aspeedtech.com>
+Date: Mon, 27 Dec 2021 02:07:02 +0000
+Subject: [PATCH v3 2/4] usb: aspeed-vhub: fix remote wakeup failure in
+ iKVM use case
+In-Reply-To: <HK0PR06MB3202051E7C15E84006DF55C0807B9@HK0PR06MB3202.apcprd06.prod.outlook.com>
+References: <20211208100545.1441397-1-neal_liu@aspeedtech.com>
+ <20211208100545.1441397-3-neal_liu@aspeedtech.com>
+ <391323f136e49387797d43e89b6e42cd95d916c2.camel@kernel.crashing.org>
+ <HK0PR06MB320271524E51BDFA922F070780709@HK0PR06MB3202.apcprd06.prod.outlook.com>
+ <0888eb83c8b2bd53d4c3e2355019052d0ab40db6.camel@kernel.crashing.org>
+ <HK0PR06MB3202051E7C15E84006DF55C0807B9@HK0PR06MB3202.apcprd06.prod.outlook.com>
+Message-ID: <HK0PR06MB3202796B4DDF471856149B1480429@HK0PR06MB3202.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Dec 24, 2021 at 11:13:49AM +0700, Quan Nguyen wrote:
+> -----Original Message-----
+> From: Neal Liu
+> Sent: Monday, December 20, 2021 10:23 AM
+> To: Benjamin Herrenschmidt <benh@kernel.crashing.org>; Felipe Balbi
+> <balbi@kernel.org>; Greg Kroah-Hartman <gregkh@linuxfoundation.org>; Joel
+> Stanley <joel@jms.id.au>; Andrew Jeffery <andrew@aj.id.au>; Cai Huoqing
+> <caihuoqing@baidu.com>; Tao Ren <rentao.bupt@gmail.com>; Julia Lawall
+> <julia.lawall@inria.fr>; kernel test robot <lkp@intel.com>; Sasha Levin
+> <sashal@kernel.org>; linux-usb at vger.kernel.org; linux-kernel at vger.kernel.org;
+> linux-arm-kernel at lists.infradead.org; linux-aspeed at lists.ozlabs.org
+> Cc: BMC-SW <BMC-SW@aspeedtech.com>
+> Subject: RE: [PATCH v3 2/4] usb: aspeed-vhub: fix remote wakeup failure in
+> iKVM use case
+> 
+> > -----Original Message-----
+> > From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> > Sent: Tuesday, December 14, 2021 10:36 AM
+> > To: Neal Liu <neal_liu@aspeedtech.com>; Felipe Balbi
+> > <balbi@kernel.org>; Greg Kroah-Hartman <gregkh@linuxfoundation.org>;
+> > Joel Stanley <joel@jms.id.au>; Andrew Jeffery <andrew@aj.id.au>; Cai
+> > Huoqing <caihuoqing@baidu.com>; Tao Ren <rentao.bupt@gmail.com>; Julia
+> > Lawall <julia.lawall@inria.fr>; kernel test robot <lkp@intel.com>;
+> > Sasha Levin <sashal@kernel.org>; linux-usb at vger.kernel.org;
+> > linux-kernel at vger.kernel.org; linux-arm-kernel at lists.infradead.org;
+> > linux-aspeed at lists.ozlabs.org
+> > Cc: BMC-SW <BMC-SW@aspeedtech.com>
+> > Subject: Re: [PATCH v3 2/4] usb: aspeed-vhub: fix remote wakeup
+> > failure in iKVM use case
+> >
+> > On Thu, 2021-12-09 at 02:37 +0000, Neal Liu wrote:
+> > > I'm confused. Signaling Wakeup when wakeup_en is set if it has any
+> > > ep activities is not exactly what you said?
+> > >
+> > > wakeup_en is set only if host allows this device have wakeup
+> > > capability and bus being suspended.
+> > >
+> > > Normal ep activities would not write the MMIO because wakeup_en is
+> > > not set.
+> >
+> > Hrm... I didn't think wakeup_en was limited to the bus being
+> > suspended, but maybe I misremember, it's been a while.
+> >
+> > Cheers,
+> > Ben.
+> >
+> 
+> wakeup_en is only set in the case of host set USB_DEVICE_REMOTE_WAKEUP
+> feature to vhub devices.
+> I think this behavior only occurs during host is going to suspend, and set this
+> feature to any device which can wakeup itself before sleep.
+> Thanks
+> 
+> -Neal
+> 
+Would you like to test it if you have some free time.
+Please feel free for any feedback.
 
-> +static int read_i2c_block_data(struct i2c_client *client, u16 address, u16 length, u8 *data)
-> +{
-> +	unsigned char outbuf[MAX_READ_BLOCK_LENGTH];
-> +	unsigned char inbuf[2];
-> +	struct i2c_msg msgs[2];
-> +	ssize_t ret;
-> +
-> +	inbuf[0] = (address & 0xff);
-> +	inbuf[1] = length;
-> +
-> +	msgs[0].addr = client->addr;
-> +	msgs[0].flags = client->flags & I2C_M_TEN;
-> +	msgs[0].len = 2;
-> +	msgs[0].buf = inbuf;
-> +
-> +	msgs[1].addr = client->addr;
-> +	msgs[1].flags = (client->flags  & I2C_M_TEN) | I2C_M_RD;
-> +	msgs[1].len = length;
-> +	msgs[1].buf = outbuf;
-> +
-> +	ret = i2c_transfer(client->adapter, msgs, NUM_I2C_MESSAGES);
-> +	if (ret < 0)
+-Neal
 
-regmap already supports bulk data access so it's not clear why we
-would open code this.  Given that this is a single I2C transfer
-it's also unclear why we'd need to export the regmap lock - a
-single I2C transfer is atomic@the bus level so the regmap lock
-isn't providing any additional concurrency protection.
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 488 bytes
-Desc: not available
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20211224/86f8c99e/attachment.sig>
