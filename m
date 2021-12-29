@@ -1,56 +1,107 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Wed, 29 Dec 2021 10:18:37 +0000
-Subject: [PATCH v6 8/9] misc: smpro-misc: Add Ampere's Altra SMpro misc
- driver
-In-Reply-To: <20211224041352.29405-9-quan@os.amperecomputing.com>
-References: <20211224041352.29405-1-quan@os.amperecomputing.com>
- <20211224041352.29405-9-quan@os.amperecomputing.com>
-Message-ID: <Ycw1/XufNWq/FUss@google.com>
+From: Patrick Williams <patrick@stwcx.xyz>
+Date: Wed, 29 Dec 2021 08:33:33 -0600
+Subject: [PATCH] mtd: aspeed-smc: improve probe resilience
+Message-ID: <20211229143334.297305-1-patrick@stwcx.xyz>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, 24 Dec 2021, Quan Nguyen wrote:
+The aspeed-smc can have multiple SPI devices attached to it in the
+device tree.  If one of the devices is missing or failing the entire
+probe will fail and all MTD devices under the controller will be
+removed.  On OpenBMC this results in a kernel panic due to missing
+rootfs:
 
-> This commit adds driver support for accessing various information
-> reported by Ampere's SMpro co-processor such as Boot Progress and
-> other miscellaneous data.
-> 
-> Signed-off-by: Quan Nguyen <quan@os.amperecomputing.com>
-> ---
-> Change in v6:
->   + First introduced in v6 [Quan]
-> 
->  drivers/mfd/smpro-mfd.c   |   1 +
+[    0.538774] aspeed-smc 1e620000.spi: Using 50 MHz SPI frequency
+[    0.540471] aspeed-smc 1e620000.spi: w25q01jv-iq (131072 Kbytes)
+[    0.540750] aspeed-smc 1e620000.spi: CE0 window [ 0x20000000 - 0x28000000 ] 128MB
+[    0.540943] aspeed-smc 1e620000.spi: CE1 window [ 0x28000000 - 0x2c000000 ] 64MB
+[    0.541143] aspeed-smc 1e620000.spi: read control register: 203b0041
+[    0.581442] 5 fixed-partitions partitions found on MTD device bmc
+[    0.581625] Creating 5 MTD partitions on "bmc":
+[    0.581854] 0x000000000000-0x0000000e0000 : "u-boot"
+[    0.584472] 0x0000000e0000-0x000000100000 : "u-boot-env"
+[    0.586468] 0x000000100000-0x000000a00000 : "kernel"
+[    0.588465] 0x000000a00000-0x000006000000 : "rofs"
+[    0.590552] 0x000006000000-0x000008000000 : "rwfs"
+[    0.592605] aspeed-smc 1e620000.spi: Using 50 MHz SPI frequency
+[    0.592801] aspeed-smc 1e620000.spi: unrecognized JEDEC id bytes: 00 00 00 00 00 00
+[    0.593039] Deleting MTD partitions on "bmc":
+[    0.593175] Deleting u-boot MTD partition
+[    0.637929] Deleting u-boot-env MTD partition
+[    0.829527] Deleting kernel MTD partition
+[    0.856902] Freeing initrd memory: 1032K
+[    0.866428] Deleting rofs MTD partition
+[    0.906264] Deleting rwfs MTD partition
+[    0.986628] aspeed-smc 1e620000.spi: Aspeed SMC probe failed -2
+[    0.986929] aspeed-smc: probe of 1e620000.spi failed with error -2
+...
+[    2.936719] /dev/mtdblock: Can't open blockdev
+mount: mounting /dev/mtdblock on run/initramfs/ro failed: No such file or directory
+[    2.963030] MTD: Couldn't look up '/dev/mtdblock': -2
+mount: mounting /dev/mtdblock on run/initramfs/rw failed: No such file or directory
 
-Please pull all of these patches out.
+Mounting read-write /dev/mtdblock filesystem failed.  Please fix and run
+	mount /dev/mtdblock run/initramfs/rw -t jffs2 -o rw
+or perform a factory reset with the clean-rwfs-filesystem option.
+Fatal error, triggering kernel panic!
+[    3.013047] Kernel panic - not syncing: Attempted to kill init! exitcode=0x00000100
 
-There are no build dependencies here.
+Many BMC designs have two flash chips so that they can handle a hardware
+failure of one of them.  If one chip failed, it doesn't do any good to
+have redundancy if they all get removed anyhow.
 
->  drivers/misc/Kconfig      |   7 ++
->  drivers/misc/Makefile     |   1 +
->  drivers/misc/smpro-misc.c | 177 ++++++++++++++++++++++++++++++++++++++
->  4 files changed, 186 insertions(+)
->  create mode 100644 drivers/misc/smpro-misc.c
-> 
-> diff --git a/drivers/mfd/smpro-mfd.c b/drivers/mfd/smpro-mfd.c
-> index a7cd64bf9eaa..5611dd30f8f4 100644
-> --- a/drivers/mfd/smpro-mfd.c
-> +++ b/drivers/mfd/smpro-mfd.c
-> @@ -28,6 +28,7 @@ static const struct regmap_config simple_word_regmap_config = {
->  static const struct mfd_cell smpro_devs[] = {
->  	MFD_CELL_NAME("smpro-hwmon"),
->  	MFD_CELL_NAME("smpro-errmon"),
-> +	MFD_CELL_NAME("smpro-misc"),
+Improve the resilience of the probe function to handle one of the
+children being missing or failed.  Only in the case where all children
+fail to probe should the controller be failed out.
 
-Misc is a Linuxisum which are not allowed in DT.
+Signed-off-by: Patrick Williams <patrick@stwcx.xyz>
+---
+ drivers/mtd/spi-nor/controllers/aspeed-smc.c | 15 +++++++++++++--
+ 1 file changed, 13 insertions(+), 2 deletions(-)
 
-What does this driver actually do?
-
+diff --git a/drivers/mtd/spi-nor/controllers/aspeed-smc.c b/drivers/mtd/spi-nor/controllers/aspeed-smc.c
+index 7225870e8b18..acfe010f9dd7 100644
+--- a/drivers/mtd/spi-nor/controllers/aspeed-smc.c
++++ b/drivers/mtd/spi-nor/controllers/aspeed-smc.c
+@@ -769,6 +769,7 @@ static int aspeed_smc_setup_flash(struct aspeed_smc_controller *controller,
+ 	struct device_node *child;
+ 	unsigned int cs;
+ 	int ret = -ENODEV;
++	bool found_one = false;
+ 
+ 	for_each_available_child_of_node(np, child) {
+ 		struct aspeed_smc_chip *chip;
+@@ -827,8 +828,17 @@ static int aspeed_smc_setup_flash(struct aspeed_smc_controller *controller,
+ 		 * by of property.
+ 		 */
+ 		ret = spi_nor_scan(nor, NULL, &hwcaps);
+-		if (ret)
+-			break;
++		/*
++		 * If we fail to scan the device it might not be present or
++		 * broken.  Don't fail the whole controller if others work.
++		 */
++		if (ret) {
++			if (found_one)
++				ret = 0;
++
++			devm_kfree(controller->dev, chip);
++			continue;
++		}
+ 
+ 		ret = aspeed_smc_chip_setup_finish(chip);
+ 		if (ret)
+@@ -839,6 +849,7 @@ static int aspeed_smc_setup_flash(struct aspeed_smc_controller *controller,
+ 			break;
+ 
+ 		controller->chips[cs] = chip;
++		found_one = true;
+ 	}
+ 
+ 	if (ret) {
 -- 
-Lee Jones [???]
-Senior Technical Lead - Developer Services
-Linaro.org ? Open source software for Arm SoCs
-Follow Linaro: Facebook | Twitter | Blog
+2.32.0
+
