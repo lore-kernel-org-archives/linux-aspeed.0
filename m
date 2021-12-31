@@ -1,79 +1,39 @@
-From: Joel Stanley <joel@jms.id.au>
-Date: Mon, 27 Jul 2020 23:45:11 +0000
-Subject: [GIT PULL] ARM: aspeed: devicetree changes for 5.9
-Message-ID: <CACPK8Xf_Np7LtcDFhywi6Uk1EgUpb0pVVa+Lr9YEwBRjbjOKCQ@mail.gmail.com>
+From: Petr Vorel <petr.vorel@gmail.com>
+Date: Fri, 31 Dec 2021 23:01:38 +0100
+Subject: [PATCH 1/1] arm: dts: aspeed: Fix typo
+Message-ID: <20211231220138.119747-1-petr.vorel@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello ARM maintainers,
+Fixes: 25337c735414 ("ARM: dts: aspeed: Add Inventec Lanyang BMC")
 
-Here's the ASPEED pull request for 5.9. Most of the patches have been
-sitting in next for a while, with a few late comers merged today.
+Signed-off-by: Petr Vorel <petr.vorel@gmail.com>
+---
+ arch/arm/boot/dts/aspeed-bmc-opp-lanyang.dts | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-The following changes since commit 2c887638a5fa1ac5e2491ae911f50d554b604985:
+diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-lanyang.dts b/arch/arm/boot/dts/aspeed-bmc-opp-lanyang.dts
+index c0847636f20b..e72e8ef5bff2 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-opp-lanyang.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-opp-lanyang.dts
+@@ -52,12 +52,12 @@ hdd_fault {
+ 			gpios = <&gpio ASPEED_GPIO(B, 3) GPIO_ACTIVE_HIGH>;
+ 		};
+ 		bmc_err {
+-			lable = "BMC_fault";
++			label = "BMC_fault";
+ 			gpios = <&gpio ASPEED_GPIO(H, 6) GPIO_ACTIVE_HIGH>;
+ 		};
+ 
+ 		sys_err {
+-			lable = "Sys_fault";
++			label = "Sys_fault";
+ 			gpios = <&gpio ASPEED_GPIO(H, 7) GPIO_ACTIVE_HIGH>;
+ 		};
+ 	};
+-- 
+2.34.1
 
-  ARM: dts: Aspeed: tacoma: Enable EHCI controller (2020-07-28 09:02:45 +0930)
-
-are available in the Git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/joel/aspeed.git
-tags/aspeed-5.9-devicetree
-
-for you to fetch changes up to 2c887638a5fa1ac5e2491ae911f50d554b604985:
-
-  ARM: dts: Aspeed: tacoma: Enable EHCI controller (2020-07-28 09:02:45 +0930)
-
-----------------------------------------------------------------
-ASPEED device tree updates for 5.9
-
-There is one new machine; AMD's EthanolX reference platform with an
-AST2600 BMC.
-
-Misc updates for Rainier, Tacoma, Wedge and Mihawk machines.
-
-----------------------------------------------------------------
-
-Andrew Jeffery (2):
-      ARM: dts: rainier: Configure ball Y23 as GPIOP7 for MCLR_VPP
-      ARM: dts: rainier: Describe GPIO mux on I2C3
-
-Ben Pai (2):
-      ARM: dts: aspeed: mihawk: IO expander uses TCA9554 driver
-      ARM: dts: aspeed: mihawk: Add 8 tmp401 thermal sensors
-
-Ben Tyner (2):
-      ARM: dts: aspeed: tacoma: Remove checkstop gpio-key
-      ARM: dts: aspeed: rainier: Add line-name checkstop
-
-Eddie James (9):
-      ARM: dts: aspeed: ast2500: Update XDMA engine node
-      ARM: dts: aspeed: ast2600: Update XDMA engine node
-      ARM: dts: aspeed: witherspoon: Enable XDMA engine
-      ARM: dts: aspeed: tacoma: Enable XDMA engine
-      ARM: dts: aspeed: rainier: Add second cfam on the hub
-      ARM: dts: aspeed: rainier: Add CFAM SPI controllers
-      ARM: dts: aspeed: rainier: Switch OCCs to P10
-      ARM: dts: aspeed: rainier: Enable EHCI controller
-      ARM: dts: Aspeed: tacoma: Enable EHCI controller
-
-Jet Li (1):
-      ARM: dts: aspeed: rainier: Add I2C buses for NVMe use
-
-Joel Stanley (5):
-      ARM: dts: aspeed: rainier: System has one SPI NOR
-      ARM: dts: aspeed: tacoma: Fix gpio-key definitions
-      ARM: dts: aspeed: rainier: Add CFAM reset GPIO
-      ARM: dts: aspeed: tacoma: Add CFAM reset GPIO
-      ARM: dts: aspeed: rainier: Add FSI I2C masters
-
-Supreeth Venkatesh (1):
-      ARM: dts: aspeed: Initial device tree for AMD EthanolX
-
-Tao Ren (4):
-      ARM: dts: aspeed: cmm: Fixup I2C tree
-      ARM: dts: aspeed: wedge40: Disable unused i2c controllers
-      ARM: dts: aspeed: wedge40: Enable ADC device
-      ARM: dts: aspeed: wedge40: Enable pwm_tacho device
