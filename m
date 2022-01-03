@@ -1,39 +1,52 @@
-From: Petr Vorel <petr.vorel@gmail.com>
-Date: Fri, 31 Dec 2021 23:01:38 +0100
-Subject: [PATCH 1/1] arm: dts: aspeed: Fix typo
-Message-ID: <20211231220138.119747-1-petr.vorel@gmail.com>
+From: Bartosz Golaszewski <brgl@bgdev.pl>
+Date: Mon, 3 Jan 2022 10:50:38 +0100
+Subject: [PATCH v1 1/1] gpio: gpio-aspeed-sgpio: Fix wrong hwirq base in
+ irq handler
+In-Reply-To: <CAMRc=MdAgK7zKuJ=7cA2T-mSTJD3tWSW2aEB6G=0Tz4X+iHcZQ@mail.gmail.com>
+References: <20211214040239.8977-1-steven_lee@aspeedtech.com>
+ <20211214040239.8977-2-steven_lee@aspeedtech.com>
+ <CAMRc=MdAgK7zKuJ=7cA2T-mSTJD3tWSW2aEB6G=0Tz4X+iHcZQ@mail.gmail.com>
+Message-ID: <CAMRc=McjZZTMjR+riwjj6SLEh=fYq0yjBQYNgzGXHok6=OTz_w@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Fixes: 25337c735414 ("ARM: dts: aspeed: Add Inventec Lanyang BMC")
+On Wed, Dec 22, 2021 at 10:18 AM Bartosz Golaszewski <brgl@bgdev.pl> wrote:
+>
+> On Tue, Dec 14, 2021 at 5:03 AM Steven Lee <steven_lee@aspeedtech.com> wrote:
+> >
+> > Each aspeed sgpio bank has 64 gpio pins(32 input pins and 32 output pins).
+> > The hwirq base for each sgpio bank should be multiples of 64 rather than
+> > multiples of 32.
+> >
+> > Signed-off-by: Steven Lee <steven_lee@aspeedtech.com>
+> > ---
+> >  drivers/gpio/gpio-aspeed-sgpio.c | 2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> >
+> > diff --git a/drivers/gpio/gpio-aspeed-sgpio.c b/drivers/gpio/gpio-aspeed-sgpio.c
+> > index 3d6ef37a7702..b3a9b8488f11 100644
+> > --- a/drivers/gpio/gpio-aspeed-sgpio.c
+> > +++ b/drivers/gpio/gpio-aspeed-sgpio.c
+> > @@ -395,7 +395,7 @@ static void aspeed_sgpio_irq_handler(struct irq_desc *desc)
+> >                 reg = ioread32(bank_reg(data, bank, reg_irq_status));
+> >
+> >                 for_each_set_bit(p, &reg, 32)
+> > -                       generic_handle_domain_irq(gc->irq.domain, i * 32 + p * 2);
+> > +                       generic_handle_domain_irq(gc->irq.domain, (i * 32 + p) * 2);
+> >         }
+> >
+> >         chained_irq_exit(ic, desc);
+> > --
+> > 2.17.1
+> >
+>
+> Joel, Andrew: any comments on this? I'd like to send it upstream tomorrow.
+>
+> Bart
 
-Signed-off-by: Petr Vorel <petr.vorel@gmail.com>
----
- arch/arm/boot/dts/aspeed-bmc-opp-lanyang.dts | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+I don't want to delay it anymore, it looks good so I queued it for fixes.
 
-diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-lanyang.dts b/arch/arm/boot/dts/aspeed-bmc-opp-lanyang.dts
-index c0847636f20b..e72e8ef5bff2 100644
---- a/arch/arm/boot/dts/aspeed-bmc-opp-lanyang.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-opp-lanyang.dts
-@@ -52,12 +52,12 @@ hdd_fault {
- 			gpios = <&gpio ASPEED_GPIO(B, 3) GPIO_ACTIVE_HIGH>;
- 		};
- 		bmc_err {
--			lable = "BMC_fault";
-+			label = "BMC_fault";
- 			gpios = <&gpio ASPEED_GPIO(H, 6) GPIO_ACTIVE_HIGH>;
- 		};
- 
- 		sys_err {
--			lable = "Sys_fault";
-+			label = "Sys_fault";
- 			gpios = <&gpio ASPEED_GPIO(H, 7) GPIO_ACTIVE_HIGH>;
- 		};
- 	};
--- 
-2.34.1
-
+Bart
