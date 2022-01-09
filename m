@@ -1,47 +1,55 @@
-From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Date: Sun,  9 Jan 2022 14:20:35 +0100
-Subject: [PATCH v2] fsi: Aspeed: Fix a potential double free
-Message-ID: <3b5c9b693749a956b525c54bed0eeac9f958b8e8.1641734402.git.christophe.jaillet@wanadoo.fr>
+From: Heyi Guo <guoheyi@linux.alibaba.com>
+Date: Sun,  9 Jan 2022 21:26:13 +0800
+Subject: [PATCH] drivers/i2c-aspeed: avoid invalid memory reference after
+ timeout
+Message-ID: <20220109132613.122912-1-guoheyi@linux.alibaba.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-A struct device can never be devm_alloc()'ed.
-Here, it is embedded in "struct fsi_master", and "struct fsi_master" is
-embedded in "struct fsi_master_aspeed".
+The memory will be freed by the caller if transfer timeout occurs,
+then it would trigger kernel panic if the peer device responds with
+something after timeout and triggers the interrupt handler of aspeed
+i2c driver.
 
-Since "struct device" is embedded, the data structure embedding it must be
-released with the release function, as is already done here.
+Set the msgs pointer to NULL to avoid invalid memory reference after
+timeout to fix this potential kernel panic.
 
-So use kzalloc() instead of devm_kzalloc() when allocating "aspeed".
-This prevent a potential double free().
+Signed-off-by: Heyi Guo <guoheyi@linux.alibaba.com>
 
-Fixes: 606397d67f41 ("fsi: Add ast2600 master driver")
-Suggested-by: Greg KH <gregkh@linuxfoundation.org>
-Suggested-by: Guenter Roeck <linux@roeck-us.net>
-Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+-------
+
+Cc: Brendan Higgins <brendanhiggins@google.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Joel Stanley <joel@jms.id.au>
+Cc: Andrew Jeffery <andrew@aj.id.au>
+Cc: Philipp Zabel <p.zabel@pengutronix.de>
+Cc: linux-i2c at vger.kernel.org
+Cc: openbmc at lists.ozlabs.org
+Cc: linux-arm-kernel at lists.infradead.org
+Cc: linux-aspeed at lists.ozlabs.org
 ---
-v2: Keep the release function which is correct
-    s/devm_kzalloc()/kzalloc()/ instead
----
- drivers/fsi/fsi-master-aspeed.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/i2c/busses/i2c-aspeed.c | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/drivers/fsi/fsi-master-aspeed.c b/drivers/fsi/fsi-master-aspeed.c
-index 8606e55c1721..ae6319818b14 100644
---- a/drivers/fsi/fsi-master-aspeed.c
-+++ b/drivers/fsi/fsi-master-aspeed.c
-@@ -542,7 +542,7 @@ static int fsi_master_aspeed_probe(struct platform_device *pdev)
- 		return rc;
- 	}
+diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
+index 67e8b97c0c950..3ab0396168680 100644
+--- a/drivers/i2c/busses/i2c-aspeed.c
++++ b/drivers/i2c/busses/i2c-aspeed.c
+@@ -708,6 +708,11 @@ static int aspeed_i2c_master_xfer(struct i2c_adapter *adap,
+ 		spin_lock_irqsave(&bus->lock, flags);
+ 		if (bus->master_state == ASPEED_I2C_MASTER_PENDING)
+ 			bus->master_state = ASPEED_I2C_MASTER_INACTIVE;
++		/*
++		 * All the buffers may be freed after returning to caller, so
++		 * set msgs to NULL to avoid memory reference after freeing.
++		 */
++		bus->msgs = NULL;
+ 		spin_unlock_irqrestore(&bus->lock, flags);
  
--	aspeed = devm_kzalloc(&pdev->dev, sizeof(*aspeed), GFP_KERNEL);
-+	aspeed = kzalloc(sizeof(*aspeed), GFP_KERNEL);
- 	if (!aspeed)
- 		return -ENOMEM;
- 
+ 		return -ETIMEDOUT;
 -- 
-2.32.0
+2.17.1
 
