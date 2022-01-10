@@ -1,106 +1,193 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Date: Mon, 10 Jan 2022 09:01:48 -0800
-Subject: [PATCH v3] fsi: Aspeed: Fix a potential double free
-In-Reply-To: <2c123f8b0a40dc1a061fae982169fe030b4f47e6.1641765339.git.christophe.jaillet@wanadoo.fr>
-References: <2c123f8b0a40dc1a061fae982169fe030b4f47e6.1641765339.git.christophe.jaillet@wanadoo.fr>
-Message-ID: <3c4ff68f-3686-bcc6-c370-0732860b4d80@roeck-us.net>
+From: Joel Stanley <joel@jms.id.au>
+Date: Mon, 10 Jan 2022 23:29:30 +0000
+Subject: [PATCH 3/3] ARM: aspeed: Add secure boot controller support
+In-Reply-To: <20211117035106.321454-4-joel@jms.id.au>
+References: <20211117035106.321454-1-joel@jms.id.au>
+ <20211117035106.321454-4-joel@jms.id.au>
+Message-ID: <CACPK8XcSPiOoJZ4jyJySvCiW+EXxSVsxiEcK2eOZjGY9b1vrjA@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 1/9/22 1:56 PM, Christophe JAILLET wrote:
-> A struct device can never be devm_alloc()'ed.
-> Here, it is embedded in "struct fsi_master", and "struct fsi_master" is
-> embedded in "struct fsi_master_aspeed".
-> 
-> Since "struct device" is embedded, the data structure embedding it must be
-> released with the release function, as is already done here.
-> 
-> So use kzalloc() instead of devm_kzalloc() when allocating "aspeed" and
-> update all error handling branches accordingly.
-> 
-> This prevent a potential double free().
-> 
-> This also fix another issue if opb_readl() fails. Instead of a direct
-> return, it now jumps in the error handling path.
-> 
-> Fixes: 606397d67f41 ("fsi: Add ast2600 master driver")
-> Suggested-by: Greg KH <gregkh@linuxfoundation.org>
-> Suggested-by: Guenter Roeck <linux@roeck-us.net>
-> Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Hi Arnd,
 
-Reviewed-by: Guenter Roeck <linux@roeck-us.net>
+On Wed, 17 Nov 2021 at 03:51, Joel Stanley <joel@jms.id.au> wrote:
+>
+> This reads out the status of the secure boot controller and exposes it
+> in sysfs.
+>
+> An example on a AST2600A3 QEMU model:
+>
+>  # grep . /sys/bus/soc/devices/soc0/*
+>  /sys/bus/soc/devices/soc0/abr_image:0
+>  /sys/bus/soc/devices/soc0/family:AST2600
+>  /sys/bus/soc/devices/soc0/low_security_key:0
+>  /sys/bus/soc/devices/soc0/machine:Rainier 2U
+>  /sys/bus/soc/devices/soc0/otp_protected:0
+>  /sys/bus/soc/devices/soc0/revision:A3
+>  /sys/bus/soc/devices/soc0/secure_boot:1
+>  /sys/bus/soc/devices/soc0/serial_number:888844441234abcd
+>  /sys/bus/soc/devices/soc0/soc_id:05030303
+>  /sys/bus/soc/devices/soc0/uart_boot:1
 
+Quoting from your response to my pull request:
+
+> - I actually want to avoid custom attributes on soc device instances as much
+>   as possible. I have not looked in detail at what you add here, but the
+>   number of custom attributes means we should discuss this properly.
+
+Can you explain the reasoning here?
+
+I am a bit surprised given we have this nice feature in struct
+soc_device_attribute:
+
+struct soc_device_attribute {
+...
+        const struct attribute_group *custom_attr_group;
+};
+
+Cheers,
+
+Joel
+
+
+>
+> On boot the state of the system according to the secure boot controller
+> will be printed:
+>
+>  [    0.037634] AST2600 secure boot enabled
+>
+> or
+>
+>  [    0.037935] AST2600 secure boot disabled
+>
+> Signed-off-by: Joel Stanley <joel@jms.id.au>
+> Reviewed-by: Ryan Chen <ryan_chen@aspeedtech.com>
 > ---
-> v2: Keep the release function which is correct
->      s/devm_kzalloc()/kzalloc()/ instead
-> 
-> v3: Update the error handling path to free "aspeed" [Guenter Roeck]
->      Fix another issue when opb_readl() fails [Guenter Roeck]
-> 
-> I hope that fixing both issues in the same patch is ok. It makes no sense
-> to me not to update the goto to the correct label if opb_readl() fails.
-> ---
->   drivers/fsi/fsi-master-aspeed.c | 17 +++++++++++------
->   1 file changed, 11 insertions(+), 6 deletions(-)
-> 
-> diff --git a/drivers/fsi/fsi-master-aspeed.c b/drivers/fsi/fsi-master-aspeed.c
-> index 8606e55c1721..0bed2fab8055 100644
-> --- a/drivers/fsi/fsi-master-aspeed.c
-> +++ b/drivers/fsi/fsi-master-aspeed.c
-> @@ -542,25 +542,28 @@ static int fsi_master_aspeed_probe(struct platform_device *pdev)
->   		return rc;
->   	}
->   
-> -	aspeed = devm_kzalloc(&pdev->dev, sizeof(*aspeed), GFP_KERNEL);
-> +	aspeed = kzalloc(sizeof(*aspeed), GFP_KERNEL);
->   	if (!aspeed)
->   		return -ENOMEM;
->   
->   	aspeed->dev = &pdev->dev;
->   
->   	aspeed->base = devm_platform_ioremap_resource(pdev, 0);
-> -	if (IS_ERR(aspeed->base))
-> -		return PTR_ERR(aspeed->base);
-> +	if (IS_ERR(aspeed->base)) {
-> +		rc = PTR_ERR(aspeed->base);
-> +		goto err_free_aspeed;
-> +	}
->   
->   	aspeed->clk = devm_clk_get(aspeed->dev, NULL);
->   	if (IS_ERR(aspeed->clk)) {
->   		dev_err(aspeed->dev, "couldn't get clock\n");
-> -		return PTR_ERR(aspeed->clk);
-> +		rc = PTR_ERR(aspeed->clk);
-> +		goto err_free_aspeed;
->   	}
->   	rc = clk_prepare_enable(aspeed->clk);
->   	if (rc) {
->   		dev_err(aspeed->dev, "couldn't enable clock\n");
-> -		return rc;
-> +		goto err_free_aspeed;
->   	}
->   
->   	rc = setup_cfam_reset(aspeed);
-> @@ -595,7 +598,7 @@ static int fsi_master_aspeed_probe(struct platform_device *pdev)
->   	rc = opb_readl(aspeed, ctrl_base + FSI_MVER, &raw);
->   	if (rc) {
->   		dev_err(&pdev->dev, "failed to read hub version\n");
-> -		return rc;
-> +		goto err_release;
->   	}
->   
->   	reg = be32_to_cpu(raw);
-> @@ -634,6 +637,8 @@ static int fsi_master_aspeed_probe(struct platform_device *pdev)
->   
->   err_release:
->   	clk_disable_unprepare(aspeed->clk);
-> +err_free_aspeed:
-> +	kfree(aspeed);
->   	return rc;
->   }
->   
-> 
-
+>  drivers/soc/aspeed/aspeed-socinfo.c | 73 +++++++++++++++++++++++++++++
+>  1 file changed, 73 insertions(+)
+>
+> diff --git a/drivers/soc/aspeed/aspeed-socinfo.c b/drivers/soc/aspeed/aspeed-socinfo.c
+> index 1ca140356a08..6faf2c199c90 100644
+> --- a/drivers/soc/aspeed/aspeed-socinfo.c
+> +++ b/drivers/soc/aspeed/aspeed-socinfo.c
+> @@ -9,6 +9,8 @@
+>  #include <linux/slab.h>
+>  #include <linux/sys_soc.h>
+>
+> +static u32 security_status;
+> +
+>  static struct {
+>         const char *name;
+>         const u32 id;
+> @@ -74,6 +76,54 @@ static const char *siliconid_to_rev(u32 siliconid)
+>         return "??";
+>  }
+>
+> +#define SEC_STATUS             0x14
+> +#define ABR_IMAGE_SOURCE       BIT(13)
+> +#define OTP_PROTECTED          BIT(8)
+> +#define LOW_SEC_KEY            BIT(7)
+> +#define SECURE_BOOT            BIT(6)
+> +#define UART_BOOT              BIT(5)
+> +
+> +static ssize_t abr_image_show(struct device *dev, struct device_attribute *attr, char *buf)
+> +{
+> +       return sprintf(buf, "%d\n", !!(security_status & ABR_IMAGE_SOURCE));
+> +}
+> +static DEVICE_ATTR_RO(abr_image);
+> +
+> +static ssize_t low_security_key_show(struct device *dev, struct device_attribute *attr, char *buf)
+> +{
+> +       return sprintf(buf, "%d\n", !!(security_status & LOW_SEC_KEY));
+> +}
+> +static DEVICE_ATTR_RO(low_security_key);
+> +
+> +static ssize_t otp_protected_show(struct device *dev, struct device_attribute *attr, char *buf)
+> +{
+> +       return sprintf(buf, "%d\n", !!(security_status & OTP_PROTECTED));
+> +}
+> +static DEVICE_ATTR_RO(otp_protected);
+> +
+> +static ssize_t secure_boot_show(struct device *dev, struct device_attribute *attr, char *buf)
+> +{
+> +       return sprintf(buf, "%d\n", !!(security_status & SECURE_BOOT));
+> +}
+> +static DEVICE_ATTR_RO(secure_boot);
+> +
+> +static ssize_t uart_boot_show(struct device *dev, struct device_attribute *attr, char *buf)
+> +{
+> +       /* Invert the bit, as 1 is boot from SPI/eMMC */
+> +       return sprintf(buf, "%d\n", !(security_status & UART_BOOT));
+> +}
+> +static DEVICE_ATTR_RO(uart_boot);
+> +
+> +static struct attribute *aspeed_attrs[] = {
+> +       &dev_attr_abr_image.attr,
+> +       &dev_attr_low_security_key.attr,
+> +       &dev_attr_otp_protected.attr,
+> +       &dev_attr_secure_boot.attr,
+> +       &dev_attr_uart_boot.attr,
+> +       NULL,
+> +};
+> +ATTRIBUTE_GROUPS(aspeed);
+> +
+>  static int __init aspeed_socinfo_init(void)
+>  {
+>         struct soc_device_attribute *attrs;
+> @@ -81,6 +131,7 @@ static int __init aspeed_socinfo_init(void)
+>         struct device_node *np;
+>         void __iomem *reg;
+>         bool has_chipid = false;
+> +       bool has_sbe = false;
+>         u32 siliconid;
+>         u32 chipid[2];
+>         const char *machine = NULL;
+> @@ -109,6 +160,20 @@ static int __init aspeed_socinfo_init(void)
+>         }
+>         of_node_put(np);
+>
+> +       /* AST2600 only */
+> +       np = of_find_compatible_node(NULL, NULL, "aspeed,ast2600-sbc");
+> +       if (of_device_is_available(np)) {
+> +               void *base = of_iomap(np, 0);
+> +               if (!base) {
+> +                       of_node_put(np);
+> +                       return -ENODEV;
+> +               }
+> +               security_status = readl(base + SEC_STATUS);
+> +               has_sbe = true;
+> +               iounmap(base);
+> +               of_node_put(np);
+> +       }
+> +
+>         attrs = kzalloc(sizeof(*attrs), GFP_KERNEL);
+>         if (!attrs)
+>                 return -ENODEV;
+> @@ -135,6 +200,9 @@ static int __init aspeed_socinfo_init(void)
+>                 attrs->serial_number = kasprintf(GFP_KERNEL, "%08x%08x",
+>                                                  chipid[1], chipid[0]);
+>
+> +       if (has_sbe)
+> +               attrs->custom_attr_group = aspeed_groups[0];
+> +
+>         soc_dev = soc_device_register(attrs);
+>         if (IS_ERR(soc_dev)) {
+>                 kfree(attrs->soc_id);
+> @@ -148,6 +216,11 @@ static int __init aspeed_socinfo_init(void)
+>                         attrs->revision,
+>                         attrs->soc_id);
+>
+> +       if (has_sbe) {
+> +               pr_info("AST2600 secure boot %s\n",
+> +                       (security_status & SECURE_BOOT) ? "enabled" : "disabled");
+> +       }
+> +
+>         return 0;
+>  }
+>  early_initcall(aspeed_socinfo_init);
+> --
+> 2.33.0
+>
