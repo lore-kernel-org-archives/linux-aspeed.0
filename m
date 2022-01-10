@@ -1,98 +1,106 @@
-From: Neal Liu <neal_liu@aspeedtech.com>
-Date: Mon, 10 Jan 2022 06:29:14 +0000
-Subject: [PATCH v3 2/4] usb: aspeed-vhub: fix remote wakeup failure in
- iKVM use case
-In-Reply-To: <HK0PR06MB3202796B4DDF471856149B1480429@HK0PR06MB3202.apcprd06.prod.outlook.com>
-References: <20211208100545.1441397-1-neal_liu@aspeedtech.com>
- <20211208100545.1441397-3-neal_liu@aspeedtech.com>
- <391323f136e49387797d43e89b6e42cd95d916c2.camel@kernel.crashing.org>
- <HK0PR06MB320271524E51BDFA922F070780709@HK0PR06MB3202.apcprd06.prod.outlook.com>
- <0888eb83c8b2bd53d4c3e2355019052d0ab40db6.camel@kernel.crashing.org>
- <HK0PR06MB3202051E7C15E84006DF55C0807B9@HK0PR06MB3202.apcprd06.prod.outlook.com>
- <HK0PR06MB3202796B4DDF471856149B1480429@HK0PR06MB3202.apcprd06.prod.outlook.com>
-Message-ID: <HK0PR06MB320263FDED955EA4B6E0557480509@HK0PR06MB3202.apcprd06.prod.outlook.com>
+From: Guenter Roeck <linux@roeck-us.net>
+Date: Mon, 10 Jan 2022 09:01:48 -0800
+Subject: [PATCH v3] fsi: Aspeed: Fix a potential double free
+In-Reply-To: <2c123f8b0a40dc1a061fae982169fe030b4f47e6.1641765339.git.christophe.jaillet@wanadoo.fr>
+References: <2c123f8b0a40dc1a061fae982169fe030b4f47e6.1641765339.git.christophe.jaillet@wanadoo.fr>
+Message-ID: <3c4ff68f-3686-bcc6-c370-0732860b4d80@roeck-us.net>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-> -----Original Message-----
-> From: Neal Liu
-> Sent: Monday, December 27, 2021 10:07 AM
-> To: Benjamin Herrenschmidt <benh@kernel.crashing.org>; Felipe Balbi
-> <balbi@kernel.org>; Greg Kroah-Hartman <gregkh@linuxfoundation.org>; Joel
-> Stanley <joel@jms.id.au>; Andrew Jeffery <andrew@aj.id.au>; Cai Huoqing
-> <caihuoqing@baidu.com>; Tao Ren <rentao.bupt@gmail.com>; Julia Lawall
-> <julia.lawall@inria.fr>; kernel test robot <lkp@intel.com>; Sasha Levin
-> <sashal@kernel.org>; linux-usb at vger.kernel.org; linux-kernel at vger.kernel.org;
-> linux-arm-kernel at lists.infradead.org; linux-aspeed at lists.ozlabs.org
-> Cc: BMC-SW <BMC-SW@aspeedtech.com>
-> Subject: RE: [PATCH v3 2/4] usb: aspeed-vhub: fix remote wakeup failure in
-> iKVM use case
+On 1/9/22 1:56 PM, Christophe JAILLET wrote:
+> A struct device can never be devm_alloc()'ed.
+> Here, it is embedded in "struct fsi_master", and "struct fsi_master" is
+> embedded in "struct fsi_master_aspeed".
 > 
-> > -----Original Message-----
-> > From: Neal Liu
-> > Sent: Monday, December 20, 2021 10:23 AM
-> > To: Benjamin Herrenschmidt <benh@kernel.crashing.org>; Felipe Balbi
-> > <balbi@kernel.org>; Greg Kroah-Hartman <gregkh@linuxfoundation.org>;
-> > Joel Stanley <joel@jms.id.au>; Andrew Jeffery <andrew@aj.id.au>; Cai
-> > Huoqing <caihuoqing@baidu.com>; Tao Ren <rentao.bupt@gmail.com>; Julia
-> > Lawall <julia.lawall@inria.fr>; kernel test robot <lkp@intel.com>;
-> > Sasha Levin <sashal@kernel.org>; linux-usb at vger.kernel.org;
-> > linux-kernel at vger.kernel.org; linux-arm-kernel at lists.infradead.org;
-> > linux-aspeed at lists.ozlabs.org
-> > Cc: BMC-SW <BMC-SW@aspeedtech.com>
-> > Subject: RE: [PATCH v3 2/4] usb: aspeed-vhub: fix remote wakeup
-> > failure in iKVM use case
-> >
-> > > -----Original Message-----
-> > > From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> > > Sent: Tuesday, December 14, 2021 10:36 AM
-> > > To: Neal Liu <neal_liu@aspeedtech.com>; Felipe Balbi
-> > > <balbi@kernel.org>; Greg Kroah-Hartman <gregkh@linuxfoundation.org>;
-> > > Joel Stanley <joel@jms.id.au>; Andrew Jeffery <andrew@aj.id.au>; Cai
-> > > Huoqing <caihuoqing@baidu.com>; Tao Ren <rentao.bupt@gmail.com>;
-> > > Julia Lawall <julia.lawall@inria.fr>; kernel test robot
-> > > <lkp@intel.com>; Sasha Levin <sashal@kernel.org>;
-> > > linux-usb at vger.kernel.org; linux-kernel at vger.kernel.org;
-> > > linux-arm-kernel at lists.infradead.org;
-> > > linux-aspeed at lists.ozlabs.org
-> > > Cc: BMC-SW <BMC-SW@aspeedtech.com>
-> > > Subject: Re: [PATCH v3 2/4] usb: aspeed-vhub: fix remote wakeup
-> > > failure in iKVM use case
-> > >
-> > > On Thu, 2021-12-09 at 02:37 +0000, Neal Liu wrote:
-> > > > I'm confused. Signaling Wakeup when wakeup_en is set if it has any
-> > > > ep activities is not exactly what you said?
-> > > >
-> > > > wakeup_en is set only if host allows this device have wakeup
-> > > > capability and bus being suspended.
-> > > >
-> > > > Normal ep activities would not write the MMIO because wakeup_en is
-> > > > not set.
-> > >
-> > > Hrm... I didn't think wakeup_en was limited to the bus being
-> > > suspended, but maybe I misremember, it's been a while.
-> > >
-> > > Cheers,
-> > > Ben.
-> > >
-> >
-> > wakeup_en is only set in the case of host set
-> USB_DEVICE_REMOTE_WAKEUP
-> > feature to vhub devices.
-> > I think this behavior only occurs during host is going to suspend, and
-> > set this feature to any device which can wakeup itself before sleep.
-> > Thanks
-> >
-> > -Neal
-> >
-> Would you like to test it if you have some free time.
-> Please feel free for any feedback.
+> Since "struct device" is embedded, the data structure embedding it must be
+> released with the release function, as is already done here.
 > 
-> -Neal
+> So use kzalloc() instead of devm_kzalloc() when allocating "aspeed" and
+> update all error handling branches accordingly.
+> 
+> This prevent a potential double free().
+> 
+> This also fix another issue if opb_readl() fails. Instead of a direct
+> return, it now jumps in the error handling path.
+> 
+> Fixes: 606397d67f41 ("fsi: Add ast2600 master driver")
+> Suggested-by: Greg KH <gregkh@linuxfoundation.org>
+> Suggested-by: Guenter Roeck <linux@roeck-us.net>
+> Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
 
-Gentle ping for this patch.
-Thanks
+Reviewed-by: Guenter Roeck <linux@roeck-us.net>
+
+> ---
+> v2: Keep the release function which is correct
+>      s/devm_kzalloc()/kzalloc()/ instead
+> 
+> v3: Update the error handling path to free "aspeed" [Guenter Roeck]
+>      Fix another issue when opb_readl() fails [Guenter Roeck]
+> 
+> I hope that fixing both issues in the same patch is ok. It makes no sense
+> to me not to update the goto to the correct label if opb_readl() fails.
+> ---
+>   drivers/fsi/fsi-master-aspeed.c | 17 +++++++++++------
+>   1 file changed, 11 insertions(+), 6 deletions(-)
+> 
+> diff --git a/drivers/fsi/fsi-master-aspeed.c b/drivers/fsi/fsi-master-aspeed.c
+> index 8606e55c1721..0bed2fab8055 100644
+> --- a/drivers/fsi/fsi-master-aspeed.c
+> +++ b/drivers/fsi/fsi-master-aspeed.c
+> @@ -542,25 +542,28 @@ static int fsi_master_aspeed_probe(struct platform_device *pdev)
+>   		return rc;
+>   	}
+>   
+> -	aspeed = devm_kzalloc(&pdev->dev, sizeof(*aspeed), GFP_KERNEL);
+> +	aspeed = kzalloc(sizeof(*aspeed), GFP_KERNEL);
+>   	if (!aspeed)
+>   		return -ENOMEM;
+>   
+>   	aspeed->dev = &pdev->dev;
+>   
+>   	aspeed->base = devm_platform_ioremap_resource(pdev, 0);
+> -	if (IS_ERR(aspeed->base))
+> -		return PTR_ERR(aspeed->base);
+> +	if (IS_ERR(aspeed->base)) {
+> +		rc = PTR_ERR(aspeed->base);
+> +		goto err_free_aspeed;
+> +	}
+>   
+>   	aspeed->clk = devm_clk_get(aspeed->dev, NULL);
+>   	if (IS_ERR(aspeed->clk)) {
+>   		dev_err(aspeed->dev, "couldn't get clock\n");
+> -		return PTR_ERR(aspeed->clk);
+> +		rc = PTR_ERR(aspeed->clk);
+> +		goto err_free_aspeed;
+>   	}
+>   	rc = clk_prepare_enable(aspeed->clk);
+>   	if (rc) {
+>   		dev_err(aspeed->dev, "couldn't enable clock\n");
+> -		return rc;
+> +		goto err_free_aspeed;
+>   	}
+>   
+>   	rc = setup_cfam_reset(aspeed);
+> @@ -595,7 +598,7 @@ static int fsi_master_aspeed_probe(struct platform_device *pdev)
+>   	rc = opb_readl(aspeed, ctrl_base + FSI_MVER, &raw);
+>   	if (rc) {
+>   		dev_err(&pdev->dev, "failed to read hub version\n");
+> -		return rc;
+> +		goto err_release;
+>   	}
+>   
+>   	reg = be32_to_cpu(raw);
+> @@ -634,6 +637,8 @@ static int fsi_master_aspeed_probe(struct platform_device *pdev)
+>   
+>   err_release:
+>   	clk_disable_unprepare(aspeed->clk);
+> +err_free_aspeed:
+> +	kfree(aspeed);
+>   	return rc;
+>   }
+>   
+> 
 
