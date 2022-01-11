@@ -1,75 +1,313 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Tue, 11 Jan 2022 10:51:22 +0000
-Subject: [PATCH] drivers/i2c-aspeed: avoid invalid memory reference after
- timeout
-In-Reply-To: <ad5e5438-4a3f-2447-4af3-7caa91e7252a@linux.alibaba.com>
-References: <20220109132613.122912-1-guoheyi@linux.alibaba.com>
- <ad5e5438-4a3f-2447-4af3-7caa91e7252a@linux.alibaba.com>
-Message-ID: <CACPK8XcYp9iAD3fjBQCax41C-1UpA+1AQW3epyEooYzNLt7R5g@mail.gmail.com>
+Date: Tue, 11 Jan 2022 10:59:28 +0000
+Subject: [PATCH] ARM: dts: aspeed: Add ASRock ROMED8HM3 BMC
+In-Reply-To: <20220105101719.7093-1-zev@bewilderbeest.net>
+References: <20220105101719.7093-1-zev@bewilderbeest.net>
+Message-ID: <CACPK8XeHyoo0D1vQm=L8m284kC5n-O+FEMp1HN+ROWJfx7qjhQ@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, 11 Jan 2022 at 07:52, Heyi Guo <guoheyi@linux.alibaba.com> wrote:
+On Wed, 5 Jan 2022 at 23:10, Zev Weiss <zev@bewilderbeest.net> wrote:
 >
-> Hi all,
+> This is a half-width, single-socket Epyc server board with an AST2500
+> BMC.  This device tree is sufficient for basic OpenBMC functionality,
+> but we'll need to add a few more devices (as driver support becomes
+> available) before it's fully usable.
 >
-> Any comments?
->
-> Thanks,
->
-> Heyi
->
-> ? 2022/1/9 ??9:26, Heyi Guo ??:
-> > The memory will be freed by the caller if transfer timeout occurs,
-> > then it would trigger kernel panic if the peer device responds with
-> > something after timeout and triggers the interrupt handler of aspeed
-> > i2c driver.
-> >
-> > Set the msgs pointer to NULL to avoid invalid memory reference after
-> > timeout to fix this potential kernel panic.
+> Signed-off-by: Zev Weiss <zev@bewilderbeest.net>
 
-Thanks for the patch. How did you discover this issue? Do you have a
-test I can run to reproduce the crash?
+Reviewed-by: Joel Stanley <joel@jms.id.au>
 
-Can you provide a Fixes tag?
+Have you considered using the openbmc gpio naming scheme for the
+gpio-line-names?
 
-Do other i2c master drivers do this? I took a quick look at the meson
-driver and it doesn't appear to clear it's pointer to msgs.
 
-> >
-> > Signed-off-by: Heyi Guo <guoheyi@linux.alibaba.com>
-> >
-> > -------
-> >
-> > Cc: Brendan Higgins <brendanhiggins@google.com>
-> > Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> > Cc: Joel Stanley <joel@jms.id.au>
-> > Cc: Andrew Jeffery <andrew@aj.id.au>
-> > Cc: Philipp Zabel <p.zabel@pengutronix.de>
-> > Cc: linux-i2c at vger.kernel.org
-> > Cc: openbmc at lists.ozlabs.org
-> > Cc: linux-arm-kernel at lists.infradead.org
-> > Cc: linux-aspeed at lists.ozlabs.org
-> > ---
-> >   drivers/i2c/busses/i2c-aspeed.c | 5 +++++
-> >   1 file changed, 5 insertions(+)
-> >
-> > diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
-> > index 67e8b97c0c950..3ab0396168680 100644
-> > --- a/drivers/i2c/busses/i2c-aspeed.c
-> > +++ b/drivers/i2c/busses/i2c-aspeed.c
-> > @@ -708,6 +708,11 @@ static int aspeed_i2c_master_xfer(struct i2c_adapter *adap,
-> >               spin_lock_irqsave(&bus->lock, flags);
-> >               if (bus->master_state == ASPEED_I2C_MASTER_PENDING)
-> >                       bus->master_state = ASPEED_I2C_MASTER_INACTIVE;
-> > +             /*
-> > +              * All the buffers may be freed after returning to caller, so
-> > +              * set msgs to NULL to avoid memory reference after freeing.
-> > +              */
-> > +             bus->msgs = NULL;
-> >               spin_unlock_irqrestore(&bus->lock, flags);
-> >
-> >               return -ETIMEDOUT;
+> ---
+>  arch/arm/boot/dts/Makefile                    |   1 +
+>  .../boot/dts/aspeed-bmc-asrock-romed8hm3.dts  | 259 ++++++++++++++++++
+>  2 files changed, 260 insertions(+)
+>  create mode 100644 arch/arm/boot/dts/aspeed-bmc-asrock-romed8hm3.dts
+>
+> diff --git a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
+> index 0de64f237cd8..4008d2143b44 100644
+> --- a/arch/arm/boot/dts/Makefile
+> +++ b/arch/arm/boot/dts/Makefile
+> @@ -1481,6 +1481,7 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
+>         aspeed-bmc-arm-centriq2400-rep.dtb \
+>         aspeed-bmc-arm-stardragon4800-rep2.dtb \
+>         aspeed-bmc-asrock-e3c246d4i.dtb \
+> +       aspeed-bmc-asrock-romed8hm3.dtb \
+>         aspeed-bmc-bytedance-g220a.dtb \
+>         aspeed-bmc-facebook-cloudripper.dtb \
+>         aspeed-bmc-facebook-cmm.dtb \
+> diff --git a/arch/arm/boot/dts/aspeed-bmc-asrock-romed8hm3.dts b/arch/arm/boot/dts/aspeed-bmc-asrock-romed8hm3.dts
+> new file mode 100644
+> index 000000000000..e71ccfd1df63
+> --- /dev/null
+> +++ b/arch/arm/boot/dts/aspeed-bmc-asrock-romed8hm3.dts
+> @@ -0,0 +1,259 @@
+> +// SPDX-License-Identifier: GPL-2.0+
+> +/dts-v1/;
+> +
+> +#include "aspeed-g5.dtsi"
+> +#include <dt-bindings/gpio/aspeed-gpio.h>
+> +#include <dt-bindings/interrupt-controller/irq.h>
+> +
+> +/{
+> +       model = "ASRock ROMED8HM3 BMC v1.00";
+> +       compatible = "asrock,romed8hm3-bmc", "aspeed,ast2500";
+> +
+> +       aliases {
+> +               serial4 = &uart5;
+> +       };
+> +
+> +       chosen {
+> +               stdout-path = &uart5;
+> +               bootargs = "console=tty0 console=ttyS4,115200 earlycon";
+> +       };
+> +
+> +       memory at 80000000 {
+> +               reg = <0x80000000 0x20000000>;
+> +       };
+> +
+> +       leds {
+> +               compatible = "gpio-leds";
+> +
+> +               heartbeat {
+> +                       gpios = <&gpio ASPEED_GPIO(H, 6) GPIO_ACTIVE_LOW>;
+> +                       linux,default-trigger = "timer";
+> +               };
+> +
+> +               system-fault {
+> +                       gpios = <&gpio ASPEED_GPIO(Z, 2) GPIO_ACTIVE_LOW>;
+> +                       panic-indicator;
+> +               };
+> +       };
+> +
+> +       iio-hwmon {
+> +               compatible = "iio-hwmon";
+> +               io-channels = <&adc 0>, <&adc 1>, <&adc 2>, <&adc 3>,
+> +                       <&adc 4>, <&adc 5>, <&adc 6>, <&adc 7>,
+> +                       <&adc 8>, <&adc 9>, <&adc 10>, <&adc 11>,
+> +                       <&adc 12>, <&adc 13>, <&adc 14>, <&adc 15>;
+> +       };
+> +};
+> +
+> +&fmc {
+> +       status = "okay";
+> +       flash at 0 {
+> +               status = "okay";
+> +               m25p,fast-read;
+> +               label = "bmc";
+> +               spi-max-frequency = <100000000>; /* 100 MHz */
+> +#include "openbmc-flash-layout-64.dtsi"
+> +       };
+> +};
+> +
+> +&uart5 {
+> +       status = "okay";
+> +};
+> +
+> +&vuart {
+> +       status = "okay";
+> +       aspeed,lpc-io-reg = <0x2f8>;
+> +       aspeed,lpc-interrupts = <3 IRQ_TYPE_LEVEL_HIGH>;
+> +};
+> +
+> +&mac0 {
+> +       status = "okay";
+> +
+> +       pinctrl-names = "default";
+> +       pinctrl-0 = <&pinctrl_rgmii1_default &pinctrl_mdio1_default>;
+> +};
+> +
+> +&i2c0 {
+> +       status = "okay";
+> +
+> +       /* inlet temp sensor */
+> +       w83773g at 4c {
+> +               compatible = "nuvoton,w83773g";
+> +               reg = <0x4c>;
+> +       };
+> +};
+> +
+> +&i2c1 {
+> +       status = "okay";
+> +};
+> +
+> +&i2c2 {
+> +       status = "okay";
+> +
+> +       /* IPB temp sensor */
+> +       w83773g at 4c {
+> +               compatible = "nuvoton,w83773g";
+> +               reg = <0x4c>;
+> +       };
+> +
+> +       /* IPB PMIC */
+> +       lm25066 at 40 {
+> +               compatible = "lm25066";
+> +               reg = <0x40>;
+> +       };
+> +
+> +       /* 12VSB PMIC */
+> +       lm25066 at 41 {
+> +               compatible = "lm25066";
+> +               reg = <0x41>;
+> +       };
+> +};
+> +
+> +&i2c4 {
+> +       status = "okay";
+> +};
+> +
+> +&i2c5 {
+> +       status = "okay";
+> +};
+> +
+> +&i2c6 {
+> +       status = "okay";
+> +};
+> +
+> +&i2c7 {
+> +       status = "okay";
+> +
+> +       /* Baseboard FRU eeprom */
+> +       eeprom at 50 {
+> +               compatible = "st,24c128", "atmel,24c128";
+> +               reg = <0x50>;
+> +               pagesize = <16>;
+> +       };
+> +};
+> +
+> +&i2c8 {
+> +       status = "okay";
+> +};
+> +
+> +&i2c9 {
+> +       status = "okay";
+> +};
+> +
+> +&video {
+> +       status = "okay";
+> +};
+> +
+> +&vhub {
+> +       status = "okay";
+> +};
+> +
+> +&lpc_ctrl {
+> +       status = "okay";
+> +};
+> +
+> +&lpc_snoop {
+> +       status = "okay";
+> +       snoop-ports = <0x80>;
+> +};
+> +
+> +&kcs3 {
+> +       status = "okay";
+> +       aspeed,lpc-io-reg = <0xca2>;
+> +};
+> +
+> +&pwm_tacho {
+> +       status = "okay";
+> +       pinctrl-names = "default";
+> +       pinctrl-0 = <&pinctrl_pwm3_default
+> +               &pinctrl_pwm4_default
+> +               &pinctrl_pwm5_default
+> +               &pinctrl_pwm6_default>;
+> +
+> +       fan at 3 {
+> +               reg = <0x03>;
+> +               aspeed,fan-tach-ch = /bits/ 8 <0x03 0x0b>;
+> +       };
+> +
+> +       fan at 4 {
+> +               reg = <0x04>;
+> +               aspeed,fan-tach-ch = /bits/ 8 <0x04 0x0c>;
+> +       };
+> +
+> +       fan at 5 {
+> +               reg = <0x05>;
+> +               aspeed,fan-tach-ch = /bits/ 8 <0x05 0x0d>;
+> +       };
+> +
+> +       fan at 6 {
+> +               reg = <0x06>;
+> +               aspeed,fan-tach-ch = /bits/ 8 <0x06 0x0e>;
+> +       };
+> +};
+> +
+> +&gpio {
+> +       status = "okay";
+> +       gpio-line-names =
+> +               /*  A */ "LOCATORLED_STATUS_N", "BMC_MAC2_INTB", "NMI_BTN_N", "BMC_NMI",
+> +                       "", "", "", "",
+> +               /*  B */ "DDR_MEM_TEMP", "", "", "", "", "", "", "",
+> +               /*  C */ "", "", "", "", "PCIE_HP_SEL_N", "PCIE_SATA_SEL_N", "LOCATORBTN", "",
+> +               /*  D */ "BMC_PSIN", "BMC_PSOUT", "BMC_RESETCON", "RESETCON",
+> +                       "", "", "", "PSU_FAN_FAIL_N",
+> +               /*  E */ "", "", "", "", "", "", "", "",
+> +               /*  F */ "NIC_PWR_GOOD", "PRSNTB0", "PRSNTB1", "PRSNTB2",
+> +                       "PRSNTB3", "", "3VSB_PCIE1_PG", "12V_PCIE1_PG",
+> +               /*  G */ "HWM_BAT_EN", "CHASSIS_ID0", "CHASSIS_ID1", "CHASSIS_ID2",
+> +                       "BMC_ALERT1_N_R", "BMC_ALERT2_N_R", "BMC_ALERT3_N", "BMC_ALERT4_N",
+> +               /*  H */ "X24_C1_PRSNT", "X24_C2_PRSNT", "X24_C3_PRSNT", "FM_MEM_THERM_EVENT_BMC_R_N",
+> +                       "FACMODE", "BMC_RTCRST", "BMC_HB_LED_N", "BMC_CASEOPEN",
+> +               /*  I */ "", "", "", "", "", "", "", "",
+> +               /*  J */ "BMC_READY", "BMC_PCH_BIOS_CS_N", "", "P0_MA_DDR_QS_CS_N",
+> +                       "", "", "", "",
+> +               /*  K */ "", "", "", "", "", "", "", "",
+> +               /*  L */ "", "", "", "", "", "", "", "",
+> +               /*  M */ "", "", "MEZZ_PWRBRK_N", "OCP_HP_RST_EN",
+> +                       "MAIN_PWR_EN_G", "BMC_MAIN_EN", "AUX_PWR_EN_G", "BMC_AUX_EN",
+> +               /*  N */ "", "", "", "", "", "", "", "",
+> +               /*  O */ "", "", "", "", "", "", "", "",
+> +               /*  P */ "", "", "", "", "", "", "", "",
+> +               /*  Q */ "", "", "", "",
+> +                       "BMC_SMB_PRESENT_1_N", "BMC_SMB_PRESENT_2_N",
+> +                       "BMC_SMB_PRESENT_3_N", "BMC_PCIE_WAKE_N",
+> +               /*  R */ "", "", "THERMALTRIP_CLEAR_N", "", "", "", "", "",
+> +               /*  S */ "", "", "", "", "", "", "", "",
+> +               /*  T */ "", "", "", "", "", "", "", "",
+> +               /*  U */ "", "", "", "", "", "", "", "",
+> +               /*  V */ "", "", "", "", "", "", "", "",
+> +               /*  W */ "", "", "", "", "", "", "", "",
+> +               /*  X */ "", "", "", "", "", "", "", "",
+> +               /*  Y */ "SLP_S3", "SLP_S4_S5", "NODE_ID_1", "NODE_ID_2", "", "", "", "",
+> +               /*  Z */ "", "", "SYSTEM_FAULT_LED_N", "FAST_THROTTLE_N",
+> +                       "", "", "", "",
+> +               /* AA */ "FM_CPU0_IBMC_THERMTRIP_N", "", "PROCHOT_L_G", "",
+> +                       "", "", "", "",
+> +               /* AB */ "BMC_FORCE_SELFREFRESH", "PWRGD_OUT", "", "IRQ_BMC_PCH_SMI_LPC_N",
+> +                       "", "", "", "",
+> +               /* AC */ "", "", "", "", "", "", "", "";
+> +};
+> +
+> +&adc {
+> +       status = "okay";
+> +       pinctrl-names = "default";
+> +       pinctrl-0 = <&pinctrl_adc0_default
+> +               &pinctrl_adc1_default
+> +               &pinctrl_adc2_default
+> +               &pinctrl_adc3_default
+> +               &pinctrl_adc4_default
+> +               &pinctrl_adc5_default
+> +               &pinctrl_adc6_default
+> +               &pinctrl_adc7_default
+> +               &pinctrl_adc8_default
+> +               &pinctrl_adc9_default
+> +               &pinctrl_adc10_default
+> +               &pinctrl_adc11_default
+> +               &pinctrl_adc12_default
+> +               &pinctrl_adc13_default
+> +               &pinctrl_adc14_default
+> +               &pinctrl_adc15_default>;
+> +};
+> --
+> 2.34.1
+>
