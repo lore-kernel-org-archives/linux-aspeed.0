@@ -1,86 +1,65 @@
-From: Noralf Trønnes <noralf@tronnes.org>
-Date: Tue, 11 Jan 2022 13:02:50 +0100
-Subject: [PATCH v2 1/2] drm/mipi-dbi: Remove dependency on GEM CMA helper
- library
-In-Reply-To: <20211106193509.17472-2-tzimmermann@suse.de>
-References: <20211106193509.17472-2-tzimmermann@suse.de>
-Message-ID: <a9e2d66e-1a85-b61f-ee3b-ca7032e0516f@tronnes.org>
+From: Joel Stanley <joel@jms.id.au>
+Date: Wed, 12 Jan 2022 00:51:53 +0000
+Subject: [PATCH] media: aspeed: Fix no complete irq for non-64-aligned
+ width
+In-Reply-To: <20211214045348.13702-1-jammy_huang@aspeedtech.com>
+References: <20211214045348.13702-1-jammy_huang@aspeedtech.com>
+Message-ID: <CACPK8XfkXi6M=gzfkYcuoga6WxnzSm2+mspBt4gjop7Ytm+VCA@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-> The MIPI DBI helpers access struct drm_gem_cma_object.vaddr in a
-> few places. Replace all instances with the correct generic GEM
-> functions. Use drm_gem_fb_vmap() for mapping a framebuffer's GEM
-> objects and drm_gem_fb_vunmap() for unmapping them. This removes
-> the dependency on CMA helpers within MIPI DBI.
+On Tue, 14 Dec 2021 at 04:53, Jammy Huang <jammy_huang@aspeedtech.com> wrote:
 >
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+> In ast2500, engine will stop occasionally for 1360x768.
+>
+> This is a bug which has been addressed, but the workaround is specific
+> for 1680 only. Here we make it more complete.
+>
+> Signed-off-by: Jammy Huang <jammy_huang@aspeedtech.com>
 > ---
->  drivers/gpu/drm/drm_mipi_dbi.c | 34 +++++++++++++++++++++++++---------
->  1 file changed, 25 insertions(+), 9 deletions(-)
+>  drivers/media/platform/aspeed-video.c | 12 +++++++-----
+>  1 file changed, 7 insertions(+), 5 deletions(-)
 >
-> diff --git a/drivers/gpu/drm/drm_mipi_dbi.c
-b/drivers/gpu/drm/drm_mipi_dbi.c
-> index 71b646c4131f..f80fd6c0ccf8 100644
-> --- a/drivers/gpu/drm/drm_mipi_dbi.c
-> +++ b/drivers/gpu/drm/drm_mipi_dbi.c
-> @@ -15,9 +15,10 @@
->  #include <drm/drm_connector.h>
->  #include <drm/drm_damage_helper.h>
->  #include <drm/drm_drv.h>
-> -#include <drm/drm_gem_cma_helper.h>
-> +#include <drm/drm_file.h>
->  #include <drm/drm_format_helper.h>
->  #include <drm/drm_fourcc.h>
-> +#include <drm/drm_gem.h>
->  #include <drm/drm_gem_framebuffer_helper.h>
->  #include <drm/drm_mipi_dbi.h>
->  #include <drm/drm_modes.h>
-> @@ -200,13 +201,19 @@ int mipi_dbi_buf_copy(void *dst, struct
-drm_framebuffer *fb,
->  		      struct drm_rect *clip, bool swap)
->  {
->  	struct drm_gem_object *gem = drm_gem_fb_get_obj(fb, 0);
-> -	struct drm_gem_cma_object *cma_obj = to_drm_gem_cma_obj(gem);
-> -	void *src = cma_obj->vaddr;
-> +	struct dma_buf_map map[DRM_FORMAT_MAX_PLANES];
-> +	struct dma_buf_map data[DRM_FORMAT_MAX_PLANES];
-> +	void *src;
->  	int ret;
+> diff --git a/drivers/media/platform/aspeed-video.c b/drivers/media/platform/aspeed-video.c
+> index 793b2adaa0f5..4d3e6b105d44 100644
+> --- a/drivers/media/platform/aspeed-video.c
+> +++ b/drivers/media/platform/aspeed-video.c
+> @@ -1055,18 +1055,20 @@ static void aspeed_video_set_resolution(struct aspeed_video *video)
+>         /* Set capture/compression frame sizes */
+>         aspeed_video_calc_compressed_size(video, size);
 >
->  	ret = drm_gem_fb_begin_cpu_access(fb, DMA_FROM_DEVICE);
->  	if (ret)
->  		return ret;
-> +	src = data[0].vaddr; /* TODO: Use mapping abstraction properly */
+> -       if (video->active_timings.width == 1680) {
+> +       if (!IS_ALIGNED(act->width, 64)) {
+>                 /*
+>                  * This is a workaround to fix a silicon bug on A1 and A2
 
-This assignment should be after the _vmap() call. The MIPI DBI drivers
-are currently broken because of this.
+Please add:  "a AST2500 silicon bug" so we know which A1/A2 this is
+referring to.
 
-Noralf.
+With that added, you can add:
 
+ Reviewed-by: Joel Stanley <joel@jms.id.au>
+
+>                  * revisions. Since it doesn't break capturing operation of
+>                  * other revisions, use it for all revisions without checking
+> -                * the revision ID. It picked 1728 which is a very next
+> -                * 64-pixels aligned value to 1680 to minimize memory bandwidth
+> +                * the revision ID. It picked new width which is a very next
+> +                * 64-pixels aligned value to minimize memory bandwidth
+>                  * and to get better access speed from video engine.
+>                  */
+> +               u32 width = ALIGN(act->width, 64);
 > +
-> +	ret = drm_gem_fb_vmap(fb, map, data);
-> +	if (ret)
-> +		goto out_drm_gem_fb_end_cpu_access;
->
->  	switch (fb->format->format) {
->  	case DRM_FORMAT_RGB565:
-> @@ -221,9 +228,11 @@ int mipi_dbi_buf_copy(void *dst, struct
-drm_framebuffer *fb,
->  	default:
->  		drm_err_once(fb->dev, "Format is not supported: %p4cc\n",
->  			     &fb->format->format);
-> -		return -EINVAL;
-> +		ret = -EINVAL;
->  	}
->
-> +	drm_gem_fb_vunmap(fb, map);
-> +out_drm_gem_fb_end_cpu_access:
->  	drm_gem_fb_end_cpu_access(fb, DMA_FROM_DEVICE);
->
->  	return ret;
->
+>                 aspeed_video_write(video, VE_CAP_WINDOW,
+> -                                  1728 << 16 | act->height);
+> -               size += (1728 - 1680) * video->active_timings.height;
+> +                                  width << 16 | act->height);
+> +               size = width * act->height;
+
+You could make it clearer by putting the write on one line:
+
+                aspeed_video_write(video, VE_CAP_WINDOW, width << 16 |
+act->height);
