@@ -1,75 +1,74 @@
-From: Milton Miller II <miltonm@us.ibm.com>
-Date: Wed, 12 Jan 2022 01:28:36 +0000
-Subject: [PATCH] ARM: dts: aspeed: Add ASRock ROMED8HM3 BMC
-Message-ID: <OF56051358.C6261723-ON002587C8.00081CB9-1641950916512@ibm.com>
+From: Jammy Huang <jammy_huang@aspeedtech.com>
+Date: Wed, 12 Jan 2022 14:05:41 +0800
+Subject: [PATCH] media: aspeed: Fix no complete irq for non-64-aligned
+ width
+In-Reply-To: <CACPK8XfkXi6M=gzfkYcuoga6WxnzSm2+mspBt4gjop7Ytm+VCA@mail.gmail.com>
+References: <20211214045348.13702-1-jammy_huang@aspeedtech.com>
+ <CACPK8XfkXi6M=gzfkYcuoga6WxnzSm2+mspBt4gjop7Ytm+VCA@mail.gmail.com>
+Message-ID: <a779f1c1-e5b0-5d55-bc6c-5f253d03525d@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-My response tagged 
+Hi Joel,
 
+OK, thanks for your review. I will send another updated patch per your 
+advice.
 
--------- Original Message --------
-From: Zev Weiss 
-Date: Tue, January 11, 2022 7:15 PM -0600
-To: Joel Stanley 
-CC: devicetree , linux-aspeed , Arnd Bergmann , Andrew Jeffery , OpenBMC Maillist , Linux Kernel Mailing List , Rob Herring , Neil Horman , Olof Johansson , Anthony Jenkins , Linux ARM 
-Subject: [EXTERNAL] Re: [PATCH] ARM: dts: aspeed: Add ASRock ROMED8HM3 BMC
-
-
-On Tue, Jan 11, 2022 at 02:59:28AM PST, Joel Stanley wrote:
->On Wed, 5 Jan 2022 at 23:10, Zev Weiss wrote:
+On 2022/1/12 ?? 08:51, Joel Stanley wrote:
+> On Tue, 14 Dec 2021 at 04:53, Jammy Huang <jammy_huang@aspeedtech.com> wrote:
+>> In ast2500, engine will stop occasionally for 1360x768.
 >>
->> This is a half-width, single-socket Epyc server board with an AST2500
->> BMC.??This device tree is sufficient for basic OpenBMC functionality,
->> but we'll need to add a few more devices (as driver support becomes
->> available) before it's fully usable.
+>> This is a bug which has been addressed, but the workaround is specific
+>> for 1680 only. Here we make it more complete.
 >>
->> Signed-off-by: Zev Weiss 
+>> Signed-off-by: Jammy Huang <jammy_huang@aspeedtech.com>
+>> ---
+>>   drivers/media/platform/aspeed-video.c | 12 +++++++-----
+>>   1 file changed, 7 insertions(+), 5 deletions(-)
+>>
+>> diff --git a/drivers/media/platform/aspeed-video.c b/drivers/media/platform/aspeed-video.c
+>> index 793b2adaa0f5..4d3e6b105d44 100644
+>> --- a/drivers/media/platform/aspeed-video.c
+>> +++ b/drivers/media/platform/aspeed-video.c
+>> @@ -1055,18 +1055,20 @@ static void aspeed_video_set_resolution(struct aspeed_video *video)
+>>          /* Set capture/compression frame sizes */
+>>          aspeed_video_calc_compressed_size(video, size);
+>>
+>> -       if (video->active_timings.width == 1680) {
+>> +       if (!IS_ALIGNED(act->width, 64)) {
+>>                  /*
+>>                   * This is a workaround to fix a silicon bug on A1 and A2
+> Please add:  "a AST2500 silicon bug" so we know which A1/A2 this is
+> referring to.
 >
->Reviewed-by: Joel Stanley 
+> With that added, you can add:
 >
-
-Thanks!
-
->Have you considered using the openbmc gpio naming scheme for the
->gpio-line-names?
+>   Reviewed-by: Joel Stanley <joel@jms.id.au>
 >
+>>                   * revisions. Since it doesn't break capturing operation of
+>>                   * other revisions, use it for all revisions without checking
+>> -                * the revision ID. It picked 1728 which is a very next
+>> -                * 64-pixels aligned value to 1680 to minimize memory bandwidth
+>> +                * the revision ID. It picked new width which is a very next
+>> +                * 64-pixels aligned value to minimize memory bandwidth
+>>                   * and to get better access speed from video engine.
+>>                   */
+>> +               u32 width = ALIGN(act->width, 64);
+>> +
+>>                  aspeed_video_write(video, VE_CAP_WINDOW,
+>> -                                  1728 << 16 | act->height);
+>> -               size += (1728 - 1680) * video->active_timings.height;
+>> +                                  width << 16 | act->height);
+>> +               size = width * act->height;
+> You could make it clearer by putting the write on one line:
+>
+>                  aspeed_video_write(video, VE_CAP_WINDOW, width << 16 |
+> act->height);
 
-I looked at it, but decided not to for a few reasons:
+-- 
+Best Regards
+Jammy
 
-??- For systems that are in the early stages of a porting effort (like 
-????this one currently is), I'm still referring to hardware schematics 
-????fairly often, and using the same identifiers in software that are 
-????used in the schematics simplifies things by avoiding an extra
-????translation step between the two.
-
-??- Most of the GPIO-related userspace components (that I'm dealing with 
-????anyway, e.g. x86-power-control and host-error-monitor) already have 
-????their own GPIO line-name configuration/remapping mechanisms that need 
-????to be set up anyway.
-
-??- There's a solid mix of GPIOs that would be covered by the naming 
-????guidelines and others that aren't; having a mix of the two styles 
-????seems a bit awkward to me.
-
-That said, I sympathize with the motivation behind it and I'm not 
-vehemently opposed on the whole, so if there's a strong preference to 
-follow that scheme I could probably be talked into changing it.
-
-
-
-Milton >??Did this assessment take into consideration 
-Milton > https://gerrit.openbmc-project.xyz/c/openbmc/docs/+/49863
-
-Milton > is there something that could be improved? 
-
-
-Zev
-
-
--------------- next part --------------
-An HTML attachment was scrubbed...
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20220112/a27af10c/attachment.htm>
