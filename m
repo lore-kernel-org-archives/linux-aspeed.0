@@ -1,218 +1,411 @@
 From: Iwona Winiarska <iwona.winiarska@intel.com>
-Date: Thu, 13 Jan 2022 00:02:34 +0100
-Subject: [PATCH v5 00/13] Introduce PECI subsystem
-Message-ID: <20220112230247.982212-1-iwona.winiarska@intel.com>
+Date: Thu, 13 Jan 2022 00:02:38 +0100
+Subject: [PATCH v5 04/13] peci: Add core infrastructure
+In-Reply-To: <20220112230247.982212-1-iwona.winiarska@intel.com>
+References: <20220112230247.982212-1-iwona.winiarska@intel.com>
+Message-ID: <20220112230247.982212-5-iwona.winiarska@intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi!
+Intel processors provide access for various services designed to support
+processor and DRAM thermal management, platform manageability and
+processor interface tuning and diagnostics.
+Those services are available via the Platform Environment Control
+Interface (PECI) that provides a communication channel between the
+processor and the Baseboard Management Controller (BMC) or other
+platform management device.
 
-Changes in this revision are limited to peci-aspeed controller driver
-and its DTS schema (except small cosmetic change in peci-dimmtemp
-hwmon).
-Major change is related to clock programming - common clock framework
-is now used in peci-aspeed.
-This required appropriate changes in peci-aspeed DTS schema. The
-properties that had impact on clock programming were removed and
-replaced with "clock-frequency", which is simply passed to
-clk_aspeed_peci.
-Additionally, "aspeed,rd-sampling-point" was removed. The driver is
-now just using a default value. DTS property can be reintroduced in
-the future if needed.
+This change introduces PECI subsystem by adding the initial core module
+and API for controller drivers.
 
-Here is the usual cover letter from the previous revision:
-
-The Platform Environment Control Interface (PECI) is a communication
-interface between Intel processors and management controllers (e.g.
-Baseboard Management Controller, BMC).
-
-This series adds a PECI subsystem and introduces drivers which run in
-the Linux instance on the management controller (not the main Intel
-processor) and is intended to be used by the OpenBMC [1], a Linux
-distribution for BMC devices.
-The information exposed over PECI (like processor and DIMM
-temperature) refers to the Intel processor and can be consumed by
-daemons running on the BMC to, for example, display the processor
-temperature in its web interface.
-
-The PECI bus is collection of code that provides interface support
-between PECI devices (that actually represent processors) and PECI
-controllers (such as the "peci-aspeed" controller) that allow to
-access physical PECI interface. PECI devices are bound to PECI
-drivers that provides access to PECI services. This series introduces
-a generic "peci-cpu" driver that exposes hardware monitoring "cputemp"
-and "dimmtemp" using the auxiliary bus.
-
-Exposing "raw" PECI to userspace, either to write userspace drivers or
-for debug/testing purpose was left out of this series to encourage
-writing kernel drivers instead, but may be pursued in the future.
-
-Introducing PECI to upstream Linux was already attempted before [2].
-Since it's been over a year since last revision, and the series
-changed quite a bit in the meantime, I've decided to start from v1.
-
-I would also like to give credit to everyone who helped me with
-different aspects of preliminary review:
-- Pierre-Louis Bossart,
-- Tony Luck, 
-- Andy Shevchenko,
-- Dave Hansen.
-
-[1] https://github.com/openbmc/openbmc
-[2] https://lore.kernel.org/openbmc/20191211194624.2872-1-jae.hyun.yoo at linux.intel.com/
-
-Changes v4 -> v5:
-* Added clk_aspeed_peci to express controller programming using common
-  clock framework (Billy)
-* Modified peci-aspeed DTS schema to match clock changes (Billy)
-* Added workaround for peci-aspeed controller hang (Billy)
-* Removed unnecessary "else after return" (Guenter)
-
-Changes v3 -> v4:
-* Fixed an issue where peci doesn't work after host shutdown (Zev)
-* Replaced kill_device() with peci_device_del_lock (Greg)
-* Fixed dts_valid() parameter type (Guenter)
-* Removed Jae from MAINTAINERS file (Jae)
-
-Changes v2 -> v3:
-
-* Dropped x86/cpu patches (Boris)
-* Dropped pr_fmt() for PECI module (Dan)
-* Fixed releasing peci controller device flow (Dan) 
-* Improved peci-aspeed commit-msg and Kconfig help (Dan)
-* Fixed aspeed_peci_xfer() to use the proper spin_lock function (Dan) 
-* Wrapped print_hex_dump_bytes() in CONFIG_DYNAMIC_DEBUG (Dan)
-* Removed debug status logs from aspeed_peci_irq_handler() (Dan)
-* Renamed functions using devres to start with "devm" (Dan)
-* Changed request to be allocated on stack in peci_detect (Dan)
-* Removed redundant WARN_ON on invalid PECI addr (Dan)
-* Changed peci_device_create() to use device_initialize() + device_add() pattern (Dan)
-* Fixed peci_device_destroy() to use kill_device() avoiding double-free (Dan)
-* Renamed functions that perform xfer using "peci_xfer_*" prefix (Dan) 
-* Renamed peci_request_data_dib(temp) -> peci_request_dib(temp)_read (Dan)
-* Fixed thermal margin readings for older Intel processors (Zev) 
-* Misc hwmon simplifications (Guenter)
-* Used BIT_PER_TYPE to verify macro value constrains (Guenter)
-* Improved WARN_ON message to print chan_rank_max and idx_dimm_max (Guenter)
-* Improved dimmtemp to not reattempt probe if no dimms are populated
-
-Changes v1 -> v2:
-
-Biggest changes when it comes to diffstat are locking in HWMON
-(I decided to clean things up a bit while adding it), switching to
-devres usage in more places and exposing sysfs interface in separate patch.
-
-* Moved extending X86 ARCHITECTURE MAINTAINERS earlier in series (Dan)
-* Removed "default n" for GENERIC_LIB_X86 (Dan)
-* Added vendor prefix for peci-aspeed specific properties (Rob)
-* Refactored PECI to use devres consistently (Dan)
-* Added missing sysfs documentation and excluded adding peci-sysfs to
-  separate patch (Dan)
-* Used module_init() instead of subsys_init() for peci module initialization (Dan)
-* Removed redundant struct peci_device member (Dan)
-* Improved PECI Kconfig help (Randy/Dan)
-* Fixed/removed log messages (Dan, Guenter)
-* Refactored peci-cputemp and peci-dimmtemp and added missing locks (Guenter)
-* Removed unused dev_set_drvdata() in peci-cputemp and peci-dimmtemp (Guenter)
-* Fixed used types, names, fixed broken and added additional comments
-  to peci-hwmon (Guenter, Zev)
-* Refactored peci-dimmtemp to not return -ETIMEDOUT (Guenter)
-* Added sanity check for min_peci_revision in peci-hwmon drivers (Zev)
-* Added assert for DIMM_NUMS_MAX and additional warning in peci-dimmtemp (Zev)
-* Fixed macro names in peci-aspeed (Zev)
-* Refactored peci-aspeed sanitizing properties to a single helper function (Zev)
-* Fixed peci_cpu_device_ids definition for Broadwell Xeon D (David)
-* Refactor peci_request to use a single allocation (Zev)
-* Used min_t() to improve code readability (Zev)
-* Added macro for PECI_RDENDPTCFG_MMIO_WR_LEN_BASE and fixed adev type
-  array name to more descriptive (Zev)
-* Fixed peci-hwmon commit-msg and documentation (Zev)
-
-Thanks
--Iwona
-
-Iwona Winiarska (11):
-  dt-bindings: Add generic bindings for PECI
-  dt-bindings: Add bindings for peci-aspeed
-  ARM: dts: aspeed: Add PECI controller nodes
-  peci: Add core infrastructure
-  peci: Add device detection
-  peci: Add sysfs interface for PECI bus
-  peci: Add support for PECI device drivers
-  peci: Add peci-cpu driver
-  hwmon: peci: Add cputemp driver
-  hwmon: peci: Add dimmtemp driver
-  docs: Add PECI documentation
-
-Jae Hyun Yoo (2):
-  peci: Add peci-aspeed controller driver
-  docs: hwmon: Document PECI drivers
-
- Documentation/ABI/testing/sysfs-bus-peci      |  16 +
- .../devicetree/bindings/peci/peci-aspeed.yaml |  72 ++
- .../bindings/peci/peci-controller.yaml        |  33 +
- Documentation/hwmon/index.rst                 |   2 +
- Documentation/hwmon/peci-cputemp.rst          |  90 +++
- Documentation/hwmon/peci-dimmtemp.rst         |  57 ++
- Documentation/index.rst                       |   1 +
- Documentation/peci/index.rst                  |  16 +
- Documentation/peci/peci.rst                   |  51 ++
- MAINTAINERS                                   |  26 +
- arch/arm/boot/dts/aspeed-g4.dtsi              |  11 +
- arch/arm/boot/dts/aspeed-g5.dtsi              |  11 +
- arch/arm/boot/dts/aspeed-g6.dtsi              |  11 +
- drivers/Kconfig                               |   3 +
- drivers/Makefile                              |   1 +
- drivers/hwmon/Kconfig                         |   2 +
- drivers/hwmon/Makefile                        |   1 +
- drivers/hwmon/peci/Kconfig                    |  31 +
- drivers/hwmon/peci/Makefile                   |   7 +
- drivers/hwmon/peci/common.h                   |  58 ++
- drivers/hwmon/peci/cputemp.c                  | 592 ++++++++++++++++
- drivers/hwmon/peci/dimmtemp.c                 | 630 ++++++++++++++++++
- drivers/peci/Kconfig                          |  36 +
- drivers/peci/Makefile                         |  10 +
- drivers/peci/controller/Kconfig               |  17 +
- drivers/peci/controller/Makefile              |   3 +
- drivers/peci/controller/peci-aspeed.c         | 584 ++++++++++++++++
- drivers/peci/core.c                           | 236 +++++++
- drivers/peci/cpu.c                            | 343 ++++++++++
- drivers/peci/device.c                         | 252 +++++++
- drivers/peci/internal.h                       | 136 ++++
- drivers/peci/request.c                        | 482 ++++++++++++++
- drivers/peci/sysfs.c                          |  82 +++
- include/linux/peci-cpu.h                      |  40 ++
- include/linux/peci.h                          | 112 ++++
- 35 files changed, 4055 insertions(+)
- create mode 100644 Documentation/ABI/testing/sysfs-bus-peci
- create mode 100644 Documentation/devicetree/bindings/peci/peci-aspeed.yaml
- create mode 100644 Documentation/devicetree/bindings/peci/peci-controller.yaml
- create mode 100644 Documentation/hwmon/peci-cputemp.rst
- create mode 100644 Documentation/hwmon/peci-dimmtemp.rst
- create mode 100644 Documentation/peci/index.rst
- create mode 100644 Documentation/peci/peci.rst
- create mode 100644 drivers/hwmon/peci/Kconfig
- create mode 100644 drivers/hwmon/peci/Makefile
- create mode 100644 drivers/hwmon/peci/common.h
- create mode 100644 drivers/hwmon/peci/cputemp.c
- create mode 100644 drivers/hwmon/peci/dimmtemp.c
+Co-developed-by: Jason M Bills <jason.m.bills@linux.intel.com>
+Signed-off-by: Jason M Bills <jason.m.bills@linux.intel.com>
+Co-developed-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+Signed-off-by: Iwona Winiarska <iwona.winiarska@intel.com>
+Reviewed-by: Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>
+---
+ MAINTAINERS             |   8 ++
+ drivers/Kconfig         |   3 +
+ drivers/Makefile        |   1 +
+ drivers/peci/Kconfig    |  15 ++++
+ drivers/peci/Makefile   |   5 ++
+ drivers/peci/core.c     | 158 ++++++++++++++++++++++++++++++++++++++++
+ drivers/peci/internal.h |  16 ++++
+ include/linux/peci.h    |  99 +++++++++++++++++++++++++
+ 8 files changed, 305 insertions(+)
  create mode 100644 drivers/peci/Kconfig
  create mode 100644 drivers/peci/Makefile
- create mode 100644 drivers/peci/controller/Kconfig
- create mode 100644 drivers/peci/controller/Makefile
- create mode 100644 drivers/peci/controller/peci-aspeed.c
  create mode 100644 drivers/peci/core.c
- create mode 100644 drivers/peci/cpu.c
- create mode 100644 drivers/peci/device.c
  create mode 100644 drivers/peci/internal.h
- create mode 100644 drivers/peci/request.c
- create mode 100644 drivers/peci/sysfs.c
- create mode 100644 include/linux/peci-cpu.h
  create mode 100644 include/linux/peci.h
 
+diff --git a/MAINTAINERS b/MAINTAINERS
+index dd36acc87ce6..3b079e193bf3 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -14922,6 +14922,14 @@ L:	platform-driver-x86 at vger.kernel.org
+ S:	Maintained
+ F:	drivers/platform/x86/peaq-wmi.c
+ 
++PECI SUBSYSTEM
++M:	Iwona Winiarska <iwona.winiarska@intel.com>
++L:	openbmc at lists.ozlabs.org (moderated for non-subscribers)
++S:	Supported
++F:	Documentation/devicetree/bindings/peci/
++F:	drivers/peci/
++F:	include/linux/peci.h
++
+ PENSANDO ETHERNET DRIVERS
+ M:	Shannon Nelson <snelson@pensando.io>
+ M:	drivers at pensando.io
+diff --git a/drivers/Kconfig b/drivers/Kconfig
+index 0d399ddaa185..8d6cd5d08722 100644
+--- a/drivers/Kconfig
++++ b/drivers/Kconfig
+@@ -236,4 +236,7 @@ source "drivers/interconnect/Kconfig"
+ source "drivers/counter/Kconfig"
+ 
+ source "drivers/most/Kconfig"
++
++source "drivers/peci/Kconfig"
++
+ endmenu
+diff --git a/drivers/Makefile b/drivers/Makefile
+index a110338c860c..020780b6b4d2 100644
+--- a/drivers/Makefile
++++ b/drivers/Makefile
+@@ -187,3 +187,4 @@ obj-$(CONFIG_GNSS)		+= gnss/
+ obj-$(CONFIG_INTERCONNECT)	+= interconnect/
+ obj-$(CONFIG_COUNTER)		+= counter/
+ obj-$(CONFIG_MOST)		+= most/
++obj-$(CONFIG_PECI)		+= peci/
+diff --git a/drivers/peci/Kconfig b/drivers/peci/Kconfig
+new file mode 100644
+index 000000000000..71a4ad81225a
+--- /dev/null
++++ b/drivers/peci/Kconfig
+@@ -0,0 +1,15 @@
++# SPDX-License-Identifier: GPL-2.0-only
++
++menuconfig PECI
++	tristate "PECI support"
++	help
++	  The Platform Environment Control Interface (PECI) is an interface
++	  that provides a communication channel to Intel processors and
++	  chipset components from external monitoring or control devices.
++
++	  If you are building a Baseboard Management Controller (BMC) kernel
++	  for Intel platform say Y here and also to the specific driver for
++	  your adapter(s) below. If unsure say N.
++
++	  This support is also available as a module. If so, the module
++	  will be called peci.
+diff --git a/drivers/peci/Makefile b/drivers/peci/Makefile
+new file mode 100644
+index 000000000000..e789a354e842
+--- /dev/null
++++ b/drivers/peci/Makefile
+@@ -0,0 +1,5 @@
++# SPDX-License-Identifier: GPL-2.0-only
++
++# Core functionality
++peci-y := core.o
++obj-$(CONFIG_PECI) += peci.o
+diff --git a/drivers/peci/core.c b/drivers/peci/core.c
+new file mode 100644
+index 000000000000..73ad0a47fa9d
+--- /dev/null
++++ b/drivers/peci/core.c
+@@ -0,0 +1,158 @@
++// SPDX-License-Identifier: GPL-2.0-only
++// Copyright (c) 2018-2021 Intel Corporation
++
++#include <linux/bug.h>
++#include <linux/device.h>
++#include <linux/export.h>
++#include <linux/idr.h>
++#include <linux/module.h>
++#include <linux/of.h>
++#include <linux/peci.h>
++#include <linux/pm_runtime.h>
++#include <linux/property.h>
++#include <linux/slab.h>
++
++#include "internal.h"
++
++static DEFINE_IDA(peci_controller_ida);
++
++static void peci_controller_dev_release(struct device *dev)
++{
++	struct peci_controller *controller = to_peci_controller(dev);
++
++	mutex_destroy(&controller->bus_lock);
++	ida_free(&peci_controller_ida, controller->id);
++	kfree(controller);
++}
++
++struct device_type peci_controller_type = {
++	.release	= peci_controller_dev_release,
++};
++
++static struct peci_controller *peci_controller_alloc(struct device *dev,
++						     struct peci_controller_ops *ops)
++{
++	struct peci_controller *controller;
++	int ret;
++
++	if (!ops->xfer)
++		return ERR_PTR(-EINVAL);
++
++	controller = kzalloc(sizeof(*controller), GFP_KERNEL);
++	if (!controller)
++		return ERR_PTR(-ENOMEM);
++
++	ret = ida_alloc_max(&peci_controller_ida, U8_MAX, GFP_KERNEL);
++	if (ret < 0)
++		goto err;
++	controller->id = ret;
++
++	controller->ops = ops;
++
++	controller->dev.parent = dev;
++	controller->dev.bus = &peci_bus_type;
++	controller->dev.type = &peci_controller_type;
++
++	device_initialize(&controller->dev);
++
++	mutex_init(&controller->bus_lock);
++
++	return controller;
++
++err:
++	kfree(controller);
++	return ERR_PTR(ret);
++}
++
++static void unregister_controller(void *_controller)
++{
++	struct peci_controller *controller = _controller;
++
++	device_unregister(&controller->dev);
++
++	fwnode_handle_put(controller->dev.fwnode);
++
++	pm_runtime_disable(&controller->dev);
++}
++
++/**
++ * devm_peci_controller_add() - add PECI controller
++ * @dev: device for devm operations
++ * @ops: pointer to controller specific methods
++ *
++ * In final stage of its probe(), peci_controller driver calls
++ * devm_peci_controller_add() to register itself with the PECI bus.
++ *
++ * Return: Pointer to the newly allocated controller or ERR_PTR() in case of failure.
++ */
++struct peci_controller *devm_peci_controller_add(struct device *dev,
++						 struct peci_controller_ops *ops)
++{
++	struct peci_controller *controller;
++	int ret;
++
++	controller = peci_controller_alloc(dev, ops);
++	if (IS_ERR(controller))
++		return controller;
++
++	ret = dev_set_name(&controller->dev, "peci-%d", controller->id);
++	if (ret)
++		goto err_put;
++
++	pm_runtime_no_callbacks(&controller->dev);
++	pm_suspend_ignore_children(&controller->dev, true);
++	pm_runtime_enable(&controller->dev);
++
++	device_set_node(&controller->dev, fwnode_handle_get(dev_fwnode(dev)));
++
++	ret = device_add(&controller->dev);
++	if (ret)
++		goto err_fwnode;
++
++	ret = devm_add_action_or_reset(dev, unregister_controller, controller);
++	if (ret)
++		return ERR_PTR(ret);
++
++	return controller;
++
++err_fwnode:
++	fwnode_handle_put(controller->dev.fwnode);
++
++	pm_runtime_disable(&controller->dev);
++
++err_put:
++	put_device(&controller->dev);
++
++	return ERR_PTR(ret);
++}
++EXPORT_SYMBOL_NS_GPL(devm_peci_controller_add, PECI);
++
++struct bus_type peci_bus_type = {
++	.name		= "peci",
++};
++
++static int __init peci_init(void)
++{
++	int ret;
++
++	ret = bus_register(&peci_bus_type);
++	if (ret < 0) {
++		pr_err("peci: failed to register PECI bus type!\n");
++		return ret;
++	}
++
++	return 0;
++}
++module_init(peci_init);
++
++static void __exit peci_exit(void)
++{
++	bus_unregister(&peci_bus_type);
++}
++module_exit(peci_exit);
++
++MODULE_AUTHOR("Jason M Bills <jason.m.bills@linux.intel.com>");
++MODULE_AUTHOR("Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>");
++MODULE_AUTHOR("Iwona Winiarska <iwona.winiarska@intel.com>");
++MODULE_DESCRIPTION("PECI bus core module");
++MODULE_LICENSE("GPL");
+diff --git a/drivers/peci/internal.h b/drivers/peci/internal.h
+new file mode 100644
+index 000000000000..918dea745a86
+--- /dev/null
++++ b/drivers/peci/internal.h
+@@ -0,0 +1,16 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/* Copyright (c) 2018-2021 Intel Corporation */
++
++#ifndef __PECI_INTERNAL_H
++#define __PECI_INTERNAL_H
++
++#include <linux/device.h>
++#include <linux/types.h>
++
++struct peci_controller;
++
++extern struct bus_type peci_bus_type;
++
++extern struct device_type peci_controller_type;
++
++#endif /* __PECI_INTERNAL_H */
+diff --git a/include/linux/peci.h b/include/linux/peci.h
+new file mode 100644
+index 000000000000..26e0a4e73b50
+--- /dev/null
++++ b/include/linux/peci.h
+@@ -0,0 +1,99 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/* Copyright (c) 2018-2021 Intel Corporation */
++
++#ifndef __LINUX_PECI_H
++#define __LINUX_PECI_H
++
++#include <linux/device.h>
++#include <linux/kernel.h>
++#include <linux/mutex.h>
++#include <linux/types.h>
++
++/*
++ * Currently we don't support any PECI command over 32 bytes.
++ */
++#define PECI_REQUEST_MAX_BUF_SIZE 32
++
++struct peci_controller;
++struct peci_request;
++
++/**
++ * struct peci_controller_ops - PECI controller specific methods
++ * @xfer: PECI transfer function
++ *
++ * PECI controllers may have different hardware interfaces - the drivers
++ * implementing PECI controllers can use this structure to abstract away those
++ * differences by exposing a common interface for PECI core.
++ */
++struct peci_controller_ops {
++	int (*xfer)(struct peci_controller *controller, u8 addr, struct peci_request *req);
++};
++
++/**
++ * struct peci_controller - PECI controller
++ * @dev: device object to register PECI controller to the device model
++ * @ops: pointer to device specific controller operations
++ * @bus_lock: lock used to protect multiple callers
++ * @id: PECI controller ID
++ *
++ * PECI controllers usually connect to their drivers using non-PECI bus,
++ * such as the platform bus.
++ * Each PECI controller can communicate with one or more PECI devices.
++ */
++struct peci_controller {
++	struct device dev;
++	struct peci_controller_ops *ops;
++	struct mutex bus_lock; /* held for the duration of xfer */
++	u8 id;
++};
++
++struct peci_controller *devm_peci_controller_add(struct device *parent,
++						 struct peci_controller_ops *ops);
++
++static inline struct peci_controller *to_peci_controller(void *d)
++{
++	return container_of(d, struct peci_controller, dev);
++}
++
++/**
++ * struct peci_device - PECI device
++ * @dev: device object to register PECI device to the device model
++ * @controller: manages the bus segment hosting this PECI device
++ * @addr: address used on the PECI bus connected to the parent controller
++ *
++ * A peci_device identifies a single device (i.e. CPU) connected to a PECI bus.
++ * The behaviour exposed to the rest of the system is defined by the PECI driver
++ * managing the device.
++ */
++struct peci_device {
++	struct device dev;
++	u8 addr;
++};
++
++static inline struct peci_device *to_peci_device(struct device *d)
++{
++	return container_of(d, struct peci_device, dev);
++}
++
++/**
++ * struct peci_request - PECI request
++ * @device: PECI device to which the request is sent
++ * @tx: TX buffer specific data
++ * @tx.buf: TX buffer
++ * @tx.len: transfer data length in bytes
++ * @rx: RX buffer specific data
++ * @rx.buf: RX buffer
++ * @rx.len: received data length in bytes
++ *
++ * A peci_request represents a request issued by PECI originator (TX) and
++ * a response received from PECI responder (RX).
++ */
++struct peci_request {
++	struct peci_device *device;
++	struct {
++		u8 buf[PECI_REQUEST_MAX_BUF_SIZE];
++		u8 len;
++	} rx, tx;
++};
++
++#endif /* __LINUX_PECI_H */
 -- 
 2.31.1
 
