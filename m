@@ -1,158 +1,94 @@
-From: Joel Stanley <joel@jms.id.au>
-Date: Thu, 13 Jan 2022 04:12:16 +0000
-Subject: [PATCH v5 05/13] peci: Add peci-aspeed controller driver
-In-Reply-To: <20220112230247.982212-6-iwona.winiarska@intel.com>
-References: <20220112230247.982212-1-iwona.winiarska@intel.com>
- <20220112230247.982212-6-iwona.winiarska@intel.com>
-Message-ID: <CACPK8XewQJBvwssM6zQKQoxT=JLpk-qjGhsiTAa980OtbU7JBw@mail.gmail.com>
+From: kernel test robot <lkp@intel.com>
+Date: Thu, 13 Jan 2022 15:54:26 +0800
+Subject: [PATCH v5 08/13] peci: Add support for PECI device drivers
+In-Reply-To: <20220112230247.982212-9-iwona.winiarska@intel.com>
+References: <20220112230247.982212-9-iwona.winiarska@intel.com>
+Message-ID: <202201131534.HcDrC30f-lkp@intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 12 Jan 2022 at 23:06, Iwona Winiarska <iwona.winiarska@intel.com> wrote:
->
-> From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
->
-> ASPEED AST24xx/AST25xx/AST26xx SoCs support the PECI electrical
-> interface (a.k.a PECI wire) that provides a communication channel with
-> Intel processors.
-> This driver allows BMC to discover devices connected to it and
-> communicate with them using PECI protocol.
->
-> Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-> Co-developed-by: Iwona Winiarska <iwona.winiarska@intel.com>
-> Signed-off-by: Iwona Winiarska <iwona.winiarska@intel.com>
-> Reviewed-by: Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>
+Hi Iwona,
 
-The driver looks good to me. I would be happy to see it merged in its
-current state.
+I love your patch! Perhaps something to improve:
 
-Reviewed-by: Joel Stanley <joel@jms.id.au>
+[auto build test WARNING on groeck-staging/hwmon-next]
+[also build test WARNING on linux/master linus/master v5.16 next-20220112]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch]
 
-I've a few questions below that can be followed up later if need be.
+url:    https://github.com/0day-ci/linux/commits/Iwona-Winiarska/Introduce-PECI-subsystem/20220113-071131
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/groeck/linux-staging.git hwmon-next
+config: hexagon-randconfig-r033-20220113 (https://download.01.org/0day-ci/archive/20220113/202201131534.HcDrC30f-lkp at intel.com/config)
+compiler: clang version 14.0.0 (https://github.com/llvm/llvm-project d1021978b8e7e35dcc30201ca1731d64b5a602a8)
+reproduce (this is a W=1 build):
+        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        # https://github.com/0day-ci/linux/commit/0c9888d465568adc8526df1407c9a75be5ce6cd4
+        git remote add linux-review https://github.com/0day-ci/linux
+        git fetch --no-tags linux-review Iwona-Winiarska/Introduce-PECI-subsystem/20220113-071131
+        git checkout 0c9888d465568adc8526df1407c9a75be5ce6cd4
+        # save the config file to linux build tree
+        mkdir build_dir
+        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=clang make.cross W=1 O=build_dir ARCH=hexagon SHELL=/bin/bash drivers/peci/
 
-> +
-> +static void aspeed_peci_init_regs(struct aspeed_peci *priv)
-> +{
-> +       u32 val;
-> +
-> +       /* Clear interrupts */
-> +       val = readl(priv->base + ASPEED_PECI_INT_STS) | ASPEED_PECI_INT_MASK;
+If you fix the issue, kindly add following tag as appropriate
+Reported-by: kernel test robot <lkp@intel.com>
 
-Should that be & MASK?
+All warnings (new ones prefixed by >>):
 
-As you're just sanitising the registers, you could clear the status
-unconditionally:
+>> drivers/peci/request.c:111:23: warning: address of array 'req->rx.buf' will always evaluate to 'true' [-Wpointer-bool-conversion]
+           if (WARN_ON(!req->rx.buf))
+                       ~~~~~~~~~^~~
+   include/asm-generic/bug.h:121:25: note: expanded from macro 'WARN_ON'
+           int __ret_warn_on = !!(condition);                              \
+                                  ^~~~~~~~~
+   1 warning generated.
 
- writel(ASPEED_PECI_INT_MASK, priv->base + ASPEED_PECI_INT_STS);
 
-> +       writel(val, priv->base + ASPEED_PECI_INT_STS);
-> +
-> +       /* Set timing negotiation mode and enable interrupts */
-> +       val = FIELD_PREP(ASPEED_PECI_TIMING_NEGO_SEL_MASK, ASPEED_PECI_1ST_BIT_OF_ADDR_NEGO);
+vim +111 drivers/peci/request.c
 
-That's a complicated way to set val to zero :)
+   101	
+   102	static int peci_request_xfer_retry(struct peci_request *req)
+   103	{
+   104		long wait_interval = PECI_RETRY_INTERVAL_MIN;
+   105		struct peci_device *device = req->device;
+   106		struct peci_controller *controller = to_peci_controller(device->dev.parent);
+   107		unsigned long start = jiffies;
+   108		int ret;
+   109	
+   110		/* Don't try to use it for ping */
+ > 111		if (WARN_ON(!req->rx.buf))
+   112			return 0;
+   113	
+   114		do {
+   115			ret = peci_request_xfer(req);
+   116			if (ret) {
+   117				dev_dbg(&controller->dev, "xfer error: %d\n", ret);
+   118				return ret;
+   119			}
+   120	
+   121			if (peci_request_status(req) != -EAGAIN)
+   122				return 0;
+   123	
+   124			/* Set the retry bit to indicate a retry attempt */
+   125			req->tx.buf[1] |= PECI_RETRY_BIT;
+   126	
+   127			if (schedule_timeout_interruptible(wait_interval))
+   128				return -ERESTARTSYS;
+   129	
+   130			wait_interval = min_t(long, wait_interval * 2, PECI_RETRY_INTERVAL_MAX);
+   131		} while (time_before(jiffies, start + PECI_RETRY_TIMEOUT));
+   132	
+   133		dev_dbg(&controller->dev, "request timed out\n");
+   134	
+   135		return -ETIMEDOUT;
+   136	}
+   137	
 
-> +       val |= ASPEED_PECI_INT_MASK;
-> +       writel(val, priv->base + ASPEED_PECI_INT_CTRL);
-> +
-> +       val = FIELD_PREP(ASPEED_PECI_CTRL_SAMPLING_MASK, ASPEED_PECI_RD_SAMPLING_POINT_DEFAULT);
-> +       writel(val, priv->base + ASPEED_PECI_CTRL);
-
-This will clear the rest of the ctrl register, including the divisor
-settings. Was that your intention?
-
-Reading the rest of your driver you only call _init_regs after
-_controller_enable, so I guess you're fine.
-
-> +}
-> +
-> +static int aspeed_peci_check_idle(struct aspeed_peci *priv)
-> +{
-> +       u32 cmd_sts = readl(priv->base + ASPEED_PECI_CMD);
-> +       int ret;
-> +
-> +       /*
-> +        * Under normal circumstances, we expect to be idle here.
-> +        * In case there were any errors/timeouts that led to the situation
-> +        * where the hardware is not in idle state - we need to reset and
-> +        * reinitialize it to avoid potential controller hang.
-> +        */
-> +       if (FIELD_GET(ASPEED_PECI_CMD_STS_MASK, cmd_sts)) {
-> +               reset_control_assert(priv->rst);
-> +
-> +               ret = reset_control_deassert(priv->rst);
-> +               if (ret) {
-> +                       dev_err(priv->dev, "cannot deassert reset control\n");
-> +                       return ret;
-> +               }
-> +
-> +               aspeed_peci_init_regs(priv);
-> +
-> +               ret = clk_set_rate(priv->clk, priv->clk_frequency);
-> +               if (ret < 0) {
-> +                       dev_err(priv->dev, "cannot set clock frequency\n");
-> +                       return ret;
-> +               }
-> +
-> +               aspeed_peci_controller_enable(priv);
-> +       }
-> +
-> +       return readl_poll_timeout(priv->base + ASPEED_PECI_CMD,
-> +                                 cmd_sts,
-> +                                 !(cmd_sts & ASPEED_PECI_CMD_IDLE_MASK),
-> +                                 ASPEED_PECI_IDLE_CHECK_INTERVAL_US,
-> +                                 ASPEED_PECI_IDLE_CHECK_TIMEOUT_US);
-> +}
-> +
-> +static int aspeed_peci_xfer(struct peci_controller *controller,
-> +                           u8 addr, struct peci_request *req)
-> +{
-> +       struct aspeed_peci *priv = dev_get_drvdata(controller->dev.parent);
-> +       unsigned long timeout = msecs_to_jiffies(priv->cmd_timeout_ms);
-> +       u32 peci_head;
-> +       int ret;
-> +
-> +       if (req->tx.len > ASPEED_PECI_DATA_BUF_SIZE_MAX ||
-> +           req->rx.len > ASPEED_PECI_DATA_BUF_SIZE_MAX)
-> +               return -EINVAL;
-> +
-> +       /* Check command sts and bus idle state */
-> +       ret = aspeed_peci_check_idle(priv);
-> +       if (ret)
-> +               return ret; /* -ETIMEDOUT */
-> +
-> +       spin_lock_irq(&priv->lock);
-> +       reinit_completion(&priv->xfer_complete);
-> +
-> +       peci_head = FIELD_PREP(ASPEED_PECI_TARGET_ADDR_MASK, addr) |
-> +                   FIELD_PREP(ASPEED_PECI_WR_LEN_MASK, req->tx.len) |
-> +                   FIELD_PREP(ASPEED_PECI_RD_LEN_MASK, req->rx.len);
-> +
-> +       writel(peci_head, priv->base + ASPEED_PECI_RW_LENGTH);
-> +
-> +       memcpy_toio(priv->base + ASPEED_PECI_WR_DATA0, req->tx.buf, min_t(u8, req->tx.len, 16));
-> +       if (req->tx.len > 16)
-> +               memcpy_toio(priv->base + ASPEED_PECI_WR_DATA4, req->tx.buf + 16,
-> +                           req->tx.len - 16);
-> +
-> +#if IS_ENABLED(CONFIG_DYNAMIC_DEBUG)
-> +       dev_dbg(priv->dev, "HEAD : %#08x\n", peci_head);
-> +       print_hex_dump_bytes("TX : ", DUMP_PREFIX_NONE, req->tx.buf, req->tx.len);
-> +#endif
-
-The ifdef is unfortunate. Could you do this?
-
-dev_dbg(priv->dev, "HEAD : %#08x\n", peci_head);
-if (IS_ENABLED(CONFIG_DYNAMIC_DEBUG))
-       print_hex_dump_bytes("TX : ", DUMP_PREFIX_NONE, req->tx.buf,
-req->tx.len);
-
-Not a biggie though, don't let this hold up merging.
-
-> +       priv->status = 0;
-> +       writel(ASPEED_PECI_CMD_FIRE, priv->base + ASPEED_PECI_CMD);
-> +       spin_unlock_irq(&priv->lock);
-> +
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
