@@ -1,69 +1,158 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Thu, 13 Jan 2022 03:17:42 +0000
-Subject: [PATCH v5 01/13] dt-bindings: Add generic bindings for PECI
-In-Reply-To: <20220112230247.982212-2-iwona.winiarska@intel.com>
+Date: Thu, 13 Jan 2022 04:12:16 +0000
+Subject: [PATCH v5 05/13] peci: Add peci-aspeed controller driver
+In-Reply-To: <20220112230247.982212-6-iwona.winiarska@intel.com>
 References: <20220112230247.982212-1-iwona.winiarska@intel.com>
- <20220112230247.982212-2-iwona.winiarska@intel.com>
-Message-ID: <CACPK8Xfi33mr38_sdxF_Hi8Pw7VHzxH0zJd09gQz0voJm2xDBA@mail.gmail.com>
+ <20220112230247.982212-6-iwona.winiarska@intel.com>
+Message-ID: <CACPK8XewQJBvwssM6zQKQoxT=JLpk-qjGhsiTAa980OtbU7JBw@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 12 Jan 2022 at 23:03, Iwona Winiarska <iwona.winiarska@intel.com> wrote:
+On Wed, 12 Jan 2022 at 23:06, Iwona Winiarska <iwona.winiarska@intel.com> wrote:
 >
-> Add device tree bindings for the PECI controller.
+> From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
 >
+> ASPEED AST24xx/AST25xx/AST26xx SoCs support the PECI electrical
+> interface (a.k.a PECI wire) that provides a communication channel with
+> Intel processors.
+> This driver allows BMC to discover devices connected to it and
+> communicate with them using PECI protocol.
+>
+> Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+> Co-developed-by: Iwona Winiarska <iwona.winiarska@intel.com>
 > Signed-off-by: Iwona Winiarska <iwona.winiarska@intel.com>
-> Reviewed-by: Rob Herring <robh@kernel.org>
+> Reviewed-by: Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>
+
+The driver looks good to me. I would be happy to see it merged in its
+current state.
 
 Reviewed-by: Joel Stanley <joel@jms.id.au>
 
-> ---
->  .../bindings/peci/peci-controller.yaml        | 33 +++++++++++++++++++
->  1 file changed, 33 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/peci/peci-controller.yaml
->
-> diff --git a/Documentation/devicetree/bindings/peci/peci-controller.yaml b/Documentation/devicetree/bindings/peci/peci-controller.yaml
-> new file mode 100644
-> index 000000000000..bbc3d3f3a929
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/peci/peci-controller.yaml
-> @@ -0,0 +1,33 @@
-> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-> +%YAML 1.2
-> +---
-> +$id: http://devicetree.org/schemas/peci/peci-controller.yaml#
-> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+I've a few questions below that can be followed up later if need be.
+
 > +
-> +title: Generic Device Tree Bindings for PECI
+> +static void aspeed_peci_init_regs(struct aspeed_peci *priv)
+> +{
+> +       u32 val;
 > +
-> +maintainers:
-> +  - Iwona Winiarska <iwona.winiarska@intel.com>
+> +       /* Clear interrupts */
+> +       val = readl(priv->base + ASPEED_PECI_INT_STS) | ASPEED_PECI_INT_MASK;
+
+Should that be & MASK?
+
+As you're just sanitising the registers, you could clear the status
+unconditionally:
+
+ writel(ASPEED_PECI_INT_MASK, priv->base + ASPEED_PECI_INT_STS);
+
+> +       writel(val, priv->base + ASPEED_PECI_INT_STS);
 > +
-> +description:
-> +  PECI (Platform Environment Control Interface) is an interface that provides a
-> +  communication channel from Intel processors and chipset components to external
-> +  monitoring or control devices.
+> +       /* Set timing negotiation mode and enable interrupts */
+> +       val = FIELD_PREP(ASPEED_PECI_TIMING_NEGO_SEL_MASK, ASPEED_PECI_1ST_BIT_OF_ADDR_NEGO);
+
+That's a complicated way to set val to zero :)
+
+> +       val |= ASPEED_PECI_INT_MASK;
+> +       writel(val, priv->base + ASPEED_PECI_INT_CTRL);
 > +
-> +properties:
-> +  $nodename:
-> +    pattern: "^peci-controller(@.*)?$"
+> +       val = FIELD_PREP(ASPEED_PECI_CTRL_SAMPLING_MASK, ASPEED_PECI_RD_SAMPLING_POINT_DEFAULT);
+> +       writel(val, priv->base + ASPEED_PECI_CTRL);
+
+This will clear the rest of the ctrl register, including the divisor
+settings. Was that your intention?
+
+Reading the rest of your driver you only call _init_regs after
+_controller_enable, so I guess you're fine.
+
+> +}
 > +
-> +  cmd-timeout-ms:
-> +    description:
-> +      Command timeout in units of ms.
+> +static int aspeed_peci_check_idle(struct aspeed_peci *priv)
+> +{
+> +       u32 cmd_sts = readl(priv->base + ASPEED_PECI_CMD);
+> +       int ret;
 > +
-> +additionalProperties: true
+> +       /*
+> +        * Under normal circumstances, we expect to be idle here.
+> +        * In case there were any errors/timeouts that led to the situation
+> +        * where the hardware is not in idle state - we need to reset and
+> +        * reinitialize it to avoid potential controller hang.
+> +        */
+> +       if (FIELD_GET(ASPEED_PECI_CMD_STS_MASK, cmd_sts)) {
+> +               reset_control_assert(priv->rst);
 > +
-> +examples:
-> +  - |
-> +    peci-controller at 1e78b000 {
-> +      reg = <0x1e78b000 0x100>;
-> +      cmd-timeout-ms = <500>;
-> +    };
-> +...
-> --
-> 2.31.1
->
+> +               ret = reset_control_deassert(priv->rst);
+> +               if (ret) {
+> +                       dev_err(priv->dev, "cannot deassert reset control\n");
+> +                       return ret;
+> +               }
+> +
+> +               aspeed_peci_init_regs(priv);
+> +
+> +               ret = clk_set_rate(priv->clk, priv->clk_frequency);
+> +               if (ret < 0) {
+> +                       dev_err(priv->dev, "cannot set clock frequency\n");
+> +                       return ret;
+> +               }
+> +
+> +               aspeed_peci_controller_enable(priv);
+> +       }
+> +
+> +       return readl_poll_timeout(priv->base + ASPEED_PECI_CMD,
+> +                                 cmd_sts,
+> +                                 !(cmd_sts & ASPEED_PECI_CMD_IDLE_MASK),
+> +                                 ASPEED_PECI_IDLE_CHECK_INTERVAL_US,
+> +                                 ASPEED_PECI_IDLE_CHECK_TIMEOUT_US);
+> +}
+> +
+> +static int aspeed_peci_xfer(struct peci_controller *controller,
+> +                           u8 addr, struct peci_request *req)
+> +{
+> +       struct aspeed_peci *priv = dev_get_drvdata(controller->dev.parent);
+> +       unsigned long timeout = msecs_to_jiffies(priv->cmd_timeout_ms);
+> +       u32 peci_head;
+> +       int ret;
+> +
+> +       if (req->tx.len > ASPEED_PECI_DATA_BUF_SIZE_MAX ||
+> +           req->rx.len > ASPEED_PECI_DATA_BUF_SIZE_MAX)
+> +               return -EINVAL;
+> +
+> +       /* Check command sts and bus idle state */
+> +       ret = aspeed_peci_check_idle(priv);
+> +       if (ret)
+> +               return ret; /* -ETIMEDOUT */
+> +
+> +       spin_lock_irq(&priv->lock);
+> +       reinit_completion(&priv->xfer_complete);
+> +
+> +       peci_head = FIELD_PREP(ASPEED_PECI_TARGET_ADDR_MASK, addr) |
+> +                   FIELD_PREP(ASPEED_PECI_WR_LEN_MASK, req->tx.len) |
+> +                   FIELD_PREP(ASPEED_PECI_RD_LEN_MASK, req->rx.len);
+> +
+> +       writel(peci_head, priv->base + ASPEED_PECI_RW_LENGTH);
+> +
+> +       memcpy_toio(priv->base + ASPEED_PECI_WR_DATA0, req->tx.buf, min_t(u8, req->tx.len, 16));
+> +       if (req->tx.len > 16)
+> +               memcpy_toio(priv->base + ASPEED_PECI_WR_DATA4, req->tx.buf + 16,
+> +                           req->tx.len - 16);
+> +
+> +#if IS_ENABLED(CONFIG_DYNAMIC_DEBUG)
+> +       dev_dbg(priv->dev, "HEAD : %#08x\n", peci_head);
+> +       print_hex_dump_bytes("TX : ", DUMP_PREFIX_NONE, req->tx.buf, req->tx.len);
+> +#endif
+
+The ifdef is unfortunate. Could you do this?
+
+dev_dbg(priv->dev, "HEAD : %#08x\n", peci_head);
+if (IS_ENABLED(CONFIG_DYNAMIC_DEBUG))
+       print_hex_dump_bytes("TX : ", DUMP_PREFIX_NONE, req->tx.buf,
+req->tx.len);
+
+Not a biggie though, don't let this hold up merging.
+
+> +       priv->status = 0;
+> +       writel(ASPEED_PECI_CMD_FIRE, priv->base + ASPEED_PECI_CMD);
+> +       spin_unlock_irq(&priv->lock);
+> +
