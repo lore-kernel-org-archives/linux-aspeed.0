@@ -1,107 +1,67 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Thu, 13 Jan 2022 03:17:20 +0000
-Subject: [PATCH v5 02/13] dt-bindings: Add bindings for peci-aspeed
-In-Reply-To: <20220112230247.982212-3-iwona.winiarska@intel.com>
+Date: Thu, 13 Jan 2022 03:17:42 +0000
+Subject: [PATCH v5 01/13] dt-bindings: Add generic bindings for PECI
+In-Reply-To: <20220112230247.982212-2-iwona.winiarska@intel.com>
 References: <20220112230247.982212-1-iwona.winiarska@intel.com>
- <20220112230247.982212-3-iwona.winiarska@intel.com>
-Message-ID: <CACPK8XcO5Z0f2bU6=+o2q7caGnoBdzQ5Dm8AVt-BNs3d_xmOJg@mail.gmail.com>
+ <20220112230247.982212-2-iwona.winiarska@intel.com>
+Message-ID: <CACPK8Xfi33mr38_sdxF_Hi8Pw7VHzxH0zJd09gQz0voJm2xDBA@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 12 Jan 2022 at 23:04, Iwona Winiarska <iwona.winiarska@intel.com> wrote:
+On Wed, 12 Jan 2022 at 23:03, Iwona Winiarska <iwona.winiarska@intel.com> wrote:
 >
-> Add device tree bindings for the peci-aspeed controller driver.
+> Add device tree bindings for the PECI controller.
 >
-> Co-developed-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-> Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
 > Signed-off-by: Iwona Winiarska <iwona.winiarska@intel.com>
+> Reviewed-by: Rob Herring <robh@kernel.org>
 
 Reviewed-by: Joel Stanley <joel@jms.id.au>
 
 > ---
->  .../devicetree/bindings/peci/peci-aspeed.yaml | 72 +++++++++++++++++++
->  1 file changed, 72 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/peci/peci-aspeed.yaml
+>  .../bindings/peci/peci-controller.yaml        | 33 +++++++++++++++++++
+>  1 file changed, 33 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/peci/peci-controller.yaml
 >
-> diff --git a/Documentation/devicetree/bindings/peci/peci-aspeed.yaml b/Documentation/devicetree/bindings/peci/peci-aspeed.yaml
+> diff --git a/Documentation/devicetree/bindings/peci/peci-controller.yaml b/Documentation/devicetree/bindings/peci/peci-controller.yaml
 > new file mode 100644
-> index 000000000000..1e68a801a92a
+> index 000000000000..bbc3d3f3a929
 > --- /dev/null
-> +++ b/Documentation/devicetree/bindings/peci/peci-aspeed.yaml
-> @@ -0,0 +1,72 @@
+> +++ b/Documentation/devicetree/bindings/peci/peci-controller.yaml
+> @@ -0,0 +1,33 @@
 > +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
 > +%YAML 1.2
 > +---
-> +$id: http://devicetree.org/schemas/peci/peci-aspeed.yaml#
+> +$id: http://devicetree.org/schemas/peci/peci-controller.yaml#
 > +$schema: http://devicetree.org/meta-schemas/core.yaml#
 > +
-> +title: Aspeed PECI Bus Device Tree Bindings
+> +title: Generic Device Tree Bindings for PECI
 > +
 > +maintainers:
 > +  - Iwona Winiarska <iwona.winiarska@intel.com>
-> +  - Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
 > +
-> +allOf:
-> +  - $ref: peci-controller.yaml#
+> +description:
+> +  PECI (Platform Environment Control Interface) is an interface that provides a
+> +  communication channel from Intel processors and chipset components to external
+> +  monitoring or control devices.
 > +
 > +properties:
-> +  compatible:
-> +    enum:
-> +      - aspeed,ast2400-peci
-> +      - aspeed,ast2500-peci
-> +      - aspeed,ast2600-peci
-> +
-> +  reg:
-> +    maxItems: 1
-> +
-> +  interrupts:
-> +    maxItems: 1
-> +
-> +  clocks:
-> +    description:
-> +      Clock source for PECI controller. Should reference the external
-> +      oscillator clock.
-> +    maxItems: 1
-> +
-> +  resets:
-> +    maxItems: 1
+> +  $nodename:
+> +    pattern: "^peci-controller(@.*)?$"
 > +
 > +  cmd-timeout-ms:
-> +    minimum: 1
-> +    maximum: 1000
-> +    default: 1000
-> +
-> +  clock-frequency:
 > +    description:
-> +      The desired operation frequency of PECI controller in Hz.
-> +    minimum: 2000
-> +    maximum: 2000000
-> +    default: 1000000
+> +      Command timeout in units of ms.
 > +
-> +required:
-> +  - compatible
-> +  - reg
-> +  - interrupts
-> +  - clocks
-> +  - resets
-> +
-> +additionalProperties: false
+> +additionalProperties: true
 > +
 > +examples:
 > +  - |
-> +    #include <dt-bindings/interrupt-controller/arm-gic.h>
-> +    #include <dt-bindings/clock/ast2600-clock.h>
 > +    peci-controller at 1e78b000 {
-> +      compatible = "aspeed,ast2600-peci";
 > +      reg = <0x1e78b000 0x100>;
-> +      interrupts = <GIC_SPI 38 IRQ_TYPE_LEVEL_HIGH>;
-> +      clocks = <&syscon ASPEED_CLK_GATE_REF0CLK>;
-> +      resets = <&syscon ASPEED_RESET_PECI>;
-> +      cmd-timeout-ms = <1000>;
-> +      clock-frequency = <1000000>;
+> +      cmd-timeout-ms = <500>;
 > +    };
 > +...
 > --
