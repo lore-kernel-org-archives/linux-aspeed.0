@@ -1,266 +1,60 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Mon, 17 Jan 2022 21:43:51 -0500
-Subject: [PATCH AUTOSEL 5.4 32/73] gpio: aspeed: Convert aspeed_gpio.lock to
- raw_spinlock
-In-Reply-To: <20220118024432.1952028-1-sashal@kernel.org>
-References: <20220118024432.1952028-1-sashal@kernel.org>
-Message-ID: <20220118024432.1952028-32-sashal@kernel.org>
+From: Jammy Huang <jammy_huang@aspeedtech.com>
+Date: Tue, 18 Jan 2022 16:44:49 +0800
+Subject: [PATCH v3 2/2] video: aspeed: Fix unstable timing detection
+In-Reply-To: <20220118084449.5182-1-jammy_huang@aspeedtech.com>
+References: <20220118084449.5182-1-jammy_huang@aspeedtech.com>
+Message-ID: <20220118084449.5182-3-jammy_huang@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Iwona Winiarska <iwona.winiarska@intel.com>
+Using stable-signal in resolution detection, and try detection again
+if unstable.
 
-[ Upstream commit 61a7904b6ace99b1bde0d0e867fa3097f5c8cee2 ]
+VE_MODE_DETECT_EXTSRC_ADC: 1 if video source is from ADC output.
+VE_MODE_DETECT_H_STABLE: 1 if horizontal signal detection is stable.
+VE_MODE_DETECT_V_STABLE: 1 if vertical signal detection is stable.
 
-The gpio-aspeed driver implements an irq_chip which need to be invoked
-from hardirq context. Since spin_lock() can sleep with PREEMPT_RT, it is
-no longer legal to invoke it while interrupts are disabled.
-This also causes lockdep to complain about:
-[    0.649797] [ BUG: Invalid wait context ]
-because aspeed_gpio.lock (spin_lock_t) is taken under irq_desc.lock
-(raw_spinlock_t).
-Let's use of raw_spinlock_t instead of spinlock_t.
-
-Signed-off-by: Iwona Winiarska <iwona.winiarska@intel.com>
-Signed-off-by: Bartosz Golaszewski <brgl@bgdev.pl>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+Signed-off-by: Jammy Huang <jammy_huang@aspeedtech.com>
 ---
- drivers/gpio/gpio-aspeed.c | 52 +++++++++++++++++++-------------------
- 1 file changed, 26 insertions(+), 26 deletions(-)
+ drivers/media/platform/aspeed-video.c | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
 
-diff --git a/drivers/gpio/gpio-aspeed.c b/drivers/gpio/gpio-aspeed.c
-index 2820c59b5f071..22e0d6fcab1c4 100644
---- a/drivers/gpio/gpio-aspeed.c
-+++ b/drivers/gpio/gpio-aspeed.c
-@@ -53,7 +53,7 @@ struct aspeed_gpio_config {
- struct aspeed_gpio {
- 	struct gpio_chip chip;
- 	struct irq_chip irqc;
--	spinlock_t lock;
-+	raw_spinlock_t lock;
- 	void __iomem *base;
- 	int irq;
- 	const struct aspeed_gpio_config *config;
-@@ -413,14 +413,14 @@ static void aspeed_gpio_set(struct gpio_chip *gc, unsigned int offset,
- 	unsigned long flags;
- 	bool copro;
+diff --git a/drivers/media/platform/aspeed-video.c b/drivers/media/platform/aspeed-video.c
+index 5ba4d70c8dab..585ee2997d44 100644
+--- a/drivers/media/platform/aspeed-video.c
++++ b/drivers/media/platform/aspeed-video.c
+@@ -165,9 +165,14 @@
  
--	spin_lock_irqsave(&gpio->lock, flags);
-+	raw_spin_lock_irqsave(&gpio->lock, flags);
- 	copro = aspeed_gpio_copro_request(gpio, offset);
+ #define VE_MODE_DETECT_STATUS		0x098
+ #define  VE_MODE_DETECT_H_PERIOD	GENMASK(11, 0)
++#define  VE_MODE_DETECT_EXTSRC_ADC	BIT(12)
++#define  VE_MODE_DETECT_H_STABLE	BIT(13)
++#define  VE_MODE_DETECT_V_STABLE	BIT(14)
+ #define  VE_MODE_DETECT_V_LINES		GENMASK(27, 16)
+ #define  VE_MODE_DETECT_STATUS_VSYNC	BIT(28)
+ #define  VE_MODE_DETECT_STATUS_HSYNC	BIT(29)
++#define  VE_MODE_DETECT_VSYNC_RDY	BIT(30)
++#define  VE_MODE_DETECT_HSYNC_RDY	BIT(31)
  
- 	__aspeed_gpio_set(gc, offset, val);
+ #define VE_SYNC_STATUS			0x09c
+ #define  VE_SYNC_STATUS_HSYNC		GENMASK(11, 0)
+@@ -971,6 +976,13 @@ static void aspeed_video_get_resolution(struct aspeed_video *video)
+ 			return;
+ 		}
  
- 	if (copro)
- 		aspeed_gpio_copro_release(gpio, offset);
--	spin_unlock_irqrestore(&gpio->lock, flags);
-+	raw_spin_unlock_irqrestore(&gpio->lock, flags);
- }
++		mds = aspeed_video_read(video, VE_MODE_DETECT_STATUS);
++		// try detection again if current signal isn't stable
++		if (!(mds & VE_MODE_DETECT_H_STABLE) ||
++		    !(mds & VE_MODE_DETECT_V_STABLE) ||
++		    (mds & VE_MODE_DETECT_EXTSRC_ADC))
++			continue;
++
+ 		aspeed_video_check_and_set_polarity(video);
  
- static int aspeed_gpio_dir_in(struct gpio_chip *gc, unsigned int offset)
-@@ -435,7 +435,7 @@ static int aspeed_gpio_dir_in(struct gpio_chip *gc, unsigned int offset)
- 	if (!have_input(gpio, offset))
- 		return -ENOTSUPP;
- 
--	spin_lock_irqsave(&gpio->lock, flags);
-+	raw_spin_lock_irqsave(&gpio->lock, flags);
- 
- 	reg = ioread32(addr);
- 	reg &= ~GPIO_BIT(offset);
-@@ -445,7 +445,7 @@ static int aspeed_gpio_dir_in(struct gpio_chip *gc, unsigned int offset)
- 	if (copro)
- 		aspeed_gpio_copro_release(gpio, offset);
- 
--	spin_unlock_irqrestore(&gpio->lock, flags);
-+	raw_spin_unlock_irqrestore(&gpio->lock, flags);
- 
- 	return 0;
- }
-@@ -463,7 +463,7 @@ static int aspeed_gpio_dir_out(struct gpio_chip *gc,
- 	if (!have_output(gpio, offset))
- 		return -ENOTSUPP;
- 
--	spin_lock_irqsave(&gpio->lock, flags);
-+	raw_spin_lock_irqsave(&gpio->lock, flags);
- 
- 	reg = ioread32(addr);
- 	reg |= GPIO_BIT(offset);
-@@ -474,7 +474,7 @@ static int aspeed_gpio_dir_out(struct gpio_chip *gc,
- 
- 	if (copro)
- 		aspeed_gpio_copro_release(gpio, offset);
--	spin_unlock_irqrestore(&gpio->lock, flags);
-+	raw_spin_unlock_irqrestore(&gpio->lock, flags);
- 
- 	return 0;
- }
-@@ -492,11 +492,11 @@ static int aspeed_gpio_get_direction(struct gpio_chip *gc, unsigned int offset)
- 	if (!have_output(gpio, offset))
- 		return 1;
- 
--	spin_lock_irqsave(&gpio->lock, flags);
-+	raw_spin_lock_irqsave(&gpio->lock, flags);
- 
- 	val = ioread32(bank_reg(gpio, bank, reg_dir)) & GPIO_BIT(offset);
- 
--	spin_unlock_irqrestore(&gpio->lock, flags);
-+	raw_spin_unlock_irqrestore(&gpio->lock, flags);
- 
- 	return !val;
- 
-@@ -540,14 +540,14 @@ static void aspeed_gpio_irq_ack(struct irq_data *d)
- 
- 	status_addr = bank_reg(gpio, bank, reg_irq_status);
- 
--	spin_lock_irqsave(&gpio->lock, flags);
-+	raw_spin_lock_irqsave(&gpio->lock, flags);
- 	copro = aspeed_gpio_copro_request(gpio, offset);
- 
- 	iowrite32(bit, status_addr);
- 
- 	if (copro)
- 		aspeed_gpio_copro_release(gpio, offset);
--	spin_unlock_irqrestore(&gpio->lock, flags);
-+	raw_spin_unlock_irqrestore(&gpio->lock, flags);
- }
- 
- static void aspeed_gpio_irq_set_mask(struct irq_data *d, bool set)
-@@ -566,7 +566,7 @@ static void aspeed_gpio_irq_set_mask(struct irq_data *d, bool set)
- 
- 	addr = bank_reg(gpio, bank, reg_irq_enable);
- 
--	spin_lock_irqsave(&gpio->lock, flags);
-+	raw_spin_lock_irqsave(&gpio->lock, flags);
- 	copro = aspeed_gpio_copro_request(gpio, offset);
- 
- 	reg = ioread32(addr);
-@@ -578,7 +578,7 @@ static void aspeed_gpio_irq_set_mask(struct irq_data *d, bool set)
- 
- 	if (copro)
- 		aspeed_gpio_copro_release(gpio, offset);
--	spin_unlock_irqrestore(&gpio->lock, flags);
-+	raw_spin_unlock_irqrestore(&gpio->lock, flags);
- }
- 
- static void aspeed_gpio_irq_mask(struct irq_data *d)
-@@ -630,7 +630,7 @@ static int aspeed_gpio_set_type(struct irq_data *d, unsigned int type)
- 		return -EINVAL;
- 	}
- 
--	spin_lock_irqsave(&gpio->lock, flags);
-+	raw_spin_lock_irqsave(&gpio->lock, flags);
- 	copro = aspeed_gpio_copro_request(gpio, offset);
- 
- 	addr = bank_reg(gpio, bank, reg_irq_type0);
-@@ -650,7 +650,7 @@ static int aspeed_gpio_set_type(struct irq_data *d, unsigned int type)
- 
- 	if (copro)
- 		aspeed_gpio_copro_release(gpio, offset);
--	spin_unlock_irqrestore(&gpio->lock, flags);
-+	raw_spin_unlock_irqrestore(&gpio->lock, flags);
- 
- 	irq_set_handler_locked(d, handler);
- 
-@@ -720,7 +720,7 @@ static int aspeed_gpio_reset_tolerance(struct gpio_chip *chip,
- 
- 	treg = bank_reg(gpio, to_bank(offset), reg_tolerance);
- 
--	spin_lock_irqsave(&gpio->lock, flags);
-+	raw_spin_lock_irqsave(&gpio->lock, flags);
- 	copro = aspeed_gpio_copro_request(gpio, offset);
- 
- 	val = readl(treg);
-@@ -734,7 +734,7 @@ static int aspeed_gpio_reset_tolerance(struct gpio_chip *chip,
- 
- 	if (copro)
- 		aspeed_gpio_copro_release(gpio, offset);
--	spin_unlock_irqrestore(&gpio->lock, flags);
-+	raw_spin_unlock_irqrestore(&gpio->lock, flags);
- 
- 	return 0;
- }
-@@ -860,7 +860,7 @@ static int enable_debounce(struct gpio_chip *chip, unsigned int offset,
- 		return rc;
- 	}
- 
--	spin_lock_irqsave(&gpio->lock, flags);
-+	raw_spin_lock_irqsave(&gpio->lock, flags);
- 
- 	if (timer_allocation_registered(gpio, offset)) {
- 		rc = unregister_allocated_timer(gpio, offset);
-@@ -920,7 +920,7 @@ static int enable_debounce(struct gpio_chip *chip, unsigned int offset,
- 	configure_timer(gpio, offset, i);
- 
- out:
--	spin_unlock_irqrestore(&gpio->lock, flags);
-+	raw_spin_unlock_irqrestore(&gpio->lock, flags);
- 
- 	return rc;
- }
-@@ -931,13 +931,13 @@ static int disable_debounce(struct gpio_chip *chip, unsigned int offset)
- 	unsigned long flags;
- 	int rc;
- 
--	spin_lock_irqsave(&gpio->lock, flags);
-+	raw_spin_lock_irqsave(&gpio->lock, flags);
- 
- 	rc = unregister_allocated_timer(gpio, offset);
- 	if (!rc)
- 		configure_timer(gpio, offset, 0);
- 
--	spin_unlock_irqrestore(&gpio->lock, flags);
-+	raw_spin_unlock_irqrestore(&gpio->lock, flags);
- 
- 	return rc;
- }
-@@ -1019,7 +1019,7 @@ int aspeed_gpio_copro_grab_gpio(struct gpio_desc *desc,
- 		return -EINVAL;
- 	bindex = offset >> 3;
- 
--	spin_lock_irqsave(&gpio->lock, flags);
-+	raw_spin_lock_irqsave(&gpio->lock, flags);
- 
- 	/* Sanity check, this shouldn't happen */
- 	if (gpio->cf_copro_bankmap[bindex] == 0xff) {
-@@ -1040,7 +1040,7 @@ int aspeed_gpio_copro_grab_gpio(struct gpio_desc *desc,
- 	if (bit)
- 		*bit = GPIO_OFFSET(offset);
-  bail:
--	spin_unlock_irqrestore(&gpio->lock, flags);
-+	raw_spin_unlock_irqrestore(&gpio->lock, flags);
- 	return rc;
- }
- EXPORT_SYMBOL_GPL(aspeed_gpio_copro_grab_gpio);
-@@ -1064,7 +1064,7 @@ int aspeed_gpio_copro_release_gpio(struct gpio_desc *desc)
- 		return -EINVAL;
- 	bindex = offset >> 3;
- 
--	spin_lock_irqsave(&gpio->lock, flags);
-+	raw_spin_lock_irqsave(&gpio->lock, flags);
- 
- 	/* Sanity check, this shouldn't happen */
- 	if (gpio->cf_copro_bankmap[bindex] == 0) {
-@@ -1078,7 +1078,7 @@ int aspeed_gpio_copro_release_gpio(struct gpio_desc *desc)
- 		aspeed_gpio_change_cmd_source(gpio, bank, bindex,
- 					      GPIO_CMDSRC_ARM);
-  bail:
--	spin_unlock_irqrestore(&gpio->lock, flags);
-+	raw_spin_unlock_irqrestore(&gpio->lock, flags);
- 	return rc;
- }
- EXPORT_SYMBOL_GPL(aspeed_gpio_copro_release_gpio);
-@@ -1151,7 +1151,7 @@ static int __init aspeed_gpio_probe(struct platform_device *pdev)
- 	if (IS_ERR(gpio->base))
- 		return PTR_ERR(gpio->base);
- 
--	spin_lock_init(&gpio->lock);
-+	raw_spin_lock_init(&gpio->lock);
- 
- 	gpio_id = of_match_node(aspeed_gpio_of_table, pdev->dev.of_node);
- 	if (!gpio_id)
+ 		aspeed_video_enable_mode_detect(video);
 -- 
-2.34.1
+2.25.1
 
