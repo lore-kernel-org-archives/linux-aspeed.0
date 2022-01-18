@@ -1,10 +1,10 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Mon, 17 Jan 2022 21:39:08 -0500
-Subject: [PATCH AUTOSEL 5.10 057/116] gpio: aspeed: Convert aspeed_gpio.lock
- to raw_spinlock
-In-Reply-To: <20220118024007.1950576-1-sashal@kernel.org>
-References: <20220118024007.1950576-1-sashal@kernel.org>
-Message-ID: <20220118024007.1950576-57-sashal@kernel.org>
+Date: Mon, 17 Jan 2022 21:43:51 -0500
+Subject: [PATCH AUTOSEL 5.4 32/73] gpio: aspeed: Convert aspeed_gpio.lock to
+ raw_spinlock
+In-Reply-To: <20220118024432.1952028-1-sashal@kernel.org>
+References: <20220118024432.1952028-1-sashal@kernel.org>
+Message-ID: <20220118024432.1952028-32-sashal@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -32,7 +32,7 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 26 insertions(+), 26 deletions(-)
 
 diff --git a/drivers/gpio/gpio-aspeed.c b/drivers/gpio/gpio-aspeed.c
-index b966f5e28ebff..e0d5d80ec8e0f 100644
+index 2820c59b5f071..22e0d6fcab1c4 100644
 --- a/drivers/gpio/gpio-aspeed.c
 +++ b/drivers/gpio/gpio-aspeed.c
 @@ -53,7 +53,7 @@ struct aspeed_gpio_config {
@@ -99,7 +99,7 @@ index b966f5e28ebff..e0d5d80ec8e0f 100644
  }
 @@ -492,11 +492,11 @@ static int aspeed_gpio_get_direction(struct gpio_chip *gc, unsigned int offset)
  	if (!have_output(gpio, offset))
- 		return GPIO_LINE_DIRECTION_IN;
+ 		return 1;
  
 -	spin_lock_irqsave(&gpio->lock, flags);
 +	raw_spin_lock_irqsave(&gpio->lock, flags);
@@ -109,9 +109,9 @@ index b966f5e28ebff..e0d5d80ec8e0f 100644
 -	spin_unlock_irqrestore(&gpio->lock, flags);
 +	raw_spin_unlock_irqrestore(&gpio->lock, flags);
  
- 	return val ? GPIO_LINE_DIRECTION_OUT : GPIO_LINE_DIRECTION_IN;
- }
-@@ -539,14 +539,14 @@ static void aspeed_gpio_irq_ack(struct irq_data *d)
+ 	return !val;
+ 
+@@ -540,14 +540,14 @@ static void aspeed_gpio_irq_ack(struct irq_data *d)
  
  	status_addr = bank_reg(gpio, bank, reg_irq_status);
  
@@ -128,7 +128,7 @@ index b966f5e28ebff..e0d5d80ec8e0f 100644
  }
  
  static void aspeed_gpio_irq_set_mask(struct irq_data *d, bool set)
-@@ -565,7 +565,7 @@ static void aspeed_gpio_irq_set_mask(struct irq_data *d, bool set)
+@@ -566,7 +566,7 @@ static void aspeed_gpio_irq_set_mask(struct irq_data *d, bool set)
  
  	addr = bank_reg(gpio, bank, reg_irq_enable);
  
@@ -137,7 +137,7 @@ index b966f5e28ebff..e0d5d80ec8e0f 100644
  	copro = aspeed_gpio_copro_request(gpio, offset);
  
  	reg = ioread32(addr);
-@@ -577,7 +577,7 @@ static void aspeed_gpio_irq_set_mask(struct irq_data *d, bool set)
+@@ -578,7 +578,7 @@ static void aspeed_gpio_irq_set_mask(struct irq_data *d, bool set)
  
  	if (copro)
  		aspeed_gpio_copro_release(gpio, offset);
@@ -146,7 +146,7 @@ index b966f5e28ebff..e0d5d80ec8e0f 100644
  }
  
  static void aspeed_gpio_irq_mask(struct irq_data *d)
-@@ -629,7 +629,7 @@ static int aspeed_gpio_set_type(struct irq_data *d, unsigned int type)
+@@ -630,7 +630,7 @@ static int aspeed_gpio_set_type(struct irq_data *d, unsigned int type)
  		return -EINVAL;
  	}
  
@@ -155,7 +155,7 @@ index b966f5e28ebff..e0d5d80ec8e0f 100644
  	copro = aspeed_gpio_copro_request(gpio, offset);
  
  	addr = bank_reg(gpio, bank, reg_irq_type0);
-@@ -649,7 +649,7 @@ static int aspeed_gpio_set_type(struct irq_data *d, unsigned int type)
+@@ -650,7 +650,7 @@ static int aspeed_gpio_set_type(struct irq_data *d, unsigned int type)
  
  	if (copro)
  		aspeed_gpio_copro_release(gpio, offset);
@@ -164,7 +164,7 @@ index b966f5e28ebff..e0d5d80ec8e0f 100644
  
  	irq_set_handler_locked(d, handler);
  
-@@ -719,7 +719,7 @@ static int aspeed_gpio_reset_tolerance(struct gpio_chip *chip,
+@@ -720,7 +720,7 @@ static int aspeed_gpio_reset_tolerance(struct gpio_chip *chip,
  
  	treg = bank_reg(gpio, to_bank(offset), reg_tolerance);
  
@@ -173,7 +173,7 @@ index b966f5e28ebff..e0d5d80ec8e0f 100644
  	copro = aspeed_gpio_copro_request(gpio, offset);
  
  	val = readl(treg);
-@@ -733,7 +733,7 @@ static int aspeed_gpio_reset_tolerance(struct gpio_chip *chip,
+@@ -734,7 +734,7 @@ static int aspeed_gpio_reset_tolerance(struct gpio_chip *chip,
  
  	if (copro)
  		aspeed_gpio_copro_release(gpio, offset);
@@ -182,7 +182,7 @@ index b966f5e28ebff..e0d5d80ec8e0f 100644
  
  	return 0;
  }
-@@ -859,7 +859,7 @@ static int enable_debounce(struct gpio_chip *chip, unsigned int offset,
+@@ -860,7 +860,7 @@ static int enable_debounce(struct gpio_chip *chip, unsigned int offset,
  		return rc;
  	}
  
@@ -191,7 +191,7 @@ index b966f5e28ebff..e0d5d80ec8e0f 100644
  
  	if (timer_allocation_registered(gpio, offset)) {
  		rc = unregister_allocated_timer(gpio, offset);
-@@ -919,7 +919,7 @@ static int enable_debounce(struct gpio_chip *chip, unsigned int offset,
+@@ -920,7 +920,7 @@ static int enable_debounce(struct gpio_chip *chip, unsigned int offset,
  	configure_timer(gpio, offset, i);
  
  out:
@@ -200,7 +200,7 @@ index b966f5e28ebff..e0d5d80ec8e0f 100644
  
  	return rc;
  }
-@@ -930,13 +930,13 @@ static int disable_debounce(struct gpio_chip *chip, unsigned int offset)
+@@ -931,13 +931,13 @@ static int disable_debounce(struct gpio_chip *chip, unsigned int offset)
  	unsigned long flags;
  	int rc;
  
@@ -216,7 +216,7 @@ index b966f5e28ebff..e0d5d80ec8e0f 100644
  
  	return rc;
  }
-@@ -1018,7 +1018,7 @@ int aspeed_gpio_copro_grab_gpio(struct gpio_desc *desc,
+@@ -1019,7 +1019,7 @@ int aspeed_gpio_copro_grab_gpio(struct gpio_desc *desc,
  		return -EINVAL;
  	bindex = offset >> 3;
  
@@ -225,7 +225,7 @@ index b966f5e28ebff..e0d5d80ec8e0f 100644
  
  	/* Sanity check, this shouldn't happen */
  	if (gpio->cf_copro_bankmap[bindex] == 0xff) {
-@@ -1039,7 +1039,7 @@ int aspeed_gpio_copro_grab_gpio(struct gpio_desc *desc,
+@@ -1040,7 +1040,7 @@ int aspeed_gpio_copro_grab_gpio(struct gpio_desc *desc,
  	if (bit)
  		*bit = GPIO_OFFSET(offset);
   bail:
@@ -234,7 +234,7 @@ index b966f5e28ebff..e0d5d80ec8e0f 100644
  	return rc;
  }
  EXPORT_SYMBOL_GPL(aspeed_gpio_copro_grab_gpio);
-@@ -1063,7 +1063,7 @@ int aspeed_gpio_copro_release_gpio(struct gpio_desc *desc)
+@@ -1064,7 +1064,7 @@ int aspeed_gpio_copro_release_gpio(struct gpio_desc *desc)
  		return -EINVAL;
  	bindex = offset >> 3;
  
@@ -243,7 +243,7 @@ index b966f5e28ebff..e0d5d80ec8e0f 100644
  
  	/* Sanity check, this shouldn't happen */
  	if (gpio->cf_copro_bankmap[bindex] == 0) {
-@@ -1077,7 +1077,7 @@ int aspeed_gpio_copro_release_gpio(struct gpio_desc *desc)
+@@ -1078,7 +1078,7 @@ int aspeed_gpio_copro_release_gpio(struct gpio_desc *desc)
  		aspeed_gpio_change_cmd_source(gpio, bank, bindex,
  					      GPIO_CMDSRC_ARM);
   bail:
