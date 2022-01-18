@@ -1,10 +1,10 @@
 From: Jammy Huang <jammy_huang@aspeedtech.com>
-Date: Tue, 18 Jan 2022 16:44:48 +0800
-Subject: [PATCH v3 1/2] media: aspeed: Add macro for the fields of the
+Date: Tue, 18 Jan 2022 18:07:28 +0800
+Subject: [PATCH v4 1/2] media: aspeed: Add macro for the fields of the
  mode-detect registers
-In-Reply-To: <20220118084449.5182-1-jammy_huang@aspeedtech.com>
-References: <20220118084449.5182-1-jammy_huang@aspeedtech.com>
-Message-ID: <20220118084449.5182-2-jammy_huang@aspeedtech.com>
+In-Reply-To: <20220118100729.7651-1-jammy_huang@aspeedtech.com>
+References: <20220118100729.7651-1-jammy_huang@aspeedtech.com>
+Message-ID: <20220118100729.7651-2-jammy_huang@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
