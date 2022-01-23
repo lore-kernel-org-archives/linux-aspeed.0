@@ -1,66 +1,56 @@
-From: Miquel Raynal <miquel.raynal@bootlin.com>
-Date: Sun, 23 Jan 2022 16:39:24 +0100
+From: Cédric Le Goater <clg@kaod.org>
+Date: Sun, 23 Jan 2022 23:44:05 +0100
 Subject: [PATCH] mtd: aspeed-smc: improve probe resilience
-In-Reply-To: <20211229143334.297305-1-patrick@stwcx.xyz>
-Message-ID: <20220123153924.673172-1-miquel.raynal@bootlin.com>
+In-Reply-To: <20220105063244.lno3xur64uepa7i5@ti.com>
+References: <20211229143334.297305-1-patrick@stwcx.xyz>
+ <20211229173411.l2bipmi4x3arqjoo@ti.com> <Yc3Qav+ULNdF5zRT@heinlein>
+ <20211231102623.izaqlzjvracbbgmp@ti.com> <20220103171721.46c8e697@xps13>
+ <YdSP6tKyQ2ZRUC+2@heinlein> <20220105063244.lno3xur64uepa7i5@ti.com>
+Message-ID: <d4ba6413-57ce-14c1-ed48-d00db2f74bd3@kaod.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 2021-12-29 at 14:33:33 UTC, Patrick Williams wrote:
-> The aspeed-smc can have multiple SPI devices attached to it in the
-> device tree.  If one of the devices is missing or failing the entire
-> probe will fail and all MTD devices under the controller will be
-> removed.  On OpenBMC this results in a kernel panic due to missing
-> rootfs:
+>> I had an offline discussion with someone who knew more history on this driver.
+>> My understanding is that the linux-aspeed team is aware of this being deprecated
+>> but that there was some missing support for interface training that nobody has
+>> gotten around to write?  If that is the case this really isn't even a "simple"
+>> port to a new API at this point.
 > 
-> [    0.538774] aspeed-smc 1e620000.spi: Using 50 MHz SPI frequency
-> [    0.540471] aspeed-smc 1e620000.spi: w25q01jv-iq (131072 Kbytes)
-> [    0.540750] aspeed-smc 1e620000.spi: CE0 window [ 0x20000000 - 0x28000000 ] 128MB
-> [    0.540943] aspeed-smc 1e620000.spi: CE1 window [ 0x28000000 - 0x2c000000 ] 64MB
-> [    0.541143] aspeed-smc 1e620000.spi: read control register: 203b0041
-> [    0.581442] 5 fixed-partitions partitions found on MTD device bmc
-> [    0.581625] Creating 5 MTD partitions on "bmc":
-> [    0.581854] 0x000000000000-0x0000000e0000 : "u-boot"
-> [    0.584472] 0x0000000e0000-0x000000100000 : "u-boot-env"
-> [    0.586468] 0x000000100000-0x000000a00000 : "kernel"
-> [    0.588465] 0x000000a00000-0x000006000000 : "rofs"
-> [    0.590552] 0x000006000000-0x000008000000 : "rwfs"
-> [    0.592605] aspeed-smc 1e620000.spi: Using 50 MHz SPI frequency
-> [    0.592801] aspeed-smc 1e620000.spi: unrecognized JEDEC id bytes: 00 00 00 00 00 00
-> [    0.593039] Deleting MTD partitions on "bmc":
-> [    0.593175] Deleting u-boot MTD partition
-> [    0.637929] Deleting u-boot-env MTD partition
-> [    0.829527] Deleting kernel MTD partition
-> [    0.856902] Freeing initrd memory: 1032K
-> [    0.866428] Deleting rofs MTD partition
-> [    0.906264] Deleting rwfs MTD partition
-> [    0.986628] aspeed-smc 1e620000.spi: Aspeed SMC probe failed -2
-> [    0.986929] aspeed-smc: probe of 1e620000.spi failed with error -2
-> ...
-> [    2.936719] /dev/mtdblock: Can't open blockdev
-> mount: mounting /dev/mtdblock on run/initramfs/ro failed: No such file or directory
-> [    2.963030] MTD: Couldn't look up '/dev/mtdblock': -2
-> mount: mounting /dev/mtdblock on run/initramfs/rw failed: No such file or directory
-> 
-> Mounting read-write /dev/mtdblock filesystem failed.  Please fix and run
-> 	mount /dev/mtdblock run/initramfs/rw -t jffs2 -o rw
-> or perform a factory reset with the clean-rwfs-filesystem option.
-> Fatal error, triggering kernel panic!
-> [    3.013047] Kernel panic - not syncing: Attempted to kill init! exitcode=0x00000100
-> 
-> Many BMC designs have two flash chips so that they can handle a hardware
-> failure of one of them.  If one chip failed, it doesn't do any good to
-> have redundancy if they all get removed anyhow.
-> 
-> Improve the resilience of the probe function to handle one of the
-> children being missing or failed.  Only in the case where all children
-> fail to probe should the controller be failed out.
-> 
-> Signed-off-by: Patrick Williams <patrick@stwcx.xyz>
+> Unless the controller needs some unique feature (I don't think it does
+> on a quick glance), the conversion should not be too difficult. For any
+> experienced developer, even if they are unfamiliar with the SPI MEM API,
+> I don't think it should take more than 2-3 days to do the conversion.
+> The code to program the registers would stay the same, all that needs to
+> change is the API through which it is accessed.
 
-Applied to https://git.kernel.org/pub/scm/linux/kernel/git/mtd/linux.git mtd/next, thanks.
+Writing a spimem driver is not a problem, I think people have done
+that in house. Aspeed has one for AST2600. We have one for u-boot
+I wrote sometime ago. I even have one for Linux but training comes
+with ugly hacks to fit in the current stack.
 
-Miquel
+All Aspeed SoCs need training and that has been the problem for the
+last 4 years or so because we can not do training without knowing
+a minimum about the flash being trained :/ The previous framework
+offered a way to do a first scan and tune the delay settings
+afterwards. It worked pretty well on AST2400, AST2500 and AST2600
+even if more complex.
+
+One alternative was to include the setting in the DT but the flash
+modules are not always soldered on the boards, at least on OpenPOWER
+systems which have sockets for them. The board are large, the wires
+long, the need is real, some chips freak out if not tuned correctly.
+
+spimem needs an extension I think. Sorry I have not been able to
+push that forward. Lack of time and other tasks to address on the
+host side of the machine. This is really a software problem, we
+have the HW procedures ready. If a spimem expert could get involved
+to make a few proposals, I would be happy to help and do some testing.
+QEMU models are good enough for the software part. We can do the
+training validation on real HW when ready.
+
+Thanks,
+
+C.
