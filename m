@@ -1,56 +1,51 @@
-From: Cédric Le Goater <clg@kaod.org>
-Date: Sun, 23 Jan 2022 23:44:05 +0100
-Subject: [PATCH] mtd: aspeed-smc: improve probe resilience
-In-Reply-To: <20220105063244.lno3xur64uepa7i5@ti.com>
-References: <20211229143334.297305-1-patrick@stwcx.xyz>
- <20211229173411.l2bipmi4x3arqjoo@ti.com> <Yc3Qav+ULNdF5zRT@heinlein>
- <20211231102623.izaqlzjvracbbgmp@ti.com> <20220103171721.46c8e697@xps13>
- <YdSP6tKyQ2ZRUC+2@heinlein> <20220105063244.lno3xur64uepa7i5@ti.com>
-Message-ID: <d4ba6413-57ce-14c1-ed48-d00db2f74bd3@kaod.org>
+From: Chia-Wei Wang <chiawei_wang@aspeedtech.com>
+Date: Mon, 24 Jan 2022 09:43:51 +0800
+Subject: [PATCH next] docs/ABI: testing: aspeed-uart-routing: Escape asterisk
+Message-ID: <20220124014351.9121-1-chiawei_wang@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
->> I had an offline discussion with someone who knew more history on this driver.
->> My understanding is that the linux-aspeed team is aware of this being deprecated
->> but that there was some missing support for interface training that nobody has
->> gotten around to write?  If that is the case this really isn't even a "simple"
->> port to a new API at this point.
-> 
-> Unless the controller needs some unique feature (I don't think it does
-> on a quick glance), the conversion should not be too difficult. For any
-> experienced developer, even if they are unfamiliar with the SPI MEM API,
-> I don't think it should take more than 2-3 days to do the conversion.
-> The code to program the registers would stay the same, all that needs to
-> change is the API through which it is accessed.
+Escape asterisk symbols to fix the following warning:
 
-Writing a spimem driver is not a problem, I think people have done
-that in house. Aspeed has one for AST2600. We have one for u-boot
-I wrote sometime ago. I even have one for Linux but training comes
-with ugly hacks to fit in the current stack.
+"WARNING: Inline emphasis start-string without end-string"
 
-All Aspeed SoCs need training and that has been the problem for the
-last 4 years or so because we can not do training without knowing
-a minimum about the flash being trained :/ The previous framework
-offered a way to do a first scan and tune the delay settings
-afterwards. It worked pretty well on AST2400, AST2500 and AST2600
-even if more complex.
+Fixes: c6807970c3bc ("soc: aspeed: Add UART routing support")
+Signed-off-by: Chia-Wei Wang <chiawei_wang@aspeedtech.com>
+---
+ Documentation/ABI/testing/sysfs-driver-aspeed-uart-routing | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-One alternative was to include the setting in the DT but the flash
-modules are not always soldered on the boards, at least on OpenPOWER
-systems which have sockets for them. The board are large, the wires
-long, the need is real, some chips freak out if not tuned correctly.
+diff --git a/Documentation/ABI/testing/sysfs-driver-aspeed-uart-routing b/Documentation/ABI/testing/sysfs-driver-aspeed-uart-routing
+index b363827da437..910df0e5815a 100644
+--- a/Documentation/ABI/testing/sysfs-driver-aspeed-uart-routing
++++ b/Documentation/ABI/testing/sysfs-driver-aspeed-uart-routing
+@@ -1,4 +1,4 @@
+-What:		/sys/bus/platform/drivers/aspeed-uart-routing/*/uart*
++What:		/sys/bus/platform/drivers/aspeed-uart-routing/\*/uart\*
+ Date:		September 2021
+ Contact:	Oskar Senft <osk@google.com>
+ 		Chia-Wei Wang <chiawei_wang@aspeedtech.com>
+@@ -9,7 +9,7 @@ Description:	Selects the RX source of the UARTx device.
+ 		depends on the selected file.
+ 
+ 		e.g.
+-		cat /sys/bus/platform/drivers/aspeed-uart-routing/*.uart_routing/uart1
++		cat /sys/bus/platform/drivers/aspeed-uart-routing/\*.uart_routing/uart1
+ 		[io1] io2 io3 io4 uart2 uart3 uart4 io6
+ 
+ 		In this case, UART1 gets its input from IO1 (physical serial port 1).
+@@ -17,7 +17,7 @@ Description:	Selects the RX source of the UARTx device.
+ Users:		OpenBMC.  Proposed changes should be mailed to
+ 		openbmc at lists.ozlabs.org
+ 
+-What:		/sys/bus/platform/drivers/aspeed-uart-routing/*/io*
++What:		/sys/bus/platform/drivers/aspeed-uart-routing/\*/io\*
+ Date:		September 2021
+ Contact:	Oskar Senft <osk@google.com>
+ 		Chia-Wei Wang <chiawei_wang@aspeedtech.com>
+-- 
+2.25.1
 
-spimem needs an extension I think. Sorry I have not been able to
-push that forward. Lack of time and other tasks to address on the
-host side of the machine. This is really a software problem, we
-have the HW procedures ready. If a spimem expert could get involved
-to make a few proposals, I would be happy to help and do some testing.
-QEMU models are good enough for the software part. We can do the
-training validation on real HW when ready.
-
-Thanks,
-
-C.
