@@ -1,79 +1,114 @@
-From: Jammy Huang <jammy_huang@aspeedtech.com>
-Date: Mon, 24 Jan 2022 17:33:42 +0800
-Subject: [PATCH v3 1/4] media: aspeed: Correct value for h-total-pixels
-In-Reply-To: <20220124093345.3935-1-jammy_huang@aspeedtech.com>
-References: <20220124093345.3935-1-jammy_huang@aspeedtech.com>
-Message-ID: <20220124093345.3935-2-jammy_huang@aspeedtech.com>
+From: Hans Verkuil <hverkuil@xs4all.nl>
+Date: Mon, 24 Jan 2022 11:22:46 +0100
+Subject: [PATCH v2 4/4] media: aspeed: Fix timing polarity incorrect
+In-Reply-To: <b8707885-c10c-ca19-3f2c-f19f567e1f92@aspeedtech.com>
+References: <20211222082139.26933-1-jammy_huang@aspeedtech.com>
+ <20211222082139.26933-5-jammy_huang@aspeedtech.com>
+ <418fc1b2-ddbe-24e3-82cc-aa8ce74f4507@xs4all.nl>
+ <b8707885-c10c-ca19-3f2c-f19f567e1f92@aspeedtech.com>
+Message-ID: <2ddda01a-3f1f-eff6-6ce1-a5b9354f2993@xs4all.nl>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Previous reg-field, 0x98[11:0], stands for the period of the detected
-hsync signal.
-Use the correct reg, 0xa0, to get h-total in pixels.
+On 24/01/2022 03:29, Jammy Huang wrote:
+> 
+> On 2022/1/21 ?? 03:30, Hans Verkuil wrote:
+>> On 12/22/21 09:21, Jammy Huang wrote:
+>>> This is a workaround for sync polarity unstable.
+>>> Sync value get by VR09C counts from sync's rising edge, which means
+>>> sync's polarity is negative if sync value is bigger than total/2.
+>> Do you have an example of such a format, or is this mostly theoretical?
+>>
+>> Either provide the example or make a note that it is theoretical.
+> 
+> OK, I will update an example in next patch. Let me explain first.
+> 
+> This is a must-be result. Please refer to the graph below as I sent in 3/4 of this
+> series. For negative sync, sync width equals to back porch + data enable + front porch.
+> Thus, sync would be bigger than 90% of total in most cases.
 
-Fixes: d2b4387f3bdf ("media: platform: Add Aspeed Video Engine driver")
-Signed-off-by: Jammy Huang <jammy_huang@aspeedtech.com>
-Reviewed-by: Joel Stanley <joel@jms.id.au>
----
-v3:
- - no update
-v2:
- - no update
----
- drivers/media/platform/aspeed-video.c | 9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
+Right, I suspected that might be the case.
 
-diff --git a/drivers/media/platform/aspeed-video.c b/drivers/media/platform/aspeed-video.c
-index b388bc56ce81..d5f77b205175 100644
---- a/drivers/media/platform/aspeed-video.c
-+++ b/drivers/media/platform/aspeed-video.c
-@@ -166,7 +166,7 @@
- #define  VE_SRC_TB_EDGE_DET_BOT		GENMASK(28, VE_SRC_TB_EDGE_DET_BOT_SHF)
- 
- #define VE_MODE_DETECT_STATUS		0x098
--#define  VE_MODE_DETECT_H_PIXELS	GENMASK(11, 0)
-+#define  VE_MODE_DETECT_H_PERIOD	GENMASK(11, 0)
- #define  VE_MODE_DETECT_V_LINES_SHF	16
- #define  VE_MODE_DETECT_V_LINES		GENMASK(27, VE_MODE_DETECT_V_LINES_SHF)
- #define  VE_MODE_DETECT_STATUS_VSYNC	BIT(28)
-@@ -177,6 +177,8 @@
- #define  VE_SYNC_STATUS_VSYNC_SHF	16
- #define  VE_SYNC_STATUS_VSYNC		GENMASK(27, VE_SYNC_STATUS_VSYNC_SHF)
- 
-+#define VE_H_TOTAL_PIXELS		0x0A0
-+
- #define VE_INTERRUPT_CTRL		0x304
- #define VE_INTERRUPT_STATUS		0x308
- #define  VE_INTERRUPT_MODE_DETECT_WD	BIT(0)
-@@ -938,6 +940,7 @@ static void aspeed_video_get_resolution(struct aspeed_video *video)
- 	u32 src_lr_edge;
- 	u32 src_tb_edge;
- 	u32 sync;
-+	u32 htotal;
- 	struct v4l2_bt_timings *det = &video->detected_timings;
- 
- 	det->width = MIN_WIDTH;
-@@ -983,6 +986,7 @@ static void aspeed_video_get_resolution(struct aspeed_video *video)
- 		src_tb_edge = aspeed_video_read(video, VE_SRC_TB_EDGE_DET);
- 		mds = aspeed_video_read(video, VE_MODE_DETECT_STATUS);
- 		sync = aspeed_video_read(video, VE_SYNC_STATUS);
-+		htotal = aspeed_video_read(video, VE_H_TOTAL_PIXELS);
- 
- 		video->frame_bottom = (src_tb_edge & VE_SRC_TB_EDGE_DET_BOT) >>
- 			VE_SRC_TB_EDGE_DET_BOT_SHF;
-@@ -999,8 +1003,7 @@ static void aspeed_video_get_resolution(struct aspeed_video *video)
- 			VE_SRC_LR_EDGE_DET_RT_SHF;
- 		video->frame_left = src_lr_edge & VE_SRC_LR_EDGE_DET_LEFT;
- 		det->hfrontporch = video->frame_left;
--		det->hbackporch = (mds & VE_MODE_DETECT_H_PIXELS) -
--			video->frame_right;
-+		det->hbackporch = htotal - video->frame_right;
- 		det->hsync = sync & VE_SYNC_STATUS_HSYNC;
- 		if (video->frame_left > video->frame_right)
- 			continue;
--- 
-2.25.1
+I think it would be better to combine patches 3 and 4 into a single
+patch, since they are closely related and it is actually easier to
+understand if it's just a single patch.
+
+Regards,
+
+	Hans
+
+> 
+> ????????????????? +-------------------+
+> ????????????????? |??? v i d e o????? |
+> ????? +--+? +-----+?????????????????? +-----+? +---+
+> ???????? |? |?????????????????????????????? |? |
+> ???????? +--+?????????????????????????????? +--+
+> ?????? vsync+-------------------------------+
+> ?? frame_top+-----+
+> frame_bottom+-------------------------+
+> 
+> 
+> Following registers are what I got for 1920x1200 at 60.
+> 
+> 1e700090: 07ee206f 04c9001a c4d3efff 04cc001f
+> 
+> 1e7000a0: 0000081f 00000000 00000000 00000000
+> 
+> vertical total = 0x4D3 (VR098[27:16]) = 1235
+> vertical sync = 0x4CC (VR09C[27:16]) = 1228
+> 
+>>
+>> Regards,
+>>
+>> ????Hans
+>>
+>>> Signed-off-by: Jammy Huang <jammy_huang@aspeedtech.com>
+>>> ---
+>>> ? v2:
+>>> ?? - Use 'total/2' rather than 'total<<1'
+>>> ?? - Update comment
+>>> ---
+>>> ? drivers/media/platform/aspeed-video.c | 20 ++++++++++++++++++++
+>>> ? 1 file changed, 20 insertions(+)
+>>>
+>>> diff --git a/drivers/media/platform/aspeed-video.c b/drivers/media/platform/aspeed-video.c
+>>> index 7c50567f5ab0..c3e3343d91e1 100644
+>>> --- a/drivers/media/platform/aspeed-video.c
+>>> +++ b/drivers/media/platform/aspeed-video.c
+>>> @@ -989,6 +989,16 @@ static void aspeed_video_get_resolution(struct aspeed_video *video)
+>>> ? ????????? video->frame_bottom = FIELD_GET(VE_SRC_TB_EDGE_DET_BOT, src_tb_edge);
+>>> ????????? video->frame_top = FIELD_GET(VE_SRC_TB_EDGE_DET_TOP, src_tb_edge);
+>>> +
+>>> +??????? /*
+>>> +???????? * This is a workaround for polarity detection when the sync
+>>> +???????? * value is larger than half.
+>>> +???????? */
+>>> +??????? if (vsync > (vtotal / 2))
+>>> +??????????? det->polarities &= ~V4L2_DV_VSYNC_POS_POL;
+>>> +??????? else
+>>> +??????????? det->polarities |= V4L2_DV_VSYNC_POS_POL;
+>>> +
+>>> ????????? if (det->polarities & V4L2_DV_VSYNC_POS_POL) {
+>>> ????????????? det->vbackporch = video->frame_top - vsync;
+>>> ????????????? det->vfrontporch = vtotal - video->frame_bottom;
+>>> @@ -1003,6 +1013,16 @@ static void aspeed_video_get_resolution(struct aspeed_video *video)
+>>> ? ????????? video->frame_right = FIELD_GET(VE_SRC_LR_EDGE_DET_RT, src_lr_edge);
+>>> ????????? video->frame_left = FIELD_GET(VE_SRC_LR_EDGE_DET_LEFT, src_lr_edge);
+>>> +
+>>> +??????? /*
+>>> +???????? * This is a workaround for polarity detection when the sync
+>>> +???????? * value is larger than half.
+>>> +???????? */
+>>> +??????? if (hsync > (htotal / 2))
+>>> +??????????? det->polarities &= ~V4L2_DV_HSYNC_POS_POL;
+>>> +??????? else
+>>> +??????????? det->polarities |= V4L2_DV_HSYNC_POS_POL;
+>>> +
+>>> ????????? if (det->polarities & V4L2_DV_HSYNC_POS_POL) {
+>>> ????????????? det->hbackporch = video->frame_left - hsync;
+>>> ????????????? det->hfrontporch = htotal - video->frame_right;
+> 
 
