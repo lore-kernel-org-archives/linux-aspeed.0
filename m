@@ -1,133 +1,116 @@
-From: Iwona Winiarska <iwona.winiarska@intel.com>
-Date: Tue, 25 Jan 2022 02:11:04 +0100
-Subject: [PATCH v6 13/13] docs: Add PECI documentation
-In-Reply-To: <20220125011104.2480133-1-iwona.winiarska@intel.com>
-References: <20220125011104.2480133-1-iwona.winiarska@intel.com>
-Message-ID: <20220125011104.2480133-14-iwona.winiarska@intel.com>
+From: Jammy Huang <jammy_huang@aspeedtech.com>
+Date: Tue, 25 Jan 2022 09:37:51 +0800
+Subject: [PATCH v2 4/4] media: aspeed: Fix timing polarity incorrect
+In-Reply-To: <2ddda01a-3f1f-eff6-6ce1-a5b9354f2993@xs4all.nl>
+References: <20211222082139.26933-1-jammy_huang@aspeedtech.com>
+ <20211222082139.26933-5-jammy_huang@aspeedtech.com>
+ <418fc1b2-ddbe-24e3-82cc-aa8ce74f4507@xs4all.nl>
+ <b8707885-c10c-ca19-3f2c-f19f567e1f92@aspeedtech.com>
+ <2ddda01a-3f1f-eff6-6ce1-a5b9354f2993@xs4all.nl>
+Message-ID: <fbe1742c-2afd-bc09-b565-783b080a1418@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add a brief overview of PECI and PECI wire interface.
-The documentation also contains kernel-doc for PECI subsystem internals
-and PECI CPU Driver API.
 
-Signed-off-by: Iwona Winiarska <iwona.winiarska@intel.com>
-Reviewed-by: Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>
----
- Documentation/index.rst      |  1 +
- Documentation/peci/index.rst | 16 +++++++++++
- Documentation/peci/peci.rst  | 51 ++++++++++++++++++++++++++++++++++++
- MAINTAINERS                  |  1 +
- 4 files changed, 69 insertions(+)
- create mode 100644 Documentation/peci/index.rst
- create mode 100644 Documentation/peci/peci.rst
+On 2022/1/24 ?? 06:22, Hans Verkuil wrote:
+> On 24/01/2022 03:29, Jammy Huang wrote:
+>> On 2022/1/21 ?? 03:30, Hans Verkuil wrote:
+>>> On 12/22/21 09:21, Jammy Huang wrote:
+>>>> This is a workaround for sync polarity unstable.
+>>>> Sync value get by VR09C counts from sync's rising edge, which means
+>>>> sync's polarity is negative if sync value is bigger than total/2.
+>>> Do you have an example of such a format, or is this mostly theoretical?
+>>>
+>>> Either provide the example or make a note that it is theoretical.
+>> OK, I will update an example in next patch. Let me explain first.
+>>
+>> This is a must-be result. Please refer to the graph below as I sent in 3/4 of this
+>> series. For negative sync, sync width equals to back porch + data enable + front porch.
+>> Thus, sync would be bigger than 90% of total in most cases.
+> Right, I suspected that might be the case.
+>
+> I think it would be better to combine patches 3 and 4 into a single
+> patch, since they are closely related and it is actually easier to
+> understand if it's just a single patch.
+OK, I will combine 3/4 into a single patch in next series.
+Thanks.
 
-diff --git a/Documentation/index.rst b/Documentation/index.rst
-index 2b4de3926858..deaa7f669fcd 100644
---- a/Documentation/index.rst
-+++ b/Documentation/index.rst
-@@ -138,6 +138,7 @@ needed).
-    scheduler/index
-    mhi/index
-    tty/index
-+   peci/index
- 
- Architecture-agnostic documentation
- -----------------------------------
-diff --git a/Documentation/peci/index.rst b/Documentation/peci/index.rst
-new file mode 100644
-index 000000000000..989de10416e7
---- /dev/null
-+++ b/Documentation/peci/index.rst
-@@ -0,0 +1,16 @@
-+.. SPDX-License-Identifier: GPL-2.0-only
-+
-+====================
-+Linux PECI Subsystem
-+====================
-+
-+.. toctree::
-+
-+   peci
-+
-+.. only::  subproject and html
-+
-+   Indices
-+   =======
-+
-+   * :ref:`genindex`
-diff --git a/Documentation/peci/peci.rst b/Documentation/peci/peci.rst
-new file mode 100644
-index 000000000000..331b1ec00e22
---- /dev/null
-+++ b/Documentation/peci/peci.rst
-@@ -0,0 +1,51 @@
-+.. SPDX-License-Identifier: GPL-2.0-only
-+
-+========
-+Overview
-+========
-+
-+The Platform Environment Control Interface (PECI) is a communication
-+interface between Intel processor and management controllers
-+(e.g. Baseboard Management Controller, BMC).
-+PECI provides services that allow the management controller to
-+configure, monitor and debug platform by accessing various registers.
-+It defines a dedicated command protocol, where the management
-+controller is acting as a PECI originator and the processor - as
-+a PECI responder.
-+PECI can be used in both single processor and multiple-processor based
-+systems.
-+
-+NOTE:
-+Intel PECI specification is not released as a dedicated document,
-+instead it is a part of External Design Specification (EDS) for given
-+Intel CPU. External Design Specifications are usually not publicly
-+available.
-+
-+PECI Wire
-+---------
-+
-+PECI Wire interface uses a single wire for self-clocking and data
-+transfer. It does not require any additional control lines - the
-+physical layer is a self-clocked one-wire bus signal that begins each
-+bit with a driven, rising edge from an idle near zero volts. The
-+duration of the signal driven high allows to determine whether the bit
-+value is logic '0' or logic '1'. PECI Wire also includes variable data
-+rate established with every message.
-+
-+For PECI Wire, each processor package will utilize unique, fixed
-+addresses within a defined range and that address should
-+have a fixed relationship with the processor socket ID - if one of the
-+processors is removed, it does not affect addresses of remaining
-+processors.
-+
-+PECI subsystem internals
-+------------------------
-+
-+.. kernel-doc:: include/linux/peci.h
-+.. kernel-doc:: drivers/peci/internal.h
-+.. kernel-doc:: drivers/peci/core.c
-+.. kernel-doc:: drivers/peci/request.c
-+
-+PECI CPU Driver API
-+-------------------
-+.. kernel-doc:: drivers/peci/cpu.c
-diff --git a/MAINTAINERS b/MAINTAINERS
-index d821aeaaa2d3..06449cc42a10 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -15112,6 +15112,7 @@ M:	Iwona Winiarska <iwona.winiarska@intel.com>
- L:	openbmc at lists.ozlabs.org (moderated for non-subscribers)
- S:	Supported
- F:	Documentation/devicetree/bindings/peci/
-+F:	Documentation/peci/
- F:	drivers/peci/
- F:	include/linux/peci-cpu.h
- F:	include/linux/peci.h
--- 
-2.31.1
+Best Regards,
 
+ ??? ??? Jammy
+>
+> Regards,
+>
+> 	Hans
+>
+>>  ????????????????? +-------------------+
+>>  ????????????????? |??? v i d e o????? |
+>>  ????? +--+? +-----+?????????????????? +-----+? +---+
+>>  ???????? |? |?????????????????????????????? |? |
+>>  ???????? +--+?????????????????????????????? +--+
+>>  ?????? vsync+-------------------------------+
+>>  ?? frame_top+-----+
+>> frame_bottom+-------------------------+
+>>
+>>
+>> Following registers are what I got for 1920x1200 at 60.
+>>
+>> 1e700090: 07ee206f 04c9001a c4d3efff 04cc001f
+>>
+>> 1e7000a0: 0000081f 00000000 00000000 00000000
+>>
+>> vertical total = 0x4D3 (VR098[27:16]) = 1235
+>> vertical sync = 0x4CC (VR09C[27:16]) = 1228
+>>
+>>> Regards,
+>>>
+>>>  ????Hans
+>>>
+>>>> Signed-off-by: Jammy Huang <jammy_huang@aspeedtech.com>
+>>>> ---
+>>>>  ? v2:
+>>>>  ?? - Use 'total/2' rather than 'total<<1'
+>>>>  ?? - Update comment
+>>>> ---
+>>>>  ? drivers/media/platform/aspeed-video.c | 20 ++++++++++++++++++++
+>>>>  ? 1 file changed, 20 insertions(+)
+>>>>
+>>>> diff --git a/drivers/media/platform/aspeed-video.c b/drivers/media/platform/aspeed-video.c
+>>>> index 7c50567f5ab0..c3e3343d91e1 100644
+>>>> --- a/drivers/media/platform/aspeed-video.c
+>>>> +++ b/drivers/media/platform/aspeed-video.c
+>>>> @@ -989,6 +989,16 @@ static void aspeed_video_get_resolution(struct aspeed_video *video)
+>>>>  ? ????????? video->frame_bottom = FIELD_GET(VE_SRC_TB_EDGE_DET_BOT, src_tb_edge);
+>>>>  ????????? video->frame_top = FIELD_GET(VE_SRC_TB_EDGE_DET_TOP, src_tb_edge);
+>>>> +
+>>>> +??????? /*
+>>>> +???????? * This is a workaround for polarity detection when the sync
+>>>> +???????? * value is larger than half.
+>>>> +???????? */
+>>>> +??????? if (vsync > (vtotal / 2))
+>>>> +??????????? det->polarities &= ~V4L2_DV_VSYNC_POS_POL;
+>>>> +??????? else
+>>>> +??????????? det->polarities |= V4L2_DV_VSYNC_POS_POL;
+>>>> +
+>>>>  ????????? if (det->polarities & V4L2_DV_VSYNC_POS_POL) {
+>>>>  ????????????? det->vbackporch = video->frame_top - vsync;
+>>>>  ????????????? det->vfrontporch = vtotal - video->frame_bottom;
+>>>> @@ -1003,6 +1013,16 @@ static void aspeed_video_get_resolution(struct aspeed_video *video)
+>>>>  ? ????????? video->frame_right = FIELD_GET(VE_SRC_LR_EDGE_DET_RT, src_lr_edge);
+>>>>  ????????? video->frame_left = FIELD_GET(VE_SRC_LR_EDGE_DET_LEFT, src_lr_edge);
+>>>> +
+>>>> +??????? /*
+>>>> +???????? * This is a workaround for polarity detection when the sync
+>>>> +???????? * value is larger than half.
+>>>> +???????? */
+>>>> +??????? if (hsync > (htotal / 2))
+>>>> +??????????? det->polarities &= ~V4L2_DV_HSYNC_POS_POL;
+>>>> +??????? else
+>>>> +??????????? det->polarities |= V4L2_DV_HSYNC_POS_POL;
+>>>> +
+>>>>  ????????? if (det->polarities & V4L2_DV_HSYNC_POS_POL) {
+>>>>  ????????????? det->hbackporch = video->frame_left - hsync;
+>>>>  ????????????? det->hfrontporch = htotal - video->frame_right;
