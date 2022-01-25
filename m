@@ -1,62 +1,102 @@
 From: Iwona Winiarska <iwona.winiarska@intel.com>
-Date: Tue, 25 Jan 2022 02:10:52 +0100
-Subject: [PATCH v6 01/13] dt-bindings: Add generic bindings for PECI
+Date: Tue, 25 Jan 2022 02:10:53 +0100
+Subject: [PATCH v6 02/13] dt-bindings: Add bindings for peci-aspeed
 In-Reply-To: <20220125011104.2480133-1-iwona.winiarska@intel.com>
 References: <20220125011104.2480133-1-iwona.winiarska@intel.com>
-Message-ID: <20220125011104.2480133-2-iwona.winiarska@intel.com>
+Message-ID: <20220125011104.2480133-3-iwona.winiarska@intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add device tree bindings for the PECI controller.
+Add device tree bindings for the peci-aspeed controller driver.
 
+Co-developed-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
 Signed-off-by: Iwona Winiarska <iwona.winiarska@intel.com>
-Reviewed-by: Rob Herring <robh@kernel.org>
 Reviewed-by: Joel Stanley <joel@jms.id.au>
 ---
- .../bindings/peci/peci-controller.yaml        | 33 +++++++++++++++++++
- 1 file changed, 33 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/peci/peci-controller.yaml
+ .../devicetree/bindings/peci/peci-aspeed.yaml | 72 +++++++++++++++++++
+ 1 file changed, 72 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/peci/peci-aspeed.yaml
 
-diff --git a/Documentation/devicetree/bindings/peci/peci-controller.yaml b/Documentation/devicetree/bindings/peci/peci-controller.yaml
+diff --git a/Documentation/devicetree/bindings/peci/peci-aspeed.yaml b/Documentation/devicetree/bindings/peci/peci-aspeed.yaml
 new file mode 100644
-index 000000000000..bbc3d3f3a929
+index 000000000000..1e68a801a92a
 --- /dev/null
-+++ b/Documentation/devicetree/bindings/peci/peci-controller.yaml
-@@ -0,0 +1,33 @@
++++ b/Documentation/devicetree/bindings/peci/peci-aspeed.yaml
+@@ -0,0 +1,72 @@
 +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
 +%YAML 1.2
 +---
-+$id: http://devicetree.org/schemas/peci/peci-controller.yaml#
++$id: http://devicetree.org/schemas/peci/peci-aspeed.yaml#
 +$schema: http://devicetree.org/meta-schemas/core.yaml#
 +
-+title: Generic Device Tree Bindings for PECI
++title: Aspeed PECI Bus Device Tree Bindings
 +
 +maintainers:
 +  - Iwona Winiarska <iwona.winiarska@intel.com>
++  - Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
 +
-+description:
-+  PECI (Platform Environment Control Interface) is an interface that provides a
-+  communication channel from Intel processors and chipset components to external
-+  monitoring or control devices.
++allOf:
++  - $ref: peci-controller.yaml#
 +
 +properties:
-+  $nodename:
-+    pattern: "^peci-controller(@.*)?$"
++  compatible:
++    enum:
++      - aspeed,ast2400-peci
++      - aspeed,ast2500-peci
++      - aspeed,ast2600-peci
++
++  reg:
++    maxItems: 1
++
++  interrupts:
++    maxItems: 1
++
++  clocks:
++    description:
++      Clock source for PECI controller. Should reference the external
++      oscillator clock.
++    maxItems: 1
++
++  resets:
++    maxItems: 1
 +
 +  cmd-timeout-ms:
-+    description:
-+      Command timeout in units of ms.
++    minimum: 1
++    maximum: 1000
++    default: 1000
 +
-+additionalProperties: true
++  clock-frequency:
++    description:
++      The desired operation frequency of PECI controller in Hz.
++    minimum: 2000
++    maximum: 2000000
++    default: 1000000
++
++required:
++  - compatible
++  - reg
++  - interrupts
++  - clocks
++  - resets
++
++additionalProperties: false
 +
 +examples:
 +  - |
++    #include <dt-bindings/interrupt-controller/arm-gic.h>
++    #include <dt-bindings/clock/ast2600-clock.h>
 +    peci-controller at 1e78b000 {
++      compatible = "aspeed,ast2600-peci";
 +      reg = <0x1e78b000 0x100>;
-+      cmd-timeout-ms = <500>;
++      interrupts = <GIC_SPI 38 IRQ_TYPE_LEVEL_HIGH>;
++      clocks = <&syscon ASPEED_CLK_GATE_REF0CLK>;
++      resets = <&syscon ASPEED_RESET_PECI>;
++      cmd-timeout-ms = <1000>;
++      clock-frequency = <1000000>;
 +    };
 +...
 -- 
