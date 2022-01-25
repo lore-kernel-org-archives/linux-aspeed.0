@@ -1,98 +1,51 @@
-From: Jammy Huang <jammy_huang@aspeedtech.com>
-Date: Tue, 25 Jan 2022 14:44:08 +0800
-Subject: [PATCH v4 2/3] media: aspeed: Use FIELD_GET to improve readability
-In-Reply-To: <20220125064409.5502-1-jammy_huang@aspeedtech.com>
-References: <20220125064409.5502-1-jammy_huang@aspeedtech.com>
-Message-ID: <20220125064409.5502-3-jammy_huang@aspeedtech.com>
+From: Hans Verkuil <hverkuil@xs4all.nl>
+Date: Tue, 25 Jan 2022 11:43:10 +0100
+Subject: [PATCH v4 0/2] Fix incorrect resolution detected
+In-Reply-To: <20220118100729.7651-1-jammy_huang@aspeedtech.com>
+References: <20220118100729.7651-1-jammy_huang@aspeedtech.com>
+Message-ID: <c3202b1f-ff8f-8108-e8a3-8710c8c74d10@xs4all.nl>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Use the bitfield macro FIELD_GET, and GENMASK to do the shift and mask in
-one go for reg values.
+Hi Jammy,
 
-Signed-off-by: Jammy Huang <jammy_huang@aspeedtech.com>
-Reviewed-by: Joel Stanley <joel@jms.id.au>
----
- v4:
-  - no update
- v3:
-  - no update
- v2:
-  - Put some codes on one line
----
- drivers/media/platform/aspeed-video.c | 31 +++++++++++----------------
- 1 file changed, 12 insertions(+), 19 deletions(-)
+On 18/01/2022 11:07, Jammy Huang wrote:
+> This series fixes incorrect resolution detected.
+> We found this problem happened occasionally in the switch between bios
+> and bootloader.
 
-diff --git a/drivers/media/platform/aspeed-video.c b/drivers/media/platform/aspeed-video.c
-index d5f77b205175..c241038ee27c 100644
---- a/drivers/media/platform/aspeed-video.c
-+++ b/drivers/media/platform/aspeed-video.c
-@@ -156,26 +156,22 @@
- #define  VE_SRC_LR_EDGE_DET_NO_H	BIT(13)
- #define  VE_SRC_LR_EDGE_DET_NO_DISP	BIT(14)
- #define  VE_SRC_LR_EDGE_DET_NO_CLK	BIT(15)
--#define  VE_SRC_LR_EDGE_DET_RT_SHF	16
--#define  VE_SRC_LR_EDGE_DET_RT		GENMASK(27, VE_SRC_LR_EDGE_DET_RT_SHF)
-+#define  VE_SRC_LR_EDGE_DET_RT		GENMASK(27, 16)
- #define  VE_SRC_LR_EDGE_DET_INTERLACE	BIT(31)
- 
- #define VE_SRC_TB_EDGE_DET		0x094
- #define  VE_SRC_TB_EDGE_DET_TOP		GENMASK(12, 0)
--#define  VE_SRC_TB_EDGE_DET_BOT_SHF	16
--#define  VE_SRC_TB_EDGE_DET_BOT		GENMASK(28, VE_SRC_TB_EDGE_DET_BOT_SHF)
-+#define  VE_SRC_TB_EDGE_DET_BOT		GENMASK(28, 16)
- 
- #define VE_MODE_DETECT_STATUS		0x098
- #define  VE_MODE_DETECT_H_PERIOD	GENMASK(11, 0)
--#define  VE_MODE_DETECT_V_LINES_SHF	16
--#define  VE_MODE_DETECT_V_LINES		GENMASK(27, VE_MODE_DETECT_V_LINES_SHF)
-+#define  VE_MODE_DETECT_V_LINES		GENMASK(27, 16)
- #define  VE_MODE_DETECT_STATUS_VSYNC	BIT(28)
- #define  VE_MODE_DETECT_STATUS_HSYNC	BIT(29)
- 
- #define VE_SYNC_STATUS			0x09c
- #define  VE_SYNC_STATUS_HSYNC		GENMASK(11, 0)
--#define  VE_SYNC_STATUS_VSYNC_SHF	16
--#define  VE_SYNC_STATUS_VSYNC		GENMASK(27, VE_SYNC_STATUS_VSYNC_SHF)
-+#define  VE_SYNC_STATUS_VSYNC		GENMASK(27, 16)
- 
- #define VE_H_TOTAL_PIXELS		0x0A0
- 
-@@ -988,23 +984,20 @@ static void aspeed_video_get_resolution(struct aspeed_video *video)
- 		sync = aspeed_video_read(video, VE_SYNC_STATUS);
- 		htotal = aspeed_video_read(video, VE_H_TOTAL_PIXELS);
- 
--		video->frame_bottom = (src_tb_edge & VE_SRC_TB_EDGE_DET_BOT) >>
--			VE_SRC_TB_EDGE_DET_BOT_SHF;
--		video->frame_top = src_tb_edge & VE_SRC_TB_EDGE_DET_TOP;
-+		video->frame_bottom = FIELD_GET(VE_SRC_TB_EDGE_DET_BOT, src_tb_edge);
-+		video->frame_top = FIELD_GET(VE_SRC_TB_EDGE_DET_TOP, src_tb_edge);
- 		det->vfrontporch = video->frame_top;
--		det->vbackporch = ((mds & VE_MODE_DETECT_V_LINES) >>
--			VE_MODE_DETECT_V_LINES_SHF) - video->frame_bottom;
--		det->vsync = (sync & VE_SYNC_STATUS_VSYNC) >>
--			VE_SYNC_STATUS_VSYNC_SHF;
-+		det->vbackporch = FIELD_GET(VE_MODE_DETECT_V_LINES, mds) -
-+			video->frame_bottom;
-+		det->vsync = FIELD_GET(VE_SYNC_STATUS_VSYNC, sync);
- 		if (video->frame_top > video->frame_bottom)
- 			continue;
- 
--		video->frame_right = (src_lr_edge & VE_SRC_LR_EDGE_DET_RT) >>
--			VE_SRC_LR_EDGE_DET_RT_SHF;
--		video->frame_left = src_lr_edge & VE_SRC_LR_EDGE_DET_LEFT;
-+		video->frame_right = FIELD_GET(VE_SRC_LR_EDGE_DET_RT, src_lr_edge);
-+		video->frame_left = FIELD_GET(VE_SRC_LR_EDGE_DET_LEFT, src_lr_edge);
- 		det->hfrontporch = video->frame_left;
- 		det->hbackporch = htotal - video->frame_right;
--		det->hsync = sync & VE_SYNC_STATUS_HSYNC;
-+		det->hsync = FIELD_GET(VE_SYNC_STATUS_HSYNC, sync);
- 		if (video->frame_left > video->frame_right)
- 			continue;
- 
--- 
-2.25.1
+Can you rebase this on top of:
+
+https://git.linuxtv.org/hverkuil/media_tree.git/log/?h=for-v5.18f
+
+This series doesn't apply cleanly.
+
+Regards,
+
+	Hans
+
+> 
+> Changes in v4:
+>  - Correct the subject of patch
+> 
+> Changes in v3:
+>  - In v2, we tried to increase the min-required-count of stable signal
+>    to avoid incorrect transient state in timing detection. But it is
+>    not working for all conditions.
+>    Thus, we go another way in v3. Use regs, which can represent the
+>    signal status, to decide if we needs to do detection again.
+>  
+> Changes in v2:
+>  - Separate the patch into two patches
+> 
+> Jammy Huang (2):
+>   media: aspeed: Add macro for the fields of the mode-detect registers
+>   media: aspeed: Fix unstable timing detection
+> 
+>  drivers/media/platform/aspeed-video.c | 25 ++++++++++++++++++++++++-
+>  1 file changed, 24 insertions(+), 1 deletion(-)
+> 
 
