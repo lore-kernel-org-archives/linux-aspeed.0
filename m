@@ -1,51 +1,62 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Date: Tue, 25 Jan 2022 06:46:28 -0800
-Subject: [PATCH linux dev-5.15] hwmon: (pmbus) modify PSU fan_target
- convert value to false
-In-Reply-To: <20220125130116.18646-1-krishnar@ami.com>
-References: <20220125130116.18646-1-krishnar@ami.com>
-Message-ID: <4e7ca9d8-c545-160a-5578-cf1438223759@roeck-us.net>
+From: Jammy Huang <jammy_huang@aspeedtech.com>
+Date: Wed, 26 Jan 2022 09:41:27 +0800
+Subject: [PATCH v4 0/2] Fix incorrect resolution detected
+In-Reply-To: <c3202b1f-ff8f-8108-e8a3-8710c8c74d10@xs4all.nl>
+References: <20220118100729.7651-1-jammy_huang@aspeedtech.com>
+ <c3202b1f-ff8f-8108-e8a3-8710c8c74d10@xs4all.nl>
+Message-ID: <8681fe29-69c2-f701-aff4-c27cef2d32d7@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 1/25/22 05:01, krishnar4 wrote:
-> Description: PSU can't use sysfs fan_target to control PSU fan duty.
-> 
 
-This is neither a proper subject nor a proper description.
-"modify PSU fan_target convert value to false" means that the
-value reported from the attribute is used directly without
-conversion. The subject should reflect this.
-"Description:" should not be part of the description, and
-the description should describe the reason for the change
-(ie explain clearly what is wrong).
-"PSU can't use sysfs fan_target to control PSU fan duty"
-doesn't explain anything and doesn't match the subject.
+On 2022/1/25 ?? 06:43, Hans Verkuil wrote:
+> Hi Jammy,
+>
+> On 18/01/2022 11:07, Jammy Huang wrote:
+>> This series fixes incorrect resolution detected.
+>> We found this problem happened occasionally in the switch between bios
+>> and bootloader.
+> Can you rebase this on top of:
+>
+> https://git.linuxtv.org/hverkuil/media_tree.git/log/?h=for-v5.18f
+>
+> This series doesn't apply cleanly.
 
-> Signed-off-by: krishnar4 <krishnar@ami.com>
+OK, I will update patch based on this code base.
 
-"krishnar4" is not an acceptable name. This needs to be a real name.
+Regards,
 
-Guenter
+	Jammy
 
-> ---
->   drivers/hwmon/pmbus/pmbus_core.c | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/hwmon/pmbus/pmbus_core.c b/drivers/hwmon/pmbus/pmbus_core.c
-> index 776ee2237be2..a56c2e1c4079 100644
-> --- a/drivers/hwmon/pmbus/pmbus_core.c
-> +++ b/drivers/hwmon/pmbus/pmbus_core.c
-> @@ -1889,7 +1889,7 @@ static int pmbus_add_fan_ctrl(struct i2c_client *client,
->   
->   	sensor = pmbus_add_sensor(data, "fan", "target", index, page,
->   				  0xff, PMBUS_VIRT_FAN_TARGET_1 + id, PSC_FAN,
-> -				  false, false, true);
-> +				  false, false, false);
->   
->   	if (!sensor)
->   		return -ENOMEM;
+>
+> Regards,
+>
+> 	Hans
+>
+>> Changes in v4:
+>>   - Correct the subject of patch
+>>
+>> Changes in v3:
+>>   - In v2, we tried to increase the min-required-count of stable signal
+>>     to avoid incorrect transient state in timing detection. But it is
+>>     not working for all conditions.
+>>     Thus, we go another way in v3. Use regs, which can represent the
+>>     signal status, to decide if we needs to do detection again.
+>>   
+>> Changes in v2:
+>>   - Separate the patch into two patches
+>>
+>> Jammy Huang (2):
+>>    media: aspeed: Add macro for the fields of the mode-detect registers
+>>    media: aspeed: Fix unstable timing detection
+>>
+>>   drivers/media/platform/aspeed-video.c | 25 ++++++++++++++++++++++++-
+>>   1 file changed, 24 insertions(+), 1 deletion(-)
+>>
+-- 
+Best Regards
+Jammy
 
