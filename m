@@ -1,9 +1,9 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Wed, 26 Jan 2022 11:51:09 +0100
+From: Alan Stern <stern@rowland.harvard.edu>
+Date: Wed, 26 Jan 2022 11:00:44 -0500
 Subject: [PATCH] usb: gadget: mass_storage: add READ_TOC cmd mask check
 In-Reply-To: <20220126100856.3680716-1-neal_liu@aspeedtech.com>
 References: <20220126100856.3680716-1-neal_liu@aspeedtech.com>
-Message-ID: <YfEnnWuL1cC6airb@kroah.com>
+Message-ID: <YfFwLDLX5D4dYLTb@rowland.harvard.edu>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -30,12 +30,12 @@ On Wed, Jan 26, 2022 at 06:08:56PM +0800, Neal Liu wrote:
 >  		reply = check_command(common, 10, DATA_DIR_TO_HOST,
 > -				      (7<<6) | (1<<1), 1,
 > +				      (7<<6) | (1<<1) | (1<<2), 1,
+>  				      "READ TOC");
+>  		if (reply == 0)
+>  			reply = do_read_toc(common, bh);
 
-Can we have real names here instead of magic numbers?
+You've been anticipated:
 
-And what commit does this fix?  Is it a regression or has it always
-never worked properly?
+https://git.kernel.org/pub/scm/linux/kernel/git/gregkh/usb.git/commit/?h=usb-testing&id=89ada0fe669a7abf8777b793b874202a0767a24f
 
-thanks,
-
-greg k-h
+Alan Stern
