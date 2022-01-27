@@ -1,36 +1,53 @@
-From: krishnar4 <krishnar@ami.com>
-Date: Thu, 27 Jan 2022 11:34:59 +0530
-Subject: [PATCH linux dev-5.15] hwmon: (pmbus) modify PSU fan_target convert
- value to false
-In-Reply-To: <git-send-email-krishnar@ami.com>
-References: <git-send-email-krishnar@ami.com>
-Message-ID: <20220127060459.17310-1-krishnar@ami.com>
+From: Andrei Kartashev <a.kartashev@yadro.com>
+Date: Thu, 27 Jan 2022 16:17:04 +0300
+Subject: [PATCH] ARM: dts: aspeed: remove unhandled fttmr010,pwm-outputs
+In-Reply-To: <20220127121952.3985981-1-clabbe@baylibre.com>
+References: <20220127121952.3985981-1-clabbe@baylibre.com>
+Message-ID: <b5e8f3defc6715fbc0798a5c490d588e247335bc.camel@yadro.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Description: PSU can't use sysfs fan_target to control PSU fan duty.
+Hello,
 
-Signed-off-by: krishnar4 <krishnar@ami.com>
----
- drivers/hwmon/pmbus/pmbus_core.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Good catch! I miss this on porting DTS from local tree, based on
+Intel's one. Since there is no such driver in upstream kernel
+(https://github.com/Intel-BMC/linux/blob/dev-5.15-intel/drivers/pwm/pwm-fttmr010.c
+), both this and beeper sections could be completely removed.
 
-diff --git a/drivers/hwmon/pmbus/pmbus_core.c b/drivers/hwmon/pmbus/pmbus_core.c
-index 776ee2237be2..a56c2e1c4079 100644
---- a/drivers/hwmon/pmbus/pmbus_core.c
-+++ b/drivers/hwmon/pmbus/pmbus_core.c
-@@ -1889,7 +1889,7 @@ static int pmbus_add_fan_ctrl(struct i2c_client *client,
- 
- 	sensor = pmbus_add_sensor(data, "fan", "target", index, page,
- 				  0xff, PMBUS_VIRT_FAN_TARGET_1 + id, PSC_FAN,
--				  false, false, true);
-+				  false, false, false);
- 
- 	if (!sensor)
- 		return -ENOMEM;
+I will send another patch with cleanup.
+
+Thank you.
+
+On Thu, 2022-01-27 at 12:19 +0000, Corentin Labbe wrote:
+> fttmr010,pwm-outputs is not handled by its timer driver, so this
+> property is useless.
+> Fixes: 67ac01d03862 ("ARM: dts: aspeed: add device tree for YADRO
+> VEGMAN BMC")
+> 
+> Signed-off-by: Corentin Labbe <clabbe@baylibre.com>
+> ---
+> ?arch/arm/boot/dts/aspeed-bmc-vegman.dtsi | 1 -
+> ?1 file changed, 1 deletion(-)
+> 
+> diff --git a/arch/arm/boot/dts/aspeed-bmc-vegman.dtsi
+> b/arch/arm/boot/dts/aspeed-bmc-vegman.dtsi
+> index 1a5b25b2ea29..43af63910571 100644
+> --- a/arch/arm/boot/dts/aspeed-bmc-vegman.dtsi
+> +++ b/arch/arm/boot/dts/aspeed-bmc-vegman.dtsi
+> @@ -166,7 +166,6 @@ &sdhci1 {
+> ?};
+> ?
+> ?&timer {
+> -???????fttmr010,pwm-outputs = <5>;
+> ????????pinctrl-names = "default";
+> ????????pinctrl-0 = <&pinctrl_timer5_default>;
+> ????????#pwm-cells = <3>;
+
 -- 
-2.17.1
+Best regards,
+Andrei Kartashev
+
 
