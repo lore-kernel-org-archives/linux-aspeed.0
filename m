@@ -1,8 +1,10 @@
 From: krishnar4 <krishnar@ami.com>
-Date: Tue, 25 Jan 2022 18:31:16 +0530
+Date: Thu, 27 Jan 2022 11:34:59 +0530
 Subject: [PATCH linux dev-5.15] hwmon: (pmbus) modify PSU fan_target convert
  value to false
-Message-ID: <20220125130116.18646-1-krishnar@ami.com>
+In-Reply-To: <git-send-email-krishnar@ami.com>
+References: <git-send-email-krishnar@ami.com>
+Message-ID: <20220127060459.17310-1-krishnar@ami.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
