@@ -1,10 +1,10 @@
 From: Neal Liu <neal_liu@aspeedtech.com>
-Date: Thu, 27 Jan 2022 02:11:09 +0000
+Date: Thu, 27 Jan 2022 02:11:40 +0000
 Subject: [PATCH] usb: gadget: mass_storage: add READ_TOC cmd mask check
-In-Reply-To: <YfEnnWuL1cC6airb@kroah.com>
+In-Reply-To: <YfFwLDLX5D4dYLTb@rowland.harvard.edu>
 References: <20220126100856.3680716-1-neal_liu@aspeedtech.com>
- <YfEnnWuL1cC6airb@kroah.com>
-Message-ID: <HK0PR06MB3202A4690440C2123A2D76D880219@HK0PR06MB3202.apcprd06.prod.outlook.com>
+ <YfFwLDLX5D4dYLTb@rowland.harvard.edu>
+Message-ID: <HK0PR06MB3202A514A1CE186A29DFFD8380219@HK0PR06MB3202.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -12,12 +12,12 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 > -----Original Message-----
-> From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> Sent: Wednesday, January 26, 2022 6:51 PM
+> From: Alan Stern <stern@rowland.harvard.edu>
+> Sent: Thursday, January 27, 2022 12:01 AM
 > To: Neal Liu <neal_liu@aspeedtech.com>
-> Cc: Felipe Balbi <balbi@kernel.org>; Alan Stern <stern@rowland.harvard.edu>;
-> Chen Lin <chen.lin5@zte.com.cn>; Wesley Cheng
-> <quic_wcheng@quicinc.com>; Nikita Yushchenko
+> Cc: Felipe Balbi <balbi@kernel.org>; Greg Kroah-Hartman
+> <gregkh@linuxfoundation.org>; Chen Lin <chen.lin5@zte.com.cn>; Wesley
+> Cheng <quic_wcheng@quicinc.com>; Nikita Yushchenko
 > <nikita.yoush@cogentembedded.com>; Cai Huoqing <caihuoqing@baidu.com>;
 > linux-usb at vger.kernel.org; linux-kernel at vger.kernel.org;
 > linux-aspeed at lists.ozlabs.org; BMC-SW <BMC-SW@aspeedtech.com>
@@ -45,19 +45,17 @@ Content-Transfer-Encoding: 7bit
 > >  		reply = check_command(common, 10, DATA_DIR_TO_HOST,
 > > -				      (7<<6) | (1<<1), 1,
 > > +				      (7<<6) | (1<<1) | (1<<2), 1,
+> >  				      "READ TOC");
+> >  		if (reply == 0)
+> >  			reply = do_read_toc(common, bh);
 > 
-> Can we have real names here instead of magic numbers?
+> You've been anticipated:
 > 
-> And what commit does this fix?  Is it a regression or has it always never
-> worked properly?
+> https://git.kernel.org/pub/scm/linux/kernel/git/gregkh/usb.git/commit/?h=usb
+> -testing&id=89ada0fe669a7abf8777b793b874202a0767a24f
 > 
-> thanks,
-> 
-> greg k-h
+> Alan Stern
 
-This patch fix Windows Server OS installation failure problem.
-Since @Roger already sent similar patch fixed, I'll try it.
-https://git.kernel.org/pub/scm/linux/kernel/git/gregkh/usb.git/commit/?h=usb-testing&id=89ada0fe669a7abf8777b793b874202a0767a24f
-Thanks
+Thanks for you info.
 
 -Neal
