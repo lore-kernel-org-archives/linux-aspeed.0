@@ -1,93 +1,104 @@
 From: Iwona Winiarska <iwona.winiarska@intel.com>
-Date: Wed,  2 Feb 2022 15:48:28 +0100
-Subject: [PATCH v7 03/13] ARM: dts: aspeed: Add PECI controller nodes
+Date: Wed,  2 Feb 2022 15:48:27 +0100
+Subject: [PATCH v7 02/13] dt-bindings: Add bindings for peci-aspeed
 In-Reply-To: <20220202144838.163875-1-iwona.winiarska@intel.com>
 References: <20220202144838.163875-1-iwona.winiarska@intel.com>
-Message-ID: <20220202144838.163875-4-iwona.winiarska@intel.com>
+Message-ID: <20220202144838.163875-3-iwona.winiarska@intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add PECI controller nodes with all required information.
+Add device tree bindings for the peci-aspeed controller driver.
 
 Co-developed-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
 Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
 Signed-off-by: Iwona Winiarska <iwona.winiarska@intel.com>
 Reviewed-by: Joel Stanley <joel@jms.id.au>
 ---
- arch/arm/boot/dts/aspeed-g4.dtsi | 11 +++++++++++
- arch/arm/boot/dts/aspeed-g5.dtsi | 11 +++++++++++
- arch/arm/boot/dts/aspeed-g6.dtsi | 11 +++++++++++
- 3 files changed, 33 insertions(+)
+ .../devicetree/bindings/peci/peci-aspeed.yaml | 72 +++++++++++++++++++
+ 1 file changed, 72 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/peci/peci-aspeed.yaml
 
-diff --git a/arch/arm/boot/dts/aspeed-g4.dtsi b/arch/arm/boot/dts/aspeed-g4.dtsi
-index f14dace34c5a..fa8b581c3d6c 100644
---- a/arch/arm/boot/dts/aspeed-g4.dtsi
-+++ b/arch/arm/boot/dts/aspeed-g4.dtsi
-@@ -392,6 +392,17 @@ uart_routing: uart-routing at 9c {
- 				};
- 			};
- 
-+			peci0: peci-controller at 1e78b000 {
-+				compatible = "aspeed,ast2400-peci";
-+				reg = <0x1e78b000 0x60>;
-+				interrupts = <15>;
-+				clocks = <&syscon ASPEED_CLK_GATE_REFCLK>;
-+				resets = <&syscon ASPEED_RESET_PECI>;
-+				cmd-timeout-ms = <1000>;
-+				clock-frequency = <1000000>;
-+				status = "disabled";
-+			};
+diff --git a/Documentation/devicetree/bindings/peci/peci-aspeed.yaml b/Documentation/devicetree/bindings/peci/peci-aspeed.yaml
+new file mode 100644
+index 000000000000..1e68a801a92a
+--- /dev/null
++++ b/Documentation/devicetree/bindings/peci/peci-aspeed.yaml
+@@ -0,0 +1,72 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/peci/peci-aspeed.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
 +
- 			uart2: serial at 1e78d000 {
- 				compatible = "ns16550a";
- 				reg = <0x1e78d000 0x20>;
-diff --git a/arch/arm/boot/dts/aspeed-g5.dtsi b/arch/arm/boot/dts/aspeed-g5.dtsi
-index 7495f93c5069..4147b397c883 100644
---- a/arch/arm/boot/dts/aspeed-g5.dtsi
-+++ b/arch/arm/boot/dts/aspeed-g5.dtsi
-@@ -516,6 +516,17 @@ ibt: ibt at 140 {
- 				};
- 			};
- 
-+			peci0: peci-controller at 1e78b000 {
-+				compatible = "aspeed,ast2500-peci";
-+				reg = <0x1e78b000 0x60>;
-+				interrupts = <15>;
-+				clocks = <&syscon ASPEED_CLK_GATE_REFCLK>;
-+				resets = <&syscon ASPEED_RESET_PECI>;
-+				cmd-timeout-ms = <1000>;
-+				clock-frequency = <1000000>;
-+				status = "disabled";
-+			};
++title: Aspeed PECI Bus Device Tree Bindings
 +
- 			uart2: serial at 1e78d000 {
- 				compatible = "ns16550a";
- 				reg = <0x1e78d000 0x20>;
-diff --git a/arch/arm/boot/dts/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed-g6.dtsi
-index c32e87fad4dc..3d5ce9da42c3 100644
---- a/arch/arm/boot/dts/aspeed-g6.dtsi
-+++ b/arch/arm/boot/dts/aspeed-g6.dtsi
-@@ -512,6 +512,17 @@ wdt4: watchdog at 1e7850c0 {
- 				status = "disabled";
- 			};
- 
-+			peci0: peci-controller at 1e78b000 {
-+				compatible = "aspeed,ast2600-peci";
-+				reg = <0x1e78b000 0x100>;
-+				interrupts = <GIC_SPI 38 IRQ_TYPE_LEVEL_HIGH>;
-+				clocks = <&syscon ASPEED_CLK_GATE_REF0CLK>;
-+				resets = <&syscon ASPEED_RESET_PECI>;
-+				cmd-timeout-ms = <1000>;
-+				clock-frequency = <1000000>;
-+				status = "disabled";
-+			};
++maintainers:
++  - Iwona Winiarska <iwona.winiarska@intel.com>
++  - Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
 +
- 			lpc: lpc at 1e789000 {
- 				compatible = "aspeed,ast2600-lpc-v2", "simple-mfd", "syscon";
- 				reg = <0x1e789000 0x1000>;
++allOf:
++  - $ref: peci-controller.yaml#
++
++properties:
++  compatible:
++    enum:
++      - aspeed,ast2400-peci
++      - aspeed,ast2500-peci
++      - aspeed,ast2600-peci
++
++  reg:
++    maxItems: 1
++
++  interrupts:
++    maxItems: 1
++
++  clocks:
++    description:
++      Clock source for PECI controller. Should reference the external
++      oscillator clock.
++    maxItems: 1
++
++  resets:
++    maxItems: 1
++
++  cmd-timeout-ms:
++    minimum: 1
++    maximum: 1000
++    default: 1000
++
++  clock-frequency:
++    description:
++      The desired operation frequency of PECI controller in Hz.
++    minimum: 2000
++    maximum: 2000000
++    default: 1000000
++
++required:
++  - compatible
++  - reg
++  - interrupts
++  - clocks
++  - resets
++
++additionalProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/interrupt-controller/arm-gic.h>
++    #include <dt-bindings/clock/ast2600-clock.h>
++    peci-controller at 1e78b000 {
++      compatible = "aspeed,ast2600-peci";
++      reg = <0x1e78b000 0x100>;
++      interrupts = <GIC_SPI 38 IRQ_TYPE_LEVEL_HIGH>;
++      clocks = <&syscon ASPEED_CLK_GATE_REF0CLK>;
++      resets = <&syscon ASPEED_RESET_PECI>;
++      cmd-timeout-ms = <1000>;
++      clock-frequency = <1000000>;
++    };
++...
 -- 
 2.34.1
 
