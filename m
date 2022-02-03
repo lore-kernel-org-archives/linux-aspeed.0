@@ -1,67 +1,50 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Thu, 3 Feb 2022 11:39:38 +0000
-Subject: [PATCH 2/2] ARM: aspeed: Add secure boot controller support
-In-Reply-To: <YfjyNo5wBPs16vkz@kroah.com>
-References: <20220201050501.182961-1-joel@jms.id.au>
- <20220201050501.182961-3-joel@jms.id.au>
- <YfjyNo5wBPs16vkz@kroah.com>
-Message-ID: <CACPK8XcYFZUtw_-8A5hzT0dYqtnifuFOf7qoER0YVsbCsReH8A@mail.gmail.com>
+Date: Thu,  3 Feb 2022 22:23:41 +1030
+Subject: [PATCH v2 0/3] firmware: Add boot information to sysfs
+Message-ID: <20220203115344.267159-1-joel@jms.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, 1 Feb 2022 at 08:41, Greg Kroah-Hartman
-<gregkh@linuxfoundation.org> wrote:
->
-> On Tue, Feb 01, 2022 at 03:35:01PM +1030, Joel Stanley wrote:
+v2 reworks the series to put the sysfs properties in the core, and
+optionally show them with the is_visible() callback.
 
-> > --- a/drivers/soc/aspeed/aspeed-socinfo.c
-> > +++ b/drivers/soc/aspeed/aspeed-socinfo.c
-> > @@ -8,6 +8,9 @@
-> >  #include <linux/platform_device.h>
-> >  #include <linux/slab.h>
-> >  #include <linux/sys_soc.h>
-> > +#include <linux/firmware_bootinfo.h>
-> > +
-> > +static u32 security_status;
-> >
-> >  static struct {
-> >       const char *name;
-> > @@ -74,6 +77,83 @@ static const char *siliconid_to_rev(u32 siliconid)
-> >       return "??";
-> >  }
-> >
-> > +#define SEC_STATUS           0x14
-> > +#define ABR_IMAGE_SOURCE     BIT(13)
-> > +#define OTP_PROTECTED                BIT(8)
-> > +#define LOW_SEC_KEY          BIT(7)
-> > +#define SECURE_BOOT          BIT(6)
-> > +#define UART_BOOT            BIT(5)
->
-> Where do these bits come from?
+This is the second iteration of this idea. The first used socinfo
+custom attribute groups, but Arnd suggested we make this something
+standardised under /sys/firmware instead:
 
-They are taken from the datasheet.
+ http://lore.kernel.org/all/CAK8P3a3MRf0aGt1drkgsuZyBbeoy+S7Ha18SBM01q+3f33oL+Q at mail.gmail.com
 
-> > +     pr_info("AST2600 secure boot %s\n",
-> > +             (security_status & SECURE_BOOT) ? "enabled" : "disabled");
->
-> When all is good, no need to print anything out.
+Some ARM systems have a firmware that provides a hardware root of
+trust. It's useful for the system to know how this root of trust has
+been configured, so provide a standardised interface that expose this
+information to userspace.
 
-We had some back and forth on this in an earlier iteration of this change:
+This is implemented as a sysfs attribute group registration in the
+driver core, with platforms populating values obtained from firmware at
+kernel boot time.
 
- https://lore.kernel.org/all/57584776-06e7-0faf-aeb2-eab0c7c5ae1f at molgen.mpg.de/
+Patch 2 provides a user of the properties on an ARM system.
 
-It boils down to what is "good"? The system is fine if it is not
-provisioned with secure boot keys, if that's the intent of the system
-builder.
+Patch 3 is new in v2 and is an example of populating bootinfo with the
+EFI secure boot status.
 
-A similar thing is done for efi secure boot, where it prints out
-whether it's enabled, disabled or unable to determine.
+Joel Stanley (3):
+  firmware: Add boot information to sysfs
+  ARM: aspeed: Add secure boot controller support
+  x86/setup: Populate bootinfo with secure boot status
 
-I'll send out a v2 that takes on the suggestions you made in the cover letter.
+ .../ABI/testing/sysfs-firmware-bootinfo       | 43 +++++++++
+ arch/x86/kernel/setup.c                       |  6 ++
+ drivers/base/firmware.c                       | 90 +++++++++++++++++++
+ drivers/soc/aspeed/aspeed-socinfo.c           | 46 +++++++++-
+ include/linux/firmware_bootinfo.h             | 22 +++++
+ 5 files changed, 206 insertions(+), 1 deletion(-)
+ create mode 100644 Documentation/ABI/testing/sysfs-firmware-bootinfo
+ create mode 100644 include/linux/firmware_bootinfo.h
 
-Cheers,
+-- 
+2.34.1
 
-Joel
