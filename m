@@ -1,17 +1,17 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Thu, 3 Feb 2022 13:44:36 +0100
+From: Robin Murphy <robin.murphy@arm.com>
+Date: Thu, 3 Feb 2022 14:22:59 +0000
 Subject: [PATCH v2 1/3] firmware: Add boot information to sysfs
 In-Reply-To: <20220203115344.267159-2-joel@jms.id.au>
 References: <20220203115344.267159-1-joel@jms.id.au>
  <20220203115344.267159-2-joel@jms.id.au>
-Message-ID: <YfvONCxvTTuWqI+J@kroah.com>
+Message-ID: <f44d2e01-b6cb-5f22-f651-f4dd7ced166f@arm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Feb 03, 2022 at 10:23:42PM +1030, Joel Stanley wrote:
+On 2022-02-03 11:53, Joel Stanley wrote:
 > Machines often have firmware that perform some action before Linux is
 > loaded. It's useful to know how this firmware is configured, so create a
 > sysfs directory and some properties that a system can choose to expose
@@ -27,16 +27,16 @@ On Thu, Feb 03, 2022 at 10:23:42PM +1030, Joel Stanley wrote:
 > Signed-off-by: Joel Stanley <joel@jms.id.au>
 > ---
 > v2:
->  - Rewrite so properties are present in common code and are exposed based
->    on the is_visible callback.
->  - Use sysfs_emit
+>   - Rewrite so properties are present in common code and are exposed based
+>     on the is_visible callback.
+>   - Use sysfs_emit
 > ---
->  .../ABI/testing/sysfs-firmware-bootinfo       | 43 +++++++++
->  drivers/base/firmware.c                       | 90 +++++++++++++++++++
->  include/linux/firmware_bootinfo.h             | 22 +++++
->  3 files changed, 155 insertions(+)
->  create mode 100644 Documentation/ABI/testing/sysfs-firmware-bootinfo
->  create mode 100644 include/linux/firmware_bootinfo.h
+>   .../ABI/testing/sysfs-firmware-bootinfo       | 43 +++++++++
+>   drivers/base/firmware.c                       | 90 +++++++++++++++++++
+>   include/linux/firmware_bootinfo.h             | 22 +++++
+>   3 files changed, 155 insertions(+)
+>   create mode 100644 Documentation/ABI/testing/sysfs-firmware-bootinfo
+>   create mode 100644 include/linux/firmware_bootinfo.h
 > 
 > diff --git a/Documentation/ABI/testing/sysfs-firmware-bootinfo b/Documentation/ABI/testing/sysfs-firmware-bootinfo
 > new file mode 100644
@@ -87,22 +87,35 @@ On Thu, Feb 03, 2022 at 10:23:42PM +1030, Joel Stanley wrote:
 > +Description:
 > +		Indicates the system firmware was loaded from a UART instead of
 > +		an internal boot device.
+
+I'd be concerned about how well details like "uart_boot" and "abr_image" 
+scale beyond one SoC family from one vendor. The combinatorial explosion 
+of possible boot configurations across Linux-capable SoCs and firmware 
+in general is larger than I'd care to imagine, even before considering 
+that the nuances don't necessarily stop there - e.g. whether a given 
+storage interface is hard-wired or user-accessible is not a fixed 
+property on many SoCs, and even a socketed SD card might be "trusted" if 
+a board is deployed in a product with a sealed enclosure.
+
+Cheers,
+Robin.
+
 > diff --git a/drivers/base/firmware.c b/drivers/base/firmware.c
 > index 8dff940e0db9..24b931232eb2 100644
 > --- a/drivers/base/firmware.c
 > +++ b/drivers/base/firmware.c
 > @@ -11,6 +11,7 @@
->  #include <linux/module.h>
->  #include <linux/init.h>
->  #include <linux/device.h>
+>   #include <linux/module.h>
+>   #include <linux/init.h>
+>   #include <linux/device.h>
 > +#include <linux/firmware_bootinfo.h>
->  
->  #include "base.h"
->  
+>   
+>   #include "base.h"
+>   
 > @@ -24,3 +25,92 @@ int __init firmware_init(void)
->  		return -ENOMEM;
->  	return 0;
->  }
+>   		return -ENOMEM;
+>   	return 0;
+>   }
 > +
 > +/*
 > + * Exposes attributes documented in Documentation/ABI/testing/sysfs-firmware-bootinfo
@@ -199,35 +212,16 @@ On Thu, Feb 03, 2022 at 10:23:42PM +1030, Joel Stanley wrote:
 > +++ b/include/linux/firmware_bootinfo.h
 > @@ -0,0 +1,22 @@
 > +/* SPDX-License-Identifier: GPL-2.0-or-later */
-
-I have to ask, do you really mean "or later"?
-
-
 > +/* Copyright 2022 IBM Corp. */
 > +
 > +#include <linux/sysfs.h>
 > +#include <linux/init.h>
 > +
 > +#define BOOTINFO_SET(b, n, v) b.n.en = true; b.n.val = v
-
-Please use a while {} loop around these two statements.
-
-Didn't checkpatch warn you about that?
-
+> +
 > +struct bootinfo_entry {
 > +	bool en;
-
-What does "en" mean?  "enabled"?  If so, please spell it out.
-
 > +	bool val;
-
-How can a "value" have a boolean?  Is this "valid"?  Again, please spell
-it out, we have no lack of letters to use here to keep people from being
-confused.
-
-Can you please use kernel-doc comments to describe this structure?
-
-
 > +};
 > +
 > +struct bootinfo {
@@ -237,14 +231,5 @@ Can you please use kernel-doc comments to describe this structure?
 > +	struct bootinfo_entry secure_boot;
 > +	struct bootinfo_entry uart_boot;
 > +};
-
-Same here, please use kernel-doc
-
 > +
 > +int __init firmware_bootinfo_init(struct bootinfo *bootinfo_init);
-
-__init is not needed on a function definition like this.
-
-thanks,
-
-greg k-h
