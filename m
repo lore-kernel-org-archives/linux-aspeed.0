@@ -1,220 +1,67 @@
-From: Iwona Winiarska <iwona.winiarska@intel.com>
-Date: Wed,  2 Feb 2022 15:48:37 +0100
-Subject: [PATCH v7 12/13] docs: hwmon: Document PECI drivers
-In-Reply-To: <20220202144838.163875-1-iwona.winiarska@intel.com>
-References: <20220202144838.163875-1-iwona.winiarska@intel.com>
-Message-ID: <20220202144838.163875-13-iwona.winiarska@intel.com>
+From: Joel Stanley <joel@jms.id.au>
+Date: Thu, 3 Feb 2022 11:39:38 +0000
+Subject: [PATCH 2/2] ARM: aspeed: Add secure boot controller support
+In-Reply-To: <YfjyNo5wBPs16vkz@kroah.com>
+References: <20220201050501.182961-1-joel@jms.id.au>
+ <20220201050501.182961-3-joel@jms.id.au>
+ <YfjyNo5wBPs16vkz@kroah.com>
+Message-ID: <CACPK8XcYFZUtw_-8A5hzT0dYqtnifuFOf7qoER0YVsbCsReH8A@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+On Tue, 1 Feb 2022 at 08:41, Greg Kroah-Hartman
+<gregkh@linuxfoundation.org> wrote:
+>
+> On Tue, Feb 01, 2022 at 03:35:01PM +1030, Joel Stanley wrote:
 
-Add documentation for peci-cputemp driver that provides DTS thermal
-readings for CPU packages and CPU cores, and peci-dimmtemp driver that
-provides Temperature Sensor on DIMM readings.
+> > --- a/drivers/soc/aspeed/aspeed-socinfo.c
+> > +++ b/drivers/soc/aspeed/aspeed-socinfo.c
+> > @@ -8,6 +8,9 @@
+> >  #include <linux/platform_device.h>
+> >  #include <linux/slab.h>
+> >  #include <linux/sys_soc.h>
+> > +#include <linux/firmware_bootinfo.h>
+> > +
+> > +static u32 security_status;
+> >
+> >  static struct {
+> >       const char *name;
+> > @@ -74,6 +77,83 @@ static const char *siliconid_to_rev(u32 siliconid)
+> >       return "??";
+> >  }
+> >
+> > +#define SEC_STATUS           0x14
+> > +#define ABR_IMAGE_SOURCE     BIT(13)
+> > +#define OTP_PROTECTED                BIT(8)
+> > +#define LOW_SEC_KEY          BIT(7)
+> > +#define SECURE_BOOT          BIT(6)
+> > +#define UART_BOOT            BIT(5)
+>
+> Where do these bits come from?
 
-Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-Co-developed-by: Iwona Winiarska <iwona.winiarska@intel.com>
-Signed-off-by: Iwona Winiarska <iwona.winiarska@intel.com>
-Reviewed-by: Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>
-Acked-by: Guenter Roeck <linux@roeck-us.net>
----
- Documentation/hwmon/index.rst         |  2 +
- Documentation/hwmon/peci-cputemp.rst  | 90 +++++++++++++++++++++++++++
- Documentation/hwmon/peci-dimmtemp.rst | 57 +++++++++++++++++
- MAINTAINERS                           |  2 +
- 4 files changed, 151 insertions(+)
- create mode 100644 Documentation/hwmon/peci-cputemp.rst
- create mode 100644 Documentation/hwmon/peci-dimmtemp.rst
+They are taken from the datasheet.
 
-diff --git a/Documentation/hwmon/index.rst b/Documentation/hwmon/index.rst
-index df20022c741f..f387f661e1d7 100644
---- a/Documentation/hwmon/index.rst
-+++ b/Documentation/hwmon/index.rst
-@@ -161,6 +161,8 @@ Hardware Monitoring Kernel Drivers
-    pcf8591
-    pim4328
-    pm6764tr
-+   peci-cputemp
-+   peci-dimmtemp
-    pmbus
-    powr1220
-    pxe1610
-diff --git a/Documentation/hwmon/peci-cputemp.rst b/Documentation/hwmon/peci-cputemp.rst
-new file mode 100644
-index 000000000000..fe0422248dc5
---- /dev/null
-+++ b/Documentation/hwmon/peci-cputemp.rst
-@@ -0,0 +1,90 @@
-+.. SPDX-License-Identifier: GPL-2.0-only
-+
-+Kernel driver peci-cputemp
-+==========================
-+
-+Supported chips:
-+	One of Intel server CPUs listed below which is connected to a PECI bus.
-+		* Intel Xeon E5/E7 v3 server processors
-+			Intel Xeon E5-14xx v3 family
-+			Intel Xeon E5-24xx v3 family
-+			Intel Xeon E5-16xx v3 family
-+			Intel Xeon E5-26xx v3 family
-+			Intel Xeon E5-46xx v3 family
-+			Intel Xeon E7-48xx v3 family
-+			Intel Xeon E7-88xx v3 family
-+		* Intel Xeon E5/E7 v4 server processors
-+			Intel Xeon E5-16xx v4 family
-+			Intel Xeon E5-26xx v4 family
-+			Intel Xeon E5-46xx v4 family
-+			Intel Xeon E7-48xx v4 family
-+			Intel Xeon E7-88xx v4 family
-+		* Intel Xeon Scalable server processors
-+			Intel Xeon D family
-+			Intel Xeon Bronze family
-+			Intel Xeon Silver family
-+			Intel Xeon Gold family
-+			Intel Xeon Platinum family
-+
-+	Datasheet: Available from http://www.intel.com/design/literature.htm
-+
-+Author: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-+
-+Description
-+-----------
-+
-+This driver implements a generic PECI hwmon feature which provides Digital
-+Thermal Sensor (DTS) thermal readings of the CPU package and CPU cores that are
-+accessible via the processor PECI interface.
-+
-+All temperature values are given in millidegree Celsius and will be measurable
-+only when the target CPU is powered on.
-+
-+Sysfs interface
-+-------------------
-+
-+======================= =======================================================
-+temp1_label		"Die"
-+temp1_input		Provides current die temperature of the CPU package.
-+temp1_max		Provides thermal control temperature of the CPU package
-+			which is also known as Tcontrol.
-+temp1_crit		Provides shutdown temperature of the CPU package which
-+			is also known as the maximum processor junction
-+			temperature, Tjmax or Tprochot.
-+temp1_crit_hyst		Provides the hysteresis value from Tcontrol to Tjmax of
-+			the CPU package.
-+
-+temp2_label		"DTS"
-+temp2_input		Provides current temperature of the CPU package scaled
-+			to match DTS thermal profile.
-+temp2_max		Provides thermal control temperature of the CPU package
-+			which is also known as Tcontrol.
-+temp2_crit		Provides shutdown temperature of the CPU package which
-+			is also known as the maximum processor junction
-+			temperature, Tjmax or Tprochot.
-+temp2_crit_hyst		Provides the hysteresis value from Tcontrol to Tjmax of
-+			the CPU package.
-+
-+temp3_label		"Tcontrol"
-+temp3_input		Provides current Tcontrol temperature of the CPU
-+			package which is also known as Fan Temperature target.
-+			Indicates the relative value from thermal monitor trip
-+			temperature at which fans should be engaged.
-+temp3_crit		Provides Tcontrol critical value of the CPU package
-+			which is same to Tjmax.
-+
-+temp4_label		"Tthrottle"
-+temp4_input		Provides current Tthrottle temperature of the CPU
-+			package. Used for throttling temperature. If this value
-+			is allowed and lower than Tjmax - the throttle will
-+			occur and reported at lower than Tjmax.
-+
-+temp5_label		"Tjmax"
-+temp5_input		Provides the maximum junction temperature, Tjmax of the
-+			CPU package.
-+
-+temp[6-N]_label		Provides string "Core X", where X is resolved core
-+			number.
-+temp[6-N]_input		Provides current temperature of each core.
-+
-+======================= =======================================================
-diff --git a/Documentation/hwmon/peci-dimmtemp.rst b/Documentation/hwmon/peci-dimmtemp.rst
-new file mode 100644
-index 000000000000..e562aed620de
---- /dev/null
-+++ b/Documentation/hwmon/peci-dimmtemp.rst
-@@ -0,0 +1,57 @@
-+.. SPDX-License-Identifier: GPL-2.0
-+
-+Kernel driver peci-dimmtemp
-+===========================
-+
-+Supported chips:
-+	One of Intel server CPUs listed below which is connected to a PECI bus.
-+		* Intel Xeon E5/E7 v3 server processors
-+			Intel Xeon E5-14xx v3 family
-+			Intel Xeon E5-24xx v3 family
-+			Intel Xeon E5-16xx v3 family
-+			Intel Xeon E5-26xx v3 family
-+			Intel Xeon E5-46xx v3 family
-+			Intel Xeon E7-48xx v3 family
-+			Intel Xeon E7-88xx v3 family
-+		* Intel Xeon E5/E7 v4 server processors
-+			Intel Xeon E5-16xx v4 family
-+			Intel Xeon E5-26xx v4 family
-+			Intel Xeon E5-46xx v4 family
-+			Intel Xeon E7-48xx v4 family
-+			Intel Xeon E7-88xx v4 family
-+		* Intel Xeon Scalable server processors
-+			Intel Xeon D family
-+			Intel Xeon Bronze family
-+			Intel Xeon Silver family
-+			Intel Xeon Gold family
-+			Intel Xeon Platinum family
-+
-+	Datasheet: Available from http://www.intel.com/design/literature.htm
-+
-+Author: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-+
-+Description
-+-----------
-+
-+This driver implements a generic PECI hwmon feature which provides
-+Temperature sensor on DIMM readings that are accessible via the processor PECI interface.
-+
-+All temperature values are given in millidegree Celsius and will be measurable
-+only when the target CPU is powered on.
-+
-+Sysfs interface
-+-------------------
-+
-+======================= =======================================================
-+
-+temp[N]_label		Provides string "DIMM CI", where C is DIMM channel and
-+			I is DIMM index of the populated DIMM.
-+temp[N]_input		Provides current temperature of the populated DIMM.
-+temp[N]_max		Provides thermal control temperature of the DIMM.
-+temp[N]_crit		Provides shutdown temperature of the DIMM.
-+
-+======================= =======================================================
-+
-+Note:
-+	DIMM temperature attributes will appear when the client CPU's BIOS
-+	completes memory training and testing.
-diff --git a/MAINTAINERS b/MAINTAINERS
-index dbf2bb23a15f..b7992853a427 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -15108,6 +15108,8 @@ PECI HARDWARE MONITORING DRIVERS
- M:	Iwona Winiarska <iwona.winiarska@intel.com>
- L:	linux-hwmon at vger.kernel.org
- S:	Supported
-+F:	Documentation/hwmon/peci-cputemp.rst
-+F:	Documentation/hwmon/peci-dimmtemp.rst
- F:	drivers/hwmon/peci/
- 
- PECI SUBSYSTEM
--- 
-2.34.1
+> > +     pr_info("AST2600 secure boot %s\n",
+> > +             (security_status & SECURE_BOOT) ? "enabled" : "disabled");
+>
+> When all is good, no need to print anything out.
 
+We had some back and forth on this in an earlier iteration of this change:
+
+ https://lore.kernel.org/all/57584776-06e7-0faf-aeb2-eab0c7c5ae1f at molgen.mpg.de/
+
+It boils down to what is "good"? The system is fine if it is not
+provisioned with secure boot keys, if that's the intent of the system
+builder.
+
+A similar thing is done for efi secure boot, where it prints out
+whether it's enabled, disabled or unable to determine.
+
+I'll send out a v2 that takes on the suggestions you made in the cover letter.
+
+Cheers,
+
+Joel
