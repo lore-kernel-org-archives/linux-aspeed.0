@@ -1,81 +1,53 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Fri, 4 Feb 2022 06:55:26 +0000
-Subject: [PATCH v2 1/3] firmware: Add boot information to sysfs
-In-Reply-To: <YfvONCxvTTuWqI+J@kroah.com>
-References: <20220203115344.267159-1-joel@jms.id.au>
- <20220203115344.267159-2-joel@jms.id.au>
- <YfvONCxvTTuWqI+J@kroah.com>
-Message-ID: <CACPK8Xf-gEkMUxB=numzbzQyM7f+YioUcocDP9=6T4VaF822sg@mail.gmail.com>
+Date: Fri,  4 Feb 2022 17:52:31 +1030
+Subject: [PATCH v3 0/3] firmware: Add boot information to sysfs
+Message-ID: <20220204072234.304543-1-joel@jms.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, 3 Feb 2022 at 12:44, Greg Kroah-Hartman
-<gregkh@linuxfoundation.org> wrote:
->
-> On Thu, Feb 03, 2022 at 10:23:42PM +1030, Joel Stanley wrote:
+v3 resolves Greg's review for the bootinfo header and macros, and drops
+uart_boot as it's unlikely to be common across platforms.
 
-> > diff --git a/include/linux/firmware_bootinfo.h b/include/linux/firmware_bootinfo.h
-> > new file mode 100644
-> > index 000000000000..3fe630b061b9
-> > --- /dev/null
-> > +++ b/include/linux/firmware_bootinfo.h
-> > @@ -0,0 +1,22 @@
-> > +/* SPDX-License-Identifier: GPL-2.0-or-later */
->
-> I have to ask, do you really mean "or later"?
+v2 reworks the series to put the sysfs properties in the core, and
+optionally show them with the is_visible() callback.
 
-Yeah. That's what we're told we should use.
+This is the second iteration of this idea. The first used socinfo
+custom attribute groups, but Arnd suggested we make this something
+standardised under /sys/firmware instead:
 
-> > +/* Copyright 2022 IBM Corp. */
-> > +
-> > +#include <linux/sysfs.h>
-> > +#include <linux/init.h>
-> > +
-> > +#define BOOTINFO_SET(b, n, v) b.n.en = true; b.n.val = v
->
-> Please use a while {} loop around these two statements.
->
-> Didn't checkpatch warn you about that?
+ http://lore.kernel.org/all/CAK8P3a3MRf0aGt1drkgsuZyBbeoy+S7Ha18SBM01q+3f33oL+Q at mail.gmail.com
 
-No, it didn't. I'll add it.
+Some ARM systems have a firmware that provides a hardware root of
+trust. It's useful for the system to know how this root of trust has
+been configured, so provide a standardised interface that expose this
+information to userspace.
 
->
-> > +struct bootinfo_entry {
-> > +     bool en;
->
-> What does "en" mean?  "enabled"?  If so, please spell it out.
->
-> > +     bool val;
->
-> How can a "value" have a boolean?  Is this "valid"?  Again, please spell
-> it out, we have no lack of letters to use here to keep people from being
-> confused.
+This is implemented as a sysfs attribute group registration in the
+driver core, with platforms populating values obtained from firmware at
+kernel boot time.
 
-I meant value. I think it's reasonable for a value to be true or
-false. I'll make the names clearer with docs as you suggest.
+Patch 2 provides a user of the properties on an ARM system.
 
->
-> Can you please use kernel-doc comments to describe this structure?
->
->
-> > +};
-> > +
-> > +struct bootinfo {
-> > +     struct bootinfo_entry abr_image;
-> > +     struct bootinfo_entry low_security_key;
-> > +     struct bootinfo_entry otp_protected;
-> > +     struct bootinfo_entry secure_boot;
-> > +     struct bootinfo_entry uart_boot;
-> > +};
->
-> Same here, please use kernel-doc
->
-> > +
-> > +int __init firmware_bootinfo_init(struct bootinfo *bootinfo_init);
->
-> __init is not needed on a function definition like this.
+Patch 3 is new in v2 and is an example of populating bootinfo with the
+EFI secure boot status.
 
-ack.
+Joel Stanley (3):
+  firmware: Add boot information to sysfs
+  ARM: aspeed: Add secure boot controller support
+  x86/setup: Populate bootinfo with secure boot status
+
+ .../ABI/testing/sysfs-firmware-bootinfo       | 37 +++++++++
+ arch/x86/kernel/setup.c                       |  6 ++
+ drivers/base/firmware.c                       | 80 +++++++++++++++++++
+ drivers/soc/aspeed/aspeed-socinfo.c           | 44 +++++++++-
+ include/linux/firmware_bootinfo.h             | 48 +++++++++++
+ 5 files changed, 214 insertions(+), 1 deletion(-)
+ create mode 100644 Documentation/ABI/testing/sysfs-firmware-bootinfo
+ create mode 100644 include/linux/firmware_bootinfo.h
+
+-- 
+2.34.1
+
