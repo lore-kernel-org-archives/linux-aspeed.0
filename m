@@ -1,32 +1,36 @@
-From: Daniel Axtens <dja@axtens.net>
-Date: Mon,  7 Feb 2022 17:39:15 +1100
-Subject: [PATCH v2 1/3] firmware: Add boot information to sysfs
-In-Reply-To: <20220203115344.267159-2-joel@jms.id.au>
-References: <20220203115344.267159-2-joel@jms.id.au>
-Message-ID: <20220207063915.2079738-1-dja@axtens.net>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Mon, 7 Feb 2022 15:41:07 +0300
+Subject: [bug report] pinctrl: aspeed: Improve debug output
+Message-ID: <20220207124107.GA19955@kili>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi,
+Hello Andrew Jeffery,
 
-I really like this design.
+This is a semi-automatic email about new static checker warnings.
 
-Currently on powerpc, a user wanting to check if firmware was
-configured to boot with secure boot has to understand both OpenPower
-and PowerVM secure boot. On OpenPower they need to check for the
-presence of a device-tree property. If they're on PowerVM they need to
-decode a different device-tree property and check it's 2 or
-greater. Of course, it's not stored as ASCII, it's \x02. And it's
-stored big-endian too.
+The patch aa639e443704: "pinctrl: aspeed: Improve debug output" from
+Jul 1, 2020, leads to the following Smatch complaint:
 
-So if powerpc implemented this infrastructure, it would provide users
-with one single place to look, and it would represent the value as
-ASCII. All very lovely, and it would simplify some scripts enormously.
+    ./drivers/pinctrl/aspeed/pinctrl-aspeed.c:241 aspeed_pinmux_set_mux()
+    warn: variable dereferenced before check 'pdesc' (see line 239)
 
-Reviewed-by: Daniel Axtens <dja@axtens.net>
+./drivers/pinctrl/aspeed/pinctrl-aspeed.c
+   238	
+   239			pr_debug("Muxing pin %s for %s\n", pdesc->name, pfunc->name);
+                                                           ^^^^^^^^^^^
+Dereference
 
-Kind regards,
-Daniel
+   240	
+   241			if (!pdesc)
+                             ^^^^^
+Checked too late.
+
+   242				return -EINVAL;
+   243	
+
+regards,
+dan carpenter
