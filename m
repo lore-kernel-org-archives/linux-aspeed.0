@@ -1,175 +1,60 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Tue, 8 Feb 2022 09:12:03 +0000
-Subject: [PATCH v6 2/9] mfd: smpro-mfd: Adds Ampere's Altra SMpro MFD
- driver
-In-Reply-To: <20211224041352.29405-3-quan@os.amperecomputing.com>
-References: <20211224041352.29405-1-quan@os.amperecomputing.com>
- <20211224041352.29405-3-quan@os.amperecomputing.com>
-Message-ID: <YgIz484pt8IJmP85@google.com>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Date: Tue, 8 Feb 2022 12:08:06 +0100
+Subject: [PATCH v7 07/13] peci: Add sysfs interface for PECI bus
+In-Reply-To: <20220202144838.163875-8-iwona.winiarska@intel.com>
+References: <20220202144838.163875-1-iwona.winiarska@intel.com>
+ <20220202144838.163875-8-iwona.winiarska@intel.com>
+Message-ID: <YgJPFlr18AmWiTRY@kroah.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, 24 Dec 2021, Quan Nguyen wrote:
-
-> Adds Multi-function devices driver for SMpro co-processor found on the
-> Mt.Jade hardware reference platform with Ampere's Altra processor family.
+On Wed, Feb 02, 2022 at 03:48:32PM +0100, Iwona Winiarska wrote:
+> PECI devices may not be discoverable at the time when PECI controller is
+> being added (e.g. BMC can boot up when the Host system is still in S5).
+> Since we currently don't have the capabilities to figure out the Host
+> system state inside the PECI subsystem itself, we have to rely on
+> userspace to do it for us.
 > 
-> Signed-off-by: Quan Nguyen <quan@os.amperecomputing.com>
+> In the future, PECI subsystem may be expanded with mechanisms that allow
+> us to avoid depending on userspace interaction (e.g. CPU presence could
+> be detected using GPIO, and the information on whether it's discoverable
+> could be obtained over IPMI).
+> Unfortunately, those methods may ultimately not be available (support
+> will vary from platform to platform), which means that we still need
+> platform independent method triggered by userspace.
+> 
+> Signed-off-by: Iwona Winiarska <iwona.winiarska@intel.com>
 > ---
-> Changes in v6:
->   + Update license part to reflect that this driver is clone from
->   simple-mfd-i2c driver [Quan]
+>  Documentation/ABI/testing/sysfs-bus-peci | 16 +++++
+>  drivers/peci/Makefile                    |  2 +-
+>  drivers/peci/core.c                      |  3 +-
+>  drivers/peci/device.c                    |  1 +
+>  drivers/peci/internal.h                  |  5 ++
+>  drivers/peci/sysfs.c                     | 82 ++++++++++++++++++++++++
+>  6 files changed, 107 insertions(+), 2 deletions(-)
+>  create mode 100644 Documentation/ABI/testing/sysfs-bus-peci
+>  create mode 100644 drivers/peci/sysfs.c
 > 
-> Changes in v5:
->   + Dropped the use of simple-mfd-i2c driver [Quan]
->   + Introduced drivers/mfd/smpro-mfd.c driver to instantiate
->   sub-devices. This is to avoid DT nodes without resource issue [Quan]
->   + Revised commit message [Quan]
-> 
-> Changes in v4:
->   + Add "depends on I2C" to fix build issue found by kernel test
->   robot [Guenter]
-> 
-> Changes in v3:
->   + None
-> 
-> Changes in v2:
->   + Used 'struct of_device_id's .data attribute [Lee Jones]
-> 
->  drivers/mfd/Kconfig     | 12 +++++++
->  drivers/mfd/Makefile    |  1 +
->  drivers/mfd/smpro-mfd.c | 76 +++++++++++++++++++++++++++++++++++++++++
->  3 files changed, 89 insertions(+)
->  create mode 100644 drivers/mfd/smpro-mfd.c
-> 
-> diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
-> index a21cbdf89477..a886da5018b1 100644
-> --- a/drivers/mfd/Kconfig
-> +++ b/drivers/mfd/Kconfig
-> @@ -77,6 +77,18 @@ config MFD_AS3711
->  	help
->  	  Support for the AS3711 PMIC from AMS
->  
-> +config MFD_SMPRO
-> +	tristate "Ampere Computing MFD SMpro core driver"
-> +	depends on I2C
-> +	select MFD_CORE
-> +	select REGMAP_I2C
-> +	help
-> +	  Say yes here to enable SMpro driver support for Ampere's Altra
-> +	  processor family.
-> +
-> +	  Ampere's Altra SMpro exposes an I2C regmap interface that can
-> +	  be accessed by child devices.
-> +
->  config MFD_AS3722
->  	tristate "ams AS3722 Power Management IC"
->  	select MFD_CORE
-> diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
-> index 4d53e951a92d..fbcd09dce5ce 100644
-> --- a/drivers/mfd/Makefile
-> +++ b/drivers/mfd/Makefile
-> @@ -267,6 +267,7 @@ obj-$(CONFIG_MFD_QCOM_PM8008)	+= qcom-pm8008.o
->  
->  obj-$(CONFIG_SGI_MFD_IOC3)	+= ioc3.o
->  obj-$(CONFIG_MFD_SIMPLE_MFD_I2C)	+= simple-mfd-i2c.o
-> +obj-$(CONFIG_MFD_SMPRO)		+= smpro-mfd.o
->  obj-$(CONFIG_MFD_INTEL_M10_BMC)   += intel-m10-bmc.o
->  
->  obj-$(CONFIG_MFD_ATC260X)	+= atc260x-core.o
-> diff --git a/drivers/mfd/smpro-mfd.c b/drivers/mfd/smpro-mfd.c
+> diff --git a/Documentation/ABI/testing/sysfs-bus-peci b/Documentation/ABI/testing/sysfs-bus-peci
 > new file mode 100644
-> index 000000000000..132d4e2dde12
+> index 000000000000..56c2b2216bbd
 > --- /dev/null
-> +++ b/drivers/mfd/smpro-mfd.c
-> @@ -0,0 +1,76 @@
-> +// SPDX-License-Identifier: GPL-2.0-only
-> +/*
-> + * Ampere Altra Family SMPro MFD - I2C
-> + *
-> + * Copyright (c) 2021, Ampere Computing LLC
-> + * Author: Quan Nguyen <quan@os.amperecomputing..com>
-> + *
-> + * Based on simple-mfd-i2c.c:
+> +++ b/Documentation/ABI/testing/sysfs-bus-peci
+> @@ -0,0 +1,16 @@
+> +What:		/sys/bus/peci/rescan
+> +Date:		July 2021
+> +KernelVersion:	5.15
 
-Why aren't you just using this?
+5.15 was a long time ago :(
 
-> + * Copyright (c) by Michael Walle <michael@walle.cc>
-> + */
-> +
-> +#include <linux/i2c.h>
-> +#include <linux/kernel.h>
-> +#include <linux/module.h>
-> +#include <linux/of_platform.h>
-> +#include <linux/mfd/core.h>
-> +#include <linux/regmap.h>
-> +
-> +/* Identification Registers */
-> +#define MANUFACTURER_ID_REG     0x02
-> +#define AMPERE_MANUFACTURER_ID  0xCD3A
-> +
-> +static const struct regmap_config simple_word_regmap_config = {
-> +	.reg_bits = 8,
-> +	.val_bits = 16,
-> +};
-> +
-> +static const struct mfd_cell smpro_devs[] = {
-> +	MFD_CELL_NAME("smpro-hwmon"),
-> +};
 
-What are the other devices?
+Other than this nit, these all look semi-sane to me.  What tree are you
+wanting these to go through, mine?  If so, can you fix this up (both
+places in this file) and resend?
 
-> +static int smpro_mfd_probe(struct i2c_client *i2c)
-> +{
-> +	const struct regmap_config *config;
-> +	struct regmap *regmap;
-> +	unsigned int val;
-> +	int ret;
-> +
-> +	config = device_get_match_data(&i2c->dev);
-> +	if (!config)
-> +		config = &simple_word_regmap_config;
-> +
-> +	regmap = devm_regmap_init_i2c(i2c, config);
-> +	if (IS_ERR(regmap))
-> +		return PTR_ERR(regmap);
-> +
-> +	/* Check for valid ID */
-> +	ret = regmap_read(regmap, MANUFACTURER_ID_REG, &val);
-> +	if (ret)
-> +		return ret;
-> +
-> +	if (val != AMPERE_MANUFACTURER_ID)
-> +		return -ENODEV;
-> +
-> +	return devm_mfd_add_devices(&i2c->dev, PLATFORM_DEVID_AUTO,
-> +				    smpro_devs, ARRAY_SIZE(smpro_devs), NULL, 0, NULL);
-> +}
-> +
-> +static const struct of_device_id smpro_mfd_of_match[] = {
-> +	{ .compatible = "ampere,smpro", .data = &simple_word_regmap_config },
-> +	{}
-> +};
-> +MODULE_DEVICE_TABLE(of, smpro_mfd_of_match);
-> +
-> +static struct i2c_driver smpro_mfd_driver = {
-> +	.probe_new = smpro_mfd_probe,
-> +	.driver = {
-> +		.name = "smpro-mfd-i2c",
-> +		.of_match_table = smpro_mfd_of_match,
-> +	},
-> +};
-> +module_i2c_driver(smpro_mfd_driver);
-> +
-> +MODULE_AUTHOR("Quan Nguyen <quan@os.amperecomputing.com>");
-> +MODULE_DESCRIPTION("SMPRO MFD - I2C driver");
-> +MODULE_LICENSE("GPL v2");
+thanks,
 
--- 
-Lee Jones [???]
-Principal Technical Lead - Developer Services
-Linaro.org ? Open source software for Arm SoCs
-Follow Linaro: Facebook | Twitter | Blog
+greg k-h
