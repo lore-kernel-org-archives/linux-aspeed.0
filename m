@@ -1,109 +1,175 @@
-From: Cédric Le Goater <clg@kaod.org>
-Date: Mon, 7 Feb 2022 18:13:01 +0100
-Subject: [PATCH] mtd: aspeed-smc: improve probe resilience
-In-Reply-To: <20220124203708.lm23sgsub234wlhq@ti.com>
-References: <20211229143334.297305-1-patrick@stwcx.xyz>
- <20211229173411.l2bipmi4x3arqjoo@ti.com> <Yc3Qav+ULNdF5zRT@heinlein>
- <20211231102623.izaqlzjvracbbgmp@ti.com> <20220103171721.46c8e697@xps13>
- <YdSP6tKyQ2ZRUC+2@heinlein> <20220105063244.lno3xur64uepa7i5@ti.com>
- <d4ba6413-57ce-14c1-ed48-d00db2f74bd3@kaod.org>
- <20220124153644.m3iwlvq5ld5cpbyz@ti.com>
- <b222361a-288a-55b2-fc02-04c0b93b4220@kaod.org>
- <20220124203708.lm23sgsub234wlhq@ti.com>
-Message-ID: <53d53523-7174-89fd-8661-550346d53141@kaod.org>
+From: Lee Jones <lee.jones@linaro.org>
+Date: Tue, 8 Feb 2022 09:12:03 +0000
+Subject: [PATCH v6 2/9] mfd: smpro-mfd: Adds Ampere's Altra SMpro MFD
+ driver
+In-Reply-To: <20211224041352.29405-3-quan@os.amperecomputing.com>
+References: <20211224041352.29405-1-quan@os.amperecomputing.com>
+ <20211224041352.29405-3-quan@os.amperecomputing.com>
+Message-ID: <YgIz484pt8IJmP85@google.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello,
+On Fri, 24 Dec 2021, Quan Nguyen wrote:
 
-On 1/24/22 21:37, Pratyush Yadav wrote:
-> On 24/01/22 07:34PM, C?dric Le Goater wrote:
->>>> spimem needs an extension I think. Sorry I have not been able to
->>>> push that forward. Lack of time and other tasks to address on the
->>>> host side of the machine. This is really a software problem, we
->>>> have the HW procedures ready. If a spimem expert could get involved
->>>> to make a few proposals, I would be happy to help and do some testing.
->>>> QEMU models are good enough for the software part. We can do the
->>>> training validation on real HW when ready.
->>>
->>> What information about the flash do you need for this training?
->>
->> Last time I looked, we lacked some post_init handler to setup a slave:
->> configure the registers defining the AHB windows for each flash
->> slave and perform the read timing calibration. calibration should
->> only be done once.
->>
->> See how the aspeed_spi_flash_init() routine doing the calibration
->> is hooked up under aspeed_spi_claim_bus() in the u-boot driver :
+> Adds Multi-function devices driver for SMpro co-processor found on the
+> Mt.Jade hardware reference platform with Ampere's Altra processor family.
 > 
-> My patch series should provide a hook for doing the calibration _after_
-> the flash is initialized.
+> Signed-off-by: Quan Nguyen <quan@os.amperecomputing.com>
+> ---
+> Changes in v6:
+>   + Update license part to reflect that this driver is clone from
+>   simple-mfd-i2c driver [Quan]
+> 
+> Changes in v5:
+>   + Dropped the use of simple-mfd-i2c driver [Quan]
+>   + Introduced drivers/mfd/smpro-mfd.c driver to instantiate
+>   sub-devices. This is to avoid DT nodes without resource issue [Quan]
+>   + Revised commit message [Quan]
+> 
+> Changes in v4:
+>   + Add "depends on I2C" to fix build issue found by kernel test
+>   robot [Guenter]
+> 
+> Changes in v3:
+>   + None
+> 
+> Changes in v2:
+>   + Used 'struct of_device_id's .data attribute [Lee Jones]
+> 
+>  drivers/mfd/Kconfig     | 12 +++++++
+>  drivers/mfd/Makefile    |  1 +
+>  drivers/mfd/smpro-mfd.c | 76 +++++++++++++++++++++++++++++++++++++++++
+>  3 files changed, 89 insertions(+)
+>  create mode 100644 drivers/mfd/smpro-mfd.c
+> 
+> diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
+> index a21cbdf89477..a886da5018b1 100644
+> --- a/drivers/mfd/Kconfig
+> +++ b/drivers/mfd/Kconfig
+> @@ -77,6 +77,18 @@ config MFD_AS3711
+>  	help
+>  	  Support for the AS3711 PMIC from AMS
+>  
+> +config MFD_SMPRO
+> +	tristate "Ampere Computing MFD SMpro core driver"
+> +	depends on I2C
+> +	select MFD_CORE
+> +	select REGMAP_I2C
+> +	help
+> +	  Say yes here to enable SMpro driver support for Ampere's Altra
+> +	  processor family.
+> +
+> +	  Ampere's Altra SMpro exposes an I2C regmap interface that can
+> +	  be accessed by child devices.
+> +
+>  config MFD_AS3722
+>  	tristate "ams AS3722 Power Management IC"
+>  	select MFD_CORE
+> diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
+> index 4d53e951a92d..fbcd09dce5ce 100644
+> --- a/drivers/mfd/Makefile
+> +++ b/drivers/mfd/Makefile
+> @@ -267,6 +267,7 @@ obj-$(CONFIG_MFD_QCOM_PM8008)	+= qcom-pm8008.o
+>  
+>  obj-$(CONFIG_SGI_MFD_IOC3)	+= ioc3.o
+>  obj-$(CONFIG_MFD_SIMPLE_MFD_I2C)	+= simple-mfd-i2c.o
+> +obj-$(CONFIG_MFD_SMPRO)		+= smpro-mfd.o
+>  obj-$(CONFIG_MFD_INTEL_M10_BMC)   += intel-m10-bmc.o
+>  
+>  obj-$(CONFIG_MFD_ATC260X)	+= atc260x-core.o
+> diff --git a/drivers/mfd/smpro-mfd.c b/drivers/mfd/smpro-mfd.c
+> new file mode 100644
+> index 000000000000..132d4e2dde12
+> --- /dev/null
+> +++ b/drivers/mfd/smpro-mfd.c
+> @@ -0,0 +1,76 @@
+> +// SPDX-License-Identifier: GPL-2.0-only
+> +/*
+> + * Ampere Altra Family SMPro MFD - I2C
+> + *
+> + * Copyright (c) 2021, Ampere Computing LLC
+> + * Author: Quan Nguyen <quan@os.amperecomputing..com>
+> + *
+> + * Based on simple-mfd-i2c.c:
 
-You can also use the .dirmap_create handler. The flash device has
-been scanned when called and the size is available in the spi-mem
-dirmap descriptor.
+Why aren't you just using this?
 
-I reworked the current Aspeed driver with this approach and it
-seems sufficient for read calibration.
+> + * Copyright (c) by Michael Walle <michael@walle.cc>
+> + */
+> +
+> +#include <linux/i2c.h>
+> +#include <linux/kernel.h>
+> +#include <linux/module.h>
+> +#include <linux/of_platform.h>
+> +#include <linux/mfd/core.h>
+> +#include <linux/regmap.h>
+> +
+> +/* Identification Registers */
+> +#define MANUFACTURER_ID_REG     0x02
+> +#define AMPERE_MANUFACTURER_ID  0xCD3A
+> +
+> +static const struct regmap_config simple_word_regmap_config = {
+> +	.reg_bits = 8,
+> +	.val_bits = 16,
+> +};
+> +
+> +static const struct mfd_cell smpro_devs[] = {
+> +	MFD_CELL_NAME("smpro-hwmon"),
+> +};
 
-Thanks,
+What are the other devices?
 
-C.
+> +static int smpro_mfd_probe(struct i2c_client *i2c)
+> +{
+> +	const struct regmap_config *config;
+> +	struct regmap *regmap;
+> +	unsigned int val;
+> +	int ret;
+> +
+> +	config = device_get_match_data(&i2c->dev);
+> +	if (!config)
+> +		config = &simple_word_regmap_config;
+> +
+> +	regmap = devm_regmap_init_i2c(i2c, config);
+> +	if (IS_ERR(regmap))
+> +		return PTR_ERR(regmap);
+> +
+> +	/* Check for valid ID */
+> +	ret = regmap_read(regmap, MANUFACTURER_ID_REG, &val);
+> +	if (ret)
+> +		return ret;
+> +
+> +	if (val != AMPERE_MANUFACTURER_ID)
+> +		return -ENODEV;
+> +
+> +	return devm_mfd_add_devices(&i2c->dev, PLATFORM_DEVID_AUTO,
+> +				    smpro_devs, ARRAY_SIZE(smpro_devs), NULL, 0, NULL);
+> +}
+> +
+> +static const struct of_device_id smpro_mfd_of_match[] = {
+> +	{ .compatible = "ampere,smpro", .data = &simple_word_regmap_config },
+> +	{}
+> +};
+> +MODULE_DEVICE_TABLE(of, smpro_mfd_of_match);
+> +
+> +static struct i2c_driver smpro_mfd_driver = {
+> +	.probe_new = smpro_mfd_probe,
+> +	.driver = {
+> +		.name = "smpro-mfd-i2c",
+> +		.of_match_table = smpro_mfd_of_match,
+> +	},
+> +};
+> +module_i2c_driver(smpro_mfd_driver);
+> +
+> +MODULE_AUTHOR("Quan Nguyen <quan@os.amperecomputing.com>");
+> +MODULE_DESCRIPTION("SMPRO MFD - I2C driver");
+> +MODULE_LICENSE("GPL v2");
 
-
-> 
->>
->>    https://github.com/openbmc/u-boot/blob/v2019.04-aspeed-openbmc/drivers/spi/aspeed_spi.c
->>
->> Not good enough for upstream, Linux would be the same :/
->>
->>> I proposed a patch series [0] some time ago trying to implement training
->>> for TI SoCs. It did not get merged but I do intend to respin it and get
->>> it through. Would this API work for your tuning as well?
->>
->> I will take a look.
->>> Also, I am curious how your training works. What data do you read for
->>> training delays? Where is it stored?
->>
->> The driver reads the first 16K at slow speed (that's why we need a
->> basic minimal setup of the slave) and checks if the buffer is valid
->> enough for the calibration :
->>
->>    https://github.com/openbmc/linux/blob/dev-5.15/drivers/mtd/spi-nor/controllers/aspeed-smc.c#L998
->>
->> it then performs reads by changing the frequency and delays and
->> compares results with the initial default buffer.
-> 
-> This seems similar to the tuning I implemented, except mine uses a
-> pre-defined pattern at a pre-defined location.
-> 
->>
->> if not, then the driver stays in a safe mode (slow).
-> 
-> Same for my patches.
-> 
->>
->>> In our case we need to flash a
->>> known pattern at some location (which is passed in via DT). Do you need
->>> to run it for every read transaction or just once after the flash is
->>> initialized?
->>
->> Just once because it is a heavy process. See the debug outputs below.
->> Once we have good read timings and frequency, there is no need to do
->> it each time.
-> 
-> It looks very similar to the tuning I implemented in my patch series.
-> You should be able to use those APIs for your tuning as well. But it
-> should not block the SPI MEM port. The current upstream driver does not
-> seem to implement this tuning anyway.
-> 
->>
->>> [0] https://patchwork.ozlabs.org/project/linux-mtd/list/?series=233504&state=%2A&archive=both
->> Thanks,
->>
->> C.
-> 
-
+-- 
+Lee Jones [???]
+Principal Technical Lead - Developer Services
+Linaro.org ? Open source software for Arm SoCs
+Follow Linaro: Facebook | Twitter | Blog
