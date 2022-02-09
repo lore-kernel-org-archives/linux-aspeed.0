@@ -1,37 +1,73 @@
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Date: Wed, 9 Feb 2022 10:21:40 +0200
-Subject: [PATCH] serial: 8259: replace snprintf with sysfs_emit
-In-Reply-To: <96f0e23f49d708ce2476a6c19867443a48d78f65.1644283006.git.yang.guang5@zte.com.cn>
-References: <96f0e23f49d708ce2476a6c19867443a48d78f65.1644283006.git.yang.guang5@zte.com.cn>
-Message-ID: <CAHp75VfQMkb0Ek6HG_FL+4OJV91=nd3QKjYFCobQPCt5PzdASA@mail.gmail.com>
+From: Jammy Huang <jammy_huang@aspeedtech.com>
+Date: Wed, 9 Feb 2022 16:42:25 +0800
+Subject: [PATCH v2] media: aspeed: Use full swing as JFIF to fix incorrect
+ color
+Message-ID: <20220209084225.4456-1-jammy_huang@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Feb 9, 2022 at 9:24 AM <davidcomponentone@gmail.com> wrote:
->
-> From: Yang Guang <yang.guang5@zte.com.cn>
->
-> coccinelle report:
-> ./drivers/tty/serial/8250/8250_aspeed_vuart.c:85:8-16:
-> WARNING: use scnprintf or sprintf
-> ./drivers/tty/serial/8250/8250_aspeed_vuart.c:174:8-16:
-> WARNING: use scnprintf or sprintf
-> ./drivers/tty/serial/8250/8250_aspeed_vuart.c:127:8-16:
-> WARNING: use scnprintf or sprintf
->
-> Use sysfs_emit instead of scnprintf or sprintf makes more sense.
+Current settings for video capture rgb-2-yuv is BT.601(studio swing),
+but JFIF uses BT.601(full swing) to deocde. This mismatch will lead
+to incorrect color. For example, input RGB value, (0, 0, 255), will
+become (16, 16, 235) after jpg decoded.
 
-Subject should start with "serial: 8250_aspeed_vuart: "
+Add an enum, aspeed_video_capture_format, to define VR008[7:6]
+capture format and correct default settings for video capture to fix
+the problem.
 
-> Reported-by: Zeal Robot <zealci@zte.com.cn>
-> Signed-off-by: Yang Guang <yang.guang5@zte.com.cn>
-> Signed-off-by: David Yang <davidcomponentone@gmail.com>
+Signed-off-by: Jammy Huang <jammy_huang@aspeedtech.com>
+---
+v2:
+ - update subject from 'media: aspeed: Fix-incorrect-color' to
+   'media: aspeed: Use full swing as JFIF to fix incorrect'
+ - update commit message
+ - add enum, aspeed_video_capture_format, to define VR008[7:6]
+---
+ drivers/media/platform/aspeed-video.c | 14 +++++++++++---
+ 1 file changed, 11 insertions(+), 3 deletions(-)
 
-Who is the author(s)?
-
+diff --git a/drivers/media/platform/aspeed-video.c b/drivers/media/platform/aspeed-video.c
+index eb9c17ac0e14..5bcf60b4628b 100644
+--- a/drivers/media/platform/aspeed-video.c
++++ b/drivers/media/platform/aspeed-video.c
+@@ -86,8 +86,6 @@
+ #define  VE_CTRL_SOURCE			BIT(2)
+ #define  VE_CTRL_INT_DE			BIT(4)
+ #define  VE_CTRL_DIRECT_FETCH		BIT(5)
+-#define  VE_CTRL_YUV			BIT(6)
+-#define  VE_CTRL_RGB			BIT(7)
+ #define  VE_CTRL_CAPTURE_FMT		GENMASK(7, 6)
+ #define  VE_CTRL_AUTO_OR_CURSOR		BIT(8)
+ #define  VE_CTRL_CLK_INVERSE		BIT(11)
+@@ -202,6 +200,15 @@ enum {
+ 	VIDEO_CLOCKS_ON,
+ };
+ 
++// for VE_CTRL_CAPTURE_FMT
++enum aspeed_video_capture_format {
++	VIDEO_CAP_FMT_YUV_STUDIO = 0,
++	VIDEO_CAP_FMT_YUV_FULL,
++	VIDEO_CAP_FMT_RGB,
++	VIDEO_CAP_FMT_GRAY,
++	VIDEO_CAP_FMT_MAX
++};
++
+ struct aspeed_video_addr {
+ 	unsigned int size;
+ 	dma_addr_t dma;
+@@ -1089,7 +1096,8 @@ static void aspeed_video_init_regs(struct aspeed_video *video)
+ 	u32 comp_ctrl = VE_COMP_CTRL_RSVD |
+ 		FIELD_PREP(VE_COMP_CTRL_DCT_LUM, video->jpeg_quality) |
+ 		FIELD_PREP(VE_COMP_CTRL_DCT_CHR, video->jpeg_quality | 0x10);
+-	u32 ctrl = VE_CTRL_AUTO_OR_CURSOR;
++	u32 ctrl = VE_CTRL_AUTO_OR_CURSOR |
++		FIELD_PREP(VE_CTRL_CAPTURE_FMT, VIDEO_CAP_FMT_YUV_FULL);
+ 	u32 seq_ctrl = video->jpeg_mode;
+ 
+ 	if (video->frame_rate)
 -- 
-With Best Regards,
-Andy Shevchenko
+2.25.1
+
