@@ -1,104 +1,92 @@
-From: Jammy Huang <jammy_huang@aspeedtech.com>
-Date: Thu, 10 Feb 2022 09:03:35 +0800
-Subject: [PATCH v2] media: aspeed: Use full swing as JFIF to fix incorrect
- color
-In-Reply-To: <f790f9aa-fcb7-d163-9c1c-9eb107d4b1bd@molgen.mpg.de>
-References: <20220209084225.4456-1-jammy_huang@aspeedtech.com>
- <f790f9aa-fcb7-d163-9c1c-9eb107d4b1bd@molgen.mpg.de>
-Message-ID: <fcad21a9-c7f6-4dd9-7fa8-8a6e6f3853f2@aspeedtech.com>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Date: Thu, 10 Feb 2022 08:40:42 +0100
+Subject: [PATCH] serial: 8250_aspeed_vuart: add PORT_ASPEED_VUART port type
+In-Reply-To: <20220209203414.23491-1-zev@bewilderbeest.net>
+References: <20220209203414.23491-1-zev@bewilderbeest.net>
+Message-ID: <YgTBennInxX3fE3X@kroah.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Dear Paul,
+On Wed, Feb 09, 2022 at 12:34:14PM -0800, Zev Weiss wrote:
+> Commit 54da3e381c2b ("serial: 8250_aspeed_vuart: use UPF_IOREMAP to
+> set up register mapping") fixed a bug that had, as a side-effect,
+> prevented the 8250_aspeed_vuart driver from enabling the VUART's
+> FIFOs.  However, fixing that (and hence enabling the FIFOs) has in
+> turn revealed what appears to be a hardware bug in the ASPEED VUART in
+> which the host-side THRE bit doesn't get if the BMC-side receive FIFO
+> trigger level is set to anything but one byte.  This causes problems
+> for polled-mode writes from the host -- for example, Linux kernel
+> console writes proceed at a glacial pace (less than 100 bytes per
+> second) because the write path waits for a 10ms timeout to expire
+> after every character instead of being able to continue on to the next
+> character upon seeing THRE asserted.  (GRUB behaves similarly.)
+> 
+> As a workaround, introduce a new port type for the ASPEED VUART that's
+> identical to PORT_16550A as it had previously been using, but with
+> UART_FCR_R_TRIG_00 instead to set the receive FIFO trigger level to
+> one byte, which (experimentally) seems to avoid the problematic THRE
+> behavior.
+> 
+> Signed-off-by: Zev Weiss <zev@bewilderbeest.net>
+> Tested-by: Konstantin Aladyshev <aladyshev22@gmail.com>
 
-OK, I will update a new patch per your suggestion.
+Do we need a "Fixes:" tag here as well?
 
-Thanks for your help.
+> ---
+>  drivers/tty/serial/8250/8250_aspeed_vuart.c | 2 +-
+>  drivers/tty/serial/8250/8250_port.c         | 8 ++++++++
+>  include/uapi/linux/serial_core.h            | 3 +++
+>  3 files changed, 12 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/tty/serial/8250/8250_aspeed_vuart.c b/drivers/tty/serial/8250/8250_aspeed_vuart.c
+> index 2350fb3bb5e4..c2cecc6f47db 100644
+> --- a/drivers/tty/serial/8250/8250_aspeed_vuart.c
+> +++ b/drivers/tty/serial/8250/8250_aspeed_vuart.c
+> @@ -487,7 +487,7 @@ static int aspeed_vuart_probe(struct platform_device *pdev)
+>  	port.port.irq = irq_of_parse_and_map(np, 0);
+>  	port.port.handle_irq = aspeed_vuart_handle_irq;
+>  	port.port.iotype = UPIO_MEM;
+> -	port.port.type = PORT_16550A;
+> +	port.port.type = PORT_ASPEED_VUART;
+>  	port.port.uartclk = clk;
+>  	port.port.flags = UPF_SHARE_IRQ | UPF_BOOT_AUTOCONF | UPF_IOREMAP
+>  		| UPF_FIXED_PORT | UPF_FIXED_TYPE | UPF_NO_THRE_TEST;
+> diff --git a/drivers/tty/serial/8250/8250_port.c b/drivers/tty/serial/8250/8250_port.c
+> index 3b12bfc1ed67..973870ebff69 100644
+> --- a/drivers/tty/serial/8250/8250_port.c
+> +++ b/drivers/tty/serial/8250/8250_port.c
+> @@ -307,6 +307,14 @@ static const struct serial8250_config uart_config[] = {
+>  		.rxtrig_bytes	= {1, 32, 64, 112},
+>  		.flags		= UART_CAP_FIFO | UART_CAP_SLEEP,
+>  	},
+> +	[PORT_ASPEED_VUART] = {
+> +		.name		= "ASPEED VUART",
+> +		.fifo_size	= 16,
+> +		.tx_loadsz	= 16,
+> +		.fcr		= UART_FCR_ENABLE_FIFO | UART_FCR_R_TRIG_00,
+> +		.rxtrig_bytes	= {1, 4, 8, 14},
+> +		.flags		= UART_CAP_FIFO,
+> +	},
+>  };
+>  
+>  /* Uart divisor latch read */
+> diff --git a/include/uapi/linux/serial_core.h b/include/uapi/linux/serial_core.h
+> index c4042dcfdc0c..cd11748833e6 100644
+> --- a/include/uapi/linux/serial_core.h
+> +++ b/include/uapi/linux/serial_core.h
+> @@ -274,4 +274,7 @@
+>  /* Freescale LINFlexD UART */
+>  #define PORT_LINFLEXUART	122
+>  
+> +/* ASPEED AST2x00 virtual UART */
+> +#define PORT_ASPEED_VUART	123
 
-On 2022/2/9 ?? 05:06, Paul Menzel wrote:
-> Dear Jammy,
->
->
-> Am 09.02.22 um 09:42 schrieb Jammy Huang:
->> Current settings for video capture rgb-2-yuv is BT.601(studio swing),
->> but JFIF uses BT.601(full swing) to deocde. This mismatch will lead
->> to incorrect color. For example, input RGB value, (0, 0, 255), will
->> become (16, 16, 235) after jpg decoded.
->>
->> Add an enum, aspeed_video_capture_format, to define VR008[7:6]
->> capture format and correct default settings for video capture to fix
->> the problem.
-> Maybe quote the datasheet:
->
-> VR008[7:6] will decide the data format for video capture:
-> 00: CCIR601 studio swing compliant YUV format
-> 01: CCIR601 full swing compliant YUV format
-> 10: RGB format
-> 11: Gray color mode
->
->> Signed-off-by: Jammy Huang <jammy_huang@aspeedtech.com>
->> ---
->> v2:
->>    - update subject from 'media: aspeed: Fix-incorrect-color' to
->>      'media: aspeed: Use full swing as JFIF to fix incorrect'
->>    - update commit message
->>    - add enum, aspeed_video_capture_format, to define VR008[7:6]
->> ---
->>    drivers/media/platform/aspeed-video.c | 14 +++++++++++---
->>    1 file changed, 11 insertions(+), 3 deletions(-)
->>
->> diff --git a/drivers/media/platform/aspeed-video.c b/drivers/media/platform/aspeed-video.c
->> index eb9c17ac0e14..5bcf60b4628b 100644
->> --- a/drivers/media/platform/aspeed-video.c
->> +++ b/drivers/media/platform/aspeed-video.c
->> @@ -86,8 +86,6 @@
->>    #define  VE_CTRL_SOURCE			BIT(2)
->>    #define  VE_CTRL_INT_DE			BIT(4)
->>    #define  VE_CTRL_DIRECT_FETCH		BIT(5)
->> -#define  VE_CTRL_YUV			BIT(6)
->> -#define  VE_CTRL_RGB			BIT(7)
->>    #define  VE_CTRL_CAPTURE_FMT		GENMASK(7, 6)
->>    #define  VE_CTRL_AUTO_OR_CURSOR		BIT(8)
->>    #define  VE_CTRL_CLK_INVERSE		BIT(11)
->> @@ -202,6 +200,15 @@ enum {
->>    	VIDEO_CLOCKS_ON,
->>    };
->>    
->> +// for VE_CTRL_CAPTURE_FMT
->> +enum aspeed_video_capture_format {
->> +	VIDEO_CAP_FMT_YUV_STUDIO = 0,
-> Maybe also append `_SWING`?
->
->> +	VIDEO_CAP_FMT_YUV_FULL,
->> +	VIDEO_CAP_FMT_RGB,
->> +	VIDEO_CAP_FMT_GRAY,
->> +	VIDEO_CAP_FMT_MAX
->> +};
->> +
->>    struct aspeed_video_addr {
->>    	unsigned int size;
->>    	dma_addr_t dma;
->> @@ -1089,7 +1096,8 @@ static void aspeed_video_init_regs(struct aspeed_video *video)
->>    	u32 comp_ctrl = VE_COMP_CTRL_RSVD |
->>    		FIELD_PREP(VE_COMP_CTRL_DCT_LUM, video->jpeg_quality) |
->>    		FIELD_PREP(VE_COMP_CTRL_DCT_CHR, video->jpeg_quality | 0x10);
->> -	u32 ctrl = VE_CTRL_AUTO_OR_CURSOR;
->> +	u32 ctrl = VE_CTRL_AUTO_OR_CURSOR |
->> +		FIELD_PREP(VE_CTRL_CAPTURE_FMT, VIDEO_CAP_FMT_YUV_FULL);
->>    	u32 seq_ctrl = video->jpeg_mode;
->>    
->>    	if (video->frame_rate)
-> Reviewed-by: Paul Menzel <pmenzel@molgen.mpg.de>
->
->
-> Kind regards,
->
-> Paul
+Why does this value have to be in a uapi header file?  What userspace
+tool is going to need this?
 
--- 
-Best Regards
-Jammy
+thanks,
 
+greg k-h
