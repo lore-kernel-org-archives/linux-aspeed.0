@@ -1,36 +1,69 @@
-From: patchwork-bot+netdevbpf@kernel.org <patchwork-bot+netdevbpf@kernel.org>
-Date: Wed, 09 Feb 2022 12:20:09 +0000
-Subject: [PATCH net] net: mdio: aspeed: Add missing MODULE_DEVICE_TABLE
-In-Reply-To: <20220209000359.372978-1-joel@jms.id.au>
-References: <20220209000359.372978-1-joel@jms.id.au>
-Message-ID: <164440920916.21838.3965616722762050917.git-patchwork-notify@kernel.org>
+From: davidcomponentone@gmail.com <davidcomponentone@gmail.com>
+Date: Thu, 10 Feb 2022 18:34:45 +0800
+Subject: [PATCH v2] serial: 8259_aspeed_vuart: replace snprintf with sysfs_emit
+Message-ID: <a0f3e5d6d438710413d1909365f99ae4d2a4bacc.1644399683.git.yang.guang5@zte.com.cn>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello:
+From: Yang Guang <yang.guang5@zte.com.cn>
 
-This patch was applied to netdev/net.git (master)
-by David S. Miller <davem@davemloft.net>:
+coccinelle report:
+./drivers/tty/serial/8250/8250_aspeed_vuart.c:85:8-16:
+WARNING: use scnprintf or sprintf
+./drivers/tty/serial/8250/8250_aspeed_vuart.c:174:8-16:
+WARNING: use scnprintf or sprintf
+./drivers/tty/serial/8250/8250_aspeed_vuart.c:127:8-16:
+WARNING: use scnprintf or sprintf
 
-On Wed,  9 Feb 2022 10:33:59 +1030 you wrote:
-> Fix loading of the driver when built as a module.
-> 
-> Fixes: f160e99462c6 ("net: phy: Add mdio-aspeed")
-> Signed-off-by: Joel Stanley <joel@jms.id.au>
-> ---
->  drivers/net/mdio/mdio-aspeed.c | 1 +
->  1 file changed, 1 insertion(+)
+Use sysfs_emit instead of scnprintf or sprintf makes more sense.
 
-Here is the summary with links:
-  - [net] net: mdio: aspeed: Add missing MODULE_DEVICE_TABLE
-    https://git.kernel.org/netdev/net/c/bc1c3c3b10db
+Reported-by: Zeal Robot <zealci@zte.com.cn>
+Signed-off-by: Yang Guang <yang.guang5@zte.com.cn>
+CC: David Yang <davidcomponentone@gmail.com>
 
-You are awesome, thank you!
+---
+Change from v1-v2:
+- Modify the patch title
+- Use the CC for patch sender
+
+---
+ drivers/tty/serial/8250/8250_aspeed_vuart.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/tty/serial/8250/8250_aspeed_vuart.c b/drivers/tty/serial/8250/8250_aspeed_vuart.c
+index 2350fb3bb5e4..36c39b8ea7af 100644
+--- a/drivers/tty/serial/8250/8250_aspeed_vuart.c
++++ b/drivers/tty/serial/8250/8250_aspeed_vuart.c
+@@ -82,7 +82,7 @@ static ssize_t lpc_address_show(struct device *dev,
+ 	addr = (aspeed_vuart_readb(vuart, ASPEED_VUART_ADDRH) << 8) |
+ 		(aspeed_vuart_readb(vuart, ASPEED_VUART_ADDRL));
+ 
+-	return snprintf(buf, PAGE_SIZE - 1, "0x%x\n", addr);
++	return sysfs_emit(buf, "0x%x\n", addr);
+ }
+ 
+ static int aspeed_vuart_set_lpc_address(struct aspeed_vuart *vuart, u32 addr)
+@@ -124,7 +124,7 @@ static ssize_t sirq_show(struct device *dev,
+ 	reg &= ASPEED_VUART_GCRB_HOST_SIRQ_MASK;
+ 	reg >>= ASPEED_VUART_GCRB_HOST_SIRQ_SHIFT;
+ 
+-	return snprintf(buf, PAGE_SIZE - 1, "%u\n", reg);
++	return sysfs_emit(buf, "%u\n", reg);
+ }
+ 
+ static int aspeed_vuart_set_sirq(struct aspeed_vuart *vuart, u32 sirq)
+@@ -171,7 +171,7 @@ static ssize_t sirq_polarity_show(struct device *dev,
+ 	reg = aspeed_vuart_readb(vuart, ASPEED_VUART_GCRA);
+ 	reg &= ASPEED_VUART_GCRA_HOST_SIRQ_POLARITY;
+ 
+-	return snprintf(buf, PAGE_SIZE - 1, "%u\n", reg ? 1 : 0);
++	return sysfs_emit(buf, "%u\n", reg ? 1 : 0);
+ }
+ 
+ static void aspeed_vuart_set_sirq_polarity(struct aspeed_vuart *vuart,
 -- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/patchwork/pwbot.html
-
+2.30.2
 
