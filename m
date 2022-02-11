@@ -1,45 +1,35 @@
 From: Potin Lai <potin.lai@quantatw.com>
-Date: Fri, 11 Feb 2022 09:43:42 +0800
-Subject: [PATCH 05/10] arch: arm: dts: bletchley: switch to spi-gpio for spi2
+Date: Fri, 11 Feb 2022 09:43:44 +0800
+Subject: [PATCH 07/10] arch: arm: dts: bletchley: add shunt-resistor for
+ ADM1278
 In-Reply-To: <20220211014347.24841-1-potin.lai@quantatw.com>
 References: <20220211014347.24841-1-potin.lai@quantatw.com>
-Message-ID: <20220211014347.24841-6-potin.lai@quantatw.com>
+Message-ID: <20220211014347.24841-8-potin.lai@quantatw.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Switch to spi-gpio driver to avoid unstable signal issue with EVT HW
+fix with correct shunt-resistor value base on EVT HW
 
 Signed-off-by: Potin Lai <potin.lai@quantatw.com>
 ---
- arch/arm/boot/dts/aspeed-bmc-facebook-bletchley.dts | 12 ++++++++++--
- 1 file changed, 10 insertions(+), 2 deletions(-)
+ arch/arm/boot/dts/aspeed-bmc-facebook-bletchley.dts | 1 +
+ 1 file changed, 1 insertion(+)
 
 diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-bletchley.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-bletchley.dts
-index b01f1e7adb81..3c54e4a892c9 100644
+index 8afaa8f52c38..76c086ea7b71 100644
 --- a/arch/arm/boot/dts/aspeed-bmc-facebook-bletchley.dts
 +++ b/arch/arm/boot/dts/aspeed-bmc-facebook-bletchley.dts
-@@ -227,8 +227,16 @@
+@@ -715,6 +715,7 @@
+ 	adm1278 at 11 {
+ 		compatible = "adi,adm1278";
+ 		reg = <0x11>;
++		shunt-resistor-micro-ohms = <300>;
+ 	};
  
- &spi2 {
- 	status = "okay";
--	pinctrl-names = "default";
--	pinctrl-0 = <&pinctrl_spi2_default>;
-+
-+	compatible = "spi-gpio";
-+	#address-cells = <1>;
-+	#size-cells = <0>;
-+
-+	gpio-sck = <&gpio0 ASPEED_GPIO(X, 3) GPIO_ACTIVE_HIGH>;
-+	gpio-mosi = <&gpio0 ASPEED_GPIO(X, 4) GPIO_ACTIVE_HIGH>;
-+	gpio-miso = <&gpio0 ASPEED_GPIO(X, 5) GPIO_ACTIVE_HIGH>;
-+	num-chipselects = <1>;
-+	cs-gpios = <&gpio0 ASPEED_GPIO(X, 0) GPIO_ACTIVE_LOW>;
- 
- 	flash at 0 {
- 		status = "okay";
+ 	tmp421 at 4c {
 -- 
 2.17.1
 
