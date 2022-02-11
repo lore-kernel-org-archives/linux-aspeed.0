@@ -1,66 +1,45 @@
 From: Patrick Williams <patrick@stwcx.xyz>
-Date: Fri, 11 Feb 2022 16:19:36 -0600
-Subject: [PATCH 10/10] arch: arm: dts: bletchley: cleanup redundant node
-In-Reply-To: <20220211014347.24841-11-potin.lai@quantatw.com>
+Date: Fri, 11 Feb 2022 16:20:56 -0600
+Subject: [PATCH 00/10] arch: arm: dts: update Facebook Bletchley BMC
+In-Reply-To: <20220211014347.24841-1-potin.lai@quantatw.com>
 References: <20220211014347.24841-1-potin.lai@quantatw.com>
- <20220211014347.24841-11-potin.lai@quantatw.com>
-Message-ID: <Ygbg+KYK9qT90O2N@heinlein>
+Message-ID: <YgbhSCx9qDinSAq/@heinlein>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Feb 11, 2022 at 09:43:47AM +0800, Potin Lai wrote:
-> Remove redundant i2c1 node.
-> Disable in-chip rtc, use external rtc (pcf85263) instead.
-
-A bit of "why" on the RTC change might be useful.  I suspect it has to do
-with where battery-backing is for the RTC in hardware.
-
+On Fri, Feb 11, 2022 at 09:43:37AM +0800, Potin Lai wrote:
+> Update Facebook Bletchley BMC devicetree base on EVT HW design and 
+> rebase sled numbering to 1-based for OpenBMC multi-host
 > 
-> Signed-off-by: Potin Lai <potin.lai@quantatw.com>
-> ---
->  arch/arm/boot/dts/aspeed-bmc-facebook-bletchley.dts | 9 +--------
->  1 file changed, 1 insertion(+), 8 deletions(-)
+> This patch series are modified from
+> LINK: https://lore.kernel.org/all/20220209100413.23714-1-potin.lai at quantatw.com/
 > 
-> diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-bletchley.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-bletchley.dts
-> index 946107bd8bc7..fb62a67cfeed 100644
-> --- a/arch/arm/boot/dts/aspeed-bmc-facebook-bletchley.dts
-> +++ b/arch/arm/boot/dts/aspeed-bmc-facebook-bletchley.dts
-> @@ -205,10 +205,6 @@
->  	};
->  };
->  
-> -&rtc {
-> -	status = "okay";
-> -};
-> -
->  &fmc {
->  	status = "okay";
->  	flash at 0 {
-> @@ -387,10 +383,6 @@
->  	};
->  };
->  
-> -&i2c1 {
-> -	status = "okay";
-> -};
-> -
->  &i2c2 {
->  	status = "okay";
->  	ina230 at 45 {
-> @@ -680,6 +672,7 @@
->  	};
->  
->  	rtc at 51 {
-> +		/* in-chip rtc disabled, use this external rtc instead */
->  		compatible = "nxp,pcf85263";
->  		reg = <0x51>;
->  	};
+> Potin Lai (10):
+>   arch: arm: dts: bletchley: switch sled numbering to 1-based
+>   arch: arm: dts: bletchley: separate leds into multiple groups
+>   arch: arm: dts: bletchley: update gpio-line-names
+>   arch: arm: dts: bletchley: update fmc configurations
+>   arch: arm: dts: bletchley: switch to spi-gpio for spi2
+>   arch: arm: dts: bletchley: add interrupt support for sled io expander
+>   arch: arm: dts: bletchley: add shunt-resistor for ADM1278
+>   arch: arm: dts: bletchley: add INA230 sensor on each sled
+>   arch: arm: dts: bletchley: enable mdio3 bus
+>   arch: arm: dts: bletchley: cleanup redundant node
+> 
+>  .../dts/aspeed-bmc-facebook-bletchley.dts     | 303 +++++++++++-------
+>  1 file changed, 194 insertions(+), 109 deletions(-)
+> 
 > -- 
 > 2.17.1
 > 
+
+Left a few minor comments on potential improvements to the commit messages, but
+otherwise whole series is:
+
+Reviewed-by: Patrick Williams <patrick@stwcx.xyz> 
 
 -- 
 Patrick Williams
@@ -70,4 +49,4 @@ Name: signature.asc
 Type: application/pgp-signature
 Size: 833 bytes
 Desc: not available
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20220211/d38df7a4/attachment.sig>
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20220211/de809649/attachment.sig>
