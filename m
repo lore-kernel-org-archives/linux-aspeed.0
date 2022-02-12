@@ -1,7 +1,7 @@
 From: davidcomponentone@gmail.com <davidcomponentone@gmail.com>
-Date: Thu, 10 Feb 2022 18:34:45 +0800
-Subject: [PATCH v2] serial: 8259_aspeed_vuart: replace snprintf with sysfs_emit
-Message-ID: <a0f3e5d6d438710413d1909365f99ae4d2a4bacc.1644399683.git.yang.guang5@zte.com.cn>
+Date: Sat, 12 Feb 2022 10:19:48 +0800
+Subject: [PATCH v3] serial: 8250_aspeed_vuart: replace snprintf with sysfs_emit
+Message-ID: <fed40753603dac4d14b17970c88e6f5f936348c1.1644541843.git.yang.guang5@zte.com.cn>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -22,12 +22,16 @@ Use sysfs_emit instead of scnprintf or sprintf makes more sense.
 
 Reported-by: Zeal Robot <zealci@zte.com.cn>
 Signed-off-by: Yang Guang <yang.guang5@zte.com.cn>
-CC: David Yang <davidcomponentone@gmail.com>
+Signed-off-by: David Yang <davidcomponentone@gmail.com>
 
 ---
 Change from v1-v2:
 - Modify the patch title
 - Use the CC for patch sender
+
+Change from v2-v3:
+- Fix the patch subject prefix typo ("8250")
+- Change back the SoB for patch submitter
 
 ---
  drivers/tty/serial/8250/8250_aspeed_vuart.c | 6 +++---
