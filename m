@@ -1,119 +1,104 @@
 From: Cédric Le Goater <clg@kaod.org>
-Date: Mon, 14 Feb 2022 10:42:25 +0100
-Subject: [PATCH 04/10] spi: aspeed: Add support for direct mapping
+Date: Mon, 14 Feb 2022 10:42:22 +0100
+Subject: [PATCH 01/10] mtd: spi-nor: aspeed: Rename Kconfig option
 In-Reply-To: <20220214094231.3753686-1-clg@kaod.org>
 References: <20220214094231.3753686-1-clg@kaod.org>
-Message-ID: <20220214094231.3753686-5-clg@kaod.org>
+Message-ID: <20220214094231.3753686-2-clg@kaod.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Use direct mapping to read the flash device contents. This operation
-mode is called "Command mode" on Aspeed SoC SMC controllers. It uses a
-Control Register for the settings to apply when a memory operation is
-performed on the flash device mapping window.
-
-If the window is not big enough, fall back to the "User mode" to
-perform the read.
-
-Direct mapping for writes will come later when validated.
+To prepare transition to the new Aspeed SMC SPI controller driver using
+the spi-mem interface, change the kernel CONFIG option of the current
+driver to reflect that the implementation uses the MTD SPI-NOR interface.
+Once the new driver is sufficiently exposed, we should remove the old one.
 
 Signed-off-by: C?dric Le Goater <clg@kaod.org>
 ---
- drivers/spi/spi-aspeed-smc.c | 67 ++++++++++++++++++++++++++++++++++--
- 1 file changed, 65 insertions(+), 2 deletions(-)
+ arch/arm/configs/aspeed_g4_defconfig     | 2 +-
+ arch/arm/configs/aspeed_g5_defconfig     | 2 +-
+ arch/arm/configs/multi_v5_defconfig      | 2 +-
+ arch/arm/configs/multi_v7_defconfig      | 2 +-
+ drivers/mtd/spi-nor/controllers/Kconfig  | 2 +-
+ drivers/mtd/spi-nor/controllers/Makefile | 2 +-
+ 6 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/spi/spi-aspeed-smc.c b/drivers/spi/spi-aspeed-smc.c
-index 0aeff6f468af..8d33fcb7736a 100644
---- a/drivers/spi/spi-aspeed-smc.c
-+++ b/drivers/spi/spi-aspeed-smc.c
-@@ -345,8 +345,8 @@ static int do_aspeed_spi_exec_op(struct spi_mem *mem, const struct spi_mem_op *o
- 		if (!op->addr.nbytes)
- 			ret = aspeed_spi_read_reg(chip, op);
- 		else
--			ret = aspeed_spi_read_user(chip, op, op->addr.val,
--						   op->data.nbytes, op->data.buf.in);
-+			memcpy_fromio(op->data.buf.in, chip->ahb_base + op->addr.val,
-+				      op->data.nbytes);
- 	} else {
- 		if (!op->addr.nbytes)
- 			ret = aspeed_spi_write_reg(chip, op);
-@@ -426,10 +426,73 @@ static int aspeed_spi_chip_set_default_window(struct aspeed_spi_chip *chip)
- 	return chip->ahb_window_size ? 0 : -1;
- }
- 
-+static int aspeed_spi_dirmap_create(struct spi_mem_dirmap_desc *desc)
-+{
-+	struct aspeed_spi *aspi = spi_controller_get_devdata(desc->mem->spi->master);
-+	struct aspeed_spi_chip *chip = &aspi->chips[desc->mem->spi->chip_select];
-+	struct spi_mem_op *op = &desc->info.op_tmpl;
-+	u32 ctl_val;
-+	int ret = 0;
-+
-+	chip->clk_freq = desc->mem->spi->max_speed_hz;
-+
-+	/* Only for reads */
-+	if (op->data.dir != SPI_MEM_DATA_IN)
-+		return -EOPNOTSUPP;
-+
-+	if (desc->info.length > chip->ahb_window_size)
-+		dev_warn(aspi->dev, "CE%d window (%dMB) too small for mapping",
-+			 chip->cs, chip->ahb_window_size >> 20);
-+
-+	/* Define the default IO read settings */
-+	ctl_val = readl(chip->ctl) & ~CTRL_IO_CMD_MASK;
-+	ctl_val |= aspeed_spi_get_io_mode(op) |
-+		op->cmd.opcode << CTRL_COMMAND_SHIFT |
-+		CTRL_IO_DUMMY_SET(op->dummy.nbytes / op->dummy.buswidth) |
-+		CTRL_IO_MODE_READ;
-+
-+	/* Tune 4BYTE address mode */
-+	if (op->addr.nbytes) {
-+		u32 addr_mode = readl(aspi->regs + CE_CTRL_REG);
-+
-+		if (op->addr.nbytes == 4)
-+			addr_mode |= (0x11 << chip->cs);
-+		else
-+			addr_mode &= ~(0x11 << chip->cs);
-+		writel(addr_mode, aspi->regs + CE_CTRL_REG);
-+	}
-+
-+	/* READ mode is the controller default setting */
-+	chip->ctl_val[ASPEED_SPI_READ] = ctl_val;
-+	writel(chip->ctl_val[ASPEED_SPI_READ], chip->ctl);
-+
-+	dev_info(aspi->dev, "CE%d read buswidth:%d [0x%08x]\n",
-+		 chip->cs, op->data.buswidth, chip->ctl_val[ASPEED_SPI_READ]);
-+
-+	return ret;
-+}
-+
-+static int aspeed_spi_dirmap_read(struct spi_mem_dirmap_desc *desc,
-+				  u64 offset, size_t len, void *buf)
-+{
-+	struct aspeed_spi *aspi = spi_controller_get_devdata(desc->mem->spi->master);
-+	struct aspeed_spi_chip *chip = &aspi->chips[desc->mem->spi->chip_select];
-+
-+	/* Switch to USER command mode if mapping window is too small */
-+	if (chip->ahb_window_size < offset + len)
-+		aspeed_spi_read_user(chip, &desc->info.op_tmpl, offset, len, buf);
-+	else
-+		memcpy_fromio(buf, chip->ahb_base + offset, len);
-+
-+	return len;
-+}
-+
- static const struct spi_controller_mem_ops aspeed_spi_mem_ops = {
- 	.supports_op = aspeed_spi_supports_op,
- 	.exec_op = aspeed_spi_exec_op,
- 	.get_name = aspeed_spi_get_name,
-+	.dirmap_create = aspeed_spi_dirmap_create,
-+	.dirmap_read = aspeed_spi_dirmap_read,
- };
- 
- static void aspeed_spi_chip_set_type(struct aspeed_spi_chip *chip, int type)
+diff --git a/arch/arm/configs/aspeed_g4_defconfig b/arch/arm/configs/aspeed_g4_defconfig
+index b4a1b2ed1a17..964536444cd7 100644
+--- a/arch/arm/configs/aspeed_g4_defconfig
++++ b/arch/arm/configs/aspeed_g4_defconfig
+@@ -64,7 +64,7 @@ CONFIG_MTD_BLOCK=y
+ CONFIG_MTD_PARTITIONED_MASTER=y
+ CONFIG_MTD_SPI_NOR=y
+ # CONFIG_MTD_SPI_NOR_USE_4K_SECTORS is not set
+-CONFIG_SPI_ASPEED_SMC=y
++CONFIG_SPI_ASPEED_SMC_MTD_SPI_NOR=y
+ CONFIG_MTD_UBI=y
+ CONFIG_MTD_UBI_FASTMAP=y
+ CONFIG_MTD_UBI_BLOCK=y
+diff --git a/arch/arm/configs/aspeed_g5_defconfig b/arch/arm/configs/aspeed_g5_defconfig
+index ccc4240ee4b5..e809236ca88b 100644
+--- a/arch/arm/configs/aspeed_g5_defconfig
++++ b/arch/arm/configs/aspeed_g5_defconfig
+@@ -103,7 +103,7 @@ CONFIG_MTD_BLOCK=y
+ CONFIG_MTD_PARTITIONED_MASTER=y
+ CONFIG_MTD_SPI_NOR=y
+ # CONFIG_MTD_SPI_NOR_USE_4K_SECTORS is not set
+-CONFIG_SPI_ASPEED_SMC=y
++CONFIG_SPI_ASPEED_SMC_MTD_SPI_NOR=y
+ CONFIG_MTD_UBI=y
+ CONFIG_MTD_UBI_FASTMAP=y
+ CONFIG_MTD_UBI_BLOCK=y
+diff --git a/arch/arm/configs/multi_v5_defconfig b/arch/arm/configs/multi_v5_defconfig
+index 80a3ae02d759..49083ef05fb0 100644
+--- a/arch/arm/configs/multi_v5_defconfig
++++ b/arch/arm/configs/multi_v5_defconfig
+@@ -103,7 +103,7 @@ CONFIG_MTD_RAW_NAND=y
+ CONFIG_MTD_NAND_ATMEL=y
+ CONFIG_MTD_NAND_ORION=y
+ CONFIG_MTD_SPI_NOR=y
+-CONFIG_SPI_ASPEED_SMC=y
++CONFIG_SPI_ASPEED_SMC_MTD_SPI_NOR=y
+ CONFIG_MTD_UBI=y
+ CONFIG_BLK_DEV_LOOP=y
+ CONFIG_ATMEL_SSC=m
+diff --git a/arch/arm/configs/multi_v7_defconfig b/arch/arm/configs/multi_v7_defconfig
+index 33572998dbbe..fc1b69256b64 100644
+--- a/arch/arm/configs/multi_v7_defconfig
++++ b/arch/arm/configs/multi_v7_defconfig
+@@ -217,7 +217,7 @@ CONFIG_MTD_NAND_DAVINCI=y
+ CONFIG_MTD_NAND_STM32_FMC2=y
+ CONFIG_MTD_NAND_PL35X=y
+ CONFIG_MTD_SPI_NOR=y
+-CONFIG_SPI_ASPEED_SMC=m
++CONFIG_SPI_ASPEED_SMC_MTD_SPI_NOR=m
+ CONFIG_MTD_UBI=y
+ CONFIG_BLK_DEV_LOOP=y
+ CONFIG_BLK_DEV_RAM=y
+diff --git a/drivers/mtd/spi-nor/controllers/Kconfig b/drivers/mtd/spi-nor/controllers/Kconfig
+index 5c0e0ec2e6d1..876a47042fec 100644
+--- a/drivers/mtd/spi-nor/controllers/Kconfig
++++ b/drivers/mtd/spi-nor/controllers/Kconfig
+@@ -1,5 +1,5 @@
+ # SPDX-License-Identifier: GPL-2.0-only
+-config SPI_ASPEED_SMC
++config SPI_ASPEED_SMC_MTD_SPI_NOR
+ 	tristate "Aspeed flash controllers in SPI mode"
+ 	depends on ARCH_ASPEED || COMPILE_TEST
+ 	depends on HAS_IOMEM && OF
+diff --git a/drivers/mtd/spi-nor/controllers/Makefile b/drivers/mtd/spi-nor/controllers/Makefile
+index e7abba491d98..1e28297fb1e8 100644
+--- a/drivers/mtd/spi-nor/controllers/Makefile
++++ b/drivers/mtd/spi-nor/controllers/Makefile
+@@ -1,5 +1,5 @@
+ # SPDX-License-Identifier: GPL-2.0
+-obj-$(CONFIG_SPI_ASPEED_SMC)	+= aspeed-smc.o
++obj-$(CONFIG_SPI_ASPEED_SMC_MTD_SPI_NOR)	+= aspeed-smc.o
+ obj-$(CONFIG_SPI_HISI_SFC)	+= hisi-sfc.o
+ obj-$(CONFIG_SPI_NXP_SPIFI)	+= nxp-spifi.o
+ obj-$(CONFIG_SPI_INTEL_SPI)	+= intel-spi.o
 -- 
 2.34.1
 
