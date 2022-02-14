@@ -1,104 +1,124 @@
 From: Cédric Le Goater <clg@kaod.org>
-Date: Mon, 14 Feb 2022 10:42:22 +0100
-Subject: [PATCH 01/10] mtd: spi-nor: aspeed: Rename Kconfig option
+Date: Mon, 14 Feb 2022 10:42:28 +0100
+Subject: [PATCH 07/10] spi: aspeed: Add support for the AST2400 SPI controller
 In-Reply-To: <20220214094231.3753686-1-clg@kaod.org>
 References: <20220214094231.3753686-1-clg@kaod.org>
-Message-ID: <20220214094231.3753686-2-clg@kaod.org>
+Message-ID: <20220214094231.3753686-8-clg@kaod.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-To prepare transition to the new Aspeed SMC SPI controller driver using
-the spi-mem interface, change the kernel CONFIG option of the current
-driver to reflect that the implementation uses the MTD SPI-NOR interface.
-Once the new driver is sufficiently exposed, we should remove the old one.
+Extend the driver for the AST2400 SPI Flash Controller (SPI). This
+controller has a slightly different interface which requires
+adaptation of the 4B handling. Summary of features :
+
+   . host Firmware
+   . 1 chip select pin (CE0)
+   . slightly different register set, between AST2500 and the legacy
+     controller
+   . no segment registers
+   . single, dual mode.
 
 Signed-off-by: C?dric Le Goater <clg@kaod.org>
 ---
- arch/arm/configs/aspeed_g4_defconfig     | 2 +-
- arch/arm/configs/aspeed_g5_defconfig     | 2 +-
- arch/arm/configs/multi_v5_defconfig      | 2 +-
- arch/arm/configs/multi_v7_defconfig      | 2 +-
- drivers/mtd/spi-nor/controllers/Kconfig  | 2 +-
- drivers/mtd/spi-nor/controllers/Makefile | 2 +-
- 6 files changed, 6 insertions(+), 6 deletions(-)
+ drivers/spi/spi-aspeed-smc.c | 33 ++++++++++++++++++++++++++++++++-
+ 1 file changed, 32 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm/configs/aspeed_g4_defconfig b/arch/arm/configs/aspeed_g4_defconfig
-index b4a1b2ed1a17..964536444cd7 100644
---- a/arch/arm/configs/aspeed_g4_defconfig
-+++ b/arch/arm/configs/aspeed_g4_defconfig
-@@ -64,7 +64,7 @@ CONFIG_MTD_BLOCK=y
- CONFIG_MTD_PARTITIONED_MASTER=y
- CONFIG_MTD_SPI_NOR=y
- # CONFIG_MTD_SPI_NOR_USE_4K_SECTORS is not set
--CONFIG_SPI_ASPEED_SMC=y
-+CONFIG_SPI_ASPEED_SMC_MTD_SPI_NOR=y
- CONFIG_MTD_UBI=y
- CONFIG_MTD_UBI_FASTMAP=y
- CONFIG_MTD_UBI_BLOCK=y
-diff --git a/arch/arm/configs/aspeed_g5_defconfig b/arch/arm/configs/aspeed_g5_defconfig
-index ccc4240ee4b5..e809236ca88b 100644
---- a/arch/arm/configs/aspeed_g5_defconfig
-+++ b/arch/arm/configs/aspeed_g5_defconfig
-@@ -103,7 +103,7 @@ CONFIG_MTD_BLOCK=y
- CONFIG_MTD_PARTITIONED_MASTER=y
- CONFIG_MTD_SPI_NOR=y
- # CONFIG_MTD_SPI_NOR_USE_4K_SECTORS is not set
--CONFIG_SPI_ASPEED_SMC=y
-+CONFIG_SPI_ASPEED_SMC_MTD_SPI_NOR=y
- CONFIG_MTD_UBI=y
- CONFIG_MTD_UBI_FASTMAP=y
- CONFIG_MTD_UBI_BLOCK=y
-diff --git a/arch/arm/configs/multi_v5_defconfig b/arch/arm/configs/multi_v5_defconfig
-index 80a3ae02d759..49083ef05fb0 100644
---- a/arch/arm/configs/multi_v5_defconfig
-+++ b/arch/arm/configs/multi_v5_defconfig
-@@ -103,7 +103,7 @@ CONFIG_MTD_RAW_NAND=y
- CONFIG_MTD_NAND_ATMEL=y
- CONFIG_MTD_NAND_ORION=y
- CONFIG_MTD_SPI_NOR=y
--CONFIG_SPI_ASPEED_SMC=y
-+CONFIG_SPI_ASPEED_SMC_MTD_SPI_NOR=y
- CONFIG_MTD_UBI=y
- CONFIG_BLK_DEV_LOOP=y
- CONFIG_ATMEL_SSC=m
-diff --git a/arch/arm/configs/multi_v7_defconfig b/arch/arm/configs/multi_v7_defconfig
-index 33572998dbbe..fc1b69256b64 100644
---- a/arch/arm/configs/multi_v7_defconfig
-+++ b/arch/arm/configs/multi_v7_defconfig
-@@ -217,7 +217,7 @@ CONFIG_MTD_NAND_DAVINCI=y
- CONFIG_MTD_NAND_STM32_FMC2=y
- CONFIG_MTD_NAND_PL35X=y
- CONFIG_MTD_SPI_NOR=y
--CONFIG_SPI_ASPEED_SMC=m
-+CONFIG_SPI_ASPEED_SMC_MTD_SPI_NOR=m
- CONFIG_MTD_UBI=y
- CONFIG_BLK_DEV_LOOP=y
- CONFIG_BLK_DEV_RAM=y
-diff --git a/drivers/mtd/spi-nor/controllers/Kconfig b/drivers/mtd/spi-nor/controllers/Kconfig
-index 5c0e0ec2e6d1..876a47042fec 100644
---- a/drivers/mtd/spi-nor/controllers/Kconfig
-+++ b/drivers/mtd/spi-nor/controllers/Kconfig
-@@ -1,5 +1,5 @@
- # SPDX-License-Identifier: GPL-2.0-only
--config SPI_ASPEED_SMC
-+config SPI_ASPEED_SMC_MTD_SPI_NOR
- 	tristate "Aspeed flash controllers in SPI mode"
- 	depends on ARCH_ASPEED || COMPILE_TEST
- 	depends on HAS_IOMEM && OF
-diff --git a/drivers/mtd/spi-nor/controllers/Makefile b/drivers/mtd/spi-nor/controllers/Makefile
-index e7abba491d98..1e28297fb1e8 100644
---- a/drivers/mtd/spi-nor/controllers/Makefile
-+++ b/drivers/mtd/spi-nor/controllers/Makefile
-@@ -1,5 +1,5 @@
- # SPDX-License-Identifier: GPL-2.0
--obj-$(CONFIG_SPI_ASPEED_SMC)	+= aspeed-smc.o
-+obj-$(CONFIG_SPI_ASPEED_SMC_MTD_SPI_NOR)	+= aspeed-smc.o
- obj-$(CONFIG_SPI_HISI_SFC)	+= hisi-sfc.o
- obj-$(CONFIG_SPI_NXP_SPIFI)	+= nxp-spifi.o
- obj-$(CONFIG_SPI_INTEL_SPI)	+= intel-spi.o
+diff --git a/drivers/spi/spi-aspeed-smc.c b/drivers/spi/spi-aspeed-smc.c
+index c6ac3253d7d5..e44e80bab50f 100644
+--- a/drivers/spi/spi-aspeed-smc.c
++++ b/drivers/spi/spi-aspeed-smc.c
+@@ -32,6 +32,7 @@
+ #define   CTRL_IO_DUAL_DATA		BIT(29)
+ #define   CTRL_IO_QUAD_DATA		BIT(30)
+ #define   CTRL_COMMAND_SHIFT		16
++#define   CTRL_IO_ADDRESS_4B		BIT(13)	/* AST2400 SPI only */
+ #define   CTRL_IO_DUMMY_SET(dummy)					\
+ 	(((((dummy) >> 2) & 0x1) << 14) | (((dummy) & 0x3) << 6))
+ #define   CTRL_CE_STOP_ACTIVE		BIT(2)
+@@ -293,6 +294,8 @@ static bool aspeed_spi_supports_op(struct spi_mem *mem, const struct spi_mem_op
+ 	return true;
+ }
+ 
++static const struct aspeed_spi_data ast2400_spi_data;
++
+ static int do_aspeed_spi_exec_op(struct spi_mem *mem, const struct spi_mem_op *op)
+ {
+ 	struct aspeed_spi *aspi = spi_controller_get_devdata(mem->spi->master);
+@@ -322,6 +325,9 @@ static int do_aspeed_spi_exec_op(struct spi_mem *mem, const struct spi_mem_op *o
+ 			addr_mode |= (0x11 << chip->cs);
+ 		else
+ 			addr_mode &= ~(0x11 << chip->cs);
++
++		if (op->addr.nbytes == 4 && chip->aspi->data == &ast2400_spi_data)
++			ctl_val |= CTRL_IO_ADDRESS_4B;
+ 	}
+ 
+ 	if (op->dummy.buswidth && op->dummy.nbytes)
+@@ -413,7 +419,13 @@ static int aspeed_spi_chip_set_default_window(struct aspeed_spi_chip *chip)
+ 	struct aspeed_spi_window windows[ASPEED_SPI_MAX_NUM_CS] = { 0 };
+ 	struct aspeed_spi_window *win = &windows[chip->cs];
+ 
+-	aspeed_spi_get_windows(aspi, windows);
++	/* No segment registers for the AST2400 SPI controller */
++	if (aspi->data == &ast2400_spi_data) {
++		win->offset = 0;
++		win->size = aspi->ahb_window_size;
++	} else {
++		aspeed_spi_get_windows(aspi, windows);
++	}
+ 
+ 	chip->ahb_base = aspi->ahb_base + win->offset;
+ 	chip->ahb_window_size = win->size;
+@@ -476,6 +488,10 @@ static int aspeed_spi_chip_adjust_window(struct aspeed_spi_chip *chip,
+ 	struct aspeed_spi_window *win = &windows[chip->cs];
+ 	int ret;
+ 
++	/* No segment registers for the AST2400 SPI controller */
++	if (aspi->data == &ast2400_spi_data)
++		return 0;
++
+ 	/*
+ 	 * Due to an HW issue on the AST2500 SPI controller, the CE0
+ 	 * window size should be smaller than the maximum 128MB.
+@@ -560,6 +576,12 @@ static int aspeed_spi_dirmap_create(struct spi_mem_dirmap_desc *desc)
+ 		else
+ 			addr_mode &= ~(0x11 << chip->cs);
+ 		writel(addr_mode, aspi->regs + CE_CTRL_REG);
++
++		/* AST2400 SPI controller sets 4BYTE address mode in
++		 * CE0 Control Register
++		 */
++		if (op->addr.nbytes == 4 && chip->aspi->data == &ast2400_spi_data)
++			ctl_val |= CTRL_IO_ADDRESS_4B;
+ 	}
+ 
+ 	/* READ mode is the controller default setting */
+@@ -860,6 +882,14 @@ static const struct aspeed_spi_data ast2400_fmc_data = {
+ 	.segment_reg   = aspeed_spi_segment_reg,
+ };
+ 
++static const struct aspeed_spi_data ast2400_spi_data = {
++	.max_cs	       = 1,
++	.hastype       = false,
++	.we0	       = 0,
++	.ctl0	       = 0x04,
++	/* No segment registers */
++};
++
+ static const struct aspeed_spi_data ast2500_fmc_data = {
+ 	.max_cs	       = 3,
+ 	.hastype       = true,
+@@ -904,6 +934,7 @@ static const struct aspeed_spi_data ast2600_spi_data = {
+ 
+ static const struct of_device_id aspeed_spi_matches[] = {
+ 	{ .compatible = "aspeed,ast2400-fmc", .data = &ast2400_fmc_data },
++	{ .compatible = "aspeed,ast2400-spi", .data = &ast2400_spi_data },
+ 	{ .compatible = "aspeed,ast2500-fmc", .data = &ast2500_fmc_data },
+ 	{ .compatible = "aspeed,ast2500-spi", .data = &ast2500_spi_data },
+ 	{ .compatible = "aspeed,ast2600-fmc", .data = &ast2600_fmc_data },
 -- 
 2.34.1
 
