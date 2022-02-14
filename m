@@ -1,53 +1,58 @@
-From: Jammy Huang <jammy_huang@aspeedtech.com>
-Date: Mon, 14 Feb 2022 11:27:08 +0800
-Subject: [PATCH] media: aspeed: Use of_device_get_match_data() helper
-Message-ID: <20220214032708.854-1-jammy_huang@aspeedtech.com>
+From: Potin Lai <potin.lai@quantatw.com>
+Date: Mon, 14 Feb 2022 12:25:28 +0800
+Subject: [PATCH v2 00/10] update Facebook Bletchley BMC
+Message-ID: <20220214042538.12132-1-potin.lai@quantatw.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Use of_device_get_match_data() to simplify the code.
+This patch series update Facebook Bletchley BMC devicetree base on EVT HW
+schematioc design, and rebase SLED numbering to 1-based for OpenBMC
+multi-host.
 
-Signed-off-by: Jammy Huang <jammy_huang@aspeedtech.com>
----
- drivers/media/platform/aspeed-video.c | 8 ++------
- 1 file changed, 2 insertions(+), 6 deletions(-)
+- GPIO:
+  - adding more gpio line names
+  - include interrupt line in io expander for gpio interrupt monitoring
 
-diff --git a/drivers/media/platform/aspeed-video.c b/drivers/media/platform/aspeed-video.c
-index 3904ded2052a..d4acf84cda9b 100644
---- a/drivers/media/platform/aspeed-video.c
-+++ b/drivers/media/platform/aspeed-video.c
-@@ -13,6 +13,7 @@
- #include <linux/module.h>
- #include <linux/mutex.h>
- #include <linux/of.h>
-+#include <linux/of_device.h>
- #include <linux/of_irq.h>
- #include <linux/of_reserved_mem.h>
- #include <linux/platform_device.h>
-@@ -2451,7 +2452,6 @@ MODULE_DEVICE_TABLE(of, aspeed_video_of_match);
- static int aspeed_video_probe(struct platform_device *pdev)
- {
- 	const struct aspeed_video_config *config;
--	const struct of_device_id *match;
- 	struct aspeed_video *video;
- 	int rc;
- 
-@@ -2463,11 +2463,7 @@ static int aspeed_video_probe(struct platform_device *pdev)
- 	if (IS_ERR(video->base))
- 		return PTR_ERR(video->base);
- 
--	match = of_match_node(aspeed_video_of_match, pdev->dev.of_node);
--	if (!match)
--		return -EINVAL;
--
--	config = match->data;
-+	config = of_device_get_match_data(&pdev->dev);
- 	video->version = config->version;
- 	video->jpeg_mode = config->jpeg_mode;
- 	video->comp_size_read = config->comp_size_read;
+- SPI flash:
+  - adding dual flash BSM module support
+  - switch to spi2-gpio on spi2 due to unstable signal issue
+
+- Hwmon Sensors:
+  - adding INA230 sensors for monitoring
+  - fix ADM1278 shunt-resistor
+
+- MDIO Bus: enable mido3 bus
+
+- RTC: switch to external battery-backed rtc
+
+- OpenBMC: 1-based SLED numbering
+
+
+LINK: [v1] https://lore.kernel.org/all/20220211014347.24841-1-potin.lai at quantatw.com/
+
+
+Changes v1 --> v2:
+- update the details of new added gpio line names in commit message
+- add battery-backed rtc information in comment and commit message
+
+Potin Lai (10):
+  arch: arm: dts: bletchley: switch sled numbering to 1-based
+  arch: arm: dts: bletchley: separate leds into multiple groups
+  arch: arm: dts: bletchley: update gpio-line-names
+  arch: arm: dts: bletchley: update fmc configurations
+  arch: arm: dts: bletchley: switch to spi-gpio for spi2
+  arch: arm: dts: bletchley: add interrupt support for sled io expander
+  arch: arm: dts: bletchley: add shunt-resistor for ADM1278
+  arch: arm: dts: bletchley: add INA230 sensor on each sled
+  arch: arm: dts: bletchley: enable mdio3 bus
+  arch: arm: dts: bletchley: cleanup redundant nodes
+
+ .../dts/aspeed-bmc-facebook-bletchley.dts     | 303 +++++++++++-------
+ 1 file changed, 194 insertions(+), 109 deletions(-)
+
 -- 
-2.25.1
+2.17.1
 
