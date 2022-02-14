@@ -1,99 +1,136 @@
 From: Cédric Le Goater <clg@kaod.org>
-Date: Mon, 14 Feb 2022 10:42:21 +0100
-Subject: [PATCH 00/10] spi: spi-mem: Add driver for Aspeed SMC controllers
-Message-ID: <20220214094231.3753686-1-clg@kaod.org>
+Date: Mon, 14 Feb 2022 10:42:26 +0100
+Subject: [PATCH 05/10] spi: aspeed: Adjust direct mapping to device size
+In-Reply-To: <20220214094231.3753686-1-clg@kaod.org>
+References: <20220214094231.3753686-1-clg@kaod.org>
+Message-ID: <20220214094231.3753686-6-clg@kaod.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi,
+The segment registers of the FMC/SPI controllers provide a way to
+configure the mapping window of the flash device contents on the AHB
+bus. Adjust this window to the size of the spi-mem mapping.
 
-This series adds a new SPI driver using the spi-mem interface for the
-Aspeed static memory controllers of the AST2600, AST2500 and AST2400
-SoCs.
+Things get more complex with multiple devices. The driver needs to
+also adjust the window of the next device to make sure that there is
+no overlap, even if there is no available device. The proposal below
+is not perfect but it is covering all the cases we have seen on
+different boards with one and two devices on the same bus.
 
- * AST2600 Firmware SPI Memory Controller (FMC)
- * AST2600 SPI Flash Controller (SPI1 and SPI2)
- * AST2500 Firmware SPI Memory Controller (FMC)
- * AST2500 SPI Flash Controller (SPI1 and SPI2)
- * AST2400 New Static Memory Controller (also referred as FMC)
- * AST2400 SPI Flash Controller (SPI)
+Signed-off-by: C?dric Le Goater <clg@kaod.org>
+---
+ drivers/spi/spi-aspeed-smc.c | 88 ++++++++++++++++++++++++++++++++++++
+ 1 file changed, 88 insertions(+)
 
-It is based on the current OpenBMC kernel driver [1], using directly
-the MTD SPI-NOR interface and on a patchset [2] previously proposed
-adding support for the AST2600 only. This driver takes a slightly
-different approach to cover all 6 controllers.
-
-It does not make use of the controller register disabling Address and
-Data byte lanes because is not available on the AST2400 SoC. We could
-introduce a specific handler for new features available on recent SoCs
-if needed. As there is not much difference on performance, the driver
-chooses the common denominator: "User mode" which has been heavily
-tested in [1]. "User mode" is also used as a fall back method when
-flash device mapping window is too small.
-
-Problems to address with spi-mem were the configuration of the mapping
-windows and the calibration of the read timings. The driver handles
-them in the direct mapping handler when some knowledge on the size of
-the flash device is know. It is not perfect but not incorrect either.
-The algorithm is one from [1] because it doesn't require the DMA
-registers which are not available on all controllers.
-
-Direct mapping for writes is not supported (yet). I have seen some
-corruption with writes and I preferred to use the safer and proven
-method of the initial driver [1]. We can improve that later.
-
-The driver supports Quad SPI RX transfers on the AST2600 SoC but it
-didn't have the expected results. Therefore it is not activated yet.
-This needs more tests.
-
-The series does not remove the current Aspeed SMC driver but prepares
-ground for its removal by changing its CONFIG option. This last step
-can be addressed as a followup when the new driver using the spi-mem
-interface has been sufficiently exposed. 
-
-Tested on:
+diff --git a/drivers/spi/spi-aspeed-smc.c b/drivers/spi/spi-aspeed-smc.c
+index 8d33fcb7736a..9c4eacfed72c 100644
+--- a/drivers/spi/spi-aspeed-smc.c
++++ b/drivers/spi/spi-aspeed-smc.c
+@@ -426,6 +426,92 @@ static int aspeed_spi_chip_set_default_window(struct aspeed_spi_chip *chip)
+ 	return chip->ahb_window_size ? 0 : -1;
+ }
  
- * OpenPOWER Palmetto (AST2400)
- * Evaluation board (AST2500) 
- * OpenPOWER Witherspoon (AST2500)
- * Evaluation board (AST2600 A0)
- * Rainier board (AST2600)
++static int aspeed_spi_set_window(struct aspeed_spi *aspi,
++				 const struct aspeed_spi_window *win)
++{
++	u32 start = aspi->ahb_base_phy + win->offset;
++	u32 end = start + win->size;
++	void __iomem *seg_reg = aspi->regs + CE0_SEGMENT_ADDR_REG + win->cs * 4;
++	u32 seg_val_backup = readl(seg_reg);
++	u32 seg_val = aspi->data->segment_reg(aspi, start, end);
++
++	if (seg_val == seg_val_backup)
++		return 0;
++
++	writel(seg_val, seg_reg);
++
++	/*
++	 * Restore initial value if something goes wrong else we could
++	 * loose access to the chip.
++	 */
++	if (seg_val != readl(seg_reg)) {
++		dev_err(aspi->dev, "CE%d invalid window [ 0x%.8x - 0x%.8x ] %dMB",
++			win->cs, start, end - 1, win->size >> 20);
++		writel(seg_val_backup, seg_reg);
++		return -EIO;
++	}
++
++	if (win->size)
++		dev_dbg(aspi->dev, "CE%d new window [ 0x%.8x - 0x%.8x ] %dMB",
++			win->cs, start, end - 1,  win->size >> 20);
++	else
++		dev_dbg(aspi->dev, "CE%d window closed", win->cs);
++
++	return 0;
++}
++
++/*
++ * Yet to be done when possible :
++ * - Align mappings on flash size (we don't have the info)
++ * - ioremap each window, not strictly necessary since the overall window
++ *   is correct.
++ */
++static int aspeed_spi_chip_adjust_window(struct aspeed_spi_chip *chip,
++					 u32 local_offset, u32 size)
++{
++	struct aspeed_spi *aspi = chip->aspi;
++	struct aspeed_spi_window windows[ASPEED_SPI_MAX_NUM_CS] = { 0 };
++	struct aspeed_spi_window *win = &windows[chip->cs];
++	int ret;
++
++	aspeed_spi_get_windows(aspi, windows);
++
++	/* Adjust this chip window */
++	win->offset += local_offset;
++	win->size = size;
++
++	if (win->offset + win->size > aspi->ahb_window_size) {
++		win->size = aspi->ahb_window_size - win->offset;
++		dev_warn(aspi->dev, "CE%d window resized to %dMB", chip->cs, win->size >> 20);
++	}
++
++	ret = aspeed_spi_set_window(aspi, win);
++	if (ret)
++		return ret;
++
++	/* Update chip mapping info */
++	chip->ahb_base = aspi->ahb_base + win->offset;
++	chip->ahb_window_size = win->size;
++
++	/*
++	 * Also adjust next chip window to make sure that it does not
++	 * overlap with the current window.
++	 */
++	if (chip->cs < aspi->data->max_cs - 1) {
++		struct aspeed_spi_window *next = &windows[chip->cs + 1];
++
++		/* Change offset and size to keep the same end address */
++		if ((next->offset + next->size) > (win->offset + win->size))
++			next->size = (next->offset + next->size) - (win->offset + win->size);
++		else
++			next->size = 0;
++		next->offset = win->offset + win->size;
++
++		aspeed_spi_set_window(aspi, next);
++	}
++	return 0;
++}
++
+ static int aspeed_spi_dirmap_create(struct spi_mem_dirmap_desc *desc)
+ {
+ 	struct aspeed_spi *aspi = spi_controller_get_devdata(desc->mem->spi->master);
+@@ -440,6 +526,8 @@ static int aspeed_spi_dirmap_create(struct spi_mem_dirmap_desc *desc)
+ 	if (op->data.dir != SPI_MEM_DATA_IN)
+ 		return -EOPNOTSUPP;
  
-[1] https://github.com/openbmc/linux/blob/dev-5.15/drivers/mtd/spi-nor/controllers/aspeed-smc.c
-[2] https://patchwork.ozlabs.org/project/linux-aspeed/list/?series=212394
-
-Thanks,
-
-C. 
-
-C?dric Le Goater (10):
-  mtd: spi-nor: aspeed: Rename Kconfig option
-  dt-bindings: spi: Add Aspeed SMC controllers device tree binding
-  spi: spi-mem: Add driver for Aspeed SMC controllers
-  spi: aspeed: Add support for direct mapping
-  spi: aspeed: Adjust direct mapping to device size
-  spi: aspeed: Workaround AST2500 limitations
-  spi: aspeed: Add support for the AST2400 SPI controller
-  spi: aspeed: Calibrate read timings
-  ARM: dts: aspeed: Enable Dual SPI RX transfers
-  spi: aspeed: Activate new spi-mem driver
-
- drivers/spi/spi-aspeed-smc.c                  | 1241 +++++++++++++++++
- .../bindings/spi/aspeed,ast2600-fmc.yaml      |   92 ++
- arch/arm/boot/dts/aspeed-g4.dtsi              |    6 +
- arch/arm/boot/dts/aspeed-g5.dtsi              |    7 +
- arch/arm/boot/dts/aspeed-g6.dtsi              |    8 +
- drivers/mtd/spi-nor/controllers/Kconfig       |    4 +-
- drivers/mtd/spi-nor/controllers/Makefile      |    2 +-
- drivers/spi/Kconfig                           |   11 +
- drivers/spi/Makefile                          |    1 +
- 9 files changed, 1369 insertions(+), 3 deletions(-)
- create mode 100644 drivers/spi/spi-aspeed-smc.c
- create mode 100644 Documentation/devicetree/bindings/spi/aspeed,ast2600-fmc.yaml
-
++	aspeed_spi_chip_adjust_window(chip, desc->info.offset, desc->info.length);
++
+ 	if (desc->info.length > chip->ahb_window_size)
+ 		dev_warn(aspi->dev, "CE%d window (%dMB) too small for mapping",
+ 			 chip->cs, chip->ahb_window_size >> 20);
 -- 
 2.34.1
 
