@@ -1,60 +1,61 @@
-From: Potin Lai <potin.lai@quantatw.com>
-Date: Mon, 14 Feb 2022 12:25:38 +0800
-Subject: [PATCH v2 10/10] arch: arm: dts: bletchley: cleanup redundant nodes
-In-Reply-To: <20220214042538.12132-1-potin.lai@quantatw.com>
-References: <20220214042538.12132-1-potin.lai@quantatw.com>
-Message-ID: <20220214042538.12132-11-potin.lai@quantatw.com>
+From: Joel Stanley <joel@jms.id.au>
+Date: Mon, 14 Feb 2022 06:34:54 +0000
+Subject: [PATCH] media: aspeed: Use of_device_get_match_data() helper
+In-Reply-To: <20220214032708.854-1-jammy_huang@aspeedtech.com>
+References: <20220214032708.854-1-jammy_huang@aspeedtech.com>
+Message-ID: <CACPK8XcLJuWitefi8LTAxDrhzAVe3b88haQYAJRLX5M=ceDg5g@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-cleanup following nodes
+On Mon, 14 Feb 2022 at 03:27, Jammy Huang <jammy_huang@aspeedtech.com> wrote:
+>
+> Use of_device_get_match_data() to simplify the code.
+>
+> Signed-off-by: Jammy Huang <jammy_huang@aspeedtech.com>
+> ---
+>  drivers/media/platform/aspeed-video.c | 8 ++------
+>  1 file changed, 2 insertions(+), 6 deletions(-)
+>
+> diff --git a/drivers/media/platform/aspeed-video.c b/drivers/media/platform/aspeed-video.c
+> index 3904ded2052a..d4acf84cda9b 100644
+> --- a/drivers/media/platform/aspeed-video.c
+> +++ b/drivers/media/platform/aspeed-video.c
+> @@ -13,6 +13,7 @@
+>  #include <linux/module.h>
+>  #include <linux/mutex.h>
+>  #include <linux/of.h>
+> +#include <linux/of_device.h>
+>  #include <linux/of_irq.h>
+>  #include <linux/of_reserved_mem.h>
+>  #include <linux/platform_device.h>
+> @@ -2451,7 +2452,6 @@ MODULE_DEVICE_TABLE(of, aspeed_video_of_match);
+>  static int aspeed_video_probe(struct platform_device *pdev)
+>  {
+>         const struct aspeed_video_config *config;
+> -       const struct of_device_id *match;
+>         struct aspeed_video *video;
+>         int rc;
+>
+> @@ -2463,11 +2463,7 @@ static int aspeed_video_probe(struct platform_device *pdev)
+>         if (IS_ERR(video->base))
+>                 return PTR_ERR(video->base);
+>
+> -       match = of_match_node(aspeed_video_of_match, pdev->dev.of_node);
+> -       if (!match)
+> -               return -EINVAL;
+> -
+> -       config = match->data;
+> +       config = of_device_get_match_data(&pdev->dev);
 
-1. Remove redundant i2c1 node.
-2. Disable in-chip rtc, use battery-backed external rtc (pcf85263)
-   instead.
+While normally this driver won't have probed without matching on some
+data, it would be sensible to add a check for a null pointer here.
 
-Signed-off-by: Potin Lai <potin.lai@quantatw.com>
----
- arch/arm/boot/dts/aspeed-bmc-facebook-bletchley.dts | 9 +--------
- 1 file changed, 1 insertion(+), 8 deletions(-)
-
-diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-bletchley.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-bletchley.dts
-index 946107bd8bc7..52201c6a69bc 100644
---- a/arch/arm/boot/dts/aspeed-bmc-facebook-bletchley.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-facebook-bletchley.dts
-@@ -205,10 +205,6 @@
- 	};
- };
- 
--&rtc {
--	status = "okay";
--};
--
- &fmc {
- 	status = "okay";
- 	flash at 0 {
-@@ -387,10 +383,6 @@
- 	};
- };
- 
--&i2c1 {
--	status = "okay";
--};
--
- &i2c2 {
- 	status = "okay";
- 	ina230 at 45 {
-@@ -680,6 +672,7 @@
- 	};
- 
- 	rtc at 51 {
-+		/* in-chip rtc disabled, use external rtc (battery-backed) */
- 		compatible = "nxp,pcf85263";
- 		reg = <0x51>;
- 	};
--- 
-2.17.1
-
+>         video->version = config->version;
+>         video->jpeg_mode = config->jpeg_mode;
+>         video->comp_size_read = config->comp_size_read;
+> --
+> 2.25.1
+>
