@@ -1,58 +1,106 @@
-From: Jammy Huang <jammy_huang@aspeedtech.com>
-Date: Mon, 14 Feb 2022 16:09:09 +0800
-Subject: [PATCH v2] media: aspeed: Use of_device_get_match_data() helper
-Message-ID: <20220214080909.2792-1-jammy_huang@aspeedtech.com>
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Date: Mon, 14 Feb 2022 11:38:36 +0200
+Subject: [PATCH v2] serial: 8250_aspeed_vuart: add PORT_ASPEED_VUART port
+ type
+In-Reply-To: <20220211004203.14915-1-zev@bewilderbeest.net>
+References: <20220211004203.14915-1-zev@bewilderbeest.net>
+Message-ID: <YgojHCCeeNbSx+9K@smile.fi.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Use of_device_get_match_data() to simplify the code.
+On Thu, Feb 10, 2022 at 04:42:03PM -0800, Zev Weiss wrote:
+> Commit 54da3e381c2b ("serial: 8250_aspeed_vuart: use UPF_IOREMAP to
+> set up register mapping") fixed a bug that had, as a side-effect,
+> prevented the 8250_aspeed_vuart driver from enabling the VUART's
+> FIFOs.  However, fixing that (and hence enabling the FIFOs) has in
+> turn revealed what appears to be a hardware bug in the ASPEED VUART in
+> which the host-side THRE bit doesn't get if the BMC-side receive FIFO
+> trigger level is set to anything but one byte.  This causes problems
+> for polled-mode writes from the host -- for example, Linux kernel
+> console writes proceed at a glacial pace (less than 100 bytes per
+> second) because the write path waits for a 10ms timeout to expire
+> after every character instead of being able to continue on to the next
+> character upon seeing THRE asserted.  (GRUB behaves similarly.)
+> 
+> As a workaround, introduce a new port type for the ASPEED VUART that's
+> identical to PORT_16550A as it had previously been using, but with
+> UART_FCR_R_TRIG_00 instead to set the receive FIFO trigger level to
+> one byte, which (experimentally) seems to avoid the problematic THRE
+> behavior.
 
-Signed-off-by: Jammy Huang <jammy_huang@aspeedtech.com>
----
- v2:
-  - Add a check for null pointer for of_device_get_match_data
----
- drivers/media/platform/aspeed-video.c | 9 ++++-----
- 1 file changed, 4 insertions(+), 5 deletions(-)
+Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 
-diff --git a/drivers/media/platform/aspeed-video.c b/drivers/media/platform/aspeed-video.c
-index 3904ded2052a..91ec7eec1e6e 100644
---- a/drivers/media/platform/aspeed-video.c
-+++ b/drivers/media/platform/aspeed-video.c
-@@ -13,6 +13,7 @@
- #include <linux/module.h>
- #include <linux/mutex.h>
- #include <linux/of.h>
-+#include <linux/of_device.h>
- #include <linux/of_irq.h>
- #include <linux/of_reserved_mem.h>
- #include <linux/platform_device.h>
-@@ -2451,7 +2452,6 @@ MODULE_DEVICE_TABLE(of, aspeed_video_of_match);
- static int aspeed_video_probe(struct platform_device *pdev)
- {
- 	const struct aspeed_video_config *config;
--	const struct of_device_id *match;
- 	struct aspeed_video *video;
- 	int rc;
- 
-@@ -2463,11 +2463,10 @@ static int aspeed_video_probe(struct platform_device *pdev)
- 	if (IS_ERR(video->base))
- 		return PTR_ERR(video->base);
- 
--	match = of_match_node(aspeed_video_of_match, pdev->dev.of_node);
--	if (!match)
--		return -EINVAL;
-+	config = of_device_get_match_data(&pdev->dev);
-+	if (!config)
-+		return -ENODEV;
- 
--	config = match->data;
- 	video->version = config->version;
- 	video->jpeg_mode = config->jpeg_mode;
- 	video->comp_size_read = config->comp_size_read;
+> Signed-off-by: Zev Weiss <zev@bewilderbeest.net>
+> Tested-by: Konstantin Aladyshev <aladyshev22@gmail.com>
+> Fixes: 54da3e381c2b ("serial: 8250_aspeed_vuart: use UPF_IOREMAP to set up register mapping")
+> ---
+> 
+> Changes since v1 [0]:
+>  - Added Fixes: tag
+>  - Shifted PORT_* constant down into an unused gap
+> 
+> [0] https://lore.kernel.org/all/20220209203414.23491-1-zev at bewilderbeest.net/
+> 
+>  drivers/tty/serial/8250/8250_aspeed_vuart.c | 2 +-
+>  drivers/tty/serial/8250/8250_port.c         | 8 ++++++++
+>  include/uapi/linux/serial_core.h            | 3 +++
+>  3 files changed, 12 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/tty/serial/8250/8250_aspeed_vuart.c b/drivers/tty/serial/8250/8250_aspeed_vuart.c
+> index 2350fb3bb5e4..c2cecc6f47db 100644
+> --- a/drivers/tty/serial/8250/8250_aspeed_vuart.c
+> +++ b/drivers/tty/serial/8250/8250_aspeed_vuart.c
+> @@ -487,7 +487,7 @@ static int aspeed_vuart_probe(struct platform_device *pdev)
+>  	port.port.irq = irq_of_parse_and_map(np, 0);
+>  	port.port.handle_irq = aspeed_vuart_handle_irq;
+>  	port.port.iotype = UPIO_MEM;
+> -	port.port.type = PORT_16550A;
+> +	port.port.type = PORT_ASPEED_VUART;
+>  	port.port.uartclk = clk;
+>  	port.port.flags = UPF_SHARE_IRQ | UPF_BOOT_AUTOCONF | UPF_IOREMAP
+>  		| UPF_FIXED_PORT | UPF_FIXED_TYPE | UPF_NO_THRE_TEST;
+> diff --git a/drivers/tty/serial/8250/8250_port.c b/drivers/tty/serial/8250/8250_port.c
+> index 3b12bfc1ed67..973870ebff69 100644
+> --- a/drivers/tty/serial/8250/8250_port.c
+> +++ b/drivers/tty/serial/8250/8250_port.c
+> @@ -307,6 +307,14 @@ static const struct serial8250_config uart_config[] = {
+>  		.rxtrig_bytes	= {1, 32, 64, 112},
+>  		.flags		= UART_CAP_FIFO | UART_CAP_SLEEP,
+>  	},
+> +	[PORT_ASPEED_VUART] = {
+> +		.name		= "ASPEED VUART",
+> +		.fifo_size	= 16,
+> +		.tx_loadsz	= 16,
+> +		.fcr		= UART_FCR_ENABLE_FIFO | UART_FCR_R_TRIG_00,
+> +		.rxtrig_bytes	= {1, 4, 8, 14},
+> +		.flags		= UART_CAP_FIFO,
+> +	},
+>  };
+>  
+>  /* Uart divisor latch read */
+> diff --git a/include/uapi/linux/serial_core.h b/include/uapi/linux/serial_core.h
+> index c4042dcfdc0c..8885e69178bd 100644
+> --- a/include/uapi/linux/serial_core.h
+> +++ b/include/uapi/linux/serial_core.h
+> @@ -68,6 +68,9 @@
+>  /* NVIDIA Tegra Combined UART */
+>  #define PORT_TEGRA_TCU	41
+>  
+> +/* ASPEED AST2x00 virtual UART */
+> +#define PORT_ASPEED_VUART	42
+> +
+>  /* Intel EG20 */
+>  #define PORT_PCH_8LINE	44
+>  #define PORT_PCH_2LINE	45
+> -- 
+> 2.35.1
+> 
+
 -- 
-2.25.1
+With Best Regards,
+Andy Shevchenko
+
 
