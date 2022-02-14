@@ -1,136 +1,119 @@
 From: Cédric Le Goater <clg@kaod.org>
-Date: Mon, 14 Feb 2022 10:42:26 +0100
-Subject: [PATCH 05/10] spi: aspeed: Adjust direct mapping to device size
+Date: Mon, 14 Feb 2022 10:42:25 +0100
+Subject: [PATCH 04/10] spi: aspeed: Add support for direct mapping
 In-Reply-To: <20220214094231.3753686-1-clg@kaod.org>
 References: <20220214094231.3753686-1-clg@kaod.org>
-Message-ID: <20220214094231.3753686-6-clg@kaod.org>
+Message-ID: <20220214094231.3753686-5-clg@kaod.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The segment registers of the FMC/SPI controllers provide a way to
-configure the mapping window of the flash device contents on the AHB
-bus. Adjust this window to the size of the spi-mem mapping.
+Use direct mapping to read the flash device contents. This operation
+mode is called "Command mode" on Aspeed SoC SMC controllers. It uses a
+Control Register for the settings to apply when a memory operation is
+performed on the flash device mapping window.
 
-Things get more complex with multiple devices. The driver needs to
-also adjust the window of the next device to make sure that there is
-no overlap, even if there is no available device. The proposal below
-is not perfect but it is covering all the cases we have seen on
-different boards with one and two devices on the same bus.
+If the window is not big enough, fall back to the "User mode" to
+perform the read.
+
+Direct mapping for writes will come later when validated.
 
 Signed-off-by: C?dric Le Goater <clg@kaod.org>
 ---
- drivers/spi/spi-aspeed-smc.c | 88 ++++++++++++++++++++++++++++++++++++
- 1 file changed, 88 insertions(+)
+ drivers/spi/spi-aspeed-smc.c | 67 ++++++++++++++++++++++++++++++++++--
+ 1 file changed, 65 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/spi/spi-aspeed-smc.c b/drivers/spi/spi-aspeed-smc.c
-index 8d33fcb7736a..9c4eacfed72c 100644
+index 0aeff6f468af..8d33fcb7736a 100644
 --- a/drivers/spi/spi-aspeed-smc.c
 +++ b/drivers/spi/spi-aspeed-smc.c
-@@ -426,6 +426,92 @@ static int aspeed_spi_chip_set_default_window(struct aspeed_spi_chip *chip)
+@@ -345,8 +345,8 @@ static int do_aspeed_spi_exec_op(struct spi_mem *mem, const struct spi_mem_op *o
+ 		if (!op->addr.nbytes)
+ 			ret = aspeed_spi_read_reg(chip, op);
+ 		else
+-			ret = aspeed_spi_read_user(chip, op, op->addr.val,
+-						   op->data.nbytes, op->data.buf.in);
++			memcpy_fromio(op->data.buf.in, chip->ahb_base + op->addr.val,
++				      op->data.nbytes);
+ 	} else {
+ 		if (!op->addr.nbytes)
+ 			ret = aspeed_spi_write_reg(chip, op);
+@@ -426,10 +426,73 @@ static int aspeed_spi_chip_set_default_window(struct aspeed_spi_chip *chip)
  	return chip->ahb_window_size ? 0 : -1;
  }
  
-+static int aspeed_spi_set_window(struct aspeed_spi *aspi,
-+				 const struct aspeed_spi_window *win)
++static int aspeed_spi_dirmap_create(struct spi_mem_dirmap_desc *desc)
 +{
-+	u32 start = aspi->ahb_base_phy + win->offset;
-+	u32 end = start + win->size;
-+	void __iomem *seg_reg = aspi->regs + CE0_SEGMENT_ADDR_REG + win->cs * 4;
-+	u32 seg_val_backup = readl(seg_reg);
-+	u32 seg_val = aspi->data->segment_reg(aspi, start, end);
++	struct aspeed_spi *aspi = spi_controller_get_devdata(desc->mem->spi->master);
++	struct aspeed_spi_chip *chip = &aspi->chips[desc->mem->spi->chip_select];
++	struct spi_mem_op *op = &desc->info.op_tmpl;
++	u32 ctl_val;
++	int ret = 0;
 +
-+	if (seg_val == seg_val_backup)
-+		return 0;
++	chip->clk_freq = desc->mem->spi->max_speed_hz;
 +
-+	writel(seg_val, seg_reg);
++	/* Only for reads */
++	if (op->data.dir != SPI_MEM_DATA_IN)
++		return -EOPNOTSUPP;
 +
-+	/*
-+	 * Restore initial value if something goes wrong else we could
-+	 * loose access to the chip.
-+	 */
-+	if (seg_val != readl(seg_reg)) {
-+		dev_err(aspi->dev, "CE%d invalid window [ 0x%.8x - 0x%.8x ] %dMB",
-+			win->cs, start, end - 1, win->size >> 20);
-+		writel(seg_val_backup, seg_reg);
-+		return -EIO;
-+	}
++	if (desc->info.length > chip->ahb_window_size)
++		dev_warn(aspi->dev, "CE%d window (%dMB) too small for mapping",
++			 chip->cs, chip->ahb_window_size >> 20);
 +
-+	if (win->size)
-+		dev_dbg(aspi->dev, "CE%d new window [ 0x%.8x - 0x%.8x ] %dMB",
-+			win->cs, start, end - 1,  win->size >> 20);
-+	else
-+		dev_dbg(aspi->dev, "CE%d window closed", win->cs);
++	/* Define the default IO read settings */
++	ctl_val = readl(chip->ctl) & ~CTRL_IO_CMD_MASK;
++	ctl_val |= aspeed_spi_get_io_mode(op) |
++		op->cmd.opcode << CTRL_COMMAND_SHIFT |
++		CTRL_IO_DUMMY_SET(op->dummy.nbytes / op->dummy.buswidth) |
++		CTRL_IO_MODE_READ;
 +
-+	return 0;
-+}
++	/* Tune 4BYTE address mode */
++	if (op->addr.nbytes) {
++		u32 addr_mode = readl(aspi->regs + CE_CTRL_REG);
 +
-+/*
-+ * Yet to be done when possible :
-+ * - Align mappings on flash size (we don't have the info)
-+ * - ioremap each window, not strictly necessary since the overall window
-+ *   is correct.
-+ */
-+static int aspeed_spi_chip_adjust_window(struct aspeed_spi_chip *chip,
-+					 u32 local_offset, u32 size)
-+{
-+	struct aspeed_spi *aspi = chip->aspi;
-+	struct aspeed_spi_window windows[ASPEED_SPI_MAX_NUM_CS] = { 0 };
-+	struct aspeed_spi_window *win = &windows[chip->cs];
-+	int ret;
-+
-+	aspeed_spi_get_windows(aspi, windows);
-+
-+	/* Adjust this chip window */
-+	win->offset += local_offset;
-+	win->size = size;
-+
-+	if (win->offset + win->size > aspi->ahb_window_size) {
-+		win->size = aspi->ahb_window_size - win->offset;
-+		dev_warn(aspi->dev, "CE%d window resized to %dMB", chip->cs, win->size >> 20);
-+	}
-+
-+	ret = aspeed_spi_set_window(aspi, win);
-+	if (ret)
-+		return ret;
-+
-+	/* Update chip mapping info */
-+	chip->ahb_base = aspi->ahb_base + win->offset;
-+	chip->ahb_window_size = win->size;
-+
-+	/*
-+	 * Also adjust next chip window to make sure that it does not
-+	 * overlap with the current window.
-+	 */
-+	if (chip->cs < aspi->data->max_cs - 1) {
-+		struct aspeed_spi_window *next = &windows[chip->cs + 1];
-+
-+		/* Change offset and size to keep the same end address */
-+		if ((next->offset + next->size) > (win->offset + win->size))
-+			next->size = (next->offset + next->size) - (win->offset + win->size);
++		if (op->addr.nbytes == 4)
++			addr_mode |= (0x11 << chip->cs);
 +		else
-+			next->size = 0;
-+		next->offset = win->offset + win->size;
-+
-+		aspeed_spi_set_window(aspi, next);
++			addr_mode &= ~(0x11 << chip->cs);
++		writel(addr_mode, aspi->regs + CE_CTRL_REG);
 +	}
-+	return 0;
++
++	/* READ mode is the controller default setting */
++	chip->ctl_val[ASPEED_SPI_READ] = ctl_val;
++	writel(chip->ctl_val[ASPEED_SPI_READ], chip->ctl);
++
++	dev_info(aspi->dev, "CE%d read buswidth:%d [0x%08x]\n",
++		 chip->cs, op->data.buswidth, chip->ctl_val[ASPEED_SPI_READ]);
++
++	return ret;
 +}
 +
- static int aspeed_spi_dirmap_create(struct spi_mem_dirmap_desc *desc)
- {
- 	struct aspeed_spi *aspi = spi_controller_get_devdata(desc->mem->spi->master);
-@@ -440,6 +526,8 @@ static int aspeed_spi_dirmap_create(struct spi_mem_dirmap_desc *desc)
- 	if (op->data.dir != SPI_MEM_DATA_IN)
- 		return -EOPNOTSUPP;
- 
-+	aspeed_spi_chip_adjust_window(chip, desc->info.offset, desc->info.length);
++static int aspeed_spi_dirmap_read(struct spi_mem_dirmap_desc *desc,
++				  u64 offset, size_t len, void *buf)
++{
++	struct aspeed_spi *aspi = spi_controller_get_devdata(desc->mem->spi->master);
++	struct aspeed_spi_chip *chip = &aspi->chips[desc->mem->spi->chip_select];
 +
- 	if (desc->info.length > chip->ahb_window_size)
- 		dev_warn(aspi->dev, "CE%d window (%dMB) too small for mapping",
- 			 chip->cs, chip->ahb_window_size >> 20);
++	/* Switch to USER command mode if mapping window is too small */
++	if (chip->ahb_window_size < offset + len)
++		aspeed_spi_read_user(chip, &desc->info.op_tmpl, offset, len, buf);
++	else
++		memcpy_fromio(buf, chip->ahb_base + offset, len);
++
++	return len;
++}
++
+ static const struct spi_controller_mem_ops aspeed_spi_mem_ops = {
+ 	.supports_op = aspeed_spi_supports_op,
+ 	.exec_op = aspeed_spi_exec_op,
+ 	.get_name = aspeed_spi_get_name,
++	.dirmap_create = aspeed_spi_dirmap_create,
++	.dirmap_read = aspeed_spi_dirmap_read,
+ };
+ 
+ static void aspeed_spi_chip_set_type(struct aspeed_spi_chip *chip, int type)
 -- 
 2.34.1
 
