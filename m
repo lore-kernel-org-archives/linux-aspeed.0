@@ -1,54 +1,71 @@
-From: Cédric Le Goater <clg@kaod.org>
-Date: Mon, 14 Feb 2022 10:42:27 +0100
-Subject: [PATCH 06/10] spi: aspeed: Workaround AST2500 limitations
-In-Reply-To: <20220214094231.3753686-1-clg@kaod.org>
-References: <20220214094231.3753686-1-clg@kaod.org>
-Message-ID: <20220214094231.3753686-7-clg@kaod.org>
+From: Patrick Williams <patrick@stwcx.xyz>
+Date: Mon, 14 Feb 2022 12:27:59 -0600
+Subject: [PATCH v2 00/10] update Facebook Bletchley BMC
+In-Reply-To: <20220214042538.12132-1-potin.lai@quantatw.com>
+References: <20220214042538.12132-1-potin.lai@quantatw.com>
+Message-ID: <Ygqe6lwWUdgv+8ss@patrickw3-mbp>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-It is not possible to configure a full 128MB window for a chip of the
-same size on the AST2500 SPI controller. For his case, the maximum
-window size is restricted to 120MB for CE0.
+On Mon, Feb 14, 2022 at 12:25:28PM +0800, Potin Lai wrote:
+> This patch series update Facebook Bletchley BMC devicetree base on EVT HW
+> schematioc design, and rebase SLED numbering to 1-based for OpenBMC
+> multi-host.
+> 
+> - GPIO:
+>   - adding more gpio line names
+>   - include interrupt line in io expander for gpio interrupt monitoring
+> 
+> - SPI flash:
+>   - adding dual flash BSM module support
+>   - switch to spi2-gpio on spi2 due to unstable signal issue
+> 
+> - Hwmon Sensors:
+>   - adding INA230 sensors for monitoring
+>   - fix ADM1278 shunt-resistor
+> 
+> - MDIO Bus: enable mido3 bus
+> 
+> - RTC: switch to external battery-backed rtc
+> 
+> - OpenBMC: 1-based SLED numbering
+> 
+> 
+> LINK: [v1] https://lore.kernel.org/all/20220211014347.24841-1-potin.lai at quantatw.com/
+> 
+> 
+> Changes v1 --> v2:
+> - update the details of new added gpio line names in commit message
+> - add battery-backed rtc information in comment and commit message
 
-Signed-off-by: C?dric Le Goater <clg@kaod.org>
----
- drivers/spi/spi-aspeed-smc.c | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
+Thank you for the details there Potin.
 
-diff --git a/drivers/spi/spi-aspeed-smc.c b/drivers/spi/spi-aspeed-smc.c
-index 9c4eacfed72c..c6ac3253d7d5 100644
---- a/drivers/spi/spi-aspeed-smc.c
-+++ b/drivers/spi/spi-aspeed-smc.c
-@@ -466,6 +466,8 @@ static int aspeed_spi_set_window(struct aspeed_spi *aspi,
-  * - ioremap each window, not strictly necessary since the overall window
-  *   is correct.
-  */
-+static const struct aspeed_spi_data ast2500_spi_data;
-+
- static int aspeed_spi_chip_adjust_window(struct aspeed_spi_chip *chip,
- 					 u32 local_offset, u32 size)
- {
-@@ -474,6 +476,16 @@ static int aspeed_spi_chip_adjust_window(struct aspeed_spi_chip *chip,
- 	struct aspeed_spi_window *win = &windows[chip->cs];
- 	int ret;
- 
-+	/*
-+	 * Due to an HW issue on the AST2500 SPI controller, the CE0
-+	 * window size should be smaller than the maximum 128MB.
-+	 */
-+	if (aspi->data == &ast2500_spi_data && chip->cs == 0 && size == SZ_128M) {
-+		size = 120 << 20;
-+		dev_info(aspi->dev, "CE%d window resized to %dMB (AST2500 HW quirk)",
-+			 chip->cs, size >> 20);
-+	}
-+
- 	aspeed_spi_get_windows(aspi, windows);
- 
- 	/* Adjust this chip window */
+> 
+> Potin Lai (10):
+>   arch: arm: dts: bletchley: switch sled numbering to 1-based
+>   arch: arm: dts: bletchley: separate leds into multiple groups
+>   arch: arm: dts: bletchley: update gpio-line-names
+>   arch: arm: dts: bletchley: update fmc configurations
+>   arch: arm: dts: bletchley: switch to spi-gpio for spi2
+>   arch: arm: dts: bletchley: add interrupt support for sled io expander
+>   arch: arm: dts: bletchley: add shunt-resistor for ADM1278
+>   arch: arm: dts: bletchley: add INA230 sensor on each sled
+>   arch: arm: dts: bletchley: enable mdio3 bus
+>   arch: arm: dts: bletchley: cleanup redundant nodes
+> 
+>  .../dts/aspeed-bmc-facebook-bletchley.dts     | 303 +++++++++++-------
+>  1 file changed, 194 insertions(+), 109 deletions(-)
+> 
+> -- 
+> 2.17.1
+> 
+
+Entire series is
+
+Reviewed-by: Patrick Williams <patrick@stwcx.xyz>
+
 -- 
-2.34.1
-
+Patrick Williams
