@@ -1,124 +1,79 @@
 From: Cédric Le Goater <clg@kaod.org>
-Date: Mon, 14 Feb 2022 10:42:23 +0100
-Subject: [PATCH 02/10] dt-bindings: spi: Add Aspeed SMC controllers device
- tree binding
+Date: Mon, 14 Feb 2022 10:42:31 +0100
+Subject: [PATCH 10/10] spi: aspeed: Activate new spi-mem driver
 In-Reply-To: <20220214094231.3753686-1-clg@kaod.org>
 References: <20220214094231.3753686-1-clg@kaod.org>
-Message-ID: <20220214094231.3753686-3-clg@kaod.org>
+Message-ID: <20220214094231.3753686-11-clg@kaod.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The "interrupt" property is optional because it is only necessary for
-controllers supporting DMAs (Not implemented yet in the new driver).
+The previous driver using the MTD SPI NOR interface is kept in case we
+find some issues but we should remove it quickly once the new driver
+using the spi-mem interface has been sufficiently exposed.
 
-Cc: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
 Signed-off-by: C?dric Le Goater <clg@kaod.org>
 ---
- .../bindings/spi/aspeed,ast2600-fmc.yaml      | 92 +++++++++++++++++++
- 1 file changed, 92 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/spi/aspeed,ast2600-fmc.yaml
+ arch/arm/configs/aspeed_g4_defconfig | 2 +-
+ arch/arm/configs/aspeed_g5_defconfig | 2 +-
+ arch/arm/configs/multi_v5_defconfig  | 2 +-
+ arch/arm/configs/multi_v7_defconfig  | 2 +-
+ 4 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/spi/aspeed,ast2600-fmc.yaml b/Documentation/devicetree/bindings/spi/aspeed,ast2600-fmc.yaml
-new file mode 100644
-index 000000000000..ed71c4d86930
---- /dev/null
-+++ b/Documentation/devicetree/bindings/spi/aspeed,ast2600-fmc.yaml
-@@ -0,0 +1,92 @@
-+# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/spi/aspeed,ast2600-fmc.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: Aspeed SMC controllers bindings
-+
-+maintainers:
-+  - Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
-+  - C?dric Le Goater <clg@kaod.org>
-+
-+description: |
-+  This binding describes the Aspeed Static Memory Controllers (FMC and
-+  SPI) of the AST2400, AST2500 and AST2600 SOCs.
-+
-+allOf:
-+  - $ref: "spi-controller.yaml#"
-+
-+properties:
-+  compatible:
-+    enum:
-+      - aspeed,ast2600-fmc
-+      - aspeed,ast2600-spi
-+      - aspeed,ast2500-fmc
-+      - aspeed,ast2500-spi
-+      - aspeed,ast2400-fmc
-+      - aspeed,ast2400-spi
-+
-+  reg:
-+    items:
-+      - description: registers
-+      - description: memory mapping
-+
-+  clocks:
-+    maxItems: 1
-+
-+  interrupts:
-+    maxItems: 1
-+
-+patternProperties:
-+  "@[0-9a-f]+":
-+    type: object
-+
-+    properties:
-+      spi-rx-bus-width:
-+        enum: [1, 2, 4]
-+
-+    required:
-+      - reg
-+
-+required:
-+  - compatible
-+  - reg
-+  - clocks
-+
-+unevaluatedProperties: false
-+
-+examples:
-+  - |
-+    #include <dt-bindings/interrupt-controller/arm-gic.h>
-+    #include <dt-bindings/interrupt-controller/aspeed-scu-ic.h>
-+    #include <dt-bindings/clock/ast2600-clock.h>
-+
-+    spi at 1e620000 {
-+        reg = < 0x1e620000 0xc4
-+                0x20000000 0x10000000 >;
-+        #address-cells = <1>;
-+        #size-cells = <0>;
-+        compatible = "aspeed,ast2600-fmc";
-+        clocks = <&syscon ASPEED_CLK_AHB>;
-+        status = "disabled";
-+        interrupts = <GIC_SPI 39 IRQ_TYPE_LEVEL_HIGH>;
-+        flash at 0 {
-+                reg = < 0 >;
-+                compatible = "jedec,spi-nor";
-+                spi-max-frequency = <50000000>;
-+                status = "disabled";
-+        };
-+        flash at 1 {
-+                reg = < 1 >;
-+                compatible = "jedec,spi-nor";
-+                spi-max-frequency = <50000000>;
-+                status = "disabled";
-+        };
-+        flash at 2 {
-+                reg = < 2 >;
-+                compatible = "jedec,spi-nor";
-+                spi-max-frequency = <50000000>;
-+                status = "disabled";
-+        };
-+    };
+diff --git a/arch/arm/configs/aspeed_g4_defconfig b/arch/arm/configs/aspeed_g4_defconfig
+index 964536444cd7..b4a1b2ed1a17 100644
+--- a/arch/arm/configs/aspeed_g4_defconfig
++++ b/arch/arm/configs/aspeed_g4_defconfig
+@@ -64,7 +64,7 @@ CONFIG_MTD_BLOCK=y
+ CONFIG_MTD_PARTITIONED_MASTER=y
+ CONFIG_MTD_SPI_NOR=y
+ # CONFIG_MTD_SPI_NOR_USE_4K_SECTORS is not set
+-CONFIG_SPI_ASPEED_SMC_MTD_SPI_NOR=y
++CONFIG_SPI_ASPEED_SMC=y
+ CONFIG_MTD_UBI=y
+ CONFIG_MTD_UBI_FASTMAP=y
+ CONFIG_MTD_UBI_BLOCK=y
+diff --git a/arch/arm/configs/aspeed_g5_defconfig b/arch/arm/configs/aspeed_g5_defconfig
+index e809236ca88b..ccc4240ee4b5 100644
+--- a/arch/arm/configs/aspeed_g5_defconfig
++++ b/arch/arm/configs/aspeed_g5_defconfig
+@@ -103,7 +103,7 @@ CONFIG_MTD_BLOCK=y
+ CONFIG_MTD_PARTITIONED_MASTER=y
+ CONFIG_MTD_SPI_NOR=y
+ # CONFIG_MTD_SPI_NOR_USE_4K_SECTORS is not set
+-CONFIG_SPI_ASPEED_SMC_MTD_SPI_NOR=y
++CONFIG_SPI_ASPEED_SMC=y
+ CONFIG_MTD_UBI=y
+ CONFIG_MTD_UBI_FASTMAP=y
+ CONFIG_MTD_UBI_BLOCK=y
+diff --git a/arch/arm/configs/multi_v5_defconfig b/arch/arm/configs/multi_v5_defconfig
+index 49083ef05fb0..80a3ae02d759 100644
+--- a/arch/arm/configs/multi_v5_defconfig
++++ b/arch/arm/configs/multi_v5_defconfig
+@@ -103,7 +103,7 @@ CONFIG_MTD_RAW_NAND=y
+ CONFIG_MTD_NAND_ATMEL=y
+ CONFIG_MTD_NAND_ORION=y
+ CONFIG_MTD_SPI_NOR=y
+-CONFIG_SPI_ASPEED_SMC_MTD_SPI_NOR=y
++CONFIG_SPI_ASPEED_SMC=y
+ CONFIG_MTD_UBI=y
+ CONFIG_BLK_DEV_LOOP=y
+ CONFIG_ATMEL_SSC=m
+diff --git a/arch/arm/configs/multi_v7_defconfig b/arch/arm/configs/multi_v7_defconfig
+index fc1b69256b64..33572998dbbe 100644
+--- a/arch/arm/configs/multi_v7_defconfig
++++ b/arch/arm/configs/multi_v7_defconfig
+@@ -217,7 +217,7 @@ CONFIG_MTD_NAND_DAVINCI=y
+ CONFIG_MTD_NAND_STM32_FMC2=y
+ CONFIG_MTD_NAND_PL35X=y
+ CONFIG_MTD_SPI_NOR=y
+-CONFIG_SPI_ASPEED_SMC_MTD_SPI_NOR=m
++CONFIG_SPI_ASPEED_SMC=m
+ CONFIG_MTD_UBI=y
+ CONFIG_BLK_DEV_LOOP=y
+ CONFIG_BLK_DEV_RAM=y
 -- 
 2.34.1
 
