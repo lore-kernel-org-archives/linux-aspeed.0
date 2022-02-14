@@ -1,105 +1,46 @@
 From: Potin Lai <potin.lai@quantatw.com>
-Date: Mon, 14 Feb 2022 12:25:36 +0800
-Subject: [PATCH v2 08/10] arch: arm: dts: bletchley: add INA230 sensor on each
- sled
+Date: Mon, 14 Feb 2022 12:25:33 +0800
+Subject: [PATCH v2 05/10] arch: arm: dts: bletchley: switch to spi-gpio for
+ spi2
 In-Reply-To: <20220214042538.12132-1-potin.lai@quantatw.com>
 References: <20220214042538.12132-1-potin.lai@quantatw.com>
-Message-ID: <20220214042538.12132-9-potin.lai@quantatw.com>
+Message-ID: <20220214042538.12132-6-potin.lai@quantatw.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-add INA230 node on each sled base on EVT HW
+Switch to spi-gpio driver to avoid unstable signal issue with EVT HW
 
 Signed-off-by: Potin Lai <potin.lai@quantatw.com>
 ---
- .../dts/aspeed-bmc-facebook-bletchley.dts     | 36 +++++++++++++++----
- 1 file changed, 30 insertions(+), 6 deletions(-)
+ arch/arm/boot/dts/aspeed-bmc-facebook-bletchley.dts | 12 ++++++++++--
+ 1 file changed, 10 insertions(+), 2 deletions(-)
 
 diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-bletchley.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-bletchley.dts
-index 76c086ea7b71..8c8fbfcbb257 100644
+index b01f1e7adb81..3c54e4a892c9 100644
 --- a/arch/arm/boot/dts/aspeed-bmc-facebook-bletchley.dts
 +++ b/arch/arm/boot/dts/aspeed-bmc-facebook-bletchley.dts
-@@ -249,7 +249,11 @@
+@@ -227,8 +227,16 @@
  
- &i2c0 {
+ &spi2 {
  	status = "okay";
--	/* TODO: Add ADC INA230 */
-+	ina230 at 45 {
-+		compatible = "ti,ina230";
-+		reg = <0x45>;
-+		shunt-resistor = <2000>;
-+	};
+-	pinctrl-names = "default";
+-	pinctrl-0 = <&pinctrl_spi2_default>;
++
++	compatible = "spi-gpio";
++	#address-cells = <1>;
++	#size-cells = <0>;
++
++	gpio-sck = <&gpio0 ASPEED_GPIO(X, 3) GPIO_ACTIVE_HIGH>;
++	gpio-mosi = <&gpio0 ASPEED_GPIO(X, 4) GPIO_ACTIVE_HIGH>;
++	gpio-miso = <&gpio0 ASPEED_GPIO(X, 5) GPIO_ACTIVE_HIGH>;
++	num-chipselects = <1>;
++	cs-gpios = <&gpio0 ASPEED_GPIO(X, 0) GPIO_ACTIVE_LOW>;
  
- 	mp5023 at 40 {
- 		compatible = "mps,mp5023";
-@@ -315,7 +319,11 @@
- 
- &i2c1 {
- 	status = "okay";
--	/* TODO: Add ADC INA230 */
-+	ina230 at 45 {
-+		compatible = "ti,ina230";
-+		reg = <0x45>;
-+		shunt-resistor = <2000>;
-+	};
- 
- 	mp5023 at 40 {
- 		compatible = "mps,mp5023";
-@@ -385,7 +393,11 @@
- 
- &i2c2 {
- 	status = "okay";
--	/* TODO: Add ADC INA230 */
-+	ina230 at 45 {
-+		compatible = "ti,ina230";
-+		reg = <0x45>;
-+		shunt-resistor = <2000>;
-+	};
- 
- 	mp5023 at 40 {
- 		compatible = "mps,mp5023";
-@@ -451,7 +463,11 @@
- 
- &i2c3 {
- 	status = "okay";
--	/* TODO: Add ADC INA230 */
-+	ina230 at 45 {
-+		compatible = "ti,ina230";
-+		reg = <0x45>;
-+		shunt-resistor = <2000>;
-+	};
- 
- 	mp5023 at 40 {
- 		compatible = "mps,mp5023";
-@@ -517,7 +533,11 @@
- 
- &i2c4 {
- 	status = "okay";
--	/* TODO: Add ADC INA230 */
-+	ina230 at 45 {
-+		compatible = "ti,ina230";
-+		reg = <0x45>;
-+		shunt-resistor = <2000>;
-+	};
- 
- 	mp5023 at 40 {
- 		compatible = "mps,mp5023";
-@@ -583,7 +603,11 @@
- 
- &i2c5 {
- 	status = "okay";
--	/* TODO: Add ADC INA230 */
-+	ina230 at 45 {
-+		compatible = "ti,ina230";
-+		reg = <0x45>;
-+		shunt-resistor = <2000>;
-+	};
- 
- 	mp5023 at 40 {
- 		compatible = "mps,mp5023";
+ 	flash at 0 {
+ 		status = "okay";
 -- 
 2.17.1
 
