@@ -1,65 +1,47 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Date: Fri, 11 Feb 2022 20:02:04 -0800
-Subject: [PATCH 1/1] watchdog: aspeed: add nowayout support
-In-Reply-To: <20220212021033.2344-1-eduval@amazon.com>
-References: <20220212021033.2344-1-eduval@amazon.com>
-Message-ID: <af800c8b-8ad8-a335-0f72-ee636c02e9ef@roeck-us.net>
+From: cgel.zte@gmail.com <cgel.zte@gmail.com>
+Date: Mon, 14 Feb 2022 02:04:54 +0000
+Subject: [PATCH] drm/aspeed: Use of_device_get_match_data()
+Message-ID: <20220214020454.1714560-1-chi.minghao@zte.com.cn>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 2/11/22 18:10, Eduardo Valentin wrote:
-> Add support for not stopping the watchdog
-> when the userspace application quits. At
-> closing of the device, the driver cannot
-> determine if this was a graceful closure
-> or if the app crashed. If the support
-> of nowayout on this driver, the system integrator
-> can select the behaviour by setting the kernel
-> config and enabling it.
-> 
-> Cc: Wim Van Sebroeck <wim@linux-watchdog.org> (maintainer:WATCHDOG DEVICE DRIVERS)
-> Cc: Guenter Roeck <linux@roeck-us.net> (maintainer:WATCHDOG DEVICE DRIVERS)
-> Cc: Joel Stanley <joel@jms.id.au> (supporter:ARM/ASPEED MACHINE SUPPORT)
-> Cc: Andrew Jeffery <andrew@aj.id.au> (reviewer:ARM/ASPEED MACHINE SUPPORT)
-> Cc: linux-watchdog at vger.kernel.org (open list:WATCHDOG DEVICE DRIVERS)
-> Cc: linux-arm-kernel at lists.infradead.org (moderated list:ARM/ASPEED MACHINE SUPPORT)
-> Cc: linux-aspeed at lists.ozlabs.org (moderated list:ARM/ASPEED MACHINE SUPPORT)
-> Cc: linux-kernel at vger.kernel.org (open list)
-> Signed-off-by: Eduardo Valentin <eduval@amazon.com>
-> Signed-off-by: Eduardo Valentin <evalenti@kernel.org>
+From: "Minghao Chi (CGEL ZTE)" <chi.minghao@zte.com.cn>
 
-Reviewed-by: Guenter Roeck <linux@roeck-us.net>
+Use of_device_get_match_data() to simplify the code.
 
-> ---
->   drivers/watchdog/aspeed_wdt.c | 7 +++++++
->   1 file changed, 7 insertions(+)
-> 
-> diff --git a/drivers/watchdog/aspeed_wdt.c b/drivers/watchdog/aspeed_wdt.c
-> index 436571b6fc79..bd06622813eb 100644
-> --- a/drivers/watchdog/aspeed_wdt.c
-> +++ b/drivers/watchdog/aspeed_wdt.c
-> @@ -13,6 +13,11 @@
->   #include <linux/platform_device.h>
->   #include <linux/watchdog.h>
->   
-> +static bool nowayout = WATCHDOG_NOWAYOUT;
-> +module_param(nowayout, bool, 0);
-> +MODULE_PARM_DESC(nowayout, "Watchdog cannot be stopped once started (default="
-> +				__MODULE_STRING(WATCHDOG_NOWAYOUT) ")");
-> +
->   struct aspeed_wdt {
->   	struct watchdog_device	wdd;
->   	void __iomem		*base;
-> @@ -266,6 +271,8 @@ static int aspeed_wdt_probe(struct platform_device *pdev)
->   	wdt->wdd.timeout = WDT_DEFAULT_TIMEOUT;
->   	watchdog_init_timeout(&wdt->wdd, 0, dev);
->   
-> +	watchdog_set_nowayout(&wdt->wdd, nowayout);
-> +
->   	np = dev->of_node;
->   
->   	ofdid = of_match_node(aspeed_wdt_of_table, np);
+Reported-by: Zeal Robot <zealci@zte.com.cn>
+Signed-off-by: Minghao Chi (CGEL ZTE) <chi.minghao@zte.com.cn>
+---
+ drivers/gpu/drm/aspeed/aspeed_gfx_drv.c | 6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
+
+diff --git a/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c b/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
+index 65f172807a0d..9fe1983bd9c3 100644
+--- a/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
++++ b/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
+@@ -132,7 +132,6 @@ static int aspeed_gfx_load(struct drm_device *drm)
+ 	struct aspeed_gfx *priv = to_aspeed_gfx(drm);
+ 	struct device_node *np = pdev->dev.of_node;
+ 	const struct aspeed_gfx_config *config;
+-	const struct of_device_id *match;
+ 	struct resource *res;
+ 	int ret;
+ 
+@@ -141,10 +140,7 @@ static int aspeed_gfx_load(struct drm_device *drm)
+ 	if (IS_ERR(priv->base))
+ 		return PTR_ERR(priv->base);
+ 
+-	match = of_match_device(aspeed_gfx_match, &pdev->dev);
+-	if (!match)
+-		return -EINVAL;
+-	config = match->data;
++	config = of_device_get_match_data(&pdev->dev);
+ 
+ 	priv->dac_reg = config->dac_reg;
+ 	priv->vga_scratch_reg = config->vga_scratch_reg;
+-- 
+2.25.1
 
