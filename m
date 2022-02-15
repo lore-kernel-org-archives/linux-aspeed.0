@@ -1,57 +1,54 @@
-From: Cédric Le Goater <clg@kaod.org>
-Date: Tue, 15 Feb 2022 10:07:51 +0100
-Subject: [PATCH 03/10] spi: spi-mem: Add driver for Aspeed SMC controllers
-In-Reply-To: <20220215062743.GA12431@wunner.de>
-References: <20220214094231.3753686-1-clg@kaod.org>
- <20220214094231.3753686-4-clg@kaod.org> <20220215062743.GA12431@wunner.de>
-Message-ID: <76c3f352-a0fc-f72f-e66e-594f9249cb8c@kaod.org>
+From: Sasha Levin <sashal@kernel.org>
+Date: Tue, 15 Feb 2022 10:26:46 -0500
+Subject: [PATCH AUTOSEL 5.16 23/34] soc: aspeed: lpc-ctrl: Block error
+ printing on probe defer cases
+In-Reply-To: <20220215152657.580200-1-sashal@kernel.org>
+References: <20220215152657.580200-1-sashal@kernel.org>
+Message-ID: <20220215152657.580200-23-sashal@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello Lukas,
+From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
 
-On 2/15/22 07:27, Lukas Wunner wrote:
-> On Mon, Feb 14, 2022 at 10:42:24AM +0100, C?dric Le Goater wrote:
->> +static int aspeed_spi_probe(struct platform_device *pdev)
->> +{
-> [...]
->> +	ctlr = spi_alloc_master(dev, sizeof(*aspi));
->> +	if (!ctlr)
->> +		return -ENOMEM;
-> 
-> Use devm_spi_alloc_master() and remove the "put_controller" error path
-> for simplicity.
-  
-yes.
+[ Upstream commit 301a5d3ad2432d7829f59432ca0a93a6defbb9a1 ]
 
->> +	ret = devm_spi_register_controller(dev, ctlr);
-> [...]
->> +static int aspeed_spi_remove(struct platform_device *pdev)
->> +{
->> +	struct spi_controller *ctlr = platform_get_drvdata(pdev);
->> +	struct aspeed_spi *aspi = spi_controller_get_devdata(ctlr);
->> +
->> +	aspeed_spi_enable(aspi, false);
->> +	spi_unregister_controller(ctlr);
->> +	clk_disable_unprepare(aspi->clk);
->> +	return 0;
->> +}
-> 
-> You need to move the call to spi_unregister_controller() *before*
-> the call to aspeed_spi_enable().  The controller must be fully
-> operational until spi_unregister_controller() returns.
-> 
-> You also need to replace the call to devm_spi_register_controller()
-> in aspeed_spi_probe() with spi_register_controller().
-> Otherwise you'll unregister the controller twice because you're
-> calling spi_unregister_controller() in aspeed_spi_remove().
+Add a checking code when it gets -EPROBE_DEFER while getting a clock
+resource. In this case, it doesn't need to print out an error message
+because the probing will be re-visited.
 
-ok. Understood. Done in v2.
+Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+Signed-off-by: Joel Stanley <joel@jms.id.au>
+Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
+Reviewed-by: Iwona Winiarska <iwona.winiarska@intel.com>
+Link: https://lore.kernel.org/r/20211104173709.222912-1-jae.hyun.yoo at intel.com
+Link: https://lore.kernel.org/r/20220201070118.196372-1-joel at jms.id.au'
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/soc/aspeed/aspeed-lpc-ctrl.c | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
 
-Thanks,
-
-C.
+diff --git a/drivers/soc/aspeed/aspeed-lpc-ctrl.c b/drivers/soc/aspeed/aspeed-lpc-ctrl.c
+index 72771e018c42e..258894ed234b3 100644
+--- a/drivers/soc/aspeed/aspeed-lpc-ctrl.c
++++ b/drivers/soc/aspeed/aspeed-lpc-ctrl.c
+@@ -306,10 +306,9 @@ static int aspeed_lpc_ctrl_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	lpc_ctrl->clk = devm_clk_get(dev, NULL);
+-	if (IS_ERR(lpc_ctrl->clk)) {
+-		dev_err(dev, "couldn't get clock\n");
+-		return PTR_ERR(lpc_ctrl->clk);
+-	}
++	if (IS_ERR(lpc_ctrl->clk))
++		return dev_err_probe(dev, PTR_ERR(lpc_ctrl->clk),
++				     "couldn't get clock\n");
+ 	rc = clk_prepare_enable(lpc_ctrl->clk);
+ 	if (rc) {
+ 		dev_err(dev, "couldn't enable clock\n");
+-- 
+2.34.1
 
