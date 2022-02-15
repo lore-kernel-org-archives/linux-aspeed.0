@@ -1,10 +1,10 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Tue, 15 Feb 2022 10:28:21 -0500
-Subject: [PATCH AUTOSEL 5.15 23/33] soc: aspeed: lpc-ctrl: Block error
+Date: Tue, 15 Feb 2022 10:29:50 -0500
+Subject: [PATCH AUTOSEL 5.10 16/23] soc: aspeed: lpc-ctrl: Block error
  printing on probe defer cases
-In-Reply-To: <20220215152831.580780-1-sashal@kernel.org>
-References: <20220215152831.580780-1-sashal@kernel.org>
-Message-ID: <20220215152831.580780-23-sashal@kernel.org>
+In-Reply-To: <20220215152957.581303-1-sashal@kernel.org>
+References: <20220215152957.581303-1-sashal@kernel.org>
+Message-ID: <20220215152957.581303-16-sashal@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -32,10 +32,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 3 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/soc/aspeed/aspeed-lpc-ctrl.c b/drivers/soc/aspeed/aspeed-lpc-ctrl.c
-index 72771e018c42e..258894ed234b3 100644
+index 040c7dc1d4792..71b555c715d2e 100644
 --- a/drivers/soc/aspeed/aspeed-lpc-ctrl.c
 +++ b/drivers/soc/aspeed/aspeed-lpc-ctrl.c
-@@ -306,10 +306,9 @@ static int aspeed_lpc_ctrl_probe(struct platform_device *pdev)
+@@ -251,10 +251,9 @@ static int aspeed_lpc_ctrl_probe(struct platform_device *pdev)
  	}
  
  	lpc_ctrl->clk = devm_clk_get(dev, NULL);
