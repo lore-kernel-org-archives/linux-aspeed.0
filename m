@@ -1,54 +1,96 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Tue, 15 Feb 2022 10:29:50 -0500
-Subject: [PATCH AUTOSEL 5.10 16/23] soc: aspeed: lpc-ctrl: Block error
- printing on probe defer cases
-In-Reply-To: <20220215152957.581303-1-sashal@kernel.org>
-References: <20220215152957.581303-1-sashal@kernel.org>
-Message-ID: <20220215152957.581303-16-sashal@kernel.org>
+From: Potin Lai <potin.lai@quantatw.com>
+Date: Wed, 16 Feb 2022 00:31:47 +0800
+Subject: [PATCH v3 06/10] ARM: dts: aspeed: bletchley: add interrupt support
+ for sled io expander
+In-Reply-To: <20220215163151.32252-1-potin.lai@quantatw.com>
+References: <20220215163151.32252-1-potin.lai@quantatw.com>
+Message-ID: <20220215163151.32252-7-potin.lai@quantatw.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+Enable interrupt support for all sledx_ioexp, so userspace can monitor
+gpio from io expander by interrupt
 
-[ Upstream commit 301a5d3ad2432d7829f59432ca0a93a6defbb9a1 ]
-
-Add a checking code when it gets -EPROBE_DEFER while getting a clock
-resource. In this case, it doesn't need to print out an error message
-because the probing will be re-visited.
-
-Signed-off-by: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
-Signed-off-by: Joel Stanley <joel@jms.id.au>
-Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
-Reviewed-by: Iwona Winiarska <iwona.winiarska@intel.com>
-Link: https://lore.kernel.org/r/20211104173709.222912-1-jae.hyun.yoo at intel.com
-Link: https://lore.kernel.org/r/20220201070118.196372-1-joel at jms.id.au'
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+Signed-off-by: Potin Lai <potin.lai@quantatw.com>
 ---
- drivers/soc/aspeed/aspeed-lpc-ctrl.c | 7 +++----
- 1 file changed, 3 insertions(+), 4 deletions(-)
+ .../dts/aspeed-bmc-facebook-bletchley.dts     | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
 
-diff --git a/drivers/soc/aspeed/aspeed-lpc-ctrl.c b/drivers/soc/aspeed/aspeed-lpc-ctrl.c
-index 040c7dc1d4792..71b555c715d2e 100644
---- a/drivers/soc/aspeed/aspeed-lpc-ctrl.c
-+++ b/drivers/soc/aspeed/aspeed-lpc-ctrl.c
-@@ -251,10 +251,9 @@ static int aspeed_lpc_ctrl_probe(struct platform_device *pdev)
- 	}
+diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-bletchley.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-bletchley.dts
+index 08fa4c7b5ed4..ba9ac01cc585 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-facebook-bletchley.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-facebook-bletchley.dts
+@@ -6,6 +6,7 @@
+ #include <dt-bindings/gpio/aspeed-gpio.h>
+ #include <dt-bindings/usb/pd.h>
+ #include <dt-bindings/leds/leds-pca955x.h>
++#include <dt-bindings/interrupt-controller/irq.h>
  
- 	lpc_ctrl->clk = devm_clk_get(dev, NULL);
--	if (IS_ERR(lpc_ctrl->clk)) {
--		dev_err(dev, "couldn't get clock\n");
--		return PTR_ERR(lpc_ctrl->clk);
--	}
-+	if (IS_ERR(lpc_ctrl->clk))
-+		return dev_err_probe(dev, PTR_ERR(lpc_ctrl->clk),
-+				     "couldn't get clock\n");
- 	rc = clk_prepare_enable(lpc_ctrl->clk);
- 	if (rc) {
- 		dev_err(dev, "couldn't enable clock\n");
+ / {
+ 	model = "Facebook Bletchley BMC";
+@@ -267,6 +268,9 @@
+ 		gpio-controller;
+ 		#gpio-cells = <2>;
+ 
++		interrupt-parent = <&gpio0>;
++		interrupts = <ASPEED_GPIO(M, 0) IRQ_TYPE_LEVEL_LOW>;
++
+ 		gpio-line-names =
+ 		"SLED1_MS_DETECT1","SLED1_VBUS_BMC_EN","SLED1_INA230_ALERT","SLED1_P12V_STBY_ALERT",
+ 		"SLED1_SSD_ALERT","SLED1_MS_DETECT0","SLED1_RST_CCG5","SLED1_FUSB302_INT",
+@@ -330,6 +334,9 @@
+ 		gpio-controller;
+ 		#gpio-cells = <2>;
+ 
++		interrupt-parent = <&gpio0>;
++		interrupts = <ASPEED_GPIO(M, 1) IRQ_TYPE_LEVEL_LOW>;
++
+ 		gpio-line-names =
+ 		"SLED2_MS_DETECT1","SLED2_VBUS_BMC_EN","SLED2_INA230_ALERT","SLED2_P12V_STBY_ALERT",
+ 		"SLED2_SSD_ALERT","SLED2_MS_DETECT0","SLED2_RST_CCG5","SLED2_FUSB302_INT",
+@@ -397,6 +404,9 @@
+ 		gpio-controller;
+ 		#gpio-cells = <2>;
+ 
++		interrupt-parent = <&gpio0>;
++		interrupts = <ASPEED_GPIO(M, 2) IRQ_TYPE_LEVEL_LOW>;
++
+ 		gpio-line-names =
+ 		"SLED3_MS_DETECT1","SLED3_VBUS_BMC_EN","SLED3_INA230_ALERT","SLED3_P12V_STBY_ALERT",
+ 		"SLED3_SSD_ALERT","SLED3_MS_DETECT0","SLED3_RST_CCG5","SLED3_FUSB302_INT",
+@@ -460,6 +470,9 @@
+ 		gpio-controller;
+ 		#gpio-cells = <2>;
+ 
++		interrupt-parent = <&gpio0>;
++		interrupts = <ASPEED_GPIO(M, 3) IRQ_TYPE_LEVEL_LOW>;
++
+ 		gpio-line-names =
+ 		"SLED4_MS_DETECT1","SLED4_VBUS_BMC_EN","SLED4_INA230_ALERT","SLED4_P12V_STBY_ALERT",
+ 		"SLED4_SSD_ALERT","SLED4_MS_DETECT0","SLED4_RST_CCG5","SLED4_FUSB302_INT",
+@@ -523,6 +536,9 @@
+ 		gpio-controller;
+ 		#gpio-cells = <2>;
+ 
++		interrupt-parent = <&gpio0>;
++		interrupts = <ASPEED_GPIO(M, 4) IRQ_TYPE_LEVEL_LOW>;
++
+ 		gpio-line-names =
+ 		"SLED5_MS_DETECT1","SLED5_VBUS_BMC_EN","SLED5_INA230_ALERT","SLED5_P12V_STBY_ALERT",
+ 		"SLED5_SSD_ALERT","SLED5_MS_DETECT0","SLED5_RST_CCG5","SLED5_FUSB302_INT",
+@@ -586,6 +602,9 @@
+ 		gpio-controller;
+ 		#gpio-cells = <2>;
+ 
++		interrupt-parent = <&gpio0>;
++		interrupts = <ASPEED_GPIO(M, 5) IRQ_TYPE_LEVEL_LOW>;
++
+ 		gpio-line-names =
+ 		"SLED6_MS_DETECT1","SLED6_VBUS_BMC_EN","SLED6_INA230_ALERT","SLED6_P12V_STBY_ALERT",
+ 		"SLED6_SSD_ALERT","SLED6_MS_DETECT0","SLED6_RST_CCG5","SLED6_FUSB302_INT",
 -- 
-2.34.1
+2.17.1
 
