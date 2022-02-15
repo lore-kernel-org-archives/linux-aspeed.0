@@ -1,79 +1,50 @@
-From: Joel Stanley <joel@jms.id.au>
-Date: Tue, 15 Feb 2022 05:51:29 +0000
-Subject: [PATCH v2 00/10] update Facebook Bletchley BMC
-In-Reply-To: <20220214042538.12132-1-potin.lai@quantatw.com>
-References: <20220214042538.12132-1-potin.lai@quantatw.com>
-Message-ID: <CACPK8Xcs7y2d9AGfizv9+Lr_Ri3gaq2gmwXMFt=04z7s9XmAMg@mail.gmail.com>
+From: Lukas Wunner <lukas@wunner.de>
+Date: Tue, 15 Feb 2022 07:27:43 +0100
+Subject: [PATCH 03/10] spi: spi-mem: Add driver for Aspeed SMC controllers
+In-Reply-To: <20220214094231.3753686-4-clg@kaod.org>
+References: <20220214094231.3753686-1-clg@kaod.org>
+ <20220214094231.3753686-4-clg@kaod.org>
+Message-ID: <20220215062743.GA12431@wunner.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, 14 Feb 2022 at 04:26, Potin Lai <potin.lai@quantatw.com> wrote:
->
-> This patch series update Facebook Bletchley BMC devicetree base on EVT HW
-> schematioc design, and rebase SLED numbering to 1-based for OpenBMC
-> multi-host.
->
-> - GPIO:
->   - adding more gpio line names
->   - include interrupt line in io expander for gpio interrupt monitoring
->
-> - SPI flash:
->   - adding dual flash BSM module support
->   - switch to spi2-gpio on spi2 due to unstable signal issue
->
-> - Hwmon Sensors:
->   - adding INA230 sensors for monitoring
->   - fix ADM1278 shunt-resistor
->
-> - MDIO Bus: enable mido3 bus
->
-> - RTC: switch to external battery-backed rtc
->
-> - OpenBMC: 1-based SLED numbering
->
->
-> LINK: [v1] https://lore.kernel.org/all/20220211014347.24841-1-potin.lai at quantatw.com/
->
->
-> Changes v1 --> v2:
-> - update the details of new added gpio line names in commit message
-> - add battery-backed rtc information in comment and commit message
+On Mon, Feb 14, 2022 at 10:42:24AM +0100, C?dric Le Goater wrote:
+> +static int aspeed_spi_probe(struct platform_device *pdev)
+> +{
+[...]
+> +	ctlr = spi_alloc_master(dev, sizeof(*aspi));
+> +	if (!ctlr)
+> +		return -ENOMEM;
 
-Looks good. I made some comments on the spi2 patch, please fix those
-up and I will merge.
+Use devm_spi_alloc_master() and remove the "put_controller" error path
+for simplicity.
 
-Note that the convention for patch names is:
 
-ARM: dts: aspeed: bletchley: Description with sentence case
+> +	ret = devm_spi_register_controller(dev, ctlr);
+[...]
+> +static int aspeed_spi_remove(struct platform_device *pdev)
+> +{
+> +	struct spi_controller *ctlr = platform_get_drvdata(pdev);
+> +	struct aspeed_spi *aspi = spi_controller_get_devdata(ctlr);
+> +
+> +	aspeed_spi_enable(aspi, false);
+> +	spi_unregister_controller(ctlr);
+> +	clk_disable_unprepare(aspi->clk);
+> +	return 0;
+> +}
 
-If you could update your patches to follow that it would be appreciated.
+You need to move the call to spi_unregister_controller() *before*
+the call to aspeed_spi_enable().  The controller must be fully
+operational until spi_unregister_controller() returns.
 
-There's no need to re-send your series for the openbmc tree; I can
-merge those once we've reviewed the ones for mainline.
+You also need to replace the call to devm_spi_register_controller()
+in aspeed_spi_probe() with spi_register_controller().
+Otherwise you'll unregister the controller twice because you're
+calling spi_unregister_controller() in aspeed_spi_remove().
 
-Cheers,
+Thanks,
 
-Joel
-
->
-> Potin Lai (10):
->   arch: arm: dts: bletchley: switch sled numbering to 1-based
->   arch: arm: dts: bletchley: separate leds into multiple groups
->   arch: arm: dts: bletchley: update gpio-line-names
->   arch: arm: dts: bletchley: update fmc configurations
->   arch: arm: dts: bletchley: switch to spi-gpio for spi2
->   arch: arm: dts: bletchley: add interrupt support for sled io expander
->   arch: arm: dts: bletchley: add shunt-resistor for ADM1278
->   arch: arm: dts: bletchley: add INA230 sensor on each sled
->   arch: arm: dts: bletchley: enable mdio3 bus
->   arch: arm: dts: bletchley: cleanup redundant nodes
->
->  .../dts/aspeed-bmc-facebook-bletchley.dts     | 303 +++++++++++-------
->  1 file changed, 194 insertions(+), 109 deletions(-)
->
-> --
-> 2.17.1
->
+Lukas
