@@ -1,73 +1,72 @@
-From: davidcomponentone@gmail.com <davidcomponentone@gmail.com>
-Date: Sat, 12 Feb 2022 10:19:48 +0800
-Subject: [PATCH v3] serial: 8250_aspeed_vuart: replace snprintf with sysfs_emit
-Message-ID: <fed40753603dac4d14b17970c88e6f5f936348c1.1644541843.git.yang.guang5@zte.com.cn>
+From: Joel Stanley <joel@jms.id.au>
+Date: Tue, 15 Feb 2022 05:48:37 +0000
+Subject: [PATCH v2 05/10] arch: arm: dts: bletchley: switch to spi-gpio
+ for spi2
+In-Reply-To: <20220214042538.12132-6-potin.lai@quantatw.com>
+References: <20220214042538.12132-1-potin.lai@quantatw.com>
+ <20220214042538.12132-6-potin.lai@quantatw.com>
+Message-ID: <CACPK8Xf5W4h=dcBg_Pe1zjXUK73h8YH1tfL4RvoxV3DVsCL90g@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Yang Guang <yang.guang5@zte.com.cn>
+On Mon, 14 Feb 2022 at 04:26, Potin Lai <potin.lai@quantatw.com> wrote:
+>
+> Switch to spi-gpio driver to avoid unstable signal issue with EVT HW
+>
+> Signed-off-by: Potin Lai <potin.lai@quantatw.com>
+> ---
+>  arch/arm/boot/dts/aspeed-bmc-facebook-bletchley.dts | 12 ++++++++++--
+>  1 file changed, 10 insertions(+), 2 deletions(-)
+>
+> diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-bletchley.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-bletchley.dts
+> index b01f1e7adb81..3c54e4a892c9 100644
+> --- a/arch/arm/boot/dts/aspeed-bmc-facebook-bletchley.dts
+> +++ b/arch/arm/boot/dts/aspeed-bmc-facebook-bletchley.dts
+> @@ -227,8 +227,16 @@
+>
+>  &spi2 {
+>         status = "okay";
+> -       pinctrl-names = "default";
+> -       pinctrl-0 = <&pinctrl_spi2_default>;
+> +
+> +       compatible = "spi-gpio";
 
-coccinelle report:
-./drivers/tty/serial/8250/8250_aspeed_vuart.c:85:8-16:
-WARNING: use scnprintf or sprintf
-./drivers/tty/serial/8250/8250_aspeed_vuart.c:174:8-16:
-WARNING: use scnprintf or sprintf
-./drivers/tty/serial/8250/8250_aspeed_vuart.c:127:8-16:
-WARNING: use scnprintf or sprintf
+This is a bit strange. You're effectively rewriting the node with a new one.
 
-Use sysfs_emit instead of scnprintf or sprintf makes more sense.
+It would make more sense to leave spi2 disabled (the default), and add
+a new node:
 
-Reported-by: Zeal Robot <zealci@zte.com.cn>
-Signed-off-by: Yang Guang <yang.guang5@zte.com.cn>
-Signed-off-by: David Yang <davidcomponentone@gmail.com>
+ spi {
+   compatible = "spi-gpio";
+   #address-cells = <1>;
+   #size-cells = <0>;
+   gpio-sck = <&gpio0 ASPEED_GPIO(X, 3) GPIO_ACTIVE_HIGH>;
+   gpio-mosi = <&gpio0 ASPEED_GPIO(X, 4) GPIO_ACTIVE_HIGH>;
+   gpio-miso = <&gpio0 ASPEED_GPIO(X, 5) GPIO_ACTIVE_HIGH>;
+   num-chipselects = <1>;
+  cs-gpios = <&gpio0 ASPEED_GPIO(X, 0) GPIO_ACTIVE_LOW>;
 
----
-Change from v1-v2:
-- Modify the patch title
-- Use the CC for patch sender
+   flash at 0 {
+       status = "okay";
 
-Change from v2-v3:
-- Fix the patch subject prefix typo ("8250")
-- Change back the SoB for patch submitter
+etc.
 
----
- drivers/tty/serial/8250/8250_aspeed_vuart.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+Your new spi node doesn't need the pinctrl or clock properties.
 
-diff --git a/drivers/tty/serial/8250/8250_aspeed_vuart.c b/drivers/tty/serial/8250/8250_aspeed_vuart.c
-index 2350fb3bb5e4..36c39b8ea7af 100644
---- a/drivers/tty/serial/8250/8250_aspeed_vuart.c
-+++ b/drivers/tty/serial/8250/8250_aspeed_vuart.c
-@@ -82,7 +82,7 @@ static ssize_t lpc_address_show(struct device *dev,
- 	addr = (aspeed_vuart_readb(vuart, ASPEED_VUART_ADDRH) << 8) |
- 		(aspeed_vuart_readb(vuart, ASPEED_VUART_ADDRL));
- 
--	return snprintf(buf, PAGE_SIZE - 1, "0x%x\n", addr);
-+	return sysfs_emit(buf, "0x%x\n", addr);
- }
- 
- static int aspeed_vuart_set_lpc_address(struct aspeed_vuart *vuart, u32 addr)
-@@ -124,7 +124,7 @@ static ssize_t sirq_show(struct device *dev,
- 	reg &= ASPEED_VUART_GCRB_HOST_SIRQ_MASK;
- 	reg >>= ASPEED_VUART_GCRB_HOST_SIRQ_SHIFT;
- 
--	return snprintf(buf, PAGE_SIZE - 1, "%u\n", reg);
-+	return sysfs_emit(buf, "%u\n", reg);
- }
- 
- static int aspeed_vuart_set_sirq(struct aspeed_vuart *vuart, u32 sirq)
-@@ -171,7 +171,7 @@ static ssize_t sirq_polarity_show(struct device *dev,
- 	reg = aspeed_vuart_readb(vuart, ASPEED_VUART_GCRA);
- 	reg &= ASPEED_VUART_GCRA_HOST_SIRQ_POLARITY;
- 
--	return snprintf(buf, PAGE_SIZE - 1, "%u\n", reg ? 1 : 0);
-+	return sysfs_emit(buf, "%u\n", reg ? 1 : 0);
- }
- 
- static void aspeed_vuart_set_sirq_polarity(struct aspeed_vuart *vuart,
--- 
-2.30.2
-
+> +       #address-cells = <1>;
+> +       #size-cells = <0>;
+> +
+> +       gpio-sck = <&gpio0 ASPEED_GPIO(X, 3) GPIO_ACTIVE_HIGH>;
+> +       gpio-mosi = <&gpio0 ASPEED_GPIO(X, 4) GPIO_ACTIVE_HIGH>;
+> +       gpio-miso = <&gpio0 ASPEED_GPIO(X, 5) GPIO_ACTIVE_HIGH>;
+> +       num-chipselects = <1>;
+> +       cs-gpios = <&gpio0 ASPEED_GPIO(X, 0) GPIO_ACTIVE_LOW>;
+>
+>         flash at 0 {
+>                 status = "okay";
+> --
+> 2.17.1
+>
