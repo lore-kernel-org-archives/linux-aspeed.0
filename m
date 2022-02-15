@@ -1,208 +1,65 @@
 From: Potin Lai <potin.lai@quantatw.com>
-Date: Wed, 16 Feb 2022 00:31:43 +0800
-Subject: [PATCH v3 02/10] ARM: dts: aspeed: bletchley: separate leds into
- multiple groups
-In-Reply-To: <20220215163151.32252-1-potin.lai@quantatw.com>
-References: <20220215163151.32252-1-potin.lai@quantatw.com>
-Message-ID: <20220215163151.32252-3-potin.lai@quantatw.com>
+Date: Wed, 16 Feb 2022 00:31:41 +0800
+Subject: [PATCH v3 00/10] update Facebook Bletchley BMC
+Message-ID: <20220215163151.32252-1-potin.lai@quantatw.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Separate gpio-leds by each io expander chip.
-To avoid entire gpio-leds bind failed due to single chip not available
+This patch series update Facebook Bletchley BMC devicetree base on EVT HW
+schematioc design, and rebase SLED numbering to 1-based for OpenBMC
+multi-host.
 
-Signed-off-by: Potin Lai <potin.lai@quantatw.com>
----
- .../dts/aspeed-bmc-facebook-bletchley.dts     | 77 +++++++++++++------
- 1 file changed, 52 insertions(+), 25 deletions(-)
+- GPIO:
+  - adding more gpio line names
+  - include interrupt line in io expander for gpio interrupt monitoring
 
-diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-bletchley.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-bletchley.dts
-index e77736ed5c4c..ebd2430a3bdd 100644
---- a/arch/arm/boot/dts/aspeed-bmc-facebook-bletchley.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-facebook-bletchley.dts
-@@ -5,6 +5,7 @@
- #include "aspeed-g6.dtsi"
- #include <dt-bindings/gpio/aspeed-gpio.h>
- #include <dt-bindings/usb/pd.h>
-+#include <dt-bindings/leds/leds-pca955x.h>
- 
- / {
- 	model = "Facebook Bletchley BMC";
-@@ -53,112 +54,138 @@
- 		// Fixed link
- 	};
- 
--	leds {
-+	front_gpio_leds {
- 		compatible = "gpio-leds";
--
- 		sys_log_id {
--			retain-state-shutdown;
--			default-state = "keep";
-+			default-state = "off";
- 			gpios = <&front_leds 0 GPIO_ACTIVE_HIGH>;
- 		};
-+	};
-+
-+	fan_gpio_leds {
-+		compatible = "gpio-leds";
- 		fan0_blue {
- 			retain-state-shutdown;
- 			default-state = "on";
--			gpios = <&fan_ioexp 8 GPIO_ACTIVE_HIGH>;
-+			gpios = <&fan_leds 8 GPIO_ACTIVE_HIGH>;
- 		};
- 		fan1_blue {
- 			retain-state-shutdown;
- 			default-state = "on";
--			gpios = <&fan_ioexp 9 GPIO_ACTIVE_HIGH>;
-+			gpios = <&fan_leds 9 GPIO_ACTIVE_HIGH>;
- 		};
- 		fan2_blue {
- 			retain-state-shutdown;
- 			default-state = "on";
--			gpios = <&fan_ioexp 10 GPIO_ACTIVE_HIGH>;
-+			gpios = <&fan_leds 10 GPIO_ACTIVE_HIGH>;
- 		};
- 		fan3_blue {
- 			retain-state-shutdown;
- 			default-state = "on";
--			gpios = <&fan_ioexp 11 GPIO_ACTIVE_HIGH>;
-+			gpios = <&fan_leds 11 GPIO_ACTIVE_HIGH>;
- 		};
- 		fan0_amber {
- 			retain-state-shutdown;
- 			default-state = "off";
--			gpios = <&fan_ioexp 12 GPIO_ACTIVE_HIGH>;
-+			gpios = <&fan_leds 12 GPIO_ACTIVE_HIGH>;
- 		};
- 		fan1_amber {
- 			retain-state-shutdown;
- 			default-state = "off";
--			gpios = <&fan_ioexp 13 GPIO_ACTIVE_HIGH>;
-+			gpios = <&fan_leds 13 GPIO_ACTIVE_HIGH>;
- 		};
- 		fan2_amber {
- 			retain-state-shutdown;
- 			default-state = "off";
--			gpios = <&fan_ioexp 14 GPIO_ACTIVE_HIGH>;
-+			gpios = <&fan_leds 14 GPIO_ACTIVE_HIGH>;
- 		};
- 		fan3_amber {
- 			retain-state-shutdown;
- 			default-state = "off";
--			gpios = <&fan_ioexp 15 GPIO_ACTIVE_HIGH>;
-+			gpios = <&fan_leds 15 GPIO_ACTIVE_HIGH>;
- 		};
-+	};
-+
-+	sled1_gpio_leds {
-+		compatible = "gpio-leds";
- 		sled1_amber {
- 			retain-state-shutdown;
--			default-state = "off";
-+			default-state = "keep";
- 			gpios = <&sled1_leds 0 GPIO_ACTIVE_LOW>;
- 		};
- 		sled1_blue {
- 			retain-state-shutdown;
--			default-state = "off";
-+			default-state = "keep";
- 			gpios = <&sled1_leds 1 GPIO_ACTIVE_LOW>;
- 		};
-+	};
-+
-+	sled2_gpio_leds {
-+		compatible = "gpio-leds";
- 		sled2_amber {
- 			retain-state-shutdown;
--			default-state = "off";
-+			default-state = "keep";
- 			gpios = <&sled2_leds 0 GPIO_ACTIVE_LOW>;
- 		};
- 		sled2_blue {
- 			retain-state-shutdown;
--			default-state = "off";
-+			default-state = "keep";
- 			gpios = <&sled2_leds 1 GPIO_ACTIVE_LOW>;
- 		};
-+	};
-+
-+	sled3_gpio_leds {
-+		compatible = "gpio-leds";
- 		sled3_amber {
- 			retain-state-shutdown;
--			default-state = "off";
-+			default-state = "keep";
- 			gpios = <&sled3_leds 0 GPIO_ACTIVE_LOW>;
- 		};
- 		sled3_blue {
- 			retain-state-shutdown;
--			default-state = "off";
-+			default-state = "keep";
- 			gpios = <&sled3_leds 1 GPIO_ACTIVE_LOW>;
- 		};
-+	};
-+
-+	sled4_gpio_leds {
-+		compatible = "gpio-leds";
- 		sled4_amber {
- 			retain-state-shutdown;
--			default-state = "off";
-+			default-state = "keep";
- 			gpios = <&sled4_leds 0 GPIO_ACTIVE_LOW>;
- 		};
- 		sled4_blue {
- 			retain-state-shutdown;
--			default-state = "off";
-+			default-state = "keep";
- 			gpios = <&sled4_leds 1 GPIO_ACTIVE_LOW>;
- 		};
-+	};
-+
-+	sled5_gpio_leds {
-+		compatible = "gpio-leds";
- 		sled5_amber {
- 			retain-state-shutdown;
--			default-state = "off";
-+			default-state = "keep";
- 			gpios = <&sled5_leds 0 GPIO_ACTIVE_LOW>;
- 		};
- 		sled5_blue {
- 			retain-state-shutdown;
--			default-state = "off";
-+			default-state = "keep";
- 			gpios = <&sled5_leds 1 GPIO_ACTIVE_LOW>;
- 		};
-+	};
-+
-+	sled6_gpio_leds {
-+		compatible = "gpio-leds";
- 		sled6_amber {
- 			retain-state-shutdown;
--			default-state = "off";
-+			default-state = "keep";
- 			gpios = <&sled6_leds 0 GPIO_ACTIVE_LOW>;
- 		};
- 		sled6_blue {
- 			retain-state-shutdown;
--			default-state = "off";
-+			default-state = "keep";
- 			gpios = <&sled6_leds 1 GPIO_ACTIVE_LOW>;
- 		};
- 	};
-@@ -667,7 +694,7 @@
- 		reg = <0x4d>;
- 	};
- 
--	fan_ioexp: pca9552 at 67 {
-+	fan_leds: pca9552 at 67 {
- 		compatible = "nxp,pca9552";
- 		reg = <0x67>;
- 		#address-cells = <1>;
+- SPI flash:
+  - adding dual flash BSM module support
+  - switch to spi2-gpio on spi2 due to unstable signal issue
+
+- Hwmon Sensors:
+  - adding INA230 sensors for monitoring
+  - fix ADM1278 shunt-resistor
+
+- MDIO Bus: enable mido3 bus
+
+- RTC: switch to external battery-backed rtc
+
+- OpenBMC: 1-based SLED numbering
+
+
+LINK: [v2] https://lore.kernel.org/all/20220214042538.12132-1-potin.lai at quantatw.com/
+LINK: [v1] https://lore.kernel.org/all/20220211014347.24841-1-potin.lai at quantatw.com/
+
+
+Changes v2 --> v3:
+- update patch name prefix
+- Disable spi2, and create a new node call spi2_gpio
+
+Changes v1 --> v2:
+- update the details of new added gpio line names in commit message
+- add battery-backed rtc information in comment and commit message
+
+
+Potin Lai (10):
+  ARM: dts: aspeed: bletchley: switch sled numbering to 1-based
+  ARM: dts: aspeed: bletchley: separate leds into multiple groups
+  ARM: dts: aspeed: bletchley: update gpio-line-names
+  ARM: dts: aspeed: bletchley: update fmc configurations
+  ARM: dts: aspeed: bletchley: switch to spi-gpio for spi2
+  ARM: dts: aspeed: bletchley: add interrupt support for sled io
+    expander
+  ARM: dts: aspeed: bletchley: add shunt-resistor for ADM1278
+  ARM: dts: aspeed: bletchley: add INA230 sensor on each sled
+  ARM: dts: aspeed: bletchley: enable mdio3 bus
+  ARM: dts: aspeed: bletchley: cleanup redundant nodes
+
+ .../dts/aspeed-bmc-facebook-bletchley.dts     | 320 +++++++++++-------
+ 1 file changed, 202 insertions(+), 118 deletions(-)
+
 -- 
 2.17.1
 
