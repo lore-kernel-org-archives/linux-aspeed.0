@@ -1,11 +1,9 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Tue, 15 Feb 2022 05:48:37 +0000
-Subject: [PATCH v2 05/10] arch: arm: dts: bletchley: switch to spi-gpio
- for spi2
-In-Reply-To: <20220214042538.12132-6-potin.lai@quantatw.com>
+Date: Tue, 15 Feb 2022 05:51:29 +0000
+Subject: [PATCH v2 00/10] update Facebook Bletchley BMC
+In-Reply-To: <20220214042538.12132-1-potin.lai@quantatw.com>
 References: <20220214042538.12132-1-potin.lai@quantatw.com>
- <20220214042538.12132-6-potin.lai@quantatw.com>
-Message-ID: <CACPK8Xf5W4h=dcBg_Pe1zjXUK73h8YH1tfL4RvoxV3DVsCL90g@mail.gmail.com>
+Message-ID: <CACPK8Xcs7y2d9AGfizv9+Lr_Ri3gaq2gmwXMFt=04z7s9XmAMg@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -14,59 +12,68 @@ Content-Transfer-Encoding: 7bit
 
 On Mon, 14 Feb 2022 at 04:26, Potin Lai <potin.lai@quantatw.com> wrote:
 >
-> Switch to spi-gpio driver to avoid unstable signal issue with EVT HW
+> This patch series update Facebook Bletchley BMC devicetree base on EVT HW
+> schematioc design, and rebase SLED numbering to 1-based for OpenBMC
+> multi-host.
 >
-> Signed-off-by: Potin Lai <potin.lai@quantatw.com>
-> ---
->  arch/arm/boot/dts/aspeed-bmc-facebook-bletchley.dts | 12 ++++++++++--
->  1 file changed, 10 insertions(+), 2 deletions(-)
+> - GPIO:
+>   - adding more gpio line names
+>   - include interrupt line in io expander for gpio interrupt monitoring
 >
-> diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-bletchley.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-bletchley.dts
-> index b01f1e7adb81..3c54e4a892c9 100644
-> --- a/arch/arm/boot/dts/aspeed-bmc-facebook-bletchley.dts
-> +++ b/arch/arm/boot/dts/aspeed-bmc-facebook-bletchley.dts
-> @@ -227,8 +227,16 @@
+> - SPI flash:
+>   - adding dual flash BSM module support
+>   - switch to spi2-gpio on spi2 due to unstable signal issue
 >
->  &spi2 {
->         status = "okay";
-> -       pinctrl-names = "default";
-> -       pinctrl-0 = <&pinctrl_spi2_default>;
-> +
-> +       compatible = "spi-gpio";
-
-This is a bit strange. You're effectively rewriting the node with a new one.
-
-It would make more sense to leave spi2 disabled (the default), and add
-a new node:
-
- spi {
-   compatible = "spi-gpio";
-   #address-cells = <1>;
-   #size-cells = <0>;
-   gpio-sck = <&gpio0 ASPEED_GPIO(X, 3) GPIO_ACTIVE_HIGH>;
-   gpio-mosi = <&gpio0 ASPEED_GPIO(X, 4) GPIO_ACTIVE_HIGH>;
-   gpio-miso = <&gpio0 ASPEED_GPIO(X, 5) GPIO_ACTIVE_HIGH>;
-   num-chipselects = <1>;
-  cs-gpios = <&gpio0 ASPEED_GPIO(X, 0) GPIO_ACTIVE_LOW>;
-
-   flash at 0 {
-       status = "okay";
-
-etc.
-
-Your new spi node doesn't need the pinctrl or clock properties.
-
-> +       #address-cells = <1>;
-> +       #size-cells = <0>;
-> +
-> +       gpio-sck = <&gpio0 ASPEED_GPIO(X, 3) GPIO_ACTIVE_HIGH>;
-> +       gpio-mosi = <&gpio0 ASPEED_GPIO(X, 4) GPIO_ACTIVE_HIGH>;
-> +       gpio-miso = <&gpio0 ASPEED_GPIO(X, 5) GPIO_ACTIVE_HIGH>;
-> +       num-chipselects = <1>;
-> +       cs-gpios = <&gpio0 ASPEED_GPIO(X, 0) GPIO_ACTIVE_LOW>;
+> - Hwmon Sensors:
+>   - adding INA230 sensors for monitoring
+>   - fix ADM1278 shunt-resistor
 >
->         flash at 0 {
->                 status = "okay";
+> - MDIO Bus: enable mido3 bus
+>
+> - RTC: switch to external battery-backed rtc
+>
+> - OpenBMC: 1-based SLED numbering
+>
+>
+> LINK: [v1] https://lore.kernel.org/all/20220211014347.24841-1-potin.lai at quantatw.com/
+>
+>
+> Changes v1 --> v2:
+> - update the details of new added gpio line names in commit message
+> - add battery-backed rtc information in comment and commit message
+
+Looks good. I made some comments on the spi2 patch, please fix those
+up and I will merge.
+
+Note that the convention for patch names is:
+
+ARM: dts: aspeed: bletchley: Description with sentence case
+
+If you could update your patches to follow that it would be appreciated.
+
+There's no need to re-send your series for the openbmc tree; I can
+merge those once we've reviewed the ones for mainline.
+
+Cheers,
+
+Joel
+
+>
+> Potin Lai (10):
+>   arch: arm: dts: bletchley: switch sled numbering to 1-based
+>   arch: arm: dts: bletchley: separate leds into multiple groups
+>   arch: arm: dts: bletchley: update gpio-line-names
+>   arch: arm: dts: bletchley: update fmc configurations
+>   arch: arm: dts: bletchley: switch to spi-gpio for spi2
+>   arch: arm: dts: bletchley: add interrupt support for sled io expander
+>   arch: arm: dts: bletchley: add shunt-resistor for ADM1278
+>   arch: arm: dts: bletchley: add INA230 sensor on each sled
+>   arch: arm: dts: bletchley: enable mdio3 bus
+>   arch: arm: dts: bletchley: cleanup redundant nodes
+>
+>  .../dts/aspeed-bmc-facebook-bletchley.dts     | 303 +++++++++++-------
+>  1 file changed, 194 insertions(+), 109 deletions(-)
+>
 > --
 > 2.17.1
 >
