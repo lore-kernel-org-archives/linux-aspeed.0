@@ -1,89 +1,117 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Wed, 16 Feb 2022 07:02:04 +0000
-Subject: [PATCH 10/10] spi: aspeed: Activate new spi-mem driver
-In-Reply-To: <20220214094231.3753686-11-clg@kaod.org>
+Date: Wed, 16 Feb 2022 07:21:04 +0000
+Subject: [PATCH 00/10] spi: spi-mem: Add driver for Aspeed SMC controllers
+In-Reply-To: <20220214094231.3753686-1-clg@kaod.org>
 References: <20220214094231.3753686-1-clg@kaod.org>
- <20220214094231.3753686-11-clg@kaod.org>
-Message-ID: <CACPK8XdvczyZ1QHtFm7JJAC7AY+QmWSx0MarUwLjUyOtC9DnSQ@mail.gmail.com>
+Message-ID: <CACPK8Xe5_opc8W-00DZF1URcb2-OYSU6acjJg+c+aAoDxGBboA@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, 14 Feb 2022 at 09:43, C?dric Le Goater <clg@kaod.org> wrote:
+On Mon, 14 Feb 2022 at 09:42, C?dric Le Goater <clg@kaod.org> wrote:
 >
-> The previous driver using the MTD SPI NOR interface is kept in case we
-> find some issues but we should remove it quickly once the new driver
-> using the spi-mem interface has been sufficiently exposed.
+> Hi,
 >
-> Signed-off-by: C?dric Le Goater <clg@kaod.org>
-
-I suggest we drop the defconfig changes from both this patch and the
-first. This way we'll always have the new driver being built, with
-less churn.
-
-If you strongly prefer the way you've done it then that's fine too.
-
-> ---
->  arch/arm/configs/aspeed_g4_defconfig | 2 +-
->  arch/arm/configs/aspeed_g5_defconfig | 2 +-
->  arch/arm/configs/multi_v5_defconfig  | 2 +-
->  arch/arm/configs/multi_v7_defconfig  | 2 +-
->  4 files changed, 4 insertions(+), 4 deletions(-)
+> This series adds a new SPI driver using the spi-mem interface for the
+> Aspeed static memory controllers of the AST2600, AST2500 and AST2400
+> SoCs.
 >
-> diff --git a/arch/arm/configs/aspeed_g4_defconfig b/arch/arm/configs/aspeed_g4_defconfig
-> index 964536444cd7..b4a1b2ed1a17 100644
-> --- a/arch/arm/configs/aspeed_g4_defconfig
-> +++ b/arch/arm/configs/aspeed_g4_defconfig
-> @@ -64,7 +64,7 @@ CONFIG_MTD_BLOCK=y
->  CONFIG_MTD_PARTITIONED_MASTER=y
->  CONFIG_MTD_SPI_NOR=y
->  # CONFIG_MTD_SPI_NOR_USE_4K_SECTORS is not set
-> -CONFIG_SPI_ASPEED_SMC_MTD_SPI_NOR=y
-> +CONFIG_SPI_ASPEED_SMC=y
->  CONFIG_MTD_UBI=y
->  CONFIG_MTD_UBI_FASTMAP=y
->  CONFIG_MTD_UBI_BLOCK=y
-> diff --git a/arch/arm/configs/aspeed_g5_defconfig b/arch/arm/configs/aspeed_g5_defconfig
-> index e809236ca88b..ccc4240ee4b5 100644
-> --- a/arch/arm/configs/aspeed_g5_defconfig
-> +++ b/arch/arm/configs/aspeed_g5_defconfig
-> @@ -103,7 +103,7 @@ CONFIG_MTD_BLOCK=y
->  CONFIG_MTD_PARTITIONED_MASTER=y
->  CONFIG_MTD_SPI_NOR=y
->  # CONFIG_MTD_SPI_NOR_USE_4K_SECTORS is not set
-> -CONFIG_SPI_ASPEED_SMC_MTD_SPI_NOR=y
-> +CONFIG_SPI_ASPEED_SMC=y
->  CONFIG_MTD_UBI=y
->  CONFIG_MTD_UBI_FASTMAP=y
->  CONFIG_MTD_UBI_BLOCK=y
-> diff --git a/arch/arm/configs/multi_v5_defconfig b/arch/arm/configs/multi_v5_defconfig
-> index 49083ef05fb0..80a3ae02d759 100644
-> --- a/arch/arm/configs/multi_v5_defconfig
-> +++ b/arch/arm/configs/multi_v5_defconfig
-> @@ -103,7 +103,7 @@ CONFIG_MTD_RAW_NAND=y
->  CONFIG_MTD_NAND_ATMEL=y
->  CONFIG_MTD_NAND_ORION=y
->  CONFIG_MTD_SPI_NOR=y
-> -CONFIG_SPI_ASPEED_SMC_MTD_SPI_NOR=y
-> +CONFIG_SPI_ASPEED_SMC=y
->  CONFIG_MTD_UBI=y
->  CONFIG_BLK_DEV_LOOP=y
->  CONFIG_ATMEL_SSC=m
-> diff --git a/arch/arm/configs/multi_v7_defconfig b/arch/arm/configs/multi_v7_defconfig
-> index fc1b69256b64..33572998dbbe 100644
-> --- a/arch/arm/configs/multi_v7_defconfig
-> +++ b/arch/arm/configs/multi_v7_defconfig
-> @@ -217,7 +217,7 @@ CONFIG_MTD_NAND_DAVINCI=y
->  CONFIG_MTD_NAND_STM32_FMC2=y
->  CONFIG_MTD_NAND_PL35X=y
->  CONFIG_MTD_SPI_NOR=y
-> -CONFIG_SPI_ASPEED_SMC_MTD_SPI_NOR=m
-> +CONFIG_SPI_ASPEED_SMC=m
->  CONFIG_MTD_UBI=y
->  CONFIG_BLK_DEV_LOOP=y
->  CONFIG_BLK_DEV_RAM=y
+>  * AST2600 Firmware SPI Memory Controller (FMC)
+>  * AST2600 SPI Flash Controller (SPI1 and SPI2)
+>  * AST2500 Firmware SPI Memory Controller (FMC)
+>  * AST2500 SPI Flash Controller (SPI1 and SPI2)
+>  * AST2400 New Static Memory Controller (also referred as FMC)
+>  * AST2400 SPI Flash Controller (SPI)
+>
+> It is based on the current OpenBMC kernel driver [1], using directly
+> the MTD SPI-NOR interface and on a patchset [2] previously proposed
+> adding support for the AST2600 only. This driver takes a slightly
+> different approach to cover all 6 controllers.
+>
+> It does not make use of the controller register disabling Address and
+> Data byte lanes because is not available on the AST2400 SoC. We could
+> introduce a specific handler for new features available on recent SoCs
+> if needed. As there is not much difference on performance, the driver
+> chooses the common denominator: "User mode" which has been heavily
+> tested in [1]. "User mode" is also used as a fall back method when
+> flash device mapping window is too small.
+>
+> Problems to address with spi-mem were the configuration of the mapping
+> windows and the calibration of the read timings. The driver handles
+> them in the direct mapping handler when some knowledge on the size of
+> the flash device is know. It is not perfect but not incorrect either.
+> The algorithm is one from [1] because it doesn't require the DMA
+> registers which are not available on all controllers.
+>
+> Direct mapping for writes is not supported (yet). I have seen some
+> corruption with writes and I preferred to use the safer and proven
+> method of the initial driver [1]. We can improve that later.
+>
+> The driver supports Quad SPI RX transfers on the AST2600 SoC but it
+> didn't have the expected results. Therefore it is not activated yet.
+> This needs more tests.
+>
+> The series does not remove the current Aspeed SMC driver but prepares
+> ground for its removal by changing its CONFIG option. This last step
+> can be addressed as a followup when the new driver using the spi-mem
+> interface has been sufficiently exposed.
+>
+> Tested on:
+>
+>  * OpenPOWER Palmetto (AST2400)
+>  * Evaluation board (AST2500)
+>  * OpenPOWER Witherspoon (AST2500)
+>  * Evaluation board (AST2600 A0)
+>  * Rainier board (AST2600)
+
+Looks great! Thanks for doing this work C?dric.
+
+I reviewed all of the patches. The device tree and defconfig ones,
+which we will send via my aspeed tree, are good to go.
+
+The others look good too, to the best of my knowledge.
+
+I'll do some more testing of your v2 when you send it out.
+
+Cheers,
+
+Joel
+
+>
+> [1] https://github.com/openbmc/linux/blob/dev-5.15/drivers/mtd/spi-nor/controllers/aspeed-smc.c
+> [2] https://patchwork.ozlabs.org/project/linux-aspeed/list/?series=212394
+>
+> Thanks,
+>
+> C.
+>
+> C?dric Le Goater (10):
+>   mtd: spi-nor: aspeed: Rename Kconfig option
+>   dt-bindings: spi: Add Aspeed SMC controllers device tree binding
+>   spi: spi-mem: Add driver for Aspeed SMC controllers
+>   spi: aspeed: Add support for direct mapping
+>   spi: aspeed: Adjust direct mapping to device size
+>   spi: aspeed: Workaround AST2500 limitations
+>   spi: aspeed: Add support for the AST2400 SPI controller
+>   spi: aspeed: Calibrate read timings
+>   ARM: dts: aspeed: Enable Dual SPI RX transfers
+>   spi: aspeed: Activate new spi-mem driver
+>
+>  drivers/spi/spi-aspeed-smc.c                  | 1241 +++++++++++++++++
+>  .../bindings/spi/aspeed,ast2600-fmc.yaml      |   92 ++
+>  arch/arm/boot/dts/aspeed-g4.dtsi              |    6 +
+>  arch/arm/boot/dts/aspeed-g5.dtsi              |    7 +
+>  arch/arm/boot/dts/aspeed-g6.dtsi              |    8 +
+>  drivers/mtd/spi-nor/controllers/Kconfig       |    4 +-
+>  drivers/mtd/spi-nor/controllers/Makefile      |    2 +-
+>  drivers/spi/Kconfig                           |   11 +
+>  drivers/spi/Makefile                          |    1 +
+>  9 files changed, 1369 insertions(+), 3 deletions(-)
+>  create mode 100644 drivers/spi/spi-aspeed-smc.c
+>  create mode 100644 Documentation/devicetree/bindings/spi/aspeed,ast2600-fmc.yaml
+>
 > --
 > 2.34.1
 >
