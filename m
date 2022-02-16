@@ -1,82 +1,89 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Wed, 16 Feb 2022 05:01:56 +0000
-Subject: [PATCH v3 00/10] update Facebook Bletchley BMC
-In-Reply-To: <20220215163151.32252-1-potin.lai@quantatw.com>
-References: <20220215163151.32252-1-potin.lai@quantatw.com>
-Message-ID: <CACPK8Xfs34gw2_XGeduJ6D=-khN7RtMj3LY8hQ8B96fFxMuE8A@mail.gmail.com>
+Date: Wed, 16 Feb 2022 07:02:04 +0000
+Subject: [PATCH 10/10] spi: aspeed: Activate new spi-mem driver
+In-Reply-To: <20220214094231.3753686-11-clg@kaod.org>
+References: <20220214094231.3753686-1-clg@kaod.org>
+ <20220214094231.3753686-11-clg@kaod.org>
+Message-ID: <CACPK8XdvczyZ1QHtFm7JJAC7AY+QmWSx0MarUwLjUyOtC9DnSQ@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, 15 Feb 2022 at 16:32, Potin Lai <potin.lai@quantatw.com> wrote:
+On Mon, 14 Feb 2022 at 09:43, C?dric Le Goater <clg@kaod.org> wrote:
 >
-> This patch series update Facebook Bletchley BMC devicetree base on EVT HW
-> schematioc design, and rebase SLED numbering to 1-based for OpenBMC
-> multi-host.
+> The previous driver using the MTD SPI NOR interface is kept in case we
+> find some issues but we should remove it quickly once the new driver
+> using the spi-mem interface has been sufficiently exposed.
 >
-> - GPIO:
->   - adding more gpio line names
->   - include interrupt line in io expander for gpio interrupt monitoring
->
-> - SPI flash:
->   - adding dual flash BSM module support
->   - switch to spi2-gpio on spi2 due to unstable signal issue
->
-> - Hwmon Sensors:
->   - adding INA230 sensors for monitoring
->   - fix ADM1278 shunt-resistor
->
-> - MDIO Bus: enable mido3 bus
->
-> - RTC: switch to external battery-backed rtc
->
-> - OpenBMC: 1-based SLED numbering
->
->
-> LINK: [v2] https://lore.kernel.org/all/20220214042538.12132-1-potin.lai at quantatw.com/
-> LINK: [v1] https://lore.kernel.org/all/20220211014347.24841-1-potin.lai at quantatw.com/
->
->
-> Changes v2 --> v3:
-> - update patch name prefix
-> - Disable spi2, and create a new node call spi2_gpio
+> Signed-off-by: C?dric Le Goater <clg@kaod.org>
 
-Thanks, the patches look good.
+I suggest we drop the defconfig changes from both this patch and the
+first. This way we'll always have the new driver being built, with
+less churn.
 
-Reviewed-by: Joel Stanley <joel@jms.id.au>
+If you strongly prefer the way you've done it then that's fine too.
 
-and given the minor differences from v2, lets add Patrick's review:
-
-Reviewed-by: Patrick Williams <patrick@stwcx.xyz>
-
-I've applied these for submission in the v5.18 merge window, and to
-the openbmc tree.
-
-
+> ---
+>  arch/arm/configs/aspeed_g4_defconfig | 2 +-
+>  arch/arm/configs/aspeed_g5_defconfig | 2 +-
+>  arch/arm/configs/multi_v5_defconfig  | 2 +-
+>  arch/arm/configs/multi_v7_defconfig  | 2 +-
+>  4 files changed, 4 insertions(+), 4 deletions(-)
 >
-> Changes v1 --> v2:
-> - update the details of new added gpio line names in commit message
-> - add battery-backed rtc information in comment and commit message
->
->
-> Potin Lai (10):
->   ARM: dts: aspeed: bletchley: switch sled numbering to 1-based
->   ARM: dts: aspeed: bletchley: separate leds into multiple groups
->   ARM: dts: aspeed: bletchley: update gpio-line-names
->   ARM: dts: aspeed: bletchley: update fmc configurations
->   ARM: dts: aspeed: bletchley: switch to spi-gpio for spi2
->   ARM: dts: aspeed: bletchley: add interrupt support for sled io
->     expander
->   ARM: dts: aspeed: bletchley: add shunt-resistor for ADM1278
->   ARM: dts: aspeed: bletchley: add INA230 sensor on each sled
->   ARM: dts: aspeed: bletchley: enable mdio3 bus
->   ARM: dts: aspeed: bletchley: cleanup redundant nodes
->
->  .../dts/aspeed-bmc-facebook-bletchley.dts     | 320 +++++++++++-------
->  1 file changed, 202 insertions(+), 118 deletions(-)
->
+> diff --git a/arch/arm/configs/aspeed_g4_defconfig b/arch/arm/configs/aspeed_g4_defconfig
+> index 964536444cd7..b4a1b2ed1a17 100644
+> --- a/arch/arm/configs/aspeed_g4_defconfig
+> +++ b/arch/arm/configs/aspeed_g4_defconfig
+> @@ -64,7 +64,7 @@ CONFIG_MTD_BLOCK=y
+>  CONFIG_MTD_PARTITIONED_MASTER=y
+>  CONFIG_MTD_SPI_NOR=y
+>  # CONFIG_MTD_SPI_NOR_USE_4K_SECTORS is not set
+> -CONFIG_SPI_ASPEED_SMC_MTD_SPI_NOR=y
+> +CONFIG_SPI_ASPEED_SMC=y
+>  CONFIG_MTD_UBI=y
+>  CONFIG_MTD_UBI_FASTMAP=y
+>  CONFIG_MTD_UBI_BLOCK=y
+> diff --git a/arch/arm/configs/aspeed_g5_defconfig b/arch/arm/configs/aspeed_g5_defconfig
+> index e809236ca88b..ccc4240ee4b5 100644
+> --- a/arch/arm/configs/aspeed_g5_defconfig
+> +++ b/arch/arm/configs/aspeed_g5_defconfig
+> @@ -103,7 +103,7 @@ CONFIG_MTD_BLOCK=y
+>  CONFIG_MTD_PARTITIONED_MASTER=y
+>  CONFIG_MTD_SPI_NOR=y
+>  # CONFIG_MTD_SPI_NOR_USE_4K_SECTORS is not set
+> -CONFIG_SPI_ASPEED_SMC_MTD_SPI_NOR=y
+> +CONFIG_SPI_ASPEED_SMC=y
+>  CONFIG_MTD_UBI=y
+>  CONFIG_MTD_UBI_FASTMAP=y
+>  CONFIG_MTD_UBI_BLOCK=y
+> diff --git a/arch/arm/configs/multi_v5_defconfig b/arch/arm/configs/multi_v5_defconfig
+> index 49083ef05fb0..80a3ae02d759 100644
+> --- a/arch/arm/configs/multi_v5_defconfig
+> +++ b/arch/arm/configs/multi_v5_defconfig
+> @@ -103,7 +103,7 @@ CONFIG_MTD_RAW_NAND=y
+>  CONFIG_MTD_NAND_ATMEL=y
+>  CONFIG_MTD_NAND_ORION=y
+>  CONFIG_MTD_SPI_NOR=y
+> -CONFIG_SPI_ASPEED_SMC_MTD_SPI_NOR=y
+> +CONFIG_SPI_ASPEED_SMC=y
+>  CONFIG_MTD_UBI=y
+>  CONFIG_BLK_DEV_LOOP=y
+>  CONFIG_ATMEL_SSC=m
+> diff --git a/arch/arm/configs/multi_v7_defconfig b/arch/arm/configs/multi_v7_defconfig
+> index fc1b69256b64..33572998dbbe 100644
+> --- a/arch/arm/configs/multi_v7_defconfig
+> +++ b/arch/arm/configs/multi_v7_defconfig
+> @@ -217,7 +217,7 @@ CONFIG_MTD_NAND_DAVINCI=y
+>  CONFIG_MTD_NAND_STM32_FMC2=y
+>  CONFIG_MTD_NAND_PL35X=y
+>  CONFIG_MTD_SPI_NOR=y
+> -CONFIG_SPI_ASPEED_SMC_MTD_SPI_NOR=m
+> +CONFIG_SPI_ASPEED_SMC=m
+>  CONFIG_MTD_UBI=y
+>  CONFIG_BLK_DEV_LOOP=y
+>  CONFIG_BLK_DEV_RAM=y
 > --
-> 2.17.1
+> 2.34.1
 >
