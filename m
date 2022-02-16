@@ -1,133 +1,82 @@
-From: Rob Herring <robh@kernel.org>
-Date: Tue, 15 Feb 2022 15:06:45 -0600
-Subject: [PATCH 02/10] dt-bindings: spi: Add Aspeed SMC controllers
- device tree binding
-In-Reply-To: <20220214094231.3753686-3-clg@kaod.org>
-References: <20220214094231.3753686-1-clg@kaod.org>
- <20220214094231.3753686-3-clg@kaod.org>
-Message-ID: <YgwV5ZGCbrNhlk0s@robh.at.kernel.org>
+From: Joel Stanley <joel@jms.id.au>
+Date: Wed, 16 Feb 2022 05:01:56 +0000
+Subject: [PATCH v3 00/10] update Facebook Bletchley BMC
+In-Reply-To: <20220215163151.32252-1-potin.lai@quantatw.com>
+References: <20220215163151.32252-1-potin.lai@quantatw.com>
+Message-ID: <CACPK8Xfs34gw2_XGeduJ6D=-khN7RtMj3LY8hQ8B96fFxMuE8A@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Feb 14, 2022 at 10:42:23AM +0100, C?dric Le Goater wrote:
-> The "interrupt" property is optional because it is only necessary for
-> controllers supporting DMAs (Not implemented yet in the new driver).
-> 
-> Cc: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
-> Signed-off-by: C?dric Le Goater <clg@kaod.org>
-> ---
->  .../bindings/spi/aspeed,ast2600-fmc.yaml      | 92 +++++++++++++++++++
->  1 file changed, 92 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/spi/aspeed,ast2600-fmc.yaml
-> 
-> diff --git a/Documentation/devicetree/bindings/spi/aspeed,ast2600-fmc.yaml b/Documentation/devicetree/bindings/spi/aspeed,ast2600-fmc.yaml
-> new file mode 100644
-> index 000000000000..ed71c4d86930
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/spi/aspeed,ast2600-fmc.yaml
-> @@ -0,0 +1,92 @@
-> +# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
-> +%YAML 1.2
-> +---
-> +$id: http://devicetree.org/schemas/spi/aspeed,ast2600-fmc.yaml#
-> +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> +
-> +title: Aspeed SMC controllers bindings
-> +
-> +maintainers:
-> +  - Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
-> +  - C?dric Le Goater <clg@kaod.org>
-> +
-> +description: |
-> +  This binding describes the Aspeed Static Memory Controllers (FMC and
-> +  SPI) of the AST2400, AST2500 and AST2600 SOCs.
-> +
-> +allOf:
-> +  - $ref: "spi-controller.yaml#"
-> +
-> +properties:
-> +  compatible:
-> +    enum:
-> +      - aspeed,ast2600-fmc
-> +      - aspeed,ast2600-spi
-> +      - aspeed,ast2500-fmc
-> +      - aspeed,ast2500-spi
-> +      - aspeed,ast2400-fmc
-> +      - aspeed,ast2400-spi
-> +
-> +  reg:
-> +    items:
-> +      - description: registers
-> +      - description: memory mapping
-> +
-> +  clocks:
-> +    maxItems: 1
-> +
-> +  interrupts:
-> +    maxItems: 1
-> +
-> +patternProperties:
-> +  "@[0-9a-f]+":
-> +    type: object
-> +
-> +    properties:
-> +      spi-rx-bus-width:
-> +        enum: [1, 2, 4]
-> +
-> +    required:
-> +      - reg
-> +
-> +required:
-> +  - compatible
-> +  - reg
-> +  - clocks
-> +
-> +unevaluatedProperties: false
-> +
-> +examples:
-> +  - |
-> +    #include <dt-bindings/interrupt-controller/arm-gic.h>
-> +    #include <dt-bindings/interrupt-controller/aspeed-scu-ic.h>
-> +    #include <dt-bindings/clock/ast2600-clock.h>
-> +
-> +    spi at 1e620000 {
-> +        reg = < 0x1e620000 0xc4
-> +                0x20000000 0x10000000 >;
-> +        #address-cells = <1>;
-> +        #size-cells = <0>;
-> +        compatible = "aspeed,ast2600-fmc";
-> +        clocks = <&syscon ASPEED_CLK_AHB>;
-> +        status = "disabled";
+On Tue, 15 Feb 2022 at 16:32, Potin Lai <potin.lai@quantatw.com> wrote:
+>
+> This patch series update Facebook Bletchley BMC devicetree base on EVT HW
+> schematioc design, and rebase SLED numbering to 1-based for OpenBMC
+> multi-host.
+>
+> - GPIO:
+>   - adding more gpio line names
+>   - include interrupt line in io expander for gpio interrupt monitoring
+>
+> - SPI flash:
+>   - adding dual flash BSM module support
+>   - switch to spi2-gpio on spi2 due to unstable signal issue
+>
+> - Hwmon Sensors:
+>   - adding INA230 sensors for monitoring
+>   - fix ADM1278 shunt-resistor
+>
+> - MDIO Bus: enable mido3 bus
+>
+> - RTC: switch to external battery-backed rtc
+>
+> - OpenBMC: 1-based SLED numbering
+>
+>
+> LINK: [v2] https://lore.kernel.org/all/20220214042538.12132-1-potin.lai at quantatw.com/
+> LINK: [v1] https://lore.kernel.org/all/20220211014347.24841-1-potin.lai at quantatw.com/
+>
+>
+> Changes v2 --> v3:
+> - update patch name prefix
+> - Disable spi2, and create a new node call spi2_gpio
 
-Why is your example disabled? Drop 'status'.
+Thanks, the patches look good.
 
-> +        interrupts = <GIC_SPI 39 IRQ_TYPE_LEVEL_HIGH>;
-> +        flash at 0 {
-> +                reg = < 0 >;
-> +                compatible = "jedec,spi-nor";
-> +                spi-max-frequency = <50000000>;
-> +                status = "disabled";
+Reviewed-by: Joel Stanley <joel@jms.id.au>
 
-Ditto.
+and given the minor differences from v2, lets add Patrick's review:
 
-> +        };
-> +        flash at 1 {
-> +                reg = < 1 >;
-> +                compatible = "jedec,spi-nor";
-> +                spi-max-frequency = <50000000>;
-> +                status = "disabled";
-> +        };
-> +        flash at 2 {
-> +                reg = < 2 >;
-> +                compatible = "jedec,spi-nor";
-> +                spi-max-frequency = <50000000>;
-> +                status = "disabled";
-> +        };
-> +    };
-> -- 
-> 2.34.1
-> 
-> 
+Reviewed-by: Patrick Williams <patrick@stwcx.xyz>
+
+I've applied these for submission in the v5.18 merge window, and to
+the openbmc tree.
+
+
+>
+> Changes v1 --> v2:
+> - update the details of new added gpio line names in commit message
+> - add battery-backed rtc information in comment and commit message
+>
+>
+> Potin Lai (10):
+>   ARM: dts: aspeed: bletchley: switch sled numbering to 1-based
+>   ARM: dts: aspeed: bletchley: separate leds into multiple groups
+>   ARM: dts: aspeed: bletchley: update gpio-line-names
+>   ARM: dts: aspeed: bletchley: update fmc configurations
+>   ARM: dts: aspeed: bletchley: switch to spi-gpio for spi2
+>   ARM: dts: aspeed: bletchley: add interrupt support for sled io
+>     expander
+>   ARM: dts: aspeed: bletchley: add shunt-resistor for ADM1278
+>   ARM: dts: aspeed: bletchley: add INA230 sensor on each sled
+>   ARM: dts: aspeed: bletchley: enable mdio3 bus
+>   ARM: dts: aspeed: bletchley: cleanup redundant nodes
+>
+>  .../dts/aspeed-bmc-facebook-bletchley.dts     | 320 +++++++++++-------
+>  1 file changed, 202 insertions(+), 118 deletions(-)
+>
+> --
+> 2.17.1
+>
