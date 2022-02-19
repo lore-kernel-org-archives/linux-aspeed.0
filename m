@@ -1,57 +1,61 @@
-From: Cédric Le Goater <clg@kaod.org>
-Date: Fri, 18 Feb 2022 10:33:17 +0100
-Subject: [PATCH] dt-bindings: soc: aspeed XDMA fixes
-Message-ID: <20220218093317.664559-1-clg@kaod.org>
+From: Jonathan Cameron <jic23@kernel.org>
+Date: Sat, 19 Feb 2022 16:00:02 +0000
+Subject: [PATCH] iio: adc: aspeed: Add divider flag to fix incorrect
+ voltage reading.
+In-Reply-To: <20220218085708.8194-1-billy_tsai@aspeedtech.com>
+References: <20220218085708.8194-1-billy_tsai@aspeedtech.com>
+Message-ID: <20220219160002.46e301b8@jic23-huawei>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This is to address warnings reported by make dt_binding_check.
+On Fri, 18 Feb 2022 16:57:08 +0800
+Billy Tsai <billy_tsai@aspeedtech.com> wrote:
 
-Cc: Eddie James <eajames@linux.ibm.com>
-Signed-off-by: C?dric Le Goater <clg@kaod.org>
----
- Documentation/devicetree/bindings/soc/aspeed/xdma.yaml | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+> The formula for the ADC sampling period in ast2400/ast2500 is:
+> ADC clock period = PCLK * 2 * (ADC0C[31:17] + 1) * (ADC0C[9:0])
+> When ADC0C[9:0] is set to 0 the sampling voltage will be lower than
+> expected, because the hardware may not have enough time to
+> charge/discharge to a stable voltage.
+> 
+> Reported-by: Konstantin Klubnichkin <kitsok@yandex-team.ru>
+> Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
+Hi Billy,
 
-diff --git a/Documentation/devicetree/bindings/soc/aspeed/xdma.yaml b/Documentation/devicetree/bindings/soc/aspeed/xdma.yaml
-index 495743581e2d..b3d2aeb5a9b9 100644
---- a/Documentation/devicetree/bindings/soc/aspeed/xdma.yaml
-+++ b/Documentation/devicetree/bindings/soc/aspeed/xdma.yaml
-@@ -7,7 +7,7 @@ $schema: http://devicetree.org/meta-schemas/core.yaml#
- title: Aspeed AST25XX and AST26XX XDMA Engine
- 
- maintainers:
-- - Eddie James <eajames@linux.ibm.com>
-+  - Eddie James <eajames@linux.ibm.com>
- 
- description: |
-   This binding describes the XDMA Engine embedded in the AST2500 and AST2600
-@@ -31,13 +31,11 @@ properties:
-     maxItems: 2
- 
-   reset-names:
--    maxItems: 2
-     items:
-       - const: device
-       - const: root-complex
- 
-   interrupts:
--    maxItems: 2
-     items:
-       - description: global interrupt for the XDMA engine
-       - description: PCI-E reset or PERST interrupt
-@@ -71,6 +69,8 @@ then:
-   required:
-     - reset-names
- 
-+additionalProperties: false
-+
- examples:
-   - |
-     #include <dt-bindings/clock/ast2600-clock.h>
--- 
-2.34.1
+Fixes tag?
+
+Also, would be good to call out in the patch description that
+CLK_DIVIDER_ONE_BASED rules at 0 as a valid value and hence
+avoids the ADC0C[9:0] value of 0 that is causing problems.
+
+That may be obvious to people who make frequent use of clk dividers
+but it's not locally obvious when looking at this patch.
+
+Otherwise looks good to me.
+
+Thanks,
+
+Jonathan
+
+> ---
+>  drivers/iio/adc/aspeed_adc.c | 4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/iio/adc/aspeed_adc.c b/drivers/iio/adc/aspeed_adc.c
+> index a957cad1bfab..ffae64f39221 100644
+> --- a/drivers/iio/adc/aspeed_adc.c
+> +++ b/drivers/iio/adc/aspeed_adc.c
+> @@ -539,7 +539,9 @@ static int aspeed_adc_probe(struct platform_device *pdev)
+>  	data->clk_scaler = devm_clk_hw_register_divider(
+>  		&pdev->dev, clk_name, clk_parent_name, scaler_flags,
+>  		data->base + ASPEED_REG_CLOCK_CONTROL, 0,
+> -		data->model_data->scaler_bit_width, 0, &data->clk_lock);
+> +		data->model_data->scaler_bit_width,
+> +		data->model_data->need_prescaler ? CLK_DIVIDER_ONE_BASED : 0,
+> +		&data->clk_lock);
+>  	if (IS_ERR(data->clk_scaler))
+>  		return PTR_ERR(data->clk_scaler);
+>  
 
