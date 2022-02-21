@@ -1,218 +1,122 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Mon, 21 Feb 2022 09:09:40 +0000
-Subject: [PATCH] fsi: Add trace events in initialization path
-In-Reply-To: <20220207161640.35605-1-eajames@linux.ibm.com>
-References: <20220207161640.35605-1-eajames@linux.ibm.com>
-Message-ID: <CACPK8XeGyGdVw-KzdCXD_JAL3Qymp_hY-v4pqP9GtxjpQ7G5rw@mail.gmail.com>
+Date: Mon, 21 Feb 2022 09:24:22 +0000
+Subject: [PATCH v3] fsi: Aspeed: Fix a potential double free
+In-Reply-To: <2c123f8b0a40dc1a061fae982169fe030b4f47e6.1641765339.git.christophe.jaillet@wanadoo.fr>
+References: <2c123f8b0a40dc1a061fae982169fe030b4f47e6.1641765339.git.christophe.jaillet@wanadoo.fr>
+Message-ID: <CACPK8XfxZRXtU0Bn+f0=B3CGUE8A8i9Ob_a9=2t=TzLc5a+75w@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, 7 Feb 2022 at 16:17, Eddie James <eajames@linux.ibm.com> wrote:
->
-> Add definitions for trace events to show the scanning flow.
->
-> Signed-off-by: Eddie James <eajames@linux.ibm.com>
+Hi Christophe,
 
-Thanks Eddie. I've applied this with Steven's r-b.
+Thanks for the patch.
 
+On Sun, 9 Jan 2022 at 21:56, Christophe JAILLET
+<christophe.jaillet@wanadoo.fr> wrote:
+>
+> A struct device can never be devm_alloc()'ed.
+> Here, it is embedded in "struct fsi_master", and "struct fsi_master" is
+> embedded in "struct fsi_master_aspeed".
+>
+> Since "struct device" is embedded, the data structure embedding it must be
+> released with the release function, as is already done here.
+>
+> So use kzalloc() instead of devm_kzalloc() when allocating "aspeed" and
+> update all error handling branches accordingly.
+
+This looks like a problem with the design of the fsi master structure.
+It's a common pattern to devm_alloc the platform devices as they are
+probed, the fsi masters all embed a copy of struct fsi_master, which
+as you say embeds struct device.
+
+Can we learn from other bus drivers (eg i2c?) how we should lay out
+these structures?
+
+
+
+
+>
+> This prevent a potential double free().
+>
+> This also fix another issue if opb_readl() fails. Instead of a direct
+> return, it now jumps in the error handling path.
+>
+> Fixes: 606397d67f41 ("fsi: Add ast2600 master driver")
+> Suggested-by: Greg KH <gregkh@linuxfoundation.org>
+> Suggested-by: Guenter Roeck <linux@roeck-us.net>
+> Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
 > ---
->  drivers/fsi/fsi-core.c                   | 11 ++-
->  drivers/fsi/fsi-master-aspeed.c          |  2 +
->  include/trace/events/fsi.h               | 86 ++++++++++++++++++++++++
->  include/trace/events/fsi_master_aspeed.h | 12 ++++
->  4 files changed, 108 insertions(+), 3 deletions(-)
+> v2: Keep the release function which is correct
+>     s/devm_kzalloc()/kzalloc()/ instead
 >
-> diff --git a/drivers/fsi/fsi-core.c b/drivers/fsi/fsi-core.c
-> index 59ddc9fd5bca..3a7b78e36701 100644
-> --- a/drivers/fsi/fsi-core.c
-> +++ b/drivers/fsi/fsi-core.c
-> @@ -24,9 +24,6 @@
+> v3: Update the error handling path to free "aspeed" [Guenter Roeck]
+>     Fix another issue when opb_readl() fails [Guenter Roeck]
 >
->  #include "fsi-master.h"
+> I hope that fixing both issues in the same patch is ok. It makes no sense
+> to me not to update the goto to the correct label if opb_readl() fails.
+> ---
+>  drivers/fsi/fsi-master-aspeed.c | 17 +++++++++++------
+>  1 file changed, 11 insertions(+), 6 deletions(-)
 >
-> -#define CREATE_TRACE_POINTS
-> -#include <trace/events/fsi.h>
-> -
->  #define FSI_SLAVE_CONF_NEXT_MASK       GENMASK(31, 31)
->  #define FSI_SLAVE_CONF_SLOTS_MASK      GENMASK(23, 16)
->  #define FSI_SLAVE_CONF_SLOTS_SHIFT     16
-> @@ -95,6 +92,9 @@ struct fsi_slave {
->         u8                      t_echo_delay;
->  };
->
-> +#define CREATE_TRACE_POINTS
-> +#include <trace/events/fsi.h>
-> +
->  #define to_fsi_master(d) container_of(d, struct fsi_master, dev)
->  #define to_fsi_slave(d) container_of(d, struct fsi_slave, dev)
->
-> @@ -524,6 +524,8 @@ static int fsi_slave_scan(struct fsi_slave *slave)
->                         dev->addr = engine_addr;
->                         dev->size = slots * engine_page_size;
->
-> +                       trace_fsi_dev_init(dev);
-> +
->                         dev_dbg(&slave->dev,
->                         "engine[%i]: type %x, version %x, addr %x size %x\n",
->                                         dev->unit, dev->engine_type, version,
-> @@ -1006,6 +1008,7 @@ static int fsi_slave_init(struct fsi_master *master, int link, uint8_t id)
->
->         crc = crc4(0, cfam_id, 32);
->         if (crc) {
-> +               trace_fsi_slave_invalid_cfam(master, link, cfam_id);
->                 dev_warn(&master->dev, "slave %02x:%02x invalid cfam id CRC!\n",
->                                 link, id);
->                 return -EIO;
-> @@ -1080,6 +1083,8 @@ static int fsi_slave_init(struct fsi_master *master, int link, uint8_t id)
->         if (rc)
->                 goto err_free;
->
-> +       trace_fsi_slave_init(slave);
-> +
->         /* Create chardev for userspace access */
->         cdev_init(&slave->cdev, &cfam_fops);
->         rc = cdev_device_add(&slave->cdev, &slave->dev);
 > diff --git a/drivers/fsi/fsi-master-aspeed.c b/drivers/fsi/fsi-master-aspeed.c
-> index 0bed2fab8055..7cec1772820d 100644
+> index 8606e55c1721..0bed2fab8055 100644
 > --- a/drivers/fsi/fsi-master-aspeed.c
 > +++ b/drivers/fsi/fsi-master-aspeed.c
-> @@ -449,11 +449,13 @@ static ssize_t cfam_reset_store(struct device *dev, struct device_attribute *att
->  {
->         struct fsi_master_aspeed *aspeed = dev_get_drvdata(dev);
+> @@ -542,25 +542,28 @@ static int fsi_master_aspeed_probe(struct platform_device *pdev)
+>                 return rc;
+>         }
 >
-> +       trace_fsi_master_aspeed_cfam_reset(true);
->         mutex_lock(&aspeed->lock);
->         gpiod_set_value(aspeed->cfam_reset_gpio, 1);
->         usleep_range(900, 1000);
->         gpiod_set_value(aspeed->cfam_reset_gpio, 0);
->         mutex_unlock(&aspeed->lock);
-> +       trace_fsi_master_aspeed_cfam_reset(false);
+> -       aspeed = devm_kzalloc(&pdev->dev, sizeof(*aspeed), GFP_KERNEL);
+> +       aspeed = kzalloc(sizeof(*aspeed), GFP_KERNEL);
+>         if (!aspeed)
+>                 return -ENOMEM;
 >
->         return count;
+>         aspeed->dev = &pdev->dev;
+>
+>         aspeed->base = devm_platform_ioremap_resource(pdev, 0);
+> -       if (IS_ERR(aspeed->base))
+> -               return PTR_ERR(aspeed->base);
+> +       if (IS_ERR(aspeed->base)) {
+> +               rc = PTR_ERR(aspeed->base);
+> +               goto err_free_aspeed;
+> +       }
+>
+>         aspeed->clk = devm_clk_get(aspeed->dev, NULL);
+>         if (IS_ERR(aspeed->clk)) {
+>                 dev_err(aspeed->dev, "couldn't get clock\n");
+> -               return PTR_ERR(aspeed->clk);
+> +               rc = PTR_ERR(aspeed->clk);
+> +               goto err_free_aspeed;
+>         }
+>         rc = clk_prepare_enable(aspeed->clk);
+>         if (rc) {
+>                 dev_err(aspeed->dev, "couldn't enable clock\n");
+> -               return rc;
+> +               goto err_free_aspeed;
+>         }
+>
+>         rc = setup_cfam_reset(aspeed);
+> @@ -595,7 +598,7 @@ static int fsi_master_aspeed_probe(struct platform_device *pdev)
+>         rc = opb_readl(aspeed, ctrl_base + FSI_MVER, &raw);
+>         if (rc) {
+>                 dev_err(&pdev->dev, "failed to read hub version\n");
+> -               return rc;
+> +               goto err_release;
+>         }
+>
+>         reg = be32_to_cpu(raw);
+> @@ -634,6 +637,8 @@ static int fsi_master_aspeed_probe(struct platform_device *pdev)
+>
+>  err_release:
+>         clk_disable_unprepare(aspeed->clk);
+> +err_free_aspeed:
+> +       kfree(aspeed);
+>         return rc;
 >  }
-> diff --git a/include/trace/events/fsi.h b/include/trace/events/fsi.h
-> index 9832cb8e0eb0..c9a72e8432b8 100644
-> --- a/include/trace/events/fsi.h
-> +++ b/include/trace/events/fsi.h
-> @@ -122,6 +122,92 @@ TRACE_EVENT(fsi_master_break,
->         )
->  );
 >
-> +TRACE_EVENT(fsi_slave_init,
-> +       TP_PROTO(const struct fsi_slave *slave),
-> +       TP_ARGS(slave),
-> +       TP_STRUCT__entry(
-> +               __field(int,    master_idx)
-> +               __field(int,    master_n_links)
-> +               __field(int,    idx)
-> +               __field(int,    link)
-> +               __field(int,    chip_id)
-> +               __field(__u32,  cfam_id)
-> +               __field(__u32,  size)
-> +       ),
-> +       TP_fast_assign(
-> +               __entry->master_idx = slave->master->idx;
-> +               __entry->master_n_links = slave->master->n_links;
-> +               __entry->idx = slave->cdev_idx;
-> +               __entry->link = slave->link;
-> +               __entry->chip_id = slave->chip_id;
-> +               __entry->cfam_id = slave->cfam_id;
-> +               __entry->size = slave->size;
-> +       ),
-> +       TP_printk("fsi%d: idx:%d link:%d/%d cid:%d cfam:%08x %08x",
-> +               __entry->master_idx,
-> +               __entry->idx,
-> +               __entry->link,
-> +               __entry->master_n_links,
-> +               __entry->chip_id,
-> +               __entry->cfam_id,
-> +               __entry->size
-> +       )
-> +);
-> +
-> +TRACE_EVENT(fsi_slave_invalid_cfam,
-> +       TP_PROTO(const struct fsi_master *master, int link, uint32_t cfam_id),
-> +       TP_ARGS(master, link, cfam_id),
-> +       TP_STRUCT__entry(
-> +               __field(int,    master_idx)
-> +               __field(int,    master_n_links)
-> +               __field(int,    link)
-> +               __field(__u32,  cfam_id)
-> +       ),
-> +       TP_fast_assign(
-> +               __entry->master_idx = master->idx;
-> +               __entry->master_n_links = master->n_links;
-> +               __entry->link = link;
-> +               __entry->cfam_id = cfam_id;
-> +       ),
-> +       TP_printk("fsi%d: cfam:%08x link:%d/%d",
-> +               __entry->master_idx,
-> +               __entry->cfam_id,
-> +               __entry->link,
-> +               __entry->master_n_links
-> +       )
-> +);
-> +
-> +TRACE_EVENT(fsi_dev_init,
-> +       TP_PROTO(const struct fsi_device *dev),
-> +       TP_ARGS(dev),
-> +       TP_STRUCT__entry(
-> +               __field(int,    master_idx)
-> +               __field(int,    link)
-> +               __field(int,    type)
-> +               __field(int,    unit)
-> +               __field(int,    version)
-> +               __field(__u32,  addr)
-> +               __field(__u32,  size)
-> +       ),
-> +       TP_fast_assign(
-> +               __entry->master_idx = dev->slave->master->idx;
-> +               __entry->link = dev->slave->link;
-> +               __entry->type = dev->engine_type;
-> +               __entry->unit = dev->unit;
-> +               __entry->version = dev->version;
-> +               __entry->addr = dev->addr;
-> +               __entry->size = dev->size;
-> +       ),
-> +       TP_printk("fsi%d: slv%d: t:%02x u:%02x v:%02x %08x@%08x",
-> +               __entry->master_idx,
-> +               __entry->link,
-> +               __entry->type,
-> +               __entry->unit,
-> +               __entry->version,
-> +               __entry->size,
-> +               __entry->addr
-> +       )
-> +);
->
->  #endif /* _TRACE_FSI_H */
->
-> diff --git a/include/trace/events/fsi_master_aspeed.h b/include/trace/events/fsi_master_aspeed.h
-> index a355ceacc33f..0fff873775f1 100644
-> --- a/include/trace/events/fsi_master_aspeed.h
-> +++ b/include/trace/events/fsi_master_aspeed.h
-> @@ -72,6 +72,18 @@ TRACE_EVENT(fsi_master_aspeed_opb_error,
->                 )
->         );
->
-> +TRACE_EVENT(fsi_master_aspeed_cfam_reset,
-> +       TP_PROTO(bool start),
-> +       TP_ARGS(start),
-> +       TP_STRUCT__entry(
-> +               __field(bool,   start)
-> +       ),
-> +       TP_fast_assign(
-> +               __entry->start = start;
-> +       ),
-> +       TP_printk("%s", __entry->start ? "start" : "end")
-> +);
-> +
->  #endif
->
->  #include <trace/define_trace.h>
 > --
-> 2.27.0
+> 2.32.0
 >
