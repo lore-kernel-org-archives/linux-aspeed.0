@@ -1,57 +1,52 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Mon, 21 Feb 2022 05:45:16 +0000
-Subject: [PATCH v2] iio: adc: aspeed: Add divider flag to fix incorrect
- voltage reading.
-In-Reply-To: <20220221012705.22008-1-billy_tsai@aspeedtech.com>
-References: <20220221012705.22008-1-billy_tsai@aspeedtech.com>
-Message-ID: <CACPK8XdsRorJvMjUMNYGAYNLGLzhYJEZSQMTk1ZywwY+SyqDbQ@mail.gmail.com>
+Date: Mon, 21 Feb 2022 07:33:59 +0000
+Subject: [PATCH 0/2] leds: pca955x: Expose GPIOs for all pins
+In-Reply-To: <d2b85ad7-aef7-6088-03f5-cbd6e0bcab5d@kaod.org>
+References: <20210921043936.468001-1-andrew@aj.id.au>
+ <d2b85ad7-aef7-6088-03f5-cbd6e0bcab5d@kaod.org>
+Message-ID: <CACPK8Xdvns7PK9t1ZutAbkJqhb5eRcoWCDySQGsfbtLv+XMvqQ@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, 21 Feb 2022 at 01:26, Billy Tsai <billy_tsai@aspeedtech.com> wrote:
->
-> The formula for the ADC sampling period in ast2400/ast2500 is:
-> ADC clock period = PCLK * 2 * (ADC0C[31:17] + 1) * (ADC0C[9:0])
-> When ADC0C[9:0] is set to 0 the sampling voltage will be lower than
-> expected, because the hardware may not have enough time to
-> charge/discharge to a stable voltage. This patch use the flag
-> CLK_DIVIDER_ONE_BASED which will use the raw value read from the
-> register, with the value of zero considered invalid to conform to the
-> corrected formula.
+Hello Pavel,
 
-(to answer my own question)
 
-..and this is okay on the 2600, because we do not set need_prescaler =
-true on that platform.
 
-Reviewed-by: Joel Stanley <joel@jms.id.au>
+On Fri, 24 Sept 2021 at 06:41, C?dric Le Goater <clg@kaod.org> wrote:
+>
+> On 9/21/21 06:39, Andrew Jeffery wrote:
+> > Without these patches the driver limits the number of pins exposed on
+> > the gpiochip to the number of pins specified as GPIO in the devicetree,
+> > but doesn't map between the GPIO and pin number spaces. The result is
+> > that specifying offset or interleaved GPIOs in the devicetree gives
+> > unexpected behaviour in userspace.
+> >
+> > By always exposing all pins as GPIOs the patches resolve the lack of
+> > mapping between GPIO offsets and pins on the package in the driver by
+> > ensuring we always have a 1-to-1 mapping.
+> >
+> > The issue is primarily addressed by patch 1/2. Patch 2/2 makes it
+> > possible to not expose any pins as LEDs (and therefore make them all
+> > accessible as GPIOs). This has a follow-on effect of allowing the driver
+> > to bind to a device instantiated at runtime without requiring a
+> > description in the devicetree.
+> >
+> > I've tested the series under qemu to inspect the various interactions
+> > between LEDs vs GPIOs as well as conflicting GPIO requests.
 
+> > Please review!
 >
-> Fixes: 573803234e72 ("iio: Aspeed ADC")
-> Reported-by: Konstantin Klubnichkin <kitsok@yandex-team.ru>
-> Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
-> ---
->  drivers/iio/adc/aspeed_adc.c | 4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
+> This is simpler than the 'ngpio' business we had before.
 >
-> diff --git a/drivers/iio/adc/aspeed_adc.c b/drivers/iio/adc/aspeed_adc.c
-> index a957cad1bfab..ffae64f39221 100644
-> --- a/drivers/iio/adc/aspeed_adc.c
-> +++ b/drivers/iio/adc/aspeed_adc.c
-> @@ -539,7 +539,9 @@ static int aspeed_adc_probe(struct platform_device *pdev)
->         data->clk_scaler = devm_clk_hw_register_divider(
->                 &pdev->dev, clk_name, clk_parent_name, scaler_flags,
->                 data->base + ASPEED_REG_CLOCK_CONTROL, 0,
-> -               data->model_data->scaler_bit_width, 0, &data->clk_lock);
-> +               data->model_data->scaler_bit_width,
-> +               data->model_data->need_prescaler ? CLK_DIVIDER_ONE_BASED : 0,
-> +               &data->clk_lock);
->         if (IS_ERR(data->clk_scaler))
->                 return PTR_ERR(data->clk_scaler);
->
-> --
-> 2.25.1
->
+> Reviewed-by: C?dric Le Goater <clg@kaod.org>
+
+I saw that you recently merged some LED patches. I was wondering if
+you could consider this series for v5.18. It still applies cleanly,
+and we've been running it for a while now, so it's very well tested.
+
+Cheers,
+
+Joel
