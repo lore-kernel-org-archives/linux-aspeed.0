@@ -1,10 +1,10 @@
 From: Pratyush Yadav <p.yadav@ti.com>
-Date: Fri, 25 Feb 2022 14:42:19 +0530
-Subject: [PATCH 04/10] spi: aspeed: Add support for direct mapping
-In-Reply-To: <20220214094231.3753686-5-clg@kaod.org>
+Date: Fri, 25 Feb 2022 14:48:09 +0530
+Subject: [PATCH 08/10] spi: aspeed: Calibrate read timings
+In-Reply-To: <20220214094231.3753686-9-clg@kaod.org>
 References: <20220214094231.3753686-1-clg@kaod.org>
- <20220214094231.3753686-5-clg@kaod.org>
-Message-ID: <20220225091219.bv62jm3nehg4e4z4@ti.com>
+ <20220214094231.3753686-9-clg@kaod.org>
+Message-ID: <20220225091809.gvup3mcst45szi6x@ti.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -12,117 +12,36 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 On 14/02/22 10:42AM, C?dric Le Goater wrote:
-> Use direct mapping to read the flash device contents. This operation
-> mode is called "Command mode" on Aspeed SoC SMC controllers. It uses a
-> Control Register for the settings to apply when a memory operation is
-> performed on the flash device mapping window.
+> To accommodate the different response time of SPI transfers on different
+> boards and different SPI NOR devices, the Aspeed controllers provide a
+> set of Read Timing Compensation registers to tune the timing delays
+> depending on the frequency being used. The AST2600 SoC has one of
+> these registers per device. On the AST2500 and AST2400 SoCs, the
+> timing register is shared by all devices which is a bit problematic to
+> get good results other than for one device.
 > 
-> If the window is not big enough, fall back to the "User mode" to
-> perform the read.
+> The algorithm first reads a golden buffer at low speed and then performs
+> reads with different clocks and delay cycle settings to find a breaking
+> point. This selects a default good frequency for the CEx control register.
+> The current settings are bit optimistic as we pick the first delay giving
+> good results. A safer approach would be to determine an interval and
+> choose the middle value.
 > 
-> Direct mapping for writes will come later when validated.
+> Due to the lack of API, calibration is performed when the direct mapping
+> for reads is created.
+
+The dirmap_create mapping says nothing about _when_ it should be called. 
+So there is no guarantee that it will only be called after the flash is 
+fully initialized. I suggest you either make this a requirement of the 
+API, or create a new API that guarantees it will only be called after 
+the flash is initialized, like [0].
+
+[0] https://patchwork.ozlabs.org/project/linux-mtd/patch/20210311191216.7363-2-p.yadav at ti.com/
+
 > 
+> Cc: Pratyush Yadav <p.yadav@ti.com>
 > Signed-off-by: C?dric Le Goater <clg@kaod.org>
 > ---
->  drivers/spi/spi-aspeed-smc.c | 67 ++++++++++++++++++++++++++++++++++--
->  1 file changed, 65 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/spi/spi-aspeed-smc.c b/drivers/spi/spi-aspeed-smc.c
-> index 0aeff6f468af..8d33fcb7736a 100644
-> --- a/drivers/spi/spi-aspeed-smc.c
-> +++ b/drivers/spi/spi-aspeed-smc.c
-> @@ -345,8 +345,8 @@ static int do_aspeed_spi_exec_op(struct spi_mem *mem, const struct spi_mem_op *o
->  		if (!op->addr.nbytes)
->  			ret = aspeed_spi_read_reg(chip, op);
->  		else
-> -			ret = aspeed_spi_read_user(chip, op, op->addr.val,
-> -						   op->data.nbytes, op->data.buf.in);
-> +			memcpy_fromio(op->data.buf.in, chip->ahb_base + op->addr.val,
-> +				      op->data.nbytes);
-
-Why change this? exec_op should be independent from dirmap APIs. And you 
-don't even do the ahb_window_size checks here.
-
->  	} else {
->  		if (!op->addr.nbytes)
->  			ret = aspeed_spi_write_reg(chip, op);
-> @@ -426,10 +426,73 @@ static int aspeed_spi_chip_set_default_window(struct aspeed_spi_chip *chip)
->  	return chip->ahb_window_size ? 0 : -1;
->  }
->  
-> +static int aspeed_spi_dirmap_create(struct spi_mem_dirmap_desc *desc)
-> +{
-> +	struct aspeed_spi *aspi = spi_controller_get_devdata(desc->mem->spi->master);
-> +	struct aspeed_spi_chip *chip = &aspi->chips[desc->mem->spi->chip_select];
-> +	struct spi_mem_op *op = &desc->info.op_tmpl;
-> +	u32 ctl_val;
-> +	int ret = 0;
-> +
-> +	chip->clk_freq = desc->mem->spi->max_speed_hz;
-> +
-> +	/* Only for reads */
-> +	if (op->data.dir != SPI_MEM_DATA_IN)
-> +		return -EOPNOTSUPP;
-> +
-> +	if (desc->info.length > chip->ahb_window_size)
-> +		dev_warn(aspi->dev, "CE%d window (%dMB) too small for mapping",
-> +			 chip->cs, chip->ahb_window_size >> 20);
-> +
-> +	/* Define the default IO read settings */
-> +	ctl_val = readl(chip->ctl) & ~CTRL_IO_CMD_MASK;
-> +	ctl_val |= aspeed_spi_get_io_mode(op) |
-> +		op->cmd.opcode << CTRL_COMMAND_SHIFT |
-> +		CTRL_IO_DUMMY_SET(op->dummy.nbytes / op->dummy.buswidth) |
-> +		CTRL_IO_MODE_READ;
-> +
-> +	/* Tune 4BYTE address mode */
-> +	if (op->addr.nbytes) {
-> +		u32 addr_mode = readl(aspi->regs + CE_CTRL_REG);
-> +
-> +		if (op->addr.nbytes == 4)
-> +			addr_mode |= (0x11 << chip->cs);
-> +		else
-> +			addr_mode &= ~(0x11 << chip->cs);
-> +		writel(addr_mode, aspi->regs + CE_CTRL_REG);
-> +	}
-> +
-> +	/* READ mode is the controller default setting */
-> +	chip->ctl_val[ASPEED_SPI_READ] = ctl_val;
-> +	writel(chip->ctl_val[ASPEED_SPI_READ], chip->ctl);
-> +
-> +	dev_info(aspi->dev, "CE%d read buswidth:%d [0x%08x]\n",
-> +		 chip->cs, op->data.buswidth, chip->ctl_val[ASPEED_SPI_READ]);
-> +
-> +	return ret;
-> +}
-> +
-> +static int aspeed_spi_dirmap_read(struct spi_mem_dirmap_desc *desc,
-> +				  u64 offset, size_t len, void *buf)
-> +{
-> +	struct aspeed_spi *aspi = spi_controller_get_devdata(desc->mem->spi->master);
-> +	struct aspeed_spi_chip *chip = &aspi->chips[desc->mem->spi->chip_select];
-> +
-> +	/* Switch to USER command mode if mapping window is too small */
-> +	if (chip->ahb_window_size < offset + len)
-> +		aspeed_spi_read_user(chip, &desc->info.op_tmpl, offset, len, buf);
-> +	else
-> +		memcpy_fromio(buf, chip->ahb_base + offset, len);
-> +
-> +	return len;
-> +}
-> +
->  static const struct spi_controller_mem_ops aspeed_spi_mem_ops = {
->  	.supports_op = aspeed_spi_supports_op,
->  	.exec_op = aspeed_spi_exec_op,
->  	.get_name = aspeed_spi_get_name,
-> +	.dirmap_create = aspeed_spi_dirmap_create,
-> +	.dirmap_read = aspeed_spi_dirmap_read,
->  };
->  
->  static void aspeed_spi_chip_set_type(struct aspeed_spi_chip *chip, int type)
-> -- 
-> 2.34.1
-> 
 
 -- 
 Regards,
