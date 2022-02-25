@@ -1,49 +1,42 @@
-From: Pratyush Yadav <p.yadav@ti.com>
-Date: Fri, 25 Feb 2022 14:48:09 +0530
-Subject: [PATCH 08/10] spi: aspeed: Calibrate read timings
-In-Reply-To: <20220214094231.3753686-9-clg@kaod.org>
-References: <20220214094231.3753686-1-clg@kaod.org>
- <20220214094231.3753686-9-clg@kaod.org>
-Message-ID: <20220225091809.gvup3mcst45szi6x@ti.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Fri, 25 Feb 2022 15:56:48 +0100
+Subject: [GIT PULL] ARM: aspeed: devicetree changes for 5.18
+In-Reply-To: <CACPK8XcLpAA7b_hGea-Wc8H5eu9=YpPZ9b75nYF7rqMzDcMw9w@mail.gmail.com>
+References: <CACPK8XcLpAA7b_hGea-Wc8H5eu9=YpPZ9b75nYF7rqMzDcMw9w@mail.gmail.com>
+Message-ID: <CAK8P3a3eXgHSX8wUX030rzvMtnqaEjjKqCeX3=uJEK59iTLtEQ@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 14/02/22 10:42AM, C?dric Le Goater wrote:
-> To accommodate the different response time of SPI transfers on different
-> boards and different SPI NOR devices, the Aspeed controllers provide a
-> set of Read Timing Compensation registers to tune the timing delays
-> depending on the frequency being used. The AST2600 SoC has one of
-> these registers per device. On the AST2500 and AST2400 SoCs, the
-> timing register is shared by all devices which is a bit problematic to
-> get good results other than for one device.
-> 
-> The algorithm first reads a golden buffer at low speed and then performs
-> reads with different clocks and delay cycle settings to find a breaking
-> point. This selects a default good frequency for the CEx control register.
-> The current settings are bit optimistic as we pick the first delay giving
-> good results. A safer approach would be to determine an interval and
-> choose the middle value.
-> 
-> Due to the lack of API, calibration is performed when the direct mapping
-> for reads is created.
+On Mon, Feb 21, 2022 at 9:57 AM Joel Stanley <joel@jms.id.au> wrote:
+> ----------------------------------------------------------------
+> ASPEED device tree updates for 5.18
+>
+>  - New machines
+>
+>   * Quanta S6Q AST2600 BMC
+>   * Facebook's Bletchley is not new, but has a large update
+>
+>  - Small clenaups and additions for Everest, Rainier and Tacoma, and the
+>    flash layout
+>
+> ----------------------------------------------------------------
+> Jonathan Neusch?fer (8):
+>       dt-bindings: arm/npcm: Add binding for global control registers (GCR)
+>       MAINTAINERS: Match all of bindings/arm/npcm/ as part of NPCM architecture
+>       ARM: dts: wpcm450: Add global control registers (GCR) node
+>       ARM: dts: wpcm450: Add pinctrl and GPIO nodes
+>       ARM: dts: wpcm450: Add pin functions
+>       ARM: dts: wpcm450-supermicro-x9sci-ln4f: Add GPIO LEDs and buttons
+>       ARM: dts: wpcm450: Add pinmux information to UART0
+>       MAINTAINERS: ARM/WPCM450: Add 'W:' line with wiki
 
-The dirmap_create mapping says nothing about _when_ it should be called. 
-So there is no guarantee that it will only be called after the flash is 
-fully initialized. I suggest you either make this a requirement of the 
-API, or create a new API that guarantees it will only be called after 
-the flash is initialized, like [0].
+It looks like you tagged the wrong branch, these are the same contents
+as in the nuvoton branch, but the description is for aspeed.
 
-[0] https://patchwork.ozlabs.org/project/linux-mtd/patch/20210311191216.7363-2-p.yadav at ti.com/
+I assume you have the correct branch somewhere local, so please resend
+the fixed pull request
 
-> 
-> Cc: Pratyush Yadav <p.yadav@ti.com>
-> Signed-off-by: C?dric Le Goater <clg@kaod.org>
-> ---
-
--- 
-Regards,
-Pratyush Yadav
-Texas Instruments Inc.
+       Arnd
