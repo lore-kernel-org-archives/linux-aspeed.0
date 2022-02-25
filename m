@@ -1,10 +1,10 @@
 From: Pratyush Yadav <p.yadav@ti.com>
-Date: Fri, 25 Feb 2022 13:20:07 +0530
-Subject: [PATCH 03/10] spi: spi-mem: Add driver for Aspeed SMC controllers
-In-Reply-To: <20220214094231.3753686-4-clg@kaod.org>
+Date: Fri, 25 Feb 2022 14:42:19 +0530
+Subject: [PATCH 04/10] spi: aspeed: Add support for direct mapping
+In-Reply-To: <20220214094231.3753686-5-clg@kaod.org>
 References: <20220214094231.3753686-1-clg@kaod.org>
- <20220214094231.3753686-4-clg@kaod.org>
-Message-ID: <20220225075007.73xypamm3zbjnkg6@ti.com>
+ <20220214094231.3753686-5-clg@kaod.org>
+Message-ID: <20220225091219.bv62jm3nehg4e4z4@ti.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -12,156 +12,117 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 On 14/02/22 10:42AM, C?dric Le Goater wrote:
-> This SPI driver adds support for the Aspeed static memory controllers
-> of the AST2600, AST2500 and AST2400 SoCs using the spi-mem interface.
+> Use direct mapping to read the flash device contents. This operation
+> mode is called "Command mode" on Aspeed SoC SMC controllers. It uses a
+> Control Register for the settings to apply when a memory operation is
+> performed on the flash device mapping window.
 > 
->  * AST2600 Firmware SPI Memory Controller (FMC)
->    . BMC firmware
->    . 3 chip select pins (CE0 ~ CE2)
->    . Only supports SPI type flash memory
->    . different segment register interface
->    . single, dual and quad mode.
+> If the window is not big enough, fall back to the "User mode" to
+> perform the read.
 > 
->  * AST2600 SPI Flash Controller (SPI1 and SPI2)
->    . host firmware
->    . 2 chip select pins (CE0 ~ CE1)
->    . different segment register interface
->    . single, dual and quad mode.
+> Direct mapping for writes will come later when validated.
 > 
->  * AST2500 Firmware SPI Memory Controller (FMC)
->    . BMC firmware
->    . 3 chip select pins (CE0 ~ CE2)
->    . supports SPI type flash memory (CE0-CE1)
->    . CE2 can be of NOR type flash but this is not supported by the driver
->    . single, dual mode.
-> 
->  * AST2500 SPI Flash Controller (SPI1 and SPI2)
->    . host firmware
->    . 2 chip select pins (CE0 ~ CE1)
->    . single, dual mode.
-> 
->  * AST2400 New Static Memory Controller (also referred as FMC)
->    . BMC firmware
->    . New register set
->    . 5 chip select pins (CE0 ? CE4)
->    . supports NOR flash, NAND flash and SPI flash memory.
->    . single, dual and quad mode.
-> 
-> Each controller has a memory range on which flash devices contents are
-> mapped. Each device is assigned a window that can be changed at bootime
-> with the Segment Address Registers.
-> 
-> Each SPI flash device can then be accessed in two modes: Command and
-> User. When in User mode, SPI transfers are initiated with accesses to
-> the memory segment of a device. When in Command mode, memory
-> operations on the memory segment of a device generate SPI commands
-> automatically using a Control Register for the settings.
-> 
-> This initial patch adds support for User mode. Command mode needs a little
-> more work to check that the memory window on the AHB bus fits the device
-> size. It will come later when support for direct mapping is added.
-> 
-> Single and dual mode RX transfers are supported. Other types than SPI
-> are not supported.
-> 
-> Signed-off-by: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
 > Signed-off-by: C?dric Le Goater <clg@kaod.org>
 > ---
->  drivers/spi/spi-aspeed-smc.c            | 766 ++++++++++++++++++++++++
->  drivers/mtd/spi-nor/controllers/Kconfig |   2 +-
->  drivers/spi/Kconfig                     |  11 +
->  drivers/spi/Makefile                    |   1 +
->  4 files changed, 779 insertions(+), 1 deletion(-)
->  create mode 100644 drivers/spi/spi-aspeed-smc.c
+>  drivers/spi/spi-aspeed-smc.c | 67 ++++++++++++++++++++++++++++++++++--
+>  1 file changed, 65 insertions(+), 2 deletions(-)
 > 
-[...]
-> +
-> +/* support for 1-1-1, 1-1-2 or 1-1-4 */
-> +static bool aspeed_spi_supports_op(struct spi_mem *mem, const struct spi_mem_op *op)
+> diff --git a/drivers/spi/spi-aspeed-smc.c b/drivers/spi/spi-aspeed-smc.c
+> index 0aeff6f468af..8d33fcb7736a 100644
+> --- a/drivers/spi/spi-aspeed-smc.c
+> +++ b/drivers/spi/spi-aspeed-smc.c
+> @@ -345,8 +345,8 @@ static int do_aspeed_spi_exec_op(struct spi_mem *mem, const struct spi_mem_op *o
+>  		if (!op->addr.nbytes)
+>  			ret = aspeed_spi_read_reg(chip, op);
+>  		else
+> -			ret = aspeed_spi_read_user(chip, op, op->addr.val,
+> -						   op->data.nbytes, op->data.buf.in);
+> +			memcpy_fromio(op->data.buf.in, chip->ahb_base + op->addr.val,
+> +				      op->data.nbytes);
+
+Why change this? exec_op should be independent from dirmap APIs. And you 
+don't even do the ahb_window_size checks here.
+
+>  	} else {
+>  		if (!op->addr.nbytes)
+>  			ret = aspeed_spi_write_reg(chip, op);
+> @@ -426,10 +426,73 @@ static int aspeed_spi_chip_set_default_window(struct aspeed_spi_chip *chip)
+>  	return chip->ahb_window_size ? 0 : -1;
+>  }
+>  
+> +static int aspeed_spi_dirmap_create(struct spi_mem_dirmap_desc *desc)
 > +{
-> +	if (op->cmd.buswidth > 1)
-> +		return false;
+> +	struct aspeed_spi *aspi = spi_controller_get_devdata(desc->mem->spi->master);
+> +	struct aspeed_spi_chip *chip = &aspi->chips[desc->mem->spi->chip_select];
+> +	struct spi_mem_op *op = &desc->info.op_tmpl;
+> +	u32 ctl_val;
+> +	int ret = 0;
 > +
-> +	if (op->addr.nbytes != 0) {
-> +		if (op->addr.buswidth > 1 || op->addr.nbytes > 4)
-> +			return false;
+> +	chip->clk_freq = desc->mem->spi->max_speed_hz;
+> +
+> +	/* Only for reads */
+> +	if (op->data.dir != SPI_MEM_DATA_IN)
+> +		return -EOPNOTSUPP;
+> +
+> +	if (desc->info.length > chip->ahb_window_size)
+> +		dev_warn(aspi->dev, "CE%d window (%dMB) too small for mapping",
+> +			 chip->cs, chip->ahb_window_size >> 20);
+> +
+> +	/* Define the default IO read settings */
+> +	ctl_val = readl(chip->ctl) & ~CTRL_IO_CMD_MASK;
+> +	ctl_val |= aspeed_spi_get_io_mode(op) |
+> +		op->cmd.opcode << CTRL_COMMAND_SHIFT |
+> +		CTRL_IO_DUMMY_SET(op->dummy.nbytes / op->dummy.buswidth) |
+> +		CTRL_IO_MODE_READ;
+> +
+> +	/* Tune 4BYTE address mode */
+> +	if (op->addr.nbytes) {
+> +		u32 addr_mode = readl(aspi->regs + CE_CTRL_REG);
+> +
+> +		if (op->addr.nbytes == 4)
+> +			addr_mode |= (0x11 << chip->cs);
+> +		else
+> +			addr_mode &= ~(0x11 << chip->cs);
+> +		writel(addr_mode, aspi->regs + CE_CTRL_REG);
 > +	}
 > +
-> +	if (op->dummy.nbytes != 0) {
-> +		if (op->dummy.buswidth > 1 || op->dummy.nbytes > 7)
-> +			return false;
-> +	}
+> +	/* READ mode is the controller default setting */
+> +	chip->ctl_val[ASPEED_SPI_READ] = ctl_val;
+> +	writel(chip->ctl_val[ASPEED_SPI_READ], chip->ctl);
 > +
-> +	if (op->data.nbytes != 0 && op->data.buswidth > 4)
-> +		return false;
+> +	dev_info(aspi->dev, "CE%d read buswidth:%d [0x%08x]\n",
+> +		 chip->cs, op->data.buswidth, chip->ctl_val[ASPEED_SPI_READ]);
 > +
-> +	if (!spi_mem_default_supports_op(mem, op))
-> +		return false;
-> +
-> +	return true;
-
-Nitpick: You can just do return spi_mem_default_supports_op(mem, op);
-
+> +	return ret;
 > +}
 > +
-[...]
-> +
-> +static int aspeed_spi_init_devices(struct platform_device *pdev, struct aspeed_spi *aspi)
+> +static int aspeed_spi_dirmap_read(struct spi_mem_dirmap_desc *desc,
+> +				  u64 offset, size_t len, void *buf)
 > +{
-> +	struct device_node *np;
-> +	unsigned int cs;
-> +	int ret;
+> +	struct aspeed_spi *aspi = spi_controller_get_devdata(desc->mem->spi->master);
+> +	struct aspeed_spi_chip *chip = &aspi->chips[desc->mem->spi->chip_select];
 > +
-> +	for_each_available_child_of_node(aspi->dev->of_node, np) {
-> +		struct aspeed_spi_chip *chip;
+> +	/* Switch to USER command mode if mapping window is too small */
+> +	if (chip->ahb_window_size < offset + len)
+> +		aspeed_spi_read_user(chip, &desc->info.op_tmpl, offset, len, buf);
+> +	else
+> +		memcpy_fromio(buf, chip->ahb_base + offset, len);
 > +
-> +		if (!of_device_is_compatible(np, "jedec,spi-nor"))
-> +			continue;
-> +
-> +		ret = of_property_read_u32(np, "reg", &cs);
-> +		if (ret) {
-> +			dev_err(aspi->dev, "Couldn't not read chip select.\n");
-> +			of_node_put(np);
-> +			return ret;
-> +		}
-> +
-> +		if (cs > aspi->data->max_cs) {
-> +			dev_err(aspi->dev, "Chip select %d out of range.\n", cs);
-> +			of_node_put(np);
-> +			return -ERANGE;
-> +		}
-> +
-> +		chip = &aspi->chips[cs];
-> +		chip->aspi = aspi;
-> +		chip->cs = cs;
-> +
-> +		ret = aspeed_spi_chip_init(chip);
-> +		if (ret) {
-> +			of_node_put(np);
-> +			return ret;
-> +		}
-> +
-> +		if (of_property_read_u32(np, "spi-max-frequency", &chip->clk_freq))
-> +			chip->clk_freq = ASPEED_SPI_DEFAULT_FREQ;
-> +
-> +		aspi->num_cs++;
-> +	}
-
-SPI MEM already gives you all this information. Get it from there, don't 
-parse it yourself.
-
-You can get Chip Select via spi_mem->spi->chip_select.
-You can get clock frequency via spi_mem->spi->max_speed_hz.
-
-With these comments fixed,
-
-Acked-by: Pratyush Yadav <p.yadav@ti.com>
-
-> +
-> +	return 0;
+> +	return len;
 > +}
 > +
-[...]
+>  static const struct spi_controller_mem_ops aspeed_spi_mem_ops = {
+>  	.supports_op = aspeed_spi_supports_op,
+>  	.exec_op = aspeed_spi_exec_op,
+>  	.get_name = aspeed_spi_get_name,
+> +	.dirmap_create = aspeed_spi_dirmap_create,
+> +	.dirmap_read = aspeed_spi_dirmap_read,
+>  };
+>  
+>  static void aspeed_spi_chip_set_type(struct aspeed_spi_chip *chip, int type)
+> -- 
+> 2.34.1
+> 
 
 -- 
 Regards,
