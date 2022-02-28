@@ -1,62 +1,46 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Mon, 28 Feb 2022 05:00:17 +0000
-Subject: [PATCH] ARM: dts: aspeed: Add ASRock ROMED8HM3 BMC
-In-Reply-To: <Yd4rfi/iICQ5EjGh@hatter.bewilderbeest.net>
-References: <20220105101719.7093-1-zev@bewilderbeest.net>
- <CACPK8XeHyoo0D1vQm=L8m284kC5n-O+FEMp1HN+ROWJfx7qjhQ@mail.gmail.com>
- <Yd4rfi/iICQ5EjGh@hatter.bewilderbeest.net>
-Message-ID: <CACPK8XfGdTvznj90C7XFJ04QVU96NdwfXQX_Rj+bkCnov1Urpg@mail.gmail.com>
+Date: Mon, 28 Feb 2022 05:52:34 +0000
+Subject: [GIT PULL] ARM: aspeed: devicetree changes for 5.18
+In-Reply-To: <CAK8P3a3eXgHSX8wUX030rzvMtnqaEjjKqCeX3=uJEK59iTLtEQ@mail.gmail.com>
+References: <CACPK8XcLpAA7b_hGea-Wc8H5eu9=YpPZ9b75nYF7rqMzDcMw9w@mail.gmail.com>
+ <CAK8P3a3eXgHSX8wUX030rzvMtnqaEjjKqCeX3=uJEK59iTLtEQ@mail.gmail.com>
+Message-ID: <CACPK8XcxuoF8U0ruwBakTLKxXzfW66tL7taK=y011LxSE1=uSg@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 12 Jan 2022 at 01:14, Zev Weiss <zev@bewilderbeest.net> wrote:
+On Fri, 25 Feb 2022 at 14:57, Arnd Bergmann <arnd@arndb.de> wrote:
 >
-> On Tue, Jan 11, 2022 at 02:59:28AM PST, Joel Stanley wrote:
-> >On Wed, 5 Jan 2022 at 23:10, Zev Weiss <zev@bewilderbeest.net> wrote:
-> >>
-> >> This is a half-width, single-socket Epyc server board with an AST2500
-> >> BMC.  This device tree is sufficient for basic OpenBMC functionality,
-> >> but we'll need to add a few more devices (as driver support becomes
-> >> available) before it's fully usable.
-> >>
-> >> Signed-off-by: Zev Weiss <zev@bewilderbeest.net>
+> On Mon, Feb 21, 2022 at 9:57 AM Joel Stanley <joel@jms.id.au> wrote:
+> > ----------------------------------------------------------------
+> > ASPEED device tree updates for 5.18
 > >
-> >Reviewed-by: Joel Stanley <joel@jms.id.au>
+> >  - New machines
 > >
+> >   * Quanta S6Q AST2600 BMC
+> >   * Facebook's Bletchley is not new, but has a large update
+> >
+> >  - Small clenaups and additions for Everest, Rainier and Tacoma, and the
+> >    flash layout
+> >
+> > ----------------------------------------------------------------
+> > Jonathan Neusch?fer (8):
+> >       dt-bindings: arm/npcm: Add binding for global control registers (GCR)
+> >       MAINTAINERS: Match all of bindings/arm/npcm/ as part of NPCM architecture
+> >       ARM: dts: wpcm450: Add global control registers (GCR) node
+> >       ARM: dts: wpcm450: Add pinctrl and GPIO nodes
+> >       ARM: dts: wpcm450: Add pin functions
+> >       ARM: dts: wpcm450-supermicro-x9sci-ln4f: Add GPIO LEDs and buttons
+> >       ARM: dts: wpcm450: Add pinmux information to UART0
+> >       MAINTAINERS: ARM/WPCM450: Add 'W:' line with wiki
 >
-> Thanks!
+> It looks like you tagged the wrong branch, these are the same contents
+> as in the nuvoton branch, but the description is for aspeed.
+>
+> I assume you have the correct branch somewhere local, so please resend
+> the fixed pull request
 
-I've merged this for v5.18.
-
->
-> >Have you considered using the openbmc gpio naming scheme for the
-> >gpio-line-names?
-> >
->
-> I looked at it, but decided not to for a few reasons:
->
->   - For systems that are in the early stages of a porting effort (like
->     this one currently is), I'm still referring to hardware schematics
->     fairly often, and using the same identifiers in software that are
->     used in the schematics simplifies things by avoiding an extra
->     translation step between the two.
->
->   - Most of the GPIO-related userspace components (that I'm dealing with
->     anyway, e.g. x86-power-control and host-error-monitor) already have
->     their own GPIO line-name configuration/remapping mechanisms that need
->     to be set up anyway.
->
->   - There's a solid mix of GPIOs that would be covered by the naming
->     guidelines and others that aren't; having a mix of the two styles
->     seems a bit awkward to me.
->
-> That said, I sympathize with the motivation behind it and I'm not
-> vehemently opposed on the whole, so if there's a strong preference to
-> follow that scheme I could probably be talked into changing it.
->
->
-> Zev
->
+I did! The correct branch was pushed to korg, but I tagged the wrong
+branch. My bad, I'll send a v2.
