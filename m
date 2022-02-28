@@ -1,49 +1,41 @@
 From: Quan Nguyen <quan@os.amperecomputing.com>
-Date: Mon, 28 Feb 2022 07:02:42 +0700
-Subject: [PATCH v1 5/5] ARM: dts: aspeed: mtjade: Move all adc sensors into
- iio-hwmon node
+Date: Mon, 28 Feb 2022 07:02:38 +0700
+Subject: [PATCH v1 1/5] ARM: dts: aspeed: mtjade: Enable secondary flash
 In-Reply-To: <20220228000242.1884-1-quan@os.amperecomputing.com>
 References: <20220228000242.1884-1-quan@os.amperecomputing.com>
-Message-ID: <20220228000242.1884-6-quan@os.amperecomputing.com>
+Message-ID: <20220228000242.1884-2-quan@os.amperecomputing.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Move adc14 and adc15 (battery sensor) into single iio-hwmon node to
-correct label to be read by single application for all adc sensors.
+Enable the secondary flash of the Ampere's Mt. Jade's BMC.
 
 Signed-off-by: Quan Nguyen <quan@os.amperecomputing.com>
 Signed-off-by: Thang Q. Nguyen <thang@os.amperecomputing.com>
 ---
- arch/arm/boot/dts/aspeed-bmc-ampere-mtjade.dts | 13 ++-----------
- 1 file changed, 2 insertions(+), 11 deletions(-)
+ arch/arm/boot/dts/aspeed-bmc-ampere-mtjade.dts | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
 diff --git a/arch/arm/boot/dts/aspeed-bmc-ampere-mtjade.dts b/arch/arm/boot/dts/aspeed-bmc-ampere-mtjade.dts
-index 60b0e650957a..1b2e7ad37566 100644
+index 4c3c3f1a12ea..934bb54b193a 100644
 --- a/arch/arm/boot/dts/aspeed-bmc-ampere-mtjade.dts
 +++ b/arch/arm/boot/dts/aspeed-bmc-ampere-mtjade.dts
-@@ -339,17 +339,8 @@ iio-hwmon {
- 			<&adc10mux 0>, <&adc10mux 1>,
- 			<&adc11mux 0>, <&adc11mux 1>,
- 			<&adc12mux 0>, <&adc12mux 1>,
--			<&adc13mux 0>, <&adc13mux 1>;
--	};
--
--	iio-hwmon-adc14 {
--		compatible = "iio-hwmon";
--		io-channels = <&adc 14>;
--	};
--
--	iio-hwmon-battery {
--		compatible = "iio-hwmon";
--		io-channels = <&adc 15>;
-+			<&adc13mux 0>, <&adc13mux 1>,
-+			<&adc 14>, <&adc 15>;
+@@ -362,6 +362,13 @@ flash at 0 {
+ 		/* spi-max-frequency = <50000000>; */
+ #include "openbmc-flash-layout-64.dtsi"
  	};
++
++	flash at 1 {
++		status = "okay";
++		m25p,fast-read;
++		label = "alt-bmc";
++#include "openbmc-flash-layout-64-alt.dtsi"
++	};
  };
  
+ &spi1 {
 -- 
 2.28.0
 
