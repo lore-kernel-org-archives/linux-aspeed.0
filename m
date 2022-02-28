@@ -1,42 +1,48 @@
-From: Johannes Berg <johannes@sipsolutions.net>
-Date: Mon, 28 Feb 2022 21:27:13 +0100
-Subject: [PATCH 2/6] treewide: remove using list iterator after loop
- body as a ptr
-In-Reply-To: <Yh0tl3Lni4weIMkl@casper.infradead.org>
+From: Jeffrey Walton <noloader@gmail.com>
+Date: Mon, 28 Feb 2022 16:18:56 -0500
+Subject: [PATCH 2/6] treewide: remove using list iterator after loop body
+ as a ptr
+In-Reply-To: <b2d20961dbb7533f380827a7fcc313ff849875c1.camel@HansenPartnership.com>
 References: <20220228110822.491923-1-jakobkoschel@gmail.com>
  <20220228110822.491923-3-jakobkoschel@gmail.com>
  <2e4e95d6-f6c9-a188-e1cd-b1eae465562a@amd.com>
  <CAHk-=wgQps58DPEOe4y5cTh5oE9EdNTWRLXzgMiETc+mFX7jzw@mail.gmail.com>
- <CAHk-=wj8fkosQ7=bps5K+DDazBXk=ypfn49A0sEq+7-nZnyfXA@mail.gmail.com>
- <CAHk-=wiTCvLQkHcJ3y0hpqH7FEk9D28LDvZZogC6OVLk7naBww@mail.gmail.com>
- <Yh0tl3Lni4weIMkl@casper.infradead.org>
-Message-ID: <e3bb7d0632f8ef60f18c19976d57330e1ef00584.camel@sipsolutions.net>
+ <282f0f8d-f491-26fc-6ae0-604b367a5a1a@amd.com>
+ <b2d20961dbb7533f380827a7fcc313ff849875c1.camel@HansenPartnership.com>
+Message-ID: <CAH8yC8nwp8f3rANhCiiP_Oiw2cjfqCwAgZdTXY9OxtN9Tmm7HA@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, 2022-02-28 at 20:16 +0000, Matthew Wilcox wrote:
-> On Mon, Feb 28, 2022 at 12:10:24PM -0800, Linus Torvalds wrote:
-> > We can do
-> > 
-> >         typeof(pos) pos
-> > 
-> > in the 'for ()' loop, and never use __iter at all.
-> > 
-> > That means that inside the for-loop, we use a _different_ 'pos' than outside.
-> 
-> Then we can never use -Wshadow ;-(  I'd love to be able to turn it on;
-> it catches real bugs.
-> 
+On Mon, Feb 28, 2022 at 3:45 PM James Bottomley
+<James.Bottomley@hansenpartnership.com> wrote:
+> ...
+> > Just from skimming over the patches to change this and experience
+> > with the drivers/subsystems I help to maintain I think the primary
+> > pattern looks something like this:
+> >
+> > list_for_each_entry(entry, head, member) {
+> >      if (some_condition_checking(entry))
+> >          break;
+> > }
+> > do_something_with(entry);
+>
+>
+> Actually, we usually have a check to see if the loop found anything,
+> but in that case it should something like
+>
+> if (list_entry_is_head(entry, head, member)) {
+>     return with error;
+> }
+> do_somethin_with(entry);
 
-I was just going to say the same thing...
+Borrowing from c++, perhaps an explicit end should be used:
 
-If we're willing to change the API for the macro, we could do
+  if (list_entry_not_end(entry))
+    do_somethin_with(entry)
 
-  list_for_each_entry(type, pos, head, member)
+It is modelled after c++ and the 'while(begin != end) {}' pattern.
 
-and then actually take advantage of -Wshadow?
-
-johannes
+Jeff
