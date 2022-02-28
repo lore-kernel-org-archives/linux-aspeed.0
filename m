@@ -1,41 +1,40 @@
-From: Quan Nguyen <quan@os.amperecomputing.com>
-Date: Mon, 28 Feb 2022 07:02:38 +0700
-Subject: [PATCH v1 1/5] ARM: dts: aspeed: mtjade: Enable secondary flash
+From: Joel Stanley <joel@jms.id.au>
+Date: Mon, 28 Feb 2022 04:21:11 +0000
+Subject: [PATCH v1 0/5] Enable second flash, update gpios pin and merge
+ adc channels
 In-Reply-To: <20220228000242.1884-1-quan@os.amperecomputing.com>
 References: <20220228000242.1884-1-quan@os.amperecomputing.com>
-Message-ID: <20220228000242.1884-2-quan@os.amperecomputing.com>
+Message-ID: <CACPK8XfCskh7KPhXJqOR9ZLnoBdd64SL9D1z5HoDC+_VVs4LCg@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Enable the secondary flash of the Ampere's Mt. Jade's BMC.
+On Mon, 28 Feb 2022 at 00:03, Quan Nguyen <quan@os.amperecomputing.com> wrote:
+>
+> This patchset adds the second flash support, merge all ADC channels to
+> single iio-hwmon node and update various gpios pin name.
+>
+> Link:https://github.com/openbmc/docs/blob/master/designs/device-tree-gpio-naming.md
+>
+> Quan Nguyen (5):
+>   ARM: dts: aspeed: mtjade: Enable secondary flash
+>   ARM: dts: aspeed: mtjade: Update rtc-battery-voltage-read-enable pin
+>   ARM: dts: aspeed: mtjade: Update host0-ready pin
+>   ARM: dts: aspeed: mtjade: Rename GPIO hog nodes to match schema.
+>   ARM: dts: aspeed: mtjade: Move all adc sensors into iio-hwmon node
 
-Signed-off-by: Quan Nguyen <quan@os.amperecomputing.com>
-Signed-off-by: Thang Q. Nguyen <thang@os.amperecomputing.com>
----
- arch/arm/boot/dts/aspeed-bmc-ampere-mtjade.dts | 7 +++++++
- 1 file changed, 7 insertions(+)
+These look good.
 
-diff --git a/arch/arm/boot/dts/aspeed-bmc-ampere-mtjade.dts b/arch/arm/boot/dts/aspeed-bmc-ampere-mtjade.dts
-index 4c3c3f1a12ea..934bb54b193a 100644
---- a/arch/arm/boot/dts/aspeed-bmc-ampere-mtjade.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-ampere-mtjade.dts
-@@ -362,6 +362,13 @@ flash at 0 {
- 		/* spi-max-frequency = <50000000>; */
- #include "openbmc-flash-layout-64.dtsi"
- 	};
-+
-+	flash at 1 {
-+		status = "okay";
-+		m25p,fast-read;
-+		label = "alt-bmc";
-+#include "openbmc-flash-layout-64-alt.dtsi"
-+	};
- };
- 
- &spi1 {
--- 
-2.28.0
+Reviewed-by: Joel Stanley <joel@jms.id.au>
 
+I'll apply them for v5.18.
+
+>
+>  .../arm/boot/dts/aspeed-bmc-ampere-mtjade.dts | 26 +++++++++----------
+>  1 file changed, 12 insertions(+), 14 deletions(-)
+>
+> --
+> 2.28.0
+>
