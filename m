@@ -1,65 +1,48 @@
 From: Dan Carpenter <dan.carpenter@oracle.com>
-Date: Mon, 28 Feb 2022 16:13:25 +0300
-Subject: [PATCH 2/6] treewide: remove using list iterator after loop body
- as a ptr
-In-Reply-To: <20220228110822.491923-3-jakobkoschel@gmail.com>
+Date: Mon, 28 Feb 2022 16:18:44 +0300
+Subject: [PATCH 1/6] drivers: usb: remove usage of list iterator past the
+ loop body
+In-Reply-To: <E31E215E-C409-40B8-8452-57E70C91484C@gmail.com>
 References: <20220228110822.491923-1-jakobkoschel@gmail.com>
- <20220228110822.491923-3-jakobkoschel@gmail.com>
-Message-ID: <20220228131325.GC2794@kadam>
+ <20220228110822.491923-2-jakobkoschel@gmail.com>
+ <20220228112413.GA2812@kadam>
+ <E31E215E-C409-40B8-8452-57E70C91484C@gmail.com>
+Message-ID: <20220228131844.GD2812@kadam>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Feb 28, 2022 at 12:08:18PM +0100, Jakob Koschel wrote:
-> diff --git a/drivers/scsi/scsi_transport_sas.c b/drivers/scsi/scsi_transport_sas.c
-> index 4ee578b181da..a8cbd90db9d2 100644
-> --- a/drivers/scsi/scsi_transport_sas.c
-> +++ b/drivers/scsi/scsi_transport_sas.c
-> @@ -1060,26 +1060,29 @@ EXPORT_SYMBOL(sas_port_get_phy);
->   * connected to a remote device is a port, so ports must be formed on
->   * all devices with phys if they're connected to anything.
->   */
-> -void sas_port_add_phy(struct sas_port *port, struct sas_phy *phy)
-> +void sas_port_add_phy(struct sas_port *port, struct sas_phy *_phy)
-
-_phy is an unfortunate name.
-
->  {
->  	mutex_lock(&port->phy_list_mutex);
-> -	if (unlikely(!list_empty(&phy->port_siblings))) {
-> +	if (unlikely(!list_empty(&_phy->port_siblings))) {
->  		/* make sure we're already on this port */
-> +		struct sas_phy *phy = NULL;
-
-Maybe call this port_phy?
-
->  		struct sas_phy *tmp;
+On Mon, Feb 28, 2022 at 01:03:36PM +0100, Jakob Koschel wrote:
+> >> @@ -954,7 +957,6 @@ net2272_dequeue(struct usb_ep *_ep, struct usb_request *_req)
+> >> 		dev_dbg(ep->dev->dev, "unlink (%s) pio\n", _ep->name);
+> >> 		net2272_done(ep, req, -ECONNRESET);
+> >> 	}
+> >> -	req = NULL;
+> > 
+> > Another unrelated change.  These are all good changes but send them as
+> > separate patches.
 > 
->  		list_for_each_entry(tmp, &port->phy_list, port_siblings)
-> -			if (tmp == phy)
-> +			if (tmp == _phy) {
-> +				phy = tmp;
->  				break;
-> +			}
->  		/* If this trips, you added a phy that was already
->  		 * part of a different port */
-> -		if (unlikely(tmp != phy)) {
-> +		if (unlikely(!phy)) {
->  			dev_printk(KERN_ERR, &port->dev, "trying to add phy %s fails: it's already part of another port\n",
-> -				   dev_name(&phy->dev));
-> +				   dev_name(&_phy->dev));
->  			BUG();
->  		}
->  	} else {
-> -		sas_port_create_link(port, phy);
-> -		list_add_tail(&phy->port_siblings, &port->phy_list);
-> +		sas_port_create_link(port, _phy);
-> +		list_add_tail(&_phy->port_siblings, &port->phy_list);
->  		port->num_phys++;
->  	}
->  	mutex_unlock(&port->phy_list_mutex);
+> You are referring to the req = NULL, right?
+
+Yes.
+
+> 
+> I've changed the use of 'req' in the same function and assumed that I can
+> just remove the unnecessary statement. But if it's better to do separately
+> I'll do that.
+> 
+
+These are all changes which made me pause during my review to figure out
+why they were necessary.  The line between what is a related part of a
+patch is a bit vague and some maintainers will ask you to add or subtract
+from a patch depending on their individual tastes.  I don't really have
+an exact answer, but I felt like this patch needs to be subtracted from.
+
+Especially if there is a whole chunk of the patch which can be removed,
+then to me, that obviously should be in a different patch.
 
 regards,
 dan carpenter
+
