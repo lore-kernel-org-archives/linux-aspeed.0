@@ -1,5 +1,5 @@
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Mon, 28 Feb 2022 12:03:34 -0800
+From: Christian König <christian.koenig@amd.com>
+Date: Mon, 28 Feb 2022 21:07:03 +0100
 Subject: [PATCH 2/6] treewide: remove using list iterator after loop body
  as a ptr
 In-Reply-To: <CAHk-=wgQps58DPEOe4y5cTh5oE9EdNTWRLXzgMiETc+mFX7jzw@mail.gmail.com>
@@ -7,41 +7,75 @@ References: <20220228110822.491923-1-jakobkoschel@gmail.com>
  <20220228110822.491923-3-jakobkoschel@gmail.com>
  <2e4e95d6-f6c9-a188-e1cd-b1eae465562a@amd.com>
  <CAHk-=wgQps58DPEOe4y5cTh5oE9EdNTWRLXzgMiETc+mFX7jzw@mail.gmail.com>
-Message-ID: <CAHk-=wj8fkosQ7=bps5K+DDazBXk=ypfn49A0sEq+7-nZnyfXA@mail.gmail.com>
+Message-ID: <282f0f8d-f491-26fc-6ae0-604b367a5a1a@amd.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Feb 28, 2022 at 11:56 AM Linus Torvalds
-<torvalds@linux-foundation.org> wrote:
+Am 28.02.22 um 20:56 schrieb Linus Torvalds:
+> On Mon, Feb 28, 2022 at 4:19 AM Christian K?nig
+> <christian.koenig@amd.com> wrote:
+>> I don't think that using the extra variable makes the code in any way
+>> more reliable or easier to read.
+> So I think the next step is to do the attached patch (which requires
+> that "-std=gnu11" that was discussed in the original thread).
 >
+> That will guarantee that the 'pos' parameter of list_for_each_entry()
+> is only updated INSIDE the for_each_list_entry() loop, and can never
+> point to the (wrongly typed) head entry.
+>
+> And I would actually hope that it should actually cause compiler
+> warnings about possibly uninitialized variables if people then use the
+> 'pos' pointer outside the loop. Except
+>
+>   (a) that code in sgx/encl.c currently initializes 'tmp' to NULL for
+> inexplicable reasons - possibly because it already expected this
+> behavior
+>
+>   (b) when I remove that NULL initializer, I still don't get a warning,
+> because we've disabled -Wno-maybe-uninitialized since it results in so
+> many false positives.
+>
+> Oh well.
+>
+> Anyway, give this patch a look, and at least if it's expanded to do
+> "(pos) = NULL" in the entry statement for the for-loop, it will avoid
+> the HEAD type confusion that Jakob is working on. And I think in a
+> cleaner way than the horrid games he plays.
+>
+> (But it won't avoid possible CPU speculation of such type confusion.
+> That, in my opinion, is a completely different issue)
+
+Yes, completely agree.
+
 > I do wish we could actually poison the 'pos' value after the loop
 > somehow - but clearly the "might be uninitialized" I was hoping for
 > isn't the way to do it.
+>
+> Anybody have any ideas?
 
-Side note: we do need *some* way to do it.
+I think we should look at the use cases why code is touching (pos) after 
+the loop.
 
-Because if we make that change, and only set it to another pointer
-when not the head, then we very much change the semantics of
-"list_for_each_head()". The "list was empty" case would now exit with
-'pos' not set at all (or set to NULL if we add that). Or it would be
-set to the last entry.
+Just from skimming over the patches to change this and experience with 
+the drivers/subsystems I help to maintain I think the primary pattern 
+looks something like this:
 
-And regardless, that means that all the
+list_for_each_entry(entry, head, member) {
+ ??? if (some_condition_checking(entry))
+ ??? ??? break;
+}
+do_something_with(entry);
 
-        if (pos == head)
+So the solution should probably not be to change all those use cases to 
+use more temporary variables, but rather to add a list_find_entry(..., 
+condition) macro and consistently use that one instead.
 
-kinds of checks after the loop would be fundamentally broken.
+Regards,
+Christian.
 
-Darn. I really hoped for (and naively expected) that we could actually
-have the compiler warn about the use-after-loop case. That whole
-"compiler will now complain about bad use" was integral to my clever
-plan to use the C99 feature of declaring the iterator inside the loop.
+>
+>                  Linus
 
-But my "clever plan" was apparently some ACME-level Wile E. Coyote sh*t.
-
-Darn.
-
-                   Linus
