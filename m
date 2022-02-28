@@ -1,64 +1,73 @@
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Date: Mon, 28 Feb 2022 14:53:07 -0600
-Subject: [PATCH 2/6] treewide: remove using list iterator after loop body
- as a ptr
-In-Reply-To: <CAHk-=wj27SZQ3kPTesBzkiGhe-mA3gOQqr_adt_bMFzmg1VNaA@mail.gmail.com>
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+Date: Mon, 28 Feb 2022 16:13:09 -0500
+Subject: [PATCH 2/6] treewide: remove using list iterator after loop
+ body as a ptr
+In-Reply-To: <0b65541a-3da7-dc35-690a-0ada75b0adae@amd.com>
 References: <20220228110822.491923-1-jakobkoschel@gmail.com>
  <20220228110822.491923-3-jakobkoschel@gmail.com>
  <2e4e95d6-f6c9-a188-e1cd-b1eae465562a@amd.com>
  <CAHk-=wgQps58DPEOe4y5cTh5oE9EdNTWRLXzgMiETc+mFX7jzw@mail.gmail.com>
- <CAHk-=wj8fkosQ7=bps5K+DDazBXk=ypfn49A0sEq+7-nZnyfXA@mail.gmail.com>
- <CAHk-=wiTCvLQkHcJ3y0hpqH7FEk9D28LDvZZogC6OVLk7naBww@mail.gmail.com>
- <CAHk-=wj27SZQ3kPTesBzkiGhe-mA3gOQqr_adt_bMFzmg1VNaA@mail.gmail.com>
-Message-ID: <20220228205307.GD614@gate.crashing.org>
+ <282f0f8d-f491-26fc-6ae0-604b367a5a1a@amd.com>
+ <b2d20961dbb7533f380827a7fcc313ff849875c1.camel@HansenPartnership.com>
+ <0b65541a-3da7-dc35-690a-0ada75b0adae@amd.com>
+Message-ID: <ade13f419519350e460e7ef1e64477ec72e828ed.camel@HansenPartnership.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Feb 28, 2022 at 12:14:44PM -0800, Linus Torvalds wrote:
-> On Mon, Feb 28, 2022 at 12:10 PM Linus Torvalds
-> <torvalds@linux-foundation.org> wrote:
-> >
-> > We can do
-> >
-> >         typeof(pos) pos
-> >
-> > in the 'for ()' loop, and never use __iter at all.
-> >
-> > That means that inside the for-loop, we use a _different_ 'pos' than outside.
+On Mon, 2022-02-28 at 21:56 +0100, Christian K?nig wrote:
 > 
-> The thing that makes me throw up in my mouth a bit is that in that
+> Am 28.02.22 um 21:42 schrieb James Bottomley:
+> > On Mon, 2022-02-28 at 21:07 +0100, Christian K?nig wrote:
+> > > Am 28.02.22 um 20:56 schrieb Linus Torvalds:
+> > > > On Mon, Feb 28, 2022 at 4:19 AM Christian K?nig
+> > > > <christian.koenig@amd.com> wrote:
+> > > > [SNIP]
+> > > > Anybody have any ideas?
+> > > I think we should look at the use cases why code is touching
+> > > (pos)
+> > > after the loop.
+> > > 
+> > > Just from skimming over the patches to change this and experience
+> > > with the drivers/subsystems I help to maintain I think the
+> > > primary pattern looks something like this:
+> > > 
+> > > list_for_each_entry(entry, head, member) {
+> > >       if (some_condition_checking(entry))
+> > >           break;
+> > > }
+> > > do_something_with(entry);
+> > 
+> > Actually, we usually have a check to see if the loop found
+> > anything, but in that case it should something like
+> > 
+> > if (list_entry_is_head(entry, head, member)) {
+> >      return with error;
+> > }
+> > do_somethin_with(entry);
+> > 
+> > Suffice?  The list_entry_is_head() macro is designed to cope with
+> > the bogus entry on head problem.
 > 
->         typeof(pos) pos
+> That will work and is also what people already do.
 > 
-> the first 'pos' (that we use for just the typeof) is that outer-level
-> 'pos', IOW it's a *different* 'pos' than the second 'pos' in that same
-> declaration that declares the inner level shadowing new 'pos'
-> variable.
+> The key problem is that we let people do the same thing over and
+> over again with slightly different implementations.
+> 
+> Out in the wild I've seen at least using a separate variable, using
+> a bool to indicate that something was found and just assuming that
+> the list has an entry.
+> 
+> The last case is bogus and basically what can break badly.
 
-The new "pos" has not yet been declared, so this has to refer to the
-outer "pos", it cannot be the inner one.  Because it hasn't been
-declared yet :-)
+Yes, I understand that.  I'm saying we should replace that bogus checks
+of entry->something against some_value loop termination condition with
+the list_entry_is_head() macro.  That should be a one line and fairly
+mechanical change rather than the explosion of code changes we seem to
+have in the patch series.
 
-Compare this to
-  typeof (pos) pos = pos;
-where that last "pos" *does* refer to the newly declared one: that
-declaration has already been done!  (So this code is UB btw, 6.3.2.1/2).
-
-> If I was a compiler person, I would say "Linus, that thing is too ugly
-> to live", and I would hate it. I'm just hoping that even compiler
-> people say "that's *so* ugly it's almost beautiful".
-
-It is perfectly well-defined.  Well, it would be good if we (GCC) would
-document it does work, and if someone tested it on LLVM as well.  But it
-is really hard to implement it to *not* work :-)
-
-> Because it does seem to work. It's not pretty, but hey, it's not like
-> our headers are really ever be winning any beauty contests...
-
-It is very pretty!  Needs a comment though :-)
+James
 
 
-Segher
