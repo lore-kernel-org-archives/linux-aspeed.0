@@ -1,54 +1,68 @@
-From: Cédric Le Goater <clg@kaod.org>
-Date: Mon, 28 Feb 2022 15:37:44 +0100
-Subject: [PATCH 01/10] mtd: spi-nor: aspeed: Rename Kconfig option
-In-Reply-To: <CACPK8XeCfLmEJSLV6q5BLpCVztzG3dZehCgqrjgrNr7LaOiReQ@mail.gmail.com>
-References: <20220214094231.3753686-1-clg@kaod.org>
- <20220214094231.3753686-2-clg@kaod.org>
- <20220225073155.f2cxfhm7surf34d4@ti.com>
- <688b7a65-d4b6-682b-494a-1d4178699dba@kaod.org>
- <CACPK8XeCfLmEJSLV6q5BLpCVztzG3dZehCgqrjgrNr7LaOiReQ@mail.gmail.com>
-Message-ID: <423d3bfa-c963-c765-fa65-700db9980804@kaod.org>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Mon, 28 Feb 2022 16:12:55 +0300
+Subject: [PATCH 6/6] treewide: remove check of list iterator against head
+ past the loop body
+In-Reply-To: <20220228110822.491923-7-jakobkoschel@gmail.com>
+References: <20220228110822.491923-1-jakobkoschel@gmail.com>
+ <20220228110822.491923-7-jakobkoschel@gmail.com>
+Message-ID: <20220228131255.GC2812@kadam>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 2/28/22 07:07, Joel Stanley wrote:
-> On Sun, 27 Feb 2022 at 18:50, C?dric Le Goater <clg@kaod.org> wrote:
->>
->> On 2/25/22 08:31, Pratyush Yadav wrote:
->>> On 14/02/22 10:42AM, C?dric Le Goater wrote:
->>>> To prepare transition to the new Aspeed SMC SPI controller driver using
->>>> the spi-mem interface, change the kernel CONFIG option of the current
->>>> driver to reflect that the implementation uses the MTD SPI-NOR interface.
->>>> Once the new driver is sufficiently exposed, we should remove the old one.
->>>
->>> I don't quite understand the reasoning behind this. Why keep the old
->>> driver around? Why not directly replace it with the new one? Does the
->>> new one have any limitations that this one doesn't?
->>
->> No. The old one has more limitations than the new one. The old one in
->> mainline is half baked since we could never merge the necessary bits
->> for training. We have been keeping a full version in the OpenBMC tree.
->>
->> Joel, could we simply drop the old driver in mainline and keep the old
->> one in the OpenBMC tree until we feel comfortable ? I guess we need
->> more testing.
+On Mon, Feb 28, 2022 at 12:08:22PM +0100, Jakob Koschel wrote:
+> diff --git a/drivers/infiniband/hw/hfi1/tid_rdma.c b/drivers/infiniband/hw/hfi1/tid_rdma.c
+> index 2a7abf7a1f7f..a069847b56aa 100644
+> --- a/drivers/infiniband/hw/hfi1/tid_rdma.c
+> +++ b/drivers/infiniband/hw/hfi1/tid_rdma.c
+> @@ -1239,7 +1239,7 @@ static int kern_alloc_tids(struct tid_rdma_flow *flow)
+>  	struct hfi1_ctxtdata *rcd = flow->req->rcd;
+>  	struct hfi1_devdata *dd = rcd->dd;
+>  	u32 ngroups, pageidx = 0;
+> -	struct tid_group *group = NULL, *used;
+> +	struct tid_group *group = NULL, *used, *tmp;
+>  	u8 use;
 > 
-> I would answer Pratyush's question with: the old one is well tested,
-> and the new one is not. We would intend to keep the old one around for
-> a release cycle or two, and once we're confident the new one is stable
-> we would remove the old.
+>  	flow->tnode_cnt = 0;
+> @@ -1248,13 +1248,15 @@ static int kern_alloc_tids(struct tid_rdma_flow *flow)
+>  		goto used_list;
+> 
+>  	/* First look at complete groups */
+> -	list_for_each_entry(group,  &rcd->tid_group_list.list, list) {
+> -		kern_add_tid_node(flow, rcd, "complete groups", group,
+> -				  group->size);
+> +	list_for_each_entry(tmp,  &rcd->tid_group_list.list, list) {
+> +		kern_add_tid_node(flow, rcd, "complete groups", tmp,
+> +				  tmp->size);
+> 
+> -		pageidx += group->size;
+> -		if (!--ngroups)
+> +		pageidx += tmp->size;
+> +		if (!--ngroups) {
+> +			group = tmp;
+>  			break;
+> +		}
+>  	}
+> 
+>  	if (pageidx >= flow->npagesets)
+> @@ -1277,7 +1279,7 @@ static int kern_alloc_tids(struct tid_rdma_flow *flow)
+>  	 * However, if we are at the head, we have reached the end of the
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  	 * complete groups list from the first loop above
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  	 */
 
-yes but we could handle the transition in the OpenBMC tree without putting
-the burden on mainline.
-  
-mainline would only have the newer spi-mem based driver, the OpenBMC tree
-would have it also, along with the older SPI-NOR based driver.
+Originally this code tested for an open code list_is_head() so the
+comment made sense, but it's out of date now.  Just delete it.
 
-So this patch renaming the Kconfig option would only apply to the OpenBMC
-tree.
 
-C.
+> -	if (group && &group->list == &rcd->tid_group_list.list)
+> +	if (!group)
+>  		goto bail_eagain;
+>  	group = list_prepare_entry(group, &rcd->tid_group_list.list,
+>  				   list);
 
+regards,
+dan carpenter
