@@ -1,77 +1,115 @@
 From: Jakob Koschel <jakobkoschel@gmail.com>
-Date: Mon, 28 Feb 2022 12:08:20 +0100
-Subject: [PATCH 4/6] drivers: remove unnecessary use of list iterator variable
+Date: Mon, 28 Feb 2022 12:08:21 +0100
+Subject: [PATCH 5/6] treewide: remove dereference of list iterator after loop
+ body
 In-Reply-To: <20220228110822.491923-1-jakobkoschel@gmail.com>
 References: <20220228110822.491923-1-jakobkoschel@gmail.com>
-Message-ID: <20220228110822.491923-5-jakobkoschel@gmail.com>
+Message-ID: <20220228110822.491923-6-jakobkoschel@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-When list_for_each_entry() completes the iteration over the whole list
-without breaking the loop, the iterator value will *always* be a bogus
-pointer computed based on the head element.
+The list iterator variable will be a bogus pointer if no break was hit.
+Dereferencing it could load *any* out-of-bounds/undefined value
+making it unsafe to use that in the comparision to determine if the
+specific element was found.
 
-To avoid type confusion use the actual list head directly instead of last
-iterator value.
+This is fixed by using a separate list iterator variable for the loop
+and only setting the original variable if a suitable element was found.
+Then determing if the element was found is simply checking if the
+variable is set.
 
 Signed-off-by: Jakob Koschel <jakobkoschel@gmail.com>
 ---
- drivers/dma/dw-edma/dw-edma-core.c             | 4 ++--
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 3 ++-
- drivers/net/wireless/ath/ath6kl/htc_mbox.c     | 2 +-
- 3 files changed, 5 insertions(+), 4 deletions(-)
+ drivers/gpu/drm/nouveau/nvkm/subdev/clk/base.c | 11 +++++++----
+ drivers/scsi/wd719x.c                          | 12 ++++++++----
+ fs/f2fs/segment.c                              |  9 ++++++---
+ 3 files changed, 21 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/dma/dw-edma/dw-edma-core.c b/drivers/dma/dw-edma/dw-edma-core.c
-index 468d1097a1ec..7883c4831857 100644
---- a/drivers/dma/dw-edma/dw-edma-core.c
-+++ b/drivers/dma/dw-edma/dw-edma-core.c
-@@ -136,7 +136,7 @@ static void dw_edma_free_burst(struct dw_edma_chunk *chunk)
+diff --git a/drivers/gpu/drm/nouveau/nvkm/subdev/clk/base.c b/drivers/gpu/drm/nouveau/nvkm/subdev/clk/base.c
+index 57199be082fd..c56cd9e59a66 100644
+--- a/drivers/gpu/drm/nouveau/nvkm/subdev/clk/base.c
++++ b/drivers/gpu/drm/nouveau/nvkm/subdev/clk/base.c
+@@ -471,20 +471,23 @@ nvkm_pstate_new(struct nvkm_clk *clk, int idx)
+ static int
+ nvkm_clk_ustate_update(struct nvkm_clk *clk, int req)
+ {
+-	struct nvkm_pstate *pstate;
++	struct nvkm_pstate *pstate = NULL;
++	struct nvkm_pstate *tmp;
+ 	int i = 0;
+
+ 	if (!clk->allow_reclock)
+ 		return -ENOSYS;
+
+ 	if (req != -1 && req != -2) {
+-		list_for_each_entry(pstate, &clk->states, head) {
+-			if (pstate->pstate == req)
++		list_for_each_entry(tmp, &clk->states, head) {
++			if (tmp->pstate == req) {
++				pstate = tmp;
+ 				break;
++			}
+ 			i++;
+ 		}
+
+-		if (pstate->pstate != req)
++		if (!pstate)
+ 			return -EINVAL;
+ 		req = i;
+ 	}
+diff --git a/drivers/scsi/wd719x.c b/drivers/scsi/wd719x.c
+index 1a7947554581..be270ed8e00d 100644
+--- a/drivers/scsi/wd719x.c
++++ b/drivers/scsi/wd719x.c
+@@ -684,11 +684,15 @@ static irqreturn_t wd719x_interrupt(int irq, void *dev_id)
+ 	case WD719X_INT_SPIDERFAILED:
+ 		/* was the cmd completed a direct or SCB command? */
+ 		if (regs.bytes.OPC == WD719X_CMD_PROCESS_SCB) {
+-			struct wd719x_scb *scb;
+-			list_for_each_entry(scb, &wd->active_scbs, list)
+-				if (SCB_out == scb->phys)
++			struct wd719x_scb *scb = NULL;
++			struct wd719x_scb *tmp;
++
++			list_for_each_entry(tmp, &wd->active_scbs, list)
++				if (SCB_out == tmp->phys) {
++					scb = tmp;
+ 					break;
+-			if (SCB_out == scb->phys)
++				}
++			if (scb)
+ 				wd719x_interrupt_SCB(wd, regs, scb);
+ 			else
+ 				dev_err(&wd->pdev->dev, "card returned invalid SCB pointer\n");
+diff --git a/fs/f2fs/segment.c b/fs/f2fs/segment.c
+index 1dabc8244083..a3684385e04a 100644
+--- a/fs/f2fs/segment.c
++++ b/fs/f2fs/segment.c
+@@ -356,16 +356,19 @@ void f2fs_drop_inmem_page(struct inode *inode, struct page *page)
+ 	struct f2fs_sb_info *sbi = F2FS_I_SB(inode);
+ 	struct list_head *head = &fi->inmem_pages;
+ 	struct inmem_pages *cur = NULL;
++	struct inmem_pages *tmp;
+
+ 	f2fs_bug_on(sbi, !page_private_atomic(page));
+
+ 	mutex_lock(&fi->inmem_lock);
+-	list_for_each_entry(cur, head, list) {
+-		if (cur->page == page)
++	list_for_each_entry(tmp, head, list) {
++		if (tmp->page == page) {
++			cur = tmp;
+ 			break;
++		}
  	}
 
- 	/* Remove the list head */
--	kfree(child);
-+	kfree(chunk->burst);
- 	chunk->burst = NULL;
- }
-
-@@ -156,7 +156,7 @@ static void dw_edma_free_chunk(struct dw_edma_desc *desc)
- 	}
-
- 	/* Remove the list head */
--	kfree(child);
-+	kfree(desc->chunk);
- 	desc->chunk = NULL;
- }
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index 091f36adbbe1..c0ea9dbc4ff6 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -3963,7 +3963,8 @@ static void __i40e_reprogram_flex_pit(struct i40e_pf *pf,
- 	 * correctly, the hardware will disable flexible field parsing.
- 	 */
- 	if (!list_empty(flex_pit_list))
--		last_offset = list_prev_entry(entry, list)->src_offset + 1;
-+		last_offset = list_entry(flex_pit_list->prev,
-+					 struct i40e_flex_pit, list)->src_offset + 1;
-
- 	for (; i < 3; i++, last_offset++) {
- 		i40e_write_rx_ctl(&pf->hw,
-diff --git a/drivers/net/wireless/ath/ath6kl/htc_mbox.c b/drivers/net/wireless/ath/ath6kl/htc_mbox.c
-index e3874421c4c0..cf5b05860799 100644
---- a/drivers/net/wireless/ath/ath6kl/htc_mbox.c
-+++ b/drivers/net/wireless/ath/ath6kl/htc_mbox.c
-@@ -104,7 +104,7 @@ static void ath6kl_credit_init(struct ath6kl_htc_credit_info *cred_info,
- 	 * it use list_for_each_entry_reverse to walk around the whole ep list.
- 	 * Therefore assign this lowestpri_ep_dist after walk around the ep_list
- 	 */
--	cred_info->lowestpri_ep_dist = cur_ep_dist->list;
-+	cred_info->lowestpri_ep_dist = *ep_list;
-
- 	WARN_ON(cred_info->cur_free_credits <= 0);
+-	f2fs_bug_on(sbi, list_empty(head) || cur->page != page);
++	f2fs_bug_on(sbi, !cur);
+ 	list_del(&cur->list);
+ 	mutex_unlock(&fi->inmem_lock);
 
 --
 2.25.1
