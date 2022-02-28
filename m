@@ -1,45 +1,96 @@
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Mon, 28 Feb 2022 12:41:01 -0800
-Subject: [PATCH 2/6] treewide: remove using list iterator after loop body
- as a ptr
-In-Reply-To: <e3bb7d0632f8ef60f18c19976d57330e1ef00584.camel@sipsolutions.net>
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+Date: Mon, 28 Feb 2022 15:42:53 -0500
+Subject: [PATCH 2/6] treewide: remove using list iterator after loop
+ body as a ptr
+In-Reply-To: <282f0f8d-f491-26fc-6ae0-604b367a5a1a@amd.com>
 References: <20220228110822.491923-1-jakobkoschel@gmail.com>
  <20220228110822.491923-3-jakobkoschel@gmail.com>
  <2e4e95d6-f6c9-a188-e1cd-b1eae465562a@amd.com>
  <CAHk-=wgQps58DPEOe4y5cTh5oE9EdNTWRLXzgMiETc+mFX7jzw@mail.gmail.com>
- <CAHk-=wj8fkosQ7=bps5K+DDazBXk=ypfn49A0sEq+7-nZnyfXA@mail.gmail.com>
- <CAHk-=wiTCvLQkHcJ3y0hpqH7FEk9D28LDvZZogC6OVLk7naBww@mail.gmail.com>
- <Yh0tl3Lni4weIMkl@casper.infradead.org>
- <e3bb7d0632f8ef60f18c19976d57330e1ef00584.camel@sipsolutions.net>
-Message-ID: <CAHk-=wjNgWNa9njuBJEoafc-cRV3SbzZfh3m5YfxcZxdCw3+XQ@mail.gmail.com>
+ <282f0f8d-f491-26fc-6ae0-604b367a5a1a@amd.com>
+Message-ID: <b2d20961dbb7533f380827a7fcc313ff849875c1.camel@HansenPartnership.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Feb 28, 2022 at 12:29 PM Johannes Berg
-<johannes@sipsolutions.net> wrote:
->
-> If we're willing to change the API for the macro, we could do
->
->   list_for_each_entry(type, pos, head, member)
->
-> and then actually take advantage of -Wshadow?
+On Mon, 2022-02-28 at 21:07 +0100, Christian K?nig wrote:
+> Am 28.02.22 um 20:56 schrieb Linus Torvalds:
+> > On Mon, Feb 28, 2022 at 4:19 AM Christian K?nig
+> > <christian.koenig@amd.com> wrote:
+> > > I don't think that using the extra variable makes the code in any
+> > > way
+> > > more reliable or easier to read.
+> > So I think the next step is to do the attached patch (which
+> > requires
+> > that "-std=gnu11" that was discussed in the original thread).
+> > 
+> > That will guarantee that the 'pos' parameter of
+> > list_for_each_entry()
+> > is only updated INSIDE the for_each_list_entry() loop, and can
+> > never
+> > point to the (wrongly typed) head entry.
+> > 
+> > And I would actually hope that it should actually cause compiler
+> > warnings about possibly uninitialized variables if people then use
+> > the
+> > 'pos' pointer outside the loop. Except
+> > 
+> >   (a) that code in sgx/encl.c currently initializes 'tmp' to NULL
+> > for
+> > inexplicable reasons - possibly because it already expected this
+> > behavior
+> > 
+> >   (b) when I remove that NULL initializer, I still don't get a
+> > warning,
+> > because we've disabled -Wno-maybe-uninitialized since it results in
+> > so
+> > many false positives.
+> > 
+> > Oh well.
+> > 
+> > Anyway, give this patch a look, and at least if it's expanded to do
+> > "(pos) = NULL" in the entry statement for the for-loop, it will
+> > avoid the HEAD type confusion that Jakob is working on. And I think
+> > in a cleaner way than the horrid games he plays.
+> > 
+> > (But it won't avoid possible CPU speculation of such type
+> > confusion. That, in my opinion, is a completely different issue)
+> 
+> Yes, completely agree.
+> 
+> > I do wish we could actually poison the 'pos' value after the loop
+> > somehow - but clearly the "might be uninitialized" I was hoping for
+> > isn't the way to do it.
+> > 
+> > Anybody have any ideas?
+> 
+> I think we should look at the use cases why code is touching (pos)
+> after the loop.
+> 
+> Just from skimming over the patches to change this and experience
+> with the drivers/subsystems I help to maintain I think the primary
+> pattern looks something like this:
+> 
+> list_for_each_entry(entry, head, member) {
+>      if (some_condition_checking(entry))
+>          break;
+> }
+> do_something_with(entry);
 
-See my reply to Willy. There is no way -Wshadow will ever happen.
 
-I considered that (type, pos, head, member) kind of thing, to the
-point of trying it for one file, but it ends up as horrendous syntax.
-It turns out that declaring the type separately really helps, and
-avoids crazy long lines among other things.
+Actually, we usually have a check to see if the loop found anything,
+but in that case it should something like
 
-It would be unacceptable for another reason too - the amount of churn
-would just be immense. Every single use of that macro (and related
-macros) would change, even the ones that really don't need it or want
-it (ie the good kinds that already only use the variable inside the
-loop).
+if (list_entry_is_head(entry, head, member)) {
+    return with error;
+}
+do_somethin_with(entry);
 
-So "typeof(pos) pos" may be ugly - but it's a very localized ugly.
+Suffice?  The list_entry_is_head() macro is designed to cope with the
+bogus entry on head problem.
 
-                    Linus
+James
+
+
