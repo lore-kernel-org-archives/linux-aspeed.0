@@ -1,153 +1,64 @@
-From: Rob Herring <robh@kernel.org>
-Date: Wed, 2 Mar 2022 15:26:45 -0600
-Subject: [PATCH v2 03/10] dt-bindings: spi: Add Aspeed SMC controllers
- device tree binding
-In-Reply-To: <20220302173114.927476-4-clg@kaod.org>
-References: <20220302173114.927476-1-clg@kaod.org>
- <20220302173114.927476-4-clg@kaod.org>
-Message-ID: <Yh/hFS2XW9SjK4Pl@robh.at.kernel.org>
+From: Matthew Wilcox <willy@infradead.org>
+Date: Mon, 28 Feb 2022 23:26:42 +0000
+Subject: [PATCH 2/6] treewide: remove using list iterator after loop body
+ as a ptr
+In-Reply-To: <CAHk-=wgBfJ1-cPA2LTvFyyy8owpfmtCuyiZi4+um8DhFNe+CyA@mail.gmail.com>
+References: <20220228110822.491923-1-jakobkoschel@gmail.com>
+ <20220228110822.491923-3-jakobkoschel@gmail.com>
+ <2e4e95d6-f6c9-a188-e1cd-b1eae465562a@amd.com>
+ <CAHk-=wgQps58DPEOe4y5cTh5oE9EdNTWRLXzgMiETc+mFX7jzw@mail.gmail.com>
+ <CAHk-=wj8fkosQ7=bps5K+DDazBXk=ypfn49A0sEq+7-nZnyfXA@mail.gmail.com>
+ <CAHk-=wiTCvLQkHcJ3y0hpqH7FEk9D28LDvZZogC6OVLk7naBww@mail.gmail.com>
+ <Yh0tl3Lni4weIMkl@casper.infradead.org>
+ <CAHk-=wgBfJ1-cPA2LTvFyyy8owpfmtCuyiZi4+um8DhFNe+CyA@mail.gmail.com>
+Message-ID: <Yh1aMm3hFe/j9ZbI@casper.infradead.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Mar 02, 2022 at 06:31:07PM +0100, C?dric Le Goater wrote:
-> The "interrupt" property is optional because it is only necessary for
-> controllers supporting DMAs (Not implemented yet in the new driver).
+On Mon, Feb 28, 2022 at 12:37:15PM -0800, Linus Torvalds wrote:
+> On Mon, Feb 28, 2022 at 12:16 PM Matthew Wilcox <willy@infradead.org> wrote:
+> >
+> > Then we can never use -Wshadow ;-(  I'd love to be able to turn it on;
+> > it catches real bugs.
 > 
-> Cc: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
-> Signed-off-by: C?dric Le Goater <clg@kaod.org>
-> ---
->  .../bindings/spi/aspeed,ast2600-fmc.yaml      | 90 +++++++++++++++++++
->  MAINTAINERS                                   |  9 ++
->  2 files changed, 99 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/spi/aspeed,ast2600-fmc.yaml
+> Oh, we already can never use -Wshadow regardless of things like this.
+> That bridge hasn't just been burned, it never existed in the first
+> place.
 > 
-> diff --git a/Documentation/devicetree/bindings/spi/aspeed,ast2600-fmc.yaml b/Documentation/devicetree/bindings/spi/aspeed,ast2600-fmc.yaml
-> new file mode 100644
-> index 000000000000..0289a4f52196
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/spi/aspeed,ast2600-fmc.yaml
-> @@ -0,0 +1,90 @@
-> +# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
-> +%YAML 1.2
-> +---
-> +$id: http://devicetree.org/schemas/spi/aspeed,ast2600-fmc.yaml#
-> +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> +
-> +title: Aspeed SMC controllers bindings
-> +
-> +maintainers:
-> +  - Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
-> +  - C?dric Le Goater <clg@kaod.org>
-> +
-> +description: |
-> +  This binding describes the Aspeed Static Memory Controllers (FMC and
-> +  SPI) of the AST2400, AST2500 and AST2600 SOCs.
-> +
-> +allOf:
-> +  - $ref: "spi-controller.yaml#"
-> +
-> +properties:
-> +  compatible:
-> +    enum:
-> +      - aspeed,ast2600-fmc
-> +      - aspeed,ast2600-spi
-> +      - aspeed,ast2500-fmc
-> +      - aspeed,ast2500-spi
-> +      - aspeed,ast2400-fmc
-> +      - aspeed,ast2400-spi
-> +
-> +  reg:
-> +    items:
-> +      - description: registers
-> +      - description: memory mapping
-> +
-> +  clocks:
-> +    maxItems: 1
-> +
-> +  interrupts:
-> +    maxItems: 1
-> +
-> +patternProperties:
-> +  "@[0-9a-f]+":
-> +    type: object
-> +
-> +    properties:
-> +      spi-rx-bus-width:
-> +        enum: [1, 2, 4]
-> +
-> +    required:
-> +      - reg
-
-No need for required here, spi-controller.yaml already enforces that.
-
-Otherwise,
-
-Reviewed-by: Rob Herring <robh@kernel.org>
-
-> +
-> +required:
-> +  - compatible
-> +  - reg
-> +  - clocks
-> +
-> +unevaluatedProperties: false
-> +
-> +examples:
-> +  - |
-> +    #include <dt-bindings/interrupt-controller/arm-gic.h>
-> +    #include <dt-bindings/interrupt-controller/aspeed-scu-ic.h>
-> +    #include <dt-bindings/clock/ast2600-clock.h>
-> +
-> +    spi at 1e620000 {
-> +        reg = <0x1e620000 0xc4>, <0x20000000 0x10000000>;
-> +        #address-cells = <1>;
-> +        #size-cells = <0>;
-> +        compatible = "aspeed,ast2600-fmc";
-> +        clocks = <&syscon ASPEED_CLK_AHB>;
-> +        interrupts = <GIC_SPI 39 IRQ_TYPE_LEVEL_HIGH>;
-> +        flash at 0 {
-> +                reg = < 0 >;
-> +                compatible = "jedec,spi-nor";
-> +                spi-max-frequency = <50000000>;
-> +                spi-rx-bus-width = <2>;
-> +        };
-> +        flash at 1 {
-> +                reg = < 1 >;
-> +                compatible = "jedec,spi-nor";
-> +                spi-max-frequency = <50000000>;
-> +                spi-rx-bus-width = <2>;
-> +        };
-> +        flash at 2 {
-> +                reg = < 2 >;
-> +                compatible = "jedec,spi-nor";
-> +                spi-max-frequency = <50000000>;
-> +                spi-rx-bus-width = <2>;
-> +        };
-> +    };
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 4175103e928d..f5ab77548ef6 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -2925,6 +2925,15 @@ S:	Maintained
->  F:	Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml
->  F:	drivers/mmc/host/sdhci-of-aspeed*
->  
-> +ASPEED SMC SPI DRIVER
-> +M:	Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
-> +M:	C?dric Le Goater <clg@kaod.org>
-> +L:	linux-aspeed at lists.ozlabs.org (moderated for non-subscribers)
-> +L:	openbmc at lists.ozlabs.org (moderated for non-subscribers)
-> +L:	linux-spi at vger.kernel.org
-> +S:	Maintained
-> +F:	Documentation/devicetree/bindings/spi/aspeed,ast2600-fmc.yaml
-> +
->  ASPEED VIDEO ENGINE DRIVER
->  M:	Eddie James <eajames@linux.ibm.com>
->  L:	linux-media at vger.kernel.org
-> -- 
-> 2.34.1
+> The whole '-Wshadow' thing simply cannot work with local variables in
+> macros - something that we've used since day 1.
 > 
+> Try this (as a "p.c" file):
 > 
+>         #define min(a,b) ({                     \
+>                 typeof(a) __a = (a);            \
+>                 typeof(b) __b = (b);            \
+>                 __a < __b ? __a : __b; })
+> 
+>         int min3(int a, int b, int c)
+>         {
+>                 return min(a,min(b,c));
+>         }
+> 
+> and now do "gcc -O2 -S t.c".
+> 
+> Then try it with -Wshadow.
+
+#define ___PASTE(a, b)	a##b
+#define __PASTE(a, b) ___PASTE(a, b)
+#define _min(a, b, u) ({         \
+        typeof(a) __PASTE(__a,u) = (a);            \
+        typeof(b) __PASTE(__b,u) = (b);            \
+        __PASTE(__a,u) < __PASTE(__b,u) ? __PASTE(__a,u) : __PASTE(__b,u); })
+
+#define min(a, b) _min(a, b, __COUNTER__)
+
+int min3(int a, int b, int c)
+{
+        return min(a,min(b,c));
+}
+
+(probably there's a more elegant way to do this)
