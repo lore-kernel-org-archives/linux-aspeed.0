@@ -1,67 +1,69 @@
-From: Jakob Koschel <jakobkoschel@gmail.com>
-Date: Mon, 28 Feb 2022 13:06:57 +0100
+From: Christian König <christian.koenig@amd.com>
+Date: Mon, 28 Feb 2022 13:19:17 +0100
 Subject: [PATCH 2/6] treewide: remove using list iterator after loop body
  as a ptr
-In-Reply-To: <Yhyv42ONIxTj04mg@kroah.com>
+In-Reply-To: <20220228110822.491923-3-jakobkoschel@gmail.com>
 References: <20220228110822.491923-1-jakobkoschel@gmail.com>
- <20220228110822.491923-3-jakobkoschel@gmail.com> <Yhyv42ONIxTj04mg@kroah.com>
-Message-ID: <79FCD5F4-0EBA-4E3F-8B3F-D450BBA10367@gmail.com>
+ <20220228110822.491923-3-jakobkoschel@gmail.com>
+Message-ID: <2e4e95d6-f6c9-a188-e1cd-b1eae465562a@amd.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+Am 28.02.22 um 12:08 schrieb Jakob Koschel:
+> If the list does not contain the expected element, the value of
+> list_for_each_entry() iterator will not point to a valid structure.
+> To avoid type confusion in such case, the list iterator
+> scope will be limited to list_for_each_entry() loop.
 
+We explicitly have the list_entry_is_head() macro to test after a loop 
+if the element pointer points to the head of the list instead of a valid 
+list entry.
 
-> On 28. Feb 2022, at 12:20, Greg KH <gregkh@linuxfoundation.org> wrote:
-> 
-> On Mon, Feb 28, 2022 at 12:08:18PM +0100, Jakob Koschel wrote:
->> If the list does not contain the expected element, the value of
->> list_for_each_entry() iterator will not point to a valid structure.
->> To avoid type confusion in such case, the list iterator
->> scope will be limited to list_for_each_entry() loop.
->> 
->> In preparation to limiting scope of a list iterator to the list traversal
->> loop, use a dedicated pointer to point to the found element.
->> Determining if an element was found is then simply checking if
->> the pointer is != NULL.
->> 
->> Signed-off-by: Jakob Koschel <jakobkoschel@gmail.com>
->> ---
->> arch/x86/kernel/cpu/sgx/encl.c       |  6 +++--
->> drivers/scsi/scsi_transport_sas.c    | 17 ++++++++-----
->> drivers/thermal/thermal_core.c       | 38 ++++++++++++++++++----------
->> drivers/usb/gadget/configfs.c        | 22 ++++++++++------
->> drivers/usb/gadget/udc/max3420_udc.c | 11 +++++---
->> drivers/usb/gadget/udc/tegra-xudc.c  | 11 +++++---
->> drivers/usb/mtu3/mtu3_gadget.c       | 11 +++++---
->> drivers/usb/musb/musb_gadget.c       | 11 +++++---
->> drivers/vfio/mdev/mdev_core.c        | 11 +++++---
->> 9 files changed, 88 insertions(+), 50 deletions(-)
-> 
-> The drivers/usb/ portion of this patch should be in patch 1/X, right?
+So at least from my side I absolutely don't think that this is a good idea.
 
-I kept them separate since it's a slightly different case.
-Using 'ptr' instead of '&ptr->other_member'. Regardless, I'll split
-this commit up as you mentioned.
+> In preparation to limiting scope of a list iterator to the list traversal
+> loop, use a dedicated pointer to point to the found element.
+> Determining if an element was found is then simply checking if
+> the pointer is != NULL.
 
-> 
-> Also, you will have to split these up per-subsystem so that the
-> different subsystem maintainers can take these in their trees.
+Since when do we actually want to do this?
 
-Thanks for the feedback.
-To clarify I understand you correctly:
-I should do one patch set per-subsystem with every instance/(file?)
-fixed as a separate commit?
+Take this code here as an example:
+> diff --git a/arch/x86/kernel/cpu/sgx/encl.c b/arch/x86/kernel/cpu/sgx/encl.c
+> index 48afe96ae0f0..6c916416decc 100644
+> --- a/arch/x86/kernel/cpu/sgx/encl.c
+> +++ b/arch/x86/kernel/cpu/sgx/encl.c
+> @@ -450,7 +450,8 @@ static void sgx_mmu_notifier_release(struct mmu_notifier *mn,
+>   				     struct mm_struct *mm)
+>   {
+>   	struct sgx_encl_mm *encl_mm = container_of(mn, struct sgx_encl_mm, mmu_notifier);
+> -	struct sgx_encl_mm *tmp = NULL;
+> +	struct sgx_encl_mm *found_encl_mm = NULL;
+> +	struct sgx_encl_mm *tmp;
+>
+>   	/*
+>   	 * The enclave itself can remove encl_mm.  Note, objects can't be moved
+> @@ -460,12 +461,13 @@ static void sgx_mmu_notifier_release(struct mmu_notifier *mn,
+>   	list_for_each_entry(tmp, &encl_mm->encl->mm_list, list) {
+>   		if (tmp == encl_mm) {
+>   			list_del_rcu(&encl_mm->list);
+> +			found_encl_mm = tmp;
+>   			break;
+>   		}
+>   	}
+>   	spin_unlock(&encl_mm->encl->mm_lock);
+>
+> -	if (tmp == encl_mm) {
+> +	if (found_encl_mm) {
+>   		synchronize_srcu(&encl_mm->encl->srcu);
+>   		mmu_notifier_put(mn);
+>   	}
 
-If I understand correctly, I'll repost accordingly.
+I don't think that using the extra variable makes the code in any way 
+more reliable or easier to read.
 
-> 
-> thanks,
-> 
-> greg k-h
-
-thanks,
-Jakob Koschel
-
+Regards,
+Christian.
