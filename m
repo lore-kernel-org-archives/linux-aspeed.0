@@ -1,87 +1,42 @@
-From: Greg KH <greg@kroah.com>
-Date: Tue, 1 Mar 2022 18:58:02 +0100
+From: Kees Cook <keescook@chromium.org>
+Date: Tue, 1 Mar 2022 10:14:07 -0800
 Subject: [PATCH 2/6] treewide: remove using list iterator after loop body
  as a ptr
-In-Reply-To: <4B1AFAD9-C1B3-499C-945A-C259361ABA8C@gmail.com>
-References: <20220228110822.491923-3-jakobkoschel@gmail.com>
+In-Reply-To: <CAHk-=wi0gSUMBr2SVF01Gy1xC1w1iGtJT5ztju9BPWYKjdh+NA@mail.gmail.com>
+References: <20220228110822.491923-1-jakobkoschel@gmail.com>
+ <20220228110822.491923-3-jakobkoschel@gmail.com>
  <2e4e95d6-f6c9-a188-e1cd-b1eae465562a@amd.com>
  <CAHk-=wgQps58DPEOe4y5cTh5oE9EdNTWRLXzgMiETc+mFX7jzw@mail.gmail.com>
  <CAHk-=wj8fkosQ7=bps5K+DDazBXk=ypfn49A0sEq+7-nZnyfXA@mail.gmail.com>
  <CAHk-=wiTCvLQkHcJ3y0hpqH7FEk9D28LDvZZogC6OVLk7naBww@mail.gmail.com>
- <FC710A1A-524E-481B-A668-FC258F529A2E@gmail.com>
- <CAHk-=whLK11HyvpUtEftOjc3Gup2V77KpAQ2fycj3uai=qceHw@mail.gmail.com>
- <CEDAD0D9-56EE-4105-9107-72C2EAD940B0@gmail.com>
- <Yh5ZmwiH5AxtQ69K@kroah.com>
- <4B1AFAD9-C1B3-499C-945A-C259361ABA8C@gmail.com>
-Message-ID: <Yh5eqmAv0P2nnSq0@kroah.com>
+ <Yh0tl3Lni4weIMkl@casper.infradead.org>
+ <CAHk-=wgBfJ1-cPA2LTvFyyy8owpfmtCuyiZi4+um8DhFNe+CyA@mail.gmail.com>
+ <Yh1aMm3hFe/j9ZbI@casper.infradead.org>
+ <CAHk-=wi0gSUMBr2SVF01Gy1xC1w1iGtJT5ztju9BPWYKjdh+NA@mail.gmail.com>
+Message-ID: <202203011008.AA0B5A2D@keescook>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Mar 01, 2022 at 06:40:04PM +0100, Jakob Koschel wrote:
-> 
-> 
-> > On 1. Mar 2022, at 18:36, Greg KH <greg@kroah.com> wrote:
-> > 
-> > On Tue, Mar 01, 2022 at 12:28:15PM +0100, Jakob Koschel wrote:
-> >> 
-> >> 
-> >>> On 1. Mar 2022, at 01:41, Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> >>> 
-> >>> On Mon, Feb 28, 2022 at 1:47 PM Jakob Koschel <jakobkoschel@gmail.com> wrote:
-> >>>> 
-> >>>> The goal of this is to get compiler warnings right? This would indeed be great.
-> >>> 
-> >>> Yes, so I don't mind having a one-time patch that has been gathered
-> >>> using some automated checker tool, but I don't think that works from a
-> >>> long-term maintenance perspective.
-> >>> 
-> >>> So if we have the basic rule being "don't use the loop iterator after
-> >>> the loop has finished, because it can cause all kinds of subtle
-> >>> issues", then in _addition_ to fixing the existing code paths that
-> >>> have this issue, I really would want to (a) get a compiler warning for
-> >>> future cases and (b) make it not actually _work_ for future cases.
-> >>> 
-> >>> Because otherwise it will just happen again.
-> >>> 
-> >>>> Changing the list_for_each_entry() macro first will break all of those cases
-> >>>> (e.g. the ones using 'list_entry_is_head()).
-> >>> 
-> >>> So I have no problems with breaking cases that we basically already
-> >>> have a patch for due to  your automated tool. There were certainly
-> >>> more than a handful, but it didn't look _too_ bad to just make the
-> >>> rule be "don't use the iterator after the loop".
-> >>> 
-> >>> Of course, that's just based on that patch of yours. Maybe there are a
-> >>> ton of other cases that your patch didn't change, because they didn't
-> >>> match your trigger case, so I may just be overly optimistic here.
-> >> 
-> >> Based on the coccinelle script there are ~480 cases that need fixing
-> >> in total. I'll now finish all of them and then split them by
-> >> submodules as Greg suggested and repost a patch set per submodule.
-> >> Sounds good?
-> > 
-> > Sounds good to me!
-> > 
-> > If you need help carving these up and maintaining them over time as
-> > different subsystem maintainers accept/ignore them, just let me know.
-> > Doing large patchsets like this can be tough without a lot of
-> > experience.
-> 
-> Very much appreciated!
-> 
-> There will probably be some cases that do not match one of the pattern
-> we already discussed and need separate attention.
-> 
-> I was planning to start with one subsystem and adjust the coming ones
-> according to the feedback gather there instead of posting all of them
-> in one go.
+On Mon, Feb 28, 2022 at 04:45:11PM -0800, Linus Torvalds wrote:
+> Really. The "-Wshadow doesn't work on the kernel" is not some new
+> issue, because you have to do completely insane things to the source
+> code to enable it.
 
-That seems wise.  Feel free to use USB as a testing ground for this if
-you want to :)
+The first big glitch with -Wshadow was with shadowed global variables.
+GCC 4.8 fixed that, but it still yells about shadowed functions. What
+_almost_ works is -Wshadow=local. At first glace, all the warnings
+look solvable, but then one will eventually discover __wait_event()
+and associated macros that mix when and how deeply it intentionally
+shadows variables. :)
 
-thanks,
+Another way to try to catch misused shadow variables is
+-Wunused-but-set-varible, but it, too, has tons of false positives.
 
-greg k-h
+I tried to capture some of the rationale and research here:
+https://github.com/KSPP/linux/issues/152
+
+-- 
+Kees Cook
