@@ -1,31 +1,88 @@
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Date: Tue, 1 Mar 2022 08:52:31 +0300
-Subject: [PATCH 1/6] drivers: usb: remove usage of list iterator past the
- loop body
-In-Reply-To: <0be9de3920442df490f01b6fb1c42521c3de6190.camel@perches.com>
+From: Jakub Kicinski <kuba@kernel.org>
+Date: Mon, 28 Feb 2022 22:32:28 -0800
+Subject: [PATCH 2/6] treewide: remove using list iterator after loop
+ body as a ptr
+In-Reply-To: <CAHk-=whLK11HyvpUtEftOjc3Gup2V77KpAQ2fycj3uai=qceHw@mail.gmail.com>
 References: <20220228110822.491923-1-jakobkoschel@gmail.com>
- <20220228110822.491923-2-jakobkoschel@gmail.com>
- <20220228112413.GA2812@kadam>
- <0be9de3920442df490f01b6fb1c42521c3de6190.camel@perches.com>
-Message-ID: <20220301055231.GI2812@kadam>
+ <20220228110822.491923-3-jakobkoschel@gmail.com>
+ <2e4e95d6-f6c9-a188-e1cd-b1eae465562a@amd.com>
+ <CAHk-=wgQps58DPEOe4y5cTh5oE9EdNTWRLXzgMiETc+mFX7jzw@mail.gmail.com>
+ <CAHk-=wj8fkosQ7=bps5K+DDazBXk=ypfn49A0sEq+7-nZnyfXA@mail.gmail.com>
+ <CAHk-=wiTCvLQkHcJ3y0hpqH7FEk9D28LDvZZogC6OVLk7naBww@mail.gmail.com>
+ <FC710A1A-524E-481B-A668-FC258F529A2E@gmail.com>
+ <CAHk-=whLK11HyvpUtEftOjc3Gup2V77KpAQ2fycj3uai=qceHw@mail.gmail.com>
+Message-ID: <20220228223228.24cf3fd4@kicinski-fedora-PC1C0HJN.hsd1.ca.comcast.net>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Feb 28, 2022 at 10:20:28AM -0800, Joe Perches wrote:
-> On Mon, 2022-02-28 at 14:24 +0300, Dan Carpenter wrote:
+On Mon, 28 Feb 2022 16:41:04 -0800 Linus Torvalds wrote:
+> So yes, initially my idea had been to just move the iterator entirely
+> inside the macro. But specifying the type got so ugly that I think
+> that
 > 
-> > a multi-line indent gets curly braces for readability even though
-> > it's not required by C.  And then both sides would get curly braces.
+>         typeof (pos) pos
 > 
-> That's more your personal preference than a coding style guideline.
+> trick inside the macro really ends up giving us the best of all worlds:
 > 
+>  (a) let's us keep the existing syntax and code for all the nice cases
+> that did everything inside the loop anyway
+> 
+>  (b) gives us a nice warning for any normal use-after-loop case
+> (unless you explicitly initialized it like that
+> sgx_mmu_notifier_release() function did for no good reason
+> 
+>  (c) also guarantees that even if you don't get a warning,
+> non-converted (or newly written) bad code won't actually _work_
+> 
+> so you end up getting the new rules without any ambiguity or mistaken
 
-It's a USB patch.  I thought Greg prefered it that way.  Greg has some
-specific style things which he likes and I have adopted and some I
-pretend not to see.
+I presume the goal is that we can do this without changing existing
+code? Otherwise actually moving the iterator into the loop body would
+be an option, by creating a different hidden variable:
 
-regards,
-dan carpenter
+#define list_iter(head)						\
+	for (struct list head *_l = (head)->next; _l != (head); _l = _l->next)
+
+#define list_iter_entry(var, member)		\
+	list_entry(_l, typeof(*var), member)
+
+
+	list_iter(&p->a_head) {
+		struct entry *e = list_iter_entry(e, a_member);
+
+		/* use e->... */
+	}
+
+
+Or we can slide into soft insanity and exploit one of Kees'es tricks
+to encode the type of the entries "next to" the head:
+
+#define LIST_HEAD_MEM(name, type)			\
+	union {						\
+		struct list_head name;			\
+		type *name ## _entry;			\
+	}
+
+struct entry {
+	struct list_head a_member;
+};
+
+struct parent {
+	LIST_HEAD_MEM(a_head, struct entry);
+};
+
+#define list_for_each_magic(pos, head, member)				\
+	for (typeof(**(head ## _entry)) *pos = list_first_entry(head, typeof(**(head ## _entry)), member); \
+	     &pos->member != (head);					\
+	     pos = list_next_entry(pos, member))
+
+
+	list_for_each_magic(e, &p->a_head, a_member) {
+		/* use e->... */
+	}
+
+
+I'll show myself out...
