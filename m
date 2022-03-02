@@ -1,179 +1,75 @@
-From: Tvrtko Ursulin <tvrtko.ursulin@linux.intel.com>
-Date: Wed, 2 Mar 2022 17:14:50 +0000
-Subject: [Intel-gfx] [PATCH 6/6] treewide: remove check of list iterator
- against head past the loop body
-In-Reply-To: <20220228110822.491923-7-jakobkoschel@gmail.com>
-References: <20220228110822.491923-1-jakobkoschel@gmail.com>
- <20220228110822.491923-7-jakobkoschel@gmail.com>
-Message-ID: <ed52ce3c-0f4a-a1e8-4176-543657d6228d@linux.intel.com>
+From: Kees Cook <keescook@chromium.org>
+Date: Wed, 2 Mar 2022 12:07:04 -0800
+Subject: [PATCH 2/6] treewide: remove using list iterator after loop body
+ as a ptr
+In-Reply-To: <78ccb184-405e-da93-1e02-078f90d2b9bc@rasmusvillemoes.dk>
+References: <282f0f8d-f491-26fc-6ae0-604b367a5a1a@amd.com>
+ <b2d20961dbb7533f380827a7fcc313ff849875c1.camel@HansenPartnership.com>
+ <7D0C2A5D-500E-4F38-AD0C-A76E132A390E@kernel.org>
+ <73fa82a20910c06784be2352a655acc59e9942ea.camel@HansenPartnership.com>
+ <CAHk-=wiT5HX6Kp0Qv4ZYK_rkq9t5fZ5zZ7vzvi6pub9kgp=72g@mail.gmail.com>
+ <7dc860874d434d2288f36730d8ea3312@AcuMS.aculab.com>
+ <CAHk-=whKqg89zu4T95+ctY-hocR6kDArpo2qO14-kV40Ga7ufw@mail.gmail.com>
+ <0ced2b155b984882b39e895f0211037c@AcuMS.aculab.com>
+ <CAHk-=wix0HLCBs5sxAeW3uckg0YncXbTjMsE-Tv8WzmkOgLAXQ@mail.gmail.com>
+ <78ccb184-405e-da93-1e02-078f90d2b9bc@rasmusvillemoes.dk>
+Message-ID: <202203021158.DB5204A0@keescook>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+On Wed, Mar 02, 2022 at 10:29:31AM +0100, Rasmus Villemoes wrote:
+> This won't help the current issue (because it doesn't exist and might
+> never), but just in case some compiler people are listening, I'd like to
+> have some sort of way to tell the compiler "treat this variable as
+> uninitialized from here on". So one could do
+> 
+> #define kfree(p) do { __kfree(p); __magic_uninit(p); } while (0)
+> 
+> with __magic_uninit being a magic no-op that doesn't affect the
+> semantics of the code, but could be used by the compiler's "[is/may be]
+> used uninitialized" machinery to flag e.g. double frees on some odd
+> error path etc. It would probably only work for local automatic
+> variables, but it should be possible to just ignore the hint if p is
+> some expression like foo->bar or has side effects. If we had that, the
+> end-of-loop test could include that to "uninitialize" the iterator.
 
-On 28/02/2022 11:08, Jakob Koschel wrote:
-> When list_for_each_entry() completes the iteration over the whole list
-> without breaking the loop, the iterator value will be a bogus pointer
-> computed based on the head element.
-> 
-> While it is safe to use the pointer to determine if it was computed
-> based on the head element, either with list_entry_is_head() or
-> &pos->member == head, using the iterator variable after the loop should
-> be avoided.
-> 
-> In preparation to limiting the scope of a list iterator to the list
-> traversal loop, use a dedicated pointer to point to the found element.
-> 
-> Signed-off-by: Jakob Koschel <jakobkoschel@gmail.com>
+I've long wanted to change kfree() to explicitly set pointers to NULL on
+free. https://github.com/KSPP/linux/issues/87
 
-[snip until i915 parts]
+The thing stopping a trivial transformation of kfree() is:
 
->   drivers/gpu/drm/i915/gem/i915_gem_context.c   | 14 +++---
->   .../gpu/drm/i915/gem/i915_gem_execbuffer.c    | 15 ++++---
->   drivers/gpu/drm/i915/gt/intel_ring.c          | 15 ++++---
+	kfree(get_some_pointer());
 
-[snip]
+I would argue, though, that the above is poor form: the thing holding
+the pointer should be the thing freeing it, so these cases should be
+refactored and kfree() could do the NULLing by default.
 
-> diff --git a/drivers/gpu/drm/i915/gem/i915_gem_context.c b/drivers/gpu/drm/i915/gem/i915_gem_context.c
-> index 00327b750fbb..80c79028901a 100644
-> --- a/drivers/gpu/drm/i915/gem/i915_gem_context.c
-> +++ b/drivers/gpu/drm/i915/gem/i915_gem_context.c
-> @@ -107,25 +107,27 @@ static void lut_close(struct i915_gem_context *ctx)
->   	radix_tree_for_each_slot(slot, &ctx->handles_vma, &iter, 0) {
->   		struct i915_vma *vma = rcu_dereference_raw(*slot);
->   		struct drm_i915_gem_object *obj = vma->obj;
-> -		struct i915_lut_handle *lut;
-> +		struct i915_lut_handle *lut = NULL;
-> +		struct i915_lut_handle *tmp;
-> 
->   		if (!kref_get_unless_zero(&obj->base.refcount))
->   			continue;
-> 
->   		spin_lock(&obj->lut_lock);
-> -		list_for_each_entry(lut, &obj->lut_list, obj_link) {
-> -			if (lut->ctx != ctx)
-> +		list_for_each_entry(tmp, &obj->lut_list, obj_link) {
-> +			if (tmp->ctx != ctx)
->   				continue;
-> 
-> -			if (lut->handle != iter.index)
-> +			if (tmp->handle != iter.index)
->   				continue;
-> 
-> -			list_del(&lut->obj_link);
-> +			list_del(&tmp->obj_link);
-> +			lut = tmp;
->   			break;
->   		}
->   		spin_unlock(&obj->lut_lock);
-> 
-> -		if (&lut->obj_link != &obj->lut_list) {
-> +		if (lut) {
->   			i915_lut_handle_free(lut);
->   			radix_tree_iter_delete(&ctx->handles_vma, &iter, slot);
+Quoting myself in the above issue:
 
-Looks okay although personally I would have left lut as is for a smaller 
-diff and introduced a new local like 'found' or 'unlinked'.
 
->   			i915_vma_close(vma);
-> diff --git a/drivers/gpu/drm/i915/gem/i915_gem_execbuffer.c b/drivers/gpu/drm/i915/gem/i915_gem_execbuffer.c
-> index 1736efa43339..fda9e3685ad2 100644
-> --- a/drivers/gpu/drm/i915/gem/i915_gem_execbuffer.c
-> +++ b/drivers/gpu/drm/i915/gem/i915_gem_execbuffer.c
-> @@ -2444,7 +2444,8 @@ static struct i915_request *eb_throttle(struct i915_execbuffer *eb, struct intel
->   {
->   	struct intel_ring *ring = ce->ring;
->   	struct intel_timeline *tl = ce->timeline;
-> -	struct i915_request *rq;
-> +	struct i915_request *rq = NULL;
-> +	struct i915_request *tmp;
-> 
->   	/*
->   	 * Completely unscientific finger-in-the-air estimates for suitable
-> @@ -2460,15 +2461,17 @@ static struct i915_request *eb_throttle(struct i915_execbuffer *eb, struct intel
->   	 * claiming our resources, but not so long that the ring completely
->   	 * drains before we can submit our next request.
->   	 */
-> -	list_for_each_entry(rq, &tl->requests, link) {
-> -		if (rq->ring != ring)
-> +	list_for_each_entry(tmp, &tl->requests, link) {
-> +		if (tmp->ring != ring)
->   			continue;
-> 
-> -		if (__intel_ring_space(rq->postfix,
-> -				       ring->emit, ring->size) > ring->size / 2)
-> +		if (__intel_ring_space(tmp->postfix,
-> +				       ring->emit, ring->size) > ring->size / 2) {
-> +			rq = tmp;
->   			break;
-> +		}
->   	}
-> -	if (&rq->link == &tl->requests)
-> +	if (!rq)
->   		return NULL; /* weird, we will check again later for real */
+Without doing massive tree-wide changes, I think we need compiler
+support. If we had something like __builtin_is_lvalue(), we could
+distinguish function returns from lvalues. For example, right now a
+common case are things like:
 
-Alternatively, instead of break could simply do "return 
-i915_request_get(rq);" and replace the end of the function after the 
-loop with "return NULL;". A bit smaller diff, or at least less "spread 
-out" over the function, so might be easier to backport stuff touching 
-this area in the future. But looks correct as is.
+	kfree(get_some_ptr());
 
-> 
->   	return i915_request_get(rq);
-> diff --git a/drivers/gpu/drm/i915/gt/intel_ring.c b/drivers/gpu/drm/i915/gt/intel_ring.c
-> index 2fdd52b62092..4881c4e0c407 100644
-> --- a/drivers/gpu/drm/i915/gt/intel_ring.c
-> +++ b/drivers/gpu/drm/i915/gt/intel_ring.c
-> @@ -191,24 +191,27 @@ wait_for_space(struct intel_ring *ring,
->   	       struct intel_timeline *tl,
->   	       unsigned int bytes)
->   {
-> -	struct i915_request *target;
-> +	struct i915_request *target = NULL;
-> +	struct i915_request *tmp;
->   	long timeout;
-> 
->   	if (intel_ring_update_space(ring) >= bytes)
->   		return 0;
-> 
->   	GEM_BUG_ON(list_empty(&tl->requests));
-> -	list_for_each_entry(target, &tl->requests, link) {
-> -		if (target->ring != ring)
-> +	list_for_each_entry(tmp, &tl->requests, link) {
-> +		if (tmp->ring != ring)
->   			continue;
-> 
->   		/* Would completion of this request free enough space? */
-> -		if (bytes <= __intel_ring_space(target->postfix,
-> -						ring->emit, ring->size))
-> +		if (bytes <= __intel_ring_space(tmp->postfix,
-> +						ring->emit, ring->size)) {
-> +			target = tmp;
->   			break;
-> +		}
->   	}
-> 
-> -	if (GEM_WARN_ON(&target->link == &tl->requests))
-> +	if (GEM_WARN_ON(!target))
->   		return -ENOSPC;
-> 
->   	timeout = i915_request_wait(target,
+But if we could at least gain coverage of the lvalue cases, and detect
+them statically at compile-time, we could do:
 
-Looks okay as well. Less clear here if there is a clean solution to make 
-the diff smaller so no suggestions. I mean do I dare mention "goto 
-found;" from inside the loop, where the break is, instead of the 
-variable renames.. risky.. :) (And ofc "return -ENOSPC" immediately 
-after the loop.)
+#define __kfree_and_null(x) do { __kfree(*x); *x = NULL; } while (0)
+#define kfree(x) __builtin_choose_expr(__builtin_is_lvalue(x),
+			__kfree_and_null(&(x)), __kfree(x))
 
-As a summary changes looks okay, up to you if you want to try to make 
-the diffs smaller or not. It doesn't matter hugely really, all I have is 
-a vague and uncertain "maybe it makes backporting of something, someday 
-easier". So for i915 it is good either way.
+Alternatively, we could do a tree-wide change of the former case (findable
+with Coccinelle) and change them into something like kfree_no_null()
+and redefine kfree() itself:
 
-Reviewed-by: Tvrtko Ursulin <tvrtko.ursulin@intel.com> # i915 bits only
+#define kfree_no_null(x) do { void *__ptr = (x); __kfree(__ptr); } while (0)
+#define kfree(x) do { __kfree(x); x = NULL; } while (0)
 
-Regards,
-
-Tvrtko
+-- 
+Kees Cook
