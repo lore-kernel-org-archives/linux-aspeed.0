@@ -1,10 +1,10 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Wed, 2 Mar 2022 22:30:08 +0000
-Subject: [PATCH v2 07/10] spi: aspeed: Workaround AST2500 limitations
-In-Reply-To: <20220302173114.927476-8-clg@kaod.org>
+Date: Wed, 2 Mar 2022 22:31:57 +0000
+Subject: [PATCH v2 06/10] spi: aspeed: Adjust direct mapping to device size
+In-Reply-To: <20220302173114.927476-7-clg@kaod.org>
 References: <20220302173114.927476-1-clg@kaod.org>
- <20220302173114.927476-8-clg@kaod.org>
-Message-ID: <CACPK8Xesu-3cfH+fPvNGW=JfntTarTSv1njb1FBZ7pD2-TMbMA@mail.gmail.com>
+ <20220302173114.927476-7-clg@kaod.org>
+Message-ID: <CACPK8XcAaQWdNqEJ3f2ko0wCuAwxptkY2EncV7A2TouWzd8cWA@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -13,51 +13,130 @@ Content-Transfer-Encoding: 7bit
 
 On Wed, 2 Mar 2022 at 17:31, C?dric Le Goater <clg@kaod.org> wrote:
 >
-> It is not possible to configure a full 128MB window for a chip of the
-> same size on the AST2500 SPI controller. For his case, the maximum
-
-typo: this
-
-> window size is restricted to 120MB for CE0.
+> The segment registers of the FMC/SPI controllers provide a way to
+> configure the mapping window of the flash device contents on the AHB
+> bus. Adjust this window to the size of the spi-mem mapping.
+>
+> Things get more complex with multiple devices. The driver needs to
+> also adjust the window of the next device to make sure that there is
+> no overlap, even if there is no available device. The proposal below
+> is not perfect but it is covering all the cases we have seen on
+> different boards with one and two devices on the same bus.
 >
 > Signed-off-by: C?dric Le Goater <clg@kaod.org>
 
 Reviewed-by: Joel Stanley <joel@jms.id.au>
 
 > ---
->  drivers/spi/spi-aspeed-smc.c | 12 ++++++++++++
->  1 file changed, 12 insertions(+)
+>  drivers/spi/spi-aspeed-smc.c | 88 ++++++++++++++++++++++++++++++++++++
+>  1 file changed, 88 insertions(+)
 >
 > diff --git a/drivers/spi/spi-aspeed-smc.c b/drivers/spi/spi-aspeed-smc.c
-> index 974ab215ec34..e133984d3c95 100644
+> index b4854b521477..974ab215ec34 100644
 > --- a/drivers/spi/spi-aspeed-smc.c
 > +++ b/drivers/spi/spi-aspeed-smc.c
-> @@ -445,6 +445,8 @@ static int aspeed_spi_set_window(struct aspeed_spi *aspi,
->   * - ioremap each window, not strictly necessary since the overall window
->   *   is correct.
->   */
-> +static const struct aspeed_spi_data ast2500_spi_data;
-> +
->  static int aspeed_spi_chip_adjust_window(struct aspeed_spi_chip *chip,
->                                          u32 local_offset, u32 size)
->  {
-> @@ -453,6 +455,16 @@ static int aspeed_spi_chip_adjust_window(struct aspeed_spi_chip *chip,
->         struct aspeed_spi_window *win = &windows[chip->cs];
->         int ret;
+> @@ -405,6 +405,92 @@ static int aspeed_spi_chip_set_default_window(struct aspeed_spi_chip *chip)
+>         return chip->ahb_window_size ? 0 : -1;
+>  }
 >
+> +static int aspeed_spi_set_window(struct aspeed_spi *aspi,
+> +                                const struct aspeed_spi_window *win)
+> +{
+> +       u32 start = aspi->ahb_base_phy + win->offset;
+> +       u32 end = start + win->size;
+> +       void __iomem *seg_reg = aspi->regs + CE0_SEGMENT_ADDR_REG + win->cs * 4;
+> +       u32 seg_val_backup = readl(seg_reg);
+> +       u32 seg_val = aspi->data->segment_reg(aspi, start, end);
+> +
+> +       if (seg_val == seg_val_backup)
+> +               return 0;
+> +
+> +       writel(seg_val, seg_reg);
+> +
 > +       /*
-> +        * Due to an HW issue on the AST2500 SPI controller, the CE0
-> +        * window size should be smaller than the maximum 128MB.
+> +        * Restore initial value if something goes wrong else we could
+> +        * loose access to the chip.
 > +        */
-> +       if (aspi->data == &ast2500_spi_data && chip->cs == 0 && size == SZ_128M) {
-> +               size = 120 << 20;
-> +               dev_info(aspi->dev, "CE%d window resized to %dMB (AST2500 HW quirk)",
-> +                        chip->cs, size >> 20);
+> +       if (seg_val != readl(seg_reg)) {
+> +               dev_err(aspi->dev, "CE%d invalid window [ 0x%.8x - 0x%.8x ] %dMB",
+> +                       win->cs, start, end - 1, win->size >> 20);
+> +               writel(seg_val_backup, seg_reg);
+> +               return -EIO;
 > +       }
 > +
->         aspeed_spi_get_windows(aspi, windows);
+> +       if (win->size)
+> +               dev_dbg(aspi->dev, "CE%d new window [ 0x%.8x - 0x%.8x ] %dMB",
+> +                       win->cs, start, end - 1,  win->size >> 20);
+> +       else
+> +               dev_dbg(aspi->dev, "CE%d window closed", win->cs);
+> +
+> +       return 0;
+> +}
+> +
+> +/*
+> + * Yet to be done when possible :
+> + * - Align mappings on flash size (we don't have the info)
+> + * - ioremap each window, not strictly necessary since the overall window
+> + *   is correct.
+> + */
+> +static int aspeed_spi_chip_adjust_window(struct aspeed_spi_chip *chip,
+> +                                        u32 local_offset, u32 size)
+> +{
+> +       struct aspeed_spi *aspi = chip->aspi;
+> +       struct aspeed_spi_window windows[ASPEED_SPI_MAX_NUM_CS] = { 0 };
+> +       struct aspeed_spi_window *win = &windows[chip->cs];
+> +       int ret;
+> +
+> +       aspeed_spi_get_windows(aspi, windows);
+> +
+> +       /* Adjust this chip window */
+> +       win->offset += local_offset;
+> +       win->size = size;
+> +
+> +       if (win->offset + win->size > aspi->ahb_window_size) {
+> +               win->size = aspi->ahb_window_size - win->offset;
+> +               dev_warn(aspi->dev, "CE%d window resized to %dMB", chip->cs, win->size >> 20);
+> +       }
+> +
+> +       ret = aspeed_spi_set_window(aspi, win);
+> +       if (ret)
+> +               return ret;
+> +
+> +       /* Update chip mapping info */
+> +       chip->ahb_base = aspi->ahb_base + win->offset;
+> +       chip->ahb_window_size = win->size;
+> +
+> +       /*
+> +        * Also adjust next chip window to make sure that it does not
+> +        * overlap with the current window.
+> +        */
+> +       if (chip->cs < aspi->data->max_cs - 1) {
+> +               struct aspeed_spi_window *next = &windows[chip->cs + 1];
+> +
+> +               /* Change offset and size to keep the same end address */
+> +               if ((next->offset + next->size) > (win->offset + win->size))
+> +                       next->size = (next->offset + next->size) - (win->offset + win->size);
+> +               else
+> +                       next->size = 0;
+> +               next->offset = win->offset + win->size;
+> +
+> +               aspeed_spi_set_window(aspi, next);
+> +       }
+> +       return 0;
+> +}
+> +
+>  static int aspeed_spi_dirmap_create(struct spi_mem_dirmap_desc *desc)
+>  {
+>         struct aspeed_spi *aspi = spi_controller_get_devdata(desc->mem->spi->master);
+> @@ -419,6 +505,8 @@ static int aspeed_spi_dirmap_create(struct spi_mem_dirmap_desc *desc)
+>         if (op->data.dir != SPI_MEM_DATA_IN)
+>                 return -EOPNOTSUPP;
 >
->         /* Adjust this chip window */
+> +       aspeed_spi_chip_adjust_window(chip, desc->info.offset, desc->info.length);
+> +
+>         if (desc->info.length > chip->ahb_window_size)
+>                 dev_warn(aspi->dev, "CE%d window (%dMB) too small for mapping",
+>                          chip->cs, chip->ahb_window_size >> 20);
 > --
 > 2.34.1
 >
