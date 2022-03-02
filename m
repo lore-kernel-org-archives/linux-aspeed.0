@@ -1,72 +1,42 @@
 From: Tommy Haung <tommy_huang@aspeedtech.com>
-Date: Wed, 2 Mar 2022 10:49:25 +0800
-Subject: [PATCH v6 0/5] Add Aspeed AST2600 soc display support
-Message-ID: <20220302024930.18758-1-tommy_huang@aspeedtech.com>
+Date: Wed, 2 Mar 2022 10:49:30 +0800
+Subject: [PATCH v6 5/5] ARM: dtsi: aspeed: Modified gfx reset control
+In-Reply-To: <20220302024930.18758-1-tommy_huang@aspeedtech.com>
+References: <20220302024930.18758-1-tommy_huang@aspeedtech.com>
+Message-ID: <20220302024930.18758-6-tommy_huang@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-v6:
-  Remove some unnecessary reset patch.
-  Refine patch format.
-  Add detail explain of SOC display reset bits.
+Remove the ast2500-gfx from aspeed-g6.dtsi.
+In the AST2600, the ASPEED_RESET_CRT1 is replaced by
+ASPEED_RESET_GRAPHICS. This is no differnce between these two reset
+behavior but reigster location is changed. The HW controller states
+and FW programming resgiter will be reset by CRT reset controller bit
+(SCU040[13]). And another part HW controller will be reset by
+Graphics controller bit (SCU040[26]). These two reset bit need be
+de-assert then the SOC display will be active.
 
-v5:
-  Add lost reset define.
+Signed-off-by: Tommy Haung <tommy_huang@aspeedtech.com>
+---
+ arch/arm/boot/dts/aspeed-g6.dtsi | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-v4:
-  Add necessary reset control for ast2600.
-  Add chip caps for futher use.
-  These code are test on AST2500 and AST2600 by below steps.
-
-  1. Add below config to turn VT and LOGO on.
-
-	CONFIG_TTY=y
-	CONFIG_VT=y
-	CONFIG_CONSOLE_TRANSLATIONS=y
-	CONFIG_VT_CONSOLE=y
-	CONFIG_VT_CONSOLE_SLEEP=y
-	CONFIG_HW_CONSOLE=y
-	CONFIG_VT_HW_CONSOLE_BINDING=y
-	CONFIG_UNIX98_PTYS=y
-	CONFIG_LDISC_AUTOLOAD=y
-	CONFIG_DEVMEM=y
-	CONFIG_DUMMY_CONSOLE=y
-	CONFIG_FRAMEBUFFER_CONSOLE=y
-	CONFIG_FRAMEBUFFER_CONSOLE_DETECT_PRIMARY=y
-	CONFIG_LOGO=y
-	CONFIG_LOGO_LINUX_CLUT224=y
-
-  2. The Linux logo will be shown on the screen, when the BMC boot in Linux.
-
-v3:
-  Refine the patch for clear separate purpose.
-  Skip to send devicetree patch
-
-v2:
-  Remove some unnecessary patch.
-  Refine for reviwer request.
-
-v1:
-  First add patch.
-
-Joel Stanley (2):
-  ARM: dts: aspeed: Add GFX node to AST2600
-  ARM: dts: aspeed: ast2600-evb: Enable GFX device
-
-Tommy Haung (3):
-  drm/aspeed: Update INTR_STS handling
-  drm/aspeed: Add AST2600 chip support
-  ARM: dtsi: aspeed: Modified gfx reset control
-
- arch/arm/boot/dts/aspeed-ast2600-evb.dts | 18 ++++++++++++++++++
- arch/arm/boot/dts/aspeed-g6.dtsi         | 11 +++++++++++
- drivers/gpu/drm/aspeed/aspeed_gfx.h      |  1 +
- drivers/gpu/drm/aspeed/aspeed_gfx_drv.c  | 15 ++++++++++++++-
- 4 files changed, 44 insertions(+), 1 deletion(-)
-
+diff --git a/arch/arm/boot/dts/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed-g6.dtsi
+index e38c3742761b..7cc99bc68558 100644
+--- a/arch/arm/boot/dts/aspeed-g6.dtsi
++++ b/arch/arm/boot/dts/aspeed-g6.dtsi
+@@ -352,7 +352,7 @@
+ 			};
+ 
+ 			gfx: display at 1e6e6000 {
+-				compatible = "aspeed,ast2600-gfx", "aspeed,ast2500-gfx", "syscon";
++				compatible = "aspeed,ast2600-gfx", "syscon";
+ 				reg = <0x1e6e6000 0x1000>;
+ 				reg-io-width = <4>;
+ 				clocks = <&syscon ASPEED_CLK_GATE_D1CLK>;
 -- 
 2.17.1
 
