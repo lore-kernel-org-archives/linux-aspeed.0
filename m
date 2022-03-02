@@ -1,80 +1,47 @@
 From: Tommy Haung <tommy_huang@aspeedtech.com>
-Date: Wed, 2 Mar 2022 10:49:28 +0800
-Subject: [PATCH v6 3/5] drm/aspeed: Update INTR_STS handling
+Date: Wed, 2 Mar 2022 10:49:26 +0800
+Subject: [PATCH v6 1/5] ARM: dts: aspeed: Add GFX node to AST2600
 In-Reply-To: <20220302024930.18758-1-tommy_huang@aspeedtech.com>
 References: <20220302024930.18758-1-tommy_huang@aspeedtech.com>
-Message-ID: <20220302024930.18758-4-tommy_huang@aspeedtech.com>
+Message-ID: <20220302024930.18758-2-tommy_huang@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add interrupt clear register define for further chip support.
+From: Joel Stanley <joel@jms.id.au>
 
+The GFX device is present in the AST2600 SoC.
+
+Signed-off-by: Joel Stanley <joel@jms.id.au>
 Signed-off-by: Tommy Haung <tommy_huang@aspeedtech.com>
 ---
- drivers/gpu/drm/aspeed/aspeed_gfx.h     | 1 +
- drivers/gpu/drm/aspeed/aspeed_gfx_drv.c | 6 +++++-
- 2 files changed, 6 insertions(+), 1 deletion(-)
+ arch/arm/boot/dts/aspeed-g6.dtsi | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
-diff --git a/drivers/gpu/drm/aspeed/aspeed_gfx.h b/drivers/gpu/drm/aspeed/aspeed_gfx.h
-index 96501152bafa..4e6a442c3886 100644
---- a/drivers/gpu/drm/aspeed/aspeed_gfx.h
-+++ b/drivers/gpu/drm/aspeed/aspeed_gfx.h
-@@ -12,6 +12,7 @@ struct aspeed_gfx {
- 	struct regmap			*scu;
+diff --git a/arch/arm/boot/dts/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed-g6.dtsi
+index 1b47be1704f8..e38c3742761b 100644
+--- a/arch/arm/boot/dts/aspeed-g6.dtsi
++++ b/arch/arm/boot/dts/aspeed-g6.dtsi
+@@ -351,6 +351,17 @@
+ 				quality = <100>;
+ 			};
  
- 	u32				dac_reg;
-+	u32				int_clr_reg;
- 	u32				vga_scratch_reg;
- 	u32				throd_val;
- 	u32				scan_line_max;
-diff --git a/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c b/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
-index b53fee6f1c17..d4b56b3c7597 100644
---- a/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
-+++ b/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
-@@ -60,6 +60,7 @@
- 
- struct aspeed_gfx_config {
- 	u32 dac_reg;		/* DAC register in SCU */
-+	u32 int_clear_reg;	/* Interrupt clear register */
- 	u32 vga_scratch_reg;	/* VGA scratch register in SCU */
- 	u32 throd_val;		/* Default Threshold Seting */
- 	u32 scan_line_max;	/* Max memory size of one scan line */
-@@ -67,6 +68,7 @@ struct aspeed_gfx_config {
- 
- static const struct aspeed_gfx_config ast2400_config = {
- 	.dac_reg = 0x2c,
-+	.int_clear_reg = 0x60,
- 	.vga_scratch_reg = 0x50,
- 	.throd_val = CRT_THROD_LOW(0x1e) | CRT_THROD_HIGH(0x12),
- 	.scan_line_max = 64,
-@@ -74,6 +76,7 @@ static const struct aspeed_gfx_config ast2400_config = {
- 
- static const struct aspeed_gfx_config ast2500_config = {
- 	.dac_reg = 0x2c,
-+	.int_clear_reg = 0x60,
- 	.vga_scratch_reg = 0x50,
- 	.throd_val = CRT_THROD_LOW(0x24) | CRT_THROD_HIGH(0x3c),
- 	.scan_line_max = 128,
-@@ -119,7 +122,7 @@ static irqreturn_t aspeed_gfx_irq_handler(int irq, void *data)
- 
- 	if (reg & CRT_CTRL_VERTICAL_INTR_STS) {
- 		drm_crtc_handle_vblank(&priv->pipe.crtc);
--		writel(reg, priv->base + CRT_CTRL1);
-+		writel(reg, priv->base + priv->int_clr_reg);
- 		return IRQ_HANDLED;
- 	}
- 
-@@ -147,6 +150,7 @@ static int aspeed_gfx_load(struct drm_device *drm)
- 	config = match->data;
- 
- 	priv->dac_reg = config->dac_reg;
-+	priv->int_clr_reg = config->int_clear_reg;
- 	priv->vga_scratch_reg = config->vga_scratch_reg;
- 	priv->throd_val = config->throd_val;
- 	priv->scan_line_max = config->scan_line_max;
++			gfx: display at 1e6e6000 {
++				compatible = "aspeed,ast2600-gfx", "aspeed,ast2500-gfx", "syscon";
++				reg = <0x1e6e6000 0x1000>;
++				reg-io-width = <4>;
++				clocks = <&syscon ASPEED_CLK_GATE_D1CLK>;
++				resets = <&syscon ASPEED_RESET_GRAPHICS>;
++				syscon = <&syscon>;
++				status = "disabled";
++				interrupts = <GIC_SPI 14 IRQ_TYPE_LEVEL_HIGH>;
++			};
++
+ 			xdma: xdma at 1e6e7000 {
+ 				compatible = "aspeed,ast2600-xdma";
+ 				reg = <0x1e6e7000 0x100>;
 -- 
 2.17.1
 
