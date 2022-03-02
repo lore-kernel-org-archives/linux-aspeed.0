@@ -1,78 +1,65 @@
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Tue, 1 Mar 2022 15:55:42 -0800
-Subject: [PATCH 2/6] treewide: remove using list iterator after loop body
- as a ptr
-In-Reply-To: <0ced2b155b984882b39e895f0211037c@AcuMS.aculab.com>
-References: <20220228110822.491923-1-jakobkoschel@gmail.com>
- <20220228110822.491923-3-jakobkoschel@gmail.com>
- <2e4e95d6-f6c9-a188-e1cd-b1eae465562a@amd.com>
- <CAHk-=wgQps58DPEOe4y5cTh5oE9EdNTWRLXzgMiETc+mFX7jzw@mail.gmail.com>
- <282f0f8d-f491-26fc-6ae0-604b367a5a1a@amd.com>
- <b2d20961dbb7533f380827a7fcc313ff849875c1.camel@HansenPartnership.com>
- <7D0C2A5D-500E-4F38-AD0C-A76E132A390E@kernel.org>
- <73fa82a20910c06784be2352a655acc59e9942ea.camel@HansenPartnership.com>
- <CAHk-=wiT5HX6Kp0Qv4ZYK_rkq9t5fZ5zZ7vzvi6pub9kgp=72g@mail.gmail.com>
- <7dc860874d434d2288f36730d8ea3312@AcuMS.aculab.com>
- <CAHk-=whKqg89zu4T95+ctY-hocR6kDArpo2qO14-kV40Ga7ufw@mail.gmail.com>
- <0ced2b155b984882b39e895f0211037c@AcuMS.aculab.com>
-Message-ID: <CAHk-=wix0HLCBs5sxAeW3uckg0YncXbTjMsE-Tv8WzmkOgLAXQ@mail.gmail.com>
+From: Pavel Machek <pavel@ucw.cz>
+Date: Wed, 2 Mar 2022 09:54:32 +0100
+Subject: [PATCH 0/2] leds: pca955x: Expose GPIOs for all pins
+In-Reply-To: <CACPK8Xdvns7PK9t1ZutAbkJqhb5eRcoWCDySQGsfbtLv+XMvqQ@mail.gmail.com>
+References: <20210921043936.468001-1-andrew@aj.id.au>
+ <d2b85ad7-aef7-6088-03f5-cbd6e0bcab5d@kaod.org>
+ <CACPK8Xdvns7PK9t1ZutAbkJqhb5eRcoWCDySQGsfbtLv+XMvqQ@mail.gmail.com>
+Message-ID: <20220302085432.GA11054@duo.ucw.cz>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Mar 1, 2022 at 3:19 PM David Laight <David.Laight@aculab.com> wrote:
->
-> Having said that there are so few users of list_entry_is_head()
-> it is reasonable to generate two new names.
+Hi!
 
-Well, the problem is that the users of list_entry_is_head() may be few
-- but there are a number of _other_ ways to check "was that the HEAD
-pointer", and not all of them are necessarily correct.
+> > > Without these patches the driver limits the number of pins exposed on
+> > > the gpiochip to the number of pins specified as GPIO in the devicetree,
+> > > but doesn't map between the GPIO and pin number spaces. The result is
+> > > that specifying offset or interleaved GPIOs in the devicetree gives
+> > > unexpected behaviour in userspace.
+> > >
+> > > By always exposing all pins as GPIOs the patches resolve the lack of
+> > > mapping between GPIO offsets and pins on the package in the driver by
+> > > ensuring we always have a 1-to-1 mapping.
+> > >
+> > > The issue is primarily addressed by patch 1/2. Patch 2/2 makes it
+> > > possible to not expose any pins as LEDs (and therefore make them all
+> > > accessible as GPIOs). This has a follow-on effect of allowing the driver
+> > > to bind to a device instantiated at runtime without requiring a
+> > > description in the devicetree.
+> > >
+> > > I've tested the series under qemu to inspect the various interactions
+> > > between LEDs vs GPIOs as well as conflicting GPIO requests.
+> 
+> > > Please review!
+> >
+> > This is simpler than the 'ngpio' business we had before.
+> >
+> > Reviewed-by: C?dric Le Goater <clg@kaod.org>
+> 
+> I saw that you recently merged some LED patches. I was wondering if
+> you could consider this series for v5.18. It still applies cleanly,
+> and we've been running it for a while now, so it's very well tested.
 
-IOW, different places do different random tests for "did we walk the
-whole loop without breaking out". And many of them happen to work. In
-fact, in practice, pretty much *all* of them happen to work, and you
-have to have the right struct layout and really really bad luck to hit
-a case of "type confusion ended up causing the test to not work".
+Thanks, applied. I must say this is really ninja-mutant driver, but I
+see no better way.
 
-And *THAT* is the problem here. It's not the "there are 25ish places
-that current use list_entry_is_head()".
++++ b/drivers/leds/leds-pca955x.c
+@@ -429,7 +429,7 @@ pca955x_get_pdata(struct i2c_client *client, struct pca955x_chipdef *chip)
+        int count;
 
-It's the "there are ~480 places that use the type-confused HEAD entry
-that has been cast to the wrong type".
+This really should be unsigned. Care to fix/submit a patch?
 
-And THAT is why I think we'd be better off with that bigger change
-that simply means that you can't use the iterator variable at all
-outside the loop, and try to make it something where the compiler can
-help catch mis-uses.
-
-Now, making the list_for_each_entry() thing force the iterator to NULL
-at the end of the loop does fix the problem. The issue I have with it
-is really just that you end up getting no warning at all from the
-compiler if you mix old-style and new-style semantics. Now, you *will*
-get an oops (if using a new-style iterator with an old-style check),
-but many of these things will be in odd driver code and may happen
-only for error cases.
-
-And if you use a new-style check with an old-style iterator (ie some
-backport problem), you will probably end up getting random memory
-corruption, because you'll decide "it's not a HEAD entry", and then
-you'll actually *use* the HEAD that has the wrong type cast associated
-with it.
-
-See what my worry is?
-
-With the "don't use iterator outside the loop" approach, the exact
-same code works in both the old world order and the new world order,
-and you don't have the semantic confusion. And *if* you try to use the
-iterator outside the loop, you'll _mostly_ (*) get a compiler warning
-about it not being initialized.
-
-             Linus
-
-(*) Unless somebody initializes the iterator pointer pointlessly.
-Which clearly does happen. Thus the "mostly". It's not perfect, and
-that's most definitely not nice - but it should at least hopefully
-make it that much harder to mess up.
+Best regards,
+								Pavel
+-- 
+http://www.livejournal.com/~pavelmachek
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 195 bytes
+Desc: not available
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20220302/6f784f7f/attachment-0001.sig>
