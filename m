@@ -1,65 +1,63 @@
-From: Pavel Machek <pavel@ucw.cz>
-Date: Wed, 2 Mar 2022 09:54:32 +0100
-Subject: [PATCH 0/2] leds: pca955x: Expose GPIOs for all pins
-In-Reply-To: <CACPK8Xdvns7PK9t1ZutAbkJqhb5eRcoWCDySQGsfbtLv+XMvqQ@mail.gmail.com>
-References: <20210921043936.468001-1-andrew@aj.id.au>
- <d2b85ad7-aef7-6088-03f5-cbd6e0bcab5d@kaod.org>
- <CACPK8Xdvns7PK9t1ZutAbkJqhb5eRcoWCDySQGsfbtLv+XMvqQ@mail.gmail.com>
-Message-ID: <20220302085432.GA11054@duo.ucw.cz>
+From: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+Date: Wed, 2 Mar 2022 10:29:31 +0100
+Subject: [PATCH 2/6] treewide: remove using list iterator after loop body
+ as a ptr
+In-Reply-To: <CAHk-=wix0HLCBs5sxAeW3uckg0YncXbTjMsE-Tv8WzmkOgLAXQ@mail.gmail.com>
+References: <20220228110822.491923-1-jakobkoschel@gmail.com>
+ <20220228110822.491923-3-jakobkoschel@gmail.com>
+ <2e4e95d6-f6c9-a188-e1cd-b1eae465562a@amd.com>
+ <CAHk-=wgQps58DPEOe4y5cTh5oE9EdNTWRLXzgMiETc+mFX7jzw@mail.gmail.com>
+ <282f0f8d-f491-26fc-6ae0-604b367a5a1a@amd.com>
+ <b2d20961dbb7533f380827a7fcc313ff849875c1.camel@HansenPartnership.com>
+ <7D0C2A5D-500E-4F38-AD0C-A76E132A390E@kernel.org>
+ <73fa82a20910c06784be2352a655acc59e9942ea.camel@HansenPartnership.com>
+ <CAHk-=wiT5HX6Kp0Qv4ZYK_rkq9t5fZ5zZ7vzvi6pub9kgp=72g@mail.gmail.com>
+ <7dc860874d434d2288f36730d8ea3312@AcuMS.aculab.com>
+ <CAHk-=whKqg89zu4T95+ctY-hocR6kDArpo2qO14-kV40Ga7ufw@mail.gmail.com>
+ <0ced2b155b984882b39e895f0211037c@AcuMS.aculab.com>
+ <CAHk-=wix0HLCBs5sxAeW3uckg0YncXbTjMsE-Tv8WzmkOgLAXQ@mail.gmail.com>
+Message-ID: <78ccb184-405e-da93-1e02-078f90d2b9bc@rasmusvillemoes.dk>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi!
+On 02/03/2022 00.55, Linus Torvalds wrote:
+> On Tue, Mar 1, 2022 at 3:19 PM David Laight <David.Laight@aculab.com> wrote:
+>>
 
-> > > Without these patches the driver limits the number of pins exposed on
-> > > the gpiochip to the number of pins specified as GPIO in the devicetree,
-> > > but doesn't map between the GPIO and pin number spaces. The result is
-> > > that specifying offset or interleaved GPIOs in the devicetree gives
-> > > unexpected behaviour in userspace.
-> > >
-> > > By always exposing all pins as GPIOs the patches resolve the lack of
-> > > mapping between GPIO offsets and pins on the package in the driver by
-> > > ensuring we always have a 1-to-1 mapping.
-> > >
-> > > The issue is primarily addressed by patch 1/2. Patch 2/2 makes it
-> > > possible to not expose any pins as LEDs (and therefore make them all
-> > > accessible as GPIOs). This has a follow-on effect of allowing the driver
-> > > to bind to a device instantiated at runtime without requiring a
-> > > description in the devicetree.
-> > >
-> > > I've tested the series under qemu to inspect the various interactions
-> > > between LEDs vs GPIOs as well as conflicting GPIO requests.
+> With the "don't use iterator outside the loop" approach, the exact
+> same code works in both the old world order and the new world order,
+> and you don't have the semantic confusion. And *if* you try to use the
+> iterator outside the loop, you'll _mostly_ (*) get a compiler warning
+> about it not being initialized.
 > 
-> > > Please review!
-> >
-> > This is simpler than the 'ngpio' business we had before.
-> >
-> > Reviewed-by: C?dric Le Goater <clg@kaod.org>
+>              Linus
 > 
-> I saw that you recently merged some LED patches. I was wondering if
-> you could consider this series for v5.18. It still applies cleanly,
-> and we've been running it for a while now, so it's very well tested.
+> (*) Unless somebody initializes the iterator pointer pointlessly.
+> Which clearly does happen. Thus the "mostly". It's not perfect, and
+> that's most definitely not nice - but it should at least hopefully
+> make it that much harder to mess up.
 
-Thanks, applied. I must say this is really ninja-mutant driver, but I
-see no better way.
+This won't help the current issue (because it doesn't exist and might
+never), but just in case some compiler people are listening, I'd like to
+have some sort of way to tell the compiler "treat this variable as
+uninitialized from here on". So one could do
 
-+++ b/drivers/leds/leds-pca955x.c
-@@ -429,7 +429,7 @@ pca955x_get_pdata(struct i2c_client *client, struct pca955x_chipdef *chip)
-        int count;
+#define kfree(p) do { __kfree(p); __magic_uninit(p); } while (0)
 
-This really should be unsigned. Care to fix/submit a patch?
+with __magic_uninit being a magic no-op that doesn't affect the
+semantics of the code, but could be used by the compiler's "[is/may be]
+used uninitialized" machinery to flag e.g. double frees on some odd
+error path etc. It would probably only work for local automatic
+variables, but it should be possible to just ignore the hint if p is
+some expression like foo->bar or has side effects. If we had that, the
+end-of-loop test could include that to "uninitialize" the iterator.
 
-Best regards,
-								Pavel
--- 
-http://www.livejournal.com/~pavelmachek
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 195 bytes
-Desc: not available
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20220302/6f784f7f/attachment-0001.sig>
+Maybe sparse/smatch or some other static analyzer could implement such a
+magic thing? Maybe it's better as a function attribute
+[__attribute__((uninitializes(1)))] to avoid having to macrofy all
+functions that release resources.
+
+Rasmus
