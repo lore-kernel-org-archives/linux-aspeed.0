@@ -1,58 +1,45 @@
 From: Tommy Haung <tommy_huang@aspeedtech.com>
-Date: Wed, 2 Mar 2022 10:49:27 +0800
-Subject: [PATCH v6 2/5] ARM: dts: aspeed: ast2600-evb: Enable GFX device
+Date: Wed, 2 Mar 2022 10:49:29 +0800
+Subject: [PATCH v6 4/5] drm/aspeed: Add AST2600 chip support
 In-Reply-To: <20220302024930.18758-1-tommy_huang@aspeedtech.com>
 References: <20220302024930.18758-1-tommy_huang@aspeedtech.com>
-Message-ID: <20220302024930.18758-3-tommy_huang@aspeedtech.com>
+Message-ID: <20220302024930.18758-5-tommy_huang@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Joel Stanley <joel@jms.id.au>
+Add AST2600 chip support and setting.
 
-Enable the GFX device with a framebuffer memory region.
-
-Signed-off-by: Joel Stanley <joel@jms.id.au>
 Signed-off-by: Tommy Haung <tommy_huang@aspeedtech.com>
 ---
- arch/arm/boot/dts/aspeed-ast2600-evb.dts | 18 ++++++++++++++++++
- 1 file changed, 18 insertions(+)
+ drivers/gpu/drm/aspeed/aspeed_gfx_drv.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-diff --git a/arch/arm/boot/dts/aspeed-ast2600-evb.dts b/arch/arm/boot/dts/aspeed-ast2600-evb.dts
-index b7eb552640cb..e223dad2abd0 100644
---- a/arch/arm/boot/dts/aspeed-ast2600-evb.dts
-+++ b/arch/arm/boot/dts/aspeed-ast2600-evb.dts
-@@ -23,6 +23,19 @@
- 		reg = <0x80000000 0x80000000>;
- 	};
- 
-+	reserved-memory {
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		ranges;
-+
-+		gfx_memory: framebuffer {
-+			size = <0x01000000>;
-+			alignment = <0x01000000>;
-+			compatible = "shared-dma-pool";
-+			reusable;
-+		};
-+	};
-+
- 	vcc_sdhci0: regulator-vcc-sdhci0 {
- 		compatible = "regulator-fixed";
- 		regulator-name = "SDHCI0 Vcc";
-@@ -300,3 +313,8 @@
- 	vqmmc-supply = <&vccq_sdhci1>;
- 	clk-phase-sd-hs = <7>, <200>;
+diff --git a/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c b/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
+index d4b56b3c7597..d10246b1d1c2 100644
+--- a/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
++++ b/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
+@@ -82,9 +82,18 @@ static const struct aspeed_gfx_config ast2500_config = {
+ 	.scan_line_max = 128,
  };
-+
-+&gfx {
-+	status = "okay";
-+	memory-region = <&gfx_memory>;
+ 
++static const struct aspeed_gfx_config ast2600_config = {
++	.dac_reg = 0xc0,
++	.int_clear_reg = 0x68,
++	.vga_scratch_reg = 0x50,
++	.throd_val = CRT_THROD_LOW(0x50) | CRT_THROD_HIGH(0x70),
++	.scan_line_max = 128,
 +};
++
+ static const struct of_device_id aspeed_gfx_match[] = {
+ 	{ .compatible = "aspeed,ast2400-gfx", .data = &ast2400_config },
+ 	{ .compatible = "aspeed,ast2500-gfx", .data = &ast2500_config },
++	{ .compatible = "aspeed,ast2600-gfx", .data = &ast2600_config },
+ 	{ },
+ };
+ MODULE_DEVICE_TABLE(of, aspeed_gfx_match);
 -- 
 2.17.1
 
