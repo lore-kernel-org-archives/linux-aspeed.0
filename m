@@ -1,50 +1,58 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Wed, 02 Mar 2022 10:39:04 +1030
-Subject: [PATCH] pinctrl: aspeed: fix null dereference in debug
-In-Reply-To: <tencent_BBDF8D2C89ECC450F3349D6E46F8EAF87F0A@qq.com>
-References: <tencent_BBDF8D2C89ECC450F3349D6E46F8EAF87F0A@qq.com>
-Message-ID: <c51e5a79-168e-4189-ba8e-a426ab82cd89@www.fastmail.com>
+From: Tommy Haung <tommy_huang@aspeedtech.com>
+Date: Wed, 2 Mar 2022 10:49:27 +0800
+Subject: [PATCH v6 2/5] ARM: dts: aspeed: ast2600-evb: Enable GFX device
+In-Reply-To: <20220302024930.18758-1-tommy_huang@aspeedtech.com>
+References: <20220302024930.18758-1-tommy_huang@aspeedtech.com>
+Message-ID: <20220302024930.18758-3-tommy_huang@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+From: Joel Stanley <joel@jms.id.au>
 
+Enable the GFX device with a framebuffer memory region.
 
-On Wed, 2 Mar 2022, at 06:00, Weiguo Li wrote:
-> "pdesc" is null checked, but already dereferenced ahead in debug.
-> Swap their positions to avoid potential null dereference.
->
-> Signed-off-by: Weiguo Li <liwg06@foxmail.com>
+Signed-off-by: Joel Stanley <joel@jms.id.au>
+Signed-off-by: Tommy Haung <tommy_huang@aspeedtech.com>
+---
+ arch/arm/boot/dts/aspeed-ast2600-evb.dts | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
 
-Thanks.
+diff --git a/arch/arm/boot/dts/aspeed-ast2600-evb.dts b/arch/arm/boot/dts/aspeed-ast2600-evb.dts
+index b7eb552640cb..e223dad2abd0 100644
+--- a/arch/arm/boot/dts/aspeed-ast2600-evb.dts
++++ b/arch/arm/boot/dts/aspeed-ast2600-evb.dts
+@@ -23,6 +23,19 @@
+ 		reg = <0x80000000 0x80000000>;
+ 	};
+ 
++	reserved-memory {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		ranges;
++
++		gfx_memory: framebuffer {
++			size = <0x01000000>;
++			alignment = <0x01000000>;
++			compatible = "shared-dma-pool";
++			reusable;
++		};
++	};
++
+ 	vcc_sdhci0: regulator-vcc-sdhci0 {
+ 		compatible = "regulator-fixed";
+ 		regulator-name = "SDHCI0 Vcc";
+@@ -300,3 +313,8 @@
+ 	vqmmc-supply = <&vccq_sdhci1>;
+ 	clk-phase-sd-hs = <7>, <200>;
+ };
++
++&gfx {
++	status = "okay";
++	memory-region = <&gfx_memory>;
++};
+-- 
+2.17.1
 
-Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
-
-> ---
->  drivers/pinctrl/aspeed/pinctrl-aspeed.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/pinctrl/aspeed/pinctrl-aspeed.c 
-> b/drivers/pinctrl/aspeed/pinctrl-aspeed.c
-> index c94e24aadf92..83d47ff1cea8 100644
-> --- a/drivers/pinctrl/aspeed/pinctrl-aspeed.c
-> +++ b/drivers/pinctrl/aspeed/pinctrl-aspeed.c
-> @@ -236,11 +236,11 @@ int aspeed_pinmux_set_mux(struct pinctrl_dev 
-> *pctldev, unsigned int function,
->  		const struct aspeed_sig_expr **funcs;
->  		const struct aspeed_sig_expr ***prios;
-> 
-> -		pr_debug("Muxing pin %s for %s\n", pdesc->name, pfunc->name);
-> -
->  		if (!pdesc)
->  			return -EINVAL;
-> 
-> +		pr_debug("Muxing pin %s for %s\n", pdesc->name, pfunc->name);
-> +
->  		prios = pdesc->prios;
-> 
->  		if (!prios)
-> -- 
-> 2.25.1
