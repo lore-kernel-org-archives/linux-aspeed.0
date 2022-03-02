@@ -1,123 +1,125 @@
 From: Cédric Le Goater <clg@kaod.org>
-Date: Wed,  2 Mar 2022 18:31:09 +0100
-Subject: [PATCH v2 05/10] spi: aspeed: Add support for direct mapping
+Date: Wed,  2 Mar 2022 18:31:12 +0100
+Subject: [PATCH v2 08/10] spi: aspeed: Add support for the AST2400 SPI
+ controller
 In-Reply-To: <20220302173114.927476-1-clg@kaod.org>
 References: <20220302173114.927476-1-clg@kaod.org>
-Message-ID: <20220302173114.927476-6-clg@kaod.org>
+Message-ID: <20220302173114.927476-9-clg@kaod.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Use direct mapping to read the flash device contents. This operation
-mode is called "Command mode" on Aspeed SoC SMC controllers. It uses a
-Control Register for the settings to apply when a memory operation is
-performed on the flash device mapping window.
+Extend the driver for the AST2400 SPI Flash Controller (SPI). This
+controller has a slightly different interface which requires
+adaptation of the 4B handling. Summary of features :
 
-If the window is not big enough, fall back to the "User mode" to
-perform the read.
-
-Since direct mapping now handles all reads of the flash device
-contents, also use memcpy_fromio for other address spaces, such as
-SFDP.
-
-Direct mapping for writes will come later when validated.
+   . host Firmware
+   . 1 chip select pin (CE0)
+   . slightly different register set, between AST2500 and the legacy
+     controller
+   . no segment registers
+   . single, dual mode.
 
 Signed-off-by: C?dric Le Goater <clg@kaod.org>
 ---
- drivers/spi/spi-aspeed-smc.c | 67 ++++++++++++++++++++++++++++++++++--
- 1 file changed, 65 insertions(+), 2 deletions(-)
+ drivers/spi/spi-aspeed-smc.c | 33 ++++++++++++++++++++++++++++++++-
+ 1 file changed, 32 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/spi/spi-aspeed-smc.c b/drivers/spi/spi-aspeed-smc.c
-index 688f9472e0d7..b4854b521477 100644
+index e133984d3c95..8c6d7f79d97f 100644
 --- a/drivers/spi/spi-aspeed-smc.c
 +++ b/drivers/spi/spi-aspeed-smc.c
-@@ -324,8 +324,8 @@ static int do_aspeed_spi_exec_op(struct spi_mem *mem, const struct spi_mem_op *o
- 		if (!op->addr.nbytes)
- 			ret = aspeed_spi_read_reg(chip, op);
- 		else
--			ret = aspeed_spi_read_user(chip, op, op->addr.val,
--						   op->data.nbytes, op->data.buf.in);
-+			memcpy_fromio(op->data.buf.in, chip->ahb_base + op->addr.val,
-+				      op->data.nbytes);
- 	} else {
- 		if (!op->addr.nbytes)
- 			ret = aspeed_spi_write_reg(chip, op);
-@@ -405,10 +405,73 @@ static int aspeed_spi_chip_set_default_window(struct aspeed_spi_chip *chip)
- 	return chip->ahb_window_size ? 0 : -1;
+@@ -32,6 +32,7 @@
+ #define   CTRL_IO_DUAL_DATA		BIT(29)
+ #define   CTRL_IO_QUAD_DATA		BIT(30)
+ #define   CTRL_COMMAND_SHIFT		16
++#define   CTRL_IO_ADDRESS_4B		BIT(13)	/* AST2400 SPI only */
+ #define   CTRL_IO_DUMMY_SET(dummy)					\
+ 	(((((dummy) >> 2) & 0x1) << 14) | (((dummy) & 0x3) << 6))
+ #define   CTRL_CE_STOP_ACTIVE		BIT(2)
+@@ -272,6 +273,8 @@ static bool aspeed_spi_supports_op(struct spi_mem *mem, const struct spi_mem_op
+ 	return spi_mem_default_supports_op(mem, op);
  }
  
-+static int aspeed_spi_dirmap_create(struct spi_mem_dirmap_desc *desc)
-+{
-+	struct aspeed_spi *aspi = spi_controller_get_devdata(desc->mem->spi->master);
-+	struct aspeed_spi_chip *chip = &aspi->chips[desc->mem->spi->chip_select];
-+	struct spi_mem_op *op = &desc->info.op_tmpl;
-+	u32 ctl_val;
-+	int ret = 0;
++static const struct aspeed_spi_data ast2400_spi_data;
 +
-+	chip->clk_freq = desc->mem->spi->max_speed_hz;
+ static int do_aspeed_spi_exec_op(struct spi_mem *mem, const struct spi_mem_op *op)
+ {
+ 	struct aspeed_spi *aspi = spi_controller_get_devdata(mem->spi->master);
+@@ -301,6 +304,9 @@ static int do_aspeed_spi_exec_op(struct spi_mem *mem, const struct spi_mem_op *o
+ 			addr_mode |= (0x11 << chip->cs);
+ 		else
+ 			addr_mode &= ~(0x11 << chip->cs);
 +
-+	/* Only for reads */
-+	if (op->data.dir != SPI_MEM_DATA_IN)
-+		return -EOPNOTSUPP;
-+
-+	if (desc->info.length > chip->ahb_window_size)
-+		dev_warn(aspi->dev, "CE%d window (%dMB) too small for mapping",
-+			 chip->cs, chip->ahb_window_size >> 20);
-+
-+	/* Define the default IO read settings */
-+	ctl_val = readl(chip->ctl) & ~CTRL_IO_CMD_MASK;
-+	ctl_val |= aspeed_spi_get_io_mode(op) |
-+		op->cmd.opcode << CTRL_COMMAND_SHIFT |
-+		CTRL_IO_DUMMY_SET(op->dummy.nbytes / op->dummy.buswidth) |
-+		CTRL_IO_MODE_READ;
-+
-+	/* Tune 4BYTE address mode */
-+	if (op->addr.nbytes) {
-+		u32 addr_mode = readl(aspi->regs + CE_CTRL_REG);
-+
-+		if (op->addr.nbytes == 4)
-+			addr_mode |= (0x11 << chip->cs);
-+		else
-+			addr_mode &= ~(0x11 << chip->cs);
-+		writel(addr_mode, aspi->regs + CE_CTRL_REG);
++		if (op->addr.nbytes == 4 && chip->aspi->data == &ast2400_spi_data)
++			ctl_val |= CTRL_IO_ADDRESS_4B;
+ 	}
+ 
+ 	if (op->dummy.buswidth && op->dummy.nbytes)
+@@ -392,7 +398,13 @@ static int aspeed_spi_chip_set_default_window(struct aspeed_spi_chip *chip)
+ 	struct aspeed_spi_window windows[ASPEED_SPI_MAX_NUM_CS] = { 0 };
+ 	struct aspeed_spi_window *win = &windows[chip->cs];
+ 
+-	aspeed_spi_get_windows(aspi, windows);
++	/* No segment registers for the AST2400 SPI controller */
++	if (aspi->data == &ast2400_spi_data) {
++		win->offset = 0;
++		win->size = aspi->ahb_window_size;
++	} else {
++		aspeed_spi_get_windows(aspi, windows);
 +	}
+ 
+ 	chip->ahb_base = aspi->ahb_base + win->offset;
+ 	chip->ahb_window_size = win->size;
+@@ -455,6 +467,10 @@ static int aspeed_spi_chip_adjust_window(struct aspeed_spi_chip *chip,
+ 	struct aspeed_spi_window *win = &windows[chip->cs];
+ 	int ret;
+ 
++	/* No segment registers for the AST2400 SPI controller */
++	if (aspi->data == &ast2400_spi_data)
++		return 0;
 +
-+	/* READ mode is the controller default setting */
-+	chip->ctl_val[ASPEED_SPI_READ] = ctl_val;
-+	writel(chip->ctl_val[ASPEED_SPI_READ], chip->ctl);
+ 	/*
+ 	 * Due to an HW issue on the AST2500 SPI controller, the CE0
+ 	 * window size should be smaller than the maximum 128MB.
+@@ -539,6 +555,12 @@ static int aspeed_spi_dirmap_create(struct spi_mem_dirmap_desc *desc)
+ 		else
+ 			addr_mode &= ~(0x11 << chip->cs);
+ 		writel(addr_mode, aspi->regs + CE_CTRL_REG);
 +
-+	dev_info(aspi->dev, "CE%d read buswidth:%d [0x%08x]\n",
-+		 chip->cs, op->data.buswidth, chip->ctl_val[ASPEED_SPI_READ]);
-+
-+	return ret;
-+}
-+
-+static int aspeed_spi_dirmap_read(struct spi_mem_dirmap_desc *desc,
-+				  u64 offset, size_t len, void *buf)
-+{
-+	struct aspeed_spi *aspi = spi_controller_get_devdata(desc->mem->spi->master);
-+	struct aspeed_spi_chip *chip = &aspi->chips[desc->mem->spi->chip_select];
-+
-+	/* Switch to USER command mode if mapping window is too small */
-+	if (chip->ahb_window_size < offset + len)
-+		aspeed_spi_read_user(chip, &desc->info.op_tmpl, offset, len, buf);
-+	else
-+		memcpy_fromio(buf, chip->ahb_base + offset, len);
-+
-+	return len;
-+}
-+
- static const struct spi_controller_mem_ops aspeed_spi_mem_ops = {
- 	.supports_op = aspeed_spi_supports_op,
- 	.exec_op = aspeed_spi_exec_op,
- 	.get_name = aspeed_spi_get_name,
-+	.dirmap_create = aspeed_spi_dirmap_create,
-+	.dirmap_read = aspeed_spi_dirmap_read,
++		/* AST2400 SPI controller sets 4BYTE address mode in
++		 * CE0 Control Register
++		 */
++		if (op->addr.nbytes == 4 && chip->aspi->data == &ast2400_spi_data)
++			ctl_val |= CTRL_IO_ADDRESS_4B;
+ 	}
+ 
+ 	/* READ mode is the controller default setting */
+@@ -805,6 +827,14 @@ static const struct aspeed_spi_data ast2400_fmc_data = {
+ 	.segment_reg   = aspeed_spi_segment_reg,
  };
  
- static void aspeed_spi_chip_set_type(struct aspeed_spi *aspi, unsigned int cs, int type)
++static const struct aspeed_spi_data ast2400_spi_data = {
++	.max_cs	       = 1,
++	.hastype       = false,
++	.we0	       = 0,
++	.ctl0	       = 0x04,
++	/* No segment registers */
++};
++
+ static const struct aspeed_spi_data ast2500_fmc_data = {
+ 	.max_cs	       = 3,
+ 	.hastype       = true,
+@@ -849,6 +879,7 @@ static const struct aspeed_spi_data ast2600_spi_data = {
+ 
+ static const struct of_device_id aspeed_spi_matches[] = {
+ 	{ .compatible = "aspeed,ast2400-fmc", .data = &ast2400_fmc_data },
++	{ .compatible = "aspeed,ast2400-spi", .data = &ast2400_spi_data },
+ 	{ .compatible = "aspeed,ast2500-fmc", .data = &ast2500_fmc_data },
+ 	{ .compatible = "aspeed,ast2500-spi", .data = &ast2500_spi_data },
+ 	{ .compatible = "aspeed,ast2600-fmc", .data = &ast2600_fmc_data },
 -- 
 2.34.1
 
