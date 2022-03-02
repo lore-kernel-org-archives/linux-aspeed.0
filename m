@@ -1,145 +1,45 @@
-From: Joel Stanley <joel@jms.id.au>
-Date: Wed,  2 Mar 2022 15:40:56 +1030
-Subject: [PATCH] dt-bindings: gpu: Convert aspeed-gfx bindings to yaml
-Message-ID: <20220302051056.678367-1-joel@jms.id.au>
+From: Weiguo Li <liwg06@foxmail.com>
+Date: Wed,  2 Mar 2022 15:12:24 +0800
+Subject: [PATCH v2] pinctrl: aspeed: fix null dereference in debug
+In-Reply-To: <c51e5a79-168e-4189-ba8e-a426ab82cd89@www.fastmail.com>
+References: <c51e5a79-168e-4189-ba8e-a426ab82cd89@www.fastmail.com>
+Message-ID: <tencent_68563A6FDF372313228831913CC3A7041108@qq.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Convert the bindings to yaml and add the ast2600 compatible string.
+"pdesc" is null checked, but already dereferenced ahead in debug.
+Swap their positions to avoid potential null dereference.
 
-Signed-off-by: Joel Stanley <joel@jms.id.au>
+Signed-off-by: Weiguo Li <liwg06@foxmail.com>
+Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
 ---
- .../devicetree/bindings/gpu/aspeed,gfx.yaml   | 69 +++++++++++++++++++
- .../devicetree/bindings/gpu/aspeed-gfx.txt    | 41 -----------
- 2 files changed, 69 insertions(+), 41 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/gpu/aspeed,gfx.yaml
- delete mode 100644 Documentation/devicetree/bindings/gpu/aspeed-gfx.txt
+v2:
+* resend it after registering an account in aspeed patchwork
+---
+ drivers/pinctrl/aspeed/pinctrl-aspeed.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/gpu/aspeed,gfx.yaml b/Documentation/devicetree/bindings/gpu/aspeed,gfx.yaml
-new file mode 100644
-index 000000000000..8ddc4fa6e8e4
---- /dev/null
-+++ b/Documentation/devicetree/bindings/gpu/aspeed,gfx.yaml
-@@ -0,0 +1,69 @@
-+# SPDX-License-Identifier: GPL-2.0-only
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/gpu/aspeed,gfx.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: ASPEED GFX display device
-+
-+maintainers:
-+  - Joel Stanley <joel@jms.id.au>
-+
-+properties:
-+  compatible:
-+    items:
-+      - enum:
-+          - aspeed,ast2400-gfx
-+          - aspeed,ast2500-gfx
-+          - aspeed,ast2600-gfx
-+      - const: syscon
-+
-+  reg:
-+    minItems: 1
-+
-+  interrupts:
-+    maxItems: 1
-+
-+  clocks:
-+    maxItems: 1
-+
-+  resets:
-+    maxItems: 1
-+
-+  memory-region: true
-+
-+  syscon: true
-+
-+  reg-io-width: true
-+
-+required:
-+  - reg
-+  - compatible
-+  - interrupts
-+  - clocks
-+  - resets
-+  - memory-region
-+  - syscon
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+   #include <dt-bindings/clock/aspeed-clock.h>
-+   gfx: display at 1e6e6000 {
-+       compatible = "aspeed,ast2500-gfx", "syscon";
-+       reg = <0x1e6e6000 0x1000>;
-+       reg-io-width = <4>;
-+       clocks = <&syscon ASPEED_CLK_GATE_D1CLK>;
-+       resets = <&syscon ASPEED_RESET_CRT1>;
-+       interrupts = <0x19>;
-+       syscon = <&syscon>;
-+       memory-region = <&gfx_memory>;
-+   };
-+
-+   gfx_memory: framebuffer {
-+       size = <0x01000000>;
-+       alignment = <0x01000000>;
-+       compatible = "shared-dma-pool";
-+       reusable;
-+   };
-diff --git a/Documentation/devicetree/bindings/gpu/aspeed-gfx.txt b/Documentation/devicetree/bindings/gpu/aspeed-gfx.txt
-deleted file mode 100644
-index 958bdf962339..000000000000
---- a/Documentation/devicetree/bindings/gpu/aspeed-gfx.txt
-+++ /dev/null
-@@ -1,41 +0,0 @@
--Device tree configuration for the GFX display device on the ASPEED SoCs
+diff --git a/drivers/pinctrl/aspeed/pinctrl-aspeed.c b/drivers/pinctrl/aspeed/pinctrl-aspeed.c
+index c94e24aadf92..83d47ff1cea8 100644
+--- a/drivers/pinctrl/aspeed/pinctrl-aspeed.c
++++ b/drivers/pinctrl/aspeed/pinctrl-aspeed.c
+@@ -236,11 +236,11 @@ int aspeed_pinmux_set_mux(struct pinctrl_dev *pctldev, unsigned int function,
+ 		const struct aspeed_sig_expr **funcs;
+ 		const struct aspeed_sig_expr ***prios;
+ 
+-		pr_debug("Muxing pin %s for %s\n", pdesc->name, pfunc->name);
 -
--Required properties:
--  - compatible
--    * Must be one of the following:
--      + aspeed,ast2500-gfx
--      + aspeed,ast2400-gfx
--    * In addition, the ASPEED pinctrl bindings require the 'syscon' property to
--      be present
--
--  - reg: Physical base address and length of the GFX registers
--
--  - interrupts: interrupt number for the GFX device
--
--  - clocks: clock number used to generate the pixel clock
--
--  - resets: reset line that must be released to use the GFX device
--
--  - memory-region:
--    Phandle to a memory region to allocate from, as defined in
--    Documentation/devicetree/bindings/reserved-memory/reserved-memory.txt
--
--
--Example:
--
--gfx: display at 1e6e6000 {
--	compatible = "aspeed,ast2500-gfx", "syscon";
--	reg = <0x1e6e6000 0x1000>;
--	reg-io-width = <4>;
--	clocks = <&syscon ASPEED_CLK_GATE_D1CLK>;
--	resets = <&syscon ASPEED_RESET_CRT1>;
--	interrupts = <0x19>;
--	memory-region = <&gfx_memory>;
--};
--
--gfx_memory: framebuffer {
--	size = <0x01000000>;
--	alignment = <0x01000000>;
--	compatible = "shared-dma-pool";
--	reusable;
--};
+ 		if (!pdesc)
+ 			return -EINVAL;
+ 
++		pr_debug("Muxing pin %s for %s\n", pdesc->name, pfunc->name);
++
+ 		prios = pdesc->prios;
+ 
+ 		if (!prios)
 -- 
-2.34.1
+2.25.1
 
