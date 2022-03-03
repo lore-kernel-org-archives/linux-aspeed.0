@@ -1,116 +1,92 @@
-From: David Laight <David.Laight@ACULAB.COM>
-Date: Thu, 3 Mar 2022 09:30:14 +0000
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Thu, 3 Mar 2022 13:56:02 +0300
 Subject: [PATCH 2/6] treewide: remove using list iterator after loop body
  as a ptr
-In-Reply-To: <20220303072657.11124-1-xiam0nd.tong@gmail.com>
-References: <39404befad5b44b385698ff65465abe5@AcuMS.aculab.com>
- <20220303072657.11124-1-xiam0nd.tong@gmail.com>
-Message-ID: <2d208771c50b4c6db4f43039e9d62851@AcuMS.aculab.com>
+In-Reply-To: <78ccb184-405e-da93-1e02-078f90d2b9bc@rasmusvillemoes.dk>
+References: <282f0f8d-f491-26fc-6ae0-604b367a5a1a@amd.com>
+ <b2d20961dbb7533f380827a7fcc313ff849875c1.camel@HansenPartnership.com>
+ <7D0C2A5D-500E-4F38-AD0C-A76E132A390E@kernel.org>
+ <73fa82a20910c06784be2352a655acc59e9942ea.camel@HansenPartnership.com>
+ <CAHk-=wiT5HX6Kp0Qv4ZYK_rkq9t5fZ5zZ7vzvi6pub9kgp=72g@mail.gmail.com>
+ <7dc860874d434d2288f36730d8ea3312@AcuMS.aculab.com>
+ <CAHk-=whKqg89zu4T95+ctY-hocR6kDArpo2qO14-kV40Ga7ufw@mail.gmail.com>
+ <0ced2b155b984882b39e895f0211037c@AcuMS.aculab.com>
+ <CAHk-=wix0HLCBs5sxAeW3uckg0YncXbTjMsE-Tv8WzmkOgLAXQ@mail.gmail.com>
+ <78ccb184-405e-da93-1e02-078f90d2b9bc@rasmusvillemoes.dk>
+Message-ID: <20220303105602.GE2794@kadam>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Xiaomeng Tong
-> Sent: 03 March 2022 07:27
+On Wed, Mar 02, 2022 at 10:29:31AM +0100, Rasmus Villemoes wrote:
+> This won't help the current issue (because it doesn't exist and might
+> never), but just in case some compiler people are listening, I'd like to
+> have some sort of way to tell the compiler "treat this variable as
+> uninitialized from here on". So one could do
 > 
-> On Thu, 3 Mar 2022 04:58:23 +0000, David Laight wrote:
-> > on 3 Mar 2022 10:27:29 +0800, Xiaomeng Tong wrote:
-> > > The problem is the mis-use of iterator outside the loop on exit, and
-> > > the iterator will be the HEAD's container_of pointer which pointers
-> > > to a type-confused struct. Sidenote: The *mis-use* here refers to
-> > > mistakely access to other members of the struct, instead of the
-> > > list_head member which acutally is the valid HEAD.
-> >
-> > The problem is that the HEAD's container_of pointer should never
-> > be calculated at all.
-> > This is what is fundamentally broken about the current definition.
+> #define kfree(p) do { __kfree(p); __magic_uninit(p); } while (0)
 > 
-> Yes, the rule is "the HEAD's container_of pointer should never be
-> calculated at all outside the loop", but how do you make sure everyone
-> follows this rule?
-> Everyone makes mistakes, but we can eliminate them all from the beginning
-> with the help of compiler which can catch such use-after-loop things.
-> 
-> > > IOW, you would dereference a (NULL + offset_of_member) address here.
-> >
-> >Where?
-> 
-> In the case where a developer do not follows the above rule, and mistakely
-> access a non-list-head member of the HEAD's container_of pointer outside
-> the loop. For example:
->     struct req{
->       int a;
->       struct list_head h;
->     }
->     struct req *r;
->     list_for_each_entry(r, HEAD, h) {
->       if (r->a == 0x10)
->         break;
->     }
->     // the developer made a mistake: he didn't take this situation into
->     // account where all entries in the list are *r->a != 0x10*, and now
->     // the r is the HEAD's container_of pointer.
->     r->a = 0x20;
-> Thus the "r->a = 0x20" would dereference a (NULL + offset_of_member)
-> address here.
 
-That is just a bug.
-No different to failing to check anything else might 'return'
-a NULL pointer.
-Because it is a NULL dereference you find out pretty quickly.
-The existing loop leaves you with a valid pointer to something
-that isn't a list item.
+I think this is a good idea.
 
-> > > Please remind me if i missed something, thanks.
-> > >
-> > > Can you share your "alternative definitions" details? thanks!
-> >
-> > The loop should probably use as extra variable that points
-> > to the 'list node' in the next structure.
-> > Something like:
-> > 	for (xxx *iter = head->next;
-> > 		iter == &head ? ((item = NULL),0) : ((item = list_item(iter),1));
-> > 		iter = item->member->next) {
-> > 	   ...
-> > With a bit of casting you can use 'item' to hold 'iter'.
-> 
-> you still can not make sure everyone follows this rule:
-> "do not use iterator outside the loop" without the help of compiler,
-> because item is declared outside the loop.
+Smatch can already find all the iterator used outside the loop bugs that
+Jakob did with a manageably small number of false positives.  The
+problems are that:
+1) It would be better to find it in the compile stage instead of later.
+2) I hadn't published that check.  Will do shortly.
+3) A couple weeks back I noticed that the list_for_each_entry() check
+   was no longer working.  Fixed now.
+4) Smatch was only looking at cases which dereferenced the iterator and
+   not checks for NULL.  I will test the fix for that tonight.
+5) Smatch is broken on PowerPC.
 
-That one has 'iter' defined in the loop.
+Coccinelle also has checks for iterator used outside the loop.
+Coccinelle had these checks before Smatch did.  I copied Julia's idea.
 
-> BTW, to avoid ambiguity?the "alternative definitions" here i asked is
-> something from you in this context:
-> "OTOH there may be alternative definitions that can be used to get
-> the compiler (or other compiler-like tools) to detect broken code.
-> Even if the definition can't possibly generate a working kerrnel."
+If your annotation was added to GCC it would solve all those problems.
 
-I was thinking of something like:
-	if ((pos = list_first)), 1) pos = NULL else
-so that unchecked dereferences after the loop will be detectable
-as NULL pointer offsets - but that in itself isn't enough to avoid
-other warnings.
+But it's kind of awkward that we can't annotate kfree() directly
+instead of creating the kfree() macro.  And there are lots of other
+functions which free things so you'd have to create a ton of macros
+like:
 
-> > > The "list_for_each_entry_inside(pos, type, head, member)" way makes
-> > > the iterator invisiable outside the loop, and would be catched by
-> > > compiler if use-after-loop things happened.
-> 
-> > It is also a compete PITA for anything doing a search.
-> 
-> You mean it would be a burden on search? can you show me some examples?
+#define gr_free_dma_desc(a, b) do { __gr_free_dma_desc(a, b); __magic_uninit(b); } while (0)
 
-The whole business of having to save the pointer to the located item
-before breaking the loop, remembering to have set it to NULL earlier etc.
+And then there are functions which free a struct member:
 
-It is so much better if you can just do:
-		if (found)
-			break;
+void free_bar(struct foo *p) { kfree(p->bar); }
 
-	David
+Or functions which free a container_of().
 
--
-Registered Address Lakeside, Bramley Road, Mount Farm, Milton Keynes, MK1 1PT, UK
-Registration No: 1397386 (Wales)
+Smatch is more evolved than designed but what I do these days is use $0,
+$1, $2 to represent the parameters.  So you can say a function frees
+$0->bar.  For container_of() then is "(168<~$0)->bar" which means 168
+bytes from $0.  Returns are parameter -1 so I guess it would be $(-1),
+but as I said Smatch evolved so right now places that talk about
+returned values use a different format.
+
+What you could do is just make a parseable table next to the function
+definition with all the information.  Then you would use a Perl script
+to automatically generate a Coccinelle check to warn about use after
+frees.
+
+diff --git a/mm/slab.c b/mm/slab.c
+index ddf5737c63d9..c9dffa5c40a2 100644
+--- a/mm/slab.c
++++ b/mm/slab.c
+@@ -3771,6 +3771,9 @@ EXPORT_SYMBOL(kmem_cache_free_bulk);
+  *
+  * Don't free memory not originally allocated by kmalloc()
+  * or you will run into trouble.
++ *
++ * CHECKER information
++ * frees: $0
+  */
+ void kfree(const void *objp)
+ {
+
+regards,
+dan carpenter
+
