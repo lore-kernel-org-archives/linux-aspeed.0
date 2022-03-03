@@ -1,72 +1,62 @@
-From: Joel Stanley <joel@jms.id.au>
-Date: Wed, 2 Mar 2022 23:38:10 +0000
-Subject: [PATCH v2 04/10] spi: spi-mem: Add driver for Aspeed SMC
- controllers
-In-Reply-To: <20220302173114.927476-5-clg@kaod.org>
-References: <20220302173114.927476-1-clg@kaod.org>
- <20220302173114.927476-5-clg@kaod.org>
-Message-ID: <CACPK8Xc5DMeBnQnVWk4YUsiN7YFsujYh9Qs9okrc8vFvaF28Fw@mail.gmail.com>
+From: Andrew Jeffery <andrew@aj.id.au>
+Date: Thu, 03 Mar 2022 11:00:11 +1030
+Subject: [PATCH 0/2] leds: pca955x: Expose GPIOs for all pins
+In-Reply-To: <20220302085432.GA11054@duo.ucw.cz>
+References: <20210921043936.468001-1-andrew@aj.id.au>
+ <d2b85ad7-aef7-6088-03f5-cbd6e0bcab5d@kaod.org>
+ <CACPK8Xdvns7PK9t1ZutAbkJqhb5eRcoWCDySQGsfbtLv+XMvqQ@mail.gmail.com>
+ <20220302085432.GA11054@duo.ucw.cz>
+Message-ID: <a42db25f-33af-4232-9acd-815f7b116c71@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 2 Mar 2022 at 17:31, C?dric Le Goater <clg@kaod.org> wrote:
->
-> This SPI driver adds support for the Aspeed static memory controllers
-> of the AST2600, AST2500 and AST2400 SoCs using the spi-mem interface.
->
->  * AST2600 Firmware SPI Memory Controller (FMC)
->    . BMC firmware
->    . 3 chip select pins (CE0 ~ CE2)
->    . Only supports SPI type flash memory
->    . different segment register interface
->    . single, dual and quad mode.
->
->  * AST2600 SPI Flash Controller (SPI1 and SPI2)
->    . host firmware
->    . 2 chip select pins (CE0 ~ CE1)
->    . different segment register interface
->    . single, dual and quad mode.
->
->  * AST2500 Firmware SPI Memory Controller (FMC)
->    . BMC firmware
->    . 3 chip select pins (CE0 ~ CE2)
->    . supports SPI type flash memory (CE0-CE1)
->    . CE2 can be of NOR type flash but this is not supported by the driver
->    . single, dual mode.
->
->  * AST2500 SPI Flash Controller (SPI1 and SPI2)
->    . host firmware
->    . 2 chip select pins (CE0 ~ CE1)
->    . single, dual mode.
->
->  * AST2400 New Static Memory Controller (also referred as FMC)
->    . BMC firmware
->    . New register set
->    . 5 chip select pins (CE0 ? CE4)
->    . supports NOR flash, NAND flash and SPI flash memory.
->    . single, dual and quad mode.
->
-> Each controller has a memory range on which flash devices contents are
-> mapped. Each device is assigned a window that can be changed at bootime
-> with the Segment Address Registers.
->
-> Each SPI flash device can then be accessed in two modes: Command and
-> User. When in User mode, SPI transfers are initiated with accesses to
-> the memory segment of a device. When in Command mode, memory
-> operations on the memory segment of a device generate SPI commands
-> automatically using a Control Register for the settings.
->
-> This initial patch adds support for User mode. Command mode needs a little
-> more work to check that the memory window on the AHB bus fits the device
-> size. It will come later when support for direct mapping is added.
->
-> Single and dual mode RX transfers are supported. Other types than SPI
-> are not supported.
->
-> Signed-off-by: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
-> Signed-off-by: C?dric Le Goater <clg@kaod.org>
 
-Reviewed-by: Joel Stanley <joel@jms.id.au>
+
+On Wed, 2 Mar 2022, at 19:24, Pavel Machek wrote:
+> Hi!
+>
+>> > > Without these patches the driver limits the number of pins exposed on
+>> > > the gpiochip to the number of pins specified as GPIO in the devicetree,
+>> > > but doesn't map between the GPIO and pin number spaces. The result is
+>> > > that specifying offset or interleaved GPIOs in the devicetree gives
+>> > > unexpected behaviour in userspace.
+>> > >
+>> > > By always exposing all pins as GPIOs the patches resolve the lack of
+>> > > mapping between GPIO offsets and pins on the package in the driver by
+>> > > ensuring we always have a 1-to-1 mapping.
+>> > >
+>> > > The issue is primarily addressed by patch 1/2. Patch 2/2 makes it
+>> > > possible to not expose any pins as LEDs (and therefore make them all
+>> > > accessible as GPIOs). This has a follow-on effect of allowing the driver
+>> > > to bind to a device instantiated at runtime without requiring a
+>> > > description in the devicetree.
+>> > >
+>> > > I've tested the series under qemu to inspect the various interactions
+>> > > between LEDs vs GPIOs as well as conflicting GPIO requests.
+>> 
+>> > > Please review!
+>> >
+>> > This is simpler than the 'ngpio' business we had before.
+>> >
+>> > Reviewed-by: C?dric Le Goater <clg@kaod.org>
+>> 
+>> I saw that you recently merged some LED patches. I was wondering if
+>> you could consider this series for v5.18. It still applies cleanly,
+>> and we've been running it for a while now, so it's very well tested.
+>
+> Thanks, applied. I must say this is really ninja-mutant driver, but I
+> see no better way.
+>
+> +++ b/drivers/leds/leds-pca955x.c
+> @@ -429,7 +429,7 @@ pca955x_get_pdata(struct i2c_client *client, struct 
+> pca955x_chipdef *chip)
+>         int count;
+>
+> This really should be unsigned. Care to fix/submit a patch?
+
+I'll send a fix.
+
+Andrew
