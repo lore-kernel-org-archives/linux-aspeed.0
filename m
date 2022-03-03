@@ -1,19 +1,217 @@
-From: Petr Vorel <petr.vorel@gmail.com>
-Date: Thu, 3 Mar 2022 06:52:01 +0100
-Subject: [PATCH] pinctrl: aspeed: fix null dereference in debug
-In-Reply-To: <tencent_BBDF8D2C89ECC450F3349D6E46F8EAF87F0A@qq.com>
-References: <tencent_BBDF8D2C89ECC450F3349D6E46F8EAF87F0A@qq.com>
-Message-ID: <YiBXgV4mVYiJ2MxQ@pevik>
+From: Cédric Le Goater <clg@kaod.org>
+Date: Thu, 3 Mar 2022 08:57:22 +0100
+Subject: [PATCH v2 10/10] ARM: dts: aspeed: Enable Dual SPI RX transfers
+In-Reply-To: <CACPK8Xd6VJLuWsvSjYrQ-y=yS+yR7vjdWECfsd2W9_J7e09K-A@mail.gmail.com>
+References: <20220302173114.927476-1-clg@kaod.org>
+ <20220302173114.927476-11-clg@kaod.org>
+ <CACPK8XeDBCMCEO4=w7qUQxsYiFUDKPAuBhXW5Sr6=UHM_GRsWA@mail.gmail.com>
+ <CACPK8Xd6VJLuWsvSjYrQ-y=yS+yR7vjdWECfsd2W9_J7e09K-A@mail.gmail.com>
+Message-ID: <88d86ba1-65ba-0c95-6d46-c064eaa62856@kaod.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Weiguo,
+On 3/2/22 23:48, Joel Stanley wrote:
+> On Wed, 2 Mar 2022 at 22:45, Joel Stanley <joel@jms.id.au> wrote:
+>>
+>> On Wed, 2 Mar 2022 at 17:31, C?dric Le Goater <clg@kaod.org> wrote:
+>>>
+>>> All these controllers support at least Dual SPI. Update the DTs.
+>>>
+>>> Reviewed-by: Joel Stanley <joel@jms.id.au>
+>>> Signed-off-by: C?dric Le Goater <clg@kaod.org>
+>>
+>> Thanks. I'll apply this to the aspeed tree now.
+>>
+>> Did you also have a patch to add a second flash chip to the AST2400 FMC?
+> 
+> That was a reference to the discussion on the openbmc list with Tao. I
+> was mistaken; the flash chips are there, but they lack the
+> spi-max-frequency property.
 
-LGTM.
-Reviewed-by: Petr Vorel <pvorel@suse.cz>
+Yes.
 
-Kind regards,
-Petr
+I will include a patch in v3 for the second flash chip of the AST2400 FMC.
+
+Thanks,
+
+C.
+
+> 
+>>
+>>> ---
+>>>   arch/arm/boot/dts/aspeed-g4.dtsi | 6 ++++++
+>>>   arch/arm/boot/dts/aspeed-g5.dtsi | 7 +++++++
+>>>   arch/arm/boot/dts/aspeed-g6.dtsi | 8 ++++++++
+>>>   3 files changed, 21 insertions(+)
+>>>
+>>> diff --git a/arch/arm/boot/dts/aspeed-g4.dtsi b/arch/arm/boot/dts/aspeed-g4.dtsi
+>>> index 9ae67e83cf60..31e6569db97e 100644
+>>> --- a/arch/arm/boot/dts/aspeed-g4.dtsi
+>>> +++ b/arch/arm/boot/dts/aspeed-g4.dtsi
+>>> @@ -64,27 +64,32 @@ fmc: spi at 1e620000 {
+>>>                          flash at 0 {
+>>>                                  reg = < 0 >;
+>>>                                  compatible = "jedec,spi-nor";
+>>> +                               spi-rx-bus-width = <2>;
+>>>                                  spi-max-frequency = <50000000>;
+>>>                                  status = "disabled";
+>>>                          };
+>>>                          flash at 1 {
+>>>                                  reg = < 1 >;
+>>>                                  compatible = "jedec,spi-nor";
+>>> +                               spi-rx-bus-width = <2>;
+>>>                                  status = "disabled";
+>>>                          };
+>>>                          flash at 2 {
+>>>                                  reg = < 2 >;
+>>>                                  compatible = "jedec,spi-nor";
+>>> +                               spi-rx-bus-width = <2>;
+>>>                                  status = "disabled";
+>>>                          };
+>>>                          flash at 3 {
+>>>                                  reg = < 3 >;
+>>>                                  compatible = "jedec,spi-nor";
+>>> +                               spi-rx-bus-width = <2>;
+>>>                                  status = "disabled";
+>>>                          };
+>>>                          flash at 4 {
+>>>                                  reg = < 4 >;
+>>>                                  compatible = "jedec,spi-nor";
+>>> +                               spi-rx-bus-width = <2>;
+>>>                                  status = "disabled";
+>>>                          };
+>>>                  };
+>>> @@ -100,6 +105,7 @@ flash at 0 {
+>>>                                  reg = < 0 >;
+>>>                                  compatible = "jedec,spi-nor";
+>>>                                  spi-max-frequency = <50000000>;
+>>> +                               spi-rx-bus-width = <2>;
+>>>                                  status = "disabled";
+>>>                          };
+>>>                  };
+>>> diff --git a/arch/arm/boot/dts/aspeed-g5.dtsi b/arch/arm/boot/dts/aspeed-g5.dtsi
+>>> index c3e0a8e13c8a..29bf017899b6 100644
+>>> --- a/arch/arm/boot/dts/aspeed-g5.dtsi
+>>> +++ b/arch/arm/boot/dts/aspeed-g5.dtsi
+>>> @@ -66,18 +66,21 @@ flash at 0 {
+>>>                                  reg = < 0 >;
+>>>                                  compatible = "jedec,spi-nor";
+>>>                                  spi-max-frequency = <50000000>;
+>>> +                               spi-rx-bus-width = <2>;
+>>>                                  status = "disabled";
+>>>                          };
+>>>                          flash at 1 {
+>>>                                  reg = < 1 >;
+>>>                                  compatible = "jedec,spi-nor";
+>>>                                  spi-max-frequency = <50000000>;
+>>> +                               spi-rx-bus-width = <2>;
+>>>                                  status = "disabled";
+>>>                          };
+>>>                          flash at 2 {
+>>>                                  reg = < 2 >;
+>>>                                  compatible = "jedec,spi-nor";
+>>>                                  spi-max-frequency = <50000000>;
+>>> +                               spi-rx-bus-width = <2>;
+>>>                                  status = "disabled";
+>>>                          };
+>>>                  };
+>>> @@ -93,12 +96,14 @@ flash at 0 {
+>>>                                  reg = < 0 >;
+>>>                                  compatible = "jedec,spi-nor";
+>>>                                  spi-max-frequency = <50000000>;
+>>> +                               spi-rx-bus-width = <2>;
+>>>                                  status = "disabled";
+>>>                          };
+>>>                          flash at 1 {
+>>>                                  reg = < 1 >;
+>>>                                  compatible = "jedec,spi-nor";
+>>>                                  spi-max-frequency = <50000000>;
+>>> +                               spi-rx-bus-width = <2>;
+>>>                                  status = "disabled";
+>>>                          };
+>>>                  };
+>>> @@ -114,12 +119,14 @@ flash at 0 {
+>>>                                  reg = < 0 >;
+>>>                                  compatible = "jedec,spi-nor";
+>>>                                  spi-max-frequency = <50000000>;
+>>> +                               spi-rx-bus-width = <2>;
+>>>                                  status = "disabled";
+>>>                          };
+>>>                          flash at 1 {
+>>>                                  reg = < 1 >;
+>>>                                  compatible = "jedec,spi-nor";
+>>>                                  spi-max-frequency = <50000000>;
+>>> +                               spi-rx-bus-width = <2>;
+>>>                                  status = "disabled";
+>>>                          };
+>>>                  };
+>>> diff --git a/arch/arm/boot/dts/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed-g6.dtsi
+>>> index 1ad05dde19d2..ce93c56a21a7 100644
+>>> --- a/arch/arm/boot/dts/aspeed-g6.dtsi
+>>> +++ b/arch/arm/boot/dts/aspeed-g6.dtsi
+>>> @@ -106,18 +106,21 @@ flash at 0 {
+>>>                                  reg = < 0 >;
+>>>                                  compatible = "jedec,spi-nor";
+>>>                                  spi-max-frequency = <50000000>;
+>>> +                               spi-rx-bus-width = <2>;
+>>>                                  status = "disabled";
+>>>                          };
+>>>                          flash at 1 {
+>>>                                  reg = < 1 >;
+>>>                                  compatible = "jedec,spi-nor";
+>>>                                  spi-max-frequency = <50000000>;
+>>> +                               spi-rx-bus-width = <2>;
+>>>                                  status = "disabled";
+>>>                          };
+>>>                          flash at 2 {
+>>>                                  reg = < 2 >;
+>>>                                  compatible = "jedec,spi-nor";
+>>>                                  spi-max-frequency = <50000000>;
+>>> +                               spi-rx-bus-width = <2>;
+>>>                                  status = "disabled";
+>>>                          };
+>>>                  };
+>>> @@ -133,12 +136,14 @@ flash at 0 {
+>>>                                  reg = < 0 >;
+>>>                                  compatible = "jedec,spi-nor";
+>>>                                  spi-max-frequency = <50000000>;
+>>> +                               spi-rx-bus-width = <2>;
+>>>                                  status = "disabled";
+>>>                          };
+>>>                          flash at 1 {
+>>>                                  reg = < 1 >;
+>>>                                  compatible = "jedec,spi-nor";
+>>>                                  spi-max-frequency = <50000000>;
+>>> +                               spi-rx-bus-width = <2>;
+>>>                                  status = "disabled";
+>>>                          };
+>>>                  };
+>>> @@ -154,18 +159,21 @@ flash at 0 {
+>>>                                  reg = < 0 >;
+>>>                                  compatible = "jedec,spi-nor";
+>>>                                  spi-max-frequency = <50000000>;
+>>> +                               spi-rx-bus-width = <2>;
+>>>                                  status = "disabled";
+>>>                          };
+>>>                          flash at 1 {
+>>>                                  reg = < 1 >;
+>>>                                  compatible = "jedec,spi-nor";
+>>>                                  spi-max-frequency = <50000000>;
+>>> +                               spi-rx-bus-width = <2>;
+>>>                                  status = "disabled";
+>>>                          };
+>>>                          flash at 2 {
+>>>                                  reg = < 2 >;
+>>>                                  compatible = "jedec,spi-nor";
+>>>                                  spi-max-frequency = <50000000>;
+>>> +                               spi-rx-bus-width = <2>;
+>>>                                  status = "disabled";
+>>>                          };
+>>>                  };
+>>> --
+>>> 2.34.1
+>>>
+
