@@ -1,145 +1,51 @@
-From: Xiaomeng Tong <xiam0nd.tong@gmail.com>
-Date: Thu,  3 Mar 2022 20:37:18 +0800
-Subject: [PATCH 2/6] treewide: remove using list iterator after loop body
- as a ptr
-In-Reply-To: <2d208771c50b4c6db4f43039e9d62851@AcuMS.aculab.com>
-References: <2d208771c50b4c6db4f43039e9d62851@AcuMS.aculab.com>
-Message-ID: <20220303123718.12426-1-xiam0nd.tong@gmail.com>
+From: Tommy Haung <tommy_huang@aspeedtech.com>
+Date: Fri, 4 Mar 2022 14:31:35 +0800
+Subject: [PATCH v1 0/2] Add 1024x768 timing for AST2600
+Message-ID: <20220304063137.12970-1-tommy_huang@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-> From: Xiaomeng Tong
-> > Sent: 03 March 2022 07:27
-> > 
-> > On Thu, 3 Mar 2022 04:58:23 +0000, David Laight wrote:
-> > > on 3 Mar 2022 10:27:29 +0800, Xiaomeng Tong wrote:
-> > > > The problem is the mis-use of iterator outside the loop on exit, and
-> > > > the iterator will be the HEAD's container_of pointer which pointers
-> > > > to a type-confused struct. Sidenote: The *mis-use* here refers to
-> > > > mistakely access to other members of the struct, instead of the
-> > > > list_head member which acutally is the valid HEAD.
-> > >
-> > > The problem is that the HEAD's container_of pointer should never
-> > > be calculated at all.
-> > > This is what is fundamentally broken about the current definition.
-> > 
-> > Yes, the rule is "the HEAD's container_of pointer should never be
-> > calculated at all outside the loop", but how do you make sure everyone
-> > follows this rule?
-> > Everyone makes mistakes, but we can eliminate them all from the beginning
-> > with the help of compiler which can catch such use-after-loop things.
-> > 
-> > > > IOW, you would dereference a (NULL + offset_of_member) address here.
-> > >
-> > >Where?
-> > 
-> > In the case where a developer do not follows the above rule, and mistakely
-> > access a non-list-head member of the HEAD's container_of pointer outside
-> > the loop. For example:
-> >     struct req{
-> >       int a;
-> >       struct list_head h;
-> >     }
-> >     struct req *r;
-> >     list_for_each_entry(r, HEAD, h) {
-> >       if (r->a == 0x10)
-> >         break;
-> >     }
-> >     // the developer made a mistake: he didn't take this situation into
-> >     // account where all entries in the list are *r->a != 0x10*, and now
-> >     // the r is the HEAD's container_of pointer.
-> >     r->a = 0x20;
-> > Thus the "r->a = 0x20" would dereference a (NULL + offset_of_member)
-> > address here.
-> 
-> That is just a bug.
-> No different to failing to check anything else might 'return'
-> a NULL pointer.
+v1: 
+  Add 1024x768 at 70Hz for AST2600 soc display timing selection.
+  Add gfx flag for future usage.
 
-Yes, but it?s a mistake everyone has made and will make, we should avoid
-this at the beginning with the help of compiler.
+Testing steps:
 
-> Because it is a NULL dereference you find out pretty quickly.
+    1. Add below config to turn VT and LOGO on.
 
-AFAIK?NULL dereference is a undefined bahavior, can compiler quickly
-catch it? Or it can only be applied to some simple/restricted cases.
+	CONFIG_TTY=y
+	CONFIG_VT=y
+	CONFIG_CONSOLE_TRANSLATIONS=y
+	CONFIG_VT_CONSOLE=y
+	CONFIG_VT_CONSOLE_SLEEP=y
+	CONFIG_HW_CONSOLE=y
+	CONFIG_VT_HW_CONSOLE_BINDING=y
+	CONFIG_UNIX98_PTYS=y
+	CONFIG_LDISC_AUTOLOAD=y
+	CONFIG_DEVMEM=y
+	CONFIG_DUMMY_CONSOLE=y
+	CONFIG_FRAMEBUFFER_CONSOLE=y
+	CONFIG_FRAMEBUFFER_CONSOLE_DETECT_PRIMARY=y
+	CONFIG_LOGO=y
+	CONFIG_LOGO_LINUX_CLUT224=y
 
-> The existing loop leaves you with a valid pointer to something
-> that isn't a list item.
-> 
-> > > > Please remind me if i missed something, thanks.
-> > > >
-> > > > Can you share your "alternative definitions" details? thanks!
-> > >
-> > > The loop should probably use as extra variable that points
-> > > to the 'list node' in the next structure.
-> > > Something like:
-> > > 	for (xxx *iter = head->next;
-> > > 		iter == &head ? ((item = NULL),0) : ((item = list_item(iter),1));
-> > > 		iter = item->member->next) {
-> > > 	   ...
-> > > With a bit of casting you can use 'item' to hold 'iter'.
-> > 
-> > you still can not make sure everyone follows this rule:
-> > "do not use iterator outside the loop" without the help of compiler,
-> > because item is declared outside the loop.
-> 
-> That one has 'iter' defined in the loop.
+  2. The Linux logo will be shown on the screen, when the BMC boot in Linux.
+  3. Check the display mode is 1024x768 at 70Hz at AST2600.
+  4. Check the display mode is 800x600 at 60Hz at AST2500.
 
-Oh, sorry, I misunderstood. Then this is the same way with my way of
-list_for_each_entry_inside(pos, type, head, member), which declare
-the iterator inside the loop.
-You go further and make things like "&pos->member == (head)" goes away
-to avoid calculate the HEAD's container_of pointer, although the
-calculation is harmless.
+Tommy Haung (2):
+  drm/aspeed: Add gfx flags and clock selection for AST2600
+  drm/aspeed: Add 1024x768 mode for AST2600
 
-> 
-> > BTW, to avoid ambiguity?the "alternative definitions" here i asked is
-> > something from you in this context:
-> > "OTOH there may be alternative definitions that can be used to get
-> > the compiler (or other compiler-like tools) to detect broken code.
-> > Even if the definition can't possibly generate a working kerrnel."
-> 
-> I was thinking of something like:
-> 	if ((pos = list_first)), 1) pos = NULL else
-> so that unchecked dereferences after the loop will be detectable
-> as NULL pointer offsets - but that in itself isn't enough to avoid
-> other warnings.
-> 
+ drivers/gpu/drm/aspeed/aspeed_gfx.h      | 15 ++++++++++
+ drivers/gpu/drm/aspeed/aspeed_gfx_crtc.c | 35 ++++++++++++++++++++++++
+ drivers/gpu/drm/aspeed/aspeed_gfx_drv.c  | 20 ++++++++++++--
+ drivers/gpu/drm/aspeed/aspeed_gfx_out.c  | 14 +++++++++-
+ 4 files changed, 81 insertions(+), 3 deletions(-)
 
-Do you mean put this right after the loop (I changed somthing that i
-do not understand, please correct me if i am worng, thanks):
-       if (pos == list_first) pos = NULL; else
-and compiler can detect the following NULL derefernce?
-But if the NULL derefernce is just right after the loop originally,
-it will be masked by the *else* keyword?
+-- 
+2.17.1
 
-> > > > The "list_for_each_entry_inside(pos, type, head, member)" way makes
-> > > > the iterator invisiable outside the loop, and would be catched by
-> > > > compiler if use-after-loop things happened.
-> > 
-> > > It is also a compete PITA for anything doing a search.
-> > 
-> > You mean it would be a burden on search? can you show me some examples?
-> 
-> The whole business of having to save the pointer to the located item
-> before breaking the loop, remembering to have set it to NULL earlier etc.
-
-Ok, i see. And then you need pass a "item" to the list_for_each_entry macro
-as a new argument.
-
-> 
-> It is so much better if you can just do:
-> 		if (found)
-> 			break;
-> 
-> 	David
-
-this confused me. this way is better or the "save the pointer to the located item
-before breaking the loop" one?
-
---
-Xiaomeng Tong
