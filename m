@@ -1,61 +1,128 @@
 From: Cédric Le Goater <clg@kaod.org>
-Date: Fri,  4 Mar 2022 09:36:43 +0100
-Subject: [PATCH v3 11/11] ARM: dts: aspeed-g4: Set spi-max-frequency for all
- flashes
+Date: Fri,  4 Mar 2022 09:36:40 +0100
+Subject: [PATCH v3 08/11] spi: aspeed: Add support for the AST2400 SPI
+ controller
 In-Reply-To: <20220304083643.1079142-1-clg@kaod.org>
 References: <20220304083643.1079142-1-clg@kaod.org>
-Message-ID: <20220304083643.1079142-12-clg@kaod.org>
+Message-ID: <20220304083643.1079142-9-clg@kaod.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Tao Ren <rentao.bupt@gmail.com>
+Extend the driver for the AST2400 SPI Flash Controller (SPI). This
+controller has a slightly different interface which requires
+adaptation of the 4B handling. Summary of features :
 
-Set "spi-max-frequency" to 50 MHz for all the flashes under the FMC
-controller to ensure the clock frequency is calculated correctly.
+   . host Firmware
+   . 1 chip select pin (CE0)
+   . slightly different register set, between AST2500 and the legacy
+     controller
+   . no segment registers
+   . single, dual mode.
 
-Suggested-by: C?dric Le Goater <clg@kaod.org>
-Signed-off-by: Tao Ren <rentao.bupt@gmail.com>
+Reviewed-by: Joel Stanley <joel@jms.id.au>
+Tested-by: Joel Stanley <joel@jms.id.au>
+Tested-by: Tao Ren <rentao.bupt@gmail.com>
 Signed-off-by: C?dric Le Goater <clg@kaod.org>
 ---
- arch/arm/boot/dts/aspeed-g4.dtsi | 4 ++++
- 1 file changed, 4 insertions(+)
+ drivers/spi/spi-aspeed-smc.c | 33 ++++++++++++++++++++++++++++++++-
+ 1 file changed, 32 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm/boot/dts/aspeed-g4.dtsi b/arch/arm/boot/dts/aspeed-g4.dtsi
-index 31e6569db97e..d3d919dcb8d4 100644
---- a/arch/arm/boot/dts/aspeed-g4.dtsi
-+++ b/arch/arm/boot/dts/aspeed-g4.dtsi
-@@ -72,24 +72,28 @@ flash at 1 {
- 				reg = < 1 >;
- 				compatible = "jedec,spi-nor";
- 				spi-rx-bus-width = <2>;
-+				spi-max-frequency = <50000000>;
- 				status = "disabled";
- 			};
- 			flash at 2 {
- 				reg = < 2 >;
- 				compatible = "jedec,spi-nor";
- 				spi-rx-bus-width = <2>;
-+				spi-max-frequency = <50000000>;
- 				status = "disabled";
- 			};
- 			flash at 3 {
- 				reg = < 3 >;
- 				compatible = "jedec,spi-nor";
- 				spi-rx-bus-width = <2>;
-+				spi-max-frequency = <50000000>;
- 				status = "disabled";
- 			};
- 			flash at 4 {
- 				reg = < 4 >;
- 				compatible = "jedec,spi-nor";
- 				spi-rx-bus-width = <2>;
-+				spi-max-frequency = <50000000>;
- 				status = "disabled";
- 			};
- 		};
+diff --git a/drivers/spi/spi-aspeed-smc.c b/drivers/spi/spi-aspeed-smc.c
+index ab6fa5cfad9c..7f306da7c44e 100644
+--- a/drivers/spi/spi-aspeed-smc.c
++++ b/drivers/spi/spi-aspeed-smc.c
+@@ -30,6 +30,7 @@
+ #define   CTRL_IO_DUAL_DATA		BIT(29)
+ #define   CTRL_IO_QUAD_DATA		BIT(30)
+ #define   CTRL_COMMAND_SHIFT		16
++#define   CTRL_IO_ADDRESS_4B		BIT(13)	/* AST2400 SPI only */
+ #define   CTRL_IO_DUMMY_SET(dummy)					\
+ 	(((((dummy) >> 2) & 0x1) << 14) | (((dummy) & 0x3) << 6))
+ #define   CTRL_CE_STOP_ACTIVE		BIT(2)
+@@ -270,6 +271,8 @@ static bool aspeed_spi_supports_op(struct spi_mem *mem, const struct spi_mem_op
+ 	return spi_mem_default_supports_op(mem, op);
+ }
+ 
++static const struct aspeed_spi_data ast2400_spi_data;
++
+ static int do_aspeed_spi_exec_op(struct spi_mem *mem, const struct spi_mem_op *op)
+ {
+ 	struct aspeed_spi *aspi = spi_controller_get_devdata(mem->spi->master);
+@@ -299,6 +302,9 @@ static int do_aspeed_spi_exec_op(struct spi_mem *mem, const struct spi_mem_op *o
+ 			addr_mode |= (0x11 << chip->cs);
+ 		else
+ 			addr_mode &= ~(0x11 << chip->cs);
++
++		if (op->addr.nbytes == 4 && chip->aspi->data == &ast2400_spi_data)
++			ctl_val |= CTRL_IO_ADDRESS_4B;
+ 	}
+ 
+ 	if (op->dummy.buswidth && op->dummy.nbytes)
+@@ -390,7 +396,13 @@ static int aspeed_spi_chip_set_default_window(struct aspeed_spi_chip *chip)
+ 	struct aspeed_spi_window windows[ASPEED_SPI_MAX_NUM_CS] = { 0 };
+ 	struct aspeed_spi_window *win = &windows[chip->cs];
+ 
+-	aspeed_spi_get_windows(aspi, windows);
++	/* No segment registers for the AST2400 SPI controller */
++	if (aspi->data == &ast2400_spi_data) {
++		win->offset = 0;
++		win->size = aspi->ahb_window_size;
++	} else {
++		aspeed_spi_get_windows(aspi, windows);
++	}
+ 
+ 	chip->ahb_base = aspi->ahb_base + win->offset;
+ 	chip->ahb_window_size = win->size;
+@@ -453,6 +465,10 @@ static int aspeed_spi_chip_adjust_window(struct aspeed_spi_chip *chip,
+ 	struct aspeed_spi_window *win = &windows[chip->cs];
+ 	int ret;
+ 
++	/* No segment registers for the AST2400 SPI controller */
++	if (aspi->data == &ast2400_spi_data)
++		return 0;
++
+ 	/*
+ 	 * Due to an HW issue on the AST2500 SPI controller, the CE0
+ 	 * window size should be smaller than the maximum 128MB.
+@@ -537,6 +553,12 @@ static int aspeed_spi_dirmap_create(struct spi_mem_dirmap_desc *desc)
+ 		else
+ 			addr_mode &= ~(0x11 << chip->cs);
+ 		writel(addr_mode, aspi->regs + CE_CTRL_REG);
++
++		/* AST2400 SPI controller sets 4BYTE address mode in
++		 * CE0 Control Register
++		 */
++		if (op->addr.nbytes == 4 && chip->aspi->data == &ast2400_spi_data)
++			ctl_val |= CTRL_IO_ADDRESS_4B;
+ 	}
+ 
+ 	/* READ mode is the controller default setting */
+@@ -803,6 +825,14 @@ static const struct aspeed_spi_data ast2400_fmc_data = {
+ 	.segment_reg   = aspeed_spi_segment_reg,
+ };
+ 
++static const struct aspeed_spi_data ast2400_spi_data = {
++	.max_cs	       = 1,
++	.hastype       = false,
++	.we0	       = 0,
++	.ctl0	       = 0x04,
++	/* No segment registers */
++};
++
+ static const struct aspeed_spi_data ast2500_fmc_data = {
+ 	.max_cs	       = 3,
+ 	.hastype       = true,
+@@ -847,6 +877,7 @@ static const struct aspeed_spi_data ast2600_spi_data = {
+ 
+ static const struct of_device_id aspeed_spi_matches[] = {
+ 	{ .compatible = "aspeed,ast2400-fmc", .data = &ast2400_fmc_data },
++	{ .compatible = "aspeed,ast2400-spi", .data = &ast2400_spi_data },
+ 	{ .compatible = "aspeed,ast2500-fmc", .data = &ast2500_fmc_data },
+ 	{ .compatible = "aspeed,ast2500-spi", .data = &ast2500_spi_data },
+ 	{ .compatible = "aspeed,ast2600-fmc", .data = &ast2600_fmc_data },
 -- 
 2.34.1
 
