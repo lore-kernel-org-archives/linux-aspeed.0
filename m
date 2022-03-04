@@ -1,139 +1,121 @@
 From: Cédric Le Goater <clg@kaod.org>
-Date: Fri,  4 Mar 2022 09:36:38 +0100
-Subject: [PATCH v3 06/11] spi: aspeed: Adjust direct mapping to device size
+Date: Fri,  4 Mar 2022 09:36:34 +0100
+Subject: [PATCH v3 02/11] ARM: dts: aspeed: Adjust "reg" property of FMC/SPI
+ controllers
 In-Reply-To: <20220304083643.1079142-1-clg@kaod.org>
 References: <20220304083643.1079142-1-clg@kaod.org>
-Message-ID: <20220304083643.1079142-7-clg@kaod.org>
+Message-ID: <20220304083643.1079142-3-clg@kaod.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The segment registers of the FMC/SPI controllers provide a way to
-configure the mapping window of the flash device contents on the AHB
-bus. Adjust this window to the size of the spi-mem mapping.
+This is compatible with the current driver and addresses issues when
+running 'make dt_binding_check'.
 
-Things get more complex with multiple devices. The driver needs to
-also adjust the window of the next device to make sure that there is
-no overlap, even if there is no available device. The proposal below
-is not perfect but it is covering all the cases we have seen on
-different boards with one and two devices on the same bus.
-
-Reviewed-by: Joel Stanley <joel@jms.id.au>
+Cc: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
 Tested-by: Joel Stanley <joel@jms.id.au>
 Tested-by: Tao Ren <rentao.bupt@gmail.com>
 Signed-off-by: C?dric Le Goater <clg@kaod.org>
 ---
- drivers/spi/spi-aspeed-smc.c | 88 ++++++++++++++++++++++++++++++++++++
- 1 file changed, 88 insertions(+)
+ arch/arm/boot/dts/aspeed-g4.dtsi | 6 ++----
+ arch/arm/boot/dts/aspeed-g5.dtsi | 9 +++------
+ arch/arm/boot/dts/aspeed-g6.dtsi | 9 +++------
+ 3 files changed, 8 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/spi/spi-aspeed-smc.c b/drivers/spi/spi-aspeed-smc.c
-index 0951766baef4..9f7910e79ae8 100644
---- a/drivers/spi/spi-aspeed-smc.c
-+++ b/drivers/spi/spi-aspeed-smc.c
-@@ -403,6 +403,92 @@ static int aspeed_spi_chip_set_default_window(struct aspeed_spi_chip *chip)
- 	return chip->ahb_window_size ? 0 : -1;
- }
+diff --git a/arch/arm/boot/dts/aspeed-g4.dtsi b/arch/arm/boot/dts/aspeed-g4.dtsi
+index f14dace34c5a..9ae67e83cf60 100644
+--- a/arch/arm/boot/dts/aspeed-g4.dtsi
++++ b/arch/arm/boot/dts/aspeed-g4.dtsi
+@@ -54,8 +54,7 @@ ahb {
+ 		ranges;
  
-+static int aspeed_spi_set_window(struct aspeed_spi *aspi,
-+				 const struct aspeed_spi_window *win)
-+{
-+	u32 start = aspi->ahb_base_phy + win->offset;
-+	u32 end = start + win->size;
-+	void __iomem *seg_reg = aspi->regs + CE0_SEGMENT_ADDR_REG + win->cs * 4;
-+	u32 seg_val_backup = readl(seg_reg);
-+	u32 seg_val = aspi->data->segment_reg(aspi, start, end);
-+
-+	if (seg_val == seg_val_backup)
-+		return 0;
-+
-+	writel(seg_val, seg_reg);
-+
-+	/*
-+	 * Restore initial value if something goes wrong else we could
-+	 * loose access to the chip.
-+	 */
-+	if (seg_val != readl(seg_reg)) {
-+		dev_err(aspi->dev, "CE%d invalid window [ 0x%.8x - 0x%.8x ] %dMB",
-+			win->cs, start, end - 1, win->size >> 20);
-+		writel(seg_val_backup, seg_reg);
-+		return -EIO;
-+	}
-+
-+	if (win->size)
-+		dev_dbg(aspi->dev, "CE%d new window [ 0x%.8x - 0x%.8x ] %dMB",
-+			win->cs, start, end - 1,  win->size >> 20);
-+	else
-+		dev_dbg(aspi->dev, "CE%d window closed", win->cs);
-+
-+	return 0;
-+}
-+
-+/*
-+ * Yet to be done when possible :
-+ * - Align mappings on flash size (we don't have the info)
-+ * - ioremap each window, not strictly necessary since the overall window
-+ *   is correct.
-+ */
-+static int aspeed_spi_chip_adjust_window(struct aspeed_spi_chip *chip,
-+					 u32 local_offset, u32 size)
-+{
-+	struct aspeed_spi *aspi = chip->aspi;
-+	struct aspeed_spi_window windows[ASPEED_SPI_MAX_NUM_CS] = { 0 };
-+	struct aspeed_spi_window *win = &windows[chip->cs];
-+	int ret;
-+
-+	aspeed_spi_get_windows(aspi, windows);
-+
-+	/* Adjust this chip window */
-+	win->offset += local_offset;
-+	win->size = size;
-+
-+	if (win->offset + win->size > aspi->ahb_window_size) {
-+		win->size = aspi->ahb_window_size - win->offset;
-+		dev_warn(aspi->dev, "CE%d window resized to %dMB", chip->cs, win->size >> 20);
-+	}
-+
-+	ret = aspeed_spi_set_window(aspi, win);
-+	if (ret)
-+		return ret;
-+
-+	/* Update chip mapping info */
-+	chip->ahb_base = aspi->ahb_base + win->offset;
-+	chip->ahb_window_size = win->size;
-+
-+	/*
-+	 * Also adjust next chip window to make sure that it does not
-+	 * overlap with the current window.
-+	 */
-+	if (chip->cs < aspi->data->max_cs - 1) {
-+		struct aspeed_spi_window *next = &windows[chip->cs + 1];
-+
-+		/* Change offset and size to keep the same end address */
-+		if ((next->offset + next->size) > (win->offset + win->size))
-+			next->size = (next->offset + next->size) - (win->offset + win->size);
-+		else
-+			next->size = 0;
-+		next->offset = win->offset + win->size;
-+
-+		aspeed_spi_set_window(aspi, next);
-+	}
-+	return 0;
-+}
-+
- static int aspeed_spi_dirmap_create(struct spi_mem_dirmap_desc *desc)
- {
- 	struct aspeed_spi *aspi = spi_controller_get_devdata(desc->mem->spi->master);
-@@ -417,6 +503,8 @@ static int aspeed_spi_dirmap_create(struct spi_mem_dirmap_desc *desc)
- 	if (op->data.dir != SPI_MEM_DATA_IN)
- 		return -EOPNOTSUPP;
+ 		fmc: spi at 1e620000 {
+-			reg = < 0x1e620000 0x94
+-				0x20000000 0x10000000 >;
++			reg = <0x1e620000 0x94>, <0x20000000 0x10000000>;
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 			compatible = "aspeed,ast2400-fmc";
+@@ -91,8 +90,7 @@ flash at 4 {
+ 		};
  
-+	aspeed_spi_chip_adjust_window(chip, desc->info.offset, desc->info.length);
-+
- 	if (desc->info.length > chip->ahb_window_size)
- 		dev_warn(aspi->dev, "CE%d window (%dMB) too small for mapping",
- 			 chip->cs, chip->ahb_window_size >> 20);
+ 		spi: spi at 1e630000 {
+-			reg = < 0x1e630000 0x18
+-				0x30000000 0x10000000 >;
++			reg = <0x1e630000 0x18>, <0x30000000 0x10000000>;
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 			compatible = "aspeed,ast2400-spi";
+diff --git a/arch/arm/boot/dts/aspeed-g5.dtsi b/arch/arm/boot/dts/aspeed-g5.dtsi
+index 7495f93c5069..c3e0a8e13c8a 100644
+--- a/arch/arm/boot/dts/aspeed-g5.dtsi
++++ b/arch/arm/boot/dts/aspeed-g5.dtsi
+@@ -55,8 +55,7 @@ ahb {
+ 		ranges;
+ 
+ 		fmc: spi at 1e620000 {
+-			reg = < 0x1e620000 0xc4
+-				0x20000000 0x10000000 >;
++			reg = <0x1e620000 0xc4>, <0x20000000 0x10000000>;
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 			compatible = "aspeed,ast2500-fmc";
+@@ -84,8 +83,7 @@ flash at 2 {
+ 		};
+ 
+ 		spi1: spi at 1e630000 {
+-			reg = < 0x1e630000 0xc4
+-				0x30000000 0x08000000 >;
++			reg = <0x1e630000 0xc4>, <0x30000000 0x08000000>;
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 			compatible = "aspeed,ast2500-spi";
+@@ -106,8 +104,7 @@ flash at 1 {
+ 		};
+ 
+ 		spi2: spi at 1e631000 {
+-			reg = < 0x1e631000 0xc4
+-				0x38000000 0x08000000 >;
++			reg = <0x1e631000 0xc4>, <0x38000000 0x08000000>;
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 			compatible = "aspeed,ast2500-spi";
+diff --git a/arch/arm/boot/dts/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed-g6.dtsi
+index c32e87fad4dc..1ad05dde19d2 100644
+--- a/arch/arm/boot/dts/aspeed-g6.dtsi
++++ b/arch/arm/boot/dts/aspeed-g6.dtsi
+@@ -95,8 +95,7 @@ gic: interrupt-controller at 40461000 {
+ 			};
+ 
+ 		fmc: spi at 1e620000 {
+-			reg = < 0x1e620000 0xc4
+-				0x20000000 0x10000000 >;
++			reg = <0x1e620000 0xc4>, <0x20000000 0x10000000>;
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 			compatible = "aspeed,ast2600-fmc";
+@@ -124,8 +123,7 @@ flash at 2 {
+ 		};
+ 
+ 		spi1: spi at 1e630000 {
+-			reg = < 0x1e630000 0xc4
+-				0x30000000 0x10000000 >;
++			reg = <0x1e630000 0xc4>, <0x30000000 0x10000000>;
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 			compatible = "aspeed,ast2600-spi";
+@@ -146,8 +144,7 @@ flash at 1 {
+ 		};
+ 
+ 		spi2: spi at 1e631000 {
+-			reg = < 0x1e631000 0xc4
+-				0x50000000 0x10000000 >;
++			reg = <0x1e631000 0xc4>, <0x50000000 0x10000000>;
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 			compatible = "aspeed,ast2600-spi";
 -- 
 2.34.1
 
