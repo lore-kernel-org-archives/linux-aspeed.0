@@ -1,54 +1,55 @@
-From: Patrick Williams <patrick@stwcx.xyz>
-Date: Fri, 4 Mar 2022 11:04:35 -0600
-Subject: [PATCH 1/1] ARM: dts: aspeed: bletchley: add sample averaging
- for ADM1278
-In-Reply-To: <20220304003506.4243-1-potin.lai@quantatw.com>
-References: <20220304003506.4243-1-potin.lai@quantatw.com>
-Message-ID: <YiJGo7Tor3IKEToq@heinlein>
+From: Potin Lai <potin.lai@quantatw.com>
+Date: Sat,  5 Mar 2022 01:07:57 +0800
+Subject: [PATCH 1/1] mtd: spi-nor: aspeed: set the decoding size to at least
+ 2MB for AST2600
+Message-ID: <20220304170757.16924-1-potin.lai@quantatw.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Mar 04, 2022 at 08:35:06AM +0800, Potin Lai wrote:
-> set number of sample averaging to 128 for both PWR_AVG and VI_AVG
-> 
-> Signed-off-by: Potin Lai <potin.lai@quantatw.com>
-> ---
->  arch/arm/boot/dts/aspeed-bmc-facebook-bletchley.dts | 2 ++
->  1 file changed, 2 insertions(+)
-> 
-> diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-bletchley.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-bletchley.dts
-> index eaf1bc261ee3..be76cd955129 100644
-> --- a/arch/arm/boot/dts/aspeed-bmc-facebook-bletchley.dts
-> +++ b/arch/arm/boot/dts/aspeed-bmc-facebook-bletchley.dts
-> @@ -732,6 +732,8 @@
->  		compatible = "adi,adm1278";
->  		reg = <0x11>;
->  		shunt-resistor-micro-ohms = <300>;
-> +		adi,volt-curr-sample-average = <128>;
-> +		adi,power-sample-average = <128>;
->  	};
->  
->  	tmp421 at 4c {
-> -- 
-> 2.17.1
-> 
+In AST2600, the unit of SPI CEx decoding range register is 1MB, and end
+address offset is set to the acctual offset - 1MB. If the flash only has
+1MB, the end address will has same value as start address, which will
+causing unexpected errors.
 
-Reviewed-by: Patrick Williams <patrick@stwcx.xyz>
+This patch set the decoding size to at least 2MB to avoid decoding errors.
 
-Note that this code depends on ADM1275 support pulled into groeck/linux-staging
-already.
+Tested:
+root at bletchley:~# dmesg | grep "aspeed-smc 1e631000.spi: CE0 window"
+[   59.328134] aspeed-smc 1e631000.spi: CE0 window resized to 2MB (AST2600 Decoding)
+[   59.343001] aspeed-smc 1e631000.spi: CE0 window [ 0x50000000 - 0x50200000 ] 2MB
+root at bletchley:~# devmem 0x1e631030
+0x00100000
 
-https://lore.kernel.org/all/20220222223610.23098-1-linux at roeck-us.net/
+Signed-off-by: Potin Lai <potin.lai@quantatw.com>
+---
+ drivers/mtd/spi-nor/controllers/aspeed-smc.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
+diff --git a/drivers/mtd/spi-nor/controllers/aspeed-smc.c b/drivers/mtd/spi-nor/controllers/aspeed-smc.c
+index 416ea247f843..6db35732c0fb 100644
+--- a/drivers/mtd/spi-nor/controllers/aspeed-smc.c
++++ b/drivers/mtd/spi-nor/controllers/aspeed-smc.c
+@@ -781,6 +781,17 @@ static u32 aspeed_smc_chip_set_segment(struct aspeed_smc_chip *chip)
+ 			 chip->cs, size >> 20);
+ 	}
+ 
++	/*
++	 * The decoding size of AST2600 SPI controller should set at
++	 * least 2MB.
++	 */
++	if (controller->info == &spi_2600_info && size < SZ_2M) {
++		size = SZ_2M;
++		dev_info(chip->nor.dev,
++			 "CE%d window resized to %dMB (AST2600 Decoding)",
++			 chip->cs, size >> 20);
++	}
++
+ 	ahb_base_phy = controller->ahb_base_phy;
+ 
+ 	/*
 -- 
-Patrick Williams
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 833 bytes
-Desc: not available
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20220304/6422146b/attachment-0001.sig>
+2.17.1
+
