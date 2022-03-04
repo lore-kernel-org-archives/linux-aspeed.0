@@ -1,51 +1,50 @@
-From: Weiguo Li <liwg06@foxmail.com>
-Date: Fri,  4 Mar 2022 17:04:04 +0800
-Subject: [PATCH v2] pinctrl: aspeed: fix null dereference in debug
-In-Reply-To: <tencent_68563A6FDF372313228831913CC3A7041108@qq.com>
-References: <tencent_68563A6FDF372313228831913CC3A7041108@qq.com>
-Message-ID: <tencent_5F734C284FE3294244B94EDA77CA088AC806@qq.com>
+From: Rob Herring <robh@kernel.org>
+Date: Fri, 04 Mar 2022 09:29:01 -0600
+Subject: [PATCH v2 2/2] dt-bindings: gpu: Convert aspeed-gfx bindings to
+ yaml
+In-Reply-To: <20220304000311.970267-3-joel@jms.id.au>
+References: <20220304000311.970267-1-joel@jms.id.au>
+ <20220304000311.970267-3-joel@jms.id.au>
+Message-ID: <1646407741.272520.3970570.nullmailer@robh.at.kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 02 Mar 2022 15:12:24 Weiguo Li wrote:
-> "pdesc" is null checked, but already dereferenced ahead in debug.
-> Swap their positions to avoid potential null dereference.
+On Fri, 04 Mar 2022 10:33:11 +1030, Joel Stanley wrote:
+> Convert the bindings to yaml and add the ast2600 compatible string.
 > 
-> Signed-off-by: Weiguo Li <liwg06@foxmail.com>
-> Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
+> The legacy mfd description was put in place before the gfx bindings
+> existed, to document the compatible that is used in the pinctrl
+> bindings.
+> 
+> Signed-off-by: Joel Stanley <joel@jms.id.au>
 > ---
-> v2:
-> * resend it after registering an account in aspeed patchwork
-> ---
->  drivers/pinctrl/aspeed/pinctrl-aspeed.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/pinctrl/aspeed/pinctrl-aspeed.c b/drivers/pinctrl/aspeed/pinctrl-aspeed.c
-> index c94e24aadf92..83d47ff1cea8 100644
-> --- a/drivers/pinctrl/aspeed/pinctrl-aspeed.c
-> +++ b/drivers/pinctrl/aspeed/pinctrl-aspeed.c
-> @@ -236,11 +236,11 @@ int aspeed_pinmux_set_mux(struct pinctrl_dev *pctldev, unsigned int function,
->   const struct aspeed_sig_expr **funcs;
->   const struct aspeed_sig_expr ***prios;
->  
-> - pr_debug("Muxing pin %s for %s\n", pdesc->name, pfunc->name);
-> -
->   if (!pdesc)
->   return -EINVAL;
->  
-> + pr_debug("Muxing pin %s for %s\n", pdesc->name, pfunc->name);
-> +
->   prios = pdesc->prios;
->  
->   if (!prios)
+>  .../devicetree/bindings/gpu/aspeed,gfx.yaml   | 69 +++++++++++++++++++
+>  .../devicetree/bindings/gpu/aspeed-gfx.txt    | 41 -----------
+>  .../devicetree/bindings/mfd/aspeed-gfx.txt    | 17 -----
+>  3 files changed, 69 insertions(+), 58 deletions(-)
+>  create mode 100644 Documentation/devicetree/bindings/gpu/aspeed,gfx.yaml
+>  delete mode 100644 Documentation/devicetree/bindings/gpu/aspeed-gfx.txt
+>  delete mode 100644 Documentation/devicetree/bindings/mfd/aspeed-gfx.txt
 > 
 
-Moving Petr's review from previous version:
+Running 'make dtbs_check' with the schema in this patch gives the
+following warnings. Consider if they are expected or the schema is
+incorrect. These may not be new warnings.
 
-Reviewed-by: Petr Vorel <pvorel@suse.cz>
+Note that it is not yet a requirement to have 0 warnings for dtbs_check.
+This will change in the future.
 
--Weiguo
+Full log is available here: https://patchwork.ozlabs.org/patch/1600723
+
+
+display at 1e6e6000: 'memory-region' is a required property
+	arch/arm/boot/dts/aspeed-bmc-arm-centriq2400-rep.dt.yaml
+	arch/arm/boot/dts/aspeed-bmc-arm-stardragon4800-rep2.dt.yaml
+	arch/arm/boot/dts/aspeed-bmc-intel-s2600wf.dt.yaml
+	arch/arm/boot/dts/aspeed-bmc-opp-lanyang.dt.yaml
+	arch/arm/boot/dts/aspeed-bmc-opp-zaius.dt.yaml
+	arch/arm/boot/dts/aspeed-bmc-supermicro-x11spi.dt.yaml
 
