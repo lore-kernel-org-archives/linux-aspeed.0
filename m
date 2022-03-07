@@ -1,47 +1,45 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Tue, 08 Mar 2022 10:29:33 +1030
-Subject: [PATCH] ARM: dts: aspeed: Fix AST2600 quad spi group
-In-Reply-To: <20220304011010.974863-1-joel@jms.id.au>
-References: <20220304011010.974863-1-joel@jms.id.au>
-Message-ID: <22db3bbf-9796-43ac-84a4-081977827ac5@www.fastmail.com>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Mon, 7 Mar 2022 18:00:37 +0300
+Subject: [PATCH 0/6] Remove usage of list iterator past the loop body
+In-Reply-To: <20220228110822.491923-1-jakobkoschel@gmail.com>
+References: <20220228110822.491923-1-jakobkoschel@gmail.com>
+Message-ID: <20220307150037.GD3293@kadam>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+Updating this API is risky because some places rely on the old behavior
+and not all of them have been updated.  Here are some additional places
+you might want to change.
 
+drivers/usb/host/uhci-q.c:466 link_async() warn: iterator used outside loop: 'pqh'
+drivers/infiniband/core/mad.c:968 ib_get_rmpp_segment() warn: iterator used outside loop: 'mad_send_wr->cur_seg'
+drivers/opp/debugfs.c:208 opp_migrate_dentry() warn: iterator used outside loop: 'new_dev'
+drivers/staging/greybus/audio_codec.c:602 gbcodec_mute_stream() warn: iterator used outside loop: 'module'
+drivers/staging/media/atomisp/pci/atomisp_acc.c:508 atomisp_acc_load_extensions() warn: iterator used outside loop: 'acc_fw'
+drivers/perf/thunderx2_pmu.c:814 tx2_uncore_pmu_init_dev() warn: iterator used outside loop: 'rentry'
+drivers/gpu/drm/nouveau/nvkm/engine/device/ctrl.c:111 nvkm_control_mthd_pstate_attr() warn: iterator used outside loop: 'pstate'
+drivers/gpu/drm/panfrost/panfrost_mmu.c:203 panfrost_mmu_as_get() warn: iterator used outside loop: 'lru_mmu'
+drivers/media/usb/uvc/uvc_v4l2.c:885 uvc_ioctl_enum_input() warn: iterator used outside loop: 'iterm'
+drivers/media/usb/uvc/uvc_v4l2.c:896 uvc_ioctl_enum_input() warn: iterator used outside loop: 'iterm'
+drivers/scsi/dc395x.c:3596 device_alloc() warn: iterator used outside loop: 'p'
+drivers/net/ethernet/mellanox/mlx4/alloc.c:379 __mlx4_alloc_from_zone() warn: iterator used outside loop: 'curr_node'
+fs/ocfs2/dlm/dlmdebug.c:573 lockres_seq_start() warn: iterator used outside loop: 'res'
 
-On Fri, 4 Mar 2022, at 11:40, Joel Stanley wrote:
-> Requesting quad mode for the FMC resulted in an error:
->
->   &fmc {
->          status = "okay";
->  +       pinctrl-names = "default";
->  +       pinctrl-0 = <&pinctrl_fwqspi_default>'
->
-> [    0.742963] aspeed-g6-pinctrl 1e6e2000.syscon:pinctrl: invalid 
-> function FWQSPID in map table
-> ?
->
-> This is because the quad mode pins are a group of pins, not a function.
->
-> After applying this patch we can request the pins and the QSPI data
-> lines are muxed:
->
->  # cat 
-> /sys/kernel/debug/pinctrl/1e6e2000.syscon\:pinctrl-aspeed-g6-pinctrl/pinmux-pins 
-> |grep 1e620000.spi
->  pin 196 (AE12): device 1e620000.spi function FWSPID group FWQSPID
->  pin 197 (AF12): device 1e620000.spi function FWSPID group FWQSPID
->  pin 240 (Y1): device 1e620000.spi function FWSPID group FWQSPID
->  pin 241 (Y2): device 1e620000.spi function FWSPID group FWQSPID
->  pin 242 (Y3): device 1e620000.spi function FWSPID group FWQSPID
->  pin 243 (Y4): device 1e620000.spi function FWSPID group FWQSPID
->
-> Fixes: f510f04c8c83 ("ARM: dts: aspeed: Add AST2600 pinmux nodes")
-> Signed-off-by: Joel Stanley <joel@jms.id.au>
+This patchset fixes 3 bugs.  Initially when it's merged it's probably
+going to introduce some bugs because there are likely other places which
+rely on the old behavior.
 
-Looks good to me.
+In an ideal world, with the new API the compiler would warn about
+uninitialized variables, but unfortunately that warning is disabled by
+default so we still have to rely on kbuild/Clang/Smatch to find the
+bugs.
 
-Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
+But hopefully the new API encourages people to write clearer code so it
+prevents bugs in the long run.
+
+regards,
+dan carpenter
+
