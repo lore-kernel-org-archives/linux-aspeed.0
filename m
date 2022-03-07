@@ -1,40 +1,47 @@
-From: Cédric Le Goater <clg@kaod.org>
-Date: Mon, 7 Mar 2022 19:28:48 +0100
-Subject: [SPAM] [PATCH 1/1] mtd: spi-nor: aspeed: set the decoding size to
- at least 2MB for AST2600
-In-Reply-To: <4d072c43-a766-9ce4-a629-a3ed095663a4@kaod.org>
-References: <20220304170757.16924-1-potin.lai@quantatw.com>
- <67004879-96ab-33b5-f389-bbe0005d78ef@kaod.org>
- <6ed257f7-ae87-e2fe-26ed-9db300f5ebcc@kaod.org>
- <efeac1dc-0762-b6d3-e03b-dffc2c76d756@quantatw.com>
- <4d072c43-a766-9ce4-a629-a3ed095663a4@kaod.org>
-Message-ID: <e10877f9-57f7-7019-b9ca-0812a60cdea9@kaod.org>
+From: Andrew Jeffery <andrew@aj.id.au>
+Date: Tue, 08 Mar 2022 10:29:33 +1030
+Subject: [PATCH] ARM: dts: aspeed: Fix AST2600 quad spi group
+In-Reply-To: <20220304011010.974863-1-joel@jms.id.au>
+References: <20220304011010.974863-1-joel@jms.id.au>
+Message-ID: <22db3bbf-9796-43ac-84a4-081977827ac5@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 3/7/22 08:57, C?dric Le Goater wrote:
-> 
->> I tested with spi-mem v3 patch, it looks same issue appeared. (spi-model=mx25l800)
->>
->>
->> [??? 0.541050] spi-nor spi1.0: mx25l8005 (1024 Kbytes)
->> aspeed_smc_flash_set_segment CS0 segreg=0x0 [ 0x30000000 - 0x30000000 ]
->> aspeed_smc_flash_set_segment CS1 segreg=0x7f00010 [ 0x30100000 - 0x38000000 ]
->> [??? 0.541976] spi-aspeed-smc 1e630000.spi: Calibration area too uniform, using low speed
->> [??? 0.542267] spi-aspeed-smc 1e630000.spi: CE0 read buswidth:1 [0x000b0041]
->>
->> I think the model mx25l1606e you tested is 2MB flash.
-> 
-> Indeed. Thanks for the test of v3. We should send a followup patch
-> for this 2MB restriction on the minimum size of the flash when the
-> patchset is merged or I will if a v4 is asked for.
 
-Here is an updated version for the spi-mem driver :
 
-   https://github.com/legoater/linux/commit/418126725d11863b7b51b70ff507d1da6db192c3
-Thanks,
+On Fri, 4 Mar 2022, at 11:40, Joel Stanley wrote:
+> Requesting quad mode for the FMC resulted in an error:
+>
+>   &fmc {
+>          status = "okay";
+>  +       pinctrl-names = "default";
+>  +       pinctrl-0 = <&pinctrl_fwqspi_default>'
+>
+> [    0.742963] aspeed-g6-pinctrl 1e6e2000.syscon:pinctrl: invalid 
+> function FWQSPID in map table
+> ?
+>
+> This is because the quad mode pins are a group of pins, not a function.
+>
+> After applying this patch we can request the pins and the QSPI data
+> lines are muxed:
+>
+>  # cat 
+> /sys/kernel/debug/pinctrl/1e6e2000.syscon\:pinctrl-aspeed-g6-pinctrl/pinmux-pins 
+> |grep 1e620000.spi
+>  pin 196 (AE12): device 1e620000.spi function FWSPID group FWQSPID
+>  pin 197 (AF12): device 1e620000.spi function FWSPID group FWQSPID
+>  pin 240 (Y1): device 1e620000.spi function FWSPID group FWQSPID
+>  pin 241 (Y2): device 1e620000.spi function FWSPID group FWQSPID
+>  pin 242 (Y3): device 1e620000.spi function FWSPID group FWQSPID
+>  pin 243 (Y4): device 1e620000.spi function FWSPID group FWQSPID
+>
+> Fixes: f510f04c8c83 ("ARM: dts: aspeed: Add AST2600 pinmux nodes")
+> Signed-off-by: Joel Stanley <joel@jms.id.au>
 
-C.
+Looks good to me.
+
+Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
