@@ -1,63 +1,63 @@
-From: David Laight <David.Laight@ACULAB.COM>
-Date: Mon, 7 Mar 2022 15:26:48 +0000
-Subject: [PATCH 0/6] Remove usage of list iterator past the loop body
-In-Reply-To: <20220307150037.GD3293@kadam>
-References: <20220228110822.491923-1-jakobkoschel@gmail.com>
- <20220307150037.GD3293@kadam>
-Message-ID: <f7ffd78aa68340e1ade6af15fa2f06d8@AcuMS.aculab.com>
+From: Jae Hyun Yoo <quic_jaehyoo@quicinc.com>
+Date: Mon, 7 Mar 2022 16:31:36 -0800
+Subject: [PATCH] pinctrl: aspeed: Add FWQSPI pinmux
+Message-ID: <20220308003136.3930466-1-quic_jaehyoo@quicinc.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Dan Carpenter
-> Sent: 07 March 2022 15:01
-> 
-> Updating this API is risky because some places rely on the old behavior
-> and not all of them have been updated.  Here are some additional places
-> you might want to change.
+From: Johnny Huang <johnny_huang@aspeedtech.com>
 
-I really can't help thinking that trying to merge this patch is
-actually impossible.
-It affects far too many different parts of the tree.
+AST2600 FW SPI quad mode only need to set AE12 and AF12, no need
+to set Y1~Y4. FW SPI cs, clk, mosi and miso pins are dedicated.
 
-Since (I believe) this is a doubly linked list with forwards and
-backwards pointers that point to a 'node' (not that there is a
-nice comment to that effect in the header - and there are lots of
-ways to do linked lists) the 'head' pretty much has to be a 'node'.
+Signed-off-by: Johnny Huang <johnny_huang@aspeedtech.com>
+---
+ drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c | 11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
 
-I'd write the following new defines (but I might be using
-the old names here):
-
-list_first(head, field) First item, NULL if empty.
-list_last(head, field) Last item NULL if empty.
-list_next(head, item, field) Item after 'item', NULL if last.
-list_prev(head, item. field) Item before 'item', NULL if first.
-
-You get (something like):
-#define list_first(head, field) \
-	head->next == &head ? NULL : list_item(head->next, field)
-(probably needs typeof(item) from somewhere).
-
-The iterator loop is then just:
-#define loop_iterate(item, head, field) \
-	for (item = list_first(head, field); item; \
-		item = list_next(head, item, field)
-
-I'm not sure, but making the 'head' be a structure that contains
-a single member that is a 'node' might help type checking.
-
-Then all the code that uses the current defines can slowly be
-moved over (probably a couple of releases) before the existing
-defines are deleted.
-
-That should simplify all the open-coded search loops that are
-just as likely to be buggy (possibly more so).
-
-	David
-
--
-Registered Address Lakeside, Bramley Road, Mount Farm, Milton Keynes, MK1 1PT, UK
-Registration No: 1397386 (Wales)
+diff --git a/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c b/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
+index 54064714d73f..80838dc54b3a 100644
+--- a/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
++++ b/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
+@@ -1236,12 +1236,17 @@ FUNC_GROUP_DECL(SALT8, AA12);
+ FUNC_GROUP_DECL(WDTRST4, AA12);
+ 
+ #define AE12 196
++SIG_EXPR_LIST_DECL_SESG(AE12, FWSPIQ2, FWQSPI, SIG_DESC_SET(SCU438, 4));
+ SIG_EXPR_LIST_DECL_SESG(AE12, GPIOY4, GPIOY4);
+-PIN_DECL_(AE12, SIG_EXPR_LIST_PTR(AE12, GPIOY4));
++PIN_DECL_(AE12, SIG_EXPR_LIST_PTR(AE12, FWSPIQ2),
++	  SIG_EXPR_LIST_PTR(AE12, GPIOY4));
+ 
+ #define AF12 197
++SIG_EXPR_LIST_DECL_SESG(AF12, FWSPIQ3, FWQSPI, SIG_DESC_SET(SCU438, 5));
+ SIG_EXPR_LIST_DECL_SESG(AF12, GPIOY5, GPIOY5);
+-PIN_DECL_(AF12, SIG_EXPR_LIST_PTR(AF12, GPIOY5));
++PIN_DECL_(AF12, SIG_EXPR_LIST_PTR(AF12, FWSPIQ3),
++	  SIG_EXPR_LIST_PTR(AF12, GPIOY5));
++FUNC_GROUP_DECL(FWQSPI, AE12, AF12);
+ 
+ #define AC12 198
+ SSSF_PIN_DECL(AC12, GPIOY6, FWSPIABR, SIG_DESC_SET(SCU438, 6));
+@@ -1911,6 +1916,7 @@ static const struct aspeed_pin_group aspeed_g6_groups[] = {
+ 	ASPEED_PINCTRL_GROUP(FSI2),
+ 	ASPEED_PINCTRL_GROUP(FWSPIABR),
+ 	ASPEED_PINCTRL_GROUP(FWSPID),
++	ASPEED_PINCTRL_GROUP(FWQSPI),
+ 	ASPEED_PINCTRL_GROUP(FWSPIWP),
+ 	ASPEED_PINCTRL_GROUP(GPIT0),
+ 	ASPEED_PINCTRL_GROUP(GPIT1),
+@@ -2152,6 +2158,7 @@ static const struct aspeed_pin_function aspeed_g6_functions[] = {
+ 	ASPEED_PINCTRL_FUNC(FSI2),
+ 	ASPEED_PINCTRL_FUNC(FWSPIABR),
+ 	ASPEED_PINCTRL_FUNC(FWSPID),
++	ASPEED_PINCTRL_FUNC(FWQSPI),
+ 	ASPEED_PINCTRL_FUNC(FWSPIWP),
+ 	ASPEED_PINCTRL_FUNC(GPIT0),
+ 	ASPEED_PINCTRL_FUNC(GPIT1),
+-- 
+2.25.1
 
