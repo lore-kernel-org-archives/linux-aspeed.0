@@ -1,49 +1,62 @@
-From: Jae Hyun Yoo <quic_jaehyoo@quicinc.com>
-Date: Mon, 7 Mar 2022 17:04:49 -0800
-Subject: [PATCH] pinctrl: aspeed: Add FWQSPI pinmux
-In-Reply-To: <e541828f-f0bc-419a-a5fc-d8aefe97832d@www.fastmail.com>
-References: <20220308003136.3930466-1-quic_jaehyoo@quicinc.com>
- <d2f125d8-07d1-4bff-8718-7dfba4d8fdb3@www.fastmail.com>
- <73a487ed-312b-72b3-4e64-dc580ba80704@quicinc.com>
- <e541828f-f0bc-419a-a5fc-d8aefe97832d@www.fastmail.com>
-Message-ID: <b7aea3d4-6384-23e9-3b6a-71ba18ae161f@quicinc.com>
+From: Potin Lai (賴柏廷) <Potin.Lai@quantatw.com>
+Date: Tue, 8 Mar 2022 01:14:45 +0000
+Subject: [SPAM] [PATCH 1/1] mtd: spi-nor: aspeed: set the decoding size to
+ at least 2MB for AST2600
+In-Reply-To: <e10877f9-57f7-7019-b9ca-0812a60cdea9@kaod.org>
+References: <20220304170757.16924-1-potin.lai@quantatw.com>
+ <67004879-96ab-33b5-f389-bbe0005d78ef@kaod.org>
+ <6ed257f7-ae87-e2fe-26ed-9db300f5ebcc@kaod.org>
+ <efeac1dc-0762-b6d3-e03b-dffc2c76d756@quantatw.com>
+ <4d072c43-a766-9ce4-a629-a3ed095663a4@kaod.org>
+ <e10877f9-57f7-7019-b9ca-0812a60cdea9@kaod.org>
+Message-ID: <597dcccf-f01a-92b5-9b62-72580660a1c5@quantatw.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-
-
-On 3/7/2022 5:02 PM, Andrew Jeffery wrote:
-> 
-> 
-> On Tue, 8 Mar 2022, at 11:16, Jae Hyun Yoo wrote:
->> Hi Andrew,
+C?dric Le Goater ? 2022/3/8 ?? 02:28 ??:
+> On 3/7/22 08:57, C?dric Le Goater wrote:
 >>
->> On 3/7/2022 4:41 PM, Andrew Jeffery wrote:
+>>> I tested with spi-mem v3 patch, it looks same issue appeared. (spi-model=mx25l800)
 >>>
 >>>
->>> On Tue, 8 Mar 2022, at 11:01, Jae Hyun Yoo wrote:
->>>> From: Johnny Huang <johnny_huang@aspeedtech.com>
->>>>
->>>> AST2600 FW SPI quad mode only need to set AE12 and AF12, no need
->>>> to set Y1~Y4. FW SPI cs, clk, mosi and miso pins are dedicated.
+>>> [??? 0.541050] spi-nor spi1.0: mx25l8005 (1024 Kbytes)
+>>> aspeed_smc_flash_set_segment CS0 segreg=0x0 [ 0x30000000 - 0x30000000 ]
+>>> aspeed_smc_flash_set_segment CS1 segreg=0x7f00010 [ 0x30100000 - 0x38000000 ]
+>>> [??? 0.541976] spi-aspeed-smc 1e630000.spi: Calibration area too uniform, using low speed
+>>> [??? 0.542267] spi-aspeed-smc 1e630000.spi: CE0 read buswidth:1 [0x000b0041]
 >>>
->>> They're not dedicated according to the datasheet?
->>>
->>> Can you please look at this patch?
->>>
->>> https://lore.kernel.org/all/20220304011010.974863-1-joel at jms.id.au/
+>>> I think the model mx25l1606e you tested is 2MB flash.
 >>
->> Sorry. Please ignore this patch.
->> I mistakenly sent this patch while making a patch series.
->>
->> Please check this patch series instead.
->> https://lore.kernel.org/linux-arm-kernel/20220308003745.3930607-1-quic_jaehyoo at quicinc.com/T/#t
-> 
-> No worries, I'll take a look though it might be a couple of days due to chasing some other issues.
+>> Indeed. Thanks for the test of v3. We should send a followup patch
+>> for this 2MB restriction on the minimum size of the flash when the
+>> patchset is merged or I will if a v4 is asked for.
+>
+> Here is an updated version for the spi-mem driver :
+>
+> ? https://apc01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fgithub.com%2Flegoater%2Flinux%2Fcommit%2F418126725d11863b7b51b70ff507d1da6db192c3&amp;data=04%7C01%7CPotin.Lai%40quantatw.com%7Cde46d26422ae4f2dbd1708da0068575f%7C179b032707fc4973ac738de7313561b2%7C1%7C0%7C637822745417263929%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C3000&amp;sdata=D594iU1%2BDbDcvC%2BPP1yUWSLhGxlCGfGC4qWXh0QJoH4%3D&amp;reserved=0
+> Thanks,
+>
+> C.
 
-Thanks a lot, Andrew!
 
--Jae
+Thanks for taking this patch into spi-mem driver, the tested log as below.
+
+[??? 1.945705] spi-nor spi1.0: mx25l8005 (1024 Kbytes)
+[??? 1.945926] spi-aspeed-smc 1e630000.spi: CE0 window resized to 2MB (AST2600 Decoding)
+aspeed_smc_flash_set_segment CS0 segreg=0x100000 [ 0x30000000 - 0x30200000 ]
+aspeed_smc_flash_set_segment CS1 segreg=0x7f00020 [ 0x30200000 - 0x38000000 ]
+[??? 1.953083] spi-aspeed-smc 1e630000.spi: Calibration area too uniform, using low speed
+[??? 1.953409] spi-aspeed-smc 1e630000.spi: CE0 read buswidth:1 [0x000b0041]
+
+
+By the way, there is a small error when compiling kernel, it needs forward declare for both ast2600_spi_data & ast2600_fmc_data.
+
+Also, I saw you add ast2600_fmc_data for resize checking as well, should I add it in aspeed-smc.c and resend the patch?
+
+Thanks,
+Potin
+
+
