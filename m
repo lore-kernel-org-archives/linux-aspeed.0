@@ -1,44 +1,29 @@
-From: Jae Hyun Yoo <quic_jaehyoo@quicinc.com>
-Date: Mon, 7 Mar 2022 16:37:45 -0800
-Subject: [PATCH 5/5] ARM: dts: aspeed-g6: fix SPI1/SPI2 quad pin group
-In-Reply-To: <20220308003745.3930607-1-quic_jaehyoo@quicinc.com>
-References: <20220308003745.3930607-1-quic_jaehyoo@quicinc.com>
-Message-ID: <20220308003745.3930607-6-quic_jaehyoo@quicinc.com>
+From: Andrew Jeffery <andrew@aj.id.au>
+Date: Tue, 08 Mar 2022 11:11:57 +1030
+Subject: [PATCH] pinctrl: aspeed: Add FWQSPI pinmux
+In-Reply-To: <20220308003136.3930466-1-quic_jaehyoo@quicinc.com>
+References: <20220308003136.3930466-1-quic_jaehyoo@quicinc.com>
+Message-ID: <d2f125d8-07d1-4bff-8718-7dfba4d8fdb3@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Fix incorrect function mappings in pinctrl_qspi1_default and
-pinctrl_qspi2_default since there function should be SPI1 and
-SPI2 respectively.
 
-Signed-off-by: Jae Hyun Yoo <quic_jaehyoo@quicinc.com>
-Fixes: f510f04c8c83 ("ARM: dts: aspeed: Add AST2600 pinmux nodes")
----
- arch/arm/boot/dts/aspeed-g6-pinctrl.dtsi | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/arm/boot/dts/aspeed-g6-pinctrl.dtsi b/arch/arm/boot/dts/aspeed-g6-pinctrl.dtsi
-index 47c3fb137cbc..7cd4f075e325 100644
---- a/arch/arm/boot/dts/aspeed-g6-pinctrl.dtsi
-+++ b/arch/arm/boot/dts/aspeed-g6-pinctrl.dtsi
-@@ -653,12 +653,12 @@ pinctrl_pwm9g1_default: pwm9g1_default {
- 	};
- 
- 	pinctrl_qspi1_default: qspi1_default {
--		function = "QSPI1";
-+		function = "SPI1";
- 		groups = "QSPI1";
- 	};
- 
- 	pinctrl_qspi2_default: qspi2_default {
--		function = "QSPI2";
-+		function = "SPI2";
- 		groups = "QSPI2";
- 	};
- 
--- 
-2.25.1
+On Tue, 8 Mar 2022, at 11:01, Jae Hyun Yoo wrote:
+> From: Johnny Huang <johnny_huang@aspeedtech.com>
+>
+> AST2600 FW SPI quad mode only need to set AE12 and AF12, no need
+> to set Y1~Y4. FW SPI cs, clk, mosi and miso pins are dedicated.
 
+They're not dedicated according to the datasheet?
+
+Can you please look at this patch?
+
+https://lore.kernel.org/all/20220304011010.974863-1-joel at jms.id.au/
+
+Cheers,
+
+Andrew
