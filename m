@@ -1,98 +1,43 @@
-From: Rob Herring <robh@kernel.org>
-Date: Mon, 7 Mar 2022 18:57:33 -0600
-Subject: [PATCH v2 2/2] dt-bindings: gpu: Convert aspeed-gfx bindings to
- yaml
-In-Reply-To: <44308465-db4c-80e7-2beb-b0f676d16edf@canonical.com>
-References: <20220304000311.970267-1-joel@jms.id.au>
- <20220304000311.970267-3-joel@jms.id.au>
- <44308465-db4c-80e7-2beb-b0f676d16edf@canonical.com>
-Message-ID: <Yiap/f48pLUXzaQ0@robh.at.kernel.org>
+From: Andrew Jeffery <andrew@aj.id.au>
+Date: Tue, 08 Mar 2022 11:32:43 +1030
+Subject: [PATCH] pinctrl: aspeed: Add FWQSPI pinmux
+In-Reply-To: <73a487ed-312b-72b3-4e64-dc580ba80704@quicinc.com>
+References: <20220308003136.3930466-1-quic_jaehyoo@quicinc.com>
+ <d2f125d8-07d1-4bff-8718-7dfba4d8fdb3@www.fastmail.com>
+ <73a487ed-312b-72b3-4e64-dc580ba80704@quicinc.com>
+Message-ID: <e541828f-f0bc-419a-a5fc-d8aefe97832d@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sat, Mar 05, 2022 at 10:49:05PM +0100, Krzysztof Kozlowski wrote:
-> On 04/03/2022 01:03, Joel Stanley wrote:
-> > Convert the bindings to yaml and add the ast2600 compatible string.
-> > 
-> > The legacy mfd description was put in place before the gfx bindings
-> > existed, to document the compatible that is used in the pinctrl
-> > bindings.
-> > 
-> > Signed-off-by: Joel Stanley <joel@jms.id.au>
-> > ---
-> >  .../devicetree/bindings/gpu/aspeed,gfx.yaml   | 69 +++++++++++++++++++
-> >  .../devicetree/bindings/gpu/aspeed-gfx.txt    | 41 -----------
-> >  .../devicetree/bindings/mfd/aspeed-gfx.txt    | 17 -----
-> >  3 files changed, 69 insertions(+), 58 deletions(-)
-> >  create mode 100644 Documentation/devicetree/bindings/gpu/aspeed,gfx.yaml
-> >  delete mode 100644 Documentation/devicetree/bindings/gpu/aspeed-gfx.txt
-> >  delete mode 100644 Documentation/devicetree/bindings/mfd/aspeed-gfx.txt
-> > 
-> > diff --git a/Documentation/devicetree/bindings/gpu/aspeed,gfx.yaml b/Documentation/devicetree/bindings/gpu/aspeed,gfx.yaml
-> > new file mode 100644
-> > index 000000000000..8ddc4fa6e8e4
-> > --- /dev/null
-> > +++ b/Documentation/devicetree/bindings/gpu/aspeed,gfx.yaml
-> > @@ -0,0 +1,69 @@
-> > +# SPDX-License-Identifier: GPL-2.0-only
-> > +%YAML 1.2
-> > +---
-> > +$id: http://devicetree.org/schemas/gpu/aspeed,gfx.yaml#
-> > +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> > +
-> > +title: ASPEED GFX display device
-> > +
-> > +maintainers:
-> > +  - Joel Stanley <joel@jms.id.au>
-> > +
-> > +properties:
-> > +  compatible:
-> > +    items:
-> > +      - enum:
-> > +          - aspeed,ast2400-gfx
-> > +          - aspeed,ast2500-gfx
-> > +          - aspeed,ast2600-gfx
-> 
-> That's different than original bindings - new patch. It's not currently
-> supported, so adding it is more than just updating bindings to current
-> state.
-> 
-> > +      - const: syscon
-> > +
-> > +  reg:
-> > +    minItems: 1
-> 
-> maxItems?
-> 
-> > +
-> > +  interrupts:
-> > +    maxItems: 1
-> > +
-> > +  clocks:
-> > +    maxItems: 1
-> > +
-> > +  resets:
-> > +    maxItems: 1
-> > +
-> > +  memory-region: true
 
-Also need to define how many (maxItems: 1).
 
-> > +
-> > +  syscon: true
-> 
-> You need at least description. I see old bindings did not mention it
-> (except that it is required)... I think you also need a type, because it
-> is not a standard property.
-> 
-> > +
-> > +  reg-io-width: true
-> 
-> Some constraints? Can it be anything from syscon schema?
-> 
-> Best regards,
-> Krzysztof
-> 
+On Tue, 8 Mar 2022, at 11:16, Jae Hyun Yoo wrote:
+> Hi Andrew,
+>
+> On 3/7/2022 4:41 PM, Andrew Jeffery wrote:
+>> 
+>> 
+>> On Tue, 8 Mar 2022, at 11:01, Jae Hyun Yoo wrote:
+>>> From: Johnny Huang <johnny_huang@aspeedtech.com>
+>>>
+>>> AST2600 FW SPI quad mode only need to set AE12 and AF12, no need
+>>> to set Y1~Y4. FW SPI cs, clk, mosi and miso pins are dedicated.
+>> 
+>> They're not dedicated according to the datasheet?
+>> 
+>> Can you please look at this patch?
+>> 
+>> https://lore.kernel.org/all/20220304011010.974863-1-joel at jms.id.au/
+>
+> Sorry. Please ignore this patch.
+> I mistakenly sent this patch while making a patch series.
+>
+> Please check this patch series instead.
+> https://lore.kernel.org/linux-arm-kernel/20220308003745.3930607-1-quic_jaehyoo at quicinc.com/T/#t
+
+No worries, I'll take a look though it might be a couple of days due to chasing some other issues.
+
+Andrew
