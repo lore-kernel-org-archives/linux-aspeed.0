@@ -1,62 +1,177 @@
-From: Potin Lai <potin.lai@quantatw.com>
-Date: Tue,  8 Mar 2022 17:22:34 +0800
-Subject: [PATCH v2 1/1] mtd: spi-nor: aspeed: set the decoding size to at
- least 2MB for AST2600
-Message-ID: <20220308092234.5186-1-potin.lai@quantatw.com>
+From: Cédric Le Goater <clg@kaod.org>
+Date: Wed, 9 Mar 2022 16:53:28 +0100
+Subject: [PATCH] ARM: soc: aspeed: Add secure boot controller support
+In-Reply-To: <20220304030336.1017197-1-joel@jms.id.au>
+References: <20220304030336.1017197-1-joel@jms.id.au>
+Message-ID: <92c2301f-5759-c13c-84f6-52ec69af7de6@kaod.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-In AST2600, the unit of SPI CEx decoding range register is 1MB, and end
-address offset is set to the acctual offset - 1MB. If the flash only has
-1MB, the end address will has same value as start address, which will
-causing unexpected errors.
+Hello Joel,
 
-This patch set the decoding size to at least 2MB to avoid decoding errors.
+On 3/4/22 04:03, Joel Stanley wrote:
+> This reads out the status of the secure boot controller and exposes it
+> in debugfs.
+> 
+> An example on a AST2600A3 QEMU model:
+> 
+>   # grep -r . /sys/kernel/debug/aspeed/*
+>   /sys/kernel/debug/aspeed/abr_image:0
+>   /sys/kernel/debug/aspeed/low_security_key:0
+>   /sys/kernel/debug/aspeed/otp_protected:0
+>   /sys/kernel/debug/aspeed/secure_boot:1
+>   /sys/kernel/debug/aspeed/uart_boot:0
+> 
+> On boot the state of the system according to the secure boot controller
+> will be printed:
+> 
+>   [    0.037634] AST2600 secure boot enabled
+> 
+> or
+> 
+>   [    0.037935] AST2600 secure boot disabled
+> 
+> Signed-off-by: Joel Stanley <joel@jms.id.au>
+> ---
+> We're creating a common API for a subset of this information in sysfs:
+> 
+>   https://lore.kernel.org/all/20220204072234.304543-1-joel at jms.id.au/
+> 
+> However, machines with an ASPEED soc need the detailed information from
+> the SBE that is not relevant for other systems, so expose it all in
+> debugfs.
+> 
+>   drivers/soc/aspeed/aspeed-sbc.c | 71 +++++++++++++++++++++++++++++++++
+>   drivers/soc/aspeed/Kconfig      |  7 ++++
+>   drivers/soc/aspeed/Makefile     |  1 +
+>   3 files changed, 79 insertions(+)
+>   create mode 100644 drivers/soc/aspeed/aspeed-sbc.c
+> 
+> diff --git a/drivers/soc/aspeed/aspeed-sbc.c b/drivers/soc/aspeed/aspeed-sbc.c
+> new file mode 100644
+> index 000000000000..ee466f02ae4c
+> --- /dev/null
+> +++ b/drivers/soc/aspeed/aspeed-sbc.c
+> @@ -0,0 +1,71 @@
+> +// SPDX-License-Identifier: GPL-2.0-or-later
+> +/* Copyright 2022 IBM Corp. */
+> +
+> +#include <linux/io.h>
+> +#include <linux/of.h>
+> +#include <linux/of_address.h>
+> +#include <linux/of_platform.h>
+> +#include <linux/debugfs.h>
+> +
+> +#define SEC_STATUS		0x14
+> +#define ABR_IMAGE_SOURCE	BIT(13)
+> +#define OTP_PROTECTED		BIT(8)
+> +#define LOW_SEC_KEY		BIT(7)
+> +#define SECURE_BOOT		BIT(6)
+> +#define UART_BOOT		BIT(5)
 
-Tested:
-root at bletchley:~# dmesg | grep "aspeed-smc 1e631000.spi: CE0 window"
-[   59.328134] aspeed-smc 1e631000.spi: CE0 window resized to 2MB (AST2600 Decoding)
-[   59.343001] aspeed-smc 1e631000.spi: CE0 window [ 0x50000000 - 0x50200000 ] 2MB
-root at bletchley:~# devmem 0x1e631030
-0x00100000
+Why not put these definitions under a common header file ?
 
-Signed-off-by: Potin Lai <potin.lai@quantatw.com>
+> +struct sbe {> +	u8 abr_image;
+> +	u8 low_security_key;
+> +	u8 otp_protected;
+> +	u8 secure_boot;
+> +	u8 invert;
+> +	u8 uart_boot;
 
----
-[v1]: https://lore.kernel.org/all/20220304170757.16924-1-potin.lai at quantatw.com/
+ From what the code does below, these could be of type 'bool'
 
-Changes v1 --> v2:
-- add fmc controller into decoding range resize checking
----
- drivers/mtd/spi-nor/controllers/aspeed-smc.c | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
+> +};
+> +
+> +static struct sbe sbe;
+> +
+> +static int __init aspeed_sbc_init(void)
+> +{
+> +	struct device_node *np;
+> +	void __iomem *base;
+> +	struct dentry *debugfs_root;
+> +	u32 security_status;
+> +
+> +	/* AST2600 only */
+> +	np = of_find_compatible_node(NULL, NULL, "aspeed,ast2600-sbc");
+> +	if (!of_device_is_available(np))
+> +		return -ENODEV;
+> +
+> +	base = of_iomap(np, 0);
+> +	if (!base) {
+> +		of_node_put(np);
+> +		return -ENODEV;
+> +	}
+> +
+> +	security_status = readl(base + SEC_STATUS);
+> +
+> +	iounmap(base);
+> +	of_node_put(np);
+> +
+> +	sbe.abr_image = !!(security_status & ABR_IMAGE_SOURCE);
+> +	sbe.low_security_key = !!(security_status & LOW_SEC_KEY);
+> +	sbe.otp_protected = !!(security_status & OTP_PROTECTED);
+> +	sbe.secure_boot = !!(security_status & SECURE_BOOT);
+> +	/* Invert the bit, as 1 is boot from SPI/eMMC */
+> +	sbe.uart_boot =  !(security_status & UART_BOOT);
+> +
+> +	debugfs_root = debugfs_create_dir("aspeed", NULL);
 
-diff --git a/drivers/mtd/spi-nor/controllers/aspeed-smc.c b/drivers/mtd/spi-nor/controllers/aspeed-smc.c
-index 416ea247f843..74fa46439246 100644
---- a/drivers/mtd/spi-nor/controllers/aspeed-smc.c
-+++ b/drivers/mtd/spi-nor/controllers/aspeed-smc.c
-@@ -781,6 +781,18 @@ static u32 aspeed_smc_chip_set_segment(struct aspeed_smc_chip *chip)
- 			 chip->cs, size >> 20);
- 	}
- 
-+	/*
-+	 * The decoding size of AST2600 SPI controller should set at
-+	 * least 2MB.
-+	 */
-+	if ((controller->info == &spi_2600_info ||
-+	     controller->info == &fmc_2600_info) && size < SZ_2M) {
-+		size = SZ_2M;
-+		dev_info(chip->nor.dev,
-+			 "CE%d window resized to %dMB (AST2600 Decoding)",
-+			 chip->cs, size >> 20);
-+	}
-+
- 	ahb_base_phy = controller->ahb_base_phy;
- 
- 	/*
--- 
-2.17.1
+may be use 'arch_debugfs_dir' or is that the same ? and test the returned
+value as it can fail.
+
+Also, instead of 'debugfs_root', we could introduce an extern
+'aspeed_debugfs_dir' for other aspeed drivers. For instance, the spi-mem
+driver for flash devices could expose some internal settings like the
+direct mapping ranges for each flash device. I am sure other drivers
+would use it.
+
+> +	debugfs_create_u8("abr_image", 0444, debugfs_root, &sbe.abr_image);
+> +	debugfs_create_u8("low_security_key", 0444, debugfs_root, &sbe.low_security_key);
+> +	debugfs_create_u8("otp_protected", 0444, debugfs_root, &sbe.otp_protected);
+> +	debugfs_create_u8("uart_boot", 0444, debugfs_root, &sbe.uart_boot);
+> +	debugfs_create_u8("secure_boot", 0444, debugfs_root, &sbe.secure_boot);
+
+It would be cleaner if these files were under a 'sbe' or 'sbc' directory.
+
+Thanks,
+
+C.
+
+> +
+> +	pr_info("AST2600 secure boot %s\n", sbe.secure_boot ? "enabled" : "disabled");
+> +
+> +	return 0;
+> +}
+> +
+> +
+> +subsys_initcall(aspeed_sbc_init);
+> diff --git a/drivers/soc/aspeed/Kconfig b/drivers/soc/aspeed/Kconfig
+> index f579ee0b5afa..7a2a5bed8bc5 100644
+> --- a/drivers/soc/aspeed/Kconfig
+> +++ b/drivers/soc/aspeed/Kconfig
+> @@ -52,6 +52,13 @@ config ASPEED_SOCINFO
+>   	help
+>   	  Say yes to support decoding of ASPEED BMC information.
+>   
+> +config ASPEED_SBC
+> +	bool "ASPEED Secure Boot Controller driver"
+> +	default MACH_ASPEED_G6> +	help
+> +	  Say yes to provide information about the secure boot controller in
+> +	  debugfs.
+> +
+>   endmenu
+>   
+>   endif
+> diff --git a/drivers/soc/aspeed/Makefile b/drivers/soc/aspeed/Makefile
+> index b35d74592964..042235ffa05b 100644
+> --- a/drivers/soc/aspeed/Makefile
+> +++ b/drivers/soc/aspeed/Makefile
+> @@ -4,3 +4,4 @@ obj-$(CONFIG_ASPEED_LPC_SNOOP)		+= aspeed-lpc-snoop.o
+>   obj-$(CONFIG_ASPEED_UART_ROUTING)	+= aspeed-uart-routing.o
+>   obj-$(CONFIG_ASPEED_P2A_CTRL)		+= aspeed-p2a-ctrl.o
+>   obj-$(CONFIG_ASPEED_SOCINFO)		+= aspeed-socinfo.o
+> +obj-$(CONFIG_ASPEED_SBC)		+= aspeed-sbc.o
 
