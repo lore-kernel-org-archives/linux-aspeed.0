@@ -1,86 +1,48 @@
 From: Quan Nguyen <quan@os.amperecomputing.com>
-Date: Thu, 10 Mar 2022 18:41:17 +0700
-Subject: [PATCH v6 2/4] bindings: ipmi: Add binding for SSIF BMC driver
+Date: Thu, 10 Mar 2022 18:41:18 +0700
+Subject: [PATCH v6 3/4] ipmi: ssif_bmc: Return -EFAULT if copy_from_user()
+ fails
 In-Reply-To: <20220310114119.13736-1-quan@os.amperecomputing.com>
 References: <20220310114119.13736-1-quan@os.amperecomputing.com>
-Message-ID: <20220310114119.13736-3-quan@os.amperecomputing.com>
+Message-ID: <20220310114119.13736-4-quan@os.amperecomputing.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add device tree binding document for the SSIF BMC driver.
+From: Dan Carpenter <dan.carpenter@oracle.com>
 
-Signed-off-by: Quan Nguyen <quan@os.amperecomputing.com>
-Message-Id: <20210714033833.11640-4-quan@os.amperecomputing.com>
-Reviewed-by: Rob Herring <robh@kernel.org>
+The copy_from_user() function returns the number of bytes remaining to
+be copied but we should return -EFAULT here.
+
+Fixes: 501c25b59508 ("ipmi: ssif_bmc: Add SSIF BMC driver")
+Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
 Signed-off-by: Corey Minyard <cminyard@mvista.com>
+Signed-off-by: Quan Nguyen <quan@os.amperecomputing.com>
 ---
 v6:
-  + None
+  + New add in v6, thanks Dan for the patch     [Dan]
 
-v5:
-  + None
+ drivers/char/ipmi/ssif_bmc.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
-v4:
-  + Fix warning with dt_binding_check [Rob]
-  + Change aspeed-ssif-bmc.yaml to ssif-bmc.yaml [Quan]
-
-v3:
-  + Switched to use DT schema format [Rob]
-
-v2:
-  + None
-
- .../devicetree/bindings/ipmi/ssif-bmc.yaml    | 38 +++++++++++++++++++
- 1 file changed, 38 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/ipmi/ssif-bmc.yaml
-
-diff --git a/Documentation/devicetree/bindings/ipmi/ssif-bmc.yaml b/Documentation/devicetree/bindings/ipmi/ssif-bmc.yaml
-new file mode 100644
-index 000000000000..917a577c2f29
---- /dev/null
-+++ b/Documentation/devicetree/bindings/ipmi/ssif-bmc.yaml
-@@ -0,0 +1,38 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/ipmi/ssif-bmc.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: SSIF IPMI BMC interface
-+
-+description: SSIF IPMI BMC device bindings
-+
-+maintainers:
-+  - Quan Nguyen <quan@os.amperecomputing.com>
-+
-+properties:
-+  compatible:
-+    enum:
-+      - ampere,ssif-bmc
-+
-+  reg:
-+    maxItems: 1
-+
-+required:
-+  - compatible
-+  - reg
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    i2c {
-+        #address-cells = <1>;
-+        #size-cells = <0>;
-+
-+        ssif-bmc at 10 {
-+            compatible = "ampere,ssif-bmc";
-+            reg = <0x10>;
-+        };
-+    };
+diff --git a/drivers/char/ipmi/ssif_bmc.c b/drivers/char/ipmi/ssif_bmc.c
+index 62db97773654..91ac2cae756e 100644
+--- a/drivers/char/ipmi/ssif_bmc.c
++++ b/drivers/char/ipmi/ssif_bmc.c
+@@ -87,9 +87,8 @@ static ssize_t ssif_bmc_write(struct file *file, const char __user *buf, size_t
+ 	if (count > sizeof(struct ssif_msg))
+ 		return -EINVAL;
+ 
+-	ret = copy_from_user(&msg, buf, count);
+-	if (ret)
+-		return ret;
++	if (copy_from_user(&msg, buf, count))
++		return -EFAULT;
+ 
+ 	if (!msg.len || count < ssif_msg_len(&msg))
+ 		return -EINVAL;
 -- 
 2.35.1
 
