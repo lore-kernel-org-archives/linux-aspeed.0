@@ -1,87 +1,39 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Wed, 9 Mar 2022 22:40:41 +0000
-Subject: [PATCH] ARM: soc: aspeed: Add secure boot controller support
-In-Reply-To: <92c2301f-5759-c13c-84f6-52ec69af7de6@kaod.org>
-References: <20220304030336.1017197-1-joel@jms.id.au>
- <92c2301f-5759-c13c-84f6-52ec69af7de6@kaod.org>
-Message-ID: <CACPK8Xc+_hPU2wT10g6r2pKssTOdMB-xuCN7uL30rzNCLWWjEg@mail.gmail.com>
+Date: Thu, 10 Mar 2022 10:36:27 +1030
+Subject: [PATCH v2 0/2] ARM: aspeed: Add secure boot controller debugfs
+Message-ID: <20220310000629.119699-1-joel@jms.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 9 Mar 2022 at 15:53, C?dric Le Goater <clg@kaod.org> wrote:
-> > +#define SEC_STATUS           0x14
-> > +#define ABR_IMAGE_SOURCE     BIT(13)
-> > +#define OTP_PROTECTED                BIT(8)
-> > +#define LOW_SEC_KEY          BIT(7)
-> > +#define SECURE_BOOT          BIT(6)
-> > +#define UART_BOOT            BIT(5)
->
-> Why not put these definitions under a common header file ?
+We're creating a common API for a subset of this information in sysfs:
 
-They are the register definitions. I don't think there will be any
-users outside of this driver.
+ https://lore.kernel.org/all/20220204072234.304543-1-joel at jms.id.au/
 
->
-> > +struct sbe {> +      u8 abr_image;
-> > +     u8 low_security_key;
-> > +     u8 otp_protected;
-> > +     u8 secure_boot;
-> > +     u8 invert;
-> > +     u8 uart_boot;
->
->  From what the code does below, these could be of type 'bool'
+However, machines with an ASPEED soc need the detailed information from
+the SBE that is not relevant for other systems, so expose it all in
+debugfs.
 
-I made them boot initially, but debugfs_create_u8 gets unhappy about
-taking a bool.
+v2 Moves the files to aspeed/sbc, and uses arch_debugfs_dir instead of a
+driver specific directory.
 
-We could use debugfs_create_bool, but then the files return Y/N which
-I didn't like.
+v1: https://lore.kernel.org/linux-arm-kernel/20220304030336.1017197-1-joel at jms.id.au/
 
-> > +     sbe.abr_image = !!(security_status & ABR_IMAGE_SOURCE);
-> > +     sbe.low_security_key = !!(security_status & LOW_SEC_KEY);
-> > +     sbe.otp_protected = !!(security_status & OTP_PROTECTED);
-> > +     sbe.secure_boot = !!(security_status & SECURE_BOOT);
-> > +     /* Invert the bit, as 1 is boot from SPI/eMMC */
-> > +     sbe.uart_boot =  !(security_status & UART_BOOT);
-> > +
-> > +     debugfs_root = debugfs_create_dir("aspeed", NULL);
->
-> may be use 'arch_debugfs_dir' or is that the same ? and test the returned
-> value as it can fail.
->
-> Also, instead of 'debugfs_root', we could introduce an extern
-> 'aspeed_debugfs_dir' for other aspeed drivers. For instance, the spi-mem
-> driver for flash devices could expose some internal settings like the
-> direct mapping ranges for each flash device. I am sure other drivers
-> would use it.
+Joel Stanley (2):
+  ARM: aspeed: Add debugfs directory
+  ARM: soc: aspeed: Add secure boot controller support
 
-Okay. I was hesitant to export it before we had other users, but given
-you already have some in mind I'll do that.
+ arch/arm/mach-aspeed/debugfs.c  | 16 ++++++++
+ drivers/soc/aspeed/aspeed-sbc.c | 73 +++++++++++++++++++++++++++++++++
+ arch/arm/mach-aspeed/Makefile   |  1 +
+ drivers/soc/aspeed/Kconfig      |  7 ++++
+ drivers/soc/aspeed/Makefile     |  1 +
+ 5 files changed, 98 insertions(+)
+ create mode 100644 arch/arm/mach-aspeed/debugfs.c
+ create mode 100644 drivers/soc/aspeed/aspeed-sbc.c
 
-The hard bit is where to put it.
+-- 
+2.34.1
 
-We have arch_debugfs_dir in include/linux/debugfs.h. This is used by
-ppc, x86, s390 and sh, but arm doesn't populate it. Neither do any of
-the arm socs.
-
-We could initalise that to the machine name. This means we don't need
-to add the soc-specific names into the driver. OTOH, "arch" is "arm"
-not "aspeed".
-
-I like the idea.
-
->
-> > +     debugfs_create_u8("abr_image", 0444, debugfs_root, &sbe.abr_image);
-> > +     debugfs_create_u8("low_security_key", 0444, debugfs_root, &sbe.low_security_key);
-> > +     debugfs_create_u8("otp_protected", 0444, debugfs_root, &sbe.otp_protected);
-> > +     debugfs_create_u8("uart_boot", 0444, debugfs_root, &sbe.uart_boot);
-> > +     debugfs_create_u8("secure_boot", 0444, debugfs_root, &sbe.secure_boot);
->
-> It would be cleaner if these files were under a 'sbe' or 'sbc' directory.
-
-Ok.
-
-Thanks for the review.
