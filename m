@@ -1,55 +1,109 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Thu, 10 Mar 2022 09:02:45 +0100
-Subject: [PATCH v2 2/2] ARM: soc: aspeed: Add secure boot controller
- support
-In-Reply-To: <20220310000629.119699-3-joel@jms.id.au>
-References: <20220310000629.119699-1-joel@jms.id.au>
- <20220310000629.119699-3-joel@jms.id.au>
-Message-ID: <CAK8P3a0LKG25Zu1X0m0FmSXpbC6YmWcvyhW1MOcw4XgnazS4sw@mail.gmail.com>
+From: Quan Nguyen <quan@os.amperecomputing.com>
+Date: Thu, 10 Mar 2022 18:41:15 +0700
+Subject: [PATCH v6 0/4] Add SSIF BMC driver
+Message-ID: <20220310114119.13736-1-quan@os.amperecomputing.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Mar 10, 2022 at 1:06 AM Joel Stanley <joel@jms.id.au> wrote:
->
-> This reads out the status of the secure boot controller and exposes it
-> in debugfs.
->
-> An example on a AST2600A3 QEMU model:
->
->  # grep -r . /sys/kernel/debug/aspeed/*
->  /sys/kernel/debug/aspeed/sbc/abr_image:0
->  /sys/kernel/debug/aspeed/sbc/low_security_key:0
->  /sys/kernel/debug/aspeed/sbc/otp_protected:0
->  /sys/kernel/debug/aspeed/sbc/secure_boot:1
->  /sys/kernel/debug/aspeed/sbc/uart_boot:0
->
-> On boot the state of the system according to the secure boot controller
-> will be printed:
->
->  [    0.037634] AST2600 secure boot enabled
->
-> or
->
->  [    0.037935] AST2600 secure boot disabled
->
-> Signed-off-by: Joel Stanley <joel@jms.id.au>
-> ---
-> v2:
->   - Place files in aspeed/sbc
->   - Check for error when creating directory
->   - Print secure boot message even if debugfs is disabled
+This series add support the SSIF BMC driver which is to perform in-band
+IPMI communication with their host in management (BMC) side.
 
-The implementation looks fine to me, but I think the changelog needs to
-explain why you picked debugfs over a sysfs interface, and how the
-interface is going to be used.
+SSIF BMC driver in this series is tested with Aspeed AST2500.
 
-As a rule, sysfs interfaces need to be documented and kept stable
-so that user space can rely on it, while debugfs interfaces should only
-be used for development and never be accessed by applications
-that need to work across kernel versions. If no stable user space
-is allowed to access these files, what is accessing them?
+Discussion for v5: https://lkml.org/lkml/2021/7/13/868
 
-      Arnd
+v6:
+  + Drop the use of slave_enable()                             [Wolfram]
+  + Make i2c-aspeed to issue RxCmdLast command on all
+  I2C_SLAVE_WRITE_REQUESTED event to assert NAK when slave busy   [Quan]
+  + Make i2c slave to return -EBUSY when it's busy                [Quan]
+  + Drop the aborting feature as return Completion Code 0xFF may stop
+  host to retry and make ipmi_ssif.so fails to load               [Quan]
+  + Add timer to recover slave from busy state when no response   [Quan]
+  + Clean request/response buffer appropriately                   [Quan]
+  + Add some minor change on error and warning messages           [Quan]
+
+v5:
+  + Correct the patches order to fix the bisect issue found by
+  kernel build robot
+
+v4:
+  + Fix recursive spinlock                                      [Graeme]
+  + Send response with Completion code 0xFF when aborting         [Quan]
+  + Fix warning with dt_binding_check                              [Rob]
+  + Change aspeed-ssif-bmc.yaml to ssif-bmc.yaml                  [Quan]
+  + Added bounding check on SMBus writes and the whole request     [Dan]
+  + Moved buffer to end of struct ssif_bmc_ctx to avoid context
+    corruption if somehow buffer is written past the end           [Dan]
+  + Return -EINVAL if userspace buffer too small, dont
+    silence truncate                                       [Corey, Joel]
+  + Not necessary to check NONBLOCK in lock                      [Corey]
+  + Enforce one user at a time                                    [Joel]
+  + Reject write with invalid response length from userspace     [Corey]
+  + Add state machines for better ssif bmc state handling         [Quan]
+  + Drop ssif_bmc_aspeed.c and make ssif_bmc.c is generic
+    SSIF BMC driver                                               [Quan]
+  + Change compatible string "aspeed,ast2500-ssif-bmc" to
+    "ampere,ssif-bmc"                                             [Quan]
+  + Toggle Slave enable in i2c-aspeed to turn on/off slave mode   [Ryan]
+  + Added slave_enable() to struct i2c_algorithm to control
+    slave mode and to address the recursive spinlock      [Graeme, Ryan]
+  + Abort current request with invalid SMBus write or
+    invalid command                                               [Quan]
+  + Abort all request if there is pending response                [Quan]
+  + Changed validate_pec() to validate_request()                  [Quan]
+  + Add unsupported_smbus_cmd() to handle unknown SMBus command   [Quan]
+  + Print internal state string for ease investigating issue      [Quan]
+  + Move to READY state on SLAVE_STOP event                       [Quan]
+  + Change initilize_transfer() to process_smbus_cmd()            [Quan]
+  + Introduce functions for each slave event                      [Quan]
+
+v3:
+  + Switched binding doc to use DT schema format                   [Rob]
+  + Splited into generic ssif_bmc and aspeed-specific      [Corey, Joel]
+  + Removed redundant license info                                [Joel]
+  + Switched to use traditional if-else                           [Joel]
+  + Removed unused ssif_bmc_ioctl()                               [Joel]
+  + Made handle_request()/complete_response() to return void      [Joel]
+  + Refactored send_ssif_bmc_response() and
+  receive_ssif_bmc_request()                                     [Corey]
+  + Remove mutex                                                 [Corey]
+  + Use spin_lock/unlock_irqsave/restore in callback             [Corey]
+  + Removed the unnecessary memset                               [Corey]
+  + Switch to use dev_err()                                      [Corey]
+  + Combine mask/unmask two interrupts together                  [Corey]
+  + Fixed unhandled Tx done with NAK                              [Quan]
+  + Late ack'ed Tx done w/wo Ack irq                              [Quan]
+  + Use aspeed-specific exported aspeed_set_slave_busy() when
+  slave busy to fix the deadlock                 [Graeme, Philipp, Quan]
+  + Clean buffer for last multipart read                          [Quan]
+  + Handle unknown incoming command                               [Quan]
+
+v2:
+  + Fixed compiling error with COMPILE_TEST for arc
+
+Dan Carpenter (1):
+  ipmi: ssif_bmc: Return -EFAULT if copy_from_user() fails
+
+Quan Nguyen (3):
+  ipmi: ssif_bmc: Add SSIF BMC driver
+  bindings: ipmi: Add binding for SSIF BMC driver
+  i2c: aspeed: Assert NAK when slave is busy
+
+ .../devicetree/bindings/ipmi/ssif-bmc.yaml    |  38 +
+ drivers/char/ipmi/Kconfig                     |  11 +
+ drivers/char/ipmi/Makefile                    |   1 +
+ drivers/char/ipmi/ssif_bmc.c                  | 790 ++++++++++++++++++
+ drivers/char/ipmi/ssif_bmc.h                  | 102 +++
+ drivers/i2c/busses/i2c-aspeed.c               |   5 +-
+ 6 files changed, 946 insertions(+), 1 deletion(-)
+ create mode 100644 Documentation/devicetree/bindings/ipmi/ssif-bmc.yaml
+ create mode 100644 drivers/char/ipmi/ssif_bmc.c
+ create mode 100644 drivers/char/ipmi/ssif_bmc.h
+
+-- 
+2.35.1
+
