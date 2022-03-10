@@ -1,48 +1,50 @@
 From: Quan Nguyen <quan@os.amperecomputing.com>
-Date: Thu, 10 Mar 2022 18:41:18 +0700
-Subject: [PATCH v6 3/4] ipmi: ssif_bmc: Return -EFAULT if copy_from_user()
- fails
+Date: Thu, 10 Mar 2022 18:41:19 +0700
+Subject: [PATCH v6 4/4] i2c: aspeed: Assert NAK when slave is busy
 In-Reply-To: <20220310114119.13736-1-quan@os.amperecomputing.com>
 References: <20220310114119.13736-1-quan@os.amperecomputing.com>
-Message-ID: <20220310114119.13736-4-quan@os.amperecomputing.com>
+Message-ID: <20220310114119.13736-5-quan@os.amperecomputing.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Dan Carpenter <dan.carpenter@oracle.com>
+When processing I2C_SLAVE_WRITE_REQUESTED event, if slave returns
+-EBUSY, i2c controller should issue RxCmdLast command to assert NAK
+on the bus.
 
-The copy_from_user() function returns the number of bytes remaining to
-be copied but we should return -EFAULT here.
-
-Fixes: 501c25b59508 ("ipmi: ssif_bmc: Add SSIF BMC driver")
-Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
-Signed-off-by: Corey Minyard <cminyard@mvista.com>
 Signed-off-by: Quan Nguyen <quan@os.amperecomputing.com>
 ---
 v6:
-  + New add in v6, thanks Dan for the patch     [Dan]
+  + New introduced in v6                      [Quan]
 
- drivers/char/ipmi/ssif_bmc.c | 5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
+ drivers/i2c/busses/i2c-aspeed.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/char/ipmi/ssif_bmc.c b/drivers/char/ipmi/ssif_bmc.c
-index 62db97773654..91ac2cae756e 100644
---- a/drivers/char/ipmi/ssif_bmc.c
-+++ b/drivers/char/ipmi/ssif_bmc.c
-@@ -87,9 +87,8 @@ static ssize_t ssif_bmc_write(struct file *file, const char __user *buf, size_t
- 	if (count > sizeof(struct ssif_msg))
- 		return -EINVAL;
+diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
+index 771e53d3d197..ebc2b92656c8 100644
+--- a/drivers/i2c/busses/i2c-aspeed.c
++++ b/drivers/i2c/busses/i2c-aspeed.c
+@@ -244,6 +244,7 @@ static u32 aspeed_i2c_slave_irq(struct aspeed_i2c_bus *bus, u32 irq_status)
+ 	u32 command, irq_handled = 0;
+ 	struct i2c_client *slave = bus->slave;
+ 	u8 value;
++	int ret;
  
--	ret = copy_from_user(&msg, buf, count);
--	if (ret)
--		return ret;
-+	if (copy_from_user(&msg, buf, count))
-+		return -EFAULT;
- 
- 	if (!msg.len || count < ssif_msg_len(&msg))
- 		return -EINVAL;
+ 	if (!slave)
+ 		return 0;
+@@ -311,7 +312,9 @@ static u32 aspeed_i2c_slave_irq(struct aspeed_i2c_bus *bus, u32 irq_status)
+ 		break;
+ 	case ASPEED_I2C_SLAVE_WRITE_REQUESTED:
+ 		bus->slave_state = ASPEED_I2C_SLAVE_WRITE_RECEIVED;
+-		i2c_slave_event(slave, I2C_SLAVE_WRITE_REQUESTED, &value);
++		ret = i2c_slave_event(slave, I2C_SLAVE_WRITE_REQUESTED, &value);
++		if (ret == -EBUSY)
++			writel(ASPEED_I2CD_M_S_RX_CMD_LAST, bus->base + ASPEED_I2C_CMD_REG);
+ 		break;
+ 	case ASPEED_I2C_SLAVE_WRITE_RECEIVED:
+ 		i2c_slave_event(slave, I2C_SLAVE_WRITE_RECEIVED, &value);
 -- 
 2.35.1
 
