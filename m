@@ -1,156 +1,55 @@
-From: Joel Stanley <joel@jms.id.au>
-Date: Thu, 10 Mar 2022 10:36:29 +1030
-Subject: [PATCH v2 2/2] ARM: soc: aspeed: Add secure boot controller support
-In-Reply-To: <20220310000629.119699-1-joel@jms.id.au>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Thu, 10 Mar 2022 09:02:45 +0100
+Subject: [PATCH v2 2/2] ARM: soc: aspeed: Add secure boot controller
+ support
+In-Reply-To: <20220310000629.119699-3-joel@jms.id.au>
 References: <20220310000629.119699-1-joel@jms.id.au>
-Message-ID: <20220310000629.119699-3-joel@jms.id.au>
+ <20220310000629.119699-3-joel@jms.id.au>
+Message-ID: <CAK8P3a0LKG25Zu1X0m0FmSXpbC6YmWcvyhW1MOcw4XgnazS4sw@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This reads out the status of the secure boot controller and exposes it
-in debugfs.
+On Thu, Mar 10, 2022 at 1:06 AM Joel Stanley <joel@jms.id.au> wrote:
+>
+> This reads out the status of the secure boot controller and exposes it
+> in debugfs.
+>
+> An example on a AST2600A3 QEMU model:
+>
+>  # grep -r . /sys/kernel/debug/aspeed/*
+>  /sys/kernel/debug/aspeed/sbc/abr_image:0
+>  /sys/kernel/debug/aspeed/sbc/low_security_key:0
+>  /sys/kernel/debug/aspeed/sbc/otp_protected:0
+>  /sys/kernel/debug/aspeed/sbc/secure_boot:1
+>  /sys/kernel/debug/aspeed/sbc/uart_boot:0
+>
+> On boot the state of the system according to the secure boot controller
+> will be printed:
+>
+>  [    0.037634] AST2600 secure boot enabled
+>
+> or
+>
+>  [    0.037935] AST2600 secure boot disabled
+>
+> Signed-off-by: Joel Stanley <joel@jms.id.au>
+> ---
+> v2:
+>   - Place files in aspeed/sbc
+>   - Check for error when creating directory
+>   - Print secure boot message even if debugfs is disabled
 
-An example on a AST2600A3 QEMU model:
+The implementation looks fine to me, but I think the changelog needs to
+explain why you picked debugfs over a sysfs interface, and how the
+interface is going to be used.
 
- # grep -r . /sys/kernel/debug/aspeed/*
- /sys/kernel/debug/aspeed/sbc/abr_image:0
- /sys/kernel/debug/aspeed/sbc/low_security_key:0
- /sys/kernel/debug/aspeed/sbc/otp_protected:0
- /sys/kernel/debug/aspeed/sbc/secure_boot:1
- /sys/kernel/debug/aspeed/sbc/uart_boot:0
+As a rule, sysfs interfaces need to be documented and kept stable
+so that user space can rely on it, while debugfs interfaces should only
+be used for development and never be accessed by applications
+that need to work across kernel versions. If no stable user space
+is allowed to access these files, what is accessing them?
 
-On boot the state of the system according to the secure boot controller
-will be printed:
-
- [    0.037634] AST2600 secure boot enabled
-
-or
-
- [    0.037935] AST2600 secure boot disabled
-
-Signed-off-by: Joel Stanley <joel@jms.id.au>
----
-v2:
-  - Place files in aspeed/sbc
-  - Check for error when creating directory
-  - Print secure boot message even if debugfs is disabled
----
- drivers/soc/aspeed/aspeed-sbc.c | 73 +++++++++++++++++++++++++++++++++
- drivers/soc/aspeed/Kconfig      |  7 ++++
- drivers/soc/aspeed/Makefile     |  1 +
- 3 files changed, 81 insertions(+)
- create mode 100644 drivers/soc/aspeed/aspeed-sbc.c
-
-diff --git a/drivers/soc/aspeed/aspeed-sbc.c b/drivers/soc/aspeed/aspeed-sbc.c
-new file mode 100644
-index 000000000000..be4497b418c4
---- /dev/null
-+++ b/drivers/soc/aspeed/aspeed-sbc.c
-@@ -0,0 +1,73 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
-+/* Copyright 2022 IBM Corp. */
-+
-+#include <linux/io.h>
-+#include <linux/of.h>
-+#include <linux/of_address.h>
-+#include <linux/of_platform.h>
-+#include <linux/debugfs.h>
-+
-+#define SEC_STATUS		0x14
-+#define ABR_IMAGE_SOURCE	BIT(13)
-+#define OTP_PROTECTED		BIT(8)
-+#define LOW_SEC_KEY		BIT(7)
-+#define SECURE_BOOT		BIT(6)
-+#define UART_BOOT		BIT(5)
-+
-+struct sbe {
-+	u8 abr_image;
-+	u8 low_security_key;
-+	u8 otp_protected;
-+	u8 secure_boot;
-+	u8 invert;
-+	u8 uart_boot;
-+};
-+
-+static struct sbe sbe;
-+
-+static int __init aspeed_sbc_init(void)
-+{
-+	struct device_node *np;
-+	void __iomem *base;
-+	struct dentry *sbc_dir;
-+	u32 security_status;
-+
-+	/* AST2600 only */
-+	np = of_find_compatible_node(NULL, NULL, "aspeed,ast2600-sbc");
-+	if (!of_device_is_available(np))
-+		return -ENODEV;
-+
-+	base = of_iomap(np, 0);
-+	if (!base) {
-+		of_node_put(np);
-+		return -ENODEV;
-+	}
-+
-+	security_status = readl(base + SEC_STATUS);
-+
-+	iounmap(base);
-+	of_node_put(np);
-+
-+	sbe.abr_image = !!(security_status & ABR_IMAGE_SOURCE);
-+	sbe.low_security_key = !!(security_status & LOW_SEC_KEY);
-+	sbe.otp_protected = !!(security_status & OTP_PROTECTED);
-+	sbe.secure_boot = !!(security_status & SECURE_BOOT);
-+	/* Invert the bit, as 1 is boot from SPI/eMMC */
-+	sbe.uart_boot =  !(security_status & UART_BOOT);
-+
-+	pr_info("AST2600 secure boot %s\n", sbe.secure_boot ? "enabled" : "disabled");
-+
-+	sbc_dir = debugfs_create_dir("sbc", arch_debugfs_dir);
-+	if (IS_ERR(sbc_dir))
-+		return PTR_ERR(sbc_dir);
-+
-+	debugfs_create_u8("abr_image", 0444, sbc_dir, &sbe.abr_image);
-+	debugfs_create_u8("low_security_key", 0444, sbc_dir, &sbe.low_security_key);
-+	debugfs_create_u8("otp_protected", 0444, sbc_dir, &sbe.otp_protected);
-+	debugfs_create_u8("uart_boot", 0444, sbc_dir, &sbe.uart_boot);
-+	debugfs_create_u8("secure_boot", 0444, sbc_dir, &sbe.secure_boot);
-+
-+	return 0;
-+}
-+
-+subsys_initcall(aspeed_sbc_init);
-diff --git a/drivers/soc/aspeed/Kconfig b/drivers/soc/aspeed/Kconfig
-index f941c41b84dc..aaf4596ae4f9 100644
---- a/drivers/soc/aspeed/Kconfig
-+++ b/drivers/soc/aspeed/Kconfig
-@@ -62,6 +62,13 @@ config ASPEED_XDMA
- 	  SoCs. The XDMA engine can perform PCIe DMA operations between the BMC
- 	  and a host processor.
- 
-+config ASPEED_SBC
-+	bool "ASPEED Secure Boot Controller driver"
-+	default MACH_ASPEED_G6
-+	help
-+	  Say yes to provide information about the secure boot controller in
-+	  debugfs.
-+
- endmenu
- 
- endif
-diff --git a/drivers/soc/aspeed/Makefile b/drivers/soc/aspeed/Makefile
-index 8fb73cede4bf..9e275fd1d54d 100644
---- a/drivers/soc/aspeed/Makefile
-+++ b/drivers/soc/aspeed/Makefile
-@@ -4,4 +4,5 @@ obj-$(CONFIG_ASPEED_LPC_SNOOP)		+= aspeed-lpc-snoop.o
- obj-$(CONFIG_ASPEED_UART_ROUTING)	+= aspeed-uart-routing.o
- obj-$(CONFIG_ASPEED_P2A_CTRL)		+= aspeed-p2a-ctrl.o
- obj-$(CONFIG_ASPEED_SOCINFO)		+= aspeed-socinfo.o
-+obj-$(CONFIG_ASPEED_SBC)		+= aspeed-sbc.o
- obj-$(CONFIG_ASPEED_XDMA)	+= aspeed-xdma.o
--- 
-2.34.1
-
+      Arnd
