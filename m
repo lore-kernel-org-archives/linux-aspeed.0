@@ -1,63 +1,117 @@
-From: Wolfram Sang <wsa@kernel.org>
-Date: Fri, 11 Mar 2022 07:58:46 +0100
-Subject: [PATCH v6 3/4] ipmi: ssif_bmc: Return -EFAULT if
- copy_from_user() fails
-In-Reply-To: <20220310114119.13736-4-quan@os.amperecomputing.com>
-References: <20220310114119.13736-1-quan@os.amperecomputing.com>
- <20220310114119.13736-4-quan@os.amperecomputing.com>
-Message-ID: <YirzJj/BBUQTbKS3@ninjato>
+From: Mauro Carvalho Chehab <mchehab@kernel.org>
+Date: Fri, 11 Mar 2022 15:07:19 +0100
+Subject: [PATCH v2 06/38] media: platform: place Aspeed driver on a separate
+ dir
+In-Reply-To: <cover.1647006877.git.mchehab@kernel.org>
+References: <cover.1647006877.git.mchehab@kernel.org>
+Message-ID: <97fe1a5a4183c04ac8bed0cee7583fcda96a3dd6.1647006877.git.mchehab@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Mar 10, 2022 at 06:41:18PM +0700, Quan Nguyen wrote:
-> From: Dan Carpenter <dan.carpenter@oracle.com>
-> 
-> The copy_from_user() function returns the number of bytes remaining to
-> be copied but we should return -EFAULT here.
-> 
-> Fixes: 501c25b59508 ("ipmi: ssif_bmc: Add SSIF BMC driver")
-> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
-> Signed-off-by: Corey Minyard <cminyard@mvista.com>
-> Signed-off-by: Quan Nguyen <quan@os.amperecomputing.com>
+In order to cleanup the main platform media directory, move Aspeed
+driver to its own directory.
 
-It is nice that you want to keep this patch seperate to give Dan
-credits, but I still think it should be merged into patch 1, so the
-initial driver is as flawless as it can be. You could give Dan still
-credits by mentioning him in the commit message IMO. Dan, would you be
-fine with this?
+Signed-off-by: Mauro Carvalho Chehab <mchehab@kernel.org>
+---
 
-> v6:
->   + New add in v6, thanks Dan for the patch     [Dan]
-> 
->  drivers/char/ipmi/ssif_bmc.c | 5 ++---
->  1 file changed, 2 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/char/ipmi/ssif_bmc.c b/drivers/char/ipmi/ssif_bmc.c
-> index 62db97773654..91ac2cae756e 100644
-> --- a/drivers/char/ipmi/ssif_bmc.c
-> +++ b/drivers/char/ipmi/ssif_bmc.c
-> @@ -87,9 +87,8 @@ static ssize_t ssif_bmc_write(struct file *file, const char __user *buf, size_t
->  	if (count > sizeof(struct ssif_msg))
->  		return -EINVAL;
->  
-> -	ret = copy_from_user(&msg, buf, count);
-> -	if (ret)
-> -		return ret;
-> +	if (copy_from_user(&msg, buf, count))
-> +		return -EFAULT;
->  
->  	if (!msg.len || count < ssif_msg_len(&msg))
->  		return -EINVAL;
-> -- 
-> 2.35.1
-> 
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 833 bytes
-Desc: not available
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20220311/0feccee0/attachment.sig>
+To avoid mailbombing on a large number of people, only mailing lists were C/C on the cover.
+See [PATCH v2 00/38] at: https://lore.kernel.org/all/cover.1647006877.git.mchehab at kernel.org/
+
+ MAINTAINERS                                        |  2 +-
+ drivers/media/platform/Kconfig                     | 10 +---------
+ drivers/media/platform/Makefile                    |  2 +-
+ drivers/media/platform/aspeed/Kconfig              | 10 ++++++++++
+ drivers/media/platform/aspeed/Makefile             |  1 +
+ drivers/media/platform/{ => aspeed}/aspeed-video.c |  0
+ 6 files changed, 14 insertions(+), 11 deletions(-)
+ create mode 100644 drivers/media/platform/aspeed/Kconfig
+ create mode 100644 drivers/media/platform/aspeed/Makefile
+ rename drivers/media/platform/{ => aspeed}/aspeed-video.c (100%)
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 1a9fb0615925..1b6f48a660de 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -3026,7 +3026,7 @@ L:	linux-media at vger.kernel.org
+ L:	openbmc at lists.ozlabs.org (moderated for non-subscribers)
+ S:	Maintained
+ F:	Documentation/devicetree/bindings/media/aspeed-video.txt
+-F:	drivers/media/platform/aspeed-video.c
++F:	drivers/media/platform/aspeed/
+ 
+ ASUS NOTEBOOKS AND EEEPC ACPI/WMI EXTRAS DRIVERS
+ M:	Corentin Chary <corentin.chary@gmail.com>
+diff --git a/drivers/media/platform/Kconfig b/drivers/media/platform/Kconfig
+index 1cb73f09d0b5..ad95a25ae2fc 100644
+--- a/drivers/media/platform/Kconfig
++++ b/drivers/media/platform/Kconfig
+@@ -57,15 +57,7 @@ source "drivers/media/platform/davinci/Kconfig"
+ 
+ source "drivers/media/platform/omap/Kconfig"
+ 
+-config VIDEO_ASPEED
+-	tristate "Aspeed AST2400 and AST2500 Video Engine driver"
+-	depends on V4L_PLATFORM_DRIVERS
+-	depends on VIDEO_V4L2
+-	select VIDEOBUF2_DMA_CONTIG
+-	help
+-	  Support for the Aspeed Video Engine (VE) embedded in the Aspeed
+-	  AST2400 and AST2500 SOCs. The VE can capture and compress video data
+-	  from digital or analog sources.
++source "drivers/media/platform/aspeed/Kconfig"
+ 
+ config VIDEO_SH_VOU
+ 	tristate "SuperH VOU video output driver"
+diff --git a/drivers/media/platform/Makefile b/drivers/media/platform/Makefile
+index c7ee7dafe6b3..1a52a1a784b5 100644
+--- a/drivers/media/platform/Makefile
++++ b/drivers/media/platform/Makefile
+@@ -5,6 +5,7 @@
+ 
+ # Place here, alphabetically sorted, all directories
+ obj-y += allegro-dvt/
++obj-y += aspeed/
+ obj-y += am437x/
+ obj-y += amphion/
+ obj-y += atmel/
+@@ -44,7 +45,6 @@ obj-y += vsp1/
+ obj-y += xilinx/
+ 
+ # Please place here only ancillary drivers that aren't SoC-specific
+-obj-$(CONFIG_VIDEO_ASPEED)		+= aspeed-video.o
+ obj-$(CONFIG_VIDEO_IMX_PXP)		+= imx-pxp.o
+ obj-$(CONFIG_VIDEO_MEM2MEM_DEINTERLACE)	+= m2m-deinterlace.o
+ obj-$(CONFIG_VIDEO_MUX)			+= video-mux.o
+diff --git a/drivers/media/platform/aspeed/Kconfig b/drivers/media/platform/aspeed/Kconfig
+new file mode 100644
+index 000000000000..5025e892844c
+--- /dev/null
++++ b/drivers/media/platform/aspeed/Kconfig
+@@ -0,0 +1,10 @@
++# SPDX-License-Identifier: GPL-2.0-only
++config VIDEO_ASPEED
++	tristate "Aspeed AST2400 and AST2500 Video Engine driver"
++	depends on V4L_PLATFORM_DRIVERS
++	depends on VIDEO_V4L2
++	select VIDEOBUF2_DMA_CONTIG
++	help
++	  Support for the Aspeed Video Engine (VE) embedded in the Aspeed
++	  AST2400 and AST2500 SOCs. The VE can capture and compress video data
++	  from digital or analog sources.
+diff --git a/drivers/media/platform/aspeed/Makefile b/drivers/media/platform/aspeed/Makefile
+new file mode 100644
+index 000000000000..4ee15b3ddd90
+--- /dev/null
++++ b/drivers/media/platform/aspeed/Makefile
+@@ -0,0 +1 @@
++obj-$(CONFIG_VIDEO_ASPEED)		+= aspeed-video.o
+diff --git a/drivers/media/platform/aspeed-video.c b/drivers/media/platform/aspeed/aspeed-video.c
+similarity index 100%
+rename from drivers/media/platform/aspeed-video.c
+rename to drivers/media/platform/aspeed/aspeed-video.c
+-- 
+2.35.1
+
