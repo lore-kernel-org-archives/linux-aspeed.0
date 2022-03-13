@@ -1,10 +1,10 @@
 From: Mauro Carvalho Chehab <mchehab@kernel.org>
-Date: Fri, 11 Mar 2022 15:07:19 +0100
-Subject: [PATCH v2 06/38] media: platform: place Aspeed driver on a separate
+Date: Sun, 13 Mar 2022 08:21:15 +0100
+Subject: [PATCH v3 06/39] media: platform: place Aspeed driver on a separate
  dir
-In-Reply-To: <cover.1647006877.git.mchehab@kernel.org>
-References: <cover.1647006877.git.mchehab@kernel.org>
-Message-ID: <97fe1a5a4183c04ac8bed0cee7583fcda96a3dd6.1647006877.git.mchehab@kernel.org>
+In-Reply-To: <cover.1647155572.git.mchehab@kernel.org>
+References: <cover.1647155572.git.mchehab@kernel.org>
+Message-ID: <c76621493dcd1d347d210b4e9b7ff620294d3fbd.1647155572.git.mchehab@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -18,15 +18,15 @@ Signed-off-by: Mauro Carvalho Chehab <mchehab@kernel.org>
 ---
 
 To avoid mailbombing on a large number of people, only mailing lists were C/C on the cover.
-See [PATCH v2 00/38] at: https://lore.kernel.org/all/cover.1647006877.git.mchehab at kernel.org/
+See [PATCH v3 00/39] at: https://lore.kernel.org/all/cover.1647155572.git.mchehab at kernel.org/
 
  MAINTAINERS                                        |  2 +-
  drivers/media/platform/Kconfig                     | 10 +---------
  drivers/media/platform/Makefile                    |  2 +-
  drivers/media/platform/aspeed/Kconfig              | 10 ++++++++++
- drivers/media/platform/aspeed/Makefile             |  1 +
+ drivers/media/platform/aspeed/Makefile             |  2 ++
  drivers/media/platform/{ => aspeed}/aspeed-video.c |  0
- 6 files changed, 14 insertions(+), 11 deletions(-)
+ 6 files changed, 15 insertions(+), 11 deletions(-)
  create mode 100644 drivers/media/platform/aspeed/Kconfig
  create mode 100644 drivers/media/platform/aspeed/Makefile
  rename drivers/media/platform/{ => aspeed}/aspeed-video.c (100%)
@@ -45,10 +45,10 @@ index 1a9fb0615925..1b6f48a660de 100644
  ASUS NOTEBOOKS AND EEEPC ACPI/WMI EXTRAS DRIVERS
  M:	Corentin Chary <corentin.chary@gmail.com>
 diff --git a/drivers/media/platform/Kconfig b/drivers/media/platform/Kconfig
-index 1cb73f09d0b5..ad95a25ae2fc 100644
+index 1446a99159c5..10f453ff2717 100644
 --- a/drivers/media/platform/Kconfig
 +++ b/drivers/media/platform/Kconfig
-@@ -57,15 +57,7 @@ source "drivers/media/platform/davinci/Kconfig"
+@@ -50,15 +50,7 @@ source "drivers/media/platform/davinci/Kconfig"
  
  source "drivers/media/platform/omap/Kconfig"
  
@@ -66,21 +66,21 @@ index 1cb73f09d0b5..ad95a25ae2fc 100644
  config VIDEO_SH_VOU
  	tristate "SuperH VOU video output driver"
 diff --git a/drivers/media/platform/Makefile b/drivers/media/platform/Makefile
-index c7ee7dafe6b3..1a52a1a784b5 100644
+index e319044c57e9..18ec3d208483 100644
 --- a/drivers/media/platform/Makefile
 +++ b/drivers/media/platform/Makefile
-@@ -5,6 +5,7 @@
- 
- # Place here, alphabetically sorted, all directories
+@@ -6,6 +6,7 @@
+ # Place here, alphabetically sorted by directory
+ # (e. g. LC_ALL=C sort Makefile)
  obj-y += allegro-dvt/
 +obj-y += aspeed/
  obj-y += am437x/
  obj-y += amphion/
  obj-y += atmel/
-@@ -44,7 +45,6 @@ obj-y += vsp1/
- obj-y += xilinx/
- 
+@@ -47,7 +48,6 @@ obj-y += xilinx/
  # Please place here only ancillary drivers that aren't SoC-specific
+ # Please keep it alphabetically sorted by Kconfig name
+ # (e. g. LC_ALL=C sort Makefile)
 -obj-$(CONFIG_VIDEO_ASPEED)		+= aspeed-video.o
  obj-$(CONFIG_VIDEO_IMX_PXP)		+= imx-pxp.o
  obj-$(CONFIG_VIDEO_MEM2MEM_DEINTERLACE)	+= m2m-deinterlace.o
@@ -103,11 +103,12 @@ index 000000000000..5025e892844c
 +	  from digital or analog sources.
 diff --git a/drivers/media/platform/aspeed/Makefile b/drivers/media/platform/aspeed/Makefile
 new file mode 100644
-index 000000000000..4ee15b3ddd90
+index 000000000000..b8394b7e537d
 --- /dev/null
 +++ b/drivers/media/platform/aspeed/Makefile
-@@ -0,0 +1 @@
-+obj-$(CONFIG_VIDEO_ASPEED)		+= aspeed-video.o
+@@ -0,0 +1,2 @@
++# SPDX-License-Identifier: GPL-2.0
++obj-$(CONFIG_VIDEO_ASPEED) += aspeed-video.o
 diff --git a/drivers/media/platform/aspeed-video.c b/drivers/media/platform/aspeed/aspeed-video.c
 similarity index 100%
 rename from drivers/media/platform/aspeed-video.c
