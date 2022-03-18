@@ -1,63 +1,66 @@
-From: Kuldeep Singh <singh.kuldeep87k@gmail.com>
-Date: Fri, 18 Mar 2022 02:40:24 +0530
+From: Joel Stanley <joel@jms.id.au>
+Date: Fri, 18 Mar 2022 06:18:50 +0000
 Subject: [PATCH v2 3/3] ARM: dts: aspeed: Remove arch timer clocks property
-In-Reply-To: <87h77wxslh.wl-maz@kernel.org>
+In-Reply-To: <87fsngxnff.wl-maz@kernel.org>
 References: <20220317191527.96237-1-singh.kuldeep87k@gmail.com>
  <20220317191527.96237-4-singh.kuldeep87k@gmail.com>
  <87h77wxslh.wl-maz@kernel.org>
-Message-ID: <20220317211024.GA99538@9a2d8922b8f1>
+ <20220317211024.GA99538@9a2d8922b8f1> <87fsngxnff.wl-maz@kernel.org>
+Message-ID: <CACPK8Xdv4bG=Haz5oe+gHotQ_B7=bMbZE3fNnHs-Ezy7Yje6Jg@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Mar 17, 2022 at 07:54:34PM +0000, Marc Zyngier wrote:
-> On Thu, 17 Mar 2022 19:15:26 +0000,
+On Thu, 17 Mar 2022 at 21:46, Marc Zyngier <maz@kernel.org> wrote:
+>
+> On Thu, 17 Mar 2022 21:10:24 +0000,
 > Kuldeep Singh <singh.kuldeep87k@gmail.com> wrote:
-> > 
-> > Arch timer either require clock-frequency property or doesn't need to
-> > specify clock at all in DT. In general, frequency can be determined
-> > internally and in case of brokern firmwares, need to extend
-> > clock-frequency to pass info to driver.
-> 
-> A clock frequency and a clock are not the same thing.
 
-Yes Marc, That's what I have mentioned in commit description.
+> > >
+> > > >
+> > > > Moreover, clocks also matches incorrectly with the regex pattern.
+> > > > Remove this entry altogether to fix it.
+> > > > 'clocks' does not match any of the regexes: 'pinctrl-[0-9]+'
+> > >
+> > > NAK. That's not a reason to randomly butcher things.
+> >
+> > I hope I explained my reasons above.
+>
+> My position on this sort of change remains. Blindly changing existing
+> DTs based on a warning provided by a tool that totally ignores the
+> reality of what is out there is not acceptable.
 
-Driver uses "clock-frequency" property only and doesn't take inputs from
-"clocks" property. So, any platform should refrain from defining such
-entity at first place in DT. Binding also says the same i.e pass info
-via "clock-frequency" property and no mention of "clocks".
+Thanks Marc for stating this. I share this view; we shouldn't go
+around deleting parts of device trees for the sake of the bindings.
+It's been happening across the tree, and I think it's to the detriment
+of the supported hardware.
 
-> 
-> > 
-> > Aspeed BMC is the platform which defines clocks property, an invalid
-> > entry which can be safely removed.
-> 
-> Safely removed? Says who? Have you tested this change?
+In the case of this particular change: I suspect this property was
+there for early bringup, before the firmware was in place to configure
+CNTFRQ. Looking back in time we had:
 
-Since "clocks" is never read by driver and driver incorporates
-"clock-frequency" which was certainly not defined here, I believe this
-reasoning is sufficient for my clause. As it's safe to remove an entry
-which was never used.
+ clock-frequency = <25000000>;
+ arm,cpu-registers-not-fw-configured;
 
-Please note, it's just Aspeed BMC which had "clocks" defined, other
-platforms which require input from DT have extended "clock-frequency"
-property like I mentioned before.
+I'm not sure why that changed from clock-frequency to clocks when the
+device tree was mainlined.
 
-I don't possess this platform physically,and did successfull compile
-time testing. I have initally copied few Aspeed folks, they can help in
-reviewing and confirming this.
+That was bringup. These days, the vendor u-boot programs CNTFRQ with a
+value for the system. This code is also in mainline u-boot, so as long
+as you're running one of those firmwares the standard method will
+work.
 
-> 
-> > 
-> > Moreover, clocks also matches incorrectly with the regex pattern.
-> > Remove this entry altogether to fix it.
-> > 'clocks' does not match any of the regexes: 'pinctrl-[0-9]+'
-> 
-> NAK. That's not a reason to randomly butcher things.
+The qemu model also sets CNTFRQ, so loading the kernel without going
+through u-boot will be fine there too.
 
-I hope I explained my reasons above.
+Given that, I think we can go ahead with removing the property in this case.
 
-- Kuldeep
+Reviewed-by: Joel Stanley <joel@jms.id.au>
+
+I'll take the patch through my aspeed tree.
+
+Cheers,
+
+Joel
