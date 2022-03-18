@@ -1,117 +1,76 @@
-From: Howard Chiu <howard_chiu@aspeedtech.com>
-Date: Fri, 18 Mar 2022 09:32:11 +0000
-Subject: [PATCH v1] ARM: dts: aspeed: ast2600-evb: Enable RX delay for
- MAC0/MAC1
-In-Reply-To: <CACPK8XdYHb-PgVVQuTtMBokxu4GTObG7nCohm4dosK9XWzE9ow@mail.gmail.com>
-References: <SG2PR06MB2315A7BAE2F1B384CDADB57FE6139@SG2PR06MB2315.apcprd06.prod.outlook.com>
- <CACPK8XdYHb-PgVVQuTtMBokxu4GTObG7nCohm4dosK9XWzE9ow@mail.gmail.com>
-Message-ID: <SG2PR06MB23150B3673E58737ABB08D51E6139@SG2PR06MB2315.apcprd06.prod.outlook.com>
+From: Shuah Khan <skhan@linuxfoundation.org>
+Date: Fri, 18 Mar 2022 14:59:05 -0600
+Subject: [PATCH 64/64] media: Kconfig: cleanup VIDEO_DEV dependencies
+In-Reply-To: <decd26e90adc5c16470e4f738810f22fe6478b27.1647242579.git.mchehab@kernel.org>
+References: <cover.1647242578.git.mchehab@kernel.org>
+ <decd26e90adc5c16470e4f738810f22fe6478b27.1647242579.git.mchehab@kernel.org>
+Message-ID: <9e02d88a-3344-8d91-c652-72cb989506de@linuxfoundation.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Joel
+On 3/14/22 1:55 AM, Mauro Carvalho Chehab wrote:
+> media Kconfig has two entries associated to V4L API:
+> VIDEO_DEV and VIDEO_V4L2.
+> 
+> On Kernel 2.6.x, there were two V4L APIs, each one with its own flag.
+> VIDEO_DEV were meant to:
+> 	1) enable Video4Linux and make its Kconfig options to appear;
+> 	2) it makes the Kernel build the V4L core.
+> 
+> while VIDEO_V4L2 where used to distinguish between drivers that
+> implement the newer API and drivers that implemented the former one.
+> 
+> With time, such meaning changed, specially after the removal of
+> all V4L version 1 drivers.
+> 
+> At the current implementation, VIDEO_DEV only does (1): it enables
+> the media options related to V4L, that now has:
+> 
+> 	menu "Video4Linux options"
+> 		visible if VIDEO_DEV
+> 
+> 	source "drivers/media/v4l2-core/Kconfig"
+> 	endmenu
+> 
+> but it doesn't affect anymore the V4L core drivers.
+> 
+> The rationale is that the V4L2 core has a "soft" dependency
+> at the I2C bus, and now requires to select a number of other
+> Kconfig options:
+> 
+> 	config VIDEO_V4L2
+> 		tristate
+> 		depends on (I2C || I2C=n) && VIDEO_DEV
+> 		select RATIONAL
+> 		select VIDEOBUF2_V4L2 if VIDEOBUF2_CORE
+> 		default (I2C || I2C=n) && VIDEO_DEV
+> 
+> In the past, merging them would be tricky, but it seems that it is now
+> possible to merge those symbols, in order to simplify V4L dependencies.
+> 
+> Let's keep VIDEO_DEV, as this one is used on some make *defconfig
+> configurations.
+> 
+> Suggested-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+> Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+> Signed-off-by: Mauro Carvalho Chehab <mchehab@kernel.org>
+> ---
+> 
 
-> > +&syscon {
-> > +       mac0-clk-delay = <0x10 0x0a
-> > +                         0x10 0x10
-> > +                         0x10 0x10>;
-> 
-> These properties aren't supported by the mainline kernel. Do you have some
-> code coming for that support?
-No, clk-ast2600 did not support it yet.
-Let me remove this setting for now since I confirmed that the patch wouldn't be ready very soon.
-Currently, the delay will be set at u-boot stage with commit for OpenBMC https://github.com/openbmc/u-boot/commit/e40a4e447a0e7f4d8b38c3256349e39ff3701f1f
-So it should be safe for OpenBMC if this part was removed.
+>   drivers/media/test-drivers/vicodec/Kconfig    |   2 +-
+>   drivers/media/test-drivers/vimc/Kconfig       |   2 +-
+>   drivers/media/test-drivers/vivid/Kconfig      |   2 +-
+>
 
-> -----Original Message-----
-> From: Joel Stanley <joel@jms.id.au>
-> Sent: Friday, March 18, 2022 4:46 PM
-> To: Howard Chiu <howard_chiu@aspeedtech.com>
-> Cc: robh+dt at kernel.org; andrew at aj.id.au; devicetree at vger.kernel.org;
-> linux-arm-kernel at lists.infradead.org; linux-aspeed at lists.ozlabs.org;
-> linux-kernel at vger.kernel.org; Troy Lee <troy_lee@aspeedtech.com>
-> Subject: Re: [PATCH v1] ARM: dts: aspeed: ast2600-evb: Enable RX delay for
-> MAC0/MAC1
-> 
-> Hi Howard,
-> 
-> On Fri, 18 Mar 2022 at 08:09, Howard Chiu <howard_chiu@aspeedtech.com>
-> wrote:
-> >
-> > Since mac0/1 and mac2/3 are physically located on different die, they
-> > have different properties by nature, which is mac0/1 has smaller delay step.
-> >
-> > The property 'phy-mode' on ast2600 mac0 and mac1 is recommended to set
-> to 'rgmii-rxid'
-> > which enables the RX interface delay from the PHY chip.
-> > Refer page 45 of SDK User Guide v08.00
-> >
-> https://github.com/AspeedTech-BMC/openbmc/releases/download/v08.00/SD
-> K
-> > _User_Guide_v08.00.pdf
-> >
-> > Set mac delay according to the mactest result.
-> 
-> This bit confused me. How does the rxid relate to the mac delay numbers?
-> Which device and code is responsible for using them?
-> 
-> >
-> > Signed-off-by: Howard Chiu <howard_chiu@aspeedtech.com>
-> > ---
-> >  arch/arm/boot/dts/aspeed-ast2600-evb.dts | 19 +++++++++++++++++--
-> >  1 file changed, 17 insertions(+), 2 deletions(-)
-> >
-> > diff --git a/arch/arm/boot/dts/aspeed-ast2600-evb.dts
-> > b/arch/arm/boot/dts/aspeed-ast2600-evb.dts
-> > index b7eb552640cb..db16ba307e97 100644
-> > --- a/arch/arm/boot/dts/aspeed-ast2600-evb.dts
-> > +++ b/arch/arm/boot/dts/aspeed-ast2600-evb.dts
-> > @@ -103,7 +103,7 @@ ethphy3: ethernet-phy at 0 {
-> >  &mac0 {
-> >         status = "okay";
-> >
-> > -       phy-mode = "rgmii";
-> > +       phy-mode = "rgmii-rxid";
-> >         phy-handle = <&ethphy0>;
-> >
-> >         pinctrl-names = "default";
-> > @@ -114,7 +114,7 @@ &mac0 {
-> >  &mac1 {
-> >         status = "okay";
-> >
-> > -       phy-mode = "rgmii";
-> > +       phy-mode = "rgmii-rxid";
-> >         phy-handle = <&ethphy1>;
-> >
-> >         pinctrl-names = "default";
-> > @@ -141,6 +141,21 @@ &mac3 {
-> >         pinctrl-0 = <&pinctrl_rgmii4_default>;  };
-> >
-> > +&syscon {
-> > +       mac0-clk-delay = <0x10 0x0a
-> > +                         0x10 0x10
-> > +                         0x10 0x10>;
-> 
-> These properties aren't supported by the mainline kernel. Do you have some
-> code coming for that support?
-> 
-> > +       mac1-clk-delay = <0x10 0x0a
-> > +                         0x10 0x10
-> > +                         0x10 0x10>;
-> > +       mac2-clk-delay = <0x08 0x04
-> > +                         0x08 0x04
-> > +                         0x08 0x04>;
-> > +       mac3-clk-delay = <0x08 0x04
-> > +                         0x08 0x04
-> > +                         0x08 0x04>;
-> > +};
-> > +
-> >  &emmc_controller {
-> >         status = "okay";
-> >  };
-> > --
-> > 2.25.1
-> >
+For vimc change: (trimmed the recipient list to send response)
+
+Acked-by: Shuah Khan <skhan@linuxfoundation.org>
+
+thanks,
+-- Shuah
+
+
+
