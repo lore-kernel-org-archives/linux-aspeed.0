@@ -1,66 +1,67 @@
-From: Joel Stanley <joel@jms.id.au>
-Date: Fri, 18 Mar 2022 06:18:50 +0000
-Subject: [PATCH v2 3/3] ARM: dts: aspeed: Remove arch timer clocks property
-In-Reply-To: <87fsngxnff.wl-maz@kernel.org>
-References: <20220317191527.96237-1-singh.kuldeep87k@gmail.com>
- <20220317191527.96237-4-singh.kuldeep87k@gmail.com>
- <87h77wxslh.wl-maz@kernel.org>
- <20220317211024.GA99538@9a2d8922b8f1> <87fsngxnff.wl-maz@kernel.org>
-Message-ID: <CACPK8Xdv4bG=Haz5oe+gHotQ_B7=bMbZE3fNnHs-Ezy7Yje6Jg@mail.gmail.com>
+From: ChiaWei Wang <chiawei_wang@aspeedtech.com>
+Date: Fri, 18 Mar 2022 06:45:55 +0000
+Subject: [PATCH v2 0/2] aspeed: Add LPC mailbox support
+In-Reply-To: <000501d82d04$0ffa9870$2fefc950$@linux.intel.com>
+References: <20210817025848.19914-1-chiawei_wang@aspeedtech.com>
+ <000501d82d04$0ffa9870$2fefc950$@linux.intel.com>
+Message-ID: <HK0PR06MB3779B539AB32EAF7A87BA5A391139@HK0PR06MB3779.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, 17 Mar 2022 at 21:46, Marc Zyngier <maz@kernel.org> wrote:
->
-> On Thu, 17 Mar 2022 21:10:24 +0000,
-> Kuldeep Singh <singh.kuldeep87k@gmail.com> wrote:
+Hi All,
 
-> > >
-> > > >
-> > > > Moreover, clocks also matches incorrectly with the regex pattern.
-> > > > Remove this entry altogether to fix it.
-> > > > 'clocks' does not match any of the regexes: 'pinctrl-[0-9]+'
-> > >
-> > > NAK. That's not a reason to randomly butcher things.
-> >
-> > I hope I explained my reasons above.
->
-> My position on this sort of change remains. Blindly changing existing
-> DTs based on a warning provided by a tool that totally ignores the
-> reality of what is out there is not acceptable.
+Do you have any suggestion to revise this patch series?
+It has been verified with AST2500 and AST2600 A3 EVBs.
 
-Thanks Marc for stating this. I share this view; we shouldn't go
-around deleting parts of device trees for the sake of the bindings.
-It's been happening across the tree, and I think it's to the detriment
-of the supported hardware.
+Thanks,
+Chiawei
 
-In the case of this particular change: I suspect this property was
-there for early bringup, before the firmware was in place to configure
-CNTFRQ. Looking back in time we had:
+> From: Yong Li <yong.b.li@linux.intel.com>
+> Sent: Tuesday, March 1, 2022 8:34 AM
+> 
+> @andrew at aj.id.au @Chia-Wei Wang @joel at jms.id.au
+> 
+> Just want to check the latest status about this mailbox driver. I would like to get
+> this driver upstreamed too.
+> 
+> Thanks,
+> Yong
+> 
+> -----Original Message-----
+> From: openbmc
+> <openbmc-bounces+yong.b.li=linux.intel.com@lists.ozlabs.org>
+> On Behalf Of Chia-Wei Wang
+> Sent: Tuesday, August 17, 2021 10:59 AM
+> To: robh+dt at kernel.org; joel at jms.id.au; andrew at aj.id.au;
+> cyrilbur at gmail.com; devicetree at vger.kernel.org;
+> linux-arm-kernel at lists.infradead.org;
+> linux-aspeed at lists.ozlabs.org; linux-kernel at vger.kernel.org;
+> openbmc at lists.ozlabs.org
+> Subject: [PATCH v2 0/2] aspeed: Add LPC mailbox support
+> 
+> Add driver support for the LPC mailbox controller of ASPEED SoCs.
+> 
+> v2:
+>  - Fix error handling for copy_to_user
+>  - Fix incorrect type in the .poll initializer
+> 
+> Chia-Wei Wang (2):
+>   soc: aspeed: Add LPC mailbox support
+>   ARM: dts: aspeed: Add mailbox to device tree
+> 
+>  arch/arm/boot/dts/aspeed-g4.dtsi     |   7 +
+>  arch/arm/boot/dts/aspeed-g5.dtsi     |   8 +-
+>  arch/arm/boot/dts/aspeed-g6.dtsi     |   7 +
+>  drivers/soc/aspeed/Kconfig           |  10 +
+>  drivers/soc/aspeed/Makefile          |   9 +-
+>  drivers/soc/aspeed/aspeed-lpc-mbox.c | 418
+> +++++++++++++++++++++++++++
+>  6 files changed, 454 insertions(+), 5 deletions(-)  create mode 100644
+> drivers/soc/aspeed/aspeed-lpc-mbox.c
+> 
+> --
+> 2.17.1
 
- clock-frequency = <25000000>;
- arm,cpu-registers-not-fw-configured;
-
-I'm not sure why that changed from clock-frequency to clocks when the
-device tree was mainlined.
-
-That was bringup. These days, the vendor u-boot programs CNTFRQ with a
-value for the system. This code is also in mainline u-boot, so as long
-as you're running one of those firmwares the standard method will
-work.
-
-The qemu model also sets CNTFRQ, so loading the kernel without going
-through u-boot will be fine there too.
-
-Given that, I think we can go ahead with removing the property in this case.
-
-Reviewed-by: Joel Stanley <joel@jms.id.au>
-
-I'll take the patch through my aspeed tree.
-
-Cheers,
-
-Joel
