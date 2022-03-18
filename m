@@ -1,109 +1,73 @@
-From: ryan_chen <ryan_chen@aspeedtech.com>
-Date: Wed, 23 Mar 2022 08:40:08 +0800
-Subject: [PATCH 1/2] dt-bindings: i2c-new: Add bindings for AST2600 i2C new
- controller
-In-Reply-To: <20220323004009.943298-1-ryan_chen@aspeedtech.com>
-References: <20220323004009.943298-1-ryan_chen@aspeedtech.com>
-Message-ID: <20220323004009.943298-2-ryan_chen@aspeedtech.com>
+From: Howard Chiu <howard_chiu@aspeedtech.com>
+Date: Fri, 18 Mar 2022 08:09:35 +0000
+Subject: [PATCH v1] ARM: dts: aspeed: ast2600-evb: Enable RX delay for
+ MAC0/MAC1
+Message-ID: <SG2PR06MB2315A7BAE2F1B384CDADB57FE6139@SG2PR06MB2315.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-AST2600 support new register set for I2C controller, add bindings document
-to support driver of i2c new controller
+Since mac0/1 and mac2/3 are physically located on different die,
+they have different properties by nature, which is mac0/1 has smaller delay step.
 
-Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
+The property 'phy-mode' on ast2600 mac0 and mac1 is recommended to set to 'rgmii-rxid'
+which enables the RX interface delay from the PHY chip.
+Refer page 45 of SDK User Guide v08.00
+https://github.com/AspeedTech-BMC/openbmc/releases/download/v08.00/SDK_User_Guide_v08.00.pdf
+
+Set mac delay according to the mactest result.
+
+Signed-off-by: Howard Chiu <howard_chiu@aspeedtech.com>
 ---
- .../bindings/i2c/aspeed,i2c-new.yaml          | 78 +++++++++++++++++++
- 1 file changed, 78 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/i2c/aspeed,i2c-new.yaml
+ arch/arm/boot/dts/aspeed-ast2600-evb.dts | 19 +++++++++++++++++--
+ 1 file changed, 17 insertions(+), 2 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/i2c/aspeed,i2c-new.yaml b/Documentation/devicetree/bindings/i2c/aspeed,i2c-new.yaml
-new file mode 100644
-index 000000000000..2e49c5438ad2
---- /dev/null
-+++ b/Documentation/devicetree/bindings/i2c/aspeed,i2c-new.yaml
-@@ -0,0 +1,78 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/i2c/aspeed,i2c-new.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
+diff --git a/arch/arm/boot/dts/aspeed-ast2600-evb.dts b/arch/arm/boot/dts/aspeed-ast2600-evb.dts
+index b7eb552640cb..db16ba307e97 100644
+--- a/arch/arm/boot/dts/aspeed-ast2600-evb.dts
++++ b/arch/arm/boot/dts/aspeed-ast2600-evb.dts
+@@ -103,7 +103,7 @@ ethphy3: ethernet-phy at 0 {
+ &mac0 {
+ 	status = "okay";
+ 
+-	phy-mode = "rgmii";
++	phy-mode = "rgmii-rxid";
+ 	phy-handle = <&ethphy0>;
+ 
+ 	pinctrl-names = "default";
+@@ -114,7 +114,7 @@ &mac0 {
+ &mac1 {
+ 	status = "okay";
+ 
+-	phy-mode = "rgmii";
++	phy-mode = "rgmii-rxid";
+ 	phy-handle = <&ethphy1>;
+ 
+ 	pinctrl-names = "default";
+@@ -141,6 +141,21 @@ &mac3 {
+ 	pinctrl-0 = <&pinctrl_rgmii4_default>;
+ };
+ 
++&syscon {
++	mac0-clk-delay = <0x10 0x0a
++			  0x10 0x10
++			  0x10 0x10>;
++	mac1-clk-delay = <0x10 0x0a
++			  0x10 0x10
++			  0x10 0x10>;
++	mac2-clk-delay = <0x08 0x04
++			  0x08 0x04
++			  0x08 0x04>;
++	mac3-clk-delay = <0x08 0x04
++			  0x08 0x04
++			  0x08 0x04>;
++};
 +
-+title: ASPEED New I2C Controller on the AST26XX SoCs Device Tree Bindings
-+
-+maintainers:
-+  - Ryan Chen <ryan_chen@aspeedtech.com>
-+
-+allOf:
-+  - $ref: /schemas/i2c/i2c-controller.yaml#
-+
-+properties:
-+  compatible:
-+    enum:
-+      - aspeed,ast2600-i2c-bus
-+
-+  reg:
-+    minItems: 1
-+    items:
-+      - description: address offset and range of bus
-+      - description: address offset and range of bus buffer
-+
-+  interrupts:
-+    maxItems: 1
-+
-+  clocks:
-+    maxItems: 1
-+    description:
-+      root clock of bus, should reference the APB
-+      clock in the second cell
-+
-+  resets:
-+    maxItems: 1
-+
-+  bus-frequency:
-+    minimum: 500
-+    maximum: 2000000
-+    default: 100000
-+    description: frequency of the bus clock in Hz defaults to 100 kHz when not
-+      specified
-+
-+  multi-master:
-+    type: boolean
-+    description:
-+      states that there is another master active on this bus
-+
-+required:
-+  - reg
-+  - compatible
-+  - clocks
-+  - resets
-+
-+unevaluatedProperties: false
-+
-+examples:
-+  - |
-+    #include <dt-bindings/interrupt-controller/arm-gic.h>
-+    #include <dt-bindings/clock/ast2600-clock.h>
-+
-+    i2c_gr: i2c-global-regs at 0 {
-+      compatible = "aspeed,ast2600-i2c-global", "syscon";
-+      reg = <0x0 0x20>;
-+      resets = <&syscon ASPEED_RESET_I2C>;
-+    };
-+
-+    i2c0: i2c-bus at 80 {
-+      #address-cells = <1>;
-+      #size-cells = <0>;
-+      #interrupt-cells = <1>;
-+      compatible = "aspeed,ast2600-i2c-bus";
-+      reg = <0x80 0x80>, <0xC00 0x20>;
-+      clocks = <&syscon ASPEED_CLK_APB2>;
-+      resets = <&syscon ASPEED_RESET_I2C>;
-+      bus-frequency = <100000>;
-+    };
+ &emmc_controller {
+ 	status = "okay";
+ };
 -- 
 2.25.1
 
