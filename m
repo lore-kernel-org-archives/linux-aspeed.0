@@ -1,24 +1,60 @@
 From: Dylan Hung <dylan_hung@aspeedtech.com>
-Date: Mon, 21 Mar 2022 15:01:29 +0800
-Subject: [PATCH 0/2] Add reset deassertion for Aspeed MDIO
-Message-ID: <20220321070131.23363-1-dylan_hung@aspeedtech.com>
+Date: Mon, 21 Mar 2022 15:01:31 +0800
+Subject: [PATCH 2/2] ARM: dts: aspeed: add reset properties into MDIO nodes
+In-Reply-To: <20220321070131.23363-1-dylan_hung@aspeedtech.com>
+References: <20220321070131.23363-1-dylan_hung@aspeedtech.com>
+Message-ID: <20220321070131.23363-3-dylan_hung@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add missing reset deassertion for Aspeed MDIO. There are 4 MDIOs
-embedded in Aspeed AST2600 and share one reset control bit SCU50[3].
+Add reset control properties into MDIO nodes.  The 4 MDIO controllers in
+AST2600 SOC share one reset control bit SCU50[3].
 
-Dylan Hung (2):
-  net: mdio: add reset deassertion for Aspeed MDIO
-  ARM: dts: aspeed: add reset properties into MDIO nodes
-
+Signed-off-by: Dylan Hung <dylan_hung@aspeedtech.com>
+Cc: stable at vger.kernel.org
+---
  arch/arm/boot/dts/aspeed-g6.dtsi | 4 ++++
- drivers/net/mdio/mdio-aspeed.c   | 8 ++++++++
- 2 files changed, 12 insertions(+)
+ 1 file changed, 4 insertions(+)
 
+diff --git a/arch/arm/boot/dts/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed-g6.dtsi
+index c32e87fad4dc..ab20ea8d829d 100644
+--- a/arch/arm/boot/dts/aspeed-g6.dtsi
++++ b/arch/arm/boot/dts/aspeed-g6.dtsi
+@@ -181,6 +181,7 @@ mdio0: mdio at 1e650000 {
+ 			status = "disabled";
+ 			pinctrl-names = "default";
+ 			pinctrl-0 = <&pinctrl_mdio1_default>;
++			resets = <&syscon ASPEED_RESET_MII>;
+ 		};
+ 
+ 		mdio1: mdio at 1e650008 {
+@@ -191,6 +192,7 @@ mdio1: mdio at 1e650008 {
+ 			status = "disabled";
+ 			pinctrl-names = "default";
+ 			pinctrl-0 = <&pinctrl_mdio2_default>;
++			resets = <&syscon ASPEED_RESET_MII>;
+ 		};
+ 
+ 		mdio2: mdio at 1e650010 {
+@@ -201,6 +203,7 @@ mdio2: mdio at 1e650010 {
+ 			status = "disabled";
+ 			pinctrl-names = "default";
+ 			pinctrl-0 = <&pinctrl_mdio3_default>;
++			resets = <&syscon ASPEED_RESET_MII>;
+ 		};
+ 
+ 		mdio3: mdio at 1e650018 {
+@@ -211,6 +214,7 @@ mdio3: mdio at 1e650018 {
+ 			status = "disabled";
+ 			pinctrl-names = "default";
+ 			pinctrl-0 = <&pinctrl_mdio4_default>;
++			resets = <&syscon ASPEED_RESET_MII>;
+ 		};
+ 
+ 		mac0: ftgmac at 1e660000 {
 -- 
 2.25.1
 
