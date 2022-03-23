@@ -1,23 +1,34 @@
-From: Andrew Lunn <andrew@lunn.ch>
-Date: Tue, 22 Mar 2022 13:17:45 +0100
-Subject: [PATCH 0/2] Add reset deassertion for Aspeed MDIO
-In-Reply-To: <HK0PR06MB283430933D2FE015531B52749C179@HK0PR06MB2834.apcprd06.prod.outlook.com>
-References: <20220321070131.23363-1-dylan_hung@aspeedtech.com>
- <YjhrUrXzLxvKtDP8@lunn.ch>
- <HK0PR06MB283430933D2FE015531B52749C179@HK0PR06MB2834.apcprd06.prod.outlook.com>
-Message-ID: <Yjm+aQwXuWh5TLpr@lunn.ch>
+From: ryan_chen <ryan_chen@aspeedtech.com>
+Date: Wed, 23 Mar 2022 08:40:07 +0800
+Subject: [PATCH 0/2] Add ASPEED AST2600 I2C new controller driver
+Message-ID: <20220323004009.943298-1-ryan_chen@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-> Do I still need to add a reset assertion/deassertion if the hardware
-> asserts the reset by default?
+This series add AST2600 i2c new register mode driver. The 
+i2c new register mode have new clock divider option for
+more flexibale generation. And also have separate i2c 
+master and slave register set for control.
 
-One use case would be kexec when one kernel is used to boot another
-kernel. But since this is shared by multiple busses, it is probably
-not worth the complexity unless that is something you expect you
-customers to do, e.g. during kernel development work.
+ryan_chen (2):
+  dt-bindings: i2c-new: Add bindings for AST2600 i2C new controller
+  i2c:aspeed:support ast2600 i2c new register mode driver
 
-	Andrew
+ .../bindings/i2c/aspeed,i2c-new.yaml          |   78 +
+ drivers/i2c/busses/Kconfig                    |   11 +
+ drivers/i2c/busses/Makefile                   |    1 +
+ drivers/i2c/busses/aspeed-i2c-new-global.c    |   91 +
+ drivers/i2c/busses/aspeed-i2c-new-global.h    |   19 +
+ drivers/i2c/busses/i2c-new-aspeed.c           | 1698 +++++++++++++++++
+ 6 files changed, 1898 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/i2c/aspeed,i2c-new.yaml
+ create mode 100644 drivers/i2c/busses/aspeed-i2c-new-global.c
+ create mode 100644 drivers/i2c/busses/aspeed-i2c-new-global.h
+ create mode 100644 drivers/i2c/busses/i2c-new-aspeed.c
+
+-- 
+2.25.1
+
