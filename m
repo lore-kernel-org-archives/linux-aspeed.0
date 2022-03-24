@@ -1,41 +1,232 @@
 From: Jae Hyun Yoo <quic_jaehyoo@quicinc.com>
-Date: Thu, 24 Mar 2022 06:51:09 -0700
-Subject: [PATCH v1 2/3] dt-bindings: clock: Add AST2600 video engine reset
- definition
-In-Reply-To: <SG2PR06MB2315F68B23BB0998B8F7E93EE6199@SG2PR06MB2315.apcprd06.prod.outlook.com>
-References: <SG2PR06MB2315F68B23BB0998B8F7E93EE6199@SG2PR06MB2315.apcprd06.prod.outlook.com>
-Message-ID: <527e9d9e-0dac-3a97-da83-068891a41381@quicinc.com>
+Date: Thu, 24 Mar 2022 09:45:51 -0700
+Subject: [PATCH] ARM: dts: aspeed: add Nuvia DC-SCM BMC
+Message-ID: <20220324164551.359570-1-quic_jaehyoo@quicinc.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+From: Graeme Gregory <quic_ggregory@quicinc.com>
 
+Add initial version of device tree for Nuvia DC-SCM BMC which is
+equipped with Aspeed AST2600 BMC SoC.
 
-On 3/24/2022 12:27 AM, Howard Chiu wrote:
-> Reset bit for VE is 6
-> 
-> Signed-off-by: Howard Chiu <howard_chiu@aspeedtech.com>
-> ---
->   include/dt-bindings/clock/ast2600-clock.h | 1 +
->   1 file changed, 1 insertion(+)
-> 
-> diff --git a/include/dt-bindings/clock/ast2600-clock.h b/include/dt-bindings/clock/ast2600-clock.h
-> index 62b9520a00fd..a7d0ad9539eb 100644
-> --- a/include/dt-bindings/clock/ast2600-clock.h
-> +++ b/include/dt-bindings/clock/ast2600-clock.h
-> @@ -110,6 +110,7 @@
->   #define ASPEED_RESET_PCIE_DEV_OEN	20
->   #define ASPEED_RESET_PCIE_RC_O		19
->   #define ASPEED_RESET_PCIE_RC_OEN	18
-> +#define ASPEED_RESET_VIDEO		6
+Signed-off-by: Graeme Gregory <quic_ggregory@quicinc.com>
+Signed-off-by: Jae Hyun Yoo <quic_jaehyoo@quicinc.com>
+---
+ arch/arm/boot/dts/Makefile                    |   1 +
+ arch/arm/boot/dts/aspeed-bmc-nuvia-dc-scm.dts | 188 ++++++++++++++++++
+ 2 files changed, 189 insertions(+)
+ create mode 100644 arch/arm/boot/dts/aspeed-bmc-nuvia-dc-scm.dts
 
-You don't need to add 'resets' for video node in DT so it wouldn't be
-needed.
+diff --git a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
+index ec801dc22b61..22c515ca20f2 100644
+--- a/arch/arm/boot/dts/Makefile
++++ b/arch/arm/boot/dts/Makefile
+@@ -1486,6 +1486,7 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
+ 	aspeed-bmc-lenovo-hr630.dtb \
+ 	aspeed-bmc-lenovo-hr855xg2.dtb \
+ 	aspeed-bmc-microsoft-olympus.dtb \
++	aspeed-bmc-nuvia-dc-scm.dtb \
+ 	aspeed-bmc-opp-lanyang.dtb \
+ 	aspeed-bmc-opp-mihawk.dtb \
+ 	aspeed-bmc-opp-mowgli.dtb \
+diff --git a/arch/arm/boot/dts/aspeed-bmc-nuvia-dc-scm.dts b/arch/arm/boot/dts/aspeed-bmc-nuvia-dc-scm.dts
+new file mode 100644
+index 000000000000..54ac6b30c213
+--- /dev/null
++++ b/arch/arm/boot/dts/aspeed-bmc-nuvia-dc-scm.dts
+@@ -0,0 +1,188 @@
++// SPDX-License-Identifier: GPL-2.0-or-later
++// Copyright (c) 2021-2022 Qualcomm Innovation Center, Inc. All rights reserved.
++
++/dts-v1/;
++
++#include "aspeed-g6.dtsi"
++
++/ {
++	model = "Nuvia DC-SCM BMC";
++	compatible = "nuvia,dc-scm-bmc", "aspeed,ast2600";
++
++	aliases {
++		serial4 = &uart5;
++	};
++
++	chosen {
++		bootargs = "console=ttyS4,115200n8";
++	};
++
++	memory at 80000000 {
++		device_type = "memory";
++		reg = <0x80000000 0x40000000>;
++	};
++};
++
++&mdio3 {
++	status = "okay";
++
++	ethphy3: ethernet-phy at 1 {
++		compatible = "ethernet-phy-ieee802.3-c22";
++		reg = <1>;
++	};
++};
++
++&mac2 {
++	status = "okay";
++
++	phy-mode = "rgmii";
++	phy-handle = <&ethphy3>;
++
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_rgmii3_default>;
++};
++
++&mac3 {
++	status = "okay";
++
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_rmii4_default>;
++
++	use-ncsi;
++};
++
++&rtc {
++	status = "okay";
++};
++
++&fmc {
++	status = "okay";
++
++	flash at 0 {
++		status = "okay";
++		m25p,fast-read;
++		label = "bmc";
++		spi-max-frequency = <133000000>;
++#include "openbmc-flash-layout-64.dtsi"
++	};
++
++	flash at 1 {
++		status = "okay";
++		m25p,fast-read;
++		label = "alt-bmc";
++		spi-max-frequency = <133000000>;
++#include "openbmc-flash-layout-64-alt.dtsi"
++	};
++};
++
++&spi1 {
++	status = "okay";
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_spi1_default>;
++
++	flash at 0 {
++		status = "okay";
++		m25p,fast-read;
++		label = "bios";
++		spi-max-frequency = <133000000>;
++	};
++};
++
++&gpio0 {
++	gpio-line-names =
++	/*A0-A7*/	"","","","","","","","",
++	/*B0-B7*/	"BMC_FLASH_MUX_SEL","","","","","","","",
++	/*C0-C7*/	"","","","","","","","",
++	/*D0-D7*/	"","","","","","","","",
++	/*E0-E7*/	"","","","","","","","",
++	/*F0-F7*/	"","","","","","","","",
++	/*G0-G7*/	"","","","","","","","",
++	/*H0-H7*/	"","","","","","","","",
++	/*I0-I7*/	"","","","","","","","",
++	/*J0-J7*/	"","","","","","","","",
++	/*K0-K7*/	"","","","","","","","",
++	/*L0-L7*/	"","","","","","","","",
++	/*M0-M7*/	"","","","","","","","",
++	/*N0-N7*/	"BMC_FWSPI_RST_N","","GPIO_1_BMC_3V3","","","","","",
++	/*O0-O7*/	"JTAG_MUX_A","JTAG_MUX_B","","","","","","",
++	/*P0-P7*/	"","","","","","","","",
++	/*Q0-Q7*/	"","","","","","","","",
++	/*R0-R7*/	"","","","","","","","",
++	/*S0-S7*/	"","","","","","","","",
++	/*T0-T7*/	"","","","","","","","",
++	/*U0-U7*/	"","","","","","","","",
++	/*V0-V7*/	"","","","SCMFPGA_SPARE_GPIO1_3V3",
++			"SCMFPGA_SPARE_GPIO2_3V3","SCMFPGA_SPARE_GPIO3_3V3",
++			"SCMFPGA_SPARE_GPIO4_3V3","SCMFPGA_SPARE_GPIO5_3V3",
++	/*W0-W7*/	"","","","","","","","",
++	/*X0-X7*/	"","","","","","","","",
++	/*Y0-Y7*/	"","","","","","","","",
++	/*Z0-Z7*/	"","","","","","","","",
++	/*AA0-AA7*/	"","","","","","","","",
++	/*AB0-AB7*/	"","","","","","","","",
++	/*AC0-AC7*/	"","","","","","","","";
++};
++
++&gpio1 {
++	gpio-line-names =
++	/*A0-A7*/	"GPI_1_BMC_1V8","","","","","",
++			"SCMFPGA_SPARE_GPIO1_1V8","SCMFPGA_SPARE_GPIO2_1V8",
++	/*B0-B7*/	"SCMFPGA_SPARE_GPIO3_1V8","SCMFPGA_SPARE_GPIO4_1V8",
++			"SCMFPGA_SPARE_GPIO5_1V8","","","","","",
++	/*C0-C7*/	"","","","","","","","",
++	/*D0-D7*/	"","BMC_SPI1_RST_N","BIOS_FLASH_MUX_SEL","",
++			"","TPM2_PIRQ_N","TPM2_RST_N","",
++	/*E0-E7*/	"","","","","","","","";
++};
++
++&i2c2 {
++	status = "okay";
++};
++
++&i2c4 {
++	status = "okay";
++};
++
++&i2c5 {
++	status = "okay";
++};
++
++&i2c6 {
++	status = "okay";
++};
++
++&i2c7 {
++	status = "okay";
++};
++
++&i2c8 {
++	status = "okay";
++};
++
++&i2c9 {
++	status = "okay";
++};
++
++&i2c10 {
++	status = "okay";
++};
++
++&i2c12 {
++	status = "okay";
++};
++
++&i2c13 {
++	status = "okay";
++};
++
++&i2c14 {
++	status = "okay";
++};
++
++&i2c15 {
++	status = "okay";
++};
++
++&vhub {
++	status = "okay";
++};
+-- 
+2.25.1
 
--Jae
-
->   #define ASPEED_RESET_PCI_DP		5
->   #define ASPEED_RESET_AHB		1
->   #define ASPEED_RESET_SDRAM		0
