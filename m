@@ -1,10 +1,9 @@
 From: Hans de Goede <hdegoede@redhat.com>
-Date: Thu, 24 Mar 2022 17:59:16 +0100
-Subject: [PATCH 1/3] Documentation/ABI: sysfs-driver-aspeed-uart-routing: Fix
- sphinx warning
+Date: Thu, 24 Mar 2022 17:59:17 +0100
+Subject: [PATCH 2/3] Documentation/ABI: sysfs-class-thermal: Fix Sphinx warning
 In-Reply-To: <20220324165918.22005-1-hdegoede@redhat.com>
 References: <20220324165918.22005-1-hdegoede@redhat.com>
-Message-ID: <20220324165918.22005-2-hdegoede@redhat.com>
+Message-ID: <20220324165918.22005-3-hdegoede@redhat.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -13,34 +12,26 @@ Content-Transfer-Encoding: 7bit
 
 Fix the following warning from "make htmldocs":
 
-Documentation/ABI/testing/sysfs-driver-aspeed-uart-routing:2:
-  WARNING: Inline emphasis start-string without end-string.
-
-This is caused by the used of '*' in the example cat command,
-mark the command as code to fix this.
+Documentation/ABI/testing/sysfs-class-thermal:201:
+  WARNING: Bullet list ends without a blank line; unexpected unindent.
 
 Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 ---
- Documentation/ABI/testing/sysfs-driver-aspeed-uart-routing | 7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+ Documentation/ABI/testing/sysfs-class-thermal | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/Documentation/ABI/testing/sysfs-driver-aspeed-uart-routing b/Documentation/ABI/testing/sysfs-driver-aspeed-uart-routing
-index b363827da437..1e25cd2cacc1 100644
---- a/Documentation/ABI/testing/sysfs-driver-aspeed-uart-routing
-+++ b/Documentation/ABI/testing/sysfs-driver-aspeed-uart-routing
-@@ -8,9 +8,10 @@ Description:	Selects the RX source of the UARTx device.
- 		selected option marked by brackets "[]". The list of available options
- 		depends on the selected file.
+diff --git a/Documentation/ABI/testing/sysfs-class-thermal b/Documentation/ABI/testing/sysfs-class-thermal
+index 2c52bb1f864c..8eee37982b2a 100644
+--- a/Documentation/ABI/testing/sysfs-class-thermal
++++ b/Documentation/ABI/testing/sysfs-class-thermal
+@@ -203,7 +203,7 @@ Description:
  
--		e.g.
--		cat /sys/bus/platform/drivers/aspeed-uart-routing/*.uart_routing/uart1
--		[io1] io2 io3 io4 uart2 uart3 uart4 io6
-+		e.g.::
-+
-+			# cat /sys/bus/platform/drivers/aspeed-uart-routing/*.uart_routing/uart1
-+			[io1] io2 io3 io4 uart2 uart3 uart4 io6
+ 		- for generic ACPI: should be "Fan", "Processor" or "LCD"
+ 		- for memory controller device on intel_menlow platform:
+-		should be "Memory controller".
++		  should be "Memory controller".
  
- 		In this case, UART1 gets its input from IO1 (physical serial port 1).
+ 		RO, Required
  
 -- 
 2.35.1
