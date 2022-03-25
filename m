@@ -1,90 +1,67 @@
-From: Jae Hyun Yoo <quic_jaehyoo@quicinc.com>
-Date: Fri, 25 Mar 2022 06:55:07 -0700
-Subject: [PATCH v2] ARM: dts: aspeed: add Nuvia DC-SCM BMC
-In-Reply-To: <fe55ba03-3989-4566-1831-ad43329e4628@quicinc.com>
-References: <20220325010316.451471-1-quic_jaehyoo@quicinc.com>
- <37768dc5-16ac-23ea-61a0-27f44e2fbd84@kernel.org>
- <fe55ba03-3989-4566-1831-ad43329e4628@quicinc.com>
-Message-ID: <685b5cd3-38a2-f1d7-2277-62d824ea2a3e@quicinc.com>
+From: Ali El-Haj-Mahmoud <aaelhaj@google.com>
+Date: Fri, 25 Mar 2022 10:39:27 -0400
+Subject: aspeed2500 SPI1 control at run-time with OpenBMC
+Message-ID: <CAFPZpNbNc5Fx1tBtmM1x0n-qEB_qp+wSSrR2+_0bxPrPyh1xMw@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 3/25/2022 6:46 AM, Jae Hyun Yoo wrote:
-> On 3/25/2022 5:10 AM, Krzysztof Kozlowski wrote:
->> On 25/03/2022 02:03, Jae Hyun Yoo wrote:
->>> From: Graeme Gregory <quic_ggregory@quicinc.com>
->>>
->>> Add initial version of device tree for Nuvia DC-SCM BMC which is
->>> equipped with Aspeed AST2600 BMC SoC.
->>>
->>> Signed-off-by: Graeme Gregory <quic_ggregory@quicinc.com>
->>> Signed-off-by: Jae Hyun Yoo <quic_jaehyoo@quicinc.com>
->>> ---
->>> Changes in v2:
->>> * Added a comment to explain 'rgmii' phy mode setting. (Andrew)
->>>
->>> ? arch/arm/boot/dts/Makefile??????????????????? |?? 1 +
->>> ? arch/arm/boot/dts/aspeed-bmc-nuvia-dc-scm.dts | 189 ++++++++++++++++++
->>> ? 2 files changed, 190 insertions(+)
->>> ? create mode 100644 arch/arm/boot/dts/aspeed-bmc-nuvia-dc-scm.dts
->>>
->>> diff --git a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
->>> index 7c16f8a2b738..e63cd6ed0faa 100644
->>> --- a/arch/arm/boot/dts/Makefile
->>> +++ b/arch/arm/boot/dts/Makefile
->>> @@ -1546,6 +1546,7 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
->>> ????? aspeed-bmc-lenovo-hr630.dtb \
->>> ????? aspeed-bmc-lenovo-hr855xg2.dtb \
->>> ????? aspeed-bmc-microsoft-olympus.dtb \
->>> +??? aspeed-bmc-nuvia-dc-scm.dtb \
->>> ????? aspeed-bmc-opp-lanyang.dtb \
->>> ????? aspeed-bmc-opp-mihawk.dtb \
->>> ????? aspeed-bmc-opp-mowgli.dtb \
->>> diff --git a/arch/arm/boot/dts/aspeed-bmc-nuvia-dc-scm.dts 
->>> b/arch/arm/boot/dts/aspeed-bmc-nuvia-dc-scm.dts
->>> new file mode 100644
->>> index 000000000000..1984d545b66e
->>> --- /dev/null
->>> +++ b/arch/arm/boot/dts/aspeed-bmc-nuvia-dc-scm.dts
->>> @@ -0,0 +1,189 @@
->>> +// SPDX-License-Identifier: GPL-2.0-or-later
->>> +// Copyright (c) 2021-2022 Qualcomm Innovation Center, Inc. All 
->>> rights reserved.
->>
->> This does not look like DTS comment style (Only SPDX should be in //).
->>
->>> +
->>> +/dts-v1/;
->>> +
->>> +#include "aspeed-g6.dtsi"
->>> +
->>> +/ {
->>> +??? model = "Nuvia DC-SCM BMC";
->>> +??? compatible = "nuvia,dc-scm-bmc", "aspeed,ast2600";
->>> +
->>> +??? aliases {
->>> +??????? serial4 = &uart5;
->>> +??? };
->>> +
->>> +??? chosen {
->>> +??????? bootargs = "console=ttyS4,115200n8";
->>
->> You should use stdout path instead.
+I'm working on an aspeed2500-based system:
+https://github.com/torvalds/linux/blob/master/arch/arm/boot/dts/aspeed-bmc-tyan-s8036.dts.
 
-Oh, I missed this comment. I'll add 'stdout-path'.
-Thanks for your pointing it out.
+We would like to be able to update the host BIOS (SPI1) from the BMC.
+Something along these lines:
 
--Jae
+- Upload a BIOS image to the BMC. Validate.
+- Power down the host.
+- Switch SPI1 control (SCU70[13:12]) to 'master' to connect to BMC.
+- Flash the new image.
+- Switch SPI1 to 'passthru' to connect back to the host.
+- Power on the host.
 
-> 
-> "The format of the .dts "source" file is "C" like, supports C and C++
-> style comments."
-> 
-> According to the
-> https://www.kernel.org/doc/Documentation/devicetree/booting-without-of.txt
-> 
-> Thanks,
-> Jae
+I'm able to accomplish this in a debug build using devmem to control
+SCU70[13:12]. However, it seems this should be doable via pinctrl
+instead (https://github.com/torvalds/linux/blob/master/drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c#L515-L520),
+but I'm not able to get it to work.
+
+To begin with, a patch similar to
+https://lists.ozlabs.org/pipermail/openbmc/2016-November/005392.html
+is needed to allow modifying SCU70[13:12] via pinctrl.
+
+After that, I'm not sure how to configure SPI1 in the DTS.
+
+With the config below, SPI1 is connected to the BMC, and the host cannot boot:
+
+&spi1 {
+status = "okay";
+pinctrl-names = "default";
+pinctrl-0 = <&pinctrl_spi1_default>;
+pinctrl-1 = <&pinctrl_spi1passthru_default>;
+...
+};
+
+I can still switch it to passthru at run time and boot the host, but
+that's not the behavior I'd like:
+
+$ echo SPI1PASSTHRU SPI1PASSTHRU >
+/sys/kernel/debug/pinctrl/1e6e2080.pinctrl-aspeed-g5-pinctrl/pinmux-select
+
+If I switch the order of the pinctrls, SPI1 is connected to the host,
+and I cannot access it from the BMC, even if I try to explicitly
+switch it:
+
+&spi1 {
+status = "okay";
+pinctrl-names = "default";
+pinctrl-0 = <&pinctrl_spi1passthru_default>;
+pinctrl-1 = <&pinctrl_spi1_default>;
+...
+};
+
+And this has no effect:
+$ echo SPI1 SPI1 >
+/sys/kernel/debug/pinctrl/1e6e2080.pinctrl-aspeed-g5-pinctrl/pinmux-select
+
+Is this use-case supported through pinctrl? Am I missing something here? Thanks!
