@@ -1,35 +1,80 @@
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Date: Fri, 25 Mar 2022 13:19:28 +0100
-Subject: [PATCH v3 1/3] dt-bindings: net: add reset property for aspeed,
- ast2600-mdio binding
-In-Reply-To: <20220325041451.894-2-dylan_hung@aspeedtech.com>
-References: <20220325041451.894-1-dylan_hung@aspeedtech.com>
- <20220325041451.894-2-dylan_hung@aspeedtech.com>
-Message-ID: <6c44b745-36c7-4d28-74ea-590011892658@kernel.org>
+From: Jae Hyun Yoo <quic_jaehyoo@quicinc.com>
+Date: Fri, 25 Mar 2022 06:46:25 -0700
+Subject: [PATCH v2] ARM: dts: aspeed: add Nuvia DC-SCM BMC
+In-Reply-To: <37768dc5-16ac-23ea-61a0-27f44e2fbd84@kernel.org>
+References: <20220325010316.451471-1-quic_jaehyoo@quicinc.com>
+ <37768dc5-16ac-23ea-61a0-27f44e2fbd84@kernel.org>
+Message-ID: <fe55ba03-3989-4566-1831-ad43329e4628@quicinc.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 25/03/2022 05:14, Dylan Hung wrote:
-> The AST2600 MDIO bus controller has a reset control bit and must be
-> deasserted before manipulating the MDIO controller. By default, the
-> hardware asserts the reset so the driver only need to deassert it.
+On 3/25/2022 5:10 AM, Krzysztof Kozlowski wrote:
+> On 25/03/2022 02:03, Jae Hyun Yoo wrote:
+>> From: Graeme Gregory <quic_ggregory@quicinc.com>
+>>
+>> Add initial version of device tree for Nuvia DC-SCM BMC which is
+>> equipped with Aspeed AST2600 BMC SoC.
+>>
+>> Signed-off-by: Graeme Gregory <quic_ggregory@quicinc.com>
+>> Signed-off-by: Jae Hyun Yoo <quic_jaehyoo@quicinc.com>
+>> ---
+>> Changes in v2:
+>> * Added a comment to explain 'rgmii' phy mode setting. (Andrew)
+>>
+>>   arch/arm/boot/dts/Makefile                    |   1 +
+>>   arch/arm/boot/dts/aspeed-bmc-nuvia-dc-scm.dts | 189 ++++++++++++++++++
+>>   2 files changed, 190 insertions(+)
+>>   create mode 100644 arch/arm/boot/dts/aspeed-bmc-nuvia-dc-scm.dts
+>>
+>> diff --git a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
+>> index 7c16f8a2b738..e63cd6ed0faa 100644
+>> --- a/arch/arm/boot/dts/Makefile
+>> +++ b/arch/arm/boot/dts/Makefile
+>> @@ -1546,6 +1546,7 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
+>>   	aspeed-bmc-lenovo-hr630.dtb \
+>>   	aspeed-bmc-lenovo-hr855xg2.dtb \
+>>   	aspeed-bmc-microsoft-olympus.dtb \
+>> +	aspeed-bmc-nuvia-dc-scm.dtb \
+>>   	aspeed-bmc-opp-lanyang.dtb \
+>>   	aspeed-bmc-opp-mihawk.dtb \
+>>   	aspeed-bmc-opp-mowgli.dtb \
+>> diff --git a/arch/arm/boot/dts/aspeed-bmc-nuvia-dc-scm.dts b/arch/arm/boot/dts/aspeed-bmc-nuvia-dc-scm.dts
+>> new file mode 100644
+>> index 000000000000..1984d545b66e
+>> --- /dev/null
+>> +++ b/arch/arm/boot/dts/aspeed-bmc-nuvia-dc-scm.dts
+>> @@ -0,0 +1,189 @@
+>> +// SPDX-License-Identifier: GPL-2.0-or-later
+>> +// Copyright (c) 2021-2022 Qualcomm Innovation Center, Inc. All rights reserved.
 > 
-> Regarding to the old DT blobs which don't have reset property in them,
-> the reset deassertion is usually done by the bootloader so the reset
-> property is optional to work with them.
+> This does not look like DTS comment style (Only SPDX should be in //).
 > 
-> Signed-off-by: Dylan Hung <dylan_hung@aspeedtech.com>
-> ---
->  .../devicetree/bindings/net/aspeed,ast2600-mdio.yaml         | 5 +++++
->  1 file changed, 5 insertions(+)
+>> +
+>> +/dts-v1/;
+>> +
+>> +#include "aspeed-g6.dtsi"
+>> +
+>> +/ {
+>> +	model = "Nuvia DC-SCM BMC";
+>> +	compatible = "nuvia,dc-scm-bmc", "aspeed,ast2600";
+>> +
+>> +	aliases {
+>> +		serial4 = &uart5;
+>> +	};
+>> +
+>> +	chosen {
+>> +		bootargs = "console=ttyS4,115200n8";
 > 
+> You should use stdout path instead.
 
+"The format of the .dts "source" file is "C" like, supports C and C++
+style comments."
 
-Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
+According to the
+https://www.kernel.org/doc/Documentation/devicetree/booting-without-of.txt
 
-
-Best regards,
-Krzysztof
+Thanks,
+Jae
