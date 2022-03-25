@@ -1,236 +1,71 @@
-From: Jae Hyun Yoo <quic_jaehyoo@quicinc.com>
-Date: Thu, 24 Mar 2022 18:03:16 -0700
-Subject: [PATCH v2] ARM: dts: aspeed: add Nuvia DC-SCM BMC
-Message-ID: <20220325010316.451471-1-quic_jaehyoo@quicinc.com>
+From: Howard Chiu <howard_chiu@aspeedtech.com>
+Date: Fri, 25 Mar 2022 01:56:59 +0000
+Subject: [PATCH v1 1/3] ARM: dts: aspeed: Add video engine
+In-Reply-To: <0419edf0-89ba-7db8-7f8f-7682d2af3e7c@quicinc.com>
+References: <SG2PR06MB2315C9F4348D39DA1A448852E6199@SG2PR06MB2315.apcprd06.prod.outlook.com>
+ <0419edf0-89ba-7db8-7f8f-7682d2af3e7c@quicinc.com>
+Message-ID: <HK0PR06MB23070E27C9104B3726CC245EE61A9@HK0PR06MB2307.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Graeme Gregory <quic_ggregory@quicinc.com>
+Hi Jae
 
-Add initial version of device tree for Nuvia DC-SCM BMC which is
-equipped with Aspeed AST2600 BMC SoC.
-
-Signed-off-by: Graeme Gregory <quic_ggregory@quicinc.com>
-Signed-off-by: Jae Hyun Yoo <quic_jaehyoo@quicinc.com>
----
-Changes in v2:
-* Added a comment to explain 'rgmii' phy mode setting. (Andrew)
-
- arch/arm/boot/dts/Makefile                    |   1 +
- arch/arm/boot/dts/aspeed-bmc-nuvia-dc-scm.dts | 189 ++++++++++++++++++
- 2 files changed, 190 insertions(+)
- create mode 100644 arch/arm/boot/dts/aspeed-bmc-nuvia-dc-scm.dts
-
-diff --git a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
-index 7c16f8a2b738..e63cd6ed0faa 100644
---- a/arch/arm/boot/dts/Makefile
-+++ b/arch/arm/boot/dts/Makefile
-@@ -1546,6 +1546,7 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
- 	aspeed-bmc-lenovo-hr630.dtb \
- 	aspeed-bmc-lenovo-hr855xg2.dtb \
- 	aspeed-bmc-microsoft-olympus.dtb \
-+	aspeed-bmc-nuvia-dc-scm.dtb \
- 	aspeed-bmc-opp-lanyang.dtb \
- 	aspeed-bmc-opp-mihawk.dtb \
- 	aspeed-bmc-opp-mowgli.dtb \
-diff --git a/arch/arm/boot/dts/aspeed-bmc-nuvia-dc-scm.dts b/arch/arm/boot/dts/aspeed-bmc-nuvia-dc-scm.dts
-new file mode 100644
-index 000000000000..1984d545b66e
---- /dev/null
-+++ b/arch/arm/boot/dts/aspeed-bmc-nuvia-dc-scm.dts
-@@ -0,0 +1,189 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
-+// Copyright (c) 2021-2022 Qualcomm Innovation Center, Inc. All rights reserved.
-+
-+/dts-v1/;
-+
-+#include "aspeed-g6.dtsi"
-+
-+/ {
-+	model = "Nuvia DC-SCM BMC";
-+	compatible = "nuvia,dc-scm-bmc", "aspeed,ast2600";
-+
-+	aliases {
-+		serial4 = &uart5;
-+	};
-+
-+	chosen {
-+		bootargs = "console=ttyS4,115200n8";
-+	};
-+
-+	memory at 80000000 {
-+		device_type = "memory";
-+		reg = <0x80000000 0x40000000>;
-+	};
-+};
-+
-+&mdio3 {
-+	status = "okay";
-+
-+	ethphy3: ethernet-phy at 1 {
-+		compatible = "ethernet-phy-ieee802.3-c22";
-+		reg = <1>;
-+	};
-+};
-+
-+&mac2 {
-+	status = "okay";
-+
-+	/* Bootloader sets up the MAC to insert delay */
-+	phy-mode = "rgmii";
-+	phy-handle = <&ethphy3>;
-+
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pinctrl_rgmii3_default>;
-+};
-+
-+&mac3 {
-+	status = "okay";
-+
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pinctrl_rmii4_default>;
-+
-+	use-ncsi;
-+};
-+
-+&rtc {
-+	status = "okay";
-+};
-+
-+&fmc {
-+	status = "okay";
-+
-+	flash at 0 {
-+		status = "okay";
-+		m25p,fast-read;
-+		label = "bmc";
-+		spi-max-frequency = <133000000>;
-+#include "openbmc-flash-layout-64.dtsi"
-+	};
-+
-+	flash at 1 {
-+		status = "okay";
-+		m25p,fast-read;
-+		label = "alt-bmc";
-+		spi-max-frequency = <133000000>;
-+#include "openbmc-flash-layout-64-alt.dtsi"
-+	};
-+};
-+
-+&spi1 {
-+	status = "okay";
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pinctrl_spi1_default>;
-+
-+	flash at 0 {
-+		status = "okay";
-+		m25p,fast-read;
-+		label = "bios";
-+		spi-max-frequency = <133000000>;
-+	};
-+};
-+
-+&gpio0 {
-+	gpio-line-names =
-+	/*A0-A7*/	"","","","","","","","",
-+	/*B0-B7*/	"BMC_FLASH_MUX_SEL","","","","","","","",
-+	/*C0-C7*/	"","","","","","","","",
-+	/*D0-D7*/	"","","","","","","","",
-+	/*E0-E7*/	"","","","","","","","",
-+	/*F0-F7*/	"","","","","","","","",
-+	/*G0-G7*/	"","","","","","","","",
-+	/*H0-H7*/	"","","","","","","","",
-+	/*I0-I7*/	"","","","","","","","",
-+	/*J0-J7*/	"","","","","","","","",
-+	/*K0-K7*/	"","","","","","","","",
-+	/*L0-L7*/	"","","","","","","","",
-+	/*M0-M7*/	"","","","","","","","",
-+	/*N0-N7*/	"BMC_FWSPI_RST_N","","GPIO_1_BMC_3V3","","","","","",
-+	/*O0-O7*/	"JTAG_MUX_A","JTAG_MUX_B","","","","","","",
-+	/*P0-P7*/	"","","","","","","","",
-+	/*Q0-Q7*/	"","","","","","","","",
-+	/*R0-R7*/	"","","","","","","","",
-+	/*S0-S7*/	"","","","","","","","",
-+	/*T0-T7*/	"","","","","","","","",
-+	/*U0-U7*/	"","","","","","","","",
-+	/*V0-V7*/	"","","","SCMFPGA_SPARE_GPIO1_3V3",
-+			"SCMFPGA_SPARE_GPIO2_3V3","SCMFPGA_SPARE_GPIO3_3V3",
-+			"SCMFPGA_SPARE_GPIO4_3V3","SCMFPGA_SPARE_GPIO5_3V3",
-+	/*W0-W7*/	"","","","","","","","",
-+	/*X0-X7*/	"","","","","","","","",
-+	/*Y0-Y7*/	"","","","","","","","",
-+	/*Z0-Z7*/	"","","","","","","","",
-+	/*AA0-AA7*/	"","","","","","","","",
-+	/*AB0-AB7*/	"","","","","","","","",
-+	/*AC0-AC7*/	"","","","","","","","";
-+};
-+
-+&gpio1 {
-+	gpio-line-names =
-+	/*A0-A7*/	"GPI_1_BMC_1V8","","","","","",
-+			"SCMFPGA_SPARE_GPIO1_1V8","SCMFPGA_SPARE_GPIO2_1V8",
-+	/*B0-B7*/	"SCMFPGA_SPARE_GPIO3_1V8","SCMFPGA_SPARE_GPIO4_1V8",
-+			"SCMFPGA_SPARE_GPIO5_1V8","","","","","",
-+	/*C0-C7*/	"","","","","","","","",
-+	/*D0-D7*/	"","BMC_SPI1_RST_N","BIOS_FLASH_MUX_SEL","",
-+			"","TPM2_PIRQ_N","TPM2_RST_N","",
-+	/*E0-E7*/	"","","","","","","","";
-+};
-+
-+&i2c2 {
-+	status = "okay";
-+};
-+
-+&i2c4 {
-+	status = "okay";
-+};
-+
-+&i2c5 {
-+	status = "okay";
-+};
-+
-+&i2c6 {
-+	status = "okay";
-+};
-+
-+&i2c7 {
-+	status = "okay";
-+};
-+
-+&i2c8 {
-+	status = "okay";
-+};
-+
-+&i2c9 {
-+	status = "okay";
-+};
-+
-+&i2c10 {
-+	status = "okay";
-+};
-+
-+&i2c12 {
-+	status = "okay";
-+};
-+
-+&i2c13 {
-+	status = "okay";
-+};
-+
-+&i2c14 {
-+	status = "okay";
-+};
-+
-+&i2c15 {
-+	status = "okay";
-+};
-+
-+&vhub {
-+	status = "okay";
-+};
--- 
-2.25.1
-
+> -----Original Message-----
+> From: Jae Hyun Yoo <quic_jaehyoo@quicinc.com>
+> Sent: Thursday, March 24, 2022 9:49 PM
+> To: Howard Chiu <howard_chiu@aspeedtech.com>; robh+dt at kernel.org; Joel
+> Stanley <joel@jms.id.au>; andrew at aj.id.au; devicetree at vger.kernel.org;
+> linux-arm-kernel at lists.infradead.org; linux-aspeed at lists.ozlabs.org;
+> linux-kernel at vger.kernel.org
+> Subject: Re: [PATCH v1 1/3] ARM: dts: aspeed: Add video engine
+> 
+> Hi Howard,
+> 
+> On 3/24/2022 12:27 AM, Howard Chiu wrote:
+> > The ast2600 SoC has an embedded video engine
+> >
+> > Signed-off-by: Howard Chiu <howard_chiu@aspeedtech.com>
+> > ---
+> >   arch/arm/boot/dts/aspeed-g6.dtsi | 11 +++++++++++
+> >   1 file changed, 11 insertions(+)
+> >
+> > diff --git a/arch/arm/boot/dts/aspeed-g6.dtsi
+> > b/arch/arm/boot/dts/aspeed-g6.dtsi
+> > index c32e87fad4dc..41d5087f7d92 100644
+> > --- a/arch/arm/boot/dts/aspeed-g6.dtsi
+> > +++ b/arch/arm/boot/dts/aspeed-g6.dtsi
+> > @@ -389,6 +389,17 @@ sbc: secure-boot-controller at 1e6f2000 {
+> >   				reg = <0x1e6f2000 0x1000>;
+> >   			};
+> >
+> > +			video: video at 1e700000 {
+> > +				compatible = "aspeed,ast2600-video-engine";
+> > +				reg = <0x1e700000 0x1000>;
+> > +				clocks = <&syscon ASPEED_CLK_GATE_VCLK>,
+> > +					 <&syscon ASPEED_CLK_GATE_ECLK>;
+> > +				clock-names = "vclk", "eclk";
+> > +				interrupts = <GIC_SPI 7 IRQ_TYPE_LEVEL_HIGH>;
+> > +				resets = <&syscon ASPEED_RESET_VIDEO>;
+> 
+> Video engine reset is handled by clk-ast2600.c so you don't need to add
+> 'resets'.
+> 
+> > +				status = "disabled";
+> > +			};
+> > +
+> 
+> This node was already added back by this change.
+> https://lore.kernel.org/all/CACPK8XfPPLoS=mhwbAHY4EfVad=1_dnhB+gaHBjPj
+> 1wWbWE4gg at mail.gmail.com/
+> 
+Thanks for info, the next patchset won't include this.
+> Cheers,
+> 
+> -Jae
+> 
+> >   			gpio0: gpio at 1e780000 {
+> >   				#gpio-cells = <2>;
+> >   				gpio-controller;
