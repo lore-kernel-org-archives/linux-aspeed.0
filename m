@@ -1,80 +1,90 @@
 From: Jae Hyun Yoo <quic_jaehyoo@quicinc.com>
-Date: Fri, 25 Mar 2022 06:46:25 -0700
+Date: Fri, 25 Mar 2022 06:55:07 -0700
 Subject: [PATCH v2] ARM: dts: aspeed: add Nuvia DC-SCM BMC
-In-Reply-To: <37768dc5-16ac-23ea-61a0-27f44e2fbd84@kernel.org>
+In-Reply-To: <fe55ba03-3989-4566-1831-ad43329e4628@quicinc.com>
 References: <20220325010316.451471-1-quic_jaehyoo@quicinc.com>
  <37768dc5-16ac-23ea-61a0-27f44e2fbd84@kernel.org>
-Message-ID: <fe55ba03-3989-4566-1831-ad43329e4628@quicinc.com>
+ <fe55ba03-3989-4566-1831-ad43329e4628@quicinc.com>
+Message-ID: <685b5cd3-38a2-f1d7-2277-62d824ea2a3e@quicinc.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 3/25/2022 5:10 AM, Krzysztof Kozlowski wrote:
-> On 25/03/2022 02:03, Jae Hyun Yoo wrote:
->> From: Graeme Gregory <quic_ggregory@quicinc.com>
+On 3/25/2022 6:46 AM, Jae Hyun Yoo wrote:
+> On 3/25/2022 5:10 AM, Krzysztof Kozlowski wrote:
+>> On 25/03/2022 02:03, Jae Hyun Yoo wrote:
+>>> From: Graeme Gregory <quic_ggregory@quicinc.com>
+>>>
+>>> Add initial version of device tree for Nuvia DC-SCM BMC which is
+>>> equipped with Aspeed AST2600 BMC SoC.
+>>>
+>>> Signed-off-by: Graeme Gregory <quic_ggregory@quicinc.com>
+>>> Signed-off-by: Jae Hyun Yoo <quic_jaehyoo@quicinc.com>
+>>> ---
+>>> Changes in v2:
+>>> * Added a comment to explain 'rgmii' phy mode setting. (Andrew)
+>>>
+>>> ? arch/arm/boot/dts/Makefile??????????????????? |?? 1 +
+>>> ? arch/arm/boot/dts/aspeed-bmc-nuvia-dc-scm.dts | 189 ++++++++++++++++++
+>>> ? 2 files changed, 190 insertions(+)
+>>> ? create mode 100644 arch/arm/boot/dts/aspeed-bmc-nuvia-dc-scm.dts
+>>>
+>>> diff --git a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
+>>> index 7c16f8a2b738..e63cd6ed0faa 100644
+>>> --- a/arch/arm/boot/dts/Makefile
+>>> +++ b/arch/arm/boot/dts/Makefile
+>>> @@ -1546,6 +1546,7 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
+>>> ????? aspeed-bmc-lenovo-hr630.dtb \
+>>> ????? aspeed-bmc-lenovo-hr855xg2.dtb \
+>>> ????? aspeed-bmc-microsoft-olympus.dtb \
+>>> +??? aspeed-bmc-nuvia-dc-scm.dtb \
+>>> ????? aspeed-bmc-opp-lanyang.dtb \
+>>> ????? aspeed-bmc-opp-mihawk.dtb \
+>>> ????? aspeed-bmc-opp-mowgli.dtb \
+>>> diff --git a/arch/arm/boot/dts/aspeed-bmc-nuvia-dc-scm.dts 
+>>> b/arch/arm/boot/dts/aspeed-bmc-nuvia-dc-scm.dts
+>>> new file mode 100644
+>>> index 000000000000..1984d545b66e
+>>> --- /dev/null
+>>> +++ b/arch/arm/boot/dts/aspeed-bmc-nuvia-dc-scm.dts
+>>> @@ -0,0 +1,189 @@
+>>> +// SPDX-License-Identifier: GPL-2.0-or-later
+>>> +// Copyright (c) 2021-2022 Qualcomm Innovation Center, Inc. All 
+>>> rights reserved.
 >>
->> Add initial version of device tree for Nuvia DC-SCM BMC which is
->> equipped with Aspeed AST2600 BMC SoC.
+>> This does not look like DTS comment style (Only SPDX should be in //).
 >>
->> Signed-off-by: Graeme Gregory <quic_ggregory@quicinc.com>
->> Signed-off-by: Jae Hyun Yoo <quic_jaehyoo@quicinc.com>
->> ---
->> Changes in v2:
->> * Added a comment to explain 'rgmii' phy mode setting. (Andrew)
+>>> +
+>>> +/dts-v1/;
+>>> +
+>>> +#include "aspeed-g6.dtsi"
+>>> +
+>>> +/ {
+>>> +??? model = "Nuvia DC-SCM BMC";
+>>> +??? compatible = "nuvia,dc-scm-bmc", "aspeed,ast2600";
+>>> +
+>>> +??? aliases {
+>>> +??????? serial4 = &uart5;
+>>> +??? };
+>>> +
+>>> +??? chosen {
+>>> +??????? bootargs = "console=ttyS4,115200n8";
 >>
->>   arch/arm/boot/dts/Makefile                    |   1 +
->>   arch/arm/boot/dts/aspeed-bmc-nuvia-dc-scm.dts | 189 ++++++++++++++++++
->>   2 files changed, 190 insertions(+)
->>   create mode 100644 arch/arm/boot/dts/aspeed-bmc-nuvia-dc-scm.dts
->>
->> diff --git a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
->> index 7c16f8a2b738..e63cd6ed0faa 100644
->> --- a/arch/arm/boot/dts/Makefile
->> +++ b/arch/arm/boot/dts/Makefile
->> @@ -1546,6 +1546,7 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
->>   	aspeed-bmc-lenovo-hr630.dtb \
->>   	aspeed-bmc-lenovo-hr855xg2.dtb \
->>   	aspeed-bmc-microsoft-olympus.dtb \
->> +	aspeed-bmc-nuvia-dc-scm.dtb \
->>   	aspeed-bmc-opp-lanyang.dtb \
->>   	aspeed-bmc-opp-mihawk.dtb \
->>   	aspeed-bmc-opp-mowgli.dtb \
->> diff --git a/arch/arm/boot/dts/aspeed-bmc-nuvia-dc-scm.dts b/arch/arm/boot/dts/aspeed-bmc-nuvia-dc-scm.dts
->> new file mode 100644
->> index 000000000000..1984d545b66e
->> --- /dev/null
->> +++ b/arch/arm/boot/dts/aspeed-bmc-nuvia-dc-scm.dts
->> @@ -0,0 +1,189 @@
->> +// SPDX-License-Identifier: GPL-2.0-or-later
->> +// Copyright (c) 2021-2022 Qualcomm Innovation Center, Inc. All rights reserved.
-> 
-> This does not look like DTS comment style (Only SPDX should be in //).
-> 
->> +
->> +/dts-v1/;
->> +
->> +#include "aspeed-g6.dtsi"
->> +
->> +/ {
->> +	model = "Nuvia DC-SCM BMC";
->> +	compatible = "nuvia,dc-scm-bmc", "aspeed,ast2600";
->> +
->> +	aliases {
->> +		serial4 = &uart5;
->> +	};
->> +
->> +	chosen {
->> +		bootargs = "console=ttyS4,115200n8";
-> 
-> You should use stdout path instead.
+>> You should use stdout path instead.
 
-"The format of the .dts "source" file is "C" like, supports C and C++
-style comments."
+Oh, I missed this comment. I'll add 'stdout-path'.
+Thanks for your pointing it out.
 
-According to the
-https://www.kernel.org/doc/Documentation/devicetree/booting-without-of.txt
+-Jae
 
-Thanks,
-Jae
+> 
+> "The format of the .dts "source" file is "C" like, supports C and C++
+> style comments."
+> 
+> According to the
+> https://www.kernel.org/doc/Documentation/devicetree/booting-without-of.txt
+> 
+> Thanks,
+> Jae
