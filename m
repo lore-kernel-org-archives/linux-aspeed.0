@@ -1,64 +1,74 @@
 From: Jae Hyun Yoo <quic_jaehyoo@quicinc.com>
-Date: Fri, 25 Mar 2022 08:40:43 -0700
-Subject: [PATCH v2 0/5] Fix AST2600 quad mode SPI pinmux settings
-Message-ID: <20220325154048.467245-1-quic_jaehyoo@quicinc.com>
+Date: Fri, 25 Mar 2022 08:40:45 -0700
+Subject: [PATCH v2 2/5] pinctrl: pinctrl-aspeed-g6: remove FWQSPID group in
+ pinctrl
+In-Reply-To: <20220325154048.467245-1-quic_jaehyoo@quicinc.com>
+References: <20220325154048.467245-1-quic_jaehyoo@quicinc.com>
+Message-ID: <20220325154048.467245-3-quic_jaehyoo@quicinc.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-I?m sending this patch series to fix current issues in AST2600 pinmux
-settings while enabling quad mode SPI support.
+FWSPIDQ2 and FWSPIDQ3 are not part of FWSPI18 interface so remove
+FWQSPID group in pinctrl. These pins must be used with the FWSPI
+pins that are dedicated for boot SPI interface which provides
+same 3.3v logic level.
 
-FWSPI18 pins are basically 1.8v logic pins that are different from the
-dedicated FWSPI pins that provide 3.3v logic level, so FWSPI18 pins can?t
-be grouped with FWSPIDQ2 and FWSPIDQ3, so this series fix the issue.
-
-Also, fixes QSPI1 and QSPI2 function settings in AST2600 pinctrl dtsi to
-make it able to enable quad mode on SPI1 and SPI2 interfaces.
-
-With this series, quad mode pinmux can be set like below.
-
-FW SPI:
-&fmc {
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_fwqspi_default>;
-}
-
-SPI1:
-&spi1 {
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_qspi1_default>;
-}
-
-SPI2:
-&spi2 {
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_qspi2_default>;
-}
-
-Please review.
-
-Thanks,
-Jae
-
+Signed-off-by: Jae Hyun Yoo <quic_jaehyoo@quicinc.com>
+Fixes: 2eda1cdec49f ("pinctrl: aspeed: Add AST2600 pinmux support")
+---
 Changes in v2:
- * Rebased it on the latest.
+ * None.
 
-Jae Hyun Yoo (3):
-  ARM: dts: aspeed-g6: remove FWQSPID group in pinctrl dtsi
-  pinctrl: pinctrl-aspeed-g6: remove FWQSPID group in pinctrl
-  ARM: dts: aspeed-g6: fix SPI1/SPI2 quad pin group
+ drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c | 14 +++-----------
+ 1 file changed, 3 insertions(+), 11 deletions(-)
 
-Johnny Huang (2):
-  pinctrl: pinctrl-aspeed-g6: add FWQSPI function-group
-  ARM: dts: aspeed-g6: add FWQSPI group in pinctrl dtsi
-
- arch/arm/boot/dts/aspeed-g6-pinctrl.dtsi   | 10 +++++-----
- drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c | 17 ++++++++---------
- 2 files changed, 13 insertions(+), 14 deletions(-)
-
+diff --git a/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c b/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
+index a3fa03bcd9a3..54064714d73f 100644
+--- a/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
++++ b/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
+@@ -1236,18 +1236,12 @@ FUNC_GROUP_DECL(SALT8, AA12);
+ FUNC_GROUP_DECL(WDTRST4, AA12);
+ 
+ #define AE12 196
+-SIG_EXPR_LIST_DECL_SEMG(AE12, FWSPIDQ2, FWQSPID, FWSPID,
+-			SIG_DESC_SET(SCU438, 4));
+ SIG_EXPR_LIST_DECL_SESG(AE12, GPIOY4, GPIOY4);
+-PIN_DECL_(AE12, SIG_EXPR_LIST_PTR(AE12, FWSPIDQ2),
+-	  SIG_EXPR_LIST_PTR(AE12, GPIOY4));
++PIN_DECL_(AE12, SIG_EXPR_LIST_PTR(AE12, GPIOY4));
+ 
+ #define AF12 197
+-SIG_EXPR_LIST_DECL_SEMG(AF12, FWSPIDQ3, FWQSPID, FWSPID,
+-			SIG_DESC_SET(SCU438, 5));
+ SIG_EXPR_LIST_DECL_SESG(AF12, GPIOY5, GPIOY5);
+-PIN_DECL_(AF12, SIG_EXPR_LIST_PTR(AF12, FWSPIDQ3),
+-	  SIG_EXPR_LIST_PTR(AF12, GPIOY5));
++PIN_DECL_(AF12, SIG_EXPR_LIST_PTR(AF12, GPIOY5));
+ 
+ #define AC12 198
+ SSSF_PIN_DECL(AC12, GPIOY6, FWSPIABR, SIG_DESC_SET(SCU438, 6));
+@@ -1520,9 +1514,8 @@ SIG_EXPR_LIST_DECL_SEMG(Y4, EMMCDAT7, EMMCG8, EMMC, SIG_DESC_SET(SCU404, 3));
+ PIN_DECL_3(Y4, GPIO18E3, FWSPIDMISO, VBMISO, EMMCDAT7);
+ 
+ GROUP_DECL(FWSPID, Y1, Y2, Y3, Y4);
+-GROUP_DECL(FWQSPID, Y1, Y2, Y3, Y4, AE12, AF12);
+ GROUP_DECL(EMMCG8, AB4, AA4, AC4, AA5, Y5, AB5, AB6, AC5, Y1, Y2, Y3, Y4);
+-FUNC_DECL_2(FWSPID, FWSPID, FWQSPID);
++FUNC_DECL_1(FWSPID, FWSPID);
+ FUNC_GROUP_DECL(VB, Y1, Y2, Y3, Y4);
+ FUNC_DECL_3(EMMC, EMMCG1, EMMCG4, EMMCG8);
+ /*
+@@ -1918,7 +1911,6 @@ static const struct aspeed_pin_group aspeed_g6_groups[] = {
+ 	ASPEED_PINCTRL_GROUP(FSI2),
+ 	ASPEED_PINCTRL_GROUP(FWSPIABR),
+ 	ASPEED_PINCTRL_GROUP(FWSPID),
+-	ASPEED_PINCTRL_GROUP(FWQSPID),
+ 	ASPEED_PINCTRL_GROUP(FWSPIWP),
+ 	ASPEED_PINCTRL_GROUP(GPIT0),
+ 	ASPEED_PINCTRL_GROUP(GPIT1),
 -- 
 2.25.1
 
