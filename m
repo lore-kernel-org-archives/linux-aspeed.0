@@ -1,80 +1,61 @@
-From: Dylan Hung <dylan_hung@aspeedtech.com>
-Date: Fri, 25 Mar 2022 12:14:50 +0800
-Subject: [PATCH v3 2/3] net: mdio: add reset control for Aspeed MDIO
-In-Reply-To: <20220325041451.894-1-dylan_hung@aspeedtech.com>
-References: <20220325041451.894-1-dylan_hung@aspeedtech.com>
-Message-ID: <20220325041451.894-3-dylan_hung@aspeedtech.com>
+From: Ryan Chen <ryan_chen@aspeedtech.com>
+Date: Fri, 25 Mar 2022 05:19:29 +0000
+Subject: [PATCH 2/2] i2c:aspeed:support ast2600 i2c new register mode
+ driver
+In-Reply-To: <YjsUjB7vr1scHPVy@lunn.ch>
+References: <20220323004009.943298-1-ryan_chen@aspeedtech.com>
+ <20220323004009.943298-3-ryan_chen@aspeedtech.com> <YjsUjB7vr1scHPVy@lunn.ch>
+Message-ID: <HK0PR06MB3380636B12959660E04403CDF21A9@HK0PR06MB3380.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add reset assertion/deassertion for Aspeed MDIO.  There are 4 MDIO
-controllers embedded in Aspeed AST2600 SOC and share one reset control
-register SCU50[3].  To work with old DT blobs which don't have the reset
-property, devm_reset_control_get_optional_shared is used in this change.
+Hello,
+> -----Original Message-----
+> From: Andrew Lunn <andrew@lunn.ch>
+> Sent: Wednesday, March 23, 2022 8:38 PM
+> To: Ryan Chen <ryan_chen@aspeedtech.com>
+> Cc: BMC-SW <BMC-SW@aspeedtech.com>; Rob Herring
+> <robh+dt@kernel.org>; Joel Stanley <joel@jms.id.au>; Andrew Jeffery
+> <andrew@aj.id.au>; Philipp Zabel <p.zabel@pengutronix.de>;
+> linux-arm-kernel at lists.infradead.org; linux-aspeed at lists.ozlabs.org;
+> linux-kernel at vger.kernel.org
+> Subject: Re: [PATCH 2/2] i2c:aspeed:support ast2600 i2c new register mode
+> driver
+> 
+> On Wed, Mar 23, 2022 at 08:40:09AM +0800, ryan_chen wrote:
+> > Add i2c new register mode driver to support AST2600 i2c new register
+> > set. AST2600 i2c controller have legacy and new register mode. The new
+> > register mode have global register support 4 base clock for scl clock
+> > selection, and new clock divider mode. And i2c new register mode have
+> > separate register set to control i2c master and slave.
+> >
+> > Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
+> > ---
+> >  drivers/i2c/busses/Kconfig                 |   11 +
+> >  drivers/i2c/busses/Makefile                |    1 +
+> >  drivers/i2c/busses/aspeed-i2c-new-global.c |   91 ++
+> >  drivers/i2c/busses/aspeed-i2c-new-global.h |   19 +
+> >  drivers/i2c/busses/i2c-new-aspeed.c        | 1698
+> ++++++++++++++++++++
+> 
+> I always find it funny when somebody uses 'new'. What is the next version
+> going to be called? 'even-newer', and the version after that 'really-really-new'?
+> 
+> > +static const struct of_device_id aspeed_new_i2c_bus_of_table[] = {
+> > +	{
+> > +		.compatible = "aspeed,ast2600-i2c-bus",
+> > +	},
+> 
+> Given this compatible string, why not call it i2c-aspeed-2600.c, and remove
+> 'new' everywhere.
+> 
+Yes, I struggle the naming, but the next generation ast2700 still used.
+The name "i2c-aspeed-2600.c" may not adaptable. 
+Or How about name it to i2c-aspeed-package.c due to this is major feature
+For this new i2c controller design?
 
-Signed-off-by: Dylan Hung <dylan_hung@aspeedtech.com>
-Reviewed-by: Philipp Zabel <p.zabel@pengutronix.de>
----
- drivers/net/mdio/mdio-aspeed.c | 15 ++++++++++++++-
- 1 file changed, 14 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/net/mdio/mdio-aspeed.c b/drivers/net/mdio/mdio-aspeed.c
-index e2273588c75b..1afb58ccc524 100644
---- a/drivers/net/mdio/mdio-aspeed.c
-+++ b/drivers/net/mdio/mdio-aspeed.c
-@@ -3,6 +3,7 @@
- 
- #include <linux/bitfield.h>
- #include <linux/delay.h>
-+#include <linux/reset.h>
- #include <linux/iopoll.h>
- #include <linux/mdio.h>
- #include <linux/module.h>
-@@ -37,6 +38,7 @@
- 
- struct aspeed_mdio {
- 	void __iomem *base;
-+	struct reset_control *reset;
- };
- 
- static int aspeed_mdio_read(struct mii_bus *bus, int addr, int regnum)
-@@ -120,6 +122,12 @@ static int aspeed_mdio_probe(struct platform_device *pdev)
- 	if (IS_ERR(ctx->base))
- 		return PTR_ERR(ctx->base);
- 
-+	ctx->reset = devm_reset_control_get_optional_shared(&pdev->dev, NULL);
-+	if (IS_ERR(ctx->reset))
-+		return PTR_ERR(ctx->reset);
-+
-+	reset_control_deassert(ctx->reset);
-+
- 	bus->name = DRV_NAME;
- 	snprintf(bus->id, MII_BUS_ID_SIZE, "%s%d", pdev->name, pdev->id);
- 	bus->parent = &pdev->dev;
-@@ -129,6 +137,7 @@ static int aspeed_mdio_probe(struct platform_device *pdev)
- 	rc = of_mdiobus_register(bus, pdev->dev.of_node);
- 	if (rc) {
- 		dev_err(&pdev->dev, "Cannot register MDIO bus!\n");
-+		reset_control_assert(ctx->reset);
- 		return rc;
- 	}
- 
-@@ -139,7 +148,11 @@ static int aspeed_mdio_probe(struct platform_device *pdev)
- 
- static int aspeed_mdio_remove(struct platform_device *pdev)
- {
--	mdiobus_unregister(platform_get_drvdata(pdev));
-+	struct mii_bus *bus = (struct mii_bus *)platform_get_drvdata(pdev);
-+	struct aspeed_mdio *ctx = bus->priv;
-+
-+	reset_control_assert(ctx->reset);
-+	mdiobus_unregister(bus);
- 
- 	return 0;
- }
--- 
-2.25.1
+Ryan
 
