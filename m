@@ -1,50 +1,139 @@
-From: kernel test robot <lkp@intel.com>
-Date: Fri, 25 Mar 2022 17:02:22 +0800
-Subject: [PATCH v2] ARM: dts: aspeed: ast2600-evb: Support KVM
-In-Reply-To: <HK0PR06MB2307383743B9AE1D714A899BE61A9@HK0PR06MB2307.apcprd06.prod.outlook.com>
-References: <HK0PR06MB2307383743B9AE1D714A899BE61A9@HK0PR06MB2307.apcprd06.prod.outlook.com>
-Message-ID: <202203251620.taj6u6mo-lkp@intel.com>
+From: Cédric Le Goater <clg@kaod.org>
+Date: Fri, 25 Mar 2022 11:08:43 +0100
+Subject: [PATCH v4 05/11] spi: aspeed: Adjust direct mapping to device size
+In-Reply-To: <20220325100849.2019209-1-clg@kaod.org>
+References: <20220325100849.2019209-1-clg@kaod.org>
+Message-ID: <20220325100849.2019209-6-clg@kaod.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Howard,
+The segment registers of the FMC/SPI controllers provide a way to
+configure the mapping window of the flash device contents on the AHB
+bus. Adjust this window to the size of the spi-mem mapping.
 
-Thank you for the patch! Yet something to improve:
+Things get more complex with multiple devices. The driver needs to
+also adjust the window of the next device to make sure that there is
+no overlap, even if there is no available device. The proposal below
+is not perfect but it is covering all the cases we have seen on
+different boards with one and two devices on the same bus.
 
-[auto build test ERROR on v5.17]
-[cannot apply to joel-aspeed/for-next next-20220324]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch]
+Reviewed-by: Joel Stanley <joel@jms.id.au>
+Tested-by: Joel Stanley <joel@jms.id.au>
+Tested-by: Tao Ren <rentao.bupt@gmail.com>
+Signed-off-by: C?dric Le Goater <clg@kaod.org>
+---
+ drivers/spi/spi-aspeed-smc.c | 88 ++++++++++++++++++++++++++++++++++++
+ 1 file changed, 88 insertions(+)
 
-url:    https://github.com/0day-ci/linux/commits/Howard-Chiu/ARM-dts-aspeed-ast2600-evb-Support-KVM/20220325-103839
-base:    f443e374ae131c168a065ea1748feac6b2e76613
-config: arm-aspeed_g4_defconfig (https://download.01.org/0day-ci/archive/20220325/202203251620.taj6u6mo-lkp at intel.com/config)
-compiler: clang version 15.0.0 (https://github.com/llvm/llvm-project 0f6d9501cf49ce02937099350d08f20c4af86f3d)
-reproduce (this is a W=1 build):
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        # install arm cross compiling tool for clang build
-        # apt-get install binutils-arm-linux-gnueabi
-        # https://github.com/0day-ci/linux/commit/9037b86779cd7616b378b3bafd1f32b4c862f0bd
-        git remote add linux-review https://github.com/0day-ci/linux
-        git fetch --no-tags linux-review Howard-Chiu/ARM-dts-aspeed-ast2600-evb-Support-KVM/20220325-103839
-        git checkout 9037b86779cd7616b378b3bafd1f32b4c862f0bd
-        # save the config file to linux build tree
-        mkdir build_dir
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=clang make.cross W=1 O=build_dir ARCH=arm SHELL=/bin/bash
-
-If you fix the issue, kindly add following tag as appropriate
-Reported-by: kernel test robot <lkp@intel.com>
-
-All errors (new ones prefixed by >>):
-
->> Error: arch/arm/boot/dts/aspeed-ast2600-evb.dts:322.1-7 Label or path video not found
->> FATAL ERROR: Syntax error parsing input tree
-
+diff --git a/drivers/spi/spi-aspeed-smc.c b/drivers/spi/spi-aspeed-smc.c
+index 0951766baef4..9f7910e79ae8 100644
+--- a/drivers/spi/spi-aspeed-smc.c
++++ b/drivers/spi/spi-aspeed-smc.c
+@@ -403,6 +403,92 @@ static int aspeed_spi_chip_set_default_window(struct aspeed_spi_chip *chip)
+ 	return chip->ahb_window_size ? 0 : -1;
+ }
+ 
++static int aspeed_spi_set_window(struct aspeed_spi *aspi,
++				 const struct aspeed_spi_window *win)
++{
++	u32 start = aspi->ahb_base_phy + win->offset;
++	u32 end = start + win->size;
++	void __iomem *seg_reg = aspi->regs + CE0_SEGMENT_ADDR_REG + win->cs * 4;
++	u32 seg_val_backup = readl(seg_reg);
++	u32 seg_val = aspi->data->segment_reg(aspi, start, end);
++
++	if (seg_val == seg_val_backup)
++		return 0;
++
++	writel(seg_val, seg_reg);
++
++	/*
++	 * Restore initial value if something goes wrong else we could
++	 * loose access to the chip.
++	 */
++	if (seg_val != readl(seg_reg)) {
++		dev_err(aspi->dev, "CE%d invalid window [ 0x%.8x - 0x%.8x ] %dMB",
++			win->cs, start, end - 1, win->size >> 20);
++		writel(seg_val_backup, seg_reg);
++		return -EIO;
++	}
++
++	if (win->size)
++		dev_dbg(aspi->dev, "CE%d new window [ 0x%.8x - 0x%.8x ] %dMB",
++			win->cs, start, end - 1,  win->size >> 20);
++	else
++		dev_dbg(aspi->dev, "CE%d window closed", win->cs);
++
++	return 0;
++}
++
++/*
++ * Yet to be done when possible :
++ * - Align mappings on flash size (we don't have the info)
++ * - ioremap each window, not strictly necessary since the overall window
++ *   is correct.
++ */
++static int aspeed_spi_chip_adjust_window(struct aspeed_spi_chip *chip,
++					 u32 local_offset, u32 size)
++{
++	struct aspeed_spi *aspi = chip->aspi;
++	struct aspeed_spi_window windows[ASPEED_SPI_MAX_NUM_CS] = { 0 };
++	struct aspeed_spi_window *win = &windows[chip->cs];
++	int ret;
++
++	aspeed_spi_get_windows(aspi, windows);
++
++	/* Adjust this chip window */
++	win->offset += local_offset;
++	win->size = size;
++
++	if (win->offset + win->size > aspi->ahb_window_size) {
++		win->size = aspi->ahb_window_size - win->offset;
++		dev_warn(aspi->dev, "CE%d window resized to %dMB", chip->cs, win->size >> 20);
++	}
++
++	ret = aspeed_spi_set_window(aspi, win);
++	if (ret)
++		return ret;
++
++	/* Update chip mapping info */
++	chip->ahb_base = aspi->ahb_base + win->offset;
++	chip->ahb_window_size = win->size;
++
++	/*
++	 * Also adjust next chip window to make sure that it does not
++	 * overlap with the current window.
++	 */
++	if (chip->cs < aspi->data->max_cs - 1) {
++		struct aspeed_spi_window *next = &windows[chip->cs + 1];
++
++		/* Change offset and size to keep the same end address */
++		if ((next->offset + next->size) > (win->offset + win->size))
++			next->size = (next->offset + next->size) - (win->offset + win->size);
++		else
++			next->size = 0;
++		next->offset = win->offset + win->size;
++
++		aspeed_spi_set_window(aspi, next);
++	}
++	return 0;
++}
++
+ static int aspeed_spi_dirmap_create(struct spi_mem_dirmap_desc *desc)
+ {
+ 	struct aspeed_spi *aspi = spi_controller_get_devdata(desc->mem->spi->master);
+@@ -417,6 +503,8 @@ static int aspeed_spi_dirmap_create(struct spi_mem_dirmap_desc *desc)
+ 	if (op->data.dir != SPI_MEM_DATA_IN)
+ 		return -EOPNOTSUPP;
+ 
++	aspeed_spi_chip_adjust_window(chip, desc->info.offset, desc->info.length);
++
+ 	if (desc->info.length > chip->ahb_window_size)
+ 		dev_warn(aspi->dev, "CE%d window (%dMB) too small for mapping",
+ 			 chip->cs, chip->ahb_window_size >> 20);
 -- 
-0-DAY CI Kernel Test Service
-https://01.org/lkp
+2.34.1
+
