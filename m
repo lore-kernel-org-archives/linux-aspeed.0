@@ -1,61 +1,73 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Date: Fri, 25 Mar 2022 11:43:22 +0100
-Subject: [PATCH 1/3] Documentation/ABI: sysfs-driver-aspeed-uart-routing:
- Fix sphinx warning
-In-Reply-To: <20220324165918.22005-2-hdegoede@redhat.com>
-References: <20220324165918.22005-1-hdegoede@redhat.com>
- <20220324165918.22005-2-hdegoede@redhat.com>
-Message-ID: <5c372eb8-d1f6-a001-fad2-fe11e0b37575@redhat.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Date: Fri, 25 Mar 2022 13:10:58 +0100
+Subject: [PATCH v2] ARM: dts: aspeed: add Nuvia DC-SCM BMC
+In-Reply-To: <20220325010316.451471-1-quic_jaehyoo@quicinc.com>
+References: <20220325010316.451471-1-quic_jaehyoo@quicinc.com>
+Message-ID: <37768dc5-16ac-23ea-61a0-27f44e2fbd84@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi,
-
-On 3/24/22 17:59, Hans de Goede wrote:
-> Fix the following warning from "make htmldocs":
+On 25/03/2022 02:03, Jae Hyun Yoo wrote:
+> From: Graeme Gregory <quic_ggregory@quicinc.com>
 > 
-> Documentation/ABI/testing/sysfs-driver-aspeed-uart-routing:2:
->   WARNING: Inline emphasis start-string without end-string.
+> Add initial version of device tree for Nuvia DC-SCM BMC which is
+> equipped with Aspeed AST2600 BMC SoC.
 > 
-> This is caused by the used of '*' in the example cat command,
-> mark the command as code to fix this.
-> 
-> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
-
-I see that this was already fixed by escaping the '*' with a '\',
-apologies.
-
-So this patch can be ignored / dropped.
-
-Regards,
-
-Hans
-
-
-
+> Signed-off-by: Graeme Gregory <quic_ggregory@quicinc.com>
+> Signed-off-by: Jae Hyun Yoo <quic_jaehyoo@quicinc.com>
 > ---
->  Documentation/ABI/testing/sysfs-driver-aspeed-uart-routing | 7 ++++---
->  1 file changed, 4 insertions(+), 3 deletions(-)
+> Changes in v2:
+> * Added a comment to explain 'rgmii' phy mode setting. (Andrew)
 > 
-> diff --git a/Documentation/ABI/testing/sysfs-driver-aspeed-uart-routing b/Documentation/ABI/testing/sysfs-driver-aspeed-uart-routing
-> index b363827da437..1e25cd2cacc1 100644
-> --- a/Documentation/ABI/testing/sysfs-driver-aspeed-uart-routing
-> +++ b/Documentation/ABI/testing/sysfs-driver-aspeed-uart-routing
-> @@ -8,9 +8,10 @@ Description:	Selects the RX source of the UARTx device.
->  		selected option marked by brackets "[]". The list of available options
->  		depends on the selected file.
->  
-> -		e.g.
-> -		cat /sys/bus/platform/drivers/aspeed-uart-routing/*.uart_routing/uart1
-> -		[io1] io2 io3 io4 uart2 uart3 uart4 io6
-> +		e.g.::
-> +
-> +			# cat /sys/bus/platform/drivers/aspeed-uart-routing/*.uart_routing/uart1
-> +			[io1] io2 io3 io4 uart2 uart3 uart4 io6
->  
->  		In this case, UART1 gets its input from IO1 (physical serial port 1).
->  
+>  arch/arm/boot/dts/Makefile                    |   1 +
+>  arch/arm/boot/dts/aspeed-bmc-nuvia-dc-scm.dts | 189 ++++++++++++++++++
+>  2 files changed, 190 insertions(+)
+>  create mode 100644 arch/arm/boot/dts/aspeed-bmc-nuvia-dc-scm.dts
+> 
+> diff --git a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
+> index 7c16f8a2b738..e63cd6ed0faa 100644
+> --- a/arch/arm/boot/dts/Makefile
+> +++ b/arch/arm/boot/dts/Makefile
+> @@ -1546,6 +1546,7 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
+>  	aspeed-bmc-lenovo-hr630.dtb \
+>  	aspeed-bmc-lenovo-hr855xg2.dtb \
+>  	aspeed-bmc-microsoft-olympus.dtb \
+> +	aspeed-bmc-nuvia-dc-scm.dtb \
+>  	aspeed-bmc-opp-lanyang.dtb \
+>  	aspeed-bmc-opp-mihawk.dtb \
+>  	aspeed-bmc-opp-mowgli.dtb \
+> diff --git a/arch/arm/boot/dts/aspeed-bmc-nuvia-dc-scm.dts b/arch/arm/boot/dts/aspeed-bmc-nuvia-dc-scm.dts
+> new file mode 100644
+> index 000000000000..1984d545b66e
+> --- /dev/null
+> +++ b/arch/arm/boot/dts/aspeed-bmc-nuvia-dc-scm.dts
+> @@ -0,0 +1,189 @@
+> +// SPDX-License-Identifier: GPL-2.0-or-later
+> +// Copyright (c) 2021-2022 Qualcomm Innovation Center, Inc. All rights reserved.
 
+This does not look like DTS comment style (Only SPDX should be in //).
+
+> +
+> +/dts-v1/;
+> +
+> +#include "aspeed-g6.dtsi"
+> +
+> +/ {
+> +	model = "Nuvia DC-SCM BMC";
+> +	compatible = "nuvia,dc-scm-bmc", "aspeed,ast2600";
+> +
+> +	aliases {
+> +		serial4 = &uart5;
+> +	};
+> +
+> +	chosen {
+> +		bootargs = "console=ttyS4,115200n8";
+
+You should use stdout path instead.
+
+
+Best regards,
+Krzysztof
