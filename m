@@ -1,85 +1,59 @@
-From: Howard Chiu <howard_chiu@aspeedtech.com>
-Date: Fri, 25 Mar 2022 02:21:07 +0000
-Subject: [PATCH v2] ARM: dts: aspeed: ast2600-evb: Support KVM
-Message-ID: <HK0PR06MB2307383743B9AE1D714A899BE61A9@HK0PR06MB2307.apcprd06.prod.outlook.com>
+From: Dylan Hung <dylan_hung@aspeedtech.com>
+Date: Fri, 25 Mar 2022 12:14:51 +0800
+Subject: [PATCH v3 3/3] ARM: dts: aspeed: add reset properties into MDIO nodes
+In-Reply-To: <20220325041451.894-1-dylan_hung@aspeedtech.com>
+References: <20220325041451.894-1-dylan_hung@aspeedtech.com>
+Message-ID: <20220325041451.894-4-dylan_hung@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Enable video engine and reserve memory for it.
-Enable USB/vHUB for HID support
+Add reset control properties into MDIO nodes.  The 4 MDIO controllers in
+AST2600 SOC share one reset control bit SCU50[3].
 
-Signed-off-by: Howard Chiu <howard_chiu@aspeedtech.com>
+Signed-off-by: Dylan Hung <dylan_hung@aspeedtech.com>
 ---
-Change since v1: 
-1. Remove video engine node and reset definition.
+ arch/arm/boot/dts/aspeed-g6.dtsi | 4 ++++
+ 1 file changed, 4 insertions(+)
 
- arch/arm/boot/dts/aspeed-ast2600-evb.dts | 39 +++++++++++++++++++-----
- 1 file changed, 31 insertions(+), 8 deletions(-)
-
-diff --git a/arch/arm/boot/dts/aspeed-ast2600-evb.dts b/arch/arm/boot/dts/aspeed-ast2600-evb.dts
-index b7eb552640cb..d535a711bf5a 100644
---- a/arch/arm/boot/dts/aspeed-ast2600-evb.dts
-+++ b/arch/arm/boot/dts/aspeed-ast2600-evb.dts
-@@ -23,6 +23,19 @@ memory at 80000000 {
- 		reg = <0x80000000 0x80000000>;
- 	};
+diff --git a/arch/arm/boot/dts/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed-g6.dtsi
+index c32e87fad4dc..ab20ea8d829d 100644
+--- a/arch/arm/boot/dts/aspeed-g6.dtsi
++++ b/arch/arm/boot/dts/aspeed-g6.dtsi
+@@ -181,6 +181,7 @@ mdio0: mdio at 1e650000 {
+ 			status = "disabled";
+ 			pinctrl-names = "default";
+ 			pinctrl-0 = <&pinctrl_mdio1_default>;
++			resets = <&syscon ASPEED_RESET_MII>;
+ 		};
  
-+	reserved-memory {
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		ranges;
-+
-+		video_engine_memory: video {
-+			size = <0x04000000>;
-+			alignment = <0x01000000>;
-+			compatible = "shared-dma-pool";
-+			reusable;
-+		};
-+	};
-+
- 	vcc_sdhci0: regulator-vcc-sdhci0 {
- 		compatible = "regulator-fixed";
- 		regulator-name = "SDHCI0 Vcc";
-@@ -250,14 +263,6 @@ &fsim0 {
- 	status = "okay";
- };
+ 		mdio1: mdio at 1e650008 {
+@@ -191,6 +192,7 @@ mdio1: mdio at 1e650008 {
+ 			status = "disabled";
+ 			pinctrl-names = "default";
+ 			pinctrl-0 = <&pinctrl_mdio2_default>;
++			resets = <&syscon ASPEED_RESET_MII>;
+ 		};
  
--&ehci1 {
--	status = "okay";
--};
--
--&uhci {
--	status = "okay";
--};
--
- &sdc {
- 	status = "okay";
- };
-@@ -300,3 +305,21 @@ &sdhci1 {
- 	vqmmc-supply = <&vccq_sdhci1>;
- 	clk-phase-sd-hs = <7>, <200>;
- };
-+
-+&ehci1 {
-+	status = "okay";
-+};
-+
-+&uhci {
-+	status = "okay";
-+};
-+
-+&vhub {
-+	status = "okay";
-+	pinctrl-names = "default";
-+};
-+
-+&video {
-+	status = "okay";
-+	memory-region = <&video_engine_memory>;
-+};
+ 		mdio2: mdio at 1e650010 {
+@@ -201,6 +203,7 @@ mdio2: mdio at 1e650010 {
+ 			status = "disabled";
+ 			pinctrl-names = "default";
+ 			pinctrl-0 = <&pinctrl_mdio3_default>;
++			resets = <&syscon ASPEED_RESET_MII>;
+ 		};
+ 
+ 		mdio3: mdio at 1e650018 {
+@@ -211,6 +214,7 @@ mdio3: mdio at 1e650018 {
+ 			status = "disabled";
+ 			pinctrl-names = "default";
+ 			pinctrl-0 = <&pinctrl_mdio4_default>;
++			resets = <&syscon ASPEED_RESET_MII>;
+ 		};
+ 
+ 		mac0: ftgmac at 1e660000 {
 -- 
 2.25.1
 
