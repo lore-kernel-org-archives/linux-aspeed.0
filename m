@@ -1,75 +1,73 @@
-From: Xiaomeng Tong <xiam0nd.tong@gmail.com>
-Date: Sun, 27 Mar 2022 14:24:31 +0800
-Subject: [PATCH] aspeed-vhub: epn: fix an incorrect member check on list
- iterator
-Message-ID: <20220327062431.5847-1-xiam0nd.tong@gmail.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Date: Sun, 27 Mar 2022 20:55:01 +0200
+Subject: [PATCH v3] ARM: dts: aspeed: add Nuvia DC-SCM BMC
+In-Reply-To: <20220325190247.468079-1-quic_jaehyoo@quicinc.com>
+References: <20220325190247.468079-1-quic_jaehyoo@quicinc.com>
+Message-ID: <d0044322-72d8-1348-9898-dc91e3192e94@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The bug is here:
-	if (&req->req == u_req) {
+On 25/03/2022 20:02, Jae Hyun Yoo wrote:
+> From: Graeme Gregory <quic_ggregory@quicinc.com>
+> 
+> Add initial version of device tree for Nuvia DC-SCM BMC which is
+> equipped with Aspeed AST2600 BMC SoC.
+> 
+> Signed-off-by: Graeme Gregory <quic_ggregory@quicinc.com>
+> Signed-off-by: Jae Hyun Yoo <quic_jaehyoo@quicinc.com>
+> ---
+> Changes in v3:
+> * Added 'stdout-path'. (Krzysztof)
+> 
+> Changes in v2:
+> * Added a comment to explain 'rgmii' phy mode setting. (Andrew)
+> 
+>  arch/arm/boot/dts/Makefile                    |   1 +
+>  arch/arm/boot/dts/aspeed-bmc-nuvia-dc-scm.dts | 190 ++++++++++++++++++
+>  2 files changed, 191 insertions(+)
+>  create mode 100644 arch/arm/boot/dts/aspeed-bmc-nuvia-dc-scm.dts
+> 
+> diff --git a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
+> index 7c16f8a2b738..e63cd6ed0faa 100644
+> --- a/arch/arm/boot/dts/Makefile
+> +++ b/arch/arm/boot/dts/Makefile
+> @@ -1546,6 +1546,7 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
+>  	aspeed-bmc-lenovo-hr630.dtb \
+>  	aspeed-bmc-lenovo-hr855xg2.dtb \
+>  	aspeed-bmc-microsoft-olympus.dtb \
+> +	aspeed-bmc-nuvia-dc-scm.dtb \
+>  	aspeed-bmc-opp-lanyang.dtb \
+>  	aspeed-bmc-opp-mihawk.dtb \
+>  	aspeed-bmc-opp-mowgli.dtb \
+> diff --git a/arch/arm/boot/dts/aspeed-bmc-nuvia-dc-scm.dts b/arch/arm/boot/dts/aspeed-bmc-nuvia-dc-scm.dts
+> new file mode 100644
+> index 000000000000..f4a97cfb0f23
+> --- /dev/null
+> +++ b/arch/arm/boot/dts/aspeed-bmc-nuvia-dc-scm.dts
+> @@ -0,0 +1,190 @@
+> +// SPDX-License-Identifier: GPL-2.0-or-later
+> +// Copyright (c) 2021-2022 Qualcomm Innovation Center, Inc. All rights reserved.
+> +
+> +/dts-v1/;
+> +
+> +#include "aspeed-g6.dtsi"
+> +
+> +/ {
+> +	model = "Nuvia DC-SCM BMC";
+> +	compatible = "nuvia,dc-scm-bmc", "aspeed,ast2600";
+> +
+> +	aliases {
+> +		serial4 = &uart5;
+> +	};
+> +
+> +	chosen {
+> +		stdout-path = &uart5;
+> +		bootargs = "console=ttyS4,115200n8";
 
-The list iterator 'req' will point to a bogus position containing
-HEAD if the list is empty or no element is found. This case must
-be checked before any use of the iterator, otherwise it may bypass
-the 'if (&req->req == u_req) {' check in theory, if '*u_req' obj is
-just allocated in the same addr with '&req->req'.
+After adding stdout-path, please remove bootargs.
 
-To fix this bug, just mova all thing inside the loop and return 0,
-otherwise return error.
-
-Cc: stable at vger.kernel.org
-Fixes: 7ecca2a4080cb ("usb/gadget: Add driver for Aspeed SoC virtual hub")
-Signed-off-by: Xiaomeng Tong <xiam0nd.tong@gmail.com>
----
- drivers/usb/gadget/udc/aspeed-vhub/epn.c | 23 ++++++++++-------------
- 1 file changed, 10 insertions(+), 13 deletions(-)
-
-diff --git a/drivers/usb/gadget/udc/aspeed-vhub/epn.c b/drivers/usb/gadget/udc/aspeed-vhub/epn.c
-index 917892ca8753..aae4ce3e1029 100644
---- a/drivers/usb/gadget/udc/aspeed-vhub/epn.c
-+++ b/drivers/usb/gadget/udc/aspeed-vhub/epn.c
-@@ -468,27 +468,24 @@ static int ast_vhub_epn_dequeue(struct usb_ep* u_ep, struct usb_request *u_req)
- 	struct ast_vhub *vhub = ep->vhub;
- 	struct ast_vhub_req *req;
- 	unsigned long flags;
--	int rc = -EINVAL;
- 
- 	spin_lock_irqsave(&vhub->lock, flags);
- 
- 	/* Make sure it's actually queued on this endpoint */
- 	list_for_each_entry (req, &ep->queue, queue) {
--		if (&req->req == u_req)
--			break;
--	}
--
--	if (&req->req == u_req) {
--		EPVDBG(ep, "dequeue req @%p active=%d\n",
--		       req, req->active);
--		if (req->active)
--			ast_vhub_stop_active_req(ep, true);
--		ast_vhub_done(ep, req, -ECONNRESET);
--		rc = 0;
-+		if (&req->req == u_req) {
-+			EPVDBG(ep, "dequeue req @%p active=%d\n",
-+				req, req->active);
-+			if (req->active)
-+				ast_vhub_stop_active_req(ep, true);
-+			ast_vhub_done(ep, req, -ECONNRESET);
-+			spin_unlock_irqrestore(&vhub->lock, flags);
-+			return 0;
-+		}
- 	}
- 
- 	spin_unlock_irqrestore(&vhub->lock, flags);
--	return rc;
-+	return -EINVAL;
- }
- 
- void ast_vhub_update_epn_stall(struct ast_vhub_ep *ep)
--- 
-2.17.1
-
+Best regards,
+Krzysztof
