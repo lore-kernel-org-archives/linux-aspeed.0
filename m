@@ -1,41 +1,33 @@
-From: Oskar Senft <osk@google.com>
-Date: Wed, 30 Mar 2022 17:10:15 -0400
-Subject: aspeed2500 SPI1 control at run-time with OpenBMC
-In-Reply-To: <CAFPZpNb4fNF-QgQrWLeSkN9TjYsWZvH1YrbQj66rBW6jn8rCug@mail.gmail.com>
-References: <CAFPZpNbNc5Fx1tBtmM1x0n-qEB_qp+wSSrR2+_0bxPrPyh1xMw@mail.gmail.com>
- <c29de2ea-0f60-4e7f-8308-11849a7de8e8@www.fastmail.com>
- <CAFPZpNZ1+UDVcEs_gp1zCzxXfP6PqZ8kx+UGhb73BusiScRk+g@mail.gmail.com>
- <a509d7a3-2551-4eea-b965-9499ada39b16@www.fastmail.com>
- <CAFPZpNb4fNF-QgQrWLeSkN9TjYsWZvH1YrbQj66rBW6jn8rCug@mail.gmail.com>
-Message-ID: <CABoTLcSj0Py37E9tjC=0snep71Hg2bvTG8oGm_+wmiUHpTZL5w@mail.gmail.com>
+From: Jesper Nilsson <jesper.nilsson@axis.com>
+Date: Mon, 28 Mar 2022 10:28:58 +0200
+Subject: [RFC PATCH 1/1] ARM/arm64: categorize dts in arm dir and fix
+ dependency in arm64
+In-Reply-To: <20220328000915.15041-2-ansuelsmth@gmail.com>
+References: <20220328000915.15041-1-ansuelsmth@gmail.com>
+ <20220328000915.15041-2-ansuelsmth@gmail.com>
+Message-ID: <20220328082858.GJ7371@axis.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-> I can
-> switch SPI1 control to master through pinmux-select:
+Hi Ansuel,
+
+On Mon, Mar 28, 2022 at 02:09:15AM +0200, Ansuel Smith wrote:
+> - Categorize every dts in arm directory in subdirectory
+> - Fix Makefile to address for the arm subdirectory
+> - Fix any arm64 dependency
 > [...]
->
-> However, I cannot access the device. '/dev/mtd6' doesn't exist, and I
-> cannot bind it:
-> $  echo 1e630000.spi >/sys/bus/platform/drivers/aspeed-smc/bind
-> -sh: echo: write error: No such file or directory
+>  arch/arm/boot/dts/axix/Makefile               |    3 +
+>  .../boot/dts/{ => axix}/artpec6-devboard.dts  |    0
+>  arch/arm/boot/dts/{ => axix}/artpec6.dtsi     |    0
 
-Is there an existing interaction (in the code) between the Aspeed SPI
-driver and pinmux? I guess ideally we'd want the SPI driver to talk
-with pinmux to tell it "I'd like to bind the device, can you please
-configure the pins properly" as well as "I just unbound the device.
-pinmux, please release the pins".
+All ARTPEC platforms should be in a directory called "axis".
+Otherwise LGTM.
 
-With that, I wonder if we somewhat have that already and "pinctrl-0 =
-<&pinctrl_spi1passthru_default>" ends up "confusing" the link between
-the pinmux and the spi driver (since it's actually the opposite of
-what we want)? How is that _supposed_ to work? Maybe there's just a
-bug?
+Thanks!
 
-Also, I'm wondering: Is it possible to have "&spi1" defined, but not
-bound initially? I guess that's what we want by default?
-
-Oskar.
+/^JN - Jesper Nilsson
+-- 
+               Jesper Nilsson -- jesper.nilsson at axis.com
