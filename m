@@ -1,51 +1,23 @@
-From: Jae Hyun Yoo <quic_jaehyoo@quicinc.com>
-Date: Tue, 29 Mar 2022 10:39:32 -0700
-Subject: [PATCH v3 7/7] ARM: dts: aspeed-g6: fix SPI1/SPI2 quad pin group
-In-Reply-To: <20220329173932.2588289-1-quic_jaehyoo@quicinc.com>
-References: <20220329173932.2588289-1-quic_jaehyoo@quicinc.com>
-Message-ID: <20220329173932.2588289-8-quic_jaehyoo@quicinc.com>
+From: Andrew Lunn <andrew@lunn.ch>
+Date: Tue, 29 Mar 2022 19:39:49 +0200
+Subject: [PATCH 1/1] net: mdio: aspeed: Add Clause 45 support
+In-Reply-To: <20220329161949.19762-1-potin.lai@quantatw.com>
+References: <20220329161949.19762-1-potin.lai@quantatw.com>
+Message-ID: <YkNEZRDw1bZuc/PP@lunn.ch>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Fix incorrect function mappings in pinctrl_qspi1_default and
-pinctrl_qspi2_default since their function should be SPI1 and
-SPI2 respectively.
+On Wed, Mar 30, 2022 at 12:19:49AM +0800, Potin Lai wrote:
+> Add Clause 45 support for Aspeed mdio driver.
 
-Fixes: f510f04c8c83 ("ARM: dts: aspeed: Add AST2600 pinmux nodes")
-Signed-off-by: Jae Hyun Yoo <quic_jaehyoo@quicinc.com>
-Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
----
-Changes in v3:
- * None.
+This looks O.K, but please set bus->probe_capabilities to indicate
+both C22 and C45.
 
-Changes in v2:
- * None.
+net-next is closed at the moment, so please wait until next week
+before sending the next version.
 
- arch/arm/boot/dts/aspeed-g6-pinctrl.dtsi | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/arch/arm/boot/dts/aspeed-g6-pinctrl.dtsi b/arch/arm/boot/dts/aspeed-g6-pinctrl.dtsi
-index 47c3fb137cbc..7cd4f075e325 100644
---- a/arch/arm/boot/dts/aspeed-g6-pinctrl.dtsi
-+++ b/arch/arm/boot/dts/aspeed-g6-pinctrl.dtsi
-@@ -653,12 +653,12 @@ pinctrl_pwm9g1_default: pwm9g1_default {
- 	};
- 
- 	pinctrl_qspi1_default: qspi1_default {
--		function = "QSPI1";
-+		function = "SPI1";
- 		groups = "QSPI1";
- 	};
- 
- 	pinctrl_qspi2_default: qspi2_default {
--		function = "QSPI2";
-+		function = "SPI2";
- 		groups = "QSPI2";
- 	};
- 
--- 
-2.25.1
+     Andrew
 
