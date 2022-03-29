@@ -1,52 +1,58 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Tue, 29 Mar 2022 19:02:04 +1030
+From: Nicolas Ferre <nicolas.ferre@microchip.com>
+Date: Tue, 29 Mar 2022 10:50:38 +0200
 Subject: [RFC PATCH 0/1] Categorize ARM dts directory
-In-Reply-To: <YkK691VG6ON/6Ysn@atomide.com>
+In-Reply-To: <CAFr9PXkgrRe-=E=GhNnZ4w1x_FMb97-_RmX6ND1vEd74_TbZSw@mail.gmail.com>
 References: <20220328000915.15041-1-ansuelsmth@gmail.com>
  <CAFr9PXkgrRe-=E=GhNnZ4w1x_FMb97-_RmX6ND1vEd74_TbZSw@mail.gmail.com>
- <YkK691VG6ON/6Ysn@atomide.com>
-Message-ID: <a2542d9f-581a-49be-8e70-722fd98ab6f1@www.fastmail.com>
+Message-ID: <4ff4f171-c5f8-87af-aad1-5e7686292288@microchip.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+Ansuel, All,
+
+On 28/03/2022 at 10:55, Daniel Palmer wrote:
+> Hi Ansuel
+> 
+> On Mon, 28 Mar 2022 at 09:09, Ansuel Smith <ansuelsmth@gmail.com> wrote:
+>>
+>> Hi,
+>> as the title say, the intention of this ""series"" is to finally categorize
+>> the ARM dts directory in subdirectory for each oem.
+> 
+> While I agree with this change and think it's for the good (browsing
+> the ARM dts directory at the moment is frustrating..) I think
+> buildroot and others need to be told about this as it'll potentially
+> break their kernel build scripting for ARM and probably messes up the
+> configs they have for existing boards.
+
+This aspect mustn't be underestimated and I anticipate lots of issues 
+during a long time on this particular topic of "build systems".
+
+Another aspect is CI and public or private testing farms we all have 
+running.
+
+These aspects always refrained me to change anything in the naming 
+scheme of our DT files, but if we go in this direction, we must really 
+be prepared and I'm still not convince it's worth it...
 
 
-On Tue, 29 Mar 2022, at 18:23, Tony Lindgren wrote:
-> Hi,
->
-> * Daniel Palmer <daniel@0x0f.com> [220328 08:53]:
->> Hi Ansuel
->> 
->> On Mon, 28 Mar 2022 at 09:09, Ansuel Smith <ansuelsmth@gmail.com> wrote:
->> >
->> > Hi,
->> > as the title say, the intention of this ""series"" is to finally categorize
->> > the ARM dts directory in subdirectory for each oem.
->> 
->> While I agree with this change and think it's for the good (browsing
->> the ARM dts directory at the moment is frustrating..) I think
->> buildroot and others need to be told about this as it'll potentially
->> break their kernel build scripting for ARM and probably messes up the
->> configs they have for existing boards.
->
-> Yeah.. And ideally this would be done in smaller steps as these will
-> conflict with all the other pending patches.
->
-> For example, I have a pile of pending omap clock clean-up dts patches
-> posted and tested waiting for v5.19-rc1 to apply. I'd rather not start
-> redoing or fixing up the patches with sed :)
->
-> What I'd like to have see is that at some point when suitable we move
-> one machine at a time with a script if possible.. Maybe the dtb files
-> generated would need to remain in the current directory until all of
-> the machine dts files are moved? That should help with the build
-> scripting too probably :)
+If this has to happen, I would also like to queue some file name changes 
+to do all modifications in one go in order to lower the annoyance level 
+of those who would need to adapt to those changes.
 
-There's probably some reason not to, but could we symlink the new paths 
-in the subdirectories to the existing files to handle the transition? 
-Then do the move to remove the symlinks at some future point.
+BTW, is there a common scheme for dts/dtsi file naming? Is it more 
+enforced in one way or another for arm64 in a sense that I can take some 
+norm as an example?
 
-Andrew
+[..]
+
+Best regards,
+   Nicolas
+
+
+
+-- 
+Nicolas Ferre
