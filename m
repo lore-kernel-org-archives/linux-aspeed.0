@@ -1,36 +1,29 @@
-From: Howard Chiu <howard_chiu@aspeedtech.com>
-Date: Tue, 29 Mar 2022 03:24:10 +0000
-Subject: [PATCH v4 3/3] ARM: dts: aspeed: ast2600-evb: Enable virtual hub
-Message-ID: <SG2PR06MB23155E8A6193118544A7DBF3E61E9@SG2PR06MB2315.apcprd06.prod.outlook.com>
+From: Jakub Kicinski <kuba@kernel.org>
+Date: Mon, 28 Mar 2022 21:45:22 -0700
+Subject: [PATCH v3 0/3] Add reset deassertion for Aspeed MDIO
+In-Reply-To: <20220325041451.894-1-dylan_hung@aspeedtech.com>
+References: <20220325041451.894-1-dylan_hung@aspeedtech.com>
+Message-ID: <20220328214522.7cfdff1e@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Enable Aspeed VHub for HID emulation
+On Fri, 25 Mar 2022 12:14:48 +0800 Dylan Hung wrote:
+> Add missing reset deassertion for Aspeed MDIO bus controller. The reset
+> is asserted by the hardware when power-on so the driver only needs to
+> deassert it. To be able to work with the old DT blobs, the reset is
+> optional since it may be deasserted by the bootloader or the previous
+> kernel.
 
-Signed-off-by: Howard Chiu <howard_chiu@aspeedtech.com>
----
- arch/arm/boot/dts/aspeed-ast2600-evb.dts | 5 +++++
- 1 file changed, 5 insertions(+)
+# Form letter - net-next is closed
 
-diff --git a/arch/arm/boot/dts/aspeed-ast2600-evb.dts b/arch/arm/boot/dts/aspeed-ast2600-evb.dts
-index 158b88f38d2c..b98cdad86e90 100644
---- a/arch/arm/boot/dts/aspeed-ast2600-evb.dts
-+++ b/arch/arm/boot/dts/aspeed-ast2600-evb.dts
-@@ -314,6 +314,11 @@ &sdhci1 {
- 	clk-phase-sd-hs = <7>, <200>;
- };
- 
-+&vhub {
-+	status = "okay";
-+	pinctrl-names = "default";
-+};
-+
- &video {
- 	status = "okay";
- 	memory-region = <&video_engine_memory>;
--- 
-2.25.1
+We have already sent the networking pull request for 5.18
+and therefore net-next is closed for new drivers, features,
+code refactoring and optimizations. We are currently accepting
+bug fixes only.
 
+Please repost when net-next reopens after 5.18-rc1 is cut, in ~1 week.
+
+RFC patches sent for review only are obviously welcome at any time.
