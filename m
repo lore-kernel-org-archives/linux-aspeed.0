@@ -1,30 +1,28 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Tue, 29 Mar 2022 10:53:40 +1030
-Subject: [RFC PATCH 0/1] Categorize ARM dts directory
-In-Reply-To: <D9AFAC3C-46CA-4C40-8559-FD6934411CAB@goldelico.com>
-References: <20220328000915.15041-1-ansuelsmth@gmail.com>
- <YkG2RPrtPaBNXb7a@latitude>
- <D9AFAC3C-46CA-4C40-8559-FD6934411CAB@goldelico.com>
-Message-ID: <d5e6c96b-5882-4602-93cb-b08a65bfa37e@www.fastmail.com>
+From: Howard Chiu <howard_chiu@aspeedtech.com>
+Date: Tue, 29 Mar 2022 01:38:41 +0000
+Subject: [PATCH v3 0/2] Enable ast2600-evb KVM
+Message-ID: <SG2PR06MB2315A39490DD5282FC6CF2ABE61E9@SG2PR06MB2315.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+Change since v2:
+1. Add video engine node back which was removed by commit 645afe7 unintentionally.
 
+Change since v1:
+1. Remove video engine node which was added by commit bcee389.
+2. Remove reset definition because the reset is handled by clk-ast2600 driver currently.
 
-On Tue, 29 Mar 2022, at 00:20, H. Nikolaus Schaller wrote:
->> Am 28.03.2022 um 15:21 schrieb Jonathan Neusch?fer <j.neuschaefer@gmx.net>:
->> 
->> Or maybe bcm instead of broadcom. Not sure which is preferred by
->> Broadcom people.
->
-> Maybe it should always follow the list of vendor prefixes as we are 
-> talking about DTS?
+Howard Chiu (2):
+  ARM: dts: aspeed: Add video engine
+  ARM: dts: aspeed: ast2600-evb: Support KVM
 
-+1 (if we're actually going to do this). That would neuter most the 
-mistakes and discussion and can be extracted from the dts files 
-themselves.
+ arch/arm/boot/dts/aspeed-ast2600-evb.dts | 39 +++++++++++++++++++-----
+ arch/arm/boot/dts/aspeed-g6.dtsi         | 10 ++++++
+ 2 files changed, 41 insertions(+), 8 deletions(-)
 
-Andrew
+-- 
+2.25.1
+
