@@ -1,47 +1,77 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Tue, 29 Mar 2022 11:04:11 +0200
+From: Alexandre Belloni <alexandre.belloni@bootlin.com>
+Date: Tue, 29 Mar 2022 11:19:30 +0200
 Subject: [RFC PATCH 0/1] Categorize ARM dts directory
-In-Reply-To: <YkK691VG6ON/6Ysn@atomide.com>
+In-Reply-To: <YkG2RPrtPaBNXb7a@latitude>
 References: <20220328000915.15041-1-ansuelsmth@gmail.com>
- <CAFr9PXkgrRe-=E=GhNnZ4w1x_FMb97-_RmX6ND1vEd74_TbZSw@mail.gmail.com>
- <YkK691VG6ON/6Ysn@atomide.com>
-Message-ID: <CAMuHMdXDDNTgBdJTa8+H1H5v1gAarp07xxWu_E1JL8mXS8HPMg@mail.gmail.com>
+ <YkG2RPrtPaBNXb7a@latitude>
+Message-ID: <YkLPIgwClJAUc1Uf@piout.net>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Tony,
+Hi,
 
-On Tue, Mar 29, 2022 at 10:03 AM Tony Lindgren <tony@atomide.com> wrote:
-> * Daniel Palmer <daniel@0x0f.com> [220328 08:53]:
-> > On Mon, 28 Mar 2022 at 09:09, Ansuel Smith <ansuelsmth@gmail.com> wrote:
-> > > as the title say, the intention of this ""series"" is to finally categorize
-> > > the ARM dts directory in subdirectory for each oem.
-> >
-> > While I agree with this change and think it's for the good (browsing
-> > the ARM dts directory at the moment is frustrating..) I think
-> > buildroot and others need to be told about this as it'll potentially
-> > break their kernel build scripting for ARM and probably messes up the
-> > configs they have for existing boards.
->
-> Yeah.. And ideally this would be done in smaller steps as these will
-> conflict with all the other pending patches.
->
-> For example, I have a pile of pending omap clock clean-up dts patches
-> posted and tested waiting for v5.19-rc1 to apply. I'd rather not start
-> redoing or fixing up the patches with sed :)
+On 28/03/2022 15:21:08+0200, Jonathan Neusch?fer wrote:
+> On Mon, Mar 28, 2022 at 02:09:14AM +0200, Ansuel Smith wrote:
+> >  create mode 100644 arch/arm/boot/dts/freescale/Makefile
+> 
+> Freescale has been part of NXP for a while, so it might make sense to
+> merge the freescale and nxp directories. I can't speak for
+> NXP-the-company, so that's just my view as a bystander.
+> 
 
-Git merge/rebase/cherry-pick should handle renames fine?
+Maybe we should wait for the market consolidation to end so we can put
+all the files in a single subfolder?
 
-Gr{oetje,eeting}s,
+this would save us from all the bikeshedding ;)
 
-                        Geert
+> >  create mode 100644 arch/arm/boot/dts/kirkwood/Makefile
+> 
+> The Kirkwood family should probably be sorted into Marvell.
+> 
+> >  create mode 100644 arch/arm/boot/dts/layerscape/Makefile
+> >  rename arch/arm/boot/dts/{ => layerscape}/ls1021a-moxa-uc-8410a.dts (100%)
+> >  rename arch/arm/boot/dts/{ => layerscape}/ls1021a-qds.dts (100%)
+> >  rename arch/arm/boot/dts/{ => layerscape}/ls1021a-tsn.dts (100%)
+> >  rename arch/arm/boot/dts/{ => layerscape}/ls1021a-twr.dts (100%)
+> >  rename arch/arm/boot/dts/{ => layerscape}/ls1021a.dtsi (100%)
+> 
+> The Layerscape family is part of Freescale/NXP.
+> 
+> >  create mode 120000 arch/arm/boot/dts/nxp/armv7-m.dtsi
+> 
+> armv7-m.dtsi is a bit confusing, because it contains a few devices at
+> fixed addresses, so it looks vendor-specific at a first glance into the
+> file. However, if it is actually as vendor-neutral as the name implies,
+> I think it should live dts/ directly, rather than in vendor
+> subdirectories.
+> 
+> >  rename arch/arm/boot/dts/{ => nxp}/lpc18xx.dtsi (100%)
+> 
+> Here we have the NXP LPCxxxx family, which is AFAIK unrelated to the
+> i.MX family (and thus the bulk of the Freescale legacy).
+> 
+> >  create mode 100644 arch/arm/boot/dts/vybrid/Makefile
+> 
+> Vybrid is another chip family of NXP, with a good deal of Freescale
+> legacy in it as evidenced by the "fsl," prefix in the devicetrees.
+> 
+> 
+> 
+> Thanks,
+> Jonathan
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert at linux-m68k.org
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+
+> _______________________________________________
+> linux-arm-kernel mailing list
+> linux-arm-kernel at lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+
+
+-- 
+Alexandre Belloni, co-owner and COO, Bootlin
+Embedded Linux and Kernel engineering
+https://bootlin.com
