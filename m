@@ -1,23 +1,70 @@
-From: Andrew Lunn <andrew@lunn.ch>
-Date: Tue, 29 Mar 2022 19:39:49 +0200
-Subject: [PATCH 1/1] net: mdio: aspeed: Add Clause 45 support
-In-Reply-To: <20220329161949.19762-1-potin.lai@quantatw.com>
-References: <20220329161949.19762-1-potin.lai@quantatw.com>
-Message-ID: <YkNEZRDw1bZuc/PP@lunn.ch>
+From: Jae Hyun Yoo <quic_jaehyoo@quicinc.com>
+Date: Tue, 29 Mar 2022 10:39:25 -0700
+Subject: [PATCH v3 0/7] Fix AST2600 quad mode SPI pinmux settings
+Message-ID: <20220329173932.2588289-1-quic_jaehyoo@quicinc.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Mar 30, 2022 at 12:19:49AM +0800, Potin Lai wrote:
-> Add Clause 45 support for Aspeed mdio driver.
+I?m sending this patch series to fix current issues in AST2600 pinmux
+settings while enabling quad mode SPI support.
 
-This looks O.K, but please set bus->probe_capabilities to indicate
-both C22 and C45.
+FWSPI18 pins are basically 1.8v logic pins that are different from the
+dedicated FWSPI pins that provide 3.3v logic level, so FWSPI18 pins can?t
+be grouped with FWSPIDQ2 and FWSPIDQ3, so this series fix the issue.
 
-net-next is closed at the moment, so please wait until next week
-before sending the next version.
+Also, fixes QSPI1 and QSPI2 function settings in AST2600 pinctrl dtsi to
+make it able to enable quad mode on SPI1 and SPI2 interfaces.
 
-     Andrew
+With this series, quad mode pinmux can be set like below.
+
+FW SPI:
+&fmc {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_fwqspi_default>;
+}
+
+SPI1:
+&spi1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_qspi1_default>;
+}
+
+SPI2:
+&spi2 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_qspi2_default>;
+}
+
+Please review.
+
+Thanks,
+Jae
+
+Changes in v3:
+ * Added bindings patches. (Andrew)
+
+Changes in v2:
+ * Rebased it on the latest.
+
+Jae Hyun Yoo (5):
+  ARM: dts: aspeed-g6: remove FWQSPID group in pinctrl dtsi
+  pinctrl: pinctrl-aspeed-g6: remove FWQSPID group in pinctrl
+  dt-bindings: pinctrl: aspeed-g6: remove FWQSPID group
+  dt-bindings: pinctrl: aspeed-g6: add FWQSPI function/group
+  ARM: dts: aspeed-g6: fix SPI1/SPI2 quad pin group
+
+Johnny Huang (2):
+  pinctrl: pinctrl-aspeed-g6: add FWQSPI function-group
+  ARM: dts: aspeed-g6: add FWQSPI group in pinctrl dtsi
+
+ .../pinctrl/aspeed,ast2600-pinctrl.yaml         |  4 ++--
+ arch/arm/boot/dts/aspeed-g6-pinctrl.dtsi        | 10 +++++-----
+ drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c      | 17 ++++++++---------
+ 3 files changed, 15 insertions(+), 16 deletions(-)
+
+-- 
+2.25.1
 
