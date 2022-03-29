@@ -1,74 +1,49 @@
 From: Jae Hyun Yoo <quic_jaehyoo@quicinc.com>
-Date: Tue, 29 Mar 2022 10:39:29 -0700
-Subject: [PATCH v3 4/7] pinctrl: pinctrl-aspeed-g6: add FWQSPI function-group
+Date: Tue, 29 Mar 2022 10:39:30 -0700
+Subject: [PATCH v3 5/7] dt-bindings: pinctrl: aspeed-g6: add FWQSPI
+ function/group
 In-Reply-To: <20220329173932.2588289-1-quic_jaehyoo@quicinc.com>
 References: <20220329173932.2588289-1-quic_jaehyoo@quicinc.com>
-Message-ID: <20220329173932.2588289-5-quic_jaehyoo@quicinc.com>
+Message-ID: <20220329173932.2588289-6-quic_jaehyoo@quicinc.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Johnny Huang <johnny_huang@aspeedtech.com>
+Add FWQSPI function/group to support QSPI mode on the dedicated
+FWSPI interface.
 
-Add FWSPIDQ2 (AE12) and FWSPIDQ3 (AF12) function-group to support
-AST2600 FW SPI quad mode. These pins can be used with dedicated FW
-SPI pins - FWSPICS0# (AB14), FWSPICK (AF13), FWSPIMOSI (AC14)
-and FWSPIMISO (AB13).
-
-Signed-off-by: Johnny Huang <johnny_huang@aspeedtech.com>
 Signed-off-by: Jae Hyun Yoo <quic_jaehyoo@quicinc.com>
 ---
 Changes in v3:
- * None.
+ * Newly added in v3. (Andrew)
 
-Changes in v2:
- * None.
+ .../devicetree/bindings/pinctrl/aspeed,ast2600-pinctrl.yaml   | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
- drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c | 11 +++++++++--
- 1 file changed, 9 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c b/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
-index 54064714d73f..80838dc54b3a 100644
---- a/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
-+++ b/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
-@@ -1236,12 +1236,17 @@ FUNC_GROUP_DECL(SALT8, AA12);
- FUNC_GROUP_DECL(WDTRST4, AA12);
- 
- #define AE12 196
-+SIG_EXPR_LIST_DECL_SESG(AE12, FWSPIQ2, FWQSPI, SIG_DESC_SET(SCU438, 4));
- SIG_EXPR_LIST_DECL_SESG(AE12, GPIOY4, GPIOY4);
--PIN_DECL_(AE12, SIG_EXPR_LIST_PTR(AE12, GPIOY4));
-+PIN_DECL_(AE12, SIG_EXPR_LIST_PTR(AE12, FWSPIQ2),
-+	  SIG_EXPR_LIST_PTR(AE12, GPIOY4));
- 
- #define AF12 197
-+SIG_EXPR_LIST_DECL_SESG(AF12, FWSPIQ3, FWQSPI, SIG_DESC_SET(SCU438, 5));
- SIG_EXPR_LIST_DECL_SESG(AF12, GPIOY5, GPIOY5);
--PIN_DECL_(AF12, SIG_EXPR_LIST_PTR(AF12, GPIOY5));
-+PIN_DECL_(AF12, SIG_EXPR_LIST_PTR(AF12, FWSPIQ3),
-+	  SIG_EXPR_LIST_PTR(AF12, GPIOY5));
-+FUNC_GROUP_DECL(FWQSPI, AE12, AF12);
- 
- #define AC12 198
- SSSF_PIN_DECL(AC12, GPIOY6, FWSPIABR, SIG_DESC_SET(SCU438, 6));
-@@ -1911,6 +1916,7 @@ static const struct aspeed_pin_group aspeed_g6_groups[] = {
- 	ASPEED_PINCTRL_GROUP(FSI2),
- 	ASPEED_PINCTRL_GROUP(FWSPIABR),
- 	ASPEED_PINCTRL_GROUP(FWSPID),
-+	ASPEED_PINCTRL_GROUP(FWQSPI),
- 	ASPEED_PINCTRL_GROUP(FWSPIWP),
- 	ASPEED_PINCTRL_GROUP(GPIT0),
- 	ASPEED_PINCTRL_GROUP(GPIT1),
-@@ -2152,6 +2158,7 @@ static const struct aspeed_pin_function aspeed_g6_functions[] = {
- 	ASPEED_PINCTRL_FUNC(FSI2),
- 	ASPEED_PINCTRL_FUNC(FWSPIABR),
- 	ASPEED_PINCTRL_FUNC(FWSPID),
-+	ASPEED_PINCTRL_FUNC(FWQSPI),
- 	ASPEED_PINCTRL_FUNC(FWSPIWP),
- 	ASPEED_PINCTRL_FUNC(GPIT0),
- 	ASPEED_PINCTRL_FUNC(GPIT1),
+diff --git a/Documentation/devicetree/bindings/pinctrl/aspeed,ast2600-pinctrl.yaml b/Documentation/devicetree/bindings/pinctrl/aspeed,ast2600-pinctrl.yaml
+index eb6e2f2dc9eb..3666ac5b6518 100644
+--- a/Documentation/devicetree/bindings/pinctrl/aspeed,ast2600-pinctrl.yaml
++++ b/Documentation/devicetree/bindings/pinctrl/aspeed,ast2600-pinctrl.yaml
+@@ -33,7 +33,7 @@ patternProperties:
+           $ref: "/schemas/types.yaml#/definitions/string"
+           enum: [ ADC0, ADC1, ADC10, ADC11, ADC12, ADC13, ADC14, ADC15, ADC2,
+                   ADC3, ADC4, ADC5, ADC6, ADC7, ADC8, ADC9, BMCINT, EMMC, ESPI, ESPIALT,
+-                  FSI1, FSI2, FWSPIABR, FWSPID, FWSPIWP, GPIT0, GPIT1, GPIT2, GPIT3,
++                  FSI1, FSI2, FWQSPI, FWSPIABR, FWSPID, FWSPIWP, GPIT0, GPIT1, GPIT2, GPIT3,
+                   GPIT4, GPIT5, GPIT6, GPIT7, GPIU0, GPIU1, GPIU2, GPIU3, GPIU4, GPIU5,
+                   GPIU6, GPIU7, I2C1, I2C10, I2C11, I2C12, I2C13, I2C14, I2C15, I2C16,
+                   I2C2, I2C3, I2C4, I2C5, I2C6, I2C7, I2C8, I2C9, I3C3, I3C4, I3C5,
+@@ -58,7 +58,7 @@ patternProperties:
+           $ref: "/schemas/types.yaml#/definitions/string"
+           enum: [ ADC0, ADC1, ADC10, ADC11, ADC12, ADC13, ADC14, ADC15, ADC2,
+                   ADC3, ADC4, ADC5, ADC6, ADC7, ADC8, ADC9, BMCINT, EMMCG1, EMMCG4,
+-                  EMMCG8, ESPI, ESPIALT, FSI1, FSI2, FWSPIABR, FWSPID, FWSPIWP,
++                  EMMCG8, ESPI, ESPIALT, FSI1, FSI2, FWQSPI, FWSPIABR, FWSPID, FWSPIWP,
+                   GPIT0, GPIT1, GPIT2, GPIT3, GPIT4, GPIT5, GPIT6, GPIT7, GPIU0, GPIU1,
+                   GPIU2, GPIU3, GPIU4, GPIU5, GPIU6, GPIU7, HVI3C3, HVI3C4, I2C1, I2C10,
+                   I2C11, I2C12, I2C13, I2C14, I2C15, I2C16, I2C2, I2C3, I2C4, I2C5,
 -- 
 2.25.1
 
