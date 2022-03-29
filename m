@@ -1,28 +1,28 @@
-From: Ali El-Haj-Mahmoud <aaelhaj@google.com>
-Date: Tue, 29 Mar 2022 13:57:52 -0400
-Subject: aspeed2500 SPI1 control at run-time with OpenBMC
-In-Reply-To: <c29de2ea-0f60-4e7f-8308-11849a7de8e8@www.fastmail.com>
-References: <CAFPZpNbNc5Fx1tBtmM1x0n-qEB_qp+wSSrR2+_0bxPrPyh1xMw@mail.gmail.com>
- <c29de2ea-0f60-4e7f-8308-11849a7de8e8@www.fastmail.com>
-Message-ID: <CAFPZpNZ1+UDVcEs_gp1zCzxXfP6PqZ8kx+UGhb73BusiScRk+g@mail.gmail.com>
+From: Rob Herring <robh@kernel.org>
+Date: Tue, 29 Mar 2022 18:38:13 -0500
+Subject: [PATCH v3 3/7] dt-bindings: pinctrl: aspeed-g6: remove FWQSPID
+ group
+In-Reply-To: <20220329173932.2588289-4-quic_jaehyoo@quicinc.com>
+References: <20220329173932.2588289-1-quic_jaehyoo@quicinc.com>
+ <20220329173932.2588289-4-quic_jaehyoo@quicinc.com>
+Message-ID: <YkOYZQQ2D4zuBspP@robh.at.kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Thanks for the reply Andrew.
+On Tue, 29 Mar 2022 10:39:28 -0700, Jae Hyun Yoo wrote:
+> FWQSPID is not a group of FWSPID so remove it.
+> 
+> Fixes: 7488838f2315 ("dt-bindings: pinctrl: aspeed: Document AST2600 pinmux")
+> Signed-off-by: Jae Hyun Yoo <quic_jaehyoo@quicinc.com>
+> ---
+> Changes in v3:
+>  * Newly added in v3. (Andrew)
+> 
+>  .../devicetree/bindings/pinctrl/aspeed,ast2600-pinctrl.yaml     | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
 
-> Not explicitly as I mentioned. You're also going to run into the
-> constraints here:
->
-> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c?h=v5.17#n2739
->
-> Fundamentally that needs to be changed. We could do something like have
-> it default to pass-through unless a driver is bound.
-
-Could you please elaborate on this a bit? I'm way out of my depth here
-and would appreciate any additional pointers.
-
-I already ran into the read-only constraints in the pinctrl driver,
-and I have a patch that excludes SCU70[13:12], but that wasn't enough.
+Acked-by: Rob Herring <robh@kernel.org>
