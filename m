@@ -1,49 +1,28 @@
-From: Jae Hyun Yoo <quic_jaehyoo@quicinc.com>
-Date: Tue, 29 Mar 2022 10:39:31 -0700
-Subject: [PATCH v3 6/7] ARM: dts: aspeed-g6: add FWQSPI group in pinctrl dtsi
-In-Reply-To: <20220329173932.2588289-1-quic_jaehyoo@quicinc.com>
-References: <20220329173932.2588289-1-quic_jaehyoo@quicinc.com>
-Message-ID: <20220329173932.2588289-7-quic_jaehyoo@quicinc.com>
+From: Ali El-Haj-Mahmoud <aaelhaj@google.com>
+Date: Tue, 29 Mar 2022 13:57:52 -0400
+Subject: aspeed2500 SPI1 control at run-time with OpenBMC
+In-Reply-To: <c29de2ea-0f60-4e7f-8308-11849a7de8e8@www.fastmail.com>
+References: <CAFPZpNbNc5Fx1tBtmM1x0n-qEB_qp+wSSrR2+_0bxPrPyh1xMw@mail.gmail.com>
+ <c29de2ea-0f60-4e7f-8308-11849a7de8e8@www.fastmail.com>
+Message-ID: <CAFPZpNZ1+UDVcEs_gp1zCzxXfP6PqZ8kx+UGhb73BusiScRk+g@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Johnny Huang <johnny_huang@aspeedtech.com>
+Thanks for the reply Andrew.
 
-Add FWSPIDQ2 and FWSPIDQ3 group to support AST2600 FW SPI quad mode.
-These pins can be used with dedicated FW SPI pins - FWSPICS0#,
-FWSPICK, FWSPIMOSI and FWSPIMISO.
+> Not explicitly as I mentioned. You're also going to run into the
+> constraints here:
+>
+> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c?h=v5.17#n2739
+>
+> Fundamentally that needs to be changed. We could do something like have
+> it default to pass-through unless a driver is bound.
 
-Signed-off-by: Johnny Huang <johnny_huang@aspeedtech.com>
-Signed-off-by: Jae Hyun Yoo <quic_jaehyoo@quicinc.com>
----
-Changes in v3:
- * None.
+Could you please elaborate on this a bit? I'm way out of my depth here
+and would appreciate any additional pointers.
 
-Changes in v2:
- * None.
-
- arch/arm/boot/dts/aspeed-g6-pinctrl.dtsi | 5 +++++
- 1 file changed, 5 insertions(+)
-
-diff --git a/arch/arm/boot/dts/aspeed-g6-pinctrl.dtsi b/arch/arm/boot/dts/aspeed-g6-pinctrl.dtsi
-index 06d60a8540e9..47c3fb137cbc 100644
---- a/arch/arm/boot/dts/aspeed-g6-pinctrl.dtsi
-+++ b/arch/arm/boot/dts/aspeed-g6-pinctrl.dtsi
-@@ -117,6 +117,11 @@ pinctrl_fwspid_default: fwspid_default {
- 		groups = "FWSPID";
- 	};
- 
-+	pinctrl_fwqspi_default: fwqspi_default {
-+		function = "FWQSPI";
-+		groups = "FWQSPI";
-+	};
-+
- 	pinctrl_fwspiwp_default: fwspiwp_default {
- 		function = "FWSPIWP";
- 		groups = "FWSPIWP";
--- 
-2.25.1
-
+I already ran into the read-only constraints in the pinctrl driver,
+and I have a patch that excludes SCU70[13:12], but that wasn't enough.
