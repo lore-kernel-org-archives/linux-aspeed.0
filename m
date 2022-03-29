@@ -1,82 +1,42 @@
 From: Howard Chiu <howard_chiu@aspeedtech.com>
-Date: Tue, 29 Mar 2022 01:38:45 +0000
-Subject: [PATCH v3 2/2] ARM: dts: aspeed: ast2600-evb: Support KVM
-Message-ID: <SG2PR06MB2315F24A708B71CA594F8DAEE61E9@SG2PR06MB2315.apcprd06.prod.outlook.com>
+Date: Tue, 29 Mar 2022 01:38:43 +0000
+Subject: [PATCH v3 1/2] ARM: dts: aspeed: Add video engine
+Message-ID: <SG2PR06MB2315BF301B03A52EE0D8BB56E61E9@SG2PR06MB2315.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Enable video engine and reserve memory for it.
-Enable USB for HID support
+The ast2600 SoC has an embedded video engine
+This node was removed by commit 645afe7
 
 Signed-off-by: Howard Chiu <howard_chiu@aspeedtech.com>
 ---
- arch/arm/boot/dts/aspeed-ast2600-evb.dts | 39 +++++++++++++++++++-----
- 1 file changed, 31 insertions(+), 8 deletions(-)
+ arch/arm/boot/dts/aspeed-g6.dtsi | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-diff --git a/arch/arm/boot/dts/aspeed-ast2600-evb.dts b/arch/arm/boot/dts/aspeed-ast2600-evb.dts
-index b7eb552640cb..d535a711bf5a 100644
---- a/arch/arm/boot/dts/aspeed-ast2600-evb.dts
-+++ b/arch/arm/boot/dts/aspeed-ast2600-evb.dts
-@@ -23,6 +23,19 @@ memory at 80000000 {
- 		reg = <0x80000000 0x80000000>;
- 	};
+diff --git a/arch/arm/boot/dts/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed-g6.dtsi
+index c32e87fad4dc..aac55b3aeded 100644
+--- a/arch/arm/boot/dts/aspeed-g6.dtsi
++++ b/arch/arm/boot/dts/aspeed-g6.dtsi
+@@ -389,6 +389,16 @@ sbc: secure-boot-controller at 1e6f2000 {
+ 				reg = <0x1e6f2000 0x1000>;
+ 			};
  
-+	reserved-memory {
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		ranges;
++			video: video at 1e700000 {
++				compatible = "aspeed,ast2600-video-engine";
++				reg = <0x1e700000 0x1000>;
++				clocks = <&syscon ASPEED_CLK_GATE_VCLK>,
++					 <&syscon ASPEED_CLK_GATE_ECLK>;
++				clock-names = "vclk", "eclk";
++				interrupts = <GIC_SPI 7 IRQ_TYPE_LEVEL_HIGH>;
++				status = "disabled";
++			};
 +
-+		video_engine_memory: video {
-+			size = <0x04000000>;
-+			alignment = <0x01000000>;
-+			compatible = "shared-dma-pool";
-+			reusable;
-+		};
-+	};
-+
- 	vcc_sdhci0: regulator-vcc-sdhci0 {
- 		compatible = "regulator-fixed";
- 		regulator-name = "SDHCI0 Vcc";
-@@ -250,14 +263,6 @@ &fsim0 {
- 	status = "okay";
- };
- 
--&ehci1 {
--	status = "okay";
--};
--
--&uhci {
--	status = "okay";
--};
--
- &sdc {
- 	status = "okay";
- };
-@@ -300,3 +305,21 @@ &sdhci1 {
- 	vqmmc-supply = <&vccq_sdhci1>;
- 	clk-phase-sd-hs = <7>, <200>;
- };
-+
-+&ehci1 {
-+	status = "okay";
-+};
-+
-+&uhci {
-+	status = "okay";
-+};
-+
-+&vhub {
-+	status = "okay";
-+	pinctrl-names = "default";
-+};
-+
-+&video {
-+	status = "okay";
-+	memory-region = <&video_engine_memory>;
-+};
+ 			gpio0: gpio at 1e780000 {
+ 				#gpio-cells = <2>;
+ 				gpio-controller;
 -- 
 2.25.1
 
