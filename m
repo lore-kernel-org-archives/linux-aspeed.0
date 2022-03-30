@@ -1,82 +1,104 @@
-From: Pratyush Yadav <p.yadav@ti.com>
-Date: Thu, 31 Mar 2022 01:19:16 +0530
-Subject: [PATCH v4 11/11] mtd: spi-nor: aspeed: set the decoding size to
- at least 2MB for AST2600
-In-Reply-To: <20220325100849.2019209-12-clg@kaod.org>
-References: <20220325100849.2019209-1-clg@kaod.org>
- <20220325100849.2019209-12-clg@kaod.org>
-Message-ID: <20220330194916.olffkctxjhfqksvf@ti.com>
+From: Ali El-Haj-Mahmoud <aaelhaj@google.com>
+Date: Wed, 30 Mar 2022 17:02:17 -0400
+Subject: aspeed2500 SPI1 control at run-time with OpenBMC
+In-Reply-To: <a509d7a3-2551-4eea-b965-9499ada39b16@www.fastmail.com>
+References: <CAFPZpNbNc5Fx1tBtmM1x0n-qEB_qp+wSSrR2+_0bxPrPyh1xMw@mail.gmail.com>
+ <c29de2ea-0f60-4e7f-8308-11849a7de8e8@www.fastmail.com>
+ <CAFPZpNZ1+UDVcEs_gp1zCzxXfP6PqZ8kx+UGhb73BusiScRk+g@mail.gmail.com>
+ <a509d7a3-2551-4eea-b965-9499ada39b16@www.fastmail.com>
+Message-ID: <CAFPZpNb4fNF-QgQrWLeSkN9TjYsWZvH1YrbQj66rBW6jn8rCug@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+I'm testing with pinmux-select/debugfs at initially to understand how
+this is supposed to work.
 
-> Subject: [PATCH v4 11/11] mtd: spi-nor: aspeed: set the decoding size to at least 2MB for AST2600
+I have a local patch to let pinctrl driver modify SCU70[13:12]:
+https://github.com/aaelhaj/linux/commit/732342c55876fb81bd02828b4530ee28158b5c96
 
-Nitpick: s/mtd: spi-nor: aspeed:/spi: aspeed:/
+The desired state is that SPI1 is by default in passthru so that the
+host can boot. I'd like to switch it to be connected to the BMC only
+when updating the host BIOS (while the host is switched off).
 
-On 25/03/22 11:08AM, C?dric Le Goater wrote:
-> From: Potin Lai <potin.lai@quantatw.com>
-> 
-> In AST2600, the unit of SPI CEx decoding range register is 1MB, and end
-> address offset is set to the acctual offset - 1MB. If the flash only has
-> 1MB, the end address will has same value as start address, which will
-> causing unexpected errors.
-> 
-> This patch set the decoding size to at least 2MB to avoid decoding errors.
-> 
-> Tested:
-> root at bletchley:~# dmesg | grep "aspeed-smc 1e631000.spi: CE0 window"
-> [   59.328134] aspeed-smc 1e631000.spi: CE0 window resized to 2MB (AST2600 Decoding)
-> [   59.343001] aspeed-smc 1e631000.spi: CE0 window [ 0x50000000 - 0x50200000 ] 2MB
-> root at bletchley:~# devmem 0x1e631030
-> 0x00100000
-> 
-> Signed-off-by: Potin Lai <potin.lai@quantatw.com>
-> [ clg : Ported on new spi-mem driver ]
-> Signed-off-by: C?dric Le Goater <clg@kaod.org>
-> ---
->  drivers/spi/spi-aspeed-smc.c | 13 +++++++++++++
->  1 file changed, 13 insertions(+)
-> 
-> diff --git a/drivers/spi/spi-aspeed-smc.c b/drivers/spi/spi-aspeed-smc.c
-> index 660451667a39..227797e13997 100644
-> --- a/drivers/spi/spi-aspeed-smc.c
-> +++ b/drivers/spi/spi-aspeed-smc.c
-> @@ -466,6 +466,8 @@ static int aspeed_spi_set_window(struct aspeed_spi *aspi,
->   *   is correct.
->   */
->  static const struct aspeed_spi_data ast2500_spi_data;
-> +static const struct aspeed_spi_data ast2600_spi_data;
-> +static const struct aspeed_spi_data ast2600_fmc_data;
->  
->  static int aspeed_spi_chip_adjust_window(struct aspeed_spi_chip *chip,
->  					 u32 local_offset, u32 size)
-> @@ -489,6 +491,17 @@ static int aspeed_spi_chip_adjust_window(struct aspeed_spi_chip *chip,
->  			 chip->cs, size >> 20);
->  	}
->  
-> +	/*
-> +	 * The decoding size of AST2600 SPI controller should set at
-> +	 * least 2MB.
-> +	 */
-> +	if ((aspi->data == &ast2600_spi_data || aspi->data == &ast2600_fmc_data) &&
-> +	    size < SZ_2M) {
-> +		size = SZ_2M;
-> +		dev_info(aspi->dev, "CE%d window resized to %dMB (AST2600 Decoding)",
-> +			 chip->cs, size >> 20);
-> +	}
-> +
->  	aspeed_spi_get_windows(aspi, windows);
->  
->  	/* Adjust this chip window */
-> -- 
-> 2.34.1
-> 
+Testing with:
 
--- 
-Regards,
-Pratyush Yadav
-Texas Instruments Inc.
+&spi1 {
+status = "okay";
+pinctrl-names = "default";
+pinctrl-0 = <&pinctrl_spi1_default>;
+}
+
+I would assume this means SPI1 would be connected to BMC (SCU70[13:12]
+= 0x1), which is indeed the case. After rebooting the system:
+$ echo $(( ($(devmem 0x1e6e2070 32) >> 12) & 0x3 ))
+1
+
+I can flash a new host BIOS:
+$ grep -xl pnor /sys/class/mtd/*/name
+/sys/class/mtd/mtd6/name
+$ dd if=bios.bin of=/dev/mtd6
+
+I can also switch the pinmux-select to SPI1PASSTHRU to boot the host
+with the new BIOS:
+$ echo SPI1PASSTHRU SPI1PASSTHRU >
+/sys/kernel/debug/pinctrl/1e6e2080.pinctrl-aspeed-g5-pinctrl/pinmux-select
+$ echo $(( ($(devmem 0x1e6e2070 32) >> 12) & 0x3 ))
+3
+
+So at least I know that I can switch the state of SPI1 control using
+pinmux-select/debugfs when it starts connected to the BMC by default.
+
+However, the other way around doesn't work. If I have this config:
+
+&spi1 {
+status = "okay";
+pinctrl-names = "default";
+pinctrl-0 = <&pinctrl_spi1passthru_default>;
+};
+
+I would assume this should have SPI1 in passthru mode connected to the
+host (SCU70[13:12] = 0x3), which is indeed the case:
+
+$ echo $(( ($(devmem 0x1e6e2070 32) >> 12) & 0x3 ))
+3
+
+The host boots by default, which is again the desired behavior. I can
+switch SPI1 control to master through pinmux-select:
+$ echo SPI1 SPI1 >
+/sys/kernel/debug/pinctrl/1e6e2080.pinctrl-aspeed-g5-pinctrl/pinmux-select
+$ echo $(( ($(devmem 0x1e6e2070 32) >> 12) & 0x3 ))
+1
+
+However, I cannot access the device. '/dev/mtd6' doesn't exist, and I
+cannot bind it:
+$  echo 1e630000.spi >/sys/bus/platform/drivers/aspeed-smc/bind
+-sh: echo: write error: No such file or directory
+
+I'm probably missing something obvious but not sure what.
+Thanks again, and sorry for the long winded reply.
+
+On Tue, Mar 29, 2022 at 10:08 PM Andrew Jeffery <andrew@aj.id.au> wrote:
+>
+>
+>
+> On Wed, 30 Mar 2022, at 04:27, Ali El-Haj-Mahmoud wrote:
+> > Thanks for the reply Andrew.
+> >
+> >> Not explicitly as I mentioned. You're also going to run into the
+> >> constraints here:
+> >>
+> >> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c?h=v5.17#n2739
+> >>
+> >> Fundamentally that needs to be changed. We could do something like have
+> >> it default to pass-through unless a driver is bound.
+> >
+> > Could you please elaborate on this a bit? I'm way out of my depth here
+> > and would appreciate any additional pointers.
+> >
+> > I already ran into the read-only constraints in the pinctrl driver,
+> > and I have a patch that excludes SCU70[13:12], but that wasn't enough.
+>
+> What were you doing to test it?
