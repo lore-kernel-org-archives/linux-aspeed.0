@@ -1,11 +1,11 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Wed, 30 Mar 2022 12:33:58 +1030
-Subject: [PATCH v3 6/7] ARM: dts: aspeed-g6: add FWQSPI group in pinctrl
- dtsi
-In-Reply-To: <20220329173932.2588289-7-quic_jaehyoo@quicinc.com>
-References: <20220329173932.2588289-1-quic_jaehyoo@quicinc.com>
- <20220329173932.2588289-7-quic_jaehyoo@quicinc.com>
-Message-ID: <5d92ed84-be77-45f2-98e9-29f9ad0d233b@www.fastmail.com>
+Date: Wed, 30 Mar 2022 12:37:48 +1030
+Subject: aspeed2500 SPI1 control at run-time with OpenBMC
+In-Reply-To: <CAFPZpNZ1+UDVcEs_gp1zCzxXfP6PqZ8kx+UGhb73BusiScRk+g@mail.gmail.com>
+References: <CAFPZpNbNc5Fx1tBtmM1x0n-qEB_qp+wSSrR2+_0bxPrPyh1xMw@mail.gmail.com>
+ <c29de2ea-0f60-4e7f-8308-11849a7de8e8@www.fastmail.com>
+ <CAFPZpNZ1+UDVcEs_gp1zCzxXfP6PqZ8kx+UGhb73BusiScRk+g@mail.gmail.com>
+Message-ID: <a509d7a3-2551-4eea-b965-9499ada39b16@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -14,14 +14,21 @@ Content-Transfer-Encoding: 7bit
 
 
 
-On Wed, 30 Mar 2022, at 04:09, Jae Hyun Yoo wrote:
-> From: Johnny Huang <johnny_huang@aspeedtech.com>
+On Wed, 30 Mar 2022, at 04:27, Ali El-Haj-Mahmoud wrote:
+> Thanks for the reply Andrew.
 >
-> Add FWSPIDQ2 and FWSPIDQ3 group to support AST2600 FW SPI quad mode.
-> These pins can be used with dedicated FW SPI pins - FWSPICS0#,
-> FWSPICK, FWSPIMOSI and FWSPIMISO.
+>> Not explicitly as I mentioned. You're also going to run into the
+>> constraints here:
+>>
+>> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c?h=v5.17#n2739
+>>
+>> Fundamentally that needs to be changed. We could do something like have
+>> it default to pass-through unless a driver is bound.
 >
-> Signed-off-by: Johnny Huang <johnny_huang@aspeedtech.com>
-> Signed-off-by: Jae Hyun Yoo <quic_jaehyoo@quicinc.com>
+> Could you please elaborate on this a bit? I'm way out of my depth here
+> and would appreciate any additional pointers.
+>
+> I already ran into the read-only constraints in the pinctrl driver,
+> and I have a patch that excludes SCU70[13:12], but that wasn't enough.
 
-Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
+What were you doing to test it?
