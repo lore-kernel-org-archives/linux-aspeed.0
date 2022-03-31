@@ -1,30 +1,54 @@
-From: Russell King (Oracle) <linux@armlinux.org.uk>
-Date: Thu, 31 Mar 2022 08:12:25 +0100
-Subject: [PATCH v3 2/3] net: mdio: add reset control for Aspeed MDIO
-In-Reply-To: <20220325041451.894-3-dylan_hung@aspeedtech.com>
-References: <20220325041451.894-1-dylan_hung@aspeedtech.com>
- <20220325041451.894-3-dylan_hung@aspeedtech.com>
-Message-ID: <YkVUWV0czTzo6MrJ@shell.armlinux.org.uk>
+From: Cédric Le Goater <clg@kaod.org>
+Date: Thu, 31 Mar 2022 09:15:30 +0200
+Subject: [PATCH v4 08/11] spi: aspeed: Calibrate read timings
+In-Reply-To: <HK0PR06MB27866B5CC29F46436A4F6230B2E19@HK0PR06MB2786.apcprd06.prod.outlook.com>
+References: <20220325100849.2019209-1-clg@kaod.org>
+ <20220325100849.2019209-9-clg@kaod.org>
+ <HK0PR06MB2786548534B370AE0C691C32B21F9@HK0PR06MB2786.apcprd06.prod.outlook.com>
+ <0ec477b5-e404-536f-ff60-39f43208c3cc@kaod.org>
+ <HK0PR06MB27866B5CC29F46436A4F6230B2E19@HK0PR06MB2786.apcprd06.prod.outlook.com>
+Message-ID: <d12860e6-cc56-6073-0bf2-bfae02cbbd88@kaod.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi,
+Hello Chin-Ting,
 
-On Fri, Mar 25, 2022 at 12:14:50PM +0800, Dylan Hung wrote:
-> Add reset assertion/deassertion for Aspeed MDIO.  There are 4 MDIO
-> controllers embedded in Aspeed AST2600 SOC and share one reset control
-> register SCU50[3].  To work with old DT blobs which don't have the reset
-> property, devm_reset_control_get_optional_shared is used in this change.
+>>> - Maybe, if the calibration process is not executed, the frequency setting
+>> calculated from max_frequency in the device tree can be filled in FMC10
+>> instead of using dumb slow one, 12.5MHz, always.
+>>
+>> Indeed.
+>>
+>>>    For example, except for uniform content case, the calibration process will
+>> be ignored when SPI clock frequency in the device tree is smaller than 40MHz.
+>>> - The function, aspeed_2600_spi_clk_basic_setting, in [2] can be added to
+>> support lower SPI clock frequency, e.g., 4MHz.
+>>>    For AST2600, SPI clock frequency can be calculated by
+>> HCLK/(FMC10[27:24] + FMC10[11:8]).
+>>
+>> Could you please send patches on top of this series ? Here are the branches :
+>>
 > 
-> Signed-off-by: Dylan Hung <dylan_hung@aspeedtech.com>
-> Reviewed-by: Philipp Zabel <p.zabel@pengutronix.de>
+> Of course. How do I provide you the patch? By private mail or send a PR?
 
-Should this really be specific to one driver rather than being handled
-in the core mdio code?
+We should discuss first by email on the openbmc@ and linux-aspeed@ lists.
+Please send as follow ups on top of v4.
 
--- 
-RMK's Patch system: https://www.armlinux.org.uk/developer/patches/
-FTTP is here! 40Mbps down 10Mbps up. Decent connectivity at last!
+Using the openbmc tree should be easier :
+
+      https://github.com/legoater/linux/commits/openbmc-5.15
+
+> Besides, I may add a new callback function for this part due to difference 
+> between AST2500 and AST2600.
+
+ok.
+
+Given all the reviews and tests that were done on AST2400, AST2500, AST2600
+platforms, I will be careful not to break the existing proposal.
+
+Thanks,
+
+C.
