@@ -1,54 +1,175 @@
 From: Cédric Le Goater <clg@kaod.org>
-Date: Thu, 31 Mar 2022 09:15:30 +0200
-Subject: [PATCH v4 08/11] spi: aspeed: Calibrate read timings
-In-Reply-To: <HK0PR06MB27866B5CC29F46436A4F6230B2E19@HK0PR06MB2786.apcprd06.prod.outlook.com>
+Date: Thu, 31 Mar 2022 09:36:24 +0200
+Subject: [PATCH v4 02/11] dt-bindings: spi: Add Aspeed SMC controllers
+ device tree binding
+In-Reply-To: <20220330191908.nhg52a5ayzczpzai@ti.com>
 References: <20220325100849.2019209-1-clg@kaod.org>
- <20220325100849.2019209-9-clg@kaod.org>
- <HK0PR06MB2786548534B370AE0C691C32B21F9@HK0PR06MB2786.apcprd06.prod.outlook.com>
- <0ec477b5-e404-536f-ff60-39f43208c3cc@kaod.org>
- <HK0PR06MB27866B5CC29F46436A4F6230B2E19@HK0PR06MB2786.apcprd06.prod.outlook.com>
-Message-ID: <d12860e6-cc56-6073-0bf2-bfae02cbbd88@kaod.org>
+ <20220325100849.2019209-3-clg@kaod.org>
+ <20220330191908.nhg52a5ayzczpzai@ti.com>
+Message-ID: <2a411a3e-4b7f-c116-b595-f33bffccb4e7@kaod.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello Chin-Ting,
+Hello Pratyush,
 
->>> - Maybe, if the calibration process is not executed, the frequency setting
->> calculated from max_frequency in the device tree can be filled in FMC10
->> instead of using dumb slow one, 12.5MHz, always.
+On 3/30/22 21:19, Pratyush Yadav wrote:
+> On 25/03/22 11:08AM, C?dric Le Goater wrote:
+>> The "interrupt" property is optional because it is only necessary for
+>> controllers supporting DMAs (Not implemented yet in the new driver).
 >>
->> Indeed.
+>> Cc: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
+>> Tested-by: Joel Stanley <joel@jms.id.au>
+>> Tested-by: Tao Ren <rentao.bupt@gmail.com>
+>> Reviewed-by: Joel Stanley <joel@jms.id.au>
+>> Reviewed-by: Rob Herring <robh@kernel.org>
+>> Signed-off-by: C?dric Le Goater <clg@kaod.org>
+>> ---
+>>   .../bindings/spi/aspeed,ast2600-fmc.yaml      | 87 +++++++++++++++++++
+>>   MAINTAINERS                                   |  9 ++
+>>   2 files changed, 96 insertions(+)
+>>   create mode 100644 Documentation/devicetree/bindings/spi/aspeed,ast2600-fmc.yaml
 >>
->>>    For example, except for uniform content case, the calibration process will
->> be ignored when SPI clock frequency in the device tree is smaller than 40MHz.
->>> - The function, aspeed_2600_spi_clk_basic_setting, in [2] can be added to
->> support lower SPI clock frequency, e.g., 4MHz.
->>>    For AST2600, SPI clock frequency can be calculated by
->> HCLK/(FMC10[27:24] + FMC10[11:8]).
->>
->> Could you please send patches on top of this series ? Here are the branches :
->>
+>> diff --git a/Documentation/devicetree/bindings/spi/aspeed,ast2600-fmc.yaml b/Documentation/devicetree/bindings/spi/aspeed,ast2600-fmc.yaml
+>> new file mode 100644
+>> index 000000000000..e16bbcd38560
+>> --- /dev/null
+>> +++ b/Documentation/devicetree/bindings/spi/aspeed,ast2600-fmc.yaml
+>> @@ -0,0 +1,87 @@
+>> +# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
+>> +%YAML 1.2
+>> +---
+>> +$id: http://devicetree.org/schemas/spi/aspeed,ast2600-fmc.yaml#
+>> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+>> +
+>> +title: Aspeed SMC controllers bindings
+>> +
+>> +maintainers:
+>> +  - Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
+>> +  - C?dric Le Goater <clg@kaod.org>
+>> +
+>> +description: |
+>> +  This binding describes the Aspeed Static Memory Controllers (FMC and
+>> +  SPI) of the AST2400, AST2500 and AST2600 SOCs.
+>> +
+>> +allOf:
+>> +  - $ref: "spi-controller.yaml#"
+>> +
+>> +properties:
+>> +  compatible:
+>> +    enum:
+>> +      - aspeed,ast2600-fmc
+>> +      - aspeed,ast2600-spi
+>> +      - aspeed,ast2500-fmc
+>> +      - aspeed,ast2500-spi
+>> +      - aspeed,ast2400-fmc
+>> +      - aspeed,ast2400-spi
+>> +
+>> +  reg:
+>> +    items:
+>> +      - description: registers
+>> +      - description: memory mapping
+>> +
+>> +  clocks:
+>> +    maxItems: 1
+>> +
+>> +  interrupts:
+>> +    maxItems: 1
+>> +
+>> +patternProperties:
+>> +  "@[0-9a-f]+":
+>> +    type: object
+>> +
+>> +    properties:
+>> +      spi-rx-bus-width:
+>> +        enum: [1, 2, 4]
 > 
-> Of course. How do I provide you the patch? By private mail or send a PR?
+> No need for this. It should already be taken care of by
+> spi-peripheral-props.yaml
 
-We should discuss first by email on the openbmc@ and linux-aspeed@ lists.
-Please send as follow ups on top of v4.
+So we could drop the whole 'patternProperties' section ?
 
-Using the openbmc tree should be easier :
+> 
+>> +
+>> +required:
+>> +  - compatible
+>> +  - reg
+>> +  - clocks
+>> +
+>> +unevaluatedProperties: false
+>> +
+>> +examples:
+>> +  - |
+>> +    #include <dt-bindings/interrupt-controller/arm-gic.h>
+>> +    #include <dt-bindings/interrupt-controller/aspeed-scu-ic.h>
+>> +    #include <dt-bindings/clock/ast2600-clock.h>
+>> +
+>> +    spi at 1e620000 {
+>> +        reg = <0x1e620000 0xc4>, <0x20000000 0x10000000>;
+>> +        #address-cells = <1>;
+>> +        #size-cells = <0>;
+>> +        compatible = "aspeed,ast2600-fmc";
+>> +        clocks = <&syscon ASPEED_CLK_AHB>;
+>> +        interrupts = <GIC_SPI 39 IRQ_TYPE_LEVEL_HIGH>;
+> 
+> Nitpick: Add a blank line here
+> 
+>> +        flash at 0 {
+>> +                reg = < 0 >;
+>> +                compatible = "jedec,spi-nor";
+>> +                spi-max-frequency = <50000000>;
+>> +                spi-rx-bus-width = <2>;
+>> +        };
+> 
+> and here
+> 
+>> +        flash at 1 {
+>> +                reg = < 1 >;
+>> +                compatible = "jedec,spi-nor";
+>> +                spi-max-frequency = <50000000>;
+>> +                spi-rx-bus-width = <2>;
+>> +        };
+> 
+> and here. Looks a bit nicer.
 
-      https://github.com/legoater/linux/commits/openbmc-5.15
-
-> Besides, I may add a new callback function for this part due to difference 
-> between AST2500 and AST2600.
-
-ok.
-
-Given all the reviews and tests that were done on AST2400, AST2500, AST2600
-platforms, I will be careful not to break the existing proposal.
-
-Thanks,
+Thanks for the comments, I will provide the cleanups in v5.
 
 C.
+
+
+
+> 
+>> +        flash at 2 {
+>> +                reg = < 2 >;
+>> +                compatible = "jedec,spi-nor";
+>> +                spi-max-frequency = <50000000>;
+>> +                spi-rx-bus-width = <2>;
+>> +        };
+>> +    };
+>> diff --git a/MAINTAINERS b/MAINTAINERS
+>> index ea9d74b6236f..7d5f81dcd837 100644
+>> --- a/MAINTAINERS
+>> +++ b/MAINTAINERS
+>> @@ -3021,6 +3021,15 @@ S:	Maintained
+>>   F:	Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml
+>>   F:	drivers/mmc/host/sdhci-of-aspeed*
+>>   
+>> +ASPEED SMC SPI DRIVER
+>> +M:	Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
+>> +M:	C?dric Le Goater <clg@kaod.org>
+>> +L:	linux-aspeed at lists.ozlabs.org (moderated for non-subscribers)
+>> +L:	openbmc at lists.ozlabs.org (moderated for non-subscribers)
+>> +L:	linux-spi at vger.kernel.org
+>> +S:	Maintained
+>> +F:	Documentation/devicetree/bindings/spi/aspeed,ast2600-fmc.yaml
+>> +
+>>   ASPEED VIDEO ENGINE DRIVER
+>>   M:	Eddie James <eajames@linux.ibm.com>
+>>   L:	linux-media at vger.kernel.org
+>> -- 
+>> 2.34.1
+>>
+> 
+
