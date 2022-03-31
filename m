@@ -1,175 +1,79 @@
 From: Cédric Le Goater <clg@kaod.org>
-Date: Thu, 31 Mar 2022 09:36:24 +0200
-Subject: [PATCH v4 02/11] dt-bindings: spi: Add Aspeed SMC controllers
- device tree binding
-In-Reply-To: <20220330191908.nhg52a5ayzczpzai@ti.com>
-References: <20220325100849.2019209-1-clg@kaod.org>
- <20220325100849.2019209-3-clg@kaod.org>
- <20220330191908.nhg52a5ayzczpzai@ti.com>
-Message-ID: <2a411a3e-4b7f-c116-b595-f33bffccb4e7@kaod.org>
+Date: Thu, 31 Mar 2022 07:50:57 +0200
+Subject: [RESEND][PATCH linux dev-5.15 v2 1/1] mtd: spi-nor: aspeed: set
+ the decoding size to at least 2MB for AST2600
+In-Reply-To: <CACPK8XfzFNqyoa4Fe0sY3usfAd75KAVg2pO8fnW+BzyvSSp9dg@mail.gmail.com>
+References: <20220331002914.30495-1-potin.lai@quantatw.com>
+ <CACPK8XfzFNqyoa4Fe0sY3usfAd75KAVg2pO8fnW+BzyvSSp9dg@mail.gmail.com>
+Message-ID: <f62f43ad-8eda-c4fc-ad56-04227ef38c9f@kaod.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello Pratyush,
-
-On 3/30/22 21:19, Pratyush Yadav wrote:
-> On 25/03/22 11:08AM, C?dric Le Goater wrote:
->> The "interrupt" property is optional because it is only necessary for
->> controllers supporting DMAs (Not implemented yet in the new driver).
+On 3/31/22 03:07, Joel Stanley wrote:
+> On Thu, 31 Mar 2022 at 00:29, Potin Lai <potin.lai@quantatw.com> wrote:
 >>
->> Cc: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
->> Tested-by: Joel Stanley <joel@jms.id.au>
->> Tested-by: Tao Ren <rentao.bupt@gmail.com>
->> Reviewed-by: Joel Stanley <joel@jms.id.au>
->> Reviewed-by: Rob Herring <robh@kernel.org>
->> Signed-off-by: C?dric Le Goater <clg@kaod.org>
+>> In AST2600, the unit of SPI CEx decoding range register is 1MB, and end
+>> address offset is set to the acctual offset - 1MB. If the flash only has
+>> 1MB, the end address will has same value as start address, which will
+>> causing unexpected errors.
+>>
+>> This patch set the decoding size to at least 2MB to avoid decoding errors.
+>>
+>> Tested:
+>> root at bletchley:~# dmesg | grep "aspeed-smc 1e631000.spi: CE0 window"
+>> [   59.328134] aspeed-smc 1e631000.spi: CE0 window resized to 2MB (AST2600 Decoding)
+>> [   59.343001] aspeed-smc 1e631000.spi: CE0 window [ 0x50000000 - 0x50200000 ] 2MB
+>> root at bletchley:~# devmem 0x1e631030
+>> 0x00100000
+>>
+>> Signed-off-by: Potin Lai <potin.lai@quantatw.com>
+>>
 >> ---
->>   .../bindings/spi/aspeed,ast2600-fmc.yaml      | 87 +++++++++++++++++++
->>   MAINTAINERS                                   |  9 ++
->>   2 files changed, 96 insertions(+)
->>   create mode 100644 Documentation/devicetree/bindings/spi/aspeed,ast2600-fmc.yaml
->>
->> diff --git a/Documentation/devicetree/bindings/spi/aspeed,ast2600-fmc.yaml b/Documentation/devicetree/bindings/spi/aspeed,ast2600-fmc.yaml
->> new file mode 100644
->> index 000000000000..e16bbcd38560
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/spi/aspeed,ast2600-fmc.yaml
->> @@ -0,0 +1,87 @@
->> +# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
->> +%YAML 1.2
->> +---
->> +$id: http://devicetree.org/schemas/spi/aspeed,ast2600-fmc.yaml#
->> +$schema: http://devicetree.org/meta-schemas/core.yaml#
->> +
->> +title: Aspeed SMC controllers bindings
->> +
->> +maintainers:
->> +  - Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
->> +  - C?dric Le Goater <clg@kaod.org>
->> +
->> +description: |
->> +  This binding describes the Aspeed Static Memory Controllers (FMC and
->> +  SPI) of the AST2400, AST2500 and AST2600 SOCs.
->> +
->> +allOf:
->> +  - $ref: "spi-controller.yaml#"
->> +
->> +properties:
->> +  compatible:
->> +    enum:
->> +      - aspeed,ast2600-fmc
->> +      - aspeed,ast2600-spi
->> +      - aspeed,ast2500-fmc
->> +      - aspeed,ast2500-spi
->> +      - aspeed,ast2400-fmc
->> +      - aspeed,ast2400-spi
->> +
->> +  reg:
->> +    items:
->> +      - description: registers
->> +      - description: memory mapping
->> +
->> +  clocks:
->> +    maxItems: 1
->> +
->> +  interrupts:
->> +    maxItems: 1
->> +
->> +patternProperties:
->> +  "@[0-9a-f]+":
->> +    type: object
->> +
->> +    properties:
->> +      spi-rx-bus-width:
->> +        enum: [1, 2, 4]
+>> [v1]: https://lore.kernel.org/all/20220304170757.16924-1-potin.lai at quantatw.com/
 > 
-> No need for this. It should already be taken care of by
-> spi-peripheral-props.yaml
+> C?dric, can I get an ack from you before I put this in the openbmc tree?
 
-So we could drop the whole 'patternProperties' section ?
 
-> 
->> +
->> +required:
->> +  - compatible
->> +  - reg
->> +  - clocks
->> +
->> +unevaluatedProperties: false
->> +
->> +examples:
->> +  - |
->> +    #include <dt-bindings/interrupt-controller/arm-gic.h>
->> +    #include <dt-bindings/interrupt-controller/aspeed-scu-ic.h>
->> +    #include <dt-bindings/clock/ast2600-clock.h>
->> +
->> +    spi at 1e620000 {
->> +        reg = <0x1e620000 0xc4>, <0x20000000 0x10000000>;
->> +        #address-cells = <1>;
->> +        #size-cells = <0>;
->> +        compatible = "aspeed,ast2600-fmc";
->> +        clocks = <&syscon ASPEED_CLK_AHB>;
->> +        interrupts = <GIC_SPI 39 IRQ_TYPE_LEVEL_HIGH>;
-> 
-> Nitpick: Add a blank line here
-> 
->> +        flash at 0 {
->> +                reg = < 0 >;
->> +                compatible = "jedec,spi-nor";
->> +                spi-max-frequency = <50000000>;
->> +                spi-rx-bus-width = <2>;
->> +        };
-> 
-> and here
-> 
->> +        flash at 1 {
->> +                reg = < 1 >;
->> +                compatible = "jedec,spi-nor";
->> +                spi-max-frequency = <50000000>;
->> +                spi-rx-bus-width = <2>;
->> +        };
-> 
-> and here. Looks a bit nicer.
+Reviewed-by: C?dric Le Goater <clg@kaod.org>
 
-Thanks for the comments, I will provide the cleanups in v5.
+Thanks,
 
 C.
 
-
-
-> 
->> +        flash at 2 {
->> +                reg = < 2 >;
->> +                compatible = "jedec,spi-nor";
->> +                spi-max-frequency = <50000000>;
->> +                spi-rx-bus-width = <2>;
->> +        };
->> +    };
->> diff --git a/MAINTAINERS b/MAINTAINERS
->> index ea9d74b6236f..7d5f81dcd837 100644
->> --- a/MAINTAINERS
->> +++ b/MAINTAINERS
->> @@ -3021,6 +3021,15 @@ S:	Maintained
->>   F:	Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml
->>   F:	drivers/mmc/host/sdhci-of-aspeed*
->>   
->> +ASPEED SMC SPI DRIVER
->> +M:	Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
->> +M:	C?dric Le Goater <clg@kaod.org>
->> +L:	linux-aspeed at lists.ozlabs.org (moderated for non-subscribers)
->> +L:	openbmc at lists.ozlabs.org (moderated for non-subscribers)
->> +L:	linux-spi at vger.kernel.org
->> +S:	Maintained
->> +F:	Documentation/devicetree/bindings/spi/aspeed,ast2600-fmc.yaml
->> +
->>   ASPEED VIDEO ENGINE DRIVER
->>   M:	Eddie James <eajames@linux.ibm.com>
->>   L:	linux-media at vger.kernel.org
->> -- 
->> 2.34.1
 >>
-> 
+>> Changes v1 --> v2:
+>> - add fmc controller into decoding range resize checking
+>> ---
+>>   drivers/mtd/spi-nor/controllers/aspeed-smc.c | 12 ++++++++++++
+>>   1 file changed, 12 insertions(+)
+>>
+>> diff --git a/drivers/mtd/spi-nor/controllers/aspeed-smc.c b/drivers/mtd/spi-nor/controllers/aspeed-smc.c
+>> index 416ea247f843..74fa46439246 100644
+>> --- a/drivers/mtd/spi-nor/controllers/aspeed-smc.c
+>> +++ b/drivers/mtd/spi-nor/controllers/aspeed-smc.c
+>> @@ -781,6 +781,18 @@ static u32 aspeed_smc_chip_set_segment(struct aspeed_smc_chip *chip)
+>>                           chip->cs, size >> 20);
+>>          }
+>>
+>> +       /*
+>> +        * The decoding size of AST2600 SPI controller should set at
+>> +        * least 2MB.
+>> +        */
+>> +       if ((controller->info == &spi_2600_info ||
+>> +            controller->info == &fmc_2600_info) && size < SZ_2M) {
+>> +               size = SZ_2M;
+>> +               dev_info(chip->nor.dev,
+>> +                        "CE%d window resized to %dMB (AST2600 Decoding)",
+>> +                        chip->cs, size >> 20);
+>> +       }
+>> +
+>>          ahb_base_phy = controller->ahb_base_phy;
+>>
+>>          /*
+>> --
+>> 2.17.1
+>>
 
