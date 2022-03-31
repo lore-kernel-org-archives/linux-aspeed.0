@@ -1,49 +1,79 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Thu, 31 Mar 2022 05:35:47 +0000
-Subject: [PATCH 2/2] ARM: dts: aspeed: romed8hm3: Fix GPIOB0 name
-In-Reply-To: <20220331022425.28606-2-zev@bewilderbeest.net>
-References: <20220331022425.28606-1-zev@bewilderbeest.net>
- <20220331022425.28606-2-zev@bewilderbeest.net>
-Message-ID: <CACPK8XeeFDSN8L89BPkV+UfGTYNiULyUPBTYso7Z7e+VEdgc4A@mail.gmail.com>
+Date: Thu, 31 Mar 2022 05:50:10 +0000
+Subject: [PATCH v3 0/7] Fix AST2600 quad mode SPI pinmux settings
+In-Reply-To: <20220329173932.2588289-1-quic_jaehyoo@quicinc.com>
+References: <20220329173932.2588289-1-quic_jaehyoo@quicinc.com>
+Message-ID: <CACPK8Xed5Kh_Y2B3NY41bjgoALvz1gC4zbNfmUaHn_8EbHio4g@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, 31 Mar 2022 at 02:24, Zev Weiss <zev@bewilderbeest.net> wrote:
+On Tue, 29 Mar 2022 at 17:40, Jae Hyun Yoo <quic_jaehyoo@quicinc.com> wrote:
 >
-> This GPIO was mislabeled as DDR_MEM_TEMP in the schematic; after a
-> correction from ASRock Rack its name now reflects its actual
-> functionality (POST_COMPLETE_N).
+> I?m sending this patch series to fix current issues in AST2600 pinmux
+> settings while enabling quad mode SPI support.
+>
+> FWSPI18 pins are basically 1.8v logic pins that are different from the
+> dedicated FWSPI pins that provide 3.3v logic level, so FWSPI18 pins can?t
+> be grouped with FWSPIDQ2 and FWSPIDQ3, so this series fix the issue.
+>
+> Also, fixes QSPI1 and QSPI2 function settings in AST2600 pinctrl dtsi to
+> make it able to enable quad mode on SPI1 and SPI2 interfaces.
+>
+> With this series, quad mode pinmux can be set like below.
+>
+> FW SPI:
+> &fmc {
+>         pinctrl-names = "default";
+>         pinctrl-0 = <&pinctrl_fwqspi_default>;
+> }
+>
+> SPI1:
+> &spi1 {
+>         pinctrl-names = "default";
+>         pinctrl-0 = <&pinctrl_qspi1_default>;
+> }
+>
+> SPI2:
+> &spi2 {
+>         pinctrl-names = "default";
+>         pinctrl-0 = <&pinctrl_qspi2_default>;
+> }
 
-Those are quite different functions :)
+Thanks. I hope to see a board from you that uses this soon :)
+
+I'll send the patches as fixes once -rc1 is out.
 
 >
-> Signed-off-by: Zev Weiss <zev@bewilderbeest.net>
-
-Fixes: a9a3d60b937a ("ARM: dts: aspeed: Add ASRock ROMED8HM3 BMC")
-Reviewed-by: Joel Stanley <joel@jms.id.au>
-
-I'll send some fixes in after -rc1.
-
-> ---
->  arch/arm/boot/dts/aspeed-bmc-asrock-romed8hm3.dts | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+> Please review.
 >
-> diff --git a/arch/arm/boot/dts/aspeed-bmc-asrock-romed8hm3.dts b/arch/arm/boot/dts/aspeed-bmc-asrock-romed8hm3.dts
-> index 572a43e57cac..ff4c07c69af1 100644
-> --- a/arch/arm/boot/dts/aspeed-bmc-asrock-romed8hm3.dts
-> +++ b/arch/arm/boot/dts/aspeed-bmc-asrock-romed8hm3.dts
-> @@ -198,7 +198,7 @@ &gpio {
->         gpio-line-names =
->                 /*  A */ "LOCATORLED_STATUS_N", "BMC_MAC2_INTB", "NMI_BTN_N", "BMC_NMI",
->                         "", "", "", "",
-> -               /*  B */ "DDR_MEM_TEMP", "", "", "", "", "", "", "",
-> +               /*  B */ "POST_COMPLETE_N", "", "", "", "", "", "", "",
->                 /*  C */ "", "", "", "", "PCIE_HP_SEL_N", "PCIE_SATA_SEL_N", "LOCATORBTN", "",
->                 /*  D */ "BMC_PSIN", "BMC_PSOUT", "BMC_RESETCON", "RESETCON",
->                         "", "", "", "PSU_FAN_FAIL_N",
+> Thanks,
+> Jae
+>
+> Changes in v3:
+>  * Added bindings patches. (Andrew)
+>
+> Changes in v2:
+>  * Rebased it on the latest.
+>
+> Jae Hyun Yoo (5):
+>   ARM: dts: aspeed-g6: remove FWQSPID group in pinctrl dtsi
+>   pinctrl: pinctrl-aspeed-g6: remove FWQSPID group in pinctrl
+>   dt-bindings: pinctrl: aspeed-g6: remove FWQSPID group
+>   dt-bindings: pinctrl: aspeed-g6: add FWQSPI function/group
+>   ARM: dts: aspeed-g6: fix SPI1/SPI2 quad pin group
+>
+> Johnny Huang (2):
+>   pinctrl: pinctrl-aspeed-g6: add FWQSPI function-group
+>   ARM: dts: aspeed-g6: add FWQSPI group in pinctrl dtsi
+>
+>  .../pinctrl/aspeed,ast2600-pinctrl.yaml         |  4 ++--
+>  arch/arm/boot/dts/aspeed-g6-pinctrl.dtsi        | 10 +++++-----
+>  drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c      | 17 ++++++++---------
+>  3 files changed, 15 insertions(+), 16 deletions(-)
+>
 > --
-> 2.35.1
+> 2.25.1
 >
