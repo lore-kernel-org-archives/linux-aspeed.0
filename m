@@ -1,194 +1,162 @@
-From: Jae Hyun Yoo <quic_jaehyoo@quicinc.com>
-Date: Fri, 1 Apr 2022 15:25:41 -0700
-Subject: [PATCH v3 0/7] Fix AST2600 quad mode SPI pinmux settings
-In-Reply-To: <d652e592-29ce-3920-d1f8-66b3a617033f@kaod.org>
-References: <20220329173932.2588289-1-quic_jaehyoo@quicinc.com>
- <CACPK8Xed5Kh_Y2B3NY41bjgoALvz1gC4zbNfmUaHn_8EbHio4g@mail.gmail.com>
- <ea2ecef9-f47f-2a4e-8dda-ffd0c3691389@quicinc.com>
- <c4bcb633-02d2-1cd5-3485-787ebd4b1e0a@kaod.org>
- <42694139-61d0-fb0d-d4c3-a81cc31488d2@quicinc.com>
- <e362f6dd-785f-87b3-3090-554be0fb860c@quicinc.com>
- <d652e592-29ce-3920-d1f8-66b3a617033f@kaod.org>
-Message-ID: <a7902f38-06fc-56e1-c5fb-d224e859eeb6@quicinc.com>
+From: Cédric Le Goater <clg@kaod.org>
+Date: Mon, 4 Apr 2022 09:11:33 +0200
+Subject: [PATCH v4 04/11] spi: aspeed: Add support for direct mapping
+In-Reply-To: <20220330194548.zldbkaoctlhgwcl2@ti.com>
+References: <20220325100849.2019209-1-clg@kaod.org>
+ <20220325100849.2019209-5-clg@kaod.org>
+ <20220330194548.zldbkaoctlhgwcl2@ti.com>
+Message-ID: <3e5ea70d-805a-ff30-663b-e802d9116a49@kaod.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello C?dric,
-
-On 4/1/2022 3:07 PM, C?dric Le Goater wrote:
-> Hello Jae,
+On 3/30/22 21:45, Pratyush Yadav wrote:
+> On 25/03/22 11:08AM, C?dric Le Goater wrote:
+>> Use direct mapping to read the flash device contents. This operation
+>> mode is called "Command mode" on Aspeed SoC SMC controllers. It uses a
+>> Control Register for the settings to apply when a memory operation is
+>> performed on the flash device mapping window.
+>>
+>> If the window is not big enough, fall back to the "User mode" to
+>> perform the read.
+>>
+>> Since direct mapping now handles all reads of the flash device
+>> contents, also use memcpy_fromio for other address spaces, such as
+>> SFDP.
+>>
+>> Direct mapping for writes will come later when validated.
+>>
+>> Reviewed-by: Joel Stanley <joel@jms.id.au>
+>> Tested-by: Joel Stanley <joel@jms.id.au>
+>> Tested-by: Tao Ren <rentao.bupt@gmail.com>
+>> Signed-off-by: C?dric Le Goater <clg@kaod.org>
+>> ---
+>>   drivers/spi/spi-aspeed-smc.c | 67 ++++++++++++++++++++++++++++++++++--
+>>   1 file changed, 65 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/drivers/spi/spi-aspeed-smc.c b/drivers/spi/spi-aspeed-smc.c
+>> index 997ec2e45118..0951766baef4 100644
+>> --- a/drivers/spi/spi-aspeed-smc.c
+>> +++ b/drivers/spi/spi-aspeed-smc.c
+>> @@ -322,8 +322,8 @@ static int do_aspeed_spi_exec_op(struct spi_mem *mem, const struct spi_mem_op *o
+>>   		if (!op->addr.nbytes)
+>>   			ret = aspeed_spi_read_reg(chip, op);
+>>   		else
+>> -			ret = aspeed_spi_read_user(chip, op, op->addr.val,
+>> -						   op->data.nbytes, op->data.buf.in);
+>> +			memcpy_fromio(op->data.buf.in, chip->ahb_base + op->addr.val,
+>> +				      op->data.nbytes);
 > 
-> On 4/1/22 16:10, Jae Hyun Yoo wrote:
->> Hi C?dric,
->>
->> On 3/31/2022 9:06 AM, Jae Hyun Yoo wrote:
->>> Hello C?dric,
->>>
->>> On 3/31/2022 8:56 AM, C?dric Le Goater wrote:
->>>> Hello Jae,
->>>>
->>>> On 3/31/22 17:44, Jae Hyun Yoo wrote:
->>>>> On 3/30/2022 10:50 PM, Joel Stanley wrote:
->>>>>> On Tue, 29 Mar 2022 at 17:40, Jae Hyun Yoo 
->>>>>> <quic_jaehyoo@quicinc.com> wrote:
->>>>>>>
->>>>>>> I?m sending this patch series to fix current issues in AST2600 
->>>>>>> pinmux
->>>>>>> settings while enabling quad mode SPI support.
->>>>>>>
->>>>>>> FWSPI18 pins are basically 1.8v logic pins that are different 
->>>>>>> from the
->>>>>>> dedicated FWSPI pins that provide 3.3v logic level, so FWSPI18 
->>>>>>> pins can?t
->>>>>>> be grouped with FWSPIDQ2 and FWSPIDQ3, so this series fix the issue.
->>>>>>>
->>>>>>> Also, fixes QSPI1 and QSPI2 function settings in AST2600 pinctrl 
->>>>>>> dtsi to
->>>>>>> make it able to enable quad mode on SPI1 and SPI2 interfaces.
->>>>>>>
->>>>>>> With this series, quad mode pinmux can be set like below.
->>>>>>>
->>>>>>> FW SPI:
->>>>>>> &fmc {
->>>>>>> ???????? pinctrl-names = "default";
->>>>>>> ???????? pinctrl-0 = <&pinctrl_fwqspi_default>;
->>>>>>> }
->>>>>>>
->>>>>>> SPI1:
->>>>>>> &spi1 {
->>>>>>> ???????? pinctrl-names = "default";
->>>>>>> ???????? pinctrl-0 = <&pinctrl_qspi1_default>;
->>>>>>> }
->>>>>>>
->>>>>>> SPI2:
->>>>>>> &spi2 {
->>>>>>> ???????? pinctrl-names = "default";
->>>>>>> ???????? pinctrl-0 = <&pinctrl_qspi2_default>;
->>>>>>> }
->>>>>>
->>>>>> Thanks. I hope to see a board from you that uses this soon :)
->>>>>>
->>>>>> I'll send the patches as fixes once -rc1 is out.
->>>>>
->>>>> Thanks Joel!
->>>>>
->>>>> Yes, I would be able to send my BMC board dts soon.
->>>>> Thanks in advance for your review on that too.
->>>>
->>>> Out of curiosity, which driver are you using ? the one from SDK ?
->>>>
->>>> I proposed a new one for upstream supporting all AST2400, AST2500, 
->>>> AST2600
->>>> controllers. I would be glad to have some feedback if you have time.
->>>
->>> Yes, I saw your patch set of the new driver.
->>>
->>> I'm currently using this fix with legacy aspeed-smc driver after
->>> adding some fixes. I'll give it a try with your new driver as well and
->>> will give you some feedback if I find any.
->>
->> I tested this patch series using the new spi-aspeed-smc driver you
->> proposed.
->>
->> https://lore.kernel.org/linux-arm-kernel/20220325100849.2019209-1-clg at kaod.org/ 
->>
->>
->> I modified my BMC's device tree like below to enable quad mode.
->>
->> ?????&fmc {
->> ???????? status = "okay";
->> ???????? pinctrl-names = "default";
->> ???????? pinctrl-0 = <&pinctrl_fwqspi_default>;
->>
->> ???????? flash at 0 {
->> ???????????? status = "okay";
->> ???????????? m25p,fast-read;
->> ???????????? label = "bmc";
->> ???????????? spi-rx-bus-width = <4>;
->> ???????????? spi-max-frequency = <133000000>;
->> ?????#include "openbmc-flash-layout-64.dtsi"
->> ???????? };
->>
->> ???????? flash at 1 {
->> ???????????? status = "okay";
->> ???????????? m25p,fast-read;
->> ???????????? label = "alt-bmc";
->> ???????????? spi-rx-bus-width = <4>;
->> ???????????? spi-max-frequency = <133000000>;
->> ?????#include "openbmc-flash-layout-64-alt.dtsi"
->> ???????? };
->> ?????};
+> I think I commented on this earlier too, though I failed to respond to
+> your reply. Let me bring the topic back up. I think this can cause an
+> invalid memory address to be accessed. Not all SPI MEM consumers will
+> use dirmap APIs, and they won't use them all the time. For example, SPI
+> NOR can perform some operations to reset the flash before shutting down.
+> For example, SPI NOR turns off 4byte address mode during shutdown. This
+> will be a register read/write operation, which usually has a different
+> opcode.
+
+It's only a small optimization for startup when the SFDP probing is done.
+There are quite a few reads which are large :
+
+   spi-aspeed-smc 1e630000.spi: CE0 read OP 0x5a mode:1.1.1.1 naddr:0x3 ndummies:0x1 len:0x10
+   spi-aspeed-smc 1e630000.spi: CE0 read OP 0x5a mode:1.1.1.1 naddr:0x3 ndummies:0x1 len:0x10
+   spi-aspeed-smc 1e630000.spi: CE0 read OP 0x5a mode:1.1.1.1 naddr:0x3 ndummies:0x1 len:0x120
+   spi-aspeed-smc 1e630000.spi: CE0 read OP 0x5a mode:1.1.1.1 naddr:0x3 ndummies:0x1 len:0x40
+   spi-aspeed-smc 1e630000.spi: CE0 read OP 0x5a mode:1.1.1.1 naddr:0x3 ndummies:0x1 len:0x8
+
 > 
-> Ah ! I have an AST2600 A0 EVB without FWQSPI wires and I could not test.
-> I am glad you did. Thanks.
-> 
-> I did test the SPI1/SPI2 controllers with Quad SPI activated and results
-> were OK. I think we could include your changes above in my patchset
-> since A0 boards are pretty rare these days and unsupported.
+> So I think you should keep dirmap and exec_op() independent of each
+> other.
 
-Yes, you could include above device tree changes in your patch set for
-AST2600 EVB but please test qemu ast2600-evb model first. It would crash
-while booting if we enable quad mode because the machine's fmc spi is
-set to w25q256 which doesn't emulate quad mode properly, so you may need
-to apply below fix on top of the latest qemu tree.
+OK. I understand. It's not a problem as it works either way.
 
-diff --git a/hw/arm/aspeed.c b/hw/arm/aspeed.c
-index a17b75f4940a..f7eea27f7656 100644
---- a/hw/arm/aspeed.c
-+++ b/hw/arm/aspeed.c
-@@ -753,7 +753,7 @@ static void 
-aspeed_machine_ast2500_evb_class_init(ObjectClass *oc, void *data)
-      mc->desc       = "Aspeed AST2500 EVB (ARM1176)";
-      amc->soc_name  = "ast2500-a1";
-      amc->hw_strap1 = AST2500_EVB_HW_STRAP1;
--    amc->fmc_model = "w25q256";
-+    amc->fmc_model = "mx25l25635e";
-      amc->spi_model = "mx25l25635e";
-      amc->num_cs    = 1;
-      amc->i2c_init  = ast2500_evb_i2c_init;
+Thanks,
 
->> And I got these kernel boot logs.
+C.
+
+
+>>   	} else {
+>>   		if (!op->addr.nbytes)
+>>   			ret = aspeed_spi_write_reg(chip, op);
+>> @@ -403,10 +403,73 @@ static int aspeed_spi_chip_set_default_window(struct aspeed_spi_chip *chip)
+>>   	return chip->ahb_window_size ? 0 : -1;
+>>   }
+>>   
+>> +static int aspeed_spi_dirmap_create(struct spi_mem_dirmap_desc *desc)
+>> +{
+>> +	struct aspeed_spi *aspi = spi_controller_get_devdata(desc->mem->spi->master);
+>> +	struct aspeed_spi_chip *chip = &aspi->chips[desc->mem->spi->chip_select];
+>> +	struct spi_mem_op *op = &desc->info.op_tmpl;
+>> +	u32 ctl_val;
+>> +	int ret = 0;
+>> +
+>> +	chip->clk_freq = desc->mem->spi->max_speed_hz;
+>> +
+>> +	/* Only for reads */
+>> +	if (op->data.dir != SPI_MEM_DATA_IN)
+>> +		return -EOPNOTSUPP;
+>> +
+>> +	if (desc->info.length > chip->ahb_window_size)
+>> +		dev_warn(aspi->dev, "CE%d window (%dMB) too small for mapping",
+>> +			 chip->cs, chip->ahb_window_size >> 20);
+>> +
+>> +	/* Define the default IO read settings */
+>> +	ctl_val = readl(chip->ctl) & ~CTRL_IO_CMD_MASK;
+>> +	ctl_val |= aspeed_spi_get_io_mode(op) |
+>> +		op->cmd.opcode << CTRL_COMMAND_SHIFT |
+>> +		CTRL_IO_DUMMY_SET(op->dummy.nbytes / op->dummy.buswidth) |
+>> +		CTRL_IO_MODE_READ;
+>> +
+>> +	/* Tune 4BYTE address mode */
+>> +	if (op->addr.nbytes) {
+>> +		u32 addr_mode = readl(aspi->regs + CE_CTRL_REG);
+>> +
+>> +		if (op->addr.nbytes == 4)
+>> +			addr_mode |= (0x11 << chip->cs);
+>> +		else
+>> +			addr_mode &= ~(0x11 << chip->cs);
+>> +		writel(addr_mode, aspi->regs + CE_CTRL_REG);
+>> +	}
+>> +
+>> +	/* READ mode is the controller default setting */
+>> +	chip->ctl_val[ASPEED_SPI_READ] = ctl_val;
+>> +	writel(chip->ctl_val[ASPEED_SPI_READ], chip->ctl);
+>> +
+>> +	dev_info(aspi->dev, "CE%d read buswidth:%d [0x%08x]\n",
+>> +		 chip->cs, op->data.buswidth, chip->ctl_val[ASPEED_SPI_READ]);
+>> +
+>> +	return ret;
+>> +}
+>> +
+>> +static ssize_t aspeed_spi_dirmap_read(struct spi_mem_dirmap_desc *desc,
+>> +				      u64 offset, size_t len, void *buf)
+>> +{
+>> +	struct aspeed_spi *aspi = spi_controller_get_devdata(desc->mem->spi->master);
+>> +	struct aspeed_spi_chip *chip = &aspi->chips[desc->mem->spi->chip_select];
+>> +
+>> +	/* Switch to USER command mode if mapping window is too small */
+>> +	if (chip->ahb_window_size < offset + len)
+>> +		aspeed_spi_read_user(chip, &desc->info.op_tmpl, offset, len, buf);
+>> +	else
+>> +		memcpy_fromio(buf, chip->ahb_base + offset, len);
+>> +
+>> +	return len;
+>> +}
+>> +
+>>   static const struct spi_controller_mem_ops aspeed_spi_mem_ops = {
+>>   	.supports_op = aspeed_spi_supports_op,
+>>   	.exec_op = aspeed_spi_exec_op,
+>>   	.get_name = aspeed_spi_get_name,
+>> +	.dirmap_create = aspeed_spi_dirmap_create,
+>> +	.dirmap_read = aspeed_spi_dirmap_read,
+>>   };
+>>   
+>>   static void aspeed_spi_chip_set_type(struct aspeed_spi *aspi, unsigned int cs, int type)
+>> -- 
+>> 2.34.1
 >>
->> [??? 0.720745] spi-nor spi0.0: w25q512nwfm (65536 Kbytes)
->> [??? 0.837368] spi-aspeed-smc 1e620000.spi: CE0 read buswidth:4 
->> [0x406c0741]
->> [??? 0.846352] 5 fixed-partitions partitions found on MTD device bmc
->> [??? 0.853220] Creating 5 MTD partitions on "bmc":
->> [??? 0.858295] 0x000000000000-0x0000000e0000 : "u-boot"
->> [??? 0.865014] 0x0000000e0000-0x000000100000 : "u-boot-env"
->> [??? 0.872229] 0x000000100000-0x000000a00000 : "kernel"
->> [??? 0.878963] 0x000000a00000-0x000002a00000 : "rofs"
->> [??? 0.885406] 0x000002a00000-0x000004000000 : "rwfs"
->> [??? 0.892880] spi-nor spi0.1: w25q512nwfm (65536 Kbytes)
->> [??? 1.009460] spi-aspeed-smc 1e620000.spi: CE1 read buswidth:4 
->> [0x406c0741]
->> [??? 1.018334] 5 fixed-partitions partitions found on MTD device alt-bmc
->> [??? 1.025537] Creating 5 MTD partitions on "alt-bmc":
->> [??? 1.031027] 0x000000000000-0x0000000e0000 : "u-boot-alt"
->> [??? 1.038165] 0x0000000e0000-0x000000100000 : "u-boot-env-alt"
->> [??? 1.045623] 0x000000100000-0x000000a00000 : "kernel-alt"
->> [??? 1.052807] 0x000000a00000-0x000002a00000 : "rofs-alt"
->> [??? 1.059800] 0x000002a00000-0x000004000000 : "rwfs-alt"
->>
->> As you can see in the log, FMC10[31:28] and FMC14[31:28] are properly
->> set to 0100b which means 'quad bit read/write, data cycle only'.
 > 
-> yes and Quad Output SPI opcode (0x6c)
 
-Indeed.
-
->> I verified that your new driver supports quad mode properly and it has
->> worked well so far without making any issue.
->>
->> Thanks for your making the new driver.
->> I left my comment in your patch proposal thread.
-> 
-> I will include your 'Tested' tag in v5. I hope to address Pratyush comments
-> next week. Thanks a lot for the support.
-
-Sure. Thanks again for the new driver! :)
-
--Jae
