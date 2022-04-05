@@ -1,105 +1,176 @@
 From: Pratyush Yadav <p.yadav@ti.com>
-Date: Wed, 6 Apr 2022 00:52:43 +0530
-Subject: [PATCH v4 08/11] spi: aspeed: Calibrate read timings
-In-Reply-To: <8c88e726-0ddb-e2ba-35df-676cfc3d0475@kaod.org>
+Date: Wed, 6 Apr 2022 00:57:57 +0530
+Subject: [PATCH v4 04/11] spi: aspeed: Add support for direct mapping
+In-Reply-To: <3e5ea70d-805a-ff30-663b-e802d9116a49@kaod.org>
 References: <20220325100849.2019209-1-clg@kaod.org>
- <20220325100849.2019209-9-clg@kaod.org>
- <20220331164115.w5q3wxlmwcg3w4ns@ti.com>
- <8c88e726-0ddb-e2ba-35df-676cfc3d0475@kaod.org>
-Message-ID: <20220405192243.7ilibbsyomg42uwg@ti.com>
+ <20220325100849.2019209-5-clg@kaod.org>
+ <20220330194548.zldbkaoctlhgwcl2@ti.com>
+ <3e5ea70d-805a-ff30-663b-e802d9116a49@kaod.org>
+Message-ID: <20220405192757.v356zx2u4mpgpnlq@ti.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 04/04/22 09:30AM, C?dric Le Goater wrote:
-> On 3/31/22 18:41, Pratyush Yadav wrote:
-> > Hi,
-> > 
+On 04/04/22 09:11AM, C?dric Le Goater wrote:
+> On 3/30/22 21:45, Pratyush Yadav wrote:
 > > On 25/03/22 11:08AM, C?dric Le Goater wrote:
-> > > To accommodate the different response time of SPI transfers on different
-> > > boards and different SPI NOR devices, the Aspeed controllers provide a
-> > > set of Read Timing Compensation registers to tune the timing delays
-> > > depending on the frequency being used. The AST2600 SoC has one of these
-> > > registers per device. On the AST2500 and AST2400 SoCs, the timing
-> > > register is shared by all devices which is problematic to get good
-> > > results other than for one device.
+> > > Use direct mapping to read the flash device contents. This operation
+> > > mode is called "Command mode" on Aspeed SoC SMC controllers. It uses a
+> > > Control Register for the settings to apply when a memory operation is
+> > > performed on the flash device mapping window.
 > > > 
-> > > The algorithm first reads a golden buffer at low speed and then performs
-> > > reads with different clocks and delay cycle settings to find a breaking
-> > > point. This selects a default good frequency for the CEx control register.
-> > > The current settings are a bit optimistic as we pick the first delay giving
-> > > good results. A safer approach would be to determine an interval and
-> > > choose the middle value.
+> > > If the window is not big enough, fall back to the "User mode" to
+> > > perform the read.
 > > > 
-> > > Calibration is performed when the direct mapping for reads is created.
-> > > Since the underlying spi-nor object needs to be initialized to create
-> > > the spi_mem operation for direct mapping, we should be fine. Having a
-> > > specific API would clarify the requirements though.
+> > > Since direct mapping now handles all reads of the flash device
+> > > contents, also use memcpy_fromio for other address spaces, such as
+> > > SFDP.
 > > > 
-> > > Cc: Pratyush Yadav <p.yadav@ti.com>
+> > > Direct mapping for writes will come later when validated.
+> > > 
 > > > Reviewed-by: Joel Stanley <joel@jms.id.au>
 > > > Tested-by: Joel Stanley <joel@jms.id.au>
 > > > Tested-by: Tao Ren <rentao.bupt@gmail.com>
 > > > Signed-off-by: C?dric Le Goater <clg@kaod.org>
 > > > ---
-> > >   drivers/spi/spi-aspeed-smc.c | 281 +++++++++++++++++++++++++++++++++++
-> > >   1 file changed, 281 insertions(+)
+> > >   drivers/spi/spi-aspeed-smc.c | 67 ++++++++++++++++++++++++++++++++++--
+> > >   1 file changed, 65 insertions(+), 2 deletions(-)
 > > > 
-> > [...]
-> > > @@ -517,6 +527,8 @@ static int aspeed_spi_chip_adjust_window(struct aspeed_spi_chip *chip,
-> > >   	return 0;
-> > >   }
-> > > +static int aspeed_spi_do_calibration(struct aspeed_spi_chip *chip);
-> > > +
-> > >   static int aspeed_spi_dirmap_create(struct spi_mem_dirmap_desc *desc)
-> > >   {
-> > >   	struct aspeed_spi *aspi = spi_controller_get_devdata(desc->mem->spi->master);
-> > > @@ -565,6 +577,8 @@ static int aspeed_spi_dirmap_create(struct spi_mem_dirmap_desc *desc)
-> > >   	chip->ctl_val[ASPEED_SPI_READ] = ctl_val;
-> > >   	writel(chip->ctl_val[ASPEED_SPI_READ], chip->ctl);
-> > > +	ret = aspeed_spi_do_calibration(chip);
-> > > +
+> > > diff --git a/drivers/spi/spi-aspeed-smc.c b/drivers/spi/spi-aspeed-smc.c
+> > > index 997ec2e45118..0951766baef4 100644
+> > > --- a/drivers/spi/spi-aspeed-smc.c
+> > > +++ b/drivers/spi/spi-aspeed-smc.c
+> > > @@ -322,8 +322,8 @@ static int do_aspeed_spi_exec_op(struct spi_mem *mem, const struct spi_mem_op *o
+> > >   		if (!op->addr.nbytes)
+> > >   			ret = aspeed_spi_read_reg(chip, op);
+> > >   		else
+> > > -			ret = aspeed_spi_read_user(chip, op, op->addr.val,
+> > > -						   op->data.nbytes, op->data.buf.in);
+> > > +			memcpy_fromio(op->data.buf.in, chip->ahb_base + op->addr.val,
+> > > +				      op->data.nbytes);
 > > 
-> > I am still not convinced this is a good idea. The API does not say
-> > anywhere what dirmap_create must be called after the flash is completely
-> > initialized, though that is what is done currently in practice.
+> > I think I commented on this earlier too, though I failed to respond to
+> > your reply. Let me bring the topic back up. I think this can cause an
+> > invalid memory address to be accessed. Not all SPI MEM consumers will
+> > use dirmap APIs, and they won't use them all the time. For example, SPI
+> > NOR can perform some operations to reset the flash before shutting down.
+> > For example, SPI NOR turns off 4byte address mode during shutdown. This
+> > will be a register read/write operation, which usually has a different
+> > opcode.
 > 
-> Yes because we wouldn't have a correct 'spi_mem_dirmap_info' if it wasn't
-> the case. May be change the documentation ?
+> It's only a small optimization for startup when the SFDP probing is done.
+> There are quite a few reads which are large :
+> 
+>   spi-aspeed-smc 1e630000.spi: CE0 read OP 0x5a mode:1.1.1.1 naddr:0x3 ndummies:0x1 len:0x10
+>   spi-aspeed-smc 1e630000.spi: CE0 read OP 0x5a mode:1.1.1.1 naddr:0x3 ndummies:0x1 len:0x10
+>   spi-aspeed-smc 1e630000.spi: CE0 read OP 0x5a mode:1.1.1.1 naddr:0x3 ndummies:0x1 len:0x120
+>   spi-aspeed-smc 1e630000.spi: CE0 read OP 0x5a mode:1.1.1.1 naddr:0x3 ndummies:0x1 len:0x40
+>   spi-aspeed-smc 1e630000.spi: CE0 read OP 0x5a mode:1.1.1.1 naddr:0x3 ndummies:0x1 len:0x8
 
-SPI NOR knows what protocol and opcodes it would use before it actually 
-puts the flash in that mode. So in theory it could call dirmap_create() 
-before it has put the flash in say 8D-8D-8D mode. I don't see much 
-reason to do so in practice, but who knows, that might change. This is 
-why I would like to hear what other people think.
+Is the overhead large enough to cause any significant delays? This would 
+only happen once, it is not on a hot path.
 
-> 
-> > I think
-> > an explicit API to mark flash as "ready for calibration" would be a
-> > better idea.
-> 
-> OK. Since the above is a oneliner, it should not be a problem to move
-> it under a new handler if needed.
-> 
-> The dirmap_create() handler expects the spi-mem descriptor and the field
-> 'desc->info.op_tmpl' to be correctly initialized in order to compute the
-> control register value, which is a requirement for dirmap_read(). The
-> calibration sequence simply comes after.
-> 
-> AFAICT, there is nothing incorrect today.
+Anyway, I had not noticed earlier that you set opcode, dummy, etc. in 
+do_aspeed_spi_exec_op() so I was thinking you would always end up using 
+the "main" read operation for this.
 
-In practice, no there is nothing incorrect. But as I explained above, it 
-is certainly possible to call dirmap_create() before the flash is ready.
+I am fine with this as long as you add range checks to make sure there 
+are no overflows.
 
 > 
-> > Tudor/Mark/Miquel, what do you think?
+> > 
+> > So I think you should keep dirmap and exec_op() independent of each
+> > other.
 > 
+> OK. I understand. It's not a problem as it works either way.
 > 
 > Thanks,
 > 
 > C.
+> 
+> 
+> > >   	} else {
+> > >   		if (!op->addr.nbytes)
+> > >   			ret = aspeed_spi_write_reg(chip, op);
+> > > @@ -403,10 +403,73 @@ static int aspeed_spi_chip_set_default_window(struct aspeed_spi_chip *chip)
+> > >   	return chip->ahb_window_size ? 0 : -1;
+> > >   }
+> > > +static int aspeed_spi_dirmap_create(struct spi_mem_dirmap_desc *desc)
+> > > +{
+> > > +	struct aspeed_spi *aspi = spi_controller_get_devdata(desc->mem->spi->master);
+> > > +	struct aspeed_spi_chip *chip = &aspi->chips[desc->mem->spi->chip_select];
+> > > +	struct spi_mem_op *op = &desc->info.op_tmpl;
+> > > +	u32 ctl_val;
+> > > +	int ret = 0;
+> > > +
+> > > +	chip->clk_freq = desc->mem->spi->max_speed_hz;
+> > > +
+> > > +	/* Only for reads */
+> > > +	if (op->data.dir != SPI_MEM_DATA_IN)
+> > > +		return -EOPNOTSUPP;
+> > > +
+> > > +	if (desc->info.length > chip->ahb_window_size)
+> > > +		dev_warn(aspi->dev, "CE%d window (%dMB) too small for mapping",
+> > > +			 chip->cs, chip->ahb_window_size >> 20);
+> > > +
+> > > +	/* Define the default IO read settings */
+> > > +	ctl_val = readl(chip->ctl) & ~CTRL_IO_CMD_MASK;
+> > > +	ctl_val |= aspeed_spi_get_io_mode(op) |
+> > > +		op->cmd.opcode << CTRL_COMMAND_SHIFT |
+> > > +		CTRL_IO_DUMMY_SET(op->dummy.nbytes / op->dummy.buswidth) |
+> > > +		CTRL_IO_MODE_READ;
+> > > +
+> > > +	/* Tune 4BYTE address mode */
+> > > +	if (op->addr.nbytes) {
+> > > +		u32 addr_mode = readl(aspi->regs + CE_CTRL_REG);
+> > > +
+> > > +		if (op->addr.nbytes == 4)
+> > > +			addr_mode |= (0x11 << chip->cs);
+> > > +		else
+> > > +			addr_mode &= ~(0x11 << chip->cs);
+> > > +		writel(addr_mode, aspi->regs + CE_CTRL_REG);
+> > > +	}
+> > > +
+> > > +	/* READ mode is the controller default setting */
+> > > +	chip->ctl_val[ASPEED_SPI_READ] = ctl_val;
+> > > +	writel(chip->ctl_val[ASPEED_SPI_READ], chip->ctl);
+> > > +
+> > > +	dev_info(aspi->dev, "CE%d read buswidth:%d [0x%08x]\n",
+> > > +		 chip->cs, op->data.buswidth, chip->ctl_val[ASPEED_SPI_READ]);
+> > > +
+> > > +	return ret;
+> > > +}
+> > > +
+> > > +static ssize_t aspeed_spi_dirmap_read(struct spi_mem_dirmap_desc *desc,
+> > > +				      u64 offset, size_t len, void *buf)
+> > > +{
+> > > +	struct aspeed_spi *aspi = spi_controller_get_devdata(desc->mem->spi->master);
+> > > +	struct aspeed_spi_chip *chip = &aspi->chips[desc->mem->spi->chip_select];
+> > > +
+> > > +	/* Switch to USER command mode if mapping window is too small */
+> > > +	if (chip->ahb_window_size < offset + len)
+> > > +		aspeed_spi_read_user(chip, &desc->info.op_tmpl, offset, len, buf);
+> > > +	else
+> > > +		memcpy_fromio(buf, chip->ahb_base + offset, len);
+> > > +
+> > > +	return len;
+> > > +}
+> > > +
+> > >   static const struct spi_controller_mem_ops aspeed_spi_mem_ops = {
+> > >   	.supports_op = aspeed_spi_supports_op,
+> > >   	.exec_op = aspeed_spi_exec_op,
+> > >   	.get_name = aspeed_spi_get_name,
+> > > +	.dirmap_create = aspeed_spi_dirmap_create,
+> > > +	.dirmap_read = aspeed_spi_dirmap_read,
+> > >   };
+> > >   static void aspeed_spi_chip_set_type(struct aspeed_spi *aspi, unsigned int cs, int type)
+> > > -- 
+> > > 2.34.1
+> > > 
+> > 
+> 
 
 -- 
 Regards,
