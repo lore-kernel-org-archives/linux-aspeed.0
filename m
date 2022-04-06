@@ -1,25 +1,28 @@
 From: Andrew Lunn <andrew@lunn.ch>
-Date: Wed, 6 Apr 2022 20:58:11 +0200
-Subject: [PATCH net-next RESEND v2 1/3] net: mdio: aspeed: move reg
- accessing part into separate functions
-In-Reply-To: <20220406170055.28516-2-potin.lai@quantatw.com>
+Date: Wed, 6 Apr 2022 20:58:43 +0200
+Subject: [PATCH net-next RESEND v2 2/3] net: mdio: aspeed: Introduce read
+ write function for c22 and c45
+In-Reply-To: <20220406170055.28516-3-potin.lai@quantatw.com>
 References: <20220406170055.28516-1-potin.lai@quantatw.com>
- <20220406170055.28516-2-potin.lai@quantatw.com>
-Message-ID: <Yk3iw0ENOYUBrXK2@lunn.ch>
+ <20220406170055.28516-3-potin.lai@quantatw.com>
+Message-ID: <Yk3i496mEwOdUEyd@lunn.ch>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Apr 07, 2022 at 01:00:53AM +0800, Potin Lai wrote:
-> Add aspeed_mdio_op() and aseed_mdio_get_data() for register accessing.
+On Thu, Apr 07, 2022 at 01:00:54AM +0800, Potin Lai wrote:
+> Add following additional functions to move out the implementation from
+> aspeed_mdio_read() and aspeed_mdio_write().
 > 
-> aspeed_mdio_op() handles operations, write command to control register,
-> then check and wait operations is finished (bit 31 is cleared).
+> c22:
+>  - aspeed_mdio_read_c22()
+>  - aspeed_mdio_write_c22()
 > 
-> aseed_mdio_get_data() fetchs the result value of operation from data
-> register.
+> c45:
+>  - aspeed_mdio_read_c45()
+>  - aspeed_mdio_write_c45()
 > 
 > Signed-off-by: Potin Lai <potin.lai@quantatw.com>
 
