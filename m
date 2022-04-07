@@ -1,61 +1,139 @@
-From: Andrew Lunn <andrew@lunn.ch>
-Date: Wed, 6 Apr 2022 21:00:04 +0200
-Subject: [PATCH net-next RESEND v2 3/3] net: mdio: aspeed: Add c45 support
-In-Reply-To: <20220406170055.28516-4-potin.lai@quantatw.com>
-References: <20220406170055.28516-1-potin.lai@quantatw.com>
- <20220406170055.28516-4-potin.lai@quantatw.com>
-Message-ID: <Yk3jNJMjMPj7NM8r@lunn.ch>
+From: Potin Lai <potin.lai@quantatw.com>
+Date: Thu,  7 Apr 2022 09:17:36 +0800
+Subject: [PATCH net-next v3 1/3] net: mdio: aspeed: move reg accessing part
+ into separate functions
+In-Reply-To: <20220407011738.7189-1-potin.lai@quantatw.com>
+References: <20220407011738.7189-1-potin.lai@quantatw.com>
+Message-ID: <20220407011738.7189-2-potin.lai@quantatw.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Apr 07, 2022 at 01:00:55AM +0800, Potin Lai wrote:
-> Add Clause 45 support for Aspeed mdio driver.
-> 
-> Signed-off-by: Potin Lai <potin.lai@quantatw.com>
-> ---
->  drivers/net/mdio/mdio-aspeed.c | 35 ++++++++++++++++++++++++++++++----
->  1 file changed, 31 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/net/mdio/mdio-aspeed.c b/drivers/net/mdio/mdio-aspeed.c
-> index 5becddb56117..4236ba78aa65 100644
-> --- a/drivers/net/mdio/mdio-aspeed.c
-> +++ b/drivers/net/mdio/mdio-aspeed.c
-> @@ -21,6 +21,10 @@
->  #define   ASPEED_MDIO_CTRL_OP		GENMASK(27, 26)
->  #define     MDIO_C22_OP_WRITE		0b01
->  #define     MDIO_C22_OP_READ		0b10
-> +#define     MDIO_C45_OP_ADDR		0b00
-> +#define     MDIO_C45_OP_WRITE		0b01
-> +#define     MDIO_C45_OP_PREAD		0b10
-> +#define     MDIO_C45_OP_READ		0b11
->  #define   ASPEED_MDIO_CTRL_PHYAD	GENMASK(25, 21)
->  #define   ASPEED_MDIO_CTRL_REGAD	GENMASK(20, 16)
->  #define   ASPEED_MDIO_CTRL_MIIWDATA	GENMASK(15, 0)
-> @@ -100,15 +104,37 @@ static int aspeed_mdio_write_c22(struct mii_bus *bus, int addr, int regnum,
->  
->  static int aspeed_mdio_read_c45(struct mii_bus *bus, int addr, int regnum)
->  {
-> -	/* TODO: add c45 support */
-> -	return -EOPNOTSUPP;
-> +	int rc;
-> +	u8 c45_dev = (regnum >> 16) & 0x1F;
-> +	u16 c45_addr = regnum & 0xFFFF;
+Add aspeed_mdio_op() and aseed_mdio_get_data() for register accessing.
 
-Sorry, missed it the first time. You should use reverse christmass
-tree here. Just move rc to last.
+aspeed_mdio_op() handles operations, write command to control register,
+then check and wait operations is finished (bit 31 is cleared).
 
->  static int aspeed_mdio_write_c45(struct mii_bus *bus, int addr, int regnum,
->  				 u16 val)
->  {
-> -	/* TODO: add c45 support */
-> -	return -EOPNOTSUPP;
-> +	int rc;
-> +	u8 c45_dev = (regnum >> 16) & 0x1F;
-> +	u16 c45_addr = regnum & 0xFFFF;
+aseed_mdio_get_data() fetchs the result value of operation from data
+register.
 
-Same here.
+Signed-off-by: Potin Lai <potin.lai@quantatw.com>
+Reviewed-by: Andrew Lunn <andrew@lunn.ch>
+---
+ drivers/net/mdio/mdio-aspeed.c | 70 ++++++++++++++++++----------------
+ 1 file changed, 38 insertions(+), 32 deletions(-)
 
-     Andrew
+diff --git a/drivers/net/mdio/mdio-aspeed.c b/drivers/net/mdio/mdio-aspeed.c
+index e2273588c75b..f22be2f069e9 100644
+--- a/drivers/net/mdio/mdio-aspeed.c
++++ b/drivers/net/mdio/mdio-aspeed.c
+@@ -39,34 +39,35 @@ struct aspeed_mdio {
+ 	void __iomem *base;
+ };
+ 
+-static int aspeed_mdio_read(struct mii_bus *bus, int addr, int regnum)
++static int aspeed_mdio_op(struct mii_bus *bus, u8 st, u8 op, u8 phyad, u8 regad,
++			  u16 data)
+ {
+ 	struct aspeed_mdio *ctx = bus->priv;
+ 	u32 ctrl;
+-	u32 data;
+-	int rc;
+ 
+-	dev_dbg(&bus->dev, "%s: addr: %d, regnum: %d\n", __func__, addr,
+-		regnum);
+-
+-	/* Just clause 22 for the moment */
+-	if (regnum & MII_ADDR_C45)
+-		return -EOPNOTSUPP;
++	dev_dbg(&bus->dev, "%s: st: %u op: %u, phyad: %u, regad: %u, data: %u\n",
++		__func__, st, op, phyad, regad, data);
+ 
+ 	ctrl = ASPEED_MDIO_CTRL_FIRE
+-		| FIELD_PREP(ASPEED_MDIO_CTRL_ST, ASPEED_MDIO_CTRL_ST_C22)
+-		| FIELD_PREP(ASPEED_MDIO_CTRL_OP, MDIO_C22_OP_READ)
+-		| FIELD_PREP(ASPEED_MDIO_CTRL_PHYAD, addr)
+-		| FIELD_PREP(ASPEED_MDIO_CTRL_REGAD, regnum);
++		| FIELD_PREP(ASPEED_MDIO_CTRL_ST, st)
++		| FIELD_PREP(ASPEED_MDIO_CTRL_OP, op)
++		| FIELD_PREP(ASPEED_MDIO_CTRL_PHYAD, phyad)
++		| FIELD_PREP(ASPEED_MDIO_CTRL_REGAD, regad)
++		| FIELD_PREP(ASPEED_MDIO_DATA_MIIRDATA, data);
+ 
+ 	iowrite32(ctrl, ctx->base + ASPEED_MDIO_CTRL);
+ 
+-	rc = readl_poll_timeout(ctx->base + ASPEED_MDIO_CTRL, ctrl,
++	return readl_poll_timeout(ctx->base + ASPEED_MDIO_CTRL, ctrl,
+ 				!(ctrl & ASPEED_MDIO_CTRL_FIRE),
+ 				ASPEED_MDIO_INTERVAL_US,
+ 				ASPEED_MDIO_TIMEOUT_US);
+-	if (rc < 0)
+-		return rc;
++}
++
++static int aspeed_mdio_get_data(struct mii_bus *bus)
++{
++	struct aspeed_mdio *ctx = bus->priv;
++	int rc;
++	u32 data;
+ 
+ 	rc = readl_poll_timeout(ctx->base + ASPEED_MDIO_DATA, data,
+ 				data & ASPEED_MDIO_DATA_IDLE,
+@@ -78,31 +79,36 @@ static int aspeed_mdio_read(struct mii_bus *bus, int addr, int regnum)
+ 	return FIELD_GET(ASPEED_MDIO_DATA_MIIRDATA, data);
+ }
+ 
+-static int aspeed_mdio_write(struct mii_bus *bus, int addr, int regnum, u16 val)
++static int aspeed_mdio_read(struct mii_bus *bus, int addr, int regnum)
+ {
+-	struct aspeed_mdio *ctx = bus->priv;
+-	u32 ctrl;
++	int rc;
+ 
+-	dev_dbg(&bus->dev, "%s: addr: %d, regnum: %d, val: 0x%x\n",
+-		__func__, addr, regnum, val);
++	dev_dbg(&bus->dev, "%s: addr: %d, regnum: %d\n", __func__, addr,
++		regnum);
+ 
+ 	/* Just clause 22 for the moment */
+ 	if (regnum & MII_ADDR_C45)
+ 		return -EOPNOTSUPP;
+ 
+-	ctrl = ASPEED_MDIO_CTRL_FIRE
+-		| FIELD_PREP(ASPEED_MDIO_CTRL_ST, ASPEED_MDIO_CTRL_ST_C22)
+-		| FIELD_PREP(ASPEED_MDIO_CTRL_OP, MDIO_C22_OP_WRITE)
+-		| FIELD_PREP(ASPEED_MDIO_CTRL_PHYAD, addr)
+-		| FIELD_PREP(ASPEED_MDIO_CTRL_REGAD, regnum)
+-		| FIELD_PREP(ASPEED_MDIO_CTRL_MIIWDATA, val);
++	rc = aspeed_mdio_op(bus, ASPEED_MDIO_CTRL_ST_C22, MDIO_C22_OP_READ,
++			    addr, regnum, 0);
++	if (rc < 0)
++		return rc;
+ 
+-	iowrite32(ctrl, ctx->base + ASPEED_MDIO_CTRL);
++	return aspeed_mdio_get_data(bus);
++}
+ 
+-	return readl_poll_timeout(ctx->base + ASPEED_MDIO_CTRL, ctrl,
+-				  !(ctrl & ASPEED_MDIO_CTRL_FIRE),
+-				  ASPEED_MDIO_INTERVAL_US,
+-				  ASPEED_MDIO_TIMEOUT_US);
++static int aspeed_mdio_write(struct mii_bus *bus, int addr, int regnum, u16 val)
++{
++	dev_dbg(&bus->dev, "%s: addr: %d, regnum: %d, val: 0x%x\n",
++		__func__, addr, regnum, val);
++
++	/* Just clause 22 for the moment */
++	if (regnum & MII_ADDR_C45)
++		return -EOPNOTSUPP;
++
++	return aspeed_mdio_op(bus, ASPEED_MDIO_CTRL_ST_C22, MDIO_C22_OP_WRITE,
++			      addr, regnum, val);
+ }
+ 
+ static int aspeed_mdio_probe(struct platform_device *pdev)
+-- 
+2.17.1
+
