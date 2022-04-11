@@ -1,23 +1,88 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Mon, 11 Apr 2022 09:50:40 +0930
-Subject: [PATCH RESEND v3 3/3] ARM: dts: aspeed: add reset properties into
- MDIO nodes
-In-Reply-To: <20220407075734.19644-4-dylan_hung@aspeedtech.com>
+From: Philipp Zabel <p.zabel@pengutronix.de>
+Date: Mon, 11 Apr 2022 11:19:39 +0200
+Subject: [PATCH RESEND v3 2/3] net: mdio: add reset control for Aspeed MDIO
+In-Reply-To: <667280e7-526d-4002-9dff-389f6b35ac2f@www.fastmail.com>
 References: <20220407075734.19644-1-dylan_hung@aspeedtech.com>
- <20220407075734.19644-4-dylan_hung@aspeedtech.com>
-Message-ID: <1b708e26-264c-4b68-b6c8-c31a8d34a873@www.fastmail.com>
+ <20220407075734.19644-3-dylan_hung@aspeedtech.com>
+ <667280e7-526d-4002-9dff-389f6b35ac2f@www.fastmail.com>
+Message-ID: <8470f6029703a29bd7c384f489da0c7936c44cc7.camel@pengutronix.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+On Mo, 2022-04-11 at 09:50 +0930, Andrew Jeffery wrote:
+> 
+> On Thu, 7 Apr 2022, at 17:27, Dylan Hung wrote:
+> > Add reset assertion/deassertion for Aspeed MDIO.  There are 4 MDIO
+> > controllers embedded in Aspeed AST2600 SOC and share one reset control
+> > register SCU50[3].  To work with old DT blobs which don't have the reset
+> > property, devm_reset_control_get_optional_shared is used in this change.
+> > 
+> > Signed-off-by: Dylan Hung <dylan_hung@aspeedtech.com>
+> > Reviewed-by: Philipp Zabel <p.zabel@pengutronix.de>
+> > ---
+> > ?drivers/net/mdio/mdio-aspeed.c | 15 ++++++++++++++-
+> > ?1 file changed, 14 insertions(+), 1 deletion(-)
+> > 
+> > diff --git a/drivers/net/mdio/mdio-aspeed.c b/drivers/net/mdio/mdio-aspeed.c
+> > index e2273588c75b..1afb58ccc524 100644
+> > --- a/drivers/net/mdio/mdio-aspeed.c
+> > +++ b/drivers/net/mdio/mdio-aspeed.c
+> > @@ -3,6 +3,7 @@
+> > 
+> > ?#include <linux/bitfield.h>
+> > ?#include <linux/delay.h>
+> > +#include <linux/reset.h>
+> > ?#include <linux/iopoll.h>
+> > ?#include <linux/mdio.h>
+> > ?#include <linux/module.h>
+> > @@ -37,6 +38,7 @@
+> > 
+> > ?struct aspeed_mdio {
+> > ?	void __iomem *base;
+> > +	struct reset_control *reset;
+> > ?};
+> > 
+> > ?static int aspeed_mdio_read(struct mii_bus *bus, int addr, int regnum)
+> > @@ -120,6 +122,12 @@ static int aspeed_mdio_probe(struct platform_device *pdev)
+> > ?	if (IS_ERR(ctx->base))
+> > ?		return PTR_ERR(ctx->base);
+> > 
+> > +	ctx->reset = devm_reset_control_get_optional_shared(&pdev->dev, NULL);
+> > +	if (IS_ERR(ctx->reset))
+> > +		return PTR_ERR(ctx->reset);
+> > +
+> > +	reset_control_deassert(ctx->reset);
+> > +
+> > ?	bus->name = DRV_NAME;
+> > ?	snprintf(bus->id, MII_BUS_ID_SIZE, "%s%d", pdev->name, pdev->id);
+> > ?	bus->parent = &pdev->dev;
+> > @@ -129,6 +137,7 @@ static int aspeed_mdio_probe(struct platform_device *pdev)
+> > ?	rc = of_mdiobus_register(bus, pdev->dev.of_node);
+> > ?	if (rc) {
+> > ?		dev_err(&pdev->dev, "Cannot register MDIO bus!\n");
+> > +		reset_control_assert(ctx->reset);
+> > ?		return rc;
+> > ?	}
+> > 
+> > @@ -139,7 +148,11 @@ static int aspeed_mdio_probe(struct platform_device *pdev)
+> > 
+> > ?static int aspeed_mdio_remove(struct platform_device *pdev)
+> > ?{
+> > -	mdiobus_unregister(platform_get_drvdata(pdev));
+> > +	struct mii_bus *bus = (struct mii_bus *)platform_get_drvdata(pdev);
+> > +	struct aspeed_mdio *ctx = bus->priv;
+> > +
+> > +	reset_control_assert(ctx->reset);
+> 
+> Isn't this unnecessary because you've used the devm_ variant to acquire 
+> the reset?
 
+No, this is correct. deassert/assert needs to be balanced, and the
+reset_control_deassert() call in aspeed_mdio_probe() is not devres
+managed.
 
-On Thu, 7 Apr 2022, at 17:27, Dylan Hung wrote:
-> Add reset control properties into MDIO nodes.  The 4 MDIO controllers in
-> AST2600 SOC share one reset control bit SCU50[3].
->
-> Signed-off-by: Dylan Hung <dylan_hung@aspeedtech.com>
-
-Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
+regards
+Philipp
