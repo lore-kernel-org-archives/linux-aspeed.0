@@ -1,88 +1,60 @@
-From: Philipp Zabel <p.zabel@pengutronix.de>
-Date: Mon, 11 Apr 2022 11:19:39 +0200
-Subject: [PATCH RESEND v3 2/3] net: mdio: add reset control for Aspeed MDIO
-In-Reply-To: <667280e7-526d-4002-9dff-389f6b35ac2f@www.fastmail.com>
-References: <20220407075734.19644-1-dylan_hung@aspeedtech.com>
- <20220407075734.19644-3-dylan_hung@aspeedtech.com>
- <667280e7-526d-4002-9dff-389f6b35ac2f@www.fastmail.com>
-Message-ID: <8470f6029703a29bd7c384f489da0c7936c44cc7.camel@pengutronix.de>
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Date: Mon, 11 Apr 2022 13:22:58 +0300
+Subject: [PATCH] usb: gadget: udc: clean up comments
+In-Reply-To: <20220410150828.1891123-1-trix@redhat.com>
+References: <20220410150828.1891123-1-trix@redhat.com>
+Message-ID: <YlQBgnjpkSurf9PZ@smile.fi.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mo, 2022-04-11 at 09:50 +0930, Andrew Jeffery wrote:
+On Sun, Apr 10, 2022 at 11:08:28AM -0400, Tom Rix wrote:
+> SPDX
+> *.h use /* */ style comments
 > 
-> On Thu, 7 Apr 2022, at 17:27, Dylan Hung wrote:
-> > Add reset assertion/deassertion for Aspeed MDIO.  There are 4 MDIO
-> > controllers embedded in Aspeed AST2600 SOC and share one reset control
-> > register SCU50[3].  To work with old DT blobs which don't have the reset
-> > property, devm_reset_control_get_optional_shared is used in this change.
-> > 
-> > Signed-off-by: Dylan Hung <dylan_hung@aspeedtech.com>
-> > Reviewed-by: Philipp Zabel <p.zabel@pengutronix.de>
-> > ---
-> > ?drivers/net/mdio/mdio-aspeed.c | 15 ++++++++++++++-
-> > ?1 file changed, 14 insertions(+), 1 deletion(-)
-> > 
-> > diff --git a/drivers/net/mdio/mdio-aspeed.c b/drivers/net/mdio/mdio-aspeed.c
-> > index e2273588c75b..1afb58ccc524 100644
-> > --- a/drivers/net/mdio/mdio-aspeed.c
-> > +++ b/drivers/net/mdio/mdio-aspeed.c
-> > @@ -3,6 +3,7 @@
-> > 
-> > ?#include <linux/bitfield.h>
-> > ?#include <linux/delay.h>
-> > +#include <linux/reset.h>
-> > ?#include <linux/iopoll.h>
-> > ?#include <linux/mdio.h>
-> > ?#include <linux/module.h>
-> > @@ -37,6 +38,7 @@
-> > 
-> > ?struct aspeed_mdio {
-> > ?	void __iomem *base;
-> > +	struct reset_control *reset;
-> > ?};
-> > 
-> > ?static int aspeed_mdio_read(struct mii_bus *bus, int addr, int regnum)
-> > @@ -120,6 +122,12 @@ static int aspeed_mdio_probe(struct platform_device *pdev)
-> > ?	if (IS_ERR(ctx->base))
-> > ?		return PTR_ERR(ctx->base);
-> > 
-> > +	ctx->reset = devm_reset_control_get_optional_shared(&pdev->dev, NULL);
-> > +	if (IS_ERR(ctx->reset))
-> > +		return PTR_ERR(ctx->reset);
-> > +
-> > +	reset_control_deassert(ctx->reset);
-> > +
-> > ?	bus->name = DRV_NAME;
-> > ?	snprintf(bus->id, MII_BUS_ID_SIZE, "%s%d", pdev->name, pdev->id);
-> > ?	bus->parent = &pdev->dev;
-> > @@ -129,6 +137,7 @@ static int aspeed_mdio_probe(struct platform_device *pdev)
-> > ?	rc = of_mdiobus_register(bus, pdev->dev.of_node);
-> > ?	if (rc) {
-> > ?		dev_err(&pdev->dev, "Cannot register MDIO bus!\n");
-> > +		reset_control_assert(ctx->reset);
-> > ?		return rc;
-> > ?	}
-> > 
-> > @@ -139,7 +148,11 @@ static int aspeed_mdio_probe(struct platform_device *pdev)
-> > 
-> > ?static int aspeed_mdio_remove(struct platform_device *pdev)
-> > ?{
-> > -	mdiobus_unregister(platform_get_drvdata(pdev));
-> > +	struct mii_bus *bus = (struct mii_bus *)platform_get_drvdata(pdev);
-> > +	struct aspeed_mdio *ctx = bus->priv;
-> > +
-> > +	reset_control_assert(ctx->reset);
+> For double words, remove
+> with, also
 > 
-> Isn't this unnecessary because you've used the devm_ variant to acquire 
-> the reset?
+> Spelling replacements
+> wayt to way
+> wakup to wakeup
+> Contrl to Control
+> cheks to checks
+> initiaization to initialization
+> dyanmic to dynamic
 
-No, this is correct. deassert/assert needs to be balanced, and the
-reset_control_deassert() call in aspeed_mdio_probe() is not devres
-managed.
+Something really wrong with indentation above.
 
-regards
-Philipp
+...
+
+>  drivers/usb/gadget/udc/amd5536udc.h       | 2 +-
+>  drivers/usb/gadget/udc/aspeed-vhub/core.c | 2 +-
+>  drivers/usb/gadget/udc/aspeed-vhub/ep0.c  | 2 +-
+>  drivers/usb/gadget/udc/aspeed-vhub/hub.c  | 2 +-
+>  drivers/usb/gadget/udc/aspeed-vhub/vhub.h | 4 ++--
+>  drivers/usb/gadget/udc/at91_udc.c         | 2 +-
+>  drivers/usb/gadget/udc/bdc/bdc_core.c     | 4 ++--
+>  drivers/usb/gadget/udc/core.c             | 4 ++--
+>  drivers/usb/gadget/udc/trace.h            | 2 +-
+
+I believe that Greg's bot asks to split on per-driver basis.
+OTOH I don't see anything that can be problematic if in one
+change. So, it's up to maintainers then.
+
+...
+
+> --- a/drivers/usb/gadget/udc/amd5536udc.h
+> +++ b/drivers/usb/gadget/udc/amd5536udc.h
+
+>   * amd5536.h -- header for AMD 5536 UDC high/full speed USB device controller
+
+At the same time you may drop the filename(s) from the file(s) as this very
+one shows why it's good not to have a filename inside file.
+
+-- 
+With Best Regards,
+Andy Shevchenko
+
+
