@@ -1,57 +1,42 @@
 From: Dylan Hung <dylan_hung@aspeedtech.com>
-Date: Tue, 12 Apr 2022 14:56:09 +0800
-Subject: [PATCH v4 1/3] dt-bindings: net: add reset property for aspeed,
- ast2600-mdio binding
-In-Reply-To: <20220412065611.8930-1-dylan_hung@aspeedtech.com>
-References: <20220412065611.8930-1-dylan_hung@aspeedtech.com>
-Message-ID: <20220412065611.8930-2-dylan_hung@aspeedtech.com>
+Date: Tue, 12 Apr 2022 14:56:08 +0800
+Subject: [PATCH v4 0/3] Add reset deassertion for Aspeed MDIO
+Message-ID: <20220412065611.8930-1-dylan_hung@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The AST2600 MDIO bus controller has a reset control bit and must be
-deasserted before manipulating the MDIO controller. By default, the
-hardware asserts the reset so the driver only need to deassert it.
+Add missing reset deassertion for Aspeed MDIO bus controller. The reset
+is asserted by the hardware when power-on so the driver only needs to
+deassert it. To be able to work with the old DT blobs, the reset is
+optional since it may be deasserted by the bootloader or the previous
+kernel.
 
-Regarding to the old DT blobs which don't have reset property in them,
-the reset deassertion is usually done by the bootloader so the reset
-property is optional to work with them.
+V4:
+- use ASPEED_RESET_MII instead of hardcoding in dt-binding example
 
-Signed-off-by: Dylan Hung <dylan_hung@aspeedtech.com>
-Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
----
- .../devicetree/bindings/net/aspeed,ast2600-mdio.yaml         | 5 +++++
- 1 file changed, 5 insertions(+)
+V3:
+- remove reset property from the required list of the device tree
+  bindings
+- remove "Cc: stable at vger.kernel.org" from the commit messages
+- add more description in the commit message of the dt-binding
 
-diff --git a/Documentation/devicetree/bindings/net/aspeed,ast2600-mdio.yaml b/Documentation/devicetree/bindings/net/aspeed,ast2600-mdio.yaml
-index 1c88820cbcdf..1174c14898e1 100644
---- a/Documentation/devicetree/bindings/net/aspeed,ast2600-mdio.yaml
-+++ b/Documentation/devicetree/bindings/net/aspeed,ast2600-mdio.yaml
-@@ -20,10 +20,14 @@ allOf:
- properties:
-   compatible:
-     const: aspeed,ast2600-mdio
-+
-   reg:
-     maxItems: 1
-     description: The register range of the MDIO controller instance
- 
-+  resets:
-+    maxItems: 1
-+
- required:
-   - compatible
-   - reg
-@@ -39,6 +43,7 @@ examples:
-             reg = <0x1e650000 0x8>;
-             #address-cells = <1>;
-             #size-cells = <0>;
-+            resets = <&syscon ASPEED_RESET_MII>;
- 
-             ethphy0: ethernet-phy at 0 {
-                     compatible = "ethernet-phy-ieee802.3-c22";
+V2:
+- add reset property in the device tree bindings
+- add reset assertion in the error path and driver remove
+
+Dylan Hung (3):
+  dt-bindings: net: add reset property for aspeed, ast2600-mdio binding
+  net: mdio: add reset control for Aspeed MDIO
+  ARM: dts: aspeed: add reset properties into MDIO nodes
+
+ .../bindings/net/aspeed,ast2600-mdio.yaml         |  5 +++++
+ arch/arm/boot/dts/aspeed-g6.dtsi                  |  4 ++++
+ drivers/net/mdio/mdio-aspeed.c                    | 15 ++++++++++++++-
+ 3 files changed, 23 insertions(+), 1 deletion(-)
+
 -- 
 2.25.1
 
