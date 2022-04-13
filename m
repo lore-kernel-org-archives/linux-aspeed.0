@@ -1,60 +1,63 @@
 From: Dylan Hung <dylan_hung@aspeedtech.com>
-Date: Wed, 13 Apr 2022 20:10:37 +0800
-Subject: [PATCH v5 3/3] ARM: dts: aspeed: add reset properties into MDIO nodes
+Date: Wed, 13 Apr 2022 20:10:35 +0800
+Subject: [PATCH v5 1/3] dt-bindings: net: add reset property for aspeed,
+ ast2600-mdio binding
 In-Reply-To: <20220413121037.23748-1-dylan_hung@aspeedtech.com>
 References: <20220413121037.23748-1-dylan_hung@aspeedtech.com>
-Message-ID: <20220413121037.23748-4-dylan_hung@aspeedtech.com>
+Message-ID: <20220413121037.23748-2-dylan_hung@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add reset control properties into MDIO nodes.  The 4 MDIO controllers in
-AST2600 SOC share one reset control bit SCU50[3].
+The AST2600 MDIO bus controller has a reset control bit and must be
+deasserted before manipulating the MDIO controller. By default, the
+hardware asserts the reset so the driver only need to deassert it.
+
+Regarding to the old DT blobs which don't have reset property in them,
+the reset deassertion is usually done by the bootloader so the reset
+property is optional to work with them.
 
 Signed-off-by: Dylan Hung <dylan_hung@aspeedtech.com>
-Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
+Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
 ---
- arch/arm/boot/dts/aspeed-g6.dtsi | 4 ++++
- 1 file changed, 4 insertions(+)
+ .../devicetree/bindings/net/aspeed,ast2600-mdio.yaml        | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/arch/arm/boot/dts/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed-g6.dtsi
-index c32e87fad4dc..ab20ea8d829d 100644
---- a/arch/arm/boot/dts/aspeed-g6.dtsi
-+++ b/arch/arm/boot/dts/aspeed-g6.dtsi
-@@ -181,6 +181,7 @@ mdio0: mdio at 1e650000 {
- 			status = "disabled";
- 			pinctrl-names = "default";
- 			pinctrl-0 = <&pinctrl_mdio1_default>;
-+			resets = <&syscon ASPEED_RESET_MII>;
- 		};
+diff --git a/Documentation/devicetree/bindings/net/aspeed,ast2600-mdio.yaml b/Documentation/devicetree/bindings/net/aspeed,ast2600-mdio.yaml
+index 1c88820cbcdf..f81eda8cb0a5 100644
+--- a/Documentation/devicetree/bindings/net/aspeed,ast2600-mdio.yaml
++++ b/Documentation/devicetree/bindings/net/aspeed,ast2600-mdio.yaml
+@@ -20,10 +20,14 @@ allOf:
+ properties:
+   compatible:
+     const: aspeed,ast2600-mdio
++
+   reg:
+     maxItems: 1
+     description: The register range of the MDIO controller instance
  
- 		mdio1: mdio at 1e650008 {
-@@ -191,6 +192,7 @@ mdio1: mdio at 1e650008 {
- 			status = "disabled";
- 			pinctrl-names = "default";
- 			pinctrl-0 = <&pinctrl_mdio2_default>;
-+			resets = <&syscon ASPEED_RESET_MII>;
- 		};
++  resets:
++    maxItems: 1
++
+ required:
+   - compatible
+   - reg
+@@ -34,11 +38,13 @@ unevaluatedProperties: false
  
- 		mdio2: mdio at 1e650010 {
-@@ -201,6 +203,7 @@ mdio2: mdio at 1e650010 {
- 			status = "disabled";
- 			pinctrl-names = "default";
- 			pinctrl-0 = <&pinctrl_mdio3_default>;
-+			resets = <&syscon ASPEED_RESET_MII>;
- 		};
+ examples:
+   - |
++    #include <dt-bindings/clock/ast2600-clock.h>
+     mdio0: mdio at 1e650000 {
+             compatible = "aspeed,ast2600-mdio";
+             reg = <0x1e650000 0x8>;
+             #address-cells = <1>;
+             #size-cells = <0>;
++            resets = <&syscon ASPEED_RESET_MII>;
  
- 		mdio3: mdio at 1e650018 {
-@@ -211,6 +214,7 @@ mdio3: mdio at 1e650018 {
- 			status = "disabled";
- 			pinctrl-names = "default";
- 			pinctrl-0 = <&pinctrl_mdio4_default>;
-+			resets = <&syscon ASPEED_RESET_MII>;
- 		};
- 
- 		mac0: ftgmac at 1e660000 {
+             ethphy0: ethernet-phy at 0 {
+                     compatible = "ethernet-phy-ieee802.3-c22";
 -- 
 2.25.1
 
