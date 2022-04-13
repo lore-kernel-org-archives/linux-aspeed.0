@@ -1,43 +1,77 @@
-From: cgel.zte@gmail.com <cgel.zte@gmail.com>
-Date: Wed, 13 Apr 2022 01:04:25 +0000
-Subject: [PATCH v2] peci: aspeed: fix error check return value of
- platform_get_irq()
-In-Reply-To: <d09484f7cda13de3f156bd1bcba8c2671495dcd1.camel@intel.com>
-References: <d09484f7cda13de3f156bd1bcba8c2671495dcd1.camel@intel.com>
-Message-ID: <20220413010425.2534887-1-lv.ruyi@zte.com.cn>
+From: Joel Stanley <joel@jms.id.au>
+Date: Wed, 13 Apr 2022 02:34:08 +0000
+Subject: [PATCH v4 1/3] dt-bindings: net: add reset property for aspeed,
+ ast2600-mdio binding
+In-Reply-To: <20220412065611.8930-2-dylan_hung@aspeedtech.com>
+References: <20220412065611.8930-1-dylan_hung@aspeedtech.com>
+ <20220412065611.8930-2-dylan_hung@aspeedtech.com>
+Message-ID: <CACPK8Xd0gh5pDafP3ysu7odhnP=YPNSYPV9u36CEoMPDtQxEJw@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Lv Ruyi <lv.ruyi@zte.com.cn>
+On Tue, 12 Apr 2022 at 06:55, Dylan Hung <dylan_hung@aspeedtech.com> wrote:
+>
+> The AST2600 MDIO bus controller has a reset control bit and must be
+> deasserted before manipulating the MDIO controller. By default, the
+> hardware asserts the reset so the driver only need to deassert it.
+>
+> Regarding to the old DT blobs which don't have reset property in them,
+> the reset deassertion is usually done by the bootloader so the reset
+> property is optional to work with them.
+>
+> Signed-off-by: Dylan Hung <dylan_hung@aspeedtech.com>
+> Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
+> ---
+>  .../devicetree/bindings/net/aspeed,ast2600-mdio.yaml         | 5 +++++
+>  1 file changed, 5 insertions(+)
+>
+> diff --git a/Documentation/devicetree/bindings/net/aspeed,ast2600-mdio.yaml b/Documentation/devicetree/bindings/net/aspeed,ast2600-mdio.yaml
+> index 1c88820cbcdf..1174c14898e1 100644
+> --- a/Documentation/devicetree/bindings/net/aspeed,ast2600-mdio.yaml
+> +++ b/Documentation/devicetree/bindings/net/aspeed,ast2600-mdio.yaml
+> @@ -20,10 +20,14 @@ allOf:
+>  properties:
+>    compatible:
+>      const: aspeed,ast2600-mdio
+> +
+>    reg:
+>      maxItems: 1
+>      description: The register range of the MDIO controller instance
+>
+> +  resets:
+> +    maxItems: 1
+> +
+>  required:
+>    - compatible
+>    - reg
+> @@ -39,6 +43,7 @@ examples:
+>              reg = <0x1e650000 0x8>;
+>              #address-cells = <1>;
+>              #size-cells = <0>;
+> +            resets = <&syscon ASPEED_RESET_MII>;
 
-platform_get_irq() return negative value on failure, so null check of
-priv->irq is incorrect. Fix it by comparing whether it is less than zero.
+You will need to include the definition for ASPEED_RESET_MII at the
+start of the example:
 
-Fixes: a85e4c52086c ("peci: Add peci-aspeed controller driver")
-Reported-by: Zeal Robot <zealci@zte.com.cn>
-Signed-off-by: Lv Ruyi <lv.ruyi@zte.com.cn>
----
-v2: prefix the subject with "peci: aspeed:"
----
- drivers/peci/controller/peci-aspeed.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+#include <dt-bindings/clock/ast2600-clock.h>
 
-diff --git a/drivers/peci/controller/peci-aspeed.c b/drivers/peci/controller/peci-aspeed.c
-index 1925ddc13f00..731c5d8f75c6 100644
---- a/drivers/peci/controller/peci-aspeed.c
-+++ b/drivers/peci/controller/peci-aspeed.c
-@@ -523,7 +523,7 @@ static int aspeed_peci_probe(struct platform_device *pdev)
- 		return PTR_ERR(priv->base);
- 
- 	priv->irq = platform_get_irq(pdev, 0);
--	if (!priv->irq)
-+	if (priv->irq < 0)
- 		return priv->irq;
- 
- 	ret = devm_request_irq(&pdev->dev, priv->irq, aspeed_peci_irq_handler,
--- 
-2.25.1
+You can test the bindings example by doing this:
 
+pip install dtschema
+
+make dt_binding_check
+DT_SCHEMA_FILES=Documentation/devicetree/bindings/net/aspeed,ast2600-mdio.yaml
+
+Cheers,
+
+Joel
+
+>
+>              ethphy0: ethernet-phy at 0 {
+>                      compatible = "ethernet-phy-ieee802.3-c22";
+> --
+> 2.25.1
+>
