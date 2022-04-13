@@ -1,81 +1,60 @@
 From: Dylan Hung <dylan_hung@aspeedtech.com>
-Date: Wed, 13 Apr 2022 20:10:36 +0800
-Subject: [PATCH v5 2/3] net: mdio: add reset control for Aspeed MDIO
+Date: Wed, 13 Apr 2022 20:10:37 +0800
+Subject: [PATCH v5 3/3] ARM: dts: aspeed: add reset properties into MDIO nodes
 In-Reply-To: <20220413121037.23748-1-dylan_hung@aspeedtech.com>
 References: <20220413121037.23748-1-dylan_hung@aspeedtech.com>
-Message-ID: <20220413121037.23748-3-dylan_hung@aspeedtech.com>
+Message-ID: <20220413121037.23748-4-dylan_hung@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add reset assertion/deassertion for Aspeed MDIO.  There are 4 MDIO
-controllers embedded in Aspeed AST2600 SOC and share one reset control
-register SCU50[3].  To work with old DT blobs which don't have the reset
-property, devm_reset_control_get_optional_shared is used in this change.
+Add reset control properties into MDIO nodes.  The 4 MDIO controllers in
+AST2600 SOC share one reset control bit SCU50[3].
 
 Signed-off-by: Dylan Hung <dylan_hung@aspeedtech.com>
-Reviewed-by: Philipp Zabel <p.zabel@pengutronix.de>
-Reviewed-by: Andrew Lunn <andrew@lunn.ch>
+Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
 ---
- drivers/net/mdio/mdio-aspeed.c | 15 ++++++++++++++-
- 1 file changed, 14 insertions(+), 1 deletion(-)
+ arch/arm/boot/dts/aspeed-g6.dtsi | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/drivers/net/mdio/mdio-aspeed.c b/drivers/net/mdio/mdio-aspeed.c
-index e2273588c75b..1afb58ccc524 100644
---- a/drivers/net/mdio/mdio-aspeed.c
-+++ b/drivers/net/mdio/mdio-aspeed.c
-@@ -3,6 +3,7 @@
+diff --git a/arch/arm/boot/dts/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed-g6.dtsi
+index c32e87fad4dc..ab20ea8d829d 100644
+--- a/arch/arm/boot/dts/aspeed-g6.dtsi
++++ b/arch/arm/boot/dts/aspeed-g6.dtsi
+@@ -181,6 +181,7 @@ mdio0: mdio at 1e650000 {
+ 			status = "disabled";
+ 			pinctrl-names = "default";
+ 			pinctrl-0 = <&pinctrl_mdio1_default>;
++			resets = <&syscon ASPEED_RESET_MII>;
+ 		};
  
- #include <linux/bitfield.h>
- #include <linux/delay.h>
-+#include <linux/reset.h>
- #include <linux/iopoll.h>
- #include <linux/mdio.h>
- #include <linux/module.h>
-@@ -37,6 +38,7 @@
+ 		mdio1: mdio at 1e650008 {
+@@ -191,6 +192,7 @@ mdio1: mdio at 1e650008 {
+ 			status = "disabled";
+ 			pinctrl-names = "default";
+ 			pinctrl-0 = <&pinctrl_mdio2_default>;
++			resets = <&syscon ASPEED_RESET_MII>;
+ 		};
  
- struct aspeed_mdio {
- 	void __iomem *base;
-+	struct reset_control *reset;
- };
+ 		mdio2: mdio at 1e650010 {
+@@ -201,6 +203,7 @@ mdio2: mdio at 1e650010 {
+ 			status = "disabled";
+ 			pinctrl-names = "default";
+ 			pinctrl-0 = <&pinctrl_mdio3_default>;
++			resets = <&syscon ASPEED_RESET_MII>;
+ 		};
  
- static int aspeed_mdio_read(struct mii_bus *bus, int addr, int regnum)
-@@ -120,6 +122,12 @@ static int aspeed_mdio_probe(struct platform_device *pdev)
- 	if (IS_ERR(ctx->base))
- 		return PTR_ERR(ctx->base);
+ 		mdio3: mdio at 1e650018 {
+@@ -211,6 +214,7 @@ mdio3: mdio at 1e650018 {
+ 			status = "disabled";
+ 			pinctrl-names = "default";
+ 			pinctrl-0 = <&pinctrl_mdio4_default>;
++			resets = <&syscon ASPEED_RESET_MII>;
+ 		};
  
-+	ctx->reset = devm_reset_control_get_optional_shared(&pdev->dev, NULL);
-+	if (IS_ERR(ctx->reset))
-+		return PTR_ERR(ctx->reset);
-+
-+	reset_control_deassert(ctx->reset);
-+
- 	bus->name = DRV_NAME;
- 	snprintf(bus->id, MII_BUS_ID_SIZE, "%s%d", pdev->name, pdev->id);
- 	bus->parent = &pdev->dev;
-@@ -129,6 +137,7 @@ static int aspeed_mdio_probe(struct platform_device *pdev)
- 	rc = of_mdiobus_register(bus, pdev->dev.of_node);
- 	if (rc) {
- 		dev_err(&pdev->dev, "Cannot register MDIO bus!\n");
-+		reset_control_assert(ctx->reset);
- 		return rc;
- 	}
- 
-@@ -139,7 +148,11 @@ static int aspeed_mdio_probe(struct platform_device *pdev)
- 
- static int aspeed_mdio_remove(struct platform_device *pdev)
- {
--	mdiobus_unregister(platform_get_drvdata(pdev));
-+	struct mii_bus *bus = (struct mii_bus *)platform_get_drvdata(pdev);
-+	struct aspeed_mdio *ctx = bus->priv;
-+
-+	reset_control_assert(ctx->reset);
-+	mdiobus_unregister(bus);
- 
- 	return 0;
- }
+ 		mac0: ftgmac at 1e660000 {
 -- 
 2.25.1
 
