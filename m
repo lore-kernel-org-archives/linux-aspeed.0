@@ -1,63 +1,28 @@
-From: Dylan Hung <dylan_hung@aspeedtech.com>
-Date: Wed, 13 Apr 2022 20:10:35 +0800
-Subject: [PATCH v5 1/3] dt-bindings: net: add reset property for aspeed,
- ast2600-mdio binding
-In-Reply-To: <20220413121037.23748-1-dylan_hung@aspeedtech.com>
-References: <20220413121037.23748-1-dylan_hung@aspeedtech.com>
-Message-ID: <20220413121037.23748-2-dylan_hung@aspeedtech.com>
+From: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
+Date: Thu, 14 Apr 2022 18:28:28 +0800
+Subject: [PATCH 0/1] spi: aspeed: Update SPI clock frequency configuration
+Message-ID: <20220414102829.3892843-1-chin-ting_kuo@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The AST2600 MDIO bus controller has a reset control bit and must be
-deasserted before manipulating the MDIO controller. By default, the
-hardware asserts the reset so the driver only need to deassert it.
+This patch series aims to update SPI clock frequency
+configuration rule and add SPI clock frequency
+calculation method for different ASPEED platforms.
 
-Regarding to the old DT blobs which don't have reset property in them,
-the reset deassertion is usually done by the bootloader so the reset
-property is optional to work with them.
+This patch is based on [1] and the patch series [2].
+[1]: https://github.com/legoater/linux/commits/openbmc-5.15
+[2]: https://patchwork.kernel.org/project/spi-devel-general/list/?series=626283
 
-Signed-off-by: Dylan Hung <dylan_hung@aspeedtech.com>
-Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
----
- .../devicetree/bindings/net/aspeed,ast2600-mdio.yaml        | 6 ++++++
- 1 file changed, 6 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/net/aspeed,ast2600-mdio.yaml b/Documentation/devicetree/bindings/net/aspeed,ast2600-mdio.yaml
-index 1c88820cbcdf..f81eda8cb0a5 100644
---- a/Documentation/devicetree/bindings/net/aspeed,ast2600-mdio.yaml
-+++ b/Documentation/devicetree/bindings/net/aspeed,ast2600-mdio.yaml
-@@ -20,10 +20,14 @@ allOf:
- properties:
-   compatible:
-     const: aspeed,ast2600-mdio
-+
-   reg:
-     maxItems: 1
-     description: The register range of the MDIO controller instance
- 
-+  resets:
-+    maxItems: 1
-+
- required:
-   - compatible
-   - reg
-@@ -34,11 +38,13 @@ unevaluatedProperties: false
- 
- examples:
-   - |
-+    #include <dt-bindings/clock/ast2600-clock.h>
-     mdio0: mdio at 1e650000 {
-             compatible = "aspeed,ast2600-mdio";
-             reg = <0x1e650000 0x8>;
-             #address-cells = <1>;
-             #size-cells = <0>;
-+            resets = <&syscon ASPEED_RESET_MII>;
- 
-             ethphy0: ethernet-phy at 0 {
-                     compatible = "ethernet-phy-ieee802.3-c22";
+Chin-Ting Kuo (1):
+  spi: aspeed: Update SPI clock frequency configuration
+
+ drivers/spi/spi-aspeed-smc.c | 166 +++++++++++++++++++++++++++++++----
+ 1 file changed, 149 insertions(+), 17 deletions(-)
+
 -- 
 2.25.1
 
