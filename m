@@ -1,22 +1,28 @@
-From: Jakub Kicinski <kuba@kernel.org>
-Date: Thu, 14 Apr 2022 14:22:12 +0200
-Subject: [PATCH v5 0/3] Add reset deassertion for Aspeed MDIO
-In-Reply-To: <20220413121037.23748-1-dylan_hung@aspeedtech.com>
-References: <20220413121037.23748-1-dylan_hung@aspeedtech.com>
-Message-ID: <20220414142212.258fcb37@kernel.org>
+From: Linus Walleij <linus.walleij@linaro.org>
+Date: Mon, 18 Apr 2022 01:28:18 +0200
+Subject: [PATCH v3 0/7] Fix AST2600 quad mode SPI pinmux settings
+In-Reply-To: <20220329173932.2588289-1-quic_jaehyoo@quicinc.com>
+References: <20220329173932.2588289-1-quic_jaehyoo@quicinc.com>
+Message-ID: <CACRpkdZff-TbnNHO6Q590ubyH51+yqN68DOghazVKvYoHMBekw@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 13 Apr 2022 20:10:34 +0800 Dylan Hung wrote:
-> Add missing reset deassertion for Aspeed MDIO bus controller. The reset
-> is asserted by the hardware when power-on so the driver only needs to
-> deassert it. To be able to work with the old DT blobs, the reset is
-> optional since it may be deasserted by the bootloader or the previous
-> kernel.
+Hi Jae,
 
-I presume you want this applied to net-next, but it appears there 
-is a conflict or something. Could you resend the patches based on
-net-next/master?
+On Tue, Mar 29, 2022 at 7:40 PM Jae Hyun Yoo <quic_jaehyoo@quicinc.com> wrote:
+
+> Jae Hyun Yoo (5):
+>   pinctrl: pinctrl-aspeed-g6: remove FWQSPID group in pinctrl
+>   dt-bindings: pinctrl: aspeed-g6: remove FWQSPID group
+>   dt-bindings: pinctrl: aspeed-g6: add FWQSPI function/group
+>   pinctrl: pinctrl-aspeed-g6: add FWQSPI function-group
+
+These four patches applied to the pinctrl tree.
+
+Please funnel patches 1, 6, 7 through the SoC tree.
+
+Yours,
+Linus Walleij
