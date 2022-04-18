@@ -1,35 +1,38 @@
-From: Potin Lai <potin.lai@quantatw.com>
-Date: Mon, 18 Apr 2022 17:48:27 +0800
-Subject: [PATCH RESEND 1/1] ARM: dts: aspeed: bletchley: add sample averaging
- for ADM1278
-Message-ID: <20220418094827.6185-1-potin.lai@quantatw.com>
+From: Jae Hyun Yoo <quic_jaehyoo@quicinc.com>
+Date: Mon, 18 Apr 2022 07:07:36 -0700
+Subject: [PATCH v3 0/7] Fix AST2600 quad mode SPI pinmux settings
+In-Reply-To: <CACRpkdZff-TbnNHO6Q590ubyH51+yqN68DOghazVKvYoHMBekw@mail.gmail.com>
+References: <20220329173932.2588289-1-quic_jaehyoo@quicinc.com>
+ <CACRpkdZff-TbnNHO6Q590ubyH51+yqN68DOghazVKvYoHMBekw@mail.gmail.com>
+Message-ID: <697daba9-c07d-5a41-305e-95b1dcfa1c50@quicinc.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-set number of sample averaging to 128 for both PWR_AVG and VI_AVG
+Hi Linus,
 
-Signed-off-by: Potin Lai <potin.lai@quantatw.com>
-Reviewed-by: Patrick Williams <patrick@stwcx.xyz>
----
- arch/arm/boot/dts/aspeed-bmc-facebook-bletchley.dts | 2 ++
- 1 file changed, 2 insertions(+)
+On 4/17/2022 4:28 PM, Linus Walleij wrote:
+> Hi Jae,
+> 
+> On Tue, Mar 29, 2022 at 7:40 PM Jae Hyun Yoo <quic_jaehyoo@quicinc.com> wrote:
+> 
+>> Jae Hyun Yoo (5):
+>>    pinctrl: pinctrl-aspeed-g6: remove FWQSPID group in pinctrl
+>>    dt-bindings: pinctrl: aspeed-g6: remove FWQSPID group
+>>    dt-bindings: pinctrl: aspeed-g6: add FWQSPI function/group
+>>    pinctrl: pinctrl-aspeed-g6: add FWQSPI function-group
+> 
+> These four patches applied to the pinctrl tree.
+> 
+> Please funnel patches 1, 6, 7 through the SoC tree.
 
-diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-bletchley.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-bletchley.dts
-index eaf1bc261ee3..be76cd955129 100644
---- a/arch/arm/boot/dts/aspeed-bmc-facebook-bletchley.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-facebook-bletchley.dts
-@@ -732,6 +732,8 @@
- 		compatible = "adi,adm1278";
- 		reg = <0x11>;
- 		shunt-resistor-micro-ohms = <300>;
-+		adi,volt-curr-sample-average = <128>;
-+		adi,power-sample-average = <128>;
- 	};
- 
- 	tmp421 at 4c {
--- 
-2.17.1
+Thanks a lot!
 
+Hi Joel,
+Can you please include 1, 6 and 7 in the next pull request of Aspeed
+SoC tree?
+
+Thanks,
+Jae
