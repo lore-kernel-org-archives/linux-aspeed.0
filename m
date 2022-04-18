@@ -1,28 +1,45 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Date: Mon, 18 Apr 2022 01:28:18 +0200
-Subject: [PATCH v3 0/7] Fix AST2600 quad mode SPI pinmux settings
-In-Reply-To: <20220329173932.2588289-1-quic_jaehyoo@quicinc.com>
-References: <20220329173932.2588289-1-quic_jaehyoo@quicinc.com>
-Message-ID: <CACRpkdZff-TbnNHO6Q590ubyH51+yqN68DOghazVKvYoHMBekw@mail.gmail.com>
+From: Dylan Hung <dylan_hung@aspeedtech.com>
+Date: Mon, 18 Apr 2022 09:40:56 +0800
+Subject: [PATCH net-next RESEND v5 0/3] Add reset deassertion for Aspeed MDIO
+Message-ID: <20220418014059.3054-1-dylan_hung@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Jae,
+Add missing reset deassertion for Aspeed MDIO bus controller. The reset
+is asserted by the hardware when power-on so the driver only needs to
+deassert it. To be able to work with the old DT blobs, the reset is
+optional since it may be deasserted by the bootloader or the previous
+kernel.
 
-On Tue, Mar 29, 2022 at 7:40 PM Jae Hyun Yoo <quic_jaehyoo@quicinc.com> wrote:
+V5:
+- fix error of dt_binding_check
 
-> Jae Hyun Yoo (5):
->   pinctrl: pinctrl-aspeed-g6: remove FWQSPID group in pinctrl
->   dt-bindings: pinctrl: aspeed-g6: remove FWQSPID group
->   dt-bindings: pinctrl: aspeed-g6: add FWQSPI function/group
->   pinctrl: pinctrl-aspeed-g6: add FWQSPI function-group
+V4:
+- use ASPEED_RESET_MII instead of hardcoding in dt-binding example
 
-These four patches applied to the pinctrl tree.
+V3:
+- remove reset property from the required list of the device tree
+  bindings
+- remove "Cc: stable at vger.kernel.org" from the commit messages
+- add more description in the commit message of the dt-binding
 
-Please funnel patches 1, 6, 7 through the SoC tree.
+V2:
+- add reset property in the device tree bindings
+- add reset assertion in the error path and driver remove
 
-Yours,
-Linus Walleij
+Dylan Hung (3):
+  dt-bindings: net: add reset property for aspeed, ast2600-mdio binding
+  net: mdio: add reset control for Aspeed MDIO
+  ARM: dts: aspeed: add reset properties into MDIO nodes
+
+ .../bindings/net/aspeed,ast2600-mdio.yaml         |  6 ++++++
+ arch/arm/boot/dts/aspeed-g6.dtsi                  |  4 ++++
+ drivers/net/mdio/mdio-aspeed.c                    | 15 ++++++++++++++-
+ 3 files changed, 24 insertions(+), 1 deletion(-)
+
+-- 
+2.25.1
+
