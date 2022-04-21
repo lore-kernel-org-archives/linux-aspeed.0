@@ -1,40 +1,50 @@
-From: Haowen Bai <baihaowen@meizu.com>
-Date: Thu, 21 Apr 2022 10:26:59 +0800
-Subject: [PATCH] pinctrl: aspeed: Fix potential NULL dereference in
- aspeed_pinmux_set_mux()
-Message-ID: <1650508019-22554-1-git-send-email-baihaowen@meizu.com>
+From: Brandon Wyman <bjwyman@gmail.com>
+Date: Thu, 21 Apr 2022 21:36:38 +0000
+Subject: [PATCH] ARM: dts: aspeed: Everest and Rainier: Add
+ power-ffs-sync-history GPIO
+Message-ID: <20220421213638.1151193-1-bjwyman@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-pdesc could be null but still dereference pdesc->name and it will lead to
-a null pointer access. So we move a null check before dereference.
+The IBM Everest and Rainier systems have a GPIO line that goes to the
+power supplies. It has a dual function: 1) Fans Full Speed, and 2) Sync
+input history.
 
-Signed-off-by: Haowen Bai <baihaowen@meizu.com>
+Signed-off-by: Brandon Wyman <bjwyman@gmail.com>
 ---
- drivers/pinctrl/aspeed/pinctrl-aspeed.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/arm/boot/dts/aspeed-bmc-ibm-everest.dts | 2 +-
+ arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/pinctrl/aspeed/pinctrl-aspeed.c b/drivers/pinctrl/aspeed/pinctrl-aspeed.c
-index c94e24aadf92..83d47ff1cea8 100644
---- a/drivers/pinctrl/aspeed/pinctrl-aspeed.c
-+++ b/drivers/pinctrl/aspeed/pinctrl-aspeed.c
-@@ -236,11 +236,11 @@ int aspeed_pinmux_set_mux(struct pinctrl_dev *pctldev, unsigned int function,
- 		const struct aspeed_sig_expr **funcs;
- 		const struct aspeed_sig_expr ***prios;
- 
--		pr_debug("Muxing pin %s for %s\n", pdesc->name, pfunc->name);
--
- 		if (!pdesc)
- 			return -EINVAL;
- 
-+		pr_debug("Muxing pin %s for %s\n", pdesc->name, pfunc->name);
-+
- 		prios = pdesc->prios;
- 
- 		if (!prios)
+diff --git a/arch/arm/boot/dts/aspeed-bmc-ibm-everest.dts b/arch/arm/boot/dts/aspeed-bmc-ibm-everest.dts
+index 578f9e2fc7ed..382da7934eaa 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-ibm-everest.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-ibm-everest.dts
+@@ -283,7 +283,7 @@ &gpio0 {
+ 	/*P0-P7*/	"","","","","led-pcieslot-power","","","",
+ 	/*Q0-Q7*/	"","","regulator-standby-faulted","","","","","",
+ 	/*R0-R7*/	"bmc-tpm-reset","power-chassis-control","power-chassis-good","","","I2C_FLASH_MICRO_N","","",
+-	/*S0-S7*/	"","","","","","","","",
++	/*S0-S7*/	"","","","","power-ffs-sync-history","","","",
+ 	/*T0-T7*/	"","","","","","","","",
+ 	/*U0-U7*/	"","","","","","","","",
+ 	/*V0-V7*/	"","BMC_3RESTART_ATTEMPT_P","","","","","","",
+diff --git a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
+index 528b49e2c0f8..7213434695bf 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
+@@ -265,7 +265,7 @@ &gpio0 {
+ 	/*Q0-Q7*/	"cfam-reset","","regulator-standby-faulted","","","","","",
+ 	/*R0-R7*/	"bmc-tpm-reset","power-chassis-control","power-chassis-good","","","","","",
+ 	/*S0-S7*/	"presence-ps0","presence-ps1","presence-ps2","presence-ps3",
+-				"","","","",
++	"power-ffs-sync-history","","","",
+ 	/*T0-T7*/	"","","","","","","","",
+ 	/*U0-U7*/	"","","","","","","","",
+ 	/*V0-V7*/	"","","","","","","","",
 -- 
-2.7.4
+2.25.1
 
