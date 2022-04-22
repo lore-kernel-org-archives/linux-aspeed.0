@@ -1,50 +1,127 @@
-From: Brandon Wyman <bjwyman@gmail.com>
-Date: Thu, 21 Apr 2022 21:36:38 +0000
-Subject: [PATCH] ARM: dts: aspeed: Everest and Rainier: Add
- power-ffs-sync-history GPIO
-Message-ID: <20220421213638.1151193-1-bjwyman@gmail.com>
+From: Quan Nguyen <quan@os.amperecomputing.com>
+Date: Fri, 22 Apr 2022 11:08:00 +0700
+Subject: [PATCH v7 0/3] Add SSIF BMC driver
+Message-ID: <20220422040803.2524940-1-quan@os.amperecomputing.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The IBM Everest and Rainier systems have a GPIO line that goes to the
-power supplies. It has a dual function: 1) Fans Full Speed, and 2) Sync
-input history.
+This series add support the SSIF BMC driver which is to perform in-band
+IPMI communication with their host in management (BMC) side.
 
-Signed-off-by: Brandon Wyman <bjwyman@gmail.com>
----
- arch/arm/boot/dts/aspeed-bmc-ibm-everest.dts | 2 +-
- arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+SSIF BMC driver in this series is tested with Aspeed AST2500.
 
-diff --git a/arch/arm/boot/dts/aspeed-bmc-ibm-everest.dts b/arch/arm/boot/dts/aspeed-bmc-ibm-everest.dts
-index 578f9e2fc7ed..382da7934eaa 100644
---- a/arch/arm/boot/dts/aspeed-bmc-ibm-everest.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-ibm-everest.dts
-@@ -283,7 +283,7 @@ &gpio0 {
- 	/*P0-P7*/	"","","","","led-pcieslot-power","","","",
- 	/*Q0-Q7*/	"","","regulator-standby-faulted","","","","","",
- 	/*R0-R7*/	"bmc-tpm-reset","power-chassis-control","power-chassis-good","","","I2C_FLASH_MICRO_N","","",
--	/*S0-S7*/	"","","","","","","","",
-+	/*S0-S7*/	"","","","","power-ffs-sync-history","","","",
- 	/*T0-T7*/	"","","","","","","","",
- 	/*U0-U7*/	"","","","","","","","",
- 	/*V0-V7*/	"","BMC_3RESTART_ATTEMPT_P","","","","","","",
-diff --git a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
-index 528b49e2c0f8..7213434695bf 100644
---- a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
-@@ -265,7 +265,7 @@ &gpio0 {
- 	/*Q0-Q7*/	"cfam-reset","","regulator-standby-faulted","","","","","",
- 	/*R0-R7*/	"bmc-tpm-reset","power-chassis-control","power-chassis-good","","","","","",
- 	/*S0-S7*/	"presence-ps0","presence-ps1","presence-ps2","presence-ps3",
--				"","","","",
-+	"power-ffs-sync-history","","","",
- 	/*T0-T7*/	"","","","","","","","",
- 	/*U0-U7*/	"","","","","","","","",
- 	/*V0-V7*/	"","","","","","","","",
+Discussion for v6: https://lkml.org/lkml/2022/3/10/340
+
+v7:
+  + Remove unnecessary del_timer() in response_timeout()        [Corey]
+  + Change compatible string from "ampere,ssif-bmc" to "ssif-bmc"  [Jae]
+  + Dropped the use of ssif_msg_len() macro, use the len directly [Quan]
+  + Solve possible issue if both response timer and ssif_bmc_write()
+  occurred at the same time                                      [Corey]
+  + Fix wrong return type of ssif_bmc_poll()         [kernel robot test]
+  + Refactor and introduce ssif_part_buffer struct to replace the
+  response_buf to manage each send/receive part of ssif           [Quan]
+  + Change SSIF_BAD_SMBUS state to SSIF_ABORTING state           [Corey]
+  + Support abort feature to skip the current bad request/response and
+  wait until next new request                                    [Corey]
+  + Refactor the PEC calculation to avoid the re-calculate the PEC on
+  each I2C_SLAVE_WRITE_RECEIVED event                             [Quan]
+  + Fix the use of error-proned idx                              [Corey]
+  + Defer the test for valid SMBus command until the read/write part
+  is determined                                                   [Quan]
+  + Change/split unsupported_smbus_cmd() to
+  supported_[write|read]_cmd()                                   [Corey]
+  + Abort the request if somehow its size exceeded 255 bytes      [Quan]
+
+v6:
+  + Drop the use of slave_enable()                             [Wolfram]
+  + Make i2c-aspeed to issue RxCmdLast command on all
+  I2C_SLAVE_WRITE_REQUESTED event to assert NAK when slave busy   [Quan]
+  + Make i2c slave to return -EBUSY when it's busy                [Quan]
+  + Drop the aborting feature as return Completion Code 0xFF may stop
+  host to retry and make ipmi_ssif.so fails to load               [Quan]
+  + Add timer to recover slave from busy state when no response   [Quan]
+  + Clean request/response buffer appropriately                   [Quan]
+  + Add some minor change on error and warning messages           [Quan]
+
+v5:
+  + Correct the patches order to fix the bisect issue found by
+  kernel build robot
+
+v4:
+  + Fix recursive spinlock                                      [Graeme]
+  + Send response with Completion code 0xFF when aborting         [Quan]
+  + Fix warning with dt_binding_check                              [Rob]
+  + Change aspeed-ssif-bmc.yaml to ssif-bmc.yaml                  [Quan]
+  + Added bounding check on SMBus writes and the whole request     [Dan]
+  + Moved buffer to end of struct ssif_bmc_ctx to avoid context
+    corruption if somehow buffer is written past the end           [Dan]
+  + Return -EINVAL if userspace buffer too small, don't
+    silence truncate                                       [Corey, Joel]
+  + Not necessary to check NONBLOCK in lock                      [Corey]
+  + Enforce one user at a time                                    [Joel]
+  + Reject write with invalid response length from userspace     [Corey]
+  + Add state machines for better ssif bmc state handling         [Quan]
+  + Drop ssif_bmc_aspeed.c and make ssif_bmc.c is generic
+    SSIF BMC driver                                               [Quan]
+  + Change compatible string "aspeed,ast2500-ssif-bmc" to
+    "ampere,ssif-bmc"                                             [Quan]
+  + Toggle Slave enable in i2c-aspeed to turn on/off slave mode   [Ryan]
+  + Added slave_enable() to struct i2c_algorithm to control
+    slave mode and to address the recursive spinlock      [Graeme, Ryan]
+  + Abort current request with invalid SMBus write or
+    invalid command                                               [Quan]
+  + Abort all request if there is pending response                [Quan]
+  + Changed validate_pec() to validate_request()                  [Quan]
+  + Add unsupported_smbus_cmd() to handle unknown SMBus command   [Quan]
+  + Print internal state string for ease investigating issue      [Quan]
+  + Move to READY state on SLAVE_STOP event                       [Quan]
+  + Change initilize_transfer() to process_smbus_cmd()            [Quan]
+  + Introduce functions for each slave event                      [Quan]
+
+v3:
+  + Switched binding doc to use DT schema format                   [Rob]
+  + Splited into generic ssif_bmc and aspeed-specific      [Corey, Joel]
+  + Removed redundant license info                                [Joel]
+  + Switched to use traditional if-else                           [Joel]
+  + Removed unused ssif_bmc_ioctl()                               [Joel]
+  + Made handle_request()/complete_response() to return void      [Joel]
+  + Refactored send_ssif_bmc_response() and
+  receive_ssif_bmc_request()                                     [Corey]
+  + Remove mutex                                                 [Corey]
+  + Use spin_lock/unlock_irqsave/restore in callback             [Corey]
+  + Removed the unnecessary memset                               [Corey]
+  + Switch to use dev_err()                                      [Corey]
+  + Combine mask/unmask two interrupts together                  [Corey]
+  + Fixed unhandled Tx done with NAK                              [Quan]
+  + Late ack'ed Tx done w/wo Ack irq                              [Quan]
+  + Use aspeed-specific exported aspeed_set_slave_busy() when
+  slave busy to fix the deadlock                 [Graeme, Philipp, Quan]
+  + Clean buffer for last multipart read                          [Quan]
+  + Handle unknown incoming command                               [Quan]
+
+v2:
+  + Fixed compiling error with COMPILE_TEST for arc
+
+Quan Nguyen (3):
+  ipmi: ssif_bmc: Add SSIF BMC driver
+  bindings: ipmi: Add binding for SSIF BMC driver
+  i2c: aspeed: Assert NAK when slave is busy
+
+ .../devicetree/bindings/ipmi/ssif-bmc.yaml    |  38 +
+ drivers/char/ipmi/Kconfig                     |  11 +
+ drivers/char/ipmi/Makefile                    |   1 +
+ drivers/char/ipmi/ssif_bmc.c                  | 780 ++++++++++++++++++
+ drivers/char/ipmi/ssif_bmc.h                  | 107 +++
+ drivers/i2c/busses/i2c-aspeed.c               |   5 +-
+ 6 files changed, 941 insertions(+), 1 deletion(-)
+ create mode 100644 Documentation/devicetree/bindings/ipmi/ssif-bmc.yaml
+ create mode 100644 drivers/char/ipmi/ssif_bmc.c
+ create mode 100644 drivers/char/ipmi/ssif_bmc.h
+
 -- 
-2.25.1
+2.35.1
 
