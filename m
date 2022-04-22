@@ -1,54 +1,34 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Fri, 22 Apr 2022 14:26:14 +0200
-Subject: [PATCH v3 1/3] firmware: Add boot information to sysfs
-In-Reply-To: <CAK8P3a0G_xNQ6b2e71VXPVi+-j5L--SU37gFErwGYuh1QPrr1A@mail.gmail.com>
-References: <20220204072234.304543-1-joel@jms.id.au>
- <20220204072234.304543-2-joel@jms.id.au>
- <YmJPRPhfA4Cki85S@kroah.com>
- <CAK8P3a0G_xNQ6b2e71VXPVi+-j5L--SU37gFErwGYuh1QPrr1A@mail.gmail.com>
-Message-ID: <YmKe5sUIU4z6t0Hn@kroah.com>
+From: Greg KH <gregkh@linuxfoundation.org>
+Date: Fri, 22 Apr 2022 14:59:54 +0200
+Subject: [PATCH] aspeed-vhub: epn: fix an incorrect member check on list
+ iterator
+In-Reply-To: <20220327062431.5847-1-xiam0nd.tong@gmail.com>
+References: <20220327062431.5847-1-xiam0nd.tong@gmail.com>
+Message-ID: <YmKmysEfb9GY5ng4@kroah.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Apr 22, 2022 at 11:05:46AM +0200, Arnd Bergmann wrote:
-> On Fri, Apr 22, 2022 at 8:46 AM Greg Kroah-Hartman
-> <gregkh@linuxfoundation.org> wrote:
-> > On Fri, Feb 04, 2022 at 05:52:32PM +1030, Joel Stanley wrote:
-> > > +What:                /sys/firmware/bootinfo/*
-> > > +Date:                Jan 2022
-> >
-> > It isn't January anymore :)
+On Sun, Mar 27, 2022 at 02:24:31PM +0800, Xiaomeng Tong wrote:
+> The bug is here:
+> 	if (&req->req == u_req) {
 > 
-> The patch was sent on Feb 4, I would expect that to be close enough. Does this
-> need to be the month of the kernel release it is merged into instead?
-
-That's usually best, but at least the month the patch was sent in is
-good.
-
-Also I notice there's no "who is responsible for this" entry here.
-
+> The list iterator 'req' will point to a bogus position containing
+> HEAD if the list is empty or no element is found. This case must
+> be checked before any use of the iterator, otherwise it may bypass
+> the 'if (&req->req == u_req) {' check in theory, if '*u_req' obj is
+> just allocated in the same addr with '&req->req'.
 > 
-> > > +Description:
-> > > +             A system can expose information about how it was started in
-> > > +             this directory.
-> >
-> > I do not understand what you mean by "how it was started".
-> >
-> > > +             This information is agnostic as to the firmware implementation.
-> >
-> > How?  This should be very firmware specific.
+> To fix this bug, just mova all thing inside the loop and return 0,
+> otherwise return error.
 > 
-> The original patch was specific to a particular SoC vendor. Since the
-> information provided here is fairly generic in the end, I asked for
-> the interface
-> to be generalized to the point that it can be reused across multiple
-> vendors and architectures.
+> Cc: stable at vger.kernel.org
+> Fixes: 7ecca2a4080cb ("usb/gadget: Add driver for Aspeed SoC virtual hub")
+> Signed-off-by: Xiaomeng Tong <xiam0nd.tong@gmail.com>
+> ---
+>  drivers/usb/gadget/udc/aspeed-vhub/epn.c | 23 ++++++++++-------------
+>  1 file changed, 10 insertions(+), 13 deletions(-)
 
-Ok, and is that what this interface provides?
-
-thanks,
-
-greg k-h
+Does not apply anymore :(
