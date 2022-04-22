@@ -1,25 +1,35 @@
 From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Date: Fri, 22 Apr 2022 09:21:23 +0200
-Subject: [PATCH v7 2/3] bindings: ipmi: Add binding for SSIF BMC driver
-In-Reply-To: <153da61e-dc9d-467e-221c-b48d6f54c6c2@os.amperecomputing.com>
-References: <20220422040803.2524940-1-quan@os.amperecomputing.com>
- <20220422040803.2524940-3-quan@os.amperecomputing.com>
- <153da61e-dc9d-467e-221c-b48d6f54c6c2@os.amperecomputing.com>
-Message-ID: <55cbbc16-5769-ecd2-e65e-c3b39a34dfbb@linaro.org>
+Date: Fri, 22 Apr 2022 12:45:35 +0200
+Subject: [PATCH 1/2] irqchip/aspeed-i2c-ic: Fix irq_of_parse_and_map() return
+ value
+Message-ID: <20220422104536.61451-1-krzysztof.kozlowski@linaro.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 22/04/2022 06:16, Quan Nguyen wrote:
-> Added Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>
-> as I'm not aware of the email change
+The irq_of_parse_and_map() returns 0 on failure, not a negative ERRNO.
 
-The email change from @canonical.com was 1.5 months ago, so it would be
-better if rebase your changes on more recent Linux kernel. You get all
-proper .mailmap entries.
+Fixes: f48e699ddf70 ("irqchip/aspeed-i2c-ic: Add I2C IRQ controller for Aspeed")
+Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+---
+ drivers/irqchip/irq-aspeed-i2c-ic.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
+diff --git a/drivers/irqchip/irq-aspeed-i2c-ic.c b/drivers/irqchip/irq-aspeed-i2c-ic.c
+index a47db16ff960..cef1291ae783 100644
+--- a/drivers/irqchip/irq-aspeed-i2c-ic.c
++++ b/drivers/irqchip/irq-aspeed-i2c-ic.c
+@@ -77,7 +77,7 @@ static int __init aspeed_i2c_ic_of_init(struct device_node *node,
+ 	}
+ 
+ 	i2c_ic->parent_irq = irq_of_parse_and_map(node, 0);
+-	if (i2c_ic->parent_irq < 0) {
++	if (!i2c_ic->parent_irq) {
+ 		ret = i2c_ic->parent_irq;
+ 		goto err_iounmap;
+ 	}
+-- 
+2.32.0
 
-Best regards,
-Krzysztof
