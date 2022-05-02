@@ -1,122 +1,140 @@
 From: Cédric Le Goater <clg@kaod.org>
-Date: Mon,  2 May 2022 10:13:31 +0200
-Subject: [PATCH v5 01/11] ARM: dts: aspeed: Adjust "reg" property of FMC/SPI
- controllers
+Date: Mon,  2 May 2022 10:13:32 +0200
+Subject: [PATCH v5 02/11] dt-bindings: spi: Add Aspeed SMC controllers device
+ tree binding
 In-Reply-To: <20220502081341.203369-1-clg@kaod.org>
 References: <20220502081341.203369-1-clg@kaod.org>
-Message-ID: <20220502081341.203369-2-clg@kaod.org>
+Message-ID: <20220502081341.203369-3-clg@kaod.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This is compatible with the current driver and addresses issues when
-running 'make dt_binding_check'.
+The "interrupt" property is optional because it is only necessary for
+controllers supporting DMAs (Not implemented yet in the new driver).
 
 Cc: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
 Tested-by: Joel Stanley <joel@jms.id.au>
 Tested-by: Tao Ren <rentao.bupt@gmail.com>
 Tested-by: Jae Hyun Yoo <quic_jaehyoo@quicinc.com>
+Reviewed-by: Joel Stanley <joel@jms.id.au>
+Reviewed-by: Rob Herring <robh@kernel.org>
 Signed-off-by: C?dric Le Goater <clg@kaod.org>
 ---
- arch/arm/boot/dts/aspeed-g4.dtsi | 6 ++----
- arch/arm/boot/dts/aspeed-g5.dtsi | 9 +++------
- arch/arm/boot/dts/aspeed-g6.dtsi | 9 +++------
- 3 files changed, 8 insertions(+), 16 deletions(-)
+ .../bindings/spi/aspeed,ast2600-fmc.yaml      | 82 +++++++++++++++++++
+ MAINTAINERS                                   |  9 ++
+ 2 files changed, 91 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/spi/aspeed,ast2600-fmc.yaml
 
-diff --git a/arch/arm/boot/dts/aspeed-g4.dtsi b/arch/arm/boot/dts/aspeed-g4.dtsi
-index fa8b581c3d6c..3b7b98e787e7 100644
---- a/arch/arm/boot/dts/aspeed-g4.dtsi
-+++ b/arch/arm/boot/dts/aspeed-g4.dtsi
-@@ -54,8 +54,7 @@ ahb {
- 		ranges;
+diff --git a/Documentation/devicetree/bindings/spi/aspeed,ast2600-fmc.yaml b/Documentation/devicetree/bindings/spi/aspeed,ast2600-fmc.yaml
+new file mode 100644
+index 000000000000..42a56f3c337c
+--- /dev/null
++++ b/Documentation/devicetree/bindings/spi/aspeed,ast2600-fmc.yaml
+@@ -0,0 +1,82 @@
++# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/spi/aspeed,ast2600-fmc.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Aspeed SMC controllers bindings
++
++maintainers:
++  - Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
++  - C?dric Le Goater <clg@kaod.org>
++
++description: |
++  This binding describes the Aspeed Static Memory Controllers (FMC and
++  SPI) of the AST2400, AST2500 and AST2600 SOCs.
++
++allOf:
++  - $ref: "spi-controller.yaml#"
++
++properties:
++  compatible:
++    enum:
++      - aspeed,ast2600-fmc
++      - aspeed,ast2600-spi
++      - aspeed,ast2500-fmc
++      - aspeed,ast2500-spi
++      - aspeed,ast2400-fmc
++      - aspeed,ast2400-spi
++
++  reg:
++    items:
++      - description: registers
++      - description: memory mapping
++
++  clocks:
++    maxItems: 1
++
++  interrupts:
++    maxItems: 1
++
++required:
++  - compatible
++  - reg
++  - clocks
++
++unevaluatedProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/interrupt-controller/arm-gic.h>
++    #include <dt-bindings/interrupt-controller/aspeed-scu-ic.h>
++    #include <dt-bindings/clock/ast2600-clock.h>
++
++    spi at 1e620000 {
++        reg = <0x1e620000 0xc4>, <0x20000000 0x10000000>;
++        #address-cells = <1>;
++        #size-cells = <0>;
++        compatible = "aspeed,ast2600-fmc";
++        clocks = <&syscon ASPEED_CLK_AHB>;
++        interrupts = <GIC_SPI 39 IRQ_TYPE_LEVEL_HIGH>;
++
++	flash at 0 {
++                reg = < 0 >;
++                compatible = "jedec,spi-nor";
++                spi-max-frequency = <50000000>;
++                spi-rx-bus-width = <2>;
++        };
++
++	flash at 1 {
++                reg = < 1 >;
++                compatible = "jedec,spi-nor";
++                spi-max-frequency = <50000000>;
++                spi-rx-bus-width = <2>;
++        };
++
++	flash at 2 {
++                reg = < 2 >;
++                compatible = "jedec,spi-nor";
++                spi-max-frequency = <50000000>;
++                spi-rx-bus-width = <2>;
++        };
++    };
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 5e8c2f611766..3d74b5010cbb 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -3100,6 +3100,15 @@ S:	Maintained
+ F:	Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml
+ F:	drivers/mmc/host/sdhci-of-aspeed*
  
- 		fmc: spi at 1e620000 {
--			reg = < 0x1e620000 0x94
--				0x20000000 0x10000000 >;
-+			reg = <0x1e620000 0x94>, <0x20000000 0x10000000>;
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 			compatible = "aspeed,ast2400-fmc";
-@@ -91,8 +90,7 @@ flash at 4 {
- 		};
- 
- 		spi: spi at 1e630000 {
--			reg = < 0x1e630000 0x18
--				0x30000000 0x10000000 >;
-+			reg = <0x1e630000 0x18>, <0x30000000 0x10000000>;
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 			compatible = "aspeed,ast2400-spi";
-diff --git a/arch/arm/boot/dts/aspeed-g5.dtsi b/arch/arm/boot/dts/aspeed-g5.dtsi
-index 4147b397c883..1e727cbaab14 100644
---- a/arch/arm/boot/dts/aspeed-g5.dtsi
-+++ b/arch/arm/boot/dts/aspeed-g5.dtsi
-@@ -55,8 +55,7 @@ ahb {
- 		ranges;
- 
- 		fmc: spi at 1e620000 {
--			reg = < 0x1e620000 0xc4
--				0x20000000 0x10000000 >;
-+			reg = <0x1e620000 0xc4>, <0x20000000 0x10000000>;
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 			compatible = "aspeed,ast2500-fmc";
-@@ -84,8 +83,7 @@ flash at 2 {
- 		};
- 
- 		spi1: spi at 1e630000 {
--			reg = < 0x1e630000 0xc4
--				0x30000000 0x08000000 >;
-+			reg = <0x1e630000 0xc4>, <0x30000000 0x08000000>;
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 			compatible = "aspeed,ast2500-spi";
-@@ -106,8 +104,7 @@ flash at 1 {
- 		};
- 
- 		spi2: spi at 1e631000 {
--			reg = < 0x1e631000 0xc4
--				0x38000000 0x08000000 >;
-+			reg = <0x1e631000 0xc4>, <0x38000000 0x08000000>;
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 			compatible = "aspeed,ast2500-spi";
-diff --git a/arch/arm/boot/dts/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed-g6.dtsi
-index 3d5ce9da42c3..6ae5dfecbdf1 100644
---- a/arch/arm/boot/dts/aspeed-g6.dtsi
-+++ b/arch/arm/boot/dts/aspeed-g6.dtsi
-@@ -95,8 +95,7 @@ gic: interrupt-controller at 40461000 {
- 			};
- 
- 		fmc: spi at 1e620000 {
--			reg = < 0x1e620000 0xc4
--				0x20000000 0x10000000 >;
-+			reg = <0x1e620000 0xc4>, <0x20000000 0x10000000>;
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 			compatible = "aspeed,ast2600-fmc";
-@@ -124,8 +123,7 @@ flash at 2 {
- 		};
- 
- 		spi1: spi at 1e630000 {
--			reg = < 0x1e630000 0xc4
--				0x30000000 0x10000000 >;
-+			reg = <0x1e630000 0xc4>, <0x30000000 0x10000000>;
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 			compatible = "aspeed,ast2600-spi";
-@@ -146,8 +144,7 @@ flash at 1 {
- 		};
- 
- 		spi2: spi at 1e631000 {
--			reg = < 0x1e631000 0xc4
--				0x50000000 0x10000000 >;
-+			reg = <0x1e631000 0xc4>, <0x50000000 0x10000000>;
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 			compatible = "aspeed,ast2600-spi";
++ASPEED SMC SPI DRIVER
++M:	Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
++M:	C?dric Le Goater <clg@kaod.org>
++L:	linux-aspeed at lists.ozlabs.org (moderated for non-subscribers)
++L:	openbmc at lists.ozlabs.org (moderated for non-subscribers)
++L:	linux-spi at vger.kernel.org
++S:	Maintained
++F:	Documentation/devicetree/bindings/spi/aspeed,ast2600-fmc.yaml
++
+ ASPEED VIDEO ENGINE DRIVER
+ M:	Eddie James <eajames@linux.ibm.com>
+ L:	linux-media at vger.kernel.org
 -- 
 2.35.1
 
