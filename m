@@ -1,91 +1,97 @@
-From: Rob Herring <robh@kernel.org>
-Date: Tue, 3 May 2022 12:55:04 -0500
-Subject: [PATCH v6 03/11] spi: spi-mem: Convert Aspeed SMC driver to
- spi-mem
-In-Reply-To: <20220503060634.122722-4-clg@kaod.org>
-References: <20220503060634.122722-1-clg@kaod.org>
- <20220503060634.122722-4-clg@kaod.org>
-Message-ID: <YnFseFBfe5eaIqg0@robh.at.kernel.org>
+From: Javier Martinez Canillas <javierm@redhat.com>
+Date: Tue,  3 May 2022 09:15:37 +0200
+Subject: [PATCH v3 0/3] drm: Allow simpledrm to setup its emulated FB as
+ firmware provided
+Message-ID: <20220503071540.471667-1-javierm@redhat.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, May 03, 2022 at 08:06:26AM +0200, C?dric Le Goater wrote:
-> This SPI driver adds support for the Aspeed static memory controllers
-> of the AST2600, AST2500 and AST2400 SoCs using the spi-mem interface.
-> 
->  * AST2600 Firmware SPI Memory Controller (FMC)
->    . BMC firmware
->    . 3 chip select pins (CE0 ~ CE2)
->    . Only supports SPI type flash memory
->    . different segment register interface
->    . single, dual and quad mode.
-> 
->  * AST2600 SPI Flash Controller (SPI1 and SPI2)
->    . host firmware
->    . 2 chip select pins (CE0 ~ CE1)
->    . different segment register interface
->    . single, dual and quad mode.
-> 
->  * AST2500 Firmware SPI Memory Controller (FMC)
->    . BMC firmware
->    . 3 chip select pins (CE0 ~ CE2)
->    . supports SPI type flash memory (CE0-CE1)
->    . CE2 can be of NOR type flash but this is not supported by the driver
->    . single, dual mode.
-> 
->  * AST2500 SPI Flash Controller (SPI1 and SPI2)
->    . host firmware
->    . 2 chip select pins (CE0 ~ CE1)
->    . single, dual mode.
-> 
->  * AST2400 New Static Memory Controller (also referred as FMC)
->    . BMC firmware
->    . New register set
->    . 5 chip select pins (CE0 ? CE4)
->    . supports NOR flash, NAND flash and SPI flash memory.
->    . single, dual and quad mode.
-> 
-> Each controller has a memory range on which flash devices contents are
-> mapped. Each device is assigned a window that can be changed at bootime
-> with the Segment Address Registers.
-> 
-> Each SPI flash device can then be accessed in two modes: Command and
-> User. When in User mode, SPI transfers are initiated with accesses to
-> the memory segment of a device. When in Command mode, memory
-> operations on the memory segment of a device generate SPI commands
-> automatically using a Control Register for the settings.
-> 
-> This initial patch adds support for User mode. Command mode needs a little
-> more work to check that the memory window on the AHB bus fits the device
-> size. It will come later when support for direct mapping is added.
-> 
-> Single and dual mode RX transfers are supported. Other types than SPI
-> are not supported.
-> 
-> Reviewed-by: Joel Stanley <joel@jms.id.au>
-> Tested-by: Joel Stanley <joel@jms.id.au>
-> Tested-by: Tao Ren <rentao.bupt@gmail.com>
-> Tested-by: Jae Hyun Yoo <quic_jaehyoo@quicinc.com>
-> Signed-off-by: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
-> Signed-off-by: C?dric Le Goater <clg@kaod.org>
-> ---
->  drivers/mtd/spi-nor/controllers/aspeed-smc.c  | 921 ------------------
->  drivers/spi/spi-aspeed-smc.c                  | 717 ++++++++++++++
->  .../devicetree/bindings/mtd/aspeed-smc.txt    |  51 -
+Hello,
 
-This belongs with the binding patch. But then it is converting rather 
-than adding a binding. You should be converting the binding and then 
-adding to it (like adding 2600 support).
+This series contain patches suggested by Thomas Zimmermann as a feedback for
+"[RFC PATCH v4 00/11] Fix some race between sysfb device registration and
+drivers probe" [0].
 
->  MAINTAINERS                                   |   1 +
->  drivers/mtd/spi-nor/controllers/Kconfig       |  10 -
->  drivers/mtd/spi-nor/controllers/Makefile      |   1 -
->  drivers/spi/Kconfig                           |  11 +
->  drivers/spi/Makefile                          |   1 +
->  8 files changed, 730 insertions(+), 983 deletions(-)
->  delete mode 100644 drivers/mtd/spi-nor/controllers/aspeed-smc.c
->  create mode 100644 drivers/spi/spi-aspeed-smc.c
->  delete mode 100644 Documentation/devicetree/bindings/mtd/aspeed-smc.txt
+Since other changes in [0] were more controversial, I decided to just split
+this part in a new patch-set and revisit the rest of the patches later.
+
+This is a v2 that addresses issues pointed out in v1.
+
+Patch #1 is just a cleanup since when working on this noticed that some DRM
+drivers were passing as preferred bits per pixel to drm_fbdev_generic_setup()
+the value that is the default anyways.
+
+Patch #2 renames the 'preferred_bpp' drm_fbdev_generic_setup() parameter to
+'options', and make this a multi field parameter so that it can be extended
+later to pass other options as well.
+
+Patch #3 finally adds the new DRM_FB_FW option and makes simpledrm to use it
+so that the registered framebuffer device is also marked as firmware provided.
+
+The patches were tested on a rpi4 board with the vc4 DRM driver built as a
+module and either simplefb or simpledrm built-in.
+
+[0]: https://lore.kernel.org/lkml/20220429084253.1085911-1-javierm at redhat.com/
+
+Changes in v3:
+- Drop the preferred_bpp local variable (Laurent Pinchart).
+- Add a const qualifier to options parameter (Laurent Pinchart).
+- Drop the firmware local variable (Laurent Pinchart).
+- Use DRM_FB_OPTION() since DRM_FB_SET_OPTION() got renamed (kernel test robot).
+
+Changes in v2:
+- Rename DRM_FB_SET_OPTION() to DRM_FB_OPTION() and make more clear in
+  the kernel-doc what this macro does (Laurent Pinchart).
+- Fix some kernel-doc issues I didn't notice in v1.
+- Add Reviewed-by tags from Thomas and Laurent.
+
+Javier Martinez Canillas (3):
+  drm: Remove superfluous arg when calling to drm_fbdev_generic_setup()
+  drm/fb-helper: Rename preferred_bpp drm_fbdev_generic_setup()
+    parameter
+  drm: Allow simpledrm to setup its emulated FB as firmware provided
+
+ drivers/gpu/drm/amd/amdgpu/amdgpu_drv.c       |  6 ++--
+ drivers/gpu/drm/arm/hdlcd_drv.c               |  2 +-
+ drivers/gpu/drm/arm/malidp_drv.c              |  2 +-
+ drivers/gpu/drm/aspeed/aspeed_gfx_drv.c       |  2 +-
+ drivers/gpu/drm/ast/ast_drv.c                 |  2 +-
+ drivers/gpu/drm/atmel-hlcdc/atmel_hlcdc_dc.c  |  2 +-
+ drivers/gpu/drm/drm_drv.c                     |  2 +-
+ drivers/gpu/drm/drm_fb_helper.c               | 34 ++++++++++++++-----
+ drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_drv.c     |  2 +-
+ .../gpu/drm/hisilicon/hibmc/hibmc_drm_drv.c   |  2 +-
+ .../gpu/drm/hisilicon/kirin/kirin_drm_drv.c   |  2 +-
+ drivers/gpu/drm/imx/dcss/dcss-kms.c           |  2 +-
+ drivers/gpu/drm/imx/imx-drm-core.c            |  2 +-
+ drivers/gpu/drm/ingenic/ingenic-drm-drv.c     |  2 +-
+ drivers/gpu/drm/mcde/mcde_drv.c               |  2 +-
+ drivers/gpu/drm/mediatek/mtk_drm_drv.c        |  2 +-
+ drivers/gpu/drm/meson/meson_drv.c             |  2 +-
+ drivers/gpu/drm/mxsfb/mxsfb_drv.c             |  2 +-
+ drivers/gpu/drm/pl111/pl111_drv.c             |  2 +-
+ drivers/gpu/drm/qxl/qxl_drv.c                 |  2 +-
+ drivers/gpu/drm/rcar-du/rcar_du_drv.c         |  2 +-
+ drivers/gpu/drm/sti/sti_drv.c                 |  2 +-
+ drivers/gpu/drm/stm/drv.c                     |  2 +-
+ drivers/gpu/drm/sun4i/sun4i_drv.c             |  2 +-
+ drivers/gpu/drm/tidss/tidss_drv.c             |  2 +-
+ drivers/gpu/drm/tilcdc/tilcdc_drv.c           |  2 +-
+ drivers/gpu/drm/tiny/arcpgu.c                 |  2 +-
+ drivers/gpu/drm/tiny/bochs.c                  |  2 +-
+ drivers/gpu/drm/tiny/cirrus.c                 |  2 +-
+ drivers/gpu/drm/tiny/simpledrm.c              |  2 +-
+ drivers/gpu/drm/tve200/tve200_drv.c           |  2 +-
+ drivers/gpu/drm/vboxvideo/vbox_drv.c          |  2 +-
+ drivers/gpu/drm/vc4/vc4_drv.c                 |  2 +-
+ drivers/gpu/drm/virtio/virtgpu_drv.c          |  2 +-
+ drivers/gpu/drm/xlnx/zynqmp_dpsub.c           |  2 +-
+ include/drm/drm_fb_helper.h                   | 24 ++++++++++++-
+ 36 files changed, 85 insertions(+), 45 deletions(-)
+
+-- 
+2.35.1
+
