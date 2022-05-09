@@ -1,199 +1,117 @@
 From: Cédric Le Goater <clg@kaod.org>
-Date: Mon,  9 May 2022 19:56:07 +0200
-Subject: [PATCH v7 02/11] dt-bindings: spi: Convert the Aspeed SMC controllers
- device tree binding
+Date: Mon,  9 May 2022 19:56:09 +0200
+Subject: [PATCH v7 04/11] spi: aspeed: Add support for direct mapping
 In-Reply-To: <20220509175616.1089346-1-clg@kaod.org>
 References: <20220509175616.1089346-1-clg@kaod.org>
-Message-ID: <20220509175616.1089346-3-clg@kaod.org>
+Message-ID: <20220509175616.1089346-5-clg@kaod.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The "interrupt" property is optional because it is only necessary for
-controllers supporting DMAs (Not implemented yet in the new driver).
+Use direct mapping to read the flash device contents. This operation
+mode is called "Command mode" on Aspeed SoC SMC controllers. It uses a
+Control Register for the settings to apply when a memory operation is
+performed on the flash device mapping window.
 
-Cc: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
+If the window is not big enough, fall back to the "User mode" to
+perform the read.
+
+Direct mapping for writes will come later when validated.
+
+Reviewed-by: Joel Stanley <joel@jms.id.au>
 Tested-by: Joel Stanley <joel@jms.id.au>
 Tested-by: Tao Ren <rentao.bupt@gmail.com>
 Tested-by: Jae Hyun Yoo <quic_jaehyoo@quicinc.com>
-Reviewed-by: Joel Stanley <joel@jms.id.au>
-Reviewed-by: Rob Herring <robh@kernel.org>
 Signed-off-by: C?dric Le Goater <clg@kaod.org>
 ---
- .../devicetree/bindings/mtd/aspeed-smc.txt    | 51 ------------
- .../bindings/spi/aspeed,ast2600-fmc.yaml      | 82 +++++++++++++++++++
- MAINTAINERS                                   |  9 ++
- 3 files changed, 91 insertions(+), 51 deletions(-)
- delete mode 100644 Documentation/devicetree/bindings/mtd/aspeed-smc.txt
- create mode 100644 Documentation/devicetree/bindings/spi/aspeed,ast2600-fmc.yaml
+ drivers/spi/spi-aspeed-smc.c | 68 ++++++++++++++++++++++++++++++++++++
+ 1 file changed, 68 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/mtd/aspeed-smc.txt b/Documentation/devicetree/bindings/mtd/aspeed-smc.txt
-deleted file mode 100644
-index 49f6528ef547..000000000000
---- a/Documentation/devicetree/bindings/mtd/aspeed-smc.txt
-+++ /dev/null
-@@ -1,51 +0,0 @@
--* Aspeed Firmware Memory controller
--* Aspeed SPI Flash Memory Controller
--
--The Firmware Memory Controller in the Aspeed AST2500 SoC supports
--three chip selects, two of which are always of SPI type and the third
--can be SPI or NOR type flash. These bindings only describe SPI.
--
--The two SPI flash memory controllers in the AST2500 each support two
--chip selects.
--
--Required properties:
--  - compatible : Should be one of
--	"aspeed,ast2400-fmc" for the AST2400 Firmware Memory Controller
--	"aspeed,ast2400-spi" for the AST2400 SPI Flash memory Controller
--	"aspeed,ast2500-fmc" for the AST2500 Firmware Memory Controller
--	"aspeed,ast2500-spi" for the AST2500 SPI flash memory controllers
--
--  - reg : the first contains the control register location and length,
--          the second contains the memory window mapping address and length
--  - #address-cells : must be 1 corresponding to chip select child binding
--  - #size-cells : must be 0 corresponding to chip select child binding
--
--Optional properties:
--  - interrupts : Should contain the interrupt for the dma device if an
--    FMC
--
--The child nodes are the SPI flash modules which must have a compatible
--property as specified in bindings/mtd/jedec,spi-nor.txt
--
--Optionally, the child node can contain properties for SPI mode (may be
--ignored):
--  - spi-max-frequency - max frequency of spi bus
--
--
--Example:
--fmc: fmc at 1e620000 {
--	compatible = "aspeed,ast2500-fmc";
--	reg = < 0x1e620000 0x94
--		0x20000000 0x02000000 >;
--	#address-cells = <1>;
--	#size-cells = <0>;
--	interrupts = <19>;
--	flash at 0 {
--		reg = < 0 >;
--		compatible = "jedec,spi-nor";
--		/* spi-max-frequency = <>; */
--		/* m25p,fast-read; */
--		#address-cells = <1>;
--		#size-cells = <1>;
--	};
--};
-diff --git a/Documentation/devicetree/bindings/spi/aspeed,ast2600-fmc.yaml b/Documentation/devicetree/bindings/spi/aspeed,ast2600-fmc.yaml
-new file mode 100644
-index 000000000000..fa8f4ac20985
---- /dev/null
-+++ b/Documentation/devicetree/bindings/spi/aspeed,ast2600-fmc.yaml
-@@ -0,0 +1,82 @@
-+# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/spi/aspeed,ast2600-fmc.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: Aspeed SMC controllers bindings
-+
-+maintainers:
-+  - Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
-+  - C?dric Le Goater <clg@kaod.org>
-+
-+description: |
-+  This binding describes the Aspeed Static Memory Controllers (FMC and
-+  SPI) of the AST2400, AST2500 and AST2600 SOCs.
-+
-+allOf:
-+  - $ref: "spi-controller.yaml#"
-+
-+properties:
-+  compatible:
-+    enum:
-+      - aspeed,ast2600-fmc
-+      - aspeed,ast2600-spi
-+      - aspeed,ast2500-fmc
-+      - aspeed,ast2500-spi
-+      - aspeed,ast2400-fmc
-+      - aspeed,ast2400-spi
-+
-+  reg:
-+    items:
-+      - description: registers
-+      - description: memory mapping
-+
-+  clocks:
-+    maxItems: 1
-+
-+  interrupts:
-+    maxItems: 1
-+
-+required:
-+  - compatible
-+  - reg
-+  - clocks
-+
-+unevaluatedProperties: false
-+
-+examples:
-+  - |
-+    #include <dt-bindings/interrupt-controller/arm-gic.h>
-+    #include <dt-bindings/interrupt-controller/aspeed-scu-ic.h>
-+    #include <dt-bindings/clock/ast2600-clock.h>
-+
-+    spi at 1e620000 {
-+        reg = <0x1e620000 0xc4>, <0x20000000 0x10000000>;
-+        #address-cells = <1>;
-+        #size-cells = <0>;
-+        compatible = "aspeed,ast2600-fmc";
-+        clocks = <&syscon ASPEED_CLK_AHB>;
-+        interrupts = <GIC_SPI 39 IRQ_TYPE_LEVEL_HIGH>;
-+
-+        flash at 0 {
-+                reg = < 0 >;
-+                compatible = "jedec,spi-nor";
-+                spi-max-frequency = <50000000>;
-+                spi-rx-bus-width = <2>;
-+        };
-+
-+        flash at 1 {
-+                reg = < 1 >;
-+                compatible = "jedec,spi-nor";
-+                spi-max-frequency = <50000000>;
-+                spi-rx-bus-width = <2>;
-+        };
-+
-+        flash at 2 {
-+                reg = < 2 >;
-+                compatible = "jedec,spi-nor";
-+                spi-max-frequency = <50000000>;
-+                spi-rx-bus-width = <2>;
-+        };
-+    };
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 9d47c5e7c6ae..149e84d32293 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -3101,6 +3101,15 @@ S:	Maintained
- F:	Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml
- F:	drivers/mmc/host/sdhci-of-aspeed*
+diff --git a/drivers/spi/spi-aspeed-smc.c b/drivers/spi/spi-aspeed-smc.c
+index cb5a0652e5a4..50cc7bd7ba3e 100644
+--- a/drivers/spi/spi-aspeed-smc.c
++++ b/drivers/spi/spi-aspeed-smc.c
+@@ -411,10 +411,78 @@ static int aspeed_spi_chip_set_default_window(struct aspeed_spi_chip *chip)
+ 	return chip->ahb_window_size ? 0 : -1;
+ }
  
-+ASPEED SMC SPI DRIVER
-+M:	Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
-+M:	C?dric Le Goater <clg@kaod.org>
-+L:	linux-aspeed at lists.ozlabs.org (moderated for non-subscribers)
-+L:	openbmc at lists.ozlabs.org (moderated for non-subscribers)
-+L:	linux-spi at vger.kernel.org
-+S:	Maintained
-+F:	Documentation/devicetree/bindings/spi/aspeed,ast2600-fmc.yaml
++static int aspeed_spi_dirmap_create(struct spi_mem_dirmap_desc *desc)
++{
++	struct aspeed_spi *aspi = spi_controller_get_devdata(desc->mem->spi->master);
++	struct aspeed_spi_chip *chip = &aspi->chips[desc->mem->spi->chip_select];
++	struct spi_mem_op *op = &desc->info.op_tmpl;
++	u32 ctl_val;
++	int ret = 0;
 +
- ASPEED VIDEO ENGINE DRIVER
- M:	Eddie James <eajames@linux.ibm.com>
- L:	linux-media at vger.kernel.org
++	chip->clk_freq = desc->mem->spi->max_speed_hz;
++
++	/* Only for reads */
++	if (op->data.dir != SPI_MEM_DATA_IN)
++		return -EOPNOTSUPP;
++
++	if (desc->info.length > chip->ahb_window_size)
++		dev_warn(aspi->dev, "CE%d window (%dMB) too small for mapping",
++			 chip->cs, chip->ahb_window_size >> 20);
++
++	/* Define the default IO read settings */
++	ctl_val = readl(chip->ctl) & ~CTRL_IO_CMD_MASK;
++	ctl_val |= aspeed_spi_get_io_mode(op) |
++		op->cmd.opcode << CTRL_COMMAND_SHIFT |
++		CTRL_IO_DUMMY_SET(op->dummy.nbytes / op->dummy.buswidth) |
++		CTRL_IO_MODE_READ;
++
++	/* Tune 4BYTE address mode */
++	if (op->addr.nbytes) {
++		u32 addr_mode = readl(aspi->regs + CE_CTRL_REG);
++
++		if (op->addr.nbytes == 4)
++			addr_mode |= (0x11 << chip->cs);
++		else
++			addr_mode &= ~(0x11 << chip->cs);
++		writel(addr_mode, aspi->regs + CE_CTRL_REG);
++	}
++
++	/* READ mode is the controller default setting */
++	chip->ctl_val[ASPEED_SPI_READ] = ctl_val;
++	writel(chip->ctl_val[ASPEED_SPI_READ], chip->ctl);
++
++	dev_info(aspi->dev, "CE%d read buswidth:%d [0x%08x]\n",
++		 chip->cs, op->data.buswidth, chip->ctl_val[ASPEED_SPI_READ]);
++
++	return ret;
++}
++
++static ssize_t aspeed_spi_dirmap_read(struct spi_mem_dirmap_desc *desc,
++				      u64 offset, size_t len, void *buf)
++{
++	struct aspeed_spi *aspi = spi_controller_get_devdata(desc->mem->spi->master);
++	struct aspeed_spi_chip *chip = &aspi->chips[desc->mem->spi->chip_select];
++
++	/* Switch to USER command mode if mapping window is too small */
++	if (chip->ahb_window_size < offset + len) {
++		int ret;
++
++		ret = aspeed_spi_read_user(chip, &desc->info.op_tmpl, offset, len, buf);
++		if (ret < 0)
++			return ret;
++	} else {
++		memcpy_fromio(buf, chip->ahb_base + offset, len);
++	}
++
++	return len;
++}
++
+ static const struct spi_controller_mem_ops aspeed_spi_mem_ops = {
+ 	.supports_op = aspeed_spi_supports_op,
+ 	.exec_op = aspeed_spi_exec_op,
+ 	.get_name = aspeed_spi_get_name,
++	.dirmap_create = aspeed_spi_dirmap_create,
++	.dirmap_read = aspeed_spi_dirmap_read,
+ };
+ 
+ static void aspeed_spi_chip_set_type(struct aspeed_spi *aspi, unsigned int cs, int type)
 -- 
 2.35.1
 
