@@ -1,105 +1,126 @@
-From: kernel test robot <lkp@intel.com>
-Date: Fri, 13 May 2022 19:03:22 +0800
-Subject: [PATCH 1/3] usb: gadget: add Aspeed ast2600 udc driver
-In-Reply-To: <20220513065728.857722-2-neal_liu@aspeedtech.com>
-References: <20220513065728.857722-2-neal_liu@aspeedtech.com>
-Message-ID: <202205131836.QEUySDoN-lkp@intel.com>
+From: Neal Liu <neal_liu@aspeedtech.com>
+Date: Fri, 13 May 2022 15:39:14 +0000
+Subject: [PATCH 3/3] dt-bindings: usb: add documentation for aspeed udc
+In-Reply-To: <da78aaf6-c9ae-d591-fdc4-723f097ace2c@linaro.org>
+References: <20220513065728.857722-1-neal_liu@aspeedtech.com>
+ <20220513065728.857722-4-neal_liu@aspeedtech.com>
+ <da78aaf6-c9ae-d591-fdc4-723f097ace2c@linaro.org>
+Message-ID: <HK0PR06MB3202679A7FABAF7D0D045F0880CA9@HK0PR06MB3202.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Neal,
+> -----Original Message-----
+> From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+> Sent: Friday, May 13, 2022 5:07 PM
+> To: Neal Liu <neal_liu@aspeedtech.com>; Greg Kroah-Hartman
+> <gregkh@linuxfoundation.org>; Rob Herring <robh+dt@kernel.org>;
+> Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>; Joel Stanley
+> <joel@jms.id.au>; Andrew Jeffery <andrew@aj.id.au>; Felipe Balbi
+> <balbi@kernel.org>; Sumit Semwal <sumit.semwal@linaro.org>; Christian
+> K?nig <christian.koenig@amd.com>; Geert Uytterhoeven <geert@linux-
+> m68k.org>; Li Yang <leoyang.li@nxp.com>
+> Cc: linux-aspeed at lists.ozlabs.org; linux-usb at vger.kernel.org;
+> devicetree at vger.kernel.org; linux-arm-kernel at lists.infradead.org; linux-
+> kernel at vger.kernel.org; linux-media at vger.kernel.org; dri-
+> devel at lists.freedesktop.org; linaro-mm-sig at lists.linaro.org; BMC-SW <BMC-
+> SW at aspeedtech.com>
+> Subject: Re: [PATCH 3/3] dt-bindings: usb: add documentation for aspeed
+> udc
+> 
+> On 13/05/2022 08:57, Neal Liu wrote:
+> > Add device tree binding documentation for the Aspeed USB2.0 Device
+> > Controller.
+> >
+> > Signed-off-by: Neal Liu <neal_liu@aspeedtech.com>
+> > ---
+> >  .../devicetree/bindings/usb/aspeed,udc.yaml   | 52
+> +++++++++++++++++++
+> >  1 file changed, 52 insertions(+)
+> >  create mode 100644
+> > Documentation/devicetree/bindings/usb/aspeed,udc.yaml
+> 
+> Please name the file as first compatible, so "aspeed,ast2600-udc.yaml"
 
-I love your patch! Perhaps something to improve:
+Okay, I could rename it for next patch if you preferred.
+But there are lots of yaml files which are not named as first compatible.
 
-[auto build test WARNING on usb/usb-testing]
-[also build test WARNING on robh/for-next v5.18-rc6 next-20220513]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch]
+> 
+> >
+> > diff --git a/Documentation/devicetree/bindings/usb/aspeed,udc.yaml
+> > b/Documentation/devicetree/bindings/usb/aspeed,udc.yaml
+> > new file mode 100644
+> > index 000000000000..d1d2f77d1c54
+> > --- /dev/null
+> > +++ b/Documentation/devicetree/bindings/usb/aspeed,udc.yaml
+> > @@ -0,0 +1,52 @@
+> > +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause) # Copyright
+> > +(c) 2020 Facebook Inc.
+> > +%YAML 1.2
+> > +---
+> > +$id: http://devicetree.org/schemas/usb/aspeed,udc.yaml#
+> > +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> > +
+> > +title: ASPEED USB 2.0 Device Controller
+> > +
+> > +maintainers:
+> > +  - Neal Liu <neal_liu@aspeedtech.com>
+> > +
+> > +description: |+
+> > +  The ASPEED USB 2.0 Device Controller implements 1 control endpoint
+> > +and
+> > +  4 generic endpoints for AST260x.
+> > +
+> > +  Supports independent DMA channel for each generic endpoint.
+> > +  Supports 32/256 stages descriptor mode for all generic endpoints.
+> > +
+> > +properties:
+> > +  compatible:
+> > +    enum:
+> > +      - aspeed,ast2600-udc
+> > +
+> > +  reg:
+> > +    maxItems: 1
+> > +
+> > +  clocks:
+> > +    maxItems: 1
+> > +
+> > +  interrupts:
+> > +    maxItems: 1
+> 
+> No child properties? No ports or any other devices? No usb-hcd.yaml?
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Neal-Liu/add-Aspeed-udc-driver-for-ast2600/20220513-150314
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/gregkh/usb.git usb-testing
-config: alpha-allyesconfig (https://download.01.org/0day-ci/archive/20220513/202205131836.QEUySDoN-lkp at intel.com/config)
-compiler: alpha-linux-gcc (GCC) 11.3.0
-reproduce (this is a W=1 build):
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        # https://github.com/intel-lab-lkp/linux/commit/272ae26f9fe89f60d584cf445431d0fa566eb24b
-        git remote add linux-review https://github.com/intel-lab-lkp/linux
-        git fetch --no-tags linux-review Neal-Liu/add-Aspeed-udc-driver-for-ast2600/20220513-150314
-        git checkout 272ae26f9fe89f60d584cf445431d0fa566eb24b
-        # save the config file
-        mkdir build_dir && cp config build_dir/.config
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-11.3.0 make.cross W=1 O=build_dir ARCH=alpha SHELL=/bin/bash drivers/usb/gadget/udc/
+Aspeed udc only has 1 port, no need extra properties for now.
 
-If you fix the issue, kindly add following tag as appropriate
-Reported-by: kernel test robot <lkp@intel.com>
+> > +
+> > +required:
+> > +  - compatible
+> > +  - reg
+> > +  - clocks
+> > +  - interrupts
+> > +
+> > +additionalProperties: false
+> > +
+> > +examples:
+> > +  - |
+> > +    #include <dt-bindings/clock/aspeed-clock.h>
+> > +    udc: udc at 1e6a2000 {
+> 
+> Node name: usb
+ 
+"udc" is more recognizable than "usb" I think. "usb" is too general, can be various like host or device.
 
-All warnings (new ones prefixed by >>):
-
-   drivers/usb/gadget/udc/aspeed_udc.c: In function 'ast_udc_ep0_out':
->> drivers/usb/gadget/udc/aspeed_udc.c:790:13: warning: variable 'buf' set but not used [-Wunused-but-set-variable]
-     790 |         u8 *buf;
-         |             ^~~
-   drivers/usb/gadget/udc/aspeed_udc.c: In function 'ast_udc_ep0_handle_setup':
->> drivers/usb/gadget/udc/aspeed_udc.c:1099:60: warning: suggest braces around empty body in an 'else' statement [-Wempty-body]
-    1099 |                 SETUP_DBG(udc, "No gadget for request !\n");
-         |                                                            ^
->> drivers/usb/gadget/udc/aspeed_udc.c:1034:13: warning: variable 'ep_num' set but not used [-Wunused-but-set-variable]
-    1034 |         u16 ep_num = 0;
-         |             ^~~~~~
-
-
-vim +/buf +790 drivers/usb/gadget/udc/aspeed_udc.c
-
-   783	
-   784	static void ast_udc_ep0_out(struct ast_udc_dev *udc)
-   785	{
-   786		struct device *dev = &udc->pdev->dev;
-   787		struct ast_udc_ep *ep = &udc->ep[0];
-   788		struct ast_udc_request *req;
-   789		u16 rx_len;
- > 790		u8 *buf;
-   791	
-   792		if (list_empty(&ep->queue))
-   793			return;
-   794	
-   795		req = list_entry(ep->queue.next, struct ast_udc_request, queue);
-   796	
-   797		buf = req->req.buf;
-   798		rx_len = EP0_GET_RX_LEN(ast_udc_read(udc, AST_UDC_EP0_CTRL));
-   799		req->req.actual += rx_len;
-   800	
-   801		SETUP_DBG(udc, "req %p (%d/%d)\n", req,
-   802			  req->req.actual, req->req.length);
-   803	
-   804		if ((rx_len < ep->ep.maxpacket) ||
-   805		    (req->req.actual == req->req.length)) {
-   806			ast_udc_ep0_tx(udc);
-   807			if (!ep->dir_in)
-   808				ast_udc_done(ep, req, 0);
-   809	
-   810		} else {
-   811			if (rx_len > req->req.length) {
-   812				// Issue Fix
-   813				dev_warn(dev, "Something wrong (%d/%d)\n",
-   814					 req->req.actual, req->req.length);
-   815				ast_udc_ep0_tx(udc);
-   816				ast_udc_done(ep, req, 0);
-   817				return;
-   818			}
-   819	
-   820			ep->dir_in = 0;
-   821	
-   822			/* More works */
-   823			ast_udc_ep0_queue(ep, req);
-   824		}
-   825	}
-   826	
-
--- 
-0-DAY CI Kernel Test Service
-https://01.org/lkp
+> 
+> > +            compatible = "aspeed,ast2600-udc";
+> > +            reg = <0x1e6a2000 0x300>;
+> > +            interrupts = <9>;
+> > +            clocks = <&syscon ASPEED_CLK_GATE_USBPORT2CLK>;
+> > +            pinctrl-names = "default";
+> > +            pinctrl-0 = <&pinctrl_usb2bd_default>;
+> > +    };
+> 
+> 
+> Best regards,
+> Krzysztof
