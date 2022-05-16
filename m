@@ -1,28 +1,43 @@
-From: Wolfram Sang <wsa@kernel.org>
-Date: Sat, 14 May 2022 16:31:28 +0200
-Subject: [PATCH v7 3/3] i2c: aspeed: Assert NAK when slave is busy
-In-Reply-To: <20220422040803.2524940-4-quan@os.amperecomputing.com>
-References: <20220422040803.2524940-1-quan@os.amperecomputing.com>
- <20220422040803.2524940-4-quan@os.amperecomputing.com>
-Message-ID: <Yn+9QBoPdH8fMm/m@shikoro>
+From: Chia-Wei Wang <chiawei_wang@aspeedtech.com>
+Date: Mon, 16 May 2022 08:54:10 +0800
+Subject: [PATCH v5 2/4] MAINTAINER: Add ASPEED eSPI driver entry
+In-Reply-To: <20220516005412.4844-1-chiawei_wang@aspeedtech.com>
+References: <20220516005412.4844-1-chiawei_wang@aspeedtech.com>
+Message-ID: <20220516005412.4844-3-chiawei_wang@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Apr 22, 2022 at 11:08:03AM +0700, Quan Nguyen wrote:
-> When processing I2C_SLAVE_WRITE_REQUESTED event, if slave returns
-> -EBUSY, i2c controller should issue RxCmdLast command to assert NAK
-> on the bus.
+Add Ryan Chen and myself as the maintainer of Aspeed eSPI
+driver. Joel Stanley is added as the reviewer.
 
-That should be I2C_SLAVE_WRITE_RECEIVED and it should be NAKed on all
-errnos. Have you tested it?
+Signed-off-by: Chia-Wei Wang <chiawei_wang@aspeedtech.com>
+---
+ MAINTAINERS | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 833 bytes
-Desc: not available
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20220514/72da26af/attachment.sig>
+diff --git a/MAINTAINERS b/MAINTAINERS
+index b7b1dfba707c..e86214bd444c 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -1868,6 +1868,15 @@ F:	drivers/crypto/axis
+ F:	drivers/mmc/host/usdhi6rol0.c
+ F:	drivers/pinctrl/pinctrl-artpec*
+ 
++ARM/ASPEED ESPI DRIVER
++M:	Chia-Wei Wang <chiawei_wang@aspeedtech.com>
++M:	Ryan Chen <ryan_chen@aspeedtech.com>
++R:	Joel Stanley <joel@jms.id.au>
++L:	linux-aspeed at lists.ozlabs.org (moderated for non-subscribers)
++L:	openbmc at lists.ozlabs.org (moderated for non-subscribers)
++S:	Maintained
++F:	Documentation/devicetree/bindings/soc/aspeed/espi.yaml
++
+ ARM/ASPEED I2C DRIVER
+ M:	Brendan Higgins <brendanhiggins@google.com>
+ R:	Benjamin Herrenschmidt <benh@kernel.crashing.org>
+-- 
+2.25.1
+
