@@ -1,53 +1,54 @@
-From: Quan Nguyen <quan@os.amperecomputing.com>
-Date: Mon, 16 May 2022 09:32:08 +0700
-Subject: [PATCH v7 3/3] i2c: aspeed: Assert NAK when slave is busy
-In-Reply-To: <Yn+9QBoPdH8fMm/m@shikoro>
-References: <20220422040803.2524940-1-quan@os.amperecomputing.com>
- <20220422040803.2524940-4-quan@os.amperecomputing.com>
- <Yn+9QBoPdH8fMm/m@shikoro>
-Message-ID: <fc422a06-c035-f6e5-231b-74ea6afe8467@os.amperecomputing.com>
+From: Neal Liu <neal_liu@aspeedtech.com>
+Date: Mon, 16 May 2022 06:00:28 +0000
+Subject: [PATCH 3/3] dt-bindings: usb: add documentation for aspeed udc
+In-Reply-To: <3499cca2-1d7b-12f5-adbe-0c9b279cc51a@linaro.org>
+References: <20220513065728.857722-1-neal_liu@aspeedtech.com>
+ <20220513065728.857722-4-neal_liu@aspeedtech.com>
+ <da78aaf6-c9ae-d591-fdc4-723f097ace2c@linaro.org>
+ <HK0PR06MB3202679A7FABAF7D0D045F0880CA9@HK0PR06MB3202.apcprd06.prod.outlook.com>
+ <567d135b-3d40-9958-e000-1357020b5650@linaro.org>
+ <HK0PR06MB32020539063F8A7C5D56E0B980CF9@HK0PR06MB3202.apcprd06.prod.outlook.com>
+ <3499cca2-1d7b-12f5-adbe-0c9b279cc51a@linaro.org>
+Message-ID: <HK0PR06MB32029ED5503C616E0AF5899280CF9@HK0PR06MB3202.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 14/05/2022 21:31, Wolfram Sang wrote:
-> On Fri, Apr 22, 2022 at 11:08:03AM +0700, Quan Nguyen wrote:
->> When processing I2C_SLAVE_WRITE_REQUESTED event, if slave returns
->> -EBUSY, i2c controller should issue RxCmdLast command to assert NAK
->> on the bus.
+> -----Original Message-----
+> From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+> Sent: Monday, May 16, 2022 1:54 PM
+> To: Neal Liu <neal_liu@aspeedtech.com>; Greg Kroah-Hartman
+> <gregkh@linuxfoundation.org>; Rob Herring <robh+dt@kernel.org>; Krzysztof
+> Kozlowski <krzysztof.kozlowski+dt@linaro.org>; Joel Stanley <joel@jms.id.au>;
+> Andrew Jeffery <andrew@aj.id.au>; Felipe Balbi <balbi@kernel.org>; Sumit
+> Semwal <sumit.semwal@linaro.org>; Christian K?nig
+> <christian.koenig@amd.com>; Geert Uytterhoeven <geert@linux-m68k.org>;
+> Li Yang <leoyang.li@nxp.com>
+> Cc: linux-aspeed at lists.ozlabs.org; linux-usb at vger.kernel.org;
+> devicetree at vger.kernel.org; linux-arm-kernel at lists.infradead.org;
+> linux-kernel at vger.kernel.org; linux-media at vger.kernel.org;
+> dri-devel at lists.freedesktop.org; linaro-mm-sig at lists.linaro.org
+> Subject: Re: [PATCH 3/3] dt-bindings: usb: add documentation for aspeed udc
 > 
-> That should be I2C_SLAVE_WRITE_RECEIVED and it should be NAKed on all
-> errnos. Have you tested it?
+> On 16/05/2022 03:59, Neal Liu wrote:
+> >>> Okay, I could rename it for next patch if you preferred.
+> >>> But there are lots of yaml files which are not named as first compatible.
+> >>
+> >> Yes, I know, I quite likely I also produced such bindings, but a
+> >> specific name is rather preferred. Otherwise you will have a
+> >> difficult naming choice when your next Aspeed UDC requires new
+> >> bindings file because of some differences (not yet known now).
+> >>
+> > We can rename the bindings if next Aspeed UDC needs, don't you think?
+> > Currently, Aspeed has no requirement.
 > 
+> So just use proper name from the beginning....
+>
+Okay, I'll rename it for next patch.
+Thanks for the review.
 
-Dear Wolfram,
-
-Thanks for the comment.
-
-Yes, we have tested this patch with ast2500 and see it works well 
-without the need of the ugly slave_enable/disable() as before.
-
-When tested with ast2500, it is observed that there's always a 
-I2C_SLAVE_WRITE_REQUESTED comes first then other 
-I2C_SLAVE_WRITE_RECEIVED's follow for all transactions.
-
-In case slave is busy, the NAK will be asserted on the first occurrence 
-of I2C_SLAVE_WRITE_REQUESTED make host to stop the current transaction 
-(host later will retry with other transaction) until slave ready.
-
-This behavior is expected as we want host to drop all transactions while 
-slave is busy on working on the response. That is why we choose to 
-assert NAK on the first I2C_SLAVE_WRITE_REQUESTED of the transaction 
-instead of I2C_SLAVE_WRITE_RECEIVED.
-
-As we are interested in this specific case, ie: to assert NAK only when 
-slave busy, we dont want to force the current aspeed's slave to assert 
-NAK in all errno's. That is why we choose to NAK only when there is an 
-explicitly -EBUSY return from slave.
-
-Thank you for the review and hope to see further comments.
-Thanks,
-- Quan
-
+> 
+> Best regards,
+> Krzysztof
