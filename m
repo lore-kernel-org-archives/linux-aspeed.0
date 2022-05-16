@@ -1,75 +1,36 @@
-From: ryan_chen <ryan_chen@aspeedtech.com>
-Date: Mon, 16 May 2022 14:48:58 +0800
-Subject: [PATCH v3 1/3] dt-bindings: i2c-ast2600: Add bindings for AST2600 i2C
- global register controller
-In-Reply-To: <20220516064900.30517-1-ryan_chen@aspeedtech.com>
-References: <20220516064900.30517-1-ryan_chen@aspeedtech.com>
-Message-ID: <20220516064900.30517-2-ryan_chen@aspeedtech.com>
+From: Miaoqian Lin <linmq006@gmail.com>
+Date: Mon, 16 May 2022 11:52:02 +0400
+Subject: [PATCH] iio: adc: aspeed: Fix refcount leak in
+ aspeed_adc_set_trim_data
+Message-ID: <20220516075206.34580-1-linmq006@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-AST2600 I2C global register controller, add bindings document
-to support driver of i2c global register set
+of_find_node_by_name() returns a node pointer with refcount
+incremented, we should use of_node_put() on it when done.
+Add missing of_node_put() to avoid refcount leak.
 
-Signed-off-by: ryan_chen <ryan_chen@aspeedtech.com>
+Fixes: d0a4c17b4073 ("iio: adc: aspeed: Get and set trimming data.")
+Signed-off-by: Miaoqian Lin <linmq006@gmail.com>
 ---
- .../i2c/aspeed,i2c-ast2600-global.ymal        | 44 +++++++++++++++++++
- 1 file changed, 44 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/i2c/aspeed,i2c-ast2600-global.ymal
+ drivers/iio/adc/aspeed_adc.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/Documentation/devicetree/bindings/i2c/aspeed,i2c-ast2600-global.ymal b/Documentation/devicetree/bindings/i2c/aspeed,i2c-ast2600-global.ymal
-new file mode 100644
-index 000000000000..d92a0878d03b
---- /dev/null
-+++ b/Documentation/devicetree/bindings/i2c/aspeed,i2c-ast2600-global.ymal
-@@ -0,0 +1,44 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/i2c/aspeed,i2c-ast2600-global.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: AST2600 I2C Global Register on the AST26XX SoCs Device Tree Bindings
-+
-+maintainers:
-+  - Ryan Chen <ryan_chen@aspeedtech.com>
-+
-+allOf:
-+  - $ref: /schemas/i2c/i2c-controller.yaml#
-+
-+properties:
-+  compatible:
-+    enum:
-+      - aspeed,ast2600-i2c-global
-+
-+  reg:
-+    minItems: 1
-+    items:
-+      - description: address offset and range of bus
-+      - description: address offset and range of bus buffer
-+
-+  resets:
-+    maxItems: 1
-+
-+required:
-+  - reg
-+  - compatible
-+  - resets
-+
-+unevaluatedProperties: false
-+
-+examples:
-+  - |
-+    #include <dt-bindings/clock/ast2600-clock.h>
-+
-+    i2c_gr: i2c-global-regs at 0 {
-+      compatible = "aspeed,ast2600-i2c-global", "syscon";
-+      reg = <0x0 0x20>;
-+      resets = <&syscon ASPEED_RESET_I2C>;
-+    };
+diff --git a/drivers/iio/adc/aspeed_adc.c b/drivers/iio/adc/aspeed_adc.c
+index 0793d2474cdc..9341e0e0eb55 100644
+--- a/drivers/iio/adc/aspeed_adc.c
++++ b/drivers/iio/adc/aspeed_adc.c
+@@ -186,6 +186,7 @@ static int aspeed_adc_set_trim_data(struct iio_dev *indio_dev)
+ 		return -EOPNOTSUPP;
+ 	}
+ 	scu = syscon_node_to_regmap(syscon);
++	of_node_put(syscon);
+ 	if (IS_ERR(scu)) {
+ 		dev_warn(data->dev, "Failed to get syscon regmap\n");
+ 		return -EOPNOTSUPP;
 -- 
-2.17.1
+2.25.1
 
