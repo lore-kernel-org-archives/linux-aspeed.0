@@ -1,54 +1,49 @@
-From: Neal Liu <neal_liu@aspeedtech.com>
-Date: Mon, 16 May 2022 06:00:28 +0000
-Subject: [PATCH 3/3] dt-bindings: usb: add documentation for aspeed udc
-In-Reply-To: <3499cca2-1d7b-12f5-adbe-0c9b279cc51a@linaro.org>
-References: <20220513065728.857722-1-neal_liu@aspeedtech.com>
- <20220513065728.857722-4-neal_liu@aspeedtech.com>
- <da78aaf6-c9ae-d591-fdc4-723f097ace2c@linaro.org>
- <HK0PR06MB3202679A7FABAF7D0D045F0880CA9@HK0PR06MB3202.apcprd06.prod.outlook.com>
- <567d135b-3d40-9958-e000-1357020b5650@linaro.org>
- <HK0PR06MB32020539063F8A7C5D56E0B980CF9@HK0PR06MB3202.apcprd06.prod.outlook.com>
- <3499cca2-1d7b-12f5-adbe-0c9b279cc51a@linaro.org>
-Message-ID: <HK0PR06MB32029ED5503C616E0AF5899280CF9@HK0PR06MB3202.apcprd06.prod.outlook.com>
+From: ryan_chen <ryan_chen@aspeedtech.com>
+Date: Mon, 16 May 2022 14:48:57 +0800
+Subject: [PATCH v3 0/3] Add ASPEED AST2600 I2C new controller driver
+Message-ID: <20220516064900.30517-1-ryan_chen@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-> -----Original Message-----
-> From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-> Sent: Monday, May 16, 2022 1:54 PM
-> To: Neal Liu <neal_liu@aspeedtech.com>; Greg Kroah-Hartman
-> <gregkh@linuxfoundation.org>; Rob Herring <robh+dt@kernel.org>; Krzysztof
-> Kozlowski <krzysztof.kozlowski+dt@linaro.org>; Joel Stanley <joel@jms.id.au>;
-> Andrew Jeffery <andrew@aj.id.au>; Felipe Balbi <balbi@kernel.org>; Sumit
-> Semwal <sumit.semwal@linaro.org>; Christian K?nig
-> <christian.koenig@amd.com>; Geert Uytterhoeven <geert@linux-m68k.org>;
-> Li Yang <leoyang.li@nxp.com>
-> Cc: linux-aspeed at lists.ozlabs.org; linux-usb at vger.kernel.org;
-> devicetree at vger.kernel.org; linux-arm-kernel at lists.infradead.org;
-> linux-kernel at vger.kernel.org; linux-media at vger.kernel.org;
-> dri-devel at lists.freedesktop.org; linaro-mm-sig at lists.linaro.org
-> Subject: Re: [PATCH 3/3] dt-bindings: usb: add documentation for aspeed udc
-> 
-> On 16/05/2022 03:59, Neal Liu wrote:
-> >>> Okay, I could rename it for next patch if you preferred.
-> >>> But there are lots of yaml files which are not named as first compatible.
-> >>
-> >> Yes, I know, I quite likely I also produced such bindings, but a
-> >> specific name is rather preferred. Otherwise you will have a
-> >> difficult naming choice when your next Aspeed UDC requires new
-> >> bindings file because of some differences (not yet known now).
-> >>
-> > We can rename the bindings if next Aspeed UDC needs, don't you think?
-> > Currently, Aspeed has no requirement.
-> 
-> So just use proper name from the beginning....
->
-Okay, I'll rename it for next patch.
-Thanks for the review.
+This series add AST2600 i2c new register set driver. The i2c new
+register set have new clock divider option for more flexiable generation.
+And also have separate i2c master and slave register set for control.
 
-> 
-> Best regards,
-> Krzysztof
+v3:
+-fix i2c global clock divide default value
+-remove i2c slave no used dev_dbg info.
+ 
+v2:
+-add i2c global ymal file commit
+-rename file name from new to ast2600.
+ aspeed-i2c-new-global.c -> i2c-ast2600-global.c
+ aspeed-i2c-new-global.h -> i2c-ast2600-global.h
+ i2c-new-aspeed.c -> i2c-ast2600.c
+-rename all driver function name to ast2600
+
+ryan_chen (3):
+  dt-bindings: i2c-ast2600: Add bindings for AST2600 i2C global register
+    controller
+  dt-bindings: i2c-ast2600: Add bindings for AST2600 i2C driver
+  i2c:aspeed:support ast2600 i2c new register mode driver
+
+ .../i2c/aspeed,i2c-ast2600-global.ymal        |   44 +
+ .../bindings/i2c/aspeed,i2c-ast2600.ymal      |   78 +
+ drivers/i2c/busses/Kconfig                    |   11 +
+ drivers/i2c/busses/Makefile                   |    1 +
+ drivers/i2c/busses/i2c-ast2600-global.c       |   94 +
+ drivers/i2c/busses/i2c-ast2600-global.h       |   19 +
+ drivers/i2c/busses/i2c-ast2600.c              | 1703 +++++++++++++++++
+ 7 files changed, 1950 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/i2c/aspeed,i2c-ast2600-global.ymal
+ create mode 100644 Documentation/devicetree/bindings/i2c/aspeed,i2c-ast2600.ymal
+ create mode 100644 drivers/i2c/busses/i2c-ast2600-global.c
+ create mode 100644 drivers/i2c/busses/i2c-ast2600-global.h
+ create mode 100644 drivers/i2c/busses/i2c-ast2600.c
+
+-- 
+2.17.1
+
