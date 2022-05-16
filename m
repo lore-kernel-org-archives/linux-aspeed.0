@@ -1,159 +1,53 @@
-From: Neal Liu <neal_liu@aspeedtech.com>
-Date: Mon, 16 May 2022 01:59:28 +0000
-Subject: [PATCH 3/3] dt-bindings: usb: add documentation for aspeed udc
-In-Reply-To: <567d135b-3d40-9958-e000-1357020b5650@linaro.org>
-References: <20220513065728.857722-1-neal_liu@aspeedtech.com>
- <20220513065728.857722-4-neal_liu@aspeedtech.com>
- <da78aaf6-c9ae-d591-fdc4-723f097ace2c@linaro.org>
- <HK0PR06MB3202679A7FABAF7D0D045F0880CA9@HK0PR06MB3202.apcprd06.prod.outlook.com>
- <567d135b-3d40-9958-e000-1357020b5650@linaro.org>
-Message-ID: <HK0PR06MB32020539063F8A7C5D56E0B980CF9@HK0PR06MB3202.apcprd06.prod.outlook.com>
+From: Quan Nguyen <quan@os.amperecomputing.com>
+Date: Mon, 16 May 2022 09:32:08 +0700
+Subject: [PATCH v7 3/3] i2c: aspeed: Assert NAK when slave is busy
+In-Reply-To: <Yn+9QBoPdH8fMm/m@shikoro>
+References: <20220422040803.2524940-1-quan@os.amperecomputing.com>
+ <20220422040803.2524940-4-quan@os.amperecomputing.com>
+ <Yn+9QBoPdH8fMm/m@shikoro>
+Message-ID: <fc422a06-c035-f6e5-231b-74ea6afe8467@os.amperecomputing.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-> -----Original Message-----
-> From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-> Sent: Sunday, May 15, 2022 4:22 AM
-> To: Neal Liu <neal_liu@aspeedtech.com>; Greg Kroah-Hartman
-> <gregkh@linuxfoundation.org>; Rob Herring <robh+dt@kernel.org>; Krzysztof
-> Kozlowski <krzysztof.kozlowski+dt@linaro.org>; Joel Stanley <joel@jms.id.au>;
-> Andrew Jeffery <andrew@aj.id.au>; Felipe Balbi <balbi@kernel.org>; Sumit
-> Semwal <sumit.semwal@linaro.org>; Christian K?nig
-> <christian.koenig@amd.com>; Geert Uytterhoeven <geert@linux-m68k.org>;
-> Li Yang <leoyang.li@nxp.com>
-> Cc: linux-aspeed at lists.ozlabs.org; linux-usb at vger.kernel.org;
-> devicetree at vger.kernel.org; linux-arm-kernel at lists.infradead.org;
-> linux-kernel at vger.kernel.org; linux-media at vger.kernel.org;
-> dri-devel at lists.freedesktop.org; linaro-mm-sig at lists.linaro.org; BMC-SW
-> <BMC-SW@aspeedtech.com>
-> Subject: Re: [PATCH 3/3] dt-bindings: usb: add documentation for aspeed udc
+On 14/05/2022 21:31, Wolfram Sang wrote:
+> On Fri, Apr 22, 2022 at 11:08:03AM +0700, Quan Nguyen wrote:
+>> When processing I2C_SLAVE_WRITE_REQUESTED event, if slave returns
+>> -EBUSY, i2c controller should issue RxCmdLast command to assert NAK
+>> on the bus.
 > 
-> On 13/05/2022 17:39, Neal Liu wrote:
-> >> -----Original Message-----
-> >> From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-> >> Sent: Friday, May 13, 2022 5:07 PM
-> >> To: Neal Liu <neal_liu@aspeedtech.com>; Greg Kroah-Hartman
-> >> <gregkh@linuxfoundation.org>; Rob Herring <robh+dt@kernel.org>;
-> >> Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>; Joel Stanley
-> >> <joel@jms.id.au>; Andrew Jeffery <andrew@aj.id.au>; Felipe Balbi
-> >> <balbi@kernel.org>; Sumit Semwal <sumit.semwal@linaro.org>; Christian
-> >> K?nig <christian.koenig@amd.com>; Geert Uytterhoeven <geert@linux-
-> >> m68k.org>; Li Yang <leoyang.li@nxp.com>
-> >> Cc: linux-aspeed at lists.ozlabs.org; linux-usb at vger.kernel.org;
-> >> devicetree at vger.kernel.org; linux-arm-kernel at lists.infradead.org;
-> >> linux- kernel at vger.kernel.org; linux-media at vger.kernel.org; dri-
-> >> devel at lists.freedesktop.org; linaro-mm-sig at lists.linaro.org; BMC-SW
-> >> <BMC- SW@aspeedtech.com>
-> >> Subject: Re: [PATCH 3/3] dt-bindings: usb: add documentation for
-> >> aspeed udc
-> >>
-> >> On 13/05/2022 08:57, Neal Liu wrote:
-> >>> Add device tree binding documentation for the Aspeed USB2.0 Device
-> >>> Controller.
-> >>>
-> >>> Signed-off-by: Neal Liu <neal_liu@aspeedtech.com>
-> >>> ---
-> >>>  .../devicetree/bindings/usb/aspeed,udc.yaml   | 52
-> >> +++++++++++++++++++
-> >>>  1 file changed, 52 insertions(+)
-> >>>  create mode 100644
-> >>> Documentation/devicetree/bindings/usb/aspeed,udc.yaml
-> >>
-> >> Please name the file as first compatible, so "aspeed,ast2600-udc.yaml"
-> >
-> > Okay, I could rename it for next patch if you preferred.
-> > But there are lots of yaml files which are not named as first compatible.
+> That should be I2C_SLAVE_WRITE_RECEIVED and it should be NAKed on all
+> errnos. Have you tested it?
 > 
-> Yes, I know, I quite likely I also produced such bindings, but a specific name is
-> rather preferred. Otherwise you will have a difficult naming choice when your
-> next Aspeed UDC requires new bindings file because of some differences (not
-> yet known now).
-> 
-We can rename the bindings if next Aspeed UDC needs, don't you think?
-Currently, Aspeed has no requirement.
-> >
-> >>
-> >>>
-> >>> diff --git a/Documentation/devicetree/bindings/usb/aspeed,udc.yaml
-> >>> b/Documentation/devicetree/bindings/usb/aspeed,udc.yaml
-> >>> new file mode 100644
-> >>> index 000000000000..d1d2f77d1c54
-> >>> --- /dev/null
-> >>> +++ b/Documentation/devicetree/bindings/usb/aspeed,udc.yaml
-> >>> @@ -0,0 +1,52 @@
-> >>> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause) #
-> >>> +Copyright
-> >>> +(c) 2020 Facebook Inc.
-> >>> +%YAML 1.2
-> >>> +---
-> >>> +$id: http://devicetree.org/schemas/usb/aspeed,udc.yaml#
-> >>> +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> >>> +
-> >>> +title: ASPEED USB 2.0 Device Controller
-> >>> +
-> >>> +maintainers:
-> >>> +  - Neal Liu <neal_liu@aspeedtech.com>
-> >>> +
-> >>> +description: |+
-> >>> +  The ASPEED USB 2.0 Device Controller implements 1 control
-> >>> +endpoint and
-> >>> +  4 generic endpoints for AST260x.
-> >>> +
-> >>> +  Supports independent DMA channel for each generic endpoint.
-> >>> +  Supports 32/256 stages descriptor mode for all generic endpoints.
-> >>> +
-> >>> +properties:
-> >>> +  compatible:
-> >>> +    enum:
-> >>> +      - aspeed,ast2600-udc
-> >>> +
-> >>> +  reg:
-> >>> +    maxItems: 1
-> >>> +
-> >>> +  clocks:
-> >>> +    maxItems: 1
-> >>> +
-> >>> +  interrupts:
-> >>> +    maxItems: 1
-> >>
-> >> No child properties? No ports or any other devices? No usb-hcd.yaml?
-> >
-> > Aspeed udc only has 1 port, no need extra properties for now.
-> 
-> OK
-> 
-> >
-> >>> +
-> >>> +required:
-> >>> +  - compatible
-> >>> +  - reg
-> >>> +  - clocks
-> >>> +  - interrupts
-> >>> +
-> >>> +additionalProperties: false
-> >>> +
-> >>> +examples:
-> >>> +  - |
-> >>> +    #include <dt-bindings/clock/aspeed-clock.h>
-> >>> +    udc: udc at 1e6a2000 {
-> >>
-> >> Node name: usb
-> >
-> > "udc" is more recognizable than "usb" I think. "usb" is too general, can be
-> various like host or device.
-> 
-> It's still required by schema for most of USB host controllers. Existing USB
-> device controllers use usb as well (except Atmel mentioning gadget) Generic
-> name is also expected by Devicetree spec and "udc" is not on a list of
-> examples of generic names (usb is).
 
-Okay, I'll revise it for next patch.
-Thanks
+Dear Wolfram,
 
-> 
-> 
-> Best regards,
-> Krzysztof
+Thanks for the comment.
+
+Yes, we have tested this patch with ast2500 and see it works well 
+without the need of the ugly slave_enable/disable() as before.
+
+When tested with ast2500, it is observed that there's always a 
+I2C_SLAVE_WRITE_REQUESTED comes first then other 
+I2C_SLAVE_WRITE_RECEIVED's follow for all transactions.
+
+In case slave is busy, the NAK will be asserted on the first occurrence 
+of I2C_SLAVE_WRITE_REQUESTED make host to stop the current transaction 
+(host later will retry with other transaction) until slave ready.
+
+This behavior is expected as we want host to drop all transactions while 
+slave is busy on working on the response. That is why we choose to 
+assert NAK on the first I2C_SLAVE_WRITE_REQUESTED of the transaction 
+instead of I2C_SLAVE_WRITE_RECEIVED.
+
+As we are interested in this specific case, ie: to assert NAK only when 
+slave busy, we dont want to force the current aspeed's slave to assert 
+NAK in all errno's. That is why we choose to NAK only when there is an 
+explicitly -EBUSY return from slave.
+
+Thank you for the review and hope to see further comments.
+Thanks,
+- Quan
+
