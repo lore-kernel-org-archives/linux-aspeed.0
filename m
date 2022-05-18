@@ -1,1694 +1,2638 @@
-From: Neal Liu <neal_liu@aspeedtech.com>
-Date: Wed, 18 May 2022 14:20:41 +0800
-Subject: [PATCH v3 1/3] usb: gadget: add Aspeed ast2600 udc driver
-In-Reply-To: <20220518062043.1075360-1-neal_liu@aspeedtech.com>
-References: <20220518062043.1075360-1-neal_liu@aspeedtech.com>
-Message-ID: <20220518062043.1075360-2-neal_liu@aspeedtech.com>
+From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Date: Wed, 18 May 2022 21:12:56 +0200
+Subject: [PATCH v5 3/4] soc: aspeed: Add eSPI driver
+In-Reply-To: <20220516005412.4844-4-chiawei_wang@aspeedtech.com>
+References: <20220516005412.4844-1-chiawei_wang@aspeedtech.com>
+ <20220516005412.4844-4-chiawei_wang@aspeedtech.com>
+Message-ID: <56bb279d-ad87-7dfb-ed1f-fede14f5a6f3@wanadoo.fr>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Aspeed udc is compliant with USB2.0, supports USB High Speed
-and Full Speed, backward compatible with USB1.1.
+Hi,
 
-Supports independent DMA channel for each generic endpoint.
-Supports 32/256 stages descriptor mode for all generic endpoints.
+inline a few comments about resources not freed in error handling paths 
+in case it helps.
 
-This driver supports full functionality including single/multiple
-stages descriptor mode, and exposes 1 UDC gadget driver.
+CJ
 
-Signed-off-by: Neal Liu <neal_liu@aspeedtech.com>
-Reported-by: kernel test robot <lkp@intel.com>
----
- MAINTAINERS                         |    7 +
- drivers/usb/gadget/udc/Kconfig      |   13 +
- drivers/usb/gadget/udc/Makefile     |    1 +
- drivers/usb/gadget/udc/aspeed_udc.c | 1601 +++++++++++++++++++++++++++
- 4 files changed, 1622 insertions(+)
- create mode 100644 drivers/usb/gadget/udc/aspeed_udc.c
+Le 16/05/2022 ? 02:54, Chia-Wei Wang a ?crit?:
+> The Aspeed eSPI controller is slave device to communicate with
+> the master through the Enhanced Serial Peripheral Interface (eSPI).
+> All of the four eSPI channels, namely peripheral, virtual wire,
+> out-of-band, and flash are supported.
+> 
+> Signed-off-by: Chia-Wei Wang <chiawei_wang-SAlXDmAnmOAqDJ6do+/SaQ@public.gmane.org>
+> Reported-by: kernel test robot <lkp-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+> ---
+>   drivers/soc/aspeed/Kconfig             |  11 +
+>   drivers/soc/aspeed/Makefile            |   5 +
+>   drivers/soc/aspeed/aspeed-espi-ctrl.c  | 214 ++++++++++
+>   drivers/soc/aspeed/aspeed-espi-ctrl.h  | 309 ++++++++++++++
+>   drivers/soc/aspeed/aspeed-espi-flash.c | 352 ++++++++++++++++
+>   drivers/soc/aspeed/aspeed-espi-flash.h |  45 ++
+>   drivers/soc/aspeed/aspeed-espi-ioc.h   | 195 +++++++++
+>   drivers/soc/aspeed/aspeed-espi-oob.c   | 558 +++++++++++++++++++++++++
+>   drivers/soc/aspeed/aspeed-espi-oob.h   |  70 ++++
+>   drivers/soc/aspeed/aspeed-espi-perif.c | 511 ++++++++++++++++++++++
+>   drivers/soc/aspeed/aspeed-espi-perif.h |  45 ++
+>   drivers/soc/aspeed/aspeed-espi-vw.c    | 142 +++++++
+>   drivers/soc/aspeed/aspeed-espi-vw.h    |  21 +
+>   13 files changed, 2478 insertions(+)
+>   create mode 100644 drivers/soc/aspeed/aspeed-espi-ctrl.c
+>   create mode 100644 drivers/soc/aspeed/aspeed-espi-ctrl.h
+>   create mode 100644 drivers/soc/aspeed/aspeed-espi-flash.c
+>   create mode 100644 drivers/soc/aspeed/aspeed-espi-flash.h
+>   create mode 100644 drivers/soc/aspeed/aspeed-espi-ioc.h
+>   create mode 100644 drivers/soc/aspeed/aspeed-espi-oob.c
+>   create mode 100644 drivers/soc/aspeed/aspeed-espi-oob.h
+>   create mode 100644 drivers/soc/aspeed/aspeed-espi-perif.c
+>   create mode 100644 drivers/soc/aspeed/aspeed-espi-perif.h
+>   create mode 100644 drivers/soc/aspeed/aspeed-espi-vw.c
+>   create mode 100644 drivers/soc/aspeed/aspeed-espi-vw.h
+> 
+> diff --git a/drivers/soc/aspeed/Kconfig b/drivers/soc/aspeed/Kconfig
+> index f579ee0b5afa..b56414dc0743 100644
+> --- a/drivers/soc/aspeed/Kconfig
+> +++ b/drivers/soc/aspeed/Kconfig
+> @@ -52,6 +52,17 @@ config ASPEED_SOCINFO
+>   	help
+>   	  Say yes to support decoding of ASPEED BMC information.
+>   
+> +config ASPEED_ESPI
+> +	bool "ASPEED eSPI slave driver"
+> +	select REGMAP
+> +	select MFD_SYSCON
+> +	default n
+> +	help
+> +	  Enable driver support for the Aspeed eSPI engine. The eSPI engine
+> +	  plays as a slave device in BMC to communicate with the Host over
+> +	  the eSPI interface. The four eSPI channels, namely peripheral,
+> +	  virtual wire, out-of-band, and flash are supported.
+> +
+>   endmenu
+>   
+>   endif
+> diff --git a/drivers/soc/aspeed/Makefile b/drivers/soc/aspeed/Makefile
+> index b35d74592964..1bc433be7e93 100644
+> --- a/drivers/soc/aspeed/Makefile
+> +++ b/drivers/soc/aspeed/Makefile
+> @@ -4,3 +4,8 @@ obj-$(CONFIG_ASPEED_LPC_SNOOP)		+= aspeed-lpc-snoop.o
+>   obj-$(CONFIG_ASPEED_UART_ROUTING)	+= aspeed-uart-routing.o
+>   obj-$(CONFIG_ASPEED_P2A_CTRL)		+= aspeed-p2a-ctrl.o
+>   obj-$(CONFIG_ASPEED_SOCINFO)		+= aspeed-socinfo.o
+> +obj-$(CONFIG_ASPEED_ESPI)		+= aspeed-espi-ctrl.o \
+> +					   aspeed-espi-perif.o \
+> +					   aspeed-espi-vw.o \
+> +					   aspeed-espi-oob.o \
+> +					   aspeed-espi-flash.o
+> diff --git a/drivers/soc/aspeed/aspeed-espi-ctrl.c b/drivers/soc/aspeed/aspeed-espi-ctrl.c
+> new file mode 100644
+> index 000000000000..ce2967f851f2
+> --- /dev/null
+> +++ b/drivers/soc/aspeed/aspeed-espi-ctrl.c
+> @@ -0,0 +1,214 @@
+> +// SPDX-License-Identifier: GPL-2.0+
+> +/*
+> + * Copyright 2021 Aspeed Technology Inc.
+> + */
+> +#include <linux/io.h>
+> +#include <linux/irq.h>
+> +#include <linux/clk.h>
+> +#include <linux/module.h>
+> +#include <linux/of_device.h>
+> +#include <linux/interrupt.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/miscdevice.h>
+> +#include <linux/dma-mapping.h>
+> +#include <linux/mfd/syscon.h>
+> +#include <linux/regmap.h>
+> +#include <linux/uaccess.h>
+> +#include <linux/vmalloc.h>
+> +
+> +#include "aspeed-espi-ioc.h"
+> +#include "aspeed-espi-ctrl.h"
+> +#include "aspeed-espi-perif.h"
+> +#include "aspeed-espi-vw.h"
+> +#include "aspeed-espi-oob.h"
+> +#include "aspeed-espi-flash.h"
+> +
+> +#define DEVICE_NAME "aspeed-espi-ctrl"
+> +
+> +static irqreturn_t aspeed_espi_ctrl_isr(int irq, void *arg)
+> +{
+> +	uint32_t sts;
+> +	struct aspeed_espi_ctrl *espi_ctrl = (struct aspeed_espi_ctrl *)arg;
+> +
+> +	regmap_read(espi_ctrl->map, ESPI_INT_STS, &sts);
+> +
+> +	if (sts & ESPI_INT_STS_PERIF_BITS) {
+> +		aspeed_espi_perif_event(sts, espi_ctrl->perif);
+> +		regmap_write(espi_ctrl->map, ESPI_INT_STS, sts & ESPI_INT_STS_PERIF_BITS);
+> +	}
+> +
+> +	if (sts & ESPI_INT_STS_VW_BITS) {
+> +		aspeed_espi_vw_event(sts, espi_ctrl->vw);
+> +		regmap_write(espi_ctrl->map, ESPI_INT_STS, sts & ESPI_INT_STS_VW_BITS);
+> +	}
+> +
+> +	if (sts & (ESPI_INT_STS_OOB_BITS)) {
+> +		aspeed_espi_oob_event(sts, espi_ctrl->oob);
+> +		regmap_write(espi_ctrl->map, ESPI_INT_STS, sts & ESPI_INT_STS_OOB_BITS);
+> +	}
+> +
+> +	if (sts & ESPI_INT_STS_FLASH_BITS) {
+> +		aspeed_espi_flash_event(sts, espi_ctrl->flash);
+> +		regmap_write(espi_ctrl->map, ESPI_INT_STS, sts & ESPI_INT_STS_FLASH_BITS);
+> +	}
+> +
+> +	if (sts & ESPI_INT_STS_HW_RST_DEASSERT) {
+> +		aspeed_espi_perif_enable(espi_ctrl->perif);
+> +		aspeed_espi_vw_enable(espi_ctrl->vw);
+> +		aspeed_espi_oob_enable(espi_ctrl->oob);
+> +		aspeed_espi_flash_enable(espi_ctrl->flash);
+> +
+> +		regmap_write(espi_ctrl->map, ESPI_SYSEVT_INT_T0, 0x0);
+> +		regmap_write(espi_ctrl->map, ESPI_SYSEVT_INT_T1, 0x0);
+> +		regmap_write(espi_ctrl->map, ESPI_SYSEVT_INT_EN, 0xffffffff);
+> +
+> +		regmap_write(espi_ctrl->map, ESPI_SYSEVT1_INT_T0, 0x1);
+> +		regmap_write(espi_ctrl->map, ESPI_SYSEVT1_INT_EN, 0x1);
+> +
+> +		if (espi_ctrl->model->version == ESPI_AST2500)
+> +			regmap_write(espi_ctrl->map, ESPI_SYSEVT_INT_T2,
+> +				     ESPI_SYSEVT_INT_T2_HOST_RST_WARN |
+> +				     ESPI_SYSEVT_INT_T2_OOB_RST_WARN);
+> +
+> +		regmap_update_bits(espi_ctrl->map, ESPI_INT_EN,
+> +				   ESPI_INT_EN_HW_RST_DEASSERT,
+> +				   ESPI_INT_EN_HW_RST_DEASSERT);
+> +
+> +		regmap_update_bits(espi_ctrl->map, ESPI_SYSEVT,
+> +				   ESPI_SYSEVT_SLV_BOOT_STS | ESPI_SYSEVT_SLV_BOOT_DONE,
+> +				   ESPI_SYSEVT_SLV_BOOT_STS | ESPI_SYSEVT_SLV_BOOT_DONE);
+> +
+> +		regmap_write(espi_ctrl->map, ESPI_INT_STS, ESPI_INT_STS_HW_RST_DEASSERT);
+> +	}
+> +
+> +	return IRQ_HANDLED;
+> +}
+> +
+> +static int aspeed_espi_ctrl_probe(struct platform_device *pdev)
+> +{
+> +	int rc = 0;
+> +	struct aspeed_espi_ctrl *espi_ctrl;
+> +	struct device *dev = &pdev->dev;
+> +
+> +	espi_ctrl = devm_kzalloc(dev, sizeof(*espi_ctrl), GFP_KERNEL);
+> +	if (!espi_ctrl)
+> +		return -ENOMEM;
+> +
+> +	espi_ctrl->model = of_device_get_match_data(dev);
+> +
+> +	espi_ctrl->map = syscon_node_to_regmap(dev->parent->of_node);
+> +	if (IS_ERR(espi_ctrl->map)) {
+> +		dev_err(dev, "cannot get remap\n");
+> +		return -ENODEV;
+> +	}
+> +
+> +	espi_ctrl->irq = platform_get_irq(pdev, 0);
+> +	if (espi_ctrl->irq < 0)
+> +		return espi_ctrl->irq;
+> +
+> +	espi_ctrl->clk = devm_clk_get(dev, NULL);
+> +	if (IS_ERR(espi_ctrl->clk)) {
+> +		dev_err(dev, "cannot get clock\n");
+> +		return -ENODEV;
+> +	}
+> +
+> +	rc = clk_prepare_enable(espi_ctrl->clk);
+> +	if (rc) {
+> +		dev_err(dev, "cannot enable clock\n");
+> +		return rc;
+> +	}
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index e8c52d0192a6..784d8d8e7b22 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -3109,6 +3109,13 @@ S:	Maintained
- F:	Documentation/devicetree/bindings/media/aspeed-video.txt
- F:	drivers/media/platform/aspeed/
- 
-+ASPEED USB UDC DRIVER
-+M:	Neal Liu <neal_liu@aspeedtech.com>
-+L:	linux-aspeed at lists.ozlabs.org (moderated for non-subscribers)
-+S:	Maintained
-+F:	Documentation/devicetree/bindings/usb/aspeed,udc.yaml
-+F:	drivers/usb/gadget/udc/aspeed_udc.c
-+
- ASUS NOTEBOOKS AND EEEPC ACPI/WMI EXTRAS DRIVERS
- M:	Corentin Chary <corentin.chary@gmail.com>
- L:	acpi4asus-user at lists.sourceforge.net
-diff --git a/drivers/usb/gadget/udc/Kconfig b/drivers/usb/gadget/udc/Kconfig
-index 69394dc1cdfb..03535f33511b 100644
---- a/drivers/usb/gadget/udc/Kconfig
-+++ b/drivers/usb/gadget/udc/Kconfig
-@@ -463,6 +463,19 @@ config USB_TEGRA_XUDC
- 	 dynamically linked module called "tegra_xudc" and force all
- 	 gadget drivers to also be dynamically linked.
- 
-+config USB_ASPEED_UDC
-+	tristate "Aspeed UDC driver support"
-+	depends on ARCH_ASPEED || COMPILE_TEST
-+	depends on USB_LIBCOMPOSITE
-+	help
-+	  Enables Aspeed USB2.0 Device Controller driver for AST260x
-+	  family SoCs. The controller supports 1 control endpoint and
-+	  4 programmable endpoints.
-+
-+	  Say "y" to link the driver statically, or "m" to build a
-+	  dynamically linked module called "aspeed_udc" and force all
-+	  gadget drivers to also be dynamically linked.
-+
- source "drivers/usb/gadget/udc/aspeed-vhub/Kconfig"
- 
- #
-diff --git a/drivers/usb/gadget/udc/Makefile b/drivers/usb/gadget/udc/Makefile
-index a21f2224e7eb..12f9e4c9eb0c 100644
---- a/drivers/usb/gadget/udc/Makefile
-+++ b/drivers/usb/gadget/udc/Makefile
-@@ -40,5 +40,6 @@ obj-$(CONFIG_USB_GR_UDC)	+= gr_udc.o
- obj-$(CONFIG_USB_GADGET_XILINX)	+= udc-xilinx.o
- obj-$(CONFIG_USB_SNP_UDC_PLAT) += snps_udc_plat.o
- obj-$(CONFIG_USB_ASPEED_VHUB)	+= aspeed-vhub/
-+obj-$(CONFIG_USB_ASPEED_UDC)	+= aspeed_udc.o
- obj-$(CONFIG_USB_BDC_UDC)	+= bdc/
- obj-$(CONFIG_USB_MAX3420_UDC)	+= max3420_udc.o
-diff --git a/drivers/usb/gadget/udc/aspeed_udc.c b/drivers/usb/gadget/udc/aspeed_udc.c
-new file mode 100644
-index 000000000000..271015142210
---- /dev/null
-+++ b/drivers/usb/gadget/udc/aspeed_udc.c
-@@ -0,0 +1,1601 @@
-+// SPDX-License-Identifier: GPL-2.0+
-+/*
-+ * Copyright (c) 2021 Aspeed Technology Inc.
-+ */
-+
-+#include <linux/clk.h>
-+#include <linux/delay.h>
-+#include <linux/dma-mapping.h>
-+#include <linux/interrupt.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/of.h>
-+#include <linux/platform_device.h>
-+#include <linux/prefetch.h>
-+#include <linux/usb/ch9.h>
-+#include <linux/usb/gadget.h>
-+#include <linux/slab.h>
-+
-+#define AST_UDC_NUM_ENDPOINTS		(1 + 4)
-+#define AST_UDC_EP0_MAX_PACKET		64	/* EP0's max packet size */
-+#define AST_UDC_EPn_MAX_PACKET		1024	/* Generic EPs max packet size */
-+#define AST_UDC_DESCS_COUNT		256	/* Use 256 stages descriptor mode (32/256) */
-+#define AST_UDC_DESC_MODE		1	/* Single/Multiple Stage(s) Descriptor Mode */
-+
-+#define AST_UDC_EP_DMA_SIZE		(AST_UDC_EPn_MAX_PACKET + 8 * AST_UDC_DESCS_COUNT)
-+
-+/*****************************
-+ *                           *
-+ * UDC register definitions  *
-+ *                           *
-+ *****************************/
-+
-+#define AST_UDC_FUNC_CTRL		0x00	/* Root Function Control & Status Register */
-+#define AST_UDC_CONFIG			0x04	/* Root Configuration Setting Register */
-+#define AST_UDC_IER			0x08	/* Interrupt Control Register */
-+#define AST_UDC_ISR			0x0C	/* Interrupt Status Register */
-+#define AST_UDC_EP_ACK_IER		0x10	/* Programmable ep Pool ACK Interrupt Enable Reg */
-+#define AST_UDC_EP_NAK_IER		0x14	/* Programmable ep Pool NAK Interrupt Enable Reg */
-+#define AST_UDC_EP_ACK_ISR		0x18	/* Programmable ep Pool ACK Interrupt Status Reg */
-+#define AST_UDC_EP_NAK_ISR		0x1C	/* Programmable ep Pool NAK Interrupt Status Reg */
-+#define AST_UDC_DEV_RESET		0x20	/* Device Controller Soft Reset Enable Register */
-+#define AST_UDC_STS			0x24	/* USB Status Register */
-+#define AST_VHUB_EP_DATA		0x28	/* Programmable ep Pool Data Toggle Value Set */
-+#define AST_VHUB_ISO_TX_FAIL		0x2C	/* Isochronous Transaction Fail Accumulator */
-+#define AST_UDC_EP0_CTRL		0x30	/* Endpoint 0 Control/Status Register */
-+#define AST_UDC_EP0_DATA_BUFF		0x34	/* Base Address of ep0 IN/OUT Data Buffer Reg */
-+#define AST_UDC_SETUP0			0x80    /* Root Device Setup Data Buffer0 */
-+#define AST_UDC_SETUP1			0x84    /* Root Device Setup Data Buffer1 */
-+
-+
-+/* Main control reg */
-+#define USB_PHY_CLK_EN			BIT(31)
-+#define USB_FIFO_DYN_PWRD_EN		BIT(19)
-+#define USB_EP_LONG_DESC		BIT(18)
-+#define USB_BIST_TEST_PASS		BIT(13)
-+#define USB_BIST_TURN_ON		BIT(12)
-+#define USB_PHY_RESET_DIS		BIT(11)
-+#define USB_TEST_MODE(x)		((x) << 8)
-+#define USB_FORCE_TIMER_HS		BIT(7)
-+#define USB_FORCE_HS			BIT(6)
-+#define USB_REMOTE_WAKEUP_12MS		BIT(5)
-+#define USB_REMOTE_WAKEUP_EN		BIT(4)
-+#define USB_AUTO_REMOTE_WAKEUP_EN	BIT(3)
-+#define USB_STOP_CLK_IN_SUPEND		BIT(2)
-+#define USB_UPSTREAM_FS			BIT(1)
-+#define USB_UPSTREAM_EN			BIT(0)
-+
-+/* Main config reg */
-+#define UDC_CFG_SET_ADDR(x)		((x) & 0x3f)
-+#define UDC_CFG_ADDR_MASK		(0x3f)
-+
-+/* Interrupt ctrl & status reg */
-+#define UDC_IRQ_EP_POOL_NAK		BIT(17)
-+#define UDC_IRQ_EP_POOL_ACK_STALL	BIT(16)
-+#define UDC_IRQ_BUS_RESUME		BIT(8)
-+#define UDC_IRQ_BUS_SUSPEND		BIT(7)
-+#define UDC_IRQ_BUS_RESET		BIT(6)
-+#define UDC_IRQ_EP0_IN_DATA_NAK		BIT(4)
-+#define UDC_IRQ_EP0_IN_ACK_STALL	BIT(3)
-+#define UDC_IRQ_EP0_OUT_NAK		BIT(2)
-+#define UDC_IRQ_EP0_OUT_ACK_STALL	BIT(1)
-+#define UDC_IRQ_EP0_SETUP		BIT(0)
-+#define UDC_IRQ_ACK_ALL			(0x1ff)
-+
-+/* EP isr reg */
-+#define USB_EP3_ISR			BIT(3)
-+#define USB_EP2_ISR			BIT(2)
-+#define USB_EP1_ISR			BIT(1)
-+#define USB_EP0_ISR			BIT(0)
-+#define UDC_IRQ_EP_ACK_ALL		(0xf)
-+
-+/*Soft reset reg */
-+#define ROOT_UDC_SOFT_RESET		BIT(0)
-+
-+/* USB status reg */
-+#define UDC_STS_HIGHSPEED		BIT(27)
-+
-+/* Programmable EP data toggle */
-+#define EP_TOGGLE_SET_EPNUM(x)		((x) & 0x3)
-+
-+/* EP0 ctrl reg */
-+#define EP0_GET_RX_LEN(x)		((x >> 16) & 0x7f)
-+#define EP0_TX_LEN(x)			((x & 0x7f) << 8)
-+#define EP0_RX_BUFF_RDY			BIT(2)
-+#define EP0_TX_BUFF_RDY			BIT(1)
-+#define EP0_STALL			BIT(0)
-+
-+/*************************************
-+ *                                   *
-+ * per-endpoint register definitions *
-+ *                                   *
-+ *************************************/
-+
-+#define AST_UDC_EP_CONFIG		0x00	/* Endpoint Configuration Register */
-+#define AST_UDC_EP_DMA_CTRL		0x04	/* DMA Descriptor List Control/Status Register */
-+#define AST_UDC_EP_DMA_BUFF		0x08	/* DMA Descriptor/Buffer Base Address */
-+#define AST_UDC_EP_DMA_STS		0x0C	/* DMA Descriptor List R/W Pointer and Status */
-+
-+#define AST_UDC_EP_BASE			0x200
-+#define AST_UDC_EP_OFFSET		0x10
-+
-+/* EP config reg */
-+#define EP_SET_MAX_PKT(x)		((x & 0x3ff) << 16)
-+#define EP_DATA_FETCH_CTRL(x)		((x & 0x3) << 14)
-+#define EP_AUTO_DATA_DISABLE		(0x1 << 13)
-+#define EP_SET_EP_STALL			(0x1 << 12)
-+#define EP_SET_EP_NUM(x)		((x & 0xf) << 8)
-+#define EP_SET_TYPE_MASK(x)		((x) << 5)
-+#define EP_TYPE_BULK			(0x1)
-+#define EP_TYPE_INT			(0x2)
-+#define EP_TYPE_ISO			(0x3)
-+#define EP_DIR_OUT			(0x1 << 4)
-+#define EP_ALLOCATED_MASK		(0x7 << 1)
-+#define EP_ENABLE			BIT(0)
-+
-+/* EP DMA ctrl reg */
-+#define EP_DMA_CTRL_GET_PROC_STS(x)	((x >> 4) & 0xf)
-+#define EP_DMA_CTRL_STS_RX_IDLE		0x0
-+#define EP_DMA_CTRL_STS_TX_IDLE		0x8
-+#define EP_DMA_CTRL_IN_LONG_MODE	(0x1 << 3)
-+#define EP_DMA_CTRL_RESET		(0x1 << 2)
-+#define EP_DMA_SINGLE_STAGE		(0x1 << 1)
-+#define EP_DMA_DESC_MODE		(0x1 << 0)
-+
-+/* EP DMA status reg */
-+#define EP_DMA_SET_TX_SIZE(x)		((x & 0x7ff) << 16)
-+#define EP_DMA_GET_TX_SIZE(x)		(((x) >> 16) & 0x7ff)
-+#define EP_DMA_GET_RPTR(x)		(((x) >> 8) & 0xff)
-+#define EP_DMA_GET_WPTR(x)		((x) & 0xff)
-+#define EP_DMA_SINGLE_KICK		(1 << 0) /* WPTR = 1 for single mode */
-+
-+/* EP desc reg */
-+#define AST_EP_DMA_DESC_INTR_ENABLE	BIT(31)
-+#define AST_EP_DMA_DESC_PID_DATA0	(0 << 14)
-+#define AST_EP_DMA_DESC_PID_DATA2	BIT(14)
-+#define AST_EP_DMA_DESC_PID_DATA1	(2 << 14)
-+#define AST_EP_DMA_DESC_PID_MDATA	(3 << 14)
-+#define EP_DESC1_IN_LEN(x)		((x) & 0x1fff)
-+#define AST_EP_DMA_DESC_MAX_LEN		(7680) /* Max packet length for trasmit in 1 desc */
-+
-+struct ast_udc_request {
-+	struct usb_request	req;
-+	struct list_head	queue;
-+	unsigned		mapped:1;
-+	unsigned int		actual_dma_length;
-+	u32			saved_dma_wptr;
-+};
-+
-+#define to_ast_req(__req) container_of(__req, struct ast_udc_request, req)
-+
-+struct ast_dma_desc {
-+	u32	des_0;
-+	u32	des_1;
-+};
-+
-+struct ast_udc_ep {
-+	struct usb_ep			ep;
-+
-+	/* Request queue */
-+	struct list_head		queue;
-+
-+	struct ast_udc_dev		*udc;
-+	void __iomem			*ep_reg;
-+	void				*epn_buf;
-+	dma_addr_t			epn_buf_dma;
-+	const struct usb_endpoint_descriptor	*desc;
-+
-+	/* DMA Descriptors */
-+	struct ast_dma_desc		*descs;
-+	dma_addr_t			descs_dma;
-+	u32				descs_wptr;
-+	u32				chunk_max;
-+
-+	bool				dir_in:1;
-+	unsigned			stopped:1;
-+	bool				desc_mode:1;
-+};
-+
-+#define to_ast_ep(__ep) container_of(__ep, struct ast_udc_ep, ep)
-+
-+struct ast_udc_dev {
-+	struct platform_device		*pdev;
-+	void __iomem			*reg;
-+	int				irq;
-+	spinlock_t			lock;
-+	struct clk			*clk;
-+	struct work_struct		wake_work;
-+
-+	/* EP0 DMA buffers allocated in one chunk */
-+	void				*ep0_buf;
-+	dma_addr_t			ep0_buf_dma;
-+	struct ast_udc_ep		ep[AST_UDC_NUM_ENDPOINTS];
-+
-+	struct usb_gadget		gadget;
-+	struct usb_gadget_driver	*driver;
-+	void __iomem			*creq;
-+	enum usb_device_state		suspended_from;
-+	int				desc_mode;
-+
-+	/* Force full speed only */
-+	bool				force_usb1:1;
-+	unsigned			is_control_tx:1;
-+	bool				wakeup_en:1;
-+};
-+
-+#define to_ast_dev(__g) container_of(__g, struct ast_udc_dev, gadget)
-+
-+static const char * const ast_ep_name[] = {
-+	"ep0", "ep1", "ep2", "ep3", "ep4"
-+};
-+
-+#ifdef AST_UDC_DEBUG_ALL
-+#define AST_UDC_DEBUG
-+#define AST_SETUP_DEBUG
-+#define AST_EP_DEBUG
-+#define AST_ISR_DEBUG
-+#endif
-+
-+#ifdef AST_SETUP_DEBUG
-+#define SETUP_DBG(u, fmt, ...)	\
-+	dev_dbg(&(u)->pdev->dev, "%s() " fmt, __func__, ##__VA_ARGS__)
-+#else
-+#define SETUP_DBG(u, fmt, ...)
-+#endif
-+
-+#ifdef AST_EP_DEBUG
-+#define EP_DBG(e, fmt, ...)	\
-+	dev_dbg(&(e)->udc->pdev->dev, "%s():%s " fmt, __func__,	\
-+		 (e)->ep.name, ##__VA_ARGS__)
-+#else
-+#define EP_DBG(ep, fmt, ...)	((void)(ep))
-+#endif
-+
-+#ifdef AST_UDC_DEBUG
-+#define UDC_DBG(u, fmt, ...)	\
-+	dev_dbg(&(u)->pdev->dev, "%s() " fmt, __func__, ##__VA_ARGS__)
-+#else
-+#define UDC_DBG(u, fmt, ...)
-+#endif
-+
-+#ifdef AST_ISR_DEBUG
-+#define ISR_DBG(u, fmt, ...)	\
-+	dev_dbg(&(u)->pdev->dev, "%s() " fmt, __func__, ##__VA_ARGS__)
-+#else
-+#define ISR_DBG(u, fmt, ...)
-+#endif
-+
-+/*-------------------------------------------------------------------------*/
-+#define ast_udc_read(udc, offset) \
-+	readl((udc)->reg + (offset))
-+#define ast_udc_write(udc, val, offset) \
-+	writel((val), (udc)->reg + (offset))
-+
-+#define ast_ep_read(ep, reg) \
-+	readl((ep)->ep_reg + (reg))
-+#define ast_ep_write(ep, val, reg) \
-+	writel((val), (ep)->ep_reg + (reg))
-+
-+/*-------------------------------------------------------------------------*/
-+
-+static void ast_udc_done(struct ast_udc_ep *ep, struct ast_udc_request *req,
-+			 int status)
-+{
-+	struct ast_udc_dev *udc = ep->udc;
-+
-+	EP_DBG(ep, "req @%p, len (%d/%d), buf:0x%x, dir:0x%x\n",
-+	       req, req->req.actual, req->req.length,
-+	       (u32)req->req.buf, ep->dir_in);
-+
-+	list_del(&req->queue);
-+
-+	if (req->req.status == -EINPROGRESS)
-+		req->req.status = status;
-+	else
-+		status = req->req.status;
-+
-+	if (status && status != -ESHUTDOWN)
-+		EP_DBG(ep, "done req:%p, status:%d\n", req, status);
-+
-+	spin_unlock(&udc->lock);
-+	usb_gadget_giveback_request(&ep->ep, &req->req);
-+	spin_lock(&udc->lock);
-+}
-+
-+static void ast_udc_nuke(struct ast_udc_ep *ep, int status)
-+{
-+	int count = 0;
-+
-+	/* Sanity check */
-+	if (&ep->queue == NULL)
-+		return;
-+
-+	while (!list_empty(&ep->queue)) {
-+		struct ast_udc_request *req;
-+
-+		req = list_entry(ep->queue.next, struct ast_udc_request,
-+				 queue);
-+		ast_udc_done(ep, req, status);
-+		count++;
-+	}
-+
-+	if (count)
-+		EP_DBG(ep, "Nuked %d request(s)\n", count);
-+}
-+
-+/*
-+ * Stop activity on all endpoints.
-+ * Device controller for which EP activity is to be stopped.
-+ *
-+ * All the endpoints are stopped and any pending transfer requests if any on
-+ * the endpoint are terminated.
-+ */
-+static void ast_udc_stop_activity(struct ast_udc_dev *udc)
-+{
-+	struct ast_udc_ep *ep;
-+	int i;
-+
-+	for (i = 0; i < AST_UDC_NUM_ENDPOINTS; i++) {
-+		ep = &udc->ep[i];
-+		ep->stopped = 1;
-+		ast_udc_nuke(ep, -ESHUTDOWN);
-+	}
-+}
-+
-+static int ast_udc_ep_enable(struct usb_ep *_ep,
-+			     const struct usb_endpoint_descriptor *desc)
-+{
-+	u16 maxpacket = usb_endpoint_maxp(desc);
-+	struct ast_udc_ep *ep = to_ast_ep(_ep);
-+	struct ast_udc_dev *udc = ep->udc;
-+	u8 epnum = usb_endpoint_num(desc);
-+	unsigned long flags;
-+	u32 ep_conf = 0;
-+	u8 dir_in;
-+	u8 type;
-+
-+	if (!_ep || !ep || !desc || desc->bDescriptorType != USB_DT_ENDPOINT ||
-+	    maxpacket == 0 || maxpacket > ep->ep.maxpacket) {
-+		EP_DBG(ep, "Failed, invalid EP enable param\n");
-+		return -EINVAL;
-+	}
-+
-+	if (!udc->driver) {
-+		EP_DBG(ep, "bogus device state\n");
-+		return -ESHUTDOWN;
-+	}
-+
-+	EP_DBG(ep, "maxpacket:0x%x\n", maxpacket);
-+
-+	spin_lock_irqsave(&udc->lock, flags);
-+
-+	ep->desc = desc;
-+	ep->stopped = 0;
-+	ep->ep.maxpacket = maxpacket;
-+	ep->chunk_max = AST_EP_DMA_DESC_MAX_LEN;
-+
-+	if (maxpacket < AST_UDC_EPn_MAX_PACKET)
-+		ep_conf = EP_SET_MAX_PKT(maxpacket);
-+
-+	ep_conf |= EP_SET_EP_NUM(epnum);
-+
-+	type = usb_endpoint_type(desc);
-+	dir_in = usb_endpoint_dir_in(desc);
-+	ep->dir_in = dir_in;
-+	if (!ep->dir_in)
-+		ep_conf |= EP_DIR_OUT;
-+
-+	EP_DBG(ep, "type %d, dir_in %d\n", type, dir_in);
-+	switch (type) {
-+	case USB_ENDPOINT_XFER_ISOC:
-+		ep_conf |= EP_SET_TYPE_MASK(EP_TYPE_ISO);
-+		break;
-+
-+	case USB_ENDPOINT_XFER_BULK:
-+		ep_conf |= EP_SET_TYPE_MASK(EP_TYPE_BULK);
-+		break;
-+
-+	case USB_ENDPOINT_XFER_INT:
-+		ep_conf |= EP_SET_TYPE_MASK(EP_TYPE_INT);
-+		break;
-+	}
-+
-+	ep->desc_mode = udc->desc_mode && ep->descs_dma && ep->dir_in;
-+	if (ep->desc_mode) {
-+		ast_ep_write(ep, EP_DMA_CTRL_RESET, AST_UDC_EP_DMA_CTRL);
-+		ast_ep_write(ep, 0, AST_UDC_EP_DMA_STS);
-+		ast_ep_write(ep, ep->descs_dma, AST_UDC_EP_DMA_BUFF);
-+
-+		/* Enable Long Descriptor Mode */
-+		ast_ep_write(ep, EP_DMA_CTRL_IN_LONG_MODE | EP_DMA_DESC_MODE,
-+			     AST_UDC_EP_DMA_CTRL);
-+
-+		ep->descs_wptr = 0;
-+
-+	} else {
-+		ast_ep_write(ep, EP_DMA_CTRL_RESET, AST_UDC_EP_DMA_CTRL);
-+		ast_ep_write(ep, EP_DMA_SINGLE_STAGE, AST_UDC_EP_DMA_CTRL);
-+		ast_ep_write(ep, 0, AST_UDC_EP_DMA_STS);
-+	}
-+
-+	/* Cleanup data toggle just in case */
-+	ast_udc_write(udc, EP_TOGGLE_SET_EPNUM(epnum), AST_VHUB_EP_DATA);
-+
-+	/* Enable EP */
-+	ast_ep_write(ep, ep_conf | EP_ENABLE, AST_UDC_EP_CONFIG);
-+
-+	EP_DBG(ep, "ep_config: 0x%x\n", ast_ep_read(ep, AST_UDC_EP_CONFIG));
-+
-+	spin_unlock_irqrestore(&udc->lock, flags);
-+
-+	return 0;
-+}
-+
-+static int ast_udc_ep_disable(struct usb_ep *_ep)
-+{
-+	struct ast_udc_ep *ep = to_ast_ep(_ep);
-+	struct ast_udc_dev *udc = ep->udc;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&udc->lock, flags);
-+
-+	ep->ep.desc = NULL;
-+	ep->stopped = 1;
-+
-+	ast_udc_nuke(ep, -ESHUTDOWN);
-+	ast_ep_write(ep, 0, AST_UDC_EP_CONFIG);
-+
-+	spin_unlock_irqrestore(&udc->lock, flags);
-+
-+	return 0;
-+}
-+
-+static struct usb_request *ast_udc_ep_alloc_request(struct usb_ep *_ep,
-+						    gfp_t gfp_flags)
-+{
-+	struct ast_udc_ep *ep = to_ast_ep(_ep);
-+	struct ast_udc_request *req;
-+
-+	req = kzalloc(sizeof(struct ast_udc_request), gfp_flags);
-+	if (!req) {
-+		EP_DBG(ep, "request allocation failed\n");
-+		return NULL;
-+	}
-+
-+	INIT_LIST_HEAD(&req->queue);
-+
-+	return &req->req;
-+}
-+
-+static void ast_udc_ep_free_request(struct usb_ep *_ep,
-+				    struct usb_request *_req)
-+{
-+	struct ast_udc_request *req = to_ast_req(_req);
-+
-+	kfree(req);
-+}
-+
-+static int ast_dma_descriptor_setup(struct ast_udc_ep *ep, u32 dma_buf,
-+				    u16 tx_len, struct ast_udc_request *req)
-+{
-+	struct ast_udc_dev *udc = ep->udc;
-+	struct device *dev = &udc->pdev->dev;
-+	u32 offset, chunk;
-+	int count, last;
-+
-+	if (!ep->descs) {
-+		dev_warn(dev, "%s: Empty DMA descs list failure\n",
-+			 ep->ep.name);
-+		return -EINVAL;
-+	}
-+
-+	chunk = tx_len;
-+	offset = count = last = 0;
-+
-+	EP_DBG(ep, "req @%p, %s:%d, %s:0x%x, %s:0x%x\n", req,
-+	       "wptr", ep->descs_wptr, "dma_buf", dma_buf,
-+	       "tx_len", tx_len);
-+
-+	/* Create Descriptor Lists */
-+	while (chunk >= 0 && !last && count < AST_UDC_DESCS_COUNT) {
-+
-+		ep->descs[ep->descs_wptr].des_0 = dma_buf + offset;
-+
-+		if (chunk <= ep->chunk_max) {
-+			ep->descs[ep->descs_wptr].des_1 = chunk;
-+			last = 1;
-+		} else {
-+			ep->descs[ep->descs_wptr].des_1 = ep->chunk_max;
-+			chunk -= ep->chunk_max;
-+		}
-+
-+		EP_DBG(ep, "descs[%d]: 0x%x 0x%x, last:%d\n",
-+		       ep->descs_wptr,
-+		       ep->descs[ep->descs_wptr].des_0,
-+		       ep->descs[ep->descs_wptr].des_1,
-+		       last);
-+
-+		if (count == 0)
-+			req->saved_dma_wptr = ep->descs_wptr;
-+
-+		ep->descs_wptr++;
-+		count++;
-+
-+		if (ep->descs_wptr >= AST_UDC_DESCS_COUNT)
-+			ep->descs_wptr = 0;
-+
-+		offset = ep->chunk_max * count;
-+	}
-+
-+	return 0;
-+}
-+
-+static void ast_udc_epn_kick(struct ast_udc_ep *ep, struct ast_udc_request *req)
-+{
-+	u32 tx_len;
-+	u32 last;
-+
-+	last = req->req.length - req->req.actual;
-+	tx_len = last > ep->ep.maxpacket ? ep->ep.maxpacket : last;
-+
-+	EP_DBG(ep, "kick req @%p, len:%d, dir:%d\n",
-+	       req, tx_len, ep->dir_in);
-+
-+	ast_ep_write(ep, req->req.dma + req->req.actual, AST_UDC_EP_DMA_BUFF);
-+
-+	/* Start DMA */
-+	ast_ep_write(ep, EP_DMA_SET_TX_SIZE(tx_len), AST_UDC_EP_DMA_STS);
-+	ast_ep_write(ep, EP_DMA_SET_TX_SIZE(tx_len) | EP_DMA_SINGLE_KICK,
-+		     AST_UDC_EP_DMA_STS);
-+}
-+
-+static void ast_udc_epn_kick_desc(struct ast_udc_ep *ep,
-+				  struct ast_udc_request *req)
-+{
-+	u32 descs_max_size;
-+	u32 tx_len;
-+	u32 last;
-+
-+	descs_max_size = AST_EP_DMA_DESC_MAX_LEN * AST_UDC_DESCS_COUNT;
-+
-+	last = req->req.length - req->req.actual;
-+	tx_len = last > descs_max_size ? descs_max_size : last;
-+
-+	EP_DBG(ep, "kick req @%p, %s:%d, %s:0x%x, %s:0x%x (%d/%d), %s:0x%x\n",
-+	       req, "tx_len", tx_len, "dir_in", ep->dir_in,
-+	       "dma", req->req.dma + req->req.actual,
-+	       req->req.actual, req->req.length,
-+	       "descs_max_size", descs_max_size);
-+
-+	if (!ast_dma_descriptor_setup(ep, req->req.dma + req->req.actual,
-+				      tx_len, req))
-+		req->actual_dma_length += tx_len;
-+
-+	/* make sure CPU done everything before triggering DMA */
-+	mb();
-+
-+	ast_ep_write(ep, ep->descs_wptr, AST_UDC_EP_DMA_STS);
-+
-+	EP_DBG(ep, "descs_wptr:%d, dstat:0x%x, dctrl:0x%x\n",
-+	       ep->descs_wptr,
-+	       ast_ep_read(ep, AST_UDC_EP_DMA_STS),
-+	       ast_ep_read(ep, AST_UDC_EP_DMA_CTRL));
-+}
-+
-+static void ast_udc_ep0_queue(struct ast_udc_ep *ep,
-+			      struct ast_udc_request *req)
-+{
-+	struct ast_udc_dev *udc = ep->udc;
-+	u32 tx_len;
-+	u32 last;
-+
-+	last = req->req.length - req->req.actual;
-+	tx_len = last > ep->ep.maxpacket ? ep->ep.maxpacket : last;
-+
-+	ast_udc_write(udc, req->req.dma + req->req.actual,
-+		      AST_UDC_EP0_DATA_BUFF);
-+
-+	if (ep->dir_in) {
-+		/* IN requests, send data */
-+		SETUP_DBG(udc, "IN: %s:0x%x, %s:0x%x, %s:%d (%d/%d), %s:%d\n",
-+			  "buf", (u32)req->req.buf,
-+			  "dma", req->req.dma + req->req.actual,
-+			  "tx_len", tx_len,
-+			  req->req.actual, req->req.length,
-+			  "dir_in", ep->dir_in);
-+
-+		req->req.actual += tx_len;
-+		ast_udc_write(udc, EP0_TX_LEN(tx_len), AST_UDC_EP0_CTRL);
-+		ast_udc_write(udc, EP0_TX_LEN(tx_len) | EP0_TX_BUFF_RDY,
-+			      AST_UDC_EP0_CTRL);
-+
-+	} else {
-+		/* OUT requests, receive data */
-+		SETUP_DBG(udc, "OUT: %s:%x, %s:%x, %s:(%d/%d), %s:%d\n",
-+			  "buf", (u32)req->req.buf,
-+			  "dma", req->req.dma + req->req.actual,
-+			  "len", req->req.actual, req->req.length,
-+			  "dir_in", ep->dir_in);
-+
-+		if (!req->req.length) {
-+			/* 0 len request, send tx as completion */
-+			ast_udc_write(udc, EP0_TX_BUFF_RDY, AST_UDC_EP0_CTRL);
-+			ep->dir_in = 0x1;
-+		} else
-+			ast_udc_write(udc, EP0_RX_BUFF_RDY, AST_UDC_EP0_CTRL);
-+	}
-+}
-+
-+static int ast_udc_ep_queue(struct usb_ep *_ep, struct usb_request *_req,
-+			    gfp_t gfp_flags)
-+{
-+	struct ast_udc_request *req = to_ast_req(_req);
-+	struct ast_udc_ep *ep = to_ast_ep(_ep);
-+	struct ast_udc_dev *udc = ep->udc;
-+	struct device *dev = &udc->pdev->dev;
-+	unsigned long flags;
-+	int rc;
-+
-+	if (unlikely(!_req || !_req->complete || !_req->buf || !_ep)) {
-+		dev_warn(dev, "Invalid EP request !\n");
-+		return -EINVAL;
-+	}
-+
-+	if (ep->stopped) {
-+		dev_warn(dev, "%s is already stopped !\n", _ep->name);
-+		return -ESHUTDOWN;
-+	}
-+
-+	spin_lock_irqsave(&udc->lock, flags);
-+
-+	list_add_tail(&req->queue, &ep->queue);
-+
-+	req->req.actual = 0;
-+	req->req.status = -EINPROGRESS;
-+	req->actual_dma_length = 0;
-+
-+	rc = usb_gadget_map_request(&udc->gadget, &req->req, ep->dir_in);
-+	if (rc) {
-+		EP_DBG(ep, "Request mapping failure %d\n", rc);
-+		dev_warn(dev, "Request mapping failure %d\n", rc);
-+		goto end;
-+	}
-+
-+	EP_DBG(ep, "enqueue req @%p\n", req);
-+	EP_DBG(ep, "l=%d, dma:0x%x, zero:%d, is_in:%d\n",
-+		_req->length, _req->dma, _req->zero, ep->dir_in);
-+
-+	/* EP0 request enqueue */
-+	if (ep->ep.desc == NULL) {
-+		if ((req->req.dma % 4) != 0) {
-+			dev_warn(dev, "EP0 req dma alignment error\n");
-+			return -ESHUTDOWN;
-+		}
-+
-+		ast_udc_ep0_queue(ep, req);
-+		goto end;
-+	}
-+
-+	/* EPn request enqueue */
-+	if (list_is_singular(&ep->queue)) {
-+		if (ep->desc_mode)
-+			ast_udc_epn_kick_desc(ep, req);
-+		else
-+			ast_udc_epn_kick(ep, req);
-+	}
-+
-+end:
-+	spin_unlock_irqrestore(&udc->lock, flags);
-+
-+	return rc;
-+}
-+
-+static int ast_udc_ep_dequeue(struct usb_ep *_ep, struct usb_request *_req)
-+{
-+	struct ast_udc_ep *ep = to_ast_ep(_ep);
-+	struct ast_udc_dev *udc = ep->udc;
-+	struct ast_udc_request *req;
-+	unsigned long flags;
-+	int rc = 0;
-+
-+	spin_lock_irqsave(&udc->lock, flags);
-+
-+	/* make sure it's actually queued on this endpoint */
-+	list_for_each_entry(req, &ep->queue, queue) {
-+		if (&req->req == _req) {
-+			list_del_init(&req->queue);
-+			ast_udc_done(ep, req, -ESHUTDOWN);
-+			_req->status = -ECONNRESET;
-+			break;
-+		}
-+	}
-+
-+	/* dequeue request not found */
-+	if (&req->req != _req)
-+		rc = -EINVAL;
-+
-+	spin_unlock_irqrestore(&udc->lock, flags);
-+
-+	return rc;
-+}
-+
-+static int ast_udc_ep_set_halt(struct usb_ep *_ep, int value)
-+{
-+	struct ast_udc_ep *ep = to_ast_ep(_ep);
-+	struct ast_udc_dev *udc = ep->udc;
-+	unsigned long flags;
-+	int epnum;
-+	u32 ctrl;
-+
-+	EP_DBG(ep, "val:%d\n", value);
-+
-+	spin_lock_irqsave(&udc->lock, flags);
-+
-+	epnum = usb_endpoint_num(ep->desc);
-+
-+	/* EP0 */
-+	if (epnum == 0) {
-+		ctrl = ast_udc_read(udc, AST_UDC_EP0_CTRL);
-+		if (value)
-+			ctrl |= EP0_STALL;
-+		else
-+			ctrl &= ~EP0_STALL;
-+
-+		ast_udc_write(udc, ctrl, AST_UDC_EP0_CTRL);
-+
-+	} else {
-+	/* EPn */
-+		ctrl = ast_udc_read(udc, AST_UDC_EP_CONFIG);
-+		if (value)
-+			ctrl |= EP_SET_EP_STALL;
-+		else
-+			ctrl &= ~EP_SET_EP_STALL;
-+
-+		ast_ep_write(ep, ctrl, AST_UDC_EP_CONFIG);
-+
-+		/* only epn is stopped and waits for clear */
-+		ep->stopped = value ? 1 : 0;
-+	}
-+
-+	spin_unlock_irqrestore(&udc->lock, flags);
-+
-+	return 0;
-+}
-+
-+static const struct usb_ep_ops ast_udc_ep_ops = {
-+	.enable		= ast_udc_ep_enable,
-+	.disable	= ast_udc_ep_disable,
-+	.alloc_request	= ast_udc_ep_alloc_request,
-+	.free_request	= ast_udc_ep_free_request,
-+	.queue		= ast_udc_ep_queue,
-+	.dequeue	= ast_udc_ep_dequeue,
-+	.set_halt	= ast_udc_ep_set_halt,
-+	/* there's only imprecise fifo status reporting */
-+};
-+
-+static void ast_udc_ep0_rx(struct ast_udc_dev *udc)
-+{
-+	ast_udc_write(udc, udc->ep0_buf_dma, AST_UDC_EP0_DATA_BUFF);
-+	ast_udc_write(udc, EP0_RX_BUFF_RDY, AST_UDC_EP0_CTRL);
-+}
-+
-+static void ast_udc_ep0_tx(struct ast_udc_dev *udc)
-+{
-+	ast_udc_write(udc, udc->ep0_buf_dma, AST_UDC_EP0_DATA_BUFF);
-+	ast_udc_write(udc, EP0_TX_BUFF_RDY, AST_UDC_EP0_CTRL);
-+}
-+
-+static void ast_udc_ep0_out(struct ast_udc_dev *udc)
-+{
-+	struct device *dev = &udc->pdev->dev;
-+	struct ast_udc_ep *ep = &udc->ep[0];
-+	struct ast_udc_request *req;
-+	u16 rx_len;
-+
-+	if (list_empty(&ep->queue))
-+		return;
-+
-+	req = list_entry(ep->queue.next, struct ast_udc_request, queue);
-+
-+	rx_len = EP0_GET_RX_LEN(ast_udc_read(udc, AST_UDC_EP0_CTRL));
-+	req->req.actual += rx_len;
-+
-+	SETUP_DBG(udc, "req %p (%d/%d)\n", req,
-+		  req->req.actual, req->req.length);
-+
-+	if ((rx_len < ep->ep.maxpacket) ||
-+	    (req->req.actual == req->req.length)) {
-+		ast_udc_ep0_tx(udc);
-+		if (!ep->dir_in)
-+			ast_udc_done(ep, req, 0);
-+
-+	} else {
-+		if (rx_len > req->req.length) {
-+			// Issue Fix
-+			dev_warn(dev, "Something wrong (%d/%d)\n",
-+				 req->req.actual, req->req.length);
-+			ast_udc_ep0_tx(udc);
-+			ast_udc_done(ep, req, 0);
-+			return;
-+		}
-+
-+		ep->dir_in = 0;
-+
-+		/* More works */
-+		ast_udc_ep0_queue(ep, req);
-+	}
-+}
-+
-+static void ast_udc_ep0_in(struct ast_udc_dev *udc)
-+{
-+	struct ast_udc_ep *ep = &udc->ep[0];
-+	struct ast_udc_request *req;
-+
-+	if (list_empty(&ep->queue)) {
-+		if (udc->is_control_tx) {
-+			ast_udc_ep0_rx(udc);
-+			udc->is_control_tx = 0;
-+		}
-+
-+		return;
-+	}
-+
-+	req = list_entry(ep->queue.next, struct ast_udc_request, queue);
-+
-+	SETUP_DBG(udc, "req %p (%d/%d)\n", req,
-+		  req->req.actual, req->req.length);
-+
-+	if (req->req.length == req->req.actual) {
-+		if (req->req.length)
-+			ast_udc_ep0_rx(udc);
-+
-+		if (ep->dir_in)
-+			ast_udc_done(ep, req, 0);
-+
-+	} else {
-+		/* More works */
-+		ast_udc_ep0_queue(ep, req);
-+	}
-+}
-+
-+static void ast_udc_epn_handle(struct ast_udc_dev *udc, u16 ep_num)
-+{
-+	struct ast_udc_ep *ep = &udc->ep[ep_num];
-+	struct ast_udc_request *req;
-+	u16 len = 0;
-+
-+	if (list_empty(&ep->queue))
-+		return;
-+
-+	req = list_first_entry(&ep->queue, struct ast_udc_request, queue);
-+
-+	len = EP_DMA_GET_TX_SIZE(ast_ep_read(ep, AST_UDC_EP_DMA_STS));
-+	req->req.actual += len;
-+
-+	EP_DBG(ep, "req @%p, length:(%d/%d), %s:0x%x\n", req,
-+		req->req.actual, req->req.length, "len", len);
-+
-+	/* Done this request */
-+	if (req->req.length == req->req.actual) {
-+		ast_udc_done(ep, req, 0);
-+		req = list_first_entry_or_null(&ep->queue,
-+					       struct ast_udc_request,
-+					       queue);
-+
-+	} else {
-+		/* Check for short packet */
-+		if (len < ep->ep.maxpacket) {
-+			ast_udc_done(ep, req, 0);
-+			req = list_first_entry_or_null(&ep->queue,
-+						       struct ast_udc_request,
-+						       queue);
-+		}
-+	}
-+
-+	/* More requests */
-+	if (req)
-+		ast_udc_epn_kick(ep, req);
-+}
-+
-+static void ast_udc_epn_handle_desc(struct ast_udc_dev *udc, u16 ep_num)
-+{
-+	struct ast_udc_ep *ep = &udc->ep[ep_num];
-+	struct device *dev = &udc->pdev->dev;
-+	struct ast_udc_request *req;
-+	u32 proc_sts, wr_ptr, rd_ptr;
-+	u32 len_in_desc, ctrl;
-+	u16 total_len = 0;
-+	u16 len;
-+	int i;
-+
-+	if (list_empty(&ep->queue)) {
-+		dev_warn(dev, "%s reqest queue empty !\n", ep->ep.name);
-+		return;
-+	}
-+
-+	req = list_first_entry(&ep->queue, struct ast_udc_request, queue);
-+
-+	ctrl = ast_ep_read(ep, AST_UDC_EP_DMA_CTRL);
-+	proc_sts = EP_DMA_CTRL_GET_PROC_STS(ctrl);
-+
-+	/* Check processing status is idle */
-+	if (proc_sts != EP_DMA_CTRL_STS_RX_IDLE &&
-+	    proc_sts != EP_DMA_CTRL_STS_TX_IDLE) {
-+		dev_warn(dev, "EP DMA CTRL: 0x%x, PS:0x%x\n",
-+			 ast_ep_read(ep, AST_UDC_EP_DMA_CTRL),
-+			 proc_sts);
-+		return;
-+	}
-+
-+	ctrl = ast_ep_read(ep, AST_UDC_EP_DMA_STS);
-+	rd_ptr = EP_DMA_GET_RPTR(ctrl);
-+	wr_ptr = EP_DMA_GET_WPTR(ctrl);
-+
-+	if (rd_ptr != wr_ptr) {
-+		dev_warn(dev, "desc list is not empty ! %s:%d, %s:%d\n",
-+		"rptr", rd_ptr, "wptr", wr_ptr);
-+		return;
-+	}
-+
-+	EP_DBG(ep, "rd_ptr:%d, wr_ptr:%d\n", rd_ptr, wr_ptr);
-+	i = req->saved_dma_wptr;
-+
-+	do {
-+		len_in_desc = EP_DESC1_IN_LEN(ep->descs[i].des_1);
-+		EP_DBG(ep, "desc[%d] len: %d\n", i, len_in_desc);
-+		total_len += len_in_desc;
-+		i++;
-+		if (i >= AST_UDC_DESCS_COUNT)
-+			i = 0;
-+
-+	} while (i != wr_ptr);
-+
-+	req->req.actual += total_len;
-+
-+	EP_DBG(ep, "req @%p, length:(%d/%d), %s:0x%x\n", req,
-+		req->req.actual, req->req.length, "len", total_len);
-+
-+	/* Done this request */
-+	if (req->req.length == req->req.actual) {
-+		ast_udc_done(ep, req, 0);
-+		req = list_first_entry_or_null(&ep->queue,
-+					       struct ast_udc_request,
-+					       queue);
-+
-+	} else {
-+		/* Check for short packet */
-+		if (len < ep->ep.maxpacket) {
-+			ast_udc_done(ep, req, 0);
-+			req = list_first_entry_or_null(&ep->queue,
-+						       struct ast_udc_request,
-+						       queue);
-+		}
-+	}
-+
-+	/* More requests & dma descs not setup yet */
-+	if (req && (req->actual_dma_length == req->req.actual)) {
-+		EP_DBG(ep, "More requests\n");
-+		ast_udc_epn_kick_desc(ep, req);
-+	}
-+}
-+
-+static void ast_udc_ep0_data_tx(struct ast_udc_dev *udc, u8 *tx_data, u32 len)
-+{
-+	if (len) {
-+		memcpy(udc->ep0_buf, tx_data, len);
-+
-+		ast_udc_write(udc, udc->ep0_buf_dma, AST_UDC_EP0_DATA_BUFF);
-+		ast_udc_write(udc, EP0_TX_LEN(len), AST_UDC_EP0_CTRL);
-+		ast_udc_write(udc, EP0_TX_LEN(len) | EP0_TX_BUFF_RDY,
-+			      AST_UDC_EP0_CTRL);
-+		udc->is_control_tx = 1;
-+
-+	} else
-+		ast_udc_write(udc, EP0_TX_BUFF_RDY, AST_UDC_EP0_CTRL);
-+}
-+
-+static void ast_udc_getstatus(struct ast_udc_dev *udc)
-+{
-+	struct usb_ctrlrequest crq;
-+	struct ast_udc_ep *ep;
-+	u16 status = 0;
-+	u16 epnum;
-+
-+	memcpy_fromio(&crq, udc->creq, sizeof(crq));
-+
-+	switch (crq.bRequestType & USB_RECIP_MASK) {
-+	case USB_RECIP_DEVICE:
-+		/* Get device status */
-+		status = 1 << USB_DEVICE_SELF_POWERED;
-+		break;
-+	case USB_RECIP_INTERFACE:
-+		break;
-+	case USB_RECIP_ENDPOINT:
-+		epnum = crq.wIndex & USB_ENDPOINT_NUMBER_MASK;
-+		status = udc->ep[epnum].stopped;
-+		break;
-+	default:
-+		goto stall;
-+	}
-+
-+	ep = &udc->ep[epnum];
-+	EP_DBG(ep, "status: 0x%x\n", status);
-+	ast_udc_ep0_data_tx(udc, (u8 *)&status, sizeof(status));
-+
-+	return;
-+
-+stall:
-+	EP_DBG(ep, "Can't respond request\n");
-+	ast_udc_write(udc, ast_udc_read(udc, AST_UDC_EP0_CTRL) | EP0_STALL,
-+		      AST_UDC_EP0_CTRL);
-+}
-+
-+static void ast_udc_ep0_handle_setup(struct ast_udc_dev *udc)
-+{
-+	struct ast_udc_ep *ep = &udc->ep[0];
-+	struct ast_udc_request *req;
-+	struct usb_ctrlrequest crq;
-+	int req_num = 0;
-+	int rc;
-+	u32 reg;
-+
-+	memcpy_fromio(&crq, udc->creq, sizeof(crq));
-+
-+	SETUP_DBG(udc, "SETEUP packet: %02x/%02x/%04x/%04x/%04x\n",
-+		  crq.bRequestType, crq.bRequest, le16_to_cpu(crq.wValue),
-+		  le16_to_cpu(crq.wIndex), le16_to_cpu(crq.wLength));
-+
-+	/*
-+	 * Cleanup ep0 request(s) in queue because
-+	 * there is a new control setup comes.
-+	 */
-+	list_for_each_entry(req, &udc->ep[0].queue, queue) {
-+		req_num++;
-+		EP_DBG(ep, "there is req %p in ep0 queue !\n", req);
-+	}
-+
-+	if (req_num)
-+		ast_udc_nuke(&udc->ep[0], -ETIMEDOUT);
-+
-+	udc->ep[0].dir_in = crq.bRequestType & USB_DIR_IN;
-+
-+	if ((crq.bRequestType & USB_TYPE_MASK) == USB_TYPE_STANDARD) {
-+		switch (crq.bRequest) {
-+		case USB_REQ_SET_ADDRESS:
-+			if (ast_udc_read(udc, AST_UDC_STS) & UDC_STS_HIGHSPEED)
-+				udc->gadget.speed = USB_SPEED_HIGH;
-+			else
-+				udc->gadget.speed = USB_SPEED_FULL;
-+
-+			SETUP_DBG(udc, "set addr: 0x%x\n", crq.wValue);
-+			reg = ast_udc_read(udc, AST_UDC_CONFIG);
-+			reg &= ~UDC_CFG_ADDR_MASK;
-+			reg |= UDC_CFG_SET_ADDR(crq.wValue);
-+			ast_udc_write(udc, reg, AST_UDC_CONFIG);
-+			goto req_complete;
-+
-+		case USB_REQ_CLEAR_FEATURE:
-+			SETUP_DBG(udc, "ep0: CLEAR FEATURE\n");
-+			goto req_driver;
-+
-+		case USB_REQ_SET_FEATURE:
-+			SETUP_DBG(udc, "ep0: SET FEATURE\n");
-+			goto req_driver;
-+
-+		case USB_REQ_GET_STATUS:
-+			ast_udc_getstatus(udc);
-+			return;
-+
-+		default:
-+			goto req_driver;
-+		}
-+
-+	}
-+
-+req_driver:
-+	if (udc->driver) {
-+		SETUP_DBG(udc, "Forwarding %s to gadget...\n",
-+			  udc->gadget.name);
-+
-+		spin_unlock(&udc->lock);
-+		rc = udc->driver->setup(&udc->gadget, &crq);
-+		spin_lock(&udc->lock);
-+
-+	} else {
-+		SETUP_DBG(udc, "No gadget for request !\n");
-+	}
-+
-+	if (rc >= 0)
-+		return;
-+
-+	/* Stall if gadget failed */
-+	SETUP_DBG(udc, "Stalling, rc:0x%x\n", rc);
-+	ast_udc_write(udc, ast_udc_read(udc, AST_UDC_EP0_CTRL) | EP0_STALL,
-+		      AST_UDC_EP0_CTRL);
-+	return;
-+
-+req_complete:
-+	SETUP_DBG(udc, "ep0: Sending IN status without data\n");
-+	ast_udc_write(udc, EP0_TX_BUFF_RDY, AST_UDC_EP0_CTRL);
-+}
-+
-+static irqreturn_t ast_udc_isr(int irq, void *data)
-+{
-+	struct ast_udc_dev *udc = (struct ast_udc_dev *)data;
-+	struct ast_udc_ep *ep;
-+	u32 isr, ep_isr;
-+	int i;
-+
-+	spin_lock(&udc->lock);
-+
-+	isr = ast_udc_read(udc, AST_UDC_ISR);
-+	if (!isr)
-+		goto done;
-+
-+	/* Ack interrupts */
-+	ast_udc_write(udc, isr, AST_UDC_ISR);
-+
-+	if (isr & UDC_IRQ_BUS_RESET) {
-+		ISR_DBG(udc, "UDC_IRQ_BUS_RESET\n");
-+		udc->gadget.speed = USB_SPEED_UNKNOWN;
-+
-+		ep = &udc->ep[1];
-+		EP_DBG(ep, "dctrl:0x%x\n",
-+		       ast_ep_read(ep, AST_UDC_EP_DMA_CTRL));
-+
-+		if (udc->driver && udc->driver->reset) {
-+			spin_unlock(&udc->lock);
-+			udc->driver->reset(&udc->gadget);
-+			spin_lock(&udc->lock);
-+		}
-+	}
-+
-+	if (isr & UDC_IRQ_BUS_SUSPEND) {
-+		ISR_DBG(udc, "UDC_IRQ_BUS_SUSPEND\n");
-+		udc->suspended_from = udc->gadget.state;
-+		usb_gadget_set_state(&udc->gadget, USB_STATE_SUSPENDED);
-+
-+		if (udc->driver && udc->driver->suspend) {
-+			spin_unlock(&udc->lock);
-+			udc->driver->suspend(&udc->gadget);
-+			spin_lock(&udc->lock);
-+		}
-+	}
-+
-+	if (isr & UDC_IRQ_BUS_RESUME) {
-+		ISR_DBG(udc, "UDC_IRQ_BUS_RESUME\n");
-+		usb_gadget_set_state(&udc->gadget, udc->suspended_from);
-+
-+		if (udc->driver && udc->driver->resume) {
-+			spin_unlock(&udc->lock);
-+			udc->driver->resume(&udc->gadget);
-+			spin_lock(&udc->lock);
-+		}
-+	}
-+
-+	if (isr & UDC_IRQ_EP0_IN_ACK_STALL) {
-+		ISR_DBG(udc, "UDC_IRQ_EP0_IN_ACK_STALL\n");
-+		ast_udc_ep0_in(udc);
-+	}
-+
-+	if (isr & UDC_IRQ_EP0_OUT_ACK_STALL) {
-+		ISR_DBG(udc, "UDC_IRQ_EP0_OUT_ACK_STALL\n");
-+		ast_udc_ep0_out(udc);
-+	}
-+
-+	if (isr & UDC_IRQ_EP0_SETUP) {
-+		ISR_DBG(udc, "UDC_IRQ_EP0_SETUP\n");
-+		ast_udc_ep0_handle_setup(udc);
-+	}
-+
-+	if (isr & UDC_IRQ_EP_POOL_ACK_STALL) {
-+		ISR_DBG(udc, "UDC_IRQ_EP_POOL_ACK_STALL\n");
-+		ep_isr = ast_udc_read(udc, AST_UDC_EP_ACK_ISR);
-+
-+		/* Ack EP interrupts */
-+		ast_udc_write(udc, ep_isr, AST_UDC_EP_ACK_ISR);
-+
-+		/* Handle each EP */
-+		for (i = 0; i < AST_UDC_NUM_ENDPOINTS - 1; i++) {
-+			if (ep_isr & (0x1 << i)) {
-+				ep = &udc->ep[i + 1];
-+				if (ep->desc_mode)
-+					ast_udc_epn_handle_desc(udc, i + 1);
-+				else
-+					ast_udc_epn_handle(udc, i + 1);
-+			}
-+		}
-+	}
-+
-+done:
-+	spin_unlock(&udc->lock);
-+	return IRQ_HANDLED;
-+}
-+
-+static int ast_udc_gadget_getframe(struct usb_gadget *gadget)
-+{
-+	struct ast_udc_dev *udc = to_ast_dev(gadget);
-+
-+	return (ast_udc_read(udc, AST_UDC_STS) >> 16) & 0x7ff;
-+}
-+
-+static void ast_udc_wake_work(struct work_struct *work)
-+{
-+	struct ast_udc_dev *udc = container_of(work, struct ast_udc_dev,
-+					       wake_work);
-+	unsigned long flags;
-+	u32 ctrl;
-+
-+	spin_lock_irqsave(&udc->lock, flags);
-+
-+	UDC_DBG(udc, "Wakeup Host !\n");
-+	ctrl = ast_udc_read(udc, AST_UDC_FUNC_CTRL);
-+	ast_udc_write(udc, ctrl | USB_REMOTE_WAKEUP_EN, AST_UDC_FUNC_CTRL);
-+
-+	spin_unlock_irqrestore(&udc->lock, flags);
-+}
-+
-+static void ast_udc_wakeup_all(struct ast_udc_dev *udc)
-+{
-+	/*
-+	 * A device is trying to wake the world, because this
-+	 * can recurse into the device, we break the call chain
-+	 * using a work queue
-+	 */
-+	schedule_work(&udc->wake_work);
-+}
-+
-+static int ast_udc_wakeup(struct usb_gadget *gadget)
-+{
-+	struct ast_udc_dev *udc = to_ast_dev(gadget);
-+	unsigned long flags;
-+	int rc = 0;
-+
-+	spin_lock_irqsave(&udc->lock, flags);
-+
-+	if (!udc->wakeup_en) {
-+		UDC_DBG(udc, "Remote Wakeup is disabled\n");
-+		rc = -EINVAL;
-+		goto err;
-+	}
-+
-+	UDC_DBG(udc, "Device initiated wakeup\n");
-+	ast_udc_wakeup_all(udc);
-+
-+err:
-+	spin_unlock_irqrestore(&udc->lock, flags);
-+	return rc;
-+}
-+
-+/*
-+ * Activate/Deactivate link with host
-+ */
-+static int ast_udc_pullup(struct usb_gadget *gadget, int is_on)
-+{
-+	struct ast_udc_dev *udc = to_ast_dev(gadget);
-+	unsigned long flags;
-+	u32 ctrl;
-+
-+	spin_lock_irqsave(&udc->lock, flags);
-+
-+	UDC_DBG(udc, "is_on: %d\n", is_on);
-+	if (is_on)
-+		ctrl = ast_udc_read(udc, AST_UDC_FUNC_CTRL) | USB_UPSTREAM_EN;
-+	else
-+		ctrl = ast_udc_read(udc, AST_UDC_FUNC_CTRL) & ~USB_UPSTREAM_EN;
-+
-+	ast_udc_write(udc, ctrl, AST_UDC_FUNC_CTRL);
-+
-+	spin_unlock_irqrestore(&udc->lock, flags);
-+
-+	return 0;
-+}
-+
-+static int ast_udc_start(struct usb_gadget *gadget,
-+			 struct usb_gadget_driver *driver)
-+{
-+	struct ast_udc_dev *udc = to_ast_dev(gadget);
-+	struct ast_udc_ep *ep;
-+	unsigned long flags;
-+	int i;
-+
-+	spin_lock_irqsave(&udc->lock, flags);
-+
-+	UDC_DBG(udc, "\n");
-+	udc->driver = driver;
-+	udc->gadget.dev.of_node = udc->pdev->dev.of_node;
-+
-+	for (i = 0; i < AST_UDC_NUM_ENDPOINTS; i++) {
-+		ep = &udc->ep[i];
-+		ep->stopped = 0;
-+	}
-+
-+	spin_unlock_irqrestore(&udc->lock, flags);
-+
-+	return 0;
-+}
-+
-+static int ast_udc_stop(struct usb_gadget *gadget)
-+{
-+	struct ast_udc_dev *udc = to_ast_dev(gadget);
-+	unsigned long flags;
-+	u32 ctrl;
-+
-+	spin_lock_irqsave(&udc->lock, flags);
-+
-+	UDC_DBG(udc, "\n");
-+	ctrl = ast_udc_read(udc, AST_UDC_FUNC_CTRL) & ~USB_UPSTREAM_EN;
-+	ast_udc_write(udc, ctrl, AST_UDC_FUNC_CTRL);
-+
-+	udc->gadget.speed = USB_SPEED_UNKNOWN;
-+	udc->driver = NULL;
-+
-+	ast_udc_stop_activity(udc);
-+	usb_gadget_set_state(&udc->gadget, USB_STATE_NOTATTACHED);
-+
-+	spin_unlock_irqrestore(&udc->lock, flags);
-+
-+	return 0;
-+}
-+
-+static const struct usb_gadget_ops ast_udc_ops = {
-+	.get_frame		= ast_udc_gadget_getframe,
-+	.wakeup			= ast_udc_wakeup,
-+	.pullup			= ast_udc_pullup,
-+	.udc_start		= ast_udc_start,
-+	.udc_stop		= ast_udc_stop,
-+};
-+
-+/*
-+ * Support 1 Control Endpoint.
-+ * Support multiple programmable endpoints that can be configured to
-+ * Bulk IN/OUT, Interrupt IN/OUT, and Isochronous IN/OUT type endpoint.
-+ */
-+static void ast_udc_init_ep(struct ast_udc_dev *udc)
-+{
-+	struct ast_udc_ep *ep;
-+	int i;
-+
-+	for (i = 0; i < AST_UDC_NUM_ENDPOINTS; i++) {
-+		ep = &udc->ep[i];
-+		ep->ep.name = ast_ep_name[i];
-+		if (i == 0) {
-+			ep->ep.caps.type_control = true;
-+		} else {
-+			ep->ep.caps.type_iso = true;
-+			ep->ep.caps.type_bulk = true;
-+			ep->ep.caps.type_int = true;
-+		}
-+		ep->ep.caps.dir_in = true;
-+		ep->ep.caps.dir_out = true;
-+
-+		ep->ep.ops = &ast_udc_ep_ops;
-+		ep->udc = udc;
-+
-+		INIT_LIST_HEAD(&ep->queue);
-+
-+		if (i == 0) {
-+			usb_ep_set_maxpacket_limit(&ep->ep,
-+						   AST_UDC_EP0_MAX_PACKET);
-+			continue;
-+		}
-+
-+		ep->ep_reg = udc->reg + AST_UDC_EP_BASE +
-+				(AST_UDC_EP_OFFSET * (i - 1));
-+
-+		ep->epn_buf = udc->ep0_buf + (i * AST_UDC_EP_DMA_SIZE);
-+		ep->epn_buf_dma = udc->ep0_buf_dma + (i * AST_UDC_EP_DMA_SIZE);
-+		usb_ep_set_maxpacket_limit(&ep->ep, AST_UDC_EPn_MAX_PACKET);
-+
-+		ep->descs = ep->epn_buf + AST_UDC_EPn_MAX_PACKET;
-+		ep->descs_dma = ep->epn_buf_dma + AST_UDC_EPn_MAX_PACKET;
-+		ep->descs_wptr = 0;
-+
-+		list_add_tail(&ep->ep.ep_list, &udc->gadget.ep_list);
-+	}
-+}
-+
-+static void ast_udc_init_dev(struct ast_udc_dev *udc)
-+{
-+	INIT_WORK(&udc->wake_work, ast_udc_wake_work);
-+}
-+
-+static void ast_udc_init_hw(struct ast_udc_dev *udc)
-+{
-+	u32 ctrl;
-+
-+	/* Enable PHY */
-+	ctrl = USB_PHY_CLK_EN | USB_PHY_RESET_DIS;
-+	ast_udc_write(udc, ctrl, AST_UDC_FUNC_CTRL);
-+
-+	udelay(1);
-+	ast_udc_write(udc, 0, AST_UDC_DEV_RESET);
-+
-+	/* Set descriptor ring size */
-+	if (AST_UDC_DESCS_COUNT == 256) {
-+		ctrl |= USB_EP_LONG_DESC;
-+		ast_udc_write(udc, ctrl, AST_UDC_FUNC_CTRL);
-+	}
-+
-+	/* Mask & ack all interrupts before installing the handler */
-+	ast_udc_write(udc, 0, AST_UDC_IER);
-+	ast_udc_write(udc, UDC_IRQ_ACK_ALL, AST_UDC_ISR);
-+
-+	/* Enable some interrupts */
-+	ctrl = UDC_IRQ_EP_POOL_ACK_STALL | UDC_IRQ_BUS_RESUME |
-+	       UDC_IRQ_BUS_SUSPEND | UDC_IRQ_BUS_RESET |
-+	       UDC_IRQ_EP0_IN_ACK_STALL | UDC_IRQ_EP0_OUT_ACK_STALL |
-+	       UDC_IRQ_EP0_SETUP;
-+	ast_udc_write(udc, ctrl, AST_UDC_IER);
-+
-+	/* Cleanup and enable ep ACK interrupts */
-+	ast_udc_write(udc, UDC_IRQ_EP_ACK_ALL, AST_UDC_EP_ACK_IER);
-+	ast_udc_write(udc, UDC_IRQ_EP_ACK_ALL, AST_UDC_EP_ACK_ISR);
-+
-+	ast_udc_write(udc, 0, AST_UDC_EP0_CTRL);
-+}
-+
-+static int ast_udc_remove(struct platform_device *pdev)
-+{
-+	struct ast_udc_dev *udc = platform_get_drvdata(pdev);
-+	unsigned long flags;
-+	u32 ctrl;
-+
-+	usb_del_gadget_udc(&udc->gadget);
-+	if (udc->driver)
-+		return -EBUSY;
-+
-+	spin_lock_irqsave(&udc->lock, flags);
-+
-+	/* Disable upstream port connection */
-+	ctrl = ast_udc_read(udc, AST_UDC_FUNC_CTRL) & ~USB_UPSTREAM_EN;
-+	ast_udc_write(udc, ctrl, AST_UDC_FUNC_CTRL);
-+
-+	clk_disable_unprepare(udc->clk);
-+
-+	spin_unlock_irqrestore(&udc->lock, flags);
-+
-+	if (udc->ep0_buf)
-+		dma_free_coherent(&pdev->dev,
-+				  AST_UDC_EP_DMA_SIZE * AST_UDC_NUM_ENDPOINTS,
-+				  udc->ep0_buf,
-+				  udc->ep0_buf_dma);
-+
-+	udc->ep0_buf = NULL;
-+
-+	return 0;
-+}
-+
-+static int ast_udc_probe(struct platform_device *pdev)
-+{
-+	enum usb_device_speed max_speed;
-+	struct device *dev = &pdev->dev;
-+	struct ast_udc_dev *udc;
-+	struct resource *res;
-+	int rc;
-+
-+	udc = devm_kzalloc(&pdev->dev, sizeof(struct ast_udc_dev), GFP_KERNEL);
-+	if (!udc)
-+		return -ENOMEM;
-+
-+	udc->gadget.dev.parent = dev;
-+	udc->pdev = pdev;
-+	spin_lock_init(&udc->lock);
-+
-+	udc->gadget.ops = &ast_udc_ops;
-+	udc->gadget.ep0 = &udc->ep[0].ep;
-+	udc->gadget.name = "aspeed-udc";
-+	udc->gadget.dev.init_name = "gadget";
-+
-+	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	udc->reg = devm_ioremap_resource(&pdev->dev, res);
-+	if (IS_ERR(udc->reg)) {
-+		dev_err(&pdev->dev, "Failed to map resources\n");
-+		return PTR_ERR(udc->reg);
-+	}
-+
-+	platform_set_drvdata(pdev, udc);
-+
-+	udc->clk = devm_clk_get(&pdev->dev, NULL);
-+	if (IS_ERR(udc->clk)) {
-+		rc = PTR_ERR(udc->clk);
-+		goto err;
-+	}
-+	rc = clk_prepare_enable(udc->clk);
-+	if (rc) {
-+		dev_err(&pdev->dev, "Failed to enable clock (0x%x)\n", rc);
-+		goto err;
-+	}
-+
-+	/* Check if we need to limit the HW to USB1 */
-+	max_speed = usb_get_maximum_speed(&pdev->dev);
-+	if (max_speed != USB_SPEED_UNKNOWN && max_speed < USB_SPEED_HIGH)
-+		udc->force_usb1 = true;
-+
-+	/*
-+	 * Allocate DMA buffers for all EPs in one chunk
-+	 */
-+	udc->ep0_buf = dma_alloc_coherent(&pdev->dev,
-+					  AST_UDC_EP_DMA_SIZE *
-+					  AST_UDC_NUM_ENDPOINTS,
-+					  &udc->ep0_buf_dma, GFP_KERNEL);
-+
-+	udc->gadget.speed = USB_SPEED_UNKNOWN;
-+	udc->gadget.max_speed = USB_SPEED_HIGH;
-+	udc->creq = udc->reg + AST_UDC_SETUP0;
-+
-+	/*
-+	 * Support single stage mode or 32/256 stages descriptor mode.
-+	 * Set default as Descriptor Mode.
-+	 */
-+	udc->desc_mode = AST_UDC_DESC_MODE;
-+
-+	dev_info(&pdev->dev, "DMA %s\n", udc->desc_mode ?
-+		 "descriptor mode" : "single mode");
-+
-+	INIT_LIST_HEAD(&udc->gadget.ep_list);
-+	INIT_LIST_HEAD(&udc->gadget.ep0->ep_list);
-+
-+	/* Initialized udc ep */
-+	ast_udc_init_ep(udc);
-+
-+	/* Initialized udc device */
-+	ast_udc_init_dev(udc);
-+
-+	/* Initialized udc hardware */
-+	ast_udc_init_hw(udc);
-+
-+	/* Find interrupt and install handler */
-+	udc->irq = platform_get_irq(pdev, 0);
-+	if (udc->irq < 0) {
-+		dev_err(&pdev->dev, "Failed to get interrupt\n");
-+		rc = udc->irq;
-+		goto err;
-+	}
-+
-+	rc = devm_request_irq(&pdev->dev, udc->irq, ast_udc_isr, 0,
-+			      KBUILD_MODNAME, udc);
-+	if (rc) {
-+		dev_err(&pdev->dev, "Failed to request interrupt\n");
-+		goto err;
-+	}
-+
-+	rc = usb_add_gadget_udc(&pdev->dev, &udc->gadget);
-+	if (rc) {
-+		dev_err(&pdev->dev, "Failed to add gadget udc\n");
-+		goto err;
-+	}
-+
-+	dev_info(&pdev->dev, "Initialized udc in USB%s mode\n",
-+		 udc->force_usb1 ? "1" : "2");
-+
-+	return 0;
-+
-+err:
-+	dev_err(&pdev->dev, "Failed to udc probe, rc:0x%x\n", rc);
-+	ast_udc_remove(pdev);
-+
-+	return rc;
-+}
-+
-+static const struct of_device_id ast_udc_of_dt_ids[] = {
-+	{ .compatible = "aspeed,ast2600-udc", },
-+	{}
-+};
-+
-+MODULE_DEVICE_TABLE(of, ast_udc_of_dt_ids);
-+
-+static struct platform_driver ast_udc_driver = {
-+	.probe			= ast_udc_probe,
-+	.remove			= ast_udc_remove,
-+	.driver			= {
-+		.name			= KBUILD_MODNAME,
-+		.of_match_table		= ast_udc_of_dt_ids,
-+	},
-+};
-+
-+module_platform_driver(ast_udc_driver);
-+
-+MODULE_DESCRIPTION("ASPEED UDC driver");
-+MODULE_AUTHOR("Neal Liu <neal_liu@aspeedtech.com>");
-+MODULE_LICENSE("GPL");
--- 
-2.25.1
+This is never reverted, neither in an error handling path, nor in a 
+.remove function. devm_add_action_or_reset()?
+
+> +
+> +	espi_ctrl->perif = aspeed_espi_perif_alloc(dev, espi_ctrl);
+> +	if (IS_ERR(espi_ctrl->perif)) {
+> +		dev_err(dev, "failed to allocate peripheral channel\n");
+> +		return PTR_ERR(espi_ctrl->perif);
+> +	}
+> +
+> +	espi_ctrl->vw = aspeed_espi_vw_alloc(dev, espi_ctrl);
+> +	if (IS_ERR(espi_ctrl->vw)) {
+> +		dev_err(dev, "failed to allocate virtual wire channel\n");
+> +		return PTR_ERR(espi_ctrl->vw);
+> +	}
+> +
+> +	espi_ctrl->oob = aspeed_espi_oob_alloc(dev, espi_ctrl);
+> +	if (IS_ERR(espi_ctrl->oob)) {
+> +		dev_err(dev, "failed to allocate out-of-band channel\n");
+> +		return PTR_ERR(espi_ctrl->oob);
+> +	}
+> +
+> +	espi_ctrl->flash = aspeed_espi_flash_alloc(dev, espi_ctrl);
+> +	if (rc) {
+> +		dev_err(dev, "failed to allocate flash channel\n");
+> +		return PTR_ERR(espi_ctrl->flash);
+> +	}
+> +
+> +	regmap_write(espi_ctrl->map, ESPI_SYSEVT_INT_T0, 0x0);
+> +	regmap_write(espi_ctrl->map, ESPI_SYSEVT_INT_T1, 0x0);
+> +	regmap_write(espi_ctrl->map, ESPI_SYSEVT_INT_EN, 0xffffffff);
+> +
+> +	regmap_write(espi_ctrl->map, ESPI_SYSEVT1_INT_T0, 0x1);
+> +	regmap_write(espi_ctrl->map, ESPI_SYSEVT1_INT_EN, 0x1);
+> +
+> +	rc = devm_request_irq(dev, espi_ctrl->irq,
+> +			      aspeed_espi_ctrl_isr,
+> +			      0, DEVICE_NAME, espi_ctrl);
+> +	if (rc) {
+> +		dev_err(dev, "failed to request IRQ\n");
+> +		return rc;
+> +	}
+> +
+> +	regmap_update_bits(espi_ctrl->map, ESPI_INT_EN,
+> +			   ESPI_INT_EN_HW_RST_DEASSERT,
+> +			   ESPI_INT_EN_HW_RST_DEASSERT);
+> +
+> +	dev_set_drvdata(dev, espi_ctrl);
+> +
+> +	dev_info(dev, "module loaded\n");
+> +
+> +	return 0;
+> +}
+> +
+> +static int aspeed_espi_ctrl_remove(struct platform_device *pdev)
+> +{
+> +	struct device *dev = &pdev->dev;
+> +	struct aspeed_espi_ctrl *espi_ctrl = dev_get_drvdata(dev);
+> +
+> +	aspeed_espi_perif_free(dev, espi_ctrl->perif);
+> +	aspeed_espi_vw_free(dev, espi_ctrl->vw);
+> +	aspeed_espi_oob_free(dev, espi_ctrl->oob);
+> +	aspeed_espi_flash_free(dev, espi_ctrl->flash);
+> +
+> +	return 0;
+> +}
+> +
+> +static const struct aspeed_espi_model ast2500_model = {
+> +	.version = ESPI_AST2500,
+> +};
+> +
+> +static const struct aspeed_espi_model ast2600_model = {
+> +	.version = ESPI_AST2600,
+> +};
+> +
+> +static const struct of_device_id aspeed_espi_ctrl_of_matches[] = {
+> +	{ .compatible = "aspeed,ast2500-espi-ctrl",
+> +	  .data = &ast2500_model },
+> +	{ .compatible = "aspeed,ast2600-espi-ctrl",
+> +	  .data = &ast2600_model },
+> +	{ },
+> +};
+> +
+> +static struct platform_driver aspeed_espi_ctrl_driver = {
+> +	.driver = {
+> +		.name = DEVICE_NAME,
+> +		.of_match_table = aspeed_espi_ctrl_of_matches,
+> +	},
+> +	.probe = aspeed_espi_ctrl_probe,
+> +	.remove = aspeed_espi_ctrl_remove,
+> +};
+> +
+> +module_platform_driver(aspeed_espi_ctrl_driver);
+> +
+> +MODULE_AUTHOR("Chia-Wei Wang <chiawei_wang-SAlXDmAnmOAqDJ6do+/SaQ@public.gmane.org>");
+> +MODULE_AUTHOR("Ryan Chen <ryan_chen-SAlXDmAnmOAqDJ6do+/SaQ@public.gmane.org>");
+> +MODULE_DESCRIPTION("Control of Aspeed eSPI Slave Device");
+> +MODULE_LICENSE("GPL v2");
+> diff --git a/drivers/soc/aspeed/aspeed-espi-ctrl.h b/drivers/soc/aspeed/aspeed-espi-ctrl.h
+> new file mode 100644
+> index 000000000000..8e26cd647a7f
+> --- /dev/null
+> +++ b/drivers/soc/aspeed/aspeed-espi-ctrl.h
+> @@ -0,0 +1,309 @@
+> +/* SPDX-License-Identifier: GPL-2.0+ */
+> +/*
+> + * Copyright 2021 Aspeed Technology Inc.
+> + */
+> +#ifndef _ASPEED_ESPI_CTRL_H_
+> +#define _ASPEED_ESPI_CTRL_H_
+> +
+> +#include <linux/bits.h>
+> +
+> +enum aspeed_espi_version {
+> +	ESPI_AST2500,
+> +	ESPI_AST2600,
+> +};
+> +
+> +struct aspeed_espi_model {
+> +	uint32_t version;
+> +};
+> +
+> +struct aspeed_espi_ctrl {
+> +	struct device *dev;
+> +
+> +	struct regmap *map;
+> +	struct clk *clk;
+> +
+> +	int irq;
+> +
+> +	struct aspeed_espi_perif *perif;
+> +	struct aspeed_espi_vw *vw;
+> +	struct aspeed_espi_oob *oob;
+> +	struct aspeed_espi_flash *flash;
+> +
+> +	const struct aspeed_espi_model *model;
+> +};
+> +
+> +/* eSPI register offset */
+> +#define ESPI_CTRL		0x000
+> +#define   ESPI_CTRL_OOB_RX_SW_RST		BIT(28)
+> +#define   ESPI_CTRL_FLASH_TX_DMA_EN		BIT(23)
+> +#define   ESPI_CTRL_FLASH_RX_DMA_EN		BIT(22)
+> +#define   ESPI_CTRL_OOB_TX_DMA_EN		BIT(21)
+> +#define   ESPI_CTRL_OOB_RX_DMA_EN		BIT(20)
+> +#define   ESPI_CTRL_PERIF_NP_TX_DMA_EN		BIT(19)
+> +#define   ESPI_CTRL_PERIF_PC_TX_DMA_EN		BIT(17)
+> +#define   ESPI_CTRL_PERIF_PC_RX_DMA_EN		BIT(16)
+> +#define   ESPI_CTRL_FLASH_SW_MODE_MASK		GENMASK(11, 10)
+> +#define   ESPI_CTRL_FLASH_SW_MODE_SHIFT		10
+> +#define   ESPI_CTRL_PERIF_PC_RX_DMA_EN		BIT(16)
+> +#define   ESPI_CTRL_VW_GPIO_SW_MODE		BIT(9)
+> +#define   ESPI_CTRL_FLASH_SW_RDY		BIT(7)
+> +#define   ESPI_CTRL_OOB_SW_RDY			BIT(4)
+> +#define   ESPI_CTRL_VW_SW_RDY			BIT(3)
+> +#define   ESPI_CTRL_PERIF_SW_RDY		BIT(1)
+> +#define ESPI_STS		0x004
+> +#define ESPI_INT_STS		0x008
+> +#define   ESPI_INT_STS_HW_RST_DEASSERT		BIT(31)
+> +#define   ESPI_INT_STS_OOB_RX_TMOUT		BIT(23)
+> +#define   ESPI_INT_STS_VW_SYSEVT1		BIT(22)
+> +#define   ESPI_INT_STS_FLASH_TX_ERR		BIT(21)
+> +#define   ESPI_INT_STS_OOB_TX_ERR		BIT(20)
+> +#define   ESPI_INT_STS_FLASH_TX_ABT		BIT(19)
+> +#define   ESPI_INT_STS_OOB_TX_ABT		BIT(18)
+> +#define   ESPI_INT_STS_PERIF_NP_TX_ABT		BIT(17)
+> +#define   ESPI_INT_STS_PERIF_PC_TX_ABT		BIT(16)
+> +#define   ESPI_INT_STS_FLASH_RX_ABT		BIT(15)
+> +#define   ESPI_INT_STS_OOB_RX_ABT		BIT(14)
+> +#define   ESPI_INT_STS_PERIF_NP_RX_ABT		BIT(13)
+> +#define   ESPI_INT_STS_PERIF_PC_RX_ABT		BIT(12)
+> +#define   ESPI_INT_STS_PERIF_NP_TX_ERR		BIT(11)
+> +#define   ESPI_INT_STS_PERIF_PC_TX_ERR		BIT(10)
+> +#define   ESPI_INT_STS_VW_GPIOEVT		BIT(9)
+> +#define   ESPI_INT_STS_VW_SYSEVT		BIT(8)
+> +#define   ESPI_INT_STS_FLASH_TX_CMPLT		BIT(7)
+> +#define   ESPI_INT_STS_FLASH_RX_CMPLT		BIT(6)
+> +#define   ESPI_INT_STS_OOB_TX_CMPLT		BIT(5)
+> +#define   ESPI_INT_STS_OOB_RX_CMPLT		BIT(4)
+> +#define   ESPI_INT_STS_PERIF_NP_TX_CMPLT	BIT(3)
+> +#define   ESPI_INT_STS_PERIF_PC_TX_CMPLT	BIT(1)
+> +#define   ESPI_INT_STS_PERIF_PC_RX_CMPLT	BIT(0)
+> +#define ESPI_INT_EN		0x00c
+> +#define   ESPI_INT_EN_HW_RST_DEASSERT		BIT(31)
+> +#define   ESPI_INT_EN_OOB_RX_TMOUT		BIT(23)
+> +#define   ESPI_INT_EN_VW_SYSEVT1		BIT(22)
+> +#define   ESPI_INT_EN_FLASH_TX_ERR		BIT(21)
+> +#define   ESPI_INT_EN_OOB_TX_ERR		BIT(20)
+> +#define   ESPI_INT_EN_FLASH_TX_ABT		BIT(19)
+> +#define   ESPI_INT_EN_OOB_TX_ABT		BIT(18)
+> +#define   ESPI_INT_EN_PERIF_NP_TX_ABT		BIT(17)
+> +#define   ESPI_INT_EN_PERIF_PC_TX_ABT		BIT(16)
+> +#define   ESPI_INT_EN_FLASH_RX_ABT		BIT(15)
+> +#define   ESPI_INT_EN_OOB_RX_ABT		BIT(14)
+> +#define   ESPI_INT_EN_PERIF_NP_RX_ABT		BIT(13)
+> +#define   ESPI_INT_EN_PERIF_PC_RX_ABT		BIT(12)
+> +#define   ESPI_INT_EN_PERIF_NP_TX_ERR		BIT(11)
+> +#define   ESPI_INT_EN_PERIF_PC_TX_ERR		BIT(10)
+> +#define   ESPI_INT_EN_VW_GPIOEVT		BIT(9)
+> +#define   ESPI_INT_EN_VW_SYSEVT			BIT(8)
+> +#define   ESPI_INT_EN_FLASH_TX_CMPLT		BIT(7)
+> +#define   ESPI_INT_EN_FLASH_RX_CMPLT		BIT(6)
+> +#define   ESPI_INT_EN_OOB_TX_CMPLT		BIT(5)
+> +#define   ESPI_INT_EN_OOB_RX_CMPLT		BIT(4)
+> +#define   ESPI_INT_EN_PERIF_NP_TX_CMPLT		BIT(3)
+> +#define   ESPI_INT_EN_PERIF_PC_TX_CMPLT		BIT(1)
+> +#define   ESPI_INT_EN_PERIF_PC_RX_CMPLT		BIT(0)
+> +#define ESPI_PERIF_PC_RX_DMA	0x010
+> +#define ESPI_PERIF_PC_RX_CTRL	0x014
+> +#define   ESPI_PERIF_PC_RX_CTRL_PEND_SERV	BIT(31)
+> +#define   ESPI_PERIF_PC_RX_CTRL_LEN_MASK	GENMASK(23, 12)
+> +#define   ESPI_PERIF_PC_RX_CTRL_LEN_SHIFT	12
+> +#define   ESPI_PERIF_PC_RX_CTRL_TAG_MASK	GENMASK(11, 8)
+> +#define   ESPI_PERIF_PC_RX_CTRL_TAG_SHIFT	8
+> +#define   ESPI_PERIF_PC_RX_CTRL_CYC_MASK	GENMASK(7, 0)
+> +#define   ESPI_PERIF_PC_RX_CTRL_CYC_SHIFT	0
+> +#define ESPI_PERIF_PC_RX_PORT	0x018
+> +#define ESPI_PERIF_PC_TX_DMA	0x020
+> +#define ESPI_PERIF_PC_TX_CTRL	0x024
+> +#define	  ESPI_PERIF_PC_TX_CTRL_TRIGGER		BIT(31)
+> +#define	  ESPI_PERIF_PC_TX_CTRL_LEN_MASK	GENMASK(23, 12)
+> +#define	  ESPI_PERIF_PC_TX_CTRL_LEN_SHIFT	12
+> +#define	  ESPI_PERIF_PC_TX_CTRL_TAG_MASK	GENMASK(11, 8)
+> +#define	  ESPI_PERIF_PC_TX_CTRL_TAG_SHIFT	8
+> +#define	  ESPI_PERIF_PC_TX_CTRL_CYC_MASK	GENMASK(7, 0)
+> +#define	  ESPI_PERIF_PC_TX_CTRL_CYC_SHIFT	0
+> +#define ESPI_PERIF_PC_TX_PORT	0x028
+> +#define ESPI_PERIF_NP_TX_DMA	0x030
+> +#define ESPI_PERIF_NP_TX_CTRL	0x034
+> +#define   ESPI_PERIF_NP_TX_CTRL_TRIGGER		BIT(31)
+> +#define	  ESPI_PERIF_NP_TX_CTRL_LEN_MASK	GENMASK(23, 12)
+> +#define	  ESPI_PERIF_NP_TX_CTRL_LEN_SHIFT	12
+> +#define	  ESPI_PERIF_NP_TX_CTRL_TAG_MASK	GENMASK(11, 8)
+> +#define	  ESPI_PERIF_NP_TX_CTRL_TAG_SHIFT	8
+> +#define	  ESPI_PERIF_NP_TX_CTRL_CYC_MASK	GENMASK(7, 0)
+> +#define	  ESPI_PERIF_NP_TX_CTRL_CYC_SHIFT	0
+> +#define ESPI_PERIF_NP_TX_PORT	0x038
+> +#define ESPI_OOB_RX_DMA		0x040
+> +#define ESPI_OOB_RX_CTRL	0x044
+> +#define	  ESPI_OOB_RX_CTRL_PEND_SERV		BIT(31)
+> +#define	  ESPI_OOB_RX_CTRL_LEN_MASK		GENMASK(23, 12)
+> +#define	  ESPI_OOB_RX_CTRL_LEN_SHIFT		12
+> +#define	  ESPI_OOB_RX_CTRL_TAG_MASK		GENMASK(11, 8)
+> +#define	  ESPI_OOB_RX_CTRL_TAG_SHIFT		8
+> +#define	  ESPI_OOB_RX_CTRL_CYC_MASK		GENMASK(7, 0)
+> +#define	  ESPI_OOB_RX_CTRL_CYC_SHIFT		0
+> +#define ESPI_OOB_RX_PORT	0x048
+> +#define ESPI_OOB_TX_DMA		0x050
+> +#define ESPI_OOB_TX_CTRL	0x054
+> +#define	  ESPI_OOB_TX_CTRL_TRIGGER		BIT(31)
+> +#define	  ESPI_OOB_TX_CTRL_LEN_MASK		GENMASK(23, 12)
+> +#define	  ESPI_OOB_TX_CTRL_LEN_SHIFT		12
+> +#define	  ESPI_OOB_TX_CTRL_TAG_MASK		GENMASK(11, 8)
+> +#define	  ESPI_OOB_TX_CTRL_TAG_SHIFT		8
+> +#define	  ESPI_OOB_TX_CTRL_CYC_MASK		GENMASK(7, 0)
+> +#define	  ESPI_OOB_TX_CTRL_CYC_SHIFT		0
+> +#define ESPI_OOB_TX_PORT	0x058
+> +#define ESPI_FLASH_RX_DMA	0x060
+> +#define ESPI_FLASH_RX_CTRL	0x064
+> +#define	  ESPI_FLASH_RX_CTRL_PEND_SERV		BIT(31)
+> +#define	  ESPI_FLASH_RX_CTRL_LEN_MASK		GENMASK(23, 12)
+> +#define	  ESPI_FLASH_RX_CTRL_LEN_SHIFT		12
+> +#define	  ESPI_FLASH_RX_CTRL_TAG_MASK		GENMASK(11, 8)
+> +#define	  ESPI_FLASH_RX_CTRL_TAG_SHIFT		8
+> +#define	  ESPI_FLASH_RX_CTRL_CYC_MASK		GENMASK(7, 0)
+> +#define	  ESPI_FLASH_RX_CTRL_CYC_SHIFT		0
+> +#define ESPI_FLASH_RX_PORT	0x068
+> +#define ESPI_FLASH_TX_DMA	0x070
+> +#define ESPI_FLASH_TX_CTRL	0x074
+> +#define	  ESPI_FLASH_TX_CTRL_TRIGGER		BIT(31)
+> +#define	  ESPI_FLASH_TX_CTRL_LEN_MASK		GENMASK(23, 12)
+> +#define	  ESPI_FLASH_TX_CTRL_LEN_SHIFT		12
+> +#define	  ESPI_FLASH_TX_CTRL_TAG_MASK		GENMASK(11, 8)
+> +#define	  ESPI_FLASH_TX_CTRL_TAG_SHIFT		8
+> +#define	  ESPI_FLASH_TX_CTRL_CYC_MASK		GENMASK(7, 0)
+> +#define	  ESPI_FLASH_TX_CTRL_CYC_SHIFT		0
+> +#define ESPI_FLASH_TX_PORT	0x078
+> +#define ESPI_CTRL2		0x080
+> +#define   ESPI_CTRL2_MEMCYC_RD_DIS		BIT(6)
+> +#define   ESPI_CTRL2_MEMCYC_WR_DIS		BIT(4)
+> +#define ESPI_PERIF_PC_RX_SADDR	0x084
+> +#define ESPI_PERIF_PC_RX_TADDR	0x088
+> +#define ESPI_PERIF_PC_RX_MASK	0x08c
+> +#define   ESPI_PERIF_PC_RX_MASK_CFG_WP		BIT(0)
+> +#define ESPI_SYSEVT_INT_EN	0x094
+> +#define ESPI_SYSEVT		0x098
+> +#define   ESPI_SYSEVT_HOST_RST_ACK		BIT(27)
+> +#define   ESPI_SYSEVT_RST_CPU_INIT		BIT(26)
+> +#define   ESPI_SYSEVT_SLV_BOOT_STS		BIT(23)
+> +#define   ESPI_SYSEVT_NON_FATAL_ERR		BIT(22)
+> +#define   ESPI_SYSEVT_FATAL_ERR			BIT(21)
+> +#define   ESPI_SYSEVT_SLV_BOOT_DONE		BIT(20)
+> +#define   ESPI_SYSEVT_OOB_RST_ACK		BIT(16)
+> +#define   ESPI_SYSEVT_NMI_OUT			BIT(10)
+> +#define   ESPI_SYSEVT_SMI_OUT			BIT(9)
+> +#define   ESPI_SYSEVT_HOST_RST_WARN		BIT(8)
+> +#define   ESPI_SYSEVT_OOB_RST_WARN		BIT(6)
+> +#define   ESPI_SYSEVT_PLTRSTN			BIT(5)
+> +#define   ESPI_SYSEVT_SUSPEND			BIT(4)
+> +#define   ESPI_SYSEVT_S5_SLEEP			BIT(2)
+> +#define   ESPI_SYSEVT_S4_SLEEP			BIT(1)
+> +#define   ESPI_SYSEVT_S3_SLEEP			BIT(0)
+> +#define ESPI_VW_GPIO_VAL	0x09c
+> +#define ESPI_GEN_CAP_N_CONF	0x0a0
+> +#define ESPI_CH0_CAP_N_CONF	0x0a4
+> +#define ESPI_CH1_CAP_N_CONF	0x0a8
+> +#define ESPI_CH2_CAP_N_CONF	0x0ac
+> +#define ESPI_CH3_CAP_N_CONF	0x0b0
+> +#define ESPI_CH3_CAP_N_CONF2	0x0b4
+> +#define ESPI_SYSEVT1_INT_EN	0x100
+> +#define ESPI_SYSEVT1		0x104
+> +#define   ESPI_SYSEVT1_SUSPEND_ACK		BIT(20)
+> +#define   ESPI_SYSEVT1_SUSPEND_WARN		BIT(0)
+> +#define ESPI_SYSEVT_INT_T0	0x110
+> +#define ESPI_SYSEVT_INT_T1	0x114
+> +#define ESPI_SYSEVT_INT_T2	0x118
+> +#define   ESPI_SYSEVT_INT_T2_HOST_RST_WARN	ESPI_SYSEVT_HOST_RST_WARN
+> +#define   ESPI_SYSEVT_INT_T2_OOB_RST_WARN	ESPI_SYSEVT_OOB_RST_WARN
+> +#define ESPI_SYSEVT_INT_STS	0x11c
+> +#define   ESPI_SYSEVT_INT_STS_NMI_OUT		ESPI_SYSEVT_NMI_OUT
+> +#define   ESPI_SYSEVT_INT_STS_SMI_OUT		ESPI_SYSEVT_SMI_OUT
+> +#define   ESPI_SYSEVT_INT_STS_HOST_RST_WARN	ESPI_SYSEVT_HOST_RST_WARN
+> +#define   ESPI_SYSEVT_INT_STS_OOB_RST_WARN	ESPI_SYSEVT_OOB_RST_WARN
+> +#define   ESPI_SYSEVT_INT_STS_PLTRSTN		ESPI_SYSEVT_PLTRSTN
+> +#define   ESPI_SYSEVT_INT_STS_SUSPEND		ESPI_SYSEVT_SUSPEND
+> +#define   ESPI_SYSEVT_INT_STS_S5_SLEEP		ESPI_SYSEVT_INT_S5_SLEEP
+> +#define   ESPI_SYSEVT_INT_STS_S4_SLEEP		ESPI_SYSEVT_INT_S4_SLEEP
+> +#define   ESPI_SYSEVT_INT_STS_S3_SLEEP		ESPI_SYSEVT_INT_S3_SLEEP
+> +#define ESPI_SYSEVT1_INT_T0	0x120
+> +#define ESPI_SYSEVT1_INT_T1	0x124
+> +#define ESPI_SYSEVT1_INT_T2	0x128
+> +#define ESPI_SYSEVT1_INT_STS	0x12c
+> +#define   ESPI_SYSEVT1_INT_STS_SUSPEND_WARN	ESPI_SYSEVT1_SUSPEND_WARN
+> +#define ESPI_OOB_RX_DMA_RB_SIZE	0x130
+> +#define ESPI_OOB_RX_DMA_RD_PTR	0x134
+> +#define	  ESPI_OOB_RX_DMA_RD_PTR_UPDATE		BIT(31)
+> +#define ESPI_OOB_RX_DMA_WS_PTR	0x138
+> +#define   ESPI_OOB_RX_DMA_WS_PTR_RECV_EN	BIT(31)
+> +#define   ESPI_OOB_RX_DMA_WS_PTR_SP_MASK	GENMASK(27, 16)
+> +#define   ESPI_OOB_RX_DMA_WS_PTR_SP_SHIFT	16
+> +#define   ESPI_OOB_RX_DMA_WS_PTR_WP_MASK	GENMASK(11, 0)
+> +#define   ESPI_OOB_RX_DMA_WS_PTR_WP_SHIFT	0
+> +#define ESPI_OOB_TX_DMA_RB_SIZE	0x140
+> +#define ESPI_OOB_TX_DMA_RD_PTR	0x144
+> +#define	  ESPI_OOB_TX_DMA_RD_PTR_UPDATE		BIT(31)
+> +#define ESPI_OOB_TX_DMA_WR_PTR	0x148
+> +#define	  ESPI_OOB_TX_DMA_WR_PTR_SEND_EN	BIT(31)
+> +
+> +/* collect ESPI_INT_STS bits of eSPI channels for convenience */
+> +#define ESPI_INT_STS_PERIF_BITS			\
+> +	(ESPI_INT_STS_PERIF_NP_TX_ABT |		\
+> +	 ESPI_INT_STS_PERIF_PC_TX_ABT |		\
+> +	 ESPI_INT_STS_PERIF_NP_RX_ABT |		\
+> +	 ESPI_INT_STS_PERIF_PC_RX_ABT |		\
+> +	 ESPI_INT_STS_PERIF_NP_TX_ERR |		\
+> +	 ESPI_INT_STS_PERIF_PC_TX_ERR |		\
+> +	 ESPI_INT_STS_PERIF_NP_TX_CMPLT |	\
+> +	 ESPI_INT_STS_PERIF_PC_TX_CMPLT |	\
+> +	 ESPI_INT_STS_PERIF_PC_RX_CMPLT)
+> +
+> +#define ESPI_INT_STS_VW_BITS		\
+> +	(ESPI_INT_STS_VW_SYSEVT1 |	\
+> +	 ESPI_INT_STS_VW_GPIOEVT |	\
+> +	 ESPI_INT_STS_VW_SYSEVT)
+> +
+> +#define ESPI_INT_STS_OOB_BITS		\
+> +	(ESPI_INT_STS_OOB_RX_TMOUT |	\
+> +	 ESPI_INT_STS_OOB_TX_ERR |	\
+> +	 ESPI_INT_STS_OOB_TX_ABT |	\
+> +	 ESPI_INT_STS_OOB_RX_ABT |	\
+> +	 ESPI_INT_STS_OOB_TX_CMPLT |	\
+> +	 ESPI_INT_STS_OOB_RX_CMPLT)
+> +
+> +#define ESPI_INT_STS_FLASH_BITS		\
+> +	(ESPI_INT_STS_FLASH_TX_ERR |	\
+> +	 ESPI_INT_STS_FLASH_TX_ABT |	\
+> +	 ESPI_INT_STS_FLASH_RX_ABT |	\
+> +	 ESPI_INT_STS_FLASH_TX_CMPLT |	\
+> +	 ESPI_INT_STS_FLASH_RX_CMPLT)
+> +
+> +/* collect ESPI_INT_EN bits of eSPI channels for convenience */
+> +#define ESPI_INT_EN_PERIF_BITS			\
+> +	(ESPI_INT_EN_PERIF_NP_TX_ABT |		\
+> +	 ESPI_INT_EN_PERIF_PC_TX_ABT |		\
+> +	 ESPI_INT_EN_PERIF_NP_RX_ABT |		\
+> +	 ESPI_INT_EN_PERIF_PC_RX_ABT |		\
+> +	 ESPI_INT_EN_PERIF_NP_TX_ERR |		\
+> +	 ESPI_INT_EN_PERIF_PC_TX_ERR |		\
+> +	 ESPI_INT_EN_PERIF_NP_TX_CMPLT |	\
+> +	 ESPI_INT_EN_PERIF_PC_TX_CMPLT |	\
+> +	 ESPI_INT_EN_PERIF_PC_RX_CMPLT)
+> +
+> +#define ESPI_INT_EN_VW_BITS		\
+> +	(ESPI_INT_EN_VW_SYSEVT1 |	\
+> +	 ESPI_INT_EN_VW_GPIOEVT |	\
+> +	 ESPI_INT_EN_VW_SYSEVT)
+> +
+> +#define ESPI_INT_EN_OOB_BITS		\
+> +	(ESPI_INT_EN_OOB_RX_TMOUT |	\
+> +	 ESPI_INT_EN_OOB_TX_ERR |	\
+> +	 ESPI_INT_EN_OOB_TX_ABT |	\
+> +	 ESPI_INT_EN_OOB_RX_ABT |	\
+> +	 ESPI_INT_EN_OOB_TX_CMPLT |	\
+> +	 ESPI_INT_EN_OOB_RX_CMPLT)
+> +
+> +#define ESPI_INT_EN_FLASH_BITS		\
+> +	(ESPI_INT_EN_FLASH_TX_ERR |	\
+> +	 ESPI_INT_EN_FLASH_TX_ABT |	\
+> +	 ESPI_INT_EN_FLASH_RX_ABT |	\
+> +	 ESPI_INT_EN_FLASH_TX_CMPLT |	\
+> +	 ESPI_INT_EN_FLASH_RX_CMPLT)
+> +
+> +#endif
+> diff --git a/drivers/soc/aspeed/aspeed-espi-flash.c b/drivers/soc/aspeed/aspeed-espi-flash.c
+> new file mode 100644
+> index 000000000000..d1ede22f22e3
+> --- /dev/null
+> +++ b/drivers/soc/aspeed/aspeed-espi-flash.c
+> @@ -0,0 +1,352 @@
+> +// SPDX-License-Identifier: GPL-2.0+
+> +/*
+> + * Copyright 2021 ASPEED Technology Inc.
+> + */
+> +#include <linux/fs.h>
+> +#include <linux/of_device.h>
+> +#include <linux/miscdevice.h>
+> +#include <linux/mfd/syscon.h>
+> +#include <linux/regmap.h>
+> +#include <linux/uaccess.h>
+> +#include <linux/vmalloc.h>
+> +#include <linux/miscdevice.h>
+> +#include <linux/dma-mapping.h>
+> +
+> +#include "aspeed-espi-ioc.h"
+> +#include "aspeed-espi-ctrl.h"
+> +#include "aspeed-espi-flash.h"
+> +
+> +#define FLASH_MDEV_NAME	"aspeed-espi-flash"
+> +
+> +static long aspeed_espi_flash_get_rx(struct file *fp,
+> +				     struct aspeed_espi_ioc *ioc,
+> +				     struct aspeed_espi_flash *espi_flash)
+> +{
+> +	int i, rc = 0;
+> +	unsigned long flags;
+> +	uint32_t reg;
+> +	uint32_t cyc, tag, len;
+> +	uint8_t *pkt;
+> +	uint32_t pkt_len;
+> +	struct espi_comm_hdr *hdr;
+> +	struct aspeed_espi_ctrl *espi_ctrl = espi_flash->ctrl;
+> +
+> +	if (fp->f_flags & O_NONBLOCK) {
+> +		if (mutex_trylock(&espi_flash->get_rx_mtx))
+> +			return -EBUSY;
+> +
+> +		if (!espi_flash->rx_ready) {
+> +			rc = -ENODATA;
+> +			goto unlock_mtx_n_out;
+> +		}
+> +	} else {
+> +		mutex_lock(&espi_flash->get_rx_mtx);
+> +
+> +		if (!espi_flash->rx_ready) {
+> +			rc = wait_event_interruptible(espi_flash->wq,
+> +						      espi_flash->rx_ready);
+> +			if (rc == -ERESTARTSYS) {
+> +				rc = -EINTR;
+> +				goto unlock_mtx_n_out;
+> +			}
+> +		}
+> +	}
+> +
+> +	/* common header (i.e. cycle type, tag, and length) is taken by HW */
+> +	regmap_read(espi_ctrl->map, ESPI_FLASH_RX_CTRL, &reg);
+> +	cyc = (reg & ESPI_FLASH_RX_CTRL_CYC_MASK) >> ESPI_FLASH_RX_CTRL_CYC_SHIFT;
+> +	tag = (reg & ESPI_FLASH_RX_CTRL_TAG_MASK) >> ESPI_FLASH_RX_CTRL_TAG_SHIFT;
+> +	len = (reg & ESPI_FLASH_RX_CTRL_LEN_MASK) >> ESPI_FLASH_RX_CTRL_LEN_SHIFT;
+> +
+> +	/*
+> +	 * calculate the length of the rest part of the
+> +	 * eSPI packet to be read from HW and copied to
+> +	 * user space.
+> +	 */
+> +	switch (cyc) {
+> +	case ESPI_FLASH_READ:
+> +	case ESPI_FLASH_WRITE:
+> +	case ESPI_FLASH_ERASE:
+> +		pkt_len = ((len) ? len : ESPI_PLD_LEN_MAX) +
+> +			  sizeof(struct espi_flash_rwe);
+> +		break;
+> +	case ESPI_FLASH_SUC_CMPLT_D_MIDDLE:
+> +	case ESPI_FLASH_SUC_CMPLT_D_FIRST:
+> +	case ESPI_FLASH_SUC_CMPLT_D_LAST:
+> +	case ESPI_FLASH_SUC_CMPLT_D_ONLY:
+> +		pkt_len = ((len) ? len : ESPI_PLD_LEN_MAX) +
+> +			  sizeof(struct espi_flash_cmplt);
+> +		break;
+> +	case ESPI_FLASH_SUC_CMPLT:
+> +	case ESPI_FLASH_UNSUC_CMPLT:
+> +		pkt_len = len + sizeof(struct espi_flash_cmplt);
+> +		break;
+> +	default:
+> +		rc = -EFAULT;
+> +		goto unlock_mtx_n_out;
+> +	}
+> +
+> +	if (ioc->pkt_len < pkt_len) {
+> +		rc = -EINVAL;
+> +		goto unlock_mtx_n_out;
+> +	}
+> +
+> +	pkt = vmalloc(pkt_len);
+> +	if (!pkt) {
+> +		rc = -ENOMEM;
+> +		goto unlock_mtx_n_out;
+> +	}
+> +
+> +	hdr = (struct espi_comm_hdr *)pkt;
+> +	hdr->cyc = cyc;
+> +	hdr->tag = tag;
+> +	hdr->len_h = len >> 8;
+> +	hdr->len_l = len & 0xff;
+> +
+> +	if (espi_flash->dma_mode) {
+> +		memcpy(hdr + 1, espi_flash->dma.rx_virt,
+> +		       pkt_len - sizeof(*hdr));
+> +	} else {
+> +		for (i = sizeof(*hdr); i < pkt_len; ++i) {
+> +			regmap_read(espi_ctrl->map,
+> +				    ESPI_FLASH_RX_PORT, &reg);
+> +			pkt[i] = reg & 0xff;
+> +		}
+> +	}
+> +
+> +	if (copy_to_user((void __user *)ioc->pkt, pkt, pkt_len)) {
+> +		rc = -EFAULT;
+> +		goto free_n_out;
+> +	}
+> +
+> +	spin_lock_irqsave(&espi_flash->lock, flags);
+> +
+> +	regmap_write_bits(espi_ctrl->map, ESPI_FLASH_RX_CTRL,
+> +			  ESPI_FLASH_RX_CTRL_PEND_SERV,
+> +			  ESPI_FLASH_RX_CTRL_PEND_SERV);
+> +
+> +	espi_flash->rx_ready = 0;
+> +
+> +	spin_unlock_irqrestore(&espi_flash->lock, flags);
+> +
+> +free_n_out:
+> +	vfree(pkt);
+> +
+> +unlock_mtx_n_out:
+> +	mutex_unlock(&espi_flash->get_rx_mtx);
+> +
+> +	return rc;
+> +}
+> +
+> +static long aspeed_espi_flash_put_tx(struct file *fp,
+> +				     struct aspeed_espi_ioc *ioc,
+> +				     struct aspeed_espi_flash *espi_flash)
+> +{
+> +	int i, rc = 0;
+> +	uint32_t reg;
+> +	uint32_t cyc, tag, len;
+> +	uint8_t *pkt;
+> +	struct espi_comm_hdr *hdr;
+> +	struct aspeed_espi_ctrl *espi_ctrl = espi_flash->ctrl;
+> +
+> +	if (!mutex_trylock(&espi_flash->put_tx_mtx))
+> +		return -EAGAIN;
+> +
+> +	regmap_read(espi_ctrl->map, ESPI_FLASH_TX_CTRL, &reg);
+> +	if (reg & ESPI_FLASH_TX_CTRL_TRIGGER) {
+> +		rc = -EBUSY;
+> +		goto unlock_mtx_n_out;
+> +	}
+> +
+> +	pkt = vmalloc(ioc->pkt_len);
+> +	if (!pkt) {
+> +		rc = -ENOMEM;
+> +		goto unlock_mtx_n_out;
+> +	}
+> +
+> +	hdr = (struct espi_comm_hdr *)pkt;
+> +
+> +	if (copy_from_user(pkt, (void __user *)ioc->pkt, ioc->pkt_len)) {
+> +		rc = -EFAULT;
+> +		goto free_n_out;
+> +	}
+> +
+> +	/*
+> +	 * common header (i.e. cycle type, tag, and length)
+> +	 * part is written to HW registers
+> +	 */
+> +	if (espi_flash->dma_mode) {
+> +		memcpy(espi_flash->dma.tx_virt, hdr + 1,
+> +		       ioc->pkt_len - sizeof(*hdr));
+> +		dma_wmb();
+> +	} else {
+> +		for (i = sizeof(*hdr); i < ioc->pkt_len; ++i)
+> +			regmap_write(espi_ctrl->map,
+> +				     ESPI_FLASH_TX_PORT, pkt[i]);
+> +	}
+> +
+> +	cyc = hdr->cyc;
+> +	tag = hdr->tag;
+> +	len = (hdr->len_h << 8) | (hdr->len_l & 0xff);
+> +
+> +	reg = ((cyc << ESPI_FLASH_TX_CTRL_CYC_SHIFT) & ESPI_FLASH_TX_CTRL_CYC_MASK)
+> +		| ((tag << ESPI_FLASH_TX_CTRL_TAG_SHIFT) & ESPI_FLASH_TX_CTRL_TAG_MASK)
+> +		| ((len << ESPI_FLASH_TX_CTRL_LEN_SHIFT) & ESPI_FLASH_TX_CTRL_LEN_MASK)
+> +		| ESPI_FLASH_TX_CTRL_TRIGGER;
+> +
+> +	regmap_write(espi_ctrl->map, ESPI_FLASH_TX_CTRL, reg);
+> +
+> +free_n_out:
+> +	vfree(pkt);
+> +
+> +unlock_mtx_n_out:
+> +	mutex_unlock(&espi_flash->put_tx_mtx);
+> +
+> +	return rc;
+> +}
+> +
+> +static long aspeed_espi_flash_ioctl(struct file *fp, unsigned int cmd, unsigned long arg)
+> +{
+> +	struct aspeed_espi_ioc ioc;
+> +	struct aspeed_espi_flash *espi_flash = container_of(
+> +			fp->private_data,
+> +			struct aspeed_espi_flash,
+> +			mdev);
+> +
+> +	if (copy_from_user(&ioc, (void __user *)arg, sizeof(ioc)))
+> +		return -EFAULT;
+> +
+> +	if (ioc.pkt_len > ESPI_PKT_LEN_MAX)
+> +		return -EINVAL;
+> +
+> +	switch (cmd) {
+> +	case ASPEED_ESPI_FLASH_GET_RX:
+> +		return aspeed_espi_flash_get_rx(fp, &ioc, espi_flash);
+> +	case ASPEED_ESPI_FLASH_PUT_TX:
+> +		return aspeed_espi_flash_put_tx(fp, &ioc, espi_flash);
+> +	};
+> +
+> +	return -EINVAL;
+> +}
+> +
+> +void aspeed_espi_flash_event(uint32_t sts, struct aspeed_espi_flash *espi_flash)
+> +{
+> +	unsigned long flags;
+> +
+> +	if (sts & ESPI_INT_STS_FLASH_RX_CMPLT) {
+> +		spin_lock_irqsave(&espi_flash->lock, flags);
+> +		espi_flash->rx_ready = 1;
+> +		spin_unlock_irqrestore(&espi_flash->lock, flags);
+> +		wake_up_interruptible(&espi_flash->wq);
+> +	}
+> +}
+> +
+> +void aspeed_espi_flash_enable(struct aspeed_espi_flash *espi_flash)
+> +{
+> +	struct aspeed_espi_flash_dma *dma = &espi_flash->dma;
+> +	struct aspeed_espi_ctrl *espi_ctrl = espi_flash->ctrl;
+> +
+> +	regmap_update_bits(espi_ctrl->map, ESPI_CTRL,
+> +			   ESPI_CTRL_FLASH_SW_MODE_MASK,
+> +			   (espi_flash->safs_mode << ESPI_CTRL_FLASH_SW_MODE_SHIFT));
+> +
+> +	if (espi_flash->dma_mode) {
+> +		regmap_write(espi_ctrl->map, ESPI_FLASH_TX_DMA, dma->tx_addr);
+> +		regmap_write(espi_ctrl->map, ESPI_FLASH_RX_DMA, dma->rx_addr);
+> +		regmap_update_bits(espi_ctrl->map, ESPI_CTRL,
+> +				   ESPI_CTRL_FLASH_TX_DMA_EN | ESPI_CTRL_FLASH_RX_DMA_EN,
+> +				   ESPI_CTRL_FLASH_TX_DMA_EN | ESPI_CTRL_FLASH_RX_DMA_EN);
+> +	}
+> +
+> +	regmap_write(espi_ctrl->map, ESPI_INT_STS,
+> +		     ESPI_INT_STS_FLASH_BITS);
+> +
+> +	regmap_update_bits(espi_ctrl->map, ESPI_INT_EN,
+> +			   ESPI_INT_EN_FLASH_BITS,
+> +			   ESPI_INT_EN_FLASH_BITS);
+> +
+> +	regmap_update_bits(espi_ctrl->map, ESPI_CTRL,
+> +			   ESPI_CTRL_FLASH_SW_RDY,
+> +			   ESPI_CTRL_FLASH_SW_RDY);
+> +}
+> +
+> +static const struct file_operations aspeed_espi_flash_fops = {
+> +	.owner = THIS_MODULE,
+> +	.unlocked_ioctl = aspeed_espi_flash_ioctl,
+> +};
+> +
+> +void *aspeed_espi_flash_alloc(struct device *dev, struct aspeed_espi_ctrl *espi_ctrl)
+> +{
+> +	int rc = 0;
+> +	struct aspeed_espi_flash *espi_flash;
+> +	struct aspeed_espi_flash_dma *dma;
+> +
+> +	espi_flash = devm_kzalloc(dev, sizeof(*espi_flash), GFP_KERNEL);
+> +	if (!espi_flash)
+> +		return ERR_PTR(-ENOMEM);
+> +
+> +	espi_flash->ctrl = espi_ctrl;
+> +
+> +	init_waitqueue_head(&espi_flash->wq);
+> +
+> +	spin_lock_init(&espi_flash->lock);
+> +
+> +	mutex_init(&espi_flash->put_tx_mtx);
+> +	mutex_init(&espi_flash->get_rx_mtx);
+> +
+> +	if (of_property_read_bool(dev->of_node, "flash,dma-mode"))
+> +		espi_flash->dma_mode = 1;
+> +
+> +	of_property_read_u32(dev->of_node, "flash,safs-mode", &espi_flash->safs_mode);
+> +	if (espi_flash->safs_mode >= SAFS_MODES) {
+> +		dev_err(dev, "invalid SAFS mode\n");
+> +		return ERR_PTR(-EINVAL);
+> +	}
+> +
+> +	if (espi_flash->dma_mode) {
+> +		dma = &espi_flash->dma;
+> +
+> +		dma->tx_virt = dma_alloc_coherent(dev, PAGE_SIZE,
+> +						  &dma->tx_addr, GFP_KERNEL);
+> +		if (!dma->tx_virt) {
+Here and a few lines below, dma_alloc_coherent() could be replaced by 
+dmam_alloc_coherent() (its managed version) to simplify error handling 
+and freeing of resources.
+
+> +			dev_err(dev, "cannot allocate DMA TX buffer\n");
+> +			return ERR_PTR(-ENOMEM);
+> +		}
+> +
+> +		dma->rx_virt = dma_alloc_coherent(dev, PAGE_SIZE,
+> +						  &dma->rx_addr, GFP_KERNEL);
+> +		if (!dma->rx_virt) {
+> +			dev_err(dev, "cannot allocate DMA RX buffer\n");
+> +			return ERR_PTR(-ENOMEM);
+> +		}
+> +	}
+> +
+> +	espi_flash->mdev.parent = dev;
+> +	espi_flash->mdev.minor = MISC_DYNAMIC_MINOR;
+> +	espi_flash->mdev.name = devm_kasprintf(dev, GFP_KERNEL, "%s", FLASH_MDEV_NAME);
+> +	espi_flash->mdev.fops = &aspeed_espi_flash_fops;
+> +	rc = misc_register(&espi_flash->mdev);
+> +	if (rc) {
+> +		dev_err(dev, "cannot register device\n");
+> +		return ERR_PTR(rc);
+> +	}
+> +
+> +	aspeed_espi_flash_enable(espi_flash);
+> +
+> +	return espi_flash;
+> +}
+> +
+> +void aspeed_espi_flash_free(struct device *dev, struct aspeed_espi_flash *espi_flash)
+> +{
+> +	struct aspeed_espi_flash_dma *dma = &espi_flash->dma;
+> +
+> +	if (espi_flash->dma_mode) {
+> +		dma_free_coherent(dev, PAGE_SIZE, dma->tx_virt, dma->tx_addr);
+> +		dma_free_coherent(dev, PAGE_SIZE, dma->rx_virt, dma->rx_addr);
+> +	}
+> +
+> +	mutex_destroy(&espi_flash->put_tx_mtx);
+> +	mutex_destroy(&espi_flash->get_rx_mtx);
+> +
+> +	misc_deregister(&espi_flash->mdev);
+> +}
+> diff --git a/drivers/soc/aspeed/aspeed-espi-flash.h b/drivers/soc/aspeed/aspeed-espi-flash.h
+> new file mode 100644
+> index 000000000000..bd5177329e50
+> --- /dev/null
+> +++ b/drivers/soc/aspeed/aspeed-espi-flash.h
+> @@ -0,0 +1,45 @@
+> +/* SPDX-License-Identifier: GPL-2.0+ */
+> +/*
+> + * Copyright 2021 ASPEED Technology Inc.
+> + */
+> +#ifndef _ASPEED_ESPI_FLASH_H_
+> +#define _ASPEED_ESPI_FLASH_H_
+> +
+> +enum aspeed_espi_flash_safs_mode {
+> +	SAFS_MODE_MIX,
+> +	SAFS_MODE_SW,
+> +	SAFS_MODE_HW,
+> +	SAFS_MODES,
+> +};
+> +
+> +struct aspeed_espi_flash_dma {
+> +	void *tx_virt;
+> +	dma_addr_t tx_addr;
+> +	void *rx_virt;
+> +	dma_addr_t rx_addr;
+> +};
+> +
+> +struct aspeed_espi_flash {
+> +	uint32_t safs_mode;
+> +
+> +	uint32_t dma_mode;
+> +	struct aspeed_espi_flash_dma dma;
+> +
+> +	uint32_t rx_ready;
+> +	wait_queue_head_t wq;
+> +
+> +	struct mutex get_rx_mtx;
+> +	struct mutex put_tx_mtx;
+> +
+> +	spinlock_t lock;
+> +
+> +	struct miscdevice mdev;
+> +	struct aspeed_espi_ctrl *ctrl;
+> +};
+> +
+> +void aspeed_espi_flash_event(uint32_t sts, struct aspeed_espi_flash *espi_flash);
+> +void aspeed_espi_flash_enable(struct aspeed_espi_flash *espi_flash);
+> +void *aspeed_espi_flash_alloc(struct device *dev, struct aspeed_espi_ctrl *espi_ctrl);
+> +void aspeed_espi_flash_free(struct device *dev, struct aspeed_espi_flash *espi_flash);
+> +
+> +#endif
+> diff --git a/drivers/soc/aspeed/aspeed-espi-ioc.h b/drivers/soc/aspeed/aspeed-espi-ioc.h
+> new file mode 100644
+> index 000000000000..a78f1069841f
+> --- /dev/null
+> +++ b/drivers/soc/aspeed/aspeed-espi-ioc.h
+> @@ -0,0 +1,195 @@
+> +/* SPDX-License-Identifier: GPL-2.0+ */
+> +/*
+> + * Copyright 2021 Aspeed Technology Inc.
+> + */
+> +#ifndef _ASPEED_ESPI_IOC_H
+> +#define _ASPEED_ESPI_IOC_H
+> +
+> +#include <linux/ioctl.h>
+> +#include <linux/types.h>
+> +
+> +/*
+> + * eSPI cycle type encoding
+> + *
+> + * Section 5.1 Cycle Types and Packet Format,
+> + * Intel eSPI Interface Base Specification, Rev 1.0, Jan. 2016.
+> + */
+> +#define ESPI_PERIF_MEMRD32		0x00
+> +#define ESPI_PERIF_MEMRD64		0x02
+> +#define ESPI_PERIF_MEMWR32		0x01
+> +#define ESPI_PERIF_MEMWR64		0x03
+> +#define ESPI_PERIF_MSG			0x10
+> +#define ESPI_PERIF_MSG_D		0x11
+> +#define ESPI_PERIF_SUC_CMPLT		0x06
+> +#define ESPI_PERIF_SUC_CMPLT_D_MIDDLE	0x09
+> +#define ESPI_PERIF_SUC_CMPLT_D_FIRST	0x0b
+> +#define ESPI_PERIF_SUC_CMPLT_D_LAST	0x0d
+> +#define ESPI_PERIF_SUC_CMPLT_D_ONLY	0x0f
+> +#define ESPI_PERIF_UNSUC_CMPLT		0x0c
+> +#define ESPI_OOB_MSG			0x21
+> +#define ESPI_FLASH_READ			0x00
+> +#define ESPI_FLASH_WRITE		0x01
+> +#define ESPI_FLASH_ERASE		0x02
+> +#define ESPI_FLASH_SUC_CMPLT		0x06
+> +#define ESPI_FLASH_SUC_CMPLT_D_MIDDLE	0x09
+> +#define ESPI_FLASH_SUC_CMPLT_D_FIRST	0x0b
+> +#define ESPI_FLASH_SUC_CMPLT_D_LAST	0x0d
+> +#define ESPI_FLASH_SUC_CMPLT_D_ONLY	0x0f
+> +#define ESPI_FLASH_UNSUC_CMPLT		0x0c
+> +
+> +/*
+> + * eSPI packet format structure
+> + *
+> + * Section 5.1 Cycle Types and Packet Format,
+> + * Intel eSPI Interface Base Specification, Rev 1.0, Jan. 2016.
+> + */
+> +struct espi_comm_hdr {
+> +	uint8_t cyc;
+> +	uint8_t len_h : 4;
+> +	uint8_t tag : 4;
+> +	uint8_t len_l;
+> +};
+> +
+> +struct espi_perif_mem32 {
+> +	uint8_t cyc;
+> +	uint8_t len_h : 4;
+> +	uint8_t tag : 4;
+> +	uint8_t len_l;
+> +	uint32_t addr_be;
+> +	uint8_t data[];
+> +} __packed;
+> +
+> +struct espi_perif_mem64 {
+> +	uint8_t cyc;
+> +	uint8_t len_h : 4;
+> +	uint8_t tag : 4;
+> +	uint8_t len_l;
+> +	uint32_t addr_be;
+> +	uint8_t data[];
+> +} __packed;
+> +
+> +struct espi_perif_msg {
+> +	uint8_t cyc;
+> +	uint8_t len_h : 4;
+> +	uint8_t tag : 4;
+> +	uint8_t len_l;
+> +	uint8_t msg_code;
+> +	uint8_t msg_byte[4];
+> +	uint8_t data[];
+> +} __packed;
+> +
+> +struct espi_perif_cmplt {
+> +	uint8_t cyc;
+> +	uint8_t len_h : 4;
+> +	uint8_t tag : 4;
+> +	uint8_t len_l;
+> +	uint8_t data[];
+> +} __packed;
+> +
+> +struct espi_oob_msg {
+> +	uint8_t cyc;
+> +	uint8_t len_h : 4;
+> +	uint8_t tag : 4;
+> +	uint8_t len_l;
+> +	uint8_t data[];
+> +};
+> +
+> +struct espi_flash_rwe {
+> +	uint8_t cyc;
+> +	uint8_t len_h : 4;
+> +	uint8_t tag : 4;
+> +	uint8_t len_l;
+> +	uint32_t addr_be;
+> +	uint8_t data[];
+> +} __packed;
+> +
+> +struct espi_flash_cmplt {
+> +	uint8_t cyc;
+> +	uint8_t len_h : 4;
+> +	uint8_t tag : 4;
+> +	uint8_t len_l;
+> +	uint8_t data[];
+> +} __packed;
+> +
+> +struct aspeed_espi_ioc {
+> +	uint32_t pkt_len;
+> +	uint8_t *pkt;
+> +};
+> +
+> +/*
+> + * we choose the longest header and the max payload size
+> + * based on the Intel specification to define the maximum
+> + * eSPI packet length
+> + */
+> +#define ESPI_PLD_LEN_MIN	(1UL << 6)
+> +#define ESPI_PLD_LEN_MAX	(1UL << 12)
+> +#define ESPI_PKT_LEN_MAX	(sizeof(struct espi_perif_msg) + ESPI_PLD_LEN_MAX)
+> +
+> +#define __ASPEED_ESPI_IOCTL_MAGIC	0xb8
+> +
+> +/*
+> + * The IOCTL-based interface works in the eSPI packet in/out paradigm.
+> + *
+> + * Only the virtual wire IOCTL is a special case which does not send
+> + * or receive an eSPI packet. However, to keep a more consisten use from
+> + * userspace, we make all of the four channel drivers serve through the
+> + * IOCTL interface.
+> + *
+> + * For the eSPI packet format, refer to
+> + *   Section 5.1 Cycle Types and Packet Format,
+> + *   Intel eSPI Interface Base Specification, Rev 1.0, Jan. 2016.
+> + *
+> + * For the example user apps using these IOCTL, refer to
+> + *   https://github.com/AspeedTech-BMC/aspeed_app/tree/master/espi_test
+> + */
+> +
+> +/*
+> + * Peripheral Channel (CH0)
+> + *  - ASPEED_ESPI_PERIF_PC_GET_RX
+> + *      Receive an eSPI Posted/Completion packet
+> + *  - ASPEED_ESPI_PERIF_PC_PUT_TX
+> + *      Transmit an eSPI Posted/Completion packet
+> + *  - ASPEED_ESPI_PERIF_NP_PUT_TX
+> + *      Transmit an eSPI Non-Posted packet
+> + */
+> +#define ASPEED_ESPI_PERIF_PC_GET_RX	_IOR(__ASPEED_ESPI_IOCTL_MAGIC, \
+> +					     0x00, struct aspeed_espi_ioc)
+> +#define ASPEED_ESPI_PERIF_PC_PUT_TX	_IOW(__ASPEED_ESPI_IOCTL_MAGIC, \
+> +					     0x01, struct aspeed_espi_ioc)
+> +#define ASPEED_ESPI_PERIF_NP_PUT_TX	_IOW(__ASPEED_ESPI_IOCTL_MAGIC, \
+> +					     0x02, struct aspeed_espi_ioc)
+> +/*
+> + * Virtual Wire Channel (CH1)
+> + *  - ASPEED_ESPI_VW_GET_GPIO_VAL
+> + *      Read the input value of GPIO over the VW channel
+> + *  - ASPEED_ESPI_VW_PUT_GPIO_VAL
+> + *      Write the output value of GPIO over the VW channel
+> + */
+> +#define ASPEED_ESPI_VW_GET_GPIO_VAL	_IOR(__ASPEED_ESPI_IOCTL_MAGIC, \
+> +					     0x10, uint8_t)
+> +#define ASPEED_ESPI_VW_PUT_GPIO_VAL	_IOW(__ASPEED_ESPI_IOCTL_MAGIC, \
+> +					     0x11, uint8_t)
+> +/*
+> + * Out-of-band Channel (CH2)
+> + *  - ASPEED_ESPI_OOB_GET_RX
+> + *      Receive an eSPI OOB packet
+> + *  - ASPEED_ESPI_OOB_PUT_TX
+> + *      Transmit an eSPI OOB packet
+> + */
+> +#define ASPEED_ESPI_OOB_GET_RX		_IOR(__ASPEED_ESPI_IOCTL_MAGIC, \
+> +					     0x20, struct aspeed_espi_ioc)
+> +#define ASPEED_ESPI_OOB_PUT_TX		_IOW(__ASPEED_ESPI_IOCTL_MAGIC, \
+> +					     0x21, struct aspeed_espi_ioc)
+> +/*
+> + * Flash Channel (CH3)
+> + *  - ASPEED_ESPI_FLASH_GET_RX
+> + *      Receive an eSPI flash packet
+> + *  - ASPEED_ESPI_FLASH_PUT_TX
+> + *      Transmit an eSPI flash packet
+> + */
+> +#define ASPEED_ESPI_FLASH_GET_RX	_IOR(__ASPEED_ESPI_IOCTL_MAGIC, \
+> +					     0x30, struct aspeed_espi_ioc)
+> +#define ASPEED_ESPI_FLASH_PUT_TX	_IOW(__ASPEED_ESPI_IOCTL_MAGIC, \
+> +					     0x31, struct aspeed_espi_ioc)
+> +
+> +#endif
+> diff --git a/drivers/soc/aspeed/aspeed-espi-oob.c b/drivers/soc/aspeed/aspeed-espi-oob.c
+> new file mode 100644
+> index 000000000000..2e0cc427b6c1
+> --- /dev/null
+> +++ b/drivers/soc/aspeed/aspeed-espi-oob.c
+> @@ -0,0 +1,558 @@
+> +// SPDX-License-Identifier: GPL-2.0+
+> +/*
+> + * Copyright 2021 Aspeed Technology Inc.
+> + */
+> +#include <linux/fs.h>
+> +#include <linux/of_device.h>
+> +#include <linux/miscdevice.h>
+> +#include <linux/mfd/syscon.h>
+> +#include <linux/regmap.h>
+> +#include <linux/uaccess.h>
+> +#include <linux/vmalloc.h>
+> +#include <linux/miscdevice.h>
+> +#include <linux/dma-mapping.h>
+> +
+> +#include "aspeed-espi-ioc.h"
+> +#include "aspeed-espi-ctrl.h"
+> +#include "aspeed-espi-oob.h"
+> +
+> +#define OOB_MDEV_NAME	"aspeed-espi-oob"
+> +
+> +/* DMA descriptor is supported since AST2600 */
+> +#define OOB_DMA_DESC_MAX_NUM	1024
+> +#define OOB_DMA_TX_DESC_CUST	0x04
+> +
+> +/* descriptor-based RX DMA handling */
+> +static long aspeed_espi_oob_dma_desc_get_rx(struct file *fp,
+> +					    struct aspeed_espi_ioc *ioc,
+> +					    struct aspeed_espi_oob *espi_oob)
+> +{
+> +	int rc = 0;
+> +	unsigned long flags;
+> +	uint32_t reg;
+> +	uint32_t wptr, sptr;
+> +	uint8_t *pkt;
+> +	uint32_t pkt_len;
+> +	struct espi_comm_hdr *hdr;
+> +	struct oob_rx_dma_desc *d;
+> +	struct aspeed_espi_ctrl *espi_ctrl = espi_oob->ctrl;
+> +
+> +	regmap_read(espi_ctrl->map, ESPI_OOB_RX_DMA_WS_PTR, &reg);
+> +	wptr = (reg & ESPI_OOB_RX_DMA_WS_PTR_WP_MASK) >> ESPI_OOB_RX_DMA_WS_PTR_WP_SHIFT;
+> +	sptr = (reg & ESPI_OOB_RX_DMA_WS_PTR_SP_MASK) >> ESPI_OOB_RX_DMA_WS_PTR_SP_SHIFT;
+> +
+> +	d = &espi_oob->dma.rx_desc[sptr];
+> +
+> +	if (!d->dirty)
+> +		return -EFAULT;
+> +
+> +	pkt_len = ((d->len) ? d->len : 0x1000) + sizeof(struct espi_comm_hdr);
+> +
+> +	if (ioc->pkt_len < pkt_len)
+> +		return -EINVAL;
+> +
+> +	pkt = vmalloc(pkt_len);
+> +	if (!pkt)
+> +		return -ENOMEM;
+> +
+> +	hdr = (struct espi_comm_hdr *)pkt;
+> +	hdr->cyc = d->cyc;
+> +	hdr->tag = d->tag;
+> +	hdr->len_h = d->len >> 8;
+> +	hdr->len_l = d->len & 0xff;
+> +	memcpy(hdr + 1, espi_oob->dma.rx_virt + (PAGE_SIZE * sptr), pkt_len - sizeof(*hdr));
+> +
+> +	if (copy_to_user((void __user *)ioc->pkt, pkt, pkt_len)) {
+> +		rc = -EFAULT;
+> +		goto free_n_out;
+> +	}
+> +
+> +	spin_lock_irqsave(&espi_oob->lock, flags);
+> +
+> +	/* make current descriptor available again */
+> +	d->dirty = 0;
+> +
+> +	sptr = (sptr + 1) % espi_oob->dma.rx_desc_num;
+> +	wptr = (wptr + 1) % espi_oob->dma.rx_desc_num;
+> +
+> +	reg = ((wptr << ESPI_OOB_RX_DMA_WS_PTR_WP_SHIFT) & ESPI_OOB_RX_DMA_WS_PTR_WP_MASK)
+> +		| ((sptr << ESPI_OOB_RX_DMA_WS_PTR_SP_SHIFT) & ESPI_OOB_RX_DMA_WS_PTR_SP_MASK)
+> +		| ESPI_OOB_RX_DMA_WS_PTR_RECV_EN;
+> +	regmap_write(espi_ctrl->map, ESPI_OOB_RX_DMA_WS_PTR, reg);
+> +
+> +	/* set ready flag base on the next RX descriptor */
+> +	espi_oob->rx_ready = espi_oob->dma.rx_desc[sptr].dirty;
+> +
+> +	spin_unlock_irqrestore(&espi_oob->lock, flags);
+> +
+> +free_n_out:
+> +	vfree(pkt);
+> +
+> +	return rc;
+> +}
+> +
+> +static long aspeed_espi_oob_get_rx(struct file *fp,
+> +				   struct aspeed_espi_ioc *ioc,
+> +				   struct aspeed_espi_oob *espi_oob)
+> +{
+> +	int i, rc = 0;
+> +	unsigned long flags;
+> +	uint32_t reg;
+> +	uint32_t cyc, tag, len;
+> +	uint8_t *pkt;
+> +	uint32_t pkt_len;
+> +	struct espi_comm_hdr *hdr;
+> +	struct aspeed_espi_ctrl *espi_ctrl = espi_oob->ctrl;
+> +
+> +	if (fp->f_flags & O_NONBLOCK) {
+> +		if (mutex_trylock(&espi_oob->get_rx_mtx))
+> +			return -EBUSY;
+> +
+> +		if (!espi_oob->rx_ready) {
+> +			rc = -ENODATA;
+> +			goto unlock_mtx_n_out;
+> +		}
+> +	} else {
+> +		mutex_lock(&espi_oob->get_rx_mtx);
+> +
+> +		if (!espi_oob->rx_ready) {
+> +			rc = wait_event_interruptible(espi_oob->wq,
+> +						      espi_oob->rx_ready);
+> +			if (rc == -ERESTARTSYS) {
+> +				rc = -EINTR;
+> +				goto unlock_mtx_n_out;
+> +			}
+> +		}
+> +	}
+> +
+> +	if (espi_oob->dma_mode && espi_ctrl->model->version != ESPI_AST2500) {
+> +		rc = aspeed_espi_oob_dma_desc_get_rx(fp, ioc, espi_oob);
+> +		goto unlock_mtx_n_out;
+> +	}
+> +
+> +	/* common header (i.e. cycle type, tag, and length) is taken by HW */
+> +	regmap_read(espi_ctrl->map, ESPI_OOB_RX_CTRL, &reg);
+> +	cyc = (reg & ESPI_OOB_RX_CTRL_CYC_MASK) >> ESPI_OOB_RX_CTRL_CYC_SHIFT;
+> +	tag = (reg & ESPI_OOB_RX_CTRL_TAG_MASK) >> ESPI_OOB_RX_CTRL_TAG_SHIFT;
+> +	len = (reg & ESPI_OOB_RX_CTRL_LEN_MASK) >> ESPI_OOB_RX_CTRL_LEN_SHIFT;
+> +
+> +	/*
+> +	 * calculate the length of the rest part of the
+> +	 * eSPI packet to be read from HW and copied to
+> +	 * user space.
+> +	 */
+> +	pkt_len = ((len) ? len : ESPI_PLD_LEN_MAX) + sizeof(struct espi_comm_hdr);
+> +
+> +	if (ioc->pkt_len < pkt_len) {
+> +		rc = -EINVAL;
+> +		goto unlock_mtx_n_out;
+> +	}
+> +
+> +	pkt = vmalloc(pkt_len);
+> +	if (!pkt) {
+> +		rc = -ENOMEM;
+> +		goto unlock_mtx_n_out;
+> +	}
+> +
+> +	hdr = (struct espi_comm_hdr *)pkt;
+> +	hdr->cyc = cyc;
+> +	hdr->tag = tag;
+> +	hdr->len_h = len >> 8;
+> +	hdr->len_l = len & 0xff;
+> +
+> +	if (espi_oob->dma_mode) {
+> +		memcpy(hdr + 1, espi_oob->dma.rx_virt,
+> +		       pkt_len - sizeof(*hdr));
+> +	} else {
+> +		for (i = sizeof(*hdr); i < pkt_len; ++i) {
+> +			regmap_read(espi_ctrl->map,
+> +				    ESPI_OOB_RX_PORT, &reg);
+> +			pkt[i] = reg & 0xff;
+> +		}
+> +	}
+> +
+> +	if (copy_to_user((void __user *)ioc->pkt, pkt, pkt_len)) {
+> +		rc = -EFAULT;
+> +		goto free_n_out;
+> +	}
+> +
+> +	spin_lock_irqsave(&espi_oob->lock, flags);
+> +
+> +	regmap_write_bits(espi_ctrl->map, ESPI_OOB_RX_CTRL,
+> +			  ESPI_OOB_RX_CTRL_PEND_SERV,
+> +			  ESPI_OOB_RX_CTRL_PEND_SERV);
+> +
+> +	espi_oob->rx_ready = 0;
+> +
+> +	spin_unlock_irqrestore(&espi_oob->lock, flags);
+> +
+> +free_n_out:
+> +	vfree(pkt);
+> +
+> +unlock_mtx_n_out:
+> +	mutex_unlock(&espi_oob->get_rx_mtx);
+> +
+> +	return rc;
+> +}
+> +
+> +/* descriptor-based TX DMA handling */
+> +static long aspeed_espi_oob_dma_desc_put_tx(struct file *fp,
+> +					    struct aspeed_espi_ioc *ioc,
+> +					    struct aspeed_espi_oob *espi_oob)
+> +{
+> +	int rc = 0;
+> +	uint32_t rptr, wptr;
+> +	uint8_t *pkt;
+> +	struct espi_comm_hdr *hdr;
+> +	struct oob_tx_dma_desc *d;
+> +	struct aspeed_espi_ctrl *espi_ctrl = espi_oob->ctrl;
+> +
+> +	pkt = vzalloc(ioc->pkt_len);
+> +	if (!pkt)
+> +		return -ENOMEM;
+> +
+> +	hdr = (struct espi_comm_hdr *)pkt;
+> +
+> +	if (copy_from_user(pkt, (void __user *)ioc->pkt, ioc->pkt_len)) {
+> +		rc = -EFAULT;
+> +		goto free_n_out;
+> +	}
+> +
+> +	/* kick HW to reflect the up-to-date read/write pointer */
+> +	regmap_write(espi_ctrl->map, ESPI_OOB_TX_DMA_RD_PTR,
+> +		     ESPI_OOB_TX_DMA_RD_PTR_UPDATE);
+> +
+> +	regmap_read(espi_ctrl->map, ESPI_OOB_TX_DMA_RD_PTR, &rptr);
+> +	regmap_read(espi_ctrl->map, ESPI_OOB_TX_DMA_WR_PTR, &wptr);
+> +
+> +	if (((wptr + 1) % espi_oob->dma.tx_desc_num) == rptr) {
+> +		rc = -EBUSY;
+> +		goto free_n_out;
+> +	}
+> +
+> +	d = &espi_oob->dma.tx_desc[wptr];
+> +	d->cyc = hdr->cyc;
+> +	d->tag = hdr->tag;
+> +	d->len = (hdr->len_h << 8) | (hdr->len_l & 0xff);
+> +	d->msg_type = OOB_DMA_TX_DESC_CUST;
+> +
+> +	memcpy(espi_oob->dma.tx_virt + (PAGE_SIZE * wptr), hdr + 1,
+> +	       ioc->pkt_len - sizeof(*hdr));
+> +
+> +	dma_wmb();
+> +
+> +	wptr = (wptr + 1) % espi_oob->dma.tx_desc_num;
+> +	wptr |= ESPI_OOB_TX_DMA_WR_PTR_SEND_EN;
+> +	regmap_write(espi_ctrl->map, ESPI_OOB_TX_DMA_WR_PTR, wptr);
+> +
+> +free_n_out:
+> +	vfree(pkt);
+> +
+> +	return rc;
+> +}
+> +
+> +static long aspeed_espi_oob_put_tx(struct file *fp,
+> +				   struct aspeed_espi_ioc *ioc,
+> +				   struct aspeed_espi_oob *espi_oob)
+> +{
+> +	int i, rc = 0;
+> +	uint32_t reg;
+> +	uint32_t cyc, tag, len;
+> +	uint8_t *pkt;
+> +	struct espi_comm_hdr *hdr;
+> +	struct aspeed_espi_ctrl *espi_ctrl = espi_oob->ctrl;
+> +
+> +	if (!mutex_trylock(&espi_oob->put_tx_mtx))
+> +		return -EBUSY;
+> +
+> +	if (espi_oob->dma_mode && espi_ctrl->model->version != ESPI_AST2500) {
+> +		rc = aspeed_espi_oob_dma_desc_put_tx(fp, ioc, espi_oob);
+> +		goto unlock_mtx_n_out;
+> +	}
+> +
+> +	regmap_read(espi_ctrl->map, ESPI_OOB_TX_CTRL, &reg);
+> +	if (reg & ESPI_OOB_TX_CTRL_TRIGGER) {
+> +		rc = -EBUSY;
+> +		goto unlock_mtx_n_out;
+> +	}
+> +
+> +	if (ioc->pkt_len > ESPI_PKT_LEN_MAX) {
+> +		rc = -EINVAL;
+> +		goto unlock_mtx_n_out;
+> +	}
+> +
+> +	pkt = vmalloc(ioc->pkt_len);
+> +	if (!pkt) {
+> +		rc = -ENOMEM;
+> +		goto unlock_mtx_n_out;
+> +	}
+> +
+> +	hdr = (struct espi_comm_hdr *)pkt;
+> +
+> +	if (copy_from_user(pkt, (void __user *)ioc->pkt, ioc->pkt_len)) {
+> +		rc = -EFAULT;
+> +		goto free_n_out;
+> +	}
+> +
+> +	/*
+> +	 * common header (i.e. cycle type, tag, and length)
+> +	 * part is written to HW registers
+> +	 */
+> +	if (espi_oob->dma_mode) {
+> +		memcpy(espi_oob->dma.tx_virt, hdr + 1,
+> +		       ioc->pkt_len - sizeof(*hdr));
+> +		dma_wmb();
+> +	} else {
+> +		for (i = sizeof(*hdr); i < ioc->pkt_len; ++i)
+> +			regmap_write(espi_ctrl->map,
+> +				     ESPI_OOB_TX_PORT, pkt[i]);
+> +	}
+> +
+> +	cyc = hdr->cyc;
+> +	tag = hdr->tag;
+> +	len = (hdr->len_h << 8) | (hdr->len_l & 0xff);
+> +
+> +	reg = ((cyc << ESPI_OOB_TX_CTRL_CYC_SHIFT) & ESPI_OOB_TX_CTRL_CYC_MASK)
+> +		| ((tag << ESPI_OOB_TX_CTRL_TAG_SHIFT) & ESPI_OOB_TX_CTRL_TAG_MASK)
+> +		| ((len << ESPI_OOB_TX_CTRL_LEN_SHIFT) & ESPI_OOB_TX_CTRL_LEN_MASK)
+> +		| ESPI_OOB_TX_CTRL_TRIGGER;
+> +
+> +	regmap_write(espi_ctrl->map, ESPI_OOB_TX_CTRL, reg);
+> +
+> +free_n_out:
+> +	vfree(pkt);
+> +
+> +unlock_mtx_n_out:
+> +	mutex_unlock(&espi_oob->put_tx_mtx);
+> +
+> +	return rc;
+> +}
+> +
+> +static long aspeed_espi_oob_ioctl(struct file *fp, unsigned int cmd, unsigned long arg)
+> +{
+> +	struct aspeed_espi_ioc ioc;
+> +	struct aspeed_espi_oob *espi_oob = container_of(
+> +			fp->private_data,
+> +			struct aspeed_espi_oob,
+> +			mdev);
+> +
+> +	if (copy_from_user(&ioc, (void __user *)arg, sizeof(ioc)))
+> +		return -EFAULT;
+> +
+> +	if (ioc.pkt_len > ESPI_PKT_LEN_MAX)
+> +		return -EINVAL;
+> +
+> +	switch (cmd) {
+> +	case ASPEED_ESPI_OOB_GET_RX:
+> +		return aspeed_espi_oob_get_rx(fp, &ioc, espi_oob);
+> +	case ASPEED_ESPI_OOB_PUT_TX:
+> +		return aspeed_espi_oob_put_tx(fp, &ioc, espi_oob);
+> +	};
+> +
+> +	return -EINVAL;
+> +}
+> +
+> +void aspeed_espi_oob_event(uint32_t sts, struct aspeed_espi_oob *espi_oob)
+> +{
+> +	unsigned long flags;
+> +
+> +	if (sts & ESPI_INT_STS_OOB_RX_CMPLT) {
+> +		spin_lock_irqsave(&espi_oob->lock, flags);
+> +		espi_oob->rx_ready = 1;
+> +		spin_unlock_irqrestore(&espi_oob->lock, flags);
+> +
+> +		wake_up_interruptible(&espi_oob->wq);
+> +	}
+> +}
+> +
+> +void aspeed_espi_oob_enable(struct aspeed_espi_oob *espi_oob)
+> +{
+> +	int i;
+> +	struct aspeed_espi_oob_dma *dma = &espi_oob->dma;
+> +	struct aspeed_espi_ctrl *espi_ctrl = espi_oob->ctrl;
+> +
+> +	regmap_update_bits(espi_ctrl->map, ESPI_CTRL,
+> +			   ESPI_CTRL_OOB_SW_RDY | ESPI_CTRL_OOB_RX_SW_RST, 0);
+> +
+> +	if (espi_oob->dma_mode)
+> +		regmap_update_bits(espi_ctrl->map, ESPI_CTRL,
+> +				   ESPI_CTRL_OOB_TX_DMA_EN | ESPI_CTRL_OOB_RX_DMA_EN, 0);
+> +	else
+> +		regmap_write(espi_ctrl->map, ESPI_OOB_RX_CTRL, ESPI_OOB_RX_CTRL_PEND_SERV);
+> +
+> +	/*
+> +	 * cleanup OOB RX FIFO to get rid of the data
+> +	 * of OOB early init side-effect
+> +	 */
+> +	regmap_update_bits(espi_ctrl->map, ESPI_CTRL,
+> +			   ESPI_CTRL_OOB_RX_SW_RST, ESPI_CTRL_OOB_RX_SW_RST);
+> +
+> +	regmap_write(espi_ctrl->map, ESPI_OOB_RX_CTRL,
+> +		     ESPI_OOB_RX_CTRL_PEND_SERV);
+> +
+> +	if (espi_oob->dma_mode) {
+> +		regmap_update_bits(espi_ctrl->map, ESPI_CTRL,
+> +				   ESPI_CTRL_OOB_TX_DMA_EN | ESPI_CTRL_OOB_RX_DMA_EN,
+> +				   ESPI_CTRL_OOB_TX_DMA_EN | ESPI_CTRL_OOB_RX_DMA_EN);
+> +
+> +		if (espi_ctrl->model->version == ESPI_AST2500) {
+> +			regmap_write(espi_ctrl->map, ESPI_OOB_TX_DMA, dma->tx_addr);
+> +			regmap_write(espi_ctrl->map, ESPI_OOB_RX_DMA, dma->rx_addr);
+> +		} else {
+> +			for (i = 0; i < dma->tx_desc_num; ++i)
+> +				dma->tx_desc[i].data_addr = dma->tx_addr + (i * PAGE_SIZE);
+> +
+> +			for (i = 0; i < dma->rx_desc_num; ++i) {
+> +				dma->rx_desc[i].data_addr = dma->rx_addr + (i * PAGE_SIZE);
+> +				dma->rx_desc[i].dirty = 0;
+> +			}
+> +
+> +			regmap_write(espi_ctrl->map, ESPI_OOB_TX_DMA, dma->tx_desc_addr);
+> +			regmap_write(espi_ctrl->map, ESPI_OOB_TX_DMA_RB_SIZE, dma->tx_desc_num);
+> +
+> +			regmap_write(espi_ctrl->map, ESPI_OOB_RX_DMA, dma->rx_desc_addr);
+> +			regmap_write(espi_ctrl->map, ESPI_OOB_RX_DMA_RB_SIZE, dma->rx_desc_num);
+> +			regmap_update_bits(espi_ctrl->map, ESPI_OOB_RX_DMA_WS_PTR,
+> +					   ESPI_OOB_RX_DMA_WS_PTR_RECV_EN,
+> +					   ESPI_OOB_RX_DMA_WS_PTR_RECV_EN);
+> +		}
+> +	}
+> +
+> +	regmap_write(espi_ctrl->map, ESPI_INT_STS,
+> +		     ESPI_INT_STS_OOB_BITS);
+> +
+> +	regmap_update_bits(espi_ctrl->map, ESPI_INT_EN,
+> +			   ESPI_INT_EN_OOB_BITS,
+> +			   ESPI_INT_EN_OOB_BITS);
+> +
+> +	regmap_update_bits(espi_ctrl->map, ESPI_CTRL,
+> +			   ESPI_CTRL_OOB_SW_RDY,
+> +			   ESPI_CTRL_OOB_SW_RDY);
+> +}
+> +
+> +static const struct file_operations aspeed_espi_oob_fops = {
+> +	.owner = THIS_MODULE,
+> +	.unlocked_ioctl = aspeed_espi_oob_ioctl,
+> +};
+> +
+> +void *aspeed_espi_oob_alloc(struct device *dev, struct aspeed_espi_ctrl *espi_ctrl)
+> +{
+> +	int rc = 0;
+> +	struct aspeed_espi_oob *espi_oob;
+> +	struct aspeed_espi_oob_dma *dma;
+> +
+> +	espi_oob = devm_kzalloc(dev, sizeof(*espi_oob), GFP_KERNEL);
+> +	if (!espi_oob)
+> +		return ERR_PTR(-ENOMEM);
+> +
+> +	espi_oob->ctrl = espi_ctrl;
+> +
+> +	init_waitqueue_head(&espi_oob->wq);
+> +
+> +	spin_lock_init(&espi_oob->lock);
+> +
+> +	mutex_init(&espi_oob->put_tx_mtx);
+> +	mutex_init(&espi_oob->get_rx_mtx);
+> +
+> +	if (of_property_read_bool(dev->of_node, "oob,dma-mode"))
+> +		espi_oob->dma_mode = 1;
+> +
+> +	if (espi_oob->dma_mode) {
+> +		dma = &espi_oob->dma;
+> +
+> +		/* Descriptor based OOB DMA is supported since AST2600 */
+> +		if (espi_ctrl->model->version != ESPI_AST2500) {
+> +			of_property_read_u32(dev->of_node, "oob,dma-tx-desc-num",
+> +					     &dma->tx_desc_num);
+> +			of_property_read_u32(dev->of_node, "oob,dma-rx-desc-num",
+> +					     &dma->rx_desc_num);
+> +
+> +			if (!dma->tx_desc_num || !dma->rx_desc_num) {
+> +				dev_err(dev, "invalid zero number of DMA channels\n");
+> +				return ERR_PTR(-EINVAL);
+> +			}
+> +
+> +			if (dma->tx_desc_num >= OOB_DMA_DESC_MAX_NUM ||
+> +			    dma->rx_desc_num >= OOB_DMA_DESC_MAX_NUM) {
+> +				dev_err(dev, "too many number of DMA channels\n");
+> +				return ERR_PTR(-EINVAL);
+> +			}
+> +
+> +			dma->tx_desc = dma_alloc_coherent(dev,
+> +							  sizeof(*dma->tx_desc) * dma->tx_desc_num,
+> +							  &dma->tx_desc_addr, GFP_KERNEL);
+
+Here and a few lines below, dma_alloc_coherent() could be replaced by 
+dmam_alloc_coherent() (its managed version) to simplify error handling 
+and freeing of resources.
+
+> +			if (!dma->tx_desc) {
+> +				dev_err(dev, "cannot allocate DMA TX descriptor\n");
+> +				return ERR_PTR(-ENOMEM);
+> +			}
+> +
+> +			dma->rx_desc = dma_alloc_coherent(dev,
+> +							  sizeof(*dma->rx_desc) * dma->rx_desc_num,
+> +							  &dma->rx_desc_addr, GFP_KERNEL);
+> +			if (!dma->rx_desc) {
+> +				dev_err(dev, "cannot allocate DMA RX descriptor\n");
+> +				return ERR_PTR(-ENOMEM);
+> +			}
+> +		}
+> +
+> +		/*
+> +		 * DMA descriptors are consumed in the circular
+> +		 * queue paradigm. Therefore, one dummy slot is
+> +		 * reserved to detect the full condition.
+> +		 *
+> +		 * For AST2500 without DMA descriptors supported,
+> +		 * the number of the queue slot should be 1 here.
+> +		 */
+> +		dma->tx_desc_num += 1;
+> +		dma->rx_desc_num += 1;
+> +
+> +		dma->tx_virt = dma_alloc_coherent(dev, PAGE_SIZE * dma->tx_desc_num,
+> +						  &dma->tx_addr, GFP_KERNEL);
+> +		if (!dma->tx_virt) {
+> +			dev_err(dev, "cannot allocate DMA TX buffer\n");
+> +			return ERR_PTR(-ENOMEM);
+> +		}
+> +
+> +		dma->rx_virt = dma_alloc_coherent(dev, PAGE_SIZE * dma->rx_desc_num,
+> +						  &dma->rx_addr, GFP_KERNEL);
+> +		if (!dma->rx_virt) {
+> +			dev_err(dev, "cannot allocate DMA RX buffer\n");
+> +			return ERR_PTR(-ENOMEM);
+> +		}
+> +	}
+> +
+> +	espi_oob->mdev.parent = dev;
+> +	espi_oob->mdev.minor = MISC_DYNAMIC_MINOR;
+> +	espi_oob->mdev.name = devm_kasprintf(dev, GFP_KERNEL, "%s", OOB_MDEV_NAME);
+> +	espi_oob->mdev.fops = &aspeed_espi_oob_fops;
+> +	rc = misc_register(&espi_oob->mdev);
+> +	if (rc) {
+> +		dev_err(dev, "cannot register device\n");
+> +		return ERR_PTR(rc);
+> +	}
+> +
+> +	aspeed_espi_oob_enable(espi_oob);
+> +
+> +	return espi_oob;
+> +}
+> +
+> +void aspeed_espi_oob_free(struct device *dev, struct aspeed_espi_oob *espi_oob)
+> +{
+> +	struct aspeed_espi_oob_dma *dma = &espi_oob->dma;
+> +
+> +	if (espi_oob->dma_mode) {
+> +		dma_free_coherent(dev, sizeof(*dma->tx_desc) * dma->tx_desc_num,
+> +				  dma->tx_desc, dma->tx_desc_addr);
+> +		dma_free_coherent(dev, sizeof(*dma->rx_desc) * dma->rx_desc_num,
+> +				  dma->rx_desc, dma->rx_desc_addr);
+> +		dma_free_coherent(dev, PAGE_SIZE * dma->tx_desc_num,
+> +				  dma->tx_virt, dma->tx_addr);
+> +		dma_free_coherent(dev, PAGE_SIZE * dma->rx_desc_num,
+> +				  dma->rx_virt, dma->rx_addr);
+> +	}
+> +
+> +	mutex_destroy(&espi_oob->put_tx_mtx);
+> +	mutex_destroy(&espi_oob->get_rx_mtx);
+> +
+> +	misc_deregister(&espi_oob->mdev);
+> +}
+> diff --git a/drivers/soc/aspeed/aspeed-espi-oob.h b/drivers/soc/aspeed/aspeed-espi-oob.h
+> new file mode 100644
+> index 000000000000..03d74ef39e8b
+> --- /dev/null
+> +++ b/drivers/soc/aspeed/aspeed-espi-oob.h
+> @@ -0,0 +1,70 @@
+> +/* SPDX-License-Identifier: GPL-2.0+ */
+> +/*
+> + * Copyright 2021 Aspeed Technology Inc.
+> + */
+> +#ifndef _ASPEED_ESPI_OOB_H_
+> +#define _ASPEED_ESPI_OOB_H_
+> +
+> +struct oob_tx_dma_desc {
+> +	uint32_t data_addr;
+> +	uint8_t cyc;
+> +	uint16_t tag : 4;
+> +	uint16_t len : 12;
+> +	uint8_t msg_type : 3;
+> +	uint8_t raz0 : 1;
+> +	uint8_t pec : 1;
+> +	uint8_t int_en : 1;
+> +	uint8_t pause : 1;
+> +	uint8_t raz1 : 1;
+> +	uint32_t raz2;
+> +	uint32_t raz3;
+> +} __packed;
+> +
+> +struct oob_rx_dma_desc {
+> +	uint32_t data_addr;
+> +	uint8_t cyc;
+> +	uint16_t tag : 4;
+> +	uint16_t len : 12;
+> +	uint8_t raz : 7;
+> +	uint8_t dirty : 1;
+> +} __packed;
+> +
+> +struct aspeed_espi_oob_dma {
+> +	uint32_t tx_desc_num;
+> +	uint32_t rx_desc_num;
+> +
+> +	struct oob_tx_dma_desc *tx_desc;
+> +	dma_addr_t tx_desc_addr;
+> +
+> +	struct oob_rx_dma_desc *rx_desc;
+> +	dma_addr_t rx_desc_addr;
+> +
+> +	void *tx_virt;
+> +	dma_addr_t tx_addr;
+> +
+> +	void *rx_virt;
+> +	dma_addr_t rx_addr;
+> +};
+> +
+> +struct aspeed_espi_oob {
+> +	uint32_t dma_mode;
+> +	struct aspeed_espi_oob_dma dma;
+> +
+> +	uint32_t rx_ready;
+> +	wait_queue_head_t wq;
+> +
+> +	struct mutex get_rx_mtx;
+> +	struct mutex put_tx_mtx;
+> +
+> +	spinlock_t lock;
+> +
+> +	struct miscdevice mdev;
+> +	struct aspeed_espi_ctrl *ctrl;
+> +};
+> +
+> +void aspeed_espi_oob_event(uint32_t sts, struct aspeed_espi_oob *espi_oob);
+> +void aspeed_espi_oob_enable(struct aspeed_espi_oob *espi_oob);
+> +void *aspeed_espi_oob_alloc(struct device *dev, struct aspeed_espi_ctrl *espi_ctrl);
+> +void aspeed_espi_oob_free(struct device *dev, struct aspeed_espi_oob *espi_oob);
+> +
+> +#endif
+> diff --git a/drivers/soc/aspeed/aspeed-espi-perif.c b/drivers/soc/aspeed/aspeed-espi-perif.c
+> new file mode 100644
+> index 000000000000..ebf3d9978b4a
+> --- /dev/null
+> +++ b/drivers/soc/aspeed/aspeed-espi-perif.c
+> @@ -0,0 +1,511 @@
+> +// SPDX-License-Identifier: GPL-2.0+
+> +/*
+> + * Copyright 2021 ASPEED Technology Inc.
+> + */
+> +#include <linux/fs.h>
+> +#include <linux/of_device.h>
+> +#include <linux/miscdevice.h>
+> +#include <linux/mfd/syscon.h>
+> +#include <linux/regmap.h>
+> +#include <linux/uaccess.h>
+> +#include <linux/vmalloc.h>
+> +#include <linux/miscdevice.h>
+> +#include <linux/dma-mapping.h>
+> +
+> +#include "aspeed-espi-ioc.h"
+> +#include "aspeed-espi-ctrl.h"
+> +#include "aspeed-espi-perif.h"
+> +
+> +#define PERIF_MDEV_NAME		"aspeed-espi-peripheral"
+> +#define PERIF_MEMCYC_UNLOCK_KEY	0xfedc756e
+> +#define PERIF_MEMCYC_SIZE_MIN	0x10000
+> +
+> +static long aspeed_espi_perif_pc_get_rx(struct file *fp,
+> +					struct aspeed_espi_ioc *ioc,
+> +					struct aspeed_espi_perif *espi_perif)
+> +{
+> +	int i, rc = 0;
+> +	uint32_t reg;
+> +	uint32_t cyc, tag, len;
+> +	uint8_t *pkt;
+> +	uint32_t pkt_len;
+> +	struct espi_comm_hdr *hdr;
+> +	unsigned long flags;
+> +	struct aspeed_espi_ctrl *espi_ctrl = espi_perif->ctrl;
+> +
+> +	if (fp->f_flags & O_NONBLOCK) {
+> +		if (mutex_trylock(&espi_perif->pc_rx_mtx))
+> +			return -EBUSY;
+> +
+> +		if (!espi_perif->rx_ready) {
+> +			rc = -ENODATA;
+> +			goto unlock_mtx_n_out;
+> +		}
+> +	} else {
+> +		mutex_lock(&espi_perif->pc_rx_mtx);
+> +
+> +		if (!espi_perif->rx_ready) {
+> +			rc = wait_event_interruptible(espi_perif->wq,
+> +						      espi_perif->rx_ready);
+> +			if (rc == -ERESTARTSYS) {
+> +				rc = -EINTR;
+> +				goto unlock_mtx_n_out;
+> +			}
+> +		}
+> +	}
+> +
+> +	/* common header (i.e. cycle type, tag, and length) is taken by HW */
+> +	regmap_read(espi_ctrl->map, ESPI_PERIF_PC_RX_CTRL, &reg);
+> +	cyc = (reg & ESPI_PERIF_PC_RX_CTRL_CYC_MASK) >> ESPI_PERIF_PC_RX_CTRL_CYC_SHIFT;
+> +	tag = (reg & ESPI_PERIF_PC_RX_CTRL_TAG_MASK) >> ESPI_PERIF_PC_RX_CTRL_TAG_SHIFT;
+> +	len = (reg & ESPI_PERIF_PC_RX_CTRL_LEN_MASK) >> ESPI_PERIF_PC_RX_CTRL_LEN_SHIFT;
+> +
+> +	/*
+> +	 * calculate the length of the rest part of the
+> +	 * eSPI packet to be read from HW and copied to
+> +	 * user space.
+> +	 */
+> +	switch (cyc) {
+> +	case ESPI_PERIF_MSG:
+> +		pkt_len = len + sizeof(struct espi_perif_msg);
+> +		break;
+> +	case ESPI_PERIF_MSG_D:
+> +		pkt_len = ((len) ? len : ESPI_PLD_LEN_MAX) +
+> +			  sizeof(struct espi_perif_msg);
+> +		break;
+> +	case ESPI_PERIF_SUC_CMPLT_D_MIDDLE:
+> +	case ESPI_PERIF_SUC_CMPLT_D_FIRST:
+> +	case ESPI_PERIF_SUC_CMPLT_D_LAST:
+> +	case ESPI_PERIF_SUC_CMPLT_D_ONLY:
+> +		pkt_len = ((len) ? len : ESPI_PLD_LEN_MAX) +
+> +			  sizeof(struct espi_perif_cmplt);
+> +		break;
+> +	case ESPI_PERIF_SUC_CMPLT:
+> +	case ESPI_PERIF_UNSUC_CMPLT:
+> +		pkt_len = len + sizeof(struct espi_perif_cmplt);
+> +		break;
+> +	default:
+> +		rc = -EFAULT;
+> +		goto unlock_mtx_n_out;
+> +	}
+> +
+> +	if (ioc->pkt_len < pkt_len) {
+> +		rc = -EINVAL;
+> +		goto unlock_mtx_n_out;
+> +	}
+> +
+> +	pkt = vmalloc(pkt_len);
+> +	if (!pkt) {
+> +		rc = -ENOMEM;
+> +		goto unlock_mtx_n_out;
+> +	}
+> +
+> +	hdr = (struct espi_comm_hdr *)pkt;
+> +	hdr->cyc = cyc;
+> +	hdr->tag = tag;
+> +	hdr->len_h = len >> 8;
+> +	hdr->len_l = len & 0xff;
+> +
+> +	if (espi_perif->dma_mode) {
+> +		memcpy(hdr + 1, espi_perif->dma.pc_rx_virt,
+> +		       pkt_len - sizeof(*hdr));
+> +	} else {
+> +		for (i = sizeof(*hdr); i < pkt_len; ++i) {
+> +			regmap_read(espi_ctrl->map,
+> +				    ESPI_PERIF_PC_RX_PORT, &reg);
+> +			pkt[i] = reg & 0xff;
+> +		}
+> +	}
+> +
+> +	if (copy_to_user((void __user *)ioc->pkt, pkt, pkt_len)) {
+> +		rc = -EFAULT;
+> +		goto free_n_out;
+> +	}
+> +
+> +	spin_lock_irqsave(&espi_perif->lock, flags);
+> +
+> +	regmap_write_bits(espi_ctrl->map, ESPI_PERIF_PC_RX_CTRL,
+> +			  ESPI_PERIF_PC_RX_CTRL_PEND_SERV,
+> +			  ESPI_PERIF_PC_RX_CTRL_PEND_SERV);
+> +
+> +	espi_perif->rx_ready = 0;
+> +
+> +	spin_unlock_irqrestore(&espi_perif->lock, flags);
+> +
+> +free_n_out:
+> +	vfree(pkt);
+> +
+> +unlock_mtx_n_out:
+> +	mutex_unlock(&espi_perif->pc_rx_mtx);
+> +
+> +	return rc;
+> +}
+> +
+> +static long aspeed_espi_perif_pc_put_tx(struct file *fp,
+> +					struct aspeed_espi_ioc *ioc,
+> +					struct aspeed_espi_perif *espi_perif)
+> +{
+> +	int i, rc = 0;
+> +	uint32_t reg;
+> +	uint32_t cyc, tag, len;
+> +	uint8_t *pkt;
+> +	struct espi_comm_hdr *hdr;
+> +	struct aspeed_espi_ctrl *espi_ctrl = espi_perif->ctrl;
+> +
+> +	if (!mutex_trylock(&espi_perif->pc_tx_mtx))
+> +		return -EAGAIN;
+> +
+> +	regmap_read(espi_ctrl->map, ESPI_PERIF_PC_TX_CTRL, &reg);
+> +	if (reg & ESPI_PERIF_PC_TX_CTRL_TRIGGER) {
+> +		rc = -EBUSY;
+> +		goto unlock_n_out;
+> +	}
+> +
+> +	pkt = vmalloc(ioc->pkt_len);
+> +	if (!pkt) {
+> +		rc = -ENOMEM;
+> +		goto unlock_n_out;
+> +	}
+> +
+> +	hdr = (struct espi_comm_hdr *)pkt;
+> +
+> +	if (copy_from_user(pkt, (void __user *)ioc->pkt, ioc->pkt_len)) {
+> +		rc = -EFAULT;
+> +		goto free_n_out;
+> +	}
+> +
+> +	/*
+> +	 * common header (i.e. cycle type, tag, and length)
+> +	 * part is written to HW registers
+> +	 */
+> +	if (espi_perif->dma_mode) {
+> +		memcpy(espi_perif->dma.pc_tx_virt, hdr + 1,
+> +		       ioc->pkt_len - sizeof(*hdr));
+> +		dma_wmb();
+> +	} else {
+> +		for (i = sizeof(*hdr); i < ioc->pkt_len; ++i)
+> +			regmap_write(espi_ctrl->map,
+> +				     ESPI_PERIF_PC_TX_PORT, pkt[i]);
+> +	}
+> +
+> +	cyc = hdr->cyc;
+> +	tag = hdr->tag;
+> +	len = (hdr->len_h << 8) | (hdr->len_l & 0xff);
+> +
+> +	reg = ((cyc << ESPI_PERIF_PC_TX_CTRL_CYC_SHIFT) & ESPI_PERIF_PC_TX_CTRL_CYC_MASK)
+> +		| ((tag << ESPI_PERIF_PC_TX_CTRL_TAG_SHIFT) & ESPI_PERIF_PC_TX_CTRL_TAG_MASK)
+> +		| ((len << ESPI_PERIF_PC_TX_CTRL_LEN_SHIFT) & ESPI_PERIF_PC_TX_CTRL_LEN_MASK)
+> +		| ESPI_PERIF_PC_TX_CTRL_TRIGGER;
+> +
+> +	regmap_write(espi_ctrl->map, ESPI_PERIF_PC_TX_CTRL, reg);
+> +
+> +free_n_out:
+> +	vfree(pkt);
+> +
+> +unlock_n_out:
+> +	mutex_unlock(&espi_perif->pc_tx_mtx);
+> +
+> +	return rc;
+> +}
+> +
+> +static long aspeed_espi_perif_np_put_tx(struct file *fp,
+> +					struct aspeed_espi_ioc *ioc,
+> +					struct aspeed_espi_perif *espi_perif)
+> +{
+> +	int i, rc = 0;
+> +	uint32_t reg;
+> +	uint32_t cyc, tag, len;
+> +	uint8_t *pkt;
+> +	struct espi_comm_hdr *hdr;
+> +	struct aspeed_espi_ctrl *espi_ctrl = espi_perif->ctrl;
+> +
+> +	if (!mutex_trylock(&espi_perif->np_tx_mtx))
+> +		return -EAGAIN;
+> +
+> +	regmap_read(espi_ctrl->map, ESPI_PERIF_NP_TX_CTRL, &reg);
+> +	if (reg & ESPI_PERIF_NP_TX_CTRL_TRIGGER) {
+> +		rc = -EBUSY;
+> +		goto unlock_n_out;
+> +	}
+> +
+> +	pkt = vmalloc(ioc->pkt_len);
+> +	if (!pkt) {
+> +		rc = -ENOMEM;
+> +		goto unlock_n_out;
+> +	}
+> +
+> +	hdr = (struct espi_comm_hdr *)pkt;
+> +
+> +	if (copy_from_user(pkt, (void __user *)ioc->pkt, ioc->pkt_len)) {
+> +		rc = -EFAULT;
+> +		goto free_n_out;
+> +	}
+> +
+> +	/*
+> +	 * common header (i.e. cycle type, tag, and length)
+> +	 * part is written to HW registers
+> +	 */
+> +	if (espi_perif->dma_mode) {
+> +		memcpy(espi_perif->dma.np_tx_virt, hdr + 1,
+> +		       ioc->pkt_len - sizeof(*hdr));
+> +		dma_wmb();
+> +	} else {
+> +		for (i = sizeof(*hdr); i < ioc->pkt_len; ++i)
+> +			regmap_write(espi_ctrl->map,
+> +				     ESPI_PERIF_NP_TX_PORT, pkt[i]);
+> +	}
+> +
+> +	cyc = hdr->cyc;
+> +	tag = hdr->tag;
+> +	len = (hdr->len_h << 8) | (hdr->len_l & 0xff);
+> +
+> +	reg = ((cyc << ESPI_PERIF_NP_TX_CTRL_CYC_SHIFT) & ESPI_PERIF_NP_TX_CTRL_CYC_MASK)
+> +		| ((tag << ESPI_PERIF_NP_TX_CTRL_TAG_SHIFT) & ESPI_PERIF_NP_TX_CTRL_TAG_MASK)
+> +		| ((len << ESPI_PERIF_NP_TX_CTRL_LEN_SHIFT) & ESPI_PERIF_NP_TX_CTRL_LEN_MASK)
+> +		| ESPI_PERIF_NP_TX_CTRL_TRIGGER;
+> +
+> +	regmap_write(espi_ctrl->map, ESPI_PERIF_NP_TX_CTRL, reg);
+> +
+> +free_n_out:
+> +	vfree(pkt);
+> +
+> +unlock_n_out:
+> +	mutex_unlock(&espi_perif->np_tx_mtx);
+> +
+> +	return rc;
+> +
+> +}
+> +
+> +static long aspeed_espi_perif_ioctl(struct file *fp, unsigned int cmd, unsigned long arg)
+> +{
+> +	struct aspeed_espi_ioc ioc;
+> +	struct aspeed_espi_perif *espi_perif = container_of(
+> +			fp->private_data,
+> +			struct aspeed_espi_perif,
+> +			mdev);
+> +
+> +	if (copy_from_user(&ioc, (void __user *)arg, sizeof(ioc)))
+> +		return -EFAULT;
+> +
+> +	if (ioc.pkt_len > ESPI_PKT_LEN_MAX)
+> +		return -EINVAL;
+> +
+> +	switch (cmd) {
+> +	case ASPEED_ESPI_PERIF_PC_GET_RX:
+> +		return aspeed_espi_perif_pc_get_rx(fp, &ioc, espi_perif);
+> +	case ASPEED_ESPI_PERIF_PC_PUT_TX:
+> +		return aspeed_espi_perif_pc_put_tx(fp, &ioc, espi_perif);
+> +	case ASPEED_ESPI_PERIF_NP_PUT_TX:
+> +		return aspeed_espi_perif_np_put_tx(fp, &ioc, espi_perif);
+> +	};
+> +
+> +	return -EINVAL;
+> +}
+> +
+> +static int aspeed_espi_perif_mmap(struct file *fp, struct vm_area_struct *vma)
+> +{
+> +	struct aspeed_espi_perif *espi_perif = container_of(
+> +			fp->private_data,
+> +			struct aspeed_espi_perif,
+> +			mdev);
+> +	unsigned long vm_size = vma->vm_end - vma->vm_start;
+> +	pgprot_t prot = vma->vm_page_prot;
+> +
+> +	if (!espi_perif->mcyc_enable)
+> +		return -EPERM;
+> +
+> +	if (((vma->vm_pgoff << PAGE_SHIFT) + vm_size) > espi_perif->mcyc_size)
+> +		return -EINVAL;
+> +
+> +	prot = pgprot_noncached(prot);
+> +
+> +	if (remap_pfn_range(vma, vma->vm_start,
+> +			    (espi_perif->mcyc_taddr >> PAGE_SHIFT) + vma->vm_pgoff,
+> +			    vm_size, prot))
+> +		return -EAGAIN;
+> +
+> +	return 0;
+> +}
+> +
+> +void aspeed_espi_perif_event(uint32_t sts, struct aspeed_espi_perif *espi_perif)
+> +{
+> +	unsigned long flags;
+> +
+> +	if (sts & ESPI_INT_STS_PERIF_PC_RX_CMPLT) {
+> +		spin_lock_irqsave(&espi_perif->lock, flags);
+> +		espi_perif->rx_ready = 1;
+> +		spin_unlock_irqrestore(&espi_perif->lock, flags);
+> +
+> +		wake_up_interruptible(&espi_perif->wq);
+> +	}
+> +}
+> +
+> +void aspeed_espi_perif_enable(struct aspeed_espi_perif *espi_perif)
+> +{
+> +	struct aspeed_espi_perif_dma *dma = &espi_perif->dma;
+> +	struct aspeed_espi_ctrl *espi_ctrl = espi_perif->ctrl;
+> +
+> +	if (espi_perif->mcyc_enable) {
+> +		if (espi_ctrl->model->version == ESPI_AST2500) {
+> +			regmap_write(espi_ctrl->map, ESPI_PERIF_PC_RX_MASK,
+> +				     PERIF_MEMCYC_UNLOCK_KEY);
+> +			regmap_write(espi_ctrl->map, ESPI_PERIF_PC_RX_MASK,
+> +				     espi_perif->mcyc_mask);
+> +		} else {
+> +			regmap_write(espi_ctrl->map, ESPI_PERIF_PC_RX_MASK,
+> +				     espi_perif->mcyc_mask | ESPI_PERIF_PC_RX_MASK_CFG_WP);
+> +			regmap_update_bits(espi_ctrl->map, ESPI_CTRL2,
+> +					   ESPI_CTRL2_MEMCYC_RD_DIS | ESPI_CTRL2_MEMCYC_WR_DIS, 0);
+> +		}
+> +
+> +		regmap_write(espi_ctrl->map, ESPI_PERIF_PC_RX_SADDR, espi_perif->mcyc_saddr);
+> +		regmap_write(espi_ctrl->map, ESPI_PERIF_PC_RX_TADDR, espi_perif->mcyc_taddr);
+> +	}
+> +
+> +	if (espi_perif->dma_mode) {
+> +		regmap_write(espi_ctrl->map, ESPI_PERIF_PC_RX_DMA, dma->pc_rx_addr);
+> +		regmap_write(espi_ctrl->map, ESPI_PERIF_PC_TX_DMA, dma->pc_tx_addr);
+> +		regmap_write(espi_ctrl->map, ESPI_PERIF_NP_TX_DMA, dma->np_tx_addr);
+> +
+> +		regmap_update_bits(espi_ctrl->map, ESPI_CTRL,
+> +				   ESPI_CTRL_PERIF_NP_TX_DMA_EN |
+> +				   ESPI_CTRL_PERIF_PC_TX_DMA_EN |
+> +				   ESPI_CTRL_PERIF_PC_RX_DMA_EN,
+> +				   ESPI_CTRL_PERIF_NP_TX_DMA_EN |
+> +				   ESPI_CTRL_PERIF_PC_TX_DMA_EN |
+> +				   ESPI_CTRL_PERIF_PC_RX_DMA_EN);
+> +	}
+> +
+> +	regmap_write(espi_ctrl->map, ESPI_INT_STS,
+> +		     ESPI_INT_STS_PERIF_BITS);
+> +
+> +	regmap_update_bits(espi_ctrl->map, ESPI_INT_EN,
+> +			   ESPI_INT_EN_PERIF_BITS,
+> +			   ESPI_INT_EN_PERIF_BITS);
+> +
+> +	regmap_update_bits(espi_ctrl->map, ESPI_CTRL,
+> +			   ESPI_CTRL_PERIF_SW_RDY,
+> +			   ESPI_CTRL_PERIF_SW_RDY);
+> +}
+> +
+> +static const struct file_operations aspeed_espi_perif_fops = {
+> +	.owner = THIS_MODULE,
+> +	.mmap = aspeed_espi_perif_mmap,
+> +	.unlocked_ioctl = aspeed_espi_perif_ioctl,
+> +};
+> +
+> +void *aspeed_espi_perif_alloc(struct device *dev, struct aspeed_espi_ctrl *espi_ctrl)
+> +{
+> +	int rc;
+> +	struct aspeed_espi_perif *espi_perif;
+> +	struct aspeed_espi_perif_dma *dma;
+> +
+> +	espi_perif = devm_kzalloc(dev, sizeof(*espi_perif), GFP_KERNEL);
+> +	if (!espi_perif)
+> +		return ERR_PTR(-ENOMEM);
+> +
+> +	espi_perif->ctrl = espi_ctrl;
+> +
+> +	init_waitqueue_head(&espi_perif->wq);
+> +
+> +	spin_lock_init(&espi_perif->lock);
+> +
+> +	mutex_init(&espi_perif->pc_rx_mtx);
+> +	mutex_init(&espi_perif->pc_tx_mtx);
+> +	mutex_init(&espi_perif->np_tx_mtx);
+> +
+> +	espi_perif->mcyc_enable = of_property_read_bool(dev->of_node, "perif,memcyc-enable");
+> +	if (espi_perif->mcyc_enable) {
+> +		rc = of_property_read_u32(dev->of_node, "perif,memcyc-src-addr",
+> +					  &espi_perif->mcyc_saddr);
+> +		if (rc) {
+> +			dev_err(dev, "cannot get Host source address for memory cycle\n");
+> +			return ERR_PTR(-ENODEV);
+> +		}
+> +
+> +		rc = of_property_read_u32(dev->of_node, "perif,memcyc-size",
+> +					  &espi_perif->mcyc_size);
+> +		if (rc) {
+> +			dev_err(dev, "cannot get size for memory cycle\n");
+> +			return ERR_PTR(-ENODEV);
+> +		}
+> +
+> +		if (espi_perif->mcyc_size < PERIF_MEMCYC_SIZE_MIN)
+> +			espi_perif->mcyc_size = PERIF_MEMCYC_SIZE_MIN;
+> +		else
+> +			espi_perif->mcyc_size = roundup_pow_of_two(espi_perif->mcyc_size);
+> +
+> +		espi_perif->mcyc_mask = ~(espi_perif->mcyc_size - 1);
+> +		espi_perif->mcyc_virt = dma_alloc_coherent(dev, espi_perif->mcyc_size,
+> +							   &espi_perif->mcyc_taddr, GFP_KERNEL);
+
+Here and a few lines below, dma_alloc_coherent() could be replaced by 
+dmam_alloc_coherent() (its managed version) to simplify error handling 
+and freeing of resources.
+
+
+> +		if (!espi_perif->mcyc_virt) {
+> +			dev_err(dev, "cannot allocate memory cycle region\n");
+> +			return ERR_PTR(-ENOMEM);
+> +		}
+> +	}
+> +
+> +	if (of_property_read_bool(dev->of_node, "perif,dma-mode")) {
+> +		dma = &espi_perif->dma;
+> +
+> +		dma->pc_tx_virt = dma_alloc_coherent(dev, PAGE_SIZE,
+> +						     &dma->pc_tx_addr, GFP_KERNEL);
+> +		if (!dma->pc_tx_virt) {
+> +			dev_err(dev, "cannot allocate posted TX DMA buffer\n");
+> +			return ERR_PTR(-ENOMEM);
+> +		}
+> +
+> +		dma->pc_rx_virt = dma_alloc_coherent(dev, PAGE_SIZE,
+> +						     &dma->pc_rx_addr, GFP_KERNEL);
+> +		if (!dma->pc_rx_virt) {
+> +			dev_err(dev, "cannot allocate posted RX DMA buffer\n");
+> +			return ERR_PTR(-ENOMEM);
+> +		}
+> +
+> +		dma->np_tx_virt = dma_alloc_coherent(dev, PAGE_SIZE,
+> +				&dma->np_tx_addr, GFP_KERNEL);
+> +		if (!dma->np_tx_virt) {
+> +			dev_err(dev, "cannot allocate non-posted TX DMA buffer\n");
+> +			return ERR_PTR(-ENOMEM);
+> +		}
+> +
+> +		espi_perif->dma_mode = 1;
+> +	}
+> +
+> +	espi_perif->mdev.parent = dev;
+> +	espi_perif->mdev.minor = MISC_DYNAMIC_MINOR;
+> +	espi_perif->mdev.name = devm_kasprintf(dev, GFP_KERNEL, "%s", PERIF_MDEV_NAME);
+> +	espi_perif->mdev.fops = &aspeed_espi_perif_fops;
+> +	rc = misc_register(&espi_perif->mdev);
+> +	if (rc) {
+> +		dev_err(dev, "cannot register device\n");
+> +		return ERR_PTR(rc);
+> +	}
+> +
+> +	aspeed_espi_perif_enable(espi_perif);
+> +
+> +	return espi_perif;
+> +}
+> +
+> +void aspeed_espi_perif_free(struct device *dev, struct aspeed_espi_perif *espi_perif)
+> +{
+> +	struct aspeed_espi_perif_dma *dma = &espi_perif->dma;
+> +
+> +	if (espi_perif->mcyc_virt)
+> +		dma_free_coherent(dev, espi_perif->mcyc_size,
+> +				  espi_perif->mcyc_virt,
+> +				  espi_perif->mcyc_taddr);
+> +
+> +	if (espi_perif->dma_mode) {
+> +		dma_free_coherent(dev, PAGE_SIZE, dma->pc_tx_virt,
+> +				  dma->pc_tx_addr);
+> +		dma_free_coherent(dev, PAGE_SIZE, dma->pc_rx_virt,
+> +				  dma->pc_rx_addr);
+> +		dma_free_coherent(dev, PAGE_SIZE, dma->np_tx_virt,
+> +				  dma->np_tx_addr);
+> +	}
+> +
+> +	mutex_destroy(&espi_perif->pc_tx_mtx);
+> +	mutex_destroy(&espi_perif->np_tx_mtx);
+> +
+> +	misc_deregister(&espi_perif->mdev);
+> +}
+> diff --git a/drivers/soc/aspeed/aspeed-espi-perif.h b/drivers/soc/aspeed/aspeed-espi-perif.h
+> new file mode 100644
+> index 000000000000..1b964e4680f5
+> --- /dev/null
+> +++ b/drivers/soc/aspeed/aspeed-espi-perif.h
+> @@ -0,0 +1,45 @@
+> +/* SPDX-License-Identifier: GPL-2.0+ */
+> +/*
+> + * Copyright 2021 ASPEED Technology Inc.
+> + */
+> +#ifndef _ASPEED_ESPI_PERIF_H_
+> +#define _ASPEED_ESPI_PERIF_H_
+> +
+> +struct aspeed_espi_perif_dma {
+> +	void *pc_tx_virt;
+> +	dma_addr_t pc_tx_addr;
+> +	void *pc_rx_virt;
+> +	dma_addr_t pc_rx_addr;
+> +	void *np_tx_virt;
+> +	dma_addr_t np_tx_addr;
+> +};
+> +
+> +struct aspeed_espi_perif {
+> +	uint32_t mcyc_enable;
+> +	void *mcyc_virt;
+> +	uint32_t mcyc_saddr;
+> +	phys_addr_t mcyc_taddr;
+> +	uint32_t mcyc_size;
+> +	uint32_t mcyc_mask;
+> +
+> +	uint32_t dma_mode;
+> +	struct aspeed_espi_perif_dma dma;
+> +
+> +	uint32_t rx_ready;
+> +	wait_queue_head_t wq;
+> +
+> +	spinlock_t lock;
+> +	struct mutex pc_rx_mtx;
+> +	struct mutex pc_tx_mtx;
+> +	struct mutex np_tx_mtx;
+> +
+> +	struct miscdevice mdev;
+> +	struct aspeed_espi_ctrl *ctrl;
+> +};
+> +
+> +void aspeed_espi_perif_event(uint32_t sts, struct aspeed_espi_perif *espi_perif);
+> +void aspeed_espi_perif_enable(struct aspeed_espi_perif *espi_perif);
+> +void *aspeed_espi_perif_alloc(struct device *dev, struct aspeed_espi_ctrl *espi_ctrl);
+> +void aspeed_espi_perif_free(struct device *dev, struct aspeed_espi_perif *espi_perif);
+> +
+> +#endif
+> diff --git a/drivers/soc/aspeed/aspeed-espi-vw.c b/drivers/soc/aspeed/aspeed-espi-vw.c
+> new file mode 100644
+> index 000000000000..2bdfedfea12e
+> --- /dev/null
+> +++ b/drivers/soc/aspeed/aspeed-espi-vw.c
+> @@ -0,0 +1,142 @@
+> +// SPDX-License-Identifier: GPL-2.0+
+> +/*
+> + * Copyright 2021 ASPEED Technology Inc.
+> + */
+> +#include <linux/fs.h>
+> +#include <linux/of_device.h>
+> +#include <linux/miscdevice.h>
+> +#include <linux/mfd/syscon.h>
+> +#include <linux/regmap.h>
+> +#include <linux/uaccess.h>
+> +#include <linux/vmalloc.h>
+> +#include <linux/miscdevice.h>
+> +#include <linux/dma-mapping.h>
+> +
+> +#include "aspeed-espi-ioc.h"
+> +#include "aspeed-espi-ctrl.h"
+> +#include "aspeed-espi-vw.h"
+> +
+> +#define VW_MDEV_NAME	"aspeed-espi-vw"
+> +
+> +static long aspeed_espi_vw_ioctl(struct file *fp, unsigned int cmd, unsigned long arg)
+> +{
+> +	uint32_t val;
+> +
+> +	struct aspeed_espi_vw *espi_vw = container_of(fp->private_data,
+> +						      struct aspeed_espi_vw,
+> +						      mdev);
+> +	struct aspeed_espi_ctrl *espi_ctrl = espi_vw->ctrl;
+> +
+> +	switch (cmd) {
+> +	case ASPEED_ESPI_VW_GET_GPIO_VAL:
+> +		regmap_read(espi_ctrl->map, ESPI_VW_GPIO_VAL, &val);
+> +		if (put_user(val, (uint32_t __user *)arg))
+> +			return -EFAULT;
+> +		break;
+> +
+> +	case ASPEED_ESPI_VW_PUT_GPIO_VAL:
+> +		if (get_user(val, (uint32_t __user *)arg))
+> +			return -EFAULT;
+> +		regmap_write(espi_ctrl->map, ESPI_VW_GPIO_VAL, val);
+> +		break;
+> +
+> +	default:
+> +		return -EINVAL;
+> +	};
+> +
+> +	return 0;
+> +}
+> +
+> +void aspeed_espi_vw_event(uint32_t sts, struct aspeed_espi_vw *espi_vw)
+> +{
+> +	uint32_t sysevt_sts;
+> +	struct aspeed_espi_ctrl *espi_ctrl = espi_vw->ctrl;
+> +
+> +	regmap_read(espi_ctrl->map, ESPI_INT_STS, &sts);
+> +
+> +	if (sts & ESPI_INT_STS_VW_SYSEVT) {
+> +		regmap_read(espi_ctrl->map, ESPI_SYSEVT_INT_STS, &sysevt_sts);
+> +
+> +		if (espi_ctrl->model->version == ESPI_AST2500) {
+> +			if (sysevt_sts & ESPI_SYSEVT_INT_STS_HOST_RST_WARN)
+> +				regmap_update_bits(espi_ctrl->map, ESPI_SYSEVT,
+> +						   ESPI_SYSEVT_HOST_RST_ACK,
+> +						   ESPI_SYSEVT_HOST_RST_ACK);
+> +
+> +			if (sysevt_sts & ESPI_SYSEVT_INT_STS_OOB_RST_WARN)
+> +				regmap_update_bits(espi_ctrl->map, ESPI_SYSEVT,
+> +						   ESPI_SYSEVT_OOB_RST_ACK,
+> +						   ESPI_SYSEVT_OOB_RST_ACK);
+> +		}
+> +
+> +		regmap_write(espi_ctrl->map, ESPI_SYSEVT_INT_STS, sysevt_sts);
+> +	}
+> +
+> +	if (sts & ESPI_INT_STS_VW_SYSEVT1) {
+> +		regmap_read(espi_ctrl->map, ESPI_SYSEVT1_INT_STS, &sysevt_sts);
+> +
+> +		if (sysevt_sts & ESPI_SYSEVT1_INT_STS_SUSPEND_WARN)
+> +			regmap_update_bits(espi_ctrl->map, ESPI_SYSEVT1,
+> +					   ESPI_SYSEVT1_SUSPEND_ACK,
+> +					   ESPI_SYSEVT1_SUSPEND_ACK);
+> +
+> +		regmap_write(espi_ctrl->map, ESPI_SYSEVT1_INT_STS, sysevt_sts);
+> +	}
+> +}
+> +
+> +void aspeed_espi_vw_enable(struct aspeed_espi_vw *espi_vw)
+> +{
+> +	struct aspeed_espi_ctrl *espi_ctrl = espi_vw->ctrl;
+> +
+> +	regmap_write(espi_ctrl->map, ESPI_INT_STS,
+> +		     ESPI_INT_STS_VW_BITS);
+> +
+> +	regmap_update_bits(espi_ctrl->map, ESPI_INT_EN,
+> +			   ESPI_INT_EN_VW_BITS,
+> +			   ESPI_INT_EN_VW_BITS);
+> +
+> +	/*
+> +	 * Enforce VW GPIO to SW mode due to security concern.
+> +	 * The HW mode allows the Host to manipulate BMC GPIOs
+> +	 * without notififications.
+> +	 */
+> +	regmap_update_bits(espi_ctrl->map, ESPI_CTRL,
+> +			   ESPI_CTRL_VW_GPIO_SW_MODE | ESPI_CTRL_VW_SW_RDY,
+> +			   ESPI_CTRL_VW_GPIO_SW_MODE | ESPI_CTRL_VW_SW_RDY);
+> +}
+> +
+> +static const struct file_operations aspeed_espi_vw_fops = {
+> +	.owner = THIS_MODULE,
+> +	.unlocked_ioctl = aspeed_espi_vw_ioctl,
+> +};
+> +
+> +void *aspeed_espi_vw_alloc(struct device *dev, struct aspeed_espi_ctrl *espi_ctrl)
+> +{
+> +	int rc;
+> +	struct aspeed_espi_vw *espi_vw;
+> +
+> +	espi_vw = devm_kzalloc(dev, sizeof(*espi_vw), GFP_KERNEL);
+> +	if (!espi_vw)
+> +		return ERR_PTR(-ENOMEM);
+> +
+> +	espi_vw->ctrl = espi_ctrl;
+> +
+> +	espi_vw->mdev.parent = dev;
+> +	espi_vw->mdev.minor = MISC_DYNAMIC_MINOR;
+> +	espi_vw->mdev.name = devm_kasprintf(dev, GFP_KERNEL, "%s", VW_MDEV_NAME);
+> +	espi_vw->mdev.fops = &aspeed_espi_vw_fops;
+> +	rc = misc_register(&espi_vw->mdev);
+> +	if (rc) {
+> +		dev_err(dev, "cannot register device\n");
+> +		return ERR_PTR(rc);
+> +	}
+> +
+> +	aspeed_espi_vw_enable(espi_vw);
+> +
+> +	return espi_vw;
+> +}
+> +
+> +void aspeed_espi_vw_free(struct device *dev, struct aspeed_espi_vw *espi_vw)
+> +{
+> +	misc_deregister(&espi_vw->mdev);
+> +}
+> diff --git a/drivers/soc/aspeed/aspeed-espi-vw.h b/drivers/soc/aspeed/aspeed-espi-vw.h
+> new file mode 100644
+> index 000000000000..aba9c414ac1b
+> --- /dev/null
+> +++ b/drivers/soc/aspeed/aspeed-espi-vw.h
+> @@ -0,0 +1,21 @@
+> +/* SPDX-License-Identifier: GPL-2.0+ */
+> +/*
+> + * Copyright 2021 ASPEED Technology Inc.
+> + */
+> +#ifndef _ASPEED_ESPI_VW_H_
+> +#define _ASPEED_ESPI_VW_H_
+> +
+> +struct aspeed_espi_vw {
+> +	int irq;
+> +	int irq_reset;
+> +
+> +	struct miscdevice mdev;
+> +	struct aspeed_espi_ctrl *ctrl;
+> +};
+> +
+> +void aspeed_espi_vw_event(uint32_t sts, struct aspeed_espi_vw *espi_vw);
+> +void aspeed_espi_vw_enable(struct aspeed_espi_vw *espi_vw);
+> +void *aspeed_espi_vw_alloc(struct device *dev, struct aspeed_espi_ctrl *espi_ctrl);
+> +void aspeed_espi_vw_free(struct device *dev, struct aspeed_espi_vw *espi_vw);
+> +
+> +#endif
 
