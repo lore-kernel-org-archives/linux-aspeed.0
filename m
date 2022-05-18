@@ -1,44 +1,38 @@
-From: Neal Liu <neal_liu@aspeedtech.com>
-Date: Wed, 18 May 2022 14:20:42 +0800
-Subject: [PATCH v3 2/3] ARM: dts: aspeed: Add USB2.0 device controller node
-In-Reply-To: <20220518062043.1075360-1-neal_liu@aspeedtech.com>
-References: <20220518062043.1075360-1-neal_liu@aspeedtech.com>
-Message-ID: <20220518062043.1075360-3-neal_liu@aspeedtech.com>
+From: patchwork-bot+netdevbpf@kernel.org <patchwork-bot+netdevbpf@kernel.org>
+Date: Wed, 18 May 2022 13:10:12 +0000
+Subject: [PATCH net v3] net: ftgmac100: Disable hardware checksum on
+ AST2600
+In-Reply-To: <20220517092217.323060-1-joel@jms.id.au>
+References: <20220517092217.323060-1-joel@jms.id.au>
+Message-ID: <165287941261.26952.17675675280998772661.git-patchwork-notify@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add USB2.0 device controller(udc) node to device tree
-for AST2600.
+Hello:
 
-Signed-off-by: Neal Liu <neal_liu@aspeedtech.com>
----
- arch/arm/boot/dts/aspeed-g6.dtsi | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+This patch was applied to netdev/net.git (master)
+by David S. Miller <davem@davemloft.net>:
 
-diff --git a/arch/arm/boot/dts/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed-g6.dtsi
-index 3d5ce9da42c3..822f4fd854f5 100644
---- a/arch/arm/boot/dts/aspeed-g6.dtsi
-+++ b/arch/arm/boot/dts/aspeed-g6.dtsi
-@@ -298,6 +298,16 @@ vhub: usb-vhub at 1e6a0000 {
- 			status = "disabled";
- 		};
- 
-+		udc: usb at 1e6a2000 {
-+			compatible = "aspeed,ast2600-udc";
-+			reg = <0x1e6a2000 0x300>;
-+			interrupts = <GIC_SPI 9 IRQ_TYPE_LEVEL_HIGH>;
-+			clocks = <&syscon ASPEED_CLK_GATE_USBPORT2CLK>;
-+			pinctrl-names = "default";
-+			pinctrl-0 = <&pinctrl_usb2bd_default>;
-+			status = "disabled";
-+		};
-+
- 		apb {
- 			compatible = "simple-bus";
- 			#address-cells = <1>;
+On Tue, 17 May 2022 18:52:17 +0930 you wrote:
+> The AST2600 when using the i210 NIC over NC-SI has been observed to
+> produce incorrect checksum results with specific MTU values. This was
+> first observed when sending data across a long distance set of networks.
+> 
+> On a local network, the following test was performed using a 1MB file of
+> random data.
+> 
+> [...]
+
+Here is the summary with links:
+  - [net,v3] net: ftgmac100: Disable hardware checksum on AST2600
+    https://git.kernel.org/netdev/net/c/6fd45e79e8b9
+
+You are awesome, thank you!
 -- 
-2.25.1
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/patchwork/pwbot.html
+
 
