@@ -1,41 +1,44 @@
 From: Neal Liu <neal_liu@aspeedtech.com>
-Date: Wed, 18 May 2022 14:20:40 +0800
-Subject: [PATCH v3 0/3] add Aspeed udc driver for ast2600
-Message-ID: <20220518062043.1075360-1-neal_liu@aspeedtech.com>
+Date: Wed, 18 May 2022 14:20:42 +0800
+Subject: [PATCH v3 2/3] ARM: dts: aspeed: Add USB2.0 device controller node
+In-Reply-To: <20220518062043.1075360-1-neal_liu@aspeedtech.com>
+References: <20220518062043.1075360-1-neal_liu@aspeedtech.com>
+Message-ID: <20220518062043.1075360-3-neal_liu@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This patch series aim to add Aspeed USB 2.0 Device Controller (udc)
-driver, including driver itself, device tree node and documentation.
+Add USB2.0 device controller(udc) node to device tree
+for AST2600.
 
-Change since v2:
-- Rename device tree nodes.
-- Fix unusual indentation.
+Signed-off-by: Neal Liu <neal_liu@aspeedtech.com>
+---
+ arch/arm/boot/dts/aspeed-g6.dtsi | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-Change since v1:
-- Fix build test warning reported by kernel test robot.
-- Rename proper name for dt-bindings document.
-
-*** BLURB HERE ***
-
-Neal Liu (3):
-  usb: gadget: add Aspeed ast2600 udc driver
-  ARM: dts: aspeed: Add USB2.0 device controller node
-  dt-bindings: usb: add documentation for aspeed udc
-
- .../bindings/usb/aspeed,ast2600-udc.yaml      |   52 +
- MAINTAINERS                                   |    7 +
- arch/arm/boot/dts/aspeed-g6.dtsi              |   10 +
- drivers/usb/gadget/udc/Kconfig                |   13 +
- drivers/usb/gadget/udc/Makefile               |    1 +
- drivers/usb/gadget/udc/aspeed_udc.c           | 1601 +++++++++++++++++
- 6 files changed, 1684 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/usb/aspeed,ast2600-udc.yaml
- create mode 100644 drivers/usb/gadget/udc/aspeed_udc.c
-
+diff --git a/arch/arm/boot/dts/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed-g6.dtsi
+index 3d5ce9da42c3..822f4fd854f5 100644
+--- a/arch/arm/boot/dts/aspeed-g6.dtsi
++++ b/arch/arm/boot/dts/aspeed-g6.dtsi
+@@ -298,6 +298,16 @@ vhub: usb-vhub at 1e6a0000 {
+ 			status = "disabled";
+ 		};
+ 
++		udc: usb at 1e6a2000 {
++			compatible = "aspeed,ast2600-udc";
++			reg = <0x1e6a2000 0x300>;
++			interrupts = <GIC_SPI 9 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&syscon ASPEED_CLK_GATE_USBPORT2CLK>;
++			pinctrl-names = "default";
++			pinctrl-0 = <&pinctrl_usb2bd_default>;
++			status = "disabled";
++		};
++
+ 		apb {
+ 			compatible = "simple-bus";
+ 			#address-cells = <1>;
 -- 
 2.25.1
 
