@@ -1,38 +1,205 @@
-From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Date: Tue, 17 May 2022 17:25:56 +0200
-Subject: [PATCH v2 2/3] ARM: dts: aspeed: Add USB2.0 device controller node
-In-Reply-To: <HK0PR06MB320295DB0748CEFC68B73CCF80CE9@HK0PR06MB3202.apcprd06.prod.outlook.com>
-References: <20220517082558.3534161-1-neal_liu@aspeedtech.com>
- <20220517082558.3534161-3-neal_liu@aspeedtech.com>
- <96973d1d-c52c-d190-6989-3f7996dae70b@linaro.org>
- <HK0PR06MB32027CAC4BEE443F426F587380CE9@HK0PR06MB3202.apcprd06.prod.outlook.com>
- <0bc5ba24-5bfb-593e-cbd0-828ef44aabc5@linaro.org>
- <HK0PR06MB320295DB0748CEFC68B73CCF80CE9@HK0PR06MB3202.apcprd06.prod.outlook.com>
-Message-ID: <1327ec95-f6b4-838d-f3f2-a115c2ab632b@linaro.org>
+From: Patrick Rudolph <patrick.rudolph@9elements.com>
+Date: Wed, 18 May 2022 08:18:10 +0200
+Subject: [PATCH v5 1/4] dt-bindings: aspeed: Add eSPI controller
+In-Reply-To: <20220516005412.4844-2-chiawei_wang@aspeedtech.com>
+References: <20220516005412.4844-1-chiawei_wang@aspeedtech.com>
+ <20220516005412.4844-2-chiawei_wang@aspeedtech.com>
+Message-ID: <CALNFmy1pM4ZQ0BLDwHykxDCpR=Dv3sVaYq5QLLA_w0L+mzq7iQ@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 17/05/2022 17:21, Neal Liu wrote:
->>>>>
->>>>> +		udc: udc at 1e6a2000 {
->>>>
->>>> The same as DTS in bindings - generic node name, please.
->>>>
->>>
->>> Is it possible to use "udc: usb-udc at 1e6a2000" to distinguish it between "vhub:
->> usb-vhub at 1e6a0000"?
->>
->> Possible yes :), but not recommended and not wanted. Nodes should be generic
->> and prefixes are added only if there is no unit address. You can though use
->> some more descriptive label.
->>
-> "udc: usb at 1e6a2000" is okay for you?
+On Mon, May 16, 2022 at 2:55 AM Chia-Wei Wang
+<chiawei_wang@aspeedtech.com> wrote:
+>
+> Add dt-bindings for Aspeed eSPI controller
+>
+> Signed-off-by: Chia-Wei Wang <chiawei_wang@aspeedtech.com>
+> ---
+>  .../devicetree/bindings/soc/aspeed/espi.yaml  | 162 ++++++++++++++++++
+>  1 file changed, 162 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/soc/aspeed/espi.yaml
+>
+> diff --git a/Documentation/devicetree/bindings/soc/aspeed/espi.yaml b/Documentation/devicetree/bindings/soc/aspeed/espi.yaml
+> new file mode 100644
+> index 000000000000..aa91ec8caf6a
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/soc/aspeed/espi.yaml
+> @@ -0,0 +1,162 @@
+> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+> +# # Copyright (c) 2021 Aspeed Technology Inc.
+> +%YAML 1.2
+> +---
+> +$id: "http://devicetree.org/schemas/soc/aspeed/espi.yaml#"
+> +$schema: "http://devicetree.org/meta-schemas/core.yaml#"
+> +
+> +title: Aspeed eSPI Controller
+> +
+> +maintainers:
+> +  - Chia-Wei Wang <chiawei_wang@aspeedtech.com>
+> +  - Ryan Chen <ryan_chen@aspeedtech.com>
+> +
+> +description:
+> +  Aspeed eSPI controller implements a slave side eSPI endpoint device
+> +  supporting the four eSPI channels, namely peripheral, virtual wire,
+> +  out-of-band, and flash.
+> +
+> +properties:
+> +  compatible:
+> +    items:
+> +      - enum:
+> +          - aspeed,ast2500-espi
+> +          - aspeed,ast2600-espi
+> +      - const: simple-mfd
+> +      - const: syscon
+> +
+> +  reg:
+> +    maxItems: 1
+> +
+> +  "#address-cells":
+> +    const: 1
+> +
+> +  "#size-cells":
+> +    const: 1
+> +
+> +  ranges: true
+> +
+> +patternProperties:
+> +  "^espi-ctrl@[0-9a-f]+$":
+> +    type: object
+> +
+> +    description: Control of the four basic eSPI channels
+> +
+> +    properties:
+> +      compatible:
+> +        items:
+> +          - enum:
+> +              - aspeed,ast2500-espi-ctrl
+> +              - aspeed,ast2600-espi-ctrl
+> +
+> +      interrupts:
+> +        maxItems: 1
+> +
+> +      clocks:
+> +        maxItems: 1
+> +
+> +      perif,memcyc-enable:
+> +        type: boolean
+> +        description: Enable memory cycle over eSPI peripheral channel
+> +
+> +      perif,memcyc-src-addr:
+> +        $ref: /schemas/types.yaml#/definitions/uint32
+> +        description: The Host side address to be decoded into the memory cycle over eSPI peripheral channel
+> +
+> +      perif,memcyc-size:
+> +        $ref: /schemas/types.yaml#/definitions/uint32
+> +        description: The size of the memory region allocated for the memory cycle over eSPI peripheral channel
+> +        minimum: 65536
+> +
+> +      perif,dma-mode:
+> +        type: boolean
+> +        description: Enable DMA support for eSPI peripheral channel
+> +
+> +      oob,dma-mode:
+> +        type: boolean
+> +        description: Enable DMA support for eSPI out-of-band channel
+> +
+> +      oob,dma-tx-desc-num:
+> +        $ref: /schemas/types.yaml#/definitions/uint32
+> +        minimum: 2
+> +        maximum: 1023
+> +        description: The number of TX descriptors available for eSPI OOB DMA engine
+> +
+> +      oob,dma-rx-desc-num:
+> +        $ref: /schemas/types.yaml#/definitions/uint32
+> +        minimum: 2
+> +        maximum: 1023
+> +        description: The number of RX descriptors available for eSPI OOB DMA engine
+> +
+> +      flash,dma-mode:
+> +        type: boolean
+> +        description: Enable DMA support for eSPI flash channel
+> +
+In my tests using this driver the FIFO mode didn't work, but the DMA
+mode worked fine.
+IMHO you should always use DMA mode to reduce CPU load and get rid of
+this property.
 
-Yes, it's perfect.
+> +      flash,safs-mode:
+> +        $ref: /schemas/types.yaml#/definitions/uint32
+> +        enum: [ 0, 1, 2 ]
+> +        default: 0
+> +        description: Slave-Attached-Sharing-Flash mode, 0->Mix, 1->SW, 2->HW
+> +
+On the AST2500 the HW mode is not supported, is it?
 
+> +    dependencies:
+> +      perif,memcyc-src-addr: [ "perif,memcyc-enable" ]
+> +      perif,memcyc-size: [ "perif,memcyc-enable" ]
+> +      oob,dma-tx-desc-num: [ "oob,dma-mode" ]
+> +      oob,dma-rx-desc-num: [ "oob,dma-mode" ]
+> +
+> +    required:
+> +      - compatible
+> +      - interrupts
+> +      - clocks
+> +
+> +  "^espi-mmbi@[0-9a-f]+$":
+> +    type: object
+> +
+> +    description: Control of the PCH-BMC data exchange over eSPI peripheral memory cycle
+> +
+> +    properties:
+> +      compatible:
+> +        const: aspeed,ast2600-espi-mmbi
+> +
+> +      interrupts:
+> +        maxItems: 1
+> +
+> +    required:
+> +      - compatible
+> +      - interrupts
+> +
+> +required:
+> +  - compatible
+> +  - reg
+> +  - "#address-cells"
+> +  - "#size-cells"
+> +  - ranges
+> +
+> +additionalProperties: false
+> +
+> +examples:
+> +  - |
+> +    #include <dt-bindings/interrupt-controller/arm-gic.h>
+> +    #include <dt-bindings/clock/ast2600-clock.h>
+> +
+> +    espi: espi at 1e6ee000 {
+> +        compatible = "aspeed,ast2600-espi", "simple-mfd", "syscon";
+> +        reg = <0x1e6ee000 0x1000>;
+> +
+> +        #address-cells = <1>;
+> +        #size-cells = <1>;
+> +        ranges = <0x0 0x1e6ee000 0x1000>;
+> +
+> +        espi_ctrl: espi-ctrl at 0 {
+> +            compatible = "aspeed,ast2600-espi-ctrl";
+> +            reg = <0x0 0x800>;
+> +            interrupts = <GIC_SPI 42 IRQ_TYPE_LEVEL_HIGH>;
+> +            clocks = <&syscon ASPEED_CLK_GATE_ESPICLK>;
+> +        };
+> +
+> +        espi_mmbi: espi-mmbi at 800 {
+> +            compatible = "aspeed,ast2600-espi-mmbi";
+> +            reg = <0x800 0x50>;
+> +            interrupts = <GIC_SPI 108 IRQ_TYPE_LEVEL_HIGH>;
+> +        };
+> +    };
+> --
+> 2.25.1
+>
 
-Best regards,
-Krzysztof
+Regards,
+Patrick
