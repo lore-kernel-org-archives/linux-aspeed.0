@@ -1,433 +1,299 @@
-From: Joel Stanley <joel@jms.id.au>
-Date: Thu, 19 May 2022 02:46:43 +0000
-Subject: [PATCH] ARM: dts: aspeed: Adding Jabil Rubypass BMC
-In-Reply-To: <20220420065538.4070503-1-David_Wang6097@jabil.com>
-References: <20220420065538.4070503-1-David_Wang6097@jabil.com>
-Message-ID: <CACPK8XdXHsvzAgnX5VjqtznakEmRhcokb66yOYkhr8v+vWKXJg@mail.gmail.com>
+From: ChiaWei Wang <chiawei_wang@aspeedtech.com>
+Date: Thu, 19 May 2022 03:10:39 +0000
+Subject: [PATCH v5 1/4] dt-bindings: aspeed: Add eSPI controller
+In-Reply-To: <20220518182610.GI3302100-robh@kernel.org>
+References: <20220516005412.4844-1-chiawei_wang@aspeedtech.com>
+ <20220516005412.4844-2-chiawei_wang@aspeedtech.com>
+ <20220517183154.GA1352926-robh@kernel.org>
+ <HK0PR06MB3779B567DE70F859E28F66C991D19@HK0PR06MB3779.apcprd06.prod.outlook.com>
+ <20220518182610.GI3302100-robh@kernel.org>
+Message-ID: <HK0PR06MB37798462D17443C697433D7191D09@HK0PR06MB3779.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 20 Apr 2022 at 06:55, David Wang <David_Wang6097@jabil.com> wrote:
->
-> The initial introduction of the jabil server with AST2600 BMC SoC.
->
-> Signed-off-by: David Wang <David_Wang6097@jabil.com>
-> ---
->  .../boot/dts/aspeed-bmc-jabil-rubypass.dts    | 383 ++++++++++++++++++
->  1 file changed, 383 insertions(+)
->  create mode 100644 arch/arm/boot/dts/aspeed-bmc-jabil-rubypass.dts
->
-> diff --git a/arch/arm/boot/dts/aspeed-bmc-jabil-rubypass.dts b/arch/arm/boot/dts/aspeed-bmc-jabil-rubypass.dts
-> new file mode 100644
-> index 000000000000..80763ff48b2a
-> --- /dev/null
-> +++ b/arch/arm/boot/dts/aspeed-bmc-jabil-rubypass.dts
-> @@ -0,0 +1,383 @@
-> +// SPDX-License-Identifier: GPL-2.0-or-later
-> +
-> +/dts-v1/;
-> +
-> +#include "aspeed-g6.dtsi"
-> +#include <dt-bindings/gpio/aspeed-gpio.h>
-> +
-> +/ {
-> +       model = "Jabil Boy";
-> +       compatible = "aspeed,ast2600";
+> From: Rob Herring <robh@kernel.org>
+> Sent: Thursday, May 19, 2022 2:26 AM
+> 
+> On Wed, May 18, 2022 at 12:15:10AM +0000, ChiaWei Wang wrote:
+> > Hi Rob,
+> >
+> > > From: Rob Herring <robh@kernel.org>
+> > > Sent: Wednesday, May 18, 2022 2:32 AM
+> > >
+> > > On Mon, May 16, 2022 at 08:54:09AM +0800, Chia-Wei Wang wrote:
+> > > > Add dt-bindings for Aspeed eSPI controller
+> > > >
+> > > > Signed-off-by: Chia-Wei Wang <chiawei_wang@aspeedtech.com>
+> > > > ---
+> > > >  .../devicetree/bindings/soc/aspeed/espi.yaml  | 162
+> > > > ++++++++++++++++++
+> > >
+> > > bindings/spi/ includes SPI slaves. Is there a reason this doesn't fit there?
+> >
+> > eSPI resues the timing and electrical specification of SPI but runs completely
+> different protocol.
+> > Only the flash channel is related to SPI and the other 3 channels are for
+> EC/BMC/SIO.
+> > Therefore, an eSPI driver does not fit into the SPI model.
+> >
+> > >
+> > > >  1 file changed, 162 insertions(+)  create mode 100644
+> > > > Documentation/devicetree/bindings/soc/aspeed/espi.yaml
+> > > >
+> > > > diff --git
+> > > > a/Documentation/devicetree/bindings/soc/aspeed/espi.yaml
+> > > > b/Documentation/devicetree/bindings/soc/aspeed/espi.yaml
+> > > > new file mode 100644
+> > > > index 000000000000..aa91ec8caf6a
+> > > > --- /dev/null
+> > > > +++ b/Documentation/devicetree/bindings/soc/aspeed/espi.yaml
+> > > > @@ -0,0 +1,162 @@
+> > > > +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause) # #
+> > > > +Copyright (c) 2021 Aspeed Technology Inc.
+> > > > +%YAML 1.2
+> > > > +---
+> > > > +$id: "http://devicetree.org/schemas/soc/aspeed/espi.yaml#"
+> > > > +$schema: "http://devicetree.org/meta-schemas/core.yaml#"
+> > > > +
+> > > > +title: Aspeed eSPI Controller
+> > > > +
+> > > > +maintainers:
+> > > > +  - Chia-Wei Wang <chiawei_wang@aspeedtech.com>
+> > > > +  - Ryan Chen <ryan_chen@aspeedtech.com>
+> > > > +
+> > > > +description:
+> > > > +  Aspeed eSPI controller implements a slave side eSPI endpoint
+> > > > +device
+> > > > +  supporting the four eSPI channels, namely peripheral, virtual
+> > > > +wire,
+> > > > +  out-of-band, and flash.
+> > > > +
+> > > > +properties:
+> > > > +  compatible:
+> > > > +    items:
+> > > > +      - enum:
+> > > > +          - aspeed,ast2500-espi
+> > > > +          - aspeed,ast2600-espi
+> > > > +      - const: simple-mfd
+> > > > +      - const: syscon
+> > > > +
+> > > > +  reg:
+> > > > +    maxItems: 1
+> > > > +
+> > > > +  "#address-cells":
+> > > > +    const: 1
+> > > > +
+> > > > +  "#size-cells":
+> > > > +    const: 1
+> > > > +
+> > > > +  ranges: true
+> > > > +
+> > > > +patternProperties:
+> > > > +  "^espi-ctrl@[0-9a-f]+$":
+> > > > +    type: object
+> > > > +
+> > > > +    description: Control of the four basic eSPI channels
+> > > > +
+> > > > +    properties:
+> > > > +      compatible:
+> > > > +        items:
+> > > > +          - enum:
+> > > > +              - aspeed,ast2500-espi-ctrl
+> > > > +              - aspeed,ast2600-espi-ctrl
+> > > > +
+> > > > +      interrupts:
+> > > > +        maxItems: 1
+> > > > +
+> > > > +      clocks:
+> > > > +        maxItems: 1
+> > > > +
+> > > > +      perif,memcyc-enable:
+> > >
+> > > What vendor is 'perif'?
+> >
+> > It refers to the eSPI peripheral channel.
+> 
+> The convention for properties is <vendor-prefix>,<property-name>. Fix your
+> property names to follow this.
 
-add a string for your machine. Something like this:
+Will revise as suggested.
 
-compatible = "jabil,boy",  "aspeed,ast2600";
+> 
+> >
+> > >
+> > > > +        type: boolean
+> > > > +        description: Enable memory cycle over eSPI peripheral
+> > > > + channel
+> > > > +
+> > > > +      perif,memcyc-src-addr:
+> > > > +        $ref: /schemas/types.yaml#/definitions/uint32
+> > > > +        description: The Host side address to be decoded into the
+> > > > + memory cycle over eSPI peripheral channel
+> > > > +
+> > > > +      perif,memcyc-size:
+> > > > +        $ref: /schemas/types.yaml#/definitions/uint32
+> > > > +        description: The size of the memory region allocated for
+> > > > + the
+> > > memory cycle over eSPI peripheral channel
+> > > > +        minimum: 65536
+> > >
+> > > This region is defined by the h/w or just some carveout of system
+> > > memory? In the former, perhaps this should be part of 'reg'. In the
+> > > latter case, use a /reserved-memory node and memory-region here.
+> >
+> > The region is going to be allocated at runtime phase.
+> > It is a kind of shared memory between Host and BMC.
+> 
+> Use /reserved-memory.
 
-> +
-> +       aliases {
-> +               serial4 = &uart5;
+Will revise as suggested.
 
-This is in the dsti, so it's not required.
+> 
+> >
+> > >
+> > > > +
+> > > > +      perif,dma-mode:
+> > > > +        type: boolean
+> > > > +        description: Enable DMA support for eSPI peripheral
+> > > > + channel
+> > > > +
+> > > > +      oob,dma-mode:
+> > >
+> > > What vendor is 'oob'?
+> >
+> > It refers to the eSPI out-of-band channel.
+> >
+> > >
+> > > > +        type: boolean
+> > > > +        description: Enable DMA support for eSPI out-of-band
+> > > > + channel
+> > > > +
+> > > > +      oob,dma-tx-desc-num:
+> > > > +        $ref: /schemas/types.yaml#/definitions/uint32
+> > > > +        minimum: 2
+> > > > +        maximum: 1023
+> > > > +        description: The number of TX descriptors available for
+> > > > + eSPI OOB DMA engine
+> > > > +
+> > > > +      oob,dma-rx-desc-num:
+> > > > +        $ref: /schemas/types.yaml#/definitions/uint32
+> > > > +        minimum: 2
+> > > > +        maximum: 1023
+> > > > +        description: The number of RX descriptors available for
+> > > > + eSPI OOB DMA engine
+> > > > +
+> > > > +      flash,dma-mode:
+> > > > +        type: boolean
+> > > > +        description: Enable DMA support for eSPI flash channel
+> > >
+> > > Why does this need to be in DT. It's configuration.
+> >
+> > The property is used to decide the operation mode (i.e. FIFO or DMA) of the
+> eSPI flash channel.
+> > Is it a wrong idea to use the DTS property for?
+> >
+> > >
+> > > > +
+> > > > +      flash,safs-mode:
+> > > > +        $ref: /schemas/types.yaml#/definitions/uint32
+> > > > +        enum: [ 0, 1, 2 ]
+> > > > +        default: 0
+> > > > +        description: Slave-Attached-Sharing-Flash mode, 0->Mix,
+> > > > + 1->SW, 2->HW
+> > > > +
+> > > > +    dependencies:
+> > > > +      perif,memcyc-src-addr: [ "perif,memcyc-enable" ]
+> > > > +      perif,memcyc-size: [ "perif,memcyc-enable" ]
+> > > > +      oob,dma-tx-desc-num: [ "oob,dma-mode" ]
+> > > > +      oob,dma-rx-desc-num: [ "oob,dma-mode" ]
+> > > > +
+> > > > +    required:
+> > > > +      - compatible
+> > > > +      - interrupts
+> > > > +      - clocks
+> > > > +
+> > > > +  "^espi-mmbi@[0-9a-f]+$":
+> > > > +    type: object
+> > > > +
+> > > > +    description: Control of the PCH-BMC data exchange over eSPI
+> > > > + peripheral memory cycle
+> > > > +
+> > > > +    properties:
+> > > > +      compatible:
+> > > > +        const: aspeed,ast2600-espi-mmbi
+> > > > +
+> > > > +      interrupts:
+> > > > +        maxItems: 1
+> > > > +
+> > > > +    required:
+> > > > +      - compatible
+> > > > +      - interrupts
+> > > > +
+> > > > +required:
+> > > > +  - compatible
+> > > > +  - reg
+> > > > +  - "#address-cells"
+> > > > +  - "#size-cells"
+> > > > +  - ranges
+> > > > +
+> > > > +additionalProperties: false
+> > > > +
+> > > > +examples:
+> > > > +  - |
+> > > > +    #include <dt-bindings/interrupt-controller/arm-gic.h>
+> > > > +    #include <dt-bindings/clock/ast2600-clock.h>
+> > > > +
+> > > > +    espi: espi at 1e6ee000 {
+> > > > +        compatible = "aspeed,ast2600-espi", "simple-mfd", "syscon";
+> > > > +        reg = <0x1e6ee000 0x1000>;
+> > > > +
+> > > > +        #address-cells = <1>;
+> > > > +        #size-cells = <1>;
+> > > > +        ranges = <0x0 0x1e6ee000 0x1000>;
+> > > > +
+> > > > +        espi_ctrl: espi-ctrl at 0 {
+> > > > +            compatible = "aspeed,ast2600-espi-ctrl";
+> > > > +            reg = <0x0 0x800>;
+> > > > +            interrupts = <GIC_SPI 42 IRQ_TYPE_LEVEL_HIGH>;
+> > > > +            clocks = <&syscon ASPEED_CLK_GATE_ESPICLK>;
+> > > > +        };
+> > > > +
+> > > > +        espi_mmbi: espi-mmbi at 800 {
+> > > > +            compatible = "aspeed,ast2600-espi-mmbi";
+> > > > +            reg = <0x800 0x50>;
+> > > > +            interrupts = <GIC_SPI 108 IRQ_TYPE_LEVEL_HIGH>;
+> > > > +        };
+> > >
+> > > Why do you need these child nodes? Are the subblocks somehow useful
+> > > on their own or reuseable in another configuration? If not, looks
+> > > like this could all be 1 node.
+> >
+> > espi-mmbi has individual function and control registers.
+> > However, espi-mmbi is also a feature extended based on the memory cycle
+> of eSPI peripheral channel.
+> > Thereby, it has dependency on the eSPI channel initialization conducted by
+> espi-ctrl.
+> > The scenario is similar to the lpc-ctrl and other lpc-xxx drivers of Aspeed
+> SoCs.
+> 
+> Doesn't LPC have independent downstream devices like a bus?
 
-> +       };
-> +
-> +       chosen {
-> +               bootargs = "console=ttyS4,115200n8";
-> +       };
-> +
-> +       memory at 80000000 {
-> +               device_type = "memory";
-> +               reg = <0x80000000 0x80000000>;
-> +       };
-> +
-> +       leds {
-> +               compatible = "gpio-leds";
-> +
-> +               identify {
-> +                       default-state = "off";
-> +                       gpios = <&gpio0 ASPEED_GPIO(B, 7) GPIO_ACTIVE_LOW>;
-> +               };
-> +
-> +               status_amber {
-> +                       default-state = "off";
-> +                       gpios = <&gpio0 ASPEED_GPIO(G, 3) GPIO_ACTIVE_LOW>;
-> +               };
-> +
-> +               status_green {
-> +                       default-state = "keep";
-> +                       gpios = <&gpio0 ASPEED_GPIO(G, 2) GPIO_ACTIVE_LOW>;
-> +               };
-> +
-> +               status_susack {
-> +                       default-state = "off";
-> +                       gpios = <&gpio0 ASPEED_GPIO(V, 6) GPIO_ACTIVE_LOW>;
-> +               };
-> +
-> +               fan1_fault{
-> +                       default-state = "off";
-> +                       gpios = <&gpio3_71 0 GPIO_ACTIVE_HIGH>;
-> +               };
-> +               fan2_fault{
-> +                       default-state = "off"
-> +               };
-> +               fan3_fault{
-> +                       default-state = "off";
-> +                       gpios = <&gpio3_71 2 GPIO_ACTIVE_HIGH>;
-> +               };
-> +               fan4_fault{
-> +                       default-state = "off";
-> +                       gpios = <&gpio3_71 3 GPIO_ACTIVE_HIGH>;
-> +               };
-> +               fan5_fault{
-> +                       default-state = "off";
-> +                       gpios = <&gpio3_71 4 GPIO_ACTIVE_HIGH>;
-> +               };
-> +               fan6_fault{
-> +                       default-state = "off";
-> +                       gpios = <&gpio3_71 5 GPIO_ACTIVE_HIGH>;
-> +               };
-> +
-> +               power_amber {
-> +                       default-state = "off";
-> +                       gpios = <&gpio0 ASPEED_GPIO(Y, 0) GPIO_ACTIVE_LOW>;
-> +               };
-> +       };
-> +};
-> +
-> +&mdio0 {
-> +       status = "okay";
-> +
-> +       ethphy0: ethernet-phy at 0 {
-> +               compatible = "ethernet-phy-ieee802.3-c22";
-> +               reg = <0>;
-> +       };
-> +};
-> +
-> +&mdio1 {
-> +       status = "okay";
-> +
-> +       ethphy1: ethernet-phy at 0 {
-> +               compatible = "ethernet-phy-ieee802.3-c22";
-> +               reg = <0>;
-> +       };
-> +};
-> +
-> +&mdio2 {
-> +       status = "okay";
-> +
-> +       ethphy2: ethernet-phy at 0 {
-> +               compatible = "ethernet-phy-ieee802.3-c22";
-> +               reg = <0>;
-> +       };
-> +};
-> +
-> +&mdio3 {
-> +       status = "okay";
-> +
-> +       ethphy3: ethernet-phy at 0 {
-> +               compatible = "ethernet-phy-ieee802.3-c22";
-> +               reg = <0>;
-> +       };
-> +};
-> +
-> +&mac0 {
-> +       status = "okay";
-> +
-> +       phy-mode = "rgmii-rxid";
-> +       phy-handle = <&ethphy0>;
-> +
-> +       pinctrl-names = "default";
-> +       pinctrl-0 = <&pinctrl_rgmii1_default>;
-> +};
-> +
-> +
-> +&mac1 {
-> +       status = "okay";
-> +
-> +       phy-mode = "rgmii-rxid";
-> +       phy-handle = <&ethphy1>;
-> +
-> +       pinctrl-names = "default";
-> +       pinctrl-0 = <&pinctrl_rgmii2_default>;
-> +};
-> +
-> +&mac2 {
-> +       status = "okay";
-> +
-> +       phy-mode = "rgmii";
-> +       phy-handle = <&ethphy2>;
-> +
-> +       pinctrl-names = "default";
-> +       pinctrl-0 = <&pinctrl_rgmii3_default>;
-> +};
-> +
-> +&mac3 {
-> +       status = "okay";
-> +
-> +       phy-mode = "rgmii";
-> +       phy-handle = <&ethphy3>;
-> +
-> +       pinctrl-names = "default";
-> +       pinctrl-0 = <&pinctrl_rgmii4_default>;
-> +};
-> +
-> +&emmc_controller {
-> +       status = "okay";
-> +};
-> +
-> +&emmc {
-> +       non-removable;
-> +       bus-width = <4>;
-> +       max-frequency = <100000000>;
-> +       clk-phase-mmc-hs200 = <9>, <225>;
-> +};
-> +
-> +&rtc {
-> +       status = "okay";
-> +};
-> +
-> +&fmc {
-> +       status = "okay";
-> +       flash at 0 {
-> +               status = "okay";
-> +               m25p,fast-read;
-> +               label = "bmc";
-> +               spi-max-frequency = <50000000>;
-> +#include "openbmc-flash-layout-128.dtsi"
-> +       };
-> +};
-> +
-> +&spi1 {
-> +       status = "okay";
-> +       pinctrl-names = "default";
-> +       pinctrl-0 = <&pinctrl_spi1_default>;
-> +
-> +       flash at 0 {
-> +               status = "okay";
-> +               m25p,fast-read;
-> +               label = "pnor";
-> +               spi-max-frequency = <100000000>;
-> +       };
-> +};
-> +
-> +&uart1 {
-> +       status = "okay";
-> +       pinctrl-0 = <&pinctrl_txd1_default
-> +               &pinctrl_rxd1_default
-> +               &pinctrl_nrts1_default
-> +               &pinctrl_ndtr1_default
-> +               &pinctrl_ndsr1_default
-> +               &pinctrl_ncts1_default
-> +               &pinctrl_ndcd1_default
-> +               &pinctrl_nri1_default>;
-> +};
-> +
-> +&uart2 {
-> +       status = "okay";
-> +       pinctrl-0 = <&pinctrl_txd2_default
-> +               &pinctrl_rxd2_default
-> +               &pinctrl_nrts2_default
-> +               &pinctrl_ndtr2_default
-> +               &pinctrl_ndsr2_default
-> +               &pinctrl_ncts2_default
-> +               &pinctrl_ndcd2_default
-> +               &pinctrl_nri2_default>;
-> +};
-> +
-> +&uart3 {
-> +       status = "okay";
-> +};
-> +
-> +&uart4 {
-> +       status = "okay";
-> +};
-> +
-> +
-> +&uart5 {
-> +       // Workaround for A0
-> +       compatible = "snps,dw-apb-uart";
+No. We use MFD simply because the HW design places multiple devices in the same HW block.
+And they do share certain registers as the control bits are mixed.
 
-Are you really on an A0? If not, this can be dropped.
+> Is this a bus where the ESPI controls access to MMBI and espi-ctrl devices? If so, then the
+> devices need their own binding and descriptions. But it doesn't really look like
+> that to me given the limited description.
 
-> +};
-> +
-> +&i2c0 {
-> +       status = "okay";
-> +
-> +       temp at 2e {
-> +               compatible = "adi,adt7490";
-> +               reg = <0x2e>;
-> +       };
-> +};
-> +
-> +&i2c1 {
-> +       status = "okay";
-> +};
-> +
-> +&i2c2 {
-> +       status = "okay";
-> +};
-> +
-> +&i2c3 {
-> +       multi-master;
-> +       status = "okay";
-> +
-> +       gpio at 70 {
-> +               compatible = "nxp,pca9538";
-> +               reg = <0x70>;
-> +               interrupt-parent = <&gpio0>;
-> +               interrupts = <ASPEED_GPIO(O, 7) IRQ_TYPE_EDGE_FALLING>;
-> +               gpio-controller;
-> +               #gpio-cells = <2>;
-> +               gpio-line-names =
-> +                       "FAN1_PRSNT_N", "FAN2_PRSNT_N", "FAN3_PRSNT_N", "FAN4_PRSNT_N",
-> +                       "FAN5_PRSNT_N", "FAN6_PRSNT_N", "FANCTRL1_FANFAIL_N", "FANCTRL2_FANFAIL_N";
-> +       };
-> +
-> +       gpio3_71:gpio at 71 {
-> +               compatible = "nxp,pca9538";
-> +               reg = <0x71>;
-> +               gpio-controller;
-> +               #gpio-cells = <2>;
-> +               gpio-line-names =
-> +                       "LED_FAN1_FAULT", "LED_FAN2_FAULT", "LED_FAN3_FAULT", "LED_FAN4_FAULT",
-> +                       "LED_FAN5_FAULT", "LED_FAN6_FAULT", "PU_U12_IO6", "PU_U12_IO7";
-> +       };
-> +};
-> +
-> +&i2c4 {
-> +       status = "okay";
-> +};
-> +
-> +&i2c5 {
-> +       status = "okay";
-> +};
-> +
-> +&i2c6 {
-> +       status = "okay";
-> +};
-> +
-> +&i2c7 {
-> +       status = "okay";
-> +};
-> +
-> +&i2c8 {
-> +       status = "okay";
-> +};
-> +
-> +&i2c9 {
-> +       status = "okay";
-> +};
-> +
-> +&i2c12 {
-> +       status = "okay";
-> +};
-> +
-> +&i2c13 {
-> +       status = "okay";
-> +};
-> +
-> +&i2c14 {
-> +       status = "okay";
-> +};
-> +
-> +&i2c15 {
-> +       status = "okay";
-> +};
-> +
-> +&fsim0 {
-> +       status = "okay";
-> +};
-> +
-> +&ehci1 {
-> +       status = "okay";
-> +};
-> +
-> +&uhci {
-> +       status = "okay";
-> +};
-> +
-> +&sdc {
-> +       status = "okay";
-> +};
-> +
-> +&gpio0 {
-> +       status = "okay";
-> +       /* Enable GPIOP0 and GPIOP2 pass-through by default */
-> +       /* pinctrl-names = "pass-through";                  */
-> +       /* pinctrl-0 = <&pinctrl_thru0_default              */
-> +       /*              &pinctrl_thru1_default>;            */
+No.
+The eSPI HW block contains eSPI main device (the 4 channel) and eSPI MMBI devices.
+So I use MFD based on the same reason as LPC block.
+And MMBI will have individual binding and description in the later submission.
 
-Commented out? Unless you have a good reason to keep these like this,
-please un-comment or remove them.
+If it is not appropriate way to use MFD, I will revise the implementation into one driver.
+Thanks for your feedback and suggestions.
 
-> +
-> +       gpio-line-names =
-> +       /*A0-A7*/       "SMB_DCSCM_I2C2_R_SCL","SMB_DCSCM_I2C2_R_SDA","TP_GPIOA2","TP_GPIOA3","SMB_CPU_PIROM_R_SCL","SMB_CPU_PIROM_R_SDA","SMB_IPMB_STBY_LVC3_R_SCL","SMB_IPMB_STBY_LVC3_R_SDA",
-> +       /*B0-B7*/       "NCSI_BMC_I210_NCSI_PRSNT_N","NMI_OUT","IRQ_SMB3_M2_ALERT_N","FM_SPD_SWITCH_CTRL_N","RGMII_BMC_RMM4_LVC3_R_MDC","RGMII_BMC_RMM4_LVC3_R_MDIO","FM_BMC_BMCINIT_R","FP_ID_LED_N",
-> +       /*C0-C7*/       "","RMII_BMC_I210_TXEN_R","RMII_BMC_I210_TXD0_R","RMII_BMC_I210_TXD1_R","","","CLK_50M_BMC_MAC3_NCSI","",
-> +       /*D0-D7*/       "RMII_BMC_I210_RXD0","RMII_BMC_I210_RXD1","RMII_BMC_I210_CRSDV","RMII_BMC_I210_RXER","","RMII_BMC_OCP3_A_TXEN_R","RMII_BMC_OCP3_A_TXD0_R","RMII_BMC_OCP3_A_TXD1_R",
-> +       /*E0-E7*/       "","","CLK_50M_BMC_MAC4_NCSI","","RMII_BMC_OCP3_A_RXD0","RMII_BMC_OCP3_A_RXD1","RMII_BMC_OCP3_A_CRSDV","RMII_BMC_OCP3_A_RXER",
-> +       /*F0-F7*/       "","","","","","","ID_BUTTON","PS_PWROK",
-> +       /*G0-G7*/       "FM_SMB_BMC_NVME_LVC3_ALERT_N","RST_BMC_I2C_M2_R_N","FP_LED_STATUS_GREEN_N","FP_LED_STATUS_AMBER_N","FM_FORCE_BMC_UPDATE_N","FM_BMC_CRASHLOG_TRIG_N","FM_BMC_CPU_FBRK_OUT_R_N","DBP_PRESENT_IN_R2_N",
-> +       /*H0-H7*/       "SGPIO_BMC_FPGA_CLK_R","SGPIO_BMC_FPGA_LD_R_N","SGPIO_BMC_FPGA_DOUT_R","SGPIO_BMC_FPGA_DIN","PLTRST_N","CPU_CATERR","PCH_BMC_THERMTRIP","FM_CPU1_CATERR_N",
-> +       /*I0-I7*/       "JTAG_ASD_NTRST_R_N","JTAG_ASD_TDI_R","JTAG_ASD_TCK_R","JTAG_ASD_TMS_R","JTAG_ASD_TDO","FM_BMC_PWRBTN_OUT_R_N","FM_BMC_PWR_BTN_PTHRU_N","TP_FM_BMC_PCH_SCI_R_N",
-> +       /*J0-J7*/       "SMB_CHASSENSOR_STBY_LVC3_SCL","SMB_CHASSENSOR_STBY_LVC3_SDA","SMB_FPGA_REG_R_SCL","SMB_FPGA_REG_R_SDA","SMB_DCSCM_I2C12_R_SCL","SMB_DCSCM_I2C12_R_SDA","SMB_BMC_FAN_STBY_LVC3_R_SCL","SMB_BMC_FAN_STBY_LVC3_R_SDA",
-> +       /*K0-K7*/       "SMB_HSBP_STBY_LVC3_R_SCL","SMB_HSBP_STBY_LVC3_R_SDA","SMB_SMLINK0_STBY_LVC3_R2_SCL","SMB_SMLINK0_STBY_LVC3_R2_SDA","SMB_TEMPSENSOR_STBY_LVC3_R_SCL","SMB_TEMPSENSOR_STBY_LVC3_R_SDA","SMB_PMBUS_SML1_STBY_LVC3_R_SCL","SMB_PMBUS_SML1_STBY_LVC3_R_SDA",
-> +       /*L0-L7*/       "SMB_PCIE_STBY_LVC3_R_SCL","SMB_PCIE_STBY_LVC3_R_SDA","SMB_HOST_STBY_BMC_LVC3_R_SCL","SMB_HOST_STBY_BMC_LVC3_R_SDA","PREQ_N","TCK_MUX_SEL","","",
-> +       /*M0-M7*/       "TP_SPA_CTS_N","TP_SPA_DCD_N","TP_SPA_DSR_N","PU_SPA_RI_N","TP_SPA_DTR_N","TP_SPA_RTS_N","SPA_SOUT","SPA_SIN",
-> +       /*N0-N7*/       "TP_SPB_CTS_N","TP_SPB_DCD_N","TP_SPB_DSR_N","PU_SPB_RI_N","TP_SPB_DTR_N","TP_SPB_RTS_N","UART_BMC_TXD2","UART_BMC_RXD2",
-> +       /*O0-O7*/       "BMC_FPGA_GPIO_0","BMC_FPGA_GPIO_1","BMC_FPGA_GPIO_2","BMC_FPGA_GPIO_3","FM_BMC_PCH_SPARE_R","FM_CPU1_DISABLE_COD_N","NMI_BUTTON","PDB_PCA9538_INT_N",
-> +       /*P0-P7*/       "RESET_BUTTON","RESET_OUT","POWER_BUTTON","POWER_OUT","","","DISPLAYPORT_MUX_AUX_R_SEL","BMC_HBLED_N",
-> +       /*Q0-Q7*/       "TP_BMC_FAN1_A_TACH","TP_BMC_FAN1_B_TACH","TP_BMC_FAN2_A_TACH","TP_BMC_FAN2_B_TACH","TP_BMC_FAN3_A_TACH","TP_BMC_FAN3_B_TACH","TP_BMC_FAN4_A_TACH","TP_BMC_FAN4_B_TACH",
-> +       /*R0-R7*/       "","","","","","FPGA_JTAG_MUX_SEL","DISPLAYPORT_MUX_R_OE","DISPLAYPORT_MUX_DX_R_SEL",
-> +       /*S0-S7*/       "RST_BMC_PCIE_MUX_N","BMC_RST_RTCRST_R","PRDY_N","FM_FLASH_SECURITY_STRAP","RST_IPMB_SWITCH_R_N","A_P3V_BAT_SCALED_EN","REMOTE_DEBUG_ENABLE","FM_PCHHOT_N",
-> +       /*T0-T7*/       "GND","GND","GND","GND","GND","GND","GND","GND",
-> +       /*U0-U7*/       "GND","GND","GND","GND","GND","GND","GND","GND",
-> +       /*V0-V7*/       "SIO_S3","SIO_S5","TP_BMC_SIO_PWREQ_N","SIO_ONCONTROL","SIO_POWER_GOOD","LED_BMC_FW_CONFIG_DONE_N","FM_BMC_SUSACK_N","TP_IRQ_BMC_PCH_SMI_LPC_N_R",
-> +       /*W0-W7*/       "ESPI_IO0_LPC_LAD0_R","ESPI_IO1_LPC_LAD1_R","ESPI_IO2_LPC_LAD2_R","ESPI_IO3_LPC_LAD3_R","CLK_24M_66M_LPC0_ESPI_BMC","ESPI_CS0_N_LFRAME_N_BMC","IRQ_LPC_SERIRQ_ESPI_ALERT_N","RST_LPC_LRST_ESPI_RST_BMC_R_N",
-> +       /*X0-X7*/       "CPU_ERR2","SMI","POST_COMPLETE","TP_SPI_BMC_SAFS_R_CLK","TP_SPI_BMC_SAFS_R_MOSI","TP_SPI_BMC_SAFS_R_MISO","TP_SPI_BMC_SAFS_R_IO2","TP_SPI_BMC_SAFS_R_IO3",
-> +       /*Y0-Y7*/       "BMC_PWR_AMB_LED_R_N","IRQ_SML0_ALERT_BMC_R2_N","JTAG_CPLD_BMC_MUX_R_SEL","IRQ_SML1_PMBUS_BMC_ALERT_N","SPI_BMC_BOOT_R_IO2","SPI_BMC_BOOT_R_IO3","PU_SPI_BMC_BOOT_ABR","PU_SPI_BMC_BOOT_WP_N",
-> +       /*Z0-Z7*/       "CPU_ERR0","CPU_ERR1","PU_TP_PWRGD_P3V3_RISER2","PU_GPIOZ3","PU_GPIOZ4","PU_GPIOZ5","PU_GPIOZ6","PU_GPIOZ7";
-
-I see you've not used any of the OpenBMC naming conventions for your
-GPIOs. Can you explain why?
-
-> +};
-> +
-> +&gpio1 {
-> +       status = "okay";
-> +       gpio-line-names = /* GPIO18 A-E */
-> +       /*A0-A7*/       "TP_GPIO18B5","TP_GPIO18B4","RST_EMMC_BMC_R_N","","","","","",
-> +       /*B0-B7*/       "","","PD_GPIOB2","","RGMII_BMC_RMM4_TX_R_CLK","RGMII_BMC_RMM4_TX_R_CTRL","RGMII_BMC_RMM4_R_TXD0","RGMII_BMC_RMM4_R_TXD1",
-> +       /*C0-C7*/       "RGMII_BMC_RMM4_R_TXD2","RGMII_BMC_RMM4_R_TXD3","RGMII_BMC_RMM4_RX_CLK","RGMII_BMC_RMM4_RX_CTRL","RGMII_BMC_RMM4_RXD0","RGMII_BMC_RMM4_RXD1","RGMII_BMC_RMM4_RXD2","RGMII_BMC_RMM4_RXD3",
-> +       /*D0-D7*/       "EMMC_BMC_R_CLK","EMMC_BMC_R_CMD","EMMC_BMC_R_DATA0","EMMC_BMC_R_DATA1","EMMC_BMC_R_DATA2","EMMC_BMC_R_DATA3","EMMC_BMC_CD_N","EMMC_BMC_WP_N",
-> +       /*E0-E3*/       "EMMC_BMC_R_DATA4","EMMC_BMC_R_DATA5","EMMC_BMC_R_DATA6","EMMC_BMC_R_DATA7";
-> +};
-> +
-> +&lpc_snoop {
-> +       snoop-ports = <0x80>;
-> +       status = "okay";
-> +};
-> +
-> --
-> 2.30.2
->
+Chiawei
