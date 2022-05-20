@@ -1,40 +1,56 @@
-From: Howard Chiu <howard_chiu@aspeedtech.com>
-Date: Fri, 20 May 2022 05:36:34 +0000
-Subject: [PATCH v5 3/3] ARM: dts: aspeed: ast2600-evb: Enable virtual hub
-Message-ID: <SG2PR06MB23150BC7CBC564E04385C6D8E6D39@SG2PR06MB2315.apcprd06.prod.outlook.com>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Date: Fri, 20 May 2022 07:44:13 +0200
+Subject: [PATCH v3 1/3] usb: gadget: add Aspeed ast2600 udc driver
+In-Reply-To: <HK0PR06MB32020AEF88CFFD4296762B2880D39@HK0PR06MB3202.apcprd06.prod.outlook.com>
+References: <20220518062043.1075360-1-neal_liu@aspeedtech.com>
+ <20220518062043.1075360-2-neal_liu@aspeedtech.com>
+ <YoZoouI4EbnNYE6h@kroah.com>
+ <HK0PR06MB32020AEF88CFFD4296762B2880D39@HK0PR06MB3202.apcprd06.prod.outlook.com>
+Message-ID: <YocqrTHm29g9qU69@kroah.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-1. Disable EHCI0
-2. Enable Aspeed vHub for HID emulation
-3. Remove duplicated EHCI1
+On Fri, May 20, 2022 at 02:29:36AM +0000, Neal Liu wrote:
+> > -----Original Message-----
+> > From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> > Sent: Thursday, May 19, 2022 11:56 PM
+> > To: Neal Liu <neal_liu@aspeedtech.com>
+> > Cc: Rob Herring <robh+dt@kernel.org>; Krzysztof Kozlowski
+> > <krzysztof.kozlowski+dt@linaro.org>; Joel Stanley <joel@jms.id.au>; Andrew
+> > Jeffery <andrew@aj.id.au>; Felipe Balbi <balbi@kernel.org>; Sumit Semwal
+> > <sumit.semwal@linaro.org>; Christian K?nig <christian.koenig@amd.com>;
+> > Geert Uytterhoeven <geert@linux-m68k.org>; Li Yang <leoyang.li@nxp.com>;
+> > linux-aspeed at lists.ozlabs.org; linux-usb at vger.kernel.org;
+> > devicetree at vger.kernel.org; linux-arm-kernel at lists.infradead.org;
+> > linux-kernel at vger.kernel.org; linux-media at vger.kernel.org;
+> > dri-devel at lists.freedesktop.org; linaro-mm-sig at lists.linaro.org; kernel test
+> > robot <lkp@intel.com>
+> > Subject: Re: [PATCH v3 1/3] usb: gadget: add Aspeed ast2600 udc driver
+> > 
+> > On Wed, May 18, 2022 at 02:20:41PM +0800, Neal Liu wrote:
+> > > Aspeed udc is compliant with USB2.0, supports USB High Speed and Full
+> > > Speed, backward compatible with USB1.1.
+> > >
+> > > Supports independent DMA channel for each generic endpoint.
+> > > Supports 32/256 stages descriptor mode for all generic endpoints.
+> > >
+> > > This driver supports full functionality including single/multiple
+> > > stages descriptor mode, and exposes 1 UDC gadget driver.
+> > >
+> > > Signed-off-by: Neal Liu <neal_liu@aspeedtech.com>
+> > > Reported-by: kernel test robot <lkp@intel.com>
+> > 
+> > The kernel test robot did not report that you needed to add a new driver :(
+> 
+> I had received auto build test WARNING on usb/usb-testing reported from kernel test robot.
+> It still mentioned that if the issue is fixed, I can kindly add this tag.
+> Would you prefer not to add this tag for the first coming driver?
 
-Tested with AST2600
-Signed-off-by: Howard Chiu <howard_chiu@aspeedtech.com>
----
- arch/arm/boot/dts/aspeed-ast2600-evb.dts | 6 +-----
- 1 file changed, 1 insertion(+), 5 deletions(-)
+Please do not add tags that do not make sense to.
 
-diff --git a/arch/arm/boot/dts/aspeed-ast2600-evb.dts b/arch/arm/boot/dts/aspeed-ast2600-evb.dts
-index 1db7aa0beea9..4452b6953c23 100644
---- a/arch/arm/boot/dts/aspeed-ast2600-evb.dts
-+++ b/arch/arm/boot/dts/aspeed-ast2600-evb.dts
-@@ -321,11 +321,7 @@ &sdhci1 {
- 	clk-phase-sd-hs = <7>, <200>;
- };
- 
--&ehci0 {
--	status = "okay";
--};
--
--&ehci1 {
-+&vhub {
- 	status = "okay";
- };
- 
--- 
-2.25.1
+thanks,
 
+greg k-h
