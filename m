@@ -1,33 +1,40 @@
-From: Jae Hyun Yoo <quic_jaehyoo@quicinc.com>
-Date: Thu, 19 May 2022 21:13:22 -0700
-Subject: [PATCH v4] ARM: dts: aspeed: add Qualcomm DC-SCM V1 BMC
-In-Reply-To: <20220519172838.61270-1-quic_jaehyoo@quicinc.com>
-References: <20220519172838.61270-1-quic_jaehyoo@quicinc.com>
-Message-ID: <b4fccd87-e579-05e6-c06c-209f2d4a3b15@quicinc.com>
+From: Howard Chiu <howard_chiu@aspeedtech.com>
+Date: Fri, 20 May 2022 05:36:34 +0000
+Subject: [PATCH v5 3/3] ARM: dts: aspeed: ast2600-evb: Enable virtual hub
+Message-ID: <SG2PR06MB23150BC7CBC564E04385C6D8E6D39@SG2PR06MB2315.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 5/19/2022 10:28 AM, Jae Hyun Yoo wrote:
-> From: Graeme Gregory <quic_ggregory@quicinc.com>
-> 
-> Add initial version of device tree for Qualcomm DC-SCM V1 BMC which is
-> equipped with Aspeed AST2600 BMC SoC.
-> 
-> Signed-off-by: Graeme Gregory <quic_ggregory@quicinc.com>
-> Signed-off-by: Jae Hyun Yoo <quic_jaehyoo@quicinc.com>
-> ---
-> Changes in v4:
-> * Changed vendor name from Nuvia to Qualcomm.
-> * Removed 'bootargs'. (Krzysztof Kozlowski)
+1. Disable EHCI0
+2. Enable Aspeed vHub for HID emulation
+3. Remove duplicated EHCI1
 
-Please ignore this v4 since v3 has been already merged via
+Tested with AST2600
+Signed-off-by: Howard Chiu <howard_chiu@aspeedtech.com>
+---
+ arch/arm/boot/dts/aspeed-ast2600-evb.dts | 6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
 
-https://lore.kernel.org/all/CACPK8XfUmFxU8Y6C+aZ2+=dT7=fCfs2=2_aYqyRjoXCoeQaUWQ at mail.gmail.com/
+diff --git a/arch/arm/boot/dts/aspeed-ast2600-evb.dts b/arch/arm/boot/dts/aspeed-ast2600-evb.dts
+index 1db7aa0beea9..4452b6953c23 100644
+--- a/arch/arm/boot/dts/aspeed-ast2600-evb.dts
++++ b/arch/arm/boot/dts/aspeed-ast2600-evb.dts
+@@ -321,11 +321,7 @@ &sdhci1 {
+ 	clk-phase-sd-hs = <7>, <200>;
+ };
+ 
+-&ehci0 {
+-	status = "okay";
+-};
+-
+-&ehci1 {
++&vhub {
+ 	status = "okay";
+ };
+ 
+-- 
+2.25.1
 
-I'll send a follow up patch on top of that.
-
-Thanks,
-Jae
