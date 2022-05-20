@@ -1,11 +1,10 @@
 From: Neal Liu <neal_liu@aspeedtech.com>
-Date: Fri, 20 May 2022 02:29:36 +0000
-Subject: [PATCH v3 1/3] usb: gadget: add Aspeed ast2600 udc driver
-In-Reply-To: <YoZoouI4EbnNYE6h@kroah.com>
+Date: Fri, 20 May 2022 02:31:13 +0000
+Subject: [PATCH v3 0/3] add Aspeed udc driver for ast2600
+In-Reply-To: <YoZosLk5GhTsP841@kroah.com>
 References: <20220518062043.1075360-1-neal_liu@aspeedtech.com>
- <20220518062043.1075360-2-neal_liu@aspeedtech.com>
- <YoZoouI4EbnNYE6h@kroah.com>
-Message-ID: <HK0PR06MB32020AEF88CFFD4296762B2880D39@HK0PR06MB3202.apcprd06.prod.outlook.com>
+ <YoZosLk5GhTsP841@kroah.com>
+Message-ID: <HK0PR06MB320209500E21D25E7A31E4E880D39@HK0PR06MB3202.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -14,7 +13,7 @@ Content-Transfer-Encoding: 7bit
 
 > -----Original Message-----
 > From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> Sent: Thursday, May 19, 2022 11:56 PM
+> Sent: Thursday, May 19, 2022 11:57 PM
 > To: Neal Liu <neal_liu@aspeedtech.com>
 > Cc: Rob Herring <robh+dt@kernel.org>; Krzysztof Kozlowski
 > <krzysztof.kozlowski+dt@linaro.org>; Joel Stanley <joel@jms.id.au>; Andrew
@@ -24,29 +23,24 @@ Content-Transfer-Encoding: 7bit
 > linux-aspeed at lists.ozlabs.org; linux-usb at vger.kernel.org;
 > devicetree at vger.kernel.org; linux-arm-kernel at lists.infradead.org;
 > linux-kernel at vger.kernel.org; linux-media at vger.kernel.org;
-> dri-devel at lists.freedesktop.org; linaro-mm-sig at lists.linaro.org; kernel test
-> robot <lkp@intel.com>
-> Subject: Re: [PATCH v3 1/3] usb: gadget: add Aspeed ast2600 udc driver
+> dri-devel at lists.freedesktop.org; linaro-mm-sig at lists.linaro.org
+> Subject: Re: [PATCH v3 0/3] add Aspeed udc driver for ast2600
 > 
-> On Wed, May 18, 2022 at 02:20:41PM +0800, Neal Liu wrote:
-> > Aspeed udc is compliant with USB2.0, supports USB High Speed and Full
-> > Speed, backward compatible with USB1.1.
+> On Wed, May 18, 2022 at 02:20:40PM +0800, Neal Liu wrote:
+> > This patch series aim to add Aspeed USB 2.0 Device Controller (udc)
+> > driver, including driver itself, device tree node and documentation.
 > >
-> > Supports independent DMA channel for each generic endpoint.
-> > Supports 32/256 stages descriptor mode for all generic endpoints.
+> > Change since v2:
+> > - Rename device tree nodes.
+> > - Fix unusual indentation.
 > >
-> > This driver supports full functionality including single/multiple
-> > stages descriptor mode, and exposes 1 UDC gadget driver.
+> > Change since v1:
+> > - Fix build test warning reported by kernel test robot.
+> > - Rename proper name for dt-bindings document.
 > >
-> > Signed-off-by: Neal Liu <neal_liu@aspeedtech.com>
-> > Reported-by: kernel test robot <lkp@intel.com>
+> > *** BLURB HERE ***
 > 
-> The kernel test robot did not report that you needed to add a new driver :(
+> No blurb?
 
-I had received auto build test WARNING on usb/usb-testing reported from kernel test robot.
-It still mentioned that if the issue is fixed, I can kindly add this tag.
-Would you prefer not to add this tag for the first coming driver?
-Thanks
-
--Neal
+The blurb is above over this comment. I'll revise it as you suggested.
 
