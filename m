@@ -1,243 +1,59 @@
-From: Jae Hyun Yoo <quic_jaehyoo@quicinc.com>
-Date: Thu, 19 May 2022 10:28:38 -0700
-Subject: [PATCH v4] ARM: dts: aspeed: add Qualcomm DC-SCM V1 BMC
-Message-ID: <20220519172838.61270-1-quic_jaehyoo@quicinc.com>
+From: Howard Chiu <howard_chiu@aspeedtech.com>
+Date: Fri, 20 May 2022 02:29:11 +0000
+Subject: [PATCH v4 3/3] ARM: dts: aspeed: ast2600-evb: Enable virtual hub
+In-Reply-To: <CACPK8Xev-AYtrWzZyMGj8eBkTP2YXjnX=M+4UUGgfRZYeGMPtA@mail.gmail.com>
+References: <SG2PR06MB23155E8A6193118544A7DBF3E61E9@SG2PR06MB2315.apcprd06.prod.outlook.com>
+ <CACPK8Xev-AYtrWzZyMGj8eBkTP2YXjnX=M+4UUGgfRZYeGMPtA@mail.gmail.com>
+Message-ID: <SG2PR06MB2315E86259B3751AE8C47E39E6D39@SG2PR06MB2315.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Graeme Gregory <quic_ggregory@quicinc.com>
-
-Add initial version of device tree for Qualcomm DC-SCM V1 BMC which is
-equipped with Aspeed AST2600 BMC SoC.
-
-Signed-off-by: Graeme Gregory <quic_ggregory@quicinc.com>
-Signed-off-by: Jae Hyun Yoo <quic_jaehyoo@quicinc.com>
----
-Changes in v4:
-* Changed vendor name from Nuvia to Qualcomm.
-* Removed 'bootargs'. (Krzysztof Kozlowski)
-
-Changes in v3:
-* Added 'stdout-path'. (Krzysztof Kozlowski)
-
-Changes in v2:
-* Added a comment to explain 'rgmii' phy mode setting. (Andrew Lunn)
-
- arch/arm/boot/dts/Makefile                    |   1 +
- .../boot/dts/aspeed-bmc-qcom-dc-scm-v1.dts    | 189 ++++++++++++++++++
- 2 files changed, 190 insertions(+)
- create mode 100644 arch/arm/boot/dts/aspeed-bmc-qcom-dc-scm-v1.dts
-
-diff --git a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
-index 7c16f8a2b738..6afb7c8102d3 100644
---- a/arch/arm/boot/dts/Makefile
-+++ b/arch/arm/boot/dts/Makefile
-@@ -1558,6 +1558,7 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
- 	aspeed-bmc-opp-witherspoon.dtb \
- 	aspeed-bmc-opp-zaius.dtb \
- 	aspeed-bmc-portwell-neptune.dtb \
-+	aspeed-bmc-qcom-dc-scm-v1.dtb \
- 	aspeed-bmc-quanta-q71l.dtb \
- 	aspeed-bmc-quanta-s6q.dtb \
- 	aspeed-bmc-supermicro-x11spi.dtb \
-diff --git a/arch/arm/boot/dts/aspeed-bmc-qcom-dc-scm-v1.dts b/arch/arm/boot/dts/aspeed-bmc-qcom-dc-scm-v1.dts
-new file mode 100644
-index 000000000000..966cef5f1e9e
---- /dev/null
-+++ b/arch/arm/boot/dts/aspeed-bmc-qcom-dc-scm-v1.dts
-@@ -0,0 +1,189 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
-+// Copyright (c) 2021-2022 Qualcomm Innovation Center, Inc. All rights reserved.
-+
-+/dts-v1/;
-+
-+#include "aspeed-g6.dtsi"
-+
-+/ {
-+	model = "Qualcomm DC-SCM V1 BMC";
-+	compatible = "qcom,dc-scm-v1-bmc", "aspeed,ast2600";
-+
-+	aliases {
-+		serial4 = &uart5;
-+	};
-+
-+	chosen {
-+		stdout-path = &uart5;
-+	};
-+
-+	memory at 80000000 {
-+		device_type = "memory";
-+		reg = <0x80000000 0x40000000>;
-+	};
-+};
-+
-+&mdio3 {
-+	status = "okay";
-+
-+	ethphy3: ethernet-phy at 1 {
-+		compatible = "ethernet-phy-ieee802.3-c22";
-+		reg = <1>;
-+	};
-+};
-+
-+&mac2 {
-+	status = "okay";
-+
-+	/* Bootloader sets up the MAC to insert delay */
-+	phy-mode = "rgmii";
-+	phy-handle = <&ethphy3>;
-+
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pinctrl_rgmii3_default>;
-+};
-+
-+&mac3 {
-+	status = "okay";
-+
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pinctrl_rmii4_default>;
-+
-+	use-ncsi;
-+};
-+
-+&rtc {
-+	status = "okay";
-+};
-+
-+&fmc {
-+	status = "okay";
-+
-+	flash at 0 {
-+		status = "okay";
-+		m25p,fast-read;
-+		label = "bmc";
-+		spi-max-frequency = <133000000>;
-+#include "openbmc-flash-layout-64.dtsi"
-+	};
-+
-+	flash at 1 {
-+		status = "okay";
-+		m25p,fast-read;
-+		label = "alt-bmc";
-+		spi-max-frequency = <133000000>;
-+#include "openbmc-flash-layout-64-alt.dtsi"
-+	};
-+};
-+
-+&spi1 {
-+	status = "okay";
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pinctrl_spi1_default>;
-+
-+	flash at 0 {
-+		status = "okay";
-+		m25p,fast-read;
-+		label = "bios";
-+		spi-max-frequency = <133000000>;
-+	};
-+};
-+
-+&gpio0 {
-+	gpio-line-names =
-+	/*A0-A7*/	"","","","","","","","",
-+	/*B0-B7*/	"BMC_FLASH_MUX_SEL","","","","","","","",
-+	/*C0-C7*/	"","","","","","","","",
-+	/*D0-D7*/	"","","","","","","","",
-+	/*E0-E7*/	"","","","","","","","",
-+	/*F0-F7*/	"","","","","","","","",
-+	/*G0-G7*/	"","","","","","","","",
-+	/*H0-H7*/	"","","","","","","","",
-+	/*I0-I7*/	"","","","","","","","",
-+	/*J0-J7*/	"","","","","","","","",
-+	/*K0-K7*/	"","","","","","","","",
-+	/*L0-L7*/	"","","","","","","","",
-+	/*M0-M7*/	"","","","","","","","",
-+	/*N0-N7*/	"BMC_FWSPI_RST_N","","GPIO_1_BMC_3V3","","","","","",
-+	/*O0-O7*/	"JTAG_MUX_A","JTAG_MUX_B","","","","","","",
-+	/*P0-P7*/	"","","","","","","","",
-+	/*Q0-Q7*/	"","","","","","","","",
-+	/*R0-R7*/	"","","","","","","","",
-+	/*S0-S7*/	"","","","","","","","",
-+	/*T0-T7*/	"","","","","","","","",
-+	/*U0-U7*/	"","","","","","","","",
-+	/*V0-V7*/	"","","","SCMFPGA_SPARE_GPIO1_3V3",
-+			"SCMFPGA_SPARE_GPIO2_3V3","SCMFPGA_SPARE_GPIO3_3V3",
-+			"SCMFPGA_SPARE_GPIO4_3V3","SCMFPGA_SPARE_GPIO5_3V3",
-+	/*W0-W7*/	"","","","","","","","",
-+	/*X0-X7*/	"","","","","","","","",
-+	/*Y0-Y7*/	"","","","","","","","",
-+	/*Z0-Z7*/	"","","","","","","","",
-+	/*AA0-AA7*/	"","","","","","","","",
-+	/*AB0-AB7*/	"","","","","","","","",
-+	/*AC0-AC7*/	"","","","","","","","";
-+};
-+
-+&gpio1 {
-+	gpio-line-names =
-+	/*A0-A7*/	"GPI_1_BMC_1V8","","","","","",
-+			"SCMFPGA_SPARE_GPIO1_1V8","SCMFPGA_SPARE_GPIO2_1V8",
-+	/*B0-B7*/	"SCMFPGA_SPARE_GPIO3_1V8","SCMFPGA_SPARE_GPIO4_1V8",
-+			"SCMFPGA_SPARE_GPIO5_1V8","","","","","",
-+	/*C0-C7*/	"","","","","","","","",
-+	/*D0-D7*/	"","BMC_SPI1_RST_N","BIOS_FLASH_MUX_SEL","",
-+			"","TPM2_PIRQ_N","TPM2_RST_N","",
-+	/*E0-E7*/	"","","","","","","","";
-+};
-+
-+&i2c2 {
-+	status = "okay";
-+};
-+
-+&i2c4 {
-+	status = "okay";
-+};
-+
-+&i2c5 {
-+	status = "okay";
-+};
-+
-+&i2c6 {
-+	status = "okay";
-+};
-+
-+&i2c7 {
-+	status = "okay";
-+};
-+
-+&i2c8 {
-+	status = "okay";
-+};
-+
-+&i2c9 {
-+	status = "okay";
-+};
-+
-+&i2c10 {
-+	status = "okay";
-+};
-+
-+&i2c12 {
-+	status = "okay";
-+};
-+
-+&i2c13 {
-+	status = "okay";
-+};
-+
-+&i2c14 {
-+	status = "okay";
-+};
-+
-+&i2c15 {
-+	status = "okay";
-+};
-+
-+&vhub {
-+	status = "okay";
-+};
--- 
-2.25.1
+> On Tue, 29 Mar 2022 at 03:24, Howard Chiu <howard_chiu@aspeedtech.com>
+> wrote:
+> >
+> > Enable Aspeed VHub for HID emulation
+> >
+> > Signed-off-by: Howard Chiu <howard_chiu@aspeedtech.com>
+> > ---
+> >  arch/arm/boot/dts/aspeed-ast2600-evb.dts | 5 +++++
+> >  1 file changed, 5 insertions(+)
+> >
+> > diff --git a/arch/arm/boot/dts/aspeed-ast2600-evb.dts
+> b/arch/arm/boot/dts/aspeed-ast2600-evb.dts
+> > index 158b88f38d2c..b98cdad86e90 100644
+> > --- a/arch/arm/boot/dts/aspeed-ast2600-evb.dts
+> > +++ b/arch/arm/boot/dts/aspeed-ast2600-evb.dts
+> > @@ -314,6 +314,11 @@ &sdhci1 {
+> >         clk-phase-sd-hs = <7>, <200>;
+> >  };
+> >
+> > +&vhub {
+> > +       status = "okay";
+> > +       pinctrl-names = "default";
+> > +};
+> 
+> When booting with this patch applied we see:
+> 
+> [    1.596377] aspeed-g6-pinctrl 1e6e2000.syscon:pinctrl: pin A4
+> already requested by 1e6a1000.usb; cannot claim for 1e6a0000.usb-vhub
+> [    1.596678] aspeed-g6-pinctrl 1e6e2000.syscon:pinctrl: pin-252
+> (1e6a0000.usb-vhub) status -22
+> [    1.596947] aspeed-g6-pinctrl 1e6e2000.syscon:pinctrl: could not
+> request pin 252 (A4) from group USBA  on device aspeed-g6-pinctrl
+> [    1.597238] aspeed_vhub 1e6a0000.usb-vhub: Error applying setting,
+> reverse things back
+> 
+The ehci0 should be disabled, I will remove it.
+And I also find there is a duplicated ehci1 node in .dts, I will remove one of them too.
+> 
+> > +
+> >  &video {
+> >         status = "okay";
+> >         memory-region = <&video_engine_memory>;
+> > --
+> > 2.25.1
+> >
 
