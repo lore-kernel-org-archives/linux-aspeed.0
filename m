@@ -1,81 +1,44 @@
 From: Neal Liu <neal_liu@aspeedtech.com>
-Date: Fri, 20 May 2022 05:45:36 +0000
-Subject: [PATCH v3 1/3] usb: gadget: add Aspeed ast2600 udc driver
-In-Reply-To: <YocqrTHm29g9qU69@kroah.com>
-References: <20220518062043.1075360-1-neal_liu@aspeedtech.com>
- <20220518062043.1075360-2-neal_liu@aspeedtech.com>
- <YoZoouI4EbnNYE6h@kroah.com>
- <HK0PR06MB32020AEF88CFFD4296762B2880D39@HK0PR06MB3202.apcprd06.prod.outlook.com>
- <YocqrTHm29g9qU69@kroah.com>
-Message-ID: <HK0PR06MB3202D08237C96D4766B070F580D39@HK0PR06MB3202.apcprd06.prod.outlook.com>
+Date: Fri, 20 May 2022 17:06:16 +0800
+Subject: [PATCH v4 2/3] ARM: dts: aspeed: Add USB2.0 device controller node
+In-Reply-To: <20220520090617.2225080-1-neal_liu@aspeedtech.com>
+References: <20220520090617.2225080-1-neal_liu@aspeedtech.com>
+Message-ID: <20220520090617.2225080-3-neal_liu@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-> -----Original Message-----
-> From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> Sent: Friday, May 20, 2022 1:44 PM
-> To: Neal Liu <neal_liu@aspeedtech.com>
-> Cc: Rob Herring <robh+dt@kernel.org>; Krzysztof Kozlowski
-> <krzysztof.kozlowski+dt@linaro.org>; Joel Stanley <joel@jms.id.au>; Andrew
-> Jeffery <andrew@aj.id.au>; Felipe Balbi <balbi@kernel.org>; Sumit Semwal
-> <sumit.semwal@linaro.org>; Christian K?nig <christian.koenig@amd.com>;
-> Geert Uytterhoeven <geert@linux-m68k.org>; Li Yang <leoyang.li@nxp.com>;
-> linux-aspeed at lists.ozlabs.org; linux-usb at vger.kernel.org;
-> devicetree at vger.kernel.org; linux-arm-kernel at lists.infradead.org;
-> linux-kernel at vger.kernel.org; linux-media at vger.kernel.org;
-> dri-devel at lists.freedesktop.org; linaro-mm-sig at lists.linaro.org; kernel test
-> robot <lkp@intel.com>
-> Subject: Re: [PATCH v3 1/3] usb: gadget: add Aspeed ast2600 udc driver
-> 
-> On Fri, May 20, 2022 at 02:29:36AM +0000, Neal Liu wrote:
-> > > -----Original Message-----
-> > > From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> > > Sent: Thursday, May 19, 2022 11:56 PM
-> > > To: Neal Liu <neal_liu@aspeedtech.com>
-> > > Cc: Rob Herring <robh+dt@kernel.org>; Krzysztof Kozlowski
-> > > <krzysztof.kozlowski+dt@linaro.org>; Joel Stanley <joel@jms.id.au>;
-> > > Andrew Jeffery <andrew@aj.id.au>; Felipe Balbi <balbi@kernel.org>;
-> > > Sumit Semwal <sumit.semwal@linaro.org>; Christian K?nig
-> > > <christian.koenig@amd.com>; Geert Uytterhoeven
-> > > <geert@linux-m68k.org>; Li Yang <leoyang.li@nxp.com>;
-> > > linux-aspeed at lists.ozlabs.org; linux-usb at vger.kernel.org;
-> > > devicetree at vger.kernel.org; linux-arm-kernel at lists.infradead.org;
-> > > linux-kernel at vger.kernel.org; linux-media at vger.kernel.org;
-> > > dri-devel at lists.freedesktop.org; linaro-mm-sig at lists.linaro.org;
-> > > kernel test robot <lkp@intel.com>
-> > > Subject: Re: [PATCH v3 1/3] usb: gadget: add Aspeed ast2600 udc
-> > > driver
-> > >
-> > > On Wed, May 18, 2022 at 02:20:41PM +0800, Neal Liu wrote:
-> > > > Aspeed udc is compliant with USB2.0, supports USB High Speed and
-> > > > Full Speed, backward compatible with USB1.1.
-> > > >
-> > > > Supports independent DMA channel for each generic endpoint.
-> > > > Supports 32/256 stages descriptor mode for all generic endpoints.
-> > > >
-> > > > This driver supports full functionality including single/multiple
-> > > > stages descriptor mode, and exposes 1 UDC gadget driver.
-> > > >
-> > > > Signed-off-by: Neal Liu <neal_liu@aspeedtech.com>
-> > > > Reported-by: kernel test robot <lkp@intel.com>
-> > >
-> > > The kernel test robot did not report that you needed to add a new
-> > > driver :(
-> >
-> > I had received auto build test WARNING on usb/usb-testing reported from
-> kernel test robot.
-> > It still mentioned that if the issue is fixed, I can kindly add this tag.
-> > Would you prefer not to add this tag for the first coming driver?
-> 
-> Please do not add tags that do not make sense to.
-> 
-> thanks,
-> 
-> greg k-h
+Add USB2.0 device controller(udc) node to device tree
+for AST2600.
 
-Okay, I'll remove it as you suggested.
-Thanks
+Signed-off-by: Neal Liu <neal_liu@aspeedtech.com>
+---
+ arch/arm/boot/dts/aspeed-g6.dtsi | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/arch/arm/boot/dts/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed-g6.dtsi
+index 3d5ce9da42c3..822f4fd854f5 100644
+--- a/arch/arm/boot/dts/aspeed-g6.dtsi
++++ b/arch/arm/boot/dts/aspeed-g6.dtsi
+@@ -298,6 +298,16 @@ vhub: usb-vhub at 1e6a0000 {
+ 			status = "disabled";
+ 		};
+ 
++		udc: usb at 1e6a2000 {
++			compatible = "aspeed,ast2600-udc";
++			reg = <0x1e6a2000 0x300>;
++			interrupts = <GIC_SPI 9 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&syscon ASPEED_CLK_GATE_USBPORT2CLK>;
++			pinctrl-names = "default";
++			pinctrl-0 = <&pinctrl_usb2bd_default>;
++			status = "disabled";
++		};
++
+ 		apb {
+ 			compatible = "simple-bus";
+ 			#address-cells = <1>;
+-- 
+2.25.1
 
