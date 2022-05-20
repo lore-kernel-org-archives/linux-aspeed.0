@@ -1,59 +1,52 @@
-From: Howard Chiu <howard_chiu@aspeedtech.com>
-Date: Fri, 20 May 2022 02:29:11 +0000
-Subject: [PATCH v4 3/3] ARM: dts: aspeed: ast2600-evb: Enable virtual hub
-In-Reply-To: <CACPK8Xev-AYtrWzZyMGj8eBkTP2YXjnX=M+4UUGgfRZYeGMPtA@mail.gmail.com>
-References: <SG2PR06MB23155E8A6193118544A7DBF3E61E9@SG2PR06MB2315.apcprd06.prod.outlook.com>
- <CACPK8Xev-AYtrWzZyMGj8eBkTP2YXjnX=M+4UUGgfRZYeGMPtA@mail.gmail.com>
-Message-ID: <SG2PR06MB2315E86259B3751AE8C47E39E6D39@SG2PR06MB2315.apcprd06.prod.outlook.com>
+From: Neal Liu <neal_liu@aspeedtech.com>
+Date: Fri, 20 May 2022 02:29:36 +0000
+Subject: [PATCH v3 1/3] usb: gadget: add Aspeed ast2600 udc driver
+In-Reply-To: <YoZoouI4EbnNYE6h@kroah.com>
+References: <20220518062043.1075360-1-neal_liu@aspeedtech.com>
+ <20220518062043.1075360-2-neal_liu@aspeedtech.com>
+ <YoZoouI4EbnNYE6h@kroah.com>
+Message-ID: <HK0PR06MB32020AEF88CFFD4296762B2880D39@HK0PR06MB3202.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-> On Tue, 29 Mar 2022 at 03:24, Howard Chiu <howard_chiu@aspeedtech.com>
-> wrote:
-> >
-> > Enable Aspeed VHub for HID emulation
-> >
-> > Signed-off-by: Howard Chiu <howard_chiu@aspeedtech.com>
-> > ---
-> >  arch/arm/boot/dts/aspeed-ast2600-evb.dts | 5 +++++
-> >  1 file changed, 5 insertions(+)
-> >
-> > diff --git a/arch/arm/boot/dts/aspeed-ast2600-evb.dts
-> b/arch/arm/boot/dts/aspeed-ast2600-evb.dts
-> > index 158b88f38d2c..b98cdad86e90 100644
-> > --- a/arch/arm/boot/dts/aspeed-ast2600-evb.dts
-> > +++ b/arch/arm/boot/dts/aspeed-ast2600-evb.dts
-> > @@ -314,6 +314,11 @@ &sdhci1 {
-> >         clk-phase-sd-hs = <7>, <200>;
-> >  };
-> >
-> > +&vhub {
-> > +       status = "okay";
-> > +       pinctrl-names = "default";
-> > +};
+> -----Original Message-----
+> From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Sent: Thursday, May 19, 2022 11:56 PM
+> To: Neal Liu <neal_liu@aspeedtech.com>
+> Cc: Rob Herring <robh+dt@kernel.org>; Krzysztof Kozlowski
+> <krzysztof.kozlowski+dt@linaro.org>; Joel Stanley <joel@jms.id.au>; Andrew
+> Jeffery <andrew@aj.id.au>; Felipe Balbi <balbi@kernel.org>; Sumit Semwal
+> <sumit.semwal@linaro.org>; Christian K?nig <christian.koenig@amd.com>;
+> Geert Uytterhoeven <geert@linux-m68k.org>; Li Yang <leoyang.li@nxp.com>;
+> linux-aspeed at lists.ozlabs.org; linux-usb at vger.kernel.org;
+> devicetree at vger.kernel.org; linux-arm-kernel at lists.infradead.org;
+> linux-kernel at vger.kernel.org; linux-media at vger.kernel.org;
+> dri-devel at lists.freedesktop.org; linaro-mm-sig at lists.linaro.org; kernel test
+> robot <lkp@intel.com>
+> Subject: Re: [PATCH v3 1/3] usb: gadget: add Aspeed ast2600 udc driver
 > 
-> When booting with this patch applied we see:
-> 
-> [    1.596377] aspeed-g6-pinctrl 1e6e2000.syscon:pinctrl: pin A4
-> already requested by 1e6a1000.usb; cannot claim for 1e6a0000.usb-vhub
-> [    1.596678] aspeed-g6-pinctrl 1e6e2000.syscon:pinctrl: pin-252
-> (1e6a0000.usb-vhub) status -22
-> [    1.596947] aspeed-g6-pinctrl 1e6e2000.syscon:pinctrl: could not
-> request pin 252 (A4) from group USBA  on device aspeed-g6-pinctrl
-> [    1.597238] aspeed_vhub 1e6a0000.usb-vhub: Error applying setting,
-> reverse things back
-> 
-The ehci0 should be disabled, I will remove it.
-And I also find there is a duplicated ehci1 node in .dts, I will remove one of them too.
-> 
-> > +
-> >  &video {
-> >         status = "okay";
-> >         memory-region = <&video_engine_memory>;
-> > --
-> > 2.25.1
+> On Wed, May 18, 2022 at 02:20:41PM +0800, Neal Liu wrote:
+> > Aspeed udc is compliant with USB2.0, supports USB High Speed and Full
+> > Speed, backward compatible with USB1.1.
 > >
+> > Supports independent DMA channel for each generic endpoint.
+> > Supports 32/256 stages descriptor mode for all generic endpoints.
+> >
+> > This driver supports full functionality including single/multiple
+> > stages descriptor mode, and exposes 1 UDC gadget driver.
+> >
+> > Signed-off-by: Neal Liu <neal_liu@aspeedtech.com>
+> > Reported-by: kernel test robot <lkp@intel.com>
+> 
+> The kernel test robot did not report that you needed to add a new driver :(
+
+I had received auto build test WARNING on usb/usb-testing reported from kernel test robot.
+It still mentioned that if the issue is fixed, I can kindly add this tag.
+Would you prefer not to add this tag for the first coming driver?
+Thanks
+
+-Neal
 
