@@ -1,118 +1,117 @@
-From: kernel test robot <lkp@intel.com>
-Date: Sat, 21 May 2022 09:57:42 +0800
-Subject: [PATCH v4 1/3] usb: gadget: add Aspeed ast2600 udc driver
-In-Reply-To: <20220520090617.2225080-2-neal_liu@aspeedtech.com>
-References: <20220520090617.2225080-2-neal_liu@aspeedtech.com>
-Message-ID: <202205210945.hUK3CONa-lkp@intel.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Sat, 21 May 2022 12:51:21 +1000
+Subject: [PATCH net v3] net: ftgmac100: Disable hardware checksum on
+ AST2600
+In-Reply-To: <20220517092217.323060-1-joel@jms.id.au>
+References: <20220517092217.323060-1-joel@jms.id.au>
+Message-ID: <5630dd68ca5f31dafce3f92489761294ea589b16.camel@kernel.crashing.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Neal,
+On Tue, 2022-05-17 at 18:52 +0930, Joel Stanley wrote:
+> The AST2600 when using the i210 NIC over NC-SI has been observed to
+> produce incorrect checksum results with specific MTU values. This was
+> first observed when sending data across a long distance set of
+> networks.
+> 
+> On a local network, the following test was performed using a 1MB file
+> of random data.
 
-I love your patch! Perhaps something to improve:
+Can you double check with Aspeed what's going on there and whether
+there's a way to instead, identify the bad case in the TX path and do
+on-demand SW checksuming only in those cases ?
 
-[auto build test WARNING on usb/usb-testing]
-[also build test WARNING on robh/for-next v5.18-rc7 next-20220520]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch]
+Because disabling HW checksum will kill performances afaik... (doesn't
+it also end up disabling zero-copy and SG ?)
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Neal-Liu/add-Aspeed-udc-driver-for-ast2600/20220520-170904
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/gregkh/usb.git usb-testing
-config: hexagon-allyesconfig (https://download.01.org/0day-ci/archive/20220521/202205210945.hUK3CONa-lkp at intel.com/config)
-compiler: clang version 15.0.0 (https://github.com/llvm/llvm-project e00cbbec06c08dc616a0d52a20f678b8fbd4e304)
-reproduce (this is a W=1 build):
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        # https://github.com/intel-lab-lkp/linux/commit/19f3e863ea1b55f570db57febb96c6e8cb39c145
-        git remote add linux-review https://github.com/intel-lab-lkp/linux
-        git fetch --no-tags linux-review Neal-Liu/add-Aspeed-udc-driver-for-ast2600/20220520-170904
-        git checkout 19f3e863ea1b55f570db57febb96c6e8cb39c145
-        # save the config file
-        mkdir build_dir && cp config build_dir/.config
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=clang make.cross W=1 O=build_dir ARCH=hexagon SHELL=/bin/bash drivers/clk/ drivers/usb/gadget/udc/
+Cheers,
+Ben.
 
-If you fix the issue, kindly add following tag where applicable
-Reported-by: kernel test robot <lkp@intel.com>
+> On the receiver run this script:
+> 
+>  #!/bin/bash
+>  while [ 1 ]; do
+>         # Zero the stats
+>         nstat -r  > /dev/null
+>         nc -l 9899 > test-file
+>         # Check for checksum errors
+>         TcpInCsumErrors=$(nstat | grep TcpInCsumErrors)
+>         if [ -z "$TcpInCsumErrors" ]; then
+>                 echo No TcpInCsumErrors
+>         else
+>                 echo TcpInCsumErrors = $TcpInCsumErrors
+>         fi
+>  done
+> 
+> On an AST2600 system:
+> 
+>  # nc <IP of  receiver host> 9899 < test-file
+> 
+> The test was repeated with various MTU values:
+> 
+>  # ip link set mtu 1410 dev eth0
+> 
+> The observed results:
+> 
+>  1500 - good
+>  1434 - bad
+>  1400 - good
+>  1410 - bad
+>  1420 - good
+> 
+> The test was repeated after disabling tx checksumming:
+> 
+>  # ethtool -K eth0 tx-checksumming off
+> 
+> And all MTU values tested resulted in transfers without error.
+> 
+> An issue with the driver cannot be ruled out, however there has been
+> no
+> bug discovered so far.
+> 
+> David has done the work to take the original bug report of slow data
+> transfer between long distance connections and triaged it down to
+> this
+> test case.
+> 
+> The vendor suspects this this is a hardware issue when using NC-SI.
+> The
+> fixes line refers to the patch that introduced AST2600 support.
+> 
+> Reported-by: David Wilder <wilder@us.ibm.com>
+> Reviewed-by: Dylan Hung <dylan_hung@aspeedtech.com>
+> Signed-off-by: Joel Stanley <joel@jms.id.au>
+> ---
+> v3 modifies the wrapping of the commit message.
+> 
+> v2 updates the commit message with confirmation from the vendor that
+> this is a hardware issue, and clarifies why the commit used in the
+> fixes
+> 
+>  drivers/net/ethernet/faraday/ftgmac100.c | 5 +++++
+>  1 file changed, 5 insertions(+)
+> 
+> diff --git a/drivers/net/ethernet/faraday/ftgmac100.c
+> b/drivers/net/ethernet/faraday/ftgmac100.c
+> index caf48023f8ea..5231818943c6 100644
+> --- a/drivers/net/ethernet/faraday/ftgmac100.c
+> +++ b/drivers/net/ethernet/faraday/ftgmac100.c
+> @@ -1928,6 +1928,11 @@ static int ftgmac100_probe(struct
+> platform_device *pdev)
+>  	/* AST2400  doesn't have working HW checksum generation */
+>  	if (np && (of_device_is_compatible(np, "aspeed,ast2400-mac")))
+>  		netdev->hw_features &= ~NETIF_F_HW_CSUM;
+> +
+> +	/* AST2600 tx checksum with NCSI is broken */
+> +	if (priv->use_ncsi && of_device_is_compatible(np,
+> "aspeed,ast2600-mac"))
+> +		netdev->hw_features &= ~NETIF_F_HW_CSUM;
+> +
+>  	if (np && of_get_property(np, "no-hw-checksum", NULL))
+>  		netdev->hw_features &= ~(NETIF_F_HW_CSUM |
+> NETIF_F_RXCSUM);
+>  	netdev->features |= netdev->hw_features;
 
-All warnings (new ones prefixed by >>):
-
->> drivers/usb/gadget/udc/aspeed_udc.c:310:11: warning: comparison of address of 'ep->queue' equal to a null pointer is always false [-Wtautological-pointer-compare]
-           if (&ep->queue == NULL)
-                ~~~~^~~~~    ~~~~
->> drivers/usb/gadget/udc/aspeed_udc.c:967:7: warning: variable 'len' is uninitialized when used here [-Wuninitialized]
-                   if (len < ep->ep.maxpacket) {
-                       ^~~
-   drivers/usb/gadget/udc/aspeed_udc.c:908:9: note: initialize the variable 'len' to silence this warning
-           u16 len;
-                  ^
-                   = 0
->> drivers/usb/gadget/udc/aspeed_udc.c:1011:7: warning: variable 'epnum' is used uninitialized whenever switch case is taken [-Wsometimes-uninitialized]
-           case USB_RECIP_INTERFACE:
-                ^~~~~~~~~~~~~~~~~~~
-   include/uapi/linux/usb/ch9.h:67:30: note: expanded from macro 'USB_RECIP_INTERFACE'
-   #define USB_RECIP_INTERFACE             0x01
-                                           ^~~~
-   drivers/usb/gadget/udc/aspeed_udc.c:1021:16: note: uninitialized use occurs here
-           ep = &udc->ep[epnum];
-                         ^~~~~
-   drivers/usb/gadget/udc/aspeed_udc.c:1007:7: warning: variable 'epnum' is used uninitialized whenever switch case is taken [-Wsometimes-uninitialized]
-           case USB_RECIP_DEVICE:
-                ^~~~~~~~~~~~~~~~
-   include/uapi/linux/usb/ch9.h:66:27: note: expanded from macro 'USB_RECIP_DEVICE'
-   #define USB_RECIP_DEVICE                0x00
-                                           ^~~~
-   drivers/usb/gadget/udc/aspeed_udc.c:1021:16: note: uninitialized use occurs here
-           ep = &udc->ep[epnum];
-                         ^~~~~
-   drivers/usb/gadget/udc/aspeed_udc.c:1002:11: note: initialize the variable 'epnum' to silence this warning
-           u16 epnum;
-                    ^
-                     = 0
->> drivers/usb/gadget/udc/aspeed_udc.c:1096:6: warning: variable 'rc' is used uninitialized whenever 'if' condition is false [-Wsometimes-uninitialized]
-           if (udc->driver) {
-               ^~~~~~~~~~~
-   drivers/usb/gadget/udc/aspeed_udc.c:1108:6: note: uninitialized use occurs here
-           if (rc >= 0)
-               ^~
-   drivers/usb/gadget/udc/aspeed_udc.c:1096:2: note: remove the 'if' if its condition is always true
-           if (udc->driver) {
-           ^~~~~~~~~~~~~~~~~
-   drivers/usb/gadget/udc/aspeed_udc.c:1039:8: note: initialize the variable 'rc' to silence this warning
-           int rc;
-                 ^
-                  = 0
-   5 warnings generated.
-
-
-vim +310 drivers/usb/gadget/udc/aspeed_udc.c
-
-   304	
-   305	static void ast_udc_nuke(struct ast_udc_ep *ep, int status)
-   306	{
-   307		int count = 0;
-   308	
-   309		/* Sanity check */
- > 310		if (&ep->queue == NULL)
-   311			return;
-   312	
-   313		while (!list_empty(&ep->queue)) {
-   314			struct ast_udc_request *req;
-   315	
-   316			req = list_entry(ep->queue.next, struct ast_udc_request,
-   317					 queue);
-   318			ast_udc_done(ep, req, status);
-   319			count++;
-   320		}
-   321	
-   322		if (count)
-   323			EP_DBG(ep, "Nuked %d request(s)\n", count);
-   324	}
-   325	
-
--- 
-0-DAY CI Kernel Test Service
-https://01.org/lkp
