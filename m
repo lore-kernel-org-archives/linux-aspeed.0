@@ -1,117 +1,47 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Sat, 21 May 2022 12:51:21 +1000
-Subject: [PATCH net v3] net: ftgmac100: Disable hardware checksum on
- AST2600
-In-Reply-To: <20220517092217.323060-1-joel@jms.id.au>
-References: <20220517092217.323060-1-joel@jms.id.au>
-Message-ID: <5630dd68ca5f31dafce3f92489761294ea589b16.camel@kernel.crashing.org>
+From: Jonathan Cameron <jic23@kernel.org>
+Date: Sun, 22 May 2022 12:48:04 +0100
+Subject: [PATCH] iio: adc: aspeed: Fix refcount leak in
+ aspeed_adc_set_trim_data
+In-Reply-To: <20220516075206.34580-1-linmq006@gmail.com>
+References: <20220516075206.34580-1-linmq006@gmail.com>
+Message-ID: <20220522124804.7ec5940a@jic23-huawei>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, 2022-05-17 at 18:52 +0930, Joel Stanley wrote:
-> The AST2600 when using the i210 NIC over NC-SI has been observed to
-> produce incorrect checksum results with specific MTU values. This was
-> first observed when sending data across a long distance set of
-> networks.
-> 
-> On a local network, the following test was performed using a 1MB file
-> of random data.
+On Mon, 16 May 2022 11:52:02 +0400
+Miaoqian Lin <linmq006@gmail.com> wrote:
 
-Can you double check with Aspeed what's going on there and whether
-there's a way to instead, identify the bad case in the TX path and do
-on-demand SW checksuming only in those cases ?
+> of_find_node_by_name() returns a node pointer with refcount
+> incremented, we should use of_node_put() on it when done.
+> Add missing of_node_put() to avoid refcount leak.
+> 
+> Fixes: d0a4c17b4073 ("iio: adc: aspeed: Get and set trimming data.")
+> Signed-off-by: Miaoqian Lin <linmq006@gmail.com>
 
-Because disabling HW checksum will kill performances afaik... (doesn't
-it also end up disabling zero-copy and SG ?)
+In the 'hopefully obviously correct' category so applied to the fixes
+togreg branch of iio.git and marked for stable.
 
-Cheers,
-Ben.
+Thanks,
 
-> On the receiver run this script:
-> 
->  #!/bin/bash
->  while [ 1 ]; do
->         # Zero the stats
->         nstat -r  > /dev/null
->         nc -l 9899 > test-file
->         # Check for checksum errors
->         TcpInCsumErrors=$(nstat | grep TcpInCsumErrors)
->         if [ -z "$TcpInCsumErrors" ]; then
->                 echo No TcpInCsumErrors
->         else
->                 echo TcpInCsumErrors = $TcpInCsumErrors
->         fi
->  done
-> 
-> On an AST2600 system:
-> 
->  # nc <IP of  receiver host> 9899 < test-file
-> 
-> The test was repeated with various MTU values:
-> 
->  # ip link set mtu 1410 dev eth0
-> 
-> The observed results:
-> 
->  1500 - good
->  1434 - bad
->  1400 - good
->  1410 - bad
->  1420 - good
-> 
-> The test was repeated after disabling tx checksumming:
-> 
->  # ethtool -K eth0 tx-checksumming off
-> 
-> And all MTU values tested resulted in transfers without error.
-> 
-> An issue with the driver cannot be ruled out, however there has been
-> no
-> bug discovered so far.
-> 
-> David has done the work to take the original bug report of slow data
-> transfer between long distance connections and triaged it down to
-> this
-> test case.
-> 
-> The vendor suspects this this is a hardware issue when using NC-SI.
-> The
-> fixes line refers to the patch that introduced AST2600 support.
-> 
-> Reported-by: David Wilder <wilder@us.ibm.com>
-> Reviewed-by: Dylan Hung <dylan_hung@aspeedtech.com>
-> Signed-off-by: Joel Stanley <joel@jms.id.au>
+Jonathan
+
 > ---
-> v3 modifies the wrapping of the commit message.
+>  drivers/iio/adc/aspeed_adc.c | 1 +
+>  1 file changed, 1 insertion(+)
 > 
-> v2 updates the commit message with confirmation from the vendor that
-> this is a hardware issue, and clarifies why the commit used in the
-> fixes
-> 
->  drivers/net/ethernet/faraday/ftgmac100.c | 5 +++++
->  1 file changed, 5 insertions(+)
-> 
-> diff --git a/drivers/net/ethernet/faraday/ftgmac100.c
-> b/drivers/net/ethernet/faraday/ftgmac100.c
-> index caf48023f8ea..5231818943c6 100644
-> --- a/drivers/net/ethernet/faraday/ftgmac100.c
-> +++ b/drivers/net/ethernet/faraday/ftgmac100.c
-> @@ -1928,6 +1928,11 @@ static int ftgmac100_probe(struct
-> platform_device *pdev)
->  	/* AST2400  doesn't have working HW checksum generation */
->  	if (np && (of_device_is_compatible(np, "aspeed,ast2400-mac")))
->  		netdev->hw_features &= ~NETIF_F_HW_CSUM;
-> +
-> +	/* AST2600 tx checksum with NCSI is broken */
-> +	if (priv->use_ncsi && of_device_is_compatible(np,
-> "aspeed,ast2600-mac"))
-> +		netdev->hw_features &= ~NETIF_F_HW_CSUM;
-> +
->  	if (np && of_get_property(np, "no-hw-checksum", NULL))
->  		netdev->hw_features &= ~(NETIF_F_HW_CSUM |
-> NETIF_F_RXCSUM);
->  	netdev->features |= netdev->hw_features;
+> diff --git a/drivers/iio/adc/aspeed_adc.c b/drivers/iio/adc/aspeed_adc.c
+> index 0793d2474cdc..9341e0e0eb55 100644
+> --- a/drivers/iio/adc/aspeed_adc.c
+> +++ b/drivers/iio/adc/aspeed_adc.c
+> @@ -186,6 +186,7 @@ static int aspeed_adc_set_trim_data(struct iio_dev *indio_dev)
+>  		return -EOPNOTSUPP;
+>  	}
+>  	scu = syscon_node_to_regmap(syscon);
+> +	of_node_put(syscon);
+>  	if (IS_ERR(scu)) {
+>  		dev_warn(data->dev, "Failed to get syscon regmap\n");
+>  		return -EOPNOTSUPP;
 
