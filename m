@@ -1,9 +1,9 @@
 From: Neal Liu <neal_liu@aspeedtech.com>
-Date: Fri, 20 May 2022 17:06:15 +0800
-Subject: [PATCH v4 1/3] usb: gadget: add Aspeed ast2600 udc driver
-In-Reply-To: <20220520090617.2225080-1-neal_liu@aspeedtech.com>
-References: <20220520090617.2225080-1-neal_liu@aspeedtech.com>
-Message-ID: <20220520090617.2225080-2-neal_liu@aspeedtech.com>
+Date: Mon, 23 May 2022 11:01:32 +0800
+Subject: [PATCH v5 1/3] usb: gadget: add Aspeed ast2600 udc driver
+In-Reply-To: <20220523030134.2977116-1-neal_liu@aspeedtech.com>
+References: <20220523030134.2977116-1-neal_liu@aspeedtech.com>
+Message-ID: <20220523030134.2977116-2-neal_liu@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -24,8 +24,8 @@ Signed-off-by: Neal Liu <neal_liu@aspeedtech.com>
  MAINTAINERS                         |    7 +
  drivers/usb/gadget/udc/Kconfig      |   13 +
  drivers/usb/gadget/udc/Makefile     |    1 +
- drivers/usb/gadget/udc/aspeed_udc.c | 1601 +++++++++++++++++++++++++++
- 4 files changed, 1622 insertions(+)
+ drivers/usb/gadget/udc/aspeed_udc.c | 1596 +++++++++++++++++++++++++++
+ 4 files changed, 1617 insertions(+)
  create mode 100644 drivers/usb/gadget/udc/aspeed_udc.c
 
 diff --git a/MAINTAINERS b/MAINTAINERS
@@ -83,10 +83,10 @@ index a21f2224e7eb..12f9e4c9eb0c 100644
  obj-$(CONFIG_USB_MAX3420_UDC)	+= max3420_udc.o
 diff --git a/drivers/usb/gadget/udc/aspeed_udc.c b/drivers/usb/gadget/udc/aspeed_udc.c
 new file mode 100644
-index 000000000000..271015142210
+index 000000000000..1fc15228ff15
 --- /dev/null
 +++ b/drivers/usb/gadget/udc/aspeed_udc.c
-@@ -0,0 +1,1601 @@
+@@ -0,0 +1,1596 @@
 +// SPDX-License-Identifier: GPL-2.0+
 +/*
 + * Copyright (c) 2021 Aspeed Technology Inc.
@@ -394,10 +394,6 @@ index 000000000000..271015142210
 +static void ast_udc_nuke(struct ast_udc_ep *ep, int status)
 +{
 +	int count = 0;
-+
-+	/* Sanity check */
-+	if (&ep->queue == NULL)
-+		return;
 +
 +	while (!list_empty(&ep->queue)) {
 +		struct ast_udc_request *req;
@@ -994,7 +990,6 @@ index 000000000000..271015142210
 +	u32 proc_sts, wr_ptr, rd_ptr;
 +	u32 len_in_desc, ctrl;
 +	u16 total_len = 0;
-+	u16 len;
 +	int i;
 +
 +	if (list_empty(&ep->queue)) {
@@ -1053,7 +1048,7 @@ index 000000000000..271015142210
 +
 +	} else {
 +		/* Check for short packet */
-+		if (len < ep->ep.maxpacket) {
++		if (total_len < ep->ep.maxpacket) {
 +			ast_udc_done(ep, req, 0);
 +			req = list_first_entry_or_null(&ep->queue,
 +						       struct ast_udc_request,
@@ -1088,7 +1083,7 @@ index 000000000000..271015142210
 +	struct usb_ctrlrequest crq;
 +	struct ast_udc_ep *ep;
 +	u16 status = 0;
-+	u16 epnum;
++	u16 epnum = 0;
 +
 +	memcpy_fromio(&crq, udc->creq, sizeof(crq));
 +
@@ -1125,7 +1120,7 @@ index 000000000000..271015142210
 +	struct ast_udc_request *req;
 +	struct usb_ctrlrequest crq;
 +	int req_num = 0;
-+	int rc;
++	int rc = 0;
 +	u32 reg;
 +
 +	memcpy_fromio(&crq, udc->creq, sizeof(crq));
