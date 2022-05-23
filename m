@@ -1,60 +1,63 @@
-From: Juerg Haefliger <juerg.haefliger@canonical.com>
-Date: Mon, 23 May 2022 08:05:32 +0200
-Subject: [PATCH] ARM: aspeed: Kconfig: Fix indentation
-Message-ID: <20220523060532.7864-1-juergh@canonical.com>
+From: Jae Hyun Yoo <quic_jaehyoo@quicinc.com>
+Date: Mon, 23 May 2022 10:56:40 -0700
+Subject: [PATCH -next] ARM: dts: aspeed: nuvia: rename vendor nuvia to qcom
+Message-ID: <20220523175640.60155-1-quic_jaehyoo@quicinc.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The convention for indentation seems to be a single tab. Help text is
-further indented by an additional two whitespaces. Fix the lines that
-violate these rules.
+Nuvia has been acquired by Qualcomm and the vendor name 'nuvia' will
+not be used anymore so rename aspeed-bmc-nuvia-dc-scm.dts to
+aspeed-bmc-qcom-dc-scm-v1.dts and change 'nuvia' to 'qcom' as its vendor
+name in the file.
 
-Signed-off-by: Juerg Haefliger <juergh@canonical.com>
+Signed-off-by: Jae Hyun Yoo <quic_jaehyoo@quicinc.com>
 ---
- arch/arm/mach-aspeed/Kconfig | 14 +++++++-------
- 1 file changed, 7 insertions(+), 7 deletions(-)
+ arch/arm/boot/dts/Makefile                                    | 2 +-
+ ...eed-bmc-nuvia-dc-scm.dts => aspeed-bmc-qcom-dc-scm-v1.dts} | 4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+ rename arch/arm/boot/dts/{aspeed-bmc-nuvia-dc-scm.dts => aspeed-bmc-qcom-dc-scm-v1.dts} (97%)
 
-diff --git a/arch/arm/mach-aspeed/Kconfig b/arch/arm/mach-aspeed/Kconfig
-index ea96d11b8502..e05997ec2f82 100644
---- a/arch/arm/mach-aspeed/Kconfig
-+++ b/arch/arm/mach-aspeed/Kconfig
-@@ -19,9 +19,9 @@ config MACH_ASPEED_G4
- 	select PINCTRL_ASPEED_G4
- 	select FTTMR010_TIMER
- 	help
--	 Say yes if you intend to run on an Aspeed ast2400 or similar
--	 fourth generation BMCs, such as those used by OpenPower Power8
--	 systems.
-+	  Say yes if you intend to run on an Aspeed ast2400 or similar
-+	  fourth generation BMCs, such as those used by OpenPower Power8
-+	  systems.
+diff --git a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
+index 03f5b3a15415..2a3c95387613 100644
+--- a/arch/arm/boot/dts/Makefile
++++ b/arch/arm/boot/dts/Makefile
+@@ -1584,7 +1584,6 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
+ 	aspeed-bmc-lenovo-hr630.dtb \
+ 	aspeed-bmc-lenovo-hr855xg2.dtb \
+ 	aspeed-bmc-microsoft-olympus.dtb \
+-	aspeed-bmc-nuvia-dc-scm.dtb \
+ 	aspeed-bmc-opp-lanyang.dtb \
+ 	aspeed-bmc-opp-mihawk.dtb \
+ 	aspeed-bmc-opp-mowgli.dtb \
+@@ -1597,6 +1596,7 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
+ 	aspeed-bmc-opp-witherspoon.dtb \
+ 	aspeed-bmc-opp-zaius.dtb \
+ 	aspeed-bmc-portwell-neptune.dtb \
++	aspeed-bmc-qcom-dc-scm-v1.dtb \
+ 	aspeed-bmc-quanta-q71l.dtb \
+ 	aspeed-bmc-quanta-s6q.dtb \
+ 	aspeed-bmc-supermicro-x11spi.dtb \
+diff --git a/arch/arm/boot/dts/aspeed-bmc-nuvia-dc-scm.dts b/arch/arm/boot/dts/aspeed-bmc-qcom-dc-scm-v1.dts
+similarity index 97%
+rename from arch/arm/boot/dts/aspeed-bmc-nuvia-dc-scm.dts
+rename to arch/arm/boot/dts/aspeed-bmc-qcom-dc-scm-v1.dts
+index f4a97cfb0f23..259ef3f54c5c 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-nuvia-dc-scm.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-qcom-dc-scm-v1.dts
+@@ -6,8 +6,8 @@
+ #include "aspeed-g6.dtsi"
  
- config MACH_ASPEED_G5
- 	bool "Aspeed SoC 5th Generation"
-@@ -29,8 +29,8 @@ config MACH_ASPEED_G5
- 	select PINCTRL_ASPEED_G5
- 	select FTTMR010_TIMER
- 	help
--	 Say yes if you intend to run on an Aspeed ast2500 or similar
--	 fifth generation Aspeed BMCs.
-+	  Say yes if you intend to run on an Aspeed ast2500 or similar
-+	  fifth generation Aspeed BMCs.
+ / {
+-	model = "Nuvia DC-SCM BMC";
+-	compatible = "nuvia,dc-scm-bmc", "aspeed,ast2600";
++	model = "Qualcomm DC-SCM V1 BMC";
++	compatible = "qcom,dc-scm-v1-bmc", "aspeed,ast2600";
  
- config MACH_ASPEED_G6
- 	bool "Aspeed SoC 6th Generation"
-@@ -40,7 +40,7 @@ config MACH_ASPEED_G6
- 	select ARM_GIC
- 	select HAVE_ARM_ARCH_TIMER
- 	help
--	 Say yes if you intend to run on an Aspeed ast2600 or similar
--	 sixth generation Aspeed BMCs.
-+	  Say yes if you intend to run on an Aspeed ast2600 or similar
-+	  sixth generation Aspeed BMCs.
- 
- endif
+ 	aliases {
+ 		serial4 = &uart5;
 -- 
-2.32.0
+2.25.1
 
