@@ -1,32 +1,89 @@
-From: Andrew Lunn <andrew@lunn.ch>
-Date: Tue, 24 May 2022 01:44:37 +0200
-Subject: [PATCH net v3] net: ftgmac100: Disable hardware checksum on
- AST2600
-In-Reply-To: <CACPK8Xd5BLiz1ePwzirtxLvSL8V8EGmJuxB0GmxyyqBRK9mSdQ@mail.gmail.com>
-References: <20220517092217.323060-1-joel@jms.id.au>
- <5630dd68ca5f31dafce3f92489761294ea589b16.camel@kernel.crashing.org>
- <CACPK8Xd5BLiz1ePwzirtxLvSL8V8EGmJuxB0GmxyyqBRK9mSdQ@mail.gmail.com>
-Message-ID: <YowcZUX3lwAA6c5k@lunn.ch>
+From: Jae Hyun Yoo <quic_jaehyoo@quicinc.com>
+Date: Tue, 24 May 2022 04:57:56 -0700
+Subject: [PATCH -next] ARM: dts: aspeed: nuvia: rename vendor nuvia to qcom
+In-Reply-To: <dd67a453-b75b-d092-f999-3faf05ef8160@linaro.org>
+References: <20220523175640.60155-1-quic_jaehyoo@quicinc.com>
+ <dd67a453-b75b-d092-f999-3faf05ef8160@linaro.org>
+Message-ID: <71613fa5-c468-e3ab-935a-7aa675e822fc@quicinc.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-> > > The observed results:
-> > >
-> > >  1500 - good
-> > >  1434 - bad
-> > >  1400 - good
-> > >  1410 - bad
-> > >  1420 - good
+Hi Krzysztof,
 
-Looking at these numbers, all the good cases a divisible by 4. All the
-bad cases are not.
+On 5/24/2022 2:53 AM, Krzysztof Kozlowski wrote:
+> On 23/05/2022 19:56, Jae Hyun Yoo wrote:
+>> Nuvia has been acquired by Qualcomm and the vendor name 'nuvia' will
+>> not be used anymore so rename aspeed-bmc-nuvia-dc-scm.dts to
+>> aspeed-bmc-qcom-dc-scm-v1.dts and change 'nuvia' to 'qcom' as its vendor
+>> name in the file.
+> 
+> And all users of this DTB now have to update their bootloaders, scripts,
+> installation methods. We did not rename FSL or Marvell boards, so
+> neither should be renamed this one.
 
-Could you extend the test to automatically test 64 through 1500?  Or
-manually try 1499, 1498, 1497, 1496. Maybe the workaround is if the
-packet length is divisible by 4 let the hardware do the checksum,
-otherwise do it in software.
+Yeah, I know that we don't rename dts but the previous version of this
+change was picked recently in the middle of code review
+https://lore.kernel.org/all/979a5c87-a7ea-a1f0-e42e-29043df6b348 at quicinc.com/
+and the v3 was pulled recently so it's still in the -next queue so
+I believe it has a chance to be renamed since no one is using the DTB
+yet.
 
-      Andrew
+>>
+>> Signed-off-by: Jae Hyun Yoo <quic_jaehyoo@quicinc.com>
+>> ---
+>>   arch/arm/boot/dts/Makefile                                    | 2 +-
+>>   ...eed-bmc-nuvia-dc-scm.dts => aspeed-bmc-qcom-dc-scm-v1.dts} | 4 ++--
+>>   2 files changed, 3 insertions(+), 3 deletions(-)
+>>   rename arch/arm/boot/dts/{aspeed-bmc-nuvia-dc-scm.dts => aspeed-bmc-qcom-dc-scm-v1.dts} (97%)
+>>
+>> diff --git a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
+>> index 03f5b3a15415..2a3c95387613 100644
+>> --- a/arch/arm/boot/dts/Makefile
+>> +++ b/arch/arm/boot/dts/Makefile
+>> @@ -1584,7 +1584,6 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
+>>   	aspeed-bmc-lenovo-hr630.dtb \
+>>   	aspeed-bmc-lenovo-hr855xg2.dtb \
+>>   	aspeed-bmc-microsoft-olympus.dtb \
+>> -	aspeed-bmc-nuvia-dc-scm.dtb \
+>>   	aspeed-bmc-opp-lanyang.dtb \
+>>   	aspeed-bmc-opp-mihawk.dtb \
+>>   	aspeed-bmc-opp-mowgli.dtb \
+>> @@ -1597,6 +1596,7 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
+>>   	aspeed-bmc-opp-witherspoon.dtb \
+>>   	aspeed-bmc-opp-zaius.dtb \
+>>   	aspeed-bmc-portwell-neptune.dtb \
+>> +	aspeed-bmc-qcom-dc-scm-v1.dtb \
+>>   	aspeed-bmc-quanta-q71l.dtb \
+>>   	aspeed-bmc-quanta-s6q.dtb \
+>>   	aspeed-bmc-supermicro-x11spi.dtb \
+>> diff --git a/arch/arm/boot/dts/aspeed-bmc-nuvia-dc-scm.dts b/arch/arm/boot/dts/aspeed-bmc-qcom-dc-scm-v1.dts
+>> similarity index 97%
+>> rename from arch/arm/boot/dts/aspeed-bmc-nuvia-dc-scm.dts
+>> rename to arch/arm/boot/dts/aspeed-bmc-qcom-dc-scm-v1.dts
+>> index f4a97cfb0f23..259ef3f54c5c 100644
+>> --- a/arch/arm/boot/dts/aspeed-bmc-nuvia-dc-scm.dts
+>> +++ b/arch/arm/boot/dts/aspeed-bmc-qcom-dc-scm-v1.dts
+>> @@ -6,8 +6,8 @@
+>>   #include "aspeed-g6.dtsi"
+>>   
+>>   / {
+>> -	model = "Nuvia DC-SCM BMC";
+>> -	compatible = "nuvia,dc-scm-bmc", "aspeed,ast2600";
+>> +	model = "Qualcomm DC-SCM V1 BMC";
+>> +	compatible = "qcom,dc-scm-v1-bmc", "aspeed,ast2600";
+> 
+> 
+> You need also change bindings.
+
+I didn't see any case of changing bindings for adding a new Aspped BMC
+dts.
+
+Thanks,
+Jae
+
+> 
+> Best regards,
+> Krzysztof
