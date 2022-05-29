@@ -1,35 +1,43 @@
 From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Date: Sun, 29 May 2022 12:49:27 +0200
-Subject: [PATCH 6/7] ARM: dts: ast2600-evb-a1: fix board compatible
+Date: Sun, 29 May 2022 12:49:24 +0200
+Subject: [PATCH 3/7] dt-bindings: arm: aspeed: add Aspeed Evaluation boards
 In-Reply-To: <20220529104928.79636-1-krzysztof.kozlowski@linaro.org>
 References: <20220529104928.79636-1-krzysztof.kozlowski@linaro.org>
-Message-ID: <20220529104928.79636-6-krzysztof.kozlowski@linaro.org>
+Message-ID: <20220529104928.79636-3-krzysztof.kozlowski@linaro.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The AST2600 EVB A1 board should have dedicated compatible.
+Document the new compatibles used on Aspeed Evaluation boards.
 
-Fixes: a72955180372 ("ARM: dts: aspeed: ast2600evb: Add dts file for A1 and A0")
 Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 ---
- arch/arm/boot/dts/aspeed-ast2600-evb-a1.dts | 1 +
- 1 file changed, 1 insertion(+)
+ Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/arch/arm/boot/dts/aspeed-ast2600-evb-a1.dts b/arch/arm/boot/dts/aspeed-ast2600-evb-a1.dts
-index dd7148060c4a..d0a5c2ff0fec 100644
---- a/arch/arm/boot/dts/aspeed-ast2600-evb-a1.dts
-+++ b/arch/arm/boot/dts/aspeed-ast2600-evb-a1.dts
-@@ -5,6 +5,7 @@
- 
- / {
- 	model = "AST2600 A1 EVB";
-+	compatible = "aspeed,ast2600-evb-a1", "aspeed,ast2600";
- 
- 	/delete-node/regulator-vcc-sdhci0;
- 	/delete-node/regulator-vcc-sdhci1;
+diff --git a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+index f214b57d5ae1..fe71cb10ba6e 100644
+--- a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
++++ b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+@@ -29,6 +29,7 @@ properties:
+       - description: AST2500 based boards
+         items:
+           - enum:
++              - aspeed,ast2500-evb
+               - amd,ethanolx-bmc
+               - ampere,mtjade-bmc
+               - asrock,e3c246d4i-bmc
+@@ -68,6 +69,8 @@ properties:
+       - description: AST2600 based boards
+         items:
+           - enum:
++              - aspeed,ast2600-evb
++              - aspeed,ast2600-evb-a1
+               - facebook,bletchley-bmc
+               - facebook,cloudripper-bmc
+               - facebook,elbert-bmc
 -- 
 2.34.1
 
