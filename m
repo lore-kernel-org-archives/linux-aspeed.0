@@ -1,43 +1,36 @@
 From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Date: Sun, 29 May 2022 12:49:24 +0200
-Subject: [PATCH 3/7] dt-bindings: arm: aspeed: add Aspeed Evaluation boards
+Date: Sun, 29 May 2022 12:49:26 +0200
+Subject: [PATCH 5/7] ARM: dts: ast2600-evb: fix board compatible
 In-Reply-To: <20220529104928.79636-1-krzysztof.kozlowski@linaro.org>
 References: <20220529104928.79636-1-krzysztof.kozlowski@linaro.org>
-Message-ID: <20220529104928.79636-3-krzysztof.kozlowski@linaro.org>
+Message-ID: <20220529104928.79636-5-krzysztof.kozlowski@linaro.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Document the new compatibles used on Aspeed Evaluation boards.
+The AST2600 EVB board should have dedicated compatible.
 
+Fixes: 2ca5646b5c2f ("ARM: dts: aspeed: Add AST2600 and EVB")
 Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 ---
- Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 3 +++
- 1 file changed, 3 insertions(+)
+ arch/arm/boot/dts/aspeed-ast2600-evb.dts | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
-index f214b57d5ae1..fe71cb10ba6e 100644
---- a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
-+++ b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
-@@ -29,6 +29,7 @@ properties:
-       - description: AST2500 based boards
-         items:
-           - enum:
-+              - aspeed,ast2500-evb
-               - amd,ethanolx-bmc
-               - ampere,mtjade-bmc
-               - asrock,e3c246d4i-bmc
-@@ -68,6 +69,8 @@ properties:
-       - description: AST2600 based boards
-         items:
-           - enum:
-+              - aspeed,ast2600-evb
-+              - aspeed,ast2600-evb-a1
-               - facebook,bletchley-bmc
-               - facebook,cloudripper-bmc
-               - facebook,elbert-bmc
+diff --git a/arch/arm/boot/dts/aspeed-ast2600-evb.dts b/arch/arm/boot/dts/aspeed-ast2600-evb.dts
+index 5a6063bd4508..c698e6538269 100644
+--- a/arch/arm/boot/dts/aspeed-ast2600-evb.dts
++++ b/arch/arm/boot/dts/aspeed-ast2600-evb.dts
+@@ -8,7 +8,7 @@
+ 
+ / {
+ 	model = "AST2600 EVB";
+-	compatible = "aspeed,ast2600";
++	compatible = "aspeed,ast2600-evb-a1", "aspeed,ast2600";
+ 
+ 	aliases {
+ 		serial4 = &uart5;
 -- 
 2.34.1
 
