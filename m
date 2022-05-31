@@ -1,49 +1,42 @@
-From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Date: Tue, 31 May 2022 11:06:12 +0200
-Subject: [PATCH 1/2] net/ncsi: use proper "mellanox" DT vendor prefix
-In-Reply-To: <48cb78ebd38dfe4ac05e337d5fb38623b7ee0e8f.camel@redhat.com>
-References: <20220529111017.181766-1-krzysztof.kozlowski@linaro.org>
- <48cb78ebd38dfe4ac05e337d5fb38623b7ee0e8f.camel@redhat.com>
-Message-ID: <ae36420f-847b-c53b-24ad-22e3181bff51@linaro.org>
+From: ryan_chen <ryan_chen@aspeedtech.com>
+Date: Tue, 31 May 2022 17:31:40 +0800
+Subject: [PATCH] i2c: aspeed: Fix slave mode unexpected irq handler
+Message-ID: <20220531093140.28770-1-ryan_chen@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 31/05/2022 10:21, Paolo Abeni wrote:
-> Hello,
-> 
-> On Sun, 2022-05-29 at 13:10 +0200, Krzysztof Kozlowski wrote:
->> "mlx" Devicetree vendor prefix is not documented and instead "mellanox"
->> should be used.
->>
->> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
->> ---
->>  net/ncsi/ncsi-manage.c | 3 ++-
->>  1 file changed, 2 insertions(+), 1 deletion(-)
->>
->> diff --git a/net/ncsi/ncsi-manage.c b/net/ncsi/ncsi-manage.c
->> index 78814417d753..80713febfac6 100644
->> --- a/net/ncsi/ncsi-manage.c
->> +++ b/net/ncsi/ncsi-manage.c
->> @@ -1803,7 +1803,8 @@ struct ncsi_dev *ncsi_register_dev(struct net_device *dev,
->>  	pdev = to_platform_device(dev->dev.parent);
->>  	if (pdev) {
->>  		np = pdev->dev.of_node;
->> -		if (np && of_get_property(np, "mlx,multi-host", NULL))
->> +		if (np && (of_get_property(np, "mellanox,multi-host", NULL) ||
->> +			   of_get_property(np, "mlx,multi-host", NULL)))
->>  			ndp->mlx_multi_host = true;
->>  	}
->>
-> 
-> I can't guess which tree are you targeting, devicetree? net-next? could
-> you please specify?
+When i2c master send the new i2c transfer immediately
+after stop. the i2c slave will see the stop and new
+address match stage together. And it needs handle the
+stop first. otherwise will occur unexpected handle
+isr.
 
-Both independently. The patch here for net-next (although it is closed
-now). The DTS patch can come later via ARM SoC maintainer tree.
+Fixes: f327c686d3ba ("i2c: aspeed: added drover for Aspeed I2C)
+Signed-off-by: ryan_chen <ryan_chen@aspeedtech.com>
+---
+ drivers/i2c/busses/i2c-aspeed.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
+diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
+index 771e53d3d197..9f21e090ce47 100644
+--- a/drivers/i2c/busses/i2c-aspeed.c
++++ b/drivers/i2c/busses/i2c-aspeed.c
+@@ -252,6 +252,12 @@ static u32 aspeed_i2c_slave_irq(struct aspeed_i2c_bus *bus, u32 irq_status)
+ 
+ 	/* Slave was requested, restart state machine. */
+ 	if (irq_status & ASPEED_I2CD_INTR_SLAVE_MATCH) {
++		if (irq_status & ASPEED_I2CD_INTR_NORMAL_STOP &&
++			bus->slave_state == ASPEED_I2C_SLAVE_WRITE_RECEIVED) {
++			irq_handled |= ASPEED_I2CD_INTR_NORMAL_STOP;
++			irq_status &= ~ASPEED_I2CD_INTR_NORMAL_STOP;
++			i2c_slave_event(slave, I2C_SLAVE_STOP, &value);
++		}
+ 		irq_handled |= ASPEED_I2CD_INTR_SLAVE_MATCH;
+ 		bus->slave_state = ASPEED_I2C_SLAVE_START;
+ 	}
+-- 
+2.17.1
 
-Best regards,
-Krzysztof
