@@ -1,121 +1,62 @@
-From: Neal Liu <neal_liu@aspeedtech.com>
-Date: Wed, 1 Jun 2022 08:01:05 +0000
-Subject: [PATCH 4/5] dt-bindings: crypto: add documentation for aspeed
- hace
-In-Reply-To: <dca283db-0b2e-1fc1-bc76-811c4c918fb5@linaro.org>
-References: <20220601054204.1522976-1-neal_liu@aspeedtech.com>
- <20220601054204.1522976-5-neal_liu@aspeedtech.com>
- <dca283db-0b2e-1fc1-bc76-811c4c918fb5@linaro.org>
-Message-ID: <HK0PR06MB3202D6A6C66480BF60ED829080DF9@HK0PR06MB3202.apcprd06.prod.outlook.com>
+From: Quan Nguyen <quan@os.amperecomputing.com>
+Date: Wed, 1 Jun 2022 15:23:11 +0700
+Subject: [Openipmi-developer] [PATCH v7 1/3] ipmi: ssif_bmc: Add SSIF BMC
+ driver
+In-Reply-To: <20220504120631.GE3767252@minyard.net>
+References: <20220422040803.2524940-1-quan@os.amperecomputing.com>
+ <20220422040803.2524940-2-quan@os.amperecomputing.com>
+ <20220423015119.GE426325@minyard.net>
+ <ec7b86ec-827f-da64-8fd2-eae09f802694@os.amperecomputing.com>
+ <20220504120631.GE3767252@minyard.net>
+Message-ID: <ba084735-0781-7ca2-4d04-a70a4115729a@os.amperecomputing.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-> On 01/06/2022 07:42, Neal Liu wrote:
-> > Add device tree binding documentation for the Aspeed Hash and Crypto
-> > Engines (HACE) Controller.
-> >
-> > Signed-off-by: Neal Liu <neal_liu@aspeedtech.com>
-> > Signed-off-by: Johnny Huang <johnny_huang@aspeedtech.com>
-> > ---
-> >  .../bindings/crypto/aspeed,hace.yaml          | 58
-> +++++++++++++++++++
-> >  1 file changed, 58 insertions(+)
-> >  create mode 100644
-> > Documentation/devicetree/bindings/crypto/aspeed,hace.yaml
-> >
-> > diff --git a/Documentation/devicetree/bindings/crypto/aspeed,hace.yaml
-> > b/Documentation/devicetree/bindings/crypto/aspeed,hace.yaml
-> > new file mode 100644
-> > index 000000000000..36b4ad0dc7fa
-> > --- /dev/null
-> > +++ b/Documentation/devicetree/bindings/crypto/aspeed,hace.yaml
+On 04/05/2022 19:06, Corey Minyard wrote:
+> On Wed, May 04, 2022 at 01:45:03PM +0700, Quan Nguyen via Openipmi-developer wrote:
+>>>
+>>> I seem to remember mentioning this before, but there is no reason to
+>>> pack the structures below.
+>>>
+>>
+>> The packed structure is because we want to pick the len directly from user
+>> space without worry about the padding byte.
+>>
+>> As we plan not to use the .h file in next version, I still would like to use
+>> packed structure internally inside ssif_bmc.c file.
 > 
-> Filename should be rather from the first compatible, so
-> "aspeed,ast2500-hace.yaml"
+> Packed doesn't matter for the userspace API.  If you look at other
+> structures in the userspace API, they are not packed, either.  The
+> compiler will do the right thing on both ends.
 > 
-Got it, I'll revise it as you suggested.
+>>
+>>> And second, the following is a userspace API structures, so it needs to
+>>> be in its own file in include/uapi/linux, along with any supporting
+>>> things that users will need to use.  And your userspace code should be
+>>> using that file.
+>>>
+>>
+>> Meantime, I'd like not to use .h as I see there is no demand for sharing the
+>> data structure between kernel and user space yet. But we may do it in the
+>> future.
+> 
+> If you have a userspace API, it needs to be in include/uapi/linux.
+> You may not be the only user of this code.  In fact, you probably won't
+> be.  You need to have a .h with the structures in it, you don't want the
+> same structure in two places if you can help it.
+> 
 
-> > @@ -0,0 +1,58 @@
-> > +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause) %YAML 1.2
-> > +---
-> > +$id: http://devicetree.org/schemas/crypto/aspeed,hace.yaml#
-> > +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> > +
-> > +title: ASPEED HACE hash and crypto Hardware Accelerator Device Tree
-> > +Bindings
-> 
-> s/Device Tree Bindings//
-> 
-Got it, I'll revise it as you suggested.
+Dear Corey,
 
-> > +
-> > +maintainers:
-> > +  - Neal Liu <neal_liu@aspeedtech.com>
-> > +
-> > +description: |
-> > +  The Hash and Crypto Engine (HACE) is designed to accelerate the
-> > +throughput
-> > +  of hash data digest, encryption, and decryption. Basically, HACE
-> > +can be
-> > +  divided into two independently engines - Hash Engine and Crypto Engine.
-> > +
-> > +properties:
-> > +  compatible:
-> > +    enum:
-> > +      - aspeed,ast2500-hace
-> > +      - aspeed,ast2600-hace
-> > +
-> > +  reg:
-> > +    maxItems: 1
-> > +
-> > +  clocks:
-> > +    maxItems: 1
-> > +
-> > +  clock-names:
-> > +    maxItems: 1
-> 
-> You need to list clock names, however usually it does not make sense to have
-> names for just one main device clock.
-> 
-I think list clock-names is optional, I'll remove it from required list.
+Is it OK to push the structure definition into the 
+include/uapi/linux/ipmi_bmc.h ?
 
-> > +
-> > +  interrupts:
-> > +    maxItems: 1
-> > +
-> > +  resets:
-> > +    maxItems: 1
-> > +
-> > +required:
-> > +  - compatible
-> > +  - reg
-> > +  - clocks
-> > +  - clock-names
-> > +  - interrupts
-> > +  - resets
-> > +
-> > +additionalProperties: false
-> > +
-> > +examples:
-> > +  - |
-> > +    #include <dt-bindings/clock/ast2600-clock.h>
-> > +    hace: hace at 1e6d0000 {
-> 
-> Generic node names so "crypto".
-> 
-Got it, I'll revise it as you suggested.
+Or should it need to be in separate new header file in uapi/linux ?
 
-> > +        compatible = "aspeed,ast2600-hace";
-> > +        reg = <0x1e6d0000 0x200>;
-> > +        interrupts = <4>;
-> > +        clocks = <&syscon ASPEED_CLK_GATE_YCLK>;
-> > +        clock-names = "yclk";
-> > +        resets = <&syscon ASPEED_RESET_HACE>;
-> > +    };
-> 
-> 
-> Best regards,
-> Krzysztof
+Thank you,
+- Quan
+
+
