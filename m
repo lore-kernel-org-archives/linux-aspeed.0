@@ -1,90 +1,35 @@
-From: Potin Lai <potin.lai.pt@gmail.com>
-Date: Wed,  1 Jun 2022 12:15:12 +0800
-Subject: [PATCH v2 2/2] dt-bindings: aspeed-i2c: add properties for manual clock setting
-In-Reply-To: <20220601041512.21484-1-potin.lai.pt@gmail.com>
-References: <20220601041512.21484-1-potin.lai.pt@gmail.com>
-Message-ID: <20220601041512.21484-3-potin.lai.pt@gmail.com>
+From: Neal Liu <neal_liu@aspeedtech.com>
+Date: Wed, 1 Jun 2022 13:42:01 +0800
+Subject: [PATCH 2/5] dt-bindings: clock: Add AST2600 HACE reset definition
+In-Reply-To: <20220601054204.1522976-1-neal_liu@aspeedtech.com>
+References: <20220601054204.1522976-1-neal_liu@aspeedtech.com>
+Message-ID: <20220601054204.1522976-3-neal_liu@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add following properties for manual tuning clock divisor and cycle of
-hign/low pulse witdh.
+Add HACE reset bit definition for ast2600.
 
-* aspeed,i2c-manual-clk: Enable aspeed i2c clock manual setting
-* aspeed,i2c-base-clk-div: Base Clock divisor (tBaseClk)
-* aspeed,i2c-clk-high-cycle: Cycles of clock-high pulse (tClkHigh)
-* aspeed,i2c-clk-low-cycle: Cycles of clock-low pulse (tClkLow)
-
-Signed-off-by: Potin Lai <potin.lai.pt@gmail.com>
+Signed-off-by: Neal Liu <neal_liu@aspeedtech.com>
+Signed-off-by: Johnny Huang <johnny_huang@aspeedtech.com>
 ---
- .../devicetree/bindings/i2c/aspeed,i2c.yaml   | 44 +++++++++++++++++++
- 1 file changed, 44 insertions(+)
+ include/dt-bindings/clock/ast2600-clock.h | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/Documentation/devicetree/bindings/i2c/aspeed,i2c.yaml b/Documentation/devicetree/bindings/i2c/aspeed,i2c.yaml
-index ea643e6c3ef5..e2f67fe2aa0c 100644
---- a/Documentation/devicetree/bindings/i2c/aspeed,i2c.yaml
-+++ b/Documentation/devicetree/bindings/i2c/aspeed,i2c.yaml
-@@ -12,6 +12,28 @@ maintainers:
- allOf:
-   - $ref: /schemas/i2c/i2c-controller.yaml#
+diff --git a/include/dt-bindings/clock/ast2600-clock.h b/include/dt-bindings/clock/ast2600-clock.h
+index 62b9520a00fd..d8b0db2f7a7d 100644
+--- a/include/dt-bindings/clock/ast2600-clock.h
++++ b/include/dt-bindings/clock/ast2600-clock.h
+@@ -111,6 +111,7 @@
+ #define ASPEED_RESET_PCIE_RC_O		19
+ #define ASPEED_RESET_PCIE_RC_OEN	18
+ #define ASPEED_RESET_PCI_DP		5
++#define ASPEED_RESET_HACE		4
+ #define ASPEED_RESET_AHB		1
+ #define ASPEED_RESET_SDRAM		0
  
-+  - if:
-+      properties:
-+        compatible:
-+          const: st,stm32-uart
-+
-+    then:
-+      properties:
-+        aspeed,i2c-clk-high-cycle:
-+          maximum: 8
-+        aspeed,i2c-clk-low-cycle:
-+          maximum: 8
-+
-+  - if:
-+      required:
-+        - aspeed,i2c-manual-clk
-+
-+    then:
-+      required:
-+        - aspeed,i2c-base-clk-div
-+        - aspeed,i2c-clk-high-cycle
-+        - aspeed,i2c-clk-low-cycle
-+
- properties:
-   compatible:
-     enum:
-@@ -49,6 +71,28 @@ properties:
-     description:
-       states that there is another master active on this bus
- 
-+  aspeed,i2c-manual-clk:
-+    type: boolean
-+    description: enable manual clock setting
-+
-+  aspeed,i2c-base-clk-div:
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+    enum: [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192,
-+           16384, 32768]
-+    description: base clock divisor
-+
-+  aspeed,i2c-clk-high-cycle:
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+    minimum: 1
-+    maximum: 16
-+    description: cycles of master clock-high pulse width
-+
-+  aspeed,i2c-clk-low-cycle:
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+    minimum: 1
-+    maximum: 16
-+    description: cycles of master clock-low pulse width
-+
- required:
-   - reg
-   - compatible
 -- 
-2.17.1
+2.25.1
 
