@@ -1,225 +1,239 @@
 From: Neal Liu <neal_liu@aspeedtech.com>
-Date: Thu, 2 Jun 2022 06:34:39 +0000
-Subject: [PATCH 1/5] crypto: aspeed: Add HACE hash driver
-In-Reply-To: <dd525d8b-3cb3-e843-4a79-64f50c0fe8a7@wanadoo.fr>
+Date: Thu, 2 Jun 2022 06:53:57 +0000
+Subject: [PATCH 5/5] crypto: aspeed: add HACE crypto driver
+In-Reply-To: <56f0c3cb-c17f-6bc1-f621-09e0c2e5e62f@wanadoo.fr>
 References: <20220601054204.1522976-1-neal_liu@aspeedtech.com>
- <20220601054204.1522976-2-neal_liu@aspeedtech.com>
- <dd525d8b-3cb3-e843-4a79-64f50c0fe8a7@wanadoo.fr>
-Message-ID: <HK0PR06MB320268D5DCFB8FF3B4D8EB5E80DE9@HK0PR06MB3202.apcprd06.prod.outlook.com>
+ <20220601054204.1522976-6-neal_liu@aspeedtech.com>
+ <56f0c3cb-c17f-6bc1-f621-09e0c2e5e62f@wanadoo.fr>
+Message-ID: <HK0PR06MB3202DC8C441DFB95935BB7E680DE9@HK0PR06MB3202.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-> Hi,
+> Le 01/06/2022 ? 07:42, Neal Liu a ?crit :
+>  > Add HACE crypto driver to support symmetric-key  > encryption and
+> decryption with multiple modes of  > operation.
+>  >
+>  > Signed-off-by: Neal Liu <neal_liu@aspeedtech.com>  > Signed-off-by:
+> Johnny Huang <johnny_huang@aspeedtech.com>  > ---
+>  >   drivers/crypto/aspeed/Kconfig              |   16 +
+>  >   drivers/crypto/aspeed/Makefile             |    2 +
+>  >   drivers/crypto/aspeed/aspeed-hace-crypto.c | 1019
+> ++++++++++++++++++++
+>  >   drivers/crypto/aspeed/aspeed-hace.c        |  101 +-
+>  >   drivers/crypto/aspeed/aspeed-hace.h        |  107 ++
+>  >   5 files changed, 1242 insertions(+), 3 deletions(-)
+>  >   create mode 100644 drivers/crypto/aspeed/aspeed-hace-crypto.c
+>  >
+>  > diff --git a/drivers/crypto/aspeed/Kconfig b/drivers/crypto/aspeed/Kconfig
+> > index 17b800286a51..5e4d18288bf1 100644 [...]
 > 
-> Le 01/06/2022 ? 07:42, Neal Liu a ?crit?:
-> > Hash and Crypto Engine (HACE) is designed to accelerate the throughput
-> > of hash data digest, encryption, and decryption.
-> >
-> > Basically, HACE can be divided into two independently engines
-> > - Hash Engine and Crypto Engine. This patch aims to add HACE hash
-> > engine driver for hash accelerator.
-> >
-> > Signed-off-by: Neal Liu <neal_liu@aspeedtech.com>
-> > Signed-off-by: Johnny Huang <johnny_huang@aspeedtech.com>
-> > ---
-> >   MAINTAINERS                              |    7 +
-> >   drivers/crypto/Kconfig                   |    1 +
-> >   drivers/crypto/Makefile                  |    1 +
-> >   drivers/crypto/aspeed/Kconfig            |   22 +
-> >   drivers/crypto/aspeed/Makefile           |    6 +
-> >   drivers/crypto/aspeed/aspeed-hace-hash.c | 1335
-> ++++++++++++++++++++++
-> >   drivers/crypto/aspeed/aspeed-hace.c      |  210 ++++
-> >   drivers/crypto/aspeed/aspeed-hace.h      |  179 +++
-> >   8 files changed, 1761 insertions(+)
-> >   create mode 100644 drivers/crypto/aspeed/Kconfig
-> >   create mode 100644 drivers/crypto/aspeed/Makefile
-> >   create mode 100644 drivers/crypto/aspeed/aspeed-hace-hash.c
-> >   create mode 100644 drivers/crypto/aspeed/aspeed-hace.c
-> >   create mode 100644 drivers/crypto/aspeed/aspeed-hace.h
-> >
-> > diff --git a/MAINTAINERS b/MAINTAINERS index
-> > e8c52d0192a6..c020e0893eed 100644
-> 
-> [...]
-> 
-> > +int aspeed_register_hace_hash_algs(struct aspeed_hace_dev *hace_dev)
+>  > +int aspeed_register_hace_crypto_algs(struct aspeed_hace_dev *hace_dev)
 > > +{
-> > +	int rc, i;
-> > +
-> > +	AHASH_DBG(hace_dev, "\n");
-> > +
-> > +	for (i = 0; i < ARRAY_SIZE(aspeed_ahash_algs); i++) {
-> > +		aspeed_ahash_algs[i].hace_dev = hace_dev;
-> > +		rc = crypto_register_ahash(&aspeed_ahash_algs[i].alg.ahash);
-> > +		if (rc)
-> > +			return rc;
-> > +	}
-> > +
-> > +	if (hace_dev->version != AST2600_VERSION)
-> > +		return 0;
-> > +
-> > +	for (i = 0; i < ARRAY_SIZE(aspeed_ahash_algs_g6); i++) {
-> > +		aspeed_ahash_algs_g6[i].hace_dev = hace_dev;
-> > +		rc = crypto_register_ahash(&aspeed_ahash_algs_g6[i].alg.ahash);
-> > +		if (rc)
-> > +			return rc;
-> > +	}
-> > +
-> > +	return 0;
-> 
+>  > +	int rc, i;
+>  > +
+>  > +	for (i = 0; i < ARRAY_SIZE(aspeed_crypto_algs); i++) {
+>  > +		aspeed_crypto_algs[i].hace_dev = hace_dev;
+>  > +		rc = crypto_register_skcipher(&aspeed_crypto_algs[i].alg.skcipher);
+>  > +		if (rc)
+>  > +			return rc;
+>  > +	}
+>  > +
+>  > +	if (hace_dev->version == AST2600_VERSION) {
+>  > +		for (i = 0; i < ARRAY_SIZE(aspeed_crypto_algs_g6); i++) {
+>  > +			aspeed_crypto_algs_g6[i].hace_dev = hace_dev;
+>  > +			rc = crypto_register_skcipher(
+>  > +				&aspeed_crypto_algs_g6[i].alg.skcipher);
+>  > +			if (rc)
+>  > +				return rc;
+>  > +		}
+>  > +	}
 > Should there be some kind of error handling here, in order to undo things
 > already done if an error occures?
-> 
 
 No need. .remove function would do the error handling stuffs.
 
 > 
-> > +}
-> > diff --git a/drivers/crypto/aspeed/aspeed-hace.c
+>  > +
+>  > +	return 0;
+>  > +}
+>  > diff --git a/drivers/crypto/aspeed/aspeed-hace.c
 > b/drivers/crypto/aspeed/aspeed-hace.c
-> > new file mode 100644
-> > index 000000000000..f25b13d120e8
-> > --- /dev/null
-> > +++ b/drivers/crypto/aspeed/aspeed-hace.c
+>  > index f25b13d120e8..f7f90c230843 100644  > ---
+> a/drivers/crypto/aspeed/aspeed-hace.c
+>  > +++ b/drivers/crypto/aspeed/aspeed-hace.c
+>  > @@ -40,10 +40,30 @@ void __weak
+
+[...]
+
+>  > @@ -56,12 +76,36 @@ static irqreturn_t aspeed_hace_irq(int irq, void
+> *dev)
+>  >   		if (hash_engine->flags & CRYPTO_FLAGS_BUSY)
+>  >   			tasklet_schedule(&hash_engine->done_task);
+>  >   		else
+>  > -			dev_warn(hace_dev->dev, "no active requests.\n");
+>  > +			dev_warn(hace_dev->dev, "HASH no active requests.\n");
+> To reduce diff, maybe this could already be part of patch 1/5?
+
+Sure !
+
 > 
-> [...]
+>  > +	}
+>  > +
+>  > +	if (sts & HACE_CRYPTO_ISR) {
+>  > +		if (crypto_engine->flags & CRYPTO_FLAGS_BUSY)
+>  > +			tasklet_schedule(&crypto_engine->done_task);
+>  > +		else
+>  > +			dev_warn(hace_dev->dev, "CRYPTO no active requests.\n");
+>  >   	}
+>  >
+>  >   	return IRQ_HANDLED;
+>  >   }
+>  >
+>  > +static void aspeed_hace_cryptro_done_task(unsigned long data)  > +{
+>  > +	struct aspeed_hace_dev *hace_dev = (struct aspeed_hace_dev *)data;
+>  > +	struct aspeed_engine_crypto *crypto_engine;
+>  > +
+>  > +	crypto_engine = &hace_dev->crypto_engine;
+>  > +	crypto_engine->is_async = true;
+>  > +	crypto_engine->resume(hace_dev);
+>  > +}
+>  > +
+>  > +static void aspeed_hace_crypto_queue_task(unsigned long data)  > +{
+>  > +	struct aspeed_hace_dev *hace_dev = (struct aspeed_hace_dev *)data;
+>  > +
+>  > +	aspeed_hace_crypto_handle_queue(hace_dev, NULL);
+>  > +}
+>  > +
+>  >   static void aspeed_hace_hash_done_task(unsigned long data)
+>  >   {
+>  >   	struct aspeed_hace_dev *hace_dev = (struct aspeed_hace_dev
+> *)data;
+>  > @@ -79,12 +123,27 @@ static void
+> aspeed_hace_hash_queue_task(unsigned
+> long data)
+>  >
+>  >   static int aspeed_hace_register(struct aspeed_hace_dev *hace_dev)
+>  >   {
+>  > -	return aspeed_register_hace_hash_algs(hace_dev);
+>  > +	int rc1, rc2;
+>  > +
+>  > +	rc1 = aspeed_register_hace_hash_algs(hace_dev);
+>  > +	if (rc1) {
+>  > +		HACE_DBG(hace_dev, "Failed to register hash alg, rc:0x%x\n",
+>  > +			 rc1);
+>  > +	}
+>  > +
+>  > +	rc2 = aspeed_register_hace_crypto_algs(hace_dev);
+>  > +	if (rc2) {
+>  > +		HACE_DBG(hace_dev, "Failed to register crypto alg, rc:0x%x\n",
+>  > +			 rc2);
+>  > +	}
+>  > +
+>  > +	return rc1 + rc2;
+> This looks odd. The error returned could finally be pointless if both
+> rc1 and rc2 are not 0.
+
+This function aims to register both hash & symmetric algo for further use.
+It's fine if either of them register failed. The return value is only the information and it will not have different control flow.
+
 > 
-> > +static int aspeed_hace_probe(struct platform_device *pdev)
-> > +{
-> > +	const struct of_device_id *hace_dev_id;
-> > +	struct aspeed_engine_hash *hash_engine;
-> > +	struct aspeed_hace_dev *hace_dev;
-> > +	struct resource *res;
-> > +	int rc;
-> > +
-> > +	hace_dev = devm_kzalloc(&pdev->dev, sizeof(struct aspeed_hace_dev),
-> > +				GFP_KERNEL);
-> > +	if (!hace_dev)
-> > +		return -ENOMEM;
-> > +
-> > +	hace_dev_id = of_match_device(aspeed_hace_of_matches, &pdev->dev);
-> > +	if (!hace_dev_id) {
-> > +		dev_err(&pdev->dev, "Failed to match hace dev id\n");
-> > +		return -EINVAL;
-> > +	}
-> > +
-> > +	hace_dev->dev = &pdev->dev;
-> > +	hace_dev->version = (unsigned long)hace_dev_id->data;
-> > +	hash_engine = &hace_dev->hash_engine;
-> > +
-> > +	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> > +
-> > +	platform_set_drvdata(pdev, hace_dev);
-> > +
-> > +	spin_lock_init(&hash_engine->lock);
-> > +	tasklet_init(&hash_engine->done_task, aspeed_hace_hash_done_task,
-> > +		     (unsigned long)hace_dev);
-> > +	tasklet_init(&hash_engine->queue_task, aspeed_hace_hash_queue_task,
-> > +		     (unsigned long)hace_dev);
-> > +	crypto_init_queue(&hash_engine->queue,
+>  >   }
+>  >
+>  >   static void aspeed_hace_unregister(struct aspeed_hace_dev *hace_dev)
+>  >   {
+>  >   	aspeed_unregister_hace_hash_algs(hace_dev);
+>  > +	aspeed_unregister_hace_crypto_algs(hace_dev);
+>  >   }
+>  >
+>  >   static const struct of_device_id aspeed_hace_of_matches[] = {
+>  > @@ -95,6 +154,7 @@ static const struct of_device_id
+> aspeed_hace_of_matches[] = {  >
+>  >   static int aspeed_hace_probe(struct platform_device *pdev)
+>  >   {
+>  > +	struct aspeed_engine_crypto *crypto_engine;
+>  >   	const struct of_device_id *hace_dev_id;
+>  >   	struct aspeed_engine_hash *hash_engine;
+>  >   	struct aspeed_hace_dev *hace_dev;
+>  > @@ -115,6 +175,7 @@ static int aspeed_hace_probe(struct
+> platform_device *pdev)
+>  >   	hace_dev->dev = &pdev->dev;
+>  >   	hace_dev->version = (unsigned long)hace_dev_id->data;
+>  >   	hash_engine = &hace_dev->hash_engine;
+>  > +	crypto_engine = &hace_dev->crypto_engine;
+>  >
+>  >   	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+>  >
+>  > @@ -127,6 +188,13 @@ static int aspeed_hace_probe(struct
+> platform_device *pdev)
+>  >   		     (unsigned long)hace_dev);
+>  >   	crypto_init_queue(&hash_engine->queue,
 > ASPEED_HASH_QUEUE_LENGTH);
-> > +
-> > +	hace_dev->regs = devm_ioremap_resource(&pdev->dev, res);
-> > +	if (!hace_dev->regs) {
-> > +		dev_err(&pdev->dev, "Failed to map resources\n");
-> > +		return -ENOMEM;
-> > +	}
-> > +
-> > +	hace_dev->irq = platform_get_irq(pdev, 0);
-> > +	if (!hace_dev->irq) {
-> > +		dev_err(&pdev->dev, "Failed to get interrupt\n");
-> > +		return -ENXIO;
-> > +	}
-> > +
-> > +	rc = devm_request_irq(&pdev->dev, hace_dev->irq, aspeed_hace_irq, 0,
-> > +			      dev_name(&pdev->dev), hace_dev);
-> > +	if (rc) {
-> > +		dev_err(&pdev->dev, "Failed to request interrupt\n");
-> > +		return rc;
-> > +	}
-> > +
-> > +	hace_dev->yclk = devm_clk_get(&pdev->dev, "yclk");
-> > +	if (IS_ERR(hace_dev->yclk)) {
-> > +		dev_err(&pdev->dev, "Failed to get yclk\n");
-> > +		return -ENODEV;
-> > +	}
-> > +
-> > +	rc = clk_prepare_enable(hace_dev->yclk);
-> > +	if (rc) {
-> > +		dev_err(&pdev->dev, "Failed to enable clock 0x%x\n", rc);
-> > +		return rc;
-> 
-> This is not undone, neither if an error occures after it, nor in the
-> .remove function.
+>  >
+>  > +	spin_lock_init(&crypto_engine->lock);
+>  > +	tasklet_init(&crypto_engine->done_task,
+> aspeed_hace_cryptro_done_task,
+>  > +		     (unsigned long)hace_dev);
+>  > +	tasklet_init(&crypto_engine->queue_task,
+> aspeed_hace_crypto_queue_task,
+>  > +		     (unsigned long)hace_dev);
+>  > +	crypto_init_queue(&crypto_engine->queue,
+> ASPEED_HASH_QUEUE_LENGTH);
+>  > +
+>  >   	hace_dev->regs = devm_ioremap_resource(&pdev->dev, res);
+>  >   	if (!hace_dev->regs) {
+>  >   		dev_err(&pdev->dev, "Failed to map resources\n");
+>  > @@ -168,9 +236,36 @@ static int aspeed_hace_probe(struct
+> platform_device *pdev)
+>  >   		return -ENOMEM;
+>  >   	}
+>  >
+>  > +	crypto_engine->cipher_ctx =
+>  > +		dma_alloc_coherent(&pdev->dev,
+>  > +				   PAGE_SIZE,
+>  > +				   &crypto_engine->cipher_ctx_dma,
+>  > +				   GFP_KERNEL);
+> Should all these dma_alloc_coherent() be undone in the error handling path of
+> the probe and in the .rmove function?
+> If applicable, maybe dmam_alloc_coherent() would ease? realeasing of
+> resources?
 
-You're correct. I'll add error handling in .remove function.
-Thanks for your suggestion.
+You're right. I'll forgot this part. I'll revise it on next patch, Thanks.
 
 > 
-> > +	}
-> > +
-> > +	hash_engine->ahash_src_addr =
-> > +		dma_alloc_coherent(&pdev->dev,
-> > +				   ASPEED_HASH_SRC_DMA_BUF_LEN,
-> > +				   &hash_engine->ahash_src_dma_addr,
-> > +				   GFP_KERNEL);
-> > +	if (!hash_engine->ahash_src_addr) {
-> > +		dev_err(&pdev->dev, "Failed to allocate dma buffer\n");
-> > +		return -ENOMEM;
-> > +	}
-> 
-> Same here, this si not undone in the .remove function.
+>  > +	crypto_engine->cipher_addr =
+>  > +		dma_alloc_coherent(&pdev->dev,
+>  > +				   ASPEED_CRYPTO_SRC_DMA_BUF_LEN,
+>  > +				   &crypto_engine->cipher_dma_addr,
+>  > +				   GFP_KERNEL);
+>  > +	if (!crypto_engine->cipher_ctx || !crypto_engine->cipher_addr) {
+>  > +		dev_err(&pdev->dev, "Failed to allocate cipher dma\n");
+>  > +		return -ENOMEM;
+>  > +	}
+>  > +
+>  > +	if (hace_dev->version == AST2600_VERSION) {
+>  > +		crypto_engine->dst_sg_addr =
+>  > +			dma_alloc_coherent(&pdev->dev,
+>  > +					   ASPEED_CRYPTO_DST_DMA_BUF_LEN,
+>  > +					   &crypto_engine->dst_sg_dma_addr,
+>  > +					   GFP_KERNEL);
+>  > +		if (!crypto_engine->dst_sg_addr) {
+>  > +			dev_err(&pdev->dev, "Failed to allocate dst_sg dma\n");
+>  > +			return -ENOMEM;
+>  > +		}
+>  > +	}
+>  > +
+>  >   	rc = aspeed_hace_register(hace_dev);
+>  >   	if (rc) {
+>  > -		dev_err(&pdev->dev, "Failed to register hash alg, rc:0x%x\n", rc);
+>  > +		dev_err(&pdev->dev, "Failed to register algs, rc:0x%x\n", rc);
+> To reduce diff, maybe this could already be part of patch 1/5?
 
-Same here.
-
-> 
-> > +
-> > +	rc = aspeed_hace_register(hace_dev);
-> > +	if (rc) {
-> > +		dev_err(&pdev->dev, "Failed to register hash alg, rc:0x%x\n", rc);
-> 
-> Is this really an error if finaly we continue and return 0 (success) at
-> the end?
-
-I assume if some alg register failed, some alg register pass, the driver still works fine.
-So no need to fail driver probe.
-
-> 
-> > +		rc = 0;
-> > +	}
-> > +
-> > +	dev_info(&pdev->dev, "ASPEED Crypto Accelerator successfully
-> registered\n");
-> > +
-> > +	return rc;
-> > +}
-> > +
-> > +static int aspeed_hace_remove(struct platform_device *pdev)
-> > +{
-> > +	struct aspeed_hace_dev *hace_dev = platform_get_drvdata(pdev);
-> > +	struct aspeed_engine_hash *hash_engine = &hace_dev->hash_engine;
-> > +
-> > +	aspeed_hace_unregister(hace_dev);
-> 
-> Should this be done even if aspeed_hace_register() failed in the probe?
-
-Crypto core would check if the alg is registered or not, so no need to check here.
+Sure !
 
 > 
-> Just my 2c,
-> CJ
-> 
-> 
-> > +
-> > +	tasklet_kill(&hash_engine->done_task);
-> > +	tasklet_kill(&hash_engine->queue_task);
-> > +
-> > +	return 0;
-> > +}
-> > +
-> 
-> [...]
+>  >   		rc = 0;
+>  >   	}
+>  >   [...]
