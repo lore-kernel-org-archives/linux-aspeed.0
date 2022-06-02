@@ -1,71 +1,225 @@
-From: Corey Minyard <minyard@acm.org>
-Date: Wed, 1 Jun 2022 19:32:44 -0500
-Subject: [Openipmi-developer] [PATCH v7 1/3] ipmi: ssif_bmc: Add SSIF BMC
- driver
-In-Reply-To: <ba084735-0781-7ca2-4d04-a70a4115729a@os.amperecomputing.com>
-References: <20220422040803.2524940-1-quan@os.amperecomputing.com>
- <20220422040803.2524940-2-quan@os.amperecomputing.com>
- <20220423015119.GE426325@minyard.net>
- <ec7b86ec-827f-da64-8fd2-eae09f802694@os.amperecomputing.com>
- <20220504120631.GE3767252@minyard.net>
- <ba084735-0781-7ca2-4d04-a70a4115729a@os.amperecomputing.com>
-Message-ID: <20220602003244.GK3767252@minyard.net>
+From: Neal Liu <neal_liu@aspeedtech.com>
+Date: Thu, 2 Jun 2022 06:34:39 +0000
+Subject: [PATCH 1/5] crypto: aspeed: Add HACE hash driver
+In-Reply-To: <dd525d8b-3cb3-e843-4a79-64f50c0fe8a7@wanadoo.fr>
+References: <20220601054204.1522976-1-neal_liu@aspeedtech.com>
+ <20220601054204.1522976-2-neal_liu@aspeedtech.com>
+ <dd525d8b-3cb3-e843-4a79-64f50c0fe8a7@wanadoo.fr>
+Message-ID: <HK0PR06MB320268D5DCFB8FF3B4D8EB5E80DE9@HK0PR06MB3202.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Jun 01, 2022 at 03:23:11PM +0700, Quan Nguyen wrote:
-> On 04/05/2022 19:06, Corey Minyard wrote:
-> > On Wed, May 04, 2022 at 01:45:03PM +0700, Quan Nguyen via Openipmi-developer wrote:
-> > > > 
-> > > > I seem to remember mentioning this before, but there is no reason to
-> > > > pack the structures below.
-> > > > 
-> > > 
-> > > The packed structure is because we want to pick the len directly from user
-> > > space without worry about the padding byte.
-> > > 
-> > > As we plan not to use the .h file in next version, I still would like to use
-> > > packed structure internally inside ssif_bmc.c file.
-> > 
-> > Packed doesn't matter for the userspace API.  If you look at other
-> > structures in the userspace API, they are not packed, either.  The
-> > compiler will do the right thing on both ends.
-> > 
-> > > 
-> > > > And second, the following is a userspace API structures, so it needs to
-> > > > be in its own file in include/uapi/linux, along with any supporting
-> > > > things that users will need to use.  And your userspace code should be
-> > > > using that file.
-> > > > 
-> > > 
-> > > Meantime, I'd like not to use .h as I see there is no demand for sharing the
-> > > data structure between kernel and user space yet. But we may do it in the
-> > > future.
-> > 
-> > If you have a userspace API, it needs to be in include/uapi/linux.
-> > You may not be the only user of this code.  In fact, you probably won't
-> > be.  You need to have a .h with the structures in it, you don't want the
-> > same structure in two places if you can help it.
-> > 
+> Hi,
 > 
-> Dear Corey,
+> Le 01/06/2022 ? 07:42, Neal Liu a ?crit?:
+> > Hash and Crypto Engine (HACE) is designed to accelerate the throughput
+> > of hash data digest, encryption, and decryption.
+> >
+> > Basically, HACE can be divided into two independently engines
+> > - Hash Engine and Crypto Engine. This patch aims to add HACE hash
+> > engine driver for hash accelerator.
+> >
+> > Signed-off-by: Neal Liu <neal_liu@aspeedtech.com>
+> > Signed-off-by: Johnny Huang <johnny_huang@aspeedtech.com>
+> > ---
+> >   MAINTAINERS                              |    7 +
+> >   drivers/crypto/Kconfig                   |    1 +
+> >   drivers/crypto/Makefile                  |    1 +
+> >   drivers/crypto/aspeed/Kconfig            |   22 +
+> >   drivers/crypto/aspeed/Makefile           |    6 +
+> >   drivers/crypto/aspeed/aspeed-hace-hash.c | 1335
+> ++++++++++++++++++++++
+> >   drivers/crypto/aspeed/aspeed-hace.c      |  210 ++++
+> >   drivers/crypto/aspeed/aspeed-hace.h      |  179 +++
+> >   8 files changed, 1761 insertions(+)
+> >   create mode 100644 drivers/crypto/aspeed/Kconfig
+> >   create mode 100644 drivers/crypto/aspeed/Makefile
+> >   create mode 100644 drivers/crypto/aspeed/aspeed-hace-hash.c
+> >   create mode 100644 drivers/crypto/aspeed/aspeed-hace.c
+> >   create mode 100644 drivers/crypto/aspeed/aspeed-hace.h
+> >
+> > diff --git a/MAINTAINERS b/MAINTAINERS index
+> > e8c52d0192a6..c020e0893eed 100644
 > 
-> Is it OK to push the structure definition into the
-> include/uapi/linux/ipmi_bmc.h ?
+> [...]
 > 
-> Or should it need to be in separate new header file in uapi/linux ?
+> > +int aspeed_register_hace_hash_algs(struct aspeed_hace_dev *hace_dev)
+> > +{
+> > +	int rc, i;
+> > +
+> > +	AHASH_DBG(hace_dev, "\n");
+> > +
+> > +	for (i = 0; i < ARRAY_SIZE(aspeed_ahash_algs); i++) {
+> > +		aspeed_ahash_algs[i].hace_dev = hace_dev;
+> > +		rc = crypto_register_ahash(&aspeed_ahash_algs[i].alg.ahash);
+> > +		if (rc)
+> > +			return rc;
+> > +	}
+> > +
+> > +	if (hace_dev->version != AST2600_VERSION)
+> > +		return 0;
+> > +
+> > +	for (i = 0; i < ARRAY_SIZE(aspeed_ahash_algs_g6); i++) {
+> > +		aspeed_ahash_algs_g6[i].hace_dev = hace_dev;
+> > +		rc = crypto_register_ahash(&aspeed_ahash_algs_g6[i].alg.ahash);
+> > +		if (rc)
+> > +			return rc;
+> > +	}
+> > +
+> > +	return 0;
+> 
+> Should there be some kind of error handling here, in order to undo things
+> already done if an error occures?
+> 
 
-I think a different file, like ipmi_ssif_bmc, to match the file and
-operation.  Unless you need the things in ipmi_bmc.h, which I don't
-think is the case.
-
--corey
+No need. .remove function would do the error handling stuffs.
 
 > 
-> Thank you,
-> - Quan
+> > +}
+> > diff --git a/drivers/crypto/aspeed/aspeed-hace.c
+> b/drivers/crypto/aspeed/aspeed-hace.c
+> > new file mode 100644
+> > index 000000000000..f25b13d120e8
+> > --- /dev/null
+> > +++ b/drivers/crypto/aspeed/aspeed-hace.c
+> 
+> [...]
+> 
+> > +static int aspeed_hace_probe(struct platform_device *pdev)
+> > +{
+> > +	const struct of_device_id *hace_dev_id;
+> > +	struct aspeed_engine_hash *hash_engine;
+> > +	struct aspeed_hace_dev *hace_dev;
+> > +	struct resource *res;
+> > +	int rc;
+> > +
+> > +	hace_dev = devm_kzalloc(&pdev->dev, sizeof(struct aspeed_hace_dev),
+> > +				GFP_KERNEL);
+> > +	if (!hace_dev)
+> > +		return -ENOMEM;
+> > +
+> > +	hace_dev_id = of_match_device(aspeed_hace_of_matches, &pdev->dev);
+> > +	if (!hace_dev_id) {
+> > +		dev_err(&pdev->dev, "Failed to match hace dev id\n");
+> > +		return -EINVAL;
+> > +	}
+> > +
+> > +	hace_dev->dev = &pdev->dev;
+> > +	hace_dev->version = (unsigned long)hace_dev_id->data;
+> > +	hash_engine = &hace_dev->hash_engine;
+> > +
+> > +	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+> > +
+> > +	platform_set_drvdata(pdev, hace_dev);
+> > +
+> > +	spin_lock_init(&hash_engine->lock);
+> > +	tasklet_init(&hash_engine->done_task, aspeed_hace_hash_done_task,
+> > +		     (unsigned long)hace_dev);
+> > +	tasklet_init(&hash_engine->queue_task, aspeed_hace_hash_queue_task,
+> > +		     (unsigned long)hace_dev);
+> > +	crypto_init_queue(&hash_engine->queue,
+> ASPEED_HASH_QUEUE_LENGTH);
+> > +
+> > +	hace_dev->regs = devm_ioremap_resource(&pdev->dev, res);
+> > +	if (!hace_dev->regs) {
+> > +		dev_err(&pdev->dev, "Failed to map resources\n");
+> > +		return -ENOMEM;
+> > +	}
+> > +
+> > +	hace_dev->irq = platform_get_irq(pdev, 0);
+> > +	if (!hace_dev->irq) {
+> > +		dev_err(&pdev->dev, "Failed to get interrupt\n");
+> > +		return -ENXIO;
+> > +	}
+> > +
+> > +	rc = devm_request_irq(&pdev->dev, hace_dev->irq, aspeed_hace_irq, 0,
+> > +			      dev_name(&pdev->dev), hace_dev);
+> > +	if (rc) {
+> > +		dev_err(&pdev->dev, "Failed to request interrupt\n");
+> > +		return rc;
+> > +	}
+> > +
+> > +	hace_dev->yclk = devm_clk_get(&pdev->dev, "yclk");
+> > +	if (IS_ERR(hace_dev->yclk)) {
+> > +		dev_err(&pdev->dev, "Failed to get yclk\n");
+> > +		return -ENODEV;
+> > +	}
+> > +
+> > +	rc = clk_prepare_enable(hace_dev->yclk);
+> > +	if (rc) {
+> > +		dev_err(&pdev->dev, "Failed to enable clock 0x%x\n", rc);
+> > +		return rc;
+> 
+> This is not undone, neither if an error occures after it, nor in the
+> .remove function.
+
+You're correct. I'll add error handling in .remove function.
+Thanks for your suggestion.
+
+> 
+> > +	}
+> > +
+> > +	hash_engine->ahash_src_addr =
+> > +		dma_alloc_coherent(&pdev->dev,
+> > +				   ASPEED_HASH_SRC_DMA_BUF_LEN,
+> > +				   &hash_engine->ahash_src_dma_addr,
+> > +				   GFP_KERNEL);
+> > +	if (!hash_engine->ahash_src_addr) {
+> > +		dev_err(&pdev->dev, "Failed to allocate dma buffer\n");
+> > +		return -ENOMEM;
+> > +	}
+> 
+> Same here, this si not undone in the .remove function.
+
+Same here.
+
+> 
+> > +
+> > +	rc = aspeed_hace_register(hace_dev);
+> > +	if (rc) {
+> > +		dev_err(&pdev->dev, "Failed to register hash alg, rc:0x%x\n", rc);
+> 
+> Is this really an error if finaly we continue and return 0 (success) at
+> the end?
+
+I assume if some alg register failed, some alg register pass, the driver still works fine.
+So no need to fail driver probe.
+
+> 
+> > +		rc = 0;
+> > +	}
+> > +
+> > +	dev_info(&pdev->dev, "ASPEED Crypto Accelerator successfully
+> registered\n");
+> > +
+> > +	return rc;
+> > +}
+> > +
+> > +static int aspeed_hace_remove(struct platform_device *pdev)
+> > +{
+> > +	struct aspeed_hace_dev *hace_dev = platform_get_drvdata(pdev);
+> > +	struct aspeed_engine_hash *hash_engine = &hace_dev->hash_engine;
+> > +
+> > +	aspeed_hace_unregister(hace_dev);
+> 
+> Should this be done even if aspeed_hace_register() failed in the probe?
+
+Crypto core would check if the alg is registered or not, so no need to check here.
+
+> 
+> Just my 2c,
+> CJ
 > 
 > 
+> > +
+> > +	tasklet_kill(&hash_engine->done_task);
+> > +	tasklet_kill(&hash_engine->queue_task);
+> > +
+> > +	return 0;
+> > +}
+> > +
+> 
+> [...]
