@@ -1,71 +1,44 @@
-From: Quan Nguyen <quan@os.amperecomputing.com>
-Date: Thu, 2 Jun 2022 16:38:19 +0700
-Subject: [Openipmi-developer] [PATCH v7 1/3] ipmi: ssif_bmc: Add SSIF BMC
- driver
-In-Reply-To: <20220602003244.GK3767252@minyard.net>
-References: <20220422040803.2524940-1-quan@os.amperecomputing.com>
- <20220422040803.2524940-2-quan@os.amperecomputing.com>
- <20220423015119.GE426325@minyard.net>
- <ec7b86ec-827f-da64-8fd2-eae09f802694@os.amperecomputing.com>
- <20220504120631.GE3767252@minyard.net>
- <ba084735-0781-7ca2-4d04-a70a4115729a@os.amperecomputing.com>
- <20220602003244.GK3767252@minyard.net>
-Message-ID: <052469a4-1f0b-8615-7b4e-fa16159297a2@os.amperecomputing.com>
+From: Cédric Le Goater <clg@kaod.org>
+Date: Fri,  3 Jun 2022 09:37:05 +0200
+Subject: [PATCH] ARM: dts: aspeed: ast2600-evb: Enable Quad SPI RX tranfers
+Message-ID: <20220603073705.1624351-1-clg@kaod.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 02/06/2022 07:32, Corey Minyard wrote:
-> On Wed, Jun 01, 2022 at 03:23:11PM +0700, Quan Nguyen wrote:
->> On 04/05/2022 19:06, Corey Minyard wrote:
->>> On Wed, May 04, 2022 at 01:45:03PM +0700, Quan Nguyen via Openipmi-developer wrote:
->>>>>
->>>>> I seem to remember mentioning this before, but there is no reason to
->>>>> pack the structures below.
->>>>>
->>>>
->>>> The packed structure is because we want to pick the len directly from user
->>>> space without worry about the padding byte.
->>>>
->>>> As we plan not to use the .h file in next version, I still would like to use
->>>> packed structure internally inside ssif_bmc.c file.
->>>
->>> Packed doesn't matter for the userspace API.  If you look at other
->>> structures in the userspace API, they are not packed, either.  The
->>> compiler will do the right thing on both ends.
->>>
->>>>
->>>>> And second, the following is a userspace API structures, so it needs to
->>>>> be in its own file in include/uapi/linux, along with any supporting
->>>>> things that users will need to use.  And your userspace code should be
->>>>> using that file.
->>>>>
->>>>
->>>> Meantime, I'd like not to use .h as I see there is no demand for sharing the
->>>> data structure between kernel and user space yet. But we may do it in the
->>>> future.
->>>
->>> If you have a userspace API, it needs to be in include/uapi/linux.
->>> You may not be the only user of this code.  In fact, you probably won't
->>> be.  You need to have a .h with the structures in it, you don't want the
->>> same structure in two places if you can help it.
->>>
->>
->> Dear Corey,
->>
->> Is it OK to push the structure definition into the
->> include/uapi/linux/ipmi_bmc.h ?
->>
->> Or should it need to be in separate new header file in uapi/linux ?
-> 
-> I think a different file, like ipmi_ssif_bmc, to match the file and
-> operation.  Unless you need the things in ipmi_bmc.h, which I don't
-> think is the case.
-> 
+Now that the pinctrl definitions of the ast2600 SoC have been fixed,
+see commit 925fbe1f7eb6 ("dt-bindings: pinctrl: aspeed-g6: add FWQSPI
+function/group"), it is safe to activate QSPI on the ast2600 evb.
 
-Thanks Corey,
-Will add ipmi_ssif_bmc as you suggested.
+Cc: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
+Tested-by: Jae Hyun Yoo <quic_jaehyoo@quicinc.com>
+Signed-off-by: C?dric Le Goater <clg@kaod.org>
+---
+ arch/arm/boot/dts/aspeed-ast2600-evb.dts | 2 ++
+ 1 file changed, 2 insertions(+)
 
--- Quan
+diff --git a/arch/arm/boot/dts/aspeed-ast2600-evb.dts b/arch/arm/boot/dts/aspeed-ast2600-evb.dts
+index 5a6063bd4508..87a79922ff78 100644
+--- a/arch/arm/boot/dts/aspeed-ast2600-evb.dts
++++ b/arch/arm/boot/dts/aspeed-ast2600-evb.dts
+@@ -182,6 +182,7 @@ flash at 0 {
+ 		status = "okay";
+ 		m25p,fast-read;
+ 		label = "bmc";
++		spi-rx-bus-width = <4>;
+ 		spi-max-frequency = <50000000>;
+ #include "openbmc-flash-layout-64.dtsi"
+ 	};
+@@ -196,6 +197,7 @@ flash at 0 {
+ 		status = "okay";
+ 		m25p,fast-read;
+ 		label = "pnor";
++		spi-rx-bus-width = <4>;
+ 		spi-max-frequency = <100000000>;
+ 	};
+ };
+-- 
+2.35.3
+
