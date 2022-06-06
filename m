@@ -1,36 +1,84 @@
 From: Neal Liu <neal_liu@aspeedtech.com>
-Date: Mon, 6 Jun 2022 14:49:32 +0800
-Subject: [PATCH v2 2/5] dt-bindings: clock: Add AST2600 HACE reset definition
+Date: Mon, 6 Jun 2022 14:49:34 +0800
+Subject: [PATCH v2 4/5] dt-bindings: crypto: add documentation for aspeed hace
 In-Reply-To: <20220606064935.1458903-1-neal_liu@aspeedtech.com>
 References: <20220606064935.1458903-1-neal_liu@aspeedtech.com>
-Message-ID: <20220606064935.1458903-3-neal_liu@aspeedtech.com>
+Message-ID: <20220606064935.1458903-5-neal_liu@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add HACE reset bit definition for ast2600.
+Add device tree binding documentation for the Aspeed Hash
+and Crypto Engines (HACE) Controller.
 
 Signed-off-by: Neal Liu <neal_liu@aspeedtech.com>
 Signed-off-by: Johnny Huang <johnny_huang@aspeedtech.com>
-Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 ---
- include/dt-bindings/clock/ast2600-clock.h | 1 +
- 1 file changed, 1 insertion(+)
+ .../bindings/crypto/aspeed,ast2500-hace.yaml  | 53 +++++++++++++++++++
+ 1 file changed, 53 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/crypto/aspeed,ast2500-hace.yaml
 
-diff --git a/include/dt-bindings/clock/ast2600-clock.h b/include/dt-bindings/clock/ast2600-clock.h
-index 62b9520a00fd..d8b0db2f7a7d 100644
---- a/include/dt-bindings/clock/ast2600-clock.h
-+++ b/include/dt-bindings/clock/ast2600-clock.h
-@@ -111,6 +111,7 @@
- #define ASPEED_RESET_PCIE_RC_O		19
- #define ASPEED_RESET_PCIE_RC_OEN	18
- #define ASPEED_RESET_PCI_DP		5
-+#define ASPEED_RESET_HACE		4
- #define ASPEED_RESET_AHB		1
- #define ASPEED_RESET_SDRAM		0
- 
+diff --git a/Documentation/devicetree/bindings/crypto/aspeed,ast2500-hace.yaml b/Documentation/devicetree/bindings/crypto/aspeed,ast2500-hace.yaml
+new file mode 100644
+index 000000000000..a772d232de09
+--- /dev/null
++++ b/Documentation/devicetree/bindings/crypto/aspeed,ast2500-hace.yaml
+@@ -0,0 +1,53 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/crypto/aspeed,ast2500-hace.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: ASPEED HACE hash and crypto Hardware Accelerator Engines
++
++maintainers:
++  - Neal Liu <neal_liu@aspeedtech.com>
++
++description: |
++  The Hash and Crypto Engine (HACE) is designed to accelerate the throughput
++  of hash data digest, encryption, and decryption. Basically, HACE can be
++  divided into two independently engines - Hash Engine and Crypto Engine.
++
++properties:
++  compatible:
++    enum:
++      - aspeed,ast2500-hace
++      - aspeed,ast2600-hace
++
++  reg:
++    maxItems: 1
++
++  clocks:
++    maxItems: 1
++
++  interrupts:
++    maxItems: 1
++
++  resets:
++    maxItems: 1
++
++required:
++  - compatible
++  - reg
++  - clocks
++  - interrupts
++  - resets
++
++additionalProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/clock/ast2600-clock.h>
++    hace: crypto at 1e6d0000 {
++        compatible = "aspeed,ast2600-hace";
++        reg = <0x1e6d0000 0x200>;
++        interrupts = <4>;
++        clocks = <&syscon ASPEED_CLK_GATE_YCLK>;
++        resets = <&syscon ASPEED_RESET_HACE>;
++    };
 -- 
 2.25.1
 
