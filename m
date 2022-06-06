@@ -1,232 +1,276 @@
-From: Corentin Labbe <clabbe.montjoie@gmail.com>
-Date: Mon, 6 Jun 2022 21:43:25 +0200
-Subject: [PATCH v2 1/5] crypto: aspeed: Add HACE hash driver
-In-Reply-To: <20220606064935.1458903-2-neal_liu@aspeedtech.com>
+From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Date: Mon, 6 Jun 2022 22:18:56 +0200
+Subject: [PATCH v2 5/5] crypto: aspeed: add HACE crypto driver
+In-Reply-To: <20220606064935.1458903-6-neal_liu@aspeedtech.com>
 References: <20220606064935.1458903-1-neal_liu@aspeedtech.com>
- <20220606064935.1458903-2-neal_liu@aspeedtech.com>
-Message-ID: <Yp5Y3WKhGklwgMTp@Red>
+ <20220606064935.1458903-6-neal_liu@aspeedtech.com>
+Message-ID: <ef2fc6ab-e487-1f95-dceb-fd190f064ac2@wanadoo.fr>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Le Mon, Jun 06, 2022 at 02:49:31PM +0800, Neal Liu a ?crit :
-> Hash and Crypto Engine (HACE) is designed to accelerate the
-> throughput of hash data digest, encryption, and decryption.
-> 
-> Basically, HACE can be divided into two independently engines
-> - Hash Engine and Crypto Engine. This patch aims to add HACE
-> hash engine driver for hash accelerator.
+Le 06/06/2022 ? 08:49, Neal Liu a ?crit?:
+> Add HACE crypto driver to support symmetric-key
+> encryption and decryption with multiple modes of
+> operation.
 > 
 > Signed-off-by: Neal Liu <neal_liu@aspeedtech.com>
 > Signed-off-by: Johnny Huang <johnny_huang@aspeedtech.com>
 > ---
->  MAINTAINERS                              |    7 +
->  drivers/crypto/Kconfig                   |    1 +
->  drivers/crypto/Makefile                  |    1 +
->  drivers/crypto/aspeed/Kconfig            |   22 +
->  drivers/crypto/aspeed/Makefile           |    6 +
->  drivers/crypto/aspeed/aspeed-hace-hash.c | 1409 ++++++++++++++++++++++
->  drivers/crypto/aspeed/aspeed-hace.c      |  221 ++++
->  drivers/crypto/aspeed/aspeed-hace.h      |  182 +++
->  8 files changed, 1849 insertions(+)
->  create mode 100644 drivers/crypto/aspeed/Kconfig
->  create mode 100644 drivers/crypto/aspeed/Makefile
->  create mode 100644 drivers/crypto/aspeed/aspeed-hace-hash.c
->  create mode 100644 drivers/crypto/aspeed/aspeed-hace.c
->  create mode 100644 drivers/crypto/aspeed/aspeed-hace.h
-
-Hello please see my comments below.
 
 [...]
 
-> diff --git a/drivers/crypto/aspeed/aspeed-hace-hash.c b/drivers/crypto/aspeed/aspeed-hace-hash.c
-> new file mode 100644
-> index 000000000000..9b003e12b2c8
-> --- /dev/null
-> +++ b/drivers/crypto/aspeed/aspeed-hace-hash.c
-> @@ -0,0 +1,1409 @@
-> +// SPDX-License-Identifier: GPL-2.0+
-> +/*
-> + * Copyright (c) 2021 Aspeed Technology Inc.
-> + */
-> +
-> +#include "aspeed-hace.h"
-> +
-> +//#define ASPEED_AHASH_DEBUG
-
-Please remove this
-
-[...]
-
-> +
-> +#ifdef ASPEED_AHASH_DEBUG
-> +#define AHASH_DBG(h, fmt, ...)	\
-> +	dev_info((h)->dev, "%s() " fmt, __func__, ##__VA_ARGS__)
-> +#else
-> +#define AHASH_DBG(h, fmt, ...)	\
-> +	((void)(h))
-> +#endif
-
-Why not using dev_dbg() ?
-
-[...]
-> +	sg_len = dma_map_sg(hace_dev->dev, rctx->src_sg, rctx->src_nents,
-> +			    DMA_TO_DEVICE);
-> +	if (!sg_len) {
-> +		dev_warn(hace_dev->dev, "dma_map_sg() src error\n");
-> +		rc = -ENOMEM;
-> +		goto end;
-> +	}
-
-This test does handle the possible negative return of dma_map_sg()
-
-[...]
-> +	memset(bctx->ipad + keylen, 0, bs - keylen);
-> +	memcpy(bctx->opad, bctx->ipad, bs);
-> +
-> +	for (i = 0; i < bs; i++) {
-> +		bctx->ipad[i] ^= 0x36;
-> +		bctx->opad[i] ^= 0x5c;
-
-Please use HMAC_OPAD_VALUE and HMAC_IPAD_VALUE from include/crypto/hmac.h
-
-[...]
-> +int aspeed_register_hace_hash_algs(struct aspeed_hace_dev *hace_dev)
+> +static int aspeed_sk_transfer_sg(struct aspeed_hace_dev *hace_dev)
 > +{
-> +	int rc, i;
+> +	struct aspeed_engine_crypto *crypto_engine = &hace_dev->crypto_engine;
+> +	struct device *dev = hace_dev->dev;
+> +	struct aspeed_cipher_reqctx *rctx;
+> +	struct skcipher_request *req;
 > +
-> +	AHASH_DBG(hace_dev, "\n");
+> +	CIPHER_DBG(hace_dev, "\n");
 > +
-> +	for (i = 0; i < ARRAY_SIZE(aspeed_ahash_algs); i++) {
-> +		aspeed_ahash_algs[i].hace_dev = hace_dev;
-> +		rc = crypto_register_ahash(&aspeed_ahash_algs[i].alg.ahash);
-> +		if (rc)
-> +			return rc;
-> +	}
+> +	req = skcipher_request_cast(crypto_engine->areq);
+> +	rctx = skcipher_request_ctx(req);
+> +
+> +	if (req->src == req->dst) {
+> +		dma_unmap_sg(dev, req->src, rctx->src_nents, DMA_BIDIRECTIONAL);
+> +
 
-If any hash fail to register, the function exits but you will still unregister all hashes (even ones not registered) on aspeed_unregister_hace_hash_algs().
+Unneeded empty line.
+
+> +	} else {
+> +		dma_unmap_sg(dev, req->src, rctx->src_nents, DMA_TO_DEVICE);
+> +		dma_unmap_sg(dev, req->dst, rctx->dst_nents, DMA_FROM_DEVICE);
+> +	}
+> +
+> +	return aspeed_sk_complete(hace_dev, 0);
+> +}
+> +
 
 [...]
-> +static int aspeed_hace_probe(struct platform_device *pdev)
+
+> +static int aspeed_sk_start_sg(struct aspeed_hace_dev *hace_dev)
 > +{
-> +	const struct of_device_id *hace_dev_id;
-> +	struct aspeed_engine_hash *hash_engine;
-> +	struct aspeed_hace_dev *hace_dev;
-> +	struct resource *res;
+> +	struct aspeed_engine_crypto *crypto_engine = &hace_dev->crypto_engine;
+> +	struct aspeed_sg_list *src_list, *dst_list;
+> +	dma_addr_t src_dma_addr, dst_dma_addr;
+> +	struct aspeed_cipher_reqctx *rctx;
+> +	struct skcipher_request *req;
+> +	struct scatterlist *s;
+> +	int src_sg_len;
+> +	int dst_sg_len;
+> +	int total, i;
 > +	int rc;
 > +
-> +	hace_dev = devm_kzalloc(&pdev->dev, sizeof(struct aspeed_hace_dev),
-> +				GFP_KERNEL);
-> +	if (!hace_dev)
-> +		return -ENOMEM;
+> +	CIPHER_DBG(hace_dev, "\n");
 > +
-> +	hace_dev_id = of_match_device(aspeed_hace_of_matches, &pdev->dev);
-> +	if (!hace_dev_id) {
-> +		dev_err(&pdev->dev, "Failed to match hace dev id\n");
+> +	req = skcipher_request_cast(crypto_engine->areq);
+> +	rctx = skcipher_request_ctx(req);
+> +
+> +	rctx->enc_cmd |= HACE_CMD_DES_SG_CTRL | HACE_CMD_SRC_SG_CTRL |
+> +			 HACE_CMD_AES_KEY_HW_EXP | HACE_CMD_MBUS_REQ_SYNC_EN;
+> +
+> +	/* BIDIRECTIONAL */
+> +	if (req->dst == req->src) {
+> +		src_sg_len = dma_map_sg(hace_dev->dev, req->src,
+> +					rctx->src_nents, DMA_BIDIRECTIONAL);
+> +		dst_sg_len = src_sg_len;
+> +		if (!src_sg_len) {
+> +			dev_warn(hace_dev->dev, "dma_map_sg() src error\n");
+> +			return -EINVAL;
+> +		}
+> +
+> +	} else {
+> +		src_sg_len = dma_map_sg(hace_dev->dev, req->src,
+> +					rctx->src_nents, DMA_TO_DEVICE);
+> +		if (!src_sg_len) {
+> +			dev_warn(hace_dev->dev, "dma_map_sg() src error\n");
+> +			return -EINVAL;
+> +		}
+> +
+> +		dst_sg_len = dma_map_sg(hace_dev->dev, req->dst,
+> +					rctx->dst_nents, DMA_FROM_DEVICE);
+> +		if (!dst_sg_len) {
+> +			dev_warn(hace_dev->dev, "dma_map_sg() dst error\n");
+> +			rc = -EINVAL;
+> +			goto free_req_src;
+
+Should we realy call dma_unmap_sg() if dma_map_sg() fails?
+
+> +		}
+> +	}
+> +
+> +	src_list = (struct aspeed_sg_list *)crypto_engine->cipher_addr;
+> +	src_dma_addr = crypto_engine->cipher_dma_addr;
+> +	total = req->cryptlen;
+> +
+> +	for_each_sg(req->src, s, src_sg_len, i) {
+> +		src_list[i].phy_addr = sg_dma_address(s);
+> +
+> +		/* last sg list */
+> +		if (sg_dma_len(s) >= total) {
+> +			src_list[i].len = total;
+> +			src_list[i].len |= BIT(31);
+> +			total = 0;
+> +			break;
+> +		}
+> +
+> +		src_list[i].len = sg_dma_len(s);
+> +		total -= src_list[i].len;
+> +	}
+> +
+> +	if (total != 0)
 > +		return -EINVAL;
+
+goto free_req_src; ?
+
+> +
+> +	if (req->dst == req->src) {
+> +		dst_list = src_list;
+> +		dst_dma_addr = src_dma_addr;
+> +
+> +	} else {
+> +		dst_list = (struct aspeed_sg_list *)crypto_engine->dst_sg_addr;
+> +		dst_dma_addr = crypto_engine->dst_sg_dma_addr;
+> +		total = req->cryptlen;
+> +
+> +		for_each_sg(req->dst, s, dst_sg_len, i) {
+> +			dst_list[i].phy_addr = sg_dma_address(s);
+> +
+> +			/* last sg list */
+> +			if (sg_dma_len(s) >= total) {
+> +				dst_list[i].len = total;
+> +				dst_list[i].len |= BIT(31);
+> +				total = 0;
+> +				break;
+> +			}
+> +
+> +			dst_list[i].len = sg_dma_len(s);
+> +			total -= dst_list[i].len;
+> +		}
+> +
+> +		dst_list[dst_sg_len].phy_addr = 0;
+> +		dst_list[dst_sg_len].len = 0;
 > +	}
 > +
-> +	hace_dev->dev = &pdev->dev;
-> +	hace_dev->version = (unsigned long)hace_dev_id->data;
-> +	hash_engine = &hace_dev->hash_engine;
+> +	if (total != 0)
+> +		return -EINVAL;
 > +
-> +	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+> +	crypto_engine->resume = aspeed_sk_transfer_sg;
 > +
-> +	platform_set_drvdata(pdev, hace_dev);
+> +	/* Dummy read for barriers */
+> +	readl(src_list);
+> +	readl(dst_list);
 > +
-> +	spin_lock_init(&hash_engine->lock);
-> +	tasklet_init(&hash_engine->done_task, aspeed_hace_hash_done_task,
-> +		     (unsigned long)hace_dev);
-> +	tasklet_init(&hash_engine->queue_task, aspeed_hace_hash_queue_task,
-> +		     (unsigned long)hace_dev);
-> +	crypto_init_queue(&hash_engine->queue, ASPEED_HASH_QUEUE_LENGTH);
+> +	/* Trigger engines */
+> +	ast_hace_write(hace_dev, src_dma_addr, ASPEED_HACE_SRC);
+> +	ast_hace_write(hace_dev, dst_dma_addr, ASPEED_HACE_DEST);
+> +	ast_hace_write(hace_dev, req->cryptlen, ASPEED_HACE_DATA_LEN);
+> +	ast_hace_write(hace_dev, rctx->enc_cmd, ASPEED_HACE_CMD);
 > +
-> +	hace_dev->regs = devm_ioremap_resource(&pdev->dev, res);
-> +	if (!hace_dev->regs) {
-> +		dev_err(&pdev->dev, "Failed to map resources\n");
-> +		return -ENOMEM;
+> +	return -EINPROGRESS;
+> +
+> +free_req_src:
+> +	dma_unmap_sg(hace_dev->dev, req->src, rctx->src_nents, DMA_TO_DEVICE);
+> +
+> +	return rc;
+> +}
+> +
+
+[...]
+
+> +static int aspeed_aes_setkey(struct crypto_skcipher *cipher, const u8 *key,
+> +			     unsigned int keylen)
+> +{
+> +	struct aspeed_cipher_ctx *ctx = crypto_skcipher_ctx(cipher);
+> +	struct aspeed_hace_dev *hace_dev = ctx->hace_dev;
+> +	struct crypto_aes_ctx gen_aes_key;
+> +
+> +	CIPHER_DBG(hace_dev, "keylen: %d bits\n", (keylen * 8));
+> +
+> +	if (keylen != AES_KEYSIZE_128 && keylen != AES_KEYSIZE_192 &&
+> +	    keylen != AES_KEYSIZE_256)
+> +		return -EINVAL;
+> +
+> +	if (ctx->hace_dev->version == AST2500_VERSION) {
+> +		aes_expandkey(&gen_aes_key, key, keylen);
+> +		memcpy(ctx->key, gen_aes_key.key_enc, AES_MAX_KEYLENGTH);
+> +
+
+Unneeded empty line
+
+> +	} else {
+> +		memcpy(ctx->key, key, keylen);
 > +	}
 > +
-> +	hace_dev->irq = platform_get_irq(pdev, 0);
-> +	if (!hace_dev->irq) {
-> +		dev_err(&pdev->dev, "Failed to get interrupt\n");
-> +		return -ENXIO;
-> +	}
+> +	ctx->key_len = keylen;
 > +
-> +	rc = devm_request_irq(&pdev->dev, hace_dev->irq, aspeed_hace_irq, 0,
-> +			      dev_name(&pdev->dev), hace_dev);
-> +	if (rc) {
-> +		dev_err(&pdev->dev, "Failed to request interrupt\n");
-> +		return rc;
-> +	}
+> +	return 0;
+> +}
 > +
-> +	hace_dev->clk = devm_clk_get(&pdev->dev, NULL);
-> +	if (IS_ERR(hace_dev->clk)) {
-> +		dev_err(&pdev->dev, "Failed to get clk\n");
-> +		return -ENODEV;
-> +	}
-> +
-> +	rc = clk_prepare_enable(hace_dev->clk);
-> +	if (rc) {
-> +		dev_err(&pdev->dev, "Failed to enable clock 0x%x\n", rc);
-> +		return rc;
-> +	}
-> +
-> +	hash_engine->ahash_src_addr =
+
+[...]
+
+> +	crypto_engine->cipher_ctx =
 > +		dma_alloc_coherent(&pdev->dev,
-> +				   ASPEED_HASH_SRC_DMA_BUF_LEN,
-> +				   &hash_engine->ahash_src_dma_addr,
+> +				   PAGE_SIZE,
+> +				   &crypto_engine->cipher_ctx_dma,
 > +				   GFP_KERNEL);
-> +	if (!hash_engine->ahash_src_addr) {
-> +		dev_err(&pdev->dev, "Failed to allocate dma buffer\n");
+> +	if (!crypto_engine->cipher_ctx) {
+> +		dev_err(&pdev->dev, "Failed to allocate cipher ctx dma\n");
 > +		rc = -ENOMEM;
-> +		goto end;
+> +		goto free_hash_src;
 > +	}
 > +
-> +	rc = aspeed_hace_register(hace_dev);
-> +	if (rc) {
-> +		dev_err(&pdev->dev, "Failed to register algs, rc:0x%x\n", rc);
-> +		rc = 0;
+> +	crypto_engine->cipher_addr =
+> +		dma_alloc_coherent(&pdev->dev,
+> +				   ASPEED_CRYPTO_SRC_DMA_BUF_LEN,
+> +				   &crypto_engine->cipher_dma_addr,
+> +				   GFP_KERNEL);
+> +	if (!crypto_engine->cipher_addr) {
+> +		dev_err(&pdev->dev, "Failed to allocate cipher addr dma\n");
+> +		rc = -ENOMEM;
+> +		goto free_cipher_ctx;
 > +	}
-
-So you print an error but you keep the driver loaded even if no hashes (or a limited number of them) are registered, for which interest ?
-
-[...]
-> +struct aspeed_sham_ctx {
-> +	struct aspeed_hace_dev		*hace_dev;
-> +	unsigned long			flags;	/* hmac flag */
 > +
-> +	/* fallback stuff */
-> +	struct aspeed_sha_hmac_ctx	base[0];
-
-I am not sure to understand the [0] purpose, and the comment said something about fallback, but your driver dont do any real fallback.
-
-[...]
-> +struct aspeed_hace_dev {
-> +	void __iomem			*regs;
-> +	void __iomem			*sec_regs;
-
-sec_regs is unused.
-
-> +	struct device			*dev;
-> +	int				irq;
-> +	struct clk			*clk;
-> +	unsigned long			version;
-> +	struct aspeed_engine_hash	hash_engine;
-> +};
+> +	if (hace_dev->version == AST2600_VERSION) {
+> +		crypto_engine->dst_sg_addr =
+> +			dma_alloc_coherent(&pdev->dev,
+> +					   ASPEED_CRYPTO_DST_DMA_BUF_LEN,
+> +					   &crypto_engine->dst_sg_dma_addr,
+> +					   GFP_KERNEL);
+> +		if (!crypto_engine->dst_sg_addr) {
+> +			dev_err(&pdev->dev, "Failed to allocate dst_sg dma\n");
+> +			rc = -ENOMEM;
+> +			goto free_cipher_addr;
+> +		}
+> +	}
 > +
-> +struct aspeed_hace_alg {
-> +	struct aspeed_hace_dev		*hace_dev;
-> +	union {
-> +		struct skcipher_alg	skcipher;
-> +		struct aead_alg		aead;
-> +		struct ahash_alg	ahash;
-> +		struct kpp_alg		kpp;
-> +		struct akcipher_alg	akcipher;
+>   	rc = aspeed_hace_register(hace_dev);
+>   	if (rc) {
+>   		dev_err(&pdev->dev, "Failed to register algs, rc:0x%x\n", rc);
 
-Your patch dont do any kpp or akcipher (and aead/skcipher also).
-Please drop this.
+I guess that the new dma_alloc_coherent() just a few lines above should 
+also be undone in error hanfling path if aspeed_hace_register() fails?
 
-Regards
+> @@ -179,6 +282,18 @@ static int aspeed_hace_probe(struct platform_device *pdev)
+>   
+>   	return 0;
+>   
+> +free_cipher_addr:
+> +	dma_free_coherent(&pdev->dev, ASPEED_CRYPTO_SRC_DMA_BUF_LEN,
+> +			  crypto_engine->cipher_addr,
+> +			  crypto_engine->cipher_dma_addr);
+> +free_cipher_ctx:
+> +	dma_free_coherent(&pdev->dev, PAGE_SIZE,
+> +			  crypto_engine->cipher_ctx,
+> +			  crypto_engine->cipher_ctx_dma);
+> +free_hash_src:
+> +	dma_free_coherent(&pdev->dev, ASPEED_HASH_SRC_DMA_BUF_LEN,
+> +			  hash_engine->ahash_src_addr,
+> +			  hash_engine->ahash_src_dma_addr);
+>   end:
+>   	clk_disable_unprepare(hace_dev->clk);
+>   	return rc;
