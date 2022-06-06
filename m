@@ -1,108 +1,109 @@
-From: Corentin Labbe <clabbe.montjoie@gmail.com>
-Date: Mon, 6 Jun 2022 10:22:41 +0200
-Subject: [PATCH 1/5] crypto: aspeed: Add HACE hash driver
-In-Reply-To: <HK0PR06MB320263939B2E388481DE2A0A80DF9@HK0PR06MB3202.apcprd06.prod.outlook.com>
-References: <20220601054204.1522976-1-neal_liu@aspeedtech.com>
- <20220601054204.1522976-2-neal_liu@aspeedtech.com>
- <YpcYLiJfC6tgP2Nj@Red>
- <HK0PR06MB320263939B2E388481DE2A0A80DF9@HK0PR06MB3202.apcprd06.prod.outlook.com>
-Message-ID: <Yp25UVBCNHzeiQOn@Red>
+From: Potin Lai <potin.lai.pt@gmail.com>
+Date: Mon, 6 Jun 2022 16:39:06 +0800
+Subject: [PATCH v2 2/2] dt-bindings: aspeed-i2c: add properties for manual
+ clock setting
+In-Reply-To: <20220605214700.GA3558088-robh@kernel.org>
+References: <20220601041512.21484-1-potin.lai.pt@gmail.com>
+ <20220601041512.21484-3-potin.lai.pt@gmail.com>
+ <20220605214700.GA3558088-robh@kernel.org>
+Message-ID: <f0a8c3fd-8013-0f7f-b7f8-5e9e85395543@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Le Wed, Jun 01, 2022 at 08:38:51AM +0000, Neal Liu a ?crit :
-> > Le Wed, Jun 01, 2022 at 01:42:00PM +0800, Neal Liu a ?crit :
-> > > Hash and Crypto Engine (HACE) is designed to accelerate the throughput
-> > > of hash data digest, encryption, and decryption.
-> > >
-> > > Basically, HACE can be divided into two independently engines
-> > > - Hash Engine and Crypto Engine. This patch aims to add HACE hash
-> > > engine driver for hash accelerator.
-> > >
-> > > Signed-off-by: Neal Liu <neal_liu@aspeedtech.com>
-> > > Signed-off-by: Johnny Huang <johnny_huang@aspeedtech.com>
-> > 
-> > Hello
-> > 
-> > Did you test with CONFIG_CRYPTO_MANAGER_EXTRA_TESTS=y (you should
-> > said it in cover letter).
-> > There are several easy style fixes to do (please run checkpatch --strict) Did you
-> > test your driver with both little and big endian mode ?
-> > 
-> 
-> Yes, I also test it with CONFIG_CRYPTO_MANAGER_EXTRA_TESTS=y. I'll describe it in cover letter as you suggested.
-> And the style problem would be fixed, thanks for your suggestion.
-> 
-> How to test it with both little and big endian mode? It would be appreciated if you give me some clue.
-> 
 
-Hello
+Rob Herring ? 2022/6/6 ?? 05:47 ??:
+> On Wed, Jun 01, 2022 at 12:15:12PM +0800, Potin Lai wrote:
+>> Add following properties for manual tuning clock divisor and cycle of
+>> hign/low pulse witdh.
+>>
+>> * aspeed,i2c-manual-clk: Enable aspeed i2c clock manual setting
+>> * aspeed,i2c-base-clk-div: Base Clock divisor (tBaseClk)
+>> * aspeed,i2c-clk-high-cycle: Cycles of clock-high pulse (tClkHigh)
+>> * aspeed,i2c-clk-low-cycle: Cycles of clock-low pulse (tClkLow)
+>>
+>> Signed-off-by: Potin Lai <potin.lai.pt@gmail.com>
+>> ---
+>>  .../devicetree/bindings/i2c/aspeed,i2c.yaml   | 44 +++++++++++++++++++
+>>  1 file changed, 44 insertions(+)
+>>
+>> diff --git a/Documentation/devicetree/bindings/i2c/aspeed,i2c.yaml b/Documentation/devicetree/bindings/i2c/aspeed,i2c.yaml
+>> index ea643e6c3ef5..e2f67fe2aa0c 100644
+>> --- a/Documentation/devicetree/bindings/i2c/aspeed,i2c.yaml
+>> +++ b/Documentation/devicetree/bindings/i2c/aspeed,i2c.yaml
+>> @@ -12,6 +12,28 @@ maintainers:
+>>  allOf:
+>>    - $ref: /schemas/i2c/i2c-controller.yaml#
+>>  
+>> +  - if:
+>> +      properties:
+>> +        compatible:
+>> +          const: st,stm32-uart
+> stm32 uart?
+Sorry, I will remove it.
+>> +
+>> +    then:
+>> +      properties:
+>> +        aspeed,i2c-clk-high-cycle:
+>> +          maximum: 8
+>> +        aspeed,i2c-clk-low-cycle:
+>> +          maximum: 8
+>> +
+>> +  - if:
+>> +      required:
+>> +        - aspeed,i2c-manual-clk
+>> +
+>> +    then:
+>> +      required:
+>> +        - aspeed,i2c-base-clk-div
+>> +        - aspeed,i2c-clk-high-cycle
+>> +        - aspeed,i2c-clk-low-cycle
+> 'dependencies' can better express this than an if/then.
+>
+> However, I think this should all be done in a common way.
+>
+>> +
+>>  properties:
+>>    compatible:
+>>      enum:
+>> @@ -49,6 +71,28 @@ properties:
+>>      description:
+>>        states that there is another master active on this bus
+>>  
+>> +  aspeed,i2c-manual-clk:
+>> +    type: boolean
+>> +    description: enable manual clock setting
+> No need for this as presence of the other properties can determine this.
+>
+>> +
+>> +  aspeed,i2c-base-clk-div:
+>> +    $ref: /schemas/types.yaml#/definitions/uint32
+>> +    enum: [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192,
+>> +           16384, 32768]
+>> +    description: base clock divisor
+> Specify the i2c bus frequency and calculate the divider.
+>
+>> +
+>> +  aspeed,i2c-clk-high-cycle:
+>> +    $ref: /schemas/types.yaml#/definitions/uint32
+>> +    minimum: 1
+>> +    maximum: 16
+>> +    description: cycles of master clock-high pulse width
+>> +
+>> +  aspeed,i2c-clk-low-cycle:
+>> +    $ref: /schemas/types.yaml#/definitions/uint32
+>> +    minimum: 1
+>> +    maximum: 16
+>> +    description: cycles of master clock-low pulse width
+> These 2 should be common. I think you just need a single property 
+> expressing duty cycle.
+>
+> Rob
 
-Sorry for the delayed answer.
+Got it, thank you for the suggestion of duty cycle.
+I will use duty cycle for next version.
 
-You should try compiling and booting with CONFIG_CPU_BIG_ENDIAN=y
+Potin
 
-> > Also please see my comment below.
-> > 
-> > [...]
-> > > +/* Initialization Vectors for SHA-family */ static const u32
-> > > +sha1_iv[8] = {
-> > > +	0x01234567UL, 0x89abcdefUL, 0xfedcba98UL, 0x76543210UL,
-> > > +	0xf0e1d2c3UL, 0, 0, 0
-> > > +};
-> > > +
-> > > +static const u32 sha224_iv[8] = {
-> > > +	0xd89e05c1UL, 0x07d57c36UL, 0x17dd7030UL, 0x39590ef7UL,
-> > > +	0x310bc0ffUL, 0x11155868UL, 0xa78ff964UL, 0xa44ffabeUL };
-> > > +
-> > > +static const u32 sha256_iv[8] = {
-> > > +	0x67e6096aUL, 0x85ae67bbUL, 0x72f36e3cUL, 0x3af54fa5UL,
-> > > +	0x7f520e51UL, 0x8c68059bUL, 0xabd9831fUL, 0x19cde05bUL };
-> > > +
-> > > +static const u32 sha384_iv[16] = {
-> > > +	0x5d9dbbcbUL, 0xd89e05c1UL, 0x2a299a62UL, 0x07d57c36UL,
-> > > +	0x5a015991UL, 0x17dd7030UL, 0xd8ec2f15UL, 0x39590ef7UL,
-> > > +	0x67263367UL, 0x310bc0ffUL, 0x874ab48eUL, 0x11155868UL,
-> > > +	0x0d2e0cdbUL, 0xa78ff964UL, 0x1d48b547UL, 0xa44ffabeUL };
-> > > +
-> > > +static const u32 sha512_iv[16] = {
-> > > +	0x67e6096aUL, 0x08c9bcf3UL, 0x85ae67bbUL, 0x3ba7ca84UL,
-> > > +	0x72f36e3cUL, 0x2bf894feUL, 0x3af54fa5UL, 0xf1361d5fUL,
-> > > +	0x7f520e51UL, 0xd182e6adUL, 0x8c68059bUL, 0x1f6c3e2bUL,
-> > > +	0xabd9831fUL, 0x6bbd41fbUL, 0x19cde05bUL, 0x79217e13UL };
-> > > +
-> > > +static const u32 sha512_224_iv[16] = {
-> > > +	0xC8373D8CUL, 0xA24D5419UL, 0x6699E173UL, 0xD6D4DC89UL,
-> > > +	0xAEB7FA1DUL, 0x829CFF32UL, 0x14D59D67UL, 0xCF9F2F58UL,
-> > > +	0x692B6D0FUL, 0xA84DD47BUL, 0x736FE377UL, 0x4289C404UL,
-> > > +	0xA8859D3FUL, 0xC8361D6AUL, 0xADE61211UL, 0xA192D691UL };
-> > > +
-> > > +static const u32 sha512_256_iv[16] = {
-> > > +	0x94213122UL, 0x2CF72BFCUL, 0xA35F559FUL, 0xC2644CC8UL,
-> > > +	0x6BB89323UL, 0x51B1536FUL, 0x19773896UL, 0xBDEA4059UL,
-> > > +	0xE23E2896UL, 0xE3FF8EA8UL, 0x251E5EBEUL, 0x92398653UL,
-> > > +	0xFC99012BUL, 0xAAB8852CUL, 0xDC2DB70EUL, 0xA22CC581UL };
-> > 
-> > Thoses IV already exists as define in linux headers (SHA1_H0 for example) But I
-> > am puzzled on why you invert them.
-> > 
-> 
-> This is Aspeed hardware limitation.
-
-The limitation is that hardware does not know theses IV ?
-Having them inverted seems to proof that you have some endianness issue.
-
-> > 
-> > Why didnt you use the crypto_engine API instead of rewriting it.
-> 
-> Any common crypto_engine API can be used? I did not find any, Maybe I miss something.
-> It would be appreciated if you give me some clue.
-> 
-
-Please check crypto/crypto_engine.c.
-You could take crypto/omap and allwinner/sun8i-ce as example of usage.
-
-Regards
