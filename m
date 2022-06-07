@@ -1,265 +1,121 @@
-From: Tommy Huang <tommy_huang@aspeedtech.com>
-Date: Tue, 7 Jun 2022 01:30:18 +0000
-Subject: [PATCH v1 2/2] drm/aspeed: Add 1024x768 mode for AST2600
-In-Reply-To: <SG2PR06MB48187B873F1B0B8FD7A119A5E1FB9@SG2PR06MB4818.apcprd06.prod.outlook.com>
-References: <20220304063137.12970-1-tommy_huang@aspeedtech.com>
- <20220304063137.12970-3-tommy_huang@aspeedtech.com>
- <CACPK8XfeRGU4ZySfO8vMf71wy-=PcdetvFAwAE9gaSz-NPK6Fg@mail.gmail.com>
- <SG2PR06MB48187B873F1B0B8FD7A119A5E1FB9@SG2PR06MB4818.apcprd06.prod.outlook.com>
-Message-ID: <SG2PR06MB4818ED730BFADDE19DA967D3E1A59@SG2PR06MB4818.apcprd06.prod.outlook.com>
+From: Neal Liu <neal_liu@aspeedtech.com>
+Date: Tue, 7 Jun 2022 02:42:08 +0000
+Subject: [PATCH 1/5] crypto: aspeed: Add HACE hash driver
+In-Reply-To: <Yp25UVBCNHzeiQOn@Red>
+References: <20220601054204.1522976-1-neal_liu@aspeedtech.com>
+ <20220601054204.1522976-2-neal_liu@aspeedtech.com> <YpcYLiJfC6tgP2Nj@Red>
+ <HK0PR06MB320263939B2E388481DE2A0A80DF9@HK0PR06MB3202.apcprd06.prod.outlook.com>
+ <Yp25UVBCNHzeiQOn@Red>
+Message-ID: <HK0PR06MB3202C108F41724E49E2C5C7280A59@HK0PR06MB3202.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Joel,
-
-	We have released related datasheet and update these registers description.
-
-	SCU300: Clock Selection Register
-	...
-	10:8 Soc display clock selection
-	000b: D-PLL
-	001b: Reserved
-	010b: 40MHz from USB 2.0 port1 PHY
-	011b: GPIOC6
-	100b: Reserved
-	101b: E-PLL divided by SCU308[17:12]
-	110b: M-PLL divided by SCU308[17:12]
-	111b: H-PLL divided by SCU308[17:12]
-
-	SCU308: Clock Selection Register Set 3
-	17:12 Soc display clock divider selection
-	000000b: div 1
-	011011b: div 16
-
-	Thanks,
-
-	By Tommy
-
-> -----Original Message-----
-> From: Tommy Huang
-> Sent: Tuesday, April 26, 2022 4:28 PM
-> To: Joel Stanley <joel@jms.id.au>
-> Cc: David Airlie <airlied@linux.ie>; Daniel Vetter <daniel@ffwll.ch>; Rob
-> Herring <robh+dt@kernel.org>; Andrew Jeffery <andrew@aj.id.au>;
-> linux-aspeed <linux-aspeed@lists.ozlabs.org>; open list:DRM DRIVERS
-> <dri-devel@lists.freedesktop.org>; devicetree <devicetree@vger.kernel.org>;
-> Linux ARM <linux-arm-kernel@lists.infradead.org>; Linux Kernel Mailing List
-> <linux-kernel@vger.kernel.org>; BMC-SW <BMC-SW@aspeedtech.com>
-> Subject: RE: [PATCH v1 2/2] drm/aspeed: Add 1024x768 mode for AST2600
-> 
-> 
-> 
-> > -----Original Message-----
-> > From: Joel Stanley <joel@jms.id.au>
-> > Sent: Tuesday, April 26, 2022 3:48 PM
-> > To: Tommy Huang <tommy_huang@aspeedtech.com>
-> > Cc: David Airlie <airlied@linux.ie>; Daniel Vetter <daniel@ffwll.ch>;
-> > Rob Herring <robh+dt@kernel.org>; Andrew Jeffery <andrew@aj.id.au>;
-> > linux-aspeed <linux-aspeed@lists.ozlabs.org>; open list:DRM DRIVERS
-> > <dri-devel@lists.freedesktop.org>; devicetree
-> > <devicetree@vger.kernel.org>; Linux ARM
-> > <linux-arm-kernel@lists.infradead.org>; Linux Kernel Mailing List
-> > <linux-kernel@vger.kernel.org>; BMC-SW <BMC-SW@aspeedtech.com>
-> > Subject: Re: [PATCH v1 2/2] drm/aspeed: Add 1024x768 mode for AST2600
+> Le Wed, Jun 01, 2022 at 08:38:51AM +0000, Neal Liu a ?crit :
+> > > Le Wed, Jun 01, 2022 at 01:42:00PM +0800, Neal Liu a ?crit :
+> > > > Hash and Crypto Engine (HACE) is designed to accelerate the
+> > > > throughput of hash data digest, encryption, and decryption.
+> > > >
+> > > > Basically, HACE can be divided into two independently engines
+> > > > - Hash Engine and Crypto Engine. This patch aims to add HACE hash
+> > > > engine driver for hash accelerator.
+> > > >
+> > > > Signed-off-by: Neal Liu <neal_liu@aspeedtech.com>
+> > > > Signed-off-by: Johnny Huang <johnny_huang@aspeedtech.com>
+> > >
+> > > Hello
+> > >
+> > > Did you test with CONFIG_CRYPTO_MANAGER_EXTRA_TESTS=y (you should
+> > > said it in cover letter).
+> > > There are several easy style fixes to do (please run checkpatch
+> > > --strict) Did you test your driver with both little and big endian mode ?
+> > >
 > >
-> > On Fri, 4 Mar 2022 at 06:32, Tommy Haung
-> <tommy_huang@aspeedtech.com>
-> > wrote:
-> > >
-> > > Update the aspeed_gfx_set_clk with display width.
-> > > At AST2600, the display clock could be coming from HPLL clock / 16 =
-> > > 75MHz. It would fit 1024x768 at 70Hz.
-> > > Another chip will still keep 800x600.
-> > >
-> > > Signed-off-by: Tommy Haung <tommy_huang@aspeedtech.com>
-> > > ---
-> > >  drivers/gpu/drm/aspeed/aspeed_gfx.h      | 12 ++++++----
-> > >  drivers/gpu/drm/aspeed/aspeed_gfx_crtc.c | 29
-> > > ++++++++++++++++++++----  drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
-> |
-> > > 16 +++++++++++--  drivers/gpu/drm/aspeed/aspeed_gfx_out.c  | 14
-> > > +++++++++++-
-> > >  4 files changed, 60 insertions(+), 11 deletions(-)
-> > >
-> > > diff --git a/drivers/gpu/drm/aspeed/aspeed_gfx.h
-> > > b/drivers/gpu/drm/aspeed/aspeed_gfx.h
-> > > index eb4c267cde5e..c7aefee0657a 100644
-> > > --- a/drivers/gpu/drm/aspeed/aspeed_gfx.h
-> > > +++ b/drivers/gpu/drm/aspeed/aspeed_gfx.h
-> > > @@ -109,11 +109,15 @@ int aspeed_gfx_create_output(struct drm_device
-> > *drm);
-> > >  #define CRT_THROD_HIGH(x)              ((x) << 8)
-> > >
-> > >  /* SCU control */
-> > > -#define SCU_G6_CLK_COURCE              0x300
-> > > +#define G6_CLK_SOURCE                  0x300
-> > > +#define G6_CLK_SOURCE_MASK             (BIT(8) | BIT(9) | BIT(10))
-> > > +#define G6_CLK_SOURCE_HPLL             (BIT(8) | BIT(9) | BIT(10))
-> > > +#define G6_CLK_SOURCE_USB              BIT(9)
-> > > +#define G6_CLK_SEL3                    0x308
-> > > +#define G6_CLK_DIV_MASK                        0x3F000
+> > Yes, I also test it with CONFIG_CRYPTO_MANAGER_EXTRA_TESTS=y. I'll
+> describe it in cover letter as you suggested.
+> > And the style problem would be fixed, thanks for your suggestion.
 > >
-> > This register is defined in the data sheet as:
+> > How to test it with both little and big endian mode? It would be appreciated
+> if you give me some clue.
 > >
-> > 17:12 SOC Display clock selection when source is from DisplayPort PHY
-> >
-> > That doesn't match with what the code is doing. Can you clarify the
-> > register definition?
 > 
-> OK. I will clarify it and response it to you.
+> Hello
 > 
+> Sorry for the delayed answer.
+> 
+> You should try compiling and booting with CONFIG_CPU_BIG_ENDIAN=y
+> 
+
+Thanks for the info. I'll try it.
+
+> > > Also please see my comment below.
+> > >
+> > > [...]
+> > > > +/* Initialization Vectors for SHA-family */ static const u32
+> > > > +sha1_iv[8] = {
+> > > > +	0x01234567UL, 0x89abcdefUL, 0xfedcba98UL, 0x76543210UL,
+> > > > +	0xf0e1d2c3UL, 0, 0, 0
+> > > > +};
+> > > > +
+> > > > +static const u32 sha224_iv[8] = {
+> > > > +	0xd89e05c1UL, 0x07d57c36UL, 0x17dd7030UL, 0x39590ef7UL,
+> > > > +	0x310bc0ffUL, 0x11155868UL, 0xa78ff964UL, 0xa44ffabeUL };
+> > > > +
+> > > > +static const u32 sha256_iv[8] = {
+> > > > +	0x67e6096aUL, 0x85ae67bbUL, 0x72f36e3cUL, 0x3af54fa5UL,
+> > > > +	0x7f520e51UL, 0x8c68059bUL, 0xabd9831fUL, 0x19cde05bUL };
+> > > > +
+> > > > +static const u32 sha384_iv[16] = {
+> > > > +	0x5d9dbbcbUL, 0xd89e05c1UL, 0x2a299a62UL, 0x07d57c36UL,
+> > > > +	0x5a015991UL, 0x17dd7030UL, 0xd8ec2f15UL, 0x39590ef7UL,
+> > > > +	0x67263367UL, 0x310bc0ffUL, 0x874ab48eUL, 0x11155868UL,
+> > > > +	0x0d2e0cdbUL, 0xa78ff964UL, 0x1d48b547UL, 0xa44ffabeUL };
+> > > > +
+> > > > +static const u32 sha512_iv[16] = {
+> > > > +	0x67e6096aUL, 0x08c9bcf3UL, 0x85ae67bbUL, 0x3ba7ca84UL,
+> > > > +	0x72f36e3cUL, 0x2bf894feUL, 0x3af54fa5UL, 0xf1361d5fUL,
+> > > > +	0x7f520e51UL, 0xd182e6adUL, 0x8c68059bUL, 0x1f6c3e2bUL,
+> > > > +	0xabd9831fUL, 0x6bbd41fbUL, 0x19cde05bUL, 0x79217e13UL };
+> > > > +
+> > > > +static const u32 sha512_224_iv[16] = {
+> > > > +	0xC8373D8CUL, 0xA24D5419UL, 0x6699E173UL, 0xD6D4DC89UL,
+> > > > +	0xAEB7FA1DUL, 0x829CFF32UL, 0x14D59D67UL, 0xCF9F2F58UL,
+> > > > +	0x692B6D0FUL, 0xA84DD47BUL, 0x736FE377UL, 0x4289C404UL,
+> > > > +	0xA8859D3FUL, 0xC8361D6AUL, 0xADE61211UL, 0xA192D691UL };
+> > > > +
+> > > > +static const u32 sha512_256_iv[16] = {
+> > > > +	0x94213122UL, 0x2CF72BFCUL, 0xA35F559FUL, 0xC2644CC8UL,
+> > > > +	0x6BB89323UL, 0x51B1536FUL, 0x19773896UL, 0xBDEA4059UL,
+> > > > +	0xE23E2896UL, 0xE3FF8EA8UL, 0x251E5EBEUL, 0x92398653UL,
+> > > > +	0xFC99012BUL, 0xAAB8852CUL, 0xDC2DB70EUL, 0xA22CC581UL };
+> > >
+> > > Thoses IV already exists as define in linux headers (SHA1_H0 for
+> > > example) But I am puzzled on why you invert them.
+> > >
 > >
-> > > +#define G6_CLK_DIV_16
-> > (BIT(16)|BIT(15)|BIT(13)|BIT(12))
-> > > +#define G6_USB_40_CLK                  BIT(9)
+> > This is Aspeed hardware limitation.
+> 
+> The limitation is that hardware does not know theses IV ?
+> Having them inverted seems to proof that you have some endianness issue.
+
+Sorry, no limitation here. I can replace these IV into predefined macro.
+I'll also check the endianness issue.
+
+> 
 > > >
-> > >  /* GFX FLAGS */
-> > >  #define CLK_MASK                       BIT(0)
-> > >  #define CLK_G6                         BIT(0)
-> > > -
-> > > -#define G6_CLK_MASK                    (BIT(8) | BIT(9) | BIT(10))
-> > > -#define G6_USB_40_CLK                  BIT(9)
-> > > diff --git a/drivers/gpu/drm/aspeed/aspeed_gfx_crtc.c
-> > > b/drivers/gpu/drm/aspeed/aspeed_gfx_crtc.c
-> > > index a24fab22eac4..5829be9c7c67 100644
-> > > --- a/drivers/gpu/drm/aspeed/aspeed_gfx_crtc.c
-> > > +++ b/drivers/gpu/drm/aspeed/aspeed_gfx_crtc.c
-> > > @@ -23,6 +23,28 @@ drm_pipe_to_aspeed_gfx(struct
-> > drm_simple_display_pipe *pipe)
-> > >         return container_of(pipe, struct aspeed_gfx, pipe);  }
-> > >
-> > > +static void aspeed_gfx_set_clock_source(struct aspeed_gfx *priv,
-> > > +int
-> > > +mode_width) {
-> > > +       regmap_update_bits(priv->scu, G6_CLK_SOURCE,
-> > G6_CLK_SOURCE_MASK, 0x0);
-> > > +       regmap_update_bits(priv->scu, G6_CLK_SEL3,
-> G6_CLK_DIV_MASK,
-> > > +0x0);
-> > > +
-> > > +       switch (mode_width) {
-> > > +       case 1024:
-> > > +               /* hpll div 16 = 75Mhz */
-> > > +               regmap_update_bits(priv->scu, G6_CLK_SOURCE,
-> > > +               G6_CLK_SOURCE_MASK, G6_CLK_SOURCE_HPLL);
-> > > +               regmap_update_bits(priv->scu, G6_CLK_SEL3,
-> > > +               G6_CLK_DIV_MASK, G6_CLK_DIV_16);
-> > > +               break;
-> > > +       case 800:
-> > > +       default:
-> > > +               /* usb 40Mhz */
-> > > +               regmap_update_bits(priv->scu, G6_CLK_SOURCE,
-> > > +               G6_CLK_SOURCE_MASK, G6_CLK_SOURCE_USB);
-> > > +               break;
-> > > +       }
-> > > +}
-> > > +
-> > >  static int aspeed_gfx_set_pixel_fmt(struct aspeed_gfx *priv, u32
-> > > *bpp)  {
-> > >         struct drm_crtc *crtc = &priv->pipe.crtc; @@ -77,12 +99,11
-> > > @@ static void aspeed_gfx_disable_controller(struct aspeed_gfx *priv)
-> > >         regmap_update_bits(priv->scu, priv->dac_reg, BIT(16), 0);  }
-> > >
-> > > -static void aspeed_gfx_set_clk(struct aspeed_gfx *priv)
-> > > +static void aspeed_gfx_set_clk(struct aspeed_gfx *priv, int
-> > > +mode_width)
-> > >  {
-> > >         switch (priv->flags & CLK_MASK) {
-> > >         case CLK_G6:
-> > > -               regmap_update_bits(priv->scu, SCU_G6_CLK_COURCE,
-> > G6_CLK_MASK, 0x0);
-> > > -               regmap_update_bits(priv->scu, SCU_G6_CLK_COURCE,
-> > G6_CLK_MASK, G6_USB_40_CLK);
-> > > +               aspeed_gfx_set_clock_source(priv, mode_width);
-> > >                 break;
-> > >         default:
-> > >                 break;
-> > > @@ -99,7 +120,7 @@ static void aspeed_gfx_crtc_mode_set_nofb(struct
-> > aspeed_gfx *priv)
-> > >         if (err)
-> > >                 return;
-> > >
-> > > -       aspeed_gfx_set_clk(priv);
-> > > +       aspeed_gfx_set_clk(priv, m->hdisplay);
-> > >
-> > >  #if 0
-> > >         /* TODO: we have only been able to test with the 40MHz USB
-> > > clock. The diff --git a/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
-> > > b/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
-> > > index af56ffdccc65..e1a814aebc2d 100644
-> > > --- a/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
-> > > +++ b/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
-> > > @@ -110,6 +110,7 @@ static const struct drm_mode_config_funcs
-> > > aspeed_gfx_mode_config_funcs = {
-> > >
-> > >  static int aspeed_gfx_setup_mode_config(struct drm_device *drm)  {
-> > > +       struct aspeed_gfx *priv = to_aspeed_gfx(drm);
-> > >         int ret;
-> > >
-> > >         ret = drmm_mode_config_init(drm); @@ -118,8 +119,18 @@
-> > static
-> > > int aspeed_gfx_setup_mode_config(struct drm_device *drm)
-> > >
-> > >         drm->mode_config.min_width = 0;
-> > >         drm->mode_config.min_height = 0;
-> > > -       drm->mode_config.max_width = 800;
-> > > -       drm->mode_config.max_height = 600;
-> > > +
-> > > +       switch (priv->flags & CLK_MASK) {
-> > > +       case CLK_G6:
-> > > +               drm->mode_config.max_width = 1024;
-> > > +               drm->mode_config.max_height = 768;
-> > > +               break;
-> > > +       default:
-> > > +               drm->mode_config.max_width = 800;
-> > > +               drm->mode_config.max_height = 600;
-> > > +               break;
-> > > +       }
-> > > +
-> > >         drm->mode_config.funcs = &aspeed_gfx_mode_config_funcs;
-> > >
-> > >         return ret;
-> > > @@ -167,6 +178,7 @@ static int aspeed_gfx_load(struct drm_device *drm)
-> > >         priv->vga_scratch_reg = config->vga_scratch_reg;
-> > >         priv->throd_val = config->throd_val;
-> > >         priv->scan_line_max = config->scan_line_max;
-> > > +       priv->flags = config->gfx_flags;
-> > >
-> > >         priv->scu = syscon_regmap_lookup_by_phandle(np, "syscon");
-> > >         if (IS_ERR(priv->scu)) {
-> > > diff --git a/drivers/gpu/drm/aspeed/aspeed_gfx_out.c
-> > > b/drivers/gpu/drm/aspeed/aspeed_gfx_out.c
-> > > index 6759cb88415a..5d5e04f15c59 100644
-> > > --- a/drivers/gpu/drm/aspeed/aspeed_gfx_out.c
-> > > +++ b/drivers/gpu/drm/aspeed/aspeed_gfx_out.c
-> > > @@ -10,7 +10,19 @@
-> > >
-> > >  static int aspeed_gfx_get_modes(struct drm_connector *connector)  {
-> > > -       return drm_add_modes_noedid(connector, 800, 600);
-> > > +       struct aspeed_gfx *priv = container_of(connector, struct
-> > aspeed_gfx, connector);
-> > > +       int mode_count = 0;
-> > > +
-> > > +       switch (priv->flags & CLK_MASK) {
-> > > +       case CLK_G6:
-> > > +               mode_count = drm_add_modes_noedid(connector,
-> 1024,
-> > 768);
-> > > +               break;
-> > > +       default:
-> > > +               mode_count = drm_add_modes_noedid(connector,
-> 800,
-> > 600);
-> > > +               break;
-> > > +       }
-> > > +
-> > > +       return mode_count;
-> > >  }
-> > >
-> > >  static const struct
-> > > --
-> > > 2.17.1
-> > >
+> > > Why didnt you use the crypto_engine API instead of rewriting it.
+> >
+> > Any common crypto_engine API can be used? I did not find any, Maybe I miss
+> something.
+> > It would be appreciated if you give me some clue.
+> >
+> 
+> Please check crypto/crypto_engine.c.
+> You could take crypto/omap and allwinner/sun8i-ce as example of usage.
+> 
+> Regards
+
+Okay, thanks for the info.
+
