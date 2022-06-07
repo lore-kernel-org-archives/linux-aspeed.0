@@ -1,133 +1,267 @@
 From: Neal Liu <neal_liu@aspeedtech.com>
-Date: Tue, 7 Jun 2022 03:11:51 +0000
+Date: Tue, 7 Jun 2022 03:43:34 +0000
 Subject: [PATCH v2 1/5] crypto: aspeed: Add HACE hash driver
-In-Reply-To: <349c0714-5ec8-4233-0f0d-669e4ad3bf59@wanadoo.fr>
+In-Reply-To: <Yp5Y3WKhGklwgMTp@Red>
 References: <20220606064935.1458903-1-neal_liu@aspeedtech.com>
- <20220606064935.1458903-2-neal_liu@aspeedtech.com>
- <349c0714-5ec8-4233-0f0d-669e4ad3bf59@wanadoo.fr>
-Message-ID: <HK0PR06MB3202E53C7EA4626291AD785E80A59@HK0PR06MB3202.apcprd06.prod.outlook.com>
+ <20220606064935.1458903-2-neal_liu@aspeedtech.com> <Yp5Y3WKhGklwgMTp@Red>
+Message-ID: <HK0PR06MB3202FEC488851225569DD0AE80A59@HK0PR06MB3202.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-> > +
+> Le Mon, Jun 06, 2022 at 02:49:31PM +0800, Neal Liu a ?crit :
+> > Hash and Crypto Engine (HACE) is designed to accelerate the throughput
+> > of hash data digest, encryption, and decryption.
+> >
+> > Basically, HACE can be divided into two independently engines
+> > - Hash Engine and Crypto Engine. This patch aims to add HACE hash
+> > engine driver for hash accelerator.
+> >
+> > Signed-off-by: Neal Liu <neal_liu@aspeedtech.com>
+> > Signed-off-by: Johnny Huang <johnny_huang@aspeedtech.com>
+> > ---
+> >  MAINTAINERS                              |    7 +
+> >  drivers/crypto/Kconfig                   |    1 +
+> >  drivers/crypto/Makefile                  |    1 +
+> >  drivers/crypto/aspeed/Kconfig            |   22 +
+> >  drivers/crypto/aspeed/Makefile           |    6 +
+> >  drivers/crypto/aspeed/aspeed-hace-hash.c | 1409
+> ++++++++++++++++++++++
+> >  drivers/crypto/aspeed/aspeed-hace.c      |  221 ++++
+> >  drivers/crypto/aspeed/aspeed-hace.h      |  182 +++
+> >  8 files changed, 1849 insertions(+)
+> >  create mode 100644 drivers/crypto/aspeed/Kconfig  create mode 100644
+> > drivers/crypto/aspeed/Makefile  create mode 100644
+> > drivers/crypto/aspeed/aspeed-hace-hash.c
+> >  create mode 100644 drivers/crypto/aspeed/aspeed-hace.c
+> >  create mode 100644 drivers/crypto/aspeed/aspeed-hace.h
+> 
+> Hello please see my comments below.
+> 
+> [...]
+> 
+> > diff --git a/drivers/crypto/aspeed/aspeed-hace-hash.c
+> > b/drivers/crypto/aspeed/aspeed-hace-hash.c
+> > new file mode 100644
+> > index 000000000000..9b003e12b2c8
+> > --- /dev/null
+> > +++ b/drivers/crypto/aspeed/aspeed-hace-hash.c
+> > @@ -0,0 +1,1409 @@
+> > +// SPDX-License-Identifier: GPL-2.0+
 > > +/*
-> > + * Prepare DMA buffer as SG list buffer before
-> > + * hardware engine processing.
+> > + * Copyright (c) 2021 Aspeed Technology Inc.
 > > + */
-> > +static int aspeed_ahash_dma_prepare_sg(struct aspeed_hace_dev
-> > +*hace_dev) {
-> > +	struct aspeed_engine_hash *hash_engine = &hace_dev->hash_engine;
-> > +	struct ahash_request *req = hash_engine->ahash_req;
-> > +	struct aspeed_sham_reqctx *rctx = ahash_request_ctx(req);
-> > +	struct aspeed_sg_list *src_list;
-> > +	struct scatterlist *s;
-> > +	int length, remain, sg_len, i;
-> > +	int rc = 0;
 > > +
-> > +	remain = (rctx->total + rctx->bufcnt) % rctx->block_size;
-> > +	length = rctx->total + rctx->bufcnt - remain;
+> > +#include "aspeed-hace.h"
 > > +
-> > +	AHASH_DBG(hace_dev, "%s:0x%x, %s:0x%x, %s:0x%x, %s:0x%x\n",
-> > +		  "rctx total", rctx->total, "bufcnt", rctx->bufcnt,
-> > +		  "length", length, "remain", remain);
+> > +//#define ASPEED_AHASH_DEBUG
+> 
+> Please remove this
+
+Sure !
+
+> 
+> [...]
+> 
 > > +
+> > +#ifdef ASPEED_AHASH_DEBUG
+> > +#define AHASH_DBG(h, fmt, ...)	\
+> > +	dev_info((h)->dev, "%s() " fmt, __func__, ##__VA_ARGS__) #else
+> > +#define AHASH_DBG(h, fmt, ...)	\
+> > +	((void)(h))
+> > +#endif
+> 
+> Why not using dev_dbg() ?
+
+dev_dbg() would be nice. I'll revise it.
+
+> 
+> [...]
 > > +	sg_len = dma_map_sg(hace_dev->dev, rctx->src_sg, rctx->src_nents,
 > > +			    DMA_TO_DEVICE);
 > > +	if (!sg_len) {
 > > +		dev_warn(hace_dev->dev, "dma_map_sg() src error\n");
 > > +		rc = -ENOMEM;
+> > +		goto end;
+> > +	}
 > 
-> Direct return, as done in v1, looks fine to me. But it is mostly a matter of test, I
-> guess.
+> This test does handle the possible negative return of dma_map_sg()
+
+Zero is returned for any error of dma_map_sg().
+
 > 
+> [...]
+> > +	memset(bctx->ipad + keylen, 0, bs - keylen);
+> > +	memcpy(bctx->opad, bctx->ipad, bs);
+> > +
+> > +	for (i = 0; i < bs; i++) {
+> > +		bctx->ipad[i] ^= 0x36;
+> > +		bctx->opad[i] ^= 0x5c;
+> 
+> Please use HMAC_OPAD_VALUE and HMAC_IPAD_VALUE from
+> include/crypto/hmac.h
+> 
+
+Thanks for the notice. I'll revise it in next patch, thanks.
+
+> [...]
+> > +int aspeed_register_hace_hash_algs(struct aspeed_hace_dev *hace_dev)
+> > +{
+> > +	int rc, i;
+> > +
+> > +	AHASH_DBG(hace_dev, "\n");
+> > +
+> > +	for (i = 0; i < ARRAY_SIZE(aspeed_ahash_algs); i++) {
+> > +		aspeed_ahash_algs[i].hace_dev = hace_dev;
+> > +		rc = crypto_register_ahash(&aspeed_ahash_algs[i].alg.ahash);
+> > +		if (rc)
+> > +			return rc;
+> > +	}
+> 
+> If any hash fail to register, the function exits but you will still unregister all
+> hashes (even ones not registered) on aspeed_unregister_hace_hash_algs().
+
+Yes. crypto/algapi.c would handle this part even if algo is not registered.
+But of course we could use a variable to store which algo is registered, which is not.
+
+> 
+> [...]
+> > +static int aspeed_hace_probe(struct platform_device *pdev) {
+> > +	const struct of_device_id *hace_dev_id;
+> > +	struct aspeed_engine_hash *hash_engine;
+> > +	struct aspeed_hace_dev *hace_dev;
+> > +	struct resource *res;
+> > +	int rc;
+> > +
+> > +	hace_dev = devm_kzalloc(&pdev->dev, sizeof(struct aspeed_hace_dev),
+> > +				GFP_KERNEL);
+> > +	if (!hace_dev)
+> > +		return -ENOMEM;
+> > +
+> > +	hace_dev_id = of_match_device(aspeed_hace_of_matches, &pdev->dev);
+> > +	if (!hace_dev_id) {
+> > +		dev_err(&pdev->dev, "Failed to match hace dev id\n");
+> > +		return -EINVAL;
+> > +	}
+> > +
+> > +	hace_dev->dev = &pdev->dev;
+> > +	hace_dev->version = (unsigned long)hace_dev_id->data;
+> > +	hash_engine = &hace_dev->hash_engine;
+> > +
+> > +	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+> > +
+> > +	platform_set_drvdata(pdev, hace_dev);
+> > +
+> > +	spin_lock_init(&hash_engine->lock);
+> > +	tasklet_init(&hash_engine->done_task, aspeed_hace_hash_done_task,
+> > +		     (unsigned long)hace_dev);
+> > +	tasklet_init(&hash_engine->queue_task, aspeed_hace_hash_queue_task,
+> > +		     (unsigned long)hace_dev);
+> > +	crypto_init_queue(&hash_engine->queue,
+> ASPEED_HASH_QUEUE_LENGTH);
+> > +
+> > +	hace_dev->regs = devm_ioremap_resource(&pdev->dev, res);
+> > +	if (!hace_dev->regs) {
+> > +		dev_err(&pdev->dev, "Failed to map resources\n");
+> > +		return -ENOMEM;
+> > +	}
+> > +
+> > +	hace_dev->irq = platform_get_irq(pdev, 0);
+> > +	if (!hace_dev->irq) {
+> > +		dev_err(&pdev->dev, "Failed to get interrupt\n");
+> > +		return -ENXIO;
+> > +	}
+> > +
+> > +	rc = devm_request_irq(&pdev->dev, hace_dev->irq, aspeed_hace_irq, 0,
+> > +			      dev_name(&pdev->dev), hace_dev);
+> > +	if (rc) {
+> > +		dev_err(&pdev->dev, "Failed to request interrupt\n");
+> > +		return rc;
+> > +	}
+> > +
+> > +	hace_dev->clk = devm_clk_get(&pdev->dev, NULL);
+> > +	if (IS_ERR(hace_dev->clk)) {
+> > +		dev_err(&pdev->dev, "Failed to get clk\n");
+> > +		return -ENODEV;
+> > +	}
+> > +
+> > +	rc = clk_prepare_enable(hace_dev->clk);
+> > +	if (rc) {
+> > +		dev_err(&pdev->dev, "Failed to enable clock 0x%x\n", rc);
+> > +		return rc;
+> > +	}
+> > +
+> > +	hash_engine->ahash_src_addr =
+> > +		dma_alloc_coherent(&pdev->dev,
+> > +				   ASPEED_HASH_SRC_DMA_BUF_LEN,
+> > +				   &hash_engine->ahash_src_dma_addr,
+> > +				   GFP_KERNEL);
+> > +	if (!hash_engine->ahash_src_addr) {
+> > +		dev_err(&pdev->dev, "Failed to allocate dma buffer\n");
+> > +		rc = -ENOMEM;
 > > +		goto end;
 > > +	}
 > > +
-> > +	src_list = (struct aspeed_sg_list *)hash_engine->ahash_src_addr;
-> > +	rctx->digest_dma_addr = dma_map_single(hace_dev->dev, rctx->digest,
-> > +					       SHA512_DIGEST_SIZE,
-> > +					       DMA_BIDIRECTIONAL);
-> > +	if (dma_mapping_error(hace_dev->dev, rctx->digest_dma_addr)) {
-> > +		dev_warn(hace_dev->dev, "dma_map() rctx digest error\n");
-> > +		rc = -ENOMEM;
-> > +		goto free_src_sg;
+> > +	rc = aspeed_hace_register(hace_dev);
+> > +	if (rc) {
+> > +		dev_err(&pdev->dev, "Failed to register algs, rc:0x%x\n", rc);
+> > +		rc = 0;
 > > +	}
-> > +
-> > +	if (rctx->bufcnt != 0) {
-> > +		rctx->buffer_dma_addr = dma_map_single(hace_dev->dev,
-> > +						       rctx->buffer,
-> > +						       rctx->block_size * 2,
-> > +						       DMA_TO_DEVICE);
-> > +		if (dma_mapping_error(hace_dev->dev, rctx->buffer_dma_addr)) {
-> > +			dev_warn(hace_dev->dev, "dma_map() rctx buffer error\n");
-> > +			rc = -ENOMEM;
-> > +			goto free_rctx_digest;
-> > +		}
-> > +
-> > +		src_list[0].phy_addr = rctx->buffer_dma_addr;
-> > +		src_list[0].len = rctx->bufcnt;
-> > +		length -= src_list[0].len;
-> > +
-> > +		/* Last sg list */
-> > +		if (length == 0)
-> > +			src_list[0].len |= HASH_SG_LAST_LIST;
-> > +		src_list++;
-> > +	}
-> > +
-> > +	if (length != 0) {
-> > +		for_each_sg(rctx->src_sg, s, sg_len, i) {
-> > +			src_list[i].phy_addr = sg_dma_address(s);
-> > +
-> > +			if (length > sg_dma_len(s)) {
-> > +				src_list[i].len = sg_dma_len(s);
-> > +				length -= sg_dma_len(s);
-> > +
-> > +			} else {
-> > +				/* Last sg list */
-> > +				src_list[i].len = length;
-> > +				src_list[i].len |= HASH_SG_LAST_LIST;
-> > +				length = 0;
-> > +				break;
-> > +			}
-> > +		}
-> > +	}
-> > +
-> > +	if (length != 0) {
-> > +		rc = -EINVAL;
-> > +		goto free_rctx_buffer;
-> > +	}
-> > +
-> > +	rctx->offset = rctx->total - remain;
-> > +	hash_engine->src_length = rctx->total + rctx->bufcnt - remain;
-> > +	hash_engine->src_dma = hash_engine->ahash_src_dma_addr;
-> > +	hash_engine->digest_dma = rctx->digest_dma_addr;
-> > +
-> > +	goto end;
-> > +
-> > +free_rctx_buffer:
-> > +	dma_unmap_single(hace_dev->dev, rctx->buffer_dma_addr,
-> > +			 rctx->block_size * 2, DMA_TO_DEVICE);
 > 
-> If "rctx->bufcnt == 0" the correspondning dma_map_single() has not been
-> called. Is it an issue? (the test exists in aspeed_ahash_update_resume_sg(), so
-> I guess it is needed)
-
-Yes, I miss this part. I'll revise it in next patch, thanks.
-
+> So you print an error but you keep the driver loaded even if no hashes (or a
+> limited number of them) are registered, for which interest ?
 > 
-> > +free_rctx_digest:
-> > +	dma_unmap_single(hace_dev->dev, rctx->digest_dma_addr,
-> > +			 SHA512_DIGEST_SIZE, DMA_BIDIRECTIONAL);
-> > +free_src_sg:
-> > +	dma_unmap_sg(hace_dev->dev, rctx->src_sg, rctx->src_nents,
-> > +		     DMA_TO_DEVICE);
-> > +end:
-> > +	return rc;
-> > +}
+
+Take PATCH 5/5 as consideration, aspeed_hace_register() would register both hashes & skciphers.
+So even one of them failed, the driver still can be loaded.
+
+> [...]
+> > +struct aspeed_sham_ctx {
+> > +	struct aspeed_hace_dev		*hace_dev;
+> > +	unsigned long			flags;	/* hmac flag */
 > > +
+> > +	/* fallback stuff */
+> > +	struct aspeed_sha_hmac_ctx	base[0];
+> 
+> I am not sure to understand the [0] purpose, and the comment said something
+> about fallback, but your driver dont do any real fallback.
+
+[0] is a convenience to reference it as a pointer.
+The comment should be removed, thanks.
+
 > 
 > [...]
+> > +struct aspeed_hace_dev {
+> > +	void __iomem			*regs;
+> > +	void __iomem			*sec_regs;
+> 
+> sec_regs is unused.
 
+I miss this part, I'll revise it in next patch, thanks.
+
+> 
+> > +	struct device			*dev;
+> > +	int				irq;
+> > +	struct clk			*clk;
+> > +	unsigned long			version;
+> > +	struct aspeed_engine_hash	hash_engine;
+> > +};
+> > +
+> > +struct aspeed_hace_alg {
+> > +	struct aspeed_hace_dev		*hace_dev;
+> > +	union {
+> > +		struct skcipher_alg	skcipher;
+> > +		struct aead_alg		aead;
+> > +		struct ahash_alg	ahash;
+> > +		struct kpp_alg		kpp;
+> > +		struct akcipher_alg	akcipher;
+> 
+> Your patch dont do any kpp or akcipher (and aead/skcipher also).
+> Please drop this.
+
+I miss this part, I'll revise it in next patch, thanks.
+
+> 
+> Regards
