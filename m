@@ -1,43 +1,39 @@
-From: Potin Lai <potin.lai.pt@gmail.com>
-Date: Wed,  8 Jun 2022 00:37:03 +0800
-Subject: [PATCH v3 2/2] dt-bindings: aspeed-i2c: add properties for setting i2c clock duty cycle
-In-Reply-To: <20220607163703.26355-1-potin.lai.pt@gmail.com>
-References: <20220607163703.26355-1-potin.lai.pt@gmail.com>
-Message-ID: <20220607163703.26355-3-potin.lai.pt@gmail.com>
+From: Dhananjay Phadke <dphadke@linux.microsoft.com>
+Date: Wed, 8 Jun 2022 12:33:41 -0700
+Subject: [PATCH 5/5] crypto: aspeed: add HACE crypto driver
+In-Reply-To: <20220601054204.1522976-6-neal_liu@aspeedtech.com>
+References: <20220601054204.1522976-1-neal_liu@aspeedtech.com>
+ <20220601054204.1522976-6-neal_liu@aspeedtech.com>
+Message-ID: <6f9e1481-db9c-cd5f-c38d-bdcd3040315f@linux.microsoft.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Introduce a new property for setting a minimum duty cycle for clock high.
+On 6/6/2022 8:43 PM, Neal Liu wrote:
+>>> +struct aspeed_hace_alg {
+>>> +	struct aspeed_hace_dev		*hace_dev;
+>>> +	union {
+>>> +		struct skcipher_alg	skcipher;
+>>> +		struct aead_alg		aead;
+>>> +		struct ahash_alg	ahash;
+>>> +		struct kpp_alg		kpp;
+>>> +		struct akcipher_alg	akcipher;
+>>
+>> Your patch dont do any kpp or akcipher (and aead/skcipher also).
+>> Please drop this.
+>
+> I miss this part, I'll revise it in next patch, thanks.
 
-* i2c-clk-duty-cycle-min: a minimum percentage of clock high
+Hi Neal,
 
-Signed-off-by: Potin Lai <potin.lai.pt@gmail.com>
----
- Documentation/devicetree/bindings/i2c/aspeed,i2c.yaml | 8 ++++++++
- 1 file changed, 8 insertions(+)
+Are you planning to submit aead separately? HW programming interface
+for aes-gcm is almost same as other aes modes except extra regs/fields 
+for tag etc.
 
-diff --git a/Documentation/devicetree/bindings/i2c/aspeed,i2c.yaml b/Documentation/devicetree/bindings/i2c/aspeed,i2c.yaml
-index ea643e6c3ef5..af4c49111cc0 100644
---- a/Documentation/devicetree/bindings/i2c/aspeed,i2c.yaml
-+++ b/Documentation/devicetree/bindings/i2c/aspeed,i2c.yaml
-@@ -49,6 +49,14 @@ properties:
-     description:
-       states that there is another master active on this bus
- 
-+  i2c-clk-duty-cycle-min:
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+    minimum: 1
-+    maximum: 100
-+    default: 50
-+    description:
-+      a minimum percentage of clock high
-+
- required:
-   - reg
-   - compatible
--- 
-2.17.1
+
+Thanks,
+Dhananjay
+
 
