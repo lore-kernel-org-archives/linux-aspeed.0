@@ -1,63 +1,55 @@
-From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Date: Thu,  9 Jun 2022 13:40:42 +0200
-Subject: [PATCH v2 43/48] ARM: dts: aspeed: correct gpio-keys properties
-In-Reply-To: <20220609113721.379932-1-krzysztof.kozlowski@linaro.org>
-References: <20220609113721.379932-1-krzysztof.kozlowski@linaro.org>
-Message-ID: <20220609114047.380793-4-krzysztof.kozlowski@linaro.org>
+From: Rob Herring <robh@kernel.org>
+Date: Thu, 9 Jun 2022 14:35:40 -0600
+Subject: [PATCH v3 2/2] dt-bindings: aspeed-i2c: add properties for
+ setting i2c clock duty cycle
+In-Reply-To: <20220607163703.26355-3-potin.lai.pt@gmail.com>
+References: <20220607163703.26355-1-potin.lai.pt@gmail.com>
+ <20220607163703.26355-3-potin.lai.pt@gmail.com>
+Message-ID: <20220609203540.GA43168-robh@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-gpio-keys children do not use unit addresses.
+On Wed, Jun 08, 2022 at 12:37:03AM +0800, Potin Lai wrote:
+> Introduce a new property for setting a minimum duty cycle for clock high.
+> 
+> * i2c-clk-duty-cycle-min: a minimum percentage of clock high
+> 
+> Signed-off-by: Potin Lai <potin.lai.pt@gmail.com>
+> ---
+>  Documentation/devicetree/bindings/i2c/aspeed,i2c.yaml | 8 ++++++++
+>  1 file changed, 8 insertions(+)
+> 
+> diff --git a/Documentation/devicetree/bindings/i2c/aspeed,i2c.yaml b/Documentation/devicetree/bindings/i2c/aspeed,i2c.yaml
+> index ea643e6c3ef5..af4c49111cc0 100644
+> --- a/Documentation/devicetree/bindings/i2c/aspeed,i2c.yaml
+> +++ b/Documentation/devicetree/bindings/i2c/aspeed,i2c.yaml
+> @@ -49,6 +49,14 @@ properties:
+>      description:
+>        states that there is another master active on this bus
+>  
+> +  i2c-clk-duty-cycle-min:
 
-Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
----
- arch/arm/boot/dts/aspeed-bmc-ibm-everest.dts | 2 --
- arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts | 2 --
- arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts  | 2 --
- 3 files changed, 6 deletions(-)
+i2c-clk-duty-cycle-high-min-percent
 
-diff --git a/arch/arm/boot/dts/aspeed-bmc-ibm-everest.dts b/arch/arm/boot/dts/aspeed-bmc-ibm-everest.dts
-index afad8d732cc3..a6a2bc3b855c 100644
---- a/arch/arm/boot/dts/aspeed-bmc-ibm-everest.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-ibm-everest.dts
-@@ -189,8 +189,6 @@ vga_memory: region at bf000000 {
- 
- 	gpio-keys-polled {
- 		compatible = "gpio-keys-polled";
--		#address-cells = <1>;
--		#size-cells = <0>;
- 		poll-interval = <1000>;
- 
- 		event-fan0-presence {
-diff --git a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
-index fc8222ea2dd0..bf59a9962379 100644
---- a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
-@@ -179,8 +179,6 @@ pcieslot-power {
- 
- 	gpio-keys-polled {
- 		compatible = "gpio-keys-polled";
--		#address-cells = <1>;
--		#size-cells = <0>;
- 		poll-interval = <1000>;
- 
- 		event-fan0-presence {
-diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts b/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts
-index 6f6a35fe2caf..3f6010ef2b86 100644
---- a/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-opp-tacoma.dts
-@@ -65,8 +65,6 @@ event-ps1-presence {
- 
- 	gpio-keys-polled {
- 		compatible = "gpio-keys-polled";
--		#address-cells = <1>;
--		#size-cells = <0>;
- 		poll-interval = <1000>;
- 
- 		event-fan0-presence {
--- 
-2.34.1
+Or maybe 'i2c-clk-high-min-percent' with duty cycle being implied.
 
+> +    $ref: /schemas/types.yaml#/definitions/uint32
+
+With '-percent' you can drop this.
+
+> +    minimum: 1
+> +    maximum: 100
+> +    default: 50
+> +    description:
+> +      a minimum percentage of clock high
+> +
+>  required:
+>    - reg
+>    - compatible
+> -- 
+> 2.17.1
+> 
+> 
