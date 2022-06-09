@@ -1,39 +1,29 @@
-From: Dhananjay Phadke <dphadke@linux.microsoft.com>
-Date: Wed, 8 Jun 2022 12:33:41 -0700
-Subject: [PATCH 5/5] crypto: aspeed: add HACE crypto driver
-In-Reply-To: <20220601054204.1522976-6-neal_liu@aspeedtech.com>
-References: <20220601054204.1522976-1-neal_liu@aspeedtech.com>
- <20220601054204.1522976-6-neal_liu@aspeedtech.com>
-Message-ID: <6f9e1481-db9c-cd5f-c38d-bdcd3040315f@linux.microsoft.com>
+From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Date: Thu, 9 Jun 2022 10:50:21 +0200
+Subject: [PATCH 1/7] dt-bindings: vendor-prefixes: document several
+ vendors for Aspeed BMC boards
+In-Reply-To: <20220529104928.79636-1-krzysztof.kozlowski@linaro.org>
+References: <20220529104928.79636-1-krzysztof.kozlowski@linaro.org>
+Message-ID: <c86be8e0-8350-5d73-8055-e04a4e88f3b6@linaro.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 6/6/2022 8:43 PM, Neal Liu wrote:
->>> +struct aspeed_hace_alg {
->>> +	struct aspeed_hace_dev		*hace_dev;
->>> +	union {
->>> +		struct skcipher_alg	skcipher;
->>> +		struct aead_alg		aead;
->>> +		struct ahash_alg	ahash;
->>> +		struct kpp_alg		kpp;
->>> +		struct akcipher_alg	akcipher;
->>
->> Your patch dont do any kpp or akcipher (and aead/skcipher also).
->> Please drop this.
->
-> I miss this part, I'll revise it in next patch, thanks.
+On 29/05/2022 12:49, Krzysztof Kozlowski wrote:
+> Add vendor prefixes for manufacturers of Aspeed SoC based BMC boards:
+> ASrock, ByteDance, Ingrasys, Inventec and Quanta.  Move also bticino to
+> proper alphabetical place.
+> 
+> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+> ---
 
-Hi Neal,
+Joel, Andrew,
 
-Are you planning to submit aead separately? HW programming interface
-for aes-gcm is almost same as other aes modes except extra regs/fields 
-for tag etc.
+Any comments on this patchset? Are you going to pick it up? If you
+prefer me taking it, I can, but new boards depend on the bindings, so
+this should rather go via your tree.
 
-
-Thanks,
-Dhananjay
-
-
+Best regards,
+Krzysztof
