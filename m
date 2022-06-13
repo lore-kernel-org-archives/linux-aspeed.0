@@ -1,51 +1,96 @@
-From: Neal Liu <neal_liu@aspeedtech.com>
-Date: Thu, 16 Jun 2022 01:16:55 +0000
-Subject: [PATCH] MAINTAINERS: Repair file entry in ASPEED USB UDC DRIVER
-In-Reply-To: <20220615194409.11875-1-lukas.bulwahn@gmail.com>
-References: <20220615194409.11875-1-lukas.bulwahn@gmail.com>
-Message-ID: <HK0PR06MB3202DE01EB506DC97EBBD60E80AC9@HK0PR06MB3202.apcprd06.prod.outlook.com>
+From: Woloschin, Ian <iwolosch@akamai.com>
+Date: Mon, 13 Jun 2022 16:18:25 +0000
+Subject: [PATCH] spi: aspeed: Fix division by zero
+In-Reply-To: <367135b2-e5c0-3ebb-9ad2-2a78b2c6af2f@kaod.org>
+References: <20220611103929.1484062-1-clg@kaod.org>
+ <20220613083952.4z45ulaxdy2okbho@ti.com>
+ <367135b2-e5c0-3ebb-9ad2-2a78b2c6af2f@kaod.org>
+Message-ID: <9EDBE426-7AC1-4351-8225-5DFE15C4F8D2@akamai.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-> Commit 055276c13205 ("usb: gadget: add Aspeed ast2600 udc driver") adds
-> the section ASPEED USB UDC DRIVER with a file entry to aspeed,udc.yaml, but
-> then, commit 0dde9a46a2cf ("dt-bindings: usb: add documentation for aspeed
-> udc") actually adds a device tree binding aspeed,ast2600-udc.yaml.
-> 
-> Hence, ./scripts/get_maintainer.pl --self-test=patterns complains about a
-> broken reference.
-> 
-> Repair the reference to the actually added file in ASPEED USB UDC DRIVER.
-> 
-> Signed-off-by: Lukas Bulwahn <lukas.bulwahn@gmail.com>
 
-Thanks for the fix.
 
-Acked-by: Neal Liu <neal_liu@aspeedtech.com>
+> On Jun 13, 2022, at 4:57 AM, C?dric Le Goater <clg@kaod.org> wrote:
+> 
+> On 6/13/22 10:39, Pratyush Yadav wrote:
+>> On 11/06/22 12:39PM, C?dric Le Goater wrote:
+>>> When using the normal read operation for data transfers, the dummy bus
+>>> width is zero. In that case, they are no dummy bytes to transfer and
+>>> setting the dummy field in the controller register becomes useless.
+>>> 
+>>> Issue was found on a custom "Bifrost" board with a AST2500 SoC and
+>>> using a MX25L51245GMI-08G SPI Flash.
+>>> 
+>>> Cc: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
+>>> Reported-by: Ian Woloschin <ian.woloschin@akamai.com>
+>>> Fixes: 54613fc6659b ("spi: aspeed: Add support for direct mapping")
+>>> Signed-off-by: C?dric Le Goater <clg@kaod.org>
+>>> ---
+>>> drivers/spi/spi-aspeed-smc.c | 12 +++++++++++-
+>>> 1 file changed, 11 insertions(+), 1 deletion(-)
+>>> 
+>>> diff --git a/drivers/spi/spi-aspeed-smc.c b/drivers/spi/spi-aspeed-smc.c
+>>> index 496f3e1e9079..3e891bf22470 100644
+>>> --- a/drivers/spi/spi-aspeed-smc.c
+>>> +++ b/drivers/spi/spi-aspeed-smc.c
+>>> @@ -558,6 +558,14 @@ static int aspeed_spi_dirmap_create(struct spi_mem_dirmap_desc *desc)
+>>> 	u32 ctl_val;
+>>> 	int ret = 0;
+>>> +	dev_dbg(aspi->dev,
+>>> +		"CE%d %s dirmap [ 0x%.8llx - 0x%.8llx ] OP %#x mode:%d.%d.%d.%d naddr:%#x ndummies:%#x\n",
+>>> +		chip->cs, op->data.dir == SPI_MEM_DATA_IN ? "read" : "write",
+>>> +		desc->info.offset, desc->info.offset + desc->info.length,
+>>> +		op->cmd.opcode, op->cmd.buswidth, op->addr.buswidth,
+>>> +		op->dummy.buswidth, op->data.buswidth,
+>>> +		op->addr.nbytes, op->dummy.nbytes);
+>>> +
+>> Unrelated change. Please send as a separate patch.
+> 
+> OK.
+> 
+>>> 	chip->clk_freq = desc->mem->spi->max_speed_hz;
+>>> 	/* Only for reads */
+>>> @@ -574,9 +582,11 @@ static int aspeed_spi_dirmap_create(struct spi_mem_dirmap_desc *desc)
+>>> 	ctl_val = readl(chip->ctl) & ~CTRL_IO_CMD_MASK;
+>>> 	ctl_val |= aspeed_spi_get_io_mode(op) |
+>>> 		op->cmd.opcode << CTRL_COMMAND_SHIFT |
+>>> -		CTRL_IO_DUMMY_SET(op->dummy.nbytes / op->dummy.buswidth) |
+>>> 		CTRL_IO_MODE_READ;
+>>> +	if (op->dummy.nbytes)
+>>> +		ctl_val |= CTRL_IO_DUMMY_SET(op->dummy.nbytes / op->dummy.buswidth);
+>>> +
+>> LGTM. With the above fixed,
+>> 
+>> Reviewed-by: Pratyush Yadav <p.yadav@ti.com>
+> 
+> Thanks,
+> 
+> C.
 
-> ---
-> Neal, please ack.
-> Greg, please pick this minor non-urgent clean-up patch in your usb-next tree.
-> 
->  MAINTAINERS | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index d9c3576b082f..8830d1adb23b 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -3144,7 +3144,7 @@ ASPEED USB UDC DRIVER
->  M:	Neal Liu <neal_liu@aspeedtech.com>
->  L:	linux-aspeed at lists.ozlabs.org (moderated for non-subscribers)
->  S:	Maintained
-> -F:	Documentation/devicetree/bindings/usb/aspeed,udc.yaml
-> +F:	Documentation/devicetree/bindings/usb/aspeed,ast2600-udc.yaml
->  F:	drivers/usb/gadget/udc/aspeed_udc.c
-> 
->  ASUS NOTEBOOKS AND EEEPC ACPI/WMI EXTRAS DRIVERS
-> --
-> 2.17.1
+I tested just the relevant change and it fixed my problem, allowing my board to boot.
 
+Tested-by: Ian Woloschin <iwolosch at akamai.com <mailto:iwolosch@akamai.com>>
+
+Thanks!
+
+> 
+>>> 	/* Tune 4BYTE address mode */
+>>> 	if (op->addr.nbytes) {
+>>> 		u32 addr_mode = readl(aspi->regs + CE_CTRL_REG);
+>>> -- 
+>>> 2.35.3
+
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20220613/7983ba21/attachment-0001.htm>
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: smime.p7s
+Type: application/pkcs7-signature
+Size: 2998 bytes
+Desc: not available
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20220613/7983ba21/attachment-0001.p7s>
