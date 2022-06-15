@@ -1,53 +1,53 @@
-From: Quan Nguyen <quan@os.amperecomputing.com>
-Date: Wed, 15 Jun 2022 16:02:59 +0700
-Subject: [PATCH v8 3/3] i2c: aspeed: Assert NAK when slave is busy
-In-Reply-To: <20220615090259.1121405-1-quan@os.amperecomputing.com>
-References: <20220615090259.1121405-1-quan@os.amperecomputing.com>
-Message-ID: <20220615090259.1121405-4-quan@os.amperecomputing.com>
+From: Neal Liu <neal_liu@aspeedtech.com>
+Date: Wed, 15 Jun 2022 09:31:41 +0000
+Subject: [PATCH][next] usb: gadget: ast2600: Fix a couple of spelling
+ mistakes
+In-Reply-To: <20220615073518.192827-1-colin.i.king@gmail.com>
+References: <20220615073518.192827-1-colin.i.king@gmail.com>
+Message-ID: <HK0PR06MB3202A6D92D8FD10CFE48F8E680AD9@HK0PR06MB3202.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-When processing I2C_SLAVE_WRITE_REQUESTED event, if slave returns
--EBUSY, i2c controller should issue RxCmdLast command to assert NAK
-on the bus.
+> There are a couple of spelling mistakes, one in a dev_warn message and
+> another in a SETUP_DBG message. Fix these and remove an extraneous white
+> space too.
+> 
+> Signed-off-by: Colin Ian King <colin.i.king@gmail.com>
 
-Signed-off-by: Quan Nguyen <quan@os.amperecomputing.com>
----
-v7 -> v8:
-  + None
+Acked-by: Neal Liu <neal_liu@aspeedtech.com>
 
-v6:
-  + New introduced in v6                      [Quan]
-
- drivers/i2c/busses/i2c-aspeed.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
-index 771e53d3d197..ebc2b92656c8 100644
---- a/drivers/i2c/busses/i2c-aspeed.c
-+++ b/drivers/i2c/busses/i2c-aspeed.c
-@@ -244,6 +244,7 @@ static u32 aspeed_i2c_slave_irq(struct aspeed_i2c_bus *bus, u32 irq_status)
- 	u32 command, irq_handled = 0;
- 	struct i2c_client *slave = bus->slave;
- 	u8 value;
-+	int ret;
- 
- 	if (!slave)
- 		return 0;
-@@ -311,7 +312,9 @@ static u32 aspeed_i2c_slave_irq(struct aspeed_i2c_bus *bus, u32 irq_status)
- 		break;
- 	case ASPEED_I2C_SLAVE_WRITE_REQUESTED:
- 		bus->slave_state = ASPEED_I2C_SLAVE_WRITE_RECEIVED;
--		i2c_slave_event(slave, I2C_SLAVE_WRITE_REQUESTED, &value);
-+		ret = i2c_slave_event(slave, I2C_SLAVE_WRITE_REQUESTED, &value);
-+		if (ret == -EBUSY)
-+			writel(ASPEED_I2CD_M_S_RX_CMD_LAST, bus->base + ASPEED_I2C_CMD_REG);
- 		break;
- 	case ASPEED_I2C_SLAVE_WRITE_RECEIVED:
- 		i2c_slave_event(slave, I2C_SLAVE_WRITE_RECEIVED, &value);
--- 
-2.35.1
+> ---
+>  drivers/usb/gadget/udc/aspeed_udc.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/usb/gadget/udc/aspeed_udc.c
+> b/drivers/usb/gadget/udc/aspeed_udc.c
+> index 1fc15228ff15..05cfcc4812b8 100644
+> --- a/drivers/usb/gadget/udc/aspeed_udc.c
+> +++ b/drivers/usb/gadget/udc/aspeed_udc.c
+> @@ -904,7 +904,7 @@ static void ast_udc_epn_handle_desc(struct
+> ast_udc_dev *udc, u16 ep_num)
+>  	int i;
+> 
+>  	if (list_empty(&ep->queue)) {
+> -		dev_warn(dev, "%s reqest queue empty !\n", ep->ep.name);
+> +		dev_warn(dev, "%s request queue empty!\n", ep->ep.name);
+>  		return;
+>  	}
+> 
+> @@ -1036,7 +1036,7 @@ static void ast_udc_ep0_handle_setup(struct
+> ast_udc_dev *udc)
+> 
+>  	memcpy_fromio(&crq, udc->creq, sizeof(crq));
+> 
+> -	SETUP_DBG(udc, "SETEUP packet: %02x/%02x/%04x/%04x/%04x\n",
+> +	SETUP_DBG(udc, "SETUP packet: %02x/%02x/%04x/%04x/%04x\n",
+>  		  crq.bRequestType, crq.bRequest, le16_to_cpu(crq.wValue),
+>  		  le16_to_cpu(crq.wIndex), le16_to_cpu(crq.wLength));
+> 
+> --
+> 2.35.3
 
