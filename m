@@ -1,89 +1,53 @@
 From: Quan Nguyen <quan@os.amperecomputing.com>
-Date: Wed, 15 Jun 2022 16:02:58 +0700
-Subject: [PATCH v8 2/3] bindings: ipmi: Add binding for SSIF BMC driver
+Date: Wed, 15 Jun 2022 16:02:59 +0700
+Subject: [PATCH v8 3/3] i2c: aspeed: Assert NAK when slave is busy
 In-Reply-To: <20220615090259.1121405-1-quan@os.amperecomputing.com>
 References: <20220615090259.1121405-1-quan@os.amperecomputing.com>
-Message-ID: <20220615090259.1121405-3-quan@os.amperecomputing.com>
+Message-ID: <20220615090259.1121405-4-quan@os.amperecomputing.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add device tree binding document for the SSIF BMC driver.
+When processing I2C_SLAVE_WRITE_REQUESTED event, if slave returns
+-EBUSY, i2c controller should issue RxCmdLast command to assert NAK
+on the bus.
 
 Signed-off-by: Quan Nguyen <quan@os.amperecomputing.com>
 ---
-v8:
+v7 -> v8:
   + None
-
-v7:
-  + Change compatible string from "ampere,ssif-bmc" to "ssif-bmc"  [Jae]
 
 v6:
-  + None
+  + New introduced in v6                      [Quan]
 
-v5:
-  + None
+ drivers/i2c/busses/i2c-aspeed.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-v4:
-  + Fix warning with dt_binding_check [Rob]
-  + Change aspeed-ssif-bmc.yaml to ssif-bmc.yaml [Quan]
-
-v3:
-  + Switched to use DT schema format [Rob]
-
-v2:
-  + None
-
- .../devicetree/bindings/ipmi/ssif-bmc.yaml    | 38 +++++++++++++++++++
- 1 file changed, 38 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/ipmi/ssif-bmc.yaml
-
-diff --git a/Documentation/devicetree/bindings/ipmi/ssif-bmc.yaml b/Documentation/devicetree/bindings/ipmi/ssif-bmc.yaml
-new file mode 100644
-index 000000000000..02b662d780bb
---- /dev/null
-+++ b/Documentation/devicetree/bindings/ipmi/ssif-bmc.yaml
-@@ -0,0 +1,38 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/ipmi/ssif-bmc.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: SSIF IPMI BMC interface
-+
-+description: SSIF IPMI BMC device bindings
-+
-+maintainers:
-+  - Quan Nguyen <quan@os.amperecomputing.com>
-+
-+properties:
-+  compatible:
-+    enum:
-+      - ssif-bmc
-+
-+  reg:
-+    maxItems: 1
-+
-+required:
-+  - compatible
-+  - reg
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    i2c {
-+        #address-cells = <1>;
-+        #size-cells = <0>;
-+
-+        ssif-bmc at 10 {
-+            compatible = "ssif-bmc";
-+            reg = <0x10>;
-+        };
-+    };
+diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
+index 771e53d3d197..ebc2b92656c8 100644
+--- a/drivers/i2c/busses/i2c-aspeed.c
++++ b/drivers/i2c/busses/i2c-aspeed.c
+@@ -244,6 +244,7 @@ static u32 aspeed_i2c_slave_irq(struct aspeed_i2c_bus *bus, u32 irq_status)
+ 	u32 command, irq_handled = 0;
+ 	struct i2c_client *slave = bus->slave;
+ 	u8 value;
++	int ret;
+ 
+ 	if (!slave)
+ 		return 0;
+@@ -311,7 +312,9 @@ static u32 aspeed_i2c_slave_irq(struct aspeed_i2c_bus *bus, u32 irq_status)
+ 		break;
+ 	case ASPEED_I2C_SLAVE_WRITE_REQUESTED:
+ 		bus->slave_state = ASPEED_I2C_SLAVE_WRITE_RECEIVED;
+-		i2c_slave_event(slave, I2C_SLAVE_WRITE_REQUESTED, &value);
++		ret = i2c_slave_event(slave, I2C_SLAVE_WRITE_REQUESTED, &value);
++		if (ret == -EBUSY)
++			writel(ASPEED_I2CD_M_S_RX_CMD_LAST, bus->base + ASPEED_I2C_CMD_REG);
+ 		break;
+ 	case ASPEED_I2C_SLAVE_WRITE_RECEIVED:
+ 		i2c_slave_event(slave, I2C_SLAVE_WRITE_RECEIVED, &value);
 -- 
 2.35.1
 
