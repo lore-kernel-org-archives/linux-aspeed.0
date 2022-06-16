@@ -1,51 +1,27 @@
-From: kernel test robot <lkp@intel.com>
-Date: Fri, 17 Jun 2022 04:04:50 +0800
-Subject: [PATCH v8 1/3] ipmi: ssif_bmc: Add SSIF BMC driver
-In-Reply-To: <20220615090259.1121405-2-quan@os.amperecomputing.com>
-References: <20220615090259.1121405-2-quan@os.amperecomputing.com>
-Message-ID: <202206170337.0kCTfR63-lkp@intel.com>
+From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Date: Thu, 16 Jun 2022 13:47:16 -0700
+Subject: [PATCH] ARM: dts: aspeed: adjust whitespace around '='
+In-Reply-To: <20220526204127.831853-1-krzysztof.kozlowski@linaro.org>
+References: <20220526204127.831853-1-krzysztof.kozlowski@linaro.org>
+Message-ID: <165541242280.9040.12820468454884340112.b4-ty@linaro.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Quan,
+On Thu, 26 May 2022 22:41:27 +0200, Krzysztof Kozlowski wrote:
+> Fix whitespace coding style: use single space instead of tabs or
+> multiple spaces around '=' sign in property assignment.  No functional
+> changes (same DTB).
+> 
+> 
 
-I love your patch! Yet something to improve:
+Applied, thanks!
 
-[auto build test ERROR on cminyard-ipmi/for-next]
-[also build test ERROR on wsa/i2c/for-next v5.19-rc2 next-20220616]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch]
+[1/1] ARM: dts: aspeed: adjust whitespace around '='
+      https://git.kernel.org/krzk/linux/c/94d0a03297615cad2d40b0f02ceab902a7339062
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Quan-Nguyen/Add-SSIF-BMC-driver/20220615-170539
-base:   https://github.com/cminyard/linux-ipmi for-next
-config: i386-randconfig-a006 (https://download.01.org/0day-ci/archive/20220617/202206170337.0kCTfR63-lkp at intel.com/config)
-compiler: clang version 15.0.0 (https://github.com/llvm/llvm-project f0e608de27b3d568000046eebf3712ab542979d6)
-reproduce (this is a W=1 build):
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        # https://github.com/intel-lab-lkp/linux/commit/0feb5f0351d090633e7522dbec22de419a04b85f
-        git remote add linux-review https://github.com/intel-lab-lkp/linux
-        git fetch --no-tags linux-review Quan-Nguyen/Add-SSIF-BMC-driver/20220615-170539
-        git checkout 0feb5f0351d090633e7522dbec22de419a04b85f
-        # save the config file
-        mkdir build_dir && cp config build_dir/.config
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=clang make.cross W=1 O=build_dir ARCH=i386 SHELL=/bin/bash
-
-If you fix the issue, kindly add following tag where applicable
-Reported-by: kernel test robot <lkp@intel.com>
-
-All errors (new ones prefixed by >>):
-
-   In file included from <built-in>:1:
->> ./usr/include/linux/ipmi_ssif_bmc.h:13:2: error: unknown type name '__u8'
-           __u8    payload[IPMI_SSIF_PAYLOAD_MAX];
-           ^
-   1 error generated.
-
+Best regards,
 -- 
-0-DAY CI Kernel Test Service
-https://01.org/lkp
+Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
