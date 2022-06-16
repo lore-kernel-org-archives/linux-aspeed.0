@@ -1,45 +1,51 @@
-From: Neal Liu <neal_liu@aspeedtech.com>
-Date: Thu, 16 Jun 2022 10:16:05 +0000
-Subject: [PATCH] usb: gadget: Remove unnecessary print function dev_err()
-In-Reply-To: <20220616090410.128483-1-jiapeng.chong@linux.alibaba.com>
-References: <20220616090410.128483-1-jiapeng.chong@linux.alibaba.com>
-Message-ID: <HK0PR06MB320275CCAE8E424810C8907F80AC9@HK0PR06MB3202.apcprd06.prod.outlook.com>
+From: Wolfram Sang <wsa@kernel.org>
+Date: Thu, 16 Jun 2022 14:29:57 +0200
+Subject: [PATCH v7 3/3] i2c: aspeed: Assert NAK when slave is busy
+In-Reply-To: <bf001ece-e981-3a06-53fe-6a8b637d69fe@os.amperecomputing.com>
+References: <20220422040803.2524940-1-quan@os.amperecomputing.com>
+ <20220422040803.2524940-4-quan@os.amperecomputing.com>
+ <Yn+9QBoPdH8fMm/m@shikoro>
+ <fc422a06-c035-f6e5-231b-74ea6afe8467@os.amperecomputing.com>
+ <YqpB8A2uBi+4epHM@shikoro>
+ <bf001ece-e981-3a06-53fe-6a8b637d69fe@os.amperecomputing.com>
+Message-ID: <YqsiRW78NAL9rX9S@shikoro>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-> The print function dev_err() is redundant because platform_get_irq() already
-> prints an error.
-> 
-> This was found by coccicheck:
-> 
-> ./drivers/usb/gadget/udc/aspeed_udc.c:1546:2-9: line 1546 is redundant
-> because platform_get_irq() already prints an error.
-> 
-> Signed-off-by: Jiapeng Chong <jiapeng.chong@linux.alibaba.com>
+Hi Quan,
 
-Acked-by: Neal Liu <neal_liu@aspeedtech.com>
+> On the first occurrence of I2C_SLAVE_WRITE_REQUESTED, the address is already
+> received with ACK. So if slave return -EBUSY, the NAK will occur on the next
+> Rx byte (on I2C_SLAVE_WRITE_RECEIVED event).
 
-> ---
->  drivers/usb/gadget/udc/aspeed_udc.c | 1 -
->  1 file changed, 1 deletion(-)
-> 
-> diff --git a/drivers/usb/gadget/udc/aspeed_udc.c
-> b/drivers/usb/gadget/udc/aspeed_udc.c
-> index 1fc15228ff15..2c3dc80d6b8c 100644
-> --- a/drivers/usb/gadget/udc/aspeed_udc.c
-> +++ b/drivers/usb/gadget/udc/aspeed_udc.c
-> @@ -1543,7 +1543,6 @@ static int ast_udc_probe(struct platform_device
-> *pdev)
->  	/* Find interrupt and install handler */
->  	udc->irq = platform_get_irq(pdev, 0);
->  	if (udc->irq < 0) {
-> -		dev_err(&pdev->dev, "Failed to get interrupt\n");
->  		rc = udc->irq;
->  		goto err;
->  	}
-> --
-> 2.20.1.7.g153144c
+This is exactly why I2C_SLAVE_WRITE_RECEIVED allows for an error code.
+From the docs:
 
+===
+
+* I2C_SLAVE_WRITE_RECEIVED (mandatory)
+
+  'val': bus driver delivers received byte
+
+  'ret': 0 if the byte should be acked, some errno if the byte should be nacked
+
+Another I2C master has sent a byte to us which needs to be set in 'val'. If 'ret'
+is zero, the bus driver should ack this byte. If 'ret' is an errno, then the byte
+should be nacked.
+
+===
+
+'ret' is used to ACK/NACK the current byte in 'val'. That's exactly what
+you need, or? Does the aspeed driver not support acking the current
+byte?
+
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 833 bytes
+Desc: not available
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20220616/10331f96/attachment.sig>
