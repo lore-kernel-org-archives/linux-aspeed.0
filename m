@@ -1,87 +1,51 @@
 From: Quan Nguyen <quan@os.amperecomputing.com>
-Date: Thu, 16 Jun 2022 14:16:14 +0700
-Subject: [PATCH v7 3/3] i2c: aspeed: Assert NAK when slave is busy
-In-Reply-To: <YqpB8A2uBi+4epHM@shikoro>
-References: <20220422040803.2524940-1-quan@os.amperecomputing.com>
- <20220422040803.2524940-4-quan@os.amperecomputing.com>
- <Yn+9QBoPdH8fMm/m@shikoro>
- <fc422a06-c035-f6e5-231b-74ea6afe8467@os.amperecomputing.com>
- <YqpB8A2uBi+4epHM@shikoro>
-Message-ID: <bf001ece-e981-3a06-53fe-6a8b637d69fe@os.amperecomputing.com>
+Date: Thu, 16 Jun 2022 14:25:14 +0700
+Subject: [PATCH v8 1/3] ipmi: ssif_bmc: Add SSIF BMC driver
+In-Reply-To: <8b7841a9-9313-b1d5-8a80-a65cfa8e7b4d@infradead.org>
+References: <20220615090259.1121405-1-quan@os.amperecomputing.com>
+ <20220615090259.1121405-2-quan@os.amperecomputing.com>
+ <8b7841a9-9313-b1d5-8a80-a65cfa8e7b4d@infradead.org>
+Message-ID: <74f94464-a095-f539-746a-853b8f1d52ca@os.amperecomputing.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 16/06/2022 03:32, Wolfram Sang wrote:
-> Hi Quan,
+On 15/06/2022 23:06, Randy Dunlap wrote:
 > 
->> When tested with ast2500, it is observed that there's always a
->> I2C_SLAVE_WRITE_REQUESTED comes first then other I2C_SLAVE_WRITE_RECEIVED's
->> follow for all transactions.
 > 
-> Yes, that's the design of the interface :)
+> On 6/15/22 02:02, Quan Nguyen wrote:
+>> diff --git a/drivers/char/ipmi/Kconfig b/drivers/char/ipmi/Kconfig
+>> index b061e6b513ed..18a89093d64e 100644
+>> --- a/drivers/char/ipmi/Kconfig
+>> +++ b/drivers/char/ipmi/Kconfig
+>> @@ -169,6 +169,17 @@ config ASPEED_BT_IPMI_BMC
+>>   	  found on Aspeed SOCs (AST2400 and AST2500). The driver
+>>   	  implements the BMC side of the BT interface.
+>>   
+>> +config SSIF_IPMI_BMC
+>> +	tristate "SSIF IPMI BMC driver"
+>> +	select I2C
 > 
->> In case slave is busy, the NAK will be asserted on the first occurrence of
->> I2C_SLAVE_WRITE_REQUESTED make host to stop the current transaction (host
->> later will retry with other transaction) until slave ready.
->>
->> This behavior is expected as we want host to drop all transactions while
->> slave is busy on working on the response. That is why we choose to assert
->> NAK on the first I2C_SLAVE_WRITE_REQUESTED of the transaction instead of
->> I2C_SLAVE_WRITE_RECEIVED.
+> No. That should be:
+> 	depends on I2C
 > 
->  From Documentation/i2c/slave-interface.rst:
+> We don't select an entire subsystem just to satisfy one driver.
 > 
-> ===
+>> +	select I2C_SLAVE
+>> +	help
+>> +	  This enables the IPMI SMBus system interface (SSIF) at the
+>> +	  management (BMC) side.
+>> +
+>> +	  The driver implements the BMC side of the SMBus system
+>> +	  interface (SSIF).
+>> +
 > 
-> About ACK/NACK
-> --------------
-> 
-> It is good behaviour to always ACK the address phase, so the master knows if a
-> device is basically present or if it mysteriously disappeared. Using NACK to
-> state being busy is troublesome. SMBus demands to always ACK the address phase,
-> while the I2C specification is more loose on that. Most I2C controllers also
-> automatically ACK when detecting their slave addresses, so there is no option
-> to NACK them. For those reasons, this API does not support NACK in the address
-> phase.
-> 
-> ===
-> 
-> So, the proper design is to NACK on the first received byte. All EEPROMs
-> do it this way when they are busy because of erasing a page.
-> 
+> Thanks.
 
-Thanks Wolfram for the review.
-
-On the first occurrence of I2C_SLAVE_WRITE_REQUESTED, the address is 
-already received with ACK. So if slave return -EBUSY, the NAK will occur 
-on the next Rx byte (on I2C_SLAVE_WRITE_RECEIVED event).
-
-Tested this patch and capture using Saleae tool, it always shows ACK on 
-the address and NAK on the first byte follow when slave return -EBUSY, 
-ie: the byte follow the address, which is single part read command 
-(0x03) in my case.
-
-+ When slave return -EBUSY:
-   S-> Aw(ACK)-> RxD(NAK)-> P
-       0x10      0x03 (Singlepart read)
-
-+ When slave ready:
-   S-> Aw(ACK)-> RxD(ACK)-> Sr-> Ar-> TxD(ACK)-> ... -> TxD(NAK)-> P
-       0x10      0x03                 0x07       ...    0xDE
-
-Using the Logic 2 (with Saleae tool) to capture, we could see the log as 
-below:
-
-write to 0x10 ack data: 0x03    <= when slave return -EBUSY
-write to 0x10 ack data: 0x03    <= when slave return -EBUSY
-write to 0x10 ack data: 0x03    <= when slave return -EBUSY
-...
-write to 0x10 ack data: 0x03    <= when slave return -EBUSY
-write to 0x10 ack data: 0x03    <= when slave is ready
-read to 0x10 ack data: 0x07 0xF4 0x1D 0x00 0x01 0x00 0x00 0x00 0xDE
+Thanks Randy,
+it should be change to "depends on I2C && I2C_SLAVE"
 
 Thanks,
 - Quan
