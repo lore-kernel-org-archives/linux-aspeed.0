@@ -1,45 +1,71 @@
-From: Neal Liu <neal_liu@aspeedtech.com>
-Date: Fri, 17 Jun 2022 02:20:44 +0000
-Subject: [PATCH -next] usb: gadget: aspeed_udc: fix missing
- spin_unlock_irqrestore in ast_udc_ep_queue
-In-Reply-To: <20220616133508.3655864-1-zhengbin13@huawei.com>
-References: <20220616133508.3655864-1-zhengbin13@huawei.com>
-Message-ID: <HK0PR06MB3202958ED74CD706458B85CE80AF9@HK0PR06MB3202.apcprd06.prod.outlook.com>
+From: Quan Nguyen <quan@os.amperecomputing.com>
+Date: Fri, 17 Jun 2022 14:08:55 +0700
+Subject: [PATCH v7 3/3] i2c: aspeed: Assert NAK when slave is busy
+In-Reply-To: <YqsiRW78NAL9rX9S@shikoro>
+References: <20220422040803.2524940-1-quan@os.amperecomputing.com>
+ <20220422040803.2524940-4-quan@os.amperecomputing.com>
+ <Yn+9QBoPdH8fMm/m@shikoro>
+ <fc422a06-c035-f6e5-231b-74ea6afe8467@os.amperecomputing.com>
+ <YqpB8A2uBi+4epHM@shikoro>
+ <bf001ece-e981-3a06-53fe-6a8b637d69fe@os.amperecomputing.com>
+ <YqsiRW78NAL9rX9S@shikoro>
+Message-ID: <27f5999e-40a6-311f-20f1-331a0f4447da@os.amperecomputing.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-> ast_udc_ep_queue misses spin_unlock_irqrestore in an error path, this patch
-> fixes that.
+On 16/06/2022 19:29, Wolfram Sang wrote:
+> Hi Quan,
 > 
-> Fixes: 055276c13205 ("usb: gadget: add Aspeed ast2600 udc driver")
-> Signed-off-by: Zheng Bin <zhengbin13@huawei.com>
-> ---
->  drivers/usb/gadget/udc/aspeed_udc.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
+>> On the first occurrence of I2C_SLAVE_WRITE_REQUESTED, the address is already
+>> received with ACK. So if slave return -EBUSY, the NAK will occur on the next
+>> Rx byte (on I2C_SLAVE_WRITE_RECEIVED event).
 > 
-> diff --git a/drivers/usb/gadget/udc/aspeed_udc.c
-> b/drivers/usb/gadget/udc/aspeed_udc.c
-> index 1fc15228ff15..6c91f7f288a2 100644
-> --- a/drivers/usb/gadget/udc/aspeed_udc.c
-> +++ b/drivers/usb/gadget/udc/aspeed_udc.c
-> @@ -665,7 +665,8 @@ static int ast_udc_ep_queue(struct usb_ep *_ep, struct
-> usb_request *_req,
->  	if (ep->ep.desc == NULL) {
->  		if ((req->req.dma % 4) != 0) {
->  			dev_warn(dev, "EP0 req dma alignment error\n");
-> -			return -ESHUTDOWN;
-> +			rc = -ESHUTDOWN;
-> +			goto end;
->  		}
+> This is exactly why I2C_SLAVE_WRITE_RECEIVED allows for an error code.
+>  From the docs:
 > 
->  		ast_udc_ep0_queue(ep, req);
-> --
-> 2.31.1
+> ===
+> 
+> * I2C_SLAVE_WRITE_RECEIVED (mandatory)
+> 
+>    'val': bus driver delivers received byte
+> 
+>    'ret': 0 if the byte should be acked, some errno if the byte should be nacked
+> 
+> Another I2C master has sent a byte to us which needs to be set in 'val'. If 'ret'
+> is zero, the bus driver should ack this byte. If 'ret' is an errno, then the byte
+> should be nacked.
+> 
+> ===
+> 
+> 'ret' is used to ACK/NACK the current byte in 'val'. That's exactly what
+> you need, or? Does the aspeed driver not support acking the current
+> byte?
+>
 
-Thanks for the fix.
+It is true that aspeed driver does not support acking the current byte. 
+Setting ASPEED_I2CD_M_S_RX_CMD_LAST will take effect on the next Rx byte 
+as per my observation.
 
-Reviewed-by: Neal Liu <neal_liu@aspeedtech.com>
+S-> Aw(ACK)-> RxD(ACK)-> Sr-> Ar-> TxD(ACK)-> ... -> TxD(NAK)-> P
+      (1)        (2)
 
+Currently, setting ASPEED_I2CD_M_S_RX_CMD_LAST in (1), on 
+I2C_SLAVE_WRITE_REQUESTED event, will make the NAK happen in (2) and 
+make the read stop.
+
+If setting ASPEED_I2CD_M_S_RX_CMD_LAST on (2), ie: on 
+I2C_SLAVE_WRITE_RECEIVED event, the read from Master is never NAK 
+because there is no next Rx byte and Master is already switch to read 
+from Slave.
+
+I understands that the return of
+i2c_slave_event(slave, I2C_SLAVE_WRITE_REQUESTED, &value) is always 0 as 
+in Documentation/i2c/slave-interface.rst. But with this case, this is 
+the way to NAK on the first byte and I'm wonder if this particular case 
+would be supported somehow.
+
+Thanks,
+-- Quan
