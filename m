@@ -1,71 +1,93 @@
-From: Quan Nguyen <quan@os.amperecomputing.com>
-Date: Fri, 17 Jun 2022 14:08:55 +0700
-Subject: [PATCH v7 3/3] i2c: aspeed: Assert NAK when slave is busy
-In-Reply-To: <YqsiRW78NAL9rX9S@shikoro>
-References: <20220422040803.2524940-1-quan@os.amperecomputing.com>
- <20220422040803.2524940-4-quan@os.amperecomputing.com>
- <Yn+9QBoPdH8fMm/m@shikoro>
- <fc422a06-c035-f6e5-231b-74ea6afe8467@os.amperecomputing.com>
- <YqpB8A2uBi+4epHM@shikoro>
- <bf001ece-e981-3a06-53fe-6a8b637d69fe@os.amperecomputing.com>
- <YqsiRW78NAL9rX9S@shikoro>
-Message-ID: <27f5999e-40a6-311f-20f1-331a0f4447da@os.amperecomputing.com>
+From: Patrick Williams <patrick@stwcx.xyz>
+Date: Fri, 17 Jun 2022 11:42:35 -0500
+Subject: [PATCH v2] ARM: dts: aspeed: Adding Facebook Yosemite V3.5 BMC
+In-Reply-To: <20220616120707.GA22590@logan-ThinkPad-T14-Gen-1>
+References: <20220616120707.GA22590@logan-ThinkPad-T14-Gen-1>
+Message-ID: <Yqyu+y9ms/DmFCbJ@heinlein.stwcx.org.github.beta.tailscale.net>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 16/06/2022 19:29, Wolfram Sang wrote:
-> Hi Quan,
+On Thu, Jun 16, 2022 at 05:37:07PM +0530, Logananth Sundararaj wrote:
+> The Yosemite V3.5 is a facebook multi-node server
+> platform that host four OCP server. The BMC
+> in the Yosemite V3.5 platform based on AST2600 SoC.
 > 
->> On the first occurrence of I2C_SLAVE_WRITE_REQUESTED, the address is already
->> received with ACK. So if slave return -EBUSY, the NAK will occur on the next
->> Rx byte (on I2C_SLAVE_WRITE_RECEIVED event).
+> This patch adds linux device tree entry related to
+> Yosemite V3.5 specific devices connected to BMC SoC.
 > 
-> This is exactly why I2C_SLAVE_WRITE_RECEIVED allows for an error code.
->  From the docs:
+> Signed-off-by: Logananth Sundararaj <logananth_s@hcl.com>
 > 
-> ===
-> 
-> * I2C_SLAVE_WRITE_RECEIVED (mandatory)
-> 
->    'val': bus driver delivers received byte
-> 
->    'ret': 0 if the byte should be acked, some errno if the byte should be nacked
-> 
-> Another I2C master has sent a byte to us which needs to be set in 'val'. If 'ret'
-> is zero, the bus driver should ack this byte. If 'ret' is an errno, then the byte
-> should be nacked.
-> 
-> ===
-> 
-> 'ret' is used to ACK/NACK the current byte in 'val'. That's exactly what
-> you need, or? Does the aspeed driver not support acking the current
-> byte?
->
+> ---
+> --- v2 - Enabled i2c drivers.
+> --- v1 - Initial draft.
+> ---
+>  arch/arm/boot/dts/Makefile                    |   1 +
+>  .../boot/dts/aspeed-bmc-facebook-fby35.dts    | 277 ++++++++++++++++++
+>  2 files changed, 278 insertions(+)
+>  create mode 100644 arch/arm/boot/dts/aspeed-bmc-facebook-fby35.dts
 
-It is true that aspeed driver does not support acking the current byte. 
-Setting ASPEED_I2CD_M_S_RX_CMD_LAST will take effect on the next Rx byte 
-as per my observation.
+A few comments below.
 
-S-> Aw(ACK)-> RxD(ACK)-> Sr-> Ar-> TxD(ACK)-> ... -> TxD(NAK)-> P
-      (1)        (2)
+...
+> +&uart5 {
+> +	status = "okay";
+> +	/* Workaround for AST2600 A0 */
+> +	compatible = "snps,dw-apb-uart";
+> +};
 
-Currently, setting ASPEED_I2CD_M_S_RX_CMD_LAST in (1), on 
-I2C_SLAVE_WRITE_REQUESTED event, will make the NAK happen in (2) and 
-make the read stop.
+Is this comment accurate?  Are we using A0 hardware on this system?
 
-If setting ASPEED_I2CD_M_S_RX_CMD_LAST on (2), ie: on 
-I2C_SLAVE_WRITE_RECEIVED event, the read from Master is never NAK 
-because there is no next Rx byte and Master is already switch to read 
-from Slave.
+> +&fmc {
+> +	status = "okay";
+> +	reg = <0x1e620000 0xc4>, <0x20000000 0x8000000>;
+> +	flash at 0 {
+> +		status = "okay";
+> +		m25p,fast-read;
+> +		label = "spi0.1";
+> +		spi-max-frequency = <50000000>;
+> +		spi-tx-bus-width = <2>;
+> +		spi-rx-bus-width = <2>;
+> +		#include "openbmc-flash-layout-64.dtsi"
+> +	};
+> +};
 
-I understands that the return of
-i2c_slave_event(slave, I2C_SLAVE_WRITE_REQUESTED, &value) is always 0 as 
-in Documentation/i2c/slave-interface.rst. But with this case, this is 
-the way to NAK on the first byte and I'm wonder if this particular case 
-would be supported somehow.
+Aren't there two SPI flashes?  It seems like it based on:
+https://github.com/facebook/openbmc-linux/blob/dev-5.10/arch/arm/boot/dts/aspeed-bmc-facebook-fby35.dts#L162
 
-Thanks,
--- Quan
+> +
+> +&spi1 {
+> +	status = "okay";
+> +	pinctrl-names = "default";
+> +	pinctrl-0 = <&pinctrl_spi1_default>;
+> +
+> +	flash at 0 {
+> +		status = "okay";
+> +		m25p,fast-read;
+> +		label = "pnor";
+> +		spi-rx-bus-width = <4>;
+> +		spi-max-frequency = <100000000>;
+> +	};
+> +};
+
+What is SPI1 used for?  I don't see it in the facebook/openbmc-linux
+DTS.
+
+> -- 
+> 2.17.1
+> 
+
+Are we missing the pwm/tach support?  Or is that still not upstream from
+Aspeed?
+
+-- 
+Patrick Williams
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 833 bytes
+Desc: not available
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20220617/15c63c32/attachment-0001.sig>
