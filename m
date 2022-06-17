@@ -1,36 +1,34 @@
-From: Zheng Bin <zhengbin13@huawei.com>
-Date: Thu, 16 Jun 2022 21:35:08 +0800
-Subject: [PATCH -next] usb: gadget: aspeed_udc: fix missing spin_unlock_irqrestore in ast_udc_ep_queue
-Message-ID: <20220616133508.3655864-1-zhengbin13@huawei.com>
+From: Liang He <windhl@126.com>
+Date: Fri, 17 Jun 2022 22:41:06 +0800
+Subject: [PATCH] iio: adc: Fix refcount leak bug in aspeed_adc
+Message-ID: <20220617144106.4050677-1-windhl@126.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-ast_udc_ep_queue misses spin_unlock_irqrestore in an error path,
-this patch fixes that.
+In aspeed_adc_set_trim_data(), of_find_node_by_name() will return
+a node pointer with refcount incremented. We should use of_node_put()
+when it is not used anymore.
 
-Fixes: 055276c13205 ("usb: gadget: add Aspeed ast2600 udc driver")
-Signed-off-by: Zheng Bin <zhengbin13@huawei.com>
+Signed-off-by: Liang He <windhl@126.com>
 ---
- drivers/usb/gadget/udc/aspeed_udc.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/iio/adc/aspeed_adc.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/usb/gadget/udc/aspeed_udc.c b/drivers/usb/gadget/udc/aspeed_udc.c
-index 1fc15228ff15..6c91f7f288a2 100644
---- a/drivers/usb/gadget/udc/aspeed_udc.c
-+++ b/drivers/usb/gadget/udc/aspeed_udc.c
-@@ -665,7 +665,8 @@ static int ast_udc_ep_queue(struct usb_ep *_ep, struct usb_request *_req,
- 	if (ep->ep.desc == NULL) {
- 		if ((req->req.dma % 4) != 0) {
- 			dev_warn(dev, "EP0 req dma alignment error\n");
--			return -ESHUTDOWN;
-+			rc = -ESHUTDOWN;
-+			goto end;
- 		}
-
- 		ast_udc_ep0_queue(ep, req);
---
-2.31.1
+diff --git a/drivers/iio/adc/aspeed_adc.c b/drivers/iio/adc/aspeed_adc.c
+index 0793d2474cdc..9341e0e0eb55 100644
+--- a/drivers/iio/adc/aspeed_adc.c
++++ b/drivers/iio/adc/aspeed_adc.c
+@@ -186,6 +186,7 @@ static int aspeed_adc_set_trim_data(struct iio_dev *indio_dev)
+ 		return -EOPNOTSUPP;
+ 	}
+ 	scu = syscon_node_to_regmap(syscon);
++	of_node_put(syscon);
+ 	if (IS_ERR(scu)) {
+ 		dev_warn(data->dev, "Failed to get syscon regmap\n");
+ 		return -EOPNOTSUPP;
+-- 
+2.25.1
 
