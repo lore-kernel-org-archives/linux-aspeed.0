@@ -1,123 +1,74 @@
-From: David Gow <davidgow@google.com>
-Date: Sat, 18 Jun 2022 17:03:10 +0800
-Subject: [PATCH 5/5] mmc: sdhci-of-aspeed: test: Use kunit_test_suite() macro
-In-Reply-To: <20220618090310.1174932-1-davidgow@google.com>
-References: <20220618090310.1174932-1-davidgow@google.com>
-Message-ID: <20220618090310.1174932-6-davidgow@google.com>
+From: kernel test robot <lkp@intel.com>
+Date: Sat, 18 Jun 2022 19:36:18 +0800
+Subject: [PATCH 1/5] kunit: unify module and builtin suite definitions
+In-Reply-To: <20220618090310.1174932-2-davidgow@google.com>
+References: <20220618090310.1174932-2-davidgow@google.com>
+Message-ID: <202206181950.qNG3jcE8-lkp@intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The kunit_test_suite() macro is no-longer incompatible with module_add,
-so its use can be reinstated.
+Hi David,
 
-Since this fixes parsing with builtins and kunit_tool, also enable the
-test by default when KUNIT_ALL_TESTS is enabled.
+I love your patch! Yet something to improve:
 
-The test can now be run via kunit_tool with:
-	./tools/testing/kunit/kunit.py run --arch=x86_64 \
-	--kconfig_add CONFIG_OF=y --kconfig_add CONFIG_OF_ADDRESS=y \
-	--kconfig_add CONFIG_MMC=y --kconfig_add CONFIG_MMC_SDHCI=y \
-	--kconfig_add CONFIG_MMC_SDHCI_PLTFM=y \
-	--kconfig_add CONFIG_MMC_SDHCI_OF_ASPEED=y \
-	'sdhci-of-aspeed'
+[auto build test ERROR on linus/master]
+[cannot apply to mcgrof/modules-next joel-aspeed/for-next ulf-hansson-mmc-mirror/next]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch]
 
-(It may be worth adding a .kunitconfig at some point, as there are
-enough dependencies to make that command scarily long.)
+url:    https://github.com/intel-lab-lkp/linux/commits/David-Gow/Rework-KUnit-test-execution-in-modules/20220618-170653
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git 4b35035bcf80ddb47c0112c4fbd84a63a2836a18
+config: s390-allmodconfig (https://download.01.org/0day-ci/archive/20220618/202206181950.qNG3jcE8-lkp at intel.com/config)
+compiler: s390-linux-gcc (GCC) 11.3.0
+reproduce (this is a W=1 build):
+        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        # https://github.com/intel-lab-lkp/linux/commit/14ff6ae01a41e301f1409874dd5aa38f73bc96f5
+        git remote add linux-review https://github.com/intel-lab-lkp/linux
+        git fetch --no-tags linux-review David-Gow/Rework-KUnit-test-execution-in-modules/20220618-170653
+        git checkout 14ff6ae01a41e301f1409874dd5aa38f73bc96f5
+        # save the config file
+        mkdir build_dir && cp config build_dir/.config
+        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-11.3.0 make.cross W=1 O=build_dir ARCH=s390 SHELL=/bin/bash lib/kunit/
 
-Signed-off-by: David Gow <davidgow@google.com>
----
- drivers/mmc/host/Kconfig                |  5 +++--
- drivers/mmc/host/sdhci-of-aspeed-test.c |  8 +-------
- drivers/mmc/host/sdhci-of-aspeed.c      | 27 -------------------------
- 3 files changed, 4 insertions(+), 36 deletions(-)
+If you fix the issue, kindly add following tag where applicable
+Reported-by: kernel test robot <lkp@intel.com>
 
-diff --git a/drivers/mmc/host/Kconfig b/drivers/mmc/host/Kconfig
-index d6144978e32d..10c563999d3d 100644
---- a/drivers/mmc/host/Kconfig
-+++ b/drivers/mmc/host/Kconfig
-@@ -169,8 +169,9 @@ config MMC_SDHCI_OF_ASPEED
- 	  If unsure, say N.
- 
- config MMC_SDHCI_OF_ASPEED_TEST
--	bool "Tests for the ASPEED SDHCI driver"
--	depends on MMC_SDHCI_OF_ASPEED && KUNIT=y
-+	bool "Tests for the ASPEED SDHCI driver" if !KUNIT_ALL_TESTS
-+	depends on MMC_SDHCI_OF_ASPEED && KUNIT
-+	default KUNIT_ALL_TESTS
- 	help
- 	  Enable KUnit tests for the ASPEED SDHCI driver. Select this
- 	  option only if you will boot the kernel for the purpose of running
-diff --git a/drivers/mmc/host/sdhci-of-aspeed-test.c b/drivers/mmc/host/sdhci-of-aspeed-test.c
-index 1ed4f86291f2..ecb502606c53 100644
---- a/drivers/mmc/host/sdhci-of-aspeed-test.c
-+++ b/drivers/mmc/host/sdhci-of-aspeed-test.c
-@@ -96,10 +96,4 @@ static struct kunit_suite aspeed_sdhci_test_suite = {
- 	.test_cases = aspeed_sdhci_test_cases,
- };
- 
--static struct kunit_suite *aspeed_sdc_test_suite_array[] = {
--	&aspeed_sdhci_test_suite,
--	NULL,
--};
--
--static struct kunit_suite **aspeed_sdc_test_suites
--	__used __section(".kunit_test_suites") = aspeed_sdc_test_suite_array;
-+kunit_test_suite(aspeed_sdhci_test_suite);
-diff --git a/drivers/mmc/host/sdhci-of-aspeed.c b/drivers/mmc/host/sdhci-of-aspeed.c
-index 6e4e132903a6..c10367946bc7 100644
---- a/drivers/mmc/host/sdhci-of-aspeed.c
-+++ b/drivers/mmc/host/sdhci-of-aspeed.c
-@@ -606,25 +606,6 @@ static struct platform_driver aspeed_sdc_driver = {
- 
- #if defined(CONFIG_MMC_SDHCI_OF_ASPEED_TEST)
- #include "sdhci-of-aspeed-test.c"
--
--static inline int aspeed_sdc_tests_init(void)
--{
--	return __kunit_test_suites_init(aspeed_sdc_test_suites);
--}
--
--static inline void aspeed_sdc_tests_exit(void)
--{
--	__kunit_test_suites_exit(aspeed_sdc_test_suites);
--}
--#else
--static inline int aspeed_sdc_tests_init(void)
--{
--	return 0;
--}
--
--static inline void aspeed_sdc_tests_exit(void)
--{
--}
- #endif
- 
- static int __init aspeed_sdc_init(void)
-@@ -639,12 +620,6 @@ static int __init aspeed_sdc_init(void)
- 	if (rc < 0)
- 		goto cleanup_sdhci;
- 
--	rc = aspeed_sdc_tests_init();
--	if (rc < 0) {
--		platform_driver_unregister(&aspeed_sdc_driver);
--		goto cleanup_sdhci;
--	}
--
- 	return 0;
- 
- cleanup_sdhci:
-@@ -656,8 +631,6 @@ module_init(aspeed_sdc_init);
- 
- static void __exit aspeed_sdc_exit(void)
- {
--	aspeed_sdc_tests_exit();
--
- 	platform_driver_unregister(&aspeed_sdc_driver);
- 	platform_driver_unregister(&aspeed_sdhci_driver);
- }
+All errors (new ones prefixed by >>):
+
+   lib/kunit/test.c: In function 'kunit_module_init':
+>> lib/kunit/test.c:618:28: error: 'struct module' has no member named 'num_kunit_suites'
+     618 |         for (i = 0; i < mod->num_kunit_suites; i++)
+         |                            ^~
+>> lib/kunit/test.c:619:45: error: 'struct module' has no member named 'kunit_suites'
+     619 |                 __kunit_test_suites_init(mod->kunit_suites[i]);
+         |                                             ^~
+   lib/kunit/test.c: In function 'kunit_module_exit':
+   lib/kunit/test.c:626:28: error: 'struct module' has no member named 'num_kunit_suites'
+     626 |         for (i = 0; i < mod->num_kunit_suites; i++)
+         |                            ^~
+   lib/kunit/test.c:627:45: error: 'struct module' has no member named 'kunit_suites'
+     627 |                 __kunit_test_suites_exit(mod->kunit_suites[i]);
+         |                                             ^~
+
+
+vim +618 lib/kunit/test.c
+
+   612	
+   613	#ifdef CONFIG_MODULES
+   614	static void kunit_module_init(struct module *mod)
+   615	{
+   616		unsigned int i;
+   617	
+ > 618		for (i = 0; i < mod->num_kunit_suites; i++)
+ > 619			__kunit_test_suites_init(mod->kunit_suites[i]);
+   620	}
+   621	
+
 -- 
-2.36.1.476.g0c4daa206d-goog
-
+0-DAY CI Kernel Test Service
+https://01.org/lkp
