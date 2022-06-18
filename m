@@ -1,26 +1,30 @@
-From: Maíra Canal <maira.canal@usp.br>
-Date: Sat, 18 Jun 2022 14:11:29 -0300
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Date: Sat, 18 Jun 2022 17:41:28 +0000
 Subject: [PATCH 0/5] Rework KUnit test execution in modules
 In-Reply-To: <20220618090310.1174932-1-davidgow@google.com>
 References: <20220618090310.1174932-1-davidgow@google.com>
-Message-ID: <3358b97e-021a-82b7-9ae2-2113aea2c2d9@usp.br>
+Message-ID: <87335c4a-7050-79e3-ec5c-4684a180193a@csgroup.eu>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 6/18/22 06:03, David Gow wrote:
+
+
+Le 18/06/2022 ? 11:03, David Gow a ?crit?:
+> [Vous ne recevez pas souvent de courriers de davidgow at google.com. D?couvrez pourquoi ceci est important ? https://aka.ms/LearnAboutSenderIdentification ]
+> 
 > This patch series makes two changes to how KUnit test suites are stored
 > and executed:
 > - The .kunit_test_suites section is now used for tests in modules (in
->   lieu of a module_init funciton), as well as for built-in tests. The
->   module loader will now trigger test execution. This frees up the
->   module_init function for other uses.
+>    lieu of a module_init funciton), as well as for built-in tests. The
+>    module loader will now trigger test execution. This frees up the
+>    module_init function for other uses.
 > - Instead of storing an array of arrays of suites, have the
->   kunit_test_suite() and kunit_test_suites() macros append to one global
->   (or per-module) list of test suites. This removes a needless layer of
->   indirection.
+>    kunit_test_suite() and kunit_test_suites() macros append to one global
+>    (or per-module) list of test suites. This removes a needless layer of
+>    indirection.
 > 
 > The upshot of this is that it should now be possible to use the
 > kunit_test_suite() and kunit_test_suites() macros to register test
@@ -40,21 +44,33 @@ On 6/18/22 06:03, David Gow wrote:
 > I've tested this series both with builtin tests, and with modules on
 > x86_64, but there's always the possibility that there's something subtle
 > and nasty on another architecture, so please test!
-> 
-> Cheers,
-> -- David
-> 
 
-I've tested the modules on x86_64 machines, and everything looks fine.
-Also, I applied the AMDGPU KUnit tests [1] on top of these patches,
-tried out compiling as a module, and it runs pretty well!
+Build failure on powerpc architecture with ppc64_defconfig + 
+CONFIG_KUNIT_TEST=m
 
-Great to see this feature on KUnit!
+   CC [M]  lib/kunit/test.o
+lib/kunit/test.c: In function 'kunit_module_init':
+lib/kunit/test.c:616:37: error: 'struct module' has no member named 
+'kunit_suites'
+   616 |         __kunit_test_suites_init(mod->kunit_suites, 
+mod->num_kunit_suites);
+       |                                     ^~
+lib/kunit/test.c:616:56: error: 'struct module' has no member named 
+'num_kunit_suites'
+   616 |         __kunit_test_suites_init(mod->kunit_suites, 
+mod->num_kunit_suites);
+       |                                                        ^~
+lib/kunit/test.c: In function 'kunit_module_exit':
+lib/kunit/test.c:621:37: error: 'struct module' has no member named 
+'kunit_suites'
+   621 |         __kunit_test_suites_exit(mod->kunit_suites, 
+mod->num_kunit_suites);
+       |                                     ^~
+lib/kunit/test.c:621:56: error: 'struct module' has no member named 
+'num_kunit_suites'
+   621 |         __kunit_test_suites_exit(mod->kunit_suites, 
+mod->num_kunit_suites);
+       |                                                        ^~
 
-Tested-by: Ma?ra Canal <maira.canal@usp.br>
 
-[1] https://lore.kernel.org/dri-devel/20220608010709.272962-1
-maira.canal at usp.br/
-
-Best Regards,
-- Ma?ra Canal
+Christophe
