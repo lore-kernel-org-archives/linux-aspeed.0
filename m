@@ -1,70 +1,159 @@
-From: Neal Liu <neal_liu@aspeedtech.com>
-Date: Tue, 21 Jun 2022 14:37:47 +0800
-Subject: [PATCH v3 0/5] Add Aspeed crypto driver for hardware acceleration
-Message-ID: <20220621063752.1005781-1-neal_liu@aspeedtech.com>
+From: Paraschiv, Andra-Irina <andraprs@amazon.com>
+Date: Mon, 20 Jun 2022 12:26:14 +0300
+Subject: [PATCH 4/5] nitro_enclaves: test: Use kunit_test_suite() macro
+In-Reply-To: <20220618090310.1174932-5-davidgow@google.com>
+References: <20220618090310.1174932-1-davidgow@google.com>
+ <20220618090310.1174932-5-davidgow@google.com>
+Message-ID: <d6f031fa-f287-75e6-dee0-b94bd22bd32d@amazon.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Aspeed Hash and Crypto Engine (HACE) is designed to accelerate the
-throughput of hash data digest, encryption and decryption.
-
-These patches aim to add Aspeed hash & crypto driver support.
-The hash & crypto driver also pass the run-time self tests that
-take place at algorithm registration.
-
-Tested-by below configs:
-- CONFIG_CRYPTO_MANAGER_DISABLE_TESTS is not set
-- CONFIG_CRYPTO_MANAGER_EXTRA_TESTS=y
-- CONFIG_DMA_API_DEBUG=y
-- CONFIG_DMA_API_DEBUG_SG=y
-- CONFIG_CPU_BIG_ENDIAN=y
-
-Change since v2:
-- Fix endianness issue. Tested on both little endian & big endian
-  system.
-- Use common crypto hardware engine for enqueue & dequeue requests.
-- Use pre-defined IVs for SHA-family.
-- Revise error handler flow.
-- Fix sorts of coding style problems.
-
-Change since v1:
-- Add more error handlers, including DMA memory allocate/free, DMA
-  map/unmap, clock enable/disable, etc.
-- Fix check dma_map error for config DMA_API_DEBUG.
-- Fix dt-binding doc & dts node naming.
 
 
-Neal Liu (5):
-  crypto: aspeed: Add HACE hash driver
-  dt-bindings: clock: Add AST2600 HACE reset definition
-  ARM: dts: aspeed: Add HACE device controller node
-  dt-bindings: crypto: add documentation for aspeed hace
-  crypto: aspeed: add HACE crypto driver
+On 18.06.2022 12:03, David Gow wrote:
+> 
+> The kunit_test_suite() macro previously conflicted with module_init,
+> making it unsuitable for use in the nitro_enclaves test. Now that it's
+> fixed, we can use it instead of a custom call into internal KUnit
+> functions to run the test.
+> 
+> As a side-effect, this means that the test results are properly included
+> with other suites when built-in. To celebrate, enable the test by
+> default when KUNIT_ALL_TESTS is set (and NITRO_ENCLAVES enabled).
+> 
+> The nitro_enclave tests can now be run via kunit_tool with:
+>          ./tools/testing/kunit/kunit.py run --arch=x86_64 \
+>          --kconfig_add CONFIG_PCI=y --kconfig_add CONFIG_SMP=y \
+>          --kconfig_add CONFIG_HOTPLUG_CPU=y \
+>          --kconfig_add CONFIG_VIRT_DRIVERS=y \
+>          --kconfig_add CONFIG_NITRO_ENCLAVES=y \
+>          'ne_misc_dev_test'
+> 
+> (This is a pretty long command, so it may be worth adding a .kunitconfig
+> file at some point, instead.)
+> 
+> Signed-off-by: David Gow <davidgow@google.com>
 
- .../bindings/crypto/aspeed,ast2500-hace.yaml  |   53 +
- MAINTAINERS                                   |    7 +
- arch/arm/boot/dts/aspeed-g6.dtsi              |    8 +
- drivers/crypto/Kconfig                        |    1 +
- drivers/crypto/Makefile                       |    1 +
- drivers/crypto/aspeed/Kconfig                 |   40 +
- drivers/crypto/aspeed/Makefile                |    8 +
- drivers/crypto/aspeed/aspeed-hace-crypto.c    | 1041 ++++++++++++
- drivers/crypto/aspeed/aspeed-hace-hash.c      | 1423 +++++++++++++++++
- drivers/crypto/aspeed/aspeed-hace.c           |  320 ++++
- drivers/crypto/aspeed/aspeed-hace.h           |  289 ++++
- include/dt-bindings/clock/ast2600-clock.h     |    1 +
- 12 files changed, 3192 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/crypto/aspeed,ast2500-hace.yaml
- create mode 100644 drivers/crypto/aspeed/Kconfig
- create mode 100644 drivers/crypto/aspeed/Makefile
- create mode 100644 drivers/crypto/aspeed/aspeed-hace-crypto.c
- create mode 100644 drivers/crypto/aspeed/aspeed-hace-hash.c
- create mode 100644 drivers/crypto/aspeed/aspeed-hace.c
- create mode 100644 drivers/crypto/aspeed/aspeed-hace.h
+Thank you, David, for the KUnit update and for this patch.
 
--- 
-2.25.1
+> ---
+>   drivers/thunderbolt/Kconfig                   |  5 ++--
+>   drivers/virt/nitro_enclaves/Kconfig           |  5 ++--
+>   drivers/virt/nitro_enclaves/ne_misc_dev.c     | 27 -------------------
+>   .../virt/nitro_enclaves/ne_misc_dev_test.c    |  5 +---
+>   4 files changed, 7 insertions(+), 35 deletions(-)
+> 
+> diff --git a/drivers/thunderbolt/Kconfig b/drivers/thunderbolt/Kconfig
+> index 4bfec8a28064..2a063d344b94 100644
+> --- a/drivers/thunderbolt/Kconfig
+> +++ b/drivers/thunderbolt/Kconfig
+> @@ -28,8 +28,9 @@ config USB4_DEBUGFS_WRITE
+>            this for production systems or distro kernels.
+> 
+>   config USB4_KUNIT_TEST
+> -       bool "KUnit tests"
+> -       depends on KUNIT=y
+> +       bool "KUnit tests" if !KUNIT_ALL_TESTS
+> +       depends on KUNIT
+> +       default KUNIT_ALL_TESTS
+> 
+>   config USB4_DMA_TEST
+>          tristate "DMA traffic test driver"
 
+This needs to be included in the previous patch instead (patch 3/5, for 
+thunderbolt).
+
+> diff --git a/drivers/virt/nitro_enclaves/Kconfig b/drivers/virt/nitro_enclaves/Kconfig
+> index 2d3d98158121..ce91add81401 100644
+> --- a/drivers/virt/nitro_enclaves/Kconfig
+> +++ b/drivers/virt/nitro_enclaves/Kconfig
+> @@ -16,8 +16,9 @@ config NITRO_ENCLAVES
+>            The module will be called nitro_enclaves.
+> 
+>   config NITRO_ENCLAVES_MISC_DEV_TEST
+> -       bool "Tests for the misc device functionality of the Nitro Enclaves"
+> -       depends on NITRO_ENCLAVES && KUNIT=y
+> +       bool "Tests for the misc device functionality of the Nitro Enclaves" if !KUNIT_ALL_TESTS
+> +       depends on NITRO_ENCLAVES && KUNIT
+> +       default KUNIT_ALL_TESTS
+>          help
+>            Enable KUnit tests for the misc device functionality of the Nitro
+>            Enclaves. Select this option only if you will boot the kernel for
+> diff --git a/drivers/virt/nitro_enclaves/ne_misc_dev.c b/drivers/virt/nitro_enclaves/ne_misc_dev.c
+> index 20c881b6a4b6..241b94f62e56 100644
+> --- a/drivers/virt/nitro_enclaves/ne_misc_dev.c
+> +++ b/drivers/virt/nitro_enclaves/ne_misc_dev.c
+> @@ -1759,35 +1759,10 @@ static long ne_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+> 
+>   #if defined(CONFIG_NITRO_ENCLAVES_MISC_DEV_TEST)
+>   #include "ne_misc_dev_test.c"
+> -
+> -static inline int ne_misc_dev_test_init(void)
+> -{
+> -       return __kunit_test_suites_init(ne_misc_dev_test_suites);
+> -}
+> -
+> -static inline void ne_misc_dev_test_exit(void)
+> -{
+> -       __kunit_test_suites_exit(ne_misc_dev_test_suites);
+> -}
+> -#else
+> -static inline int ne_misc_dev_test_init(void)
+> -{
+> -       return 0;
+> -}
+> -
+> -static inline void ne_misc_dev_test_exit(void)
+> -{
+> -}
+>   #endif
+> 
+>   static int __init ne_init(void)
+>   {
+> -       int rc = 0;
+> -
+> -       rc = ne_misc_dev_test_init();
+> -       if (rc < 0)
+> -               return rc;
+> -
+>          mutex_init(&ne_cpu_pool.mutex);
+> 
+>          return pci_register_driver(&ne_pci_driver);
+> @@ -1798,8 +1773,6 @@ static void __exit ne_exit(void)
+>          pci_unregister_driver(&ne_pci_driver);
+> 
+>          ne_teardown_cpu_pool();
+> -
+> -       ne_misc_dev_test_exit();
+>   }
+> 
+>   module_init(ne_init);
+> diff --git a/drivers/virt/nitro_enclaves/ne_misc_dev_test.c b/drivers/virt/nitro_enclaves/ne_misc_dev_test.c
+> index 265797bed0ea..74df43b925be 100644
+> --- a/drivers/virt/nitro_enclaves/ne_misc_dev_test.c
+> +++ b/drivers/virt/nitro_enclaves/ne_misc_dev_test.c
+> @@ -151,7 +151,4 @@ static struct kunit_suite ne_misc_dev_test_suite = {
+>          .test_cases = ne_misc_dev_test_cases,
+>   };
+> 
+> -static struct kunit_suite *ne_misc_dev_test_suites[] = {
+> -       &ne_misc_dev_test_suite,
+> -       NULL
+> -};
+> +kunit_test_suite(ne_misc_dev_test_suite);
+> --
+> 2.36.1.476.g0c4daa206d-goog
+> 
+
+Other than that, looks good to me.
+
+Thank you.
+
+Andra
+
+
+
+Amazon Development Center (Romania) S.R.L. registered office: 27A Sf. Lazar Street, UBC5, floor 2, Iasi, Iasi County, 700045, Romania. Registered in Romania. Registration number J22/2621/2005.
