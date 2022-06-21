@@ -1,43 +1,64 @@
 From: Daniel Latypov <dlatypov@google.com>
-Date: Tue, 21 Jun 2022 13:29:24 -0700
-Subject: [PATCH v2 2/5] kunit: flatten kunit_suite*** to kunit_suite** in .kunit_test_suites
-In-Reply-To: <20220621085345.603820-3-davidgow@google.com>
-References: <20220621085345.603820-1-davidgow@google.com> <20220621085345.603820-3-davidgow@google.com>
-Message-ID: <CAGS_qxqnCvTnE-cGd-LNnhCMsz5YE3Ea9jw_OqNDwjQQ9TGpGg@mail.gmail.com>
+Date: Tue, 21 Jun 2022 15:19:10 -0700
+Subject: [PATCH v2 5/5] mmc: sdhci-of-aspeed: test: Use kunit_test_suite() macro
+In-Reply-To: <20220621085345.603820-6-davidgow@google.com>
+References: <20220621085345.603820-1-davidgow@google.com> <20220621085345.603820-6-davidgow@google.com>
+Message-ID: <CAGS_qxp6ZK9K0Sy1JcuU-SGqChOyr6-+5HDxgesOpxjxvDkiXQ@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Jun 21, 2022 at 1:54 AM 'David Gow' via KUnit Development
-<kunit-dev@googlegroups.com> wrote:
+ On Tue, Jun 21, 2022 at 1:54 AM David Gow <davidgow@google.com> wrote:
 >
-> From: Daniel Latypov <dlatypov@google.com>
+> The kunit_test_suite() macro is no-longer incompatible with module_add,
+> so its use can be reinstated.
 >
-> We currently store kunit suites in the .kunit_test_suites ELF section as
-> a `struct kunit_suite***` (modulo some `const`s).
-> For every test file, we store a struct kunit_suite** NULL-terminated array.
+> Since this fixes parsing with builtins and kunit_tool, also enable the
+> test by default when KUNIT_ALL_TESTS is enabled.
 >
-> This adds quite a bit of complexity to the test filtering code in the
-> executor.
+> The test can now be run via kunit_tool with:
+>         ./tools/testing/kunit/kunit.py run --arch=x86_64 \
+>         --kconfig_add CONFIG_OF=y --kconfig_add CONFIG_OF_ADDRESS=y \
+>         --kconfig_add CONFIG_MMC=y --kconfig_add CONFIG_MMC_SDHCI=y \
+>         --kconfig_add CONFIG_MMC_SDHCI_PLTFM=y \
+>         --kconfig_add CONFIG_MMC_SDHCI_OF_ASPEED=y \
+>         'sdhci-of-aspeed'
 >
-> Instead, let's just make the .kunit_test_suites section contain a single
-> giant array of struct kunit_suite pointers, which can then be directly
-> manipulated. This array is not NULL-terminated, and so none of the test
-> filtering code needs to NULL-terminate anything.
+> (It may be worth adding a .kunitconfig at some point, as there are
+> enough dependencies to make that command scarily long.)
 >
-> Tested-by: Ma?ra Canal <maira.canal@usp.br>
-> Signed-off-by: Daniel Latypov <dlatypov@google.com>
-> Co-developed-by: David Gow <davidgow@google.com>
 > Signed-off-by: David Gow <davidgow@google.com>
-> ---
+
+Acked-by: Daniel Latypov <dlatypov@google.com>
+
+Minor, optional suggestion below.
+
+>  static int __init aspeed_sdc_init(void)
+> @@ -639,12 +620,6 @@ static int __init aspeed_sdc_init(void)
+>         if (rc < 0)
+>                 goto cleanup_sdhci;
 >
-> Changes since v1:
-> https://lore.kernel.org/linux-kselftest/20220618090310.1174932-3-davidgow at google.com/
-> - No longer NULL-terminate generated suite_sets
+> -       rc = aspeed_sdc_tests_init();
+> -       if (rc < 0) {
+> -               platform_driver_unregister(&aspeed_sdc_driver);
+> -               goto cleanup_sdhci;
+> -       }
+> -
+>         return 0;
+>
+>  cleanup_sdhci:
 
-Nice!
-Thanks for picking and cleaning this up!
+This goto was added in 4af307f57426 ("mmc: sdhci-of-aspeed: Fix
+kunit-related build error") to allow for this extra call to
+aspeed_sdc_tests_init().
 
-Daniel
+This could now be reverted back to what is
+        rc = platform_driver_register(&aspeed_sdc_driver);
+        if (rc < 0)
+               platform_driver_unregister(&aspeed_sdhci_driver);
+
+        return rc;
+
+but let's see what the maintainers think.
