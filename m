@@ -1,31 +1,42 @@
-From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Date: Mon, 20 Jun 2022 13:06:38 +0200
-Subject: [PATCH 2/7] dt-bindings: arm: aspeed: document board compatibles
-In-Reply-To: <20220529104928.79636-2-krzysztof.kozlowski@linaro.org>
-References: <20220529104928.79636-1-krzysztof.kozlowski@linaro.org>
- <20220529104928.79636-2-krzysztof.kozlowski@linaro.org>
-Message-ID: <0207c2fe-7c01-7852-3cd1-74297cd4857d@linaro.org>
+From: Neal Liu <neal_liu@aspeedtech.com>
+Date: Tue, 21 Jun 2022 14:37:50 +0800
+Subject: [PATCH v3 3/5] ARM: dts: aspeed: Add HACE device controller node
+In-Reply-To: <20220621063752.1005781-1-neal_liu@aspeedtech.com>
+References: <20220621063752.1005781-1-neal_liu@aspeedtech.com>
+Message-ID: <20220621063752.1005781-4-neal_liu@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 29/05/2022 12:49, Krzysztof Kozlowski wrote:
-> Document all compatibles used in existing upstreamed Aspeed AST2400,
-> AST2500 and AST2600 based boards.
-> 
-> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-> ---
->  .../bindings/arm/aspeed/aspeed.yaml           | 83 +++++++++++++++++++
->  MAINTAINERS                                   |  1 +
->  2 files changed, 84 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+Add hace node to device tree for AST2600.
 
-Joel, Andrew,
+Signed-off-by: Neal Liu <neal_liu@aspeedtech.com>
+Signed-off-by: Johnny Huang <johnny_huang@aspeedtech.com>
+---
+ arch/arm/boot/dts/aspeed-g6.dtsi | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-Any comments on the series? Rob applied only patch 1, so the rest is
-supposed through Aspeed tree. Shall I pick them up and send to arm-soc?
+diff --git a/arch/arm/boot/dts/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed-g6.dtsi
+index 6660564855ff..095cf8d03616 100644
+--- a/arch/arm/boot/dts/aspeed-g6.dtsi
++++ b/arch/arm/boot/dts/aspeed-g6.dtsi
+@@ -323,6 +323,14 @@ apb {
+ 			#size-cells = <1>;
+ 			ranges;
+ 
++			hace: crypto at 1e6d0000 {
++				compatible = "aspeed,ast2600-hace";
++				reg = <0x1e6d0000 0x200>;
++				interrupts = <GIC_SPI 4 IRQ_TYPE_LEVEL_HIGH>;
++				clocks = <&syscon ASPEED_CLK_GATE_YCLK>;
++				resets = <&syscon ASPEED_RESET_HACE>;
++			};
++
+ 			syscon: syscon at 1e6e2000 {
+ 				compatible = "aspeed,ast2600-scu", "syscon", "simple-mfd";
+ 				reg = <0x1e6e2000 0x1000>;
+-- 
+2.25.1
 
-Best regards,
-Krzysztof
