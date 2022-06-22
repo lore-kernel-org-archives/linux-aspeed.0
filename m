@@ -1,48 +1,37 @@
-From: Cédric Le Goater <clg@kaod.org>
-Date: Wed, 22 Jun 2022 11:42:33 +0200
-Subject: [PATCH v2 2/2] spi: aspeed: Fix division by zero
-In-Reply-To: <20220622094233.3681843-1-clg@kaod.org>
-References: <20220622094233.3681843-1-clg@kaod.org>
-Message-ID: <20220622094233.3681843-3-clg@kaod.org>
+From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Date: Wed, 22 Jun 2022 12:10:25 +0200
+Subject: [PATCH 2/7] dt-bindings: arm: aspeed: document board compatibles
+In-Reply-To: <0207c2fe-7c01-7852-3cd1-74297cd4857d@linaro.org>
+References: <20220529104928.79636-1-krzysztof.kozlowski@linaro.org>
+ <20220529104928.79636-2-krzysztof.kozlowski@linaro.org>
+ <0207c2fe-7c01-7852-3cd1-74297cd4857d@linaro.org>
+Message-ID: <fd015563-0326-c897-4ecc-cc77e8a4a14c@linaro.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-When using the normal read operation for data transfers, the dummy bus
-width is zero. In that case, they are no dummy bytes to transfer and
-setting the dummy field in the controller register becomes useless.
+On 20/06/2022 13:06, Krzysztof Kozlowski wrote:
+> On 29/05/2022 12:49, Krzysztof Kozlowski wrote:
+>> Document all compatibles used in existing upstreamed Aspeed AST2400,
+>> AST2500 and AST2600 based boards.
+>>
+>> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+>> ---
+>>  .../bindings/arm/aspeed/aspeed.yaml           | 83 +++++++++++++++++++
+>>  MAINTAINERS                                   |  1 +
+>>  2 files changed, 84 insertions(+)
+>>  create mode 100644 Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+> 
+> Joel, Andrew,
+> 
+> Any comments on the series? Rob applied only patch 1, so the rest is
+> supposed through Aspeed tree. Shall I pick them up and send to arm-soc?
 
-Issue was found on a custom "Bifrost" board based on the AST2500 SoC
-and using a MX25L51245GMI-08G SPI Flash.
+I'll grab the bindings and DTS. I'll keep it on separate branch, so I
+can share to avoid conflicts. If anyone prefers to pick it up, let me
+know so I will drop them from my tree.
 
-Reported-by: Ian Woloschin <ian.woloschin@akamai.com>
-Reviewed-by: Pratyush Yadav <p.yadav@ti.com>
-Tested-by: Ian Woloschin <iwolosch@akamai.com>
-Fixes: 54613fc6659b ("spi: aspeed: Add support for direct mapping")
-Signed-off-by: C?dric Le Goater <clg@kaod.org>
----
- drivers/spi/spi-aspeed-smc.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/spi/spi-aspeed-smc.c b/drivers/spi/spi-aspeed-smc.c
-index ac64be289e59..3e891bf22470 100644
---- a/drivers/spi/spi-aspeed-smc.c
-+++ b/drivers/spi/spi-aspeed-smc.c
-@@ -582,9 +582,11 @@ static int aspeed_spi_dirmap_create(struct spi_mem_dirmap_desc *desc)
- 	ctl_val = readl(chip->ctl) & ~CTRL_IO_CMD_MASK;
- 	ctl_val |= aspeed_spi_get_io_mode(op) |
- 		op->cmd.opcode << CTRL_COMMAND_SHIFT |
--		CTRL_IO_DUMMY_SET(op->dummy.nbytes / op->dummy.buswidth) |
- 		CTRL_IO_MODE_READ;
- 
-+	if (op->dummy.nbytes)
-+		ctl_val |= CTRL_IO_DUMMY_SET(op->dummy.nbytes / op->dummy.buswidth);
-+
- 	/* Tune 4BYTE address mode */
- 	if (op->addr.nbytes) {
- 		u32 addr_mode = readl(aspi->regs + CE_CTRL_REG);
--- 
-2.35.3
-
+Best regards,
+Krzysztof
