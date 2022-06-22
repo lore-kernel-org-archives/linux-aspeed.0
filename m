@@ -1,57 +1,35 @@
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Date: Wed, 22 Jun 2022 17:50:59 +0300
-Subject: [PATCH] usb: gadget: aspeed_udc: fix handling of tx_len == 0
-Message-ID: <YrMsU9HvdBm5YrRH@kili>
+From: Cédric Le Goater <clg@kaod.org>
+Date: Wed, 22 Jun 2022 18:16:15 +0200
+Subject: [PATCH v3 0/2] spi: aspeed: Fix division by zero
+Message-ID: <20220622161617.3719096-1-clg@kaod.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The bug is that we should still enter this loop if "tx_len" is zero.
 
-After adding the "last" variable, then the "chunk >= 0" condition is no
-longer required but I left it for readability.
+Hello,
 
-Reported-by: Neal Liu <neal_liu@aspeedtech.com>
-Fixes: c09b1f372e74 ("usb: gadget: aspeed_udc: cleanup loop in ast_dma_descriptor_setup()")
-Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
----
- drivers/usb/gadget/udc/aspeed_udc.c | 9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
+Here is a small series adding some debug and fixing a division by zero
+on a board using normal speed reads.
 
-diff --git a/drivers/usb/gadget/udc/aspeed_udc.c b/drivers/usb/gadget/udc/aspeed_udc.c
-index d75a4e070bf7..01968e2167f9 100644
---- a/drivers/usb/gadget/udc/aspeed_udc.c
-+++ b/drivers/usb/gadget/udc/aspeed_udc.c
-@@ -476,6 +476,7 @@ static int ast_dma_descriptor_setup(struct ast_udc_ep *ep, u32 dma_buf,
- {
- 	struct ast_udc_dev *udc = ep->udc;
- 	struct device *dev = &udc->pdev->dev;
-+	bool last = false;
- 	int chunk, count;
- 	u32 offset;
- 
-@@ -493,14 +494,16 @@ static int ast_dma_descriptor_setup(struct ast_udc_ep *ep, u32 dma_buf,
- 	       "tx_len", tx_len);
- 
- 	/* Create Descriptor Lists */
--	while (chunk > 0 && count < AST_UDC_DESCS_COUNT) {
-+	while (chunk >= 0 && !last && count < AST_UDC_DESCS_COUNT) {
- 
- 		ep->descs[ep->descs_wptr].des_0 = dma_buf + offset;
- 
--		if (chunk > ep->chunk_max)
-+		if (chunk > ep->chunk_max) {
- 			ep->descs[ep->descs_wptr].des_1 = ep->chunk_max;
--		else
-+		} else {
- 			ep->descs[ep->descs_wptr].des_1 = chunk;
-+			last = true;
-+		}
- 
- 		chunk -= ep->chunk_max;
- 
+Thanks,
+
+C.
+
+ Changes since v2:
+
+ - improved commit log 
+
+C?dric Le Goater (2):
+  spi: aspeed: Add dev_dbg() to dump the spi-mem direct mapping
+    descriptor
+  spi: aspeed: Fix division by zero
+
+ drivers/spi/spi-aspeed-smc.c | 12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
+
 -- 
-2.35.1
+2.35.3
 
