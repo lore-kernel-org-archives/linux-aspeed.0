@@ -1,67 +1,41 @@
-From: Neal Liu <neal_liu@aspeedtech.com>
-Date: Mon, 27 Jun 2022 02:06:06 +0000
-Subject: [PATCH v4 0/5] Add Aspeed crypto driver for hardware acceleration
-In-Reply-To: <3dde4d8e-5f97-dc07-1763-981942d23f12@linux.microsoft.com>
-References: <20220624090827.3909179-1-neal_liu@aspeedtech.com>
- <3dde4d8e-5f97-dc07-1763-981942d23f12@linux.microsoft.com>
-Message-ID: <HK0PR06MB3202A2C71562AB1F9202DEAD80B99@HK0PR06MB3202.apcprd06.prod.outlook.com>
+From: Heiko Stuebner <heiko@sntech.de>
+Date: Wed, 22 Jun 2022 21:47:36 +0200
+Subject: (subset) [PATCH v3 00/40] dt-bindings: input: gpio-keys: rework matching children
+In-Reply-To: <20220616005224.18391-1-krzysztof.kozlowski@linaro.org>
+References: <20220616005224.18391-1-krzysztof.kozlowski@linaro.org>
+Message-ID: <165592714968.3933570.9891201783444800337.b4-ty@sntech.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-> Hi Neal,
+On Wed, 15 Jun 2022 17:52:24 -0700, Krzysztof Kozlowski wrote:
+> Merging
+> =======
+> 1. dt-bindings: rebased on top of Rob's:
+>    https://lore.kernel.org/all/20220608211207.2058487-1-robh at kernel.org/
 > 
-> On 6/24/2022 2:08 AM, Neal Liu wrote:
-> > Aspeed Hash and Crypto Engine (HACE) is designed to accelerate the
-> > throughput of hash data digest, encryption and decryption.
-> >
-> > These patches aim to add Aspeed hash & crypto driver support.
-> > The hash & crypto driver also pass the run-time self tests that take
-> > place at algorithm registration.
-> >
-> > Tested-by below configs:
-> > - CONFIG_CRYPTO_MANAGER_DISABLE_TESTS is not set
-> > - CONFIG_CRYPTO_MANAGER_EXTRA_TESTS=y
-> > - CONFIG_DMA_API_DEBUG=y
-> > - CONFIG_DMA_API_DEBUG_SG=y
-> > - CONFIG_CPU_BIG_ENDIAN=y
-> >
-> > Change since v3:
-> > - Use dmam_alloc_coherent() instead to manage dma_alloc_coherent().
-> > - Add more error handler of dma_prepare() & crypto_engine_start().
-> >
-> > Change since v2:
-> > - Fix endianness issue. Tested on both little endian & big endian
-> >    system.
-> > - Use common crypto hardware engine for enqueue & dequeue requests.
-> > - Use pre-defined IVs for SHA-family.
-> > - Revise error handler flow.
-> > - Fix sorts of coding style problems.
-> >
-> > Change since v1:
-> > - Add more error handlers, including DMA memory allocate/free, DMA
-> >    map/unmap, clock enable/disable, etc.
-> > - Fix check dma_map error for config DMA_API_DEBUG.
-> > - Fix dt-binding doc & dts node naming.
-> >
-> >
-> > Neal Liu (5):
-> >    crypto: aspeed: Add HACE hash driver
-> >    dt-bindings: clock: Add AST2600 HACE reset definition
-> >    ARM: dts: aspeed: Add HACE device controller node
-> >    dt-bindings: crypto: add documentation for aspeed hace
-> >    crypto: aspeed: add HACE crypto driver
+> 2. DTS patches are independent. They can be picked up directly by sub-arch
+>    maintainers, by Arnd or Olof, or eventually by me (if you wish).
 > 
-> The driver claims compatible with aspeed,ast2500-hace, but there's no
-> equivalent g5 DTS change (patch 3/5) or reset definition (patch 2/5) in
-> aspeed-clock.h? Either drop ast2500 compatible from this patch series or fix
-> these.
-> 
-> Thanks,
-> Dhananjay
+> [...]
 
-Okay, I miss this part. I'll fix it in next patch.
-Thanks for the review.
+Applied, thanks!
 
+[26/40] arm64: dts: rockchip: align gpio-key node names with dtschema
+        commit: 517ed0ffd3cc691bef747288d51d01d2705b2251
+
+        In the pinenote dts the original patch changed "cover" to
+        switch, so to keep the cover information intact, I changed
+        the node to "switch-cover" ... similar to other "switch-lid"
+        instances in some other Rockchip devicetrees.
+
+[27/40] ARM: dts: rockchip: align gpio-key node names with dtschema
+        commit: 271e2c92285075a890c58cba9ad5979a8959f6ff
+[28/40] ARM: dts: rockchip: rk3288-tinker: correct gpio-keys properties
+        commit: e5a3cbe8b45b0a436a39cc969b7bcc8353248018
+
+Best regards,
+-- 
+Heiko Stuebner <heiko@sntech.de>
