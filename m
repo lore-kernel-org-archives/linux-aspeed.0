@@ -1,26 +1,23 @@
-From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Date: Wed, 22 Jun 2022 12:17:39 +0200
-Subject: (subset) [PATCH 7/7] ARM: dts: aspeed: centriq2400: use qcom compatible
-In-Reply-To: <20220529104928.79636-7-krzysztof.kozlowski@linaro.org>
-References: <20220529104928.79636-1-krzysztof.kozlowski@linaro.org> <20220529104928.79636-7-krzysztof.kozlowski@linaro.org>
-Message-ID: <165589305701.29629.10216921074802952879.b4-ty@linaro.org>
+From: Andy Shevchenko <andy.shevchenko@gmail.com>
+Date: Wed, 22 Jun 2022 12:26:19 +0200
+Subject: [PATCH v2 1/2] spi: aspeed: Add pr_debug in aspeed_spi_dirmap_create()
+In-Reply-To: <20220622094233.3681843-2-clg@kaod.org>
+References: <20220622094233.3681843-1-clg@kaod.org> <20220622094233.3681843-2-clg@kaod.org>
+Message-ID: <CAHp75VdBO1yPVH6NCEj8ZSYF2-6q0soE=8qNGrh7G=t7adRBZw@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sun, 29 May 2022 12:49:28 +0200, Krzysztof Kozlowski wrote:
-> "qualcomm" is not a documented compatible and instead "qcom" should be
-> used.
-> 
-> 
+On Wed, Jun 22, 2022 at 11:46 AM C?dric Le Goater <clg@kaod.org> wrote:
+>
+> It helps to analyze the default setting of the control register.
 
-Applied, thanks!
+Replace "It" with a slightly more descriptive "what is it?".
 
-[7/7] ARM: dts: aspeed: centriq2400: use qcom compatible
-      https://git.kernel.org/krzk/linux/c/6202c6063145cf9ec22b40aac219122dd702a10f
+Also make the subject aligned with the contents of the patch.
 
-Best regards,
 -- 
-Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+With Best Regards,
+Andy Shevchenko
