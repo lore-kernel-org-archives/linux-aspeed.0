@@ -1,45 +1,36 @@
 From: Neal Liu <neal_liu@aspeedtech.com>
-Date: Fri, 24 Jun 2022 07:46:50 +0000
-Subject: [PATCH] usb: gadget: aspeed_udc: fix handling of tx_len == 0
-In-Reply-To: <46f88070d8f6f47f55310e964a4576cadbc810f4.camel@kernel.crashing.org>
-References: <YrMsU9HvdBm5YrRH@kili>
-	 <HK0PR06MB32023259EBD6B4C649C62E8280B59@HK0PR06MB3202.apcprd06.prod.outlook.com>
-	 <20220623064320.GN16517@kadam>
-	 <e0b1c201bec2ccb68d1779ea8e9cfdf27563dd73.camel@amazon.com>
-	 <20220624063457.GG11460@kadam>
- <46f88070d8f6f47f55310e964a4576cadbc810f4.camel@kernel.crashing.org>
-Message-ID: <HK0PR06MB32024B6C49E2C958185E005280B49@HK0PR06MB3202.apcprd06.prod.outlook.com>
+Date: Fri, 24 Jun 2022 17:08:24 +0800
+Subject: [PATCH v4 2/5] dt-bindings: clock: Add AST2600 HACE reset definition
+In-Reply-To: <20220624090827.3909179-1-neal_liu@aspeedtech.com>
+References: <20220624090827.3909179-1-neal_liu@aspeedtech.com>
+Message-ID: <20220624090827.3909179-3-neal_liu@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-> (switching back to my normal "community" email)
-> 
-> On Fri, 2022-06-24 at 09:34 +0300, Dan Carpenter wrote:
-> > > Hrm... what is that driver ? I've missed it ... is the code lifted
-> > > from aspeed-vhub ? If yes, should we instead make it a common code
-> > > base ?
-> > > And if there are bug fixes on one they might apply to the other as
-> > > well...
-> >
-> >
-> > No, I'm the person who introduced the bug so it's unique to this
-> > driver.
-> 
-> Ok thanks. That said, the code looks fairly similar to the vhub code, so my
-> comment stands, if this is the same IP block, which it appears to be, the driver
-> should be common.
-> 
-> IE. The vhub is made of a virtual hub with a bunch of UDCs underneath, this
-> appears to address the ast2600 "new" standalone (no hub) variant of said UDC
-> if I'm not mistaken.
-> 
-> The way I structured the code in vhub, it shouldn't be overly difficult to make it
-> standalone. I wrote (and maintain) aspeed-vhub and would be happy to work
-> on this if I got sent an ast2600 board.
-> 
+Add HACE reset bit definition for ast2600.
 
-Hi Ben, This UDC is the independent IP. The ast2600 board can run aspeed-vhub & aspeed_udc simultaneously with different USB port.
-I think it's no need to restruct the code in vhub.
+Signed-off-by: Neal Liu <neal_liu@aspeedtech.com>
+Signed-off-by: Johnny Huang <johnny_huang@aspeedtech.com>
+Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+---
+ include/dt-bindings/clock/ast2600-clock.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/include/dt-bindings/clock/ast2600-clock.h b/include/dt-bindings/clock/ast2600-clock.h
+index 62b9520a00fd..d8b0db2f7a7d 100644
+--- a/include/dt-bindings/clock/ast2600-clock.h
++++ b/include/dt-bindings/clock/ast2600-clock.h
+@@ -111,6 +111,7 @@
+ #define ASPEED_RESET_PCIE_RC_O		19
+ #define ASPEED_RESET_PCIE_RC_OEN	18
+ #define ASPEED_RESET_PCI_DP		5
++#define ASPEED_RESET_HACE		4
+ #define ASPEED_RESET_AHB		1
+ #define ASPEED_RESET_SDRAM		0
+ 
+-- 
+2.25.1
+
