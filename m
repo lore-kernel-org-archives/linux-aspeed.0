@@ -1,45 +1,47 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Fri, 24 Jun 2022 16:39:50 +1000
-Subject: [PATCH] usb: gadget: aspeed_udc: fix handling of tx_len == 0
-In-Reply-To: <20220624063457.GG11460@kadam>
-References: <YrMsU9HvdBm5YrRH@kili>
-	 <HK0PR06MB32023259EBD6B4C649C62E8280B59@HK0PR06MB3202.apcprd06.prod.outlook.com>
-	 <20220623064320.GN16517@kadam>
-	 <e0b1c201bec2ccb68d1779ea8e9cfdf27563dd73.camel@amazon.com>
-	 <20220624063457.GG11460@kadam>
-Message-ID: <46f88070d8f6f47f55310e964a4576cadbc810f4.camel@kernel.crashing.org>
+From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Date: Fri, 24 Jun 2022 09:12:04 +0200
+Subject: (subset) [PATCH 7/7] ARM: dts: aspeed: centriq2400: use qcom
+ compatible
+In-Reply-To: <84cba0c8-fb31-3314-5e2c-7a0c13030b9a@linaro.org>
+References: <20220529104928.79636-1-krzysztof.kozlowski@linaro.org>
+ <20220529104928.79636-7-krzysztof.kozlowski@linaro.org>
+ <165589305701.29629.10216921074802952879.b4-ty@linaro.org>
+ <CACPK8XfxXi8kQr+vxta8rD6SBgxLf_oBjAH0UkPBacQta552YQ@mail.gmail.com>
+ <84cba0c8-fb31-3314-5e2c-7a0c13030b9a@linaro.org>
+Message-ID: <0378a9e1-a2f9-5c7d-2fdd-0a78ff237db9@linaro.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-(switching back to my normal "community" email)
-
-On Fri, 2022-06-24 at 09:34 +0300, Dan Carpenter wrote:
-> > Hrm... what is that driver ? I've missed it ... is the code lifted
-> > from
-> > aspeed-vhub ? If yes, should we instead make it a common code base
-> > ?
-> > And if there are bug fixes on one they might apply to the other as
-> > well...
+On 23/06/2022 09:05, Krzysztof Kozlowski wrote:
+> On 23/06/2022 07:34, Joel Stanley wrote:
+>> On Wed, 22 Jun 2022 at 10:17, Krzysztof Kozlowski
+>> <krzysztof.kozlowski@linaro.org> wrote:
+>>>
+>>> On Sun, 29 May 2022 12:49:28 +0200, Krzysztof Kozlowski wrote:
+>>>> "qualcomm" is not a documented compatible and instead "qcom" should be
+>>>> used.
+>>>>
+>>>>
+>>>
+>>> Applied, thanks!
+>>
+>> What tree did you apply this to? Did you get review from the maintainer?
 > 
+> Tree was mentioned below.
 > 
-> No, I'm the person who introduced the bug so it's unique to this
-> driver.
+>>
+>> This board is unmaintained and unused. I would prefer it removed
+>> rather than meaningless fixes be applied.
+> 
+> I can drop the patch. I'll send the patch to remove the board.
 
-Ok thanks. That said, the code looks fairly similar to the vhub code,
-so my comment stands, if this is the same IP block, which it appears to
-be, the driver should be common.
+Does your answer also means that you are planning to take these? I am
+going to prepare a pull request to arm-soc so need to know whether to
+keep these or not. I don't have any particular need of handling these
+patches by myself, but I want the issues to get fixed.
 
-IE. The vhub is made of a virtual hub with a bunch of UDCs underneath,
-this appears to address the ast2600 "new" standalone (no hub) variant
-of said UDC if I'm not mistaken.
-
-The way I structured the code in vhub, it shouldn't be overly difficult
-to make it standalone. I wrote (and maintain) aspeed-vhub and would be
-happy to work on this if I got sent an ast2600 board.
-
-Cheers,
-Ben.
-
+Best regards,
+Krzysztof
