@@ -1,78 +1,42 @@
-From: Cédric Le Goater <clg@kaod.org>
-Date: Fri, 24 Jun 2022 08:06:10 +0200
-Subject: [PATCH] ARM: dts: aspeed: ast2600-evb: Update I2C devices
-In-Reply-To: <20220623094717.3873328-1-joel@jms.id.au>
-References: <20220623094717.3873328-1-joel@jms.id.au>
-Message-ID: <3114efc7-5131-2de5-4ebc-6b6deeea1f23@kaod.org>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Fri, 24 Jun 2022 09:34:57 +0300
+Subject: [PATCH] usb: gadget: aspeed_udc: fix handling of tx_len == 0
+In-Reply-To: <e0b1c201bec2ccb68d1779ea8e9cfdf27563dd73.camel@amazon.com>
+References: <YrMsU9HvdBm5YrRH@kili>
+ <HK0PR06MB32023259EBD6B4C649C62E8280B59@HK0PR06MB3202.apcprd06.prod.outlook.com>
+ <20220623064320.GN16517@kadam>
+ <e0b1c201bec2ccb68d1779ea8e9cfdf27563dd73.camel@amazon.com>
+Message-ID: <20220624063457.GG11460@kadam>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 6/23/22 11:47, Joel Stanley wrote:
-> The AST2600A3 EVB has the following I2C devices:
+On Fri, Jun 24, 2022 at 06:17:31AM +0000, Herrenschmidt, Benjamin wrote:
+> On Thu, 2022-06-23 at 09:43 +0300, Dan Carpenter wrote:
+> > On Thu, Jun 23, 2022 at 01:41:49AM +0000, Neal Liu wrote:
+> > > > The bug is that we should still enter this loop if "tx_len" is
+> > > > zero.
+> > > > 
+> > > > After adding the "last" variable, then the "chunk >= 0" condition
+> > > > is no longer
+> > > > required but I left it for readability.
+> > > > 
+> > > 
+> > > Use either "chunk >=0" or "last".
+> > > I think the former is more simpler.
+> > 
+> > chunk >= 0 doesn't work.  last works but I think this way is more
+> > readable.
 > 
->   - ADT7490 at 0x2e
->   - EEPROM at 0xa0
->   - LM75 at 0x9a
-> 
-> The bus these devices appear on can be configured by jumpers. The device
-> tree is configured with the buses given by the default jumper settings.
-> 
-> Signed-off-by: Joel Stanley <joel@jms.id.au>
+> Hrm... what is that driver ? I've missed it ... is the code lifted from
+> aspeed-vhub ? If yes, should we instead make it a common code base ?
+> And if there are bug fixes on one they might apply to the other as
+> well...
 
-Reviewed-by: C?dric Le Goater <clg@kaod.org>
+No, I'm the person who introduced the bug so it's unique to this driver.
 
-Thanks,
-
-C.
-
-> ---
->   arch/arm/boot/dts/aspeed-ast2600-evb.dts | 21 ++++++++++++++++-----
->   1 file changed, 16 insertions(+), 5 deletions(-)
-> 
-> diff --git a/arch/arm/boot/dts/aspeed-ast2600-evb.dts b/arch/arm/boot/dts/aspeed-ast2600-evb.dts
-> index 5a6063bd4508..9da70b873ab6 100644
-> --- a/arch/arm/boot/dts/aspeed-ast2600-evb.dts
-> +++ b/arch/arm/boot/dts/aspeed-ast2600-evb.dts
-> @@ -207,11 +207,6 @@ &uart5 {
->   
->   &i2c0 {
->   	status = "okay";
-> -
-> -	temp at 2e {
-> -		compatible = "adi,adt7490";
-> -		reg = <0x2e>;
-> -	};
->   };
->   
->   &i2c1 {
-> @@ -240,10 +235,26 @@ &i2c6 {
->   
->   &i2c7 {
->   	status = "okay";
-> +
-> +	temp at 2e {
-> +		compatible = "adi,adt7490";
-> +		reg = <0x2e>;
-> +	};
-> +
-> +	eeprom at 50 {
-> +		compatible = "atmel,24c08";
-> +		reg = <0x50>;
-> +		pagesize = <16>;
-> +	};
->   };
->   
->   &i2c8 {
->   	status = "okay";
-> +
-> +	lm75 at 4d {
-> +		compatible = "national,lm75";
-> +		reg = <0x4d>;
-> +	};
->   };
->   
->   &i2c9 {
+regards,
+dan carpenter
 
