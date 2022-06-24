@@ -1,65 +1,216 @@
 From: Neal Liu <neal_liu@aspeedtech.com>
-Date: Fri, 24 Jun 2022 02:01:18 +0000
-Subject: [PATCH v2] usb: gadget: aspeed_udc: fix handling of tx_len == 0
-In-Reply-To: <YrRj38cU1nV4gsUX@kili>
-References: <YrRj38cU1nV4gsUX@kili>
-Message-ID: <HK0PR06MB3202A24ACAA94B6525ECA7DF80B49@HK0PR06MB3202.apcprd06.prod.outlook.com>
+Date: Fri, 24 Jun 2022 05:25:15 +0000
+Subject: [PATCH v3 1/5] crypto: aspeed: Add HACE hash driver
+In-Reply-To: <21679090-7a89-865b-becf-d5552e8cedea@wanadoo.fr>
+References: <20220621063752.1005781-1-neal_liu@aspeedtech.com>
+ <20220621063752.1005781-2-neal_liu@aspeedtech.com>
+ <21679090-7a89-865b-becf-d5552e8cedea@wanadoo.fr>
+Message-ID: <HK0PR06MB32026FAA5D5F2852DD747A6480B49@HK0PR06MB3202.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-> The bug is that we should still enter this loop if "tx_len" is zero.
+> Le 21/06/2022 ? 08:37, Neal Liu a ?crit?:
+> > Hash and Crypto Engine (HACE) is designed to accelerate the throughput
+> > of hash data digest, encryption, and decryption.
+> >
+> > Basically, HACE can be divided into two independently engines
+> > - Hash Engine and Crypto Engine. This patch aims to add HACE hash
+> > engine driver for hash accelerator.
+> >
+> > Signed-off-by: Neal Liu
+> > <neal_liu-SAlXDmAnmOAqDJ6do+/SaQ@public.gmane.org>
+> > Signed-off-by: Johnny Huang
+> > <johnny_huang-SAlXDmAnmOAqDJ6do+/SaQ@public.gmane.org>
+> > ---
 > 
-> Reported-by: Neal Liu <neal_liu@aspeedtech.com>
-> Fixes: c09b1f372e74 ("usb: gadget: aspeed_udc: cleanup loop in
-> ast_dma_descriptor_setup()")
-> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
-> ---
-> v2: Remove the unnecessary "chunk >= 0" condition
+> [...]
+> 
+> > +++ b/drivers/crypto/aspeed/Kconfig
+> > @@ -0,0 +1,23 @@
+> > +config CRYPTO_DEV_ASPEED
+> > +	tristate "Support for Aspeed cryptographic engine driver"
+> > +	depends on ARCH_ASPEED
+> > +	help
+> > +	  Hash and Crypto Engine (HACE) is designed to accelerate the
+> > +	  throughput of hash data digest, encryption and decryption.
+> > +
+> > +	  Select y here to have support for the cryptographic driver
+> > +	  available on Aspeed SoC.
+> > +
+> > +config CRYPTO_DEV_ASPEED_HACE_HASH
+> > +	bool "Enable ASPEED Hash & Crypto Engine (HACE) hash"
+> 
+> Nit: Sometimes you have ASPEED, sometimes you have Aspeed. (see a few lines
+> above)
+> 
 
-I mean v1 looks good to me.
-Sorry if you are misunderstanding.
+I'll align it for next patch.
+
+> [...]
+> 
+> > +static int aspeed_ahash_req_update(struct aspeed_hace_dev *hace_dev)
+> > +{
+> > +	struct aspeed_engine_hash *hash_engine = &hace_dev->hash_engine;
+> > +	struct ahash_request *req = hash_engine->req;
+> > +	struct aspeed_sham_reqctx *rctx = ahash_request_ctx(req);
+> > +	aspeed_hace_fn_t resume;
+> > +
+> > +	AHASH_DBG(hace_dev, "\n");
+> > +
+> > +	if (hace_dev->version == AST2600_VERSION) {
+> > +		rctx->cmd |= HASH_CMD_HASH_SRC_SG_CTRL;
+> > +		resume = aspeed_ahash_update_resume_sg;
+> > +
+> > +	} else {
+> > +		resume = aspeed_ahash_update_resume;
+> > +	}
+> > +
+> > +	hash_engine->dma_prepare(hace_dev);
+> 
+> Apparently dma_prepare() can fail. Should there be some error handling here?
+
+Yes, it should. I'll add it for next patch.
 
 > 
->  drivers/usb/gadget/udc/aspeed_udc.c | 9 ++++++---
->  1 file changed, 6 insertions(+), 3 deletions(-)
+> > +
+> > +	return aspeed_hace_ahash_trigger(hace_dev, resume); }
+> > +
 > 
-> diff --git a/drivers/usb/gadget/udc/aspeed_udc.c
-> b/drivers/usb/gadget/udc/aspeed_udc.c
-> index d75a4e070bf7..6ff02acc5662 100644
-> --- a/drivers/usb/gadget/udc/aspeed_udc.c
-> +++ b/drivers/usb/gadget/udc/aspeed_udc.c
-> @@ -476,6 +476,7 @@ static int ast_dma_descriptor_setup(struct ast_udc_ep
-> *ep, u32 dma_buf,  {
->  	struct ast_udc_dev *udc = ep->udc;
->  	struct device *dev = &udc->pdev->dev;
-> +	bool last = false;
->  	int chunk, count;
->  	u32 offset;
+> [...]
 > 
-> @@ -493,14 +494,16 @@ static int ast_dma_descriptor_setup(struct
-> ast_udc_ep *ep, u32 dma_buf,
->  	       "tx_len", tx_len);
+> > +static int aspeed_hace_probe(struct platform_device *pdev) {
+> > +	const struct of_device_id *hace_dev_id;
+> > +	struct aspeed_engine_hash *hash_engine;
+> > +	struct aspeed_hace_dev *hace_dev;
+> > +	struct resource *res;
+> > +	int rc;
+> > +
+> > +	hace_dev = devm_kzalloc(&pdev->dev, sizeof(struct aspeed_hace_dev),
+> > +				GFP_KERNEL);
+> > +	if (!hace_dev)
+> > +		return -ENOMEM;
+> > +
+> > +	hace_dev_id = of_match_device(aspeed_hace_of_matches, &pdev->dev);
+> > +	if (!hace_dev_id) {
+> > +		dev_err(&pdev->dev, "Failed to match hace dev id\n");
+> > +		return -EINVAL;
+> > +	}
+> > +
+> > +	hace_dev->dev = &pdev->dev;
+> > +	hace_dev->version = (unsigned long)hace_dev_id->data;
+> > +	hash_engine = &hace_dev->hash_engine;
+> > +
+> > +	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+> > +
+> > +	platform_set_drvdata(pdev, hace_dev);
+> > +
+> > +	/* Initialize crypto hardware engine structure for hash */
+> > +	hace_dev->crypt_engine_hash = crypto_engine_alloc_init(hace_dev->dev,
+> > +							       true);
 > 
->  	/* Create Descriptor Lists */
-> -	while (chunk > 0 && count < AST_UDC_DESCS_COUNT) {
-> +	while (!last && count < AST_UDC_DESCS_COUNT) {
+> This returns NULL on error and crypto_engine_start() will crash in such a case.
+
+I'll revise it also, thanks.
+
 > 
->  		ep->descs[ep->descs_wptr].des_0 = dma_buf + offset;
+> > +
+> > +	rc = crypto_engine_start(hace_dev->crypt_engine_hash);
+> > +	if (rc)
+> > +		goto err_engine_hash_start;
+> > +
+> > +	tasklet_init(&hash_engine->done_task, aspeed_hace_hash_done_task,
+> > +		     (unsigned long)hace_dev);
+> > +
+> > +	hace_dev->regs = devm_ioremap_resource(&pdev->dev, res);
+> > +	if (!hace_dev->regs) {
+> > +		dev_err(&pdev->dev, "Failed to map resources\n");
+> > +		return -ENOMEM;
 > 
-> -		if (chunk > ep->chunk_max)
-> +		if (chunk > ep->chunk_max) {
->  			ep->descs[ep->descs_wptr].des_1 = ep->chunk_max;
-> -		else
-> +		} else {
->  			ep->descs[ep->descs_wptr].des_1 = chunk;
-> +			last = true;
-> +		}
+> I think that all direct returns from here to the end of the function should be
+> "goto err_engine_hash_start;".
+
+I'll move crypto engine start stuffs to below, so all these returns can stay the same.
+
 > 
->  		chunk -= ep->chunk_max;
+> > +	}
+> > +
+> > +	/* Get irq number and register it */
+> > +	hace_dev->irq = platform_get_irq(pdev, 0);
+> > +	if (!hace_dev->irq) {
+> > +		dev_err(&pdev->dev, "Failed to get interrupt\n");
+> > +		return -ENXIO;
+> > +	}
+> > +
+> > +	rc = devm_request_irq(&pdev->dev, hace_dev->irq, aspeed_hace_irq, 0,
+> > +			      dev_name(&pdev->dev), hace_dev);
+> > +	if (rc) {
+> > +		dev_err(&pdev->dev, "Failed to request interrupt\n");
+> > +		return rc;
+> > +	}
+> > +
+> > +	/* Get clk and enable it */
+> > +	hace_dev->clk = devm_clk_get(&pdev->dev, NULL);
+> > +	if (IS_ERR(hace_dev->clk)) {
+> > +		dev_err(&pdev->dev, "Failed to get clk\n");
+> > +		return -ENODEV;
+> > +	}
+> > +
+> > +	rc = clk_prepare_enable(hace_dev->clk);
+> > +	if (rc) {
+> > +		dev_err(&pdev->dev, "Failed to enable clock 0x%x\n", rc);
+> > +		return rc;
+> > +	}
+> > +
+> > +	/* Allocate DMA buffer for hash engine input used */
+> > +	hash_engine->ahash_src_addr =
+> > +		dma_alloc_coherent(&pdev->dev,
+> > +				   ASPEED_HASH_SRC_DMA_BUF_LEN,
+> > +				   &hash_engine->ahash_src_dma_addr,
+> > +				   GFP_KERNEL);
 > 
-> --
-> 2.35.1
+> Most of the resources are devm_'ed. Does it make sense to use
+> dmam_alloc_coherent() here to simplify the .remove function?
+
+Thanks for the suggestion. I'll use dmam_alloc_coherent() instead.
+
+> 
+> > +	if (!hash_engine->ahash_src_addr) {
+> > +		dev_err(&pdev->dev, "Failed to allocate dma buffer\n");
+> > +		rc = -ENOMEM;
+> > +		goto clk_exit;
+> > +	}
+> > +
+> > +	aspeed_hace_register(hace_dev);
+> > +
+> > +	dev_info(&pdev->dev, "ASPEED Crypto Accelerator successfully
+> > +registered\n");
+> > +
+> Nit: Sometimes you have ASPEED, sometimes you have Aspeed.
+> 
+
+Same here.
+
+> > +	return rc;
+> > +
+> > +clk_exit:
+> > +	clk_disable_unprepare(hace_dev->clk);
+> > +err_engine_hash_start:
+> > +	crypto_engine_exit(hace_dev->crypt_engine_hash);
+> > +
+> > +	return rc;
+> > +}
+> > +
+> 
+> [...]
+> 
+> > +MODULE_AUTHOR("Neal Liu
+> > +<neal_liu-SAlXDmAnmOAqDJ6do+/SaQ@public.gmane.org>");
+> > +MODULE_DESCRIPTION("ASPEED HACE driver Crypto Accelerator");
+> 
+> Nit: Sometimes you have ASPEED, sometimes you have Aspeed.
+
+Same here.
 
