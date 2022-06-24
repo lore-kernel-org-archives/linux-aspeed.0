@@ -1,42 +1,33 @@
-From: Neal Liu <neal_liu@aspeedtech.com>
-Date: Fri, 24 Jun 2022 17:08:25 +0800
-Subject: [PATCH v4 3/5] ARM: dts: aspeed: Add HACE device controller node
-In-Reply-To: <20220624090827.3909179-1-neal_liu@aspeedtech.com>
-References: <20220624090827.3909179-1-neal_liu@aspeedtech.com>
-Message-ID: <20220624090827.3909179-4-neal_liu@aspeedtech.com>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Date: Fri, 24 Jun 2022 13:35:54 +0200
+Subject: [PATCH v2] usb: gadget: aspeed_udc: fix handling of tx_len == 0
+In-Reply-To: <HK0PR06MB3202A24ACAA94B6525ECA7DF80B49@HK0PR06MB3202.apcprd06.prod.outlook.com>
+References: <YrRj38cU1nV4gsUX@kili>
+ <HK0PR06MB3202A24ACAA94B6525ECA7DF80B49@HK0PR06MB3202.apcprd06.prod.outlook.com>
+Message-ID: <YrWhmkqpDuL34rQR@kroah.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add hace node to device tree for AST2600.
+On Fri, Jun 24, 2022 at 02:01:18AM +0000, Neal Liu wrote:
+> > The bug is that we should still enter this loop if "tx_len" is zero.
+> > 
+> > Reported-by: Neal Liu <neal_liu@aspeedtech.com>
+> > Fixes: c09b1f372e74 ("usb: gadget: aspeed_udc: cleanup loop in
+> > ast_dma_descriptor_setup()")
+> > Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+> > ---
+> > v2: Remove the unnecessary "chunk >= 0" condition
+> 
+> I mean v1 looks good to me.
+> Sorry if you are misunderstanding.
 
-Signed-off-by: Neal Liu <neal_liu@aspeedtech.com>
-Signed-off-by: Johnny Huang <johnny_huang@aspeedtech.com>
----
- arch/arm/boot/dts/aspeed-g6.dtsi | 8 ++++++++
- 1 file changed, 8 insertions(+)
+I have no idea if v1 or v2 is the "correct" one here, sorry.
 
-diff --git a/arch/arm/boot/dts/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed-g6.dtsi
-index 6660564855ff..095cf8d03616 100644
---- a/arch/arm/boot/dts/aspeed-g6.dtsi
-+++ b/arch/arm/boot/dts/aspeed-g6.dtsi
-@@ -323,6 +323,14 @@ apb {
- 			#size-cells = <1>;
- 			ranges;
- 
-+			hace: crypto at 1e6d0000 {
-+				compatible = "aspeed,ast2600-hace";
-+				reg = <0x1e6d0000 0x200>;
-+				interrupts = <GIC_SPI 4 IRQ_TYPE_LEVEL_HIGH>;
-+				clocks = <&syscon ASPEED_CLK_GATE_YCLK>;
-+				resets = <&syscon ASPEED_RESET_HACE>;
-+			};
-+
- 			syscon: syscon at 1e6e2000 {
- 				compatible = "aspeed,ast2600-scu", "syscon", "simple-mfd";
- 				reg = <0x1e6e2000 0x1000>;
--- 
-2.25.1
+Dan, can you send a v3 that you all agree on?
 
+thanks,
+
+greg k-h
