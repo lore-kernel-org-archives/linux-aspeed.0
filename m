@@ -1,85 +1,74 @@
 From: Neal Liu <neal_liu@aspeedtech.com>
-Date: Fri, 24 Jun 2022 17:08:26 +0800
-Subject: [PATCH v4 4/5] dt-bindings: crypto: add documentation for aspeed hace
-In-Reply-To: <20220624090827.3909179-1-neal_liu@aspeedtech.com>
-References: <20220624090827.3909179-1-neal_liu@aspeedtech.com>
-Message-ID: <20220624090827.3909179-5-neal_liu@aspeedtech.com>
+Date: Fri, 24 Jun 2022 17:08:22 +0800
+Subject: [PATCH v4 0/5] Add Aspeed crypto driver for hardware acceleration
+Message-ID: <20220624090827.3909179-1-neal_liu@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add device tree binding documentation for the Aspeed Hash
-and Crypto Engines (HACE) Controller.
+Aspeed Hash and Crypto Engine (HACE) is designed to accelerate the
+throughput of hash data digest, encryption and decryption.
 
-Signed-off-by: Neal Liu <neal_liu@aspeedtech.com>
-Signed-off-by: Johnny Huang <johnny_huang@aspeedtech.com>
-Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
----
- .../bindings/crypto/aspeed,ast2500-hace.yaml  | 53 +++++++++++++++++++
- 1 file changed, 53 insertions(+)
+These patches aim to add Aspeed hash & crypto driver support.
+The hash & crypto driver also pass the run-time self tests that
+take place at algorithm registration.
+
+Tested-by below configs:
+- CONFIG_CRYPTO_MANAGER_DISABLE_TESTS is not set
+- CONFIG_CRYPTO_MANAGER_EXTRA_TESTS=y
+- CONFIG_DMA_API_DEBUG=y
+- CONFIG_DMA_API_DEBUG_SG=y
+- CONFIG_CPU_BIG_ENDIAN=y
+
+Change since v3:
+- Use dmam_alloc_coherent() instead to manage dma_alloc_coherent().
+- Add more error handler of dma_prepare() & crypto_engine_start().
+
+Change since v2:
+- Fix endianness issue. Tested on both little endian & big endian
+  system.
+- Use common crypto hardware engine for enqueue & dequeue requests.
+- Use pre-defined IVs for SHA-family.
+- Revise error handler flow.
+- Fix sorts of coding style problems.
+
+Change since v1:
+- Add more error handlers, including DMA memory allocate/free, DMA
+  map/unmap, clock enable/disable, etc.
+- Fix check dma_map error for config DMA_API_DEBUG.
+- Fix dt-binding doc & dts node naming.
+
+
+Neal Liu (5):
+  crypto: aspeed: Add HACE hash driver
+  dt-bindings: clock: Add AST2600 HACE reset definition
+  ARM: dts: aspeed: Add HACE device controller node
+  dt-bindings: crypto: add documentation for aspeed hace
+  crypto: aspeed: add HACE crypto driver
+
+ .../bindings/crypto/aspeed,ast2500-hace.yaml  |   53 +
+ MAINTAINERS                                   |    7 +
+ arch/arm/boot/dts/aspeed-g6.dtsi              |    8 +
+ drivers/crypto/Kconfig                        |    1 +
+ drivers/crypto/Makefile                       |    1 +
+ drivers/crypto/aspeed/Kconfig                 |   40 +
+ drivers/crypto/aspeed/Makefile                |    8 +
+ drivers/crypto/aspeed/aspeed-hace-crypto.c    | 1041 ++++++++++++
+ drivers/crypto/aspeed/aspeed-hace-hash.c      | 1428 +++++++++++++++++
+ drivers/crypto/aspeed/aspeed-hace.c           |  301 ++++
+ drivers/crypto/aspeed/aspeed-hace.h           |  289 ++++
+ include/dt-bindings/clock/ast2600-clock.h     |    1 +
+ 12 files changed, 3178 insertions(+)
  create mode 100644 Documentation/devicetree/bindings/crypto/aspeed,ast2500-hace.yaml
+ create mode 100644 drivers/crypto/aspeed/Kconfig
+ create mode 100644 drivers/crypto/aspeed/Makefile
+ create mode 100644 drivers/crypto/aspeed/aspeed-hace-crypto.c
+ create mode 100644 drivers/crypto/aspeed/aspeed-hace-hash.c
+ create mode 100644 drivers/crypto/aspeed/aspeed-hace.c
+ create mode 100644 drivers/crypto/aspeed/aspeed-hace.h
 
-diff --git a/Documentation/devicetree/bindings/crypto/aspeed,ast2500-hace.yaml b/Documentation/devicetree/bindings/crypto/aspeed,ast2500-hace.yaml
-new file mode 100644
-index 000000000000..a772d232de09
---- /dev/null
-+++ b/Documentation/devicetree/bindings/crypto/aspeed,ast2500-hace.yaml
-@@ -0,0 +1,53 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/crypto/aspeed,ast2500-hace.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: ASPEED HACE hash and crypto Hardware Accelerator Engines
-+
-+maintainers:
-+  - Neal Liu <neal_liu@aspeedtech.com>
-+
-+description: |
-+  The Hash and Crypto Engine (HACE) is designed to accelerate the throughput
-+  of hash data digest, encryption, and decryption. Basically, HACE can be
-+  divided into two independently engines - Hash Engine and Crypto Engine.
-+
-+properties:
-+  compatible:
-+    enum:
-+      - aspeed,ast2500-hace
-+      - aspeed,ast2600-hace
-+
-+  reg:
-+    maxItems: 1
-+
-+  clocks:
-+    maxItems: 1
-+
-+  interrupts:
-+    maxItems: 1
-+
-+  resets:
-+    maxItems: 1
-+
-+required:
-+  - compatible
-+  - reg
-+  - clocks
-+  - interrupts
-+  - resets
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    #include <dt-bindings/clock/ast2600-clock.h>
-+    hace: crypto at 1e6d0000 {
-+        compatible = "aspeed,ast2600-hace";
-+        reg = <0x1e6d0000 0x200>;
-+        interrupts = <4>;
-+        clocks = <&syscon ASPEED_CLK_GATE_YCLK>;
-+        resets = <&syscon ASPEED_RESET_HACE>;
-+    };
 -- 
 2.25.1
 
