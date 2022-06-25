@@ -1,132 +1,133 @@
 From: David Gow <davidgow@google.com>
-Date: Sat, 25 Jun 2022 13:08:37 +0800
-Subject: [PATCH v3 3/5] thunderbolt: test: Use kunit_test_suite() macro
+Date: Sat, 25 Jun 2022 13:08:38 +0800
+Subject: [PATCH v3 4/5] nitro_enclaves: test: Use kunit_test_suite() macro
 In-Reply-To: <20220625050838.1618469-1-davidgow@google.com>
 References: <20220625050838.1618469-1-davidgow@google.com>
-Message-ID: <20220625050838.1618469-4-davidgow@google.com>
+Message-ID: <20220625050838.1618469-5-davidgow@google.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The new implementation of kunit_test_suite() for modules no longer
-conflicts with module_init, so can now be used by the thunderbolt tests.
+The kunit_test_suite() macro previously conflicted with module_init,
+making it unsuitable for use in the nitro_enclaves test. Now that it's
+fixed, we can use it instead of a custom call into internal KUnit
+functions to run the test.
 
-Also update the Kconfig entry to enable the test when KUNIT_ALL_TESTS is
-enabled.
+As a side-effect, this means that the test results are properly included
+with other suites when built-in. To celebrate, enable the test by
+default when KUNIT_ALL_TESTS is set (and NITRO_ENCLAVES enabled).
 
-This means that kunit_tool can now successfully run and parse the test
-results with, for example:
+The nitro_enclave tests can now be run via kunit_tool with:
 	./tools/testing/kunit/kunit.py run --arch=x86_64 \
-	--kconfig_add CONFIG_PCI=y --kconfig_add CONFIG_USB4=y \
-	'thunderbolt'
+	--kconfig_add CONFIG_PCI=y --kconfig_add CONFIG_SMP=y \
+	--kconfig_add CONFIG_HOTPLUG_CPU=y \
+	--kconfig_add CONFIG_VIRT_DRIVERS=y \
+	--kconfig_add CONFIG_NITRO_ENCLAVES=y \
+	'ne_misc_dev_test'
 
-Acked-by: Mika Westerberg <mika.westerberg@linux.intel.com>
-Acked-by: Daniel Latypov <dlatypov@google.com>
+(This is a pretty long command, so it may be worth adding a .kunitconfig
+file at some point, instead.)
+
+Reviewed-by: Andra Paraschiv <andraprs@amazon.com>
 Signed-off-by: David Gow <davidgow@google.com>
 ---
 
 Changes since v2:
-https://lore.kernel.org/linux-kselftest/20220621085345.603820-4-davidgow at google.com/
-- Don't permit USB4_KUNIT_TESTS to be enabled when USB4=y and KUNIT=m
-  i.e., add a dependency on (USB4=m || KUNIT=y)
-  This would result in undefined kunit symbols being used, otherwise.
-- Add Daniel's Acked-by
+https://lore.kernel.org/linux-kselftest/20220621085345.603820-5-davidgow at google.com/
+- Add Andra's Reviewed-by tag.
 
 Changes since v1:
-https://lore.kernel.org/linux-kselftest/20220618090310.1174932-4-davidgow at google.com/
-- Actually include the Kconfig changes, which were mistakenly added to
-  the next patch in the series in v1.
-- Add Acked-by tag from Mika Westerberg
+https://lore.kernel.org/linux-kselftest/20220618090310.1174932-5-davidgow at google.com/
+- Move the mistakenly-added thunderbolt Kconfig to the previous patch
+  (Thanks Andra)
+- Add Andra's Acked-by tag.
 
 ---
- drivers/thunderbolt/Kconfig  |  6 ++++--
- drivers/thunderbolt/domain.c |  3 ---
- drivers/thunderbolt/tb.h     |  8 --------
- drivers/thunderbolt/test.c   | 12 +-----------
- 4 files changed, 5 insertions(+), 24 deletions(-)
+ drivers/virt/nitro_enclaves/Kconfig           |  5 ++--
+ drivers/virt/nitro_enclaves/ne_misc_dev.c     | 27 -------------------
+ .../virt/nitro_enclaves/ne_misc_dev_test.c    |  5 +---
+ 3 files changed, 4 insertions(+), 33 deletions(-)
 
-diff --git a/drivers/thunderbolt/Kconfig b/drivers/thunderbolt/Kconfig
-index 4bfec8a28064..e76a6c173637 100644
---- a/drivers/thunderbolt/Kconfig
-+++ b/drivers/thunderbolt/Kconfig
-@@ -28,8 +28,10 @@ config USB4_DEBUGFS_WRITE
- 	  this for production systems or distro kernels.
+diff --git a/drivers/virt/nitro_enclaves/Kconfig b/drivers/virt/nitro_enclaves/Kconfig
+index 2d3d98158121..ce91add81401 100644
+--- a/drivers/virt/nitro_enclaves/Kconfig
++++ b/drivers/virt/nitro_enclaves/Kconfig
+@@ -16,8 +16,9 @@ config NITRO_ENCLAVES
+ 	  The module will be called nitro_enclaves.
  
- config USB4_KUNIT_TEST
--	bool "KUnit tests"
--	depends on KUNIT=y
-+	bool "KUnit tests" if !KUNIT_ALL_TESTS
-+	depends on (USB4=m || KUNIT=y)
-+	depends on KUNIT
+ config NITRO_ENCLAVES_MISC_DEV_TEST
+-	bool "Tests for the misc device functionality of the Nitro Enclaves"
+-	depends on NITRO_ENCLAVES && KUNIT=y
++	bool "Tests for the misc device functionality of the Nitro Enclaves" if !KUNIT_ALL_TESTS
++	depends on NITRO_ENCLAVES && KUNIT
 +	default KUNIT_ALL_TESTS
+ 	help
+ 	  Enable KUnit tests for the misc device functionality of the Nitro
+ 	  Enclaves. Select this option only if you will boot the kernel for
+diff --git a/drivers/virt/nitro_enclaves/ne_misc_dev.c b/drivers/virt/nitro_enclaves/ne_misc_dev.c
+index 20c881b6a4b6..241b94f62e56 100644
+--- a/drivers/virt/nitro_enclaves/ne_misc_dev.c
++++ b/drivers/virt/nitro_enclaves/ne_misc_dev.c
+@@ -1759,35 +1759,10 @@ static long ne_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
  
- config USB4_DMA_TEST
- 	tristate "DMA traffic test driver"
-diff --git a/drivers/thunderbolt/domain.c b/drivers/thunderbolt/domain.c
-index 2889a214dadc..99211f35a5cd 100644
---- a/drivers/thunderbolt/domain.c
-+++ b/drivers/thunderbolt/domain.c
-@@ -872,7 +872,6 @@ int tb_domain_init(void)
- {
- 	int ret;
- 
--	tb_test_init();
- 	tb_debugfs_init();
- 	tb_acpi_init();
- 
-@@ -890,7 +889,6 @@ int tb_domain_init(void)
- err_acpi:
- 	tb_acpi_exit();
- 	tb_debugfs_exit();
--	tb_test_exit();
- 
- 	return ret;
- }
-@@ -903,5 +901,4 @@ void tb_domain_exit(void)
- 	tb_xdomain_exit();
- 	tb_acpi_exit();
- 	tb_debugfs_exit();
--	tb_test_exit();
- }
-diff --git a/drivers/thunderbolt/tb.h b/drivers/thunderbolt/tb.h
-index 4602c69913fa..a831faa50f65 100644
---- a/drivers/thunderbolt/tb.h
-+++ b/drivers/thunderbolt/tb.h
-@@ -1271,12 +1271,4 @@ static inline void tb_service_debugfs_init(struct tb_service *svc) { }
- static inline void tb_service_debugfs_remove(struct tb_service *svc) { }
- #endif
- 
--#ifdef CONFIG_USB4_KUNIT_TEST
--int tb_test_init(void);
--void tb_test_exit(void);
--#else
--static inline int tb_test_init(void) { return 0; }
--static inline void tb_test_exit(void) { }
--#endif
+ #if defined(CONFIG_NITRO_ENCLAVES_MISC_DEV_TEST)
+ #include "ne_misc_dev_test.c"
 -
+-static inline int ne_misc_dev_test_init(void)
+-{
+-	return __kunit_test_suites_init(ne_misc_dev_test_suites);
+-}
+-
+-static inline void ne_misc_dev_test_exit(void)
+-{
+-	__kunit_test_suites_exit(ne_misc_dev_test_suites);
+-}
+-#else
+-static inline int ne_misc_dev_test_init(void)
+-{
+-	return 0;
+-}
+-
+-static inline void ne_misc_dev_test_exit(void)
+-{
+-}
  #endif
-diff --git a/drivers/thunderbolt/test.c b/drivers/thunderbolt/test.c
-index ee37f8b58f50..24c06e7354cd 100644
---- a/drivers/thunderbolt/test.c
-+++ b/drivers/thunderbolt/test.c
-@@ -2817,14 +2817,4 @@ static struct kunit_suite tb_test_suite = {
- 	.test_cases = tb_test_cases,
+ 
+ static int __init ne_init(void)
+ {
+-	int rc = 0;
+-
+-	rc = ne_misc_dev_test_init();
+-	if (rc < 0)
+-		return rc;
+-
+ 	mutex_init(&ne_cpu_pool.mutex);
+ 
+ 	return pci_register_driver(&ne_pci_driver);
+@@ -1798,8 +1773,6 @@ static void __exit ne_exit(void)
+ 	pci_unregister_driver(&ne_pci_driver);
+ 
+ 	ne_teardown_cpu_pool();
+-
+-	ne_misc_dev_test_exit();
+ }
+ 
+ module_init(ne_init);
+diff --git a/drivers/virt/nitro_enclaves/ne_misc_dev_test.c b/drivers/virt/nitro_enclaves/ne_misc_dev_test.c
+index 265797bed0ea..74df43b925be 100644
+--- a/drivers/virt/nitro_enclaves/ne_misc_dev_test.c
++++ b/drivers/virt/nitro_enclaves/ne_misc_dev_test.c
+@@ -151,7 +151,4 @@ static struct kunit_suite ne_misc_dev_test_suite = {
+ 	.test_cases = ne_misc_dev_test_cases,
  };
  
--static struct kunit_suite *tb_test_suites[] = { &tb_test_suite, NULL };
--
--int tb_test_init(void)
--{
--	return __kunit_test_suites_init(tb_test_suites);
--}
--
--void tb_test_exit(void)
--{
--	return __kunit_test_suites_exit(tb_test_suites);
--}
-+kunit_test_suite(tb_test_suite);
+-static struct kunit_suite *ne_misc_dev_test_suites[] = {
+-	&ne_misc_dev_test_suite,
+-	NULL
+-};
++kunit_test_suite(ne_misc_dev_test_suite);
 -- 
 2.37.0.rc0.161.g10f37bed90-goog
 
