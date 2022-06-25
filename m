@@ -1,62 +1,95 @@
-From: Dhananjay Phadke <dphadke@linux.microsoft.com>
-Date: Fri, 24 Jun 2022 20:28:39 -0700
-Subject: [PATCH v4 0/5] Add Aspeed crypto driver for hardware acceleration
-In-Reply-To: <20220624090827.3909179-1-neal_liu@aspeedtech.com>
-References: <20220624090827.3909179-1-neal_liu@aspeedtech.com>
-Message-ID: <3dde4d8e-5f97-dc07-1763-981942d23f12@linux.microsoft.com>
+From: David Gow <davidgow@google.com>
+Date: Sat, 25 Jun 2022 13:08:34 +0800
+Subject: [PATCH v3 0/5] Rework KUnit test execution in modules
+Message-ID: <20220625050838.1618469-1-davidgow@google.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Neal,
+This patch series makes two changes to how KUnit test suites are stored
+and executed:
+- The .kunit_test_suites section is now used for tests in modules (in
+  lieu of a module_init funciton), as well as for built-in tests. The
+  module loader will now trigger test execution. This frees up the
+  module_init function for other uses.
+- Instead of storing an array of arrays of suites, have the
+  kunit_test_suite() and kunit_test_suites() macros append to one global
+  (or per-module) list of test suites. This removes a needless layer of
+  indirection, and removes the need to NULL-terminate suite_sets.
 
-On 6/24/2022 2:08 AM, Neal Liu wrote:
-> Aspeed Hash and Crypto Engine (HACE) is designed to accelerate the
-> throughput of hash data digest, encryption and decryption.
-> 
-> These patches aim to add Aspeed hash & crypto driver support.
-> The hash & crypto driver also pass the run-time self tests that
-> take place at algorithm registration.
-> 
-> Tested-by below configs:
-> - CONFIG_CRYPTO_MANAGER_DISABLE_TESTS is not set
-> - CONFIG_CRYPTO_MANAGER_EXTRA_TESTS=y
-> - CONFIG_DMA_API_DEBUG=y
-> - CONFIG_DMA_API_DEBUG_SG=y
-> - CONFIG_CPU_BIG_ENDIAN=y
-> 
-> Change since v3:
-> - Use dmam_alloc_coherent() instead to manage dma_alloc_coherent().
-> - Add more error handler of dma_prepare() & crypto_engine_start().
-> 
-> Change since v2:
-> - Fix endianness issue. Tested on both little endian & big endian
->    system.
-> - Use common crypto hardware engine for enqueue & dequeue requests.
-> - Use pre-defined IVs for SHA-family.
-> - Revise error handler flow.
-> - Fix sorts of coding style problems.
-> 
-> Change since v1:
-> - Add more error handlers, including DMA memory allocate/free, DMA
->    map/unmap, clock enable/disable, etc.
-> - Fix check dma_map error for config DMA_API_DEBUG.
-> - Fix dt-binding doc & dts node naming.
-> 
-> 
-> Neal Liu (5):
->    crypto: aspeed: Add HACE hash driver
->    dt-bindings: clock: Add AST2600 HACE reset definition
->    ARM: dts: aspeed: Add HACE device controller node
->    dt-bindings: crypto: add documentation for aspeed hace
->    crypto: aspeed: add HACE crypto driver
+The upshot of this is that it should now be possible to use the
+kunit_test_suite() and kunit_test_suites() macros to register test
+suites even from within modules which otherwise had module_init
+functions. This was proving to be quite a common issue, resulting in
+several modules calling into KUnit's private suite execution functions
+to run their tests (often introducing incompatibilities with the KUnit
+tooling).
 
-The driver claims compatible with aspeed,ast2500-hace, but there's no
-equivalent g5 DTS change (patch 3/5) or reset definition (patch 2/5) in
-aspeed-clock.h? Either drop ast2500 compatible from this patch series or 
-fix these.
+This series also fixes the thunderbolt, nitro_enclaves, and
+sdhci-of-aspeed tests to use kunit_test_suite() now that it works. This
+is required, as otherwise the first two patches may break these tests
+entirely.
 
-Thanks,
-Dhananjay
+Huge thanks to Jeremy Kerr, who designed and implemented the module
+loader changes, and to Daniel Latypov for pushing the simplification of
+the nested arrays in .kunit_test_suites.
+
+I've tested this series both with builtin tests on a number of
+architectures, and with modules on x86_64, and it seems good-to-go to
+me. More testing (particularly of modules) with more interesting setups
+never hurts, though!
+
+Cheers,
+-- David
+
+Changes since v2:
+https://lore.kernel.org/linux-kselftest/20220621085345.603820-1-davidgow at google.com/
+- Add various Reviewed-by and Acked-by tags.
+- Fix the Kconfig for thunderbolt to not allow USB4=y and KUNIT=m with
+  tests enabled.
+- Clean up the sdhci-of-aspeed init a bit more (Thanks Daniel)
+
+Changes since v1:
+https://lore.kernel.org/linux-kselftest/20220618090310.1174932-1-davidgow at google.com/
+- Fix a compile issue when CONFIG_KUNIT=m (Thanks Christophe)
+- No longer NULL-terminate suite_sets.
+- Move the thunderbird Kconfig to the correct patch (Thanks Andra)
+- Add all the Tested-by and Acked-by tags.
+
+---
+Daniel Latypov (1):
+
+Daniel Latypov (1):
+  kunit: flatten kunit_suite*** to kunit_suite** in .kunit_test_suites
+
+David Gow (3):
+  thunderbolt: test: Use kunit_test_suite() macro
+  nitro_enclaves: test: Use kunit_test_suite() macro
+  mmc: sdhci-of-aspeed: test: Use kunit_test_suite() macro
+
+Jeremy Kerr (1):
+  kunit: unify module and builtin suite definitions
+
+ drivers/mmc/host/Kconfig                      |   5 +-
+ drivers/mmc/host/sdhci-of-aspeed-test.c       |   8 +-
+ drivers/mmc/host/sdhci-of-aspeed.c            |  34 +----
+ drivers/thunderbolt/Kconfig                   |   6 +-
+ drivers/thunderbolt/domain.c                  |   3 -
+ drivers/thunderbolt/tb.h                      |   8 -
+ drivers/thunderbolt/test.c                    |  12 +-
+ drivers/virt/nitro_enclaves/Kconfig           |   5 +-
+ drivers/virt/nitro_enclaves/ne_misc_dev.c     |  27 ----
+ .../virt/nitro_enclaves/ne_misc_dev_test.c    |   5 +-
+ include/kunit/test.h                          |  60 ++------
+ include/linux/module.h                        |   5 +
+ kernel/module/main.c                          |   6 +
+ lib/kunit/executor.c                          | 115 ++++----------
+ lib/kunit/executor_test.c                     | 144 +++++-------------
+ lib/kunit/test.c                              |  54 ++++++-
+ 16 files changed, 154 insertions(+), 343 deletions(-)
+
+-- 
+2.37.0.rc0.161.g10f37bed90-goog
+
