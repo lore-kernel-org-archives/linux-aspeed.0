@@ -1,51 +1,49 @@
-From: Quan Nguyen <quan@os.amperecomputing.com>
-Date: Mon, 27 Jun 2022 16:44:43 +0700
-Subject: [PATCH] ARM: dts: aspeed: Add device tree for Ampere's Mt.
- Mitchell BMC
-In-Reply-To: <aafd58d6-8705-96ee-7813-9b3bae7bb3d1@linaro.org>
-References: <20220621092120.2427152-1-quan@os.amperecomputing.com>
- <97934f38-4da5-ab9e-7089-d6e48edd5e6a@linaro.org>
- <9120c167-38c2-f8c4-e039-4202d5844639@os.amperecomputing.com>
- <aafd58d6-8705-96ee-7813-9b3bae7bb3d1@linaro.org>
-Message-ID: <624cd43b-af83-402d-86bb-68e7242da0f7@os.amperecomputing.com>
+From: Rob Herring <robh@kernel.org>
+Date: Mon, 27 Jun 2022 16:00:58 -0600
+Subject: [PATCH v8 2/3] bindings: ipmi: Add binding for SSIF BMC driver
+In-Reply-To: <20220615090259.1121405-3-quan@os.amperecomputing.com>
+References: <20220615090259.1121405-1-quan@os.amperecomputing.com>
+ <20220615090259.1121405-3-quan@os.amperecomputing.com>
+Message-ID: <20220627220058.GA3036977-robh@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 27/06/2022 16:35, Krzysztof Kozlowski wrote:
-> On 27/06/2022 11:32, Quan Nguyen wrote:
->>>> +
->>>> +	ltc2497_reg: ltc2497_regulator {
->>>
->>> No underscores in node name, no specific names (Devicetree spec requires
->>> generic), so ltc2497 has to go. You could add some more specific
->>> prefix/suffix to describe the function.
->>>
->> This is to monitor peripheral voltage so it would be updated to:
+On Wed, Jun 15, 2022 at 04:02:58PM +0700, Quan Nguyen wrote:
+> Add device tree binding document for the SSIF BMC driver.
 > 
-> But it is a regulator, not a voltage monitor, so the node name could be:
-> regulator-0
-> regulator-voltage-mon
-> voltage-mon-regulator
+> Signed-off-by: Quan Nguyen <quan@os.amperecomputing.com>
+> ---
+> v8:
+>   + None
 > 
-Yes, I think I would pick the voltage-mon-regulator:
+> v7:
+>   + Change compatible string from "ampere,ssif-bmc" to "ssif-bmc"  [Jae]
+> 
+> v6:
+>   + None
+> 
+> v5:
+>   + None
+> 
+> v4:
+>   + Fix warning with dt_binding_check [Rob]
+>   + Change aspeed-ssif-bmc.yaml to ssif-bmc.yaml [Quan]
+> 
+> v3:
+>   + Switched to use DT schema format [Rob]
+> 
+> v2:
+>   + None
+> 
+>  .../devicetree/bindings/ipmi/ssif-bmc.yaml    | 38 +++++++++++++++++++
+>  1 file changed, 38 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/ipmi/ssif-bmc.yaml
 
-            voltage_mon_reg: voltage-mon-monitor {
+Please add Acked-by/Reviewed-by tags when posting new versions. However,
+there's no need to repost patches *only* to add the tags. The upstream
+maintainer will do that for acks received on the version they apply.
 
->>
->>            voltage_monitor: voltage-monitor {
->>
->>>> +		compatible = "regulator-fixed";
->>>> +		regulator-name = "ltc2497_reg";
->>>> +		regulator-min-microvolt = <3300000>;
->>>> +		regulator-max-microvolt = <3300000>;
->>>> +		regulator-always-on;
->>>> +	};
->>>> +
-> 
-> 
-Thanks a lot for the quick suggestion.
-- Quan
-
+If a tag was not added on purpose, please state why and what changed.
