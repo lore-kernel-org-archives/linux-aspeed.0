@@ -1,36 +1,67 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Mon, 27 Jun 2022 11:30:15 +1000
-Subject: [PATCH] usb: gadget: aspeed_udc: fix handling of tx_len == 0
-In-Reply-To: <HK0PR06MB32024B6C49E2C958185E005280B49@HK0PR06MB3202.apcprd06.prod.outlook.com>
-References: <YrMsU9HvdBm5YrRH@kili>
-	 <HK0PR06MB32023259EBD6B4C649C62E8280B59@HK0PR06MB3202.apcprd06.prod.outlook.com>
-	 <20220623064320.GN16517@kadam>
-	 <e0b1c201bec2ccb68d1779ea8e9cfdf27563dd73.camel@amazon.com>
-	 <20220624063457.GG11460@kadam>
-	 <46f88070d8f6f47f55310e964a4576cadbc810f4.camel@kernel.crashing.org>
-	 <HK0PR06MB32024B6C49E2C958185E005280B49@HK0PR06MB3202.apcprd06.prod.outlook.com>
-Message-ID: <c960c2e02ddeacd527442e0b3b0db532c9017e1b.camel@kernel.crashing.org>
+From: Neal Liu <neal_liu@aspeedtech.com>
+Date: Mon, 27 Jun 2022 02:06:06 +0000
+Subject: [PATCH v4 0/5] Add Aspeed crypto driver for hardware acceleration
+In-Reply-To: <3dde4d8e-5f97-dc07-1763-981942d23f12@linux.microsoft.com>
+References: <20220624090827.3909179-1-neal_liu@aspeedtech.com>
+ <3dde4d8e-5f97-dc07-1763-981942d23f12@linux.microsoft.com>
+Message-ID: <HK0PR06MB3202A2C71562AB1F9202DEAD80B99@HK0PR06MB3202.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, 2022-06-24 at 07:46 +0000, Neal Liu wrote:
-> > 
-> Hi Ben, This UDC is the independent IP. The ast2600 board can run
-> aspeed-vhub & aspeed_udc simultaneously with different USB port.
-> I think it's no need to restruct the code in vhub.
+> Hi Neal,
+> 
+> On 6/24/2022 2:08 AM, Neal Liu wrote:
+> > Aspeed Hash and Crypto Engine (HACE) is designed to accelerate the
+> > throughput of hash data digest, encryption and decryption.
+> >
+> > These patches aim to add Aspeed hash & crypto driver support.
+> > The hash & crypto driver also pass the run-time self tests that take
+> > place at algorithm registration.
+> >
+> > Tested-by below configs:
+> > - CONFIG_CRYPTO_MANAGER_DISABLE_TESTS is not set
+> > - CONFIG_CRYPTO_MANAGER_EXTRA_TESTS=y
+> > - CONFIG_DMA_API_DEBUG=y
+> > - CONFIG_DMA_API_DEBUG_SG=y
+> > - CONFIG_CPU_BIG_ENDIAN=y
+> >
+> > Change since v3:
+> > - Use dmam_alloc_coherent() instead to manage dma_alloc_coherent().
+> > - Add more error handler of dma_prepare() & crypto_engine_start().
+> >
+> > Change since v2:
+> > - Fix endianness issue. Tested on both little endian & big endian
+> >    system.
+> > - Use common crypto hardware engine for enqueue & dequeue requests.
+> > - Use pre-defined IVs for SHA-family.
+> > - Revise error handler flow.
+> > - Fix sorts of coding style problems.
+> >
+> > Change since v1:
+> > - Add more error handlers, including DMA memory allocate/free, DMA
+> >    map/unmap, clock enable/disable, etc.
+> > - Fix check dma_map error for config DMA_API_DEBUG.
+> > - Fix dt-binding doc & dts node naming.
+> >
+> >
+> > Neal Liu (5):
+> >    crypto: aspeed: Add HACE hash driver
+> >    dt-bindings: clock: Add AST2600 HACE reset definition
+> >    ARM: dts: aspeed: Add HACE device controller node
+> >    dt-bindings: crypto: add documentation for aspeed hace
+> >    crypto: aspeed: add HACE crypto driver
+> 
+> The driver claims compatible with aspeed,ast2500-hace, but there's no
+> equivalent g5 DTS change (patch 3/5) or reset definition (patch 2/5) in
+> aspeed-clock.h? Either drop ast2500 compatible from this patch series or fix
+> these.
+> 
+> Thanks,
+> Dhananjay
 
-But is it a copy of the same base IP block ? IE, is the fundamental HW
-interface of the independent UDC operating the same way with the same
-register layout as one of the ports of the vHUB ?
-
-I don't like having multiple drivers for the same hardware... if it's
-different enough, then let's keep it separate, but if not, we should
-definitely split the udc from the existing vhub code so that the same
-driver can operate standalone or beneath a vhub. 
-
-Cheers,
-Ben.
+Okay, I miss this part. I'll fix it in next patch.
+Thanks for the review.
 
