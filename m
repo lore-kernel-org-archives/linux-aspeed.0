@@ -1,28 +1,28 @@
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Date: Tue, 28 Jun 2022 11:15:47 -0000
-Subject: [PATCH v1 0/2] Fix console probe delay when stdout-path isn't set
-In-Reply-To: <20220628020110.1601693-1-saravanak@google.com>
+From: Tobias Klauser <tklauser@distanz.ch>
+Date: Tue, 28 Jun 2022 14:08:58 -0000
+Subject: [PATCH v1 2/2] serial: Set probe_no_timeout for all DT based
+ drivers
+In-Reply-To: <20220628020110.1601693-3-saravanak@google.com>
 References: <20220628020110.1601693-1-saravanak@google.com>
-Message-ID: <Yrrivbk2NSK3loBW@smile.fi.intel.com>
+ <20220628020110.1601693-3-saravanak@google.com>
+Message-ID: <20220628140025.qpom64ptru4ub6fu@distanz.ch>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Jun 27, 2022 at 07:01:01PM -0700, Saravana Kannan wrote:
-> Since the series that fixes console probe delay based on stdout-path[1] got
-> pulled into driver-core-next, I made these patches on top of them.
-> 
-> Even if stdout-path isn't set in DT, this patch should take console
-> probe times back to how they were before the deferred_probe_timeout
-> clean up series[2].
+On 2022-06-28 at 04:01:03 +0200, Saravana Kannan <saravanak@google.com> wrote:
+> diff --git a/drivers/tty/serial/8250/8250_acorn.c b/drivers/tty/serial/8250/8250_acorn.c
+> index 758c4aa203ab..5a6f2f67de4f 100644
+> --- a/drivers/tty/serial/8250/8250_acorn.c
+> +++ b/drivers/tty/serial/8250/8250_acorn.c
+> @@ -114,7 +114,6 @@ static const struct ecard_id serial_cids[] = {
+>  static struct ecard_driver serial_card_driver = {
+>  	.probe		= serial_card_probe,
+>  	.remove		= serial_card_remove,
+> -	.id_table	= serial_cids,
 
-Are you sure it's only limited to the serial drivers?
-(just asking, I don't know myself the answer)
-
--- 
-With Best Regards,
-Andy Shevchenko
-
-
+Is this change intentional? All other drivers are only changed to set
+.probe_no_time and I don't see anything mentioned in the commit message
+re. this driver's change.
