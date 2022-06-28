@@ -1,41 +1,61 @@
-From: Neal Liu <neal_liu@aspeedtech.com>
-Date: Tue, 28 Jun 2022 07:17:41 +0000
-Subject: [PATCH] usb: gadget: aspeed_udc: fix handling of tx_len == 0
-In-Reply-To: <c960c2e02ddeacd527442e0b3b0db532c9017e1b.camel@kernel.crashing.org>
-References: <YrMsU9HvdBm5YrRH@kili>
-	 <HK0PR06MB32023259EBD6B4C649C62E8280B59@HK0PR06MB3202.apcprd06.prod.outlook.com>
-	 <20220623064320.GN16517@kadam>
-	 <e0b1c201bec2ccb68d1779ea8e9cfdf27563dd73.camel@amazon.com>
-	 <20220624063457.GG11460@kadam>
-	 <46f88070d8f6f47f55310e964a4576cadbc810f4.camel@kernel.crashing.org>
-	 <HK0PR06MB32024B6C49E2C958185E005280B49@HK0PR06MB3202.apcprd06.prod.outlook.com>
- <c960c2e02ddeacd527442e0b3b0db532c9017e1b.camel@kernel.crashing.org>
-Message-ID: <HK0PR06MB3202F5E3C643A4943BB521A480B89@HK0PR06MB3202.apcprd06.prod.outlook.com>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Tue, 28 Jun 2022 11:21:43 +0300
+Subject: [PATCH v3] usb: gadget: aspeed_udc: fix handling of tx_len == 0
+Message-ID: <Yrq6F5okoX1y05rT@kili>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-> On Fri, 2022-06-24 at 07:46 +0000, Neal Liu wrote:
-> > >
-> > Hi Ben, This UDC is the independent IP. The ast2600 board can run
-> > aspeed-vhub & aspeed_udc simultaneously with different USB port.
-> > I think it's no need to restruct the code in vhub.
-> 
-> But is it a copy of the same base IP block ? IE, is the fundamental HW interface
-> of the independent UDC operating the same way with the same register layout
-> as one of the ports of the vHUB ?
-> 
-> I don't like having multiple drivers for the same hardware... if it's different
-> enough, then let's keep it separate, but if not, we should definitely split the udc
-> from the existing vhub code so that the same driver can operate standalone or
-> beneath a vhub.
-> 
+The bug is that we should still enter this loop if "tx_len" is zero.
 
-Based on ast2600 hardware design, it's similar, but not exactly the same.
-I need more time to extract the differences and evaluate it if it could utilize vhub.
+After adding the "last" variable, then the "chunk >= 0" condition is no
+longer required but I left it for readability.
 
-> Cheers,
-> Ben.
+Reported-by: Neal Liu <neal_liu@aspeedtech.com>
+Fixes: c09b1f372e74 ("usb: gadget: aspeed_udc: cleanup loop in ast_dma_descriptor_setup()")
+Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+Reviewed-by: Neal Liu <neal_liu@aspeedtech.com>
+---
+v3:  We went back and forth on the style on this.  This is just v1 but
+with Neal's Reviewed-by.
+
+ drivers/usb/gadget/udc/aspeed_udc.c | 9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/usb/gadget/udc/aspeed_udc.c b/drivers/usb/gadget/udc/aspeed_udc.c
+index d75a4e070bf7..01968e2167f9 100644
+--- a/drivers/usb/gadget/udc/aspeed_udc.c
++++ b/drivers/usb/gadget/udc/aspeed_udc.c
+@@ -476,6 +476,7 @@ static int ast_dma_descriptor_setup(struct ast_udc_ep *ep, u32 dma_buf,
+ {
+ 	struct ast_udc_dev *udc = ep->udc;
+ 	struct device *dev = &udc->pdev->dev;
++	bool last = false;
+ 	int chunk, count;
+ 	u32 offset;
+ 
+@@ -493,14 +494,16 @@ static int ast_dma_descriptor_setup(struct ast_udc_ep *ep, u32 dma_buf,
+ 	       "tx_len", tx_len);
+ 
+ 	/* Create Descriptor Lists */
+-	while (chunk > 0 && count < AST_UDC_DESCS_COUNT) {
++	while (chunk >= 0 && !last && count < AST_UDC_DESCS_COUNT) {
+ 
+ 		ep->descs[ep->descs_wptr].des_0 = dma_buf + offset;
+ 
+-		if (chunk > ep->chunk_max)
++		if (chunk > ep->chunk_max) {
+ 			ep->descs[ep->descs_wptr].des_1 = ep->chunk_max;
+-		else
++		} else {
+ 			ep->descs[ep->descs_wptr].des_1 = chunk;
++			last = true;
++		}
+ 
+ 		chunk -= ep->chunk_max;
+ 
+-- 
+2.35.1
 
