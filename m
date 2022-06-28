@@ -1,49 +1,41 @@
-From: Rob Herring <robh@kernel.org>
-Date: Mon, 27 Jun 2022 16:00:58 -0600
-Subject: [PATCH v8 2/3] bindings: ipmi: Add binding for SSIF BMC driver
-In-Reply-To: <20220615090259.1121405-3-quan@os.amperecomputing.com>
-References: <20220615090259.1121405-1-quan@os.amperecomputing.com>
- <20220615090259.1121405-3-quan@os.amperecomputing.com>
-Message-ID: <20220627220058.GA3036977-robh@kernel.org>
+From: Neal Liu <neal_liu@aspeedtech.com>
+Date: Tue, 28 Jun 2022 07:17:41 +0000
+Subject: [PATCH] usb: gadget: aspeed_udc: fix handling of tx_len == 0
+In-Reply-To: <c960c2e02ddeacd527442e0b3b0db532c9017e1b.camel@kernel.crashing.org>
+References: <YrMsU9HvdBm5YrRH@kili>
+	 <HK0PR06MB32023259EBD6B4C649C62E8280B59@HK0PR06MB3202.apcprd06.prod.outlook.com>
+	 <20220623064320.GN16517@kadam>
+	 <e0b1c201bec2ccb68d1779ea8e9cfdf27563dd73.camel@amazon.com>
+	 <20220624063457.GG11460@kadam>
+	 <46f88070d8f6f47f55310e964a4576cadbc810f4.camel@kernel.crashing.org>
+	 <HK0PR06MB32024B6C49E2C958185E005280B49@HK0PR06MB3202.apcprd06.prod.outlook.com>
+ <c960c2e02ddeacd527442e0b3b0db532c9017e1b.camel@kernel.crashing.org>
+Message-ID: <HK0PR06MB3202F5E3C643A4943BB521A480B89@HK0PR06MB3202.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Jun 15, 2022 at 04:02:58PM +0700, Quan Nguyen wrote:
-> Add device tree binding document for the SSIF BMC driver.
+> On Fri, 2022-06-24 at 07:46 +0000, Neal Liu wrote:
+> > >
+> > Hi Ben, This UDC is the independent IP. The ast2600 board can run
+> > aspeed-vhub & aspeed_udc simultaneously with different USB port.
+> > I think it's no need to restruct the code in vhub.
 > 
-> Signed-off-by: Quan Nguyen <quan@os.amperecomputing.com>
-> ---
-> v8:
->   + None
+> But is it a copy of the same base IP block ? IE, is the fundamental HW interface
+> of the independent UDC operating the same way with the same register layout
+> as one of the ports of the vHUB ?
 > 
-> v7:
->   + Change compatible string from "ampere,ssif-bmc" to "ssif-bmc"  [Jae]
+> I don't like having multiple drivers for the same hardware... if it's different
+> enough, then let's keep it separate, but if not, we should definitely split the udc
+> from the existing vhub code so that the same driver can operate standalone or
+> beneath a vhub.
 > 
-> v6:
->   + None
-> 
-> v5:
->   + None
-> 
-> v4:
->   + Fix warning with dt_binding_check [Rob]
->   + Change aspeed-ssif-bmc.yaml to ssif-bmc.yaml [Quan]
-> 
-> v3:
->   + Switched to use DT schema format [Rob]
-> 
-> v2:
->   + None
-> 
->  .../devicetree/bindings/ipmi/ssif-bmc.yaml    | 38 +++++++++++++++++++
->  1 file changed, 38 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/ipmi/ssif-bmc.yaml
 
-Please add Acked-by/Reviewed-by tags when posting new versions. However,
-there's no need to repost patches *only* to add the tags. The upstream
-maintainer will do that for acks received on the version they apply.
+Based on ast2600 hardware design, it's similar, but not exactly the same.
+I need more time to extract the differences and evaluate it if it could utilize vhub.
 
-If a tag was not added on purpose, please state why and what changed.
+> Cheers,
+> Ben.
+
