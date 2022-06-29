@@ -1,92 +1,65 @@
-From: Neal Liu <neal_liu@aspeedtech.com>
-Date: Wed, 29 Jun 2022 07:59:15 +0000
-Subject: [PATCH v5 2/5] dt-bindings: clock: Add AST2500/AST2600 HACE reset
- definition
-In-Reply-To: <b70e06e7-81fc-dfc1-f9c5-f83cb4a18293@linaro.org>
-References: <20220629032008.1579899-1-neal_liu@aspeedtech.com>
- <20220629032008.1579899-3-neal_liu@aspeedtech.com>
- <b70e06e7-81fc-dfc1-f9c5-f83cb4a18293@linaro.org>
-Message-ID: <HK0PR06MB32025ACEE605D1016DD3B99D80BB9@HK0PR06MB3202.apcprd06.prod.outlook.com>
+From: Quan Nguyen <quan@os.amperecomputing.com>
+Date: Wed, 29 Jun 2022 15:02:06 +0700
+Subject: [PATCH v8 2/3] bindings: ipmi: Add binding for SSIF BMC driver
+In-Reply-To: <20220627220058.GA3036977-robh@kernel.org>
+References: <20220615090259.1121405-1-quan@os.amperecomputing.com>
+ <20220615090259.1121405-3-quan@os.amperecomputing.com>
+ <20220627220058.GA3036977-robh@kernel.org>
+Message-ID: <deff0c4c-a158-84cb-c366-3f030b5e6f33@os.amperecomputing.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-> -----Original Message-----
-> From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-> Sent: Wednesday, June 29, 2022 1:58 PM
-> To: Neal Liu <neal_liu@aspeedtech.com>; Corentin Labbe
-> <clabbe.montjoie@gmail.com>; Christophe JAILLET
-> <christophe.jaillet@wanadoo.fr>; Randy Dunlap <rdunlap@infradead.org>;
-> Herbert Xu <herbert@gondor.apana.org.au>; David S . Miller
-> <davem@davemloft.net>; Rob Herring <robh+dt@kernel.org>; Krzysztof
-> Kozlowski <krzysztof.kozlowski+dt@linaro.org>; Joel Stanley <joel@jms.id.au>;
-> Andrew Jeffery <andrew@aj.id.au>; Dhananjay Phadke
-> <dhphadke@microsoft.com>; Johnny Huang
-> <johnny_huang@aspeedtech.com>
-> Cc: linux-aspeed at lists.ozlabs.org; linux-crypto at vger.kernel.org;
-> devicetree at vger.kernel.org; linux-arm-kernel at lists.infradead.org;
-> linux-kernel at vger.kernel.org; BMC-SW <BMC-SW@aspeedtech.com>
-> Subject: Re: [PATCH v5 2/5] dt-bindings: clock: Add AST2500/AST2600 HACE
-> reset definition
-> 
-> On 29/06/2022 05:20, Neal Liu wrote:
-> > Add HACE reset bit definition for AST2500/AST2600.
-> >
-> > Signed-off-by: Neal Liu <neal_liu@aspeedtech.com>
-> > Signed-off-by: Johnny Huang <johnny_huang@aspeedtech.com>
-> > Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-> > ---
-> >  include/dt-bindings/clock/aspeed-clock.h  | 3 ++-
-> > include/dt-bindings/clock/ast2600-clock.h | 1 +
-> >  2 files changed, 3 insertions(+), 1 deletion(-)
-> >
-> > diff --git a/include/dt-bindings/clock/aspeed-clock.h
-> > b/include/dt-bindings/clock/aspeed-clock.h
-> > index 9ff4f6e4558c..6e040f7c3426 100644
-> > --- a/include/dt-bindings/clock/aspeed-clock.h
-> > +++ b/include/dt-bindings/clock/aspeed-clock.h
-> > @@ -46,11 +46,12 @@
-> >  #define ASPEED_RESET_MCTP		1
-> >  #define ASPEED_RESET_ADC		2
-> >  #define ASPEED_RESET_JTAG_MASTER	3
-> > -#define ASPEED_RESET_MIC		4
-> > +#define ASPEED_RESET_HACE		4
-> 
-> I did not ack such change. This is a significant change from previous version,
-> invalidating my previous ack.
-> 
-> This breaks the ABI, so NAK without proper explanation why ABI break is
-> accepted.
 
-I changed the original define (MIC) into different value (see below diff), and add a new define for HACE.
-How does that break the ABI? I'll be appreciated if you can explain it more details.
-And sorry for not remove ack with new change.
 
+On 28/06/2022 05:00, Rob Herring wrote:
+> On Wed, Jun 15, 2022 at 04:02:58PM +0700, Quan Nguyen wrote:
+>> Add device tree binding document for the SSIF BMC driver.
+>>
+>> Signed-off-by: Quan Nguyen <quan@os.amperecomputing.com>
+>> ---
+>> v8:
+>>    + None
+>>
+>> v7:
+>>    + Change compatible string from "ampere,ssif-bmc" to "ssif-bmc"  [Jae]
+>>
+>> v6:
+>>    + None
+>>
+>> v5:
+>>    + None
+>>
+>> v4:
+>>    + Fix warning with dt_binding_check [Rob]
+>>    + Change aspeed-ssif-bmc.yaml to ssif-bmc.yaml [Quan]
+>>
+>> v3:
+>>    + Switched to use DT schema format [Rob]
+>>
+>> v2:
+>>    + None
+>>
+>>   .../devicetree/bindings/ipmi/ssif-bmc.yaml    | 38 +++++++++++++++++++
+>>   1 file changed, 38 insertions(+)
+>>   create mode 100644 Documentation/devicetree/bindings/ipmi/ssif-bmc.yaml
 > 
-> >  #define ASPEED_RESET_PWM		5
-> >  #define ASPEED_RESET_PECI		6
-> >  #define ASPEED_RESET_I2C		7
-> >  #define ASPEED_RESET_AHB		8
-> >  #define ASPEED_RESET_CRT1		9
-> > +#define ASPEED_RESET_MIC		18
-> >
-> >  #endif
-> > diff --git a/include/dt-bindings/clock/ast2600-clock.h
-> > b/include/dt-bindings/clock/ast2600-clock.h
-> > index 62b9520a00fd..d8b0db2f7a7d 100644
-> > --- a/include/dt-bindings/clock/ast2600-clock.h
-> > +++ b/include/dt-bindings/clock/ast2600-clock.h
-> > @@ -111,6 +111,7 @@
-> >  #define ASPEED_RESET_PCIE_RC_O		19
-> >  #define ASPEED_RESET_PCIE_RC_OEN	18
-> >  #define ASPEED_RESET_PCI_DP		5
-> > +#define ASPEED_RESET_HACE		4
-> >  #define ASPEED_RESET_AHB		1
-> >  #define ASPEED_RESET_SDRAM		0
-> >
+> Please add Acked-by/Reviewed-by tags when posting new versions. However,
+> there's no need to repost patches *only* to add the tags. The upstream
+> maintainer will do that for acks received on the version they apply.
 > 
-> 
-> Best regards,
-> Krzysztof
+> If a tag was not added on purpose, please state why and what changed.
+
+Dear Rob,
+
+It was my fault and I apologize for forget adding your Reviewed-by tag 
+in this v8.
+There is no change in this patch and the tag was not removed on purpose. 
+It's simply a mistake and I should have been more careful.
+
+Will add the tag if there's new version and will be more careful next time.
+
+Thank you and best regards,
+- Quan
