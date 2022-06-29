@@ -1,83 +1,44 @@
-From: Neal Liu <neal_liu@aspeedtech.com>
-Date: Wed, 29 Jun 2022 11:20:03 +0800
-Subject: [PATCH v5 0/5] Add Aspeed crypto driver for hardware acceleration
-Message-ID: <20220629032008.1579899-1-neal_liu@aspeedtech.com>
+From: Jiapeng.Chong <jiapeng.chong@linux.alibaba.com>
+Date: Wed, 29 Jun 2022 13:51:01 +0800
+Subject: =?UTF-8?B?5Zue5aSN77yaW1BBVENIXSB1c2I6IGdhZGdldDogRml4IHVuc2lnbmVkIGNvbXBhcmlzb24g?=
+  =?UTF-8?B?d2l0aCBsZXNzIHRoYW4gemVybw==?=
+In-Reply-To: <YrWjCnNJohij691b@kroah.com>
+References: <20220623084347.38207-1-jiapeng.chong@linux.alibaba.com>,<YrWjCnNJohij691b@kroah.com>
+Message-ID: <19ba5da7-3e9d-49e1-aa7f-b0834737fbfe.jiapeng.chong@linux.alibaba.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Aspeed Hash and Crypto Engine (HACE) is designed to accelerate the
-throughput of hash data digest, encryption and decryption.
+Sorry, we didn't see this patch.
+commit c09b1f372e746aeeb61ef8ffe0fea3970fd9273e
 
-These patches aim to add Aspeed hash & crypto driver support.
-The hash & crypto driver also pass the run-time self tests that
-take place at algorithm registration.
+------------------------------------------------------------------
+????Greg KH <gregkh@linuxfoundation.org>
+?????2022?6?24?(???) 19:45
+????Jiapeng Chong <jiapeng.chong@linux.alibaba.com>
+????neal_liu <neal_liu@aspeedtech.com>; balbi <balbi@kernel.org>; joel <joel@jms.id.au>; andrew <andrew@aj.id.au>; sumit.semwal <sumit.semwal@linaro.org>; christian.koenig <christian.koenig@amd.com>; linux-aspeed <linux-aspeed@lists.ozlabs.org>; linux-usb <linux-usb@vger.kernel.org>; linux-arm-kernel <linux-arm-kernel@lists.infradead.org>; linux-kernel <linux-kernel@vger.kernel.org>; linux-media <linux-media@vger.kernel.org>; dri-devel <dri-devel@lists.freedesktop.org>; linaro-mm-sig <linaro-mm-sig@lists.linaro.org>
+????Re: [PATCH] usb: gadget: Fix unsigned comparison with less than zero
 
-The patch series are tested on both AST2500 & AST2600 evaluation boards.
+On Thu, Jun 23, 2022 at 04:43:47PM +0800, Jiapeng Chong wrote:
+> This was found by coccicheck:
+> 
+> ./drivers/usb/gadget/udc/aspeed_udc.c:496:8-13: WARNING: Unsigned expression compared with zero: chunk >= 0.
 
-Tested-by below configs:
-- CONFIG_CRYPTO_MANAGER_DISABLE_TESTS is not set
-- CONFIG_CRYPTO_MANAGER_EXTRA_TESTS=y
-- CONFIG_DMA_API_DEBUG=y
-- CONFIG_DMA_API_DEBUG_SG=y
-- CONFIG_CPU_BIG_ENDIAN=y
+What does this mean?  Where is the error?
 
-Change since v4:
-- Add AST2500 clock definition & dts node.
-- Add software fallback for handling corner cases.
-- Fix copy wrong key length.
+Please explain the reason for changes, not just the output of a random
+tool that you ran on the code.
 
-Change since v3:
-- Use dmam_alloc_coherent() instead to manage dma_alloc_coherent().
-- Add more error handler of dma_prepare() & crypto_engine_start().
+> Signed-off-by: Jiapeng Chong <jiapeng.chong@linux.alibaba.com>
 
-Change since v2:
-- Fix endianness issue. Tested on both little endian & big endian
-  system.
-- Use common crypto hardware engine for enqueue & dequeue requests.
-- Use pre-defined IVs for SHA-family.
-- Revise error handler flow.
-- Fix sorts of coding style problems.
+What commit does this fix?
 
-Change since v1:
-- Add more error handlers, including DMA memory allocate/free, DMA
-  map/unmap, clock enable/disable, etc.
-- Fix check dma_map error for config DMA_API_DEBUG.
-- Fix dt-binding doc & dts node naming.
+thanks,
 
+greg k-h
 
-Neal Liu (5):
-  crypto: aspeed: Add HACE hash driver
-  dt-bindings: clock: Add AST2500/AST2600 HACE reset definition
-  ARM: dts: aspeed: Add HACE device controller node
-  dt-bindings: crypto: add documentation for aspeed hace
-  crypto: aspeed: add HACE crypto driver
-
- .../bindings/crypto/aspeed,ast2500-hace.yaml  |   53 +
- MAINTAINERS                                   |    7 +
- arch/arm/boot/dts/aspeed-g5.dtsi              |    8 +
- arch/arm/boot/dts/aspeed-g6.dtsi              |    8 +
- drivers/crypto/Kconfig                        |    1 +
- drivers/crypto/Makefile                       |    1 +
- drivers/crypto/aspeed/Kconfig                 |   40 +
- drivers/crypto/aspeed/Makefile                |    8 +
- drivers/crypto/aspeed/aspeed-hace-crypto.c    | 1122 +++++++++++++
- drivers/crypto/aspeed/aspeed-hace-hash.c      | 1428 +++++++++++++++++
- drivers/crypto/aspeed/aspeed-hace.c           |  301 ++++
- drivers/crypto/aspeed/aspeed-hace.h           |  293 ++++
- include/dt-bindings/clock/aspeed-clock.h      |    3 +-
- include/dt-bindings/clock/ast2600-clock.h     |    1 +
- 14 files changed, 3273 insertions(+), 1 deletion(-)
- create mode 100644 Documentation/devicetree/bindings/crypto/aspeed,ast2500-hace.yaml
- create mode 100644 drivers/crypto/aspeed/Kconfig
- create mode 100644 drivers/crypto/aspeed/Makefile
- create mode 100644 drivers/crypto/aspeed/aspeed-hace-crypto.c
- create mode 100644 drivers/crypto/aspeed/aspeed-hace-hash.c
- create mode 100644 drivers/crypto/aspeed/aspeed-hace.c
- create mode 100644 drivers/crypto/aspeed/aspeed-hace.h
-
--- 
-2.25.1
-
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20220629/cb6bd167/attachment-0001.htm>
