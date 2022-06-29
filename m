@@ -1,44 +1,66 @@
-From: Jiapeng.Chong <jiapeng.chong@linux.alibaba.com>
-Date: Wed, 29 Jun 2022 13:51:01 +0800
-Subject: =?UTF-8?B?5Zue5aSN77yaW1BBVENIXSB1c2I6IGdhZGdldDogRml4IHVuc2lnbmVkIGNvbXBhcmlzb24g?=
-  =?UTF-8?B?d2l0aCBsZXNzIHRoYW4gemVybw==?=
-In-Reply-To: <YrWjCnNJohij691b@kroah.com>
-References: <20220623084347.38207-1-jiapeng.chong@linux.alibaba.com>,<YrWjCnNJohij691b@kroah.com>
-Message-ID: <19ba5da7-3e9d-49e1-aa7f-b0834737fbfe.jiapeng.chong@linux.alibaba.com>
+From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Date: Wed, 29 Jun 2022 07:57:40 +0200
+Subject: [PATCH v5 2/5] dt-bindings: clock: Add AST2500/AST2600 HACE reset
+ definition
+In-Reply-To: <20220629032008.1579899-3-neal_liu@aspeedtech.com>
+References: <20220629032008.1579899-1-neal_liu@aspeedtech.com>
+ <20220629032008.1579899-3-neal_liu@aspeedtech.com>
+Message-ID: <b70e06e7-81fc-dfc1-f9c5-f83cb4a18293@linaro.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Sorry, we didn't see this patch.
-commit c09b1f372e746aeeb61ef8ffe0fea3970fd9273e
-
-------------------------------------------------------------------
-????Greg KH <gregkh@linuxfoundation.org>
-?????2022?6?24?(???) 19:45
-????Jiapeng Chong <jiapeng.chong@linux.alibaba.com>
-????neal_liu <neal_liu@aspeedtech.com>; balbi <balbi@kernel.org>; joel <joel@jms.id.au>; andrew <andrew@aj.id.au>; sumit.semwal <sumit.semwal@linaro.org>; christian.koenig <christian.koenig@amd.com>; linux-aspeed <linux-aspeed@lists.ozlabs.org>; linux-usb <linux-usb@vger.kernel.org>; linux-arm-kernel <linux-arm-kernel@lists.infradead.org>; linux-kernel <linux-kernel@vger.kernel.org>; linux-media <linux-media@vger.kernel.org>; dri-devel <dri-devel@lists.freedesktop.org>; linaro-mm-sig <linaro-mm-sig@lists.linaro.org>
-????Re: [PATCH] usb: gadget: Fix unsigned comparison with less than zero
-
-On Thu, Jun 23, 2022 at 04:43:47PM +0800, Jiapeng Chong wrote:
-> This was found by coccicheck:
+On 29/06/2022 05:20, Neal Liu wrote:
+> Add HACE reset bit definition for AST2500/AST2600.
 > 
-> ./drivers/usb/gadget/udc/aspeed_udc.c:496:8-13: WARNING: Unsigned expression compared with zero: chunk >= 0.
+> Signed-off-by: Neal Liu <neal_liu@aspeedtech.com>
+> Signed-off-by: Johnny Huang <johnny_huang@aspeedtech.com>
+> Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+> ---
+>  include/dt-bindings/clock/aspeed-clock.h  | 3 ++-
+>  include/dt-bindings/clock/ast2600-clock.h | 1 +
+>  2 files changed, 3 insertions(+), 1 deletion(-)
+> 
+> diff --git a/include/dt-bindings/clock/aspeed-clock.h b/include/dt-bindings/clock/aspeed-clock.h
+> index 9ff4f6e4558c..6e040f7c3426 100644
+> --- a/include/dt-bindings/clock/aspeed-clock.h
+> +++ b/include/dt-bindings/clock/aspeed-clock.h
+> @@ -46,11 +46,12 @@
+>  #define ASPEED_RESET_MCTP		1
+>  #define ASPEED_RESET_ADC		2
+>  #define ASPEED_RESET_JTAG_MASTER	3
+> -#define ASPEED_RESET_MIC		4
+> +#define ASPEED_RESET_HACE		4
 
-What does this mean?  Where is the error?
+I did not ack such change. This is a significant change from previous
+version, invalidating my previous ack.
 
-Please explain the reason for changes, not just the output of a random
-tool that you ran on the code.
+This breaks the ABI, so NAK without proper explanation why ABI break is
+accepted.
 
-> Signed-off-by: Jiapeng Chong <jiapeng.chong@linux.alibaba.com>
+>  #define ASPEED_RESET_PWM		5
+>  #define ASPEED_RESET_PECI		6
+>  #define ASPEED_RESET_I2C		7
+>  #define ASPEED_RESET_AHB		8
+>  #define ASPEED_RESET_CRT1		9
+> +#define ASPEED_RESET_MIC		18
+>  
+>  #endif
+> diff --git a/include/dt-bindings/clock/ast2600-clock.h b/include/dt-bindings/clock/ast2600-clock.h
+> index 62b9520a00fd..d8b0db2f7a7d 100644
+> --- a/include/dt-bindings/clock/ast2600-clock.h
+> +++ b/include/dt-bindings/clock/ast2600-clock.h
+> @@ -111,6 +111,7 @@
+>  #define ASPEED_RESET_PCIE_RC_O		19
+>  #define ASPEED_RESET_PCIE_RC_OEN	18
+>  #define ASPEED_RESET_PCI_DP		5
+> +#define ASPEED_RESET_HACE		4
+>  #define ASPEED_RESET_AHB		1
+>  #define ASPEED_RESET_SDRAM		0
+>  
 
-What commit does this fix?
 
-thanks,
-
-greg k-h
-
--------------- next part --------------
-An HTML attachment was scrubbed...
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20220629/cb6bd167/attachment-0001.htm>
+Best regards,
+Krzysztof
