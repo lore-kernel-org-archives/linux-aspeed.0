@@ -1,83 +1,92 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Wed, 29 Jun 2022 08:06:32 +0200
-Subject: [PATCH-next] usb: gadget: dereference before null check
-In-Reply-To: <20220629055605.102425-1-mailmesebin00@gmail.com>
-References: <20220629055605.102425-1-mailmesebin00@gmail.com>
-Message-ID: <Yrvr6A8YgyZuWQUz@kroah.com>
+From: Neal Liu <neal_liu@aspeedtech.com>
+Date: Wed, 29 Jun 2022 07:59:15 +0000
+Subject: [PATCH v5 2/5] dt-bindings: clock: Add AST2500/AST2600 HACE reset
+ definition
+In-Reply-To: <b70e06e7-81fc-dfc1-f9c5-f83cb4a18293@linaro.org>
+References: <20220629032008.1579899-1-neal_liu@aspeedtech.com>
+ <20220629032008.1579899-3-neal_liu@aspeedtech.com>
+ <b70e06e7-81fc-dfc1-f9c5-f83cb4a18293@linaro.org>
+Message-ID: <HK0PR06MB32025ACEE605D1016DD3B99D80BB9@HK0PR06MB3202.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Jun 29, 2022 at 11:26:05AM +0530, SebinSebastian wrote:
-> From: Sebin Sebastian <mailmesebin00@gmail.com>
+> -----Original Message-----
+> From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+> Sent: Wednesday, June 29, 2022 1:58 PM
+> To: Neal Liu <neal_liu@aspeedtech.com>; Corentin Labbe
+> <clabbe.montjoie@gmail.com>; Christophe JAILLET
+> <christophe.jaillet@wanadoo.fr>; Randy Dunlap <rdunlap@infradead.org>;
+> Herbert Xu <herbert@gondor.apana.org.au>; David S . Miller
+> <davem@davemloft.net>; Rob Herring <robh+dt@kernel.org>; Krzysztof
+> Kozlowski <krzysztof.kozlowski+dt@linaro.org>; Joel Stanley <joel@jms.id.au>;
+> Andrew Jeffery <andrew@aj.id.au>; Dhananjay Phadke
+> <dhphadke@microsoft.com>; Johnny Huang
+> <johnny_huang@aspeedtech.com>
+> Cc: linux-aspeed at lists.ozlabs.org; linux-crypto at vger.kernel.org;
+> devicetree at vger.kernel.org; linux-arm-kernel at lists.infradead.org;
+> linux-kernel at vger.kernel.org; BMC-SW <BMC-SW@aspeedtech.com>
+> Subject: Re: [PATCH v5 2/5] dt-bindings: clock: Add AST2500/AST2600 HACE
+> reset definition
 > 
-> Fix coverity warning dereferencing before null check. _ep and desc is
-> deferenced on all paths until the check for null. Move the
-> initilizations after the check for null.
-> Coverity issue: 1518209
+> On 29/06/2022 05:20, Neal Liu wrote:
+> > Add HACE reset bit definition for AST2500/AST2600.
+> >
+> > Signed-off-by: Neal Liu <neal_liu@aspeedtech.com>
+> > Signed-off-by: Johnny Huang <johnny_huang@aspeedtech.com>
+> > Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+> > ---
+> >  include/dt-bindings/clock/aspeed-clock.h  | 3 ++-
+> > include/dt-bindings/clock/ast2600-clock.h | 1 +
+> >  2 files changed, 3 insertions(+), 1 deletion(-)
+> >
+> > diff --git a/include/dt-bindings/clock/aspeed-clock.h
+> > b/include/dt-bindings/clock/aspeed-clock.h
+> > index 9ff4f6e4558c..6e040f7c3426 100644
+> > --- a/include/dt-bindings/clock/aspeed-clock.h
+> > +++ b/include/dt-bindings/clock/aspeed-clock.h
+> > @@ -46,11 +46,12 @@
+> >  #define ASPEED_RESET_MCTP		1
+> >  #define ASPEED_RESET_ADC		2
+> >  #define ASPEED_RESET_JTAG_MASTER	3
+> > -#define ASPEED_RESET_MIC		4
+> > +#define ASPEED_RESET_HACE		4
 > 
-> Signed-off-by: Sebin Sebastian <mailmesebin00@gmail.com>
-> ---
->  drivers/usb/gadget/udc/aspeed_udc.c | 10 ++++++----
->  1 file changed, 6 insertions(+), 4 deletions(-)
+> I did not ack such change. This is a significant change from previous version,
+> invalidating my previous ack.
 > 
-> diff --git a/drivers/usb/gadget/udc/aspeed_udc.c b/drivers/usb/gadget/udc/aspeed_udc.c
-> index d75a4e070bf7..4f158030e2cc 100644
-> --- a/drivers/usb/gadget/udc/aspeed_udc.c
-> +++ b/drivers/usb/gadget/udc/aspeed_udc.c
-> @@ -341,10 +341,6 @@ static void ast_udc_stop_activity(struct ast_udc_dev *udc)
->  static int ast_udc_ep_enable(struct usb_ep *_ep,
->  			     const struct usb_endpoint_descriptor *desc)
->  {
-> -	u16 maxpacket = usb_endpoint_maxp(desc);
-> -	struct ast_udc_ep *ep = to_ast_ep(_ep);
-> -	struct ast_udc_dev *udc = ep->udc;
-> -	u8 epnum = usb_endpoint_num(desc);
->  	unsigned long flags;
->  	u32 ep_conf = 0;
->  	u8 dir_in;
-> @@ -355,6 +351,12 @@ static int ast_udc_ep_enable(struct usb_ep *_ep,
->  		EP_DBG(ep, "Failed, invalid EP enable param\n");
->  		return -EINVAL;
->  	}
-> +
-> +	u16 maxpacket = usb_endpoint_maxp(desc);
-> +	struct ast_udc_ep *ep = to_ast_ep(_ep);
-> +	struct ast_udc_dev *udc = ep->udc;
-> +	u8 epnum = usb_endpoint_num(desc);
-> +
->  
->  	if (!udc->driver) {
->  		EP_DBG(ep, "bogus device state\n");
-> -- 
-> 2.34.1
+> This breaks the ABI, so NAK without proper explanation why ABI break is
+> accepted.
+
+I changed the original define (MIC) into different value (see below diff), and add a new define for HACE.
+How does that break the ABI? I'll be appreciated if you can explain it more details.
+And sorry for not remove ack with new change.
+
 > 
-
-Hi,
-
-This is the friendly patch-bot of Greg Kroah-Hartman.  You have sent him
-a patch that has triggered this response.  He used to manually respond
-to these common problems, but in order to save his sanity (he kept
-writing the same thing over and over, yet to different people), I was
-created.  Hopefully you will not take offence and will fix the problem
-in your patch and resubmit it so that it can be accepted into the Linux
-kernel tree.
-
-You are receiving this message because of the following common error(s)
-as indicated below:
-
-- Your patch breaks the build.
-
-- Your patch contains warnings and/or errors noticed by the
-  scripts/checkpatch.pl tool.
-
-If you wish to discuss this problem further, or you have questions about
-how to resolve this issue, please feel free to respond to this email and
-Greg will reply once he has dug out from the pending patches received
-from other developers.
-
-thanks,
-
-greg k-h's patch email bot
+> >  #define ASPEED_RESET_PWM		5
+> >  #define ASPEED_RESET_PECI		6
+> >  #define ASPEED_RESET_I2C		7
+> >  #define ASPEED_RESET_AHB		8
+> >  #define ASPEED_RESET_CRT1		9
+> > +#define ASPEED_RESET_MIC		18
+> >
+> >  #endif
+> > diff --git a/include/dt-bindings/clock/ast2600-clock.h
+> > b/include/dt-bindings/clock/ast2600-clock.h
+> > index 62b9520a00fd..d8b0db2f7a7d 100644
+> > --- a/include/dt-bindings/clock/ast2600-clock.h
+> > +++ b/include/dt-bindings/clock/ast2600-clock.h
+> > @@ -111,6 +111,7 @@
+> >  #define ASPEED_RESET_PCIE_RC_O		19
+> >  #define ASPEED_RESET_PCIE_RC_OEN	18
+> >  #define ASPEED_RESET_PCI_DP		5
+> > +#define ASPEED_RESET_HACE		4
+> >  #define ASPEED_RESET_AHB		1
+> >  #define ASPEED_RESET_SDRAM		0
+> >
+> 
+> 
+> Best regards,
+> Krzysztof
