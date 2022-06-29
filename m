@@ -1,48 +1,90 @@
-From: Dhananjay Phadke <dphadke@linux.microsoft.com>
-Date: Wed, 29 Jun 2022 04:49:32 -0700
-Subject: [PATCH v6 2/5] dt-bindings: clock: Add AST2500/AST2600 HACE reset
- definition
-In-Reply-To: <20220629094426.1930589-3-neal_liu@aspeedtech.com>
+From: Corentin Labbe <clabbe.montjoie@gmail.com>
+Date: Wed, 29 Jun 2022 14:36:20 +0200
+Subject: [PATCH v6 1/5] crypto: aspeed: Add HACE hash driver
+In-Reply-To: <20220629094426.1930589-2-neal_liu@aspeedtech.com>
 References: <20220629094426.1930589-1-neal_liu@aspeedtech.com>
- <20220629094426.1930589-3-neal_liu@aspeedtech.com>
-Message-ID: <c24d0e6d-d9ba-68c5-b1c8-13ad31d39ec8@linux.microsoft.com>
+ <20220629094426.1930589-2-neal_liu@aspeedtech.com>
+Message-ID: <YrxHRMoMYW+QDSnd@Red>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 6/29/2022 2:44 AM, Neal Liu wrote:
-> Add HACE reset bit definition for AST2500/AST2600.
+Le Wed, Jun 29, 2022 at 05:44:22PM +0800, Neal Liu a ?crit :
+> Hash and Crypto Engine (HACE) is designed to accelerate the
+> throughput of hash data digest, encryption, and decryption.
+> 
+> Basically, HACE can be divided into two independently engines
+> - Hash Engine and Crypto Engine. This patch aims to add HACE
+> hash engine driver for hash accelerator.
 > 
 > Signed-off-by: Neal Liu <neal_liu@aspeedtech.com>
 > Signed-off-by: Johnny Huang <johnny_huang@aspeedtech.com>
 > ---
->   include/dt-bindings/clock/aspeed-clock.h  | 1 +
->   include/dt-bindings/clock/ast2600-clock.h | 1 +
->   2 files changed, 2 insertions(+)
-> 
-> diff --git a/include/dt-bindings/clock/aspeed-clock.h b/include/dt-bindings/clock/aspeed-clock.h
-> index 9ff4f6e4558c..06d568382c77 100644
-> --- a/include/dt-bindings/clock/aspeed-clock.h
-> +++ b/include/dt-bindings/clock/aspeed-clock.h
-> @@ -52,5 +52,6 @@
->   #define ASPEED_RESET_I2C		7
->   #define ASPEED_RESET_AHB		8
->   #define ASPEED_RESET_CRT1		9
-> +#define ASPEED_RESET_HACE		10
 
-NAK.
+Hello
 
-I replied to older v5 of this patch, but this v6 also looks incorrect
-as per HW manual.
+I have some minor comments below.
 
-https://lore.kernel.org/linux-arm-kernel/20220629032008.1579899-1-neal_liu at aspeedtech.com/T/#m000bd3388b3e41117aa0eef10bf6f8a6a3a85cce
+> +++ b/drivers/crypto/aspeed/aspeed-hace-hash.c
+> @@ -0,0 +1,1428 @@
+> +// SPDX-License-Identifier: GPL-2.0+
+> +/*
+> + * Copyright (c) 2021 Aspeed Technology Inc.
+> + */
+> +
+> +#include "aspeed-hace.h"
+> +
+> +#ifdef ASPEED_AHASH_DEBUG
+> +#define AHASH_DBG(h, fmt, ...)	\
+> +	dev_dbg((h)->dev, "%s() " fmt, __func__, ##__VA_ARGS__)
+> +#else
+> +#define AHASH_DBG(h, fmt, ...)	\
+> +	((void)(h))
+> +#endif
 
-For both AST2400 and AST2500:
-SCU04[10] = PECI.
+Hello why not direclty use dev_dbg ?
+You will still need something to do to enable dev_dbg, so why force to add the need to re-compile it with ASPEED_AHASH_DEBUG ?
 
-It will be best to refactor/split aspeed-clock.h into separate files.
 
-Regards,
-Dhananjay
+[...]
+
+> +	if (dma_mapping_error(hace_dev->dev, rctx->digest_dma_addr)) {
+> +		dev_warn(hace_dev->dev, "dma_map() rctx digest error\n");
+> +		return -ENOMEM;
+> +	}
+
+An error displayed as warning.
+
+[...]
+> +	if (!sg_len) {
+> +		dev_warn(hace_dev->dev, "dma_map_sg() src error\n");
+
+Same here. In fact you have lot of error displayed as warning in the driver.
+
+[...]
+> +/* Weak function for HACE hash */
+> +void __weak aspeed_register_hace_hash_algs(struct aspeed_hace_dev *hace_dev)
+> +{
+> +	pr_warn("%s: Not supported yet\n", __func__);
+> +}
+> +
+> +void __weak aspeed_unregister_hace_hash_algs(struct aspeed_hace_dev *hace_dev)
+> +{
+> +	pr_warn("%s: Not supported yet\n", __func__);
+> +}
+
+Why not use dev_warn ?
+
+
+[...]
+
+> +struct aspeed_sg_list {
+> +	u32 len;
+> +	u32 phy_addr;
+> +};
+
+Since it is a descriptor where all member are written with cpu_to_le32(), it should be __le32.
+
+Regards
