@@ -1,125 +1,81 @@
-From: Neal Liu <neal_liu@aspeedtech.com>
-Date: Thu, 30 Jun 2022 03:41:52 +0000
-Subject: [PATCH v6 1/5] crypto: aspeed: Add HACE hash driver
-In-Reply-To: <YrxHRMoMYW+QDSnd@Red>
-References: <20220629094426.1930589-1-neal_liu@aspeedtech.com>
- <20220629094426.1930589-2-neal_liu@aspeedtech.com> <YrxHRMoMYW+QDSnd@Red>
-Message-ID: <HK0PR06MB320233EB0554D930CBFED3CC80BA9@HK0PR06MB3202.apcprd06.prod.outlook.com>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Date: Thu, 30 Jun 2022 08:54:04 +0200
+Subject: [PATCH v2 -next] usb: gadget: dereference before null check
+In-Reply-To: <20220630044706.10772-1-mailmesebin00@gmail.com>
+References: <20220630044706.10772-1-mailmesebin00@gmail.com>
+Message-ID: <Yr1IjFBe6JjrDq8n@kroah.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-> -----Original Message-----
-> From: Corentin Labbe <clabbe.montjoie@gmail.com>
-> Sent: Wednesday, June 29, 2022 8:36 PM
-> To: Neal Liu <neal_liu@aspeedtech.com>
-> Cc: Christophe JAILLET <christophe.jaillet@wanadoo.fr>; Randy Dunlap
-> <rdunlap@infradead.org>; Herbert Xu <herbert@gondor.apana.org.au>; David
-> S . Miller <davem@davemloft.net>; Rob Herring <robh+dt@kernel.org>;
-> Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>; Joel Stanley
-> <joel@jms.id.au>; Andrew Jeffery <andrew@aj.id.au>; Dhananjay Phadke
-> <dhphadke@microsoft.com>; Johnny Huang
-> <johnny_huang@aspeedtech.com>; linux-aspeed at lists.ozlabs.org;
-> linux-crypto at vger.kernel.org; devicetree at vger.kernel.org;
-> linux-arm-kernel at lists.infradead.org; linux-kernel at vger.kernel.org; BMC-SW
-> <BMC-SW@aspeedtech.com>
-> Subject: Re: [PATCH v6 1/5] crypto: aspeed: Add HACE hash driver
-> 
-> Le Wed, Jun 29, 2022 at 05:44:22PM +0800, Neal Liu a ?crit :
-> > Hash and Crypto Engine (HACE) is designed to accelerate the throughput
-> > of hash data digest, encryption, and decryption.
-> >
-> > Basically, HACE can be divided into two independently engines
-> > - Hash Engine and Crypto Engine. This patch aims to add HACE hash
-> > engine driver for hash accelerator.
-> >
-> > Signed-off-by: Neal Liu <neal_liu@aspeedtech.com>
-> > Signed-off-by: Johnny Huang <johnny_huang@aspeedtech.com>
-> > ---
-> 
-> Hello
-> 
-> I have some minor comments below.
-> 
-> > +++ b/drivers/crypto/aspeed/aspeed-hace-hash.c
-> > @@ -0,0 +1,1428 @@
-> > +// SPDX-License-Identifier: GPL-2.0+
-> > +/*
-> > + * Copyright (c) 2021 Aspeed Technology Inc.
-> > + */
-> > +
-> > +#include "aspeed-hace.h"
-> > +
-> > +#ifdef ASPEED_AHASH_DEBUG
-> > +#define AHASH_DBG(h, fmt, ...)	\
-> > +	dev_dbg((h)->dev, "%s() " fmt, __func__, ##__VA_ARGS__) #else
-> > +#define AHASH_DBG(h, fmt, ...)	\
-> > +	((void)(h))
-> > +#endif
-> 
-> Hello why not direclty use dev_dbg ?
-> You will still need something to do to enable dev_dbg, so why force to add the
-> need to re-compile it with ASPEED_AHASH_DEBUG ?
+On Thu, Jun 30, 2022 at 10:17:06AM +0530, Sebin Sebastian wrote:
+> Fix coverity warning dereferencing before null check. _ep and desc is
+> dereferenced on all paths until the check for null. Move the
+> initializations after the check for null.
 
-My purpose is to control its own debug logs independently.
-Maybe below define is more reasonable.
+How can those values ever be NULL?
 
-#ifdef ASPEED_AHASH_DEBUG
-#define AHASH_DBG dev_info()...
-#else
-#define AHASH_DBG dev_dbg()...
-#endif
+> Coverity issue: 1518209
+> 
+> Reported-by: kernel test robot <lkp@intel.com>
 
-Do you agree with this?
+kernel test robot did not find this issue.
 
-> 
-> 
-> [...]
-> 
-> > +	if (dma_mapping_error(hace_dev->dev, rctx->digest_dma_addr)) {
-> > +		dev_warn(hace_dev->dev, "dma_map() rctx digest error\n");
-> > +		return -ENOMEM;
-> > +	}
-> 
-> An error displayed as warning.
-> 
-> [...]
-> > +	if (!sg_len) {
-> > +		dev_warn(hace_dev->dev, "dma_map_sg() src error\n");
-> 
-> Same here. In fact you have lot of error displayed as warning in the driver.
+> Signed-off-by: Sebin Sebastian <mailmesebin00@gmail.com>
 
-I think both of them are fine. Would you prefer dev_err() instead?
+What commit id does this change fix?
 
+> ---
+>  Changes since v1: Fix the build errors and warnings due to first patch.
+>  Fix the undeclared 'ep' and 'maxpacket' error. Fix the ISO C90 warning.
 > 
-> [...]
-> > +/* Weak function for HACE hash */
-> > +void __weak aspeed_register_hace_hash_algs(struct aspeed_hace_dev
-> > +*hace_dev) {
-> > +	pr_warn("%s: Not supported yet\n", __func__); }
-> > +
-> > +void __weak aspeed_unregister_hace_hash_algs(struct aspeed_hace_dev
-> > +*hace_dev) {
-> > +	pr_warn("%s: Not supported yet\n", __func__); }
+>  drivers/usb/gadget/udc/aspeed_udc.c | 21 ++++++++++++++-------
+>  1 file changed, 14 insertions(+), 7 deletions(-)
 > 
-> Why not use dev_warn ?
+> diff --git a/drivers/usb/gadget/udc/aspeed_udc.c b/drivers/usb/gadget/udc/aspeed_udc.c
+> index d75a4e070bf7..a43cf8dde2a8 100644
+> --- a/drivers/usb/gadget/udc/aspeed_udc.c
+> +++ b/drivers/usb/gadget/udc/aspeed_udc.c
+> @@ -341,26 +341,33 @@ static void ast_udc_stop_activity(struct ast_udc_dev *udc)
+>  static int ast_udc_ep_enable(struct usb_ep *_ep,
+>  			     const struct usb_endpoint_descriptor *desc)
+>  {
+> -	u16 maxpacket = usb_endpoint_maxp(desc);
+> -	struct ast_udc_ep *ep = to_ast_ep(_ep);
 
-dev_warn() is better, I'll revise it in next patch.
+checking that ep is NULL here is an impossible thing on its own.  You
+did change this so that you didn't check this anymore, which is odd as
+you did not mention that in the changelog text :(
 
-> 
-> 
-> [...]
-> 
-> > +struct aspeed_sg_list {
-> > +	u32 len;
-> > +	u32 phy_addr;
-> > +};
-> 
-> Since it is a descriptor where all member are written with cpu_to_le32(), it
-> should be __le32.
+> -	struct ast_udc_dev *udc = ep->udc;
+> -	u8 epnum = usb_endpoint_num(desc);
+>  	unsigned long flags;
+>  	u32 ep_conf = 0;
+>  	u8 dir_in;
+>  	u8 type;
+> +	u16 maxpacket;
+> +	struct ast_udc_ep *ep;
+> +	struct ast_udc_dev *udc;
+> +	u8 epnum;
 
-Sure! I'll revise it in next patch.
-Thanks.
+Why did you reorder these?
 
+>  
+> -	if (!_ep || !ep || !desc || desc->bDescriptorType != USB_DT_ENDPOINT ||
+> -	    maxpacket == 0 || maxpacket > ep->ep.maxpacket) {
+> +	if (!_ep || !desc || desc->bDescriptorType != USB_DT_ENDPOINT) {
+>  		EP_DBG(ep, "Failed, invalid EP enable param\n");
+>  		return -EINVAL;
+>  	}
+> -
+
+Why did you remove this line?
+
+Also, your To: line is messed up somehow, please fix your email
+client...
+
+thanks,
+
+gre gk-h
