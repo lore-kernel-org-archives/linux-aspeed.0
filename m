@@ -1,16 +1,16 @@
 From: Bjorn Andersson <bjorn.andersson@linaro.org>
 Date: Sun, 03 Jul 2022 03:57:38 -0000
-Subject: (subset) [PATCH v2 00/48] dt-bindings: input: gpio-keys: rework matching children
-In-Reply-To: <20220609113721.379932-1-krzysztof.kozlowski@linaro.org>
-References: <20220609113721.379932-1-krzysztof.kozlowski@linaro.org>
-Message-ID: <165682055971.445910.5189932421143220440.b4-ty@linaro.org>
+Subject: (subset) [PATCH v3 00/40] dt-bindings: input: gpio-keys: rework matching children
+In-Reply-To: <20220616005224.18391-1-krzysztof.kozlowski@linaro.org>
+References: <20220616005224.18391-1-krzysztof.kozlowski@linaro.org>
+Message-ID: <165682055968.445910.13332143476289618470.b4-ty@linaro.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, 9 Jun 2022 13:37:21 +0200, Krzysztof Kozlowski wrote:
+On Wed, 15 Jun 2022 17:52:24 -0700, Krzysztof Kozlowski wrote:
 > Merging
 > =======
 > 1. dt-bindings: rebased on top of Rob's:
@@ -23,14 +23,8 @@ On Thu, 9 Jun 2022 13:37:21 +0200, Krzysztof Kozlowski wrote:
 
 Applied, thanks!
 
-[27/48] arm64: dts: qcom: align gpio-key node names with dtschema
-        commit: b08f5cbd69dcd25f5ab2a0798fe3836a97a9d7c6
-[28/48] arm64: dts: qcom: correct gpio-keys properties
-        commit: 5a4b0b853a2914403746b0a1decab695202ff242
-[29/48] arm64: dts: qcom: sdm630-sony-xperia-nile: drop unneeded status from gpio-keys
-        commit: 9d8840f6ee426b6dfcb65bdf39e2898652e2b1e5
-[30/48] arm64: dts: qcom: align led node names with dtschema
-        commit: 3cfe94d660a8ebc19e78ea0a4781d7e9a1054c65
+[25/40] ARM: dts: qcom: align gpio-key node names with dtschema
+        commit: 9c17baaa97c89379cbd89e36115b7fb6aba43518
 
 Best regards,
 -- 
