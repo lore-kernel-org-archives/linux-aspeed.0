@@ -1,9 +1,9 @@
 From: Brendan Higgins <brendanhiggins@google.com>
-Date: Wed, 6 Jul 2022 17:19:54 -0400
-Subject: [PATCH v3 3/5] thunderbolt: test: Use kunit_test_suite() macro
-In-Reply-To: <20220625050838.1618469-4-davidgow@google.com>
-References: <20220625050838.1618469-1-davidgow@google.com> <20220625050838.1618469-4-davidgow@google.com>
-Message-ID: <CAFd5g471_it8CQmBJnrhS=T3AgdfQF2tr4A9n=sYuWayovXmLw@mail.gmail.com>
+Date: Wed, 6 Jul 2022 17:21:37 -0400
+Subject: [PATCH v3 4/5] nitro_enclaves: test: Use kunit_test_suite() macro
+In-Reply-To: <20220625050838.1618469-5-davidgow@google.com>
+References: <20220625050838.1618469-1-davidgow@google.com> <20220625050838.1618469-5-davidgow@google.com>
+Message-ID: <CAFd5g45www4FZ0BoXN+mbqAJEkub07mM-nfzMtjm4p3q_VSCXw@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -12,20 +12,27 @@ Content-Transfer-Encoding: 7bit
 
 On Sat, Jun 25, 2022 at 1:10 AM David Gow <davidgow@google.com> wrote:
 >
-> The new implementation of kunit_test_suite() for modules no longer
-> conflicts with module_init, so can now be used by the thunderbolt tests.
+> The kunit_test_suite() macro previously conflicted with module_init,
+> making it unsuitable for use in the nitro_enclaves test. Now that it's
+> fixed, we can use it instead of a custom call into internal KUnit
+> functions to run the test.
 >
-> Also update the Kconfig entry to enable the test when KUNIT_ALL_TESTS is
-> enabled.
+> As a side-effect, this means that the test results are properly included
+> with other suites when built-in. To celebrate, enable the test by
+> default when KUNIT_ALL_TESTS is set (and NITRO_ENCLAVES enabled).
 >
-> This means that kunit_tool can now successfully run and parse the test
-> results with, for example:
+> The nitro_enclave tests can now be run via kunit_tool with:
 >         ./tools/testing/kunit/kunit.py run --arch=x86_64 \
->         --kconfig_add CONFIG_PCI=y --kconfig_add CONFIG_USB4=y \
->         'thunderbolt'
+>         --kconfig_add CONFIG_PCI=y --kconfig_add CONFIG_SMP=y \
+>         --kconfig_add CONFIG_HOTPLUG_CPU=y \
+>         --kconfig_add CONFIG_VIRT_DRIVERS=y \
+>         --kconfig_add CONFIG_NITRO_ENCLAVES=y \
+>         'ne_misc_dev_test'
 >
-> Acked-by: Mika Westerberg <mika.westerberg@linux.intel.com>
-> Acked-by: Daniel Latypov <dlatypov@google.com>
+> (This is a pretty long command, so it may be worth adding a .kunitconfig
+> file at some point, instead.)
+>
+> Reviewed-by: Andra Paraschiv <andraprs@amazon.com>
 > Signed-off-by: David Gow <davidgow@google.com>
 
 Acked-by: Brendan Higgins <brendanhiggins@google.com>
