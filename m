@@ -1,83 +1,85 @@
-From: Daniel Latypov <dlatypov@google.com>
-Date: Fri, 8 Jul 2022 11:23:08 -0700
-Subject: [PATCH v3 1/5] kunit: unify module and builtin suite definitions
-In-Reply-To: <20220625050838.1618469-2-davidgow@google.com>
-References: <20220625050838.1618469-1-davidgow@google.com> <20220625050838.1618469-2-davidgow@google.com>
-Message-ID: <CAGS_qxrGwVL37AOUWCxwx=qg6YvXCDSSu4p_PSt7_87N3RxJZw@mail.gmail.com>
+From: David Gow <davidgow@google.com>
+Date: Sat,  9 Jul 2022 11:19:56 +0800
+Subject: [PATCH v4 0/5] Rework KUnit test execution in modules
+Message-ID: <20220709032001.819487-1-davidgow@google.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Jun 24, 2022 at 10:10 PM David Gow <davidgow@google.com> wrote:
-> diff --git a/include/kunit/test.h b/include/kunit/test.h
-> index 8ffcd7de9607..54306271cfbf 100644
-> --- a/include/kunit/test.h
-> +++ b/include/kunit/test.h
-> @@ -250,41 +250,8 @@ static inline int kunit_run_all_tests(void)
->  }
->  #endif /* IS_BUILTIN(CONFIG_KUNIT) */
->
-> -#ifdef MODULE
-> -/**
-> - * kunit_test_suites_for_module() - used to register one or more
-> - *                      &struct kunit_suite with KUnit.
-> - *
-> - * @__suites: a statically allocated list of &struct kunit_suite.
-> - *
-> - * Registers @__suites with the test framework. See &struct kunit_suite for
-> - * more information.
-> - *
-> - * If a test suite is built-in, module_init() gets translated into
-> - * an initcall which we don't want as the idea is that for builtins
-> - * the executor will manage execution.  So ensure we do not define
-> - * module_{init|exit} functions for the builtin case when registering
-> - * suites via kunit_test_suites() below.
-> - */
-> -#define kunit_test_suites_for_module(__suites)                         \
+This patch series makes two changes to how KUnit test suites are stored
+and executed:
+- The .kunit_test_suites section is now used for tests in modules (in
+  lieu of a module_init funciton), as well as for built-in tests. The
+  module loader will now trigger test execution. This frees up the
+  module_init function for other uses.
+- Instead of storing an array of arrays of suites, have the
+  kunit_test_suite() and kunit_test_suites() macros append to one global
+  (or per-module) list of test suites. This removes a needless layer of
+  indirection, and removes the need to NULL-terminate suite_sets.
 
-Deleting this bit now causes merge conflicts with Shuah's kunit
-branch, due to https://patchwork.kernel.org/project/linux-kselftest/patch/20220702040959.3232874-3-davidgow at google.com/
-I.e. We added in a MODULE_INFO(test, "Y") in this to-be-deleted section.
+The upshot of this is that it should now be possible to use the
+kunit_test_suite() and kunit_test_suites() macros to register test
+suites even from within modules which otherwise had module_init
+functions. This was proving to be quite a common issue, resulting in
+several modules calling into KUnit's private suite execution functions
+to run their tests (often introducing incompatibilities with the KUnit
+tooling).
 
-Perhaps something like this would be a fix?
+This series also fixes the thunderbolt, nitro_enclaves, and
+sdhci-of-aspeed tests to use kunit_test_suite() now that it works. This
+is required, as otherwise the first two patches may break these tests
+entirely.
 
-  #ifdef MODULE
-  #define _kunit_mark_test_module MODULE_INFO(test, "Y")
-  #else
-  #define _kunit_mark_test_module
-  #endif /* MODULE */
+Huge thanks to Jeremy Kerr, who designed and implemented the module
+loader changes, and to Daniel Latypov for pushing the simplification of
+the nested arrays in .kunit_test_suites.
 
-  #define __kunit_test_suites(unique_array, unique_suites, ...)
-          \
-          _kunit_mark_test_module;
-          \
-          static struct kunit_suite *unique_array[] = { __VA_ARGS__,
-NULL };     \
-          static struct kunit_suite **unique_suites
-          \
-          __used __section(".kunit_test_suites") = unique_array
+I've tested this series both with builtin tests on a number of
+architectures, and with modules on x86_64, and it seems good-to-go to
+me. More testing (particularly of modules) with more interesting setups
+never hurts, though!
 
+Cheers,
+-- David
 
-> -       static int __init kunit_test_suites_init(void)                  \
-> -       {                                                               \
-> -               return __kunit_test_suites_init(__suites);              \
-> -       }                                                               \
-> -       module_init(kunit_test_suites_init);                            \
-> -                                                                       \
-> -       static void __exit kunit_test_suites_exit(void)                 \
-> -       {                                                               \
-> -               return __kunit_test_suites_exit(__suites);              \
-> -       }                                                               \
-> -       module_exit(kunit_test_suites_exit)
-> -#else
-> -#define kunit_test_suites_for_module(__suites)
-> -#endif /* MODULE */
-> -
->  #define __kunit_test_suites(unique_array, unique_suites, ...)                 \
->         static struct kunit_suite *unique_array[] = { __VA_ARGS__, NULL };     \
-> -       kunit_test_suites_for_module(unique_array);                            \
->         static struct kunit_suite **unique_suites                              \
->         __used __section(".kunit_test_suites") = unique_array
->
+Changes since v3:
+https://lore.kernel.org/linux-kselftest/20220625050838.1618469-1-davidgow at google.com/
+- Rebase on top of the TAINT_TEST patch series. This should now apply
+  cleanly on top of the kunit branch:
+  https://lore.kernel.org/linux-kselftest/20220708044847.531566-1-davidgow at google.com/T/#u
+- Add Brendan's Reviewed/Acked-by tags.
+
+Daniel Latypov (1):
+  kunit: flatten kunit_suite*** to kunit_suite** in .kunit_test_suites
+
+David Gow (3):
+  thunderbolt: test: Use kunit_test_suite() macro
+  nitro_enclaves: test: Use kunit_test_suite() macro
+  mmc: sdhci-of-aspeed: test: Use kunit_test_suite() macro
+
+Jeremy Kerr (1):
+  kunit: unify module and builtin suite definitions
+
+ drivers/mmc/host/Kconfig                      |   5 +-
+ drivers/mmc/host/sdhci-of-aspeed-test.c       |   8 +-
+ drivers/mmc/host/sdhci-of-aspeed.c            |  34 +----
+ drivers/thunderbolt/Kconfig                   |   6 +-
+ drivers/thunderbolt/domain.c                  |   3 -
+ drivers/thunderbolt/tb.h                      |   8 -
+ drivers/thunderbolt/test.c                    |  12 +-
+ drivers/virt/nitro_enclaves/Kconfig           |   5 +-
+ drivers/virt/nitro_enclaves/ne_misc_dev.c     |  27 ----
+ .../virt/nitro_enclaves/ne_misc_dev_test.c    |   5 +-
+ include/kunit/test.h                          |  62 ++------
+ include/linux/module.h                        |   5 +
+ kernel/module/main.c                          |   6 +
+ lib/kunit/executor.c                          | 115 ++++----------
+ lib/kunit/executor_test.c                     | 144 +++++-------------
+ lib/kunit/test.c                              |  54 ++++++-
+ 16 files changed, 155 insertions(+), 344 deletions(-)
+
+-- 
+2.37.0.rc0.161.g10f37bed90-goog
+
