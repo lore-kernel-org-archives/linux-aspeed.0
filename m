@@ -1,151 +1,100 @@
 From: David Gow <davidgow@google.com>
-Date: Sat,  9 Jul 2022 11:20:01 +0800
-Subject: [PATCH v4 5/5] mmc: sdhci-of-aspeed: test: Use kunit_test_suite() macro
-In-Reply-To: <20220709032001.819487-1-davidgow@google.com>
-References: <20220709032001.819487-1-davidgow@google.com>
-Message-ID: <20220709032001.819487-6-davidgow@google.com>
+Date: Sat, 9 Jul 2022 11:25:06 +0800
+Subject: [PATCH v3 1/5] kunit: unify module and builtin suite definitions
+In-Reply-To: <CAGS_qxrGwVL37AOUWCxwx=qg6YvXCDSSu4p_PSt7_87N3RxJZw@mail.gmail.com>
+References: <20220625050838.1618469-1-davidgow@google.com> <20220625050838.1618469-2-davidgow@google.com>
+ <CAGS_qxrGwVL37AOUWCxwx=qg6YvXCDSSu4p_PSt7_87N3RxJZw@mail.gmail.com>
+Message-ID: <CABVgOS=AfJ7X5xqEKvXCzQ=UzOWrmR9KBO_TnkQw4Ti3fmKHBw@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The kunit_test_suite() macro is no-longer incompatible with module_add,
-so its use can be reinstated.
+On Sat, Jul 9, 2022 at 2:23 AM Daniel Latypov <dlatypov@google.com> wrote:
+>
+> On Fri, Jun 24, 2022 at 10:10 PM David Gow <davidgow@google.com> wrote:
+> > diff --git a/include/kunit/test.h b/include/kunit/test.h
+> > index 8ffcd7de9607..54306271cfbf 100644
+> > --- a/include/kunit/test.h
+> > +++ b/include/kunit/test.h
+> > @@ -250,41 +250,8 @@ static inline int kunit_run_all_tests(void)
+> >  }
+> >  #endif /* IS_BUILTIN(CONFIG_KUNIT) */
+> >
+> > -#ifdef MODULE
+> > -/**
+> > - * kunit_test_suites_for_module() - used to register one or more
+> > - *                      &struct kunit_suite with KUnit.
+> > - *
+> > - * @__suites: a statically allocated list of &struct kunit_suite.
+> > - *
+> > - * Registers @__suites with the test framework. See &struct kunit_suite for
+> > - * more information.
+> > - *
+> > - * If a test suite is built-in, module_init() gets translated into
+> > - * an initcall which we don't want as the idea is that for builtins
+> > - * the executor will manage execution.  So ensure we do not define
+> > - * module_{init|exit} functions for the builtin case when registering
+> > - * suites via kunit_test_suites() below.
+> > - */
+> > -#define kunit_test_suites_for_module(__suites)                         \
+>
+> Deleting this bit now causes merge conflicts with Shuah's kunit
+> branch, due to https://patchwork.kernel.org/project/linux-kselftest/patch/20220702040959.3232874-3-davidgow at google.com/
+> I.e. We added in a MODULE_INFO(test, "Y") in this to-be-deleted section.
 
-Since this fixes parsing with builtins and kunit_tool, also enable the
-test by default when KUNIT_ALL_TESTS is enabled.
+Nice catch. I've rebased this series on top of the taint stuff:
+https://lore.kernel.org/linux-kselftest/20220709032001.819487-2-davidgow at google.com/T/#u
 
-The test can now be run via kunit_tool with:
-	./tools/testing/kunit/kunit.py run --arch=x86_64 \
-	--kconfig_add CONFIG_OF=y --kconfig_add CONFIG_OF_ADDRESS=y \
-	--kconfig_add CONFIG_MMC=y --kconfig_add CONFIG_MMC_SDHCI=y \
-	--kconfig_add CONFIG_MMC_SDHCI_PLTFM=y \
-	--kconfig_add CONFIG_MMC_SDHCI_OF_ASPEED=y \
-	'sdhci-of-aspeed'
+> Perhaps something like this would be a fix?
 
-(It may be worth adding a .kunitconfig at some point, as there are
-enough dependencies to make that command scarily long.)
+Thanks.The rebased version is basically this, but without the #ifdef
+MODULE indirection, as MODULE_INFO() will decay to nothing if MODULE
+is not defined, anyway.
 
-Acked-by: Daniel Latypov <dlatypov@google.com>
-Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
-Acked-by: Brendan Higgins <brendanhiggins@google.com>
-Signed-off-by: David Gow <davidgow@google.com>
----
-
-Changes since v3:
-https://lore.kernel.org/linux-kselftest/20220625050838.1618469-6-davidgow at google.com/
-- Rebase on top of the TAINT_TEST patch series. This should now apply
-  cleanly on top of the kunit branch:
-  https://lore.kernel.org/linux-kselftest/20220708044847.531566-1-davidgow at google.com/T/#u
-- Add Brendan's Acked-by tag.
-
-Changes since v2:
-https://lore.kernel.org/linux-kselftest/20220621085345.603820-6-davidgow at google.com/
-- Clean up the aspeed_sdc_init() function to get rid of an obsolete goto
-  (Thanks Daniel)
-- Add Daniel and Ulf's Acked-by tags.
-
-No changes since v1:
-https://lore.kernel.org/linux-kselftest/20220618090310.1174932-6-davidgow at google.com/
-
----
- drivers/mmc/host/Kconfig                |  5 ++--
- drivers/mmc/host/sdhci-of-aspeed-test.c |  8 +-----
- drivers/mmc/host/sdhci-of-aspeed.c      | 34 +------------------------
- 3 files changed, 5 insertions(+), 42 deletions(-)
-
-diff --git a/drivers/mmc/host/Kconfig b/drivers/mmc/host/Kconfig
-index d6144978e32d..10c563999d3d 100644
---- a/drivers/mmc/host/Kconfig
-+++ b/drivers/mmc/host/Kconfig
-@@ -169,8 +169,9 @@ config MMC_SDHCI_OF_ASPEED
- 	  If unsure, say N.
- 
- config MMC_SDHCI_OF_ASPEED_TEST
--	bool "Tests for the ASPEED SDHCI driver"
--	depends on MMC_SDHCI_OF_ASPEED && KUNIT=y
-+	bool "Tests for the ASPEED SDHCI driver" if !KUNIT_ALL_TESTS
-+	depends on MMC_SDHCI_OF_ASPEED && KUNIT
-+	default KUNIT_ALL_TESTS
- 	help
- 	  Enable KUnit tests for the ASPEED SDHCI driver. Select this
- 	  option only if you will boot the kernel for the purpose of running
-diff --git a/drivers/mmc/host/sdhci-of-aspeed-test.c b/drivers/mmc/host/sdhci-of-aspeed-test.c
-index 1ed4f86291f2..ecb502606c53 100644
---- a/drivers/mmc/host/sdhci-of-aspeed-test.c
-+++ b/drivers/mmc/host/sdhci-of-aspeed-test.c
-@@ -96,10 +96,4 @@ static struct kunit_suite aspeed_sdhci_test_suite = {
- 	.test_cases = aspeed_sdhci_test_cases,
- };
- 
--static struct kunit_suite *aspeed_sdc_test_suite_array[] = {
--	&aspeed_sdhci_test_suite,
--	NULL,
--};
--
--static struct kunit_suite **aspeed_sdc_test_suites
--	__used __section(".kunit_test_suites") = aspeed_sdc_test_suite_array;
-+kunit_test_suite(aspeed_sdhci_test_suite);
-diff --git a/drivers/mmc/host/sdhci-of-aspeed.c b/drivers/mmc/host/sdhci-of-aspeed.c
-index 6e4e132903a6..ba6677bf7372 100644
---- a/drivers/mmc/host/sdhci-of-aspeed.c
-+++ b/drivers/mmc/host/sdhci-of-aspeed.c
-@@ -606,25 +606,6 @@ static struct platform_driver aspeed_sdc_driver = {
- 
- #if defined(CONFIG_MMC_SDHCI_OF_ASPEED_TEST)
- #include "sdhci-of-aspeed-test.c"
--
--static inline int aspeed_sdc_tests_init(void)
--{
--	return __kunit_test_suites_init(aspeed_sdc_test_suites);
--}
--
--static inline void aspeed_sdc_tests_exit(void)
--{
--	__kunit_test_suites_exit(aspeed_sdc_test_suites);
--}
--#else
--static inline int aspeed_sdc_tests_init(void)
--{
--	return 0;
--}
--
--static inline void aspeed_sdc_tests_exit(void)
--{
--}
- #endif
- 
- static int __init aspeed_sdc_init(void)
-@@ -637,18 +618,7 @@ static int __init aspeed_sdc_init(void)
- 
- 	rc = platform_driver_register(&aspeed_sdc_driver);
- 	if (rc < 0)
--		goto cleanup_sdhci;
--
--	rc = aspeed_sdc_tests_init();
--	if (rc < 0) {
--		platform_driver_unregister(&aspeed_sdc_driver);
--		goto cleanup_sdhci;
--	}
--
--	return 0;
--
--cleanup_sdhci:
--	platform_driver_unregister(&aspeed_sdhci_driver);
-+		platform_driver_unregister(&aspeed_sdhci_driver);
- 
- 	return rc;
- }
-@@ -656,8 +626,6 @@ module_init(aspeed_sdc_init);
- 
- static void __exit aspeed_sdc_exit(void)
- {
--	aspeed_sdc_tests_exit();
--
- 	platform_driver_unregister(&aspeed_sdc_driver);
- 	platform_driver_unregister(&aspeed_sdhci_driver);
- }
--- 
-2.37.0.rc0.161.g10f37bed90-goog
-
+>   #ifdef MODULE
+>   #define _kunit_mark_test_module MODULE_INFO(test, "Y")
+>   #else
+>   #define _kunit_mark_test_module
+>   #endif /* MODULE */
+>
+>   #define __kunit_test_suites(unique_array, unique_suites, ...)
+>           \
+>           _kunit_mark_test_module;
+>           \
+>           static struct kunit_suite *unique_array[] = { __VA_ARGS__,
+> NULL };     \
+>           static struct kunit_suite **unique_suites
+>           \
+>           __used __section(".kunit_test_suites") = unique_array
+>
+>
+> > -       static int __init kunit_test_suites_init(void)                  \
+> > -       {                                                               \
+> > -               return __kunit_test_suites_init(__suites);              \
+> > -       }                                                               \
+> > -       module_init(kunit_test_suites_init);                            \
+> > -                                                                       \
+> > -       static void __exit kunit_test_suites_exit(void)                 \
+> > -       {                                                               \
+> > -               return __kunit_test_suites_exit(__suites);              \
+> > -       }                                                               \
+> > -       module_exit(kunit_test_suites_exit)
+> > -#else
+> > -#define kunit_test_suites_for_module(__suites)
+> > -#endif /* MODULE */
+> > -
+> >  #define __kunit_test_suites(unique_array, unique_suites, ...)                 \
+> >         static struct kunit_suite *unique_array[] = { __VA_ARGS__, NULL };     \
+> > -       kunit_test_suites_for_module(unique_array);                            \
+> >         static struct kunit_suite **unique_suites                              \
+> >         __used __section(".kunit_test_suites") = unique_array
+> >
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: smime.p7s
+Type: application/pkcs7-signature
+Size: 4003 bytes
+Desc: S/MIME Cryptographic Signature
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20220709/a9d5f3fd/attachment-0001.p7s>
