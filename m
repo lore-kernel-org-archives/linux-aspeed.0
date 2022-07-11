@@ -1,100 +1,112 @@
-From: David Gow <davidgow@google.com>
-Date: Sat, 9 Jul 2022 11:25:06 +0800
-Subject: [PATCH v3 1/5] kunit: unify module and builtin suite definitions
-In-Reply-To: <CAGS_qxrGwVL37AOUWCxwx=qg6YvXCDSSu4p_PSt7_87N3RxJZw@mail.gmail.com>
-References: <20220625050838.1618469-1-davidgow@google.com> <20220625050838.1618469-2-davidgow@google.com>
- <CAGS_qxrGwVL37AOUWCxwx=qg6YvXCDSSu4p_PSt7_87N3RxJZw@mail.gmail.com>
-Message-ID: <CABVgOS=AfJ7X5xqEKvXCzQ=UzOWrmR9KBO_TnkQw4Ti3fmKHBw@mail.gmail.com>
+From: Neal Liu <neal_liu@aspeedtech.com>
+Date: Mon, 11 Jul 2022 03:23:00 +0000
+Subject: [PATCH v7 0/5] Add Aspeed crypto driver for hardware acceleration
+In-Reply-To: <20220705020936.1751771-1-neal_liu@aspeedtech.com>
+References: <20220705020936.1751771-1-neal_liu@aspeedtech.com>
+Message-ID: <HK0PR06MB3202AE39EF5F43E62F19337880879@HK0PR06MB3202.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sat, Jul 9, 2022 at 2:23 AM Daniel Latypov <dlatypov@google.com> wrote:
->
-> On Fri, Jun 24, 2022 at 10:10 PM David Gow <davidgow@google.com> wrote:
-> > diff --git a/include/kunit/test.h b/include/kunit/test.h
-> > index 8ffcd7de9607..54306271cfbf 100644
-> > --- a/include/kunit/test.h
-> > +++ b/include/kunit/test.h
-> > @@ -250,41 +250,8 @@ static inline int kunit_run_all_tests(void)
-> >  }
-> >  #endif /* IS_BUILTIN(CONFIG_KUNIT) */
-> >
-> > -#ifdef MODULE
-> > -/**
-> > - * kunit_test_suites_for_module() - used to register one or more
-> > - *                      &struct kunit_suite with KUnit.
-> > - *
-> > - * @__suites: a statically allocated list of &struct kunit_suite.
-> > - *
-> > - * Registers @__suites with the test framework. See &struct kunit_suite for
-> > - * more information.
-> > - *
-> > - * If a test suite is built-in, module_init() gets translated into
-> > - * an initcall which we don't want as the idea is that for builtins
-> > - * the executor will manage execution.  So ensure we do not define
-> > - * module_{init|exit} functions for the builtin case when registering
-> > - * suites via kunit_test_suites() below.
-> > - */
-> > -#define kunit_test_suites_for_module(__suites)                         \
->
-> Deleting this bit now causes merge conflicts with Shuah's kunit
-> branch, due to https://patchwork.kernel.org/project/linux-kselftest/patch/20220702040959.3232874-3-davidgow at google.com/
-> I.e. We added in a MODULE_INFO(test, "Y") in this to-be-deleted section.
+> -----Original Message-----
+> From: Neal Liu <neal_liu@aspeedtech.com>
+> Sent: Tuesday, July 5, 2022 10:10 AM
+> To: Corentin Labbe <clabbe.montjoie@gmail.com>; Christophe JAILLET
+> <christophe.jaillet@wanadoo.fr>; Randy Dunlap <rdunlap@infradead.org>;
+> Herbert Xu <herbert@gondor.apana.org.au>; David S . Miller
+> <davem@davemloft.net>; Rob Herring <robh+dt@kernel.org>; Krzysztof
+> Kozlowski <krzysztof.kozlowski+dt@linaro.org>; Joel Stanley <joel@jms.id.au>;
+> Andrew Jeffery <andrew@aj.id.au>; Dhananjay Phadke
+> <dhphadke@microsoft.com>; Johnny Huang
+> <johnny_huang@aspeedtech.com>
+> Cc: linux-aspeed at lists.ozlabs.org; linux-crypto at vger.kernel.org;
+> devicetree at vger.kernel.org; linux-arm-kernel at lists.infradead.org;
+> linux-kernel at vger.kernel.org; BMC-SW <BMC-SW@aspeedtech.com>
+> Subject: [PATCH v7 0/5] Add Aspeed crypto driver for hardware acceleration
 
-Nice catch. I've rebased this series on top of the taint stuff:
-https://lore.kernel.org/linux-kselftest/20220709032001.819487-2-davidgow at google.com/T/#u
+Gentle ping on these patch series, thanks.
 
-> Perhaps something like this would be a fix?
+> Aspeed Hash and Crypto Engine (HACE) is designed to accelerate the
+> throughput of hash data digest, encryption and decryption.
+> 
+> These patches aim to add Aspeed hash & crypto driver support.
+> The hash & crypto driver also pass the run-time self tests that take place at
+> algorithm registration.
+> 
+> The patch series are tested on both AST2500 & AST2600 evaluation boards.
+> 
+> Tested-by below configs:
+> - CONFIG_CRYPTO_MANAGER_DISABLE_TESTS is not set
+> - CONFIG_CRYPTO_MANAGER_EXTRA_TESTS=y
+> - CONFIG_DMA_API_DEBUG=y
+> - CONFIG_DMA_API_DEBUG_SG=y
+> - CONFIG_CPU_BIG_ENDIAN=y
+> 
+> Change since v6:
+> - Refine debug print.
+> - Change aspeed_sg_list struct memeber's type to __le32.
+> 
+> Change since v5:
+> - Re-define HACE clock define to fix breaking ABI.
+> 
+> Change since v4:
+> - Add AST2500 clock definition & dts node.
+> - Add software fallback for handling corner cases.
+> - Fix copy wrong key length.
+> 
+> Change since v3:
+> - Use dmam_alloc_coherent() instead to manage dma_alloc_coherent().
+> - Add more error handler of dma_prepare() & crypto_engine_start().
+> 
+> Change since v2:
+> - Fix endianness issue. Tested on both little endian & big endian
+>   system.
+> - Use common crypto hardware engine for enqueue & dequeue requests.
+> - Use pre-defined IVs for SHA-family.
+> - Revise error handler flow.
+> - Fix sorts of coding style problems.
+> 
+> Change since v1:
+> - Add more error handlers, including DMA memory allocate/free, DMA
+>   map/unmap, clock enable/disable, etc.
+> - Fix check dma_map error for config DMA_API_DEBUG.
+> - Fix dt-binding doc & dts node naming.
+> 
+> 
+> Neal Liu (5):
+>   crypto: aspeed: Add HACE hash driver
+>   dt-bindings: clock: Add AST2500/AST2600 HACE reset definition
+>   ARM: dts: aspeed: Add HACE device controller node
+>   dt-bindings: crypto: add documentation for aspeed hace
+>   crypto: aspeed: add HACE crypto driver
+> 
+>  .../bindings/crypto/aspeed,ast2500-hace.yaml  |   53 +
+>  MAINTAINERS                                   |    7 +
+>  arch/arm/boot/dts/aspeed-g5.dtsi              |    8 +
+>  arch/arm/boot/dts/aspeed-g6.dtsi              |    8 +
+>  drivers/crypto/Kconfig                        |    1 +
+>  drivers/crypto/Makefile                       |    1 +
+>  drivers/crypto/aspeed/Kconfig                 |   40 +
+>  drivers/crypto/aspeed/Makefile                |    9 +
+>  drivers/crypto/aspeed/aspeed-hace-crypto.c    | 1121 +++++++++++++
+>  drivers/crypto/aspeed/aspeed-hace-hash.c      | 1428
+> +++++++++++++++++
+>  drivers/crypto/aspeed/aspeed-hace.c           |  302 ++++
+>  drivers/crypto/aspeed/aspeed-hace.h           |  293 ++++
+>  include/dt-bindings/clock/aspeed-clock.h      |    1 +
+>  include/dt-bindings/clock/ast2600-clock.h     |    1 +
+>  14 files changed, 3273 insertions(+)
+>  create mode 100644
+> Documentation/devicetree/bindings/crypto/aspeed,ast2500-hace.yaml
+>  create mode 100644 drivers/crypto/aspeed/Kconfig  create mode 100644
+> drivers/crypto/aspeed/Makefile  create mode 100644
+> drivers/crypto/aspeed/aspeed-hace-crypto.c
+>  create mode 100644 drivers/crypto/aspeed/aspeed-hace-hash.c
+>  create mode 100644 drivers/crypto/aspeed/aspeed-hace.c
+>  create mode 100644 drivers/crypto/aspeed/aspeed-hace.h
+> 
+> --
+> 2.25.1
 
-Thanks.The rebased version is basically this, but without the #ifdef
-MODULE indirection, as MODULE_INFO() will decay to nothing if MODULE
-is not defined, anyway.
-
->   #ifdef MODULE
->   #define _kunit_mark_test_module MODULE_INFO(test, "Y")
->   #else
->   #define _kunit_mark_test_module
->   #endif /* MODULE */
->
->   #define __kunit_test_suites(unique_array, unique_suites, ...)
->           \
->           _kunit_mark_test_module;
->           \
->           static struct kunit_suite *unique_array[] = { __VA_ARGS__,
-> NULL };     \
->           static struct kunit_suite **unique_suites
->           \
->           __used __section(".kunit_test_suites") = unique_array
->
->
-> > -       static int __init kunit_test_suites_init(void)                  \
-> > -       {                                                               \
-> > -               return __kunit_test_suites_init(__suites);              \
-> > -       }                                                               \
-> > -       module_init(kunit_test_suites_init);                            \
-> > -                                                                       \
-> > -       static void __exit kunit_test_suites_exit(void)                 \
-> > -       {                                                               \
-> > -               return __kunit_test_suites_exit(__suites);              \
-> > -       }                                                               \
-> > -       module_exit(kunit_test_suites_exit)
-> > -#else
-> > -#define kunit_test_suites_for_module(__suites)
-> > -#endif /* MODULE */
-> > -
-> >  #define __kunit_test_suites(unique_array, unique_suites, ...)                 \
-> >         static struct kunit_suite *unique_array[] = { __VA_ARGS__, NULL };     \
-> > -       kunit_test_suites_for_module(unique_array);                            \
-> >         static struct kunit_suite **unique_suites                              \
-> >         __used __section(".kunit_test_suites") = unique_array
-> >
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: smime.p7s
-Type: application/pkcs7-signature
-Size: 4003 bytes
-Desc: S/MIME Cryptographic Signature
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20220709/a9d5f3fd/attachment-0001.p7s>
