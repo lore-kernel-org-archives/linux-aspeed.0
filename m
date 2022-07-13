@@ -1,41 +1,63 @@
 From: Dhananjay Phadke <dphadke@linux.microsoft.com>
-Date: Wed, 13 Jul 2022 00:24:45 -0700
-Subject: [PATCH v7 1/5] crypto: aspeed: Add HACE hash driver
-In-Reply-To: <45058512-0661-5d34-7faf-ddf3eb6142ec@linux.microsoft.com>
+Date: Wed, 13 Jul 2022 00:48:04 -0700
+Subject: [PATCH v7 3/5] ARM: dts: aspeed: Add HACE device controller node
+In-Reply-To: <20220705020936.1751771-4-neal_liu@aspeedtech.com>
 References: <20220705020936.1751771-1-neal_liu@aspeedtech.com>
- <20220705020936.1751771-2-neal_liu@aspeedtech.com>
- <45058512-0661-5d34-7faf-ddf3eb6142ec@linux.microsoft.com>
-Message-ID: <7041bf01-d91f-3149-e8ba-5db4ba59f9bb@linux.microsoft.com>
+ <20220705020936.1751771-4-neal_liu@aspeedtech.com>
+Message-ID: <e5c47d13-bbb9-e607-47cb-6bf4cf6bebd9@linux.microsoft.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 7/12/2022 10:32 PM, Dhananjay Phadke wrote:
->> +static void aspeed_ahash_iV(struct aspeed_sham_reqctx *rctx)
->> +{
->> +??? if (rctx->flags & SHA_FLAGS_SHA1)
->> +??????? memcpy(rctx->digest, sha1_iv, 32);
->> +??? else if (rctx->flags & SHA_FLAGS_SHA224)
->> +??????? memcpy(rctx->digest, sha224_iv, 32);
->> +??? else if (rctx->flags & SHA_FLAGS_SHA256)
->> +??????? memcpy(rctx->digest, sha256_iv, 32);
->> +??? else if (rctx->flags & SHA_FLAGS_SHA384)
->> +??????? memcpy(rctx->digest, sha384_iv, 64);
->> +??? else if (rctx->flags & SHA_FLAGS_SHA512)
->> +??????? memcpy(rctx->digest, sha512_iv, 64);
->> +??? else if (rctx->flags & SHA_FLAGS_SHA512_224)
->> +??????? memcpy(rctx->digest, sha512_224_iv, 64);
->> +??? else if (rctx->flags & SHA_FLAGS_SHA512_256)
->> +??????? memcpy(rctx->digest, sha512_256_iv, 64);
->> +}
+On 7/4/2022 7:09 PM, Neal Liu wrote:
+> Add hace node to device tree for AST2500/AST2600.
 > 
-> Can use the "digsize" from reqctx to memcpy() instead lots of if..else
-> conditionals for every request?
+> Signed-off-by: Neal Liu <neal_liu@aspeedtech.com>
+> Signed-off-by: Johnny Huang <johnny_huang@aspeedtech.com>
+> ---
+>   arch/arm/boot/dts/aspeed-g5.dtsi | 8 ++++++++
+>   arch/arm/boot/dts/aspeed-g6.dtsi | 8 ++++++++
+>   2 files changed, 16 insertions(+)
+> 
+> diff --git a/arch/arm/boot/dts/aspeed-g5.dtsi b/arch/arm/boot/dts/aspeed-g5.dtsi
+> index c89092c3905b..04f98d1dbb97 100644
+> --- a/arch/arm/boot/dts/aspeed-g5.dtsi
+> +++ b/arch/arm/boot/dts/aspeed-g5.dtsi
+> @@ -262,6 +262,14 @@ rng: hwrng at 1e6e2078 {
+>   				quality = <100>;
+>   			};
+>   
+> +			hace: crypto at 1e6e3000 {
+> +				compatible = "aspeed,ast2500-hace";
+> +				reg = <0x1e6e3000 0x100>;
+> +				interrupts = <4>;
+> +				clocks = <&syscon ASPEED_CLK_GATE_YCLK>;
+> +				resets = <&syscon ASPEED_RESET_HACE>;
+> +			};
+> +
+>   			gfx: display at 1e6e6000 {
+>   				compatible = "aspeed,ast2500-gfx", "syscon";
+>   				reg = <0x1e6e6000 0x1000>;
+> diff --git a/arch/arm/boot/dts/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed-g6.dtsi
+> index 6660564855ff..095cf8d03616 100644
+> --- a/arch/arm/boot/dts/aspeed-g6.dtsi
+> +++ b/arch/arm/boot/dts/aspeed-g6.dtsi
+> @@ -323,6 +323,14 @@ apb {
+>   			#size-cells = <1>;
+>   			ranges;
+>   
+> +			hace: crypto at 1e6d0000 {
+> +				compatible = "aspeed,ast2600-hace";
+> +				reg = <0x1e6d0000 0x200>;
+> +				interrupts = <GIC_SPI 4 IRQ_TYPE_LEVEL_HIGH>;
+> +				clocks = <&syscon ASPEED_CLK_GATE_YCLK>;
+> +				resets = <&syscon ASPEED_RESET_HACE>;
+> +			};
+> +
 
-Sorry, meant pre-initialized ivsize not digsize, which could be
-in alg wrapper structure (aspeed_hace_alg).
 
-Thanks,
-Dhananjay
+Thank you for addressing ast2500, for this patch -
+
+Reviewed-by: Dhananjay Phadke <dphadke@linux.microsoft.com>
