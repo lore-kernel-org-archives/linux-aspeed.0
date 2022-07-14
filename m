@@ -1,9 +1,9 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Thu, 14 Jul 2022 00:24:03 -0400
-Subject: [PATCH AUTOSEL 5.15 02/28] pinctrl: aspeed: Fix potential NULL dereference in aspeed_pinmux_set_mux()
-In-Reply-To: <20220714042429.281816-1-sashal@kernel.org>
-References: <20220714042429.281816-1-sashal@kernel.org>
-Message-ID: <20220714042429.281816-2-sashal@kernel.org>
+Date: Thu, 14 Jul 2022 00:25:27 -0400
+Subject: [PATCH AUTOSEL 5.10 02/15] pinctrl: aspeed: Fix potential NULL dereference in aspeed_pinmux_set_mux()
+In-Reply-To: <20220714042541.282175-1-sashal@kernel.org>
+References: <20220714042541.282175-1-sashal@kernel.org>
+Message-ID: <20220714042541.282175-2-sashal@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -26,10 +26,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/pinctrl/aspeed/pinctrl-aspeed.c b/drivers/pinctrl/aspeed/pinctrl-aspeed.c
-index c94e24aadf92..83d47ff1cea8 100644
+index 9c65d560d48f..e792318c3894 100644
 --- a/drivers/pinctrl/aspeed/pinctrl-aspeed.c
 +++ b/drivers/pinctrl/aspeed/pinctrl-aspeed.c
-@@ -236,11 +236,11 @@ int aspeed_pinmux_set_mux(struct pinctrl_dev *pctldev, unsigned int function,
+@@ -235,11 +235,11 @@ int aspeed_pinmux_set_mux(struct pinctrl_dev *pctldev, unsigned int function,
  		const struct aspeed_sig_expr **funcs;
  		const struct aspeed_sig_expr ***prios;
  
