@@ -1,9 +1,9 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Thu, 14 Jul 2022 00:21:42 -0400
-Subject: [PATCH AUTOSEL 5.18 02/41] pinctrl: aspeed: Fix potential NULL dereference in aspeed_pinmux_set_mux()
-In-Reply-To: <20220714042221.281187-1-sashal@kernel.org>
-References: <20220714042221.281187-1-sashal@kernel.org>
-Message-ID: <20220714042221.281187-2-sashal@kernel.org>
+Date: Thu, 14 Jul 2022 00:24:03 -0400
+Subject: [PATCH AUTOSEL 5.15 02/28] pinctrl: aspeed: Fix potential NULL dereference in aspeed_pinmux_set_mux()
+In-Reply-To: <20220714042429.281816-1-sashal@kernel.org>
+References: <20220714042429.281816-1-sashal@kernel.org>
+Message-ID: <20220714042429.281816-2-sashal@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
