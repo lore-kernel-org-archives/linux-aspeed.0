@@ -1,39 +1,58 @@
-From: Herbert Xu <herbert@gondor.apana.org.au>
-Date: Fri, 15 Jul 2022 16:21:30 +0800
-Subject: [PATCH v7 0/5] Add Aspeed crypto driver for hardware acceleration
-In-Reply-To: <HK0PR06MB3202AE39EF5F43E62F19337880879@HK0PR06MB3202.apcprd06.prod.outlook.com>
-References: <20220705020936.1751771-1-neal_liu@aspeedtech.com>
- <HK0PR06MB3202AE39EF5F43E62F19337880879@HK0PR06MB3202.apcprd06.prod.outlook.com>
-Message-ID: <YtEjivBuw5MMpXJi@gondor.apana.org.au>
+From: Guenter Roeck <linux@roeck-us.net>
+Date: Fri, 15 Jul 2022 16:34:08 -0700
+Subject: [PATCH] hwmon: (aspeed-pwm-tacho) increase fan tach period
+ (again)
+In-Reply-To: <20220714142344.27071-1-fercerpav@gmail.com>
+References: <20220714142344.27071-1-fercerpav@gmail.com>
+Message-ID: <20220715233408.GA2181024@roeck-us.net>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Jul 11, 2022 at 03:23:00AM +0000, Neal Liu wrote:
-> > -----Original Message-----
-> > From: Neal Liu <neal_liu@aspeedtech.com>
-> > Sent: Tuesday, July 5, 2022 10:10 AM
-> > To: Corentin Labbe <clabbe.montjoie@gmail.com>; Christophe JAILLET
-> > <christophe.jaillet@wanadoo.fr>; Randy Dunlap <rdunlap@infradead.org>;
-> > Herbert Xu <herbert@gondor.apana.org.au>; David S . Miller
-> > <davem@davemloft.net>; Rob Herring <robh+dt@kernel.org>; Krzysztof
-> > Kozlowski <krzysztof.kozlowski+dt@linaro.org>; Joel Stanley <joel@jms.id.au>;
-> > Andrew Jeffery <andrew@aj.id.au>; Dhananjay Phadke
-> > <dhphadke@microsoft.com>; Johnny Huang
-> > <johnny_huang@aspeedtech.com>
-> > Cc: linux-aspeed at lists.ozlabs.org; linux-crypto at vger.kernel.org;
-> > devicetree at vger.kernel.org; linux-arm-kernel at lists.infradead.org;
-> > linux-kernel at vger.kernel.org; BMC-SW <BMC-SW@aspeedtech.com>
-> > Subject: [PATCH v7 0/5] Add Aspeed crypto driver for hardware acceleration
+On Thu, Jul 14, 2022 at 05:23:44PM +0300, Paul Fertser wrote:
+> The old value allows measuring fan speeds down to about 970 RPM and
+> gives timeout for anything less than that. It is problematic because it
+> can also be used as an indicator for fan failure or absence.
 > 
-> Gentle ping on these patch series, thanks.
+> Despite having read the relevant section of "ASPEED AST2500/AST2520 A2
+> Datasheet ? V1.7" multiple times I wasn't able to figure out what
+> exactly "fan tach period" and "fan tach falling point of period" mean
+> (both are set by the driver from the constant this patch is amending).
+> 
+> Experimentation with a Tioga Pass OCP board (AST2500 BMC) showed that
+> value of 0x0108 gives time outs for speeds below 1500 RPM and the value
+> offered by the patch is good for at least 750 RPM (the fans can't spin
+> any slower so the lower bound is unknown). Measuring with the fans
+> spinning takes about 30 ms, sometimes down to 18 ms, so about the same
+> as with the previous value.
+> 
+> This constant was last changed in
+> 762b1e88801357770889d013c5d20fe110d1f456.
+> 
+> Signed-off-by: Paul Fertser <fercerpav@gmail.com>
 
-Please address the comments that you've received first.
+Patrick - any feedback ? Would it be possible to test this change with
+Quanta-q71l ? Or do you envision no problems ?
 
 Thanks,
--- 
-Email: Herbert Xu <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Guenter
+
+> ---
+>  drivers/hwmon/aspeed-pwm-tacho.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/hwmon/aspeed-pwm-tacho.c b/drivers/hwmon/aspeed-pwm-tacho.c
+> index 3cb88d6fbec0..d11f674e3dc3 100644
+> --- a/drivers/hwmon/aspeed-pwm-tacho.c
+> +++ b/drivers/hwmon/aspeed-pwm-tacho.c
+> @@ -159,7 +159,7 @@
+>   * 11: reserved.
+>   */
+>  #define M_TACH_MODE 0x02 /* 10b */
+> -#define M_TACH_UNIT 0x0210
+> +#define M_TACH_UNIT 0x0420
+>  #define INIT_FAN_CTRL 0xFF
+>  
+>  /* How long we sleep in us while waiting for an RPM result. */
