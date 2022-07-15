@@ -1,95 +1,46 @@
-From: Peter Delevoryas <peter@pjd.dev>
-Date: Thu, 14 Jul 2022 13:30:06 -0700
-Subject: [PATCH v3] The Yosemite V3.5 is a facebook multi-node server
- platform that host four OCP server. The BMC in the Yosemite V3.5 platform
- based on AST2600 SoC.
-In-Reply-To: <YtB7mw1YSahFg0xI@pdel-mbp.dhcp.thefacebook.com>
-References: <20220707132054.GA10610@logan-ThinkPad-T14-Gen-1>
- <CAK8P3a0P2u+LdXcU7As=dfNbg_J2eWfhgB9TT1-xVyH0v6OM5Q@mail.gmail.com>
- <YtBazSo/uJzFeF+L@pdel-mbp>
- <CAK8P3a1juHV6N2QtXaEcobWs6kQHBqqUn9MynvobyJtFFyOsfg@mail.gmail.com>
- <YtB7mw1YSahFg0xI@pdel-mbp.dhcp.thefacebook.com>
-Message-ID: <YtB8zjhjwlUXp4Mw@pdel-mbp.dhcp.thefacebook.com>
+From: David Gow <davidgow@google.com>
+Date: Fri, 15 Jul 2022 12:03:54 +0800
+Subject: [PATCH] mmc: sdhci-of-aspeed: test: Fix dependencies when KUNIT=m
+Message-ID: <20220715040354.2629856-1-davidgow@google.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Jul 14, 2022 at 01:24:59PM -0700, Peter Delevoryas wrote:
-> On Thu, Jul 14, 2022 at 10:15:15PM +0200, Arnd Bergmann wrote:
-> > On Thu, Jul 14, 2022 at 8:05 PM Peter Delevoryas <peter@pjd.dev> wrote:
-> > > On Thu, Jul 07, 2022 at 03:33:48PM +0200, Arnd Bergmann wrote:
-> > > > > +       model = "Facebook fby35";
-> > > > > +       compatible = "facebook,fby35", "aspeed,ast2600";
-> > > > > +
-> > > > > +       aliases {
-> > > > > +               serial4 = &uart5;
-> > > > > +       };
-> > > >
-> > > > Why not start at serial0 here?
-> > >
-> > > Hey, Facebook person jumping in here (using a personal email):
-> > >
-> > > I think you're right, it should be like this:
-> > >
-> > >         aliases {
-> > >                 serial0 = &uart5;
-> > >                 serial1 = &uart1;
-> > >                 serial2 = &uart2;
-> > >                 serial3 = &uart3;
-> > >                 serial4 = &uart4;
-> > >         };
-> > 
-> > Are you actually using all five uarts though?
-> 
-> Actually yes, I should have mentioned this in my previous message.
-> 
-> YosemiteV3.5 is similar to YosemiteV3, which you can see here:
-> 
-> https://www.opencompute.org/products/423/wiwynn-yosemite-v3-server
-> 
-> This dts is for the BMC on the sled baseboard, and it manages the 4 slots in the
-> sled. Each slot has a "Bridge Interconnect" (BIC) (an AST1030) that manages the
-> slot CPU/etc. uart1 is connected to a uart on slot1's BIC, uart2 to slot2, etc.
-> 
-> We also have a work-in-progress QEMU model for this:
-> 
-> https://lore.kernel.org/qemu-devel/20220714154456.2565189-1-clg at kaod.org/
-> 
-> > 
-> > > > > +       chosen {
-> > > > > +               stdout-path = &uart5;
-> > > > > +               bootargs = "console=ttyS4,57600n8 root=/dev/ram rw vmalloc=384M";
-> > > > > +       };
-> > >
-> > > Also: if we do serial0 = &uart5, it should be console=ttyS0, not ttyS4.
-> > >
-> > > >
-> > > > The bootargs should really come from the boot loader.
-> > >
-> > > What if we want to boot the kernel by itself with QEMU? It's kinda annoying to
-> > > have to specify '-append "console=ttyS0,57600n8...' everytime, or to have to use
-> > > a wrapper script. But, it's also a source of bugs: I realized yesterday the
-> > > dts we were using here:
-> > >
-> > > https://github.com/facebook/openbmc-linux/blob/e26c76992e0761d9e440ff514538009384c094b4/arch/arm/boot/dts/aspeed-bmc-facebook-fby35.dts
-> > >
-> > > Has the wrong console setting.
-> > 
-> > You can encode the uart settings like
-> > 
-> >            stdout-path = "serial0:115200n8"
-> > 
-> > the rest really should be passed on the command line, not in
-> > the DT shipped with the kernel.
+While the sdhci-of-aspeed KUnit tests do work when builtin, and do work
+when KUnit itself is being built as a module, the two together break.
 
-Oh sorry, I missed this comment:
+This is because the KUnit tests (understandably) depend on KUnit, so a
+built-in test cannot build if KUnit is a module.
 
-That sounds good, I'm fine with that. We should remove the bootargs then.
+Fix this by adding a dependency on (MMC_SDHCI_OF_ASPEED=m || KUNIT=y),
+which only excludes this one problematic configuration.
 
-Thanks,
-Peter
+This was reported on a nasty openrisc-randconfig run by the kernel test
+robot, though for some reason (compiler optimisations removing the test
+code?) I wasn't able to reproduce it locally on x86:
+https://lore.kernel.org/linux-mm/202207140122.fzhlf60k-lkp at intel.com/T/
 
-> > 
-> >         Arnd
+Fixes: 291cd54e5b05 ("mmc: sdhci-of-aspeed: test: Use kunit_test_suite() macro")
+Reported-by: kernel test robot <lkp@intel.com>
+Signed-off-by: David Gow <davidgow@google.com>
+---
+ drivers/mmc/host/Kconfig | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/mmc/host/Kconfig b/drivers/mmc/host/Kconfig
+index 10c563999d3d..e63608834411 100644
+--- a/drivers/mmc/host/Kconfig
++++ b/drivers/mmc/host/Kconfig
+@@ -171,6 +171,7 @@ config MMC_SDHCI_OF_ASPEED
+ config MMC_SDHCI_OF_ASPEED_TEST
+ 	bool "Tests for the ASPEED SDHCI driver" if !KUNIT_ALL_TESTS
+ 	depends on MMC_SDHCI_OF_ASPEED && KUNIT
++	depends on (MMC_SDHCI_OF_ASPEED=m || KUNIT=y)
+ 	default KUNIT_ALL_TESTS
+ 	help
+ 	  Enable KUnit tests for the ASPEED SDHCI driver. Select this
+-- 
+2.37.0.170.g444d1eabd0-goog
+
