@@ -1,11 +1,11 @@
 From: Liam Howlett <liam.howlett@oracle.com>
-Date: Sun, 17 Jul 2022 02:57:10 +0000
+Date: Mon, 18 Jul 2022 13:55:22 +0000
 Subject: [linux-next:master] BUILD REGRESSION
  4662b7adea50bb62e993a67f611f3be625d3df0d
 In-Reply-To: <20220716180319.dcb09d8ce9519368695c1108@linux-foundation.org>
 References: <62cf77c3.3T/sxYUjJq0ImGp4%lkp@intel.com>
  <20220716180319.dcb09d8ce9519368695c1108@linux-foundation.org>
-Message-ID: <20220717025703.pcrf6bseaigsq22r@revolver>
+Message-ID: <20220718135515.vyuy6rozchf755hq@revolver>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -44,4 +44,6 @@ Content-Transfer-Encoding: 7bit
 > 
 > Liam, I suggest we worry about the mapletree things at a later time ;)
 
-Thanks.  I'll dig into them on top of v11, which I just sent out.
+I'm not sure where we stand with all that goings on here with an rc8 and
+the concerns raised by Hugh, but I can produce a fix for these issues if
+you'd like?
