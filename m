@@ -1,62 +1,36 @@
 From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Date: Thu, 21 Jul 2022 09:11:34 +0200
-Subject: [PATCH v2 1/2] dt-bindings: arm: aspeed: document Ampere
- Mt.Mitchell BMC compatibles
-In-Reply-To: <4516d7a6-f493-aa51-2700-bbab8ea8533a@os.amperecomputing.com>
-References: <20220720085230.3801945-1-quan@os.amperecomputing.com>
- <20220720085230.3801945-2-quan@os.amperecomputing.com>
- <0a5cbaaa-565a-7215-5e31-12c52f4bbcbd@linaro.org>
- <4516d7a6-f493-aa51-2700-bbab8ea8533a@os.amperecomputing.com>
-Message-ID: <174eaacb-27e6-0ce3-3a27-07137a4d1a0d@linaro.org>
+Date: Thu, 21 Jul 2022 09:25:05 +0200
+Subject: [PATCH 1/7] dt-bindings: vendor-prefixes: document several
+ vendors for Aspeed BMC boards
+In-Reply-To: <fb1b5eed-41ed-2c4b-c984-235ec4b3b0f6@linaro.org>
+References: <20220529104928.79636-1-krzysztof.kozlowski@linaro.org>
+ <c86be8e0-8350-5d73-8055-e04a4e88f3b6@linaro.org>
+ <42fb4884-e2c3-4d7f-9049-f14c19701b20@www.fastmail.com>
+ <fb1b5eed-41ed-2c4b-c984-235ec4b3b0f6@linaro.org>
+Message-ID: <1f0f2083-3100-a2d4-d513-52869b5aa706@linaro.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 21/07/2022 04:46, Quan Nguyen wrote:
-> 
-> 
-> On 20/07/2022 17:34, Krzysztof Kozlowski wrote:
->> On 20/07/2022 10:52, Quan Nguyen wrote:
->>> Document Ampere Mt.Mitchell BMC board compatible.
->>>
->>> Signed-off-by: Quan Nguyen <quan@os.amperecomputing.com>
+On 21/07/2022 08:30, Krzysztof Kozlowski wrote:
+> On 21/07/2022 04:34, Andrew Jeffery wrote:
+>>> Any comments on this patchset? Are you going to pick it up? If you
+>>> prefer me taking it, I can, but new boards depend on the bindings, so
+>>> this should rather go via your tree.
 >>
->> Thank you for your patch. There is something to discuss/improve.
->>
->>> ---
->>> v2:
->>>    + Introduce in v2 to add Ampere Mt. Mitchell BMC compatible [Krzysztof]
->>>
->>>   Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 1 +
->>>   1 file changed, 1 insertion(+)
->>>
->>> diff --git a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
->>> index d61408194998..b8146d5c4431 100644
->>> --- a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
->>> +++ b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
->>> @@ -71,6 +71,7 @@ properties:
->>>             - enum:
->>>                 - aspeed,ast2600-evb
->>>                 - aspeed,ast2600-evb-a1
->>> +              - ampere,mtmitchell-bmc
->>
->> Put the entry ordered alphabetically.
->>
+>> Apologies for not getting to this earlier, but I see Rob's applied it.
 > 
-> Thanks Krzysztof for the review.
+> Rob took only the first patch - vendor-prefix. The DTS patches I sent to
+> arm-soc.
 > 
-> Will change to :
->               - enum:
->   +              - ampere,mtmitchell-bmc
->                  - aspeed,ast2600-evb
->                  - aspeed,ast2600-evb-a1
+> However the second bindings patch [1] will miss merge window as I did
+> not send it to arm-soc. I have it in my tree but I am not planning to
+> push it out before merge window.
 > 
-> But, should we correct the below as well? ie: to move 
-> "ampere,mtjade-bmc" to before "aspeed,ast2500-evb" ?
-> 
-Oops, indeed, I added aspeed in wrong place. I'll correct it in my tree.
+
+I sent pull with the bindings now.
 
 Best regards,
 Krzysztof
