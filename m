@@ -1,10 +1,10 @@
 From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Date: Thu, 21 Jul 2022 17:42:07 +0200
-Subject: [PATCH 4/6] ARM: defconfig: address renamed CONFIG_DEBUG_INFO=y
-In-Reply-To: <20220721141325.2413920-5-arnd@kernel.org>
+Date: Thu, 21 Jul 2022 17:43:19 +0200
+Subject: [PATCH 5/6] ARM: defconfig: remove broken CONFIG_THUMB disables
+In-Reply-To: <20220721141325.2413920-6-arnd@kernel.org>
 References: <20220721141325.2413920-1-arnd@kernel.org>
- <20220721141325.2413920-5-arnd@kernel.org>
-Message-ID: <e83c98f9-f32a-6bfd-71b6-9aba22aa7abb@linaro.org>
+ <20220721141325.2413920-6-arnd@kernel.org>
+Message-ID: <ba87edff-6e2c-884f-1afb-cf4b721b6893@linaro.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -14,20 +14,17 @@ Content-Transfer-Encoding: 7bit
 On 21/07/2022 16:13, Arnd Bergmann wrote:
 > From: Arnd Bergmann <arnd@arndb.de>
 > 
-> CONFIG_DEBUG_INFO is now implicitly selected if one picks one of the
-> explicit options that could be DEBUG_INFO_DWARF_TOOLCHAIN_DEFAULT,
-> DEBUG_INFO_DWARF4, DEBUG_INFO_DWARF5.
+> Since commit 1515b186c235 ("ARM: make configuration of userspace
+> Thumb support an expert option"), CONFIG_THUMB cannot be disabled
+> unless one turns on CONFIG_EXPERT first.
 > 
-> This was actually not what I had in mind when I suggested making
-> it a 'choice' statement, but it's too late to change again now,
-> and the Kconfig logic is more sensible in the new form.
+> This is probably for the better, so remove the statements that
+> turn it off.
 > 
-> Change any defconfig file that had CONFIG_DEBUG_INFO enabled
-> but did not pick DWARF4 or DWARF5 explicitly to now pick the toolchain
-> default.
 
-I think this should be split - into remove DEBUG_INFO (noop) and into
-selecting CONFIG_DEBUG_INFO_DWARF_TOOLCHAIN_DEFAULT (a fix).
+
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+
 
 Best regards,
 Krzysztof
