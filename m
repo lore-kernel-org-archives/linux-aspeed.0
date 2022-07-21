@@ -1,37 +1,28 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Thu, 21 Jul 2022 16:36:27 +0200
+From: Jernej Škrabec <jernej.skrabec@gmail.com>
+Date: Thu, 21 Jul 2022 17:03:56 +0200
 Subject: [PATCH 1/6] ARM: refresh defconfig files
 In-Reply-To: <20220721141325.2413920-2-arnd@kernel.org>
 References: <20220721141325.2413920-1-arnd@kernel.org> <20220721141325.2413920-2-arnd@kernel.org>
-Message-ID: <CAK8P3a2X7unsa2N5ynkUdk6H1=GZiWTyKBiLrDjQirAc9nfKhg@mail.gmail.com>
+Message-ID: <2073800.OBFZWjSADL@jernej-laptop>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Jul 21, 2022 at 4:13 PM Arnd Bergmann <arnd@kernel.org> wrote:
->
+Dne ?etrtek, 21. julij 2022 ob 16:13:20 CEST je Arnd Bergmann napisal(a):
 > From: Arnd Bergmann <arnd@arndb.de>
->
+> 
 > A lot of Kconfig options have changed over the years, and we tend
 > to not do a blind 'make defconfig' to refresh the files, to ensure
 > we catch options that should not have gone away.
->
+> 
 > I used some a bit of scripting to only rework the bits where an
 > option moved around in any of the defconfig files, without also
 > dropping any of the other lines, to make it clearer which options
 > we no longer have.
->
+> 
 > Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-
-Apparently this patch got a little large and was rejected by some of
-the mailing lists, in case someone wonders what happened.
-Fortunately the contents  don't actually matter here, as I'm just
-reordering the lines as seen in the diffstat.
-
-        Arnd
-
 > ---
 >  arch/arm/configs/am200epdkit_defconfig    |  26 ++---
 >  arch/arm/configs/aspeed_g4_defconfig      |  16 +--
@@ -90,3 +81,51 @@ reordering the lines as seen in the diffstat.
 >  arch/arm/configs/nhk8815_defconfig        |   6 +-
 >  arch/arm/configs/omap1_defconfig          |  74 ++++++-------
 >  arch/arm/configs/omap2plus_defconfig      |  16 +--
+>  arch/arm/configs/orion5x_defconfig        |  32 +++---
+>  arch/arm/configs/oxnas_v6_defconfig       |  14 +--
+>  arch/arm/configs/palmz72_defconfig        |  14 +--
+>  arch/arm/configs/pcm027_defconfig         |  22 ++--
+>  arch/arm/configs/pleb_defconfig           |   6 +-
+>  arch/arm/configs/pxa168_defconfig         |  18 ++--
+>  arch/arm/configs/pxa255-idp_defconfig     |  10 +-
+>  arch/arm/configs/pxa3xx_defconfig         |  18 ++--
+>  arch/arm/configs/pxa910_defconfig         |  22 ++--
+>  arch/arm/configs/pxa_defconfig            | 126 +++++++++++-----------
+>  arch/arm/configs/qcom_defconfig           |  60 +++++------
+>  arch/arm/configs/realview_defconfig       |   8 +-
+>  arch/arm/configs/rpc_defconfig            |  18 ++--
+>  arch/arm/configs/s3c2410_defconfig        |   8 +-
+>  arch/arm/configs/s3c6400_defconfig        |   2 +-
+>  arch/arm/configs/s5pv210_defconfig        |   4 +-
+>  arch/arm/configs/sama5_defconfig          |   8 +-
+>  arch/arm/configs/sama7_defconfig          |   8 +-
+>  arch/arm/configs/shannon_defconfig        |   8 +-
+>  arch/arm/configs/simpad_defconfig         |  18 ++--
+>  arch/arm/configs/socfpga_defconfig        |   4 +-
+>  arch/arm/configs/spear13xx_defconfig      |  16 +--
+>  arch/arm/configs/spear3xx_defconfig       |  10 +-
+>  arch/arm/configs/spear6xx_defconfig       |   8 +-
+>  arch/arm/configs/spitz_defconfig          |  44 ++++----
+>  arch/arm/configs/stm32_defconfig          |  14 +--
+>  arch/arm/configs/sunxi_defconfig          |   2 +-
+
+For sunxi:
+Reviewed-by: Jernej Skrabec <jernej.skrabec@gmail.com>
+
+Best regards,
+Jernej
+
+>  arch/arm/configs/tct_hammer_defconfig     |  12 +--
+>  arch/arm/configs/tegra_defconfig          |  18 ++--
+>  arch/arm/configs/trizeps4_defconfig       |  58 +++++-----
+>  arch/arm/configs/u8500_defconfig          |   2 +-
+>  arch/arm/configs/versatile_defconfig      |   4 +-
+>  arch/arm/configs/vexpress_defconfig       |   4 +-
+>  arch/arm/configs/vf610m4_defconfig        |   2 +-
+>  arch/arm/configs/viper_defconfig          |  28 ++---
+>  arch/arm/configs/vt8500_v6_v7_defconfig   |   2 +-
+>  arch/arm/configs/xcep_defconfig           |  30 +++---
+>  arch/arm/configs/zeus_defconfig           |  26 ++---
+
+
+
