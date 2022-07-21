@@ -1,59 +1,35 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Date: Wed, 20 Jul 2022 20:49:46 -0700
-Subject: [PATCH] hwmon: (aspeed-pwm-tacho) increase fan tach period
- (again)
-In-Reply-To: <20220714142344.27071-1-fercerpav@gmail.com>
-References: <20220714142344.27071-1-fercerpav@gmail.com>
-Message-ID: <20220721034946.GA1644072@roeck-us.net>
+From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Date: Thu, 21 Jul 2022 08:30:23 +0200
+Subject: [PATCH 1/7] dt-bindings: vendor-prefixes: document several
+ vendors for Aspeed BMC boards
+In-Reply-To: <42fb4884-e2c3-4d7f-9049-f14c19701b20@www.fastmail.com>
+References: <20220529104928.79636-1-krzysztof.kozlowski@linaro.org>
+ <c86be8e0-8350-5d73-8055-e04a4e88f3b6@linaro.org>
+ <42fb4884-e2c3-4d7f-9049-f14c19701b20@www.fastmail.com>
+Message-ID: <fb1b5eed-41ed-2c4b-c984-235ec4b3b0f6@linaro.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Jul 14, 2022 at 05:23:44PM +0300, Paul Fertser wrote:
-> The old value allows measuring fan speeds down to about 970 RPM and
-> gives timeout for anything less than that. It is problematic because it
-> can also be used as an indicator for fan failure or absence.
+On 21/07/2022 04:34, Andrew Jeffery wrote:
+>> Any comments on this patchset? Are you going to pick it up? If you
+>> prefer me taking it, I can, but new boards depend on the bindings, so
+>> this should rather go via your tree.
 > 
-> Despite having read the relevant section of "ASPEED AST2500/AST2520 A2
-> Datasheet ? V1.7" multiple times I wasn't able to figure out what
-> exactly "fan tach period" and "fan tach falling point of period" mean
-> (both are set by the driver from the constant this patch is amending).
-> 
-> Experimentation with a Tioga Pass OCP board (AST2500 BMC) showed that
-> value of 0x0108 gives time outs for speeds below 1500 RPM and the value
-> offered by the patch is good for at least 750 RPM (the fans can't spin
-> any slower so the lower bound is unknown). Measuring with the fans
-> spinning takes about 30 ms, sometimes down to 18 ms, so about the same
-> as with the previous value.
-> 
-> This constant was last changed in
-> 762b1e88801357770889d013c5d20fe110d1f456.
-> 
-> Signed-off-by: Paul Fertser <fercerpav@gmail.com>
+> Apologies for not getting to this earlier, but I see Rob's applied it.
 
-I did not get any further feedback, so:
+Rob took only the first patch - vendor-prefix. The DTS patches I sent to
+arm-soc.
 
-Applied to linux-next.
+However the second bindings patch [1] will miss merge window as I did
+not send it to arm-soc. I have it in my tree but I am not planning to
+push it out before merge window.
 
-Thanks,
-Guenter
+[1]
+https://lore.kernel.org/all/165589284658.28441.1588047978357747292.b4-ty at linaro.org/
 
-> ---
->  drivers/hwmon/aspeed-pwm-tacho.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/hwmon/aspeed-pwm-tacho.c b/drivers/hwmon/aspeed-pwm-tacho.c
-> index 3cb88d6fbec0..d11f674e3dc3 100644
-> --- a/drivers/hwmon/aspeed-pwm-tacho.c
-> +++ b/drivers/hwmon/aspeed-pwm-tacho.c
-> @@ -159,7 +159,7 @@
->   * 11: reserved.
->   */
->  #define M_TACH_MODE 0x02 /* 10b */
-> -#define M_TACH_UNIT 0x0210
-> +#define M_TACH_UNIT 0x0420
->  #define INIT_FAN_CTRL 0xFF
->  
->  /* How long we sleep in us while waiting for an RPM result. */
+
+Best regards,
+Krzysztof
