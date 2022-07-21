@@ -1,254 +1,190 @@
-From: Neal Liu <neal_liu@aspeedtech.com>
-Date: Wed, 27 Jul 2022 05:31:56 +0000
-Subject: [PATCH v8 5/5] crypto: aspeed: add HACE crypto driver
-In-Reply-To: <9d6beefe-9974-22f8-750c-68c9acb707ab@linux.microsoft.com>
-References: <20220726113448.2964968-1-neal_liu@aspeedtech.com>
- <20220726113448.2964968-6-neal_liu@aspeedtech.com>
- <9d6beefe-9974-22f8-750c-68c9acb707ab@linux.microsoft.com>
-Message-ID: <TY2PR06MB32137A54B483D6D700BDE7EC80979@TY2PR06MB3213.apcprd06.prod.outlook.com>
+From: Arnd Bergmann <arnd@kernel.org>
+Date: Thu, 21 Jul 2022 16:13:19 +0200
+Subject: [PATCH 0/6] ARM: defconfig cleanups
+Message-ID: <20220721141325.2413920-1-arnd@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-> Hi Neal,
-> 
-> Thanks for addressing v7 review comments, few more below.
-> 
-> On 7/26/2022 4:34 AM, Neal Liu wrote:
-> > Add HACE crypto driver to support symmetric-key encryption and
-> > decryption with multiple modes of operation.
-> >
-> > Signed-off-by: Neal Liu <neal_liu@aspeedtech.com>
-> > Signed-off-by: Johnny Huang <johnny_huang@aspeedtech.com>
-> > ---
-> >   drivers/crypto/aspeed/Kconfig              |   26 +
-> >   drivers/crypto/aspeed/Makefile             |    7 +-
-> >   drivers/crypto/aspeed/aspeed-hace-crypto.c | 1121
-> ++++++++++++++++++++
-> >   drivers/crypto/aspeed/aspeed-hace.c        |   91 +-
-> >   drivers/crypto/aspeed/aspeed-hace.h        |  112 ++
-> >   5 files changed, 1354 insertions(+), 3 deletions(-)
-> >   create mode 100644 drivers/crypto/aspeed/aspeed-hace-crypto.c
-> >
-> > diff --git a/drivers/crypto/aspeed/Kconfig
-> > b/drivers/crypto/aspeed/Kconfig index 059e627efef8..f19994915a5e
-> > 100644
-> > --- a/drivers/crypto/aspeed/Kconfig
-> > +++ b/drivers/crypto/aspeed/Kconfig
-> > @@ -30,3 +30,29 @@ config CRYPTO_DEV_ASPEED_HACE_HASH_DEBUG
-> >   	  to ask for those messages.
-> >   	  Avoid enabling this option for production build to
-> >   	  minimize driver timing.
-> > +
-> > +config CRYPTO_DEV_ASPEED_HACE_CRYPTO
-> > +	bool "Enable Aspeed Hash & Crypto Engine (HACE) crypto"
-> > +	depends on CRYPTO_DEV_ASPEED
-> > +	select CRYPTO_ENGINE
-> > +	select CRYPTO_AES
-> > +	select CRYPTO_DES
-> > +	select CRYPTO_ECB
-> > +	select CRYPTO_CBC
-> > +	select CRYPTO_CFB
-> > +	select CRYPTO_OFB
-> > +	select CRYPTO_CTR
-> > +	help
-> > +	  Select here to enable Aspeed Hash & Crypto Engine (HACE)
-> > +	  crypto driver.
-> > +	  Supports AES/DES symmetric-key encryption and decryption
-> > +	  with ECB/CBC/CFB/OFB/CTR options.
-> > +
-> > +config CRYPTO_DEV_ASPEED_HACE_CRYPTO_DEBUG
-> > +	bool "Enable HACE crypto debug messages"
-> > +	depends on CRYPTO_DEV_ASPEED_HACE_CRYPTO
-> > +	help
-> > +	  Print HACE crypto debugging messages if you use this option
-> > +	  to ask for those messages.
-> > +	  Avoid enabling this option for production build to
-> > +	  minimize driver timing.
-> 
-> Why are separate options required for hash and crypto algorithms, if hace is
-> only hw crypto on the SoCs?
-> 
-> Looks like that's requiring unnecessary __weak register / unregister functions
-> [see below].
-> 
-> Couldn't just two options CONFIG_CRYPTO_DEV_ASPEED and
-> CONFIG_CRYPTO_DEV_ASPEED_DEBUG be simpler to set for downstream
-> defconfigs?
+From: Arnd Bergmann <arnd@arndb.de>
 
-I would like to separate different algorithms by different options for more convenient for further use and debug.
-We also have RSA engine named ACRY, and would upstream once hash & crypto being accepted.
-So combined them into one option seems not a good choice for multiple hw crypto, do you agree?
+In the process of deprecating board files, I had to modify some defconfig
+files and ran into the same problem as everyone else that a lot of
+them are rather outdated. With some scripting, I managed to split out
+a preparation patch that puts all lines into the expected order without
+actually changing the contents.
 
-> > diff --git a/drivers/crypto/aspeed/Makefile
-> > b/drivers/crypto/aspeed/Makefile index 8bc8d4fed5a9..421e2ca9c53e
-> > 100644
-> > --- a/drivers/crypto/aspeed/Makefile
-> > +++ b/drivers/crypto/aspeed/Makefile
-> > @@ -1,6 +1,9 @@
-> >   obj-$(CONFIG_CRYPTO_DEV_ASPEED) += aspeed_crypto.o
-> > -aspeed_crypto-objs := aspeed-hace.o \
-> > -		      $(hace-hash-y)
-> > +aspeed_crypto-objs := aspeed-hace.o	\
-> > +		      $(hace-hash-y)	\
-> > +		      $(hace-crypto-y)
-> >
-> >   obj-$(CONFIG_CRYPTO_DEV_ASPEED_HACE_HASH) +=
-> aspeed-hace-hash.o
-> >   hace-hash-$(CONFIG_CRYPTO_DEV_ASPEED_HACE_HASH) :=
-> > aspeed-hace-hash.o
-> > +obj-$(CONFIG_CRYPTO_DEV_ASPEED_HACE_CRYPTO) +=
-> aspeed-hace-crypto.o
-> > +hace-crypto-$(CONFIG_CRYPTO_DEV_ASPEED_HACE_CRYPTO) :=
-> > +aspeed-hace-crypto.o
-> > diff --git a/drivers/crypto/aspeed/aspeed-hace-crypto.c
-> > b/drivers/crypto/aspeed/aspeed-hace-crypto.c
-> > new file mode 100644
-> 
-> [...]
-> 
-> > +
-> > +void aspeed_register_hace_crypto_algs(struct aspeed_hace_dev
-> > +*hace_dev) {
-> > +	int rc, i;
-> > +
-> > +	CIPHER_DBG(hace_dev, "\n");
-> > +
-> > +	for (i = 0; i < ARRAY_SIZE(aspeed_crypto_algs); i++) {
-> > +		aspeed_crypto_algs[i].hace_dev = hace_dev;
-> > +		rc = crypto_register_skcipher(&aspeed_crypto_algs[i].alg.skcipher);
-> > +		if (rc) {
-> > +			CIPHER_DBG(hace_dev, "Failed to register %s\n",
-> > +				   aspeed_crypto_algs[i].alg.skcipher.base.cra_name);
-> > +		}
-> > +	}
-> > +
-> > +	if (hace_dev->version != AST2600_VERSION)
-> > +		return;
-> > +
-> > +	for (i = 0; i < ARRAY_SIZE(aspeed_crypto_algs_g6); i++) {
-> > +		aspeed_crypto_algs_g6[i].hace_dev = hace_dev;
-> > +		rc =
-> crypto_register_skcipher(&aspeed_crypto_algs_g6[i].alg.skcipher);
-> > +		if (rc) {
-> > +			CIPHER_DBG(hace_dev, "Failed to register %s\n",
-> > +				   aspeed_crypto_algs_g6[i].alg.skcipher.base.cra_name);
-> > +		}
-> > +	}
-> > +}
-> > diff --git a/drivers/crypto/aspeed/aspeed-hace.c
-> > b/drivers/crypto/aspeed/aspeed-hace.c
-> > index 89b1585d72e2..efc0725ebf98 100644
-> > --- a/drivers/crypto/aspeed/aspeed-hace.c
-> > +++ b/drivers/crypto/aspeed/aspeed-hace.c
-> > @@ -32,10 +32,22 @@ void __weak
-> aspeed_unregister_hace_hash_algs(struct aspeed_hace_dev *hace_dev)
-> >   	dev_warn(hace_dev->dev, "%s: Not supported yet\n", __func__);
-> >   }
-> >
-> > +/* Weak function for HACE crypto */
-> > +void __weak aspeed_register_hace_crypto_algs(struct aspeed_hace_dev
-> > +*hace_dev) {
-> > +	dev_warn(hace_dev->dev, "%s: Not supported yet\n", __func__); }
-> > +
-> > +void __weak aspeed_unregister_hace_crypto_algs(struct aspeed_hace_dev
-> > +*hace_dev) {
-> > +	dev_warn(hace_dev->dev, "%s: Not supported yet\n", __func__); }
-> > +
-> 
-> aspeed_unregister_hace_crypto_algs() is not implemented in
-> aspeed-hace-crypto.c, so those algorithms are not unregistered during unload.
-> 
-> This was missed because of __weak function.
+This helped doing the cleanup separately per Kconfig option that needed
+to be addressed. I only did a small portion of the follow-up changes
+to get to the point of being able to rebase my board changes on top,
+but I did manage to address some bugs that have crept in.
 
-I missed this part, thanks for pointing out.
-I'll add it in next patch.
+If there are no objections, I'd apply this set to the arm/defconfig
+branch of the soc tree directly.
 
-> >   /* HACE interrupt service routine */
-> >   static irqreturn_t aspeed_hace_irq(int irq, void *dev)
-> >   {
-> >   	struct aspeed_hace_dev *hace_dev = (struct aspeed_hace_dev
-> *)dev;
-> > +	struct aspeed_engine_crypto *crypto_engine =
-> > +&hace_dev->crypto_engine;
-> >   	struct aspeed_engine_hash *hash_engine =
-> &hace_dev->hash_engine;
-> >   	u32 sts;
-> >
-> > @@ -51,9 +63,24 @@ static irqreturn_t aspeed_hace_irq(int irq, void *dev)
-> >   			dev_warn(hace_dev->dev, "HASH no active requests.\n");
-> >   	}
-> >
-> > +	if (sts & HACE_CRYPTO_ISR) {
-> > +		if (crypto_engine->flags & CRYPTO_FLAGS_BUSY)
-> > +			tasklet_schedule(&crypto_engine->done_task);
-> > +		else
-> > +			dev_warn(hace_dev->dev, "CRYPTO no active requests.\n");
-> > +	}
-> > +
-> >   	return IRQ_HANDLED;
-> >   }
-> >
-> > +static void aspeed_hace_crypto_done_task(unsigned long data) {
-> > +	struct aspeed_hace_dev *hace_dev = (struct aspeed_hace_dev *)data;
-> > +	struct aspeed_engine_crypto *crypto_engine =
-> > +&hace_dev->crypto_engine;
-> > +
-> > +	crypto_engine->resume(hace_dev);
-> > +}
-> > +
-> >   static void aspeed_hace_hash_done_task(unsigned long data)
-> >   {
-> >   	struct aspeed_hace_dev *hace_dev = (struct aspeed_hace_dev
-> *)data;
-> > @@ -65,11 +92,13 @@ static void aspeed_hace_hash_done_task(unsigned
-> long data)
-> >   static void aspeed_hace_register(struct aspeed_hace_dev *hace_dev)
-> >   {
-> >   	aspeed_register_hace_hash_algs(hace_dev);
-> > +	aspeed_register_hace_crypto_algs(hace_dev);
-> >   }
-> >
-> >   static void aspeed_hace_unregister(struct aspeed_hace_dev *hace_dev)
-> >   {
-> >   	aspeed_unregister_hace_hash_algs(hace_dev);
-> > +	aspeed_unregister_hace_crypto_algs(hace_dev);
-> >   }
-> 
-> Could just wrap these calls instead of weak functions.
-> 
-> static void aspeed_hace_unregister(struct aspeed_hace_dev *hace_dev)
-> { #ifdef CONFIG_CRYPTO_DEV_ASPEED_HACE_HASH
->    	aspeed_unregister_hace_hash_algs(hace_dev);
-> #endif
-> #ifdef CONFIG_CRYPTO_DEV_ASPEED_HACE_CRYPTO
-> 	aspeed_unregister_hace_crypto_algs(hace_dev);
-> #endif
-> }
+      Arnd
 
-Okay, I'll revise it as you suggested.
+Arnd Bergmann (6):
+  ARM: refresh defconfig files
+  ARM: defconfig: remove irda remnants
+  ARM: defconfig: remove stale CONFIG_ZBOOT_ROM entries
+  ARM: defconfig: address renamed CONFIG_DEBUG_INFO=y
+  ARM: defconfig: remove broken CONFIG_THUMB disables
+  ARM: defconfig: kill remnants of CONFIG_LEDS
 
-> >
-> >   static const struct of_device_id aspeed_hace_of_matches[] = { @@
-> > -80,6 +109,7 @@ static const struct of_device_id
-> > aspeed_hace_of_matches[] = {
-> >
-> >   static int aspeed_hace_probe(struct platform_device *pdev)
-> >   {
-> > +	struct aspeed_engine_crypto *crypto_engine;
-> >   	const struct of_device_id *hace_dev_id;
-> >   	struct aspeed_engine_hash *hash_engine;
-> >   	struct aspeed_hace_dev *hace_dev;
-> > @@ -100,6 +130,7 @@ static int aspeed_hace_probe(struct platform_device
-> *pdev)
-> >   	hace_dev->dev = &pdev->dev;
-> >   	hace_dev->version = (unsigned long)hace_dev_id->data;
-> >   	hash_engine = &hace_dev->hash_engine;
-> > +	crypto_engine = &hace_dev->crypto_engine;
-> >
-> >   	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> 
-> Thanks,
-> Dhananjay
+Cc: Russell King <linux@armlinux.org.uk>
+Cc: Nicolas Ferre <nicolas.ferre@microchip.com>
+Cc: Alexandre Belloni <alexandre.belloni@bootlin.com>
+Cc: Claudiu Beznea <claudiu.beznea@microchip.com>
+Cc: Florian Fainelli <f.fainelli@gmail.com>
+Cc: Ray Jui <rjui@broadcom.com>
+Cc: Scott Branden <sbranden@broadcom.com>
+Cc: Alexander Shiyan <shc_work@mail.ru>
+Cc: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Cc: Alim Akhtar <alim.akhtar@samsung.com>
+Cc: Shawn Guo <shawnguo@kernel.org>
+Cc: Sascha Hauer <s.hauer@pengutronix.de>
+Cc: Pengutronix Kernel Team <kernel@pengutronix.de>
+Cc: Fabio Estevam <festevam@gmail.com>
+Cc: NXP Linux Team <linux-imx@nxp.com>
+Cc: Vladimir Zapolskiy <vz@mleia.com>
+Cc: Taichi Sugaya <sugaya.taichi@socionext.com>
+Cc: Takao Orito <orito.takao@socionext.com>
+Cc: Liviu Dudau <liviu.dudau@arm.com>
+Cc: Sudeep Holla <sudeep.holla@arm.com>
+Cc: Lorenzo Pieralisi <lpieralisi@kernel.org>
+Cc: Andrew Lunn <andrew@lunn.ch>
+Cc: Gregory Clement <gregory.clement@bootlin.com>
+Cc: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+Cc: Aaro Koskinen <aaro.koskinen@iki.fi>
+Cc: Janusz Krzysztofik <jmkrzyszt@gmail.com>
+Cc: Tony Lindgren <tony@atomide.com>
+Cc: Neil Armstrong <narmstrong@baylibre.com>
+Cc: Dinh Nguyen <dinguyen@kernel.org>
+Cc: Maxime Coquelin <mcoquelin.stm32@gmail.com>
+Cc: Alexandre Torgue <alexandre.torgue@foss.st.com>
+Cc: Chen-Yu Tsai <wens@csie.org>
+Cc: Jernej Skrabec <jernej.skrabec@gmail.com>
+Cc: Samuel Holland <samuel@sholland.org>
+Cc: Thierry Reding <thierry.reding@gmail.com>
+Cc: Jonathan Hunter <jonathanh@nvidia.com>
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Will Deacon <will@kernel.org>
+Cc: linux-arm-kernel at lists.infradead.org
+Cc: linux-kernel at vger.kernel.org
+Cc: linux-aspeed at lists.ozlabs.org
+Cc: bcm-kernel-feedback-list at broadcom.com
+Cc: linux-rpi-kernel at lists.infradead.org
+Cc: linux-samsung-soc at vger.kernel.org
+Cc: linux-omap at vger.kernel.org
+Cc: linux-oxnas at groups.io
+Cc: linux-stm32 at st-md-mailman.stormreply.com
+Cc: linux-sunxi at lists.linux.dev
+Cc: linux-tegra at vger.kernel.org
+Cc: linux-sh at vger.kernel.org
+
+ arch/arm/configs/am200epdkit_defconfig    |  28 ++---
+ arch/arm/configs/aspeed_g4_defconfig      |  17 ++-
+ arch/arm/configs/aspeed_g5_defconfig      |  17 ++-
+ arch/arm/configs/assabet_defconfig        |  19 ++-
+ arch/arm/configs/at91_dt_defconfig        |  10 +-
+ arch/arm/configs/axm55xx_defconfig        |  26 ++--
+ arch/arm/configs/badge4_defconfig         |  17 +--
+ arch/arm/configs/bcm2835_defconfig        |  38 +++---
+ arch/arm/configs/cerfcube_defconfig       |  24 ++--
+ arch/arm/configs/clps711x_defconfig       |   6 +-
+ arch/arm/configs/cm_x300_defconfig        |  28 ++---
+ arch/arm/configs/cns3420vb_defconfig      |  20 ++--
+ arch/arm/configs/colibri_pxa270_defconfig |  41 +++----
+ arch/arm/configs/colibri_pxa300_defconfig |  12 +-
+ arch/arm/configs/collie_defconfig         |  22 ++--
+ arch/arm/configs/corgi_defconfig          |  51 ++++----
+ arch/arm/configs/davinci_all_defconfig    |  28 ++---
+ arch/arm/configs/dove_defconfig           |  32 +++--
+ arch/arm/configs/ep93xx_defconfig         |  18 ++-
+ arch/arm/configs/eseries_pxa_defconfig    |  36 ++----
+ arch/arm/configs/exynos_defconfig         |  24 ++--
+ arch/arm/configs/ezx_defconfig            |  74 ++++++------
+ arch/arm/configs/footbridge_defconfig     |  31 ++---
+ arch/arm/configs/h3600_defconfig          |  16 +--
+ arch/arm/configs/h5000_defconfig          |  20 ++--
+ arch/arm/configs/hackkit_defconfig        |  12 +-
+ arch/arm/configs/hisi_defconfig           |  24 ++--
+ arch/arm/configs/imx_v4_v5_defconfig      |  10 +-
+ arch/arm/configs/imx_v6_v7_defconfig      |   8 +-
+ arch/arm/configs/integrator_defconfig     |   2 +-
+ arch/arm/configs/iop32x_defconfig         |  23 ++--
+ arch/arm/configs/ixp4xx_defconfig         |   1 -
+ arch/arm/configs/jornada720_defconfig     |  16 +--
+ arch/arm/configs/keystone_defconfig       |  64 +++++-----
+ arch/arm/configs/lart_defconfig           |  21 ++--
+ arch/arm/configs/lpc18xx_defconfig        |  16 ++-
+ arch/arm/configs/lpc32xx_defconfig        |  12 +-
+ arch/arm/configs/lpd270_defconfig         |  11 +-
+ arch/arm/configs/lubbock_defconfig        |  21 ++--
+ arch/arm/configs/magician_defconfig       |  41 +++----
+ arch/arm/configs/mainstone_defconfig      |  15 ++-
+ arch/arm/configs/milbeaut_m10v_defconfig  |   6 +-
+ arch/arm/configs/mini2440_defconfig       |   8 +-
+ arch/arm/configs/mmp2_defconfig           |  32 +++--
+ arch/arm/configs/moxart_defconfig         |  20 ++--
+ arch/arm/configs/mps2_defconfig           |  18 ++-
+ arch/arm/configs/multi_v4t_defconfig      |   6 +-
+ arch/arm/configs/multi_v5_defconfig       |  14 +--
+ arch/arm/configs/multi_v7_defconfig       |  62 +++++-----
+ arch/arm/configs/mv78xx0_defconfig        |  36 +++---
+ arch/arm/configs/mvebu_v5_defconfig       |  32 +++--
+ arch/arm/configs/mvebu_v7_defconfig       |   4 +-
+ arch/arm/configs/mxs_defconfig            |   6 +-
+ arch/arm/configs/neponset_defconfig       |  30 ++---
+ arch/arm/configs/netwinder_defconfig      |  18 +--
+ arch/arm/configs/nhk8815_defconfig        |   8 +-
+ arch/arm/configs/omap1_defconfig          |  80 ++++++-------
+ arch/arm/configs/omap2plus_defconfig      |  17 ++-
+ arch/arm/configs/orion5x_defconfig        |  36 +++---
+ arch/arm/configs/oxnas_v6_defconfig       |  14 +--
+ arch/arm/configs/palmz72_defconfig        |  16 ++-
+ arch/arm/configs/pcm027_defconfig         |  24 ++--
+ arch/arm/configs/pleb_defconfig           |   8 +-
+ arch/arm/configs/pxa168_defconfig         |  22 ++--
+ arch/arm/configs/pxa255-idp_defconfig     |  21 ++--
+ arch/arm/configs/pxa3xx_defconfig         |  20 ++--
+ arch/arm/configs/pxa910_defconfig         |  26 ++--
+ arch/arm/configs/pxa_defconfig            | 140 ++++++++++------------
+ arch/arm/configs/qcom_defconfig           |  62 +++++-----
+ arch/arm/configs/realview_defconfig       |   8 +-
+ arch/arm/configs/rpc_defconfig            |  20 ++--
+ arch/arm/configs/s3c2410_defconfig        |  12 +-
+ arch/arm/configs/s3c6400_defconfig        |   4 +-
+ arch/arm/configs/s5pv210_defconfig        |   6 +-
+ arch/arm/configs/sama5_defconfig          |   8 +-
+ arch/arm/configs/sama7_defconfig          |   8 +-
+ arch/arm/configs/shannon_defconfig        |  10 +-
+ arch/arm/configs/simpad_defconfig         |  29 ++---
+ arch/arm/configs/socfpga_defconfig        |   8 +-
+ arch/arm/configs/spear13xx_defconfig      |  18 +--
+ arch/arm/configs/spear3xx_defconfig       |  12 +-
+ arch/arm/configs/spear6xx_defconfig       |  10 +-
+ arch/arm/configs/spitz_defconfig          |  51 ++++----
+ arch/arm/configs/stm32_defconfig          |  18 ++-
+ arch/arm/configs/sunxi_defconfig          |   2 +-
+ arch/arm/configs/tct_hammer_defconfig     |  14 +--
+ arch/arm/configs/tegra_defconfig          |  20 ++--
+ arch/arm/configs/trizeps4_defconfig       |  66 +++++-----
+ arch/arm/configs/u8500_defconfig          |   2 +-
+ arch/arm/configs/versatile_defconfig      |   4 +-
+ arch/arm/configs/vexpress_defconfig       |   8 +-
+ arch/arm/configs/vf610m4_defconfig        |   2 +-
+ arch/arm/configs/viper_defconfig          |  30 +++--
+ arch/arm/configs/vt8500_v6_v7_defconfig   |   2 +-
+ arch/arm/configs/xcep_defconfig           |  32 +++--
+ arch/arm/configs/zeus_defconfig           |  28 ++---
+ arch/arm64/configs/defconfig              |   2 +-
+ arch/sh/configs/ecovec24_defconfig        |   2 -
+ 100 files changed, 989 insertions(+), 1189 deletions(-)
+
+-- 
+2.29.2
+
