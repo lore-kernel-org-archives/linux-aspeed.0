@@ -1,12 +1,12 @@
 From: Quan Nguyen <quan@os.amperecomputing.com>
-Date: Thu, 21 Jul 2022 09:46:10 +0700
-Subject: [PATCH v2 2/2] ARM: dts: aspeed: Add device tree for Ampere's Mt.
- Mitchell BMC
-In-Reply-To: <ab78f85c-dd0a-9176-103f-8e4abe01b8f9@linaro.org>
+Date: Thu, 21 Jul 2022 09:46:42 +0700
+Subject: [PATCH v2 1/2] dt-bindings: arm: aspeed: document Ampere
+ Mt.Mitchell BMC compatibles
+In-Reply-To: <0a5cbaaa-565a-7215-5e31-12c52f4bbcbd@linaro.org>
 References: <20220720085230.3801945-1-quan@os.amperecomputing.com>
- <20220720085230.3801945-3-quan@os.amperecomputing.com>
- <ab78f85c-dd0a-9176-103f-8e4abe01b8f9@linaro.org>
-Message-ID: <878f9889-0255-96d8-77c8-19b0542932f4@os.amperecomputing.com>
+ <20220720085230.3801945-2-quan@os.amperecomputing.com>
+ <0a5cbaaa-565a-7215-5e31-12c52f4bbcbd@linaro.org>
+Message-ID: <4516d7a6-f493-aa51-2700-bbab8ea8533a@os.amperecomputing.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -15,83 +15,52 @@ Content-Transfer-Encoding: 7bit
 
 
 
-On 20/07/2022 17:36, Krzysztof Kozlowski wrote:
+On 20/07/2022 17:34, Krzysztof Kozlowski wrote:
 > On 20/07/2022 10:52, Quan Nguyen wrote:
->> The Mt. Mitchell BMC is an ASPEED AST2600-based BMC for the Mt. Mitchell
->> hardware reference platform with AmpereOne(TM) processor.
+>> Document Ampere Mt.Mitchell BMC board compatible.
 >>
 >> Signed-off-by: Quan Nguyen <quan@os.amperecomputing.com>
->> Signed-off-by: Phong Vo <phong@os.amperecomputing.com>
->> Signed-off-by: Thang Q. Nguyen <thang@os.amperecomputing.com>
+> 
+> Thank you for your patch. There is something to discuss/improve.
+> 
 >> ---
->> v2 :
->>    + Remove bootargs                                       [Krzysztof]
->>    + Fix gpio-keys nodes name to conform with device tree binding
->>    documents                                               [Krzysztof]
->>    + Fix some nodes to use generic name                    [Krzysztof]
->>    + Remove unnecessary blank line                         [Krzysztof]
->>    + Fix typo "LTC" to "LLC" in license info and corrected license
->>    info to GPL-2.0-only
+>> v2:
+>>    + Introduce in v2 to add Ampere Mt. Mitchell BMC compatible [Krzysztof]
 >>
->>   arch/arm/boot/dts/Makefile                    |   1 +
->>   .../boot/dts/aspeed-bmc-ampere-mtmitchell.dts | 577 ++++++++++++++++++
->>   2 files changed, 578 insertions(+)
->>   create mode 100644 arch/arm/boot/dts/aspeed-bmc-ampere-mtmitchell.dts
+>>   Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 1 +
+>>   1 file changed, 1 insertion(+)
 >>
+>> diff --git a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+>> index d61408194998..b8146d5c4431 100644
+>> --- a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+>> +++ b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+>> @@ -71,6 +71,7 @@ properties:
+>>             - enum:
+>>                 - aspeed,ast2600-evb
+>>                 - aspeed,ast2600-evb-a1
+>> +              - ampere,mtmitchell-bmc
 > 
-> (...)
-> 
->> +
->> +&i2c3 {
->> +	status = "okay";
->> +};
->> +
->> +&i2c4 {
->> +	status = "okay";
->> +
->> +	adc_i2c: adc-i2c at 16 {
-> 
-> Node name: just "adc"
+> Put the entry ordered alphabetically.
 > 
 
-Thanks, will fix.
+Thanks Krzysztof for the review.
 
->> +		compatible = "lltc,ltc2497";
->> +		reg = <0x16>;
->> +		vref-supply = <&voltage_mon_reg>;
->> +		#io-channel-cells = <1>;
->> +		status = "okay";
-> 
-> Isn't this new node? Why do you need status here?
-> 
-Thanks for the comment. The drivers/iio/adc/ltc2497.c does not check for 
-the status indeed. Will remove it.
+Will change to :
+              - enum:
+  +              - ampere,mtmitchell-bmc
+                 - aspeed,ast2600-evb
+                 - aspeed,ast2600-evb-a1
 
->> +	 };
->> +
->> +	eeprom at 50 {
->> +		compatible = "atmel,24c64";
->> +		reg = <0x50>;
->> +		pagesize = <32>;
->> +	};
->> +
-> 
-> (...)
-> 
->> +
->> +&gpio1 {
->> +	gpio-line-names =
->> +	/*18A0-18A7*/	"","","","","","","","",
->> +	/*18B0-18B7*/	"","","","","emmc-rst-n","","s0-soc-pgood","",
->> +	/*18C0-18C7*/	"uart1-mode0","uart1-mode1","uart2-mode0","uart2-mode1",
->> +			"uart3-mode0","uart3-mode1","uart4-mode0","uart4-mode1",
->> +	/*18D0-18D7*/	"","","","","","","","",
->> +	/*18E0-18E3*/	"","","","";
->> +};
->> +
-> 
-> You have a trailing line error.
-> 
-> 
-Thanks, will fix
+But, should we correct the below as well? ie: to move 
+"ampere,mtjade-bmc" to before "aspeed,ast2500-evb" ?
+
+- description: AST2500 based boards
+         items:
+           - enum:
+               - aspeed,ast2500-evb
+               - amd,ethanolx-bmc
+               - ampere,mtjade-bmc
+               - asrock,e3c246d4i-bmc
+
+Thanks,
 - Quan
