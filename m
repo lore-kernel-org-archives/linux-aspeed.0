@@ -1,66 +1,59 @@
-From: Quan Nguyen <quan@os.amperecomputing.com>
-Date: Thu, 21 Jul 2022 09:46:42 +0700
-Subject: [PATCH v2 1/2] dt-bindings: arm: aspeed: document Ampere
- Mt.Mitchell BMC compatibles
-In-Reply-To: <0a5cbaaa-565a-7215-5e31-12c52f4bbcbd@linaro.org>
-References: <20220720085230.3801945-1-quan@os.amperecomputing.com>
- <20220720085230.3801945-2-quan@os.amperecomputing.com>
- <0a5cbaaa-565a-7215-5e31-12c52f4bbcbd@linaro.org>
-Message-ID: <4516d7a6-f493-aa51-2700-bbab8ea8533a@os.amperecomputing.com>
+From: Guenter Roeck <linux@roeck-us.net>
+Date: Wed, 20 Jul 2022 20:49:46 -0700
+Subject: [PATCH] hwmon: (aspeed-pwm-tacho) increase fan tach period
+ (again)
+In-Reply-To: <20220714142344.27071-1-fercerpav@gmail.com>
+References: <20220714142344.27071-1-fercerpav@gmail.com>
+Message-ID: <20220721034946.GA1644072@roeck-us.net>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-
-
-On 20/07/2022 17:34, Krzysztof Kozlowski wrote:
-> On 20/07/2022 10:52, Quan Nguyen wrote:
->> Document Ampere Mt.Mitchell BMC board compatible.
->>
->> Signed-off-by: Quan Nguyen <quan@os.amperecomputing.com>
+On Thu, Jul 14, 2022 at 05:23:44PM +0300, Paul Fertser wrote:
+> The old value allows measuring fan speeds down to about 970 RPM and
+> gives timeout for anything less than that. It is problematic because it
+> can also be used as an indicator for fan failure or absence.
 > 
-> Thank you for your patch. There is something to discuss/improve.
+> Despite having read the relevant section of "ASPEED AST2500/AST2520 A2
+> Datasheet ? V1.7" multiple times I wasn't able to figure out what
+> exactly "fan tach period" and "fan tach falling point of period" mean
+> (both are set by the driver from the constant this patch is amending).
 > 
->> ---
->> v2:
->>    + Introduce in v2 to add Ampere Mt. Mitchell BMC compatible [Krzysztof]
->>
->>   Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 1 +
->>   1 file changed, 1 insertion(+)
->>
->> diff --git a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
->> index d61408194998..b8146d5c4431 100644
->> --- a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
->> +++ b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
->> @@ -71,6 +71,7 @@ properties:
->>             - enum:
->>                 - aspeed,ast2600-evb
->>                 - aspeed,ast2600-evb-a1
->> +              - ampere,mtmitchell-bmc
+> Experimentation with a Tioga Pass OCP board (AST2500 BMC) showed that
+> value of 0x0108 gives time outs for speeds below 1500 RPM and the value
+> offered by the patch is good for at least 750 RPM (the fans can't spin
+> any slower so the lower bound is unknown). Measuring with the fans
+> spinning takes about 30 ms, sometimes down to 18 ms, so about the same
+> as with the previous value.
 > 
-> Put the entry ordered alphabetically.
+> This constant was last changed in
+> 762b1e88801357770889d013c5d20fe110d1f456.
 > 
+> Signed-off-by: Paul Fertser <fercerpav@gmail.com>
 
-Thanks Krzysztof for the review.
+I did not get any further feedback, so:
 
-Will change to :
-              - enum:
-  +              - ampere,mtmitchell-bmc
-                 - aspeed,ast2600-evb
-                 - aspeed,ast2600-evb-a1
-
-But, should we correct the below as well? ie: to move 
-"ampere,mtjade-bmc" to before "aspeed,ast2500-evb" ?
-
-- description: AST2500 based boards
-         items:
-           - enum:
-               - aspeed,ast2500-evb
-               - amd,ethanolx-bmc
-               - ampere,mtjade-bmc
-               - asrock,e3c246d4i-bmc
+Applied to linux-next.
 
 Thanks,
-- Quan
+Guenter
+
+> ---
+>  drivers/hwmon/aspeed-pwm-tacho.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/hwmon/aspeed-pwm-tacho.c b/drivers/hwmon/aspeed-pwm-tacho.c
+> index 3cb88d6fbec0..d11f674e3dc3 100644
+> --- a/drivers/hwmon/aspeed-pwm-tacho.c
+> +++ b/drivers/hwmon/aspeed-pwm-tacho.c
+> @@ -159,7 +159,7 @@
+>   * 11: reserved.
+>   */
+>  #define M_TACH_MODE 0x02 /* 10b */
+> -#define M_TACH_UNIT 0x0210
+> +#define M_TACH_UNIT 0x0420
+>  #define INIT_FAN_CTRL 0xFF
+>  
+>  /* How long we sleep in us while waiting for an RPM result. */
