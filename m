@@ -1,51 +1,40 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Date: Thu, 21 Jul 2022 16:16:46 +0100
-Subject: [PATCH 0/6] ARM: defconfig cleanups
-In-Reply-To: <20220721141325.2413920-1-arnd@kernel.org>
+From: Scott Branden <scott.branden@broadcom.com>
+Date: Thu, 21 Jul 2022 08:33:58 -0700
+Subject: [PATCH 1/6] ARM: refresh defconfig files
+In-Reply-To: <20220721141325.2413920-2-arnd@kernel.org>
 References: <20220721141325.2413920-1-arnd@kernel.org>
-Message-ID: <20220721151646.3xnptk72qhgnrwqw@bogus>
+ <20220721141325.2413920-2-arnd@kernel.org>
+Message-ID: <9321ce6c-7565-a7eb-2bfe-dac144ab7733@broadcom.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Jul 21, 2022 at 04:13:19PM +0200, Arnd Bergmann wrote:
+Hi Arnd,
+
+On 2022-07-21 07:13, Arnd Bergmann wrote:
 > From: Arnd Bergmann <arnd@arndb.de>
 > 
-> In the process of deprecating board files, I had to modify some defconfig
-> files and ran into the same problem as everyone else that a lot of
-> them are rather outdated. With some scripting, I managed to split out
-> a preparation patch that puts all lines into the expected order without
-> actually changing the contents.
+> A lot of Kconfig options have changed over the years, and we tend
+> to not do a blind 'make defconfig' to refresh the files, to ensure
+> we catch options that should not have gone away.
 > 
-> This helped doing the cleanup separately per Kconfig option that needed
-> to be addressed. I only did a small portion of the follow-up changes
-> to get to the point of being able to rebase my board changes on top,
-> but I did manage to address some bugs that have crept in.
-> 
-> If there are no objections, I'd apply this set to the arm/defconfig
-> branch of the soc tree directly.
-> 
->       Arnd
-> 
-> Arnd Bergmann (6):
->   ARM: refresh defconfig files
->   ARM: defconfig: remove irda remnants
->   ARM: defconfig: remove stale CONFIG_ZBOOT_ROM entries
->   ARM: defconfig: address renamed CONFIG_DEBUG_INFO=y
->   ARM: defconfig: remove broken CONFIG_THUMB disables
->   ARM: defconfig: kill remnants of CONFIG_LEDS
-> 
+> I used some a bit of scripting to only rework the bits where an
+> option moved around in any of the defconfig files, without also
+> dropping any of the other lines, to make it clearer which options
+> we no longer have.
+Resync is fine.  But, it would be great if the defconfig files were kept 
+in sync. Almost every kernel version kconfig options change which affect 
+these files. Could we put in place a defconfig refresh per kernel 
+version to keep them all in sync going forward?
 
-[...]
-
->  arch/arm/configs/vexpress_defconfig       |   8 +-
-
-For vexpress,
-
-Acked-by: Sudeep Holla <sudeep.holla@arm.com>
-
--- 
 Regards,
-Sudeep
+Scott
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: smime.p7s
+Type: application/pkcs7-signature
+Size: 4212 bytes
+Desc: S/MIME Cryptographic Signature
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20220721/d87f929e/attachment-0001.p7s>
