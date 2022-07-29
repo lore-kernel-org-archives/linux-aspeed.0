@@ -1,59 +1,128 @@
-From: Neal Liu <neal_liu@aspeedtech.com>
-Date: Thu, 28 Jul 2022 08:58:01 +0000
-Subject: [PATCH v8 5/5] crypto: aspeed: add HACE crypto driver
-In-Reply-To: <450dee2f-63bf-51a7-730e-b780b594c1c5@linux.microsoft.com>
-References: <20220726113448.2964968-1-neal_liu@aspeedtech.com>
- <20220726113448.2964968-6-neal_liu@aspeedtech.com>
- <9d6beefe-9974-22f8-750c-68c9acb707ab@linux.microsoft.com>
- <TY2PR06MB32137A54B483D6D700BDE7EC80979@TY2PR06MB3213.apcprd06.prod.outlook.com>
- <450dee2f-63bf-51a7-730e-b780b594c1c5@linux.microsoft.com>
-Message-ID: <HK0PR06MB3202719AA188BB743BE0A36C80969@HK0PR06MB3202.apcprd06.prod.outlook.com>
+From: Andrew Jeffery <andrew@aj.id.au>
+Date: Fri, 29 Jul 2022 11:58:34 +0930
+Subject: [PATCH v3 2/3] dt-bindings: i2c-ast2600: Add bindings for AST2600 i2C
+ driver
+In-Reply-To: <20220516064900.30517-3-ryan_chen@aspeedtech.com>
+References: <20220516064900.30517-1-ryan_chen@aspeedtech.com>
+ <20220516064900.30517-3-ryan_chen@aspeedtech.com>
+Message-ID: <5d863bc1-4f27-48b6-89ab-c3f02bc09057@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-> On 7/26/2022 10:31 PM, Neal Liu wrote:
-> >> Why are separate options required for hash and crypto algorithms, if
-> >> hace is only hw crypto on the SoCs?
-> >>
-> >> Looks like that's requiring unnecessary __weak register / unregister
-> >> functions [see below].
-> >>
-> >> Couldn't just two options CONFIG_CRYPTO_DEV_ASPEED and
-> >> CONFIG_CRYPTO_DEV_ASPEED_DEBUG be simpler to set for downstream
-> >> defconfigs?
-> > I would like to separate different algorithms by different options for more
-> convenient for further use and debug.
-> > We also have RSA engine named ACRY, and would upstream once hash &
-> crypto being accepted.
-> > So combined them into one option seems not a good choice for multiple hw
-> crypto, do you agree?
-> 
-> Not sure what's the use case of just enabling crypto or hash separately out of
-> same HW engine and esp. when there's no alternative accel available, but
-> that's fine.
-> 
-> If ARCY is different HW engine (interface) then having separate config sounds
-> logical.
-> 
-> Multiplying DEBUG configs seems unnecessary though. With dynamic debug
-> any of the dev_dbg could be turned on. Suggest using single one for the
-> module, if not drop it altogether. Following code is still not covered by Kconfig,
-> it in common code.
-> 
->  > +#ifdef ASPEED_HACE_DEBUG
->  > +#define HACE_DBG(d, fmt, ...)	\
->  > +	dev_info((d)->dev, "%s() " fmt, __func__, ##__VA_ARGS__)
->  > +#else
->  > +#define HACE_DBG(d, fmt, ...)	\
->  > +	dev_dbg((d)->dev, "%s() " fmt, __func__, ##__VA_ARGS__)
->  > +#endif
-> 
-> Regards,
-> Dhananjay
+Hi Ryan,
 
-Okay, I'll leverage your suggestion with different crypto algos options and 1 debug option for all modules.
-Thanks !
+On Mon, 16 May 2022, at 16:18, ryan_chen wrote:
+> AST2600 support new register set for I2C controller, add bindings document
+> to support driver of i2c new register mode controller
+>
+> Signed-off-by: ryan_chen <ryan_chen@aspeedtech.com>
+> ---
+>  .../bindings/i2c/aspeed,i2c-ast2600.ymal      | 78 +++++++++++++++++++
+>  1 file changed, 78 insertions(+)
+>  create mode 100644 
+> Documentation/devicetree/bindings/i2c/aspeed,i2c-ast2600.ymal
+>
+> diff --git 
+> a/Documentation/devicetree/bindings/i2c/aspeed,i2c-ast2600.ymal 
+> b/Documentation/devicetree/bindings/i2c/aspeed,i2c-ast2600.ymal
+> new file mode 100644
+> index 000000000000..7c75f5bac24f
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/i2c/aspeed,i2c-ast2600.ymal
+> @@ -0,0 +1,78 @@
+> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+> +%YAML 1.2
+> +---
+> +$id: http://devicetree.org/schemas/i2c/aspeed,i2c-ast2600.yaml#
+> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> +
+> +title: AST2600 I2C Controller on the AST26XX SoCs Device Tree Bindings
+> +
+> +maintainers:
+> +  - Ryan Chen <ryan_chen@aspeedtech.com>
+> +
+> +allOf:
+> +  - $ref: /schemas/i2c/i2c-controller.yaml#
+> +
+> +properties:
+> +  compatible:
+> +    enum:
+> +      - aspeed,ast2600-i2c
 
+The original driver uses e.g. aspeed,ast2500-i2c-bus for the 
+subordinate controllers. While the register layout changes, I'd prefer 
+we try to use the existing compatibles rather than introducing a new set
+and causing some confusion.
+
+Further, what you're proposing here is effectively being used to select 
+the driver implementation, which isn't the purpose of the devicetree.
+
+My preference would be to reuse the existing compatibles and instead 
+select the driver implementation via Kconfig. Or, if we can figure out 
+some way to do so, support both register interfaces in the one driver 
+implementation and fall back to the old register interface where the 
+new one isn't available (I don't think this is feasible though).
+
+> +
+> +  reg:
+> +    minItems: 1
+> +    items:
+> +      - description: address offset and range of bus
+> +      - description: address offset and range of bus buffer
+> +
+> +  interrupts:
+> +    maxItems: 1
+> +
+> +  clocks:
+> +    maxItems: 1
+> +    description:
+> +      root clock of bus, should reference the APB
+> +      clock in the second cell
+> +
+> +  resets:
+> +    maxItems: 1
+> +
+> +  bus-frequency:
+> +    minimum: 500
+> +    maximum: 2000000
+> +    default: 100000
+> +    description: frequency of the bus clock in Hz defaults to 100 kHz 
+> when not
+> +      specified
+> +
+> +  multi-master:
+> +    type: boolean
+> +    description:
+> +      states that there is another master active on this bus
+> +
+> +required:
+> +  - reg
+> +  - compatible
+> +  - clocks
+> +  - resets
+> +
+> +unevaluatedProperties: false
+> +
+> +examples:
+> +  - |
+> +    #include <dt-bindings/interrupt-controller/arm-gic.h>
+> +    #include <dt-bindings/clock/ast2600-clock.h>
+> +
+> +    i2c_gr: i2c-global-regs at 0 {
+> +      compatible = "aspeed,ast2600-i2c-global", "syscon";
+> +      reg = <0x0 0x20>;
+> +      resets = <&syscon ASPEED_RESET_I2C>;
+> +    };
+> +
+> +    i2c0: i2c-bus at 80 {
+> +      #address-cells = <1>;
+> +      #size-cells = <0>;
+> +      #interrupt-cells = <1>;
+> +      compatible = "aspeed,ast2600-i2c-bus";
+
+This isn't quite right with respect to your binding description above :)
+
+Andrew
