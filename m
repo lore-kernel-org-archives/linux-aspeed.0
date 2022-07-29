@@ -1,45 +1,48 @@
-From: Cédric Le Goater <clg@kaod.org>
-Date: Fri, 29 Jul 2022 09:39:19 +0200
-Subject: [PATCH linux dev-5.15] soc: aspeed: abr: Add sysfs attrs for
- flash toggle
-In-Reply-To: <62143648-8a90-4ff4-bfe1-f311b40cd50c@www.fastmail.com>
-References: <20220501105644.355062-1-zhangjian.3032@bytedance.com>
- <62143648-8a90-4ff4-bfe1-f311b40cd50c@www.fastmail.com>
-Message-ID: <32c4045d-7fce-5954-9710-4f6b0c6b0d2a@kaod.org>
+From: Neal Liu <neal_liu@aspeedtech.com>
+Date: Fri, 29 Jul 2022 19:23:10 +0800
+Subject: [PATCH v9 2/5] dt-bindings: clock: Add AST2500/AST2600 HACE reset definition
+In-Reply-To: <20220729112313.86169-1-neal_liu@aspeedtech.com>
+References: <20220729112313.86169-1-neal_liu@aspeedtech.com>
+Message-ID: <20220729112313.86169-3-neal_liu@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello,
+Add HACE reset bit definition for AST2500/AST2600.
 
-On 7/29/22 04:37, Andrew Jeffery wrote:
-> Hi Jian Zhang,
-> 
-> On Sun, 1 May 2022, at 20:26, Jian Zhang wrote:
->> Implement the flash toggle function in soc ast2600.
->> Add two sysfs attrs named "access_primary" and "access_backup"
-> 
-> If you're proposing this patch for upstream then it needs to be based on
-> an upstream kernel tree, not the OpenBMC kernel tree. You also should
-> not use e.g. `linux dev-5.15` in the patch subject prefix, as that would
-> be inappropriate for an upstream patch.
-> 
-> As you're adding sysfs attributes you'll also need to add the
-> corresponding ABI documentation.
+Signed-off-by: Neal Liu <neal_liu@aspeedtech.com>
+Signed-off-by: Johnny Huang <johnny_huang@aspeedtech.com>
+Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+---
+ include/dt-bindings/clock/aspeed-clock.h  | 1 +
+ include/dt-bindings/clock/ast2600-clock.h | 1 +
+ 2 files changed, 2 insertions(+)
 
-Yes. I think we need to discuss the ABI/sysfs files a bit. I am not
-sure we should toggle the sysfs files depending on the boot mode :
-primary vs. alternate. We could have the same files always and return
-EIO if some conditions are not met. Something like :
+diff --git a/include/dt-bindings/clock/aspeed-clock.h b/include/dt-bindings/clock/aspeed-clock.h
+index 9ff4f6e4558c..06d568382c77 100644
+--- a/include/dt-bindings/clock/aspeed-clock.h
++++ b/include/dt-bindings/clock/aspeed-clock.h
+@@ -52,5 +52,6 @@
+ #define ASPEED_RESET_I2C		7
+ #define ASPEED_RESET_AHB		8
+ #define ASPEED_RESET_CRT1		9
++#define ASPEED_RESET_HACE		10
+ 
+ #endif
+diff --git a/include/dt-bindings/clock/ast2600-clock.h b/include/dt-bindings/clock/ast2600-clock.h
+index 62b9520a00fd..d8b0db2f7a7d 100644
+--- a/include/dt-bindings/clock/ast2600-clock.h
++++ b/include/dt-bindings/clock/ast2600-clock.h
+@@ -111,6 +111,7 @@
+ #define ASPEED_RESET_PCIE_RC_O		19
+ #define ASPEED_RESET_PCIE_RC_OEN	18
+ #define ASPEED_RESET_PCI_DP		5
++#define ASPEED_RESET_HACE		4
+ #define ASPEED_RESET_AHB		1
+ #define ASPEED_RESET_SDRAM		0
+ 
+-- 
+2.25.1
 
-* boot mode : primary/alternate. Write changes the next boot.
-* watchdog management
-
-Also, there is no need to introduce a new include file with large
-inline functions.
-
-Thanks,
-
-C.
