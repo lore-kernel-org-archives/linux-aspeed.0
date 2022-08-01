@@ -1,50 +1,52 @@
-From: Colin King <colin.king@canonical.com>
-Date: Sat, 29 Sep 2018 12:43:13 +0100
-Subject: [PATCH] usb: gadget: fix spelling mistakeis "[En]queing" ->
- "[En]queuing"
-Message-ID: <20180929114313.10557-1-colin.king@canonical.com>
+From: Andrew Jeffery <andrew@aj.id.au>
+Date: Mon, 01 Aug 2022 13:55:26 +0930
+Subject: aspeed2500 SPI1 control at run-time with OpenBMC
+In-Reply-To: <CABoTLcSj0Py37E9tjC=0snep71Hg2bvTG8oGm_+wmiUHpTZL5w@mail.gmail.com>
+References: <CAFPZpNbNc5Fx1tBtmM1x0n-qEB_qp+wSSrR2+_0bxPrPyh1xMw@mail.gmail.com>
+ <c29de2ea-0f60-4e7f-8308-11849a7de8e8@www.fastmail.com>
+ <CAFPZpNZ1+UDVcEs_gp1zCzxXfP6PqZ8kx+UGhb73BusiScRk+g@mail.gmail.com>
+ <a509d7a3-2551-4eea-b965-9499ada39b16@www.fastmail.com>
+ <CAFPZpNb4fNF-QgQrWLeSkN9TjYsWZvH1YrbQj66rBW6jn8rCug@mail.gmail.com>
+ <CABoTLcSj0Py37E9tjC=0snep71Hg2bvTG8oGm_+wmiUHpTZL5w@mail.gmail.com>
+Message-ID: <e94ec2a3-cb7e-4e8b-bb73-fe6b7a6c618d@www.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Colin Ian King <colin.king@canonical.com>
 
-Trivial fix to spelling mistakes in debug warning messages
 
-Signed-off-by: Colin Ian King <colin.king@canonical.com>
----
- drivers/usb/gadget/udc/aspeed-vhub/epn.c | 2 +-
- drivers/usb/gadget/udc/udc-xilinx.c      | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+On Thu, 31 Mar 2022, at 07:40, Oskar Senft wrote:
+>> I can
+>> switch SPI1 control to master through pinmux-select:
+>> [...]
+>>
+>> However, I cannot access the device. '/dev/mtd6' doesn't exist, and I
+>> cannot bind it:
+>> $  echo 1e630000.spi >/sys/bus/platform/drivers/aspeed-smc/bind
+>> -sh: echo: write error: No such file or directory
+>
+> Is there an existing interaction (in the code) between the Aspeed SPI
+> driver and pinmux? I guess ideally we'd want the SPI driver to talk
+> with pinmux to tell it "I'd like to bind the device, can you please
+> configure the pins properly" as well as "I just unbound the device.
+> pinmux, please release the pins".
+>
+> With that, I wonder if we somewhat have that already and "pinctrl-0 =
+> <&pinctrl_spi1passthru_default>" ends up "confusing" the link between
+> the pinmux and the spi driver (since it's actually the opposite of
+> what we want)? How is that _supposed_ to work? Maybe there's just a
+> bug?
 
-diff --git a/drivers/usb/gadget/udc/aspeed-vhub/epn.c b/drivers/usb/gadget/udc/aspeed-vhub/epn.c
-index 5939eb1e97f2..e9ee2b72af19 100644
---- a/drivers/usb/gadget/udc/aspeed-vhub/epn.c
-+++ b/drivers/usb/gadget/udc/aspeed-vhub/epn.c
-@@ -353,7 +353,7 @@ static int ast_vhub_epn_queue(struct usb_ep* u_ep, struct usb_request *u_req,
- 	/* Endpoint enabled ? */
- 	if (!ep->epn.enabled || !u_ep->desc || !ep->dev || !ep->d_idx ||
- 	    !ep->dev->enabled || ep->dev->suspended) {
--		EPDBG(ep,"Enqueing request on wrong or disabled EP\n");
-+		EPDBG(ep, "Enqueuing request on wrong or disabled EP\n");
- 		return -ESHUTDOWN;
- 	}
- 
-diff --git a/drivers/usb/gadget/udc/udc-xilinx.c b/drivers/usb/gadget/udc/udc-xilinx.c
-index 6407e433bc78..b1f4104d1283 100644
---- a/drivers/usb/gadget/udc/udc-xilinx.c
-+++ b/drivers/usb/gadget/udc/udc-xilinx.c
-@@ -1078,7 +1078,7 @@ static int xudc_ep_queue(struct usb_ep *_ep, struct usb_request *_req,
- 	unsigned long flags;
- 
- 	if (!ep->desc) {
--		dev_dbg(udc->dev, "%s:queing request to disabled %s\n",
-+		dev_dbg(udc->dev, "%s: queuing request to disabled %s\n",
- 			__func__, ep->name);
- 		return -ESHUTDOWN;
- 	}
--- 
-2.17.1
+Possibly, getting a driver going for the Aspeed pinmux is hard work :)
 
+>
+> Also, I'm wondering: Is it possible to have "&spi1" defined, but not
+> bound initially? I guess that's what we want by default?
+
+Zev tried this and got a lot of push-back.
+
+https://lore.kernel.org/all/20211022020032.26980-1-zev at bewilderbeest.net/
+
+Andrew
