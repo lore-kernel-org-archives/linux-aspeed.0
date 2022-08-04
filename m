@@ -1,33 +1,36 @@
-From: Brendan Higgins <brendanhiggins@google.com>
-Date: Wed, 3 Aug 2022 16:35:33 -0400
-Subject: [PATCH] mmc: sdhci-of-aspeed: test: Fix dependencies when KUNIT=m
-In-Reply-To: <20220715040354.2629856-1-davidgow@google.com>
-References: <20220715040354.2629856-1-davidgow@google.com>
-Message-ID: <CAFd5g44h5viRSA_CU=4A0bPyj8yxQ8KgEVHKb=-JZENQwaGEnA@mail.gmail.com>
+From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Date: Thu,  4 Aug 2022 11:27:10 +0200
+Subject: [PATCH] dt-bindings: arm: aspeed: adjust qcom,dc-scm-v1-bmc compatible after rename
+Message-ID: <20220804092710.64636-1-krzysztof.kozlowski@linaro.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Jul 15, 2022 at 12:04 AM David Gow <davidgow@google.com> wrote:
->
-> While the sdhci-of-aspeed KUnit tests do work when builtin, and do work
-> when KUnit itself is being built as a module, the two together break.
->
-> This is because the KUnit tests (understandably) depend on KUnit, so a
-> built-in test cannot build if KUnit is a module.
->
-> Fix this by adding a dependency on (MMC_SDHCI_OF_ASPEED=m || KUNIT=y),
-> which only excludes this one problematic configuration.
->
-> This was reported on a nasty openrisc-randconfig run by the kernel test
-> robot, though for some reason (compiler optimisations removing the test
-> code?) I wasn't able to reproduce it locally on x86:
-> https://lore.kernel.org/linux-mm/202207140122.fzhlf60k-lkp at intel.com/T/
->
-> Fixes: 291cd54e5b05 ("mmc: sdhci-of-aspeed: test: Use kunit_test_suite() macro")
-> Reported-by: kernel test robot <lkp@intel.com>
-> Signed-off-by: David Gow <davidgow@google.com>
+The Nuvia DC-SCM BMC board compatible was renamed iin commit
+7f058112873e ("ARM: dts: aspeed: nuvia: rename vendor nuvia to qcom"),
+so adjust the bindings as well.
 
-Acked-by: Brendan Higgins <brendanhiggins@google.com>
+Fixes: f77024c80147 ("dt-bindings: arm: aspeed: document board compatibles")
+Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+---
+ Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+index 1895ce9de461..20469519e497 100644
+--- a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
++++ b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+@@ -80,7 +80,7 @@ properties:
+               - ibm,tacoma-bmc
+               - inventec,transformer-bmc
+               - jabil,rbp-bmc
+-              - nuvia,dc-scm-bmc
++              - qcom,dc-scm-bmc
+               - quanta,s6q-bmc
+           - const: aspeed,ast2600
+ 
+-- 
+2.34.1
+
