@@ -1,35 +1,37 @@
 From: Dan Carpenter <dan.carpenter@oracle.com>
-Date: Thu, 11 Aug 2022 13:49:26 +0300
-Subject: [PATCH] peci: Fix platform_get_irq() error checking
-Message-ID: <YvTettdmRKZw46mb@kili>
+Date: Thu, 11 Aug 2022 14:00:22 +0300
+Subject: [PATCH] soc: aspeed: fix platform_get_irq() error checking
+Message-ID: <YvThRi0vUw0kXOal@kili>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The platform_get_irq() function returns success or negative error codes
-on failure.
+The platform_get_irq() function returns negative error codes but this
+code is testing for zero instead.
 
-Fixes: a85e4c52086c ("peci: Add peci-aspeed controller driver")
+Fixes: 9f4f9ae81d0a ("drivers/misc: add Aspeed LPC snoop driver")
 Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
 ---
- drivers/peci/controller/peci-aspeed.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/soc/aspeed/aspeed-lpc-snoop.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/peci/controller/peci-aspeed.c b/drivers/peci/controller/peci-aspeed.c
-index 1925ddc13f00..731c5d8f75c6 100644
---- a/drivers/peci/controller/peci-aspeed.c
-+++ b/drivers/peci/controller/peci-aspeed.c
-@@ -523,7 +523,7 @@ static int aspeed_peci_probe(struct platform_device *pdev)
- 		return PTR_ERR(priv->base);
+diff --git a/drivers/soc/aspeed/aspeed-lpc-snoop.c b/drivers/soc/aspeed/aspeed-lpc-snoop.c
+index eceeaf8dfbeb..c4a03b3a5cf8 100644
+--- a/drivers/soc/aspeed/aspeed-lpc-snoop.c
++++ b/drivers/soc/aspeed/aspeed-lpc-snoop.c
+@@ -167,8 +167,8 @@ static int aspeed_lpc_snoop_config_irq(struct aspeed_lpc_snoop *lpc_snoop,
+ 	int rc;
  
- 	priv->irq = platform_get_irq(pdev, 0);
--	if (!priv->irq)
-+	if (priv->irq < 0)
- 		return priv->irq;
+ 	lpc_snoop->irq = platform_get_irq(pdev, 0);
+-	if (!lpc_snoop->irq)
+-		return -ENODEV;
++	if (lpc_snoop->irq < 0)
++		return lpc_snoop->irq;
  
- 	ret = devm_request_irq(&pdev->dev, priv->irq, aspeed_peci_irq_handler,
+ 	rc = devm_request_irq(dev, lpc_snoop->irq,
+ 			      aspeed_lpc_snoop_irq, IRQF_SHARED,
 -- 
 2.35.1
 
