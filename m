@@ -1,37 +1,79 @@
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Date: Thu, 11 Aug 2022 14:00:22 +0300
-Subject: [PATCH] soc: aspeed: fix platform_get_irq() error checking
-Message-ID: <YvThRi0vUw0kXOal@kili>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Thu, 11 Aug 2022 15:49:26 +0200
+Subject: [PATCH v4 1/5] kunit: unify module and builtin suite definitions
+In-Reply-To: <20220709032001.819487-2-davidgow@google.com>
+References: <20220709032001.819487-1-davidgow@google.com> <20220709032001.819487-2-davidgow@google.com>
+Message-ID: <CAMuHMdUdvGyMFyDSX3cSGDz9x3Q0+z1e0nQB5cB0GFazyPcK3A@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The platform_get_irq() function returns negative error codes but this
-code is testing for zero instead.
+Hi David, Jeremy,
 
-Fixes: 9f4f9ae81d0a ("drivers/misc: add Aspeed LPC snoop driver")
-Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
----
- drivers/soc/aspeed/aspeed-lpc-snoop.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+On Sat, Jul 9, 2022 at 5:21 AM David Gow <davidgow@google.com> wrote:
+> From: Jeremy Kerr <jk@codeconstruct.com.au>
+>
+> Currently, KUnit runs built-in tests and tests loaded from modules
+> differently. For built-in tests, the kunit_test_suite{,s}() macro adds a
+> list of suites in the .kunit_test_suites linker section. However, for
+> kernel modules, a module_init() function is used to run the test suites.
+>
+> This causes problems if tests are included in a module which already
+> defines module_init/exit_module functions, as they'll conflict with the
+> kunit-provided ones.
+>
+> This change removes the kunit-defined module inits, and instead parses
+> the kunit tests from their own section in the module. After module init,
+> we call __kunit_test_suites_init() on the contents of that section,
+> which prepares and runs the suite.
+>
+> This essentially unifies the module- and non-module kunit init formats.
+>
+> Tested-by: Ma?ra Canal <maira.canal@usp.br>
+> Reviewed-by: Brendan Higgins <brendanhiggins@google.com>
+> Signed-off-by: Jeremy Kerr <jk@codeconstruct.com.au>
+> Signed-off-by: Daniel Latypov <dlatypov@google.com>
+> Signed-off-by: David Gow <davidgow@google.com>
 
-diff --git a/drivers/soc/aspeed/aspeed-lpc-snoop.c b/drivers/soc/aspeed/aspeed-lpc-snoop.c
-index eceeaf8dfbeb..c4a03b3a5cf8 100644
---- a/drivers/soc/aspeed/aspeed-lpc-snoop.c
-+++ b/drivers/soc/aspeed/aspeed-lpc-snoop.c
-@@ -167,8 +167,8 @@ static int aspeed_lpc_snoop_config_irq(struct aspeed_lpc_snoop *lpc_snoop,
- 	int rc;
- 
- 	lpc_snoop->irq = platform_get_irq(pdev, 0);
--	if (!lpc_snoop->irq)
--		return -ENODEV;
-+	if (lpc_snoop->irq < 0)
-+		return lpc_snoop->irq;
- 
- 	rc = devm_request_irq(dev, lpc_snoop->irq,
- 			      aspeed_lpc_snoop_irq, IRQF_SHARED,
--- 
-2.35.1
+Thanks for your patch, which is now commit 3d6e44623841c8b8 ("kunit:
+unify module and builtin suite definitions") upstream.
 
+Since this commit, modular kunit tests are no longer run at all.
+
+Before:
+
+    # insmod lib/kunit/kunit.ko
+    # insmod lib/test_hash.ko
+    test_hash: loading test module taints kernel.
+        # Subtest: hash
+        1..2
+        ok 1 - test_string_or
+        ok 2 - test_hash_or
+    # hash: pass:2 fail:0 skip:0 total:2
+    # Totals: pass:2 fail:0 skip:0 total:2
+    ok 1 - hash
+
+After:
+
+    # insmod lib/kunit/kunit.ko
+    # insmod lib/test_hash.ko
+    test_hash: loading test module taints kernel.
+
+The actual test code (and test init code, if it exists) is not run.
+
+Reverting commits e5857d396f35e59e ("kunit: flatten kunit_suite***
+to kunit_suite** in .kunit_test_suites") and 3d6e44623841c8b8 ("kunit:
+unify module and builtin suite definitions") fixes the issue.
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert at linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
