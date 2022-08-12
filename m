@@ -1,93 +1,67 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Fri, 12 Aug 2022 10:08:21 +0200
-Subject: [PATCH v4 1/5] kunit: unify module and builtin suite definitions
-In-Reply-To: <CABVgOSk_Y-eEoqH1xbbXfK5TN3P188JFeuZn3ZgV59Bs3Ds4Hg@mail.gmail.com>
-References: <20220709032001.819487-1-davidgow@google.com> <20220709032001.819487-2-davidgow@google.com>
- <CAMuHMdUdvGyMFyDSX3cSGDz9x3Q0+z1e0nQB5cB0GFazyPcK3A@mail.gmail.com> <CABVgOSk_Y-eEoqH1xbbXfK5TN3P188JFeuZn3ZgV59Bs3Ds4Hg@mail.gmail.com>
-Message-ID: <CAMuHMdW-v7Ovcx8+3XALK_cS8OxODVP5nDVT8n44q_9C=C+C2Q@mail.gmail.com>
+From: Andrew Jeffery <andrew@aj.id.au>
+Date: Sat, 13 Aug 2022 00:17:41 +0930
+Subject: [PATCH] ipmi: kcs: Poll OBF briefly to reduce OBE latency
+Message-ID: <20220812144741.240315-1-andrew@aj.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi David,
+The ASPEED KCS devices don't provide a BMC-side interrupt for the host
+reading the output data register (ODR). The act of the host reading ODR
+clears the output buffer full (OBF) flag in the status register (STR),
+informing the BMC it can transmit a subsequent byte.
 
-On Thu, Aug 11, 2022 at 6:56 PM David Gow <davidgow@google.com> wrote:
-> On Thu, Aug 11, 2022 at 9:49 PM Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> > On Sat, Jul 9, 2022 at 5:21 AM David Gow <davidgow@google.com> wrote:
-> > > From: Jeremy Kerr <jk@codeconstruct.com.au>
-> > >
-> > > Currently, KUnit runs built-in tests and tests loaded from modules
-> > > differently. For built-in tests, the kunit_test_suite{,s}() macro adds a
-> > > list of suites in the .kunit_test_suites linker section. However, for
-> > > kernel modules, a module_init() function is used to run the test suites.
-> > >
-> > > This causes problems if tests are included in a module which already
-> > > defines module_init/exit_module functions, as they'll conflict with the
-> > > kunit-provided ones.
-> > >
-> > > This change removes the kunit-defined module inits, and instead parses
-> > > the kunit tests from their own section in the module. After module init,
-> > > we call __kunit_test_suites_init() on the contents of that section,
-> > > which prepares and runs the suite.
-> > >
-> > > This essentially unifies the module- and non-module kunit init formats.
-> > >
-> > > Tested-by: Ma?ra Canal <maira.canal@usp.br>
-> > > Reviewed-by: Brendan Higgins <brendanhiggins@google.com>
-> > > Signed-off-by: Jeremy Kerr <jk@codeconstruct.com.au>
-> > > Signed-off-by: Daniel Latypov <dlatypov@google.com>
-> > > Signed-off-by: David Gow <davidgow@google.com>
-> >
-> > Thanks for your patch, which is now commit 3d6e44623841c8b8 ("kunit:
-> > unify module and builtin suite definitions") upstream.
-> >
-> > Since this commit, modular kunit tests are no longer run at all.
-> >
-> > Before:
-> >
-> >     # insmod lib/kunit/kunit.ko
-> >     # insmod lib/test_hash.ko
-> >     test_hash: loading test module taints kernel.
-> >         # Subtest: hash
-> >         1..2
-> >         ok 1 - test_string_or
-> >         ok 2 - test_hash_or
-> >     # hash: pass:2 fail:0 skip:0 total:2
-> >     # Totals: pass:2 fail:0 skip:0 total:2
-> >     ok 1 - hash
-> >
-> > After:
-> >
-> >     # insmod lib/kunit/kunit.ko
-> >     # insmod lib/test_hash.ko
-> >     test_hash: loading test module taints kernel.
-> >
-> > The actual test code (and test init code, if it exists) is not run.
-> >
-> > Reverting commits e5857d396f35e59e ("kunit: flatten kunit_suite***
-> > to kunit_suite** in .kunit_test_suites") and 3d6e44623841c8b8 ("kunit:
-> > unify module and builtin suite definitions") fixes the issue.
->
-> Thanks Geert,
->
-> This is a known issue. There's a patch to fix it here, which just
-> missed the pull request:
-> https://patchwork.kernel.org/project/linux-kselftest/patch/20220713005221.1926290-1-davidgow at google.com/
->
-> We'll try to get it merged as soon as possible.
+On the BMC side the KCS client must enable the OBE event *and* perform a
+subsequent read of STR anyway to avoid races - the polling provides a
+window for the host to read ODR if data was freshly written while
+minimising BMC-side latency.
 
-Thanks for the pointer. I can confirm it fixes the issue, so I provided
-my Tb tag.
+Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
+---
+ drivers/char/ipmi/kcs_bmc_aspeed.c | 24 +++++++++++++++++++++---
+ 1 file changed, 21 insertions(+), 3 deletions(-)
 
-Gr{oetje,eeting}s,
+diff --git a/drivers/char/ipmi/kcs_bmc_aspeed.c b/drivers/char/ipmi/kcs_bmc_aspeed.c
+index cdc88cde1e9a..417e5a3ccfae 100644
+--- a/drivers/char/ipmi/kcs_bmc_aspeed.c
++++ b/drivers/char/ipmi/kcs_bmc_aspeed.c
+@@ -399,13 +399,31 @@ static void aspeed_kcs_check_obe(struct timer_list *timer)
+ static void aspeed_kcs_irq_mask_update(struct kcs_bmc_device *kcs_bmc, u8 mask, u8 state)
+ {
+ 	struct aspeed_kcs_bmc *priv = to_aspeed_kcs_bmc(kcs_bmc);
++	int rc;
++	u8 str;
+ 
+ 	/* We don't have an OBE IRQ, emulate it */
+ 	if (mask & KCS_BMC_EVENT_TYPE_OBE) {
+-		if (KCS_BMC_EVENT_TYPE_OBE & state)
+-			mod_timer(&priv->obe.timer, jiffies + OBE_POLL_PERIOD);
+-		else
++		if (KCS_BMC_EVENT_TYPE_OBE & state) {
++			/*
++			 * Given we don't have an OBE IRQ, delay by polling briefly to see if we can
++			 * observe such an event before returning to the caller. This is not
++			 * incorrect because OBF may have already become clear before enabling the
++			 * IRQ if we had one, under which circumstance no event will be propagated
++			 * anyway.
++			 *
++			 * The onus is on the client to perform a race-free check that it hasn't
++			 * missed the event.
++			 */
++			rc = read_poll_timeout_atomic(aspeed_kcs_inb, str,
++						      !(str & KCS_BMC_STR_OBF), 1, 100, false,
++						      &priv->kcs_bmc, priv->kcs_bmc.ioreg.str);
++			/* Time for the slow path? */
++			if (rc == -ETIMEDOUT)
++				mod_timer(&priv->obe.timer, jiffies + OBE_POLL_PERIOD);
++		} else {
+ 			del_timer(&priv->obe.timer);
++		}
+ 	}
+ 
+ 	if (mask & KCS_BMC_EVENT_TYPE_IBF) {
+-- 
+2.34.1
 
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert at linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
