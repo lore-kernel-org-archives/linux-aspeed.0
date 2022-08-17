@@ -1,49 +1,40 @@
 From: Quan Nguyen <quan@os.amperecomputing.com>
-Date: Wed, 17 Aug 2022 14:15:37 +0700
-Subject: [PATCH v3 0/2] Add device tree for Ampere's Mt. Mitchell BMC
-Message-ID: <20220817071539.176110-1-quan@os.amperecomputing.com>
+Date: Wed, 17 Aug 2022 14:15:38 +0700
+Subject: [PATCH v3 1/2] dt-bindings: arm: aspeed: document Ampere Mt.Mitchell BMC compatibles
+In-Reply-To: <20220817071539.176110-1-quan@os.amperecomputing.com>
+References: <20220817071539.176110-1-quan@os.amperecomputing.com>
+Message-ID: <20220817071539.176110-2-quan@os.amperecomputing.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The Mt. Mitchell BMC is an ASPEED AST2600-based BMC for the Mt. Mitchell
-hardware reference platform with AmpereOne(TM) processor.
+Document Ampere Mt.Mitchell BMC board compatible.
 
-v3 :
-  + Change adc-i2c node to generic adc node               [Krzysztof]
-  + Remove unused status property in adc node             [Krzysztof]
-  + Remove trailing blank line at the end of file         [Krzysztof]
-  + Fix alphabetical order in dt-binding documentation    [Krzysztof]
-  + Remove the wrong comment on vga_memory nodes             [Andrew]
-  + Remove gpio-keys                                         [Andrew]
-  + Remove the line-name for bmc-debug-mode, eth-phy-rst-n,
-    eth-phy-int-n, bmc-salt12-s0-ssif-n, fpga-program-b,
-    bmc-uart-cts1, bmc-spi-fm-boot-abr-pd, emmc-rst-n gpios  [Andrew]
-  + Update line-name for hs-csout-prochot, s1-spi-auth-fail-n  [Quan]
-  + Add line-name [s0|s1]-heartbeat                            [Quan]
+Signed-off-by: Quan Nguyen <quan@os.amperecomputing.com>
+---
+v3:
+  + Fixed the alphabetical order                              [Krzysztof]
 
-v2 :
-  + Add Ampere Mt. Mitchell BMC compatible                [Krzysztof]
-  + Remove bootargs                                       [Krzysztof]
-  + Fix gpio-keys nodes name to conform with device tree binding
-  documents                                               [Krzysztof]
-  + Fix some nodes to use generic name                    [Krzysztof]
-  + Remove unnecessary blank line                         [Krzysztof]
-  + Fix typo "LTC" to "LLC" in license info and corrected license
-  info to GPL-2.0-only
+v2:
+  + Introduce in v2 to add Ampere Mt. Mitchell BMC compatible [Krzysztof]
 
-Quan Nguyen (2):
-  dt-bindings: arm: aspeed: document Ampere Mt.Mitchell BMC compatibles
-  ARM: dts: aspeed: Add device tree for Ampere's Mt. Mitchell BMC
+ Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 1 +
+ 1 file changed, 1 insertion(+)
 
- .../bindings/arm/aspeed/aspeed.yaml           |   1 +
- arch/arm/boot/dts/Makefile                    |   1 +
- .../boot/dts/aspeed-bmc-ampere-mtmitchell.dts | 546 ++++++++++++++++++
- 3 files changed, 548 insertions(+)
- create mode 100644 arch/arm/boot/dts/aspeed-bmc-ampere-mtmitchell.dts
-
+diff --git a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+index 1895ce9de461..59811e4a084c 100644
+--- a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
++++ b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+@@ -69,6 +69,7 @@ properties:
+       - description: AST2600 based boards
+         items:
+           - enum:
++              - ampere,mtmitchell-bmc
+               - aspeed,ast2600-evb
+               - aspeed,ast2600-evb-a1
+               - facebook,bletchley-bmc
 -- 
 2.35.1
 
