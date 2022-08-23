@@ -1,12 +1,13 @@
-From: i.kononenko <i.kononenko@yadro.com>
-Date: Tue, 23 Aug 2022 10:02:13 +0300
-Subject: [PATCH 2/3] drivers/misc: (aspeed-lpc-snoop): Add regmap cleanup
- on a shutdown.
-In-Reply-To: <CACPK8XenuLrB-iOCo57FjeoOdEieHyxSM2ZM-X73AfP3fq3r+g@mail.gmail.com>
-References: <cover.1661094034.git.i.kononenko@yadro.com>
- <f9814f62fe2d6b6c21400ee3c83e46e61e0c72d1.1661094034.git.i.kononenko@yadro.com>
- <CACPK8XenuLrB-iOCo57FjeoOdEieHyxSM2ZM-X73AfP3fq3r+g@mail.gmail.com>
-Message-ID: <01dfdd3e-0de6-be94-18dd-5418e60b5a74@yadro.com>
+From: Quan Nguyen <quan@os.amperecomputing.com>
+Date: Tue, 23 Aug 2022 15:27:32 +0700
+Subject: [PATCH v3 2/2] ARM: dts: aspeed: Add device tree for Ampere's Mt.
+ Mitchell BMC
+In-Reply-To: <CAK8P3a2LZKfZpdTQ-R4o9mJ6dk52VRF+Bxj=PJEx-1MA4yH8+w@mail.gmail.com>
+References: <20220817071539.176110-1-quan@os.amperecomputing.com>
+ <20220817071539.176110-3-quan@os.amperecomputing.com>
+ <CACPK8XdDpG3ONM1=-E6qvHL1FgMNWSMPoL_sVGJK6BmmnT3w_w@mail.gmail.com>
+ <CAK8P3a2LZKfZpdTQ-R4o9mJ6dk52VRF+Bxj=PJEx-1MA4yH8+w@mail.gmail.com>
+Message-ID: <673e200f-f458-7866-f956-3d5bd7160a49@os.amperecomputing.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -15,133 +16,41 @@ Content-Transfer-Encoding: 7bit
 
 
 
-On 23.08.2022 03:30, Joel Stanley wrote:
-> ?????????! ?????? ?????? ?? ???????? ????????!?
-> 
-> On Sun, 21 Aug 2022 at 15:54, Igor Kononenko <i.kononenko@yadro.com> wrote:
+On 18/08/2022 19:06, Arnd Bergmann wrote:
+> On Thu, Aug 18, 2022 at 9:33 AM Joel Stanley <joel@jms.id.au> wrote:
+>>> +
+>>> +/ {
+>>> +       model = "Ampere Mt.Mitchell BMC";
+>>> +       compatible = "ampere,mtmitchell-bmc", "aspeed,ast2600";
+>>> +
+>>> +       chosen {
+>>> +               stdout-path = &uart5;
 >>
->> The bmc might be rebooted while the host is still reachable and the host
->> might send requests through configured lpc-kcs channels in same time.
->> That leads to raise lpc-snoop interrupts that haven't adjusted IRQ
->> handlers on next early kernel boot, because on the aspeed-chip reboot
->> might keep registers on a unclean state that is configured on the last
->> boot.
+>> I know you've been told by Arnd and others to remove the default
+>> command line here, but without it your device tree fails to produce
+>> any output in my tests:
 >>
->> The patch brings an way to masking lpc-snoop interrupts all through
->> a bmc-rebooting time.
+>> qemu-system-arm -M ast2600-evb -nographic -dtb
+>> arch/arm/boot/dts/aspeed-bmc-ampere-mtmitchell.dtb -kernel
+>> arch/arm/boot/zImage
 >>
->> Tested on a YADRO VEGMAN N110 stand.
->>
->> Signed-off-by: Igor Kononenko <i.kononenko@yadro.com>
->> ---
->>  drivers/soc/aspeed/aspeed-lpc-snoop.c | 44 +++++++++++++++++++++++++++
->>  1 file changed, 44 insertions(+)
->>
->> diff --git a/drivers/soc/aspeed/aspeed-lpc-snoop.c b/drivers/soc/aspeed/aspeed-lpc-snoop.c
->> index eceeaf8dfbeb..6ec47bf1dc6b 100644
->> --- a/drivers/soc/aspeed/aspeed-lpc-snoop.c
->> +++ b/drivers/soc/aspeed/aspeed-lpc-snoop.c
->> @@ -235,6 +235,41 @@ static int aspeed_lpc_enable_snoop(struct aspeed_lpc_snoop *lpc_snoop,
->>         return rc;
->>  }
->>
->> +static void aspeed_lpc_reset_regmap(struct aspeed_lpc_snoop *lpc_snoop)
->> +{
->> +       u8 index;
->> +       struct lpc_regman_cleanup {
->> +               u32 offset;
->> +               u32 mask;
->> +               u8 val;
->> +       };
->> +       static struct lpc_regman_cleanup cleanup_list[] = {
->> +               // Prevent handling ENINIT_SNPxW
->> +               { .offset = HICR5,
->> +                 .mask = HICR5_EN_SNP0W | HICR5_ENINT_SNP0W,
->> +                 .val = 0 },
->> +               { .offset = HICR5,
->> +                 .mask = HICR5_EN_SNP1W | HICR5_ENINT_SNP1W,
->> +                 .val = 0 },
->> +               { .offset = HICRB,
->> +                 .mask = HICRB_ENSNP0D | HICRB_ENSNP1D,
->> +                 .val = 0 },
->> +               // Reset SNOOP channel IRQ status
->> +               { .offset = HICR6,
->> +                 .mask = HICR6_STR_SNP0W | HICR6_STR_SNP1W,
->> +                 .val = 1 },
->> +       };
->> +       for (index = 0; index < ARRAY_SIZE(cleanup_list); index++) {
+>> Without a working test, I can't tell the difference between a broken
+>> device tree and one that omits the serial device on the command line.
+>> Can you work with Arnd to come to a solution here?
 > 
-> Did you consider open coding the various updates instead of using a
-> for loop? I don't think the for loop help us here.
+> If you use qemu as the boot loader, I think the expected way to do
+> this is to use the "-append" command line argument along with "-kernel".
 > 
-> You could instead make these three updates:
-> 
-> /* Prevent handling ENINIT_SNPxW */
-> regmap_clear_bits(lpc_snoop->regmap, HICR5,
->                                   HICR5_EN_SNP0W | HICR5_ENINT_SNP0W |
-> HICR5_EN_SNP1W | HICR5_ENINT_SNP1W);
-> 
-> regmap_clear_bits(lpc_snoop->regmap, HICRB,
->                                HICRB_ENSNP0D | HICRB_ENSNP1D);
-> 
-> /* Reset SNOOP channel IRQ status */
-> regmap_set_bits(lpc_snoop->regmap, HICR6,
->                             HICR6_STR_SNP0W | HICR6_STR_SNP1W);
-> 
+> Is there any reason for this machine to be special here?
 > 
 
-Thanks! I'll take a notice for the further patches.
-Will fix in a v3 patchset.
+Thanks Arnd for the comment.
 
-> 
->> +               u32 val = 0;
->> +
->> +               if (cleanup_list[index].val)
->> +                       val = cleanup_list[index].mask;
->> +               regmap_update_bits(lpc_snoop->regmap,
->> +                                  cleanup_list[index].offset,
->> +                                  cleanup_list[index].mask, val);
->> +       }
->> +}
->> +
->>  static void aspeed_lpc_disable_snoop(struct aspeed_lpc_snoop *lpc_snoop,
->>                                      int channel)
->>  {
->> @@ -285,6 +320,7 @@ static int aspeed_lpc_snoop_probe(struct platform_device *pdev)
->>                 return -ENODEV;
->>         }
->>
->> +       aspeed_lpc_reset_regmap(lpc_snoop);
->>         dev_set_drvdata(&pdev->dev, lpc_snoop);
->>
->>         rc = of_property_read_u32_index(dev->of_node, "snoop-ports", 0, &port);
->> @@ -345,6 +381,13 @@ static int aspeed_lpc_snoop_remove(struct platform_device *pdev)
->>         return 0;
->>  }
->>
->> +static void aspeed_lpc_snoop_shutdown(struct platform_device *pdev)
->> +{
->> +       struct aspeed_lpc_snoop *lpc_snoop = dev_get_drvdata(&pdev->dev);
->> +
->> +       aspeed_lpc_reset_regmap(lpc_snoop);
->> +}
->> +
->>  static const struct aspeed_lpc_snoop_model_data ast2400_model_data = {
->>         .has_hicrb_ensnp = 0,
->>  };
->> @@ -370,6 +413,7 @@ static struct platform_driver aspeed_lpc_snoop_driver = {
->>         },
->>         .probe = aspeed_lpc_snoop_probe,
->>         .remove = aspeed_lpc_snoop_remove,
->> +       .shutdown = aspeed_lpc_snoop_shutdown,
->>  };
->>
->>  module_platform_driver(aspeed_lpc_snoop_driver);
->> --
->> 2.25.1
->>
+I think adding -append could solve the issue.
 
--- 
-Best regards,
+But as the bootargs still exist in all other 
+arch/arm/boot/dts/aspeed-bmc-*.dts should we still keep bootargs for 
+this dts?
 
-Igor Kononenko
+Thanks,
+- Quan
