@@ -1,131 +1,128 @@
-From: Joel Stanley <joel@jms.id.au>
-Date: Tue, 23 Aug 2022 00:30:30 +0000
-Subject: [PATCH 2/3] drivers/misc: (aspeed-lpc-snoop): Add regmap cleanup
- on a shutdown.
-In-Reply-To: <f9814f62fe2d6b6c21400ee3c83e46e61e0c72d1.1661094034.git.i.kononenko@yadro.com>
-References: <cover.1661094034.git.i.kononenko@yadro.com> <f9814f62fe2d6b6c21400ee3c83e46e61e0c72d1.1661094034.git.i.kononenko@yadro.com>
-Message-ID: <CACPK8XenuLrB-iOCo57FjeoOdEieHyxSM2ZM-X73AfP3fq3r+g@mail.gmail.com>
+From: karthikeyan P <pkarthikeyan1509@gmail.com>
+Date: Tue, 23 Aug 2022 10:41:51 +0530
+Subject: [PATCH v1] ARM: dts: aspeed: Update for Facebook Yosemite V2 BMC
+In-Reply-To: <CACPK8XfgYma8=qV0kKOKSSpXprC1sBZgKuaGsAhD1ifYG4KgTw@mail.gmail.com>
+References: <20220822070204.GA6110@hcl-ThinkPad-T495> <CACPK8XfgYma8=qV0kKOKSSpXprC1sBZgKuaGsAhD1ifYG4KgTw@mail.gmail.com>
+Message-ID: <CA+ezb7hkFc9DYUT8JbK7aEOb31NmXfhQzL=3xg6YtjKhr98Edg@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sun, 21 Aug 2022 at 15:54, Igor Kononenko <i.kononenko@yadro.com> wrote:
->
-> The bmc might be rebooted while the host is still reachable and the host
-> might send requests through configured lpc-kcs channels in same time.
-> That leads to raise lpc-snoop interrupts that haven't adjusted IRQ
-> handlers on next early kernel boot, because on the aspeed-chip reboot
-> might keep registers on a unclean state that is configured on the last
-> boot.
->
-> The patch brings an way to masking lpc-snoop interrupts all through
-> a bmc-rebooting time.
->
-> Tested on a YADRO VEGMAN N110 stand.
->
-> Signed-off-by: Igor Kononenko <i.kononenko@yadro.com>
-> ---
->  drivers/soc/aspeed/aspeed-lpc-snoop.c | 44 +++++++++++++++++++++++++++
->  1 file changed, 44 insertions(+)
->
-> diff --git a/drivers/soc/aspeed/aspeed-lpc-snoop.c b/drivers/soc/aspeed/aspeed-lpc-snoop.c
-> index eceeaf8dfbeb..6ec47bf1dc6b 100644
-> --- a/drivers/soc/aspeed/aspeed-lpc-snoop.c
-> +++ b/drivers/soc/aspeed/aspeed-lpc-snoop.c
-> @@ -235,6 +235,41 @@ static int aspeed_lpc_enable_snoop(struct aspeed_lpc_snoop *lpc_snoop,
->         return rc;
->  }
->
-> +static void aspeed_lpc_reset_regmap(struct aspeed_lpc_snoop *lpc_snoop)
-> +{
-> +       u8 index;
-> +       struct lpc_regman_cleanup {
-> +               u32 offset;
-> +               u32 mask;
-> +               u8 val;
-> +       };
-> +       static struct lpc_regman_cleanup cleanup_list[] = {
-> +               // Prevent handling ENINIT_SNPxW
-> +               { .offset = HICR5,
-> +                 .mask = HICR5_EN_SNP0W | HICR5_ENINT_SNP0W,
-> +                 .val = 0 },
-> +               { .offset = HICR5,
-> +                 .mask = HICR5_EN_SNP1W | HICR5_ENINT_SNP1W,
-> +                 .val = 0 },
-> +               { .offset = HICRB,
-> +                 .mask = HICRB_ENSNP0D | HICRB_ENSNP1D,
-> +                 .val = 0 },
-> +               // Reset SNOOP channel IRQ status
-> +               { .offset = HICR6,
-> +                 .mask = HICR6_STR_SNP0W | HICR6_STR_SNP1W,
-> +                 .val = 1 },
-> +       };
-> +       for (index = 0; index < ARRAY_SIZE(cleanup_list); index++) {
+Noted.
 
-Did you consider open coding the various updates instead of using a
-for loop? I don't think the for loop help us here.
+On Tue, Aug 23, 2022 at 5:31 AM Joel Stanley <joel@jms.id.au> wrote:
 
-You could instead make these three updates:
-
-/* Prevent handling ENINIT_SNPxW */
-regmap_clear_bits(lpc_snoop->regmap, HICR5,
-                                  HICR5_EN_SNP0W | HICR5_ENINT_SNP0W |
-HICR5_EN_SNP1W | HICR5_ENINT_SNP1W);
-
-regmap_clear_bits(lpc_snoop->regmap, HICRB,
-                               HICRB_ENSNP0D | HICRB_ENSNP1D);
-
-/* Reset SNOOP channel IRQ status */
-regmap_set_bits(lpc_snoop->regmap, HICR6,
-                            HICR6_STR_SNP0W | HICR6_STR_SNP1W);
-
-
-
-> +               u32 val = 0;
-> +
-> +               if (cleanup_list[index].val)
-> +                       val = cleanup_list[index].mask;
-> +               regmap_update_bits(lpc_snoop->regmap,
-> +                                  cleanup_list[index].offset,
-> +                                  cleanup_list[index].mask, val);
-> +       }
-> +}
-> +
->  static void aspeed_lpc_disable_snoop(struct aspeed_lpc_snoop *lpc_snoop,
->                                      int channel)
->  {
-> @@ -285,6 +320,7 @@ static int aspeed_lpc_snoop_probe(struct platform_device *pdev)
->                 return -ENODEV;
->         }
+> On Mon, 22 Aug 2022 at 07:02, Karthikeyan Pasupathi
+> <pkarthikeyan1509@gmail.com> wrote:
+> >
+> > This patch includes the following updates for Yosemite V2
+> > BMC.
+> >
+> > 1) Updated GPIO configuration for power control.
 >
-> +       aspeed_lpc_reset_regmap(lpc_snoop);
->         dev_set_drvdata(&pdev->dev, lpc_snoop);
+> Please take a look the openbmc naming conventions for the GPIOs. If
+> you are not going to follow them, please explain why in your commit
+> message.
 >
->         rc = of_property_read_u32_index(dev->of_node, "snoop-ports", 0, &port);
-> @@ -345,6 +381,13 @@ static int aspeed_lpc_snoop_remove(struct platform_device *pdev)
->         return 0;
->  }
 >
-> +static void aspeed_lpc_snoop_shutdown(struct platform_device *pdev)
-> +{
-> +       struct aspeed_lpc_snoop *lpc_snoop = dev_get_drvdata(&pdev->dev);
-> +
-> +       aspeed_lpc_reset_regmap(lpc_snoop);
-> +}
-> +
->  static const struct aspeed_lpc_snoop_model_data ast2400_model_data = {
->         .has_hicrb_ensnp = 0,
->  };
-> @@ -370,6 +413,7 @@ static struct platform_driver aspeed_lpc_snoop_driver = {
->         },
->         .probe = aspeed_lpc_snoop_probe,
->         .remove = aspeed_lpc_snoop_remove,
-> +       .shutdown = aspeed_lpc_snoop_shutdown,
->  };
+> > 2) Added IPMB-13 channel for Debug Card communication.
+> > 3) Removed EEPROM driver IPMB-12 channel and keeping it as
+> >    "status ok".
 >
->  module_platform_driver(aspeed_lpc_snoop_driver);
-> --
-> 2.25.1
+> If you find yourself writing a commit log that contains 1), 2), 3)
+> then there's a fair chance you could have sent three separate patches.
+> Consider this for next time.
 >
+> >
+> > Signed-off-by: Karthikeyan Pasupathi <pkarthikeyan1509@gmail.com>
+> > ---
+> >  .../dts/aspeed-bmc-facebook-yosemitev2.dts    | 49 +++++++++++++++++--
+> >  1 file changed, 44 insertions(+), 5 deletions(-)
+> >
+> > diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts
+> b/arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts
+> > index 8864e9c312a8..4d2ff7eb6740 100644
+> > --- a/arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts
+> > +++ b/arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts
+> > @@ -119,6 +119,40 @@
+> >                         &pinctrl_adc15_default>;
+> >  };
+> >
+> > +&gpio {
+> > +       status = "okay";
+> > +       gpio-line-names =
+> > +       /*A0-A7*/   "","","","","","","","",
+> > +       /*B0-B7*/   "","","","","","","","",
+> > +       /*C0-C7*/   "","","","","","","","",
+> > +       /*D0-D7*/
+>  "POWER_BUTTON","POWER_OUT1","","POWER_OUT2","","POWER_OUT3","","POWER_OUT4",
+> > +       /*E0-E7*/
+>  "DEBUG_UART_SEL0","DEBUG_UART_SEL1","DEBUG_UART_SEL2","DEBUG_UART_RX_SEL_N","","","","",
+> > +       /*F0-F7*/   "","","","","","","","",
+> > +       /*G0-G7*/
+>  "LED_POST_CODE_0","LED_POST_CODE_1","LED_POST_CODE_2","LED_POST_CODE_3","","","","",
+> > +       /*H0-H7*/   "","","","","","","","",
+> > +       /*I0-I7*/
+>  "SLOT1_POWER_OK","SLOT2_POWER_OK","SLOT3_POWER_OK","SLOT4_POWER_OK","","","","",
+> > +       /*J0-J7*/   "","","","","","","","",
+> > +       /*K0-K7*/   "","","","","","","","",
+> > +       /*L0-L7*/   "","","","","","","","",
+> > +       /*M0-M7*/   "","","","","","","","",
+> > +       /*N0-N7*/
+>  "","","I2C_SLOT1","I2C_SLOT2","I2C_SLOT3","I2C_SLOT4","","",
+> > +       /*O0-O7*/
+>  "","","","SELECTOR_BUTTON","SLOT1_POWER","SLOT2_POWER","SLOT3_POWER","SLOT4_POWER",
+> > +       /*P0-P7*/
+>  "","","","","LED_POST_CODE_4","LED_POST_CODE_5","LED_POST_CODE_6","LED_POST_CODE_7",
+> > +       /*Q0-Q7*/   "","","","","","","","",
+> > +       /*R0-R7*/   "","","","GPIO_DBG_CARD_PRSNT","","","","",
+> > +       /*S0-S7*/
+>  "RESET_OUT1","RESET_OUT2","RESET_OUT3","RESET_OUT4","","","","",
+> > +       /*T0-T7*/   "","","","","","","","",
+> > +       /*U0-U7*/   "","","","","","","","",
+> > +       /*V0-V7*/   "","","","","","","","",
+> > +       /*W0-W7*/   "","","","","","","","",
+> > +       /*X0-X7*/   "","","","","","","","",
+> > +       /*Y0-Y7*/   "","","","","","","","",
+> > +       /*Z0-Z7*/
+>  "POST_COMPLETE","POST_COMPLETE2","POST_COMPLETE3","POST_COMPLETE4","","","","",
+> > +       /*AA0-AA7*/
+> "","","","","HAND_SW1","HAND_SW2","HAND_SW3","HAND_SW4",
+> > +       /*AB0-AB7*/ "RESET_BUTTON","","","","","","","",
+> > +               /*AC0-AC7*/ "","","","","","","","";
+> > +};
+> > +
+> >  &i2c1 {
+> >         //Host1 IPMB bus
+> >         status = "okay";
+> > @@ -207,11 +241,16 @@
+> >
+> >  &i2c12 {
+> >         status = "okay";
+> > -       //MEZZ_FRU
+> > -       eeprom at 51 {
+> > -               compatible = "atmel,24c64";
+> > -               reg = <0x51>;
+> > -               pagesize = <32>;
+> > +};
+> > +
+> > +&i2c13 {
+> > +       status = "okay";
+> > +       // Debug Card
+> > +       multi-master;
+> > +       ipmb13 at 10 {
+> > +               compatible = "ipmb-dev";
+> > +               reg = <(0x10 | I2C_OWN_SLAVE_ADDRESS)>;
+> > +               i2c-protocol;
+> >         };
+> >  };
+> >
+> > --
+> > 2.17.1
+> >
+>
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20220823/9c8206b5/attachment.htm>
