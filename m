@@ -1,12 +1,12 @@
 From: i.kononenko <i.kononenko@yadro.com>
-Date: Tue, 23 Aug 2022 09:54:02 +0300
-Subject: [PATCH v2 1/3] ipmi:kcs_bmc: Add cleanup regmap(interrupt-regs)
+Date: Tue, 23 Aug 2022 10:02:13 +0300
+Subject: [PATCH 2/3] drivers/misc: (aspeed-lpc-snoop): Add regmap cleanup
  on a shutdown.
-In-Reply-To: <CACPK8Xfe+hPLXcgwWxZtb5H_WG8GRJ7pLfRXG3jupk8ANc7wgQ@mail.gmail.com>
-References: <fb81dda34f9db0b9f743b247a2464576dcccd7c9.1661094034.git.i.kononenko@yadro.com>
- <ad3cd046c4dcb9169aaff6c0b739b23d0a06014d.1661149313.git.i.kononenko@yadro.com>
- <CACPK8Xfe+hPLXcgwWxZtb5H_WG8GRJ7pLfRXG3jupk8ANc7wgQ@mail.gmail.com>
-Message-ID: <97ba69b1-1568-f749-1342-72f238fbd33b@yadro.com>
+In-Reply-To: <CACPK8XenuLrB-iOCo57FjeoOdEieHyxSM2ZM-X73AfP3fq3r+g@mail.gmail.com>
+References: <cover.1661094034.git.i.kononenko@yadro.com>
+ <f9814f62fe2d6b6c21400ee3c83e46e61e0c72d1.1661094034.git.i.kononenko@yadro.com>
+ <CACPK8XenuLrB-iOCo57FjeoOdEieHyxSM2ZM-X73AfP3fq3r+g@mail.gmail.com>
+Message-ID: <01dfdd3e-0de6-be94-18dd-5418e60b5a74@yadro.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -15,86 +15,128 @@ Content-Transfer-Encoding: 7bit
 
 
 
-On 23.08.2022 03:22, Joel Stanley wrote:
+On 23.08.2022 03:30, Joel Stanley wrote:
 > ?????????! ?????? ?????? ?? ???????? ????????!?
 > 
-> On Mon, 22 Aug 2022 at 06:36, Igor Kononenko <i.kononenko@yadro.com> wrote:
+> On Sun, 21 Aug 2022 at 15:54, Igor Kononenko <i.kononenko@yadro.com> wrote:
 >>
->> The previos v1 [PATCH 1/3] have error of getting `struct kcs_bmc_device`
->> pointer from `struct platform_device *`. Replaced to retriveing pointer by
->> `platform_get_drvdata()`
-> 
-> Can we get a v3 with your original commit message added? You had a
-> good write up in v1 but it was dropped in v2.
-> 
-
-Thanks for the review.
-Ok, I'll include the origin commit message to a v3. 
-
-> This change looks like the right thing to do. We should get Andrew to
-> review too, as he spends more time with the KCS controllers.
-> 
-> The missed irq issue was seen with the other LPC sub drivers because
-> the clock wasn't enabled. We ended up with this patch:
-> 
-> https://lore.kernel.org/all/20201208091748.1920-1-wangzhiqiang.bj at bytedance.com/
->> Do we need to do something similar for KCS?
-
-As far as I see by the LPC 'nobody cared irq' issue there had the feature of 
-enabling LCLK individually earlier, there is patch about:
-
-https://lore.kernel.org/all/20211101233751.49222-5-jae.hyun.yoo at intel.com/
-
-Originally I found the bug on the linux-dev.v5.4 that includes the 'LCLK individually
-enabling' feature.
-
-It seems to me the issue is that lpc-snoop and the lpc-kcs has same IRQ#35 that is used
-in separated drivers(by the IRQF_SHARED flag).
-The IRQ handler determinate request purpose(for kcs or snoop) by LPC interrupt registers
-state, and if such interrupt is not for any one of them, the irq-handler passthrough 
-request to a next handler by returning `IRQ_NONE`.
-
-So, even if lpc-kcs will be having adjusted own individual LCLK, that is doesn't solve 
-issue, because when lpc-snoop will had configured irq-handler the irq-manager will know 
-that for IRQ#35 already registered a good handler, but such handler will skip all requests
-by `IRQ_NONE` because such irqs are intended for lpc-kcs. I guess that is the point of bug.
-
-
-> 
+>> The bmc might be rebooted while the host is still reachable and the host
+>> might send requests through configured lpc-kcs channels in same time.
+>> That leads to raise lpc-snoop interrupts that haven't adjusted IRQ
+>> handlers on next early kernel boot, because on the aspeed-chip reboot
+>> might keep registers on a unclean state that is configured on the last
+>> boot.
 >>
->> Reported-by: kernel test robot <lkp@intel.com>
+>> The patch brings an way to masking lpc-snoop interrupts all through
+>> a bmc-rebooting time.
+>>
+>> Tested on a YADRO VEGMAN N110 stand.
+>>
 >> Signed-off-by: Igor Kononenko <i.kononenko@yadro.com>
 >> ---
->>  drivers/char/ipmi/kcs_bmc_aspeed.c | 9 +++++++++
->>  1 file changed, 9 insertions(+)
+>>  drivers/soc/aspeed/aspeed-lpc-snoop.c | 44 +++++++++++++++++++++++++++
+>>  1 file changed, 44 insertions(+)
 >>
->> diff --git a/drivers/char/ipmi/kcs_bmc_aspeed.c b/drivers/char/ipmi/kcs_bmc_aspeed.c
->> index cdc88cde1e9a..8437f3cfe3f4 100644
->> --- a/drivers/char/ipmi/kcs_bmc_aspeed.c
->> +++ b/drivers/char/ipmi/kcs_bmc_aspeed.c
->> @@ -636,6 +636,14 @@ static int aspeed_kcs_remove(struct platform_device *pdev)
+>> diff --git a/drivers/soc/aspeed/aspeed-lpc-snoop.c b/drivers/soc/aspeed/aspeed-lpc-snoop.c
+>> index eceeaf8dfbeb..6ec47bf1dc6b 100644
+>> --- a/drivers/soc/aspeed/aspeed-lpc-snoop.c
+>> +++ b/drivers/soc/aspeed/aspeed-lpc-snoop.c
+>> @@ -235,6 +235,41 @@ static int aspeed_lpc_enable_snoop(struct aspeed_lpc_snoop *lpc_snoop,
+>>         return rc;
+>>  }
+>>
+>> +static void aspeed_lpc_reset_regmap(struct aspeed_lpc_snoop *lpc_snoop)
+>> +{
+>> +       u8 index;
+>> +       struct lpc_regman_cleanup {
+>> +               u32 offset;
+>> +               u32 mask;
+>> +               u8 val;
+>> +       };
+>> +       static struct lpc_regman_cleanup cleanup_list[] = {
+>> +               // Prevent handling ENINIT_SNPxW
+>> +               { .offset = HICR5,
+>> +                 .mask = HICR5_EN_SNP0W | HICR5_ENINT_SNP0W,
+>> +                 .val = 0 },
+>> +               { .offset = HICR5,
+>> +                 .mask = HICR5_EN_SNP1W | HICR5_ENINT_SNP1W,
+>> +                 .val = 0 },
+>> +               { .offset = HICRB,
+>> +                 .mask = HICRB_ENSNP0D | HICRB_ENSNP1D,
+>> +                 .val = 0 },
+>> +               // Reset SNOOP channel IRQ status
+>> +               { .offset = HICR6,
+>> +                 .mask = HICR6_STR_SNP0W | HICR6_STR_SNP1W,
+>> +                 .val = 1 },
+>> +       };
+>> +       for (index = 0; index < ARRAY_SIZE(cleanup_list); index++) {
+> 
+> Did you consider open coding the various updates instead of using a
+> for loop? I don't think the for loop help us here.
+> 
+> You could instead make these three updates:
+> 
+> /* Prevent handling ENINIT_SNPxW */
+> regmap_clear_bits(lpc_snoop->regmap, HICR5,
+>                                   HICR5_EN_SNP0W | HICR5_ENINT_SNP0W |
+> HICR5_EN_SNP1W | HICR5_ENINT_SNP1W);
+> 
+> regmap_clear_bits(lpc_snoop->regmap, HICRB,
+>                                HICRB_ENSNP0D | HICRB_ENSNP1D);
+> 
+> /* Reset SNOOP channel IRQ status */
+> regmap_set_bits(lpc_snoop->regmap, HICR6,
+>                             HICR6_STR_SNP0W | HICR6_STR_SNP1W);
+> 
+> 
+
+Thanks! I'll take a notice for the further patches.
+Will fix in a v3 patchset.
+
+> 
+>> +               u32 val = 0;
+>> +
+>> +               if (cleanup_list[index].val)
+>> +                       val = cleanup_list[index].mask;
+>> +               regmap_update_bits(lpc_snoop->regmap,
+>> +                                  cleanup_list[index].offset,
+>> +                                  cleanup_list[index].mask, val);
+>> +       }
+>> +}
+>> +
+>>  static void aspeed_lpc_disable_snoop(struct aspeed_lpc_snoop *lpc_snoop,
+>>                                      int channel)
+>>  {
+>> @@ -285,6 +320,7 @@ static int aspeed_lpc_snoop_probe(struct platform_device *pdev)
+>>                 return -ENODEV;
+>>         }
+>>
+>> +       aspeed_lpc_reset_regmap(lpc_snoop);
+>>         dev_set_drvdata(&pdev->dev, lpc_snoop);
+>>
+>>         rc = of_property_read_u32_index(dev->of_node, "snoop-ports", 0, &port);
+>> @@ -345,6 +381,13 @@ static int aspeed_lpc_snoop_remove(struct platform_device *pdev)
 >>         return 0;
 >>  }
 >>
->> +static void aspeed_kcs_shutdown(struct platform_device *pdev)
+>> +static void aspeed_lpc_snoop_shutdown(struct platform_device *pdev)
 >> +{
->> +       struct aspeed_kcs_bmc *priv = platform_get_drvdata(pdev);
->> +       struct kcs_bmc_device *kcs_bmc = &priv->kcs_bmc;
+>> +       struct aspeed_lpc_snoop *lpc_snoop = dev_get_drvdata(&pdev->dev);
 >> +
->> +       aspeed_kcs_irq_mask_update(kcs_bmc, (KCS_BMC_EVENT_TYPE_IBF), 0);
+>> +       aspeed_lpc_reset_regmap(lpc_snoop);
 >> +}
 >> +
->>  static const struct of_device_id ast_kcs_bmc_match[] = {
->>         { .compatible = "aspeed,ast2400-kcs-bmc-v2" },
->>         { .compatible = "aspeed,ast2500-kcs-bmc-v2" },
->> @@ -651,6 +659,7 @@ static struct platform_driver ast_kcs_bmc_driver = {
->>         },
->>         .probe  = aspeed_kcs_probe,
->>         .remove = aspeed_kcs_remove,
->> +       .shutdown = aspeed_kcs_shutdown,
+>>  static const struct aspeed_lpc_snoop_model_data ast2400_model_data = {
+>>         .has_hicrb_ensnp = 0,
 >>  };
->>  module_platform_driver(ast_kcs_bmc_driver);
+>> @@ -370,6 +413,7 @@ static struct platform_driver aspeed_lpc_snoop_driver = {
+>>         },
+>>         .probe = aspeed_lpc_snoop_probe,
+>>         .remove = aspeed_lpc_snoop_remove,
+>> +       .shutdown = aspeed_lpc_snoop_shutdown,
+>>  };
 >>
+>>  module_platform_driver(aspeed_lpc_snoop_driver);
 >> --
 >> 2.25.1
 >>
