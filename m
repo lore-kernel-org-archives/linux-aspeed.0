@@ -1,97 +1,100 @@
-From: Billy Tsai <billy_tsai@aspeedtech.com>
-Date: Tue, 23 Aug 2022 10:51:09 +0000
-Subject: [PATCH] pinctrl: aspeed: Force to disable the function's signal
-In-Reply-To: <6845561a-cb33-4939-a760-2a5722134851@www.fastmail.com>
-References: <20220818101839.28860-1-billy_tsai@aspeedtech.com>
- <6845561a-cb33-4939-a760-2a5722134851@www.fastmail.com>
-Message-ID: <E0E8F46E-145A-4180-8AAA-788150F0C44A@aspeedtech.com>
+From: Rob Herring <robh@kernel.org>
+Date: Tue, 23 Aug 2022 09:56:40 -0500
+Subject: [PATCH] dt-bindings: usb: Add missing (unevaluated|additional)Properties on child nodes
+Message-ID: <20220823145649.3118479-9-robh@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+In order to ensure only documented properties are present, node schemas
+must have unevaluatedProperties or additionalProperties set to false
+(typically).
 
-Hi Andrew,
+Signed-off-by: Rob Herring <robh@kernel.org>
+---
+ .../devicetree/bindings/usb/analogix,anx7411.yaml    |  2 ++
+ .../devicetree/bindings/usb/aspeed,usb-vhub.yaml     |  2 ++
+ .../devicetree/bindings/usb/st,stusb160x.yaml        | 12 +++++++++---
+ .../devicetree/bindings/usb/willsemi,wusb3801.yaml   |  1 +
+ 4 files changed, 14 insertions(+), 3 deletions(-)
 
-On 2022/8/19, 8:40 AM, "Andrew Jeffery" <andrew@aj.id.au> wrote:
-
-    > Hi Billy,
-
-    On Thu, 18 Aug 2022, at 19:48, Billy Tsai wrote:
-    > > When the driver want to disable the signal of the function, it doesn't
-    > > need to query the state of the mux function's signal on a pin. The
-    > > condition below will miss the disable of the signal:
-    > > Ball | Default | P0 Signal | P0 Expression               | Other
-    > > -----+---------+-----------+-----------------------------+----------
-    > >  E21   GPIOG0    SD2CLK      SCU4B4[16]=1 & SCU450[1]=1    GPIOG0
-    > > -----+---------+-----------+-----------------------------+----------
-    > >  B22   GPIOG1    SD2CMD      SCU4B4[17]=1 & SCU450[1]=1    GPIOG1
-    > > -----+---------+-----------+-----------------------------+----------
-    > > Assume the register status like below:
-    > > SCU4B4[16] == 1 & SCU4B4[17] == 1 & SCU450[1]==1
-    > > After the driver set the Ball E21 to the GPIOG0:
-    > > SCU4B4[16] == 0 & SCU4B4[17] == 1 & SCU450[1]==0
-    > > When the driver want to set the Ball B22 to the GPIOG1, the condition of
-    > > the SD2CMD will be false causing SCU4B4[17] not to be cleared.
-    > >
-    > > Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
-    > > ---
-    > >  drivers/pinctrl/aspeed/pinctrl-aspeed.c | 11 +----------
-    > >  1 file changed, 1 insertion(+), 10 deletions(-)
-    > >
-    > > diff --git a/drivers/pinctrl/aspeed/pinctrl-aspeed.c 
-    > > b/drivers/pinctrl/aspeed/pinctrl-aspeed.c
-    > > index 83d47ff1cea8..a30912a92f05 100644
-    > > --- a/drivers/pinctrl/aspeed/pinctrl-aspeed.c
-    > > +++ b/drivers/pinctrl/aspeed/pinctrl-aspeed.c
-    > > @@ -92,19 +92,10 @@ static int aspeed_sig_expr_enable(struct 
-    > > aspeed_pinmux_data *ctx,
-    > >  static int aspeed_sig_expr_disable(struct aspeed_pinmux_data *ctx,
-    > >  				   const struct aspeed_sig_expr *expr)
-    > >  {
-    > > -	int ret;
-    > > -
-    > >  	pr_debug("Disabling signal %s for %s\n", expr->signal,
-    > >  		 expr->function);
-    > > 
-    > > -	ret = aspeed_sig_expr_eval(ctx, expr, true);
-    > > -	if (ret < 0)
-    > > -		return ret;
-    > > -
-    > > -	if (ret)
-    > > -		return aspeed_sig_expr_set(ctx, expr, false);
-    > > -
-    > > -	return 0;
-    > > +	return aspeed_sig_expr_set(ctx, expr, false);
-
-    > Okay, maybe I was short-circuiting things in a way that wasn't quite 
-    > right. However, I'm a little nervous that we'll end up whacking state 
-    > that we can't restore and give ourselves mux-request ordering problems. 
-    > The Aspeed pin controllers are such a complex sea of state. Hopefully 
-    > we get away without needing to fix the theory behind the driver's 
-    > implementation.
-
-    > This code is common to the 2400, 2500 and 2600, have you tested the 
-    > patch on platforms for each to get coverage for the various pin state 
-    > expressions we have?
-
-I think that we just need to make sure that the logic of the driver is the same as the Aspeed
-Datasheet table 5.1 => Revert all settings of the higher priority function and apply the
-the setting of the current function, then the pinmux will belong to that function.
-I have confirmed the design logic with our designer and it can adapt to 2400 and 2500.
-This concept also covers the original driver logic which invalidates the condition of the higher
-priority function.
-
-    > I also wonder if we can write kunit tests to build some confidence with 
-    > the expected SCU bit state patterns for a given set of desired mux 
-    > states. Is this something you've looked at (it would be handy if kunit 
-    > can intercept regmap accesses)?
-
-I didn't look at it.
-
-Billy
-
-    > Andrew
-
+diff --git a/Documentation/devicetree/bindings/usb/analogix,anx7411.yaml b/Documentation/devicetree/bindings/usb/analogix,anx7411.yaml
+index ee436308e5dc..0e72c08e6566 100644
+--- a/Documentation/devicetree/bindings/usb/analogix,anx7411.yaml
++++ b/Documentation/devicetree/bindings/usb/analogix,anx7411.yaml
+@@ -23,6 +23,8 @@ properties:
+   connector:
+     type: object
+     $ref: ../connector/usb-connector.yaml
++    unevaluatedProperties: false
++
+     description:
+       Properties for usb c connector.
+ 
+diff --git a/Documentation/devicetree/bindings/usb/aspeed,usb-vhub.yaml b/Documentation/devicetree/bindings/usb/aspeed,usb-vhub.yaml
+index 8b019ac05bbe..a86bcd95100e 100644
+--- a/Documentation/devicetree/bindings/usb/aspeed,usb-vhub.yaml
++++ b/Documentation/devicetree/bindings/usb/aspeed,usb-vhub.yaml
+@@ -67,6 +67,7 @@ properties:
+ 
+   vhub-strings:
+     type: object
++    additionalProperties: false
+ 
+     properties:
+       '#address-cells':
+@@ -78,6 +79,7 @@ properties:
+     patternProperties:
+       '^string@[0-9a-f]+$':
+         type: object
++        additionalProperties: false
+         description: string descriptors of the specific language
+ 
+         properties:
+diff --git a/Documentation/devicetree/bindings/usb/st,stusb160x.yaml b/Documentation/devicetree/bindings/usb/st,stusb160x.yaml
+index b5a8c9814dd3..b8974807b666 100644
+--- a/Documentation/devicetree/bindings/usb/st,stusb160x.yaml
++++ b/Documentation/devicetree/bindings/usb/st,stusb160x.yaml
+@@ -33,6 +33,7 @@ properties:
+   connector:
+     type: object
+     $ref: /schemas/connector/usb-connector.yaml#
++    unevaluatedProperties: false
+ 
+     properties:
+       compatible:
+@@ -74,9 +75,14 @@ examples:
+                 data-role = "dual";
+                 typec-power-opmode = "default";
+ 
+-                port {
+-                    typec_con_ep: endpoint {
+-                        remote-endpoint = <&usbotg_hs_ep>;
++                ports {
++                    #address-cells = <1>;
++                    #size-cells = <0>;
++                    port at 0 {
++                        reg = <0>;
++                        typec_con_ep: endpoint {
++                            remote-endpoint = <&usbotg_hs_ep>;
++                        };
+                     };
+                 };
+             };
+diff --git a/Documentation/devicetree/bindings/usb/willsemi,wusb3801.yaml b/Documentation/devicetree/bindings/usb/willsemi,wusb3801.yaml
+index c2b2243c7892..5aa4ffd67119 100644
+--- a/Documentation/devicetree/bindings/usb/willsemi,wusb3801.yaml
++++ b/Documentation/devicetree/bindings/usb/willsemi,wusb3801.yaml
+@@ -28,6 +28,7 @@ properties:
+   connector:
+     type: object
+     $ref: ../connector/usb-connector.yaml#
++    unevaluatedProperties: false
+     description:
+       The managed USB Type-C connector. Since WUSB3801 does not support
+       Power Delivery, the node should have the "pd-disable" property.
+-- 
+2.34.1
 
