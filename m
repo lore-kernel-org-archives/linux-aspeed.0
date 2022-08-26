@@ -1,33 +1,112 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Thu, 25 Aug 2022 14:35:31 +0200
-Subject: [PATCH v3 2/2] ARM: dts: aspeed: Add device tree for Ampere's Mt.
- Mitchell BMC
-In-Reply-To: <673e200f-f458-7866-f956-3d5bd7160a49@os.amperecomputing.com>
-References: <20220817071539.176110-1-quan@os.amperecomputing.com>
- <20220817071539.176110-3-quan@os.amperecomputing.com> <CACPK8XdDpG3ONM1=-E6qvHL1FgMNWSMPoL_sVGJK6BmmnT3w_w@mail.gmail.com>
- <CAK8P3a2LZKfZpdTQ-R4o9mJ6dk52VRF+Bxj=PJEx-1MA4yH8+w@mail.gmail.com> <673e200f-f458-7866-f956-3d5bd7160a49@os.amperecomputing.com>
-Message-ID: <CAK8P3a3MU7shuBpcpRNC5L6xxQmSy8FXCX1jvYXhv-NT3PMYOw@mail.gmail.com>
+From: Herbert Xu <herbert@gondor.apana.org.au>
+Date: Fri, 26 Aug 2022 19:04:18 +0800
+Subject: [PATCH v10 0/5] Add Aspeed crypto driver for hardware
+ acceleration
+In-Reply-To: <20220818035956.1160585-1-neal_liu@aspeedtech.com>
+References: <20220818035956.1160585-1-neal_liu@aspeedtech.com>
+Message-ID: <YwiospkrYMevTok9@gondor.apana.org.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Aug 23, 2022 at 10:27 AM Quan Nguyen
-<quan@os.amperecomputing.com> wrote:
-> On 18/08/2022 19:06, Arnd Bergmann wrote:
->
-> Thanks Arnd for the comment.
->
-> I think adding -append could solve the issue.
->
-> But as the bootargs still exist in all other
-> arch/arm/boot/dts/aspeed-bmc-*.dts should we still keep bootargs for
-> this dts?
+On Thu, Aug 18, 2022 at 11:59:51AM +0800, Neal Liu wrote:
+> Aspeed Hash and Crypto Engine (HACE) is designed to accelerate the
+> throughput of hash data digest, encryption and decryption.
+> 
+> These patches aim to add Aspeed hash & crypto driver support.
+> The hash & crypto driver also pass the run-time self tests that
+> take place at algorithm registration.
+> 
+> The patch series are tested on both AST2500 & AST2600 evaluation boards.
+> 
+> Tested-by below configs:
+> - CONFIG_CRYPTO_MANAGER_DISABLE_TESTS is not set
+> - CONFIG_CRYPTO_MANAGER_EXTRA_TESTS=y
+> - CONFIG_DMA_API_DEBUG=y
+> - CONFIG_DMA_API_DEBUG_SG=y
+> - CONFIG_CPU_BIG_ENDIAN=y
+> 
+> Change since v9:
+> - Fix unnecessary "goto xxx".
+> 
+> Change since v8:
+> - Remove __weak functions for register/unregister crypto algos.
+> - Add missing functions of unregister crypto algos.
+> - Use single debug config to control debug messages.
+> 
+> Change since v7:
+> - Define debug Kconfigs.
+> - Simplify assign iv/ivsize.
+> - Simplify cra_init() for hmac related init.
+> 
+> Change since v6:
+> - Refine debug print.
+> - Change aspeed_sg_list struct memeber's type to __le32.
+> 
+> Change since v5:
+> - Re-define HACE clock define to fix breaking ABI.
+> 
+> Change since v4:
+> - Add AST2500 clock definition & dts node.
+> - Add software fallback for handling corner cases.
+> - Fix copy wrong key length.
+> 
+> Change since v3:
+> - Use dmam_alloc_coherent() instead to manage dma_alloc_coherent().
+> - Add more error handler of dma_prepare() & crypto_engine_start().
+> 
+> Change since v2:
+> - Fix endianness issue. Tested on both little endian & big endian
+>   system.
+> - Use common crypto hardware engine for enqueue & dequeue requests.
+> - Use pre-defined IVs for SHA-family.
+> - Revise error handler flow.
+> - Fix sorts of coding style problems.
+> 
+> Change since v1:
+> - Add more error handlers, including DMA memory allocate/free, DMA
+>   map/unmap, clock enable/disable, etc.
+> - Fix check dma_map error for config DMA_API_DEBUG.
+> - Fix dt-binding doc & dts node naming.
+> 
+> 
+> Neal Liu (5):
+>   crypto: aspeed: Add HACE hash driver
+>   dt-bindings: clock: Add AST2500/AST2600 HACE reset definition
+>   ARM: dts: aspeed: Add HACE device controller node
+>   dt-bindings: crypto: add documentation for aspeed hace
+>   crypto: aspeed: add HACE crypto driver
+> 
+>  .../bindings/crypto/aspeed,ast2500-hace.yaml  |   53 +
+>  MAINTAINERS                                   |    7 +
+>  arch/arm/boot/dts/aspeed-g5.dtsi              |    8 +
+>  arch/arm/boot/dts/aspeed-g6.dtsi              |    8 +
+>  drivers/crypto/Kconfig                        |    1 +
+>  drivers/crypto/Makefile                       |    1 +
+>  drivers/crypto/aspeed/Kconfig                 |   49 +
+>  drivers/crypto/aspeed/Makefile                |    9 +
+>  drivers/crypto/aspeed/aspeed-hace-crypto.c    | 1135 ++++++++++++++
+>  drivers/crypto/aspeed/aspeed-hace-hash.c      | 1389 +++++++++++++++++
+>  drivers/crypto/aspeed/aspeed-hace.c           |  288 ++++
+>  drivers/crypto/aspeed/aspeed-hace.h           |  298 ++++
+>  include/dt-bindings/clock/aspeed-clock.h      |    1 +
+>  include/dt-bindings/clock/ast2600-clock.h     |    1 +
+>  14 files changed, 3248 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/crypto/aspeed,ast2500-hace.yaml
+>  create mode 100644 drivers/crypto/aspeed/Kconfig
+>  create mode 100644 drivers/crypto/aspeed/Makefile
+>  create mode 100644 drivers/crypto/aspeed/aspeed-hace-crypto.c
+>  create mode 100644 drivers/crypto/aspeed/aspeed-hace-hash.c
+>  create mode 100644 drivers/crypto/aspeed/aspeed-hace.c
+>  create mode 100644 drivers/crypto/aspeed/aspeed-hace.h
+> 
+> -- 
+> 2.25.1
 
-I think it should still be removed. Only 238 of 2547 set the console using
-bootargs, so that would make it more consistent with the other files.
-
-Changing the files that have the same issue is a separate matter.
-
-      Arnd
+All applied.  Thanks. 
+-- 
+Email: Herbert Xu <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
