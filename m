@@ -1,10 +1,10 @@
 From: Neal Liu <neal_liu@aspeedtech.com>
-Date: Mon, 29 Aug 2022 10:04:32 +0000
-Subject: build failure of next-20220829 due to 108713a713c7 ("crypto:
- aspeed - Add HACE hash driver")
-In-Reply-To: <YwyORp72cuDrVYdA@debian>
-References: <YwyORp72cuDrVYdA@debian>
-Message-ID: <TY2PR06MB321356F6EB09D3D59D37B53F80769@TY2PR06MB3213.apcprd06.prod.outlook.com>
+Date: Tue, 30 Aug 2022 04:01:22 +0000
+Subject: [PATCH] crypto: aspeed: fix return value check in
+ aspeed_hace_probe()
+In-Reply-To: <20220830031347.810217-1-sunke32@huawei.com>
+References: <20220830031347.810217-1-sunke32@huawei.com>
+Message-ID: <TY2PR06MB3213B139F88D72C3EEED7A0780799@TY2PR06MB3213.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -12,47 +12,47 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 > -----Original Message-----
-> From: Sudip Mukherjee (Codethink) <sudipm.mukherjee@gmail.com>
-> Sent: Monday, August 29, 2022 6:01 PM
-> To: Neal Liu <neal_liu@aspeedtech.com>; Johnny Huang
-> <johnny_huang@aspeedtech.com>; Dhananjay Phadke
-> <dphadke@linux.microsoft.com>; Herbert Xu <herbert@gondor.apana.org.au>
-> Cc: David S. Miller <davem@davemloft.net>; Joel Stanley <joel@jms.id.au>;
-> Andrew Jeffery <andrew@aj.id.au>; linux-aspeed at lists.ozlabs.org;
-> linux-crypto at vger.kernel.org; linux-arm-kernel at lists.infradead.org;
-> linux-kernel at vger.kernel.org; linux-next at vger.kernel.org
-> Subject: build failure of next-20220829 due to 108713a713c7 ("crypto: aspeed
-> - Add HACE hash driver")
+> From: Sun Ke <sunke32@huawei.com>
+> Sent: Tuesday, August 30, 2022 11:14 AM
+> To: Neal Liu <neal_liu@aspeedtech.com>; herbert at gondor.apana.org.au;
+> davem at davemloft.net; joel at jms.id.au
+> Cc: linux-aspeed at lists.ozlabs.org; linux-crypto at vger.kernel.org;
+> linux-arm-kernel at lists.infradead.org; kernel-janitors at vger.kernel.org;
+> sunke32 at huawei.com
+> Subject: [PATCH] crypto: aspeed: fix return value check in aspeed_hace_probe()
 > 
-> Hi All,
+> In case of error, the function devm_ioremap_resource() returns
+> ERR_PTR() not NULL. The NULL test in the return value check must be replaced
+> with IS_ERR().
 > 
-> The builds of arm allmodconfig have failed to build next-20220829 with the
-> error:
+> Fixes: 108713a713c7 ("crypto: aspeed - Add HACE hash driver")
+> Signed-off-by: Sun Ke <sunke32@huawei.com>
+
+Thanks for the fix.
+Reviewed-by: Neal Liu<neal_liu@aspeedtech.com>
+
+> ---
+>  drivers/crypto/aspeed/aspeed-hace.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 > 
-> ERROR: modpost: "aspeed_register_hace_hash_algs"
-> [drivers/crypto/aspeed/aspeed_crypto.ko] undefined!
-> ERROR: modpost: "aspeed_unregister_hace_crypto_algs"
-> [drivers/crypto/aspeed/aspeed_crypto.ko] undefined!
-> ERROR: modpost: "aspeed_register_hace_crypto_algs"
-> [drivers/crypto/aspeed/aspeed_crypto.ko] undefined!
-> ERROR: modpost: "aspeed_unregister_hace_hash_algs"
-> [drivers/crypto/aspeed/aspeed_crypto.ko] undefined!
+> diff --git a/drivers/crypto/aspeed/aspeed-hace.c
+> b/drivers/crypto/aspeed/aspeed-hace.c
+> index 4fefc9e69d72..3f880aafb6a2 100644
+> --- a/drivers/crypto/aspeed/aspeed-hace.c
+> +++ b/drivers/crypto/aspeed/aspeed-hace.c
+> @@ -123,9 +123,9 @@ static int aspeed_hace_probe(struct platform_device
+> *pdev)
+>  	platform_set_drvdata(pdev, hace_dev);
 > 
+>  	hace_dev->regs = devm_ioremap_resource(&pdev->dev, res);
+> -	if (!hace_dev->regs) {
+> +	if (IS_ERR(hace_dev->regs)) {
+>  		dev_err(&pdev->dev, "Failed to map resources\n");
+> -		return -ENOMEM;
+> +		return PTR_ERR(hace_dev->regs);
+>  	}
 > 
-> git bisect pointed to 108713a713c7 ("crypto: aspeed - Add HACE hash driver")
-> 
-> I will be happy to test any patch or provide any extra log if needed.
-> 
-> 
+>  	/* Get irq number and register it */
 > --
-> Regards
-> Sudip
+> 2.31.1
 
-Hi Sudip,
-
-I already sent another patch to fix this build error, could you give it a try?
-https://lkml.org/lkml/2022/8/29/131
-Thanks
-
-Best Regards,
--Neal
