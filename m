@@ -1,58 +1,89 @@
-From: Neal Liu <neal_liu@aspeedtech.com>
-Date: Tue, 30 Aug 2022 04:01:22 +0000
-Subject: [PATCH] crypto: aspeed: fix return value check in
- aspeed_hace_probe()
-In-Reply-To: <20220830031347.810217-1-sunke32@huawei.com>
-References: <20220830031347.810217-1-sunke32@huawei.com>
-Message-ID: <TY2PR06MB3213B139F88D72C3EEED7A0780799@TY2PR06MB3213.apcprd06.prod.outlook.com>
+From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Date: Tue, 30 Aug 2022 21:03:44 +0300
+Subject: [RESEND PATCH] ARM: dts: aspeed: align SPI node name with dtschema
+Message-ID: <20220830180344.15657-1-krzysztof.kozlowski@linaro.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-> -----Original Message-----
-> From: Sun Ke <sunke32@huawei.com>
-> Sent: Tuesday, August 30, 2022 11:14 AM
-> To: Neal Liu <neal_liu@aspeedtech.com>; herbert at gondor.apana.org.au;
-> davem at davemloft.net; joel at jms.id.au
-> Cc: linux-aspeed at lists.ozlabs.org; linux-crypto at vger.kernel.org;
-> linux-arm-kernel at lists.infradead.org; kernel-janitors at vger.kernel.org;
-> sunke32 at huawei.com
-> Subject: [PATCH] crypto: aspeed: fix return value check in aspeed_hace_probe()
-> 
-> In case of error, the function devm_ioremap_resource() returns
-> ERR_PTR() not NULL. The NULL test in the return value check must be replaced
-> with IS_ERR().
-> 
-> Fixes: 108713a713c7 ("crypto: aspeed - Add HACE hash driver")
-> Signed-off-by: Sun Ke <sunke32@huawei.com>
+The node names should be generic and DT schema expects certain pattern.
 
-Thanks for the fix.
-Reviewed-by: Neal Liu<neal_liu@aspeedtech.com>
+Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+---
+ arch/arm/boot/dts/aspeed-bmc-facebook-cloudripper.dts | 2 +-
+ arch/arm/boot/dts/aspeed-bmc-facebook-elbert.dts      | 2 +-
+ arch/arm/boot/dts/aspeed-bmc-facebook-fuji.dts        | 2 +-
+ arch/arm/boot/dts/aspeed-bmc-facebook-wedge400.dts    | 2 +-
+ arch/arm/boot/dts/ast2600-facebook-netbmc-common.dtsi | 2 +-
+ 5 files changed, 5 insertions(+), 5 deletions(-)
 
-> ---
->  drivers/crypto/aspeed/aspeed-hace.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/crypto/aspeed/aspeed-hace.c
-> b/drivers/crypto/aspeed/aspeed-hace.c
-> index 4fefc9e69d72..3f880aafb6a2 100644
-> --- a/drivers/crypto/aspeed/aspeed-hace.c
-> +++ b/drivers/crypto/aspeed/aspeed-hace.c
-> @@ -123,9 +123,9 @@ static int aspeed_hace_probe(struct platform_device
-> *pdev)
->  	platform_set_drvdata(pdev, hace_dev);
-> 
->  	hace_dev->regs = devm_ioremap_resource(&pdev->dev, res);
-> -	if (!hace_dev->regs) {
-> +	if (IS_ERR(hace_dev->regs)) {
->  		dev_err(&pdev->dev, "Failed to map resources\n");
-> -		return -ENOMEM;
-> +		return PTR_ERR(hace_dev->regs);
->  	}
-> 
->  	/* Get irq number and register it */
-> --
-> 2.31.1
+diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-cloudripper.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-cloudripper.dts
+index 9c6271a17ae8..5cd060029ea9 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-facebook-cloudripper.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-facebook-cloudripper.dts
+@@ -77,7 +77,7 @@ aliases {
+ 		i2c55 = &imux55;
+ 	};
+ 
+-	spi_gpio: spi-gpio {
++	spi_gpio: spi {
+ 		num-chipselects = <2>;
+ 		cs-gpios = <&gpio0 ASPEED_GPIO(X, 0) GPIO_ACTIVE_LOW>,
+ 			   <&gpio0 ASPEED_GPIO(X, 1) GPIO_ACTIVE_HIGH>;
+diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-elbert.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-elbert.dts
+index 27b43fe099f1..4b520d7ce3e1 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-facebook-elbert.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-facebook-elbert.dts
+@@ -44,7 +44,7 @@ chosen {
+ 		stdout-path = &uart5;
+ 	};
+ 
+-	spi_gpio: spi-gpio {
++	spi_gpio: spi {
+ 		num-chipselects = <1>;
+ 		cs-gpios = <&gpio0 ASPEED_GPIO(X, 0) GPIO_ACTIVE_LOW>;
+ 	};
+diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-fuji.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-fuji.dts
+index af58a73bbc49..6b319f34a9b9 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-facebook-fuji.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-facebook-fuji.dts
+@@ -207,7 +207,7 @@ aliases {
+ 		i2c143 = &imux143;
+ 	};
+ 
+-	spi_gpio: spi-gpio {
++	spi_gpio: spi {
+ 		num-chipselects = <3>;
+ 		cs-gpios = <&gpio0 ASPEED_GPIO(X, 0) GPIO_ACTIVE_LOW>,
+ 			   <0>,	/* device reg=<1> does not exist */
+diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-wedge400.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-wedge400.dts
+index a901c8be49b9..ed305948386f 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-facebook-wedge400.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-facebook-wedge400.dts
+@@ -67,7 +67,7 @@ ast-adc-hwmon {
+ 	 * full-duplex SPI transactions are not supported by ASPEED SPI
+ 	 * Controllers.
+ 	 */
+-	spi_gpio: spi-gpio {
++	spi_gpio: spi {
+ 		status = "okay";
+ 		compatible = "spi-gpio";
+ 		#address-cells = <1>;
+diff --git a/arch/arm/boot/dts/ast2600-facebook-netbmc-common.dtsi b/arch/arm/boot/dts/ast2600-facebook-netbmc-common.dtsi
+index 051de5bec345..31590d3186a2 100644
+--- a/arch/arm/boot/dts/ast2600-facebook-netbmc-common.dtsi
++++ b/arch/arm/boot/dts/ast2600-facebook-netbmc-common.dtsi
+@@ -25,7 +25,7 @@ memory at 80000000 {
+ 	 * full-duplex SPI transactions are not supported by ASPEED SPI
+ 	 * Controllers.
+ 	 */
+-	spi_gpio: spi-gpio {
++	spi_gpio: spi {
+ 		status = "okay";
+ 		compatible = "spi-gpio";
+ 		#address-cells = <1>;
+-- 
+2.34.1
 
