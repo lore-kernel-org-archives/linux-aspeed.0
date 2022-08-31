@@ -1,39 +1,36 @@
-From: Sun Ke <sunke32@huawei.com>
-Date: Tue, 30 Aug 2022 11:13:47 +0800
-Subject: [PATCH] crypto: aspeed: fix return value check in aspeed_hace_probe()
-Message-ID: <20220830031347.810217-1-sunke32@huawei.com>
+From: Linus Walleij <linus.walleij@linaro.org>
+Date: Wed, 31 Aug 2022 14:15:04 +0200
+Subject: [PATCH] pinctrl: aspeed: Force to disable the function's signal
+In-Reply-To: <20220818101839.28860-1-billy_tsai@aspeedtech.com>
+References: <20220818101839.28860-1-billy_tsai@aspeedtech.com>
+Message-ID: <CACRpkdZSw9Nn8hp+C3SPw4_EkXn0mkLh8tSO5zhGR8xdv=Jk8g@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-In case of error, the function devm_ioremap_resource() returns
-ERR_PTR() not NULL. The NULL test in the return value check must be
-replaced with IS_ERR().
+On Thu, Aug 18, 2022 at 12:18 PM Billy Tsai <billy_tsai@aspeedtech.com> wrote:
 
-Fixes: 108713a713c7 ("crypto: aspeed - Add HACE hash driver")
-Signed-off-by: Sun Ke <sunke32@huawei.com>
----
- drivers/crypto/aspeed/aspeed-hace.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+> When the driver want to disable the signal of the function, it doesn't
+> need to query the state of the mux function's signal on a pin. The
+> condition below will miss the disable of the signal:
+> Ball | Default | P0 Signal | P0 Expression               | Other
+> -----+---------+-----------+-----------------------------+----------
+>  E21   GPIOG0    SD2CLK      SCU4B4[16]=1 & SCU450[1]=1    GPIOG0
+> -----+---------+-----------+-----------------------------+----------
+>  B22   GPIOG1    SD2CMD      SCU4B4[17]=1 & SCU450[1]=1    GPIOG1
+> -----+---------+-----------+-----------------------------+----------
+> Assume the register status like below:
+> SCU4B4[16] == 1 & SCU4B4[17] == 1 & SCU450[1]==1
+> After the driver set the Ball E21 to the GPIOG0:
+> SCU4B4[16] == 0 & SCU4B4[17] == 1 & SCU450[1]==0
+> When the driver want to set the Ball B22 to the GPIOG1, the condition of
+> the SD2CMD will be false causing SCU4B4[17] not to be cleared.
+>
+> Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
 
-diff --git a/drivers/crypto/aspeed/aspeed-hace.c b/drivers/crypto/aspeed/aspeed-hace.c
-index 4fefc9e69d72..3f880aafb6a2 100644
---- a/drivers/crypto/aspeed/aspeed-hace.c
-+++ b/drivers/crypto/aspeed/aspeed-hace.c
-@@ -123,9 +123,9 @@ static int aspeed_hace_probe(struct platform_device *pdev)
- 	platform_set_drvdata(pdev, hace_dev);
- 
- 	hace_dev->regs = devm_ioremap_resource(&pdev->dev, res);
--	if (!hace_dev->regs) {
-+	if (IS_ERR(hace_dev->regs)) {
- 		dev_err(&pdev->dev, "Failed to map resources\n");
--		return -ENOMEM;
-+		return PTR_ERR(hace_dev->regs);
- 	}
- 
- 	/* Get irq number and register it */
--- 
-2.31.1
+Patch applied!
 
+Yours,
+Linus Walleij
