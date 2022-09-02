@@ -1,30 +1,93 @@
-From: Shawn Guo <shawnguo@kernel.org>
-Date: Sat, 31 Dec 2022 20:40:26 +0800
-Subject: [PATCH 07/11] arm64: dts: freescale: Fix pca954x i2c-mux node
- names
-In-Reply-To: <3755a821121c472c9a9fd26a735c87ebb79484a5.1669999298.git.geert+renesas@glider.be>
-References: <cover.1669999298.git.geert+renesas@glider.be>
- <3755a821121c472c9a9fd26a735c87ebb79484a5.1669999298.git.geert+renesas@glider.be>
-Message-ID: <20221231124025.GV6112@T480>
+From: Neal Liu <neal_liu@aspeedtech.com>
+Date: Fri, 2 Sep 2022 14:00:11 +0800
+Subject: [PATCH v1 3/4] dt-bindings: crypto: add documentation for Aspeed ACRY
+In-Reply-To: <20220902060012.3758637-1-neal_liu@aspeedtech.com>
+References: <20220902060012.3758637-1-neal_liu@aspeedtech.com>
+Message-ID: <20220902060012.3758637-4-neal_liu@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Dec 02, 2022 at 05:49:22PM +0100, Geert Uytterhoeven wrote:
-> "make dtbs_check":
-> 
->     arch/arm64/boot/dts/freescale/fsl-ls1012a-qds.dtb: pca9547 at 77: $nodename:0: 'pca9547 at 77' does not match '^(i2c-?)?mux'
-> 	    From schema: Documentation/devicetree/bindings/i2c/i2c-mux-pca954x.yaml
->     arch/arm64/boot/dts/freescale/fsl-ls1012a-qds.dtb: pca9547 at 77: Unevaluated properties are not allowed ('#address-cells', '#size-cells', 'i2c at 4' were unexpected)
-> 	    From schema: Documentation/devicetree/bindings/i2c/i2c-mux-pca954x.yaml
->     ...
-> 
-> Fix this by renaming PCA954x nodes to "i2c-mux", to match the I2C bus
-> multiplexer/switch DT bindings and the Generic Names Recommendation in
-> the Devicetree Specification.
-> 
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Add device tree binding documentation for the Aspeed
+ECDSA/RSA ACRY Engines Controller.
 
-Applied, thanks!
+Signed-off-by: Neal Liu <neal_liu@aspeedtech.com>
+---
+ .../bindings/crypto/aspeed,ast2600-acry.yaml  | 49 +++++++++++++++++++
+ MAINTAINERS                                   |  2 +-
+ 2 files changed, 50 insertions(+), 1 deletion(-)
+ create mode 100644 Documentation/devicetree/bindings/crypto/aspeed,ast2600-acry.yaml
+
+diff --git a/Documentation/devicetree/bindings/crypto/aspeed,ast2600-acry.yaml b/Documentation/devicetree/bindings/crypto/aspeed,ast2600-acry.yaml
+new file mode 100644
+index 000000000000..192b40cd0a39
+--- /dev/null
++++ b/Documentation/devicetree/bindings/crypto/aspeed,ast2600-acry.yaml
+@@ -0,0 +1,49 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/crypto/aspeed,ast2600-acry.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: ASPEED ACRY ECDSA/RSA Hardware Accelerator Engines Device Tree Bindings
++
++maintainers:
++  - Neal Liu <neal_liu@aspeedtech.com>
++
++description: |
++  The ACRY ECDSA/RSA engines is designed to accelerate the throughput
++  of ECDSA/RSA signature and verification. Basically, ACRY can be
++  divided into two independently engines - ECC Engine and RSA Engine.
++
++properties:
++  compatible:
++    enum:
++      - aspeed,ast2600-acry
++
++  reg:
++    items:
++      - description: acry base address & size
++      - description: acry sram base address & size
++
++  clocks:
++    maxItems: 1
++
++  interrupts:
++    maxItems: 1
++
++required:
++  - compatible
++  - reg
++  - clocks
++  - interrupts
++
++additionalProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/clock/ast2600-clock.h>
++    acry: crypto at 1e6fa000 {
++        compatible = "aspeed,ast2600-acry";
++        reg = <0x1e6fa000 0x400>, <0x1e710000 0x1800>;
++        interrupts = <160>;
++        clocks = <&syscon ASPEED_CLK_GATE_RSACLK>;
++    };
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 832da6d77374..09ab1c3adbb7 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -3214,7 +3214,7 @@ ASPEED CRYPTO DRIVER
+ M:	Neal Liu <neal_liu@aspeedtech.com>
+ L:	linux-aspeed at lists.ozlabs.org (moderated for non-subscribers)
+ S:	Maintained
+-F:	Documentation/devicetree/bindings/crypto/aspeed,ast2500-hace.yaml
++F:	Documentation/devicetree/bindings/crypto/aspeed,*
+ F:	drivers/crypto/aspeed/
+ 
+ ASUS NOTEBOOKS AND EEEPC ACPI/WMI EXTRAS DRIVERS
+-- 
+2.25.1
+
