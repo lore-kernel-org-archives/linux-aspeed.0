@@ -1,50 +1,46 @@
-From: Neal Liu <neal_liu@aspeedtech.com>
-Date: Mon, 5 Sep 2022 13:24:49 +0800
-Subject: [PATCH v2] crypto: aspeed: fix format unexpected build warning
-Message-ID: <20220905052449.1830669-1-neal_liu@aspeedtech.com>
+From: Quan Nguyen <quan@os.amperecomputing.com>
+Date: Mon, 5 Sep 2022 16:45:45 +0700
+Subject: [PATCH v3 2/2] ARM: dts: aspeed: Add device tree for Ampere's Mt.
+ Mitchell BMC
+In-Reply-To: <CAK8P3a3MU7shuBpcpRNC5L6xxQmSy8FXCX1jvYXhv-NT3PMYOw@mail.gmail.com>
+References: <20220817071539.176110-1-quan@os.amperecomputing.com>
+ <20220817071539.176110-3-quan@os.amperecomputing.com>
+ <CACPK8XdDpG3ONM1=-E6qvHL1FgMNWSMPoL_sVGJK6BmmnT3w_w@mail.gmail.com>
+ <CAK8P3a2LZKfZpdTQ-R4o9mJ6dk52VRF+Bxj=PJEx-1MA4yH8+w@mail.gmail.com>
+ <673e200f-f458-7866-f956-3d5bd7160a49@os.amperecomputing.com>
+ <CAK8P3a3MU7shuBpcpRNC5L6xxQmSy8FXCX1jvYXhv-NT3PMYOw@mail.gmail.com>
+Message-ID: <396a3c24-2a86-0d1c-07f9-386a0de1d473@os.amperecomputing.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This fixes the following similar build warning when
-enabling compile test:
 
-aspeed-hace-hash.c:188:9: warning: format '%x' expects argument of type
-'unsigned int', but argument 7 has type 'size_t' {aka 'long unsigned int'}
-[-Wformat=]
 
-Reported-by: kernel test robot <lkp@intel.com>
-Signed-off-by: Neal Liu <neal_liu@aspeedtech.com>
----
-v2: Use "%zu" format to print size_t.
+On 25/08/2022 19:35, Arnd Bergmann wrote:
+> On Tue, Aug 23, 2022 at 10:27 AM Quan Nguyen
+> <quan@os.amperecomputing.com> wrote:
+>> On 18/08/2022 19:06, Arnd Bergmann wrote:
+>>
+>> Thanks Arnd for the comment.
+>>
+>> I think adding -append could solve the issue.
+>>
+>> But as the bootargs still exist in all other
+>> arch/arm/boot/dts/aspeed-bmc-*.dts should we still keep bootargs for
+>> this dts?
+> 
+> I think it should still be removed. Only 238 of 2547 set the console using
+> bootargs, so that would make it more consistent with the other files.
+> 
+> Changing the files that have the same issue is a separate matter.
+> 
 
- drivers/crypto/aspeed/aspeed-hace-hash.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Hi Joel,
 
-diff --git a/drivers/crypto/aspeed/aspeed-hace-hash.c b/drivers/crypto/aspeed/aspeed-hace-hash.c
-index 0a44ffc0e13b..6e833d238253 100644
---- a/drivers/crypto/aspeed/aspeed-hace-hash.c
-+++ b/drivers/crypto/aspeed/aspeed-hace-hash.c
-@@ -185,7 +185,7 @@ static int aspeed_ahash_dma_prepare_sg(struct aspeed_hace_dev *hace_dev)
- 	remain = (rctx->total + rctx->bufcnt) % rctx->block_size;
- 	length = rctx->total + rctx->bufcnt - remain;
- 
--	AHASH_DBG(hace_dev, "%s:0x%x, %s:0x%x, %s:0x%x, %s:0x%x\n",
-+	AHASH_DBG(hace_dev, "%s:0x%x, %s:%zu, %s:0x%x, %s:0x%x\n",
- 		  "rctx total", rctx->total, "bufcnt", rctx->bufcnt,
- 		  "length", length, "remain", remain);
- 
-@@ -324,7 +324,7 @@ static int aspeed_hace_ahash_trigger(struct aspeed_hace_dev *hace_dev,
- 	struct ahash_request *req = hash_engine->req;
- 	struct aspeed_sham_reqctx *rctx = ahash_request_ctx(req);
- 
--	AHASH_DBG(hace_dev, "src_dma:0x%x, digest_dma:0x%x, length:0x%x\n",
-+	AHASH_DBG(hace_dev, "src_dma:%zu, digest_dma:%zu, length:%zu\n",
- 		  hash_engine->src_dma, hash_engine->digest_dma,
- 		  hash_engine->src_length);
- 
--- 
-2.25.1
+In the meantime, I'm just wonder if you could help to test the patch 
+with -append and get it merged.
 
+Thank you and best regards,
+- Quan
