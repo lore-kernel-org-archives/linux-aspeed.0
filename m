@@ -1,51 +1,50 @@
 From: Neal Liu <neal_liu@aspeedtech.com>
-Date: Mon, 5 Sep 2022 10:54:33 +0800
-Subject: [PATCH v2] crypto: aspeed: fix build module error
-Message-ID: <20220905025433.1610696-1-neal_liu@aspeedtech.com>
+Date: Mon, 5 Sep 2022 11:28:38 +0800
+Subject: [PATCH] crypto: aspeed: fix format unexpected build warning
+Message-ID: <20220905032838.1663510-1-neal_liu@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-If CONFIG_MODULES=y and CONFIG_CRYPTO_DEV_ASPEED=m,
-build modpost would be failed.
+This fixes the following similar build warning when
+enabling compile test:
 
-Error messages:
-  ERROR: modpost: "aspeed_register_hace_hash_algs"
-  [drivers/crypto/aspeed/aspeed_crypto.ko] undefined!
-  ERROR: modpost: "aspeed_unregister_hace_hash_algs"
-  [drivers/crypto/aspeed/aspeed_crypto.ko] undefined!
-
-Change build sequence to fix this.
+aspeed-hace-hash.c:188:9: warning: format '%x' expects argument of type
+'unsigned int', but argument 7 has type 'size_t' {aka 'long unsigned int'}
+[-Wformat=]
 
 Reported-by: kernel test robot <lkp@intel.com>
 Signed-off-by: Neal Liu <neal_liu@aspeedtech.com>
-Tested-by: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
 ---
-v2: Remove redundant obj- lines.
+ drivers/crypto/aspeed/aspeed-hace-hash.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
- drivers/crypto/aspeed/Makefile | 11 ++++-------
- 1 file changed, 4 insertions(+), 7 deletions(-)
-
-diff --git a/drivers/crypto/aspeed/Makefile b/drivers/crypto/aspeed/Makefile
-index 421e2ca9c53e..3be78cec0ecb 100644
---- a/drivers/crypto/aspeed/Makefile
-+++ b/drivers/crypto/aspeed/Makefile
-@@ -1,9 +1,6 @@
-+hace-hash-$(CONFIG_CRYPTO_DEV_ASPEED_HACE_HASH) := aspeed-hace.o aspeed-hace-hash.o
-+hace-crypto-$(CONFIG_CRYPTO_DEV_ASPEED_HACE_CRYPTO) := aspeed-hace.o aspeed-hace-crypto.o
-+
- obj-$(CONFIG_CRYPTO_DEV_ASPEED) += aspeed_crypto.o
--aspeed_crypto-objs := aspeed-hace.o	\
--		      $(hace-hash-y)	\
-+aspeed_crypto-objs := $(hace-hash-y)	\
- 		      $(hace-crypto-y)
--
--obj-$(CONFIG_CRYPTO_DEV_ASPEED_HACE_HASH) += aspeed-hace-hash.o
--hace-hash-$(CONFIG_CRYPTO_DEV_ASPEED_HACE_HASH) := aspeed-hace-hash.o
--obj-$(CONFIG_CRYPTO_DEV_ASPEED_HACE_CRYPTO) += aspeed-hace-crypto.o
--hace-crypto-$(CONFIG_CRYPTO_DEV_ASPEED_HACE_CRYPTO) := aspeed-hace-crypto.o
+diff --git a/drivers/crypto/aspeed/aspeed-hace-hash.c b/drivers/crypto/aspeed/aspeed-hace-hash.c
+index 0a44ffc0e13b..d0f61149fe24 100644
+--- a/drivers/crypto/aspeed/aspeed-hace-hash.c
++++ b/drivers/crypto/aspeed/aspeed-hace-hash.c
+@@ -186,7 +186,7 @@ static int aspeed_ahash_dma_prepare_sg(struct aspeed_hace_dev *hace_dev)
+ 	length = rctx->total + rctx->bufcnt - remain;
+ 
+ 	AHASH_DBG(hace_dev, "%s:0x%x, %s:0x%x, %s:0x%x, %s:0x%x\n",
+-		  "rctx total", rctx->total, "bufcnt", rctx->bufcnt,
++		  "rctx total", rctx->total, "bufcnt", (u32)rctx->bufcnt,
+ 		  "length", length, "remain", remain);
+ 
+ 	sg_len = dma_map_sg(hace_dev->dev, rctx->src_sg, rctx->src_nents,
+@@ -325,8 +325,8 @@ static int aspeed_hace_ahash_trigger(struct aspeed_hace_dev *hace_dev,
+ 	struct aspeed_sham_reqctx *rctx = ahash_request_ctx(req);
+ 
+ 	AHASH_DBG(hace_dev, "src_dma:0x%x, digest_dma:0x%x, length:0x%x\n",
+-		  hash_engine->src_dma, hash_engine->digest_dma,
+-		  hash_engine->src_length);
++		  (u32)hash_engine->src_dma, (u32)hash_engine->digest_dma,
++		  (u32)hash_engine->src_length);
+ 
+ 	rctx->cmd |= HASH_CMD_INT_ENABLE;
+ 	hash_engine->resume = resume;
 -- 
 2.25.1
 
