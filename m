@@ -1,46 +1,45 @@
-From: Quan Nguyen <quan@os.amperecomputing.com>
-Date: Mon, 5 Sep 2022 16:45:45 +0700
-Subject: [PATCH v3 2/2] ARM: dts: aspeed: Add device tree for Ampere's Mt.
- Mitchell BMC
-In-Reply-To: <CAK8P3a3MU7shuBpcpRNC5L6xxQmSy8FXCX1jvYXhv-NT3PMYOw@mail.gmail.com>
-References: <20220817071539.176110-1-quan@os.amperecomputing.com>
- <20220817071539.176110-3-quan@os.amperecomputing.com>
- <CACPK8XdDpG3ONM1=-E6qvHL1FgMNWSMPoL_sVGJK6BmmnT3w_w@mail.gmail.com>
- <CAK8P3a2LZKfZpdTQ-R4o9mJ6dk52VRF+Bxj=PJEx-1MA4yH8+w@mail.gmail.com>
- <673e200f-f458-7866-f956-3d5bd7160a49@os.amperecomputing.com>
- <CAK8P3a3MU7shuBpcpRNC5L6xxQmSy8FXCX1jvYXhv-NT3PMYOw@mail.gmail.com>
-Message-ID: <396a3c24-2a86-0d1c-07f9-386a0de1d473@os.amperecomputing.com>
+From: Herbert Xu <herbert@gondor.apana.org.au>
+Date: Mon, 5 Sep 2022 19:04:27 +0800
+Subject: [PATCH v2] crypto: aspeed: fix build module error
+In-Reply-To: <20220905025433.1610696-1-neal_liu@aspeedtech.com>
+References: <20220905025433.1610696-1-neal_liu@aspeedtech.com>
+Message-ID: <YxXXuyNrQIcMZBLI@gondor.apana.org.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+On Mon, Sep 05, 2022 at 10:54:33AM +0800, Neal Liu wrote:
+>
+> diff --git a/drivers/crypto/aspeed/Makefile b/drivers/crypto/aspeed/Makefile
+> index 421e2ca9c53e..3be78cec0ecb 100644
+> --- a/drivers/crypto/aspeed/Makefile
+> +++ b/drivers/crypto/aspeed/Makefile
+> @@ -1,9 +1,6 @@
+> +hace-hash-$(CONFIG_CRYPTO_DEV_ASPEED_HACE_HASH) := aspeed-hace.o aspeed-hace-hash.o
+> +hace-crypto-$(CONFIG_CRYPTO_DEV_ASPEED_HACE_CRYPTO) := aspeed-hace.o aspeed-hace-crypto.o
+> +
+>  obj-$(CONFIG_CRYPTO_DEV_ASPEED) += aspeed_crypto.o
+> -aspeed_crypto-objs := aspeed-hace.o	\
+> -		      $(hace-hash-y)	\
+> +aspeed_crypto-objs := $(hace-hash-y)	\
+>  		      $(hace-crypto-y)
 
+Does this still build if both HASH and CRYPTO are off?
 
-On 25/08/2022 19:35, Arnd Bergmann wrote:
-> On Tue, Aug 23, 2022 at 10:27 AM Quan Nguyen
-> <quan@os.amperecomputing.com> wrote:
->> On 18/08/2022 19:06, Arnd Bergmann wrote:
->>
->> Thanks Arnd for the comment.
->>
->> I think adding -append could solve the issue.
->>
->> But as the bootargs still exist in all other
->> arch/arm/boot/dts/aspeed-bmc-*.dts should we still keep bootargs for
->> this dts?
-> 
-> I think it should still be removed. Only 238 of 2547 set the console using
-> bootargs, so that would make it more consistent with the other files.
-> 
-> Changing the files that have the same issue is a separate matter.
-> 
+I think this it's best if you do:
 
-Hi Joel,
+hace-hash-$(CONFIG_CRYPTO_DEV_ASPEED_HACE_HASH) := aspeed-hace-hash.o
+hace-crypto-$(CONFIG_CRYPTO_DEV_ASPEED_HACE_CRYPTO) := aspeed-hace-crypto.o
 
-In the meantime, I'm just wonder if you could help to test the patch 
-with -append and get it merged.
+obj-$(CONFIG_CRYPTO_DEV_ASPEED) += aspeed_crypto.o
+aspeed_crypto-objs := aspeed-hace.o	\
+		      $(hace-hash-y)	\
+		      $(hace-crypto-y)
 
-Thank you and best regards,
-- Quan
+Thanks,
+-- 
+Email: Herbert Xu <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
