@@ -1,9 +1,9 @@
 From: rentao.bupt@gmail.com <rentao.bupt@gmail.com>
-Date: Mon,  5 Sep 2022 23:20:25 -0700
-Subject: [PATCH net-next v2 1/2] net: ftgmac100: support fixed link
+Date: Mon,  5 Sep 2022 23:20:26 -0700
+Subject: [PATCH net-next v2 2/2] ARM: dts: aspeed: elbert: Enable mac3 controller
 In-Reply-To: <20220906062026.57169-1-rentao.bupt@gmail.com>
 References: <20220906062026.57169-1-rentao.bupt@gmail.com>
-Message-ID: <20220906062026.57169-2-rentao.bupt@gmail.com>
+Message-ID: <20220906062026.57169-3-rentao.bupt@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -12,63 +12,51 @@ Content-Transfer-Encoding: 7bit
 
 From: Tao Ren <rentao.bupt@gmail.com>
 
-Support fixed link in ftgmac100 driver. Fixed link is used on several
-Meta OpenBMC platforms, such as Elbert (AST2620) and Wedge400 (AST2520).
+Enable mac3 controller in Elbert dts: Elbert MAC3 is connected to the
+BCM53134P onboard switch's IMP_RGMII port directly (fixed link, no PHY
+between BMC MAC and BCM53134P).
+
+Note: BMC's mdio0 controller is connected to BCM53134P's MDIO interface
+for debugging purposes only: BCM53134P always loads configurations from
+its EEPROM, and users should not configure the switch via the MDIO
+interface. As a result, the MDIO connection is disabled in dts.
 
 Signed-off-by: Tao Ren <rentao.bupt@gmail.com>
-Reviewed-by: Andrew Lunn <andrew@lunn.ch>
 ---
- Changes in v2: None
+ Changes in v2:
+  - updated comments and patch description.
 
- drivers/net/ethernet/faraday/ftgmac100.c | 24 ++++++++++++++++++++++++
- 1 file changed, 24 insertions(+)
+ .../boot/dts/aspeed-bmc-facebook-elbert.dts   | 20 +++++++++++++++++++
+ 1 file changed, 20 insertions(+)
 
-diff --git a/drivers/net/ethernet/faraday/ftgmac100.c b/drivers/net/ethernet/faraday/ftgmac100.c
-index 9277d5fb5052..da04beee5865 100644
---- a/drivers/net/ethernet/faraday/ftgmac100.c
-+++ b/drivers/net/ethernet/faraday/ftgmac100.c
-@@ -1701,10 +1701,14 @@ static int ftgmac100_setup_mdio(struct net_device *netdev)
- 
- static void ftgmac100_phy_disconnect(struct net_device *netdev)
- {
-+	struct ftgmac100 *priv = netdev_priv(netdev);
+diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-elbert.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-elbert.dts
+index 27b43fe099f1..36657d8fdb73 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-facebook-elbert.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-facebook-elbert.dts
+@@ -183,3 +183,23 @@ imux31: i2c at 7 {
+ &i2c11 {
+ 	status = "okay";
+ };
 +
- 	if (!netdev->phydev)
- 		return;
- 
- 	phy_disconnect(netdev->phydev);
-+	if (of_phy_is_fixed_link(priv->dev->of_node))
-+		of_phy_deregister_fixed_link(priv->dev->of_node);
- }
- 
- static void ftgmac100_destroy_mdio(struct net_device *netdev)
-@@ -1867,6 +1871,26 @@ static int ftgmac100_probe(struct platform_device *pdev)
- 			err = -EINVAL;
- 			goto err_phy_connect;
- 		}
-+	} else if (np && of_phy_is_fixed_link(np)) {
-+		struct phy_device *phy;
-+
-+		err = of_phy_register_fixed_link(np);
-+		if (err) {
-+			dev_err(&pdev->dev, "Failed to register fixed PHY\n");
-+			goto err_phy_connect;
-+		}
-+
-+		phy = of_phy_get_and_connect(priv->netdev, np,
-+					     &ftgmac100_adjust_link);
-+		if (!phy) {
-+			dev_err(&pdev->dev, "Failed to connect to fixed PHY\n");
-+			of_phy_deregister_fixed_link(np);
-+			err = -EINVAL;
-+			goto err_phy_connect;
-+		}
-+
-+		/* Display what we found */
-+		phy_attached_info(phy);
- 	} else if (np && of_get_property(np, "phy-handle", NULL)) {
- 		struct phy_device *phy;
- 
++/*
++ * BMC's "mac3" is connected to BCM53134P's IMP_RGMII port directly (no
++ * PHY in between).
++ * Although BMC's "mdio0" controller is connected to BCM53134P's MDIO
++ * interface, it's only for debugging purposes: BCM53134P always loads
++ * configurations from its EEPROM, and users should not configure the
++ * switch through MDIO interface in regular operations. As a result,
++ * the MDIO connection is disabled in dts.
++ */
++&mac3 {
++	status = "okay";
++	phy-mode = "rgmii";
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_rgmii4_default>;
++	fixed-link {
++		speed = <1000>;
++		full-duplex;
++	};
++};
 -- 
 2.37.3
 
