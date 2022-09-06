@@ -1,46 +1,31 @@
-From: Karthikeyan Pasupathi <pkarthikeyan1509@gmail.com>
-Date: Tue, 6 Sep 2022 10:37:02 +0530
-Subject: [PATCH v1] Update for Facebook yosemite V2 BMC.
-Message-ID: <20220906050702.GA10565@hcl-ThinkPad-T495>
+From: rentao.bupt@gmail.com <rentao.bupt@gmail.com>
+Date: Mon,  5 Sep 2022 23:20:24 -0700
+Subject: [PATCH net-next v2 0/2] net: ftgmac100: support fixed link
+Message-ID: <20220906062026.57169-1-rentao.bupt@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Added IPMB-13 channel for Debug Card communication.
+From: Tao Ren <rentao.bupt@gmail.com>
 
----
---- v1 - Initial draft.
----
+The patch series adds fixed link support to ftgmac100 driver.
 
-Signed-off-by: Karthikeyan Pasupathi <pkarthikeyan1509@gmail.com>
----
- arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts | 11 +++++++++++
- 1 file changed, 11 insertions(+)
+Patch #1 adds fixed link logic into ftgmac100 driver.
 
-diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts
-index 8864e9c312a8..84236df522dc 100644
---- a/arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts
-@@ -215,6 +215,17 @@
- 	};
- };
- 
-+&i2c13 {
-+	status = "okay";
-+	// Debug Card
-+	multi-master;
-+	ipmb13 at 10 {
-+		compatible = "ipmb-dev";
-+		reg = <(0x10 | I2C_OWN_SLAVE_ADDRESS)>;
-+		i2c-protocol;
-+	};
-+};
-+
- &pwm_tacho {
- 	status = "okay";
- 	//FSC
+Patch #2 enables mac3 controller in Elbert dts: Elbert mac3 is connected
+to the onboard switch BCM53134P's IMP_RGMII port directly (no PHY
+between BMC MAC and BCM53134P).
+
+Tao Ren (2):
+  net: ftgmac100: support fixed link
+  ARM: dts: aspeed: elbert: Enable mac3 controller
+
+ .../boot/dts/aspeed-bmc-facebook-elbert.dts   | 20 ++++++++++++++++
+ drivers/net/ethernet/faraday/ftgmac100.c      | 24 +++++++++++++++++++
+ 2 files changed, 44 insertions(+)
+
 -- 
-2.17.1
+2.37.3
 
