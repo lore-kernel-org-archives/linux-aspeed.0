@@ -1,62 +1,61 @@
-From: rentao.bupt@gmail.com <rentao.bupt@gmail.com>
-Date: Mon,  5 Sep 2022 23:20:26 -0700
-Subject: [PATCH net-next v2 2/2] ARM: dts: aspeed: elbert: Enable mac3 controller
-In-Reply-To: <20220906062026.57169-1-rentao.bupt@gmail.com>
-References: <20220906062026.57169-1-rentao.bupt@gmail.com>
-Message-ID: <20220906062026.57169-3-rentao.bupt@gmail.com>
+From: Tao Ren <rentao.bupt@gmail.com>
+Date: Mon, 5 Sep 2022 23:27:42 -0700
+Subject: [PATCH v1] Update for Facebook yosemite V2 BMC.
+In-Reply-To: <20220906050702.GA10565@hcl-ThinkPad-T495>
+References: <20220906050702.GA10565@hcl-ThinkPad-T495>
+Message-ID: <YxboXspF+0Y/+spD@taoren-fedora-PC23YAB4>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Tao Ren <rentao.bupt@gmail.com>
+Hi Karthikeyan,
 
-Enable mac3 controller in Elbert dts: Elbert MAC3 is connected to the
-BCM53134P onboard switch's IMP_RGMII port directly (fixed link, no PHY
-between BMC MAC and BCM53134P).
+I don't have much experience with ipmb-dev, but I'd suggest updating the
+patch tile so it's consistent with other dts patches. For example:
 
-Note: BMC's mdio0 controller is connected to BCM53134P's MDIO interface
-for debugging purposes only: BCM53134P always loads configurations from
-its EEPROM, and users should not configure the switch via the MDIO
-interface. As a result, the MDIO connection is disabled in dts.
+"ARM: dts: aspeed: yosemitev2: Enable i2c13 controller"
 
-Signed-off-by: Tao Ren <rentao.bupt@gmail.com>
----
- Changes in v2:
-  - updated comments and patch description.
 
- .../boot/dts/aspeed-bmc-facebook-elbert.dts   | 20 +++++++++++++++++++
- 1 file changed, 20 insertions(+)
+Cheers,
 
-diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-elbert.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-elbert.dts
-index 27b43fe099f1..36657d8fdb73 100644
---- a/arch/arm/boot/dts/aspeed-bmc-facebook-elbert.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-facebook-elbert.dts
-@@ -183,3 +183,23 @@ imux31: i2c at 7 {
- &i2c11 {
- 	status = "okay";
- };
-+
-+/*
-+ * BMC's "mac3" is connected to BCM53134P's IMP_RGMII port directly (no
-+ * PHY in between).
-+ * Although BMC's "mdio0" controller is connected to BCM53134P's MDIO
-+ * interface, it's only for debugging purposes: BCM53134P always loads
-+ * configurations from its EEPROM, and users should not configure the
-+ * switch through MDIO interface in regular operations. As a result,
-+ * the MDIO connection is disabled in dts.
-+ */
-+&mac3 {
-+	status = "okay";
-+	phy-mode = "rgmii";
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pinctrl_rgmii4_default>;
-+	fixed-link {
-+		speed = <1000>;
-+		full-duplex;
-+	};
-+};
--- 
-2.37.3
+- Tao
 
+On Tue, Sep 06, 2022 at 10:37:02AM +0530, Karthikeyan Pasupathi wrote:
+> Added IPMB-13 channel for Debug Card communication.
+> 
+> ---
+> --- v1 - Initial draft.
+> ---
+> 
+> Signed-off-by: Karthikeyan Pasupathi <pkarthikeyan1509@gmail.com>
+> ---
+>  arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts | 11 +++++++++++
+>  1 file changed, 11 insertions(+)
+> 
+> diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts
+> index 8864e9c312a8..84236df522dc 100644
+> --- a/arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts
+> +++ b/arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts
+> @@ -215,6 +215,17 @@
+>  	};
+>  };
+>  
+> +&i2c13 {
+> +	status = "okay";
+> +	// Debug Card
+> +	multi-master;
+> +	ipmb13 at 10 {
+> +		compatible = "ipmb-dev";
+> +		reg = <(0x10 | I2C_OWN_SLAVE_ADDRESS)>;
+> +		i2c-protocol;
+> +	};
+> +};
+> +
+>  &pwm_tacho {
+>  	status = "okay";
+>  	//FSC
+> -- 
+> 2.17.1
+> 
