@@ -1,67 +1,72 @@
-From: Tao Ren <rentao.bupt@gmail.com>
-Date: Mon, 5 Sep 2022 18:41:33 -0700
-Subject: [PATCH net-next 2/2] ARM: dts: aspeed: elbert: Enable mac3
- controller
-In-Reply-To: <YxaS2mS5vwW4HuqL@lunn.ch>
-References: <20220905235634.20957-1-rentao.bupt@gmail.com>
- <20220905235634.20957-3-rentao.bupt@gmail.com>
- <YxaS2mS5vwW4HuqL@lunn.ch>
-Message-ID: <YxalTToannPyLQpI@taoren-fedora-PC23YAB4>
+From: Neal Liu <neal_liu@aspeedtech.com>
+Date: Tue, 6 Sep 2022 02:21:20 +0000
+Subject: [PATCH v2] crypto: aspeed: fix build module error
+In-Reply-To: <YxXXuyNrQIcMZBLI@gondor.apana.org.au>
+References: <20220905025433.1610696-1-neal_liu@aspeedtech.com>
+ <YxXXuyNrQIcMZBLI@gondor.apana.org.au>
+Message-ID: <HK0PR06MB3202F47019416BA40859C7D4807E9@HK0PR06MB3202.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Andrew,
-
-On Tue, Sep 06, 2022 at 02:22:50AM +0200, Andrew Lunn wrote:
-> On Mon, Sep 05, 2022 at 04:56:34PM -0700, rentao.bupt at gmail.com wrote:
-> > From: Tao Ren <rentao.bupt@gmail.com>
-> > 
-> > Enable mac3 controller in Elbert dts: Elbert MAC3 is connected to the
-> > onboard switch directly (fixed link).
+> -----Original Message-----
+> From: Herbert Xu <herbert@gondor.apana.org.au>
+> Sent: Monday, September 5, 2022 7:04 PM
+> To: Neal Liu <neal_liu@aspeedtech.com>
+> Cc: David S . Miller <davem@davemloft.net>; Joel Stanley <joel@jms.id.au>;
+> Andrew Jeffery <andrew@aj.id.au>; linux-aspeed at lists.ozlabs.org;
+> linux-crypto at vger.kernel.org; linux-arm-kernel at lists.infradead.org;
+> linux-kernel at vger.kernel.org; BMC-SW <BMC-SW@aspeedtech.com>; kernel
+> test robot <lkp@intel.com>; Sudip Mukherjee
+> <sudipm.mukherjee@gmail.com>
+> Subject: Re: [PATCH v2] crypto: aspeed: fix build module error
 > 
-> What is the switch? Could you also add a DT node for it?
-> 
-> > 
-> > Signed-off-by: Tao Ren <rentao.bupt@gmail.com>
-> > ---
-> >  arch/arm/boot/dts/aspeed-bmc-facebook-elbert.dts | 11 +++++++++++
-> >  1 file changed, 11 insertions(+)
-> > 
-> > diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-elbert.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-elbert.dts
-> > index 27b43fe099f1..52cb617783ac 100644
-> > --- a/arch/arm/boot/dts/aspeed-bmc-facebook-elbert.dts
-> > +++ b/arch/arm/boot/dts/aspeed-bmc-facebook-elbert.dts
-> > @@ -183,3 +183,14 @@ imux31: i2c at 7 {
-> >  &i2c11 {
-> >  	status = "okay";
-> >  };
+> On Mon, Sep 05, 2022 at 10:54:33AM +0800, Neal Liu wrote:
+> >
+> > diff --git a/drivers/crypto/aspeed/Makefile
+> > b/drivers/crypto/aspeed/Makefile index 421e2ca9c53e..3be78cec0ecb
+> > 100644
+> > --- a/drivers/crypto/aspeed/Makefile
+> > +++ b/drivers/crypto/aspeed/Makefile
+> > @@ -1,9 +1,6 @@
+> > +hace-hash-$(CONFIG_CRYPTO_DEV_ASPEED_HACE_HASH) := aspeed-hace.o
+> > +aspeed-hace-hash.o
+> > +hace-crypto-$(CONFIG_CRYPTO_DEV_ASPEED_HACE_CRYPTO) :=
+> aspeed-hace.o
+> > +aspeed-hace-crypto.o
 > > +
-> > +&mac3 {
-> > +	status = "okay";
-> > +	phy-mode = "rgmii";
+> >  obj-$(CONFIG_CRYPTO_DEV_ASPEED) += aspeed_crypto.o
+> > -aspeed_crypto-objs := aspeed-hace.o	\
+> > -		      $(hace-hash-y)	\
+> > +aspeed_crypto-objs := $(hace-hash-y)	\
+> >  		      $(hace-crypto-y)
 > 
-> 'rgmii' is suspicious, though not necessarily wrong. This value is
-> normally passed to the PHY, so the PHY inserts the RGMII delay. You
-> however don't have a PHY. So i assume the switch is inserting the
-> delay? Again, being able to see the DT properties for the switch would
-> be useful.
+> Does this still build if both HASH and CRYPTO are off?
 > 
->    Andrew
+> I think this it's best if you do:
+> 
+> hace-hash-$(CONFIG_CRYPTO_DEV_ASPEED_HACE_HASH) :=
+> aspeed-hace-hash.o
+> hace-crypto-$(CONFIG_CRYPTO_DEV_ASPEED_HACE_CRYPTO) :=
+> aspeed-hace-crypto.o
+> 
+> obj-$(CONFIG_CRYPTO_DEV_ASPEED) += aspeed_crypto.o
+> aspeed_crypto-objs := aspeed-hace.o	\
+> 		      $(hace-hash-y)	\
+> 		      $(hace-crypto-y)
+> 
 
-Thank you for the quick review!
+aspeed-hace.o effects only if either hace-hash-y or hace-crypto-y.
+If we put aspeed-hace.o in aspeed_crypto-objs, but hace-hash-y and hace-crypto-y are empty, apseed-hace.o is just an useless driver which might still occupy system resources.
 
-The BMC mac3 is connected to BCM53134P's IMP_RGMII port, and there is no
-PHY between BMC MAC and BCM53134P. BCM53134P loads configurations from
-its EEPROM when the chip is powered.
+For this patch, you're right it would still build if both HASH & CRYPTO are off. But no driver would be run up.
+That's why I revise it from your suggestion to this patch.
+Thanks.
 
-Could you please point me an example showing how to describe the switch in
-dts? Anyhow I will need to improve the patch description and comments in
-v2.
-
-
-Thanks,
-
-- Tao
+> Thanks,
+> --
+> Email: Herbert Xu <herbert@gondor.apana.org.au> Home Page:
+> http://gondor.apana.org.au/~herbert/
+> PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
