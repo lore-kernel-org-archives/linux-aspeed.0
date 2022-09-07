@@ -1,35 +1,50 @@
-From: Herbert Xu <herbert@gondor.apana.org.au>
-Date: Wed, 7 Sep 2022 14:12:37 +0800
-Subject: [PATCH v3] crypto: aspeed: fix format unexpected build warning
-In-Reply-To: <20220907033431.402208-1-neal_liu@aspeedtech.com>
-References: <20220907033431.402208-1-neal_liu@aspeedtech.com>
-Message-ID: <Yxg2VSC2ud/lgjik@gondor.apana.org.au>
+From: Karthikeyan Pasupathi <pkarthikeyan1509@gmail.com>
+Date: Wed, 7 Sep 2022 18:08:10 +0530
+Subject: [PATCH v2] ARM: dts: aspeed: yosemitev2: Enable i2c13 controller
+Message-ID: <20220907123810.GA27621@hcl-ThinkPad-T495>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Sep 07, 2022 at 11:34:31AM +0800, Neal Liu wrote:
-> This fixes the following similar build warning when
-> enabling compile test:
-> 
-> aspeed-hace-hash.c:188:9: warning: format '%x' expects argument of type
-> 'unsigned int', but argument 7 has type 'size_t' {aka 'long unsigned int'}
-> [-Wformat=]
-> 
-> Reported-by: kernel test robot <lkp@intel.com>
-> Signed-off-by: Neal Liu <neal_liu@aspeedtech.com>
-> Acked-by: Randy Dunlap <rdunlap@infradead.org>
-> ---
-> v3: Use "%pad" to print dma_addr_t type.
-> v2: Use "%zu" format to print size_t.
-> 
->  drivers/crypto/aspeed/aspeed-hace-hash.c | 6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
+Added IPMB-13 channel for Debug Card communication.
 
-Patch applied.  Thanks.
+---
+--- v2-Updated the title
+---
+
+---
+--- v1 - Initial draft.
+---
+
+Signed-off-by: Karthikeyan Pasupathi <pkarthikeyan1509@gmail.com>
+---
+ arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts
+index 8864e9c312a8..84236df522dc 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts
+@@ -215,6 +215,17 @@
+ 	};
+ };
+ 
++&i2c13 {
++	status = "okay";
++	// Debug Card
++	multi-master;
++	ipmb13 at 10 {
++		compatible = "ipmb-dev";
++		reg = <(0x10 | I2C_OWN_SLAVE_ADDRESS)>;
++		i2c-protocol;
++	};
++};
++
+ &pwm_tacho {
+ 	status = "okay";
+ 	//FSC
 -- 
-Email: Herbert Xu <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+2.17.1
+
