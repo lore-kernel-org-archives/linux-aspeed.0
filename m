@@ -1,47 +1,30 @@
-From: Karthikeyan Pasupathi <pkarthikeyan1509@gmail.com>
-Date: Wed, 7 Sep 2022 18:20:35 +0530
-Subject: [PATCH v2] ARM: dts: aspeed: yosemit V2: Update for Facebook
- Yosemite V2 BMC
-Message-ID: <20220907125035.GA28461@hcl-ThinkPad-T495>
+From: Andrew Lunn <andrew@lunn.ch>
+Date: Wed, 7 Sep 2022 20:31:24 +0200
+Subject: [PATCH net-next v3 2/2] ARM: dts: aspeed: elbert: Enable mac3
+ controller
+In-Reply-To: <20220907054453.20016-3-rentao.bupt@gmail.com>
+References: <20220907054453.20016-1-rentao.bupt@gmail.com>
+ <20220907054453.20016-3-rentao.bupt@gmail.com>
+Message-ID: <YxjjfELmf7XIVH7k@lunn.ch>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Removed NIC EEPROM driver IPMB-12 channel and keeping it as
-"status ok".
+On Tue, Sep 06, 2022 at 10:44:53PM -0700, rentao.bupt at gmail.com wrote:
+> From: Tao Ren <rentao.bupt@gmail.com>
+> 
+> Enable mac3 controller in Elbert dts: Elbert MAC3 is connected to the
+> BCM53134P onboard switch's IMP_RGMII port directly (fixed link, no PHY
+> between BMC MAC and BCM53134P).
+> 
+> Note: BMC's mdio0 controller is connected to BCM53134P's MDIO interface,
+> and the MDIO channel will be enabled later, when BCM53134 is added to
+> "bcm53xx" DSA driver.
+> 
+> Signed-off-by: Tao Ren <rentao.bupt@gmail.com>
 
----
---- v2- Updated the title
----
+Reviewed-by: Andrew Lunn <andrew@lunn.ch>
 
----
---- v1- Initial draft
----
-
-Signed-off-by: Karthikeyan Pasupathi <pkarthikeyan1509@gmail.com>
----
- arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts | 6 ------
- 1 file changed, 6 deletions(-)
-
-diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts
-index 8864e9c312a8..2293f10e94d6 100644
---- a/arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts
-@@ -207,12 +207,6 @@
- 
- &i2c12 {
- 	status = "okay";
--	//MEZZ_FRU
--	eeprom at 51 {
--		compatible = "atmel,24c64";
--		reg = <0x51>;
--		pagesize = <32>;
--	};
- };
- 
- &pwm_tacho {
--- 
-2.17.1
-
+    Andrew
