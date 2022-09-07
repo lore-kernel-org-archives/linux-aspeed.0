@@ -1,54 +1,75 @@
-From: Neal Liu <neal_liu@aspeedtech.com>
-Date: Wed, 7 Sep 2022 11:34:31 +0800
-Subject: [PATCH v3] crypto: aspeed: fix format unexpected build warning
-Message-ID: <20220907033431.402208-1-neal_liu@aspeedtech.com>
+From: rentao.bupt@gmail.com <rentao.bupt@gmail.com>
+Date: Tue,  6 Sep 2022 22:44:52 -0700
+Subject: [PATCH net-next v3 1/2] net: ftgmac100: support fixed link
+In-Reply-To: <20220907054453.20016-1-rentao.bupt@gmail.com>
+References: <20220907054453.20016-1-rentao.bupt@gmail.com>
+Message-ID: <20220907054453.20016-2-rentao.bupt@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This fixes the following similar build warning when
-enabling compile test:
+From: Tao Ren <rentao.bupt@gmail.com>
 
-aspeed-hace-hash.c:188:9: warning: format '%x' expects argument of type
-'unsigned int', but argument 7 has type 'size_t' {aka 'long unsigned int'}
-[-Wformat=]
+Support fixed link in ftgmac100 driver. Fixed link is used on several
+Meta OpenBMC platforms, such as Elbert (AST2620) and Wedge400 (AST2520).
 
-Reported-by: kernel test robot <lkp@intel.com>
-Signed-off-by: Neal Liu <neal_liu@aspeedtech.com>
-Acked-by: Randy Dunlap <rdunlap@infradead.org>
+Signed-off-by: Tao Ren <rentao.bupt@gmail.com>
+Reviewed-by: Andrew Lunn <andrew@lunn.ch>
 ---
-v3: Use "%pad" to print dma_addr_t type.
-v2: Use "%zu" format to print size_t.
+ Changes in v3: None
+ Changes in v2: None
 
- drivers/crypto/aspeed/aspeed-hace-hash.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/faraday/ftgmac100.c | 24 ++++++++++++++++++++++++
+ 1 file changed, 24 insertions(+)
 
-diff --git a/drivers/crypto/aspeed/aspeed-hace-hash.c b/drivers/crypto/aspeed/aspeed-hace-hash.c
-index 0a44ffc0e13b..5a8a3a611dd4 100644
---- a/drivers/crypto/aspeed/aspeed-hace-hash.c
-+++ b/drivers/crypto/aspeed/aspeed-hace-hash.c
-@@ -185,7 +185,7 @@ static int aspeed_ahash_dma_prepare_sg(struct aspeed_hace_dev *hace_dev)
- 	remain = (rctx->total + rctx->bufcnt) % rctx->block_size;
- 	length = rctx->total + rctx->bufcnt - remain;
+diff --git a/drivers/net/ethernet/faraday/ftgmac100.c b/drivers/net/ethernet/faraday/ftgmac100.c
+index 9277d5fb5052..da04beee5865 100644
+--- a/drivers/net/ethernet/faraday/ftgmac100.c
++++ b/drivers/net/ethernet/faraday/ftgmac100.c
+@@ -1701,10 +1701,14 @@ static int ftgmac100_setup_mdio(struct net_device *netdev)
  
--	AHASH_DBG(hace_dev, "%s:0x%x, %s:0x%x, %s:0x%x, %s:0x%x\n",
-+	AHASH_DBG(hace_dev, "%s:0x%x, %s:%zu, %s:0x%x, %s:0x%x\n",
- 		  "rctx total", rctx->total, "bufcnt", rctx->bufcnt,
- 		  "length", length, "remain", remain);
+ static void ftgmac100_phy_disconnect(struct net_device *netdev)
+ {
++	struct ftgmac100 *priv = netdev_priv(netdev);
++
+ 	if (!netdev->phydev)
+ 		return;
  
-@@ -324,8 +324,8 @@ static int aspeed_hace_ahash_trigger(struct aspeed_hace_dev *hace_dev,
- 	struct ahash_request *req = hash_engine->req;
- 	struct aspeed_sham_reqctx *rctx = ahash_request_ctx(req);
+ 	phy_disconnect(netdev->phydev);
++	if (of_phy_is_fixed_link(priv->dev->of_node))
++		of_phy_deregister_fixed_link(priv->dev->of_node);
+ }
  
--	AHASH_DBG(hace_dev, "src_dma:0x%x, digest_dma:0x%x, length:0x%x\n",
--		  hash_engine->src_dma, hash_engine->digest_dma,
-+	AHASH_DBG(hace_dev, "src_dma:%pad, digest_dma:%pad, length:%zu\n",
-+		  &hash_engine->src_dma, &hash_engine->digest_dma,
- 		  hash_engine->src_length);
+ static void ftgmac100_destroy_mdio(struct net_device *netdev)
+@@ -1867,6 +1871,26 @@ static int ftgmac100_probe(struct platform_device *pdev)
+ 			err = -EINVAL;
+ 			goto err_phy_connect;
+ 		}
++	} else if (np && of_phy_is_fixed_link(np)) {
++		struct phy_device *phy;
++
++		err = of_phy_register_fixed_link(np);
++		if (err) {
++			dev_err(&pdev->dev, "Failed to register fixed PHY\n");
++			goto err_phy_connect;
++		}
++
++		phy = of_phy_get_and_connect(priv->netdev, np,
++					     &ftgmac100_adjust_link);
++		if (!phy) {
++			dev_err(&pdev->dev, "Failed to connect to fixed PHY\n");
++			of_phy_deregister_fixed_link(np);
++			err = -EINVAL;
++			goto err_phy_connect;
++		}
++
++		/* Display what we found */
++		phy_attached_info(phy);
+ 	} else if (np && of_get_property(np, "phy-handle", NULL)) {
+ 		struct phy_device *phy;
  
- 	rctx->cmd |= HASH_CMD_INT_ENABLE;
 -- 
-2.25.1
+2.37.3
 
