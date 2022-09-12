@@ -1,58 +1,55 @@
 From: Patrick Williams <patrick@stwcx.xyz>
-Date: Mon, 12 Sep 2022 17:33:16 -0500
-Subject: [PATCH v2] ARM: dts: aspeed: yosemitev2: Enable i2c13 controller
-In-Reply-To: <20220907123810.GA27621@hcl-ThinkPad-T495>
-References: <20220907123810.GA27621@hcl-ThinkPad-T495>
-Message-ID: <Yx+zrEViePskgaWq@heinlein.stwcx.org.github.beta.tailscale.net>
+Date: Mon, 12 Sep 2022 17:32:00 -0500
+Subject: [PATCH v2] ARM: dts: aspeed: yosemit V2: Update for Facebook
+ Yosemite V2 BMC
+In-Reply-To: <20220907125035.GA28461@hcl-ThinkPad-T495>
+References: <20220907125035.GA28461@hcl-ThinkPad-T495>
+Message-ID: <Yx+zYP5qTuDrjP10@heinlein.stwcx.org.github.beta.tailscale.net>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Sep 07, 2022 at 06:08:10PM +0530, Karthikeyan Pasupathi wrote:
-> Added IPMB-13 channel for Debug Card communication.
+On Wed, Sep 07, 2022 at 06:20:35PM +0530, Karthikeyan Pasupathi wrote:
 
-Wouldn't this be better to be the title?  'enable OCP debug card'  Might
-need some reference to what an "OCP debug card" is in the commit
+Please improve the title and commit message here.  "Update" is
+insufficient for a title.  There is no description of _why_ in the commit
 message.
 
+> Removed NIC EEPROM driver IPMB-12 channel and keeping it as
+> "status ok".
 > 
 > ---
-> --- v2-Updated the title
+> --- v2- Updated the title
 > ---
 > 
 > ---
-> --- v1 - Initial draft.
+> --- v1- Initial draft
 > ---
 > 
 > Signed-off-by: Karthikeyan Pasupathi <pkarthikeyan1509@gmail.com>
 > ---
->  arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts | 11 +++++++++++
->  1 file changed, 11 insertions(+)
+>  arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts | 6 ------
+>  1 file changed, 6 deletions(-)
 > 
 > diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts
-> index 8864e9c312a8..84236df522dc 100644
+> index 8864e9c312a8..2293f10e94d6 100644
 > --- a/arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts
 > +++ b/arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts
-> @@ -215,6 +215,17 @@
->  	};
+> @@ -207,12 +207,6 @@
+>  
+>  &i2c12 {
+>  	status = "okay";
+> -	//MEZZ_FRU
+> -	eeprom at 51 {
+> -		compatible = "atmel,24c64";
+> -		reg = <0x51>;
+> -		pagesize = <32>;
+> -	};
 >  };
 >  
-> +&i2c13 {
-> +	status = "okay";
-> +	// Debug Card
-> +	multi-master;
-> +	ipmb13 at 10 {
-> +		compatible = "ipmb-dev";
-> +		reg = <(0x10 | I2C_OWN_SLAVE_ADDRESS)>;
-> +		i2c-protocol;
-> +	};
-> +};
-> +
 >  &pwm_tacho {
->  	status = "okay";
->  	//FSC
 > -- 
 > 2.17.1
 > 
@@ -65,4 +62,4 @@ Name: signature.asc
 Type: application/pgp-signature
 Size: 833 bytes
 Desc: not available
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20220912/18ab87d7/attachment.sig>
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20220912/7e2f7d29/attachment.sig>
