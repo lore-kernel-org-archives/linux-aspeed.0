@@ -1,34 +1,30 @@
-From: Tudor.Ambarus@microchip.com <Tudor.Ambarus@microchip.com>
-Date: Mon, 12 Sep 2022 10:58:10 +0000
+From: Mark Brown <broonie@kernel.org>
+Date: Mon, 12 Sep 2022 12:52:41 +0100
 Subject: [PATCH] spi: Replace `dummy.nbytes` with `dummy.ncycles`
-In-Reply-To: <2c44a497-b489-7519-e922-4ec79eb7617d@foss.st.com>
+In-Reply-To: <20220911174551.653599-1-sergiu.moga@microchip.com>
 References: <20220911174551.653599-1-sergiu.moga@microchip.com>
- <2c44a497-b489-7519-e922-4ec79eb7617d@foss.st.com>
-Message-ID: <118c2b49-fefd-7de6-5b0f-9ae4064c7b56@microchip.com>
+Message-ID: <Yx8didL1aFc4XxGa@sirena.org.uk>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 9/12/22 12:44, Patrice CHOTARD wrote:
+On Sun, Sep 11, 2022 at 08:45:53PM +0300, Sergiu Moga wrote:
+> In order to properly represent the hardware functionality
+> in the core, avoid reconverting the number of dummy cycles
+> to the number of bytes and only work with the former.
+> Instead, let the drivers that do need this conversion do
+> it themselves.
 
-Hi!
+Acked-by: Mark Brown <broonie@kernel.org>
 
->> -             /* 2 bytes per clock cycle in DTR mode. */
->> -             op->dummy.nbytes *= 2;
->> -
-> What is the benefit to remove dtr dummy.nbytes computation ? it leads to spray it in all drivers which support DTR.
-> It was simpler to let the framework to deal with it, have i missed something ?
-
-The majority of drivers from SPI need the number of cycles, not the number
-of bytes. JESD216 refers to dummy ncycles as well, there's no such thing as
-dummy nbytes. You'll notice that these drivers do the computation back to
-ncycles in their driver, thus they undo what's prepared in SPI NOR. There
-are just 4 drivers that use nbytes and rely on what's currently computed in
-SPI NOR. Since these 4 drivers don't use the standard parameter and require
-nbytes instead, they can do the conversion to nbytes in their driver.
-
--- 
-Cheers,
-ta
+If this gets applied it might be good to have a tag in case we
+need it for any SPI updates.
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 488 bytes
+Desc: not available
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20220912/41a68ef6/attachment-0001.sig>
