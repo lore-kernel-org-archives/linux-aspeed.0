@@ -1,65 +1,56 @@
-From: Patrick Williams <patrick@stwcx.xyz>
-Date: Mon, 12 Sep 2022 17:32:00 -0500
-Subject: [PATCH v2] ARM: dts: aspeed: yosemit V2: Update for Facebook
- Yosemite V2 BMC
-In-Reply-To: <20220907125035.GA28461@hcl-ThinkPad-T495>
-References: <20220907125035.GA28461@hcl-ThinkPad-T495>
-Message-ID: <Yx+zYP5qTuDrjP10@heinlein.stwcx.org.github.beta.tailscale.net>
+From: Quan Nguyen <quan@os.amperecomputing.com>
+Date: Tue, 13 Sep 2022 14:42:14 +0700
+Subject: [PATCH v3 2/2] ARM: dts: aspeed: Add device tree for Ampere's Mt.
+ Mitchell BMC
+In-Reply-To: <396a3c24-2a86-0d1c-07f9-386a0de1d473@os.amperecomputing.com>
+References: <20220817071539.176110-1-quan@os.amperecomputing.com>
+ <20220817071539.176110-3-quan@os.amperecomputing.com>
+ <CACPK8XdDpG3ONM1=-E6qvHL1FgMNWSMPoL_sVGJK6BmmnT3w_w@mail.gmail.com>
+ <CAK8P3a2LZKfZpdTQ-R4o9mJ6dk52VRF+Bxj=PJEx-1MA4yH8+w@mail.gmail.com>
+ <673e200f-f458-7866-f956-3d5bd7160a49@os.amperecomputing.com>
+ <CAK8P3a3MU7shuBpcpRNC5L6xxQmSy8FXCX1jvYXhv-NT3PMYOw@mail.gmail.com>
+ <396a3c24-2a86-0d1c-07f9-386a0de1d473@os.amperecomputing.com>
+Message-ID: <b34ab4d0-c14f-caeb-afde-01655b35a236@os.amperecomputing.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Sep 07, 2022 at 06:20:35PM +0530, Karthikeyan Pasupathi wrote:
+Hi,
 
-Please improve the title and commit message here.  "Update" is
-insufficient for a title.  There is no description of _why_ in the commit
-message.
+Just a gentle ping on the patch.
 
-> Removed NIC EEPROM driver IPMB-12 channel and keeping it as
-> "status ok".
-> 
-> ---
-> --- v2- Updated the title
-> ---
-> 
-> ---
-> --- v1- Initial draft
-> ---
-> 
-> Signed-off-by: Karthikeyan Pasupathi <pkarthikeyan1509@gmail.com>
-> ---
->  arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts | 6 ------
->  1 file changed, 6 deletions(-)
-> 
-> diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts
-> index 8864e9c312a8..2293f10e94d6 100644
-> --- a/arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts
-> +++ b/arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts
-> @@ -207,12 +207,6 @@
->  
->  &i2c12 {
->  	status = "okay";
-> -	//MEZZ_FRU
-> -	eeprom at 51 {
-> -		compatible = "atmel,24c64";
-> -		reg = <0x51>;
-> -		pagesize = <32>;
-> -	};
->  };
->  
->  &pwm_tacho {
-> -- 
-> 2.17.1
-> 
+Thanks and best regards,
+- Quan
 
--- 
-Patrick Williams
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 833 bytes
-Desc: not available
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20220912/7e2f7d29/attachment.sig>
+On 05/09/2022 16:45, Quan Nguyen wrote:
+> 
+> 
+> On 25/08/2022 19:35, Arnd Bergmann wrote:
+>> On Tue, Aug 23, 2022 at 10:27 AM Quan Nguyen
+>> <quan@os.amperecomputing.com> wrote:
+>>> On 18/08/2022 19:06, Arnd Bergmann wrote:
+>>>
+>>> Thanks Arnd for the comment.
+>>>
+>>> I think adding -append could solve the issue.
+>>>
+>>> But as the bootargs still exist in all other
+>>> arch/arm/boot/dts/aspeed-bmc-*.dts should we still keep bootargs for
+>>> this dts?
+>>
+>> I think it should still be removed. Only 238 of 2547 set the console 
+>> using
+>> bootargs, so that would make it more consistent with the other files.
+>>
+>> Changing the files that have the same issue is a separate matter.
+>>
+> 
+> Hi Joel,
+> 
+> In the meantime, I'm just wonder if you could help to test the patch 
+> with -append and get it merged.
+> 
+> Thank you and best regards,
+> - Quan
