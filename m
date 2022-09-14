@@ -1,58 +1,44 @@
 From: Karthikeyan Pasupathi <pkarthikeyan1509@gmail.com>
-Date: Wed, 14 Sep 2022 15:22:07 +0530
-Subject: [PATCH v3] ARM: dts: aspeed: yosemit V2: Enable OCP debug card
-Message-ID: <20220914095207.GA24690@hcl-ThinkPad-T495>
+Date: Wed, 14 Sep 2022 17:23:07 +0530
+Subject: [PATCH v3] ARM: dts: aspeed: yosemit V2: Disable the EEPROM driver
+Message-ID: <20220914115307.GA339@hcl-ThinkPad-T495>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Added IPMB-13 channel for Debug Card communication.
-which improve the readability of the machine and makes
-easier to debug the server.  and it will display the some
-informations about the server like "system info",
-"Critical sensors" and "critical sel".
+Removed NIC EEPROM driver IPMB-12 channel and enabled it as
+generic i2c EEPROM.
 
 ---
---- v3- 2- Updated the title and commit
----
-
----
+--- v3- Updated the title and commit
 --- v2- Updated the title
----
-
----
 --- v1- Initial draft
 ---
 
 Signed-off-by: Karthikeyan Pasupathi <pkarthikeyan1509@gmail.com>
 ---
- arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts | 11 +++++++++++
- 1 file changed, 11 insertions(+)
+ arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts | 6 ------
+ 1 file changed, 6 deletions(-)
 
 diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts
-index 8864e9c312a8..df29072b3d1b 100644
+index 8864e9c312a8..2293f10e94d6 100644
 --- a/arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts
 +++ b/arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts
-@@ -215,6 +215,17 @@
- 	};
+@@ -207,12 +207,6 @@
+ 
+ &i2c12 {
+ 	status = "okay";
+-	//MEZZ_FRU
+-	eeprom at 51 {
+-		compatible = "atmel,24c64";
+-		reg = <0x51>;
+-		pagesize = <32>;
+-	};
  };
  
-+&i2c13 {
-+	status = "okay";
-+	// Debug Card
-+	multi-master;
-+	ipmb13 at 10 {
-+		compatible = "ipmb-dev";
-+		reg = <(0x10 | I2C_OWN_SLAVE_ADDRESS)>;
-+		i2c-protocol;
-+};
-+};
-+
  &pwm_tacho {
- 	status = "okay";
- 	//FSC
 -- 
 2.17.1
 
