@@ -1,48 +1,73 @@
 From: Neal Liu <neal_liu@aspeedtech.com>
-Date: Mon, 19 Sep 2022 06:36:36 +0000
-Subject: [PATCH v2] crypto: aspeed: fix build module error
-In-Reply-To: <4dc8b1a8-d7ef-844d-b48e-76fb8b91d96a@linux.microsoft.com>
-References: <20220905025433.1610696-1-neal_liu@aspeedtech.com>
- <YxXXuyNrQIcMZBLI@gondor.apana.org.au>
- <HK0PR06MB3202F47019416BA40859C7D4807E9@HK0PR06MB3202.apcprd06.prod.outlook.com>
- <YyRS/71B4veWJgyl@gondor.apana.org.au>
- <4dc8b1a8-d7ef-844d-b48e-76fb8b91d96a@linux.microsoft.com>
-Message-ID: <HK0PR06MB3202E093BABA938058D5D6FC804D9@HK0PR06MB3202.apcprd06.prod.outlook.com>
+Date: Mon, 19 Sep 2022 14:37:05 +0800
+Subject: [PATCH] crypto: aspeed: fix build error when only CRYPTO_DEV_ASPEED is enabled
+Message-ID: <20220919063705.358225-1-neal_liu@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-> >>> Does this still build if both HASH and CRYPTO are off?
-> >>>
-> >>> I think this it's best if you do:
-> >>>
-> >>> hace-hash-$(CONFIG_CRYPTO_DEV_ASPEED_HACE_HASH) :=
-> >>> aspeed-hace-hash.o
-> >>> hace-crypto-$(CONFIG_CRYPTO_DEV_ASPEED_HACE_CRYPTO) :=
-> >>> aspeed-hace-crypto.o
-> >>>
-> >>> obj-$(CONFIG_CRYPTO_DEV_ASPEED) += aspeed_crypto.o
-> >>> aspeed_crypto-objs := aspeed-hace.o	\
-> >>> 		      $(hace-hash-y)	\
-> >>> 		      $(hace-crypto-y)
-> >>>
-> >> aspeed-hace.o effects only if either hace-hash-y or hace-crypto-y.
-> >> If we put aspeed-hace.o in aspeed_crypto-objs, but hace-hash-y and
-> hace-crypto-y are empty, apseed-hace.o is just an useless driver which might
-> still occupy system resources.
-> > Apparently it doesn't build after all, at least not on m68k.
-> >
-> > So please either adopt my suggestion above, or come up with another
-> > way of preventing the build failure on m68k with both HASH and CRYPTO
-> > disabled.
-> 
-> Curious why compiled on m68k? It's embedded controller in ARM based
-> Aspeed SoCs. And there's "depends on ARCH_ASPEED" in Kconfig, need some
-> additional dependencies?
+Fix build error within the following configs setting:
+- CONFIG_CRYPTO_DEV_ASPEED=y
+- CONFIG_CRYPTO_DEV_ASPEED_HACE_HASH is not set
+- CONFIG_CRYPTO_DEV_ASPEED_HACE_CRYPTO is not set
 
-The reason is because the compile test is enabled.
-Check this:
-https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git/commit/?id=31b39755e32568b43c80814c5e13d7b1ab796d73
+Error messages:
+make[4]: *** No rule to make target 'drivers/crypto/aspeed/aspeed_crypto.o'
+, needed by 'drivers/crypto/aspeed/built-in.a'.
+make[4]: Target '__build' not remade because of errors.
+
+Reported-by: kernel test robot <lkp@intel.com>
+Signed-off-by: Neal Liu <neal_liu@aspeedtech.com>
+---
+ drivers/crypto/aspeed/Kconfig  | 3 +--
+ drivers/crypto/aspeed/Makefile | 7 ++++---
+ 2 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/crypto/aspeed/Kconfig b/drivers/crypto/aspeed/Kconfig
+index ae3eb0eb57f6..ae2710ae8d8f 100644
+--- a/drivers/crypto/aspeed/Kconfig
++++ b/drivers/crypto/aspeed/Kconfig
+@@ -1,6 +1,7 @@
+ config CRYPTO_DEV_ASPEED
+ 	tristate "Support for Aspeed cryptographic engine driver"
+ 	depends on ARCH_ASPEED || COMPILE_TEST
++	select CRYPTO_ENGINE
+ 	help
+ 	  Hash and Crypto Engine (HACE) is designed to accelerate the
+ 	  throughput of hash data digest, encryption and decryption.
+@@ -20,7 +21,6 @@ config CRYPTO_DEV_ASPEED_DEBUG
+ config CRYPTO_DEV_ASPEED_HACE_HASH
+ 	bool "Enable Aspeed Hash & Crypto Engine (HACE) hash"
+ 	depends on CRYPTO_DEV_ASPEED
+-	select CRYPTO_ENGINE
+ 	select CRYPTO_SHA1
+ 	select CRYPTO_SHA256
+ 	select CRYPTO_SHA512
+@@ -34,7 +34,6 @@ config CRYPTO_DEV_ASPEED_HACE_HASH
+ config CRYPTO_DEV_ASPEED_HACE_CRYPTO
+ 	bool "Enable Aspeed Hash & Crypto Engine (HACE) crypto"
+ 	depends on CRYPTO_DEV_ASPEED
+-	select CRYPTO_ENGINE
+ 	select CRYPTO_AES
+ 	select CRYPTO_DES
+ 	select CRYPTO_ECB
+diff --git a/drivers/crypto/aspeed/Makefile b/drivers/crypto/aspeed/Makefile
+index 3be78cec0ecb..a0ed40ddaad1 100644
+--- a/drivers/crypto/aspeed/Makefile
++++ b/drivers/crypto/aspeed/Makefile
+@@ -1,6 +1,7 @@
+-hace-hash-$(CONFIG_CRYPTO_DEV_ASPEED_HACE_HASH) := aspeed-hace.o aspeed-hace-hash.o
+-hace-crypto-$(CONFIG_CRYPTO_DEV_ASPEED_HACE_CRYPTO) := aspeed-hace.o aspeed-hace-crypto.o
++hace-hash-$(CONFIG_CRYPTO_DEV_ASPEED_HACE_HASH) := aspeed-hace-hash.o
++hace-crypto-$(CONFIG_CRYPTO_DEV_ASPEED_HACE_CRYPTO) := aspeed-hace-crypto.o
+ 
+ obj-$(CONFIG_CRYPTO_DEV_ASPEED) += aspeed_crypto.o
+-aspeed_crypto-objs := $(hace-hash-y)	\
++aspeed_crypto-objs := aspeed-hace.o	\
++		      $(hace-hash-y)	\
+ 		      $(hace-crypto-y)
+-- 
+2.25.1
 
