@@ -1,75 +1,50 @@
-From: Joel Stanley <joel@jms.id.au>
-Date: Tue, 27 Sep 2022 12:05:14 +0000
-Subject: [PATCH v6] ARM: dts: aspeed: Yosemite V2: Enable OCP debug card
-In-Reply-To: <20220927114515.GA22344@hcl-ThinkPad-T495>
-References: <20220927114515.GA22344@hcl-ThinkPad-T495>
-Message-ID: <CACPK8XdHaExSzdHpCXNzSEK7L-QDDSkz2rud3OynBC-KhEApFA@mail.gmail.com>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Date: Mon, 19 Sep 2022 10:45:06 +0200
+Subject: [PATCH v2 0/2] Fix console probe delay when stdout-path isn't set
+In-Reply-To: <CAOesGMivJ5Q-jdeGKw32yhjmNiYctHjpEAnoMMRghYqWD2m2tw@mail.gmail.com>
+References: <20220701012647.2007122-1-saravanak@google.com>
+ <YwS5J3effuHQJRZ5@kroah.com>
+ <CAOesGMivJ5Q-jdeGKw32yhjmNiYctHjpEAnoMMRghYqWD2m2tw@mail.gmail.com>
+Message-ID: <YygsEtxKz8dsEstc@kroah.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, 27 Sept 2022 at 11:45, Karthikeyan Pasupathi
-<pkarthikeyan1509@gmail.com> wrote:
->
-> Added IPMB-13 channel for Debug Card communication.
-> which improves the readability of the machine and makes
-> it easier to debug the server and it will display some
-> pieces of information about the server like "system info",
-> "Critical sensors" and "critical sel".
->
-> Signed-off-by: Karthikeyan Pasupathi <pkarthikeyan1509@gmail.com>
+On Sun, Sep 18, 2022 at 08:44:27PM -0700, Olof Johansson wrote:
+> On Tue, Aug 23, 2022 at 8:37 AM Greg Kroah-Hartman
+> <gregkh@linuxfoundation.org> wrote:
+> >
+> > On Thu, Jun 30, 2022 at 06:26:38PM -0700, Saravana Kannan wrote:
+> > > These patches are on top of driver-core-next.
+> > >
+> > > Even if stdout-path isn't set in DT, this patch should take console
+> > > probe times back to how they were before the deferred_probe_timeout
+> > > clean up series[1].
+> >
+> > Now dropped from my queue due to lack of a response to other reviewer's
+> > questions.
+> 
+> What happened to this patch? I have a 10 second timeout on console
+> probe on my SiFive Unmatched, and I don't see this flag being set for
+> the serial driver. In fact, I don't see it anywhere in-tree. I can't
+> seem to locate another patchset from Saravana around this though, so
+> I'm not sure where to look for a missing piece for the sifive serial
+> driver.
+> 
+> This is the second boot time regression (this one not fatal, unlike
+> the Layerscape PCIe one) from the fw_devlink patchset.
+> 
+> Greg, can you revert the whole set for 6.0, please? It's obviously
+> nowhere near tested enough to go in and I expect we'll see a bunch of
+> -stable fixups due to this if we let it remain in.
 
-Thanks, I've queued this.
+What exactly is "the whole set"?  I have the default option fix queued
+up and will send that to Linus later this week (am traveling back from
+Plumbers still), but have not heard any problems about any other issues
+at all other than your report.
 
-Thanks Zev for your help reviewing.
+thnaks,
 
-> ---
-> v6:
->  -Fix the commit format
->
-> v5:
->  -Updated commit message
->
-> v4:
->  -Resolved syntax error
->
-> v3:
->  -Updated the title and commit
->
-> v2:
->  -Updated the title
->
-> v1:
->  - Initial draft
-> ---
-> ---
->  arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts | 11 +++++++++++
->  1 file changed, 11 insertions(+)
->
-> diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts
-> index 8864e9c312a8..84236df522dc 100644
-> --- a/arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts
-> +++ b/arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts
-> @@ -215,6 +215,17 @@
->         };
->  };
->
-> +&i2c13 {
-> +       status = "okay";
-> +       // Debug Card
-> +       multi-master;
-> +       ipmb13 at 10 {
-> +               compatible = "ipmb-dev";
-> +               reg = <(0x10 | I2C_OWN_SLAVE_ADDRESS)>;
-> +               i2c-protocol;
-> +       };
-> +};
-> +
->  &pwm_tacho {
->         status = "okay";
->         //FSC
-> --
-> 2.17.1
->
+greg k-h
