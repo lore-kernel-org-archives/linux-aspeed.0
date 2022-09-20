@@ -1,64 +1,42 @@
-From: Chia-Wei Wang <chiawei_wang@aspeedtech.com>
-Date: Tue, 20 Sep 2022 10:03:33 +0800
-Subject: [PATCH] ipmi: kcs: aspeed: Update port address comments
-Message-ID: <20220920020333.601-1-chiawei_wang@aspeedtech.com>
+From: YueHaibing <yuehaibing@huawei.com>
+Date: Tue, 20 Sep 2022 11:21:18 +0800
+Subject: [PATCH -next] crypto: aspeed - Fix check for platform_get_irq() errors
+Message-ID: <20220920032118.6440-1-yuehaibing@huawei.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Remove AST_usrGuide_KCS.pdf as it is no longer maintained.
+The platform_get_irq() function returns negative on error and
+positive non-zero values on success. It never returns zero, but if it
+did then treat that as a success.
 
-Add more descriptions as the driver now supports the I/O
-address configurations for both the KCS Data and Cmd/Status
-interface registers.
+Also remove redundant dev_err() print as platform_get_irq() already
+prints an error.
 
-Signed-off-by: Chia-Wei Wang <chiawei_wang@aspeedtech.com>
+Fixes: 108713a713c7 ("crypto: aspeed - Add HACE hash driver")
+Signed-off-by: YueHaibing <yuehaibing@huawei.com>
 ---
- drivers/char/ipmi/kcs_bmc_aspeed.c | 29 ++++++++++++++++++-----------
- 1 file changed, 18 insertions(+), 11 deletions(-)
+ drivers/crypto/aspeed/aspeed-hace.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/drivers/char/ipmi/kcs_bmc_aspeed.c b/drivers/char/ipmi/kcs_bmc_aspeed.c
-index cdc88cde1e9a..19c32bf50e0e 100644
---- a/drivers/char/ipmi/kcs_bmc_aspeed.c
-+++ b/drivers/char/ipmi/kcs_bmc_aspeed.c
-@@ -207,17 +207,24 @@ static void aspeed_kcs_updateb(struct kcs_bmc_device *kcs_bmc, u32 reg, u8 mask,
- }
+diff --git a/drivers/crypto/aspeed/aspeed-hace.c b/drivers/crypto/aspeed/aspeed-hace.c
+index 3f880aafb6a2..f7f1d33defb1 100644
+--- a/drivers/crypto/aspeed/aspeed-hace.c
++++ b/drivers/crypto/aspeed/aspeed-hace.c
+@@ -130,10 +130,8 @@ static int aspeed_hace_probe(struct platform_device *pdev)
  
- /*
-- * AST_usrGuide_KCS.pdf
-- * 2. Background:
-- *   we note D for Data, and C for Cmd/Status, default rules are
-- *     A. KCS1 / KCS2 ( D / C:X / X+4 )
-- *        D / C : CA0h / CA4h
-- *        D / C : CA8h / CACh
-- *     B. KCS3 ( D / C:XX2h / XX3h )
-- *        D / C : CA2h / CA3h
-- *        D / C : CB2h / CB3h
-- *     C. KCS4
-- *        D / C : CA4h / CA5h
-+ * We note D for Data, and C for Cmd/Status, default rules are
-+ *
-+ * 1. Only the D address is given:
-+ *   A. KCS1/KCS2 (D/C: X/X+4)
-+ *      D/C: CA0h/CA4h
-+ *      D/C: CA8h/CACh
-+ *   B. KCS3 (D/C: XX2/XX3h)
-+ *      D/C: CA2h/CA3h
-+ *   C. KCS4 (D/C: X/X+1)
-+ *      D/C: CA4h/CA5h
-+ *
-+ * 2. Both the D/C addresses are given:
-+ *   A. KCS1/KCS2/KCS4 (D/C: X/Y)
-+ *      D/C: CA0h/CA1h
-+ *      D/C: CA8h/CA9h
-+ *      D/C: CA4h/CA5h
-+ *   B. KCS3 (D/C: XX2/XX3h)
-+ *      D/C: CA2h/CA3h
-  */
- static int aspeed_kcs_set_address(struct kcs_bmc_device *kcs_bmc, u32 addrs[2], int nr_addrs)
- {
+ 	/* Get irq number and register it */
+ 	hace_dev->irq = platform_get_irq(pdev, 0);
+-	if (!hace_dev->irq) {
+-		dev_err(&pdev->dev, "Failed to get interrupt\n");
++	if (hace_dev->irq < 0)
+ 		return -ENXIO;
+-	}
+ 
+ 	rc = devm_request_irq(&pdev->dev, hace_dev->irq, aspeed_hace_irq, 0,
+ 			      dev_name(&pdev->dev), hace_dev);
 -- 
-2.25.1
+2.17.1
 
