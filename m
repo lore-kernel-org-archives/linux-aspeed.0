@@ -1,7 +1,7 @@
 From: Konstantin Aladyshev <aladyshev22@gmail.com>
-Date: Tue, 20 Sep 2022 18:34:07 +0300
-Subject: [PATCH] ARM: dts: aspeed: Add AMD DaytonaX BMC
-Message-ID: <20220920153409.6288-1-aladyshev22@gmail.com>
+Date: Tue, 20 Sep 2022 18:39:26 +0300
+Subject: [PATCH v2] ARM: dts: aspeed: Add AMD DaytonaX BMC
+Message-ID: <20220920153928.6454-1-aladyshev22@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -18,8 +18,7 @@ Signed-off-by: Konstantin Aladyshev <aladyshev22@gmail.com>
 ---
  arch/arm/boot/dts/Makefile                    |   1 +
  arch/arm/boot/dts/aspeed-bmc-amd-daytonax.dts | 320 ++++++++++++++++++
- arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts |  14 +-
- 3 files changed, 333 insertions(+), 2 deletions(-)
+ 2 files changed, 321 insertions(+)
  create mode 100644 arch/arm/boot/dts/aspeed-bmc-amd-daytonax.dts
 
 diff --git a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
@@ -360,59 +359,6 @@ index 000000000000..0e066b5ae0fb
 +	status = "okay";
 +};
 +
-diff --git a/arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts b/arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts
-index 6406a0f080ee..90feac5ec628 100644
---- a/arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts
-@@ -5,6 +5,7 @@
- 
- #include "aspeed-g5.dtsi"
- #include <dt-bindings/gpio/aspeed-gpio.h>
-+#include <dt-bindings/interrupt-controller/irq.h>
- 
- / {
- 	model = "AMD EthanolX BMC";
-@@ -58,6 +59,7 @@ &fmc {
- 	flash at 0 {
- 		status = "okay";
- 		m25p,fast-read;
-+		label = "bmc";
- 		#include "openbmc-flash-layout.dtsi"
- 	};
- };
-@@ -78,7 +80,9 @@ &uart1 {
- 	status = "okay";
- 	pinctrl-names = "default";
- 	pinctrl-0 = <&pinctrl_txd1_default
--		     &pinctrl_rxd1_default>;
-+		     &pinctrl_rxd1_default
-+		     &pinctrl_nrts1_default
-+		     &pinctrl_ncts1_default>;
- };
- 
- &uart5 {
-@@ -160,7 +164,7 @@ &i2c2 {
- &i2c3 {
- 	status = "okay";
- 	eeprom at 50 {
--		compatible = "atmel,24c256";
-+		compatible = "atmel,24c128";
- 		reg = <0x50>;
- 		pagesize = <64>;
- 	};
-@@ -261,6 +265,12 @@ &lpc_ctrl {
- 	status = "okay";
- };
- 
-+&vuart {
-+	status = "okay";
-+	aspeed,lpc-io-reg = <0x3f8>;
-+	aspeed,lpc-interrupts = <4 IRQ_TYPE_LEVEL_HIGH>;
-+};
-+
- &pwm_tacho {
- 	status = "okay";
- 	pinctrl-names = "default";
 -- 
 2.25.1
 
