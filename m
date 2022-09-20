@@ -1,83 +1,292 @@
-From: Olof Johansson <olof@lixom.net>
-Date: Mon, 19 Sep 2022 15:56:09 -0700
-Subject: [PATCH v2 0/2] Fix console probe delay when stdout-path isn't set
-In-Reply-To: <YygsEtxKz8dsEstc@kroah.com>
-References: <20220701012647.2007122-1-saravanak@google.com>
- <YwS5J3effuHQJRZ5@kroah.com> <CAOesGMivJ5Q-jdeGKw32yhjmNiYctHjpEAnoMMRghYqWD2m2tw@mail.gmail.com>
- <YygsEtxKz8dsEstc@kroah.com>
-Message-ID: <CAOesGMh5GHCONTQ9M1Ro7zW-hkL_1F7Xt=xRV0vYSfPY=7LYkQ@mail.gmail.com>
+From: Bonnie Lo <Bonnie_Lo@Wiwynn.com>
+Date: Tue, 20 Sep 2022 10:30:34 +0800
+Subject: [PATCH] ARM: dts: aspeed: greatlakes: Add Facebook greatlakes (AST2600) BMC
+Message-ID: <20220920023042.19244-1-Bonnie_Lo@Wiwynn.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Sep 19, 2022 at 1:44 AM Greg Kroah-Hartman
-<gregkh@linuxfoundation.org> wrote:
->
-> On Sun, Sep 18, 2022 at 08:44:27PM -0700, Olof Johansson wrote:
-> > On Tue, Aug 23, 2022 at 8:37 AM Greg Kroah-Hartman
-> > <gregkh@linuxfoundation.org> wrote:
-> > >
-> > > On Thu, Jun 30, 2022 at 06:26:38PM -0700, Saravana Kannan wrote:
-> > > > These patches are on top of driver-core-next.
-> > > >
-> > > > Even if stdout-path isn't set in DT, this patch should take console
-> > > > probe times back to how they were before the deferred_probe_timeout
-> > > > clean up series[1].
-> > >
-> > > Now dropped from my queue due to lack of a response to other reviewer's
-> > > questions.
-> >
-> > What happened to this patch? I have a 10 second timeout on console
-> > probe on my SiFive Unmatched, and I don't see this flag being set for
-> > the serial driver. In fact, I don't see it anywhere in-tree. I can't
-> > seem to locate another patchset from Saravana around this though, so
-> > I'm not sure where to look for a missing piece for the sifive serial
-> > driver.
-> >
-> > This is the second boot time regression (this one not fatal, unlike
-> > the Layerscape PCIe one) from the fw_devlink patchset.
-> >
-> > Greg, can you revert the whole set for 6.0, please? It's obviously
-> > nowhere near tested enough to go in and I expect we'll see a bunch of
-> > -stable fixups due to this if we let it remain in.
->
-> What exactly is "the whole set"?  I have the default option fix queued
-> up and will send that to Linus later this week (am traveling back from
-> Plumbers still), but have not heard any problems about any other issues
-> at all other than your report.
+From: Bonnie Lo <Bonnie_Lo@wiwynn.com>
 
-I stand corrected in this case, the issue on the Hifive Unmatched was
-a regression due to a PWM clock change -- I just sent a patch for that
-(serial driver fix).
+Add linux device tree entry related to
+greatlakes specific devices connected to BMC SoC.
 
-So it seems like as long as the fw_devlink.strict=1 patch is reverted,
-things are back to a working state here.
+Signed-off-by: Bonnie Lo <Bonnie_Lo@wiwynn.com>
+---
+ arch/arm/boot/dts/Makefile                    |   1 +
+ .../dts/aspeed-bmc-facebook-greatlakes.dts    | 247 ++++++++++++++++++
+ 2 files changed, 248 insertions(+)
+ create mode 100644 arch/arm/boot/dts/aspeed-bmc-facebook-greatlakes.dts
 
-I still struggle with how the fw_devlink patchset is expected to work
-though, since DT is expected to describe the hardware configuration,
-and it has no knowledge of whether there are drivers that will be
-bound to any referenced supplier devnodes. It's not going to work well
-to assume that they will always be bound, and to add 10 second
-timeouts for those cases isn't a good solution. Seems like the number
-of special cases will keep adding up.
+diff --git a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
+index 05d8aef6e5d2..d9f417f2d7df 100644
+--- a/arch/arm/boot/dts/Makefile
++++ b/arch/arm/boot/dts/Makefile
+@@ -1586,6 +1586,7 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
+        aspeed-bmc-facebook-elbert.dtb \
+        aspeed-bmc-facebook-fuji.dtb \
+        aspeed-bmc-facebook-galaxy100.dtb \
++       aspeed-bmc-facebook-greatlakes.dtb \
+        aspeed-bmc-facebook-minipack.dtb \
+        aspeed-bmc-facebook-tiogapass.dtb \
+        aspeed-bmc-facebook-wedge40.dtb \
+diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-greatlakes.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-greatlakes.dts
+new file mode 100644
+index 000000000000..c368eb33efeb
+--- /dev/null
++++ b/arch/arm/boot/dts/aspeed-bmc-facebook-greatlakes.dts
+@@ -0,0 +1,247 @@
++// SPDX-License-Identifier: GPL-2.0-or-later
++// Copyright 2022 Facebook Inc.
++
++/dts-v1/;
++#include "aspeed-g6.dtsi"
++#include <dt-bindings/gpio/aspeed-gpio.h>
++#include <dt-bindings/leds/leds-pca955x.h>
++#include <dt-bindings/i2c/i2c.h>
++
++/ {
++       model = "Facebook Greatlakes BMC";
++       compatible = "facebook,greatlakes-bmc", "aspeed,ast2600";
++
++       aliases {
++               serial4 = &uart5;
++       };
++
++       chosen {
++               bootargs = "console=ttyS4,57600n8";
++       };
++
++       memory at 80000000 {
++               device_type = "memory";
++               reg = <0x80000000 0x80000000>;
++       };
++
++       iio-hwmon {
++               compatible = "iio-hwmon";
++               io-channels = <&adc0 0>, <&adc0 1>, <&adc0 2>, <&adc0 3>,
++                               <&adc0 4>, <&adc0 5>, <&adc0 6>, <&adc0 7>,
++                               <&adc1 0>, <&adc1 2>, <&adc1 3>, <&adc1 4>,
++                               <&adc1 5>, <&adc1 6>;
++       };
++};
++
++&uart1 {
++       status = "okay";
++};
++
++&uart2 {
++       status = "okay";
++};
++
++&uart3 {
++       status = "okay";
++};
++
++&uart4 {
++       status = "okay";
++};
++
++&uart5 {
++       status = "okay";
++};
++
++&wdt1 {
++       status = "okay";
++       pinctrl-names = "default";
++       pinctrl-0 = <&pinctrl_wdtrst1_default>;
++       aspeed,reset-type = "soc";
++       aspeed,external-signal;
++       aspeed,ext-push-pull;
++       aspeed,ext-active-high;
++       aspeed,ext-pulse-duration = <256>;
++};
++
++&mac3 {
++       status = "okay";
++       pinctrl-names = "default";
++       pinctrl-0 = <&pinctrl_rmii4_default>;
++       no-hw-checksum;
++       use-ncsi;
++       mlx,multi-host;
++       ncsi-ctrl,start-redo-probe;
++       ncsi-ctrl,no-channel-monitor;
++       ncsi-package = <1>;
++       ncsi-channel = <1>;
++       ncsi-rexmit = <1>;
++       ncsi-timeout = <2>;
++};
++
++&rtc {
++       status = "okay";
++};
++
++&fmc {
++       status = "okay";
++       flash at 0 {
++               status = "okay";
++               m25p,fast-read;
++               label = "bmc";
++               spi-rx-bus-width = <4>;
++               spi-max-frequency = <50000000>;
++#include "openbmc-flash-layout-64.dtsi"
++       };
++       flash at 1 {
++               status = "okay";
++               m25p,fast-read;
++               label = "bmc2";
++               spi-rx-bus-width = <4>;
++               spi-max-frequency = <50000000>;
++       };
++};
++
++&i2c0 {
++       status = "okay";
++       multi-master;
++       ipmb0 at 10 {
++               compatible = "ipmb-dev";
++               reg = <(0x10 | I2C_OWN_SLAVE_ADDRESS)>;
++               i2c-protocol;
++       };
++};
++
++&i2c1 {
++       status = "okay";
++       multi-master;
++       ipmb1 at 10 {
++               compatible = "ipmb-dev";
++               reg = <(0x10 | I2C_OWN_SLAVE_ADDRESS)>;
++               i2c-protocol;
++       };
++};
++
++&i2c2 {
++       status = "okay";
++       multi-master;
++       ipmb2 at 10 {
++               compatible = "ipmb-dev";
++               reg = <(0x10 | I2C_OWN_SLAVE_ADDRESS)>;
++               i2c-protocol;
++       };
++};
++
++&i2c3 {
++       status = "okay";
++       multi-master;
++       ipmb3 at 10 {
++               compatible = "ipmb-dev";
++               reg = <(0x10 | I2C_OWN_SLAVE_ADDRESS)>;
++               i2c-protocol;
++       };
++};
++
++&i2c4 {
++       status = "okay";
++};
++
++&i2c5 {
++       status = "okay";
++};
++
++&i2c6 {
++       status = "okay";
++};
++
++&i2c7 {
++       status = "okay";
++};
++
++&i2c8 {
++       status = "okay";
++       temperature-sensor at 1f {
++               compatible = "ti,tmp421";
++               reg = <0x1f>;
++       };
++       // NIC EEPROM
++       eeprom at 50 {
++               compatible = "st,24c32";
++               reg = <0x50>;
++       };
++};
++
++&i2c9 {
++       status = "okay";
++       multi-master;
++       ipmb9 at 10 {
++               compatible = "ipmb-dev";
++               reg = <(0x10 | I2C_OWN_SLAVE_ADDRESS)>;
++               i2c-protocol;
++       };
++};
++
++&i2c10 {
++       status = "okay";
++};
++
++&i2c11 {
++       status = "okay";
++       eeprom at 51 {
++               compatible = "atmel,24c128";
++               reg = <0x51>;
++       };
++       eeprom at 54 {
++               compatible = "atmel,24c128";
++               reg = <0x54>;
++       };
++};
++
++&i2c12 {
++       status = "okay";
++       temperature-sensor at 4f {
++               compatible = "lm75";
++               reg = <0x4f>;
++       };
++};
++
++&i2c13 {
++       status = "okay";
++};
++
++&adc0 {
++       ref_voltage = <2500>;
++       status = "okay";
++       pinctrl-0 = <&pinctrl_adc0_default &pinctrl_adc1_default
++                       &pinctrl_adc2_default &pinctrl_adc3_default
++                       &pinctrl_adc4_default &pinctrl_adc5_default
++                       &pinctrl_adc6_default &pinctrl_adc7_default>;
++};
++
++&adc1 {
++       ref_voltage = <2500>;
++       status = "okay";
++       pinctrl-0 = <&pinctrl_adc8_default &pinctrl_adc10_default
++                       &pinctrl_adc11_default &pinctrl_adc12_default
++                       &pinctrl_adc13_default &pinctrl_adc14_default>;
++};
++
++
++&ehci0 {
++       status = "okay";
++};
++
++&ehci1 {
++       status = "okay";
++};
++
++&uhci {
++       status = "okay";
++};
++
++&gpio0 {
++       pinctrl-names = "default";
++       pinctrl-0 = <&pinctrl_gpiu1_default &pinctrl_gpiu7_default>;
++};
++
++
+--
+2.17.1
 
-The whole design feels like it's falling short, and it's been patched
-here and there to deal with the shortcomings, instead of revisiting
-the full solution. (The patches are the console one, and another to
-deal with nfsroot boots).
-
-As long as it doesn't keep regressing others, I suppose the work to
-redesign it can happen in-tree, but it's not usually how we try to do
-it for new functionality. Especially since it's still being iterated
-on (with active patch sets posted around -rc1 for improvements).
-
-Oh, and one more thing for the future -- the main patch that changes
-behavior due to dependency tracking is 2f8c3ae8288e, named "driver
-core: Add wait_for_init_devices_probe helper function". It's easy to
-overlook this when looking at a list of patches since it's said to
-just introduce a helper.
-
-
--Olof
+WIWYNN PROPRIETARY
+This email (and any attachments) contains proprietary or confidential information and is for the sole use of its intended recipient. Any unauthorized review, use, copying or distribution of this email or the content of this email is strictly prohibited. If you are not the intended recipient, please notify the sender and delete this email immediately.
