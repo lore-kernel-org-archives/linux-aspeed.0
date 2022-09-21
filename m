@@ -1,44 +1,31 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Date: Wed, 21 Sep 2022 14:48:37 +0200
-Subject: [PATCH] mmc: sdhci-of-aspeed: Add dependency on ARCH_ASPEED
-In-Reply-To: <20220916115602.370003-1-pbrobinson@gmail.com>
-References: <20220916115602.370003-1-pbrobinson@gmail.com>
-Message-ID: <CAPDyKFr8Y+ChTK2-AdioYr5zYuxx_d-gwUBppGJcR5X7M2+SSQ@mail.gmail.com>
+From: Konstantin Aladyshev <aladyshev22@gmail.com>
+Date: Thu, 22 Sep 2022 00:09:45 +0300
+Subject: [PATCH v4 0/2] Add AMD DaytonaX BMC
+In-Reply-To: <20220920165404.14099-1-aladyshev22@gmail.com>
+References: <20220920165404.14099-1-aladyshev22@gmail.com>
+Message-ID: <20220921210950.10568-1-aladyshev22@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, 16 Sept 2022 at 13:56, Peter Robinson <pbrobinson@gmail.com> wrote:
->
-> The MMC_SDHCI_OF_ASPEED is part of the Aspeed silicon so it makes
-> sense to depend on ARCH_ASPEED and for compile testing.
->
-> Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
+Add initial version of device tree for the BMC in the AMD DaytonaX
+platform.
 
-Applied for next, thanks!
+AMD DaytonaX platform is a customer reference board (CRB) with an
+Aspeed ast2500 BMC manufactured by AMD.
 
-Kind regards
-Uffe
+Konstantin Aladyshev (2):
+  dt-bindings: arm: aspeed: document AMD DaytonaX
+  ARM: dts: aspeed: Add AMD DaytonaX BMC
 
+ .../bindings/arm/aspeed/aspeed.yaml           |   1 +
+ arch/arm/boot/dts/Makefile                    |   1 +
+ arch/arm/boot/dts/aspeed-bmc-amd-daytonax.dts | 319 ++++++++++++++++++
+ 3 files changed, 321 insertions(+)
+ create mode 100644 arch/arm/boot/dts/aspeed-bmc-amd-daytonax.dts
 
-> ---
->  drivers/mmc/host/Kconfig | 1 +
->  1 file changed, 1 insertion(+)
->
-> diff --git a/drivers/mmc/host/Kconfig b/drivers/mmc/host/Kconfig
-> index e63608834411..f324daadaf70 100644
-> --- a/drivers/mmc/host/Kconfig
-> +++ b/drivers/mmc/host/Kconfig
-> @@ -157,6 +157,7 @@ config MMC_SDHCI_OF_ARASAN
->
->  config MMC_SDHCI_OF_ASPEED
->         tristate "SDHCI OF support for the ASPEED SDHCI controller"
-> +       depends on ARCH_ASPEED || COMPILE_TEST
->         depends on MMC_SDHCI_PLTFM
->         depends on OF && OF_ADDRESS
->         select MMC_SDHCI_IO_ACCESSORS
-> --
-> 2.37.3
->
+-- 
+2.25.1
+
