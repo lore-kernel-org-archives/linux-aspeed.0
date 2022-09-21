@@ -1,114 +1,75 @@
-From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Date: Wed, 21 Sep 2022 09:07:13 +0200
-Subject: [PATCH v3] ARM: dts: aspeed: Add AMD DaytonaX BMC
-In-Reply-To: <20220920165404.14099-1-aladyshev22@gmail.com>
-References: <20220920165404.14099-1-aladyshev22@gmail.com>
-Message-ID: <98d70040-f442-98dd-eb50-39e2f39a9be3@linaro.org>
+From: Quan Nguyen <quan@os.amperecomputing.com>
+Date: Wed, 21 Sep 2022 14:57:27 +0700
+Subject: [PATCH v3 2/2] ARM: dts: aspeed: Add device tree for Ampere's Mt.
+ Mitchell BMC
+In-Reply-To: <b34ab4d0-c14f-caeb-afde-01655b35a236@os.amperecomputing.com>
+References: <20220817071539.176110-1-quan@os.amperecomputing.com>
+ <20220817071539.176110-3-quan@os.amperecomputing.com>
+ <CACPK8XdDpG3ONM1=-E6qvHL1FgMNWSMPoL_sVGJK6BmmnT3w_w@mail.gmail.com>
+ <CAK8P3a2LZKfZpdTQ-R4o9mJ6dk52VRF+Bxj=PJEx-1MA4yH8+w@mail.gmail.com>
+ <673e200f-f458-7866-f956-3d5bd7160a49@os.amperecomputing.com>
+ <CAK8P3a3MU7shuBpcpRNC5L6xxQmSy8FXCX1jvYXhv-NT3PMYOw@mail.gmail.com>
+ <396a3c24-2a86-0d1c-07f9-386a0de1d473@os.amperecomputing.com>
+ <b34ab4d0-c14f-caeb-afde-01655b35a236@os.amperecomputing.com>
+Message-ID: <60188017-8f96-0773-7eaf-43d877f876b2@os.amperecomputing.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 20/09/2022 18:54, Konstantin Aladyshev wrote:
-> Add initial version of device tree for the BMC in the AMD DaytonaX
-> platform.
+Hi Arnd,
+
+I'm really sorry but I have to ping you again as I'm confused and still 
+wonder if anything else could be updated to this patchset. Could you 
+share some suggestion on what to do next ? or should I resend it?
+
+The only thing left is Joel's complaint about there is no output to test 
+with bootargs removed. I have tried and see it could be fixed by using 
+the -append option with qemu.
+
+Besides, Joel also says it "looks ready to merge" and give a Reviewed-by 
+already.
+
+Thank you and best regards,
+- Quan
+
+
+On 13/09/2022 14:42, Quan Nguyen wrote:
+> Hi,
 > 
-> AMD DaytonaX platform is a customer reference board (CRB) with an
-> Aspeed ast2500 BMC manufactured by AMD.
+> Just a gentle ping on the patch.
 > 
-> Signed-off-by: Konstantin Aladyshev <aladyshev22@gmail.com>
-> ---
->  .../bindings/arm/aspeed/aspeed.yaml           |   1 +
->  arch/arm/boot/dts/Makefile                    |   1 +
->  arch/arm/boot/dts/aspeed-bmc-amd-daytonax.dts | 319 ++++++++++++++++++
->  3 files changed, 321 insertions(+)
->  create mode 100644 arch/arm/boot/dts/aspeed-bmc-amd-daytonax.dts
+> Thanks and best regards,
+> - Quan
 > 
-> diff --git a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
-> index 1895ce9de461..191a52595fea 100644
-> --- a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
-> +++ b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
-> @@ -30,6 +30,7 @@ properties:
->          items:
->            - enum:
->                - amd,ethanolx-bmc
-> +              - amd,daytonax-bmc
-
-Alphabetical order.
-
->                - ampere,mtjade-bmc
->                - aspeed,ast2500-evb
->                - asrock,e3c246d4i-bmc
-
-This is always a separate patch.
-
-> diff --git a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
-> index 05d8aef6e5d2..9eff88d410aa 100644
-> --- a/arch/arm/boot/dts/Makefile
-> +++ b/arch/arm/boot/dts/Makefile
-> @@ -1575,6 +1575,7 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
->  	aspeed-ast2600-evb-a1.dtb \
->  	aspeed-ast2600-evb.dtb \
->  	aspeed-bmc-amd-ethanolx.dtb \
-> +	aspeed-bmc-amd-daytonax.dtb \
->  	aspeed-bmc-ampere-mtjade.dtb \
->  	aspeed-bmc-arm-stardragon4800-rep2.dtb \
->  	aspeed-bmc-asrock-e3c246d4i.dtb \
-> diff --git a/arch/arm/boot/dts/aspeed-bmc-amd-daytonax.dts b/arch/arm/boot/dts/aspeed-bmc-amd-daytonax.dts
-> new file mode 100644
-> index 000000000000..89634dda8e5f
-> --- /dev/null
-> +++ b/arch/arm/boot/dts/aspeed-bmc-amd-daytonax.dts
-> @@ -0,0 +1,319 @@
-> +// SPDX-License-Identifier: GPL-2.0
-> +/dts-v1/;
-> +
-> +#include "aspeed-g5.dtsi"
-> +#include <dt-bindings/gpio/aspeed-gpio.h>
-> +#include <dt-bindings/interrupt-controller/irq.h>
-> +
-> +/ {
-> +	model = "AMD DaytonaX BMC";
-> +	compatible = "amd,daytonax-bmc", "aspeed,ast2500";
-> +
-> +	memory at 80000000 {
-> +		reg = <0x80000000 0x20000000>;
-> +	};
-> +
-> +	reserved-memory {
-> +		#address-cells = <1>;
-> +		#size-cells = <1>;
-> +		ranges;
-> +
-> +		video_engine_memory: jpegbuffer {
-> +			size = <0x02000000>;	/* 32M */
-> +			alignment = <0x01000000>;
-> +			compatible = "shared-dma-pool";
-> +			reusable;
-> +		};
-> +	};
-> +
-> +	aliases {
-> +		serial0 = &uart1;
-> +		serial4 = &uart5;
-> +	};
-> +
-> +	chosen {
-> +		stdout-path = &uart5;
-> +		bootargs = "console=ttyS4,115200 earlycon";
-> +	};
-> +
-> +	leds {
-> +		compatible = "gpio-leds";
-> +
-> +		fault {
-
-No improvements here, so you did not test your DTS. You received comment
-asking you to do it.
-
-Please run `make dtbs_check` (see
-Documentation/devicetree/bindings/writing-schema.rst for instructions).
-
-Best regards,
-Krzysztof
+> On 05/09/2022 16:45, Quan Nguyen wrote:
+>>
+>>
+>> On 25/08/2022 19:35, Arnd Bergmann wrote:
+>>> On Tue, Aug 23, 2022 at 10:27 AM Quan Nguyen
+>>> <quan@os.amperecomputing.com> wrote:
+>>>> On 18/08/2022 19:06, Arnd Bergmann wrote:
+>>>>
+>>>> Thanks Arnd for the comment.
+>>>>
+>>>> I think adding -append could solve the issue.
+>>>>
+>>>> But as the bootargs still exist in all other
+>>>> arch/arm/boot/dts/aspeed-bmc-*.dts should we still keep bootargs for
+>>>> this dts?
+>>>
+>>> I think it should still be removed. Only 238 of 2547 set the console 
+>>> using
+>>> bootargs, so that would make it more consistent with the other files.
+>>>
+>>> Changing the files that have the same issue is a separate matter.
+>>>
+>>
+>> Hi Joel,
+>>
+>> In the meantime, I'm just wonder if you could help to test the patch 
+>> with -append and get it merged.
+>>
+>> Thank you and best regards,
+>> - Quan
