@@ -1,33 +1,55 @@
-From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Date: Thu, 22 Sep 2022 08:52:33 +0200
-Subject: [PATCH v4 2/2] ARM: dts: aspeed: Add AMD DaytonaX BMC
-In-Reply-To: <20220921210950.10568-3-aladyshev22@gmail.com>
-References: <20220920165404.14099-1-aladyshev22@gmail.com>
- <20220921210950.10568-1-aladyshev22@gmail.com>
- <20220921210950.10568-3-aladyshev22@gmail.com>
-Message-ID: <f84250e7-39fe-80d9-9e50-700f9752367a@linaro.org>
+From: Liu Shixin <liushixin2@huawei.com>
+Date: Thu, 22 Sep 2022 22:30:38 +0800
+Subject: [PATCH] media: aspeed: use DEFINE_SHOW_ATTRIBUTE to simplify code
+Message-ID: <20220922143038.3251456-1-liushixin2@huawei.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 21/09/2022 23:09, Konstantin Aladyshev wrote:
-> Add initial version of device tree for the BMC in the AMD DaytonaX
-> platform.
-> 
-> AMD DaytonaX platform is a customer reference board (CRB) with an
-> Aspeed ast2500 BMC manufactured by AMD.
-> 
-> Signed-off-by: Konstantin Aladyshev <aladyshev22@gmail.com>
-> ---
->  arch/arm/boot/dts/Makefile                    |   1 +
->  arch/arm/boot/dts/aspeed-bmc-amd-daytonax.dts | 319 ++++++++++++++++++
->  2 files changed, 320 insertions(+)
+Use DEFINE_SHOW_ATTRIBUTE helper macro to simplify the code.
+No functional change.
 
+Signed-off-by: Liu Shixin <liushixin2@huawei.com>
+---
+ drivers/media/platform/aspeed/aspeed-video.c | 16 ++--------------
+ 1 file changed, 2 insertions(+), 14 deletions(-)
 
-Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-
-Best regards,
-Krzysztof
+diff --git a/drivers/media/platform/aspeed/aspeed-video.c b/drivers/media/platform/aspeed/aspeed-video.c
+index 20f795ccc11b..26f067c77217 100644
+--- a/drivers/media/platform/aspeed/aspeed-video.c
++++ b/drivers/media/platform/aspeed/aspeed-video.c
+@@ -1753,19 +1753,7 @@ static int aspeed_video_debugfs_show(struct seq_file *s, void *data)
+ 
+ 	return 0;
+ }
+-
+-static int aspeed_video_proc_open(struct inode *inode, struct file *file)
+-{
+-	return single_open(file, aspeed_video_debugfs_show, inode->i_private);
+-}
+-
+-static const struct file_operations aspeed_video_debugfs_ops = {
+-	.owner   = THIS_MODULE,
+-	.open    = aspeed_video_proc_open,
+-	.read    = seq_read,
+-	.llseek  = seq_lseek,
+-	.release = single_release,
+-};
++DEFINE_SHOW_ATTRIBUTE(aspeed_video_debugfs);
+ 
+ static struct dentry *debugfs_entry;
+ 
+@@ -1779,7 +1767,7 @@ static int aspeed_video_debugfs_create(struct aspeed_video *video)
+ {
+ 	debugfs_entry = debugfs_create_file(DEVICE_NAME, 0444, NULL,
+ 					    video,
+-					    &aspeed_video_debugfs_ops);
++					    &aspeed_video_debugfs_fops);
+ 	if (!debugfs_entry)
+ 		aspeed_video_debugfs_remove(video);
+ 
+-- 
+2.25.1
 
