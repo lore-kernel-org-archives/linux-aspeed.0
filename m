@@ -1,44 +1,45 @@
-From: Neal Liu <neal_liu@aspeedtech.com>
-Date: Fri, 23 Sep 2022 10:15:23 +0000
-Subject: [PATCH -next] crypto: aspeed - Remove redundant dev_err call
-In-Reply-To: <20220923100159.15705-1-shangxiaojing@huawei.com>
-References: <20220923100159.15705-1-shangxiaojing@huawei.com>
-Message-ID: <HK0PR06MB320294D6E2A61F85F4276EE780519@HK0PR06MB3202.apcprd06.prod.outlook.com>
+From: Cédric Le Goater <clg@kaod.org>
+Date: Fri, 23 Sep 2022 11:51:41 +0200
+Subject: [PATCH -next] spi: aspeed: Remove redundant dev_err call
+In-Reply-To: <20220923101632.19170-1-shangxiaojing@huawei.com>
+References: <20220923101632.19170-1-shangxiaojing@huawei.com>
+Message-ID: <a51f9a8a-23aa-3795-3fce-963f2888b73c@kaod.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-> devm_ioremap_resource() prints error message in itself. Remove the dev_err
-> call to avoid redundant error message.
+On 9/23/22 12:16, Shang XiaoJing wrote:
+> devm_ioremap_resource() prints error message in itself. Remove the
+> dev_err call to avoid redundant error message.
 > 
 > Signed-off-by: Shang XiaoJing <shangxiaojing@huawei.com>
-> ---
->  drivers/crypto/aspeed/aspeed-hace.c | 4 +---
->  1 file changed, 1 insertion(+), 3 deletions(-)
-> 
-> diff --git a/drivers/crypto/aspeed/aspeed-hace.c
-> b/drivers/crypto/aspeed/aspeed-hace.c
-> index 3f880aafb6a2..e05c32c31842 100644
-> --- a/drivers/crypto/aspeed/aspeed-hace.c
-> +++ b/drivers/crypto/aspeed/aspeed-hace.c
-> @@ -123,10 +123,8 @@ static int aspeed_hace_probe(struct platform_device
-> *pdev)
->  	platform_set_drvdata(pdev, hace_dev);
-> 
->  	hace_dev->regs = devm_ioremap_resource(&pdev->dev, res);
-> -	if (IS_ERR(hace_dev->regs)) {
-> -		dev_err(&pdev->dev, "Failed to map resources\n");
-> +	if (IS_ERR(hace_dev->regs))
->  		return PTR_ERR(hace_dev->regs);
-> -	}
-> 
->  	/* Get irq number and register it */
->  	hace_dev->irq = platform_get_irq(pdev, 0);
-> --
-> 2.17.1
 
-Similar patch just be proposed few days ago.
-https://patchwork.kernel.org/project/linux-crypto/patch/20220920032118.6440-1-yuehaibing at huawei.com/
+Reviewed-by: C?dric Le Goater <clg@kaod.org>
+
+Thanks,
+
+C.
+
+> ---
+>   drivers/spi/spi-aspeed-smc.c | 4 +---
+>   1 file changed, 1 insertion(+), 3 deletions(-)
+> 
+> diff --git a/drivers/spi/spi-aspeed-smc.c b/drivers/spi/spi-aspeed-smc.c
+> index 3e891bf22470..a334e89add86 100644
+> --- a/drivers/spi/spi-aspeed-smc.c
+> +++ b/drivers/spi/spi-aspeed-smc.c
+> @@ -736,10 +736,8 @@ static int aspeed_spi_probe(struct platform_device *pdev)
+>   
+>   	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+>   	aspi->regs = devm_ioremap_resource(dev, res);
+> -	if (IS_ERR(aspi->regs)) {
+> -		dev_err(dev, "missing AHB register window\n");
+> +	if (IS_ERR(aspi->regs))
+>   		return PTR_ERR(aspi->regs);
+> -	}
+>   
+>   	res = platform_get_resource(pdev, IORESOURCE_MEM, 1);
+>   	aspi->ahb_base = devm_ioremap_resource(dev, res);
 
