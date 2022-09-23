@@ -1,45 +1,75 @@
-From: Mark Brown <broonie@kernel.org>
-Date: Fri, 23 Sep 2022 18:21:43 +0100
-Subject: [PATCH -next] spi: aspeed: Remove redundant dev_err call
-In-Reply-To: <20220923101632.19170-1-shangxiaojing@huawei.com>
-References: <20220923101632.19170-1-shangxiaojing@huawei.com>
-Message-ID: <166395370362.637404.4217222260781909886.b4-ty@kernel.org>
+From: Patrick Williams <patrick@stwcx.xyz>
+Date: Fri, 23 Sep 2022 16:52:33 -0500
+Subject: [PATCH v4] ARM: dts: aspeed: yosemit V2: Enable OCP debug card
+In-Reply-To: <20220921064309.GA18932@hcl-ThinkPad-T495>
+References: <20220921064309.GA18932@hcl-ThinkPad-T495>
+Message-ID: <Yy4qofFUIxudLxbS@heinlein>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, 23 Sep 2022 18:16:32 +0800, Shang XiaoJing wrote:
-> devm_ioremap_resource() prints error message in itself. Remove the
-> dev_err call to avoid redundant error message.
+
+> Subject: [PATCH v4] ARM: dts: aspeed: yosemit V2: Enable OCP debug card
+
+Please double-check your spelling of commit messages.  You've misspelled
+"yosemite" here, which gives an impression that it is quite likely that
+other things are wrong with your commit.
+
+On Wed, Sep 21, 2022 at 12:13:09PM +0530, Karthikeyan Pasupathi wrote:
+> Added IPMB-13 channel for Debug Card communication.
+> which improve the readability of the machine and makes
+> easier to debug the server.  and it will display the some
+> informations about the server like "system info",
+> "Critical sensors" and "critical sel".
 > 
+> ---
+> --- v4- Resolved syntax error
+> --- v3- Updated the title and commit
+> --- v2- Updated the title
+> --- v1- Initial draft
+> ---
+> 
+> Signed-off-by: Karthikeyan Pasupathi <pkarthikeyan1509@gmail.com>
+> ---
+>  arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts | 11 +++++++++++
+>  1 file changed, 11 insertions(+)
+> 
+> diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts
+> index 8864e9c312a8..84236df522dc 100644
+> --- a/arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts
+> +++ b/arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts
+> @@ -215,6 +215,17 @@
+>  	};
+>  };
+>  
+> +&i2c13 {
+> +	status = "okay";
+> +	// Debug Card
+> +	multi-master;
+> +	ipmb13 at 10 {
+> +		compatible = "ipmb-dev";
+> +		reg = <(0x10 | I2C_OWN_SLAVE_ADDRESS)>;
+> +		i2c-protocol;
+> +	};
+> +};
+> +
+>  &pwm_tacho {
+>  	status = "okay";
+>  	//FSC
+> -- 
+> 2.17.1
 > 
 
-Applied to
+Reviewed-by: Patrick Williams <patrick@stwcx.xyz>
 
-   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/spi.git for-next
-
-Thanks!
-
-[1/1] spi: aspeed: Remove redundant dev_err call
-      commit: 04e0456f778de550a14d222d1a9ae0625511244d
-
-All being well this means that it will be integrated into the linux-next
-tree (usually sometime in the next 24 hours) and sent to Linus during
-the next merge window (or sooner if it is a bug fix), however if
-problems are discovered then the patch may be dropped or reverted.
-
-You may get further e-mails resulting from automated or manual testing
-and review of the tree, please engage with people reporting problems and
-send followup patches addressing any issues that are reported if needed.
-
-If any updates are required or you are submitting further changes they
-should be sent as incremental updates against current git, existing
-patches will not be replaced.
-
-Please add any relevant lists and maintainers to the CCs when replying
-to this mail.
-
-Thanks,
-Mark
+-- 
+Patrick Williams
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 833 bytes
+Desc: not available
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20220923/87159363/attachment-0001.sig>
