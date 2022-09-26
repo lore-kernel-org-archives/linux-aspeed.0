@@ -1,75 +1,49 @@
-From: Patrick Williams <patrick@stwcx.xyz>
-Date: Fri, 23 Sep 2022 16:52:33 -0500
-Subject: [PATCH v4] ARM: dts: aspeed: yosemit V2: Enable OCP debug card
-In-Reply-To: <20220921064309.GA18932@hcl-ThinkPad-T495>
-References: <20220921064309.GA18932@hcl-ThinkPad-T495>
-Message-ID: <Yy4qofFUIxudLxbS@heinlein>
+From: Quan Nguyen <quan@os.amperecomputing.com>
+Date: Mon, 26 Sep 2022 14:58:46 +0700
+Subject: [PATCH v3 RESEND 0/2] Add device tree for Ampere's Mt. Mitchell BMC
+Message-ID: <20220926075848.206918-1-quan@os.amperecomputing.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+The Mt. Mitchell BMC is an ASPEED AST2600-based BMC for the Mt. Mitchell
+hardware reference platform with AmpereOne(TM) processor.
 
-> Subject: [PATCH v4] ARM: dts: aspeed: yosemit V2: Enable OCP debug card
+v3 :
+  + Change adc-i2c node to generic adc node               [Krzysztof]
+  + Remove unused status property in adc node             [Krzysztof]
+  + Remove trailing blank line at the end of file         [Krzysztof]
+  + Fix alphabetical order in dt-binding documentation    [Krzysztof]
+  + Remove the wrong comment on vga_memory nodes             [Andrew]
+  + Remove gpio-keys                                         [Andrew]
+  + Remove the line-name for bmc-debug-mode, eth-phy-rst-n,
+    eth-phy-int-n, bmc-salt12-s0-ssif-n, fpga-program-b,
+    bmc-uart-cts1, bmc-spi-fm-boot-abr-pd, emmc-rst-n gpios  [Andrew]
+  + Update line-name for hs-csout-prochot, s1-spi-auth-fail-n  [Quan]
+  + Add line-name [s0|s1]-heartbeat                            [Quan]
 
-Please double-check your spelling of commit messages.  You've misspelled
-"yosemite" here, which gives an impression that it is quite likely that
-other things are wrong with your commit.
+v2 :
+  + Add Ampere Mt. Mitchell BMC compatible                [Krzysztof]
+  + Remove bootargs                                       [Krzysztof]
+  + Fix gpio-keys nodes name to conform with device tree binding
+  documents                                               [Krzysztof]
+  + Fix some nodes to use generic name                    [Krzysztof]
+  + Remove unnecessary blank line                         [Krzysztof]
+  + Fix typo "LTC" to "LLC" in license info and corrected license
+  info to GPL-2.0-only
 
-On Wed, Sep 21, 2022 at 12:13:09PM +0530, Karthikeyan Pasupathi wrote:
-> Added IPMB-13 channel for Debug Card communication.
-> which improve the readability of the machine and makes
-> easier to debug the server.  and it will display the some
-> informations about the server like "system info",
-> "Critical sensors" and "critical sel".
-> 
-> ---
-> --- v4- Resolved syntax error
-> --- v3- Updated the title and commit
-> --- v2- Updated the title
-> --- v1- Initial draft
-> ---
-> 
-> Signed-off-by: Karthikeyan Pasupathi <pkarthikeyan1509@gmail.com>
-> ---
->  arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts | 11 +++++++++++
->  1 file changed, 11 insertions(+)
-> 
-> diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts
-> index 8864e9c312a8..84236df522dc 100644
-> --- a/arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts
-> +++ b/arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts
-> @@ -215,6 +215,17 @@
->  	};
->  };
->  
-> +&i2c13 {
-> +	status = "okay";
-> +	// Debug Card
-> +	multi-master;
-> +	ipmb13 at 10 {
-> +		compatible = "ipmb-dev";
-> +		reg = <(0x10 | I2C_OWN_SLAVE_ADDRESS)>;
-> +		i2c-protocol;
-> +	};
-> +};
-> +
->  &pwm_tacho {
->  	status = "okay";
->  	//FSC
-> -- 
-> 2.17.1
-> 
+Quan Nguyen (2):
+  dt-bindings: arm: aspeed: document Ampere Mt.Mitchell BMC compatibles
+  ARM: dts: aspeed: Add device tree for Ampere's Mt. Mitchell BMC
 
-Reviewed-by: Patrick Williams <patrick@stwcx.xyz>
+ .../bindings/arm/aspeed/aspeed.yaml           |   1 +
+ arch/arm/boot/dts/Makefile                    |   1 +
+ .../boot/dts/aspeed-bmc-ampere-mtmitchell.dts | 546 ++++++++++++++++++
+ 3 files changed, 548 insertions(+)
+ create mode 100644 arch/arm/boot/dts/aspeed-bmc-ampere-mtmitchell.dts
 
 -- 
-Patrick Williams
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 833 bytes
-Desc: not available
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20220923/87159363/attachment-0001.sig>
+2.35.1
+
