@@ -1,134 +1,77 @@
-From: Quan Nguyen <quan@os.amperecomputing.com>
-Date: Mon, 26 Sep 2022 15:02:08 +0700
-Subject: [PATCH] ARM: dts: aspeed: mtjade: Remove gpio-keys entries
-In-Reply-To: <20220915080828.2894070-1-quan@os.amperecomputing.com>
-References: <20220915080828.2894070-1-quan@os.amperecomputing.com>
-Message-ID: <9a5699a1-0649-808a-ff5b-e37c1e299418@os.amperecomputing.com>
+From: karthikeyan P <pkarthikeyan1509@gmail.com>
+Date: Mon, 26 Sep 2022 17:13:09 +0530
+Subject: [PATCH v4] ARM: dts: aspeed: yosemit V2: Enable OCP debug card
+In-Reply-To: <Yy4qofFUIxudLxbS@heinlein>
+References: <20220921064309.GA18932@hcl-ThinkPad-T495> <Yy4qofFUIxudLxbS@heinlein>
+Message-ID: <CA+ezb7jrp3Fo0gGvXib4MgivWSx7V23Wjc-4EJJ2EQXscmYDRg@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Dear reviewers,
-Just a gentle ping for the patch.
+Will do, thanks!
 
-Thank you,
-- Quan
+On Sat, Sep 24, 2022 at 3:22 AM Patrick Williams <patrick@stwcx.xyz> wrote:
 
-On 15/09/2022 15:08, Quan Nguyen wrote:
-> Remove the gpio-keys entries from the Ampere's Mt. Jade BMC device
-> tree. The user space applications are going to change from using
-> libevdev to libgpiod.
-> 
-> Signed-off-by: Quan Nguyen <quan@os.amperecomputing.com>
-> ---
->   .../arm/boot/dts/aspeed-bmc-ampere-mtjade.dts | 95 -------------------
->   1 file changed, 95 deletions(-)
-> 
-> diff --git a/arch/arm/boot/dts/aspeed-bmc-ampere-mtjade.dts b/arch/arm/boot/dts/aspeed-bmc-ampere-mtjade.dts
-> index 82a6f14a45f0..d127cbcc7998 100644
-> --- a/arch/arm/boot/dts/aspeed-bmc-ampere-mtjade.dts
-> +++ b/arch/arm/boot/dts/aspeed-bmc-ampere-mtjade.dts
-> @@ -97,101 +97,6 @@ identify {
->   		};
->   	};
->   
-> -	gpio-keys {
-> -		compatible = "gpio-keys";
-> -
-> -		event-shutdown-ack {
-> -			label = "SHUTDOWN_ACK";
-> -			gpios = <&gpio ASPEED_GPIO(G, 2) GPIO_ACTIVE_LOW>;
-> -			linux,code = <ASPEED_GPIO(G, 2)>;
-> -		};
-> -
-> -		event-reboot-ack {
-> -			label = "REBOOT_ACK";
-> -			gpios = <&gpio ASPEED_GPIO(J, 3) GPIO_ACTIVE_LOW>;
-> -			linux,code = <ASPEED_GPIO(J, 3)>;
-> -		};
-> -
-> -		event-s0-overtemp {
-> -			label = "S0_OVERTEMP";
-> -			gpios = <&gpio ASPEED_GPIO(G, 3) GPIO_ACTIVE_LOW>;
-> -			linux,code = <ASPEED_GPIO(G, 3)>;
-> -		};
-> -
-> -		event-s0-hightemp {
-> -			label = "S0_HIGHTEMP";
-> -			gpios = <&gpio ASPEED_GPIO(J, 0) GPIO_ACTIVE_LOW>;
-> -			linux,code = <ASPEED_GPIO(J, 0)>;
-> -		};
-> -
-> -		event-s0-cpu-fault {
-> -			label = "S0_CPU_FAULT";
-> -			gpios = <&gpio ASPEED_GPIO(J, 1) GPIO_ACTIVE_HIGH>;
-> -			linux,code = <ASPEED_GPIO(J, 1)>;
-> -		};
-> -
-> -		event-s0-scp-auth-fail {
-> -			label = "S0_SCP_AUTH_FAIL";
-> -			gpios = <&gpio ASPEED_GPIO(J, 2) GPIO_ACTIVE_LOW>;
-> -			linux,code = <ASPEED_GPIO(J, 2)>;
-> -		};
-> -
-> -		event-s1-scp-auth-fail {
-> -			label = "S1_SCP_AUTH_FAIL";
-> -			gpios = <&gpio ASPEED_GPIO(Z, 5) GPIO_ACTIVE_LOW>;
-> -			linux,code = <ASPEED_GPIO(Z, 5)>;
-> -		};
-> -
-> -		event-s1-overtemp {
-> -			label = "S1_OVERTEMP";
-> -			gpios = <&gpio ASPEED_GPIO(Z, 6) GPIO_ACTIVE_LOW>;
-> -			linux,code = <ASPEED_GPIO(Z, 6)>;
-> -		};
-> -
-> -		event-s1-hightemp {
-> -			label = "S1_HIGHTEMP";
-> -			gpios = <&gpio ASPEED_GPIO(AB, 0) GPIO_ACTIVE_LOW>;
-> -			linux,code = <ASPEED_GPIO(AB, 0)>;
-> -		};
-> -
-> -		event-s1-cpu-fault {
-> -			label = "S1_CPU_FAULT";
-> -			gpios = <&gpio ASPEED_GPIO(Z, 1) GPIO_ACTIVE_HIGH>;
-> -			linux,code = <ASPEED_GPIO(Z, 1)>;
-> -		};
-> -
-> -		event-id {
-> -			label = "ID_BUTTON";
-> -			gpios = <&gpio ASPEED_GPIO(Q, 5) GPIO_ACTIVE_LOW>;
-> -			linux,code = <ASPEED_GPIO(Q, 5)>;
-> -		};
-> -
-> -		event-psu1-vin-good {
-> -			label = "PSU1_VIN_GOOD";
-> -			gpios = <&gpio ASPEED_GPIO(H, 4) GPIO_ACTIVE_LOW>;
-> -			linux,code = <ASPEED_GPIO(H, 4)>;
-> -		};
-> -
-> -		event-psu2-vin-good {
-> -			label = "PSU2_VIN_GOOD";
-> -			gpios = <&gpio ASPEED_GPIO(H, 5) GPIO_ACTIVE_LOW>;
-> -			linux,code = <ASPEED_GPIO(H, 5)>;
-> -		};
-> -
-> -		event-psu1-present {
-> -			label = "PSU1_PRESENT";
-> -			gpios = <&gpio ASPEED_GPIO(I, 0) GPIO_ACTIVE_LOW>;
-> -			linux,code = <ASPEED_GPIO(I, 0)>;
-> -		};
-> -
-> -		event-psu2-present {
-> -			label = "PSU2_PRESENT";
-> -			gpios = <&gpio ASPEED_GPIO(I, 1) GPIO_ACTIVE_LOW>;
-> -			linux,code = <ASPEED_GPIO(I, 1)>;
-> -		};
-> -
-> -	};
-> -
->   	gpioA0mux: mux-controller {
->   		compatible = "gpio-mux";
->   		#mux-control-cells = <0>;
+>
+> > Subject: [PATCH v4] ARM: dts: aspeed: yosemit V2: Enable OCP debug card
+>
+> Please double-check your spelling of commit messages.  You've misspelled
+> "yosemite" here, which gives an impression that it is quite likely that
+> other things are wrong with your commit.
+>
+> On Wed, Sep 21, 2022 at 12:13:09PM +0530, Karthikeyan Pasupathi wrote:
+> > Added IPMB-13 channel for Debug Card communication.
+> > which improve the readability of the machine and makes
+> > easier to debug the server.  and it will display the some
+> > informations about the server like "system info",
+> > "Critical sensors" and "critical sel".
+> >
+> > ---
+> > --- v4- Resolved syntax error
+> > --- v3- Updated the title and commit
+> > --- v2- Updated the title
+> > --- v1- Initial draft
+> > ---
+> >
+> > Signed-off-by: Karthikeyan Pasupathi <pkarthikeyan1509@gmail.com>
+> > ---
+> >  arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts | 11 +++++++++++
+> >  1 file changed, 11 insertions(+)
+> >
+> > diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts
+> b/arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts
+> > index 8864e9c312a8..84236df522dc 100644
+> > --- a/arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts
+> > +++ b/arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev2.dts
+> > @@ -215,6 +215,17 @@
+> >       };
+> >  };
+> >
+> > +&i2c13 {
+> > +     status = "okay";
+> > +     // Debug Card
+> > +     multi-master;
+> > +     ipmb13 at 10 {
+> > +             compatible = "ipmb-dev";
+> > +             reg = <(0x10 | I2C_OWN_SLAVE_ADDRESS)>;
+> > +             i2c-protocol;
+> > +     };
+> > +};
+> > +
+> >  &pwm_tacho {
+> >       status = "okay";
+> >       //FSC
+> > --
+> > 2.17.1
+> >
+>
+> Reviewed-by: Patrick Williams <patrick@stwcx.xyz>
+>
+> --
+> Patrick Williams
+>
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20220926/c78a348a/attachment.htm>
