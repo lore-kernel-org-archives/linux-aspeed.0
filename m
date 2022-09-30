@@ -1,62 +1,58 @@
-From: Quan Nguyen <quan@os.amperecomputing.com>
-Date: Thu, 29 Sep 2022 15:03:26 +0700
-Subject: [PATCH v9 3/3] i2c: aspeed: Assert NAK when slave is busy
-In-Reply-To: <20220929080326.752907-1-quan@os.amperecomputing.com>
-References: <20220929080326.752907-1-quan@os.amperecomputing.com>
-Message-ID: <20220929080326.752907-4-quan@os.amperecomputing.com>
+From: Herbert Xu <herbert@gondor.apana.org.au>
+Date: Fri, 30 Sep 2022 13:56:20 +0800
+Subject: [PATCH -next] crypto: aspeed - Remove redundant dev_err call
+In-Reply-To: <afde3f5c-32e4-6b89-8d6b-1f4f5a7744c4@huawei.com>
+References: <20220923100159.15705-1-shangxiaojing@huawei.com>
+ <HK0PR06MB320294D6E2A61F85F4276EE780519@HK0PR06MB3202.apcprd06.prod.outlook.com>
+ <afde3f5c-32e4-6b89-8d6b-1f4f5a7744c4@huawei.com>
+Message-ID: <YzaFBPVtJT4hMCvw@gondor.apana.org.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On I2C_SLAVE_WRITE_REQUESTED event, Slave already ACK'ed on the address
-phase. But as the backend driver is busy and unable to process any
-request from Master, issue RxCmdLast for Slave to auto send NACK on
-next incoming byte.
+On Fri, Sep 23, 2022 at 08:26:21PM +0800, shangxiaojing wrote:
+> 
+> On 2022/9/23 18:15, Neal Liu wrote:
+> > > devm_ioremap_resource() prints error message in itself. Remove the dev_err
+> > > call to avoid redundant error message.
+> > > 
+> > > Signed-off-by: Shang XiaoJing <shangxiaojing@huawei.com>
+> > > ---
+> > >   drivers/crypto/aspeed/aspeed-hace.c | 4 +---
+> > >   1 file changed, 1 insertion(+), 3 deletions(-)
+> > > 
+> > > diff --git a/drivers/crypto/aspeed/aspeed-hace.c
+> > > b/drivers/crypto/aspeed/aspeed-hace.c
+> > > index 3f880aafb6a2..e05c32c31842 100644
+> > > --- a/drivers/crypto/aspeed/aspeed-hace.c
+> > > +++ b/drivers/crypto/aspeed/aspeed-hace.c
+> > > @@ -123,10 +123,8 @@ static int aspeed_hace_probe(struct platform_device
+> > > *pdev)
+> > >   	platform_set_drvdata(pdev, hace_dev);
+> > > 
+> > >   	hace_dev->regs = devm_ioremap_resource(&pdev->dev, res);
+> > > -	if (IS_ERR(hace_dev->regs)) {
+> > > -		dev_err(&pdev->dev, "Failed to map resources\n");
+> > > +	if (IS_ERR(hace_dev->regs))
+> > >   		return PTR_ERR(hace_dev->regs);
+> > > -	}
+> > > 
+> > >   	/* Get irq number and register it */
+> > >   	hace_dev->irq = platform_get_irq(pdev, 0);
+> > > --
+> > > 2.17.1
+> > Similar patch just be proposed few days ago.
+> > https://patchwork.kernel.org/project/linux-crypto/patch/20220920032118.6440-1-yuehaibing at huawei.com/
+> 
+> sorry, pls ignore mine.
 
-Signed-off-by: Quan Nguyen <quan@os.amperecomputing.com>
----
-v9:
-  + Update commit message and add comment to explain
-    the effect of issuing RxCmdLast when Slave busy [Quan]
+Actually I think these two patches are different and both can be
+applied.
 
-v7 -> v8:
-  + None
-
-v6:
-  + New introduced in v6                            [Quan]
-
- drivers/i2c/busses/i2c-aspeed.c | 9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
-index 185dedfebbac..3d70f1ce6c6a 100644
---- a/drivers/i2c/busses/i2c-aspeed.c
-+++ b/drivers/i2c/busses/i2c-aspeed.c
-@@ -244,6 +244,7 @@ static u32 aspeed_i2c_slave_irq(struct aspeed_i2c_bus *bus, u32 irq_status)
- 	u32 command, irq_handled = 0;
- 	struct i2c_client *slave = bus->slave;
- 	u8 value;
-+	int ret;
- 
- 	if (!slave)
- 		return 0;
-@@ -311,7 +312,13 @@ static u32 aspeed_i2c_slave_irq(struct aspeed_i2c_bus *bus, u32 irq_status)
- 		break;
- 	case ASPEED_I2C_SLAVE_WRITE_REQUESTED:
- 		bus->slave_state = ASPEED_I2C_SLAVE_WRITE_RECEIVED;
--		i2c_slave_event(slave, I2C_SLAVE_WRITE_REQUESTED, &value);
-+		ret = i2c_slave_event(slave, I2C_SLAVE_WRITE_REQUESTED, &value);
-+		/*
-+		 * Slave ACK's on this address phase already but as the backend driver insists it
-+		 * is busy, turn on RxCmdLast for Slave to NACK on the next Rx byte.
-+		 */
-+		if (ret == -EBUSY)
-+			writel(ASPEED_I2CD_M_S_RX_CMD_LAST, bus->base + ASPEED_I2C_CMD_REG);
- 		break;
- 	case ASPEED_I2C_SLAVE_WRITE_RECEIVED:
- 		i2c_slave_event(slave, I2C_SLAVE_WRITE_RECEIVED, &value);
+Cheers,
 -- 
-2.35.1
-
+Email: Herbert Xu <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
