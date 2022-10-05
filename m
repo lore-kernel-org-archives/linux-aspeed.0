@@ -1,44 +1,27 @@
-From: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
-Date: Wed, 5 Oct 2022 16:32:09 +0800
-Subject: [v2] spi: aspeed: Fix typo in mode_bits field for AST2600 platform
-Message-ID: <20221005083209.222272-1-chin-ting_kuo@aspeedtech.com>
+From: Rob Herring <robh@kernel.org>
+Date: Wed, 5 Oct 2022 08:14:08 -0500
+Subject: [PATCH v2 3/4] dt-bindings: crypto: add documentation for Aspeed
+ ACRY
+In-Reply-To: <20221004032841.3714928-4-neal_liu@aspeedtech.com>
+References: <20221004032841.3714928-1-neal_liu@aspeedtech.com>
+ <20221004032841.3714928-4-neal_liu@aspeedtech.com>
+Message-ID: <166497564756.3256206.1489547324996590627.robh@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Both quad SPI TX and RX modes can be supported on AST2600.
-Correct typo in mode_bits field in both ast2600_fmc_data
-and ast2600_spi_data structs.
+On Tue, 04 Oct 2022 11:28:40 +0800, Neal Liu wrote:
+> Add device tree binding documentation for the Aspeed
+> ECDSA/RSA ACRY Engines Controller.
+> 
+> Signed-off-by: Neal Liu <neal_liu@aspeedtech.com>
+> ---
+>  .../bindings/crypto/aspeed,ast2600-acry.yaml  | 49 +++++++++++++++++++
+>  MAINTAINERS                                   |  2 +-
+>  2 files changed, 50 insertions(+), 1 deletion(-)
+>  create mode 100644 Documentation/devicetree/bindings/crypto/aspeed,ast2600-acry.yaml
+> 
 
-Signed-off-by: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
----
- drivers/spi/spi-aspeed-smc.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/spi/spi-aspeed-smc.c b/drivers/spi/spi-aspeed-smc.c
-index a334e89add86..33cefcf18392 100644
---- a/drivers/spi/spi-aspeed-smc.c
-+++ b/drivers/spi/spi-aspeed-smc.c
-@@ -1163,7 +1163,7 @@ static const struct aspeed_spi_data ast2500_spi_data = {
- static const struct aspeed_spi_data ast2600_fmc_data = {
- 	.max_cs	       = 3,
- 	.hastype       = false,
--	.mode_bits     = SPI_RX_QUAD | SPI_RX_QUAD,
-+	.mode_bits     = SPI_RX_QUAD | SPI_TX_QUAD,
- 	.we0	       = 16,
- 	.ctl0	       = CE0_CTRL_REG,
- 	.timing	       = CE0_TIMING_COMPENSATION_REG,
-@@ -1178,7 +1178,7 @@ static const struct aspeed_spi_data ast2600_fmc_data = {
- static const struct aspeed_spi_data ast2600_spi_data = {
- 	.max_cs	       = 2,
- 	.hastype       = false,
--	.mode_bits     = SPI_RX_QUAD | SPI_RX_QUAD,
-+	.mode_bits     = SPI_RX_QUAD | SPI_TX_QUAD,
- 	.we0	       = 16,
- 	.ctl0	       = CE0_CTRL_REG,
- 	.timing	       = CE0_TIMING_COMPENSATION_REG,
--- 
-2.25.1
-
+Reviewed-by: Rob Herring <robh@kernel.org>
