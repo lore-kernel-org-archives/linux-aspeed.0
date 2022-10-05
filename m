@@ -1,30 +1,31 @@
-From: Wolfram Sang <wsa@kernel.org>
-Date: Wed, 5 Oct 2022 21:06:01 +0200
-Subject: [PATCH v10 3/3] i2c: aspeed: Assert NAK when slave is busy
-In-Reply-To: <20221004093106.1653317-4-quan@os.amperecomputing.com>
-References: <20221004093106.1653317-1-quan@os.amperecomputing.com>
- <20221004093106.1653317-4-quan@os.amperecomputing.com>
-Message-ID: <Yz3VmWCqdolKg5sm@shikoro>
+From: Andrew Jeffery <andrew@aj.id.au>
+Date: Thu, 06 Oct 2022 09:42:57 +1030
+Subject: [PATCH] ipmi: kcs: Poll OBF briefly to reduce OBE latency
+In-Reply-To: <20220812144741.240315-1-andrew@aj.id.au>
+References: <20220812144741.240315-1-andrew@aj.id.au>
+Message-ID: <08c20621-e75d-4a72-82e6-b1980304e20a@app.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Oct 04, 2022 at 04:31:06PM +0700, Quan Nguyen wrote:
-> On I2C_SLAVE_WRITE_REQUESTED event, Slave already ACK'ed on the address
-> phase. But as the backend driver is busy and unable to process any
-> request from Master, issue RxCmdLast for Slave to auto send NACK on
-> next incoming byte.
-> 
-> Signed-off-by: Quan Nguyen <quan@os.amperecomputing.com>
+Hi Corey,
 
-Applied to for-current, thanks!
+On Sat, 13 Aug 2022, at 00:17, Andrew Jeffery wrote:
+> The ASPEED KCS devices don't provide a BMC-side interrupt for the host
+> reading the output data register (ODR). The act of the host reading ODR
+> clears the output buffer full (OBF) flag in the status register (STR),
+> informing the BMC it can transmit a subsequent byte.
+>
+> On the BMC side the KCS client must enable the OBE event *and* perform a
+> subsequent read of STR anyway to avoid races - the polling provides a
+> window for the host to read ODR if data was freshly written while
+> minimising BMC-side latency.
 
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 833 bytes
-Desc: not available
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20221005/d53d6409/attachment.sig>
+Just wondering whether you're happy to pick this one up? I haven't seen 
+it hit the IPMI tree yet.
+
+Cheers,
+
+Andrew
