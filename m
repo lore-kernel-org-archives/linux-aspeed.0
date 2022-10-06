@@ -1,10 +1,11 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Thu, 06 Oct 2022 13:36:51 +1030
+Date: Thu, 06 Oct 2022 13:38:30 +1030
 Subject: [PATCH] ipmi: kcs: Poll OBF briefly to reduce OBE latency
-In-Reply-To: <CACPK8XdnFPXZuzAaSMOUnV6ng9y2_ZMcAff12q8Zxvr2HJZy-w@mail.gmail.com>
+In-Reply-To: <Yz4ZU8Ron/b9GV6p@minyard.net>
 References: <20220812144741.240315-1-andrew@aj.id.au>
- <CACPK8XdnFPXZuzAaSMOUnV6ng9y2_ZMcAff12q8Zxvr2HJZy-w@mail.gmail.com>
-Message-ID: <f6a85e5e-a3b1-4e5c-9db6-1222dcabd780@app.fastmail.com>
+ <08c20621-e75d-4a72-82e6-b1980304e20a@app.fastmail.com>
+ <Yz4ZU8Ron/b9GV6p@minyard.net>
+Message-ID: <c992be3d-2002-44e3-8bee-9ded84145ad1@app.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -13,101 +14,33 @@ Content-Transfer-Encoding: 7bit
 
 
 
-On Thu, 6 Oct 2022, at 10:20, Joel Stanley wrote:
-> On Fri, 12 Aug 2022 at 14:48, Andrew Jeffery <andrew@aj.id.au> wrote:
->>
->> The ASPEED KCS devices don't provide a BMC-side interrupt for the host
->> reading the output data register (ODR). The act of the host reading ODR
->> clears the output buffer full (OBF) flag in the status register (STR),
->> informing the BMC it can transmit a subsequent byte.
->>
->> On the BMC side the KCS client must enable the OBE event *and* perform a
->> subsequent read of STR anyway to avoid races - the polling provides a
->> window for the host to read ODR if data was freshly written while
->> minimising BMC-side latency.
->>
+On Thu, 6 Oct 2022, at 10:24, Corey Minyard wrote:
+> On Thu, Oct 06, 2022 at 09:42:57AM +1030, Andrew Jeffery wrote:
+>> Hi Corey,
+>> 
+>> On Sat, 13 Aug 2022, at 00:17, Andrew Jeffery wrote:
+>> > The ASPEED KCS devices don't provide a BMC-side interrupt for the host
+>> > reading the output data register (ODR). The act of the host reading ODR
+>> > clears the output buffer full (OBF) flag in the status register (STR),
+>> > informing the BMC it can transmit a subsequent byte.
+>> >
+>> > On the BMC side the KCS client must enable the OBE event *and* perform a
+>> > subsequent read of STR anyway to avoid races - the polling provides a
+>> > window for the host to read ODR if data was freshly written while
+>> > minimising BMC-side latency.
+>> 
+>> Just wondering whether you're happy to pick this one up? I haven't seen 
+>> it hit the IPMI tree yet.
 >
-> Fixes...?
-
-Is it a fix though? It's definitely an *improvement* in behaviour, but 
-the existing behaviour also wasn't *incorrect*, just kinda unfortunate 
-under certain timings? Dunno. I'm probably splitting hairs.
-
-In any case, if we do want a fixes line:
-
-Fixes: 28651e6c4237 ("ipmi: kcs_bmc: Allow clients to control KCS IRQ state")
-
->
->> Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
->
-> Reviewed-by: Joel Stanley <joel@jms.id.au>
+> Sorry.  It's in my tree for 6.2 right now.
 
 Thanks!
 
 >
->> ---
->>  drivers/char/ipmi/kcs_bmc_aspeed.c | 24 +++++++++++++++++++++---
->>  1 file changed, 21 insertions(+), 3 deletions(-)
->>
->> diff --git a/drivers/char/ipmi/kcs_bmc_aspeed.c b/drivers/char/ipmi/kcs_bmc_aspeed.c
->> index cdc88cde1e9a..417e5a3ccfae 100644
->> --- a/drivers/char/ipmi/kcs_bmc_aspeed.c
->> +++ b/drivers/char/ipmi/kcs_bmc_aspeed.c
->> @@ -399,13 +399,31 @@ static void aspeed_kcs_check_obe(struct timer_list *timer)
->>  static void aspeed_kcs_irq_mask_update(struct kcs_bmc_device *kcs_bmc, u8 mask, u8 state)
->>  {
->>         struct aspeed_kcs_bmc *priv = to_aspeed_kcs_bmc(kcs_bmc);
->> +       int rc;
->> +       u8 str;
+> I can't push it up to for-next until 6.1-rc1 comes out.
 >
-> str is status, it would be good to spell that out in full.
 
-I guess if it trips enough people up we can rename it later.
-
->
->>
->>         /* We don't have an OBE IRQ, emulate it */
->>         if (mask & KCS_BMC_EVENT_TYPE_OBE) {
->> -               if (KCS_BMC_EVENT_TYPE_OBE & state)
->> -                       mod_timer(&priv->obe.timer, jiffies + OBE_POLL_PERIOD);
->> -               else
->> +               if (KCS_BMC_EVENT_TYPE_OBE & state) {
->> +                       /*
->> +                        * Given we don't have an OBE IRQ, delay by polling briefly to see if we can
->> +                        * observe such an event before returning to the caller. This is not
->> +                        * incorrect because OBF may have already become clear before enabling the
->> +                        * IRQ if we had one, under which circumstance no event will be propagated
->> +                        * anyway.
->> +                        *
->> +                        * The onus is on the client to perform a race-free check that it hasn't
->> +                        * missed the event.
->> +                        */
->> +                       rc = read_poll_timeout_atomic(aspeed_kcs_inb, str,
->> +                                                     !(str & KCS_BMC_STR_OBF), 1, 100, false,
->> +                                                     &priv->kcs_bmc, priv->kcs_bmc.ioreg.str);
->> +                       /* Time for the slow path? */
->
-> The mod_timer is the slow path? The question mark threw me.
-
-Yeah, mod_timer() is the slow path; read_poll_timeout_atomic() is the 
-fast path and we've exhausted the time we're willing to wait there if 
-we get -ETIMEDOUT.
-
-The comment was intended as a description for the question posed by the 
-condition. It made sense in my head but maybe it's confusing more than 
-it is enlightening?
+No worries, just wanted to make sure it didn't fall through the cracks 
+:)
 
 Andrew
-
->
->> +                       if (rc == -ETIMEDOUT)
->> +                               mod_timer(&priv->obe.timer, jiffies + OBE_POLL_PERIOD);
->> +               } else {
->>                         del_timer(&priv->obe.timer);
->> +               }
->>         }
->>
->>         if (mask & KCS_BMC_EVENT_TYPE_IBF) {
->> --
->> 2.34.1
->>
