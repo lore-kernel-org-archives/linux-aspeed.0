@@ -1,9 +1,9 @@
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Date: Mon, 10 Oct 2022 23:14:36 +0300
-Subject: [PATCH v2 20/36] pinctrl: samsung: Add missed header(s)
+Date: Mon, 10 Oct 2022 23:14:39 +0300
+Subject: [PATCH v2 23/36] pinctrl: sprd: Add missed header(s)
 In-Reply-To: <20221010201453.77401-1-andriy.shevchenko@linux.intel.com>
 References: <20221010201453.77401-1-andriy.shevchenko@linux.intel.com>
-Message-ID: <20221010201453.77401-21-andriy.shevchenko@linux.intel.com>
+Message-ID: <20221010201453.77401-24-andriy.shevchenko@linux.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -17,35 +17,30 @@ While at it, sort headers alphabetically.
 
 Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 ---
- drivers/pinctrl/samsung/pinctrl-samsung.c | 11 ++++++-----
- 1 file changed, 6 insertions(+), 5 deletions(-)
+ drivers/pinctrl/sprd/pinctrl-sprd.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/pinctrl/samsung/pinctrl-samsung.c b/drivers/pinctrl/samsung/pinctrl-samsung.c
-index bd13b5ef246d..5736761927cb 100644
---- a/drivers/pinctrl/samsung/pinctrl-samsung.c
-+++ b/drivers/pinctrl/samsung/pinctrl-samsung.c
-@@ -15,15 +15,16 @@
- // but provides extensions to which platform specific implementation of the gpio
- // and wakeup interrupts can be hooked to.
- 
--#include <linux/init.h>
--#include <linux/platform_device.h>
--#include <linux/io.h>
--#include <linux/property.h>
--#include <linux/slab.h>
- #include <linux/err.h>
- #include <linux/gpio/driver.h>
-+#include <linux/init.h>
-+#include <linux/io.h>
- #include <linux/irqdomain.h>
+diff --git a/drivers/pinctrl/sprd/pinctrl-sprd.c b/drivers/pinctrl/sprd/pinctrl-sprd.c
+index dca7a505d413..c1806b7dcf78 100644
+--- a/drivers/pinctrl/sprd/pinctrl-sprd.c
++++ b/drivers/pinctrl/sprd/pinctrl-sprd.c
+@@ -13,12 +13,14 @@
+ #include <linux/of.h>
  #include <linux/of_device.h>
-+#include <linux/platform_device.h>
-+#include <linux/property.h>
-+#include <linux/seq_file.h>
+ #include <linux/platform_device.h>
 +#include <linux/slab.h>
- #include <linux/spinlock.h>
++
++#include <linux/pinctrl/consumer.h>
+ #include <linux/pinctrl/machine.h>
+-#include <linux/pinctrl/pinconf.h>
+ #include <linux/pinctrl/pinconf-generic.h>
++#include <linux/pinctrl/pinconf.h>
+ #include <linux/pinctrl/pinctrl.h>
+ #include <linux/pinctrl/pinmux.h>
+-#include <linux/slab.h>
  
  #include "../core.h"
+ #include "../pinmux.h"
 -- 
 2.35.1
 
