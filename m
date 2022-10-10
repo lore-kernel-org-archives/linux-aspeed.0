@@ -1,9 +1,9 @@
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Date: Mon, 10 Oct 2022 23:14:35 +0300
-Subject: [PATCH v2 19/36] pinctrl: renesas: Add missed header(s)
+Date: Mon, 10 Oct 2022 23:14:38 +0300
+Subject: [PATCH v2 22/36] pinctrl: spear: Add missed header(s)
 In-Reply-To: <20221010201453.77401-1-andriy.shevchenko@linux.intel.com>
 References: <20221010201453.77401-1-andriy.shevchenko@linux.intel.com>
-Message-ID: <20221010201453.77401-20-andriy.shevchenko@linux.intel.com>
+Message-ID: <20221010201453.77401-23-andriy.shevchenko@linux.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -17,80 +17,29 @@ While at it, sort headers alphabetically.
 
 Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 ---
- drivers/pinctrl/renesas/pinctrl-rzg2l.c | 7 +++++--
- drivers/pinctrl/renesas/pinctrl-rzv2m.c | 4 +++-
- drivers/pinctrl/renesas/pinctrl.c       | 8 +++++---
- 3 files changed, 13 insertions(+), 6 deletions(-)
+ drivers/pinctrl/spear/pinctrl-spear.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/pinctrl/renesas/pinctrl-rzg2l.c b/drivers/pinctrl/renesas/pinctrl-rzg2l.c
-index a43824fd9505..a08eee092430 100644
---- a/drivers/pinctrl/renesas/pinctrl-rzg2l.c
-+++ b/drivers/pinctrl/renesas/pinctrl-rzg2l.c
-@@ -8,16 +8,19 @@
- #include <linux/bitops.h>
- #include <linux/clk.h>
- #include <linux/gpio/driver.h>
--#include <linux/io.h>
- #include <linux/interrupt.h>
-+#include <linux/io.h>
- #include <linux/module.h>
- #include <linux/of_device.h>
- #include <linux/of_irq.h>
-+#include <linux/seq_file.h>
-+#include <linux/spinlock.h>
-+
-+#include <linux/pinctrl/consumer.h>
- #include <linux/pinctrl/pinconf-generic.h>
- #include <linux/pinctrl/pinconf.h>
- #include <linux/pinctrl/pinctrl.h>
- #include <linux/pinctrl/pinmux.h>
--#include <linux/spinlock.h>
- 
- #include <dt-bindings/pinctrl/rzg2l-pinctrl.h>
- 
-diff --git a/drivers/pinctrl/renesas/pinctrl-rzv2m.c b/drivers/pinctrl/renesas/pinctrl-rzv2m.c
-index e8c18198bebd..061f16c77304 100644
---- a/drivers/pinctrl/renesas/pinctrl-rzv2m.c
-+++ b/drivers/pinctrl/renesas/pinctrl-rzv2m.c
-@@ -15,11 +15,13 @@
- #include <linux/io.h>
- #include <linux/module.h>
- #include <linux/of_device.h>
-+#include <linux/spinlock.h>
-+
-+#include <linux/pinctrl/consumer.h>
- #include <linux/pinctrl/pinconf-generic.h>
- #include <linux/pinctrl/pinconf.h>
- #include <linux/pinctrl/pinctrl.h>
- #include <linux/pinctrl/pinmux.h>
--#include <linux/spinlock.h>
- 
- #include <dt-bindings/pinctrl/rzv2m-pinctrl.h>
- 
-diff --git a/drivers/pinctrl/renesas/pinctrl.c b/drivers/pinctrl/renesas/pinctrl.c
-index b438d24c13b5..b74147800319 100644
---- a/drivers/pinctrl/renesas/pinctrl.c
-+++ b/drivers/pinctrl/renesas/pinctrl.c
-@@ -12,14 +12,16 @@
- #include <linux/io.h>
- #include <linux/module.h>
+diff --git a/drivers/pinctrl/spear/pinctrl-spear.c b/drivers/pinctrl/spear/pinctrl-spear.c
+index e0543c1ad641..18de2e70ea50 100644
+--- a/drivers/pinctrl/spear/pinctrl-spear.c
++++ b/drivers/pinctrl/spear/pinctrl-spear.c
+@@ -19,11 +19,13 @@
  #include <linux/of.h>
+ #include <linux/of_address.h>
+ #include <linux/of_gpio.h>
++#include <linux/platform_device.h>
 +#include <linux/seq_file.h>
 +#include <linux/slab.h>
-+#include <linux/spinlock.h>
 +
- #include <linux/pinctrl/consumer.h>
  #include <linux/pinctrl/machine.h>
--#include <linux/pinctrl/pinconf.h>
- #include <linux/pinctrl/pinconf-generic.h>
-+#include <linux/pinctrl/pinconf.h>
  #include <linux/pinctrl/pinctrl.h>
  #include <linux/pinctrl/pinmux.h>
+-#include <linux/platform_device.h>
 -#include <linux/slab.h>
--#include <linux/spinlock.h>
  
- #include "core.h"
- #include "../core.h"
+ #include "pinctrl-spear.h"
+ 
 -- 
 2.35.1
 
