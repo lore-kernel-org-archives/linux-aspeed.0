@@ -1,9 +1,9 @@
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Date: Mon, 10 Oct 2022 23:14:28 +0300
-Subject: [PATCH v2 12/36] pinctrl: k210: Add missed header(s)
+Date: Mon, 10 Oct 2022 23:14:31 +0300
+Subject: [PATCH v2 15/36] pinctrl: mvebu: Add missed header(s)
 In-Reply-To: <20221010201453.77401-1-andriy.shevchenko@linux.intel.com>
 References: <20221010201453.77401-1-andriy.shevchenko@linux.intel.com>
-Message-ID: <20221010201453.77401-13-andriy.shevchenko@linux.intel.com>
+Message-ID: <20221010201453.77401-16-andriy.shevchenko@linux.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -17,38 +17,41 @@ While at it, sort headers alphabetically.
 
 Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 ---
- drivers/pinctrl/pinctrl-k210.c | 12 +++++++-----
- 1 file changed, 7 insertions(+), 5 deletions(-)
+ drivers/pinctrl/mvebu/pinctrl-mvebu.c | 14 ++++++++------
+ 1 file changed, 8 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/pinctrl/pinctrl-k210.c b/drivers/pinctrl/pinctrl-k210.c
-index ecab6bf63dc6..288e44457fec 100644
---- a/drivers/pinctrl/pinctrl-k210.c
-+++ b/drivers/pinctrl/pinctrl-k210.c
-@@ -3,18 +3,20 @@
-  * Copyright (C) 2020 Sean Anderson <seanga2@gmail.com>
-  * Copyright (c) 2020 Western Digital Corporation or its affiliates.
+diff --git a/drivers/pinctrl/mvebu/pinctrl-mvebu.c b/drivers/pinctrl/mvebu/pinctrl-mvebu.c
+index 8ef0a97d2bf5..8e6aac4164df 100644
+--- a/drivers/pinctrl/mvebu/pinctrl-mvebu.c
++++ b/drivers/pinctrl/mvebu/pinctrl-mvebu.c
+@@ -6,20 +6,22 @@
+  *          Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
   */
--#include <linux/io.h>
--#include <linux/of_device.h>
-+#include <linux/bitfield.h>
- #include <linux/clk.h>
-+#include <linux/io.h>
- #include <linux/mfd/syscon.h>
-+#include <linux/of_device.h>
- #include <linux/platform_device.h>
--#include <linux/bitfield.h>
- #include <linux/regmap.h>
+ 
+-#include <linux/platform_device.h>
+-#include <linux/slab.h>
++#include <linux/err.h>
++#include <linux/gpio/driver.h>
+ #include <linux/io.h>
++#include <linux/mfd/syscon.h>
+ #include <linux/of.h>
+ #include <linux/of_address.h>
+ #include <linux/of_platform.h>
+-#include <linux/err.h>
+-#include <linux/gpio/driver.h>
++#include <linux/platform_device.h>
++#include <linux/regmap.h>
 +#include <linux/seq_file.h>
- #include <linux/slab.h>
++#include <linux/slab.h>
 +
-+#include <linux/pinctrl/pinconf-generic.h>
-+#include <linux/pinctrl/pinconf.h>
+ #include <linux/pinctrl/machine.h>
+ #include <linux/pinctrl/pinconf.h>
  #include <linux/pinctrl/pinctrl.h>
  #include <linux/pinctrl/pinmux.h>
--#include <linux/pinctrl/pinconf.h>
--#include <linux/pinctrl/pinconf-generic.h>
+-#include <linux/mfd/syscon.h>
+-#include <linux/regmap.h>
  
- #include <dt-bindings/pinctrl/k210-fpioa.h>
+ #include "pinctrl-mvebu.h"
  
 -- 
 2.35.1
