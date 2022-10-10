@@ -1,9 +1,9 @@
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Date: Mon, 10 Oct 2022 23:14:32 +0300
-Subject: [PATCH v2 16/36] pinctrl: npcm7xx: Add missed header(s)
+Date: Mon, 10 Oct 2022 23:14:30 +0300
+Subject: [PATCH v2 14/36] pinctrl: mediatek: Add missed header(s)
 In-Reply-To: <20221010201453.77401-1-andriy.shevchenko@linux.intel.com>
 References: <20221010201453.77401-1-andriy.shevchenko@linux.intel.com>
-Message-ID: <20221010201453.77401-17-andriy.shevchenko@linux.intel.com>
+Message-ID: <20221010201453.77401-15-andriy.shevchenko@linux.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -17,35 +17,41 @@ While at it, sort headers alphabetically.
 
 Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 ---
- drivers/pinctrl/nuvoton/pinctrl-npcm7xx.c | 11 +++++++----
- 1 file changed, 7 insertions(+), 4 deletions(-)
+ drivers/pinctrl/mediatek/pinctrl-moore.c | 3 +++
+ drivers/pinctrl/mediatek/pinctrl-paris.c | 5 +++++
+ 2 files changed, 8 insertions(+)
 
-diff --git a/drivers/pinctrl/nuvoton/pinctrl-npcm7xx.c b/drivers/pinctrl/nuvoton/pinctrl-npcm7xx.c
-index 1c4e89b046de..ff5bcea172e8 100644
---- a/drivers/pinctrl/nuvoton/pinctrl-npcm7xx.c
-+++ b/drivers/pinctrl/nuvoton/pinctrl-npcm7xx.c
-@@ -11,14 +11,17 @@
- #include <linux/of.h>
- #include <linux/of_address.h>
- #include <linux/of_irq.h>
-+#include <linux/platform_device.h>
-+#include <linux/property.h>
-+#include <linux/regmap.h>
+diff --git a/drivers/pinctrl/mediatek/pinctrl-moore.c b/drivers/pinctrl/mediatek/pinctrl-moore.c
+index 526faaebaf77..9474ada5addb 100644
+--- a/drivers/pinctrl/mediatek/pinctrl-moore.c
++++ b/drivers/pinctrl/mediatek/pinctrl-moore.c
+@@ -9,6 +9,9 @@
+  */
+ 
+ #include <linux/gpio/driver.h>
++
++#include <linux/pinctrl/consumer.h>
++
+ #include "pinctrl-moore.h"
+ 
+ #define PINCTRL_PINCTRL_DEV		KBUILD_MODNAME
+diff --git a/drivers/pinctrl/mediatek/pinctrl-paris.c b/drivers/pinctrl/mediatek/pinctrl-paris.c
+index 74517e810958..475f4172d508 100644
+--- a/drivers/pinctrl/mediatek/pinctrl-paris.c
++++ b/drivers/pinctrl/mediatek/pinctrl-paris.c
+@@ -11,7 +11,12 @@
+ 
+ #include <linux/gpio/driver.h>
+ #include <linux/module.h>
 +#include <linux/seq_file.h>
 +
 +#include <linux/pinctrl/consumer.h>
- #include <linux/pinctrl/machine.h>
--#include <linux/pinctrl/pinconf.h>
- #include <linux/pinctrl/pinconf-generic.h>
-+#include <linux/pinctrl/pinconf.h>
- #include <linux/pinctrl/pinctrl.h>
- #include <linux/pinctrl/pinmux.h>
--#include <linux/platform_device.h>
--#include <linux/property.h>
--#include <linux/regmap.h>
++
+ #include <dt-bindings/pinctrl/mt65xx.h>
++
+ #include "pinctrl-paris.h"
  
- /* GCR registers */
- #define NPCM7XX_GCR_PDID	0x00
+ #define PINCTRL_PINCTRL_DEV	KBUILD_MODNAME
 -- 
 2.35.1
 
