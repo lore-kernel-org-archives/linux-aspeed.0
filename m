@@ -1,9 +1,9 @@
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Date: Mon, 10 Oct 2022 23:14:30 +0300
-Subject: [PATCH v2 14/36] pinctrl: mediatek: Add missed header(s)
+Date: Mon, 10 Oct 2022 23:14:33 +0300
+Subject: [PATCH v2 17/36] pinctrl: ocelot: Add missed header(s)
 In-Reply-To: <20221010201453.77401-1-andriy.shevchenko@linux.intel.com>
 References: <20221010201453.77401-1-andriy.shevchenko@linux.intel.com>
-Message-ID: <20221010201453.77401-15-andriy.shevchenko@linux.intel.com>
+Message-ID: <20221010201453.77401-18-andriy.shevchenko@linux.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -17,41 +17,35 @@ While at it, sort headers alphabetically.
 
 Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 ---
- drivers/pinctrl/mediatek/pinctrl-moore.c | 3 +++
- drivers/pinctrl/mediatek/pinctrl-paris.c | 5 +++++
- 2 files changed, 8 insertions(+)
+ drivers/pinctrl/pinctrl-ocelot.c | 10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/pinctrl/mediatek/pinctrl-moore.c b/drivers/pinctrl/mediatek/pinctrl-moore.c
-index 526faaebaf77..9474ada5addb 100644
---- a/drivers/pinctrl/mediatek/pinctrl-moore.c
-+++ b/drivers/pinctrl/mediatek/pinctrl-moore.c
-@@ -9,6 +9,9 @@
-  */
+diff --git a/drivers/pinctrl/pinctrl-ocelot.c b/drivers/pinctrl/pinctrl-ocelot.c
+index 647e91490bac..a9343c242cd5 100644
+--- a/drivers/pinctrl/pinctrl-ocelot.c
++++ b/drivers/pinctrl/pinctrl-ocelot.c
+@@ -13,15 +13,17 @@
+ #include <linux/of_device.h>
+ #include <linux/of_irq.h>
+ #include <linux/of_platform.h>
+-#include <linux/pinctrl/pinctrl.h>
+-#include <linux/pinctrl/pinmux.h>
+-#include <linux/pinctrl/pinconf.h>
+-#include <linux/pinctrl/pinconf-generic.h>
+ #include <linux/platform_device.h>
+ #include <linux/regmap.h>
+ #include <linux/reset.h>
+ #include <linux/slab.h>
  
- #include <linux/gpio/driver.h>
-+
 +#include <linux/pinctrl/consumer.h>
++#include <linux/pinctrl/pinconf-generic.h>
++#include <linux/pinctrl/pinconf.h>
++#include <linux/pinctrl/pinctrl.h>
++#include <linux/pinctrl/pinmux.h>
 +
- #include "pinctrl-moore.h"
- 
- #define PINCTRL_PINCTRL_DEV		KBUILD_MODNAME
-diff --git a/drivers/pinctrl/mediatek/pinctrl-paris.c b/drivers/pinctrl/mediatek/pinctrl-paris.c
-index 74517e810958..475f4172d508 100644
---- a/drivers/pinctrl/mediatek/pinctrl-paris.c
-+++ b/drivers/pinctrl/mediatek/pinctrl-paris.c
-@@ -11,7 +11,12 @@
- 
- #include <linux/gpio/driver.h>
- #include <linux/module.h>
-+#include <linux/seq_file.h>
-+
-+#include <linux/pinctrl/consumer.h>
-+
- #include <dt-bindings/pinctrl/mt65xx.h>
-+
- #include "pinctrl-paris.h"
- 
- #define PINCTRL_PINCTRL_DEV	KBUILD_MODNAME
+ #include "core.h"
+ #include "pinconf.h"
+ #include "pinmux.h"
 -- 
 2.35.1
 
