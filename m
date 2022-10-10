@@ -1,9 +1,9 @@
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Date: Mon, 10 Oct 2022 23:14:19 +0300
-Subject: [PATCH v2 03/36] media: c8sectpfe: Add missed header(s)
+Date: Mon, 10 Oct 2022 23:14:20 +0300
+Subject: [PATCH v2 04/36] pinctrl: actions: Add missed header(s)
 In-Reply-To: <20221010201453.77401-1-andriy.shevchenko@linux.intel.com>
 References: <20221010201453.77401-1-andriy.shevchenko@linux.intel.com>
-Message-ID: <20221010201453.77401-4-andriy.shevchenko@linux.intel.com>
+Message-ID: <20221010201453.77401-5-andriy.shevchenko@linux.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -17,35 +17,33 @@ While at it, sort headers alphabetically.
 
 Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 ---
- drivers/media/platform/st/sti/c8sectpfe/c8sectpfe-core.c | 8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+ drivers/pinctrl/actions/pinctrl-owl.c | 10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/media/platform/st/sti/c8sectpfe/c8sectpfe-core.c b/drivers/media/platform/st/sti/c8sectpfe/c8sectpfe-core.c
-index cefe6b7bfdc4..4c5027a0480d 100644
---- a/drivers/media/platform/st/sti/c8sectpfe/c8sectpfe-core.c
-+++ b/drivers/media/platform/st/sti/c8sectpfe/c8sectpfe-core.c
-@@ -24,16 +24,18 @@
+diff --git a/drivers/pinctrl/actions/pinctrl-owl.c b/drivers/pinctrl/actions/pinctrl-owl.c
+index ed46abc15d72..a84ace6e451e 100644
+--- a/drivers/pinctrl/actions/pinctrl-owl.c
++++ b/drivers/pinctrl/actions/pinctrl-owl.c
+@@ -17,13 +17,15 @@
  #include <linux/module.h>
- #include <linux/of_gpio.h>
- #include <linux/of_platform.h>
-+#include <linux/pinctrl/consumer.h>
-+#include <linux/pinctrl/pinctrl.h>
+ #include <linux/of.h>
  #include <linux/platform_device.h>
--#include <linux/usb.h>
- #include <linux/slab.h>
- #include <linux/time.h>
-+#include <linux/usb.h>
- #include <linux/wait.h>
--#include <linux/pinctrl/pinctrl.h>
- 
--#include "c8sectpfe-core.h"
- #include "c8sectpfe-common.h"
-+#include "c8sectpfe-core.h"
- #include "c8sectpfe-debugfs.h"
++#include <linux/seq_file.h>
++#include <linux/slab.h>
++#include <linux/spinlock.h>
 +
- #include <media/dmxdev.h>
- #include <media/dvb_demux.h>
- #include <media/dvb_frontend.h>
+ #include <linux/pinctrl/machine.h>
++#include <linux/pinctrl/pinconf-generic.h>
++#include <linux/pinctrl/pinconf.h>
+ #include <linux/pinctrl/pinctrl.h>
+ #include <linux/pinctrl/pinmux.h>
+-#include <linux/pinctrl/pinconf.h>
+-#include <linux/pinctrl/pinconf-generic.h>
+-#include <linux/slab.h>
+-#include <linux/spinlock.h>
+ 
+ #include "../core.h"
+ #include "../pinctrl-utils.h"
 -- 
 2.35.1
 
