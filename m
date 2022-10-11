@@ -1,70 +1,70 @@
-From: Damien Le Moal <Damien.LeMoal@wdc.com>
-Date: Mon, 10 Oct 2022 22:33:10 +0000
-Subject: [PATCH v2 12/36] pinctrl: k210: Add missed header(s)
-In-Reply-To: <20221010201453.77401-13-andriy.shevchenko@linux.intel.com>
+From: Kent Gibson <warthog618@gmail.com>
+Date: Tue, 11 Oct 2022 08:01:27 +0800
+Subject: [PATCH v2 02/36] gpiolib: cdev: Add missed header(s)
+In-Reply-To: <20221010201453.77401-3-andriy.shevchenko@linux.intel.com>
 References: <20221010201453.77401-1-andriy.shevchenko@linux.intel.com>
- <20221010201453.77401-13-andriy.shevchenko@linux.intel.com>
-Message-ID: <4630d457-2d3b-6f66-7be5-54c84bdf80b4@wdc.com>
+ <20221010201453.77401-3-andriy.shevchenko@linux.intel.com>
+Message-ID: <Y0SyVwjDl7NGfTPn@sol>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 2022/10/11 5:15, Andy Shevchenko wrote:
+On Mon, Oct 10, 2022 at 11:14:18PM +0300, Andy Shevchenko wrote:
 > Do not imply that some of the generic headers may be always included.
 > Instead, include explicitly what we are direct user of.
 > 
 > While at it, sort headers alphabetically.
 > 
 > Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-
-Looks OK to me, but the patch title should be:
-
-pinctrl: k210: Add missing header(s)
-
-Same remark for the entire series. You need s/missed/missing in all patch titles.
-
-With that fixed,
-
-Reviewed-by: Damien Le Moal <damien.lemoal@opensource.wdc.com>
-
 > ---
->  drivers/pinctrl/pinctrl-k210.c | 12 +++++++-----
->  1 file changed, 7 insertions(+), 5 deletions(-)
+>  drivers/gpio/gpiolib-cdev.c | 6 ++++--
+>  1 file changed, 4 insertions(+), 2 deletions(-)
 > 
-> diff --git a/drivers/pinctrl/pinctrl-k210.c b/drivers/pinctrl/pinctrl-k210.c
-> index ecab6bf63dc6..288e44457fec 100644
-> --- a/drivers/pinctrl/pinctrl-k210.c
-> +++ b/drivers/pinctrl/pinctrl-k210.c
-> @@ -3,18 +3,20 @@
->   * Copyright (C) 2020 Sean Anderson <seanga2@gmail.com>
->   * Copyright (c) 2020 Western Digital Corporation or its affiliates.
->   */
-> -#include <linux/io.h>
-> -#include <linux/of_device.h>
-> +#include <linux/bitfield.h>
->  #include <linux/clk.h>
-> +#include <linux/io.h>
->  #include <linux/mfd/syscon.h>
-> +#include <linux/of_device.h>
->  #include <linux/platform_device.h>
-> -#include <linux/bitfield.h>
->  #include <linux/regmap.h>
+> diff --git a/drivers/gpio/gpiolib-cdev.c b/drivers/gpio/gpiolib-cdev.c
+> index f8041d4898d1..60a60e2d60c5 100644
+> --- a/drivers/gpio/gpiolib-cdev.c
+> +++ b/drivers/gpio/gpiolib-cdev.c
+> @@ -10,8 +10,9 @@
+>  #include <linux/device.h>
+>  #include <linux/err.h>
+>  #include <linux/file.h>
+> -#include <linux/gpio.h>
+>  #include <linux/gpio/driver.h>
+> +#include <linux/gpio.h>
+> +#include <linux/hte.h>
+
+Ok with the hte re-order.
+
+But moving the gpio subsystem header after the gpio/driver is not
+alphabetical ('.' precedes '/') and it read better and made more sense
+to me the way it was.
+
+>  #include <linux/interrupt.h>
+>  #include <linux/irqreturn.h>
+>  #include <linux/kernel.h>
+> @@ -20,11 +21,12 @@
+>  #include <linux/mutex.h>
+>  #include <linux/pinctrl/consumer.h>
+>  #include <linux/poll.h>
 > +#include <linux/seq_file.h>
->  #include <linux/slab.h>
+
+I wasn't aware that we use anything from seq_file.
+What am I missing?
+
+Cheers,
+Kent.
+
+>  #include <linux/spinlock.h>
+>  #include <linux/timekeeping.h>
+>  #include <linux/uaccess.h>
+>  #include <linux/workqueue.h>
+> -#include <linux/hte.h>
 > +
-> +#include <linux/pinctrl/pinconf-generic.h>
-> +#include <linux/pinctrl/pinconf.h>
->  #include <linux/pinctrl/pinctrl.h>
->  #include <linux/pinctrl/pinmux.h>
-> -#include <linux/pinctrl/pinconf.h>
-> -#include <linux/pinctrl/pinconf-generic.h>
+>  #include <uapi/linux/gpio.h>
 >  
->  #include <dt-bindings/pinctrl/k210-fpioa.h>
->  
-
--- 
-Damien Le Moal
-Western Digital Research
-
+>  #include "gpiolib.h"
+> -- 
+> 2.35.1
+> 
