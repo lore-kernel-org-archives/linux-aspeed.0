@@ -1,60 +1,42 @@
-From: Horatiu Vultur <horatiu.vultur@microchip.com>
-Date: Tue, 11 Oct 2022 11:52:33 +0200
-Subject: [PATCH v2 17/36] pinctrl: ocelot: Add missed header(s)
-In-Reply-To: <20221010201453.77401-18-andriy.shevchenko@linux.intel.com>
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Date: Tue, 11 Oct 2022 16:48:17 +0300
+Subject: [PATCH v2 02/36] gpiolib: cdev: Add missed header(s)
+In-Reply-To: <CAHp75Vf4oS8g0zxgismtLrzsJ7AE-bdMEq+GAzx2=Mwnhuk3UA@mail.gmail.com>
 References: <20221010201453.77401-1-andriy.shevchenko@linux.intel.com>
- <20221010201453.77401-18-andriy.shevchenko@linux.intel.com>
-Message-ID: <20221011095233.jk2vypndisz2wgn6@soft-dev3-1.localhost>
+ <20221010201453.77401-3-andriy.shevchenko@linux.intel.com>
+ <Y0SyVwjDl7NGfTPn@sol>
+ <CAHp75Vf4oS8g0zxgismtLrzsJ7AE-bdMEq+GAzx2=Mwnhuk3UA@mail.gmail.com>
+Message-ID: <Y0V0IXF3sASTGdMU@smile.fi.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The 10/10/2022 23:14, Andy Shevchenko wrote:
-> 
-> Do not imply that some of the generic headers may be always included.
-> Instead, include explicitly what we are direct user of.
-> 
-> While at it, sort headers alphabetically.
-> 
-> Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-> ---
+On Tue, Oct 11, 2022 at 11:05:42AM +0300, Andy Shevchenko wrote:
+> On Tue, Oct 11, 2022 at 3:02 AM Kent Gibson <warthog618@gmail.com> wrote:
+> > On Mon, Oct 10, 2022 at 11:14:18PM +0300, Andy Shevchenko wrote:
 
-Acked-by: Horatiu Vultur <horatiu.vultur@microchip.com>
+...
 
->  drivers/pinctrl/pinctrl-ocelot.c | 10 ++++++----
->  1 file changed, 6 insertions(+), 4 deletions(-)
+> > > -#include <linux/gpio.h>
+> > >  #include <linux/gpio/driver.h>
+> > > +#include <linux/gpio.h>
+> > > +#include <linux/hte.h>
+> >
+> > Ok with the hte re-order.
+> >
+> > But moving the gpio subsystem header after the gpio/driver is not
+> > alphabetical ('.' precedes '/') and it read better and made more sense
+> > to me the way it was.
 > 
-> diff --git a/drivers/pinctrl/pinctrl-ocelot.c b/drivers/pinctrl/pinctrl-ocelot.c
-> index 647e91490bac..a9343c242cd5 100644
-> --- a/drivers/pinctrl/pinctrl-ocelot.c
-> +++ b/drivers/pinctrl/pinctrl-ocelot.c
-> @@ -13,15 +13,17 @@
->  #include <linux/of_device.h>
->  #include <linux/of_irq.h>
->  #include <linux/of_platform.h>
-> -#include <linux/pinctrl/pinctrl.h>
-> -#include <linux/pinctrl/pinmux.h>
-> -#include <linux/pinctrl/pinconf.h>
-> -#include <linux/pinctrl/pinconf-generic.h>
->  #include <linux/platform_device.h>
->  #include <linux/regmap.h>
->  #include <linux/reset.h>
->  #include <linux/slab.h>
-> 
-> +#include <linux/pinctrl/consumer.h>
-> +#include <linux/pinctrl/pinconf-generic.h>
-> +#include <linux/pinctrl/pinconf.h>
-> +#include <linux/pinctrl/pinctrl.h>
-> +#include <linux/pinctrl/pinmux.h>
-> +
->  #include "core.h"
->  #include "pinconf.h"
->  #include "pinmux.h"
-> --
-> 2.35.1
-> 
+> I see, I guess this is vim sort vs shell sort. Strange, they should
+> follow the locale settings...
+
+I have checked, the shell and vim sort gave the same result as in this patch.
 
 -- 
-/Horatiu
+With Best Regards,
+Andy Shevchenko
+
+
