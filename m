@@ -1,54 +1,120 @@
-From: Emil Renner Berthing <emil.renner.berthing@canonical.com>
-Date: Tue, 11 Oct 2022 10:31:33 +0200
-Subject: [PATCH v2 25/36] pinctrl: starfive: Add missed header(s)
-In-Reply-To: <20221010201453.77401-26-andriy.shevchenko@linux.intel.com>
-References: <20221010201453.77401-1-andriy.shevchenko@linux.intel.com> <20221010201453.77401-26-andriy.shevchenko@linux.intel.com>
-Message-ID: <CAJM55Z_ApPowttZrjn_0dUs81H4FfByDfv=fbhvmHquipULANg@mail.gmail.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Tue, 11 Oct 2022 10:46:30 +0200
+Subject: [PATCH v2 36/36] pinctrl: Clean up headers
+In-Reply-To: <d63088d7-202b-a550-01e5-345a22de5f7d@amd.com>
+References: <20221010201453.77401-1-andriy.shevchenko@linux.intel.com>
+ <20221010201453.77401-37-andriy.shevchenko@linux.intel.com> <d63088d7-202b-a550-01e5-345a22de5f7d@amd.com>
+Message-ID: <CAMuHMdUfdQnisexfs4yLjeKs-LUPY1HjChrgeNjNL1qSErir9Q@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, 10 Oct 2022 at 22:26, Andy Shevchenko
-<andriy.shevchenko@linux.intel.com> wrote:
+On Tue, Oct 11, 2022 at 9:31 AM Basavaraj Natikar <bnatikar@amd.com> wrote:
+> On 10/11/2022 1:44 AM, Andy Shevchenko wrote:
+> > There is a few things done:
+> > - include only the headers we are direct user of
+> > - when pointer is in use, provide a forward declaration
+> > - add missed headers
+> > - group generic headers and subsystem headers
+> > - sort each group alphabetically
+> >
+> > While at it, fix some awkward indentations.
+> >
+> > Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> > ---
+> >  drivers/pinctrl/core.c                  | 19 ++++++++-------
+> >  drivers/pinctrl/core.h                  | 12 +++++++++-
+> >  drivers/pinctrl/devicetree.h            |  6 +++++
+> >  drivers/pinctrl/pinconf.h               | 10 ++++++++
+> >  drivers/pinctrl/pinctrl-utils.h         |  5 ++++
+> >  drivers/pinctrl/pinmux.c                | 17 ++++++++------
+> >  drivers/pinctrl/pinmux.h                | 11 +++++++++
+> >  include/linux/pinctrl/consumer.h        | 31 +++++++++++--------------
+> >  include/linux/pinctrl/devinfo.h         |  6 +++--
+> >  include/linux/pinctrl/machine.h         |  8 ++++---
+> >  include/linux/pinctrl/pinconf-generic.h | 23 ++++++++++--------
+> >  include/linux/pinctrl/pinctrl.h         | 18 +++++++-------
+> >  include/linux/pinctrl/pinmux.h          |  5 ++--
+> >  13 files changed, 110 insertions(+), 61 deletions(-)
+> >
+> > diff --git a/drivers/pinctrl/core.c b/drivers/pinctrl/core.c
+> > index 9e57f4c62e60..655f9502e73f 100644
+> > --- a/drivers/pinctrl/core.c
+> > +++ b/drivers/pinctrl/core.c
+> > @@ -12,19 +12,21 @@
+> >   */
+> >  #define pr_fmt(fmt) "pinctrl core: " fmt
+> >
+> > -#include <linux/kernel.h>
+> > -#include <linux/kref.h>
+> > -#include <linux/export.h>
+> > -#include <linux/init.h>
+> > +#include <linux/debugfs.h>
+> >  #include <linux/device.h>
+> > -#include <linux/slab.h>
+> >  #include <linux/err.h>
+> > +#include <linux/export.h>
+> > +#include <linux/init.h>
+> > +#include <linux/kernel.h>
+> > +#include <linux/kref.h>
+> >  #include <linux/list.h>
+> > -#include <linux/debugfs.h>
+> >  #include <linux/seq_file.h>
+> > +#include <linux/slab.h>
+> > +
+> >  #include <linux/pinctrl/consumer.h>
+> > -#include <linux/pinctrl/pinctrl.h>
+> > +#include <linux/pinctrl/devinfo.h>
+> >  #include <linux/pinctrl/machine.h>
+> > +#include <linux/pinctrl/pinctrl.h>
+> >
+> >  #ifdef CONFIG_GPIOLIB
+> >  #include "../gpio/gpiolib.h"
+> > @@ -33,9 +35,8 @@
+> >
+> >  #include "core.h"
+> >  #include "devicetree.h"
+> > -#include "pinmux.h"
+> >  #include "pinconf.h"
+> > -
+> > +#include "pinmux.h"
+> >
+> >  static bool pinctrl_dummy_state;
+> >
+> > diff --git a/drivers/pinctrl/core.h b/drivers/pinctrl/core.h
+> > index 840103c40c14..4d0bdb9fb99b 100644
+> > --- a/drivers/pinctrl/core.h
+> > +++ b/drivers/pinctrl/core.h
+> > @@ -9,12 +9,22 @@
+> >   */
+> >
+> >  #include <linux/kref.h>
+> > +#include <linux/list.h>
+> >  #include <linux/mutex.h>
+> >  #include <linux/radix-tree.h>
+> > -#include <linux/pinctrl/pinconf.h>
 >
-> Do not imply that some of the generic headers may be always included.
-> Instead, include explicitly what we are direct user of.
->
-> While at it, sort headers alphabetically.
+> Removing pinconf.h from the core.h may cause build failure in other files
+> because where-ever core.h is included to use ?struct pinconf_ops?, there
+> is a need to include pinconf.h.
 
-The patch is fine, but I don't see any sorting other than just adding
-the headers at the appropriate place.
-In any case
+I can confirm adding
 
-Acked-by: Emil Renner Berthing <emil.renner.berthing@canonical.com>
+    #include <linux/pinctrl/pinconf.h>
 
-> Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-> ---
->  drivers/pinctrl/starfive/pinctrl-starfive-jh7100.c | 2 ++
->  1 file changed, 2 insertions(+)
->
-> diff --git a/drivers/pinctrl/starfive/pinctrl-starfive-jh7100.c b/drivers/pinctrl/starfive/pinctrl-starfive-jh7100.c
-> index 5b544fb7f3d8..6a8a9cfe8965 100644
-> --- a/drivers/pinctrl/starfive/pinctrl-starfive-jh7100.c
-> +++ b/drivers/pinctrl/starfive/pinctrl-starfive-jh7100.c
-> @@ -15,8 +15,10 @@
->  #include <linux/of.h>
->  #include <linux/platform_device.h>
->  #include <linux/reset.h>
-> +#include <linux/seq_file.h>
->  #include <linux/spinlock.h>
->
-> +#include <linux/pinctrl/consumer.h>
->  #include <linux/pinctrl/pinctrl.h>
->  #include <linux/pinctrl/pinmux.h>
->
-> --
-> 2.35.1
->
->
-> _______________________________________________
-> linux-riscv mailing list
-> linux-riscv at lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-riscv
+to drivers/pinctrl/renesas/pinctrl-rzn1.c and drivers/pinctrl/pinctrl-single.c
+fixes the issues I was seeing with shmobile_defconfig and (out-of-tree)
+renesas_defconfig.
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert at linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
