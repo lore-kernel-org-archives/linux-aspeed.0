@@ -1,48 +1,34 @@
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Date: Tue, 11 Oct 2022 11:05:42 +0300
-Subject: [PATCH v2 02/36] gpiolib: cdev: Add missed header(s)
-In-Reply-To: <Y0SyVwjDl7NGfTPn@sol>
-References: <20221010201453.77401-1-andriy.shevchenko@linux.intel.com>
- <20221010201453.77401-3-andriy.shevchenko@linux.intel.com> <Y0SyVwjDl7NGfTPn@sol>
-Message-ID: <CAHp75Vf4oS8g0zxgismtLrzsJ7AE-bdMEq+GAzx2=Mwnhuk3UA@mail.gmail.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Tue, 11 Oct 2022 10:10:37 +0200
+Subject: [PATCH v2 19/36] pinctrl: renesas: Add missed header(s)
+In-Reply-To: <20221010201453.77401-20-andriy.shevchenko@linux.intel.com>
+References: <20221010201453.77401-1-andriy.shevchenko@linux.intel.com> <20221010201453.77401-20-andriy.shevchenko@linux.intel.com>
+Message-ID: <CAMuHMdUMLEpZrEU0EviCRqRB9tX4iNGAVx2XPR5KbCMGWZetAQ@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Oct 11, 2022 at 3:02 AM Kent Gibson <warthog618@gmail.com> wrote:
-> On Mon, Oct 10, 2022 at 11:14:18PM +0300, Andy Shevchenko wrote:
-
-...
-
-> > -#include <linux/gpio.h>
-> >  #include <linux/gpio/driver.h>
-> > +#include <linux/gpio.h>
-> > +#include <linux/hte.h>
+On Mon, Oct 10, 2022 at 10:15 PM Andy Shevchenko
+<andriy.shevchenko@linux.intel.com> wrote:
+> Do not imply that some of the generic headers may be always included.
+> Instead, include explicitly what we are direct user of.
 >
-> Ok with the hte re-order.
+> While at it, sort headers alphabetically.
 >
-> But moving the gpio subsystem header after the gpio/driver is not
-> alphabetical ('.' precedes '/') and it read better and made more sense
-> to me the way it was.
+> Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 
-I see, I guess this is vim sort vs shell sort. Strange, they should
-follow the locale settings...
+Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Acked-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
-...
+Gr{oetje,eeting}s,
 
-> > +#include <linux/seq_file.h>
->
-> I wasn't aware that we use anything from seq_file.
-> What am I missing?
-
-I will recheck, because in v6.0 I don't see anything, but LKP was not
-okay with something IIRC.
-
-
-
+                        Geert
 
 --
-With Best Regards,
-Andy Shevchenko
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert at linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
