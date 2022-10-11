@@ -1,70 +1,35 @@
-From: Patrice CHOTARD <patrice.chotard@foss.st.com>
-Date: Tue, 11 Oct 2022 08:16:19 +0200
-Subject: [PATCH v2 24/36] pinctrl: st: Add missed header(s)
-In-Reply-To: <20221010201453.77401-25-andriy.shevchenko@linux.intel.com>
+From: Bartosz Golaszewski <brgl@bgdev.pl>
+Date: Tue, 11 Oct 2022 09:10:07 +0200
+Subject: [rft, PATCH v2 00/36] pinctrl: Clean up and add missed headers
+In-Reply-To: <20221010201453.77401-1-andriy.shevchenko@linux.intel.com>
 References: <20221010201453.77401-1-andriy.shevchenko@linux.intel.com>
- <20221010201453.77401-25-andriy.shevchenko@linux.intel.com>
-Message-ID: <8425ef44-f756-6e54-401a-e2665d4967f4@foss.st.com>
+Message-ID: <CAMRc=Mc5t=R2pJYfHUntJj_UA3sL=sKGOQDL-Kf5=dfNJEKyvg@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+On Mon, Oct 10, 2022 at 10:15 PM Andy Shevchenko
+<andriy.shevchenko@linux.intel.com> wrote:
+>
+> Currently the header inclusion inside the pinctrl headers seems more arbitrary
+> than logical. This series is basically out of two parts:
+> - add missed headers to the pin control drivers / users
+> - clean up the headers of pin control subsystem
+>
+> The idea is to have this series to be pulled after -rc1 by the GPIO and
+> pin control subsystems, so all new drivers will utilize cleaned up headers
+> of the pin control.
+>
+> Please, review and comment.
+>
+> Changelog v2:
+> - added preparatory patches: all, but last (LKP)
+> - added missed forward declaration to the last patch (LKP)
+>
 
+Thanks for doing this. Did you use any kind of automation for
+detecting for which symbols the headers are missing?
 
-On 10/10/22 22:14, Andy Shevchenko wrote:
-> Do not imply that some of the generic headers may be always included.
-> Instead, include explicitly what we are direct user of.
-> 
-> While at it, sort headers alphabetically.
-> 
-> Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-> ---
->  drivers/pinctrl/pinctrl-st.c | 21 +++++++++++++--------
->  1 file changed, 13 insertions(+), 8 deletions(-)
-> 
-> diff --git a/drivers/pinctrl/pinctrl-st.c b/drivers/pinctrl/pinctrl-st.c
-> index cf7f9cbe6044..985dfceb127d 100644
-> --- a/drivers/pinctrl/pinctrl-st.c
-> +++ b/drivers/pinctrl/pinctrl-st.c
-> @@ -5,21 +5,26 @@
->   *	Srinivas Kandagatla <srinivas.kandagatla@st.com>
->   */
->  
-> -#include <linux/init.h>
-> -#include <linux/module.h>
-> -#include <linux/slab.h>
->  #include <linux/err.h>
-> +#include <linux/gpio/driver.h>
-> +#include <linux/init.h>
->  #include <linux/io.h>
-> +#include <linux/mfd/syscon.h>
-> +#include <linux/module.h>
->  #include <linux/of.h>
-> -#include <linux/of_irq.h>
->  #include <linux/of_address.h>
-> -#include <linux/gpio/driver.h>
-> +#include <linux/of_irq.h>
-> +#include <linux/platform_device.h>
->  #include <linux/regmap.h>
-> -#include <linux/mfd/syscon.h>
-> +#include <linux/seq_file.h>
-> +#include <linux/slab.h>
-> +#include <linux/string_helpers.h>
-> +
-> +#include <linux/pinctrl/consumer.h>
-> +#include <linux/pinctrl/pinconf.h>
->  #include <linux/pinctrl/pinctrl.h>
->  #include <linux/pinctrl/pinmux.h>
-> -#include <linux/pinctrl/pinconf.h>
-> -#include <linux/platform_device.h>
-> +
->  #include "core.h"
->  
->  /* PIO Block registers */
-
-Reviewed-by: Patrice Chotard <patrice.chotard@foss.st.com>
-
-Thanks
-Patrice
+Bart
