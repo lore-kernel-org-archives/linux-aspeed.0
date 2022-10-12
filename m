@@ -1,19 +1,20 @@
-From: Claudiu.Beznea@microchip.com <Claudiu.Beznea@microchip.com>
-Date: Wed, 12 Oct 2022 07:52:49 +0000
-Subject: [PATCH v2 06/36] pinctrl: at91: Add missed header(s)
-In-Reply-To: <20221010201453.77401-7-andriy.shevchenko@linux.intel.com>
+From: Paul Cercueil <paul@crapouillou.net>
+Date: Wed, 12 Oct 2022 10:15:29 +0100
+Subject: [PATCH v2 11/36] pinctrl: ingenic: Add missed header(s)
+In-Reply-To: <20221010201453.77401-12-andriy.shevchenko@linux.intel.com>
 References: <20221010201453.77401-1-andriy.shevchenko@linux.intel.com>
- <20221010201453.77401-7-andriy.shevchenko@linux.intel.com>
-Message-ID: <6846a969-028c-f499-2e15-4ae2536edaa9@microchip.com>
+	<20221010201453.77401-12-andriy.shevchenko@linux.intel.com>
+Message-ID: <T1VMJR.YAQIRYFT8EC22@crapouillou.net>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 10.10.2022 23:14, Andy Shevchenko wrote:
-> EXTERNAL EMAIL: Do not click links or open attachments unless you know the content is safe
-> 
+
+
+Le lun., oct. 10 2022 at 23:14:27 +0300, Andy Shevchenko 
+<andriy.shevchenko@linux.intel.com> a ?crit :
 > Do not imply that some of the generic headers may be always included.
 > Instead, include explicitly what we are direct user of.
 > 
@@ -21,81 +22,45 @@ On 10.10.2022 23:14, Andy Shevchenko wrote:
 > 
 > Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 
-Reviewed-by: Claudiu Beznea <claudiu.beznea@microchip.com>
+Reviewed-by: Paul Cercueil <paul@crapouillou.net>
 
+Cheers,
+-Paul
 
 > ---
->  drivers/pinctrl/pinctrl-at91-pio4.c | 10 +++++++---
->  drivers/pinctrl/pinctrl-at91.c      | 16 +++++++++-------
->  2 files changed, 16 insertions(+), 10 deletions(-)
+>  drivers/pinctrl/pinctrl-ingenic.c | 10 ++++++----
+>  1 file changed, 6 insertions(+), 4 deletions(-)
 > 
-> diff --git a/drivers/pinctrl/pinctrl-at91-pio4.c b/drivers/pinctrl/pinctrl-at91-pio4.c
-> index 82b921fd630d..e38c683aba09 100644
-> --- a/drivers/pinctrl/pinctrl-at91-pio4.c
-> +++ b/drivers/pinctrl/pinctrl-at91-pio4.c
-> @@ -7,18 +7,22 @@
->   */
-> 
->  #include <dt-bindings/pinctrl/at91.h>
-> +
->  #include <linux/clk.h>
->  #include <linux/gpio/driver.h>
-> +#include <linux/init.h>
->  #include <linux/interrupt.h>
->  #include <linux/io.h>
-> -#include <linux/init.h>
+> diff --git a/drivers/pinctrl/pinctrl-ingenic.c 
+> b/drivers/pinctrl/pinctrl-ingenic.c
+> index 7e732076dedf..dbc25a60fbff 100644
+> --- a/drivers/pinctrl/pinctrl-ingenic.c
+> +++ b/drivers/pinctrl/pinctrl-ingenic.c
+> @@ -14,16 +14,18 @@
+>  #include <linux/kernel.h>
+>  #include <linux/mod_devicetable.h>
 >  #include <linux/of.h>
->  #include <linux/platform_device.h>
+> -#include <linux/pinctrl/pinctrl.h>
+> -#include <linux/pinctrl/pinmux.h>
 > -#include <linux/pinctrl/pinconf.h>
-> +#include <linux/seq_file.h>
-> +#include <linux/slab.h>
-> +
->  #include <linux/pinctrl/pinconf-generic.h>
+> -#include <linux/pinctrl/pinconf-generic.h>
+>  #include <linux/platform_device.h>
+>  #include <linux/property.h>
+>  #include <linux/regmap.h>
+>  #include <linux/seq_file.h>
+>  #include <linux/slab.h>
+> 
+> +#include <linux/pinctrl/consumer.h>
+> +#include <linux/pinctrl/pinconf-generic.h>
 > +#include <linux/pinctrl/pinconf.h>
->  #include <linux/pinctrl/pinctrl.h>
->  #include <linux/pinctrl/pinmux.h>
-> -#include <linux/slab.h>
+> +#include <linux/pinctrl/pinctrl.h>
+> +#include <linux/pinctrl/pinmux.h>
 > +
 >  #include "core.h"
 >  #include "pinconf.h"
->  #include "pinctrl-utils.h"
-> diff --git a/drivers/pinctrl/pinctrl-at91.c b/drivers/pinctrl/pinctrl-at91.c
-> index 81dbffab621f..1e1813d7c550 100644
-> --- a/drivers/pinctrl/pinctrl-at91.c
-> +++ b/drivers/pinctrl/pinctrl-at91.c
-> @@ -7,22 +7,24 @@
-> 
->  #include <linux/clk.h>
->  #include <linux/err.h>
-> +#include <linux/gpio/driver.h>
->  #include <linux/init.h>
-> +#include <linux/interrupt.h>
-> +#include <linux/io.h>
->  #include <linux/of.h>
-> -#include <linux/of_device.h>
->  #include <linux/of_address.h>
-> +#include <linux/of_device.h>
->  #include <linux/of_irq.h>
-> +#include <linux/pm.h>
-> +#include <linux/seq_file.h>
->  #include <linux/slab.h>
-> -#include <linux/interrupt.h>
-> -#include <linux/io.h>
-> -#include <linux/gpio/driver.h>
-> +
-> +/* Since we request GPIOs from ourself */
-> +#include <linux/pinctrl/consumer.h>
->  #include <linux/pinctrl/machine.h>
->  #include <linux/pinctrl/pinconf.h>
->  #include <linux/pinctrl/pinctrl.h>
->  #include <linux/pinctrl/pinmux.h>
-> -/* Since we request GPIOs from ourself */
-> -#include <linux/pinctrl/consumer.h>
-> -#include <linux/pm.h>
-> 
->  #include "pinctrl-at91.h"
->  #include "core.h"
+>  #include "pinmux.h"
 > --
 > 2.35.1
 > 
+
 
