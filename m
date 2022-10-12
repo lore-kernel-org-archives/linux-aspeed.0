@@ -1,34 +1,48 @@
-From: Florian Fainelli <f.fainelli@gmail.com>
-Date: Tue, 11 Oct 2022 13:56:09 -0700
-Subject: [rft, PATCH v2 00/36] pinctrl: Clean up and add missed headers
-In-Reply-To: <20221010201453.77401-1-andriy.shevchenko@linux.intel.com>
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Date: Wed, 12 Oct 2022 16:30:05 +0300
+Subject: [PATCH v2 02/36] gpiolib: cdev: Add missed header(s)
+In-Reply-To: <Y0SyVwjDl7NGfTPn@sol>
 References: <20221010201453.77401-1-andriy.shevchenko@linux.intel.com>
-Message-ID: <0684f480-2092-d520-2c8e-bd9a2dca47e3@gmail.com>
+ <20221010201453.77401-3-andriy.shevchenko@linux.intel.com>
+ <Y0SyVwjDl7NGfTPn@sol>
+Message-ID: <Y0bBXSHyxpdTGxoU@smile.fi.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+On Tue, Oct 11, 2022 at 08:01:27AM +0800, Kent Gibson wrote:
+> On Mon, Oct 10, 2022 at 11:14:18PM +0300, Andy Shevchenko wrote:
 
+...
 
-On 10/10/2022 1:14 PM, Andy Shevchenko wrote:
-> Currently the header inclusion inside the pinctrl headers seems more arbitrary
-> than logical. This series is basically out of two parts:
-> - add missed headers to the pin control drivers / users
-> - clean up the headers of pin control subsystem
+> > -#include <linux/gpio.h>
+> >  #include <linux/gpio/driver.h>
+> > +#include <linux/gpio.h>
+
+> But moving the gpio subsystem header after the gpio/driver is not
+> alphabetical ('.' precedes '/') and it read better and made more sense
+> to me the way it was.
+
+Okay, I will move it back.
+
+...
+
+> > +#include <linux/seq_file.h>
 > 
-> The idea is to have this series to be pulled after -rc1 by the GPIO and
-> pin control subsystems, so all new drivers will utilize cleaned up headers
-> of the pin control.
-> 
-> Please, review and comment.
+> I wasn't aware that we use anything from seq_file.
+> What am I missing?
 
-Did you really need to split this on a per-driver basis as opposed to 
-just a treewide drivers/pinctrl, drivers/media and drivers/gpiolib patch 
-set?
 
-36 patches seems needlessly high when 4 patches could have achieve the 
-same outcome.
+Eventually I can answer to your question: the commit 0ae3109a8391
+("gpiolib: cdev: add fdinfo output for line request file descriptors")
+is what you are missing.
+
+That said, we need this patch.
+
 -- 
-Florian
+With Best Regards,
+Andy Shevchenko
+
+
