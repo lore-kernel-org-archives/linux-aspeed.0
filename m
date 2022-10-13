@@ -1,40 +1,51 @@
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Date: Wed, 12 Oct 2022 13:04:10 +0300
-Subject: [rft, PATCH v2 00/36] pinctrl: Clean up and add missed headers
-In-Reply-To: <0684f480-2092-d520-2c8e-bd9a2dca47e3@gmail.com>
-References: <20221010201453.77401-1-andriy.shevchenko@linux.intel.com> <0684f480-2092-d520-2c8e-bd9a2dca47e3@gmail.com>
-Message-ID: <CAHp75VdDjyUAZBTaoPOe5oA3f_5xRznAooq08=Eff4F1AZyVOQ@mail.gmail.com>
+From: Baolin Wang <baolin.wang@linux.alibaba.com>
+Date: Thu, 13 Oct 2022 09:23:27 +0800
+Subject: [PATCH v2 23/36] pinctrl: sprd: Add missed header(s)
+In-Reply-To: <20221010201453.77401-24-andriy.shevchenko@linux.intel.com>
+References: <20221010201453.77401-1-andriy.shevchenko@linux.intel.com>
+ <20221010201453.77401-24-andriy.shevchenko@linux.intel.com>
+Message-ID: <b7c8afe1-af89-9b5a-2c2c-82a2810ca9f1@linux.alibaba.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Oct 11, 2022 at 11:56 PM Florian Fainelli <f.fainelli@gmail.com> wrote:
-> On 10/10/2022 1:14 PM, Andy Shevchenko wrote:
-> > Currently the header inclusion inside the pinctrl headers seems more arbitrary
-> > than logical. This series is basically out of two parts:
-> > - add missed headers to the pin control drivers / users
-> > - clean up the headers of pin control subsystem
-> >
-> > The idea is to have this series to be pulled after -rc1 by the GPIO and
-> > pin control subsystems, so all new drivers will utilize cleaned up headers
-> > of the pin control.
-> >
-> > Please, review and comment.
->
-> Did you really need to split this on a per-driver basis as opposed to
-> just a treewide drivers/pinctrl, drivers/media and drivers/gpiolib patch
-> set?
->
-> 36 patches seems needlessly high when 4 patches could have achieve the
-> same outcome.
-
-I can combine them if maintainers ask for that, nevertheless for Intel
-pin control and GPIO drivers, which I care more about, I would like to
-leave as separate changes (easy to see in history what was done).
 
 
--- 
-With Best Regards,
-Andy Shevchenko
+On 10/11/2022 4:14 AM, Andy Shevchenko wrote:
+> Do not imply that some of the generic headers may be always included.
+> Instead, include explicitly what we are direct user of.
+> 
+> While at it, sort headers alphabetically.
+> 
+> Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+
+LGTM. Thanks.
+Reviewed-by: Baolin Wang <baolin.wang@linux.alibaba.com>
+
+> ---
+>   drivers/pinctrl/sprd/pinctrl-sprd.c | 6 ++++--
+>   1 file changed, 4 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/pinctrl/sprd/pinctrl-sprd.c b/drivers/pinctrl/sprd/pinctrl-sprd.c
+> index dca7a505d413..c1806b7dcf78 100644
+> --- a/drivers/pinctrl/sprd/pinctrl-sprd.c
+> +++ b/drivers/pinctrl/sprd/pinctrl-sprd.c
+> @@ -13,12 +13,14 @@
+>   #include <linux/of.h>
+>   #include <linux/of_device.h>
+>   #include <linux/platform_device.h>
+> +#include <linux/slab.h>
+> +
+> +#include <linux/pinctrl/consumer.h>
+>   #include <linux/pinctrl/machine.h>
+> -#include <linux/pinctrl/pinconf.h>
+>   #include <linux/pinctrl/pinconf-generic.h>
+> +#include <linux/pinctrl/pinconf.h>
+>   #include <linux/pinctrl/pinctrl.h>
+>   #include <linux/pinctrl/pinmux.h>
+> -#include <linux/slab.h>
+>   
+>   #include "../core.h"
+>   #include "../pinmux.h"
