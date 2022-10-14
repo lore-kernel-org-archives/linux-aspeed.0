@@ -1,58 +1,94 @@
-From: Kent Gibson <warthog618@gmail.com>
-Date: Wed, 12 Oct 2022 21:54:39 +0800
-Subject: [PATCH v2 02/36] gpiolib: cdev: Add missed header(s)
-In-Reply-To: <Y0bBXSHyxpdTGxoU@smile.fi.intel.com>
-References: <20221010201453.77401-1-andriy.shevchenko@linux.intel.com>
- <20221010201453.77401-3-andriy.shevchenko@linux.intel.com>
- <Y0SyVwjDl7NGfTPn@sol>
- <Y0bBXSHyxpdTGxoU@smile.fi.intel.com>
-Message-ID: <Y0bHH06cbngWk4mH@sol>
+From: Graeme Gregory <quic_ggregory@quicinc.com>
+Date: Fri, 14 Oct 2022 14:05:17 +0100
+Subject: [PATCH v10 1/3] ipmi: ssif_bmc: Add SSIF BMC driver
+In-Reply-To: <72c8a5bc-830d-25a9-0528-5d428dd9f163@quicinc.com>
+References: <20221004093106.1653317-1-quan@os.amperecomputing.com>
+ <20221004093106.1653317-2-quan@os.amperecomputing.com>
+ <5fbc5a54-60f2-fc0d-a4a1-839f28a4d8ba@quicinc.com>
+ <48a5e252-9a1e-65e6-e8bf-add3d39a0286@os.amperecomputing.com>
+ <72c8a5bc-830d-25a9-0528-5d428dd9f163@quicinc.com>
+Message-ID: <20221014130517.y4mdinylnwfrg6u2@ggregory-linuxws>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Oct 12, 2022 at 04:30:05PM +0300, Andy Shevchenko wrote:
-> On Tue, Oct 11, 2022 at 08:01:27AM +0800, Kent Gibson wrote:
-> > On Mon, Oct 10, 2022 at 11:14:18PM +0300, Andy Shevchenko wrote:
+On Mon, Oct 10, 2022 at 12:08:24PM +0100, Graeme Gregory wrote:
 > 
-> ...
-> 
-> > > -#include <linux/gpio.h>
-> > >  #include <linux/gpio/driver.h>
-> > > +#include <linux/gpio.h>
-> 
-> > But moving the gpio subsystem header after the gpio/driver is not
-> > alphabetical ('.' precedes '/') and it read better and made more sense
-> > to me the way it was.
-> 
-> Okay, I will move it back.
-> 
-> ...
-> 
-> > > +#include <linux/seq_file.h>
+> On 10/10/2022 02:28, Quan Nguyen wrote:
 > > 
-> > I wasn't aware that we use anything from seq_file.
-> > What am I missing?
-> 
-> 
-> Eventually I can answer to your question: the commit 0ae3109a8391
-> ("gpiolib: cdev: add fdinfo output for line request file descriptors")
-> is what you are missing.
-> 
-> That said, we need this patch.
-> 
+> > 
+> > On 07/10/2022 20:26, Graeme Gregory wrote:
+> > >
+> > > On 04/10/2022 10:31, Quan Nguyen wrote:
+> > > > The SMBus system interface (SSIF) IPMI BMC driver can be used to
+> > > > perform
+> > > > in-band IPMI communication with their host in management (BMC) side.
+> > > >
+> > > > Thanks Dan for the copy_from_user() fix in the link below.
+> > > >
+> > > > Link: https://lore.kernel.org/linux-arm-kernel/20220310114119.13736-4-quan at os.amperecomputing.com/
+> > > > Signed-off-by: Quan Nguyen <quan@os.amperecomputing.com>
+> > >
+> > > I have been testing this on our hardware and I don't seem to be able
+> > > to get this driver working. I was using an older version.
+> > >
+> > > I have hacked ssifbridged to deal with the change in len from u8 to
+> > > unsigned int.
+> > >
+> > > It works as long as I only ever send SSIF commands, any attempt to
+> > > read a response crashes the state machine and the driver never
+> > > recovers. No further SSIF comms is possible! (slave doesnt even ACK
+> > > writes).
+> > >
+> > > A couple of comments below on possible state machine errors.
+> > >
+> > > Its possible I am doing something wrong!
+> > >
+> >
+> > Thanks Graeme for the test and the comments.
+> >
+> > What's your testing hardware?
+> >
+> > This was tested with Aspeed ast2500 and ast2600 with the patch series
+> > [1] below applied.
+> >
+> > If you use the same hw, could you pick the series and see if any thing
+> > improve ?
+> >
+> > [1] https://lore.kernel.org/all/20210616031046.2317-1-quan at os.amperecomputing.com/
+> >
+> Thanks, that patch series does stop the state machine crashing.
+>
+> I am testing on AST2600EVB with A1 rev, but we also have our own DC-SCM with
+> A3 chip.
+>
+> Responses are still not working for me, but I think that may be an error in
+> my ssifbridged hacks.
+>
+> Oct 10 10:54:55 qcom-evb-proto-ccf37d18ea0c ssifbridged[335]: Read ssif
+> request message with len=13 netfn=44 lun=0 cmd=2
+>
+> Oct 10 10:54:55 qcom-evb-proto-ccf37d18ea0c ipmid[312]: BootCode:
+> 000000000000000000
+>
+> Oct 10 10:54:55 qcom-evb-proto-ccf37d18ea0c ssifbridged[335]: Send ssif
+> respond message with len=4 netfn=45 lun=0 cmd=2 cc=0
+>
+> Oct 10 10:54:55 qcom-evb-proto-ccf37d18ea0c kernel: ipmi-ssif-host 0-0010:
+> Warn: on_read_requested_event unexpected READ REQUESTED in state=SSIF_READY
+>
+> Oct 10 10:54:55 qcom-evb-proto-ccf37d18ea0c kernel: ipmi-ssif-host 0-0010:
+> Warn: on_stop_event unexpected SLAVE STOP in state=SSIF_ABORTING
+>
+Just to close the loop on this, I have now fully tested this driver on
+our setup internally.
 
-Ah, yes - totally forgot that one is in flight.
-That makes sense then.
+Final hitch turned out to be an aardvark not issuing STOP events between
+reads/writes.
 
-With the gpio headers retaining their original order:
+Thanks for the work.
 
-Rewiewed-by: Kent Gibson <warthog618@gmail.com>
+Graeme
 
-> -- 
-> With Best Regards,
-> Andy Shevchenko
-> 
-> 
