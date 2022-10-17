@@ -1,49 +1,48 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Sun, 16 Oct 2022 22:43:30 +0000
-Subject: [PATCH] spi: aspeed: Fix window offset of CE1
-In-Reply-To: <20221016155722.3520802-1-clg@kaod.org>
-References: <20221016155722.3520802-1-clg@kaod.org>
-Message-ID: <CACPK8XfrF2h0zYNPcFwHmGfyohCOYQziqoUAJ6j60bEonFHu0A@mail.gmail.com>
+Date: Mon, 17 Oct 2022 16:00:06 +1030
+Subject: [PATCH] usb: gadget: aspeed: Fix probe regression
+Message-ID: <20221017053006.358520-1-joel@jms.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sun, 16 Oct 2022 at 15:57, C?dric Le Goater <clg@kaod.org> wrote:
->
-> The offset value of the mapping window in the kernel structure is
-> calculated using the value of the previous window offset. This doesn't
-> reflect how the HW is configured and can lead to erroneous setting of
-> the second flash device (CE1).
+Since commit fc274c1e9973 ("USB: gadget: Add a new bus for gadgets"),
+the gadget devices are proper driver core devices, which caused each
+device to request pinmux settings:
 
-So .offset is expected to be the absolute address of the window, and
-this was okay for the 2400/2500 but was broken on the 2600?
+ aspeed_vhub 1e6a0000.usb-vhub: Initialized virtual hub in USB2 mode
+ aspeed-g5-pinctrl 1e6e2080.pinctrl: pin A7 already requested by 1e6a0000.usb-vhub; cannot claim for gadget.0
+ aspeed-g5-pinctrl 1e6e2080.pinctrl: pin-232 (gadget.0) status -22
+ aspeed-g5-pinctrl 1e6e2080.pinctrl: could not request pin 232 (A7) from group USB2AD  on device aspeed-g5-pinctrl
+ g_mass_storage gadget.0: Error applying setting, reverse things back
 
-Reviewed-by: Joel Stanley <joel@jms.id.au>
+The vhub driver has already claimed the pins, so prevent the gadgets
+from requesting them too by setting the magic of_node_reused flag. This
+causes the driver core to skip the mux request.
 
+Reported-by: Zev Weiss <zev@bewilderbeest.net>
+Reported-by: Jae Hyun Yoo <quic_jaehyoo@quicinc.com>
+Fixes: fc274c1e9973 ("USB: gadget: Add a new bus for gadgets")
+Cc: stable at vger.kernel.org
+Signed-off-by: Joel Stanley <joel@jms.id.au>
+---
+ drivers/usb/gadget/udc/aspeed-vhub/dev.c | 1 +
+ 1 file changed, 1 insertion(+)
 
->
-> Cc: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
-> Fixes: e3228ed92893 ("spi: spi-mem: Convert Aspeed SMC driver to spi-mem")
-> Signed-off-by: C?dric Le Goater <clg@kaod.org>
-> ---
->  drivers/spi/spi-aspeed-smc.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/drivers/spi/spi-aspeed-smc.c b/drivers/spi/spi-aspeed-smc.c
-> index 33cefcf18392..b90571396a60 100644
-> --- a/drivers/spi/spi-aspeed-smc.c
-> +++ b/drivers/spi/spi-aspeed-smc.c
-> @@ -398,7 +398,7 @@ static void aspeed_spi_get_windows(struct aspeed_spi *aspi,
->                 windows[cs].cs = cs;
->                 windows[cs].size = data->segment_end(aspi, reg_val) -
->                         data->segment_start(aspi, reg_val);
-> -               windows[cs].offset = cs ? windows[cs - 1].offset + windows[cs - 1].size : 0;
-> +               windows[cs].offset = data->segment_start(aspi, reg_val) - aspi->ahb_base_phy;
->                 dev_vdbg(aspi->dev, "CE%d offset=0x%.8x size=0x%x\n", cs,
->                          windows[cs].offset, windows[cs].size);
->         }
-> --
-> 2.37.3
->
+diff --git a/drivers/usb/gadget/udc/aspeed-vhub/dev.c b/drivers/usb/gadget/udc/aspeed-vhub/dev.c
+index b0dfca43fbdc..4f3bc27c1c62 100644
+--- a/drivers/usb/gadget/udc/aspeed-vhub/dev.c
++++ b/drivers/usb/gadget/udc/aspeed-vhub/dev.c
+@@ -591,6 +591,7 @@ int ast_vhub_init_dev(struct ast_vhub *vhub, unsigned int idx)
+ 		d->gadget.max_speed = USB_SPEED_HIGH;
+ 	d->gadget.speed = USB_SPEED_UNKNOWN;
+ 	d->gadget.dev.of_node = vhub->pdev->dev.of_node;
++	d->gadget.dev.of_node_reused = true;
+ 
+ 	rc = usb_add_gadget_udc(d->port_dev, &d->gadget);
+ 	if (rc != 0)
+-- 
+2.35.1
+
