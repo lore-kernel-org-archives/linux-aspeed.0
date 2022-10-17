@@ -1,9 +1,9 @@
 From: Linus Walleij <linus.walleij@linaro.org>
-Date: Mon, 17 Oct 2022 10:59:14 +0200
-Subject: [PATCH v2 09/36] pinctrl: cygnus-mux: Add missed header(s)
-In-Reply-To: <20221010201453.77401-10-andriy.shevchenko@linux.intel.com>
-References: <20221010201453.77401-1-andriy.shevchenko@linux.intel.com> <20221010201453.77401-10-andriy.shevchenko@linux.intel.com>
-Message-ID: <CACRpkdaMdwurbFt-S63M_sGDS0L-VxPc+cee2Drj9h8iKtRXYw@mail.gmail.com>
+Date: Mon, 17 Oct 2022 10:59:54 +0200
+Subject: [PATCH v2 10/36] pinctrl: imx: Add missed header(s)
+In-Reply-To: <20221010201453.77401-11-andriy.shevchenko@linux.intel.com>
+References: <20221010201453.77401-1-andriy.shevchenko@linux.intel.com> <20221010201453.77401-11-andriy.shevchenko@linux.intel.com>
+Message-ID: <CACRpkdZ=0Uj7PxS-+AcQ+Z1xsV0n24xsSA0+upucZzbXVa2KHw@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
