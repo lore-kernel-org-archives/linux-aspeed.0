@@ -1,51 +1,64 @@
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Date: Mon, 17 Oct 2022 15:18:18 +0300
-Subject: [rft, PATCH v2 00/36] pinctrl: Clean up and add missed headers
-In-Reply-To: <CACRpkdYmSOGtFz8W_RRkDqMXRRBOSB9jqSn65Sah90bf3Gm59g@mail.gmail.com>
-References: <20221010201453.77401-1-andriy.shevchenko@linux.intel.com>
- <CACRpkdZ1M3ckw+jFgvMqG4jvR-t_44GPoZ6ZDXszwZCJr-cDpg@mail.gmail.com>
- <Y00f5exY2fM6IwZ+@smile.fi.intel.com>
- <CACRpkdYmSOGtFz8W_RRkDqMXRRBOSB9jqSn65Sah90bf3Gm59g@mail.gmail.com>
-Message-ID: <Y01ICtqd8uy/4/Mb@smile.fi.intel.com>
+From: Rob Herring <robh@kernel.org>
+Date: Mon, 17 Oct 2022 13:51:38 -0500
+Subject: [PATCH linux v2 1/3] spi: dt-bindings: aspeed: Add a ranges
+ property
+In-Reply-To: <20221017091624.130227-2-clg@kaod.org>
+References: <20221017091624.130227-1-clg@kaod.org>
+ <20221017091624.130227-2-clg@kaod.org>
+Message-ID: <20221017185138.GA2264550-robh@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Oct 17, 2022 at 11:58:03AM +0200, Linus Walleij wrote:
-> On Mon, Oct 17, 2022 at 11:27 AM Andy Shevchenko
-> <andriy.shevchenko@linux.intel.com> wrote:
-> > On Mon, Oct 17, 2022 at 11:02:09AM +0200, Linus Walleij wrote:
-> > > On Mon, Oct 10, 2022 at 10:15 PM Andy Shevchenko
-> > > <andriy.shevchenko@linux.intel.com> wrote:
-> > >
-> > > > Currently the header inclusion inside the pinctrl headers seems more arbitrary
-> > > > than logical. This series is basically out of two parts:
-> > > > - add missed headers to the pin control drivers / users
-> > > > - clean up the headers of pin control subsystem
-> > > >
-> > > > The idea is to have this series to be pulled after -rc1 by the GPIO and
-> > > > pin control subsystems, so all new drivers will utilize cleaned up headers
-> > > > of the pin control.
-> > >
-> > > Aha I see you want to send a pull request so I backed out the applied patches
-> > > from the series for now.
-> >
-> > Can I consider all that you answered to as Rb tag?
+On Mon, Oct 17, 2022 at 11:16:22AM +0200, C?dric Le Goater wrote:
+> "ranges" predefines settings for the decoding ranges of each CS.
+
+Please explain the problem, not what the change is.
+
+> Cc: Naresh Solanki <naresh.solanki@9elements.com>
+> Cc: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
+> Signed-off-by: C?dric Le Goater <clg@kaod.org>
+> ---
+>  .../devicetree/bindings/spi/aspeed,ast2600-fmc.yaml      | 9 +++++++++
+>  1 file changed, 9 insertions(+)
 > 
-> Acked-by: Linus Walleij <linus.walleij@linaro.org>
+> diff --git a/Documentation/devicetree/bindings/spi/aspeed,ast2600-fmc.yaml b/Documentation/devicetree/bindings/spi/aspeed,ast2600-fmc.yaml
+> index fa8f4ac20985..a11cbc4c4c5c 100644
+> --- a/Documentation/devicetree/bindings/spi/aspeed,ast2600-fmc.yaml
+> +++ b/Documentation/devicetree/bindings/spi/aspeed,ast2600-fmc.yaml
+> @@ -38,6 +38,14 @@ properties:
+>    interrupts:
+>      maxItems: 1
+>  
+> +  ranges:
+> +    minItems: 1
+> +    maxItems: 5
+> +    description: |
+> +      Defines the address mapping for child devices with four integer
+> +      values for each chip-select line in use:
+> +      <cs-number> 0 <physical address of mapping> <size>
+> +
+>  required:
+>    - compatible
+>    - reg
+> @@ -58,6 +66,7 @@ examples:
+>          compatible = "aspeed,ast2600-fmc";
+>          clocks = <&syscon ASPEED_CLK_AHB>;
+>          interrupts = <GIC_SPI 39 IRQ_TYPE_LEVEL_HIGH>;
+> +        ranges = <0 0 0x20000000 0x2000000>, <1 0 0x22000000 0x2000000>;
 
-Thank you!
+By having ranges here, 'reg' in child nodes become translatable 
+addresses. But they are not because they are SPI chip-selects. Only 
+memory mapped addresses should be translatable. 
 
-> I haven't reviewed in detail but I fully trust you to do the right thing
-> and fix any fallout so will happily pull this.
+Probably the ranges here should be in 'reg' of the controller.
 
-The plan is to push this to Linux Next for a couple of days and then I'll send
-PR to you and Bart.
-
--- 
-With Best Regards,
-Andy Shevchenko
-
-
+>  
+>          flash at 0 {
+>                  reg = < 0 >;
+> -- 
+> 2.37.3
+> 
+> 
