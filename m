@@ -1,44 +1,51 @@
 From: Cédric Le Goater <clg@kaod.org>
-Date: Mon, 17 Oct 2022 11:16:21 +0200
-Subject: [PATCH linux v2 0/3] spi: aspeed: Add a "ranges" property
-Message-ID: <20221017091624.130227-1-clg@kaod.org>
+Date: Mon, 17 Oct 2022 11:16:22 +0200
+Subject: [PATCH linux v2 1/3] spi: dt-bindings: aspeed: Add a ranges property
+In-Reply-To: <20221017091624.130227-1-clg@kaod.org>
+References: <20221017091624.130227-1-clg@kaod.org>
+Message-ID: <20221017091624.130227-2-clg@kaod.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello,
+"ranges" predefines settings for the decoding ranges of each CS.
 
-Currently, the Linux Aspeed SMC driver computes the decoding ranges of
-each CS (AHB memory window on which the flash contents are mapped)
-from the size of the detected flash device. It seems that some chips
-have issues with the computed ranges and for these, it would be nice
-to be able to define custom decoding ranges in the DT.
+Cc: Naresh Solanki <naresh.solanki@9elements.com>
+Cc: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
+Signed-off-by: C?dric Le Goater <clg@kaod.org>
+---
+ .../devicetree/bindings/spi/aspeed,ast2600-fmc.yaml      | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-Here is a little series doing that. 
-
-Thanks,
-
-C. 
-
-Changes in v2 :
-
- - Tested by Naresh Solanki
- - sent preliminary fix independently
-   https://patchwork.kernel.org/project/linux-arm-kernel/patch/20221016155722.3520802-1-clg at kaod.org/
- - changed the sysfs file exposing the register values to debugfs.
- - refresh on 6.1-rc1
-
-C?dric Le Goater (3):
-  spi: dt-bindings: aspeed: Add a ranges property
-  spi: aspeed: Handle custom decoding ranges
-  spi: aspeed: Introduce a "ranges" debugfs file
-
- drivers/spi/spi-aspeed-smc.c                  | 131 +++++++++++++++++-
- .../bindings/spi/aspeed,ast2600-fmc.yaml      |   9 ++
- 2 files changed, 138 insertions(+), 2 deletions(-)
-
+diff --git a/Documentation/devicetree/bindings/spi/aspeed,ast2600-fmc.yaml b/Documentation/devicetree/bindings/spi/aspeed,ast2600-fmc.yaml
+index fa8f4ac20985..a11cbc4c4c5c 100644
+--- a/Documentation/devicetree/bindings/spi/aspeed,ast2600-fmc.yaml
++++ b/Documentation/devicetree/bindings/spi/aspeed,ast2600-fmc.yaml
+@@ -38,6 +38,14 @@ properties:
+   interrupts:
+     maxItems: 1
+ 
++  ranges:
++    minItems: 1
++    maxItems: 5
++    description: |
++      Defines the address mapping for child devices with four integer
++      values for each chip-select line in use:
++      <cs-number> 0 <physical address of mapping> <size>
++
+ required:
+   - compatible
+   - reg
+@@ -58,6 +66,7 @@ examples:
+         compatible = "aspeed,ast2600-fmc";
+         clocks = <&syscon ASPEED_CLK_AHB>;
+         interrupts = <GIC_SPI 39 IRQ_TYPE_LEVEL_HIGH>;
++        ranges = <0 0 0x20000000 0x2000000>, <1 0 0x22000000 0x2000000>;
+ 
+         flash at 0 {
+                 reg = < 0 >;
 -- 
 2.37.3
 
