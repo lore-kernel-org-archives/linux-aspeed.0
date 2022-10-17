@@ -1,64 +1,38 @@
-From: Amit Kumar Mahapatra <amit.kumar-mahapatra@amd.com>
-Date: Mon, 17 Oct 2022 17:42:46 +0530
-Subject: [PATCH 07/10] spi: spi-zynqmp-gqspi: Add stacked memories support in GQSPI driver
-In-Reply-To: <20221017121249.19061-1-amit.kumar-mahapatra@amd.com>
-References: <20221017121249.19061-1-amit.kumar-mahapatra@amd.com>
-Message-ID: <20221017121249.19061-8-amit.kumar-mahapatra@amd.com>
+From: Andy Shevchenko <andy.shevchenko@gmail.com>
+Date: Mon, 17 Oct 2022 15:15:51 +0300
+Subject: [PATCH v2 01/36] gpiolib: tegra186: Add missed header(s)
+In-Reply-To: <CAMRc=MexjuQw+hUDDfCVxiBEJ573jNb3Ko9SyOU-xJ03wOe8cQ@mail.gmail.com>
+References: <20221010201453.77401-1-andriy.shevchenko@linux.intel.com>
+ <20221010201453.77401-2-andriy.shevchenko@linux.intel.com>
+ <CACRpkdbdzFR-a_xh8EjLMAshTeesOYhD3-_Bkc=vi7iK72ZKtA@mail.gmail.com> <CAMRc=MexjuQw+hUDDfCVxiBEJ573jNb3Ko9SyOU-xJ03wOe8cQ@mail.gmail.com>
+Message-ID: <CAHp75VftkwPB-+jhCrhCdPRN0hLm5DLADMyAO45eBTRFfxiNuQ@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-GQSPI supports two chip select CS0 & CS1. Update the driver to
-assert/de-assert the appropriate chip select as per the bits set in
-qspi->cs_index_mask.
+On Mon, Oct 17, 2022 at 12:35 PM Bartosz Golaszewski <brgl@bgdev.pl> wrote:
+> On Mon, Oct 17, 2022 at 10:52 AM Linus Walleij <linus.walleij@linaro.org> wrote:
+>>?On Mon, Oct 10, 2022 at 10:15 PM Andy Shevchenko
+> > <andriy.shevchenko@linux.intel.com> wrote:
+> >
+> > > Do not imply that some of the generic headers may be always included.
+> > > Instead, include explicitly what we are direct user of.
+> > >
+> > > While at it, sort headers alphabetically.
+> > >
+> > > Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> >
+> > Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
 
-Signed-off-by: Amit Kumar Mahapatra <amit.kumar-mahapatra@amd.com>
----
- drivers/spi/spi-zynqmp-gqspi.c | 21 +++++++++++++--------
- 1 file changed, 13 insertions(+), 8 deletions(-)
+> Andy: are you going to send it together with the corresponding pinctrl
+> changes in a separate PR?
 
-diff --git a/drivers/spi/spi-zynqmp-gqspi.c b/drivers/spi/spi-zynqmp-gqspi.c
-index 35ff734fb82d..4759f704bf5c 100644
---- a/drivers/spi/spi-zynqmp-gqspi.c
-+++ b/drivers/spi/spi-zynqmp-gqspi.c
-@@ -156,6 +156,9 @@
- #define GQSPI_FREQ_100MHZ	100000000
- #define GQSPI_FREQ_150MHZ	150000000
- 
-+#define GQSPI_SELECT_LOWER_CS  BIT(0)
-+#define GQSPI_SELECT_UPPER_CS  BIT(1)
-+
- #define SPI_AUTOSUSPEND_TIMEOUT		3000
- enum mode_type {GQSPI_MODE_IO, GQSPI_MODE_DMA};
- 
-@@ -467,15 +470,17 @@ static void zynqmp_qspi_chipselect(struct spi_device *qspi, bool is_high)
- 
- 	genfifoentry |= GQSPI_GENFIFO_MODE_SPI;
- 
-+	if (qspi->cs_index_mask & GQSPI_SELECT_UPPER_CS) {
-+		zynqmp_gqspi_selectslave(xqspi,
-+					 GQSPI_SELECT_FLASH_CS_UPPER,
-+					 GQSPI_SELECT_FLASH_BUS_LOWER);
-+	} else if (qspi->cs_index_mask & GQSPI_SELECT_LOWER_CS) {
-+		zynqmp_gqspi_selectslave(xqspi,
-+					 GQSPI_SELECT_FLASH_CS_LOWER,
-+					 GQSPI_SELECT_FLASH_BUS_LOWER);
-+	}
-+	genfifoentry |= xqspi->genfifobus;
- 	if (!is_high) {
--		if (!qspi->chip_select[0]) {
--			xqspi->genfifobus = GQSPI_GENFIFO_BUS_LOWER;
--			xqspi->genfifocs = GQSPI_GENFIFO_CS_LOWER;
--		} else {
--			xqspi->genfifobus = GQSPI_GENFIFO_BUS_UPPER;
--			xqspi->genfifocs = GQSPI_GENFIFO_CS_UPPER;
--		}
--		genfifoentry |= xqspi->genfifobus;
- 		genfifoentry |= xqspi->genfifocs;
- 		genfifoentry |= GQSPI_GENFIFO_CS_SETUP;
- 	} else {
+Yes, this is the plan, but I want first to push it to Linux Next (via
+my tree) for a couple of days, so we will be sure there are no
+compilation issues.
+
 -- 
-2.17.1
-
+With Best Regards,
+Andy Shevchenko
