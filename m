@@ -1,44 +1,26 @@
-From: Jae Hyun Yoo <quic_jaehyoo@quicinc.com>
-Date: Mon, 17 Oct 2022 13:59:53 -0700
-Subject: [PATCH] usb: gadget: aspeed: Fix probe regression
-In-Reply-To: <Y029u+ZZZikW4fYl@hatter.bewilderbeest.net>
-References: <20221017053006.358520-1-joel@jms.id.au>
- <Y029u+ZZZikW4fYl@hatter.bewilderbeest.net>
-Message-ID: <75d65e4c-961a-0338-8101-d1ea05542dd6@quicinc.com>
+From: Linus Walleij <linus.walleij@linaro.org>
+Date: Mon, 17 Oct 2022 10:52:24 +0200
+Subject: [PATCH v2 01/36] gpiolib: tegra186: Add missed header(s)
+In-Reply-To: <20221010201453.77401-2-andriy.shevchenko@linux.intel.com>
+References: <20221010201453.77401-1-andriy.shevchenko@linux.intel.com> <20221010201453.77401-2-andriy.shevchenko@linux.intel.com>
+Message-ID: <CACRpkdbdzFR-a_xh8EjLMAshTeesOYhD3-_Bkc=vi7iK72ZKtA@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 10/17/2022 1:40 PM, Zev Weiss wrote:
-> On Sun, Oct 16, 2022 at 10:30:06PM PDT, Joel Stanley wrote:
->> Since commit fc274c1e9973 ("USB: gadget: Add a new bus for gadgets"),
->> the gadget devices are proper driver core devices, which caused each
->> device to request pinmux settings:
->>
->> aspeed_vhub 1e6a0000.usb-vhub: Initialized virtual hub in USB2 mode
->> aspeed-g5-pinctrl 1e6e2080.pinctrl: pin A7 already requested by 
->> 1e6a0000.usb-vhub; cannot claim for gadget.0
->> aspeed-g5-pinctrl 1e6e2080.pinctrl: pin-232 (gadget.0) status -22
->> aspeed-g5-pinctrl 1e6e2080.pinctrl: could not request pin 232 (A7) 
->> from group USB2AD? on device aspeed-g5-pinctrl
->> g_mass_storage gadget.0: Error applying setting, reverse things back
->>
->> The vhub driver has already claimed the pins, so prevent the gadgets
->> from requesting them too by setting the magic of_node_reused flag. This
->> causes the driver core to skip the mux request.
->>
->> Reported-by: Zev Weiss <zev@bewilderbeest.net>
->> Reported-by: Jae Hyun Yoo <quic_jaehyoo@quicinc.com>
->> Fixes: fc274c1e9973 ("USB: gadget: Add a new bus for gadgets")
->> Cc: stable at vger.kernel.org
->> Signed-off-by: Joel Stanley <joel@jms.id.au>
-> 
-> Thanks Joel!
-> 
-> Tested-by: Zev Weiss <zev@bewilderbeest.net>
+On Mon, Oct 10, 2022 at 10:15 PM Andy Shevchenko
+<andriy.shevchenko@linux.intel.com> wrote:
 
-It works for my AST2600 build targets too. Thanks Joel!
+> Do not imply that some of the generic headers may be always included.
+> Instead, include explicitly what we are direct user of.
+>
+> While at it, sort headers alphabetically.
+>
+> Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 
-Tested-by: Jae Hyun Yoo <quic_jaehyoo@quicinc.com>
+Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+
+Yours,
+Linus Walleij
