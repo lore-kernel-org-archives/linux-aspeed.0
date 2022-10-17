@@ -1,143 +1,325 @@
 From: Amit Kumar Mahapatra <amit.kumar-mahapatra@amd.com>
-Date: Mon, 17 Oct 2022 17:42:39 +0530
-Subject: [PATCH 00/10] spi: Add support for stacked/parallel memories
-Message-ID: <20221017121249.19061-1-amit.kumar-mahapatra@amd.com>
+Date: Mon, 17 Oct 2022 17:42:40 +0530
+Subject: [PATCH 01/10] spi: Add stacked memories support in SPI core
+In-Reply-To: <20221017121249.19061-1-amit.kumar-mahapatra@amd.com>
+References: <20221017121249.19061-1-amit.kumar-mahapatra@amd.com>
+Message-ID: <20221017121249.19061-2-amit.kumar-mahapatra@amd.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This patch is in the continuation to the discussions which happened on
-'commit f89504300e94 ("spi: Stacked/parallel memories bindings")' for
-adding dtbinding support for stacked/parallel memories.
+For supporting multiple CS the SPI device need to be aware of all the CS
+values. So, the "chip_select" member in the spi_device structure is now an
+array that holds all the CS values.
 
-This patch series updated the spi-nor, spi core and the spi drivers
-to add stacked and parallel memories support.
+spi_device structure now has a "cs_index_mask" member. This acts as an
+index to the chip_select array. If nth bit of spi->cs_index_mask is set
+then the driver would assert spi->chip_select[n].
+
+For supporting multiple CS via GPIO the cs_gpiod member of the spi_device
+structure is now an array that holds the gpio descriptor for each
+chipselect.
+
+Multi CS support using GPIO is not tested due to unavailability of
+necessary hardware setup.
+
+Signed-off-by: Amit Kumar Mahapatra <amit.kumar-mahapatra@amd.com>
 ---
-BRANCH: mtd/next
----
-Amit Kumar Mahapatra (10):
-  spi: Add stacked memories support in SPI core
-  spi: Replace all spi->chip_select & spi->cs_gpiod references with
-    array
-  net: Replace spi->chip_select references to spi->chip_select[0]
-  mtd: devices: Replace spi->chip_select references to
-    spi->chip_select[0]
-  iio: imu: Replace spi->chip_select references to spi->chip_select[0]
-  mtd: spi-nor: Add stacked memories support in spi-nor
-  spi: spi-zynqmp-gqspi: Add stacked memories support in GQSPI driver
-  spi: Add parallel memories support in SPI core
-  mtd: spi-nor: Add parallel memories support in spi-nor
-  spi: spi-zynqmp-gqspi: Add parallel memories support in GQSPI driver
+ drivers/spi/spi.c       | 86 ++++++++++++++++++++++++-----------------
+ include/linux/spi/spi.h | 16 +++++++-
+ 2 files changed, 65 insertions(+), 37 deletions(-)
 
- drivers/iio/imu/adis16400.c                   |   2 +-
- drivers/mtd/devices/mtd_dataflash.c           |   2 +-
- drivers/mtd/spi-nor/atmel.c                   |  10 +-
- drivers/mtd/spi-nor/core.c                    | 569 +++++++++++++++---
- drivers/mtd/spi-nor/core.h                    |   8 +
- drivers/mtd/spi-nor/debugfs.c                 |   4 +-
- drivers/mtd/spi-nor/gigadevice.c              |   2 +-
- drivers/mtd/spi-nor/issi.c                    |   6 +-
- drivers/mtd/spi-nor/macronix.c                |   4 +-
- drivers/mtd/spi-nor/micron-st.c               |  27 +-
- drivers/mtd/spi-nor/otp.c                     |  18 +-
- drivers/mtd/spi-nor/sfdp.c                    |  20 +-
- drivers/mtd/spi-nor/spansion.c                |  32 +-
- drivers/mtd/spi-nor/sst.c                     |   4 +-
- drivers/mtd/spi-nor/swp.c                     |  12 +-
- drivers/mtd/spi-nor/winbond.c                 |   6 +-
- drivers/mtd/spi-nor/xilinx.c                  |  14 +-
- drivers/net/ethernet/asix/ax88796c_main.c     |   2 +-
- drivers/net/ethernet/davicom/dm9051.c         |   2 +-
- drivers/net/ieee802154/ca8210.c               |   2 +-
- drivers/net/wan/slic_ds26522.c                |   2 +-
- .../net/wireless/marvell/libertas/if_spi.c    |   2 +-
- drivers/spi/spi-altera-core.c                 |   2 +-
- drivers/spi/spi-amd.c                         |   4 +-
- drivers/spi/spi-ar934x.c                      |   2 +-
- drivers/spi/spi-armada-3700.c                 |   4 +-
- drivers/spi/spi-aspeed-smc.c                  |  12 +-
- drivers/spi/spi-at91-usart.c                  |   2 +-
- drivers/spi/spi-ath79.c                       |   4 +-
- drivers/spi/spi-atmel.c                       |  26 +-
- drivers/spi/spi-au1550.c                      |   4 +-
- drivers/spi/spi-axi-spi-engine.c              |   2 +-
- drivers/spi/spi-bcm-qspi.c                    |   6 +-
- drivers/spi/spi-bcm2835.c                     |   6 +-
- drivers/spi/spi-bcm2835aux.c                  |   2 +-
- drivers/spi/spi-bcm63xx-hsspi.c               |  22 +-
- drivers/spi/spi-bcm63xx.c                     |   2 +-
- drivers/spi/spi-cadence-quadspi.c             |   4 +-
- drivers/spi/spi-cadence-xspi.c                |   4 +-
- drivers/spi/spi-cadence.c                     |   4 +-
- drivers/spi/spi-cavium.c                      |   8 +-
- drivers/spi/spi-coldfire-qspi.c               |   8 +-
- drivers/spi/spi-davinci.c                     |  18 +-
- drivers/spi/spi-dln2.c                        |   6 +-
- drivers/spi/spi-dw-core.c                     |   2 +-
- drivers/spi/spi-dw-mmio.c                     |   4 +-
- drivers/spi/spi-falcon.c                      |   2 +-
- drivers/spi/spi-fsi.c                         |   2 +-
- drivers/spi/spi-fsl-dspi.c                    |   4 +-
- drivers/spi/spi-fsl-espi.c                    |   6 +-
- drivers/spi/spi-fsl-lpspi.c                   |   2 +-
- drivers/spi/spi-fsl-qspi.c                    |   6 +-
- drivers/spi/spi-fsl-spi.c                     |  10 +-
- drivers/spi/spi-gpio.c                        |   4 +-
- drivers/spi/spi-hisi-sfc-v3xx.c               |   2 +-
- drivers/spi/spi-img-spfi.c                    |  14 +-
- drivers/spi/spi-imx.c                         |  30 +-
- drivers/spi/spi-ingenic.c                     |   4 +-
- drivers/spi/spi-jcore.c                       |   4 +-
- drivers/spi/spi-mem.c                         |   4 +-
- drivers/spi/spi-meson-spicc.c                 |   2 +-
- drivers/spi/spi-mpc512x-psc.c                 |   8 +-
- drivers/spi/spi-mpc52xx.c                     |   2 +-
- drivers/spi/spi-mt65xx.c                      |   6 +-
- drivers/spi/spi-mt7621.c                      |   2 +-
- drivers/spi/spi-mux.c                         |   8 +-
- drivers/spi/spi-mxs.c                         |   2 +-
- drivers/spi/spi-npcm-fiu.c                    |  20 +-
- drivers/spi/spi-nxp-fspi.c                    |  10 +-
- drivers/spi/spi-omap-100k.c                   |   2 +-
- drivers/spi/spi-omap-uwire.c                  |   8 +-
- drivers/spi/spi-omap2-mcspi.c                 |  24 +-
- drivers/spi/spi-orion.c                       |   4 +-
- drivers/spi/spi-pic32-sqi.c                   |   2 +-
- drivers/spi/spi-pic32.c                       |   4 +-
- drivers/spi/spi-pl022.c                       |   2 +-
- drivers/spi/spi-pxa2xx.c                      |   6 +-
- drivers/spi/spi-qcom-qspi.c                   |   2 +-
- drivers/spi/spi-rb4xx.c                       |   2 +-
- drivers/spi/spi-rockchip-sfc.c                |   2 +-
- drivers/spi/spi-rockchip.c                    |  28 +-
- drivers/spi/spi-rspi.c                        |  10 +-
- drivers/spi/spi-s3c64xx.c                     |   2 +-
- drivers/spi/spi-sc18is602.c                   |   4 +-
- drivers/spi/spi-sh-msiof.c                    |   6 +-
- drivers/spi/spi-st-ssc4.c                     |   2 +-
- drivers/spi/spi-stm32-qspi.c                  |   6 +-
- drivers/spi/spi-sun4i.c                       |   2 +-
- drivers/spi/spi-sun6i.c                       |   2 +-
- drivers/spi/spi-synquacer.c                   |   6 +-
- drivers/spi/spi-tegra114.c                    |  28 +-
- drivers/spi/spi-tegra20-sflash.c              |   2 +-
- drivers/spi/spi-tegra20-slink.c               |   6 +-
- drivers/spi/spi-ti-qspi.c                     |  16 +-
- drivers/spi/spi-topcliff-pch.c                |   2 +-
- drivers/spi/spi-xcomm.c                       |   2 +-
- drivers/spi/spi-xilinx.c                      |   6 +-
- drivers/spi/spi-xlp.c                         |   4 +-
- drivers/spi/spi-zynq-qspi.c                   |   2 +-
- drivers/spi/spi-zynqmp-gqspi.c                |  58 +-
- drivers/spi/spi.c                             | 219 ++++---
- drivers/spi/spidev.c                          |   4 +-
- include/linux/mtd/spi-nor.h                   |   8 +-
- include/linux/spi/spi.h                       |  28 +-
- include/trace/events/spi.h                    |  10 +-
- 105 files changed, 1062 insertions(+), 521 deletions(-)
-
+diff --git a/drivers/spi/spi.c b/drivers/spi/spi.c
+index 8f97a3eacdea..1b1a891f4ccc 100644
+--- a/drivers/spi/spi.c
++++ b/drivers/spi/spi.c
+@@ -592,7 +592,7 @@ static void spi_dev_set_name(struct spi_device *spi)
+ 	}
+ 
+ 	dev_set_name(&spi->dev, "%s.%u", dev_name(&spi->controller->dev),
+-		     spi->chip_select);
++		     spi->chip_select[0]);
+ }
+ 
+ static int spi_dev_check(struct device *dev, void *data)
+@@ -601,7 +601,8 @@ static int spi_dev_check(struct device *dev, void *data)
+ 	struct spi_device *new_spi = data;
+ 
+ 	if (spi->controller == new_spi->controller &&
+-	    spi->chip_select == new_spi->chip_select)
++	    spi->chip_select[0] == new_spi->chip_select[0] &&
++	    spi->chip_select[1] == new_spi->chip_select[1])
+ 		return -EBUSY;
+ 	return 0;
+ }
+@@ -616,7 +617,7 @@ static int __spi_add_device(struct spi_device *spi)
+ {
+ 	struct spi_controller *ctlr = spi->controller;
+ 	struct device *dev = ctlr->dev.parent;
+-	int status;
++	int status, idx;
+ 
+ 	/*
+ 	 * We need to make sure there's no other device with this
+@@ -626,7 +627,7 @@ static int __spi_add_device(struct spi_device *spi)
+ 	status = bus_for_each_dev(&spi_bus_type, NULL, spi, spi_dev_check);
+ 	if (status) {
+ 		dev_err(dev, "chipselect %d already in use\n",
+-				spi->chip_select);
++				spi->chip_select[0]);
+ 		return status;
+ 	}
+ 
+@@ -636,8 +637,10 @@ static int __spi_add_device(struct spi_device *spi)
+ 		return -ENODEV;
+ 	}
+ 
+-	if (ctlr->cs_gpiods)
+-		spi->cs_gpiod = ctlr->cs_gpiods[spi->chip_select];
++	if (ctlr->cs_gpiods) {
++		for (idx = 0; idx < SPI_CS_CNT_MAX; idx++)
++			spi->cs_gpiod[idx] = ctlr->cs_gpiods[spi->chip_select[idx]];
++	}
+ 
+ 	/*
+ 	 * Drivers may modify this initial i/o setup, but will
+@@ -677,13 +680,15 @@ int spi_add_device(struct spi_device *spi)
+ {
+ 	struct spi_controller *ctlr = spi->controller;
+ 	struct device *dev = ctlr->dev.parent;
+-	int status;
++	int status, idx;
+ 
+-	/* Chipselects are numbered 0..max; validate. */
+-	if (spi->chip_select >= ctlr->num_chipselect) {
+-		dev_err(dev, "cs%d >= max %d\n", spi->chip_select,
+-			ctlr->num_chipselect);
+-		return -EINVAL;
++	for (idx = 0; idx < SPI_CS_CNT_MAX; idx++) {
++		/* Chipselects are numbered 0..max; validate. */
++		if (spi->chip_select[idx] >= ctlr->num_chipselect) {
++			dev_err(dev, "cs%d >= max %d\n", spi->chip_select[idx],
++				ctlr->num_chipselect);
++			return -EINVAL;
++		}
+ 	}
+ 
+ 	/* Set the bus ID string */
+@@ -700,12 +705,15 @@ static int spi_add_device_locked(struct spi_device *spi)
+ {
+ 	struct spi_controller *ctlr = spi->controller;
+ 	struct device *dev = ctlr->dev.parent;
++	int idx;
+ 
+-	/* Chipselects are numbered 0..max; validate. */
+-	if (spi->chip_select >= ctlr->num_chipselect) {
+-		dev_err(dev, "cs%d >= max %d\n", spi->chip_select,
+-			ctlr->num_chipselect);
+-		return -EINVAL;
++	for (idx = 0; idx < SPI_CS_CNT_MAX; idx++) {
++		/* Chipselects are numbered 0..max; validate. */
++		if (spi->chip_select[idx] >= ctlr->num_chipselect) {
++			dev_err(dev, "cs%d >= max %d\n", spi->chip_select[idx],
++				ctlr->num_chipselect);
++			return -EINVAL;
++		}
+ 	}
+ 
+ 	/* Set the bus ID string */
+@@ -749,7 +757,7 @@ struct spi_device *spi_new_device(struct spi_controller *ctlr,
+ 
+ 	WARN_ON(strlen(chip->modalias) >= sizeof(proxy->modalias));
+ 
+-	proxy->chip_select = chip->chip_select;
++	proxy->chip_select[0] = chip->chip_select;
+ 	proxy->max_speed_hz = chip->max_speed_hz;
+ 	proxy->mode = chip->mode;
+ 	proxy->irq = chip->irq;
+@@ -953,29 +961,32 @@ static void spi_res_release(struct spi_controller *ctlr, struct spi_message *mes
+ static void spi_set_cs(struct spi_device *spi, bool enable, bool force)
+ {
+ 	bool activate = enable;
++	u32 cs_num = __ffs(spi->cs_index_mask);
++	int idx;
+ 
+ 	/*
+ 	 * Avoid calling into the driver (or doing delays) if the chip select
+ 	 * isn't actually changing from the last time this was called.
+ 	 */
+-	if (!force && ((enable && spi->controller->last_cs == spi->chip_select) ||
+-				(!enable && spi->controller->last_cs != spi->chip_select)) &&
++	if (!force && ((enable &&
++			spi->controller->last_cs == spi->chip_select[cs_num]) ||
++		       (!enable &&
++			spi->controller->last_cs != spi->chip_select[cs_num])) &&
+ 	    (spi->controller->last_cs_mode_high == (spi->mode & SPI_CS_HIGH)))
+ 		return;
+ 
+ 	trace_spi_set_cs(spi, activate);
+ 
+-	spi->controller->last_cs = enable ? spi->chip_select : -1;
++	spi->controller->last_cs = enable ? spi->chip_select[cs_num] : -1;
+ 	spi->controller->last_cs_mode_high = spi->mode & SPI_CS_HIGH;
+ 
+-	if ((spi->cs_gpiod || !spi->controller->set_cs_timing) && !activate) {
++	if ((spi->cs_gpiod[cs_num] || !spi->controller->set_cs_timing) && !activate)
+ 		spi_delay_exec(&spi->cs_hold, NULL);
+-	}
+ 
+ 	if (spi->mode & SPI_CS_HIGH)
+ 		enable = !enable;
+ 
+-	if (spi->cs_gpiod) {
++	if (spi->cs_gpiod[cs_num]) {
+ 		if (!(spi->mode & SPI_NO_CS)) {
+ 			/*
+ 			 * Historically ACPI has no means of the GPIO polarity and
+@@ -988,10 +999,10 @@ static void spi_set_cs(struct spi_device *spi, bool enable, bool force)
+ 			 * into account.
+ 			 */
+ 			if (has_acpi_companion(&spi->dev))
+-				gpiod_set_value_cansleep(spi->cs_gpiod, !enable);
++				gpiod_set_value_cansleep(spi->cs_gpiod[cs_num], !enable);
+ 			else
+ 				/* Polarity handled by GPIO library */
+-				gpiod_set_value_cansleep(spi->cs_gpiod, activate);
++				gpiod_set_value_cansleep(spi->cs_gpiod[cs_num], activate);
+ 		}
+ 		/* Some SPI masters need both GPIO CS & slave_select */
+ 		if ((spi->controller->flags & SPI_MASTER_GPIO_SS) &&
+@@ -1001,7 +1012,7 @@ static void spi_set_cs(struct spi_device *spi, bool enable, bool force)
+ 		spi->controller->set_cs(spi, !enable);
+ 	}
+ 
+-	if (spi->cs_gpiod || !spi->controller->set_cs_timing) {
++	if (spi->cs_gpiod[cs_num] || !spi->controller->set_cs_timing) {
+ 		if (activate)
+ 			spi_delay_exec(&spi->cs_setup, NULL);
+ 		else
+@@ -2139,8 +2150,8 @@ void spi_flush_queue(struct spi_controller *ctlr)
+ static int of_spi_parse_dt(struct spi_controller *ctlr, struct spi_device *spi,
+ 			   struct device_node *nc)
+ {
+-	u32 value;
+-	int rc;
++	u32 value, cs[SPI_CS_CNT_MAX] = {0};
++	int rc, idx;
+ 
+ 	/* Mode (clock phase/polarity/etc.) */
+ 	if (of_property_read_bool(nc, "spi-cpha"))
+@@ -2213,13 +2224,17 @@ static int of_spi_parse_dt(struct spi_controller *ctlr, struct spi_device *spi,
+ 	}
+ 
+ 	/* Device address */
+-	rc = of_property_read_u32(nc, "reg", &value);
+-	if (rc) {
++	rc = of_property_read_variable_u32_array(nc, "reg", &cs[0], 1,
++						 SPI_CS_CNT_MAX);
++	if (rc < 0 || rc > ctlr->num_chipselect) {
+ 		dev_err(&ctlr->dev, "%pOF has no valid 'reg' property (%d)\n",
+ 			nc, rc);
+ 		return rc;
+ 	}
+-	spi->chip_select = value;
++	for (idx = 0; idx < rc; idx++)
++		spi->chip_select[idx] = cs[idx];
++	/* By default set the spi->cs_index_mask as 1 */
++	spi->cs_index_mask = 0x01;
+ 
+ 	/* Device speed */
+ 	if (!of_property_read_u32(nc, "spi-max-frequency", &value))
+@@ -2333,7 +2348,7 @@ struct spi_device *spi_new_ancillary_device(struct spi_device *spi,
+ 	strlcpy(ancillary->modalias, "dummy", sizeof(ancillary->modalias));
+ 
+ 	/* Use provided chip-select for ancillary device */
+-	ancillary->chip_select = chip_select;
++	ancillary->chip_select[0] = chip_select;
+ 
+ 	/* Take over SPI mode/speed from SPI main device */
+ 	ancillary->max_speed_hz = spi->max_speed_hz;
+@@ -2580,7 +2595,7 @@ struct spi_device *acpi_spi_device_alloc(struct spi_controller *ctlr,
+ 	spi->mode		|= lookup.mode;
+ 	spi->irq		= lookup.irq;
+ 	spi->bits_per_word	= lookup.bits_per_word;
+-	spi->chip_select	= lookup.chip_select;
++	spi->chip_select[0]	= lookup.chip_select;
+ 
+ 	return spi;
+ }
+@@ -3687,6 +3702,7 @@ static int __spi_validate(struct spi_device *spi, struct spi_message *message)
+ 	struct spi_controller *ctlr = spi->controller;
+ 	struct spi_transfer *xfer;
+ 	int w_size;
++	u32 cs_num = __ffs(spi->cs_index_mask);
+ 
+ 	if (list_empty(&message->transfers))
+ 		return -EINVAL;
+@@ -3699,7 +3715,7 @@ static int __spi_validate(struct spi_device *spi, struct spi_message *message)
+ 	 * cs_change is set for each transfer.
+ 	 */
+ 	if ((spi->mode & SPI_CS_WORD) && (!(ctlr->mode_bits & SPI_CS_WORD) ||
+-					  spi->cs_gpiod)) {
++					  spi->cs_gpiod[cs_num])) {
+ 		size_t maxsize;
+ 		int ret;
+ 
+diff --git a/include/linux/spi/spi.h b/include/linux/spi/spi.h
+index e6c73d5ff1a8..a7c2efedcc4c 100644
+--- a/include/linux/spi/spi.h
++++ b/include/linux/spi/spi.h
+@@ -19,6 +19,9 @@
+ #include <linux/acpi.h>
+ #include <linux/u64_stats_sync.h>
+ 
++/* Max no. of CS supported per spi device */
++#define SPI_CS_CNT_MAX 2
++
+ struct dma_chan;
+ struct software_node;
+ struct ptp_system_timestamp;
+@@ -163,6 +166,7 @@ extern int spi_delay_exec(struct spi_delay *_delay, struct spi_transfer *xfer);
+  *	deasserted. If @cs_change_delay is used from @spi_transfer, then the
+  *	two delays will be added up.
+  * @pcpu_statistics: statistics for the spi_device
++ * @cs_index_mask: Bit mask of the active chipselect(s) in the chipselect array
+  *
+  * A @spi_device is used to interchange data between an SPI slave
+  * (usually a discrete chip) and CPU memory.
+@@ -178,7 +182,7 @@ struct spi_device {
+ 	struct spi_controller	*controller;
+ 	struct spi_controller	*master;	/* Compatibility layer */
+ 	u32			max_speed_hz;
+-	u8			chip_select;
++	u8			chip_select[SPI_CS_CNT_MAX];
+ 	u8			bits_per_word;
+ 	bool			rt;
+ #define SPI_NO_TX	BIT(31)		/* No transmit wire */
+@@ -199,7 +203,7 @@ struct spi_device {
+ 	void			*controller_data;
+ 	char			modalias[SPI_NAME_SIZE];
+ 	const char		*driver_override;
+-	struct gpio_desc	*cs_gpiod;	/* Chip select gpio desc */
++	struct gpio_desc	*cs_gpiod[SPI_CS_CNT_MAX];	/* Chip select gpio desc */
+ 	struct spi_delay	word_delay; /* Inter-word delay */
+ 	/* CS delays */
+ 	struct spi_delay	cs_setup;
+@@ -209,6 +213,14 @@ struct spi_device {
+ 	/* The statistics */
+ 	struct spi_statistics __percpu	*pcpu_statistics;
+ 
++	/*
++	 * Bit mask of the chipselect(s) that the driver need to use from
++	 * the chipselect array.When the controller is capable to handle
++	 * multiple chip selects & memories are connected in parallel
++	 * then more than one bit need to be set in cs_index_mask.
++	 */
++	u32			cs_index_mask : 2;
++
+ 	/*
+ 	 * likely need more hooks for more protocol options affecting how
+ 	 * the controller talks to each chip, like:
 -- 
 2.17.1
 
