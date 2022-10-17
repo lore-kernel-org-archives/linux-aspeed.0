@@ -1,101 +1,37 @@
-From: Rob Herring <robh@kernel.org>
-Date: Mon, 17 Oct 2022 13:57:30 -0500
-Subject: [PATCH linux v2 2/3] spi: aspeed: Handle custom decoding ranges
-In-Reply-To: <20221017091624.130227-3-clg@kaod.org>
-References: <20221017091624.130227-1-clg@kaod.org>
- <20221017091624.130227-3-clg@kaod.org>
-Message-ID: <20221017185730.GB2264550-robh@kernel.org>
+From: Zev Weiss <zev@bewilderbeest.net>
+Date: Mon, 17 Oct 2022 13:40:27 -0700
+Subject: [PATCH] usb: gadget: aspeed: Fix probe regression
+In-Reply-To: <20221017053006.358520-1-joel@jms.id.au>
+References: <20221017053006.358520-1-joel@jms.id.au>
+Message-ID: <Y029u+ZZZikW4fYl@hatter.bewilderbeest.net>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Oct 17, 2022 at 11:16:23AM +0200, C?dric Le Goater wrote:
-> The "ranges" property predefines settings for the decoding ranges of
-> each CS. If found in the DT, the driver applies the settings at probe
-> time. The default behavior is to set the decoding range of each CS
-> using the flash device size when the spi slave is setup.
-> 
-> Cc: Naresh Solanki <naresh.solanki@9elements.com>
-> Cc: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
-> Signed-off-by: C?dric Le Goater <clg@kaod.org>
-> ---
->  drivers/spi/spi-aspeed-smc.c | 65 +++++++++++++++++++++++++++++++++++-
->  1 file changed, 64 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/spi/spi-aspeed-smc.c b/drivers/spi/spi-aspeed-smc.c
-> index b90571396a60..75e1d08bbd00 100644
-> --- a/drivers/spi/spi-aspeed-smc.c
-> +++ b/drivers/spi/spi-aspeed-smc.c
-> @@ -96,6 +96,7 @@ struct aspeed_spi {
->  	u32			 ahb_base_phy;
->  	u32			 ahb_window_size;
->  	struct device		*dev;
-> +	bool                     fixed_windows;
->  
->  	struct clk		*clk;
->  	u32			 clk_freq;
-> @@ -382,6 +383,7 @@ static const char *aspeed_spi_get_name(struct spi_mem *mem)
->  
->  struct aspeed_spi_window {
->  	u32 cs;
-> +	u32 reg;
->  	u32 offset;
->  	u32 size;
->  };
-> @@ -396,6 +398,7 @@ static void aspeed_spi_get_windows(struct aspeed_spi *aspi,
->  	for (cs = 0; cs < aspi->data->max_cs; cs++) {
->  		reg_val = readl(aspi->regs + CE0_SEGMENT_ADDR_REG + cs * 4);
->  		windows[cs].cs = cs;
-> +		windows[cs].reg = reg_val;
->  		windows[cs].size = data->segment_end(aspi, reg_val) -
->  			data->segment_start(aspi, reg_val);
->  		windows[cs].offset = data->segment_start(aspi, reg_val) - aspi->ahb_base_phy;
-> @@ -572,7 +575,8 @@ static int aspeed_spi_dirmap_create(struct spi_mem_dirmap_desc *desc)
->  	if (op->data.dir != SPI_MEM_DATA_IN)
->  		return -EOPNOTSUPP;
->  
-> -	aspeed_spi_chip_adjust_window(chip, desc->info.offset, desc->info.length);
-> +	if (!aspi->fixed_windows)
-> +		aspeed_spi_chip_adjust_window(chip, desc->info.offset, desc->info.length);
->  
->  	if (desc->info.length > chip->ahb_window_size)
->  		dev_warn(aspi->dev, "CE%d window (%dMB) too small for mapping",
-> @@ -712,6 +716,61 @@ static void aspeed_spi_enable(struct aspeed_spi *aspi, bool enable)
->  		aspeed_spi_chip_enable(aspi, cs, enable);
->  }
->  
-> +static int aspeed_spi_chip_read_ranges(struct device_node *node, struct aspeed_spi *aspi)
-> +{
-> +	const char *range_prop = "ranges";
-> +	struct property *prop;
-> +	struct aspeed_spi_window ranges[ASPEED_SPI_MAX_NUM_CS];
-> +	int prop_size;
-> +	int count;
-> +	int ret;
-> +	int i;
-> +
-> +	prop = of_find_property(node, range_prop, &prop_size);
-> +	if (!prop)
-> +		return 0;
+On Sun, Oct 16, 2022 at 10:30:06PM PDT, Joel Stanley wrote:
+>Since commit fc274c1e9973 ("USB: gadget: Add a new bus for gadgets"),
+>the gadget devices are proper driver core devices, which caused each
+>device to request pinmux settings:
+>
+> aspeed_vhub 1e6a0000.usb-vhub: Initialized virtual hub in USB2 mode
+> aspeed-g5-pinctrl 1e6e2080.pinctrl: pin A7 already requested by 1e6a0000.usb-vhub; cannot claim for gadget.0
+> aspeed-g5-pinctrl 1e6e2080.pinctrl: pin-232 (gadget.0) status -22
+> aspeed-g5-pinctrl 1e6e2080.pinctrl: could not request pin 232 (A7) from group USB2AD  on device aspeed-g5-pinctrl
+> g_mass_storage gadget.0: Error applying setting, reverse things back
+>
+>The vhub driver has already claimed the pins, so prevent the gadgets
+>from requesting them too by setting the magic of_node_reused flag. This
+>causes the driver core to skip the mux request.
+>
+>Reported-by: Zev Weiss <zev@bewilderbeest.net>
+>Reported-by: Jae Hyun Yoo <quic_jaehyoo@quicinc.com>
+>Fixes: fc274c1e9973 ("USB: gadget: Add a new bus for gadgets")
+>Cc: stable at vger.kernel.org
+>Signed-off-by: Joel Stanley <joel@jms.id.au>
 
-Parsing common properties yourself is generally a bad sign.
+Thanks Joel!
 
-> +
-> +	count = prop_size / sizeof(*ranges);
-> +	if (count > aspi->data->max_cs) {
-> +		dev_err(aspi->dev, "invalid '%s' property %d\n", range_prop, count);
-> +		return -EINVAL;
-> +	}
-> +
-> +	if (count < aspi->data->max_cs)
-> +		dev_dbg(aspi->dev, "'%s' property does not cover all CE\n",
-> +			range_prop);
-> +
-> +	ret = of_property_read_u32_array(node, range_prop, (u32 *)ranges, count * 4);
+Tested-by: Zev Weiss <zev@bewilderbeest.net>
 
-You've just gotten it horribly wrong because you ignored #size-cells and 
-#address-cells.
-
-Rob
