@@ -1,48 +1,44 @@
-From: Joel Stanley <joel@jms.id.au>
-Date: Mon, 17 Oct 2022 16:00:06 +1030
-Subject: [PATCH] usb: gadget: aspeed: Fix probe regression
-Message-ID: <20221017053006.358520-1-joel@jms.id.au>
+From: Cédric Le Goater <clg@kaod.org>
+Date: Mon, 17 Oct 2022 11:16:21 +0200
+Subject: [PATCH linux v2 0/3] spi: aspeed: Add a "ranges" property
+Message-ID: <20221017091624.130227-1-clg@kaod.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Since commit fc274c1e9973 ("USB: gadget: Add a new bus for gadgets"),
-the gadget devices are proper driver core devices, which caused each
-device to request pinmux settings:
+Hello,
 
- aspeed_vhub 1e6a0000.usb-vhub: Initialized virtual hub in USB2 mode
- aspeed-g5-pinctrl 1e6e2080.pinctrl: pin A7 already requested by 1e6a0000.usb-vhub; cannot claim for gadget.0
- aspeed-g5-pinctrl 1e6e2080.pinctrl: pin-232 (gadget.0) status -22
- aspeed-g5-pinctrl 1e6e2080.pinctrl: could not request pin 232 (A7) from group USB2AD  on device aspeed-g5-pinctrl
- g_mass_storage gadget.0: Error applying setting, reverse things back
+Currently, the Linux Aspeed SMC driver computes the decoding ranges of
+each CS (AHB memory window on which the flash contents are mapped)
+from the size of the detected flash device. It seems that some chips
+have issues with the computed ranges and for these, it would be nice
+to be able to define custom decoding ranges in the DT.
 
-The vhub driver has already claimed the pins, so prevent the gadgets
-from requesting them too by setting the magic of_node_reused flag. This
-causes the driver core to skip the mux request.
+Here is a little series doing that. 
 
-Reported-by: Zev Weiss <zev@bewilderbeest.net>
-Reported-by: Jae Hyun Yoo <quic_jaehyoo@quicinc.com>
-Fixes: fc274c1e9973 ("USB: gadget: Add a new bus for gadgets")
-Cc: stable at vger.kernel.org
-Signed-off-by: Joel Stanley <joel@jms.id.au>
----
- drivers/usb/gadget/udc/aspeed-vhub/dev.c | 1 +
- 1 file changed, 1 insertion(+)
+Thanks,
 
-diff --git a/drivers/usb/gadget/udc/aspeed-vhub/dev.c b/drivers/usb/gadget/udc/aspeed-vhub/dev.c
-index b0dfca43fbdc..4f3bc27c1c62 100644
---- a/drivers/usb/gadget/udc/aspeed-vhub/dev.c
-+++ b/drivers/usb/gadget/udc/aspeed-vhub/dev.c
-@@ -591,6 +591,7 @@ int ast_vhub_init_dev(struct ast_vhub *vhub, unsigned int idx)
- 		d->gadget.max_speed = USB_SPEED_HIGH;
- 	d->gadget.speed = USB_SPEED_UNKNOWN;
- 	d->gadget.dev.of_node = vhub->pdev->dev.of_node;
-+	d->gadget.dev.of_node_reused = true;
- 
- 	rc = usb_add_gadget_udc(d->port_dev, &d->gadget);
- 	if (rc != 0)
+C. 
+
+Changes in v2 :
+
+ - Tested by Naresh Solanki
+ - sent preliminary fix independently
+   https://patchwork.kernel.org/project/linux-arm-kernel/patch/20221016155722.3520802-1-clg at kaod.org/
+ - changed the sysfs file exposing the register values to debugfs.
+ - refresh on 6.1-rc1
+
+C?dric Le Goater (3):
+  spi: dt-bindings: aspeed: Add a ranges property
+  spi: aspeed: Handle custom decoding ranges
+  spi: aspeed: Introduce a "ranges" debugfs file
+
+ drivers/spi/spi-aspeed-smc.c                  | 131 +++++++++++++++++-
+ .../bindings/spi/aspeed,ast2600-fmc.yaml      |   9 ++
+ 2 files changed, 138 insertions(+), 2 deletions(-)
+
 -- 
-2.35.1
+2.37.3
 
