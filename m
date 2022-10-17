@@ -1,64 +1,101 @@
 From: Rob Herring <robh@kernel.org>
-Date: Mon, 17 Oct 2022 13:51:38 -0500
-Subject: [PATCH linux v2 1/3] spi: dt-bindings: aspeed: Add a ranges
- property
-In-Reply-To: <20221017091624.130227-2-clg@kaod.org>
+Date: Mon, 17 Oct 2022 13:57:30 -0500
+Subject: [PATCH linux v2 2/3] spi: aspeed: Handle custom decoding ranges
+In-Reply-To: <20221017091624.130227-3-clg@kaod.org>
 References: <20221017091624.130227-1-clg@kaod.org>
- <20221017091624.130227-2-clg@kaod.org>
-Message-ID: <20221017185138.GA2264550-robh@kernel.org>
+ <20221017091624.130227-3-clg@kaod.org>
+Message-ID: <20221017185730.GB2264550-robh@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Oct 17, 2022 at 11:16:22AM +0200, C?dric Le Goater wrote:
-> "ranges" predefines settings for the decoding ranges of each CS.
-
-Please explain the problem, not what the change is.
-
+On Mon, Oct 17, 2022 at 11:16:23AM +0200, C?dric Le Goater wrote:
+> The "ranges" property predefines settings for the decoding ranges of
+> each CS. If found in the DT, the driver applies the settings at probe
+> time. The default behavior is to set the decoding range of each CS
+> using the flash device size when the spi slave is setup.
+> 
 > Cc: Naresh Solanki <naresh.solanki@9elements.com>
 > Cc: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
 > Signed-off-by: C?dric Le Goater <clg@kaod.org>
 > ---
->  .../devicetree/bindings/spi/aspeed,ast2600-fmc.yaml      | 9 +++++++++
->  1 file changed, 9 insertions(+)
+>  drivers/spi/spi-aspeed-smc.c | 65 +++++++++++++++++++++++++++++++++++-
+>  1 file changed, 64 insertions(+), 1 deletion(-)
 > 
-> diff --git a/Documentation/devicetree/bindings/spi/aspeed,ast2600-fmc.yaml b/Documentation/devicetree/bindings/spi/aspeed,ast2600-fmc.yaml
-> index fa8f4ac20985..a11cbc4c4c5c 100644
-> --- a/Documentation/devicetree/bindings/spi/aspeed,ast2600-fmc.yaml
-> +++ b/Documentation/devicetree/bindings/spi/aspeed,ast2600-fmc.yaml
-> @@ -38,6 +38,14 @@ properties:
->    interrupts:
->      maxItems: 1
+> diff --git a/drivers/spi/spi-aspeed-smc.c b/drivers/spi/spi-aspeed-smc.c
+> index b90571396a60..75e1d08bbd00 100644
+> --- a/drivers/spi/spi-aspeed-smc.c
+> +++ b/drivers/spi/spi-aspeed-smc.c
+> @@ -96,6 +96,7 @@ struct aspeed_spi {
+>  	u32			 ahb_base_phy;
+>  	u32			 ahb_window_size;
+>  	struct device		*dev;
+> +	bool                     fixed_windows;
 >  
-> +  ranges:
-> +    minItems: 1
-> +    maxItems: 5
-> +    description: |
-> +      Defines the address mapping for child devices with four integer
-> +      values for each chip-select line in use:
-> +      <cs-number> 0 <physical address of mapping> <size>
+>  	struct clk		*clk;
+>  	u32			 clk_freq;
+> @@ -382,6 +383,7 @@ static const char *aspeed_spi_get_name(struct spi_mem *mem)
+>  
+>  struct aspeed_spi_window {
+>  	u32 cs;
+> +	u32 reg;
+>  	u32 offset;
+>  	u32 size;
+>  };
+> @@ -396,6 +398,7 @@ static void aspeed_spi_get_windows(struct aspeed_spi *aspi,
+>  	for (cs = 0; cs < aspi->data->max_cs; cs++) {
+>  		reg_val = readl(aspi->regs + CE0_SEGMENT_ADDR_REG + cs * 4);
+>  		windows[cs].cs = cs;
+> +		windows[cs].reg = reg_val;
+>  		windows[cs].size = data->segment_end(aspi, reg_val) -
+>  			data->segment_start(aspi, reg_val);
+>  		windows[cs].offset = data->segment_start(aspi, reg_val) - aspi->ahb_base_phy;
+> @@ -572,7 +575,8 @@ static int aspeed_spi_dirmap_create(struct spi_mem_dirmap_desc *desc)
+>  	if (op->data.dir != SPI_MEM_DATA_IN)
+>  		return -EOPNOTSUPP;
+>  
+> -	aspeed_spi_chip_adjust_window(chip, desc->info.offset, desc->info.length);
+> +	if (!aspi->fixed_windows)
+> +		aspeed_spi_chip_adjust_window(chip, desc->info.offset, desc->info.length);
+>  
+>  	if (desc->info.length > chip->ahb_window_size)
+>  		dev_warn(aspi->dev, "CE%d window (%dMB) too small for mapping",
+> @@ -712,6 +716,61 @@ static void aspeed_spi_enable(struct aspeed_spi *aspi, bool enable)
+>  		aspeed_spi_chip_enable(aspi, cs, enable);
+>  }
+>  
+> +static int aspeed_spi_chip_read_ranges(struct device_node *node, struct aspeed_spi *aspi)
+> +{
+> +	const char *range_prop = "ranges";
+> +	struct property *prop;
+> +	struct aspeed_spi_window ranges[ASPEED_SPI_MAX_NUM_CS];
+> +	int prop_size;
+> +	int count;
+> +	int ret;
+> +	int i;
 > +
->  required:
->    - compatible
->    - reg
-> @@ -58,6 +66,7 @@ examples:
->          compatible = "aspeed,ast2600-fmc";
->          clocks = <&syscon ASPEED_CLK_AHB>;
->          interrupts = <GIC_SPI 39 IRQ_TYPE_LEVEL_HIGH>;
-> +        ranges = <0 0 0x20000000 0x2000000>, <1 0 0x22000000 0x2000000>;
+> +	prop = of_find_property(node, range_prop, &prop_size);
+> +	if (!prop)
+> +		return 0;
 
-By having ranges here, 'reg' in child nodes become translatable 
-addresses. But they are not because they are SPI chip-selects. Only 
-memory mapped addresses should be translatable. 
+Parsing common properties yourself is generally a bad sign.
 
-Probably the ranges here should be in 'reg' of the controller.
+> +
+> +	count = prop_size / sizeof(*ranges);
+> +	if (count > aspi->data->max_cs) {
+> +		dev_err(aspi->dev, "invalid '%s' property %d\n", range_prop, count);
+> +		return -EINVAL;
+> +	}
+> +
+> +	if (count < aspi->data->max_cs)
+> +		dev_dbg(aspi->dev, "'%s' property does not cover all CE\n",
+> +			range_prop);
+> +
+> +	ret = of_property_read_u32_array(node, range_prop, (u32 *)ranges, count * 4);
 
->  
->          flash at 0 {
->                  reg = < 0 >;
-> -- 
-> 2.37.3
-> 
-> 
+You've just gotten it horribly wrong because you ignored #size-cells and 
+#address-cells.
+
+Rob
