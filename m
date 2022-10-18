@@ -1,51 +1,53 @@
-From: Yang Yingliang <yangyingliang@huawei.com>
-Date: Tue, 18 Oct 2022 22:49:57 +0800
-Subject: [PATCH 1/2] fsi: aspeed: fix master device refcount leak
-Message-ID: <20221018144958.1972563-1-yangyingliang@huawei.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Tue, 18 Oct 2022 15:04:44 +0200
+Subject: [PATCH v2 36/36] pinctrl: Clean up headers
+In-Reply-To: <Y0UyOWALxSFai2w6@smile.fi.intel.com>
+References: <20221010201453.77401-1-andriy.shevchenko@linux.intel.com>
+ <20221010201453.77401-37-andriy.shevchenko@linux.intel.com>
+ <d63088d7-202b-a550-01e5-345a22de5f7d@amd.com> <CAMuHMdUfdQnisexfs4yLjeKs-LUPY1HjChrgeNjNL1qSErir9Q@mail.gmail.com>
+ <Y0UyOWALxSFai2w6@smile.fi.intel.com>
+Message-ID: <CAMuHMdVU-cTBMzgBrbzA9+ZYybVS8kdYaA9spU9oDfqrLMvCuA@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-If fsi_master_register() fails, put_device() need be called to decrease
-refcount to 0, so that the name allocated in dev_set_name() can be freed
-in callback function kobject_cleanup().
+Hi Andy,
 
-Besides, the refcount is hold in fsi_master_aspeed_probe(), it need be put
-in fsi_master_aspeed_remove().
+On Tue, Oct 11, 2022 at 11:07 AM Andy Shevchenko
+<andriy.shevchenko@linux.intel.com> wrote:
+> On Tue, Oct 11, 2022 at 10:46:30AM +0200, Geert Uytterhoeven wrote:
+> > On Tue, Oct 11, 2022 at 9:31 AM Basavaraj Natikar <bnatikar@amd.com> wrote:
+> > > On 10/11/2022 1:44 AM, Andy Shevchenko wrote:
+>
+> > > > +++ b/drivers/pinctrl/core.h
+>
+> > > > -#include <linux/pinctrl/pinconf.h>
+> > >
+> > > Removing pinconf.h from the core.h may cause build failure in other files
+> > > because where-ever core.h is included to use ?struct pinconf_ops?, there
+> > > is a need to include pinconf.h.
+> >
+> > I can confirm adding
+> >
+> >     #include <linux/pinctrl/pinconf.h>
+> >
+> > to drivers/pinctrl/renesas/pinctrl-rzn1.c and drivers/pinctrl/pinctrl-single.c
+> > fixes the issues I was seeing with shmobile_defconfig and (out-of-tree)
+> > renesas_defconfig.
+>
+> I will add this, thank you for reporting.
 
-Fixes: 606397d67f41 ("fsi: Add ast2600 master driver")
-Signed-off-by: Yang Yingliang <yangyingliang@huawei.com>
----
- drivers/fsi/fsi-master-aspeed.c | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+Same for drivers/pinctrl/starfive/pinctrl-starfive-jh7100.c.
 
-diff --git a/drivers/fsi/fsi-master-aspeed.c b/drivers/fsi/fsi-master-aspeed.c
-index 7cec1772820d..a72dbfe2addc 100644
---- a/drivers/fsi/fsi-master-aspeed.c
-+++ b/drivers/fsi/fsi-master-aspeed.c
-@@ -624,8 +624,11 @@ static int fsi_master_aspeed_probe(struct platform_device *pdev)
- 	aspeed_master_init(aspeed);
- 
- 	rc = fsi_master_register(&aspeed->master);
--	if (rc)
-+	if (rc) {
-+		put_device(&aspeed->master.dev);
-+		aspeed = NULL;
- 		goto err_release;
-+	}
- 
- 	/* At this point, fsi_master_register performs the device_initialize(),
- 	 * and holds the sole reference on master.dev. This means the device
-@@ -651,6 +654,7 @@ static int fsi_master_aspeed_remove(struct platform_device *pdev)
- 	fsi_master_unregister(&aspeed->master);
- 	clk_disable_unprepare(aspeed->clk);
- 
-+	put_device(&aspeed->master.dev);
- 	return 0;
- }
- 
--- 
-2.25.1
+Gr{oetje,eeting}s,
 
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert at linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
