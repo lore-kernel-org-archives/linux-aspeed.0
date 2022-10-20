@@ -1,57 +1,37 @@
 From: Thomas Zimmermann <tzimmermann@suse.de>
-Date: Thu, 20 Oct 2022 12:37:35 +0200
-Subject: [PATCH 01/21] drm/amdgpu: Don't set struct drm_driver.lastclose
+Date: Thu, 20 Oct 2022 12:37:37 +0200
+Subject: [PATCH 03/21] drm/ingenic: Don't set struct drm_driver.lastclose
 In-Reply-To: <20221020103755.24058-1-tzimmermann@suse.de>
 References: <20221020103755.24058-1-tzimmermann@suse.de>
-Message-ID: <20221020103755.24058-2-tzimmermann@suse.de>
+Message-ID: <20221020103755.24058-4-tzimmermann@suse.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Don't set struct drm_driver.lastclose. It's used to restore the
-fbdev console. But as amdgpu uses generic fbdev emulation, the
-console is being restored by the DRM client helpers already. See
-the call to drm_client_dev_restore() in drm_lastclose().
+Don't set struct drm_mode_config.output_poll_changed. It's used to
+inform the fbdev console about conncetor changes. But as ingenic
+uses generic fbdev emulation, the console is being informed by the
+DRM client helpers already. See the calls to drm_client_dev_hotplug()
+in drm_probe_helper.c.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- drivers/gpu/drm/amd/amdgpu/amdgpu_display.c       | 1 -
- drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c | 2 --
- 2 files changed, 3 deletions(-)
+ drivers/gpu/drm/ingenic/ingenic-drm-drv.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/drivers/gpu/drm/amd/amdgpu/amdgpu_display.c b/drivers/gpu/drm/amd/amdgpu/amdgpu_display.c
-index 23998f727c7f9..fb7186c5ade2a 100644
---- a/drivers/gpu/drm/amd/amdgpu/amdgpu_display.c
-+++ b/drivers/gpu/drm/amd/amdgpu/amdgpu_display.c
-@@ -1224,7 +1224,6 @@ amdgpu_display_user_framebuffer_create(struct drm_device *dev,
+diff --git a/drivers/gpu/drm/ingenic/ingenic-drm-drv.c b/drivers/gpu/drm/ingenic/ingenic-drm-drv.c
+index ab0515d2c420a..99f86f1ba8bee 100644
+--- a/drivers/gpu/drm/ingenic/ingenic-drm-drv.c
++++ b/drivers/gpu/drm/ingenic/ingenic-drm-drv.c
+@@ -1018,7 +1018,6 @@ static const struct drm_bridge_funcs ingenic_drm_bridge_funcs = {
  
- const struct drm_mode_config_funcs amdgpu_mode_funcs = {
- 	.fb_create = amdgpu_display_user_framebuffer_create,
--	.output_poll_changed = drm_fb_helper_output_poll_changed,
- };
- 
- static const struct drm_prop_enum_list amdgpu_underscan_enum_list[] =
-diff --git a/drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c b/drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c
-index f6a9e8fdd87d6..e9a28a5363b9a 100644
---- a/drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c
-+++ b/drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c
-@@ -82,7 +82,6 @@
- #include <drm/drm_atomic_uapi.h>
- #include <drm/drm_atomic_helper.h>
- #include <drm/drm_blend.h>
--#include <drm/drm_fb_helper.h>
- #include <drm/drm_fourcc.h>
- #include <drm/drm_edid.h>
- #include <drm/drm_vblank.h>
-@@ -2810,7 +2809,6 @@ const struct amdgpu_ip_block_version dm_ip_block =
- static const struct drm_mode_config_funcs amdgpu_dm_mode_funcs = {
- 	.fb_create = amdgpu_display_user_framebuffer_create,
- 	.get_format_info = amd_get_format_info,
--	.output_poll_changed = drm_fb_helper_output_poll_changed,
- 	.atomic_check = amdgpu_dm_atomic_check,
- 	.atomic_commit = drm_atomic_helper_commit,
+ static const struct drm_mode_config_funcs ingenic_drm_mode_config_funcs = {
+ 	.fb_create		= ingenic_drm_gem_fb_create,
+-	.output_poll_changed	= drm_fb_helper_output_poll_changed,
+ 	.atomic_check		= drm_atomic_helper_check,
+ 	.atomic_commit		= drm_atomic_helper_commit,
  };
 -- 
 2.38.0
