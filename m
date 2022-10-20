@@ -1,130 +1,58 @@
-From: Jammy Huang <jammy_huang@aspeedtech.com>
-Date: Thu, 20 Oct 2022 17:54:33 +0800
-Subject: [PATCH v9 1/4] media: v4l: Add definition for the Aspeed JPEG
- format
-In-Reply-To: <Yy2tAlGXFJS+a2Lz@paasikivi.fi.intel.com>
-References: <20220921025112.13150-1-jammy_huang@aspeedtech.com>
- <20220921025112.13150-2-jammy_huang@aspeedtech.com>
- <Yy2tAlGXFJS+a2Lz@paasikivi.fi.intel.com>
-Message-ID: <a9dc473c-1556-bd3d-fc1f-5a7e54d21352@aspeedtech.com>
+From: Thomas Zimmermann <tzimmermann@suse.de>
+Date: Thu, 20 Oct 2022 12:37:35 +0200
+Subject: [PATCH 01/21] drm/amdgpu: Don't set struct drm_driver.lastclose
+In-Reply-To: <20221020103755.24058-1-tzimmermann@suse.de>
+References: <20221020103755.24058-1-tzimmermann@suse.de>
+Message-ID: <20221020103755.24058-2-tzimmermann@suse.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Sakari,
+Don't set struct drm_driver.lastclose. It's used to restore the
+fbdev console. But as amdgpu uses generic fbdev emulation, the
+console is being restored by the DRM client helpers already. See
+the call to drm_client_dev_restore() in drm_lastclose().
 
-Thanks for your review.
+Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+---
+ drivers/gpu/drm/amd/amdgpu/amdgpu_display.c       | 1 -
+ drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c | 2 --
+ 2 files changed, 3 deletions(-)
 
-On 2022/9/23 ?? 08:56, Sakari Ailus wrote:
-> Hi Jammy,
->
-> Thanks for the update.
->
-> On Wed, Sep 21, 2022 at 10:51:09AM +0800, Jammy Huang wrote:
->> This introduces support for the Aspeed JPEG format, where the new frame
->> can refer to previous frame to reduce the amount of compressed data.
->> The concept is similar to I/P frame of video compression. It will
->> compare the new frame with previous one to decide which macroblock's
->> data is changed, and only the changed macroblocks will be compressed.
->>
->> This Aspeed JPEG format is used by the video engine on Aspeed platforms,
->> which is generally adapted for remote KVM.
->>
->> Signed-off-by: Jammy Huang <jammy_huang@aspeedtech.com>
->> ---
->>   .../userspace-api/media/v4l/pixfmt-reserved.rst | 17 +++++++++++++++++
->>   drivers/media/v4l2-core/v4l2-ioctl.c            |  1 +
->>   include/uapi/linux/videodev2.h                  |  1 +
->>   3 files changed, 19 insertions(+)
->>
->> diff --git a/Documentation/userspace-api/media/v4l/pixfmt-reserved.rst b/Documentation/userspace-api/media/v4l/pixfmt-reserved.rst
->> index 0ff68cd8cf62..f62bc76d606f 100644
->> --- a/Documentation/userspace-api/media/v4l/pixfmt-reserved.rst
->> +++ b/Documentation/userspace-api/media/v4l/pixfmt-reserved.rst
->> @@ -258,6 +258,23 @@ please make a proposal on the linux-media mailing list.
->>           and it is used by various multimedia hardware blocks like GPU, display
->>           controllers, ISP and video accelerators.
->>           It contains four planes for progressive video.
->> +    * .. _V4L2-PIX-FMT-AJPG:
->> +
->> +      - ``V4L2_PIX_FMT_AJPG``
->> +      - 'AJPG'
->> +      - ASPEED JPEG format used by the aspeed-video driver on Aspeed platforms,
->> +        which is generally adapted for remote KVM.
->> +        On each frame compression, I will compare the new frame with previous
->> +        one to decide which macroblock's data is changed, and only the changed
->> +        macroblocks will be compressed.
->> +
->> +        The implementation is based on AST2600 A3 datasheet, revision 0.9, which
->> +        is not publicly available. Or you can reference Video stream data format
->> +        ? ASPEED mode compression of SDK_User_Guide which available on
->> +        AspeedTech-BMC/openbmc/releases.
->> +
->> +        Decoder's implementation can be found here,
->> +        `https://github.com/AspeedTech-BMC/aspeed_codec/ <https://github.com/AspeedTech-BMC/aspeed_codec/>`__
-> This is better than the previous versions.
->
-> Can you still run
->
-> $ scripts/checkpatch.pl --strict --max-line-length=80
->
-> ?
-I will correct the length to meet the rule.
->
-> On the decoder --- which values is the user supposed to use for mode_420,
-> selector and advance_selector parameters? I think this needs to be
-> documented.
-
-I will update following information to aspeed_codec's github, and 
-provide recommended
-
-values.
-
-"The following parameters should be provided by the encoded stream to 
-let decoder
-
-know how to work, because Aspeed codec does not include the information 
-needed
-
-for decoding in the header. Users can adjust the three parameters, 
-mode420, selector,
-
-and advance_selector, to achieve the desired quality level while at the 
-same time
-
-reduce the storage size."
-
->>   .. raw:: latex
->>   
->>       \normalsize
->> diff --git a/drivers/media/v4l2-core/v4l2-ioctl.c b/drivers/media/v4l2-core/v4l2-ioctl.c
->> index a1a1b51ac599..c72bc3410bee 100644
->> --- a/drivers/media/v4l2-core/v4l2-ioctl.c
->> +++ b/drivers/media/v4l2-core/v4l2-ioctl.c
->> @@ -1497,6 +1497,7 @@ static void v4l_fill_fmtdesc(struct v4l2_fmtdesc *fmt)
->>   		case V4L2_PIX_FMT_MT21C:	descr = "Mediatek Compressed Format"; break;
->>   		case V4L2_PIX_FMT_QC08C:	descr = "QCOM Compressed 8-bit Format"; break;
->>   		case V4L2_PIX_FMT_QC10C:	descr = "QCOM Compressed 10-bit Format"; break;
->> +		case V4L2_PIX_FMT_AJPG:		descr = "Aspeed JPEG"; break;
->>   		default:
->>   			if (fmt->description[0])
->>   				return;
->> diff --git a/include/uapi/linux/videodev2.h b/include/uapi/linux/videodev2.h
->> index 86cae23cc446..870a7e5ef8ca 100644
->> --- a/include/uapi/linux/videodev2.h
->> +++ b/include/uapi/linux/videodev2.h
->> @@ -775,6 +775,7 @@ struct v4l2_pix_format {
->>   #define V4L2_PIX_FMT_HI240    v4l2_fourcc('H', 'I', '2', '4') /* BTTV 8-bit dithered RGB */
->>   #define V4L2_PIX_FMT_QC08C    v4l2_fourcc('Q', '0', '8', 'C') /* Qualcomm 8-bit compressed */
->>   #define V4L2_PIX_FMT_QC10C    v4l2_fourcc('Q', '1', '0', 'C') /* Qualcomm 10-bit compressed */
->> +#define V4L2_PIX_FMT_AJPG     v4l2_fourcc('A', 'J', 'P', 'G') /* Aspeed JPEG */
->>   
->>   /* 10bit raw packed, 32 bytes for every 25 pixels, last LSB 6 bits unused */
->>   #define V4L2_PIX_FMT_IPU3_SBGGR10	v4l2_fourcc('i', 'p', '3', 'b') /* IPU3 packed 10-bit BGGR bayer */
-
+diff --git a/drivers/gpu/drm/amd/amdgpu/amdgpu_display.c b/drivers/gpu/drm/amd/amdgpu/amdgpu_display.c
+index 23998f727c7f9..fb7186c5ade2a 100644
+--- a/drivers/gpu/drm/amd/amdgpu/amdgpu_display.c
++++ b/drivers/gpu/drm/amd/amdgpu/amdgpu_display.c
+@@ -1224,7 +1224,6 @@ amdgpu_display_user_framebuffer_create(struct drm_device *dev,
+ 
+ const struct drm_mode_config_funcs amdgpu_mode_funcs = {
+ 	.fb_create = amdgpu_display_user_framebuffer_create,
+-	.output_poll_changed = drm_fb_helper_output_poll_changed,
+ };
+ 
+ static const struct drm_prop_enum_list amdgpu_underscan_enum_list[] =
+diff --git a/drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c b/drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c
+index f6a9e8fdd87d6..e9a28a5363b9a 100644
+--- a/drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c
++++ b/drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c
+@@ -82,7 +82,6 @@
+ #include <drm/drm_atomic_uapi.h>
+ #include <drm/drm_atomic_helper.h>
+ #include <drm/drm_blend.h>
+-#include <drm/drm_fb_helper.h>
+ #include <drm/drm_fourcc.h>
+ #include <drm/drm_edid.h>
+ #include <drm/drm_vblank.h>
+@@ -2810,7 +2809,6 @@ const struct amdgpu_ip_block_version dm_ip_block =
+ static const struct drm_mode_config_funcs amdgpu_dm_mode_funcs = {
+ 	.fb_create = amdgpu_display_user_framebuffer_create,
+ 	.get_format_info = amd_get_format_info,
+-	.output_poll_changed = drm_fb_helper_output_poll_changed,
+ 	.atomic_check = amdgpu_dm_atomic_check,
+ 	.atomic_commit = drm_atomic_helper_commit,
+ };
 -- 
-Best Regards
-Jammy
+2.38.0
 
