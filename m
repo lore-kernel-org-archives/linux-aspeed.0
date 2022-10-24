@@ -1,55 +1,60 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Date: Mon, 24 Oct 2022 12:03:27 -0700
-Subject: [PATCH 2/2] dt-bindings: watchdog: aspeed: Document
- aspeed,pre-timeout-irq-us
-In-Reply-To: <20221024184423.GA2023764-robh@kernel.org>
-References: <20221021151559.781983-1-eajames@linux.ibm.com>
- <20221021151559.781983-3-eajames@linux.ibm.com>
- <20221024184423.GA2023764-robh@kernel.org>
-Message-ID: <31046e78-840f-4c1a-3966-6cb539e11685@roeck-us.net>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Tue, 25 Oct 2022 08:59:17 +1100
+Subject: [PATCH] usb: gadget: aspeed: fix buffer overflow
+In-Reply-To: <20221024094853.2877441-1-yulei.sh@bytedance.com>
+References: <20221024094853.2877441-1-yulei.sh@bytedance.com>
+Message-ID: <661b43881b7f8764919847f29c0daf1866441090.camel@kernel.crashing.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 10/24/22 11:44, Rob Herring wrote:
-> On Fri, Oct 21, 2022 at 10:15:59AM -0500, Eddie James wrote:
->> Document this new property for the pre-timeout interrupt.
->>
->> Signed-off-by: Eddie James <eajames@linux.ibm.com>
->> ---
->>   Documentation/devicetree/bindings/watchdog/aspeed-wdt.txt | 7 ++++++-
->>   1 file changed, 6 insertions(+), 1 deletion(-)
->>
->> diff --git a/Documentation/devicetree/bindings/watchdog/aspeed-wdt.txt b/Documentation/devicetree/bindings/watchdog/aspeed-wdt.txt
->> index a8197632d6d2..81d2c35ca7e3 100644
->> --- a/Documentation/devicetree/bindings/watchdog/aspeed-wdt.txt
->> +++ b/Documentation/devicetree/bindings/watchdog/aspeed-wdt.txt
->> @@ -40,12 +40,17 @@ Optional properties:
->>   			specified no external signal is sent.
->>    - aspeed,ext-pulse-duration: External signal pulse duration in microseconds
->>   
->> -Optional properties for AST2500-compatible watchdogs:
->> +Optional properties for AST2500 and AST2600 compatible watchdogs:
->>    - aspeed,ext-push-pull: If aspeed,external-signal is present, set the pin's
->>   			 drive type to push-pull. The default is open-drain.
->>    - aspeed,ext-active-high: If aspeed,external-signal is present and and the pin
->>   			   is configured as push-pull, then set the pulse
->>   			   polarity to active-high. The default is active-low.
->> + - aspeed,pre-timeout-irq-us: If aspeed,pre-timeout-irq-us is non-zero, the
->> +			      pre-timeout interrupt will be enabled for the
->> +			      watchdog. The interrupt will fire the specified
->> +			      number of microseconds before the watchdog expires
->> +			      and trigger a kernel panic.
-> 
-> A pre-timeout interrupt is fairly common. Come up with a common property
-> please. You'll need to be clear if the time is from wdog restart or time
-> before final timeout.
-> 
+On Mon, 2022-10-24 at 09:48 +0000, Lei YU wrote:
+> From: Henry Tian <tianxiaofeng@bytedance.com>
 
-It would be nice if it would match the semantics of the existing
-pretimeout attribute in the watchdog core.
+I wrote that driver, please CC me on further patches to it (thanks Joel
+for the heads up).
 
-Guenter
+> In ast_vhub_epn_handle_ack() when the received data length exceeds the
+> buffer, it does not check the case and just copies to req.buf and cause
+> a buffer overflow, kernel oops on this case.
 
+ .../...
+
+Thanks ! Seems like a legit bug, however:
+
+> diff --git a/drivers/usb/gadget/udc/aspeed-vhub/epn.c b/drivers/usb/gadget/udc/aspeed-vhub/epn.c
+> index b5252880b389..56e55472daa1 100644
+> --- a/drivers/usb/gadget/udc/aspeed-vhub/epn.c
+> +++ b/drivers/usb/gadget/udc/aspeed-vhub/epn.c
+> @@ -84,6 +84,7 @@ static void ast_vhub_epn_handle_ack(struct ast_vhub_ep *ep)
+> ?{
+> ????????struct ast_vhub_req *req;
+> ????????unsigned int len;
+> +???????int status = 0;
+> ????????u32 stat;
+> ?
+> ????????/* Read EP status */
+> @@ -119,9 +120,15 @@ static void ast_vhub_epn_handle_ack(struct ast_vhub_ep *ep)
+> ????????len = VHUB_EP_DMA_TX_SIZE(stat);
+> ?
+> ????????/* If not using DMA, copy data out if needed */
+> -???????if (!req->req.dma && !ep->epn.is_in && len)
+> -???????????????memcpy(req->req.buf + req->req.actual, ep->buf, len);
+> -
+> +???????if (!req->req.dma && !ep->epn.is_in && len) {
+> +???????????????if (req->req.actual + len > req->req.length) {
+> +???????????????????????req->last_desc = 1;
+> +???????????????????????status = -EOVERFLOW;
+> +???????????????????????goto done;
+
+Should we stall as well ? Should we continue receiving and just dropping the data until we have
+a small packet ? Otherwise the EP could get out of sync for subsequent ones...
+
+Additionally, I'm curious, why in this specific case is the device sending more data than
+the buffer can hold ? The MTU change should have resulted in buffers being re-allocated no ?
+Or did you change the MTU on the remote and not on the local device ?
+
+Cheers,
+Ben.
