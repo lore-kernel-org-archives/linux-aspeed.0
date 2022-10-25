@@ -1,106 +1,128 @@
 From: Jammy Huang <jammy_huang@aspeedtech.com>
-Date: Tue, 25 Oct 2022 17:02:01 +0800
-Subject: [PATCH v10 3/5] media: Documentation: aspeed-video: Add user documentation for the aspeed-video driver
+Date: Tue, 25 Oct 2022 17:02:03 +0800
+Subject: [PATCH v10 5/5] media: aspeed: Extend debug message
 In-Reply-To: <20221025090203.5623-1-jammy_huang@aspeedtech.com>
 References: <20221025090203.5623-1-jammy_huang@aspeedtech.com>
-Message-ID: <20221025090203.5623-4-jammy_huang@aspeedtech.com>
+Message-ID: <20221025090203.5623-6-jammy_huang@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add user documentation for the aspeed-video driver.
+updated as below:
+
+Capture:
+  Mode                : Direct fetch
+  VGA bpp mode        : 32
+  Signal              : lock
+  Width               : 1920
+  Height              : 1080
+  FRC                 : 0
+
+Compression:
+  Format              : JPEG
+  Subsampling         : 444
+  Quality             : 4
+
+Performance:
+  Frame#              : 4
+  Frame Duration(ms)  :
+    Now               : 22
+    Min               : 21
+    Max               : 22
+  FPS                 : 45
 
 Signed-off-by: Jammy Huang <jammy_huang@aspeedtech.com>
 ---
 v10:
-  - new
+  - no update
+v9:
+  - no update
+v8:
+  - no update
+v7:
+  - update debugfs message. Aspeed-jpeg's compression parameters only shown
+    if it's aspeed jpeg now
+v6:
+  - no update
+v5:
+  - no update
+v4:
+  - update debugfs log
+v3:
+  - no update
+v2:
+  - update commit message
 ---
- .../media/drivers/aspeed-video.rst            | 61 +++++++++++++++++++
- .../userspace-api/media/drivers/index.rst     |  1 +
- 2 files changed, 62 insertions(+)
- create mode 100644 Documentation/userspace-api/media/drivers/aspeed-video.rst
+ drivers/media/platform/aspeed/aspeed-video.c | 38 +++++++++++++++++++-
+ 1 file changed, 37 insertions(+), 1 deletion(-)
 
-diff --git a/Documentation/userspace-api/media/drivers/aspeed-video.rst b/Documentation/userspace-api/media/drivers/aspeed-video.rst
-new file mode 100644
-index 000000000000..798a2588b175
---- /dev/null
-+++ b/Documentation/userspace-api/media/drivers/aspeed-video.rst
-@@ -0,0 +1,61 @@
-+.. SPDX-License-Identifier: GPL-2.0
-+
-+.. include:: <isonum.txt>
-+
-+ASPEED video driver
-+===================
-+
-+ASPEED Video Engine found on AST2400/2500/2600 SoC supports high performance
-+video compressions with a wide range of video quality and compression ratio
-+options. The adopted compressing algorithm is a modified JPEG algorithm.
-+
-+There are 2 types of compressions in this IP.
-+
-+* JPEG JFIF standard mode: for single frame and management compression
-+* ASPEED proprietary mode: for multi-frame and differential compression.
-+  Support 2-pass (high quality) video compression scheme (Patent pending by
-+  ASPEED). Provide visually lossless video compression quality or to reduce
-+  the network average loading under intranet KVM applications.
-+
-+More details on the ASPEED video hardware operations can be found in
-+*chapter 6.2.16 KVM Video Driver* of SDK_User_Guide which available on
-+AspeedTech-BMC/openbmc/releases.
-+
-+The ASPEED video driver implements the following driver-specific control:
-+
-+``V4L2_CID_ASPEED_HQ_MODE``
-+-------------------------------
-+    Enable/Disable ASPEED's High quality mode. This is a private control
-+    that can be used to enable high quality for aspeed proprietary mode.
-+
-+.. flat-table::
-+    :header-rows:  0
-+    :stub-columns: 0
-+    :widths:       1 4
-+
-+    * - ``(0)``
-+      - ASPEED HQ mode is disabled.
-+    * - ``(1)``
-+      - ASPEED HQ mode is enabled.
-+
-+``V4L2_CID_ASPEED_HQ_JPEG_QUALITY``
-+-------------------------------
-+    Define the quality of ASPEED's High quality mode. This is a private control
-+    that can be used to decide compression quality if High quality mode enabled
-+    . Higher the value, better the quality and bigger the size.
-+
-+.. flat-table::
-+    :header-rows:  0
-+    :stub-columns: 0
-+    :widths:       1 4
-+
-+    * - ``(1)``
-+      - minimum
-+    * - ``(12)``
-+      - maximum
-+    * - ``(1)``
-+      - step
-+    * - ``(1)``
-+      - default
-+
-+**Copyright** |copy| 2022 ASPEED Technology Inc.
-diff --git a/Documentation/userspace-api/media/drivers/index.rst b/Documentation/userspace-api/media/drivers/index.rst
-index 32f82aed47d9..46a494e00b72 100644
---- a/Documentation/userspace-api/media/drivers/index.rst
-+++ b/Documentation/userspace-api/media/drivers/index.rst
-@@ -31,6 +31,7 @@ For more details see the file COPYING in the source distribution of Linux.
- 	:maxdepth: 5
- 	:numbered:
+diff --git a/drivers/media/platform/aspeed/aspeed-video.c b/drivers/media/platform/aspeed/aspeed-video.c
+index 0b3605ebefc3..cf76aeee8cb6 100644
+--- a/drivers/media/platform/aspeed/aspeed-video.c
++++ b/drivers/media/platform/aspeed/aspeed-video.c
+@@ -1905,9 +1905,29 @@ static const struct vb2_ops aspeed_video_vb2_ops = {
+ static int aspeed_video_debugfs_show(struct seq_file *s, void *data)
+ {
+ 	struct aspeed_video *v = s->private;
++	u32 val08;
  
-+	aspeed-video
- 	ccs
- 	cx2341x-uapi
- 	dw100
+ 	seq_puts(s, "\n");
+ 
++	seq_puts(s, "Capture:\n");
++	val08 = aspeed_video_read(v, VE_CTRL);
++	if (FIELD_GET(VE_CTRL_DIRECT_FETCH, val08)) {
++		seq_printf(s, "  %-20s:\tDirect fetch\n", "Mode");
++		seq_printf(s, "  %-20s:\t%s\n", "VGA bpp mode",
++			   FIELD_GET(VE_CTRL_INT_DE, val08) ? "16" : "32");
++	} else {
++		seq_printf(s, "  %-20s:\tSync\n", "Mode");
++		seq_printf(s, "  %-20s:\t%s\n", "Video source",
++			   FIELD_GET(VE_CTRL_SOURCE, val08) ?
++			   "external" : "internal");
++		seq_printf(s, "  %-20s:\t%s\n", "DE source",
++			   FIELD_GET(VE_CTRL_INT_DE, val08) ?
++			   "internal" : "external");
++		seq_printf(s, "  %-20s:\t%s\n", "Cursor overlay",
++			   FIELD_GET(VE_CTRL_AUTO_OR_CURSOR, val08) ?
++			   "Without" : "With");
++	}
++
+ 	seq_printf(s, "  %-20s:\t%s\n", "Signal",
+ 		   v->v4l2_input_status ? "Unlock" : "Lock");
+ 	seq_printf(s, "  %-20s:\t%d\n", "Width", v->pix_fmt.width);
+@@ -1916,13 +1936,29 @@ static int aspeed_video_debugfs_show(struct seq_file *s, void *data)
+ 
+ 	seq_puts(s, "\n");
+ 
++	seq_puts(s, "Compression:\n");
++	seq_printf(s, "  %-20s:\t%s\n", "Format", format_str[v->format]);
++	seq_printf(s, "  %-20s:\t%s\n", "Subsampling",
++		   v->yuv420 ? "420" : "444");
++	seq_printf(s, "  %-20s:\t%d\n", "Quality", v->jpeg_quality);
++	if (v->format == VIDEO_FMT_ASPEED) {
++		seq_printf(s, "  %-20s:\t%s\n", "HQ Mode",
++			   v->hq_mode ? "on" : "off");
++		seq_printf(s, "  %-20s:\t%d\n", "HQ Quality",
++			   v->hq_mode ? v->jpeg_hq_quality : 0);
++	}
++
++	seq_puts(s, "\n");
++
+ 	seq_puts(s, "Performance:\n");
+ 	seq_printf(s, "  %-20s:\t%d\n", "Frame#", v->sequence);
+ 	seq_printf(s, "  %-20s:\n", "Frame Duration(ms)");
+ 	seq_printf(s, "    %-18s:\t%d\n", "Now", v->perf.duration);
+ 	seq_printf(s, "    %-18s:\t%d\n", "Min", v->perf.duration_min);
+ 	seq_printf(s, "    %-18s:\t%d\n", "Max", v->perf.duration_max);
+-	seq_printf(s, "  %-20s:\t%d\n", "FPS", 1000 / (v->perf.totaltime / v->sequence));
++	seq_printf(s, "  %-20s:\t%d\n", "FPS",
++		   (v->perf.totaltime && v->sequence) ?
++		   1000/(v->perf.totaltime/v->sequence) : 0);
+ 
+ 	return 0;
+ }
 -- 
 2.25.1
 
