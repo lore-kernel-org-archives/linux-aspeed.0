@@ -1,71 +1,106 @@
 From: Jammy Huang <jammy_huang@aspeedtech.com>
-Date: Tue, 25 Oct 2022 17:01:58 +0800
-Subject: [PATCH v10 0/5] add aspeed-jpeg support for aspeed-video
-Message-ID: <20221025090203.5623-1-jammy_huang@aspeedtech.com>
+Date: Tue, 25 Oct 2022 17:02:01 +0800
+Subject: [PATCH v10 3/5] media: Documentation: aspeed-video: Add user documentation for the aspeed-video driver
+In-Reply-To: <20221025090203.5623-1-jammy_huang@aspeedtech.com>
+References: <20221025090203.5623-1-jammy_huang@aspeedtech.com>
+Message-ID: <20221025090203.5623-4-jammy_huang@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The aim of this series is to add aspeed-jpeg support for aspeed-video
-driver. aspeed-jpeg is a per-frame differential jpeg format which only
-compress the parts which are different from the previous frame. In this
-way, it reduces both the amount of data to be transferred by network and
-those to be decoded on the client side.
+Add user documentation for the aspeed-video driver.
 
-In the last, debugfs information is also updated per this change.
-
-Changes in v10:
- - Add document, aspeed-video.rst, for new V4L2 CID
- - Fix warnings reported by kernel test robot
- 
-Changes in v9:
- - Rebase on new kernel
-
-Changes in v8:
- - Add information of decoder's implementation
- 
-Changes in v7:
- - Separate other patches alone from aspeed-jpeg series
- - for Aspeed-jpeg, generate an I frame every 8 frames
- - rename compression_mode as compression_scheme
- - Add more reference for aspeed-jpeg
- - Update debugfs message
-
-Changes in v6:
- - Update description for new format, aspeed-jpeg, in Documentation.
-
-Changes in v5:
- - Use model data to tell different soc
-
-Changes in v4:
- - Add definition for the Aspeed JPEG format
- - Reserve controls for ASPEED
- - Use s_fmt to update format rather than new control
- - Update aspeed hq quality range, 1 ~ 12
-
-
-Jammy Huang (5):
-  media: v4l: Add definition for the Aspeed JPEG format
-  media: v4l2-ctrls: Reserve controls for ASPEED
-  media: Documentation: aspeed-video: Add user documentation for the
-    aspeed-video driver
-  media: aspeed: Support aspeed mode to reduce compressed data
-  media: aspeed: Extend debug message
-
- .../media/drivers/aspeed-video.rst            |  61 ++++
- .../userspace-api/media/drivers/index.rst     |   1 +
- .../media/v4l/pixfmt-reserved.rst             |  17 +
- drivers/media/platform/aspeed/aspeed-video.c  | 317 +++++++++++++++---
- drivers/media/v4l2-core/v4l2-ioctl.c          |   1 +
- include/uapi/linux/aspeed-video.h             |  14 +
- include/uapi/linux/v4l2-controls.h            |   6 +
- include/uapi/linux/videodev2.h                |   1 +
- 8 files changed, 366 insertions(+), 52 deletions(-)
+Signed-off-by: Jammy Huang <jammy_huang@aspeedtech.com>
+---
+v10:
+  - new
+---
+ .../media/drivers/aspeed-video.rst            | 61 +++++++++++++++++++
+ .../userspace-api/media/drivers/index.rst     |  1 +
+ 2 files changed, 62 insertions(+)
  create mode 100644 Documentation/userspace-api/media/drivers/aspeed-video.rst
- create mode 100644 include/uapi/linux/aspeed-video.h
 
+diff --git a/Documentation/userspace-api/media/drivers/aspeed-video.rst b/Documentation/userspace-api/media/drivers/aspeed-video.rst
+new file mode 100644
+index 000000000000..798a2588b175
+--- /dev/null
++++ b/Documentation/userspace-api/media/drivers/aspeed-video.rst
+@@ -0,0 +1,61 @@
++.. SPDX-License-Identifier: GPL-2.0
++
++.. include:: <isonum.txt>
++
++ASPEED video driver
++===================
++
++ASPEED Video Engine found on AST2400/2500/2600 SoC supports high performance
++video compressions with a wide range of video quality and compression ratio
++options. The adopted compressing algorithm is a modified JPEG algorithm.
++
++There are 2 types of compressions in this IP.
++
++* JPEG JFIF standard mode: for single frame and management compression
++* ASPEED proprietary mode: for multi-frame and differential compression.
++  Support 2-pass (high quality) video compression scheme (Patent pending by
++  ASPEED). Provide visually lossless video compression quality or to reduce
++  the network average loading under intranet KVM applications.
++
++More details on the ASPEED video hardware operations can be found in
++*chapter 6.2.16 KVM Video Driver* of SDK_User_Guide which available on
++AspeedTech-BMC/openbmc/releases.
++
++The ASPEED video driver implements the following driver-specific control:
++
++``V4L2_CID_ASPEED_HQ_MODE``
++-------------------------------
++    Enable/Disable ASPEED's High quality mode. This is a private control
++    that can be used to enable high quality for aspeed proprietary mode.
++
++.. flat-table::
++    :header-rows:  0
++    :stub-columns: 0
++    :widths:       1 4
++
++    * - ``(0)``
++      - ASPEED HQ mode is disabled.
++    * - ``(1)``
++      - ASPEED HQ mode is enabled.
++
++``V4L2_CID_ASPEED_HQ_JPEG_QUALITY``
++-------------------------------
++    Define the quality of ASPEED's High quality mode. This is a private control
++    that can be used to decide compression quality if High quality mode enabled
++    . Higher the value, better the quality and bigger the size.
++
++.. flat-table::
++    :header-rows:  0
++    :stub-columns: 0
++    :widths:       1 4
++
++    * - ``(1)``
++      - minimum
++    * - ``(12)``
++      - maximum
++    * - ``(1)``
++      - step
++    * - ``(1)``
++      - default
++
++**Copyright** |copy| 2022 ASPEED Technology Inc.
+diff --git a/Documentation/userspace-api/media/drivers/index.rst b/Documentation/userspace-api/media/drivers/index.rst
+index 32f82aed47d9..46a494e00b72 100644
+--- a/Documentation/userspace-api/media/drivers/index.rst
++++ b/Documentation/userspace-api/media/drivers/index.rst
+@@ -31,6 +31,7 @@ For more details see the file COPYING in the source distribution of Linux.
+ 	:maxdepth: 5
+ 	:numbered:
+ 
++	aspeed-video
+ 	ccs
+ 	cx2341x-uapi
+ 	dw100
 -- 
 2.25.1
 
