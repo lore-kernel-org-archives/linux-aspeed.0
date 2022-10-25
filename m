@@ -1,133 +1,58 @@
-From: Nicolas Dufresne <nicolas.dufresne@collabora.com>
-Date: Tue, 25 Oct 2022 09:18:16 -0400
-Subject: [PATCH v10 3/5] media: Documentation: aspeed-video: Add user
- documentation for the aspeed-video driver
-In-Reply-To: <20221025090203.5623-4-jammy_huang@aspeedtech.com>
-References: <20221025090203.5623-1-jammy_huang@aspeedtech.com>
-	 <20221025090203.5623-4-jammy_huang@aspeedtech.com>
-Message-ID: <8a8f7c818688bda7c75d2f4fb5f8f0d6f89cb965.camel@collabora.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Wed, 26 Oct 2022 09:29:23 +1100
+Subject: [PATCH] usb: gadget: aspeed: fix buffer overflow
+In-Reply-To: <CAGm54UE1oS1N_hn4RKuF8a+OWgfvJ-OCc0-uju4mXbtz-jw8VA@mail.gmail.com>
+References: <20221024094853.2877441-1-yulei.sh@bytedance.com>
+	 <661b43881b7f8764919847f29c0daf1866441090.camel@kernel.crashing.org>
+	 <CAGm54UE1oS1N_hn4RKuF8a+OWgfvJ-OCc0-uju4mXbtz-jw8VA@mail.gmail.com>
+Message-ID: <49d97f97e63edb70392279845186547d73b2290e.camel@kernel.crashing.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Jammy,
-
-thanks for the addition.
-
-Le mardi 25 octobre 2022 ? 17:02 +0800, Jammy Huang a ?crit?:
-> Add user documentation for the aspeed-video driver.
+On Tue, 2022-10-25 at 14:21 +0800, Lei Yu wrote:
 > 
-> Signed-off-by: Jammy Huang <jammy_huang@aspeedtech.com>
-> ---
-> v10:
->   - new
-> ---
->  .../media/drivers/aspeed-video.rst            | 61 +++++++++++++++++++
->  .../userspace-api/media/drivers/index.rst     |  1 +
->  2 files changed, 62 insertions(+)
->  create mode 100644 Documentation/userspace-api/media/drivers/aspeed-video.rst
+
+> This case is treated as an error and we do not care about the
+> following data.
+> Similarly, if we change the MTU in BMC and let BMC ping the OS, the
+> OS
+> kernel does not crash and it gets RX errors, and the ping fails.
 > 
-> diff --git a/Documentation/userspace-api/media/drivers/aspeed-video.rst b/Documentation/userspace-api/media/drivers/aspeed-video.rst
-> new file mode 100644
-> index 000000000000..798a2588b175
-> --- /dev/null
-> +++ b/Documentation/userspace-api/media/drivers/aspeed-video.rst
-> @@ -0,0 +1,61 @@
-> +.. SPDX-License-Identifier: GPL-2.0
-> +
-> +.. include:: <isonum.txt>
-> +
-> +ASPEED video driver
-> +===================
-> +
-> +ASPEED Video Engine found on AST2400/2500/2600 SoC supports high performance
-> +video compressions with a wide range of video quality and compression ratio
-> +options. The adopted compressing algorithm is a modified JPEG algorithm.
-> +
-> +There are 2 types of compressions in this IP.
-> +
-> +* JPEG JFIF standard mode: for single frame and management compression
-> +* ASPEED proprietary mode: for multi-frame and differential compression.
-> +  Support 2-pass (high quality) video compression scheme (Patent pending by
-> +  ASPEED). Provide visually lossless video compression quality or to reduce
-> +  the network average loading under intranet KVM applications.
+> ?# ifconfig usb0
+> ?usb0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>? mtu 1500
+> ???????? ...
+> ???????? RX packets 85? bytes 15380 (15.0 KiB)
+> ???????? RX errors 51? dropped 0? overruns 0? frame 51
+> 
+> With this patch, we get the similar behavior on BMC that the RX
+> errors
+> are increasing.
+> 
+> > Additionally, I'm curious, why in this specific case is the device
+> > sending more data than
+> > the buffer can hold ? The MTU change should have resulted in
+> > buffers being re-allocated no ?
+> 
+> The issue is found in a rare case during BIOS boot, we assume that
+> BIOS is sending unexpected data to BMC for unknown reasons.
 
-I think some of the information disclosed in the following quote could be
-summarized. Notably the part about the extra buffers.
+Ok thanks.
 
-   Aspeed JPEG Format requires an additional buffer, called bcd, to store
-   the information about which macro block in the new frame is different
-   from the previous one.
-   
-   To have bcd correctly working, we need to swap the buffers for src0/1 to
-   make src1 refer to previous frame and src0 to the coming new frame.
-   
-But before I push you this route, have you considered using a dedicated pixel
-format instead ? Here's my thinking, the output of the JPEG encoder is no longer
-"compatible" (or at least won't yield the expected images) if used with a normal
-JPEG decoder. By differentiating these two as dedicated formats, you will only need
-1 vendor control, and you avoid the potential risk of software bugs mixing them up.
-Also note that there is other JPEG based vendor formats that exist in V4L2.
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-Let me know what do you think ?
 
-Nicolas
-
-> +
-> +More details on the ASPEED video hardware operations can be found in
-> +*chapter 6.2.16 KVM Video Driver* of SDK_User_Guide which available on
-> +AspeedTech-BMC/openbmc/releases.
-> +
-> +The ASPEED video driver implements the following driver-specific control:
-> +
-> +``V4L2_CID_ASPEED_HQ_MODE``
-> +-------------------------------
-> +    Enable/Disable ASPEED's High quality mode. This is a private control
-> +    that can be used to enable high quality for aspeed proprietary mode.
-> +
-> +.. flat-table::
-> +    :header-rows:  0
-> +    :stub-columns: 0
-> +    :widths:       1 4
-> +
-> +    * - ``(0)``
-> +      - ASPEED HQ mode is disabled.
-> +    * - ``(1)``
-> +      - ASPEED HQ mode is enabled.
-> +
-> +``V4L2_CID_ASPEED_HQ_JPEG_QUALITY``
-> +-------------------------------
-> +    Define the quality of ASPEED's High quality mode. This is a private control
-> +    that can be used to decide compression quality if High quality mode enabled
-> +    . Higher the value, better the quality and bigger the size.
-> +
-> +.. flat-table::
-> +    :header-rows:  0
-> +    :stub-columns: 0
-> +    :widths:       1 4
-> +
-> +    * - ``(1)``
-> +      - minimum
-> +    * - ``(12)``
-> +      - maximum
-> +    * - ``(1)``
-> +      - step
-> +    * - ``(1)``
-> +      - default
-> +
-> +**Copyright** |copy| 2022 ASPEED Technology Inc.
-> diff --git a/Documentation/userspace-api/media/drivers/index.rst b/Documentation/userspace-api/media/drivers/index.rst
-> index 32f82aed47d9..46a494e00b72 100644
-> --- a/Documentation/userspace-api/media/drivers/index.rst
-> +++ b/Documentation/userspace-api/media/drivers/index.rst
-> @@ -31,6 +31,7 @@ For more details see the file COPYING in the source distribution of Linux.
->  	:maxdepth: 5
->  	:numbered:
->  
-> +	aspeed-video
->  	ccs
->  	cx2341x-uapi
->  	dw100
+> > Or did you change the MTU on the remote and not on the local device
+> > ?
+> > 
+> 
+> Yes, the MTU is changed to 2000 in OS and kept 1500 on BMC, then the
+> issue is reproduced. (see detailed steps in the above email).
+> 
+> The reason we made the above test is because we are trying to
+> reproduce the behavior as BIOS, and from the logs it looks like it's
+> sending a packet larger than MTU. Then we tried to adjust the MTU on
+> the OS side and reproduced the issue.
 
