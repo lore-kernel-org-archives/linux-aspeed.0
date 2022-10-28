@@ -1,112 +1,57 @@
-From: Jammy Huang <jammy_huang@aspeedtech.com>
-Date: Fri, 28 Oct 2022 10:35:52 +0800
-Subject: [PATCH v11 3/5] media: Documentation: aspeed-video: Add user documentation for the aspeed-video driver
-In-Reply-To: <20221028023554.928-1-jammy_huang@aspeedtech.com>
-References: <20221028023554.928-1-jammy_huang@aspeedtech.com>
-Message-ID: <20221028023554.928-4-jammy_huang@aspeedtech.com>
+From: Neal Liu <neal_liu@aspeedtech.com>
+Date: Fri, 28 Oct 2022 06:59:31 +0000
+Subject: [PATCH] usb: gadget: aspeed: fix buffer overflow
+In-Reply-To: <20221024094853.2877441-1-yulei.sh@bytedance.com>
+References: <20221024094853.2877441-1-yulei.sh@bytedance.com>
+Message-ID: <HK0PR06MB32022348EA65805C7109B7D080329@HK0PR06MB3202.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add user documentation for the aspeed-video driver.
+> From: Henry Tian <tianxiaofeng@bytedance.com>
+> 
+> In ast_vhub_epn_handle_ack() when the received data length exceeds the
+> buffer, it does not check the case and just copies to req.buf and cause a buffer
+> overflow, kernel oops on this case.
+> 
+> This issue could be reproduced on a BMC with an OS that enables the lan over
+> USB:
+> 1. In OS, enable the usb eth dev, verify it pings the BMC OK; 2. In OS, set the
+> usb dev mtu to 2000. (Default is 1500); 3. In OS, ping the BMC with `-s 2000`
+> argument.
+> 
+> The BMC kernel will get oops with below logs:
+> 
+>     skbuff: skb_over_panic: text:8058e098 len:2048 put:2048
+> head:84c678a0 data:84c678c2 tail:0x84c680c2 end:0x84c67f00 dev:usb0
+>     ------------[ cut here ]------------
+>     kernel BUG at net/core/skbuff.c:113!
+>     Internal error: Oops - BUG: 0 [#1] ARM
+>     CPU: 0 PID: 0 Comm: swapper Not tainted
+> 5.15.69-c9fb275-dirty-d1e579a #1
+>     Hardware name: Generic DT based system
+>     PC is at skb_panic+0x60/0x6c
+>     LR is at irq_work_queue+0x6c/0x94
+> 
+> Fix the issue by checking the length and set `-EOVERFLOW`.
+> 
+> Tested: Verify the BMC kernel does not get oops in the above case, and the usb
+> ethernet gets RX packets errors instead.
 
-Signed-off-by: Jammy Huang <jammy_huang@aspeedtech.com>
----
-v11:
-  - update the way to change format
-v10:
-  - new
----
- .../media/drivers/aspeed-video.rst            | 61 +++++++++++++++++++
- .../userspace-api/media/drivers/index.rst     |  1 +
- 2 files changed, 66 insertions(+)
- create mode 100644 Documentation/userspace-api/media/drivers/aspeed-video.rst
+Thanks for your feedback.
+I tried to reproduce it on my side, and it cannot be reproduce it.
+Here are my test sequences:
+1. emulate one of the vhub port to usb ethernet through Linux gadget (ncm)
+2. connect BMC vhub to Host
+3. BMC & Host can ping each other (both usb eth dev default mtu is 1500)
+4. Set BMC mtu to 1000 (Host OS cannot set usb eth dev mtu to 2000, it's maxmtu is 1500)
+5. ping BMC with `s -1500` argument from Host OS
+6. BMC kernel no oops
 
-diff --git a/Documentation/userspace-api/media/drivers/aspeed-video.rst b/Documentation/userspace-api/media/drivers/aspeed-video.rst
-new file mode 100644
-index 000000000000..e5656a8d990e
---- /dev/null
-+++ b/Documentation/userspace-api/media/drivers/aspeed-video.rst
-@@ -0,0 +1,65 @@
-+.. SPDX-License-Identifier: GPL-2.0
-+
-+.. include:: <isonum.txt>
-+
-+ASPEED video driver
-+===================
-+
-+ASPEED Video Engine found on AST2400/2500/2600 SoC supports high performance
-+video compressions with a wide range of video quality and compression ratio
-+options. The adopted compressing algorithm is a modified JPEG algorithm.
-+
-+There are 2 types of compressions in this IP.
-+
-+* JPEG JFIF standard mode: for single frame and management compression
-+* ASPEED proprietary mode: for multi-frame and differential compression.
-+  Support 2-pass (high quality) video compression scheme (Patent pending by
-+  ASPEED). Provide visually lossless video compression quality or to reduce
-+  the network average loading under intranet KVM applications.
-+
-+VIDIOC_S_FMT can be used to choose which format you want. V4L2_PIX_FMT_JPEG
-+stands for JPEG JFIF standard mode; V4L2_PIX_FMT_AJPG stands for ASPEED
-+proprietary mode.
-+
-+More details on the ASPEED video hardware operations can be found in
-+*chapter 6.2.16 KVM Video Driver* of SDK_User_Guide which available on
-+AspeedTech-BMC/openbmc/releases.
-+
-+The ASPEED video driver implements the following driver-specific control:
-+
-+``V4L2_CID_ASPEED_HQ_MODE``
-+-------------------------------
-+    Enable/Disable ASPEED's High quality mode. This is a private control
-+    that can be used to enable high quality for aspeed proprietary mode.
-+
-+.. flat-table::
-+    :header-rows:  0
-+    :stub-columns: 0
-+    :widths:       1 4
-+
-+    * - ``(0)``
-+      - ASPEED HQ mode is disabled.
-+    * - ``(1)``
-+      - ASPEED HQ mode is enabled.
-+
-+``V4L2_CID_ASPEED_HQ_JPEG_QUALITY``
-+-------------------------------
-+    Define the quality of ASPEED's High quality mode. This is a private control
-+    that can be used to decide compression quality if High quality mode enabled
-+    . Higher the value, better the quality and bigger the size.
-+
-+.. flat-table::
-+    :header-rows:  0
-+    :stub-columns: 0
-+    :widths:       1 4
-+
-+    * - ``(1)``
-+      - minimum
-+    * - ``(12)``
-+      - maximum
-+    * - ``(1)``
-+      - step
-+    * - ``(1)``
-+      - default
-+
-+**Copyright** |copy| 2022 ASPEED Technology Inc.
-diff --git a/Documentation/userspace-api/media/drivers/index.rst b/Documentation/userspace-api/media/drivers/index.rst
-index 32f82aed47d9..46a494e00b72 100644
---- a/Documentation/userspace-api/media/drivers/index.rst
-+++ b/Documentation/userspace-api/media/drivers/index.rst
-@@ -31,6 +31,7 @@ For more details see the file COPYING in the source distribution of Linux.
- 	:maxdepth: 5
- 	:numbered:
- 
-+	aspeed-video
- 	ccs
- 	cx2341x-uapi
- 	dw100
--- 
-2.25.1
+I dumped the `req` related members in ast_vhub_epn_handle_ack() to see if whether the received data length exceeds the buffer length.
+In my case `req.length` is 16384 bytes, so it never exceeds it in this case.
+I'm wondering what's the value of `req.length` in your test scenario? And how can I reproduce it?
+Thanks
 
