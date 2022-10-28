@@ -1,100 +1,76 @@
 From: Jammy Huang <jammy_huang@aspeedtech.com>
-Date: Fri, 28 Oct 2022 10:35:50 +0800
-Subject: [PATCH v11 1/5] media: v4l: Add definition for the Aspeed JPEG format
-In-Reply-To: <20221028023554.928-1-jammy_huang@aspeedtech.com>
-References: <20221028023554.928-1-jammy_huang@aspeedtech.com>
-Message-ID: <20221028023554.928-2-jammy_huang@aspeedtech.com>
+Date: Fri, 28 Oct 2022 10:35:49 +0800
+Subject: [PATCH v11 0/5] add aspeed-jpeg support for aspeed-video
+Message-ID: <20221028023554.928-1-jammy_huang@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This introduces support for the Aspeed JPEG format, where the new frame
-can refer to previous frame to reduce the amount of compressed data.
-The concept is similar to I/P frame of video compression. It will
-compare the new frame with previous one to decide which macroblock's
-data is changed, and only the changed macroblocks will be compressed.
+The aim of this series is to add aspeed-jpeg support for aspeed-video
+driver. aspeed-jpeg is a per-frame differential jpeg format which only
+compress the parts which are different from the previous frame. In this
+way, it reduces both the amount of data to be transferred by network and
+those to be decoded on the client side.
 
-This Aspeed JPEG format is used by the video engine on Aspeed platforms,
-which is generally adapted for remote KVM.
+In the last, debugfs information is also updated per this change.
 
-Signed-off-by: Jammy Huang <jammy_huang@aspeedtech.com>
----
-v11:
-  - no update
-v10:
-  - no update
-v9:
-  - Rebase on new kernel
-v8:
-  - Add decoder information for aspeed-jpeg
-v7:
-  - Add more information for aspeed-jpeg
-v6:
-  - Update description for new format, aspeed-jpeg, in Documentation.
-v5:
-  - no update
-v4:
-  - new
----
- .../userspace-api/media/v4l/pixfmt-reserved.rst | 17 +++++++++++++++++
- drivers/media/v4l2-core/v4l2-ioctl.c            |  1 +
- include/uapi/linux/videodev2.h                  |  1 +
- 3 files changed, 19 insertions(+)
+Changes in v11:
+ - Update document
 
-diff --git a/Documentation/userspace-api/media/v4l/pixfmt-reserved.rst b/Documentation/userspace-api/media/v4l/pixfmt-reserved.rst
-index 0ff68cd8cf62..73cd99828010 100644
---- a/Documentation/userspace-api/media/v4l/pixfmt-reserved.rst
-+++ b/Documentation/userspace-api/media/v4l/pixfmt-reserved.rst
-@@ -258,6 +258,23 @@ please make a proposal on the linux-media mailing list.
-         and it is used by various multimedia hardware blocks like GPU, display
-         controllers, ISP and video accelerators.
-         It contains four planes for progressive video.
-+    * .. _V4L2-PIX-FMT-AJPG:
-+
-+      - ``V4L2_PIX_FMT_AJPG``
-+      - 'AJPG'
-+      - ASPEED JPEG format used by the aspeed-video driver on Aspeed platforms,
-+        which is generally adapted for remote KVM.
-+        On each frame compression, I will compare the new frame with previous
-+        one to decide which macroblock's data is changed, and only the changed
-+        macroblocks will be compressed.
-+
-+        The implementation is based on AST2600 A3 datasheet, revision 0.9, which
-+        is not publicly available. Or you can reference Video stream data format
-+        ? ASPEED mode compression of SDK_User_Guide which available on
-+        AspeedTech-BMC/openbmc/releases.
-+
-+        Decoder's implementation can be found here,
-+        `aspeed_codec <https://github.com/AspeedTech-BMC/aspeed_codec/>`__
- .. raw:: latex
+Changes in v10:
+ - Add document, aspeed-video.rst, for new V4L2 CID
+ - Fix warnings reported by kernel test robot
  
-     \normalsize
-diff --git a/drivers/media/v4l2-core/v4l2-ioctl.c b/drivers/media/v4l2-core/v4l2-ioctl.c
-index fddba75d9074..8cb4b976064e 100644
---- a/drivers/media/v4l2-core/v4l2-ioctl.c
-+++ b/drivers/media/v4l2-core/v4l2-ioctl.c
-@@ -1497,6 +1497,7 @@ static void v4l_fill_fmtdesc(struct v4l2_fmtdesc *fmt)
- 		case V4L2_PIX_FMT_MT21C:	descr = "Mediatek Compressed Format"; break;
- 		case V4L2_PIX_FMT_QC08C:	descr = "QCOM Compressed 8-bit Format"; break;
- 		case V4L2_PIX_FMT_QC10C:	descr = "QCOM Compressed 10-bit Format"; break;
-+		case V4L2_PIX_FMT_AJPG:		descr = "Aspeed JPEG"; break;
- 		default:
- 			if (fmt->description[0])
- 				return;
-diff --git a/include/uapi/linux/videodev2.h b/include/uapi/linux/videodev2.h
-index 86cae23cc446..870a7e5ef8ca 100644
---- a/include/uapi/linux/videodev2.h
-+++ b/include/uapi/linux/videodev2.h
-@@ -775,6 +775,7 @@ struct v4l2_pix_format {
- #define V4L2_PIX_FMT_HI240    v4l2_fourcc('H', 'I', '2', '4') /* BTTV 8-bit dithered RGB */
- #define V4L2_PIX_FMT_QC08C    v4l2_fourcc('Q', '0', '8', 'C') /* Qualcomm 8-bit compressed */
- #define V4L2_PIX_FMT_QC10C    v4l2_fourcc('Q', '1', '0', 'C') /* Qualcomm 10-bit compressed */
-+#define V4L2_PIX_FMT_AJPG     v4l2_fourcc('A', 'J', 'P', 'G') /* Aspeed JPEG */
+Changes in v9:
+ - Rebase on new kernel
+
+Changes in v8:
+ - Add information of decoder's implementation
  
- /* 10bit raw packed, 32 bytes for every 25 pixels, last LSB 6 bits unused */
- #define V4L2_PIX_FMT_IPU3_SBGGR10	v4l2_fourcc('i', 'p', '3', 'b') /* IPU3 packed 10-bit BGGR bayer */
+Changes in v7:
+ - Separate other patches alone from aspeed-jpeg series
+ - for Aspeed-jpeg, generate an I frame every 8 frames
+ - rename compression_mode as compression_scheme
+ - Add more reference for aspeed-jpeg
+ - Update debugfs message
+
+Changes in v6:
+ - Update description for new format, aspeed-jpeg, in Documentation.
+
+Changes in v5:
+ - Use model data to tell different soc
+
+Changes in v4:
+ - Add definition for the Aspeed JPEG format
+ - Reserve controls for ASPEED
+ - Use s_fmt to update format rather than new control
+ - Update aspeed hq quality range, 1 ~ 12
+
+
+Jammy Huang (5):
+  media: v4l: Add definition for the Aspeed JPEG format
+  media: v4l2-ctrls: Reserve controls for ASPEED
+  media: Documentation: aspeed-video: Add user documentation for the
+    aspeed-video driver
+  media: aspeed: Support aspeed mode to reduce compressed data
+  media: aspeed: Extend debug message
+
+ .../media/drivers/aspeed-video.rst            |  65 ++++
+ .../userspace-api/media/drivers/index.rst     |   1 +
+ .../media/v4l/pixfmt-reserved.rst             |  17 +
+ drivers/media/platform/aspeed/aspeed-video.c  | 317 +++++++++++++++---
+ drivers/media/v4l2-core/v4l2-ioctl.c          |   1 +
+ include/uapi/linux/aspeed-video.h             |  14 +
+ include/uapi/linux/v4l2-controls.h            |   6 +
+ include/uapi/linux/videodev2.h                |   1 +
+ 8 files changed, 370 insertions(+), 52 deletions(-)
+ create mode 100644 Documentation/userspace-api/media/drivers/aspeed-video.rst
+ create mode 100644 include/uapi/linux/aspeed-video.h
+
+
+base-commit: aae703b02f92bde9264366c545e87cec451de471
 -- 
 2.25.1
 
