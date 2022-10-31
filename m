@@ -1,11 +1,10 @@
 From: Javier Martinez Canillas <javierm@redhat.com>
-Date: Mon, 31 Oct 2022 13:19:11 +0100
-Subject: [PATCH v2 08/21] drm/rockchip: Don't set struct
- drm_driver.output_poll_changed
-In-Reply-To: <20221024111953.24307-9-tzimmermann@suse.de>
+Date: Mon, 31 Oct 2022 13:21:48 +0100
+Subject: [PATCH v2 09/21] drm/panel-ili9341: Include <linux/backlight.h>
+In-Reply-To: <20221024111953.24307-10-tzimmermann@suse.de>
 References: <20221024111953.24307-1-tzimmermann@suse.de>
- <20221024111953.24307-9-tzimmermann@suse.de>
-Message-ID: <01f85874-6beb-c325-8b94-7a7aeec30d5a@redhat.com>
+ <20221024111953.24307-10-tzimmermann@suse.de>
+Message-ID: <e9192382-f04c-4ebd-ca1c-b2fceaa29f86@redhat.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -13,14 +12,7 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 On 10/24/22 13:19, Thomas Zimmermann wrote:
-> Don't set struct drm_driver.output_poll_changed. It's used to restore
-> the fbdev console. But as rockchip uses generic fbdev emulation, the
-> console is being restored by the DRM client helpers already. See the
-> functions drm_kms_helper_hotplug_event() and
-> drm_kms_helper_connector_hotplug_event() in drm_probe_helper.c.
-> 
-> v2:
-> 	* fix commit description (Christian)
+> Include <linux/backlight.h> for devm_of_find_backlight().
 > 
 > Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 > ---
