@@ -1,10 +1,11 @@
 From: Javier Martinez Canillas <javierm@redhat.com>
-Date: Mon, 31 Oct 2022 12:59:34 +0100
-Subject: [PATCH v2 02/21] drm/mcde: Don't set struct drm_driver.lastclose
-In-Reply-To: <20221024111953.24307-3-tzimmermann@suse.de>
+Date: Mon, 31 Oct 2022 13:00:21 +0100
+Subject: [PATCH v2 03/21] drm/vboxvideo: Don't set struct
+ drm_driver.lastclose
+In-Reply-To: <20221024111953.24307-4-tzimmermann@suse.de>
 References: <20221024111953.24307-1-tzimmermann@suse.de>
- <20221024111953.24307-3-tzimmermann@suse.de>
-Message-ID: <ae69e0c5-05ee-f0ef-a333-53bbaff5c3e8@redhat.com>
+ <20221024111953.24307-4-tzimmermann@suse.de>
+Message-ID: <2e2e3915-a7b2-d030-2ffd-117b12deedb2@redhat.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -13,7 +14,7 @@ Content-Transfer-Encoding: 7bit
 
 On 10/24/22 13:19, Thomas Zimmermann wrote:
 > Don't set struct drm_driver.lastclose. It's used to restore the
-> fbdev console. But as mcde uses generic fbdev emulation, the
+> fbdev console. But as vboxvideo uses generic fbdev emulation, the
 > console is being restored by the DRM client helpers already. See
 > the call to drm_client_dev_restore() in drm_lastclose().
 > 
