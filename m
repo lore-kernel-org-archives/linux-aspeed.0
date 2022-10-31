@@ -1,41 +1,54 @@
 From: Billy Tsai <billy_tsai@aspeedtech.com>
-Date: Mon, 31 Oct 2022 19:32:08 +0800
-Subject: [PATCH 2/2] dt-bindings: iio: adc: Remove the property "aspeed,trim-data-valid"
-In-Reply-To: <20221031113208.19194-1-billy_tsai@aspeedtech.com>
-References: <20221031113208.19194-1-billy_tsai@aspeedtech.com>
-Message-ID: <20221031113208.19194-2-billy_tsai@aspeedtech.com>
+Date: Mon, 31 Oct 2022 19:32:07 +0800
+Subject: [PATCH 1/2] iio: adc: aspeed: Remove the trim valid dts property.
+Message-ID: <20221031113208.19194-1-billy_tsai@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The valid of the trimming data will use the otp default value as a
-criterion.
+The dts property "aspeed,trim-data-valid" is used to determin whether to
+read the OTP register. If the image with the aspeed,trim-data-vali
+install to the chip without valid trimming data the adc controller will
+become confused. This patch use the default otp value 0 as a criterion
+for determining whether trimming data is valid instead of the dts
+property. The chip with actually trimming value is 0 should be filter out.
 
 Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
 ---
- .../devicetree/bindings/iio/adc/aspeed,ast2600-adc.yaml    | 7 -------
- 1 file changed, 7 deletions(-)
+ drivers/iio/adc/aspeed_adc.c | 11 +++++------
+ 1 file changed, 5 insertions(+), 6 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/iio/adc/aspeed,ast2600-adc.yaml b/Documentation/devicetree/bindings/iio/adc/aspeed,ast2600-adc.yaml
-index b283c8ca2bbf..5c08d8b6e995 100644
---- a/Documentation/devicetree/bindings/iio/adc/aspeed,ast2600-adc.yaml
-+++ b/Documentation/devicetree/bindings/iio/adc/aspeed,ast2600-adc.yaml
-@@ -62,13 +62,6 @@ properties:
-     description:
-       Inform the driver that last channel will be used to sensor battery.
+diff --git a/drivers/iio/adc/aspeed_adc.c b/drivers/iio/adc/aspeed_adc.c
+index ffae64f39221..0f065f0bb8e7 100644
+--- a/drivers/iio/adc/aspeed_adc.c
++++ b/drivers/iio/adc/aspeed_adc.c
+@@ -201,6 +201,8 @@ static int aspeed_adc_set_trim_data(struct iio_dev *indio_dev)
+ 				((scu_otp) &
+ 				 (data->model_data->trim_locate->field)) >>
+ 				__ffs(data->model_data->trim_locate->field);
++			if (!trimming_val)
++				trimming_val = 0x8;
+ 		}
+ 		dev_dbg(data->dev,
+ 			"trimming val = %d, offset = %08x, fields = %08x\n",
+@@ -562,12 +564,9 @@ static int aspeed_adc_probe(struct platform_device *pdev)
+ 	if (ret)
+ 		return ret;
  
--  aspeed,trim-data-valid:
--    type: boolean
--    description: |
--      The ADC reference voltage can be calibrated to obtain the trimming
--      data which will be stored in otp. This property informs the driver that
--      the data store in the otp is valid.
--
- required:
-   - compatible
-   - reg
+-	if (of_find_property(data->dev->of_node, "aspeed,trim-data-valid",
+-			     NULL)) {
+-		ret = aspeed_adc_set_trim_data(indio_dev);
+-		if (ret)
+-			return ret;
+-	}
++	ret = aspeed_adc_set_trim_data(indio_dev);
++	if (ret)
++		return ret;
+ 
+ 	if (of_find_property(data->dev->of_node, "aspeed,battery-sensing",
+ 			     NULL)) {
 -- 
 2.25.1
 
