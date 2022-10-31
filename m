@@ -1,9 +1,7 @@
 From: Billy Tsai <billy_tsai@aspeedtech.com>
-Date: Mon, 31 Oct 2022 18:38:06 +0800
-Subject: [PATCH 1/3] dt-bindings: Add bindings for aspeed pwm-tach.
-In-Reply-To: <20221031103809.20225-1-billy_tsai@aspeedtech.com>
-References: <20221031103809.20225-1-billy_tsai@aspeedtech.com>
-Message-ID: <20221031103809.20225-2-billy_tsai@aspeedtech.com>
+Date: Mon, 31 Oct 2022 18:38:05 +0800
+Subject: [PATCH 0/3] Support pwm/tach driver for aspeed ast26xx
+Message-ID: <20221031103809.20225-1-billy_tsai@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -12,228 +10,36 @@ Content-Transfer-Encoding: 7bit
 
 Unlike the old design that the register setting of the TACH should based
 on the configure of the PWM. In ast26xx, the dependency between pwm and
-tach controller is eliminated and becomes a separate hardware block. They
-only shared the same base address, source clock and reset.
-This patch adds device binding for aspeed pwm-tach device which is a
-multi-function device include pwm and tach function and pwm/tach device
-bindings which should be the child-node of pwm-tach device.
+tach controller is eliminated and becomes a separate hardware block. One
+is used to provide pwm output and another is used to monitor the frequency
+of the input. Therefore, this patch serials implements them by writing the
+two driver "pwm-aspeed-ast2600.c" and "tach-aspeed-ast2600.c". The former
+is following the pwm subsystem which can apply the existed driver to
+controller the fan(pwm-fan.c), beeper(pwm-beeper.c) and so on. The latter
+is following the sysfs interface of hwmon to creat the node for fan
+monitor.
 
-Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
----
- .../bindings/hwmon/aspeed,ast2600-tach.yaml   | 48 ++++++++++++
- .../bindings/mfd/aspeed,ast2600-pwm-tach.yaml | 76 +++++++++++++++++++
- .../bindings/pwm/aspeed,ast2600-pwm.yaml      | 64 ++++++++++++++++
- 3 files changed, 188 insertions(+)
+Billy Tsai (3):
+  dt-bindings: Add bindings for aspeed pwm-tach.
+  pwm: Add Aspeed ast2600 PWM support
+  hwmon: Add Aspeed ast2600 TACH support
+
+ .../bindings/hwmon/aspeed,ast2600-tach.yaml   |  48 ++
+ .../bindings/mfd/aspeed,ast2600-pwm-tach.yaml |  76 ++
+ .../bindings/pwm/aspeed,ast2600-pwm.yaml      |  64 ++
+ drivers/hwmon/Kconfig                         |   9 +
+ drivers/hwmon/Makefile                        |   1 +
+ drivers/hwmon/tach-aspeed-ast2600.c           | 692 ++++++++++++++++++
+ drivers/pwm/Kconfig                           |  10 +
+ drivers/pwm/Makefile                          |   1 +
+ drivers/pwm/pwm-aspeed-ast2600.c              | 325 ++++++++
+ 9 files changed, 1226 insertions(+)
  create mode 100644 Documentation/devicetree/bindings/hwmon/aspeed,ast2600-tach.yaml
  create mode 100644 Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.yaml
  create mode 100644 Documentation/devicetree/bindings/pwm/aspeed,ast2600-pwm.yaml
+ create mode 100644 drivers/hwmon/tach-aspeed-ast2600.c
+ create mode 100644 drivers/pwm/pwm-aspeed-ast2600.c
 
-diff --git a/Documentation/devicetree/bindings/hwmon/aspeed,ast2600-tach.yaml b/Documentation/devicetree/bindings/hwmon/aspeed,ast2600-tach.yaml
-new file mode 100644
-index 000000000000..838200fae30e
---- /dev/null
-+++ b/Documentation/devicetree/bindings/hwmon/aspeed,ast2600-tach.yaml
-@@ -0,0 +1,48 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+# Copyright (C) 2021 Aspeed, Inc.
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/hwmon/aspeed,ast2600-tach.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: Aspeed Ast2600 Tach controller
-+
-+maintainers:
-+  - Billy Tsai <billy_tsai@aspeedtech.com>
-+
-+description: |
-+  The Aspeed Tach controller can support upto 16 fan input.
-+  This module is part of the ast2600-pwm-tach multi-function device. For more
-+  details see ../mfd/aspeed,ast2600-pwm-tach.yaml.
-+
-+properties:
-+  compatible:
-+    enum:
-+      - aspeed,ast2600-tach
-+
-+  "#address-cells":
-+    const: 1
-+
-+  "#size-cells":
-+    const: 0
-+
-+  pinctrl-0: true
-+
-+  pinctrl-names:
-+    const: default
-+
-+required:
-+  - compatible
-+  - "#address-cells"
-+  - "#size-cells"
-+
-+additionalProperties:
-+  type: object
-+  properties:
-+    reg:
-+      description:
-+        The tach channel used for this node.
-+      maxItems: 1
-+
-+  required:
-+    - reg
-diff --git a/Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.yaml b/Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.yaml
-new file mode 100644
-index 000000000000..1eaf6fab2752
---- /dev/null
-+++ b/Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.yaml
-@@ -0,0 +1,76 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+# Copyright (C) 2021 Aspeed, Inc.
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/mfd/aspeed,ast2600-pwm-tach.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: PWM Tach controller Device Tree Bindings
-+
-+description: |
-+  The PWM Tach controller is represented as a multi-function device which
-+  includes:
-+    PWM
-+    Tach
-+
-+maintainers:
-+  - Billy Tsai <billy_tsai@aspeedtech.com>
-+
-+properties:
-+  compatible:
-+    items:
-+      - enum:
-+          - aspeed,ast2600-pwm-tach
-+      - const: syscon
-+      - const: simple-mfd
-+
-+  reg:
-+    maxItems: 1
-+
-+  clocks:
-+    maxItems: 1
-+
-+  resets:
-+    maxItems: 1
-+
-+required:
-+  - compatible
-+  - reg
-+  - clocks
-+  - resets
-+
-+patternProperties:
-+  "^pwm(@[0-9a-f]+)?$":
-+    $ref: ../pwm/aspeed,ast2600-pwm.yaml
-+
-+  "^tach(@[0-9a-f]+)?$":
-+    $ref: ../hwmon/aspeed,ast2600-tach.yaml
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    #include <dt-bindings/clock/ast2600-clock.h>
-+    pwm_tach: pwm_tach at 1e610000 {
-+      compatible = "aspeed,ast2600-pwm-tach", "syscon", "simple-mfd";
-+      reg = <0x1e610000 0x100>;
-+      clocks = <&syscon ASPEED_CLK_AHB>;
-+      resets = <&syscon ASPEED_RESET_PWM>;
-+
-+      pwm: pwm {
-+        compatible = "aspeed,ast2600-pwm";
-+        #address-cells = <1>;
-+        #size-cells = <0>;
-+        #pwm-cells = <3>;
-+        pinctrl-names = "default";
-+        pinctrl-0 = <&pinctrl_pwm0_default>;
-+      };
-+
-+      tach: tach {
-+        compatible = "aspeed,ast2600-tach";
-+        #address-cells = <1>;
-+        #size-cells = <0>;
-+        pinctrl-names = "default";
-+        pinctrl-0 = <&pinctrl_tach0_default>;
-+      };
-+    };
-diff --git a/Documentation/devicetree/bindings/pwm/aspeed,ast2600-pwm.yaml b/Documentation/devicetree/bindings/pwm/aspeed,ast2600-pwm.yaml
-new file mode 100644
-index 000000000000..f501f8a769df
---- /dev/null
-+++ b/Documentation/devicetree/bindings/pwm/aspeed,ast2600-pwm.yaml
-@@ -0,0 +1,64 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+# Copyright (C) 2021 Aspeed, Inc.
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/pwm/aspeed,ast2600-pwm.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: Aspeed Ast2600 PWM controller
-+
-+maintainers:
-+  - Billy Tsai <billy_tsai@aspeedtech.com>
-+
-+description: |
-+  The Aspeed PWM controller can support upto 16 PWM outputs.
-+  This module is part of the ast2600-pwm-tach multi-function device. For more
-+  details see ../mfd/aspeed,ast2600-pwm-tach.yaml.
-+
-+properties:
-+  compatible:
-+    enum:
-+      - aspeed,ast2600-pwm
-+
-+  "#pwm-cells":
-+    const: 3
-+
-+  "#address-cells":
-+    const: 1
-+
-+  "#size-cells":
-+    const: 0
-+
-+  pinctrl-0: true
-+
-+  pinctrl-names:
-+    const: default
-+
-+required:
-+  - compatible
-+  - "#pwm-cells"
-+  - "#address-cells"
-+  - "#size-cells"
-+
-+additionalProperties:
-+  description: Set extend properties for each pwm channel.
-+  type: object
-+  properties:
-+    reg:
-+      description:
-+        The pwm channel index.
-+      maxItems: 1
-+
-+    aspeed,wdt-reload-enable:
-+      type: boolean
-+      description:
-+        Enable the function of wdt reset reload duty point.
-+
-+    aspeed,wdt-reload-duty-point:
-+      description:
-+        Define the duty point after wdt reset, 0 = 100%
-+      minimum: 0
-+      maximum: 255
-+
-+  required:
-+    - reg
 -- 
 2.25.1
 
