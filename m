@@ -1,54 +1,32 @@
-From: Billy Tsai <billy_tsai@aspeedtech.com>
-Date: Mon, 31 Oct 2022 19:32:07 +0800
-Subject: [PATCH 1/2] iio: adc: aspeed: Remove the trim valid dts property.
-Message-ID: <20221031113208.19194-1-billy_tsai@aspeedtech.com>
+From: Javier Martinez Canillas <javierm@redhat.com>
+Date: Mon, 31 Oct 2022 12:58:48 +0100
+Subject: [PATCH v2 01/21] drm/komeda: Don't set struct
+ drm_driver.lastclose
+In-Reply-To: <20221024111953.24307-2-tzimmermann@suse.de>
+References: <20221024111953.24307-1-tzimmermann@suse.de>
+ <20221024111953.24307-2-tzimmermann@suse.de>
+Message-ID: <365e1467-7dc2-42b4-b985-53323741dea8@redhat.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The dts property "aspeed,trim-data-valid" is used to determin whether to
-read the OTP register. If the image with the aspeed,trim-data-vali
-install to the chip without valid trimming data the adc controller will
-become confused. This patch use the default otp value 0 as a criterion
-for determining whether trimming data is valid instead of the dts
-property. The chip with actually trimming value is 0 should be filter out.
+On 10/24/22 13:19, Thomas Zimmermann wrote:
+> Don't set struct drm_driver.lastclose. It's used to restore the
+> fbdev console. But as komeda uses generic fbdev emulation, the
+> console is being restored by the DRM client helpers already. See
+> the call to drm_client_dev_restore() in drm_lastclose().
+> 
+> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+> ---
 
-Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
----
- drivers/iio/adc/aspeed_adc.c | 11 +++++------
- 1 file changed, 5 insertions(+), 6 deletions(-)
+Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
 
-diff --git a/drivers/iio/adc/aspeed_adc.c b/drivers/iio/adc/aspeed_adc.c
-index ffae64f39221..0f065f0bb8e7 100644
---- a/drivers/iio/adc/aspeed_adc.c
-+++ b/drivers/iio/adc/aspeed_adc.c
-@@ -201,6 +201,8 @@ static int aspeed_adc_set_trim_data(struct iio_dev *indio_dev)
- 				((scu_otp) &
- 				 (data->model_data->trim_locate->field)) >>
- 				__ffs(data->model_data->trim_locate->field);
-+			if (!trimming_val)
-+				trimming_val = 0x8;
- 		}
- 		dev_dbg(data->dev,
- 			"trimming val = %d, offset = %08x, fields = %08x\n",
-@@ -562,12 +564,9 @@ static int aspeed_adc_probe(struct platform_device *pdev)
- 	if (ret)
- 		return ret;
- 
--	if (of_find_property(data->dev->of_node, "aspeed,trim-data-valid",
--			     NULL)) {
--		ret = aspeed_adc_set_trim_data(indio_dev);
--		if (ret)
--			return ret;
--	}
-+	ret = aspeed_adc_set_trim_data(indio_dev);
-+	if (ret)
-+		return ret;
- 
- 	if (of_find_property(data->dev->of_node, "aspeed,battery-sensing",
- 			     NULL)) {
 -- 
-2.25.1
+Best regards,
+
+Javier Martinez Canillas
+Core Platforms
+Red Hat
 
