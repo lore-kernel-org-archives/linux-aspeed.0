@@ -1,93 +1,235 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Date: Mon, 31 Oct 2022 09:32:58 -0700
-Subject: [PATCH 3/3] hwmon: Add Aspeed ast2600 TACH support
-In-Reply-To: <20221031103809.20225-4-billy_tsai@aspeedtech.com>
-References: <20221031103809.20225-1-billy_tsai@aspeedtech.com>
- <20221031103809.20225-4-billy_tsai@aspeedtech.com>
-Message-ID: <20221031163258.GC2462187@roeck-us.net>
+From: Billy Tsai <billy_tsai@aspeedtech.com>
+Date: Tue, 1 Nov 2022 17:51:54 +0800
+Subject: [v2 1/3] dt-bindings: Add bindings for aspeed pwm-tach.
+In-Reply-To: <20221101095156.30591-1-billy_tsai@aspeedtech.com>
+References: <20221101095156.30591-1-billy_tsai@aspeedtech.com>
+Message-ID: <20221101095156.30591-2-billy_tsai@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Oct 31, 2022 at 06:38:08PM +0800, Billy Tsai wrote:
-> This patch add the support of Tachometer which can use to monitor the
-> frequency of the input. The tach supports up to 16 channels and it's part
-> function of multi-function device "pwm-tach controller".
-> 
-> Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
-> ---
->  drivers/hwmon/Kconfig               |   9 +
->  drivers/hwmon/Makefile              |   1 +
->  drivers/hwmon/tach-aspeed-ast2600.c | 692 ++++++++++++++++++++++++++++
+This patch adds device binding for aspeed pwm-tach device which is a
+multi-function device include pwm and tach function and pwm/tach device
+bindings which should be the child-node of pwm-tach device.
 
-Please also provide Documentation/hwmon/tach-aspeed-ast2600.rst.
+Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
+---
+ .../bindings/hwmon/aspeed,ast2600-tach.yaml   | 48 ++++++++++++
+ .../bindings/mfd/aspeed,ast2600-pwm-tach.yaml | 76 +++++++++++++++++++
+ .../bindings/pwm/aspeed,ast2600-pwm.yaml      | 64 ++++++++++++++++
+ 3 files changed, 188 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/hwmon/aspeed,ast2600-tach.yaml
+ create mode 100644 Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.yaml
+ create mode 100644 Documentation/devicetree/bindings/pwm/aspeed,ast2600-pwm.yaml
 
-[ ... ]
+diff --git a/Documentation/devicetree/bindings/hwmon/aspeed,ast2600-tach.yaml b/Documentation/devicetree/bindings/hwmon/aspeed,ast2600-tach.yaml
+new file mode 100644
+index 000000000000..838200fae30e
+--- /dev/null
++++ b/Documentation/devicetree/bindings/hwmon/aspeed,ast2600-tach.yaml
+@@ -0,0 +1,48 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++# Copyright (C) 2021 Aspeed, Inc.
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/hwmon/aspeed,ast2600-tach.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Aspeed Ast2600 Tach controller
++
++maintainers:
++  - Billy Tsai <billy_tsai@aspeedtech.com>
++
++description: |
++  The Aspeed Tach controller can support upto 16 fan input.
++  This module is part of the ast2600-pwm-tach multi-function device. For more
++  details see ../mfd/aspeed,ast2600-pwm-tach.yaml.
++
++properties:
++  compatible:
++    enum:
++      - aspeed,ast2600-tach
++
++  "#address-cells":
++    const: 1
++
++  "#size-cells":
++    const: 0
++
++  pinctrl-0: true
++
++  pinctrl-names:
++    const: default
++
++required:
++  - compatible
++  - "#address-cells"
++  - "#size-cells"
++
++additionalProperties:
++  type: object
++  properties:
++    reg:
++      description:
++        The tach channel used for this node.
++      maxItems: 1
++
++  required:
++    - reg
+diff --git a/Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.yaml b/Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.yaml
+new file mode 100644
+index 000000000000..1eaf6fab2752
+--- /dev/null
++++ b/Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.yaml
+@@ -0,0 +1,76 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++# Copyright (C) 2021 Aspeed, Inc.
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/mfd/aspeed,ast2600-pwm-tach.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: PWM Tach controller Device Tree Bindings
++
++description: |
++  The PWM Tach controller is represented as a multi-function device which
++  includes:
++    PWM
++    Tach
++
++maintainers:
++  - Billy Tsai <billy_tsai@aspeedtech.com>
++
++properties:
++  compatible:
++    items:
++      - enum:
++          - aspeed,ast2600-pwm-tach
++      - const: syscon
++      - const: simple-mfd
++
++  reg:
++    maxItems: 1
++
++  clocks:
++    maxItems: 1
++
++  resets:
++    maxItems: 1
++
++required:
++  - compatible
++  - reg
++  - clocks
++  - resets
++
++patternProperties:
++  "^pwm(@[0-9a-f]+)?$":
++    $ref: ../pwm/aspeed,ast2600-pwm.yaml
++
++  "^tach(@[0-9a-f]+)?$":
++    $ref: ../hwmon/aspeed,ast2600-tach.yaml
++
++additionalProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/clock/ast2600-clock.h>
++    pwm_tach: pwm_tach at 1e610000 {
++      compatible = "aspeed,ast2600-pwm-tach", "syscon", "simple-mfd";
++      reg = <0x1e610000 0x100>;
++      clocks = <&syscon ASPEED_CLK_AHB>;
++      resets = <&syscon ASPEED_RESET_PWM>;
++
++      pwm: pwm {
++        compatible = "aspeed,ast2600-pwm";
++        #address-cells = <1>;
++        #size-cells = <0>;
++        #pwm-cells = <3>;
++        pinctrl-names = "default";
++        pinctrl-0 = <&pinctrl_pwm0_default>;
++      };
++
++      tach: tach {
++        compatible = "aspeed,ast2600-tach";
++        #address-cells = <1>;
++        #size-cells = <0>;
++        pinctrl-names = "default";
++        pinctrl-0 = <&pinctrl_tach0_default>;
++      };
++    };
+diff --git a/Documentation/devicetree/bindings/pwm/aspeed,ast2600-pwm.yaml b/Documentation/devicetree/bindings/pwm/aspeed,ast2600-pwm.yaml
+new file mode 100644
+index 000000000000..f501f8a769df
+--- /dev/null
++++ b/Documentation/devicetree/bindings/pwm/aspeed,ast2600-pwm.yaml
+@@ -0,0 +1,64 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++# Copyright (C) 2021 Aspeed, Inc.
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/pwm/aspeed,ast2600-pwm.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Aspeed Ast2600 PWM controller
++
++maintainers:
++  - Billy Tsai <billy_tsai@aspeedtech.com>
++
++description: |
++  The Aspeed PWM controller can support upto 16 PWM outputs.
++  This module is part of the ast2600-pwm-tach multi-function device. For more
++  details see ../mfd/aspeed,ast2600-pwm-tach.yaml.
++
++properties:
++  compatible:
++    enum:
++      - aspeed,ast2600-pwm
++
++  "#pwm-cells":
++    const: 3
++
++  "#address-cells":
++    const: 1
++
++  "#size-cells":
++    const: 0
++
++  pinctrl-0: true
++
++  pinctrl-names:
++    const: default
++
++required:
++  - compatible
++  - "#pwm-cells"
++  - "#address-cells"
++  - "#size-cells"
++
++additionalProperties:
++  description: Set extend properties for each pwm channel.
++  type: object
++  properties:
++    reg:
++      description:
++        The pwm channel index.
++      maxItems: 1
++
++    aspeed,wdt-reload-enable:
++      type: boolean
++      description:
++        Enable the function of wdt reset reload duty point.
++
++    aspeed,wdt-reload-duty-point:
++      description:
++        Define the duty point after wdt reset, 0 = 100%
++      minimum: 0
++      maximum: 255
++
++  required:
++    - reg
+-- 
+2.25.1
 
-> +	hwmon = devm_hwmon_device_register_with_groups(dev, "aspeed_tach", priv,
-> +						       priv->groups);
-
-Please use the new hwmon api (devm_hwmon_device_register_with_info).
-
-> +	ret = PTR_ERR_OR_ZERO(hwmon);
-> +	if (ret) {
-> +		dev_err_probe(dev, ret, "Failed to register hwmon device\n");
-> +		goto err_assert_reset;
-> +	}
-> +	platform_set_drvdata(pdev, priv);
-> +	return 0;
-> +err_assert_reset:
-> +	reset_control_assert(priv->reset);
-> +err_disable_clk:
-> +	clk_disable_unprepare(priv->clk);
-
-You should be able to use devm_clk_get_enabled() to handle
-the clock. If reset handling has to come first, you could use
-devm_add_action_or_reset() for it. This way you would
-not need the remove function, and error cleanup would
-be much simplified.
-
-Thanks,
-Guenter
-
-> +	return ret;
-> +}
-> +
-> +static int aspeed_tach_remove(struct platform_device *pdev)
-> +{
-> +	struct aspeed_tach_data *priv = platform_get_drvdata(pdev);
-> +
-> +	reset_control_assert(priv->reset);
-> +	clk_disable_unprepare(priv->clk);
-> +
-> +	return 0;
-> +}
-> +
-> +static const struct of_device_id of_stach_match_table[] = {
-> +	{
-> +		.compatible = "aspeed,ast2600-tach",
-> +	},
-> +	{},
-> +};
-> +MODULE_DEVICE_TABLE(of, of_stach_match_table);
-> +
-> +static struct platform_driver aspeed_tach_driver = {
-> +	.probe		= aspeed_tach_probe,
-> +	.remove		= aspeed_tach_remove,
-> +	.driver		= {
-> +		.name	= "aspeed_tach",
-> +		.of_match_table = of_stach_match_table,
-> +	},
-> +};
-> +
-> +module_platform_driver(aspeed_tach_driver);
-> +
-> +MODULE_AUTHOR("Billy Tsai <billy_tsai@aspeedtech.com>");
-> +MODULE_DESCRIPTION("Aspeed ast2600 TACH device driver");
-> +MODULE_LICENSE("GPL v2");
-> +
-> -- 
-> 2.25.1
-> 
