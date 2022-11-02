@@ -1,10 +1,11 @@
 From: Javier Martinez Canillas <javierm@redhat.com>
-Date: Wed, 2 Nov 2022 10:05:02 +0100
-Subject: [PATCH v2 16/21] drm/fb-helper: Call fb_sync in I/O functions
-In-Reply-To: <20221024111953.24307-17-tzimmermann@suse.de>
+Date: Wed, 2 Nov 2022 10:32:11 +0100
+Subject: [PATCH v2 17/21] drm/fb-helper: Perform all fbdev I/O with the
+ same implementation
+In-Reply-To: <20221024111953.24307-18-tzimmermann@suse.de>
 References: <20221024111953.24307-1-tzimmermann@suse.de>
- <20221024111953.24307-17-tzimmermann@suse.de>
-Message-ID: <a96d57d8-486d-5a48-a00a-39df6275cbb5@redhat.com>
+ <20221024111953.24307-18-tzimmermann@suse.de>
+Message-ID: <3ab32fc3-f2aa-1b42-fd87-557482ab56d5@redhat.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -12,16 +13,92 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 On 10/24/22 13:19, Thomas Zimmermann wrote:
-> Call struct fb_ops.fb_sync in drm_fbdev_{read,write}() to mimic the
-> behavior of fbdev. Fbdev implementations of fb_read and fb_write in
-> struct fb_ops invoke fb_sync to synchronize with outstanding operations
-> before I/O. Doing the same in DRM implementations will allow us to use
-> them throughout DRM drivers.
+> Implement the fbdev's read/write helpers with the same functions. Use
+> the generic fbdev's code as template. Convert all drivers.
+> 
+> DRM's fb helpers must implement regular I/O functionality in struct
+> fb_ops and possibly perform a damage update. Handle all this in the
+> same functions and convert drivers. The functionality has been used
+> as part of the generic fbdev code for some time. The drivers don't
+> set struct drm_fb_helper.fb_dirty, so they will not be affected by
+> damage handling.
+> 
+> For I/O memory, fb helpers now provide drm_fb_helper_cfb_read() and
+> drm_fb_helper_cfb_write(). Several drivers require these. Until now
+> tegra used I/O read and write, although the memory buffer appears to
+> be in system memory. So use _sys_ helpers now.
 > 
 > Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 > ---
 
-Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
+[...]
+
+> +static ssize_t __drm_fb_helper_write(struct fb_info *info, const char __user *buf, size_t count,
+> +				     loff_t *ppos, drm_fb_helper_write_screen write_screen)
+> +{
+
+[...]
+
+> +	/*
+> +	 * Copy to framebuffer even if we already logged an error. Emulates
+> +	 * the behavior of the original fbdev implementation.
+> +	 */
+> +	ret = write_screen(info, buf, count, pos);
+> +	if (ret < 0)
+> +		return ret; /* return last error, if any */
+> +	else if (!ret)
+> +		return err; /* return previous error, if any */
+> +
+> +	*ppos += ret;
+> +
+
+Should *ppos be incremented even if the previous error is returned?
+
+The write_screen() succeeded anyways, even when the count written was
+smaller than what the caller asked for.
+
+>  /**
+> - * drm_fb_helper_sys_read - wrapper around fb_sys_read
+> + * drm_fb_helper_sys_read - Implements struct &fb_ops.fb_read for system memory
+>   * @info: fb_info struct pointer
+>   * @buf: userspace buffer to read from framebuffer memory
+>   * @count: number of bytes to read from framebuffer memory
+>   * @ppos: read offset within framebuffer memory
+>   *
+> - * A wrapper around fb_sys_read implemented by fbdev core
+> + * Returns:
+> + * The number of read bytes on success, or an error code otherwise.
+>   */
+
+This sentence sounds a little bit off to me. Shouldn't be "number of bytes read"
+instead? I'm not a native English speaker though, so feel free to just ignore me.
+
+[...]
+
+>  
+> +static ssize_t fb_read_screen_base(struct fb_info *info, char __user *buf, size_t count,
+> +				   loff_t pos)
+> +{
+> +	const char __iomem *src = info->screen_base + pos;
+> +	size_t alloc_size = min_t(size_t, count, PAGE_SIZE);
+> +	ssize_t ret = 0;
+> +	int err = 0;
+
+Do you really need these two? AFAIK ssize_t is a signed type
+so you can just use the ret variable to store and return the
+errno value.
+
+[...]
+
+> +static ssize_t fb_write_screen_base(struct fb_info *info, const char __user *buf, size_t count,
+> +				    loff_t pos)
+> +{
+> +	char __iomem *dst = info->screen_base + pos;
+> +	size_t alloc_size = min_t(size_t, count, PAGE_SIZE);
+> +	ssize_t ret = 0;
+> +	int err = 0;
+
+Same here.
 
 -- 
 Best regards,
