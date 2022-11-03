@@ -1,50 +1,35 @@
 From: Thomas Zimmermann <tzimmermann@suse.de>
-Date: Thu,  3 Nov 2022 16:14:31 +0100
-Subject: [PATCH v3 08/23] drm/rockchip: Don't set struct drm_driver.output_poll_changed
+Date: Thu,  3 Nov 2022 16:14:32 +0100
+Subject: [PATCH v3 09/23] drm/panel-ili9341: Include <linux/backlight.h>
 In-Reply-To: <20221103151446.2638-1-tzimmermann@suse.de>
 References: <20221103151446.2638-1-tzimmermann@suse.de>
-Message-ID: <20221103151446.2638-9-tzimmermann@suse.de>
+Message-ID: <20221103151446.2638-10-tzimmermann@suse.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Don't set struct drm_driver.output_poll_changed. It's used to restore
-the fbdev console. But as rockchip uses generic fbdev emulation, the
-console is being restored by the DRM client helpers already. See the
-functions drm_kms_helper_hotplug_event() and
-drm_kms_helper_connector_hotplug_event() in drm_probe_helper.c.
-
-v2:
-	* fix commit description (Christian)
+Include <linux/backlight.h> for devm_of_find_backlight().
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
 ---
- drivers/gpu/drm/rockchip/rockchip_drm_fb.c | 2 --
- 1 file changed, 2 deletions(-)
+ drivers/gpu/drm/panel/panel-ilitek-ili9341.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/gpu/drm/rockchip/rockchip_drm_fb.c b/drivers/gpu/drm/rockchip/rockchip_drm_fb.c
-index 092bf863110b7..7de64b0ad047f 100644
---- a/drivers/gpu/drm/rockchip/rockchip_drm_fb.c
-+++ b/drivers/gpu/drm/rockchip/rockchip_drm_fb.c
-@@ -9,7 +9,6 @@
- #include <drm/drm.h>
- #include <drm/drm_atomic.h>
- #include <drm/drm_damage_helper.h>
--#include <drm/drm_fb_helper.h>
- #include <drm/drm_fourcc.h>
- #include <drm/drm_framebuffer.h>
- #include <drm/drm_gem_framebuffer_helper.h>
-@@ -101,7 +100,6 @@ rockchip_fb_create(struct drm_device *dev, struct drm_file *file,
+diff --git a/drivers/gpu/drm/panel/panel-ilitek-ili9341.c b/drivers/gpu/drm/panel/panel-ilitek-ili9341.c
+index 39dc40cf681f0..b59472c29a40d 100644
+--- a/drivers/gpu/drm/panel/panel-ilitek-ili9341.c
++++ b/drivers/gpu/drm/panel/panel-ilitek-ili9341.c
+@@ -18,6 +18,7 @@
+  * Copyright 2018 David Lechner <david@lechnology.com>
+  */
  
- static const struct drm_mode_config_funcs rockchip_drm_mode_config_funcs = {
- 	.fb_create = rockchip_fb_create,
--	.output_poll_changed = drm_fb_helper_output_poll_changed,
- 	.atomic_check = drm_atomic_helper_check,
- 	.atomic_commit = drm_atomic_helper_commit,
- };
++#include <linux/backlight.h>
+ #include <linux/bitops.h>
+ #include <linux/delay.h>
+ #include <linux/gpio/consumer.h>
 -- 
 2.38.0
 
