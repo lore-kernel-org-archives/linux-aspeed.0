@@ -1,54 +1,81 @@
 From: Thomas Zimmermann <tzimmermann@suse.de>
-Date: Thu,  3 Nov 2022 16:14:42 +0100
-Subject: [PATCH v3 19/23] drm/fb-helper: Always initialize generic fbdev emulation
+Date: Thu,  3 Nov 2022 16:14:43 +0100
+Subject: [PATCH v3 20/23] drm/fb-helper: Set flag in struct drm_fb_helper for leaking physical addresses
 In-Reply-To: <20221103151446.2638-1-tzimmermann@suse.de>
 References: <20221103151446.2638-1-tzimmermann@suse.de>
-Message-ID: <20221103151446.2638-20-tzimmermann@suse.de>
+Message-ID: <20221103151446.2638-21-tzimmermann@suse.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Initialize the generic fbdev emulation even if it has been disabled
-on the kernel command line. The hotplug and mode initialization will
-fail accordingly.
-
-The kernel parameter can still be changed at runtime and the emulation
-will initialize after hotplugging the connector.
+Uncouple the parameter drm_leak_fbdev_smem from the implementation by
+setting a flag in struct drm_fb_helper. This will help to move the
+generic fbdev emulation into its own source file, while keeping the
+parameter in drm_fb_helper.c. No functional changes.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
 ---
- drivers/gpu/drm/drm_fb_helper.c | 8 --------
- 1 file changed, 8 deletions(-)
+ drivers/gpu/drm/drm_fb_helper.c | 10 +++++++---
+ include/drm/drm_fb_helper.h     |  2 ++
+ 2 files changed, 9 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/gpu/drm/drm_fb_helper.c b/drivers/gpu/drm/drm_fb_helper.c
-index 3dfda1e3830b3..95f389433c4a6 100644
+index 95f389433c4a6..105d9c8fe3250 100644
 --- a/drivers/gpu/drm/drm_fb_helper.c
 +++ b/drivers/gpu/drm/drm_fb_helper.c
-@@ -526,11 +526,6 @@ int drm_fb_helper_init(struct drm_device *dev,
- {
- 	int ret;
+@@ -74,7 +74,7 @@ MODULE_PARM_DESC(drm_fbdev_overalloc,
+  * considered as a broken and legacy behaviour from a modern fbdev device.
+  */
+ #if IS_ENABLED(CONFIG_DRM_FBDEV_LEAK_PHYS_SMEM)
+-static bool drm_leak_fbdev_smem = false;
++static bool drm_leak_fbdev_smem;
+ module_param_unsafe(drm_leak_fbdev_smem, bool, 0600);
+ MODULE_PARM_DESC(drm_leak_fbdev_smem,
+ 		 "Allow unsafe leaking fbdev physical smem address [default=false]");
+@@ -1968,6 +1968,10 @@ static int drm_fb_helper_single_fb_probe(struct drm_fb_helper *fb_helper,
+ 		sizes.surface_height = config->max_height;
+ 	}
  
--	if (!drm_fbdev_emulation) {
--		dev->fb_helper = fb_helper;
--		return 0;
--	}
--
- 	/*
- 	 * If this is not the generic fbdev client, initialize a drm_client
- 	 * without callbacks so we can use the modesets.
-@@ -2716,9 +2711,6 @@ void drm_fbdev_generic_setup(struct drm_device *dev,
- 	drm_WARN(dev, !dev->registered, "Device has not been registered.\n");
- 	drm_WARN(dev, dev->fb_helper, "fb_helper is already set!\n");
++#if IS_ENABLED(CONFIG_DRM_FBDEV_LEAK_PHYS_SMEM)
++	fb_helper->hint_leak_smem_start = drm_leak_fbdev_smem;
++#endif
++
+ 	/* push down into drivers */
+ 	ret = (*fb_helper->funcs->fb_probe)(fb_helper, &sizes);
+ 	if (ret < 0)
+@@ -2165,7 +2169,7 @@ __drm_fb_helper_initial_config_and_unlock(struct drm_fb_helper *fb_helper,
+ 	info->var.pixclock = 0;
+ 	/* Shamelessly allow physical address leaking to userspace */
+ #if IS_ENABLED(CONFIG_DRM_FBDEV_LEAK_PHYS_SMEM)
+-	if (!drm_leak_fbdev_smem)
++	if (!fb_helper->hint_leak_smem_start)
+ #endif
+ 		/* don't leak any physical addresses to userspace */
+ 		info->flags |= FBINFO_HIDE_SMEM_START;
+@@ -2564,7 +2568,7 @@ static int drm_fb_helper_generic_probe(struct drm_fb_helper *fb_helper,
+ 		 * case.
+ 		 */
+ #if IS_ENABLED(CONFIG_DRM_FBDEV_LEAK_PHYS_SMEM)
+-		if (drm_leak_fbdev_smem && fbi->fix.smem_start == 0 &&
++		if (fb_helper->hint_leak_smem_start && fbi->fix.smem_start == 0 &&
+ 		    !drm_WARN_ON_ONCE(dev, map.is_iomem))
+ 			fbi->fix.smem_start =
+ 				page_to_phys(virt_to_page(fbi->screen_buffer));
+diff --git a/include/drm/drm_fb_helper.h b/include/drm/drm_fb_helper.h
+index 6581183618b89..3dfb5d1093871 100644
+--- a/include/drm/drm_fb_helper.h
++++ b/include/drm/drm_fb_helper.h
+@@ -199,6 +199,8 @@ struct drm_fb_helper {
+ 	 * See also: @deferred_setup
+ 	 */
+ 	int preferred_bpp;
++
++	bool hint_leak_smem_start;
+ };
  
--	if (!drm_fbdev_emulation)
--		return;
--
- 	fb_helper = kzalloc(sizeof(*fb_helper), GFP_KERNEL);
- 	if (!fb_helper) {
- 		drm_err(dev, "Failed to allocate fb_helper\n");
+ static inline struct drm_fb_helper *
 -- 
 2.38.0
 
