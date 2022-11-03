@@ -1,196 +1,235 @@
 From: Thomas Zimmermann <tzimmermann@suse.de>
-Date: Thu,  3 Nov 2022 16:14:38 +0100
-Subject: [PATCH v3 15/23] drm/fb-helper: Disconnect damage worker from update logic
+Date: Thu,  3 Nov 2022 16:14:41 +0100
+Subject: [PATCH v3 18/23] drm/fb_helper: Minimize damage-helper overhead
 In-Reply-To: <20221103151446.2638-1-tzimmermann@suse.de>
 References: <20221103151446.2638-1-tzimmermann@suse.de>
-Message-ID: <20221103151446.2638-16-tzimmermann@suse.de>
+Message-ID: <20221103151446.2638-19-tzimmermann@suse.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The fbdev helpers implement a damage worker that forwards fbdev
-updates to the DRM driver. The worker's update logic depends on
-the generic fbdev emulation. Separate the two via function pointer.
-
-The generic fbdev emulation sets struct drm_fb_helper_funcs.fb_dirty,
-a new callback that hides the update logic from the damage worker.
-It's not possible to use the generic logic with other fbdev emulation,
-because it contains additional code for the shadow buffering that
-the generic emulation employs.
-
-DRM drivers with internal fbdev emulation can set fb_dirty to their
-own implementation if they require damage handling; although no such
-drivers currently exist.
+Pull the test for fb_dirty into the caller to avoid extra work
+if no callback has been set. In this case no damage handling is
+required and no damage area needs to be computed. Print a warning
+if the damage worker runs without getting an fb_dirty callback.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
 ---
- drivers/gpu/drm/drm_fb_helper.c | 75 ++++++++++++++++++++-------------
- include/drm/drm_fb_helper.h     | 15 +++++++
- 2 files changed, 61 insertions(+), 29 deletions(-)
+ drivers/gpu/drm/drm_fb_helper.c | 90 ++++++++++++++++++++++-----------
+ 1 file changed, 60 insertions(+), 30 deletions(-)
 
 diff --git a/drivers/gpu/drm/drm_fb_helper.c b/drivers/gpu/drm/drm_fb_helper.c
-index bfbb2af144060..f6d22cc4cd876 100644
+index c7c0c0a8532b4..3dfda1e3830b3 100644
 --- a/drivers/gpu/drm/drm_fb_helper.c
 +++ b/drivers/gpu/drm/drm_fb_helper.c
-@@ -448,35 +448,24 @@ static int drm_fb_helper_damage_blit(struct drm_fb_helper *fb_helper,
- 
+@@ -449,12 +449,13 @@ static int drm_fb_helper_damage_blit(struct drm_fb_helper *fb_helper,
  static void drm_fb_helper_damage_work(struct work_struct *work)
  {
--	struct drm_fb_helper *helper = container_of(work, struct drm_fb_helper,
--						    damage_work);
--	struct drm_device *dev = helper->dev;
-+	struct drm_fb_helper *helper = container_of(work, struct drm_fb_helper, damage_work);
+ 	struct drm_fb_helper *helper = container_of(work, struct drm_fb_helper, damage_work);
++	struct drm_device *dev = helper->dev;
  	struct drm_clip_rect *clip = &helper->damage_clip;
  	struct drm_clip_rect clip_copy;
  	unsigned long flags;
  	int ret;
  
-+	if (!helper->funcs->fb_dirty)
-+		return;
-+
- 	spin_lock_irqsave(&helper->damage_lock, flags);
- 	clip_copy = *clip;
- 	clip->x1 = clip->y1 = ~0;
- 	clip->x2 = clip->y2 = 0;
- 	spin_unlock_irqrestore(&helper->damage_lock, flags);
- 
--	/* Call damage handlers only if necessary */
--	if (!(clip_copy.x1 < clip_copy.x2 && clip_copy.y1 < clip_copy.y2))
--		return;
--
--	if (helper->buffer) {
--		ret = drm_fb_helper_damage_blit(helper, &clip_copy);
--		if (drm_WARN_ONCE(dev, ret, "Damage blitter failed: ret=%d\n", ret))
--			goto err;
--	}
--
--	if (helper->fb->funcs->dirty) {
--		ret = helper->fb->funcs->dirty(helper->fb, NULL, 0, 0, &clip_copy, 1);
--		if (drm_WARN_ONCE(dev, ret, "Dirty helper failed: ret=%d\n", ret))
--			goto err;
--	}
-+	ret = helper->funcs->fb_dirty(helper, &clip_copy);
-+	if (ret)
-+		goto err;
- 
- 	return;
- 
-@@ -670,16 +659,6 @@ void drm_fb_helper_fini(struct drm_fb_helper *fb_helper)
- }
- EXPORT_SYMBOL(drm_fb_helper_fini);
- 
--static bool drm_fbdev_use_shadow_fb(struct drm_fb_helper *fb_helper)
--{
--	struct drm_device *dev = fb_helper->dev;
--	struct drm_framebuffer *fb = fb_helper->fb;
--
--	return dev->mode_config.prefer_shadow_fbdev ||
--	       dev->mode_config.prefer_shadow ||
--	       fb->funcs->dirty;
--}
--
- static void drm_fb_helper_damage(struct fb_info *info, u32 x, u32 y,
- 				 u32 width, u32 height)
- {
-@@ -687,7 +666,7 @@ static void drm_fb_helper_damage(struct fb_info *info, u32 x, u32 y,
- 	struct drm_clip_rect *clip = &helper->damage_clip;
- 	unsigned long flags;
- 
--	if (!drm_fbdev_use_shadow_fb(helper))
-+	if (!helper->funcs->fb_dirty)
+-	if (!helper->funcs->fb_dirty)
++	if (drm_WARN_ON_ONCE(dev, !helper->funcs->fb_dirty))
  		return;
  
  	spin_lock_irqsave(&helper->damage_lock, flags);
-@@ -2111,6 +2090,16 @@ void drm_fb_helper_output_poll_changed(struct drm_device *dev)
+@@ -659,16 +660,12 @@ void drm_fb_helper_fini(struct drm_fb_helper *fb_helper)
  }
- EXPORT_SYMBOL(drm_fb_helper_output_poll_changed);
+ EXPORT_SYMBOL(drm_fb_helper_fini);
  
-+static bool drm_fbdev_use_shadow_fb(struct drm_fb_helper *fb_helper)
-+{
-+	struct drm_device *dev = fb_helper->dev;
-+	struct drm_framebuffer *fb = fb_helper->fb;
-+
-+	return dev->mode_config.prefer_shadow_fbdev ||
-+	       dev->mode_config.prefer_shadow ||
-+	       fb->funcs->dirty;
-+}
-+
- /* @user: 1=userspace, 0=fbcon */
- static int drm_fbdev_fb_open(struct fb_info *info, int user)
+-static void drm_fb_helper_damage(struct fb_info *info, u32 x, u32 y,
++static void drm_fb_helper_damage(struct drm_fb_helper *helper, u32 x, u32 y,
+ 				 u32 width, u32 height)
  {
-@@ -2487,8 +2476,36 @@ static int drm_fb_helper_generic_probe(struct drm_fb_helper *fb_helper,
- 	return 0;
+-	struct drm_fb_helper *helper = info->par;
+ 	struct drm_clip_rect *clip = &helper->damage_clip;
+ 	unsigned long flags;
+ 
+-	if (!helper->funcs->fb_dirty)
+-		return;
+-
+ 	spin_lock_irqsave(&helper->damage_lock, flags);
+ 	clip->x1 = min_t(u32, clip->x1, x);
+ 	clip->y1 = min_t(u32, clip->y1, y);
+@@ -718,6 +715,7 @@ static void drm_fb_helper_memory_range_to_clip(struct fb_info *info, off_t off,
+  */
+ void drm_fb_helper_deferred_io(struct fb_info *info, struct list_head *pagereflist)
+ {
++	struct drm_fb_helper *helper = info->par;
+ 	unsigned long start, end, min_off, max_off;
+ 	struct fb_deferred_io_pageref *pageref;
+ 	struct drm_rect damage_area;
+@@ -733,17 +731,19 @@ void drm_fb_helper_deferred_io(struct fb_info *info, struct list_head *pagerefli
+ 	if (min_off >= max_off)
+ 		return;
+ 
+-	/*
+-	 * As we can only track pages, we might reach beyond the end
+-	 * of the screen and account for non-existing scanlines. Hence,
+-	 * keep the covered memory area within the screen buffer.
+-	 */
+-	max_off = min(max_off, info->screen_size);
++	if (helper->funcs->fb_dirty) {
++		/*
++		 * As we can only track pages, we might reach beyond the end
++		 * of the screen and account for non-existing scanlines. Hence,
++		 * keep the covered memory area within the screen buffer.
++		 */
++		max_off = min(max_off, info->screen_size);
+ 
+-	drm_fb_helper_memory_range_to_clip(info, min_off, max_off - min_off, &damage_area);
+-	drm_fb_helper_damage(info, damage_area.x1, damage_area.y1,
+-			     drm_rect_width(&damage_area),
+-			     drm_rect_height(&damage_area));
++		drm_fb_helper_memory_range_to_clip(info, min_off, max_off - min_off, &damage_area);
++		drm_fb_helper_damage(helper, damage_area.x1, damage_area.y1,
++				     drm_rect_width(&damage_area),
++				     drm_rect_height(&damage_area));
++	}
  }
+ EXPORT_SYMBOL(drm_fb_helper_deferred_io);
  
-+static int drm_fbdev_fb_dirty(struct drm_fb_helper *helper, struct drm_clip_rect *clip)
-+{
-+	struct drm_device *dev = helper->dev;
-+	int ret;
-+
-+	if (!drm_fbdev_use_shadow_fb(helper))
-+		return 0;
-+
-+	/* Call damage handlers only if necessary */
-+	if (!(clip->x1 < clip->x2 && clip->y1 < clip->y2))
-+		return 0;
-+
-+	if (helper->buffer) {
-+		ret = drm_fb_helper_damage_blit(helper, clip);
-+		if (drm_WARN_ONCE(dev, ret, "Damage blitter failed: ret=%d\n", ret))
-+			return ret;
+@@ -877,6 +877,7 @@ static ssize_t drm_fb_helper_write_screen_buffer(struct fb_info *info, const cha
+ ssize_t drm_fb_helper_sys_write(struct fb_info *info, const char __user *buf,
+ 				size_t count, loff_t *ppos)
+ {
++	struct drm_fb_helper *helper = info->par;
+ 	loff_t pos = *ppos;
+ 	ssize_t ret;
+ 	struct drm_rect damage_area;
+@@ -885,10 +886,12 @@ ssize_t drm_fb_helper_sys_write(struct fb_info *info, const char __user *buf,
+ 	if (ret <= 0)
+ 		return ret;
+ 
+-	drm_fb_helper_memory_range_to_clip(info, pos, ret, &damage_area);
+-	drm_fb_helper_damage(info, damage_area.x1, damage_area.y1,
+-			     drm_rect_width(&damage_area),
+-			     drm_rect_height(&damage_area));
++	if (helper->funcs->fb_dirty) {
++		drm_fb_helper_memory_range_to_clip(info, pos, ret, &damage_area);
++		drm_fb_helper_damage(helper, damage_area.x1, damage_area.y1,
++				     drm_rect_width(&damage_area),
++				     drm_rect_height(&damage_area));
 +	}
+ 
+ 	return ret;
+ }
+@@ -904,8 +907,12 @@ EXPORT_SYMBOL(drm_fb_helper_sys_write);
+ void drm_fb_helper_sys_fillrect(struct fb_info *info,
+ 				const struct fb_fillrect *rect)
+ {
++	struct drm_fb_helper *helper = info->par;
 +
-+	if (helper->fb->funcs->dirty) {
-+		ret = helper->fb->funcs->dirty(helper->fb, NULL, 0, 0, clip, 1);
-+		if (drm_WARN_ONCE(dev, ret, "Dirty helper failed: ret=%d\n", ret))
-+			return ret;
+ 	sys_fillrect(info, rect);
+-	drm_fb_helper_damage(info, rect->dx, rect->dy, rect->width, rect->height);
++
++	if (helper->funcs->fb_dirty)
++		drm_fb_helper_damage(helper, rect->dx, rect->dy, rect->width, rect->height);
+ }
+ EXPORT_SYMBOL(drm_fb_helper_sys_fillrect);
+ 
+@@ -919,8 +926,12 @@ EXPORT_SYMBOL(drm_fb_helper_sys_fillrect);
+ void drm_fb_helper_sys_copyarea(struct fb_info *info,
+ 				const struct fb_copyarea *area)
+ {
++	struct drm_fb_helper *helper = info->par;
++
+ 	sys_copyarea(info, area);
+-	drm_fb_helper_damage(info, area->dx, area->dy, area->width, area->height);
++
++	if (helper->funcs->fb_dirty)
++		drm_fb_helper_damage(helper, area->dx, area->dy, area->width, area->height);
+ }
+ EXPORT_SYMBOL(drm_fb_helper_sys_copyarea);
+ 
+@@ -934,8 +945,12 @@ EXPORT_SYMBOL(drm_fb_helper_sys_copyarea);
+ void drm_fb_helper_sys_imageblit(struct fb_info *info,
+ 				 const struct fb_image *image)
+ {
++	struct drm_fb_helper *helper = info->par;
++
+ 	sys_imageblit(info, image);
+-	drm_fb_helper_damage(info, image->dx, image->dy, image->width, image->height);
++
++	if (helper->funcs->fb_dirty)
++		drm_fb_helper_damage(helper, image->dx, image->dy, image->width, image->height);
+ }
+ EXPORT_SYMBOL(drm_fb_helper_sys_imageblit);
+ 
+@@ -1035,6 +1050,7 @@ static ssize_t fb_write_screen_base(struct fb_info *info, const char __user *buf
+ ssize_t drm_fb_helper_cfb_write(struct fb_info *info, const char __user *buf,
+ 				size_t count, loff_t *ppos)
+ {
++	struct drm_fb_helper *helper = info->par;
+ 	loff_t pos = *ppos;
+ 	ssize_t ret;
+ 	struct drm_rect damage_area;
+@@ -1043,10 +1059,12 @@ ssize_t drm_fb_helper_cfb_write(struct fb_info *info, const char __user *buf,
+ 	if (ret <= 0)
+ 		return ret;
+ 
+-	drm_fb_helper_memory_range_to_clip(info, pos, ret, &damage_area);
+-	drm_fb_helper_damage(info, damage_area.x1, damage_area.y1,
+-			     drm_rect_width(&damage_area),
+-			     drm_rect_height(&damage_area));
++	if (helper->funcs->fb_dirty) {
++		drm_fb_helper_memory_range_to_clip(info, pos, ret, &damage_area);
++		drm_fb_helper_damage(helper, damage_area.x1, damage_area.y1,
++				     drm_rect_width(&damage_area),
++				     drm_rect_height(&damage_area));
 +	}
+ 
+ 	return ret;
+ }
+@@ -1062,8 +1080,12 @@ EXPORT_SYMBOL(drm_fb_helper_cfb_write);
+ void drm_fb_helper_cfb_fillrect(struct fb_info *info,
+ 				const struct fb_fillrect *rect)
+ {
++	struct drm_fb_helper *helper = info->par;
 +
-+	return 0;
-+}
+ 	cfb_fillrect(info, rect);
+-	drm_fb_helper_damage(info, rect->dx, rect->dy, rect->width, rect->height);
 +
- static const struct drm_fb_helper_funcs drm_fb_helper_generic_funcs = {
- 	.fb_probe = drm_fb_helper_generic_probe,
-+	.fb_dirty = drm_fbdev_fb_dirty,
- };
++	if (helper->funcs->fb_dirty)
++		drm_fb_helper_damage(helper, rect->dx, rect->dy, rect->width, rect->height);
+ }
+ EXPORT_SYMBOL(drm_fb_helper_cfb_fillrect);
  
- static void drm_fbdev_client_unregister(struct drm_client_dev *client)
-diff --git a/include/drm/drm_fb_helper.h b/include/drm/drm_fb_helper.h
-index edc697a2fde24..3d7a3d68dab8a 100644
---- a/include/drm/drm_fb_helper.h
-+++ b/include/drm/drm_fb_helper.h
-@@ -30,6 +30,7 @@
- #ifndef DRM_FB_HELPER_H
- #define DRM_FB_HELPER_H
- 
-+struct drm_clip_rect;
- struct drm_fb_helper;
- 
- #include <linux/fb.h>
-@@ -89,6 +90,20 @@ struct drm_fb_helper_funcs {
- 	 */
- 	int (*fb_probe)(struct drm_fb_helper *helper,
- 			struct drm_fb_helper_surface_size *sizes);
+@@ -1077,8 +1099,12 @@ EXPORT_SYMBOL(drm_fb_helper_cfb_fillrect);
+ void drm_fb_helper_cfb_copyarea(struct fb_info *info,
+ 				const struct fb_copyarea *area)
+ {
++	struct drm_fb_helper *helper = info->par;
 +
-+	/**
-+	 * @fb_dirty:
-+	 *
-+	 * Driver callback to update the framebuffer memory. If set, fbdev
-+	 * emulation will invoke this callback in regular intervals after
-+	 * the framebuffer has been written.
-+	 *
-+	 * This callback is optional.
-+	 *
-+	 * Returns:
-+	 * 0 on success, or an error code otherwise.
-+	 */
-+	int (*fb_dirty)(struct drm_fb_helper *helper, struct drm_clip_rect *clip);
- };
+ 	cfb_copyarea(info, area);
+-	drm_fb_helper_damage(info, area->dx, area->dy, area->width, area->height);
++
++	if (helper->funcs->fb_dirty)
++		drm_fb_helper_damage(helper, area->dx, area->dy, area->width, area->height);
+ }
+ EXPORT_SYMBOL(drm_fb_helper_cfb_copyarea);
  
- /**
+@@ -1092,8 +1118,12 @@ EXPORT_SYMBOL(drm_fb_helper_cfb_copyarea);
+ void drm_fb_helper_cfb_imageblit(struct fb_info *info,
+ 				 const struct fb_image *image)
+ {
++	struct drm_fb_helper *helper = info->par;
++
+ 	cfb_imageblit(info, image);
+-	drm_fb_helper_damage(info, image->dx, image->dy, image->width, image->height);
++
++	if (helper->funcs->fb_dirty)
++		drm_fb_helper_damage(helper, image->dx, image->dy, image->width, image->height);
+ }
+ EXPORT_SYMBOL(drm_fb_helper_cfb_imageblit);
+ 
 -- 
 2.38.0
 
