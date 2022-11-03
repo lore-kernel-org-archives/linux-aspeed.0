@@ -1,35 +1,46 @@
 From: Thomas Zimmermann <tzimmermann@suse.de>
-Date: Thu,  3 Nov 2022 16:14:33 +0100
-Subject: [PATCH v3 10/23] drm/tve200: Include <linux/of.h>
+Date: Thu,  3 Nov 2022 16:14:24 +0100
+Subject: [PATCH v3 01/23] drm/komeda: Don't set struct drm_driver.lastclose
 In-Reply-To: <20221103151446.2638-1-tzimmermann@suse.de>
 References: <20221103151446.2638-1-tzimmermann@suse.de>
-Message-ID: <20221103151446.2638-11-tzimmermann@suse.de>
+Message-ID: <20221103151446.2638-2-tzimmermann@suse.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Include <linux/of.h> for of_match_ptr().
+Don't set struct drm_driver.lastclose. It's used to restore the
+fbdev console. But as komeda uses generic fbdev emulation, the
+console is being restored by the DRM client helpers already. See
+the call to drm_client_dev_restore() in drm_lastclose().
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
 ---
- drivers/gpu/drm/tve200/tve200_drv.c | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/gpu/drm/arm/display/komeda/komeda_kms.c | 2 --
+ 1 file changed, 2 deletions(-)
 
-diff --git a/drivers/gpu/drm/tve200/tve200_drv.c b/drivers/gpu/drm/tve200/tve200_drv.c
-index 04db72e3fa9c2..611785e097576 100644
---- a/drivers/gpu/drm/tve200/tve200_drv.c
-+++ b/drivers/gpu/drm/tve200/tve200_drv.c
-@@ -32,6 +32,7 @@
- #include <linux/irq.h>
- #include <linux/io.h>
- #include <linux/module.h>
-+#include <linux/of.h>
- #include <linux/platform_device.h>
- #include <linux/shmem_fs.h>
- #include <linux/slab.h>
+diff --git a/drivers/gpu/drm/arm/display/komeda/komeda_kms.c b/drivers/gpu/drm/arm/display/komeda/komeda_kms.c
+index 451746ebbe713..62dc64550793e 100644
+--- a/drivers/gpu/drm/arm/display/komeda/komeda_kms.c
++++ b/drivers/gpu/drm/arm/display/komeda/komeda_kms.c
+@@ -10,7 +10,6 @@
+ #include <drm/drm_atomic.h>
+ #include <drm/drm_atomic_helper.h>
+ #include <drm/drm_drv.h>
+-#include <drm/drm_fb_helper.h>
+ #include <drm/drm_gem_dma_helper.h>
+ #include <drm/drm_gem_framebuffer_helper.h>
+ #include <drm/drm_managed.h>
+@@ -59,7 +58,6 @@ static irqreturn_t komeda_kms_irq_handler(int irq, void *data)
+ 
+ static const struct drm_driver komeda_kms_driver = {
+ 	.driver_features = DRIVER_GEM | DRIVER_MODESET | DRIVER_ATOMIC,
+-	.lastclose			= drm_fb_helper_lastclose,
+ 	DRM_GEM_DMA_DRIVER_OPS_WITH_DUMB_CREATE(komeda_gem_dma_dumb_create),
+ 	.fops = &komeda_cma_fops,
+ 	.name = "komeda",
 -- 
 2.38.0
 
