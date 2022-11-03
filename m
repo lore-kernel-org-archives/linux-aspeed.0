@@ -1,45 +1,46 @@
 From: Billy Tsai <billy_tsai@aspeedtech.com>
-Date: Thu, 3 Nov 2022 05:40:44 +0000
-Subject: [v2 3/3] hwmon: Add Aspeed ast2600 TACH support
-In-Reply-To: <20221103043034.GA2113834@roeck-us.net>
+Date: Thu, 3 Nov 2022 07:39:27 +0000
+Subject: [v2 1/3] dt-bindings: Add bindings for aspeed pwm-tach.
+In-Reply-To: <CAL_Jsq+eiFO9JyJW=2SB-HLHJLrXggO+7kwG8G-6Zt=K2QnFUA@mail.gmail.com>
 References: <20221101095156.30591-1-billy_tsai@aspeedtech.com>
- <20221101095156.30591-4-billy_tsai@aspeedtech.com>
- <20221101131456.GA1310110@roeck-us.net>
- <271C521D-8F20-4C86-B3DA-9C0AD74242D4@aspeedtech.com>
- <20221102170138.GA2913353@roeck-us.net>
- <F1166366-99CC-4A36-A0A2-4965C787E60B@aspeedtech.com>
- <20221103043034.GA2113834@roeck-us.net>
-Message-ID: <E9E92BC7-CB1A-487F-9E5D-2A403A01CB17@aspeedtech.com>
+ <20221101095156.30591-2-billy_tsai@aspeedtech.com>
+ <20221101184033.GA1879756-robh@kernel.org>
+ <C4090559-71D3-4DC4-A994-474D375DC4EF@aspeedtech.com>
+ <CAL_Jsq+eiFO9JyJW=2SB-HLHJLrXggO+7kwG8G-6Zt=K2QnFUA@mail.gmail.com>
+Message-ID: <294877DF-1EFB-4E62-9603-3586A13BE471@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 2022/11/3, 12:30 PM, "Guenter Roeck" <groeck7 at gmail.com on behalf of linux@roeck-us.net> wrote:
+On 2022/11/3, 2:19 AM, "Rob Herring" <robh@kernel.org> wrote:
 
-    On Thu, Nov 03, 2022 at 03:52:59AM +0000, Billy Tsai wrote:
-    > > 
-    > > Can't I use a min/max RPM to let the driver know a reasonable timeout/polling period when
-    > > the driver is trying to get RPM?
-    > > Beacause that our tach controller have the falg to indicates the hardware detected the change
-    > > in the input signal. I need the proper timout to rule out slow RPMs.
+    On Tue, Nov 1, 2022 at 10:21 PM Billy Tsai <billy_tsai@aspeedtech.com> wrote:
+    
+    > That all sounds like requirements that you have which you should
+    > ensure the fan binding can support.
 
-    > If the chip measures the fan speed continuously, why would that ever be a
-    > problem, and why wait in the first place instead of just taking the most
-    > recent result ?
+    > I've already said to use the PWM binding in the fan binding exactly
+    > for the purpose of hooking up the PWMs to other things. Whether the
+    > tach controller is useful for something other than fans, I don't know.
+    > Seems less likely. The max6639 also has a tach controller. So if other
+    > uses are possible for you, then it could be possible for any other h/w
+    > like the max6639.
 
-    > Pretty much every other driver is doing that, so I really don't understand
-    > why that would not work here.
+The linux kernel already have the similar binding:
+https://github.com/torvalds/linux/blob/master/Documentation/devicetree/bindings/hwmon/pwm-fan.txt 
+Therefore, I want to reuse it and the pwm-fan.c instead of creating another similar fan binding and driver.
+I am referring to the following files:
+https://github.com/torvalds/linux/blob/master/Documentation/devicetree/bindings/mfd/kontron%2Csl28cpld.yaml 
+https://github.com/torvalds/linux/blob/master/Documentation/devicetree/bindings/pwm/kontron%2Csl28cpld-pwm.yaml 
+https://github.com/torvalds/linux/blob/master/Documentation/devicetree/bindings/hwmon/kontron%2Csl28cpld-hwmon.yaml 
+It will also reuse the pwm-fan instead creating it own pwm-fan binding for their hwmon(tach).
+https://github.com/torvalds/linux/blob/master/arch/arm64/boot/dts/freescale/fsl-ls1028a-kontron-sl28-var3-ads2.dts#L20 
 
-When the fan speed drop from a very fast RPM to a very slow RPM. Especially when it is close to stopping.
-The most recent result will be no meaningful value. The slower RPM needs more time to sample it. E.g., If
-we want to measure the fan with 600 RPM, the controller needs at least 100ms. During this time period, we
-will always get the wrong value. So, our tach controller have the flag to avoid this problem:
-TACH_ASPEED_VALUE_UPDATE: tach value updated since last read
-This flag will be set when the controller detected the change of the signal and clear by read it.
-In order to use this flag, the controller needs the proper timeout based on minimum RPM to avoid waiting forever.
+Thanks
 
 Best Regards,
 Billy Tsai
+
 
