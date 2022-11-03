@@ -1,51 +1,54 @@
 From: Thomas Zimmermann <tzimmermann@suse.de>
-Date: Thu,  3 Nov 2022 16:14:39 +0100
-Subject: [PATCH v3 16/23] drm/fb-helper: Call fb_sync in I/O functions
+Date: Thu,  3 Nov 2022 16:14:42 +0100
+Subject: [PATCH v3 19/23] drm/fb-helper: Always initialize generic fbdev emulation
 In-Reply-To: <20221103151446.2638-1-tzimmermann@suse.de>
 References: <20221103151446.2638-1-tzimmermann@suse.de>
-Message-ID: <20221103151446.2638-17-tzimmermann@suse.de>
+Message-ID: <20221103151446.2638-20-tzimmermann@suse.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Call struct fb_ops.fb_sync in drm_fbdev_{read,write}() to mimic the
-behavior of fbdev. Fbdev implementations of fb_read and fb_write in
-struct fb_ops invoke fb_sync to synchronize with outstanding operations
-before I/O. Doing the same in DRM implementations will allow us to use
-them throughout DRM drivers.
+Initialize the generic fbdev emulation even if it has been disabled
+on the kernel command line. The hotplug and mode initialization will
+fail accordingly.
+
+The kernel parameter can still be changed at runtime and the emulation
+will initialize after hotplugging the connector.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
 ---
- drivers/gpu/drm/drm_fb_helper.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+ drivers/gpu/drm/drm_fb_helper.c | 8 --------
+ 1 file changed, 8 deletions(-)
 
 diff --git a/drivers/gpu/drm/drm_fb_helper.c b/drivers/gpu/drm/drm_fb_helper.c
-index f6d22cc4cd876..379e0d2f67198 100644
+index 3dfda1e3830b3..95f389433c4a6 100644
 --- a/drivers/gpu/drm/drm_fb_helper.c
 +++ b/drivers/gpu/drm/drm_fb_helper.c
-@@ -2246,6 +2246,9 @@ static ssize_t drm_fbdev_fb_read(struct fb_info *info, char __user *buf,
- 	if (total_size - count < pos)
- 		count = total_size - pos;
+@@ -526,11 +526,6 @@ int drm_fb_helper_init(struct drm_device *dev,
+ {
+ 	int ret;
  
-+	if (info->fbops->fb_sync)
-+		info->fbops->fb_sync(info);
-+
- 	if (drm_fbdev_use_iomem(info))
- 		ret = fb_read_screen_base(info, buf, count, pos);
- 	else
-@@ -2327,6 +2330,9 @@ static ssize_t drm_fbdev_fb_write(struct fb_info *info, const char __user *buf,
- 		count = total_size - pos;
- 	}
- 
-+	if (info->fbops->fb_sync)
-+		info->fbops->fb_sync(info);
-+
+-	if (!drm_fbdev_emulation) {
+-		dev->fb_helper = fb_helper;
+-		return 0;
+-	}
+-
  	/*
- 	 * Copy to framebuffer even if we already logged an error. Emulates
- 	 * the behavior of the original fbdev implementation.
+ 	 * If this is not the generic fbdev client, initialize a drm_client
+ 	 * without callbacks so we can use the modesets.
+@@ -2716,9 +2711,6 @@ void drm_fbdev_generic_setup(struct drm_device *dev,
+ 	drm_WARN(dev, !dev->registered, "Device has not been registered.\n");
+ 	drm_WARN(dev, dev->fb_helper, "fb_helper is already set!\n");
+ 
+-	if (!drm_fbdev_emulation)
+-		return;
+-
+ 	fb_helper = kzalloc(sizeof(*fb_helper), GFP_KERNEL);
+ 	if (!fb_helper) {
+ 		drm_err(dev, "Failed to allocate fb_helper\n");
 -- 
 2.38.0
 
