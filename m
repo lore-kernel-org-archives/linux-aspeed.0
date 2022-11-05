@@ -1,31 +1,33 @@
-From: Javier Martinez Canillas <javierm@redhat.com>
-Date: Fri, 4 Nov 2022 11:38:07 +0100
-Subject: [PATCH v3 23/23] drm/fb-helper: Clarify use of last_close and
- output_poll_changed
-In-Reply-To: <20221103151446.2638-24-tzimmermann@suse.de>
-References: <20221103151446.2638-1-tzimmermann@suse.de>
- <20221103151446.2638-24-tzimmermann@suse.de>
-Message-ID: <1f5e6de4-3fe2-7933-f8c0-5f13564595cc@redhat.com>
+From: Zev Weiss <zev@bewilderbeest.net>
+Date: Fri,  4 Nov 2022 18:33:19 -0700
+Subject: [PATCH 0/2] ARM: dts: aspeed: Add Delta AHE-50DC BMC
+Message-ID: <20221105013321.2719-1-zev@bewilderbeest.net>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 11/3/22 16:14, Thomas Zimmermann wrote:
-> Clarify documentation in the use of struct drm_driver.last_close and
-> struct drm_mode_config_funcs.output_poll_changed. Those callbacks should
-> not be said for fbdev implementations on top of struct drm_client_funcs.
-> 
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> ---
+Hello,
 
-Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
+This series adds a device-tree for the BMCs of the Delta AHE-50DC
+Open19 power shelf.  The first patch adds a compat entry to the Aspeed
+bindings; the second adds the device-tree itself.
+
+
+Thanks,
+Zev
+
+Zev Weiss (2):
+  dt-bindings: arm: aspeed: document Delta AHE-50DC BMC
+  ARM: dts: aspeed: Add Delta AHE-50DC BMC
+
+ .../bindings/arm/aspeed/aspeed.yaml           |    1 +
+ arch/arm/boot/dts/Makefile                    |    1 +
+ .../arm/boot/dts/aspeed-bmc-delta-ahe50dc.dts | 1094 +++++++++++++++++
+ 3 files changed, 1096 insertions(+)
+ create mode 100644 arch/arm/boot/dts/aspeed-bmc-delta-ahe50dc.dts
 
 -- 
-Best regards,
-
-Javier Martinez Canillas
-Core Platforms
-Red Hat
+2.38.1
 
