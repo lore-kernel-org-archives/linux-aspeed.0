@@ -1,34 +1,49 @@
-From: Zev Weiss <zev@bewilderbeest.net>
-Date: Fri,  4 Nov 2022 18:33:20 -0700
-Subject: [PATCH 1/2] dt-bindings: arm: aspeed: document Delta AHE-50DC BMC
-In-Reply-To: <20221105013321.2719-1-zev@bewilderbeest.net>
-References: <20221105013321.2719-1-zev@bewilderbeest.net>
-Message-ID: <20221105013321.2719-2-zev@bewilderbeest.net>
+From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Date: Sat,  5 Nov 2022 12:09:34 +0100
+Subject: [PATCH] watchdog: Include <linux/kstrtox.h> when appropriate
+Message-ID: <08fd5512e569558231247515c04c8596a1d11004.1667646547.git.christophe.jaillet@wanadoo.fr>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Document Delta AHE-50DC BMC board compatible.
+The kstrto<something>() functions have been moved from kernel.h to
+kstrtox.h.
 
-Signed-off-by: Zev Weiss <zev@bewilderbeest.net>
+So, in order to eventually remove <linux/kernel.h> from <linux/watchdog.h>,
+include the latter directly in the appropriate files.
+
+Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
 ---
- Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/watchdog/aspeed_wdt.c   | 1 +
+ drivers/watchdog/watchdog_dev.c | 1 +
+ 2 files changed, 2 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
-index 217a1d674863..272626937ecd 100644
---- a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
-+++ b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
-@@ -17,6 +17,7 @@ properties:
-       - description: AST2400 based boards
-         items:
-           - enum:
-+              - delta,ahe50dc-bmc
-               - facebook,galaxy100-bmc
-               - facebook,wedge100-bmc
-               - facebook,wedge40-bmc
+diff --git a/drivers/watchdog/aspeed_wdt.c b/drivers/watchdog/aspeed_wdt.c
+index 0cff2adfbfc9..10863d2ef924 100644
+--- a/drivers/watchdog/aspeed_wdt.c
++++ b/drivers/watchdog/aspeed_wdt.c
+@@ -8,6 +8,7 @@
+ #include <linux/delay.h>
+ #include <linux/io.h>
+ #include <linux/kernel.h>
++#include <linux/kstrtox.h>
+ #include <linux/module.h>
+ #include <linux/of.h>
+ #include <linux/platform_device.h>
+diff --git a/drivers/watchdog/watchdog_dev.c b/drivers/watchdog/watchdog_dev.c
+index 55574ed42504..f31608f3e324 100644
+--- a/drivers/watchdog/watchdog_dev.c
++++ b/drivers/watchdog/watchdog_dev.c
+@@ -35,6 +35,7 @@
+ #include <linux/init.h>		/* For __init/__exit/... */
+ #include <linux/hrtimer.h>	/* For hrtimers */
+ #include <linux/kernel.h>	/* For printk/panic/... */
++#include <linux/kstrtox.h>	/* For kstrto* */
+ #include <linux/kthread.h>	/* For kthread_work */
+ #include <linux/miscdevice.h>	/* For handling misc devices */
+ #include <linux/module.h>	/* For module stuff/... */
 -- 
-2.38.1
+2.34.1
 
