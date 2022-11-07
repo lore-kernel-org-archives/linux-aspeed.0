@@ -1,79 +1,42 @@
-From: Biju Das <biju.das.jz@bp.renesas.com>
-Date: Mon, 7 Nov 2022 08:55:11 +0000
-Subject: [v3 2/3] pwm: Add Aspeed ast2600 PWM support
-In-Reply-To: <C7224BE1-D81E-4FE0-8B7C-5A3CA69898D2@aspeedtech.com>
-References: <20221102083601.10456-1-billy_tsai@aspeedtech.com>
- <20221102083601.10456-3-billy_tsai@aspeedtech.com>
- <OS0PR01MB5922014A7D74A884D2E7BDC286399@OS0PR01MB5922.jpnprd01.prod.outlook.com>
- <C7224BE1-D81E-4FE0-8B7C-5A3CA69898D2@aspeedtech.com>
-Message-ID: <OS0PR01MB5922EC7AB73207DF30F42A0A863C9@OS0PR01MB5922.jpnprd01.prod.outlook.com>
+From: Billy Tsai <billy_tsai@aspeedtech.com>
+Date: Mon, 7 Nov 2022 17:15:06 +0800
+Subject: [v2 2/2] dt-bindings: iio: adc: Remove the property "aspeed,trim-data-valid"
+In-Reply-To: <20221107091506.28630-1-billy_tsai@aspeedtech.com>
+References: <20221107091506.28630-1-billy_tsai@aspeedtech.com>
+Message-ID: <20221107091506.28630-2-billy_tsai@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Billy Tsai,
+The valid of the trimming data will use the otp default value as a
+criterion.
 
-> -----Original Message-----
-> From: Billy Tsai <billy_tsai@aspeedtech.com>
-> Sent: 07 November 2022 08:48
-> To: Biju Das <biju.das.jz@bp.renesas.com>; jdelvare at suse.com; linux at roeck-
-> us.net; robh+dt at kernel.org; joel at jms.id.au; andrew at aj.id.au;
-> lee.jones at linaro.org; thierry.reding at gmail.com; u.kleine-
-> koenig at pengutronix.de; p.zabel at pengutronix.de; linux-hwmon at vger.kernel.org;
-> devicetree at vger.kernel.org; linux-arm-kernel at lists.infradead.org; linux-
-> aspeed at lists.ozlabs.org; linux-kernel at vger.kernel.org; linux-
-> pwm at vger.kernel.org; BMC-SW <BMC-SW@aspeedtech.com>; garnermic at meta.com
-> Cc: kernel test robot <lkp@intel.com>
-> Subject: Re: [v3 2/3] pwm: Add Aspeed ast2600 PWM support
-> 
-> On 2022/11/2, 11:56 PM, "Biju Das" <biju.das.jz@bp.renesas.com> wrote:
-> 
->     > > +	parent_dev = of_find_device_by_node(np);
->     > > +	priv->clk = devm_clk_get_enabled(&parent_dev->dev, NULL);
->     > > +	if (IS_ERR(priv->clk))
->     > > +		return dev_err_probe(dev, PTR_ERR(priv->clk),
->     > > +				     "Couldn't get clock\n");
-> 
->     > What is the use case?
-> 
->     > Is pwm configured by boot loader initially ?
-> 
->     > Or
-> 
->     > pwm configured by Linux, not by the bootloader initially?
-> 
->     > Or
-> 
->     > Driver needs to handle both cases?
-> 
->     > Just asking, because you are turning on the clock unnecessarily here,
->     > If you need to address all the use cases. If it is just first one, then
->     > It is ok.
-> 
-> Hi Biju,
-> 
-> The driver want to handle all of the use cases. Can you tell me why turning
-> on the clock is unnecessarily here?
+Fixes: 2bdb2f00a895 ("dt-bindings: iio: adc: Add ast2600-adc bindings")
+Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
+---
+ .../devicetree/bindings/iio/adc/aspeed,ast2600-adc.yaml    | 7 -------
+ 1 file changed, 7 deletions(-)
 
-For the use case, "pwm configured by Linux, not by the bootloader initially",
-
-You are unnecessarily turning on the clocks. You could 
-
-enable it during pwm_enable
-and disable it during pwm_disable.
-
-For configuring registers, while pwm is in disable state, 
-you could just turn on the clock and do the register configurations and turn it off.
-
-By this way you are saving power.
-
-Cheers,
-Biju
-
-
-
-
+diff --git a/Documentation/devicetree/bindings/iio/adc/aspeed,ast2600-adc.yaml b/Documentation/devicetree/bindings/iio/adc/aspeed,ast2600-adc.yaml
+index b283c8ca2bbf..5c08d8b6e995 100644
+--- a/Documentation/devicetree/bindings/iio/adc/aspeed,ast2600-adc.yaml
++++ b/Documentation/devicetree/bindings/iio/adc/aspeed,ast2600-adc.yaml
+@@ -62,13 +62,6 @@ properties:
+     description:
+       Inform the driver that last channel will be used to sensor battery.
  
+-  aspeed,trim-data-valid:
+-    type: boolean
+-    description: |
+-      The ADC reference voltage can be calibrated to obtain the trimming
+-      data which will be stored in otp. This property informs the driver that
+-      the data store in the otp is valid.
+-
+ required:
+   - compatible
+   - reg
+-- 
+2.25.1
 
