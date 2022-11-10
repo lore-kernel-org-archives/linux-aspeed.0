@@ -1,45 +1,37 @@
-From: Joel Stanley <joel@jms.id.au>
-Date: Wed, 9 Nov 2022 23:55:19 +0000
-Subject: [PATCH v2 0/2] ARM: dts: aspeed: Add Delta AHE-50DC BMC
-In-Reply-To: <20221108001551.18175-1-zev@bewilderbeest.net>
-References: <20221108001551.18175-1-zev@bewilderbeest.net>
-Message-ID: <CACPK8XeKA+rFwOGCZam2XZh9v8OndyZeE2sk4-3nb-rKdNeDBA@mail.gmail.com>
+From: Zev Weiss <zev@bewilderbeest.net>
+Date: Wed,  9 Nov 2022 17:34:38 -0800
+Subject: [PATCH] MAINTAINERS: aspeed: Update git tree URL
+Message-ID: <20221110013438.16212-1-zev@bewilderbeest.net>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, 8 Nov 2022 at 00:16, Zev Weiss <zev@bewilderbeest.net> wrote:
->
-> Hello,
->
-> This series adds a device-tree for the BMCs of the Delta AHE-50DC
-> Open19 power shelf.  The first patch adds a compat entry to the Aspeed
-> bindings; the second adds the device-tree itself.
->
-> Changes since v1 [0]:
->  - rearranged patch 2 with macros to reduce boilerplate
->  - added ack from Krzysztof on patch 1
+The description for joel/aspeed.git on git.kernel.org currently says:
 
-Looks good to me, I've put it in the aspeed tree for 6.2.
+    Old Aspeed tree. Please see joel/bmc.git
 
->
-> Thanks,
-> Zev
->
-> [0] https://lore.kernel.org/lkml/20221105013321.2719-1-zev at bewilderbeest.net/T/
->
-> Zev Weiss (2):
->   dt-bindings: arm: aspeed: document Delta AHE-50DC BMC
->   ARM: dts: aspeed: Add Delta AHE-50DC BMC
->
->  .../bindings/arm/aspeed/aspeed.yaml           |   1 +
->  arch/arm/boot/dts/Makefile                    |   1 +
->  .../arm/boot/dts/aspeed-bmc-delta-ahe50dc.dts | 418 ++++++++++++++++++
->  3 files changed, 420 insertions(+)
->  create mode 100644 arch/arm/boot/dts/aspeed-bmc-delta-ahe50dc.dts
->
-> --
-> 2.38.1
->
+Let's update MAINTAINERS accordingly.
+
+Signed-off-by: Zev Weiss <zev@bewilderbeest.net>
+---
+ MAINTAINERS | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index cac5a4ad4eb8..1775e5fdaefd 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -1969,7 +1969,7 @@ L:	linux-arm-kernel at lists.infradead.org (moderated for non-subscribers)
+ L:	linux-aspeed at lists.ozlabs.org (moderated for non-subscribers)
+ S:	Supported
+ Q:	https://patchwork.ozlabs.org/project/linux-aspeed/list/
+-T:	git git://git.kernel.org/pub/scm/linux/kernel/git/joel/aspeed.git
++T:	git git://git.kernel.org/pub/scm/linux/kernel/git/joel/bmc.git
+ F:	Documentation/devicetree/bindings/arm/aspeed/
+ F:	arch/arm/boot/dts/aspeed-*
+ F:	arch/arm/mach-aspeed/
+-- 
+2.38.1
+
