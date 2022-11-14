@@ -1,55 +1,64 @@
-From: Billy Tsai <billy_tsai@aspeedtech.com>
-Date: Mon, 14 Nov 2022 08:26:49 +0000
-Subject: [v2 1/3] dt-bindings: Add bindings for aspeed pwm-tach.
-In-Reply-To: <294877DF-1EFB-4E62-9603-3586A13BE471@aspeedtech.com>
-References: <20221101095156.30591-1-billy_tsai@aspeedtech.com>
- <20221101095156.30591-2-billy_tsai@aspeedtech.com>
- <20221101184033.GA1879756-robh@kernel.org>
- <C4090559-71D3-4DC4-A994-474D375DC4EF@aspeedtech.com>
- <CAL_Jsq+eiFO9JyJW=2SB-HLHJLrXggO+7kwG8G-6Zt=K2QnFUA@mail.gmail.com>
- <294877DF-1EFB-4E62-9603-3586A13BE471@aspeedtech.com>
-Message-ID: <D453751F-9FA5-4046-BC5F-866D11010805@aspeedtech.com>
+From: Jonathan Cameron <jic23@kernel.org>
+Date: Mon, 14 Nov 2022 20:21:43 +0000
+Subject: [v3 1/2] iio: adc: aspeed: Remove the trim valid dts property.
+In-Reply-To: <20221114025057.10843-1-billy_tsai@aspeedtech.com>
+References: <20221114025057.10843-1-billy_tsai@aspeedtech.com>
+Message-ID: <20221114202143.6156b436@jic23-huawei>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Rob,
+On Mon, 14 Nov 2022 10:50:56 +0800
+Billy Tsai <billy_tsai@aspeedtech.com> wrote:
 
-On 2022/11/3, 3:39 PM, "Billy Tsai" <billy_tsai@aspeedtech.com> wrote:
+> The dts property "aspeed,trim-data-valid" is currently used to determine
+> whether to read trimming data from the OTP register. If this is set on
+> a device without valid trimming data in the OTP the ADC will not function
+> correctly. This patch drops the use of this property and instead uses the
+> default (unprogrammed) OTP value of 0 to detect when a fallback value of
+> 0x8 should be used rather then the value read from the OTP.
+> 
+> Fixes: d0a4c17b4073 ("iio: adc: aspeed: Get and set trimming data.")
+> Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
+Series applied to the fixes-togreg branch of iio.git and marked for stable.
 
-    On 2022/11/3, 2:19 AM, "Rob Herring" <robh@kernel.org> wrote:
+Thanks,
 
-        On Tue, Nov 1, 2022 at 10:21 PM Billy Tsai <billy_tsai@aspeedtech.com> wrote:
+Jonathan
 
-    >    > That all sounds like requirements that you have which you should
-    >    > ensure the fan binding can support.
-
-    >    > I've already said to use the PWM binding in the fan binding exactly
-    >    > for the purpose of hooking up the PWMs to other things. Whether the
-    >    > tach controller is useful for something other than fans, I don't know.
-    >    > Seems less likely. The max6639 also has a tach controller. So if other
-    >    > uses are possible for you, then it could be possible for any other h/w
-    >    > like the max6639.
-
-    > The linux kernel already have the similar binding:
-    > https://github.com/torvalds/linux/blob/master/Documentation/devicetree/bindings/hwmon/pwm-fan.txt 
-    > Therefore, I want to reuse it and the pwm-fan.c instead of creating another similar fan binding and driver.
-    > I am referring to the following files:
-    > https://github.com/torvalds/linux/blob/master/Documentation/devicetree/bindings/mfd/kontron%2Csl28cpld.yaml 
-    > https://github.com/torvalds/linux/blob/master/Documentation/devicetree/bindings/pwm/kontron%2Csl28cpld-pwm.yaml 
-    > https://github.com/torvalds/linux/blob/master/Documentation/devicetree/bindings/hwmon/kontron%2Csl28cpld-hwmon.yaml 
-    > It will also reuse the pwm-fan instead creating it own pwm-fan binding for their hwmon(tach).
-    > https://github.com/torvalds/linux/blob/master/arch/arm64/boot/dts/freescale/fsl-ls1028a-kontron-sl28-var3-ads2.dts#L20 
-
-Do you have any sugguest about the binding like the link above?
-We can just creat the pure PWM provider and use the pwm-fan as the common fan binding instead of creating another fan-common.yaml.
-
-Thanks
-
-Best Regards,
-Billy Tsai
-
-
+> ---
+>  drivers/iio/adc/aspeed_adc.c | 11 +++++------
+>  1 file changed, 5 insertions(+), 6 deletions(-)
+> 
+> diff --git a/drivers/iio/adc/aspeed_adc.c b/drivers/iio/adc/aspeed_adc.c
+> index 9341e0e0eb55..998e8bcc06e1 100644
+> --- a/drivers/iio/adc/aspeed_adc.c
+> +++ b/drivers/iio/adc/aspeed_adc.c
+> @@ -202,6 +202,8 @@ static int aspeed_adc_set_trim_data(struct iio_dev *indio_dev)
+>  				((scu_otp) &
+>  				 (data->model_data->trim_locate->field)) >>
+>  				__ffs(data->model_data->trim_locate->field);
+> +			if (!trimming_val)
+> +				trimming_val = 0x8;
+>  		}
+>  		dev_dbg(data->dev,
+>  			"trimming val = %d, offset = %08x, fields = %08x\n",
+> @@ -563,12 +565,9 @@ static int aspeed_adc_probe(struct platform_device *pdev)
+>  	if (ret)
+>  		return ret;
+>  
+> -	if (of_find_property(data->dev->of_node, "aspeed,trim-data-valid",
+> -			     NULL)) {
+> -		ret = aspeed_adc_set_trim_data(indio_dev);
+> -		if (ret)
+> -			return ret;
+> -	}
+> +	ret = aspeed_adc_set_trim_data(indio_dev);
+> +	if (ret)
+> +		return ret;
+>  
+>  	if (of_find_property(data->dev->of_node, "aspeed,battery-sensing",
+>  			     NULL)) {
 
