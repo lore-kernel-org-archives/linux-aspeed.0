@@ -1,56 +1,44 @@
-From: Jonathan Cameron <jic23@kernel.org>
-Date: Sat, 12 Nov 2022 16:38:53 +0000
-Subject: [v2 2/2] dt-bindings: iio: adc: Remove the property
- "aspeed,trim-data-valid"
-In-Reply-To: <9ddc0bc9-c5cf-6c94-d15e-77a7a7e2b7f1@linaro.org>
-References: <20221107091506.28630-1-billy_tsai@aspeedtech.com>
-	<20221107091506.28630-2-billy_tsai@aspeedtech.com>
-	<9ddc0bc9-c5cf-6c94-d15e-77a7a7e2b7f1@linaro.org>
-Message-ID: <20221112163853.5a9c8893@jic23-huawei>
+From: Billy Tsai <billy_tsai@aspeedtech.com>
+Date: Mon, 14 Nov 2022 10:50:57 +0800
+Subject: [v3 2/2] dt-bindings: iio: adc: Remove the property "aspeed,trim-data-valid"
+In-Reply-To: <20221114025057.10843-1-billy_tsai@aspeedtech.com>
+References: <20221114025057.10843-1-billy_tsai@aspeedtech.com>
+Message-ID: <20221114025057.10843-2-billy_tsai@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, 7 Nov 2022 10:16:31 +0100
-Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org> wrote:
+If the property is set on a device without valid trimming data in the OTP
+the ADC will not function correctly. Therefore, this patch drops the use
+of this property to avoid this scenario.
 
-> On 07/11/2022 10:15, Billy Tsai wrote:
-> > The valid of the trimming data will use the otp default value as a
-> > criterion.
-> > 
-> > Fixes: 2bdb2f00a895 ("dt-bindings: iio: adc: Add ast2600-adc bindings")  
-> 
-> If this is a fix, you need to describe the bug.
+Fixes: 2bdb2f00a895 ("dt-bindings: iio: adc: Add ast2600-adc bindings")
+Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
+Acked-by: Rob Herring <robh@kernel.org>
+---
+ .../devicetree/bindings/iio/adc/aspeed,ast2600-adc.yaml    | 7 -------
+ 1 file changed, 7 deletions(-)
 
-Hi Billy,
-
-Please pull forwards some of the description from the previous patch.
-Key thing is that people may be looking at the two parts of the
-fix independently.
-
-Also as Krzysztof noted, pick up Rob's tag for v3.
-
-> 
-> > Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>  
-> 
-> This is a friendly reminder during the review process.
-> 
-> It looks like you received a tag and forgot to add it.
-> 
-> If you do not know the process, here is a short explanation:
-> Please add Acked-by/Reviewed-by/Tested-by tags when posting new
-> versions. However, there's no need to repost patches *only* to add the
-> tags. The upstream maintainer will do that for acks received on the
-> version they apply.
-> 
-> https://elixir.bootlin.com/linux/v5.17/source/Documentation/process/submitting-patches.rst#L540
-> 
-> If a tag was not added on purpose, please state why and what changed.
-> 
-> 
-> Best regards,
-> Krzysztof
-> 
+diff --git a/Documentation/devicetree/bindings/iio/adc/aspeed,ast2600-adc.yaml b/Documentation/devicetree/bindings/iio/adc/aspeed,ast2600-adc.yaml
+index b283c8ca2bbf..5c08d8b6e995 100644
+--- a/Documentation/devicetree/bindings/iio/adc/aspeed,ast2600-adc.yaml
++++ b/Documentation/devicetree/bindings/iio/adc/aspeed,ast2600-adc.yaml
+@@ -62,13 +62,6 @@ properties:
+     description:
+       Inform the driver that last channel will be used to sensor battery.
+ 
+-  aspeed,trim-data-valid:
+-    type: boolean
+-    description: |
+-      The ADC reference voltage can be calibrated to obtain the trimming
+-      data which will be stored in otp. This property informs the driver that
+-      the data store in the otp is valid.
+-
+ required:
+   - compatible
+   - reg
+-- 
+2.25.1
 
