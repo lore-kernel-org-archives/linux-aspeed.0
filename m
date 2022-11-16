@@ -1,284 +1,57 @@
-From: Delphine CC Chiu <Delphine_CC_Chiu@Wiwynn.com>
-Date: Fri, 11 Nov 2022 11:48:26 +0800
-Subject: [PATCH v4 2/2] ARM: dts: aspeed: greatlakes: Add Facebook greatlakes (AST2600) BMC
-In-Reply-To: <20221007055346.3484180-1-Delphine_CC_Chiu@Wiwynn.com>
-References: <20221007055346.3484180-1-Delphine_CC_Chiu@Wiwynn.com>
-Message-ID: <20221111034828.2377-3-Delphine_CC_Chiu@Wiwynn.com>
+From: Quan Nguyen <quan@os.amperecomputing.com>
+Date: Wed, 16 Nov 2022 14:06:22 +0700
+Subject: [PATCH] ARM: dts: aspeed: mtjade,mtmitchell: Add BMC SSIF nodes
+In-Reply-To: <20221024081115.3320584-1-quan@os.amperecomputing.com>
+References: <20221024081115.3320584-1-quan@os.amperecomputing.com>
+Message-ID: <781ea7c7-b33e-f054-71eb-d760f7a01301@os.amperecomputing.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add linux device tree entry related to
-greatlakes specific devices connected to BMC SoC.
 
-Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@Wiwynn.com>
----
- arch/arm/boot/dts/Makefile                    |   1 +
- .../dts/aspeed-bmc-facebook-greatlakes.dts    | 241 ++++++++++++++++++
- 2 files changed, 242 insertions(+)
- create mode 100644 arch/arm/boot/dts/aspeed-bmc-facebook-greatlakes.dts
+Just a gentle ping about this patch.
 
-diff --git a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
-index 6aa7dc4db2fc..d18605aa783d 100644
---- a/arch/arm/boot/dts/Makefile
-+++ b/arch/arm/boot/dts/Makefile
-@@ -1594,6 +1594,7 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
- 	aspeed-bmc-facebook-elbert.dtb \
- 	aspeed-bmc-facebook-fuji.dtb \
- 	aspeed-bmc-facebook-galaxy100.dtb \
-+	aspeed-bmc-facebook-greatlakes.dtb \
- 	aspeed-bmc-facebook-minipack.dtb \
- 	aspeed-bmc-facebook-tiogapass.dtb \
- 	aspeed-bmc-facebook-wedge40.dtb \
-diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-greatlakes.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-greatlakes.dts
-new file mode 100644
-index 000000000000..8c05bd56ce1e
---- /dev/null
-+++ b/arch/arm/boot/dts/aspeed-bmc-facebook-greatlakes.dts
-@@ -0,0 +1,241 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
-+// Copyright 2022 Facebook Inc.
-+
-+/dts-v1/;
-+#include "aspeed-g6.dtsi"
-+#include <dt-bindings/gpio/aspeed-gpio.h>
-+#include <dt-bindings/leds/leds-pca955x.h>
-+#include <dt-bindings/i2c/i2c.h>
-+
-+/ {
-+	model = "Facebook Greatlakes BMC";
-+	compatible = "facebook,greatlakes-bmc", "aspeed,ast2600";
-+
-+	aliases {
-+		serial4 = &uart5;
-+	};
-+
-+	memory at 80000000 {
-+		device_type = "memory";
-+		reg = <0x80000000 0x80000000>;
-+	};
-+
-+	iio-hwmon {
-+		compatible = "iio-hwmon";
-+		io-channels = <&adc0 0>, <&adc0 1>, <&adc0 2>, <&adc0 3>,
-+				<&adc0 4>, <&adc0 5>, <&adc0 6>, <&adc0 7>,
-+				<&adc1 0>, <&adc1 2>, <&adc1 3>, <&adc1 4>,
-+				<&adc1 5>, <&adc1 6>;
-+	};
-+};
-+
-+&uart1 {
-+	status = "okay";
-+};
-+
-+&uart2 {
-+	status = "okay";
-+};
-+
-+&uart3 {
-+	status = "okay";
-+};
-+
-+&uart4 {
-+	status = "okay";
-+};
-+
-+&uart5 {
-+	status = "okay";
-+};
-+
-+&wdt1 {
-+	status = "okay";
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pinctrl_wdtrst1_default>;
-+	aspeed,reset-type = "soc";
-+	aspeed,external-signal;
-+	aspeed,ext-push-pull;
-+	aspeed,ext-active-high;
-+	aspeed,ext-pulse-duration = <256>;
-+};
-+
-+&mac3 {
-+	status = "okay";
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pinctrl_rmii4_default>;
-+	no-hw-checksum;
-+	use-ncsi;
-+	mlx,multi-host;
-+	ncsi-ctrl,start-redo-probe;
-+	ncsi-ctrl,no-channel-monitor;
-+	ncsi-package = <1>;
-+	ncsi-channel = <1>;
-+	ncsi-rexmit = <1>;
-+	ncsi-timeout = <2>;
-+};
-+
-+&rtc {
-+	status = "okay";
-+};
-+
-+&fmc {
-+	status = "okay";
-+	flash at 0 {
-+		status = "okay";
-+		m25p,fast-read;
-+		label = "bmc";
-+		spi-rx-bus-width = <4>;
-+		spi-max-frequency = <50000000>;
-+#include "openbmc-flash-layout-64.dtsi"
-+	};
-+	flash at 1 {
-+		status = "okay";
-+		m25p,fast-read;
-+		label = "bmc2";
-+		spi-rx-bus-width = <4>;
-+		spi-max-frequency = <50000000>;
-+	};
-+};
-+
-+&i2c0 {
-+	status = "okay";
-+	multi-master;
-+	ipmb at 10 {
-+		compatible = "ipmb-dev";
-+		reg = <(0x10 | I2C_OWN_SLAVE_ADDRESS)>;
-+		i2c-protocol;
-+	};
-+};
-+
-+&i2c1 {
-+	status = "okay";
-+	multi-master;
-+	ipmb at 10 {
-+		compatible = "ipmb-dev";
-+		reg = <(0x10 | I2C_OWN_SLAVE_ADDRESS)>;
-+		i2c-protocol;
-+	};
-+};
-+
-+&i2c2 {
-+	status = "okay";
-+	multi-master;
-+	ipmb at 10 {
-+		compatible = "ipmb-dev";
-+		reg = <(0x10 | I2C_OWN_SLAVE_ADDRESS)>;
-+		i2c-protocol;
-+	};
-+};
-+
-+&i2c3 {
-+	status = "okay";
-+	multi-master;
-+	ipmb at 10 {
-+		compatible = "ipmb-dev";
-+		reg = <(0x10 | I2C_OWN_SLAVE_ADDRESS)>;
-+		i2c-protocol;
-+	};
-+};
-+
-+&i2c4 {
-+	status = "okay";
-+};
-+
-+&i2c5 {
-+	status = "okay";
-+};
-+
-+&i2c6 {
-+	status = "okay";
-+};
-+
-+&i2c7 {
-+	status = "okay";
-+};
-+
-+&i2c8 {
-+	status = "okay";
-+	temperature-sensor at 1f {
-+		compatible = "ti,tmp421";
-+		reg = <0x1f>;
-+	};
-+	// NIC EEPROM
-+	eeprom at 50 {
-+		compatible = "st,24c32";
-+		reg = <0x50>;
-+	};
-+};
-+
-+&i2c9 {
-+	status = "okay";
-+	multi-master;
-+	ipmb at 10 {
-+		compatible = "ipmb-dev";
-+		reg = <(0x10 | I2C_OWN_SLAVE_ADDRESS)>;
-+		i2c-protocol;
-+	};
-+};
-+
-+&i2c10 {
-+	status = "okay";
-+};
-+
-+&i2c11 {
-+	status = "okay";
-+	eeprom at 51 {
-+		compatible = "atmel,24c128";
-+		reg = <0x51>;
-+	};
-+	eeprom at 54 {
-+		compatible = "atmel,24c128";
-+		reg = <0x54>;
-+	};
-+};
-+
-+&i2c12 {
-+	status = "okay";
-+	temperature-sensor at 4f {
-+		compatible = "lm75";
-+		reg = <0x4f>;
-+	};
-+};
-+
-+&i2c13 {
-+	status = "okay";
-+};
-+
-+&adc0 {
-+	ref_voltage = <2500>;
-+	status = "okay";
-+	pinctrl-0 = <&pinctrl_adc0_default &pinctrl_adc1_default
-+			&pinctrl_adc2_default &pinctrl_adc3_default
-+			&pinctrl_adc4_default &pinctrl_adc5_default
-+			&pinctrl_adc6_default &pinctrl_adc7_default>;
-+};
-+
-+&adc1 {
-+	ref_voltage = <2500>;
-+	status = "okay";
-+	pinctrl-0 = <&pinctrl_adc8_default &pinctrl_adc10_default
-+			&pinctrl_adc11_default &pinctrl_adc12_default
-+			&pinctrl_adc13_default &pinctrl_adc14_default>;
-+};
-+
-+
-+&ehci0 {
-+	status = "okay";
-+};
-+
-+&ehci1 {
-+	status = "okay";
-+};
-+
-+&uhci {
-+	status = "okay";
-+};
-+
-+&gpio0 {
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pinctrl_gpiu1_default &pinctrl_gpiu7_default>;
-+};
--- 
-2.17.1
+Thanks and best regards,
+- Quan
 
+On 24/10/2022 15:11, Quan Nguyen wrote:
+> Add BMC SSIF node to support IPMI in-band communication.
+> 
+> Signed-off-by: Quan Nguyen <quan@os.amperecomputing.com>
+> ---
+>   arch/arm/boot/dts/aspeed-bmc-ampere-mtjade.dts     | 4 ++++
+>   arch/arm/boot/dts/aspeed-bmc-ampere-mtmitchell.dts | 4 ++++
+>   2 files changed, 8 insertions(+)
+> 
+> diff --git a/arch/arm/boot/dts/aspeed-bmc-ampere-mtjade.dts b/arch/arm/boot/dts/aspeed-bmc-ampere-mtjade.dts
+> index d127cbcc7998..353359822d7b 100644
+> --- a/arch/arm/boot/dts/aspeed-bmc-ampere-mtjade.dts
+> +++ b/arch/arm/boot/dts/aspeed-bmc-ampere-mtjade.dts
+> @@ -342,6 +342,10 @@ &mac1 {
+>   
+>   &i2c0 {
+>   	status = "okay";
+> +	ssif-bmc at 10 {
+> +		compatible = "ssif-bmc";
+> +		reg = <0x10>;
+> +	};
+>   };
+>   
+>   &i2c1 {
+> diff --git a/arch/arm/boot/dts/aspeed-bmc-ampere-mtmitchell.dts b/arch/arm/boot/dts/aspeed-bmc-ampere-mtmitchell.dts
+> index 606cd4be245a..4b91600eaf62 100644
+> --- a/arch/arm/boot/dts/aspeed-bmc-ampere-mtmitchell.dts
+> +++ b/arch/arm/boot/dts/aspeed-bmc-ampere-mtmitchell.dts
+> @@ -445,6 +445,10 @@ &i2c9 {
+>   
+>   &i2c11 {
+>   	status = "okay";
+> +	ssif-bmc at 10 {
+> +		compatible = "ssif-bmc";
+> +		reg = <0x10>;
+> +	};
+>   };
+>   
+>   &i2c14 {
