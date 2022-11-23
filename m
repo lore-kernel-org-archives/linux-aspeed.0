@@ -1,89 +1,54 @@
-From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Date: Wed, 23 Nov 2022 09:33:19 +0100
-Subject: [v4 3/5] dt-bindings: hwmon: Add bindings for aspeed tach
- controller
-In-Reply-To: <20221123061635.32025-4-billy_tsai@aspeedtech.com>
+From: Rob Herring <robh@kernel.org>
+Date: Wed, 23 Nov 2022 09:07:21 -0600
+Subject: [v4 1/5] dt-bindings: mfd: Add aspeed pwm-tach binding
+In-Reply-To: <20221123061635.32025-2-billy_tsai@aspeedtech.com>
 References: <20221123061635.32025-1-billy_tsai@aspeedtech.com>
- <20221123061635.32025-4-billy_tsai@aspeedtech.com>
-Message-ID: <d7538ba3-c326-ffcb-afe0-5abb7f0deff1@linaro.org>
+ <20221123061635.32025-2-billy_tsai@aspeedtech.com>
+Message-ID: <166921592541.2001852.8427859391374590200.robh@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 23/11/2022 07:16, Billy Tsai wrote:
-> Add the aspeed tach device bindings which should be the child-node of
-> pwm-tach mfd.
 
-Subject: drop second, redundant "bindings".
-
+On Wed, 23 Nov 2022 14:16:31 +0800, Billy Tsai wrote:
+> Add device binding for aspeed pwm-tach device which is a multi-function
+> device include pwm and tach function.
 > 
 > Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
 > ---
->  .../bindings/hwmon/aspeed,ast2600-tach.yaml   | 36 +++++++++++++++++++
->  1 file changed, 36 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/hwmon/aspeed,ast2600-tach.yaml
+>  .../bindings/mfd/aspeed,ast2600-pwm-tach.yaml | 73 +++++++++++++++++++
+>  1 file changed, 73 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.yaml
 > 
-> diff --git a/Documentation/devicetree/bindings/hwmon/aspeed,ast2600-tach.yaml b/Documentation/devicetree/bindings/hwmon/aspeed,ast2600-tach.yaml
-> new file mode 100644
-> index 000000000000..f42114f8e3c2
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/hwmon/aspeed,ast2600-tach.yaml
-> @@ -0,0 +1,36 @@
-> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-> +# Copyright (C) 2021 Aspeed, Inc.
-> +%YAML 1.2
-> +---
-> +$id: http://devicetree.org/schemas/hwmon/aspeed,ast2600-tach.yaml#
-> +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> +
-> +title: Aspeed Ast2600 Tach controller
-> +
-> +maintainers:
-> +  - Billy Tsai <billy_tsai@aspeedtech.com>
-> +
-> +description: |
-> +  The Aspeed Tach controller can support upto 16 fan input.
 
-Same comments as before. When you receive feedback about something,
-please correct it everywhere, not only in one place.
+My bot found errors running 'make DT_CHECKER_FLAGS=-m dt_binding_check'
+on your patch (DT_CHECKER_FLAGS is new in v5.13):
 
-> +  This module is part of the ast2600-pwm-tach multi-function device. For more
-> +  details see ../mfd/aspeed,ast2600-pwm-tach.yaml.
-> +
-> +properties:
-> +  compatible:
-> +    enum:
-> +      - aspeed,ast2600-tach
+yamllint warnings/errors:
 
+dtschema/dtc warnings/errors:
+./Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.yaml: Unable to find schema file matching $id: http://devicetree.org/schemas/pwm/aspeed,ast2600-pwm.yaml
+/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.example.dtb: pwm-tach at 1e610000: pwm: False schema does not allow {'compatible': ['aspeed,ast2600-pwm'], '#pwm-cells': [[3]], 'pinctrl-names': ['default'], 'pinctrl-0': [[4294967295]]}
+	From schema: /builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.yaml
+/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.example.dtb: pwm-tach at 1e610000: tach: False schema does not allow {'compatible': ['aspeed,ast2600-tach'], 'pinctrl-names': ['default'], 'pinctrl-0': [[4294967295]]}
+	From schema: /builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.yaml
+Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.example.dtb:0:0: /example-0/pwm-tach at 1e610000/pwm: failed to match any schema with compatible: ['aspeed,ast2600-pwm']
+Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.example.dtb:0:0: /example-0/pwm-tach at 1e610000/tach: failed to match any schema with compatible: ['aspeed,ast2600-tach']
 
-Missing blank line.
+doc reference errors (make refcheckdocs):
 
-> +patternProperties:
-> +  "^fan@[a-z0-9]+$":
-> +    type: object
+See https://patchwork.ozlabs.org/project/devicetree-bindings/patch/20221123061635.32025-2-billy_tsai at aspeedtech.com
 
-Missing description. But more important - why do you have such child
-nodes? Your example does not have them. What's the point? Do you expect
-different number of fans per one device (one compatible)?
+This check can fail if there are any dependencies. The base for a patch
+series is generally the most recent rc1.
 
-> +    properties:
-> +      reg:
-> +        description:
-> +          The tach channel used for this node.
-> +        maxItems: 1
+If you already ran 'make dt_binding_check' and didn't see the above
+error(s), then make sure 'yamllint' is installed and dt-schema is up to
+date:
 
-Missing blank line.
+pip3 install dtschema --upgrade
 
-> +    required:
-> +      - reg
-> +
-> +required:
-> +  - compatible
-> +
-> +additionalProperties: false
-
-Best regards,
-Krzysztof
+Please check and re-submit after running the above command.
 
