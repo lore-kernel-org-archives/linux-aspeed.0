@@ -1,119 +1,103 @@
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-Date: Wed, 23 Nov 2022 09:08:30 +0100
-Subject: [PATCH] media: aspeed: Use v4l2_dbg to replace v4l2_warn to avoid
- log spam
-In-Reply-To: <20221110095611.522-1-jammy_huang@aspeedtech.com>
-References: <20221110095611.522-1-jammy_huang@aspeedtech.com>
-Message-ID: <c8a4a3b6-6591-2710-433f-642277eeb8f3@molgen.mpg.de>
+From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Date: Wed, 23 Nov 2022 09:24:34 +0100
+Subject: [v4 1/5] dt-bindings: mfd: Add aspeed pwm-tach binding
+In-Reply-To: <20221123061635.32025-2-billy_tsai@aspeedtech.com>
+References: <20221123061635.32025-1-billy_tsai@aspeedtech.com>
+ <20221123061635.32025-2-billy_tsai@aspeedtech.com>
+Message-ID: <c4b188b1-06a4-3cb0-a758-e12942e1f67b@linaro.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Dear Jammy,
+On 23/11/2022 07:16, Billy Tsai wrote:
+> Add device binding for aspeed pwm-tach device which is a multi-function
+> device include pwm and tach function.
 
+Subject: drop second, redundant "bindings".
+Also use proper PATCH prefix.
 
-Am 10.11.22 um 10:56 schrieb Jammy Huang:
-> If the host is powered off, there will be many warning log. To avoid the
-
-?, many warnings are logged.
-
-Also, please paste one example message.
-
-Are the messages really just debug messages, or only in the one 
-condition? If the latter, another solution should be found, like 
-checking if the host is powered off, or rate limiting the message.
-
-> log spam in this condition, replace v4l2_warn with v4l2_dbg.
-
-Please add a reference, to Zev?s report on the mailing list.
-
-Link: ?
-
-> Signed-off-by: Jammy Huang <jammy_huang@aspeedtech.com>
+> 
+> Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
 > ---
->   drivers/media/platform/aspeed/aspeed-video.c | 16 ++++++++--------
->   1 file changed, 8 insertions(+), 8 deletions(-)
+>  .../bindings/mfd/aspeed,ast2600-pwm-tach.yaml | 73 +++++++++++++++++++
+>  1 file changed, 73 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.yaml
 > 
-> diff --git a/drivers/media/platform/aspeed/aspeed-video.c b/drivers/media/platform/aspeed/aspeed-video.c
-> index cf76aeee8cb6..662465d13a0e 100644
-> --- a/drivers/media/platform/aspeed/aspeed-video.c
-> +++ b/drivers/media/platform/aspeed/aspeed-video.c
-> @@ -586,13 +586,13 @@ static int aspeed_video_start_frame(struct aspeed_video *video)
->   	bool bcd_buf_need = (video->format != VIDEO_FMT_STANDARD);
->   
->   	if (video->v4l2_input_status) {
-> -		v4l2_warn(&video->v4l2_dev, "No signal; don't start frame\n");
-> +		v4l2_dbg(1, debug, &video->v4l2_dev, "No signal; don't start frame\n");
->   		return 0;
->   	}
->   
->   	if (!(seq_ctrl & VE_SEQ_CTRL_COMP_BUSY) ||
->   	    !(seq_ctrl & VE_SEQ_CTRL_CAP_BUSY)) {
-> -		v4l2_warn(&video->v4l2_dev, "Engine busy; don't start frame\n");
-> +		v4l2_dbg(1, debug, &video->v4l2_dev, "Engine busy; don't start frame\n");
->   		return -EBUSY;
->   	}
->   
-> @@ -615,7 +615,7 @@ static int aspeed_video_start_frame(struct aspeed_video *video)
->   				       struct aspeed_video_buffer, link);
->   	if (!buf) {
->   		spin_unlock_irqrestore(&video->lock, flags);
-> -		v4l2_warn(&video->v4l2_dev, "No buffers; don't start frame\n");
-> +		v4l2_dbg(1, debug, &video->v4l2_dev, "No buffers; don't start frame\n");
->   		return -EPROTO;
->   	}
->   
-> @@ -796,7 +796,7 @@ static irqreturn_t aspeed_video_irq(int irq, void *arg)
->   			if (video->format == VIDEO_FMT_STANDARD &&
->   			    list_is_last(&buf->link, &video->buffers)) {
->   				empty = false;
-> -				v4l2_warn(&video->v4l2_dev, "skip to keep last frame updated\n");
-> +				v4l2_dbg(1, debug, &video->v4l2_dev, "skip to keep last frame updated\n");
->   			} else {
->   				buf->vb.vb2_buf.timestamp = ktime_get_ns();
->   				buf->vb.sequence = video->sequence++;
-> @@ -1060,7 +1060,7 @@ static void aspeed_video_get_resolution(struct aspeed_video *video)
->   						      res_check(video),
->   						      MODE_DETECT_TIMEOUT);
->   		if (!rc) {
-> -			v4l2_warn(&video->v4l2_dev, "Timed out; first mode detect\n");
-> +			v4l2_dbg(1, debug, &video->v4l2_dev, "Timed out; first mode detect\n");
->   			clear_bit(VIDEO_RES_DETECT, &video->flags);
->   			return;
->   		}
-> @@ -1081,7 +1081,7 @@ static void aspeed_video_get_resolution(struct aspeed_video *video)
->   						      MODE_DETECT_TIMEOUT);
->   		clear_bit(VIDEO_RES_DETECT, &video->flags);
->   		if (!rc) {
-> -			v4l2_warn(&video->v4l2_dev, "Timed out; second mode detect\n");
-> +			v4l2_dbg(1, debug, &video->v4l2_dev, "Timed out; second mode detect\n");
->   			return;
->   		}
->   
-> @@ -1104,7 +1104,7 @@ static void aspeed_video_get_resolution(struct aspeed_video *video)
->   	} while (invalid_resolution && (tries++ < INVALID_RESOLUTION_RETRIES));
->   
->   	if (invalid_resolution) {
-> -		v4l2_warn(&video->v4l2_dev, "Invalid resolution detected\n");
-> +		v4l2_dbg(1, debug, &video->v4l2_dev, "Invalid resolution detected\n");
->   		return;
->   	}
->   
-> @@ -1856,7 +1856,7 @@ static void aspeed_video_stop_streaming(struct vb2_queue *q)
->   				!test_bit(VIDEO_FRAME_INPRG, &video->flags),
->   				STOP_TIMEOUT);
->   	if (!rc) {
-> -		v4l2_warn(&video->v4l2_dev, "Timed out when stopping streaming\n");
-> +		v4l2_dbg(1, debug, &video->v4l2_dev, "Timed out when stopping streaming\n");
->   
->   		/*
->   		 * Need to force stop any DMA and try and get HW into a good
-> 
-> base-commit: aae703b02f92bde9264366c545e87cec451de471
-> prerequisite-patch-id: bf47e8ab2998acfbc32be5a4b7b5ae8a3ae4218b
-> prerequisite-patch-id: bf82715983e08f2e810ff1a82ce644f5f9006cd9
-> prerequisite-patch-id: 28a2040ef0235e5765f05d2fc5529bce2a0f4c6f
-> prerequisite-patch-id: 7e761c779730536db8baf50db5fc8caf058e95af
-> prerequisite-patch-id: c48ea20973fa35938a7d33a0e20d2900df48755f
+> diff --git a/Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.yaml b/Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.yaml
+> new file mode 100644
+> index 000000000000..e2a7be2e0a18
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.yaml
+> @@ -0,0 +1,73 @@
+> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+> +# Copyright (C) 2021 Aspeed, Inc.
+> +%YAML 1.2
+> +---
+> +$id: http://devicetree.org/schemas/mfd/aspeed,ast2600-pwm-tach.yaml#
+> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> +
+> +title: PWM Tach controller
+> +
+> +description: |
+> +  The PWM Tach controller is represented as a multi-function device which
+> +  includes:
+> +    PWM
+> +    Tach
+> +
+> +maintainers:
+> +  - Billy Tsai <billy_tsai@aspeedtech.com>
+> +
+> +properties:
+> +  compatible:
+> +    items:
+> +      - enum:
+> +          - aspeed,ast2600-pwm-tach
+> +      - const: syscon
+> +      - const: simple-mfd
+> +
+> +  reg:
+> +    maxItems: 1
+> +
+> +  clocks:
+> +    maxItems: 1
+> +
+> +  resets:
+> +    maxItems: 1
+
+If this is simple-mfd then it cannot take clocks or resets.  Usually the
+recommendation for such case is: This is not simple-mfd, drop it. Drop
+also syscon and make a proper device.
+
+However I am surprised to see such change, so I have no clue why this
+was done.
+
+> +
+> +  pwm:
+> +    type: object
+> +    $ref: "/schemas/pwm/aspeed,ast2600-pwm.yaml"
+
+Drop quotes.
+
+There is no such file. Are you sure you ordered the patches correctly?
+
+> +
+> +  tach:
+> +    type: object
+> +    $ref: "/schemas/hwmon/aspeed,ast2600-tach.yaml"
+
+Drop quotes.
+
+There is no such file.
+
+> +
+> +required:
+> +  - compatible
+> +  - reg
+> +  - clocks
+> +  - resets
+
+Best regards,
+Krzysztof
+
