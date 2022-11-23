@@ -1,10 +1,11 @@
 From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Date: Wed, 23 Nov 2022 09:30:10 +0100
-Subject: [v4 2/5] dt-bindings: pwm: Add bindings for aspeed pwm controller
-In-Reply-To: <20221123061635.32025-3-billy_tsai@aspeedtech.com>
+Date: Wed, 23 Nov 2022 09:33:19 +0100
+Subject: [v4 3/5] dt-bindings: hwmon: Add bindings for aspeed tach
+ controller
+In-Reply-To: <20221123061635.32025-4-billy_tsai@aspeedtech.com>
 References: <20221123061635.32025-1-billy_tsai@aspeedtech.com>
- <20221123061635.32025-3-billy_tsai@aspeedtech.com>
-Message-ID: <3d689f8e-ae2d-2b3e-e783-94b8e6ba8aa0@linaro.org>
+ <20221123061635.32025-4-billy_tsai@aspeedtech.com>
+Message-ID: <d7538ba3-c326-ffcb-afe0-5abb7f0deff1@linaro.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -12,7 +13,7 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 On 23/11/2022 07:16, Billy Tsai wrote:
-> Add the aspeed pwm device bindings which should be the child-node of
+> Add the aspeed tach device bindings which should be the child-node of
 > pwm-tach mfd.
 
 Subject: drop second, redundant "bindings".
@@ -20,74 +21,60 @@ Subject: drop second, redundant "bindings".
 > 
 > Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
 > ---
->  .../bindings/pwm/aspeed,ast2600-pwm.yaml      | 54 +++++++++++++++++++
->  1 file changed, 54 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/pwm/aspeed,ast2600-pwm.yaml
+>  .../bindings/hwmon/aspeed,ast2600-tach.yaml   | 36 +++++++++++++++++++
+>  1 file changed, 36 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/hwmon/aspeed,ast2600-tach.yaml
 > 
-> diff --git a/Documentation/devicetree/bindings/pwm/aspeed,ast2600-pwm.yaml b/Documentation/devicetree/bindings/pwm/aspeed,ast2600-pwm.yaml
+> diff --git a/Documentation/devicetree/bindings/hwmon/aspeed,ast2600-tach.yaml b/Documentation/devicetree/bindings/hwmon/aspeed,ast2600-tach.yaml
 > new file mode 100644
-> index 000000000000..68a60fc73902
+> index 000000000000..f42114f8e3c2
 > --- /dev/null
-> +++ b/Documentation/devicetree/bindings/pwm/aspeed,ast2600-pwm.yaml
-> @@ -0,0 +1,54 @@
+> +++ b/Documentation/devicetree/bindings/hwmon/aspeed,ast2600-tach.yaml
+> @@ -0,0 +1,36 @@
 > +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
 > +# Copyright (C) 2021 Aspeed, Inc.
 > +%YAML 1.2
 > +---
-> +$id: http://devicetree.org/schemas/pwm/aspeed,ast2600-pwm.yaml#
+> +$id: http://devicetree.org/schemas/hwmon/aspeed,ast2600-tach.yaml#
 > +$schema: http://devicetree.org/meta-schemas/core.yaml#
 > +
-> +title: Aspeed Ast2600 PWM controller
+> +title: Aspeed Ast2600 Tach controller
 > +
 > +maintainers:
 > +  - Billy Tsai <billy_tsai@aspeedtech.com>
 > +
 > +description: |
-> +  The Aspeed PWM controller supports up to 16 PWM outputs.
+> +  The Aspeed Tach controller can support upto 16 fan input.
+
+Same comments as before. When you receive feedback about something,
+please correct it everywhere, not only in one place.
+
 > +  This module is part of the ast2600-pwm-tach multi-function device. For more
 > +  details see ../mfd/aspeed,ast2600-pwm-tach.yaml.
-> +
-> +allOf:
-> +  - $ref: pwm.yaml#
 > +
 > +properties:
 > +  compatible:
 > +    enum:
-> +      - aspeed,ast2600-pwm
-> +
-> +  "#pwm-cells":
-> +    const: 3
+> +      - aspeed,ast2600-tach
 
-Blank line.
+
+Missing blank line.
 
 > +patternProperties:
-> +  "^pwm@[a-z0-9]+$":
-> +    description: Set extend properties for each pwm channel.
-
-Description is not a correct sentence. Description explains the hardware
-property you have here.
-
+> +  "^fan@[a-z0-9]+$":
 > +    type: object
+
+Missing description. But more important - why do you have such child
+nodes? Your example does not have them. What's the point? Do you expect
+different number of fans per one device (one compatible)?
+
 > +    properties:
 > +      reg:
 > +        description:
-> +          The pwm channel index.
+> +          The tach channel used for this node.
 > +        maxItems: 1
-> +
-> +      aspeed,wdt-reload-enable:
-> +        type: boolean
-> +        description:
-> +          Enable the function of wdt reset reload duty point.
-> +
-> +      aspeed,wdt-reload-duty-point:
-> +        description:
-> +          Define the duty point after wdt reset, 0 = 100%
-> +        minimum: 0
-> +        maximum: 255
 
-Why maximum is 255? Why 0=100%? 0 should be equal to 0 and maximum to
-some maximum value (e.g. 100%). If these are percents, use appropriate
-units. If these are not - what are these? You need a $ref in such case.
+Missing blank line.
 
 > +    required:
 > +      - reg
