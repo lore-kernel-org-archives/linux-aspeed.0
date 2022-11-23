@@ -1,115 +1,35 @@
-From: Jammy Huang <jammy_huang@aspeedtech.com>
-Date: Fri, 25 Nov 2022 12:11:51 +0800
-Subject: [PATCH v2] media: aspeed: Use v4l2_dbg to replace v4l2_warn to avoid log spam
-Message-ID: <20221125041151.12957-1-jammy_huang@aspeedtech.com>
+From: Bagas Sanjaya <bagasdotme@gmail.com>
+Date: Wed, 23 Nov 2022 15:43:41 +0700
+Subject: [v4 4/5] pwm: Add Aspeed ast2600 PWM support
+In-Reply-To: <20221123061635.32025-5-billy_tsai@aspeedtech.com>
+References: <20221123061635.32025-1-billy_tsai@aspeedtech.com>
+ <20221123061635.32025-5-billy_tsai@aspeedtech.com>
+Message-ID: <Y33dPbQywb5amyw4@debian.me>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-If the host is powered off, there will be many warning log:
-  [  335.526279] aspeed-video 1e700000.video: Timed out; first mode detect
-  [  335.544172] aspeed-video 1e700000.video: No signal; don't start frame
-  [  337.165555] aspeed-video 1e700000.video: Timed out; first mode detect
-  [  337.186214] aspeed-video 1e700000.video: No signal; don't start frame
-  [  338.815501] aspeed-video 1e700000.video: Timed out; first mode detect
-  [  338.834008] aspeed-video 1e700000.video: No signal; don't start frame
+On Wed, Nov 23, 2022 at 02:16:34PM +0800, Billy Tsai wrote:
+> Add the support of PWM controller which can be found at aspeed ast2600
+> soc. The pwm supoorts up to 16 channels and it's part function of
+> multi-function device "pwm-tach controller".
+> 
+> Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
+> Reviewed-by: Uwe Kleine-K?nig <u.kleine-koenig@pengutronix.de>
+> Reported-by: kernel test robot <lkp@intel.com>
 
-To avoid the log spam in this condition, replace v4l2_warn with v4l2_dbg.
+Why do you add Reported-by from kernel test robot? I guess the bot
+reported issues on previous version of this patch series, then you fix
+them, right?
 
-Link: https://lore.kernel.org/openbmc/Y1dX9r9ybGjBrW0k at hatter.bewilderbeest.net/
-
-Reported by: Zev Weiss <zweiss@equinix.com>
-Signed-off-by: Jammy Huang <jammy_huang@aspeedtech.com>
----
-v2:
-  - update commit message
----
- drivers/media/platform/aspeed/aspeed-video.c | 16 ++++++++--------
- 1 file changed, 8 insertions(+), 8 deletions(-)
-
-diff --git a/drivers/media/platform/aspeed/aspeed-video.c b/drivers/media/platform/aspeed/aspeed-video.c
-index cf76aeee8cb6..662465d13a0e 100644
---- a/drivers/media/platform/aspeed/aspeed-video.c
-+++ b/drivers/media/platform/aspeed/aspeed-video.c
-@@ -586,13 +586,13 @@ static int aspeed_video_start_frame(struct aspeed_video *video)
- 	bool bcd_buf_need = (video->format != VIDEO_FMT_STANDARD);
- 
- 	if (video->v4l2_input_status) {
--		v4l2_warn(&video->v4l2_dev, "No signal; don't start frame\n");
-+		v4l2_dbg(1, debug, &video->v4l2_dev, "No signal; don't start frame\n");
- 		return 0;
- 	}
- 
- 	if (!(seq_ctrl & VE_SEQ_CTRL_COMP_BUSY) ||
- 	    !(seq_ctrl & VE_SEQ_CTRL_CAP_BUSY)) {
--		v4l2_warn(&video->v4l2_dev, "Engine busy; don't start frame\n");
-+		v4l2_dbg(1, debug, &video->v4l2_dev, "Engine busy; don't start frame\n");
- 		return -EBUSY;
- 	}
- 
-@@ -615,7 +615,7 @@ static int aspeed_video_start_frame(struct aspeed_video *video)
- 				       struct aspeed_video_buffer, link);
- 	if (!buf) {
- 		spin_unlock_irqrestore(&video->lock, flags);
--		v4l2_warn(&video->v4l2_dev, "No buffers; don't start frame\n");
-+		v4l2_dbg(1, debug, &video->v4l2_dev, "No buffers; don't start frame\n");
- 		return -EPROTO;
- 	}
- 
-@@ -796,7 +796,7 @@ static irqreturn_t aspeed_video_irq(int irq, void *arg)
- 			if (video->format == VIDEO_FMT_STANDARD &&
- 			    list_is_last(&buf->link, &video->buffers)) {
- 				empty = false;
--				v4l2_warn(&video->v4l2_dev, "skip to keep last frame updated\n");
-+				v4l2_dbg(1, debug, &video->v4l2_dev, "skip to keep last frame updated\n");
- 			} else {
- 				buf->vb.vb2_buf.timestamp = ktime_get_ns();
- 				buf->vb.sequence = video->sequence++;
-@@ -1060,7 +1060,7 @@ static void aspeed_video_get_resolution(struct aspeed_video *video)
- 						      res_check(video),
- 						      MODE_DETECT_TIMEOUT);
- 		if (!rc) {
--			v4l2_warn(&video->v4l2_dev, "Timed out; first mode detect\n");
-+			v4l2_dbg(1, debug, &video->v4l2_dev, "Timed out; first mode detect\n");
- 			clear_bit(VIDEO_RES_DETECT, &video->flags);
- 			return;
- 		}
-@@ -1081,7 +1081,7 @@ static void aspeed_video_get_resolution(struct aspeed_video *video)
- 						      MODE_DETECT_TIMEOUT);
- 		clear_bit(VIDEO_RES_DETECT, &video->flags);
- 		if (!rc) {
--			v4l2_warn(&video->v4l2_dev, "Timed out; second mode detect\n");
-+			v4l2_dbg(1, debug, &video->v4l2_dev, "Timed out; second mode detect\n");
- 			return;
- 		}
- 
-@@ -1104,7 +1104,7 @@ static void aspeed_video_get_resolution(struct aspeed_video *video)
- 	} while (invalid_resolution && (tries++ < INVALID_RESOLUTION_RETRIES));
- 
- 	if (invalid_resolution) {
--		v4l2_warn(&video->v4l2_dev, "Invalid resolution detected\n");
-+		v4l2_dbg(1, debug, &video->v4l2_dev, "Invalid resolution detected\n");
- 		return;
- 	}
- 
-@@ -1856,7 +1856,7 @@ static void aspeed_video_stop_streaming(struct vb2_queue *q)
- 				!test_bit(VIDEO_FRAME_INPRG, &video->flags),
- 				STOP_TIMEOUT);
- 	if (!rc) {
--		v4l2_warn(&video->v4l2_dev, "Timed out when stopping streaming\n");
-+		v4l2_dbg(1, debug, &video->v4l2_dev, "Timed out when stopping streaming\n");
- 
- 		/*
- 		 * Need to force stop any DMA and try and get HW into a good
-
-base-commit: 08ad43d554bacb9769c6a69d5f771f02f5ba411c
-prerequisite-patch-id: bf47e8ab2998acfbc32be5a4b7b5ae8a3ae4218b
-prerequisite-patch-id: bf82715983e08f2e810ff1a82ce644f5f9006cd9
-prerequisite-patch-id: 28a2040ef0235e5765f05d2fc5529bce2a0f4c6f
-prerequisite-patch-id: 7e761c779730536db8baf50db5fc8caf058e95af
-prerequisite-patch-id: c48ea20973fa35938a7d33a0e20d2900df48755f
 -- 
-2.25.1
-
+An old man doll... just what I always wanted! - Clara
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 228 bytes
+Desc: not available
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20221123/a68589f3/attachment-0001.sig>
