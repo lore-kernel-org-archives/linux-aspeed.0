@@ -1,42 +1,37 @@
-From: Zheng Yongjun <zhengyongjun3@huawei.com>
-Date: Fri, 25 Nov 2022 09:24:15 +0000
-Subject: [PATCH] media: aspeed: Fix return value check in aspeed_video_debugfs_create()
-Message-ID: <20221125092415.29635-1-zhengyongjun3@huawei.com>
+From: Yuan Can <yuancan@huawei.com>
+Date: Fri, 25 Nov 2022 09:28:33 +0000
+Subject: [PATCH] usb: gadget: aspeed_udc: Add checks for dma_alloc_coherent()
+Message-ID: <20221125092833.74822-1-yuancan@huawei.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-In case of error, the function debugfs_create_file() returns ERR_PTR()
-and never returns NULL. The NULL test in the return value check
-should be replaced with IS_ERR().
+As the dma_alloc_coherent() may return NULL, the return value needs to be
+checked to avoid NULL poineter dereference.
 
-Fixes: 52fed10ad756 ("media: aspeed: add debugfs")
-Signed-off-by: Zheng Yongjun <zhengyongjun3@huawei.com>
+Fixes: 055276c13205 ("usb: gadget: add Aspeed ast2600 udc driver")
+Signed-off-by: Yuan Can <yuancan@huawei.com>
 ---
- drivers/media/platform/aspeed/aspeed-video.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ drivers/usb/gadget/udc/aspeed_udc.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/drivers/media/platform/aspeed/aspeed-video.c b/drivers/media/platform/aspeed/aspeed-video.c
-index 20f795ccc11b..c8fc2450e409 100644
---- a/drivers/media/platform/aspeed/aspeed-video.c
-+++ b/drivers/media/platform/aspeed/aspeed-video.c
-@@ -1780,10 +1780,12 @@ static int aspeed_video_debugfs_create(struct aspeed_video *video)
- 	debugfs_entry = debugfs_create_file(DEVICE_NAME, 0444, NULL,
- 					    video,
- 					    &aspeed_video_debugfs_ops);
--	if (!debugfs_entry)
-+	if (IS_ERR(debugfs_entry)) {
- 		aspeed_video_debugfs_remove(video);
-+		return ERR_PTR(debugfs_entry);
+diff --git a/drivers/usb/gadget/udc/aspeed_udc.c b/drivers/usb/gadget/udc/aspeed_udc.c
+index 01968e2167f9..7dc2457c7460 100644
+--- a/drivers/usb/gadget/udc/aspeed_udc.c
++++ b/drivers/usb/gadget/udc/aspeed_udc.c
+@@ -1516,6 +1516,10 @@ static int ast_udc_probe(struct platform_device *pdev)
+ 					  AST_UDC_EP_DMA_SIZE *
+ 					  AST_UDC_NUM_ENDPOINTS,
+ 					  &udc->ep0_buf_dma, GFP_KERNEL);
++	if (!udc->ep0_buf) {
++		rc = -ENOMEM;
++		goto err;
 +	}
-
--	return !debugfs_entry ? -EIO : 0;
-+	return 0;
- }
- #else
- static void aspeed_video_debugfs_remove(struct aspeed_video *video) { }
---
+ 
+ 	udc->gadget.speed = USB_SPEED_UNKNOWN;
+ 	udc->gadget.max_speed = USB_SPEED_HIGH;
+-- 
 2.17.1
 
