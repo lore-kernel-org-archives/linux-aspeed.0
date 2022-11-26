@@ -1,39 +1,28 @@
-From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Date: Sat, 26 Nov 2022 10:44:02 +0100
-Subject: [PATCH] fsi: Aspeed: Fix a resource leak in fsi_master_aspeed_remove()
-Message-ID: <faf56efd13207ea888c5ebda2d3de82e096d3fa0.1669455822.git.christophe.jaillet@wanadoo.fr>
+From: Andrew Lunn <andrew@lunn.ch>
+Date: Sat, 26 Nov 2022 18:25:07 +0100
+Subject: [PATCH v2] media: aspeed: Fix return value check in
+ aspeed_video_debugfs_create()
+In-Reply-To: <20221126022813.57372-1-zhengyongjun3@huawei.com>
+References: <20221126022813.57372-1-zhengyongjun3@huawei.com>
+Message-ID: <Y4JL89BCcs1pjWZZ@lunn.ch>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-An explicit get_device() call in fsi_master_aspeed_probe() is not balanced
-by a corresponding put_device() in the .remove() function.
+On Sat, Nov 26, 2022 at 02:28:13AM +0000, Zheng Yongjun wrote:
+> In case of error, the function debugfs_create_file() returns ERR_PTR()
+> and never returns NULL. The NULL test in the return value check
+> should be replaced with IS_ERR().
+> 
+> Fixes: 52fed10ad756 ("media: aspeed: add debugfs")
+> Signed-off-by: Zheng Yongjun <zhengyongjun3@huawei.com>
 
-Add it, otherwise some resource may never be released.
+Please see:
 
-Fixes: 606397d67f41 ("fsi: Add ast2600 master driver")
-Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
----
-This patch is speculative and untested.
----
- drivers/fsi/fsi-master-aspeed.c | 2 ++
- 1 file changed, 2 insertions(+)
+https://patchwork.kernel.org/project/linux-wireless/patch/20200429101526.GA2094124 at kroah.com/
 
-diff --git a/drivers/fsi/fsi-master-aspeed.c b/drivers/fsi/fsi-master-aspeed.c
-index 7cec1772820d..b66d9853117b 100644
---- a/drivers/fsi/fsi-master-aspeed.c
-+++ b/drivers/fsi/fsi-master-aspeed.c
-@@ -651,6 +651,8 @@ static int fsi_master_aspeed_remove(struct platform_device *pdev)
- 	fsi_master_unregister(&aspeed->master);
- 	clk_disable_unprepare(aspeed->clk);
- 
-+	put_device(&aspeed->master.dev);
-+
- 	return 0;
- }
- 
--- 
-2.34.1
+and there are other examples. Just delete all the checks.
 
+	Andrew
