@@ -1,35 +1,39 @@
-From: Xiu Jianfeng <xiujianfeng@huawei.com>
-Date: Wed, 23 Nov 2022 21:58:08 +0800
-Subject: [PATCH] soc: aspeed: Fix memory leak issue in aspeed_socinfo_init()
-Message-ID: <20221123135808.171048-1-xiujianfeng@huawei.com>
+From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Date: Sat, 26 Nov 2022 10:44:02 +0100
+Subject: [PATCH] fsi: Aspeed: Fix a resource leak in fsi_master_aspeed_remove()
+Message-ID: <faf56efd13207ea888c5ebda2d3de82e096d3fa0.1669455822.git.christophe.jaillet@wanadoo.fr>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-If soc_device_register() fails, @attrs->machine may have allocated
-string, it should be freed before return error, otherwise will cause
-memory leak issue, fix it.
+An explicit get_device() call in fsi_master_aspeed_probe() is not balanced
+by a corresponding put_device() in the .remove() function.
 
-Fixes: e0218dca5787 ("soc: aspeed: Add soc info driver")
-Signed-off-by: Xiu Jianfeng <xiujianfeng@huawei.com>
+Add it, otherwise some resource may never be released.
+
+Fixes: 606397d67f41 ("fsi: Add ast2600 master driver")
+Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
 ---
- drivers/soc/aspeed/aspeed-socinfo.c | 1 +
- 1 file changed, 1 insertion(+)
+This patch is speculative and untested.
+---
+ drivers/fsi/fsi-master-aspeed.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/soc/aspeed/aspeed-socinfo.c b/drivers/soc/aspeed/aspeed-socinfo.c
-index 1ca140356a08..3f759121dc00 100644
---- a/drivers/soc/aspeed/aspeed-socinfo.c
-+++ b/drivers/soc/aspeed/aspeed-socinfo.c
-@@ -137,6 +137,7 @@ static int __init aspeed_socinfo_init(void)
+diff --git a/drivers/fsi/fsi-master-aspeed.c b/drivers/fsi/fsi-master-aspeed.c
+index 7cec1772820d..b66d9853117b 100644
+--- a/drivers/fsi/fsi-master-aspeed.c
++++ b/drivers/fsi/fsi-master-aspeed.c
+@@ -651,6 +651,8 @@ static int fsi_master_aspeed_remove(struct platform_device *pdev)
+ 	fsi_master_unregister(&aspeed->master);
+ 	clk_disable_unprepare(aspeed->clk);
  
- 	soc_dev = soc_device_register(attrs);
- 	if (IS_ERR(soc_dev)) {
-+		kfree(attrs->machine);
- 		kfree(attrs->soc_id);
- 		kfree(attrs->serial_number);
- 		kfree(attrs);
++	put_device(&aspeed->master.dev);
++
+ 	return 0;
+ }
+ 
 -- 
-2.17.1
+2.34.1
 
