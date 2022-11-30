@@ -1,45 +1,43 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Date: Thu, 27 Feb 2020 10:16:59 +0100
-Subject: [PATCH 2/7] docs: dt: fix several broken references due to renames
-In-Reply-To: <83c5df4acbbe0fa55a1d58d4c4a435b51cd2a7ad.1582361737.git.mchehab+huawei@kernel.org>
-References: <cover.1582361737.git.mchehab+huawei@kernel.org>
- <83c5df4acbbe0fa55a1d58d4c4a435b51cd2a7ad.1582361737.git.mchehab+huawei@kernel.org>
-Message-ID: <add18b30-6eec-9aba-a961-8ecfe9b32596@linaro.org>
+From: Rob Herring <robh@kernel.org>
+Date: Wed, 30 Nov 2022 15:30:57 -0600
+Subject: [PATCH v3 4/4] dt-bindings: bus: add documentation for Aspeed
+ AHBC
+In-Reply-To: <20221124105552.1006549-5-neal_liu@aspeedtech.com>
+References: <20221124105552.1006549-1-neal_liu@aspeedtech.com>
+ <20221124105552.1006549-5-neal_liu@aspeedtech.com>
+Message-ID: <20221130213057.GA2960216-robh@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 22/02/2020 10:00, Mauro Carvalho Chehab wrote:
-> Several DT references got broken due to txt->yaml conversion.
+On Thu, Nov 24, 2022 at 06:55:52PM +0800, Neal Liu wrote:
+> Add device tree binding documentation for the Aspeed
+> Advanced High-Performance Bus (AHB) Controller.
 > 
-> Those are auto-fixed by running:
+> Signed-off-by: Neal Liu <neal_liu@aspeedtech.com>
+> ---
+>  .../bindings/bus/aspeed,ast2600-ahbc.yaml     | 37 +++++++++++++++++++
+>  1 file changed, 37 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/bus/aspeed,ast2600-ahbc.yaml
 > 
-> 	scripts/documentation-file-ref-check --fix
-> 
-> Signed-off-by: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
+> diff --git a/Documentation/devicetree/bindings/bus/aspeed,ast2600-ahbc.yaml b/Documentation/devicetree/bindings/bus/aspeed,ast2600-ahbc.yaml
+> new file mode 100644
+> index 000000000000..cf9740f2a0c7
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/bus/aspeed,ast2600-ahbc.yaml
+> @@ -0,0 +1,37 @@
+> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+> +%YAML 1.2
+> +---
+> +$id: http://devicetree.org/schemas/bus/aspeed,ast2600-ahbc.yaml#
+> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> +
+> +title: ASPEED Advanced High-Performance Bus Controller (AHBC) Device Tree Bindings
 
-[ ... ]
+Drop " Device Tree Bindings"
 
-> diff --git a/Documentation/devicetree/bindings/thermal/brcm,avs-ro-thermal.yaml b/Documentation/devicetree/bindings/thermal/brcm,avs-ro-thermal.yaml
-> index d9fdf4809a49..f3e68ed03abf 100644
-> --- a/Documentation/devicetree/bindings/thermal/brcm,avs-ro-thermal.yaml
-> +++ b/Documentation/devicetree/bindings/thermal/brcm,avs-ro-thermal.yaml
-> @@ -17,7 +17,7 @@ description: |+
->                  "brcm,bcm2711-avs-monitor", "syscon", "simple-mfd"
->  
->    Refer to the the bindings described in
-> -  Documentation/devicetree/bindings/mfd/syscon.txt
-> +  Documentation/devicetree/bindings/mfd/syscon.yaml
+With that,
 
-Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-
-
--- 
- <http://www.linaro.org/> Linaro.org ? Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
-
+Reviewed-by: Rob Herring <robh@kernel.org>
