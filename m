@@ -1,11 +1,11 @@
 From: Sakari Ailus <sakari.ailus@linux.intel.com>
-Date: Fri, 2 Dec 2022 14:23:48 +0000
-Subject: [PATCH v11 1/5] media: v4l: Add definition for the Aspeed JPEG
- format
-In-Reply-To: <20221028023554.928-2-jammy_huang@aspeedtech.com>
+Date: Fri, 2 Dec 2022 14:24:28 +0000
+Subject: [PATCH v11 3/5] media: Documentation: aspeed-video: Add user
+ documentation for the aspeed-video driver
+In-Reply-To: <20221028023554.928-4-jammy_huang@aspeedtech.com>
 References: <20221028023554.928-1-jammy_huang@aspeedtech.com>
- <20221028023554.928-2-jammy_huang@aspeedtech.com>
-Message-ID: <Y4oKdBApOGk9TUHO@paasikivi.fi.intel.com>
+ <20221028023554.928-4-jammy_huang@aspeedtech.com>
+Message-ID: <Y4oKnBDnvliD8cJb@paasikivi.fi.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -14,101 +14,107 @@ Content-Transfer-Encoding: 7bit
 
 Hi Jammy,
 
-Apologies for a late reply.
-
-On Fri, Oct 28, 2022 at 10:35:50AM +0800, Jammy Huang wrote:
-> This introduces support for the Aspeed JPEG format, where the new frame
-> can refer to previous frame to reduce the amount of compressed data.
-> The concept is similar to I/P frame of video compression. It will
-> compare the new frame with previous one to decide which macroblock's
-> data is changed, and only the changed macroblocks will be compressed.
-> 
-> This Aspeed JPEG format is used by the video engine on Aspeed platforms,
-> which is generally adapted for remote KVM.
+On Fri, Oct 28, 2022 at 10:35:52AM +0800, Jammy Huang wrote:
+> Add user documentation for the aspeed-video driver.
 > 
 > Signed-off-by: Jammy Huang <jammy_huang@aspeedtech.com>
 > ---
 > v11:
->   - no update
+>   - update the way to change format
 > v10:
->   - no update
-> v9:
->   - Rebase on new kernel
-> v8:
->   - Add decoder information for aspeed-jpeg
-> v7:
->   - Add more information for aspeed-jpeg
-> v6:
->   - Update description for new format, aspeed-jpeg, in Documentation.
-> v5:
->   - no update
-> v4:
 >   - new
 > ---
->  .../userspace-api/media/v4l/pixfmt-reserved.rst | 17 +++++++++++++++++
->  drivers/media/v4l2-core/v4l2-ioctl.c            |  1 +
->  include/uapi/linux/videodev2.h                  |  1 +
->  3 files changed, 19 insertions(+)
+>  .../media/drivers/aspeed-video.rst            | 61 +++++++++++++++++++
+>  .../userspace-api/media/drivers/index.rst     |  1 +
+>  2 files changed, 66 insertions(+)
+>  create mode 100644 Documentation/userspace-api/media/drivers/aspeed-video.rst
 > 
-> diff --git a/Documentation/userspace-api/media/v4l/pixfmt-reserved.rst b/Documentation/userspace-api/media/v4l/pixfmt-reserved.rst
-> index 0ff68cd8cf62..73cd99828010 100644
-> --- a/Documentation/userspace-api/media/v4l/pixfmt-reserved.rst
-> +++ b/Documentation/userspace-api/media/v4l/pixfmt-reserved.rst
-> @@ -258,6 +258,23 @@ please make a proposal on the linux-media mailing list.
->          and it is used by various multimedia hardware blocks like GPU, display
->          controllers, ISP and video accelerators.
->          It contains four planes for progressive video.
-> +    * .. _V4L2-PIX-FMT-AJPG:
+> diff --git a/Documentation/userspace-api/media/drivers/aspeed-video.rst b/Documentation/userspace-api/media/drivers/aspeed-video.rst
+> new file mode 100644
+> index 000000000000..e5656a8d990e
+> --- /dev/null
+> +++ b/Documentation/userspace-api/media/drivers/aspeed-video.rst
+> @@ -0,0 +1,65 @@
+> +.. SPDX-License-Identifier: GPL-2.0
 > +
-> +      - ``V4L2_PIX_FMT_AJPG``
-> +      - 'AJPG'
-> +      - ASPEED JPEG format used by the aspeed-video driver on Aspeed platforms,
-> +        which is generally adapted for remote KVM.
-> +        On each frame compression, I will compare the new frame with previous
-> +        one to decide which macroblock's data is changed, and only the changed
-> +        macroblocks will be compressed.
+> +.. include:: <isonum.txt>
 > +
-> +        The implementation is based on AST2600 A3 datasheet, revision 0.9, which
-> +        is not publicly available. Or you can reference Video stream data format
-> +        ? ASPEED mode compression of SDK_User_Guide which available on
-> +        AspeedTech-BMC/openbmc/releases.
+> +ASPEED video driver
+> +===================
+> +
+> +ASPEED Video Engine found on AST2400/2500/2600 SoC supports high performance
+> +video compressions with a wide range of video quality and compression ratio
+> +options. The adopted compressing algorithm is a modified JPEG algorithm.
+> +
+> +There are 2 types of compressions in this IP.
+> +
+> +* JPEG JFIF standard mode: for single frame and management compression
+> +* ASPEED proprietary mode: for multi-frame and differential compression.
+> +  Support 2-pass (high quality) video compression scheme (Patent pending by
+> +  ASPEED). Provide visually lossless video compression quality or to reduce
+> +  the network average loading under intranet KVM applications.
+> +
+> +VIDIOC_S_FMT can be used to choose which format you want. V4L2_PIX_FMT_JPEG
+> +stands for JPEG JFIF standard mode; V4L2_PIX_FMT_AJPG stands for ASPEED
+> +proprietary mode.
+> +
+> +More details on the ASPEED video hardware operations can be found in
+> +*chapter 6.2.16 KVM Video Driver* of SDK_User_Guide which available on
+> +AspeedTech-BMC/openbmc/releases.
 
-What does this refer to? If it's a URL, please add a reference as below.
-
-Also please run this on the patches:
-
-	$ scripts/checkpatch.pl --strict --max-line-length=80
+Same comment on this, what does this refer to?
 
 > +
-> +        Decoder's implementation can be found here,
-> +        `aspeed_codec <https://github.com/AspeedTech-BMC/aspeed_codec/>`__
->  .. raw:: latex
+> +The ASPEED video driver implements the following driver-specific control:
+> +
+> +``V4L2_CID_ASPEED_HQ_MODE``
+> +-------------------------------
+> +    Enable/Disable ASPEED's High quality mode. This is a private control
+> +    that can be used to enable high quality for aspeed proprietary mode.
+> +
+> +.. flat-table::
+> +    :header-rows:  0
+> +    :stub-columns: 0
+> +    :widths:       1 4
+> +
+> +    * - ``(0)``
+> +      - ASPEED HQ mode is disabled.
+> +    * - ``(1)``
+> +      - ASPEED HQ mode is enabled.
+> +
+> +``V4L2_CID_ASPEED_HQ_JPEG_QUALITY``
+> +-------------------------------
+> +    Define the quality of ASPEED's High quality mode. This is a private control
+> +    that can be used to decide compression quality if High quality mode enabled
+> +    . Higher the value, better the quality and bigger the size.
+> +
+> +.. flat-table::
+> +    :header-rows:  0
+> +    :stub-columns: 0
+> +    :widths:       1 4
+> +
+> +    * - ``(1)``
+> +      - minimum
+> +    * - ``(12)``
+> +      - maximum
+> +    * - ``(1)``
+> +      - step
+> +    * - ``(1)``
+> +      - default
+> +
+> +**Copyright** |copy| 2022 ASPEED Technology Inc.
+> diff --git a/Documentation/userspace-api/media/drivers/index.rst b/Documentation/userspace-api/media/drivers/index.rst
+> index 32f82aed47d9..46a494e00b72 100644
+> --- a/Documentation/userspace-api/media/drivers/index.rst
+> +++ b/Documentation/userspace-api/media/drivers/index.rst
+> @@ -31,6 +31,7 @@ For more details see the file COPYING in the source distribution of Linux.
+>  	:maxdepth: 5
+>  	:numbered:
 >  
->      \normalsize
-> diff --git a/drivers/media/v4l2-core/v4l2-ioctl.c b/drivers/media/v4l2-core/v4l2-ioctl.c
-> index fddba75d9074..8cb4b976064e 100644
-> --- a/drivers/media/v4l2-core/v4l2-ioctl.c
-> +++ b/drivers/media/v4l2-core/v4l2-ioctl.c
-> @@ -1497,6 +1497,7 @@ static void v4l_fill_fmtdesc(struct v4l2_fmtdesc *fmt)
->  		case V4L2_PIX_FMT_MT21C:	descr = "Mediatek Compressed Format"; break;
->  		case V4L2_PIX_FMT_QC08C:	descr = "QCOM Compressed 8-bit Format"; break;
->  		case V4L2_PIX_FMT_QC10C:	descr = "QCOM Compressed 10-bit Format"; break;
-> +		case V4L2_PIX_FMT_AJPG:		descr = "Aspeed JPEG"; break;
->  		default:
->  			if (fmt->description[0])
->  				return;
-> diff --git a/include/uapi/linux/videodev2.h b/include/uapi/linux/videodev2.h
-> index 86cae23cc446..870a7e5ef8ca 100644
-> --- a/include/uapi/linux/videodev2.h
-> +++ b/include/uapi/linux/videodev2.h
-> @@ -775,6 +775,7 @@ struct v4l2_pix_format {
->  #define V4L2_PIX_FMT_HI240    v4l2_fourcc('H', 'I', '2', '4') /* BTTV 8-bit dithered RGB */
->  #define V4L2_PIX_FMT_QC08C    v4l2_fourcc('Q', '0', '8', 'C') /* Qualcomm 8-bit compressed */
->  #define V4L2_PIX_FMT_QC10C    v4l2_fourcc('Q', '1', '0', 'C') /* Qualcomm 10-bit compressed */
-> +#define V4L2_PIX_FMT_AJPG     v4l2_fourcc('A', 'J', 'P', 'G') /* Aspeed JPEG */
->  
->  /* 10bit raw packed, 32 bytes for every 25 pixels, last LSB 6 bits unused */
->  #define V4L2_PIX_FMT_IPU3_SBGGR10	v4l2_fourcc('i', 'p', '3', 'b') /* IPU3 packed 10-bit BGGR bayer */
+> +	aspeed-video
+>  	ccs
+>  	cx2341x-uapi
+>  	dw100
 
 -- 
 Kind regards,
