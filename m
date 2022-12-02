@@ -1,122 +1,59 @@
-From: Sakari Ailus <sakari.ailus@linux.intel.com>
-Date: Fri, 2 Dec 2022 14:24:28 +0000
-Subject: [PATCH v11 3/5] media: Documentation: aspeed-video: Add user
- documentation for the aspeed-video driver
-In-Reply-To: <20221028023554.928-4-jammy_huang@aspeedtech.com>
-References: <20221028023554.928-1-jammy_huang@aspeedtech.com>
- <20221028023554.928-4-jammy_huang@aspeedtech.com>
-Message-ID: <Y4oKnBDnvliD8cJb@paasikivi.fi.intel.com>
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+Date: Fri,  2 Dec 2022 17:49:21 +0100
+Subject: [PATCH 06/11] ARM: dts: vf610: Fix pca9548 i2c-mux node names
+In-Reply-To: <cover.1669999298.git.geert+renesas@glider.be>
+References: <cover.1669999298.git.geert+renesas@glider.be>
+Message-ID: <d1c5038b36d10282f01d8c722f94821b1710d2e0.1669999298.git.geert+renesas@glider.be>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Jammy,
+"make dtbs_check":
 
-On Fri, Oct 28, 2022 at 10:35:52AM +0800, Jammy Huang wrote:
-> Add user documentation for the aspeed-video driver.
-> 
-> Signed-off-by: Jammy Huang <jammy_huang@aspeedtech.com>
-> ---
-> v11:
->   - update the way to change format
-> v10:
->   - new
-> ---
->  .../media/drivers/aspeed-video.rst            | 61 +++++++++++++++++++
->  .../userspace-api/media/drivers/index.rst     |  1 +
->  2 files changed, 66 insertions(+)
->  create mode 100644 Documentation/userspace-api/media/drivers/aspeed-video.rst
-> 
-> diff --git a/Documentation/userspace-api/media/drivers/aspeed-video.rst b/Documentation/userspace-api/media/drivers/aspeed-video.rst
-> new file mode 100644
-> index 000000000000..e5656a8d990e
-> --- /dev/null
-> +++ b/Documentation/userspace-api/media/drivers/aspeed-video.rst
-> @@ -0,0 +1,65 @@
-> +.. SPDX-License-Identifier: GPL-2.0
-> +
-> +.. include:: <isonum.txt>
-> +
-> +ASPEED video driver
-> +===================
-> +
-> +ASPEED Video Engine found on AST2400/2500/2600 SoC supports high performance
-> +video compressions with a wide range of video quality and compression ratio
-> +options. The adopted compressing algorithm is a modified JPEG algorithm.
-> +
-> +There are 2 types of compressions in this IP.
-> +
-> +* JPEG JFIF standard mode: for single frame and management compression
-> +* ASPEED proprietary mode: for multi-frame and differential compression.
-> +  Support 2-pass (high quality) video compression scheme (Patent pending by
-> +  ASPEED). Provide visually lossless video compression quality or to reduce
-> +  the network average loading under intranet KVM applications.
-> +
-> +VIDIOC_S_FMT can be used to choose which format you want. V4L2_PIX_FMT_JPEG
-> +stands for JPEG JFIF standard mode; V4L2_PIX_FMT_AJPG stands for ASPEED
-> +proprietary mode.
-> +
-> +More details on the ASPEED video hardware operations can be found in
-> +*chapter 6.2.16 KVM Video Driver* of SDK_User_Guide which available on
-> +AspeedTech-BMC/openbmc/releases.
+    arch/arm/boot/dts/vf610-zii-dev-rev-b.dtb: tca9548 at 70: $nodename:0: 'tca9548 at 70' does not match '^(i2c-?)?mux'
+	    From schema: Documentation/devicetree/bindings/i2c/i2c-mux-pca954x.yaml
+    arch/arm/boot/dts/vf610-zii-dev-rev-b.dtb: tca9548 at 70: Unevaluated properties are not allowed ('#address-cells', '#size-cells', 'i2c at 0', 'i2c at 1', 'i2c at 2', 'i2c at 3', 'i2c at 4' were unexpected)
+	    From schema: /scratch/geert/linux/linux-renesas/Documentation/devicetree/bindings/i2c/i2c-mux-pca954x.yaml
+    ...
 
-Same comment on this, what does this refer to?
+Fix this by renaming PCA9548 nodes to "i2c-mux", to match the I2C bus
+multiplexer/switch DT bindings and the Generic Names Recommendation in
+the Devicetree Specification.
 
-> +
-> +The ASPEED video driver implements the following driver-specific control:
-> +
-> +``V4L2_CID_ASPEED_HQ_MODE``
-> +-------------------------------
-> +    Enable/Disable ASPEED's High quality mode. This is a private control
-> +    that can be used to enable high quality for aspeed proprietary mode.
-> +
-> +.. flat-table::
-> +    :header-rows:  0
-> +    :stub-columns: 0
-> +    :widths:       1 4
-> +
-> +    * - ``(0)``
-> +      - ASPEED HQ mode is disabled.
-> +    * - ``(1)``
-> +      - ASPEED HQ mode is enabled.
-> +
-> +``V4L2_CID_ASPEED_HQ_JPEG_QUALITY``
-> +-------------------------------
-> +    Define the quality of ASPEED's High quality mode. This is a private control
-> +    that can be used to decide compression quality if High quality mode enabled
-> +    . Higher the value, better the quality and bigger the size.
-> +
-> +.. flat-table::
-> +    :header-rows:  0
-> +    :stub-columns: 0
-> +    :widths:       1 4
-> +
-> +    * - ``(1)``
-> +      - minimum
-> +    * - ``(12)``
-> +      - maximum
-> +    * - ``(1)``
-> +      - step
-> +    * - ``(1)``
-> +      - default
-> +
-> +**Copyright** |copy| 2022 ASPEED Technology Inc.
-> diff --git a/Documentation/userspace-api/media/drivers/index.rst b/Documentation/userspace-api/media/drivers/index.rst
-> index 32f82aed47d9..46a494e00b72 100644
-> --- a/Documentation/userspace-api/media/drivers/index.rst
-> +++ b/Documentation/userspace-api/media/drivers/index.rst
-> @@ -31,6 +31,7 @@ For more details see the file COPYING in the source distribution of Linux.
->  	:maxdepth: 5
->  	:numbered:
->  
-> +	aspeed-video
->  	ccs
->  	cx2341x-uapi
->  	dw100
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+---
+ arch/arm/boot/dts/vf610-zii-dev-rev-b.dts | 2 +-
+ arch/arm/boot/dts/vf610-zii-dev-rev-c.dts | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
+diff --git a/arch/arm/boot/dts/vf610-zii-dev-rev-b.dts b/arch/arm/boot/dts/vf610-zii-dev-rev-b.dts
+index 42ed4a04a12e250b..6280c5e86a124e2f 100644
+--- a/arch/arm/boot/dts/vf610-zii-dev-rev-b.dts
++++ b/arch/arm/boot/dts/vf610-zii-dev-rev-b.dts
+@@ -345,7 +345,7 @@ gpio6: io-expander at 22 {
+ };
+ 
+ &i2c2 {
+-	tca9548 at 70 {
++	i2c-mux at 70 {
+ 		compatible = "nxp,pca9548";
+ 		pinctrl-0 = <&pinctrl_i2c_mux_reset>;
+ 		pinctrl-names = "default";
+diff --git a/arch/arm/boot/dts/vf610-zii-dev-rev-c.dts b/arch/arm/boot/dts/vf610-zii-dev-rev-c.dts
+index f892977da9e4e031..c00d39562a10bb94 100644
+--- a/arch/arm/boot/dts/vf610-zii-dev-rev-c.dts
++++ b/arch/arm/boot/dts/vf610-zii-dev-rev-c.dts
+@@ -340,7 +340,7 @@ eeprom at 50 {
+ };
+ 
+ &i2c2 {
+-	tca9548 at 70 {
++	i2c-mux at 70 {
+ 		compatible = "nxp,pca9548";
+ 		pinctrl-0 = <&pinctrl_i2c_mux_reset>;
+ 		pinctrl-names = "default";
 -- 
-Kind regards,
+2.25.1
 
-Sakari Ailus
