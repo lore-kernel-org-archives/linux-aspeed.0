@@ -1,50 +1,125 @@
-From: Dinh Nguyen <dinguyen@kernel.org>
-Date: Tue, 6 Dec 2022 15:01:54 -0600
-Subject: [PATCH 05/11] ARM: dts: socfpga: Fix pca9548 i2c-mux node name
-In-Reply-To: <a7bcc2de6c2c0946f56b2d9f9584c55cf28545dc.1669999298.git.geert+renesas@glider.be>
-References: <cover.1669999298.git.geert+renesas@glider.be>
- <a7bcc2de6c2c0946f56b2d9f9584c55cf28545dc.1669999298.git.geert+renesas@glider.be>
-Message-ID: <98a97883-3303-20eb-5a18-cfa00af9443e@kernel.org>
+From: Jammy Huang <jammy_huang@aspeedtech.com>
+Date: Wed, 7 Dec 2022 17:35:20 +0800
+Subject: [PATCH v11 1/5] media: v4l: Add definition for the Aspeed JPEG
+ format
+In-Reply-To: <Y4oKdBApOGk9TUHO@paasikivi.fi.intel.com>
+References: <20221028023554.928-1-jammy_huang@aspeedtech.com>
+ <20221028023554.928-2-jammy_huang@aspeedtech.com>
+ <Y4oKdBApOGk9TUHO@paasikivi.fi.intel.com>
+Message-ID: <8bd7b378-70c9-bcd2-2d81-f6567a9f63fb@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+Hi Sakari,
 
 
-On 12/2/22 10:49, Geert Uytterhoeven wrote:
-> "make dtbs_check":
-> 
->      arch/arm/boot/dts/socfpga_cyclone5_vining_fpga.dtb: i2cswitch at 70: $nodename:0: 'i2cswitch at 70' does not match '^(i2c-?)?mux'
-> 	    From schema: Documentation/devicetree/bindings/i2c/i2c-mux-pca954x.yaml
->      arch/arm/boot/dts/socfpga_cyclone5_vining_fpga.dtb: i2cswitch at 70: Unevaluated properties are not allowed ('#address-cells', '#size-cells', 'i2c at 0', 'i2c at 1', 'i2c at 2', 'i2c at 3', 'i2c at 4', 'i2c at 5', 'i2c at 6', 'i2c at 7' were unexpected)
->          From schema: Documentation/devicetree/bindings/i2c/i2c-mux-pca954x.yaml
-> 
-> Fix this by renaming the PCA9548 node to "i2c-mux", to match the I2C bus
-> multiplexer/switch DT bindings and the Generic Names Recommendation in
-> the Devicetree Specification.
-> 
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> ---
->   arch/arm/boot/dts/socfpga_cyclone5_vining_fpga.dts | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/arch/arm/boot/dts/socfpga_cyclone5_vining_fpga.dts b/arch/arm/boot/dts/socfpga_cyclone5_vining_fpga.dts
-> index f24f17c2f5ee6bc4..e0630b0eed036d35 100644
-> --- a/arch/arm/boot/dts/socfpga_cyclone5_vining_fpga.dts
-> +++ b/arch/arm/boot/dts/socfpga_cyclone5_vining_fpga.dts
-> @@ -141,7 +141,7 @@ at24 at 50 {
->   		reg = <0x50>;
->   	};
->   
-> -	i2cswitch at 70 {
-> +	i2c-mux at 70 {
->   		compatible = "nxp,pca9548";
->   		#address-cells = <1>;
->   		#size-cells = <0>;
+After discussing with Hans, I will send patches on top to update this.
 
-Applied!
+Thanks for your review.
 
-Thanks,
-Dinh
+
+On 2022/12/2 ?? 10:23, Sakari Ailus wrote:
+> Hi Jammy,
+>
+> Apologies for a late reply.
+>
+> On Fri, Oct 28, 2022 at 10:35:50AM +0800, Jammy Huang wrote:
+>> This introduces support for the Aspeed JPEG format, where the new frame
+>> can refer to previous frame to reduce the amount of compressed data.
+>> The concept is similar to I/P frame of video compression. It will
+>> compare the new frame with previous one to decide which macroblock's
+>> data is changed, and only the changed macroblocks will be compressed.
+>>
+>> This Aspeed JPEG format is used by the video engine on Aspeed platforms,
+>> which is generally adapted for remote KVM.
+>>
+>> Signed-off-by: Jammy Huang <jammy_huang@aspeedtech.com>
+>> ---
+>> v11:
+>>    - no update
+>> v10:
+>>    - no update
+>> v9:
+>>    - Rebase on new kernel
+>> v8:
+>>    - Add decoder information for aspeed-jpeg
+>> v7:
+>>    - Add more information for aspeed-jpeg
+>> v6:
+>>    - Update description for new format, aspeed-jpeg, in Documentation.
+>> v5:
+>>    - no update
+>> v4:
+>>    - new
+>> ---
+>>   .../userspace-api/media/v4l/pixfmt-reserved.rst | 17 +++++++++++++++++
+>>   drivers/media/v4l2-core/v4l2-ioctl.c            |  1 +
+>>   include/uapi/linux/videodev2.h                  |  1 +
+>>   3 files changed, 19 insertions(+)
+>>
+>> diff --git a/Documentation/userspace-api/media/v4l/pixfmt-reserved.rst b/Documentation/userspace-api/media/v4l/pixfmt-reserved.rst
+>> index 0ff68cd8cf62..73cd99828010 100644
+>> --- a/Documentation/userspace-api/media/v4l/pixfmt-reserved.rst
+>> +++ b/Documentation/userspace-api/media/v4l/pixfmt-reserved.rst
+>> @@ -258,6 +258,23 @@ please make a proposal on the linux-media mailing list.
+>>           and it is used by various multimedia hardware blocks like GPU, display
+>>           controllers, ISP and video accelerators.
+>>           It contains four planes for progressive video.
+>> +    * .. _V4L2-PIX-FMT-AJPG:
+>> +
+>> +      - ``V4L2_PIX_FMT_AJPG``
+>> +      - 'AJPG'
+>> +      - ASPEED JPEG format used by the aspeed-video driver on Aspeed platforms,
+>> +        which is generally adapted for remote KVM.
+>> +        On each frame compression, I will compare the new frame with previous
+>> +        one to decide which macroblock's data is changed, and only the changed
+>> +        macroblocks will be compressed.
+>> +
+>> +        The implementation is based on AST2600 A3 datasheet, revision 0.9, which
+>> +        is not publicly available. Or you can reference Video stream data format
+>> +        ? ASPEED mode compression of SDK_User_Guide which available on
+>> +        AspeedTech-BMC/openbmc/releases.
+> What does this refer to? If it's a URL, please add a reference as below.
+>
+> Also please run this on the patches:
+>
+> 	$ scripts/checkpatch.pl --strict --max-line-length=80
+>
+>> +
+>> +        Decoder's implementation can be found here,
+>> +        `aspeed_codec <https://github.com/AspeedTech-BMC/aspeed_codec/>`__
+>>   .. raw:: latex
+>>   
+>>       \normalsize
+>> diff --git a/drivers/media/v4l2-core/v4l2-ioctl.c b/drivers/media/v4l2-core/v4l2-ioctl.c
+>> index fddba75d9074..8cb4b976064e 100644
+>> --- a/drivers/media/v4l2-core/v4l2-ioctl.c
+>> +++ b/drivers/media/v4l2-core/v4l2-ioctl.c
+>> @@ -1497,6 +1497,7 @@ static void v4l_fill_fmtdesc(struct v4l2_fmtdesc *fmt)
+>>   		case V4L2_PIX_FMT_MT21C:	descr = "Mediatek Compressed Format"; break;
+>>   		case V4L2_PIX_FMT_QC08C:	descr = "QCOM Compressed 8-bit Format"; break;
+>>   		case V4L2_PIX_FMT_QC10C:	descr = "QCOM Compressed 10-bit Format"; break;
+>> +		case V4L2_PIX_FMT_AJPG:		descr = "Aspeed JPEG"; break;
+>>   		default:
+>>   			if (fmt->description[0])
+>>   				return;
+>> diff --git a/include/uapi/linux/videodev2.h b/include/uapi/linux/videodev2.h
+>> index 86cae23cc446..870a7e5ef8ca 100644
+>> --- a/include/uapi/linux/videodev2.h
+>> +++ b/include/uapi/linux/videodev2.h
+>> @@ -775,6 +775,7 @@ struct v4l2_pix_format {
+>>   #define V4L2_PIX_FMT_HI240    v4l2_fourcc('H', 'I', '2', '4') /* BTTV 8-bit dithered RGB */
+>>   #define V4L2_PIX_FMT_QC08C    v4l2_fourcc('Q', '0', '8', 'C') /* Qualcomm 8-bit compressed */
+>>   #define V4L2_PIX_FMT_QC10C    v4l2_fourcc('Q', '1', '0', 'C') /* Qualcomm 10-bit compressed */
+>> +#define V4L2_PIX_FMT_AJPG     v4l2_fourcc('A', 'J', 'P', 'G') /* Aspeed JPEG */
+>>   
+>>   /* 10bit raw packed, 32 bytes for every 25 pixels, last LSB 6 bits unused */
+>>   #define V4L2_PIX_FMT_IPU3_SBGGR10	v4l2_fourcc('i', 'p', '3', 'b') /* IPU3 packed 10-bit BGGR bayer */
+
+-- 
+Best Regards
+Jammy
+
