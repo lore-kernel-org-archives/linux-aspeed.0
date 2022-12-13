@@ -1,35 +1,35 @@
-From: Greg KH <gregkh@linuxfoundation.org>
-Date: Wed, 14 Dec 2022 09:25:51 +0100
-Subject: [PATCH v2] usb: gadget: aspeed_udc: Add check for
- dma_alloc_coherent
-In-Reply-To: <20221214025414.44866-1-jiasheng@iscas.ac.cn>
-References: <20221214025414.44866-1-jiasheng@iscas.ac.cn>
-Message-ID: <Y5mIj6yLpObaLfSr@kroah.com>
+From: Jiasheng Jiang <jiasheng@iscas.ac.cn>
+Date: Tue, 13 Dec 2022 10:51:19 +0800
+Subject: [PATCH] usb: gadget: aspeed_udc: Add check for dma_alloc_coherent
+Message-ID: <20221213025120.23149-1-jiasheng@iscas.ac.cn>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Dec 14, 2022 at 10:54:14AM +0800, Jiasheng Jiang wrote:
-> Add the check for the return value of dma_alloc_coherent in order to
-> avoid NULL pointer dereference.
-> 
-> This flaw was found using an experimental static analysis tool we are
-> developing, APP-Miner, which has not been disclosed.
-> 
-> The allyesconfig build using GCC 9.3.0 shows no new warning. As we
-> don't have a UDC device to test with, no runtime testing was able to
-> be performed.
-> 
-> Signed-off-by: Jiasheng Jiang <jiasheng@iscas.ac.cn>
-> ---
-> Changelog:
-> 
-> v1 -> v2:
-> 
-> 1. Add "goto err;" when allocation fails.
+Add the check for the return value of dma_alloc_coherent
+in order to avoid NULL pointer dereference.
 
-You already sent a previous v2 that differs from this one, this should
-be v3, right?
+Fixes: 055276c13205 ("usb: gadget: add Aspeed ast2600 udc driver")
+Signed-off-by: Jiasheng Jiang <jiasheng@iscas.ac.cn>
+---
+ drivers/usb/gadget/udc/aspeed_udc.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/drivers/usb/gadget/udc/aspeed_udc.c b/drivers/usb/gadget/udc/aspeed_udc.c
+index 01968e2167f9..6cf46562bb25 100644
+--- a/drivers/usb/gadget/udc/aspeed_udc.c
++++ b/drivers/usb/gadget/udc/aspeed_udc.c
+@@ -1516,6 +1516,8 @@ static int ast_udc_probe(struct platform_device *pdev)
+ 					  AST_UDC_EP_DMA_SIZE *
+ 					  AST_UDC_NUM_ENDPOINTS,
+ 					  &udc->ep0_buf_dma, GFP_KERNEL);
++	if (!udc->ep0_buf)
++		return -ENOMEM;
+ 
+ 	udc->gadget.speed = USB_SPEED_UNKNOWN;
+ 	udc->gadget.max_speed = USB_SPEED_HIGH;
+-- 
+2.25.1
 
