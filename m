@@ -1,17 +1,23 @@
 From: Jiasheng Jiang <jiasheng@iscas.ac.cn>
-Date: Tue, 13 Dec 2022 20:21:16 +0800
+Date: Wed, 14 Dec 2022 10:54:14 +0800
 Subject: [PATCH v2] usb: gadget: aspeed_udc: Add check for dma_alloc_coherent
-Message-ID: <20221213122116.43278-1-jiasheng@iscas.ac.cn>
+Message-ID: <20221214025414.44866-1-jiasheng@iscas.ac.cn>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add the check for the return value of dma_alloc_coherent
-in order to avoid NULL pointer dereference.
+Add the check for the return value of dma_alloc_coherent in order to
+avoid NULL pointer dereference.
 
-Fixes: 055276c13205 ("usb: gadget: add Aspeed ast2600 udc driver")
+This flaw was found using an experimental static analysis tool we are
+developing, APP-Miner, which has not been disclosed.
+
+The allyesconfig build using GCC 9.3.0 shows no new warning. As we
+don't have a UDC device to test with, no runtime testing was able to
+be performed.
+
 Signed-off-by: Jiasheng Jiang <jiasheng@iscas.ac.cn>
 ---
 Changelog:
