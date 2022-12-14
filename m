@@ -1,57 +1,68 @@
 From: Neal Liu <neal_liu@aspeedtech.com>
-Date: Wed, 14 Dec 2022 15:01:10 +0800
-Subject: [PATCH v4 0/4] Add Aspeed ACRY driver for hardware acceleration
-Message-ID: <20221214070114.3966155-1-neal_liu@aspeedtech.com>
+Date: Wed, 14 Dec 2022 15:01:14 +0800
+Subject: [PATCH v4 4/4] dt-bindings: bus: add documentation for Aspeed AHBC
+In-Reply-To: <20221214070114.3966155-1-neal_liu@aspeedtech.com>
+References: <20221214070114.3966155-1-neal_liu@aspeedtech.com>
+Message-ID: <20221214070114.3966155-5-neal_liu@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Aspeed ACRY engine is designed to accelerate the throughput of
-ECDSA/RSA signature and verification.
+Add device tree binding documentation for the Aspeed
+Advanced High-Performance Bus (AHB) Controller.
 
-These patches aim to add Aspeed ACRY RSA driver support.
-This driver also pass the run-time self tests that take place at
-algorithm registration on both big-endian/little-endian system
-in AST2600 evaluation board .
-
-Tested-by below configs:
-- CONFIG_CRYPTO_MANAGER_DISABLE_TESTS is not set
-- CONFIG_CRYPTO_MANAGER_EXTRA_TESTS=y
-- CONFIG_DMA_API_DEBUG=y
-- CONFIG_DMA_API_DEBUG_SG=y
-- CONFIG_CPU_BIG_ENDIAN=y
-
-Change since v3:
-- Revise aspeed,ast2600-ahbc.yaml dt-bindings description.
-
-Change since v2:
-- Fix format and uninitialized warning.
-- Revise binding description.
-
-Change since v1:
-- Fix dt-bindings description.
-- Refine the Makefile which has been addressed.
-
-Neal Liu (4):
-  crypto: aspeed: Add ACRY RSA driver
-  ARM: dts: aspeed: Add ACRY/AHBC device controller node
-  dt-bindings: crypto: add documentation for Aspeed ACRY
-  dt-bindings: bus: add documentation for Aspeed AHBC
-
- .../bindings/bus/aspeed,ast2600-ahbc.yaml     |  37 +
- .../bindings/crypto/aspeed,ast2600-acry.yaml  |  49 ++
- MAINTAINERS                                   |   2 +-
- arch/arm/boot/dts/aspeed-g6.dtsi              |  13 +
- drivers/crypto/aspeed/Kconfig                 |  11 +
- drivers/crypto/aspeed/Makefile                |   2 +
- drivers/crypto/aspeed/aspeed-acry.c           | 828 ++++++++++++++++++
- 7 files changed, 941 insertions(+), 1 deletion(-)
+Signed-off-by: Neal Liu <neal_liu@aspeedtech.com>
+Reviewed-by: Rob Herring <robh@kernel.org>
+---
+ .../bindings/bus/aspeed,ast2600-ahbc.yaml     | 37 +++++++++++++++++++
+ 1 file changed, 37 insertions(+)
  create mode 100644 Documentation/devicetree/bindings/bus/aspeed,ast2600-ahbc.yaml
- create mode 100644 Documentation/devicetree/bindings/crypto/aspeed,ast2600-acry.yaml
- create mode 100644 drivers/crypto/aspeed/aspeed-acry.c
 
+diff --git a/Documentation/devicetree/bindings/bus/aspeed,ast2600-ahbc.yaml b/Documentation/devicetree/bindings/bus/aspeed,ast2600-ahbc.yaml
+new file mode 100644
+index 000000000000..2894256c976d
+--- /dev/null
++++ b/Documentation/devicetree/bindings/bus/aspeed,ast2600-ahbc.yaml
+@@ -0,0 +1,37 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/bus/aspeed,ast2600-ahbc.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: ASPEED Advanced High-Performance Bus Controller (AHBC)
++
++maintainers:
++  - Neal Liu <neal_liu@aspeedtech.com>
++  - Chia-Wei Wang <chiawei_wang@aspeedtech.com>
++
++description: |
++  Advanced High-performance Bus Controller (AHBC) supports plenty of mechanisms
++  including a priority arbiter, an address decoder and a data multiplexer
++  to control the overall operations of Advanced High-performance Bus (AHB).
++
++properties:
++  compatible:
++    enum:
++      - aspeed,ast2600-ahbc
++
++  reg:
++    maxItems: 1
++
++required:
++  - compatible
++  - reg
++
++additionalProperties: false
++
++examples:
++  - |
++    ahbc at 1e600000 {
++        compatible = "aspeed,ast2600-ahbc";
++        reg = <0x1e600000 0x100>;
++    };
 -- 
 2.25.1
 
