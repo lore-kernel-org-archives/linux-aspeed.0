@@ -1,7 +1,7 @@
 From: Jiasheng Jiang <jiasheng@iscas.ac.cn>
-Date: Wed, 14 Dec 2022 10:54:14 +0800
-Subject: [PATCH v2] usb: gadget: aspeed_udc: Add check for dma_alloc_coherent
-Message-ID: <20221214025414.44866-1-jiasheng@iscas.ac.cn>
+Date: Thu, 15 Dec 2022 20:31:12 +0800
+Subject: [PATCH v3] usb: gadget: aspeed_udc: Add check for dma_alloc_coherent
+Message-ID: <20221215123112.20553-1-jiasheng@iscas.ac.cn>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -21,6 +21,10 @@ be performed.
 Signed-off-by: Jiasheng Jiang <jiasheng@iscas.ac.cn>
 ---
 Changelog:
+
+v2 -> v3:
+
+1. Add information of finding tool and tests to commit message.
 
 v1 -> v2:
 
