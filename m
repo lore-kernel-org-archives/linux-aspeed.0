@@ -1,9 +1,9 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Fri, 16 Dec 2022 19:09:30 -0500
-Subject: [PATCH AUTOSEL 6.1 3/9] ARM: dts: aspeed: rainier,everest: Move reserved memory regions
-In-Reply-To: <20221217000937.41115-1-sashal@kernel.org>
-References: <20221217000937.41115-1-sashal@kernel.org>
-Message-ID: <20221217000937.41115-3-sashal@kernel.org>
+Date: Fri, 16 Dec 2022 19:10:07 -0500
+Subject: [PATCH AUTOSEL 6.0 3/8] ARM: dts: aspeed: rainier,everest: Move reserved memory regions
+In-Reply-To: <20221217001013.41239-1-sashal@kernel.org>
+References: <20221217001013.41239-1-sashal@kernel.org>
+Message-ID: <20221217001013.41239-3-sashal@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
