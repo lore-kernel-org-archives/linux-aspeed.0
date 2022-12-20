@@ -1,130 +1,70 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Fri, 16 Dec 2022 19:10:07 -0500
-Subject: [PATCH AUTOSEL 6.0 3/8] ARM: dts: aspeed: rainier,everest: Move reserved memory regions
-In-Reply-To: <20221217001013.41239-1-sashal@kernel.org>
-References: <20221217001013.41239-1-sashal@kernel.org>
-Message-ID: <20221217001013.41239-3-sashal@kernel.org>
+From: Lei Yu <yulei.sh@bytedance.com>
+Date: Tue, 20 Dec 2022 18:51:42 +0800
+Subject: [PATCH] usb: gadget: aspeed: fix buffer overflow
+In-Reply-To: <Y1uyssu84kl1INSR@kroah.com>
+References: <20221024094853.2877441-1-yulei.sh@bytedance.com>
+ <HK0PR06MB32022348EA65805C7109B7D080329@HK0PR06MB3202.apcprd06.prod.outlook.com>
+ <CAGm54UExHOBw61DJNqxvW67OSr60fQ+Q247t63RzymiMOmHmFg@mail.gmail.com>
+ <HK0PR06MB320203EF8E3AD14C34359B0580329@HK0PR06MB3202.apcprd06.prod.outlook.com>
+ <Y1ueEYJk2epT/g4J@kroah.com> <HK0PR06MB32024F58191E17DC5ABC99F380329@HK0PR06MB3202.apcprd06.prod.outlook.com>
+ <Y1uyssu84kl1INSR@kroah.com>
+Message-ID: <CAGm54UGmp=kTKGLhEfENF4SqkvRt_GcpuGH_g5PjtQiBkwtOsA@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Adriana Kobylak <anoo@us.ibm.com>
+On Fri, Oct 28, 2022 at 6:45 PM Greg Kroah-Hartman
+<gregkh@linuxfoundation.org> wrote:
+>
+> On Fri, Oct 28, 2022 at 09:55:57AM +0000, Neal Liu wrote:
+> > > > > > Thanks for your feedback.
+> > > > > > I tried to reproduce it on my side, and it cannot be reproduce it.
+> > > > > > Here are my test sequences:
+> > > > > > 1. emulate one of the vhub port to usb ethernet through Linux
+> > > > > > gadget
+> > > > > > (ncm)
+> > > > >
+> > > > > We are using rndis instead of ncm.
+> > > > >
+> > > > > > 2. connect BMC vhub to Host
+> > > > > > 3. BMC & Host can ping each other (both usb eth dev default mtu is
+> > > > > > 1500) 4. Set BMC mtu to 1000 (Host OS cannot set usb eth dev mtu
+> > > > > > to 2000, it's maxmtu is 1500)
+> > > > >
+> > > > > Not sure if it's related, but in my case (USB rndis, Debian 10 OS)
+> > > > > it should be able to set MTU to 2000.
+> > > >
+> > > > Using rndis is able to set MTU to 2000, and the issue can be reproduced.
 
-[ Upstream commit e184d42a6e085f95f5c4f1a4fbabebab2984cb68 ]
+USB ecm is also tested and it is possible to set MTU to 2000, and
+could reproduce the issue.
+So I think this patch is needed anyway.
 
-Move the reserved regions to account for a decrease in DRAM when ECC is
-enabled. ECC takes 1/9th of memory.
+@Neal Liu Could you kindly help to verify the USB ECM case?
 
-Running on HW with ECC off, u-boot prints:
-DRAM:  already initialized, 1008 MiB (capacity:1024 MiB, VGA:16 MiB, ECC:off)
-
-And with ECC on, u-boot prints:
-DRAM:  already initialized, 896 MiB (capacity:1024 MiB, VGA:16 MiB, ECC:on, ECC size:896 MiB)
-
-This implies that MCR54 is configured for ECC to be bounded at the
-bottom of a 16MiB VGA memory region:
-
-1024MiB - 16MiB (VGA) = 1008MiB
-1008MiB / 9 (for ECC) = 112MiB
-1008MiB - 112MiB = 896MiB (available DRAM)
-
-The flash_memory region currently starts at offset 896MiB:
-0xb8000000 (flash_memory offset) - 0x80000000 (base memory address) = 0x38000000 = 896MiB
-
-This is the end of the available DRAM with ECC enabled and therefore it
-needs to be moved.
-
-Since the flash_memory is 64MiB in size and needs to be 64MiB aligned,
-it can just be moved up by 64MiB and would sit right at the end of the
-available DRAM buffer.
-
-The ramoops region currently follows the flash_memory, but it can be
-moved to sit above flash_memory which would minimize the address-space
-fragmentation.
-
-Signed-off-by: Adriana Kobylak <anoo@us.ibm.com>
-Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
-Link: https://lore.kernel.org/r/20220916195535.1020185-1-anoo at linux.ibm.com
-Signed-off-by: Joel Stanley <joel@jms.id.au>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- arch/arm/boot/dts/aspeed-bmc-ibm-everest.dts | 17 ++++++++---------
- arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts | 16 +++++++++-------
- 2 files changed, 17 insertions(+), 16 deletions(-)
-
-diff --git a/arch/arm/boot/dts/aspeed-bmc-ibm-everest.dts b/arch/arm/boot/dts/aspeed-bmc-ibm-everest.dts
-index a6a2bc3b855c..fcc890e3ad73 100644
---- a/arch/arm/boot/dts/aspeed-bmc-ibm-everest.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-ibm-everest.dts
-@@ -162,16 +162,9 @@ reserved-memory {
- 		#size-cells = <1>;
- 		ranges;
- 
--		/* LPC FW cycle bridge region requires natural alignment */
--		flash_memory: region at b8000000 {
--			no-map;
--			reg = <0xb8000000 0x04000000>; /* 64M */
--		};
--
--		/* 48MB region from the end of flash to start of vga memory */
--		ramoops at bc000000 {
-+		ramoops at b3e00000 {
- 			compatible = "ramoops";
--			reg = <0xbc000000 0x200000>; /* 16 * (4 * 0x8000) */
-+			reg = <0xb3e00000 0x200000>; /* 16 * (4 * 0x8000) */
- 			record-size = <0x8000>;
- 			console-size = <0x8000>;
- 			ftrace-size = <0x8000>;
-@@ -179,6 +172,12 @@ ramoops at bc000000 {
- 			max-reason = <3>; /* KMSG_DUMP_EMERG */
- 		};
- 
-+		/* LPC FW cycle bridge region requires natural alignment */
-+		flash_memory: region at b4000000 {
-+			no-map;
-+			reg = <0xb4000000 0x04000000>; /* 64M */
-+		};
-+
- 		/* VGA region is dictated by hardware strapping */
- 		vga_memory: region at bf000000 {
- 			no-map;
-diff --git a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
-index bf59a9962379..4879da4cdbd2 100644
---- a/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts
-@@ -95,14 +95,9 @@ reserved-memory {
- 		#size-cells = <1>;
- 		ranges;
- 
--		flash_memory: region at b8000000 {
--			no-map;
--			reg = <0xb8000000 0x04000000>; /* 64M */
--		};
--
--		ramoops at bc000000 {
-+		ramoops at b3e00000 {
- 			compatible = "ramoops";
--			reg = <0xbc000000 0x200000>; /* 16 * (4 * 0x8000) */
-+			reg = <0xb3e00000 0x200000>; /* 16 * (4 * 0x8000) */
- 			record-size = <0x8000>;
- 			console-size = <0x8000>;
- 			ftrace-size = <0x8000>;
-@@ -110,6 +105,13 @@ ramoops at bc000000 {
- 			max-reason = <3>; /* KMSG_DUMP_EMERG */
- 		};
- 
-+		/* LPC FW cycle bridge region requires natural alignment */
-+		flash_memory: region at b4000000 {
-+			no-map;
-+			reg = <0xb4000000 0x04000000>; /* 64M */
-+		};
-+
-+		/* VGA region is dictated by hardware strapping */
- 		vga_memory: region at bf000000 {
- 			no-map;
- 			compatible = "shared-dma-pool";
--- 
-2.35.1
-
+> > >
+> > > Please NEVER use rndis anymore.  I need to go just delete that driver from
+> > > the tree.
+> > >
+> > > It is insecure-by-design and will cause any system that runs it to be instantly
+> > > compromised and it can not be fixed.  Never trust it.
+> > >
+> > > Even for data throughput tests, I wouldn't trust it as it does odd things with
+> > > packet sizes as you show here.
+> >
+> > Thanks for the info, Greg.
+> > If rndis will no longer be supported, how to use usb-ethernet on Windows OS?
+> > For my understanding, ncm/ecm cannot work on Windows OS.
+>
+> rndis should ONLY be there for Windows XP, which is long out-of-support.
+> Newer versions of windows have more sane usb protocols built into it and
+> this driver is not needed.
+>
+> As proof of this, Android devices removed this from their kernel
+> configuration a few years ago and no one has complained :)
+>
+> thanks,
+>
+> greg k-h
