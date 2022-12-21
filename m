@@ -1,35 +1,49 @@
-From: Lei Yu <yulei.sh@bytedance.com>
-Date: Wed, 21 Dec 2022 10:26:25 +0800
-Subject: [PATCH] usb: gadget: aspeed: fix buffer overflow
-In-Reply-To: <TY2PR06MB321303972156248AB08CAB2480EB9@TY2PR06MB3213.apcprd06.prod.outlook.com>
-References: <20221024094853.2877441-1-yulei.sh@bytedance.com>
- <HK0PR06MB32022348EA65805C7109B7D080329@HK0PR06MB3202.apcprd06.prod.outlook.com>
- <CAGm54UExHOBw61DJNqxvW67OSr60fQ+Q247t63RzymiMOmHmFg@mail.gmail.com>
- <HK0PR06MB320203EF8E3AD14C34359B0580329@HK0PR06MB3202.apcprd06.prod.outlook.com>
- <Y1ueEYJk2epT/g4J@kroah.com> <HK0PR06MB32024F58191E17DC5ABC99F380329@HK0PR06MB3202.apcprd06.prod.outlook.com>
- <Y1uyssu84kl1INSR@kroah.com> <CAGm54UGmp=kTKGLhEfENF4SqkvRt_GcpuGH_g5PjtQiBkwtOsA@mail.gmail.com>
- <TY2PR06MB321303972156248AB08CAB2480EB9@TY2PR06MB3213.apcprd06.prod.outlook.com>
-Message-ID: <CAGm54UHWhRQsvaBQM7mgfP2A5os=mYDTfKS9qfS0C5_9XkcrSA@mail.gmail.com>
+From: Konstantin Ryabitsev via B4 Submission Endpoint <devnull+icon.mricon.com@kernel.org>
+Date: Wed, 21 Dec 2022 14:27:59 -0500
+Subject: [PATCH] arm: lanyang: fix lable->label typo for lanyang dts
+Message-ID: <20221221-lanyang-lable-fix-v1-1-eb6e11eb4a6c@mricon.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Dec 21, 2022 at 10:17 AM Neal Liu <neal_liu@aspeedtech.com> wrote:
-> > > > > > Using rndis is able to set MTU to 2000, and the issue can be
-> > reproduced.
-> >
-> > USB ecm is also tested and it is possible to set MTU to 2000, and could
-> > reproduce the issue.
-> > So I think this patch is needed anyway.
-> >
-> > @Neal Liu Could you kindly help to verify the USB ECM case?
->
-> How to set MTU to 2000 on USB ECM case? I remember last time I cannot set by using "ifconfig ..."
-> Regardless ECM or RNDIS, I agree this patch is still needed.
+From: Konstantin Ryabitsev <icon@mricon.com>
 
-You were able to set MTU to 2000 for RNDIS but not for NCM.
-@Greg Kroah-Hartman indicated that RNDIS should not be used anymore.
-So I tested ECM and verified it could set MTU 2000 and the issue could
-be reproduced.
+Fix an obvious spelling error in the dts file for Lanyang BMC.
+This was reported via bugzilla a few years ago but never fixed.
+
+Reported-by: Jens Schleusener <Jens.Schleusener@fossies.org>
+Link: https://bugzilla.kernel.org/show_bug.cgi?id=205891
+Signed-off-by: Konstantin Ryabitsev <icon@mricon.com>
+---
+ arch/arm/boot/dts/aspeed-bmc-opp-lanyang.dts | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/arm/boot/dts/aspeed-bmc-opp-lanyang.dts b/arch/arm/boot/dts/aspeed-bmc-opp-lanyang.dts
+index c0847636f20b..e72e8ef5bff2 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-opp-lanyang.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-opp-lanyang.dts
+@@ -52,12 +52,12 @@ hdd_fault {
+ 			gpios = <&gpio ASPEED_GPIO(B, 3) GPIO_ACTIVE_HIGH>;
+ 		};
+ 		bmc_err {
+-			lable = "BMC_fault";
++			label = "BMC_fault";
+ 			gpios = <&gpio ASPEED_GPIO(H, 6) GPIO_ACTIVE_HIGH>;
+ 		};
+ 
+ 		sys_err {
+-			lable = "Sys_fault";
++			label = "Sys_fault";
+ 			gpios = <&gpio ASPEED_GPIO(H, 7) GPIO_ACTIVE_HIGH>;
+ 		};
+ 	};
+
+---
+base-commit: 830b3c68c1fb1e9176028d02ef86f3cf76aa2476
+change-id: 20221221-lanyang-lable-fix-605edf14d27e
+
+Best regards,
+-- 
+Konstantin Ryabitsev <icon@mricon.com>
