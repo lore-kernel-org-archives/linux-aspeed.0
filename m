@@ -1,9 +1,9 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Fri, 23 Dec 2022 20:31:53 -0500
-Subject: [PATCH AUTOSEL 5.10 03/11] usb: gadget: aspeed: fix buffer overflow
-In-Reply-To: <20221224013202.393372-1-sashal@kernel.org>
-References: <20221224013202.393372-1-sashal@kernel.org>
-Message-ID: <20221224013202.393372-3-sashal@kernel.org>
+Date: Fri, 23 Dec 2022 20:32:28 -0500
+Subject: [PATCH AUTOSEL 5.4 2/7] usb: gadget: aspeed: fix buffer overflow
+In-Reply-To: <20221224013233.393537-1-sashal@kernel.org>
+References: <20221224013233.393537-1-sashal@kernel.org>
+Message-ID: <20221224013233.393537-2-sashal@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -53,7 +53,7 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  2 files changed, 13 insertions(+), 5 deletions(-)
 
 diff --git a/drivers/usb/gadget/udc/aspeed-vhub/core.c b/drivers/usb/gadget/udc/aspeed-vhub/core.c
-index d11d3d14313f..9cd5e792dbf7 100644
+index c1bfbfd9491d..0812967e1d5a 100644
 --- a/drivers/usb/gadget/udc/aspeed-vhub/core.c
 +++ b/drivers/usb/gadget/udc/aspeed-vhub/core.c
 @@ -42,7 +42,7 @@ void ast_vhub_done(struct ast_vhub_ep *ep, struct ast_vhub_req *req,
@@ -66,7 +66,7 @@ index d11d3d14313f..9cd5e792dbf7 100644
  
  	if (req->req.dma) {
 diff --git a/drivers/usb/gadget/udc/aspeed-vhub/epn.c b/drivers/usb/gadget/udc/aspeed-vhub/epn.c
-index cb164c615e6f..934fa026832b 100644
+index 2cd406e8dd99..90d1279eca64 100644
 --- a/drivers/usb/gadget/udc/aspeed-vhub/epn.c
 +++ b/drivers/usb/gadget/udc/aspeed-vhub/epn.c
 @@ -89,6 +89,7 @@ static void ast_vhub_epn_handle_ack(struct ast_vhub_ep *ep)
