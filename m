@@ -1,9 +1,9 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Fri, 23 Dec 2022 20:31:16 -0500
-Subject: [PATCH AUTOSEL 5.15 03/14] usb: gadget: aspeed: fix buffer overflow
-In-Reply-To: <20221224013127.393187-1-sashal@kernel.org>
-References: <20221224013127.393187-1-sashal@kernel.org>
-Message-ID: <20221224013127.393187-3-sashal@kernel.org>
+Date: Fri, 23 Dec 2022 20:31:53 -0500
+Subject: [PATCH AUTOSEL 5.10 03/11] usb: gadget: aspeed: fix buffer overflow
+In-Reply-To: <20221224013202.393372-1-sashal@kernel.org>
+References: <20221224013202.393372-1-sashal@kernel.org>
+Message-ID: <20221224013202.393372-3-sashal@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -53,10 +53,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  2 files changed, 13 insertions(+), 5 deletions(-)
 
 diff --git a/drivers/usb/gadget/udc/aspeed-vhub/core.c b/drivers/usb/gadget/udc/aspeed-vhub/core.c
-index 7a635c499777..ac3ca24f8b04 100644
+index d11d3d14313f..9cd5e792dbf7 100644
 --- a/drivers/usb/gadget/udc/aspeed-vhub/core.c
 +++ b/drivers/usb/gadget/udc/aspeed-vhub/core.c
-@@ -37,7 +37,7 @@ void ast_vhub_done(struct ast_vhub_ep *ep, struct ast_vhub_req *req,
+@@ -42,7 +42,7 @@ void ast_vhub_done(struct ast_vhub_ep *ep, struct ast_vhub_req *req,
  
  	list_del_init(&req->queue);
  
@@ -66,10 +66,10 @@ index 7a635c499777..ac3ca24f8b04 100644
  
  	if (req->req.dma) {
 diff --git a/drivers/usb/gadget/udc/aspeed-vhub/epn.c b/drivers/usb/gadget/udc/aspeed-vhub/epn.c
-index 917892ca8753..f265b9a47450 100644
+index cb164c615e6f..934fa026832b 100644
 --- a/drivers/usb/gadget/udc/aspeed-vhub/epn.c
 +++ b/drivers/usb/gadget/udc/aspeed-vhub/epn.c
-@@ -84,6 +84,7 @@ static void ast_vhub_epn_handle_ack(struct ast_vhub_ep *ep)
+@@ -89,6 +89,7 @@ static void ast_vhub_epn_handle_ack(struct ast_vhub_ep *ep)
  {
  	struct ast_vhub_req *req;
  	unsigned int len;
@@ -77,7 +77,7 @@ index 917892ca8753..f265b9a47450 100644
  	u32 stat;
  
  	/* Read EP status */
-@@ -119,9 +120,15 @@ static void ast_vhub_epn_handle_ack(struct ast_vhub_ep *ep)
+@@ -124,9 +125,15 @@ static void ast_vhub_epn_handle_ack(struct ast_vhub_ep *ep)
  	len = VHUB_EP_DMA_TX_SIZE(stat);
  
  	/* If not using DMA, copy data out if needed */
@@ -96,7 +96,7 @@ index 917892ca8753..f265b9a47450 100644
  	/* Adjust size */
  	req->req.actual += len;
  
-@@ -129,9 +136,10 @@ static void ast_vhub_epn_handle_ack(struct ast_vhub_ep *ep)
+@@ -134,9 +141,10 @@ static void ast_vhub_epn_handle_ack(struct ast_vhub_ep *ep)
  	if (len < ep->ep.maxpacket)
  		req->last_desc = 1;
  
