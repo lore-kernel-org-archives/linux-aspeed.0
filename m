@@ -1,9 +1,9 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Fri, 23 Dec 2022 20:29:15 -0500
-Subject: [PATCH AUTOSEL 6.1 11/26] usb: gadget: aspeed: fix buffer overflow
-In-Reply-To: <20221224012930.392358-1-sashal@kernel.org>
-References: <20221224012930.392358-1-sashal@kernel.org>
-Message-ID: <20221224012930.392358-11-sashal@kernel.org>
+Date: Fri, 23 Dec 2022 20:30:20 -0500
+Subject: [PATCH AUTOSEL 6.0 04/18] usb: gadget: aspeed: fix buffer overflow
+In-Reply-To: <20221224013034.392810-1-sashal@kernel.org>
+References: <20221224013034.392810-1-sashal@kernel.org>
+Message-ID: <20221224013034.392810-4-sashal@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
