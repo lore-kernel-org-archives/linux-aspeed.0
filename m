@@ -1,42 +1,26 @@
-From: Potin Lai <potin.lai.pt@gmail.com>
-Date: Mon, 26 Dec 2022 13:45:35 +0800
-Subject: [PATCH 2/2] ARM: dts: aspeed: bletchley: enable wdtrst1
-In-Reply-To: <20221226054535.2836110-1-potin.lai.pt@gmail.com>
-References: <20221226054535.2836110-1-potin.lai.pt@gmail.com>
-Message-ID: <20221226054535.2836110-3-potin.lai.pt@gmail.com>
+From: Herbert Xu <herbert@gondor.apana.org.au>
+Date: Fri, 30 Dec 2022 16:29:17 +0800
+Subject: [PATCH v4 1/4] crypto: aspeed: Add ACRY RSA driver
+In-Reply-To: <20221214070114.3966155-2-neal_liu@aspeedtech.com>
+References: <20221214070114.3966155-1-neal_liu@aspeedtech.com>
+ <20221214070114.3966155-2-neal_liu@aspeedtech.com>
+Message-ID: <Y66hXZHl+kqIivOl@gondor.apana.org.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Enable WDTRST1 external signal to send a reset pluse to peripherals while
-BMC reset.
+On Wed, Dec 14, 2022 at 03:01:11PM +0800, Neal Liu wrote:
+>
+> +static u8 *aspeed_rsa_key_copy(u8 *src, size_t len)
+> +{
+> +	return kmemdup(src, len, GFP_DMA | GFP_KERNEL);
 
-Signed-off-by: Potin Lai <potin.lai.pt@gmail.com>
----
- arch/arm/boot/dts/aspeed-bmc-facebook-bletchley.dts | 11 +++++++++++
- 1 file changed, 11 insertions(+)
+Please explain why you are using GFP_DMA.
 
-diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-bletchley.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-bletchley.dts
-index 791f83aaac50..050ed7e810fa 100644
---- a/arch/arm/boot/dts/aspeed-bmc-facebook-bletchley.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-facebook-bletchley.dts
-@@ -1064,3 +1064,14 @@ pinctrl_gpiov2_unbiased_default: gpiov2 {
- 		bias-disable;
- 	};
- };
-+
-+&wdt1 {
-+	status = "okay";
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pinctrl_wdtrst1_default>;
-+	aspeed,reset-type = "soc";
-+	aspeed,external-signal;
-+	aspeed,ext-push-pull;
-+	aspeed,ext-active-high;
-+	aspeed,ext-pulse-duration = <256>;
-+};
+Thanks,
 -- 
-2.31.1
-
+Email: Herbert Xu <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
