@@ -1,41 +1,60 @@
-From: Patrick Williams <patrick@stwcx.xyz>
-Date: Tue, 3 Jan 2023 15:02:55 -0600
-Subject: [PATCH 0/2] ARM: dts: aspeed: bletchley: Update Bletchley
- devicetree
-In-Reply-To: <20221226054535.2836110-1-potin.lai.pt@gmail.com>
-References: <20221226054535.2836110-1-potin.lai.pt@gmail.com>
-Message-ID: <Y7SX/6bsztulhw7/@heinlein.taila677.ts.net>
+From: Neal Liu <neal_liu@aspeedtech.com>
+Date: Wed, 4 Jan 2023 09:34:32 +0800
+Subject: [PATCH v5 0/4] Add Aspeed ACRY driver for hardware acceleration
+Message-ID: <20230104013436.203427-1-neal_liu@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Dec 26, 2022 at 01:45:33PM +0800, Potin Lai wrote:
-> Update Bletchley BMC devicetree.
-> 
-> Potin Lai (2):
->   ARM: dts: aspeed: bletchley: rename flash1 label
->   ARM: dts: aspeed: bletchley: enable wdtrst1
+Aspeed ACRY engine is designed to accelerate the throughput of
+ECDSA/RSA signature and verification.
 
-Series is
+These patches aim to add Aspeed ACRY RSA driver support.
+This driver also pass the run-time self tests that take place at
+algorithm registration on both big-endian/little-endian system
+in AST2600 evaluation board .
 
-Reviewed-by: Patrick Williams <patrick@stwcx.xyz>
+Tested-by below configs:
+- CONFIG_CRYPTO_MANAGER_DISABLE_TESTS is not set
+- CONFIG_CRYPTO_MANAGER_EXTRA_TESTS=y
+- CONFIG_DMA_API_DEBUG=y
+- CONFIG_DMA_API_DEBUG_SG=y
+- CONFIG_CPU_BIG_ENDIAN=y
 
-> 
->  arch/arm/boot/dts/aspeed-bmc-facebook-bletchley.dts | 13 ++++++++++++-
->  1 file changed, 12 insertions(+), 1 deletion(-)
-> 
-> -- 
-> 2.31.1
-> 
+Change since v4:
+- Remove GFP_DMA flag since it's unnecessary.
+
+Change since v3:
+- Revise aspeed,ast2600-ahbc.yaml dt-bindings description.
+
+Change since v2:
+- Fix format and uninitialized warning.
+- Revise binding description.
+
+Change since v1:
+- Fix dt-bindings description.
+- Refine the Makefile which has been addressed.
+
+Neal Liu (4):
+  crypto: aspeed: Add ACRY RSA driver
+  ARM: dts: aspeed: Add ACRY/AHBC device controller node
+  dt-bindings: crypto: add documentation for Aspeed ACRY
+  dt-bindings: bus: add documentation for Aspeed AHBC
+
+ .../bindings/bus/aspeed,ast2600-ahbc.yaml     |  37 +
+ .../bindings/crypto/aspeed,ast2600-acry.yaml  |  49 ++
+ MAINTAINERS                                   |   2 +-
+ arch/arm/boot/dts/aspeed-g6.dtsi              |  13 +
+ drivers/crypto/aspeed/Kconfig                 |  11 +
+ drivers/crypto/aspeed/Makefile                |   2 +
+ drivers/crypto/aspeed/aspeed-acry.c           | 828 ++++++++++++++++++
+ 7 files changed, 941 insertions(+), 1 deletion(-)
+ create mode 100644 Documentation/devicetree/bindings/bus/aspeed,ast2600-ahbc.yaml
+ create mode 100644 Documentation/devicetree/bindings/crypto/aspeed,ast2600-acry.yaml
+ create mode 100644 drivers/crypto/aspeed/aspeed-acry.c
 
 -- 
-Patrick Williams
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 833 bytes
-Desc: not available
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20230103/abf39bd9/attachment.sig>
+2.25.1
+
