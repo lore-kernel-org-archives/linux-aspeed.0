@@ -1,49 +1,44 @@
-From: Billy Tsai <billy_tsai@aspeedtech.com>
-Date: Fri, 6 Jan 2023 03:31:15 +0000
-Subject: [v4 1/5] dt-bindings: mfd: Add aspeed pwm-tach binding
-In-Reply-To: <41500a04-b004-0e2c-20a1-3a3092b90e6d@linaro.org>
-References: <20221123061635.32025-1-billy_tsai@aspeedtech.com>
- <20221123061635.32025-2-billy_tsai@aspeedtech.com>
- <c4b188b1-06a4-3cb0-a758-e12942e1f67b@linaro.org>
- <27055c13-11ab-cc73-f2ba-c269785b0e28@linaro.org>
- <A5EA19E5-21D8-4954-9636-9B28AC8D946A@aspeedtech.com>
- <41500a04-b004-0e2c-20a1-3a3092b90e6d@linaro.org>
-Message-ID: <24DD1FEB-95F3-47BE-BE61-8B0E6FBDE20F@aspeedtech.com>
+From: Gustavo A. R. Silva <gustavoars@kernel.org>
+Date: Mon, 9 Jan 2023 19:39:17 -0600
+Subject: [PATCH][next] crypto: aspeed - Replace zero-length array with
+ flexible-array member
+Message-ID: <Y7zBxbEAvcEEJRie@work>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 2022/12/9, 3:48 PM, "Krzysztof Kozlowski" <krzysztof.kozlowski at linaro.org <mailto:krzysztof.kozlowski@linaro.org>> wrote:
+Zero-length arrays are deprecated[1] and we are moving towards
+adopting C99 flexible-array members instead. So, replace zero-length
+array declaration in struct aspeed_sham_ctx with flex-array
+member.
 
+This helps with the ongoing efforts to tighten the FORTIFY_SOURCE
+routines on memcpy() and help us make progress towards globally
+enabling -fstrict-flex-arrays=3 [2].
 
-  On 09/12/2022 01:54, Billy Tsai wrote:
-  > > > > However I am surprised to see such change, so I have no clue why this
-  > > > > was done.
-  > > 
-  > > > Actually now I see it was like that in previous patch, I just missed it
-  > > > during previous review. Anyway this must be fixed.
-  > > 
-  > > I have two module (PWM and TACH) but share with the same base address,
-  > > The PWM will use the offset (N*0x10) + 0x0 and 0x04.
-  > > The TACH will use the offset (N*0x10) + 0x8 and 0x0c.
-  > > The range of the N is 0~15.
-  > > Can you give me some advice to fix this problem without using simple-mfd?
+Link: https://www.kernel.org/doc/html/latest/process/deprecated.html#zero-length-and-one-element-arrays [1]
+Link: https://gcc.gnu.org/pipermail/gcc-patches/2022-October/602902.html [2]
+Link: https://github.com/KSPP/linux/issues/78
+Signed-off-by: Gustavo A. R. Silva <gustavoars@kernel.org>
+---
+ drivers/crypto/aspeed/aspeed-hace.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-
-  > Use regular driver which populates children.
-
-I think that my scenario meets the definition in mfd.txt: 
-- A range of memory registers containing "miscellaneous system registers" also
-  known as a system controller "syscon" or any other memory range containing a
-  mix of unrelated hardware devices.
-Can you tell me the considerations for not using simple-mfd?
-
-Thanks
-
-Best Regards, 
-Billy Tsai
-
-
+diff --git a/drivers/crypto/aspeed/aspeed-hace.h b/drivers/crypto/aspeed/aspeed-hace.h
+index f2cde23b56ae..05d0a15d546d 100644
+--- a/drivers/crypto/aspeed/aspeed-hace.h
++++ b/drivers/crypto/aspeed/aspeed-hace.h
+@@ -183,7 +183,7 @@ struct aspeed_sham_ctx {
+ 	struct aspeed_hace_dev		*hace_dev;
+ 	unsigned long			flags;	/* hmac flag */
+ 
+-	struct aspeed_sha_hmac_ctx	base[0];
++	struct aspeed_sha_hmac_ctx	base[];
+ };
+ 
+ struct aspeed_sham_reqctx {
+-- 
+2.34.1
 
