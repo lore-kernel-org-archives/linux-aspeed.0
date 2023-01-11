@@ -1,35 +1,43 @@
 From: Konstantin Aladyshev <aladyshev22@gmail.com>
-Date: Wed, 11 Jan 2023 14:32:08 +0300
-Subject: [PATCH] ARM: dts: ethanolx: Correct EEPROM device name
-Message-ID: <20230111113208.964-1-aladyshev22@gmail.com>
+Date: Wed, 11 Jan 2023 14:39:34 +0300
+Subject: [PATCH] ARM: dts: ethanolx: Add BIOS flash chip
+Message-ID: <20230111113934.1176-1-aladyshev22@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-BMC on the EthanolX board uses 24LC128 EEPROM chip for the
-configuration settings. The correct compatible string for this
-chip is "atmel,24c128".
+Add a BIOS flash chip to the DTS to open a possibility to reflash the
+main CPU BIOS from the BMC.
 
 Signed-off-by: Konstantin Aladyshev <aladyshev22@gmail.com>
 ---
- arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
 diff --git a/arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts b/arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts
-index 889b2fdd19cf..8d84dcc06221 100644
+index 8d84dcc06221..5f9093c58e8c 100644
 --- a/arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts
 +++ b/arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts
-@@ -161,7 +161,7 @@ &i2c2 {
- &i2c3 {
- 	status = "okay";
- 	eeprom at 50 {
--		compatible = "atmel,24c256";
-+		compatible = "atmel,24c128";
- 		reg = <0x50>;
- 		pagesize = <64>;
+@@ -63,6 +63,17 @@ flash at 0 {
  	};
+ };
+ 
++&spi1 {
++	status = "okay";
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_spi1_default>;
++	flash at 0 {
++		status = "okay";
++		m25p,fast-read;
++		label = "bios";
++		spi-max-frequency = <100000000>;
++	};
++};
+ 
+ &mac0 {
+ 	status = "okay";
 -- 
 2.25.1
 
