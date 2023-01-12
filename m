@@ -1,47 +1,35 @@
-From: Konstantin Aladyshev <aladyshev22@gmail.com>
-Date: Wed, 11 Jan 2023 15:19:17 +0300
-Subject: [PATCH] ARM: dts: ethanolx: Enable VUART
-Message-ID: <20230111121917.1636-1-aladyshev22@gmail.com>
+From: Florian Fainelli <f.fainelli@gmail.com>
+Date: Thu, 12 Jan 2023 13:13:51 -0800
+Subject: [PATCH net-next 03/10] net: mdio: mux-bcm-iproc: Separate C22 and
+ C45 transactions
+In-Reply-To: <20230112-net-next-c45-seperation-part-2-v1-3-5eeaae931526@walle.cc>
+References: <20230112-net-next-c45-seperation-part-2-v1-0-5eeaae931526@walle.cc>
+ <20230112-net-next-c45-seperation-part-2-v1-3-5eeaae931526@walle.cc>
+Message-ID: <2fd5c783-94f1-1896-c6b9-431a754aec14@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Enable Virtual UART (VUART) module. This module provides virtual serial
-communication capabilities between host CPU and BMC and can be used for
-the Serial-Over-LAN (SoL) feature implementation.
+On 1/12/23 07:15, Michael Walle wrote:
+> From: Andrew Lunn <andrew@lunn.ch>
+> 
+> The MDIO mux broadcom iproc can perform both C22 and C45 transfers.
+> Create separate functions for each and register the C45 versions using
+> the new API calls.
+> 
+> Signed-off-by: Andrew Lunn <andrew@lunn.ch>
+> Signed-off-by: Michael Walle <michael@walle.cc>
+> ---
+> Apparently, in the c45 case, the reg value including the MII_ADDR_C45
+> bit is written to the hardware. Looks weird, that a "random" software
+> bit is written to a register. Florian is that correct? Also, with this
+> patch this flag isn't set anymore.
 
-Signed-off-by: Konstantin Aladyshev <aladyshev22@gmail.com>
----
- arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts | 7 +++++++
- 1 file changed, 7 insertions(+)
-
-diff --git a/arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts b/arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts
-index d8e8fca44c78..6bded774c457 100644
---- a/arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-amd-ethanolx.dts
-@@ -5,6 +5,7 @@
- 
- #include "aspeed-g5.dtsi"
- #include <dt-bindings/gpio/aspeed-gpio.h>
-+#include <dt-bindings/interrupt-controller/irq.h>
- 
- / {
- 	model = "AMD EthanolX BMC";
-@@ -275,6 +276,12 @@ &lpc_ctrl {
- 	status = "okay";
- };
- 
-+&vuart {
-+	status = "okay";
-+	aspeed,lpc-io-reg = <0x3f8>;
-+	aspeed,lpc-interrupts = <4 IRQ_TYPE_LEVEL_HIGH>;
-+};
-+
- &pwm_tacho {
- 	status = "okay";
- 	pinctrl-names = "default";
+We should be masking the MII_ADDR_C45 bit because the MDIO_ADDR_OFFSET 
+only defines bits 0 through 20 as being read/write and bits above being 
+read-only. In practice, this is probably not making any difference or harm.
 -- 
-2.25.1
+Florian
 
