@@ -1,10 +1,9 @@
 From: Michael Walle <michael@walle.cc>
-Date: Thu, 12 Jan 2023 16:15:12 +0100
-Subject: [PATCH net-next 06/10] net: ethernet: mtk_eth_soc: Separate C22 and
- C45 transactions
+Date: Thu, 12 Jan 2023 16:15:11 +0100
+Subject: [PATCH net-next 05/10] net: mdio: ipq4019: Separate C22 and C45 transactions
 In-Reply-To: <20230112-net-next-c45-seperation-part-2-v1-0-5eeaae931526@walle.cc>
 References: <20230112-net-next-c45-seperation-part-2-v1-0-5eeaae931526@walle.cc>
-Message-ID: <20230112-net-next-c45-seperation-part-2-v1-6-5eeaae931526@walle.cc>
+Message-ID: <20230112-net-next-c45-seperation-part-2-v1-5-5eeaae931526@walle.cc>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -13,248 +12,240 @@ Content-Transfer-Encoding: 7bit
 
 From: Andrew Lunn <andrew@lunn.ch>
 
-The mediatek bus driver can perform both C22 and C45 transfers.
-Create separate functions for each and register the C45 versions using
-the new API calls.
+The ipq4019 driver can perform both C22 and C45 transfers.  Create
+separate functions for each and register the C45 versions using the
+new driver API calls.
 
 Signed-off-by: Andrew Lunn <andrew@lunn.ch>
 Signed-off-by: Michael Walle <michael@walle.cc>
 ---
- drivers/net/ethernet/mediatek/mtk_eth_soc.c | 178 +++++++++++++++++-----------
- 1 file changed, 112 insertions(+), 66 deletions(-)
+ drivers/net/mdio/mdio-ipq4019.c | 154 +++++++++++++++++++++++-----------------
+ 1 file changed, 90 insertions(+), 64 deletions(-)
 
-diff --git a/drivers/net/ethernet/mediatek/mtk_eth_soc.c b/drivers/net/ethernet/mediatek/mtk_eth_soc.c
-index e3de9a53b2d9..dc50e0b227a6 100644
---- a/drivers/net/ethernet/mediatek/mtk_eth_soc.c
-+++ b/drivers/net/ethernet/mediatek/mtk_eth_soc.c
-@@ -215,8 +215,8 @@ static int mtk_mdio_busy_wait(struct mtk_eth *eth)
- 	return -ETIMEDOUT;
+diff --git a/drivers/net/mdio/mdio-ipq4019.c b/drivers/net/mdio/mdio-ipq4019.c
+index 4eba5a91075c..78b93de636f5 100644
+--- a/drivers/net/mdio/mdio-ipq4019.c
++++ b/drivers/net/mdio/mdio-ipq4019.c
+@@ -53,7 +53,8 @@ static int ipq4019_mdio_wait_busy(struct mii_bus *bus)
+ 				  IPQ4019_MDIO_SLEEP, IPQ4019_MDIO_TIMEOUT);
  }
  
--static int _mtk_mdio_write(struct mtk_eth *eth, u32 phy_addr, u32 phy_reg,
--			   u32 write_data)
-+static int _mtk_mdio_write_c22(struct mtk_eth *eth, u32 phy_addr, u32 phy_reg,
-+			       u32 write_data)
+-static int ipq4019_mdio_read(struct mii_bus *bus, int mii_id, int regnum)
++static int ipq4019_mdio_read_c45(struct mii_bus *bus, int mii_id, int mmd,
++				 int reg)
  {
- 	int ret;
+ 	struct ipq4019_mdio_data *priv = bus->priv;
+ 	unsigned int data;
+@@ -62,61 +63,71 @@ static int ipq4019_mdio_read(struct mii_bus *bus, int mii_id, int regnum)
+ 	if (ipq4019_mdio_wait_busy(bus))
+ 		return -ETIMEDOUT;
  
-@@ -224,35 +224,13 @@ static int _mtk_mdio_write(struct mtk_eth *eth, u32 phy_addr, u32 phy_reg,
- 	if (ret < 0)
- 		return ret;
+-	/* Clause 45 support */
+-	if (regnum & MII_ADDR_C45) {
+-		unsigned int mmd = (regnum >> 16) & 0x1F;
+-		unsigned int reg = regnum & 0xFFFF;
++	data = readl(priv->membase + MDIO_MODE_REG);
  
--	if (phy_reg & MII_ADDR_C45) {
--		mtk_w32(eth, PHY_IAC_ACCESS |
--			     PHY_IAC_START_C45 |
--			     PHY_IAC_CMD_C45_ADDR |
--			     PHY_IAC_REG(mdiobus_c45_devad(phy_reg)) |
--			     PHY_IAC_ADDR(phy_addr) |
--			     PHY_IAC_DATA(mdiobus_c45_regad(phy_reg)),
--			MTK_PHY_IAC);
--
--		ret = mtk_mdio_busy_wait(eth);
--		if (ret < 0)
--			return ret;
--
--		mtk_w32(eth, PHY_IAC_ACCESS |
--			     PHY_IAC_START_C45 |
--			     PHY_IAC_CMD_WRITE |
--			     PHY_IAC_REG(mdiobus_c45_devad(phy_reg)) |
--			     PHY_IAC_ADDR(phy_addr) |
--			     PHY_IAC_DATA(write_data),
--			MTK_PHY_IAC);
+-		/* Enter Clause 45 mode */
+-		data = readl(priv->membase + MDIO_MODE_REG);
++	data |= MDIO_MODE_C45;
+ 
+-		data |= MDIO_MODE_C45;
++	writel(data, priv->membase + MDIO_MODE_REG);
+ 
+-		writel(data, priv->membase + MDIO_MODE_REG);
++	/* issue the phy address and mmd */
++	writel((mii_id << 8) | mmd, priv->membase + MDIO_ADDR_REG);
+ 
+-		/* issue the phy address and mmd */
+-		writel((mii_id << 8) | mmd, priv->membase + MDIO_ADDR_REG);
++	/* issue reg */
++	writel(reg, priv->membase + MDIO_DATA_WRITE_REG);
+ 
+-		/* issue reg */
+-		writel(reg, priv->membase + MDIO_DATA_WRITE_REG);
++	cmd = MDIO_CMD_ACCESS_START | MDIO_CMD_ACCESS_CODE_C45_ADDR;
+ 
+-		cmd = MDIO_CMD_ACCESS_START | MDIO_CMD_ACCESS_CODE_C45_ADDR;
 -	} else {
--		mtk_w32(eth, PHY_IAC_ACCESS |
--			     PHY_IAC_START_C22 |
--			     PHY_IAC_CMD_WRITE |
--			     PHY_IAC_REG(phy_reg) |
--			     PHY_IAC_ADDR(phy_addr) |
--			     PHY_IAC_DATA(write_data),
--			MTK_PHY_IAC);
--	}
-+	mtk_w32(eth, PHY_IAC_ACCESS |
-+		PHY_IAC_START_C22 |
-+		PHY_IAC_CMD_WRITE |
-+		PHY_IAC_REG(phy_reg) |
-+		PHY_IAC_ADDR(phy_addr) |
-+		PHY_IAC_DATA(write_data),
-+		MTK_PHY_IAC);
+-		/* Enter Clause 22 mode */
+-		data = readl(priv->membase + MDIO_MODE_REG);
++	/* issue read command */
++	writel(cmd, priv->membase + MDIO_CMD_REG);
  
- 	ret = mtk_mdio_busy_wait(eth);
- 	if (ret < 0)
-@@ -261,7 +239,8 @@ static int _mtk_mdio_write(struct mtk_eth *eth, u32 phy_addr, u32 phy_reg,
- 	return 0;
+-		data &= ~MDIO_MODE_C45;
++	/* Wait read complete */
++	if (ipq4019_mdio_wait_busy(bus))
++		return -ETIMEDOUT;
+ 
+-		writel(data, priv->membase + MDIO_MODE_REG);
++	cmd = MDIO_CMD_ACCESS_START | MDIO_CMD_ACCESS_CODE_C45_READ;
+ 
+-		/* issue the phy address and reg */
+-		writel((mii_id << 8) | regnum, priv->membase + MDIO_ADDR_REG);
++	writel(cmd, priv->membase + MDIO_CMD_REG);
+ 
+-		cmd = MDIO_CMD_ACCESS_START | MDIO_CMD_ACCESS_CODE_READ;
+-	}
++	if (ipq4019_mdio_wait_busy(bus))
++		return -ETIMEDOUT;
+ 
+-	/* issue read command */
+-	writel(cmd, priv->membase + MDIO_CMD_REG);
++	/* Read and return data */
++	return readl(priv->membase + MDIO_DATA_READ_REG);
++}
++
++static int ipq4019_mdio_read_c22(struct mii_bus *bus, int mii_id, int regnum)
++{
++	struct ipq4019_mdio_data *priv = bus->priv;
++	unsigned int data;
++	unsigned int cmd;
+ 
+-	/* Wait read complete */
+ 	if (ipq4019_mdio_wait_busy(bus))
+ 		return -ETIMEDOUT;
+ 
+-	if (regnum & MII_ADDR_C45) {
+-		cmd = MDIO_CMD_ACCESS_START | MDIO_CMD_ACCESS_CODE_C45_READ;
++	data = readl(priv->membase + MDIO_MODE_REG);
+ 
+-		writel(cmd, priv->membase + MDIO_CMD_REG);
++	data &= ~MDIO_MODE_C45;
+ 
+-		if (ipq4019_mdio_wait_busy(bus))
+-			return -ETIMEDOUT;
+-	}
++	writel(data, priv->membase + MDIO_MODE_REG);
++
++	/* issue the phy address and reg */
++	writel((mii_id << 8) | regnum, priv->membase + MDIO_ADDR_REG);
++
++	cmd = MDIO_CMD_ACCESS_START | MDIO_CMD_ACCESS_CODE_READ;
++
++	/* issue read command */
++	writel(cmd, priv->membase + MDIO_CMD_REG);
++
++	/* Wait read complete */
++	if (ipq4019_mdio_wait_busy(bus))
++		return -ETIMEDOUT;
+ 
+ 	/* Read and return data */
+ 	return readl(priv->membase + MDIO_DATA_READ_REG);
  }
  
--static int _mtk_mdio_read(struct mtk_eth *eth, u32 phy_addr, u32 phy_reg)
-+static int _mtk_mdio_write_c45(struct mtk_eth *eth, u32 phy_addr,
-+			       u32 devad, u32 phy_reg, u32 write_data)
+-static int ipq4019_mdio_write(struct mii_bus *bus, int mii_id, int regnum,
+-							 u16 value)
++static int ipq4019_mdio_write_c45(struct mii_bus *bus, int mii_id, int mmd,
++				  int reg, u16 value)
  {
- 	int ret;
+ 	struct ipq4019_mdio_data *priv = bus->priv;
+ 	unsigned int data;
+@@ -125,50 +136,63 @@ static int ipq4019_mdio_write(struct mii_bus *bus, int mii_id, int regnum,
+ 	if (ipq4019_mdio_wait_busy(bus))
+ 		return -ETIMEDOUT;
  
-@@ -269,33 +248,82 @@ static int _mtk_mdio_read(struct mtk_eth *eth, u32 phy_addr, u32 phy_reg)
- 	if (ret < 0)
- 		return ret;
+-	/* Clause 45 support */
+-	if (regnum & MII_ADDR_C45) {
+-		unsigned int mmd = (regnum >> 16) & 0x1F;
+-		unsigned int reg = regnum & 0xFFFF;
++	data = readl(priv->membase + MDIO_MODE_REG);
  
--	if (phy_reg & MII_ADDR_C45) {
--		mtk_w32(eth, PHY_IAC_ACCESS |
--			     PHY_IAC_START_C45 |
--			     PHY_IAC_CMD_C45_ADDR |
--			     PHY_IAC_REG(mdiobus_c45_devad(phy_reg)) |
--			     PHY_IAC_ADDR(phy_addr) |
--			     PHY_IAC_DATA(mdiobus_c45_regad(phy_reg)),
--			MTK_PHY_IAC);
--
--		ret = mtk_mdio_busy_wait(eth);
--		if (ret < 0)
--			return ret;
--
--		mtk_w32(eth, PHY_IAC_ACCESS |
--			     PHY_IAC_START_C45 |
--			     PHY_IAC_CMD_C45_READ |
--			     PHY_IAC_REG(mdiobus_c45_devad(phy_reg)) |
--			     PHY_IAC_ADDR(phy_addr),
--			MTK_PHY_IAC);
+-		/* Enter Clause 45 mode */
+-		data = readl(priv->membase + MDIO_MODE_REG);
++	data |= MDIO_MODE_C45;
+ 
+-		data |= MDIO_MODE_C45;
++	writel(data, priv->membase + MDIO_MODE_REG);
+ 
+-		writel(data, priv->membase + MDIO_MODE_REG);
++	/* issue the phy address and mmd */
++	writel((mii_id << 8) | mmd, priv->membase + MDIO_ADDR_REG);
+ 
+-		/* issue the phy address and mmd */
+-		writel((mii_id << 8) | mmd, priv->membase + MDIO_ADDR_REG);
++	/* issue reg */
++	writel(reg, priv->membase + MDIO_DATA_WRITE_REG);
+ 
+-		/* issue reg */
+-		writel(reg, priv->membase + MDIO_DATA_WRITE_REG);
++	cmd = MDIO_CMD_ACCESS_START | MDIO_CMD_ACCESS_CODE_C45_ADDR;
+ 
+-		cmd = MDIO_CMD_ACCESS_START | MDIO_CMD_ACCESS_CODE_C45_ADDR;
++	writel(cmd, priv->membase + MDIO_CMD_REG);
+ 
+-		writel(cmd, priv->membase + MDIO_CMD_REG);
++	if (ipq4019_mdio_wait_busy(bus))
++		return -ETIMEDOUT;
+ 
+-		if (ipq4019_mdio_wait_busy(bus))
+-			return -ETIMEDOUT;
 -	} else {
--		mtk_w32(eth, PHY_IAC_ACCESS |
--			     PHY_IAC_START_C22 |
--			     PHY_IAC_CMD_C22_READ |
--			     PHY_IAC_REG(phy_reg) |
--			     PHY_IAC_ADDR(phy_addr),
--			MTK_PHY_IAC);
+-		/* Enter Clause 22 mode */
+-		data = readl(priv->membase + MDIO_MODE_REG);
++	/* issue write data */
++	writel(value, priv->membase + MDIO_DATA_WRITE_REG);
+ 
+-		data &= ~MDIO_MODE_C45;
++	cmd = MDIO_CMD_ACCESS_START | MDIO_CMD_ACCESS_CODE_C45_WRITE;
++	writel(cmd, priv->membase + MDIO_CMD_REG);
+ 
+-		writel(data, priv->membase + MDIO_MODE_REG);
++	/* Wait write complete */
++	if (ipq4019_mdio_wait_busy(bus))
++		return -ETIMEDOUT;
+ 
+-		/* issue the phy address and reg */
+-		writel((mii_id << 8) | regnum, priv->membase + MDIO_ADDR_REG);
 -	}
-+	mtk_w32(eth, PHY_IAC_ACCESS |
-+		PHY_IAC_START_C45 |
-+		PHY_IAC_CMD_C45_ADDR |
-+		PHY_IAC_REG(devad) |
-+		PHY_IAC_ADDR(phy_addr) |
-+		PHY_IAC_DATA(phy_reg),
-+		MTK_PHY_IAC);
-+
-+	ret = mtk_mdio_busy_wait(eth);
-+	if (ret < 0)
-+		return ret;
-+
-+	mtk_w32(eth, PHY_IAC_ACCESS |
-+		PHY_IAC_START_C45 |
-+		PHY_IAC_CMD_WRITE |
-+		PHY_IAC_REG(devad) |
-+		PHY_IAC_ADDR(phy_addr) |
-+		PHY_IAC_DATA(write_data),
-+		MTK_PHY_IAC);
-+
-+	ret = mtk_mdio_busy_wait(eth);
-+	if (ret < 0)
-+		return ret;
-+
 +	return 0;
 +}
 +
-+static int _mtk_mdio_read_c22(struct mtk_eth *eth, u32 phy_addr, u32 phy_reg)
++static int ipq4019_mdio_write_c22(struct mii_bus *bus, int mii_id, int regnum,
++				  u16 value)
 +{
-+	int ret;
++	struct ipq4019_mdio_data *priv = bus->priv;
++	unsigned int data;
++	unsigned int cmd;
 +
-+	ret = mtk_mdio_busy_wait(eth);
-+	if (ret < 0)
-+		return ret;
++	if (ipq4019_mdio_wait_busy(bus))
++		return -ETIMEDOUT;
 +
-+	mtk_w32(eth, PHY_IAC_ACCESS |
-+		PHY_IAC_START_C22 |
-+		PHY_IAC_CMD_C22_READ |
-+		PHY_IAC_REG(phy_reg) |
-+		PHY_IAC_ADDR(phy_addr),
-+		MTK_PHY_IAC);
++	/* Enter Clause 22 mode */
++	data = readl(priv->membase + MDIO_MODE_REG);
 +
-+	ret = mtk_mdio_busy_wait(eth);
-+	if (ret < 0)
-+		return ret;
++	data &= ~MDIO_MODE_C45;
 +
-+	return mtk_r32(eth, MTK_PHY_IAC) & PHY_IAC_DATA_MASK;
-+}
++	writel(data, priv->membase + MDIO_MODE_REG);
 +
-+static int _mtk_mdio_read_c45(struct mtk_eth *eth, u32 phy_addr,
-+			      u32 devad, u32 phy_reg)
-+{
-+	int ret;
-+
-+	ret = mtk_mdio_busy_wait(eth);
-+	if (ret < 0)
-+		return ret;
-+
-+	mtk_w32(eth, PHY_IAC_ACCESS |
-+		PHY_IAC_START_C45 |
-+		PHY_IAC_CMD_C45_ADDR |
-+		PHY_IAC_REG(devad) |
-+		PHY_IAC_ADDR(phy_addr) |
-+		PHY_IAC_DATA(phy_reg),
-+		MTK_PHY_IAC);
-+
-+	ret = mtk_mdio_busy_wait(eth);
-+	if (ret < 0)
-+		return ret;
-+
-+	mtk_w32(eth, PHY_IAC_ACCESS |
-+		PHY_IAC_START_C45 |
-+		PHY_IAC_CMD_C45_READ |
-+		PHY_IAC_REG(devad) |
-+		PHY_IAC_ADDR(phy_addr),
-+		MTK_PHY_IAC);
++	/* issue the phy address and reg */
++	writel((mii_id << 8) | regnum, priv->membase + MDIO_ADDR_REG);
  
- 	ret = mtk_mdio_busy_wait(eth);
- 	if (ret < 0)
-@@ -304,19 +332,35 @@ static int _mtk_mdio_read(struct mtk_eth *eth, u32 phy_addr, u32 phy_reg)
- 	return mtk_r32(eth, MTK_PHY_IAC) & PHY_IAC_DATA_MASK;
- }
+ 	/* issue write data */
+ 	writel(value, priv->membase + MDIO_DATA_WRITE_REG);
  
--static int mtk_mdio_write(struct mii_bus *bus, int phy_addr,
--			  int phy_reg, u16 val)
-+static int mtk_mdio_write_c22(struct mii_bus *bus, int phy_addr,
-+			      int phy_reg, u16 val)
-+{
-+	struct mtk_eth *eth = bus->priv;
-+
-+	return _mtk_mdio_write_c22(eth, phy_addr, phy_reg, val);
-+}
-+
-+static int mtk_mdio_write_c45(struct mii_bus *bus, int phy_addr,
-+			      int devad, int phy_reg, u16 val)
-+{
-+	struct mtk_eth *eth = bus->priv;
-+
-+	return _mtk_mdio_write_c45(eth, phy_addr, devad, phy_reg, val);
-+}
-+
-+static int mtk_mdio_read_c22(struct mii_bus *bus, int phy_addr, int phy_reg)
- {
- 	struct mtk_eth *eth = bus->priv;
+ 	/* issue write command */
+-	if (regnum & MII_ADDR_C45)
+-		cmd = MDIO_CMD_ACCESS_START | MDIO_CMD_ACCESS_CODE_C45_WRITE;
+-	else
+-		cmd = MDIO_CMD_ACCESS_START | MDIO_CMD_ACCESS_CODE_WRITE;
++	cmd = MDIO_CMD_ACCESS_START | MDIO_CMD_ACCESS_CODE_WRITE;
  
--	return _mtk_mdio_write(eth, phy_addr, phy_reg, val);
-+	return _mtk_mdio_read_c22(eth, phy_addr, phy_reg);
- }
+ 	writel(cmd, priv->membase + MDIO_CMD_REG);
  
--static int mtk_mdio_read(struct mii_bus *bus, int phy_addr, int phy_reg)
-+static int mtk_mdio_read_c45(struct mii_bus *bus, int phy_addr, int devad,
-+			     int phy_reg)
- {
- 	struct mtk_eth *eth = bus->priv;
+@@ -235,8 +259,10 @@ static int ipq4019_mdio_probe(struct platform_device *pdev)
+ 		priv->eth_ldo_rdy = devm_ioremap_resource(&pdev->dev, res);
  
--	return _mtk_mdio_read(eth, phy_addr, phy_reg);
-+	return _mtk_mdio_read_c45(eth, phy_addr, devad, phy_reg);
- }
- 
- static int mt7621_gmac0_rgmii_adjust(struct mtk_eth *eth,
-@@ -760,8 +804,10 @@ static int mtk_mdio_init(struct mtk_eth *eth)
- 	}
- 
- 	eth->mii_bus->name = "mdio";
--	eth->mii_bus->read = mtk_mdio_read;
--	eth->mii_bus->write = mtk_mdio_write;
-+	eth->mii_bus->read = mtk_mdio_read_c22;
-+	eth->mii_bus->write = mtk_mdio_write_c22;
-+	eth->mii_bus->read_c45 = mtk_mdio_read_c45;
-+	eth->mii_bus->write_c45 = mtk_mdio_write_c45;
- 	eth->mii_bus->probe_capabilities = MDIOBUS_C22_C45;
- 	eth->mii_bus->priv = eth;
- 	eth->mii_bus->parent = eth->dev;
+ 	bus->name = "ipq4019_mdio";
+-	bus->read = ipq4019_mdio_read;
+-	bus->write = ipq4019_mdio_write;
++	bus->read = ipq4019_mdio_read_c22;
++	bus->write = ipq4019_mdio_write_c22;
++	bus->read_c45 = ipq4019_mdio_read_c45;
++	bus->write_c45 = ipq4019_mdio_write_c45;
+ 	bus->reset = ipq_mdio_reset;
+ 	bus->parent = &pdev->dev;
+ 	snprintf(bus->id, MII_BUS_ID_SIZE, "%s%d", pdev->name, pdev->id);
 
 -- 
 2.30.2
