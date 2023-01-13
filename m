@@ -1,32 +1,68 @@
-From: Kees Cook <keescook@chromium.org>
-Date: Thu, 12 Jan 2023 14:17:36 -0800
-Subject: [PATCH][next] crypto: aspeed - Replace zero-length array with
- flexible-array member
-In-Reply-To: <Y7zBxbEAvcEEJRie@work>
-References: <Y7zBxbEAvcEEJRie@work>
-Message-ID: <202301121417.EE86BDD5C@keescook>
+From: Herbert Xu <herbert@gondor.apana.org.au>
+Date: Fri, 13 Jan 2023 12:13:16 +0800
+Subject: [PATCH v5 0/4] Add Aspeed ACRY driver for hardware acceleration
+In-Reply-To: <20230104013436.203427-1-neal_liu@aspeedtech.com>
+References: <20230104013436.203427-1-neal_liu@aspeedtech.com>
+Message-ID: <Y8DaXA9X5Rp+3jCA@gondor.apana.org.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Jan 09, 2023 at 07:39:17PM -0600, Gustavo A. R. Silva wrote:
-> Zero-length arrays are deprecated[1] and we are moving towards
-> adopting C99 flexible-array members instead. So, replace zero-length
-> array declaration in struct aspeed_sham_ctx with flex-array
-> member.
+On Wed, Jan 04, 2023 at 09:34:32AM +0800, Neal Liu wrote:
+> Aspeed ACRY engine is designed to accelerate the throughput of
+> ECDSA/RSA signature and verification.
 > 
-> This helps with the ongoing efforts to tighten the FORTIFY_SOURCE
-> routines on memcpy() and help us make progress towards globally
-> enabling -fstrict-flex-arrays=3 [2].
+> These patches aim to add Aspeed ACRY RSA driver support.
+> This driver also pass the run-time self tests that take place at
+> algorithm registration on both big-endian/little-endian system
+> in AST2600 evaluation board .
 > 
-> Link: https://www.kernel.org/doc/html/latest/process/deprecated.html#zero-length-and-one-element-arrays [1]
-> Link: https://gcc.gnu.org/pipermail/gcc-patches/2022-October/602902.html [2]
-> Link: https://github.com/KSPP/linux/issues/78
-> Signed-off-by: Gustavo A. R. Silva <gustavoars@kernel.org>
+> Tested-by below configs:
+> - CONFIG_CRYPTO_MANAGER_DISABLE_TESTS is not set
+> - CONFIG_CRYPTO_MANAGER_EXTRA_TESTS=y
+> - CONFIG_DMA_API_DEBUG=y
+> - CONFIG_DMA_API_DEBUG_SG=y
+> - CONFIG_CPU_BIG_ENDIAN=y
+> 
+> Change since v4:
+> - Remove GFP_DMA flag since it's unnecessary.
+> 
+> Change since v3:
+> - Revise aspeed,ast2600-ahbc.yaml dt-bindings description.
+> 
+> Change since v2:
+> - Fix format and uninitialized warning.
+> - Revise binding description.
+> 
+> Change since v1:
+> - Fix dt-bindings description.
+> - Refine the Makefile which has been addressed.
+> 
+> Neal Liu (4):
+>   crypto: aspeed: Add ACRY RSA driver
+>   ARM: dts: aspeed: Add ACRY/AHBC device controller node
+>   dt-bindings: crypto: add documentation for Aspeed ACRY
+>   dt-bindings: bus: add documentation for Aspeed AHBC
+> 
+>  .../bindings/bus/aspeed,ast2600-ahbc.yaml     |  37 +
+>  .../bindings/crypto/aspeed,ast2600-acry.yaml  |  49 ++
+>  MAINTAINERS                                   |   2 +-
+>  arch/arm/boot/dts/aspeed-g6.dtsi              |  13 +
+>  drivers/crypto/aspeed/Kconfig                 |  11 +
+>  drivers/crypto/aspeed/Makefile                |   2 +
+>  drivers/crypto/aspeed/aspeed-acry.c           | 828 ++++++++++++++++++
+>  7 files changed, 941 insertions(+), 1 deletion(-)
+>  create mode 100644 Documentation/devicetree/bindings/bus/aspeed,ast2600-ahbc.yaml
+>  create mode 100644 Documentation/devicetree/bindings/crypto/aspeed,ast2600-acry.yaml
+>  create mode 100644 drivers/crypto/aspeed/aspeed-acry.c
+> 
+> -- 
+> 2.25.1
 
-Reviewed-by: Kees Cook <keescook@chromium.org>
-
+All applied.  Thanks.
 -- 
-Kees Cook
+Email: Herbert Xu <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
