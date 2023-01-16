@@ -1,105 +1,78 @@
 From: Michael Walle <michael@walle.cc>
-Date: Thu, 12 Jan 2023 16:15:08 +0100
-Subject: [PATCH net-next 02/10] net: mdio: i2c: Separate C22 and C45 transactions
-In-Reply-To: <20230112-net-next-c45-seperation-part-2-v1-0-5eeaae931526@walle.cc>
-References: <20230112-net-next-c45-seperation-part-2-v1-0-5eeaae931526@walle.cc>
-Message-ID: <20230112-net-next-c45-seperation-part-2-v1-2-5eeaae931526@walle.cc>
+Date: Mon, 16 Jan 2023 13:55:13 +0100
+Subject: [PATCH net-next 0/6] net: phy: Remove probe_capabilities
+Message-ID: <20230116-net-next-remove-probe-capabilities-v1-0-5aa29738a023@walle.cc>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Andrew Lunn <andrew@lunn.ch>
+With all the drivers which used .probe_capabilities converted to the
+new c45 MDIO access methods, we can now decide based upon these whether
+a bus driver supports c45 and we can get rid of the not widely used
+probe_capabilites.
 
-The MDIO over I2C bus driver can perform both C22 and C45 transfers.
-Create separate functions for each and register the C45 versions using
-the new API calls.
+Unfortunately, due to a now broader support of c45 scans, this will
+trigger a bug on some boards with a (c22-only) Micrel PHY. These PHYs
+don't ignore c45 accesses correctly, thinking they are addressed
+themselves and distrupt the MDIO access. To avoid this, a blacklist
+for c45 scans is introduced.
 
-Signed-off-by: Andrew Lunn <andrew@lunn.ch>
+To: Heiner Kallweit <hkallweit1@gmail.com>
+To: Russell King <linux@armlinux.org.uk>
+To: "David S. Miller" <davem@davemloft.net>
+To: Eric Dumazet <edumazet@google.com>
+To: Jakub Kicinski <kuba@kernel.org>
+To: Paolo Abeni <pabeni@redhat.com>
+To: Felix Fietkau <nbd@nbd.name>
+To: John Crispin <john@phrozen.org>
+To: Sean Wang <sean.wang@mediatek.com>
+To: Mark Lee <Mark-MC.Lee@mediatek.com>
+To: Lorenzo Bianconi <lorenzo@kernel.org>
+To: Matthias Brugger <matthias.bgg@gmail.com>
+To: Bryan Whitehead <bryan.whitehead@microchip.com>
+To: UNGLinuxDriver@microchip.com
+To: Giuseppe Cavallaro <peppe.cavallaro@st.com>
+To: Alexandre Torgue <alexandre.torgue@foss.st.com>
+To: Jose Abreu <joabreu@synopsys.com>
+To: Maxime Coquelin <mcoquelin.stm32@gmail.com>
+To: Joel Stanley <joel@jms.id.au>
+To: Andrew Jeffery <andrew@aj.id.au>
+Cc: netdev at vger.kernel.org
+Cc: linux-kernel at vger.kernel.org
+Cc: linux-arm-kernel at lists.infradead.org
+Cc: linux-mediatek at lists.infradead.org
+Cc: linux-stm32 at st-md-mailman.stormreply.com
+Cc: linux-aspeed at lists.ozlabs.org
+Cc: Andrew Lunn <andrew@lunn.ch>
 Signed-off-by: Michael Walle <michael@walle.cc>
+
 ---
- drivers/net/mdio/mdio-i2c.c | 32 +++++++++++++++++++++++---------
- 1 file changed, 23 insertions(+), 9 deletions(-)
+Andrew Lunn (6):
+      net: mdio: Move mdiobus_scan() within file
+      net: mdio: Rework scanning of bus ready for quirks
+      net: mdio: Add workaround for Micrel PHYs which are not C45 compatible
+      net: mdio: scan bus based on bus capabilities for C22 and C45
+      net: phy: Decide on C45 capabilities based on presence of method
+      net: phy: Remove probe_capabilities
 
-diff --git a/drivers/net/mdio/mdio-i2c.c b/drivers/net/mdio/mdio-i2c.c
-index bf8bf5e20faf..9577a1842997 100644
---- a/drivers/net/mdio/mdio-i2c.c
-+++ b/drivers/net/mdio/mdio-i2c.c
-@@ -30,7 +30,8 @@ static unsigned int i2c_mii_phy_addr(int phy_id)
- 	return phy_id + 0x40;
- }
- 
--static int i2c_mii_read_default(struct mii_bus *bus, int phy_id, int reg)
-+static int i2c_mii_read_default_c45(struct mii_bus *bus, int phy_id, int devad,
-+				    int reg)
- {
- 	struct i2c_adapter *i2c = bus->priv;
- 	struct i2c_msg msgs[2];
-@@ -41,8 +42,8 @@ static int i2c_mii_read_default(struct mii_bus *bus, int phy_id, int reg)
- 		return 0xffff;
- 
- 	p = addr;
--	if (reg & MII_ADDR_C45) {
--		*p++ = 0x20 | ((reg >> 16) & 31);
-+	if (devad >= 0) {
-+		*p++ = 0x20 | devad;
- 		*p++ = reg >> 8;
- 	}
- 	*p++ = reg;
-@@ -64,8 +65,8 @@ static int i2c_mii_read_default(struct mii_bus *bus, int phy_id, int reg)
- 	return data[0] << 8 | data[1];
- }
- 
--static int i2c_mii_write_default(struct mii_bus *bus, int phy_id, int reg,
--				 u16 val)
-+static int i2c_mii_write_default_c45(struct mii_bus *bus, int phy_id,
-+				     int devad, int reg, u16 val)
- {
- 	struct i2c_adapter *i2c = bus->priv;
- 	struct i2c_msg msg;
-@@ -76,8 +77,8 @@ static int i2c_mii_write_default(struct mii_bus *bus, int phy_id, int reg,
- 		return 0;
- 
- 	p = data;
--	if (reg & MII_ADDR_C45) {
--		*p++ = (reg >> 16) & 31;
-+	if (devad >= 0) {
-+		*p++ = devad;
- 		*p++ = reg >> 8;
- 	}
- 	*p++ = reg;
-@@ -94,6 +95,17 @@ static int i2c_mii_write_default(struct mii_bus *bus, int phy_id, int reg,
- 	return ret < 0 ? ret : 0;
- }
- 
-+static int i2c_mii_read_default_c22(struct mii_bus *bus, int phy_id, int reg)
-+{
-+	return i2c_mii_read_default_c45(bus, phy_id, -1, reg);
-+}
-+
-+static int i2c_mii_write_default_c22(struct mii_bus *bus, int phy_id, int reg,
-+				     u16 val)
-+{
-+	return i2c_mii_write_default_c45(bus, phy_id, -1, reg, val);
-+}
-+
- /* RollBall SFPs do not access internal PHY via I2C address 0x56, but
-  * instead via address 0x51, when SFP page is set to 0x03 and password to
-  * 0xffffffff.
-@@ -403,8 +415,10 @@ struct mii_bus *mdio_i2c_alloc(struct device *parent, struct i2c_adapter *i2c,
- 		mii->write = i2c_mii_write_rollball;
- 		break;
- 	default:
--		mii->read = i2c_mii_read_default;
--		mii->write = i2c_mii_write_default;
-+		mii->read = i2c_mii_read_default_c22;
-+		mii->write = i2c_mii_write_default_c22;
-+		mii->read_c45 = i2c_mii_read_default_c45;
-+		mii->write_c45 = i2c_mii_write_default_c45;
- 		break;
- 	}
- 
+ drivers/net/ethernet/adi/adin1110.c               |   1 -
+ drivers/net/ethernet/freescale/xgmac_mdio.c       |   1 -
+ drivers/net/ethernet/marvell/pxa168_eth.c         |   2 +-
+ drivers/net/ethernet/mediatek/mtk_eth_soc.c       |   1 -
+ drivers/net/ethernet/microchip/lan743x_main.c     |   2 -
+ drivers/net/ethernet/stmicro/stmmac/stmmac_mdio.c |   3 -
+ drivers/net/mdio/mdio-aspeed.c                    |   1 -
+ drivers/net/phy/mdio_bus.c                        | 194 +++++++++++++++-------
+ drivers/net/phy/phy_device.c                      |   2 +-
+ include/linux/micrel_phy.h                        |   2 +
+ include/linux/phy.h                               |  10 +-
+ 11 files changed, 138 insertions(+), 81 deletions(-)
+---
+base-commit: c12e2e5b76b2e739ccdf196bee960412b45d5f85
+change-id: 20230116-net-next-remove-probe-capabilities-03d401439fc6
 
+Best regards,
 -- 
-2.30.2
+Michael Walle <michael@walle.cc>
