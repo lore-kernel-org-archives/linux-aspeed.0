@@ -1,9 +1,9 @@
 From: Thomas Zimmermann <tzimmermann@suse.de>
-Date: Mon, 16 Jan 2023 14:12:30 +0100
-Subject: [PATCH 17/22] drm/sprd: Remove unnecessary include statements for drm_crtc_helper.h
+Date: Mon, 16 Jan 2023 14:12:34 +0100
+Subject: [PATCH 21/22] drm/vboxvideo: Remove unnecessary include statements for drm_crtc_helper.h
 In-Reply-To: <20230116131235.18917-1-tzimmermann@suse.de>
 References: <20230116131235.18917-1-tzimmermann@suse.de>
-Message-ID: <20230116131235.18917-18-tzimmermann@suse.de>
+Message-ID: <20230116131235.18917-22-tzimmermann@suse.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -19,47 +19,40 @@ possible.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- drivers/gpu/drm/sprd/sprd_dpu.c | 1 -
- drivers/gpu/drm/sprd/sprd_drm.c | 1 -
- drivers/gpu/drm/sprd/sprd_dsi.c | 1 -
- 3 files changed, 3 deletions(-)
+ drivers/gpu/drm/vboxvideo/vbox_drv.c  | 2 +-
+ drivers/gpu/drm/vboxvideo/vbox_main.c | 1 -
+ 2 files changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/drivers/gpu/drm/sprd/sprd_dpu.c b/drivers/gpu/drm/sprd/sprd_dpu.c
-index db0bcea1d9f4..b96fc6837b0d 100644
---- a/drivers/gpu/drm/sprd/sprd_dpu.c
-+++ b/drivers/gpu/drm/sprd/sprd_dpu.c
-@@ -18,7 +18,6 @@
+diff --git a/drivers/gpu/drm/vboxvideo/vbox_drv.c b/drivers/gpu/drm/vboxvideo/vbox_drv.c
+index 12fee99dbfe8..4fee15c97c34 100644
+--- a/drivers/gpu/drm/vboxvideo/vbox_drv.c
++++ b/drivers/gpu/drm/vboxvideo/vbox_drv.c
+@@ -12,12 +12,12 @@
+ #include <linux/vt_kern.h>
  
- #include <drm/drm_atomic_helper.h>
- #include <drm/drm_blend.h>
--#include <drm/drm_crtc_helper.h>
- #include <drm/drm_fb_dma_helper.h>
- #include <drm/drm_framebuffer.h>
- #include <drm/drm_gem_dma_helper.h>
-diff --git a/drivers/gpu/drm/sprd/sprd_drm.c b/drivers/gpu/drm/sprd/sprd_drm.c
-index 9d42f17a5734..be60c0d546a3 100644
---- a/drivers/gpu/drm/sprd/sprd_drm.c
-+++ b/drivers/gpu/drm/sprd/sprd_drm.c
-@@ -11,7 +11,6 @@
- #include <linux/of_platform.h>
- 
- #include <drm/drm_atomic_helper.h>
+ #include <drm/drm_aperture.h>
 -#include <drm/drm_crtc_helper.h>
  #include <drm/drm_drv.h>
- #include <drm/drm_gem_dma_helper.h>
- #include <drm/drm_gem_framebuffer_helper.h>
-diff --git a/drivers/gpu/drm/sprd/sprd_dsi.c b/drivers/gpu/drm/sprd/sprd_dsi.c
-index 12b67a5d5923..ab0e5cce7adb 100644
---- a/drivers/gpu/drm/sprd/sprd_dsi.c
-+++ b/drivers/gpu/drm/sprd/sprd_dsi.c
-@@ -13,7 +13,6 @@
+ #include <drm/drm_fbdev_generic.h>
+ #include <drm/drm_file.h>
+ #include <drm/drm_ioctl.h>
+ #include <drm/drm_managed.h>
++#include <drm/drm_modeset_helper.h>
+ #include <drm/drm_module.h>
  
- #include <drm/drm_atomic_helper.h>
- #include <drm/drm_bridge.h>
+ #include "vbox_drv.h"
+diff --git a/drivers/gpu/drm/vboxvideo/vbox_main.c b/drivers/gpu/drm/vboxvideo/vbox_main.c
+index 3b83e550f4df..42c2d8a99509 100644
+--- a/drivers/gpu/drm/vboxvideo/vbox_main.c
++++ b/drivers/gpu/drm/vboxvideo/vbox_main.c
+@@ -11,7 +11,6 @@
+ #include <linux/pci.h>
+ #include <linux/vbox_err.h>
+ 
 -#include <drm/drm_crtc_helper.h>
- #include <drm/drm_of.h>
- #include <drm/drm_probe_helper.h>
+ #include <drm/drm_damage_helper.h>
  
+ #include "vbox_drv.h"
 -- 
 2.39.0
 
