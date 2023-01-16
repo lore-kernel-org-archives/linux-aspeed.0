@@ -1,10 +1,9 @@
 From: Michael Walle <michael@walle.cc>
-Date: Mon, 16 Jan 2023 13:55:16 +0100
-Subject: [PATCH net-next 4/6] net: mdio: scan bus based on bus capabilities
- for C22 and C45
+Date: Mon, 16 Jan 2023 13:55:18 +0100
+Subject: [PATCH net-next 6/6] net: phy: Remove probe_capabilities
 In-Reply-To: <20230116-net-next-remove-probe-capabilities-v1-0-5aa29738a023@walle.cc>
 References: <20230116-net-next-remove-probe-capabilities-v1-0-5aa29738a023@walle.cc>
-Message-ID: <20230116-net-next-remove-probe-capabilities-v1-4-5aa29738a023@walle.cc>
+Message-ID: <20230116-net-next-remove-probe-capabilities-v1-6-5aa29738a023@walle.cc>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -13,43 +12,123 @@ Content-Transfer-Encoding: 7bit
 
 From: Andrew Lunn <andrew@lunn.ch>
 
-Now that all MDIO bus drivers which set probe_capabilities to
-MDIOBUS_C22_C45 have been converted to use the name API for C45
-transactions, perform the scanning of the bus based on which methods
-the bus provides.
+Deciding if to probe of PHYs using C45 is now determine by if the bus
+provides the C45 read method. This makes probe_capabilities redundant
+so remove it.
 
 Signed-off-by: Andrew Lunn <andrew@lunn.ch>
 Signed-off-by: Michael Walle <michael@walle.cc>
 ---
- drivers/net/phy/mdio_bus.c | 8 ++------
- 1 file changed, 2 insertions(+), 6 deletions(-)
+ drivers/net/ethernet/adi/adin1110.c               | 1 -
+ drivers/net/ethernet/freescale/xgmac_mdio.c       | 1 -
+ drivers/net/ethernet/mediatek/mtk_eth_soc.c       | 1 -
+ drivers/net/ethernet/microchip/lan743x_main.c     | 2 --
+ drivers/net/ethernet/stmicro/stmmac/stmmac_mdio.c | 3 ---
+ drivers/net/mdio/mdio-aspeed.c                    | 1 -
+ include/linux/phy.h                               | 8 --------
+ 7 files changed, 17 deletions(-)
 
-diff --git a/drivers/net/phy/mdio_bus.c b/drivers/net/phy/mdio_bus.c
-index f173c91842e0..34790e601cb1 100644
---- a/drivers/net/phy/mdio_bus.c
-+++ b/drivers/net/phy/mdio_bus.c
-@@ -710,9 +710,7 @@ int __mdiobus_register(struct mii_bus *bus, struct module *owner)
- 			goto error_reset_gpiod;
- 	}
+diff --git a/drivers/net/ethernet/adi/adin1110.c b/drivers/net/ethernet/adi/adin1110.c
+index 0805f249fff2..25f55756681d 100644
+--- a/drivers/net/ethernet/adi/adin1110.c
++++ b/drivers/net/ethernet/adi/adin1110.c
+@@ -523,7 +523,6 @@ static int adin1110_register_mdiobus(struct adin1110_priv *priv,
+ 	mii_bus->priv = priv;
+ 	mii_bus->parent = dev;
+ 	mii_bus->phy_mask = ~((u32)GENMASK(2, 0));
+-	mii_bus->probe_capabilities = MDIOBUS_C22;
+ 	snprintf(mii_bus->id, MII_BUS_ID_SIZE, "%s", dev_name(dev));
  
--	if (bus->probe_capabilities == MDIOBUS_NO_CAP ||
--	    bus->probe_capabilities == MDIOBUS_C22 ||
--	    bus->probe_capabilities == MDIOBUS_C22_C45) {
-+	if (bus->read) {
- 		err = mdiobus_scan_bus_c22(bus);
- 		if (err)
- 			goto error;
-@@ -720,9 +718,7 @@ int __mdiobus_register(struct mii_bus *bus, struct module *owner)
+ 	ret = devm_mdiobus_register(dev, mii_bus);
+diff --git a/drivers/net/ethernet/freescale/xgmac_mdio.c b/drivers/net/ethernet/freescale/xgmac_mdio.c
+index 8b5a4cd8ff08..a13b4ba4d6e1 100644
+--- a/drivers/net/ethernet/freescale/xgmac_mdio.c
++++ b/drivers/net/ethernet/freescale/xgmac_mdio.c
+@@ -397,7 +397,6 @@ static int xgmac_mdio_probe(struct platform_device *pdev)
+ 	bus->read_c45 = xgmac_mdio_read_c45;
+ 	bus->write_c45 = xgmac_mdio_write_c45;
+ 	bus->parent = &pdev->dev;
+-	bus->probe_capabilities = MDIOBUS_C22_C45;
+ 	snprintf(bus->id, MII_BUS_ID_SIZE, "%pa", &res->start);
  
- 	prevent_c45_scan = mdiobus_prevent_c45_scan(bus);
+ 	priv = bus->priv;
+diff --git a/drivers/net/ethernet/mediatek/mtk_eth_soc.c b/drivers/net/ethernet/mediatek/mtk_eth_soc.c
+index dc50e0b227a6..d67ec28b2ba3 100644
+--- a/drivers/net/ethernet/mediatek/mtk_eth_soc.c
++++ b/drivers/net/ethernet/mediatek/mtk_eth_soc.c
+@@ -808,7 +808,6 @@ static int mtk_mdio_init(struct mtk_eth *eth)
+ 	eth->mii_bus->write = mtk_mdio_write_c22;
+ 	eth->mii_bus->read_c45 = mtk_mdio_read_c45;
+ 	eth->mii_bus->write_c45 = mtk_mdio_write_c45;
+-	eth->mii_bus->probe_capabilities = MDIOBUS_C22_C45;
+ 	eth->mii_bus->priv = eth;
+ 	eth->mii_bus->parent = eth->dev;
  
--	if (!prevent_c45_scan &&
--	    (bus->probe_capabilities == MDIOBUS_C45 ||
--	     bus->probe_capabilities == MDIOBUS_C22_C45)) {
-+	if (!prevent_c45_scan && bus->read_c45) {
- 		err = mdiobus_scan_bus_c45(bus);
- 		if (err)
- 			goto error;
+diff --git a/drivers/net/ethernet/microchip/lan743x_main.c b/drivers/net/ethernet/microchip/lan743x_main.c
+index e205edf477de..86b81df374da 100644
+--- a/drivers/net/ethernet/microchip/lan743x_main.c
++++ b/drivers/net/ethernet/microchip/lan743x_main.c
+@@ -3279,7 +3279,6 @@ static int lan743x_mdiobus_init(struct lan743x_adapter *adapter)
+ 			lan743x_csr_write(adapter, SGMII_CTL, sgmii_ctl);
+ 			netif_dbg(adapter, drv, adapter->netdev,
+ 				  "SGMII operation\n");
+-			adapter->mdiobus->probe_capabilities = MDIOBUS_C22_C45;
+ 			adapter->mdiobus->read = lan743x_mdiobus_read_c22;
+ 			adapter->mdiobus->write = lan743x_mdiobus_write_c22;
+ 			adapter->mdiobus->read_c45 = lan743x_mdiobus_read_c45;
+@@ -3295,7 +3294,6 @@ static int lan743x_mdiobus_init(struct lan743x_adapter *adapter)
+ 			netif_dbg(adapter, drv, adapter->netdev,
+ 				  "RGMII operation\n");
+ 			// Only C22 support when RGMII I/F
+-			adapter->mdiobus->probe_capabilities = MDIOBUS_C22;
+ 			adapter->mdiobus->read = lan743x_mdiobus_read_c22;
+ 			adapter->mdiobus->write = lan743x_mdiobus_write_c22;
+ 			adapter->mdiobus->name = "lan743x-mdiobus";
+diff --git a/drivers/net/ethernet/stmicro/stmmac/stmmac_mdio.c b/drivers/net/ethernet/stmicro/stmmac/stmmac_mdio.c
+index d2cb22f49ce5..21aaa2730ac8 100644
+--- a/drivers/net/ethernet/stmicro/stmmac/stmmac_mdio.c
++++ b/drivers/net/ethernet/stmicro/stmmac/stmmac_mdio.c
+@@ -553,9 +553,6 @@ int stmmac_mdio_register(struct net_device *ndev)
+ 
+ 	new_bus->name = "stmmac";
+ 
+-	if (priv->plat->has_gmac4)
+-		new_bus->probe_capabilities = MDIOBUS_C22_C45;
+-
+ 	if (priv->plat->has_xgmac) {
+ 		new_bus->read = &stmmac_xgmac2_mdio_read_c22;
+ 		new_bus->write = &stmmac_xgmac2_mdio_write_c22;
+diff --git a/drivers/net/mdio/mdio-aspeed.c b/drivers/net/mdio/mdio-aspeed.c
+index 2f4bbda5e56c..c727103c8b05 100644
+--- a/drivers/net/mdio/mdio-aspeed.c
++++ b/drivers/net/mdio/mdio-aspeed.c
+@@ -164,7 +164,6 @@ static int aspeed_mdio_probe(struct platform_device *pdev)
+ 	bus->write = aspeed_mdio_write_c22;
+ 	bus->read_c45 = aspeed_mdio_read_c45;
+ 	bus->write_c45 = aspeed_mdio_write_c45;
+-	bus->probe_capabilities = MDIOBUS_C22_C45;
+ 
+ 	rc = of_mdiobus_register(bus, pdev->dev.of_node);
+ 	if (rc) {
+diff --git a/include/linux/phy.h b/include/linux/phy.h
+index fceaac0fb319..fbeba4fee8d4 100644
+--- a/include/linux/phy.h
++++ b/include/linux/phy.h
+@@ -419,14 +419,6 @@ struct mii_bus {
+ 	/** @reset_gpiod: Reset GPIO descriptor pointer */
+ 	struct gpio_desc *reset_gpiod;
+ 
+-	/** @probe_capabilities: bus capabilities, used for probing */
+-	enum {
+-		MDIOBUS_NO_CAP = 0,
+-		MDIOBUS_C22,
+-		MDIOBUS_C45,
+-		MDIOBUS_C22_C45,
+-	} probe_capabilities;
+-
+ 	/** @shared_lock: protect access to the shared element */
+ 	struct mutex shared_lock;
+ 
 
 -- 
 2.30.2
