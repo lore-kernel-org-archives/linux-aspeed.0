@@ -1,38 +1,52 @@
 From: Thomas Zimmermann <tzimmermann@suse.de>
-Date: Mon, 16 Jan 2023 14:12:14 +0100
-Subject: [PATCH 01/22] drm/amdgpu: Fix coding style
+Date: Mon, 16 Jan 2023 14:12:24 +0100
+Subject: [PATCH 11/22] drm/kmb: Remove unnecessary include statements for drm_crtc_helper.h
 In-Reply-To: <20230116131235.18917-1-tzimmermann@suse.de>
 References: <20230116131235.18917-1-tzimmermann@suse.de>
-Message-ID: <20230116131235.18917-2-tzimmermann@suse.de>
+Message-ID: <20230116131235.18917-12-tzimmermann@suse.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Align a closing brace and remove trailing whitespaces. No functional
-changes.
+Several source files include drm_crtc_helper.h without needing it or
+only to get its transitive include statements; leading to unnecessary
+compile-time dependencies.
+
+Directly include required headers and drop drm_crtc_helper.h where
+possible.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- drivers/gpu/drm/amd/amdgpu/amdgpu_device.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/gpu/drm/kmb/kmb_crtc.c  | 1 -
+ drivers/gpu/drm/kmb/kmb_plane.c | 1 -
+ 2 files changed, 2 deletions(-)
 
-diff --git a/drivers/gpu/drm/amd/amdgpu/amdgpu_device.c b/drivers/gpu/drm/amd/amdgpu/amdgpu_device.c
-index e47058c2c294..0993ee91fe18 100644
---- a/drivers/gpu/drm/amd/amdgpu/amdgpu_device.c
-+++ b/drivers/gpu/drm/amd/amdgpu/amdgpu_device.c
-@@ -5871,8 +5871,8 @@ void amdgpu_device_invalidate_hdp(struct amdgpu_device *adev,
- int amdgpu_in_reset(struct amdgpu_device *adev)
- {
- 	return atomic_read(&adev->reset_domain->in_gpu_reset);
--	}
--	
-+}
-+
- /**
-  * amdgpu_device_halt() - bring hardware to some kind of halt state
-  *
+diff --git a/drivers/gpu/drm/kmb/kmb_crtc.c b/drivers/gpu/drm/kmb/kmb_crtc.c
+index 06613ffeaaf8..647872f65bff 100644
+--- a/drivers/gpu/drm/kmb/kmb_crtc.c
++++ b/drivers/gpu/drm/kmb/kmb_crtc.c
+@@ -8,7 +8,6 @@
+ #include <drm/drm_atomic.h>
+ #include <drm/drm_atomic_helper.h>
+ #include <drm/drm_crtc.h>
+-#include <drm/drm_crtc_helper.h>
+ #include <drm/drm_print.h>
+ #include <drm/drm_vblank.h>
+ #include <drm/drm_modeset_helper_vtables.h>
+diff --git a/drivers/gpu/drm/kmb/kmb_plane.c b/drivers/gpu/drm/kmb/kmb_plane.c
+index d172a302f902..9e0562aa2bcb 100644
+--- a/drivers/gpu/drm/kmb/kmb_plane.c
++++ b/drivers/gpu/drm/kmb/kmb_plane.c
+@@ -7,7 +7,6 @@
+ #include <drm/drm_atomic_helper.h>
+ #include <drm/drm_blend.h>
+ #include <drm/drm_crtc.h>
+-#include <drm/drm_crtc_helper.h>
+ #include <drm/drm_fb_dma_helper.h>
+ #include <drm/drm_fourcc.h>
+ #include <drm/drm_framebuffer.h>
 -- 
 2.39.0
 
