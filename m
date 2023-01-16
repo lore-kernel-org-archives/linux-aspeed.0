@@ -1,80 +1,38 @@
 From: Thomas Zimmermann <tzimmermann@suse.de>
-Date: Mon, 16 Jan 2023 14:12:15 +0100
-Subject: [PATCH 02/22] drm: Remove unnecessary include statements for drm_crtc_helper.h
+Date: Mon, 16 Jan 2023 14:12:14 +0100
+Subject: [PATCH 01/22] drm/amdgpu: Fix coding style
 In-Reply-To: <20230116131235.18917-1-tzimmermann@suse.de>
 References: <20230116131235.18917-1-tzimmermann@suse.de>
-Message-ID: <20230116131235.18917-3-tzimmermann@suse.de>
+Message-ID: <20230116131235.18917-2-tzimmermann@suse.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Several DRM core and helper source files include drm_crtc_helper.h
-without needing it or only to get its transitive include statements;
-leading to unnecessary compile-time dependencies.
-
-Directly include required headers and drop drm_crtc_helper.h where
-possible. The header file, drm_fixed.h, includes <linux/kernel.h>
-for lower_32_bits().
+Align a closing brace and remove trailing whitespaces. No functional
+changes.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- drivers/gpu/drm/drm_crtc_helper.c  | 1 -
- drivers/gpu/drm/drm_lease.c        | 2 +-
- drivers/gpu/drm/drm_plane_helper.c | 1 -
- include/drm/drm_fixed.h            | 1 +
- 4 files changed, 2 insertions(+), 3 deletions(-)
+ drivers/gpu/drm/amd/amdgpu/amdgpu_device.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/gpu/drm/drm_crtc_helper.c b/drivers/gpu/drm/drm_crtc_helper.c
-index a209659a996c..e7a23e18140c 100644
---- a/drivers/gpu/drm/drm_crtc_helper.c
-+++ b/drivers/gpu/drm/drm_crtc_helper.c
-@@ -39,7 +39,6 @@
- #include <drm/drm_atomic_uapi.h>
- #include <drm/drm_bridge.h>
- #include <drm/drm_crtc.h>
--#include <drm/drm_crtc_helper.h>
- #include <drm/drm_drv.h>
- #include <drm/drm_edid.h>
- #include <drm/drm_encoder.h>
-diff --git a/drivers/gpu/drm/drm_lease.c b/drivers/gpu/drm/drm_lease.c
-index 08ab75303a00..150fe1555068 100644
---- a/drivers/gpu/drm/drm_lease.c
-+++ b/drivers/gpu/drm/drm_lease.c
-@@ -6,7 +6,7 @@
- #include <linux/uaccess.h>
- 
- #include <drm/drm_auth.h>
--#include <drm/drm_crtc_helper.h>
-+#include <drm/drm_crtc.h>
- #include <drm/drm_drv.h>
- #include <drm/drm_file.h>
- #include <drm/drm_lease.h>
-diff --git a/drivers/gpu/drm/drm_plane_helper.c b/drivers/gpu/drm/drm_plane_helper.c
-index ba6a9136a065..c91e454eba09 100644
---- a/drivers/gpu/drm/drm_plane_helper.c
-+++ b/drivers/gpu/drm/drm_plane_helper.c
-@@ -28,7 +28,6 @@
- #include <drm/drm_atomic.h>
- #include <drm/drm_atomic_helper.h>
- #include <drm/drm_atomic_uapi.h>
--#include <drm/drm_crtc_helper.h>
- #include <drm/drm_device.h>
- #include <drm/drm_drv.h>
- #include <drm/drm_encoder.h>
-diff --git a/include/drm/drm_fixed.h b/include/drm/drm_fixed.h
-index 553210c02ee0..255645c1f9a8 100644
---- a/include/drm/drm_fixed.h
-+++ b/include/drm/drm_fixed.h
-@@ -25,6 +25,7 @@
- #ifndef DRM_FIXED_H
- #define DRM_FIXED_H
- 
-+#include <linux/kernel.h>
- #include <linux/math64.h>
- 
- typedef union dfixed {
+diff --git a/drivers/gpu/drm/amd/amdgpu/amdgpu_device.c b/drivers/gpu/drm/amd/amdgpu/amdgpu_device.c
+index e47058c2c294..0993ee91fe18 100644
+--- a/drivers/gpu/drm/amd/amdgpu/amdgpu_device.c
++++ b/drivers/gpu/drm/amd/amdgpu/amdgpu_device.c
+@@ -5871,8 +5871,8 @@ void amdgpu_device_invalidate_hdp(struct amdgpu_device *adev,
+ int amdgpu_in_reset(struct amdgpu_device *adev)
+ {
+ 	return atomic_read(&adev->reset_domain->in_gpu_reset);
+-	}
+-	
++}
++
+ /**
+  * amdgpu_device_halt() - bring hardware to some kind of halt state
+  *
 -- 
 2.39.0
 
