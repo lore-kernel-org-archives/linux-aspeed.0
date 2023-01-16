@@ -1,78 +1,112 @@
 From: Michael Walle <michael@walle.cc>
-Date: Mon, 16 Jan 2023 13:55:13 +0100
-Subject: [PATCH net-next 0/6] net: phy: Remove probe_capabilities
-Message-ID: <20230116-net-next-remove-probe-capabilities-v1-0-5aa29738a023@walle.cc>
+Date: Mon, 16 Jan 2023 13:55:15 +0100
+Subject: [PATCH net-next 3/6] net: mdio: Add workaround for Micrel PHYs which
+ are not C45 compatible
+In-Reply-To: <20230116-net-next-remove-probe-capabilities-v1-0-5aa29738a023@walle.cc>
+References: <20230116-net-next-remove-probe-capabilities-v1-0-5aa29738a023@walle.cc>
+Message-ID: <20230116-net-next-remove-probe-capabilities-v1-3-5aa29738a023@walle.cc>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-With all the drivers which used .probe_capabilities converted to the
-new c45 MDIO access methods, we can now decide based upon these whether
-a bus driver supports c45 and we can get rid of the not widely used
-probe_capabilites.
+From: Andrew Lunn <andrew@lunn.ch>
 
-Unfortunately, due to a now broader support of c45 scans, this will
-trigger a bug on some boards with a (c22-only) Micrel PHY. These PHYs
-don't ignore c45 accesses correctly, thinking they are addressed
-themselves and distrupt the MDIO access. To avoid this, a blacklist
-for c45 scans is introduced.
+After scanning the bus for C22 devices, check if any Micrel PHYs have
+been found.  They are known to do bad things if there are C45
+transactions on the bus. Prevent the scanning of the bus using C45 if
+such a PHY has been detected.
 
-To: Heiner Kallweit <hkallweit1@gmail.com>
-To: Russell King <linux@armlinux.org.uk>
-To: "David S. Miller" <davem@davemloft.net>
-To: Eric Dumazet <edumazet@google.com>
-To: Jakub Kicinski <kuba@kernel.org>
-To: Paolo Abeni <pabeni@redhat.com>
-To: Felix Fietkau <nbd@nbd.name>
-To: John Crispin <john@phrozen.org>
-To: Sean Wang <sean.wang@mediatek.com>
-To: Mark Lee <Mark-MC.Lee@mediatek.com>
-To: Lorenzo Bianconi <lorenzo@kernel.org>
-To: Matthias Brugger <matthias.bgg@gmail.com>
-To: Bryan Whitehead <bryan.whitehead@microchip.com>
-To: UNGLinuxDriver@microchip.com
-To: Giuseppe Cavallaro <peppe.cavallaro@st.com>
-To: Alexandre Torgue <alexandre.torgue@foss.st.com>
-To: Jose Abreu <joabreu@synopsys.com>
-To: Maxime Coquelin <mcoquelin.stm32@gmail.com>
-To: Joel Stanley <joel@jms.id.au>
-To: Andrew Jeffery <andrew@aj.id.au>
-Cc: netdev at vger.kernel.org
-Cc: linux-kernel at vger.kernel.org
-Cc: linux-arm-kernel at lists.infradead.org
-Cc: linux-mediatek at lists.infradead.org
-Cc: linux-stm32 at st-md-mailman.stormreply.com
-Cc: linux-aspeed at lists.ozlabs.org
-Cc: Andrew Lunn <andrew@lunn.ch>
+Signed-off-by: Andrew Lunn <andrew@lunn.ch>
 Signed-off-by: Michael Walle <michael@walle.cc>
-
 ---
-Andrew Lunn (6):
-      net: mdio: Move mdiobus_scan() within file
-      net: mdio: Rework scanning of bus ready for quirks
-      net: mdio: Add workaround for Micrel PHYs which are not C45 compatible
-      net: mdio: scan bus based on bus capabilities for C22 and C45
-      net: phy: Decide on C45 capabilities based on presence of method
-      net: phy: Remove probe_capabilities
+ drivers/net/phy/mdio_bus.c | 36 +++++++++++++++++++++++++++++++++---
+ include/linux/micrel_phy.h |  2 ++
+ 2 files changed, 35 insertions(+), 3 deletions(-)
 
- drivers/net/ethernet/adi/adin1110.c               |   1 -
- drivers/net/ethernet/freescale/xgmac_mdio.c       |   1 -
- drivers/net/ethernet/marvell/pxa168_eth.c         |   2 +-
- drivers/net/ethernet/mediatek/mtk_eth_soc.c       |   1 -
- drivers/net/ethernet/microchip/lan743x_main.c     |   2 -
- drivers/net/ethernet/stmicro/stmmac/stmmac_mdio.c |   3 -
- drivers/net/mdio/mdio-aspeed.c                    |   1 -
- drivers/net/phy/mdio_bus.c                        | 194 +++++++++++++++-------
- drivers/net/phy/phy_device.c                      |   2 +-
- include/linux/micrel_phy.h                        |   2 +
- include/linux/phy.h                               |  10 +-
- 11 files changed, 138 insertions(+), 81 deletions(-)
----
-base-commit: c12e2e5b76b2e739ccdf196bee960412b45d5f85
-change-id: 20230116-net-next-remove-probe-capabilities-03d401439fc6
+diff --git a/drivers/net/phy/mdio_bus.c b/drivers/net/phy/mdio_bus.c
+index 25a964b98bc6..f173c91842e0 100644
+--- a/drivers/net/phy/mdio_bus.c
++++ b/drivers/net/phy/mdio_bus.c
+@@ -19,6 +19,7 @@
+ #include <linux/interrupt.h>
+ #include <linux/io.h>
+ #include <linux/kernel.h>
++#include <linux/micrel_phy.h>
+ #include <linux/mii.h>
+ #include <linux/mm.h>
+ #include <linux/module.h>
+@@ -600,6 +601,31 @@ static int mdiobus_scan_bus_c45(struct mii_bus *bus)
+ 	return 0;
+ }
+ 
++/* There are some C22 PHYs which do bad things when where is a C45
++ * transaction on the bus, like accepting a read themselves, and
++ * stomping over the true devices reply, to performing a write to
++ * themselves which was intended for another device. Now that C22
++ * devices have been found, see if any of them are bad for C45, and if we
++ * should skip the C45 scan.
++ */
++static bool mdiobus_prevent_c45_scan(struct mii_bus *bus)
++{
++	struct phy_device *phydev;
++	u32 oui;
++	int i;
++
++	for (i = 0; i < PHY_MAX_ADDR; i++) {
++		phydev = mdiobus_get_phy(bus, i);
++		if (!phydev)
++			continue;
++		oui = phydev->phy_id >> 10;
++
++		if (oui == MICREL_OUI)
++			return true;
++	}
++	return false;
++}
++
+ /**
+  * __mdiobus_register - bring up all the PHYs on a given bus and attach them to bus
+  * @bus: target mii_bus
+@@ -617,8 +643,9 @@ static int mdiobus_scan_bus_c45(struct mii_bus *bus)
+ int __mdiobus_register(struct mii_bus *bus, struct module *owner)
+ {
+ 	struct mdio_device *mdiodev;
+-	int i, err;
+ 	struct gpio_desc *gpiod;
++	bool prevent_c45_scan;
++	int i, err;
+ 
+ 	if (!bus || !bus->name)
+ 		return -EINVAL;
+@@ -691,8 +718,11 @@ int __mdiobus_register(struct mii_bus *bus, struct module *owner)
+ 			goto error;
+ 	}
+ 
+-	if (bus->probe_capabilities == MDIOBUS_C45 ||
+-	    bus->probe_capabilities == MDIOBUS_C22_C45) {
++	prevent_c45_scan = mdiobus_prevent_c45_scan(bus);
++
++	if (!prevent_c45_scan &&
++	    (bus->probe_capabilities == MDIOBUS_C45 ||
++	     bus->probe_capabilities == MDIOBUS_C22_C45)) {
+ 		err = mdiobus_scan_bus_c45(bus);
+ 		if (err)
+ 			goto error;
+diff --git a/include/linux/micrel_phy.h b/include/linux/micrel_phy.h
+index 1f7c33b2f5a3..771e050883db 100644
+--- a/include/linux/micrel_phy.h
++++ b/include/linux/micrel_phy.h
+@@ -8,6 +8,8 @@
+ #ifndef _MICREL_PHY_H
+ #define _MICREL_PHY_H
+ 
++#define MICREL_OUI		0x0885
++
+ #define MICREL_PHY_ID_MASK	0x00fffff0
+ 
+ #define PHY_ID_KSZ8873MLL	0x000e7237
 
-Best regards,
 -- 
-Michael Walle <michael@walle.cc>
+2.30.2
