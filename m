@@ -1,9 +1,9 @@
 From: Thomas Zimmermann <tzimmermann@suse.de>
-Date: Mon, 16 Jan 2023 14:12:33 +0100
-Subject: [PATCH 20/22] drm/udl: Remove unnecessary include statements for drm_crtc_helper.h
+Date: Mon, 16 Jan 2023 14:12:26 +0100
+Subject: [PATCH 13/22] drm/nouveau: Remove unnecessary include statements for drm_crtc_helper.h
 In-Reply-To: <20230116131235.18917-1-tzimmermann@suse.de>
 References: <20230116131235.18917-1-tzimmermann@suse.de>
-Message-ID: <20230116131235.18917-21-tzimmermann@suse.de>
+Message-ID: <20230116131235.18917-14-tzimmermann@suse.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -19,40 +19,129 @@ possible.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- drivers/gpu/drm/udl/udl_drv.c     | 2 +-
- drivers/gpu/drm/udl/udl_modeset.c | 1 -
- 2 files changed, 1 insertion(+), 2 deletions(-)
+ drivers/gpu/drm/nouveau/dispnv04/crtc.c        | 1 +
+ drivers/gpu/drm/nouveau/dispnv04/dac.c         | 2 +-
+ drivers/gpu/drm/nouveau/dispnv04/dfp.c         | 2 +-
+ drivers/gpu/drm/nouveau/dispnv04/tvmodesnv17.c | 1 -
+ drivers/gpu/drm/nouveau/dispnv04/tvnv04.c      | 2 +-
+ drivers/gpu/drm/nouveau/dispnv04/tvnv17.c      | 1 +
+ drivers/gpu/drm/nouveau/dispnv50/head.c        | 1 -
+ drivers/gpu/drm/nouveau/nouveau_drm.c          | 1 -
+ drivers/gpu/drm/nouveau/nouveau_vga.c          | 1 -
+ 9 files changed, 5 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/gpu/drm/udl/udl_drv.c b/drivers/gpu/drm/udl/udl_drv.c
-index e81352126a0f..1506094a8009 100644
---- a/drivers/gpu/drm/udl/udl_drv.c
-+++ b/drivers/gpu/drm/udl/udl_drv.c
-@@ -5,12 +5,12 @@
+diff --git a/drivers/gpu/drm/nouveau/dispnv04/crtc.c b/drivers/gpu/drm/nouveau/dispnv04/crtc.c
+index ca6d07d8c2c6..a6f2e681bde9 100644
+--- a/drivers/gpu/drm/nouveau/dispnv04/crtc.c
++++ b/drivers/gpu/drm/nouveau/dispnv04/crtc.c
+@@ -24,6 +24,7 @@
+  */
+ #include <drm/drm_crtc_helper.h>
+ #include <drm/drm_fourcc.h>
++#include <drm/drm_modeset_helper_vtables.h>
+ #include <drm/drm_plane_helper.h>
+ #include <drm/drm_vblank.h>
  
- #include <linux/module.h>
+diff --git a/drivers/gpu/drm/nouveau/dispnv04/dac.c b/drivers/gpu/drm/nouveau/dispnv04/dac.c
+index 22d10f328559..d6b8e0cce2ac 100644
+--- a/drivers/gpu/drm/nouveau/dispnv04/dac.c
++++ b/drivers/gpu/drm/nouveau/dispnv04/dac.c
+@@ -24,7 +24,7 @@
+  * DEALINGS IN THE SOFTWARE.
+  */
  
 -#include <drm/drm_crtc_helper.h>
- #include <drm/drm_drv.h>
- #include <drm/drm_fbdev_generic.h>
- #include <drm/drm_file.h>
- #include <drm/drm_gem_shmem_helper.h>
- #include <drm/drm_managed.h>
-+#include <drm/drm_modeset_helper.h>
- #include <drm/drm_ioctl.h>
++#include <drm/drm_modeset_helper_vtables.h>
+ 
+ #include "nouveau_drv.h"
+ #include "nouveau_encoder.h"
+diff --git a/drivers/gpu/drm/nouveau/dispnv04/dfp.c b/drivers/gpu/drm/nouveau/dispnv04/dfp.c
+index ce3d8c6ef000..d5b129dc623b 100644
+--- a/drivers/gpu/drm/nouveau/dispnv04/dfp.c
++++ b/drivers/gpu/drm/nouveau/dispnv04/dfp.c
+@@ -24,8 +24,8 @@
+  * DEALINGS IN THE SOFTWARE.
+  */
+ 
+-#include <drm/drm_crtc_helper.h>
+ #include <drm/drm_fourcc.h>
++#include <drm/drm_modeset_helper_vtables.h>
+ 
+ #include "nouveau_drv.h"
+ #include "nouveau_reg.h"
+diff --git a/drivers/gpu/drm/nouveau/dispnv04/tvmodesnv17.c b/drivers/gpu/drm/nouveau/dispnv04/tvmodesnv17.c
+index 2f6d2b6711ab..a3fedd226854 100644
+--- a/drivers/gpu/drm/nouveau/dispnv04/tvmodesnv17.c
++++ b/drivers/gpu/drm/nouveau/dispnv04/tvmodesnv17.c
+@@ -24,7 +24,6 @@
+  *
+  */
+ 
+-#include <drm/drm_crtc_helper.h>
+ #include "nouveau_drv.h"
+ #include "nouveau_encoder.h"
+ #include "nouveau_crtc.h"
+diff --git a/drivers/gpu/drm/nouveau/dispnv04/tvnv04.c b/drivers/gpu/drm/nouveau/dispnv04/tvnv04.c
+index 3ba7b59580d5..de3ea731d6e6 100644
+--- a/drivers/gpu/drm/nouveau/dispnv04/tvnv04.c
++++ b/drivers/gpu/drm/nouveau/dispnv04/tvnv04.c
+@@ -30,7 +30,7 @@
+ #include "nouveau_connector.h"
+ #include "nouveau_crtc.h"
+ #include "hw.h"
+-#include <drm/drm_crtc_helper.h>
++#include <drm/drm_modeset_helper_vtables.h>
+ 
+ #include <drm/i2c/ch7006.h>
+ 
+diff --git a/drivers/gpu/drm/nouveau/dispnv04/tvnv17.c b/drivers/gpu/drm/nouveau/dispnv04/tvnv17.c
+index e5480dab55e3..670c9739e5e1 100644
+--- a/drivers/gpu/drm/nouveau/dispnv04/tvnv17.c
++++ b/drivers/gpu/drm/nouveau/dispnv04/tvnv17.c
+@@ -25,6 +25,7 @@
+  */
+ 
+ #include <drm/drm_crtc_helper.h>
++#include <drm/drm_modeset_helper_vtables.h>
  #include <drm/drm_probe_helper.h>
- #include <drm/drm_print.h>
-diff --git a/drivers/gpu/drm/udl/udl_modeset.c b/drivers/gpu/drm/udl/udl_modeset.c
-index 4b79d44752c9..aa02fd2789c3 100644
---- a/drivers/gpu/drm/udl/udl_modeset.c
-+++ b/drivers/gpu/drm/udl/udl_modeset.c
-@@ -12,7 +12,6 @@
+ #include "nouveau_drv.h"
+ #include "nouveau_reg.h"
+diff --git a/drivers/gpu/drm/nouveau/dispnv50/head.c b/drivers/gpu/drm/nouveau/dispnv50/head.c
+index f006e56e1e08..5f490fbf1877 100644
+--- a/drivers/gpu/drm/nouveau/dispnv50/head.c
++++ b/drivers/gpu/drm/nouveau/dispnv50/head.c
+@@ -32,7 +32,6 @@
  
  #include <drm/drm_atomic.h>
  #include <drm/drm_atomic_helper.h>
 -#include <drm/drm_crtc_helper.h>
- #include <drm/drm_damage_helper.h>
+ #include <drm/drm_vblank.h>
+ #include "nouveau_connector.h"
+ 
+diff --git a/drivers/gpu/drm/nouveau/nouveau_drm.c b/drivers/gpu/drm/nouveau/nouveau_drm.c
+index 574a8abf6a1d..cc7c5b4a05fd 100644
+--- a/drivers/gpu/drm/nouveau/nouveau_drm.c
++++ b/drivers/gpu/drm/nouveau/nouveau_drm.c
+@@ -31,7 +31,6 @@
+ #include <linux/dynamic_debug.h>
+ 
+ #include <drm/drm_aperture.h>
+-#include <drm/drm_crtc_helper.h>
  #include <drm/drm_drv.h>
- #include <drm/drm_edid.h>
+ #include <drm/drm_fbdev_generic.h>
+ #include <drm/drm_gem_ttm_helper.h>
+diff --git a/drivers/gpu/drm/nouveau/nouveau_vga.c b/drivers/gpu/drm/nouveau/nouveau_vga.c
+index 789393b94291..f8bf0ec26844 100644
+--- a/drivers/gpu/drm/nouveau/nouveau_vga.c
++++ b/drivers/gpu/drm/nouveau/nouveau_vga.c
+@@ -2,7 +2,6 @@
+ #include <linux/vgaarb.h>
+ #include <linux/vga_switcheroo.h>
+ 
+-#include <drm/drm_crtc_helper.h>
+ #include <drm/drm_fb_helper.h>
+ 
+ #include "nouveau_drv.h"
 -- 
 2.39.0
 
