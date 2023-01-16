@@ -1,9 +1,9 @@
 From: Thomas Zimmermann <tzimmermann@suse.de>
-Date: Mon, 16 Jan 2023 14:12:17 +0100
-Subject: [PATCH 04/22] drm/arm/komeda: Remove unnecessary include statements for drm_crtc_helper.h
+Date: Mon, 16 Jan 2023 14:12:21 +0100
+Subject: [PATCH 08/22] drm/gma500: Remove unnecessary include statements for drm_crtc_helper.h
 In-Reply-To: <20230116131235.18917-1-tzimmermann@suse.de>
 References: <20230116131235.18917-1-tzimmermann@suse.de>
-Message-ID: <20230116131235.18917-5-tzimmermann@suse.de>
+Message-ID: <20230116131235.18917-9-tzimmermann@suse.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -19,34 +19,235 @@ possible.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- drivers/gpu/drm/arm/display/komeda/komeda_crtc.c | 1 -
- drivers/gpu/drm/arm/display/komeda/komeda_kms.h  | 1 -
- 2 files changed, 2 deletions(-)
+ drivers/gpu/drm/gma500/cdv_device.c        | 1 +
+ drivers/gpu/drm/gma500/cdv_intel_crt.c     | 2 ++
+ drivers/gpu/drm/gma500/cdv_intel_display.c | 1 +
+ drivers/gpu/drm/gma500/cdv_intel_dp.c      | 1 +
+ drivers/gpu/drm/gma500/cdv_intel_hdmi.c    | 2 ++
+ drivers/gpu/drm/gma500/cdv_intel_lvds.c    | 2 ++
+ drivers/gpu/drm/gma500/framebuffer.c       | 2 ++
+ drivers/gpu/drm/gma500/gma_display.c       | 2 ++
+ drivers/gpu/drm/gma500/oaktrail_crtc.c     | 1 +
+ drivers/gpu/drm/gma500/oaktrail_hdmi.c     | 2 ++
+ drivers/gpu/drm/gma500/oaktrail_lvds.c     | 1 +
+ drivers/gpu/drm/gma500/psb_device.c        | 1 +
+ drivers/gpu/drm/gma500/psb_intel_display.c | 3 +++
+ drivers/gpu/drm/gma500/psb_intel_drv.h     | 1 -
+ drivers/gpu/drm/gma500/psb_intel_lvds.c    | 2 ++
+ drivers/gpu/drm/gma500/psb_intel_sdvo.c    | 2 ++
+ 16 files changed, 25 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/gpu/drm/arm/display/komeda/komeda_crtc.c b/drivers/gpu/drm/arm/display/komeda/komeda_crtc.c
-index 4cc07d6bb9d8..cea3fd5772b5 100644
---- a/drivers/gpu/drm/arm/display/komeda/komeda_crtc.c
-+++ b/drivers/gpu/drm/arm/display/komeda/komeda_crtc.c
-@@ -10,7 +10,6 @@
+diff --git a/drivers/gpu/drm/gma500/cdv_device.c b/drivers/gpu/drm/gma500/cdv_device.c
+index 3065596257e9..3e83299113e3 100644
+--- a/drivers/gpu/drm/gma500/cdv_device.c
++++ b/drivers/gpu/drm/gma500/cdv_device.c
+@@ -8,6 +8,7 @@
+ #include <linux/delay.h>
  
- #include <drm/drm_atomic.h>
- #include <drm/drm_atomic_helper.h>
--#include <drm/drm_crtc_helper.h>
- #include <drm/drm_print.h>
+ #include <drm/drm.h>
++#include <drm/drm_crtc_helper.h>
+ 
+ #include "cdv_device.h"
+ #include "gma_device.h"
+diff --git a/drivers/gpu/drm/gma500/cdv_intel_crt.c b/drivers/gpu/drm/gma500/cdv_intel_crt.c
+index 7ff1e5141150..5a0acd914f76 100644
+--- a/drivers/gpu/drm/gma500/cdv_intel_crt.c
++++ b/drivers/gpu/drm/gma500/cdv_intel_crt.c
+@@ -28,6 +28,8 @@
+ #include <linux/i2c.h>
+ #include <linux/pm_runtime.h>
+ 
++#include <drm/drm_crtc_helper.h>
++#include <drm/drm_modeset_helper_vtables.h>
+ #include <drm/drm_simple_kms_helper.h>
+ 
+ #include "cdv_device.h"
+diff --git a/drivers/gpu/drm/gma500/cdv_intel_display.c b/drivers/gpu/drm/gma500/cdv_intel_display.c
+index 0c3ddcdc29dc..bbd0abdd8382 100644
+--- a/drivers/gpu/drm/gma500/cdv_intel_display.c
++++ b/drivers/gpu/drm/gma500/cdv_intel_display.c
+@@ -10,6 +10,7 @@
+ #include <linux/i2c.h>
+ 
+ #include <drm/drm_crtc.h>
++#include <drm/drm_modeset_helper_vtables.h>
+ 
+ #include "cdv_device.h"
+ #include "framebuffer.h"
+diff --git a/drivers/gpu/drm/gma500/cdv_intel_dp.c b/drivers/gpu/drm/gma500/cdv_intel_dp.c
+index 53b967282d6a..8992a95076f2 100644
+--- a/drivers/gpu/drm/gma500/cdv_intel_dp.c
++++ b/drivers/gpu/drm/gma500/cdv_intel_dp.c
+@@ -33,6 +33,7 @@
+ #include <drm/drm_crtc.h>
+ #include <drm/drm_crtc_helper.h>
+ #include <drm/drm_edid.h>
++#include <drm/drm_modeset_helper_vtables.h>
+ #include <drm/drm_simple_kms_helper.h>
+ 
+ #include "gma_display.h"
+diff --git a/drivers/gpu/drm/gma500/cdv_intel_hdmi.c b/drivers/gpu/drm/gma500/cdv_intel_hdmi.c
+index 29ef45f14169..2d95e0471291 100644
+--- a/drivers/gpu/drm/gma500/cdv_intel_hdmi.c
++++ b/drivers/gpu/drm/gma500/cdv_intel_hdmi.c
+@@ -28,7 +28,9 @@
+ 
+ #include <drm/drm.h>
+ #include <drm/drm_crtc.h>
++#include <drm/drm_crtc_helper.h>
+ #include <drm/drm_edid.h>
++#include <drm/drm_modeset_helper_vtables.h>
+ #include <drm/drm_simple_kms_helper.h>
+ 
+ #include "cdv_device.h"
+diff --git a/drivers/gpu/drm/gma500/cdv_intel_lvds.c b/drivers/gpu/drm/gma500/cdv_intel_lvds.c
+index be6efcaaa3b3..f08a6803dc18 100644
+--- a/drivers/gpu/drm/gma500/cdv_intel_lvds.c
++++ b/drivers/gpu/drm/gma500/cdv_intel_lvds.c
+@@ -12,6 +12,8 @@
+ #include <linux/i2c.h>
+ #include <linux/pm_runtime.h>
+ 
++#include <drm/drm_crtc_helper.h>
++#include <drm/drm_modeset_helper_vtables.h>
+ #include <drm/drm_simple_kms_helper.h>
+ 
+ #include "cdv_device.h"
+diff --git a/drivers/gpu/drm/gma500/framebuffer.c b/drivers/gpu/drm/gma500/framebuffer.c
+index 9e892a82e109..52ae3ade9a61 100644
+--- a/drivers/gpu/drm/gma500/framebuffer.c
++++ b/drivers/gpu/drm/gma500/framebuffer.c
+@@ -19,10 +19,12 @@
+ 
+ #include <drm/drm.h>
+ #include <drm/drm_crtc.h>
++#include <drm/drm_crtc_helper.h>
+ #include <drm/drm_fb_helper.h>
+ #include <drm/drm_fourcc.h>
+ #include <drm/drm_framebuffer.h>
+ #include <drm/drm_gem_framebuffer_helper.h>
++#include <drm/drm_modeset_helper.h>
+ 
+ #include "framebuffer.h"
+ #include "gem.h"
+diff --git a/drivers/gpu/drm/gma500/gma_display.c b/drivers/gpu/drm/gma500/gma_display.c
+index fe7b8436f87a..f65e90d890f4 100644
+--- a/drivers/gpu/drm/gma500/gma_display.c
++++ b/drivers/gpu/drm/gma500/gma_display.c
+@@ -11,8 +11,10 @@
+ #include <linux/highmem.h>
+ 
+ #include <drm/drm_crtc.h>
++#include <drm/drm_crtc_helper.h>
+ #include <drm/drm_fourcc.h>
+ #include <drm/drm_framebuffer.h>
++#include <drm/drm_modeset_helper_vtables.h>
  #include <drm/drm_vblank.h>
  
-diff --git a/drivers/gpu/drm/arm/display/komeda/komeda_kms.h b/drivers/gpu/drm/arm/display/komeda/komeda_kms.h
-index 7339339ef6b8..3a872c292091 100644
---- a/drivers/gpu/drm/arm/display/komeda/komeda_kms.h
-+++ b/drivers/gpu/drm/arm/display/komeda/komeda_kms.h
-@@ -11,7 +11,6 @@
- #include <drm/drm_atomic.h>
- #include <drm/drm_atomic_helper.h>
- #include <drm/drm_blend.h>
+ #include "framebuffer.h"
+diff --git a/drivers/gpu/drm/gma500/oaktrail_crtc.c b/drivers/gpu/drm/gma500/oaktrail_crtc.c
+index 64761f46b434..de8ccfe9890f 100644
+--- a/drivers/gpu/drm/gma500/oaktrail_crtc.c
++++ b/drivers/gpu/drm/gma500/oaktrail_crtc.c
+@@ -9,6 +9,7 @@
+ 
+ #include <drm/drm_fourcc.h>
+ #include <drm/drm_framebuffer.h>
++#include <drm/drm_modeset_helper_vtables.h>
+ 
+ #include "framebuffer.h"
+ #include "gem.h"
+diff --git a/drivers/gpu/drm/gma500/oaktrail_hdmi.c b/drivers/gpu/drm/gma500/oaktrail_hdmi.c
+index 95b7cb099e63..ed8626c73541 100644
+--- a/drivers/gpu/drm/gma500/oaktrail_hdmi.c
++++ b/drivers/gpu/drm/gma500/oaktrail_hdmi.c
+@@ -27,7 +27,9 @@
+ #include <linux/delay.h>
+ 
+ #include <drm/drm.h>
++#include <drm/drm_crtc_helper.h>
+ #include <drm/drm_edid.h>
++#include <drm/drm_modeset_helper_vtables.h>
+ #include <drm/drm_simple_kms_helper.h>
+ 
+ #include "psb_drv.h"
+diff --git a/drivers/gpu/drm/gma500/oaktrail_lvds.c b/drivers/gpu/drm/gma500/oaktrail_lvds.c
+index 75b4eb1c8884..d974d0c60d2a 100644
+--- a/drivers/gpu/drm/gma500/oaktrail_lvds.c
++++ b/drivers/gpu/drm/gma500/oaktrail_lvds.c
+@@ -14,6 +14,7 @@
+ #include <asm/intel-mid.h>
+ 
+ #include <drm/drm_edid.h>
++#include <drm/drm_modeset_helper_vtables.h>
+ #include <drm/drm_simple_kms_helper.h>
+ 
+ #include "intel_bios.h"
+diff --git a/drivers/gpu/drm/gma500/psb_device.c b/drivers/gpu/drm/gma500/psb_device.c
+index 3c294c38bdb4..dcfcd7b89d4a 100644
+--- a/drivers/gpu/drm/gma500/psb_device.c
++++ b/drivers/gpu/drm/gma500/psb_device.c
+@@ -6,6 +6,7 @@
+  **************************************************************************/
+ 
+ #include <drm/drm.h>
++#include <drm/drm_crtc_helper.h>
+ 
+ #include "gma_device.h"
+ #include "intel_bios.h"
+diff --git a/drivers/gpu/drm/gma500/psb_intel_display.c b/drivers/gpu/drm/gma500/psb_intel_display.c
+index 531c1781a8fb..ff46e88c4768 100644
+--- a/drivers/gpu/drm/gma500/psb_intel_display.c
++++ b/drivers/gpu/drm/gma500/psb_intel_display.c
+@@ -9,6 +9,9 @@
+ #include <linux/delay.h>
+ #include <linux/i2c.h>
+ 
++#include <drm/drm_modeset_helper.h>
++#include <drm/drm_modeset_helper_vtables.h>
++
+ #include "framebuffer.h"
+ #include "gem.h"
+ #include "gma_display.h"
+diff --git a/drivers/gpu/drm/gma500/psb_intel_drv.h b/drivers/gpu/drm/gma500/psb_intel_drv.h
+index 8a1111fe714b..0bb85494e3da 100644
+--- a/drivers/gpu/drm/gma500/psb_intel_drv.h
++++ b/drivers/gpu/drm/gma500/psb_intel_drv.h
+@@ -9,7 +9,6 @@
+ #include <linux/i2c.h>
+ #include <linux/i2c-algo-bit.h>
+ #include <drm/drm_crtc.h>
 -#include <drm/drm_crtc_helper.h>
- #include <drm/drm_device.h>
- #include <drm/drm_writeback.h>
- #include <drm/drm_print.h>
+ #include <drm/drm_encoder.h>
+ #include <drm/drm_probe_helper.h>
+ #include <drm/drm_vblank.h>
+diff --git a/drivers/gpu/drm/gma500/psb_intel_lvds.c b/drivers/gpu/drm/gma500/psb_intel_lvds.c
+index 7ee6c8ce103b..8486de230ec9 100644
+--- a/drivers/gpu/drm/gma500/psb_intel_lvds.c
++++ b/drivers/gpu/drm/gma500/psb_intel_lvds.c
+@@ -11,6 +11,8 @@
+ #include <linux/i2c.h>
+ #include <linux/pm_runtime.h>
+ 
++#include <drm/drm_crtc_helper.h>
++#include <drm/drm_modeset_helper_vtables.h>
+ #include <drm/drm_simple_kms_helper.h>
+ 
+ #include "intel_bios.h"
+diff --git a/drivers/gpu/drm/gma500/psb_intel_sdvo.c b/drivers/gpu/drm/gma500/psb_intel_sdvo.c
+index bdced46dd333..d6fd5d726216 100644
+--- a/drivers/gpu/drm/gma500/psb_intel_sdvo.c
++++ b/drivers/gpu/drm/gma500/psb_intel_sdvo.c
+@@ -33,7 +33,9 @@
+ #include <linux/slab.h>
+ 
+ #include <drm/drm_crtc.h>
++#include <drm/drm_crtc_helper.h>
+ #include <drm/drm_edid.h>
++#include <drm/drm_modeset_helper_vtables.h>
+ 
+ #include "psb_drv.h"
+ #include "psb_intel_drv.h"
 -- 
 2.39.0
 
