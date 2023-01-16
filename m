@@ -1,9 +1,9 @@
 From: Thomas Zimmermann <tzimmermann@suse.de>
-Date: Mon, 16 Jan 2023 14:12:34 +0100
-Subject: [PATCH 21/22] drm/vboxvideo: Remove unnecessary include statements for drm_crtc_helper.h
+Date: Mon, 16 Jan 2023 14:12:31 +0100
+Subject: [PATCH 18/22] drm/sun4i: Remove unnecessary include statements for drm_crtc_helper.h
 In-Reply-To: <20230116131235.18917-1-tzimmermann@suse.de>
 References: <20230116131235.18917-1-tzimmermann@suse.de>
-Message-ID: <20230116131235.18917-22-tzimmermann@suse.de>
+Message-ID: <20230116131235.18917-19-tzimmermann@suse.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -19,40 +19,23 @@ possible.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- drivers/gpu/drm/vboxvideo/vbox_drv.c  | 2 +-
- drivers/gpu/drm/vboxvideo/vbox_main.c | 1 -
- 2 files changed, 1 insertion(+), 2 deletions(-)
+ drivers/gpu/drm/sun4i/sun8i_dw_hdmi.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/gpu/drm/vboxvideo/vbox_drv.c b/drivers/gpu/drm/vboxvideo/vbox_drv.c
-index 12fee99dbfe8..4fee15c97c34 100644
---- a/drivers/gpu/drm/vboxvideo/vbox_drv.c
-+++ b/drivers/gpu/drm/vboxvideo/vbox_drv.c
-@@ -12,12 +12,12 @@
- #include <linux/vt_kern.h>
- 
- #include <drm/drm_aperture.h>
--#include <drm/drm_crtc_helper.h>
- #include <drm/drm_drv.h>
- #include <drm/drm_fbdev_generic.h>
- #include <drm/drm_file.h>
- #include <drm/drm_ioctl.h>
- #include <drm/drm_managed.h>
-+#include <drm/drm_modeset_helper.h>
- #include <drm/drm_module.h>
- 
- #include "vbox_drv.h"
-diff --git a/drivers/gpu/drm/vboxvideo/vbox_main.c b/drivers/gpu/drm/vboxvideo/vbox_main.c
-index 3b83e550f4df..42c2d8a99509 100644
---- a/drivers/gpu/drm/vboxvideo/vbox_main.c
-+++ b/drivers/gpu/drm/vboxvideo/vbox_main.c
-@@ -11,7 +11,6 @@
- #include <linux/pci.h>
- #include <linux/vbox_err.h>
+diff --git a/drivers/gpu/drm/sun4i/sun8i_dw_hdmi.c b/drivers/gpu/drm/sun4i/sun8i_dw_hdmi.c
+index 477cb6985b4d..37dc66332bbd 100644
+--- a/drivers/gpu/drm/sun4i/sun8i_dw_hdmi.c
++++ b/drivers/gpu/drm/sun4i/sun8i_dw_hdmi.c
+@@ -8,8 +8,8 @@
+ #include <linux/of_device.h>
+ #include <linux/platform_device.h>
  
 -#include <drm/drm_crtc_helper.h>
- #include <drm/drm_damage_helper.h>
+ #include <drm/drm_of.h>
++#include <drm/drm_modeset_helper_vtables.h>
+ #include <drm/drm_simple_kms_helper.h>
  
- #include "vbox_drv.h"
+ #include "sun8i_dw_hdmi.h"
 -- 
 2.39.0
 
