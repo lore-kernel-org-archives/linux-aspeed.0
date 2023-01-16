@@ -1,9 +1,9 @@
 From: Thomas Zimmermann <tzimmermann@suse.de>
-Date: Mon, 16 Jan 2023 14:12:25 +0100
-Subject: [PATCH 12/22] drm/logicvc: Remove unnecessary include statements for drm_crtc_helper.h
+Date: Mon, 16 Jan 2023 14:12:29 +0100
+Subject: [PATCH 16/22] drm/shmobile: Remove unnecessary include statements for drm_crtc_helper.h
 In-Reply-To: <20230116131235.18917-1-tzimmermann@suse.de>
 References: <20230116131235.18917-1-tzimmermann@suse.de>
-Message-ID: <20230116131235.18917-13-tzimmermann@suse.de>
+Message-ID: <20230116131235.18917-17-tzimmermann@suse.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -19,34 +19,48 @@ possible.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- drivers/gpu/drm/logicvc/logicvc_interface.c | 1 -
- drivers/gpu/drm/logicvc/logicvc_mode.c      | 1 -
- 2 files changed, 2 deletions(-)
+ drivers/gpu/drm/shmobile/shmob_drm_crtc.c  | 2 ++
+ drivers/gpu/drm/shmobile/shmob_drm_drv.c   | 1 -
+ drivers/gpu/drm/shmobile/shmob_drm_plane.c | 1 -
+ 3 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/gpu/drm/logicvc/logicvc_interface.c b/drivers/gpu/drm/logicvc/logicvc_interface.c
-index 815cebb4c4ca..689049d395c0 100644
---- a/drivers/gpu/drm/logicvc/logicvc_interface.c
-+++ b/drivers/gpu/drm/logicvc/logicvc_interface.c
-@@ -9,7 +9,6 @@
- #include <drm/drm_atomic_helper.h>
- #include <drm/drm_bridge.h>
- #include <drm/drm_connector.h>
--#include <drm/drm_crtc_helper.h>
- #include <drm/drm_drv.h>
- #include <drm/drm_encoder.h>
+diff --git a/drivers/gpu/drm/shmobile/shmob_drm_crtc.c b/drivers/gpu/drm/shmobile/shmob_drm_crtc.c
+index 4624c0aff51f..d354ab3077ce 100644
+--- a/drivers/gpu/drm/shmobile/shmob_drm_crtc.c
++++ b/drivers/gpu/drm/shmobile/shmob_drm_crtc.c
+@@ -16,6 +16,8 @@
+ #include <drm/drm_fourcc.h>
+ #include <drm/drm_framebuffer.h>
  #include <drm/drm_gem_dma_helper.h>
-diff --git a/drivers/gpu/drm/logicvc/logicvc_mode.c b/drivers/gpu/drm/logicvc/logicvc_mode.c
-index 9971950ebd4e..3cf04b70bd27 100644
---- a/drivers/gpu/drm/logicvc/logicvc_mode.c
-+++ b/drivers/gpu/drm/logicvc/logicvc_mode.c
-@@ -8,7 +8,6 @@
++#include <drm/drm_modeset_helper.h>
++#include <drm/drm_modeset_helper_vtables.h>
+ #include <drm/drm_probe_helper.h>
+ #include <drm/drm_simple_kms_helper.h>
+ #include <drm/drm_vblank.h>
+diff --git a/drivers/gpu/drm/shmobile/shmob_drm_drv.c b/drivers/gpu/drm/shmobile/shmob_drm_drv.c
+index 337040fa6438..faacfee24763 100644
+--- a/drivers/gpu/drm/shmobile/shmob_drm_drv.c
++++ b/drivers/gpu/drm/shmobile/shmob_drm_drv.c
+@@ -15,7 +15,6 @@
+ #include <linux/pm.h>
+ #include <linux/slab.h>
  
- #include <drm/drm_atomic.h>
- #include <drm/drm_atomic_helper.h>
 -#include <drm/drm_crtc_helper.h>
  #include <drm/drm_drv.h>
  #include <drm/drm_gem_dma_helper.h>
- #include <drm/drm_gem_framebuffer_helper.h>
+ #include <drm/drm_module.h>
+diff --git a/drivers/gpu/drm/shmobile/shmob_drm_plane.c b/drivers/gpu/drm/shmobile/shmob_drm_plane.c
+index 6c5f0cbe7d95..604ae23825da 100644
+--- a/drivers/gpu/drm/shmobile/shmob_drm_plane.c
++++ b/drivers/gpu/drm/shmobile/shmob_drm_plane.c
+@@ -8,7 +8,6 @@
+  */
+ 
+ #include <drm/drm_crtc.h>
+-#include <drm/drm_crtc_helper.h>
+ #include <drm/drm_fb_dma_helper.h>
+ #include <drm/drm_fourcc.h>
+ #include <drm/drm_framebuffer.h>
 -- 
 2.39.0
 
