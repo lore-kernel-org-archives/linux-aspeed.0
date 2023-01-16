@@ -1,52 +1,65 @@
 From: Thomas Zimmermann <tzimmermann@suse.de>
-Date: Mon, 16 Jan 2023 14:12:35 +0100
-Subject: [PATCH 22/22] drm/crtc-helper: Remove most include statements from drm_crtc_helper.h
+Date: Mon, 16 Jan 2023 14:12:30 +0100
+Subject: [PATCH 17/22] drm/sprd: Remove unnecessary include statements for drm_crtc_helper.h
 In-Reply-To: <20230116131235.18917-1-tzimmermann@suse.de>
 References: <20230116131235.18917-1-tzimmermann@suse.de>
-Message-ID: <20230116131235.18917-23-tzimmermann@suse.de>
+Message-ID: <20230116131235.18917-18-tzimmermann@suse.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Remove most include statements from crm_crtc_helper.h and forward-
-declare the contained types in drm_crtc_helper.h. Only keep <linux/types.h>
-for the definition of 'bool'.
+Several source files include drm_crtc_helper.h without needing it or
+only to get its transitive include statements; leading to unnecessary
+compile-time dependencies.
 
-Suggested-by: Sam Ravnborg <sam@ravnborg.org>
+Directly include required headers and drop drm_crtc_helper.h where
+possible.
+
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- include/drm/drm_crtc_helper.h | 14 +++++++++-----
- 1 file changed, 9 insertions(+), 5 deletions(-)
+ drivers/gpu/drm/sprd/sprd_dpu.c | 1 -
+ drivers/gpu/drm/sprd/sprd_drm.c | 1 -
+ drivers/gpu/drm/sprd/sprd_dsi.c | 1 -
+ 3 files changed, 3 deletions(-)
 
-diff --git a/include/drm/drm_crtc_helper.h b/include/drm/drm_crtc_helper.h
-index 072bc4f90349..8c886fc46ef2 100644
---- a/include/drm/drm_crtc_helper.h
-+++ b/include/drm/drm_crtc_helper.h
-@@ -33,13 +33,17 @@
- #ifndef __DRM_CRTC_HELPER_H__
- #define __DRM_CRTC_HELPER_H__
+diff --git a/drivers/gpu/drm/sprd/sprd_dpu.c b/drivers/gpu/drm/sprd/sprd_dpu.c
+index db0bcea1d9f4..b96fc6837b0d 100644
+--- a/drivers/gpu/drm/sprd/sprd_dpu.c
++++ b/drivers/gpu/drm/sprd/sprd_dpu.c
+@@ -18,7 +18,6 @@
  
--#include <linux/spinlock.h>
- #include <linux/types.h>
--#include <linux/idr.h>
+ #include <drm/drm_atomic_helper.h>
+ #include <drm/drm_blend.h>
+-#include <drm/drm_crtc_helper.h>
+ #include <drm/drm_fb_dma_helper.h>
+ #include <drm/drm_framebuffer.h>
+ #include <drm/drm_gem_dma_helper.h>
+diff --git a/drivers/gpu/drm/sprd/sprd_drm.c b/drivers/gpu/drm/sprd/sprd_drm.c
+index 9d42f17a5734..be60c0d546a3 100644
+--- a/drivers/gpu/drm/sprd/sprd_drm.c
++++ b/drivers/gpu/drm/sprd/sprd_drm.c
+@@ -11,7 +11,6 @@
+ #include <linux/of_platform.h>
  
--#include <drm/drm_crtc.h>
--#include <drm/drm_modeset_helper_vtables.h>
--#include <drm/drm_modeset_helper.h>
-+struct drm_atomic_state;
-+struct drm_connector;
-+struct drm_crtc;
-+struct drm_device;
-+struct drm_display_mode;
-+struct drm_encoder;
-+struct drm_framebuffer;
-+struct drm_mode_set;
-+struct drm_modeset_acquire_ctx;
+ #include <drm/drm_atomic_helper.h>
+-#include <drm/drm_crtc_helper.h>
+ #include <drm/drm_drv.h>
+ #include <drm/drm_gem_dma_helper.h>
+ #include <drm/drm_gem_framebuffer_helper.h>
+diff --git a/drivers/gpu/drm/sprd/sprd_dsi.c b/drivers/gpu/drm/sprd/sprd_dsi.c
+index 12b67a5d5923..ab0e5cce7adb 100644
+--- a/drivers/gpu/drm/sprd/sprd_dsi.c
++++ b/drivers/gpu/drm/sprd/sprd_dsi.c
+@@ -13,7 +13,6 @@
  
- void drm_helper_disable_unused_functions(struct drm_device *dev);
- int drm_crtc_helper_set_config(struct drm_mode_set *set,
+ #include <drm/drm_atomic_helper.h>
+ #include <drm/drm_bridge.h>
+-#include <drm/drm_crtc_helper.h>
+ #include <drm/drm_of.h>
+ #include <drm/drm_probe_helper.h>
+ 
 -- 
 2.39.0
 
