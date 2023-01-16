@@ -1,66 +1,52 @@
 From: Thomas Zimmermann <tzimmermann@suse.de>
-Date: Mon, 16 Jan 2023 14:12:29 +0100
-Subject: [PATCH 16/22] drm/shmobile: Remove unnecessary include statements for drm_crtc_helper.h
+Date: Mon, 16 Jan 2023 14:12:35 +0100
+Subject: [PATCH 22/22] drm/crtc-helper: Remove most include statements from drm_crtc_helper.h
 In-Reply-To: <20230116131235.18917-1-tzimmermann@suse.de>
 References: <20230116131235.18917-1-tzimmermann@suse.de>
-Message-ID: <20230116131235.18917-17-tzimmermann@suse.de>
+Message-ID: <20230116131235.18917-23-tzimmermann@suse.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Several source files include drm_crtc_helper.h without needing it or
-only to get its transitive include statements; leading to unnecessary
-compile-time dependencies.
+Remove most include statements from crm_crtc_helper.h and forward-
+declare the contained types in drm_crtc_helper.h. Only keep <linux/types.h>
+for the definition of 'bool'.
 
-Directly include required headers and drop drm_crtc_helper.h where
-possible.
-
+Suggested-by: Sam Ravnborg <sam@ravnborg.org>
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- drivers/gpu/drm/shmobile/shmob_drm_crtc.c  | 2 ++
- drivers/gpu/drm/shmobile/shmob_drm_drv.c   | 1 -
- drivers/gpu/drm/shmobile/shmob_drm_plane.c | 1 -
- 3 files changed, 2 insertions(+), 2 deletions(-)
+ include/drm/drm_crtc_helper.h | 14 +++++++++-----
+ 1 file changed, 9 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/gpu/drm/shmobile/shmob_drm_crtc.c b/drivers/gpu/drm/shmobile/shmob_drm_crtc.c
-index 4624c0aff51f..d354ab3077ce 100644
---- a/drivers/gpu/drm/shmobile/shmob_drm_crtc.c
-+++ b/drivers/gpu/drm/shmobile/shmob_drm_crtc.c
-@@ -16,6 +16,8 @@
- #include <drm/drm_fourcc.h>
- #include <drm/drm_framebuffer.h>
- #include <drm/drm_gem_dma_helper.h>
-+#include <drm/drm_modeset_helper.h>
-+#include <drm/drm_modeset_helper_vtables.h>
- #include <drm/drm_probe_helper.h>
- #include <drm/drm_simple_kms_helper.h>
- #include <drm/drm_vblank.h>
-diff --git a/drivers/gpu/drm/shmobile/shmob_drm_drv.c b/drivers/gpu/drm/shmobile/shmob_drm_drv.c
-index 337040fa6438..faacfee24763 100644
---- a/drivers/gpu/drm/shmobile/shmob_drm_drv.c
-+++ b/drivers/gpu/drm/shmobile/shmob_drm_drv.c
-@@ -15,7 +15,6 @@
- #include <linux/pm.h>
- #include <linux/slab.h>
+diff --git a/include/drm/drm_crtc_helper.h b/include/drm/drm_crtc_helper.h
+index 072bc4f90349..8c886fc46ef2 100644
+--- a/include/drm/drm_crtc_helper.h
++++ b/include/drm/drm_crtc_helper.h
+@@ -33,13 +33,17 @@
+ #ifndef __DRM_CRTC_HELPER_H__
+ #define __DRM_CRTC_HELPER_H__
  
--#include <drm/drm_crtc_helper.h>
- #include <drm/drm_drv.h>
- #include <drm/drm_gem_dma_helper.h>
- #include <drm/drm_module.h>
-diff --git a/drivers/gpu/drm/shmobile/shmob_drm_plane.c b/drivers/gpu/drm/shmobile/shmob_drm_plane.c
-index 6c5f0cbe7d95..604ae23825da 100644
---- a/drivers/gpu/drm/shmobile/shmob_drm_plane.c
-+++ b/drivers/gpu/drm/shmobile/shmob_drm_plane.c
-@@ -8,7 +8,6 @@
-  */
+-#include <linux/spinlock.h>
+ #include <linux/types.h>
+-#include <linux/idr.h>
  
- #include <drm/drm_crtc.h>
--#include <drm/drm_crtc_helper.h>
- #include <drm/drm_fb_dma_helper.h>
- #include <drm/drm_fourcc.h>
- #include <drm/drm_framebuffer.h>
+-#include <drm/drm_crtc.h>
+-#include <drm/drm_modeset_helper_vtables.h>
+-#include <drm/drm_modeset_helper.h>
++struct drm_atomic_state;
++struct drm_connector;
++struct drm_crtc;
++struct drm_device;
++struct drm_display_mode;
++struct drm_encoder;
++struct drm_framebuffer;
++struct drm_mode_set;
++struct drm_modeset_acquire_ctx;
+ 
+ void drm_helper_disable_unused_functions(struct drm_device *dev);
+ int drm_crtc_helper_set_config(struct drm_mode_set *set,
 -- 
 2.39.0
 
