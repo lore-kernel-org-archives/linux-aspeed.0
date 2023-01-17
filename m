@@ -1,94 +1,36 @@
-From: Sam Ravnborg <sam@ravnborg.org>
-Date: Mon, 16 Jan 2023 21:15:47 +0100
-Subject: [PATCH 02/22] drm: Remove unnecessary include statements for
- drm_crtc_helper.h
-In-Reply-To: <20230116131235.18917-3-tzimmermann@suse.de>
-References: <20230116131235.18917-1-tzimmermann@suse.de>
- <20230116131235.18917-3-tzimmermann@suse.de>
-Message-ID: <Y8Wwcy3LuknhDQz1@ravnborg.org>
+From: Ryan Chen <ryan_chen@aspeedtech.com>
+Date: Tue, 17 Jan 2023 00:34:53 +0000
+Subject: [PATCH 0/2] Add ASPEED AST2600 miss pinctrl
+In-Reply-To: <3d95553d-2e86-40c9-bfe3-a837bfc7f57f@app.fastmail.com>
+References: <20230103093702.2613574-1-ryan_chen@aspeedtech.com>
+ <SEZPR06MB5269DA226076831F4B36135DF2C19@SEZPR06MB5269.apcprd06.prod.outlook.com>
+ <3d95553d-2e86-40c9-bfe3-a837bfc7f57f@app.fastmail.com>
+Message-ID: <SEZPR06MB526999E79E16DA4D43D15B21F2C69@SEZPR06MB5269.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Thomas.
-
-On Mon, Jan 16, 2023 at 02:12:15PM +0100, Thomas Zimmermann wrote:
-> Several DRM core and helper source files include drm_crtc_helper.h
-> without needing it or only to get its transitive include statements;
-> leading to unnecessary compile-time dependencies.
+> -----Original Message-----
+> From: Andrew Jeffery <andrew@aj.id.au>
+> Sent: Monday, January 16, 2023 6:43 PM
+> To: Ryan Chen <ryan_chen@aspeedtech.com>; openbmc at lists.ozlabs.org; Rob
+> Herring <robh+dt@kernel.org>; Krzysztof Kozlowski
+> <krzysztof.kozlowski+dt@linaro.org>; Joel Stanley <joel@jms.id.au>; Linus
+> Walleij <linus.walleij@linaro.org>; linux-aspeed at lists.ozlabs.org
+> Cc: BMC-SW <BMC-SW@aspeedtech.com>
+> Subject: Re: [PATCH 0/2] Add ASPEED AST2600 miss pinctrl
 > 
-> Directly include required headers and drop drm_crtc_helper.h where
-> possible. The header file, drm_fixed.h, includes <linux/kernel.h>
-> for lower_32_bits().
 > 
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> ---
->  drivers/gpu/drm/drm_crtc_helper.c  | 1 -
->  drivers/gpu/drm/drm_lease.c        | 2 +-
->  drivers/gpu/drm/drm_plane_helper.c | 1 -
->  include/drm/drm_fixed.h            | 1 +
->  4 files changed, 2 insertions(+), 3 deletions(-)
 > 
-> diff --git a/drivers/gpu/drm/drm_crtc_helper.c b/drivers/gpu/drm/drm_crtc_helper.c
-> index a209659a996c..e7a23e18140c 100644
-> --- a/drivers/gpu/drm/drm_crtc_helper.c
-> +++ b/drivers/gpu/drm/drm_crtc_helper.c
-> @@ -39,7 +39,6 @@
->  #include <drm/drm_atomic_uapi.h>
->  #include <drm/drm_bridge.h>
->  #include <drm/drm_crtc.h>
-> -#include <drm/drm_crtc_helper.h>
-
-drm_crtc_helper.c may not require drm/drm_crtc_helper.h, but it should
-include it so we get a warning in case there is a mismatch between the
-header file and the implementation.
-I think sparse would also complain that the function is not declared
-or something like that.
-
-With this fixed:
-Reviewed-by: Sam Ravnborg <sam@ravnborg.org>
-
->  #include <drm/drm_drv.h>
->  #include <drm/drm_edid.h>
->  #include <drm/drm_encoder.h>
-> diff --git a/drivers/gpu/drm/drm_lease.c b/drivers/gpu/drm/drm_lease.c
-> index 08ab75303a00..150fe1555068 100644
-> --- a/drivers/gpu/drm/drm_lease.c
-> +++ b/drivers/gpu/drm/drm_lease.c
-> @@ -6,7 +6,7 @@
->  #include <linux/uaccess.h>
->  
->  #include <drm/drm_auth.h>
-> -#include <drm/drm_crtc_helper.h>
-> +#include <drm/drm_crtc.h>
->  #include <drm/drm_drv.h>
->  #include <drm/drm_file.h>
->  #include <drm/drm_lease.h>
-> diff --git a/drivers/gpu/drm/drm_plane_helper.c b/drivers/gpu/drm/drm_plane_helper.c
-> index ba6a9136a065..c91e454eba09 100644
-> --- a/drivers/gpu/drm/drm_plane_helper.c
-> +++ b/drivers/gpu/drm/drm_plane_helper.c
-> @@ -28,7 +28,6 @@
->  #include <drm/drm_atomic.h>
->  #include <drm/drm_atomic_helper.h>
->  #include <drm/drm_atomic_uapi.h>
-> -#include <drm/drm_crtc_helper.h>
->  #include <drm/drm_device.h>
->  #include <drm/drm_drv.h>
->  #include <drm/drm_encoder.h>
-> diff --git a/include/drm/drm_fixed.h b/include/drm/drm_fixed.h
-> index 553210c02ee0..255645c1f9a8 100644
-> --- a/include/drm/drm_fixed.h
-> +++ b/include/drm/drm_fixed.h
-> @@ -25,6 +25,7 @@
->  #ifndef DRM_FIXED_H
->  #define DRM_FIXED_H
->  
-> +#include <linux/kernel.h>
->  #include <linux/math64.h>
->  
->  typedef union dfixed {
-> -- 
-> 2.39.0
+> On Mon, 16 Jan 2023, at 14:03, Ryan Chen wrote:
+> > Hello Andrew,
+> > 	Could you help review this series patch?
+> 
+> Yep, I hope to get to it this week, just trying to pick up the pieces after the new
+> year break :)
+> 
+Hello Andrew,
+	Thank your response. enjoy your holiday
+Ryan
