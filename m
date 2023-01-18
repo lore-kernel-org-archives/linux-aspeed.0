@@ -1,26 +1,612 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Mon, 23 Jan 2023 12:03:08 +1030
-Subject: [PATCH 2/2] dtsi:aspeed: add miss pinctrl in pinctrl dtsi
-In-Reply-To: <20230103093702.2613574-3-ryan_chen@aspeedtech.com>
-References: <20230103093702.2613574-1-ryan_chen@aspeedtech.com>
- <20230103093702.2613574-3-ryan_chen@aspeedtech.com>
-Message-ID: <3b11d987-180d-4b99-949a-b854b1d6d39b@app.fastmail.com>
+From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Date: Wed, 18 Jan 2023 18:39:31 +0100
+Subject: [PATCH 1/2] spi: dt-bindings: drop unneeded quotes
+Message-ID: <20230118173932.358153-1-krzysztof.kozlowski@linaro.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Ryan,
+Cleanup by removing unneeded quotes from refs and redundant blank lines.
+No functional impact except adjusting to preferred coding style.
 
-On Tue, 3 Jan 2023, at 20:07, ryan_chen wrote:
-> add miss pcie rc, secure i2c, i3c, 8bit emmc, uart ncts..
+Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+---
+ .../bindings/spi/allwinner,sun4i-a10-spi.yaml  |  2 +-
+ .../bindings/spi/allwinner,sun6i-a31-spi.yaml  |  2 +-
+ .../bindings/spi/amlogic,meson-gx-spicc.yaml   |  6 +++---
+ .../bindings/spi/amlogic,meson6-spifc.yaml     |  6 +++---
+ .../bindings/spi/aspeed,ast2600-fmc.yaml       |  2 +-
+ .../devicetree/bindings/spi/cdns,qspi-nor.yaml |  2 +-
+ .../devicetree/bindings/spi/cdns,xspi.yaml     |  6 +++---
+ .../bindings/spi/fsl,spi-fsl-qspi.yaml         |  2 +-
+ .../devicetree/bindings/spi/fsl-imx-cspi.yaml  |  2 +-
+ .../bindings/spi/mediatek,spi-mt65xx.yaml      |  2 +-
+ .../spi/mediatek,spi-slave-mt27xx.yaml         |  2 +-
+ .../bindings/spi/mikrotik,rb4xx-spi.yaml       |  2 +-
+ .../bindings/spi/mxicy,mx25f0a-spi.yaml        |  2 +-
+ .../devicetree/bindings/spi/mxs-spi.yaml       |  2 +-
+ .../bindings/spi/nvidia,tegra210-quad.yaml     |  2 +-
+ .../bindings/spi/qcom,spi-qcom-qspi.yaml       |  5 ++---
+ .../bindings/spi/realtek,rtl-spi.yaml          |  2 +-
+ .../bindings/spi/snps,dw-apb-ssi.yaml          |  2 +-
+ .../devicetree/bindings/spi/spi-cadence.yaml   |  2 +-
+ .../devicetree/bindings/spi/spi-fsl-lpspi.yaml |  2 +-
+ .../devicetree/bindings/spi/spi-gpio.yaml      |  4 ++--
+ .../devicetree/bindings/spi/spi-mux.yaml       |  4 ++--
+ .../devicetree/bindings/spi/spi-nxp-fspi.yaml  |  2 +-
+ .../devicetree/bindings/spi/spi-pl022.yaml     | 18 +++++++++---------
+ .../devicetree/bindings/spi/spi-rockchip.yaml  |  2 +-
+ .../devicetree/bindings/spi/spi-sifive.yaml    |  6 +++---
+ .../bindings/spi/spi-sunplus-sp7021.yaml       |  2 +-
+ .../devicetree/bindings/spi/spi-xilinx.yaml    |  2 +-
+ .../bindings/spi/spi-zynqmp-qspi.yaml          |  2 +-
+ .../devicetree/bindings/spi/sprd,spi-adi.yaml  |  5 ++---
+ .../devicetree/bindings/spi/st,stm32-qspi.yaml |  2 +-
+ .../devicetree/bindings/spi/st,stm32-spi.yaml  |  2 +-
+ .../bindings/spi/xlnx,zynq-qspi.yaml           |  2 +-
+ 33 files changed, 53 insertions(+), 55 deletions(-)
 
-Please make sure that any new functions and groups are documented in 
-the devicetree bindings. Also, updates to the binding documentation 
-should be in their own patch, separate to the changes to the devicetree 
-itself.
+diff --git a/Documentation/devicetree/bindings/spi/allwinner,sun4i-a10-spi.yaml b/Documentation/devicetree/bindings/spi/allwinner,sun4i-a10-spi.yaml
+index f1176a28fd87..eb0567b2971a 100644
+--- a/Documentation/devicetree/bindings/spi/allwinner,sun4i-a10-spi.yaml
++++ b/Documentation/devicetree/bindings/spi/allwinner,sun4i-a10-spi.yaml
+@@ -7,7 +7,7 @@ $schema: http://devicetree.org/meta-schemas/core.yaml#
+ title: Allwinner A10 SPI Controller
+ 
+ allOf:
+-  - $ref: "spi-controller.yaml"
++  - $ref: spi-controller.yaml
+ 
+ maintainers:
+   - Chen-Yu Tsai <wens@csie.org>
+diff --git a/Documentation/devicetree/bindings/spi/allwinner,sun6i-a31-spi.yaml b/Documentation/devicetree/bindings/spi/allwinner,sun6i-a31-spi.yaml
+index 58b7056f4a70..acf218507d22 100644
+--- a/Documentation/devicetree/bindings/spi/allwinner,sun6i-a31-spi.yaml
++++ b/Documentation/devicetree/bindings/spi/allwinner,sun6i-a31-spi.yaml
+@@ -7,7 +7,7 @@ $schema: http://devicetree.org/meta-schemas/core.yaml#
+ title: Allwinner A31 SPI Controller
+ 
+ allOf:
+-  - $ref: "spi-controller.yaml"
++  - $ref: spi-controller.yaml
+ 
+ maintainers:
+   - Chen-Yu Tsai <wens@csie.org>
+diff --git a/Documentation/devicetree/bindings/spi/amlogic,meson-gx-spicc.yaml b/Documentation/devicetree/bindings/spi/amlogic,meson-gx-spicc.yaml
+index 53eb6562b979..e5eca3a6f132 100644
+--- a/Documentation/devicetree/bindings/spi/amlogic,meson-gx-spicc.yaml
++++ b/Documentation/devicetree/bindings/spi/amlogic,meson-gx-spicc.yaml
+@@ -2,8 +2,8 @@
+ # Copyright 2019 BayLibre, SAS
+ %YAML 1.2
+ ---
+-$id: "http://devicetree.org/schemas/spi/amlogic,meson-gx-spicc.yaml#"
+-$schema: "http://devicetree.org/meta-schemas/core.yaml#"
++$id: http://devicetree.org/schemas/spi/amlogic,meson-gx-spicc.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
+ 
+ title: Amlogic Meson SPI Communication Controller
+ 
+@@ -41,7 +41,7 @@ properties:
+     maxItems: 2
+ 
+ allOf:
+-  - $ref: "spi-controller.yaml#"
++  - $ref: spi-controller.yaml#
+   - if:
+       properties:
+         compatible:
+diff --git a/Documentation/devicetree/bindings/spi/amlogic,meson6-spifc.yaml b/Documentation/devicetree/bindings/spi/amlogic,meson6-spifc.yaml
+index ac3b2ec300ac..806043fed4d1 100644
+--- a/Documentation/devicetree/bindings/spi/amlogic,meson6-spifc.yaml
++++ b/Documentation/devicetree/bindings/spi/amlogic,meson6-spifc.yaml
+@@ -2,8 +2,8 @@
+ # Copyright 2019 BayLibre, SAS
+ %YAML 1.2
+ ---
+-$id: "http://devicetree.org/schemas/spi/amlogic,meson6-spifc.yaml#"
+-$schema: "http://devicetree.org/meta-schemas/core.yaml#"
++$id: http://devicetree.org/schemas/spi/amlogic,meson6-spifc.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
+ 
+ title: Amlogic Meson SPI Flash Controller
+ 
+@@ -11,7 +11,7 @@ maintainers:
+   - Neil Armstrong <neil.armstrong@linaro.org>
+ 
+ allOf:
+-  - $ref: "spi-controller.yaml#"
++  - $ref: spi-controller.yaml#
+ 
+ description: |
+   The Meson SPIFC is a controller optimized for communication with SPI
+diff --git a/Documentation/devicetree/bindings/spi/aspeed,ast2600-fmc.yaml b/Documentation/devicetree/bindings/spi/aspeed,ast2600-fmc.yaml
+index e6c817de3449..aae6fb139b5b 100644
+--- a/Documentation/devicetree/bindings/spi/aspeed,ast2600-fmc.yaml
++++ b/Documentation/devicetree/bindings/spi/aspeed,ast2600-fmc.yaml
+@@ -15,7 +15,7 @@ description: |
+   SPI) of the AST2400, AST2500 and AST2600 SOCs.
+ 
+ allOf:
+-  - $ref: "spi-controller.yaml#"
++  - $ref: spi-controller.yaml#
+ 
+ properties:
+   compatible:
+diff --git a/Documentation/devicetree/bindings/spi/cdns,qspi-nor.yaml b/Documentation/devicetree/bindings/spi/cdns,qspi-nor.yaml
+index 4707294d8f59..9be4e2c5d1ee 100644
+--- a/Documentation/devicetree/bindings/spi/cdns,qspi-nor.yaml
++++ b/Documentation/devicetree/bindings/spi/cdns,qspi-nor.yaml
+@@ -47,7 +47,7 @@ properties:
+   cdns,fifo-depth:
+     description:
+       Size of the data FIFO in words.
+-    $ref: "/schemas/types.yaml#/definitions/uint32"
++    $ref: /schemas/types.yaml#/definitions/uint32
+     enum: [ 128, 256 ]
+     default: 128
+ 
+diff --git a/Documentation/devicetree/bindings/spi/cdns,xspi.yaml b/Documentation/devicetree/bindings/spi/cdns,xspi.yaml
+index b8bb8a3dbf54..eb0f92468185 100644
+--- a/Documentation/devicetree/bindings/spi/cdns,xspi.yaml
++++ b/Documentation/devicetree/bindings/spi/cdns,xspi.yaml
+@@ -2,8 +2,8 @@
+ # Copyright 2020-21 Cadence
+ %YAML 1.2
+ ---
+-$id: "http://devicetree.org/schemas/spi/cdns,xspi.yaml#"
+-$schema: "http://devicetree.org/meta-schemas/core.yaml#"
++$id: http://devicetree.org/schemas/spi/cdns,xspi.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
+ 
+ title: Cadence XSPI Controller
+ 
+@@ -16,7 +16,7 @@ description: |
+   read/write access to slaves such as SPI-NOR flash.
+ 
+ allOf:
+-  - $ref: "spi-controller.yaml#"
++  - $ref: spi-controller.yaml#
+ 
+ properties:
+   compatible:
+diff --git a/Documentation/devicetree/bindings/spi/fsl,spi-fsl-qspi.yaml b/Documentation/devicetree/bindings/spi/fsl,spi-fsl-qspi.yaml
+index e58644558412..f2dd20370dbb 100644
+--- a/Documentation/devicetree/bindings/spi/fsl,spi-fsl-qspi.yaml
++++ b/Documentation/devicetree/bindings/spi/fsl,spi-fsl-qspi.yaml
+@@ -10,7 +10,7 @@ maintainers:
+   - Han Xu <han.xu@nxp.com>
+ 
+ allOf:
+-  - $ref: "spi-controller.yaml#"
++  - $ref: spi-controller.yaml#
+ 
+ properties:
+   compatible:
+diff --git a/Documentation/devicetree/bindings/spi/fsl-imx-cspi.yaml b/Documentation/devicetree/bindings/spi/fsl-imx-cspi.yaml
+index 12cb76711000..2f593c7225e5 100644
+--- a/Documentation/devicetree/bindings/spi/fsl-imx-cspi.yaml
++++ b/Documentation/devicetree/bindings/spi/fsl-imx-cspi.yaml
+@@ -10,7 +10,7 @@ maintainers:
+   - Shawn Guo <shawnguo@kernel.org>
+ 
+ allOf:
+-  - $ref: "/schemas/spi/spi-controller.yaml#"
++  - $ref: /schemas/spi/spi-controller.yaml#
+ 
+ properties:
+   compatible:
+diff --git a/Documentation/devicetree/bindings/spi/mediatek,spi-mt65xx.yaml b/Documentation/devicetree/bindings/spi/mediatek,spi-mt65xx.yaml
+index 8d2a6c084eab..b6249880c3f9 100644
+--- a/Documentation/devicetree/bindings/spi/mediatek,spi-mt65xx.yaml
++++ b/Documentation/devicetree/bindings/spi/mediatek,spi-mt65xx.yaml
+@@ -10,7 +10,7 @@ maintainers:
+   - Leilk Liu <leilk.liu@mediatek.com>
+ 
+ allOf:
+-  - $ref: "/schemas/spi/spi-controller.yaml#"
++  - $ref: /schemas/spi/spi-controller.yaml#
+ 
+ properties:
+   compatible:
+diff --git a/Documentation/devicetree/bindings/spi/mediatek,spi-slave-mt27xx.yaml b/Documentation/devicetree/bindings/spi/mediatek,spi-slave-mt27xx.yaml
+index 7977799a8ee1..d19c9f73978f 100644
+--- a/Documentation/devicetree/bindings/spi/mediatek,spi-slave-mt27xx.yaml
++++ b/Documentation/devicetree/bindings/spi/mediatek,spi-slave-mt27xx.yaml
+@@ -10,7 +10,7 @@ maintainers:
+   - Leilk Liu <leilk.liu@mediatek.com>
+ 
+ allOf:
+-  - $ref: "/schemas/spi/spi-controller.yaml#"
++  - $ref: /schemas/spi/spi-controller.yaml#
+ 
+ properties:
+   compatible:
+diff --git a/Documentation/devicetree/bindings/spi/mikrotik,rb4xx-spi.yaml b/Documentation/devicetree/bindings/spi/mikrotik,rb4xx-spi.yaml
+index 3fd0a8adfe9a..303f6dca89c0 100644
+--- a/Documentation/devicetree/bindings/spi/mikrotik,rb4xx-spi.yaml
++++ b/Documentation/devicetree/bindings/spi/mikrotik,rb4xx-spi.yaml
+@@ -11,7 +11,7 @@ maintainers:
+   - Bert Vermeulen <bert@biot.com>
+ 
+ allOf:
+-  - $ref: "spi-controller.yaml#"
++  - $ref: spi-controller.yaml#
+ 
+ properties:
+   compatible:
+diff --git a/Documentation/devicetree/bindings/spi/mxicy,mx25f0a-spi.yaml b/Documentation/devicetree/bindings/spi/mxicy,mx25f0a-spi.yaml
+index a3aa5e07c0e4..221fe6e2ef53 100644
+--- a/Documentation/devicetree/bindings/spi/mxicy,mx25f0a-spi.yaml
++++ b/Documentation/devicetree/bindings/spi/mxicy,mx25f0a-spi.yaml
+@@ -10,7 +10,7 @@ maintainers:
+   - Miquel Raynal <miquel.raynal@bootlin.com>
+ 
+ allOf:
+-  - $ref: "spi-controller.yaml#"
++  - $ref: spi-controller.yaml#
+ 
+ properties:
+   compatible:
+diff --git a/Documentation/devicetree/bindings/spi/mxs-spi.yaml b/Documentation/devicetree/bindings/spi/mxs-spi.yaml
+index 51f8c664323e..e2512166c1cd 100644
+--- a/Documentation/devicetree/bindings/spi/mxs-spi.yaml
++++ b/Documentation/devicetree/bindings/spi/mxs-spi.yaml
+@@ -10,7 +10,7 @@ maintainers:
+   - Marek Vasut <marex@denx.de>
+ 
+ allOf:
+-  - $ref: "/schemas/spi/spi-controller.yaml#"
++  - $ref: /schemas/spi/spi-controller.yaml#
+ 
+ properties:
+   compatible:
+diff --git a/Documentation/devicetree/bindings/spi/nvidia,tegra210-quad.yaml b/Documentation/devicetree/bindings/spi/nvidia,tegra210-quad.yaml
+index 899100e783c9..9f78b2c06494 100644
+--- a/Documentation/devicetree/bindings/spi/nvidia,tegra210-quad.yaml
++++ b/Documentation/devicetree/bindings/spi/nvidia,tegra210-quad.yaml
+@@ -11,7 +11,7 @@ maintainers:
+   - Jonathan Hunter <jonathanh@nvidia.com>
+ 
+ allOf:
+-  - $ref: "spi-controller.yaml#"
++  - $ref: spi-controller.yaml#
+ 
+ properties:
+   compatible:
+diff --git a/Documentation/devicetree/bindings/spi/qcom,spi-qcom-qspi.yaml b/Documentation/devicetree/bindings/spi/qcom,spi-qcom-qspi.yaml
+index b622bb7363ec..85e7770703bd 100644
+--- a/Documentation/devicetree/bindings/spi/qcom,spi-qcom-qspi.yaml
++++ b/Documentation/devicetree/bindings/spi/qcom,spi-qcom-qspi.yaml
+@@ -1,9 +1,8 @@
+ # SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
+-
+ %YAML 1.2
+ ---
+-$id: "http://devicetree.org/schemas/spi/qcom,spi-qcom-qspi.yaml#"
+-$schema: "http://devicetree.org/meta-schemas/core.yaml#"
++$id: http://devicetree.org/schemas/spi/qcom,spi-qcom-qspi.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
+ 
+ title: Qualcomm Quad Serial Peripheral Interface (QSPI)
+ 
+diff --git a/Documentation/devicetree/bindings/spi/realtek,rtl-spi.yaml b/Documentation/devicetree/bindings/spi/realtek,rtl-spi.yaml
+index 2f938c293f70..70330d945a70 100644
+--- a/Documentation/devicetree/bindings/spi/realtek,rtl-spi.yaml
++++ b/Documentation/devicetree/bindings/spi/realtek,rtl-spi.yaml
+@@ -11,7 +11,7 @@ maintainers:
+   - Birger Koblitz <mail@birger-koblitz.de>
+ 
+ allOf:
+-  - $ref: "spi-controller.yaml#"
++  - $ref: spi-controller.yaml#
+ 
+ properties:
+   compatible:
+diff --git a/Documentation/devicetree/bindings/spi/snps,dw-apb-ssi.yaml b/Documentation/devicetree/bindings/spi/snps,dw-apb-ssi.yaml
+index d33b72fabc5d..a132b5fc56e0 100644
+--- a/Documentation/devicetree/bindings/spi/snps,dw-apb-ssi.yaml
++++ b/Documentation/devicetree/bindings/spi/snps,dw-apb-ssi.yaml
+@@ -10,7 +10,7 @@ maintainers:
+   - Mark Brown <broonie@kernel.org>
+ 
+ allOf:
+-  - $ref: "spi-controller.yaml#"
++  - $ref: spi-controller.yaml#
+   - if:
+       properties:
+         compatible:
+diff --git a/Documentation/devicetree/bindings/spi/spi-cadence.yaml b/Documentation/devicetree/bindings/spi/spi-cadence.yaml
+index 64bf4e621142..b0f83b5c2cdd 100644
+--- a/Documentation/devicetree/bindings/spi/spi-cadence.yaml
++++ b/Documentation/devicetree/bindings/spi/spi-cadence.yaml
+@@ -10,7 +10,7 @@ maintainers:
+   - Michal Simek <michal.simek@xilinx.com>
+ 
+ allOf:
+-  - $ref: "spi-controller.yaml#"
++  - $ref: spi-controller.yaml#
+ 
+ properties:
+   compatible:
+diff --git a/Documentation/devicetree/bindings/spi/spi-fsl-lpspi.yaml b/Documentation/devicetree/bindings/spi/spi-fsl-lpspi.yaml
+index 94caa2b7e241..e91425012319 100644
+--- a/Documentation/devicetree/bindings/spi/spi-fsl-lpspi.yaml
++++ b/Documentation/devicetree/bindings/spi/spi-fsl-lpspi.yaml
+@@ -10,7 +10,7 @@ maintainers:
+   - Anson Huang <Anson.Huang@nxp.com>
+ 
+ allOf:
+-  - $ref: "/schemas/spi/spi-controller.yaml#"
++  - $ref: /schemas/spi/spi-controller.yaml#
+ 
+ properties:
+   compatible:
+diff --git a/Documentation/devicetree/bindings/spi/spi-gpio.yaml b/Documentation/devicetree/bindings/spi/spi-gpio.yaml
+index f29b89076c99..9ce1df93d4c3 100644
+--- a/Documentation/devicetree/bindings/spi/spi-gpio.yaml
++++ b/Documentation/devicetree/bindings/spi/spi-gpio.yaml
+@@ -14,7 +14,7 @@ description:
+   dedicated GPIO lines.
+ 
+ allOf:
+-  - $ref: "/schemas/spi/spi-controller.yaml#"
++  - $ref: /schemas/spi/spi-controller.yaml#
+ 
+ properties:
+   compatible:
+@@ -41,7 +41,7 @@ properties:
+   num-chipselects:
+     description: Number of chipselect lines. Should be <0> if a single device
+       with no chip select is connected.
+-    $ref: "/schemas/types.yaml#/definitions/uint32"
++    $ref: /schemas/types.yaml#/definitions/uint32
+ 
+   # Deprecated properties
+   gpio-sck: false
+diff --git a/Documentation/devicetree/bindings/spi/spi-mux.yaml b/Documentation/devicetree/bindings/spi/spi-mux.yaml
+index 7ea79f6d33f3..fb2a6039928c 100644
+--- a/Documentation/devicetree/bindings/spi/spi-mux.yaml
++++ b/Documentation/devicetree/bindings/spi/spi-mux.yaml
+@@ -30,8 +30,8 @@ description: |
+       +------------+
+ 
+ allOf:
+-  - $ref: "/schemas/spi/spi-controller.yaml#"
+-  - $ref: "/schemas/spi/spi-peripheral-props.yaml#"
++  - $ref: /schemas/spi/spi-controller.yaml#
++  - $ref: /schemas/spi/spi-peripheral-props.yaml#
+ 
+ maintainers:
+   - Chris Packham <chris.packham@alliedtelesis.co.nz>
+diff --git a/Documentation/devicetree/bindings/spi/spi-nxp-fspi.yaml b/Documentation/devicetree/bindings/spi/spi-nxp-fspi.yaml
+index 1b552c298277..a813c971ecf6 100644
+--- a/Documentation/devicetree/bindings/spi/spi-nxp-fspi.yaml
++++ b/Documentation/devicetree/bindings/spi/spi-nxp-fspi.yaml
+@@ -11,7 +11,7 @@ maintainers:
+   - Kuldeep Singh <singh.kuldeep87k@gmail.com>
+ 
+ allOf:
+-  - $ref: "spi-controller.yaml#"
++  - $ref: spi-controller.yaml#
+ 
+ properties:
+   compatible:
+diff --git a/Documentation/devicetree/bindings/spi/spi-pl022.yaml b/Documentation/devicetree/bindings/spi/spi-pl022.yaml
+index 0e382119c64f..91e540a92faf 100644
+--- a/Documentation/devicetree/bindings/spi/spi-pl022.yaml
++++ b/Documentation/devicetree/bindings/spi/spi-pl022.yaml
+@@ -10,7 +10,7 @@ maintainers:
+   - Linus Walleij <linus.walleij@linaro.org>
+ 
+ allOf:
+-  - $ref: "spi-controller.yaml#"
++  - $ref: spi-controller.yaml#
+ 
+ # We need a select here so we don't match all nodes with 'arm,primecell'
+ select:
+@@ -45,7 +45,7 @@ properties:
+     description: delay in ms following transfer completion before the
+       runtime power management system suspends the device. A setting of 0
+       indicates no delay and the device will be suspended immediately.
+-    $ref: "/schemas/types.yaml#/definitions/uint32"
++    $ref: /schemas/types.yaml#/definitions/uint32
+ 
+   pl022,rt:
+     description: indicates the controller should run the message pump with realtime
+@@ -81,7 +81,7 @@ patternProperties:
+     properties:
+       pl022,interface:
+         description: SPI interface type
+-        $ref: "/schemas/types.yaml#/definitions/uint32"
++        $ref: /schemas/types.yaml#/definitions/uint32
+         enum:
+           - 0      # SPI
+           - 1      # Texas Instruments Synchronous Serial Frame Format
+@@ -89,7 +89,7 @@ patternProperties:
+ 
+       pl022,com-mode:
+         description: Specifies the transfer mode
+-        $ref: "/schemas/types.yaml#/definitions/uint32"
++        $ref: /schemas/types.yaml#/definitions/uint32
+         enum:
+           - 0      # interrupt mode
+           - 1      # polling mode
+@@ -98,30 +98,30 @@ patternProperties:
+ 
+       pl022,rx-level-trig:
+         description: Rx FIFO watermark level
+-        $ref: "/schemas/types.yaml#/definitions/uint32"
++        $ref: /schemas/types.yaml#/definitions/uint32
+         minimum: 0
+         maximum: 4
+ 
+       pl022,tx-level-trig:
+         description: Tx FIFO watermark level
+-        $ref: "/schemas/types.yaml#/definitions/uint32"
++        $ref: /schemas/types.yaml#/definitions/uint32
+         minimum: 0
+         maximum: 4
+ 
+       pl022,ctrl-len:
+         description: Microwire interface - Control length
+-        $ref: "/schemas/types.yaml#/definitions/uint32"
++        $ref: /schemas/types.yaml#/definitions/uint32
+         minimum: 0x03
+         maximum: 0x1f
+ 
+       pl022,wait-state:
+         description: Microwire interface - Wait state
+-        $ref: "/schemas/types.yaml#/definitions/uint32"
++        $ref: /schemas/types.yaml#/definitions/uint32
+         enum: [0, 1]
+ 
+       pl022,duplex:
+         description: Microwire interface - Full/Half duplex
+-        $ref: "/schemas/types.yaml#/definitions/uint32"
++        $ref: /schemas/types.yaml#/definitions/uint32
+         enum: [0, 1]
+ 
+ required:
+diff --git a/Documentation/devicetree/bindings/spi/spi-rockchip.yaml b/Documentation/devicetree/bindings/spi/spi-rockchip.yaml
+index 66e49947b703..e4941e9212d1 100644
+--- a/Documentation/devicetree/bindings/spi/spi-rockchip.yaml
++++ b/Documentation/devicetree/bindings/spi/spi-rockchip.yaml
+@@ -11,7 +11,7 @@ description:
+   as flash and display controllers using the SPI communication interface.
+ 
+ allOf:
+-  - $ref: "spi-controller.yaml#"
++  - $ref: spi-controller.yaml#
+ 
+ maintainers:
+   - Heiko Stuebner <heiko@sntech.de>
+diff --git a/Documentation/devicetree/bindings/spi/spi-sifive.yaml b/Documentation/devicetree/bindings/spi/spi-sifive.yaml
+index 6e7e394fc1e4..5bffefb9c7eb 100644
+--- a/Documentation/devicetree/bindings/spi/spi-sifive.yaml
++++ b/Documentation/devicetree/bindings/spi/spi-sifive.yaml
+@@ -12,7 +12,7 @@ maintainers:
+   - Palmer Dabbelt <palmer@sifive.com>
+ 
+ allOf:
+-  - $ref: "spi-controller.yaml#"
++  - $ref: spi-controller.yaml#
+ 
+ properties:
+   compatible:
+@@ -51,14 +51,14 @@ properties:
+   sifive,fifo-depth:
+     description:
+       Depth of hardware queues; defaults to 8
+-    $ref: "/schemas/types.yaml#/definitions/uint32"
++    $ref: /schemas/types.yaml#/definitions/uint32
+     enum: [8]
+     default: 8
+ 
+   sifive,max-bits-per-word:
+     description:
+       Maximum bits per word; defaults to 8
+-    $ref: "/schemas/types.yaml#/definitions/uint32"
++    $ref: /schemas/types.yaml#/definitions/uint32
+     enum: [0, 1, 2, 3, 4, 5, 6, 7, 8]
+     default: 8
+ 
+diff --git a/Documentation/devicetree/bindings/spi/spi-sunplus-sp7021.yaml b/Documentation/devicetree/bindings/spi/spi-sunplus-sp7021.yaml
+index 3a58cf0f1ec8..69a463305274 100644
+--- a/Documentation/devicetree/bindings/spi/spi-sunplus-sp7021.yaml
++++ b/Documentation/devicetree/bindings/spi/spi-sunplus-sp7021.yaml
+@@ -8,7 +8,7 @@ $schema: http://devicetree.org/meta-schemas/core.yaml#
+ title: Sunplus sp7021 SPI controller
+ 
+ allOf:
+-  - $ref: "spi-controller.yaml"
++  - $ref: spi-controller.yaml
+ 
+ maintainers:
+   - Li-hao Kuo <lhjeff911@gmail.com>
+diff --git a/Documentation/devicetree/bindings/spi/spi-xilinx.yaml b/Documentation/devicetree/bindings/spi/spi-xilinx.yaml
+index bbb735603f29..6bd83836eded 100644
+--- a/Documentation/devicetree/bindings/spi/spi-xilinx.yaml
++++ b/Documentation/devicetree/bindings/spi/spi-xilinx.yaml
+@@ -10,7 +10,7 @@ maintainers:
+   - Michal Simek <michal.simek@xilinx.com>
+ 
+ allOf:
+-  - $ref: "spi-controller.yaml#"
++  - $ref: spi-controller.yaml#
+ 
+ properties:
+   compatible:
+diff --git a/Documentation/devicetree/bindings/spi/spi-zynqmp-qspi.yaml b/Documentation/devicetree/bindings/spi/spi-zynqmp-qspi.yaml
+index 546c416cdb55..20f77246d365 100644
+--- a/Documentation/devicetree/bindings/spi/spi-zynqmp-qspi.yaml
++++ b/Documentation/devicetree/bindings/spi/spi-zynqmp-qspi.yaml
+@@ -10,7 +10,7 @@ maintainers:
+   - Michal Simek <michal.simek@xilinx.com>
+ 
+ allOf:
+-  - $ref: "spi-controller.yaml#"
++  - $ref: spi-controller.yaml#
+ 
+ properties:
+   compatible:
+diff --git a/Documentation/devicetree/bindings/spi/sprd,spi-adi.yaml b/Documentation/devicetree/bindings/spi/sprd,spi-adi.yaml
+index a3ab1a1f1eb4..903b06f88b1b 100644
+--- a/Documentation/devicetree/bindings/spi/sprd,spi-adi.yaml
++++ b/Documentation/devicetree/bindings/spi/sprd,spi-adi.yaml
+@@ -1,9 +1,8 @@
+ # SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
+-
+ %YAML 1.2
+ ---
+-$id: "http://devicetree.org/schemas/spi/sprd,spi-adi.yaml#"
+-$schema: "http://devicetree.org/meta-schemas/core.yaml#"
++$id: http://devicetree.org/schemas/spi/sprd,spi-adi.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
+ 
+ title: Spreadtrum ADI controller
+ 
+diff --git a/Documentation/devicetree/bindings/spi/st,stm32-qspi.yaml b/Documentation/devicetree/bindings/spi/st,stm32-qspi.yaml
+index 1eb17f7a4d86..8bba965a9ae6 100644
+--- a/Documentation/devicetree/bindings/spi/st,stm32-qspi.yaml
++++ b/Documentation/devicetree/bindings/spi/st,stm32-qspi.yaml
+@@ -11,7 +11,7 @@ maintainers:
+   - Patrice Chotard <patrice.chotard@foss.st.com>
+ 
+ allOf:
+-  - $ref: "spi-controller.yaml#"
++  - $ref: spi-controller.yaml#
+ 
+ properties:
+   compatible:
+diff --git a/Documentation/devicetree/bindings/spi/st,stm32-spi.yaml b/Documentation/devicetree/bindings/spi/st,stm32-spi.yaml
+index 1cda15f91cc3..d35c6f7e2dd5 100644
+--- a/Documentation/devicetree/bindings/spi/st,stm32-spi.yaml
++++ b/Documentation/devicetree/bindings/spi/st,stm32-spi.yaml
+@@ -17,7 +17,7 @@ maintainers:
+   - Fabrice Gasnier <fabrice.gasnier@foss.st.com>
+ 
+ allOf:
+-  - $ref: "spi-controller.yaml#"
++  - $ref: spi-controller.yaml#
+   - if:
+       properties:
+         compatible:
+diff --git a/Documentation/devicetree/bindings/spi/xlnx,zynq-qspi.yaml b/Documentation/devicetree/bindings/spi/xlnx,zynq-qspi.yaml
+index 1f1c40a9f320..83e8fb4a548d 100644
+--- a/Documentation/devicetree/bindings/spi/xlnx,zynq-qspi.yaml
++++ b/Documentation/devicetree/bindings/spi/xlnx,zynq-qspi.yaml
+@@ -11,7 +11,7 @@ description:
+   memory devices.
+ 
+ allOf:
+-  - $ref: "spi-controller.yaml#"
++  - $ref: spi-controller.yaml#
+ 
+ maintainers:
+   - Michal Simek <michal.simek@xilinx.com>
+-- 
+2.34.1
 
-Cheers,
-
-Andrew
