@@ -1,46 +1,39 @@
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Tue, 17 Jan 2023 17:08:22 -0800
-Subject: [PATCH net-next 6/6] net: phy: Remove probe_capabilities
-In-Reply-To: <20230116-net-next-remove-probe-capabilities-v1-6-5aa29738a023@walle.cc>
-References: <20230116-net-next-remove-probe-capabilities-v1-0-5aa29738a023@walle.cc>
- <20230116-net-next-remove-probe-capabilities-v1-6-5aa29738a023@walle.cc>
-Message-ID: <a4da45c6-7a04-c649-b841-ee1567c531ea@intel.com>
+From: Billy Tsai <billy_tsai@aspeedtech.com>
+Date: Wed, 18 Jan 2023 01:48:20 +0000
+Subject: [v4 0/5] Support pwm/tach driver for aspeed ast26xx
+In-Reply-To: <20230117214806.ptnnhgxmlvyzjdzp@pengutronix.de>
+References: <20221123061635.32025-1-billy_tsai@aspeedtech.com>
+ <20230117214806.ptnnhgxmlvyzjdzp@pengutronix.de>
+Message-ID: <C2AA4099-CD24-4D28-8A91-F1D7EF1BC564@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 1/16/2023 4:55 AM, Michael Walle wrote:
-> From: Andrew Lunn <andrew@lunn.ch>
-> 
-> Deciding if to probe of PHYs using C45 is now determine by if the bus
-> provides the C45 read method. This makes probe_capabilities redundant
-> so remove it.
-> 
-> Signed-off-by: Andrew Lunn <andrew@lunn.ch>
-> Signed-off-by: Michael Walle <michael@walle.cc>
-...
+Hi Uwe,
 
-> diff --git a/include/linux/phy.h b/include/linux/phy.h
-> index fceaac0fb319..fbeba4fee8d4 100644
-> --- a/include/linux/phy.h
-> +++ b/include/linux/phy.h
-> @@ -419,14 +419,6 @@ struct mii_bus {
->   	/** @reset_gpiod: Reset GPIO descriptor pointer */
->   	struct gpio_desc *reset_gpiod;
->   
-> -	/** @probe_capabilities: bus capabilities, used for probing */
-> -	enum {
-> -		MDIOBUS_NO_CAP = 0,
-> -		MDIOBUS_C22,
-> -		MDIOBUS_C45,
-> -		MDIOBUS_C22_C45,
-> -	} probe_capabilities;
-> -
+  On 2023/1/18, 5:48 AM, "Uwe Kleine-K?nig" <u.kleine-koenig at pengutronix.de <mailto:u.kleine-koenig@pengutronix.de>> wrote:
 
-I'm a little surprised there is no Documentation regarding this stuff, 
-that needs to be removed or fixed up, but since there isn't...
 
-Reviewed-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+  > Hello Billy,
+
+
+  > I wonder if you address the feedback you got for this series. I think
+  > there are no big issues left, are there?
+
+Thanks for your help. Yes, there is no issue with the PWM driver at the
+moment. The remaining task of this series is dt-binding and I am waiting
+the feedback from reviewer.
+
+  > There is only one patch left open in the PWM patchwork (i.e. the patch
+  > implementing the driver that already has my Reviewed-by tag). I'll
+  > discard that one, too, as "changes requested" and hope you will send a
+  > v5.
+
+I will send a v5 when the issue about the dt-binding is resloved.
+Thanks again for your help!
+
+Best Regards, 
+Billy Tsai
 
