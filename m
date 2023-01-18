@@ -1,9 +1,10 @@
 From: Michael Walle <michael@walle.cc>
-Date: Wed, 18 Jan 2023 11:01:35 +0100
-Subject: [PATCH net-next v2 1/6] net: mdio: Move mdiobus_scan() within file
+Date: Wed, 18 Jan 2023 11:01:37 +0100
+Subject: [PATCH net-next v2 3/6] net: mdio: Add workaround for Micrel PHYs
+ which are not C45 compatible
 In-Reply-To: <20230116-net-next-remove-probe-capabilities-v2-0-15513b05e1f4@walle.cc>
 References: <20230116-net-next-remove-probe-capabilities-v2-0-15513b05e1f4@walle.cc>
-Message-ID: <20230116-net-next-remove-probe-capabilities-v2-1-15513b05e1f4@walle.cc>
+Message-ID: <20230116-net-next-remove-probe-capabilities-v2-3-15513b05e1f4@walle.cc>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -12,137 +13,104 @@ Content-Transfer-Encoding: 7bit
 
 From: Andrew Lunn <andrew@lunn.ch>
 
-No functional change, just place it earlier in preparation for some
-refactoring.
-
-While at it, correct the comment format and one typo.
+After scanning the bus for C22 devices, check if any Micrel PHYs have
+been found.  They are known to do bad things if there are C45
+transactions on the bus. Prevent the scanning of the bus using C45 if
+such a PHY has been detected.
 
 Signed-off-by: Andrew Lunn <andrew@lunn.ch>
 Signed-off-by: Michael Walle <michael@walle.cc>
-Reviewed-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 ---
- drivers/net/phy/mdio_bus.c | 101 ++++++++++++++++++++++-----------------------
- 1 file changed, 50 insertions(+), 51 deletions(-)
+v2:
+ [mw] move variable declaration into the loop. Thanks, Jesse.
+---
+ drivers/net/phy/mdio_bus.c | 37 ++++++++++++++++++++++++++++++++++---
+ include/linux/micrel_phy.h |  2 ++
+ 2 files changed, 36 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/net/phy/mdio_bus.c b/drivers/net/phy/mdio_bus.c
-index 902e1c88ef58..61c33c6098a1 100644
+index 667247f661c5..a664eeb1868d 100644
 --- a/drivers/net/phy/mdio_bus.c
 +++ b/drivers/net/phy/mdio_bus.c
-@@ -506,6 +506,56 @@ static int mdiobus_create_device(struct mii_bus *bus,
- 	return ret;
+@@ -19,6 +19,7 @@
+ #include <linux/interrupt.h>
+ #include <linux/io.h>
+ #include <linux/kernel.h>
++#include <linux/micrel_phy.h>
+ #include <linux/mii.h>
+ #include <linux/mm.h>
+ #include <linux/module.h>
+@@ -600,6 +601,32 @@ static int mdiobus_scan_bus_c45(struct mii_bus *bus)
+ 	return 0;
  }
  
-+/**
-+ * mdiobus_scan - scan a bus for MDIO devices.
-+ * @bus: mii_bus to scan
-+ * @addr: address on bus to scan
-+ *
-+ * This function scans the MDIO bus, looking for devices which can be
-+ * identified using a vendor/product ID in registers 2 and 3. Not all
-+ * MDIO devices have such registers, but PHY devices typically
-+ * do. Hence this function assumes anything found is a PHY, or can be
-+ * treated as a PHY. Other MDIO devices, such as switches, will
-+ * probably not be found during the scan.
++/* There are some C22 PHYs which do bad things when where is a C45
++ * transaction on the bus, like accepting a read themselves, and
++ * stomping over the true devices reply, to performing a write to
++ * themselves which was intended for another device. Now that C22
++ * devices have been found, see if any of them are bad for C45, and if we
++ * should skip the C45 scan.
 + */
-+struct phy_device *mdiobus_scan(struct mii_bus *bus, int addr)
++static bool mdiobus_prevent_c45_scan(struct mii_bus *bus)
 +{
-+	struct phy_device *phydev = ERR_PTR(-ENODEV);
-+	int err;
++	int i;
 +
-+	switch (bus->probe_capabilities) {
-+	case MDIOBUS_NO_CAP:
-+	case MDIOBUS_C22:
-+		phydev = get_phy_device(bus, addr, false);
-+		break;
-+	case MDIOBUS_C45:
-+		phydev = get_phy_device(bus, addr, true);
-+		break;
-+	case MDIOBUS_C22_C45:
-+		phydev = get_phy_device(bus, addr, false);
-+		if (IS_ERR(phydev))
-+			phydev = get_phy_device(bus, addr, true);
-+		break;
++	for (i = 0; i < PHY_MAX_ADDR; i++) {
++		struct phy_device *phydev;
++		u32 oui;
++
++		phydev = mdiobus_get_phy(bus, i);
++		if (!phydev)
++			continue;
++		oui = phydev->phy_id >> 10;
++
++		if (oui == MICREL_OUI)
++			return true;
 +	}
-+
-+	if (IS_ERR(phydev))
-+		return phydev;
-+
-+	/* For DT, see if the auto-probed phy has a corresponding child
-+	 * in the bus node, and set the of_node pointer in this case.
-+	 */
-+	of_mdiobus_link_mdiodev(bus, &phydev->mdio);
-+
-+	err = phy_device_register(phydev);
-+	if (err) {
-+		phy_device_free(phydev);
-+		return ERR_PTR(-ENODEV);
-+	}
-+
-+	return phydev;
++	return false;
 +}
-+EXPORT_SYMBOL(mdiobus_scan);
 +
  /**
   * __mdiobus_register - bring up all the PHYs on a given bus and attach them to bus
   * @bus: target mii_bus
-@@ -679,57 +729,6 @@ void mdiobus_free(struct mii_bus *bus)
- }
- EXPORT_SYMBOL(mdiobus_free);
- 
--/**
-- * mdiobus_scan - scan a bus for MDIO devices.
-- * @bus: mii_bus to scan
-- * @addr: address on bus to scan
-- *
-- * This function scans the MDIO bus, looking for devices which can be
-- * identified using a vendor/product ID in registers 2 and 3. Not all
-- * MDIO devices have such registers, but PHY devices typically
-- * do. Hence this function assumes anything found is a PHY, or can be
-- * treated as a PHY. Other MDIO devices, such as switches, will
-- * probably not be found during the scan.
-- */
--struct phy_device *mdiobus_scan(struct mii_bus *bus, int addr)
--{
--	struct phy_device *phydev = ERR_PTR(-ENODEV);
--	int err;
--
--	switch (bus->probe_capabilities) {
--	case MDIOBUS_NO_CAP:
--	case MDIOBUS_C22:
--		phydev = get_phy_device(bus, addr, false);
--		break;
--	case MDIOBUS_C45:
--		phydev = get_phy_device(bus, addr, true);
--		break;
--	case MDIOBUS_C22_C45:
--		phydev = get_phy_device(bus, addr, false);
--		if (IS_ERR(phydev))
--			phydev = get_phy_device(bus, addr, true);
--		break;
--	}
--
--	if (IS_ERR(phydev))
--		return phydev;
--
--	/*
--	 * For DT, see if the auto-probed phy has a correspoding child
--	 * in the bus node, and set the of_node pointer in this case.
--	 */
--	of_mdiobus_link_mdiodev(bus, &phydev->mdio);
--
--	err = phy_device_register(phydev);
--	if (err) {
--		phy_device_free(phydev);
--		return ERR_PTR(-ENODEV);
--	}
--
--	return phydev;
--}
--EXPORT_SYMBOL(mdiobus_scan);
--
- static void mdiobus_stats_acct(struct mdio_bus_stats *stats, bool op, int ret)
+@@ -617,8 +644,9 @@ static int mdiobus_scan_bus_c45(struct mii_bus *bus)
+ int __mdiobus_register(struct mii_bus *bus, struct module *owner)
  {
- 	preempt_disable();
+ 	struct mdio_device *mdiodev;
+-	int i, err;
+ 	struct gpio_desc *gpiod;
++	bool prevent_c45_scan;
++	int i, err;
+ 
+ 	if (!bus || !bus->name)
+ 		return -EINVAL;
+@@ -691,8 +719,11 @@ int __mdiobus_register(struct mii_bus *bus, struct module *owner)
+ 			goto error;
+ 	}
+ 
+-	if (bus->probe_capabilities == MDIOBUS_C45 ||
+-	    bus->probe_capabilities == MDIOBUS_C22_C45) {
++	prevent_c45_scan = mdiobus_prevent_c45_scan(bus);
++
++	if (!prevent_c45_scan &&
++	    (bus->probe_capabilities == MDIOBUS_C45 ||
++	     bus->probe_capabilities == MDIOBUS_C22_C45)) {
+ 		err = mdiobus_scan_bus_c45(bus);
+ 		if (err)
+ 			goto error;
+diff --git a/include/linux/micrel_phy.h b/include/linux/micrel_phy.h
+index 1f7c33b2f5a3..771e050883db 100644
+--- a/include/linux/micrel_phy.h
++++ b/include/linux/micrel_phy.h
+@@ -8,6 +8,8 @@
+ #ifndef _MICREL_PHY_H
+ #define _MICREL_PHY_H
+ 
++#define MICREL_OUI		0x0885
++
+ #define MICREL_PHY_ID_MASK	0x00fffff0
+ 
+ #define PHY_ID_KSZ8873MLL	0x000e7237
 
 -- 
 2.30.2
