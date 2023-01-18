@@ -1,35 +1,34 @@
-From: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Date: Tue, 17 Jan 2023 22:48:06 +0100
-Subject: [v4 0/5] Support pwm/tach driver for aspeed ast26xx
-In-Reply-To: <20221123061635.32025-1-billy_tsai@aspeedtech.com>
-References: <20221123061635.32025-1-billy_tsai@aspeedtech.com>
-Message-ID: <20230117214806.ptnnhgxmlvyzjdzp@pengutronix.de>
+From: Jakub Kicinski <kuba@kernel.org>
+Date: Tue, 17 Jan 2023 17:17:40 -0800
+Subject: [PATCH net-next 2/6] net: mdio: Rework scanning of bus ready
+ for quirks
+In-Reply-To: <20230116-net-next-remove-probe-capabilities-v1-2-5aa29738a023@walle.cc>
+References: <20230116-net-next-remove-probe-capabilities-v1-0-5aa29738a023@walle.cc>
+	<20230116-net-next-remove-probe-capabilities-v1-2-5aa29738a023@walle.cc>
+Message-ID: <20230117171740.3a9e6f8d@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello Billy,
+On Mon, 16 Jan 2023 13:55:14 +0100 Michael Walle wrote:
+> From: Andrew Lunn <andrew@lunn.ch>
+> 
+> Some C22 PHYs do bad things when there are C45 transactions on the
+> bus. In order to handle this, the bus needs to be scanned first for
+> C22 at all addresses, and then C45 scanned for all addresses.
+> 
+> The Marvell pxa168 driver scans a specific address on the bus to find
+> its PHY. This is a C22 only device, so update it to use the c22
+> helper.
 
-I wonder if you address the feedback you got for this series. I think
-there are no big issues left, are there?
+clang says:
 
-There is only one patch left open in the PWM patchwork (i.e. the patch
-implementing the driver that already has my Reviewed-by tag). I'll
-discard that one, too, as "changes requested" and hope you will send a
-v5.
-
-Best regards
-Uwe
-
--- 
-Pengutronix e.K.                           | Uwe Kleine-K?nig            |
-Industrial Linux Solutions                 | https://www.pengutronix.de/ |
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 488 bytes
-Desc: not available
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20230117/9429ea72/attachment-0001.sig>
+drivers/net/phy/mdio_bus.c:708:11: warning: variable 'i' is uninitialized when used here [-Wuninitialized]
+        while (--i >= 0) {
+                 ^
+drivers/net/phy/mdio_bus.c:620:7: note: initialize the variable 'i' to silence this warning
+        int i, err;
+             ^
+              = 0
