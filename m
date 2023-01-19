@@ -1,48 +1,43 @@
-From: ye.xingchen@zte.com.cn <ye.xingchen@zte.com.cn>
-Date: Thu, 19 Jan 2023 15:36:49 +0800 (CST)
-Subject: =?UTF-8?B?W1BBVENIIGxpbnV4LW5leHRdIGNyeXB0bzogYXNwZWVkIC0gVXNlIGRldm1fcGxhdGZvcm1fZ2V0X2FuZF9pb3JlbWFwX3Jlc291cmNlKCk=?=
-Message-ID: <202301191536493046780@zte.com.cn>
+From: Patrice CHOTARD <patrice.chotard@foss.st.com>
+Date: Thu, 19 Jan 2023 08:41:36 +0100
+Subject: [PATCH 1/2] spi: dt-bindings: drop unneeded quotes
+In-Reply-To: <20230118173932.358153-1-krzysztof.kozlowski@linaro.org>
+References: <20230118173932.358153-1-krzysztof.kozlowski@linaro.org>
+Message-ID: <39af6fac-3e8e-4929-43b3-eb0b7af0ab30@foss.st.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: ye xingchen <ye.xingchen@zte.com.cn>
+Hi Krzysztof
 
-Convert platform_get_resource(), devm_ioremap_resource() to a single
-call to devm_platform_get_and_ioremap_resource(), as this is exactly
-what this function does.
+On 1/18/23 18:39, Krzysztof Kozlowski wrote:
+> Cleanup by removing unneeded quotes from refs and redundant blank lines.
+> No functional impact except adjusting to preferred coding style.
+> 
+> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+> ---
 
-Signed-off-by: ye xingchen <ye.xingchen@zte.com.cn>
----
- drivers/crypto/aspeed/aspeed-hace.c | 5 +----
- 1 file changed, 1 insertion(+), 4 deletions(-)
+[...]
 
-diff --git a/drivers/crypto/aspeed/aspeed-hace.c b/drivers/crypto/aspeed/aspeed-hace.c
-index 656cb92c8bb6..d2871e1de9c2 100644
---- a/drivers/crypto/aspeed/aspeed-hace.c
-+++ b/drivers/crypto/aspeed/aspeed-hace.c
-@@ -99,7 +99,6 @@ static int aspeed_hace_probe(struct platform_device *pdev)
- 	const struct of_device_id *hace_dev_id;
- 	struct aspeed_engine_hash *hash_engine;
- 	struct aspeed_hace_dev *hace_dev;
--	struct resource *res;
- 	int rc;
+> diff --git a/Documentation/devicetree/bindings/spi/st,stm32-qspi.yaml b/Documentation/devicetree/bindings/spi/st,stm32-qspi.yaml
+> index 1eb17f7a4d86..8bba965a9ae6 100644
+> --- a/Documentation/devicetree/bindings/spi/st,stm32-qspi.yaml
+> +++ b/Documentation/devicetree/bindings/spi/st,stm32-qspi.yaml
+> @@ -11,7 +11,7 @@ maintainers:
+>    - Patrice Chotard <patrice.chotard@foss.st.com>
+>  
+>  allOf:
+> -  - $ref: "spi-controller.yaml#"
+> +  - $ref: spi-controller.yaml#
+>  
+>  properties:
+>    compatible:
 
- 	hace_dev = devm_kzalloc(&pdev->dev, sizeof(struct aspeed_hace_dev),
-@@ -118,11 +117,9 @@ static int aspeed_hace_probe(struct platform_device *pdev)
- 	hash_engine = &hace_dev->hash_engine;
- 	crypto_engine = &hace_dev->crypto_engine;
 
--	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
--
- 	platform_set_drvdata(pdev, hace_dev);
+For stm32-qspi 
+Reviewed-by: Patrice Chotard <patrice.chotard@foss.st.com>
 
--	hace_dev->regs = devm_ioremap_resource(&pdev->dev, res);
-+	hace_dev->regs = devm_platform_get_and_ioremap_resource(pdev, 0, NULL);
- 	if (IS_ERR(hace_dev->regs))
- 		return PTR_ERR(hace_dev->regs);
-
--- 
-2.25.1
+Thanks
+Patrice
