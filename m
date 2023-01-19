@@ -1,36 +1,41 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Thu, 19 Jan 2023 15:32:02 +1030
-Subject: [PATCH net-next v2 6/6] net: phy: Remove probe_capabilities
-In-Reply-To: <20230116-net-next-remove-probe-capabilities-v2-6-15513b05e1f4@walle.cc>
-References: <20230116-net-next-remove-probe-capabilities-v2-0-15513b05e1f4@walle.cc>
- <20230116-net-next-remove-probe-capabilities-v2-6-15513b05e1f4@walle.cc>
-Message-ID: <61140466-6195-4309-8f46-3edf084731c2@app.fastmail.com>
+From: Neal Liu <neal_liu@aspeedtech.com>
+Date: Thu, 19 Jan 2023 05:30:14 +0000
+Subject: [PATCH -next] crypto: aspeed: change aspeed_acry_akcipher_algs to
+ static
+In-Reply-To: <20230119014859.1900136-1-yangyingliang@huawei.com>
+References: <20230119014859.1900136-1-yangyingliang@huawei.com>
+Message-ID: <SG2PR06MB3207C0C0D82F4F27BC4C3F6F80C49@SG2PR06MB3207.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+> aspeed_acry_akcipher_algs is only used in aspeed-acry.c now, change it to
+> static.
+> 
+> Signed-off-by: Yang Yingliang <yangyingliang@huawei.com>
 
+Reviewed-by: Neal Liu <neal_liu@aspeedtech.com>
 
-On Wed, 18 Jan 2023, at 20:31, Michael Walle wrote:
-> From: Andrew Lunn <andrew@lunn.ch>
->
-> Deciding if to probe of PHYs using C45 is now determine by if the bus
-> provides the C45 read method. This makes probe_capabilities redundant
-> so remove it.
->
-> Signed-off-by: Andrew Lunn <andrew@lunn.ch>
-> Signed-off-by: Michael Walle <michael@walle.cc>
-> Reviewed-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 > ---
->  drivers/net/ethernet/adi/adin1110.c               | 1 -
->  drivers/net/ethernet/freescale/xgmac_mdio.c       | 1 -
->  drivers/net/ethernet/mediatek/mtk_eth_soc.c       | 1 -
->  drivers/net/ethernet/microchip/lan743x_main.c     | 2 --
->  drivers/net/ethernet/stmicro/stmmac/stmmac_mdio.c | 3 ---
->  drivers/net/mdio/mdio-aspeed.c                    | 1 -
-
-For the Aspeed change:
-
-Acked-by: Andrew Jeffery <andrew@aj.id.au>
+>  drivers/crypto/aspeed/aspeed-acry.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/crypto/aspeed/aspeed-acry.c
+> b/drivers/crypto/aspeed/aspeed-acry.c
+> index 6d3790583f8b..164c524015f0 100644
+> --- a/drivers/crypto/aspeed/aspeed-acry.c
+> +++ b/drivers/crypto/aspeed/aspeed-acry.c
+> @@ -603,7 +603,7 @@ static void aspeed_acry_rsa_exit_tfm(struct
+> crypto_akcipher *tfm)
+>  	crypto_free_akcipher(ctx->fallback_tfm);
+>  }
+> 
+> -struct aspeed_acry_alg aspeed_acry_akcipher_algs[] = {
+> +static struct aspeed_acry_alg aspeed_acry_akcipher_algs[] = {
+>  	{
+>  		.akcipher = {
+>  			.encrypt = aspeed_acry_rsa_enc,
+> --
+> 2.25.1
