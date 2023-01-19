@@ -1,43 +1,44 @@
-From: Patrice CHOTARD <patrice.chotard@foss.st.com>
-Date: Thu, 19 Jan 2023 08:41:36 +0100
-Subject: [PATCH 1/2] spi: dt-bindings: drop unneeded quotes
-In-Reply-To: <20230118173932.358153-1-krzysztof.kozlowski@linaro.org>
-References: <20230118173932.358153-1-krzysztof.kozlowski@linaro.org>
-Message-ID: <39af6fac-3e8e-4929-43b3-eb0b7af0ab30@foss.st.com>
+From: ye.xingchen@zte.com.cn <ye.xingchen@zte.com.cn>
+Date: Thu, 19 Jan 2023 17:15:31 +0800 (CST)
+Subject: =?UTF-8?B?W1BBVENIXSBpMmM6IGFzcGVlZDogVXNlIGRldm1fcGxhdGZvcm1fZ2V0X2FuZF9pb3JlbWFwX3Jlc291cmNlKCk=?=
+Message-ID: <202301191715319948743@zte.com.cn>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Krzysztof
+From: ye xingchen <ye.xingchen@zte.com.cn>
 
-On 1/18/23 18:39, Krzysztof Kozlowski wrote:
-> Cleanup by removing unneeded quotes from refs and redundant blank lines.
-> No functional impact except adjusting to preferred coding style.
-> 
-> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-> ---
+Convert platform_get_resource(), devm_ioremap_resource() to a single
+call to devm_platform_get_and_ioremap_resource(), as this is exactly
+what this function does.
 
-[...]
+Signed-off-by: ye xingchen <ye.xingchen@zte.com.cn>
+---
+ drivers/i2c/busses/i2c-aspeed.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-> diff --git a/Documentation/devicetree/bindings/spi/st,stm32-qspi.yaml b/Documentation/devicetree/bindings/spi/st,stm32-qspi.yaml
-> index 1eb17f7a4d86..8bba965a9ae6 100644
-> --- a/Documentation/devicetree/bindings/spi/st,stm32-qspi.yaml
-> +++ b/Documentation/devicetree/bindings/spi/st,stm32-qspi.yaml
-> @@ -11,7 +11,7 @@ maintainers:
->    - Patrice Chotard <patrice.chotard@foss.st.com>
->  
->  allOf:
-> -  - $ref: "spi-controller.yaml#"
-> +  - $ref: spi-controller.yaml#
->  
->  properties:
->    compatible:
+diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
+index c64c381b69b7..d3c99c5b3247 100644
+--- a/drivers/i2c/busses/i2c-aspeed.c
++++ b/drivers/i2c/busses/i2c-aspeed.c
+@@ -979,15 +979,13 @@ static int aspeed_i2c_probe_bus(struct platform_device *pdev)
+ 	const struct of_device_id *match;
+ 	struct aspeed_i2c_bus *bus;
+ 	struct clk *parent_clk;
+-	struct resource *res;
+ 	int irq, ret;
 
+ 	bus = devm_kzalloc(&pdev->dev, sizeof(*bus), GFP_KERNEL);
+ 	if (!bus)
+ 		return -ENOMEM;
 
-For stm32-qspi 
-Reviewed-by: Patrice Chotard <patrice.chotard@foss.st.com>
+-	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-	bus->base = devm_ioremap_resource(&pdev->dev, res);
++	bus->base = devm_platform_get_and_ioremap_resource(pdev, 0, NULL);
+ 	if (IS_ERR(bus->base))
+ 		return PTR_ERR(bus->base);
 
-Thanks
-Patrice
+-- 
+2.25.1
