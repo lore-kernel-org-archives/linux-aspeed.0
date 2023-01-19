@@ -1,51 +1,35 @@
-From: patchwork-bot+netdevbpf@kernel.org <patchwork-bot+netdevbpf@kernel.org>
-Date: Thu, 19 Jan 2023 15:30:18 +0000
-Subject: [PATCH net-next v2 0/6] net: phy: Remove probe_capabilities
-In-Reply-To: <20230116-net-next-remove-probe-capabilities-v2-0-15513b05e1f4@walle.cc>
-References: <20230116-net-next-remove-probe-capabilities-v2-0-15513b05e1f4@walle.cc>
-Message-ID: <167414221817.31934.14400606803161415762.git-patchwork-notify@kernel.org>
+From: Joel Stanley <joel@jms.id.au>
+Date: Fri, 20 Jan 2023 09:48:56 +1030
+Subject: [PATCH] pinctrl: aspeed: Fix confusing types in return value
+Message-ID: <20230119231856.52014-1-joel@jms.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello:
+The function signature is int, but we return a bool. Instead return a
+negative errno as the kerneldoc suggests.
 
-This series was applied to netdev/net-next.git (master)
-by Paolo Abeni <pabeni@redhat.com>:
+Fixes: 4d3d0e4272d8 ("pinctrl: Add core support for Aspeed SoCs")
+Signed-off-by: Joel Stanley <joel@jms.id.au>
+---
+ drivers/pinctrl/aspeed/pinctrl-aspeed.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-On Wed, 18 Jan 2023 11:01:35 +0100 you wrote:
-> With all the drivers which used .probe_capabilities converted to the
-> new c45 MDIO access methods, we can now decide based upon these whether
-> a bus driver supports c45 and we can get rid of the not widely used
-> probe_capabilites.
-> 
-> Unfortunately, due to a now broader support of c45 scans, this will
-> trigger a bug on some boards with a (c22-only) Micrel PHY. These PHYs
-> don't ignore c45 accesses correctly, thinking they are addressed
-> themselves and distrupt the MDIO access. To avoid this, a blacklist
-> for c45 scans is introduced.
-> 
-> [...]
-
-Here is the summary with links:
-  - [net-next,v2,1/6] net: mdio: Move mdiobus_scan() within file
-    https://git.kernel.org/netdev/net-next/c/81d874e7c84e
-  - [net-next,v2,2/6] net: mdio: Rework scanning of bus ready for quirks
-    https://git.kernel.org/netdev/net-next/c/d41e127757f3
-  - [net-next,v2,3/6] net: mdio: Add workaround for Micrel PHYs which are not C45 compatible
-    https://git.kernel.org/netdev/net-next/c/348659337485
-  - [net-next,v2,4/6] net: mdio: scan bus based on bus capabilities for C22 and C45
-    https://git.kernel.org/netdev/net-next/c/1a136ca2e089
-  - [net-next,v2,5/6] net: phy: Decide on C45 capabilities based on presence of method
-    https://git.kernel.org/netdev/net-next/c/fbfe97597c77
-  - [net-next,v2,6/6] net: phy: Remove probe_capabilities
-    https://git.kernel.org/netdev/net-next/c/da099a7fb13d
-
-You are awesome, thank you!
+diff --git a/drivers/pinctrl/aspeed/pinctrl-aspeed.c b/drivers/pinctrl/aspeed/pinctrl-aspeed.c
+index a30912a92f05..f93d6959cee9 100644
+--- a/drivers/pinctrl/aspeed/pinctrl-aspeed.c
++++ b/drivers/pinctrl/aspeed/pinctrl-aspeed.c
+@@ -113,7 +113,7 @@ static int aspeed_disable_sig(struct aspeed_pinmux_data *ctx,
+ 	int ret = 0;
+ 
+ 	if (!exprs)
+-		return true;
++		return -EINVAL;
+ 
+ 	while (*exprs && !ret) {
+ 		ret = aspeed_sig_expr_disable(ctx, *exprs);
 -- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/patchwork/pwbot.html
-
+2.39.0
 
