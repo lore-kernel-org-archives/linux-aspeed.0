@@ -1,28 +1,35 @@
 From: Jordan Chang <jordan.chang@ufispace.com>
-Date: Thu, 19 Jan 2023 18:20:59 +0800
-Subject: [PATCH 0/3] Add Ufispace NCPLite platform device tree
-Message-ID: <20230119102102.73414-1-jordan.chang@ufispace.com>
+Date: Thu, 19 Jan 2023 18:21:00 +0800
+Subject: [PATCH 1/3] dt-bindings: vendor-prefixes: Add prefix for Ufi Space
+In-Reply-To: <20230119102102.73414-1-jordan.chang@ufispace.com>
+References: <20230119102102.73414-1-jordan.chang@ufispace.com>
+Message-ID: <20230119102102.73414-2-jordan.chang@ufispace.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add Ufispace NCPLite platform device tree, and add the compatible
-string in dt-bindings files.
+Add a vendor prefix for Ufi Space (https://www.ufispace.com).
 
-Jordan Chang (3):
-  dt-bindings: vendor-prefixes: Add prefix for Ufi Space
-  dt-bindings: arm: aspeed: document Ufispace NCPLite BMC
-  ARM: dts: aspeed: Add device tree for Ufispace NCPLite BMC
+Signed-off-by: Jordan Chang <jordan.chang@ufispace.com>
+---
+ Documentation/devicetree/bindings/vendor-prefixes.yaml | 2 ++
+ 1 file changed, 2 insertions(+)
 
- .../bindings/arm/aspeed/aspeed.yaml           |   1 +
- .../devicetree/bindings/vendor-prefixes.yaml  |   2 +
- arch/arm/boot/dts/Makefile                    |   1 +
- .../boot/dts/aspeed-bmc-ufispace-ncplite.dts  | 360 ++++++++++++++++++
- 4 files changed, 364 insertions(+)
- create mode 100644 arch/arm/boot/dts/aspeed-bmc-ufispace-ncplite.dts
-
+diff --git a/Documentation/devicetree/bindings/vendor-prefixes.yaml b/Documentation/devicetree/bindings/vendor-prefixes.yaml
+index 2f0151e9f6be..ab0dd1cb5ede 100644
+--- a/Documentation/devicetree/bindings/vendor-prefixes.yaml
++++ b/Documentation/devicetree/bindings/vendor-prefixes.yaml
+@@ -1344,6 +1344,8 @@ patternProperties:
+     description: Ubiquiti Networks
+   "^udoo,.*":
+     description: Udoo
++  "^ufispace,.*":
++    description: Ufi Space Co., Ltd.
+   "^ugoos,.*":
+     description: Ugoos Industrial Co., Ltd.
+   "^uniwest,.*":
 -- 
 2.39.0
 
