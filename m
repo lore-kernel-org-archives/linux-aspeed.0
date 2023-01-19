@@ -1,44 +1,40 @@
-From: ye.xingchen@zte.com.cn <ye.xingchen@zte.com.cn>
-Date: Thu, 19 Jan 2023 17:15:31 +0800 (CST)
-Subject: =?UTF-8?B?W1BBVENIXSBpMmM6IGFzcGVlZDogVXNlIGRldm1fcGxhdGZvcm1fZ2V0X2FuZF9pb3JlbWFwX3Jlc291cmNlKCk=?=
-Message-ID: <202301191715319948743@zte.com.cn>
+From: Jordan Chang <jordan.chang@ufispace.com>
+Date: Thu, 19 Jan 2023 18:20:59 +0800
+Subject: [PATCH 0/3] Add Ufispace NCPLite platform device tree
+Message-ID: <20230119102102.73414-1-jordan.chang@ufispace.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: ye xingchen <ye.xingchen@zte.com.cn>
+Add Ufispace NCPLite platform device tree, and add the compatible
+string in dt-bindings files.
 
-Convert platform_get_resource(), devm_ioremap_resource() to a single
-call to devm_platform_get_and_ioremap_resource(), as this is exactly
-what this function does.
+Jordan Chang (3):
+  dt-bindings: vendor-prefixes: Add prefix for Ufi Space
+  dt-bindings: arm: aspeed: document Ufispace NCPLite BMC
+  ARM: dts: aspeed: Add device tree for Ufispace NCPLite BMC
 
-Signed-off-by: ye xingchen <ye.xingchen@zte.com.cn>
----
- drivers/i2c/busses/i2c-aspeed.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
-
-diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
-index c64c381b69b7..d3c99c5b3247 100644
---- a/drivers/i2c/busses/i2c-aspeed.c
-+++ b/drivers/i2c/busses/i2c-aspeed.c
-@@ -979,15 +979,13 @@ static int aspeed_i2c_probe_bus(struct platform_device *pdev)
- 	const struct of_device_id *match;
- 	struct aspeed_i2c_bus *bus;
- 	struct clk *parent_clk;
--	struct resource *res;
- 	int irq, ret;
-
- 	bus = devm_kzalloc(&pdev->dev, sizeof(*bus), GFP_KERNEL);
- 	if (!bus)
- 		return -ENOMEM;
-
--	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
--	bus->base = devm_ioremap_resource(&pdev->dev, res);
-+	bus->base = devm_platform_get_and_ioremap_resource(pdev, 0, NULL);
- 	if (IS_ERR(bus->base))
- 		return PTR_ERR(bus->base);
+ .../bindings/arm/aspeed/aspeed.yaml           |   1 +
+ .../devicetree/bindings/vendor-prefixes.yaml  |   2 +
+ arch/arm/boot/dts/Makefile                    |   1 +
+ .../boot/dts/aspeed-bmc-ufispace-ncplite.dts  | 360 ++++++++++++++++++
+ 4 files changed, 364 insertions(+)
+ create mode 100644 arch/arm/boot/dts/aspeed-bmc-ufispace-ncplite.dts
 
 -- 
-2.25.1
+2.39.0
+
+
+-- 
+******************************
+This e-mail is confidential. If you are not 
+the intended recipient, you must not disclose, distribute or use the 
+information in it as this could be a breach of confidentiality.If you have 
+received this message in error, please advise us immediately by return 
+e-mail and delete the document. The address from which this message has 
+been sent is strictly for business mail only and the company reserves the 
+right to monitor the contents of communications and take action where and 
+when it is deemed necessary.
+Thank you for your co-operation.
