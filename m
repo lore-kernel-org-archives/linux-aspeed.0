@@ -1,116 +1,120 @@
-From: Amit Kumar Mahapatra <amit.kumar-mahapatra@amd.com>
-Date: Fri, 20 Jan 2023 00:23:42 +0530
-Subject: [PATCH v2 13/13] spi: spi-zynqmp-gqspi: Add parallel memories support in GQSPI driver
-In-Reply-To: <20230119185342.2093323-1-amit.kumar-mahapatra@amd.com>
+From: Heiko Stübner <heiko@sntech.de>
+Date: Fri, 20 Jan 2023 10:47:37 +0100
+Subject: [PATCH v2 02/13] spi: Replace all spi->chip_select and spi->cs_gpiod
+ references with function call
+In-Reply-To: <20230119185342.2093323-3-amit.kumar-mahapatra@amd.com>
 References: <20230119185342.2093323-1-amit.kumar-mahapatra@amd.com>
-Message-ID: <20230119185342.2093323-14-amit.kumar-mahapatra@amd.com>
+ <20230119185342.2093323-3-amit.kumar-mahapatra@amd.com>
+Message-ID: <3658396.MHq7AAxBmi@diego>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-During GQSPI driver probe set ctlr->multi-cs-cap for enabling multi CS
-capability of the controller. In parallel mode the controller can either
-split the data between both the flash or can send the same data to both the
-flashes, this is determined by the STRIPE bit. While sending commands to
-the flashes the GQSPI driver send the same command to both the flashes by
-resetting the STRIPE bit, but while writing/reading data to & from the
-flash the GQSPI driver splits the data evenly between both the flashes by
-setting the STRIPE bit.
+Am Donnerstag, 19. Januar 2023, 19:53:31 CET schrieb Amit Kumar Mahapatra:
+> Supporting multi-cs in spi drivers would require the chip_select & cs_gpiod
+> members of struct spi_device to be an array. But changing the type of these
+> members to array would break the spi driver functionality. To make the
+> transition smoother introduced four new APIs to get/set the
+> spi->chip_select & spi->cs_gpiod and replaced all spi->chip_select and
+> spi->cs_gpiod references with get or set API calls.
+> While adding multi-cs support in further patches the chip_select & cs_gpiod
+> members of the spi_device structure would be converted to arrays & the
+> "idx" parameter of the APIs would be used as array index i.e.,
+> spi->chip_select[idx] & spi->cs_gpiod[idx] respectively.
+> 
+> Signed-off-by: Amit Kumar Mahapatra <amit.kumar-mahapatra@amd.com>
+> ---
 
-Signed-off-by: Amit Kumar Mahapatra <amit.kumar-mahapatra@amd.com>
----
- drivers/spi/spi-zynqmp-gqspi.c | 39 +++++++++++++++++++++++++++++++++-
- 1 file changed, 38 insertions(+), 1 deletion(-)
+> diff --git a/drivers/spi/spi-rockchip-sfc.c b/drivers/spi/spi-rockchip-sfc.c
+> index bd87d3c92dd3..246e81453ec3 100644
+> --- a/drivers/spi/spi-rockchip-sfc.c
+> +++ b/drivers/spi/spi-rockchip-sfc.c
+> @@ -346,7 +346,7 @@ static int rockchip_sfc_xfer_setup(struct rockchip_sfc *sfc,
+>  
+>  	/* set the Controller */
+>  	ctrl |= SFC_CTRL_PHASE_SEL_NEGETIVE;
+> -	cmd |= mem->spi->chip_select << SFC_CMD_CS_SHIFT;
+> +	cmd |= spi_get_chipselect(mem->spi, 0) << SFC_CMD_CS_SHIFT;
+>  
+>  	dev_dbg(sfc->dev, "sfc addr.nbytes=%x(x%d) dummy.nbytes=%x(x%d)\n",
+>  		op->addr.nbytes, op->addr.buswidth,
+> diff --git a/drivers/spi/spi-rockchip.c b/drivers/spi/spi-rockchip.c
+> index 79242dc5272d..adc5638eff4b 100644
+> --- a/drivers/spi/spi-rockchip.c
+> +++ b/drivers/spi/spi-rockchip.c
+> @@ -246,28 +246,30 @@ static void rockchip_spi_set_cs(struct spi_device *spi, bool enable)
+>  	bool cs_asserted = spi->mode & SPI_CS_HIGH ? enable : !enable;
+>  
+>  	/* Return immediately for no-op */
+> -	if (cs_asserted == rs->cs_asserted[spi->chip_select])
+> +	if (cs_asserted == rs->cs_asserted[spi_get_chipselect(spi, 0)])
+>  		return;
+>  
+>  	if (cs_asserted) {
+>  		/* Keep things powered as long as CS is asserted */
+>  		pm_runtime_get_sync(rs->dev);
+>  
+> -		if (spi->cs_gpiod)
+> +		if (spi_get_csgpiod(spi, 0))
+>  			ROCKCHIP_SPI_SET_BITS(rs->regs + ROCKCHIP_SPI_SER, 1);
+>  		else
+> -			ROCKCHIP_SPI_SET_BITS(rs->regs + ROCKCHIP_SPI_SER, BIT(spi->chip_select));
+> +			ROCKCHIP_SPI_SET_BITS(rs->regs + ROCKCHIP_SPI_SER,
+> +					      BIT(spi_get_chipselect(spi, 0)));
+>  	} else {
+> -		if (spi->cs_gpiod)
+> +		if (spi_get_csgpiod(spi, 0))
+>  			ROCKCHIP_SPI_CLR_BITS(rs->regs + ROCKCHIP_SPI_SER, 1);
+>  		else
+> -			ROCKCHIP_SPI_CLR_BITS(rs->regs + ROCKCHIP_SPI_SER, BIT(spi->chip_select));
+> +			ROCKCHIP_SPI_CLR_BITS(rs->regs + ROCKCHIP_SPI_SER,
+> +					      BIT(spi_get_chipselect(spi, 0)));
+>  
+>  		/* Drop reference from when we first asserted CS */
+>  		pm_runtime_put(rs->dev);
+>  	}
+>  
+> -	rs->cs_asserted[spi->chip_select] = cs_asserted;
+> +	rs->cs_asserted[spi_get_chipselect(spi, 0)] = cs_asserted;
+>  }
+>  
+>  static void rockchip_spi_handle_err(struct spi_controller *ctlr,
+> @@ -541,7 +543,7 @@ static int rockchip_spi_config(struct rockchip_spi *rs,
+>  	if (spi->mode & SPI_LSB_FIRST)
+>  		cr0 |= CR0_FBM_LSB << CR0_FBM_OFFSET;
+>  	if (spi->mode & SPI_CS_HIGH)
+> -		cr0 |= BIT(spi->chip_select) << CR0_SOI_OFFSET;
+> +		cr0 |= BIT(spi_get_chipselect(spi, 0)) << CR0_SOI_OFFSET;
+>  
+>  	if (xfer->rx_buf && xfer->tx_buf)
+>  		cr0 |= CR0_XFM_TR << CR0_XFM_OFFSET;
+> @@ -724,7 +726,7 @@ static int rockchip_spi_setup(struct spi_device *spi)
+>  	struct rockchip_spi *rs = spi_controller_get_devdata(spi->controller);
+>  	u32 cr0;
+>  
+> -	if (!spi->cs_gpiod && (spi->mode & SPI_CS_HIGH) && !rs->cs_high_supported) {
+> +	if (!spi_get_csgpiod(spi, 0) && (spi->mode & SPI_CS_HIGH) && !rs->cs_high_supported) {
+>  		dev_warn(&spi->dev, "setup: non GPIO CS can't be active-high\n");
+>  		return -EINVAL;
+>  	}
+> @@ -735,10 +737,10 @@ static int rockchip_spi_setup(struct spi_device *spi)
+>  
+>  	cr0 &= ~(0x3 << CR0_SCPH_OFFSET);
+>  	cr0 |= ((spi->mode & 0x3) << CR0_SCPH_OFFSET);
+> -	if (spi->mode & SPI_CS_HIGH && spi->chip_select <= 1)
+> -		cr0 |= BIT(spi->chip_select) << CR0_SOI_OFFSET;
+> -	else if (spi->chip_select <= 1)
+> -		cr0 &= ~(BIT(spi->chip_select) << CR0_SOI_OFFSET);
+> +	if (spi->mode & SPI_CS_HIGH && spi_get_chipselect(spi, 0) <= 1)
+> +		cr0 |= BIT(spi_get_chipselect(spi, 0)) << CR0_SOI_OFFSET;
+> +	else if (spi_get_chipselect(spi, 0) <= 1)
+> +		cr0 &= ~(BIT(spi_get_chipselect(spi, 0)) << CR0_SOI_OFFSET);
+>  
+>  	writel_relaxed(cr0, rs->regs + ROCKCHIP_SPI_CTRLR0);
 
-diff --git a/drivers/spi/spi-zynqmp-gqspi.c b/drivers/spi/spi-zynqmp-gqspi.c
-index 4759f704bf5c..9e44371bfda2 100644
---- a/drivers/spi/spi-zynqmp-gqspi.c
-+++ b/drivers/spi/spi-zynqmp-gqspi.c
-@@ -23,6 +23,7 @@
- #include <linux/spinlock.h>
- #include <linux/workqueue.h>
- #include <linux/spi/spi-mem.h>
-+#include <linux/mtd/spi-nor.h>
- 
- /* Generic QSPI register offsets */
- #define GQSPI_CONFIG_OFST		0x00000100
-@@ -192,6 +193,7 @@ struct qspi_platform_data {
-  * @op_lock:		Operational lock
-  * @speed_hz:          Current SPI bus clock speed in hz
-  * @has_tapdelay:	Used for tapdelay register available in qspi
-+ * @is_parallel:		Used for multi CS support
-  */
- struct zynqmp_qspi {
- 	struct spi_controller *ctlr;
-@@ -214,8 +216,33 @@ struct zynqmp_qspi {
- 	struct mutex op_lock;
- 	u32 speed_hz;
- 	bool has_tapdelay;
-+	bool is_parallel;
- };
- 
-+/**
-+ * zynqmp_gqspi_update_stripe - For GQSPI controller data stripe capabilities
-+ * @op:	Pointer to mem ops
-+ * Return:      Status of the data stripe
-+ *
-+ * Returns true if data stripe need to be enabled, else returns false
-+ */
-+bool zynqmp_gqspi_update_stripe(const struct spi_mem_op *op)
-+{
-+	if (op->cmd.opcode ==  SPINOR_OP_BE_4K ||
-+	    op->cmd.opcode ==  SPINOR_OP_BE_32K ||
-+	    op->cmd.opcode ==  SPINOR_OP_CHIP_ERASE ||
-+	    op->cmd.opcode ==  SPINOR_OP_SE ||
-+	    op->cmd.opcode ==  SPINOR_OP_BE_32K_4B ||
-+	    op->cmd.opcode ==  SPINOR_OP_SE_4B ||
-+	    op->cmd.opcode == SPINOR_OP_BE_4K_4B ||
-+	    op->cmd.opcode ==  SPINOR_OP_WRSR ||
-+	    op->cmd.opcode ==  SPINOR_OP_BRWR ||
-+	    (op->cmd.opcode ==  SPINOR_OP_WRSR2 && !op->addr.nbytes))
-+		return false;
-+
-+	return true;
-+}
-+
- /**
-  * zynqmp_gqspi_read - For GQSPI controller read operation
-  * @xqspi:	Pointer to the zynqmp_qspi structure
-@@ -470,7 +497,14 @@ static void zynqmp_qspi_chipselect(struct spi_device *qspi, bool is_high)
- 
- 	genfifoentry |= GQSPI_GENFIFO_MODE_SPI;
- 
--	if (qspi->cs_index_mask & GQSPI_SELECT_UPPER_CS) {
-+	if ((qspi->cs_index_mask & GQSPI_SELECT_LOWER_CS) &&
-+	    (qspi->cs_index_mask & GQSPI_SELECT_UPPER_CS)) {
-+		zynqmp_gqspi_selectslave(xqspi,
-+					 GQSPI_SELECT_FLASH_CS_BOTH,
-+					 GQSPI_SELECT_FLASH_BUS_BOTH);
-+		if (!xqspi->is_parallel)
-+			xqspi->is_parallel = true;
-+	} else if (qspi->cs_index_mask & GQSPI_SELECT_UPPER_CS) {
- 		zynqmp_gqspi_selectslave(xqspi,
- 					 GQSPI_SELECT_FLASH_CS_UPPER,
- 					 GQSPI_SELECT_FLASH_BUS_LOWER);
-@@ -1139,6 +1173,8 @@ static int zynqmp_qspi_exec_op(struct spi_mem *mem,
- 	}
- 
- 	if (op->data.nbytes) {
-+		if (xqspi->is_parallel && zynqmp_gqspi_update_stripe(op))
-+			genfifoentry |= GQSPI_GENFIFO_STRIPE;
- 		reinit_completion(&xqspi->data_completion);
- 		if (op->data.dir == SPI_MEM_DATA_OUT) {
- 			xqspi->txbuf = (u8 *)op->data.buf.out;
-@@ -1334,6 +1370,7 @@ static int zynqmp_qspi_probe(struct platform_device *pdev)
- 	ctlr->bits_per_word_mask = SPI_BPW_MASK(8);
- 	ctlr->dev.of_node = np;
- 	ctlr->auto_runtime_pm = true;
-+	ctlr->multi_cs_cap = true;
- 
- 	ret = devm_spi_register_controller(&pdev->dev, ctlr);
- 	if (ret) {
--- 
-2.17.1
+for the two Rockchip drivers
+Acked-by: Heiko Stuebner <heiko@sntech.de>
+
 
