@@ -1,39 +1,28 @@
-From: Tom Rix <trix@redhat.com>
-Date: Sun, 22 Jan 2023 07:46:11 -0800
-Subject: [PATCH] crypto: change aspeed_acry_akcipher_algs storage-class-specifier to static
-Message-ID: <20230122154611.504808-1-trix@redhat.com>
+From: Andrew Jeffery <andrew@aj.id.au>
+Date: Mon, 23 Jan 2023 08:47:10 +1030
+Subject: KCS over eSPI
+In-Reply-To: <CAJTGxZH2VAn8-=LKuA76bGkrXtm1y99LW_-yDqh52UX7Kd4tZw@mail.gmail.com>
+References: <CAJTGxZH2VAn8-=LKuA76bGkrXtm1y99LW_-yDqh52UX7Kd4tZw@mail.gmail.com>
+Message-ID: <79c1441e-20dd-4c2a-8dfc-a8fdaded20b7@app.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-smatch reports
-drivers/crypto/aspeed/aspeed-acry.c:606:24: warning: symbol 'aspeed_acry_akcipher_algs'
-  was not declared. Should it be static?
 
-aspeed_acry_akcipher_algs is only used in aspeed-acry.c,
-so it should be static.
 
-Fixes: 2f1cf4e50c95 ("crypto: aspeed - Add ACRY RSA driver")
-Signed-off-by: Tom Rix <trix@redhat.com>
----
- drivers/crypto/aspeed/aspeed-acry.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+On Sat, 21 Jan 2023, at 11:40, Vijay Khemka wrote:
+> Team,
+> I am planning to use eSPI interface instead of LPC on aspeed. I see some
+> patches by intel for espi slave driver but I need to integrate this with
+> KCS. Our current upstream version of KCS only supports LPC. Please point me
+> to any patches available to support KCS over eSPI.
 
-diff --git a/drivers/crypto/aspeed/aspeed-acry.c b/drivers/crypto/aspeed/aspeed-acry.c
-index 6d3790583f8b..164c524015f0 100644
---- a/drivers/crypto/aspeed/aspeed-acry.c
-+++ b/drivers/crypto/aspeed/aspeed-acry.c
-@@ -603,7 +603,7 @@ static void aspeed_acry_rsa_exit_tfm(struct crypto_akcipher *tfm)
- 	crypto_free_akcipher(ctx->fallback_tfm);
- }
- 
--struct aspeed_acry_alg aspeed_acry_akcipher_algs[] = {
-+static struct aspeed_acry_alg aspeed_acry_akcipher_algs[] = {
- 	{
- 		.akcipher = {
- 			.encrypt = aspeed_acry_rsa_enc,
--- 
-2.26.3
+Aspeed were doing some work for eSPI support a while back, but beyond 
+that I'm not aware of any patches to bring to your attention. Also, IBM 
+isn't planning on exploiting eSPI from what I know, so I don't think 
+we'll have much motivation to get the driver side of things worked out 
+ourselves.
 
+Andrew
