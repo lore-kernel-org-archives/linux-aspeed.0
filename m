@@ -1,20 +1,20 @@
-From: Michal Simek <michal.simek@amd.com>
-Date: Mon, 23 Jan 2023 13:48:54 +0100
-Subject: [PATCH v2 07/13] platform/x86: serial-multi-instantiate: Replace
- all spi->chip_select and spi->cs_gpiod references with function call
-In-Reply-To: <20230119185342.2093323-8-amit.kumar-mahapatra@amd.com>
+From: Dhruva Gole <d-gole@ti.com>
+Date: Mon, 23 Jan 2023 19:50:50 +0530
+Subject: [PATCH v2 02/13] spi: Replace all spi->chip_select and
+ spi->cs_gpiod references with function call
+In-Reply-To: <20230119185342.2093323-3-amit.kumar-mahapatra@amd.com>
 References: <20230119185342.2093323-1-amit.kumar-mahapatra@amd.com>
- <20230119185342.2093323-8-amit.kumar-mahapatra@amd.com>
-Message-ID: <85dc2301-4d10-c909-cadf-6f117fe041b9@amd.com>
+ <20230119185342.2093323-3-amit.kumar-mahapatra@amd.com>
+Message-ID: <90084f5f-6e9d-7b17-5487-3b4b01bd5e7d@ti.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+Hi Amit,
 
-
-On 1/19/23 19:53, Amit Kumar Mahapatra wrote:
+On 20/01/23 00:23, Amit Kumar Mahapatra wrote:
 > Supporting multi-cs in spi drivers would require the chip_select & cs_gpiod
 > members of struct spi_device to be an array. But changing the type of these
 > members to array would break the spi driver functionality. To make the
@@ -25,28 +25,20 @@ On 1/19/23 19:53, Amit Kumar Mahapatra wrote:
 > members of the spi_device structure would be converted to arrays & the
 > "idx" parameter of the APIs would be used as array index i.e.,
 > spi->chip_select[idx] & spi->cs_gpiod[idx] respectively.
-> 
+>
 > Signed-off-by: Amit Kumar Mahapatra <amit.kumar-mahapatra@amd.com>
 > ---
->   drivers/platform/x86/serial-multi-instantiate.c | 3 ++-
->   1 file changed, 2 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/platform/x86/serial-multi-instantiate.c b/drivers/platform/x86/serial-multi-instantiate.c
-> index 5362f1a7b77c..270a4700d25d 100644
-> --- a/drivers/platform/x86/serial-multi-instantiate.c
-> +++ b/drivers/platform/x86/serial-multi-instantiate.c
-> @@ -139,7 +139,8 @@ static int smi_spi_probe(struct platform_device *pdev, struct smi *smi,
->   			goto error;
->   		}
->   
-> -		dev_dbg(dev, "SPI device %s using chip select %u", name, spi_dev->chip_select);
-> +		dev_dbg(dev, "SPI device %s using chip select %u", name,
-> +			spi_get_chipselect(spi_dev, 0));
->   
->   		smi->spi_devs[i] = spi_dev;
->   		smi->spi_num++;
+> [...]
+>  drivers/spi/spi-cadence-quadspi.c |  5 +++--
+>  drivers/spi/spi-cadence-xspi.c    |  4 ++--
+>  drivers/spi/spi-cadence.c         |  4 ++--
+[...]
 
-Reviewed-by: Michal Simek <michal.simek@amd.com>
+For SPI Cadence QSPI,
+Reviewed-by: Dhruva Gole <d-gole@ti.com>
 
-Thanks,
-Michal
+-- 
+Best regards,
+Dhruva Gole
+Texas Instruments Incorporated
+
