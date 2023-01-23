@@ -1,11 +1,11 @@
 From: Michal Simek <michal.simek@amd.com>
-Date: Mon, 23 Jan 2023 13:47:24 +0100
-Subject: [PATCH v2 05/13] mtd: devices: Replace all spi->chip_select and
+Date: Mon, 23 Jan 2023 13:47:38 +0100
+Subject: [PATCH v2 06/13] staging: Replace all spi->chip_select and
  spi->cs_gpiod references with function call
-In-Reply-To: <20230119185342.2093323-6-amit.kumar-mahapatra@amd.com>
+In-Reply-To: <20230119185342.2093323-7-amit.kumar-mahapatra@amd.com>
 References: <20230119185342.2093323-1-amit.kumar-mahapatra@amd.com>
- <20230119185342.2093323-6-amit.kumar-mahapatra@amd.com>
-Message-ID: <d4ccdf63-a5ef-98a6-5e80-e06428ec97ac@amd.com>
+ <20230119185342.2093323-7-amit.kumar-mahapatra@amd.com>
+Message-ID: <32009f51-ece1-a008-0c59-c0d42d9b0130@amd.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -28,23 +28,36 @@ On 1/19/23 19:53, Amit Kumar Mahapatra wrote:
 > 
 > Signed-off-by: Amit Kumar Mahapatra <amit.kumar-mahapatra@amd.com>
 > ---
->   drivers/mtd/devices/mtd_dataflash.c | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
+>   drivers/staging/fbtft/fbtft-core.c | 2 +-
+>   drivers/staging/greybus/spilib.c   | 2 +-
+>   2 files changed, 2 insertions(+), 2 deletions(-)
 > 
-> diff --git a/drivers/mtd/devices/mtd_dataflash.c b/drivers/mtd/devices/mtd_dataflash.c
-> index 3bbaa590c768..1d3b2a94581f 100644
-> --- a/drivers/mtd/devices/mtd_dataflash.c
-> +++ b/drivers/mtd/devices/mtd_dataflash.c
-> @@ -639,7 +639,7 @@ static int add_dataflash_otp(struct spi_device *spi, char *name, int nr_pages,
+> diff --git a/drivers/staging/fbtft/fbtft-core.c b/drivers/staging/fbtft/fbtft-core.c
+> index afaba94d1d1c..3a4abf3bae40 100644
+> --- a/drivers/staging/fbtft/fbtft-core.c
+> +++ b/drivers/staging/fbtft/fbtft-core.c
+> @@ -840,7 +840,7 @@ int fbtft_register_framebuffer(struct fb_info *fb_info)
+>   		sprintf(text1, ", %zu KiB buffer memory", par->txbuf.len >> 10);
+>   	if (spi)
+>   		sprintf(text2, ", spi%d.%d at %d MHz", spi->master->bus_num,
+> -			spi->chip_select, spi->max_speed_hz / 1000000);
+> +			spi_get_chipselect(spi, 0), spi->max_speed_hz / 1000000);
+>   	dev_info(fb_info->dev,
+>   		 "%s frame buffer, %dx%d, %d KiB video memory%s, fps=%lu%s\n",
+>   		 fb_info->fix.id, fb_info->var.xres, fb_info->var.yres,
+> diff --git a/drivers/staging/greybus/spilib.c b/drivers/staging/greybus/spilib.c
+> index ad0700a0bb81..efb3bec58e15 100644
+> --- a/drivers/staging/greybus/spilib.c
+> +++ b/drivers/staging/greybus/spilib.c
+> @@ -237,7 +237,7 @@ static struct gb_operation *gb_spi_operation_create(struct gb_spilib *spi,
+>   	request = operation->request->payload;
+>   	request->count = cpu_to_le16(count);
+>   	request->mode = dev->mode;
+> -	request->chip_select = dev->chip_select;
+> +	request->chip_select = spi_get_chipselect(dev, 0);
 >   
->   	/* name must be usable with cmdlinepart */
->   	sprintf(priv->name, "spi%d.%d-%s",
-> -			spi->master->bus_num, spi->chip_select,
-> +			spi->master->bus_num, spi_get_chipselect(spi, 0),
->   			name);
->   
->   	device = &priv->mtd;
-
+>   	gb_xfer = &request->transfers[0];
+>   	tx_data = gb_xfer + count;	/* place tx data after last gb_xfer */
 
 Reviewed-by: Michal Simek <michal.simek@amd.com>
 
