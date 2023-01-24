@@ -1,48 +1,57 @@
-From: Mark Brown <broonie@kernel.org>
-Date: Thu, 26 Jan 2023 00:25:14 +0000
-Subject: [PATCH v2 1/2] spi: dt-bindings: drop unneeded quotes
-In-Reply-To: <20230124083342.34869-1-krzysztof.kozlowski@linaro.org>
-References: <20230124083342.34869-1-krzysztof.kozlowski@linaro.org>
-Message-ID: <167469271489.2661317.15374060752399847689.b4-ty@kernel.org>
+From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Date: Tue, 24 Jan 2023 09:17:43 +0100
+Subject: [PATCH 2/2] spi: dt-bindings: cleanup examples - indentation,
+ lowercase hex
+In-Reply-To: <20230123201751.GA2450665-robh@kernel.org>
+References: <20230118173932.358153-1-krzysztof.kozlowski@linaro.org>
+ <20230118173932.358153-2-krzysztof.kozlowski@linaro.org>
+ <20230123201751.GA2450665-robh@kernel.org>
+Message-ID: <934be0a4-3639-5f72-cf54-b796b32df484@linaro.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, 24 Jan 2023 09:33:41 +0100, Krzysztof Kozlowski wrote:
-> Cleanup by removing unneeded quotes from refs and redundant blank lines.
-> No functional impact except adjusting to preferred coding style.
+On 23/01/2023 21:17, Rob Herring wrote:
+> On Wed, Jan 18, 2023 at 06:39:32PM +0100, Krzysztof Kozlowski wrote:
+>> Cleanup examples:
+>>  - use 4-space indentation (for cases when it is neither 4 not 2 space),
+>>  - drop redundant blank lines,
+>>  - use lowercase hex.
+>>
+>> No functional impact except adjusting to preferred coding style.
+>>
+>> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+>> ---
+>>  .../bindings/spi/amlogic,meson-gx-spicc.yaml  |  26 +--
+>>  .../bindings/spi/amlogic,meson6-spifc.yaml    |  22 +--
+>>  .../bindings/spi/aspeed,ast2600-fmc.yaml      |  24 +--
+>>  .../bindings/spi/brcm,spi-bcm-qspi.yaml       | 156 +++++++++---------
+>>  .../bindings/spi/cdns,qspi-nor.yaml           |   4 +-
+>>  .../bindings/spi/nvidia,tegra210-quad.yaml    |  42 ++---
+>>  .../bindings/spi/qcom,spi-qcom-qspi.yaml      |   1 -
+>>  .../devicetree/bindings/spi/renesas,rspi.yaml |  22 +--
+>>  .../bindings/spi/spi-sunplus-sp7021.yaml      |   4 +-
+>>  .../devicetree/bindings/spi/st,stm32-spi.yaml |   1 -
+>>  10 files changed, 150 insertions(+), 152 deletions(-)
 > 
+> [...]
+> 
+>> diff --git a/Documentation/devicetree/bindings/spi/st,stm32-spi.yaml b/Documentation/devicetree/bindings/spi/st,stm32-spi.yaml
+>> index d35c6f7e2dd5..18afdaab946d 100644
+>> --- a/Documentation/devicetree/bindings/spi/st,stm32-spi.yaml
+>> +++ b/Documentation/devicetree/bindings/spi/st,stm32-spi.yaml
+>> @@ -95,7 +95,6 @@ examples:
+>>               <&dmamux1 1 40 0x400 0x05>;
+>>        dma-names = "rx", "tx";
+>>        cs-gpios = <&gpioa 11 0>;
+> 
+> Looks like the indentation needs adjusting here.
 > 
 
-Applied to
+Ack
 
-   broonie/spi.git for-next
-
-Thanks!
-
-[1/2] spi: dt-bindings: drop unneeded quotes
-      commit: 99a7fa0e75a3a595a577fb5efa4b84a491f664a2
-[2/2] spi: dt-bindings: cleanup examples - indentation, lowercase hex
-      commit: ee8d422c91d87ebe230769b2cb89f087e56b560a
-
-All being well this means that it will be integrated into the linux-next
-tree (usually sometime in the next 24 hours) and sent to Linus during
-the next merge window (or sooner if it is a bug fix), however if
-problems are discovered then the patch may be dropped or reverted.
-
-You may get further e-mails resulting from automated or manual testing
-and review of the tree, please engage with people reporting problems and
-send followup patches addressing any issues that are reported if needed.
-
-If any updates are required or you are submitting further changes they
-should be sent as incremental updates against current git, existing
-patches will not be replaced.
-
-Please add any relevant lists and maintainers to the CCs when replying
-to this mail.
-
-Thanks,
-Mark
+Best regards,
+Krzysztof
 
