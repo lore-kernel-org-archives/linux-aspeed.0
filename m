@@ -1,56 +1,27 @@
-From: Rob Herring <robh@kernel.org>
-Date: Mon, 23 Jan 2023 14:17:51 -0600
-Subject: [PATCH 2/2] spi: dt-bindings: cleanup examples - indentation,
- lowercase hex
-In-Reply-To: <20230118173932.358153-2-krzysztof.kozlowski@linaro.org>
-References: <20230118173932.358153-1-krzysztof.kozlowski@linaro.org>
- <20230118173932.358153-2-krzysztof.kozlowski@linaro.org>
-Message-ID: <20230123201751.GA2450665-robh@kernel.org>
+From: Herbert Xu <herbert@gondor.apana.org.au>
+Date: Fri, 27 Jan 2023 19:07:46 +0800
+Subject: [PATCH -next] crypto: aspeed: change aspeed_acry_akcipher_algs
+ to static
+In-Reply-To: <20230119014859.1900136-1-yangyingliang@huawei.com>
+References: <20230119014859.1900136-1-yangyingliang@huawei.com>
+Message-ID: <Y9OwgsHFhOTcqx3s@gondor.apana.org.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Jan 18, 2023 at 06:39:32PM +0100, Krzysztof Kozlowski wrote:
-> Cleanup examples:
->  - use 4-space indentation (for cases when it is neither 4 not 2 space),
->  - drop redundant blank lines,
->  - use lowercase hex.
+On Thu, Jan 19, 2023 at 09:48:59AM +0800, Yang Yingliang wrote:
+> aspeed_acry_akcipher_algs is only used in aspeed-acry.c now,
+> change it to static.
 > 
-> No functional impact except adjusting to preferred coding style.
-> 
-> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+> Signed-off-by: Yang Yingliang <yangyingliang@huawei.com>
 > ---
->  .../bindings/spi/amlogic,meson-gx-spicc.yaml  |  26 +--
->  .../bindings/spi/amlogic,meson6-spifc.yaml    |  22 +--
->  .../bindings/spi/aspeed,ast2600-fmc.yaml      |  24 +--
->  .../bindings/spi/brcm,spi-bcm-qspi.yaml       | 156 +++++++++---------
->  .../bindings/spi/cdns,qspi-nor.yaml           |   4 +-
->  .../bindings/spi/nvidia,tegra210-quad.yaml    |  42 ++---
->  .../bindings/spi/qcom,spi-qcom-qspi.yaml      |   1 -
->  .../devicetree/bindings/spi/renesas,rspi.yaml |  22 +--
->  .../bindings/spi/spi-sunplus-sp7021.yaml      |   4 +-
->  .../devicetree/bindings/spi/st,stm32-spi.yaml |   1 -
->  10 files changed, 150 insertions(+), 152 deletions(-)
+>  drivers/crypto/aspeed/aspeed-acry.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
-[...]
-
-> diff --git a/Documentation/devicetree/bindings/spi/st,stm32-spi.yaml b/Documentation/devicetree/bindings/spi/st,stm32-spi.yaml
-> index d35c6f7e2dd5..18afdaab946d 100644
-> --- a/Documentation/devicetree/bindings/spi/st,stm32-spi.yaml
-> +++ b/Documentation/devicetree/bindings/spi/st,stm32-spi.yaml
-> @@ -95,7 +95,6 @@ examples:
->               <&dmamux1 1 40 0x400 0x05>;
->        dma-names = "rx", "tx";
->        cs-gpios = <&gpioa 11 0>;
-
-Looks like the indentation needs adjusting here.
-
-> -
->      };
->  
->  ...
-> -- 
-> 2.34.1
-> 
+Patch applied.  Thanks.
+-- 
+Email: Herbert Xu <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
