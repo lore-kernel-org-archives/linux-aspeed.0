@@ -1,57 +1,24 @@
 From: Linus Walleij <linus.walleij@linaro.org>
-Date: Fri, 27 Jan 2023 13:36:22 +0100
-Subject: [PATCH] pinctrl: aspeed-g5: Bypass clock check when fetching regmap
-In-Reply-To: <b565b254-45aa-4f7a-b158-99fb4c66167f@app.fastmail.com>
-References: <20230119235501.53294-1-joel@jms.id.au> <b565b254-45aa-4f7a-b158-99fb4c66167f@app.fastmail.com>
-Message-ID: <CACRpkdYGG8jA9x8Hb9ByvkhFXgbyG43K=LB5F0t4hLxyXtWKjQ@mail.gmail.com>
+Date: Fri, 27 Jan 2023 13:38:53 +0100
+Subject: [PATCH] pinctrl: aspeed: Force to disable the function's signal
+In-Reply-To: <CACPK8XfQ=uarsOgJ7LaXqLyGG2vSF-47RkAEV=T2gruapx-yfg@mail.gmail.com>
+References: <20220818101839.28860-1-billy_tsai@aspeedtech.com>
+ <CACRpkdYpp_1JJQmuX27pECxN0cjzciCuETLPTrSYKqpX0FPABQ@mail.gmail.com>
+ <e501d2fb-aaa0-470d-a8d5-5f8e97898df7@beta.fastmail.com> <CACPK8XfQ=uarsOgJ7LaXqLyGG2vSF-47RkAEV=T2gruapx-yfg@mail.gmail.com>
+Message-ID: <CACRpkdZPxZgWJ3jjiesOFGXmwzZFqeByZyx1VCy5pDWyVQHy+A@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Jan 20, 2023 at 3:35 AM Andrew Jeffery <andrew@aj.id.au> wrote:
-> On Fri, 20 Jan 2023, at 10:25, Joel Stanley wrote:
+On Thu, Jan 19, 2023 at 2:54 AM Joel Stanley <joel@jms.id.au> wrote:
 
-> > A recent commit cf517fef601b ("pinctrl: aspeed: Force to disable the
-> > function's signal") exposed a problem with fetching the regmap for
-> > reading the GFX register.
-> >
-> > The Romulus machine the device tree contains a gpio hog for GPIO S7.
-> > With the patch applied:
-> >
-> >   Muxing pin 151 for GPIO
-> >   Disabling signal VPOB9 for VPO
-> >   aspeed-g5-pinctrl 1e6e2080.pinctrl: Failed to acquire regmap for IP block 1
-> >   aspeed-g5-pinctrl 1e6e2080.pinctrl: request() failed for pin 151
-> >
-> > The code path is aspeed-gpio -> pinmux-g5 -> regmap -> clk, and the
-> > of_clock code returns an error as it doesn't have a valid struct clk_hw
-> > pointer. The regmap call happens because pinmux wants to check the GFX
-> > node (IP block 1) to query bits there.
-> >
-> > For reference, before the offending patch:
-> >
-> >   Muxing pin 151 for GPIO
-> >   Disabling signal VPOB9 for VPO
-> >   Want SCU8C[0x00000080]=0x1, got 0x0 from 0x00000000
-> >   Disabling signal VPOB9 for VPOOFF1
-> >   Want SCU8C[0x00000080]=0x1, got 0x0 from 0x00000000
-> >   Disabling signal VPOB9 for VPOOFF2
-> >   Want SCU8C[0x00000080]=0x1, got 0x0 from 0x00000000
-> >   Enabling signal GPIOS7 for GPIOS7
-> >   Muxed pin 151 as GPIOS7
-> >   gpio-943 (seq_cont): hogged as output/low
-> >
-> > As a workaround, skip the clock check to allow pinmux to proceed.
->
-> We'd want the clock on and and the device out of reset before this
-> makes sense though. We're just assuming the IP is in an operational
-> state? Was this just accidentally working because reading the register
-> in a bad state is producing 0 instead of other undefined garbage?
+> As foreseen by Andrew, this caused a regression. On the Romulus
+> machine the device tree contains a gpio hog for GPIO S7. With the
+> patch applied:
 
-This makes sense, can we come up with a resonable patch for this
-problem or should this one be merged as an intermediate remedy?
+OK shall I just revert the patch?
 
 Yours,
 Linus Walleij
