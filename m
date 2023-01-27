@@ -1,24 +1,27 @@
 From: Herbert Xu <herbert@gondor.apana.org.au>
-Date: Fri, 27 Jan 2023 19:07:46 +0800
-Subject: [PATCH -next] crypto: aspeed: change aspeed_acry_akcipher_algs
- to static
-In-Reply-To: <20230119014859.1900136-1-yangyingliang@huawei.com>
-References: <20230119014859.1900136-1-yangyingliang@huawei.com>
-Message-ID: <Y9OwgsHFhOTcqx3s@gondor.apana.org.au>
+Date: Fri, 27 Jan 2023 19:07:56 +0800
+Subject: [PATCH linux-next] crypto: aspeed - Use
+ devm_platform_get_and_ioremap_resource()
+In-Reply-To: <202301191536493046780@zte.com.cn>
+References: <202301191536493046780@zte.com.cn>
+Message-ID: <Y9OwjGKizQpgAIlu@gondor.apana.org.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Jan 19, 2023 at 09:48:59AM +0800, Yang Yingliang wrote:
-> aspeed_acry_akcipher_algs is only used in aspeed-acry.c now,
-> change it to static.
+On Thu, Jan 19, 2023 at 03:36:49PM +0800, ye.xingchen at zte.com.cn wrote:
+> From: ye xingchen <ye.xingchen@zte.com.cn>
 > 
-> Signed-off-by: Yang Yingliang <yangyingliang@huawei.com>
+> Convert platform_get_resource(), devm_ioremap_resource() to a single
+> call to devm_platform_get_and_ioremap_resource(), as this is exactly
+> what this function does.
+> 
+> Signed-off-by: ye xingchen <ye.xingchen@zte.com.cn>
 > ---
->  drivers/crypto/aspeed/aspeed-acry.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  drivers/crypto/aspeed/aspeed-hace.c | 5 +----
+>  1 file changed, 1 insertion(+), 4 deletions(-)
 
 Patch applied.  Thanks.
 -- 
