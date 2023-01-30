@@ -1,37 +1,40 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Mon, 30 Jan 2023 15:03:15 +1030
-Subject: [PATCH] pinctrl: aspeed: Force to disable the function's signal
-In-Reply-To: <CACPK8XcL-T_zv0aoeM5DJzGirp6dqD9UOn6=enSZDLao6hg2bg@mail.gmail.com>
-References: <20220818101839.28860-1-billy_tsai@aspeedtech.com>
- <CACRpkdYpp_1JJQmuX27pECxN0cjzciCuETLPTrSYKqpX0FPABQ@mail.gmail.com>
- <e501d2fb-aaa0-470d-a8d5-5f8e97898df7@beta.fastmail.com>
- <CACPK8XfQ=uarsOgJ7LaXqLyGG2vSF-47RkAEV=T2gruapx-yfg@mail.gmail.com>
- <CACRpkdZPxZgWJ3jjiesOFGXmwzZFqeByZyx1VCy5pDWyVQHy+A@mail.gmail.com>
- <CACPK8XcL-T_zv0aoeM5DJzGirp6dqD9UOn6=enSZDLao6hg2bg@mail.gmail.com>
-Message-ID: <2fe78085-2ae1-42dc-ad96-b16703ca3abd@app.fastmail.com>
+From: Ryan Chen <ryan_chen@aspeedtech.com>
+Date: Mon, 30 Jan 2023 08:31:19 +0000
+Subject: [PATCH 2/2] dtsi:aspeed: add miss pinctrl in pinctrl dtsi
+In-Reply-To: <3b11d987-180d-4b99-949a-b854b1d6d39b@app.fastmail.com>
+References: <20230103093702.2613574-1-ryan_chen@aspeedtech.com>
+ <20230103093702.2613574-3-ryan_chen@aspeedtech.com>
+ <3b11d987-180d-4b99-949a-b854b1d6d39b@app.fastmail.com>
+Message-ID: <SEZPR06MB5269F48124B49BE5D4599391F2D39@SEZPR06MB5269.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+Hello Andrew,
+	Thanks your review. I will separate the patch to submit.
 
+Ryan Chen
 
-On Mon, 30 Jan 2023, at 13:36, Joel Stanley wrote:
-> On Fri, 27 Jan 2023 at 12:39, Linus Walleij <linus.walleij@linaro.org> wrote:
->>
->> On Thu, Jan 19, 2023 at 2:54 AM Joel Stanley <joel@jms.id.au> wrote:
->>
->> > As foreseen by Andrew, this caused a regression. On the Romulus
->> > machine the device tree contains a gpio hog for GPIO S7. With the
->> > patch applied:
->>
->> OK shall I just revert the patch?
->
-> Yep! I was going to send a revert but I thought I should write up a
-> commit message. If you're happy just putting a revert in with a note
-> that it caused a regression that's enough for me.
-
-Agree, let's revert this one for now.
-
-Andrew
+> -----Original Message-----
+> From: Andrew Jeffery <andrew@aj.id.au>
+> Sent: Monday, January 23, 2023 9:33 AM
+> To: Ryan Chen <ryan_chen@aspeedtech.com>; openbmc at lists.ozlabs.org; Rob
+> Herring <robh+dt@kernel.org>; Krzysztof Kozlowski
+> <krzysztof.kozlowski+dt@linaro.org>; Joel Stanley <joel@jms.id.au>; Linus
+> Walleij <linus.walleij@linaro.org>; linux-aspeed at lists.ozlabs.org
+> Subject: Re: [PATCH 2/2] dtsi:aspeed: add miss pinctrl in pinctrl dtsi
+> 
+> Hi Ryan,
+> 
+> On Tue, 3 Jan 2023, at 20:07, ryan_chen wrote:
+> > add miss pcie rc, secure i2c, i3c, 8bit emmc, uart ncts..
+> 
+> Please make sure that any new functions and groups are documented in the
+> devicetree bindings. Also, updates to the binding documentation should be in
+> their own patch, separate to the changes to the devicetree itself.
+> 
+> Cheers,
+> 
+> Andrew
