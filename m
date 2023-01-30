@@ -1,40 +1,44 @@
 From: Ryan Chen <ryan_chen@aspeedtech.com>
-Date: Mon, 30 Jan 2023 08:31:19 +0000
-Subject: [PATCH 2/2] dtsi:aspeed: add miss pinctrl in pinctrl dtsi
-In-Reply-To: <3b11d987-180d-4b99-949a-b854b1d6d39b@app.fastmail.com>
-References: <20230103093702.2613574-1-ryan_chen@aspeedtech.com>
- <20230103093702.2613574-3-ryan_chen@aspeedtech.com>
- <3b11d987-180d-4b99-949a-b854b1d6d39b@app.fastmail.com>
-Message-ID: <SEZPR06MB5269F48124B49BE5D4599391F2D39@SEZPR06MB5269.apcprd06.prod.outlook.com>
+Date: Mon, 30 Jan 2023 16:54:30 +0800
+Subject: [PATCH] irqchip: aspeed: scu-ic add initial register
+Message-ID: <20230130085430.635583-1-ryan_chen@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello Andrew,
-	Thanks your review. I will separate the patch to submit.
+Add register initial in probe. For avoid isr/ier is not initial.
 
-Ryan Chen
+Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
+---
+ drivers/irqchip/irq-aspeed-scu-ic.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-> -----Original Message-----
-> From: Andrew Jeffery <andrew@aj.id.au>
-> Sent: Monday, January 23, 2023 9:33 AM
-> To: Ryan Chen <ryan_chen@aspeedtech.com>; openbmc at lists.ozlabs.org; Rob
-> Herring <robh+dt@kernel.org>; Krzysztof Kozlowski
-> <krzysztof.kozlowski+dt@linaro.org>; Joel Stanley <joel@jms.id.au>; Linus
-> Walleij <linus.walleij@linaro.org>; linux-aspeed at lists.ozlabs.org
-> Subject: Re: [PATCH 2/2] dtsi:aspeed: add miss pinctrl in pinctrl dtsi
-> 
-> Hi Ryan,
-> 
-> On Tue, 3 Jan 2023, at 20:07, ryan_chen wrote:
-> > add miss pcie rc, secure i2c, i3c, 8bit emmc, uart ncts..
-> 
-> Please make sure that any new functions and groups are documented in the
-> devicetree bindings. Also, updates to the binding documentation should be in
-> their own patch, separate to the changes to the devicetree itself.
-> 
-> Cheers,
-> 
-> Andrew
+diff --git a/drivers/irqchip/irq-aspeed-scu-ic.c b/drivers/irqchip/irq-aspeed-scu-ic.c
+index 279e92cf0b16..94a7223e95df 100644
+--- a/drivers/irqchip/irq-aspeed-scu-ic.c
++++ b/drivers/irqchip/irq-aspeed-scu-ic.c
+@@ -17,8 +17,9 @@
+ 
+ #define ASPEED_SCU_IC_REG		0x018
+ #define ASPEED_SCU_IC_SHIFT		0
+-#define ASPEED_SCU_IC_ENABLE		GENMASK(6, ASPEED_SCU_IC_SHIFT)
++#define ASPEED_SCU_IC_ENABLE		GENMASK(15, ASPEED_SCU_IC_SHIFT)
+ #define ASPEED_SCU_IC_NUM_IRQS		7
++#define ASPEED_SCU_IC_STATUS		GENMASK(28, 16)
+ #define ASPEED_SCU_IC_STATUS_SHIFT	16
+ 
+ #define ASPEED_AST2600_SCU_IC0_REG	0x560
+@@ -155,6 +156,8 @@ static int aspeed_scu_ic_of_init_common(struct aspeed_scu_ic *scu_ic,
+ 		rc = PTR_ERR(scu_ic->scu);
+ 		goto err;
+ 	}
++	regmap_write_bits(scu_ic->scu, scu_ic->reg, ASPEED_SCU_IC_STATUS, ASPEED_SCU_IC_STATUS);
++	regmap_write_bits(scu_ic->scu, scu_ic->reg, ASPEED_SCU_IC_ENABLE, 0);
+ 
+ 	irq = irq_of_parse_and_map(node, 0);
+ 	if (!irq) {
+-- 
+2.34.1
+
