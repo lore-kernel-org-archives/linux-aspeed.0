@@ -1,44 +1,84 @@
-From: Ryan Chen <ryan_chen@aspeedtech.com>
-Date: Mon, 30 Jan 2023 16:54:30 +0800
-Subject: [PATCH] irqchip: aspeed: scu-ic add initial register
-Message-ID: <20230130085430.635583-1-ryan_chen@aspeedtech.com>
+From: Joel Stanley <joel@jms.id.au>
+Date: Tue, 31 Jan 2023 08:38:45 +1030
+Subject: [PATCH] pinctrl: aspeed: Revert "Force to disable the function's signal"
+Message-ID: <20230130220845.917985-1-joel@jms.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add register initial in probe. For avoid isr/ier is not initial.
+This reverts commit cf517fef601b9dde151f0afc27164d13bf1fd907.
 
-Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
+The commit cf517fef601b ("pinctrl: aspeed: Force to disable the
+function's signal") exposed a problem with fetching the regmap for
+reading the GFX register.
+
+The Romulus machine the device tree contains a gpio hog for GPIO S7.
+With the patch applied:
+
+  Muxing pin 151 for GPIO
+  Disabling signal VPOB9 for VPO
+  aspeed-g5-pinctrl 1e6e2080.pinctrl: Failed to acquire regmap for IP block 1
+  aspeed-g5-pinctrl 1e6e2080.pinctrl: request() failed for pin 151
+
+The code path is aspeed-gpio -> pinmux-g5 -> regmap -> clk, and the
+of_clock code returns an error as it doesn't have a valid struct clk_hw
+pointer. The regmap call happens because pinmux wants to check the GFX
+node (IP block 1) to query bits there.
+
+For reference, before the offending patch:
+
+  Muxing pin 151 for GPIO
+  Disabling signal VPOB9 for VPO
+  Want SCU8C[0x00000080]=0x1, got 0x0 from 0x00000000
+  Disabling signal VPOB9 for VPOOFF1
+  Want SCU8C[0x00000080]=0x1, got 0x0 from 0x00000000
+  Disabling signal VPOB9 for VPOOFF2
+  Want SCU8C[0x00000080]=0x1, got 0x0 from 0x00000000
+  Enabling signal GPIOS7 for GPIOS7
+  Muxed pin 151 as GPIOS7
+  gpio-943 (seq_cont): hogged as output/low
+
+We can't skip the clock check to allow pinmux to proceed, because the
+write to disable VPOB9 will try to set a bit in the GFX register space
+which will not stick when the IP is in reset. However, we do not want to
+enable the IP just so pinmux can do a disable-enable dance for the pin.
+
+For now, revert the offending patch while a correct solution is found.
+
+Fixes: cf517fef601b ("pinctrl: aspeed: Force to disable the function's signal")
+Link: https://github.com/openbmc/linux/issues/218
+Signed-off-by: Joel Stanley <joel@jms.id.au>
 ---
- drivers/irqchip/irq-aspeed-scu-ic.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ drivers/pinctrl/aspeed/pinctrl-aspeed.c | 11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/irqchip/irq-aspeed-scu-ic.c b/drivers/irqchip/irq-aspeed-scu-ic.c
-index 279e92cf0b16..94a7223e95df 100644
---- a/drivers/irqchip/irq-aspeed-scu-ic.c
-+++ b/drivers/irqchip/irq-aspeed-scu-ic.c
-@@ -17,8 +17,9 @@
+diff --git a/drivers/pinctrl/aspeed/pinctrl-aspeed.c b/drivers/pinctrl/aspeed/pinctrl-aspeed.c
+index f93d6959cee9..5a12fc7cf91f 100644
+--- a/drivers/pinctrl/aspeed/pinctrl-aspeed.c
++++ b/drivers/pinctrl/aspeed/pinctrl-aspeed.c
+@@ -92,10 +92,19 @@ static int aspeed_sig_expr_enable(struct aspeed_pinmux_data *ctx,
+ static int aspeed_sig_expr_disable(struct aspeed_pinmux_data *ctx,
+ 				   const struct aspeed_sig_expr *expr)
+ {
++	int ret;
++
+ 	pr_debug("Disabling signal %s for %s\n", expr->signal,
+ 		 expr->function);
  
- #define ASPEED_SCU_IC_REG		0x018
- #define ASPEED_SCU_IC_SHIFT		0
--#define ASPEED_SCU_IC_ENABLE		GENMASK(6, ASPEED_SCU_IC_SHIFT)
-+#define ASPEED_SCU_IC_ENABLE		GENMASK(15, ASPEED_SCU_IC_SHIFT)
- #define ASPEED_SCU_IC_NUM_IRQS		7
-+#define ASPEED_SCU_IC_STATUS		GENMASK(28, 16)
- #define ASPEED_SCU_IC_STATUS_SHIFT	16
+-	return aspeed_sig_expr_set(ctx, expr, false);
++	ret = aspeed_sig_expr_eval(ctx, expr, true);
++	if (ret < 0)
++		return ret;
++
++	if (ret)
++		return aspeed_sig_expr_set(ctx, expr, false);
++
++	return 0;
+ }
  
- #define ASPEED_AST2600_SCU_IC0_REG	0x560
-@@ -155,6 +156,8 @@ static int aspeed_scu_ic_of_init_common(struct aspeed_scu_ic *scu_ic,
- 		rc = PTR_ERR(scu_ic->scu);
- 		goto err;
- 	}
-+	regmap_write_bits(scu_ic->scu, scu_ic->reg, ASPEED_SCU_IC_STATUS, ASPEED_SCU_IC_STATUS);
-+	regmap_write_bits(scu_ic->scu, scu_ic->reg, ASPEED_SCU_IC_ENABLE, 0);
- 
- 	irq = irq_of_parse_and_map(node, 0);
- 	if (!irq) {
+ /**
 -- 
-2.34.1
+2.39.0
 
