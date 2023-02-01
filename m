@@ -1,67 +1,74 @@
-From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Date: Wed, 1 Feb 2023 11:14:04 +0100
-Subject: [PATCH 3/3] ARM: dts: aspeed: Add device tree for Ufispace
- NCPLite BMC
-In-Reply-To: <CAJ3czeT1O3iw2S_SK3z0C6dMiJ+-fUrWXPox4LJpJkMy_rVsJA@mail.gmail.com>
-References: <20230119102102.73414-1-jordan.chang@ufispace.com>
- <20230119102102.73414-4-jordan.chang@ufispace.com>
- <3e242c03-f8fd-2136-0263-2306acb9f610@linaro.org>
- <CAJ3czeT1O3iw2S_SK3z0C6dMiJ+-fUrWXPox4LJpJkMy_rVsJA@mail.gmail.com>
-Message-ID: <307017b7-2ecf-2ce5-4031-27bb6f09feb1@linaro.org>
+From: Ryan Chen <ryan_chen@aspeedtech.com>
+Date: Wed, 1 Feb 2023 18:33:57 +0800
+Subject: [PATCH v4 1/3] dt-bindings: i2c-ast2600: Add support for AST2600 I2C global controller
+In-Reply-To: <20230201103359.1742140-1-ryan_chen@aspeedtech.com>
+References: <20230201103359.1742140-1-ryan_chen@aspeedtech.com>
+Message-ID: <20230201103359.1742140-2-ryan_chen@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 01/02/2023 11:06, Jordan Chang wrote:
->>> +     gpio-keys {
->>> +             compatible = "gpio-keys";
->>> +
->>> +             fan-status-int-l {
->>
->> Does not look like you tested the DTS against bindings. Please run `make
->> dtbs_check` (see Documentation/devicetree/bindings/writing-schema.rst
->> for instructions).
->>
->> These will bring warnings. Missing generic name,
->>
-> I have run the `make dtbs_check` command, and did not notice the warning
-> message 'Missing generic name'. It shows lots of compatible failed messages.
-> - /ahb/ftgmac at 1e670000: failed to match any schema with compatible:
+AST2600 I2C global register controller, add bindings document
+to support driver of i2c global register set.
 
-You can run it with DT_SCHEMA_FILES=gpio-keys
+Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
+---
+ .../i2c/aspeed,i2c-ast2600-global.yaml        | 44 +++++++++++++++++++
+ 1 file changed, 44 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/i2c/aspeed,i2c-ast2600-global.yaml
 
-> 
->>> +                     label = "fan-status-int-l";
->>> +                     gpios = <&gpio0 ASPEED_GPIO(M, 2) GPIO_ACTIVE_LOW>;
->>> +                     linux,code = <ASPEED_GPIO(M, 2)>;
->>> +             };
->>> +
-
-(...)
-
->>> +
->>> +&i2c4 {
->>> +     status = "okay";
->>> +
->>> +     psu at 58 {
->>> +             compatible = "pmbus";
->>
->> Where is this compatible documented?
-> Can not find the corresponding document.
->>
->> Did you run checkpatch? Did it pass without warnings?
-> Yes, I did run the ./scripts/checkpatch.pl and there were two warnings left.
-> - WARNING: added, moved or deleted file(s), does MAINTAINERS need updating?
-> - WARNING: line length of 104 exceeds 100 columns
-> I just ignore those warnings that Joel has informed me in the previous
-> mail loop.
-> 
-
-Hm, is it then correct compatible?
-
-
-Best regards,
-Krzysztof
+diff --git a/Documentation/devicetree/bindings/i2c/aspeed,i2c-ast2600-global.yaml b/Documentation/devicetree/bindings/i2c/aspeed,i2c-ast2600-global.yaml
+new file mode 100644
+index 000000000000..d92a0878d03b
+--- /dev/null
++++ b/Documentation/devicetree/bindings/i2c/aspeed,i2c-ast2600-global.yaml
+@@ -0,0 +1,44 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/i2c/aspeed,i2c-ast2600-global.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: AST2600 I2C Global Register on the AST26XX SoCs Device Tree Bindings
++
++maintainers:
++  - Ryan Chen <ryan_chen@aspeedtech.com>
++
++allOf:
++  - $ref: /schemas/i2c/i2c-controller.yaml#
++
++properties:
++  compatible:
++    enum:
++      - aspeed,ast2600-i2c-global
++
++  reg:
++    minItems: 1
++    items:
++      - description: address offset and range of bus
++      - description: address offset and range of bus buffer
++
++  resets:
++    maxItems: 1
++
++required:
++  - reg
++  - compatible
++  - resets
++
++unevaluatedProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/clock/ast2600-clock.h>
++
++    i2c_gr: i2c-global-regs at 0 {
++      compatible = "aspeed,ast2600-i2c-global", "syscon";
++      reg = <0x0 0x20>;
++      resets = <&syscon ASPEED_RESET_I2C>;
++    };
+-- 
+2.34.1
 
