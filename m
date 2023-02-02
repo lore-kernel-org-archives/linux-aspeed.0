@@ -1,28 +1,45 @@
-From: Neal Liu <neal_liu@aspeedtech.com>
-Date: Thu, 2 Feb 2023 03:29:40 +0000
-Subject: [PATCH-next] crypto: aspeed: fix type warnings
-In-Reply-To: <Y9stLeguRuQVpbiD@gondor.apana.org.au>
-References: <20230202025600.2598548-1-neal_liu@aspeedtech.com>
- <Y9spg/66x/wQ3x+g@gondor.apana.org.au>
- <TY2PR06MB321395387369059BC9F9722E80D69@TY2PR06MB3213.apcprd06.prod.outlook.com>
- <Y9stLeguRuQVpbiD@gondor.apana.org.au>
-Message-ID: <TY2PR06MB3213C9EDE5B9A07F63B5295880D69@TY2PR06MB3213.apcprd06.prod.outlook.com>
+From: Jeremy Kerr <jk@codeconstruct.com.au>
+Date: Thu, 02 Feb 2023 12:25:26 +0800
+Subject: [PATCH v4 1/3] dt-bindings: i2c-ast2600: Add support for
+ AST2600 I2C global controller
+In-Reply-To: <20230201103359.1742140-2-ryan_chen@aspeedtech.com>
+References: <20230201103359.1742140-1-ryan_chen@aspeedtech.com>
+	 <20230201103359.1742140-2-ryan_chen@aspeedtech.com>
+Message-ID: <c227fa62c1040c7c280f1a6559dcf4cf8fb40428.camel@codeconstruct.com.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-> >
-> > I cannot tell which way is better. Do you prefer to keep the iomem marker?
-> 
-> The whole point of iomem is to prevent you from directly dereferencing that
-> memory.  So casting it away to remove the warning simply defeats its
-> purpose.
-> 
-> If you're worried about the overhead of readb perhaps you can look into
-> readb_relaxed after considering the effects of the barriers.
-> 
-Thanks for the information. I'll send next patch as you suggested.
+Hi Ryan,
 
--Neal
+> AST2600 I2C global register controller, add bindings document
+> to support driver of i2c global register set.
+
+[...]
+
+> +allOf:
+> +? - $ref: /schemas/i2c/i2c-controller.yaml#
+
+Are you sure about this? This particular binding doesn't describe the
+i2c controller.
+
+> +
+> +properties:
+> +? compatible:
+> +??? enum:
+> +????? - aspeed,ast2600-i2c-global
+> +
+> +? reg:
+> +??? minItems: 1
+> +??? items:
+> +????? - description: address offset and range of bus
+> +????? - description: address offset and range of bus buffer
+
+Seems to be a duplicate here.
+
+Cheers,
+
+
+Jeremy
