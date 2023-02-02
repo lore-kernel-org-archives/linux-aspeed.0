@@ -1,52 +1,59 @@
-From: Ryan Chen <ryan_chen@aspeedtech.com>
-Date: Thu, 2 Feb 2023 05:15:16 +0000
-Subject: [PATCH v4 1/3] dt-bindings: i2c-ast2600: Add support for AST2600
- I2C global controller
-In-Reply-To: <c227fa62c1040c7c280f1a6559dcf4cf8fb40428.camel@codeconstruct.com.au>
-References: <20230201103359.1742140-1-ryan_chen@aspeedtech.com>
-	 <20230201103359.1742140-2-ryan_chen@aspeedtech.com>
- <c227fa62c1040c7c280f1a6559dcf4cf8fb40428.camel@codeconstruct.com.au>
-Message-ID: <SEZPR06MB5269699F950320DB7A78D7FEF2D69@SEZPR06MB5269.apcprd06.prod.outlook.com>
+From: Andrew Jeffery <andrew@aj.id.au>
+Date: Thu, 02 Feb 2023 15:48:35 +1030
+Subject: [linux-next:master] BUILD REGRESSION
+ 66eee64b235411d512bed4d672c2d00683239daf
+In-Reply-To: <TY2PR06MB321334CFD4ED1BD4AF97965380D69@TY2PR06MB3213.apcprd06.prod.outlook.com>
+References: <63da97b5.3V1HSQEat507LFIr%lkp@intel.com>
+ <76f4dea0-9a39-4238-a213-0167477f5d54@app.fastmail.com>
+ <TY2PR06MB321334CFD4ED1BD4AF97965380D69@TY2PR06MB3213.apcprd06.prod.outlook.com>
+Message-ID: <8f165a30-4adc-4a39-a467-4cd3d466e850@app.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello Jeremy
-> 
-> > AST2600 I2C global register controller, add bindings document to
-> > support driver of i2c global register set.
-> 
-> [...]
-> 
-> > +allOf:
-> > +? - $ref: /schemas/i2c/i2c-controller.yaml#
-> 
-> Are you sure about this? This particular binding doesn't describe the i2c
-> controller.
-Due to this is i2c driver global register setting. I think I will remove this ref:
-But instead add description for understanding. Is it ok?
 
-> 
-> > +
-> > +properties:
-> > +? compatible:
-> > +??? enum:
-> > +????? - aspeed,ast2600-i2c-global
-> > +
-> > +? reg:
-> > +??? minItems: 1
-> > +??? items:
-> > +????? - description: address offset and range of bus
-> > +????? - description: address offset and range of bus buffer
-> 
-> Seems to be a duplicate here.
-> 
-The same, will remove items, keep minItems:1. 
 
-Thanks
-Ryan
-> 
-> 
-> Jeremy
+On Thu, 2 Feb 2023, at 13:29, Neal Liu wrote:
+>> Hi Neal,
+>> 
+>> On Thu, 2 Feb 2023, at 03:17, kernel test robot wrote:
+>> > tree/branch:
+>> > https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
+>> > master
+>> > branch HEAD: 66eee64b235411d512bed4d672c2d00683239daf  Add
+>> linux-next
+>> > specific files for 20230201
+>> >
+>> >
+>> > Unverified Error/Warning (likely false positive, please contact us if
+>> > interested):
+>> >
+>> > drivers/crypto/aspeed/aspeed-acry.c:295:37: sparse: sparse: incorrect
+>> > type in assignment (different base types)
+>> > drivers/crypto/aspeed/aspeed-acry.c:305:28: sparse: sparse: cast
+>> > removes address space '__iomem' of expression
+>> > drivers/crypto/aspeed/aspeed-acry.c:606:24: sparse: sparse: symbol
+>> > 'aspeed_acry_akcipher_algs' was not declared. Should it be static?
+>> 
+>> Can you please look into these issues with the ACRY driver?
+>> 
+>> Cheers,
+>> 
+>> Andrew
+>
+> I just send patch to fix the first 2 warnings,
+
+Thanks.
+
+> and the last one warning 
+> is already fixed by another patch.
+> [PATCH-next] crypto: aspeed: fix type warnings
+> https://patchwork.ozlabs.org/project/linux-aspeed/patch/20230119014859.1900136-1-yangyingliang at huawei.com/
+> Thanks
+>
+
+Great!
+
+Andrew
