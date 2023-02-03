@@ -1,7 +1,7 @@
 From: Neal Liu <neal_liu@aspeedtech.com>
-Date: Fri, 3 Feb 2023 11:29:32 +0800
-Subject: [PATCH v3] crypto: aspeed: fix type warnings
-Message-ID: <20230203032932.971586-1-neal_liu@aspeedtech.com>
+Date: Fri, 3 Feb 2023 11:35:12 +0800
+Subject: [RESENT PATCH v3 -next] crypto: aspeed: fix type warnings
+Message-ID: <20230203033512.980497-1-neal_liu@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -24,7 +24,7 @@ Change since v1: keep iomem marker to remain its purpose.
  1 file changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/crypto/aspeed/aspeed-acry.c b/drivers/crypto/aspeed/aspeed-acry.c
-index 164c524015f0..f2429e699d14 100644
+index 164c524015f0..1f77ebd73489 100644
 --- a/drivers/crypto/aspeed/aspeed-acry.c
 +++ b/drivers/crypto/aspeed/aspeed-acry.c
 @@ -252,7 +252,7 @@ static int aspeed_acry_rsa_ctx_copy(struct aspeed_acry_dev *acry_dev, void *buf,
@@ -32,7 +32,7 @@ index 164c524015f0..f2429e699d14 100644
  {
  	const u8 *src = xbuf;
 -	u32 *dw_buf = (u32 *)buf;
-+	__le32 *dw_buf = (__le32 *)buf;
++	__le32 *dw_buf = buf;
  	int nbits, ndw;
  	int i, j, idx;
  	u32 data = 0;
@@ -41,7 +41,7 @@ index 164c524015f0..f2429e699d14 100644
  {
  	struct akcipher_request *req = acry_dev->req;
 -	u8 *sram_buffer = (u8 *)acry_dev->acry_sram;
-+	u8 __iomem *sram_buffer = (u8 __iomem *)acry_dev->acry_sram;
++	u8 __iomem *sram_buffer = acry_dev->acry_sram;
  	struct scatterlist *out_sg = req->dst;
  	static u8 dram_buffer[ASPEED_ACRY_SRAM_MAX_LEN];
  	int leading_zero = 1;
