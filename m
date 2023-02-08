@@ -1,34 +1,89 @@
-From: Mark Brown <broonie@kernel.org>
-Date: Wed, 15 Feb 2023 14:19:16 +0000
-Subject: [PATCH v4 01/15] spi: Replace all spi->chip_select and
- spi->cs_gpiod references with function call
-In-Reply-To: <20230210193647.4159467-2-amit.kumar-mahapatra@amd.com>
-References: <20230210193647.4159467-1-amit.kumar-mahapatra@amd.com>
- <20230210193647.4159467-2-amit.kumar-mahapatra@amd.com>
-Message-ID: <Y+zp5F2l8pffEEvN@sirena.org.uk>
+From: William Breathitt Gray <william.gray@linaro.org>
+Date: Wed, 8 Feb 2023 06:16:44 -0500
+Subject: [PATCH 16/17] gpio: pci-idio-16: Convert to immutable irq_chip
+In-Reply-To: <20230215-immutable-chips-v1-16-51a8f224a5d0@linaro.org>
+References: <20230215-immutable-chips-v1-0-51a8f224a5d0@linaro.org>
+ <20230215-immutable-chips-v1-16-51a8f224a5d0@linaro.org>
+Message-ID: <Y+OEnM/gZ+lLRELc@fedora>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sat, Feb 11, 2023 at 01:06:32AM +0530, Amit Kumar Mahapatra wrote:
-> Supporting multi-cs in spi drivers would require the chip_select & cs_gpiod
-> members of struct spi_device to be an array. But changing the type of these
-> members to array would break the spi driver functionality. To make the
-> transition smoother introduced four new APIs to get/set the
-> spi->chip_select & spi->cs_gpiod and replaced all spi->chip_select and
+On Thu, Feb 16, 2023 at 10:37:17AM +0100, Linus Walleij wrote:
+> Convert the driver to immutable irq-chip with a bit of
+> intuition.
+> 
+> Cc: Marc Zyngier <maz@kernel.org>
+> Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
 
-This again doesn't apply against my current code - I think the
-best thing to do here is going to be to rebase against -rc1 when
-it comes out and resend then, that will also make the issues
-integrating with other trees easier as then I can make a clean
-branch against -rc1 that other trees will be able to merge as
-needed.
+FYI, I'm migrating pci-idio-16 to the regmap-irq API soon, so this patch
+might not be necessary once the code is removed. Anyway, here's my ack
+in case this patch series is merged first.
+
+Acked-by: William Breathitt Gray <william.gray@linaro.org>
+
+> ---
+>  drivers/gpio/gpio-pci-idio-16.c | 12 +++++++++---
+>  1 file changed, 9 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/gpio/gpio-pci-idio-16.c b/drivers/gpio/gpio-pci-idio-16.c
+> index a86ce748384b..6726c32e31e6 100644
+> --- a/drivers/gpio/gpio-pci-idio-16.c
+> +++ b/drivers/gpio/gpio-pci-idio-16.c
+> @@ -107,6 +107,8 @@ static void idio_16_irq_mask(struct irq_data *data)
+>  
+>  		raw_spin_unlock_irqrestore(&idio16gpio->lock, flags);
+>  	}
+> +
+> +	gpiochip_disable_irq(chip, irqd_to_hwirq(data));
+>  }
+>  
+>  static void idio_16_irq_unmask(struct irq_data *data)
+> @@ -117,6 +119,8 @@ static void idio_16_irq_unmask(struct irq_data *data)
+>  	const unsigned long prev_irq_mask = idio16gpio->irq_mask;
+>  	unsigned long flags;
+>  
+> +	gpiochip_enable_irq(chip, irqd_to_hwirq(data));
+> +
+>  	idio16gpio->irq_mask |= mask;
+>  
+>  	if (!prev_irq_mask) {
+> @@ -138,12 +142,14 @@ static int idio_16_irq_set_type(struct irq_data *data, unsigned int flow_type)
+>  	return 0;
+>  }
+>  
+> -static struct irq_chip idio_16_irqchip = {
+> +static const struct irq_chip idio_16_irqchip = {
+>  	.name = "pci-idio-16",
+>  	.irq_ack = idio_16_irq_ack,
+>  	.irq_mask = idio_16_irq_mask,
+>  	.irq_unmask = idio_16_irq_unmask,
+> -	.irq_set_type = idio_16_irq_set_type
+> +	.irq_set_type = idio_16_irq_set_type,
+> +	.flags = IRQCHIP_IMMUTABLE,
+> +	GPIOCHIP_IRQ_RESOURCE_HELPERS,
+>  };
+>  
+>  static irqreturn_t idio_16_irq_handler(int irq, void *dev_id)
+> @@ -242,7 +248,7 @@ static int idio_16_probe(struct pci_dev *pdev, const struct pci_device_id *id)
+>  	idio_16_state_init(&idio16gpio->state);
+>  
+>  	girq = &idio16gpio->chip.irq;
+> -	girq->chip = &idio_16_irqchip;
+> +	gpio_irq_chip_set_chip(girq, &idio_16_irqchip);
+>  	/* This will let us handle the parent IRQ in the driver */
+>  	girq->parent_handler = NULL;
+>  	girq->num_parents = 0;
+> 
+> -- 
+> 2.34.1
+> 
 -------------- next part --------------
 A non-text attachment was scrubbed...
 Name: signature.asc
 Type: application/pgp-signature
-Size: 488 bytes
+Size: 228 bytes
 Desc: not available
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20230215/38de00d3/attachment-0001.sig>
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20230208/582a47b3/attachment-0001.sig>
