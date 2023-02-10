@@ -1,39 +1,32 @@
 From: Jordan Chang <jordan.chang@ufispace.com>
-Date: Fri, 10 Feb 2023 09:16:47 +0800
-Subject: [PATCH v2 1/3] dt-bindings: vendor-prefixes: Add prefix for Ufi Space
-In-Reply-To: <53818676-1e4d-2e58-00d3-ab06b3741fc2@linaro.org>
-References: <20230202081843.2358-1-jordan.chang@ufispace.com>
- <20230202081843.2358-2-jordan.chang@ufispace.com> <53818676-1e4d-2e58-00d3-ab06b3741fc2@linaro.org>
-Message-ID: <CAJ3czeT=pw6T6bb=tEDDa-4O=ZLEvG_n+4s6x8wvbMawL8QnnQ@mail.gmail.com>
+Date: Fri, 10 Feb 2023 13:54:48 +0800
+Subject: [PATCH v3 0/3] Add Ufispace NCPLite platform device tree
+Message-ID: <20230210055451.72153-1-jordan.chang@ufispace.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Krzysztof,
+Changes for v3:
+- add "Acked-by: Krzysztof Kozlowski"
 
-Thanks for your review. Will resend the patches.
+Changes for v2:
+- modify node name to generic one and check with dtbs_check
+- send-email without confidential mode
 
-Best regards,
-Jordan Chang
+Jordan Chang (3):
+  dt-bindings: vendor-prefixes: Add prefix for Ufi Space
+  dt-bindings: arm: aspeed: document Ufispace NCPLite
+  ARM: dts: aspeed: Add device tree for Ufispace NCPLite BMC
 
-On Wed, Feb 8, 2023 at 6:28 PM Krzysztof Kozlowski <
-krzysztof.kozlowski@linaro.org> wrote:
+ .../bindings/arm/aspeed/aspeed.yaml           |   1 +
+ .../devicetree/bindings/vendor-prefixes.yaml  |   2 +
+ arch/arm/boot/dts/Makefile                    |   1 +
+ .../boot/dts/aspeed-bmc-ufispace-ncplite.dts  | 359 ++++++++++++++++++
+ 4 files changed, 363 insertions(+)
+ create mode 100644 arch/arm/boot/dts/aspeed-bmc-ufispace-ncplite.dts
 
-> On 02/02/2023 09:18, Jordan Chang wrote:
-> > Add a vendor prefix for Ufi Space (https://www.ufispace.com).
-> >
-> > Signed-off-by: Jordan Chang <jordan.chang@ufispace.com>
-> > ---
->
->
-> Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
->
-> Best regards,
-> Krzysztof
->
->
--------------- next part --------------
-An HTML attachment was scrubbed...
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20230210/cba9e7e9/attachment.htm>
+-- 
+2.39.0
+
