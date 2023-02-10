@@ -1,9 +1,9 @@
 From: Amit Kumar Mahapatra <amit.kumar-mahapatra@amd.com>
-Date: Sat, 11 Feb 2023 01:06:37 +0530
-Subject: [PATCH v4 06/15] platform/x86: serial-multi-instantiate: Replace all spi->chip_select and spi->cs_gpiod references with function call
+Date: Sat, 11 Feb 2023 01:06:38 +0530
+Subject: [PATCH v4 07/15] powerpc/83xx/mpc832x_rdb: Replace all spi->chip_select references with function call
 In-Reply-To: <20230210193647.4159467-1-amit.kumar-mahapatra@amd.com>
 References: <20230210193647.4159467-1-amit.kumar-mahapatra@amd.com>
-Message-ID: <20230210193647.4159467-7-amit.kumar-mahapatra@amd.com>
+Message-ID: <20230210193647.4159467-8-amit.kumar-mahapatra@amd.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -22,25 +22,23 @@ members of the spi_device structure would be converted to arrays & the
 spi->chip_select[idx] & spi->cs_gpiod[idx] respectively.
 
 Signed-off-by: Amit Kumar Mahapatra <amit.kumar-mahapatra@amd.com>
-Reviewed-by: Michal Simek <michal.simek@amd.com>
 ---
- drivers/platform/x86/serial-multi-instantiate.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ arch/powerpc/platforms/83xx/mpc832x_rdb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/platform/x86/serial-multi-instantiate.c b/drivers/platform/x86/serial-multi-instantiate.c
-index 5362f1a7b77c..270a4700d25d 100644
---- a/drivers/platform/x86/serial-multi-instantiate.c
-+++ b/drivers/platform/x86/serial-multi-instantiate.c
-@@ -139,7 +139,8 @@ static int smi_spi_probe(struct platform_device *pdev, struct smi *smi,
- 			goto error;
- 		}
+diff --git a/arch/powerpc/platforms/83xx/mpc832x_rdb.c b/arch/powerpc/platforms/83xx/mpc832x_rdb.c
+index caa96edf0e72..4ab1d48cd229 100644
+--- a/arch/powerpc/platforms/83xx/mpc832x_rdb.c
++++ b/arch/powerpc/platforms/83xx/mpc832x_rdb.c
+@@ -144,7 +144,7 @@ static int __init fsl_spi_init(struct spi_board_info *board_infos,
  
--		dev_dbg(dev, "SPI device %s using chip select %u", name, spi_dev->chip_select);
-+		dev_dbg(dev, "SPI device %s using chip select %u", name,
-+			spi_get_chipselect(spi_dev, 0));
+ static void mpc83xx_spi_cs_control(struct spi_device *spi, bool on)
+ {
+-	pr_debug("%s %d %d\n", __func__, spi->chip_select, on);
++	pr_debug("%s %d %d\n", __func__, spi_get_chipselect(spi, 0), on);
+ 	par_io_data_set(3, 13, on);
+ }
  
- 		smi->spi_devs[i] = spi_dev;
- 		smi->spi_num++;
 -- 
 2.25.1
 
