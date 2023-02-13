@@ -1,116 +1,64 @@
-From: Amit Kumar Mahapatra <amit.kumar-mahapatra@amd.com>
-Date: Sat, 11 Feb 2023 01:06:46 +0530
-Subject: [PATCH v4 15/15] spi: spi-zynqmp-gqspi: Add parallel memories support in GQSPI driver
-In-Reply-To: <20230210193647.4159467-1-amit.kumar-mahapatra@amd.com>
-References: <20230210193647.4159467-1-amit.kumar-mahapatra@amd.com>
-Message-ID: <20230210193647.4159467-16-amit.kumar-mahapatra@amd.com>
+From: Ilpo Järvinen <ilpo.jarvinen@linux.intel.com>
+Date: Mon, 13 Feb 2023 10:54:36 +0200 (EET)
+Subject: [PATCH 3/4] serial: 8250: Add Aspeed UART driver
+In-Reply-To: <KL1PR0601MB378160E42842A0A55947BF7191DD9@KL1PR0601MB3781.apcprd06.prod.outlook.com>
+References: <20230210072643.2772-1-chiawei_wang@aspeedtech.com> <20230210072643.2772-4-chiawei_wang@aspeedtech.com> <2d389fc9-0d5-42a1-b6d7-695c70dcf0fe@linux.intel.com> <KL1PR0601MB378160E42842A0A55947BF7191DD9@KL1PR0601MB3781.apcprd06.prod.outlook.com>
+Message-ID: <bc8a6d9c-48ec-e394-78d8-c53bc267af1c@linux.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-During GQSPI driver probe set ctlr->multi-cs-cap for enabling multi CS
-capability of the controller. In parallel mode the controller can either
-split the data between both the flash or can send the same data to both the
-flashes, this is determined by the STRIPE bit. While sending commands to
-the flashes the GQSPI driver send the same command to both the flashes by
-resetting the STRIPE bit, but while writing/reading data to & from the
-flash the GQSPI driver splits the data evenly between both the flashes by
-setting the STRIPE bit.
+On Mon, 13 Feb 2023, ChiaWei Wang wrote:
 
-Signed-off-by: Amit Kumar Mahapatra <amit.kumar-mahapatra@amd.com>
----
- drivers/spi/spi-zynqmp-gqspi.c | 39 +++++++++++++++++++++++++++++++++-
- 1 file changed, 38 insertions(+), 1 deletion(-)
+> > From: Ilpo J?rvinen <ilpo.jarvinen@linux.intel.com>
+> > Sent: Friday, February 10, 2023 9:52 PM
+> > 
+> > On Fri, 10 Feb 2023, Chia-Wei Wang wrote:
+> > 
+> > > Add the driver for Aspeed UART/VUART devices, which are 16550A
+> > > compatible. It is an wrapper to cover the generic 16550A operation
+> > > while exetending DMA feature for the devices.
+> > >
+> > > Signed-off-by: Chia-Wei Wang <chiawei_wang@aspeedtech.com>
+> > > ---
+> > >  drivers/tty/serial/8250/8250_aspeed.c | 502
+> > ++++++++++++++++++++++++++
+> > >  drivers/tty/serial/8250/Kconfig       |   8 +
+> > >  drivers/tty/serial/8250/Makefile      |   1 +
+> > 
+> > Hi,
+> > 
+> > Before I look any further into this, could you please explain why this is made to
+> > be entirely separate from what we have in
+> >   drivers/tty/serial/8250/8250_aspeed_vuart.c
+> > ?
+> > 
+> > I quickly went through some functions and they've significant parts in common
+> > with no variations at all in many functions and you're defines are 1:1 too
+> > (except for the DMA buf sizes). It would seem much better to add the missing
+> > functionality into 8250_aspeed_vuart.c rather than creating something from
+> > scratch with large overlap with existing code.
+> > 
+> > If you intend to keep it as a separate one, you should have a rather good
+> > justification for it.
+> 
+> Yes, the main difference is the UART DMA support.
+> However, due to the UDMA design is not quite fit to the DMAEngine, the implementation is kind of hacking.
+> We thought leaving the original VUART driver unimpacted would be better.
+> The UDMA covers both UART and VUART DMA support, and so do the new 8250_aspeed.c.
 
-diff --git a/drivers/spi/spi-zynqmp-gqspi.c b/drivers/spi/spi-zynqmp-gqspi.c
-index 4759f704bf5c..9e44371bfda2 100644
---- a/drivers/spi/spi-zynqmp-gqspi.c
-+++ b/drivers/spi/spi-zynqmp-gqspi.c
-@@ -23,6 +23,7 @@
- #include <linux/spinlock.h>
- #include <linux/workqueue.h>
- #include <linux/spi/spi-mem.h>
-+#include <linux/mtd/spi-nor.h>
- 
- /* Generic QSPI register offsets */
- #define GQSPI_CONFIG_OFST		0x00000100
-@@ -192,6 +193,7 @@ struct qspi_platform_data {
-  * @op_lock:		Operational lock
-  * @speed_hz:          Current SPI bus clock speed in hz
-  * @has_tapdelay:	Used for tapdelay register available in qspi
-+ * @is_parallel:		Used for multi CS support
-  */
- struct zynqmp_qspi {
- 	struct spi_controller *ctlr;
-@@ -214,8 +216,33 @@ struct zynqmp_qspi {
- 	struct mutex op_lock;
- 	u32 speed_hz;
- 	bool has_tapdelay;
-+	bool is_parallel;
- };
- 
-+/**
-+ * zynqmp_gqspi_update_stripe - For GQSPI controller data stripe capabilities
-+ * @op:	Pointer to mem ops
-+ * Return:      Status of the data stripe
-+ *
-+ * Returns true if data stripe need to be enabled, else returns false
-+ */
-+bool zynqmp_gqspi_update_stripe(const struct spi_mem_op *op)
-+{
-+	if (op->cmd.opcode ==  SPINOR_OP_BE_4K ||
-+	    op->cmd.opcode ==  SPINOR_OP_BE_32K ||
-+	    op->cmd.opcode ==  SPINOR_OP_CHIP_ERASE ||
-+	    op->cmd.opcode ==  SPINOR_OP_SE ||
-+	    op->cmd.opcode ==  SPINOR_OP_BE_32K_4B ||
-+	    op->cmd.opcode ==  SPINOR_OP_SE_4B ||
-+	    op->cmd.opcode == SPINOR_OP_BE_4K_4B ||
-+	    op->cmd.opcode ==  SPINOR_OP_WRSR ||
-+	    op->cmd.opcode ==  SPINOR_OP_BRWR ||
-+	    (op->cmd.opcode ==  SPINOR_OP_WRSR2 && !op->addr.nbytes))
-+		return false;
-+
-+	return true;
-+}
-+
- /**
-  * zynqmp_gqspi_read - For GQSPI controller read operation
-  * @xqspi:	Pointer to the zynqmp_qspi structure
-@@ -470,7 +497,14 @@ static void zynqmp_qspi_chipselect(struct spi_device *qspi, bool is_high)
- 
- 	genfifoentry |= GQSPI_GENFIFO_MODE_SPI;
- 
--	if (qspi->cs_index_mask & GQSPI_SELECT_UPPER_CS) {
-+	if ((qspi->cs_index_mask & GQSPI_SELECT_LOWER_CS) &&
-+	    (qspi->cs_index_mask & GQSPI_SELECT_UPPER_CS)) {
-+		zynqmp_gqspi_selectslave(xqspi,
-+					 GQSPI_SELECT_FLASH_CS_BOTH,
-+					 GQSPI_SELECT_FLASH_BUS_BOTH);
-+		if (!xqspi->is_parallel)
-+			xqspi->is_parallel = true;
-+	} else if (qspi->cs_index_mask & GQSPI_SELECT_UPPER_CS) {
- 		zynqmp_gqspi_selectslave(xqspi,
- 					 GQSPI_SELECT_FLASH_CS_UPPER,
- 					 GQSPI_SELECT_FLASH_BUS_LOWER);
-@@ -1139,6 +1173,8 @@ static int zynqmp_qspi_exec_op(struct spi_mem *mem,
- 	}
- 
- 	if (op->data.nbytes) {
-+		if (xqspi->is_parallel && zynqmp_gqspi_update_stripe(op))
-+			genfifoentry |= GQSPI_GENFIFO_STRIPE;
- 		reinit_completion(&xqspi->data_completion);
- 		if (op->data.dir == SPI_MEM_DATA_OUT) {
- 			xqspi->txbuf = (u8 *)op->data.buf.out;
-@@ -1334,6 +1370,7 @@ static int zynqmp_qspi_probe(struct platform_device *pdev)
- 	ctlr->bits_per_word_mask = SPI_BPW_MASK(8);
- 	ctlr->dev.of_node = np;
- 	ctlr->auto_runtime_pm = true;
-+	ctlr->multi_cs_cap = true;
- 
- 	ret = devm_spi_register_controller(&pdev->dev, ctlr);
- 	if (ret) {
+To me it seems rather weak reasoning.
+
+If you want to go to this path, then you need to anyway share the common 
+code between those two drivers rather than duplicating it. It's likely 
+more work for you than just putting it all into the existing driver and
+having just a mostly separated setup() for 2600 case.
+
+The DMA functions should probably also depend on SERIAL_8250_DMA anyway 
+and the driver should fallback to non-DMA if SERIAL_8250_DMA is not set 
+which is yet another reason to use the existing code.
+
 -- 
-2.25.1
-
+ i.
