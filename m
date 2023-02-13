@@ -1,34 +1,33 @@
 From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Date: Mon, 13 Feb 2023 10:05:26 +0100
-Subject: [RFC PATCH] dt-bindings: Add AST2600 i3c controller binding
-In-Reply-To: <91e9e815bed8c2eff19dbe6b3ed36d10c6edcbfd.camel@codeconstruct.com.au>
-References: <5c047dd91390b9ee4cd8bca3ff107db37a7be4ac.1676273912.git.jk@codeconstruct.com.au>
- <7c6741e1-ae41-ba20-b859-736214c680e8@linaro.org>
- <91e9e815bed8c2eff19dbe6b3ed36d10c6edcbfd.camel@codeconstruct.com.au>
-Message-ID: <929a30fc-35f3-ab21-3a16-936ed69d5505@linaro.org>
+Date: Mon, 13 Feb 2023 10:06:53 +0100
+Subject: [PATCH v2 3/3] dts: ast2600: Add reset config for I3C
+In-Reply-To: <40269fdbc75a149a37e8a44f62cb3a6102f61d8a.camel@codeconstruct.com.au>
+References: <cover.1676267865.git.jk@codeconstruct.com.au>
+ <f426c3a22d64d076b007a0fc75dc95a389a9387f.1676267865.git.jk@codeconstruct.com.au>
+ <4eed8885-a149-43b1-f6f6-f9b7fbb2f3b4@linaro.org>
+ <40269fdbc75a149a37e8a44f62cb3a6102f61d8a.camel@codeconstruct.com.au>
+Message-ID: <2a3f5c20-3bfb-c1b8-f9df-d1908022509d@linaro.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 13/02/2023 09:55, Jeremy Kerr wrote:
->> 4. Where is the driver? Where is the DTS? Why do we want unused
->> binding in the kernel?
+On 13/02/2023 10:02, Jeremy Kerr wrote:
+> Hi Krzysztof,
 > 
-> The driver is coming next, but I wanted to sort out the structure of the
-> binding before committing to how the driver consumes the DT data - hence
-> the RFC.
+>> 2. This is not DTS. There is nothing from DTS here.
+> 
+> [and from, your reply on patch 2/3:]
+> 
+>> Why do you use subject prefix in patch 1 different than in patch 2?
+> 
+> Ack, will change to "clk:"; there is quite a mix of "dt-bindings:" and
+> "clk:" on the changes within this dir. I'll unify across the series.
+> 
 
-You should clearly communicate that driver is coming... Anyway binding
-comes with the driver, otherwise how can we check that you actually
-implemented it? Please send patches, not RFC. RFC means you are
-uncertain this is even correct and you ask for generic discussion. So
-generic discussion comment - implement how other recent i3c bindings are
-implemented. This is basic device, there is nothing special here.
-
-Since you did not respond to rest of comments, I assume you are going to
-implement them fully - including dropping the questioned properties.
+There was clk already, wasn't it? What do you want to change? I asked
+why do you call it in the same patchset aspeed and as2600?
 
 Best regards,
 Krzysztof
