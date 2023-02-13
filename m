@@ -1,27 +1,60 @@
-From: Jeremy Kerr <jk@codeconstruct.com.au>
-Date: Mon, 13 Feb 2023 11:54:32 +0800
-Subject: [PATCH 0/2] Add definitions for AST2600 i3c clocks and resets
-In-Reply-To: <cover.1676259904.git.jk@codeconstruct.com.au>
-References: <cover.1676259904.git.jk@codeconstruct.com.au>
-Message-ID: <7b98182e6ebbfe63aa327f363bd288b9e1736a6d.camel@codeconstruct.com.au>
+From: ChiaWei Wang <chiawei_wang@aspeedtech.com>
+Date: Mon, 13 Feb 2023 04:18:16 +0000
+Subject: [PATCH 3/4] serial: 8250: Add Aspeed UART driver
+In-Reply-To: <34e3729f-9266-3606-9f11-33222f50e753@molgen.mpg.de>
+References: <20230210072643.2772-1-chiawei_wang@aspeedtech.com>
+ <20230210072643.2772-4-chiawei_wang@aspeedtech.com>
+ <34e3729f-9266-3606-9f11-33222f50e753@molgen.mpg.de>
+Message-ID: <KL1PR0601MB3781ABE9B28372C88E62946491DD9@KL1PR0601MB3781.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi all,
+> From: Paul Menzel <pmenzel@molgen.mpg.de>
+> Sent: Friday, February 10, 2023 6:35 PM
+> 
+> Dear Chia-Wei,
+> 
+> 
+> Thank you for your patch.
+> 
+> Am 10.02.23 um 08:26 schrieb Chia-Wei Wang:
+> > Add the driver for Aspeed UART/VUART devices, which are 16550A
+> > compatible. It is an wrapper to cover the generic 16550A operation
+> 
+> a wrapper
+> 
+> > while exetending DMA feature for the devices.
+> 
+> extending
+> 
+> Is this for all ASPEED devices or only current ones?
 
-> This series adds some base configuration for the i3c controllers on
-> ast2600 hardware. We'll use the reset and clock definitions in the
-> proposed dt binding example, hence sending these first.
+There is major design change of UDMA.
+Therefore, this patch is for AST2600 only.
 
-Looks like I had Joel's address incorrect there; fixed in this reply.
+> 
+> How did you test this? What is the maximum transfer speed?
 
-Joel, let me know if you'd like a re-send (but you should also have a
-copy through linux-aspeed?).
+Yes.
+I can't remember the precise data. The experiment was done like 2 years ago.
+But it should be above 2MB/s
 
-Cheers,
+> 
+> There are other serial drivers also supporting DMA, and those seem to use
+> DMAengine?
+> 
+>      $ git grep dmaengine drivers/tty/serial/8250/
+> 
 
+Yes.
+The UDMA design is dedicated to, and tightly coupled with each UART/VUART devices.
+And UDMA does not support common DMA control such as suspend/resume.
 
-Jeremy
+We found certain discussions in the old mailing list saying that if a DMA controller is not fully fit into the DMAEngine subsystem,
+placing the implementation in the soc folder might be an option.
+
+Regards,
+Chiawei
