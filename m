@@ -1,24 +1,24 @@
 From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Date: Mon, 13 Feb 2023 10:46:48 +0100
-Subject: [PATCH 1/2] clk: aspeed: Add full configs for i3c clocks
-In-Reply-To: <68e306d262841a5435d1a7145764b64f524a2352.1676259904.git.jk@codeconstruct.com.au>
-References: <cover.1676259904.git.jk@codeconstruct.com.au>
- <68e306d262841a5435d1a7145764b64f524a2352.1676259904.git.jk@codeconstruct.com.au>
-Message-ID: <238f6b4c-b4d3-5dfd-35b2-34fede2d1d84@linaro.org>
+Date: Mon, 13 Feb 2023 10:48:09 +0100
+Subject: [PATCH v2 2/3] clk: aspeed: Add full configs for i3c clocks
+In-Reply-To: <5ee4ade6820a9db8dc9c20bb39fd8a4c4cd7c2a6.1676267865.git.jk@codeconstruct.com.au>
+References: <cover.1676267865.git.jk@codeconstruct.com.au>
+ <5ee4ade6820a9db8dc9c20bb39fd8a4c4cd7c2a6.1676267865.git.jk@codeconstruct.com.au>
+Message-ID: <45ce9e62-2620-b959-985d-ae00b071e350@linaro.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 13/02/2023 04:48, Jeremy Kerr wrote:
-> The current ast2600 i3c clock definitions are top-level, and include a
+On 13/02/2023 07:02, Jeremy Kerr wrote:
+> The current ast2600 i3c clock definitions are top-level (rather than
+> based on their actual hw sources: either HCLK or APLL), and include a
 > couple of definitions for (non-existent) i3c6 and i3c7.
 > 
-> This change re-parents these to the main i3c clock, sourced from the
-> APLL. We also remove the i3c6 and i3c7 definitions and mark those entries
-> in the gates array as reserved - all entries in the array must be
-> contiguous.
+> This change re-parents these to the main i3c clock, explicitly sourced
+> from the APLL rather than whatever G6_CLK_SELECTION5 was last set to. We
+> also remove the i3c6 and i3c7 definitions.
 > 
 > This change is a partial cherry-pick and rework of ed44b8cdfdb and
 > 1a35eb926d7 from Aspeed's own tree, originally by Dylan Hung
@@ -26,15 +26,17 @@ On 13/02/2023 04:48, Jeremy Kerr wrote:
 > 
 > Signed-off-by: Jeremy Kerr <jk@codeconstruct.com.au>
 > ---
->  drivers/clk/clk-ast2600.c                 | 39 ++++++++++++++++++-----
->  include/dt-bindings/clock/ast2600-clock.h |  6 ++--
+>  drivers/clk/clk-ast2600.c                 | 38 ++++++++++++++++++-----
+>  include/dt-bindings/clock/ast2600-clock.h |  3 +-
 
-Bindings are separate patches. Always.
+My comments from v1:
 
->  2 files changed, 34 insertions(+), 11 deletions(-)
+Bindings are always separate patches.
+
+>  2 files changed, 31 insertions(+), 10 deletions(-)
 > 
 > diff --git a/drivers/clk/clk-ast2600.c b/drivers/clk/clk-ast2600.c
-> index 9c3305bcb27a..24ad34440e1e 100644
+> index 1f08ff3c60fa..45549cb18107 100644
 > --- a/drivers/clk/clk-ast2600.c
 > +++ b/drivers/clk/clk-ast2600.c
 > @@ -4,6 +4,7 @@
@@ -64,7 +66,7 @@ Bindings are separate patches. Always.
 >  
 >  #define ASPEED_HPLL_PARAM		0x200
 >  #define ASPEED_APLL_PARAM		0x210
-> @@ -97,14 +110,14 @@ static const struct aspeed_gate_data aspeed_g6_gates[] = {
+> @@ -97,14 +110,13 @@ static const struct aspeed_gate_data aspeed_g6_gates[] = {
 >  	[ASPEED_CLK_GATE_LHCCLK]	= { 37, -1, "lhclk-gate",	"lhclk", 0 },	/* LPC master/LPC+ */
 >  	/* Reserved 38 RSA: no longer used */
 >  	/* Reserved 39 */
@@ -82,12 +84,11 @@ Bindings are separate patches. Always.
 > +	[ASPEED_CLK_GATE_I3C3CLK]	= { 43,  43, "i3c3clk-gate",	"i3cclk", 0 }, /* I3C3 */
 > +	[ASPEED_CLK_GATE_I3C4CLK]	= { 44,  44, "i3c4clk-gate",	"i3cclk", 0 }, /* I3C4 */
 > +	[ASPEED_CLK_GATE_I3C5CLK]	= { 45,  45, "i3c5clk-gate",	"i3cclk", 0 }, /* I3C5 */
-> +	[ASPEED_CLK_GATE_RESERVED43]	= { 46,  46, "reserved-43",	NULL,	0 },
-> +	[ASPEED_CLK_GATE_RESERVED44]	= { 47,  47, "reserved-44",	NULL,	0 },
+> +	/* Reserved: 46 & 47 */
 >  	[ASPEED_CLK_GATE_UART1CLK]	= { 48,  -1, "uart1clk-gate",	"uart",	 0 },	/* UART1 */
 >  	[ASPEED_CLK_GATE_UART2CLK]	= { 49,  -1, "uart2clk-gate",	"uart",	 0 },	/* UART2 */
 >  	[ASPEED_CLK_GATE_UART3CLK]	= { 50,  -1, "uart3clk-gate",	"uart",  0 },	/* UART3 */
-> @@ -772,6 +785,16 @@ static void __init aspeed_g6_cc(struct regmap *map)
+> @@ -775,6 +787,16 @@ static void __init aspeed_g6_cc(struct regmap *map)
 >  	/* USB 2.0 port1 phy 40MHz clock */
 >  	hw = clk_hw_register_fixed_rate(NULL, "usb-phy-40m", NULL, 0, 40000000);
 >  	aspeed_g6_clk_data->hws[ASPEED_CLK_USBPHY_40M] = hw;
@@ -105,20 +106,15 @@ Bindings are separate patches. Always.
 >  
 >  static void __init aspeed_g6_cc_init(struct device_node *np)
 > diff --git a/include/dt-bindings/clock/ast2600-clock.h b/include/dt-bindings/clock/ast2600-clock.h
-> index d8b0db2f7a7d..98dc82702755 100644
+> index d8b0db2f7a7d..600549d7bee8 100644
 > --- a/include/dt-bindings/clock/ast2600-clock.h
 > +++ b/include/dt-bindings/clock/ast2600-clock.h
-> @@ -57,9 +57,8 @@
+> @@ -57,8 +57,6 @@
 >  #define ASPEED_CLK_GATE_I3C3CLK		40
 >  #define ASPEED_CLK_GATE_I3C4CLK		41
 >  #define ASPEED_CLK_GATE_I3C5CLK		42
 > -#define ASPEED_CLK_GATE_I3C6CLK		43
 > -#define ASPEED_CLK_GATE_I3C7CLK		44
 
-This breaks the ABI and commit msg does not provide justfication for it.
-
-
-
-Best regards,
-Krzysztof
+This is an ABI break and commit msg does not really justify it.
 
