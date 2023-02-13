@@ -1,35 +1,41 @@
-From: Neal Liu <neal_liu@aspeedtech.com>
-Date: Mon, 13 Feb 2023 01:48:40 +0000
-Subject: [PATCH] crypto: aspeed - Fix modular aspeed-acry
-In-Reply-To: <Y+YRKdWUA4jjoUZ2@gondor.apana.org.au>
-References: <Y+YRKdWUA4jjoUZ2@gondor.apana.org.au>
-Message-ID: <TY2PR06MB3213FAE443DC7F66CC3438CB80DD9@TY2PR06MB3213.apcprd06.prod.outlook.com>
+From: ChiaWei Wang <chiawei_wang@aspeedtech.com>
+Date: Mon, 13 Feb 2023 01:50:07 +0000
+Subject: [PATCH 2/4] soc: aspeed: Add UART DMA support
+In-Reply-To: <c1e096fa-5941-cdd8-2cdc-ecf04661a389@linaro.org>
+References: <20230210072643.2772-1-chiawei_wang@aspeedtech.com>
+ <20230210072643.2772-3-chiawei_wang@aspeedtech.com>
+ <c1e096fa-5941-cdd8-2cdc-ecf04661a389@linaro.org>
+Message-ID: <KL1PR0601MB37818F70A166356FED0FEC9C91DD9@KL1PR0601MB3781.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-> When aspeed-acry is enabled as a module it doesn't get built at all.  Fix this
-> by adding it to obj-m.
+> From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+> Sent: Friday, February 10, 2023 5:14 PM
 > 
-> Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+> On 10/02/2023 08:26, Chia-Wei Wang wrote:
+> > This driver provides DMA support for AST26xx UART and VUART devices.
+> > It is useful to offload CPU overhead while using UART/VUART for binary
+> > file transfer.
+> >
+> > Signed-off-by: Chia-Wei Wang <chiawei_wang@aspeedtech.com>
+> > ---
+> >  drivers/soc/aspeed/Kconfig             |   9 +
+> >  drivers/soc/aspeed/Makefile            |   1 +
+> >  drivers/soc/aspeed/aspeed-udma.c       | 447
+> +++++++++++++++++++++++++
+> >  include/linux/soc/aspeed/aspeed-udma.h |  34 ++
+> 
+> NAK.
+> 
+> DMA drivers do not go to soc, but to dma subsystem.
 
-Reviewed-by: Neal Liu <neal_liu@aspeedtech.com>
- 
-> diff --git a/drivers/crypto/aspeed/Makefile b/drivers/crypto/aspeed/Makefile
-> index 24284d812b79..15862752c053 100644
-> --- a/drivers/crypto/aspeed/Makefile
-> +++ b/drivers/crypto/aspeed/Makefile
-> @@ -6,4 +6,6 @@ aspeed_crypto-objs := aspeed-hace.o	\
->  		      $(hace-hash-y)	\
->  		      $(hace-crypto-y)
-> 
-> -obj-$(CONFIG_CRYPTO_DEV_ASPEED_ACRY) += aspeed-acry.o
-> +aspeed_acry-$(CONFIG_CRYPTO_DEV_ASPEED_ACRY) += aspeed-acry.o
-> +
-> +obj-$(CONFIG_CRYPTO_DEV_ASPEED) += $(aspeed_acry-y)
-> --
-> Email: Herbert Xu <herbert@gondor.apana.org.au> Home Page:
-> http://gondor.apana.org.au/~herbert/
-> PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+The UDMA is dedicated only to UART use and is not fully fit to the DMAEngine subsystem.
+For example, the suspend/resume operations of common DMA engine are not supported.
+After observing certain existing DMA implementation in other soc folders, we put UDMA in the soc/aspeed as well.
+If it is not appropriate, should we integrate UDMA into the UART driver or try to make UDMA DMAEngine based?
+
+Regards,
+Chiawei
