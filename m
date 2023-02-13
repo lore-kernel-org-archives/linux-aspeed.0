@@ -1,163 +1,48 @@
 From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Date: Mon, 13 Feb 2023 09:26:30 +0100
-Subject: [PATCH 1/4] dt-bindings: aspeed: Add UART controller
-In-Reply-To: <KL1PR0601MB3781A9E9E209F2E94CE2F08D91DD9@KL1PR0601MB3781.apcprd06.prod.outlook.com>
+Date: Mon, 13 Feb 2023 09:31:30 +0100
+Subject: [PATCH 2/4] soc: aspeed: Add UART DMA support
+In-Reply-To: <KL1PR0601MB37818F70A166356FED0FEC9C91DD9@KL1PR0601MB3781.apcprd06.prod.outlook.com>
 References: <20230210072643.2772-1-chiawei_wang@aspeedtech.com>
- <20230210072643.2772-2-chiawei_wang@aspeedtech.com>
- <2d0d1866-95f9-942d-57e0-06a5ed17d35d@linaro.org>
- <KL1PR0601MB3781A9E9E209F2E94CE2F08D91DD9@KL1PR0601MB3781.apcprd06.prod.outlook.com>
-Message-ID: <e09d6807-a548-0218-5ff0-274668f1eb94@linaro.org>
+ <20230210072643.2772-3-chiawei_wang@aspeedtech.com>
+ <c1e096fa-5941-cdd8-2cdc-ecf04661a389@linaro.org>
+ <KL1PR0601MB37818F70A166356FED0FEC9C91DD9@KL1PR0601MB3781.apcprd06.prod.outlook.com>
+Message-ID: <ad200b06-368a-1f01-41e1-6b639d128186@linaro.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 13/02/2023 02:57, ChiaWei Wang wrote:
+On 13/02/2023 02:50, ChiaWei Wang wrote:
 >> From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
->> Sent: Friday, February 10, 2023 5:13 PM
+>> Sent: Friday, February 10, 2023 5:14 PM
 >>
 >> On 10/02/2023 08:26, Chia-Wei Wang wrote:
->>> Add dt-bindings for Aspeed UART controller.
->>
->> Describe the hardware. What's the difference against existing Aspeed UART
->> used everywhere?
-> 
-> The description will be revised to explain more for UART and Virtual UART controllers.
-> 
->>
+>>> This driver provides DMA support for AST26xx UART and VUART devices.
+>>> It is useful to offload CPU overhead while using UART/VUART for binary
+>>> file transfer.
 >>>
 >>> Signed-off-by: Chia-Wei Wang <chiawei_wang@aspeedtech.com>
 >>> ---
->>>  .../bindings/serial/aspeed,uart.yaml          | 81
->> +++++++++++++++++++
->>>  1 file changed, 81 insertions(+)
->>>  create mode 100644
->>> Documentation/devicetree/bindings/serial/aspeed,uart.yaml
+>>>  drivers/soc/aspeed/Kconfig             |   9 +
+>>>  drivers/soc/aspeed/Makefile            |   1 +
+>>>  drivers/soc/aspeed/aspeed-udma.c       | 447
+>> +++++++++++++++++++++++++
+>>>  include/linux/soc/aspeed/aspeed-udma.h |  34 ++
 >>
->> Filename: aspeed,ast2600-uart.yaml
->> (unless you are adding here more compatibles, but your const suggests that it's
->> not going to happen)
+>> NAK.
 >>
->>>
->>> diff --git a/Documentation/devicetree/bindings/serial/aspeed,uart.yaml
->>> b/Documentation/devicetree/bindings/serial/aspeed,uart.yaml
->>> new file mode 100644
->>> index 000000000000..10c457d6a72e
->>> --- /dev/null
->>> +++ b/Documentation/devicetree/bindings/serial/aspeed,uart.yaml
->>> @@ -0,0 +1,81 @@
->>> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause) %YAML 1.2
->>> +---
->>> +$id: http://devicetree.org/schemas/serial/aspeed,uart.yaml#
->>> +$schema: http://devicetree.org/meta-schemas/core.yaml#
->>> +
->>> +title: Aspeed Universal Asynchronous Receiver/Transmitter
->>
->> This title matches other Aspeed UARTs, so aren't you duplicating bindings?
->>
->>> +
->>> +maintainers:
->>> +  - Chia-Wei Wang <chiawei_wang@aspeedtech.com>
->>> +
->>> +allOf:
->>> +  - $ref: serial.yaml#
->>> +
->>> +description: |
->>> +  The Aspeed UART is based on the basic 8250 UART and compatible
->>> +  with 16550A, with support for DMA
->>> +
->>> +properties:
->>> +  compatible:
->>> +    const: aspeed,ast2600-uart
->>> +
->>> +  reg:
->>> +    description: The base address of the UART register bank
->>
->> Drop description
+>> DMA drivers do not go to soc, but to dma subsystem.
 > 
-> Will revise as suggested.
-> 
->>
->>> +    maxItems: 1
->>> +
->>> +  clocks:
->>> +    description: The clock the baudrate is derived from
->>> +    maxItems: 1
->>> +
->>> +  interrupts:
->>> +    description: The IRQ number of the device
->>
->> Drop description
-> 
-> Will revise as suggested.
-> 
->>
->>> +    maxItems: 1
->>> +
->>> +  dma-mode:
->>> +    type: boolean
->>> +    description: Enable DMA
->>
->> Drop property. DMA is enabled on presence of dmas.
->>
->>> +
->>> +  dma-channel:
->>> +    $ref: /schemas/types.yaml#/definitions/uint32
->>> +    description: The channel number to be used in the DMA engine
->>
->> That's not a correct DMA property. dmas and dma-names git grep dma --
->> Documentation/devicetree/bindings/
->>
->>
->>> +
->>> +  virtual:
->>> +    type: boolean
->>> +    description: Indicate virtual UART
->>
->> Virtual means not existing in real world? We do not describe in DTS
->> non-existing devices. Drop entire property.
-> 
-> The virtual property indicates it is a Virtual UART device.
+> The UDMA is dedicated only to UART use and is not fully fit to the DMAEngine subsystem.
+> For example, the suspend/resume operations of common DMA engine are not supported.
+> After observing certain existing DMA implementation in other soc folders, we put UDMA in the soc/aspeed as well.
+> If it is not appropriate, should we integrate UDMA into the UART driver or try to make UDMA DMAEngine based?
 
-vuart already has its bindings, so you do not need this in such case.
 
-> VUART of Aspeed SoC is actually a FIFO exposed in the 16550A UART interface.
-> The one head of the FIFO is exposed to Host via eSPI/LPC and the other one is for BMC.
-> There is no physical serial link between Host and BMC. And thus named as Virtual UART.
-
-I don't understand what is the virtual in terms of hardware. How you
-route your serial lines does not change the type of the device. You need
-to describe the hardware in Devicetree, not some concepts for system.
-
-> 
->>
->>> +
->>> +  sirq:
->>> +    $ref: /schemas/types.yaml#/definitions/uint32
->>> +    description: The serial IRQ number on LPC bus interface
->>
->> Drop entire property.
-> 
-> Mandatory for Virtual UART
-
-It's not a explanation why this is a property suitable for Devicetree.
-IRQ numbers are given via interrupts field.
-
-> 
->>
->>> +
->>> +  sirq-polarity:
->>> +    $ref: /schemas/types.yaml#/definitions/uint32
->>> +    description: The serial IRQ polarity on LPC bus interface
->>
->> Drop entire property.
-> 
-> Mandatory for Virtual UART
-> 
-
-Same here, this is a flag for interrupts field.
-
+You did not Cc dma folks, so how would I know... Maybe soc is right
+place if the DMA driver is not suitable for other consumers than UART.
+Maybe not.
 
 Best regards,
 Krzysztof
