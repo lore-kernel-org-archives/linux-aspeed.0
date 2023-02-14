@@ -1,53 +1,57 @@
-From: Thang Nguyen OS <thang@amperemail.onmicrosoft.com>
-Date: Tue, 14 Feb 2023 04:02:07 +0000
-Subject: [PATCH] ARM: dts: aspeed: mtjade: Add SMPro nodes
-In-Reply-To: <20221118065109.2339066-1-quan@os.amperecomputing.com>
-References: <20221118065109.2339066-1-quan@os.amperecomputing.com>
-Message-ID: <32FE8D60-98AF-4134-8FB0-46B0CE7CA420@amperemail.onmicrosoft.com>
+From: Ryan Chen <ryan_chen@aspeedtech.com>
+Date: Tue, 14 Feb 2023 06:12:54 +0000
+Subject: [PATCH v4 3/3] i2c: aspeed: support ast2600 i2c new register mode
+ driver
+In-Reply-To: <SEZPR06MB526951F24B841965C0DD6B84F2D69@SEZPR06MB5269.apcprd06.prod.outlook.com>
+References: <20230201103359.1742140-1-ryan_chen@aspeedtech.com>
+ <20230201103359.1742140-4-ryan_chen@aspeedtech.com>
+ <30c7cbbf57abbdfb5f974d6ee17b2218d124c7e8.camel@ozlabs.org>
+ <SEZPR06MB526941A3DDB25529F0671112F2D69@SEZPR06MB5269.apcprd06.prod.outlook.com>
+ <5239ea2f-284a-dcf5-6dd4-be3b13b319e6@linaro.org>
+ <SEZPR06MB526951F24B841965C0DD6B84F2D69@SEZPR06MB5269.apcprd06.prod.outlook.com>
+Message-ID: <SEZPR06MB52698009DA893813FECBE76FF2A29@SEZPR06MB5269.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+Hello Krzysztof,
+> 
+> > On 02/02/2023 10:16, Ryan Chen wrote:
+> > >>>> +static struct platform_driver ast2600_i2c_global_driver = {
+> > >>> +???????.probe? = ast2600_i2c_global_probe,
+> > >>> +???????.driver = {
+> > >>> +???????????????.name = KBUILD_MODNAME,
+> > >>> +???????????????.of_match_table =
+> ast2600_i2c_global_of_match,
+> > >>> +???????},
+> > >>> +};
+> > >>> +
+> > >>> +static int __init ast2600_i2c_global_init(void) {
+> > >>> +???????return
+> > >>> +platform_driver_register(&ast2600_i2c_global_driver);
+> > >>> +}
+> > >>> +device_initcall(ast2600_i2c_global_init);
+> > >>
+> > >> Maybe module_platform_driver() instead?
+> > >
+> > > Due to i2c global is top of all i2c bus like the scu, it make sure
+> > > the driver is
+> > before the i2c bus driver probe.
+> > > It is needed use device_initcal function.
+> >
+> > No, we do not do such ordering. device links and proper resource
+> > sharing handle the order. This must be module_platform_driver()
+> > (assuming we do not drop entire submission).
+> 
+> 
+> If global driver use module_platform_driver, does i2c driver will latter the
+> global driver probe?
+> If yes, I think it will workable.
+> >
+I find a good way instead. 
+subsys_initcall(ast2600_i2c_global_init); is better ?
 
-
-On 18 Nov 2022, at 13:51, Quan Nguyen OS <quan@os.amperecomputing.com> wrote:
-
-Add SMPro nodes to Mt. Jade BMC.
-
-Signed-off-by: Quan Nguyen <quan@os.amperecomputing.com>
----
-arch/arm/boot/dts/aspeed-bmc-ampere-mtjade.dts | 8 ++++++++
-1 file changed, 8 insertions(+)
-
-diff --git a/arch/arm/boot/dts/aspeed-bmc-ampere-mtjade.dts b/arch/arm/boot/dts/aspeed-bmc-ampere-mtjade.dts
-index 353359822d7b..0a51d2e32fab 100644
---- a/arch/arm/boot/dts/aspeed-bmc-ampere-mtjade.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-ampere-mtjade.dts
-@@ -354,6 +354,14 @@ &i2c1 {
-
-&i2c2 {
-status = "okay";
-+ smpro at 4f {
-+ compatible = "ampere,smpro";
-+ reg = <0x4f>;
-+ };
-+ smpro at 4e {
-+ compatible = "ampere,smpro";
-+ reg = <0x4e>;
-+ };
-};
-
-&i2c3 {
---
-2.35.1
-
-Hi Joel,
-Can you also pick https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git/commit/?id=7c07553807c5125c89de242d35c10c206fd8e6bb to fix USB gadget issue? It is to support multiple devices (i.e. virtual media, USB Ethernet, ?) at the same time?
-
-Thanks,
-Thang Q. Nguyen
--------------- next part --------------
-An HTML attachment was scrubbed...
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20230214/c9b808c5/attachment.htm>
+Best regards,
+Ryan
