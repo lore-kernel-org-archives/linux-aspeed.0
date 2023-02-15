@@ -1,82 +1,59 @@
-From: Ryan Chen <ryan_chen@aspeedtech.com>
-Date: Wed, 15 Feb 2023 05:43:12 +0000
-Subject: [PATCH v4 2/3] dt-bindings: i2c-ast2600: Add support for AST2600
- i2C driver
-In-Reply-To: <b0f55494-3a17-4d87-7b8f-5b078503cb53@linaro.org>
-References: <20230201103359.1742140-1-ryan_chen@aspeedtech.com>
- <20230201103359.1742140-3-ryan_chen@aspeedtech.com>
- <b0f55494-3a17-4d87-7b8f-5b078503cb53@linaro.org>
-Message-ID: <SEZPR06MB52690A1D06F3CFEAAF1FDBDEF2A39@SEZPR06MB5269.apcprd06.prod.outlook.com>
+From: Linux regression tracking #update (Thorsten Leemhuis) <regressions@leemhuis.info>
+Date: Wed, 15 Feb 2023 15:52:46 +0100
+Subject: [PATCH] pinctrl: aspeed: Force to disable the function's signal
+In-Reply-To: <3af98200-7240-9e93-bd6a-d0e2f71ab1c4@leemhuis.info>
+References: <20220818101839.28860-1-billy_tsai@aspeedtech.com>
+ <CACRpkdYpp_1JJQmuX27pECxN0cjzciCuETLPTrSYKqpX0FPABQ@mail.gmail.com>
+ <e501d2fb-aaa0-470d-a8d5-5f8e97898df7@beta.fastmail.com>
+ <CACPK8XfQ=uarsOgJ7LaXqLyGG2vSF-47RkAEV=T2gruapx-yfg@mail.gmail.com>
+ <3af98200-7240-9e93-bd6a-d0e2f71ab1c4@leemhuis.info>
+Message-ID: <05f6936f-f8e0-d0e5-7f8f-d0278dc03753@leemhuis.info>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello Krzysztof,
+[TLDR: This mail in primarily relevant for Linux regression tracking. A
+change or fix related to the regression discussed in this thread was
+posted or applied, but it did not use a Link: tag to point to the
+report, as Linus and the documentation call for. Things happen, no
+worries -- but now the regression tracking bot needs to be told manually
+about the fix. See link in footer if these mails annoy you.]
 
-> -----Original Message-----
-> From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-> Sent: Thursday, February 2, 2023 4:58 PM
-> To: Ryan Chen <ryan_chen@aspeedtech.com>; Rob Herring
-> <robh+dt@kernel.org>; Krzysztof Kozlowski
-> <krzysztof.kozlowski+dt@linaro.org>; Joel Stanley <joel@jms.id.au>; Andrew
-> Jeffery <andrew@aj.id.au>; Philipp Zabel <p.zabel@pengutronix.de>;
-> openbmc at lists.ozlabs.org; linux-arm-kernel at lists.infradead.org;
-> linux-aspeed at lists.ozlabs.org; linux-kernel at vger.kernel.org
-> Subject: Re: [PATCH v4 2/3] dt-bindings: i2c-ast2600: Add support for AST2600
-> i2C driver
+On 21.01.23 13:32, Linux kernel regression tracking (#adding) wrote:
+> On 19.01.23 02:54, Joel Stanley wrote:
+>> On Fri, 26 Aug 2022 at 22:48, Andrew Jeffery <andrew@aj.id.au> wrote:
+>>> On Sat, 27 Aug 2022, at 07:26, Linus Walleij wrote:
+>>>> On Thu, Aug 18, 2022 at 12:18 PM Billy Tsai <billy_tsai@aspeedtech.com> wrote:
+>>>>
+>>>>> When the driver want to disable the signal of the function, it doesn't
+>>>>> need to query the state of the mux function's signal on a pin. The
+>>>>> condition below will miss the disable of the signal:
+>>
+>>>> I can't see the verdict for this patch? Will there be a new
+>>>> version, or are we in the middle of a discussion?
+>>>> I'd really like Andrew's ACK on the result before merging.
+>>>
+>>> Apologies, it's been a bit of A Week :)
+>>>
+>>> Given the approach has been discussed with the IP designer and solves a bug I'm okay for it to be merged. If we run into issues it is easy enough to back it out.
+>>
+>> As foreseen by Andrew, this caused a regression. On the Romulus
+>> machine the device tree contains a gpio hog for GPIO S7. With the
+>> patch applied:
 > 
-> On 01/02/2023 11:33, Ryan Chen wrote:
-> > AST2600 support new register set for I2C controller, add bindings
-> > document to support driver of i2c new register mode controller.
-> >
-> > Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
-> > ---
-> >  .../bindings/i2c/aspeed,i2c-ast2600.yaml      | 78
-> +++++++++++++++++++
-> >  1 file changed, 78 insertions(+)
-> >  create mode 100644
-> > Documentation/devicetree/bindings/i2c/aspeed,i2c-ast2600.yaml
-> >
-> > diff --git
-> > a/Documentation/devicetree/bindings/i2c/aspeed,i2c-ast2600.yaml
-> > b/Documentation/devicetree/bindings/i2c/aspeed,i2c-ast2600.yaml
-> > new file mode 100644
-> > index 000000000000..b7d7bc303e77
-> > --- /dev/null
-> > +++ b/Documentation/devicetree/bindings/i2c/aspeed,i2c-ast2600.yaml
-> > @@ -0,0 +1,78 @@
-> > +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause) %YAML 1.2
-> > +---
-> > +$id: http://devicetree.org/schemas/i2c/aspeed,i2c-ast2600.yaml#
-> > +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> > +
-> > +title: AST2600 I2C Controller on the AST26XX SoCs Device Tree
-> > +Bindings
-> > +
-> > +maintainers:
-> > +  - Ryan Chen <ryan_chen@aspeedtech.com>
-> > +
-> > +allOf:
-> > +  - $ref: /schemas/i2c/i2c-controller.yaml#
-> > +
-> > +properties:
-> > +  compatible:
-> > +    enum:
-> > +      - aspeed,ast2600-i2c
-> 
-> NAK. It's already there. Please do not waste our time in submitting duplicated
-> drivers.
+> #regzbot ^introduced cf517fef601b
+> #regzbot title pinctrl: aspeed-g5-pinctrl 1e6e2080.pinctrl: Failed to
+> acquire regmap for IP block 1
+> #regzbot ignore-activity
 
-It is not duplicated, as my description in cover " This series add AST2600 i2c new register set driver"
-So, this will be different driver compatible. 
-The original compatible is 
-      - aspeed,ast2400-i2c-bus
-      - aspeed,ast2500-i2c-bus
-      - aspeed,ast2600-i2c-bus
-So the new register set compatible is "- aspeed,ast2600-i2c", remove "bus".
+#regzbot fix: 606d4ef4922662
 
+Ciao, Thorsten (wearing his 'the Linux kernel's regression tracker' hat)
+--
+Everything you wanna know about Linux kernel regression tracking:
+https://linux-regtracking.leemhuis.info/about/#tldr
+That page also explains what to do if mails like this annoy you.
 
-Best regards,
-Ryan Chen
+#regzbot ignore-activity
