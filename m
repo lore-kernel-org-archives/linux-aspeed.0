@@ -1,41 +1,32 @@
 From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Date: Thu, 16 Feb 2023 09:08:51 +0100
-Subject: [PATCH v4 2/3] dt-bindings: i2c-ast2600: Add support for AST2600
- i2C driver
-In-Reply-To: <a62fb259-3ad3-b75e-c59e-2ce937bf799a@linux.microsoft.com>
-References: <20230201103359.1742140-1-ryan_chen@aspeedtech.com>
- <20230201103359.1742140-3-ryan_chen@aspeedtech.com>
- <b0f55494-3a17-4d87-7b8f-5b078503cb53@linaro.org>
- <SEZPR06MB52690A1D06F3CFEAAF1FDBDEF2A39@SEZPR06MB5269.apcprd06.prod.outlook.com>
- <a62fb259-3ad3-b75e-c59e-2ce937bf799a@linux.microsoft.com>
-Message-ID: <198c084e-66ff-1f3d-33cb-a1339b34336c@linaro.org>
+Date: Thu, 16 Feb 2023 09:24:09 +0100
+Subject: [PATCH 1/4] dt-bindings: i3c: Add AST2600 i3c controller
+In-Reply-To: <82d750f53df622d8986e9a07053c7ee27dee61a2.1676532146.git.jk@codeconstruct.com.au>
+References: <cover.1676532146.git.jk@codeconstruct.com.au>
+ <82d750f53df622d8986e9a07053c7ee27dee61a2.1676532146.git.jk@codeconstruct.com.au>
+Message-ID: <03fe68be-ca9f-967c-b5ef-0599177caf90@linaro.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 16/02/2023 05:17, Dhananjay Phadke wrote:
-> Hi Ryan,
+On 16/02/2023 08:41, Jeremy Kerr wrote:
+> Add a devicetree binding for the ast2600 i3c controller hardware. This
+> is heavily based on the designware i3c core, plus a reset facility
+> and two platform-specific properties:
 > 
-> On 2/14/2023 9:43 PM, Ryan Chen wrote:
->> It is not duplicated, as my description in cover " This series add AST2600 i2c new register set driver"
->> So, this will be different driver compatible.
->> The original compatible is
->>        - aspeed,ast2400-i2c-bus
->>        - aspeed,ast2500-i2c-bus
->>        - aspeed,ast2600-i2c-bus
->> So the new register set compatible is "- aspeed,ast2600-i2c", remove "bus".
+>  - sda-pullup-ohms: to specify the value of the configurable pullup
+>    resistors on the SDA line
 > 
-> Is it possible to keep existing driver drivers/i2c/busses/i2c-aspeed.c
-> for ast2400/ast2500, while move ast2600 support to new driver
-> altogether, say i2c-ast2600.c along with new register mode? By default
-> new driver can support legacy mode with same compatible "aspeed,ast2600-
-> i2c-bus", additionally driven by dt props, switch to new mode.
+>  - aspeed,global-regs: to reference the (ast2600-specific) i3c global
+>    register block, and the device index to use within it.
+> 
+> Signed-off-by: Jeremy Kerr <jk@codeconstruct.com.au>
+> 
 
-So this is for the same hardware? Then the bindings are duplicated.
-Driver is actually duplicated as well - rework the old one, instead of
-adding this.
+
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 
 Best regards,
 Krzysztof
