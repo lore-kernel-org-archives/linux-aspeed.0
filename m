@@ -1,68 +1,72 @@
 From: Linus Walleij <linus.walleij@linaro.org>
-Date: Thu, 16 Feb 2023 10:37:15 +0100
-Subject: [PATCH 14/17] gpio: omap: Drop irq_base
+Date: Thu, 16 Feb 2023 10:37:17 +0100
+Subject: [PATCH 16/17] gpio: pci-idio-16: Convert to immutable irq_chip
 In-Reply-To: <20230215-immutable-chips-v1-0-51a8f224a5d0@linaro.org>
 References: <20230215-immutable-chips-v1-0-51a8f224a5d0@linaro.org>
-Message-ID: <20230215-immutable-chips-v1-14-51a8f224a5d0@linaro.org>
+Message-ID: <20230215-immutable-chips-v1-16-51a8f224a5d0@linaro.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The OMAP1 at one point was using static irqs but that time is gone,
-OMAP1 uses sparse irqs like all other multiplatform targets so this
-static allocation of descriptors should just go.
+Convert the driver to immutable irq-chip with a bit of
+intuition.
 
-Cc: Janusz Krzysztofik <jmkrzyszt@gmail.com>
-Cc: Arnd Bergmann <arnd@arndb.de>
-Cc: Tony Lindgren <tony@atomide.com>
-Acked-by: Marc Zyngier <maz@kernel.org>
+Cc: Marc Zyngier <maz@kernel.org>
 Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
 ---
- drivers/gpio/gpio-omap.c | 15 ---------------
- 1 file changed, 15 deletions(-)
+ drivers/gpio/gpio-pci-idio-16.c | 12 +++++++++---
+ 1 file changed, 9 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/gpio/gpio-omap.c b/drivers/gpio/gpio-omap.c
-index 80ddc43fd875..292e62c06008 100644
---- a/drivers/gpio/gpio-omap.c
-+++ b/drivers/gpio/gpio-omap.c
-@@ -992,7 +992,6 @@ static int omap_gpio_chip_init(struct gpio_bank *bank, struct irq_chip *irqc,
- 	struct gpio_irq_chip *irq;
- 	static int gpio;
- 	const char *label;
--	int irq_base = 0;
- 	int ret;
+diff --git a/drivers/gpio/gpio-pci-idio-16.c b/drivers/gpio/gpio-pci-idio-16.c
+index a86ce748384b..6726c32e31e6 100644
+--- a/drivers/gpio/gpio-pci-idio-16.c
++++ b/drivers/gpio/gpio-pci-idio-16.c
+@@ -107,6 +107,8 @@ static void idio_16_irq_mask(struct irq_data *data)
  
- 	/*
-@@ -1024,19 +1023,6 @@ static int omap_gpio_chip_init(struct gpio_bank *bank, struct irq_chip *irqc,
+ 		raw_spin_unlock_irqrestore(&idio16gpio->lock, flags);
  	}
- 	bank->chip.ngpio = bank->width;
++
++	gpiochip_disable_irq(chip, irqd_to_hwirq(data));
+ }
  
--#ifdef CONFIG_ARCH_OMAP1
--	/*
--	 * REVISIT: Once we have OMAP1 supporting SPARSE_IRQ, we can drop
--	 * irq_alloc_descs() since a base IRQ offset will no longer be needed.
--	 */
--	irq_base = devm_irq_alloc_descs(bank->chip.parent,
--					-1, 0, bank->width, 0);
--	if (irq_base < 0) {
--		dev_err(bank->chip.parent, "Couldn't allocate IRQ numbers\n");
--		return -ENODEV;
--	}
--#endif
--
- 	/* MPUIO is a bit different, reading IRQ status clears it */
- 	if (bank->is_mpuio && !bank->regs->wkup_en)
- 		irqc->irq_set_wake = NULL;
-@@ -1047,7 +1033,6 @@ static int omap_gpio_chip_init(struct gpio_bank *bank, struct irq_chip *irqc,
- 	irq->default_type = IRQ_TYPE_NONE;
- 	irq->num_parents = 1;
- 	irq->parents = &bank->irq;
--	irq->first = irq_base;
+ static void idio_16_irq_unmask(struct irq_data *data)
+@@ -117,6 +119,8 @@ static void idio_16_irq_unmask(struct irq_data *data)
+ 	const unsigned long prev_irq_mask = idio16gpio->irq_mask;
+ 	unsigned long flags;
  
- 	ret = gpiochip_add_data(&bank->chip, bank);
- 	if (ret)
++	gpiochip_enable_irq(chip, irqd_to_hwirq(data));
++
+ 	idio16gpio->irq_mask |= mask;
+ 
+ 	if (!prev_irq_mask) {
+@@ -138,12 +142,14 @@ static int idio_16_irq_set_type(struct irq_data *data, unsigned int flow_type)
+ 	return 0;
+ }
+ 
+-static struct irq_chip idio_16_irqchip = {
++static const struct irq_chip idio_16_irqchip = {
+ 	.name = "pci-idio-16",
+ 	.irq_ack = idio_16_irq_ack,
+ 	.irq_mask = idio_16_irq_mask,
+ 	.irq_unmask = idio_16_irq_unmask,
+-	.irq_set_type = idio_16_irq_set_type
++	.irq_set_type = idio_16_irq_set_type,
++	.flags = IRQCHIP_IMMUTABLE,
++	GPIOCHIP_IRQ_RESOURCE_HELPERS,
+ };
+ 
+ static irqreturn_t idio_16_irq_handler(int irq, void *dev_id)
+@@ -242,7 +248,7 @@ static int idio_16_probe(struct pci_dev *pdev, const struct pci_device_id *id)
+ 	idio_16_state_init(&idio16gpio->state);
+ 
+ 	girq = &idio16gpio->chip.irq;
+-	girq->chip = &idio_16_irqchip;
++	gpio_irq_chip_set_chip(girq, &idio_16_irqchip);
+ 	/* This will let us handle the parent IRQ in the driver */
+ 	girq->parent_handler = NULL;
+ 	girq->num_parents = 0;
 
 -- 
 2.34.1
