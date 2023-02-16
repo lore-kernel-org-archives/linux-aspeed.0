@@ -1,116 +1,52 @@
 From: Jeremy Kerr <jk@codeconstruct.com.au>
-Date: Thu, 16 Feb 2023 15:41:52 +0800
-Subject: [PATCH 1/4] dt-bindings: i3c: Add AST2600 i3c controller
-In-Reply-To: <cover.1676532146.git.jk@codeconstruct.com.au>
-References: <cover.1676532146.git.jk@codeconstruct.com.au>
-Message-ID: <82d750f53df622d8986e9a07053c7ee27dee61a2.1676532146.git.jk@codeconstruct.com.au>
+Date: Thu, 16 Feb 2023 15:41:51 +0800
+Subject: [PATCH 0/4] i3c: Add support for ast2600 i3c controller
+Message-ID: <cover.1676532146.git.jk@codeconstruct.com.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add a devicetree binding for the ast2600 i3c controller hardware. This
-is heavily based on the designware i3c core, plus a reset facility
-and two platform-specific properties:
+The AST2600 SoC hardware includes a set of i3c controllers, based on the
+designware i3c core, plus some global registers for SoC integration.
 
- - sda-pullup-ohms: to specify the value of the configurable pullup
-   resistors on the SDA line
+This series adds support for these i3c controllers, through the existing
+dw i3c master controller driver, by adding a set of platform-specific
+hooks to handle the global register configuration. This also gives us a
+way to add any future hardware-specific behaviours.
 
- - aspeed,global-regs: to reference the (ast2600-specific) i3c global
-   register block, and the device index to use within it.
+We also need a DT binding to describe the ast2600-specific hardware.
+Since this involves new (mandatory) properties, I have added this as a
+separate binding rather than add a new compat string to the dw binding.
 
-Signed-off-by: Jeremy Kerr <jk@codeconstruct.com.au>
+The dt-binding example depends on a prior submission to the dt binding
+headers:
 
----
-changes from RFC:
- - add vendor prefix to global-regs properties
- - add item description on global-regs property
- - drop global reg node from example
----
- .../bindings/i3c/aspeed,ast2600-i3c.yaml      | 73 +++++++++++++++++++
- 1 file changed, 73 insertions(+)
+  https://lore.kernel.org/linux-devicetree/cover.1676294433.git.jk at codeconstruct.com.au/
+
+Full support for the global regmap will land with this queued mfd change:
+
+  https://git.kernel.org/pub/scm/linux/kernel/git/lee/mfd.git/commit/?id=cf2271843de835839e91c5c036492a87085af756
+
+Of course, any queries/comments/etc are most welcome.
+
+Cheers,
+
+
+Jeremy
+
+Jeremy Kerr (4):
+  dt-bindings: i3c: Add AST2600 i3c controller
+  i3c: dw: Add platform operations
+  i3c: dw: Add AST2600 platform ops
+  i3c: dw: Add compatible string for ASPEED AST2600 BMC platform
+
+ .../bindings/i3c/aspeed,ast2600-i3c.yaml      |  73 ++++++++
+ drivers/i3c/master/dw-i3c-master.c            | 165 +++++++++++++++++-
+ 2 files changed, 232 insertions(+), 6 deletions(-)
  create mode 100644 Documentation/devicetree/bindings/i3c/aspeed,ast2600-i3c.yaml
 
-diff --git a/Documentation/devicetree/bindings/i3c/aspeed,ast2600-i3c.yaml b/Documentation/devicetree/bindings/i3c/aspeed,ast2600-i3c.yaml
-new file mode 100644
-index 000000000000..920428f243b5
---- /dev/null
-+++ b/Documentation/devicetree/bindings/i3c/aspeed,ast2600-i3c.yaml
-@@ -0,0 +1,73 @@
-+# SPDX-License-Identifier: GPL-2.0
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/i3c/aspeed,ast2600-i3c.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: ASPEED AST2600 i3c controller
-+
-+maintainers:
-+  - Jeremy Kerr <jk@codeconstruct.com.au>
-+
-+allOf:
-+  - $ref: i3c.yaml#
-+
-+properties:
-+  compatible:
-+    const: aspeed,ast2600-i3c
-+
-+  reg:
-+    maxItems: 1
-+
-+  clocks:
-+    maxItems: 1
-+
-+  resets:
-+    maxItems: 1
-+
-+  interrupts:
-+    maxItems: 1
-+
-+  sda-pullup-ohms:
-+    enum: [545, 750, 2000]
-+    default: 2000
-+    description: |
-+      Value to configure SDA pullup resistor, in Ohms.
-+
-+  aspeed,global-regs:
-+    $ref: /schemas/types.yaml#/definitions/phandle-array
-+    items:
-+      - items:
-+          - description: phandle to i3c global register syscon node
-+          - description: index of this i3c controller in the global register set
-+    description: |
-+      A (phandle, controller index) reference to the i3c global register set
-+      used for this device.
-+
-+required:
-+  - compatible
-+  - reg
-+  - clocks
-+  - interrupts
-+  - aspeed,global-regs
-+
-+unevaluatedProperties: false
-+
-+examples:
-+  - |
-+    #include <dt-bindings/clock/ast2600-clock.h>
-+    #include <dt-bindings/interrupt-controller/arm-gic.h>
-+
-+    i3c-master at 2000 {
-+        compatible = "aspeed,ast2600-i3c";
-+        reg = <0x2000 0x1000>;
-+        #address-cells = <3>;
-+        #size-cells = <0>;
-+        clocks = <&syscon ASPEED_CLK_GATE_I3C0CLK>;
-+        resets = <&syscon ASPEED_RESET_I3C0>;
-+        aspeed,global-regs = <&i3c_global 0>;
-+        pinctrl-names = "default";
-+        pinctrl-0 = <&pinctrl_i3c1_default>;
-+        interrupts = <GIC_SPI 102 IRQ_TYPE_LEVEL_HIGH>;
-+    };
-+...
 -- 
 2.39.1
 
