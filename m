@@ -1,85 +1,127 @@
-From: William Breathitt Gray <william.gray@linaro.org>
-Date: Wed, 8 Feb 2023 06:17:14 -0500
-Subject: [PATCH 17/17] gpio: pcie-idio-24: Convert to immutable irq_chip
-In-Reply-To: <20230215-immutable-chips-v1-17-51a8f224a5d0@linaro.org>
-References: <20230215-immutable-chips-v1-0-51a8f224a5d0@linaro.org>
- <20230215-immutable-chips-v1-17-51a8f224a5d0@linaro.org>
-Message-ID: <Y+OEujGudfk1SkSS@fedora>
+From: Ben Dooks <ben.dooks@sifive.com>
+Date: Thu, 16 Feb 2023 15:04:05 +0000
+Subject: [PATCH 2/4] i3c: dw: Add platform operations
+In-Reply-To: <eb90bc9ee9f72efc2012abce3e4e50186552e194.1676532146.git.jk@codeconstruct.com.au>
+References: <cover.1676532146.git.jk@codeconstruct.com.au>
+ <eb90bc9ee9f72efc2012abce3e4e50186552e194.1676532146.git.jk@codeconstruct.com.au>
+Message-ID: <9b374250-3afc-6277-d1c6-0dac1c682bca@sifive.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Feb 16, 2023 at 10:37:18AM +0100, Linus Walleij wrote:
-> Convert the driver to immutable irq-chip with a bit of
-> intuition.
+On 16/02/2023 07:41, Jeremy Kerr wrote:
+> The dw i3c core can be integrated into various SoC devices. Platforms
+> that use this core may need a little configuration that is specific to
+> that platform.
 > 
-> Cc: Marc Zyngier <maz@kernel.org>
-> Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
-
-Acked-by: William Breathitt Gray <william.gray@linaro.org>
-
+> Add a little infrastructure to allow platform-specific behaviour: a bit
+> of data on struct dw_i3c_master, and two hooks to the probe and init
+> calls to enable this.
+> 
+> A future change will add new platform support that uses these hooks.
+> 
+> Signed-off-by: Jeremy Kerr <jk@codeconstruct.com.au>
 > ---
->  drivers/gpio/gpio-pcie-idio-24.c | 12 +++++++++---
->  1 file changed, 9 insertions(+), 3 deletions(-)
+>   drivers/i3c/master/dw-i3c-master.c | 42 +++++++++++++++++++++++++-----
+>   1 file changed, 36 insertions(+), 6 deletions(-)
 > 
-> diff --git a/drivers/gpio/gpio-pcie-idio-24.c b/drivers/gpio/gpio-pcie-idio-24.c
-> index 8a9b98fa418f..ac42150f4009 100644
-> --- a/drivers/gpio/gpio-pcie-idio-24.c
-> +++ b/drivers/gpio/gpio-pcie-idio-24.c
-> @@ -396,6 +396,8 @@ static void idio_24_irq_mask(struct irq_data *data)
->  	}
->  
->  	raw_spin_unlock_irqrestore(&idio24gpio->lock, flags);
+> diff --git a/drivers/i3c/master/dw-i3c-master.c b/drivers/i3c/master/dw-i3c-master.c
+> index d73d57362b3b..49b891449222 100644
+> --- a/drivers/i3c/master/dw-i3c-master.c
+> +++ b/drivers/i3c/master/dw-i3c-master.c
+> @@ -241,6 +241,17 @@ struct dw_i3c_master {
+>   	char version[5];
+>   	char type[5];
+>   	u8 addrs[MAX_DEVS];
 > +
-> +	gpiochip_disable_irq(chip, irqd_to_hwirq(data));
->  }
->  
->  static void idio_24_irq_unmask(struct irq_data *data)
-> @@ -408,6 +410,8 @@ static void idio_24_irq_unmask(struct irq_data *data)
->  	const unsigned long bank_offset = bit_offset / 8;
->  	unsigned char cos_enable_state;
->  
-> +	gpiochip_enable_irq(chip, irqd_to_hwirq(data));
+> +	/* platform-specific data */
+> +	const struct dw_i3c_platform_ops *platform_ops;
+> +	union {
+> +	} pdata;
 > +
->  	raw_spin_lock_irqsave(&idio24gpio->lock, flags);
->  
->  	prev_irq_mask = idio24gpio->irq_mask >> bank_offset * 8;
-> @@ -437,12 +441,14 @@ static int idio_24_irq_set_type(struct irq_data *data, unsigned int flow_type)
->  	return 0;
->  }
->  
-> -static struct irq_chip idio_24_irqchip = {
-> +static const struct irq_chip idio_24_irqchip = {
->  	.name = "pcie-idio-24",
->  	.irq_ack = idio_24_irq_ack,
->  	.irq_mask = idio_24_irq_mask,
->  	.irq_unmask = idio_24_irq_unmask,
-> -	.irq_set_type = idio_24_irq_set_type
-> +	.irq_set_type = idio_24_irq_set_type,
-> +	.flags = IRQCHIP_IMMUTABLE,
-> +	GPIOCHIP_IRQ_RESOURCE_HELPERS,
->  };
->  
->  static irqreturn_t idio_24_irq_handler(int irq, void *dev_id)
-> @@ -535,7 +541,7 @@ static int idio_24_probe(struct pci_dev *pdev, const struct pci_device_id *id)
->  	idio24gpio->chip.set_multiple = idio_24_gpio_set_multiple;
->  
->  	girq = &idio24gpio->chip.irq;
-> -	girq->chip = &idio_24_irqchip;
-> +	gpio_irq_chip_set_chip(girq, &idio_24_irqchip);
->  	/* This will let us handle the parent IRQ in the driver */
->  	girq->parent_handler = NULL;
->  	girq->num_parents = 0;
-> 
-> -- 
-> 2.34.1
-> 
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 228 bytes
-Desc: not available
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20230208/77e43417/attachment-0001.sig>
+> +};
+> +
+> +struct dw_i3c_platform_ops {
+> +	int (*probe)(struct dw_i3c_master *i3c, struct platform_device *pdev);
+> +	int (*init)(struct dw_i3c_master *i3c);
+>   };
+
+Given the comment below having this and the main probe defined in a 
+header so users can just call in and we don't have to change the
+main code here every time someone comes up with their own
+special way of handing this?
+
+>   struct dw_i3c_i2c_dev_data {
+> @@ -612,6 +623,12 @@ static int dw_i3c_master_bus_init(struct i3c_master_controller *m)
+>   	u32 thld_ctrl;
+>   	int ret;
+>   
+> +	if (master->platform_ops && master->platform_ops->init) {
+> +		ret = master->platform_ops->init(master);
+> +		if (ret)
+> +			return ret;
+> +	}
+
+I'd rather have a "default" set of ops than have all this checking for
+NULL pointers all over the place.
+
+> +
+>   	switch (bus->mode) {
+>   	case I3C_BUS_MODE_MIXED_FAST:
+>   	case I3C_BUS_MODE_MIXED_LIMITED:
+> @@ -1128,8 +1145,15 @@ static const struct i3c_master_controller_ops dw_mipi_i3c_ops = {
+>   	.i2c_xfers = dw_i3c_master_i2c_xfers,
+>   };
+>   
+> +static const struct of_device_id dw_i3c_master_of_match[] = {
+> +	{ .compatible = "snps,dw-i3c-master-1.00a", },
+> +	{},
+> +};
+> +MODULE_DEVICE_TABLE(of, dw_i3c_master_of_match);
+> +
+>   static int dw_i3c_probe(struct platform_device *pdev)
+>   {
+> +	const struct of_device_id *match;
+>   	struct dw_i3c_master *master;
+>   	int ret, irq;
+>   
+> @@ -1181,6 +1205,18 @@ static int dw_i3c_probe(struct platform_device *pdev)
+>   	master->maxdevs = ret >> 16;
+>   	master->free_pos = GENMASK(master->maxdevs - 1, 0);
+>   
+> +	/* match any platform-specific ops */
+> +	match = of_match_node(dw_i3c_master_of_match, pdev->dev.of_node);
+> +	if (match && match->data)
+> +		master->platform_ops = match->data;
+
+I'm sure there's a of_device_get_match_data() which would have
+both removed hte need to move the match table around and the
+call to of_match_node().
+
+> +
+> +	/* platform-specific probe */
+> +	if (master->platform_ops && master->platform_ops->probe) {
+> +		ret = master->platform_ops->probe(master, pdev);
+> +		if (ret)
+> +			goto err_assert_rst;
+> +	}
+> +
+>   	ret = i3c_master_register(&master->base, &pdev->dev,
+>   				  &dw_mipi_i3c_ops, false);
+>   	if (ret)
+> @@ -1213,12 +1249,6 @@ static int dw_i3c_remove(struct platform_device *pdev)
+>   	return 0;
+>   }
+>   
+> -static const struct of_device_id dw_i3c_master_of_match[] = {
+> -	{ .compatible = "snps,dw-i3c-master-1.00a", },
+> -	{},
+> -};
+> -MODULE_DEVICE_TABLE(of, dw_i3c_master_of_match);
+> -
+>   static struct platform_driver dw_i3c_driver = {
+>   	.probe = dw_i3c_probe,
+>   	.remove = dw_i3c_remove,
+
