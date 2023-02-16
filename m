@@ -1,9 +1,9 @@
 From: Linus Walleij <linus.walleij@linaro.org>
-Date: Thu, 16 Feb 2023 10:37:08 +0100
-Subject: [PATCH 07/17] gpio: eic_sprd: Convert to immutable irq_chip
+Date: Thu, 16 Feb 2023 10:37:11 +0100
+Subject: [PATCH 10/17] gpio: idt3243x: Convert to immutable irq_chip
 In-Reply-To: <20230215-immutable-chips-v1-0-51a8f224a5d0@linaro.org>
 References: <20230215-immutable-chips-v1-0-51a8f224a5d0@linaro.org>
-Message-ID: <20230215-immutable-chips-v1-7-51a8f224a5d0@linaro.org>
+Message-ID: <20230215-immutable-chips-v1-10-51a8f224a5d0@linaro.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -16,96 +16,56 @@ intuition.
 Cc: Marc Zyngier <maz@kernel.org>
 Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
 ---
- drivers/gpio/gpio-eic-sprd.c | 33 ++++++++++++++++++++++++---------
- 1 file changed, 24 insertions(+), 9 deletions(-)
+ drivers/gpio/gpio-idt3243x.c | 11 ++++++++---
+ 1 file changed, 8 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/gpio/gpio-eic-sprd.c b/drivers/gpio/gpio-eic-sprd.c
-index 8d722e026e9c..695d74ba55f0 100644
---- a/drivers/gpio/gpio-eic-sprd.c
-+++ b/drivers/gpio/gpio-eic-sprd.c
-@@ -11,6 +11,7 @@
- #include <linux/module.h>
- #include <linux/of_device.h>
- #include <linux/platform_device.h>
-+#include <linux/seq_file.h>
- #include <linux/spinlock.h>
+diff --git a/drivers/gpio/gpio-idt3243x.c b/drivers/gpio/gpio-idt3243x.c
+index 1cafdf46f875..00f547d26254 100644
+--- a/drivers/gpio/gpio-idt3243x.c
++++ b/drivers/gpio/gpio-idt3243x.c
+@@ -92,6 +92,8 @@ static void idt_gpio_mask(struct irq_data *d)
+ 	writel(ctrl->mask_cache, ctrl->pic + IDT_PIC_IRQ_MASK);
  
- /* EIC registers definition */
-@@ -91,7 +92,7 @@ enum sprd_eic_type {
- 
- struct sprd_eic {
- 	struct gpio_chip chip;
--	struct irq_chip intc;
-+	struct device *dev;
- 	void __iomem *base[SPRD_EIC_MAX_BANK];
- 	enum sprd_eic_type type;
- 	spinlock_t lock;
-@@ -255,6 +256,7 @@ static void sprd_eic_irq_mask(struct irq_data *data)
- 	default:
- 		dev_err(chip->parent, "Unsupported EIC type.\n");
- 	}
-+	gpiochip_disable_irq(chip, irqd_to_hwirq(data));
+ 	raw_spin_unlock_irqrestore(&gc->bgpio_lock, flags);
++
++	gpiochip_disable_irq(gc, irqd_to_hwirq(d));
  }
  
- static void sprd_eic_irq_unmask(struct irq_data *data)
-@@ -263,6 +265,7 @@ static void sprd_eic_irq_unmask(struct irq_data *data)
- 	struct sprd_eic *sprd_eic = gpiochip_get_data(chip);
- 	u32 offset = irqd_to_hwirq(data);
+ static void idt_gpio_unmask(struct irq_data *d)
+@@ -100,6 +102,7 @@ static void idt_gpio_unmask(struct irq_data *d)
+ 	struct idt_gpio_ctrl *ctrl = gpiochip_get_data(gc);
+ 	unsigned long flags;
  
-+	gpiochip_enable_irq(chip, irqd_to_hwirq(data));
- 	switch (sprd_eic->type) {
- 	case SPRD_EIC_DEBOUNCE:
- 		sprd_eic_update(chip, offset, SPRD_EIC_DBNC_IE, 1);
-@@ -564,6 +567,24 @@ static void sprd_eic_irq_handler(struct irq_desc *desc)
- 	chained_irq_exit(ic, desc);
++	gpiochip_enable_irq(gc, irqd_to_hwirq(d));
+ 	raw_spin_lock_irqsave(&gc->bgpio_lock, flags);
+ 
+ 	ctrl->mask_cache &= ~BIT(d->hwirq);
+@@ -119,12 +122,14 @@ static int idt_gpio_irq_init_hw(struct gpio_chip *gc)
+ 	return 0;
  }
  
-+static void sprd_eic_irq_print_chip(struct irq_data *data, struct seq_file *p)
-+{
-+	struct gpio_chip *chip = irq_data_get_irq_chip_data(data);
-+	struct sprd_eic *sprd_eic = gpiochip_get_data(chip);
-+
-+	seq_printf(p, dev_name(sprd_eic->dev));
-+}
-+
-+static const struct irq_chip sprd_eic_irq_chip = {
-+	.irq_ack = sprd_eic_irq_ack,
-+	.irq_mask = sprd_eic_irq_mask,
-+	.irq_unmask = sprd_eic_irq_unmask,
-+	.irq_set_type = sprd_eic_irq_set_type,
-+	.irq_print_chip = sprd_eic_irq_print_chip,
-+	.flags = IRQCHIP_SKIP_SET_WAKE | IRQCHIP_IMMUTABLE,
+-static struct irq_chip idt_gpio_irqchip = {
++static const struct irq_chip idt_gpio_irqchip = {
+ 	.name = "IDTGPIO",
+ 	.irq_mask = idt_gpio_mask,
+ 	.irq_ack = idt_gpio_ack,
+ 	.irq_unmask = idt_gpio_unmask,
+-	.irq_set_type = idt_gpio_irq_set_type
++	.irq_set_type = idt_gpio_irq_set_type,
++	.flags = IRQCHIP_IMMUTABLE,
 +	GPIOCHIP_IRQ_RESOURCE_HELPERS,
-+};
-+
- static int sprd_eic_probe(struct platform_device *pdev)
- {
- 	const struct sprd_eic_variant_data *pdata;
-@@ -584,6 +605,7 @@ static int sprd_eic_probe(struct platform_device *pdev)
+ };
  
- 	spin_lock_init(&sprd_eic->lock);
- 	sprd_eic->type = pdata->type;
-+	sprd_eic->dev = &pdev->dev;
+ static int idt_gpio_probe(struct platform_device *pdev)
+@@ -168,7 +173,7 @@ static int idt_gpio_probe(struct platform_device *pdev)
+ 			return parent_irq;
  
- 	sprd_eic->irq = platform_get_irq(pdev, 0);
- 	if (sprd_eic->irq < 0)
-@@ -626,15 +648,8 @@ static int sprd_eic_probe(struct platform_device *pdev)
- 		break;
- 	}
- 
--	sprd_eic->intc.name = dev_name(&pdev->dev);
--	sprd_eic->intc.irq_ack = sprd_eic_irq_ack;
--	sprd_eic->intc.irq_mask = sprd_eic_irq_mask;
--	sprd_eic->intc.irq_unmask = sprd_eic_irq_unmask;
--	sprd_eic->intc.irq_set_type = sprd_eic_irq_set_type;
--	sprd_eic->intc.flags = IRQCHIP_SKIP_SET_WAKE;
--
- 	irq = &sprd_eic->chip.irq;
--	irq->chip = &sprd_eic->intc;
-+	gpio_irq_chip_set_chip(irq, &sprd_eic_irq_chip);
- 	irq->handler = handle_bad_irq;
- 	irq->default_type = IRQ_TYPE_NONE;
- 	irq->parent_handler = sprd_eic_irq_handler;
+ 		girq = &ctrl->gc.irq;
+-		girq->chip = &idt_gpio_irqchip;
++		gpio_irq_chip_set_chip(girq, &idt_gpio_irqchip);
+ 		girq->init_hw = idt_gpio_irq_init_hw;
+ 		girq->parent_handler = idt_gpio_dispatch;
+ 		girq->num_parents = 1;
 
 -- 
 2.34.1
