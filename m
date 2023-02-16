@@ -1,70 +1,123 @@
 From: Linus Walleij <linus.walleij@linaro.org>
-Date: Thu, 16 Feb 2023 10:37:01 +0100
-Subject: [PATCH 00/17] Mass convert GPIO IRQ chips to be immutable
-Message-ID: <20230215-immutable-chips-v1-0-51a8f224a5d0@linaro.org>
+Date: Thu, 16 Feb 2023 10:37:04 +0100
+Subject: [PATCH 03/17] gpio: aspeed: Convert to immutable irq_chip
+In-Reply-To: <20230215-immutable-chips-v1-0-51a8f224a5d0@linaro.org>
+References: <20230215-immutable-chips-v1-0-51a8f224a5d0@linaro.org>
+Message-ID: <20230215-immutable-chips-v1-3-51a8f224a5d0@linaro.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-We are getting tired of these irq_chips not getting converted
-to be immutable, so I just take out the big hammer and fix
-some that I deem not too complex as best I can.
+Convert the driver to immutable irq-chip with a bit of
+intuition.
 
-I stopped after doing some, I will take another sweep at some
-point I guess.
-
-Please test if you have the hardware. The OMAP patch especially,
-hi Tony ;)
-
-I don't expect this to be merged to v6.3, but as Bartosz may
-feel it is fixes material they are of course fine to trickle
-in on a case-by-case basis.
-
+Cc: Marc Zyngier <maz@kernel.org>
 Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
 ---
-Linus Walleij (17):
-      gpio: altera: Convert to immutable irq_chip
-      gpio: adnp: Convert to immutable irq_chip
-      gpio: aspeed: Convert to immutable irq_chip
-      gpio: aspeed-sgpio: Convert to immutable irq_chip
-      gpio: ath79: Convert to immutable irq_chip
-      gpio: cadence: Convert to immutable irq_chip
-      gpio: eic_sprd: Convert to immutable irq_chip
-      gpio: hisi: Convert to immutable irq_chip
-      gpio: hlwd: Convert to immutable irq_chip
-      gpio: idt3243x: Convert to immutable irq_chip
-      gpio: msc313: Convert to immutable irq_chip
-      gpio: mlxbf2: Convert to immutable irq_chip
-      gpio: max732x: Convert to immutable irq_chip
-      gpio: omap: Drop irq_base
-      gpio: omap: Convert to immutable irq_chip
-      gpio: pci-idio-16: Convert to immutable irq_chip
-      gpio: pcie-idio-24: Convert to immutable irq_chip
+ drivers/gpio/gpio-aspeed.c | 44 ++++++++++++++++++++++++++++++++++++++------
+ 1 file changed, 38 insertions(+), 6 deletions(-)
 
- drivers/gpio/gpio-adnp.c         |  9 ++++-
- drivers/gpio/gpio-altera.c       | 25 +++++++-----
- drivers/gpio/gpio-aspeed-sgpio.c | 44 +++++++++++++++++----
- drivers/gpio/gpio-aspeed.c       | 44 ++++++++++++++++++---
- drivers/gpio/gpio-ath79.c        |  8 +++-
- drivers/gpio/gpio-cadence.c      | 10 +++--
- drivers/gpio/gpio-eic-sprd.c     | 33 +++++++++++-----
- drivers/gpio/gpio-hisi.c         | 25 +++++++-----
- drivers/gpio/gpio-hlwd.c         | 33 ++++++++++++----
- drivers/gpio/gpio-idt3243x.c     | 11 ++++--
- drivers/gpio/gpio-max732x.c      |  8 +++-
- drivers/gpio/gpio-mlxbf2.c       | 32 ++++++++++++----
- drivers/gpio/gpio-msc313.c       | 26 +++++++++++--
- drivers/gpio/gpio-omap.c         | 83 ++++++++++++++++++++++------------------
- drivers/gpio/gpio-pci-idio-16.c  | 12 ++++--
- drivers/gpio/gpio-pcie-idio-24.c | 12 ++++--
- 16 files changed, 297 insertions(+), 118 deletions(-)
----
-base-commit: 1b929c02afd37871d5afb9d498426f83432e71c2
-change-id: 20230215-immutable-chips-762922277f1e
+diff --git a/drivers/gpio/gpio-aspeed.c b/drivers/gpio/gpio-aspeed.c
+index a94da80d3a95..9c4852de2733 100644
+--- a/drivers/gpio/gpio-aspeed.c
++++ b/drivers/gpio/gpio-aspeed.c
+@@ -15,6 +15,7 @@
+ #include <linux/module.h>
+ #include <linux/pinctrl/consumer.h>
+ #include <linux/platform_device.h>
++#include <linux/seq_file.h>
+ #include <linux/spinlock.h>
+ #include <linux/string.h>
+ 
+@@ -53,7 +54,7 @@ struct aspeed_gpio_config {
+  */
+ struct aspeed_gpio {
+ 	struct gpio_chip chip;
+-	struct irq_chip irqc;
++	struct device *dev;
+ 	raw_spinlock_t lock;
+ 	void __iomem *base;
+ 	int irq;
+@@ -566,6 +567,10 @@ static void aspeed_gpio_irq_set_mask(struct irq_data *d, bool set)
+ 
+ 	addr = bank_reg(gpio, bank, reg_irq_enable);
+ 
++	/* Unmasking the IRQ */
++	if (set)
++		gpiochip_enable_irq(&gpio->chip, irqd_to_hwirq(d));
++
+ 	raw_spin_lock_irqsave(&gpio->lock, flags);
+ 	copro = aspeed_gpio_copro_request(gpio, offset);
+ 
+@@ -579,6 +584,10 @@ static void aspeed_gpio_irq_set_mask(struct irq_data *d, bool set)
+ 	if (copro)
+ 		aspeed_gpio_copro_release(gpio, offset);
+ 	raw_spin_unlock_irqrestore(&gpio->lock, flags);
++
++	/* Masking the IRQ */
++	if (!set)
++		gpiochip_disable_irq(&gpio->chip, irqd_to_hwirq(d));
+ }
+ 
+ static void aspeed_gpio_irq_mask(struct irq_data *d)
+@@ -1080,6 +1089,30 @@ int aspeed_gpio_copro_release_gpio(struct gpio_desc *desc)
+ }
+ EXPORT_SYMBOL_GPL(aspeed_gpio_copro_release_gpio);
+ 
++static void aspeed_gpio_irq_print_chip(struct irq_data *d, struct seq_file *p)
++{
++	const struct aspeed_gpio_bank *bank;
++	struct aspeed_gpio *gpio;
++	u32 bit;
++	int rc, offset;
++
++	rc = irqd_to_aspeed_gpio_data(d, &gpio, &bank, &bit, &offset);
++	if (rc)
++		return;
++
++	seq_printf(p, dev_name(gpio->dev));
++}
++
++static const struct irq_chip aspeed_gpio_irq_chip = {
++	.irq_ack = aspeed_gpio_irq_ack,
++	.irq_mask = aspeed_gpio_irq_mask,
++	.irq_unmask = aspeed_gpio_irq_unmask,
++	.irq_set_type = aspeed_gpio_set_type,
++	.irq_print_chip = aspeed_gpio_irq_print_chip,
++	.flags = IRQCHIP_IMMUTABLE,
++	GPIOCHIP_IRQ_RESOURCE_HELPERS,
++};
++
+ /*
+  * Any banks not specified in a struct aspeed_bank_props array are assumed to
+  * have the properties:
+@@ -1149,6 +1182,8 @@ static int __init aspeed_gpio_probe(struct platform_device *pdev)
+ 	if (IS_ERR(gpio->base))
+ 		return PTR_ERR(gpio->base);
+ 
++	gpio->dev = &pdev->dev;
++
+ 	raw_spin_lock_init(&gpio->lock);
+ 
+ 	gpio_id = of_match_node(aspeed_gpio_of_table, pdev->dev.of_node);
+@@ -1208,12 +1243,9 @@ static int __init aspeed_gpio_probe(struct platform_device *pdev)
+ 
+ 		gpio->irq = rc;
+ 		girq = &gpio->chip.irq;
+-		girq->chip = &gpio->irqc;
++		gpio_irq_chip_set_chip(girq, &aspeed_gpio_irq_chip);
+ 		girq->chip->name = dev_name(&pdev->dev);
+-		girq->chip->irq_ack = aspeed_gpio_irq_ack;
+-		girq->chip->irq_mask = aspeed_gpio_irq_mask;
+-		girq->chip->irq_unmask = aspeed_gpio_irq_unmask;
+-		girq->chip->irq_set_type = aspeed_gpio_set_type;
++
+ 		girq->parent_handler = aspeed_gpio_irq_handler;
+ 		girq->num_parents = 1;
+ 		girq->parents = devm_kcalloc(&pdev->dev, 1,
 
-Best regards,
 -- 
-Linus Walleij <linus.walleij@linaro.org>
+2.34.1
 
