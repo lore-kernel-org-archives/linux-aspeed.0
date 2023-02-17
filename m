@@ -1,129 +1,94 @@
-From: Cixi Geng <gengcixi@gmail.com>
-Date: Fri, 17 Feb 2023 11:36:38 +0800
-Subject: [PATCH 07/17] gpio: eic_sprd: Convert to immutable irq_chip
-In-Reply-To: <20230215-immutable-chips-v1-7-51a8f224a5d0@linaro.org>
-References: <20230215-immutable-chips-v1-0-51a8f224a5d0@linaro.org> <20230215-immutable-chips-v1-7-51a8f224a5d0@linaro.org>
-Message-ID: <CAF12kFt3SPJppcwPxE9F2mTKaMKkN_Nvw1J8_=L1U5OOEgxwJA@mail.gmail.com>
+From: Chanh Nguyen <chanh@os.amperecomputing.com>
+Date: Fri, 17 Feb 2023 17:21:22 +0700
+Subject: [PATCH] ARM: dts: aspeed: mtmitchell: Enable NCSI
+Message-ID: <20230217102122.16547-1-chanh@os.amperecomputing.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Linus Walleij <linus.walleij@linaro.org> ?2023?2?16??? 17:41???
+Support the mac3 (RGMII4) as an NC-SI stack instead of an MDIO PHY.
 
-> Convert the driver to immutable irq-chip with a bit of
-> intuition.
->
-> Cc: Marc Zyngier <maz@kernel.org>
-> Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
-> ---
->  drivers/gpio/gpio-eic-sprd.c | 33 ++++++++++++++++++++++++---------
->  1 file changed, 24 insertions(+), 9 deletions(-)
->
-> diff --git a/drivers/gpio/gpio-eic-sprd.c b/drivers/gpio/gpio-eic-sprd.c
-> index 8d722e026e9c..695d74ba55f0 100644
-> --- a/drivers/gpio/gpio-eic-sprd.c
-> +++ b/drivers/gpio/gpio-eic-sprd.c
->
-Hi LInus:
-this file which convert to immutable changes had included in the
-patchset[1] early.
-Thank you for your commit anyway.
-[1]
-https://lore.kernel.org/all/CAMRc=MeCCT09umHQ+T6Z6OXMedBh3UXzmQ=1PCyo1zEMr34TCw at mail.gmail.com/
+The OCP slot #0 and OCP slot #1 use a common the BMC_NCSI signal,
+so we use only one of them at the same time. The OCP slot #0 will
+be enabled by PCA9539's setting by default.
 
-@@ -11,6 +11,7 @@
->  #include <linux/module.h>
->  #include <linux/of_device.h>
->  #include <linux/platform_device.h>
-> +#include <linux/seq_file.h>
->  #include <linux/spinlock.h>
->
->  /* EIC registers definition */
-> @@ -91,7 +92,7 @@ enum sprd_eic_type {
->
->  struct sprd_eic {
->         struct gpio_chip chip;
-> -       struct irq_chip intc;
-> +       struct device *dev;
->         void __iomem *base[SPRD_EIC_MAX_BANK];
->         enum sprd_eic_type type;
->         spinlock_t lock;
-> @@ -255,6 +256,7 @@ static void sprd_eic_irq_mask(struct irq_data *data)
->         default:
->                 dev_err(chip->parent, "Unsupported EIC type.\n");
->         }
-> +       gpiochip_disable_irq(chip, irqd_to_hwirq(data));
->  }
->
->  static void sprd_eic_irq_unmask(struct irq_data *data)
-> @@ -263,6 +265,7 @@ static void sprd_eic_irq_unmask(struct irq_data *data)
->         struct sprd_eic *sprd_eic = gpiochip_get_data(chip);
->         u32 offset = irqd_to_hwirq(data);
->
-> +       gpiochip_enable_irq(chip, irqd_to_hwirq(data));
->         switch (sprd_eic->type) {
->         case SPRD_EIC_DEBOUNCE:
->                 sprd_eic_update(chip, offset, SPRD_EIC_DBNC_IE, 1);
-> @@ -564,6 +567,24 @@ static void sprd_eic_irq_handler(struct irq_desc
-> *desc)
->         chained_irq_exit(ic, desc);
->  }
->
-> +static void sprd_eic_irq_print_chip(struct irq_data *data, struct
-> seq_file *p)
-> +{
-> +       struct gpio_chip *chip = irq_data_get_irq_chip_data(data);
-> +       struct sprd_eic *sprd_eic = gpiochip_get_data(chip);
-> +
-> +       seq_printf(p, dev_name(sprd_eic->dev));
-> +}
-> +
-> +static const struct irq_chip sprd_eic_irq_chip = {
-> +       .irq_ack = sprd_eic_irq_ack,
-> +       .irq_mask = sprd_eic_irq_mask,
-> +       .irq_unmask = sprd_eic_irq_unmask,
-> +       .irq_set_type = sprd_eic_irq_set_type,
-> +       .irq_print_chip = sprd_eic_irq_print_chip,
-> +       .flags = IRQCHIP_SKIP_SET_WAKE | IRQCHIP_IMMUTABLE,
-> +       GPIOCHIP_IRQ_RESOURCE_HELPERS,
-> +};
-> +
->  static int sprd_eic_probe(struct platform_device *pdev)
->  {
->         const struct sprd_eic_variant_data *pdata;
-> @@ -584,6 +605,7 @@ static int sprd_eic_probe(struct platform_device *pdev)
->
->         spin_lock_init(&sprd_eic->lock);
->         sprd_eic->type = pdata->type;
-> +       sprd_eic->dev = &pdev->dev;
->
->         sprd_eic->irq = platform_get_irq(pdev, 0);
->         if (sprd_eic->irq < 0)
-> @@ -626,15 +648,8 @@ static int sprd_eic_probe(struct platform_device
-> *pdev)
->                 break;
->         }
->
-> -       sprd_eic->intc.name = dev_name(&pdev->dev);
-> -       sprd_eic->intc.irq_ack = sprd_eic_irq_ack;
-> -       sprd_eic->intc.irq_mask = sprd_eic_irq_mask;
-> -       sprd_eic->intc.irq_unmask = sprd_eic_irq_unmask;
-> -       sprd_eic->intc.irq_set_type = sprd_eic_irq_set_type;
-> -       sprd_eic->intc.flags = IRQCHIP_SKIP_SET_WAKE;
-> -
->         irq = &sprd_eic->chip.irq;
-> -       irq->chip = &sprd_eic->intc;
-> +       gpio_irq_chip_set_chip(irq, &sprd_eic_irq_chip);
->         irq->handler = handle_bad_irq;
->         irq->default_type = IRQ_TYPE_NONE;
->         irq->parent_handler = sprd_eic_irq_handler;
->
-> --
-> 2.34.1
->
->
--------------- next part --------------
-An HTML attachment was scrubbed...
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20230217/a8e77d04/attachment-0001.htm>
+Also, enable the OCP Auxiliary Power during booting.
+
+Signed-off-by: Chanh Nguyen <chanh@os.amperecomputing.com>
+---
+ .../boot/dts/aspeed-bmc-ampere-mtmitchell.dts | 37 ++++++++++++++++++-
+ 1 file changed, 36 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/boot/dts/aspeed-bmc-ampere-mtmitchell.dts b/arch/arm/boot/dts/aspeed-bmc-ampere-mtmitchell.dts
+index 4b91600eaf62..e8a6b1f08d6a 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-ampere-mtmitchell.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-ampere-mtmitchell.dts
+@@ -251,6 +251,14 @@
+ 	pinctrl-0 = <&pinctrl_rgmii1_default>;
+ };
+ 
++&mac3 {
++	status = "okay";
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_rmii4_default>;
++	clock-names = "MACCLK", "RCLK";
++	use-ncsi;
++};
++
+ &fmc {
+ 	status = "okay";
+ 	flash at 0 {
+@@ -439,6 +447,26 @@
+ 	status = "okay";
+ };
+ 
++&i2c8 {
++	status = "okay";
++
++	pca9539 at 77 {
++		compatible = "nxp,pca9539";
++		reg = <0x77>;
++		gpio-controller;
++		#address-cells = <1>;
++		#size-cells = <0>;
++		#gpio-cells = <2>;
++
++		bmc-ocp0-en-hog {
++			gpio-hog;
++			gpios = <7 GPIO_ACTIVE_LOW>;
++			output-high;
++			line-name = "bmc-ocp0-en-n";
++		};
++	};
++};
++
+ &i2c9 {
+ 	status = "okay";
+ };
+@@ -530,13 +558,20 @@
+ 	/*V0-V7*/	"s0-hightemp-n","s0-fault-alert","s0-sys-auth-failure-n",
+ 			"host0-reboot-ack-n","host0-ready","host0-shd-req-n",
+ 			"host0-shd-ack-n","s0-overtemp-n",
+-	/*W0-W7*/	"ocp-aux-pwren","ocp-main-pwren","ocp-pgood","",
++	/*W0-W7*/	"","ocp-main-pwren","ocp-pgood","",
+ 			"bmc-ok","bmc-ready","spi0-program-sel","spi0-backup-sel",
+ 	/*X0-X7*/	"i2c-backup-sel","s1-fault-alert","s1-fw-boot-ok",
+ 			"s1-hightemp-n","s0-spi-auth-fail-n","s1-sys-auth-failure-n",
+ 			"s1-overtemp-n","s1-spi-auth-fail-n",
+ 	/*Y0-Y7*/	"","","","","","","","host0-special-boot",
+ 	/*Z0-Z7*/	"reset-button","ps0-pgood","ps1-pgood","","","","","";
++
++	ocp-aux-pwren-hog {
++		gpio-hog;
++		gpios = <ASPEED_GPIO(W, 0) GPIO_ACTIVE_HIGH>;
++		output-high;
++		line-name = "ocp-aux-pwren";
++	};
+ };
+ 
+ &gpio1 {
+-- 
+2.17.1
+
