@@ -1,103 +1,92 @@
-From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Date: Fri, 17 Feb 2023 09:37:20 +0100
-Subject: [PATCH v4 2/3] dt-bindings: i2c-ast2600: Add support for AST2600
- i2C driver
-In-Reply-To: <TYZPR06MB5274B15C35A6030CB49BFD23F2A09@TYZPR06MB5274.apcprd06.prod.outlook.com>
-References: <20230201103359.1742140-1-ryan_chen@aspeedtech.com>
- <20230201103359.1742140-3-ryan_chen@aspeedtech.com>
- <b0f55494-3a17-4d87-7b8f-5b078503cb53@linaro.org>
- <SEZPR06MB52690A1D06F3CFEAAF1FDBDEF2A39@SEZPR06MB5269.apcprd06.prod.outlook.com>
- <b58fad13-12d5-346b-9452-d345c7bf5327@linaro.org>
- <TYZPR06MB5274C8D759C5C762C12A1CE9F2A09@TYZPR06MB5274.apcprd06.prod.outlook.com>
- <c5aa358d-6fb8-9d4d-eef7-d3a8268229e8@linaro.org>
- <TYZPR06MB5274B15C35A6030CB49BFD23F2A09@TYZPR06MB5274.apcprd06.prod.outlook.com>
-Message-ID: <bb73393c-d642-0128-9e63-1a751f090a85@linaro.org>
+From: Jeremy Kerr <jk@codeconstruct.com.au>
+Date: Fri, 17 Feb 2023 17:43:04 +0800
+Subject: [PATCH 2/4] i3c: dw: Add platform operations
+In-Reply-To: <9b374250-3afc-6277-d1c6-0dac1c682bca@sifive.com>
+References: <cover.1676532146.git.jk@codeconstruct.com.au>
+	 <eb90bc9ee9f72efc2012abce3e4e50186552e194.1676532146.git.jk@codeconstruct.com.au>
+	 <9b374250-3afc-6277-d1c6-0dac1c682bca@sifive.com>
+Message-ID: <578ac18169e21c13445d29d3c99de04e9fc6888e.camel@codeconstruct.com.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 16/02/2023 10:26, Ryan Chen wrote:
-> Hello Krzysztof
+Hi Ben,
+
+Thanks for taking a look at the patch. My responses inline (just
+re-ordered, simple stuff first)
+
+> > ? struct dw_i3c_i2c_dev_data {
+> > @@ -612,6 +623,12 @@ static int dw_i3c_master_bus_init(struct i3c_master_controller *m)
+> > ????????u32 thld_ctrl;
+> > ????????int ret;
+> > ? 
+> > +???????if (master->platform_ops && master->platform_ops->init) {
+> > +???????????????ret = master->platform_ops->init(master);
+> > +???????????????if (ret)
+> > +???????????????????????return ret;
+> > +???????}
 > 
->> -----Original Message-----
->> From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
->> Sent: Thursday, February 16, 2023 5:22 PM
->> To: Ryan Chen <ryan_chen@aspeedtech.com>; Rob Herring
->> <robh+dt@kernel.org>; Krzysztof Kozlowski
->> <krzysztof.kozlowski+dt@linaro.org>; Joel Stanley <joel@jms.id.au>; Andrew
->> Jeffery <andrew@aj.id.au>; Philipp Zabel <p.zabel@pengutronix.de>;
->> openbmc at lists.ozlabs.org; linux-arm-kernel at lists.infradead.org;
->> linux-aspeed at lists.ozlabs.org; linux-kernel at vger.kernel.org
->> Subject: Re: [PATCH v4 2/3] dt-bindings: i2c-ast2600: Add support for AST2600
->> i2C driver
->>
->> On 16/02/2023 10:20, Ryan Chen wrote:
->>> Hello Krzysztof
->>>
->>>> -----Original Message-----
->>>> From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
->>>> Sent: Thursday, February 16, 2023 4:18 AM
->>>> To: Ryan Chen <ryan_chen@aspeedtech.com>; Rob Herring
->>>> <robh+dt@kernel.org>; Krzysztof Kozlowski
->>>> <krzysztof.kozlowski+dt@linaro.org>; Joel Stanley <joel@jms.id.au>;
->>>> Andrew Jeffery <andrew@aj.id.au>; Philipp Zabel
->>>> <p.zabel@pengutronix.de>; openbmc at lists.ozlabs.org;
->>>> linux-arm-kernel at lists.infradead.org;
->>>> linux-aspeed at lists.ozlabs.org; linux-kernel at vger.kernel.org
->>>> Subject: Re: [PATCH v4 2/3] dt-bindings: i2c-ast2600: Add support for
->>>> AST2600 i2C driver
->>>>
->>>> On 15/02/2023 06:43, Ryan Chen wrote:
->>>>>>> +  - $ref: /schemas/i2c/i2c-controller.yaml#
->>>>>>> +
->>>>>>> +properties:
->>>>>>> +  compatible:
->>>>>>> +    enum:
->>>>>>> +      - aspeed,ast2600-i2c
->>>>>>
->>>>>> NAK. It's already there. Please do not waste our time in submitting
->>>>>> duplicated drivers.
->>>>>
->>>>> It is not duplicated, as my description in cover " This series add
->>>>> AST2600 i2c
->>>> new register set driver"
->>>>> So, this will be different driver compatible.
->>>>> The original compatible is
->>>>>       - aspeed,ast2400-i2c-bus
->>>>>       - aspeed,ast2500-i2c-bus
->>>>>       - aspeed,ast2600-i2c-bus
->>>>> So the new register set compatible is "- aspeed,ast2600-i2c", remove
->> "bus".
->>>>
->>>> Bindings are documenting hardware, so I claim - we already have this
->>>> hardware described and this is duplicated. Otherwise - what are these
->>>> two I2C controllers and what are the differences? Why they do not
->>>> have really different name? Bus looks more like a mistake than a
->> differentiating name.
->>> For misunderstanding, or mistaken.
->>> I purpose to be aspeed,ast2600-i2cv2, will it more clear way ?
->>
->> I don't know. I still did not get answers. I asked here several questions.
-> Those are different i2c controller, as I description in cover letter.
+> I'd rather have a "default" set of ops than have all this checking for
+> NULL pointers all over the place.
 
-The cover letter does not explain here anything. It barely mentions "new
-register set" and "separate register set". This is really short, so
-without proper explanations you will get all these questions. Are they
-compatible? Do they overlap? Are they completely different? If so, why
-datasheet uses same name for them? So many questions but cover letter is
-basically two sentences and here:
+Yep, that's a better structure, changed for v2.
 
-> The i2c new register mode, there have two separate slave/master register.
-> And different register with old register.
+> > @@ -1181,6 +1205,18 @@ static int dw_i3c_probe(struct platform_device *pdev)
+> > ????????master->maxdevs = ret >> 16;
+> > ????????master->free_pos = GENMASK(master->maxdevs - 1, 0);
+> > ? 
+> > +???????/* match any platform-specific ops */
+> > +???????match = of_match_node(dw_i3c_master_of_match, pdev->dev.of_node);
+> > +???????if (match && match->data)
+> > +???????????????master->platform_ops = match->data;
+> 
+> I'm sure there's a of_device_get_match_data() which would have
+> both removed hte need to move the match table around and the
+> call to of_match_node().
 
-you repeat the same.
+That's the one I was looking for! Thanks for the pointer, I have updated
+in v2.
 
-> So now, avoid misunderstanding, or mistaken.
-> I purpose to be aspeed,ast2600-i2cv2.
+> > @@ -241,6 +241,17 @@ struct dw_i3c_master {
+> > ????????char version[5];
+> > ????????char type[5];
+> > ????????u8 addrs[MAX_DEVS];
+> > +
+> > +???????/* platform-specific data */
+> > +???????const struct dw_i3c_platform_ops *platform_ops;
+> > +???????union {
+> > +???????} pdata;
+> > +
+> > +};
+> > +
+> > +struct dw_i3c_platform_ops {
+> > +???????int (*probe)(struct dw_i3c_master *i3c, struct platform_device *pdev);
+> > +???????int (*init)(struct dw_i3c_master *i3c);
+> > ? };
+> 
+> Given the comment below having this and the main probe defined in a 
+> header so users can just call in and we don't have to change the
+> main code here every time someone comes up with their own
+> special way of handing this?
+
+I'm not sure I 100% understand the intention here - is it that we'd
+split the platform-specific code into entirely new drivers, and have
+those call into dw_i3c_probe() (presumably doing a bit of custom init
+either before or after that call)?
+
+If so: I think the platform support should stay fairly minimal, so I'm
+not sure that warrants a new driver for each instance. In the ast2600
+case it's just a couple of extra reg writes in the i3c init path. I'd be
+reluctant to split that out completely at this stage - but if this does
+grow, we can certainly reconsider.
+
+Also, I'd like to allow for the case where the platform-specific parts
+may access the fields of struct dw_i3c_master; with this approach we
+don't need to expose that struct outside of the single driver.
+
+Cheers,
 
 
-Best regards,
-Krzysztof
-
+Jeremy
