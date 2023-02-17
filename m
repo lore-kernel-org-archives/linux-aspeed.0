@@ -1,127 +1,129 @@
-From: Ben Dooks <ben.dooks@sifive.com>
-Date: Thu, 16 Feb 2023 15:04:05 +0000
-Subject: [PATCH 2/4] i3c: dw: Add platform operations
-In-Reply-To: <eb90bc9ee9f72efc2012abce3e4e50186552e194.1676532146.git.jk@codeconstruct.com.au>
-References: <cover.1676532146.git.jk@codeconstruct.com.au>
- <eb90bc9ee9f72efc2012abce3e4e50186552e194.1676532146.git.jk@codeconstruct.com.au>
-Message-ID: <9b374250-3afc-6277-d1c6-0dac1c682bca@sifive.com>
+From: Cixi Geng <gengcixi@gmail.com>
+Date: Fri, 17 Feb 2023 11:36:38 +0800
+Subject: [PATCH 07/17] gpio: eic_sprd: Convert to immutable irq_chip
+In-Reply-To: <20230215-immutable-chips-v1-7-51a8f224a5d0@linaro.org>
+References: <20230215-immutable-chips-v1-0-51a8f224a5d0@linaro.org> <20230215-immutable-chips-v1-7-51a8f224a5d0@linaro.org>
+Message-ID: <CAF12kFt3SPJppcwPxE9F2mTKaMKkN_Nvw1J8_=L1U5OOEgxwJA@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 16/02/2023 07:41, Jeremy Kerr wrote:
-> The dw i3c core can be integrated into various SoC devices. Platforms
-> that use this core may need a little configuration that is specific to
-> that platform.
-> 
-> Add a little infrastructure to allow platform-specific behaviour: a bit
-> of data on struct dw_i3c_master, and two hooks to the probe and init
-> calls to enable this.
-> 
-> A future change will add new platform support that uses these hooks.
-> 
-> Signed-off-by: Jeremy Kerr <jk@codeconstruct.com.au>
+Linus Walleij <linus.walleij@linaro.org> ?2023?2?16??? 17:41???
+
+> Convert the driver to immutable irq-chip with a bit of
+> intuition.
+>
+> Cc: Marc Zyngier <maz@kernel.org>
+> Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
 > ---
->   drivers/i3c/master/dw-i3c-master.c | 42 +++++++++++++++++++++++++-----
->   1 file changed, 36 insertions(+), 6 deletions(-)
-> 
-> diff --git a/drivers/i3c/master/dw-i3c-master.c b/drivers/i3c/master/dw-i3c-master.c
-> index d73d57362b3b..49b891449222 100644
-> --- a/drivers/i3c/master/dw-i3c-master.c
-> +++ b/drivers/i3c/master/dw-i3c-master.c
-> @@ -241,6 +241,17 @@ struct dw_i3c_master {
->   	char version[5];
->   	char type[5];
->   	u8 addrs[MAX_DEVS];
+>  drivers/gpio/gpio-eic-sprd.c | 33 ++++++++++++++++++++++++---------
+>  1 file changed, 24 insertions(+), 9 deletions(-)
+>
+> diff --git a/drivers/gpio/gpio-eic-sprd.c b/drivers/gpio/gpio-eic-sprd.c
+> index 8d722e026e9c..695d74ba55f0 100644
+> --- a/drivers/gpio/gpio-eic-sprd.c
+> +++ b/drivers/gpio/gpio-eic-sprd.c
+>
+Hi LInus:
+this file which convert to immutable changes had included in the
+patchset[1] early.
+Thank you for your commit anyway.
+[1]
+https://lore.kernel.org/all/CAMRc=MeCCT09umHQ+T6Z6OXMedBh3UXzmQ=1PCyo1zEMr34TCw at mail.gmail.com/
+
+@@ -11,6 +11,7 @@
+>  #include <linux/module.h>
+>  #include <linux/of_device.h>
+>  #include <linux/platform_device.h>
+> +#include <linux/seq_file.h>
+>  #include <linux/spinlock.h>
+>
+>  /* EIC registers definition */
+> @@ -91,7 +92,7 @@ enum sprd_eic_type {
+>
+>  struct sprd_eic {
+>         struct gpio_chip chip;
+> -       struct irq_chip intc;
+> +       struct device *dev;
+>         void __iomem *base[SPRD_EIC_MAX_BANK];
+>         enum sprd_eic_type type;
+>         spinlock_t lock;
+> @@ -255,6 +256,7 @@ static void sprd_eic_irq_mask(struct irq_data *data)
+>         default:
+>                 dev_err(chip->parent, "Unsupported EIC type.\n");
+>         }
+> +       gpiochip_disable_irq(chip, irqd_to_hwirq(data));
+>  }
+>
+>  static void sprd_eic_irq_unmask(struct irq_data *data)
+> @@ -263,6 +265,7 @@ static void sprd_eic_irq_unmask(struct irq_data *data)
+>         struct sprd_eic *sprd_eic = gpiochip_get_data(chip);
+>         u32 offset = irqd_to_hwirq(data);
+>
+> +       gpiochip_enable_irq(chip, irqd_to_hwirq(data));
+>         switch (sprd_eic->type) {
+>         case SPRD_EIC_DEBOUNCE:
+>                 sprd_eic_update(chip, offset, SPRD_EIC_DBNC_IE, 1);
+> @@ -564,6 +567,24 @@ static void sprd_eic_irq_handler(struct irq_desc
+> *desc)
+>         chained_irq_exit(ic, desc);
+>  }
+>
+> +static void sprd_eic_irq_print_chip(struct irq_data *data, struct
+> seq_file *p)
+> +{
+> +       struct gpio_chip *chip = irq_data_get_irq_chip_data(data);
+> +       struct sprd_eic *sprd_eic = gpiochip_get_data(chip);
 > +
-> +	/* platform-specific data */
-> +	const struct dw_i3c_platform_ops *platform_ops;
-> +	union {
-> +	} pdata;
+> +       seq_printf(p, dev_name(sprd_eic->dev));
+> +}
 > +
+> +static const struct irq_chip sprd_eic_irq_chip = {
+> +       .irq_ack = sprd_eic_irq_ack,
+> +       .irq_mask = sprd_eic_irq_mask,
+> +       .irq_unmask = sprd_eic_irq_unmask,
+> +       .irq_set_type = sprd_eic_irq_set_type,
+> +       .irq_print_chip = sprd_eic_irq_print_chip,
+> +       .flags = IRQCHIP_SKIP_SET_WAKE | IRQCHIP_IMMUTABLE,
+> +       GPIOCHIP_IRQ_RESOURCE_HELPERS,
 > +};
 > +
-> +struct dw_i3c_platform_ops {
-> +	int (*probe)(struct dw_i3c_master *i3c, struct platform_device *pdev);
-> +	int (*init)(struct dw_i3c_master *i3c);
->   };
-
-Given the comment below having this and the main probe defined in a 
-header so users can just call in and we don't have to change the
-main code here every time someone comes up with their own
-special way of handing this?
-
->   struct dw_i3c_i2c_dev_data {
-> @@ -612,6 +623,12 @@ static int dw_i3c_master_bus_init(struct i3c_master_controller *m)
->   	u32 thld_ctrl;
->   	int ret;
->   
-> +	if (master->platform_ops && master->platform_ops->init) {
-> +		ret = master->platform_ops->init(master);
-> +		if (ret)
-> +			return ret;
-> +	}
-
-I'd rather have a "default" set of ops than have all this checking for
-NULL pointers all over the place.
-
-> +
->   	switch (bus->mode) {
->   	case I3C_BUS_MODE_MIXED_FAST:
->   	case I3C_BUS_MODE_MIXED_LIMITED:
-> @@ -1128,8 +1145,15 @@ static const struct i3c_master_controller_ops dw_mipi_i3c_ops = {
->   	.i2c_xfers = dw_i3c_master_i2c_xfers,
->   };
->   
-> +static const struct of_device_id dw_i3c_master_of_match[] = {
-> +	{ .compatible = "snps,dw-i3c-master-1.00a", },
-> +	{},
-> +};
-> +MODULE_DEVICE_TABLE(of, dw_i3c_master_of_match);
-> +
->   static int dw_i3c_probe(struct platform_device *pdev)
->   {
-> +	const struct of_device_id *match;
->   	struct dw_i3c_master *master;
->   	int ret, irq;
->   
-> @@ -1181,6 +1205,18 @@ static int dw_i3c_probe(struct platform_device *pdev)
->   	master->maxdevs = ret >> 16;
->   	master->free_pos = GENMASK(master->maxdevs - 1, 0);
->   
-> +	/* match any platform-specific ops */
-> +	match = of_match_node(dw_i3c_master_of_match, pdev->dev.of_node);
-> +	if (match && match->data)
-> +		master->platform_ops = match->data;
-
-I'm sure there's a of_device_get_match_data() which would have
-both removed hte need to move the match table around and the
-call to of_match_node().
-
-> +
-> +	/* platform-specific probe */
-> +	if (master->platform_ops && master->platform_ops->probe) {
-> +		ret = master->platform_ops->probe(master, pdev);
-> +		if (ret)
-> +			goto err_assert_rst;
-> +	}
-> +
->   	ret = i3c_master_register(&master->base, &pdev->dev,
->   				  &dw_mipi_i3c_ops, false);
->   	if (ret)
-> @@ -1213,12 +1249,6 @@ static int dw_i3c_remove(struct platform_device *pdev)
->   	return 0;
->   }
->   
-> -static const struct of_device_id dw_i3c_master_of_match[] = {
-> -	{ .compatible = "snps,dw-i3c-master-1.00a", },
-> -	{},
-> -};
-> -MODULE_DEVICE_TABLE(of, dw_i3c_master_of_match);
+>  static int sprd_eic_probe(struct platform_device *pdev)
+>  {
+>         const struct sprd_eic_variant_data *pdata;
+> @@ -584,6 +605,7 @@ static int sprd_eic_probe(struct platform_device *pdev)
+>
+>         spin_lock_init(&sprd_eic->lock);
+>         sprd_eic->type = pdata->type;
+> +       sprd_eic->dev = &pdev->dev;
+>
+>         sprd_eic->irq = platform_get_irq(pdev, 0);
+>         if (sprd_eic->irq < 0)
+> @@ -626,15 +648,8 @@ static int sprd_eic_probe(struct platform_device
+> *pdev)
+>                 break;
+>         }
+>
+> -       sprd_eic->intc.name = dev_name(&pdev->dev);
+> -       sprd_eic->intc.irq_ack = sprd_eic_irq_ack;
+> -       sprd_eic->intc.irq_mask = sprd_eic_irq_mask;
+> -       sprd_eic->intc.irq_unmask = sprd_eic_irq_unmask;
+> -       sprd_eic->intc.irq_set_type = sprd_eic_irq_set_type;
+> -       sprd_eic->intc.flags = IRQCHIP_SKIP_SET_WAKE;
 > -
->   static struct platform_driver dw_i3c_driver = {
->   	.probe = dw_i3c_probe,
->   	.remove = dw_i3c_remove,
-
+>         irq = &sprd_eic->chip.irq;
+> -       irq->chip = &sprd_eic->intc;
+> +       gpio_irq_chip_set_chip(irq, &sprd_eic_irq_chip);
+>         irq->handler = handle_bad_irq;
+>         irq->default_type = IRQ_TYPE_NONE;
+>         irq->parent_handler = sprd_eic_irq_handler;
+>
+> --
+> 2.34.1
+>
+>
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20230217/a8e77d04/attachment-0001.htm>
