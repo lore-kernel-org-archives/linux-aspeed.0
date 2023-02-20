@@ -1,104 +1,113 @@
-From: Chanh Nguyen <chanh@os.amperecomputing.com>
-Date: Sun, 19 Feb 2023 00:10:02 +0700
-Subject: [PATCH] ARM: dts: aspeed: mtjade, mtmitchell: Add OCP device temperature sensor
-Message-ID: <20230218171002.8725-1-chanh@os.amperecomputing.com>
+From: Ryan Chen <ryan_chen@aspeedtech.com>
+Date: Mon, 20 Feb 2023 14:17:44 +0800
+Subject: [PATCH v5 1/2] dt-bindings: i2c: Add support for ASPEED i2Cv2
+In-Reply-To: <20230220061745.1973981-1-ryan_chen@aspeedtech.com>
+References: <20230220061745.1973981-1-ryan_chen@aspeedtech.com>
+Message-ID: <20230220061745.1973981-2-ryan_chen@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Define an I2C alias port from I2C Switch 0x70 at I2C5.
-Add the OCP device temperature sensor via I2C alias port
-as a tmp421 sensor.
+AST2600 support new register set for I2Cv2 controller, add bindings
+document to support driver of i2cv2 new register mode controller.
 
-Signed-off-by: Chanh Nguyen <chanh@os.amperecomputing.com>
+Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
 ---
- .../arm/boot/dts/aspeed-bmc-ampere-mtjade.dts | 16 ++++++++++
- .../boot/dts/aspeed-bmc-ampere-mtmitchell.dts | 29 +++++++++++++++++++
- 2 files changed, 45 insertions(+)
+ .../devicetree/bindings/i2c/aspeed,i2cv2.yaml | 83 +++++++++++++++++++
+ 1 file changed, 83 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/i2c/aspeed,i2cv2.yaml
 
-diff --git a/arch/arm/boot/dts/aspeed-bmc-ampere-mtjade.dts b/arch/arm/boot/dts/aspeed-bmc-ampere-mtjade.dts
-index 0a51d2e32fab..b93339ed61c0 100644
---- a/arch/arm/boot/dts/aspeed-bmc-ampere-mtjade.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-ampere-mtjade.dts
-@@ -49,6 +49,11 @@
- 		 */
- 		i2c80 = &nvme_m2_0;
- 		i2c81 = &nvme_m2_1;
+diff --git a/Documentation/devicetree/bindings/i2c/aspeed,i2cv2.yaml b/Documentation/devicetree/bindings/i2c/aspeed,i2cv2.yaml
+new file mode 100644
+index 000000000000..913fb45d5fbe
+--- /dev/null
++++ b/Documentation/devicetree/bindings/i2c/aspeed,i2cv2.yaml
+@@ -0,0 +1,83 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/i2c/aspeed,i2cv2.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
 +
-+		/*
-+		 *  i2c bus 82 assigned to OCP slot
-+		 */
-+		i2c82 = &ocpslot;
- 	};
- 
- 	chosen {
-@@ -420,6 +425,17 @@
- 		reg = <0x70>;
- 		i2c-mux-idle-disconnect;
- 
-+		ocpslot: i2c at 0 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <0x0>;
++title: ASPEED I2Cv2 Controller on the AST26XX SoCs
 +
-+			ocp_temp: temperature-sensor at 1f {
-+				compatible = "ti,tmp421";
-+				reg = <0x1f>;
-+			};
-+		};
++maintainers:
++  - Ryan Chen <ryan_chen@aspeedtech.com>
 +
- 		nvmeslot_0_7: i2c at 3 {
- 			#address-cells = <1>;
- 			#size-cells = <0>;
-diff --git a/arch/arm/boot/dts/aspeed-bmc-ampere-mtmitchell.dts b/arch/arm/boot/dts/aspeed-bmc-ampere-mtmitchell.dts
-index 4b91600eaf62..c832b8ae5999 100644
---- a/arch/arm/boot/dts/aspeed-bmc-ampere-mtmitchell.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-ampere-mtmitchell.dts
-@@ -10,6 +10,14 @@
- 	model = "Ampere Mt.Mitchell BMC";
- 	compatible = "ampere,mtmitchell-bmc", "aspeed,ast2600";
- 
-+	aliases {
-+		/*
-+		 *  i2c bus 30-31 assigned to OCP slot 0-1
-+		 */
-+		i2c30 = &ocpslot_0;
-+		i2c31 = &ocpslot_1;
-+	};
++allOf:
++  - $ref: /schemas/i2c/i2c-controller.yaml#
 +
- 	chosen {
- 		stdout-path = &uart5;
- 	};
-@@ -424,6 +432,27 @@
- 		#size-cells = <0>;
- 		reg = <0x70>;
- 		i2c-mux-idle-disconnect;
++properties:
++  compatible:
++    enum:
++      - aspeed,ast2600-i2cv2
 +
-+		ocpslot_0: i2c at 0 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <0x0>;
++  reg:
++    minItems: 1
++    items:
++      - description: address offset and range of register
++      - description: address offset and range of buffer register
 +
-+			ocpslot_0_temp: temperature-sensor at 1f {
-+				compatible = "ti,tmp421";
-+				reg = <0x1f>;
-+			};
-+		};
-+		ocpslot_1: i2c at 1 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <0x1>;
++  interrupts:
++    maxItems: 1
 +
-+			ocpslot_1_temp: temperature-sensor at 1f {
-+				compatible = "ti,tmp421";
-+				reg = <0x1f>;
-+			};
-+		};
- 	};
- };
- 
++  clocks:
++    maxItems: 1
++    description:
++      Reference clock for the I2C bus
++
++  resets:
++    maxItems: 1
++
++  clock-frequency:
++    description:
++      Desired I2C bus clock frequency in Hz. default 100khz.
++
++  multi-master:
++    type: boolean
++    description:
++      states that there is another master active on this bus
++
++  timeout:
++    type: boolean
++    description: Enable i2c bus timeout for master/slave (35ms)
++
++  byte-mode:
++    type: boolean
++    description: Force i2c driver use byte mode transmit
++
++  buff-mode:
++    type: boolean
++    description: Force i2c driver use buffer mode transmit
++
++  aspeed,gr:
++    $ref: /schemas/types.yaml#/definitions/phandle
++    description: The phandle of i2c global register node.
++
++required:
++  - compatible
++  - reg
++  - interrupts
++  - clocks
++  - resets
++  - aspeed,gr
++
++unevaluatedProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/interrupt-controller/arm-gic.h>
++    #include <dt-bindings/clock/ast2600-clock.h>
++    i2c: i2c-bus at 80 {
++      compatible = "aspeed,ast2600-i2cv2";
++      reg = <0x80 0x80>, <0xc00 0x20>;
++      interrupts = <GIC_SPI 110 IRQ_TYPE_LEVEL_HIGH>;
++      aspeed,gr = <&i2c_gr>;
++      clocks = <&syscon ASPEED_CLK_APB2>;
++      resets = <&syscon ASPEED_RESET_I2C>;
++    };
 -- 
-2.17.1
+2.34.1
 
