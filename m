@@ -1,7 +1,7 @@
-From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Date: Wed, 22 Feb 2023 11:35:34 +0100
+From: Ryan Chen <ryan_chen@aspeedtech.com>
+Date: Wed, 22 Feb 2023 10:47:01 +0000
 Subject: [PATCH v5 1/2] dt-bindings: i2c: Add support for ASPEED i2Cv2
-In-Reply-To: <SEZPR06MB52696835ED8E2709D6A454DAF2AA9@SEZPR06MB5269.apcprd06.prod.outlook.com>
+In-Reply-To: <b7ca24ea-a265-81cb-3da6-19f938b35878@linaro.org>
 References: <20230220061745.1973981-1-ryan_chen@aspeedtech.com>
  <20230220061745.1973981-2-ryan_chen@aspeedtech.com>
  <676c7777-635c-cc1f-b919-d33e84a45442@linaro.org>
@@ -12,120 +12,147 @@ References: <20230220061745.1973981-1-ryan_chen@aspeedtech.com>
  <SEZPR06MB52698CCA6AE59DDC6C15CBE4F2AA9@SEZPR06MB5269.apcprd06.prod.outlook.com>
  <94238c42-1250-4d51-86e5-0a960dea0ffc@linaro.org>
  <SEZPR06MB52696835ED8E2709D6A454DAF2AA9@SEZPR06MB5269.apcprd06.prod.outlook.com>
-Message-ID: <b7ca24ea-a265-81cb-3da6-19f938b35878@linaro.org>
+ <b7ca24ea-a265-81cb-3da6-19f938b35878@linaro.org>
+Message-ID: <SEZPR06MB5269052D7ADCD0D0F939E60DF2AA9@SEZPR06MB5269.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 22/02/2023 11:31, Ryan Chen wrote:
->> 	Board B
->>> --------------------------------------------------------
->> 	--------------------------------------------------------
->>> |    i2c bus#1(master/slave)  <--------------------> fingerprint.(can be unplug)
->> <--------------------> i2c bus#x (master/slave) |
->>> |    i2c bus#2(master) -> tmp i2c device     |
->> 	|									|
->>> |    i2c bus#3(master) -> adc i2c device      |					|
->> 								|
->>> --------------------------------------------------------
->> 	--------------------------------------------------------
->>> In this case i2c bus#1 need enable timeout, avoid suddenly unplug the
->> connector. That slave will keep state to drive clock stretching.
->>> So it is specific enable in i2c bus#1. Others is not needed enable timeout.
->>> Does this draw is more clear in scenario?
->>
->> I2C bus #1 works in slave mode? So you always need it for slave work?
-> 
-> Yes, it is both slave/master mode. It is always dual role. Slave must always work. 
-> Due to another board master will send.
+Hello Krzysztof,
 
-I meant that you need this property when it works in slave mode? It
-would be then redundant to have in DT as it is implied by the mode.
+> -----Original Message-----
+> From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+> Sent: Wednesday, February 22, 2023 6:36 PM
+> To: Ryan Chen <ryan_chen@aspeedtech.com>; Rob Herring
+> <robh+dt@kernel.org>; Krzysztof Kozlowski
+> <krzysztof.kozlowski+dt@linaro.org>; Joel Stanley <joel@jms.id.au>; Andrew
+> Jeffery <andrew@aj.id.au>; Philipp Zabel <p.zabel@pengutronix.de>;
+> openbmc at lists.ozlabs.org; linux-arm-kernel at lists.infradead.org;
+> linux-aspeed at lists.ozlabs.org; linux-kernel at vger.kernel.org
+> Subject: Re: [PATCH v5 1/2] dt-bindings: i2c: Add support for ASPEED i2Cv2
+> 
+> On 22/02/2023 11:31, Ryan Chen wrote:
+> >> 	Board B
+> >>> --------------------------------------------------------
+> >> 	--------------------------------------------------------
+> >>> |    i2c bus#1(master/slave)  <-------------------->
+> >>> | fingerprint.(can be unplug)
+> >> <--------------------> i2c bus#x (master/slave) |
+> >>> |    i2c bus#2(master) -> tmp i2c device     |
+> >> 	|									|
+> >>> |    i2c bus#3(master) -> adc i2c device      |
+> 	|
+> >> 								|
+> >>> --------------------------------------------------------
+> >> 	--------------------------------------------------------
+> >>> In this case i2c bus#1 need enable timeout, avoid suddenly unplug
+> >>> the
+> >> connector. That slave will keep state to drive clock stretching.
+> >>> So it is specific enable in i2c bus#1. Others is not needed enable timeout.
+> >>> Does this draw is more clear in scenario?
+> >>
+> >> I2C bus #1 works in slave mode? So you always need it for slave work?
+> >
+> > Yes, it is both slave/master mode. It is always dual role. Slave must always
+> work.
+> > Due to another board master will send.
+> 
+> I meant that you need this property when it works in slave mode? It would be
+> then redundant to have in DT as it is implied by the mode.
+
+But timeout feature is also apply in master. It for avoid suddenly slave miss(un-plug) 
+Master can timeout and release the SDA/SCL, return. 
 
 > 
->>>
->>>>>
->>>>> So in those reason add this timeout design in controller.
->>>>
->>>> You need to justify why DT is correct place for this property. DT is
->>>> not for configuring OS, but to describe hardware. I gave you one
->>>> possibility
->>>> - why different boards would like to set this property. You said it
->>>> is not board specific, thus all boards will have it (or none of them).
->>>> Without any other reason, this is not a DT property. Drop.
->>>>
->>>>>>
->>>>>>>
->>>>>>>>> +
->>>>>>>>> +  byte-mode:
->>>>>>>>> +    type: boolean
->>>>>>>>> +    description: Force i2c driver use byte mode transmit
->>>>>>>>
->>>>>>>> Drop, not a DT property.
->>>>>>>>
->>>>>>>>> +
->>>>>>>>> +  buff-mode:
->>>>>>>>> +    type: boolean
->>>>>>>>> +    description: Force i2c driver use buffer mode transmit
->>>>>>>>
->>>>>>>> Drop, not a DT property.
->>>>>>>>
->>>>>>> The controller support 3 different for transfer.
->>>>>>> Byte mode: it means step by step to issue transfer.
->>>>>>> Example i2c read, each step will issue interrupt then enable next step.
->>>>>>> Sr (start read) | D | D | D | P
->>>>>>> Buffer mode: it means, the data can prepare into buffer register,
->>>>>>> then Trigger transfer. So Sr D D D P, only have only 1 interrupt handling.
->>>>>>> The DMA mode most like with buffer mode, The differ is data
->>>>>>> prepare in DRAM, than trigger transfer.
->>>>>>>
->>>>>>> So, should I modify to
->>>>>>>   aspeed,byte:
->>>>>>> 	type: boolean
->>>>>>>     description: Enable i2c controller transfer with byte mode
->>>>>>>
->>>>>>>   aspeed,buff:
->>>>>>> 	type: boolean
->>>>>>>     description: Enable i2c controller transfer with buff mode
->>>>>>
->>>>>> 1. No, these are not bools but enum in such case.
->>>>>
->>>>> Thanks, will modify following.
->>>>> aspeed,xfer_mode:
->>>>>     enum: [0, 1, 2]
->>>>>     description:
->>>>>       0: byte mode, 1: buff_mode, 2: dma_mode
->>>>
->>>> Just keep it text - byte, buffered, dma
->>>>
->>>>>
->>>>>> 2. And why exactly this is board-specific?
->>>>>
->>>>> No, it not depends on board design. It is only for register control
->>>>> for
->>>> controller transfer behave.
->>>>> The controller support 3 different trigger mode for transfer.
->>>>> Assign bus#1 ~ 3 : dma tranfer and assign bus#4 ~ 6 : buffer mode
->>>>> transfer, That can reduce the dram usage.
->>>>
->>>> Then anyway it does not look like property for Devicetree. DT
->>>> describes hardware, not OS behavior.
->>>
->>> The same draw, in this case, i2c bus#1 that is multi-master transfer
->> architecture.
->>> Both will inactive with trunk data. That cane enable i2c#1 use DMA transfer
->> to reduce CPU utilized.
->>> Others (bus#2/3) can keep byte/buff mode.
->>
->> Isn't then current bus configuration for I2C#1 known to the driver?
->> Jeremy asked few other questions around here...
+> >
+> >>>
+> >>>>>
+> >>>>> So in those reason add this timeout design in controller.
+> >>>>
+> >>>> You need to justify why DT is correct place for this property. DT
+> >>>> is not for configuring OS, but to describe hardware. I gave you one
+> >>>> possibility
+> >>>> - why different boards would like to set this property. You said it
+> >>>> is not board specific, thus all boards will have it (or none of them).
+> >>>> Without any other reason, this is not a DT property. Drop.
+> >>>>
+> >>>>>>
+> >>>>>>>
+> >>>>>>>>> +
+> >>>>>>>>> +  byte-mode:
+> >>>>>>>>> +    type: boolean
+> >>>>>>>>> +    description: Force i2c driver use byte mode transmit
+> >>>>>>>>
+> >>>>>>>> Drop, not a DT property.
+> >>>>>>>>
+> >>>>>>>>> +
+> >>>>>>>>> +  buff-mode:
+> >>>>>>>>> +    type: boolean
+> >>>>>>>>> +    description: Force i2c driver use buffer mode transmit
+> >>>>>>>>
+> >>>>>>>> Drop, not a DT property.
+> >>>>>>>>
+> >>>>>>> The controller support 3 different for transfer.
+> >>>>>>> Byte mode: it means step by step to issue transfer.
+> >>>>>>> Example i2c read, each step will issue interrupt then enable next
+> step.
+> >>>>>>> Sr (start read) | D | D | D | P
+> >>>>>>> Buffer mode: it means, the data can prepare into buffer
+> >>>>>>> register, then Trigger transfer. So Sr D D D P, only have only 1 interrupt
+> handling.
+> >>>>>>> The DMA mode most like with buffer mode, The differ is data
+> >>>>>>> prepare in DRAM, than trigger transfer.
+> >>>>>>>
+> >>>>>>> So, should I modify to
+> >>>>>>>   aspeed,byte:
+> >>>>>>> 	type: boolean
+> >>>>>>>     description: Enable i2c controller transfer with byte mode
+> >>>>>>>
+> >>>>>>>   aspeed,buff:
+> >>>>>>> 	type: boolean
+> >>>>>>>     description: Enable i2c controller transfer with buff mode
+> >>>>>>
+> >>>>>> 1. No, these are not bools but enum in such case.
+> >>>>>
+> >>>>> Thanks, will modify following.
+> >>>>> aspeed,xfer_mode:
+> >>>>>     enum: [0, 1, 2]
+> >>>>>     description:
+> >>>>>       0: byte mode, 1: buff_mode, 2: dma_mode
+> >>>>
+> >>>> Just keep it text - byte, buffered, dma
+> >>>>
+> >>>>>
+> >>>>>> 2. And why exactly this is board-specific?
+> >>>>>
+> >>>>> No, it not depends on board design. It is only for register
+> >>>>> control for
+> >>>> controller transfer behave.
+> >>>>> The controller support 3 different trigger mode for transfer.
+> >>>>> Assign bus#1 ~ 3 : dma tranfer and assign bus#4 ~ 6 : buffer mode
+> >>>>> transfer, That can reduce the dram usage.
+> >>>>
+> >>>> Then anyway it does not look like property for Devicetree. DT
+> >>>> describes hardware, not OS behavior.
+> >>>
+> >>> The same draw, in this case, i2c bus#1 that is multi-master transfer
+> >> architecture.
+> >>> Both will inactive with trunk data. That cane enable i2c#1 use DMA
+> >>> transfer
+> >> to reduce CPU utilized.
+> >>> Others (bus#2/3) can keep byte/buff mode.
+> >>
+> >> Isn't then current bus configuration for I2C#1 known to the driver?
+> >> Jeremy asked few other questions around here...
+> >
+> > No, The driver don't know currently board configuration.
 > 
-> No, The driver don't know currently board configuration.
+> It knows whether it is working in multi-master/slave mode.
 
-It knows whether it is working in multi-master/slave mode.
+But in DT can decide which i2c bus number can use dma or buffer mode transfer.
+If in another i2c bus support master only, also can use dma to transfer trunk data to another slave. 
 
 Best regards,
-Krzysztof
-
+Ryan Chen
