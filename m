@@ -1,46 +1,147 @@
-From: Jeremy Kerr <jk@codeconstruct.com.au>
-Date: Wed, 22 Feb 2023 09:30:14 +0800
+From: Ryan Chen <ryan_chen@aspeedtech.com>
+Date: Wed, 22 Feb 2023 02:59:26 +0000
 Subject: [PATCH v5 1/2] dt-bindings: i2c: Add support for ASPEED i2Cv2
-In-Reply-To: <TYZPR06MB527469EBE6A18B897D2C1F6CF2A59@TYZPR06MB5274.apcprd06.prod.outlook.com>
+In-Reply-To: <c0ac0ab3-87fc-e74a-b4e2-3cf1b3a8a5e2@linaro.org>
 References: <20230220061745.1973981-1-ryan_chen@aspeedtech.com>
-	 <20230220061745.1973981-2-ryan_chen@aspeedtech.com>
-	 <2141e513acc750bf26775f5b435f4dccd41244aa.camel@codeconstruct.com.au>
-	 <TYZPR06MB5274714E58C319B4FE3B6E1BF2A49@TYZPR06MB5274.apcprd06.prod.outlook.com>
-	 <dfc2c2c442af55f64e147c920585cb7e6a74939f.camel@codeconstruct.com.au>
-	 <TYZPR06MB527469EBE6A18B897D2C1F6CF2A59@TYZPR06MB5274.apcprd06.prod.outlook.com>
-Message-ID: <d5d0bbdbfdce06a6e2ad34f2fa8f27d4eaf36207.camel@codeconstruct.com.au>
+ <20230220061745.1973981-2-ryan_chen@aspeedtech.com>
+ <676c7777-635c-cc1f-b919-d33e84a45442@linaro.org>
+ <TYZPR06MB527427ADCCD29DFD77FB0EE3F2A59@TYZPR06MB5274.apcprd06.prod.outlook.com>
+ <80d873d4-d813-6c25-8f47-f5ff9af718ec@linaro.org>
+ <SEZPR06MB5269502D7CBCD5698B65FF9FF2A59@SEZPR06MB5269.apcprd06.prod.outlook.com>
+ <c0ac0ab3-87fc-e74a-b4e2-3cf1b3a8a5e2@linaro.org>
+Message-ID: <SEZPR06MB52698CCA6AE59DDC6C15CBE4F2AA9@SEZPR06MB5269.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Ryan,
+Hello Krzysztof,
 
-> > On the other hand, if it's just because of OS behaviour, then this
-> > doesn't belong
-> > in the DT.
-> > 
-> > Maybe to help us understand: why would you ever *not* want DMA
-> > mode?
-> > Isn't that always preferable?
-> In AST SOC i2c design is 16 i2c bus share one dma engine. 
+> -----Original Message-----
+> From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+> Sent: Tuesday, February 21, 2023 7:05 PM
+> To: Ryan Chen <ryan_chen@aspeedtech.com>; Rob Herring
+> <robh+dt@kernel.org>; Krzysztof Kozlowski
+> <krzysztof.kozlowski+dt@linaro.org>; Joel Stanley <joel@jms.id.au>; Andrew
+> Jeffery <andrew@aj.id.au>; Philipp Zabel <p.zabel@pengutronix.de>;
+> openbmc at lists.ozlabs.org; linux-arm-kernel at lists.infradead.org;
+> linux-aspeed at lists.ozlabs.org; linux-kernel at vger.kernel.org
+> Subject: Re: [PATCH v5 1/2] dt-bindings: i2c: Add support for ASPEED i2Cv2
+> 
+> On 21/02/2023 11:42, Ryan Chen wrote:
+> >>>>> +    type: boolean
+> >>>>> +    description: Enable i2c bus timeout for master/slave (35ms)
+> >>>>
+> >>>> Why this is property for DT? It's for sure not bool, but proper
+> >>>> type coming from units.
+> >>> This is i2c controller feature for enable slave mode inactive
+> >>> timeout and also master mode sda/scl auto release timeout.
+> >>> So I will modify to
+> >>>   aspeed,timeout:
+> >>> 	type: boolean
+> >>>     description: I2C bus timeout enable for master/slave mode
+> >>
+> >> This does not answer my concerns. Why this is board specific?
+> > Sorry, can?t catch your point.
+> > It is not board specific. It is controller feature.
+> > ASPEED SOC chip is server product, master connect may have fingerprint
+> > connect to another board. And also support hotplug.
+> > For example I2C controller as slave mode, and suddenly disconnected.
+> > Slave state machine will keep waiting for master clock in for rx/tx transfer.
+> > So it need timeout setting to enable timeout unlock controller state.
+> > And in another side. As master mode, slave is clock stretching.
+> > The master will be keep waiting, until slave release cll stretching.
+> 
+> OK, thanks for describing the feature. I still do not see how this is DT related.
 
-Does this mean that only one i2c controller in the system can be
-configured to use DMA? Or is it able to be shared between multiple
-controllers?
+Let me draw more about the board-specific. 
+The following is an example about i2c layout in board.
+Board A														Board B
+--------------------------------------------------------							--------------------------------------------------------
+|    i2c bus#1(master/slave)  <--------------------> fingerprint.(can be unplug)    <--------------------> i2c bus#x (master/slave) |
+|    i2c bus#2(master) -> tmp i2c device     |			     		|									|
+|    i2c bus#3(master) -> adc i2c device      |					|									|
+--------------------------------------------------------							--------------------------------------------------------
+In this case i2c bus#1 need enable timeout, avoid suddenly unplug the connector. That slave will keep state to drive clock stretching.
+So it is specific enable in i2c bus#1. Others is not needed enable timeout. 
+Does this draw is more clear in scenario?
 
-> It can be switch setting by dts setting. Otherwise driver by default
-> probe is DMA mode.
+> >
+> > So in those reason add this timeout design in controller.
+> 
+> You need to justify why DT is correct place for this property. DT is not for
+> configuring OS, but to describe hardware. I gave you one possibility
+> - why different boards would like to set this property. You said it is not board
+> specific, thus all boards will have it (or none of them).
+> Without any other reason, this is not a DT property. Drop.
+> 
+> >>
+> >>>
+> >>>>> +
+> >>>>> +  byte-mode:
+> >>>>> +    type: boolean
+> >>>>> +    description: Force i2c driver use byte mode transmit
+> >>>>
+> >>>> Drop, not a DT property.
+> >>>>
+> >>>>> +
+> >>>>> +  buff-mode:
+> >>>>> +    type: boolean
+> >>>>> +    description: Force i2c driver use buffer mode transmit
+> >>>>
+> >>>> Drop, not a DT property.
+> >>>>
+> >>> The controller support 3 different for transfer.
+> >>> Byte mode: it means step by step to issue transfer.
+> >>> Example i2c read, each step will issue interrupt then enable next step.
+> >>> Sr (start read) | D | D | D | P
+> >>> Buffer mode: it means, the data can prepare into buffer register,
+> >>> then Trigger transfer. So Sr D D D P, only have only 1 interrupt handling.
+> >>> The DMA mode most like with buffer mode, The differ is data prepare
+> >>> in DRAM, than trigger transfer.
+> >>>
+> >>> So, should I modify to
+> >>>   aspeed,byte:
+> >>> 	type: boolean
+> >>>     description: Enable i2c controller transfer with byte mode
+> >>>
+> >>>   aspeed,buff:
+> >>> 	type: boolean
+> >>>     description: Enable i2c controller transfer with buff mode
+> >>
+> >> 1. No, these are not bools but enum in such case.
+> >
+> > Thanks, will modify following.
+> > aspeed,xfer_mode:
+> >     enum: [0, 1, 2]
+> >     description:
+> >       0: byte mode, 1: buff_mode, 2: dma_mode
+> 
+> Just keep it text - byte, buffered, dma
+> 
+> >
+> >> 2. And why exactly this is board-specific?
+> >
+> > No, it not depends on board design. It is only for register control for
+> controller transfer behave.
+> > The controller support 3 different trigger mode for transfer.
+> > Assign bus#1 ~ 3 : dma tranfer and assign bus#4 ~ 6 : buffer mode
+> > transfer, That can reduce the dram usage.
+> 
+> Then anyway it does not look like property for Devicetree. DT describes
+> hardware, not OS behavior.
 
-You've explained what the modes do, and how they're switched, and what
-the default is. However this doesn't explain *why* someone would want
-to choose a particular mode when creating a controller node.
+The same draw, in this case, i2c bus#1 that is multi-master transfer architecture. 
+Both will inactive with trunk data. That cane enable i2c#1 use DMA transfer to reduce CPU utilized.
+Others (bus#2/3) can keep byte/buff mode. 
 
-Still with the question above: assuming there are no restrictions on
-DMA usage, why wouldn't a driver implementation just enable it always?
+Board A														Board B
+--------------------------------------------------------							--------------------------------------------------------
+|    i2c bus#1(master/slave)  <--------------------> fingerprint.(can be unplug)    <--------------------> i2c bus#x (master/slave) |
+|    i2c bus#2(master) -> tmp i2c device     |			     		|									|
+|    i2c bus#3(master) -> adc i2c device      |					|									|
+--------------------------------------------------------							--------------------------------------------------------
+Best regards,
+Ryan
 
-Cheers,
-
-
-Jeremy
