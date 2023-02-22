@@ -1,970 +1,149 @@
-From: Ryan Chen <ryan_chen@aspeedtech.com>
-Date: Wed, 22 Feb 2023 03:36:49 +0000
-Subject: [PATCH v5 2/2] i2c: aspeed: support ast2600 i2cv2 new register
- mode driver
-In-Reply-To: <63986fb1-f8d4-f348-bae9-72e08369213b@linaro.org>
+From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Date: Wed, 22 Feb 2023 09:25:40 +0100
+Subject: [PATCH v5 1/2] dt-bindings: i2c: Add support for ASPEED i2Cv2
+In-Reply-To: <SEZPR06MB52698CCA6AE59DDC6C15CBE4F2AA9@SEZPR06MB5269.apcprd06.prod.outlook.com>
 References: <20230220061745.1973981-1-ryan_chen@aspeedtech.com>
- <20230220061745.1973981-3-ryan_chen@aspeedtech.com>
- <63986fb1-f8d4-f348-bae9-72e08369213b@linaro.org>
-Message-ID: <SEZPR06MB5269B032022D3D7286E59D36F2AA9@SEZPR06MB5269.apcprd06.prod.outlook.com>
+ <20230220061745.1973981-2-ryan_chen@aspeedtech.com>
+ <676c7777-635c-cc1f-b919-d33e84a45442@linaro.org>
+ <TYZPR06MB527427ADCCD29DFD77FB0EE3F2A59@TYZPR06MB5274.apcprd06.prod.outlook.com>
+ <80d873d4-d813-6c25-8f47-f5ff9af718ec@linaro.org>
+ <SEZPR06MB5269502D7CBCD5698B65FF9FF2A59@SEZPR06MB5269.apcprd06.prod.outlook.com>
+ <c0ac0ab3-87fc-e74a-b4e2-3cf1b3a8a5e2@linaro.org>
+ <SEZPR06MB52698CCA6AE59DDC6C15CBE4F2AA9@SEZPR06MB5269.apcprd06.prod.outlook.com>
+Message-ID: <94238c42-1250-4d51-86e5-0a960dea0ffc@linaro.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello Krzysztof,
-
-Ryan Chen
-
-> -----Original Message-----
-> From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-> Sent: Monday, February 20, 2023 4:44 PM
-> To: Ryan Chen <ryan_chen@aspeedtech.com>; Rob Herring
-> <robh+dt@kernel.org>; Krzysztof Kozlowski
-> <krzysztof.kozlowski+dt@linaro.org>; Joel Stanley <joel@jms.id.au>; Andrew
-> Jeffery <andrew@aj.id.au>; Philipp Zabel <p.zabel@pengutronix.de>;
-> openbmc at lists.ozlabs.org; linux-arm-kernel at lists.infradead.org;
-> linux-aspeed at lists.ozlabs.org; linux-kernel at vger.kernel.org
-> Subject: Re: [PATCH v5 2/2] i2c: aspeed: support ast2600 i2cv2 new register
-> mode driver
+On 22/02/2023 03:59, Ryan Chen wrote:
+> Hello Krzysztof,
 > 
-> On 20/02/2023 07:17, Ryan Chen wrote:
-> > Add i2cv2 new register mode driver to support AST2600 i2c new register
-> > mode. AST2600 i2c controller have legacy and new register mode. The
-> > new register mode have global register support 4 base clock for scl
-> > clock selection, and new clock divider mode. The i2c new register mode
-> > have separate register set to control i2c master and slave.
-> >
-> > Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
-> > ---
-> >  MAINTAINERS                      |    9 +
-> >  drivers/i2c/busses/Kconfig       |   11 +
-> >  drivers/i2c/busses/Makefile      |    1 +
-> >  drivers/i2c/busses/i2c-ast2600.c | 1703
-> > ++++++++++++++++++++++++++++++
-> >  4 files changed, 1724 insertions(+)
-> >  create mode 100644 drivers/i2c/busses/i2c-ast2600.c
-> >
-> > diff --git a/MAINTAINERS b/MAINTAINERS index
-> > 749710e22b4d..c9841568cb24 100644
-> > --- a/MAINTAINERS
-> > +++ b/MAINTAINERS
-> > @@ -1924,6 +1924,15 @@ F:
-> 	Documentation/devicetree/bindings/interrupt-controller/aspeed,ast2400-
-> i2c-ic.
-> >  F:	drivers/i2c/busses/i2c-aspeed.c
-> >  F:	drivers/irqchip/irq-aspeed-i2c-ic.c
-> >
-> > +ARM/ASPEED I2CV2 DRIVER
-> > +M:      Ryan Chen <ryan_chen@aspeedtech.com>
-> > +R:      Andrew Jeffery <andrew@aj.id.au>
-> > +L:      linux-i2c at vger.kernel.org
-> > +L:      openbmc at lists.ozlabs.org (moderated for non-subscribers)
-> > +S:      Maintained
-> > +F:      Documentation/devicetree/bindings/i2c/aspeed,i2cv2.yaml
-> > +F:      drivers/i2c/busses/i2c-ast2600.c
-> > +
-> >  ARM/ASPEED MACHINE SUPPORT
-> >  M:	Joel Stanley <joel@jms.id.au>
-> >  R:	Andrew Jeffery <andrew@aj.id.au>
-> > diff --git a/drivers/i2c/busses/Kconfig b/drivers/i2c/busses/Kconfig
-> > index 7284206b278b..f3f7500ce768 100644
-> > --- a/drivers/i2c/busses/Kconfig
-> > +++ b/drivers/i2c/busses/Kconfig
-> > @@ -389,6 +389,17 @@ config I2C_ALTERA
-> >  	  This driver can also be built as a module.  If so, the module
-> >  	  will be called i2c-altera.
-> >
-> > +config I2C_AST2600
-> > +	tristate "Aspeed I2C v2 Controller"
-> > +	depends on ARCH_ASPEED || COMPILE_TEST
-> > +	select I2C_SMBUS
-> > +	help
-> > +	  If you say yes to this option, support will be included for the
-> > +	  Aspeed I2C controller with new register set.
-> > +
-> > +	  This driver can also be built as a module.  If so, the module
-> > +	  will be called i2c-new-aspeed.
-> > +
-> >  config I2C_ASPEED
-> >  	tristate "Aspeed I2C Controller"
-> >  	depends on ARCH_ASPEED || COMPILE_TEST diff --git
-> > a/drivers/i2c/busses/Makefile b/drivers/i2c/busses/Makefile index
-> > c5cac15f075c..d0ab4d45781c 100644
-> > --- a/drivers/i2c/busses/Makefile
-> > +++ b/drivers/i2c/busses/Makefile
-> > @@ -38,6 +38,7 @@ obj-$(CONFIG_I2C_POWERMAC)	+= i2c-powermac.o
-> >  obj-$(CONFIG_I2C_ALTERA)	+= i2c-altera.o
-> >  obj-$(CONFIG_I2C_AMD_MP2)	+= i2c-amd-mp2-pci.o
-> i2c-amd-mp2-plat.o
-> >  obj-$(CONFIG_I2C_ASPEED)	+= i2c-aspeed.o
-> > +obj-$(CONFIG_I2C_AST2600)	+= i2c-ast2600.o
-> >  obj-$(CONFIG_I2C_AT91)		+= i2c-at91.o
-> >  i2c-at91-objs			:= i2c-at91-core.o i2c-at91-master.o
-> >  ifeq ($(CONFIG_I2C_AT91_SLAVE_EXPERIMENTAL),y)
-> > diff --git a/drivers/i2c/busses/i2c-ast2600.c
-> > b/drivers/i2c/busses/i2c-ast2600.c
-> > new file mode 100644
-> > index 000000000000..b5fe0af57d11
-> > --- /dev/null
-> > +++ b/drivers/i2c/busses/i2c-ast2600.c
-> > @@ -0,0 +1,1703 @@
-> > +// SPDX-License-Identifier: GPL-2.0-only
-> > +/*
-> > + * ASPEED AST2600 new register set I2C controller driver
-> > + *
-> > + * Copyright (C) ASPEED Technology Inc.
-> > + */
-> > +#include <linux/clk.h>
-> > +#include <linux/err.h>
-> > +#include <linux/i2c.h>
-> > +#include <linux/io.h>
-> > +#include <linux/slab.h>
-> > +#include <linux/delay.h>
-> > +#include <linux/reset.h>
-> > +#include <linux/module.h>
-> > +#include <linux/interrupt.h>
-> > +#include <linux/completion.h>
-> > +#include <linux/of.h>
-> > +#include <linux/of_irq.h>
-> > +#include <linux/mfd/syscon.h>
-> > +#include <linux/regmap.h>
-> > +#include <linux/of_device.h>
-> > +#include <linux/dma-mapping.h>
-> > +#include <linux/i2c-smbus.h>
-> > +
-> > +/*
-> > + * APB clk : 100Mhz
-> > + * div	: scl		: baseclk [APB/((div/2) + 1)] : tBuf [1/bclk * 16]
-> > + * I2CG10[31:24] base clk4 for i2c auto recovery timeout counter
-> > +(0xC6)
-> > + * I2CG10[23:16] base clk3 for Standard-mode (100Khz) min tBuf 4.7us
-> > + * 0x3c : 100.8Khz	: 3.225Mhz					  : 4.96us
-> > + * 0x3d : 99.2Khz	: 3.174Mhz					  : 5.04us
-> > + * 0x3e : 97.65Khz	: 3.125Mhz					  : 5.12us
-> > + * 0x40 : 97.75Khz	: 3.03Mhz					  : 5.28us
-> > + * 0x41 : 99.5Khz	: 2.98Mhz					  : 5.36us (default)
-> > + * I2CG10[15:8] base clk2 for Fast-mode (400Khz) min tBuf 1.3us
-> > + * 0x12 : 400Khz	: 10Mhz						  : 1.6us
-> > + * I2CG10[7:0] base clk1 for Fast-mode Plus (1Mhz) min tBuf 0.5us
-> > + * 0x08 : 1Mhz		: 20Mhz						  : 0.8us
-> > + */
-> > +#define AST2600_I2CG_ISR			0x00
-> > +#define AST2600_I2CG_SLAVE_ISR		0x04
-> > +#define AST2600_I2CG_OWNER		0x08
-> > +#define AST2600_I2CG_CTRL		0x0C
-> > +#define AST2600_I2CG_CLK_DIV_CTRL	0x10
-> > +
-> > +#define AST2600_I2CG_SLAVE_PKT_NAK	BIT(4)
-> > +#define AST2600_I2CG_M_S_SEPARATE_INTR	BIT(3)
-> > +#define AST2600_I2CG_CTRL_NEW_REG	BIT(2)
-> > +#define AST2600_I2CG_CTRL_NEW_CLK_DIV	BIT(1)
-> > +
-> > +#define AST2600_GLOBAL_INIT				\
-> > +			(AST2600_I2CG_CTRL_NEW_REG |	\
-> > +			AST2600_I2CG_CTRL_NEW_CLK_DIV)
-> > +#define I2CCG_DIV_CTRL 0xC6411208
-> > +
-> > +/* 0x00 : I2CC Master/Slave Function Control Register  */
-> > +#define AST2600_I2CC_FUN_CTRL		0x00
-> > +#define AST2600_I2CC_SLAVE_ADDR_RX_EN		BIT(20)
-> > +#define AST2600_I2CC_MASTER_RETRY_MASK		GENMASK(19, 18)
-> > +#define AST2600_I2CC_MASTER_RETRY(x)		(((x) & GENMASK(1, 0))
-> << 18)
-> > +#define AST2600_I2CC_BUS_AUTO_RELEASE		BIT(17)
-> > +#define AST2600_I2CC_M_SDA_LOCK_EN			BIT(16)
-> > +#define AST2600_I2CC_MULTI_MASTER_DIS		BIT(15)
-> > +#define AST2600_I2CC_M_SCL_DRIVE_EN			BIT(14)
-> > +#define AST2600_I2CC_MSB_STS				BIT(9)
-> > +#define AST2600_I2CC_SDA_DRIVE_1T_EN		BIT(8)
-> > +#define AST2600_I2CC_M_SDA_DRIVE_1T_EN		BIT(7)
-> > +#define AST2600_I2CC_M_HIGH_SPEED_EN		BIT(6)
-> > +/* reserver 5 : 2 */
-> > +#define AST2600_I2CC_SLAVE_EN			BIT(1)
-> > +#define AST2600_I2CC_MASTER_EN			BIT(0)
-> > +
-> > +/* 0x04 : I2CC Master/Slave Clock and AC Timing Control Register #1 */
-> > +#define AST2600_I2CC_AC_TIMING		0x04
-> > +#define AST2600_I2CC_TTIMEOUT(x)			(((x) & GENMASK(4, 0))
-> << 24)
-> > +#define AST2600_I2CC_TCKHIGHMIN(x)			(((x) & GENMASK(3, 0))
-> << 20)
-> > +#define AST2600_I2CC_TCKHIGH(x)			(((x) & GENMASK(3, 0)) <<
-> 16)
-> > +#define AST2600_I2CC_TCKLOW(x)			(((x) & GENMASK(3, 0)) <<
-> 12)
-> > +#define AST2600_I2CC_THDDAT(x)			(((x) & GENMASK(1, 0)) <<
-> 10)
-> > +#define AST2600_I2CC_TOUTBASECLK(x)			(((x) & GENMASK(1, 0))
-> << 8)
-> > +#define AST2600_I2CC_TBASECLK(x)			((x) & GENMASK(3, 0))
-> > +
-> > +/* 0x08 : I2CC Master/Slave Transmit/Receive Byte Buffer Register */
-> > +#define AST2600_I2CC_STS_AND_BUFF		0x08
-> > +#define AST2600_I2CC_TX_DIR_MASK			GENMASK(31, 29)
-> > +#define AST2600_I2CC_SDA_OE				BIT(28)
-> > +#define AST2600_I2CC_SDA_O				BIT(27)
-> > +#define AST2600_I2CC_SCL_OE				BIT(26)
-> > +#define AST2600_I2CC_SCL_O				BIT(25)
-> > +
-> > +#define AST2600_I2CC_SCL_LINE_STS			BIT(18)
-> > +#define AST2600_I2CC_SDA_LINE_STS			BIT(17)
-> > +#define AST2600_I2CC_BUS_BUSY_STS			BIT(16)
-> > +
-> > +#define AST2600_I2CC_GET_RX_BUFF(x)			(((x) >> 8) &
-> GENMASK(7, 0))
-> > +
-> > +/* 0x0C : I2CC Master/Slave Pool Buffer Control Register  */
-> > +#define AST2600_I2CC_BUFF_CTRL		0x0C
-> > +#define AST2600_I2CC_GET_RX_BUF_LEN(x)		(((x) >> 24) &
-> GENMASK(5, 0))
-> > +#define AST2600_I2CC_SET_RX_BUF_LEN(x)		(((((x) - 1) & GENMASK(4,
-> 0)) << 16) | BIT(0))
-> > +#define AST2600_I2CC_SET_TX_BUF_LEN(x)		(((((x) - 1) & GENMASK(4,
-> 0)) << 8) | BIT(0))
-> > +#define AST2600_I2CC_GET_TX_BUF_LEN(x)		((((x) >> 8) &
-> GENMASK(4, 0)) + 1)
-> > +
-> > +/* 0x10 : I2CM Master Interrupt Control Register */
-> > +#define AST2600_I2CM_IER			0x10
-> > +/* 0x14 : I2CM Master Interrupt Status Register   : WC */
-> > +#define AST2600_I2CM_ISR			0x14
-> > +
-> > +#define AST2600_I2CM_PKT_TIMEOUT			BIT(18)
-> > +#define AST2600_I2CM_PKT_ERROR			BIT(17)
-> > +#define AST2600_I2CM_PKT_DONE			BIT(16)
-> > +
-> > +#define AST2600_I2CM_BUS_RECOVER_FAIL		BIT(15)
-> > +#define AST2600_I2CM_SDA_DL_TO			BIT(14)
-> > +#define AST2600_I2CM_BUS_RECOVER			BIT(13)
-> > +#define AST2600_I2CM_SMBUS_ALT			BIT(12)
-> > +
-> > +#define AST2600_I2CM_SCL_LOW_TO			BIT(6)
-> > +#define AST2600_I2CM_ABNORMAL			BIT(5)
-> > +#define AST2600_I2CM_NORMAL_STOP			BIT(4)
-> > +#define AST2600_I2CM_ARBIT_LOSS			BIT(3)
-> > +#define AST2600_I2CM_RX_DONE			BIT(2)
-> > +#define AST2600_I2CM_TX_NAK				BIT(1)
-> > +#define AST2600_I2CM_TX_ACK				BIT(0)
-> > +
-> > +/* 0x18 : I2CM Master Command/Status Register   */
-> > +#define AST2600_I2CM_CMD_STS		0x18
-> > +#define AST2600_I2CM_PKT_ADDR(x)			(((x) & GENMASK(6, 0))
-> << 24)
-> > +#define AST2600_I2CM_PKT_EN				BIT(16)
-> > +#define AST2600_I2CM_SDA_OE_OUT_DIR			BIT(15)
-> > +#define AST2600_I2CM_SDA_O_OUT_DIR			BIT(14)
-> > +#define AST2600_I2CM_SCL_OE_OUT_DIR			BIT(13)
-> > +#define AST2600_I2CM_SCL_O_OUT_DIR			BIT(12)
-> > +#define AST2600_I2CM_RECOVER_CMD_EN			BIT(11)
-> > +
-> > +#define AST2600_I2CM_RX_DMA_EN			BIT(9)
-> > +#define AST2600_I2CM_TX_DMA_EN			BIT(8)
-> > +/* Command Bit */
-> > +#define AST2600_I2CM_RX_BUFF_EN			BIT(7)
-> > +#define AST2600_I2CM_TX_BUFF_EN			BIT(6)
-> > +#define AST2600_I2CM_STOP_CMD			BIT(5)
-> > +#define AST2600_I2CM_RX_CMD_LAST			BIT(4)
-> > +#define AST2600_I2CM_RX_CMD				BIT(3)
-> > +
-> > +#define AST2600_I2CM_TX_CMD				BIT(1)
-> > +#define AST2600_I2CM_START_CMD			BIT(0)
-> > +
-> > +/* 0x1C : I2CM Master DMA Transfer Length Register	 */
-> > +#define AST2600_I2CM_DMA_LEN		0x1C
-> > +/* Tx Rx support length 1 ~ 4096 */
-> > +#define AST2600_I2CM_SET_RX_DMA_LEN(x)	((((x) & GENMASK(11, 0))
-> << 16) | BIT(31))
-> > +#define AST2600_I2CM_SET_TX_DMA_LEN(x)	(((x) & GENMASK(11, 0)) |
-> BIT(15))
-> > +
-> > +/* 0x20 : I2CS Slave Interrupt Control Register   */
-> > +#define AST2600_I2CS_IER			0x20
-> > +/* 0x24 : I2CS Slave Interrupt Status Register	 */
-> > +#define AST2600_I2CS_ISR			0x24
-> > +
-> > +#define AST2600_I2CS_ADDR_INDICATE_MASK	GENMASK(31, 30)
-> > +#define AST2600_I2CS_SLAVE_PENDING			BIT(29)
-> > +
-> > +#define AST2600_I2CS_WAIT_TX_DMA			BIT(25)
-> > +#define AST2600_I2CS_WAIT_RX_DMA			BIT(24)
-> > +
-> > +#define AST2600_I2CS_ADDR3_NAK			BIT(22)
-> > +#define AST2600_I2CS_ADDR2_NAK			BIT(21)
-> > +#define AST2600_I2CS_ADDR1_NAK			BIT(20)
-> > +
-> > +#define AST2600_I2CS_ADDR_MASK			GENMASK(19, 18)
-> > +#define AST2600_I2CS_PKT_ERROR			BIT(17)
-> > +#define AST2600_I2CS_PKT_DONE			BIT(16)
-> > +#define AST2600_I2CS_INACTIVE_TO			BIT(15)
-> > +
-> > +#define AST2600_I2CS_SLAVE_MATCH			BIT(7)
-> > +#define AST2600_I2CS_ABNOR_STOP			BIT(5)
-> > +#define AST2600_I2CS_STOP				BIT(4)
-> > +#define AST2600_I2CS_RX_DONE_NAK			BIT(3)
-> > +#define AST2600_I2CS_RX_DONE			BIT(2)
-> > +#define AST2600_I2CS_TX_NAK				BIT(1)
-> > +#define AST2600_I2CS_TX_ACK				BIT(0)
-> > +
-> > +/* 0x28 : I2CS Slave CMD/Status Register   */
-> > +#define AST2600_I2CS_CMD_STS		0x28
-> > +#define AST2600_I2CS_ACTIVE_ALL			GENMASK(18, 17)
-> > +#define AST2600_I2CS_PKT_MODE_EN			BIT(16)
-> > +#define AST2600_I2CS_AUTO_NAK_NOADDR		BIT(15)
-> > +#define AST2600_I2CS_AUTO_NAK_EN			BIT(14)
-> > +
-> > +#define AST2600_I2CS_ALT_EN				BIT(10)
-> > +#define AST2600_I2CS_RX_DMA_EN			BIT(9)
-> > +#define AST2600_I2CS_TX_DMA_EN			BIT(8)
-> > +#define AST2600_I2CS_RX_BUFF_EN			BIT(7)
-> > +#define AST2600_I2CS_TX_BUFF_EN			BIT(6)
-> > +#define AST2600_I2CS_RX_CMD_LAST			BIT(4)
-> > +
-> > +#define AST2600_I2CS_TX_CMD				BIT(2)
-> > +
-> > +#define AST2600_I2CS_DMA_LEN		0x2C
-> > +#define AST2600_I2CS_SET_RX_DMA_LEN(x)	(((((x) - 1) & GENMASK(11, 0))
-> << 16) | BIT(31))
-> > +#define AST2600_I2CS_RX_DMA_LEN_MASK	(GENMASK(11, 0) << 16)
-> > +
-> > +#define AST2600_I2CS_SET_TX_DMA_LEN(x)	((((x) - 1) & GENMASK(11, 0))
-> | BIT(15))
-> > +#define AST2600_I2CS_TX_DMA_LEN_MASK	GENMASK(11, 0)
-> > +
-> > +/* I2CM Master DMA Tx Buffer Register   */
-> > +#define AST2600_I2CM_TX_DMA			0x30
-> > +/* I2CM Master DMA Rx Buffer Register	*/
-> > +#define AST2600_I2CM_RX_DMA			0x34
-> > +/* I2CS Slave DMA Tx Buffer Register   */
-> > +#define AST2600_I2CS_TX_DMA			0x38
-> > +/* I2CS Slave DMA Rx Buffer Register   */
-> > +#define AST2600_I2CS_RX_DMA			0x3C
-> > +
-> > +#define AST2600_I2CS_ADDR_CTRL		0x40
-> > +
-> > +#define	AST2600_I2CS_ADDR3_MASK		GENMASK(22, 16)
-> > +#define	AST2600_I2CS_ADDR2_MASK		GENMASK(14, 8)
-> > +#define	AST2600_I2CS_ADDR1_MASK		GENMASK(6, 0)
+>> -----Original Message-----
+>> From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+>> Sent: Tuesday, February 21, 2023 7:05 PM
+>> To: Ryan Chen <ryan_chen@aspeedtech.com>; Rob Herring
+>> <robh+dt@kernel.org>; Krzysztof Kozlowski
+>> <krzysztof.kozlowski+dt@linaro.org>; Joel Stanley <joel@jms.id.au>; Andrew
+>> Jeffery <andrew@aj.id.au>; Philipp Zabel <p.zabel@pengutronix.de>;
+>> openbmc at lists.ozlabs.org; linux-arm-kernel at lists.infradead.org;
+>> linux-aspeed at lists.ozlabs.org; linux-kernel at vger.kernel.org
+>> Subject: Re: [PATCH v5 1/2] dt-bindings: i2c: Add support for ASPEED i2Cv2
+>>
+>> On 21/02/2023 11:42, Ryan Chen wrote:
+>>>>>>> +    type: boolean
+>>>>>>> +    description: Enable i2c bus timeout for master/slave (35ms)
+>>>>>>
+>>>>>> Why this is property for DT? It's for sure not bool, but proper
+>>>>>> type coming from units.
+>>>>> This is i2c controller feature for enable slave mode inactive
+>>>>> timeout and also master mode sda/scl auto release timeout.
+>>>>> So I will modify to
+>>>>>   aspeed,timeout:
+>>>>> 	type: boolean
+>>>>>     description: I2C bus timeout enable for master/slave mode
+>>>>
+>>>> This does not answer my concerns. Why this is board specific?
+>>> Sorry, can?t catch your point.
+>>> It is not board specific. It is controller feature.
+>>> ASPEED SOC chip is server product, master connect may have fingerprint
+>>> connect to another board. And also support hotplug.
+>>> For example I2C controller as slave mode, and suddenly disconnected.
+>>> Slave state machine will keep waiting for master clock in for rx/tx transfer.
+>>> So it need timeout setting to enable timeout unlock controller state.
+>>> And in another side. As master mode, slave is clock stretching.
+>>> The master will be keep waiting, until slave release cll stretching.
+>>
+>> OK, thanks for describing the feature. I still do not see how this is DT related.
 > 
-> Drop indent after #define
+> Let me draw more about the board-specific. 
+> The following is an example about i2c layout in board.
+> Board A														Board B
+> --------------------------------------------------------							--------------------------------------------------------
+> |    i2c bus#1(master/slave)  <--------------------> fingerprint.(can be unplug)    <--------------------> i2c bus#x (master/slave) |
+> |    i2c bus#2(master) -> tmp i2c device     |			     		|									|
+> |    i2c bus#3(master) -> adc i2c device      |					|									|
+> --------------------------------------------------------							--------------------------------------------------------
+> In this case i2c bus#1 need enable timeout, avoid suddenly unplug the connector. That slave will keep state to drive clock stretching.
+> So it is specific enable in i2c bus#1. Others is not needed enable timeout. 
+> Does this draw is more clear in scenario?
 
-Will update in next send.
+I2C bus #1 works in slave mode? So you always need it for slave work?
 
 > 
-> > +
-> > +#define AST2600_I2CM_DMA_LEN_STS		0x48
-> > +#define AST2600_I2CS_DMA_LEN_STS		0x4C
-> > +
-> > +#define AST2600_I2C_GET_TX_DMA_LEN(x)		((x) & GENMASK(12, 0))
-> > +#define AST2600_I2C_GET_RX_DMA_LEN(x)		(((x) >> 16) &
-> GENMASK(12, 0))
-> > +
-> > +/* 0x40 : Slave Device Address Register */
-> > +#define AST2600_I2CS_ADDR3_ENABLE			BIT(23)
-> > +#define AST2600_I2CS_ADDR3(x)			((x) << 16)
-> > +
-> > +#define AST2600_I2CS_ADDR2_ENABLE			BIT(15)
-> > +#define AST2600_I2CS_ADDR2(x)			((x) << 8)
-> > +#define AST2600_I2CS_ADDR1_ENABLE			BIT(7)
-> > +#define AST2600_I2CS_ADDR1(x)			(x)
-> > +
-> > +#define I2C_SLAVE_MSG_BUF_SIZE		256
-> > +
-> > +#define AST2600_I2C_DMA_SIZE		4096
-> > +
-> > +#define MASTER_TRIGGER_LAST_STOP	(AST2600_I2CM_RX_CMD_LAST |
-> AST2600_I2CM_STOP_CMD)
-> > +#define SLAVE_TRIGGER_CMD	(AST2600_I2CS_ACTIVE_ALL |
-> AST2600_I2CS_PKT_MODE_EN)
-> > +
-> > +/* i2c timeout counter: use base clk4 1Mhz
-> > + * 1/(1000/4096) = 4.096ms * 8 = 32.768ms  */
-> > +#define AST_I2C_TIMEOUT_CLK		0x2
-> > +#define AST_I2C_TIMEOUT_COUNT	0x8
-> > +
-> > +struct ast2600_i2c_timing_table {
-> > +	u32 divisor;
-> > +	u32 timing;
-> > +};
-> > +
-> > +enum xfer_mode {
-> > +	BYTE_MODE = 0,
-> > +	BUFF_MODE,
-> > +	DMA_MODE,
-> > +};
-> > +
-> > +struct ast2600_i2c_bus {
-> > +	struct i2c_adapter		adap;
-> > +	struct device			*dev;
-> > +	void __iomem			*reg_base;
-> > +	struct regmap			*gr_regmap;
-> > +	struct reset_control		*rst;
-> > +	int				irq;
-> > +	enum xfer_mode			mode;
-> > +	struct clk			*clk;
-> > +	u32				apb_clk;
-> > +	u32				bus_frequency;
-> > +	int				slave_operate;
-> > +	int				timeout_enable;
-> > +	/* smbus alert */
-> > +	int				alert_enable;
-> > +	struct i2c_smbus_alert_setup	alert_data;
-> > +	struct i2c_client		*ara;
-> > +	/* Multi-master */
-> > +	bool				multi_master;
-> > +	/* master structure */
-> > +	int				cmd_err;
-> > +	struct completion		cmd_complete;
-> > +	struct i2c_msg			*msgs;
-> > +	size_t				buf_index;
-> > +	/* cur xfer msgs index*/
-> > +	int				msgs_index;
-> > +	int				msgs_count;
-> > +	u8				*master_safe_buf;
-> > +	dma_addr_t			master_dma_addr;
-> > +	/*total xfer count */
-> > +	int				master_xfer_cnt;
-> > +	/* Buffer mode */
-> > +	void __iomem			*buf_base;
-> > +	size_t				buf_size;
-> > +	/* Slave structure */
-> > +	int				slave_xfer_len;
-> > +	int				slave_xfer_cnt;
-> > +#ifdef CONFIG_I2C_SLAVE
-> > +	unsigned char			*slave_dma_buf;
-> > +	dma_addr_t			slave_dma_addr;
-> > +	struct i2c_client		*slave;
-> > +#endif
-> > +};
-> > +
+>>>
+>>> So in those reason add this timeout design in controller.
+>>
+>> You need to justify why DT is correct place for this property. DT is not for
+>> configuring OS, but to describe hardware. I gave you one possibility
+>> - why different boards would like to set this property. You said it is not board
+>> specific, thus all boards will have it (or none of them).
+>> Without any other reason, this is not a DT property. Drop.
+>>
+>>>>
+>>>>>
+>>>>>>> +
+>>>>>>> +  byte-mode:
+>>>>>>> +    type: boolean
+>>>>>>> +    description: Force i2c driver use byte mode transmit
+>>>>>>
+>>>>>> Drop, not a DT property.
+>>>>>>
+>>>>>>> +
+>>>>>>> +  buff-mode:
+>>>>>>> +    type: boolean
+>>>>>>> +    description: Force i2c driver use buffer mode transmit
+>>>>>>
+>>>>>> Drop, not a DT property.
+>>>>>>
+>>>>> The controller support 3 different for transfer.
+>>>>> Byte mode: it means step by step to issue transfer.
+>>>>> Example i2c read, each step will issue interrupt then enable next step.
+>>>>> Sr (start read) | D | D | D | P
+>>>>> Buffer mode: it means, the data can prepare into buffer register,
+>>>>> then Trigger transfer. So Sr D D D P, only have only 1 interrupt handling.
+>>>>> The DMA mode most like with buffer mode, The differ is data prepare
+>>>>> in DRAM, than trigger transfer.
+>>>>>
+>>>>> So, should I modify to
+>>>>>   aspeed,byte:
+>>>>> 	type: boolean
+>>>>>     description: Enable i2c controller transfer with byte mode
+>>>>>
+>>>>>   aspeed,buff:
+>>>>> 	type: boolean
+>>>>>     description: Enable i2c controller transfer with buff mode
+>>>>
+>>>> 1. No, these are not bools but enum in such case.
+>>>
+>>> Thanks, will modify following.
+>>> aspeed,xfer_mode:
+>>>     enum: [0, 1, 2]
+>>>     description:
+>>>       0: byte mode, 1: buff_mode, 2: dma_mode
+>>
+>> Just keep it text - byte, buffered, dma
+>>
+>>>
+>>>> 2. And why exactly this is board-specific?
+>>>
+>>> No, it not depends on board design. It is only for register control for
+>> controller transfer behave.
+>>> The controller support 3 different trigger mode for transfer.
+>>> Assign bus#1 ~ 3 : dma tranfer and assign bus#4 ~ 6 : buffer mode
+>>> transfer, That can reduce the dram usage.
+>>
+>> Then anyway it does not look like property for Devicetree. DT describes
+>> hardware, not OS behavior.
 > 
-> (...)
-> 
-> > +
-> > +	//Check 0x14's SDA and SCL status
-> 
-> Use Linux coding style. See Coding style document.
+> The same draw, in this case, i2c bus#1 that is multi-master transfer architecture. 
+> Both will inactive with trunk data. That cane enable i2c#1 use DMA transfer to reduce CPU utilized.
+> Others (bus#2/3) can keep byte/buff mode. 
 
-Will review all and clean this.
+Isn't then current bus configuration for I2C#1 known to the driver?
+Jeremy asked few other questions around here...
 
-> 
-> > +	state = readl(i2c_bus->reg_base + AST2600_I2CC_STS_AND_BUFF);
-> > +	if (!(state & AST2600_I2CC_SDA_LINE_STS) && (state &
-> AST2600_I2CC_SCL_LINE_STS)) {
-> > +		writel(AST2600_I2CM_RECOVER_CMD_EN, i2c_bus->reg_base +
-> AST2600_I2CM_CMD_STS);
-> > +		r = wait_for_completion_timeout(&i2c_bus->cmd_complete,
-> i2c_bus->adap.timeout);
-> > +		if (r == 0) {
-> > +			dev_dbg(i2c_bus->dev, "recovery timed out\n");
-> > +			ret = -ETIMEDOUT;
-> > +		} else {
-> > +			if (i2c_bus->cmd_err) {
-> > +				dev_dbg(i2c_bus->dev, "recovery error\n");
-> > +				ret = -EPROTO;
-> > +			}
-> > +		}
-> > +	}
-> > +
-> > +	dev_dbg(i2c_bus->dev, "Recovery done [%x]\n",
-> > +		readl(i2c_bus->reg_base + AST2600_I2CC_STS_AND_BUFF));
-> > +	if (readl(i2c_bus->reg_base + AST2600_I2CC_STS_AND_BUFF) &
-> AST2600_I2CC_BUS_BUSY_STS) {
-> > +		dev_dbg(i2c_bus->dev, "Can't recovery bus [%x]\n",
-> > +			readl(i2c_bus->reg_base + AST2600_I2CC_STS_AND_BUFF));
-> > +	}
-> > +
-> > +	writel(ctrl, i2c_bus->reg_base + AST2600_I2CC_FUN_CTRL);
-> > +	return ret;
-> > +}
-> > +
-> > +#ifdef CONFIG_I2C_SLAVE
-> > +static void ast2600_i2c_slave_packet_dma_irq(struct ast2600_i2c_bus
-> > +*i2c_bus, u32 sts) {
-> > +	int slave_rx_len;
-> > +	u32 cmd = 0;
-> > +	u8 value;
-> > +	int i = 0;
-> > +
-> > +	sts &= ~(AST2600_I2CS_SLAVE_PENDING);
-> > +	/* Handle i2c slave timeout condition */
-> > +	if (AST2600_I2CS_INACTIVE_TO & sts) {
-> > +		cmd = SLAVE_TRIGGER_CMD;
-> > +		cmd |= AST2600_I2CS_RX_DMA_EN;
-> > +
-> 	writel(AST2600_I2CS_SET_RX_DMA_LEN(I2C_SLAVE_MSG_BUF_SIZE),
-> > +		       i2c_bus->reg_base + AST2600_I2CS_DMA_LEN);
-> > +		writel(cmd, i2c_bus->reg_base + AST2600_I2CS_CMD_STS);
-> > +		i2c_slave_event(i2c_bus->slave, I2C_SLAVE_STOP, &value);
-> > +		return;
-> > +	}
-> > +
-> > +	sts &= ~(AST2600_I2CS_PKT_DONE | AST2600_I2CS_PKT_ERROR);
-> > +
-> > +	switch (sts) {
-> > +	case AST2600_I2CS_SLAVE_MATCH | AST2600_I2CS_RX_DONE |
-> AST2600_I2CS_WAIT_RX_DMA:
-> > +	case AST2600_I2CS_SLAVE_MATCH | AST2600_I2CS_WAIT_RX_DMA:
-> > +		i2c_slave_event(i2c_bus->slave, I2C_SLAVE_WRITE_REQUESTED,
-> &value);
-> > +		slave_rx_len =
-> AST2600_I2C_GET_RX_DMA_LEN(readl(i2c_bus->reg_base +
-> > +						      AST2600_I2CS_DMA_LEN_STS));
-> > +		for (i = 0; i < slave_rx_len; i++) {
-> > +			i2c_slave_event(i2c_bus->slave, I2C_SLAVE_WRITE_RECEIVED,
-> > +					&i2c_bus->slave_dma_buf[i]);
-> > +		}
-> > +
-> 	writel(AST2600_I2CS_SET_RX_DMA_LEN(I2C_SLAVE_MSG_BUF_SIZE),
-> > +				i2c_bus->reg_base + AST2600_I2CS_DMA_LEN);
-> > +		cmd = SLAVE_TRIGGER_CMD | AST2600_I2CS_RX_DMA_EN;
-> > +		break;
-> > +	case AST2600_I2CS_SLAVE_MATCH | AST2600_I2CS_STOP:
-> > +		i2c_slave_event(i2c_bus->slave, I2C_SLAVE_STOP, &value);
-> > +
-> 	writel(AST2600_I2CS_SET_RX_DMA_LEN(I2C_SLAVE_MSG_BUF_SIZE),
-> > +				i2c_bus->reg_base + AST2600_I2CS_DMA_LEN);
-> > +		cmd = SLAVE_TRIGGER_CMD | AST2600_I2CS_RX_DMA_EN;
-> > +		break;
-> > +	case AST2600_I2CS_SLAVE_MATCH | AST2600_I2CS_RX_DONE_NAK |
-> > +			AST2600_I2CS_RX_DONE | AST2600_I2CS_STOP:
-> > +	case AST2600_I2CS_SLAVE_MATCH | AST2600_I2CS_WAIT_RX_DMA |
-> > +			AST2600_I2CS_RX_DONE | AST2600_I2CS_STOP:
-> > +	case AST2600_I2CS_RX_DONE_NAK | AST2600_I2CS_RX_DONE |
-> AST2600_I2CS_STOP:
-> > +	case AST2600_I2CS_RX_DONE | AST2600_I2CS_WAIT_RX_DMA |
-> AST2600_I2CS_STOP:
-> > +	case AST2600_I2CS_RX_DONE | AST2600_I2CS_STOP:
-> > +	case AST2600_I2CS_RX_DONE | AST2600_I2CS_WAIT_RX_DMA:
-> > +	case AST2600_I2CS_SLAVE_MATCH | AST2600_I2CS_RX_DONE |
-> AST2600_I2CS_STOP:
-> > +		if (sts & AST2600_I2CS_SLAVE_MATCH)
-> > +			i2c_slave_event(i2c_bus->slave,
-> I2C_SLAVE_WRITE_REQUESTED,
-> > +&value);
-> > +
-> > +		slave_rx_len =
-> AST2600_I2C_GET_RX_DMA_LEN(readl(i2c_bus->reg_base +
-> > +						      AST2600_I2CS_DMA_LEN_STS));
-> > +		for (i = 0; i < slave_rx_len; i++) {
-> > +			i2c_slave_event(i2c_bus->slave, I2C_SLAVE_WRITE_RECEIVED,
-> > +					&i2c_bus->slave_dma_buf[i]);
-> > +		}
-> > +
-> 	writel(AST2600_I2CS_SET_RX_DMA_LEN(I2C_SLAVE_MSG_BUF_SIZE),
-> > +		       i2c_bus->reg_base + AST2600_I2CS_DMA_LEN);
-> > +		if (sts & AST2600_I2CS_STOP)
-> > +			i2c_slave_event(i2c_bus->slave, I2C_SLAVE_STOP, &value);
-> > +		cmd = SLAVE_TRIGGER_CMD | AST2600_I2CS_RX_DMA_EN;
-> > +		break;
-> > +
-> > +	/* it is Mw data Mr coming -> it need send tx */
-> > +	case AST2600_I2CS_RX_DONE | AST2600_I2CS_WAIT_TX_DMA:
-> > +	case AST2600_I2CS_SLAVE_MATCH | AST2600_I2CS_RX_DONE |
-> AST2600_I2CS_WAIT_TX_DMA:
-> > +		/* it should be repeat start read */
-> > +		if (sts & AST2600_I2CS_SLAVE_MATCH)
-> > +			i2c_slave_event(i2c_bus->slave,
-> I2C_SLAVE_WRITE_REQUESTED,
-> > +&value);
-> > +
-> > +		slave_rx_len =
-> AST2600_I2C_GET_RX_DMA_LEN(readl(i2c_bus->reg_base +
-> > +						      AST2600_I2CS_DMA_LEN_STS));
-> > +		for (i = 0; i < slave_rx_len; i++) {
-> > +			i2c_slave_event(i2c_bus->slave, I2C_SLAVE_WRITE_RECEIVED,
-> > +					&i2c_bus->slave_dma_buf[i]);
-> > +		}
-> > +		i2c_slave_event(i2c_bus->slave, I2C_SLAVE_READ_REQUESTED,
-> > +				&i2c_bus->slave_dma_buf[0]);
-> > +		writel(0, i2c_bus->reg_base + AST2600_I2CS_DMA_LEN_STS);
-> > +		writel(AST2600_I2CS_SET_TX_DMA_LEN(1),
-> > +				i2c_bus->reg_base + AST2600_I2CS_DMA_LEN);
-> > +		cmd = SLAVE_TRIGGER_CMD | AST2600_I2CS_TX_DMA_EN;
-> > +		break;
-> > +	case AST2600_I2CS_SLAVE_MATCH | AST2600_I2CS_WAIT_TX_DMA:
-> > +		/* First Start read */
-> > +		i2c_slave_event(i2c_bus->slave, I2C_SLAVE_READ_REQUESTED,
-> > +				&i2c_bus->slave_dma_buf[0]);
-> > +		writel(AST2600_I2CS_SET_TX_DMA_LEN(1),
-> > +				i2c_bus->reg_base + AST2600_I2CS_DMA_LEN);
-> > +		cmd = SLAVE_TRIGGER_CMD | AST2600_I2CS_TX_DMA_EN;
-> > +		break;
-> > +	case AST2600_I2CS_WAIT_TX_DMA:
-> > +		/* it should be next start read */
-> > +		i2c_slave_event(i2c_bus->slave, I2C_SLAVE_READ_PROCESSED,
-> > +				&i2c_bus->slave_dma_buf[0]);
-> > +		writel(0, i2c_bus->reg_base + AST2600_I2CS_DMA_LEN_STS);
-> > +		writel(AST2600_I2CS_SET_TX_DMA_LEN(1),
-> > +				i2c_bus->reg_base + AST2600_I2CS_DMA_LEN);
-> > +		cmd = SLAVE_TRIGGER_CMD | AST2600_I2CS_TX_DMA_EN;
-> > +		break;
-> > +
-> > +	case AST2600_I2CS_TX_NAK | AST2600_I2CS_STOP:
-> > +		/* it just tx complete */
-> > +		i2c_slave_event(i2c_bus->slave, I2C_SLAVE_STOP, &value);
-> > +		writel(0, i2c_bus->reg_base + AST2600_I2CS_DMA_LEN_STS);
-> > +
-> 	writel(AST2600_I2CS_SET_RX_DMA_LEN(I2C_SLAVE_MSG_BUF_SIZE),
-> > +		       i2c_bus->reg_base + AST2600_I2CS_DMA_LEN);
-> > +		cmd = SLAVE_TRIGGER_CMD | AST2600_I2CS_RX_DMA_EN;
-> > +		break;
-> > +	case AST2600_I2CS_SLAVE_MATCH | AST2600_I2CS_RX_DONE:
-> > +		cmd = 0;
-> > +		i2c_slave_event(i2c_bus->slave, I2C_SLAVE_WRITE_REQUESTED,
-> &value);
-> > +		break;
-> > +	case AST2600_I2CS_STOP:
-> > +		cmd = 0;
-> > +		i2c_slave_event(i2c_bus->slave, I2C_SLAVE_STOP, &value);
-> > +		break;
-> > +	default:
-> > +		dev_dbg(i2c_bus->dev, "todo slave isr case %x, sts %x\n", sts,
-> > +			readl(i2c_bus->reg_base + AST2600_I2CC_STS_AND_BUFF));
-> > +		break;
-> > +	}
-> > +
-> > +	if (cmd)
-> > +		writel(cmd, i2c_bus->reg_base + AST2600_I2CS_CMD_STS);
-> > +	writel(AST2600_I2CS_PKT_DONE, i2c_bus->reg_base +
-> AST2600_I2CS_ISR);
-> > +	readl(i2c_bus->reg_base + AST2600_I2CS_ISR);
-> > +	dev_dbg(i2c_bus->dev, "cmd %x\n", cmd); }
-> > +
-> > +static void ast2600_i2c_slave_packet_buff_irq(struct ast2600_i2c_bus
-> > +*i2c_bus, u32 sts) {
-> > +	int slave_rx_len = 0;
-> > +	u32 cmd = 0;
-> > +	u8 value;
-> > +	int i = 0;
-> > +
-> > +	//due to master slave is common buffer, so need force the master
-> > +stop not issue
-> 
-> Ditto... and everywhere else.
-> 
-> (...)
-> 
-> > +
-> > +static int ast2600_i2c_master_irq(struct ast2600_i2c_bus *i2c_bus) {
-> > +	u32 sts = readl(i2c_bus->reg_base + AST2600_I2CM_ISR);
-> > +	u32 ier = readl(i2c_bus->reg_base + AST2600_I2CM_IER);
-> > +	u32 ctrl = 0;
-> > +
-> > +	dev_dbg(i2c_bus->dev, "M sts %x\n", sts);
-> 
-> NAK. Don't drop debugs to interrupt handlers. This might flood the log and is
-> unusable.
-> 
-> > +	if (!i2c_bus->alert_enable)
-> > +		sts &= ~AST2600_I2CM_SMBUS_ALT;
-> > +
-> > +	if (AST2600_I2CM_BUS_RECOVER_FAIL & sts) {
-> > +		dev_dbg(i2c_bus->dev, "M clear isr:
-> AST2600_I2CM_BUS_RECOVER_FAIL=
-> > +%x\n", sts);
-> 
-> No debugs in handlers.
-
-Will review all, remove debug in handlers. 
-
-> > +		writel(AST2600_I2CM_BUS_RECOVER_FAIL, i2c_bus->reg_base +
-> AST2600_I2CM_ISR);
-> > +		ctrl = readl(i2c_bus->reg_base + AST2600_I2CC_FUN_CTRL);
-> > +		writel(0, i2c_bus->reg_base + AST2600_I2CC_FUN_CTRL);
-> > +		writel(ctrl, i2c_bus->reg_base + AST2600_I2CC_FUN_CTRL);
-> > +		i2c_bus->cmd_err = -EPROTO;
-> > +		complete(&i2c_bus->cmd_complete);
-> > +		return 1;
-> > +	}
-> > +
-> > +	if (AST2600_I2CM_BUS_RECOVER & sts) {
-> > +		dev_dbg(i2c_bus->dev, "M clear isr: AST2600_I2CM_BUS_RECOVER=
-> > +%x\n", sts);
-> 
-> Ditto
-> 
-> > +		writel(AST2600_I2CM_BUS_RECOVER, i2c_bus->reg_base +
-> AST2600_I2CM_ISR);
-> > +		i2c_bus->cmd_err = 0;
-> > +		complete(&i2c_bus->cmd_complete);
-> > +		return 1;
-> > +	}
-> > +
-> > +	if (AST2600_I2CM_SMBUS_ALT & sts) {
-> > +		if (ier & AST2600_I2CM_SMBUS_ALT) {
-> > +			dev_dbg(i2c_bus->dev, "M clear isr:
-> AST2600_I2CM_SMBUS_ALT= %x\n",
-> > +sts);
-> 
-> Ditto
-> 
-> > +			/* Disable ALT INT */
-> > +			writel(ier & ~AST2600_I2CM_SMBUS_ALT, i2c_bus->reg_base +
-> AST2600_I2CM_IER);
-> > +			i2c_handle_smbus_alert(i2c_bus->ara);
-> > +			writel(AST2600_I2CM_SMBUS_ALT, i2c_bus->reg_base +
-> AST2600_I2CM_ISR);
-> > +			dev_err(i2c_bus->dev,
-> > +				"ast2600_master_alert_recv bus id %d, Disable Alt, Please
-> Imple\n",
-> > +				i2c_bus->adap.nr);
-> 
-> Really? This is your intention? To print error on every error condition on every
-> interrupt?
-> 
-> > +			return 1;
-> > +		}
-> > +	}
-> > +
-> > +	i2c_bus->cmd_err = ast2600_i2c_is_irq_error(sts);
-> > +	if (i2c_bus->cmd_err) {
-> > +		dev_dbg(i2c_bus->dev, "received error interrupt: 0x%02x\n", sts);
-> 
-> Drop
-> 
-> > +		writel(AST2600_I2CM_PKT_DONE, i2c_bus->reg_base +
-> AST2600_I2CM_ISR);
-> > +		complete(&i2c_bus->cmd_complete);
-> > +		return 1;
-> > +	}
-> > +
-> > +	if (AST2600_I2CM_PKT_DONE & sts) {
-> > +		ast2600_i2c_master_package_irq(i2c_bus, sts);
-> > +		return 1;
-> > +	}
-> > +
-> > +	return 0;
-> > +}
-> > +
-> > +static irqreturn_t ast2600_i2c_bus_irq(int irq, void *dev_id) {
-> > +	struct ast2600_i2c_bus *i2c_bus = dev_id;
-> > +
-> > +#ifdef CONFIG_I2C_SLAVE
-> > +	if (readl(i2c_bus->reg_base + AST2600_I2CC_FUN_CTRL) &
-> AST2600_I2CC_SLAVE_EN) {
-> > +		if (ast2600_i2c_slave_irq(i2c_bus)) {
-> > +//			dev_dbg(i2c_bus->dev, "bus-%d.slave handle\n",
-> i2c_bus->adap.nr);
-> 
-> Drop
-> 
-> > +			return IRQ_HANDLED;
-> > +		}
-> > +	}
-> > +#endif
-> > +	return ast2600_i2c_master_irq(i2c_bus) ? IRQ_HANDLED : IRQ_NONE; }
-> > +
-> 
-> (...)
-> 
-> > +
-> > +static int ast2600_i2c_probe(struct platform_device *pdev) {
-> > +	struct device_node *np = pdev->dev.of_node;
-> > +	struct ast2600_i2c_bus *i2c_bus;
-> > +	struct resource *res;
-> > +	u32 global_ctrl;
-> > +	int ret = 0;
-> > +
-> > +	i2c_bus = devm_kzalloc(&pdev->dev, sizeof(*i2c_bus), GFP_KERNEL);
-> > +	if (!i2c_bus)
-> > +		return -ENOMEM;
-> > +
-> > +	i2c_bus->rst = devm_reset_control_get_shared(&pdev->dev, NULL);
-> > +	if (IS_ERR(i2c_bus->rst)) {
-> > +		dev_err(&pdev->dev,
-> > +			"missing or invalid reset controller device tree entry\n");
-> > +		goto free_mem;
-> > +	}
-> > +	reset_control_deassert(i2c_bus->rst);
-> > +
-> > +	i2c_bus->gr_regmap = syscon_regmap_lookup_by_phandle(np,
-> > +"aspeed,i2c-global");
-> 
-> NAK, undocumented property. This is really untested patchset. Your code does
-> not match bindings which do not match DTS.
-> 
-> Send entire set - bindings, driver and DTS which all work together.
-> 
-> Further you have several other undocumented properties.
-> 
-> > +	if (IS_ERR(i2c_bus->gr_regmap)) {
-> > +		dev_err(&pdev->dev, "failed to find ast2600 i2c global regmap\n");
-> > +		ret = -ENOMEM;
-> > +		goto free_mem;
-> > +	}
-> > +
-> > +	regmap_read(i2c_bus->gr_regmap, AST2600_I2CG_CTRL, &global_ctrl);
-> > +	if ((global_ctrl & AST2600_GLOBAL_INIT) != AST2600_GLOBAL_INIT) {
-> > +		regmap_write(i2c_bus->gr_regmap, AST2600_I2CG_CTRL,
-> AST2600_GLOBAL_INIT);
-> > +		regmap_write(i2c_bus->gr_regmap, AST2600_I2CG_CLK_DIV_CTRL,
-> I2CCG_DIV_CTRL);
-> > +	}
-> > +
-> > +	i2c_bus->mode = DMA_MODE;
-> > +	i2c_bus->slave_operate = 0;
-> > +
-> > +	if (of_property_read_bool(pdev->dev.of_node, "byte-mode"))
-> 
-> This must be gone from DT, as you do not describe hardware but "force driver".
-> 
-> > +		i2c_bus->mode = BYTE_MODE;> +
-> > +	if (of_property_read_bool(pdev->dev.of_node, "buff-mode")) {
-> 
-> This for sure is not property of DT.
-> 
-> > +		res = platform_get_resource(pdev, IORESOURCE_MEM, 1);
-> > +		if (res && resource_size(res) >= 2)
-> > +			i2c_bus->buf_base = devm_ioremap_resource(&pdev->dev, res);
-> > +
-> > +		if (!IS_ERR_OR_NULL(i2c_bus->buf_base))
-> > +			i2c_bus->buf_size = resource_size(res)/2;
-> > +
-> > +		i2c_bus->mode = BUFF_MODE;
-> > +	}
-> > +
-> > +	if (of_property_read_bool(pdev->dev.of_node, "timeout"))
-> 
-> Also will be gone.
-> 
-> > +		i2c_bus->timeout_enable = 1;
-> > +
-> > +	i2c_bus->dev = &pdev->dev;
-> > +	init_completion(&i2c_bus->cmd_complete);
-> > +
-> > +	i2c_bus->reg_base = devm_platform_ioremap_resource(pdev, 0);
-> > +	if (IS_ERR(i2c_bus->reg_base)) {
-> > +		ret = PTR_ERR(i2c_bus->reg_base);
-> > +		goto free_mem;
-> > +	}
-> > +
-> > +	i2c_bus->irq = platform_get_irq(pdev, 0);
-> > +	if (i2c_bus->irq < 0) {
-> > +		dev_err(&pdev->dev, "no irq specified\n");
-> > +		ret = -i2c_bus->irq;
-> > +		goto unmap;
-> > +	}
-> > +
-> > +	platform_set_drvdata(pdev, i2c_bus);
-> > +
-> > +	i2c_bus->clk = devm_clk_get(i2c_bus->dev, NULL);
-> > +	if (IS_ERR(i2c_bus->clk)) {
-> > +		dev_err(i2c_bus->dev, "no clock defined\n");
-> 
-> use dev_err_probe().
-> 
-> > +		ret = -ENODEV;
-> > +		goto unmap;
-> > +	}
-> > +	i2c_bus->apb_clk = clk_get_rate(i2c_bus->clk);
-> > +	dev_dbg(i2c_bus->dev, "i2c_bus->apb_clk %d\n", i2c_bus->apb_clk);
-> > +
-> 
-> NAK, drop useless debug.
-
-Will remove it.
-
-> > +
-> > +	ret = of_property_read_u32(pdev->dev.of_node, "clock-frequency",
-> &i2c_bus->bus_frequency);
-> > +	if (ret < 0) {
-> > +		dev_warn(&pdev->dev, "Could not read bus-frequency property\n");
-> > +		i2c_bus->bus_frequency = 100000;
-> > +	}
-> > +
-> > +	/* Initialize the I2C adapter */
-> > +	i2c_bus->adap.owner = THIS_MODULE;
-> > +	i2c_bus->adap.algo = &i2c_ast2600_algorithm;
-> > +	i2c_bus->adap.retries = 0;
-> > +	i2c_bus->adap.dev.parent = i2c_bus->dev;
-> > +	i2c_bus->adap.dev.of_node = pdev->dev.of_node;
-> > +	i2c_bus->adap.algo_data = i2c_bus;
-> > +	strscpy(i2c_bus->adap.name, pdev->name, sizeof(i2c_bus->adap.name));
-> > +	i2c_set_adapdata(&i2c_bus->adap, i2c_bus);
-> > +
-> > +	ast2600_i2c_init(i2c_bus);
-> > +
-> > +	ret = devm_request_irq(&pdev->dev, i2c_bus->irq, ast2600_i2c_bus_irq, 0,
-> > +			       dev_name(&pdev->dev), i2c_bus);
-> > +	if (ret < 0)
-> > +		goto unmap;
-> > +
-> > +	if (of_property_read_bool(pdev->dev.of_node, "smbus-alert")) {
-> 
-> There is no such property. Don't add undocumented properties to your code.
-> 
-> > +
-> > +	return 0;
-> > +
-> > +free_irq:
-> > +	devm_free_irq(&pdev->dev, i2c_bus->irq, i2c_bus);
-> 
-> Why?
-> 
-> > +unmap:
-> > +	devm_iounmap(&pdev->dev, i2c_bus->reg_base);
-> 
-> Why?
-> 
-> > +free_mem:
-> > +	devm_kfree(&pdev->dev, i2c_bus);
-> 
-> Why?
-> 
-
-Sorry, those are probe following, if any error, will goto this label.
-To release mem/unmap/free_irq. Is this unnecessary? 
-I saw many driver submit is remove all probe fail goto label, is just return ERR.
-Do you mean I direct go for this way?
-
-> > +
-> > +	return ret;
-> > +}
-> > +
-> > +static int ast2600_i2c_remove(struct platform_device *pdev) {
-> > +	struct ast2600_i2c_bus *i2c_bus = platform_get_drvdata(pdev);
-> > +
-> > +	/* Disable everything. */
-> > +	writel(0, i2c_bus->reg_base + AST2600_I2CC_FUN_CTRL);
-> > +	writel(0, i2c_bus->reg_base + AST2600_I2CM_IER);
-> > +
-> > +	devm_free_irq(&pdev->dev, i2c_bus->irq, i2c_bus);
-> > +
-> > +	i2c_del_adapter(&i2c_bus->adap);
-> 
-> Wrong order of cleanup. It should be reversed to the probe, unless you have
-> some reason, but then please explain.
-
-Sorry, this in remove function, it should do i2c_del_adapter(&i2c_bus->adap) in the end.
-Why this should revered to probe?
-> 
-> > +
-> > +#ifdef CONFIG_I2C_SLAVE
-> > +	/* for memory buffer initial */
-> > +	if (i2c_bus->mode == DMA_MODE)
-> > +		dma_free_coherent(i2c_bus->dev, I2C_SLAVE_MSG_BUF_SIZE,
-> > +				i2c_bus->slave_dma_buf, i2c_bus->slave_dma_addr);
-> #endif
-> > +
-> > +	return 0;
-> > +}
-> > +
-> > +static struct platform_driver ast2600_i2c_bus_driver = {
-> > +	.probe = ast2600_i2c_probe,
-> > +	.remove = ast2600_i2c_remove,
-> > +	.driver = {
-> > +		.name = KBUILD_MODNAME,
-> > +		.of_match_table = ast2600_i2c_bus_of_table,
-> > +	},
-> > +};
-> > +module_platform_driver(ast2600_i2c_bus_driver);
-> > +
-> > +MODULE_AUTHOR("Ryan Chen <ryan_chen@aspeedtech.com>");
-> > +MODULE_DESCRIPTION("ASPEED AST2600 I2C Controller Driver");
-> > +MODULE_LICENSE("GPL");
-> 
-> Best regards,
-> Krzysztof
+Best regards,
+Krzysztof
 
