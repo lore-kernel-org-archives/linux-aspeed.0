@@ -1,65 +1,105 @@
 From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Date: Thu, 23 Feb 2023 10:28:48 +0100
-Subject: [PATCH v5 1/2] dt-bindings: i2c: Add support for ASPEED i2Cv2
-In-Reply-To: <SEZPR06MB5269052D7ADCD0D0F939E60DF2AA9@SEZPR06MB5269.apcprd06.prod.outlook.com>
+Date: Thu, 23 Feb 2023 10:30:13 +0100
+Subject: [PATCH v5 2/2] i2c: aspeed: support ast2600 i2cv2 new register
+ mode driver
+In-Reply-To: <SEZPR06MB526909B8D4313CA5F33074C5F2AB9@SEZPR06MB5269.apcprd06.prod.outlook.com>
 References: <20230220061745.1973981-1-ryan_chen@aspeedtech.com>
- <20230220061745.1973981-2-ryan_chen@aspeedtech.com>
- <676c7777-635c-cc1f-b919-d33e84a45442@linaro.org>
- <TYZPR06MB527427ADCCD29DFD77FB0EE3F2A59@TYZPR06MB5274.apcprd06.prod.outlook.com>
- <80d873d4-d813-6c25-8f47-f5ff9af718ec@linaro.org>
- <SEZPR06MB5269502D7CBCD5698B65FF9FF2A59@SEZPR06MB5269.apcprd06.prod.outlook.com>
- <c0ac0ab3-87fc-e74a-b4e2-3cf1b3a8a5e2@linaro.org>
- <SEZPR06MB52698CCA6AE59DDC6C15CBE4F2AA9@SEZPR06MB5269.apcprd06.prod.outlook.com>
- <94238c42-1250-4d51-86e5-0a960dea0ffc@linaro.org>
- <SEZPR06MB52696835ED8E2709D6A454DAF2AA9@SEZPR06MB5269.apcprd06.prod.outlook.com>
- <b7ca24ea-a265-81cb-3da6-19f938b35878@linaro.org>
- <SEZPR06MB5269052D7ADCD0D0F939E60DF2AA9@SEZPR06MB5269.apcprd06.prod.outlook.com>
-Message-ID: <5c255eb3-ec9e-d66f-4a2b-ccc32edf5672@linaro.org>
+ <20230220061745.1973981-3-ryan_chen@aspeedtech.com>
+ <63986fb1-f8d4-f348-bae9-72e08369213b@linaro.org>
+ <SEZPR06MB5269B032022D3D7286E59D36F2AA9@SEZPR06MB5269.apcprd06.prod.outlook.com>
+ <77480142-a2c0-f6da-af0e-d3f01f72ac53@linaro.org>
+ <SEZPR06MB526909B8D4313CA5F33074C5F2AB9@SEZPR06MB5269.apcprd06.prod.outlook.com>
+Message-ID: <b99ed483-ab56-f5a3-d2f2-c0451de271cc@linaro.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 22/02/2023 11:47, Ryan Chen wrote:
->>>> connector. That slave will keep state to drive clock stretching.
->>>>> So it is specific enable in i2c bus#1. Others is not needed enable timeout.
->>>>> Does this draw is more clear in scenario?
->>>>
->>>> I2C bus #1 works in slave mode? So you always need it for slave work?
->>>
->>> Yes, it is both slave/master mode. It is always dual role. Slave must always
->> work.
->>> Due to another board master will send.
->>
->> I meant that you need this property when it works in slave mode? It would be
->> then redundant to have in DT as it is implied by the mode.
+On 23/02/2023 01:58, Ryan Chen wrote:
+> Hello Krzysztof,
 > 
-> But timeout feature is also apply in master. It for avoid suddenly slave miss(un-plug) 
-> Master can timeout and release the SDA/SCL, return. 
-
-OK, yet the property should describe the hardware, not the register
-feature you want to program. You need to properly model it in DT binding
-to represent hardware setup, not your desired Linux driver behavior.
-
->>>>> The same draw, in this case, i2c bus#1 that is multi-master transfer
->>>> architecture.
->>>>> Both will inactive with trunk data. That cane enable i2c#1 use DMA
->>>>> transfer
->>>> to reduce CPU utilized.
->>>>> Others (bus#2/3) can keep byte/buff mode.
->>>>
->>>> Isn't then current bus configuration for I2C#1 known to the driver?
->>>> Jeremy asked few other questions around here...
->>>
->>> No, The driver don't know currently board configuration.
+>> -----Original Message-----
+>> From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+>> Sent: Wednesday, February 22, 2023 4:28 PM
+>> To: Ryan Chen <ryan_chen@aspeedtech.com>; Rob Herring
+>> <robh+dt@kernel.org>; Krzysztof Kozlowski
+>> <krzysztof.kozlowski+dt@linaro.org>; Joel Stanley <joel@jms.id.au>; Andrew
+>> Jeffery <andrew@aj.id.au>; Philipp Zabel <p.zabel@pengutronix.de>;
+>> openbmc at lists.ozlabs.org; linux-arm-kernel at lists.infradead.org;
+>> linux-aspeed at lists.ozlabs.org; linux-kernel at vger.kernel.org
+>> Subject: Re: [PATCH v5 2/2] i2c: aspeed: support ast2600 i2cv2 new register
+>> mode driver
 >>
->> It knows whether it is working in multi-master/slave mode.
+>> On 22/02/2023 04:36, Ryan Chen wrote:
+>>
+>>>>> +
+>>>>> +	return 0;
+>>>>> +
+>>>>> +free_irq:
+>>>>> +	devm_free_irq(&pdev->dev, i2c_bus->irq, i2c_bus);
+>>>>
+>>>> Why?
+>>>>
+>>>>> +unmap:
+>>>>> +	devm_iounmap(&pdev->dev, i2c_bus->reg_base);
+>>>>
+>>>> Why?
+>>>>
+>>>>> +free_mem:
+>>>>> +	devm_kfree(&pdev->dev, i2c_bus);
+>>>>
+>>>> Why?
+>>>>
+>>>
+>>> Sorry, those are probe following, if any error, will goto this label.
+>>> To release mem/unmap/free_irq. Is this unnecessary?
+>>
+>> Releasing managed resources is usualyl unnecessary. Therefore I am asking
+>> why do you think it is necessary here?
+>>
+>>> I saw many driver submit is remove all probe fail goto label, is just return
+>> ERR.
+>>> Do you mean I direct go for this way?
+>>
+>> Why would you do it differently?
 > 
-> But in DT can decide which i2c bus number can use dma or buffer mode transfer.
-> If in another i2c bus support master only, also can use dma to transfer trunk data to another slave. 
+> Thanks, I will remove those labels, and modify to dev_err_probe in previous probe return.
+> 
+>>>
+>>>>> +
+>>>>> +	return ret;
+>>>>> +}
+>>>>> +
+>>>>> +static int ast2600_i2c_remove(struct platform_device *pdev) {
+>>>>> +	struct ast2600_i2c_bus *i2c_bus = platform_get_drvdata(pdev);
+>>>>> +
+>>>>> +	/* Disable everything. */
+>>>>> +	writel(0, i2c_bus->reg_base + AST2600_I2CC_FUN_CTRL);
+>>>>> +	writel(0, i2c_bus->reg_base + AST2600_I2CM_IER);
+>>>>> +
+>>>>> +	devm_free_irq(&pdev->dev, i2c_bus->irq, i2c_bus);
+>>>>> +
+>>>>> +	i2c_del_adapter(&i2c_bus->adap);
+>>>>
+>>>> Wrong order of cleanup. It should be reversed to the probe, unless
+>>>> you have some reason, but then please explain.
+>>>
+>>> Sorry, this in remove function, it should do i2c_del_adapter(&i2c_bus->adap)
+>> in the end.
+>>> Why this should revered to probe?
+>>
+>> Because it's logical, you do the same with error paths of probe, it it usually the
+>> only way to make sure some of the resources are not used by some other piece
+>> (e.g. interrupt handler is called while i2c adapter is unregistered).
+> 
+> Sorry, I can't catch your point.
+> Do you mean remove devm_free_irq(&pdev->dev, i2c_bus->irq, i2c_bus);
+> Keep i2c_del_adapter(&i2c_bus->adap) here, because interrupt is called while i2c adapter is unregistered ?
 
-and none of these were explained in commit msg or device description.
+Again, maybe clearer, actions should be in reversed order comparing to
+the probe actions. Why would you remove pieces of code from here if I
+asked to do them in different order?
 
 Best regards,
 Krzysztof
