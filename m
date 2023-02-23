@@ -1,106 +1,45 @@
-From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Date: Thu, 23 Feb 2023 10:30:13 +0100
-Subject: [PATCH v5 2/2] i2c: aspeed: support ast2600 i2cv2 new register
- mode driver
-In-Reply-To: <SEZPR06MB526909B8D4313CA5F33074C5F2AB9@SEZPR06MB5269.apcprd06.prod.outlook.com>
-References: <20230220061745.1973981-1-ryan_chen@aspeedtech.com>
- <20230220061745.1973981-3-ryan_chen@aspeedtech.com>
- <63986fb1-f8d4-f348-bae9-72e08369213b@linaro.org>
- <SEZPR06MB5269B032022D3D7286E59D36F2AA9@SEZPR06MB5269.apcprd06.prod.outlook.com>
- <77480142-a2c0-f6da-af0e-d3f01f72ac53@linaro.org>
- <SEZPR06MB526909B8D4313CA5F33074C5F2AB9@SEZPR06MB5269.apcprd06.prod.outlook.com>
-Message-ID: <b99ed483-ab56-f5a3-d2f2-c0451de271cc@linaro.org>
+From: Herbert Xu <herbert@gondor.apana.org.au>
+Date: Thu, 23 Feb 2023 17:32:22 +0800
+Subject: [PATCH] crypto: aspeed: add error handling if
+ dmam_alloc_coherent() failed
+In-Reply-To: <20230223085830.605202-1-neal_liu@aspeedtech.com>
+References: <20230223085830.605202-1-neal_liu@aspeedtech.com>
+Message-ID: <Y/cypg7zsGcs+szk@gondor.apana.org.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 23/02/2023 01:58, Ryan Chen wrote:
-> Hello Krzysztof,
+On Thu, Feb 23, 2023 at 04:58:30PM +0800, Neal Liu wrote:
+> Since the acry_dev->buf_addr may be NULL, add error handling to
+> prevent any additional access to avoid potential issues.
 > 
->> -----Original Message-----
->> From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
->> Sent: Wednesday, February 22, 2023 4:28 PM
->> To: Ryan Chen <ryan_chen@aspeedtech.com>; Rob Herring
->> <robh+dt@kernel.org>; Krzysztof Kozlowski
->> <krzysztof.kozlowski+dt@linaro.org>; Joel Stanley <joel@jms.id.au>; Andrew
->> Jeffery <andrew@aj.id.au>; Philipp Zabel <p.zabel@pengutronix.de>;
->> openbmc at lists.ozlabs.org; linux-arm-kernel at lists.infradead.org;
->> linux-aspeed at lists.ozlabs.org; linux-kernel at vger.kernel.org
->> Subject: Re: [PATCH v5 2/2] i2c: aspeed: support ast2600 i2cv2 new register
->> mode driver
->>
->> On 22/02/2023 04:36, Ryan Chen wrote:
->>
->>>>> +
->>>>> +	return 0;
->>>>> +
->>>>> +free_irq:
->>>>> +	devm_free_irq(&pdev->dev, i2c_bus->irq, i2c_bus);
->>>>
->>>> Why?
->>>>
->>>>> +unmap:
->>>>> +	devm_iounmap(&pdev->dev, i2c_bus->reg_base);
->>>>
->>>> Why?
->>>>
->>>>> +free_mem:
->>>>> +	devm_kfree(&pdev->dev, i2c_bus);
->>>>
->>>> Why?
->>>>
->>>
->>> Sorry, those are probe following, if any error, will goto this label.
->>> To release mem/unmap/free_irq. Is this unnecessary?
->>
->> Releasing managed resources is usualyl unnecessary. Therefore I am asking
->> why do you think it is necessary here?
->>
->>> I saw many driver submit is remove all probe fail goto label, is just return
->> ERR.
->>> Do you mean I direct go for this way?
->>
->> Why would you do it differently?
+> Signed-off-by: Neal Liu <neal_liu@aspeedtech.com>
+> ---
+>  drivers/crypto/aspeed/aspeed-acry.c | 5 +++++
+>  1 file changed, 5 insertions(+)
 > 
-> Thanks, I will remove those labels, and modify to dev_err_probe in previous probe return.
-> 
->>>
->>>>> +
->>>>> +	return ret;
->>>>> +}
->>>>> +
->>>>> +static int ast2600_i2c_remove(struct platform_device *pdev) {
->>>>> +	struct ast2600_i2c_bus *i2c_bus = platform_get_drvdata(pdev);
->>>>> +
->>>>> +	/* Disable everything. */
->>>>> +	writel(0, i2c_bus->reg_base + AST2600_I2CC_FUN_CTRL);
->>>>> +	writel(0, i2c_bus->reg_base + AST2600_I2CM_IER);
->>>>> +
->>>>> +	devm_free_irq(&pdev->dev, i2c_bus->irq, i2c_bus);
->>>>> +
->>>>> +	i2c_del_adapter(&i2c_bus->adap);
->>>>
->>>> Wrong order of cleanup. It should be reversed to the probe, unless
->>>> you have some reason, but then please explain.
->>>
->>> Sorry, this in remove function, it should do i2c_del_adapter(&i2c_bus->adap)
->> in the end.
->>> Why this should revered to probe?
->>
->> Because it's logical, you do the same with error paths of probe, it it usually the
->> only way to make sure some of the resources are not used by some other piece
->> (e.g. interrupt handler is called while i2c adapter is unregistered).
-> 
-> Sorry, I can't catch your point.
-> Do you mean remove devm_free_irq(&pdev->dev, i2c_bus->irq, i2c_bus);
-> Keep i2c_del_adapter(&i2c_bus->adap) here, because interrupt is called while i2c adapter is unregistered ?
+> diff --git a/drivers/crypto/aspeed/aspeed-acry.c b/drivers/crypto/aspeed/aspeed-acry.c
+> index 1f77ebd73489..85733e418c9e 100644
+> --- a/drivers/crypto/aspeed/aspeed-acry.c
+> +++ b/drivers/crypto/aspeed/aspeed-acry.c
+> @@ -782,6 +782,11 @@ static int aspeed_acry_probe(struct platform_device *pdev)
+>  	acry_dev->buf_addr = dmam_alloc_coherent(dev, ASPEED_ACRY_BUFF_SIZE,
+>  						 &acry_dev->buf_dma_addr,
+>  						 GFP_KERNEL);
+> +	if (!acry_dev->buf_addr) {
+> +		rc = -ENOMEM;
+> +		goto err_engine_rsa_start;
+> +	}
+> +
+>  	memzero_explicit(acry_dev->buf_addr, ASPEED_ACRY_BUFF_SIZE);
 
-Again, maybe clearer, actions should be in reversed order comparing to
-the probe actions. Why would you remove pieces of code from here if I
-asked to do them in different order?
+Please remove this memzero in a follow-up patch as
+dmam_alloc_coherent returns memory that's already zeroed.
 
-Best regards,
-Krzysztof
-
+Thanks,
+-- 
+Email: Herbert Xu <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
