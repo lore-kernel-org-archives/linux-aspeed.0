@@ -1,142 +1,100 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Wed, 22 Feb 2023 15:41:18 +0100
-Subject: [PATCH v5 1/4] crypto: aspeed: Add ACRY RSA driver
-In-Reply-To: <20230104013436.203427-2-neal_liu@aspeedtech.com>
-References: <20230104013436.203427-1-neal_liu@aspeedtech.com> <20230104013436.203427-2-neal_liu@aspeedtech.com>
-Message-ID: <CAMuHMdVS_JF0+5CyNM6ivxqRLKkMte9=Xw5E-fc-OTHibwc5vw@mail.gmail.com>
+From: Ryan Chen <ryan_chen@aspeedtech.com>
+Date: Thu, 23 Feb 2023 00:58:14 +0000
+Subject: [PATCH v5 2/2] i2c: aspeed: support ast2600 i2cv2 new register
+ mode driver
+In-Reply-To: <77480142-a2c0-f6da-af0e-d3f01f72ac53@linaro.org>
+References: <20230220061745.1973981-1-ryan_chen@aspeedtech.com>
+ <20230220061745.1973981-3-ryan_chen@aspeedtech.com>
+ <63986fb1-f8d4-f348-bae9-72e08369213b@linaro.org>
+ <SEZPR06MB5269B032022D3D7286E59D36F2AA9@SEZPR06MB5269.apcprd06.prod.outlook.com>
+ <77480142-a2c0-f6da-af0e-d3f01f72ac53@linaro.org>
+Message-ID: <SEZPR06MB526909B8D4313CA5F33074C5F2AB9@SEZPR06MB5269.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Neal,
+Hello Krzysztof,
 
-On Wed, Jan 4, 2023 at 2:37 AM Neal Liu <neal_liu@aspeedtech.com> wrote:
-> ACRY Engine is designed to accelerate the throughput of
-> ECDSA/RSA signature and verification.
->
-> This patch aims to add ACRY RSA engine driver for hardware
-> acceleration.
->
-> Signed-off-by: Neal Liu <neal_liu@aspeedtech.com>
+> -----Original Message-----
+> From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+> Sent: Wednesday, February 22, 2023 4:28 PM
+> To: Ryan Chen <ryan_chen@aspeedtech.com>; Rob Herring
+> <robh+dt@kernel.org>; Krzysztof Kozlowski
+> <krzysztof.kozlowski+dt@linaro.org>; Joel Stanley <joel@jms.id.au>; Andrew
+> Jeffery <andrew@aj.id.au>; Philipp Zabel <p.zabel@pengutronix.de>;
+> openbmc at lists.ozlabs.org; linux-arm-kernel at lists.infradead.org;
+> linux-aspeed at lists.ozlabs.org; linux-kernel at vger.kernel.org
+> Subject: Re: [PATCH v5 2/2] i2c: aspeed: support ast2600 i2cv2 new register
+> mode driver
+> 
+> On 22/02/2023 04:36, Ryan Chen wrote:
+> 
+> >>> +
+> >>> +	return 0;
+> >>> +
+> >>> +free_irq:
+> >>> +	devm_free_irq(&pdev->dev, i2c_bus->irq, i2c_bus);
+> >>
+> >> Why?
+> >>
+> >>> +unmap:
+> >>> +	devm_iounmap(&pdev->dev, i2c_bus->reg_base);
+> >>
+> >> Why?
+> >>
+> >>> +free_mem:
+> >>> +	devm_kfree(&pdev->dev, i2c_bus);
+> >>
+> >> Why?
+> >>
+> >
+> > Sorry, those are probe following, if any error, will goto this label.
+> > To release mem/unmap/free_irq. Is this unnecessary?
+> 
+> Releasing managed resources is usualyl unnecessary. Therefore I am asking
+> why do you think it is necessary here?
+> 
+> > I saw many driver submit is remove all probe fail goto label, is just return
+> ERR.
+> > Do you mean I direct go for this way?
+> 
+> Why would you do it differently?
 
-Thanks for your patch, which is now commit 2f1cf4e50c956f88 ("crypto:
-aspeed - Add ACRY RSA driver").
+Thanks, I will remove those labels, and modify to dev_err_probe in previous probe return.
 
-> --- /dev/null
-> +++ b/drivers/crypto/aspeed/aspeed-acry.c
+> >
+> >>> +
+> >>> +	return ret;
+> >>> +}
+> >>> +
+> >>> +static int ast2600_i2c_remove(struct platform_device *pdev) {
+> >>> +	struct ast2600_i2c_bus *i2c_bus = platform_get_drvdata(pdev);
+> >>> +
+> >>> +	/* Disable everything. */
+> >>> +	writel(0, i2c_bus->reg_base + AST2600_I2CC_FUN_CTRL);
+> >>> +	writel(0, i2c_bus->reg_base + AST2600_I2CM_IER);
+> >>> +
+> >>> +	devm_free_irq(&pdev->dev, i2c_bus->irq, i2c_bus);
+> >>> +
+> >>> +	i2c_del_adapter(&i2c_bus->adap);
+> >>
+> >> Wrong order of cleanup. It should be reversed to the probe, unless
+> >> you have some reason, but then please explain.
+> >
+> > Sorry, this in remove function, it should do i2c_del_adapter(&i2c_bus->adap)
+> in the end.
+> > Why this should revered to probe?
+> 
+> Because it's logical, you do the same with error paths of probe, it it usually the
+> only way to make sure some of the resources are not used by some other piece
+> (e.g. interrupt handler is called while i2c adapter is unregistered).
 
-> +static int aspeed_acry_probe(struct platform_device *pdev)
-> +{
-> +       struct aspeed_acry_dev *acry_dev;
-> +       struct device *dev = &pdev->dev;
-> +       struct resource *res;
-> +       int rc;
-> +
-> +       acry_dev = devm_kzalloc(dev, sizeof(struct aspeed_acry_dev),
-> +                               GFP_KERNEL);
-> +       if (!acry_dev)
-> +               return -ENOMEM;
-> +
-> +       acry_dev->dev = dev;
-> +
-> +       platform_set_drvdata(pdev, acry_dev);
-> +
-> +       res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> +       acry_dev->regs = devm_ioremap_resource(dev, res);
-> +       if (IS_ERR(acry_dev->regs))
-> +               return PTR_ERR(acry_dev->regs);
-> +
-> +       res = platform_get_resource(pdev, IORESOURCE_MEM, 1);
-> +       acry_dev->acry_sram = devm_ioremap_resource(dev, res);
-> +       if (IS_ERR(acry_dev->acry_sram))
-> +               return PTR_ERR(acry_dev->acry_sram);
-> +
-> +       /* Get irq number and register it */
-> +       acry_dev->irq = platform_get_irq(pdev, 0);
-> +       if (acry_dev->irq < 0)
-> +               return -ENXIO;
-> +
-> +       rc = devm_request_irq(dev, acry_dev->irq, aspeed_acry_irq, 0,
-> +                             dev_name(dev), acry_dev);
-> +       if (rc) {
-> +               dev_err(dev, "Failed to request irq.\n");
-> +               return rc;
-> +       }
-> +
-> +       acry_dev->clk = devm_clk_get_enabled(dev, NULL);
-> +       if (IS_ERR(acry_dev->clk)) {
-> +               dev_err(dev, "Failed to get acry clk\n");
-> +               return PTR_ERR(acry_dev->clk);
-> +       }
-> +
-> +       acry_dev->ahbc = syscon_regmap_lookup_by_phandle(dev->of_node,
-> +                                                        "aspeed,ahbc");
-> +       if (IS_ERR(acry_dev->ahbc)) {
-> +               dev_err(dev, "Failed to get AHBC regmap\n");
-> +               return -ENODEV;
-> +       }
-> +
-> +       /* Initialize crypto hardware engine structure for RSA */
-> +       acry_dev->crypt_engine_rsa = crypto_engine_alloc_init(dev, true);
-> +       if (!acry_dev->crypt_engine_rsa) {
-> +               rc = -ENOMEM;
-> +               goto clk_exit;
-> +       }
-> +
-> +       rc = crypto_engine_start(acry_dev->crypt_engine_rsa);
-> +       if (rc)
-> +               goto err_engine_rsa_start;
-> +
-> +       tasklet_init(&acry_dev->done_task, aspeed_acry_done_task,
-> +                    (unsigned long)acry_dev);
-> +
-> +       /* Set Data Memory to AHB(CPU) Access Mode */
-> +       ast_acry_write(acry_dev, ACRY_CMD_DMEM_AHB, ASPEED_ACRY_DMA_CMD);
-> +
-> +       /* Initialize ACRY SRAM index */
-> +       aspeed_acry_sram_mapping(acry_dev);
-> +
-> +       acry_dev->buf_addr = dmam_alloc_coherent(dev, ASPEED_ACRY_BUFF_SIZE,
-> +                                                &acry_dev->buf_dma_addr,
-> +                                                GFP_KERNEL);
-> +       memzero_explicit(acry_dev->buf_addr, ASPEED_ACRY_BUFF_SIZE);
+Sorry, I can't catch your point.
+Do you mean remove devm_free_irq(&pdev->dev, i2c_bus->irq, i2c_bus);
+Keep i2c_del_adapter(&i2c_bus->adap) here, because interrupt is called while i2c adapter is unregistered ?
 
-When compile-testing with CONFIG_HAS_DMA=n:
+Best regards,
+Ryan Chen
 
-    error: argument 1 null where non-null expected [-Werror=nonnull]
-
-The call to dmam_alloc_coherent() lacks error handling, as the returned
-address may be NULL.
-
-Moreover, is it safe to allocate this buffer only after the call to
-crypto_engine_start()? I.e. could acry_dev->buf_addr be accessed
-before, causing a NULL pointer dereference?
-Is there any other initialization that should be done earlier?
-
-> +
-> +       aspeed_acry_register(acry_dev);
-> +
-> +       dev_info(dev, "Aspeed ACRY Accelerator successfully registered\n");
-> +
-> +       return 0;
-> +
-> +err_engine_rsa_start:
-> +       crypto_engine_exit(acry_dev->crypt_engine_rsa);
-> +clk_exit:
-> +       clk_disable_unprepare(acry_dev->clk);
-> +
-> +       return rc;
-> +}
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
--- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert at linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
