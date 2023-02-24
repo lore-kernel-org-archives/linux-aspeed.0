@@ -1,37 +1,40 @@
-From: Zev Weiss <zev@bewilderbeest.net>
-Date: Thu, 23 Feb 2023 16:03:58 -0800
-Subject: [PATCH v2 1/3] ARM: dts: aspeed: romed8hm3: Fix GPIO polarity of system-fault LED
-In-Reply-To: <20230224000400.12226-1-zev@bewilderbeest.net>
-References: <20230224000400.12226-1-zev@bewilderbeest.net>
-Message-ID: <20230224000400.12226-2-zev@bewilderbeest.net>
+From: Neal Liu <neal_liu@aspeedtech.com>
+Date: Fri, 24 Feb 2023 10:05:21 +0800
+Subject: [PATCH v2] crypto: aspeed: add error handling if dmam_alloc_coherent() failed
+Message-ID: <20230224020521.3158285-1-neal_liu@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Turns out it's in fact not the same as the heartbeat LED.
+Since the acry_dev->buf_addr may be NULL, add error handling to
+prevent any additional access to avoid potential issues.
 
-Signed-off-by: Zev Weiss <zev@bewilderbeest.net>
-Cc: stable at vger.kernel.org # v5.18+
-Fixes: a9a3d60b937a ("ARM: dts: aspeed: Add ASRock ROMED8HM3 BMC")
+Signed-off-by: Neal Liu <neal_liu@aspeedtech.com>
 ---
- arch/arm/boot/dts/aspeed-bmc-asrock-romed8hm3.dts | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Change since v1: remove memzero_explicit() as dmam_alloc_coherent()
+returns memory that's already zeroed.
 
-diff --git a/arch/arm/boot/dts/aspeed-bmc-asrock-romed8hm3.dts b/arch/arm/boot/dts/aspeed-bmc-asrock-romed8hm3.dts
-index ff4c07c69af1..00efe1a93a69 100644
---- a/arch/arm/boot/dts/aspeed-bmc-asrock-romed8hm3.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-asrock-romed8hm3.dts
-@@ -31,7 +31,7 @@ heartbeat {
- 		};
+ drivers/crypto/aspeed/aspeed-acry.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/crypto/aspeed/aspeed-acry.c b/drivers/crypto/aspeed/aspeed-acry.c
+index 1f77ebd73489..eb30649ea7b3 100644
+--- a/drivers/crypto/aspeed/aspeed-acry.c
++++ b/drivers/crypto/aspeed/aspeed-acry.c
+@@ -782,7 +782,10 @@ static int aspeed_acry_probe(struct platform_device *pdev)
+ 	acry_dev->buf_addr = dmam_alloc_coherent(dev, ASPEED_ACRY_BUFF_SIZE,
+ 						 &acry_dev->buf_dma_addr,
+ 						 GFP_KERNEL);
+-	memzero_explicit(acry_dev->buf_addr, ASPEED_ACRY_BUFF_SIZE);
++	if (!acry_dev->buf_addr) {
++		rc = -ENOMEM;
++		goto err_engine_rsa_start;
++	}
  
- 		system-fault {
--			gpios = <&gpio ASPEED_GPIO(Z, 2) GPIO_ACTIVE_LOW>;
-+			gpios = <&gpio ASPEED_GPIO(Z, 2) GPIO_ACTIVE_HIGH>;
- 			panic-indicator;
- 		};
- 	};
+ 	aspeed_acry_register(acry_dev);
+ 
 -- 
-2.39.1.438.gdcb075ea9396.dirty
+2.25.1
 
