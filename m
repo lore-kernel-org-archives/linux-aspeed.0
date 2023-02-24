@@ -1,35 +1,36 @@
-From: Eddie James <eajames@linux.ibm.com>
-Date: Thu, 23 Feb 2023 09:48:26 -0600
-Subject: [PATCH 2/2] ARM: dts: aspeed: bonnell: Update eeprom size
-In-Reply-To: <20230223154826.4087138-1-eajames@linux.ibm.com>
-References: <20230223154826.4087138-1-eajames@linux.ibm.com>
-Message-ID: <20230223154826.4087138-2-eajames@linux.ibm.com>
+From: Zev Weiss <zev@bewilderbeest.net>
+Date: Thu, 23 Feb 2023 16:03:57 -0800
+Subject: [PATCH v2 0/3] ARM: dts: aspeed: ASRock BMC updates
+Message-ID: <20230224000400.12226-1-zev@bewilderbeest.net>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-An eeprom had an incorrect size.
+Hello,
 
-Signed-off-by: Eddie James <eajames@linux.ibm.com>
----
- arch/arm/boot/dts/aspeed-bmc-ibm-bonnell.dts | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+This patch series contains a few small device-tree updates for ASRock
+BMCs: an LED polarity fix for romed8hm3, enabling the ast2500 PECI
+device on e3c246d4i, and a SPI flash clock frequency fix for both.
 
-diff --git a/arch/arm/boot/dts/aspeed-bmc-ibm-bonnell.dts b/arch/arm/boot/dts/aspeed-bmc-ibm-bonnell.dts
-index a5be0ee048ec..a96feb42cbc2 100644
---- a/arch/arm/boot/dts/aspeed-bmc-ibm-bonnell.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-ibm-bonnell.dts
-@@ -686,7 +686,7 @@ tmp275 at 48 {
- 	};
- 
- 	eeprom at 50 {
--		compatible = "atmel,24c64";
-+		compatible = "atmel,24c128";
- 		reg = <0x50>;
- 	};
- 
+Thanks,
+Zev
+
+Changes since v1 [0]:
+ - Added patch 3 correcting SPI flash clocks
+
+[0] https://lore.kernel.org/linux-devicetree/20230203105405.21942-1-zev at bewilderbeest.net/
+
+Zev Weiss (3):
+  ARM: dts: aspeed: romed8hm3: Fix GPIO polarity of system-fault LED
+  ARM: dts: aspeed: e3c246d4i: Add PECI device
+  ARM: dts: aspeed: asrock: Correct firmware flash SPI clocks
+
+ arch/arm/boot/dts/aspeed-bmc-asrock-e3c246d4i.dts | 6 +++++-
+ arch/arm/boot/dts/aspeed-bmc-asrock-romed8hm3.dts | 4 ++--
+ 2 files changed, 7 insertions(+), 3 deletions(-)
+
 -- 
-2.31.1
+2.39.1.438.gdcb075ea9396.dirty
 
