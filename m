@@ -1,36 +1,54 @@
 From: Zev Weiss <zev@bewilderbeest.net>
-Date: Thu, 23 Feb 2023 16:03:57 -0800
-Subject: [PATCH v2 0/3] ARM: dts: aspeed: ASRock BMC updates
-Message-ID: <20230224000400.12226-1-zev@bewilderbeest.net>
+Date: Thu, 23 Feb 2023 16:04:00 -0800
+Subject: [PATCH v2 3/3] ARM: dts: aspeed: asrock: Correct firmware flash SPI clocks
+In-Reply-To: <20230224000400.12226-1-zev@bewilderbeest.net>
+References: <20230224000400.12226-1-zev@bewilderbeest.net>
+Message-ID: <20230224000400.12226-4-zev@bewilderbeest.net>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello,
+While I'm not aware of any problems that have occurred running these
+at 100 MHz, the official word from ASRock is that 50 MHz is the
+correct speed to use, so let's be safe and use that instead.
 
-This patch series contains a few small device-tree updates for ASRock
-BMCs: an LED polarity fix for romed8hm3, enabling the ast2500 PECI
-device on e3c246d4i, and a SPI flash clock frequency fix for both.
+Signed-off-by: Zev Weiss <zev@bewilderbeest.net>
+Cc: stable at vger.kernel.org
+Fixes: 2b81613ce417 ("ARM: dts: aspeed: Add ASRock E3C246D4I BMC")
+Fixes: a9a3d60b937a ("ARM: dts: aspeed: Add ASRock ROMED8HM3 BMC")
+---
+ arch/arm/boot/dts/aspeed-bmc-asrock-e3c246d4i.dts | 2 +-
+ arch/arm/boot/dts/aspeed-bmc-asrock-romed8hm3.dts | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-Thanks,
-Zev
-
-Changes since v1 [0]:
- - Added patch 3 correcting SPI flash clocks
-
-[0] https://lore.kernel.org/linux-devicetree/20230203105405.21942-1-zev at bewilderbeest.net/
-
-Zev Weiss (3):
-  ARM: dts: aspeed: romed8hm3: Fix GPIO polarity of system-fault LED
-  ARM: dts: aspeed: e3c246d4i: Add PECI device
-  ARM: dts: aspeed: asrock: Correct firmware flash SPI clocks
-
- arch/arm/boot/dts/aspeed-bmc-asrock-e3c246d4i.dts | 6 +++++-
- arch/arm/boot/dts/aspeed-bmc-asrock-romed8hm3.dts | 4 ++--
- 2 files changed, 7 insertions(+), 3 deletions(-)
-
+diff --git a/arch/arm/boot/dts/aspeed-bmc-asrock-e3c246d4i.dts b/arch/arm/boot/dts/aspeed-bmc-asrock-e3c246d4i.dts
+index 67a75aeafc2b..c4b2efbfdf56 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-asrock-e3c246d4i.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-asrock-e3c246d4i.dts
+@@ -63,7 +63,7 @@ flash at 0 {
+ 		status = "okay";
+ 		m25p,fast-read;
+ 		label = "bmc";
+-		spi-max-frequency = <100000000>; /* 100 MHz */
++		spi-max-frequency = <50000000>; /* 50 MHz */
+ #include "openbmc-flash-layout.dtsi"
+ 	};
+ };
+diff --git a/arch/arm/boot/dts/aspeed-bmc-asrock-romed8hm3.dts b/arch/arm/boot/dts/aspeed-bmc-asrock-romed8hm3.dts
+index 00efe1a93a69..4554abf0c7cd 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-asrock-romed8hm3.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-asrock-romed8hm3.dts
+@@ -51,7 +51,7 @@ flash at 0 {
+ 		status = "okay";
+ 		m25p,fast-read;
+ 		label = "bmc";
+-		spi-max-frequency = <100000000>; /* 100 MHz */
++		spi-max-frequency = <50000000>; /* 50 MHz */
+ #include "openbmc-flash-layout-64.dtsi"
+ 	};
+ };
 -- 
 2.39.1.438.gdcb075ea9396.dirty
 
