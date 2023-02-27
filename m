@@ -1,137 +1,135 @@
-From: Joel Stanley <joel@jms.id.au>
-Date: Mon, 27 Feb 2023 00:44:18 +0000
-Subject: [PATCH 03/17] gpio: aspeed: Convert to immutable irq_chip
-In-Reply-To: <20230215-immutable-chips-v1-3-51a8f224a5d0@linaro.org>
-References: <20230215-immutable-chips-v1-0-51a8f224a5d0@linaro.org> <20230215-immutable-chips-v1-3-51a8f224a5d0@linaro.org>
-Message-ID: <CACPK8XeqDeXvF9RJ5ppSdjFAGHWDbojCr01Q5W=k=mkFgwQgPg@mail.gmail.com>
+From: Ryan Chen <ryan_chen@aspeedtech.com>
+Date: Mon, 27 Feb 2023 04:12:52 +0000
+Subject: [PATCH v6 1/2] dt-bindings: i2c: aspeed: support for
+ AST2600-i2cv2
+In-Reply-To: <8999ef4a57b035a81b086d8732d119638d46968c.camel@codeconstruct.com.au>
+References: <20230226031321.3126756-1-ryan_chen@aspeedtech.com>
+	 <20230226031321.3126756-2-ryan_chen@aspeedtech.com>
+ <8999ef4a57b035a81b086d8732d119638d46968c.camel@codeconstruct.com.au>
+Message-ID: <SEZPR06MB52699858C92383E8E07D0832F2AF9@SEZPR06MB5269.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, 16 Feb 2023 at 09:37, Linus Walleij <linus.walleij@linaro.org> wrote:
->
-> Convert the driver to immutable irq-chip with a bit of
-> intuition.
->
-> Cc: Marc Zyngier <maz@kernel.org>
-> Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
+Hello Jeremy,
 
-Tested-by: Joel Stanley <joel@jms.id.au>
+> -----Original Message-----
+> From: Jeremy Kerr <jk@codeconstruct.com.au>
+> Sent: Sunday, February 26, 2023 3:04 PM
+> To: Ryan Chen <ryan_chen@aspeedtech.com>; Andrew Jeffery
+> <andrew@aj.id.au>; Brendan Higgins <brendan.higgins@linux.dev>; Benjamin
+> Herrenschmidt <benh@kernel.crashing.org>; Joel Stanley <joel@jms.id.au>;
+> Rob Herring <robh+dt@kernel.org>; Krzysztof Kozlowski
+> <krzysztof.kozlowski+dt@linaro.org>; Philipp Zabel <p.zabel@pengutronix.de>;
+> linux-i2c at vger.kernel.org; openbmc at lists.ozlabs.org;
+> devicetree at vger.kernel.org; linux-arm-kernel at lists.infradead.org;
+> linux-aspeed at lists.ozlabs.org; linux-kernel at vger.kernel.org
+> Subject: Re: [PATCH v6 1/2] dt-bindings: i2c: aspeed: support for AST2600-i2cv2
+> 
+> Hi Ryan,
+> 
+> > --- a/Documentation/devicetree/bindings/i2c/aspeed,i2c.yaml
+> > +++ b/Documentation/devicetree/bindings/i2c/aspeed,i2c.yaml
+> > @@ -49,6 +49,25 @@ properties:
+> > ???? description:
+> > ?????? states that there is another master active on this bus
+> >
+> > +? aspeed,timeout:
+> > +??? type: boolean
+> > +??? description: I2C bus timeout enable for master/slave mode
+> > +
+> > +? aspeed,xfer-mode:
+> > +??? description: |
+> > +????? I2C bus transfer mode selection.
+> > +????? - "byte": I2C bus byte transfer mode.
+> > +????? - "buffered": I2C bus buffer register transfer mode.
+> > +????? - "dma": I2C bus dma transfer mode (default)
+> > +??? items:
+> > +????? enum: [byte, buffered, dma]
+> > +??? maxItems: 1
+> > +??? $ref: /schemas/types.yaml#/definitions/non-unique-string-array
+> 
+> There are still unresolved questions about this xfer-mode property from
+> previous submissions of this binding. We don't yet have a justification on why
+> the mode configuration is needed in the device tree rather than something
+> that is specified in a driver implementation.
+> 
+> By now, I think we well understand what the modes are, and how a driver
+> implementation might configure them, but none of that has (so far) provided
+> sufficient rationale on why this belongs in the device tree.
+> 
+> The previous threads had a couple of pending discussions, following up on
+> those here:
+> 
+> A) You mentioned in [1] that the DMA controller is shared between all i3c
+> devices, does that have any consequence on which modes individual devices
+> might want to choose?
 
-I attempted the conversion but wasn't sure how to proceed because we
-dynamically create the irqchip depending on the presence of the
-interrupt in the device tree. However, every device tree contains this
-interrupt so perhaps we should clean that up.
+Yes, I2C controller share the same dma engine. The original thought can be enable in
+all i2c channel. But in AST2600 have ERRATA "I2C DMA fails when DRAM bus is busy
+and it can not take DMA write data immediately", So it means only 1 i2c bus can be
+enable for DMA mode.
+It means only 1 bus channel can be enable DMA for use case.
+That following example for board-specific selection.
+It is description in cover-letter.
 
-Cheers,
+The following is board-specific design example.
+Board A                                         Board B
+-------------------------                       ------------------------
+|i2c bus#1(master/slave)  <===fingerprint ===> i2c bus#x (master/slave)|
+|i2c bus#2(master)-> tmp i2c device |        |                   |
+|i2c bus#3(master)-> adc i2c device |        |                   |
+-------------------------                       ------------------------
 
-Joel
+- in bus#1 situation, you should use DMA mode.
+Because bus#1 have trunk data needed for transfer, it can enable bus dma mode to reduce cpu utilized.
+- in bus#2/3 situation, you should use buffer/byte mode
+bus#2/3 is small package transmit, it can enable buffer mode or byte mode to reduce memory cache flush overhead.
+Buffer mode is better, because byte mode have interrupt overhead(interrupt per byte data transmit),
 
-> ---
->  drivers/gpio/gpio-aspeed.c | 44 ++++++++++++++++++++++++++++++++++++++------
->  1 file changed, 38 insertions(+), 6 deletions(-)
->
-> diff --git a/drivers/gpio/gpio-aspeed.c b/drivers/gpio/gpio-aspeed.c
-> index a94da80d3a95..9c4852de2733 100644
-> --- a/drivers/gpio/gpio-aspeed.c
-> +++ b/drivers/gpio/gpio-aspeed.c
-> @@ -15,6 +15,7 @@
->  #include <linux/module.h>
->  #include <linux/pinctrl/consumer.h>
->  #include <linux/platform_device.h>
-> +#include <linux/seq_file.h>
->  #include <linux/spinlock.h>
->  #include <linux/string.h>
->
-> @@ -53,7 +54,7 @@ struct aspeed_gpio_config {
->   */
->  struct aspeed_gpio {
->         struct gpio_chip chip;
-> -       struct irq_chip irqc;
-> +       struct device *dev;
->         raw_spinlock_t lock;
->         void __iomem *base;
->         int irq;
-> @@ -566,6 +567,10 @@ static void aspeed_gpio_irq_set_mask(struct irq_data *d, bool set)
->
->         addr = bank_reg(gpio, bank, reg_irq_enable);
->
-> +       /* Unmasking the IRQ */
-> +       if (set)
-> +               gpiochip_enable_irq(&gpio->chip, irqd_to_hwirq(d));
-> +
->         raw_spin_lock_irqsave(&gpio->lock, flags);
->         copro = aspeed_gpio_copro_request(gpio, offset);
->
-> @@ -579,6 +584,10 @@ static void aspeed_gpio_irq_set_mask(struct irq_data *d, bool set)
->         if (copro)
->                 aspeed_gpio_copro_release(gpio, offset);
->         raw_spin_unlock_irqrestore(&gpio->lock, flags);
-> +
-> +       /* Masking the IRQ */
-> +       if (!set)
-> +               gpiochip_disable_irq(&gpio->chip, irqd_to_hwirq(d));
->  }
->
->  static void aspeed_gpio_irq_mask(struct irq_data *d)
-> @@ -1080,6 +1089,30 @@ int aspeed_gpio_copro_release_gpio(struct gpio_desc *desc)
->  }
->  EXPORT_SYMBOL_GPL(aspeed_gpio_copro_release_gpio);
->
-> +static void aspeed_gpio_irq_print_chip(struct irq_data *d, struct seq_file *p)
-> +{
-> +       const struct aspeed_gpio_bank *bank;
-> +       struct aspeed_gpio *gpio;
-> +       u32 bit;
-> +       int rc, offset;
-> +
-> +       rc = irqd_to_aspeed_gpio_data(d, &gpio, &bank, &bit, &offset);
-> +       if (rc)
-> +               return;
-> +
-> +       seq_printf(p, dev_name(gpio->dev));
-> +}
-> +
-> +static const struct irq_chip aspeed_gpio_irq_chip = {
-> +       .irq_ack = aspeed_gpio_irq_ack,
-> +       .irq_mask = aspeed_gpio_irq_mask,
-> +       .irq_unmask = aspeed_gpio_irq_unmask,
-> +       .irq_set_type = aspeed_gpio_set_type,
-> +       .irq_print_chip = aspeed_gpio_irq_print_chip,
-> +       .flags = IRQCHIP_IMMUTABLE,
-> +       GPIOCHIP_IRQ_RESOURCE_HELPERS,
-> +};
-> +
->  /*
->   * Any banks not specified in a struct aspeed_bank_props array are assumed to
->   * have the properties:
-> @@ -1149,6 +1182,8 @@ static int __init aspeed_gpio_probe(struct platform_device *pdev)
->         if (IS_ERR(gpio->base))
->                 return PTR_ERR(gpio->base);
->
-> +       gpio->dev = &pdev->dev;
-> +
->         raw_spin_lock_init(&gpio->lock);
->
->         gpio_id = of_match_node(aspeed_gpio_of_table, pdev->dev.of_node);
-> @@ -1208,12 +1243,9 @@ static int __init aspeed_gpio_probe(struct platform_device *pdev)
->
->                 gpio->irq = rc;
->                 girq = &gpio->chip.irq;
-> -               girq->chip = &gpio->irqc;
-> +               gpio_irq_chip_set_chip(girq, &aspeed_gpio_irq_chip);
->                 girq->chip->name = dev_name(&pdev->dev);
-> -               girq->chip->irq_ack = aspeed_gpio_irq_ack;
-> -               girq->chip->irq_mask = aspeed_gpio_irq_mask;
-> -               girq->chip->irq_unmask = aspeed_gpio_irq_unmask;
-> -               girq->chip->irq_set_type = aspeed_gpio_set_type;
-> +
->                 girq->parent_handler = aspeed_gpio_irq_handler;
->                 girq->num_parents = 1;
->                 girq->parents = devm_kcalloc(&pdev->dev, 1,
->
-> --
-> 2.34.1
->
+-But if you more bus#4 that still have trunk data needed for transfer (master/slave),
+it also use buffer mode to transmit. Because bus#1 have been use for DMA mode.
+
+Best Regards.
+Ryan Chen.
+
+> 
+> B) You implied in [2] that the different transfer modes might be related to
+> whether there are other masters present on the bus, but the logic behind that
+> is not clear.
+> 
+> C) In [3] you mentioned that there might be some DRAM savings by using a
+> particular mode.
+> 
+> and, most importantly:
+> 
+> D) unanswered from [4] and [5]: what are the hardware-specified reasons why
+> a DT author would chose one mode over another?
+> 
+> If you can write this out in some format like:
+> 
+>  - in hardware situation X, you should use DMA mode
+>  - in hardware situation Y, you should use byte mode
+>  - [...]
+> 
+> that might help us to understand where this configuration belongs, or what a
+> reasonable DT representation should look like, or even if existing DT schema
+> can already provide the information required to decide.
+> 
+> Cheers,
+> 
+> 
+> Jeremy
+> 
+> [1]:
+> https://lists.ozlabs.org/pipermail/linux-aspeed/2023-February/009876.html
+> [2]:
+> https://lists.ozlabs.org/pipermail/linux-aspeed/2023-February/009892.html
+> [3]:
+> https://lists.ozlabs.org/pipermail/linux-aspeed/2023-February/009880.html
+> [4]:
+> https://lists.ozlabs.org/pipermail/linux-aspeed/2023-February/009871.html
+> [5]:
+> https://lists.ozlabs.org/pipermail/linux-aspeed/2023-February/009884.html
