@@ -1,48 +1,37 @@
 From: Jeremy Kerr <jk@codeconstruct.com.au>
-Date: Tue, 28 Feb 2023 17:16:35 +0800
-Subject: [PATCH v4 2/5] dt-bindings: clock: ast2600: Add top-level I3C clock
-In-Reply-To: <20230228091638.206569-1-jk@codeconstruct.com.au>
-References: <20230228091638.206569-1-jk@codeconstruct.com.au>
-Message-ID: <20230228091638.206569-3-jk@codeconstruct.com.au>
+Date: Tue, 28 Feb 2023 17:16:33 +0800
+Subject: [PATCH v4 0/5] Add definitions for AST2600 i3c clocks and resets
+Message-ID: <20230228091638.206569-1-jk@codeconstruct.com.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The ast2600 hardware has a top-level clock for all i3c controller
-peripherals (then gated to each individual controller), so add a
-top-level i3c clock line to control this.
+This series adds some base configuration for the i3c controllers on
+ast2600 hardware. We'll use the reset and clock definitions in the
+proposed dt binding example, hence sending these first.
 
-This is a partial cherry-pick and rework of ed44b8cdfdb and 1a35eb926d7
-from Aspeed's own tree, originally by Dylan Hung
-<dylan_hung@aspeedtech.com>.
-
-Signed-off-by: Jeremy Kerr <jk@codeconstruct.com.au>
-
----
 v4:
- - use contiguous clock index
+ - ensure we have enough space in ASPEED_G6_NUM_CLKS
 v3:
- - split into separate bindings & clk changes
+ - split dt-bindings from clk changes
+ - unify subject prefixes
 v2:
- - reword commit message
----
- include/dt-bindings/clock/ast2600-clock.h | 1 +
- 1 file changed, 1 insertion(+)
+ - based on feedback from Joel Stanley: avoid adding RESERVED clock
+   definitions, allowing empty entries in aspeed_g6_gates instead.
 
-diff --git a/include/dt-bindings/clock/ast2600-clock.h b/include/dt-bindings/clock/ast2600-clock.h
-index d8b0db2f7a7d..dd1581bfdf58 100644
---- a/include/dt-bindings/clock/ast2600-clock.h
-+++ b/include/dt-bindings/clock/ast2600-clock.h
-@@ -87,6 +87,7 @@
- #define ASPEED_CLK_MAC2RCLK		68
- #define ASPEED_CLK_MAC3RCLK		69
- #define ASPEED_CLK_MAC4RCLK		70
-+#define ASPEED_CLK_I3C			71
- 
- /* Only list resets here that are not part of a gate */
- #define ASPEED_RESET_ADC		55
+Jeremy Kerr (5):
+  clk: ast2600: allow empty entries in aspeed_g6_gates
+  dt-bindings: clock: ast2600: Add top-level I3C clock
+  clk: ast2600: Add full configs for I3C clocks
+  dt-bindings: clock: ast2600: remove IC36 & I3C7 clock definitions
+  dt-bindings: clock: ast2600: Add reset config for I3C
+
+ drivers/clk/clk-ast2600.c                 | 43 ++++++++++++++++++-----
+ include/dt-bindings/clock/ast2600-clock.h |  9 +++--
+ 2 files changed, 41 insertions(+), 11 deletions(-)
+
 -- 
 2.39.1
 
