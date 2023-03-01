@@ -1,71 +1,64 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Wed, 1 Mar 2023 01:06:07 +0000
-Subject: [PATCH v4 3/5] clk: ast2600: Add full configs for I3C clocks
-In-Reply-To: <1024ddf2c4047e5a6cd516809d4d15ea5e0349b6.camel@codeconstruct.com.au>
-References: <20230228091638.206569-1-jk@codeconstruct.com.au>
- <20230228091638.206569-4-jk@codeconstruct.com.au> <CACPK8XfZCaLK+1kRkHa+wvGyt3YCwiZDR7CKRPKxdjuBFH+01Q@mail.gmail.com>
- <1024ddf2c4047e5a6cd516809d4d15ea5e0349b6.camel@codeconstruct.com.au>
-Message-ID: <CACPK8Xfd5UzSC=pnVL+Rn6xj4sFkWBfB27c4O=qX8CjdL=fSqg@mail.gmail.com>
+Date: Wed, 1 Mar 2023 01:30:05 +0000
+Subject: [PATCH v2 3/3] ARM: dts: aspeed: asrock: Correct firmware flash
+ SPI clocks
+In-Reply-To: <20230224000400.12226-4-zev@bewilderbeest.net>
+References: <20230224000400.12226-1-zev@bewilderbeest.net> <20230224000400.12226-4-zev@bewilderbeest.net>
+Message-ID: <CACPK8XdFT=+VJJ=iDhcmWPh9m9of2b+2UYxkrAisp6tdmWOWKg@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 1 Mar 2023 at 00:58, Jeremy Kerr <jk@codeconstruct.com.au> wrote:
+On Fri, 24 Feb 2023 at 00:04, Zev Weiss <zev@bewilderbeest.net> wrote:
 >
-> Hi Joel,
->
-> Thanks for the review. Some replies inline:
->
-> > > @@ -15,7 +16,7 @@
-> > >
-> > >  #include "clk-aspeed.h"
-> > >
-> > > -#define ASPEED_G6_NUM_CLKS             71
-> > > +#define ASPEED_G6_NUM_CLKS             72
-> >
-> > NUM_CLKS seems dangerous. Should we instead use
-> > ARRAY_SIZE(aspeed_g6_gates)?
->
-> Yep, that would have saved me some time debugging. That would suit as a
-> separate change though, would you like it in the same series?
+> While I'm not aware of any problems that have occurred running these
+> at 100 MHz, the official word from ASRock is that 50 MHz is the
+> correct speed to use, so let's be safe and use that instead.
 
-Doesn't matter much. Perhaps include it at the end, for both the
-aspeed drivers? But separately is fine too.
+:(
+
+Validated with which driver?
+
+C?dric, do you have any thoughts on this?
 
 >
-> > >         /* USB 2.0 port1 phy 40MHz clock */
-> > >         hw = clk_hw_register_fixed_rate(NULL, "usb-phy-40m", NULL,
-> > > 0, 40000000);
-> > >         aspeed_g6_clk_data->hws[ASPEED_CLK_USBPHY_40M] = hw;
-> > > +
-> > > +       /* i3c clock: source from apll, divide by 8 */
-> > > +       regmap_read(map, ASPEED_G6_CLK_SELECTION5, &val);
-> > > +       val &= ~(I3C_CLK_SELECTION | APLL_DIV_SELECTION);
-> >
-> > Is there any value in registering a mux device here? See the emmc
-> > extclk device.
+> Signed-off-by: Zev Weiss <zev@bewilderbeest.net>
+> Cc: stable at vger.kernel.org
+> Fixes: 2b81613ce417 ("ARM: dts: aspeed: Add ASRock E3C246D4I BMC")
+> Fixes: a9a3d60b937a ("ARM: dts: aspeed: Add ASRock ROMED8HM3 BMC")
+> ---
+>  arch/arm/boot/dts/aspeed-bmc-asrock-e3c246d4i.dts | 2 +-
+>  arch/arm/boot/dts/aspeed-bmc-asrock-romed8hm3.dts | 2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
 >
-> We won't be doing any mux configuration here, so I figure the static
-> setup is fine.
-
-ack
-
+> diff --git a/arch/arm/boot/dts/aspeed-bmc-asrock-e3c246d4i.dts b/arch/arm/boot/dts/aspeed-bmc-asrock-e3c246d4i.dts
+> index 67a75aeafc2b..c4b2efbfdf56 100644
+> --- a/arch/arm/boot/dts/aspeed-bmc-asrock-e3c246d4i.dts
+> +++ b/arch/arm/boot/dts/aspeed-bmc-asrock-e3c246d4i.dts
+> @@ -63,7 +63,7 @@ flash at 0 {
+>                 status = "okay";
+>                 m25p,fast-read;
+>                 label = "bmc";
+> -               spi-max-frequency = <100000000>; /* 100 MHz */
+> +               spi-max-frequency = <50000000>; /* 50 MHz */
+>  #include "openbmc-flash-layout.dtsi"
+>         };
+>  };
+> diff --git a/arch/arm/boot/dts/aspeed-bmc-asrock-romed8hm3.dts b/arch/arm/boot/dts/aspeed-bmc-asrock-romed8hm3.dts
+> index 00efe1a93a69..4554abf0c7cd 100644
+> --- a/arch/arm/boot/dts/aspeed-bmc-asrock-romed8hm3.dts
+> +++ b/arch/arm/boot/dts/aspeed-bmc-asrock-romed8hm3.dts
+> @@ -51,7 +51,7 @@ flash at 0 {
+>                 status = "okay";
+>                 m25p,fast-read;
+>                 label = "bmc";
+> -               spi-max-frequency = <100000000>; /* 100 MHz */
+> +               spi-max-frequency = <50000000>; /* 50 MHz */
+>  #include "openbmc-flash-layout-64.dtsi"
+>         };
+>  };
+> --
+> 2.39.1.438.gdcb075ea9396.dirty
 >
-> > > +       val |= FIELD_PREP(I3C_CLK_SELECTION,
-> > > I3C_CLK_SELECT_APLL_DIV);
-> > > +       val |= FIELD_PREP(APLL_DIV_SELECTION, APLL_DIV_8);
-> > > +       regmap_write(map, ASPEED_G6_CLK_SELECTION5, val);
-> >
-> > This is a departure in style from the existing code. The existing
-> > code did things like this:
-> >
-> >         regmap_update_bits(map, ASPEED_G6_CLK_SELECTION1, GENMASK(10, 8), BIT(10));
-> >
-> > Which uses the regmap API instead of FIELD_PREP macros.
->
-> Yep, that's much nicer, I'll change. The FIELD_PREP parts are just from
-> the initial ASPEED implementation.
-
-Cool.
