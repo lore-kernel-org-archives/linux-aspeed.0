@@ -1,27 +1,23 @@
 From: Ryan Chen <ryan_chen@aspeedtech.com>
-Date: Wed, 1 Mar 2023 03:40:54 +0000
+Date: Wed, 1 Mar 2023 05:57:45 +0000
 Subject: [PATCH v6 1/2] dt-bindings: i2c: aspeed: support for
  AST2600-i2cv2
-In-Reply-To: <c18b064b6b01bd547b2f03006dbf4bb6fdf9b91d.camel@codeconstruct.com.au>
+In-Reply-To: <53090449-58c9-bc03-56df-aa8ae93c0c26@linaro.org>
 References: <20230226031321.3126756-1-ryan_chen@aspeedtech.com>
-	 <20230226031321.3126756-2-ryan_chen@aspeedtech.com>
-	 <8999ef4a57b035a81b086d8732d119638d46968c.camel@codeconstruct.com.au>
-	 <SEZPR06MB52699858C92383E8E07D0832F2AF9@SEZPR06MB5269.apcprd06.prod.outlook.com>
-	 <f4cb3efc9825efa582aa94bd03657b1319ff38fd.camel@codeconstruct.com.au>
-	 <SEZPR06MB52695281E21B27DB57A7B2FFF2AD9@SEZPR06MB5269.apcprd06.prod.outlook.com>
- <c18b064b6b01bd547b2f03006dbf4bb6fdf9b91d.camel@codeconstruct.com.au>
-Message-ID: <SEZPR06MB52694CC2B6AE36B14F8D2303F2AD9@SEZPR06MB5269.apcprd06.prod.outlook.com>
+ <20230226031321.3126756-2-ryan_chen@aspeedtech.com>
+ <53090449-58c9-bc03-56df-aa8ae93c0c26@linaro.org>
+Message-ID: <SEZPR06MB52699DEB2255EB54F35C2A59F2AD9@SEZPR06MB5269.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello Jeremy,
+Hello Krzysztof,
 
 > -----Original Message-----
-> From: Jeremy Kerr <jk@codeconstruct.com.au>
-> Sent: Wednesday, March 1, 2023 11:24 AM
+> From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+> Sent: Monday, February 27, 2023 4:25 PM
 > To: Ryan Chen <ryan_chen@aspeedtech.com>; Andrew Jeffery
 > <andrew@aj.id.au>; Brendan Higgins <brendan.higgins@linux.dev>; Benjamin
 > Herrenschmidt <benh@kernel.crashing.org>; Joel Stanley <joel@jms.id.au>;
@@ -32,83 +28,145 @@ Hello Jeremy,
 > linux-aspeed at lists.ozlabs.org; linux-kernel at vger.kernel.org
 > Subject: Re: [PATCH v6 1/2] dt-bindings: i2c: aspeed: support for AST2600-i2cv2
 > 
-> Hi Ryan,
-> 
-> > Sorry, Do you mean add in description like following??
-> > ? aspeed,xfer-mode:
-> > ??? description: |
-> > ????? I2C bus transfer mode selection.
-> > ????????? ERRATA "I2C DMA fails when DRAM bus is busy and it can
-> not
-> > take DMA write data Immediately", only 1 i2c bus can be enable for DMA
-> > mode.
-> > ????? - "byte": I2C bus byte transfer mode.
-> > ????? - "buffered": I2C bus buffer register transfer mode.
-> > ????? - "dma": I2C bus dma transfer mode (default)
-> 
-> I would suggest putting some background about the transfer mode as a
-> top-level description in the binding.
-> 
-> There has been a lot of discussion here on why the binding specifies the
-> transfer mode; it would be useful (for future readers) to have a bit of context
-> on what modes they should use.
-> 
-> Perhaps something like:
-> 
->     description: |
->       [general binding description]
-> 
->       ASPEED ast2600 platforms have a number of i2c controllers, and share
-> a
->       single DMA engine between the set. DTSes can specify the mode of
-> data
->       transfer to/from the device - either DMA or programmed I/O - but
->       hardware limitations may require a DTS to manually allocate which
->       controller can use DMA mode; the enable-dma property allows control
-> of
->       this.
-> 
->       In cases where one the hardware design results in a specific
->       controller handling a larger amount of data, a DTS would likely
->       allocate DMA mode for that one controller.
-> 
-> - adjusted for whatever property interface we settle on here, of course.
-> 
-It is more clear now, I will add in next patch.
-
-> > > So, it sounds like:
-> > >
-> > > ?- there's no point in using byte mode, as buffer mode provides
-> > > ?? equivalent functionality with fewer drawbacks (ie, less interrupt
-> > > ?? load)
-> > >
-> > > ?- this just leaves the dma and buffer modes
-> > >
-> > > ?- only one controller can use dma mode
-> > >
-> > > So: how about just a single boolean property to indicate "use DMA on
-> > > this controller"? Something like aspeed,enable-dma? Or if DT binding
-> > > experts can suggest something common that might be more suitable?
+> On 26/02/2023 04:13, Ryan Chen wrote:
+> > Add ast2600-i2cv2 compatible and aspeed,global-regs, aspeed,timeout
+> > aspeed,xfer-mode description for ast2600-i2cv2.
 > >
-> > If so, just leave enable-dma and only support for buffer mode and dma
-> > mode, am I right?
+> > Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
+> > ---
+> >  .../devicetree/bindings/i2c/aspeed,i2c.yaml   | 44 +++++++++++++++++++
+> >  1 file changed, 44 insertions(+)
+> >
+> > diff --git a/Documentation/devicetree/bindings/i2c/aspeed,i2c.yaml
+> > b/Documentation/devicetree/bindings/i2c/aspeed,i2c.yaml
+> > index f597f73ccd87..75de3ce41cf5 100644
+> > --- a/Documentation/devicetree/bindings/i2c/aspeed,i2c.yaml
+> > +++ b/Documentation/devicetree/bindings/i2c/aspeed,i2c.yaml
+> > @@ -49,6 +49,25 @@ properties:
+> >      description:
+> >        states that there is another master active on this bus
+> >
+> > +  aspeed,timeout:
+> > +    type: boolean
+> > +    description: I2C bus timeout enable for master/slave mode
 > 
-> Yes, from what you have said so far, I think just a single switch between DMA /
-> not-DMA is all you need here (unless there is any time that byte mode is
-> preferable?)
+> Nothing improved here in regards to my last comment.
 
-Yes, I also think so, but if I only for dma to be single Boolean property.
-Should I remove all byte mode capability in driver?
+Yes, as I know your require is about " DT binding to represent hardware setup"
+So I add more description about aspeed,timeout as blow.
 
-Best Regards.
-Ryan
+ASPEED SOC chip is server product, i2c bus may have fingerprint connect to another board. And also support hotplug.
+The following is board-specific design example.
+Board A                                         Board B
+-------------------------                       ------------------------
+|i2c bus#1(master/slave)  <===fingerprint ===> i2c bus#x (master/slave)|
+|i2c bus#2(master)-> tmp i2c device |          |                       |
+|i2c bus#3(master)-> adc i2c device |          |                       |
+-------------------------                       ------------------------
 
-> If there is already an existing DT convention for indicating/enabling DMA
-> capability, I would suggest using that. Otherwise, just a boolean flag with a
-> sensible name would seem to work fine. The DT experts probably have a good
-> idea of what works best here :)
+aspeed,timout properites:
+For example I2C controller as slave mode, and suddenly disconnected.
+Slave state machine will keep waiting for master clock in for rx/tx transmit.
+So it need timeout setting to enable timeout unlock controller state.
+And in another side. In Master side also need avoid suddenly slave miss(un-plug), Master will timeout and release the SDA/SCL.
+
+Do you mean add those description into ore aspeed,timout properites description?
+
 > 
-> Cheers,
+> > +
+> > +  aspeed,xfer-mode:
+> > +    description: |
+> > +      I2C bus transfer mode selection.
+> > +      - "byte": I2C bus byte transfer mode.
+> > +      - "buffered": I2C bus buffer register transfer mode.
+> > +      - "dma": I2C bus dma transfer mode (default)
+> > +    items:
+> > +      enum: [byte, buffered, dma]
+> > +    maxItems: 1
 > 
+> Drop, not an array.
 > 
-> Jeremy
+> > +    $ref: /schemas/types.yaml#/definitions/non-unique-string-array
+> 
+> Wrong ref. This is not an array, but one string.
+
+Sorry, I can't catch your "one string" point.
+Could you point me what ref I can refer to?
+That I can check into Linux example. Thanks a lot.
+> 
+> > +
+> > +  aspeed,global-regs:
+> > +    $ref: /schemas/types.yaml#/definitions/phandle
+> > +    description: The phandle of i2c global register node.
+> > +
+> >  required:
+> >    - reg
+> >    - compatible
+> > @@ -57,6 +76,19 @@ required:
+> >
+> >  unevaluatedProperties: false
+> >
+> > +if:
+> 
+> This should be under allOf (in this location)
+> 
+> > +  properties:
+> > +    compatible:
+> > +      contains:
+> > +        const: aspeed,ast2600-i2cv2
+> > +
+> > +then:
+> > +  properties:
+> > +    reg:
+> > +      minItems: 2
+> > +  required:
+> > +    - aspeed,global-regs
+> 
+> else:
+>   aspeed,global-regs: false
+> and the same for other v2 properties
+> 
+
+Does modify by following? 
+
+allOf:
+ -if:
+   properties:
+    compatible:
+      contains:
+        const: aspeed,ast2600-i2cv2
+
+ then:
+  properties:
+    reg:
+      minItems: 2
+  required:
+    - aspeed,global-regs
+ else:
+    - aspeed,global-regs: false
+    -aspeed,timeout: false
+    - aspeed,xfer-mode: false
+
+> > +
+> >  examples:
+> >    - |
+> >      #include <dt-bindings/clock/aspeed-clock.h>
+> > @@ -71,3 +103,15 @@ examples:
+> >        interrupts = <0>;
+> >        interrupt-parent = <&i2c_ic>;
+> >      };
+> > +  - |
+> > +    #include <dt-bindings/interrupt-controller/arm-gic.h>
+> > +    i2c1: i2c at 80 {
+> > +      #address-cells = <1>;
+> > +      #size-cells = <0>;
+> > +      compatible = "aspeed,ast2600-i2cv2";
+> > +      reg = <0x80 0x80>, <0xc00 0x20>;
+> > +      interrupts = <GIC_SPI 110 IRQ_TYPE_LEVEL_HIGH>;
+> > +      aspeed,global-regs = <&i2c_global>;
+> > +      clocks = <&syscon ASPEED_CLK_APB>;
+> > +      resets = <&syscon ASPEED_RESET_I2C>;
+> > +    };
+> 
+Best regards,
+Ryan Chen.
