@@ -1,53 +1,65 @@
-From: Joel Stanley <joel@jms.id.au>
-Date: Wed, 1 Mar 2023 00:51:29 +0000
-Subject: [PATCH v4 2/5] dt-bindings: clock: ast2600: Add top-level I3C clock
-In-Reply-To: <20230228091638.206569-3-jk@codeconstruct.com.au>
-References: <20230228091638.206569-1-jk@codeconstruct.com.au> <20230228091638.206569-3-jk@codeconstruct.com.au>
-Message-ID: <CACPK8XebiPGe3o7uQgvpOyQ5tzn+o-AyugbJOqUh+4QzG8QgrA@mail.gmail.com>
+From: Jeremy Kerr <jk@codeconstruct.com.au>
+Date: Wed, 01 Mar 2023 08:58:43 +0800
+Subject: [PATCH v4 3/5] clk: ast2600: Add full configs for I3C clocks
+In-Reply-To: <CACPK8XfZCaLK+1kRkHa+wvGyt3YCwiZDR7CKRPKxdjuBFH+01Q@mail.gmail.com>
+References: <20230228091638.206569-1-jk@codeconstruct.com.au>
+	 <20230228091638.206569-4-jk@codeconstruct.com.au>
+	 <CACPK8XfZCaLK+1kRkHa+wvGyt3YCwiZDR7CKRPKxdjuBFH+01Q@mail.gmail.com>
+Message-ID: <1024ddf2c4047e5a6cd516809d4d15ea5e0349b6.camel@codeconstruct.com.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, 28 Feb 2023 at 09:16, Jeremy Kerr <jk@codeconstruct.com.au> wrote:
->
-> The ast2600 hardware has a top-level clock for all i3c controller
-> peripherals (then gated to each individual controller), so add a
-> top-level i3c clock line to control this.
->
-> This is a partial cherry-pick and rework of ed44b8cdfdb and 1a35eb926d7
-> from Aspeed's own tree, originally by Dylan Hung
-> <dylan_hung@aspeedtech.com>.
->
-> Signed-off-by: Jeremy Kerr <jk@codeconstruct.com.au>
+Hi Joel,
 
-Reviewed-by: Joel Stanley <joel@jms.id.au>
+Thanks for the review. Some replies inline:
 
->
-> ---
-> v4:
->  - use contiguous clock index
-> v3:
->  - split into separate bindings & clk changes
-> v2:
->  - reword commit message
-> ---
->  include/dt-bindings/clock/ast2600-clock.h | 1 +
->  1 file changed, 1 insertion(+)
->
-> diff --git a/include/dt-bindings/clock/ast2600-clock.h b/include/dt-bindings/clock/ast2600-clock.h
-> index d8b0db2f7a7d..dd1581bfdf58 100644
-> --- a/include/dt-bindings/clock/ast2600-clock.h
-> +++ b/include/dt-bindings/clock/ast2600-clock.h
-> @@ -87,6 +87,7 @@
->  #define ASPEED_CLK_MAC2RCLK            68
->  #define ASPEED_CLK_MAC3RCLK            69
->  #define ASPEED_CLK_MAC4RCLK            70
-> +#define ASPEED_CLK_I3C                 71
->
->  /* Only list resets here that are not part of a gate */
->  #define ASPEED_RESET_ADC               55
-> --
-> 2.39.1
->
+> > @@ -15,7 +16,7 @@
+> > 
+> > ?#include "clk-aspeed.h"
+> > 
+> > -#define ASPEED_G6_NUM_CLKS???????????? 71
+> > +#define ASPEED_G6_NUM_CLKS???????????? 72
+> 
+> NUM_CLKS seems dangerous. Should we instead use
+> ARRAY_SIZE(aspeed_g6_gates)?
+
+Yep, that would have saved me some time debugging. That would suit as a
+separate change though, would you like it in the same series?
+
+> > ??????? /* USB 2.0 port1 phy 40MHz clock */
+> > ??????? hw = clk_hw_register_fixed_rate(NULL, "usb-phy-40m", NULL,
+> > 0, 40000000);
+> > ??????? aspeed_g6_clk_data->hws[ASPEED_CLK_USBPHY_40M] = hw;
+> > +
+> > +?????? /* i3c clock: source from apll, divide by 8 */
+> > +?????? regmap_read(map, ASPEED_G6_CLK_SELECTION5, &val);
+> > +?????? val &= ~(I3C_CLK_SELECTION | APLL_DIV_SELECTION);
+> 
+> Is there any value in registering a mux device here? See the emmc
+> extclk device.
+
+We won't be doing any mux configuration here, so I figure the static
+setup is fine.
+
+> > +?????? val |= FIELD_PREP(I3C_CLK_SELECTION,
+> > I3C_CLK_SELECT_APLL_DIV);
+> > +?????? val |= FIELD_PREP(APLL_DIV_SELECTION, APLL_DIV_8);
+> > +?????? regmap_write(map, ASPEED_G6_CLK_SELECTION5, val);
+> 
+> This is a departure in style from the existing code. The existing
+> code did things like this:
+> 
+> ??????? regmap_update_bits(map, ASPEED_G6_CLK_SELECTION1, GENMASK(10, 8), BIT(10));
+> 
+> Which uses the regmap API instead of FIELD_PREP macros.
+
+Yep, that's much nicer, I'll change. The FIELD_PREP parts are just from
+the initial ASPEED implementation.
+
+Cheers,
+
+
+Jeremy
