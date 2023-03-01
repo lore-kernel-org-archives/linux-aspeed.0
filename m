@@ -1,40 +1,81 @@
-From: Jeremy Kerr <jk@codeconstruct.com.au>
-Date: Wed, 01 Mar 2023 16:17:39 +0800
-Subject: [PATCH v4 3/5] clk: ast2600: Add full configs for I3C clocks
-In-Reply-To: <1024ddf2c4047e5a6cd516809d4d15ea5e0349b6.camel@codeconstruct.com.au>
-References: <20230228091638.206569-1-jk@codeconstruct.com.au>
-	 <20230228091638.206569-4-jk@codeconstruct.com.au>
-	 <CACPK8XfZCaLK+1kRkHa+wvGyt3YCwiZDR7CKRPKxdjuBFH+01Q@mail.gmail.com>
-	 <1024ddf2c4047e5a6cd516809d4d15ea5e0349b6.camel@codeconstruct.com.au>
-Message-ID: <f5c9ecb7b1a850b196dfd3a5207f03226f514721.camel@codeconstruct.com.au>
+From: Cédric Le Goater <clg@kaod.org>
+Date: Wed, 1 Mar 2023 08:33:58 +0100
+Subject: [PATCH v2 3/3] ARM: dts: aspeed: asrock: Correct firmware flash
+ SPI clocks
+In-Reply-To: <CACPK8XdFT=+VJJ=iDhcmWPh9m9of2b+2UYxkrAisp6tdmWOWKg@mail.gmail.com>
+References: <20230224000400.12226-1-zev@bewilderbeest.net>
+ <20230224000400.12226-4-zev@bewilderbeest.net>
+ <CACPK8XdFT=+VJJ=iDhcmWPh9m9of2b+2UYxkrAisp6tdmWOWKg@mail.gmail.com>
+Message-ID: <36da41c9-2396-5dd4-7fef-c85412f23045@kaod.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Joel,
-
-> > > @@ -15,7 +16,7 @@
-> > > 
-> > > ?#include "clk-aspeed.h"
-> > > 
-> > > -#define ASPEED_G6_NUM_CLKS???????????? 71
-> > > +#define ASPEED_G6_NUM_CLKS???????????? 72
-> > 
-> > NUM_CLKS seems dangerous. Should we instead use
-> > ARRAY_SIZE(aspeed_g6_gates)?
+On 3/1/23 02:30, Joel Stanley wrote:
+> On Fri, 24 Feb 2023 at 00:04, Zev Weiss <zev@bewilderbeest.net> wrote:
+>>
+>> While I'm not aware of any problems that have occurred running these
+>> at 100 MHz, the official word from ASRock is that 50 MHz is the
+>> correct speed to use, so let's be safe and use that instead.
 > 
-> Yep, that would have saved me some time debugging. That would suit as
-> a separate change though, would you like it in the same series?
+> :(
+> 
+> Validated with which driver?
+> 
+> C?dric, do you have any thoughts on this?
+  
 
-No wait, it's not just ARRAY_SIZE(aspeed_g6_gates), there's a bunch of
-manually-configured clocks in the aspeed_g6_clk_data->hws[] array too.
+Transactions on the Firmware SPI controller are usually configured at
+50MHz by U-Boot and Linux to stay on the safe side, specially CE0 from
+which the board boots. The other SPI controllers are generally set at
+a higher freq : 100MHz, because the devices on these buses are not for
+booting the BMC, they are mostly only written to (at a default lower
+freq). There are some exceptions when the devices and the wiring permit
+higher rates.
 
-This might require a bit more of a restructure if we want to get rid of
-the NUM_CLKS definitions...
+For the record, we lowered the SPI freq on the AST2400 (palmetto)
+because some chips would freak out once in a while at 100MHz.
 
-Cheers,
+C.
 
+>> Signed-off-by: Zev Weiss <zev@bewilderbeest.net>
+>> Cc: stable at vger.kernel.org
+>> Fixes: 2b81613ce417 ("ARM: dts: aspeed: Add ASRock E3C246D4I BMC")
+>> Fixes: a9a3d60b937a ("ARM: dts: aspeed: Add ASRock ROMED8HM3 BMC")
+>> ---
+>>   arch/arm/boot/dts/aspeed-bmc-asrock-e3c246d4i.dts | 2 +-
+>>   arch/arm/boot/dts/aspeed-bmc-asrock-romed8hm3.dts | 2 +-
+>>   2 files changed, 2 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/arch/arm/boot/dts/aspeed-bmc-asrock-e3c246d4i.dts b/arch/arm/boot/dts/aspeed-bmc-asrock-e3c246d4i.dts
+>> index 67a75aeafc2b..c4b2efbfdf56 100644
+>> --- a/arch/arm/boot/dts/aspeed-bmc-asrock-e3c246d4i.dts
+>> +++ b/arch/arm/boot/dts/aspeed-bmc-asrock-e3c246d4i.dts
+>> @@ -63,7 +63,7 @@ flash at 0 {
+>>                  status = "okay";
+>>                  m25p,fast-read;
+>>                  label = "bmc";
+>> -               spi-max-frequency = <100000000>; /* 100 MHz */
+>> +               spi-max-frequency = <50000000>; /* 50 MHz */
+>>   #include "openbmc-flash-layout.dtsi"
+>>          };
+>>   };
+>> diff --git a/arch/arm/boot/dts/aspeed-bmc-asrock-romed8hm3.dts b/arch/arm/boot/dts/aspeed-bmc-asrock-romed8hm3.dts
+>> index 00efe1a93a69..4554abf0c7cd 100644
+>> --- a/arch/arm/boot/dts/aspeed-bmc-asrock-romed8hm3.dts
+>> +++ b/arch/arm/boot/dts/aspeed-bmc-asrock-romed8hm3.dts
+>> @@ -51,7 +51,7 @@ flash at 0 {
+>>                  status = "okay";
+>>                  m25p,fast-read;
+>>                  label = "bmc";
+>> -               spi-max-frequency = <100000000>; /* 100 MHz */
+>> +               spi-max-frequency = <50000000>; /* 50 MHz */
+>>   #include "openbmc-flash-layout-64.dtsi"
+>>          };
+>>   };
+>> --
+>> 2.39.1.438.gdcb075ea9396.dirty
+>>
 
-Jeremy
