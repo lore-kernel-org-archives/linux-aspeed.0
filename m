@@ -1,113 +1,40 @@
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-Date: Wed, 1 Mar 2023 08:51:09 +0100
-Subject: [PATCH v2] ARM: dts: aspeed: mtmitchell: Enable NCSI
-In-Reply-To: <20230228102820.18477-1-chanh@os.amperecomputing.com>
-References: <20230228102820.18477-1-chanh@os.amperecomputing.com>
-Message-ID: <775059b1-4697-b745-4743-55f7f7a9143e@molgen.mpg.de>
+From: Jeremy Kerr <jk@codeconstruct.com.au>
+Date: Wed, 01 Mar 2023 16:17:39 +0800
+Subject: [PATCH v4 3/5] clk: ast2600: Add full configs for I3C clocks
+In-Reply-To: <1024ddf2c4047e5a6cd516809d4d15ea5e0349b6.camel@codeconstruct.com.au>
+References: <20230228091638.206569-1-jk@codeconstruct.com.au>
+	 <20230228091638.206569-4-jk@codeconstruct.com.au>
+	 <CACPK8XfZCaLK+1kRkHa+wvGyt3YCwiZDR7CKRPKxdjuBFH+01Q@mail.gmail.com>
+	 <1024ddf2c4047e5a6cd516809d4d15ea5e0349b6.camel@codeconstruct.com.au>
+Message-ID: <f5c9ecb7b1a850b196dfd3a5207f03226f514721.camel@codeconstruct.com.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Dear Chanh,
+Hi Joel,
 
-
-Thank you for the patch.
-
-Am 28.02.23 um 11:28 schrieb Chanh Nguyen:
-> Support the mac3 (RGMII4) as an NC-SI stack instead of an MDIO PHY.
+> > > @@ -15,7 +16,7 @@
+> > > 
+> > > ?#include "clk-aspeed.h"
+> > > 
+> > > -#define ASPEED_G6_NUM_CLKS???????????? 71
+> > > +#define ASPEED_G6_NUM_CLKS???????????? 72
+> > 
+> > NUM_CLKS seems dangerous. Should we instead use
+> > ARRAY_SIZE(aspeed_g6_gates)?
 > 
-> The OCP slot #0 and OCP slot #1 use a common the BMC_NCSI signal,
+> Yep, that would have saved me some time debugging. That would suit as
+> a separate change though, would you like it in the same series?
 
-*the* seems a leftover.
+No wait, it's not just ARRAY_SIZE(aspeed_g6_gates), there's a bunch of
+manually-configured clocks in the aspeed_g6_clk_data->hws[] array too.
 
-> so we use only one of them at the same time. The OCP slot #0 will
-> be enabled by PCA9539's setting by default.
-> 
-> Also, enable the OCP Auxiliary Power during booting.
+This might require a bit more of a restructure if we want to get rid of
+the NUM_CLKS definitions...
 
-Is there a reason not to make this a separate commit?
-
-
-Kind regards,
-
-Paul
+Cheers,
 
 
-> Signed-off-by: Chanh Nguyen <chanh@os.amperecomputing.com>
-> ---
-> Changes in v2:
->     - Change PCA9539APW node name.                     [Krzysztof]
-> ---
->   .../boot/dts/aspeed-bmc-ampere-mtmitchell.dts | 37 ++++++++++++++++++-
->   1 file changed, 36 insertions(+), 1 deletion(-)
-> 
-> diff --git a/arch/arm/boot/dts/aspeed-bmc-ampere-mtmitchell.dts b/arch/arm/boot/dts/aspeed-bmc-ampere-mtmitchell.dts
-> index 4b91600eaf62..1e0e88465254 100644
-> --- a/arch/arm/boot/dts/aspeed-bmc-ampere-mtmitchell.dts
-> +++ b/arch/arm/boot/dts/aspeed-bmc-ampere-mtmitchell.dts
-> @@ -251,6 +251,14 @@
->   	pinctrl-0 = <&pinctrl_rgmii1_default>;
->   };
->   
-> +&mac3 {
-> +	status = "okay";
-> +	pinctrl-names = "default";
-> +	pinctrl-0 = <&pinctrl_rmii4_default>;
-> +	clock-names = "MACCLK", "RCLK";
-> +	use-ncsi;
-> +};
-> +
->   &fmc {
->   	status = "okay";
->   	flash at 0 {
-> @@ -439,6 +447,26 @@
->   	status = "okay";
->   };
->   
-> +&i2c8 {
-> +	status = "okay";
-> +
-> +	gpio at 77 {
-> +		compatible = "nxp,pca9539";
-> +		reg = <0x77>;
-> +		gpio-controller;
-> +		#address-cells = <1>;
-> +		#size-cells = <0>;
-> +		#gpio-cells = <2>;
-> +
-> +		bmc-ocp0-en-hog {
-> +			gpio-hog;
-> +			gpios = <7 GPIO_ACTIVE_LOW>;
-> +			output-high;
-> +			line-name = "bmc-ocp0-en-n";
-> +		};
-> +	};
-> +};
-> +
->   &i2c9 {
->   	status = "okay";
->   };
-> @@ -530,13 +558,20 @@
->   	/*V0-V7*/	"s0-hightemp-n","s0-fault-alert","s0-sys-auth-failure-n",
->   			"host0-reboot-ack-n","host0-ready","host0-shd-req-n",
->   			"host0-shd-ack-n","s0-overtemp-n",
-> -	/*W0-W7*/	"ocp-aux-pwren","ocp-main-pwren","ocp-pgood","",
-> +	/*W0-W7*/	"","ocp-main-pwren","ocp-pgood","",
->   			"bmc-ok","bmc-ready","spi0-program-sel","spi0-backup-sel",
->   	/*X0-X7*/	"i2c-backup-sel","s1-fault-alert","s1-fw-boot-ok",
->   			"s1-hightemp-n","s0-spi-auth-fail-n","s1-sys-auth-failure-n",
->   			"s1-overtemp-n","s1-spi-auth-fail-n",
->   	/*Y0-Y7*/	"","","","","","","","host0-special-boot",
->   	/*Z0-Z7*/	"reset-button","ps0-pgood","ps1-pgood","","","","","";
-> +
-> +	ocp-aux-pwren-hog {
-> +		gpio-hog;
-> +		gpios = <ASPEED_GPIO(W, 0) GPIO_ACTIVE_HIGH>;
-> +		output-high;
-> +		line-name = "ocp-aux-pwren";
-> +	};
->   };
->   
->   &gpio1 {
+Jeremy
