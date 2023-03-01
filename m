@@ -1,81 +1,82 @@
-From: Cédric Le Goater <clg@kaod.org>
-Date: Wed, 1 Mar 2023 08:33:58 +0100
-Subject: [PATCH v2 3/3] ARM: dts: aspeed: asrock: Correct firmware flash
- SPI clocks
-In-Reply-To: <CACPK8XdFT=+VJJ=iDhcmWPh9m9of2b+2UYxkrAisp6tdmWOWKg@mail.gmail.com>
-References: <20230224000400.12226-1-zev@bewilderbeest.net>
- <20230224000400.12226-4-zev@bewilderbeest.net>
- <CACPK8XdFT=+VJJ=iDhcmWPh9m9of2b+2UYxkrAisp6tdmWOWKg@mail.gmail.com>
-Message-ID: <36da41c9-2396-5dd4-7fef-c85412f23045@kaod.org>
+From: Thomas Zimmermann <tzimmermann@suse.de>
+Date: Wed,  1 Mar 2023 16:30:39 +0100
+Subject: [PATCH 00/22] drm/dma-helper: Add dedicated fbdev emulation
+Message-ID: <20230301153101.4282-1-tzimmermann@suse.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 3/1/23 02:30, Joel Stanley wrote:
-> On Fri, 24 Feb 2023 at 00:04, Zev Weiss <zev@bewilderbeest.net> wrote:
->>
->> While I'm not aware of any problems that have occurred running these
->> at 100 MHz, the official word from ASRock is that 50 MHz is the
->> correct speed to use, so let's be safe and use that instead.
-> 
-> :(
-> 
-> Validated with which driver?
-> 
-> C?dric, do you have any thoughts on this?
-  
+Add fbdev emulation that is optimized for DMA helpers, as used by most
+drivers. It operates directly on GEM DMA buffers in system memory.
+Memory pages are mmap'ed directly to userspace. No implicit shadow
+buffers need to be allocated; as can happen with the generic fbdev
+emulation. Convert drivers that fulfil the requirements.
 
-Transactions on the Firmware SPI controller are usually configured at
-50MHz by U-Boot and Linux to stay on the safe side, specially CE0 from
-which the board boots. The other SPI controllers are generally set at
-a higher freq : 100MHz, because the devices on these buses are not for
-booting the BMC, they are mostly only written to (at a default lower
-freq). There are some exceptions when the devices and the wiring permit
-higher rates.
+Tested with fbcon and IGT on vc4.
 
-For the record, we lowered the SPI freq on the AST2400 (palmetto)
-because some chips would freak out once in a while at 100MHz.
+Future direction: providing a dedicated fbdev emulation for GEM DMA
+helpers will allow us to remove this case from the generic fbdev code.
+The latter can then be simplified.
 
-C.
+Thomas Zimmermann (22):
+  drm/fbdev-dma: Implement fbdev emulation for GEM DMA helpers
+  arm/hdlcd: Use GEM DMA fbdev emulation
+  arm/malidp: Use GEM DMA fbdev emulation
+  drm/aspeed: Use GEM DMA fbdev emulation
+  drm/atmel-hlcdc: Use GEM DMA fbdev emulation
+  drm/fsl-dcu: Use GEM DMA fbdev emulation
+  drm/imx/dcss: Use GEM DMA fbdev emulation
+  drm/imx: Use GEM DMA fbdev emulation
+  drm/kmb: Use GEM DMA fbdev emulation
+  drm/logicvc: Use GEM DMA fbdev emulation
+  drm/meson: Use GEM DMA fbdev emulation
+  drm/mxsfb/lcdif: Use GEM DMA fbdev emulation
+  drm/mxsfb: Use GEM DMA fbdev emulation
+  drm/sti: Use GEM DMA fbdev emulation
+  drm/stm: Use GEM DMA fbdev emulation
+  drm/sun4i: Use GEM DMA fbdev emulation
+  drm/tidss: Use GEM DMA fbdev emulation
+  drm/tilcdc: Use GEM DMA fbdev emulation
+  drm/arcpgu: Use GEM DMA fbdev emulation
+  drm/tve200: Use GEM DMA fbdev emulation
+  drm/vc4: Use GEM DMA fbdev emulation
+  drm/xlnx: Use GEM DMA fbdev emulation
 
->> Signed-off-by: Zev Weiss <zev@bewilderbeest.net>
->> Cc: stable at vger.kernel.org
->> Fixes: 2b81613ce417 ("ARM: dts: aspeed: Add ASRock E3C246D4I BMC")
->> Fixes: a9a3d60b937a ("ARM: dts: aspeed: Add ASRock ROMED8HM3 BMC")
->> ---
->>   arch/arm/boot/dts/aspeed-bmc-asrock-e3c246d4i.dts | 2 +-
->>   arch/arm/boot/dts/aspeed-bmc-asrock-romed8hm3.dts | 2 +-
->>   2 files changed, 2 insertions(+), 2 deletions(-)
->>
->> diff --git a/arch/arm/boot/dts/aspeed-bmc-asrock-e3c246d4i.dts b/arch/arm/boot/dts/aspeed-bmc-asrock-e3c246d4i.dts
->> index 67a75aeafc2b..c4b2efbfdf56 100644
->> --- a/arch/arm/boot/dts/aspeed-bmc-asrock-e3c246d4i.dts
->> +++ b/arch/arm/boot/dts/aspeed-bmc-asrock-e3c246d4i.dts
->> @@ -63,7 +63,7 @@ flash at 0 {
->>                  status = "okay";
->>                  m25p,fast-read;
->>                  label = "bmc";
->> -               spi-max-frequency = <100000000>; /* 100 MHz */
->> +               spi-max-frequency = <50000000>; /* 50 MHz */
->>   #include "openbmc-flash-layout.dtsi"
->>          };
->>   };
->> diff --git a/arch/arm/boot/dts/aspeed-bmc-asrock-romed8hm3.dts b/arch/arm/boot/dts/aspeed-bmc-asrock-romed8hm3.dts
->> index 00efe1a93a69..4554abf0c7cd 100644
->> --- a/arch/arm/boot/dts/aspeed-bmc-asrock-romed8hm3.dts
->> +++ b/arch/arm/boot/dts/aspeed-bmc-asrock-romed8hm3.dts
->> @@ -51,7 +51,7 @@ flash at 0 {
->>                  status = "okay";
->>                  m25p,fast-read;
->>                  label = "bmc";
->> -               spi-max-frequency = <100000000>; /* 100 MHz */
->> +               spi-max-frequency = <50000000>; /* 50 MHz */
->>   #include "openbmc-flash-layout-64.dtsi"
->>          };
->>   };
->> --
->> 2.39.1.438.gdcb075ea9396.dirty
->>
+ drivers/gpu/drm/Makefile                     |   1 +
+ drivers/gpu/drm/arm/hdlcd_drv.c              |   4 +-
+ drivers/gpu/drm/arm/malidp_drv.c             |   4 +-
+ drivers/gpu/drm/aspeed/aspeed_gfx_drv.c      |   4 +-
+ drivers/gpu/drm/atmel-hlcdc/atmel_hlcdc_dc.c |   4 +-
+ drivers/gpu/drm/drm_fbdev_dma.c              | 275 +++++++++++++++++++
+ drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_drv.c    |   4 +-
+ drivers/gpu/drm/imx/dcss/dcss-kms.c          |   4 +-
+ drivers/gpu/drm/imx/ipuv3/imx-drm-core.c     |   4 +-
+ drivers/gpu/drm/kmb/kmb_drv.c                |   4 +-
+ drivers/gpu/drm/logicvc/logicvc_drm.c        |   4 +-
+ drivers/gpu/drm/meson/meson_drv.c            |   4 +-
+ drivers/gpu/drm/mxsfb/lcdif_drv.c            |   4 +-
+ drivers/gpu/drm/mxsfb/mxsfb_drv.c            |   4 +-
+ drivers/gpu/drm/sti/sti_drv.c                |   4 +-
+ drivers/gpu/drm/stm/drv.c                    |   4 +-
+ drivers/gpu/drm/sun4i/sun4i_drv.c            |   4 +-
+ drivers/gpu/drm/tidss/tidss_drv.c            |   4 +-
+ drivers/gpu/drm/tilcdc/tilcdc_drv.c          |   4 +-
+ drivers/gpu/drm/tiny/arcpgu.c                |   4 +-
+ drivers/gpu/drm/tve200/tve200_drv.c          |   4 +-
+ drivers/gpu/drm/vc4/vc4_drv.c                |   4 +-
+ drivers/gpu/drm/xlnx/zynqmp_kms.c            |   4 +-
+ include/drm/drm_fbdev_dma.h                  |  15 +
+ 24 files changed, 333 insertions(+), 42 deletions(-)
+ create mode 100644 drivers/gpu/drm/drm_fbdev_dma.c
+ create mode 100644 include/drm/drm_fbdev_dma.h
+
+
+base-commit: 734cd918122f6ec06e4c9366fb3283b29b1c7ea5
+prerequisite-patch-id: 0aa359f6144c4015c140c8a6750be19099c676fb
+prerequisite-patch-id: c67e5d886a47b7d0266d81100837557fda34cb24
+prerequisite-patch-id: 3f204510fcbf9530d6540bd8e6128cce598988b6
+-- 
+2.39.2
 
