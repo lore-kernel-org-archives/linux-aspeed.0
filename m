@@ -1,9 +1,9 @@
 From: Thomas Zimmermann <tzimmermann@suse.de>
-Date: Wed,  1 Mar 2023 16:30:49 +0100
-Subject: [PATCH 10/22] drm/logicvc: Use GEM DMA fbdev emulation
+Date: Wed,  1 Mar 2023 16:30:54 +0100
+Subject: [PATCH 15/22] drm/stm: Use GEM DMA fbdev emulation
 In-Reply-To: <20230301153101.4282-1-tzimmermann@suse.de>
 References: <20230301153101.4282-1-tzimmermann@suse.de>
-Message-ID: <20230301153101.4282-11-tzimmermann@suse.de>
+Message-ID: <20230301153101.4282-16-tzimmermann@suse.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -15,28 +15,28 @@ possible shadow buffering and makes the code simpler.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- drivers/gpu/drm/logicvc/logicvc_drm.c | 4 ++--
+ drivers/gpu/drm/stm/drv.c | 4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/gpu/drm/logicvc/logicvc_drm.c b/drivers/gpu/drm/logicvc/logicvc_drm.c
-index 2fb23697740a..c35c453fd025 100644
---- a/drivers/gpu/drm/logicvc/logicvc_drm.c
-+++ b/drivers/gpu/drm/logicvc/logicvc_drm.c
-@@ -17,7 +17,7 @@
- 
+diff --git a/drivers/gpu/drm/stm/drv.c b/drivers/gpu/drm/stm/drv.c
+index 50410bd99dfe..422220df7d8c 100644
+--- a/drivers/gpu/drm/stm/drv.c
++++ b/drivers/gpu/drm/stm/drv.c
+@@ -18,7 +18,7 @@
+ #include <drm/drm_atomic.h>
  #include <drm/drm_atomic_helper.h>
  #include <drm/drm_drv.h>
 -#include <drm/drm_fbdev_generic.h>
 +#include <drm/drm_fbdev_dma.h>
  #include <drm/drm_gem_dma_helper.h>
- #include <drm/drm_print.h>
+ #include <drm/drm_gem_framebuffer_helper.h>
+ #include <drm/drm_module.h>
+@@ -203,7 +203,7 @@ static int stm_drm_platform_probe(struct platform_device *pdev)
+ 	if (ret)
+ 		goto err_put;
  
-@@ -449,7 +449,7 @@ static int logicvc_drm_probe(struct platform_device *pdev)
- 		preferred_bpp = 32;
- 		break;
- 	}
--	drm_fbdev_generic_setup(drm_dev, preferred_bpp);
-+	drm_fbdev_dma_setup(drm_dev, preferred_bpp);
+-	drm_fbdev_generic_setup(ddev, 16);
++	drm_fbdev_dma_setup(ddev, 16);
  
  	return 0;
  
