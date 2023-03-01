@@ -1,9 +1,9 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Wed, 1 Mar 2023 00:50:24 +0000
-Subject: [PATCH v4 1/5] clk: ast2600: allow empty entries in aspeed_g6_gates
-In-Reply-To: <20230228091638.206569-2-jk@codeconstruct.com.au>
-References: <20230228091638.206569-1-jk@codeconstruct.com.au> <20230228091638.206569-2-jk@codeconstruct.com.au>
-Message-ID: <CACPK8XffdV3YMy0eu4sZQhw-tS2g5kz_RHLD98Up9G0P9NAR4A@mail.gmail.com>
+Date: Wed, 1 Mar 2023 00:51:29 +0000
+Subject: [PATCH v4 2/5] dt-bindings: clock: ast2600: Add top-level I3C clock
+In-Reply-To: <20230228091638.206569-3-jk@codeconstruct.com.au>
+References: <20230228091638.206569-1-jk@codeconstruct.com.au> <20230228091638.206569-3-jk@codeconstruct.com.au>
+Message-ID: <CACPK8XebiPGe3o7uQgvpOyQ5tzn+o-AyugbJOqUh+4QzG8QgrA@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -12,52 +12,42 @@ Content-Transfer-Encoding: 7bit
 
 On Tue, 28 Feb 2023 at 09:16, Jeremy Kerr <jk@codeconstruct.com.au> wrote:
 >
-> We're about to remove an entry from aspeed_g6_gates, but we won't want
-> to alter/reorder existing entries. Allow empty entries in this array.
-
-Nice. So it's recorded somewhere: the gates array should be
-sequential, with the include/dt-bindings/clock/ast2600-clock.h defines
-starting at 0 and counting up. If a clock gets mistakenly added and
-needs to be removed, we can't have a "hole" in the array so instead we
-leave it NULL and skip over adding it.
-
-We could simply remove the bad entry but this would break the
-theoretical case of a device tree with an old header, so we leave the
-gaps in place :(
+> The ast2600 hardware has a top-level clock for all i3c controller
+> peripherals (then gated to each individual controller), so add a
+> top-level i3c clock line to control this.
+>
+> This is a partial cherry-pick and rework of ed44b8cdfdb and 1a35eb926d7
+> from Aspeed's own tree, originally by Dylan Hung
+> <dylan_hung@aspeedtech.com>.
+>
+> Signed-off-by: Jeremy Kerr <jk@codeconstruct.com.au>
 
 Reviewed-by: Joel Stanley <joel@jms.id.au>
 
-Cheers,
-
-Joel
-
-
-
-
->
-> Signed-off-by: Jeremy Kerr <jk@codeconstruct.com.au>
 >
 > ---
+> v4:
+>  - use contiguous clock index
 > v3:
+>  - split into separate bindings & clk changes
+> v2:
 >  - reword commit message
 > ---
->  drivers/clk/clk-ast2600.c | 3 +++
->  1 file changed, 3 insertions(+)
+>  include/dt-bindings/clock/ast2600-clock.h | 1 +
+>  1 file changed, 1 insertion(+)
 >
-> diff --git a/drivers/clk/clk-ast2600.c b/drivers/clk/clk-ast2600.c
-> index 9c3305bcb27a..1f08ff3c60fa 100644
-> --- a/drivers/clk/clk-ast2600.c
-> +++ b/drivers/clk/clk-ast2600.c
-> @@ -652,6 +652,9 @@ static int aspeed_g6_clk_probe(struct platform_device *pdev)
->                 const struct aspeed_gate_data *gd = &aspeed_g6_gates[i];
->                 u32 gate_flags;
+> diff --git a/include/dt-bindings/clock/ast2600-clock.h b/include/dt-bindings/clock/ast2600-clock.h
+> index d8b0db2f7a7d..dd1581bfdf58 100644
+> --- a/include/dt-bindings/clock/ast2600-clock.h
+> +++ b/include/dt-bindings/clock/ast2600-clock.h
+> @@ -87,6 +87,7 @@
+>  #define ASPEED_CLK_MAC2RCLK            68
+>  #define ASPEED_CLK_MAC3RCLK            69
+>  #define ASPEED_CLK_MAC4RCLK            70
+> +#define ASPEED_CLK_I3C                 71
 >
-> +               if (!gd->name)
-> +                       continue;
-> +
->                 /*
->                  * Special case: the USB port 1 clock (bit 14) is always
->                  * working the opposite way from the other ones.
+>  /* Only list resets here that are not part of a gate */
+>  #define ASPEED_RESET_ADC               55
 > --
 > 2.39.1
 >
