@@ -1,9 +1,9 @@
 From: Thomas Zimmermann <tzimmermann@suse.de>
-Date: Wed,  1 Mar 2023 16:30:51 +0100
-Subject: [PATCH 12/22] drm/mxsfb/lcdif: Use GEM DMA fbdev emulation
+Date: Wed,  1 Mar 2023 16:30:48 +0100
+Subject: [PATCH 09/22] drm/kmb: Use GEM DMA fbdev emulation
 In-Reply-To: <20230301153101.4282-1-tzimmermann@suse.de>
 References: <20230301153101.4282-1-tzimmermann@suse.de>
-Message-ID: <20230301153101.4282-13-tzimmermann@suse.de>
+Message-ID: <20230301153101.4282-10-tzimmermann@suse.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -15,28 +15,28 @@ possible shadow buffering and makes the code simpler.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- drivers/gpu/drm/mxsfb/lcdif_drv.c | 4 ++--
+ drivers/gpu/drm/kmb/kmb_drv.c | 4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/gpu/drm/mxsfb/lcdif_drv.c b/drivers/gpu/drm/mxsfb/lcdif_drv.c
-index cc2ceb301b96..6fb5b469ee5a 100644
---- a/drivers/gpu/drm/mxsfb/lcdif_drv.c
-+++ b/drivers/gpu/drm/mxsfb/lcdif_drv.c
-@@ -16,7 +16,7 @@
+diff --git a/drivers/gpu/drm/kmb/kmb_drv.c b/drivers/gpu/drm/kmb/kmb_drv.c
+index d29c678f6c91..24035b53441c 100644
+--- a/drivers/gpu/drm/kmb/kmb_drv.c
++++ b/drivers/gpu/drm/kmb/kmb_drv.c
+@@ -15,7 +15,7 @@
+ 
  #include <drm/drm_atomic_helper.h>
- #include <drm/drm_bridge.h>
  #include <drm/drm_drv.h>
 -#include <drm/drm_fbdev_generic.h>
 +#include <drm/drm_fbdev_dma.h>
  #include <drm/drm_gem_dma_helper.h>
  #include <drm/drm_gem_framebuffer_helper.h>
- #include <drm/drm_mode_config.h>
-@@ -220,7 +220,7 @@ static int lcdif_probe(struct platform_device *pdev)
+ #include <drm/drm_module.h>
+@@ -562,7 +562,7 @@ static int kmb_probe(struct platform_device *pdev)
  	if (ret)
- 		goto err_unload;
+ 		goto err_register;
  
--	drm_fbdev_generic_setup(drm, 32);
-+	drm_fbdev_dma_setup(drm, 32);
+-	drm_fbdev_generic_setup(&kmb->drm, 0);
++	drm_fbdev_dma_setup(&kmb->drm, 0);
  
  	return 0;
  
