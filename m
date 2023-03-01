@@ -1,61 +1,113 @@
-From: Jeremy Kerr <jk@codeconstruct.com.au>
-Date: Wed, 01 Mar 2023 14:54:50 +0800
-Subject: [PATCH v4 5/5] dt-bindings: clock: ast2600: Add reset config
- for I3C
-In-Reply-To: <CACPK8XfRg9vHYjC0rco4dr9pNY03vXTrmXaopOGBgdCq09LybQ@mail.gmail.com>
-References: <20230228091638.206569-1-jk@codeconstruct.com.au>
-	 <20230228091638.206569-6-jk@codeconstruct.com.au>
-	 <CACPK8XcA_SES=Wo7vuWEJ4U5kTizM5brmb=6ELXD-taCFJQwgA@mail.gmail.com>
-	 <cbbb99ce6125048667e4c41412710a61dc4d686f.camel@codeconstruct.com.au>
-	 <CACPK8XfRg9vHYjC0rco4dr9pNY03vXTrmXaopOGBgdCq09LybQ@mail.gmail.com>
-Message-ID: <51803a244c28c53b5adb384effc09df1909dd1e8.camel@codeconstruct.com.au>
+From: Paul Menzel <pmenzel@molgen.mpg.de>
+Date: Wed, 1 Mar 2023 08:51:09 +0100
+Subject: [PATCH v2] ARM: dts: aspeed: mtmitchell: Enable NCSI
+In-Reply-To: <20230228102820.18477-1-chanh@os.amperecomputing.com>
+References: <20230228102820.18477-1-chanh@os.amperecomputing.com>
+Message-ID: <775059b1-4697-b745-4743-55f7f7a9143e@molgen.mpg.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Joel,
+Dear Chanh,
 
-> > So I'm not sure what that comment is supposed to signify as to what
-> > qualifies as a "gate" in the context of a reset...
+
+Thank you for the patch.
+
+Am 28.02.23 um 11:28 schrieb Chanh Nguyen:
+> Support the mac3 (RGMII4) as an NC-SI stack instead of an MDIO PHY.
 > 
-> This is poor documentation from the author of the clock driver,
+> The OCP slot #0 and OCP slot #1 use a common the BMC_NCSI signal,
 
-Hah, not that guy again!
+*the* seems a leftover.
 
-> which is me.
-
-oh.
-
-> We only expose the reset lines in the device tree for resets that are
-> not associated with a clock line.
+> so we use only one of them at the same time. The OCP slot #0 will
+> be enabled by PCA9539's setting by default.
 > 
-> This is done because the aspeed docs specify we do a dance when
-> enabling an IP:
+> Also, enable the OCP Auxiliary Power during booting.
+
+Is there a reason not to make this a separate commit?
+
+
+Kind regards,
+
+Paul
+
+
+> Signed-off-by: Chanh Nguyen <chanh@os.amperecomputing.com>
+> ---
+> Changes in v2:
+>     - Change PCA9539APW node name.                     [Krzysztof]
+> ---
+>   .../boot/dts/aspeed-bmc-ampere-mtmitchell.dts | 37 ++++++++++++++++++-
+>   1 file changed, 36 insertions(+), 1 deletion(-)
 > 
-> ?1. Place IP in reset
-> ?2. Enable clock
-> ?3. Delay
-> ?4. Release reset
-> 
-> So we do this with the aspeed_g6_gates array. The rule is: any gate
-> with a number in the rst column doesn't have that reset line exposed.
-> That's what this cryptic comment in the header is warning about.
-
-That makes sense, and means I can drop the explicit reset control from
-the DTS, and then we don't need these definitions.
-
-> This was documented to some extent in the original commit message for
-> the 2400/2500 driver:
-> 
-> ?https://git.kernel.org/torvalds/c/15ed8ce5f84e2b
-> 
-> We could hoist that out and put it in the source file(s).
-
-Awesome, thanks for the explanation - I'll add a patch to do so.
-
-Cheers,
-
-
-Jeremy
+> diff --git a/arch/arm/boot/dts/aspeed-bmc-ampere-mtmitchell.dts b/arch/arm/boot/dts/aspeed-bmc-ampere-mtmitchell.dts
+> index 4b91600eaf62..1e0e88465254 100644
+> --- a/arch/arm/boot/dts/aspeed-bmc-ampere-mtmitchell.dts
+> +++ b/arch/arm/boot/dts/aspeed-bmc-ampere-mtmitchell.dts
+> @@ -251,6 +251,14 @@
+>   	pinctrl-0 = <&pinctrl_rgmii1_default>;
+>   };
+>   
+> +&mac3 {
+> +	status = "okay";
+> +	pinctrl-names = "default";
+> +	pinctrl-0 = <&pinctrl_rmii4_default>;
+> +	clock-names = "MACCLK", "RCLK";
+> +	use-ncsi;
+> +};
+> +
+>   &fmc {
+>   	status = "okay";
+>   	flash at 0 {
+> @@ -439,6 +447,26 @@
+>   	status = "okay";
+>   };
+>   
+> +&i2c8 {
+> +	status = "okay";
+> +
+> +	gpio at 77 {
+> +		compatible = "nxp,pca9539";
+> +		reg = <0x77>;
+> +		gpio-controller;
+> +		#address-cells = <1>;
+> +		#size-cells = <0>;
+> +		#gpio-cells = <2>;
+> +
+> +		bmc-ocp0-en-hog {
+> +			gpio-hog;
+> +			gpios = <7 GPIO_ACTIVE_LOW>;
+> +			output-high;
+> +			line-name = "bmc-ocp0-en-n";
+> +		};
+> +	};
+> +};
+> +
+>   &i2c9 {
+>   	status = "okay";
+>   };
+> @@ -530,13 +558,20 @@
+>   	/*V0-V7*/	"s0-hightemp-n","s0-fault-alert","s0-sys-auth-failure-n",
+>   			"host0-reboot-ack-n","host0-ready","host0-shd-req-n",
+>   			"host0-shd-ack-n","s0-overtemp-n",
+> -	/*W0-W7*/	"ocp-aux-pwren","ocp-main-pwren","ocp-pgood","",
+> +	/*W0-W7*/	"","ocp-main-pwren","ocp-pgood","",
+>   			"bmc-ok","bmc-ready","spi0-program-sel","spi0-backup-sel",
+>   	/*X0-X7*/	"i2c-backup-sel","s1-fault-alert","s1-fw-boot-ok",
+>   			"s1-hightemp-n","s0-spi-auth-fail-n","s1-sys-auth-failure-n",
+>   			"s1-overtemp-n","s1-spi-auth-fail-n",
+>   	/*Y0-Y7*/	"","","","","","","","host0-special-boot",
+>   	/*Z0-Z7*/	"reset-button","ps0-pgood","ps1-pgood","","","","","";
+> +
+> +	ocp-aux-pwren-hog {
+> +		gpio-hog;
+> +		gpios = <ASPEED_GPIO(W, 0) GPIO_ACTIVE_HIGH>;
+> +		output-high;
+> +		line-name = "ocp-aux-pwren";
+> +	};
+>   };
+>   
+>   &gpio1 {
