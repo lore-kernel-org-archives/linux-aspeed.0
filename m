@@ -1,47 +1,182 @@
-From: Sam Ravnborg <sam@ravnborg.org>
-Date: Thu, 2 Mar 2023 20:47:38 +0100
-Subject: [PATCH 05/22] drm/atmel-hlcdc: Use GEM DMA fbdev emulation
-In-Reply-To: <20230301153101.4282-6-tzimmermann@suse.de>
-References: <20230301153101.4282-1-tzimmermann@suse.de>
- <20230301153101.4282-6-tzimmermann@suse.de>
-Message-ID: <ZAD9WnhAcwAdQPqT@ravnborg.org>
+From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Date: Fri, 3 Mar 2023 09:20:09 +0100
+Subject: [PATCH v6 1/2] dt-bindings: i2c: aspeed: support for
+ AST2600-i2cv2
+In-Reply-To: <SEZPR06MB52699DEB2255EB54F35C2A59F2AD9@SEZPR06MB5269.apcprd06.prod.outlook.com>
+References: <20230226031321.3126756-1-ryan_chen@aspeedtech.com>
+ <20230226031321.3126756-2-ryan_chen@aspeedtech.com>
+ <53090449-58c9-bc03-56df-aa8ae93c0c26@linaro.org>
+ <SEZPR06MB52699DEB2255EB54F35C2A59F2AD9@SEZPR06MB5269.apcprd06.prod.outlook.com>
+Message-ID: <fc20a2d1-e2f9-c22b-dcdf-153cb527eea8@linaro.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Mar 01, 2023 at 04:30:44PM +0100, Thomas Zimmermann wrote:
-> Use the fbdev emulation that is optimized for DMA helpers. Avoids
-> possible shadow buffering and makes the code simpler.
+On 01/03/2023 06:57, Ryan Chen wrote:
+> Hello Krzysztof,
 > 
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-Acked-by: Sam Ravnborg <sam@ravnborg.org>
-> ---
->  drivers/gpu/drm/atmel-hlcdc/atmel_hlcdc_dc.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+>> -----Original Message-----
+>> From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+>> Sent: Monday, February 27, 2023 4:25 PM
+>> To: Ryan Chen <ryan_chen@aspeedtech.com>; Andrew Jeffery
+>> <andrew@aj.id.au>; Brendan Higgins <brendan.higgins@linux.dev>; Benjamin
+>> Herrenschmidt <benh@kernel.crashing.org>; Joel Stanley <joel@jms.id.au>;
+>> Rob Herring <robh+dt@kernel.org>; Krzysztof Kozlowski
+>> <krzysztof.kozlowski+dt@linaro.org>; Philipp Zabel <p.zabel@pengutronix.de>;
+>> linux-i2c at vger.kernel.org; openbmc at lists.ozlabs.org;
+>> devicetree at vger.kernel.org; linux-arm-kernel at lists.infradead.org;
+>> linux-aspeed at lists.ozlabs.org; linux-kernel at vger.kernel.org
+>> Subject: Re: [PATCH v6 1/2] dt-bindings: i2c: aspeed: support for AST2600-i2cv2
+>>
+>> On 26/02/2023 04:13, Ryan Chen wrote:
+>>> Add ast2600-i2cv2 compatible and aspeed,global-regs, aspeed,timeout
+>>> aspeed,xfer-mode description for ast2600-i2cv2.
+>>>
+>>> Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
+>>> ---
+>>>  .../devicetree/bindings/i2c/aspeed,i2c.yaml   | 44 +++++++++++++++++++
+>>>  1 file changed, 44 insertions(+)
+>>>
+>>> diff --git a/Documentation/devicetree/bindings/i2c/aspeed,i2c.yaml
+>>> b/Documentation/devicetree/bindings/i2c/aspeed,i2c.yaml
+>>> index f597f73ccd87..75de3ce41cf5 100644
+>>> --- a/Documentation/devicetree/bindings/i2c/aspeed,i2c.yaml
+>>> +++ b/Documentation/devicetree/bindings/i2c/aspeed,i2c.yaml
+>>> @@ -49,6 +49,25 @@ properties:
+>>>      description:
+>>>        states that there is another master active on this bus
+>>>
+>>> +  aspeed,timeout:
+>>> +    type: boolean
+>>> +    description: I2C bus timeout enable for master/slave mode
+>>
+>> Nothing improved here in regards to my last comment.
 > 
-> diff --git a/drivers/gpu/drm/atmel-hlcdc/atmel_hlcdc_dc.c b/drivers/gpu/drm/atmel-hlcdc/atmel_hlcdc_dc.c
-> index 4e806b06d35d..29603561d501 100644
-> --- a/drivers/gpu/drm/atmel-hlcdc/atmel_hlcdc_dc.c
-> +++ b/drivers/gpu/drm/atmel-hlcdc/atmel_hlcdc_dc.c
-> @@ -19,7 +19,7 @@
->  #include <drm/drm_atomic.h>
->  #include <drm/drm_atomic_helper.h>
->  #include <drm/drm_drv.h>
-> -#include <drm/drm_fbdev_generic.h>
-> +#include <drm/drm_fbdev_dma.h>
->  #include <drm/drm_gem_dma_helper.h>
->  #include <drm/drm_gem_framebuffer_helper.h>
->  #include <drm/drm_module.h>
-> @@ -760,7 +760,7 @@ static int atmel_hlcdc_dc_drm_probe(struct platform_device *pdev)
->  	if (ret)
->  		goto err_unload;
->  
-> -	drm_fbdev_generic_setup(ddev, 24);
-> +	drm_fbdev_dma_setup(ddev, 24);
->  
->  	return 0;
->  
-> -- 
-> 2.39.2
+> Yes, as I know your require is about " DT binding to represent hardware setup"
+> So I add more description about aspeed,timeout as blow.
+> 
+> ASPEED SOC chip is server product, i2c bus may have fingerprint connect to another board. And also support hotplug.
+> The following is board-specific design example.
+> Board A                                         Board B
+> -------------------------                       ------------------------
+> |i2c bus#1(master/slave)  <===fingerprint ===> i2c bus#x (master/slave)|
+> |i2c bus#2(master)-> tmp i2c device |          |                       |
+> |i2c bus#3(master)-> adc i2c device |          |                       |
+> -------------------------                       ------------------------
+> 
+> aspeed,timout properites:
+> For example I2C controller as slave mode, and suddenly disconnected.
+> Slave state machine will keep waiting for master clock in for rx/tx transmit.
+> So it need timeout setting to enable timeout unlock controller state.
+> And in another side. In Master side also need avoid suddenly slave miss(un-plug), Master will timeout and release the SDA/SCL.
+> 
+> Do you mean add those description into ore aspeed,timout properites description?
+
+You are describing here one particular feature you want to enable in the
+driver which looks non-scalable and more difficult to configure/use.
+What I was looking for is to describe the actual configuration you have
+(e.g. multi-master) which leads to enable or disable such feature in
+your hardware. Especially that bool value does not scale later to actual
+timeout values in time (ms)...
+
+I don't know I2C that much, but I wonder - why this should be specific
+to Aspeed I2C and no other I2C controllers implement it? IOW, this looks
+quite generic and every I2C controller should have it. Adding it
+specific to Aspeed suggests that either we miss a generic property or
+this should not be in DT at all (because no one else has it...).
+
+Also I wonder, why you wouldn't enable timeout always...
+
++Cc Wolfram,
+Maybe you know whether bool "timeout" property for one controller makes
+sense? Why we do not have it for all controllers?
+
+> 
+>>
+>>> +
+>>> +  aspeed,xfer-mode:
+>>> +    description: |
+>>> +      I2C bus transfer mode selection.
+>>> +      - "byte": I2C bus byte transfer mode.
+>>> +      - "buffered": I2C bus buffer register transfer mode.
+>>> +      - "dma": I2C bus dma transfer mode (default)
+>>> +    items:
+>>> +      enum: [byte, buffered, dma]
+>>> +    maxItems: 1
+>>
+>> Drop, not an array.
+>>
+>>> +    $ref: /schemas/types.yaml#/definitions/non-unique-string-array
+>>
+>> Wrong ref. This is not an array, but one string.
+> 
+> Sorry, I can't catch your "one string" point.
+
+How many strings you are going to have in this property? If one
+(maxItems: 1), then this is not an array.
+
+> Could you point me what ref I can refer to?
+> That I can check into Linux example. Thanks a lot.
+>>
+>>> +
+>>> +  aspeed,global-regs:
+>>> +    $ref: /schemas/types.yaml#/definitions/phandle
+>>> +    description: The phandle of i2c global register node.
+>>> +
+>>>  required:
+>>>    - reg
+>>>    - compatible
+>>> @@ -57,6 +76,19 @@ required:
+>>>
+>>>  unevaluatedProperties: false
+>>>
+>>> +if:
+>>
+>> This should be under allOf (in this location)
+>>
+>>> +  properties:
+>>> +    compatible:
+>>> +      contains:
+>>> +        const: aspeed,ast2600-i2cv2
+>>> +
+>>> +then:
+>>> +  properties:
+>>> +    reg:
+>>> +      minItems: 2
+>>> +  required:
+>>> +    - aspeed,global-regs
+>>
+>> else:
+>>   aspeed,global-regs: false
+>> and the same for other v2 properties
+>>
+> 
+> Does modify by following? 
+> 
+> allOf:
+>  -if:
+>    properties:
+>     compatible:
+>       contains:
+>         const: aspeed,ast2600-i2cv2
+> 
+>  then:
+>   properties:
+>     reg:
+>       minItems: 2
+>   required:
+>     - aspeed,global-regs
+>  else:
+>     - aspeed,global-regs: false
+>     -aspeed,timeout: false
+>     - aspeed,xfer-mode: false
+
+yes
+
+
+
+Best regards,
+Krzysztof
+
