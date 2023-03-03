@@ -1,8 +1,8 @@
-From: Ryan Chen <ryan_chen@aspeedtech.com>
-Date: Fri, 3 Mar 2023 10:16:32 +0000
+From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Date: Fri, 3 Mar 2023 11:41:10 +0100
 Subject: [PATCH v6 1/2] dt-bindings: i2c: aspeed: support for
  AST2600-i2cv2
-In-Reply-To: <a3615fe7-aa2a-53e9-2732-ba4512b9369d@linaro.org>
+In-Reply-To: <SEZPR06MB5269E7B070B239F8E349C427F2B39@SEZPR06MB5269.apcprd06.prod.outlook.com>
 References: <20230226031321.3126756-1-ryan_chen@aspeedtech.com>
  <20230226031321.3126756-2-ryan_chen@aspeedtech.com>
  <53090449-58c9-bc03-56df-aa8ae93c0c26@linaro.org>
@@ -12,194 +12,74 @@ References: <20230226031321.3126756-1-ryan_chen@aspeedtech.com>
  <c41ee6b5-ddb4-1253-de54-a295b3bab2cc@linaro.org>
  <SEZPR06MB5269E7B8785B3CB56A63A916F2B39@SEZPR06MB5269.apcprd06.prod.outlook.com>
  <a3615fe7-aa2a-53e9-2732-ba4512b9369d@linaro.org>
-Message-ID: <SEZPR06MB5269E7B070B239F8E349C427F2B39@SEZPR06MB5269.apcprd06.prod.outlook.com>
+ <SEZPR06MB5269E7B070B239F8E349C427F2B39@SEZPR06MB5269.apcprd06.prod.outlook.com>
+Message-ID: <c5cf6e0a-05dc-dff7-6218-df0984d1ba47@linaro.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello Krzysztof,
+On 03/03/2023 11:16, Ryan Chen wrote:
+>>>>>>> aspeed,timout properites:
+>>>>>>> For example I2C controller as slave mode, and suddenly
+>> disconnected.
+>>>>>>> Slave state machine will keep waiting for master clock in for
+>>>>>>> rx/tx
+>>>> transmit.
+>>>>>>> So it need timeout setting to enable timeout unlock controller state.
+>>>>>>> And in another side. In Master side also need avoid suddenly slave
+>>>>>> miss(un-plug), Master will timeout and release the SDA/SCL.
+>>>>>>>
+>>>>>>> Do you mean add those description into ore aspeed,timout
+>>>>>>> properites
+>>>>>> description?
+>>>>>>
+>>>>>> You are describing here one particular feature you want to enable
+>>>>>> in the driver which looks non-scalable and more difficult to
+>> configure/use.
+>>>>>> What I was looking for is to describe the actual configuration you have
+>> (e.g.
+>>>>>> multi-master) which leads to enable or disable such feature in your
+>>>> hardware.
+>>>>>> Especially that bool value does not scale later to actual timeout
+>>>>>> values in time (ms)...
+>>>>>>
+>>>>>> I don't know I2C that much, but I wonder - why this should be
+>>>>>> specific to Aspeed I2C and no other I2C controllers implement it?
+>>>>>> IOW, this looks quite generic and every I2C controller should have
+>>>>>> it. Adding it specific to Aspeed suggests that either we miss a
+>>>>>> generic property or this should not be in DT at all (because no one
+>>>>>> else has
+>>>> it...).
+>>>>>>
+>>>>>> Also I wonder, why you wouldn't enable timeout always...
+>>>>>>
+>>>>>> +Cc Wolfram,
+>>>>>> Maybe you know whether bool "timeout" property for one controller
+>>>>>> makes sense? Why we do not have it for all controllers?
+>>>>>>
+>>>>> Because, i2c bus didn?t specific timeout.
+>>>>> But SMBus defines a clock low time-out, TIMEOUT of 35 ms.
+>>>>>
+>>>>> It have definition in SMBus specification.
+>>>>> http://smbus.org/specs/SMBus_3_1_20180319.pdf
+>>>>> You can check Page 18, Note3 that have timeout description.
+>>>>
+>>>> Then you have already property for this - "smbus"?
+>>> To be a property "smbus", that would be a big topic, I saw fsl i2c
+>>> also have this.
+>>> https://github.com/torvalds/linux/blob/master/Documentation/devicetree
+>>> /bindings/i2c/i2c-mpc.yaml#L43-L47
+>>> So, I just think the "timeout" property.
+>>
+>> Yeah and this is the only place. It also differs because it allows actual
+>> timeout values.
+> Thanks, So can I still keep the property "aspeed,timeout" here?
+> It is the only place. 
 
-> -----Original Message-----
-> From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-> Sent: Friday, March 3, 2023 5:26 PM
-> To: Ryan Chen <ryan_chen@aspeedtech.com>; Wolfram Sang
-> <wsa@kernel.org>
-> Cc: Joel Stanley <joel@jms.id.au>; Brendan Higgins
-> <brendan.higgins@linux.dev>; Krzysztof Kozlowski
-> <krzysztof.kozlowski+dt@linaro.org>; Andrew Jeffery <andrew@aj.id.au>;
-> devicetree at vger.kernel.org; Philipp Zabel <p.zabel@pengutronix.de>; Rob
-> Herring <robh+dt@kernel.org>; Benjamin Herrenschmidt
-> <benh@kernel.crashing.org>; linux-aspeed at lists.ozlabs.org;
-> linux-arm-kernel at lists.infradead.org; linux-kernel at vger.kernel.org;
-> openbmc at lists.ozlabs.org; linux-i2c at vger.kernel.org
-> Subject: Re: [PATCH v6 1/2] dt-bindings: i2c: aspeed: support for
-> AST2600-i2cv2
-> 
-> On 03/03/2023 09:55, Ryan Chen wrote:
-> > Hello Krzysztof,
-> >
-> >
-> >> -----Original Message-----
-> >> From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-> >> Sent: Friday, March 3, 2023 4:51 PM
-> >> To: Ryan Chen <ryan_chen@aspeedtech.com>; Wolfram Sang
-> >> <wsa@kernel.org>
-> >> Cc: Joel Stanley <joel@jms.id.au>; Brendan Higgins
-> >> <brendan.higgins@linux.dev>; Krzysztof Kozlowski
-> >> <krzysztof.kozlowski+dt@linaro.org>; Andrew Jeffery
-> >> <andrew@aj.id.au>; devicetree at vger.kernel.org; Philipp Zabel
-> >> <p.zabel@pengutronix.de>; Rob Herring <robh+dt@kernel.org>;
-> Benjamin
-> >> Herrenschmidt <benh@kernel.crashing.org>;
-> >> linux-aspeed at lists.ozlabs.org; linux-arm-kernel at lists.infradead.org;
-> >> linux-kernel at vger.kernel.org; openbmc at lists.ozlabs.org;
-> >> linux-i2c at vger.kernel.org
-> >> Subject: Re: [PATCH v6 1/2] dt-bindings: i2c: aspeed: support for
-> >> AST2600-i2cv2
-> >>
-> >> On 03/03/2023 09:28, Ryan Chen wrote:
-> >>> Hello Krzysztof,
-> >>>
-> >>>> -----Original Message-----
-> >>>> From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-> >>>> Sent: Friday, March 3, 2023 4:20 PM
-> >>>> To: Ryan Chen <ryan_chen@aspeedtech.com>; Wolfram Sang
-> >>>> <wsa@kernel.org>
-> >>>> Cc: Joel Stanley <joel@jms.id.au>; Brendan Higgins
-> >>>> <brendan.higgins@linux.dev>; Krzysztof Kozlowski
-> >>>> <krzysztof.kozlowski+dt@linaro.org>; Andrew Jeffery
-> >>>> <andrew@aj.id.au>; devicetree at vger.kernel.org; Philipp Zabel
-> >>>> <p.zabel@pengutronix.de>; Rob Herring <robh+dt@kernel.org>;
-> >>>> Benjamin Herrenschmidt <benh@kernel.crashing.org>;
-> >>>> linux-aspeed at lists.ozlabs.org;
-> >>>> linux-arm-kernel at lists.infradead.org;
-> >>>> linux-kernel at vger.kernel.org; openbmc at lists.ozlabs.org;
-> >>>> linux-i2c at vger.kernel.org
-> >>>> Subject: Re: [PATCH v6 1/2] dt-bindings: i2c: aspeed: support for
-> >>>> AST2600-i2cv2
-> >>>>
-> >>>> On 01/03/2023 06:57, Ryan Chen wrote:
-> >>>>> Hello Krzysztof,
-> >>>>>
-> >>>>>> -----Original Message-----
-> >>>>>> From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-> >>>>>> Sent: Monday, February 27, 2023 4:25 PM
-> >>>>>> To: Ryan Chen <ryan_chen@aspeedtech.com>; Andrew Jeffery
-> >>>>>> <andrew@aj.id.au>; Brendan Higgins <brendan.higgins@linux.dev>;
-> >>>>>> Benjamin Herrenschmidt <benh@kernel.crashing.org>; Joel Stanley
-> >>>>>> <joel@jms.id.au>; Rob Herring <robh+dt@kernel.org>; Krzysztof
-> >>>>>> Kozlowski <krzysztof.kozlowski+dt@linaro.org>; Philipp Zabel
-> >>>>>> <p.zabel@pengutronix.de>; linux-i2c at vger.kernel.org;
-> >>>>>> openbmc at lists.ozlabs.org; devicetree at vger.kernel.org;
-> >>>>>> linux-arm-kernel at lists.infradead.org;
-> >>>>>> linux-aspeed at lists.ozlabs.org; linux-kernel at vger.kernel.org
-> >>>>>> Subject: Re: [PATCH v6 1/2] dt-bindings: i2c: aspeed: support for
-> >>>>>> AST2600-i2cv2
-> >>>>>>
-> >>>>>> On 26/02/2023 04:13, Ryan Chen wrote:
-> >>>>>>> Add ast2600-i2cv2 compatible and aspeed,global-regs,
-> >>>>>>> aspeed,timeout aspeed,xfer-mode description for ast2600-i2cv2.
-> >>>>>>>
-> >>>>>>> Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
-> >>>>>>> ---
-> >>>>>>>  .../devicetree/bindings/i2c/aspeed,i2c.yaml   | 44
-> >>>> +++++++++++++++++++
-> >>>>>>>  1 file changed, 44 insertions(+)
-> >>>>>>>
-> >>>>>>> diff --git
-> >>>>>>> a/Documentation/devicetree/bindings/i2c/aspeed,i2c.yaml
-> >>>>>>> b/Documentation/devicetree/bindings/i2c/aspeed,i2c.yaml
-> >>>>>>> index f597f73ccd87..75de3ce41cf5 100644
-> >>>>>>> --- a/Documentation/devicetree/bindings/i2c/aspeed,i2c.yaml
-> >>>>>>> +++ b/Documentation/devicetree/bindings/i2c/aspeed,i2c.yaml
-> >>>>>>> @@ -49,6 +49,25 @@ properties:
-> >>>>>>>      description:
-> >>>>>>>        states that there is another master active on this bus
-> >>>>>>>
-> >>>>>>> +  aspeed,timeout:
-> >>>>>>> +    type: boolean
-> >>>>>>> +    description: I2C bus timeout enable for master/slave mode
-> >>>>>>
-> >>>>>> Nothing improved here in regards to my last comment.
-> >>>>>
-> >>>>> Yes, as I know your require is about " DT binding to represent
-> >>>>> hardware
-> >>>> setup"
-> >>>>> So I add more description about aspeed,timeout as blow.
-> >>>>>
-> >>>>> ASPEED SOC chip is server product, i2c bus may have fingerprint
-> >>>>> connect to
-> >>>> another board. And also support hotplug.
-> >>>>> The following is board-specific design example.
-> >>>>> Board A                                         Board B
-> >>>>> -------------------------                       ------------------------
-> >>>>> |i2c bus#1(master/slave)  <===fingerprint ===> i2c bus#x
-> (master/slave)|
-> >>>>> |i2c bus#2(master)-> tmp i2c device |          |
-> >>>> |
-> >>>>> |i2c bus#3(master)-> adc i2c device |          |
-> >>>> |
-> >>>>> -------------------------                       ------------------------
-> >>>>>
-> >>>>> aspeed,timout properites:
-> >>>>> For example I2C controller as slave mode, and suddenly
-> disconnected.
-> >>>>> Slave state machine will keep waiting for master clock in for
-> >>>>> rx/tx
-> >> transmit.
-> >>>>> So it need timeout setting to enable timeout unlock controller state.
-> >>>>> And in another side. In Master side also need avoid suddenly slave
-> >>>> miss(un-plug), Master will timeout and release the SDA/SCL.
-> >>>>>
-> >>>>> Do you mean add those description into ore aspeed,timout
-> >>>>> properites
-> >>>> description?
-> >>>>
-> >>>> You are describing here one particular feature you want to enable
-> >>>> in the driver which looks non-scalable and more difficult to
-> configure/use.
-> >>>> What I was looking for is to describe the actual configuration you have
-> (e.g.
-> >>>> multi-master) which leads to enable or disable such feature in your
-> >> hardware.
-> >>>> Especially that bool value does not scale later to actual timeout
-> >>>> values in time (ms)...
-> >>>>
-> >>>> I don't know I2C that much, but I wonder - why this should be
-> >>>> specific to Aspeed I2C and no other I2C controllers implement it?
-> >>>> IOW, this looks quite generic and every I2C controller should have
-> >>>> it. Adding it specific to Aspeed suggests that either we miss a
-> >>>> generic property or this should not be in DT at all (because no one
-> >>>> else has
-> >> it...).
-> >>>>
-> >>>> Also I wonder, why you wouldn't enable timeout always...
-> >>>>
-> >>>> +Cc Wolfram,
-> >>>> Maybe you know whether bool "timeout" property for one controller
-> >>>> makes sense? Why we do not have it for all controllers?
-> >>>>
-> >>> Because, i2c bus didn?t specific timeout.
-> >>> But SMBus defines a clock low time-out, TIMEOUT of 35 ms.
-> >>>
-> >>> It have definition in SMBus specification.
-> >>> http://smbus.org/specs/SMBus_3_1_20180319.pdf
-> >>> You can check Page 18, Note3 that have timeout description.
-> >>
-> >> Then you have already property for this - "smbus"?
-> > To be a property "smbus", that would be a big topic, I saw fsl i2c
-> > also have this.
-> > https://github.com/torvalds/linux/blob/master/Documentation/devicetree
-> > /bindings/i2c/i2c-mpc.yaml#L43-L47
-> > So, I just think the "timeout" property.
-> 
-> Yeah and this is the only place. It also differs because it allows actual
-> timeout values.
-Thanks, So can I still keep the property "aspeed,timeout" here?
-It is the only place. 
+No, because none of my concerns above are addressed.
 
 Best regards,
-Ryan Chen
+Krzysztof
 
