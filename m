@@ -1,85 +1,59 @@
-From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Date: Fri, 3 Mar 2023 11:41:10 +0100
-Subject: [PATCH v6 1/2] dt-bindings: i2c: aspeed: support for
- AST2600-i2cv2
-In-Reply-To: <SEZPR06MB5269E7B070B239F8E349C427F2B39@SEZPR06MB5269.apcprd06.prod.outlook.com>
-References: <20230226031321.3126756-1-ryan_chen@aspeedtech.com>
- <20230226031321.3126756-2-ryan_chen@aspeedtech.com>
- <53090449-58c9-bc03-56df-aa8ae93c0c26@linaro.org>
- <SEZPR06MB52699DEB2255EB54F35C2A59F2AD9@SEZPR06MB5269.apcprd06.prod.outlook.com>
- <fc20a2d1-e2f9-c22b-dcdf-153cb527eea8@linaro.org>
- <SEZPR06MB526902637624A97D7DFB8523F2B39@SEZPR06MB5269.apcprd06.prod.outlook.com>
- <c41ee6b5-ddb4-1253-de54-a295b3bab2cc@linaro.org>
- <SEZPR06MB5269E7B8785B3CB56A63A916F2B39@SEZPR06MB5269.apcprd06.prod.outlook.com>
- <a3615fe7-aa2a-53e9-2732-ba4512b9369d@linaro.org>
- <SEZPR06MB5269E7B070B239F8E349C427F2B39@SEZPR06MB5269.apcprd06.prod.outlook.com>
-Message-ID: <c5cf6e0a-05dc-dff7-6218-df0984d1ba47@linaro.org>
+From: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+Date: Fri,  3 Mar 2023 18:19:17 +0100
+Subject: [PATCH 03/87] spi: aspeed-smc: Convert to platform remove callback returning void
+In-Reply-To: <20230303172041.2103336-1-u.kleine-koenig@pengutronix.de>
+References: <20230303172041.2103336-1-u.kleine-koenig@pengutronix.de>
+Message-ID: <20230303172041.2103336-4-u.kleine-koenig@pengutronix.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 03/03/2023 11:16, Ryan Chen wrote:
->>>>>>> aspeed,timout properites:
->>>>>>> For example I2C controller as slave mode, and suddenly
->> disconnected.
->>>>>>> Slave state machine will keep waiting for master clock in for
->>>>>>> rx/tx
->>>> transmit.
->>>>>>> So it need timeout setting to enable timeout unlock controller state.
->>>>>>> And in another side. In Master side also need avoid suddenly slave
->>>>>> miss(un-plug), Master will timeout and release the SDA/SCL.
->>>>>>>
->>>>>>> Do you mean add those description into ore aspeed,timout
->>>>>>> properites
->>>>>> description?
->>>>>>
->>>>>> You are describing here one particular feature you want to enable
->>>>>> in the driver which looks non-scalable and more difficult to
->> configure/use.
->>>>>> What I was looking for is to describe the actual configuration you have
->> (e.g.
->>>>>> multi-master) which leads to enable or disable such feature in your
->>>> hardware.
->>>>>> Especially that bool value does not scale later to actual timeout
->>>>>> values in time (ms)...
->>>>>>
->>>>>> I don't know I2C that much, but I wonder - why this should be
->>>>>> specific to Aspeed I2C and no other I2C controllers implement it?
->>>>>> IOW, this looks quite generic and every I2C controller should have
->>>>>> it. Adding it specific to Aspeed suggests that either we miss a
->>>>>> generic property or this should not be in DT at all (because no one
->>>>>> else has
->>>> it...).
->>>>>>
->>>>>> Also I wonder, why you wouldn't enable timeout always...
->>>>>>
->>>>>> +Cc Wolfram,
->>>>>> Maybe you know whether bool "timeout" property for one controller
->>>>>> makes sense? Why we do not have it for all controllers?
->>>>>>
->>>>> Because, i2c bus didn?t specific timeout.
->>>>> But SMBus defines a clock low time-out, TIMEOUT of 35 ms.
->>>>>
->>>>> It have definition in SMBus specification.
->>>>> http://smbus.org/specs/SMBus_3_1_20180319.pdf
->>>>> You can check Page 18, Note3 that have timeout description.
->>>>
->>>> Then you have already property for this - "smbus"?
->>> To be a property "smbus", that would be a big topic, I saw fsl i2c
->>> also have this.
->>> https://github.com/torvalds/linux/blob/master/Documentation/devicetree
->>> /bindings/i2c/i2c-mpc.yaml#L43-L47
->>> So, I just think the "timeout" property.
->>
->> Yeah and this is the only place. It also differs because it allows actual
->> timeout values.
-> Thanks, So can I still keep the property "aspeed,timeout" here?
-> It is the only place. 
+The .remove() callback for a platform driver returns an int which makes
+many driver authors wrongly assume it's possible to do error handling by
+returning an error code. However the value returned is (mostly) ignored
+and this typically results in resource leaks. To improve here there is a
+quest to make the remove callback return void. In the first step of this
+quest all drivers are converted to .remove_new() which already returns
+void.
 
-No, because none of my concerns above are addressed.
+Trivially convert this driver from always returning zero in the remove
+callback to the void returning variant.
 
-Best regards,
-Krzysztof
+Signed-off-by: Uwe Kleine-K?nig <u.kleine-koenig@pengutronix.de>
+---
+ drivers/spi/spi-aspeed-smc.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/spi/spi-aspeed-smc.c b/drivers/spi/spi-aspeed-smc.c
+index 873ff2cf72c9..3f2548860317 100644
+--- a/drivers/spi/spi-aspeed-smc.c
++++ b/drivers/spi/spi-aspeed-smc.c
+@@ -787,13 +787,12 @@ static int aspeed_spi_probe(struct platform_device *pdev)
+ 	return ret;
+ }
+ 
+-static int aspeed_spi_remove(struct platform_device *pdev)
++static void aspeed_spi_remove(struct platform_device *pdev)
+ {
+ 	struct aspeed_spi *aspi = platform_get_drvdata(pdev);
+ 
+ 	aspeed_spi_enable(aspi, false);
+ 	clk_disable_unprepare(aspi->clk);
+-	return 0;
+ }
+ 
+ /*
+@@ -1201,7 +1200,7 @@ MODULE_DEVICE_TABLE(of, aspeed_spi_matches);
+ 
+ static struct platform_driver aspeed_spi_driver = {
+ 	.probe			= aspeed_spi_probe,
+-	.remove			= aspeed_spi_remove,
++	.remove_new		= aspeed_spi_remove,
+ 	.driver	= {
+ 		.name		= DEVICE_NAME,
+ 		.of_match_table = aspeed_spi_matches,
+-- 
+2.39.1
 
