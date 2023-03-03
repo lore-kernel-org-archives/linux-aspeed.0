@@ -1,239 +1,215 @@
-From: Joel Stanley <joel@jms.id.au>
-Date: Wed, 8 Mar 2023 01:21:50 +0000
-Subject: [PATCH v2 03/16] gpio: aspeed: Convert to immutable irq_chip
-In-Reply-To: <20230215-immutable-chips-v2-3-d6b0e3f2d991@linaro.org>
-References: <20230215-immutable-chips-v2-0-d6b0e3f2d991@linaro.org> <20230215-immutable-chips-v2-3-d6b0e3f2d991@linaro.org>
-Message-ID: <CACPK8Xc7ekzM9oeR7+fYuK8RfZ4jA8gpH=nUJ-OTp0XZoKwzHQ@mail.gmail.com>
+From: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+Date: Fri,  3 Mar 2023 18:19:14 +0100
+Subject: [PATCH 00/87] spi: Convert to platform remove callback returning void
+Message-ID: <20230303172041.2103336-1-u.kleine-koenig@pengutronix.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, 7 Mar 2023 at 13:04, Linus Walleij <linus.walleij@linaro.org> wrote:
->
-> Convert the driver to immutable irq-chip with a bit of
-> intuition.
->
-> Cc: Marc Zyngier <maz@kernel.org>
-> Tested-by: Joel Stanley <joel@jms.id.au>
-> Acked-by: Marc Zyngier <maz@kernel.org>
-> Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
-> ---
->  drivers/gpio/gpio-aspeed.c | 44 ++++++++++++++++++++++++++++++++++++++------
->  1 file changed, 38 insertions(+), 6 deletions(-)
->
-> diff --git a/drivers/gpio/gpio-aspeed.c b/drivers/gpio/gpio-aspeed.c
-> index a94da80d3a95..9c4852de2733 100644
-> --- a/drivers/gpio/gpio-aspeed.c
-> +++ b/drivers/gpio/gpio-aspeed.c
-> @@ -15,6 +15,7 @@
->  #include <linux/module.h>
->  #include <linux/pinctrl/consumer.h>
->  #include <linux/platform_device.h>
-> +#include <linux/seq_file.h>
->  #include <linux/spinlock.h>
->  #include <linux/string.h>
->
-> @@ -53,7 +54,7 @@ struct aspeed_gpio_config {
->   */
->  struct aspeed_gpio {
->         struct gpio_chip chip;
-> -       struct irq_chip irqc;
-> +       struct device *dev;
->         raw_spinlock_t lock;
->         void __iomem *base;
->         int irq;
-> @@ -566,6 +567,10 @@ static void aspeed_gpio_irq_set_mask(struct irq_data *d, bool set)
->
->         addr = bank_reg(gpio, bank, reg_irq_enable);
->
-> +       /* Unmasking the IRQ */
-> +       if (set)
-> +               gpiochip_enable_irq(&gpio->chip, irqd_to_hwirq(d));
-> +
->         raw_spin_lock_irqsave(&gpio->lock, flags);
->         copro = aspeed_gpio_copro_request(gpio, offset);
->
-> @@ -579,6 +584,10 @@ static void aspeed_gpio_irq_set_mask(struct irq_data *d, bool set)
->         if (copro)
->                 aspeed_gpio_copro_release(gpio, offset);
->         raw_spin_unlock_irqrestore(&gpio->lock, flags);
-> +
-> +       /* Masking the IRQ */
-> +       if (!set)
-> +               gpiochip_disable_irq(&gpio->chip, irqd_to_hwirq(d));
->  }
->
->  static void aspeed_gpio_irq_mask(struct irq_data *d)
-> @@ -1080,6 +1089,30 @@ int aspeed_gpio_copro_release_gpio(struct gpio_desc *desc)
->  }
->  EXPORT_SYMBOL_GPL(aspeed_gpio_copro_release_gpio);
->
-> +static void aspeed_gpio_irq_print_chip(struct irq_data *d, struct seq_file *p)
-> +{
-> +       const struct aspeed_gpio_bank *bank;
-> +       struct aspeed_gpio *gpio;
-> +       u32 bit;
-> +       int rc, offset;
-> +
-> +       rc = irqd_to_aspeed_gpio_data(d, &gpio, &bank, &bit, &offset);
+Hello,
 
-Why do we call this instead of using irq_data_get_irq_chip_data?
+this patch series adapts the platform drivers below drivers/spi
+to use the .remove_new() callback. Compared to the traditional .remove()
+callback .remove_new() returns no value. This is a good thing because
+the driver core doesn't (and cannot) cope for errors during remove. The
+only effect of a non-zero return value in .remove() is that the driver
+core emits a warning. The device is removed anyhow and an early return
+from .remove() usually yields a resource leak.
 
-Actually, the callback appears to do the same as the default
-implementation, so we could just drop it?
+By changing the remove callback to return void driver authors cannot
+reasonably assume any more that there is some kind of cleanup later.
 
-from kernel/irq/proc.c:
+All drivers touched here returned zero unconditionally in their remove
+callback, so they could all be converted trivially to .remove_new().
 
-        if (desc->irq_data.chip) {
-                if (desc->irq_data.chip->irq_print_chip)
-                        desc->irq_data.chip->irq_print_chip(&desc->irq_data, p);
-                else if (desc->irq_data.chip->name)
-                        seq_printf(p, " %8s", desc->irq_data.chip->name);
+Note that this series depends on commit 5c5a7680e67b ("platform: Provide
+a remove callback that returns no value") that is already in Linus' tree
+but not yet included in a tagged version.
 
-A test on the rainier ast2600 bmc machine:
+Best regards
+Uwe
 
-# gpio-event-mon -n gpiochip0 -o 123 -r -f &
-# cat /proc/interrupts  |grep gpio-event-mon
- 60:          0          0  1e780800.gpio 123 Edge      gpio-event-mon
+Uwe Kleine-K?nig (87):
+  spi: ar934x: Convert to platform remove callback returning void
+  spi: armada-3700: Convert to platform remove callback returning void
+  spi: aspeed-smc: Convert to platform remove callback returning void
+  spi: at91-usart: Convert to platform remove callback returning void
+  spi: ath79: Convert to platform remove callback returning void
+  spi: atmel: Convert to platform remove callback returning void
+  spi: au1550: Convert to platform remove callback returning void
+  spi: axi-spi-engine: Convert to platform remove callback returning void
+  spi: bcm2835: Convert to platform remove callback returning void
+  spi: bcm2835aux: Convert to platform remove callback returning void
+  spi: bcm63xx-hsspi: Convert to platform remove callback returning void
+  spi: bcm63xx: Convert to platform remove callback returning void
+  spi: bcmbca-hsspi: Convert to platform remove callback returning void
+  spi: brcmstb-qspi: Convert to platform remove callback returning void
+  spi: cadence-quadspi: Convert to platform remove callback returning void
+  spi: cadence: Convert to platform remove callback returning void
+  spi: cavium-octeon: Convert to platform remove callback returning void
+  spi: coldfire-qspi: Convert to platform remove callback returning void
+  spi: davinci: Convert to platform remove callback returning void
+  spi: dln2: Convert to platform remove callback returning void
+  spi: dw-bt1: Convert to platform remove callback returning void
+  spi: dw-mmio: Convert to platform remove callback returning void
+  spi: ep93xx: Convert to platform remove callback returning void
+  spi: fsl-dspi: Convert to platform remove callback returning void
+  spi: fsl-espi: Convert to platform remove callback returning void
+  spi: fsl-lpspi: Convert to platform remove callback returning void
+  spi: fsl-qspi: Convert to platform remove callback returning void
+  spi: fsl-spi: Convert to platform remove callback returning void
+  spi: geni-qcom: Convert to platform remove callback returning void
+  spi: hisi-kunpeng: Convert to platform remove callback returning void
+  spi: img-spfi: Convert to platform remove callback returning void
+  spi: iproc-qspi: Convert to platform remove callback returning void
+  spi: lantiq-ssc: Convert to platform remove callback returning void
+  spi: meson-spicc: Convert to platform remove callback returning void
+  spi: meson-spifc: Convert to platform remove callback returning void
+  spi: microchip-core-qspi: Convert to platform remove callback returning void
+  spi: microchip-core: Convert to platform remove callback returning void
+  spi: mpc512x-psc: Convert to platform remove callback returning void
+  spi: mpc52xx-psc: Convert to platform remove callback returning void
+  spi: mpc52xx: Convert to platform remove callback returning void
+  spi: mtk-nor: Convert to platform remove callback returning void
+  spi: mtk-snfi: Convert to platform remove callback returning void
+  spi: mxic: Convert to platform remove callback returning void
+  spi: mxs: Convert to platform remove callback returning void
+  spi: npcm-fiu: Convert to platform remove callback returning void
+  spi: npcm-pspi: Convert to platform remove callback returning void
+  spi: nxp-fspi: Convert to platform remove callback returning void
+  spi: oc-tiny: Convert to platform remove callback returning void
+  spi: omap-uwire: Convert to platform remove callback returning void
+  spi: omap2-mcspi: Convert to platform remove callback returning void
+  spi: orion: Convert to platform remove callback returning void
+  spi: pic32-sqi: Convert to platform remove callback returning void
+  spi: pic32: Convert to platform remove callback returning void
+  spi: ppc4xx: Convert to platform remove callback returning void
+  spi: pxa2xx: Convert to platform remove callback returning void
+  spi: qcom-qspi: Convert to platform remove callback returning void
+  spi: rb4xx: Convert to platform remove callback returning void
+  spi: rockchip-sfc: Convert to platform remove callback returning void
+  spi: rockchip: Convert to platform remove callback returning void
+  spi: rpc-if: Convert to platform remove callback returning void
+  spi: rspi: Convert to platform remove callback returning void
+  spi: s3c64xx: Convert to platform remove callback returning void
+  spi: sh-hspi: Convert to platform remove callback returning void
+  spi: sh-msiof: Convert to platform remove callback returning void
+  spi: sh-sci: Convert to platform remove callback returning void
+  spi: sh: Convert to platform remove callback returning void
+  spi: sifive: Convert to platform remove callback returning void
+  spi: slave-mt27xx: Convert to platform remove callback returning void
+  spi: sn-f-ospi: Convert to platform remove callback returning void
+  spi: sprd-adi: Convert to platform remove callback returning void
+  spi: st-ssc4: Convert to platform remove callback returning void
+  spi: stm32-qspi: Convert to platform remove callback returning void
+  spi: stm32: Convert to platform remove callback returning void
+  spi: sun4i: Convert to platform remove callback returning void
+  spi: sun6i: Convert to platform remove callback returning void
+  spi: sunplus-sp7021: Convert to platform remove callback returning void
+  spi: synquacer: Convert to platform remove callback returning void
+  spi: tegra114: Convert to platform remove callback returning void
+  spi: tegra20-sflash: Convert to platform remove callback returning void
+  spi: tegra20-slink: Convert to platform remove callback returning void
+  spi: tegra210-quad: Convert to platform remove callback returning void
+  spi: topcliff-pch: Convert to platform remove callback returning void
+  spi: uniphier: Convert to platform remove callback returning void
+  spi: xilinx: Convert to platform remove callback returning void
+  spi: xtensa-xtfpga: Convert to platform remove callback returning void
+  spi: zynq-qspi: Convert to platform remove callback returning void
+  spi: zynqmp-gqspi: Convert to platform remove callback returning void
 
+ drivers/spi/spi-ar934x.c              |  6 ++----
+ drivers/spi/spi-armada-3700.c         |  6 ++----
+ drivers/spi/spi-aspeed-smc.c          |  5 ++---
+ drivers/spi/spi-at91-usart.c          |  6 ++----
+ drivers/spi/spi-ath79.c               |  6 ++----
+ drivers/spi/spi-atmel.c               |  6 ++----
+ drivers/spi/spi-au1550.c              |  5 ++---
+ drivers/spi/spi-axi-spi-engine.c      |  6 ++----
+ drivers/spi/spi-bcm2835.c             | 12 +++---------
+ drivers/spi/spi-bcm2835aux.c          |  6 ++----
+ drivers/spi/spi-bcm63xx-hsspi.c       |  6 ++----
+ drivers/spi/spi-bcm63xx.c             |  6 ++----
+ drivers/spi/spi-bcmbca-hsspi.c        |  6 ++----
+ drivers/spi/spi-brcmstb-qspi.c        |  6 ++----
+ drivers/spi/spi-cadence-quadspi.c     |  6 ++----
+ drivers/spi/spi-cadence.c             |  6 ++----
+ drivers/spi/spi-cavium-octeon.c       |  6 ++----
+ drivers/spi/spi-coldfire-qspi.c       |  6 ++----
+ drivers/spi/spi-davinci.c             |  5 ++---
+ drivers/spi/spi-dln2.c                |  6 ++----
+ drivers/spi/spi-dw-bt1.c              |  6 ++----
+ drivers/spi/spi-dw-mmio.c             |  6 ++----
+ drivers/spi/spi-ep93xx.c              |  6 ++----
+ drivers/spi/spi-fsl-dspi.c            |  6 ++----
+ drivers/spi/spi-fsl-espi.c            |  6 ++----
+ drivers/spi/spi-fsl-lpspi.c           |  5 ++---
+ drivers/spi/spi-fsl-qspi.c            |  6 ++----
+ drivers/spi/spi-fsl-spi.c             | 11 ++++-------
+ drivers/spi/spi-geni-qcom.c           |  5 ++---
+ drivers/spi/spi-hisi-kunpeng.c        |  6 ++----
+ drivers/spi/spi-img-spfi.c            |  6 ++----
+ drivers/spi/spi-iproc-qspi.c          |  6 ++----
+ drivers/spi/spi-lantiq-ssc.c          |  6 ++----
+ drivers/spi/spi-meson-spicc.c         |  6 ++----
+ drivers/spi/spi-meson-spifc.c         |  6 ++----
+ drivers/spi/spi-microchip-core-qspi.c |  6 ++----
+ drivers/spi/spi-microchip-core.c      |  6 ++----
+ drivers/spi/spi-mpc512x-psc.c         | 22 ++++++++--------------
+ drivers/spi/spi-mpc52xx-psc.c         |  6 ++----
+ drivers/spi/spi-mpc52xx.c             |  6 ++----
+ drivers/spi/spi-mtk-nor.c             |  6 ++----
+ drivers/spi/spi-mtk-snfi.c            |  5 ++---
+ drivers/spi/spi-mxic.c                |  6 ++----
+ drivers/spi/spi-mxs.c                 |  6 ++----
+ drivers/spi/spi-npcm-fiu.c            |  5 ++---
+ drivers/spi/spi-npcm-pspi.c           |  6 ++----
+ drivers/spi/spi-nxp-fspi.c            |  6 ++----
+ drivers/spi/spi-oc-tiny.c             |  5 ++---
+ drivers/spi/spi-omap-uwire.c          |  5 ++---
+ drivers/spi/spi-omap2-mcspi.c         |  6 ++----
+ drivers/spi/spi-orion.c               |  6 ++----
+ drivers/spi/spi-pic32-sqi.c           |  6 ++----
+ drivers/spi/spi-pic32.c               |  6 ++----
+ drivers/spi/spi-ppc4xx.c              |  5 ++---
+ drivers/spi/spi-pxa2xx.c              |  6 ++----
+ drivers/spi/spi-qcom-qspi.c           |  6 ++----
+ drivers/spi/spi-rb4xx.c               |  6 ++----
+ drivers/spi/spi-rockchip-sfc.c        |  6 ++----
+ drivers/spi/spi-rockchip.c            |  6 ++----
+ drivers/spi/spi-rpc-if.c              |  6 ++----
+ drivers/spi/spi-rspi.c                |  6 ++----
+ drivers/spi/spi-s3c64xx.c             |  6 ++----
+ drivers/spi/spi-sh-hspi.c             |  6 ++----
+ drivers/spi/spi-sh-msiof.c            |  5 ++---
+ drivers/spi/spi-sh-sci.c              |  5 ++---
+ drivers/spi/spi-sh.c                  |  6 ++----
+ drivers/spi/spi-sifive.c              |  6 ++----
+ drivers/spi/spi-slave-mt27xx.c        |  6 ++----
+ drivers/spi/spi-sn-f-ospi.c           |  6 ++----
+ drivers/spi/spi-sprd-adi.c            |  5 ++---
+ drivers/spi/spi-st-ssc4.c             |  6 ++----
+ drivers/spi/spi-stm32-qspi.c          |  6 ++----
+ drivers/spi/spi-stm32.c               |  6 ++----
+ drivers/spi/spi-sun4i.c               |  6 ++----
+ drivers/spi/spi-sun6i.c               |  5 ++---
+ drivers/spi/spi-sunplus-sp7021.c      |  5 ++---
+ drivers/spi/spi-synquacer.c           |  6 ++----
+ drivers/spi/spi-tegra114.c            |  6 ++----
+ drivers/spi/spi-tegra20-sflash.c      |  6 ++----
+ drivers/spi/spi-tegra20-slink.c       |  5 ++---
+ drivers/spi/spi-tegra210-quad.c       |  6 ++----
+ drivers/spi/spi-topcliff-pch.c        |  6 ++----
+ drivers/spi/spi-uniphier.c            |  6 ++----
+ drivers/spi/spi-xilinx.c              |  6 ++----
+ drivers/spi/spi-xtensa-xtfpga.c       |  6 ++----
+ drivers/spi/spi-zynq-qspi.c           |  6 ++----
+ drivers/spi/spi-zynqmp-gqspi.c        |  6 ++----
+ 87 files changed, 183 insertions(+), 350 deletions(-)
 
+base-commit: 2eb29d59ddf02e39774abfb60b2030b0b7e27c1f
+-- 
+2.39.1
 
-
-> +       if (rc)
-> +               return;
-> +
-> +       seq_printf(p, dev_name(gpio->dev));
-> +}
-> +
-> +static const struct irq_chip aspeed_gpio_irq_chip = {
-> +       .irq_ack = aspeed_gpio_irq_ack,
-> +       .irq_mask = aspeed_gpio_irq_mask,
-> +       .irq_unmask = aspeed_gpio_irq_unmask,
-> +       .irq_set_type = aspeed_gpio_set_type,
-> +       .irq_print_chip = aspeed_gpio_irq_print_chip,
-> +       .flags = IRQCHIP_IMMUTABLE,
-> +       GPIOCHIP_IRQ_RESOURCE_HELPERS,
-> +};
-> +
->  /*
->   * Any banks not specified in a struct aspeed_bank_props array are assumed to
->   * have the properties:
-> @@ -1149,6 +1182,8 @@ static int __init aspeed_gpio_probe(struct platform_device *pdev)
->         if (IS_ERR(gpio->base))
->                 return PTR_ERR(gpio->base);
->
-> +       gpio->dev = &pdev->dev;
-> +
->         raw_spin_lock_init(&gpio->lock);
->
->         gpio_id = of_match_node(aspeed_gpio_of_table, pdev->dev.of_node);
-> @@ -1208,12 +1243,9 @@ static int __init aspeed_gpio_probe(struct platform_device *pdev)
->
->                 gpio->irq = rc;
->                 girq = &gpio->chip.irq;
-> -               girq->chip = &gpio->irqc;
-> +               gpio_irq_chip_set_chip(girq, &aspeed_gpio_irq_chip);
->                 girq->chip->name = dev_name(&pdev->dev);
-> -               girq->chip->irq_ack = aspeed_gpio_irq_ack;
-> -               girq->chip->irq_mask = aspeed_gpio_irq_mask;
-> -               girq->chip->irq_unmask = aspeed_gpio_irq_unmask;
-> -               girq->chip->irq_set_type = aspeed_gpio_set_type;
-> +
-
-I was thinking we could make the interrupt registration unconditional,
-as there's always an irq in the device tree. Happy to send a follow
-up, or for you to fold in a change along the lines of this:
-
---- a/drivers/gpio/gpio-aspeed.c
-+++ b/drivers/gpio/gpio-aspeed.c
-@@ -1091,14 +1091,7 @@ EXPORT_SYMBOL_GPL(aspeed_gpio_copro_release_gpio);
-
- static void aspeed_gpio_irq_print_chip(struct irq_data *d, struct seq_file *p)
- {
--       const struct aspeed_gpio_bank *bank;
--       struct aspeed_gpio *gpio;
--       u32 bit;
--       int rc, offset;
--
--       rc = irqd_to_aspeed_gpio_data(d, &gpio, &bank, &bit, &offset);
--       if (rc)
--               return;
-+       struct aspeed_gpio *gpio = irq_data_get_irq_chip_data(d);
-
-        seq_printf(p, dev_name(gpio->dev));
- }
-@@ -1108,7 +1101,7 @@ static const struct irq_chip aspeed_gpio_irq_chip = {
-        .irq_mask = aspeed_gpio_irq_mask,
-        .irq_unmask = aspeed_gpio_irq_unmask,
-        .irq_set_type = aspeed_gpio_set_type,
--       .irq_print_chip = aspeed_gpio_irq_print_chip,
-+//     .irq_print_chip = aspeed_gpio_irq_print_chip,
-        .flags = IRQCHIP_IMMUTABLE,
-        GPIOCHIP_IRQ_RESOURCE_HELPERS,
- };
-@@ -1170,6 +1163,7 @@ MODULE_DEVICE_TABLE(of, aspeed_gpio_of_table);
- static int __init aspeed_gpio_probe(struct platform_device *pdev)
- {
-        const struct of_device_id *gpio_id;
-+       struct gpio_irq_chip *girq;
-        struct aspeed_gpio *gpio;
-        int rc, i, banks, err;
-        u32 ngpio;
-@@ -1238,27 +1232,25 @@ static int __init aspeed_gpio_probe(struct
-platform_device *pdev)
-
-        /* Optionally set up an irqchip if there is an IRQ */
-        rc = platform_get_irq(pdev, 0);
--       if (rc > 0) {
--               struct gpio_irq_chip *girq;
--
--               gpio->irq = rc;
--               girq = &gpio->chip.irq;
--               gpio_irq_chip_set_chip(girq, &aspeed_gpio_irq_chip);
--               girq->chip->name = dev_name(&pdev->dev);
--
--               girq->parent_handler = aspeed_gpio_irq_handler;
--               girq->num_parents = 1;
--               girq->parents = devm_kcalloc(&pdev->dev, 1,
--                                            sizeof(*girq->parents),
--                                            GFP_KERNEL);
--               if (!girq->parents)
--                       return -ENOMEM;
--               girq->parents[0] = gpio->irq;
--               girq->default_type = IRQ_TYPE_NONE;
--               girq->handler = handle_bad_irq;
--               girq->init_valid_mask = aspeed_init_irq_valid_mask;
-+       if (rc < 0) {
-+               return rc;
-        }
-
-+       gpio->irq = rc;
-+       girq = &gpio->chip.irq;
-+       gpio_irq_chip_set_chip(girq, &aspeed_gpio_irq_chip);
-+       girq->chip->name = dev_name(&pdev->dev);
-+
-+       girq->parent_handler = aspeed_gpio_irq_handler;
-+       girq->num_parents = 1;
-+       girq->parents = devm_kcalloc(&pdev->dev, 1,
-sizeof(*girq->parents), GFP_KERNEL);
-+       if (!girq->parents)
-+               return -ENOMEM;
-+       girq->parents[0] = gpio->irq;
-+       girq->default_type = IRQ_TYPE_NONE;
-+       girq->handler = handle_bad_irq;
-+       girq->init_valid_mask = aspeed_init_irq_valid_mask;
-+
-        gpio->offset_timer =
-                devm_kzalloc(&pdev->dev, gpio->chip.ngpio, GFP_KERNEL);
-        if (!gpio->offset_timer)
-
-
->                 girq->parent_handler = aspeed_gpio_irq_handler;
->                 girq->num_parents = 1;
->                 girq->parents = devm_kcalloc(&pdev->dev, 1,
->
-> --
-> 2.34.1
->
