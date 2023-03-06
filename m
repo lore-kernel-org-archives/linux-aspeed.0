@@ -1,19 +1,18 @@
 From: Stephen Boyd <sboyd@kernel.org>
-Date: Mon, 06 Mar 2023 14:18:47 -0800
-Subject: [PATCH v5 5/6] clk: ast2600: Add comment about combined clock + reset handling
-In-Reply-To: <20230302005834.13171-6-jk@codeconstruct.com.au>
-References: <20230302005834.13171-1-jk@codeconstruct.com.au> <20230302005834.13171-6-jk@codeconstruct.com.au>
-Message-ID: <cc6a0ded69becc0b3f7e9ac5190d8f64.sboyd@kernel.org>
+Date: Mon, 06 Mar 2023 14:19:02 -0800
+Subject: [PATCH v5 6/6] dt-bindings: clock: ast2600: Expand comment on reset definitions
+In-Reply-To: <20230302005834.13171-7-jk@codeconstruct.com.au>
+References: <20230302005834.13171-1-jk@codeconstruct.com.au> <20230302005834.13171-7-jk@codeconstruct.com.au>
+Message-ID: <766e71a3f2f18af38377b50f6344e4e7.sboyd@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Quoting Jeremy Kerr (2023-03-01 16:58:33)
-> Add a little description about how reset lines can be implicit with
-> clock enable/disable. This is mostly based on the commit message
-> from the original submission in 15ed8ce5f8.
+Quoting Jeremy Kerr (2023-03-01 16:58:34)
+> The current "not part of a gate" is a little ambiguous. Expand this a
+> little to clarify the reference to the paired clock + reset control.
 > 
 > Signed-off-by: Jeremy Kerr <jk@codeconstruct.com.au>
 > ---
