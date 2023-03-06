@@ -1,135 +1,55 @@
-From: Joel Stanley <joel@jms.id.au>
-Date: Mon, 6 Mar 2023 00:52:33 +0000
-Subject: [PATCH v2] ARM: dts: aspeed: mtmitchell: Enable NCSI
-In-Reply-To: <8033851a-6eaf-e4e7-5e80-0a1f7331c67a@amperemail.onmicrosoft.com>
-References: <20230228102820.18477-1-chanh@os.amperecomputing.com>
- <775059b1-4697-b745-4743-55f7f7a9143e@molgen.mpg.de> <8033851a-6eaf-e4e7-5e80-0a1f7331c67a@amperemail.onmicrosoft.com>
-Message-ID: <CACPK8XfJmjF6cMta=igG7absJwttOv1H7=437_Vq_upeeKmdHA@mail.gmail.com>
+From: Tony Lindgren <tony@atomide.com>
+Date: Mon, 6 Mar 2023 09:28:52 +0200
+Subject: [PATCH 15/17] gpio: omap: Convert to immutable irq_chip
+In-Reply-To: <20230217173108.1448ce92@aktux>
+References: <20230215-immutable-chips-v1-0-51a8f224a5d0@linaro.org>
+ <20230215-immutable-chips-v1-15-51a8f224a5d0@linaro.org>
+ <Y+8xkV5aUrAajLNP@atomide.com>
+ <20230217173108.1448ce92@aktux>
+Message-ID: <20230306072852.GB7501@atomide.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sun, 5 Mar 2023 at 15:59, Chanh Nguyen
-<chanh@amperemail.onmicrosoft.com> wrote:
->
->
->
-> On 01/03/2023 14:51, Paul Menzel wrote:
-> > Dear Chanh,
-> >
-> >
-> > Thank you for the patch.
-> >
-> > Am 28.02.23 um 11:28 schrieb Chanh Nguyen:
-> >> Support the mac3 (RGMII4) as an NC-SI stack instead of an MDIO PHY.
-> >>
-> >> The OCP slot #0 and OCP slot #1 use a common the BMC_NCSI signal,
-> >
-> > *the* seems a leftover.
->
-> Thank Paul,
-> I'll remove it.
->
-> >
-> >> so we use only one of them at the same time. The OCP slot #0 will
-> >> be enabled by PCA9539's setting by default.
-> >>
-> >> Also, enable the OCP Auxiliary Power during booting.
-> >
-> > Is there a reason not to make this a separate commit?
-> >
-> >
-> > Kind regards,
-> >
-> > Paul
-> >
->
-> I wouldn't like to separate it.
->
-> This is "Enable NCSI" commit, so I would like to support all configs,
-> that make NCSI feature works.
+* Andreas Kemnade <andreas@kemnade.info> [230217 16:31]:
+> On Fri, 17 Feb 2023 09:49:37 +0200
+> Tony Lindgren <tony@atomide.com> wrote:
+> 
+> > Hi,
+> > 
+> > * Linus Walleij <linus.walleij@linaro.org> [230216 09:38]:
+> > > Convert the driver to immutable irq-chip with a bit of
+> > > intuition.
+> > > 
+> > > This driver require some special care: .irq_ack() was copied
+> > > from dummy_irq_chip where it was defined as noop. This only
+> > > makes sense if using handle_edge_irq() that will unconditionally
+> > > call .irq_ack() to avoid a crash, but this driver is not ever
+> > > using handle_edge_irq() so just avoid assigning .irq_ack().
+> > > 
+> > > A separate chip had to be created for the non-wakeup instance.  
+> > 
+> > Nice, works for me.
+> > 
+> > BTW, I still see these warnings remaining on boot:
+> > 
+> > gpio gpiochip0: Static allocation of GPIO base is deprecated, use dynamic allocation.
+> > 
+> > Seems like we might be able to get rid of those too now or are
+> > there still some dependencies with /sys/class/gpio for example?
+> > 
+> on what are you testing? on -next? I thought I have fixed theese warning with
+> https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git/commit/?id=92bf78b33b0b463b00c6b0203b49aea845daecc8
 
-That sounds reasonable.
+You're right, sorry looks like I pasted the wrong line from the dmesg
+output :)
 
->
-> Thanks,
-> Chanh
-> >
-> >> Signed-off-by: Chanh Nguyen <chanh@os.amperecomputing.com>
-> >> ---
-> >> Changes in v2:
-> >>     - Change PCA9539APW node name.                     [Krzysztof]
-> >> ---
-> >>   .../boot/dts/aspeed-bmc-ampere-mtmitchell.dts | 37 ++++++++++++++++++-
-> >>   1 file changed, 36 insertions(+), 1 deletion(-)
-> >>
-> >> diff --git a/arch/arm/boot/dts/aspeed-bmc-ampere-mtmitchell.dts
-> >> b/arch/arm/boot/dts/aspeed-bmc-ampere-mtmitchell.dts
-> >> index 4b91600eaf62..1e0e88465254 100644
-> >> --- a/arch/arm/boot/dts/aspeed-bmc-ampere-mtmitchell.dts
-> >> +++ b/arch/arm/boot/dts/aspeed-bmc-ampere-mtmitchell.dts
-> >> @@ -251,6 +251,14 @@
-> >>       pinctrl-0 = <&pinctrl_rgmii1_default>;
-> >>   };
-> >> +&mac3 {
-> >> +    status = "okay";
-> >> +    pinctrl-names = "default";
-> >> +    pinctrl-0 = <&pinctrl_rmii4_default>;
-> >> +    clock-names = "MACCLK", "RCLK";
-> >> +    use-ncsi;
-> >> +};
-> >> +
-> >>   &fmc {
-> >>       status = "okay";
-> >>       flash at 0 {
-> >> @@ -439,6 +447,26 @@
-> >>       status = "okay";
-> >>   };
-> >> +&i2c8 {
-> >> +    status = "okay";
-> >> +
-> >> +    gpio at 77 {
-> >> +        compatible = "nxp,pca9539";
-> >> +        reg = <0x77>;
-> >> +        gpio-controller;
-> >> +        #address-cells = <1>;
-> >> +        #size-cells = <0>;
-> >> +        #gpio-cells = <2>;
-> >> +
-> >> +        bmc-ocp0-en-hog {
-> >> +            gpio-hog;
-> >> +            gpios = <7 GPIO_ACTIVE_LOW>;
-> >> +            output-high;
-> >> +            line-name = "bmc-ocp0-en-n";
-> >> +        };
-> >> +    };
-> >> +};
-> >> +
-> >>   &i2c9 {
-> >>       status = "okay";
-> >>   };
-> >> @@ -530,13 +558,20 @@
-> >>       /*V0-V7*/
-> >> "s0-hightemp-n","s0-fault-alert","s0-sys-auth-failure-n",
-> >>               "host0-reboot-ack-n","host0-ready","host0-shd-req-n",
-> >>               "host0-shd-ack-n","s0-overtemp-n",
-> >> -    /*W0-W7*/    "ocp-aux-pwren","ocp-main-pwren","ocp-pgood","",
-> >> +    /*W0-W7*/    "","ocp-main-pwren","ocp-pgood","",
-> >>               "bmc-ok","bmc-ready","spi0-program-sel","spi0-backup-sel",
-> >>       /*X0-X7*/    "i2c-backup-sel","s1-fault-alert","s1-fw-boot-ok",
-> >>
-> >> "s1-hightemp-n","s0-spi-auth-fail-n","s1-sys-auth-failure-n",
-> >>               "s1-overtemp-n","s1-spi-auth-fail-n",
-> >>       /*Y0-Y7*/    "","","","","","","","host0-special-boot",
-> >>       /*Z0-Z7*/    "reset-button","ps0-pgood","ps1-pgood","","","","","";
-> >> +
-> >> +    ocp-aux-pwren-hog {
-> >> +        gpio-hog;
-> >> +        gpios = <ASPEED_GPIO(W, 0) GPIO_ACTIVE_HIGH>;
-> >> +        output-high;
-> >> +        line-name = "ocp-aux-pwren";
-> >> +    };
-> >>   };
-> >>   &gpio1 {
+I intended to paste this example instead of the static allocation line:
+
+gpio gpiochip1: (gpio-32-63): not an immutable chip, please consider fixing it!
+
+Regards,
+
+Tony
