@@ -1,9 +1,9 @@
 From: Amit Kumar Mahapatra <amit.kumar-mahapatra@amd.com>
-Date: Mon, 6 Mar 2023 22:50:57 +0530
-Subject: [PATCH V5 03/15] iio: imu: Replace all spi->chip_select and spi->cs_gpiod references with function call
+Date: Mon, 6 Mar 2023 22:50:58 +0530
+Subject: [PATCH V5 04/15] mtd: devices: Replace all spi->chip_select and spi->cs_gpiod references with function call
 In-Reply-To: <20230306172109.595464-1-amit.kumar-mahapatra@amd.com>
 References: <20230306172109.595464-1-amit.kumar-mahapatra@amd.com>
-Message-ID: <20230306172109.595464-4-amit.kumar-mahapatra@amd.com>
+Message-ID: <20230306172109.595464-5-amit.kumar-mahapatra@amd.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -22,25 +22,24 @@ members of the spi_device structure would be converted to arrays & the
 spi->chip_select[idx] & spi->cs_gpiod[idx] respectively.
 
 Signed-off-by: Amit Kumar Mahapatra <amit.kumar-mahapatra@amd.com>
-Acked-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
 Reviewed-by: Michal Simek <michal.simek@amd.com>
 ---
- drivers/iio/imu/adis16400.c | 2 +-
+ drivers/mtd/devices/mtd_dataflash.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/iio/imu/adis16400.c b/drivers/iio/imu/adis16400.c
-index c02fc35dceb4..3eda32e12a53 100644
---- a/drivers/iio/imu/adis16400.c
-+++ b/drivers/iio/imu/adis16400.c
-@@ -466,7 +466,7 @@ static int adis16400_initial_setup(struct iio_dev *indio_dev)
+diff --git a/drivers/mtd/devices/mtd_dataflash.c b/drivers/mtd/devices/mtd_dataflash.c
+index 25bad4318305..34d7a0c4807b 100644
+--- a/drivers/mtd/devices/mtd_dataflash.c
++++ b/drivers/mtd/devices/mtd_dataflash.c
+@@ -646,7 +646,7 @@ static int add_dataflash_otp(struct spi_device *spi, char *name, int nr_pages,
  
- 		dev_info(&indio_dev->dev, "%s: prod_id 0x%04x at CS%d (irq %d)\n",
- 			indio_dev->name, prod_id,
--			st->adis.spi->chip_select, st->adis.spi->irq);
-+			spi_get_chipselect(st->adis.spi, 0), st->adis.spi->irq);
- 	}
- 	/* use high spi speed if possible */
- 	if (st->variant->flags & ADIS16400_HAS_SLOW_MODE) {
+ 	/* name must be usable with cmdlinepart */
+ 	sprintf(priv->name, "spi%d.%d-%s",
+-			spi->master->bus_num, spi->chip_select,
++			spi->master->bus_num, spi_get_chipselect(spi, 0),
+ 			name);
+ 
+ 	device = &priv->mtd;
 -- 
 2.25.1
 
