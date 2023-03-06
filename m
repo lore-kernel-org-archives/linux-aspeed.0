@@ -1,9 +1,9 @@
 From: Amit Kumar Mahapatra <amit.kumar-mahapatra@amd.com>
-Date: Mon, 6 Mar 2023 22:51:01 +0530
-Subject: [PATCH V5 07/15] powerpc/83xx/mpc832x_rdb: Replace all spi->chip_select references with function call
+Date: Mon, 6 Mar 2023 22:51:02 +0530
+Subject: [PATCH V5 08/15] ALSA: hda: cs35l41: Replace all spi->chip_select references with function call
 In-Reply-To: <20230306172109.595464-1-amit.kumar-mahapatra@amd.com>
 References: <20230306172109.595464-1-amit.kumar-mahapatra@amd.com>
-Message-ID: <20230306172109.595464-8-amit.kumar-mahapatra@amd.com>
+Message-ID: <20230306172109.595464-9-amit.kumar-mahapatra@amd.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -23,20 +23,20 @@ spi->chip_select[idx] & spi->cs_gpiod[idx] respectively.
 
 Signed-off-by: Amit Kumar Mahapatra <amit.kumar-mahapatra@amd.com>
 ---
- arch/powerpc/platforms/83xx/mpc832x_rdb.c | 2 +-
+ sound/pci/hda/cs35l41_hda_spi.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/platforms/83xx/mpc832x_rdb.c b/arch/powerpc/platforms/83xx/mpc832x_rdb.c
-index caa96edf0e72..4ab1d48cd229 100644
---- a/arch/powerpc/platforms/83xx/mpc832x_rdb.c
-+++ b/arch/powerpc/platforms/83xx/mpc832x_rdb.c
-@@ -144,7 +144,7 @@ static int __init fsl_spi_init(struct spi_board_info *board_infos,
+diff --git a/sound/pci/hda/cs35l41_hda_spi.c b/sound/pci/hda/cs35l41_hda_spi.c
+index 71979cfb4d7e..eb287aa5f782 100644
+--- a/sound/pci/hda/cs35l41_hda_spi.c
++++ b/sound/pci/hda/cs35l41_hda_spi.c
+@@ -25,7 +25,7 @@ static int cs35l41_hda_spi_probe(struct spi_device *spi)
+ 	else
+ 		return -ENODEV;
  
- static void mpc83xx_spi_cs_control(struct spi_device *spi, bool on)
- {
--	pr_debug("%s %d %d\n", __func__, spi->chip_select, on);
-+	pr_debug("%s %d %d\n", __func__, spi_get_chipselect(spi, 0), on);
- 	par_io_data_set(3, 13, on);
+-	return cs35l41_hda_probe(&spi->dev, device_name, spi->chip_select, spi->irq,
++	return cs35l41_hda_probe(&spi->dev, device_name, spi_get_chipselect(spi, 0), spi->irq,
+ 				 devm_regmap_init_spi(spi, &cs35l41_regmap_spi));
  }
  
 -- 
