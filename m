@@ -1,75 +1,38 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Date: Tue, 07 Mar 2023 14:04:58 +0100
-Subject: [PATCH v2 16/16] gpio: pcie-idio-24: Convert to immutable irq_chip
-In-Reply-To: <20230215-immutable-chips-v2-0-d6b0e3f2d991@linaro.org>
-References: <20230215-immutable-chips-v2-0-d6b0e3f2d991@linaro.org>
-Message-ID: <20230215-immutable-chips-v2-16-d6b0e3f2d991@linaro.org>
+From: Andrew Lunn <andrew@lunn.ch>
+Date: Tue, 7 Mar 2023 21:35:42 +0100
+Subject: [PATCH net-next v2 4/6] net: mdio: scan bus based on bus
+ capabilities for C22 and C45
+In-Reply-To: <0e10aa8492eadb587949d8744b56fccaabbd183b.camel@gmail.com>
+References: <20230116-net-next-remove-probe-capabilities-v2-0-15513b05e1f4@walle.cc>
+ <20230116-net-next-remove-probe-capabilities-v2-4-15513b05e1f4@walle.cc>
+ <449bde236c08d5ab5e54abd73b645d8b29955894.camel@gmail.com>
+ <100c439a-2a4d-4cb2-96f2-5bf273e2121a@lunn.ch>
+ <712bc92ca6d576f33f63f1e9c2edf0030b10d3ae.camel@gmail.com>
+ <db6b8a09-b680-4baa-8963-d355ad29eb09@lunn.ch>
+ <0e10aa8492eadb587949d8744b56fccaabbd183b.camel@gmail.com>
+Message-ID: <72530e86-9ba9-4a01-9cd2-68835ecae7a0@lunn.ch>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Convert the driver to immutable irq-chip with a bit of
-intuition.
+> Summary: Still 4 calls to mdio_bus_scan_c22, but also *2* calls to mdio_bus_scan_c45, approx. 190*100 reads by the switch driver
 
-Cc: Marc Zyngier <maz@kernel.org>
-Acked-by: William Breathitt Gray <william.gray@linaro.org>
-Acked-by: Marc Zyngier <maz@kernel.org>
-Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
----
- drivers/gpio/gpio-pcie-idio-24.c | 12 +++++++++---
- 1 file changed, 9 insertions(+), 3 deletions(-)
+Those calls to mdio_bus_scan_c45 are caused by 743a19e38d02 net: dsa:
+mv88e6xxx: Separate C22 and C45 transactions.
 
-diff --git a/drivers/gpio/gpio-pcie-idio-24.c b/drivers/gpio/gpio-pcie-idio-24.c
-index 8a9b98fa418f..ac42150f4009 100644
---- a/drivers/gpio/gpio-pcie-idio-24.c
-+++ b/drivers/gpio/gpio-pcie-idio-24.c
-@@ -396,6 +396,8 @@ static void idio_24_irq_mask(struct irq_data *data)
- 	}
- 
- 	raw_spin_unlock_irqrestore(&idio24gpio->lock, flags);
-+
-+	gpiochip_disable_irq(chip, irqd_to_hwirq(data));
- }
- 
- static void idio_24_irq_unmask(struct irq_data *data)
-@@ -408,6 +410,8 @@ static void idio_24_irq_unmask(struct irq_data *data)
- 	const unsigned long bank_offset = bit_offset / 8;
- 	unsigned char cos_enable_state;
- 
-+	gpiochip_enable_irq(chip, irqd_to_hwirq(data));
-+
- 	raw_spin_lock_irqsave(&idio24gpio->lock, flags);
- 
- 	prev_irq_mask = idio24gpio->irq_mask >> bank_offset * 8;
-@@ -437,12 +441,14 @@ static int idio_24_irq_set_type(struct irq_data *data, unsigned int flow_type)
- 	return 0;
- }
- 
--static struct irq_chip idio_24_irqchip = {
-+static const struct irq_chip idio_24_irqchip = {
- 	.name = "pcie-idio-24",
- 	.irq_ack = idio_24_irq_ack,
- 	.irq_mask = idio_24_irq_mask,
- 	.irq_unmask = idio_24_irq_unmask,
--	.irq_set_type = idio_24_irq_set_type
-+	.irq_set_type = idio_24_irq_set_type,
-+	.flags = IRQCHIP_IMMUTABLE,
-+	GPIOCHIP_IRQ_RESOURCE_HELPERS,
- };
- 
- static irqreturn_t idio_24_irq_handler(int irq, void *dev_id)
-@@ -535,7 +541,7 @@ static int idio_24_probe(struct pci_dev *pdev, const struct pci_device_id *id)
- 	idio24gpio->chip.set_multiple = idio_24_gpio_set_multiple;
- 
- 	girq = &idio24gpio->chip.irq;
--	girq->chip = &idio_24_irqchip;
-+	gpio_irq_chip_set_chip(girq, &idio_24_irqchip);
- 	/* This will let us handle the parent IRQ in the driver */
- 	girq->parent_handler = NULL;
- 	girq->num_parents = 0;
+Some families of the mv88e6xxx do support C45 bus transactions. That
+includes the 6171 you have. Before, we never scanned the C45 bus, but
+now we do.
 
--- 
-2.34.1
+But something does not add up. Doing an additional c45 scan should
+only double the number of reads by the switch driver.
 
+The only part of a c45 scan which is not linear is
+mv88e6xxx_g2_smi_phy_wait() which is implemented by
+mv88e6xxx_wait_mask(). That loops reading a register waiting for a bit
+to change. Maybe print out the value of i, and see if it is looping
+more times for C45 than C22?
+
+     Andrew
