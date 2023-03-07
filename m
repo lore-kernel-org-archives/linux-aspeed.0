@@ -1,9 +1,9 @@
 From: Linus Walleij <linus.walleij@linaro.org>
-Date: Tue, 07 Mar 2023 14:04:51 +0100
-Subject: [PATCH v2 09/16] gpio: idt3243x: Convert to immutable irq_chip
+Date: Tue, 07 Mar 2023 14:04:53 +0100
+Subject: [PATCH v2 11/16] gpio: mlxbf2: Convert to immutable irq_chip
 In-Reply-To: <20230215-immutable-chips-v2-0-d6b0e3f2d991@linaro.org>
 References: <20230215-immutable-chips-v2-0-d6b0e3f2d991@linaro.org>
-Message-ID: <20230215-immutable-chips-v2-9-d6b0e3f2d991@linaro.org>
+Message-ID: <20230215-immutable-chips-v2-11-d6b0e3f2d991@linaro.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -14,60 +14,101 @@ Convert the driver to immutable irq-chip with a bit of
 intuition.
 
 Cc: Marc Zyngier <maz@kernel.org>
-Tested-by: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
 Acked-by: Marc Zyngier <maz@kernel.org>
 Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
 ---
- drivers/gpio/gpio-idt3243x.c | 11 ++++++++---
- 1 file changed, 8 insertions(+), 3 deletions(-)
+ drivers/gpio/gpio-mlxbf2.c | 32 +++++++++++++++++++++++++-------
+ 1 file changed, 25 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/gpio/gpio-idt3243x.c b/drivers/gpio/gpio-idt3243x.c
-index 1cafdf46f875..00f547d26254 100644
---- a/drivers/gpio/gpio-idt3243x.c
-+++ b/drivers/gpio/gpio-idt3243x.c
-@@ -92,6 +92,8 @@ static void idt_gpio_mask(struct irq_data *d)
- 	writel(ctrl->mask_cache, ctrl->pic + IDT_PIC_IRQ_MASK);
+diff --git a/drivers/gpio/gpio-mlxbf2.c b/drivers/gpio/gpio-mlxbf2.c
+index 77a41151c921..6abe01bc39c3 100644
+--- a/drivers/gpio/gpio-mlxbf2.c
++++ b/drivers/gpio/gpio-mlxbf2.c
+@@ -17,6 +17,7 @@
+ #include <linux/platform_device.h>
+ #include <linux/pm.h>
+ #include <linux/resource.h>
++#include <linux/seq_file.h>
+ #include <linux/spinlock.h>
+ #include <linux/types.h>
  
- 	raw_spin_unlock_irqrestore(&gc->bgpio_lock, flags);
-+
-+	gpiochip_disable_irq(gc, irqd_to_hwirq(d));
+@@ -65,10 +66,10 @@ struct mlxbf2_gpio_context_save_regs {
+ /* BlueField-2 gpio block context structure. */
+ struct mlxbf2_gpio_context {
+ 	struct gpio_chip gc;
+-	struct irq_chip irq_chip;
+ 
+ 	/* YU GPIO blocks address */
+ 	void __iomem *gpio_io;
++	struct device *dev;
+ 
+ 	struct mlxbf2_gpio_context_save_regs *csave_regs;
+ };
+@@ -237,6 +238,7 @@ static void mlxbf2_gpio_irq_enable(struct irq_data *irqd)
+ 	unsigned long flags;
+ 	u32 val;
+ 
++	gpiochip_enable_irq(gc, irqd_to_hwirq(irqd));
+ 	raw_spin_lock_irqsave(&gs->gc.bgpio_lock, flags);
+ 	val = readl(gs->gpio_io + YU_GPIO_CAUSE_OR_CLRCAUSE);
+ 	val |= BIT(offset);
+@@ -261,6 +263,7 @@ static void mlxbf2_gpio_irq_disable(struct irq_data *irqd)
+ 	val &= ~BIT(offset);
+ 	writel(val, gs->gpio_io + YU_GPIO_CAUSE_OR_EVTEN0);
+ 	raw_spin_unlock_irqrestore(&gs->gc.bgpio_lock, flags);
++	gpiochip_disable_irq(gc, irqd_to_hwirq(irqd));
  }
  
- static void idt_gpio_unmask(struct irq_data *d)
-@@ -100,6 +102,7 @@ static void idt_gpio_unmask(struct irq_data *d)
- 	struct idt_gpio_ctrl *ctrl = gpiochip_get_data(gc);
- 	unsigned long flags;
- 
-+	gpiochip_enable_irq(gc, irqd_to_hwirq(d));
- 	raw_spin_lock_irqsave(&gc->bgpio_lock, flags);
- 
- 	ctrl->mask_cache &= ~BIT(d->hwirq);
-@@ -119,12 +122,14 @@ static int idt_gpio_irq_init_hw(struct gpio_chip *gc)
+ static irqreturn_t mlxbf2_gpio_irq_handler(int irq, void *ptr)
+@@ -322,6 +325,24 @@ mlxbf2_gpio_irq_set_type(struct irq_data *irqd, unsigned int type)
  	return 0;
  }
  
--static struct irq_chip idt_gpio_irqchip = {
-+static const struct irq_chip idt_gpio_irqchip = {
- 	.name = "IDTGPIO",
- 	.irq_mask = idt_gpio_mask,
- 	.irq_ack = idt_gpio_ack,
- 	.irq_unmask = idt_gpio_unmask,
--	.irq_set_type = idt_gpio_irq_set_type
-+	.irq_set_type = idt_gpio_irq_set_type,
++static void mlxbf2_gpio_irq_print_chip(struct irq_data *irqd,
++				       struct seq_file *p)
++{
++	struct gpio_chip *gc = irq_data_get_irq_chip_data(irqd);
++	struct mlxbf2_gpio_context *gs = gpiochip_get_data(gc);
++
++	seq_printf(p, dev_name(gs->dev));
++}
++
++static const struct irq_chip mlxbf2_gpio_irq_chip = {
++	.irq_set_type = mlxbf2_gpio_irq_set_type,
++	.irq_enable = mlxbf2_gpio_irq_enable,
++	.irq_disable = mlxbf2_gpio_irq_disable,
++	.irq_print_chip = mlxbf2_gpio_irq_print_chip,
 +	.flags = IRQCHIP_IMMUTABLE,
 +	GPIOCHIP_IRQ_RESOURCE_HELPERS,
- };
++};
++
+ /* BlueField-2 GPIO driver initialization routine. */
+ static int
+ mlxbf2_gpio_probe(struct platform_device *pdev)
+@@ -340,6 +361,8 @@ mlxbf2_gpio_probe(struct platform_device *pdev)
+ 	if (!gs)
+ 		return -ENOMEM;
  
- static int idt_gpio_probe(struct platform_device *pdev)
-@@ -168,7 +173,7 @@ static int idt_gpio_probe(struct platform_device *pdev)
- 			return parent_irq;
++	gs->dev = dev;
++
+ 	/* YU GPIO block address */
+ 	gs->gpio_io = devm_platform_ioremap_resource(pdev, 0);
+ 	if (IS_ERR(gs->gpio_io))
+@@ -376,13 +399,8 @@ mlxbf2_gpio_probe(struct platform_device *pdev)
  
- 		girq = &ctrl->gc.irq;
--		girq->chip = &idt_gpio_irqchip;
-+		gpio_irq_chip_set_chip(girq, &idt_gpio_irqchip);
- 		girq->init_hw = idt_gpio_irq_init_hw;
- 		girq->parent_handler = idt_gpio_dispatch;
- 		girq->num_parents = 1;
+ 	irq = platform_get_irq(pdev, 0);
+ 	if (irq >= 0) {
+-		gs->irq_chip.name = name;
+-		gs->irq_chip.irq_set_type = mlxbf2_gpio_irq_set_type;
+-		gs->irq_chip.irq_enable = mlxbf2_gpio_irq_enable;
+-		gs->irq_chip.irq_disable = mlxbf2_gpio_irq_disable;
+-
+ 		girq = &gs->gc.irq;
+-		girq->chip = &gs->irq_chip;
++		gpio_irq_chip_set_chip(girq, &mlxbf2_gpio_irq_chip);
+ 		girq->handler = handle_simple_irq;
+ 		girq->default_type = IRQ_TYPE_NONE;
+ 		/* This will let us handle the parent IRQ in the driver */
 
 -- 
 2.34.1
