@@ -1,9 +1,9 @@
 From: Linus Walleij <linus.walleij@linaro.org>
-Date: Tue, 07 Mar 2023 14:04:52 +0100
-Subject: [PATCH v2 10/16] gpio: msc313: Convert to immutable irq_chip
+Date: Tue, 07 Mar 2023 14:04:51 +0100
+Subject: [PATCH v2 09/16] gpio: idt3243x: Convert to immutable irq_chip
 In-Reply-To: <20230215-immutable-chips-v2-0-d6b0e3f2d991@linaro.org>
 References: <20230215-immutable-chips-v2-0-d6b0e3f2d991@linaro.org>
-Message-ID: <20230215-immutable-chips-v2-10-d6b0e3f2d991@linaro.org>
+Message-ID: <20230215-immutable-chips-v2-9-d6b0e3f2d991@linaro.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -13,68 +13,61 @@ Content-Transfer-Encoding: 7bit
 Convert the driver to immutable irq-chip with a bit of
 intuition.
 
-This conversion follows the pattern of the gpio-ixp4xx
-hierarchical GPIO interrupt driver.
-
 Cc: Marc Zyngier <maz@kernel.org>
+Tested-by: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
 Acked-by: Marc Zyngier <maz@kernel.org>
 Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
 ---
- drivers/gpio/gpio-msc313.c | 26 ++++++++++++++++++++++----
- 1 file changed, 22 insertions(+), 4 deletions(-)
+ drivers/gpio/gpio-idt3243x.c | 11 ++++++++---
+ 1 file changed, 8 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/gpio/gpio-msc313.c b/drivers/gpio/gpio-msc313.c
-index b0773e5652fa..036ad2324892 100644
---- a/drivers/gpio/gpio-msc313.c
-+++ b/drivers/gpio/gpio-msc313.c
-@@ -532,17 +532,35 @@ static int msc313_gpio_direction_output(struct gpio_chip *chip, unsigned int off
+diff --git a/drivers/gpio/gpio-idt3243x.c b/drivers/gpio/gpio-idt3243x.c
+index 1cafdf46f875..00f547d26254 100644
+--- a/drivers/gpio/gpio-idt3243x.c
++++ b/drivers/gpio/gpio-idt3243x.c
+@@ -92,6 +92,8 @@ static void idt_gpio_mask(struct irq_data *d)
+ 	writel(ctrl->mask_cache, ctrl->pic + IDT_PIC_IRQ_MASK);
+ 
+ 	raw_spin_unlock_irqrestore(&gc->bgpio_lock, flags);
++
++	gpiochip_disable_irq(gc, irqd_to_hwirq(d));
+ }
+ 
+ static void idt_gpio_unmask(struct irq_data *d)
+@@ -100,6 +102,7 @@ static void idt_gpio_unmask(struct irq_data *d)
+ 	struct idt_gpio_ctrl *ctrl = gpiochip_get_data(gc);
+ 	unsigned long flags;
+ 
++	gpiochip_enable_irq(gc, irqd_to_hwirq(d));
+ 	raw_spin_lock_irqsave(&gc->bgpio_lock, flags);
+ 
+ 	ctrl->mask_cache &= ~BIT(d->hwirq);
+@@ -119,12 +122,14 @@ static int idt_gpio_irq_init_hw(struct gpio_chip *gc)
  	return 0;
  }
  
-+static void msc313_gpio_irq_mask(struct irq_data *d)
-+{
-+	struct gpio_chip *gc = irq_data_get_irq_chip_data(d);
-+
-+	irq_chip_mask_parent(d);
-+	gpiochip_disable_irq(gc, d->hwirq);
-+}
-+
-+static void msc313_gpio_irq_unmask(struct irq_data *d)
-+{
-+	struct gpio_chip *gc = irq_data_get_irq_chip_data(d);
-+
-+	gpiochip_enable_irq(gc, d->hwirq);
-+	irq_chip_unmask_parent(d);
-+}
-+
- /*
-  * The interrupt handling happens in the parent interrupt controller,
-  * we don't do anything here.
-  */
--static struct irq_chip msc313_gpio_irqchip = {
-+static const struct irq_chip msc313_gpio_irqchip = {
- 	.name = "GPIO",
- 	.irq_eoi = irq_chip_eoi_parent,
--	.irq_mask = irq_chip_mask_parent,
--	.irq_unmask = irq_chip_unmask_parent,
-+	.irq_mask = msc313_gpio_irq_mask,
-+	.irq_unmask = msc313_gpio_irq_unmask,
- 	.irq_set_type = irq_chip_set_type_parent,
- 	.irq_set_affinity = irq_chip_set_affinity_parent,
+-static struct irq_chip idt_gpio_irqchip = {
++static const struct irq_chip idt_gpio_irqchip = {
+ 	.name = "IDTGPIO",
+ 	.irq_mask = idt_gpio_mask,
+ 	.irq_ack = idt_gpio_ack,
+ 	.irq_unmask = idt_gpio_unmask,
+-	.irq_set_type = idt_gpio_irq_set_type
++	.irq_set_type = idt_gpio_irq_set_type,
 +	.flags = IRQCHIP_IMMUTABLE,
 +	GPIOCHIP_IRQ_RESOURCE_HELPERS,
  };
  
- /*
-@@ -644,7 +662,7 @@ static int msc313_gpio_probe(struct platform_device *pdev)
- 	gpiochip->names = gpio->gpio_data->names;
+ static int idt_gpio_probe(struct platform_device *pdev)
+@@ -168,7 +173,7 @@ static int idt_gpio_probe(struct platform_device *pdev)
+ 			return parent_irq;
  
- 	gpioirqchip = &gpiochip->irq;
--	gpioirqchip->chip = &msc313_gpio_irqchip;
-+	gpio_irq_chip_set_chip(gpioirqchip, &msc313_gpio_irqchip);
- 	gpioirqchip->fwnode = of_node_to_fwnode(dev->of_node);
- 	gpioirqchip->parent_domain = parent_domain;
- 	gpioirqchip->child_to_parent_hwirq = msc313e_gpio_child_to_parent_hwirq;
+ 		girq = &ctrl->gc.irq;
+-		girq->chip = &idt_gpio_irqchip;
++		gpio_irq_chip_set_chip(girq, &idt_gpio_irqchip);
+ 		girq->init_hw = idt_gpio_irq_init_hw;
+ 		girq->parent_handler = idt_gpio_dispatch;
+ 		girq->num_parents = 1;
 
 -- 
 2.34.1
