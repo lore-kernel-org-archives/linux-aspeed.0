@@ -1,229 +1,73 @@
-From: Ryan Chen <ryan_chen@aspeedtech.com>
-Date: Tue, 7 Mar 2023 10:09:51 +0000
-Subject: [PATCH v6 1/2] dt-bindings: i2c: aspeed: support for
- AST2600-i2cv2
-In-Reply-To: <d33145c3-e985-4d3c-a08c-6a249a8dc463@linaro.org>
-References: <20230226031321.3126756-1-ryan_chen@aspeedtech.com>
- <20230226031321.3126756-2-ryan_chen@aspeedtech.com>
- <53090449-58c9-bc03-56df-aa8ae93c0c26@linaro.org>
- <SEZPR06MB52699DEB2255EB54F35C2A59F2AD9@SEZPR06MB5269.apcprd06.prod.outlook.com>
- <fc20a2d1-e2f9-c22b-dcdf-153cb527eea8@linaro.org>
- <SEZPR06MB526902637624A97D7DFB8523F2B39@SEZPR06MB5269.apcprd06.prod.outlook.com>
- <c41ee6b5-ddb4-1253-de54-a295b3bab2cc@linaro.org>
- <SEZPR06MB5269E7B8785B3CB56A63A916F2B39@SEZPR06MB5269.apcprd06.prod.outlook.com>
- <a3615fe7-aa2a-53e9-2732-ba4512b9369d@linaro.org>
- <SEZPR06MB5269E7B070B239F8E349C427F2B39@SEZPR06MB5269.apcprd06.prod.outlook.com>
- <c5cf6e0a-05dc-dff7-6218-df0984d1ba47@linaro.org>
- <SEZPR06MB5269CB53B51B89C3CA039442F2B09@SEZPR06MB5269.apcprd06.prod.outlook.com>
- <e59fe30a-75d1-eb59-52a3-014fe3c961a6@linaro.org>
- <SEZPR06MB5269B541150855BF0DABFACFF2B69@SEZPR06MB5269.apcprd06.prod.outlook.com>
- <d33145c3-e985-4d3c-a08c-6a249a8dc463@linaro.org>
-Message-ID: <SEZPR06MB5269CA376D572B6241FCAD4DF2B79@SEZPR06MB5269.apcprd06.prod.outlook.com>
+From: Linus Walleij <linus.walleij@linaro.org>
+Date: Tue, 07 Mar 2023 14:04:42 +0100
+Subject: [PATCH v2 00/16] Mass convert GPIO IRQ chips to be immutable
+Message-ID: <20230215-immutable-chips-v2-0-d6b0e3f2d991@linaro.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello Krzysztof,
+We are getting tired of these irq_chips not getting converted
+to be immutable, so I just take out the big hammer and fix
+some that I deem not too complex as best I can.
 
-> -----Original Message-----
-> From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-> Sent: Tuesday, March 7, 2023 4:12 PM
-> To: Ryan Chen <ryan_chen@aspeedtech.com>; Wolfram Sang
-> <wsa@kernel.org>
-> Cc: Joel Stanley <joel@jms.id.au>; Brendan Higgins
-> <brendan.higgins@linux.dev>; Krzysztof Kozlowski
-> <krzysztof.kozlowski+dt@linaro.org>; Andrew Jeffery <andrew@aj.id.au>;
-> devicetree at vger.kernel.org; Philipp Zabel <p.zabel@pengutronix.de>; Rob
-> Herring <robh+dt@kernel.org>; Benjamin Herrenschmidt
-> <benh@kernel.crashing.org>; linux-aspeed at lists.ozlabs.org;
-> linux-arm-kernel at lists.infradead.org; linux-kernel at vger.kernel.org;
-> openbmc at lists.ozlabs.org; linux-i2c at vger.kernel.org
-> Subject: Re: [PATCH v6 1/2] dt-bindings: i2c: aspeed: support for AST2600-i2cv2
-> 
-> On 06/03/2023 01:48, Ryan Chen wrote:
-> > Hello Krzysztof,
-> >
-> >> -----Original Message-----
-> >> From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-> >> Sent: Sunday, March 5, 2023 5:49 PM
-> >> To: Ryan Chen <ryan_chen@aspeedtech.com>; Wolfram Sang
-> >> <wsa@kernel.org>
-> >> Cc: Joel Stanley <joel@jms.id.au>; Brendan Higgins
-> >> <brendan.higgins@linux.dev>; Krzysztof Kozlowski
-> >> <krzysztof.kozlowski+dt@linaro.org>; Andrew Jeffery
-> >> <andrew@aj.id.au>; devicetree at vger.kernel.org; Philipp Zabel
-> >> <p.zabel@pengutronix.de>; Rob Herring <robh+dt@kernel.org>; Benjamin
-> >> Herrenschmidt <benh@kernel.crashing.org>;
-> >> linux-aspeed at lists.ozlabs.org; linux-arm-kernel at lists.infradead.org;
-> >> linux-kernel at vger.kernel.org; openbmc at lists.ozlabs.org;
-> >> linux-i2c at vger.kernel.org
-> >> Subject: Re: [PATCH v6 1/2] dt-bindings: i2c: aspeed: support for
-> >> AST2600-i2cv2
-> >>
-> >> On 04/03/2023 02:33, Ryan Chen wrote:
-> >>> Hello Krzysztof,
-> >>>
-> >>>> -----Original Message-----
-> >>>> From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-> >>>> Sent: Friday, March 3, 2023 6:41 PM
-> >>>> To: Ryan Chen <ryan_chen@aspeedtech.com>; Wolfram Sang
-> >>>> <wsa@kernel.org>
-> >>>> Cc: Joel Stanley <joel@jms.id.au>; Brendan Higgins
-> >>>> <brendan.higgins@linux.dev>; Krzysztof Kozlowski
-> >>>> <krzysztof.kozlowski+dt@linaro.org>; Andrew Jeffery
-> >>>> <andrew@aj.id.au>; devicetree at vger.kernel.org; Philipp Zabel
-> >>>> <p.zabel@pengutronix.de>; Rob Herring <robh+dt@kernel.org>;
-> >>>> Benjamin Herrenschmidt <benh@kernel.crashing.org>;
-> >>>> linux-aspeed at lists.ozlabs.org;
-> >>>> linux-arm-kernel at lists.infradead.org;
-> >>>> linux-kernel at vger.kernel.org; openbmc at lists.ozlabs.org;
-> >>>> linux-i2c at vger.kernel.org
-> >>>> Subject: Re: [PATCH v6 1/2] dt-bindings: i2c: aspeed: support for
-> >>>> AST2600-i2cv2
-> >>>>
-> >>>> On 03/03/2023 11:16, Ryan Chen wrote:
-> >>>>>>>>>>> aspeed,timout properites:
-> >>>>>>>>>>> For example I2C controller as slave mode, and suddenly
-> >>>>>> disconnected.
-> >>>>>>>>>>> Slave state machine will keep waiting for master clock in
-> >>>>>>>>>>> for rx/tx
-> >>>>>>>> transmit.
-> >>>>>>>>>>> So it need timeout setting to enable timeout unlock
-> >>>>>>>>>>> controller
-> >> state.
-> >>>>>>>>>>> And in another side. In Master side also need avoid suddenly
-> >>>>>>>>>>> slave
-> >>>>>>>>>> miss(un-plug), Master will timeout and release the SDA/SCL.
-> >>>>>>>>>>>
-> >>>>>>>>>>> Do you mean add those description into ore aspeed,timout
-> >>>>>>>>>>> properites
-> >>>>>>>>>> description?
-> >>>>>>>>>>
-> >>>>>>>>>> You are describing here one particular feature you want to
-> >>>>>>>>>> enable in the driver which looks non-scalable and more
-> >>>>>>>>>> difficult to
-> >>>>>> configure/use.
-> >>>>>>>>>> What I was looking for is to describe the actual
-> >>>>>>>>>> configuration you have
-> >>>>>> (e.g.
-> >>>>>>>>>> multi-master) which leads to enable or disable such feature
-> >>>>>>>>>> in your
-> >>>>>>>> hardware.
-> >>>>>>>>>> Especially that bool value does not scale later to actual
-> >>>>>>>>>> timeout values in time (ms)...
-> >>>>>>>>>>
-> >>>>>>>>>> I don't know I2C that much, but I wonder - why this should be
-> >>>>>>>>>> specific to Aspeed I2C and no other I2C controllers implement it?
-> >>>>>>>>>> IOW, this looks quite generic and every I2C controller should
-> >>>>>>>>>> have it. Adding it specific to Aspeed suggests that either we
-> >>>>>>>>>> miss a generic property or this should not be in DT at all
-> >>>>>>>>>> (because no one else has
-> >>>>>>>> it...).
-> >>>>>>>>>>
-> >>>>>>>>>> Also I wonder, why you wouldn't enable timeout always...
-> >>>>>>>>>>
-> >>>>>>>>>> +Cc Wolfram,
-> >>>>>>>>>> Maybe you know whether bool "timeout" property for one
-> >>>>>>>>>> controller makes sense? Why we do not have it for all controllers?
-> >>>>>>>>>>
-> >>>>>>>>> Because, i2c bus didn?t specific timeout.
-> >>>>>>>>> But SMBus defines a clock low time-out, TIMEOUT of 35 ms.
-> >>>>>>>>>
-> >>>>>>>>> It have definition in SMBus specification.
-> >>>>>>>>> http://smbus.org/specs/SMBus_3_1_20180319.pdf
-> >>>>>>>>> You can check Page 18, Note3 that have timeout description.
-> >>>>>>>>
-> >>>>>>>> Then you have already property for this - "smbus"?
-> >>>>>>> To be a property "smbus", that would be a big topic, I saw fsl
-> >>>>>>> i2c also have this.
-> >>>>>>> https://github.com/torvalds/linux/blob/master/Documentation/devi
-> >>>>>>> ce
-> >>>>>>> tr
-> >>>>>>> ee
-> >>>>>>> /bindings/i2c/i2c-mpc.yaml#L43-L47
-> >>>>>>> So, I just think the "timeout" property.
-> >>>>>>
-> >>>>>> Yeah and this is the only place. It also differs because it
-> >>>>>> allows actual timeout values.
-> >>>>> Thanks, So can I still keep the property "aspeed,timeout" here?
-> >>>>> It is the only place.
-> >>>>
-> >>>> No, because none of my concerns above are addressed.
-> >>>>
-> >>> Thanks, I realize your concerns.
-> >>>
-> >>> So, I modify it like i2c-mpc.yaml
-> >>> https://github.com/torvalds/linux/blob/master/Documentation/devicetr
-> >>> ee
-> >>> /bindings/i2c/i2c-mpc.yaml#L43-L47
-> >>>
-> >>>   aspeed,timeout:
-> >>>     $ref: /schemas/types.yaml#/definitions/uint32
-> >>>     description: |
-> >>>       I2C bus timeout in microseconds Is this way acceptable?
-> >>
-> >> So, let's repeat my last questions:
-> >>
-> >> 1. Why you wouldn't enable timeout always...
-> >>
-> >> You wrote:
-> >>> http://smbus.org/specs/SMBus_3_1_20180319.pdf
-> >>> You can check Page 18, Note3 that have timeout description.
-> >>
-> >> which indicates you should always use timeout, doesn't it?
-> >
-> > Yes, if board design the bus is connected with SMBUS device, it should
-> enable.
-> > But in my previous statement, the board design is two multi-master devices
-> connected each other.
-> 
-> For which you have the property, thus case is solved, isn't it? You want timeout
-> always except for multi-master?
+I stopped after doing some, I will take another sweep at some
+point I guess.
 
-But even if in multi-master board design, no hot-plug requirement.
-And it will not need enable the timeout.
-That the reason I separate the timeout and multi-master property
+This is v6.4 material.
 
-> 
-> > And both device is transfer with MCTP protocol.
-> > That will not SMBUS protocol.
-> > They need have timeout that prevent unexpected un-plug.
-> > I do the study with smbus in Linux, that will different slave call back.
-> Compare with smbus slave and mctp slave.
-> > So in this scenario, that is only enable for timeout.
-> 
-> And the driver knows which protocol it is going to talk and such choice should
-> not be in DT.
+The last two patches to pci-idio-* (patch 15 and 16) can be
+omitted if William's patches to convert this driver to
+regmap GPIO are merged first.
 
-Sorry, as I understand the i2c driver don't know which protocol is. Due to in i2c driver implement, it just a slave call back function.
-i2c_slave_event -> client->slave_cb : up layer to do protocol operate.
+Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
+---
+Changes in v2:
+- Rebased on v6.3-rc1
+- Collected some test and ACK tags
+- Link to v1: https://lore.kernel.org/r/20230215-immutable-chips-v1-0-51a8f224a5d0 at linaro.org
 
-> >
-> >> 2. Why we do not have it for all controllers with SMBus v3? Why this
-> >> one is special?
-> >
-> > Not all bus is connected with smbus. Most are i2c device connected in board.
-> > That will be specific statement for each bus.
-> 
-> That's not the answer to my question. Why other controllers which can be
-> connected to I2C or SMBus devices do not need this property?
+---
+Linus Walleij (16):
+      gpio: altera: Convert to immutable irq_chip
+      gpio: adnp: Convert to immutable irq_chip
+      gpio: aspeed: Convert to immutable irq_chip
+      gpio: aspeed-sgpio: Convert to immutable irq_chip
+      gpio: ath79: Convert to immutable irq_chip
+      gpio: cadence: Convert to immutable irq_chip
+      gpio: hisi: Convert to immutable irq_chip
+      gpio: hlwd: Convert to immutable irq_chip
+      gpio: idt3243x: Convert to immutable irq_chip
+      gpio: msc313: Convert to immutable irq_chip
+      gpio: mlxbf2: Convert to immutable irq_chip
+      gpio: max732x: Convert to immutable irq_chip
+      gpio: omap: Drop irq_base
+      gpio: omap: Convert to immutable irq_chip
+      gpio: pci-idio-16: Convert to immutable irq_chip
+      gpio: pcie-idio-24: Convert to immutable irq_chip
 
-For example following is the board specific connection.
-
-Board A                                         Board B
--------------------------                       ------------------------
-|i2c bus#1(master/slave)  <===fingerprint ===> i2c bus#x (master/slave)|
-|i2c bus#2(master)-> tmp i2c device |          |                       |
-|i2c bus#3(master)-> adc i2c device |          |                       |
--------------------------                       ------------------------
-
-Bus#1 is mctp transfer for each BoardA/B. (Not smbus connected)
-Bus#2 is i2c device connected.
-Bus#3 is i2c device connected.
- 
+ drivers/gpio/gpio-adnp.c         |  9 ++++-
+ drivers/gpio/gpio-altera.c       | 25 +++++++-----
+ drivers/gpio/gpio-aspeed-sgpio.c | 44 +++++++++++++++++----
+ drivers/gpio/gpio-aspeed.c       | 44 ++++++++++++++++++---
+ drivers/gpio/gpio-ath79.c        |  8 +++-
+ drivers/gpio/gpio-cadence.c      | 10 +++--
+ drivers/gpio/gpio-hisi.c         | 25 +++++++-----
+ drivers/gpio/gpio-hlwd.c         | 33 ++++++++++++----
+ drivers/gpio/gpio-idt3243x.c     | 11 ++++--
+ drivers/gpio/gpio-max732x.c      |  8 +++-
+ drivers/gpio/gpio-mlxbf2.c       | 32 ++++++++++++----
+ drivers/gpio/gpio-msc313.c       | 26 +++++++++++--
+ drivers/gpio/gpio-omap.c         | 83 ++++++++++++++++++++++------------------
+ drivers/gpio/gpio-pci-idio-16.c  | 12 ++++--
+ drivers/gpio/gpio-pcie-idio-24.c | 12 ++++--
+ 15 files changed, 273 insertions(+), 109 deletions(-)
+---
+base-commit: fe15c26ee26efa11741a7b632e9f23b01aca4cc6
+change-id: 20230215-immutable-chips-762922277f1e
 
 Best regards,
-Ryan Chen
+-- 
+Linus Walleij <linus.walleij@linaro.org>
 
