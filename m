@@ -1,9 +1,9 @@
 From: Linus Walleij <linus.walleij@linaro.org>
-Date: Tue, 07 Mar 2023 14:04:47 +0100
-Subject: [PATCH v2 05/16] gpio: ath79: Convert to immutable irq_chip
+Date: Tue, 07 Mar 2023 14:04:50 +0100
+Subject: [PATCH v2 08/16] gpio: hlwd: Convert to immutable irq_chip
 In-Reply-To: <20230215-immutable-chips-v2-0-d6b0e3f2d991@linaro.org>
 References: <20230215-immutable-chips-v2-0-d6b0e3f2d991@linaro.org>
-Message-ID: <20230215-immutable-chips-v2-5-d6b0e3f2d991@linaro.org>
+Message-ID: <20230215-immutable-chips-v2-8-d6b0e3f2d991@linaro.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -17,55 +17,96 @@ Cc: Marc Zyngier <maz@kernel.org>
 Acked-by: Marc Zyngier <maz@kernel.org>
 Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
 ---
- drivers/gpio/gpio-ath79.c | 8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
+ drivers/gpio/gpio-hlwd.c | 33 +++++++++++++++++++++++++--------
+ 1 file changed, 25 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/gpio/gpio-ath79.c b/drivers/gpio/gpio-ath79.c
-index 3958c6d97639..aa0a954b8392 100644
---- a/drivers/gpio/gpio-ath79.c
-+++ b/drivers/gpio/gpio-ath79.c
-@@ -71,6 +71,7 @@ static void ath79_gpio_irq_unmask(struct irq_data *data)
- 	u32 mask = BIT(irqd_to_hwirq(data));
- 	unsigned long flags;
+diff --git a/drivers/gpio/gpio-hlwd.c b/drivers/gpio/gpio-hlwd.c
+index 4e13e937f832..c208ac1c54a6 100644
+--- a/drivers/gpio/gpio-hlwd.c
++++ b/drivers/gpio/gpio-hlwd.c
+@@ -11,6 +11,7 @@
+ #include <linux/module.h>
+ #include <linux/of.h>
+ #include <linux/of_platform.h>
++#include <linux/seq_file.h>
+ #include <linux/slab.h>
  
-+	gpiochip_enable_irq(&ctrl->gc, irqd_to_hwirq(data));
- 	raw_spin_lock_irqsave(&ctrl->lock, flags);
- 	ath79_gpio_update_bits(ctrl, AR71XX_GPIO_REG_INT_MASK, mask, mask);
- 	raw_spin_unlock_irqrestore(&ctrl->lock, flags);
-@@ -85,6 +86,7 @@ static void ath79_gpio_irq_mask(struct irq_data *data)
- 	raw_spin_lock_irqsave(&ctrl->lock, flags);
- 	ath79_gpio_update_bits(ctrl, AR71XX_GPIO_REG_INT_MASK, mask, 0);
- 	raw_spin_unlock_irqrestore(&ctrl->lock, flags);
-+	gpiochip_disable_irq(&ctrl->gc, irqd_to_hwirq(data));
+ /*
+@@ -48,7 +49,7 @@
+ 
+ struct hlwd_gpio {
+ 	struct gpio_chip gpioc;
+-	struct irq_chip irqc;
++	struct device *dev;
+ 	void __iomem *regs;
+ 	int irq;
+ 	u32 edge_emulation;
+@@ -123,6 +124,7 @@ static void hlwd_gpio_irq_mask(struct irq_data *data)
+ 	mask &= ~BIT(data->hwirq);
+ 	iowrite32be(mask, hlwd->regs + HW_GPIOB_INTMASK);
+ 	raw_spin_unlock_irqrestore(&hlwd->gpioc.bgpio_lock, flags);
++	gpiochip_disable_irq(&hlwd->gpioc, irqd_to_hwirq(data));
  }
  
- static void ath79_gpio_irq_enable(struct irq_data *data)
-@@ -169,13 +171,15 @@ static int ath79_gpio_irq_set_type(struct irq_data *data,
+ static void hlwd_gpio_irq_unmask(struct irq_data *data)
+@@ -132,6 +134,7 @@ static void hlwd_gpio_irq_unmask(struct irq_data *data)
+ 	unsigned long flags;
+ 	u32 mask;
+ 
++	gpiochip_enable_irq(&hlwd->gpioc, irqd_to_hwirq(data));
+ 	raw_spin_lock_irqsave(&hlwd->gpioc.bgpio_lock, flags);
+ 	mask = ioread32be(hlwd->regs + HW_GPIOB_INTMASK);
+ 	mask |= BIT(data->hwirq);
+@@ -202,6 +205,24 @@ static int hlwd_gpio_irq_set_type(struct irq_data *data, unsigned int flow_type)
  	return 0;
  }
  
--static struct irq_chip ath79_gpio_irqchip = {
-+static const struct irq_chip ath79_gpio_irqchip = {
- 	.name = "gpio-ath79",
- 	.irq_enable = ath79_gpio_irq_enable,
- 	.irq_disable = ath79_gpio_irq_disable,
- 	.irq_mask = ath79_gpio_irq_mask,
- 	.irq_unmask = ath79_gpio_irq_unmask,
- 	.irq_set_type = ath79_gpio_irq_set_type,
++static void hlwd_gpio_irq_print_chip(struct irq_data *data, struct seq_file *p)
++{
++	struct hlwd_gpio *hlwd =
++		gpiochip_get_data(irq_data_get_irq_chip_data(data));
++
++	seq_printf(p, dev_name(hlwd->dev));
++}
++
++static const struct irq_chip hlwd_gpio_irq_chip = {
++	.irq_mask = hlwd_gpio_irq_mask,
++	.irq_unmask = hlwd_gpio_irq_unmask,
++	.irq_enable = hlwd_gpio_irq_enable,
++	.irq_set_type = hlwd_gpio_irq_set_type,
++	.irq_print_chip = hlwd_gpio_irq_print_chip,
 +	.flags = IRQCHIP_IMMUTABLE,
 +	GPIOCHIP_IRQ_RESOURCE_HELPERS,
- };
++};
++
+ static int hlwd_gpio_probe(struct platform_device *pdev)
+ {
+ 	struct hlwd_gpio *hlwd;
+@@ -216,6 +237,8 @@ static int hlwd_gpio_probe(struct platform_device *pdev)
+ 	if (IS_ERR(hlwd->regs))
+ 		return PTR_ERR(hlwd->regs);
  
- static void ath79_gpio_irq_handler(struct irq_desc *desc)
-@@ -274,7 +278,7 @@ static int ath79_gpio_probe(struct platform_device *pdev)
- 	/* Optional interrupt setup */
- 	if (!np || of_property_read_bool(np, "interrupt-controller")) {
- 		girq = &ctrl->gc.irq;
--		girq->chip = &ath79_gpio_irqchip;
-+		gpio_irq_chip_set_chip(girq, &ath79_gpio_irqchip);
- 		girq->parent_handler = ath79_gpio_irq_handler;
++	hlwd->dev = &pdev->dev;
++
+ 	/*
+ 	 * Claim all GPIOs using the OWNER register. This will not work on
+ 	 * systems where the AHBPROT memory firewall hasn't been configured to
+@@ -259,14 +282,8 @@ static int hlwd_gpio_probe(struct platform_device *pdev)
+ 			return hlwd->irq;
+ 		}
+ 
+-		hlwd->irqc.name = dev_name(&pdev->dev);
+-		hlwd->irqc.irq_mask = hlwd_gpio_irq_mask;
+-		hlwd->irqc.irq_unmask = hlwd_gpio_irq_unmask;
+-		hlwd->irqc.irq_enable = hlwd_gpio_irq_enable;
+-		hlwd->irqc.irq_set_type = hlwd_gpio_irq_set_type;
+-
+ 		girq = &hlwd->gpioc.irq;
+-		girq->chip = &hlwd->irqc;
++		gpio_irq_chip_set_chip(girq, &hlwd_gpio_irq_chip);
+ 		girq->parent_handler = hlwd_gpio_irqhandler;
  		girq->num_parents = 1;
- 		girq->parents = devm_kcalloc(dev, 1, sizeof(*girq->parents),
+ 		girq->parents = devm_kcalloc(&pdev->dev, 1,
 
 -- 
 2.34.1
