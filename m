@@ -1,73 +1,97 @@
 From: Linus Walleij <linus.walleij@linaro.org>
-Date: Tue, 07 Mar 2023 14:04:42 +0100
-Subject: [PATCH v2 00/16] Mass convert GPIO IRQ chips to be immutable
-Message-ID: <20230215-immutable-chips-v2-0-d6b0e3f2d991@linaro.org>
+Date: Tue, 07 Mar 2023 14:04:43 +0100
+Subject: [PATCH v2 01/16] gpio: altera: Convert to immutable irq_chip
+In-Reply-To: <20230215-immutable-chips-v2-0-d6b0e3f2d991@linaro.org>
+References: <20230215-immutable-chips-v2-0-d6b0e3f2d991@linaro.org>
+Message-ID: <20230215-immutable-chips-v2-1-d6b0e3f2d991@linaro.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-We are getting tired of these irq_chips not getting converted
-to be immutable, so I just take out the big hammer and fix
-some that I deem not too complex as best I can.
+Convert the driver to immutable irq-chip with a bit of
+intuition.
 
-I stopped after doing some, I will take another sweep at some
-point I guess.
-
-This is v6.4 material.
-
-The last two patches to pci-idio-* (patch 15 and 16) can be
-omitted if William's patches to convert this driver to
-regmap GPIO are merged first.
-
+Cc: Marc Zyngier <maz@kernel.org>
+Acked-by: Marc Zyngier <maz@kernel.org>
 Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
 ---
-Changes in v2:
-- Rebased on v6.3-rc1
-- Collected some test and ACK tags
-- Link to v1: https://lore.kernel.org/r/20230215-immutable-chips-v1-0-51a8f224a5d0 at linaro.org
+ drivers/gpio/gpio-altera.c | 25 +++++++++++++++----------
+ 1 file changed, 15 insertions(+), 10 deletions(-)
 
----
-Linus Walleij (16):
-      gpio: altera: Convert to immutable irq_chip
-      gpio: adnp: Convert to immutable irq_chip
-      gpio: aspeed: Convert to immutable irq_chip
-      gpio: aspeed-sgpio: Convert to immutable irq_chip
-      gpio: ath79: Convert to immutable irq_chip
-      gpio: cadence: Convert to immutable irq_chip
-      gpio: hisi: Convert to immutable irq_chip
-      gpio: hlwd: Convert to immutable irq_chip
-      gpio: idt3243x: Convert to immutable irq_chip
-      gpio: msc313: Convert to immutable irq_chip
-      gpio: mlxbf2: Convert to immutable irq_chip
-      gpio: max732x: Convert to immutable irq_chip
-      gpio: omap: Drop irq_base
-      gpio: omap: Convert to immutable irq_chip
-      gpio: pci-idio-16: Convert to immutable irq_chip
-      gpio: pcie-idio-24: Convert to immutable irq_chip
+diff --git a/drivers/gpio/gpio-altera.c b/drivers/gpio/gpio-altera.c
+index b59fae993626..c1599edb3453 100644
+--- a/drivers/gpio/gpio-altera.c
++++ b/drivers/gpio/gpio-altera.c
+@@ -24,14 +24,12 @@
+ * @interrupt_trigger	: specifies the hardware configured IRQ trigger type
+ *			  (rising, falling, both, high)
+ * @mapped_irq		: kernel mapped irq number.
+-* @irq_chip		: IRQ chip configuration
+ */
+ struct altera_gpio_chip {
+ 	struct of_mm_gpio_chip mmchip;
+ 	raw_spinlock_t gpio_lock;
+ 	int interrupt_trigger;
+ 	int mapped_irq;
+-	struct irq_chip irq_chip;
+ };
+ 
+ static void altera_gpio_irq_unmask(struct irq_data *d)
+@@ -43,6 +41,7 @@ static void altera_gpio_irq_unmask(struct irq_data *d)
+ 
+ 	altera_gc = gpiochip_get_data(irq_data_get_irq_chip_data(d));
+ 	mm_gc = &altera_gc->mmchip;
++	gpiochip_enable_irq(&mm_gc->gc, irqd_to_hwirq(d));
+ 
+ 	raw_spin_lock_irqsave(&altera_gc->gpio_lock, flags);
+ 	intmask = readl(mm_gc->regs + ALTERA_GPIO_IRQ_MASK);
+@@ -68,6 +67,7 @@ static void altera_gpio_irq_mask(struct irq_data *d)
+ 	intmask &= ~BIT(irqd_to_hwirq(d));
+ 	writel(intmask, mm_gc->regs + ALTERA_GPIO_IRQ_MASK);
+ 	raw_spin_unlock_irqrestore(&altera_gc->gpio_lock, flags);
++	gpiochip_disable_irq(&mm_gc->gc, irqd_to_hwirq(d));
+ }
+ 
+ /*
+@@ -233,6 +233,17 @@ static void altera_gpio_irq_leveL_high_handler(struct irq_desc *desc)
+ 	chained_irq_exit(chip, desc);
+ }
+ 
++static const struct irq_chip altera_gpio_irq_chip = {
++	.name = "altera-gpio",
++	.irq_mask = altera_gpio_irq_mask,
++	.irq_unmask = altera_gpio_irq_unmask,
++	.irq_set_type = altera_gpio_irq_set_type,
++	.irq_startup  = altera_gpio_irq_startup,
++	.irq_shutdown = altera_gpio_irq_mask,
++	.flags = IRQCHIP_IMMUTABLE,
++	GPIOCHIP_IRQ_RESOURCE_HELPERS,
++};
++
+ static int altera_gpio_probe(struct platform_device *pdev)
+ {
+ 	struct device_node *node = pdev->dev.of_node;
+@@ -278,15 +289,9 @@ static int altera_gpio_probe(struct platform_device *pdev)
+ 	}
+ 	altera_gc->interrupt_trigger = reg;
+ 
+-	altera_gc->irq_chip.name = "altera-gpio";
+-	altera_gc->irq_chip.irq_mask     = altera_gpio_irq_mask;
+-	altera_gc->irq_chip.irq_unmask   = altera_gpio_irq_unmask;
+-	altera_gc->irq_chip.irq_set_type = altera_gpio_irq_set_type;
+-	altera_gc->irq_chip.irq_startup  = altera_gpio_irq_startup;
+-	altera_gc->irq_chip.irq_shutdown = altera_gpio_irq_mask;
+-
+ 	girq = &altera_gc->mmchip.gc.irq;
+-	girq->chip = &altera_gc->irq_chip;
++	gpio_irq_chip_set_chip(girq, &altera_gpio_irq_chip);
++
+ 	if (altera_gc->interrupt_trigger == IRQ_TYPE_LEVEL_HIGH)
+ 		girq->parent_handler = altera_gpio_irq_leveL_high_handler;
+ 	else
 
- drivers/gpio/gpio-adnp.c         |  9 ++++-
- drivers/gpio/gpio-altera.c       | 25 +++++++-----
- drivers/gpio/gpio-aspeed-sgpio.c | 44 +++++++++++++++++----
- drivers/gpio/gpio-aspeed.c       | 44 ++++++++++++++++++---
- drivers/gpio/gpio-ath79.c        |  8 +++-
- drivers/gpio/gpio-cadence.c      | 10 +++--
- drivers/gpio/gpio-hisi.c         | 25 +++++++-----
- drivers/gpio/gpio-hlwd.c         | 33 ++++++++++++----
- drivers/gpio/gpio-idt3243x.c     | 11 ++++--
- drivers/gpio/gpio-max732x.c      |  8 +++-
- drivers/gpio/gpio-mlxbf2.c       | 32 ++++++++++++----
- drivers/gpio/gpio-msc313.c       | 26 +++++++++++--
- drivers/gpio/gpio-omap.c         | 83 ++++++++++++++++++++++------------------
- drivers/gpio/gpio-pci-idio-16.c  | 12 ++++--
- drivers/gpio/gpio-pcie-idio-24.c | 12 ++++--
- 15 files changed, 273 insertions(+), 109 deletions(-)
----
-base-commit: fe15c26ee26efa11741a7b632e9f23b01aca4cc6
-change-id: 20230215-immutable-chips-762922277f1e
-
-Best regards,
 -- 
-Linus Walleij <linus.walleij@linaro.org>
+2.34.1
 
