@@ -1,62 +1,105 @@
-From: Andrew Lunn <andrew@lunn.ch>
-Date: Mon, 13 Mar 2023 00:57:36 +0100
-Subject: [PATCH net-next v2 4/6] net: mdio: scan bus based on bus
- capabilities for C22 and C45
-In-Reply-To: <024b696003d8403d62c45411c813058684e0418c.camel@gmail.com>
-References: <09d65e1ee0679e1e74b4f3a5a4c55bd48332f043.camel@gmail.com>
- <70f5bca0-322c-4bae-b880-742e56365abe@lunn.ch>
- <10da10caea22a8f5da8f1779df3e13b948e8a363.camel@gmail.com>
- <4abd56aa-5b9f-4e16-b0ca-11989bb8c764@lunn.ch>
- <bff0e542b8c04980e9e3af1d3e6bf739c87eb514.camel@gmail.com>
- <a57a216d-ff5a-46e6-9780-e53772dcefc8@lunn.ch>
- <2f64385a350359c5755eb4d2479e2efef7a96216.camel@gmail.com>
- <29ee3cc4-a1d6-4a07-8d90-4b2f26059e7d@lunn.ch>
- <0a1ec04fe494fcd8c68d03e4f544d7162c0e4f39.camel@gmail.com>
- <024b696003d8403d62c45411c813058684e0418c.camel@gmail.com>
-Message-ID: <04d0bf49-452c-472c-add4-a0d5bd944476@lunn.ch>
+From: Tudor Ambarus <tudor.ambarus@linaro.org>
+Date: Wed, 8 Mar 2023 09:04:55 +0000
+Subject: [PATCH] spi: Replace `dummy.nbytes` with `dummy.ncycles`
+In-Reply-To: <20220926172454.kbpzck7med5bopre@mobilestation>
+References: <20220911174551.653599-1-sergiu.moga@microchip.com>
+ <20220925220304.buk3yuqoh6vszfci@mobilestation>
+ <18e6e8a8-6412-7e31-21e0-6becd4400ac1@microchip.com>
+ <20220926172454.kbpzck7med5bopre@mobilestation>
+Message-ID: <1766f6ef-d9d8-04f7-a6bf-0ea6bc0b3d23@linaro.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sun, Mar 12, 2023 at 04:15:41PM +0100, Klaus Kudielka wrote:
-> On Sun, 2023-03-12 at 10:04 +0100, Klaus Kudielka wrote:
-> > On Sun, 2023-03-12 at 03:53 +0100, Andrew Lunn wrote:
-> > > 
-> > > Correct. But their also should not of been any noticeable slow down,
-> > > because there should not be any additional scanning when everything is
-> > > described in DT. And the move of the MDIO bus registration from probe
-> > > to setup should actually make it faster than before.
-> > > 
-> > 
-> > But then, why *do* I see such a big difference on the Omnia?
-> > 
-> > mdiobus_scan_bus_c45() takes:
-> > ~2.7 seconds without phy_mask patch
-> > ~0.2 seconds with phy_mask patch
-> 
-> Following up myself, the answer is in the call path
-> mv88e6xxx_mdios_register()
-> 	 -> mv88e6xxx_mdio_register()
-> 		-> of_mdiobus_register()
-> 
-> A child node "mdio" would be needed for the scan to be limited by
-> the device tree. And this one is *not* in armada-385-turris-omnia.dts.
-> 
-> My (incorrect) understanding was, the child node "ports" would trigger
-> that behaviour.
+Hi, Sarge,
 
-Yes, of_mdiobus_register() calls mdiobus_register() if there is no
-MDIO node in DT. And that will result in a full bus scan, limited by
-phy_mask.
+On 9/26/22 18:24, Serge Semin wrote:
+>>>> diff --git a/drivers/mtd/spi-nor/core.c b/drivers/mtd/spi-nor/core.c
+>>>> index f2c64006f8d7..cc8ca824f912 100644
+>>>> --- a/drivers/mtd/spi-nor/core.c
+>>>> +++ b/drivers/mtd/spi-nor/core.c
+>>>> @@ -88,7 +88,7 @@ void spi_nor_spimem_setup_op(const struct spi_nor *nor,
+>>>>        if (op->addr.nbytes)
+>>>>                op->addr.buswidth = spi_nor_get_protocol_addr_nbits(proto);
+>>>>
+>>>
+>>>
+>>>> -     if (op->dummy.nbytes)
+>>>> +     if (op->dummy.ncycles)
+>>>>                op->dummy.buswidth = spi_nor_get_protocol_addr_nbits(proto);
+>>>>
+>>>>        if (op->data.nbytes)
+>>>> @@ -106,9 +106,6 @@ void spi_nor_spimem_setup_op(const struct spi_nor *nor,
+>>>>                op->dummy.dtr = true;
+>>>>                op->data.dtr = true;
+>>>>
+>>>> -             /* 2 bytes per clock cycle in DTR mode. */
+>>>> -             op->dummy.nbytes *= 2;
+>>>> -
+>>>>                ext = spi_nor_get_cmd_ext(nor, op);
+>>>>                op->cmd.opcode = (op->cmd.opcode << 8) | ext;
+>>>>                op->cmd.nbytes = 2;
+>>>> @@ -207,10 +204,7 @@ static ssize_t spi_nor_spimem_read_data(struct spi_nor *nor, loff_t from,
+>>>>
+>>>>        spi_nor_spimem_setup_op(nor, &op, nor->read_proto);
+>>>>
+>>>> -     /* convert the dummy cycles to the number of bytes */
+>>>> -     op.dummy.nbytes = (nor->read_dummy * op.dummy.buswidth) / 8;
+>>>> -     if (spi_nor_protocol_is_dtr(nor->read_proto))
+>>>> -             op.dummy.nbytes *= 2;
+>>>> +     op.dummy.ncycles = nor->read_dummy;
+>>> So according to this modification and what is done in the rest of the
+>>> patch, the dummy part of the SPI-mem operations now contains the number
+>>> of cycles only. Am I right to think that it means a number of dummy
+>>> clock oscillations? (Judging from what I've seen in the HW-manuals of
+>>> the SPI NOR memory devices most likely I am...)
+>>
+>>
+>> Yes, you are correct.
+>>
 
-And for completeness, there is one additional case. When there is a DT
-description, reg = <> is optional for a PHY. Most cases, it is used,
-but if you have a board designs which can take different pin
-compatible PHYs, the address of the PHY might not be known. After
-probing PHYs which are listed in DT with reg properties, it will scan
-the bus for additional PHYs and assign them to entries which do not
-have reg properties.
+I confirm.
 
-	Andrew
+>>
+>>> If so the "ncycles" field
+>>> is now free from the "data" semantic. Then what is the meaning of the
+>>> "buswidth and "dtr" fields in the spi_mem_op.dummy field?
+>>>
+>>
+>> It is still meaningful as it is used for the conversion by some drivers 
+>> to nbytes and I do not see how it goes out of the specification in any 
+>> way. So, at least for now, I do not see any reason to remove these fields.
+> I do see the way these fields are used in the SPI-mem drivers. I was
+> wondering what do these bits mean in the framework of the SPI-mem
+> core? AFAICS from the specification the dummy cycles are irrelevant to
+> the data bus state. It says "the master tri-states the bus during
+> 'dummy' cycles." If so I don't see a reason to have the DTR and
+> buswidth fields in the spi_mem_op structure anymore. The number of
+> cycles could be calculated right on the initialization stage based on
+> the SPI NOR/NAND requirements.
+> 
+> @Mark, @Tudor, @Pratyush, what do you think?
+> 
+
+In an ideal world, where both the controller and the device talk about
+dummy number of cycles, I would agree with you, buswidth and dtr should
+not be relevant for the number of dummy cycles. But it seems that there
+are old controllers (e.g. spi-hisi-sfc-v3xx.c, spi-mt65xx.c, spi-mxic.c)
+that support buswidths > 1 and work only with dummy nbytes, they are not
+capable of specifying a smaller granularity (ncycles). Thus the older
+controllers would have to convert the dummy ncycles to dummy nbytes.
+Since mixed transfer modes are a thing (see jesd251, it talks about
+4S-4D-4D), where single transfer mode (S) can be mixed with double
+transfer mode (D) for a command, the controller would have to guess the
+buswidth and dtr of the dummy. Shall they replicate the buswidth and dtr
+of the address or of the data? There's no rule for that. So we're forced
+to keep the dummy.{dtr, buswidth} fields by the old controllers that
+don't understand dummy ncycles.
+
+I'm going to send a v2 of this patch, I'll add you in To. Thanks for
+taking the time to review this patch!
+
+Cheers,
+ta
