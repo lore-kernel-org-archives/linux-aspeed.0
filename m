@@ -1,158 +1,145 @@
-From: Marc Zyngier <maz@kernel.org>
-Date: Wed, 08 Mar 2023 13:23:52 +0000
-Subject: [PATCH v2 03/16] gpio: aspeed: Convert to immutable irq_chip
-In-Reply-To: <CACPK8Xc7ekzM9oeR7+fYuK8RfZ4jA8gpH=nUJ-OTp0XZoKwzHQ@mail.gmail.com>
-References: <20230215-immutable-chips-v2-0-d6b0e3f2d991@linaro.org>
-	<20230215-immutable-chips-v2-3-d6b0e3f2d991@linaro.org>
-	<CACPK8Xc7ekzM9oeR7+fYuK8RfZ4jA8gpH=nUJ-OTp0XZoKwzHQ@mail.gmail.com>
-Message-ID: <861qlzz89j.wl-maz@kernel.org>
+From: Klaus Kudielka <klaus.kudielka@gmail.com>
+Date: Wed, 08 Mar 2023 19:34:40 +0100
+Subject: [PATCH net-next v2 4/6] net: mdio: scan bus based on bus
+ capabilities for C22 and C45
+In-Reply-To: <72530e86-9ba9-4a01-9cd2-68835ecae7a0@lunn.ch>
+References: <20230116-net-next-remove-probe-capabilities-v2-0-15513b05e1f4@walle.cc>
+	 <20230116-net-next-remove-probe-capabilities-v2-4-15513b05e1f4@walle.cc>
+	 <449bde236c08d5ab5e54abd73b645d8b29955894.camel@gmail.com>
+	 <100c439a-2a4d-4cb2-96f2-5bf273e2121a@lunn.ch>
+	 <712bc92ca6d576f33f63f1e9c2edf0030b10d3ae.camel@gmail.com>
+	 <db6b8a09-b680-4baa-8963-d355ad29eb09@lunn.ch>
+	 <0e10aa8492eadb587949d8744b56fccaabbd183b.camel@gmail.com>
+	 <72530e86-9ba9-4a01-9cd2-68835ecae7a0@lunn.ch>
+Message-ID: <09d65e1ee0679e1e74b4f3a5a4c55bd48332f043.camel@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 08 Mar 2023 01:21:50 +0000,
-Joel Stanley <joel@jms.id.au> wrote:
+On Tue, 2023-03-07 at 21:35 +0100, Andrew Lunn wrote:
+> > Summary: Still 4 calls to mdio_bus_scan_c22, but also *2* calls to mdio_bus_scan_c45, approx. 190*100 reads by the switch driver
 > 
-> On Tue, 7 Mar 2023 at 13:04, Linus Walleij <linus.walleij@linaro.org> wrote:
-> >
-> > Convert the driver to immutable irq-chip with a bit of
-> > intuition.
-> >
-> > Cc: Marc Zyngier <maz@kernel.org>
-> > Tested-by: Joel Stanley <joel@jms.id.au>
-> > Acked-by: Marc Zyngier <maz@kernel.org>
-> > Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
-> > ---
-> >  drivers/gpio/gpio-aspeed.c | 44 ++++++++++++++++++++++++++++++++++++++------
-> >  1 file changed, 38 insertions(+), 6 deletions(-)
-> >
-> > diff --git a/drivers/gpio/gpio-aspeed.c b/drivers/gpio/gpio-aspeed.c
-> > index a94da80d3a95..9c4852de2733 100644
-> > --- a/drivers/gpio/gpio-aspeed.c
-> > +++ b/drivers/gpio/gpio-aspeed.c
-> > @@ -15,6 +15,7 @@
-> >  #include <linux/module.h>
-> >  #include <linux/pinctrl/consumer.h>
-> >  #include <linux/platform_device.h>
-> > +#include <linux/seq_file.h>
-> >  #include <linux/spinlock.h>
-> >  #include <linux/string.h>
-> >
-> > @@ -53,7 +54,7 @@ struct aspeed_gpio_config {
-> >   */
-> >  struct aspeed_gpio {
-> >         struct gpio_chip chip;
-> > -       struct irq_chip irqc;
-> > +       struct device *dev;
-> >         raw_spinlock_t lock;
-> >         void __iomem *base;
-> >         int irq;
-> > @@ -566,6 +567,10 @@ static void aspeed_gpio_irq_set_mask(struct irq_data *d, bool set)
-> >
-> >         addr = bank_reg(gpio, bank, reg_irq_enable);
-> >
-> > +       /* Unmasking the IRQ */
-> > +       if (set)
-> > +               gpiochip_enable_irq(&gpio->chip, irqd_to_hwirq(d));
-> > +
-> >         raw_spin_lock_irqsave(&gpio->lock, flags);
-> >         copro = aspeed_gpio_copro_request(gpio, offset);
-> >
-> > @@ -579,6 +584,10 @@ static void aspeed_gpio_irq_set_mask(struct irq_data *d, bool set)
-> >         if (copro)
-> >                 aspeed_gpio_copro_release(gpio, offset);
-> >         raw_spin_unlock_irqrestore(&gpio->lock, flags);
-> > +
-> > +       /* Masking the IRQ */
-> > +       if (!set)
-> > +               gpiochip_disable_irq(&gpio->chip, irqd_to_hwirq(d));
-> >  }
-> >
-> >  static void aspeed_gpio_irq_mask(struct irq_data *d)
-> > @@ -1080,6 +1089,30 @@ int aspeed_gpio_copro_release_gpio(struct gpio_desc *desc)
-> >  }
-> >  EXPORT_SYMBOL_GPL(aspeed_gpio_copro_release_gpio);
-> >
-> > +static void aspeed_gpio_irq_print_chip(struct irq_data *d, struct seq_file *p)
-> > +{
-> > +       const struct aspeed_gpio_bank *bank;
-> > +       struct aspeed_gpio *gpio;
-> > +       u32 bit;
-> > +       int rc, offset;
-> > +
-> > +       rc = irqd_to_aspeed_gpio_data(d, &gpio, &bank, &bit, &offset);
-> 
-> Why do we call this instead of using irq_data_get_irq_chip_data?
-> 
-> Actually, the callback appears to do the same as the default
-> implementation, so we could just drop it?
-> 
-> from kernel/irq/proc.c:
-> 
->         if (desc->irq_data.chip) {
->                 if (desc->irq_data.chip->irq_print_chip)
->                         desc->irq_data.chip->irq_print_chip(&desc->irq_data, p);
->                 else if (desc->irq_data.chip->name)
->                         seq_printf(p, " %8s", desc->irq_data.chip->name);
+> Those calls to mdio_bus_scan_c45 are caused by 743a19e38d02 net: dsa:
+> mv88e6xxx: Separate C22 and C45 transactions.
 
-It only does the same thing *if* chip->name is set. And in this
-particular case it really shouldn't be set, as it isn't a constant
-string.
+Well, yes and no. I understand orion mdio is MDIOBUS_NO_CAP
+and therefore the c45 scan is *not* called until 1a136ca2e0
+net: mdio: scan bus based on bus capabilities for C22 and C45.
+Which is the behaviour I see.
+(I needed a close look at the conditions in the if statements
+that were removed then)
 
->
-> A test on the rainier ast2600 bmc machine:
-> 
-> # gpio-event-mon -n gpiochip0 -o 123 -r -f &
-> # cat /proc/interrupts  |grep gpio-event-mon
->  60:          0          0  1e780800.gpio 123 Edge      gpio-event-mon
-> 
-> 
-> 
-> 
-> > +       if (rc)
-> > +               return;
-> > +
-> > +       seq_printf(p, dev_name(gpio->dev));
-> > +}
-> > +
-> > +static const struct irq_chip aspeed_gpio_irq_chip = {
-> > +       .irq_ack = aspeed_gpio_irq_ack,
-> > +       .irq_mask = aspeed_gpio_irq_mask,
-> > +       .irq_unmask = aspeed_gpio_irq_unmask,
-> > +       .irq_set_type = aspeed_gpio_set_type,
-> > +       .irq_print_chip = aspeed_gpio_irq_print_chip,
-> > +       .flags = IRQCHIP_IMMUTABLE,
-> > +       GPIOCHIP_IRQ_RESOURCE_HELPERS,
-> > +};
-> > +
-> >  /*
-> >   * Any banks not specified in a struct aspeed_bank_props array are assumed to
-> >   * have the properties:
-> > @@ -1149,6 +1182,8 @@ static int __init aspeed_gpio_probe(struct platform_device *pdev)
-> >         if (IS_ERR(gpio->base))
-> >                 return PTR_ERR(gpio->base);
-> >
-> > +       gpio->dev = &pdev->dev;
-> > +
-> >         raw_spin_lock_init(&gpio->lock);
-> >
-> >         gpio_id = of_match_node(aspeed_gpio_of_table, pdev->dev.of_node);
-> > @@ -1208,12 +1243,9 @@ static int __init aspeed_gpio_probe(struct platform_device *pdev)
-> >
-> >                 gpio->irq = rc;
-> >                 girq = &gpio->chip.irq;
-> > -               girq->chip = &gpio->irqc;
-> > +               gpio_irq_chip_set_chip(girq, &aspeed_gpio_irq_chip);
-> >                 girq->chip->name = dev_name(&pdev->dev);
 
-And this assignment will probably explode if, as expected, 'chip' is
-const and cannot be written to.
+> The only part of a c45 scan which is not linear is
+> mv88e6xxx_g2_smi_phy_wait() which is implemented by
+> mv88e6xxx_wait_mask(). That loops reading a register waiting for a bit
+> to change. Maybe print out the value of i, and see if it is looping
+> more times for C45 than C22?
 
-I obviously didn't spot this when I first looked at these patches.
+Here the debug code
 
-	M.
+diff --git a/drivers/net/dsa/mv88e6xxx/chip.c b/drivers/net/dsa/mv88e6xxx/chip.c
+index 0a5d6c7bb1..23816cad41 100644
+--- a/drivers/net/dsa/mv88e6xxx/chip.c
++++ b/drivers/net/dsa/mv88e6xxx/chip.c
+@@ -90,6 +90,7 @@ int mv88e6xxx_wait_mask(struct mv88e6xxx_chip *chip, int addr, int reg,
+ 	u16 data;
+ 	int err;
+ 	int i;
++	static unsigned wait_count = 0, loop_count = 0;
+ 
+ 	/* There's no bus specific operation to wait for a mask. Even
+ 	 * if the initial poll takes longer than 50ms, always do at
+@@ -100,8 +101,13 @@ int mv88e6xxx_wait_mask(struct mv88e6xxx_chip *chip, int addr, int reg,
+ 		if (err)
+ 			return err;
+ 
+-		if ((data & mask) == val)
++		if ((data & mask) == val) {
++			wait_count++;
++			loop_count += i;
++			if (wait_count % 10 == 0)
++				dev_warn(chip->dev, "wait_count %u, loop_count %u\n", wait_count, loop_count);
+ 			return 0;
++		}
+ 
+ 		if (i < 2)
+ 			cpu_relax();
+diff --git a/drivers/net/phy/mdio_bus.c b/drivers/net/phy/mdio_bus.c
+index 5b2f48c09a..19fde21cae 100644
+--- a/drivers/net/phy/mdio_bus.c
++++ b/drivers/net/phy/mdio_bus.c
+@@ -569,6 +569,7 @@ static int mdiobus_scan_bus_c22(struct mii_bus *bus)
+ {
+ 	int i;
+ 
++	dev_warn(&bus->dev, "*** mdiobus_scan_bus_c22 call ***\n");
+ 	for (i = 0; i < PHY_MAX_ADDR; i++) {
+ 		if ((bus->phy_mask & BIT(i)) == 0) {
+ 			struct phy_device *phydev;
+@@ -578,6 +579,7 @@ static int mdiobus_scan_bus_c22(struct mii_bus *bus)
+ 				return PTR_ERR(phydev);
+ 		}
+ 	}
++	dev_warn(&bus->dev, "*** mdiobus_scan_bus_c22 return ***\n");
+ 	return 0;
+ }
+ 
+@@ -585,6 +587,7 @@ static int mdiobus_scan_bus_c45(struct mii_bus *bus)
+ {
+ 	int i;
+ 
++	dev_warn(&bus->dev, "*** mdiobus_scan_bus_c45 call ***\n");
+ 	for (i = 0; i < PHY_MAX_ADDR; i++) {
+ 		if ((bus->phy_mask & BIT(i)) == 0) {
+ 			struct phy_device *phydev;
+@@ -598,6 +601,7 @@ static int mdiobus_scan_bus_c45(struct mii_bus *bus)
+ 				return PTR_ERR(phydev);
+ 		}
+ 	}
++	dev_warn(&bus->dev, "*** mdiobus_scan_bus_c45 return ***\n");
+ 	return 0;
+ }
+ 
 
--- 
-Without deviation from the norm, progress is not possible.
+
+And here the trimmed results from boot @ 1a136ca2e0, plus debug code.
+
+It's not only the looping during the mv88e6xxx_wait_mask calls, but
+also the sheer amount of mv88e6xxx_wait_mask calls during the c45 scans.
+(c22: ~0.1 sec & ~150 calls, c45: 2.3-2.5 sec & ~4800 calls)
+
+
+[    0.195215] mdio_bus fixed-0: *** mdiobus_scan_bus_c22 call ***
+[    0.195221] mdio_bus fixed-0: *** mdiobus_scan_bus_c22 return ***
+[    0.195617] mdio_bus f1072004.mdio-mii: *** mdiobus_scan_bus_c22 call ***
+[    0.195623] mdio_bus f1072004.mdio-mii: *** mdiobus_scan_bus_c22 return ***
+[    0.202583] mv88e6085 f1072004.mdio-mii:10: switch 0x1760 detected: Marvell 88E6176, revision 1
+[    0.212708] mdio_bus mv88e6xxx-0: *** mdiobus_scan_bus_c22 call ***
+[    0.222200] mv88e6085 f1072004.mdio-mii:10: wait_count 10, loop_count 3
+........
+[    0.315724] mv88e6085 f1072004.mdio-mii:10: wait_count 150, loop_count 76
+[    0.315908] mdio_bus mv88e6xxx-0: *** mdiobus_scan_bus_c22 return ***
+[    0.315913] mdio_bus mv88e6xxx-0: *** mdiobus_scan_bus_c45 call ***
+[    0.321095] mv88e6085 f1072004.mdio-mii:10: wait_count 160, loop_count 83
+........
+[    2.610380] mv88e6085 f1072004.mdio-mii:10: wait_count 4980, loop_count 1571
+[    2.613258] mdio_bus mv88e6xxx-0: *** mdiobus_scan_bus_c45 return ***
+[    2.755785] mv88e6085 f1072004.mdio-mii:10: switch 0x1760 detected: Marvell 88E6176, revision 1
+[    2.766047] mdio_bus mv88e6xxx-1: *** mdiobus_scan_bus_c22 call ***
+[    2.766960] mv88e6085 f1072004.mdio-mii:10: wait_count 4990, loop_count 1574
+........
+[    2.867107] mv88e6085 f1072004.mdio-mii:10: wait_count 5130, loop_count 1645
+[    2.869938] mdio_bus mv88e6xxx-1: *** mdiobus_scan_bus_c22 return ***
+[    2.869943] mdio_bus mv88e6xxx-1: *** mdiobus_scan_bus_c45 call ***
+[    2.871556] mv88e6085 f1072004.mdio-mii:10: wait_count 5140, loop_count 1649
+........
+[    5.371710] mv88e6085 f1072004.mdio-mii:10: wait_count 9970, loop_count 4282
+[    5.373332] mdio_bus mv88e6xxx-1: *** mdiobus_scan_bus_c45 return ***
+
+
+
+
+Best regards, Klaus
