@@ -1,68 +1,113 @@
-From: Jonas Gorski <jonas.gorski@gmail.com>
-Date: Mon, 6 Mar 2023 21:00:44 +0100
-Subject: [PATCH V5 09/15] spi: Add stacked and parallel memories support
- in SPI core
-In-Reply-To: <20230306172109.595464-10-amit.kumar-mahapatra@amd.com>
-References: <20230306172109.595464-1-amit.kumar-mahapatra@amd.com> <20230306172109.595464-10-amit.kumar-mahapatra@amd.com>
-Message-ID: <CAOiHx=nmsAh3ADL3s0eZKpEZJqCB_POi=8YjfxrHYLEbjRfwHg@mail.gmail.com>
+From: Chanh Nguyen <chanh@amperemail.onmicrosoft.com>
+Date: Wed, 8 Mar 2023 14:42:49 +0700
+Subject: [PATCH v2] ARM: dts: aspeed: mtmitchell: Enable NCSI
+In-Reply-To: <CACPK8XesuUATxCVEGpus=ZHTkjS=L=gjRHC3V+=XLSofU-WSSw@mail.gmail.com>
+References: <20230228102820.18477-1-chanh@os.amperecomputing.com>
+ <CACPK8XesuUATxCVEGpus=ZHTkjS=L=gjRHC3V+=XLSofU-WSSw@mail.gmail.com>
+Message-ID: <298e8999-6faa-044c-43ef-552d107cff5f@amperemail.onmicrosoft.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi,
 
-On Mon, 6 Mar 2023 at 18:26, Amit Kumar Mahapatra
-<amit.kumar-mahapatra@amd.com> wrote:
->
-> For supporting multiple CS the SPI device need to be aware of all the CS
-> values. So, the "chip_select" member in the spi_device structure is now an
-> array that holds all the CS values.
->
-> spi_device structure now has a "cs_index_mask" member. This acts as an
-> index to the chip_select array. If nth bit of spi->cs_index_mask is set
-> then the driver would assert spi->chip_select[n].
->
-> In parallel mode all the chip selects are asserted/de-asserted
-> simultaneously and each byte of data is stored in both devices, the even
-> bits in one, the odd bits in the other. The split is automatically handled
-> by the GQSPI controller. The GQSPI controller supports a maximum of two
-> flashes connected in parallel mode. A "multi-cs-cap" flag is added in the
-> spi controntroller data, through ctlr->multi-cs-cap the spi core will make
-> sure that the controller is capable of handling multiple chip selects at
-> once.
->
-> For supporting multiple CS via GPIO the cs_gpiod member of the spi_device
-> structure is now an array that holds the gpio descriptor for each
-> chipselect.
->
-> Multi CS support using GPIO is not tested due to unavailability of
-> necessary hardware setup.
->
-> Signed-off-by: Amit Kumar Mahapatra <amit.kumar-mahapatra@amd.com>
-> ---
->  drivers/spi/spi.c       | 213 +++++++++++++++++++++++++++-------------
->  include/linux/spi/spi.h |  34 +++++--
->  2 files changed, 173 insertions(+), 74 deletions(-)
->
-> diff --git a/drivers/spi/spi.c b/drivers/spi/spi.c
-> index 5866bf5813a4..8ec7f58fa111 100644
-> --- a/drivers/spi/spi.c
-> +++ b/drivers/spi/spi.c
-> @@ -613,7 +613,8 @@ static int spi_dev_check(struct device *dev, void *data)
->         struct spi_device *new_spi = data;
->
->         if (spi->controller == new_spi->controller &&
-> -           spi_get_chipselect(spi, 0) == spi_get_chipselect(new_spi, 0))
-> +           spi_get_chipselect(spi, 0) == spi_get_chipselect(new_spi, 0) &&
-> +           spi_get_chipselect(spi, 1) == spi_get_chipselect(new_spi, 1))
->                 return -EBUSY;
 
-This will only reject new devices if both chip selects are identical,
-but not if they only share one, e.g. CS 1 + 2 vs 1 + 3, or 1 + 2 vs
-only 2, or if the order is different (1 + 2 vs 2 + 1 - haven't read
-the code too close to know if this is allowed/possible).
+On 01/03/2023 07:17, Joel Stanley wrote:
+> On Tue, 28 Feb 2023 at 10:28, Chanh Nguyen <chanh@os.amperecomputing.com> wrote:
+>>
+>> Support the mac3 (RGMII4) as an NC-SI stack instead of an MDIO PHY.
+>>
+>> The OCP slot #0 and OCP slot #1 use a common the BMC_NCSI signal,
+>> so we use only one of them at the same time. The OCP slot #0 will
+>> be enabled by PCA9539's setting by default.
+>>
+>> Also, enable the OCP Auxiliary Power during booting.
+>>
+>> Signed-off-by: Chanh Nguyen <chanh@os.amperecomputing.com>
+> 
+> LGTM. I'll apply it once we have a -rc1.
+> 
+> Reviewed-by: Joel Stanley <joel@jms.id.au>
+> 
 
-Regards,
-Jonas
+Thank Joel very much!
+
+>> ---
+>> Changes in v2:
+>>     - Change PCA9539APW node name.                     [Krzysztof]
+>> ---
+>>   .../boot/dts/aspeed-bmc-ampere-mtmitchell.dts | 37 ++++++++++++++++++-
+>>   1 file changed, 36 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/arch/arm/boot/dts/aspeed-bmc-ampere-mtmitchell.dts b/arch/arm/boot/dts/aspeed-bmc-ampere-mtmitchell.dts
+>> index 4b91600eaf62..1e0e88465254 100644
+>> --- a/arch/arm/boot/dts/aspeed-bmc-ampere-mtmitchell.dts
+>> +++ b/arch/arm/boot/dts/aspeed-bmc-ampere-mtmitchell.dts
+>> @@ -251,6 +251,14 @@
+>>          pinctrl-0 = <&pinctrl_rgmii1_default>;
+>>   };
+>>
+>> +&mac3 {
+>> +       status = "okay";
+>> +       pinctrl-names = "default";
+>> +       pinctrl-0 = <&pinctrl_rmii4_default>;
+>> +       clock-names = "MACCLK", "RCLK";
+>> +       use-ncsi;
+>> +};
+>> +
+>>   &fmc {
+>>          status = "okay";
+>>          flash at 0 {
+>> @@ -439,6 +447,26 @@
+>>          status = "okay";
+>>   };
+>>
+>> +&i2c8 {
+>> +       status = "okay";
+>> +
+>> +       gpio at 77 {
+>> +               compatible = "nxp,pca9539";
+>> +               reg = <0x77>;
+>> +               gpio-controller;
+>> +               #address-cells = <1>;
+>> +               #size-cells = <0>;
+>> +               #gpio-cells = <2>;
+>> +
+>> +               bmc-ocp0-en-hog {
+>> +                       gpio-hog;
+>> +                       gpios = <7 GPIO_ACTIVE_LOW>;
+>> +                       output-high;
+>> +                       line-name = "bmc-ocp0-en-n";
+>> +               };
+>> +       };
+>> +};
+>> +
+>>   &i2c9 {
+>>          status = "okay";
+>>   };
+>> @@ -530,13 +558,20 @@
+>>          /*V0-V7*/       "s0-hightemp-n","s0-fault-alert","s0-sys-auth-failure-n",
+>>                          "host0-reboot-ack-n","host0-ready","host0-shd-req-n",
+>>                          "host0-shd-ack-n","s0-overtemp-n",
+>> -       /*W0-W7*/       "ocp-aux-pwren","ocp-main-pwren","ocp-pgood","",
+>> +       /*W0-W7*/       "","ocp-main-pwren","ocp-pgood","",
+>>                          "bmc-ok","bmc-ready","spi0-program-sel","spi0-backup-sel",
+>>          /*X0-X7*/       "i2c-backup-sel","s1-fault-alert","s1-fw-boot-ok",
+>>                          "s1-hightemp-n","s0-spi-auth-fail-n","s1-sys-auth-failure-n",
+>>                          "s1-overtemp-n","s1-spi-auth-fail-n",
+>>          /*Y0-Y7*/       "","","","","","","","host0-special-boot",
+>>          /*Z0-Z7*/       "reset-button","ps0-pgood","ps1-pgood","","","","","";
+>> +
+>> +       ocp-aux-pwren-hog {
+>> +               gpio-hog;
+>> +               gpios = <ASPEED_GPIO(W, 0) GPIO_ACTIVE_HIGH>;
+>> +               output-high;
+>> +               line-name = "ocp-aux-pwren";
+>> +       };
+>>   };
+>>
+>>   &gpio1 {
+>> --
+>> 2.17.1
+>>
