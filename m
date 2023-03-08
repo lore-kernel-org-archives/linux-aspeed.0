@@ -1,113 +1,42 @@
-From: Chanh Nguyen <chanh@amperemail.onmicrosoft.com>
-Date: Wed, 8 Mar 2023 14:42:49 +0700
-Subject: [PATCH v2] ARM: dts: aspeed: mtmitchell: Enable NCSI
-In-Reply-To: <CACPK8XesuUATxCVEGpus=ZHTkjS=L=gjRHC3V+=XLSofU-WSSw@mail.gmail.com>
-References: <20230228102820.18477-1-chanh@os.amperecomputing.com>
- <CACPK8XesuUATxCVEGpus=ZHTkjS=L=gjRHC3V+=XLSofU-WSSw@mail.gmail.com>
-Message-ID: <298e8999-6faa-044c-43ef-552d107cff5f@amperemail.onmicrosoft.com>
+From: Linus Walleij <linus.walleij@linaro.org>
+Date: Wed, 8 Mar 2023 13:13:25 +0100
+Subject: [PATCH v2 03/16] gpio: aspeed: Convert to immutable irq_chip
+In-Reply-To: <CACPK8Xc7ekzM9oeR7+fYuK8RfZ4jA8gpH=nUJ-OTp0XZoKwzHQ@mail.gmail.com>
+References: <20230215-immutable-chips-v2-0-d6b0e3f2d991@linaro.org>
+ <20230215-immutable-chips-v2-3-d6b0e3f2d991@linaro.org> <CACPK8Xc7ekzM9oeR7+fYuK8RfZ4jA8gpH=nUJ-OTp0XZoKwzHQ@mail.gmail.com>
+Message-ID: <CACRpkdZmemtVHkdo7f8G4wTHEayk1moHSMHEyvomebPV_h8AHA@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+On Wed, Mar 8, 2023 at 2:22 AM Joel Stanley <joel@jms.id.au> wrote:
+> On Tue, 7 Mar 2023 at 13:04, Linus Walleij <linus.walleij@linaro.org> wrote:
 
+> > +static void aspeed_gpio_irq_print_chip(struct irq_data *d, struct seq_file *p)
+> > +{
+> > +       const struct aspeed_gpio_bank *bank;
+> > +       struct aspeed_gpio *gpio;
+> > +       u32 bit;
+> > +       int rc, offset;
+> > +
+> > +       rc = irqd_to_aspeed_gpio_data(d, &gpio, &bank, &bit, &offset);
+>
+> Why do we call this instead of using irq_data_get_irq_chip_data?
 
-On 01/03/2023 07:17, Joel Stanley wrote:
-> On Tue, 28 Feb 2023 at 10:28, Chanh Nguyen <chanh@os.amperecomputing.com> wrote:
->>
->> Support the mac3 (RGMII4) as an NC-SI stack instead of an MDIO PHY.
->>
->> The OCP slot #0 and OCP slot #1 use a common the BMC_NCSI signal,
->> so we use only one of them at the same time. The OCP slot #0 will
->> be enabled by PCA9539's setting by default.
->>
->> Also, enable the OCP Auxiliary Power during booting.
->>
->> Signed-off-by: Chanh Nguyen <chanh@os.amperecomputing.com>
-> 
-> LGTM. I'll apply it once we have a -rc1.
-> 
-> Reviewed-by: Joel Stanley <joel@jms.id.au>
-> 
+Because this is what the other irqchip callbacks do and I do not
+dare to do anything inventive or different as I can't really test
+the patches.
 
-Thank Joel very much!
+> Actually, the callback appears to do the same as the default
+> implementation, so we could just drop it?
 
->> ---
->> Changes in v2:
->>     - Change PCA9539APW node name.                     [Krzysztof]
->> ---
->>   .../boot/dts/aspeed-bmc-ampere-mtmitchell.dts | 37 ++++++++++++++++++-
->>   1 file changed, 36 insertions(+), 1 deletion(-)
->>
->> diff --git a/arch/arm/boot/dts/aspeed-bmc-ampere-mtmitchell.dts b/arch/arm/boot/dts/aspeed-bmc-ampere-mtmitchell.dts
->> index 4b91600eaf62..1e0e88465254 100644
->> --- a/arch/arm/boot/dts/aspeed-bmc-ampere-mtmitchell.dts
->> +++ b/arch/arm/boot/dts/aspeed-bmc-ampere-mtmitchell.dts
->> @@ -251,6 +251,14 @@
->>          pinctrl-0 = <&pinctrl_rgmii1_default>;
->>   };
->>
->> +&mac3 {
->> +       status = "okay";
->> +       pinctrl-names = "default";
->> +       pinctrl-0 = <&pinctrl_rmii4_default>;
->> +       clock-names = "MACCLK", "RCLK";
->> +       use-ncsi;
->> +};
->> +
->>   &fmc {
->>          status = "okay";
->>          flash at 0 {
->> @@ -439,6 +447,26 @@
->>          status = "okay";
->>   };
->>
->> +&i2c8 {
->> +       status = "okay";
->> +
->> +       gpio at 77 {
->> +               compatible = "nxp,pca9539";
->> +               reg = <0x77>;
->> +               gpio-controller;
->> +               #address-cells = <1>;
->> +               #size-cells = <0>;
->> +               #gpio-cells = <2>;
->> +
->> +               bmc-ocp0-en-hog {
->> +                       gpio-hog;
->> +                       gpios = <7 GPIO_ACTIVE_LOW>;
->> +                       output-high;
->> +                       line-name = "bmc-ocp0-en-n";
->> +               };
->> +       };
->> +};
->> +
->>   &i2c9 {
->>          status = "okay";
->>   };
->> @@ -530,13 +558,20 @@
->>          /*V0-V7*/       "s0-hightemp-n","s0-fault-alert","s0-sys-auth-failure-n",
->>                          "host0-reboot-ack-n","host0-ready","host0-shd-req-n",
->>                          "host0-shd-ack-n","s0-overtemp-n",
->> -       /*W0-W7*/       "ocp-aux-pwren","ocp-main-pwren","ocp-pgood","",
->> +       /*W0-W7*/       "","ocp-main-pwren","ocp-pgood","",
->>                          "bmc-ok","bmc-ready","spi0-program-sel","spi0-backup-sel",
->>          /*X0-X7*/       "i2c-backup-sel","s1-fault-alert","s1-fw-boot-ok",
->>                          "s1-hightemp-n","s0-spi-auth-fail-n","s1-sys-auth-failure-n",
->>                          "s1-overtemp-n","s1-spi-auth-fail-n",
->>          /*Y0-Y7*/       "","","","","","","","host0-special-boot",
->>          /*Z0-Z7*/       "reset-button","ps0-pgood","ps1-pgood","","","","","";
->> +
->> +       ocp-aux-pwren-hog {
->> +               gpio-hog;
->> +               gpios = <ASPEED_GPIO(W, 0) GPIO_ACTIVE_HIGH>;
->> +               output-high;
->> +               line-name = "ocp-aux-pwren";
->> +       };
->>   };
->>
->>   &gpio1 {
->> --
->> 2.17.1
->>
+So is chip->name always set to dev_name(dev) if we don't define
+it? I had no idea.
+
+I can respon with this change, the optional IRQ should be a separate
+patch I think?
+
+Yours,
+Linus Walleij
