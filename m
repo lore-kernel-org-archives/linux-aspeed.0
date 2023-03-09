@@ -1,9 +1,9 @@
 From: Linus Walleij <linus.walleij@linaro.org>
-Date: Thu, 09 Mar 2023 08:45:58 +0100
-Subject: [PATCH v3 10/17] gpio: idt3243x: Convert to immutable irq_chip
+Date: Thu, 09 Mar 2023 08:45:55 +0100
+Subject: [PATCH v3 07/17] gpio: cadence: Convert to immutable irq_chip
 In-Reply-To: <20230215-immutable-chips-v3-0-972542092a77@linaro.org>
 References: <20230215-immutable-chips-v3-0-972542092a77@linaro.org>
-Message-ID: <20230215-immutable-chips-v3-10-972542092a77@linaro.org>
+Message-ID: <20230215-immutable-chips-v3-7-972542092a77@linaro.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -14,60 +14,57 @@ Convert the driver to immutable irq-chip with a bit of
 intuition.
 
 Cc: Marc Zyngier <maz@kernel.org>
-Tested-by: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
 Acked-by: Marc Zyngier <maz@kernel.org>
 Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
 ---
- drivers/gpio/gpio-idt3243x.c | 11 ++++++++---
- 1 file changed, 8 insertions(+), 3 deletions(-)
+ drivers/gpio/gpio-cadence.c | 10 +++++++---
+ 1 file changed, 7 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/gpio/gpio-idt3243x.c b/drivers/gpio/gpio-idt3243x.c
-index 1cafdf46f875..00f547d26254 100644
---- a/drivers/gpio/gpio-idt3243x.c
-+++ b/drivers/gpio/gpio-idt3243x.c
-@@ -92,6 +92,8 @@ static void idt_gpio_mask(struct irq_data *d)
- 	writel(ctrl->mask_cache, ctrl->pic + IDT_PIC_IRQ_MASK);
+diff --git a/drivers/gpio/gpio-cadence.c b/drivers/gpio/gpio-cadence.c
+index 137aea49ba02..3720b90cad10 100644
+--- a/drivers/gpio/gpio-cadence.c
++++ b/drivers/gpio/gpio-cadence.c
+@@ -70,6 +70,7 @@ static void cdns_gpio_irq_mask(struct irq_data *d)
+ 	struct cdns_gpio_chip *cgpio = gpiochip_get_data(chip);
  
- 	raw_spin_unlock_irqrestore(&gc->bgpio_lock, flags);
-+
-+	gpiochip_disable_irq(gc, irqd_to_hwirq(d));
+ 	iowrite32(BIT(d->hwirq), cgpio->regs + CDNS_GPIO_IRQ_DIS);
++	gpiochip_disable_irq(chip, irqd_to_hwirq(d));
  }
  
- static void idt_gpio_unmask(struct irq_data *d)
-@@ -100,6 +102,7 @@ static void idt_gpio_unmask(struct irq_data *d)
- 	struct idt_gpio_ctrl *ctrl = gpiochip_get_data(gc);
- 	unsigned long flags;
+ static void cdns_gpio_irq_unmask(struct irq_data *d)
+@@ -77,6 +78,7 @@ static void cdns_gpio_irq_unmask(struct irq_data *d)
+ 	struct gpio_chip *chip = irq_data_get_irq_chip_data(d);
+ 	struct cdns_gpio_chip *cgpio = gpiochip_get_data(chip);
  
-+	gpiochip_enable_irq(gc, irqd_to_hwirq(d));
- 	raw_spin_lock_irqsave(&gc->bgpio_lock, flags);
- 
- 	ctrl->mask_cache &= ~BIT(d->hwirq);
-@@ -119,12 +122,14 @@ static int idt_gpio_irq_init_hw(struct gpio_chip *gc)
- 	return 0;
++	gpiochip_enable_irq(chip, irqd_to_hwirq(d));
+ 	iowrite32(BIT(d->hwirq), cgpio->regs + CDNS_GPIO_IRQ_EN);
  }
  
--static struct irq_chip idt_gpio_irqchip = {
-+static const struct irq_chip idt_gpio_irqchip = {
- 	.name = "IDTGPIO",
- 	.irq_mask = idt_gpio_mask,
- 	.irq_ack = idt_gpio_ack,
- 	.irq_unmask = idt_gpio_unmask,
--	.irq_set_type = idt_gpio_irq_set_type
-+	.irq_set_type = idt_gpio_irq_set_type,
-+	.flags = IRQCHIP_IMMUTABLE,
+@@ -138,11 +140,13 @@ static void cdns_gpio_irq_handler(struct irq_desc *desc)
+ 	chained_irq_exit(irqchip, desc);
+ }
+ 
+-static struct irq_chip cdns_gpio_irqchip = {
++static const struct irq_chip cdns_gpio_irqchip = {
+ 	.name		= "cdns-gpio",
+ 	.irq_mask	= cdns_gpio_irq_mask,
+ 	.irq_unmask	= cdns_gpio_irq_unmask,
+-	.irq_set_type	= cdns_gpio_irq_set_type
++	.irq_set_type	= cdns_gpio_irq_set_type,
++	.flags		= IRQCHIP_IMMUTABLE,
 +	GPIOCHIP_IRQ_RESOURCE_HELPERS,
  };
  
- static int idt_gpio_probe(struct platform_device *pdev)
-@@ -168,7 +173,7 @@ static int idt_gpio_probe(struct platform_device *pdev)
- 			return parent_irq;
+ static int cdns_gpio_probe(struct platform_device *pdev)
+@@ -222,7 +226,7 @@ static int cdns_gpio_probe(struct platform_device *pdev)
+ 		struct gpio_irq_chip *girq;
  
- 		girq = &ctrl->gc.irq;
--		girq->chip = &idt_gpio_irqchip;
-+		gpio_irq_chip_set_chip(girq, &idt_gpio_irqchip);
- 		girq->init_hw = idt_gpio_irq_init_hw;
- 		girq->parent_handler = idt_gpio_dispatch;
+ 		girq = &cgpio->gc.irq;
+-		girq->chip = &cdns_gpio_irqchip;
++		gpio_irq_chip_set_chip(girq, &cdns_gpio_irqchip);
+ 		girq->parent_handler = cdns_gpio_irq_handler;
  		girq->num_parents = 1;
+ 		girq->parents = devm_kcalloc(&pdev->dev, 1,
 
 -- 
 2.34.1
