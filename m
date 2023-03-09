@@ -1,9 +1,9 @@
 From: Linus Walleij <linus.walleij@linaro.org>
-Date: Thu, 09 Mar 2023 08:45:54 +0100
-Subject: [PATCH v3 06/17] gpio: ath79: Convert to immutable irq_chip
+Date: Thu, 09 Mar 2023 08:45:58 +0100
+Subject: [PATCH v3 10/17] gpio: idt3243x: Convert to immutable irq_chip
 In-Reply-To: <20230215-immutable-chips-v3-0-972542092a77@linaro.org>
 References: <20230215-immutable-chips-v3-0-972542092a77@linaro.org>
-Message-ID: <20230215-immutable-chips-v3-6-972542092a77@linaro.org>
+Message-ID: <20230215-immutable-chips-v3-10-972542092a77@linaro.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -14,58 +14,60 @@ Convert the driver to immutable irq-chip with a bit of
 intuition.
 
 Cc: Marc Zyngier <maz@kernel.org>
+Tested-by: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
 Acked-by: Marc Zyngier <maz@kernel.org>
 Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
 ---
- drivers/gpio/gpio-ath79.c | 8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
+ drivers/gpio/gpio-idt3243x.c | 11 ++++++++---
+ 1 file changed, 8 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/gpio/gpio-ath79.c b/drivers/gpio/gpio-ath79.c
-index 3958c6d97639..aa0a954b8392 100644
---- a/drivers/gpio/gpio-ath79.c
-+++ b/drivers/gpio/gpio-ath79.c
-@@ -71,6 +71,7 @@ static void ath79_gpio_irq_unmask(struct irq_data *data)
- 	u32 mask = BIT(irqd_to_hwirq(data));
- 	unsigned long flags;
+diff --git a/drivers/gpio/gpio-idt3243x.c b/drivers/gpio/gpio-idt3243x.c
+index 1cafdf46f875..00f547d26254 100644
+--- a/drivers/gpio/gpio-idt3243x.c
++++ b/drivers/gpio/gpio-idt3243x.c
+@@ -92,6 +92,8 @@ static void idt_gpio_mask(struct irq_data *d)
+ 	writel(ctrl->mask_cache, ctrl->pic + IDT_PIC_IRQ_MASK);
  
-+	gpiochip_enable_irq(&ctrl->gc, irqd_to_hwirq(data));
- 	raw_spin_lock_irqsave(&ctrl->lock, flags);
- 	ath79_gpio_update_bits(ctrl, AR71XX_GPIO_REG_INT_MASK, mask, mask);
- 	raw_spin_unlock_irqrestore(&ctrl->lock, flags);
-@@ -85,6 +86,7 @@ static void ath79_gpio_irq_mask(struct irq_data *data)
- 	raw_spin_lock_irqsave(&ctrl->lock, flags);
- 	ath79_gpio_update_bits(ctrl, AR71XX_GPIO_REG_INT_MASK, mask, 0);
- 	raw_spin_unlock_irqrestore(&ctrl->lock, flags);
-+	gpiochip_disable_irq(&ctrl->gc, irqd_to_hwirq(data));
+ 	raw_spin_unlock_irqrestore(&gc->bgpio_lock, flags);
++
++	gpiochip_disable_irq(gc, irqd_to_hwirq(d));
  }
  
- static void ath79_gpio_irq_enable(struct irq_data *data)
-@@ -169,13 +171,15 @@ static int ath79_gpio_irq_set_type(struct irq_data *data,
+ static void idt_gpio_unmask(struct irq_data *d)
+@@ -100,6 +102,7 @@ static void idt_gpio_unmask(struct irq_data *d)
+ 	struct idt_gpio_ctrl *ctrl = gpiochip_get_data(gc);
+ 	unsigned long flags;
+ 
++	gpiochip_enable_irq(gc, irqd_to_hwirq(d));
+ 	raw_spin_lock_irqsave(&gc->bgpio_lock, flags);
+ 
+ 	ctrl->mask_cache &= ~BIT(d->hwirq);
+@@ -119,12 +122,14 @@ static int idt_gpio_irq_init_hw(struct gpio_chip *gc)
  	return 0;
  }
  
--static struct irq_chip ath79_gpio_irqchip = {
-+static const struct irq_chip ath79_gpio_irqchip = {
- 	.name = "gpio-ath79",
- 	.irq_enable = ath79_gpio_irq_enable,
- 	.irq_disable = ath79_gpio_irq_disable,
- 	.irq_mask = ath79_gpio_irq_mask,
- 	.irq_unmask = ath79_gpio_irq_unmask,
- 	.irq_set_type = ath79_gpio_irq_set_type,
+-static struct irq_chip idt_gpio_irqchip = {
++static const struct irq_chip idt_gpio_irqchip = {
+ 	.name = "IDTGPIO",
+ 	.irq_mask = idt_gpio_mask,
+ 	.irq_ack = idt_gpio_ack,
+ 	.irq_unmask = idt_gpio_unmask,
+-	.irq_set_type = idt_gpio_irq_set_type
++	.irq_set_type = idt_gpio_irq_set_type,
 +	.flags = IRQCHIP_IMMUTABLE,
 +	GPIOCHIP_IRQ_RESOURCE_HELPERS,
  };
  
- static void ath79_gpio_irq_handler(struct irq_desc *desc)
-@@ -274,7 +278,7 @@ static int ath79_gpio_probe(struct platform_device *pdev)
- 	/* Optional interrupt setup */
- 	if (!np || of_property_read_bool(np, "interrupt-controller")) {
+ static int idt_gpio_probe(struct platform_device *pdev)
+@@ -168,7 +173,7 @@ static int idt_gpio_probe(struct platform_device *pdev)
+ 			return parent_irq;
+ 
  		girq = &ctrl->gc.irq;
--		girq->chip = &ath79_gpio_irqchip;
-+		gpio_irq_chip_set_chip(girq, &ath79_gpio_irqchip);
- 		girq->parent_handler = ath79_gpio_irq_handler;
+-		girq->chip = &idt_gpio_irqchip;
++		gpio_irq_chip_set_chip(girq, &idt_gpio_irqchip);
+ 		girq->init_hw = idt_gpio_irq_init_hw;
+ 		girq->parent_handler = idt_gpio_dispatch;
  		girq->num_parents = 1;
- 		girq->parents = devm_kcalloc(dev, 1, sizeof(*girq->parents),
 
 -- 
 2.34.1
