@@ -1,10 +1,10 @@
 From: Javier Martinez Canillas <javierm@redhat.com>
-Date: Thu, 09 Mar 2023 12:17:47 +0100
-Subject: [PATCH 02/22] arm/hdlcd: Use GEM DMA fbdev emulation
-In-Reply-To: <20230301153101.4282-3-tzimmermann@suse.de>
+Date: Thu, 09 Mar 2023 12:18:09 +0100
+Subject: [PATCH 03/22] arm/malidp: Use GEM DMA fbdev emulation
+In-Reply-To: <20230301153101.4282-4-tzimmermann@suse.de>
 References: <20230301153101.4282-1-tzimmermann@suse.de>
- <20230301153101.4282-3-tzimmermann@suse.de>
-Message-ID: <87y1o6cgx0.fsf@minerva.mail-host-address-is-not-set>
+ <20230301153101.4282-4-tzimmermann@suse.de>
+Message-ID: <87v8jacgwe.fsf@minerva.mail-host-address-is-not-set>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
