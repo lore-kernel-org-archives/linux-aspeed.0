@@ -1,9 +1,9 @@
 From: Linus Walleij <linus.walleij@linaro.org>
-Date: Thu, 09 Mar 2023 08:45:53 +0100
-Subject: [PATCH v3 05/17] gpio: aspeed-sgpio: Convert to immutable irq_chip
+Date: Thu, 09 Mar 2023 08:45:54 +0100
+Subject: [PATCH v3 06/17] gpio: ath79: Convert to immutable irq_chip
 In-Reply-To: <20230215-immutable-chips-v3-0-972542092a77@linaro.org>
 References: <20230215-immutable-chips-v3-0-972542092a77@linaro.org>
-Message-ID: <20230215-immutable-chips-v3-5-972542092a77@linaro.org>
+Message-ID: <20230215-immutable-chips-v3-6-972542092a77@linaro.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -17,107 +17,55 @@ Cc: Marc Zyngier <maz@kernel.org>
 Acked-by: Marc Zyngier <maz@kernel.org>
 Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
 ---
- drivers/gpio/gpio-aspeed-sgpio.c | 44 ++++++++++++++++++++++++++++++++--------
- 1 file changed, 36 insertions(+), 8 deletions(-)
+ drivers/gpio/gpio-ath79.c | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/gpio/gpio-aspeed-sgpio.c b/drivers/gpio/gpio-aspeed-sgpio.c
-index 454cefbeecf0..3c1c0fc21fc5 100644
---- a/drivers/gpio/gpio-aspeed-sgpio.c
-+++ b/drivers/gpio/gpio-aspeed-sgpio.c
-@@ -14,6 +14,7 @@
- #include <linux/kernel.h>
- #include <linux/module.h>
- #include <linux/platform_device.h>
-+#include <linux/seq_file.h>
- #include <linux/spinlock.h>
- #include <linux/string.h>
+diff --git a/drivers/gpio/gpio-ath79.c b/drivers/gpio/gpio-ath79.c
+index 3958c6d97639..aa0a954b8392 100644
+--- a/drivers/gpio/gpio-ath79.c
++++ b/drivers/gpio/gpio-ath79.c
+@@ -71,6 +71,7 @@ static void ath79_gpio_irq_unmask(struct irq_data *data)
+ 	u32 mask = BIT(irqd_to_hwirq(data));
+ 	unsigned long flags;
  
-@@ -29,7 +30,7 @@ struct aspeed_sgpio_pdata {
- 
- struct aspeed_sgpio {
- 	struct gpio_chip chip;
--	struct irq_chip intc;
-+	struct device *dev;
- 	struct clk *pclk;
- 	raw_spinlock_t lock;
- 	void __iomem *base;
-@@ -296,6 +297,10 @@ static void aspeed_sgpio_irq_set_mask(struct irq_data *d, bool set)
- 	irqd_to_aspeed_sgpio_data(d, &gpio, &bank, &bit, &offset);
- 	addr = bank_reg(gpio, bank, reg_irq_enable);
- 
-+	/* Unmasking the IRQ */
-+	if (set)
-+		gpiochip_enable_irq(&gpio->chip, irqd_to_hwirq(d));
-+
- 	raw_spin_lock_irqsave(&gpio->lock, flags);
- 
- 	reg = ioread32(addr);
-@@ -307,6 +312,12 @@ static void aspeed_sgpio_irq_set_mask(struct irq_data *d, bool set)
- 	iowrite32(reg, addr);
- 
- 	raw_spin_unlock_irqrestore(&gpio->lock, flags);
-+
-+	/* Masking the IRQ */
-+	if (!set)
-+		gpiochip_disable_irq(&gpio->chip, irqd_to_hwirq(d));
-+
-+
++	gpiochip_enable_irq(&ctrl->gc, irqd_to_hwirq(data));
+ 	raw_spin_lock_irqsave(&ctrl->lock, flags);
+ 	ath79_gpio_update_bits(ctrl, AR71XX_GPIO_REG_INT_MASK, mask, mask);
+ 	raw_spin_unlock_irqrestore(&ctrl->lock, flags);
+@@ -85,6 +86,7 @@ static void ath79_gpio_irq_mask(struct irq_data *data)
+ 	raw_spin_lock_irqsave(&ctrl->lock, flags);
+ 	ath79_gpio_update_bits(ctrl, AR71XX_GPIO_REG_INT_MASK, mask, 0);
+ 	raw_spin_unlock_irqrestore(&ctrl->lock, flags);
++	gpiochip_disable_irq(&ctrl->gc, irqd_to_hwirq(data));
  }
  
- static void aspeed_sgpio_irq_mask(struct irq_data *d)
-@@ -401,6 +412,27 @@ static void aspeed_sgpio_irq_handler(struct irq_desc *desc)
- 	chained_irq_exit(ic, desc);
+ static void ath79_gpio_irq_enable(struct irq_data *data)
+@@ -169,13 +171,15 @@ static int ath79_gpio_irq_set_type(struct irq_data *data,
+ 	return 0;
  }
  
-+static void aspeed_sgpio_irq_print_chip(struct irq_data *d, struct seq_file *p)
-+{
-+	const struct aspeed_sgpio_bank *bank;
-+	struct aspeed_sgpio *gpio;
-+	u32 bit;
-+	int offset;
-+
-+	irqd_to_aspeed_sgpio_data(d, &gpio, &bank, &bit, &offset);
-+	seq_printf(p, dev_name(gpio->dev));
-+}
-+
-+static const struct irq_chip aspeed_sgpio_irq_chip = {
-+	.irq_ack = aspeed_sgpio_irq_ack,
-+	.irq_mask = aspeed_sgpio_irq_mask,
-+	.irq_unmask = aspeed_sgpio_irq_unmask,
-+	.irq_set_type = aspeed_sgpio_set_type,
-+	.irq_print_chip = aspeed_sgpio_irq_print_chip,
+-static struct irq_chip ath79_gpio_irqchip = {
++static const struct irq_chip ath79_gpio_irqchip = {
+ 	.name = "gpio-ath79",
+ 	.irq_enable = ath79_gpio_irq_enable,
+ 	.irq_disable = ath79_gpio_irq_disable,
+ 	.irq_mask = ath79_gpio_irq_mask,
+ 	.irq_unmask = ath79_gpio_irq_unmask,
+ 	.irq_set_type = ath79_gpio_irq_set_type,
 +	.flags = IRQCHIP_IMMUTABLE,
 +	GPIOCHIP_IRQ_RESOURCE_HELPERS,
-+};
-+
- static int aspeed_sgpio_setup_irqs(struct aspeed_sgpio *gpio,
- 				   struct platform_device *pdev)
- {
-@@ -423,14 +455,8 @@ static int aspeed_sgpio_setup_irqs(struct aspeed_sgpio *gpio,
- 		iowrite32(0xffffffff, bank_reg(gpio, bank, reg_irq_status));
- 	}
+ };
  
--	gpio->intc.name = dev_name(&pdev->dev);
--	gpio->intc.irq_ack = aspeed_sgpio_irq_ack;
--	gpio->intc.irq_mask = aspeed_sgpio_irq_mask;
--	gpio->intc.irq_unmask = aspeed_sgpio_irq_unmask;
--	gpio->intc.irq_set_type = aspeed_sgpio_set_type;
--
- 	irq = &gpio->chip.irq;
--	irq->chip = &gpio->intc;
-+	gpio_irq_chip_set_chip(irq, &aspeed_sgpio_irq_chip);
- 	irq->init_valid_mask = aspeed_sgpio_irq_init_valid_mask;
- 	irq->handler = handle_bad_irq;
- 	irq->default_type = IRQ_TYPE_NONE;
-@@ -524,6 +550,8 @@ static int __init aspeed_sgpio_probe(struct platform_device *pdev)
- 	if (IS_ERR(gpio->base))
- 		return PTR_ERR(gpio->base);
- 
-+	gpio->dev = &pdev->dev;
-+
- 	pdata = device_get_match_data(&pdev->dev);
- 	if (!pdata)
- 		return -EINVAL;
+ static void ath79_gpio_irq_handler(struct irq_desc *desc)
+@@ -274,7 +278,7 @@ static int ath79_gpio_probe(struct platform_device *pdev)
+ 	/* Optional interrupt setup */
+ 	if (!np || of_property_read_bool(np, "interrupt-controller")) {
+ 		girq = &ctrl->gc.irq;
+-		girq->chip = &ath79_gpio_irqchip;
++		gpio_irq_chip_set_chip(girq, &ath79_gpio_irqchip);
+ 		girq->parent_handler = ath79_gpio_irq_handler;
+ 		girq->num_parents = 1;
+ 		girq->parents = devm_kcalloc(dev, 1, sizeof(*girq->parents),
 
 -- 
 2.34.1
