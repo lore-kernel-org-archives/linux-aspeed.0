@@ -1,9 +1,9 @@
 From: Linus Walleij <linus.walleij@linaro.org>
-Date: Thu, 09 Mar 2023 08:46:04 +0100
-Subject: [PATCH v3 16/17] gpio: pci-idio-16: Convert to immutable irq_chip
+Date: Thu, 09 Mar 2023 08:46:05 +0100
+Subject: [PATCH v3 17/17] gpio: pcie-idio-24: Convert to immutable irq_chip
 In-Reply-To: <20230215-immutable-chips-v3-0-972542092a77@linaro.org>
 References: <20230215-immutable-chips-v3-0-972542092a77@linaro.org>
-Message-ID: <20230215-immutable-chips-v3-16-972542092a77@linaro.org>
+Message-ID: <20230215-immutable-chips-v3-17-972542092a77@linaro.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -18,54 +18,54 @@ Acked-by: William Breathitt Gray <william.gray@linaro.org>
 Acked-by: Marc Zyngier <maz@kernel.org>
 Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
 ---
- drivers/gpio/gpio-pci-idio-16.c | 12 +++++++++---
+ drivers/gpio/gpio-pcie-idio-24.c | 12 +++++++++---
  1 file changed, 9 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/gpio/gpio-pci-idio-16.c b/drivers/gpio/gpio-pci-idio-16.c
-index a86ce748384b..6726c32e31e6 100644
---- a/drivers/gpio/gpio-pci-idio-16.c
-+++ b/drivers/gpio/gpio-pci-idio-16.c
-@@ -107,6 +107,8 @@ static void idio_16_irq_mask(struct irq_data *data)
- 
- 		raw_spin_unlock_irqrestore(&idio16gpio->lock, flags);
+diff --git a/drivers/gpio/gpio-pcie-idio-24.c b/drivers/gpio/gpio-pcie-idio-24.c
+index 8a9b98fa418f..ac42150f4009 100644
+--- a/drivers/gpio/gpio-pcie-idio-24.c
++++ b/drivers/gpio/gpio-pcie-idio-24.c
+@@ -396,6 +396,8 @@ static void idio_24_irq_mask(struct irq_data *data)
  	}
+ 
+ 	raw_spin_unlock_irqrestore(&idio24gpio->lock, flags);
 +
 +	gpiochip_disable_irq(chip, irqd_to_hwirq(data));
  }
  
- static void idio_16_irq_unmask(struct irq_data *data)
-@@ -117,6 +119,8 @@ static void idio_16_irq_unmask(struct irq_data *data)
- 	const unsigned long prev_irq_mask = idio16gpio->irq_mask;
- 	unsigned long flags;
+ static void idio_24_irq_unmask(struct irq_data *data)
+@@ -408,6 +410,8 @@ static void idio_24_irq_unmask(struct irq_data *data)
+ 	const unsigned long bank_offset = bit_offset / 8;
+ 	unsigned char cos_enable_state;
  
 +	gpiochip_enable_irq(chip, irqd_to_hwirq(data));
 +
- 	idio16gpio->irq_mask |= mask;
+ 	raw_spin_lock_irqsave(&idio24gpio->lock, flags);
  
- 	if (!prev_irq_mask) {
-@@ -138,12 +142,14 @@ static int idio_16_irq_set_type(struct irq_data *data, unsigned int flow_type)
+ 	prev_irq_mask = idio24gpio->irq_mask >> bank_offset * 8;
+@@ -437,12 +441,14 @@ static int idio_24_irq_set_type(struct irq_data *data, unsigned int flow_type)
  	return 0;
  }
  
--static struct irq_chip idio_16_irqchip = {
-+static const struct irq_chip idio_16_irqchip = {
- 	.name = "pci-idio-16",
- 	.irq_ack = idio_16_irq_ack,
- 	.irq_mask = idio_16_irq_mask,
- 	.irq_unmask = idio_16_irq_unmask,
--	.irq_set_type = idio_16_irq_set_type
-+	.irq_set_type = idio_16_irq_set_type,
+-static struct irq_chip idio_24_irqchip = {
++static const struct irq_chip idio_24_irqchip = {
+ 	.name = "pcie-idio-24",
+ 	.irq_ack = idio_24_irq_ack,
+ 	.irq_mask = idio_24_irq_mask,
+ 	.irq_unmask = idio_24_irq_unmask,
+-	.irq_set_type = idio_24_irq_set_type
++	.irq_set_type = idio_24_irq_set_type,
 +	.flags = IRQCHIP_IMMUTABLE,
 +	GPIOCHIP_IRQ_RESOURCE_HELPERS,
  };
  
- static irqreturn_t idio_16_irq_handler(int irq, void *dev_id)
-@@ -242,7 +248,7 @@ static int idio_16_probe(struct pci_dev *pdev, const struct pci_device_id *id)
- 	idio_16_state_init(&idio16gpio->state);
+ static irqreturn_t idio_24_irq_handler(int irq, void *dev_id)
+@@ -535,7 +541,7 @@ static int idio_24_probe(struct pci_dev *pdev, const struct pci_device_id *id)
+ 	idio24gpio->chip.set_multiple = idio_24_gpio_set_multiple;
  
- 	girq = &idio16gpio->chip.irq;
--	girq->chip = &idio_16_irqchip;
-+	gpio_irq_chip_set_chip(girq, &idio_16_irqchip);
+ 	girq = &idio24gpio->chip.irq;
+-	girq->chip = &idio_24_irqchip;
++	gpio_irq_chip_set_chip(girq, &idio_24_irqchip);
  	/* This will let us handle the parent IRQ in the driver */
  	girq->parent_handler = NULL;
  	girq->num_parents = 0;
