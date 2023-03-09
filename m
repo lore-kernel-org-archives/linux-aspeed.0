@@ -1,10 +1,10 @@
 From: Javier Martinez Canillas <javierm@redhat.com>
-Date: Thu, 09 Mar 2023 12:28:05 +0100
-Subject: [PATCH 19/22] drm/arcpgu: Use GEM DMA fbdev emulation
-In-Reply-To: <20230301153101.4282-20-tzimmermann@suse.de>
+Date: Thu, 09 Mar 2023 12:28:26 +0100
+Subject: [PATCH 20/22] drm/tve200: Use GEM DMA fbdev emulation
+In-Reply-To: <20230301153101.4282-21-tzimmermann@suse.de>
 References: <20230301153101.4282-1-tzimmermann@suse.de>
- <20230301153101.4282-20-tzimmermann@suse.de>
-Message-ID: <87edpy6u62.fsf@minerva.mail-host-address-is-not-set>
+ <20230301153101.4282-21-tzimmermann@suse.de>
+Message-ID: <87bkl26u5h.fsf@minerva.mail-host-address-is-not-set>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
