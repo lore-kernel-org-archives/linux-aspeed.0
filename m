@@ -1,9 +1,9 @@
 From: Linus Walleij <linus.walleij@linaro.org>
-Date: Thu, 09 Mar 2023 08:45:57 +0100
-Subject: [PATCH v3 09/17] gpio: hlwd: Convert to immutable irq_chip
+Date: Thu, 09 Mar 2023 08:46:00 +0100
+Subject: [PATCH v3 12/17] gpio: mlxbf2: Convert to immutable irq_chip
 In-Reply-To: <20230215-immutable-chips-v3-0-972542092a77@linaro.org>
 References: <20230215-immutable-chips-v3-0-972542092a77@linaro.org>
-Message-ID: <20230215-immutable-chips-v3-9-972542092a77@linaro.org>
+Message-ID: <20230215-immutable-chips-v3-12-972542092a77@linaro.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -17,96 +17,98 @@ Cc: Marc Zyngier <maz@kernel.org>
 Acked-by: Marc Zyngier <maz@kernel.org>
 Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
 ---
- drivers/gpio/gpio-hlwd.c | 33 +++++++++++++++++++++++++--------
- 1 file changed, 25 insertions(+), 8 deletions(-)
+ drivers/gpio/gpio-mlxbf2.c | 32 +++++++++++++++++++++++++-------
+ 1 file changed, 25 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/gpio/gpio-hlwd.c b/drivers/gpio/gpio-hlwd.c
-index 4e13e937f832..c208ac1c54a6 100644
---- a/drivers/gpio/gpio-hlwd.c
-+++ b/drivers/gpio/gpio-hlwd.c
-@@ -11,6 +11,7 @@
- #include <linux/module.h>
- #include <linux/of.h>
- #include <linux/of_platform.h>
+diff --git a/drivers/gpio/gpio-mlxbf2.c b/drivers/gpio/gpio-mlxbf2.c
+index 77a41151c921..6abe01bc39c3 100644
+--- a/drivers/gpio/gpio-mlxbf2.c
++++ b/drivers/gpio/gpio-mlxbf2.c
+@@ -17,6 +17,7 @@
+ #include <linux/platform_device.h>
+ #include <linux/pm.h>
+ #include <linux/resource.h>
 +#include <linux/seq_file.h>
- #include <linux/slab.h>
+ #include <linux/spinlock.h>
+ #include <linux/types.h>
  
- /*
-@@ -48,7 +49,7 @@
+@@ -65,10 +66,10 @@ struct mlxbf2_gpio_context_save_regs {
+ /* BlueField-2 gpio block context structure. */
+ struct mlxbf2_gpio_context {
+ 	struct gpio_chip gc;
+-	struct irq_chip irq_chip;
  
- struct hlwd_gpio {
- 	struct gpio_chip gpioc;
--	struct irq_chip irqc;
+ 	/* YU GPIO blocks address */
+ 	void __iomem *gpio_io;
 +	struct device *dev;
- 	void __iomem *regs;
- 	int irq;
- 	u32 edge_emulation;
-@@ -123,6 +124,7 @@ static void hlwd_gpio_irq_mask(struct irq_data *data)
- 	mask &= ~BIT(data->hwirq);
- 	iowrite32be(mask, hlwd->regs + HW_GPIOB_INTMASK);
- 	raw_spin_unlock_irqrestore(&hlwd->gpioc.bgpio_lock, flags);
-+	gpiochip_disable_irq(&hlwd->gpioc, irqd_to_hwirq(data));
+ 
+ 	struct mlxbf2_gpio_context_save_regs *csave_regs;
+ };
+@@ -237,6 +238,7 @@ static void mlxbf2_gpio_irq_enable(struct irq_data *irqd)
+ 	unsigned long flags;
+ 	u32 val;
+ 
++	gpiochip_enable_irq(gc, irqd_to_hwirq(irqd));
+ 	raw_spin_lock_irqsave(&gs->gc.bgpio_lock, flags);
+ 	val = readl(gs->gpio_io + YU_GPIO_CAUSE_OR_CLRCAUSE);
+ 	val |= BIT(offset);
+@@ -261,6 +263,7 @@ static void mlxbf2_gpio_irq_disable(struct irq_data *irqd)
+ 	val &= ~BIT(offset);
+ 	writel(val, gs->gpio_io + YU_GPIO_CAUSE_OR_EVTEN0);
+ 	raw_spin_unlock_irqrestore(&gs->gc.bgpio_lock, flags);
++	gpiochip_disable_irq(gc, irqd_to_hwirq(irqd));
  }
  
- static void hlwd_gpio_irq_unmask(struct irq_data *data)
-@@ -132,6 +134,7 @@ static void hlwd_gpio_irq_unmask(struct irq_data *data)
- 	unsigned long flags;
- 	u32 mask;
- 
-+	gpiochip_enable_irq(&hlwd->gpioc, irqd_to_hwirq(data));
- 	raw_spin_lock_irqsave(&hlwd->gpioc.bgpio_lock, flags);
- 	mask = ioread32be(hlwd->regs + HW_GPIOB_INTMASK);
- 	mask |= BIT(data->hwirq);
-@@ -202,6 +205,24 @@ static int hlwd_gpio_irq_set_type(struct irq_data *data, unsigned int flow_type)
+ static irqreturn_t mlxbf2_gpio_irq_handler(int irq, void *ptr)
+@@ -322,6 +325,24 @@ mlxbf2_gpio_irq_set_type(struct irq_data *irqd, unsigned int type)
  	return 0;
  }
  
-+static void hlwd_gpio_irq_print_chip(struct irq_data *data, struct seq_file *p)
++static void mlxbf2_gpio_irq_print_chip(struct irq_data *irqd,
++				       struct seq_file *p)
 +{
-+	struct hlwd_gpio *hlwd =
-+		gpiochip_get_data(irq_data_get_irq_chip_data(data));
++	struct gpio_chip *gc = irq_data_get_irq_chip_data(irqd);
++	struct mlxbf2_gpio_context *gs = gpiochip_get_data(gc);
 +
-+	seq_printf(p, dev_name(hlwd->dev));
++	seq_printf(p, dev_name(gs->dev));
 +}
 +
-+static const struct irq_chip hlwd_gpio_irq_chip = {
-+	.irq_mask = hlwd_gpio_irq_mask,
-+	.irq_unmask = hlwd_gpio_irq_unmask,
-+	.irq_enable = hlwd_gpio_irq_enable,
-+	.irq_set_type = hlwd_gpio_irq_set_type,
-+	.irq_print_chip = hlwd_gpio_irq_print_chip,
++static const struct irq_chip mlxbf2_gpio_irq_chip = {
++	.irq_set_type = mlxbf2_gpio_irq_set_type,
++	.irq_enable = mlxbf2_gpio_irq_enable,
++	.irq_disable = mlxbf2_gpio_irq_disable,
++	.irq_print_chip = mlxbf2_gpio_irq_print_chip,
 +	.flags = IRQCHIP_IMMUTABLE,
 +	GPIOCHIP_IRQ_RESOURCE_HELPERS,
 +};
 +
- static int hlwd_gpio_probe(struct platform_device *pdev)
- {
- 	struct hlwd_gpio *hlwd;
-@@ -216,6 +237,8 @@ static int hlwd_gpio_probe(struct platform_device *pdev)
- 	if (IS_ERR(hlwd->regs))
- 		return PTR_ERR(hlwd->regs);
+ /* BlueField-2 GPIO driver initialization routine. */
+ static int
+ mlxbf2_gpio_probe(struct platform_device *pdev)
+@@ -340,6 +361,8 @@ mlxbf2_gpio_probe(struct platform_device *pdev)
+ 	if (!gs)
+ 		return -ENOMEM;
  
-+	hlwd->dev = &pdev->dev;
++	gs->dev = dev;
 +
- 	/*
- 	 * Claim all GPIOs using the OWNER register. This will not work on
- 	 * systems where the AHBPROT memory firewall hasn't been configured to
-@@ -259,14 +282,8 @@ static int hlwd_gpio_probe(struct platform_device *pdev)
- 			return hlwd->irq;
- 		}
+ 	/* YU GPIO block address */
+ 	gs->gpio_io = devm_platform_ioremap_resource(pdev, 0);
+ 	if (IS_ERR(gs->gpio_io))
+@@ -376,13 +399,8 @@ mlxbf2_gpio_probe(struct platform_device *pdev)
  
--		hlwd->irqc.name = dev_name(&pdev->dev);
--		hlwd->irqc.irq_mask = hlwd_gpio_irq_mask;
--		hlwd->irqc.irq_unmask = hlwd_gpio_irq_unmask;
--		hlwd->irqc.irq_enable = hlwd_gpio_irq_enable;
--		hlwd->irqc.irq_set_type = hlwd_gpio_irq_set_type;
+ 	irq = platform_get_irq(pdev, 0);
+ 	if (irq >= 0) {
+-		gs->irq_chip.name = name;
+-		gs->irq_chip.irq_set_type = mlxbf2_gpio_irq_set_type;
+-		gs->irq_chip.irq_enable = mlxbf2_gpio_irq_enable;
+-		gs->irq_chip.irq_disable = mlxbf2_gpio_irq_disable;
 -
- 		girq = &hlwd->gpioc.irq;
--		girq->chip = &hlwd->irqc;
-+		gpio_irq_chip_set_chip(girq, &hlwd_gpio_irq_chip);
- 		girq->parent_handler = hlwd_gpio_irqhandler;
- 		girq->num_parents = 1;
- 		girq->parents = devm_kcalloc(&pdev->dev, 1,
+ 		girq = &gs->gc.irq;
+-		girq->chip = &gs->irq_chip;
++		gpio_irq_chip_set_chip(girq, &mlxbf2_gpio_irq_chip);
+ 		girq->handler = handle_simple_irq;
+ 		girq->default_type = IRQ_TYPE_NONE;
+ 		/* This will let us handle the parent IRQ in the driver */
 
 -- 
 2.34.1
