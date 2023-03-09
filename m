@@ -1,10 +1,10 @@
 From: Javier Martinez Canillas <javierm@redhat.com>
-Date: Thu, 09 Mar 2023 12:20:24 +0100
-Subject: [PATCH 05/22] drm/atmel-hlcdc: Use GEM DMA fbdev emulation
-In-Reply-To: <20230301153101.4282-6-tzimmermann@suse.de>
+Date: Thu, 09 Mar 2023 12:20:39 +0100
+Subject: [PATCH 06/22] drm/fsl-dcu: Use GEM DMA fbdev emulation
+In-Reply-To: <20230301153101.4282-7-tzimmermann@suse.de>
 References: <20230301153101.4282-1-tzimmermann@suse.de>
- <20230301153101.4282-6-tzimmermann@suse.de>
-Message-ID: <87pm9icgsn.fsf@minerva.mail-host-address-is-not-set>
+ <20230301153101.4282-7-tzimmermann@suse.de>
+Message-ID: <87mt4mcgs8.fsf@minerva.mail-host-address-is-not-set>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
