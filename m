@@ -1,81 +1,96 @@
 From: Linus Walleij <linus.walleij@linaro.org>
-Date: Thu, 09 Mar 2023 08:45:48 +0100
-Subject: [PATCH v3 00/17] Mass convert GPIO IRQ chips to be immutable
-Message-ID: <20230215-immutable-chips-v3-0-972542092a77@linaro.org>
+Date: Thu, 09 Mar 2023 08:45:51 +0100
+Subject: [PATCH v3 03/17] gpio: aspeed: Always register the irqchip
+In-Reply-To: <20230215-immutable-chips-v3-0-972542092a77@linaro.org>
+References: <20230215-immutable-chips-v3-0-972542092a77@linaro.org>
+Message-ID: <20230215-immutable-chips-v3-3-972542092a77@linaro.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-We are getting tired of these irq_chips not getting converted
-to be immutable, so I just take out the big hammer and fix
-some that I deem not too complex as best I can.
+From: Joel Stanley <joel@jms.id.au>
 
-I stopped after doing some, I will take another sweep at some
-point I guess.
+The driver was implemented in a way that made the irqchip optional, if a
+irq was not present in the device tree. However, all of the device trees
+have always had an irq, so the optional-ness has never been used.
 
-This is v6.4 material.
-
-The last two patches to pci-idio-* (patch 15 and 16) can be
-omitted if William's patches to convert this driver to
-regmap GPIO are merged first.
-
+Signed-off-by: Joel Stanley <joel@jms.id.au>
 Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
 ---
-Changes in v3:
-- Deleted the irq_chip->name assignment in the Aspeed driver
-- Fold in a patch from Joel to make aspeed IRQs compulsory
-- Link to v2: https://lore.kernel.org/r/20230215-immutable-chips-v2-0-d6b0e3f2d991 at linaro.org
+ drivers/gpio/gpio-aspeed.c | 49 ++++++++++++++++++++++------------------------
+ 1 file changed, 23 insertions(+), 26 deletions(-)
 
-Changes in v2:
-- Rebased on v6.3-rc1
-- Collected some test and ACK tags
-- Link to v1: https://lore.kernel.org/r/20230215-immutable-chips-v1-0-51a8f224a5d0 at linaro.org
+diff --git a/drivers/gpio/gpio-aspeed.c b/drivers/gpio/gpio-aspeed.c
+index a94da80d3a95..129f6a6b4d1d 100644
+--- a/drivers/gpio/gpio-aspeed.c
++++ b/drivers/gpio/gpio-aspeed.c
+@@ -1137,8 +1137,9 @@ MODULE_DEVICE_TABLE(of, aspeed_gpio_of_table);
+ static int __init aspeed_gpio_probe(struct platform_device *pdev)
+ {
+ 	const struct of_device_id *gpio_id;
++	struct gpio_irq_chip *girq;
+ 	struct aspeed_gpio *gpio;
+-	int rc, i, banks, err;
++	int rc, irq, i, banks, err;
+ 	u32 ngpio;
+ 
+ 	gpio = devm_kzalloc(&pdev->dev, sizeof(*gpio), GFP_KERNEL);
+@@ -1201,31 +1202,27 @@ static int __init aspeed_gpio_probe(struct platform_device *pdev)
+ 		aspeed_gpio_change_cmd_source(gpio, bank, 3, GPIO_CMDSRC_ARM);
+ 	}
+ 
+-	/* Optionally set up an irqchip if there is an IRQ */
+-	rc = platform_get_irq(pdev, 0);
+-	if (rc > 0) {
+-		struct gpio_irq_chip *girq;
+-
+-		gpio->irq = rc;
+-		girq = &gpio->chip.irq;
+-		girq->chip = &gpio->irqc;
+-		girq->chip->name = dev_name(&pdev->dev);
+-		girq->chip->irq_ack = aspeed_gpio_irq_ack;
+-		girq->chip->irq_mask = aspeed_gpio_irq_mask;
+-		girq->chip->irq_unmask = aspeed_gpio_irq_unmask;
+-		girq->chip->irq_set_type = aspeed_gpio_set_type;
+-		girq->parent_handler = aspeed_gpio_irq_handler;
+-		girq->num_parents = 1;
+-		girq->parents = devm_kcalloc(&pdev->dev, 1,
+-					     sizeof(*girq->parents),
+-					     GFP_KERNEL);
+-		if (!girq->parents)
+-			return -ENOMEM;
+-		girq->parents[0] = gpio->irq;
+-		girq->default_type = IRQ_TYPE_NONE;
+-		girq->handler = handle_bad_irq;
+-		girq->init_valid_mask = aspeed_init_irq_valid_mask;
+-	}
++	/* Set up an irqchip */
++	irq = platform_get_irq(pdev, 0);
++	if (irq < 0)
++		return irq;
++	gpio->irq = irq;
++	girq = &gpio->chip.irq;
++	girq->chip = &gpio->irqc;
++	girq->chip->name = dev_name(&pdev->dev);
++	girq->chip->irq_ack = aspeed_gpio_irq_ack;
++	girq->chip->irq_mask = aspeed_gpio_irq_mask;
++	girq->chip->irq_unmask = aspeed_gpio_irq_unmask;
++	girq->chip->irq_set_type = aspeed_gpio_set_type;
++	girq->parent_handler = aspeed_gpio_irq_handler;
++	girq->num_parents = 1;
++	girq->parents = devm_kcalloc(&pdev->dev, 1, sizeof(*girq->parents), GFP_KERNEL);
++	if (!girq->parents)
++		return -ENOMEM;
++	girq->parents[0] = gpio->irq;
++	girq->default_type = IRQ_TYPE_NONE;
++	girq->handler = handle_bad_irq;
++	girq->init_valid_mask = aspeed_init_irq_valid_mask;
+ 
+ 	gpio->offset_timer =
+ 		devm_kzalloc(&pdev->dev, gpio->chip.ngpio, GFP_KERNEL);
 
----
-Joel Stanley (1):
-      gpio: aspeed: Always register the irqchip
-
-Linus Walleij (16):
-      gpio: altera: Convert to immutable irq_chip
-      gpio: adnp: Convert to immutable irq_chip
-      gpio: aspeed: Convert to immutable irq_chip
-      gpio: aspeed-sgpio: Convert to immutable irq_chip
-      gpio: ath79: Convert to immutable irq_chip
-      gpio: cadence: Convert to immutable irq_chip
-      gpio: hisi: Convert to immutable irq_chip
-      gpio: hlwd: Convert to immutable irq_chip
-      gpio: idt3243x: Convert to immutable irq_chip
-      gpio: msc313: Convert to immutable irq_chip
-      gpio: mlxbf2: Convert to immutable irq_chip
-      gpio: max732x: Convert to immutable irq_chip
-      gpio: omap: Drop irq_base
-      gpio: omap: Convert to immutable irq_chip
-      gpio: pci-idio-16: Convert to immutable irq_chip
-      gpio: pcie-idio-24: Convert to immutable irq_chip
-
- drivers/gpio/gpio-adnp.c         |  9 ++++-
- drivers/gpio/gpio-altera.c       | 25 +++++++-----
- drivers/gpio/gpio-aspeed-sgpio.c | 44 +++++++++++++++++----
- drivers/gpio/gpio-aspeed.c       | 82 ++++++++++++++++++++++++++-------------
- drivers/gpio/gpio-ath79.c        |  8 +++-
- drivers/gpio/gpio-cadence.c      | 10 +++--
- drivers/gpio/gpio-hisi.c         | 25 +++++++-----
- drivers/gpio/gpio-hlwd.c         | 33 ++++++++++++----
- drivers/gpio/gpio-idt3243x.c     | 11 ++++--
- drivers/gpio/gpio-max732x.c      |  8 +++-
- drivers/gpio/gpio-mlxbf2.c       | 32 ++++++++++++----
- drivers/gpio/gpio-msc313.c       | 26 +++++++++++--
- drivers/gpio/gpio-omap.c         | 83 ++++++++++++++++++++++------------------
- drivers/gpio/gpio-pci-idio-16.c  | 12 ++++--
- drivers/gpio/gpio-pcie-idio-24.c | 12 ++++--
- 15 files changed, 290 insertions(+), 130 deletions(-)
----
-base-commit: fe15c26ee26efa11741a7b632e9f23b01aca4cc6
-change-id: 20230215-immutable-chips-762922277f1e
-
-Best regards,
 -- 
-Linus Walleij <linus.walleij@linaro.org>
+2.34.1
 
