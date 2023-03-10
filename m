@@ -1,97 +1,215 @@
-From: Michael Walle <michael@walle.cc>
-Date: Thu, 09 Mar 2023 16:41:31 +0100
-Subject: [PATCH] spi: Replace `dummy.nbytes` with `dummy.ncycles`
-In-Reply-To: <CAJsYDVJ_UtGqOm_HsN4X4nAuy9svXe4XV6aeG_fg8cWDrgrHMQ@mail.gmail.com>
-References: <20220911174551.653599-1-sergiu.moga@microchip.com>
- <20220925220304.buk3yuqoh6vszfci@mobilestation>
- <18e6e8a8-6412-7e31-21e0-6becd4400ac1@microchip.com>
- <20220926172454.kbpzck7med5bopre@mobilestation>
- <1766f6ef-d9d8-04f7-a6bf-0ea6bc0b3d23@linaro.org>
- <f647e713a65f5d3f0f2e3af95c4d0a89@walle.cc>
- <1849e2c8-54f5-9e56-4ed8-8b0e4a826d04@linaro.org>
- <302ecf0421fe4c99fca3eb0ca2f66127@walle.cc>
- <5183a184-c72d-3acd-70cd-6aa1e31533f5@linaro.org>
- <03a9f117316ab81f1b5a18100f771e65@walle.cc>
- <6c2090bf-d102-a333-3a83-03abe81ff70e@linaro.org>
- <460ef5ff3846b409b322ca53559e2476@walle.cc>
- <b8b61fc0-1e4f-146b-2036-03fda5359585@linaro.org>
- <bf57f3aafc3e0a02c81dab905ce9497e@walle.cc>
- <CAJsYDVJ_UtGqOm_HsN4X4nAuy9svXe4XV6aeG_fg8cWDrgrHMQ@mail.gmail.com>
-Message-ID: <844d3d6807106a78767607327e2ec0d5@walle.cc>
+From: Amit Kumar Mahapatra <amit.kumar-mahapatra@amd.com>
+Date: Fri, 10 Mar 2023 23:02:02 +0530
+Subject: [PATCH V6 00/15] Add support for stacked/parallel memories
+Message-ID: <20230310173217.3429788-1-amit.kumar-mahapatra@amd.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Am 2023-03-09 15:19, schrieb Chuanhong Guo:
-> Hi!
-> 
-> On Thu, Mar 9, 2023 at 10:04?PM Michael Walle <michael@walle.cc> wrote:
->> 
->> Am 2023-03-09 14:54, schrieb Tudor Ambarus:
->> > On 09.03.2023 15:33, Michael Walle wrote:
->> >>>>> The controllers that can talk in dummy ncycles don't need the
->> >>>>> dummy.{buswidth, dtr} fields.
->> >>>>>
->> >>>>> The controllers that can't talk in dummy cycles, but only on a
->> >>>>> "byte"
->> >>>>> boundary need both buswidth and dtr fields. Assume a flash needs 32
->> >>>>> dummy cycles for an op on 8D-8D-8D mode. If the controller does not
->> >>>>> have
->> >>>>> the buswidth and dtr info, it can't convert the dummy ncycles to
->> >>>>> nbytes.
->> >>>>> If he knows only that buswidth is 8, it will convert ncycles to 4
->> >>>>> bytes.
->> >>>>> If dtr is also specified it converts ncycles to 2 bytes.
->> >>>>
->> >>>> No they don't need it. Lets take your semper flash and assume it
->> >>>> needs
->> >>>> 12 latency cycles. SPI-NOR will set ncycles to 12 *regardless of the
->> >>>> mode
->> >>>> or dtr setting*. The controller then knows we need 12 clock cycles.
->> >>>> It has
->> >>>> then to figure out how that can be achieved. E.g. if it can only do
->> >>>> the
->> >>>> "old" byte programming and is in quad mode, good for it. It will
->> >>>> send 6
->> >>>> dummy bytes, which will result in 12 dummy clock cycles, because 1
->> >>>> byte
->> >>>> takes two clock cycles in quad SDR mode. If its in octal mode, send
->> >>>> 12
->> >>>> bytes. If its in dual mode, send 3 bytes. Obiously, it cannot be in
->> >>>> single bit mode, because it cannot send 1.5 bytes..
->> >>>>
->> >>>
->> >>> You miss the fact that you can have 1-1-4. What buswidth do you use
->> >>> for dummy, the address buswidth or the data buswidth?
->> >>
->> >> Doesn't matter, does it? The driver is free to chose, 1, 4, or
->> >> anything
->> >> else. You don't sample any data during the dummy phase.
->> >> To answer your question: single for instruction, single for address,
->> >> whatever you choose for dummy as long as there are ncycles space
->> >> between
->> >> address and data, and quad for data.
->> >
->> > Huh? How does the controller chose, based on what?
->> 
->> Based on its own capabilities. It can choose either way. In the end
->> what matters is how many clock cycles there are between the address
->> and data phase. And you only need to convey that information to the
->> SPI controller - your new ncycles.
-> 
-> It does matter. Controller may be designed to actively drive
-> MOSI/WP/HOLD during single-spi dummy cycles and WP/HOLD
-> during dual-spi dummy cycles. If the pin modes between the
-> controller and device mismatched, worst case scenario
-> the chip may get fried.
+This patch is in the continuation to the discussions which happened on
+'commit f89504300e94 ("spi: Stacked/parallel memories bindings")' for
+adding dt-binding support for stacked/parallel memories.
 
-Interesting. But most of the time you'll have to do what the
-spi controller supports. Only if its freely programmable,
-then according to your comment you'd choose the buswidth of
-the data phase to be on the safe side.
+This patch series updated the spi-nor, spi core and the spi drivers
+to add stacked and parallel memories support.
 
-Btw. this is not what spi-nor is doing right now.
+The first patch
+https://lore.kernel.org/all/20230119185342.2093323-1-amit.kumar-mahapatra at amd.com/
+of the previous series got applied to
+https://git.kernel.org/pub/scm/linux/kernel/git/broonie/spi.git for-next
+But the rest of the patches in the series did not get applied due to merge
+conflict, so send the remaining patches in the series after rebasing it
+on top of for-next branch.
+---
+BRANCH: for-next
 
--michael
+Changes in v6:
+- Rebased on top of latest v6.3-rc1 and fixed merge conflicts in
+  spi-mpc512x-psc.c, sfdp.c, spansion.c files and removed spi-omap-100k.c.
+- Updated spi_dev_check( ) to reject new devices if any one of the
+  chipselect is used by another device.
+
+Changes in v5:
+- Rebased the patches on top of v6.3-rc1 and fixed the merge conflicts.
+- Fixed compilation warnings in spi-sh-msiof.c with shmobile_defconfig  
+
+Changes in v4:
+- Fixed build error in spi-pl022.c file - reported by Mark.
+- Fixed build error in spi-sn-f-ospi.c file.
+- Added Reviewed-by: Serge Semin <fancer.lancer@gmail.com> tag.
+- Added two more patches to replace spi->chip_select with API calls in
+  mpc832x_rdb.c & cs35l41_hda_spi.c files.
+
+Changes in v3:
+- Rebased the patches on top of
+  https://git.kernel.org/pub/scm/linux/kernel/git/broonie/spi.git for-next
+- Added a patch to convert spi_nor_otp_region_len(nor) &
+  spi_nor_otp_n_regions(nor) macros into inline functions
+- Added Reviewed-by & Acked-by tags
+
+Changes in v2:
+- Rebased the patches on top of v6.2-rc1
+- Created separate patch to add get & set APIs for spi->chip_select &
+  spi->cs_gpiod, and replaced all spi->chip_select and spi->cs_gpiod
+  references with the API calls.
+- Created separate patch to add get & set APIs for nor->params.
+---
+
+Amit Kumar Mahapatra (15):
+  spi: Replace all spi->chip_select and spi->cs_gpiod references with
+    function call
+  net: Replace all spi->chip_select and spi->cs_gpiod references with
+    function call
+  iio: imu: Replace all spi->chip_select and spi->cs_gpiod references
+    with function call
+  mtd: devices: Replace all spi->chip_select and spi->cs_gpiod
+    references with function call
+  staging: Replace all spi->chip_select and spi->cs_gpiod references
+    with function call
+  platform/x86: serial-multi-instantiate: Replace all spi->chip_select
+    and spi->cs_gpiod references with function call
+  powerpc/83xx/mpc832x_rdb: Replace all spi->chip_select references with
+    function call
+  ALSA: hda: cs35l41: Replace all spi->chip_select references with
+    function call
+  spi: Add stacked and parallel memories support in SPI core
+  mtd: spi-nor: Convert macros with inline functions
+  mtd: spi-nor: Add APIs to set/get nor->params
+  mtd: spi-nor: Add stacked memories support in spi-nor
+  spi: spi-zynqmp-gqspi: Add stacked memories support in GQSPI driver
+  mtd: spi-nor: Add parallel memories support in spi-nor
+  spi: spi-zynqmp-gqspi: Add parallel memories support in GQSPI driver
+
+ arch/powerpc/platforms/83xx/mpc832x_rdb.c     |   2 +-
+ drivers/iio/imu/adis16400.c                   |   2 +-
+ drivers/mtd/devices/mtd_dataflash.c           |   2 +-
+ drivers/mtd/spi-nor/atmel.c                   |  17 +-
+ drivers/mtd/spi-nor/core.c                    | 665 +++++++++++++++---
+ drivers/mtd/spi-nor/core.h                    |   8 +
+ drivers/mtd/spi-nor/debugfs.c                 |   4 +-
+ drivers/mtd/spi-nor/gigadevice.c              |   4 +-
+ drivers/mtd/spi-nor/issi.c                    |  11 +-
+ drivers/mtd/spi-nor/macronix.c                |   6 +-
+ drivers/mtd/spi-nor/micron-st.c               |  39 +-
+ drivers/mtd/spi-nor/otp.c                     |  48 +-
+ drivers/mtd/spi-nor/sfdp.c                    |  29 +-
+ drivers/mtd/spi-nor/spansion.c                |  50 +-
+ drivers/mtd/spi-nor/sst.c                     |   7 +-
+ drivers/mtd/spi-nor/swp.c                     |  22 +-
+ drivers/mtd/spi-nor/winbond.c                 |  10 +-
+ drivers/mtd/spi-nor/xilinx.c                  |  18 +-
+ drivers/net/ethernet/adi/adin1110.c           |   2 +-
+ drivers/net/ethernet/asix/ax88796c_main.c     |   2 +-
+ drivers/net/ethernet/davicom/dm9051.c         |   2 +-
+ drivers/net/ethernet/qualcomm/qca_debug.c     |   2 +-
+ drivers/net/ieee802154/ca8210.c               |   2 +-
+ drivers/net/wan/slic_ds26522.c                |   2 +-
+ .../net/wireless/marvell/libertas/if_spi.c    |   2 +-
+ drivers/net/wireless/silabs/wfx/bus_spi.c     |   2 +-
+ drivers/net/wireless/st/cw1200/cw1200_spi.c   |   2 +-
+ .../platform/x86/serial-multi-instantiate.c   |   3 +-
+ drivers/spi/spi-altera-core.c                 |   2 +-
+ drivers/spi/spi-amd.c                         |   4 +-
+ drivers/spi/spi-ar934x.c                      |   2 +-
+ drivers/spi/spi-armada-3700.c                 |   4 +-
+ drivers/spi/spi-aspeed-smc.c                  |  13 +-
+ drivers/spi/spi-at91-usart.c                  |   2 +-
+ drivers/spi/spi-ath79.c                       |   4 +-
+ drivers/spi/spi-atmel.c                       |  26 +-
+ drivers/spi/spi-au1550.c                      |   4 +-
+ drivers/spi/spi-axi-spi-engine.c              |   2 +-
+ drivers/spi/spi-bcm-qspi.c                    |  10 +-
+ drivers/spi/spi-bcm2835.c                     |  19 +-
+ drivers/spi/spi-bcm2835aux.c                  |   4 +-
+ drivers/spi/spi-bcm63xx-hsspi.c               |  30 +-
+ drivers/spi/spi-bcm63xx.c                     |   2 +-
+ drivers/spi/spi-bcmbca-hsspi.c                |  30 +-
+ drivers/spi/spi-cadence-quadspi.c             |   5 +-
+ drivers/spi/spi-cadence-xspi.c                |   4 +-
+ drivers/spi/spi-cadence.c                     |   4 +-
+ drivers/spi/spi-cavium.c                      |   8 +-
+ drivers/spi/spi-coldfire-qspi.c               |   8 +-
+ drivers/spi/spi-davinci.c                     |  18 +-
+ drivers/spi/spi-dln2.c                        |   6 +-
+ drivers/spi/spi-dw-core.c                     |   2 +-
+ drivers/spi/spi-dw-mmio.c                     |   4 +-
+ drivers/spi/spi-falcon.c                      |   2 +-
+ drivers/spi/spi-fsi.c                         |   2 +-
+ drivers/spi/spi-fsl-dspi.c                    |  16 +-
+ drivers/spi/spi-fsl-espi.c                    |   6 +-
+ drivers/spi/spi-fsl-lpspi.c                   |   2 +-
+ drivers/spi/spi-fsl-qspi.c                    |   6 +-
+ drivers/spi/spi-fsl-spi.c                     |   2 +-
+ drivers/spi/spi-geni-qcom.c                   |   6 +-
+ drivers/spi/spi-gpio.c                        |   4 +-
+ drivers/spi/spi-gxp.c                         |   4 +-
+ drivers/spi/spi-hisi-sfc-v3xx.c               |   2 +-
+ drivers/spi/spi-img-spfi.c                    |  14 +-
+ drivers/spi/spi-imx.c                         |  30 +-
+ drivers/spi/spi-ingenic.c                     |   4 +-
+ drivers/spi/spi-intel.c                       |   2 +-
+ drivers/spi/spi-jcore.c                       |   4 +-
+ drivers/spi/spi-lantiq-ssc.c                  |   6 +-
+ drivers/spi/spi-mem.c                         |   4 +-
+ drivers/spi/spi-meson-spicc.c                 |   2 +-
+ drivers/spi/spi-microchip-core.c              |   6 +-
+ drivers/spi/spi-mpc512x-psc.c                 |   8 +-
+ drivers/spi/spi-mpc52xx.c                     |   2 +-
+ drivers/spi/spi-mt65xx.c                      |   6 +-
+ drivers/spi/spi-mt7621.c                      |   2 +-
+ drivers/spi/spi-mux.c                         |   8 +-
+ drivers/spi/spi-mxic.c                        |  10 +-
+ drivers/spi/spi-mxs.c                         |   2 +-
+ drivers/spi/spi-npcm-fiu.c                    |  20 +-
+ drivers/spi/spi-nxp-fspi.c                    |  10 +-
+ drivers/spi/spi-omap-uwire.c                  |   8 +-
+ drivers/spi/spi-omap2-mcspi.c                 |  24 +-
+ drivers/spi/spi-orion.c                       |   4 +-
+ drivers/spi/spi-pci1xxxx.c                    |   4 +-
+ drivers/spi/spi-pic32-sqi.c                   |   2 +-
+ drivers/spi/spi-pic32.c                       |   4 +-
+ drivers/spi/spi-pl022.c                       |   4 +-
+ drivers/spi/spi-pxa2xx.c                      |   6 +-
+ drivers/spi/spi-qcom-qspi.c                   |   2 +-
+ drivers/spi/spi-rb4xx.c                       |   2 +-
+ drivers/spi/spi-rockchip-sfc.c                |   2 +-
+ drivers/spi/spi-rockchip.c                    |  26 +-
+ drivers/spi/spi-rspi.c                        |  10 +-
+ drivers/spi/spi-s3c64xx.c                     |   2 +-
+ drivers/spi/spi-sc18is602.c                   |   4 +-
+ drivers/spi/spi-sh-msiof.c                    |   6 +-
+ drivers/spi/spi-sh-sci.c                      |   2 +-
+ drivers/spi/spi-sifive.c                      |   6 +-
+ drivers/spi/spi-sn-f-ospi.c                   |   2 +-
+ drivers/spi/spi-st-ssc4.c                     |   2 +-
+ drivers/spi/spi-stm32-qspi.c                  |  12 +-
+ drivers/spi/spi-sun4i.c                       |   2 +-
+ drivers/spi/spi-sun6i.c                       |   2 +-
+ drivers/spi/spi-synquacer.c                   |   6 +-
+ drivers/spi/spi-tegra114.c                    |  28 +-
+ drivers/spi/spi-tegra20-sflash.c              |   2 +-
+ drivers/spi/spi-tegra20-slink.c               |   6 +-
+ drivers/spi/spi-tegra210-quad.c               |   8 +-
+ drivers/spi/spi-ti-qspi.c                     |  16 +-
+ drivers/spi/spi-topcliff-pch.c                |   4 +-
+ drivers/spi/spi-wpcm-fiu.c                    |  12 +-
+ drivers/spi/spi-xcomm.c                       |   2 +-
+ drivers/spi/spi-xilinx.c                      |   6 +-
+ drivers/spi/spi-xlp.c                         |   4 +-
+ drivers/spi/spi-zynq-qspi.c                   |   2 +-
+ drivers/spi/spi-zynqmp-gqspi.c                |  58 +-
+ drivers/spi/spi.c                             | 225 ++++--
+ drivers/spi/spidev.c                          |   6 +-
+ drivers/staging/fbtft/fbtft-core.c            |   2 +-
+ drivers/staging/greybus/spilib.c              |   2 +-
+ include/linux/mtd/spi-nor.h                   |  18 +-
+ include/linux/spi/spi.h                       |  34 +-
+ include/trace/events/spi.h                    |  10 +-
+ sound/pci/hda/cs35l41_hda_spi.c               |   2 +-
+ 126 files changed, 1350 insertions(+), 615 deletions(-)
+
+-- 
+2.25.1
+
