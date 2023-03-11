@@ -1,17 +1,17 @@
 From: Mark Brown <broonie@kernel.org>
-Date: Sat, 11 Mar 2023 21:16:16 +0000
-Subject: (subset) [PATCH v4 00/15] spi: Add support for
- stacked/parallel memories
-In-Reply-To: <20230210193647.4159467-1-amit.kumar-mahapatra@amd.com>
-References: <20230210193647.4159467-1-amit.kumar-mahapatra@amd.com>
-Message-ID: <167856937606.964268.6047676283886463336.b4-ty@kernel.org>
+Date: Sat, 11 Mar 2023 21:16:42 +0000
+Subject: (subset) [PATCH V6 00/15] Add support for stacked/parallel
+ memories
+In-Reply-To: <20230310173217.3429788-1-amit.kumar-mahapatra@amd.com>
+References: <20230310173217.3429788-1-amit.kumar-mahapatra@amd.com>
+Message-ID: <167856940280.964268.10660159170818600511.b4-ty@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sat, 11 Feb 2023 01:06:31 +0530, Amit Kumar Mahapatra wrote:
+On Fri, 10 Mar 2023 23:02:02 +0530, Amit Kumar Mahapatra wrote:
 > This patch is in the continuation to the discussions which happened on
 > 'commit f89504300e94 ("spi: Stacked/parallel memories bindings")' for
 > adding dt-binding support for stacked/parallel memories.
@@ -43,8 +43,6 @@ Thanks!
         commit: 3aba06a9fee04f6fefa9df71d3ee27dd4c464ad5
 [08/15] ALSA: hda: cs35l41: Replace all spi->chip_select references with function call
         commit: 06b5e53c8b2b016e06a53ab6f01006ca7bbfa5df
-[09/15] spi: Add stacked and parallel memories support in SPI core
-        (no commit info)
 
 All being well this means that it will be integrated into the linux-next
 tree (usually sometime in the next 24 hours) and sent to Linus during
