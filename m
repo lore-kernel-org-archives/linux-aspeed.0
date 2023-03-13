@@ -1,47 +1,87 @@
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Date: Mon, 13 Mar 2023 16:51:37 +0100
-Subject: [PATCH v2 24/25] drm/mcde: Use GEM DMA fbdev emulation
-In-Reply-To: <20230313155138.20584-1-tzimmermann@suse.de>
-References: <20230313155138.20584-1-tzimmermann@suse.de>
-Message-ID: <20230313155138.20584-25-tzimmermann@suse.de>
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Date: Mon, 13 Mar 2023 17:53:10 +0200
+Subject: [PATCH v1 1/1] usb: gadget: aspeed: Rectify a bit a random header inclusion
+Message-ID: <20230313155310.80022-1-andriy.shevchenko@linux.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Use the fbdev emulation that is optimized for DMA helpers. Avoids
-possible shadow buffering and makes the code simpler.
+It looks like the driver copied'n'pasted almost random set of
+headers for its code. Rectify it a bit by removing of_gpio.h
+that is not only unused, but also will be removed in the future
+completely.
 
-Reported-by: Linus Walleij <linus.walleij@linaro.org>
-Link: https://lore.kernel.org/dri-devel/CACRpkdawSQsNqKJkSSoSw3HmMHyNXFUywxkdszpTC-a_uZA+tQ at mail.gmail.com/
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 ---
- drivers/gpu/drm/mcde/mcde_drv.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/usb/gadget/udc/aspeed-vhub/core.c | 1 -
+ drivers/usb/gadget/udc/aspeed-vhub/dev.c  | 1 -
+ drivers/usb/gadget/udc/aspeed-vhub/ep0.c  | 1 -
+ drivers/usb/gadget/udc/aspeed-vhub/epn.c  | 1 -
+ drivers/usb/gadget/udc/aspeed-vhub/hub.c  | 1 -
+ 5 files changed, 5 deletions(-)
 
-diff --git a/drivers/gpu/drm/mcde/mcde_drv.c b/drivers/gpu/drm/mcde/mcde_drv.c
-index a592ad0d7886..a8cd86c06c14 100644
---- a/drivers/gpu/drm/mcde/mcde_drv.c
-+++ b/drivers/gpu/drm/mcde/mcde_drv.c
-@@ -69,7 +69,7 @@
- #include <drm/drm_bridge.h>
- #include <drm/drm_drv.h>
- #include <drm/drm_fb_dma_helper.h>
--#include <drm/drm_fbdev_generic.h>
-+#include <drm/drm_fbdev_dma.h>
- #include <drm/drm_gem.h>
- #include <drm/drm_gem_dma_helper.h>
- #include <drm/drm_gem_framebuffer_helper.h>
-@@ -237,7 +237,7 @@ static int mcde_drm_bind(struct device *dev)
- 	if (ret < 0)
- 		goto unbind;
+diff --git a/drivers/usb/gadget/udc/aspeed-vhub/core.c b/drivers/usb/gadget/udc/aspeed-vhub/core.c
+index ac3ca24f8b04..86398a04a012 100644
+--- a/drivers/usb/gadget/udc/aspeed-vhub/core.c
++++ b/drivers/usb/gadget/udc/aspeed-vhub/core.c
+@@ -21,7 +21,6 @@
+ #include <linux/clk.h>
+ #include <linux/usb/gadget.h>
+ #include <linux/of.h>
+-#include <linux/of_gpio.h>
+ #include <linux/regmap.h>
+ #include <linux/dma-mapping.h>
  
--	drm_fbdev_generic_setup(drm, 32);
-+	drm_fbdev_dma_setup(drm, 32);
+diff --git a/drivers/usb/gadget/udc/aspeed-vhub/dev.c b/drivers/usb/gadget/udc/aspeed-vhub/dev.c
+index 4f3bc27c1c62..573109ca5b79 100644
+--- a/drivers/usb/gadget/udc/aspeed-vhub/dev.c
++++ b/drivers/usb/gadget/udc/aspeed-vhub/dev.c
+@@ -21,7 +21,6 @@
+ #include <linux/clk.h>
+ #include <linux/usb/gadget.h>
+ #include <linux/of.h>
+-#include <linux/of_gpio.h>
+ #include <linux/regmap.h>
+ #include <linux/dma-mapping.h>
+ #include <linux/usb.h>
+diff --git a/drivers/usb/gadget/udc/aspeed-vhub/ep0.c b/drivers/usb/gadget/udc/aspeed-vhub/ep0.c
+index b4cf46249fea..e9aa74231760 100644
+--- a/drivers/usb/gadget/udc/aspeed-vhub/ep0.c
++++ b/drivers/usb/gadget/udc/aspeed-vhub/ep0.c
+@@ -21,7 +21,6 @@
+ #include <linux/clk.h>
+ #include <linux/usb/gadget.h>
+ #include <linux/of.h>
+-#include <linux/of_gpio.h>
+ #include <linux/regmap.h>
+ #include <linux/dma-mapping.h>
  
- 	return 0;
+diff --git a/drivers/usb/gadget/udc/aspeed-vhub/epn.c b/drivers/usb/gadget/udc/aspeed-vhub/epn.c
+index 56e55472daa1..148d7ec3ebf4 100644
+--- a/drivers/usb/gadget/udc/aspeed-vhub/epn.c
++++ b/drivers/usb/gadget/udc/aspeed-vhub/epn.c
+@@ -21,7 +21,6 @@
+ #include <linux/clk.h>
+ #include <linux/usb/gadget.h>
+ #include <linux/of.h>
+-#include <linux/of_gpio.h>
+ #include <linux/regmap.h>
+ #include <linux/dma-mapping.h>
  
+diff --git a/drivers/usb/gadget/udc/aspeed-vhub/hub.c b/drivers/usb/gadget/udc/aspeed-vhub/hub.c
+index e2207d014620..a63e4af60a56 100644
+--- a/drivers/usb/gadget/udc/aspeed-vhub/hub.c
++++ b/drivers/usb/gadget/udc/aspeed-vhub/hub.c
+@@ -21,7 +21,6 @@
+ #include <linux/clk.h>
+ #include <linux/usb/gadget.h>
+ #include <linux/of.h>
+-#include <linux/of_gpio.h>
+ #include <linux/regmap.h>
+ #include <linux/dma-mapping.h>
+ #include <linux/bcd.h>
 -- 
 2.39.2
 
