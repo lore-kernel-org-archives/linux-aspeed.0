@@ -1,9 +1,9 @@
 From: Thomas Zimmermann <tzimmermann@suse.de>
-Date: Mon, 13 Mar 2023 16:51:34 +0100
-Subject: [PATCH v2 21/25] drm/vc4: Use GEM DMA fbdev emulation
+Date: Mon, 13 Mar 2023 16:51:37 +0100
+Subject: [PATCH v2 24/25] drm/mcde: Use GEM DMA fbdev emulation
 In-Reply-To: <20230313155138.20584-1-tzimmermann@suse.de>
 References: <20230313155138.20584-1-tzimmermann@suse.de>
-Message-ID: <20230313155138.20584-22-tzimmermann@suse.de>
+Message-ID: <20230313155138.20584-25-tzimmermann@suse.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -13,31 +13,32 @@ Content-Transfer-Encoding: 7bit
 Use the fbdev emulation that is optimized for DMA helpers. Avoids
 possible shadow buffering and makes the code simpler.
 
+Reported-by: Linus Walleij <linus.walleij@linaro.org>
+Link: https://lore.kernel.org/dri-devel/CACRpkdawSQsNqKJkSSoSw3HmMHyNXFUywxkdszpTC-a_uZA+tQ at mail.gmail.com/
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
 ---
- drivers/gpu/drm/vc4/vc4_drv.c | 4 ++--
+ drivers/gpu/drm/mcde/mcde_drv.c | 4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/gpu/drm/vc4/vc4_drv.c b/drivers/gpu/drm/vc4/vc4_drv.c
-index 0ccaee57fe9a..c8bf954042e0 100644
---- a/drivers/gpu/drm/vc4/vc4_drv.c
-+++ b/drivers/gpu/drm/vc4/vc4_drv.c
-@@ -33,7 +33,7 @@
- #include <drm/drm_aperture.h>
- #include <drm/drm_atomic_helper.h>
+diff --git a/drivers/gpu/drm/mcde/mcde_drv.c b/drivers/gpu/drm/mcde/mcde_drv.c
+index a592ad0d7886..a8cd86c06c14 100644
+--- a/drivers/gpu/drm/mcde/mcde_drv.c
++++ b/drivers/gpu/drm/mcde/mcde_drv.c
+@@ -69,7 +69,7 @@
+ #include <drm/drm_bridge.h>
  #include <drm/drm_drv.h>
+ #include <drm/drm_fb_dma_helper.h>
 -#include <drm/drm_fbdev_generic.h>
 +#include <drm/drm_fbdev_dma.h>
- #include <drm/drm_vblank.h>
- 
- #include <soc/bcm2835/raspberrypi-firmware.h>
-@@ -387,7 +387,7 @@ static int vc4_drm_bind(struct device *dev)
+ #include <drm/drm_gem.h>
+ #include <drm/drm_gem_dma_helper.h>
+ #include <drm/drm_gem_framebuffer_helper.h>
+@@ -237,7 +237,7 @@ static int mcde_drm_bind(struct device *dev)
  	if (ret < 0)
- 		goto unbind_all;
+ 		goto unbind;
  
--	drm_fbdev_generic_setup(drm, 16);
-+	drm_fbdev_dma_setup(drm, 16);
+-	drm_fbdev_generic_setup(drm, 32);
++	drm_fbdev_dma_setup(drm, 32);
  
  	return 0;
  
