@@ -1,9 +1,9 @@
 From: Thomas Zimmermann <tzimmermann@suse.de>
-Date: Mon, 13 Mar 2023 16:51:27 +0100
-Subject: [PATCH v2 14/25] drm/sti: Use GEM DMA fbdev emulation
+Date: Mon, 13 Mar 2023 16:51:25 +0100
+Subject: [PATCH v2 12/25] drm/mxsfb/lcdif: Use GEM DMA fbdev emulation
 In-Reply-To: <20230313155138.20584-1-tzimmermann@suse.de>
 References: <20230313155138.20584-1-tzimmermann@suse.de>
-Message-ID: <20230313155138.20584-15-tzimmermann@suse.de>
+Message-ID: <20230313155138.20584-13-tzimmermann@suse.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -16,28 +16,28 @@ possible shadow buffering and makes the code simpler.
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
 ---
- drivers/gpu/drm/sti/sti_drv.c | 4 ++--
+ drivers/gpu/drm/mxsfb/lcdif_drv.c | 4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/gpu/drm/sti/sti_drv.c b/drivers/gpu/drm/sti/sti_drv.c
-index ef6a4e63198f..1b87b5899f9e 100644
---- a/drivers/gpu/drm/sti/sti_drv.c
-+++ b/drivers/gpu/drm/sti/sti_drv.c
-@@ -14,7 +14,7 @@
+diff --git a/drivers/gpu/drm/mxsfb/lcdif_drv.c b/drivers/gpu/drm/mxsfb/lcdif_drv.c
+index cc2ceb301b96..6fb5b469ee5a 100644
+--- a/drivers/gpu/drm/mxsfb/lcdif_drv.c
++++ b/drivers/gpu/drm/mxsfb/lcdif_drv.c
+@@ -16,7 +16,7 @@
  #include <drm/drm_atomic_helper.h>
- #include <drm/drm_debugfs.h>
+ #include <drm/drm_bridge.h>
  #include <drm/drm_drv.h>
 -#include <drm/drm_fbdev_generic.h>
 +#include <drm/drm_fbdev_dma.h>
  #include <drm/drm_gem_dma_helper.h>
  #include <drm/drm_gem_framebuffer_helper.h>
- #include <drm/drm_of.h>
-@@ -199,7 +199,7 @@ static int sti_bind(struct device *dev)
+ #include <drm/drm_mode_config.h>
+@@ -220,7 +220,7 @@ static int lcdif_probe(struct platform_device *pdev)
+ 	if (ret)
+ 		goto err_unload;
  
- 	drm_mode_config_reset(ddev);
- 
--	drm_fbdev_generic_setup(ddev, 32);
-+	drm_fbdev_dma_setup(ddev, 32);
+-	drm_fbdev_generic_setup(drm, 32);
++	drm_fbdev_dma_setup(drm, 32);
  
  	return 0;
  
