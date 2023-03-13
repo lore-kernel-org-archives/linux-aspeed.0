@@ -1,9 +1,9 @@
 From: Thomas Zimmermann <tzimmermann@suse.de>
-Date: Mon, 13 Mar 2023 16:51:28 +0100
-Subject: [PATCH v2 15/25] drm/stm: Use GEM DMA fbdev emulation
+Date: Mon, 13 Mar 2023 16:51:24 +0100
+Subject: [PATCH v2 11/25] drm/meson: Use GEM DMA fbdev emulation
 In-Reply-To: <20230313155138.20584-1-tzimmermann@suse.de>
 References: <20230313155138.20584-1-tzimmermann@suse.de>
-Message-ID: <20230313155138.20584-16-tzimmermann@suse.de>
+Message-ID: <20230313155138.20584-12-tzimmermann@suse.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -15,29 +15,30 @@ possible shadow buffering and makes the code simpler.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
+Acked-by: Martin Blumenstingl <martin.blumenstingl@googlemail.com>
 ---
- drivers/gpu/drm/stm/drv.c | 4 ++--
+ drivers/gpu/drm/meson/meson_drv.c | 4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/gpu/drm/stm/drv.c b/drivers/gpu/drm/stm/drv.c
-index 50410bd99dfe..422220df7d8c 100644
---- a/drivers/gpu/drm/stm/drv.c
-+++ b/drivers/gpu/drm/stm/drv.c
+diff --git a/drivers/gpu/drm/meson/meson_drv.c b/drivers/gpu/drm/meson/meson_drv.c
+index 79bfe3938d3c..6608a251106b 100644
+--- a/drivers/gpu/drm/meson/meson_drv.c
++++ b/drivers/gpu/drm/meson/meson_drv.c
 @@ -18,7 +18,7 @@
- #include <drm/drm_atomic.h>
+ #include <drm/drm_aperture.h>
  #include <drm/drm_atomic_helper.h>
  #include <drm/drm_drv.h>
 -#include <drm/drm_fbdev_generic.h>
 +#include <drm/drm_fbdev_dma.h>
  #include <drm/drm_gem_dma_helper.h>
  #include <drm/drm_gem_framebuffer_helper.h>
- #include <drm/drm_module.h>
-@@ -203,7 +203,7 @@ static int stm_drm_platform_probe(struct platform_device *pdev)
+ #include <drm/drm_modeset_helper_vtables.h>
+@@ -353,7 +353,7 @@ static int meson_drv_bind_master(struct device *dev, bool has_components)
  	if (ret)
- 		goto err_put;
+ 		goto uninstall_irq;
  
--	drm_fbdev_generic_setup(ddev, 16);
-+	drm_fbdev_dma_setup(ddev, 16);
+-	drm_fbdev_generic_setup(drm, 32);
++	drm_fbdev_dma_setup(drm, 32);
  
  	return 0;
  
