@@ -1,9 +1,9 @@
 From: Thomas Zimmermann <tzimmermann@suse.de>
-Date: Mon, 13 Mar 2023 16:51:33 +0100
-Subject: [PATCH v2 20/25] drm/tve200: Use GEM DMA fbdev emulation
+Date: Mon, 13 Mar 2023 16:51:16 +0100
+Subject: [PATCH v2 03/25] arm/malidp: Use GEM DMA fbdev emulation
 In-Reply-To: <20230313155138.20584-1-tzimmermann@suse.de>
 References: <20230313155138.20584-1-tzimmermann@suse.de>
-Message-ID: <20230313155138.20584-21-tzimmermann@suse.de>
+Message-ID: <20230313155138.20584-4-tzimmermann@suse.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -15,30 +15,29 @@ possible shadow buffering and makes the code simpler.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
-Acked-by: Linus Walleij <linus.walleij@linaro.org>
 ---
- drivers/gpu/drm/tve200/tve200_drv.c | 4 ++--
+ drivers/gpu/drm/arm/malidp_drv.c | 4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/gpu/drm/tve200/tve200_drv.c b/drivers/gpu/drm/tve200/tve200_drv.c
-index 0d05c386d303..abd557332b28 100644
---- a/drivers/gpu/drm/tve200/tve200_drv.c
-+++ b/drivers/gpu/drm/tve200/tve200_drv.c
-@@ -40,7 +40,7 @@
+diff --git a/drivers/gpu/drm/arm/malidp_drv.c b/drivers/gpu/drm/arm/malidp_drv.c
+index cf040e2e9efe..0597e6ad56e7 100644
+--- a/drivers/gpu/drm/arm/malidp_drv.c
++++ b/drivers/gpu/drm/arm/malidp_drv.c
+@@ -19,7 +19,7 @@
  #include <drm/drm_atomic_helper.h>
- #include <drm/drm_bridge.h>
+ #include <drm/drm_crtc.h>
  #include <drm/drm_drv.h>
 -#include <drm/drm_fbdev_generic.h>
 +#include <drm/drm_fbdev_dma.h>
+ #include <drm/drm_fourcc.h>
  #include <drm/drm_gem_dma_helper.h>
  #include <drm/drm_gem_framebuffer_helper.h>
- #include <drm/drm_module.h>
-@@ -227,7 +227,7 @@ static int tve200_probe(struct platform_device *pdev)
- 	 * Passing in 16 here will make the RGB565 mode the default
- 	 * Passing in 32 will use XRGB8888 mode
- 	 */
--	drm_fbdev_generic_setup(drm, 16);
-+	drm_fbdev_dma_setup(drm, 16);
+@@ -852,7 +852,7 @@ static int malidp_bind(struct device *dev)
+ 	if (ret)
+ 		goto register_fail;
+ 
+-	drm_fbdev_generic_setup(drm, 32);
++	drm_fbdev_dma_setup(drm, 32);
  
  	return 0;
  
