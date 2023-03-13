@@ -1,9 +1,9 @@
 From: Thomas Zimmermann <tzimmermann@suse.de>
-Date: Mon, 13 Mar 2023 16:51:20 +0100
-Subject: [PATCH v2 07/25] drm/imx/dcss: Use GEM DMA fbdev emulation
+Date: Mon, 13 Mar 2023 16:51:18 +0100
+Subject: [PATCH v2 05/25] drm/atmel-hlcdc: Use GEM DMA fbdev emulation
 In-Reply-To: <20230313155138.20584-1-tzimmermann@suse.de>
 References: <20230313155138.20584-1-tzimmermann@suse.de>
-Message-ID: <20230313155138.20584-8-tzimmermann@suse.de>
+Message-ID: <20230313155138.20584-6-tzimmermann@suse.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -15,31 +15,32 @@ possible shadow buffering and makes the code simpler.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
+Acked-by: Sam Ravnborg <sam@ravnborg.org>
 ---
- drivers/gpu/drm/imx/dcss/dcss-kms.c | 4 ++--
+ drivers/gpu/drm/atmel-hlcdc/atmel_hlcdc_dc.c | 4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/gpu/drm/imx/dcss/dcss-kms.c b/drivers/gpu/drm/imx/dcss/dcss-kms.c
-index dab5e664920d..896de946f8df 100644
---- a/drivers/gpu/drm/imx/dcss/dcss-kms.c
-+++ b/drivers/gpu/drm/imx/dcss/dcss-kms.c
-@@ -7,7 +7,7 @@
+diff --git a/drivers/gpu/drm/atmel-hlcdc/atmel_hlcdc_dc.c b/drivers/gpu/drm/atmel-hlcdc/atmel_hlcdc_dc.c
+index 4e806b06d35d..29603561d501 100644
+--- a/drivers/gpu/drm/atmel-hlcdc/atmel_hlcdc_dc.c
++++ b/drivers/gpu/drm/atmel-hlcdc/atmel_hlcdc_dc.c
+@@ -19,7 +19,7 @@
+ #include <drm/drm_atomic.h>
  #include <drm/drm_atomic_helper.h>
- #include <drm/drm_bridge_connector.h>
  #include <drm/drm_drv.h>
 -#include <drm/drm_fbdev_generic.h>
 +#include <drm/drm_fbdev_dma.h>
  #include <drm/drm_gem_dma_helper.h>
  #include <drm/drm_gem_framebuffer_helper.h>
- #include <drm/drm_of.h>
-@@ -145,7 +145,7 @@ struct dcss_kms_dev *dcss_kms_attach(struct dcss_dev *dcss)
+ #include <drm/drm_module.h>
+@@ -760,7 +760,7 @@ static int atmel_hlcdc_dc_drm_probe(struct platform_device *pdev)
  	if (ret)
- 		goto cleanup_crtc;
+ 		goto err_unload;
  
--	drm_fbdev_generic_setup(drm, 32);
-+	drm_fbdev_dma_setup(drm, 32);
+-	drm_fbdev_generic_setup(ddev, 24);
++	drm_fbdev_dma_setup(ddev, 24);
  
- 	return kms;
+ 	return 0;
  
 -- 
 2.39.2
