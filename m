@@ -1,9 +1,9 @@
 From: Thomas Zimmermann <tzimmermann@suse.de>
-Date: Mon, 13 Mar 2023 16:51:17 +0100
-Subject: [PATCH v2 04/25] drm/aspeed: Use GEM DMA fbdev emulation
+Date: Mon, 13 Mar 2023 16:51:33 +0100
+Subject: [PATCH v2 20/25] drm/tve200: Use GEM DMA fbdev emulation
 In-Reply-To: <20230313155138.20584-1-tzimmermann@suse.de>
 References: <20230313155138.20584-1-tzimmermann@suse.de>
-Message-ID: <20230313155138.20584-5-tzimmermann@suse.de>
+Message-ID: <20230313155138.20584-21-tzimmermann@suse.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -15,32 +15,33 @@ possible shadow buffering and makes the code simpler.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
+Acked-by: Linus Walleij <linus.walleij@linaro.org>
 ---
- drivers/gpu/drm/aspeed/aspeed_gfx_drv.c | 4 ++--
+ drivers/gpu/drm/tve200/tve200_drv.c | 4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c b/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
-index ecfb060d2557..c8c7f8215155 100644
---- a/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
-+++ b/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
-@@ -15,7 +15,7 @@
- 
+diff --git a/drivers/gpu/drm/tve200/tve200_drv.c b/drivers/gpu/drm/tve200/tve200_drv.c
+index 0d05c386d303..abd557332b28 100644
+--- a/drivers/gpu/drm/tve200/tve200_drv.c
++++ b/drivers/gpu/drm/tve200/tve200_drv.c
+@@ -40,7 +40,7 @@
  #include <drm/drm_atomic_helper.h>
- #include <drm/drm_device.h>
+ #include <drm/drm_bridge.h>
+ #include <drm/drm_drv.h>
 -#include <drm/drm_fbdev_generic.h>
 +#include <drm/drm_fbdev_dma.h>
  #include <drm/drm_gem_dma_helper.h>
  #include <drm/drm_gem_framebuffer_helper.h>
  #include <drm/drm_module.h>
-@@ -341,7 +341,7 @@ static int aspeed_gfx_probe(struct platform_device *pdev)
- 	if (ret)
- 		goto err_unload;
+@@ -227,7 +227,7 @@ static int tve200_probe(struct platform_device *pdev)
+ 	 * Passing in 16 here will make the RGB565 mode the default
+ 	 * Passing in 32 will use XRGB8888 mode
+ 	 */
+-	drm_fbdev_generic_setup(drm, 16);
++	drm_fbdev_dma_setup(drm, 16);
  
--	drm_fbdev_generic_setup(&priv->drm, 32);
-+	drm_fbdev_dma_setup(&priv->drm, 32);
  	return 0;
  
- err_unload:
 -- 
 2.39.2
 
