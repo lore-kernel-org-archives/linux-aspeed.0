@@ -1,9 +1,9 @@
 From: Thomas Zimmermann <tzimmermann@suse.de>
-Date: Mon, 13 Mar 2023 16:51:29 +0100
-Subject: [PATCH v2 16/25] drm/sun4i: Use GEM DMA fbdev emulation
+Date: Mon, 13 Mar 2023 16:51:22 +0100
+Subject: [PATCH v2 09/25] drm/kmb: Use GEM DMA fbdev emulation
 In-Reply-To: <20230313155138.20584-1-tzimmermann@suse.de>
 References: <20230313155138.20584-1-tzimmermann@suse.de>
-Message-ID: <20230313155138.20584-17-tzimmermann@suse.de>
+Message-ID: <20230313155138.20584-10-tzimmermann@suse.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -15,31 +15,32 @@ possible shadow buffering and makes the code simpler.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
+Acked-by: Anitha Chrisanthus <anitha.chrisanthus@intel.com>
 ---
- drivers/gpu/drm/sun4i/sun4i_drv.c | 4 ++--
+ drivers/gpu/drm/kmb/kmb_drv.c | 4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/gpu/drm/sun4i/sun4i_drv.c b/drivers/gpu/drm/sun4i/sun4i_drv.c
-index d6c741716167..e49f78a6a8cf 100644
---- a/drivers/gpu/drm/sun4i/sun4i_drv.c
-+++ b/drivers/gpu/drm/sun4i/sun4i_drv.c
-@@ -17,7 +17,7 @@
- #include <drm/drm_aperture.h>
+diff --git a/drivers/gpu/drm/kmb/kmb_drv.c b/drivers/gpu/drm/kmb/kmb_drv.c
+index d29c678f6c91..24035b53441c 100644
+--- a/drivers/gpu/drm/kmb/kmb_drv.c
++++ b/drivers/gpu/drm/kmb/kmb_drv.c
+@@ -15,7 +15,7 @@
+ 
  #include <drm/drm_atomic_helper.h>
  #include <drm/drm_drv.h>
 -#include <drm/drm_fbdev_generic.h>
 +#include <drm/drm_fbdev_dma.h>
  #include <drm/drm_gem_dma_helper.h>
+ #include <drm/drm_gem_framebuffer_helper.h>
  #include <drm/drm_module.h>
- #include <drm/drm_of.h>
-@@ -111,7 +111,7 @@ static int sun4i_drv_bind(struct device *dev)
+@@ -562,7 +562,7 @@ static int kmb_probe(struct platform_device *pdev)
  	if (ret)
- 		goto finish_poll;
+ 		goto err_register;
  
--	drm_fbdev_generic_setup(drm, 32);
-+	drm_fbdev_dma_setup(drm, 32);
+-	drm_fbdev_generic_setup(&kmb->drm, 0);
++	drm_fbdev_dma_setup(&kmb->drm, 0);
  
- 	dev_set_drvdata(dev, drm);
+ 	return 0;
  
 -- 
 2.39.2
