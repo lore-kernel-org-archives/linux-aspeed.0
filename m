@@ -1,47 +1,50 @@
 From: Thomas Zimmermann <tzimmermann@suse.de>
-Date: Mon, 13 Mar 2023 16:51:38 +0100
-Subject: [PATCH v2 25/25] drm/pl111: Use GEM DMA fbdev emulation
+Date: Mon, 13 Mar 2023 16:51:36 +0100
+Subject: [PATCH v2 23/25] drm/mcde: Do not use dirty GEM FB handling
 In-Reply-To: <20230313155138.20584-1-tzimmermann@suse.de>
 References: <20230313155138.20584-1-tzimmermann@suse.de>
-Message-ID: <20230313155138.20584-26-tzimmermann@suse.de>
+Message-ID: <20230313155138.20584-24-tzimmermann@suse.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Use the fbdev emulation that is optimized for DMA helpers. Avoids
-possible shadow buffering and makes the code simpler.
+From: Linus Walleij <linus.walleij@linaro.org>
 
-Reported-by: Linus Walleij <linus.walleij@linaro.org>
-Link: https://lore.kernel.org/dri-devel/CACRpkdawSQsNqKJkSSoSw3HmMHyNXFUywxkdszpTC-a_uZA+tQ at mail.gmail.com/
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+This driver has no way to handle damage, the reason the
+drm_gem_fb_create_with_dirty() was used was because I had the
+ambition that the driver would only send out updates to DSI
+command displays whenever something changed, so as to
+minimize traffic.
+
+It turns out this ambition with command mode isn't working
+in practice because all the MCDE does is to create a
+continuous stream of DSI commands and while it is possible to
+send single frame updates with it, it's not been worthwhile.
+So we are just setting up continuous updates.
+
+Reported-by: Thomas Zimmermann <tzimmermann@suse.de>
+Link: https://lore.kernel.org/dri-devel/0e789778-03ca-e3cb-9c94-e8b55573894c at suse.de/
+Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
+Reviewed-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- drivers/gpu/drm/pl111/pl111_drv.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/gpu/drm/mcde/mcde_drv.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/gpu/drm/pl111/pl111_drv.c b/drivers/gpu/drm/pl111/pl111_drv.c
-index 00deba0b7271..4b2a9e9753f6 100644
---- a/drivers/gpu/drm/pl111/pl111_drv.c
-+++ b/drivers/gpu/drm/pl111/pl111_drv.c
-@@ -48,7 +48,7 @@
- #include <drm/drm_atomic_helper.h>
- #include <drm/drm_bridge.h>
- #include <drm/drm_drv.h>
--#include <drm/drm_fbdev_generic.h>
-+#include <drm/drm_fbdev_dma.h>
- #include <drm/drm_fourcc.h>
- #include <drm/drm_gem_dma_helper.h>
- #include <drm/drm_gem_framebuffer_helper.h>
-@@ -308,7 +308,7 @@ static int pl111_amba_probe(struct amba_device *amba_dev,
- 	if (ret < 0)
- 		goto dev_put;
+diff --git a/drivers/gpu/drm/mcde/mcde_drv.c b/drivers/gpu/drm/mcde/mcde_drv.c
+index 4aedb050d2a5..a592ad0d7886 100644
+--- a/drivers/gpu/drm/mcde/mcde_drv.c
++++ b/drivers/gpu/drm/mcde/mcde_drv.c
+@@ -94,7 +94,7 @@
+ #define MCDE_PID_MAJOR_VERSION_MASK 0xFF000000
  
--	drm_fbdev_generic_setup(drm, priv->variant->fb_bpp);
-+	drm_fbdev_dma_setup(drm, priv->variant->fb_bpp);
- 
- 	return 0;
- 
+ static const struct drm_mode_config_funcs mcde_mode_config_funcs = {
+-	.fb_create = drm_gem_fb_create_with_dirty,
++	.fb_create = drm_gem_fb_create,
+ 	.atomic_check = drm_atomic_helper_check,
+ 	.atomic_commit = drm_atomic_helper_commit,
+ };
 -- 
 2.39.2
 
