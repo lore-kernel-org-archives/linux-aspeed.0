@@ -1,592 +1,126 @@
-From: Chia-Wei Wang <chiawei_wang@aspeedtech.com>
-Date: Tue, 14 Mar 2023 10:18:15 +0800
-Subject: [PATCH v2 3/5] dmaengine: aspeed: Add AST2600 UART DMA driver
-In-Reply-To: <20230314021817.30446-1-chiawei_wang@aspeedtech.com>
-References: <20230314021817.30446-1-chiawei_wang@aspeedtech.com>
-Message-ID: <20230314021817.30446-4-chiawei_wang@aspeedtech.com>
+From: Thomas Zimmermann <tzimmermann@suse.de>
+Date: Tue, 14 Mar 2023 17:09:34 +0100
+Subject: [PATCH v2 00/25] drm/dma-helper: Add dedicated fbdev emulation
+In-Reply-To: <20230313155138.20584-1-tzimmermann@suse.de>
+References: <20230313155138.20584-1-tzimmermann@suse.de>
+Message-ID: <85c3029e-796d-3c3f-7f4c-9c2552312e4c@suse.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Aspeed AST2600 UART DMA (UDMA) includes 14 channels for the
-DMA transmission and recevie of each UART devices.
+Merged into drm-misc-next. Thanks a lot for reviews and comments.
 
-Signed-off-by: Chia-Wei Wang <chiawei_wang@aspeedtech.com>
----
- drivers/dma/Kconfig        |   9 +
- drivers/dma/Makefile       |   1 +
- drivers/dma/ast2600-udma.c | 528 +++++++++++++++++++++++++++++++++++++
- 3 files changed, 538 insertions(+)
- create mode 100644 drivers/dma/ast2600-udma.c
+Am 13.03.23 um 16:51 schrieb Thomas Zimmermann:
+> Add fbdev emulation that is optimized for DMA helpers, as used by most
+> drivers. It operates directly on GEM DMA buffers in system memory.
+> Memory pages are mmap'ed directly to userspace. No implicit shadow
+> buffers need to be allocated; as can happen with the generic fbdev
+> emulation. Convert drivers that fulfil the requirements.
+> 
+> Tested with fbcon and IGT on vc4.
+> 
+> Future direction: providing a dedicated fbdev emulation for GEM DMA
+> helpers will allow us to remove this case from the generic fbdev code.
+> The latter can then be simplified.
+> 
+> v2:
+> 	* update mcde and pl111 as well (Linus)
+> 
+> Linus Walleij (1):
+>    drm/mcde: Do not use dirty GEM FB handling
+> 
+> Thomas Zimmermann (24):
+>    drm/fbdev-dma: Implement fbdev emulation for GEM DMA helpers
+>    arm/hdlcd: Use GEM DMA fbdev emulation
+>    arm/malidp: Use GEM DMA fbdev emulation
+>    drm/aspeed: Use GEM DMA fbdev emulation
+>    drm/atmel-hlcdc: Use GEM DMA fbdev emulation
+>    drm/fsl-dcu: Use GEM DMA fbdev emulation
+>    drm/imx/dcss: Use GEM DMA fbdev emulation
+>    drm/imx: Use GEM DMA fbdev emulation
+>    drm/kmb: Use GEM DMA fbdev emulation
+>    drm/logicvc: Use GEM DMA fbdev emulation
+>    drm/meson: Use GEM DMA fbdev emulation
+>    drm/mxsfb/lcdif: Use GEM DMA fbdev emulation
+>    drm/mxsfb: Use GEM DMA fbdev emulation
+>    drm/sti: Use GEM DMA fbdev emulation
+>    drm/stm: Use GEM DMA fbdev emulation
+>    drm/sun4i: Use GEM DMA fbdev emulation
+>    drm/tidss: Use GEM DMA fbdev emulation
+>    drm/tilcdc: Use GEM DMA fbdev emulation
+>    drm/arcpgu: Use GEM DMA fbdev emulation
+>    drm/tve200: Use GEM DMA fbdev emulation
+>    drm/vc4: Use GEM DMA fbdev emulation
+>    drm/xlnx: Use GEM DMA fbdev emulation
+>    drm/mcde: Use GEM DMA fbdev emulation
+>    drm/pl111: Use GEM DMA fbdev emulation
+> 
+>   drivers/gpu/drm/Makefile                     |   1 +
+>   drivers/gpu/drm/arm/hdlcd_drv.c              |   4 +-
+>   drivers/gpu/drm/arm/malidp_drv.c             |   4 +-
+>   drivers/gpu/drm/aspeed/aspeed_gfx_drv.c      |   4 +-
+>   drivers/gpu/drm/atmel-hlcdc/atmel_hlcdc_dc.c |   4 +-
+>   drivers/gpu/drm/drm_fbdev_dma.c              | 275 +++++++++++++++++++
+>   drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_drv.c    |   4 +-
+>   drivers/gpu/drm/imx/dcss/dcss-kms.c          |   4 +-
+>   drivers/gpu/drm/imx/ipuv3/imx-drm-core.c     |   4 +-
+>   drivers/gpu/drm/kmb/kmb_drv.c                |   4 +-
+>   drivers/gpu/drm/logicvc/logicvc_drm.c        |   4 +-
+>   drivers/gpu/drm/mcde/mcde_drv.c              |   6 +-
+>   drivers/gpu/drm/meson/meson_drv.c            |   4 +-
+>   drivers/gpu/drm/mxsfb/lcdif_drv.c            |   4 +-
+>   drivers/gpu/drm/mxsfb/mxsfb_drv.c            |   4 +-
+>   drivers/gpu/drm/pl111/pl111_drv.c            |   4 +-
+>   drivers/gpu/drm/sti/sti_drv.c                |   4 +-
+>   drivers/gpu/drm/stm/drv.c                    |   4 +-
+>   drivers/gpu/drm/sun4i/sun4i_drv.c            |   4 +-
+>   drivers/gpu/drm/tidss/tidss_drv.c            |   4 +-
+>   drivers/gpu/drm/tilcdc/tilcdc_drv.c          |   4 +-
+>   drivers/gpu/drm/tiny/arcpgu.c                |   4 +-
+>   drivers/gpu/drm/tve200/tve200_drv.c          |   4 +-
+>   drivers/gpu/drm/vc4/vc4_drv.c                |   4 +-
+>   drivers/gpu/drm/xlnx/zynqmp_kms.c            |   4 +-
+>   include/drm/drm_fbdev_dma.h                  |  15 +
+>   26 files changed, 338 insertions(+), 47 deletions(-)
+>   create mode 100644 drivers/gpu/drm/drm_fbdev_dma.c
+>   create mode 100644 include/drm/drm_fbdev_dma.h
+> 
+> 
+> base-commit: b21ced77ae1dbc3d8b01d3aef3c99bba7377a69b
+> prerequisite-patch-id: 0aa359f6144c4015c140c8a6750be19099c676fb
+> prerequisite-patch-id: c67e5d886a47b7d0266d81100837557fda34cb24
+> prerequisite-patch-id: 3f204510fcbf9530d6540bd8e6128cce598988b6
+> prerequisite-patch-id: 75f2ebf12693f23508f00d574b2b57488723e474
+> prerequisite-patch-id: 718531bf5cf15716834cfaf3008ea0e2366ec927
+> prerequisite-patch-id: a793aa283cf41f290d970404881f24bffc48caff
+> prerequisite-patch-id: e74f259d1923247a74d5bf7d996afb0e6ca01883
+> prerequisite-patch-id: a1d12b9548110b1f5e9aa3803b21e2a7f9f8c19d
+> prerequisite-patch-id: 033f10da72f10d82f113a5066a3b3a7ff91d13aa
+> prerequisite-patch-id: 976264fafbd69d0996209a90a3d546d9be3f3779
+> prerequisite-patch-id: 617c74af5e16717898a23ced9c8badfff1e0ade7
+> prerequisite-patch-id: 5e0cfa9c81aa7ceb2cc48c5cbc9934496251fac4
+> prerequisite-patch-id: 13594c3cc8102960bb195bc7f572fefba8eb19d7
+> prerequisite-patch-id: 99d9da7e08369050d135c23d32dead811bb9cf97
+> prerequisite-patch-id: 833f9d8341a287961ee653b04730da57ce987b06
+> prerequisite-patch-id: 5d5c9caaf9489a6c2f688d632a57a0fb65fcb5f7
+> prerequisite-patch-id: b64758ecd64ec0c0acd96d0766ba891378c5c539
+> prerequisite-patch-id: 37a7d3e9fb3e4e2b7ebeac3f77da6610f12beea3
+> prerequisite-patch-id: 99073429dafdc98cdd31464ce28e795696a149f9
+> prerequisite-patch-id: c2247eca44927569cd2b6d9f370195965346adb4
 
-diff --git a/drivers/dma/Kconfig b/drivers/dma/Kconfig
-index fb7073fc034f..c35f87dbafd9 100644
---- a/drivers/dma/Kconfig
-+++ b/drivers/dma/Kconfig
-@@ -748,6 +748,15 @@ config XILINX_ZYNQMP_DPDMA
- 	  driver provides the dmaengine required by the DisplayPort subsystem
- 	  display driver.
- 
-+config ASPEED_AST2600_UDMA
-+	bool "Aspeed AST2600 UDMA support"
-+	depends on ARCH_ASPEED
-+	help
-+	  Enable support for Aspeed AST2600 UART DMA. Select this option if you
-+	  have a AST2600 SoC integrated system. The driver provides the UART DMA
-+	  support with the dmaengine subsystem, which can be leveraged by generic
-+	  8250 serial drivers.
-+
- # driver files
- source "drivers/dma/bestcomm/Kconfig"
- 
-diff --git a/drivers/dma/Makefile b/drivers/dma/Makefile
-index a4fd1ce29510..6cbacebcdcab 100644
---- a/drivers/dma/Makefile
-+++ b/drivers/dma/Makefile
-@@ -81,6 +81,7 @@ obj-$(CONFIG_XGENE_DMA) += xgene-dma.o
- obj-$(CONFIG_ST_FDMA) += st_fdma.o
- obj-$(CONFIG_FSL_DPAA2_QDMA) += fsl-dpaa2-qdma/
- obj-$(CONFIG_INTEL_LDMA) += lgm/
-+obj-$(CONFIG_ASPEED_AST2600_UDMA) += ast2600-udma.o
- 
- obj-y += mediatek/
- obj-y += qcom/
-diff --git a/drivers/dma/ast2600-udma.c b/drivers/dma/ast2600-udma.c
-new file mode 100644
-index 000000000000..ff678724f9d9
---- /dev/null
-+++ b/drivers/dma/ast2600-udma.c
-@@ -0,0 +1,528 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Copyright (C) ASPEED Technology Inc.
-+ */
-+#include <linux/delay.h>
-+#include <linux/bitfield.h>
-+#include <linux/interrupt.h>
-+#include <linux/dmaengine.h>
-+#include <linux/dma-mapping.h>
-+#include <linux/platform_device.h>
-+#include <linux/module.h>
-+#include <linux/of.h>
-+#include <linux/of_dma.h>
-+#include <linux/of_irq.h>
-+#include <linux/of_address.h>
-+#include <linux/dma-direct.h>
-+#include "dmaengine.h"
-+
-+#define DEVICE_NAME	"aspeed-udma"
-+
-+/* register offset */
-+#define UDMA_TX_EN		0x000
-+#define UDMA_RX_EN		0x004
-+#define UDMA_TMOUT		0x00c
-+#define UDMA_TX_PTR_RST		0x020
-+#define UDMA_RX_PTR_RST		0x024
-+#define UDMA_TX_INT_EN		0x030
-+#define UDMA_TX_INT_STS		0x034
-+#define UDMA_RX_INT_EN		0x038
-+#define UDMA_RX_INT_STS		0x03c
-+
-+#define UDMA_CH_OFFS(x)		((x) * 0x10)
-+#define UDMA_CH_RPTR(x)		(0x040 + UDMA_CH_OFFS(x))
-+#define UDMA_CH_WPTR(x)		(0x044 + UDMA_CH_OFFS(x))
-+#define UDMA_CH_ADDR(x)		(0x048 + UDMA_CH_OFFS(x))
-+#define UDMA_CH_CTRL(x)		(0x04c + UDMA_CH_OFFS(x))
-+#define   UDMA_CH_CTRL_BUFSZ	GENMASK(1, 0)
-+
-+#define UDMA_MAX_BUFSZ	(0x10000)
-+#define UDMA_MAX_TXSZ	(UDMA_MAX_BUFSZ - 1)
-+
-+enum ast2600_udma_bufsz {
-+	UDMA_BUFSZ_1KB,
-+	UDMA_BUFSZ_4KB,
-+	UDMA_BUFSZ_16KB,
-+	UDMA_BUFSZ_64KB,
-+};
-+
-+struct ast2600_udma_desc {
-+	struct dma_async_tx_descriptor tx;
-+	dma_addr_t addr;
-+	unsigned int size;
-+};
-+
-+struct ast2600_udma_chan {
-+	struct dma_chan chan;
-+	struct ast2600_udma_desc ud;
-+	struct ast2600_udma *udma;
-+	uint32_t residue;
-+
-+	/* 4B-aligned local buffer for workaround */
-+	uint8_t *buf;
-+	dma_addr_t buf_addr;
-+
-+	bool is_tx;
-+};
-+
-+struct ast2600_udma {
-+	struct dma_device ddev;
-+	uint8_t __iomem *regs;
-+	int irq;
-+	struct ast2600_udma_chan *ucs;
-+	uint32_t n_ucs;
-+	spinlock_t lock;
-+};
-+
-+static struct ast2600_udma_chan *to_ast2600_udma_chan(struct dma_chan *chan)
-+{
-+	return container_of(chan, struct ast2600_udma_chan, chan);
-+}
-+
-+static int ast2600_udma_alloc_chan_resources(struct dma_chan *chan)
-+{
-+	dma_cookie_init(chan);
-+
-+	return 0;
-+}
-+
-+static dma_cookie_t ast2600_udma_tx_submit(struct dma_async_tx_descriptor *tx)
-+{
-+	return dma_cookie_assign(tx);
-+}
-+
-+/* consider only 8250_dma using dmaengine_prep_slave_single() */
-+static struct dma_async_tx_descriptor *ast2600_udma_prep_slave_sg(struct dma_chan *chan,
-+								  struct scatterlist *sgl,
-+								  unsigned int sg_len,
-+								  enum dma_transfer_direction dir,
-+								  unsigned long tx_flags,
-+								  void *context)
-+{
-+	void *p;
-+	struct device *dev = chan->device->dev;
-+	struct ast2600_udma_chan *uc = to_ast2600_udma_chan(chan);
-+	struct ast2600_udma_desc *ud = &uc->ud;
-+
-+	if (!is_slave_direction(dir)) {
-+		dev_err(dev, "direction is not slave mode\n");
-+		return NULL;
-+	}
-+
-+	if (sg_len != 1) {
-+		dev_err(dev, "scatter list length is not 1\n");
-+		return NULL;
-+	}
-+
-+	if (uc->is_tx && dir != DMA_MEM_TO_DEV) {
-+		dev_err(dev, "invalid direction to TX channel\n");
-+		return NULL;
-+	}
-+
-+	ud->addr = sg_dma_address(sgl);
-+	ud->size = sg_dma_len(sgl);
-+
-+	if (uc->is_tx) {
-+		if (ud->size > UDMA_MAX_TXSZ) {
-+			dev_err(dev, "invalid TX DMA SIZE");
-+			return NULL;
-+		}
-+
-+		/*
-+		 * UDMA is limited to 4B-aligned DMA addresses.
-+		 * Thus copy data to local 4B-aligned buffer if
-+		 * the source does not fit.
-+		 */
-+		if (ud->addr & 0x3) {
-+			p = phys_to_virt(dma_to_phys(chan->device->dev, ud->addr));
-+			memcpy(uc->buf, p, ud->size);
-+			ud->addr = uc->buf_addr;
-+		}
-+	} else {
-+		/*
-+		 * UDMA RX buffer size is limited to 1/4/16/64 KB
-+		 * We use the lower bits to encode the buffer size
-+		 */
-+		switch (ud->size) {
-+		case 0x400:
-+			ud->size |= FIELD_PREP(UDMA_CH_CTRL_BUFSZ, UDMA_BUFSZ_1KB);
-+			break;
-+		case 0x1000:
-+			ud->size |= FIELD_PREP(UDMA_CH_CTRL_BUFSZ, UDMA_BUFSZ_4KB);
-+			break;
-+		case 0x4000:
-+			ud->size |= FIELD_PREP(UDMA_CH_CTRL_BUFSZ, UDMA_BUFSZ_16KB);
-+			break;
-+		case 0x10000:
-+			ud->size |= FIELD_PREP(UDMA_CH_CTRL_BUFSZ, UDMA_BUFSZ_64KB);
-+			break;
-+		default:
-+			dev_err(dev, "invalid RX DMA size\n");
-+			return NULL;
-+		}
-+	}
-+
-+	dma_async_tx_descriptor_init(&ud->tx, &uc->chan);
-+	ud->tx.tx_submit = ast2600_udma_tx_submit;
-+
-+	return &ud->tx;
-+}
-+
-+static void ast2600_udma_issue_pending(struct dma_chan *chan)
-+{
-+	unsigned long flags;
-+	uint32_t r_pr, r_is, r_ie, r_en, reg;
-+	uint32_t ch_id = chan->chan_id;
-+	uint32_t ch_bit = ch_id / 2;
-+	dma_addr_t rx_addr;
-+	uint32_t rx_size;
-+	struct ast2600_udma_chan *uc = to_ast2600_udma_chan(chan);
-+	struct ast2600_udma_desc *ud = &uc->ud;
-+	struct ast2600_udma *udma = uc->udma;
-+
-+	if (uc->is_tx) {
-+		r_pr = UDMA_TX_PTR_RST;
-+		r_is = UDMA_TX_INT_STS;
-+		r_ie = UDMA_TX_INT_EN;
-+		r_en = UDMA_TX_EN;
-+	} else {
-+		r_pr = UDMA_RX_PTR_RST;
-+		r_is = UDMA_RX_INT_STS;
-+		r_ie = UDMA_RX_INT_EN;
-+		r_en = UDMA_RX_EN;
-+	}
-+
-+	spin_lock_irqsave(&udma->lock, flags);
-+
-+	/* reset channel HW read/write pointer */
-+	writel(BIT(ch_bit), udma->regs + r_pr);
-+	writel(0, udma->regs + r_pr);
-+
-+	/* clear interrupt status */
-+	writel(BIT(ch_bit), udma->regs + r_is);
-+
-+	/* set transfer address & size */
-+	if (uc->is_tx) {
-+		writel(ud->addr, udma->regs + UDMA_CH_ADDR(ch_id));
-+		writel(ud->size, udma->regs + UDMA_CH_WPTR(ch_id));
-+		writel(UDMA_BUFSZ_64KB, udma->regs + UDMA_CH_CTRL(ch_id));
-+	} else {
-+		/*
-+		 * UDMA is limited to 4B-aligned addresses.
-+		 * Thus use local 4B-aligned buffer to get
-+		 * RX data and copy to the real destination
-+		 * after then.
-+		 */
-+		rx_addr = (ud->addr & 0x3) ? uc->buf_addr : ud->addr;
-+		rx_size = FIELD_GET(UDMA_CH_CTRL_BUFSZ, ud->size);
-+		writel(rx_addr, udma->regs + UDMA_CH_ADDR(ch_id));
-+		writel(rx_size, udma->regs + UDMA_CH_CTRL(ch_id));
-+	}
-+
-+	/* enable interrupt */
-+	reg = readl(udma->regs + r_ie) | BIT(ch_bit);
-+	writel(reg, udma->regs + r_ie);
-+
-+	/* start DMA */
-+	reg = readl(udma->regs + r_en) | BIT(ch_bit);
-+	writel(reg, udma->regs + r_en);
-+
-+	spin_unlock_irqrestore(&udma->lock, flags);
-+}
-+
-+static enum dma_status ast2600_udma_tx_status(struct dma_chan *chan,
-+		dma_cookie_t cookie, struct dma_tx_state *txstate)
-+{
-+	struct ast2600_udma_chan *uc = to_ast2600_udma_chan(chan);
-+	enum dma_status sts = dma_cookie_status(chan, cookie, txstate);
-+
-+	dma_set_residue(txstate, uc->residue);
-+
-+	return sts;
-+}
-+
-+static int ast2600_udma_pause(struct dma_chan *chan)
-+{
-+	unsigned long flags;
-+	uint32_t r_en, r_ie, reg;
-+	uint32_t ch_id = chan->chan_id;
-+	uint32_t ch_bit = ch_id / 2;
-+	struct ast2600_udma_chan *uc = to_ast2600_udma_chan(chan);
-+	struct ast2600_udma *udma = uc->udma;
-+
-+	if (uc->is_tx) {
-+		r_en = UDMA_TX_EN;
-+		r_ie = UDMA_TX_INT_EN;
-+	} else {
-+		r_en = UDMA_RX_EN;
-+		r_ie = UDMA_RX_INT_EN;
-+	}
-+
-+	spin_lock_irqsave(&udma->lock, flags);
-+
-+	reg = readl(udma->regs + r_en) & ~BIT(ch_bit);
-+	writel(reg, udma->regs + r_en);
-+
-+	reg = readl(udma->regs + r_ie) & ~BIT(ch_bit);
-+	writel(reg, udma->regs + r_ie);
-+
-+	spin_unlock_irqrestore(&udma->lock, flags);
-+
-+	return 0;
-+}
-+
-+static int ast2600_udma_resume(struct dma_chan *chan)
-+{
-+	unsigned long flags;
-+	uint32_t r_en, r_ie, reg;
-+	uint32_t ch_id = chan->chan_id;
-+	uint32_t ch_bit = ch_id / 2;
-+	struct ast2600_udma_chan *uc = to_ast2600_udma_chan(chan);
-+	struct ast2600_udma *udma = uc->udma;
-+
-+	if (uc->is_tx) {
-+		r_en = UDMA_TX_EN;
-+		r_ie = UDMA_TX_INT_EN;
-+	} else {
-+		r_en = UDMA_RX_EN;
-+		r_ie = UDMA_RX_INT_EN;
-+	}
-+
-+	spin_lock_irqsave(&udma->lock, flags);
-+
-+	reg = readl(udma->regs + r_en) | BIT(ch_bit);
-+	writel(reg, udma->regs + r_en);
-+
-+	reg = readl(udma->regs + r_ie) | BIT(ch_bit);
-+	writel(reg, udma->regs + r_ie);
-+
-+	spin_unlock_irqrestore(&udma->lock, flags);
-+
-+	return 0;
-+}
-+
-+static int ast2600_udma_terminate(struct dma_chan *chan)
-+{
-+	unsigned long flags;
-+	uint32_t r_pr, r_is, r_ie, r_en, reg;
-+	uint32_t ch_id = chan->chan_id;
-+	uint32_t ch_bit = ch_id / 2;
-+	struct ast2600_udma_chan *uc = to_ast2600_udma_chan(chan);
-+	struct ast2600_udma *udma = uc->udma;
-+
-+	if (uc->is_tx) {
-+		r_pr = UDMA_TX_PTR_RST;
-+		r_is = UDMA_TX_INT_STS;
-+		r_ie = UDMA_TX_INT_EN;
-+		r_en = UDMA_TX_EN;
-+	} else {
-+		r_pr = UDMA_RX_PTR_RST;
-+		r_is = UDMA_RX_INT_STS;
-+		r_ie = UDMA_RX_INT_EN;
-+		r_en = UDMA_RX_EN;
-+	}
-+
-+	spin_lock_irqsave(&udma->lock, flags);
-+
-+	/* disable DMA */
-+	reg = readl(udma->regs + r_en) & ~BIT(ch_bit);
-+	writel(reg, udma->regs + r_en);
-+
-+	/* disable interrupt */
-+	reg = readl(udma->regs + r_ie) & ~BIT(ch_bit);
-+	writel(reg, udma->regs + r_ie);
-+
-+	/* clear interrupt status */
-+	writel(BIT(ch_bit), udma->regs + r_is);
-+
-+	/* reset channel HW read/write pointer */
-+	writel(BIT(ch_bit), udma->regs + r_pr);
-+	writel(0, udma->regs + r_pr);
-+
-+	spin_unlock_irqrestore(&udma->lock, flags);
-+
-+	return 0;
-+}
-+
-+static irqreturn_t ast2600_udma_isr(int irq, void *arg)
-+{
-+	struct ast2600_udma *udma = arg;
-+	struct ast2600_udma_chan *uc;
-+	struct ast2600_udma_desc *ud;
-+	struct dma_async_tx_descriptor *tx;
-+	uint32_t sts, rptr, wptr;
-+	uint32_t ch_id, ch_bit;
-+	void *p;
-+
-+	/* handle TX interrupt */
-+	sts = readl(udma->regs + UDMA_TX_INT_STS);
-+	for_each_set_bit(ch_bit, (unsigned long *)&sts, (udma->n_ucs / 2)) {
-+		ch_id = ch_bit << 1;
-+		rptr = readl(udma->regs + UDMA_CH_RPTR(ch_id));
-+		wptr = readl(udma->regs + UDMA_CH_WPTR(ch_id));
-+
-+		uc = &udma->ucs[ch_id];
-+		uc->residue = wptr - rptr;
-+
-+		ast2600_udma_terminate(&uc->chan);
-+
-+		tx = &uc->ud.tx;
-+		dma_cookie_complete(tx);
-+		dma_descriptor_unmap(tx);
-+		dmaengine_desc_get_callback_invoke(tx, NULL);
-+	}
-+
-+	/* handle RX interrupt */
-+	sts = readl(udma->regs + UDMA_RX_INT_STS);
-+	for_each_set_bit(ch_bit, (unsigned long *)&sts, udma->n_ucs / 2) {
-+		ch_id = (ch_bit << 1) + 1;
-+		wptr = readl(udma->regs + UDMA_CH_WPTR(ch_id));
-+
-+		uc = &udma->ucs[ch_id];
-+		ud = &uc->ud;
-+		tx = &ud->tx;
-+
-+		uc->residue = (ud->size & ~UDMA_CH_CTRL_BUFSZ) - wptr;
-+
-+		/* handle non-4B-aligned case */
-+		if (ud->addr & 0x3) {
-+			p = phys_to_virt(dma_to_phys(uc->chan.device->dev, ud->addr));
-+			memcpy(p, uc->buf, wptr);
-+		}
-+
-+		ast2600_udma_terminate(&uc->chan);
-+
-+		dma_cookie_complete(tx);
-+		dma_descriptor_unmap(tx);
-+		dmaengine_desc_get_callback_invoke(tx, NULL);
-+	}
-+
-+	return IRQ_HANDLED;
-+}
-+
-+static int ast2600_udma_probe(struct platform_device *pdev)
-+{
-+	int i, rc;
-+	struct resource *res;
-+	struct ast2600_udma *udma;
-+	struct device *dev = &pdev->dev;
-+
-+	udma = devm_kzalloc(dev, sizeof(*udma), GFP_KERNEL);
-+	if (!udma)
-+		return -ENOMEM;
-+
-+	dma_cap_set(DMA_SLAVE, udma->ddev.cap_mask);
-+	udma->ddev.device_alloc_chan_resources = ast2600_udma_alloc_chan_resources;
-+	udma->ddev.device_prep_slave_sg = ast2600_udma_prep_slave_sg;
-+	udma->ddev.device_issue_pending = ast2600_udma_issue_pending;
-+	udma->ddev.device_tx_status = ast2600_udma_tx_status;
-+	udma->ddev.device_pause = ast2600_udma_pause;
-+	udma->ddev.device_resume = ast2600_udma_resume;
-+	udma->ddev.device_terminate_all = ast2600_udma_terminate;
-+	udma->ddev.src_addr_widths = BIT(DMA_SLAVE_BUSWIDTH_1_BYTE);
-+	udma->ddev.dst_addr_widths = BIT(DMA_SLAVE_BUSWIDTH_1_BYTE);
-+	udma->ddev.directions = BIT(DMA_DEV_TO_MEM) | BIT(DMA_MEM_TO_DEV);
-+	udma->ddev.residue_granularity = DMA_RESIDUE_GRANULARITY_BURST;
-+	udma->ddev.dev = dev;
-+	INIT_LIST_HEAD(&udma->ddev.channels);
-+
-+	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	if (IS_ERR(res)) {
-+		dev_err(dev, "cannot get IO resource\n");
-+		return -ENODEV;
-+	}
-+
-+	udma->regs = devm_ioremap_resource(dev, res);
-+	if (IS_ERR(udma->regs)) {
-+		dev_err(dev, "cannot map IO registers\n");
-+		return PTR_ERR(udma->regs);
-+	}
-+
-+	/* timeout value: 0x200 * (PCLK * 14400) */
-+	writel(0x200, udma->regs + UDMA_TMOUT);
-+
-+	/* disable all for safety */
-+	writel(0x0, udma->regs + UDMA_TX_EN);
-+	writel(0x0, udma->regs + UDMA_RX_EN);
-+
-+	udma->irq = platform_get_irq(pdev, 0);
-+	if (udma->irq < 0)
-+		return udma->irq;
-+
-+	rc = devm_request_irq(&pdev->dev, udma->irq, ast2600_udma_isr,
-+			      IRQF_SHARED, DEVICE_NAME, udma);
-+	if (rc) {
-+		dev_err(dev, "cannot request IRQ\n");
-+		return rc;
-+	}
-+
-+	rc = of_property_read_u32(dev->of_node, "dma-channels", &udma->n_ucs);
-+	if (rc) {
-+		dev_err(dev, "cannot find number of channels\n");
-+		return rc;
-+	}
-+
-+	udma->ucs = devm_kzalloc(dev,
-+				 sizeof(struct ast2600_udma_chan) * udma->n_ucs, GFP_KERNEL);
-+	if (!udma->ucs)
-+		return -ENOMEM;
-+
-+	for (i = 0; i < udma->n_ucs; ++i) {
-+		udma->ucs[i].is_tx = !(i % 2);
-+		udma->ucs[i].chan.device = &udma->ddev;
-+		udma->ucs[i].buf = dmam_alloc_coherent(dev, UDMA_MAX_BUFSZ,
-+						       &udma->ucs[i].buf_addr, GFP_KERNEL);
-+		if (!udma->ucs[i].buf)
-+			return -ENOMEM;
-+
-+		udma->ucs[i].udma = udma;
-+		list_add_tail(&udma->ucs[i].chan.device_node, &udma->ddev.channels);
-+	}
-+
-+	rc = dma_async_device_register(&udma->ddev);
-+	if (rc)
-+		return rc;
-+
-+	rc = of_dma_controller_register(dev->of_node, of_dma_xlate_by_chan_id, &udma->ddev);
-+	if (rc)
-+		return rc;
-+
-+	spin_lock_init(&udma->lock);
-+
-+	platform_set_drvdata(pdev, udma);
-+
-+	dev_info(dev, "module loaded\n");
-+
-+	return 0;
-+}
-+
-+static int ast2600_udma_remove(struct platform_device *pdev)
-+{
-+	struct device *dev = &pdev->dev;
-+	struct ast2600_udma *udma = platform_get_drvdata(pdev);
-+
-+	of_dma_controller_free(dev->of_node);
-+	dma_async_device_unregister(&udma->ddev);
-+
-+	dev_info(dev, "module removed\n");
-+
-+	return 0;
-+}
-+
-+static const struct of_device_id ast2600_udma_match[] = {
-+	{ .compatible = "aspeed,ast2600-udma" },
-+	{ },
-+};
-+
-+static struct platform_driver ast2600_udma_driver = {
-+	.probe = ast2600_udma_probe,
-+	.remove = ast2600_udma_remove,
-+	.driver = {
-+			.name = DEVICE_NAME,
-+			.of_match_table = ast2600_udma_match,
-+	},
-+};
-+
-+module_platform_driver(ast2600_udma_driver);
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Chia-Wei Wang <chiawei_wang@aspeedtech.com");
 -- 
-2.25.1
-
+Thomas Zimmermann
+Graphics Driver Developer
+SUSE Software Solutions Germany GmbH
+Maxfeldstr. 5, 90409 N?rnberg, Germany
+(HRB 36809, AG N?rnberg)
+Gesch?ftsf?hrer: Ivo Totev
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: OpenPGP_signature
+Type: application/pgp-signature
+Size: 840 bytes
+Desc: OpenPGP digital signature
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20230314/c6d848ed/attachment.sig>
