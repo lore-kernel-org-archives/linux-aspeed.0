@@ -1,25 +1,35 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Date: Mon, 13 Mar 2023 22:41:34 +0100
-Subject: [PATCH v2 25/25] drm/pl111: Use GEM DMA fbdev emulation
-In-Reply-To: <20230313155138.20584-26-tzimmermann@suse.de>
-References: <20230313155138.20584-1-tzimmermann@suse.de> <20230313155138.20584-26-tzimmermann@suse.de>
-Message-ID: <CACRpkdYDpvpvURPCsdAMEd6s4_uU3UCpWoVLYkM8jh+wBM0ACg@mail.gmail.com>
+From: Chia-Wei Wang <chiawei_wang@aspeedtech.com>
+Date: Tue, 14 Mar 2023 10:18:13 +0800
+Subject: [PATCH v2 1/5] dt-bindings: serial: 8250: Add aspeed,ast2600-uart
+In-Reply-To: <20230314021817.30446-1-chiawei_wang@aspeedtech.com>
+References: <20230314021817.30446-1-chiawei_wang@aspeedtech.com>
+Message-ID: <20230314021817.30446-2-chiawei_wang@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Mar 13, 2023 at 4:51?PM Thomas Zimmermann <tzimmermann@suse.de> wrote:
+Add a compatible string for the NS16550A-compatible UARTs
+of Aspeed AST2600 SoCs.
 
-> Use the fbdev emulation that is optimized for DMA helpers. Avoids
-> possible shadow buffering and makes the code simpler.
->
-> Reported-by: Linus Walleij <linus.walleij@linaro.org>
-> Link: https://lore.kernel.org/dri-devel/CACRpkdawSQsNqKJkSSoSw3HmMHyNXFUywxkdszpTC-a_uZA+tQ at mail.gmail.com/
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+Signed-off-by: Chia-Wei Wang <chiawei_wang@aspeedtech.com>
+---
+ Documentation/devicetree/bindings/serial/8250.yaml | 1 +
+ 1 file changed, 1 insertion(+)
 
-Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+diff --git a/Documentation/devicetree/bindings/serial/8250.yaml b/Documentation/devicetree/bindings/serial/8250.yaml
+index 692aa05500fd..cc6842371d38 100644
+--- a/Documentation/devicetree/bindings/serial/8250.yaml
++++ b/Documentation/devicetree/bindings/serial/8250.yaml
+@@ -59,6 +59,7 @@ properties:
+       - const: ns16850
+       - const: aspeed,ast2400-vuart
+       - const: aspeed,ast2500-vuart
++      - const: aspeed,ast2600-uart
+       - const: intel,xscale-uart
+       - const: mrvl,pxa-uart
+       - const: nuvoton,wpcm450-uart
+-- 
+2.25.1
 
-Yours,
-Linus Walleij
