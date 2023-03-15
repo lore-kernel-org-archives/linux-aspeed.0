@@ -1,51 +1,38 @@
-From: Mark Brown <broonie@kernel.org>
-Date: Mon, 13 Mar 2023 16:49:19 +0000
-Subject: (subset) [PATCH V5 00/15] spi: Add support for
- stacked/parallel memories
-In-Reply-To: <20230306172109.595464-1-amit.kumar-mahapatra@amd.com>
-References: <20230306172109.595464-1-amit.kumar-mahapatra@amd.com>
-Message-ID: <167872615942.75015.12960472969249845825.b4-ty@kernel.org>
+From: Yang Li <yang.lee@linux.alibaba.com>
+Date: Wed, 15 Mar 2023 13:50:23 +0800
+Subject: [PATCH -next] mmc: sdhci-of-aspeed: Use devm_platform_get_and_ioremap_resource()
+Message-ID: <20230315055023.61779-1-yang.lee@linux.alibaba.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, 06 Mar 2023 22:50:54 +0530, Amit Kumar Mahapatra wrote:
-> This patch is in the continuation to the discussions which happened on
-> 'commit f89504300e94 ("spi: Stacked/parallel memories bindings")' for
-> adding dt-binding support for stacked/parallel memories.
-> 
-> This patch series updated the spi-nor, spi core and the spi drivers
-> to add stacked and parallel memories support.
-> 
-> [...]
+According to commit 890cc39a8799 ("drivers: provide
+devm_platform_get_and_ioremap_resource()"), convert
+platform_get_resource(), devm_ioremap_resource() to a single
+call to devm_platform_get_and_ioremap_resource(), as this is exactly
+what this function does.
 
-Applied to
+Signed-off-by: Yang Li <yang.lee@linux.alibaba.com>
+---
+ drivers/mmc/host/sdhci-of-aspeed.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/spi.git for-next
-
-Thanks!
-
-[01/15] spi: Replace all spi->chip_select and spi->cs_gpiod references with function call
-        commit: 9e264f3f85a56cc109cc2d6010a48aa89d5c1ff1
-
-All being well this means that it will be integrated into the linux-next
-tree (usually sometime in the next 24 hours) and sent to Linus during
-the next merge window (or sooner if it is a bug fix), however if
-problems are discovered then the patch may be dropped or reverted.
-
-You may get further e-mails resulting from automated or manual testing
-and review of the tree, please engage with people reporting problems and
-send followup patches addressing any issues that are reported if needed.
-
-If any updates are required or you are submitting further changes they
-should be sent as incremental updates against current git, existing
-patches will not be replaced.
-
-Please add any relevant lists and maintainers to the CCs when replying
-to this mail.
-
-Thanks,
-Mark
+diff --git a/drivers/mmc/host/sdhci-of-aspeed.c b/drivers/mmc/host/sdhci-of-aspeed.c
+index ba6677bf7372..25b4073f698b 100644
+--- a/drivers/mmc/host/sdhci-of-aspeed.c
++++ b/drivers/mmc/host/sdhci-of-aspeed.c
+@@ -547,8 +547,7 @@ static int aspeed_sdc_probe(struct platform_device *pdev)
+ 		return ret;
+ 	}
+ 
+-	sdc->res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-	sdc->regs = devm_ioremap_resource(&pdev->dev, sdc->res);
++	sdc->regs = devm_platform_get_and_ioremap_resource(pdev, 0, &sdc->res);
+ 	if (IS_ERR(sdc->regs)) {
+ 		ret = PTR_ERR(sdc->regs);
+ 		goto err_clk;
+-- 
+2.20.1.7.g153144c
 
