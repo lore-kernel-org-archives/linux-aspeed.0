@@ -1,48 +1,42 @@
-From: Hillf Danton <hdanton@sina.com>
-Date: Sat, 18 Mar 2023 11:01:13 +0800
-Subject: [PATCH v2 3/5] dmaengine: aspeed: Add AST2600 UART DMA driver
-In-Reply-To: <20230314021817.30446-4-chiawei_wang@aspeedtech.com>
-References: <20230314021817.30446-1-chiawei_wang@aspeedtech.com>
-Message-ID: <20230318030113.2024-1-hdanton@sina.com>
+From: huyinhao <dddddd@hust.edu.cn>
+Date: Sat, 18 Mar 2023 14:55:09 +0800
+Subject: [PATCH v2] drivers: soc: fix dead code in aspeed_lpc_snoop_config_irq
+Message-ID: <20230318065509.51019-1-dddddd@hust.edu.cn>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 14 Mar 2023 10:18:15 +0800 Chia-Wei Wang <chiawei_wang@aspeedtech.com>
-> +static irqreturn_t ast2600_udma_isr(int irq, void *arg)
-> +{
+From the comment of platform_get_irq, it only returns non-zero IRQ
+number and negative error number, other than zero.
 
-[...]
+Fix this if condition when platform_get_irq returns a negative
+error number.
 
-> +	/* handle RX interrupt */
-> +	sts = readl(udma->regs + UDMA_RX_INT_STS);
-> +	for_each_set_bit(ch_bit, (unsigned long *)&sts, udma->n_ucs / 2) {
-> +		ch_id = (ch_bit << 1) + 1;
-> +		wptr = readl(udma->regs + UDMA_CH_WPTR(ch_id));
-> +
-> +		uc = &udma->ucs[ch_id];
-> +		ud = &uc->ud;
-> +		tx = &ud->tx;
-> +
-> +		uc->residue = (ud->size & ~UDMA_CH_CTRL_BUFSZ) - wptr;
-> +
-> +		/* handle non-4B-aligned case */
-> +		if (ud->addr & 0x3) {
-> +			p = phys_to_virt(dma_to_phys(uc->chan.device->dev, ud->addr));
+Signed-off-by: huyinhao <dddddd@hust.edu.cn>
+Reviewed-by: Dongliang Mu <dzm91@hust.edu.cn>
+---
+v1->v2: Change "Signed-off-by" to "Reviewed-by" 
+and change the email of "From" to "Signed-off-by"
+ drivers/soc/aspeed/aspeed-lpc-snoop.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-This does not work if the dma address has no corresponding struct page.
+diff --git a/drivers/soc/aspeed/aspeed-lpc-snoop.c b/drivers/soc/aspeed/aspeed-lpc-snoop.c
+index eceeaf8dfbeb..c4a03b3a5cf8 100644
+--- a/drivers/soc/aspeed/aspeed-lpc-snoop.c
++++ b/drivers/soc/aspeed/aspeed-lpc-snoop.c
+@@ -167,8 +167,8 @@ static int aspeed_lpc_snoop_config_irq(struct aspeed_lpc_snoop *lpc_snoop,
+ 	int rc;
+ 
+ 	lpc_snoop->irq = platform_get_irq(pdev, 0);
+-	if (!lpc_snoop->irq)
+-		return -ENODEV;
++	if (lpc_snoop->irq < 0)
++		return lpc_snoop->irq;
+ 
+ 	rc = devm_request_irq(dev, lpc_snoop->irq,
+ 			      aspeed_lpc_snoop_irq, IRQF_SHARED,
+-- 
+2.34.1
 
-> +			memcpy(p, uc->buf, wptr);
-> +		}
-> +
-> +		ast2600_udma_terminate(&uc->chan);
-> +
-> +		dma_cookie_complete(tx);
-> +		dma_descriptor_unmap(tx);
-> +		dmaengine_desc_get_callback_invoke(tx, NULL);
-> +	}
-> +
-> +	return IRQ_HANDLED;
-> +}
