@@ -1,65 +1,38 @@
-From: Jernej Škrabec <jernej.skrabec@gmail.com>
-Date: Sat, 18 Mar 2023 08:59:49 +0100
-Subject: [PATCH] dt-bindings: net: Drop unneeded quotes
-In-Reply-To: <20230317233605.3967621-1-robh@kernel.org>
-References: <20230317233605.3967621-1-robh@kernel.org>
-Message-ID: <13224434.uLZWGnKmhe@jernej-laptop>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Sat, 18 Mar 2023 09:20:34 +0100
+Subject: [PATCH] dt-bindings: pinctrl: Drop unneeded quotes
+In-Reply-To: <20230317233623.3968172-1-robh@kernel.org>
+References: <20230317233623.3968172-1-robh@kernel.org>
+Message-ID: <CAMuHMdU8uu=2EZ1dmtY-eGj+ORGdepsKgpNcL7qKfW3FkVJw7g@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Dne sobota, 18. marec 2023 ob 00:36:03 CET je Rob Herring napisal(a):
+On Sat, Mar 18, 2023 at 12:37?AM Rob Herring <robh@kernel.org> wrote:
+>
 > Cleanup bindings dropping unneeded quotes. Once all these are fixed,
 > checking for this can be enabled in yamllint.
-> 
+>
 > Signed-off-by: Rob Herring <robh@kernel.org>
-> ---
->  .../devicetree/bindings/net/actions,owl-emac.yaml  |  2 +-
->  .../bindings/net/allwinner,sun4i-a10-emac.yaml     |  2 +-
->  .../bindings/net/allwinner,sun4i-a10-mdio.yaml     |  2 +-
 
-For Allwinner:
-Acked-by: Jernej Skrabec <jernej.skrabec@gmail.com>
+>  .../devicetree/bindings/pinctrl/renesas,pfc.yaml       |  2 +-
+>  .../bindings/pinctrl/renesas,rza1-ports.yaml           |  2 +-
+>  .../bindings/pinctrl/renesas,rza2-pinctrl.yaml         |  2 +-
+>  .../bindings/pinctrl/renesas,rzg2l-pinctrl.yaml        |  2 +-
+>  .../bindings/pinctrl/renesas,rzn1-pinctrl.yaml         |  2 +-
+>  .../bindings/pinctrl/renesas,rzv2m-pinctrl.yaml        |  2 +-
 
-Best regards,
-Jernej
+Acked-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
->  .../devicetree/bindings/net/altr,tse.yaml          |  2 +-
->  .../bindings/net/aspeed,ast2600-mdio.yaml          |  2 +-
->  .../devicetree/bindings/net/brcm,amac.yaml         |  2 +-
->  .../devicetree/bindings/net/brcm,systemport.yaml   |  2 +-
->  .../bindings/net/broadcom-bluetooth.yaml           |  2 +-
->  .../devicetree/bindings/net/can/xilinx,can.yaml    |  6 +++---
->  .../devicetree/bindings/net/dsa/brcm,sf2.yaml      |  2 +-
->  .../devicetree/bindings/net/dsa/qca8k.yaml         |  2 +-
->  .../devicetree/bindings/net/engleder,tsnep.yaml    |  2 +-
->  .../devicetree/bindings/net/ethernet-phy.yaml      |  2 +-
->  .../bindings/net/fsl,qoriq-mc-dpmac.yaml           |  2 +-
->  .../bindings/net/intel,ixp4xx-ethernet.yaml        |  8 ++++----
->  .../devicetree/bindings/net/intel,ixp4xx-hss.yaml  | 14 +++++++-------
->  .../devicetree/bindings/net/marvell,mvusb.yaml     |  2 +-
->  .../devicetree/bindings/net/mdio-gpio.yaml         |  2 +-
->  .../devicetree/bindings/net/mediatek,net.yaml      |  2 +-
->  .../bindings/net/mediatek,star-emac.yaml           |  2 +-
->  .../bindings/net/microchip,lan966x-switch.yaml     |  2 +-
->  .../bindings/net/microchip,sparx5-switch.yaml      |  4 ++--
->  .../devicetree/bindings/net/mscc,miim.yaml         |  2 +-
->  .../devicetree/bindings/net/nfc/marvell,nci.yaml   |  2 +-
->  .../devicetree/bindings/net/nfc/nxp,pn532.yaml     |  2 +-
->  .../bindings/net/pse-pd/podl-pse-regulator.yaml    |  2 +-
->  .../devicetree/bindings/net/qcom,ipq4019-mdio.yaml |  2 +-
->  .../devicetree/bindings/net/qcom,ipq8064-mdio.yaml |  2 +-
->  .../devicetree/bindings/net/rockchip,emac.yaml     |  2 +-
->  .../devicetree/bindings/net/snps,dwmac.yaml        |  2 +-
->  .../devicetree/bindings/net/stm32-dwmac.yaml       |  4 ++--
->  .../devicetree/bindings/net/ti,cpsw-switch.yaml    | 10 +++++-----
->  .../devicetree/bindings/net/ti,davinci-mdio.yaml   |  2 +-
->  .../devicetree/bindings/net/ti,dp83822.yaml        |  2 +-
->  .../devicetree/bindings/net/ti,dp83867.yaml        |  2 +-
->  .../devicetree/bindings/net/ti,dp83869.yaml        |  2 +-
->  36 files changed, 53 insertions(+), 53 deletions(-)
+Gr{oetje,eeting}s,
 
+                        Geert
 
+-- 
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert at linux-m68k.org
 
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
