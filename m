@@ -1,25 +1,24 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Date: Sun, 19 Mar 2023 22:14:48 +0100
+From: Damien Le Moal <damien.lemoal@opensource.wdc.com>
+Date: Mon, 20 Mar 2023 06:35:55 +0900
 Subject: [PATCH] dt-bindings: pinctrl: Drop unneeded quotes
 In-Reply-To: <20230317233623.3968172-1-robh@kernel.org>
 References: <20230317233623.3968172-1-robh@kernel.org>
-Message-ID: <CACRpkdYFJ-q9OT2b7U-CP08XGfdoD-qN3k3C2KBHhnuBdfSi7A@mail.gmail.com>
+Message-ID: <de10b014-1a97-e74a-c7c4-b1004bf4cb60@opensource.wdc.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sat, Mar 18, 2023 at 12:36?AM Rob Herring <robh@kernel.org> wrote:
-
+On 3/18/23 08:36, Rob Herring wrote:
 > Cleanup bindings dropping unneeded quotes. Once all these are fixed,
 > checking for this can be enabled in yamllint.
->
+> 
 > Signed-off-by: Rob Herring <robh@kernel.org>
 
-Less bad examples = good.
+Reviewed-by: Damien Le Moal <damien.lemoal@opensource.wdc.com>
 
-Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+-- 
+Damien Le Moal
+Western Digital Research
 
-Yours,
-Linus Walleij
