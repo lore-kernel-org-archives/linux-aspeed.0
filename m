@@ -1,36 +1,30 @@
-From: Marc Kleine-Budde <mkl@pengutronix.de>
-Date: Mon, 20 Mar 2023 10:23:49 +0100
+From: Florian Fainelli <f.fainelli@gmail.com>
+Date: Mon, 20 Mar 2023 11:08:56 -0700
 Subject: [PATCH] dt-bindings: net: Drop unneeded quotes
 In-Reply-To: <20230317233605.3967621-1-robh@kernel.org>
 References: <20230317233605.3967621-1-robh@kernel.org>
-Message-ID: <20230320092349.7eqjqiblksjpw3fb@pengutronix.de>
+Message-ID: <82ae9fd5-a4f9-89a6-8040-c64d22a85ebb@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 17.03.2023 18:36:03, Rob Herring wrote:
+On 3/17/23 16:36, Rob Herring wrote:
 > Cleanup bindings dropping unneeded quotes. Once all these are fixed,
 > checking for this can be enabled in yamllint.
 > 
 > Signed-off-by: Rob Herring <robh@kernel.org>
 > ---
-[...]
->  .../devicetree/bindings/net/can/xilinx,can.yaml    |  6 +++---
+>   .../devicetree/bindings/net/actions,owl-emac.yaml  |  2 +-
+>   .../bindings/net/allwinner,sun4i-a10-emac.yaml     |  2 +-
+>   .../bindings/net/allwinner,sun4i-a10-mdio.yaml     |  2 +-
+>   .../devicetree/bindings/net/altr,tse.yaml          |  2 +-
+>   .../bindings/net/aspeed,ast2600-mdio.yaml          |  2 +-
+>   .../devicetree/bindings/net/brcm,amac.yaml         |  2 +-
+>   .../devicetree/bindings/net/brcm,systemport.yaml   |  2 +-
 
-Acked-by: Marc Kleine-Budde <mkl@pengutronix.de> # for bindings/net/can
-
-Marc
-
+Acked-by: Florian Fainelli <f.fainelli@gmail.com>
 -- 
-Pengutronix e.K.                 | Marc Kleine-Budde           |
-Embedded Linux                   | https://www.pengutronix.de  |
-Amtsgericht Hildesheim, HRA 2686 | Fax:   +49-5121-206917-5555 |
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 488 bytes
-Desc: not available
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20230320/bf8a5731/attachment-0001.sig>
+Florian
+
