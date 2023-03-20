@@ -1,65 +1,59 @@
-From: Ryan Chen <ryan_chen@aspeedtech.com>
-Date: Sun, 19 Mar 2023 02:05:46 +0000
-Subject: [PATCH v6 1/2] dt-bindings: i2c: aspeed: support for
- AST2600-i2cv2
-In-Reply-To: <20230318090936.qvqozqfskpe5lja7@intel.intel>
-References: <20230226031321.3126756-1-ryan_chen@aspeedtech.com>
- <20230226031321.3126756-2-ryan_chen@aspeedtech.com>
- <20230318090936.qvqozqfskpe5lja7@intel.intel>
-Message-ID: <SEZPR06MB5269DB6BE01C48BBFA17876DF2839@SEZPR06MB5269.apcprd06.prod.outlook.com>
+From: ChiaWei Wang <chiawei_wang@aspeedtech.com>
+Date: Mon, 20 Mar 2023 02:54:46 +0000
+Subject: [PATCH v2 3/5] dmaengine: aspeed: Add AST2600 UART DMA driver
+In-Reply-To: <20230318030113.2024-1-hdanton@sina.com>
+References: <20230314021817.30446-1-chiawei_wang@aspeedtech.com>
+ <20230318030113.2024-1-hdanton@sina.com>
+Message-ID: <KL1PR0601MB37815BD56FC3EEA2553432B191809@KL1PR0601MB3781.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello,
-
-> -----Original Message-----
-> From: Andi Shyti <andi.shyti@kernel.org>
-> Sent: Saturday, March 18, 2023 5:10 PM
-> To: Ryan Chen <ryan_chen@aspeedtech.com>
-> Cc: Andrew Jeffery <andrew@aj.id.au>; Brendan Higgins
-> <brendan.higgins@linux.dev>; Benjamin Herrenschmidt
-> <benh@kernel.crashing.org>; Joel Stanley <joel@jms.id.au>; Rob Herring
-> <robh+dt@kernel.org>; Krzysztof Kozlowski
-> <krzysztof.kozlowski+dt@linaro.org>; Philipp Zabel
-> <p.zabel@pengutronix.de>; linux-i2c at vger.kernel.org;
-> openbmc at lists.ozlabs.org; devicetree at vger.kernel.org;
-> linux-arm-kernel at lists.infradead.org; linux-aspeed at lists.ozlabs.org;
-> linux-kernel at vger.kernel.org
-> Subject: Re: [PATCH v6 1/2] dt-bindings: i2c: aspeed: support for
-> AST2600-i2cv2
+> From: Hillf Danton <hdanton@sina.com>
+> Sent: Saturday, March 18, 2023 11:01 AM
 > 
-> Hi Ryan,
+> On 14 Mar 2023 10:18:15 +0800 Chia-Wei Wang
+> <chiawei_wang@aspeedtech.com>
+> > +static irqreturn_t ast2600_udma_isr(int irq, void *arg) {
 > 
-> On Sun, Feb 26, 2023 at 11:13:20AM +0800, Ryan Chen wrote:
-> > Add ast2600-i2cv2 compatible and aspeed,global-regs, aspeed,timeout
-> > aspeed,xfer-mode description for ast2600-i2cv2.
-> >
-> > Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
-> > ---
-> >  .../devicetree/bindings/i2c/aspeed,i2c.yaml   | 44
-> +++++++++++++++++++
-> >  1 file changed, 44 insertions(+)
-> >
-> > diff --git a/Documentation/devicetree/bindings/i2c/aspeed,i2c.yaml
-> > b/Documentation/devicetree/bindings/i2c/aspeed,i2c.yaml
-> > index f597f73ccd87..75de3ce41cf5 100644
-> > --- a/Documentation/devicetree/bindings/i2c/aspeed,i2c.yaml
-> > +++ b/Documentation/devicetree/bindings/i2c/aspeed,i2c.yaml
-> > @@ -49,6 +49,25 @@ properties:
-> >      description:
-> >        states that there is another master active on this bus
-> >
-> > +  aspeed,timeout:
-> > +    type: boolean
-> > +    description: I2C bus timeout enable for master/slave mode
+> [...]
 > 
-> Finally you can proceed with this. Please remove "aspeed,timeout"
-> and use "i2c-scl-has-clk-low-timeout" instead.
+> > +	/* handle RX interrupt */
+> > +	sts = readl(udma->regs + UDMA_RX_INT_STS);
+> > +	for_each_set_bit(ch_bit, (unsigned long *)&sts, udma->n_ucs / 2) {
+> > +		ch_id = (ch_bit << 1) + 1;
+> > +		wptr = readl(udma->regs + UDMA_CH_WPTR(ch_id));
+> > +
+> > +		uc = &udma->ucs[ch_id];
+> > +		ud = &uc->ud;
+> > +		tx = &ud->tx;
+> > +
+> > +		uc->residue = (ud->size & ~UDMA_CH_CTRL_BUFSZ) - wptr;
+> > +
+> > +		/* handle non-4B-aligned case */
+> > +		if (ud->addr & 0x3) {
+> > +			p = phys_to_virt(dma_to_phys(uc->chan.device->dev,
+> ud->addr));
+> 
+> This does not work if the dma address has no corresponding struct page.
 
-Thanks a lot, I will start progress this. 
+Will add the error check for dma_to_phys to prevent further unexpected memory accesses.
 
-Best Regards
-Ryan
+Thanks,
+Chiawei
+
+> 
+> > +			memcpy(p, uc->buf, wptr);
+> > +		}
+> > +
+> > +		ast2600_udma_terminate(&uc->chan);
+> > +
+> > +		dma_cookie_complete(tx);
+> > +		dma_descriptor_unmap(tx);
+> > +		dmaengine_desc_get_callback_invoke(tx, NULL);
+> > +	}
+> > +
+> > +	return IRQ_HANDLED;
+> > +}
