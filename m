@@ -1,65 +1,36 @@
 From: Eddie James <eajames@linux.ibm.com>
-Date: Tue, 21 Mar 2023 10:16:42 -0500
-Subject: [PATCH v2 4/4] ARM: dts: aspeed: bonnell: Add DIMM SPD
+Date: Tue, 21 Mar 2023 10:16:40 -0500
+Subject: [PATCH v2 2/4] doc: Add Atmel AT30TSE serial eeprom
 In-Reply-To: <20230321151642.461618-1-eajames@linux.ibm.com>
 References: <20230321151642.461618-1-eajames@linux.ibm.com>
-Message-ID: <20230321151642.461618-5-eajames@linux.ibm.com>
+Message-ID: <20230321151642.461618-3-eajames@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add the DIMM SPD to the processor I2C busses.
+The AT30TSE is compatible with the JEDEC EE1004 standard. Document it
+as a trivial I2C device.
 
 Signed-off-by: Eddie James <eajames@linux.ibm.com>
 ---
- arch/arm/boot/dts/aspeed-bmc-ibm-bonnell.dts | 20 ++++++++++++++++++++
- 1 file changed, 20 insertions(+)
+ Documentation/devicetree/bindings/trivial-devices.yaml | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/arch/arm/boot/dts/aspeed-bmc-ibm-bonnell.dts b/arch/arm/boot/dts/aspeed-bmc-ibm-bonnell.dts
-index 79516dc21c01..72186020e75a 100644
---- a/arch/arm/boot/dts/aspeed-bmc-ibm-bonnell.dts
-+++ b/arch/arm/boot/dts/aspeed-bmc-ibm-bonnell.dts
-@@ -232,18 +232,38 @@ cfam0_i2c1: i2c-bus at 1 {
- 
- 			cfam0_i2c10: i2c-bus at a {
- 				reg = <10>;	/* OP3A */
-+
-+				eeprom at 50 {
-+					compatible = "atmel,at30tse";
-+					reg = <0x50>;
-+				};
- 			};
- 
- 			cfam0_i2c11: i2c-bus at b {
- 				reg = <11>;	/* OP3B */
-+
-+				eeprom at 50 {
-+					compatible = "atmel,at30tse";
-+					reg = <0x50>;
-+				};
- 			};
- 
- 			cfam0_i2c12: i2c-bus at c {
- 				reg = <12>;	/* OP4A */
-+
-+				eeprom at 50 {
-+					compatible = "atmel,at30tse";
-+					reg = <0x50>;
-+				};
- 			};
- 
- 			cfam0_i2c13: i2c-bus at d {
- 				reg = <13>;	/* OP4B */
-+
-+				eeprom at 50 {
-+					compatible = "atmel,at30tse";
-+					reg = <0x50>;
-+				};
- 			};
- 
- 			cfam0_i2c14: i2c-bus at e {
+diff --git a/Documentation/devicetree/bindings/trivial-devices.yaml b/Documentation/devicetree/bindings/trivial-devices.yaml
+index 6f482a254a1d..43e26c73a95f 100644
+--- a/Documentation/devicetree/bindings/trivial-devices.yaml
++++ b/Documentation/devicetree/bindings/trivial-devices.yaml
+@@ -47,6 +47,8 @@ properties:
+           - ams,iaq-core
+             # i2c serial eeprom (24cxx)
+           - at,24c08
++            # i2c serial eeprom (EE1004 standard)
++          - atmel,at30tse
+             # i2c trusted platform module (TPM)
+           - atmel,at97sc3204t
+             # ATSHA204 - i2c h/w symmetric crypto module
 -- 
 2.31.1
 
