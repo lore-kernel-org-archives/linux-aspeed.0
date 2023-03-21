@@ -1,11 +1,11 @@
 From: Eddie James <eajames@linux.ibm.com>
-Date: Tue, 21 Mar 2023 10:45:18 -0500
-Subject: [PATCH v2 1/4] eeprom: ee1004: Enable devices on multiple busses
-In-Reply-To: <CAL_JsqJR2BOX4sk0K3V7-12Pi7Th0G_Dqjfp_MxxoCf0qnNg0A@mail.gmail.com>
+Date: Tue, 21 Mar 2023 10:46:42 -0500
+Subject: [PATCH v2 2/4] doc: Add Atmel AT30TSE serial eeprom
+In-Reply-To: <6d4cf513-0787-6b39-8d38-30484be7ddff@linaro.org>
 References: <20230321151642.461618-1-eajames@linux.ibm.com>
- <20230321151642.461618-2-eajames@linux.ibm.com>
- <CAL_JsqJR2BOX4sk0K3V7-12Pi7Th0G_Dqjfp_MxxoCf0qnNg0A@mail.gmail.com>
-Message-ID: <88ff9cea-4c44-9c65-4f8a-091851099133@linux.ibm.com>
+ <20230321151642.461618-3-eajames@linux.ibm.com>
+ <6d4cf513-0787-6b39-8d38-30484be7ddff@linaro.org>
+Message-ID: <baf7ad36-0410-3063-7960-8dd7040fb8fd@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -13,45 +13,46 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 
-On 3/21/23 10:39, Rob Herring wrote:
-> On Tue, Mar 21, 2023 at 10:17?AM Eddie James <eajames@linux.ibm.com> wrote:
->> The driver previously prevented probing devices on more than one
->> bus due to locking constraints with the special page addresses. This
->> constraint can be removed by allocating a reference-counted bus
->> structure containing the lock, rather than using global variables.
+On 3/21/23 10:19, Krzysztof Kozlowski wrote:
+> On 21/03/2023 16:16, Eddie James wrote:
+>> The AT30TSE is compatible with the JEDEC EE1004 standard. Document it
+>> as a trivial I2C device.
 >>
 >> Signed-off-by: Eddie James <eajames@linux.ibm.com>
->> ---
->>   drivers/misc/eeprom/ee1004.c | 175 +++++++++++++++++++++--------------
->>   1 file changed, 106 insertions(+), 69 deletions(-)
->>
->> diff --git a/drivers/misc/eeprom/ee1004.c b/drivers/misc/eeprom/ee1004.c
->> index c8c6deb7ed89..950813821087 100644
->> --- a/drivers/misc/eeprom/ee1004.c
->> +++ b/drivers/misc/eeprom/ee1004.c
->> @@ -9,12 +9,15 @@
->>    * Copyright (C) 2008 Wolfram Sang, Pengutronix
->>    */
->>
->> +#include <linux/err.h>
->>   #include <linux/i2c.h>
->>   #include <linux/init.h>
->>   #include <linux/kernel.h>
->> +#include <linux/list.h>
->>   #include <linux/mod_devicetable.h>
->>   #include <linux/module.h>
->>   #include <linux/mutex.h>
->> +#include <linux/of_device.h>
-> What do you need from here? I don't see anything.
+> Use subject prefixes matching the subsystem (which you can get for
+> example with `git log --oneline -- DIRECTORY_OR_FILE` on the directory
+> your patch is touching).
+
+
+Oops, sorry, will fix.
+
+
 >
-> of_device.h is a mess of implicit includes which I'm currently trying
-> to detangle. See the ~13 year old comment in it about removing
-> of_platform.h include. When I'm done, pretty much only bus
-> implementations should include of_device.h.
+>> ---
+>>   Documentation/devicetree/bindings/trivial-devices.yaml | 2 ++
+>>   1 file changed, 2 insertions(+)
+>>
+>> diff --git a/Documentation/devicetree/bindings/trivial-devices.yaml b/Documentation/devicetree/bindings/trivial-devices.yaml
+>> index 6f482a254a1d..43e26c73a95f 100644
+>> --- a/Documentation/devicetree/bindings/trivial-devices.yaml
+>> +++ b/Documentation/devicetree/bindings/trivial-devices.yaml
+>> @@ -47,6 +47,8 @@ properties:
+>>             - ams,iaq-core
+>>               # i2c serial eeprom (24cxx)
+>>             - at,24c08
+>> +            # i2c serial eeprom (EE1004 standard)
+> AT30TSE?
+>
+>> +          - atmel,at30tse
+> Microchip does not find anything on AT30TSE. Are you sure this is the
+> model name?
 
 
-You're right, I mistakenly thought I needed it for of_device_id. I'll 
-remove it in v3.
+Yes: 
+https://www.microchip.com/content/dam/mchp/documents/OTH/ProductDocuments/DataSheets/Atmel-8868-DTS-AT30TSE004A-Datasheet.pdf
+
+
+Maybe it's actually an 8868? Or should I include the 004A as well?
 
 Thanks,
 
@@ -59,4 +60,7 @@ Eddie
 
 
 >
-> Rob
+>
+> Best regards,
+> Krzysztof
+>
