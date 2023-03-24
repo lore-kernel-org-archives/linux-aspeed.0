@@ -1,48 +1,40 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Date: Thu, 23 Mar 2023 13:12:56 +0100
-Subject: [PATCH -next] mmc: sdhci-of-aspeed: Use devm_platform_get_and_ioremap_resource()
-In-Reply-To: <20230315055023.61779-1-yang.lee@linux.alibaba.com>
-References: <20230315055023.61779-1-yang.lee@linux.alibaba.com>
-Message-ID: <CAPDyKFrcATB2qxzpkHGKD=VGK21Vr83xmHYcaX708F0Qjek4xA@mail.gmail.com>
+From: huyinhao <dddddd@hust.edu.cn>
+Date: Fri, 24 Mar 2023 10:15:59 +0800
+Subject: [PATCH v2 RESEND] drivers: soc: fix dead code in aspeed_lpc_snoop_config_irq
+Message-ID: <20230324021559.249347-1-dddddd@hust.edu.cn>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 15 Mar 2023 at 06:50, Yang Li <yang.lee@linux.alibaba.com> wrote:
->
-> According to commit 890cc39a8799 ("drivers: provide
-> devm_platform_get_and_ioremap_resource()"), convert
-> platform_get_resource(), devm_ioremap_resource() to a single
-> call to devm_platform_get_and_ioremap_resource(), as this is exactly
-> what this function does.
->
-> Signed-off-by: Yang Li <yang.lee@linux.alibaba.com>
+From the comment of platform_get_irq, it only returns non-zero IRQ
+number and negative error number, other than zero.
 
-Applied for next, thanks!
+Fix this if condition when platform_get_irq returns a negative
+error number.
 
-Kind regards
-Uffe
+Signed-off-by: huyinhao <dddddd@hust.edu.cn>
+Reviewed-by: Dongliang Mu <dzm91@hust.edu.cn>
+---
+ drivers/soc/aspeed/aspeed-lpc-snoop.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-> ---
->  drivers/mmc/host/sdhci-of-aspeed.c | 3 +--
->  1 file changed, 1 insertion(+), 2 deletions(-)
->
-> diff --git a/drivers/mmc/host/sdhci-of-aspeed.c b/drivers/mmc/host/sdhci-of-aspeed.c
-> index ba6677bf7372..25b4073f698b 100644
-> --- a/drivers/mmc/host/sdhci-of-aspeed.c
-> +++ b/drivers/mmc/host/sdhci-of-aspeed.c
-> @@ -547,8 +547,7 @@ static int aspeed_sdc_probe(struct platform_device *pdev)
->                 return ret;
->         }
->
-> -       sdc->res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> -       sdc->regs = devm_ioremap_resource(&pdev->dev, sdc->res);
-> +       sdc->regs = devm_platform_get_and_ioremap_resource(pdev, 0, &sdc->res);
->         if (IS_ERR(sdc->regs)) {
->                 ret = PTR_ERR(sdc->regs);
->                 goto err_clk;
-> --
-> 2.20.1.7.g153144c
->
+diff --git a/drivers/soc/aspeed/aspeed-lpc-snoop.c b/drivers/soc/aspeed/aspeed-lpc-snoop.c
+index eceeaf8dfbeb..c4a03b3a5cf8 100644
+--- a/drivers/soc/aspeed/aspeed-lpc-snoop.c
++++ b/drivers/soc/aspeed/aspeed-lpc-snoop.c
+@@ -167,8 +167,8 @@ static int aspeed_lpc_snoop_config_irq(struct aspeed_lpc_snoop *lpc_snoop,
+ 	int rc;
+ 
+ 	lpc_snoop->irq = platform_get_irq(pdev, 0);
+-	if (!lpc_snoop->irq)
+-		return -ENODEV;
++	if (lpc_snoop->irq < 0)
++		return lpc_snoop->irq;
+ 
+ 	rc = devm_request_irq(dev, lpc_snoop->irq,
+ 			      aspeed_lpc_snoop_irq, IRQF_SHARED,
+-- 
+2.34.1
+
