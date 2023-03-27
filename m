@@ -1,62 +1,72 @@
-From: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Date: Sun, 26 Mar 2023 16:30:44 +0200
-Subject: [PATCH 017/117] media: aspeed-video: Convert to platform remove callback returning void
-In-Reply-To: <20230326143224.572654-1-u.kleine-koenig@pengutronix.de>
-References: <20230326143224.572654-1-u.kleine-koenig@pengutronix.de>
-Message-ID: <20230326143224.572654-20-u.kleine-koenig@pengutronix.de>
+From: Joel Stanley <joel@jms.id.au>
+Date: Mon, 27 Mar 2023 00:46:33 +0000
+Subject: [PATCH v3 4/4] ARM: dts: aspeed: bonnell: Add DIMM SPD
+In-Reply-To: <20230322140348.569397-5-eajames@linux.ibm.com>
+References: <20230322140348.569397-1-eajames@linux.ibm.com> <20230322140348.569397-5-eajames@linux.ibm.com>
+Message-ID: <CACPK8XfJr03L43KbWcZ44nAiVhpPF8Pao2OM4R2F36b=bkQ-fQ@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The .remove() callback for a platform driver returns an int which makes
-many driver authors wrongly assume it's possible to do error handling by
-returning an error code. However the value returned is (mostly) ignored
-and this typically results in resource leaks. To improve here there is a
-quest to make the remove callback return void. In the first step of this
-quest all drivers are converted to .remove_new() which already returns
-void.
+On Wed, 22 Mar 2023 at 14:04, Eddie James <eajames@linux.ibm.com> wrote:
+>
+> Add the DIMM SPD to the processor I2C busses.
+>
+> Signed-off-by: Eddie James <eajames@linux.ibm.com>
 
-Trivially convert this driver from always returning zero in the remove
-callback to the void returning variant.
+Reviewed-by: Joel Stanley <joel@jms.id.au>
 
-Signed-off-by: Uwe Kleine-K?nig <u.kleine-koenig@pengutronix.de>
----
- drivers/media/platform/aspeed/aspeed-video.c | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+I will take this through the aspeed tree.
 
-diff --git a/drivers/media/platform/aspeed/aspeed-video.c b/drivers/media/platform/aspeed/aspeed-video.c
-index 794d4dc3a654..374eb7781936 100644
---- a/drivers/media/platform/aspeed/aspeed-video.c
-+++ b/drivers/media/platform/aspeed/aspeed-video.c
-@@ -2206,7 +2206,7 @@ static int aspeed_video_probe(struct platform_device *pdev)
- 	return 0;
- }
- 
--static int aspeed_video_remove(struct platform_device *pdev)
-+static void aspeed_video_remove(struct platform_device *pdev)
- {
- 	struct device *dev = &pdev->dev;
- 	struct v4l2_device *v4l2_dev = dev_get_drvdata(dev);
-@@ -2228,8 +2228,6 @@ static int aspeed_video_remove(struct platform_device *pdev)
- 	aspeed_video_free_buf(video, &video->jpeg);
- 
- 	of_reserved_mem_device_release(dev);
--
--	return 0;
- }
- 
- static struct platform_driver aspeed_video_driver = {
-@@ -2238,7 +2236,7 @@ static struct platform_driver aspeed_video_driver = {
- 		.of_match_table = aspeed_video_of_match,
- 	},
- 	.probe = aspeed_video_probe,
--	.remove = aspeed_video_remove,
-+	.remove_new = aspeed_video_remove,
- };
- 
- module_platform_driver(aspeed_video_driver);
--- 
-2.39.2
-
+> ---
+>  arch/arm/boot/dts/aspeed-bmc-ibm-bonnell.dts | 20 ++++++++++++++++++++
+>  1 file changed, 20 insertions(+)
+>
+> diff --git a/arch/arm/boot/dts/aspeed-bmc-ibm-bonnell.dts b/arch/arm/boot/dts/aspeed-bmc-ibm-bonnell.dts
+> index 79516dc21c01..ab99d915b50e 100644
+> --- a/arch/arm/boot/dts/aspeed-bmc-ibm-bonnell.dts
+> +++ b/arch/arm/boot/dts/aspeed-bmc-ibm-bonnell.dts
+> @@ -232,18 +232,38 @@ cfam0_i2c1: i2c-bus at 1 {
+>
+>                         cfam0_i2c10: i2c-bus at a {
+>                                 reg = <10>;     /* OP3A */
+> +
+> +                               eeprom at 50 {
+> +                                       compatible = "atmel,at30tse004a";
+> +                                       reg = <0x50>;
+> +                               };
+>                         };
+>
+>                         cfam0_i2c11: i2c-bus at b {
+>                                 reg = <11>;     /* OP3B */
+> +
+> +                               eeprom at 50 {
+> +                                       compatible = "atmel,at30tse004a";
+> +                                       reg = <0x50>;
+> +                               };
+>                         };
+>
+>                         cfam0_i2c12: i2c-bus at c {
+>                                 reg = <12>;     /* OP4A */
+> +
+> +                               eeprom at 50 {
+> +                                       compatible = "atmel,at30tse004a";
+> +                                       reg = <0x50>;
+> +                               };
+>                         };
+>
+>                         cfam0_i2c13: i2c-bus at d {
+>                                 reg = <13>;     /* OP4B */
+> +
+> +                               eeprom at 50 {
+> +                                       compatible = "atmel,at30tse004a";
+> +                                       reg = <0x50>;
+> +                               };
+>                         };
+>
+>                         cfam0_i2c14: i2c-bus at e {
+> --
+> 2.31.1
+>
