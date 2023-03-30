@@ -1,88 +1,115 @@
-From: Greg KH <gregkh@linuxfoundation.org>
-Date: Wed, 29 Mar 2023 12:07:42 +0200
-Subject: [PATCH v3 1/4] eeprom: ee1004: Enable devices on multiple busses
-In-Reply-To: <20230322140348.569397-2-eajames@linux.ibm.com>
-References: <20230322140348.569397-1-eajames@linux.ibm.com>
- <20230322140348.569397-2-eajames@linux.ibm.com>
-Message-ID: <ZCQN7uq7Y3xFY1od@kroah.com>
+From: Ryan Chen <ryan_chen@aspeedtech.com>
+Date: Thu, 30 Mar 2023 15:32:58 +0800
+Subject: [PATCH v8 1/2] dt-bindings: i2c: aspeed: support for AST2600-i2cv2
+In-Reply-To: <20230330073259.485606-1-ryan_chen@aspeedtech.com>
+References: <20230330073259.485606-1-ryan_chen@aspeedtech.com>
+Message-ID: <20230330073259.485606-2-ryan_chen@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Mar 22, 2023 at 09:03:45AM -0500, Eddie James wrote:
-> The driver previously prevented probing devices on more than one
-> bus due to locking constraints with the special page addresses. This
-> constraint can be removed by allocating a reference-counted bus
-> structure containing the lock, rather than using global variables.
-> 
-> Signed-off-by: Eddie James <eajames@linux.ibm.com>
-> ---
-> Changes since v2:
->  - Remove of_device.h include
-> 
->  drivers/misc/eeprom/ee1004.c | 174 +++++++++++++++++++++--------------
->  1 file changed, 105 insertions(+), 69 deletions(-)
-> 
-> diff --git a/drivers/misc/eeprom/ee1004.c b/drivers/misc/eeprom/ee1004.c
-> index c8c6deb7ed89..0aed5760e370 100644
-> --- a/drivers/misc/eeprom/ee1004.c
-> +++ b/drivers/misc/eeprom/ee1004.c
-> @@ -9,9 +9,11 @@
->   * Copyright (C) 2008 Wolfram Sang, Pengutronix
->   */
->  
-> +#include <linux/err.h>
->  #include <linux/i2c.h>
->  #include <linux/init.h>
->  #include <linux/kernel.h>
-> +#include <linux/list.h>
->  #include <linux/mod_devicetable.h>
->  #include <linux/module.h>
->  #include <linux/mutex.h>
-> @@ -31,20 +33,24 @@
->   * over performance.
->   */
->  
-> -#define EE1004_ADDR_SET_PAGE		0x36
-> +#define EE1004_ADDR_SET_PAGE0		0x36
-> +#define EE1004_ADDR_SET_PAGE1		0x37
->  #define EE1004_NUM_PAGES		2
->  #define EE1004_PAGE_SIZE		256
->  #define EE1004_PAGE_SHIFT		8
->  #define EE1004_EEPROM_SIZE		(EE1004_PAGE_SIZE * EE1004_NUM_PAGES)
->  
-> -/*
-> - * Mutex protects ee1004_set_page and ee1004_dev_count, and must be held
-> - * from page selection to end of read.
-> - */
-> -static DEFINE_MUTEX(ee1004_bus_lock);
-> -static struct i2c_client *ee1004_set_page[EE1004_NUM_PAGES];
-> -static unsigned int ee1004_dev_count;
-> -static int ee1004_current_page;
-> +struct ee1004_bus {
-> +	struct kref kref;
-> +	struct list_head list;
-> +	struct mutex lock;
-> +	struct i2c_adapter *adapter;
-> +	struct i2c_client *set_page_clients[EE1004_NUM_PAGES];
-> +	int page;
-> +};
-> +
-> +static LIST_HEAD(ee1004_busses);
-> +static DEFINE_MUTEX(ee1004_busses_lock);
+Fix typo in maintainer's name and email.
+Remove ddress-cells, size-cells.
+Use Compatible and reg are always first properties.
+Add ast2600-i2cv2 compatible and aspeed,global-regs,
+aspeed,enable-dma and description for ast2600-i2cv2.
 
-This really looks like you are just emulating a tiny portion of the
-driver core (busses, lists of busses, reference counting, etc.)
+Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
+---
+ .../devicetree/bindings/i2c/aspeed,i2c.yaml   | 56 +++++++++++++++++--
+ 1 file changed, 50 insertions(+), 6 deletions(-)
 
-Why not just use an aux device instead and get all of that logic "for
-free" in a way that will be properly shown to userspace?  Right now it
-has no idea what is happening here with individual portions of the
-device and the like.
+diff --git a/Documentation/devicetree/bindings/i2c/aspeed,i2c.yaml b/Documentation/devicetree/bindings/i2c/aspeed,i2c.yaml
+index f597f73ccd87..81e8ced64900 100644
+--- a/Documentation/devicetree/bindings/i2c/aspeed,i2c.yaml
++++ b/Documentation/devicetree/bindings/i2c/aspeed,i2c.yaml
+@@ -7,10 +7,7 @@ $schema: http://devicetree.org/meta-schemas/core.yaml#
+ title: ASPEED I2C on the AST24XX, AST25XX, and AST26XX SoCs Device Tree Bindings
+ 
+ maintainers:
+-  - Rayn Chen <rayn_chen@aspeedtech.com>
+-
+-allOf:
+-  - $ref: /schemas/i2c/i2c-controller.yaml#
++  - Ryan Chen <ryan_chen@aspeedtech.com>
+ 
+ properties:
+   compatible:
+@@ -49,6 +46,25 @@ properties:
+     description:
+       states that there is another master active on this bus
+ 
++  aspeed,enable-dma:
++    type: boolean
++    description: |
++      I2C bus enable dma mode transfer.
++
++      ASPEED ast2600 platform equipped with 16 I2C controllers that share a
++      single DMA engine. DTS files can specify the data transfer mode to/from
++      the device, either DMA or programmed I/O. However, hardware limitations
++      may require a DTS to manually allocate which controller can use DMA mode.
++      The "aspeed,enable-dma" property allows control of this.
++
++      In cases where one the hardware design results in a specific
++      controller handling a larger amount of data, a DTS would likely
++      enable DMA mode for that one controller.
++
++  aspeed,global-regs:
++    $ref: /schemas/types.yaml#/definitions/phandle
++    description: The phandle of i2c global register node.
++
+ required:
+   - reg
+   - compatible
+@@ -57,12 +73,30 @@ required:
+ 
+ unevaluatedProperties: false
+ 
++allOf:
++  - $ref: /schemas/i2c/i2c-controller.yaml#
++  - if:
++      properties:
++        compatible:
++          contains:
++            const: aspeed,ast2600-i2cv2
++
++    then:
++      properties:
++        reg:
++          minItems: 2
++      required:
++        - aspeed,global-regs
++    else:
++      properties:
++        aspeed,global-regs: false
++        aspeed,enable-dma: false
++
++
+ examples:
+   - |
+     #include <dt-bindings/clock/aspeed-clock.h>
+     i2c0: i2c-bus at 40 {
+-      #address-cells = <1>;
+-      #size-cells = <0>;
+       compatible = "aspeed,ast2500-i2c-bus";
+       reg = <0x40 0x40>;
+       clocks = <&syscon ASPEED_CLK_APB>;
+@@ -71,3 +105,13 @@ examples:
+       interrupts = <0>;
+       interrupt-parent = <&i2c_ic>;
+     };
++  - |
++    #include <dt-bindings/interrupt-controller/arm-gic.h>
++    i2c1: i2c at 80 {
++      compatible = "aspeed,ast2600-i2cv2";
++      reg = <0x80 0x80>, <0xc00 0x20>;
++      aspeed,global-regs = <&i2c_global>;
++      clocks = <&syscon ASPEED_CLK_APB>;
++      resets = <&syscon ASPEED_RESET_I2C>;
++      interrupts = <GIC_SPI 110 IRQ_TYPE_LEVEL_HIGH>;
++    };
+-- 
+2.34.1
 
-Please look into that instead of this hand-rolled device model.
-
-thanks,
-
-greg k-h
