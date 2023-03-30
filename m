@@ -1,9 +1,9 @@
 From: Ryan Chen <ryan_chen@aspeedtech.com>
-Date: Mon, 27 Mar 2023 17:25:24 +0800
-Subject: [PATCH v7 2/2] i2c: aspeed: support ast2600 i2c new register mode driver
-In-Reply-To: <20230327092524.3916389-1-ryan_chen@aspeedtech.com>
-References: <20230327092524.3916389-1-ryan_chen@aspeedtech.com>
-Message-ID: <20230327092524.3916389-3-ryan_chen@aspeedtech.com>
+Date: Thu, 30 Mar 2023 15:32:59 +0800
+Subject: [PATCH v8 2/2] i2c: aspeed: support ast2600 i2c new register mode driver
+In-Reply-To: <20230330073259.485606-1-ryan_chen@aspeedtech.com>
+References: <20230330073259.485606-1-ryan_chen@aspeedtech.com>
+Message-ID: <20230330073259.485606-3-ryan_chen@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -22,8 +22,8 @@ Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
  MAINTAINERS                      |    9 +
  drivers/i2c/busses/Kconfig       |   11 +
  drivers/i2c/busses/Makefile      |    1 +
- drivers/i2c/busses/i2c-ast2600.c | 1605 ++++++++++++++++++++++++++++++
- 4 files changed, 1626 insertions(+)
+ drivers/i2c/busses/i2c-ast2600.c | 1602 ++++++++++++++++++++++++++++++
+ 4 files changed, 1623 insertions(+)
  create mode 100644 drivers/i2c/busses/i2c-ast2600.c
 
 diff --git a/MAINTAINERS b/MAINTAINERS
@@ -82,10 +82,10 @@ index c5cac15f075c..d0ab4d45781c 100644
  ifeq ($(CONFIG_I2C_AT91_SLAVE_EXPERIMENTAL),y)
 diff --git a/drivers/i2c/busses/i2c-ast2600.c b/drivers/i2c/busses/i2c-ast2600.c
 new file mode 100644
-index 000000000000..f95f425b9fd9
+index 000000000000..c8817fe9b23f
 --- /dev/null
 +++ b/drivers/i2c/busses/i2c-ast2600.c
-@@ -0,0 +1,1605 @@
+@@ -0,0 +1,1602 @@
 +// SPDX-License-Identifier: GPL-2.0-only
 +/*
 + * ASPEED AST2600 new register set I2C controller driver
@@ -1580,17 +1580,16 @@ index 000000000000..f95f425b9fd9
 +			i2c_bus->mode = BYTE_MODE;
 +	}
 +
++	/* i2c timeout counter: use base clk4 1Mhz,
++	 * per unit: 1/(1000/4096) = 4096us
++	 */
 +	ret = of_property_read_u32(dev->of_node,
 +							"i2c-scl-clk-low-timeout-us",
 +							&i2c_bus->timeout);
-+	if (ret < 0) {
++	if (ret < 0)
 +		i2c_bus->timeout = 0;
-+	} else {
-+		/* i2c timeout counter: use base clk4 1Mhz
-+		 * per unit: 1/(1000/4096) = 4096us
-+		 */
++	else
 +		i2c_bus->timeout /= 4096;
-+	}
 +
 +	init_completion(&i2c_bus->cmd_complete);
 +
@@ -1653,8 +1652,6 @@ index 000000000000..f95f425b9fd9
 +		 i2c_bus->mode);
 +
 +	return 0;
-+
-+	return ret;
 +}
 +
 +static int ast2600_i2c_remove(struct platform_device *pdev)
