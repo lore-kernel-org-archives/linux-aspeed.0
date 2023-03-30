@@ -1,1693 +1,863 @@
-From: Ryan Chen <ryan_chen@aspeedtech.com>
-Date: Thu, 30 Mar 2023 15:32:59 +0800
-Subject: [PATCH v8 2/2] i2c: aspeed: support ast2600 i2c new register mode driver
-In-Reply-To: <20230330073259.485606-1-ryan_chen@aspeedtech.com>
-References: <20230330073259.485606-1-ryan_chen@aspeedtech.com>
-Message-ID: <20230330073259.485606-3-ryan_chen@aspeedtech.com>
+From: Rob Herring <robh@kernel.org>
+Date: Thu, 30 Mar 2023 15:03:58 -0500
+Subject: [PATCH v2] dt-bindings: pinctrl: Drop unneeded quotes
+Message-ID: <20230330200402.2731992-1-robh@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add i2c new register mode driver to support AST2600 i2c
-new register mode. AST2600 i2c controller have legacy and
-new register mode. The new register mode have global register
-support 4 base clock for scl clock selection, and new clock
-divider mode. The i2c new register mode have separate register
-set to control i2c master and slave.
+Cleanup bindings dropping unneeded quotes. Once all these are fixed,
+checking for this can be enabled in yamllint.
 
-Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
+Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+Acked-by: Hector Martin <marcan@marcan.st>
+Acked-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Acked-by: Jernej Skrabec <jernej.skrabec@gmail.com>
+Reviewed-by: Heiko Stuebner <heiko@sntech.de> #rockchip
+Reviewed-by: Damien Le Moal <damien.lemoal@opensource.wdc.com>
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Signed-off-by: Rob Herring <robh@kernel.org>
 ---
- MAINTAINERS                      |    9 +
- drivers/i2c/busses/Kconfig       |   11 +
- drivers/i2c/busses/Makefile      |    1 +
- drivers/i2c/busses/i2c-ast2600.c | 1602 ++++++++++++++++++++++++++++++
- 4 files changed, 1623 insertions(+)
- create mode 100644 drivers/i2c/busses/i2c-ast2600.c
+v2:
+ - Rebase on pinctrl tree
+---
+ .../bindings/pinctrl/actions,s500-pinctrl.yaml         |  2 +-
+ .../bindings/pinctrl/allwinner,sun4i-a10-pinctrl.yaml  |  2 +-
+ .../devicetree/bindings/pinctrl/apple,pinctrl.yaml     |  2 +-
+ .../bindings/pinctrl/aspeed,ast2400-pinctrl.yaml       |  4 ++--
+ .../bindings/pinctrl/aspeed,ast2500-pinctrl.yaml       |  4 ++--
+ .../bindings/pinctrl/aspeed,ast2600-pinctrl.yaml       |  6 +++---
+ .../bindings/pinctrl/brcm,bcm6318-pinctrl.yaml         |  2 +-
+ .../bindings/pinctrl/brcm,bcm63268-pinctrl.yaml        |  2 +-
+ .../bindings/pinctrl/brcm,bcm6328-pinctrl.yaml         |  2 +-
+ .../bindings/pinctrl/brcm,bcm6358-pinctrl.yaml         |  2 +-
+ .../bindings/pinctrl/brcm,bcm6362-pinctrl.yaml         |  2 +-
+ .../bindings/pinctrl/brcm,bcm6368-pinctrl.yaml         |  2 +-
+ .../devicetree/bindings/pinctrl/brcm,ns-pinmux.yaml    |  2 +-
+ .../devicetree/bindings/pinctrl/canaan,k210-fpioa.yaml |  2 +-
+ .../devicetree/bindings/pinctrl/cirrus,lochnagar.yaml  |  2 +-
+ .../devicetree/bindings/pinctrl/cirrus,madera.yaml     |  4 ++--
+ .../devicetree/bindings/pinctrl/cypress,cy8c95x0.yaml  |  2 +-
+ .../devicetree/bindings/pinctrl/fsl,imx7d-pinctrl.yaml |  2 +-
+ .../devicetree/bindings/pinctrl/fsl,imx8m-pinctrl.yaml |  2 +-
+ .../bindings/pinctrl/fsl,imx8ulp-pinctrl.yaml          |  2 +-
+ .../devicetree/bindings/pinctrl/fsl,imx93-pinctrl.yaml |  2 +-
+ .../devicetree/bindings/pinctrl/ingenic,pinctrl.yaml   |  2 +-
+ .../devicetree/bindings/pinctrl/intel,lgm-io.yaml      |  2 +-
+ .../bindings/pinctrl/marvell,ac5-pinctrl.yaml          |  4 ++--
+ .../bindings/pinctrl/mscc,ocelot-pinctrl.yaml          |  6 +++---
+ .../devicetree/bindings/pinctrl/qcom,pmic-gpio.yaml    |  4 ++--
+ .../devicetree/bindings/pinctrl/qcom,pmic-mpp.yaml     |  4 ++--
+ .../pinctrl/qcom,sc7280-lpass-lpi-pinctrl.yaml         |  2 +-
+ .../pinctrl/qcom,sm8250-lpass-lpi-pinctrl.yaml         |  2 +-
+ .../devicetree/bindings/pinctrl/qcom,tlmm-common.yaml  |  2 +-
+ .../devicetree/bindings/pinctrl/renesas,pfc.yaml       |  2 +-
+ .../bindings/pinctrl/renesas,rza1-ports.yaml           |  2 +-
+ .../bindings/pinctrl/renesas,rza2-pinctrl.yaml         |  2 +-
+ .../bindings/pinctrl/renesas,rzg2l-pinctrl.yaml        |  2 +-
+ .../bindings/pinctrl/renesas,rzn1-pinctrl.yaml         |  2 +-
+ .../bindings/pinctrl/renesas,rzv2m-pinctrl.yaml        |  2 +-
+ .../devicetree/bindings/pinctrl/rockchip,pinctrl.yaml  | 10 +++++-----
+ .../devicetree/bindings/pinctrl/samsung,pinctrl.yaml   |  2 +-
+ .../devicetree/bindings/pinctrl/semtech,sx1501q.yaml   |  6 +++---
+ .../bindings/pinctrl/socionext,uniphier-pinctrl.yaml   |  2 +-
+ .../devicetree/bindings/pinctrl/st,stm32-pinctrl.yaml  | 10 +++++-----
+ .../bindings/pinctrl/starfive,jh7100-pinctrl.yaml      |  6 +++---
+ .../bindings/pinctrl/sunplus,sp7021-pinctrl.yaml       |  6 +++---
+ .../bindings/pinctrl/toshiba,visconti-pinctrl.yaml     |  8 ++++----
+ .../devicetree/bindings/pinctrl/xlnx,zynq-pinctrl.yaml |  2 +-
+ 45 files changed, 72 insertions(+), 72 deletions(-)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 749710e22b4d..433ec2309441 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -1924,6 +1924,15 @@ F:	Documentation/devicetree/bindings/interrupt-controller/aspeed,ast2400-i2c-ic.
- F:	drivers/i2c/busses/i2c-aspeed.c
- F:	drivers/irqchip/irq-aspeed-i2c-ic.c
+diff --git a/Documentation/devicetree/bindings/pinctrl/actions,s500-pinctrl.yaml b/Documentation/devicetree/bindings/pinctrl/actions,s500-pinctrl.yaml
+index fb0f69ce9c16..7cb8a747feee 100644
+--- a/Documentation/devicetree/bindings/pinctrl/actions,s500-pinctrl.yaml
++++ b/Documentation/devicetree/bindings/pinctrl/actions,s500-pinctrl.yaml
+@@ -185,7 +185,7 @@ patternProperties:
+     additionalProperties: false
  
-+ARM/ASPEED I2CV2 DRIVER
-+M:	Ryan Chen <ryan_chen@aspeedtech.com>
-+R:	Andrew Jeffery <andrew@aj.id.au>
-+L:	linux-i2c at vger.kernel.org
-+L:	openbmc at lists.ozlabs.org (moderated for non-subscribers)
-+S:	Maintained
-+F:	Documentation/devicetree/bindings/i2c/aspeed,i2c.yaml
-+F:	drivers/i2c/busses/i2c-ast2600.c
-+
- ARM/ASPEED MACHINE SUPPORT
- M:	Joel Stanley <joel@jms.id.au>
- R:	Andrew Jeffery <andrew@aj.id.au>
-diff --git a/drivers/i2c/busses/Kconfig b/drivers/i2c/busses/Kconfig
-index 7284206b278b..4f6935866257 100644
---- a/drivers/i2c/busses/Kconfig
-+++ b/drivers/i2c/busses/Kconfig
-@@ -389,6 +389,17 @@ config I2C_ALTERA
- 	  This driver can also be built as a module.  If so, the module
- 	  will be called i2c-altera.
+ allOf:
+-  - $ref: "pinctrl.yaml#"
++  - $ref: pinctrl.yaml#
  
-+config I2C_AST2600
-+	tristate "Aspeed I2C v2 Controller"
-+	depends on ARCH_ASPEED || COMPILE_TEST
-+	select I2C_SMBUS
-+	help
-+	  If you say yes to this option, support will be included for the
-+	  Aspeed I2C controller with new register set.
-+
-+	  This driver can also be built as a module.  If so, the module
-+	  will be called i2c-ast2600.
-+
- config I2C_ASPEED
- 	tristate "Aspeed I2C Controller"
- 	depends on ARCH_ASPEED || COMPILE_TEST
-diff --git a/drivers/i2c/busses/Makefile b/drivers/i2c/busses/Makefile
-index c5cac15f075c..d0ab4d45781c 100644
---- a/drivers/i2c/busses/Makefile
-+++ b/drivers/i2c/busses/Makefile
-@@ -38,6 +38,7 @@ obj-$(CONFIG_I2C_POWERMAC)	+= i2c-powermac.o
- obj-$(CONFIG_I2C_ALTERA)	+= i2c-altera.o
- obj-$(CONFIG_I2C_AMD_MP2)	+= i2c-amd-mp2-pci.o i2c-amd-mp2-plat.o
- obj-$(CONFIG_I2C_ASPEED)	+= i2c-aspeed.o
-+obj-$(CONFIG_I2C_AST2600)	+= i2c-ast2600.o
- obj-$(CONFIG_I2C_AT91)		+= i2c-at91.o
- i2c-at91-objs			:= i2c-at91-core.o i2c-at91-master.o
- ifeq ($(CONFIG_I2C_AT91_SLAVE_EXPERIMENTAL),y)
-diff --git a/drivers/i2c/busses/i2c-ast2600.c b/drivers/i2c/busses/i2c-ast2600.c
-new file mode 100644
-index 000000000000..c8817fe9b23f
---- /dev/null
-+++ b/drivers/i2c/busses/i2c-ast2600.c
-@@ -0,0 +1,1602 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+/*
-+ * ASPEED AST2600 new register set I2C controller driver
-+ *
-+ * Copyright (C) ASPEED Technology Inc.
-+ */
-+#include <linux/clk.h>
-+#include <linux/err.h>
-+#include <linux/i2c.h>
-+#include <linux/io.h>
-+#include <linux/slab.h>
-+#include <linux/delay.h>
-+#include <linux/reset.h>
-+#include <linux/module.h>
-+#include <linux/interrupt.h>
-+#include <linux/completion.h>
-+#include <linux/of.h>
-+#include <linux/of_irq.h>
-+#include <linux/mfd/syscon.h>
-+#include <linux/regmap.h>
-+#include <linux/of_device.h>
-+#include <linux/dma-mapping.h>
-+#include <linux/i2c-smbus.h>
-+
-+/*
-+ * APB clk : 100Mhz
-+ * div	: scl		: baseclk [APB/((div/2) + 1)] : tBuf [1/bclk * 16]
-+ * I2CG10[31:24] base clk4 for i2c auto recovery timeout counter (0xC6)
-+ * I2CG10[23:16] base clk3 for Standard-mode (100Khz) min tBuf 4.7us
-+ * 0x3c : 100.8Khz	: 3.225Mhz					  : 4.96us
-+ * 0x3d : 99.2Khz	: 3.174Mhz					  : 5.04us
-+ * 0x3e : 97.65Khz	: 3.125Mhz					  : 5.12us
-+ * 0x40 : 97.75Khz	: 3.03Mhz					  : 5.28us
-+ * 0x41 : 99.5Khz	: 2.98Mhz					  : 5.36us (default)
-+ * I2CG10[15:8] base clk2 for Fast-mode (400Khz) min tBuf 1.3us
-+ * 0x12 : 400Khz	: 10Mhz						  : 1.6us
-+ * I2CG10[7:0] base clk1 for Fast-mode Plus (1Mhz) min tBuf 0.5us
-+ * 0x08 : 1Mhz		: 20Mhz						  : 0.8us
-+ */
-+#define AST2600_I2CG_ISR			0x00
-+#define AST2600_I2CG_SLAVE_ISR		0x04
-+#define AST2600_I2CG_OWNER		0x08
-+#define AST2600_I2CG_CTRL		0x0C
-+#define AST2600_I2CG_CLK_DIV_CTRL	0x10
-+
-+#define AST2600_I2CG_SLAVE_PKT_NAK	BIT(4)
-+#define AST2600_I2CG_M_S_SEPARATE_INTR	BIT(3)
-+#define AST2600_I2CG_CTRL_NEW_REG	BIT(2)
-+#define AST2600_I2CG_CTRL_NEW_CLK_DIV	BIT(1)
-+
-+#define AST2600_GLOBAL_INIT				\
-+			(AST2600_I2CG_CTRL_NEW_REG |	\
-+			AST2600_I2CG_CTRL_NEW_CLK_DIV)
-+#define I2CCG_DIV_CTRL 0xC6411208
-+
-+/* 0x00 : I2CC Master/Slave Function Control Register  */
-+#define AST2600_I2CC_FUN_CTRL		0x00
-+#define AST2600_I2CC_SLAVE_ADDR_RX_EN		BIT(20)
-+#define AST2600_I2CC_MASTER_RETRY_MASK		GENMASK(19, 18)
-+#define AST2600_I2CC_MASTER_RETRY(x)		(((x) & GENMASK(1, 0)) << 18)
-+#define AST2600_I2CC_BUS_AUTO_RELEASE		BIT(17)
-+#define AST2600_I2CC_M_SDA_LOCK_EN			BIT(16)
-+#define AST2600_I2CC_MULTI_MASTER_DIS		BIT(15)
-+#define AST2600_I2CC_M_SCL_DRIVE_EN			BIT(14)
-+#define AST2600_I2CC_MSB_STS				BIT(9)
-+#define AST2600_I2CC_SDA_DRIVE_1T_EN		BIT(8)
-+#define AST2600_I2CC_M_SDA_DRIVE_1T_EN		BIT(7)
-+#define AST2600_I2CC_M_HIGH_SPEED_EN		BIT(6)
-+/* reserver 5 : 2 */
-+#define AST2600_I2CC_SLAVE_EN			BIT(1)
-+#define AST2600_I2CC_MASTER_EN			BIT(0)
-+
-+/* 0x04 : I2CC Master/Slave Clock and AC Timing Control Register #1 */
-+#define AST2600_I2CC_AC_TIMING		0x04
-+#define AST2600_I2CC_TTIMEOUT(x)			(((x) & GENMASK(4, 0)) << 24)
-+#define AST2600_I2CC_TCKHIGHMIN(x)			(((x) & GENMASK(3, 0)) << 20)
-+#define AST2600_I2CC_TCKHIGH(x)			(((x) & GENMASK(3, 0)) << 16)
-+#define AST2600_I2CC_TCKLOW(x)			(((x) & GENMASK(3, 0)) << 12)
-+#define AST2600_I2CC_THDDAT(x)			(((x) & GENMASK(1, 0)) << 10)
-+#define AST2600_I2CC_TOUTBASECLK(x)			(((x) & GENMASK(1, 0)) << 8)
-+#define AST2600_I2CC_TBASECLK(x)			((x) & GENMASK(3, 0))
-+
-+/* 0x08 : I2CC Master/Slave Transmit/Receive Byte Buffer Register */
-+#define AST2600_I2CC_STS_AND_BUFF		0x08
-+#define AST2600_I2CC_TX_DIR_MASK			GENMASK(31, 29)
-+#define AST2600_I2CC_SDA_OE				BIT(28)
-+#define AST2600_I2CC_SDA_O				BIT(27)
-+#define AST2600_I2CC_SCL_OE				BIT(26)
-+#define AST2600_I2CC_SCL_O				BIT(25)
-+
-+#define AST2600_I2CC_SCL_LINE_STS			BIT(18)
-+#define AST2600_I2CC_SDA_LINE_STS			BIT(17)
-+#define AST2600_I2CC_BUS_BUSY_STS			BIT(16)
-+
-+#define AST2600_I2CC_GET_RX_BUFF(x)			(((x) >> 8) & GENMASK(7, 0))
-+
-+/* 0x0C : I2CC Master/Slave Pool Buffer Control Register  */
-+#define AST2600_I2CC_BUFF_CTRL		0x0C
-+#define AST2600_I2CC_GET_RX_BUF_LEN(x)		(((x) >> 24) & GENMASK(5, 0))
-+#define AST2600_I2CC_SET_RX_BUF_LEN(x)		(((((x) - 1) & GENMASK(4, 0)) << 16) | BIT(0))
-+#define AST2600_I2CC_SET_TX_BUF_LEN(x)		(((((x) - 1) & GENMASK(4, 0)) << 8) | BIT(0))
-+#define AST2600_I2CC_GET_TX_BUF_LEN(x)		((((x) >> 8) & GENMASK(4, 0)) + 1)
-+
-+/* 0x10 : I2CM Master Interrupt Control Register */
-+#define AST2600_I2CM_IER			0x10
-+/* 0x14 : I2CM Master Interrupt Status Register   : WC */
-+#define AST2600_I2CM_ISR			0x14
-+
-+#define AST2600_I2CM_PKT_TIMEOUT			BIT(18)
-+#define AST2600_I2CM_PKT_ERROR			BIT(17)
-+#define AST2600_I2CM_PKT_DONE			BIT(16)
-+
-+#define AST2600_I2CM_BUS_RECOVER_FAIL		BIT(15)
-+#define AST2600_I2CM_SDA_DL_TO			BIT(14)
-+#define AST2600_I2CM_BUS_RECOVER			BIT(13)
-+#define AST2600_I2CM_SMBUS_ALT			BIT(12)
-+
-+#define AST2600_I2CM_SCL_LOW_TO			BIT(6)
-+#define AST2600_I2CM_ABNORMAL			BIT(5)
-+#define AST2600_I2CM_NORMAL_STOP			BIT(4)
-+#define AST2600_I2CM_ARBIT_LOSS			BIT(3)
-+#define AST2600_I2CM_RX_DONE			BIT(2)
-+#define AST2600_I2CM_TX_NAK				BIT(1)
-+#define AST2600_I2CM_TX_ACK				BIT(0)
-+
-+/* 0x18 : I2CM Master Command/Status Register   */
-+#define AST2600_I2CM_CMD_STS		0x18
-+#define AST2600_I2CM_PKT_ADDR(x)			(((x) & GENMASK(6, 0)) << 24)
-+#define AST2600_I2CM_PKT_EN				BIT(16)
-+#define AST2600_I2CM_SDA_OE_OUT_DIR			BIT(15)
-+#define AST2600_I2CM_SDA_O_OUT_DIR			BIT(14)
-+#define AST2600_I2CM_SCL_OE_OUT_DIR			BIT(13)
-+#define AST2600_I2CM_SCL_O_OUT_DIR			BIT(12)
-+#define AST2600_I2CM_RECOVER_CMD_EN			BIT(11)
-+
-+#define AST2600_I2CM_RX_DMA_EN			BIT(9)
-+#define AST2600_I2CM_TX_DMA_EN			BIT(8)
-+/* Command Bit */
-+#define AST2600_I2CM_RX_BUFF_EN			BIT(7)
-+#define AST2600_I2CM_TX_BUFF_EN			BIT(6)
-+#define AST2600_I2CM_STOP_CMD			BIT(5)
-+#define AST2600_I2CM_RX_CMD_LAST			BIT(4)
-+#define AST2600_I2CM_RX_CMD				BIT(3)
-+
-+#define AST2600_I2CM_TX_CMD				BIT(1)
-+#define AST2600_I2CM_START_CMD			BIT(0)
-+
-+/* 0x1C : I2CM Master DMA Transfer Length Register	 */
-+#define AST2600_I2CM_DMA_LEN		0x1C
-+/* Tx Rx support length 1 ~ 4096 */
-+#define AST2600_I2CM_SET_RX_DMA_LEN(x)	((((x) & GENMASK(11, 0)) << 16) | BIT(31))
-+#define AST2600_I2CM_SET_TX_DMA_LEN(x)	(((x) & GENMASK(11, 0)) | BIT(15))
-+
-+/* 0x20 : I2CS Slave Interrupt Control Register   */
-+#define AST2600_I2CS_IER			0x20
-+/* 0x24 : I2CS Slave Interrupt Status Register	 */
-+#define AST2600_I2CS_ISR			0x24
-+
-+#define AST2600_I2CS_ADDR_INDICATE_MASK	GENMASK(31, 30)
-+#define AST2600_I2CS_SLAVE_PENDING			BIT(29)
-+
-+#define AST2600_I2CS_WAIT_TX_DMA			BIT(25)
-+#define AST2600_I2CS_WAIT_RX_DMA			BIT(24)
-+
-+#define AST2600_I2CS_ADDR3_NAK			BIT(22)
-+#define AST2600_I2CS_ADDR2_NAK			BIT(21)
-+#define AST2600_I2CS_ADDR1_NAK			BIT(20)
-+
-+#define AST2600_I2CS_ADDR_MASK			GENMASK(19, 18)
-+#define AST2600_I2CS_PKT_ERROR			BIT(17)
-+#define AST2600_I2CS_PKT_DONE			BIT(16)
-+#define AST2600_I2CS_INACTIVE_TO			BIT(15)
-+
-+#define AST2600_I2CS_SLAVE_MATCH			BIT(7)
-+#define AST2600_I2CS_ABNOR_STOP			BIT(5)
-+#define AST2600_I2CS_STOP				BIT(4)
-+#define AST2600_I2CS_RX_DONE_NAK			BIT(3)
-+#define AST2600_I2CS_RX_DONE			BIT(2)
-+#define AST2600_I2CS_TX_NAK				BIT(1)
-+#define AST2600_I2CS_TX_ACK				BIT(0)
-+
-+/* 0x28 : I2CS Slave CMD/Status Register   */
-+#define AST2600_I2CS_CMD_STS		0x28
-+#define AST2600_I2CS_ACTIVE_ALL			GENMASK(18, 17)
-+#define AST2600_I2CS_PKT_MODE_EN			BIT(16)
-+#define AST2600_I2CS_AUTO_NAK_NOADDR		BIT(15)
-+#define AST2600_I2CS_AUTO_NAK_EN			BIT(14)
-+
-+#define AST2600_I2CS_ALT_EN				BIT(10)
-+#define AST2600_I2CS_RX_DMA_EN			BIT(9)
-+#define AST2600_I2CS_TX_DMA_EN			BIT(8)
-+#define AST2600_I2CS_RX_BUFF_EN			BIT(7)
-+#define AST2600_I2CS_TX_BUFF_EN			BIT(6)
-+#define AST2600_I2CS_RX_CMD_LAST			BIT(4)
-+
-+#define AST2600_I2CS_TX_CMD				BIT(2)
-+
-+#define AST2600_I2CS_DMA_LEN		0x2C
-+#define AST2600_I2CS_SET_RX_DMA_LEN(x)	(((((x) - 1) & GENMASK(11, 0)) << 16) | BIT(31))
-+#define AST2600_I2CS_RX_DMA_LEN_MASK	(GENMASK(11, 0) << 16)
-+
-+#define AST2600_I2CS_SET_TX_DMA_LEN(x)	((((x) - 1) & GENMASK(11, 0)) | BIT(15))
-+#define AST2600_I2CS_TX_DMA_LEN_MASK	GENMASK(11, 0)
-+
-+/* I2CM Master DMA Tx Buffer Register   */
-+#define AST2600_I2CM_TX_DMA			0x30
-+/* I2CM Master DMA Rx Buffer Register	*/
-+#define AST2600_I2CM_RX_DMA			0x34
-+/* I2CS Slave DMA Tx Buffer Register   */
-+#define AST2600_I2CS_TX_DMA			0x38
-+/* I2CS Slave DMA Rx Buffer Register   */
-+#define AST2600_I2CS_RX_DMA			0x3C
-+
-+#define AST2600_I2CS_ADDR_CTRL		0x40
-+
-+#define	AST2600_I2CS_ADDR3_MASK		GENMASK(22, 16)
-+#define	AST2600_I2CS_ADDR2_MASK		GENMASK(14, 8)
-+#define	AST2600_I2CS_ADDR1_MASK		GENMASK(6, 0)
-+
-+#define AST2600_I2CM_DMA_LEN_STS		0x48
-+#define AST2600_I2CS_DMA_LEN_STS		0x4C
-+
-+#define AST2600_I2C_GET_TX_DMA_LEN(x)		((x) & GENMASK(12, 0))
-+#define AST2600_I2C_GET_RX_DMA_LEN(x)		(((x) >> 16) & GENMASK(12, 0))
-+
-+/* 0x40 : Slave Device Address Register */
-+#define AST2600_I2CS_ADDR3_ENABLE			BIT(23)
-+#define AST2600_I2CS_ADDR3(x)			((x) << 16)
-+#define AST2600_I2CS_ADDR2_ENABLE			BIT(15)
-+#define AST2600_I2CS_ADDR2(x)			((x) << 8)
-+#define AST2600_I2CS_ADDR1_ENABLE			BIT(7)
-+#define AST2600_I2CS_ADDR1(x)			(x)
-+
-+#define I2C_SLAVE_MSG_BUF_SIZE		256
-+
-+#define AST2600_I2C_DMA_SIZE		4096
-+
-+#define MASTER_TRIGGER_LAST_STOP	(AST2600_I2CM_RX_CMD_LAST | AST2600_I2CM_STOP_CMD)
-+#define SLAVE_TRIGGER_CMD	(AST2600_I2CS_ACTIVE_ALL | AST2600_I2CS_PKT_MODE_EN)
-+
-+#define AST_I2C_TIMEOUT_CLK		0x2
-+
-+struct ast2600_i2c_timing_table {
-+	u32 divisor;
-+	u32 timing;
-+};
-+
-+enum xfer_mode {
-+	BYTE_MODE = 0,
-+	BUFF_MODE,
-+	DMA_MODE,
-+};
-+
-+struct ast2600_i2c_bus {
-+	struct i2c_adapter		adap;
-+	struct device			*dev;
-+	void __iomem			*reg_base;
-+	struct regmap			*global_regs;
-+	struct reset_control		*rst;
-+	int				irq;
-+	enum xfer_mode			mode;
-+	struct clk			*clk;
-+	u32				apb_clk;
-+	u32				bus_frequency;
-+	int				slave_operate;
-+	u32				timeout;
-+	/* smbus alert */
-+	int				alert_enable;
-+	struct i2c_smbus_alert_setup	alert_data;
-+	struct i2c_client		*ara;
-+	/* Multi-master */
-+	bool				multi_master;
-+	/* master structure */
-+	int				cmd_err;
-+	struct completion		cmd_complete;
-+	struct i2c_msg			*msgs;
-+	size_t				buf_index;
-+	/* cur xfer msgs index*/
-+	int				msgs_index;
-+	int				msgs_count;
-+	u8				*master_safe_buf;
-+	dma_addr_t			master_dma_addr;
-+	/*total xfer count */
-+	int				master_xfer_cnt;
-+	/* Buffer mode */
-+	void __iomem			*buf_base;
-+	size_t				buf_size;
-+	/* Slave structure */
-+	int				slave_xfer_len;
-+	int				slave_xfer_cnt;
-+#ifdef CONFIG_I2C_SLAVE
-+	unsigned char			*slave_dma_buf;
-+	dma_addr_t			slave_dma_addr;
-+	struct i2c_client		*slave;
-+#endif
-+};
-+
-+static u32 ast2600_select_i2c_clock(struct ast2600_i2c_bus *i2c_bus)
-+{
-+	unsigned long base_clk1;
-+	unsigned long base_clk2;
-+	unsigned long base_clk3;
-+	unsigned long base_clk4;
-+	int baseclk_idx;
-+	u32 clk_div_reg;
-+	u32 scl_low;
-+	u32 scl_high;
-+	int divisor;
-+	int inc = 0;
-+	u32 data;
-+
-+	regmap_read(i2c_bus->global_regs, AST2600_I2CG_CLK_DIV_CTRL, &clk_div_reg);
-+	base_clk1 = (i2c_bus->apb_clk * 10) / ((((clk_div_reg & 0xff) + 2) * 10) / 2);
-+	base_clk2 = (i2c_bus->apb_clk * 10) /
-+			(((((clk_div_reg >> 8) & 0xff) + 2) * 10) / 2);
-+	base_clk3 = (i2c_bus->apb_clk * 10) /
-+			(((((clk_div_reg >> 16) & 0xff) + 2) * 10) / 2);
-+	base_clk4 = (i2c_bus->apb_clk * 10) /
-+			(((((clk_div_reg >> 24) & 0xff) + 2) * 10) / 2);
-+
-+	if ((i2c_bus->apb_clk / i2c_bus->bus_frequency) <= 32) {
-+		baseclk_idx = 0;
-+		divisor = DIV_ROUND_UP(i2c_bus->apb_clk, i2c_bus->bus_frequency);
-+	} else if ((base_clk1 / i2c_bus->bus_frequency) <= 32) {
-+		baseclk_idx = 1;
-+		divisor = DIV_ROUND_UP(base_clk1, i2c_bus->bus_frequency);
-+	} else if ((base_clk2 / i2c_bus->bus_frequency) <= 32) {
-+		baseclk_idx = 2;
-+		divisor = DIV_ROUND_UP(base_clk2, i2c_bus->bus_frequency);
-+	} else if ((base_clk3 / i2c_bus->bus_frequency) <= 32) {
-+		baseclk_idx = 3;
-+		divisor = DIV_ROUND_UP(base_clk3, i2c_bus->bus_frequency);
-+	} else {
-+		baseclk_idx = 4;
-+		divisor = DIV_ROUND_UP(base_clk4, i2c_bus->bus_frequency);
-+		inc = 0;
-+		while ((divisor + inc) > 32) {
-+			inc |= divisor & 0x1;
-+			divisor >>= 1;
-+			baseclk_idx++;
-+		}
-+		divisor += inc;
-+	}
-+	divisor = min_t(int, divisor, 32);
-+	baseclk_idx &= 0xf;
-+	scl_low = ((divisor * 9) / 16) - 1;
-+	scl_low = min_t(u32, scl_low, 0xf);
-+	scl_high = (divisor - scl_low - 2) & 0xf;
-+	/* Divisor : Base Clock : tCKHighMin : tCK High : tCK Low  */
-+	data = ((scl_high - 1) << 20) | (scl_high << 16) | (scl_low << 12) | (baseclk_idx);
-+	if (i2c_bus->timeout) {
-+		data |= AST2600_I2CC_TOUTBASECLK(AST_I2C_TIMEOUT_CLK);
-+		data |= AST2600_I2CC_TTIMEOUT(i2c_bus->timeout);
-+	}
-+
-+	return data;
-+}
-+
-+static u8 ast2600_i2c_recover_bus(struct ast2600_i2c_bus *i2c_bus)
-+{
-+	int ret = 0;
-+	u32 ctrl;
-+	u32 state;
-+	int r;
-+
-+	dev_dbg(i2c_bus->dev, "%d-bus recovery bus [%x]\n", i2c_bus->adap.nr,
-+		readl(i2c_bus->reg_base + AST2600_I2CC_STS_AND_BUFF));
-+
-+	ctrl = readl(i2c_bus->reg_base + AST2600_I2CC_FUN_CTRL);
-+
-+	writel(ctrl & ~(AST2600_I2CC_MASTER_EN | AST2600_I2CC_SLAVE_EN),
-+	       i2c_bus->reg_base + AST2600_I2CC_FUN_CTRL);
-+
-+	writel(readl(i2c_bus->reg_base + AST2600_I2CC_FUN_CTRL) | AST2600_I2CC_MASTER_EN,
-+	       i2c_bus->reg_base + AST2600_I2CC_FUN_CTRL);
-+
-+	reinit_completion(&i2c_bus->cmd_complete);
-+	i2c_bus->cmd_err = 0;
-+
-+	/* Check 0x14's SDA and SCL status */
-+	state = readl(i2c_bus->reg_base + AST2600_I2CC_STS_AND_BUFF);
-+	if (!(state & AST2600_I2CC_SDA_LINE_STS) && (state & AST2600_I2CC_SCL_LINE_STS)) {
-+		writel(AST2600_I2CM_RECOVER_CMD_EN, i2c_bus->reg_base + AST2600_I2CM_CMD_STS);
-+		r = wait_for_completion_timeout(&i2c_bus->cmd_complete, i2c_bus->adap.timeout);
-+		if (r == 0) {
-+			dev_dbg(i2c_bus->dev, "recovery timed out\n");
-+			ret = -ETIMEDOUT;
-+		} else {
-+			if (i2c_bus->cmd_err) {
-+				dev_dbg(i2c_bus->dev, "recovery error\n");
-+				ret = -EPROTO;
-+			}
-+		}
-+	}
-+
-+	dev_dbg(i2c_bus->dev, "Recovery done [%x]\n",
-+		readl(i2c_bus->reg_base + AST2600_I2CC_STS_AND_BUFF));
-+	if (readl(i2c_bus->reg_base + AST2600_I2CC_STS_AND_BUFF) & AST2600_I2CC_BUS_BUSY_STS) {
-+		dev_dbg(i2c_bus->dev, "Can't recovery bus [%x]\n",
-+			readl(i2c_bus->reg_base + AST2600_I2CC_STS_AND_BUFF));
-+		ret = -EPROTO;
-+	}
-+
-+	writel(ctrl, i2c_bus->reg_base + AST2600_I2CC_FUN_CTRL);
-+	return ret;
-+}
-+
-+#ifdef CONFIG_I2C_SLAVE
-+static void ast2600_i2c_slave_packet_dma_irq(struct ast2600_i2c_bus *i2c_bus, u32 sts)
-+{
-+	int slave_rx_len;
-+	u32 cmd = 0;
-+	u8 value;
-+	int i = 0;
-+
-+	sts &= ~(AST2600_I2CS_SLAVE_PENDING);
-+	/* Handle i2c slave timeout condition */
-+	if (AST2600_I2CS_INACTIVE_TO & sts) {
-+		cmd = SLAVE_TRIGGER_CMD;
-+		cmd |= AST2600_I2CS_RX_DMA_EN;
-+		writel(AST2600_I2CS_SET_RX_DMA_LEN(I2C_SLAVE_MSG_BUF_SIZE),
-+		       i2c_bus->reg_base + AST2600_I2CS_DMA_LEN);
-+		writel(cmd, i2c_bus->reg_base + AST2600_I2CS_CMD_STS);
-+		writel(AST2600_I2CS_PKT_DONE, i2c_bus->reg_base + AST2600_I2CS_ISR);
-+		i2c_slave_event(i2c_bus->slave, I2C_SLAVE_STOP, &value);
-+		return;
-+	}
-+
-+	sts &= ~(AST2600_I2CS_PKT_DONE | AST2600_I2CS_PKT_ERROR);
-+
-+	switch (sts) {
-+	case AST2600_I2CS_SLAVE_MATCH | AST2600_I2CS_RX_DONE | AST2600_I2CS_WAIT_RX_DMA:
-+	case AST2600_I2CS_SLAVE_MATCH | AST2600_I2CS_WAIT_RX_DMA:
-+		i2c_slave_event(i2c_bus->slave, I2C_SLAVE_WRITE_REQUESTED, &value);
-+		slave_rx_len = AST2600_I2C_GET_RX_DMA_LEN(readl(i2c_bus->reg_base +
-+						      AST2600_I2CS_DMA_LEN_STS));
-+		for (i = 0; i < slave_rx_len; i++) {
-+			i2c_slave_event(i2c_bus->slave, I2C_SLAVE_WRITE_RECEIVED,
-+					&i2c_bus->slave_dma_buf[i]);
-+		}
-+		writel(AST2600_I2CS_SET_RX_DMA_LEN(I2C_SLAVE_MSG_BUF_SIZE),
-+				i2c_bus->reg_base + AST2600_I2CS_DMA_LEN);
-+		cmd = SLAVE_TRIGGER_CMD | AST2600_I2CS_RX_DMA_EN;
-+		break;
-+	case AST2600_I2CS_SLAVE_MATCH | AST2600_I2CS_STOP:
-+		i2c_slave_event(i2c_bus->slave, I2C_SLAVE_STOP, &value);
-+		writel(AST2600_I2CS_SET_RX_DMA_LEN(I2C_SLAVE_MSG_BUF_SIZE),
-+				i2c_bus->reg_base + AST2600_I2CS_DMA_LEN);
-+		cmd = SLAVE_TRIGGER_CMD | AST2600_I2CS_RX_DMA_EN;
-+		break;
-+	case AST2600_I2CS_SLAVE_MATCH | AST2600_I2CS_RX_DONE_NAK |
-+			AST2600_I2CS_RX_DONE | AST2600_I2CS_STOP:
-+	case AST2600_I2CS_SLAVE_MATCH | AST2600_I2CS_WAIT_RX_DMA |
-+			AST2600_I2CS_RX_DONE | AST2600_I2CS_STOP:
-+	case AST2600_I2CS_RX_DONE_NAK | AST2600_I2CS_RX_DONE | AST2600_I2CS_STOP:
-+	case AST2600_I2CS_RX_DONE | AST2600_I2CS_WAIT_RX_DMA | AST2600_I2CS_STOP:
-+	case AST2600_I2CS_RX_DONE | AST2600_I2CS_STOP:
-+	case AST2600_I2CS_RX_DONE | AST2600_I2CS_WAIT_RX_DMA:
-+	case AST2600_I2CS_SLAVE_MATCH | AST2600_I2CS_RX_DONE | AST2600_I2CS_STOP:
-+		if (sts & AST2600_I2CS_SLAVE_MATCH)
-+			i2c_slave_event(i2c_bus->slave, I2C_SLAVE_WRITE_REQUESTED, &value);
-+
-+		slave_rx_len = AST2600_I2C_GET_RX_DMA_LEN(readl(i2c_bus->reg_base +
-+						      AST2600_I2CS_DMA_LEN_STS));
-+		for (i = 0; i < slave_rx_len; i++) {
-+			i2c_slave_event(i2c_bus->slave, I2C_SLAVE_WRITE_RECEIVED,
-+					&i2c_bus->slave_dma_buf[i]);
-+		}
-+		writel(AST2600_I2CS_SET_RX_DMA_LEN(I2C_SLAVE_MSG_BUF_SIZE),
-+		       i2c_bus->reg_base + AST2600_I2CS_DMA_LEN);
-+		if (sts & AST2600_I2CS_STOP)
-+			i2c_slave_event(i2c_bus->slave, I2C_SLAVE_STOP, &value);
-+		cmd = SLAVE_TRIGGER_CMD | AST2600_I2CS_RX_DMA_EN;
-+		break;
-+
-+	/* it is Mw data Mr coming -> it need send tx */
-+	case AST2600_I2CS_RX_DONE | AST2600_I2CS_WAIT_TX_DMA:
-+	case AST2600_I2CS_SLAVE_MATCH | AST2600_I2CS_RX_DONE | AST2600_I2CS_WAIT_TX_DMA:
-+		/* it should be repeat start read */
-+		if (sts & AST2600_I2CS_SLAVE_MATCH)
-+			i2c_slave_event(i2c_bus->slave, I2C_SLAVE_WRITE_REQUESTED, &value);
-+
-+		slave_rx_len = AST2600_I2C_GET_RX_DMA_LEN(readl(i2c_bus->reg_base +
-+						      AST2600_I2CS_DMA_LEN_STS));
-+		for (i = 0; i < slave_rx_len; i++) {
-+			i2c_slave_event(i2c_bus->slave, I2C_SLAVE_WRITE_RECEIVED,
-+					&i2c_bus->slave_dma_buf[i]);
-+		}
-+		i2c_slave_event(i2c_bus->slave, I2C_SLAVE_READ_REQUESTED,
-+				&i2c_bus->slave_dma_buf[0]);
-+		writel(0, i2c_bus->reg_base + AST2600_I2CS_DMA_LEN_STS);
-+		writel(AST2600_I2CS_SET_TX_DMA_LEN(1),
-+				i2c_bus->reg_base + AST2600_I2CS_DMA_LEN);
-+		cmd = SLAVE_TRIGGER_CMD | AST2600_I2CS_TX_DMA_EN;
-+		break;
-+	case AST2600_I2CS_SLAVE_MATCH | AST2600_I2CS_WAIT_TX_DMA:
-+		/* First Start read */
-+		i2c_slave_event(i2c_bus->slave, I2C_SLAVE_READ_REQUESTED,
-+				&i2c_bus->slave_dma_buf[0]);
-+		writel(AST2600_I2CS_SET_TX_DMA_LEN(1),
-+				i2c_bus->reg_base + AST2600_I2CS_DMA_LEN);
-+		cmd = SLAVE_TRIGGER_CMD | AST2600_I2CS_TX_DMA_EN;
-+		break;
-+	case AST2600_I2CS_WAIT_TX_DMA:
-+		/* it should be next start read */
-+		i2c_slave_event(i2c_bus->slave, I2C_SLAVE_READ_PROCESSED,
-+				&i2c_bus->slave_dma_buf[0]);
-+		writel(0, i2c_bus->reg_base + AST2600_I2CS_DMA_LEN_STS);
-+		writel(AST2600_I2CS_SET_TX_DMA_LEN(1),
-+				i2c_bus->reg_base + AST2600_I2CS_DMA_LEN);
-+		cmd = SLAVE_TRIGGER_CMD | AST2600_I2CS_TX_DMA_EN;
-+		break;
-+
-+	case AST2600_I2CS_TX_NAK | AST2600_I2CS_STOP:
-+		/* it just tx complete */
-+		i2c_slave_event(i2c_bus->slave, I2C_SLAVE_STOP, &value);
-+		writel(0, i2c_bus->reg_base + AST2600_I2CS_DMA_LEN_STS);
-+		writel(AST2600_I2CS_SET_RX_DMA_LEN(I2C_SLAVE_MSG_BUF_SIZE),
-+		       i2c_bus->reg_base + AST2600_I2CS_DMA_LEN);
-+		cmd = SLAVE_TRIGGER_CMD | AST2600_I2CS_RX_DMA_EN;
-+		break;
-+	case AST2600_I2CS_SLAVE_MATCH | AST2600_I2CS_RX_DONE:
-+		cmd = 0;
-+		i2c_slave_event(i2c_bus->slave, I2C_SLAVE_WRITE_REQUESTED, &value);
-+		break;
-+	case AST2600_I2CS_STOP:
-+		cmd = 0;
-+		i2c_slave_event(i2c_bus->slave, I2C_SLAVE_STOP, &value);
-+		break;
-+	default:
-+		dev_dbg(i2c_bus->dev, "unhandled slave isr case %x, sts %x\n", sts,
-+			readl(i2c_bus->reg_base + AST2600_I2CC_STS_AND_BUFF));
-+		break;
-+	}
-+
-+	if (cmd)
-+		writel(cmd, i2c_bus->reg_base + AST2600_I2CS_CMD_STS);
-+	writel(AST2600_I2CS_PKT_DONE, i2c_bus->reg_base + AST2600_I2CS_ISR);
-+	readl(i2c_bus->reg_base + AST2600_I2CS_ISR);
-+}
-+
-+static void ast2600_i2c_slave_packet_buff_irq(struct ast2600_i2c_bus *i2c_bus, u32 sts)
-+{
-+	int slave_rx_len = 0;
-+	u32 cmd = 0;
-+	u8 value;
-+	int i = 0;
-+
-+	/* due to master slave is common buffer, so need force the master stop not issue */
-+	if (readl(i2c_bus->reg_base + AST2600_I2CM_CMD_STS) & 0xffff) {
-+		writel(0, i2c_bus->reg_base + AST2600_I2CM_CMD_STS);
-+		i2c_bus->cmd_err = -EBUSY;
-+		writel(0, i2c_bus->reg_base + AST2600_I2CC_BUFF_CTRL);
-+		complete(&i2c_bus->cmd_complete);
-+	}
-+
-+	/* Handle i2c slave timeout condition */
-+	if (AST2600_I2CS_INACTIVE_TO & sts) {
-+		writel(SLAVE_TRIGGER_CMD, i2c_bus->reg_base + AST2600_I2CS_CMD_STS);
-+		writel(AST2600_I2CS_PKT_DONE, i2c_bus->reg_base + AST2600_I2CS_ISR);
-+		i2c_slave_event(i2c_bus->slave, I2C_SLAVE_STOP, &value);
-+		i2c_bus->slave_operate = 0;
-+		return;
-+	}
-+
-+	sts &= ~(AST2600_I2CS_PKT_DONE | AST2600_I2CS_PKT_ERROR);
-+
-+	if (sts & AST2600_I2CS_SLAVE_MATCH)
-+		i2c_bus->slave_operate = 1;
-+
-+	switch (sts) {
-+	case AST2600_I2CS_SLAVE_PENDING | AST2600_I2CS_WAIT_RX_DMA |
-+		 AST2600_I2CS_SLAVE_MATCH | AST2600_I2CS_RX_DONE | AST2600_I2CS_STOP:
-+	case AST2600_I2CS_SLAVE_PENDING |
-+		 AST2600_I2CS_SLAVE_MATCH | AST2600_I2CS_RX_DONE | AST2600_I2CS_STOP:
-+	case AST2600_I2CS_SLAVE_PENDING |
-+		 AST2600_I2CS_SLAVE_MATCH | AST2600_I2CS_STOP:
-+		i2c_slave_event(i2c_bus->slave, I2C_SLAVE_STOP, &value);
-+		fallthrough;
-+	case AST2600_I2CS_SLAVE_PENDING |
-+		 AST2600_I2CS_WAIT_RX_DMA | AST2600_I2CS_SLAVE_MATCH | AST2600_I2CS_RX_DONE:
-+	case AST2600_I2CS_WAIT_RX_DMA | AST2600_I2CS_SLAVE_MATCH | AST2600_I2CS_RX_DONE:
-+	case AST2600_I2CS_WAIT_RX_DMA | AST2600_I2CS_SLAVE_MATCH:
-+		i2c_slave_event(i2c_bus->slave, I2C_SLAVE_WRITE_REQUESTED, &value);
-+		cmd = SLAVE_TRIGGER_CMD;
-+		if (sts & AST2600_I2CS_RX_DONE) {
-+			slave_rx_len = AST2600_I2CC_GET_RX_BUF_LEN(readl(i2c_bus->reg_base +
-+							       AST2600_I2CC_BUFF_CTRL));
-+			for (i = 0; i < slave_rx_len; i++) {
-+				value = readb(i2c_bus->buf_base + 0x10 + i);
-+				i2c_slave_event(i2c_bus->slave, I2C_SLAVE_WRITE_RECEIVED, &value);
-+			}
-+		}
-+		if (readl(i2c_bus->reg_base + AST2600_I2CS_CMD_STS) & AST2600_I2CS_RX_BUFF_EN)
-+			cmd = 0;
-+		else
-+			cmd = SLAVE_TRIGGER_CMD | AST2600_I2CS_RX_BUFF_EN;
-+
-+		writel(AST2600_I2CC_SET_RX_BUF_LEN(i2c_bus->buf_size),
-+					i2c_bus->reg_base + AST2600_I2CC_BUFF_CTRL);
-+		break;
-+	case AST2600_I2CS_WAIT_RX_DMA | AST2600_I2CS_RX_DONE:
-+		cmd = SLAVE_TRIGGER_CMD;
-+		slave_rx_len = AST2600_I2CC_GET_RX_BUF_LEN(readl(i2c_bus->reg_base +
-+						       AST2600_I2CC_BUFF_CTRL));
-+		for (i = 0; i < slave_rx_len; i++) {
-+			value = readb(i2c_bus->buf_base + 0x10 + i);
-+			i2c_slave_event(i2c_bus->slave, I2C_SLAVE_WRITE_RECEIVED, &value);
-+		}
-+		cmd |= AST2600_I2CS_RX_BUFF_EN;
-+		writel(AST2600_I2CC_SET_RX_BUF_LEN(i2c_bus->buf_size),
-+						i2c_bus->reg_base + AST2600_I2CC_BUFF_CTRL);
-+		break;
-+	case AST2600_I2CS_SLAVE_PENDING | AST2600_I2CS_WAIT_RX_DMA |
-+				AST2600_I2CS_RX_DONE | AST2600_I2CS_STOP:
-+		cmd = SLAVE_TRIGGER_CMD;
-+		slave_rx_len = AST2600_I2CC_GET_RX_BUF_LEN(readl(i2c_bus->reg_base +
-+						       AST2600_I2CC_BUFF_CTRL));
-+		for (i = 0; i < slave_rx_len; i++) {
-+			value = readb(i2c_bus->buf_base + 0x10 + i);
-+			i2c_slave_event(i2c_bus->slave, I2C_SLAVE_WRITE_RECEIVED, &value);
-+		}
-+		i2c_slave_event(i2c_bus->slave, I2C_SLAVE_STOP, &value);
-+		cmd |= AST2600_I2CS_RX_BUFF_EN;
-+		writel(AST2600_I2CC_SET_RX_BUF_LEN(i2c_bus->buf_size),
-+						i2c_bus->reg_base + AST2600_I2CC_BUFF_CTRL);
-+		break;
-+
-+	case AST2600_I2CS_SLAVE_PENDING | AST2600_I2CS_RX_DONE | AST2600_I2CS_STOP:
-+		cmd = SLAVE_TRIGGER_CMD;
-+		slave_rx_len = AST2600_I2CC_GET_RX_BUF_LEN(readl(i2c_bus->reg_base +
-+							   AST2600_I2CC_BUFF_CTRL));
-+		for (i = 0; i < slave_rx_len; i++) {
-+			value = readb(i2c_bus->buf_base + 0x10 + i);
-+			i2c_slave_event(i2c_bus->slave, I2C_SLAVE_WRITE_RECEIVED, &value);
-+		}
-+		/* workaround for avoid next start with len != 0 */
-+		writel(BIT(0), i2c_bus->reg_base + AST2600_I2CC_BUFF_CTRL);
-+		i2c_slave_event(i2c_bus->slave, I2C_SLAVE_STOP, &value);
-+		break;
-+
-+	case AST2600_I2CS_RX_DONE | AST2600_I2CS_STOP:
-+		cmd = SLAVE_TRIGGER_CMD;
-+		slave_rx_len = AST2600_I2CC_GET_RX_BUF_LEN(readl(i2c_bus->reg_base +
-+							   AST2600_I2CC_BUFF_CTRL));
-+		for (i = 0; i < slave_rx_len; i++) {
-+			value = readb(i2c_bus->buf_base + 0x10 + i);
-+			i2c_slave_event(i2c_bus->slave, I2C_SLAVE_WRITE_RECEIVED, &value);
-+		}
-+		/* workaround for avoid next start with len != 0 */
-+		writel(BIT(0), i2c_bus->reg_base + AST2600_I2CC_BUFF_CTRL);
-+		i2c_slave_event(i2c_bus->slave, I2C_SLAVE_STOP, &value);
-+		break;
-+	case AST2600_I2CS_WAIT_TX_DMA | AST2600_I2CS_SLAVE_MATCH:
-+		i2c_slave_event(i2c_bus->slave, I2C_SLAVE_READ_REQUESTED, &value);
-+		writeb(value, i2c_bus->buf_base);
-+		writel(AST2600_I2CC_SET_TX_BUF_LEN(1),
-+				i2c_bus->reg_base + AST2600_I2CC_BUFF_CTRL);
-+		cmd = SLAVE_TRIGGER_CMD | AST2600_I2CS_TX_BUFF_EN;
-+		break;
-+	case AST2600_I2CS_WAIT_TX_DMA | AST2600_I2CS_RX_DONE:
-+	case AST2600_I2CS_WAIT_TX_DMA:
-+		if (sts & AST2600_I2CS_RX_DONE) {
-+			slave_rx_len = AST2600_I2CC_GET_RX_BUF_LEN(readl(i2c_bus->reg_base +
-+							AST2600_I2CC_BUFF_CTRL));
-+			for (i = 0; i < slave_rx_len; i++) {
-+				value = readb(i2c_bus->buf_base + 0x10 + i);
-+				i2c_slave_event(i2c_bus->slave, I2C_SLAVE_WRITE_RECEIVED, &value);
-+			}
-+			i2c_slave_event(i2c_bus->slave, I2C_SLAVE_READ_REQUESTED, &value);
-+		} else {
-+			i2c_slave_event(i2c_bus->slave, I2C_SLAVE_READ_PROCESSED, &value);
-+		}
-+		writeb(value, i2c_bus->buf_base);
-+		writel(AST2600_I2CC_SET_TX_BUF_LEN(1),
-+				i2c_bus->reg_base + AST2600_I2CC_BUFF_CTRL);
-+		cmd = SLAVE_TRIGGER_CMD | AST2600_I2CS_TX_BUFF_EN;
-+		break;
-+	/* workaround : trigger the cmd twice to fix next state keep 1000000 */
-+	case AST2600_I2CS_SLAVE_MATCH | AST2600_I2CS_RX_DONE:
-+		i2c_slave_event(i2c_bus->slave, I2C_SLAVE_WRITE_REQUESTED, &value);
-+		cmd = SLAVE_TRIGGER_CMD | AST2600_I2CS_RX_BUFF_EN;
-+		writel(cmd, i2c_bus->reg_base + AST2600_I2CS_CMD_STS);
-+		break;
-+
-+	case AST2600_I2CS_TX_NAK | AST2600_I2CS_STOP:
-+	case AST2600_I2CS_STOP:
-+		cmd = SLAVE_TRIGGER_CMD;
-+		i2c_slave_event(i2c_bus->slave, I2C_SLAVE_STOP, &value);
-+		break;
-+	default:
-+		dev_dbg(i2c_bus->dev, "unhandled slave isr case %x, sts %x\n", sts,
-+			readl(i2c_bus->reg_base + AST2600_I2CC_STS_AND_BUFF));
-+		break;
-+	}
-+
-+	if (cmd)
-+		writel(cmd, i2c_bus->reg_base + AST2600_I2CS_CMD_STS);
-+	writel(AST2600_I2CS_PKT_DONE, i2c_bus->reg_base + AST2600_I2CS_ISR);
-+	readl(i2c_bus->reg_base + AST2600_I2CS_ISR);
-+
-+	if ((sts & AST2600_I2CS_STOP) && !(sts & AST2600_I2CS_SLAVE_PENDING))
-+		i2c_bus->slave_operate = 0;
-+
-+}
-+
-+static void ast2600_i2c_slave_byte_irq(struct ast2600_i2c_bus *i2c_bus, u32 sts)
-+{
-+	u32 i2c_buff = readl(i2c_bus->reg_base + AST2600_I2CC_STS_AND_BUFF);
-+	u32 cmd = AST2600_I2CS_ACTIVE_ALL;
-+	u8 byte_data;
-+	u8 value;
-+
-+	switch (sts) {
-+	case AST2600_I2CS_SLAVE_MATCH | AST2600_I2CS_RX_DONE | AST2600_I2CS_WAIT_RX_DMA:
-+		i2c_slave_event(i2c_bus->slave, I2C_SLAVE_WRITE_REQUESTED, &value);
-+		/* first address match is address */
-+		byte_data = AST2600_I2CC_GET_RX_BUFF(i2c_buff);
-+		break;
-+	case AST2600_I2CS_RX_DONE | AST2600_I2CS_WAIT_RX_DMA:
-+		byte_data = AST2600_I2CC_GET_RX_BUFF(i2c_buff);
-+		i2c_slave_event(i2c_bus->slave, I2C_SLAVE_WRITE_RECEIVED, &byte_data);
-+		break;
-+	case AST2600_I2CS_SLAVE_MATCH | AST2600_I2CS_RX_DONE | AST2600_I2CS_WAIT_TX_DMA:
-+		cmd |= AST2600_I2CS_TX_CMD;
-+		byte_data = AST2600_I2CC_GET_RX_BUFF(i2c_buff);
-+		i2c_slave_event(i2c_bus->slave, I2C_SLAVE_READ_REQUESTED, &byte_data);
-+		writel(byte_data, i2c_bus->reg_base + AST2600_I2CC_STS_AND_BUFF);
-+		break;
-+	case AST2600_I2CS_TX_ACK | AST2600_I2CS_WAIT_TX_DMA:
-+		cmd |= AST2600_I2CS_TX_CMD;
-+		i2c_slave_event(i2c_bus->slave, I2C_SLAVE_READ_PROCESSED, &byte_data);
-+		writel(byte_data, i2c_bus->reg_base + AST2600_I2CC_STS_AND_BUFF);
-+		break;
-+	case AST2600_I2CS_STOP:
-+	case AST2600_I2CS_STOP | AST2600_I2CS_TX_NAK:
-+		i2c_slave_event(i2c_bus->slave, I2C_SLAVE_STOP, &value);
-+		break;
-+	default:
-+		dev_dbg(i2c_bus->dev, "unhandled pkt isr %x\n", sts);
-+		break;
-+	}
-+	writel(cmd, i2c_bus->reg_base + AST2600_I2CS_CMD_STS);
-+	writel(sts, i2c_bus->reg_base + AST2600_I2CS_ISR);
-+	readl(i2c_bus->reg_base + AST2600_I2CS_ISR);
-+}
-+
-+static int ast2600_i2c_slave_irq(struct ast2600_i2c_bus *i2c_bus)
-+{
-+	u32 ier = readl(i2c_bus->reg_base + AST2600_I2CS_IER);
-+	u32 isr = readl(i2c_bus->reg_base + AST2600_I2CS_ISR);
-+
-+	if (!(isr & ier))
-+		return 0;
-+
-+	/* Slave interrupt coming after Master package done
-+	 * So need handle master first.
-+	 */
-+	if (readl(i2c_bus->reg_base + AST2600_I2CM_ISR) & AST2600_I2CM_PKT_DONE)
-+		return 0;
-+
-+	isr &= ~(AST2600_I2CS_ADDR_INDICATE_MASK);
-+
-+	if (AST2600_I2CS_ADDR1_NAK & isr)
-+		isr &= ~AST2600_I2CS_ADDR1_NAK;
-+
-+	if (AST2600_I2CS_ADDR2_NAK & isr)
-+		isr &= ~AST2600_I2CS_ADDR2_NAK;
-+
-+	if (AST2600_I2CS_ADDR3_NAK & isr)
-+		isr &= ~AST2600_I2CS_ADDR3_NAK;
-+
-+	if (AST2600_I2CS_ADDR_MASK & isr)
-+		isr &= ~AST2600_I2CS_ADDR_MASK;
-+
-+	if (AST2600_I2CS_PKT_DONE & isr) {
-+		if (i2c_bus->mode == DMA_MODE)
-+			ast2600_i2c_slave_packet_dma_irq(i2c_bus, isr);
-+		else
-+			ast2600_i2c_slave_packet_buff_irq(i2c_bus, isr);
-+	} else
-+		ast2600_i2c_slave_byte_irq(i2c_bus, isr);
-+
-+	return 1;
-+}
-+#endif
-+
-+static int ast2600_i2c_do_start(struct ast2600_i2c_bus *i2c_bus)
-+{
-+	struct i2c_msg *msg = &i2c_bus->msgs[i2c_bus->msgs_index];
-+	int xfer_len = 0;
-+	int i = 0;
-+	u32 cmd;
-+
-+	cmd = AST2600_I2CM_PKT_EN | AST2600_I2CM_PKT_ADDR(msg->addr) | AST2600_I2CM_START_CMD;
-+
-+	/* send start */
-+	dev_dbg(i2c_bus->dev, "[%d] %sing %d byte%s %s 0x%02x\n",
-+		i2c_bus->msgs_index, msg->flags & I2C_M_RD ? "read" : "write",
-+		msg->len, msg->len > 1 ? "s" : "",
-+		msg->flags & I2C_M_RD ? "from" : "to", msg->addr);
-+
-+	i2c_bus->master_xfer_cnt = 0;
-+	i2c_bus->buf_index = 0;
-+
-+	if (msg->flags & I2C_M_RD) {
-+		cmd |= AST2600_I2CM_RX_CMD;
-+		if (i2c_bus->mode == DMA_MODE) {
-+			/* dma mode */
-+			cmd |= AST2600_I2CM_RX_DMA_EN;
-+
-+			if (msg->flags & I2C_M_RECV_LEN) {
-+				xfer_len = 1;
-+			} else {
-+				if (msg->len > AST2600_I2C_DMA_SIZE) {
-+					xfer_len = AST2600_I2C_DMA_SIZE;
-+				} else {
-+					xfer_len = msg->len;
-+					if (i2c_bus->msgs_index + 1 == i2c_bus->msgs_count)
-+						cmd |= MASTER_TRIGGER_LAST_STOP;
-+				}
-+			}
-+			writel(AST2600_I2CM_SET_RX_DMA_LEN(xfer_len - 1),
-+			       i2c_bus->reg_base + AST2600_I2CM_DMA_LEN);
-+			i2c_bus->master_safe_buf = i2c_get_dma_safe_msg_buf(msg, 1);
-+			if (!i2c_bus->master_safe_buf)
-+				return -ENOMEM;
-+			i2c_bus->master_dma_addr =
-+				dma_map_single(i2c_bus->dev, i2c_bus->master_safe_buf,
-+								msg->len, DMA_FROM_DEVICE);
-+			if (dma_mapping_error(i2c_bus->dev, i2c_bus->master_dma_addr)) {
-+				i2c_put_dma_safe_msg_buf(i2c_bus->master_safe_buf, msg, false);
-+				i2c_bus->master_safe_buf = NULL;
-+				return -ENOMEM;
-+			}
-+			writel(i2c_bus->master_dma_addr, i2c_bus->reg_base + AST2600_I2CM_RX_DMA);
-+		} else if (i2c_bus->mode == BUFF_MODE) {
-+			/* buff mode */
-+			cmd |= AST2600_I2CM_RX_BUFF_EN;
-+			if (msg->flags & I2C_M_RECV_LEN) {
-+				dev_dbg(i2c_bus->dev, "smbus read\n");
-+				xfer_len = 1;
-+			} else {
-+				if (msg->len > i2c_bus->buf_size) {
-+					xfer_len = i2c_bus->buf_size;
-+				} else {
-+					xfer_len = msg->len;
-+					if (i2c_bus->msgs_index + 1 == i2c_bus->msgs_count)
-+						cmd |= MASTER_TRIGGER_LAST_STOP;
-+				}
-+			}
-+			writel(AST2600_I2CC_SET_RX_BUF_LEN(xfer_len),
-+			       i2c_bus->reg_base + AST2600_I2CC_BUFF_CTRL);
-+		} else {
-+			/* byte mode */
-+			xfer_len = 1;
-+			if (msg->flags & I2C_M_RECV_LEN) {
-+				dev_dbg(i2c_bus->dev, "smbus read\n");
-+			} else {
-+				if (i2c_bus->msgs_index + 1 == i2c_bus->msgs_count) {
-+					if (msg->len == 1)
-+						cmd |= MASTER_TRIGGER_LAST_STOP;
-+				}
-+			}
-+		}
-+	} else {
-+		if (i2c_bus->mode == DMA_MODE) {
-+			/* dma mode */
-+			if (msg->len > AST2600_I2C_DMA_SIZE) {
-+				xfer_len = AST2600_I2C_DMA_SIZE;
-+			} else {
-+				if (i2c_bus->msgs_index + 1 == i2c_bus->msgs_count)
-+					cmd |= AST2600_I2CM_STOP_CMD;
-+				xfer_len = msg->len;
-+			}
-+
-+			if (xfer_len) {
-+				cmd |= AST2600_I2CM_TX_DMA_EN | AST2600_I2CM_TX_CMD;
-+				writel(AST2600_I2CM_SET_TX_DMA_LEN(xfer_len - 1),
-+				       i2c_bus->reg_base + AST2600_I2CM_DMA_LEN);
-+				i2c_bus->master_safe_buf = i2c_get_dma_safe_msg_buf(msg, 1);
-+				if (!i2c_bus->master_safe_buf)
-+					return -ENOMEM;
-+				i2c_bus->master_dma_addr =
-+					dma_map_single(i2c_bus->dev, i2c_bus->master_safe_buf,
-+								msg->len, DMA_TO_DEVICE);
-+				if (dma_mapping_error(i2c_bus->dev, i2c_bus->master_dma_addr)) {
-+					i2c_put_dma_safe_msg_buf(i2c_bus->master_safe_buf,
-+											msg, false);
-+					i2c_bus->master_safe_buf = NULL;
-+					return -ENOMEM;
-+				}
-+				writel(i2c_bus->master_dma_addr,
-+				       i2c_bus->reg_base + AST2600_I2CM_TX_DMA);
-+			}
-+		} else if (i2c_bus->mode == BUFF_MODE) {
-+			u8 wbuf[4];
-+			/* buff mode */
-+			if (msg->len > i2c_bus->buf_size) {
-+				xfer_len = i2c_bus->buf_size;
-+			} else {
-+				if (i2c_bus->msgs_index + 1 == i2c_bus->msgs_count)
-+					cmd |= AST2600_I2CM_STOP_CMD;
-+				xfer_len = msg->len;
-+			}
-+			if (xfer_len) {
-+				cmd |= AST2600_I2CM_TX_BUFF_EN | AST2600_I2CM_TX_CMD;
-+				if (readl(i2c_bus->reg_base + AST2600_I2CS_ISR))
-+					return -ENOMEM;
-+				writel(AST2600_I2CC_SET_TX_BUF_LEN(xfer_len),
-+				       i2c_bus->reg_base + AST2600_I2CC_BUFF_CTRL);
-+				if (readl(i2c_bus->reg_base + AST2600_I2CS_ISR))
-+					return -ENOMEM;
-+				for (i = 0; i < xfer_len; i++) {
-+					wbuf[i % 4] = msg->buf[i];
-+					if (i % 4 == 3)
-+						writel(*(u32 *)wbuf, i2c_bus->buf_base + i - 3);
-+				}
-+				if (--i % 4 != 3)
-+					writel(*(u32 *)wbuf, i2c_bus->buf_base + i - (i % 4));
-+			}
-+			if (readl(i2c_bus->reg_base + AST2600_I2CS_ISR))
-+				return -ENOMEM;
-+		} else {
-+			/* byte mode */
-+			if ((i2c_bus->msgs_index + 1 == i2c_bus->msgs_count) && (msg->len <= 1))
-+				cmd |= AST2600_I2CM_STOP_CMD;
-+
-+			if (msg->len) {
-+				cmd |= AST2600_I2CM_TX_CMD;
-+				xfer_len = 1;
-+				writel(msg->buf[0], i2c_bus->reg_base + AST2600_I2CC_STS_AND_BUFF);
-+			} else {
-+				xfer_len = 0;
-+			}
-+		}
-+	}
-+	writel(cmd, i2c_bus->reg_base + AST2600_I2CM_CMD_STS);
-+	return 0;
-+}
-+
-+static int ast2600_i2c_is_irq_error(u32 irq_status)
-+{
-+	if (irq_status & AST2600_I2CM_ARBIT_LOSS)
-+		return -EAGAIN;
-+	if (irq_status & (AST2600_I2CM_SDA_DL_TO | AST2600_I2CM_SCL_LOW_TO))
-+		return -EBUSY;
-+	if (irq_status & (AST2600_I2CM_ABNORMAL))
-+		return -EPROTO;
-+
-+	return 0;
-+}
-+
-+static void ast2600_i2c_master_package_irq(struct ast2600_i2c_bus *i2c_bus, u32 sts)
-+{
-+	struct i2c_msg *msg = &i2c_bus->msgs[i2c_bus->msgs_index];
-+	u32 cmd = AST2600_I2CM_PKT_EN;
-+	int xfer_len;
-+	int i;
-+
-+	sts &= ~AST2600_I2CM_PKT_DONE;
-+	writel(AST2600_I2CM_PKT_DONE, i2c_bus->reg_base + AST2600_I2CM_ISR);
-+	switch (sts) {
-+	case AST2600_I2CM_PKT_ERROR:
-+		i2c_bus->cmd_err = -EAGAIN;
-+		complete(&i2c_bus->cmd_complete);
-+		break;
-+	case AST2600_I2CM_PKT_ERROR | AST2600_I2CM_TX_NAK: /* a0 fix for issue */
-+		fallthrough;
-+	case AST2600_I2CM_PKT_ERROR | AST2600_I2CM_TX_NAK | AST2600_I2CM_NORMAL_STOP:
-+		i2c_bus->cmd_err = -ENXIO;
-+		complete(&i2c_bus->cmd_complete);
-+		break;
-+	case AST2600_I2CM_NORMAL_STOP:
-+		/* write 0 byte only have stop isr */
-+		i2c_bus->msgs_index++;
-+		if (i2c_bus->msgs_index < i2c_bus->msgs_count) {
-+			if (ast2600_i2c_do_start(i2c_bus)) {
-+				i2c_bus->cmd_err = -ENOMEM;
-+				complete(&i2c_bus->cmd_complete);
-+			}
-+		} else {
-+			i2c_bus->cmd_err = i2c_bus->msgs_index;
-+			complete(&i2c_bus->cmd_complete);
-+		}
-+		break;
-+	case AST2600_I2CM_TX_ACK:
-+	case AST2600_I2CM_TX_ACK | AST2600_I2CM_NORMAL_STOP:
-+		if (i2c_bus->mode == DMA_MODE)
-+			xfer_len = AST2600_I2C_GET_TX_DMA_LEN(readl(i2c_bus->reg_base +
-+							  AST2600_I2CM_DMA_LEN_STS));
-+		else if (i2c_bus->mode == BUFF_MODE)
-+			xfer_len = AST2600_I2CC_GET_TX_BUF_LEN(readl(i2c_bus->reg_base +
-+							   AST2600_I2CC_BUFF_CTRL));
-+		else
-+			xfer_len = 1;
-+
-+		i2c_bus->master_xfer_cnt += xfer_len;
-+
-+		if (i2c_bus->master_xfer_cnt == msg->len) {
-+			if (i2c_bus->mode == DMA_MODE) {
-+				dma_unmap_single(i2c_bus->dev, i2c_bus->master_dma_addr, msg->len,
-+						 DMA_TO_DEVICE);
-+				i2c_put_dma_safe_msg_buf(i2c_bus->master_safe_buf, msg, true);
-+				i2c_bus->master_safe_buf = NULL;
-+			}
-+			i2c_bus->msgs_index++;
-+			if (i2c_bus->msgs_index == i2c_bus->msgs_count) {
-+				i2c_bus->cmd_err = i2c_bus->msgs_index;
-+				complete(&i2c_bus->cmd_complete);
-+			} else {
-+				if (ast2600_i2c_do_start(i2c_bus)) {
-+					i2c_bus->cmd_err = -ENOMEM;
-+					complete(&i2c_bus->cmd_complete);
-+				}
-+			}
-+		} else {
-+			/* do next tx */
-+			cmd |= AST2600_I2CM_TX_CMD;
-+			if (i2c_bus->mode == DMA_MODE) {
-+				cmd |= AST2600_I2CM_TX_DMA_EN;
-+				xfer_len = msg->len - i2c_bus->master_xfer_cnt;
-+				if (xfer_len > AST2600_I2C_DMA_SIZE) {
-+					xfer_len = AST2600_I2C_DMA_SIZE;
-+				} else {
-+					if (i2c_bus->msgs_index + 1 == i2c_bus->msgs_count)
-+						cmd |= AST2600_I2CM_STOP_CMD;
-+				}
-+				writel(AST2600_I2CM_SET_TX_DMA_LEN(xfer_len - 1),
-+				       i2c_bus->reg_base + AST2600_I2CM_DMA_LEN);
-+				writel(i2c_bus->master_dma_addr + i2c_bus->master_xfer_cnt,
-+				       i2c_bus->reg_base + AST2600_I2CM_TX_DMA);
-+			} else if (i2c_bus->mode == BUFF_MODE) {
-+				u8 wbuf[4];
-+
-+				cmd |= AST2600_I2CM_TX_BUFF_EN;
-+				xfer_len = msg->len - i2c_bus->master_xfer_cnt;
-+				if (xfer_len > i2c_bus->buf_size) {
-+					xfer_len = i2c_bus->buf_size;
-+				} else {
-+					if (i2c_bus->msgs_index + 1 == i2c_bus->msgs_count)
-+						cmd |= AST2600_I2CM_STOP_CMD;
-+				}
-+				for (i = 0; i < xfer_len; i++) {
-+					wbuf[i % 4] = msg->buf[i2c_bus->master_xfer_cnt + i];
-+					if (i % 4 == 3)
-+						writel(*(u32 *)wbuf, i2c_bus->buf_base + i - 3);
-+				}
-+				if (--i % 4 != 3)
-+					writel(*(u32 *)wbuf, i2c_bus->buf_base + i - (i % 4));
-+				writel(AST2600_I2CC_SET_TX_BUF_LEN(xfer_len),
-+				       i2c_bus->reg_base + AST2600_I2CC_BUFF_CTRL);
-+			} else {
-+				/* byte */
-+				if ((i2c_bus->msgs_index + 1 == i2c_bus->msgs_count) &&
-+				    ((i2c_bus->master_xfer_cnt + 1) == msg->len)) {
-+					cmd |= AST2600_I2CM_STOP_CMD;
-+				}
-+				writel(msg->buf[i2c_bus->master_xfer_cnt],
-+				       i2c_bus->reg_base + AST2600_I2CC_STS_AND_BUFF);
-+			}
-+			writel(cmd, i2c_bus->reg_base + AST2600_I2CM_CMD_STS);
-+		}
-+		break;
-+	case AST2600_I2CM_RX_DONE:
-+#ifdef CONFIG_I2C_SLAVE
-+		/* Workaround for master/slave package mode enable rx done stuck issue
-+		 * When master go for first read (RX_DONE), slave mode will also effect
-+		 * Then controller will send nack, not operate anymore.
-+		 */
-+		if (readl(i2c_bus->reg_base + AST2600_I2CS_CMD_STS) & AST2600_I2CS_PKT_MODE_EN) {
-+			u32 slave_cmd = readl(i2c_bus->reg_base + AST2600_I2CS_CMD_STS);
-+
-+			writel(0, i2c_bus->reg_base + AST2600_I2CS_CMD_STS);
-+			writel(slave_cmd, i2c_bus->reg_base + AST2600_I2CS_CMD_STS);
-+		}
-+		fallthrough;
-+#endif
-+	case AST2600_I2CM_RX_DONE | AST2600_I2CM_NORMAL_STOP:
-+		/* do next rx */
-+		if (i2c_bus->mode == DMA_MODE) {
-+			xfer_len = AST2600_I2C_GET_RX_DMA_LEN(readl(i2c_bus->reg_base +
-+							  AST2600_I2CM_DMA_LEN_STS));
-+		} else if (i2c_bus->mode == BUFF_MODE) {
-+			xfer_len = AST2600_I2CC_GET_RX_BUF_LEN(
-+						readl(i2c_bus->reg_base + AST2600_I2CC_BUFF_CTRL));
-+			for (i = 0; i < xfer_len; i++)
-+				msg->buf[i2c_bus->master_xfer_cnt + i] =
-+					readb(i2c_bus->buf_base + 0x10 + i);
-+		} else {
-+			xfer_len = 1;
-+			msg->buf[i2c_bus->master_xfer_cnt] =
-+				AST2600_I2CC_GET_RX_BUFF(readl(i2c_bus->reg_base +
-+						     AST2600_I2CC_STS_AND_BUFF));
-+		}
-+
-+		if (msg->flags & I2C_M_RECV_LEN) {
-+			msg->len = msg->buf[0] + ((msg->flags & I2C_CLIENT_PEC) ? 2 : 1);
-+			msg->len = min_t(unsigned int, msg->len, I2C_SMBUS_BLOCK_MAX);
-+			msg->flags &= ~I2C_M_RECV_LEN;
-+		}
-+		i2c_bus->master_xfer_cnt += xfer_len;
-+
-+		if (i2c_bus->master_xfer_cnt == msg->len) {
-+			if (i2c_bus->mode == DMA_MODE) {
-+				dma_unmap_single(i2c_bus->dev, i2c_bus->master_dma_addr, msg->len,
-+						 DMA_FROM_DEVICE);
-+				i2c_put_dma_safe_msg_buf(i2c_bus->master_safe_buf, msg, true);
-+				i2c_bus->master_safe_buf = NULL;
-+			}
-+
-+			i2c_bus->msgs_index++;
-+			if (i2c_bus->msgs_index == i2c_bus->msgs_count) {
-+				i2c_bus->cmd_err = i2c_bus->msgs_index;
-+				complete(&i2c_bus->cmd_complete);
-+			} else {
-+				if (ast2600_i2c_do_start(i2c_bus)) {
-+					i2c_bus->cmd_err = -ENOMEM;
-+					complete(&i2c_bus->cmd_complete);
-+				}
-+			}
-+		} else {
-+			/* next rx */
-+			cmd |= AST2600_I2CM_RX_CMD;
-+			if (i2c_bus->mode == DMA_MODE) {
-+				cmd |= AST2600_I2CM_RX_DMA_EN;
-+				xfer_len = msg->len - i2c_bus->master_xfer_cnt;
-+				if (xfer_len > AST2600_I2C_DMA_SIZE) {
-+					xfer_len = AST2600_I2C_DMA_SIZE;
-+				} else {
-+					if (i2c_bus->msgs_index + 1 == i2c_bus->msgs_count)
-+						cmd |= MASTER_TRIGGER_LAST_STOP;
-+				}
-+				writel(AST2600_I2CM_SET_RX_DMA_LEN(xfer_len - 1),
-+				       i2c_bus->reg_base + AST2600_I2CM_DMA_LEN);
-+				writel(i2c_bus->master_dma_addr + i2c_bus->master_xfer_cnt,
-+				       i2c_bus->reg_base + AST2600_I2CM_RX_DMA);
-+			} else if (i2c_bus->mode == BUFF_MODE) {
-+				cmd |= AST2600_I2CM_RX_BUFF_EN;
-+				xfer_len = msg->len - i2c_bus->master_xfer_cnt;
-+				if (xfer_len > i2c_bus->buf_size)
-+					xfer_len = i2c_bus->buf_size;
-+				else {
-+					if (i2c_bus->msgs_index + 1 == i2c_bus->msgs_count)
-+						cmd |= MASTER_TRIGGER_LAST_STOP;
-+				}
-+				writel(AST2600_I2CC_SET_RX_BUF_LEN(xfer_len),
-+				       i2c_bus->reg_base + AST2600_I2CC_BUFF_CTRL);
-+			} else {
-+				if ((i2c_bus->msgs_index + 1 == i2c_bus->msgs_count) &&
-+				    ((i2c_bus->master_xfer_cnt + 1) == msg->len)) {
-+					cmd |= MASTER_TRIGGER_LAST_STOP;
-+				}
-+			}
-+			writel(cmd, i2c_bus->reg_base + AST2600_I2CM_CMD_STS);
-+		}
-+		break;
-+	default:
-+		dev_dbg(i2c_bus->dev, "unhandled sts %x\n", sts);
-+		break;
-+	}
-+}
-+
-+static int ast2600_i2c_master_irq(struct ast2600_i2c_bus *i2c_bus)
-+{
-+	u32 sts = readl(i2c_bus->reg_base + AST2600_I2CM_ISR);
-+	u32 ier = readl(i2c_bus->reg_base + AST2600_I2CM_IER);
-+	u32 ctrl = 0;
-+
-+	if (!i2c_bus->alert_enable)
-+		sts &= ~AST2600_I2CM_SMBUS_ALT;
-+
-+	if (AST2600_I2CM_BUS_RECOVER_FAIL & sts) {
-+		writel(AST2600_I2CM_BUS_RECOVER_FAIL, i2c_bus->reg_base + AST2600_I2CM_ISR);
-+		ctrl = readl(i2c_bus->reg_base + AST2600_I2CC_FUN_CTRL);
-+		writel(0, i2c_bus->reg_base + AST2600_I2CC_FUN_CTRL);
-+		writel(ctrl, i2c_bus->reg_base + AST2600_I2CC_FUN_CTRL);
-+		i2c_bus->cmd_err = -EPROTO;
-+		complete(&i2c_bus->cmd_complete);
-+		return 1;
-+	}
-+
-+	if (AST2600_I2CM_BUS_RECOVER & sts) {
-+		writel(AST2600_I2CM_BUS_RECOVER, i2c_bus->reg_base + AST2600_I2CM_ISR);
-+		i2c_bus->cmd_err = 0;
-+		complete(&i2c_bus->cmd_complete);
-+		return 1;
-+	}
-+
-+	if (AST2600_I2CM_SMBUS_ALT & sts) {
-+		if (ier & AST2600_I2CM_SMBUS_ALT) {
-+			/* Disable ALT INT */
-+			writel(ier & ~AST2600_I2CM_SMBUS_ALT, i2c_bus->reg_base + AST2600_I2CM_IER);
-+			i2c_handle_smbus_alert(i2c_bus->ara);
-+			writel(AST2600_I2CM_SMBUS_ALT, i2c_bus->reg_base + AST2600_I2CM_ISR);
-+			dev_err(i2c_bus->dev,
-+				"ast2600_master_alert_recv bus id %d, Disable Alt, Please Imple\n",
-+				i2c_bus->adap.nr);
-+			return 1;
-+		}
-+	}
-+
-+	i2c_bus->cmd_err = ast2600_i2c_is_irq_error(sts);
-+	if (i2c_bus->cmd_err) {
-+		writel(AST2600_I2CM_PKT_DONE, i2c_bus->reg_base + AST2600_I2CM_ISR);
-+		complete(&i2c_bus->cmd_complete);
-+		return 1;
-+	}
-+
-+	if (AST2600_I2CM_PKT_DONE & sts) {
-+		ast2600_i2c_master_package_irq(i2c_bus, sts);
-+		return 1;
-+	}
-+
-+	return 0;
-+}
-+
-+static irqreturn_t ast2600_i2c_bus_irq(int irq, void *dev_id)
-+{
-+	struct ast2600_i2c_bus *i2c_bus = dev_id;
-+
-+#ifdef CONFIG_I2C_SLAVE
-+	if (readl(i2c_bus->reg_base + AST2600_I2CC_FUN_CTRL) & AST2600_I2CC_SLAVE_EN) {
-+		if (ast2600_i2c_slave_irq(i2c_bus))
-+			return IRQ_HANDLED;
-+	}
-+#endif
-+	return ast2600_i2c_master_irq(i2c_bus) ? IRQ_HANDLED : IRQ_NONE;
-+}
-+
-+static int ast2600_i2c_master_xfer(struct i2c_adapter *adap,
-+				      struct i2c_msg *msgs, int num)
-+{
-+	struct ast2600_i2c_bus *i2c_bus = i2c_get_adapdata(adap);
-+	unsigned long timeout;
-+	int ret = 0;
-+
-+	/* If bus is busy in a single master environment, attempt recovery. */
-+	if (!i2c_bus->multi_master &&
-+	    (readl(i2c_bus->reg_base + AST2600_I2CC_STS_AND_BUFF) & AST2600_I2CC_BUS_BUSY_STS)) {
-+		int ret;
-+
-+		ret = ast2600_i2c_recover_bus(i2c_bus);
-+		if (ret)
-+			return ret;
-+	}
-+
-+#ifdef CONFIG_I2C_SLAVE
-+	if (i2c_bus->mode == BUFF_MODE) {
-+		if (i2c_bus->slave_operate)
-+			return -EBUSY;
-+		/* disable slave isr */
-+		writel(0, i2c_bus->reg_base + AST2600_I2CS_IER);
-+		if (readl(i2c_bus->reg_base + AST2600_I2CS_ISR) || (i2c_bus->slave_operate)) {
-+			writel(AST2600_I2CS_PKT_DONE, i2c_bus->reg_base + AST2600_I2CS_IER);
-+			return -EBUSY;
-+		}
-+	}
-+#endif
-+
-+	i2c_bus->cmd_err = 0;
-+	i2c_bus->msgs = msgs;
-+	i2c_bus->msgs_index = 0;
-+	i2c_bus->msgs_count = num;
-+	reinit_completion(&i2c_bus->cmd_complete);
-+	ret = ast2600_i2c_do_start(i2c_bus);
-+#ifdef CONFIG_I2C_SLAVE
-+	/* avoid race condication slave is wait and master wait 1st slave operate */
-+	if (i2c_bus->mode == BUFF_MODE)
-+		writel(AST2600_I2CS_PKT_DONE, i2c_bus->reg_base + AST2600_I2CS_IER);
-+#endif
-+	if (ret)
-+		goto master_out;
-+	timeout = wait_for_completion_timeout(&i2c_bus->cmd_complete, i2c_bus->adap.timeout);
-+	if (timeout == 0) {
-+		u32 isr = readl(i2c_bus->reg_base + AST2600_I2CM_ISR);
-+		u32 i2c_status = readl(i2c_bus->reg_base + AST2600_I2CC_STS_AND_BUFF);
-+
-+		dev_dbg(i2c_bus->dev, "timeout isr[%x], sts[%x]\n", isr, i2c_status);
-+		if (isr || (i2c_status & AST2600_I2CC_TX_DIR_MASK)) {
-+			u32 ctrl = readl(i2c_bus->reg_base + AST2600_I2CC_FUN_CTRL);
-+
-+			writel(0, i2c_bus->reg_base + AST2600_I2CC_FUN_CTRL);
-+			writel(ctrl, i2c_bus->reg_base + AST2600_I2CC_FUN_CTRL);
-+#ifdef CONFIG_I2C_SLAVE
-+			if (ctrl & AST2600_I2CC_SLAVE_EN) {
-+				u32 cmd = SLAVE_TRIGGER_CMD;
-+
-+				if (i2c_bus->mode == DMA_MODE) {
-+					cmd |= AST2600_I2CS_RX_DMA_EN;
-+					writel(i2c_bus->slave_dma_addr,
-+						   i2c_bus->reg_base + AST2600_I2CS_RX_DMA);
-+					writel(i2c_bus->slave_dma_addr,
-+						   i2c_bus->reg_base + AST2600_I2CS_TX_DMA);
-+					writel(AST2600_I2CS_SET_RX_DMA_LEN(I2C_SLAVE_MSG_BUF_SIZE),
-+						   i2c_bus->reg_base + AST2600_I2CS_DMA_LEN);
-+				} else if (i2c_bus->mode == BUFF_MODE) {
-+					cmd = SLAVE_TRIGGER_CMD;
-+				} else {
-+					cmd &= ~AST2600_I2CS_PKT_MODE_EN;
-+				}
-+				writel(cmd, i2c_bus->reg_base + AST2600_I2CS_CMD_STS);
-+			}
-+#endif
-+		}
-+		ret = -ETIMEDOUT;
-+	} else {
-+		ret = i2c_bus->cmd_err;
-+	}
-+
-+	dev_dbg(i2c_bus->dev, "bus%d-m: %d end\n", i2c_bus->adap.nr, i2c_bus->cmd_err);
-+
-+master_out:
-+	if (i2c_bus->mode == DMA_MODE) {
-+		kfree(i2c_bus->master_safe_buf);
-+	    i2c_bus->master_safe_buf = NULL;
-+	}
-+
-+	return ret;
-+}
-+
-+static void ast2600_i2c_init(struct ast2600_i2c_bus *i2c_bus)
-+{
-+	struct platform_device *pdev = to_platform_device(i2c_bus->dev);
-+	u32 fun_ctrl = AST2600_I2CC_BUS_AUTO_RELEASE | AST2600_I2CC_MASTER_EN;
-+
-+	/* I2C Reset */
-+	writel(0, i2c_bus->reg_base + AST2600_I2CC_FUN_CTRL);
-+
-+	if (of_property_read_bool(pdev->dev.of_node, "multi-master"))
-+		i2c_bus->multi_master = true;
-+	else
-+		fun_ctrl |= AST2600_I2CC_MULTI_MASTER_DIS;
-+
-+	/* Enable Master Mode */
-+	writel(fun_ctrl, i2c_bus->reg_base + AST2600_I2CC_FUN_CTRL);
-+	/* disable slave address */
-+	writel(0, i2c_bus->reg_base + AST2600_I2CS_ADDR_CTRL);
-+
-+	/* Set AC Timing */
-+	writel(ast2600_select_i2c_clock(i2c_bus), i2c_bus->reg_base + AST2600_I2CC_AC_TIMING);
-+
-+	/* Clear Interrupt */
-+	writel(0xfffffff, i2c_bus->reg_base + AST2600_I2CM_ISR);
-+
-+#ifdef CONFIG_I2C_SLAVE
-+	/* for memory buffer initial */
-+	if (i2c_bus->mode == DMA_MODE) {
-+		i2c_bus->slave_dma_buf = dma_alloc_coherent(i2c_bus->dev, I2C_SLAVE_MSG_BUF_SIZE,
-+							    &i2c_bus->slave_dma_addr, GFP_KERNEL);
-+		if (!i2c_bus->slave_dma_buf)
-+			return;
-+	}
-+
-+	writel(0xfffffff, i2c_bus->reg_base + AST2600_I2CS_ISR);
-+
-+	if (i2c_bus->mode == BYTE_MODE) {
-+		writel(0xffff, i2c_bus->reg_base + AST2600_I2CS_IER);
-+	} else {
-+		/* Set interrupt generation of I2C slave controller */
-+		writel(AST2600_I2CS_PKT_DONE, i2c_bus->reg_base + AST2600_I2CS_IER);
-+	}
-+#endif
-+}
-+
-+#ifdef CONFIG_I2C_SLAVE
-+static int ast2600_i2c_reg_slave(struct i2c_client *client)
-+{
-+	struct ast2600_i2c_bus *i2c_bus = i2c_get_adapdata(client->adapter);
-+	u32 cmd = SLAVE_TRIGGER_CMD;
-+
-+	if (i2c_bus->slave)
-+		return -EINVAL;
-+
-+	dev_dbg(i2c_bus->dev, "slave addr %x\n", client->addr);
-+
-+	writel(0, i2c_bus->reg_base + AST2600_I2CS_ADDR_CTRL);
-+	writel(AST2600_I2CC_SLAVE_EN | readl(i2c_bus->reg_base + AST2600_I2CC_FUN_CTRL),
-+	       i2c_bus->reg_base + AST2600_I2CC_FUN_CTRL);
-+
-+	/* trigger rx buffer */
-+	if (i2c_bus->mode == DMA_MODE) {
-+		cmd |= AST2600_I2CS_RX_DMA_EN;
-+		writel(i2c_bus->slave_dma_addr, i2c_bus->reg_base + AST2600_I2CS_RX_DMA);
-+		writel(i2c_bus->slave_dma_addr, i2c_bus->reg_base + AST2600_I2CS_TX_DMA);
-+		writel(AST2600_I2CS_SET_RX_DMA_LEN(I2C_SLAVE_MSG_BUF_SIZE),
-+		       i2c_bus->reg_base + AST2600_I2CS_DMA_LEN);
-+	} else if (i2c_bus->mode == BUFF_MODE) {
-+		cmd = SLAVE_TRIGGER_CMD;
-+	} else {
-+		cmd &= ~AST2600_I2CS_PKT_MODE_EN;
-+	}
-+
-+	writel(cmd, i2c_bus->reg_base + AST2600_I2CS_CMD_STS);
-+	i2c_bus->slave = client;
-+	/* Set slave addr. */
-+	writel(client->addr | AST2600_I2CS_ADDR1_ENABLE,
-+			i2c_bus->reg_base + AST2600_I2CS_ADDR_CTRL);
-+
-+	return 0;
-+}
-+
-+static int ast2600_i2c_unreg_slave(struct i2c_client *slave)
-+{
-+	struct ast2600_i2c_bus *i2c_bus = i2c_get_adapdata(slave->adapter);
-+
-+	WARN_ON(!i2c_bus->slave);
-+
-+	/* Turn off slave mode. */
-+	writel(~AST2600_I2CC_SLAVE_EN & readl(i2c_bus->reg_base + AST2600_I2CC_FUN_CTRL),
-+	       i2c_bus->reg_base + AST2600_I2CC_FUN_CTRL);
-+	writel(readl(i2c_bus->reg_base + AST2600_I2CS_ADDR_CTRL) & ~AST2600_I2CS_ADDR1_MASK,
-+	       i2c_bus->reg_base + AST2600_I2CS_ADDR_CTRL);
-+
-+	i2c_bus->slave = NULL;
-+
-+	return 0;
-+}
-+#endif
-+
-+static u32 ast2600_i2c_functionality(struct i2c_adapter *adap)
-+{
-+	return I2C_FUNC_I2C | I2C_FUNC_SMBUS_EMUL | I2C_FUNC_SMBUS_BLOCK_DATA;
-+}
-+
-+static const struct i2c_algorithm i2c_ast2600_algorithm = {
-+	.master_xfer = ast2600_i2c_master_xfer,
-+#if IS_ENABLED(CONFIG_I2C_SLAVE)
-+	.reg_slave = ast2600_i2c_reg_slave,
-+	.unreg_slave = ast2600_i2c_unreg_slave,
-+#endif
-+	.functionality = ast2600_i2c_functionality,
-+};
-+
-+static const struct of_device_id ast2600_i2c_bus_of_table[] = {
-+	{
-+		.compatible = "aspeed,ast2600-i2cv2",
-+	},
-+	{}
-+};
-+
-+MODULE_DEVICE_TABLE(of, ast2600_i2c_bus_of_table);
-+
-+static int ast2600_i2c_probe(struct platform_device *pdev)
-+{
-+	struct device_node *np = pdev->dev.of_node;
-+	struct device *dev = &pdev->dev;
-+	struct ast2600_i2c_bus *i2c_bus;
-+	struct resource *res;
-+	u32 global_ctrl;
-+	int ret = 0;
-+
-+	i2c_bus = devm_kzalloc(dev, sizeof(*i2c_bus), GFP_KERNEL);
-+	if (!i2c_bus)
-+		return -ENOMEM;
-+
-+	i2c_bus->reg_base = devm_platform_ioremap_resource(pdev, 0);
-+	if (IS_ERR(i2c_bus->reg_base))
-+		return PTR_ERR(i2c_bus->reg_base);
-+
-+	i2c_bus->rst = devm_reset_control_get_shared(dev, NULL);
-+	if (IS_ERR(i2c_bus->rst))
-+		return dev_err_probe(dev, PTR_ERR(i2c_bus->rst), "Missing reset ctrl\n");
-+
-+	reset_control_deassert(i2c_bus->rst);
-+
-+	i2c_bus->global_regs = syscon_regmap_lookup_by_phandle(np, "aspeed,global-regs");
-+	if (IS_ERR(i2c_bus->global_regs))
-+		return PTR_ERR(i2c_bus->global_regs);
-+
-+	regmap_read(i2c_bus->global_regs, AST2600_I2CG_CTRL, &global_ctrl);
-+	if ((global_ctrl & AST2600_GLOBAL_INIT) != AST2600_GLOBAL_INIT) {
-+		regmap_write(i2c_bus->global_regs, AST2600_I2CG_CTRL, AST2600_GLOBAL_INIT);
-+		regmap_write(i2c_bus->global_regs, AST2600_I2CG_CLK_DIV_CTRL, I2CCG_DIV_CTRL);
-+	}
-+
-+	i2c_bus->slave_operate = 0;
-+	i2c_bus->dev = dev;
-+	i2c_bus->mode = BUFF_MODE;
-+
-+	if (of_property_read_bool(pdev->dev.of_node, "aspeed,enable-dma"))
-+		i2c_bus->mode = DMA_MODE;
-+
-+	if (i2c_bus->mode == BUFF_MODE) {
-+		res = platform_get_resource(pdev, IORESOURCE_MEM, 1);
-+		if (res && resource_size(res) >= 2) {
-+			i2c_bus->buf_base = devm_ioremap_resource(dev, res);
-+
-+			if (!IS_ERR_OR_NULL(i2c_bus->buf_base))
-+				i2c_bus->buf_size = resource_size(res)/2;
-+		} else
-+			i2c_bus->mode = BYTE_MODE;
-+	}
-+
-+	/* i2c timeout counter: use base clk4 1Mhz,
-+	 * per unit: 1/(1000/4096) = 4096us
-+	 */
-+	ret = of_property_read_u32(dev->of_node,
-+							"i2c-scl-clk-low-timeout-us",
-+							&i2c_bus->timeout);
-+	if (ret < 0)
-+		i2c_bus->timeout = 0;
-+	else
-+		i2c_bus->timeout /= 4096;
-+
-+	init_completion(&i2c_bus->cmd_complete);
-+
-+	i2c_bus->irq = platform_get_irq(pdev, 0);
-+	if (i2c_bus->irq < 0)
-+		return i2c_bus->irq;
-+
-+	platform_set_drvdata(pdev, i2c_bus);
-+
-+	i2c_bus->clk = devm_clk_get(i2c_bus->dev, NULL);
-+	if (IS_ERR(i2c_bus->clk))
-+		return dev_err_probe(i2c_bus->dev, PTR_ERR(i2c_bus->clk), "Can't get clock\n");
-+
-+	i2c_bus->apb_clk = clk_get_rate(i2c_bus->clk);
-+
-+	ret = of_property_read_u32(dev->of_node, "clock-frequency", &i2c_bus->bus_frequency);
-+	if (ret < 0) {
-+		dev_warn(dev, "Could not read clock-frequency property\n");
-+		i2c_bus->bus_frequency = 100000;
-+	}
-+
-+	/* Initialize the I2C adapter */
-+	i2c_bus->adap.owner = THIS_MODULE;
-+	i2c_bus->adap.algo = &i2c_ast2600_algorithm;
-+	i2c_bus->adap.retries = 0;
-+	i2c_bus->adap.dev.parent = i2c_bus->dev;
-+	i2c_bus->adap.dev.of_node = dev->of_node;
-+	i2c_bus->adap.algo_data = i2c_bus;
-+	strscpy(i2c_bus->adap.name, pdev->name, sizeof(i2c_bus->adap.name));
-+	i2c_set_adapdata(&i2c_bus->adap, i2c_bus);
-+
-+	ast2600_i2c_init(i2c_bus);
-+
-+	ret = devm_request_irq(dev, i2c_bus->irq, ast2600_i2c_bus_irq, 0,
-+			       dev_name(dev), i2c_bus);
-+	if (ret < 0)
-+		return dev_err_probe(dev, ret, "Unable to request irq %d\n", i2c_bus->irq);
-+
-+	if (of_property_read_bool(dev->of_node, "smbus-alert")) {
-+		i2c_bus->alert_enable = 1;
-+		i2c_bus->ara = i2c_new_smbus_alert_device(&i2c_bus->adap, &i2c_bus->alert_data);
-+		if (!i2c_bus->ara)
-+			dev_warn(dev, "Failed to register ARA client\n");
-+
-+		writel(AST2600_I2CM_PKT_DONE | AST2600_I2CM_BUS_RECOVER | AST2600_I2CM_SMBUS_ALT,
-+		       i2c_bus->reg_base + AST2600_I2CM_IER);
-+	} else {
-+		i2c_bus->alert_enable = 0;
-+		/* Set interrupt generation of I2C master controller */
-+		writel(AST2600_I2CM_PKT_DONE | AST2600_I2CM_BUS_RECOVER,
-+				i2c_bus->reg_base + AST2600_I2CM_IER);
-+	}
-+
-+	ret = i2c_add_adapter(&i2c_bus->adap);
-+	if (ret)
-+		return ret;
-+
-+	dev_info(dev, "%s [%d]: adapter [%d khz] mode [%d]\n",
-+		 dev->of_node->name, i2c_bus->adap.nr, i2c_bus->bus_frequency / 1000,
-+		 i2c_bus->mode);
-+
-+	return 0;
-+}
-+
-+static int ast2600_i2c_remove(struct platform_device *pdev)
-+{
-+	struct ast2600_i2c_bus *i2c_bus = platform_get_drvdata(pdev);
-+
-+	/* Disable everything. */
-+	writel(0, i2c_bus->reg_base + AST2600_I2CC_FUN_CTRL);
-+	writel(0, i2c_bus->reg_base + AST2600_I2CM_IER);
-+
-+	i2c_del_adapter(&i2c_bus->adap);
-+	devm_free_irq(&pdev->dev, i2c_bus->irq, i2c_bus);
-+
-+#ifdef CONFIG_I2C_SLAVE
-+	/* for memory buffer initial */
-+	if (i2c_bus->mode == DMA_MODE)
-+		dma_free_coherent(i2c_bus->dev, I2C_SLAVE_MSG_BUF_SIZE,
-+				i2c_bus->slave_dma_buf, i2c_bus->slave_dma_addr);
-+#endif
-+
-+	return 0;
-+}
-+
-+static struct platform_driver ast2600_i2c_bus_driver = {
-+	.probe = ast2600_i2c_probe,
-+	.remove = ast2600_i2c_remove,
-+	.driver = {
-+		.name = KBUILD_MODNAME,
-+		.of_match_table = ast2600_i2c_bus_of_table,
-+	},
-+};
-+module_platform_driver(ast2600_i2c_bus_driver);
-+
-+MODULE_AUTHOR("Ryan Chen <ryan_chen@aspeedtech.com>");
-+MODULE_DESCRIPTION("ASPEED AST2600 I2C Controller Driver");
-+MODULE_LICENSE("GPL");
+ required:
+   - compatible
+diff --git a/Documentation/devicetree/bindings/pinctrl/allwinner,sun4i-a10-pinctrl.yaml b/Documentation/devicetree/bindings/pinctrl/allwinner,sun4i-a10-pinctrl.yaml
+index 1e3c8de6cae1..467016cbb037 100644
+--- a/Documentation/devicetree/bindings/pinctrl/allwinner,sun4i-a10-pinctrl.yaml
++++ b/Documentation/devicetree/bindings/pinctrl/allwinner,sun4i-a10-pinctrl.yaml
+@@ -142,7 +142,7 @@ allOf:
+   # boards are defining it at the moment so it would generate a lot of
+   # warnings.
+ 
+-  - $ref: "pinctrl.yaml#"
++  - $ref: pinctrl.yaml#
+   - if:
+       not:
+         properties:
+diff --git a/Documentation/devicetree/bindings/pinctrl/apple,pinctrl.yaml b/Documentation/devicetree/bindings/pinctrl/apple,pinctrl.yaml
+index d3b11351ca45..9b4e0ae61ffe 100644
+--- a/Documentation/devicetree/bindings/pinctrl/apple,pinctrl.yaml
++++ b/Documentation/devicetree/bindings/pinctrl/apple,pinctrl.yaml
+@@ -73,7 +73,7 @@ patternProperties:
+     additionalProperties: false
+ 
+ allOf:
+-  - $ref: "pinctrl.yaml#"
++  - $ref: pinctrl.yaml#
+ 
+ required:
+   - compatible
+diff --git a/Documentation/devicetree/bindings/pinctrl/aspeed,ast2400-pinctrl.yaml b/Documentation/devicetree/bindings/pinctrl/aspeed,ast2400-pinctrl.yaml
+index f4f1ee6b116e..bef85c25cdef 100644
+--- a/Documentation/devicetree/bindings/pinctrl/aspeed,ast2400-pinctrl.yaml
++++ b/Documentation/devicetree/bindings/pinctrl/aspeed,ast2400-pinctrl.yaml
+@@ -32,7 +32,7 @@ patternProperties:
+     then:
+       patternProperties:
+         "^function|groups$":
+-          $ref: "/schemas/types.yaml#/definitions/string"
++          $ref: /schemas/types.yaml#/definitions/string
+           enum: [ ACPI, ADC0, ADC1, ADC10, ADC11, ADC12, ADC13, ADC14, ADC15,
+                   ADC2, ADC3, ADC4, ADC5, ADC6, ADC7, ADC8, ADC9, BMCINT, DDCCLK, DDCDAT,
+                   EXTRST, FLACK, FLBUSY, FLWP, GPID, GPID0, GPID2, GPID4, GPID6, GPIE0,
+@@ -51,7 +51,7 @@ patternProperties:
+                   VGAHS, VGAVS, VPI18, VPI24, VPI30, VPO12, VPO24, WDTRST1, WDTRST2]
+ 
+ allOf:
+-  - $ref: "pinctrl.yaml#"
++  - $ref: pinctrl.yaml#
+ 
+ required:
+   - compatible
+diff --git a/Documentation/devicetree/bindings/pinctrl/aspeed,ast2500-pinctrl.yaml b/Documentation/devicetree/bindings/pinctrl/aspeed,ast2500-pinctrl.yaml
+index 8168f0088471..14c391f16899 100644
+--- a/Documentation/devicetree/bindings/pinctrl/aspeed,ast2500-pinctrl.yaml
++++ b/Documentation/devicetree/bindings/pinctrl/aspeed,ast2500-pinctrl.yaml
+@@ -44,7 +44,7 @@ patternProperties:
+     then:
+       patternProperties:
+         "^function|groups$":
+-          $ref: "/schemas/types.yaml#/definitions/string"
++          $ref: /schemas/types.yaml#/definitions/string
+           enum: [ ACPI, ADC0, ADC1, ADC10, ADC11, ADC12, ADC13, ADC14, ADC15,
+                   ADC2, ADC3, ADC4, ADC5, ADC6, ADC7, ADC8, ADC9, BMCINT, DDCCLK, DDCDAT,
+                   ESPI, FWSPICS1, FWSPICS2, GPID0, GPID2, GPID4, GPID6, GPIE0, GPIE2,
+@@ -65,7 +65,7 @@ patternProperties:
+                   VGAVS, VPI24, VPO, WDTRST1, WDTRST2]
+ 
+ allOf:
+-  - $ref: "pinctrl.yaml#"
++  - $ref: pinctrl.yaml#
+ 
+ required:
+   - compatible
+diff --git a/Documentation/devicetree/bindings/pinctrl/aspeed,ast2600-pinctrl.yaml b/Documentation/devicetree/bindings/pinctrl/aspeed,ast2600-pinctrl.yaml
+index 62424c42c981..859a1889dc1e 100644
+--- a/Documentation/devicetree/bindings/pinctrl/aspeed,ast2600-pinctrl.yaml
++++ b/Documentation/devicetree/bindings/pinctrl/aspeed,ast2600-pinctrl.yaml
+@@ -30,7 +30,7 @@ patternProperties:
+     then:
+       properties:
+         function:
+-          $ref: "/schemas/types.yaml#/definitions/string"
++          $ref: /schemas/types.yaml#/definitions/string
+           enum: [ ADC0, ADC1, ADC10, ADC11, ADC12, ADC13, ADC14, ADC15, ADC2,
+                   ADC3, ADC4, ADC5, ADC6, ADC7, ADC8, ADC9, BMCINT, EMMC, ESPI, ESPIALT,
+                   FSI1, FSI2, FWQSPI, FWSPIABR, FWSPID, FWSPIWP, GPIT0, GPIT1, GPIT2, GPIT3,
+@@ -55,7 +55,7 @@ patternProperties:
+                   USB2BD, USB2BH, VB, VGAHS, VGAVS, WDTRST1, WDTRST2, WDTRST3, WDTRST4 ]
+ 
+         groups:
+-          $ref: "/schemas/types.yaml#/definitions/string"
++          $ref: /schemas/types.yaml#/definitions/string
+           enum: [ ADC0, ADC1, ADC10, ADC11, ADC12, ADC13, ADC14, ADC15, ADC2,
+                   ADC3, ADC4, ADC5, ADC6, ADC7, ADC8, ADC9, BMCINT, EMMCG1, EMMCG4,
+                   EMMCG8, ESPI, ESPIALT, FSI1, FSI2, FWQSPI, FWSPIABR, FWSPID, FWSPIWP,
+@@ -84,7 +84,7 @@ patternProperties:
+                   WDTRST3, WDTRST4]
+ 
+ allOf:
+-  - $ref: "pinctrl.yaml#"
++  - $ref: pinctrl.yaml#
+ 
+ required:
+   - compatible
+diff --git a/Documentation/devicetree/bindings/pinctrl/brcm,bcm6318-pinctrl.yaml b/Documentation/devicetree/bindings/pinctrl/brcm,bcm6318-pinctrl.yaml
+index ab019a1998e8..4478a76171f7 100644
+--- a/Documentation/devicetree/bindings/pinctrl/brcm,bcm6318-pinctrl.yaml
++++ b/Documentation/devicetree/bindings/pinctrl/brcm,bcm6318-pinctrl.yaml
+@@ -38,7 +38,7 @@ patternProperties:
+                 gpio8, gpio9, gpio10, gpio11, gpio12, gpio13, gpio40 ]
+ 
+ allOf:
+-  - $ref: "pinctrl.yaml#"
++  - $ref: pinctrl.yaml#
+ 
+ required:
+   - compatible
+diff --git a/Documentation/devicetree/bindings/pinctrl/brcm,bcm63268-pinctrl.yaml b/Documentation/devicetree/bindings/pinctrl/brcm,bcm63268-pinctrl.yaml
+index 8c9d4668c8c4..73e1caa7c011 100644
+--- a/Documentation/devicetree/bindings/pinctrl/brcm,bcm63268-pinctrl.yaml
++++ b/Documentation/devicetree/bindings/pinctrl/brcm,bcm63268-pinctrl.yaml
+@@ -42,7 +42,7 @@ patternProperties:
+                 vdsl_phy_override_3_grp, dsl_gpio8, dsl_gpio9 ]
+ 
+ allOf:
+-  - $ref: "pinctrl.yaml#"
++  - $ref: pinctrl.yaml#
+ 
+ required:
+   - compatible
+diff --git a/Documentation/devicetree/bindings/pinctrl/brcm,bcm6328-pinctrl.yaml b/Documentation/devicetree/bindings/pinctrl/brcm,bcm6328-pinctrl.yaml
+index a8e22ec02215..2750ba42aeb8 100644
+--- a/Documentation/devicetree/bindings/pinctrl/brcm,bcm6328-pinctrl.yaml
++++ b/Documentation/devicetree/bindings/pinctrl/brcm,bcm6328-pinctrl.yaml
+@@ -37,7 +37,7 @@ patternProperties:
+                 usb_port1 ]
+ 
+ allOf:
+-  - $ref: "pinctrl.yaml#"
++  - $ref: pinctrl.yaml#
+ 
+ required:
+   - compatible
+diff --git a/Documentation/devicetree/bindings/pinctrl/brcm,bcm6358-pinctrl.yaml b/Documentation/devicetree/bindings/pinctrl/brcm,bcm6358-pinctrl.yaml
+index 35867355a47a..2f6c540498bc 100644
+--- a/Documentation/devicetree/bindings/pinctrl/brcm,bcm6358-pinctrl.yaml
++++ b/Documentation/devicetree/bindings/pinctrl/brcm,bcm6358-pinctrl.yaml
+@@ -35,7 +35,7 @@ patternProperties:
+                 led_grp, spi_cs_grp, utopia_grp, pwm_syn_clk, sys_irq_grp ]
+ 
+ allOf:
+-  - $ref: "pinctrl.yaml#"
++  - $ref: pinctrl.yaml#
+ 
+ required:
+   - compatible
+diff --git a/Documentation/devicetree/bindings/pinctrl/brcm,bcm6362-pinctrl.yaml b/Documentation/devicetree/bindings/pinctrl/brcm,bcm6362-pinctrl.yaml
+index b584d4b27223..b3044f805753 100644
+--- a/Documentation/devicetree/bindings/pinctrl/brcm,bcm6362-pinctrl.yaml
++++ b/Documentation/devicetree/bindings/pinctrl/brcm,bcm6362-pinctrl.yaml
+@@ -42,7 +42,7 @@ patternProperties:
+                 gpio22, gpio23, gpio24, gpio25, gpio26, gpio27, nand_grp ]
+ 
+ allOf:
+-  - $ref: "pinctrl.yaml#"
++  - $ref: pinctrl.yaml#
+ 
+ required:
+   - compatible
+diff --git a/Documentation/devicetree/bindings/pinctrl/brcm,bcm6368-pinctrl.yaml b/Documentation/devicetree/bindings/pinctrl/brcm,bcm6368-pinctrl.yaml
+index 229323d9237d..3236871827df 100644
+--- a/Documentation/devicetree/bindings/pinctrl/brcm,bcm6368-pinctrl.yaml
++++ b/Documentation/devicetree/bindings/pinctrl/brcm,bcm6368-pinctrl.yaml
+@@ -43,7 +43,7 @@ patternProperties:
+                 gpio31, uart1_grp ]
+ 
+ allOf:
+-  - $ref: "pinctrl.yaml#"
++  - $ref: pinctrl.yaml#
+ 
+ required:
+   - compatible
+diff --git a/Documentation/devicetree/bindings/pinctrl/brcm,ns-pinmux.yaml b/Documentation/devicetree/bindings/pinctrl/brcm,ns-pinmux.yaml
+index 8d1e5b1cdd5f..0a39dd26ee1a 100644
+--- a/Documentation/devicetree/bindings/pinctrl/brcm,ns-pinmux.yaml
++++ b/Documentation/devicetree/bindings/pinctrl/brcm,ns-pinmux.yaml
+@@ -53,7 +53,7 @@ patternProperties:
+     additionalProperties: false
+ 
+ allOf:
+-  - $ref: "pinctrl.yaml#"
++  - $ref: pinctrl.yaml#
+   - if:
+       properties:
+         compatible:
+diff --git a/Documentation/devicetree/bindings/pinctrl/canaan,k210-fpioa.yaml b/Documentation/devicetree/bindings/pinctrl/canaan,k210-fpioa.yaml
+index a78cb2796001..7f4f36a58e56 100644
+--- a/Documentation/devicetree/bindings/pinctrl/canaan,k210-fpioa.yaml
++++ b/Documentation/devicetree/bindings/pinctrl/canaan,k210-fpioa.yaml
+@@ -144,7 +144,7 @@ patternProperties:
+     additionalProperties: false
+ 
+ allOf:
+-  - $ref: "pinctrl.yaml#"
++  - $ref: pinctrl.yaml#
+ 
+ required:
+   - compatible
+diff --git a/Documentation/devicetree/bindings/pinctrl/cirrus,lochnagar.yaml b/Documentation/devicetree/bindings/pinctrl/cirrus,lochnagar.yaml
+index 5cd512b7d5ba..5e000b3fadde 100644
+--- a/Documentation/devicetree/bindings/pinctrl/cirrus,lochnagar.yaml
++++ b/Documentation/devicetree/bindings/pinctrl/cirrus,lochnagar.yaml
+@@ -173,7 +173,7 @@ properties:
+     additionalProperties: false
+ 
+ allOf:
+-  - $ref: "pinctrl.yaml#"
++  - $ref: pinctrl.yaml#
+ 
+ required:
+   - compatible
+diff --git a/Documentation/devicetree/bindings/pinctrl/cirrus,madera.yaml b/Documentation/devicetree/bindings/pinctrl/cirrus,madera.yaml
+index 6bd42e43cdab..bb61a30321a1 100644
+--- a/Documentation/devicetree/bindings/pinctrl/cirrus,madera.yaml
++++ b/Documentation/devicetree/bindings/pinctrl/cirrus,madera.yaml
+@@ -40,8 +40,8 @@ properties:
+       '-pins$':
+         type: object
+         allOf:
+-          - $ref: "pincfg-node.yaml#"
+-          - $ref: "pinmux-node.yaml#"
++          - $ref: pincfg-node.yaml#
++          - $ref: pinmux-node.yaml#
+         properties:
+           groups:
+             description:
+diff --git a/Documentation/devicetree/bindings/pinctrl/cypress,cy8c95x0.yaml b/Documentation/devicetree/bindings/pinctrl/cypress,cy8c95x0.yaml
+index 915cbbcc3555..222d57541b65 100644
+--- a/Documentation/devicetree/bindings/pinctrl/cypress,cy8c95x0.yaml
++++ b/Documentation/devicetree/bindings/pinctrl/cypress,cy8c95x0.yaml
+@@ -109,7 +109,7 @@ required:
+ additionalProperties: false
+ 
+ allOf:
+-  - $ref: "pinctrl.yaml#"
++  - $ref: pinctrl.yaml#
+ 
+ examples:
+   - |
+diff --git a/Documentation/devicetree/bindings/pinctrl/fsl,imx7d-pinctrl.yaml b/Documentation/devicetree/bindings/pinctrl/fsl,imx7d-pinctrl.yaml
+index 621038662188..7bd723ab1281 100644
+--- a/Documentation/devicetree/bindings/pinctrl/fsl,imx7d-pinctrl.yaml
++++ b/Documentation/devicetree/bindings/pinctrl/fsl,imx7d-pinctrl.yaml
+@@ -68,7 +68,7 @@ patternProperties:
+     additionalProperties: false
+ 
+ allOf:
+-  - $ref: "pinctrl.yaml#"
++  - $ref: pinctrl.yaml#
+ 
+ required:
+   - compatible
+diff --git a/Documentation/devicetree/bindings/pinctrl/fsl,imx8m-pinctrl.yaml b/Documentation/devicetree/bindings/pinctrl/fsl,imx8m-pinctrl.yaml
+index 7ae084397258..6068be11dfe2 100644
+--- a/Documentation/devicetree/bindings/pinctrl/fsl,imx8m-pinctrl.yaml
++++ b/Documentation/devicetree/bindings/pinctrl/fsl,imx8m-pinctrl.yaml
+@@ -65,7 +65,7 @@ patternProperties:
+     additionalProperties: false
+ 
+ allOf:
+-  - $ref: "pinctrl.yaml#"
++  - $ref: pinctrl.yaml#
+ 
+ required:
+   - compatible
+diff --git a/Documentation/devicetree/bindings/pinctrl/fsl,imx8ulp-pinctrl.yaml b/Documentation/devicetree/bindings/pinctrl/fsl,imx8ulp-pinctrl.yaml
+index 693398d88223..7dcf681271d3 100644
+--- a/Documentation/devicetree/bindings/pinctrl/fsl,imx8ulp-pinctrl.yaml
++++ b/Documentation/devicetree/bindings/pinctrl/fsl,imx8ulp-pinctrl.yaml
+@@ -57,7 +57,7 @@ patternProperties:
+     additionalProperties: false
+ 
+ allOf:
+-  - $ref: "pinctrl.yaml#"
++  - $ref: pinctrl.yaml#
+ 
+ required:
+   - compatible
+diff --git a/Documentation/devicetree/bindings/pinctrl/fsl,imx93-pinctrl.yaml b/Documentation/devicetree/bindings/pinctrl/fsl,imx93-pinctrl.yaml
+index 66baa6082a4f..2f2405102996 100644
+--- a/Documentation/devicetree/bindings/pinctrl/fsl,imx93-pinctrl.yaml
++++ b/Documentation/devicetree/bindings/pinctrl/fsl,imx93-pinctrl.yaml
+@@ -14,7 +14,7 @@ description:
+   for common binding part and usage.
+ 
+ allOf:
+-  - $ref: "pinctrl.yaml#"
++  - $ref: pinctrl.yaml#
+ 
+ properties:
+   compatible:
+diff --git a/Documentation/devicetree/bindings/pinctrl/ingenic,pinctrl.yaml b/Documentation/devicetree/bindings/pinctrl/ingenic,pinctrl.yaml
+index a4397930e0e8..35723966b70a 100644
+--- a/Documentation/devicetree/bindings/pinctrl/ingenic,pinctrl.yaml
++++ b/Documentation/devicetree/bindings/pinctrl/ingenic,pinctrl.yaml
+@@ -119,7 +119,7 @@ patternProperties:
+     additionalProperties: false
+ 
+ allOf:
+-  - $ref: "pinctrl.yaml#"
++  - $ref: pinctrl.yaml#
+ 
+ required:
+   - compatible
+diff --git a/Documentation/devicetree/bindings/pinctrl/intel,lgm-io.yaml b/Documentation/devicetree/bindings/pinctrl/intel,lgm-io.yaml
+index ca0fef6e535e..1144ca2896e3 100644
+--- a/Documentation/devicetree/bindings/pinctrl/intel,lgm-io.yaml
++++ b/Documentation/devicetree/bindings/pinctrl/intel,lgm-io.yaml
+@@ -48,7 +48,7 @@ patternProperties:
+     additionalProperties: false
+ 
+ allOf:
+-  - $ref: "pinctrl.yaml#"
++  - $ref: pinctrl.yaml#
+ 
+ required:
+   - compatible
+diff --git a/Documentation/devicetree/bindings/pinctrl/marvell,ac5-pinctrl.yaml b/Documentation/devicetree/bindings/pinctrl/marvell,ac5-pinctrl.yaml
+index 491f67e7cc4f..afea9424c7e1 100644
+--- a/Documentation/devicetree/bindings/pinctrl/marvell,ac5-pinctrl.yaml
++++ b/Documentation/devicetree/bindings/pinctrl/marvell,ac5-pinctrl.yaml
+@@ -28,7 +28,7 @@ patternProperties:
+ 
+     properties:
+       marvell,function:
+-        $ref: "/schemas/types.yaml#/definitions/string"
++        $ref: /schemas/types.yaml#/definitions/string
+         description:
+           Indicates the function to select.
+         enum: [ dev_init_done, ge, gpio, i2c0, i2c1, int_out, led, nand, pcie, ptp, sdio,
+@@ -47,7 +47,7 @@ patternProperties:
+                   mpp40, mpp41, mpp42, mpp43, mpp44, mpp45 ]
+ 
+ allOf:
+-  - $ref: "pinctrl.yaml#"
++  - $ref: pinctrl.yaml#
+ 
+ required:
+   - compatible
+diff --git a/Documentation/devicetree/bindings/pinctrl/mscc,ocelot-pinctrl.yaml b/Documentation/devicetree/bindings/pinctrl/mscc,ocelot-pinctrl.yaml
+index 98d547c34ef3..dbb3e1bd58c1 100644
+--- a/Documentation/devicetree/bindings/pinctrl/mscc,ocelot-pinctrl.yaml
++++ b/Documentation/devicetree/bindings/pinctrl/mscc,ocelot-pinctrl.yaml
+@@ -54,8 +54,8 @@ patternProperties:
+   '-pins$':
+     type: object
+     allOf:
+-      - $ref: "pinmux-node.yaml"
+-      - $ref: "pincfg-node.yaml"
++      - $ref: pinmux-node.yaml
++      - $ref: pincfg-node.yaml
+ 
+     properties:
+       function: true
+@@ -78,7 +78,7 @@ required:
+   - gpio-ranges
+ 
+ allOf:
+-  - $ref: "pinctrl.yaml#"
++  - $ref: pinctrl.yaml#
+   - if:
+       properties:
+         compatible:
+diff --git a/Documentation/devicetree/bindings/pinctrl/qcom,pmic-gpio.yaml b/Documentation/devicetree/bindings/pinctrl/qcom,pmic-gpio.yaml
+index db505fdeac86..1096655961f7 100644
+--- a/Documentation/devicetree/bindings/pinctrl/qcom,pmic-gpio.yaml
++++ b/Documentation/devicetree/bindings/pinctrl/qcom,pmic-gpio.yaml
+@@ -395,8 +395,8 @@ $defs:
+   qcom-pmic-gpio-state:
+     type: object
+     allOf:
+-      - $ref: "pinmux-node.yaml"
+-      - $ref: "pincfg-node.yaml"
++      - $ref: pinmux-node.yaml
++      - $ref: pincfg-node.yaml
+     properties:
+       pins:
+         description:
+diff --git a/Documentation/devicetree/bindings/pinctrl/qcom,pmic-mpp.yaml b/Documentation/devicetree/bindings/pinctrl/qcom,pmic-mpp.yaml
+index 9412b9362328..c91d3e3a094b 100644
+--- a/Documentation/devicetree/bindings/pinctrl/qcom,pmic-mpp.yaml
++++ b/Documentation/devicetree/bindings/pinctrl/qcom,pmic-mpp.yaml
+@@ -82,8 +82,8 @@ $defs:
+   qcom-pmic-mpp-state:
+     type: object
+     allOf:
+-      - $ref: "pinmux-node.yaml"
+-      - $ref: "pincfg-node.yaml"
++      - $ref: pinmux-node.yaml
++      - $ref: pincfg-node.yaml
+     properties:
+       pins:
+         description:
+diff --git a/Documentation/devicetree/bindings/pinctrl/qcom,sc7280-lpass-lpi-pinctrl.yaml b/Documentation/devicetree/bindings/pinctrl/qcom,sc7280-lpass-lpi-pinctrl.yaml
+index e51feb4c0700..fa51fa9536f7 100644
+--- a/Documentation/devicetree/bindings/pinctrl/qcom,sc7280-lpass-lpi-pinctrl.yaml
++++ b/Documentation/devicetree/bindings/pinctrl/qcom,sc7280-lpass-lpi-pinctrl.yaml
+@@ -50,7 +50,7 @@ $defs:
+     description:
+       Pinctrl node's client devices use subnodes for desired pin configuration.
+       Client device subnodes use below standard properties.
+-    $ref: "/schemas/pinctrl/pincfg-node.yaml"
++    $ref: /schemas/pinctrl/pincfg-node.yaml
+ 
+     properties:
+       pins:
+diff --git a/Documentation/devicetree/bindings/pinctrl/qcom,sm8250-lpass-lpi-pinctrl.yaml b/Documentation/devicetree/bindings/pinctrl/qcom,sm8250-lpass-lpi-pinctrl.yaml
+index de9d8854c690..4b4be7efc150 100644
+--- a/Documentation/devicetree/bindings/pinctrl/qcom,sm8250-lpass-lpi-pinctrl.yaml
++++ b/Documentation/devicetree/bindings/pinctrl/qcom,sm8250-lpass-lpi-pinctrl.yaml
+@@ -55,7 +55,7 @@ $defs:
+     description:
+       Pinctrl node's client devices use subnodes for desired pin configuration.
+       Client device subnodes use below standard properties.
+-    $ref: "/schemas/pinctrl/pincfg-node.yaml"
++    $ref: /schemas/pinctrl/pincfg-node.yaml
+ 
+     properties:
+       pins:
+diff --git a/Documentation/devicetree/bindings/pinctrl/qcom,tlmm-common.yaml b/Documentation/devicetree/bindings/pinctrl/qcom,tlmm-common.yaml
+index cb5ba1bd6f8d..2da1437358b7 100644
+--- a/Documentation/devicetree/bindings/pinctrl/qcom,tlmm-common.yaml
++++ b/Documentation/devicetree/bindings/pinctrl/qcom,tlmm-common.yaml
+@@ -52,7 +52,7 @@ properties:
+       information.
+ 
+ allOf:
+-  - $ref: "pinctrl.yaml#"
++  - $ref: pinctrl.yaml#
+ 
+ required:
+   - interrupts
+diff --git a/Documentation/devicetree/bindings/pinctrl/renesas,pfc.yaml b/Documentation/devicetree/bindings/pinctrl/renesas,pfc.yaml
+index 4fc758fea7e6..0fc3c0f52c19 100644
+--- a/Documentation/devicetree/bindings/pinctrl/renesas,pfc.yaml
++++ b/Documentation/devicetree/bindings/pinctrl/renesas,pfc.yaml
+@@ -73,7 +73,7 @@ properties:
+     maxItems: 1
+ 
+ allOf:
+-  - $ref: "pinctrl.yaml#"
++  - $ref: pinctrl.yaml#
+ 
+ required:
+   - compatible
+diff --git a/Documentation/devicetree/bindings/pinctrl/renesas,rza1-ports.yaml b/Documentation/devicetree/bindings/pinctrl/renesas,rza1-ports.yaml
+index 9083040c996a..83800fcf0ce4 100644
+--- a/Documentation/devicetree/bindings/pinctrl/renesas,rza1-ports.yaml
++++ b/Documentation/devicetree/bindings/pinctrl/renesas,rza1-ports.yaml
+@@ -32,7 +32,7 @@ properties:
+     maxItems: 1
+ 
+ allOf:
+-  - $ref: "pinctrl.yaml#"
++  - $ref: pinctrl.yaml#
+ 
+ required:
+   - compatible
+diff --git a/Documentation/devicetree/bindings/pinctrl/renesas,rza2-pinctrl.yaml b/Documentation/devicetree/bindings/pinctrl/renesas,rza2-pinctrl.yaml
+index d761fddc2206..37173a64fed2 100644
+--- a/Documentation/devicetree/bindings/pinctrl/renesas,rza2-pinctrl.yaml
++++ b/Documentation/devicetree/bindings/pinctrl/renesas,rza2-pinctrl.yaml
+@@ -73,7 +73,7 @@ patternProperties:
+       additionalProperties: false
+ 
+ allOf:
+-  - $ref: "pinctrl.yaml#"
++  - $ref: pinctrl.yaml#
+ 
+ required:
+   - compatible
+diff --git a/Documentation/devicetree/bindings/pinctrl/renesas,rzg2l-pinctrl.yaml b/Documentation/devicetree/bindings/pinctrl/renesas,rzg2l-pinctrl.yaml
+index f081acb7ba04..9ce1a07fc015 100644
+--- a/Documentation/devicetree/bindings/pinctrl/renesas,rzg2l-pinctrl.yaml
++++ b/Documentation/devicetree/bindings/pinctrl/renesas,rzg2l-pinctrl.yaml
+@@ -113,7 +113,7 @@ additionalProperties:
+         $ref: "#/additionalProperties/anyOf/0"
+ 
+ allOf:
+-  - $ref: "pinctrl.yaml#"
++  - $ref: pinctrl.yaml#
+ 
+ required:
+   - compatible
+diff --git a/Documentation/devicetree/bindings/pinctrl/renesas,rzn1-pinctrl.yaml b/Documentation/devicetree/bindings/pinctrl/renesas,rzn1-pinctrl.yaml
+index 70b1788ab594..f3b85b7eae31 100644
+--- a/Documentation/devicetree/bindings/pinctrl/renesas,rzn1-pinctrl.yaml
++++ b/Documentation/devicetree/bindings/pinctrl/renesas,rzn1-pinctrl.yaml
+@@ -32,7 +32,7 @@ properties:
+       The bus clock, sometimes described as pclk, for register accesses.
+ 
+ allOf:
+-  - $ref: "pinctrl.yaml#"
++  - $ref: pinctrl.yaml#
+ 
+ required:
+   - compatible
+diff --git a/Documentation/devicetree/bindings/pinctrl/renesas,rzv2m-pinctrl.yaml b/Documentation/devicetree/bindings/pinctrl/renesas,rzv2m-pinctrl.yaml
+index eac6245db7dc..03f084292d68 100644
+--- a/Documentation/devicetree/bindings/pinctrl/renesas,rzv2m-pinctrl.yaml
++++ b/Documentation/devicetree/bindings/pinctrl/renesas,rzv2m-pinctrl.yaml
+@@ -94,7 +94,7 @@ additionalProperties:
+         $ref: "#/additionalProperties/anyOf/0"
+ 
+ allOf:
+-  - $ref: "pinctrl.yaml#"
++  - $ref: pinctrl.yaml#
+ 
+ required:
+   - compatible
+diff --git a/Documentation/devicetree/bindings/pinctrl/rockchip,pinctrl.yaml b/Documentation/devicetree/bindings/pinctrl/rockchip,pinctrl.yaml
+index 45b767986a87..10c335efe619 100644
+--- a/Documentation/devicetree/bindings/pinctrl/rockchip,pinctrl.yaml
++++ b/Documentation/devicetree/bindings/pinctrl/rockchip,pinctrl.yaml
+@@ -50,12 +50,12 @@ properties:
+       - rockchip,rv1126-pinctrl
+ 
+   rockchip,grf:
+-    $ref: "/schemas/types.yaml#/definitions/phandle"
++    $ref: /schemas/types.yaml#/definitions/phandle
+     description:
+       The phandle of the syscon node for the GRF registers.
+ 
+   rockchip,pmu:
+-    $ref: "/schemas/types.yaml#/definitions/phandle"
++    $ref: /schemas/types.yaml#/definitions/phandle
+     description:
+       The phandle of the syscon node for the PMU registers,
+       as some SoCs carry parts of the iomux controller registers there.
+@@ -71,7 +71,7 @@ properties:
+   ranges: true
+ 
+ allOf:
+-  - $ref: "pinctrl.yaml#"
++  - $ref: pinctrl.yaml#
+ 
+ required:
+   - compatible
+@@ -81,7 +81,7 @@ patternProperties:
+   "gpio@[0-9a-f]+$":
+     type: object
+ 
+-    $ref: "/schemas/gpio/rockchip,gpio-bank.yaml#"
++    $ref: /schemas/gpio/rockchip,gpio-bank.yaml#
+     deprecated: true
+ 
+     unevaluatedProperties: false
+@@ -117,7 +117,7 @@ additionalProperties:
+     type: object
+     properties:
+       rockchip,pins:
+-        $ref: "/schemas/types.yaml#/definitions/uint32-matrix"
++        $ref: /schemas/types.yaml#/definitions/uint32-matrix
+         minItems: 1
+         items:
+           items:
+diff --git a/Documentation/devicetree/bindings/pinctrl/samsung,pinctrl.yaml b/Documentation/devicetree/bindings/pinctrl/samsung,pinctrl.yaml
+index eb2b2692607d..26614621774a 100644
+--- a/Documentation/devicetree/bindings/pinctrl/samsung,pinctrl.yaml
++++ b/Documentation/devicetree/bindings/pinctrl/samsung,pinctrl.yaml
+@@ -117,7 +117,7 @@ required:
+   - reg
+ 
+ allOf:
+-  - $ref: "pinctrl.yaml#"
++  - $ref: pinctrl.yaml#
+   - if:
+       properties:
+         compatible:
+diff --git a/Documentation/devicetree/bindings/pinctrl/semtech,sx1501q.yaml b/Documentation/devicetree/bindings/pinctrl/semtech,sx1501q.yaml
+index 0719c03d6f4b..4214d7311f6b 100644
+--- a/Documentation/devicetree/bindings/pinctrl/semtech,sx1501q.yaml
++++ b/Documentation/devicetree/bindings/pinctrl/semtech,sx1501q.yaml
+@@ -62,8 +62,8 @@ patternProperties:
+       - pins
+ 
+     allOf:
+-      - $ref: "pincfg-node.yaml#"
+-      - $ref: "pinmux-node.yaml#"
++      - $ref: pincfg-node.yaml#
++      - $ref: pinmux-node.yaml#
+       - if:
+           properties:
+             pins:
+@@ -86,7 +86,7 @@ required:
+   - gpio-controller
+ 
+ allOf:
+-  - $ref: "pinctrl.yaml#"
++  - $ref: pinctrl.yaml#
+   - if:
+       not:
+         properties:
+diff --git a/Documentation/devicetree/bindings/pinctrl/socionext,uniphier-pinctrl.yaml b/Documentation/devicetree/bindings/pinctrl/socionext,uniphier-pinctrl.yaml
+index bc34e2c872bc..a6f34df82e90 100644
+--- a/Documentation/devicetree/bindings/pinctrl/socionext,uniphier-pinctrl.yaml
++++ b/Documentation/devicetree/bindings/pinctrl/socionext,uniphier-pinctrl.yaml
+@@ -61,7 +61,7 @@ additionalProperties:
+     unevaluatedProperties: false
+ 
+ allOf:
+-  - $ref: "pinctrl.yaml#"
++  - $ref: pinctrl.yaml#
+ 
+ required:
+   - compatible
+diff --git a/Documentation/devicetree/bindings/pinctrl/st,stm32-pinctrl.yaml b/Documentation/devicetree/bindings/pinctrl/st,stm32-pinctrl.yaml
+index eeb29b4ad4d1..1ab0f8dde477 100644
+--- a/Documentation/devicetree/bindings/pinctrl/st,stm32-pinctrl.yaml
++++ b/Documentation/devicetree/bindings/pinctrl/st,stm32-pinctrl.yaml
+@@ -44,7 +44,7 @@ properties:
+ 
+   st,syscfg:
+     description: Phandle+args to the syscon node which includes IRQ mux selection.
+-    $ref: "/schemas/types.yaml#/definitions/phandle-array"
++    $ref: /schemas/types.yaml#/definitions/phandle-array
+     items:
+       - items:
+           - description: syscon node which includes IRQ mux selection
+@@ -89,7 +89,7 @@ patternProperties:
+       st,bank-name:
+         description:
+           Should be a name string for this bank as specified in the datasheet.
+-        $ref: "/schemas/types.yaml#/definitions/string"
++        $ref: /schemas/types.yaml#/definitions/string
+         enum:
+           - GPIOA
+           - GPIOB
+@@ -108,7 +108,7 @@ patternProperties:
+         description:
+           Should correspond to the EXTI IOport selection (EXTI line used
+           to select GPIOs as interrupts).
+-        $ref: "/schemas/types.yaml#/definitions/uint32"
++        $ref: /schemas/types.yaml#/definitions/uint32
+         minimum: 0
+         maximum: 11
+ 
+@@ -140,7 +140,7 @@ patternProperties:
+           configuration, pullups, drive, output high/low and output speed.
+         properties:
+           pinmux:
+-            $ref: "/schemas/types.yaml#/definitions/uint32-array"
++            $ref: /schemas/types.yaml#/definitions/uint32-array
+             description: |
+               Integer array, represents gpio pin number and mux setting.
+               Supported pin number and mux varies for different SoCs, and are
+@@ -201,7 +201,7 @@ patternProperties:
+           - pinmux
+ 
+ allOf:
+-  - $ref: "pinctrl.yaml#"
++  - $ref: pinctrl.yaml#
+ 
+ required:
+   - compatible
+diff --git a/Documentation/devicetree/bindings/pinctrl/starfive,jh7100-pinctrl.yaml b/Documentation/devicetree/bindings/pinctrl/starfive,jh7100-pinctrl.yaml
+index 69c0dd9998ea..27eff891685b 100644
+--- a/Documentation/devicetree/bindings/pinctrl/starfive,jh7100-pinctrl.yaml
++++ b/Documentation/devicetree/bindings/pinctrl/starfive,jh7100-pinctrl.yaml
+@@ -111,7 +111,7 @@ patternProperties:
+           pins it needs, and how they should be configured, with regard to
+           muxer configuration, bias, input enable/disable, input schmitt
+           trigger enable/disable, slew-rate and drive strength.
+-        $ref: "/schemas/pinctrl/pincfg-node.yaml"
++        $ref: /schemas/pinctrl/pincfg-node.yaml
+ 
+         properties:
+           pins:
+@@ -120,14 +120,14 @@ patternProperties:
+               This should be set using either the PAD_GPIO or PAD_FUNC_SHARE
+               macros.
+               Either this or "pinmux" has to be specified, but not both.
+-            $ref: "/schemas/pinctrl/pinmux-node.yaml#/properties/pins"
++            $ref: /schemas/pinctrl/pinmux-node.yaml#/properties/pins
+ 
+           pinmux:
+             description: |
+               The list of GPIOs and their mux settings that properties in the
+               node apply to. This should be set using the GPIOMUX macro.
+               Either this or "pins" has to be specified, but not both.
+-            $ref: "/schemas/pinctrl/pinmux-node.yaml#/properties/pinmux"
++            $ref: /schemas/pinctrl/pinmux-node.yaml#/properties/pinmux
+ 
+           bias-disable: true
+ 
+diff --git a/Documentation/devicetree/bindings/pinctrl/sunplus,sp7021-pinctrl.yaml b/Documentation/devicetree/bindings/pinctrl/sunplus,sp7021-pinctrl.yaml
+index 347061eece9e..94b868c7ceb1 100644
+--- a/Documentation/devicetree/bindings/pinctrl/sunplus,sp7021-pinctrl.yaml
++++ b/Documentation/devicetree/bindings/pinctrl/sunplus,sp7021-pinctrl.yaml
+@@ -138,7 +138,7 @@ patternProperties:
+         description: |
+           Define pin-function which is used by pinctrl node's client device.
+           The name should be one of string in the following enumeration.
+-        $ref: "/schemas/types.yaml#/definitions/string"
++        $ref: /schemas/types.yaml#/definitions/string
+         enum: [ SPI_FLASH, SPI_FLASH_4BIT, SPI_NAND, CARD0_EMMC, SD_CARD,
+                 UA0, FPGA_IFX, HDMI_TX, LCDIF, USB0_OTG, USB1_OTG ]
+ 
+@@ -146,7 +146,7 @@ patternProperties:
+         description: |
+           Define pin-group in a specified pin-function.
+           The name should be one of string in the following enumeration.
+-        $ref: "/schemas/types.yaml#/definitions/string"
++        $ref: /schemas/types.yaml#/definitions/string
+         enum: [ SPI_FLASH1, SPI_FLASH2, SPI_FLASH_4BIT1, SPI_FLASH_4BIT2,
+                 SPI_NAND, CARD0_EMMC, SD_CARD, UA0, FPGA_IFX, HDMI_TX1,
+                 HDMI_TX2, HDMI_TX3, LCDIF, USB0_OTG, USB1_OTG ]
+@@ -289,7 +289,7 @@ required:
+ additionalProperties: false
+ 
+ allOf:
+-  - $ref: "pinctrl.yaml#"
++  - $ref: pinctrl.yaml#
+ 
+ examples:
+   - |
+diff --git a/Documentation/devicetree/bindings/pinctrl/toshiba,visconti-pinctrl.yaml b/Documentation/devicetree/bindings/pinctrl/toshiba,visconti-pinctrl.yaml
+index 98b4663f9766..19d47fd414bc 100644
+--- a/Documentation/devicetree/bindings/pinctrl/toshiba,visconti-pinctrl.yaml
++++ b/Documentation/devicetree/bindings/pinctrl/toshiba,visconti-pinctrl.yaml
+@@ -21,7 +21,7 @@ properties:
+     maxItems: 1
+ 
+ allOf:
+-  - $ref: "pinctrl.yaml#"
++  - $ref: pinctrl.yaml#
+ 
+ required:
+   - compatible
+@@ -35,14 +35,14 @@ patternProperties:
+       pinctrl groups available on the machine. Each subnode will list the
+       pins it needs, and how they should be configured, with regard to muxer
+       configuration, pullups, drive strength.
+-    $ref: "pinmux-node.yaml"
++    $ref: pinmux-node.yaml
+     additionalProperties: false
+ 
+     properties:
+       function:
+         description:
+           Function to mux.
+-        $ref: "/schemas/types.yaml#/definitions/string"
++        $ref: /schemas/types.yaml#/definitions/string
+         enum: [i2c0, i2c1, i2c2, i2c3, i2c4, i2c5, i2c6, i2c7, i2c8,
+                spi0, spi1, spi2, spi3, spi4, spi5, spi6,
+                uart0, uart1, uart2, uart3, pwm, pcmif_out, pcmif_in]
+@@ -50,7 +50,7 @@ patternProperties:
+       groups:
+         description:
+           Name of the pin group to use for the functions.
+-        $ref: "/schemas/types.yaml#/definitions/string"
++        $ref: /schemas/types.yaml#/definitions/string
+         enum: [i2c0_grp, i2c1_grp, i2c2_grp, i2c3_grp, i2c4_grp,
+                i2c5_grp, i2c6_grp, i2c7_grp, i2c8_grp,
+                spi0_grp, spi0_cs0_grp, spi0_cs1_grp, spi0_cs2_grp,
+diff --git a/Documentation/devicetree/bindings/pinctrl/xlnx,zynq-pinctrl.yaml b/Documentation/devicetree/bindings/pinctrl/xlnx,zynq-pinctrl.yaml
+index cfd0cc549a7b..598a042850b8 100644
+--- a/Documentation/devicetree/bindings/pinctrl/xlnx,zynq-pinctrl.yaml
++++ b/Documentation/devicetree/bindings/pinctrl/xlnx,zynq-pinctrl.yaml
+@@ -168,7 +168,7 @@ patternProperties:
+     additionalProperties: false
+ 
+ allOf:
+-  - $ref: "pinctrl.yaml#"
++  - $ref: pinctrl.yaml#
+ 
+ required:
+   - compatible
 -- 
-2.34.1
+2.39.2
 
