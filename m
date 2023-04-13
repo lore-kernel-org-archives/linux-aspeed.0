@@ -1,31 +1,57 @@
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Date: Thu, 13 Apr 2023 19:10:56 +0300
-Subject: [PATCH v9 2/2 RESEND] i2c: aspeed: support ast2600 i2c new
- register mode driver
-In-Reply-To: <20230413075327.1397306-3-ryan_chen@aspeedtech.com>
+From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Date: Thu, 13 Apr 2023 18:17:09 +0200
+Subject: [PATCH v9 1/2 RESEND] dt-bindings: i2c: aspeed: support for
+ AST2600-i2cv2
+In-Reply-To: <20230413075327.1397306-2-ryan_chen@aspeedtech.com>
 References: <20230413075327.1397306-1-ryan_chen@aspeedtech.com>
- <20230413075327.1397306-3-ryan_chen@aspeedtech.com>
-Message-ID: <ZDgpkK/Dv3y1LUe2@smile.fi.intel.com>
+ <20230413075327.1397306-2-ryan_chen@aspeedtech.com>
+Message-ID: <653a9c34-7699-13d4-7599-f64e43345b14@linaro.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Apr 13, 2023 at 03:53:27PM +0800, Ryan Chen wrote:
-> Add i2c new register mode driver to support AST2600 i2c
-> new register mode. AST2600 i2c controller have legacy and
-> new register mode. The new register mode have global register
-> support 4 base clock for scl clock selection, and new clock
-> divider mode. The i2c new register mode have separate register
-> set to control i2c master and slave.
+On 13/04/2023 09:53, Ryan Chen wrote:
+> Add ast2600-i2cv2 compatible and aspeed,global-regs, aspeed,enable-dma
+> and description for ast2600-i2cv2.
+> 
+> Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
 
-There is already i2c-aspeed.c in the kernel. Can you elaborate what's wrong
-with the extending existing driver? (It seems to me that so called "legacy"
-mode is exactly what is being serviced by that driver.)
+>  required:
+>    - reg
+>    - compatible
+> @@ -57,6 +73,26 @@ required:
+>  
+>  unevaluatedProperties: false
+>  
+> +allOf:
 
--- 
-With Best Regards,
-Andy Shevchenko
+allOf goes before unevaluatedProperties. Use example-schema.yaml as your
+template/guidance.
 
+> +  - $ref: /schemas/i2c/i2c-controller.yaml#
+> +  - if:
+> +      properties:
+> +        compatible:
+> +          contains:
+> +            const: aspeed,ast2600-i2cv2
+> +
+> +    then:
+> +      properties:
+> +        reg:
+> +          minItems: 2
+> +      required:
+> +        - aspeed,global-regs
+> +    else:
+> +      properties:
+> +        aspeed,global-regs: false
+> +        aspeed,enable-dma: false
+> +
+> +
+
+Only one blank line.
+
+Best regards,
+Krzysztof
 
