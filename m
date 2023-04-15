@@ -1,9 +1,9 @@
 From: Ryan Chen <ryan_chen@aspeedtech.com>
-Date: Thu, 13 Apr 2023 15:53:27 +0800
-Subject: [PATCH v9 2/2 RESEND] i2c: aspeed: support ast2600 i2c new register mode driver
-In-Reply-To: <20230413075327.1397306-1-ryan_chen@aspeedtech.com>
-References: <20230413075327.1397306-1-ryan_chen@aspeedtech.com>
-Message-ID: <20230413075327.1397306-3-ryan_chen@aspeedtech.com>
+Date: Sat, 15 Apr 2023 09:28:48 +0800
+Subject: [PATCH v10 2/2] i2c: aspeed: support ast2600 i2c new register mode driver
+In-Reply-To: <20230415012848.1777768-1-ryan_chen@aspeedtech.com>
+References: <20230415012848.1777768-1-ryan_chen@aspeedtech.com>
+Message-ID: <20230415012848.1777768-3-ryan_chen@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
