@@ -1,78 +1,97 @@
-From: Andi Shyti <andi.shyti@kernel.org>
-Date: Fri, 21 Apr 2023 02:05:29 +0200
+From: Ryan Chen <ryan_chen@aspeedtech.com>
+Date: Fri, 21 Apr 2023 02:01:28 +0000
 Subject: [PATCH v10 2/2] i2c: aspeed: support ast2600 i2c new register
  mode driver
-In-Reply-To: <20230415012848.1777768-3-ryan_chen@aspeedtech.com>
+In-Reply-To: <20230421000529.6awtnawqgbk5orcp@intel.intel>
 References: <20230415012848.1777768-1-ryan_chen@aspeedtech.com>
  <20230415012848.1777768-3-ryan_chen@aspeedtech.com>
-Message-ID: <20230421000529.6awtnawqgbk5orcp@intel.intel>
+ <20230421000529.6awtnawqgbk5orcp@intel.intel>
+Message-ID: <SEZPR06MB526997FBE2B216AD82986E0EF2609@SEZPR06MB5269.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Ryan,
+Hello Andi,
+> 
+> On Sat, Apr 15, 2023 at 09:28:48AM +0800, Ryan Chen wrote:
+> > Add i2c new register mode driver to support AST2600 i2c new register
+> > mode. AST2600 i2c controller have legacy and new register mode. The
+> > new register mode have global register support 4 base clock for scl
+> > clock selection, and new clock divider mode. The i2c new register mode
+> > have separate register set to control i2c master and slave.
+> 
+> This commit message is a bit messy, could you please write it more clear?
+> 
+> [...]
+> 
+The more statement is in cover letter.
+https://patchwork.ozlabs.org/project/linux-aspeed/cover/20230415012848.1777768-1-ryan_chen at aspeedtech.com/
 
-On Sat, Apr 15, 2023 at 09:28:48AM +0800, Ryan Chen wrote:
-> Add i2c new register mode driver to support AST2600 i2c
-> new register mode. AST2600 i2c controller have legacy and
-> new register mode. The new register mode have global register
-> support 4 base clock for scl clock selection, and new clock
-> divider mode. The i2c new register mode have separate register
-> set to control i2c master and slave.
 
-This commit message is a bit messy, could you please write it
-more clear?
+> > +static int ast2600_i2c_probe(struct platform_device *pdev) {
+> > +	struct device_node *np = pdev->dev.of_node;
+> > +	struct device *dev = &pdev->dev;
+> > +	struct ast2600_i2c_bus *i2c_bus;
+> > +	struct resource *res;
+> > +	u32 global_ctrl;
+> > +	int ret = 0;
+> > +
+> > +	i2c_bus = devm_kzalloc(dev, sizeof(*i2c_bus), GFP_KERNEL);
+> > +	if (!i2c_bus)
+> > +		return -ENOMEM;
+> 
+> Let's use dev_err_probe whenever possible, at least we keep a coherent style.
 
-[...]
+Will modify dev_err_probe to next patch
+> 
+> [...]
+> 
+> > +	ret = devm_request_irq(dev, i2c_bus->irq, ast2600_i2c_bus_irq, 0,
+> > +			       dev_name(dev), i2c_bus);
+> 
+> isn't it better to use threaded irq? You have quite an elaborate irq handler, you
+> may want to use a thread for it.
 
-> +static int ast2600_i2c_probe(struct platform_device *pdev)
-> +{
-> +	struct device_node *np = pdev->dev.of_node;
-> +	struct device *dev = &pdev->dev;
-> +	struct ast2600_i2c_bus *i2c_bus;
-> +	struct resource *res;
-> +	u32 global_ctrl;
-> +	int ret = 0;
-> +
-> +	i2c_bus = devm_kzalloc(dev, sizeof(*i2c_bus), GFP_KERNEL);
-> +	if (!i2c_bus)
-> +		return -ENOMEM;
+Thanks, but I would prefer to stick currently implement of the IRQ request. Thank you for your input.
 
-Let's use dev_err_probe whenever possible, at least we keep a
-coherent style.
+> 
+> > +	if (ret < 0)
+> > +		return dev_err_probe(dev, ret, "Unable to request irq %d\n",
+> > +i2c_bus->irq);
+> > +
+> > +	if (of_property_read_bool(dev->of_node, "smbus-alert")) {
+> > +		i2c_bus->alert_enable = 1;
+> 
+> true;
 
-[...]
+> 
+> alert_enable is boolean, make it bool.
 
-> +	ret = devm_request_irq(dev, i2c_bus->irq, ast2600_i2c_bus_irq, 0,
-> +			       dev_name(dev), i2c_bus);
+Will modify dev_err_probe to next patch
 
-isn't it better to use threaded irq? You have quite an elaborate
-irq handler, you may want to use a thread for it.
+> 
+> > +		i2c_bus->ara = i2c_new_smbus_alert_device(&i2c_bus->adap,
+> &i2c_bus->alert_data);
+> > +		if (!i2c_bus->ara)
+> > +			dev_warn(dev, "Failed to register ARA client\n");
+> > +
+> > +		writel(AST2600_I2CM_PKT_DONE | AST2600_I2CM_BUS_RECOVER |
+> AST2600_I2CM_SMBUS_ALT,
+> > +		       i2c_bus->reg_base + AST2600_I2CM_IER);
+> > +	} else {
+> > +		i2c_bus->alert_enable = 0;
+> 
+> false;
 
-> +	if (ret < 0)
-> +		return dev_err_probe(dev, ret, "Unable to request irq %d\n", i2c_bus->irq);
-> +
-> +	if (of_property_read_bool(dev->of_node, "smbus-alert")) {
-> +		i2c_bus->alert_enable = 1;
+Will modify dev_err_probe to next patch
 
-true;
+> 
+> I'm not going to review any further, please send the patch after you have run
+> checkpatch.pl on it. Thanks!
 
-alert_enable is boolean, make it bool.
+Sure. 
 
-> +		i2c_bus->ara = i2c_new_smbus_alert_device(&i2c_bus->adap, &i2c_bus->alert_data);
-> +		if (!i2c_bus->ara)
-> +			dev_warn(dev, "Failed to register ARA client\n");
-> +
-> +		writel(AST2600_I2CM_PKT_DONE | AST2600_I2CM_BUS_RECOVER | AST2600_I2CM_SMBUS_ALT,
-> +		       i2c_bus->reg_base + AST2600_I2CM_IER);
-> +	} else {
-> +		i2c_bus->alert_enable = 0;
-
-false;
-
-I'm not going to review any further, please send the patch after
-you have run checkpatch.pl on it. Thanks!
-
-Andi
+Thanks, your review.
+Ryan Chen.
