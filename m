@@ -1,439 +1,116 @@
-From: Delphine_CC_Chiu/WYHQ/Wiwynn <Delphine_CC_Chiu@wiwynn.com>
-Date: Mon, 24 Apr 2023 10:12:13 +0000
-Subject: [v4 4/5] pwm: Add Aspeed ast2600 PWM support
-In-Reply-To: <20221123061635.32025-5-billy_tsai@aspeedtech.com>
-References: <20221123061635.32025-1-billy_tsai@aspeedtech.com>
- <20221123061635.32025-5-billy_tsai@aspeedtech.com>
-Message-ID: <PSAPR04MB4598633B2046A6668D6FD2C9A5679@PSAPR04MB4598.apcprd04.prod.outlook.com>
+From: Rob Herring <robh+dt@kernel.org>
+Date: Mon, 24 Apr 2023 17:10:23 -0500
+Subject: [RFC PATCH 0/1] Categorize ARM dts directory
+In-Reply-To: <YkKRYnN84D9VZhGj@Ansuel-xps.localdomain>
+References: <20220328000915.15041-1-ansuelsmth@gmail.com> <85eb14ec-f465-7447-ad77-a3dabc666f47@kernel.org>
+ <YkKRYnN84D9VZhGj@Ansuel-xps.localdomain>
+Message-ID: <CAL_Jsq+RQQ-ADMxLPUFwk6S6kGmb6oNDy4k52fnU0EtbUvqmSA@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+On Tue, Mar 29, 2022 at 8:27?AM Ansuel Smith <ansuelsmth@gmail.com> wrote:
+>
+> On Tue, Mar 29, 2022 at 03:20:18PM +0200, Krzysztof Kozlowski wrote:
+> > On 28/03/2022 02:09, Ansuel Smith wrote:
+> > > Hi,
+> > > as the title say, the intention of this ""series"" is to finally categorize
+> > > the ARM dts directory in subdirectory for each oem.
+> > >
+> > > The main reason for this is that it became unpractical to handle 2600
+> > > dts files and try to even understand/edit/check the situation for a
+> > > specific target.
+> > >
+> > > In arm64 we already have this kind of separation and I honestly think
+> > > that this was never proposed for ARM due to the fact that there are
+> > > 2600+ files to sort and the fact that it will be a mess to merge this
+> > > entirely but IMHO with a little bit of effort we can finally solve this
+> > > problem and have a well organized directory just like arm64.
+> > >
+> > > Some prerequisite on how this work was done:
+> > > - This comes entirely from a python script created by me for the task.
+> > >   linked here [1]
+> > > - I had to manually categorize all the different arch in the makefile
+> > >   based on the oem. I searched every arch on the internet trying to
+> > >   understand the correct oem. I hope they are correct but I would love
+> > >   some comments about them.
+> > > - This current ""series"" is all squashed in one big commit to better
+> > >   receive comments for this. The final version ideally would have all
+> > >   changes in separate commits. The script can already do this, it's just
+> > >   commented.
+> > >
+> > > Here is a list of some discoveries while doing all the sorting.
+> > > These are totally additional reason why we need this.
+> > >
+> > > While creating the script I discovered some funny things:
+> > > - We have orphan dts! There are dts that are never compiled and are
+> > >   there just for reference. We would never have noticed this without this
+> > >   change and probably nobody noticed it. They are currently all listed
+> > >   in the python script.
+> > > - We have dtsi shared across different oem. My current solution for them
+> > >   is: NOT SORT THEM and leave them in the generic directory and create a
+> > >   link in each oem dts that points to these dtsi. This is to try in
+> > >   every way possible to skip any additional changes to the dts.
+> > >   Current dtsi that suffers from this are only 3. (listed in the script)
+> > > - arm64 dts and dtsi reference ARM dts. Obviously this change would cause
+> > >   broken include for these special dtsi. The script creates a dependency
+> > >   table of the entire arm64 directory and fix every broken dependency
+> > >   (hoping they all use a sane include logic... regex is used to parse
+> > >   all the different dependency)
+> > >
+> > > So in short the script does the following steps:
+> > > 1. Enumerate all the action to do... (dts to move, scan dependency for
+> > >    the dts...)
+> > > 2. Generate the arm64 dependency
+> > > 3. Creates the Makefile
+> > > 4. Generate the Makefiles for the current oem
+> > > 5. Move all the related dts and dtsi for the current oem
+> > > 6. Check broken dependency and fix them by editing the dts and writing
+> > >    the correct include (or fix any symbolic link)
+> > >
+> > > This is an output that describes all the things done by the script [2]
+> > >
+> > > I really hope I didn't commit any logic mistake in the script but most
+> > > of the work should be done.
+> > >
+> >
+> > +Cc Arnd and Olof,
+> >
+> > Ansuel,
+> > Thanks for you patch. Please cc the SoC maintainers in such submissions.
+> > It seems that you got some quite nice discussion, but still the core
+> > folks are not Cced, so no one would be able to take your patch...
+> >
+>
+> I had some problem with gmail and sending mail too much users. I put Rob
+> and You and all the various list to try to workaround the "gmail spam
+> protection"
+>
+> > I am pretty sure we were discussing such split idea in the past and it
+> > did not get traction, but I cannot recall the exact discussion.
+> >
+>
+> I think the main issue here is how to handle bot and how problematic is
+> to merge this. As written in the cover letter the final version of this
+> should be a big series of 50+ patch with every commit specific to each
+> oem. In theory we should be able to merge the different oem separately
+> and try to at least start the categorization.
+> Another idea I got to at least have a "migration path" is to convert
+> every dts in the dts/ directory to a symbolic link that target the dts
+> in the correct oem. But I assume that would fix only part of the problem
+> and git am will still be problematic.
 
+I have a script[1] that does the conversion written the last time this
+came up. Just have to agree on directory names. I think the easiest
+would be for Arnd/Olof to run it at the end of a merge window before
+rc1.
 
-> From: Billy Tsai <billy_tsai@aspeedtech.com>
-> Sent: Wednesday, November 23, 2022 2:17 PM
-> To: jdelvare at suse.com; linux at roeck-us.net; robh+dt at kernel.org;
-> krzysztof.kozlowski+dt at linaro.org; joel at jms.id.au; andrew at aj.id.au;
-> lee at kernel.org; thierry.reding at gmail.com; u.kleine-koenig at pengutronix.de;
-> corbet at lwn.net; p.zabel at pengutronix.de; billy_tsai at aspeedtech.com;
-> linux-hwmon at vger.kernel.org; devicetree at vger.kernel.org;
-> linux-arm-kernel at lists.infradead.org; linux-aspeed at lists.ozlabs.org;
-> linux-kernel at vger.kernel.org; linux-pwm at vger.kernel.org;
-> linux-doc at vger.kernel.org
-> Cc: kernel test robot <lkp@intel.com>
-> Subject: [v4 4/5] pwm: Add Aspeed ast2600 PWM support
-> 
-> Add the support of PWM controller which can be found at aspeed ast2600 soc.
-> The pwm supoorts up to 16 channels and it's part function of multi-function
-> device "pwm-tach controller".
-> 
-> Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
-> Reviewed-by: Uwe Kleine-K?nig <u.kleine-koenig@pengutronix.de>
-> Reported-by: kernel test robot <lkp@intel.com>
-> ---
->  drivers/pwm/Kconfig              |  10 +
->  drivers/pwm/Makefile             |   1 +
->  drivers/pwm/pwm-aspeed-ast2600.c | 318
-> +++++++++++++++++++++++++++++++
->  3 files changed, 329 insertions(+)
->  create mode 100644 drivers/pwm/pwm-aspeed-ast2600.c
-> 
-> diff --git a/drivers/pwm/Kconfig b/drivers/pwm/Kconfig index
-> 60d13a949bc5..54915185d918 100644
-> --- a/drivers/pwm/Kconfig
-> +++ b/drivers/pwm/Kconfig
-> @@ -51,6 +51,16 @@ config PWM_AB8500
->  	  To compile this driver as a module, choose M here: the module
->  	  will be called pwm-ab8500.
-> 
-> +config PWM_ASPEED_AST2600
-> +	tristate "Aspeed ast2600 PWM support"
-> +	depends on ARCH_ASPEED || COMPILE_TEST
-> +	depends on HAVE_CLK && HAS_IOMEM
-> +	help
-> +	  This driver provides support for Aspeed ast2600 PWM controllers.
-> +
-> +	  To compile this driver as a module, choose M here: the module
-> +	  will be called pwm-aspeed-ast2600.
-> +
->  config PWM_ATMEL
->  	tristate "Atmel PWM support"
->  	depends on ARCH_AT91 || COMPILE_TEST
-> diff --git a/drivers/pwm/Makefile b/drivers/pwm/Makefile index
-> 7bf1a29f02b8..5169c34056e6 100644
-> --- a/drivers/pwm/Makefile
-> +++ b/drivers/pwm/Makefile
-> @@ -2,6 +2,7 @@
->  obj-$(CONFIG_PWM)		+= core.o
->  obj-$(CONFIG_PWM_SYSFS)		+= sysfs.o
->  obj-$(CONFIG_PWM_AB8500)	+= pwm-ab8500.o
-> +obj-$(CONFIG_PWM_ASPEED_AST2600)	+= pwm-aspeed-ast2600.o
->  obj-$(CONFIG_PWM_ATMEL)		+= pwm-atmel.o
->  obj-$(CONFIG_PWM_ATMEL_HLCDC_PWM)	+= pwm-atmel-hlcdc.o
->  obj-$(CONFIG_PWM_ATMEL_TCB)	+= pwm-atmel-tcb.o
-> diff --git a/drivers/pwm/pwm-aspeed-ast2600.c
-> b/drivers/pwm/pwm-aspeed-ast2600.c
-> new file mode 100644
-> index 000000000000..2c22aff18624
-> --- /dev/null
-> +++ b/drivers/pwm/pwm-aspeed-ast2600.c
-> @@ -0,0 +1,318 @@
-> +// SPDX-License-Identifier: GPL-2.0-or-later
-> +/*
-> + * Copyright (C) 2021 Aspeed Technology Inc.
-> + *
-> + * PWM controller driver for Aspeed ast2600 SoCs.
-> + * This drivers doesn't support earlier version of the IP.
-> + *
-> + * The hardware operates in time quantities of length
-> + * Q := (DIV_L + 1) << DIV_H / input-clk
-> + * The length of a PWM period is (DUTY_CYCLE_PERIOD + 1) * Q.
-> + * The maximal value for DUTY_CYCLE_PERIOD is used here to provide
-> + * a fine grained selection for the duty cycle.
-> + *
-> + * This driver uses DUTY_CYCLE_RISING_POINT = 0, so from the start of a
-> + * period the output is active until DUTY_CYCLE_FALLING_POINT * Q. Note
-> + * that if DUTY_CYCLE_RISING_POINT = DUTY_CYCLE_FALLING_POINT the
-> +output is
-> + * always active.
-> + *
-> + * Register usage:
-> + * PIN_ENABLE: When it is unset the pwm controller will emit inactive level to
-> the external.
-> + * Use to determine whether the PWM channel is enabled or disabled
-> + * CLK_ENABLE: When it is unset the pwm controller will assert the duty
-> +counter reset and
-> + * emit inactive level to the PIN_ENABLE mux after that the driver can
-> +still change the pwm period
-> + * and duty and the value will apply when CLK_ENABLE be set again.
-> + * Use to determine whether duty_cycle bigger than 0.
-> + * PWM_ASPEED_CTRL_INVERSE: When it is toggled the output value will
-> inverse immediately.
-> + *
-> +PWM_ASPEED_DUTY_CYCLE_FALLING_POINT/PWM_ASPEED_DUTY_CYCLE_R
-> ISING_POINT:
-> +When these two
-> + * values are equal it means the duty cycle = 100%.
-> + *
-> + * The glitch may generate at:
-> + * - Enabled changing when the duty_cycle bigger than 0% and less than
-> 100%.
-> + * - Polarity changing when the duty_cycle bigger than 0% and less than
-> 100%.
-> + *
-> + * Limitations:
-> + * - When changing both duty cycle and period, we cannot prevent in
-> + *   software that the output might produce a period with mixed
-> + *   settings.
-> + * - Disabling the PWM doesn't complete the current period.
-> + *
-> + * Improvements:
-> + * - When only changing one of duty cycle or period, our pwm controller will
-> not
-> + *   generate the glitch, the configure will change at next cycle of pwm.
-> + *   This improvement can disable/enable through
-> PWM_ASPEED_CTRL_DUTY_SYNC_DISABLE.
-> + */
-> +
-> +#include <linux/bitfield.h>
-> +#include <linux/clk.h>
-> +#include <linux/errno.h>
-> +#include <linux/io.h>
-> +#include <linux/kernel.h>
-> +#include <linux/math64.h>
-> +#include <linux/mfd/syscon.h>
-> +#include <linux/module.h>
-> +#include <linux/of_device.h>
-> +#include <linux/of_platform.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/pwm.h>
-> +#include <linux/regmap.h>
-> +#include <linux/reset.h>
-> +#include <linux/sysfs.h>
-> +
-> +/* The channel number of Aspeed pwm controller */
-> +#define PWM_ASPEED_NR_PWMS			16
-> +/* PWM Control Register */
-> +#define PWM_ASPEED_CTRL(ch)			((ch) * 0x10 + 0x00)
-> +#define PWM_ASPEED_CTRL_LOAD_SEL_RISING_AS_WDT	BIT(19)
-> +#define PWM_ASPEED_CTRL_DUTY_LOAD_AS_WDT_ENABLE	BIT(18)
-> +#define PWM_ASPEED_CTRL_DUTY_SYNC_DISABLE	BIT(17)
-> +#define PWM_ASPEED_CTRL_CLK_ENABLE		BIT(16)
-> +#define PWM_ASPEED_CTRL_LEVEL_OUTPUT		BIT(15)
-> +#define PWM_ASPEED_CTRL_INVERSE			BIT(14)
-> +#define PWM_ASPEED_CTRL_OPEN_DRAIN_ENABLE	BIT(13)
-> +#define PWM_ASPEED_CTRL_PIN_ENABLE		BIT(12)
-> +#define PWM_ASPEED_CTRL_CLK_DIV_H		GENMASK(11, 8)
-> +#define PWM_ASPEED_CTRL_CLK_DIV_L		GENMASK(7, 0)
-> +
-> +/* PWM Duty Cycle Register */
-> +#define PWM_ASPEED_DUTY_CYCLE(ch)		((ch) * 0x10 + 0x04)
-> +#define PWM_ASPEED_DUTY_CYCLE_PERIOD		GENMASK(31, 24)
-> +#define PWM_ASPEED_DUTY_CYCLE_POINT_AS_WDT	GENMASK(23, 16)
-> +#define PWM_ASPEED_DUTY_CYCLE_FALLING_POINT	GENMASK(15, 8)
-> +#define PWM_ASPEED_DUTY_CYCLE_RISING_POINT	GENMASK(7, 0)
-> +
-> +/* PWM fixed value */
-> +#define PWM_ASPEED_FIXED_PERIOD
-> 	FIELD_MAX(PWM_ASPEED_DUTY_CYCLE_PERIOD)
-> +
-> +struct aspeed_pwm_data {
-> +	struct pwm_chip chip;
-> +	struct clk *clk;
-> +	struct regmap *regmap;
-> +	struct reset_control *reset;
-> +};
-> +
-> +static inline struct aspeed_pwm_data *
-> +aspeed_pwm_chip_to_data(struct pwm_chip *chip) {
-> +	return container_of(chip, struct aspeed_pwm_data, chip); }
-> +
-> +static void aspeed_pwm_get_state(struct pwm_chip *chip, struct
-void should be change to int
-> pwm_device *pwm,
-> +				 struct pwm_state *state)
-> +{
-> +	struct device *dev = chip->dev;
-> +	struct aspeed_pwm_data *priv = aspeed_pwm_chip_to_data(chip);
-> +	u32 hwpwm = pwm->hwpwm;
-> +	bool polarity,	pin_en, clk_en;
-> +	u32 duty_pt, val;
-> +	unsigned long rate;
-> +	u64 div_h, div_l, duty_cycle_period, dividend;
-> +
-> +	regmap_read(priv->regmap, PWM_ASPEED_CTRL(hwpwm), &val);
-> +	polarity = FIELD_GET(PWM_ASPEED_CTRL_INVERSE, val);
-> +	pin_en = FIELD_GET(PWM_ASPEED_CTRL_PIN_ENABLE, val);
-> +	clk_en = FIELD_GET(PWM_ASPEED_CTRL_CLK_ENABLE, val);
-> +	div_h = FIELD_GET(PWM_ASPEED_CTRL_CLK_DIV_H, val);
-> +	div_l = FIELD_GET(PWM_ASPEED_CTRL_CLK_DIV_L, val);
-> +	regmap_read(priv->regmap, PWM_ASPEED_DUTY_CYCLE(hwpwm), &val);
-> +	duty_pt = FIELD_GET(PWM_ASPEED_DUTY_CYCLE_FALLING_POINT, val);
-> +	duty_cycle_period = FIELD_GET(PWM_ASPEED_DUTY_CYCLE_PERIOD,
-> val);
-> +
-> +	rate = clk_get_rate(priv->clk);
-> +
-> +	/*
-> +	 * This multiplication doesn't overflow, the upper bound is
-> +	 * 1000000000 * 256 * 256 << 15 = 0x1dcd650000000000
-> +	 */
-> +	dividend = (u64)NSEC_PER_SEC * (div_l + 1) * (duty_cycle_period + 1)
-> +		       << div_h;
-> +	state->period = DIV_ROUND_UP_ULL(dividend, rate);
-> +
-> +	if (clk_en && duty_pt) {
-> +		dividend = (u64)NSEC_PER_SEC * (div_l + 1) * duty_pt
-> +				 << div_h;
-> +		state->duty_cycle = DIV_ROUND_UP_ULL(dividend, rate);
-> +	} else {
-> +		state->duty_cycle = clk_en ? state->period : 0;
-> +	}
-> +	state->polarity = polarity ? PWM_POLARITY_INVERSED :
-> PWM_POLARITY_NORMAL;
-> +	state->enabled = pin_en;
-> +	dev_dbg(dev, "get period: %lldns, duty_cycle: %lldns", state->period,
-> +		state->duty_cycle);
-Add return 0 here.
-> +}
-> +
-> +static int aspeed_pwm_apply(struct pwm_chip *chip, struct pwm_device
-> *pwm,
-> +			    const struct pwm_state *state)
-> +{
-> +	struct device *dev = chip->dev;
-> +	struct aspeed_pwm_data *priv = aspeed_pwm_chip_to_data(chip);
-> +	u32 hwpwm = pwm->hwpwm, duty_pt;
-> +	unsigned long rate;
-> +	u64 div_h, div_l, divisor, expect_period;
-> +	bool clk_en;
-> +
-> +	rate = clk_get_rate(priv->clk);
-> +	expect_period = min(div64_u64(ULLONG_MAX, (u64)rate),
-> state->period);
-> +	dev_dbg(dev, "expect period: %lldns, duty_cycle: %lldns", expect_period,
-> +		state->duty_cycle);
-> +	/*
-> +	 * Pick the smallest value for div_h so that div_l can be the biggest
-> +	 * which results in a finer resolution near the target period value.
-> +	 */
-> +	divisor = (u64)NSEC_PER_SEC * (PWM_ASPEED_FIXED_PERIOD + 1) *
-> +		  (FIELD_MAX(PWM_ASPEED_CTRL_CLK_DIV_L) + 1);
-> +	div_h = order_base_2(DIV64_U64_ROUND_UP(rate * expect_period,
-> divisor));
-> +	if (div_h > 0xf)
-> +		div_h = 0xf;
-> +
-> +	divisor = ((u64)NSEC_PER_SEC * (PWM_ASPEED_FIXED_PERIOD + 1)) <<
-> div_h;
-> +	div_l = div64_u64(rate * expect_period, divisor);
-> +
-> +	if (div_l == 0)
-> +		return -ERANGE;
-> +
-> +	div_l -= 1;
-> +
-> +	if (div_l > 255)
-> +		div_l = 255;
-> +
-> +	dev_dbg(dev, "clk source: %ld div_h %lld, div_l : %lld\n", rate, div_h,
-> +		div_l);
-> +	/* duty_pt = duty_cycle * (PERIOD + 1) / period */
-> +	duty_pt = div64_u64(state->duty_cycle * rate,
-> +			    (u64)NSEC_PER_SEC * (div_l + 1) << div_h);
-> +	dev_dbg(dev, "duty_cycle = %lld, duty_pt = %d\n", state->duty_cycle,
-> +		duty_pt);
-> +
-> +	/*
-> +	 * Fixed DUTY_CYCLE_PERIOD to its max value to get a
-> +	 * fine-grained resolution for duty_cycle at the expense of a
-> +	 * coarser period resolution.
-> +	 */
-> +	regmap_update_bits(priv->regmap,
-> PWM_ASPEED_DUTY_CYCLE(hwpwm),
-> +			   PWM_ASPEED_DUTY_CYCLE_PERIOD,
-> +			   FIELD_PREP(PWM_ASPEED_DUTY_CYCLE_PERIOD,
-> +				      PWM_ASPEED_FIXED_PERIOD));
-> +	if (duty_pt == 0) {
-> +		/* emit inactive level and assert the duty counter reset */
-> +		clk_en = 0;
-> +	} else {
-> +		clk_en = 1;
-> +		if (duty_pt >= (PWM_ASPEED_FIXED_PERIOD + 1))
-> +			duty_pt = 0;
-> +		regmap_update_bits(priv->regmap,
-> PWM_ASPEED_DUTY_CYCLE(hwpwm),
-> +				   PWM_ASPEED_DUTY_CYCLE_RISING_POINT |
-> +					   PWM_ASPEED_DUTY_CYCLE_FALLING_POINT,
-> +
-> FIELD_PREP(PWM_ASPEED_DUTY_CYCLE_FALLING_POINT, duty_pt));
-> +	}
-> +
-> +	regmap_update_bits(priv->regmap, PWM_ASPEED_CTRL(hwpwm),
-> +			   PWM_ASPEED_CTRL_CLK_DIV_H |
-> PWM_ASPEED_CTRL_CLK_DIV_L |
-> +				   PWM_ASPEED_CTRL_PIN_ENABLE |
-> PWM_ASPEED_CTRL_CLK_ENABLE |
-> +				   PWM_ASPEED_CTRL_INVERSE,
-> +			   FIELD_PREP(PWM_ASPEED_CTRL_CLK_DIV_H, div_h) |
-> +				   FIELD_PREP(PWM_ASPEED_CTRL_CLK_DIV_L, div_l) |
-> +				   FIELD_PREP(PWM_ASPEED_CTRL_PIN_ENABLE,
-> state->enabled) |
-> +				   FIELD_PREP(PWM_ASPEED_CTRL_CLK_ENABLE, clk_en)
-> |
-> +				   FIELD_PREP(PWM_ASPEED_CTRL_INVERSE,
-> state->polarity));
-> +	return 0;
-> +}
-> +
-> +static const struct pwm_ops aspeed_pwm_ops = {
-> +	.apply = aspeed_pwm_apply,
-> +	.get_state = aspeed_pwm_get_state,
+I'm very much in favor of this happening especially before *any*
+overlays are added to add to the mess (it's probably already
+happened).
 
-We got compile error because the get_state is int but return type of
-aspeed_pwm_get_state is void.
+Rob
 
-We found that the get_state had been change from void to int.
-Refer to linux/include/linux/pwm.h
-https://github.com/torvalds/linux/commit/6c452cff79f8bf1c0146fda598d32061cfd25443
-
-Therefore, we think the return type of aspeed_pwm_get_state should be change to int.
-Could you help to revise this patch?
-
-> +	.owner = THIS_MODULE,
-> +};
-> +
-> +static void aspeed_pwm_reset_assert(void *data) {
-> +	struct reset_control *rst = data;
-> +
-> +	reset_control_assert(rst);
-> +}
-> +
-> +static void aspeed_pwm_chip_remove(void *data) {
-> +	struct pwm_chip *chip = data;
-> +
-> +	pwmchip_remove(chip);
-> +}
-> +
-> +static int aspeed_pwm_probe(struct platform_device *pdev) {
-> +	struct device *dev = &pdev->dev;
-> +	int ret;
-> +	struct aspeed_pwm_data *priv;
-> +	struct device_node *np;
-> +	struct platform_device *parent_dev;
-> +
-> +	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
-> +	if (!priv)
-> +		return -ENOMEM;
-> +
-> +	np = pdev->dev.parent->of_node;
-> +	if (!of_device_is_compatible(np, "aspeed,ast2600-pwm-tach"))
-> +		return dev_err_probe(dev, -ENODEV,
-> +				     "Unsupported pwm device binding\n");
-> +
-> +	priv->regmap = syscon_node_to_regmap(np);
-> +	if (IS_ERR(priv->regmap))
-> +		return dev_err_probe(dev, PTR_ERR(priv->regmap),
-> +				     "Couldn't get regmap\n");
-> +
-> +	parent_dev = of_find_device_by_node(np);
-> +	priv->clk = devm_clk_get_enabled(&parent_dev->dev, NULL);
-> +	if (IS_ERR(priv->clk))
-> +		return dev_err_probe(dev, PTR_ERR(priv->clk),
-> +				     "Couldn't get clock\n");
-> +
-> +	priv->reset = devm_reset_control_get_shared(&parent_dev->dev, NULL);
-> +	if (IS_ERR(priv->reset))
-> +		return dev_err_probe(dev, PTR_ERR(priv->reset),
-> +				     "Couldn't get reset control\n");
-> +
-> +	ret = reset_control_deassert(priv->reset);
-> +	if (ret)
-> +		return dev_err_probe(dev, ret,
-> +				     "Couldn't deassert reset control\n");
-> +
-> +	ret = devm_add_action_or_reset(dev, aspeed_pwm_reset_assert,
-> +				       priv->reset);
-> +	if (ret)
-> +		return ret;
-> +
-> +	priv->chip.dev = dev;
-> +	priv->chip.ops = &aspeed_pwm_ops;
-> +	priv->chip.npwm = PWM_ASPEED_NR_PWMS;
-> +
-> +	ret = pwmchip_add(&priv->chip);
-> +	if (ret < 0)
-> +		return dev_err_probe(dev, ret, "Failed to add PWM chip\n");
-> +	ret = devm_add_action_or_reset(dev, aspeed_pwm_chip_remove,
-> +				       &priv->chip);
-> +	if (ret)
-> +		return ret;
-> +	return 0;
-> +}
-> +
-> +static const struct of_device_id of_pwm_match_table[] = {
-> +	{
-> +		.compatible = "aspeed,ast2600-pwm",
-> +	},
-> +	{},
-> +};
-> +MODULE_DEVICE_TABLE(of, of_pwm_match_table);
-> +
-> +static struct platform_driver aspeed_pwm_driver = {
-> +	.probe = aspeed_pwm_probe,
-> +	.driver	= {
-> +		.name = "aspeed-pwm",
-> +		.of_match_table = of_pwm_match_table,
-> +	},
-> +};
-> +
-> +module_platform_driver(aspeed_pwm_driver);
-> +
-> +MODULE_AUTHOR("Billy Tsai <billy_tsai@aspeedtech.com>");
-> +MODULE_DESCRIPTION("Aspeed ast2600 PWM device driver");
-> +MODULE_LICENSE("GPL");
-> --
-> 2.25.1
+[1] https://lore.kernel.org/all/20181204183649.GA5716 at bogus/
