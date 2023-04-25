@@ -1,26 +1,53 @@
 From: Chanh Nguyen <chanh@os.amperecomputing.com>
-Date: Tue, 25 Apr 2023 13:57:11 +0700
-Subject: [PATCH 0/4] Update the device tree for Ampere's Mt.Mitchell BMC
-Message-ID: <20230425065715.21871-1-chanh@os.amperecomputing.com>
+Date: Tue, 25 Apr 2023 13:57:12 +0700
+Subject: [PATCH 1/4] ARM: dts: aspeed: mtmitchell: Enable the BMC UART8 and UART9
+In-Reply-To: <20230425065715.21871-1-chanh@os.amperecomputing.com>
+References: <20230425065715.21871-1-chanh@os.amperecomputing.com>
+Message-ID: <20230425065715.21871-2-chanh@os.amperecomputing.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Updates the device tree to support some features on Ampere's
-Mt.Mitchell BMC.
+The BMC UART8 and UART9 were connected to the Secpro and Mpro console
+of socket S1 on the Mt.Mitchell system.
 
-Chanh Nguyen (4):
-  ARM: dts: aspeed: mtmitchell: Enable the BMC UART8 and UART9
-  ARM: dts: aspeed: mtmitchell: Add I2C Fan
-  ARM: dts: aspeed: mtmitchell: Update ADC sensors for Mt.Mitchell DVT
-    systems
-  ARM: dts: aspeed: mtmitchell: Add MCTP
+Signed-off-by: Chanh Nguyen <chanh@os.amperecomputing.com>
+---
+ arch/arm/boot/dts/aspeed-bmc-ampere-mtmitchell.dts | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
 
- .../boot/dts/aspeed-bmc-ampere-mtmitchell.dts | 138 ++++++++++++------
- 1 file changed, 97 insertions(+), 41 deletions(-)
-
+diff --git a/arch/arm/boot/dts/aspeed-bmc-ampere-mtmitchell.dts b/arch/arm/boot/dts/aspeed-bmc-ampere-mtmitchell.dts
+index 1e0e88465254..e79f56208b89 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-ampere-mtmitchell.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-ampere-mtmitchell.dts
+@@ -9,6 +9,10 @@
+ / {
+ 	model = "Ampere Mt.Mitchell BMC";
+ 	compatible = "ampere,mtmitchell-bmc", "aspeed,ast2600";
++	aliases {
++		serial7 = &uart8;
++		serial8 = &uart9;
++	};
+ 
+ 	chosen {
+ 		stdout-path = &uart5;
+@@ -307,6 +311,14 @@
+ 	status = "okay";
+ };
+ 
++&uart8 {
++	status = "okay";
++};
++
++&uart9 {
++	status = "okay";
++};
++
+ &i2c0 {
+ 	status = "okay";
+ 
 -- 
 2.17.1
 
