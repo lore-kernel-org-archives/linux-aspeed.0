@@ -1,64 +1,67 @@
-From: Rob Herring <robh+dt@kernel.org>
-Date: Tue, 25 Apr 2023 10:57:57 -0500
+From: Robin Murphy <robin.murphy@arm.com>
+Date: Tue, 25 Apr 2023 17:21:30 +0100
 Subject: [RFC PATCH 0/1] Categorize ARM dts directory
-In-Reply-To: <CAMuHMdWNTE48MFy6fqxAsfMWz9b6E7dVNXtXtESP95sxk2PGwA@mail.gmail.com>
-References: <20220328000915.15041-1-ansuelsmth@gmail.com> <85eb14ec-f465-7447-ad77-a3dabc666f47@kernel.org>
- <YkKRYnN84D9VZhGj@Ansuel-xps.localdomain> <CAL_Jsq+RQQ-ADMxLPUFwk6S6kGmb6oNDy4k52fnU0EtbUvqmSA@mail.gmail.com>
- <CAMuHMdWNTE48MFy6fqxAsfMWz9b6E7dVNXtXtESP95sxk2PGwA@mail.gmail.com>
-Message-ID: <CAL_JsqJthKTm8bhRF2B=ae1tvtPeYYXx_Tm76qQtSwLtH5C6VA@mail.gmail.com>
+In-Reply-To: <4ff4f171-c5f8-87af-aad1-5e7686292288@microchip.com>
+References: <20220328000915.15041-1-ansuelsmth@gmail.com>
+ <CAFr9PXkgrRe-=E=GhNnZ4w1x_FMb97-_RmX6ND1vEd74_TbZSw@mail.gmail.com>
+ <4ff4f171-c5f8-87af-aad1-5e7686292288@microchip.com>
+Message-ID: <45bc13a8-1442-2dd3-b9ea-1ed2f5962bac@arm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Apr 25, 2023 at 2:28?AM Geert Uytterhoeven <geert@linux-m68k.org> wrote:
->
-> Hi Rob,
->
-> On Tue, Apr 25, 2023 at 12:16?AM Rob Herring <robh+dt@kernel.org> wrote:
-> > I have a script[1] that does the conversion written the last time this
-> > came up. Just have to agree on directory names. I think the easiest
-> > would be for Arnd/Olof to run it at the end of a merge window before
-> > rc1.
->
-> "emev2" and "sh7" are missing for renesas.
+On 29/03/2022 9:50 am, Nicolas Ferre wrote:
+> Ansuel, All,
+> 
+> On 28/03/2022 at 10:55, Daniel Palmer wrote:
+>> Hi Ansuel
+>>
+>> On Mon, 28 Mar 2022 at 09:09, Ansuel Smith <ansuelsmth@gmail.com> wrote:
+>>>
+>>> Hi,
+>>> as the title say, the intention of this ""series"" is to finally 
+>>> categorize
+>>> the ARM dts directory in subdirectory for each oem.
+>>
+>> While I agree with this change and think it's for the good (browsing
+>> the ARM dts directory at the moment is frustrating..) I think
+>> buildroot and others need to be told about this as it'll potentially
+>> break their kernel build scripting for ARM and probably messes up the
+>> configs they have for existing boards.
+> 
+> This aspect mustn't be underestimated and I anticipate lots of issues 
+> during a long time on this particular topic of "build systems".
+> 
+> Another aspect is CI and public or private testing farms we all have 
+> running.
 
-No doubt it's been bitrotting (or I may have missed some).
+Yet another is if this affects what `make dtbs_install` does (I don't 
+know for sure, but I'd be inclined to suspect it might). Some distros 
+use that to deliver the DTBs as part of their kernel package, so if 
+paths suddenly change it could break end users' bootloader setups too.
 
-> Does your script also cater for .dts files not matching any pattern,
-> but including a .dtsi file that does match a pattern?
+Thanks,
+Robin.
 
-I assume I built everything after moving, but maybe not...
-
-That's all just "details". First, we need agreement on a) moving
-things to subdirs and b) doing it 1-by-1 or all at once. So far we've
-been stuck on a) for being 'too much churn'.
-
-One nice thing with subdirs is 'make CHECK_DTBS=y
-arch/arm/boot/dts/foo/' can build everything for a platform family
-without having to mess with the kconfig. Maybe most folks don't care,
-but I do. My CI job running schema checks looks like this to deal with
-grouping the arm dts files (this list is probably out of date too, but
-less so):
-
-        if [ "$ARCH" = "arm" ]; then
-            VENDOR_LIST="alphascale alpine artpec aspeed axm bcm cx9
-(ecx|highbank) \
-              efm ep7 imx1 imx23 imx28 imx27 imx5 imx6 imx7 ls vf qcom \
-              (am3|am4|am5|dra|keystone|omap|compulab|logicpd|elpida|motorola-cpcap|da|dm)
-\
-              nspire armada dove kirkwood orion mvebu mmp2 berlin pxa
-(arm-|integ|mps|ve) \
-              (at91|sama|usb_|tny_|mpa1600|animeo_ip|aks-cdu|ethernut5|evk-pro3|pm9g45|ge86)
-\
-              exynos s3c s5p gemini (hisi|hi3|hip) mt meson moxa nuvo
-lpc owl ox8 \
-              (r7|r8|r9|emev2|sh73a|gr-|iwg) (rk|rv11) socfpga stm
-(sti|st-pin) ste \
-              spear (sun|axp) tegra uniph (vt8500|wm8) xen zynq"
-        else
-            VENDOR_LIST=$(ls arch/$ARCH/boot/dts/ | xargs)
-        fi
-
-Rob
+> These aspects always refrained me to change anything in the naming 
+> scheme of our DT files, but if we go in this direction, we must really 
+> be prepared and I'm still not convince it's worth it...
+> 
+> 
+> If this has to happen, I would also like to queue some file name changes 
+> to do all modifications in one go in order to lower the annoyance level 
+> of those who would need to adapt to those changes.
+> 
+> BTW, is there a common scheme for dts/dtsi file naming? Is it more 
+> enforced in one way or another for arm64 in a sense that I can take some 
+> norm as an example?
+> 
+> [..]
+> 
+> Best regards,
+>  ? Nicolas
+> 
+> 
+> 
