@@ -1,67 +1,26 @@
-From: Robin Murphy <robin.murphy@arm.com>
-Date: Tue, 25 Apr 2023 17:21:30 +0100
-Subject: [RFC PATCH 0/1] Categorize ARM dts directory
-In-Reply-To: <4ff4f171-c5f8-87af-aad1-5e7686292288@microchip.com>
-References: <20220328000915.15041-1-ansuelsmth@gmail.com>
- <CAFr9PXkgrRe-=E=GhNnZ4w1x_FMb97-_RmX6ND1vEd74_TbZSw@mail.gmail.com>
- <4ff4f171-c5f8-87af-aad1-5e7686292288@microchip.com>
-Message-ID: <45bc13a8-1442-2dd3-b9ea-1ed2f5962bac@arm.com>
+From: Chanh Nguyen <chanh@os.amperecomputing.com>
+Date: Tue, 25 Apr 2023 13:57:11 +0700
+Subject: [PATCH 0/4] Update the device tree for Ampere's Mt.Mitchell BMC
+Message-ID: <20230425065715.21871-1-chanh@os.amperecomputing.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 29/03/2022 9:50 am, Nicolas Ferre wrote:
-> Ansuel, All,
-> 
-> On 28/03/2022 at 10:55, Daniel Palmer wrote:
->> Hi Ansuel
->>
->> On Mon, 28 Mar 2022 at 09:09, Ansuel Smith <ansuelsmth@gmail.com> wrote:
->>>
->>> Hi,
->>> as the title say, the intention of this ""series"" is to finally 
->>> categorize
->>> the ARM dts directory in subdirectory for each oem.
->>
->> While I agree with this change and think it's for the good (browsing
->> the ARM dts directory at the moment is frustrating..) I think
->> buildroot and others need to be told about this as it'll potentially
->> break their kernel build scripting for ARM and probably messes up the
->> configs they have for existing boards.
-> 
-> This aspect mustn't be underestimated and I anticipate lots of issues 
-> during a long time on this particular topic of "build systems".
-> 
-> Another aspect is CI and public or private testing farms we all have 
-> running.
+Updates the device tree to support some features on Ampere's
+Mt.Mitchell BMC.
 
-Yet another is if this affects what `make dtbs_install` does (I don't 
-know for sure, but I'd be inclined to suspect it might). Some distros 
-use that to deliver the DTBs as part of their kernel package, so if 
-paths suddenly change it could break end users' bootloader setups too.
+Chanh Nguyen (4):
+  ARM: dts: aspeed: mtmitchell: Enable the BMC UART8 and UART9
+  ARM: dts: aspeed: mtmitchell: Add I2C Fan
+  ARM: dts: aspeed: mtmitchell: Update ADC sensors for Mt.Mitchell DVT
+    systems
+  ARM: dts: aspeed: mtmitchell: Add MCTP
 
-Thanks,
-Robin.
+ .../boot/dts/aspeed-bmc-ampere-mtmitchell.dts | 138 ++++++++++++------
+ 1 file changed, 97 insertions(+), 41 deletions(-)
 
-> These aspects always refrained me to change anything in the naming 
-> scheme of our DT files, but if we go in this direction, we must really 
-> be prepared and I'm still not convince it's worth it...
-> 
-> 
-> If this has to happen, I would also like to queue some file name changes 
-> to do all modifications in one go in order to lower the annoyance level 
-> of those who would need to adapt to those changes.
-> 
-> BTW, is there a common scheme for dts/dtsi file naming? Is it more 
-> enforced in one way or another for arm64 in a sense that I can take some 
-> norm as an example?
-> 
-> [..]
-> 
-> Best regards,
->  ? Nicolas
-> 
-> 
-> 
+-- 
+2.17.1
+
