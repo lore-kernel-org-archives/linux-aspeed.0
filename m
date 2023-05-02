@@ -1,51 +1,42 @@
-From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Date: Mon, 1 May 2023 08:38:31 +0200
-Subject: [PATCH v11 1/2] dt-bindings: i2c: aspeed: support for
- AST2600-i2cv2
-In-Reply-To: <SEZPR06MB5269BD01787FDD95C86031E1F26E9@SEZPR06MB5269.apcprd06.prod.outlook.com>
-References: <20230430041712.3247998-1-ryan_chen@aspeedtech.com>
- <20230430041712.3247998-2-ryan_chen@aspeedtech.com>
- <93773f00-1301-cf77-9bde-5de0595fec8d@linaro.org>
- <SEZPR06MB5269BD01787FDD95C86031E1F26E9@SEZPR06MB5269.apcprd06.prod.outlook.com>
-Message-ID: <68f4ceff-5fa0-fe08-6a3f-c3fe0f8d53ea@linaro.org>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Tue, 02 May 2023 10:15:03 +0200
+Subject: [RFC PATCH 0/1] Categorize ARM dts directory
+In-Reply-To: <CAL_JsqJthKTm8bhRF2B=ae1tvtPeYYXx_Tm76qQtSwLtH5C6VA@mail.gmail.com>
+References: <20220328000915.15041-1-ansuelsmth@gmail.com>
+ <85eb14ec-f465-7447-ad77-a3dabc666f47@kernel.org>
+ <YkKRYnN84D9VZhGj@Ansuel-xps.localdomain>
+ <CAL_Jsq+RQQ-ADMxLPUFwk6S6kGmb6oNDy4k52fnU0EtbUvqmSA@mail.gmail.com>
+ <CAMuHMdWNTE48MFy6fqxAsfMWz9b6E7dVNXtXtESP95sxk2PGwA@mail.gmail.com>
+ <CAL_JsqJthKTm8bhRF2B=ae1tvtPeYYXx_Tm76qQtSwLtH5C6VA@mail.gmail.com>
+Message-ID: <720a2829-b6b5-411c-ac69-9a53e881f48d@app.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 01/05/2023 02:20, Ryan Chen wrote:
-> Hello Krzysztof,
-> 
->> Subject: Re: [PATCH v11 1/2] dt-bindings: i2c: aspeed: support for
->> AST2600-i2cv2
->>
->> On 30/04/2023 06:17, Ryan Chen wrote:
->>> Add ast2600-i2cv2 compatible and aspeed,global-regs, aspeed,enable-dma
->>> and description for ast2600-i2cv2.
->>>
->>> Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
->>
->> This is a friendly reminder during the review process.
->>
->> It looks like you received a tag and forgot to add it.
->>
->> If you do not know the process, here is a short explanation:
->> Please add Acked-by/Reviewed-by/Tested-by tags when posting new versions.
->> However, there's no need to repost patches *only* to add the tags. The
->> upstream maintainer will do that for acks received on the version they apply.
->>
->> https://elixir.bootlin.com/linux/v5.17/source/Documentation/process/submittin
->> g-patches.rst#L540
->>
->> If a tag was not added on purpose, please state why and what changed.
->>
-> Sorry, My mistake. May I ask a question?
-> In this situation, should I submit with new version?
-> Or I just add Review-by and send it again?
+On Tue, Apr 25, 2023, at 17:57, Rob Herring wrote:
+> On Tue, Apr 25, 2023 at 2:28?AM Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+>
+>> Does your script also cater for .dts files not matching any pattern,
+>> but including a .dtsi file that does match a pattern?
+>
+> I assume I built everything after moving, but maybe not...
+>
+> That's all just "details". First, we need agreement on a) moving
+> things to subdirs and b) doing it 1-by-1 or all at once. So far we've
+> been stuck on a) for being 'too much churn'.
 
-Please send a new version.
+Sorry for missing most of the discussion last week. The script sounds
+fine to me, the only reason I didn't want to do this in the past is that
+we had the plan to move platforms out of the kernel tree to an external
+repository and I wanted to do this platform at a time and also only move
+each one once. I don't think that is going to happen anytime soon now,
+so let's just do your script.
 
-Best regards,
-Krzysztof
+Can you send me the script and/or a pull request of the resulting
+tree based on my soc/dt branch? Everything is merged upstream,
+and I think git-merge would handle the remaining merges with any
+other changes in mainline.
 
+        Arnd
