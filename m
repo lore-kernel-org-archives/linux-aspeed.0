@@ -1,50 +1,173 @@
 From: Rob Herring <robh+dt@kernel.org>
-Date: Tue, 2 May 2023 14:01:01 -0500
+Date: Tue, 2 May 2023 14:40:19 -0500
 Subject: [RFC PATCH 0/1] Categorize ARM dts directory
-In-Reply-To: <45bc13a8-1442-2dd3-b9ea-1ed2f5962bac@arm.com>
-References: <20220328000915.15041-1-ansuelsmth@gmail.com> <CAFr9PXkgrRe-=E=GhNnZ4w1x_FMb97-_RmX6ND1vEd74_TbZSw@mail.gmail.com>
- <4ff4f171-c5f8-87af-aad1-5e7686292288@microchip.com> <45bc13a8-1442-2dd3-b9ea-1ed2f5962bac@arm.com>
-Message-ID: <CAL_JsqL7t47x-5U6STynwW-+4wJUhs_R9wuaQ0YOgX59aJ=vew@mail.gmail.com>
+In-Reply-To: <720a2829-b6b5-411c-ac69-9a53e881f48d@app.fastmail.com>
+References: <20220328000915.15041-1-ansuelsmth@gmail.com> <85eb14ec-f465-7447-ad77-a3dabc666f47@kernel.org>
+ <YkKRYnN84D9VZhGj@Ansuel-xps.localdomain> <CAL_Jsq+RQQ-ADMxLPUFwk6S6kGmb6oNDy4k52fnU0EtbUvqmSA@mail.gmail.com>
+ <CAMuHMdWNTE48MFy6fqxAsfMWz9b6E7dVNXtXtESP95sxk2PGwA@mail.gmail.com>
+ <CAL_JsqJthKTm8bhRF2B=ae1tvtPeYYXx_Tm76qQtSwLtH5C6VA@mail.gmail.com> <720a2829-b6b5-411c-ac69-9a53e881f48d@app.fastmail.com>
+Message-ID: <CAL_JsqKCtmkwzKa01gyG65fH8ye6R3KhR41PJbJhOJ4X9j=znA@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Apr 25, 2023 at 11:21?AM Robin Murphy <robin.murphy@arm.com> wrote:
+On Tue, May 2, 2023 at 3:15?AM Arnd Bergmann <arnd@arndb.de> wrote:
 >
-> On 29/03/2022 9:50 am, Nicolas Ferre wrote:
-> > Ansuel, All,
+> On Tue, Apr 25, 2023, at 17:57, Rob Herring wrote:
+> > On Tue, Apr 25, 2023 at 2:28?AM Geert Uytterhoeven <geert@linux-m68k.org> wrote:
 > >
-> > On 28/03/2022 at 10:55, Daniel Palmer wrote:
-> >> Hi Ansuel
-> >>
-> >> On Mon, 28 Mar 2022 at 09:09, Ansuel Smith <ansuelsmth@gmail.com> wrote:
-> >>>
-> >>> Hi,
-> >>> as the title say, the intention of this ""series"" is to finally
-> >>> categorize
-> >>> the ARM dts directory in subdirectory for each oem.
-> >>
-> >> While I agree with this change and think it's for the good (browsing
-> >> the ARM dts directory at the moment is frustrating..) I think
-> >> buildroot and others need to be told about this as it'll potentially
-> >> break their kernel build scripting for ARM and probably messes up the
-> >> configs they have for existing boards.
+> >> Does your script also cater for .dts files not matching any pattern,
+> >> but including a .dtsi file that does match a pattern?
 > >
-> > This aspect mustn't be underestimated and I anticipate lots of issues
-> > during a long time on this particular topic of "build systems".
+> > I assume I built everything after moving, but maybe not...
 > >
-> > Another aspect is CI and public or private testing farms we all have
-> > running.
+> > That's all just "details". First, we need agreement on a) moving
+> > things to subdirs and b) doing it 1-by-1 or all at once. So far we've
+> > been stuck on a) for being 'too much churn'.
 >
-> Yet another is if this affects what `make dtbs_install` does (I don't
-> know for sure, but I'd be inclined to suspect it might). Some distros
-> use that to deliver the DTBs as part of their kernel package, so if
-> paths suddenly change it could break end users' bootloader setups too.
+> Sorry for missing most of the discussion last week. The script sounds
+> fine to me, the only reason I didn't want to do this in the past is that
+> we had the plan to move platforms out of the kernel tree to an external
+> repository and I wanted to do this platform at a time and also only move
+> each one once. I don't think that is going to happen anytime soon now,
+> so let's just do your script.
+>
+> Can you send me the script and/or a pull request of the resulting
+> tree based on my soc/dt branch? Everything is merged upstream,
+> and I think git-merge would handle the remaining merges with any
+> other changes in mainline.
 
-Indeed, this came up last time. Turns out I had already implemented
-support to maintain the flat install. I just re-wrote it since
-Makefile.dtbinst changed completely since then.
+I've dusted off my script and made a branch[1] with the result.
+There's just a couple of fixes needed after the script is run (see the
+top commit). The cross arch includes are all fixed up by the script.
+dtbs_install maintains a flat install. I compared the number of .dtbs
+before and after to check the script.
+
+I think the only issue remaining is finalizing the mapping of
+platforms to subdirs. What I have currently is a mixture of SoC
+families and vendors. The most notable are all the Freescale/NXP
+platforms, pxa, socfpga, and stm32. It's not consistent with arm64
+either. Once that's finalized, I still need to go update MAINTAINERS.
+
+Here's the current mapping:
+
+vendor_map = {
+    'alphascale' : 'alphascale',
+    'alpine' : 'alpine',
+    'artpec' : 'axis',
+    'axm' : 'lsi',
+    'cx9' : 'cnxt',
+    'ecx' : 'calxeda',
+    'highbank' : 'calxeda',
+    'ep7' : 'cirrus',
+    'mxs': 'mxs',
+    'imx23': 'mxs',
+    'imx28': 'mxs',
+    'sun' : 'allwinner',
+    'imx': 'imx',
+    'e6' : 'imx',
+    'e7' : 'imx',
+    'mba6' : 'imx',
+    'ls': 'fsl',
+    'vf': 'fsl',
+    'qcom': 'qcom',
+    'am3' : 'ti',
+    'am4' : 'ti',
+    'am5' : 'ti',
+    'dra' : 'ti',
+    'keystone' : 'ti',
+    'omap' : 'ti',
+    'compulab' : 'ti',
+    'logicpd' : 'ti',
+    'elpida' : 'ti',
+    'motorola' : 'ti',
+    'twl' : 'ti',
+    'da' : 'ti',
+    'dm' : 'ti',
+    'nspire' : 'nspire',
+    'armada' : 'marvell',
+    'dove' : 'marvell',
+    'kirkwood' : 'marvell',
+    'orion' : 'marvell',
+    'mvebu' : 'marvell',
+    'mmp' : 'marvell',
+    'berlin' : 'berlin',
+    'pxa2' : 'pxa',
+    'pxa3' : 'pxa',
+    'pxa' : 'marvell',
+    'arm-' : 'arm',
+    'integ' : 'arm',
+    'mps' : 'arm',
+    've' : 'arm',
+    'aspeed' : 'aspeed',
+    'ast2' : 'aspeed',
+    'facebook' : 'aspeed',
+    'ibm' : 'aspeed',
+    'openbmc' : 'aspeed',
+    'en7' : 'airoha',
+    'at91' : 'microchip',
+    'sama' : 'microchip',
+    'sam9' : 'microchip',
+    'usb_' : 'microchip',
+    'tny_' : 'microchip',
+    'mpa1600' : 'microchip',
+    'animeo_ip' : 'microchip',
+    'aks-cdu' : 'microchip',
+    'ethernut5' : 'microchip',
+    'evk-pro3' : 'microchip',
+    'pm9g45' : 'microchip',
+    'ge86' : 'microchip',
+    'bcm' : 'brcm',
+    'exynos' : 'samsung',
+    's3c' : 'samsung',
+    's5p' : 'samsung',
+    'gemini' : 'gemini',
+    'hi3' : 'hisilicon',
+    'hip' : 'hisilicon',
+    'hisi' : 'hisilicon',
+    'sd5' : 'hisilicon',
+    'hpe' : 'hpe',
+    'intel': 'intel',
+    'mt' : 'mediatek',
+    'meson' : 'meson',
+    'moxa' : 'moxa',
+    'mstar' : 'mstar',
+    'nuvo' : 'nuvoton',
+    'lpc' : 'lpc',
+    'lan96' : 'microchip',
+    'owl' : 'actions',
+    'ox8' : 'oxsemi',
+    'rda' : 'rda',
+    'rtd' : 'realtek',
+    'r7' : 'renesas',
+    'r8' : 'renesas',
+    'r9' : 'renesas',
+    'emev2' : 'renesas',
+    'sh73a' : 'renesas',
+    'gr-' : 'renesas',
+    'iwg' : 'renesas',
+    'rk' : 'rockchip',
+    'rv11' : 'rockchip',
+    'rockchip' : 'rockchip',
+    'socfpga' : 'socfpga',
+    'stm' : 'stm32',
+    'sti' : 'sti',
+    'st-pin' : 'sti',
+    'ste' : 'st-ericsson',
+    'spear' : 'spear',
+    'axp' : 'allwinner',
+    'tegra' : 'nvidia',
+    'milbeaut' : 'socionext',
+    'uniph' : 'socionext',
+    'vt8500' : 'vt8500',
+    'wm8' : 'vt8500',
+    'xen' : 'xen',
+    'zx' : 'zte',
+    'zynq' : 'xilinx',
+}
 
 Rob
+
+[1] git://git.kernel.org/pub/scm/linux/kernel/git/robh/linux.git arm-dts-move-v2
