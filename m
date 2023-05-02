@@ -1,188 +1,358 @@
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Date: Tue, 2 May 2023 22:02:03 +0200
-Subject: [RFC PATCH 0/1] Categorize ARM dts directory
-In-Reply-To: <CAL_JsqKCtmkwzKa01gyG65fH8ye6R3KhR41PJbJhOJ4X9j=znA@mail.gmail.com>
-References: <20220328000915.15041-1-ansuelsmth@gmail.com>
- <85eb14ec-f465-7447-ad77-a3dabc666f47@kernel.org>
- <YkKRYnN84D9VZhGj@Ansuel-xps.localdomain>
- <CAL_Jsq+RQQ-ADMxLPUFwk6S6kGmb6oNDy4k52fnU0EtbUvqmSA@mail.gmail.com>
- <CAMuHMdWNTE48MFy6fqxAsfMWz9b6E7dVNXtXtESP95sxk2PGwA@mail.gmail.com>
- <CAL_JsqJthKTm8bhRF2B=ae1tvtPeYYXx_Tm76qQtSwLtH5C6VA@mail.gmail.com>
- <720a2829-b6b5-411c-ac69-9a53e881f48d@app.fastmail.com>
- <CAL_JsqKCtmkwzKa01gyG65fH8ye6R3KhR41PJbJhOJ4X9j=znA@mail.gmail.com>
-Message-ID: <2783a3ba-8fcb-7e5f-3147-91d02e573ba4@kernel.org>
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Date: Tue, 2 May 2023 23:32:04 +0300
+Subject: [PATCH v11 2/2] i2c: aspeed: support ast2600 i2c new register
+ mode driver
+In-Reply-To: <20230430041712.3247998-3-ryan_chen@aspeedtech.com>
+References: <20230430041712.3247998-1-ryan_chen@aspeedtech.com>
+ <20230430041712.3247998-3-ryan_chen@aspeedtech.com>
+Message-ID: <ZFFzRL/+73Ftix4Q@smile.fi.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 02/05/2023 21:40, Rob Herring wrote:
-> On Tue, May 2, 2023 at 3:15?AM Arnd Bergmann <arnd@arndb.de> wrote:
->>
->> On Tue, Apr 25, 2023, at 17:57, Rob Herring wrote:
->>> On Tue, Apr 25, 2023 at 2:28?AM Geert Uytterhoeven <geert@linux-m68k.org> wrote:
->>>
->>>> Does your script also cater for .dts files not matching any pattern,
->>>> but including a .dtsi file that does match a pattern?
->>>
->>> I assume I built everything after moving, but maybe not...
->>>
->>> That's all just "details". First, we need agreement on a) moving
->>> things to subdirs and b) doing it 1-by-1 or all at once. So far we've
->>> been stuck on a) for being 'too much churn'.
->>
->> Sorry for missing most of the discussion last week. The script sounds
->> fine to me, the only reason I didn't want to do this in the past is that
->> we had the plan to move platforms out of the kernel tree to an external
->> repository and I wanted to do this platform at a time and also only move
->> each one once. I don't think that is going to happen anytime soon now,
->> so let's just do your script.
->>
->> Can you send me the script and/or a pull request of the resulting
->> tree based on my soc/dt branch? Everything is merged upstream,
->> and I think git-merge would handle the remaining merges with any
->> other changes in mainline.
-> 
-> I've dusted off my script and made a branch[1] with the result.
-> There's just a couple of fixes needed after the script is run (see the
-> top commit). The cross arch includes are all fixed up by the script.
-> dtbs_install maintains a flat install. I compared the number of .dtbs
-> before and after to check the script.
-> 
-> I think the only issue remaining is finalizing the mapping of
-> platforms to subdirs. What I have currently is a mixture of SoC
-> families and vendors. The most notable are all the Freescale/NXP
-> platforms, pxa, socfpga, and stm32. It's not consistent with arm64
-> either. Once that's finalized, I still need to go update MAINTAINERS.
-> 
-> Here's the current mapping:
-> 
-> vendor_map = {
->     'alphascale' : 'alphascale',
->     'alpine' : 'alpine',
->     'artpec' : 'axis',
->     'axm' : 'lsi',
->     'cx9' : 'cnxt',
->     'ecx' : 'calxeda',
->     'highbank' : 'calxeda',
->     'ep7' : 'cirrus',
->     'mxs': 'mxs',
->     'imx23': 'mxs',
->     'imx28': 'mxs',
->     'sun' : 'allwinner',
->     'imx': 'imx',
->     'e6' : 'imx',
->     'e7' : 'imx',
->     'mba6' : 'imx',
->     'ls': 'fsl',
->     'vf': 'fsl',
+On Sun, Apr 30, 2023 at 12:17:12PM +0800, Ryan Chen wrote:
+> Add i2c new register mode driver to support AST2600 i2c
+> new register mode. AST2600 i2c controller have legacy and
+> new register mode. The new register mode have global register
+> support 4 base clock for scl clock selection, and new clock
+> divider mode. The i2c new register mode have separate register
+> set to control i2c master and slave.
 
-If I remember correctly, Vybrid are a bit closer to iMX than to LS
-(Layerscape), but it should be Shawn's call (+Cc).
+...
 
->     'qcom': 'qcom',
->     'am3' : 'ti',
->     'am4' : 'ti',
->     'am5' : 'ti',
->     'dra' : 'ti',
->     'keystone' : 'ti',
->     'omap' : 'ti',
->     'compulab' : 'ti',
->     'logicpd' : 'ti',
->     'elpida' : 'ti',
->     'motorola' : 'ti',
->     'twl' : 'ti',
->     'da' : 'ti',
->     'dm' : 'ti',
->     'nspire' : 'nspire',
->     'armada' : 'marvell',
->     'dove' : 'marvell',
->     'kirkwood' : 'marvell',
->     'orion' : 'marvell',
->     'mvebu' : 'marvell',
->     'mmp' : 'marvell',
->     'berlin' : 'berlin',
->     'pxa2' : 'pxa',
->     'pxa3' : 'pxa',
->     'pxa' : 'marvell',
->     'arm-' : 'arm',
->     'integ' : 'arm',
->     'mps' : 'arm',
->     've' : 'arm',
->     'aspeed' : 'aspeed',
->     'ast2' : 'aspeed',
->     'facebook' : 'aspeed',
->     'ibm' : 'aspeed',
->     'openbmc' : 'aspeed',
->     'en7' : 'airoha',
->     'at91' : 'microchip',
->     'sama' : 'microchip',
->     'sam9' : 'microchip',
->     'usb_' : 'microchip',
->     'tny_' : 'microchip',
->     'mpa1600' : 'microchip',
->     'animeo_ip' : 'microchip',
->     'aks-cdu' : 'microchip',
->     'ethernut5' : 'microchip',
->     'evk-pro3' : 'microchip',
->     'pm9g45' : 'microchip',
->     'ge86' : 'microchip',
->     'bcm' : 'brcm',
->     'exynos' : 'samsung',
->     's3c' : 'samsung',
->     's5p' : 'samsung',
+> +#include <linux/clk.h>
+> +#include <linux/err.h>
+> +#include <linux/i2c.h>
+> +#include <linux/io.h>
+> +#include <linux/slab.h>
+> +#include <linux/delay.h>
+> +#include <linux/reset.h>
+> +#include <linux/module.h>
+> +#include <linux/interrupt.h>
+> +#include <linux/completion.h>
+> +#include <linux/of.h>
+> +#include <linux/of_irq.h>
+> +#include <linux/mfd/syscon.h>
+> +#include <linux/regmap.h>
+> +#include <linux/of_device.h>
+> +#include <linux/dma-mapping.h>
+> +#include <linux/i2c-smbus.h>
 
-For samsung looks good.
+Ordered?
 
-Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+...
 
->     'gemini' : 'gemini',
->     'hi3' : 'hisilicon',
->     'hip' : 'hisilicon',
->     'hisi' : 'hisilicon',
->     'sd5' : 'hisilicon',
->     'hpe' : 'hpe',
->     'intel': 'intel',
->     'mt' : 'mediatek',
->     'meson' : 'meson',
->     'moxa' : 'moxa',
->     'mstar' : 'mstar',
->     'nuvo' : 'nuvoton',
->     'lpc' : 'lpc',
->     'lan96' : 'microchip',
->     'owl' : 'actions',
->     'ox8' : 'oxsemi',
->     'rda' : 'rda',
->     'rtd' : 'realtek',
->     'r7' : 'renesas',
->     'r8' : 'renesas',
->     'r9' : 'renesas',
->     'emev2' : 'renesas',
->     'sh73a' : 'renesas',
->     'gr-' : 'renesas',
->     'iwg' : 'renesas',
->     'rk' : 'rockchip',
->     'rv11' : 'rockchip',
->     'rockchip' : 'rockchip',
->     'socfpga' : 'socfpga',
->     'stm' : 'stm32',
->     'sti' : 'sti',
->     'st-pin' : 'sti',
->     'ste' : 'st-ericsson',
->     'spear' : 'spear',
->     'axp' : 'allwinner',
->     'tegra' : 'nvidia',
->     'milbeaut' : 'socionext',
->     'uniph' : 'socionext',
->     'vt8500' : 'vt8500',
->     'wm8' : 'vt8500',
->     'xen' : 'xen',
->     'zx' : 'zte',
->     'zynq' : 'xilinx',
+> +#define AST2600_GLOBAL_INIT				\
+> +			(AST2600_I2CG_CTRL_NEW_REG |	\
+> +			AST2600_I2CG_CTRL_NEW_CLK_DIV)
 
-The rest looks good to me, but I don't know half of these :)
+Make just a one TAB and put the last two lines on the single one.
 
-Best regards,
-Krzysztof
+...
+
+> +#define I2CCG_DIV_CTRL 0xC6411208
+
+Is it decimal? Is it combination of bitfields? Can you add a comment what is
+this magic?
+
+...
+
+> +struct ast2600_i2c_timing_table {
+> +	u32 divisor;
+> +	u32 timing;
+> +};
+
+Is it even used?
+
+...
+
+> +enum xfer_mode {
+> +	BYTE_MODE = 0,
+
+Why explicit assignment?
+
+> +	BUFF_MODE,
+> +	DMA_MODE,
+> +};
+
+...
+
+> +	base_clk1 = (i2c_bus->apb_clk * 10) / ((((clk_div_reg & 0xff) + 2) * 10) / 2);
+> +	base_clk2 = (i2c_bus->apb_clk * 10) /
+> +			(((((clk_div_reg >> 8) & 0xff) + 2) * 10) / 2);
+> +	base_clk3 = (i2c_bus->apb_clk * 10) /
+> +			(((((clk_div_reg >> 16) & 0xff) + 2) * 10) / 2);
+> +	base_clk4 = (i2c_bus->apb_clk * 10) /
+> +			(((((clk_div_reg >> 24) & 0xff) + 2) * 10) / 2);
+
+The same equation is used per each byte of clk_div_reg? Can it be rewritten to
+avoid this and using loop, so you will have an array of base_clk to be filled?
+
+Don't forget to use GENMASK().
+
+...
+
+> +	if ((i2c_bus->apb_clk / i2c_bus->bus_frequency) <= 32) {
+> +		baseclk_idx = 0;
+> +		divisor = DIV_ROUND_UP(i2c_bus->apb_clk, i2c_bus->bus_frequency);
+> +	} else if ((base_clk1 / i2c_bus->bus_frequency) <= 32) {
+> +		baseclk_idx = 1;
+> +		divisor = DIV_ROUND_UP(base_clk1, i2c_bus->bus_frequency);
+> +	} else if ((base_clk2 / i2c_bus->bus_frequency) <= 32) {
+> +		baseclk_idx = 2;
+> +		divisor = DIV_ROUND_UP(base_clk2, i2c_bus->bus_frequency);
+> +	} else if ((base_clk3 / i2c_bus->bus_frequency) <= 32) {
+> +		baseclk_idx = 3;
+> +		divisor = DIV_ROUND_UP(base_clk3, i2c_bus->bus_frequency);
+
+Will be optimized with above suggestion, I believe.
+
+> +	} else {
+> +		baseclk_idx = 4;
+> +		divisor = DIV_ROUND_UP(base_clk4, i2c_bus->bus_frequency);
+> +		inc = 0;
+> +		while ((divisor + inc) > 32) {
+> +			inc |= divisor & 0x1;
+> +			divisor >>= 1;
+> +			baseclk_idx++;
+> +		}
+> +		divisor += inc;
+
+I think the above loop can be rewritten to have better representation.
+
+> +	}
+
+...
+
+> +	baseclk_idx &= 0xf;
+
+GENMASK()?
+
+...
+
+> +	scl_low = ((divisor * 9) / 16) - 1;
+> +	scl_low = min_t(u32, scl_low, 0xf);
+
+This can be done in one line. Also, why not 15?
+
+...
+
+> +	scl_high = (divisor - scl_low - 2) & 0xf;
+
+GENMASK()?
+
+...
+
+> +	data = ((scl_high - 1) << 20) | (scl_high << 16) | (scl_low << 12) | (baseclk_idx);
+
+Too many parentheses.
+
+...
+
+> +	/* due to master slave is common buffer, so need force the master stop not issue */
+> +	if (readl(i2c_bus->reg_base + AST2600_I2CM_CMD_STS) & 0xffff) {
+
+GENMASK() ?
+
+> +		writel(0, i2c_bus->reg_base + AST2600_I2CM_CMD_STS);
+> +		i2c_bus->cmd_err = -EBUSY;
+> +		writel(0, i2c_bus->reg_base + AST2600_I2CC_BUFF_CTRL);
+> +		complete(&i2c_bus->cmd_complete);
+> +	}
+
+...
+
+> +	/* send start */
+> +	dev_dbg(i2c_bus->dev, "[%d] %sing %d byte%s %s 0x%02x\n",
+> +		i2c_bus->msgs_index, msg->flags & I2C_M_RD ? "read" : "write",
+
+str_read_write() ?
+
+> +		msg->len, msg->len > 1 ? "s" : "",
+> +		msg->flags & I2C_M_RD ? "from" : "to", msg->addr);
+
+...
+
+> +				for (i = 0; i < xfer_len; i++) {
+> +					wbuf[i % 4] = msg->buf[i];
+> +					if (i % 4 == 3)
+> +						writel(*(u32 *)wbuf, i2c_bus->buf_base + i - 3);
+
+Err.. There can be alignment issues.
+
+> +				}
+> +				if (--i % 4 != 3)
+> +					writel(*(u32 *)wbuf, i2c_bus->buf_base + i - (i % 4));
+
+The above code is ugly. Can you think about it and write in a better way?
+
+...
+
+> +				for (i = 0; i < xfer_len; i++) {
+> +					wbuf[i % 4] = msg->buf[i2c_bus->master_xfer_cnt + i];
+> +					if (i % 4 == 3)
+> +						writel(*(u32 *)wbuf, i2c_bus->buf_base + i - 3);
+> +				}
+> +				if (--i % 4 != 3)
+> +					writel(*(u32 *)wbuf, i2c_bus->buf_base + i - (i % 4));
+
+Ditto.
+
+...
+
+Do you have similar code pieces? Why not doing it in a separate function with
+parameters?
+
+...
+
+> +	return ast2600_i2c_master_irq(i2c_bus) ? IRQ_HANDLED : IRQ_NONE;
+
+IRQ_RETVAL() ?
+
+...
+
+> +	writel(0xfffffff, i2c_bus->reg_base + AST2600_I2CM_ISR);
+
+GENMASK()
+
+...
+
+> +	writel(0xfffffff, i2c_bus->reg_base + AST2600_I2CS_ISR);
+
+Ditto.
+
+> +	if (i2c_bus->mode == BYTE_MODE) {
+> +		writel(0xffff, i2c_bus->reg_base + AST2600_I2CS_IER);
+
+Ditto.
+
+> +	} else {
+> +		/* Set interrupt generation of I2C slave controller */
+> +		writel(AST2600_I2CS_PKT_DONE, i2c_bus->reg_base + AST2600_I2CS_IER);
+> +	}
+
+...
+
+> +	WARN_ON(!i2c_bus->slave);
+
+Why?
+
+...
+
+> +static const struct of_device_id ast2600_i2c_bus_of_table[] = {
+> +	{
+> +		.compatible = "aspeed,ast2600-i2cv2",
+> +	},
+> +	{}
+> +};
+
+> +
+
+Redundant blank line.
+
+> +MODULE_DEVICE_TABLE(of, ast2600_i2c_bus_of_table);
+
+...
+
+> +	i2c_bus = devm_kzalloc(dev, sizeof(*i2c_bus), GFP_KERNEL);
+> +	if (!i2c_bus)
+> +		return dev_err_probe(dev, -ENOMEM, "no memory allocated\n");
+
+No. We do not print error message for ENOMEM.
+You homework to find why.
+
+...
+
+> +	if (of_property_read_bool(pdev->dev.of_node, "aspeed,enable-dma"))
+
+device_property_read_bool() ?
+
+> +		i2c_bus->mode = DMA_MODE;
+
+...
+
+> +	if (i2c_bus->mode == BUFF_MODE) {
+> +		res = platform_get_resource(pdev, IORESOURCE_MEM, 1);
+> +		if (res && resource_size(res) >= 2) {
+> +			i2c_bus->buf_base = devm_ioremap_resource(dev, res);
+> +
+> +			if (!IS_ERR_OR_NULL(i2c_bus->buf_base))
+> +				i2c_bus->buf_size = resource_size(res) / 2;
+> +		} else {
+> +			i2c_bus->mode = BYTE_MODE;
+> +		}
+> +	}
+
+Can be done without additional checks and with a simple call to
+devm_platform_ioremap_resource(). No?
+
+...
+
+> +	/* i2c timeout counter: use base clk4 1Mhz,
+> +	 * per unit: 1/(1000/4096) = 4096us
+> +	 */
+
+Wrong multi-line style of the comment.
+
+...
+
+> +	ret = of_property_read_u32(dev->of_node,
+> +				   "i2c-scl-clk-low-timeout-us",
+> +				   &i2c_bus->timeout);
+> +	if (!ret)
+> +		i2c_bus->timeout /= 4096;
+
+What is this and why I2C core timings (standard) can't be utilized here?
+
+...
+
+> +	ret = of_property_read_u32(dev->of_node, "clock-frequency", &i2c_bus->bus_frequency);
+> +	if (ret < 0) {
+> +		dev_warn(dev, "Could not read clock-frequency property\n");
+> +		i2c_bus->bus_frequency = 100000;
+> +	}
+
+There are macro for standard speeds. Moreover, there is a function to parse
+properties, no need to open code.
+
+...
+
+> +	i2c_bus->adap.dev.of_node = dev->of_node;
+
+device_set_node()
+
+...
+
+> +	if (of_property_read_bool(dev->of_node, "smbus-alert")) {
+
+Doesn't core have already support for this?
+
+> +		i2c_bus->alert_enable = true;
+> +		i2c_bus->ara = i2c_new_smbus_alert_device(&i2c_bus->adap, &i2c_bus->alert_data);
+> +		if (!i2c_bus->ara)
+> +			dev_warn(dev, "Failed to register ARA client\n");
+> +
+> +		writel(AST2600_I2CM_PKT_DONE | AST2600_I2CM_BUS_RECOVER | AST2600_I2CM_SMBUS_ALT,
+> +		       i2c_bus->reg_base + AST2600_I2CM_IER);
+> +	} else {
+> +		i2c_bus->alert_enable = false;
+> +		/* Set interrupt generation of I2C master controller */
+> +		writel(AST2600_I2CM_PKT_DONE | AST2600_I2CM_BUS_RECOVER,
+> +		       i2c_bus->reg_base + AST2600_I2CM_IER);
+> +	}
+
+...
+
+> +	dev_info(dev, "%s [%d]: adapter [%d khz] mode [%d]\n",
+> +		 dev->of_node->name, i2c_bus->adap.nr, i2c_bus->bus_frequency / 1000,
+> +		 i2c_bus->mode);
+
+Useless noise.
+
+-- 
+With Best Regards,
+Andy Shevchenko
+
 
