@@ -1,23 +1,24 @@
 From: Rob Herring <robh+dt@kernel.org>
-Date: Tue, 2 May 2023 20:04:17 -0500
+Date: Tue, 2 May 2023 20:17:17 -0500
 Subject: [RFC PATCH 0/1] Categorize ARM dts directory
-In-Reply-To: <d4b52074-d11c-4c7a-ad74-b2fce64c6d30@gmail.com>
+In-Reply-To: <bce93654-fc36-3d12-282d-76fafb8f51ce@linaro.org>
 References: <20220328000915.15041-1-ansuelsmth@gmail.com> <85eb14ec-f465-7447-ad77-a3dabc666f47@kernel.org>
  <YkKRYnN84D9VZhGj@Ansuel-xps.localdomain> <CAL_Jsq+RQQ-ADMxLPUFwk6S6kGmb6oNDy4k52fnU0EtbUvqmSA@mail.gmail.com>
  <CAMuHMdWNTE48MFy6fqxAsfMWz9b6E7dVNXtXtESP95sxk2PGwA@mail.gmail.com>
  <CAL_JsqJthKTm8bhRF2B=ae1tvtPeYYXx_Tm76qQtSwLtH5C6VA@mail.gmail.com>
  <720a2829-b6b5-411c-ac69-9a53e881f48d@app.fastmail.com> <CAL_JsqKCtmkwzKa01gyG65fH8ye6R3KhR41PJbJhOJ4X9j=znA@mail.gmail.com>
- <d4b52074-d11c-4c7a-ad74-b2fce64c6d30@gmail.com>
-Message-ID: <CAL_JsqKRcMSijAdiP_BpyBGRuMhscZ12QFcLBAeZ+TcaQg7r4g@mail.gmail.com>
+ <bce93654-fc36-3d12-282d-76fafb8f51ce@linaro.org>
+Message-ID: <CAL_JsqJXd_EpOQwwNEAn25mzFfkhEvqzur6ui5Ca+dbt2kA8-Q@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, May 2, 2023 at 6:02?PM Florian Fainelli <f.fainelli@gmail.com> wrote:
+On Tue, May 2, 2023 at 5:52?PM Dmitry Baryshkov
+<dmitry.baryshkov@linaro.org> wrote:
 >
-> On 5/2/23 12:40, Rob Herring wrote:
+> On 02/05/2023 22:40, Rob Herring wrote:
 > > On Tue, May 2, 2023 at 3:15?AM Arnd Bergmann <arnd@arndb.de> wrote:
 > >>
 > >> On Tue, Apr 25, 2023, at 17:57, Rob Herring wrote:
@@ -102,36 +103,13 @@ On Tue, May 2, 2023 at 6:02?PM Florian Fainelli <f.fainelli@gmail.com> wrote:
 > >      'pxa2' : 'pxa',
 > >      'pxa3' : 'pxa',
 > >      'pxa' : 'marvell',
-> >      'arm-' : 'arm',
-> >      'integ' : 'arm',
-> >      'mps' : 'arm',
-> >      've' : 'arm',
-> >      'aspeed' : 'aspeed',
-> >      'ast2' : 'aspeed',
-> >      'facebook' : 'aspeed',
-> >      'ibm' : 'aspeed',
-> >      'openbmc' : 'aspeed',
-> >      'en7' : 'airoha',
-> >      'at91' : 'microchip',
-> >      'sama' : 'microchip',
-> >      'sam9' : 'microchip',
-> >      'usb_' : 'microchip',
-> >      'tny_' : 'microchip',
-> >      'mpa1600' : 'microchip',
-> >      'animeo_ip' : 'microchip',
-> >      'aks-cdu' : 'microchip',
-> >      'ethernut5' : 'microchip',
-> >      'evk-pro3' : 'microchip',
-> >      'pm9g45' : 'microchip',
-> >      'ge86' : 'microchip',
-> >      'bcm' : 'brcm',
 >
-> How about we use 'broadcom' here, to follow what arm64 does? I could
-> rename arch/mips/boot/dts/brcm to arch/mips/boot/dts/broadcom for
-> consistency, too?
+> I'd question if it makes sense to split the pxa line. Yes, it was sold
+> by Intel to Marvell, but IIRC the devices still had some inheritance.
+> So, if we have the 'pxa' subdir, I'd move Marvell PXAs to that dir too.
 
-Okay, though if starting clean I'd somewhat prefer to use the vendor
-prefix. I guess since arm and arm64 share dtsi files, they should
-match.
+I think I probably split it because it was different maintainers.
+Though it doesn't look like pxa168 or pxa910 have any maintainer. They
+are a mixture of pxa and mmp I think.
 
 Rob
