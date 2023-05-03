@@ -1,5 +1,5 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Wed, 03 May 2023 13:02:10 +0200
+From: Jesper Nilsson <jesper.nilsson@axis.com>
+Date: Wed, 3 May 2023 14:01:12 +0200
 Subject: [RFC PATCH 0/1] Categorize ARM dts directory
 In-Reply-To: <CAL_JsqKCtmkwzKa01gyG65fH8ye6R3KhR41PJbJhOJ4X9j=znA@mail.gmail.com>
 References: <20220328000915.15041-1-ansuelsmth@gmail.com>
@@ -10,97 +10,35 @@ References: <20220328000915.15041-1-ansuelsmth@gmail.com>
  <CAL_JsqJthKTm8bhRF2B=ae1tvtPeYYXx_Tm76qQtSwLtH5C6VA@mail.gmail.com>
  <720a2829-b6b5-411c-ac69-9a53e881f48d@app.fastmail.com>
  <CAL_JsqKCtmkwzKa01gyG65fH8ye6R3KhR41PJbJhOJ4X9j=znA@mail.gmail.com>
-Message-ID: <99b49e6b-e963-415a-a2c9-72505087833c@app.fastmail.com>
+Message-ID: <20230503120112.GC19396@axis.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, May 2, 2023, at 21:40, Rob Herring wrote:
+On Tue, May 02, 2023 at 02:40:19PM -0500, Rob Herring wrote:
 > On Tue, May 2, 2023 at 3:15?AM Arnd Bergmann <arnd@arndb.de> wrote:
-
+> I've dusted off my script and made a branch[1] with the result.
+> There's just a couple of fixes needed after the script is run (see the
+> top commit). The cross arch includes are all fixed up by the script.
+> dtbs_install maintains a flat install. I compared the number of .dtbs
+> before and after to check the script.
+> 
+> I think the only issue remaining is finalizing the mapping of
+> platforms to subdirs. What I have currently is a mixture of SoC
+> families and vendors. The most notable are all the Freescale/NXP
+> platforms, pxa, socfpga, and stm32. It's not consistent with arm64
+> either. Once that's finalized, I still need to go update MAINTAINERS.
+> 
+> Here's the current mapping:
+> 
 > vendor_map = {
->     'alphascale' : 'alphascale',
->     'alpine' : 'alpine',
+> [...]
+>     'artpec' : 'axis',
 
-I would make this one 'amazon' if we go with current manufacturers.
+Looks good for our platforms also, thanks!
 
->     'nspire' : 'nspire',
-
-nspire is the name of the end-user product, so that doesn't quite
-fit. The SoC was apparently an LSI logic Zevio, which is now owned
-by Broadcom.
-
->     'mvebu' : 'marvell',
->     'mmp' : 'marvell',
->     'berlin' : 'berlin',
-
-While berlin is related to pxa/mmp, this one is now owned
-by Synaptics, and the 64-bit versions are already in the
-synaptics subdir, so I'd go with teh same here.
-
->     'openbmc' : 'aspeed',
->     'en7' : 'airoha',
-
-airoha is a separate company now, but the hardware is still
-shared with mediatek, so we could consider lumping it into
-that subdir, but a separate one may be better long-term.
-
->     'gemini' : 'gemini',
-
-This one is also a product name, not a company. Apparently,
-gemini was originally made by Storm Semiconductor, and then
-by Cortina, which was subsequently acquired by Inphi, and that ended
-up in Marvell after the product was already discontinued.
-
-Out of the four, I'd probably go with 'cortina' as the
-directory name.
-
->     'meson' : 'meson',
-
--> amlogic
-
->     'moxa' : 'moxa',
->     'mstar' : 'mstar',
-
--> sigmastar
-
->     'nuvo' : 'nuvoton',
->     'lpc' : 'lpc',
-
--> nxp
-
->     'lan96' : 'microchip',
->     'owl' : 'actions',
->     'ox8' : 'oxsemi',
->     'rda' : 'rda',
-
--> unisoc
-
->     'rtd' : 'realtek',
->     'r7' : 'renesas',
->     'r8' : 'renesas',
->     'r9' : 'renesas',
->     'emev2' : 'renesas',
->     'sh73a' : 'renesas',
->     'gr-' : 'renesas',
->     'iwg' : 'renesas',
->     'rk' : 'rockchip',
->     'rv11' : 'rockchip',
->     'rockchip' : 'rockchip',
->     'socfpga' : 'socfpga',
-
--> intel
-
->     'stm' : 'stm32',
->     'sti' : 'sti',
->     'st-pin' : 'sti',
->     'ste' : 'st-ericsson',
->     'spear' : 'spear',
-
-I would put all five of these into 'st'. The ux500 was developed
-in st-ericsson, but last sold by st, and the other ones are all
-original st products.
-
-      Arnd
+/^JN - Jesper Nilsson
+-- 
+               Jesper Nilsson -- jesper.nilsson at axis.com
