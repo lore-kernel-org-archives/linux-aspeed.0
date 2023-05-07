@@ -1,94 +1,58 @@
-From: Chanh Nguyen <chanh@amperemail.onmicrosoft.com>
-Date: Sun, 7 May 2023 16:39:01 +0700
-Subject: [PATCH 2/4] ARM: dts: aspeed: mtmitchell: Add I2C Fan
-In-Reply-To: <969bfca0-9fff-0b22-6db1-113a7e998bc8@linaro.org>
-References: <20230425065715.21871-1-chanh@os.amperecomputing.com>
- <20230425065715.21871-3-chanh@os.amperecomputing.com>
- <7ee3eec8-b5b4-2591-adcd-1831bf7de02b@linaro.org>
- <5d1cc7d5-2d73-c1a2-f95d-5810757640d2@amperemail.onmicrosoft.com>
- <969bfca0-9fff-0b22-6db1-113a7e998bc8@linaro.org>
-Message-ID: <d230c413-fab0-50e7-20df-ff84e951f68b@amperemail.onmicrosoft.com>
+From: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+Date: Sun,  7 May 2023 18:25:28 +0200
+Subject: [PATCH 05/53] drm/aspeed: Convert to platform remove callback returning void
+In-Reply-To: <20230507162616.1368908-1-u.kleine-koenig@pengutronix.de>
+References: <20230507162616.1368908-1-u.kleine-koenig@pengutronix.de>
+Message-ID: <20230507162616.1368908-6-u.kleine-koenig@pengutronix.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+The .remove() callback for a platform driver returns an int which makes
+many driver authors wrongly assume it's possible to do error handling by
+returning an error code. However the value returned is (mostly) ignored
+and this typically results in resource leaks. To improve here there is a
+quest to make the remove callback return void. In the first step of this
+quest all drivers are converted to .remove_new() which already returns
+void.
 
+Trivially convert this driver from always returning zero in the remove
+callback to the void returning variant.
 
-On 07/05/2023 15:23, Krzysztof Kozlowski wrote:
-> On 07/05/2023 10:20, Chanh Nguyen wrote:
->>
->> On 25/04/2023 20:15, Krzysztof Kozlowski wrote:
->>> On 25/04/2023 08:57, Chanh Nguyen wrote:
->>>> Add the MAX31790 node as a Fan I2C controller. It controls the
->>>> TACH and PWM for Fan Mt.Mitchell system.
->>>>
->>>> Signed-off-by: Chanh Nguyen <chanh@os.amperecomputing.com>
->>>> ---
->>>>    arch/arm/boot/dts/aspeed-bmc-ampere-mtmitchell.dts | 12 ++++++++++++
->>>>    1 file changed, 12 insertions(+)
->>>>
->>>> diff --git a/arch/arm/boot/dts/aspeed-bmc-ampere-mtmitchell.dts b/arch/arm/boot/dts/aspeed-bmc-ampere-mtmitchell.dts
->>>> index e79f56208b89..6455cf80da0e 100644
->>>> --- a/arch/arm/boot/dts/aspeed-bmc-ampere-mtmitchell.dts
->>>> +++ b/arch/arm/boot/dts/aspeed-bmc-ampere-mtmitchell.dts
->>>> @@ -477,6 +477,18 @@
->>>>    			line-name = "bmc-ocp0-en-n";
->>>>    		};
->>>>    	};
->>>> +
->>>> +	max31790 at 20 {
->>>
->>> Node names should be generic.
->>> https://devicetree-specification.readthedocs.io/en/latest/chapter2-devicetree-basics.html#generic-names-recommendation
->>
->> Thank Krzysztof,
->>
->> I think these node names should be "fan-i2c-0" and "fan-i2c-1". Do you
->> have any other idea ?
-> 
-> i2c-0 is not generic. This should be either fan or fan-controller,
-> depending what this is.
+Signed-off-by: Uwe Kleine-K?nig <u.kleine-koenig@pengutronix.de>
+---
+ drivers/gpu/drm/aspeed/aspeed_gfx_drv.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-Thank Krzysztof! I will update node name is "fan-controller" in PATCH v2.
-
->>
->>>
->>>> +		compatible = "maxim,max31790";
->>>
->>> Unfortunately the compatible is undocumented.
->>>
->>> Please run scripts/checkpatch.pl and fix reported warnings.
->>>
->>> Best regards,
->>> Krzysztof
->>>
->>
->> Yes Krzysztof,
->>
->> This compatible has not yes documented.
->>
->> Should I push a document for max31790 to
->> ./Documentation/devicetree/bindings/ or ask to maintainer (Guenter Roeck
->> <linux@roeck-us.net> or Jean Delvare <jdelvare@suse.com>) ?
-> 
-> Check on lore.kernel.org if there is ongoing work. If there is no, then
-> please submit new the bindings (in DT schema). Maintainers are not for
-> writing your code, so it's you or some other developer who should do it.
-> 
-> Best regards,
-> Krzysztof
-> 
-
-Thank Krzysztof!
-
-I checked on lore.kernel.org but no submit is in-progress for that. I'll 
-submit new the binding document for max31790.
-
-Now, Do I need to remove the "[PATCH 2/4] ARM: dts: aspeed: mtmitchell: 
-Add I2C Fan" from PATCH v2?
-
-And will push again "ARM: dts: aspeed: mtmitchell: Add I2C Fan" commit 
-once max31790 binding document was available upstream.
+diff --git a/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c b/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
+index ecfb060d2557..d0089e7fbfae 100644
+--- a/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
++++ b/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
+@@ -351,20 +351,18 @@ static int aspeed_gfx_probe(struct platform_device *pdev)
+ 	return ret;
+ }
+ 
+-static int aspeed_gfx_remove(struct platform_device *pdev)
++static void aspeed_gfx_remove(struct platform_device *pdev)
+ {
+ 	struct drm_device *drm = platform_get_drvdata(pdev);
+ 
+ 	sysfs_remove_group(&pdev->dev.kobj, &aspeed_sysfs_attr_group);
+ 	drm_dev_unregister(drm);
+ 	aspeed_gfx_unload(drm);
+-
+-	return 0;
+ }
+ 
+ static struct platform_driver aspeed_gfx_platform_driver = {
+ 	.probe		= aspeed_gfx_probe,
+-	.remove		= aspeed_gfx_remove,
++	.remove_new	= aspeed_gfx_remove,
+ 	.driver = {
+ 		.name = "aspeed_gfx",
+ 		.of_match_table = aspeed_gfx_match,
+-- 
+2.39.2
 
