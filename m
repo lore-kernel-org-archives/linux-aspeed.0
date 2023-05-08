@@ -1,133 +1,59 @@
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Date: Mon, 8 May 2023 15:38:00 +0300
-Subject: [PATCH v11 2/2] i2c: aspeed: support ast2600 i2c new register
- mode driver
-In-Reply-To: <SEZPR06MB526906C3DAFFE0A8FA924AA7F2709@SEZPR06MB5269.apcprd06.prod.outlook.com>
-References: <20230430041712.3247998-1-ryan_chen@aspeedtech.com>
- <20230430041712.3247998-3-ryan_chen@aspeedtech.com>
- <ZFFzRL/+73Ftix4Q@smile.fi.intel.com>
- <SEZPR06MB526906C3DAFFE0A8FA924AA7F2709@SEZPR06MB5269.apcprd06.prod.outlook.com>
-Message-ID: <ZFjtKNtR3zveNIvY@smile.fi.intel.com>
+From: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+Date: Mon,  8 May 2023 22:51:40 +0200
+Subject: [PATCH 03/89] i2c: aspeed: Convert to platform remove callback returning void
+In-Reply-To: <20230508205306.1474415-1-u.kleine-koenig@pengutronix.de>
+References: <20230508205306.1474415-1-u.kleine-koenig@pengutronix.de>
+Message-ID: <20230508205306.1474415-4-u.kleine-koenig@pengutronix.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sun, May 07, 2023 at 02:21:10AM +0000, Ryan Chen wrote:
-> > On Sun, Apr 30, 2023 at 12:17:12PM +0800, Ryan Chen wrote:
+The .remove() callback for a platform driver returns an int which makes
+many driver authors wrongly assume it's possible to do error handling by
+returning an error code. However the value returned is (mostly) ignored
+and this typically results in resource leaks. To improve here there is a
+quest to make the remove callback return void. In the first step of this
+quest all drivers are converted to .remove_new() which already returns
+void.
 
-...
+Trivially convert this driver from always returning zero in the remove
+callback to the void returning variant.
 
-> > > +#define AST2600_GLOBAL_INIT				\
-> > > +			(AST2600_I2CG_CTRL_NEW_REG |	\
-> > > +			AST2600_I2CG_CTRL_NEW_CLK_DIV)
-> > 
-> > Make just a one TAB and put the last two lines on the single one.
-> 
-> Update by following. 
-> 
-> #define AST2600_GLOBAL_INIT		\
-> 	(AST2600_I2CG_CTRL_NEW_REG |	\
-> 	 AST2600_I2CG_CTRL_NEW_CLK_DIV)
+Signed-off-by: Uwe Kleine-K?nig <u.kleine-koenig@pengutronix.de>
+---
+ drivers/i2c/busses/i2c-aspeed.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-As I mentioned the last two can occupy a single line.
-
-...
-
-> > > +	/* send start */
-> > > +	dev_dbg(i2c_bus->dev, "[%d] %sing %d byte%s %s 0x%02x\n",
-> > > +		i2c_bus->msgs_index, msg->flags & I2C_M_RD ? "read" : "write",
-> > 
-> > str_read_write() ?
-> Sorry do you mean there have a function call str_read_write?
-> Can you point me where it is for refer?
-
-string_helpers.h.
-
-> > > +		msg->len, msg->len > 1 ? "s" : "",
-> > > +		msg->flags & I2C_M_RD ? "from" : "to", msg->addr);
-
-...
-
-> > > +				if (--i % 4 != 3)
-> > > +					writel(*(u32 *)wbuf, i2c_bus->buf_base + i - (i % 4));
-> > 
-> > The above code is ugly. Can you think about it and write in a better way?
-> Sorry, that is because the register only support for 4 byte align write.
-> That the reason I need put for byte write to 4 byte align write.
-
-Yes, that's fine. The problem is in _how_ the driver does it. We have a lot of
-helpers in the kernel to access unaligned data.
-
-...
-
-> > > +	return ast2600_i2c_master_irq(i2c_bus) ? IRQ_HANDLED : IRQ_NONE;
-> > 
-> > IRQ_RETVAL() ?
-> Sorry, most return is handled or not handled.
-> Do you mean replace it just " return IRQ_RETVAL(ret);"
-
-Have you had a chance to look in the implementation of IRQ_RETVAL() ?
-I believe if you do, you will find the answer to your question.
-
-...
-
-> > > +	if (i2c_bus->mode == BUFF_MODE) {
-> > > +		res = platform_get_resource(pdev, IORESOURCE_MEM, 1);
-> > > +		if (res && resource_size(res) >= 2) {
-> > > +			i2c_bus->buf_base = devm_ioremap_resource(dev, res);
-> > > +
-> > > +			if (!IS_ERR_OR_NULL(i2c_bus->buf_base))
-> > > +				i2c_bus->buf_size = resource_size(res) / 2;
-> > > +		} else {
-> > > +			i2c_bus->mode = BYTE_MODE;
-> > > +		}
-> > > +	}
-> > 
-> > Can be done without additional checks and with a simple call to
-> > devm_platform_ioremap_resource(). No?
-> > 
-> Sorry, I can't catch your point, can you guide me more about it?
-
-	if (BUFF_MODE) {
-		void __iomem buf_base;
-
-		buf_base = devm_platform_ioremap_and_get_resource(pdev, 1, &res);
-		if (IS_ERR(buf_base))
-			mode = BYTE_MODE;
-		else {
-			->buf_base = buf_base;
-			->buf_size = ...
-		}
-	}
-
-...
-
-> > > +	ret = of_property_read_u32(dev->of_node, "clock-frequency",
-> > &i2c_bus->bus_frequency);
-> > > +	if (ret < 0) {
-> > > +		dev_warn(dev, "Could not read clock-frequency property\n");
-> > > +		i2c_bus->bus_frequency = 100000;
-> > > +	}
-> > 
-> > There are macro for standard speeds. Moreover, there is a function to parse
-> > properties, no need to open code.
-> > 
-> Will update
-> ret = of_property_read_u32(dev->of_node, "clock-frequency", &bus_freq);
-> if (ret < 0) {
->     dev_warn(dev, "Could not read clock-frequency property\n");
->     i2c_bus->bus_frequency = I2C_SPEED_STANDARD;
-> } else {
->     i2c_bus->bus_frequency = bus_freq;
-> }
-
-No, just use the I2C core API to fill this property in the specific i2c_timings
-structure.
-
+diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
+index d3c99c5b3247..2e5acfeb76c8 100644
+--- a/drivers/i2c/busses/i2c-aspeed.c
++++ b/drivers/i2c/busses/i2c-aspeed.c
+@@ -1061,7 +1061,7 @@ static int aspeed_i2c_probe_bus(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
+-static int aspeed_i2c_remove_bus(struct platform_device *pdev)
++static void aspeed_i2c_remove_bus(struct platform_device *pdev)
+ {
+ 	struct aspeed_i2c_bus *bus = platform_get_drvdata(pdev);
+ 	unsigned long flags;
+@@ -1077,13 +1077,11 @@ static int aspeed_i2c_remove_bus(struct platform_device *pdev)
+ 	reset_control_assert(bus->rst);
+ 
+ 	i2c_del_adapter(&bus->adap);
+-
+-	return 0;
+ }
+ 
+ static struct platform_driver aspeed_i2c_bus_driver = {
+ 	.probe		= aspeed_i2c_probe_bus,
+-	.remove		= aspeed_i2c_remove_bus,
++	.remove_new	= aspeed_i2c_remove_bus,
+ 	.driver		= {
+ 		.name		= "aspeed-i2c-bus",
+ 		.of_match_table	= aspeed_i2c_bus_of_table,
 -- 
-With Best Regards,
-Andy Shevchenko
-
+2.39.2
 
