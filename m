@@ -1,42 +1,71 @@
-From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Date: Tue, 16 May 2023 11:22:34 +0200
-Subject: [PATCH] dt-bindings: arm: aspeed: add Inventec starscream-bmc
-In-Reply-To: <c5dd9b64b4754da8b11efefd97527a4f@inventec.com>
-References: <28f0ce0a82464083ae24f9ef2f598425@inventec.com>
- <c5dd9b64b4754da8b11efefd97527a4f@inventec.com>
-Message-ID: <2e06e7db-64f9-51f8-adf1-b240f30a2608@linaro.org>
+From: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+Date: Thu, 18 May 2023 01:01:27 +0200
+Subject: [PATCH 25/97] usb: gadget: aspeed: Convert to platform remove callback returning void
+In-Reply-To: <20230517230239.187727-1-u.kleine-koenig@pengutronix.de>
+References: <20230517230239.187727-1-u.kleine-koenig@pengutronix.de>
+Message-ID: <20230517230239.187727-26-u.kleine-koenig@pengutronix.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 16/05/2023 11:15, Chen.PJ ??? TAO wrote:
-> Document the new compatibles used on Inventec starscream-bmc
-> 
-> Signed-off-by: Chen PJ <Chen.pj@inventec.com>
-> ---
+The .remove() callback for a platform driver returns an int which makes
+many driver authors wrongly assume it's possible to do error handling by
+returning an error code. However the value returned is ignored (apart from
+emitting a warning) and this typically results in resource leaks. To improve
+here there is a quest to make the remove callback return void. In the first
+step of this quest all drivers are converted to .remove_new() which already
+returns void. Eventually after all drivers are converted, .remove_new() is
+renamed to .remove().
 
-Please always sent such patches together with DTS which introduces the user.
+Trivially convert this driver from always returning zero in the remove
+callback to the void returning variant.
 
-
-Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-
-
+Signed-off-by: Uwe Kleine-K?nig <u.kleine-koenig@pengutronix.de>
 ---
+ drivers/usb/gadget/udc/aspeed-vhub/core.c | 8 +++-----
+ 1 file changed, 3 insertions(+), 5 deletions(-)
 
-This is an automated instruction, just in case, because many review tags
-are being ignored. If you do not know the process, here is a short
-explanation:
-
-Please add Acked-by/Reviewed-by/Tested-by tags when posting new
-versions, under or above your Signed-off-by tag. Tools like b4 can help
-here. However, there's no need to repost patches *only* to add the tags.
-The upstream maintainer will do that for acks received on the version
-they apply.
-
-https://elixir.bootlin.com/linux/v5.17/source/Documentation/process/submitting-patches.rst#L540
-
-Best regards,
-Krzysztof
+diff --git a/drivers/usb/gadget/udc/aspeed-vhub/core.c b/drivers/usb/gadget/udc/aspeed-vhub/core.c
+index 86398a04a012..16f2db8c4a2b 100644
+--- a/drivers/usb/gadget/udc/aspeed-vhub/core.c
++++ b/drivers/usb/gadget/udc/aspeed-vhub/core.c
+@@ -253,14 +253,14 @@ void ast_vhub_init_hw(struct ast_vhub *vhub)
+ 	       vhub->regs + AST_VHUB_IER);
+ }
+ 
+-static int ast_vhub_remove(struct platform_device *pdev)
++static void ast_vhub_remove(struct platform_device *pdev)
+ {
+ 	struct ast_vhub *vhub = platform_get_drvdata(pdev);
+ 	unsigned long flags;
+ 	int i;
+ 
+ 	if (!vhub || !vhub->regs)
+-		return 0;
++		return;
+ 
+ 	/* Remove devices */
+ 	for (i = 0; i < vhub->max_ports; i++)
+@@ -289,8 +289,6 @@ static int ast_vhub_remove(struct platform_device *pdev)
+ 				  vhub->ep0_bufs,
+ 				  vhub->ep0_bufs_dma);
+ 	vhub->ep0_bufs = NULL;
+-
+-	return 0;
+ }
+ 
+ static int ast_vhub_probe(struct platform_device *pdev)
+@@ -431,7 +429,7 @@ MODULE_DEVICE_TABLE(of, ast_vhub_dt_ids);
+ 
+ static struct platform_driver ast_vhub_driver = {
+ 	.probe		= ast_vhub_probe,
+-	.remove		= ast_vhub_remove,
++	.remove_new	= ast_vhub_remove,
+ 	.driver		= {
+ 		.name	= KBUILD_MODNAME,
+ 		.of_match_table	= ast_vhub_dt_ids,
+-- 
+2.39.2
 
