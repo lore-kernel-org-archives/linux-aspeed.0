@@ -1,37 +1,43 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Sun, 28 May 2023 12:39:33 +0100
-Subject: [PATCH 00/97] usb: Convert to platform remove callback returning
- void
-In-Reply-To: <2023052848-patronage-zen-de4b@gregkh>
-References: <20230517230239.187727-1-u.kleine-koenig@pengutronix.de>
- <2023052848-patronage-zen-de4b@gregkh>
-Message-ID: <2023052838-sincerity-dwindle-3658@gregkh>
+From: Eddie James <eajames@linux.ibm.com>
+Date: Tue, 30 May 2023 09:18:06 -0500
+Subject: [PATCH] aspeed-video.c: Fix error checking for debugfs_create_dir
+In-Reply-To: <20230524171137.22128-1-osmtendev@gmail.com>
+References: <20230524171137.22128-1-osmtendev@gmail.com>
+Message-ID: <e123f9a1-e316-a80d-1431-1d3528c25ba5@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sun, May 28, 2023 at 12:37:17PM +0100, Greg Kroah-Hartman wrote:
-> On Thu, May 18, 2023 at 01:01:02AM +0200, Uwe Kleine-K?nig wrote:
-> > Hello,
-> > 
-> > this series convers the drivers below drivers/usb to the .remove_new()
-> > callback of struct platform_driver(). The motivation is to make the
-> > remove callback less prone for errors and wrong assumptions. See commit
-> > 5c5a7680e67b ("platform: Provide a remove callback that returns no
-> > value") for a more detailed rationale.
-> > 
-> > All drivers converted here already returned zero unconditionally in their
-> > .remove() callback, so converting them to .remove_new() is trivial.
-> 
-> All but 2 patches applied, as one was for a driver that wasn't in the
-> tree anymore, and the dwc2 patch didn't apply at all.
 
-Oops, the xhci patches broke the build so I dropped them too.  Please
-regenerate the series against the next linux-next that has these in
-them and resend the remaining bits.
+On 5/24/23 12:11, Osama Muhammad wrote:
+> This patch fixes the error checking in aspeed-video.c in
+> debugfs_create_dir. The correct way to check if an error occurred
+> is using 'IS_ERR' inline function.
 
-thanks,
 
-greg k-h
+Thanks.
+
+Reviewed-by: Eddie James <eajames@linux.ibm.com>
+
+
+>
+> Signed-off-by: Osama Muhammad <osmtendev@gmail.com>
+> ---
+>   drivers/media/platform/aspeed/aspeed-video.c | 2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/media/platform/aspeed/aspeed-video.c b/drivers/media/platform/aspeed/aspeed-video.c
+> index 374eb7781936..97847f44964a 100644
+> --- a/drivers/media/platform/aspeed/aspeed-video.c
+> +++ b/drivers/media/platform/aspeed/aspeed-video.c
+> @@ -1976,7 +1976,7 @@ static int aspeed_video_debugfs_create(struct aspeed_video *video)
+>   	debugfs_entry = debugfs_create_file(DEVICE_NAME, 0444, NULL,
+>   					    video,
+>   					    &aspeed_video_debugfs_fops);
+> -	if (!debugfs_entry)
+> +	if (IS_ERR(debugfs_entry))
+>   		aspeed_video_debugfs_remove(video);
+>   
+>   	return !debugfs_entry ? -EIO : 0;
