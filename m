@@ -1,10 +1,10 @@
 From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Date: Tue, 6 Jun 2023 12:55:45 +0200
-Subject: [v5 4/5] pwm: Add Aspeed ast2600 PWM support
-In-Reply-To: <20230606094535.5388-5-billy_tsai@aspeedtech.com>
+Date: Tue, 6 Jun 2023 12:56:31 +0200
+Subject: [v5 5/5] hwmon: Add Aspeed ast2600 TACH support
+In-Reply-To: <20230606094535.5388-6-billy_tsai@aspeedtech.com>
 References: <20230606094535.5388-1-billy_tsai@aspeedtech.com>
- <20230606094535.5388-5-billy_tsai@aspeedtech.com>
-Message-ID: <676e5c04-e13c-417b-5a2a-73ee339fbbd3@linaro.org>
+ <20230606094535.5388-6-billy_tsai@aspeedtech.com>
+Message-ID: <47d95067-12e0-4b19-6b6d-104532fae1e0@linaro.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -12,59 +12,61 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 On 06/06/2023 11:45, Billy Tsai wrote:
-> Add the support of PWM controller which can be found at aspeed ast2600
-> soc. The pwm supoorts up to 16 channels and it's part function of
+> Add the support of Tachometer which can use to monitor the frequency of
+> the input. The tach supports up to 16 channels and it's part function of
 > multi-function device "pwm-tach controller".
 > 
 > Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
-> Reviewed-by: Uwe Kleine-K?nig <u.kleine-koenig@pengutronix.de>
-> ---
 
 
-> +static int aspeed_pwm_probe(struct platform_device *pdev)
+> +
+> +static void aspeed_tach_reset_assert(void *data)
+> +{
+> +	struct reset_control *rst = data;
+> +
+> +	reset_control_assert(rst);
+> +}
+> +
+> +static int aspeed_tach_probe(struct platform_device *pdev)
 > +{
 > +	struct device *dev = &pdev->dev;
+> +	struct device_node *np, *child;
+> +	struct aspeed_tach_data *priv;
+> +	struct device *hwmon;
 > +	int ret;
-> +	struct aspeed_pwm_data *priv;
-> +	struct device_node *np;
-> +	struct platform_device *parent_dev;
+> +
+> +	np = dev->parent->of_node;
+> +	if (!of_device_is_compatible(np, "aspeed,ast2600-pwm-tach"))
+
+Drop.
+
+> +		return dev_err_probe(dev, -ENODEV,
+> +				     "Unsupported tach device binding\n");
 > +
 > +	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
 > +	if (!priv)
 > +		return -ENOMEM;
-> +
-> +	np = pdev->dev.parent->of_node;
-> +	if (!of_device_is_compatible(np, "aspeed,ast2600-pwm-tach"))
-> +		return dev_err_probe(dev, -ENODEV,
-> +				     "Unsupported pwm device binding\n");
-
-No, don't embed compatibles in your code. This is useless, so drop it.
-
+> +	priv->dev = &pdev->dev;
 > +
 > +	priv->regmap = syscon_node_to_regmap(np);
 > +	if (IS_ERR(priv->regmap))
 > +		return dev_err_probe(dev, PTR_ERR(priv->regmap),
 > +				     "Couldn't get regmap\n");
 > +
-> +	parent_dev = of_find_device_by_node(np);
+> +	priv->clk = devm_clk_get_enabled(dev->parent, NULL);
 
-Why? You already have parent!
+NAK. Parent is simple-mfd, means it must not have clock.
 
-> +	priv->clk = devm_clk_get_enabled(&parent_dev->dev, NULL);
+
 > +	if (IS_ERR(priv->clk))
 > +		return dev_err_probe(dev, PTR_ERR(priv->clk),
 > +				     "Couldn't get clock\n");
-
-NAK. This is purely broken. You cannot play with parent's clock and I
-told you this last time. Parent is simple-mfd so this code is a hacky
-workaround over using simple-mfd even though I told you that yuo cannot
-use simple-mfd.
-
 > +
-> +	priv->reset = devm_reset_control_get_shared(&parent_dev->dev, NULL);
+> +	priv->clk_source = clk_get_rate(priv->clk);
+> +
+> +	priv->reset = devm_reset_control_get_shared(dev->parent, NULL);
 
-NAK.
-
+NAK, same reasons.
 
 Best regards,
 Krzysztof
