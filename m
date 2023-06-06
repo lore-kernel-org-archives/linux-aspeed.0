@@ -1,107 +1,69 @@
 From: Billy Tsai <billy_tsai@aspeedtech.com>
-Date: Tue, 6 Jun 2023 17:45:33 +0800
-Subject: [v5 3/5] dt-bindings: mfd: Add aspeed pwm-tach binding
+Date: Tue, 6 Jun 2023 17:45:32 +0800
+Subject: [v5 2/5] dt-bindings: hwmon: Add bindings for aspeed tach controller
 In-Reply-To: <20230606094535.5388-1-billy_tsai@aspeedtech.com>
 References: <20230606094535.5388-1-billy_tsai@aspeedtech.com>
-Message-ID: <20230606094535.5388-4-billy_tsai@aspeedtech.com>
+Message-ID: <20230606094535.5388-3-billy_tsai@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add device binding for aspeed pwm-tach device which is a multi-function
-device include pwm and tach function.
+Add the aspeed tach device which should be the child-node of pwm-tach mfd.
 
 Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
-
 ---
- .../bindings/mfd/aspeed,ast2600-pwm-tach.yaml | 76 +++++++++++++++++++
- 1 file changed, 76 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.yaml
+ .../bindings/hwmon/aspeed,ast2600-tach.yaml   | 40 +++++++++++++++++++
+ 1 file changed, 40 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/hwmon/aspeed,ast2600-tach.yaml
 
-diff --git a/Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.yaml b/Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.yaml
+diff --git a/Documentation/devicetree/bindings/hwmon/aspeed,ast2600-tach.yaml b/Documentation/devicetree/bindings/hwmon/aspeed,ast2600-tach.yaml
 new file mode 100644
-index 000000000000..f98c11ff3f8a
+index 000000000000..50b3d8c98d55
 --- /dev/null
-+++ b/Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.yaml
-@@ -0,0 +1,76 @@
++++ b/Documentation/devicetree/bindings/hwmon/aspeed,ast2600-tach.yaml
+@@ -0,0 +1,40 @@
 +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
 +# Copyright (C) 2021 Aspeed, Inc.
 +%YAML 1.2
 +---
-+$id: http://devicetree.org/schemas/mfd/aspeed,ast2600-pwm-tach.yaml#
++$id: http://devicetree.org/schemas/hwmon/aspeed,ast2600-tach.yaml#
 +$schema: http://devicetree.org/meta-schemas/core.yaml#
 +
-+title: PWM Tach controller
-+
-+description: |
-+  The PWM Tach controller is represented as a multi-function device which
-+  includes:
-+    PWM
-+    Tach
++title: Aspeed Ast2600 Tach controller
 +
 +maintainers:
 +  - Billy Tsai <billy_tsai@aspeedtech.com>
 +
++description: |
++  The Aspeed Tach controller can support upto 16 fan input.
++  This module is part of the ast2600-pwm-tach multi-function device. For more
++  details see ../mfd/aspeed,ast2600-pwm-tach.yaml.
++
 +properties:
 +  compatible:
-+    items:
-+      - enum:
-+          - aspeed,ast2600-pwm-tach
-+      - const: syscon
-+      - const: simple-mfd
++    enum:
++      - aspeed,ast2600-tach
 +
-+  reg:
-+    maxItems: 1
-+
-+  clocks:
-+    maxItems: 1
-+
-+  resets:
-+    maxItems: 1
-+
-+  pwm:
++patternProperties:
++  "^fan@[a-z0-9]+$":
 +    type: object
-+    $ref: "/schemas/pwm/aspeed,ast2600-pwm.yaml"
++    description:
++      Child nodes used to enable the tach channel.
++    properties:
++      reg:
++        description:
++          The tach channel used for this node.
++        maxItems: 1
 +
-+  tach:
-+    type: object
-+    $ref: "/schemas/hwmon/aspeed,ast2600-tach.yaml"
++    required:
++      - reg
 +
 +required:
 +  - compatible
-+  - reg
-+  - clocks
-+  - resets
 +
 +additionalProperties: false
-+
-+examples:
-+  - |
-+    #include <dt-bindings/clock/ast2600-clock.h>
-+    pwm_tach: pwm-tach at 1e610000 {
-+      compatible = "aspeed,ast2600-pwm-tach", "syscon", "simple-mfd";
-+      reg = <0x1e610000 0x100>;
-+      clocks = <&syscon ASPEED_CLK_AHB>;
-+      resets = <&syscon ASPEED_RESET_PWM>;
-+
-+      pwm: pwm {
-+        compatible = "aspeed,ast2600-pwm";
-+        #pwm-cells = <3>;
-+        pinctrl-names = "default";
-+        pinctrl-0 = <&pinctrl_pwm0_default>;
-+      };
-+
-+      tach: tach {
-+        compatible = "aspeed,ast2600-tach";
-+        pinctrl-names = "default";
-+        pinctrl-0 = <&pinctrl_tach0_default>;
-+        fan at 0 {
-+          reg = <0x00>;
-+        };
-+      };
-+    };
 -- 
 2.25.1
 
