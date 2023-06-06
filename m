@@ -1,10 +1,10 @@
 From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Date: Tue, 6 Jun 2023 12:49:04 +0200
-Subject: [v5 3/5] dt-bindings: mfd: Add aspeed pwm-tach binding
-In-Reply-To: <20230606094535.5388-4-billy_tsai@aspeedtech.com>
+Date: Tue, 6 Jun 2023 12:55:45 +0200
+Subject: [v5 4/5] pwm: Add Aspeed ast2600 PWM support
+In-Reply-To: <20230606094535.5388-5-billy_tsai@aspeedtech.com>
 References: <20230606094535.5388-1-billy_tsai@aspeedtech.com>
- <20230606094535.5388-4-billy_tsai@aspeedtech.com>
-Message-ID: <35bf0a69-bcf6-ae35-eb3c-e74cfcf9c571@linaro.org>
+ <20230606094535.5388-5-billy_tsai@aspeedtech.com>
+Message-ID: <676e5c04-e13c-417b-5a2a-73ee339fbbd3@linaro.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -12,61 +12,59 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 On 06/06/2023 11:45, Billy Tsai wrote:
-> Add device binding for aspeed pwm-tach device which is a multi-function
-> device include pwm and tach function.
+> Add the support of PWM controller which can be found at aspeed ast2600
+> soc. The pwm supoorts up to 16 channels and it's part function of
+> multi-function device "pwm-tach controller".
 > 
 > Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
-> 
+> Reviewed-by: Uwe Kleine-K?nig <u.kleine-koenig@pengutronix.de>
 > ---
->  .../bindings/mfd/aspeed,ast2600-pwm-tach.yaml | 76 +++++++++++++++++++
->  1 file changed, 76 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.yaml
-> 
-> diff --git a/Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.yaml b/Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.yaml
-> new file mode 100644
-> index 000000000000..f98c11ff3f8a
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/mfd/aspeed,ast2600-pwm-tach.yaml
-> @@ -0,0 +1,76 @@
-> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-> +# Copyright (C) 2021 Aspeed, Inc.
-> +%YAML 1.2
-> +---
-> +$id: http://devicetree.org/schemas/mfd/aspeed,ast2600-pwm-tach.yaml#
-> +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> +
-> +title: PWM Tach controller
-> +
-> +description: |
-> +  The PWM Tach controller is represented as a multi-function device which
-> +  includes:
-> +    PWM
-> +    Tach
-> +
-> +maintainers:
-> +  - Billy Tsai <billy_tsai@aspeedtech.com>
-> +
-> +properties:
-> +  compatible:
-> +    items:
-> +      - enum:
-> +          - aspeed,ast2600-pwm-tach
-> +      - const: syscon
-> +      - const: simple-mfd
-> +
-> +  reg:
-> +    maxItems: 1
-> +
-> +  clocks:
-> +    maxItems: 1
-> +
-> +  resets:
-> +    maxItems: 1
 
-NAK. You got here clear comment. You cannot have simple MFD with
-resources. It is not simple anymore.
 
-Everywhere else you also ignored comments.
+> +static int aspeed_pwm_probe(struct platform_device *pdev)
+> +{
+> +	struct device *dev = &pdev->dev;
+> +	int ret;
+> +	struct aspeed_pwm_data *priv;
+> +	struct device_node *np;
+> +	struct platform_device *parent_dev;
+> +
+> +	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
+> +	if (!priv)
+> +		return -ENOMEM;
+> +
+> +	np = pdev->dev.parent->of_node;
+> +	if (!of_device_is_compatible(np, "aspeed,ast2600-pwm-tach"))
+> +		return dev_err_probe(dev, -ENODEV,
+> +				     "Unsupported pwm device binding\n");
+
+No, don't embed compatibles in your code. This is useless, so drop it.
+
+> +
+> +	priv->regmap = syscon_node_to_regmap(np);
+> +	if (IS_ERR(priv->regmap))
+> +		return dev_err_probe(dev, PTR_ERR(priv->regmap),
+> +				     "Couldn't get regmap\n");
+> +
+> +	parent_dev = of_find_device_by_node(np);
+
+Why? You already have parent!
+
+> +	priv->clk = devm_clk_get_enabled(&parent_dev->dev, NULL);
+> +	if (IS_ERR(priv->clk))
+> +		return dev_err_probe(dev, PTR_ERR(priv->clk),
+> +				     "Couldn't get clock\n");
+
+NAK. This is purely broken. You cannot play with parent's clock and I
+told you this last time. Parent is simple-mfd so this code is a hacky
+workaround over using simple-mfd even though I told you that yuo cannot
+use simple-mfd.
+
+> +
+> +	priv->reset = devm_reset_control_get_shared(&parent_dev->dev, NULL);
+
+NAK.
+
 
 Best regards,
 Krzysztof
