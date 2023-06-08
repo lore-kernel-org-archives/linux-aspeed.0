@@ -1,78 +1,66 @@
-From: Billy Tsai <billy_tsai@aspeedtech.com>
-Date: Thu, 8 Jun 2023 09:15:11 +0000
+From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Date: Thu, 8 Jun 2023 11:26:02 +0200
 Subject: [v6 1/4] dt-bindings: pwm: Add ASPEED PWM Control documentation
-In-Reply-To: <fb3cb26b-61d7-5f57-41de-f419aa50ac0b@linaro.org>
+In-Reply-To: <SG2PR06MB3365FCF5BEA6555EC503EFEC8B50A@SG2PR06MB3365.apcprd06.prod.outlook.com>
 References: <20230608021839.12769-1-billy_tsai@aspeedtech.com>
  <20230608021839.12769-2-billy_tsai@aspeedtech.com>
  <4dffd320-8e30-fb30-6ded-79519afddc21@linaro.org>
  <SG2PR06MB3365DD80EA2FD026D400C4A78B50A@SG2PR06MB3365.apcprd06.prod.outlook.com>
  <61278e12-ba39-4503-ca74-a7118b0f6e99@linaro.org>
  <SG2PR06MB336528007D2685F8D95DF4078B50A@SG2PR06MB3365.apcprd06.prod.outlook.com>
- <fb3cb26b-61d7-5f57-41de-f419aa50ac0b@linaro.org>
-Message-ID: <SG2PR06MB3365558F9A3127744CEF1C068B50A@SG2PR06MB3365.apcprd06.prod.outlook.com>
+ <9f8a9208-62d4-0c96-7d1c-a452d3d7e799@linaro.org>
+ <SG2PR06MB3365FCF5BEA6555EC503EFEC8B50A@SG2PR06MB3365.apcprd06.prod.outlook.com>
+Message-ID: <05038be8-f59d-5b2b-9b51-36094941f731@linaro.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 08/06/2023 10:21, Billy Tsai wrote:
-        >>         On 08/06/2023 09:47, Billy Tsai wrote:
-        >>         >>
-        >>         >>   >> +
-        >>         >>   >> +allOf:
-        >>         >>   >> +  - $ref: pwm.yaml#
-        >>         >>   >> +
-        >>         >>   >> +properties:
-        >>         >>   >> +  compatible:
-        >>         >>   >> +    enum:
-        >>         >>   >> +      - aspeed,ast2600-pwm
-        >>         >>   >> +
-        >>         >>   >> +  "#pwm-cells":
-        >>         >>   >> +    const: 3
-        >>         >>
-        >>         >>   > 3 cells? For one PWM? What are they?
-        >>         >>
-        >>         >> channel, period and polarity.
-        >>
-        >>         > Don't cut my responses. You wrote you have one PWM output, so only one
-        >>         > channel. What do you put then in the channel?
-        >>
-        >> You need to put 0 in the cell of the channel, the example of the dts usage will like following:
-        >>
-        >> pwm0: pwm0 at 1e610000 {
-        >>         compatible = "aspeed,ast2600-pwm";
-        >>         reg = <0x1e610000 0x8>;
-        >>         #pwm-cells = <3>;
-        >>         #address-cells = <1>;
-        >>         #size-cells = <0>;
-        >>         pinctrl-names = "default";
-        >>         pinctrl-0 = <&pinctrl_pwm0_default>;
-        >>         clocks = <&syscon ASPEED_CLK_AHB>;
-        >>         resets = <&syscon ASPEED_RESET_PWM>;
-        >>         status = "okay";
-        >> };
-        >>
-        >> pwm1: pwm1 at 1e610010 {
-        >>         compatible = "aspeed,ast2600-pwm";
-        >>         reg = <0x1e610010 0x8>;
-        >>         #pwm-cells = <3>;
-        >>         #address-cells = <1>;
-        >>         #size-cells = <0>;
-        >>         pinctrl-names = "default";
-        >>         pinctrl-0 = <&pinctrl_pwm1_default>;
-        >>         clocks = <&syscon ASPEED_CLK_AHB>;
-        >>         resets = <&syscon ASPEED_RESET_PWM>;
-        >>         status = "okay";
+On 08/06/2023 10:57, Billy Tsai wrote:
+> On 08/06/2023 10:21, Billy Tsai wrote:
+>         >>         On 08/06/2023 09:47, Billy Tsai wrote:
+>         >>         >>
+>         >>         >>   >> +
+>         >>         >>   >> +allOf:
+>         >>         >>   >> +  - $ref: pwm.yaml#
+>         >>         >>   >> +
+>         >>         >>   >> +properties:
+>         >>         >>   >> +  compatible:
+>         >>         >>   >> +    enum:
+>         >>         >>   >> +      - aspeed,ast2600-pwm
+>         >>         >>   >> +
+>         >>         >>   >> +  "#pwm-cells":
+>         >>         >>   >> +    const: 3
+>         >>         >>
+>         >>         >>   > 3 cells? For one PWM? What are they?
+>         >>         >>
+>         >>         >> channel, period and polarity.
+>         >>
+>         >>         > Don't cut my responses. You wrote you have one PWM output, so only one
+>         >>         > channel. What do you put then in the channel?
+>         >>
+>         >> You need to put 0 in the cell of the channel, the example of the dts usage will like following:
+> 
+>         > If you always put 0 isn't this a proof that it's wrong?
+> 
+> No, if your PWM controller only has one pwm output, then it should only be configured as 0.
+> This is the usage of the pwm-cells property.
+> https://github.com/torvalds/linux/blob/master/drivers/pwm/core.c#L129-L158
 
-        > BTW, these are not two PWM devices but one. I don't understand why you
-        > changed previous design into something like this, but this is not
-        > representing your hardware.
+This is only when you use generic of_xlate. You do not have to use
+generic of_xlate if it does not suite you. Again you speak about the
+drivers, but we talk about bindings:
 
-The previous design of my patch treated our PWM controller as having 16 PWM channels.
-However, from a hardware perspective, it consists of 16 individual PWM chips, each
-with its own set of two 4-byte control registers. These chips operate independently
-and are not affected by each other.
--------------- next part --------------
-An HTML attachment was scrubbed...
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20230608/e4ae7379/attachment.htm>
+https://github.com/torvalds/linux/blob/master/Documentation/devicetree/bindings/pwm/pwm.txt#L13
+
+"controller specific"
+
+> https://github.com/torvalds/linux/blob/master/include/linux/pwm.h#LL299C20-L299C20
+> All of the pwm driver with npwm = 1 will has the same usage.
+
+So it seems many simplified their drivers...
+
+Best regards,
+Krzysztof
+
