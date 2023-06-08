@@ -1,64 +1,74 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Date: Thu, 8 Jun 2023 06:18:10 -0700
-Subject: [v6 2/4] dt-bindings: hwmon: Add ASPEED TACH Control
- documentation
-In-Reply-To: <SG2PR06MB3365E360F3FCDE639F3D2D1E8B50A@SG2PR06MB3365.apcprd06.prod.outlook.com>
-References: <20230608021839.12769-1-billy_tsai@aspeedtech.com>
- <20230608021839.12769-3-billy_tsai@aspeedtech.com>
- <c1c485b0-b68b-4db7-4b67-5d59f1ecb84e@roeck-us.net>
- <SG2PR06MB3365E360F3FCDE639F3D2D1E8B50A@SG2PR06MB3365.apcprd06.prod.outlook.com>
-Message-ID: <f76f89a0-7773-6f64-c890-293093d4aba3@roeck-us.net>
+From: Rob Herring <robh@kernel.org>
+Date: Thu, 8 Jun 2023 09:15:52 -0600
+Subject: [v5 3/5] dt-bindings: mfd: Add aspeed pwm-tach binding
+In-Reply-To: <c28f963e-d13c-6b5c-c389-996e986f81d5@linaro.org>
+References: <20230606094535.5388-1-billy_tsai@aspeedtech.com>
+ <20230606094535.5388-4-billy_tsai@aspeedtech.com>
+ <35bf0a69-bcf6-ae35-eb3c-e74cfcf9c571@linaro.org>
+ <ZH89fXknZlhGmM_H@heinlein.vulture-banana.ts.net>
+ <c28f963e-d13c-6b5c-c389-996e986f81d5@linaro.org>
+Message-ID: <20230608151552.GA2637361-robh@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 6/7/23 23:21, Billy Tsai wrote:
->  ??????? > The code says:
+On Tue, Jun 06, 2023 at 04:23:52PM +0200, Krzysztof Kozlowski wrote:
+> On 06/06/2023 16:06, Patrick Williams wrote:
+> > On Tue, Jun 06, 2023 at 12:49:04PM +0200, Krzysztof Kozlowski wrote:
+> > 
+> > Hi Krzysztof,
+> > 
+> > Thank you for reviewing this from Billy.
+> > 
+> > The Aspeed chip is heavily used by the OpenBMC community and the 2600
+> > has been used in production systems for almost 2 years now.  Many
+> > companies are having to carry previous versions of these as patches, and
+> > some of the APIs changed since the last revision from Billy.  So, I had
+> > asked him to submit the latest patch set with as many revisions as he
+> > understood what to change, since the conversation seemed to have died
+> > since last time he submitted.  
+> > 
+> > I don't believe Billy is intentionally ignoring your feedback and he is
+> > motivated to get this patch set wrapped up into an acceptable state.
+> > 
+> >> On 06/06/2023 11:45, Billy Tsai wrote:
+> >  
+> >> NAK. You got here clear comment. You cannot have simple MFD with
+> >> resources. It is not simple anymore.
+> >>
+> > 
+> > In fairness, Billy asked for clarification from you on this point and didn't
+> > receive it.
+> > 
+> > https://lore.kernel.org/lkml/24DD1FEB-95F3-47BE-BE61-8B0E6FBDE20F at aspeedtech.com/
 > 
->  ??????? > In Aspeed AST2600 SoC features 16 TACH controllers, with each
+> I gave the instruction what Billy should do:
 > 
->  ??????? > controller capable of supporting up to 1 input.
+> https://lore.kernel.org/lkml/41500a04-b004-0e2c-20a1-3a3092b90e6d at linaro.org/
 > 
->  ??????? > which is a bit different. I guess there are no examples anymore,
+> What about other ignored comments? About subject, quotes and more? Even
+> if this one was unclear, then why ignoring all the rest?
 > 
->  ??????? > but I'd really like to see how this looks like in the devicetree file,
+> > 
+> > He felt what he was trying to accomplish met the documented
+> > expectations.  Are there some changes that need to be done in mfd.txt to
+> > further clarify when to use it and when not to?
 > 
->  ??????? > and how the driver is supposed to distinguish/select the 16 inputs.
+> I think mfd.txt clearly states:
+> "For more complex devices, when the nexus driver has to
+> probe registers to figure out what child devices exist etc, this should
+> not be used. In the latter case the child devices will be determined by
+> the operating system."
 > 
-> Hi Roeck,
-> 
-> The node in the devicetree file will looks like following:
-> 
-> tach0: tach0 at 1e610008 {
-> 
->  ??????? compatible = "aspeed,ast2600-tach";
-> 
->  ??????? reg = <0x1e610008 0x8>;
-> 
->  ??????? #address-cells = <1>;
-> 
->  ??????? #size-cells = <0>;
-> 
->  ??????? pinctrl-names = "default";
-> 
->  ??????? pinctrl-0 = <&pinctrl_tach0_default>;
-> 
->  ??????? clocks = <&syscon ASPEED_CLK_AHB>;
-> 
->  ??????? resets = <&syscon ASPEED_RESET_PWM>;
-> 
->  ??????? status = "disabled";
-> 
-> };
-> 
+> Also, repeated many times:
+> https://lore.kernel.org/all/YXhINE00HG6hbQI4 at robh.at.kernel.org/
+> https://lore.kernel.org/all/20220701000959.GA3588170-robh at kernel.org/
+> https://osseu2022.sched.com/event/15z0W
 
-Neither reg nor pinctrl is mentioned in the bindings. Maybe that is not needed nowadays,
-but I find it confusing.
+I've probably said this already, but any 'fan controller' needs to 
+define a common fan binding that works for multiple scenarios. There's 
+been some attempts in the last year which seems to have stalled out.
 
-Either case, it is highly unusual that there would be 16 instances of this device
-instead of one. Why is this done ? It doesn't really make sense to me.
-
-Guenter
-
+Rob
