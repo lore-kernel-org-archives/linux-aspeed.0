@@ -1,15 +1,15 @@
 From: Billy Tsai <billy_tsai@aspeedtech.com>
-Date: Thu, 8 Jun 2023 08:57:05 +0000
+Date: Thu, 8 Jun 2023 09:15:11 +0000
 Subject: [v6 1/4] dt-bindings: pwm: Add ASPEED PWM Control documentation
-In-Reply-To: <9f8a9208-62d4-0c96-7d1c-a452d3d7e799@linaro.org>
+In-Reply-To: <fb3cb26b-61d7-5f57-41de-f419aa50ac0b@linaro.org>
 References: <20230608021839.12769-1-billy_tsai@aspeedtech.com>
  <20230608021839.12769-2-billy_tsai@aspeedtech.com>
  <4dffd320-8e30-fb30-6ded-79519afddc21@linaro.org>
  <SG2PR06MB3365DD80EA2FD026D400C4A78B50A@SG2PR06MB3365.apcprd06.prod.outlook.com>
  <61278e12-ba39-4503-ca74-a7118b0f6e99@linaro.org>
  <SG2PR06MB336528007D2685F8D95DF4078B50A@SG2PR06MB3365.apcprd06.prod.outlook.com>
- <9f8a9208-62d4-0c96-7d1c-a452d3d7e799@linaro.org>
-Message-ID: <SG2PR06MB3365FCF5BEA6555EC503EFEC8B50A@SG2PR06MB3365.apcprd06.prod.outlook.com>
+ <fb3cb26b-61d7-5f57-41de-f419aa50ac0b@linaro.org>
+Message-ID: <SG2PR06MB3365558F9A3127744CEF1C068B50A@SG2PR06MB3365.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -39,15 +39,40 @@ On 08/06/2023 10:21, Billy Tsai wrote:
         >>         > channel. What do you put then in the channel?
         >>
         >> You need to put 0 in the cell of the channel, the example of the dts usage will like following:
+        >>
+        >> pwm0: pwm0 at 1e610000 {
+        >>         compatible = "aspeed,ast2600-pwm";
+        >>         reg = <0x1e610000 0x8>;
+        >>         #pwm-cells = <3>;
+        >>         #address-cells = <1>;
+        >>         #size-cells = <0>;
+        >>         pinctrl-names = "default";
+        >>         pinctrl-0 = <&pinctrl_pwm0_default>;
+        >>         clocks = <&syscon ASPEED_CLK_AHB>;
+        >>         resets = <&syscon ASPEED_RESET_PWM>;
+        >>         status = "okay";
+        >> };
+        >>
+        >> pwm1: pwm1 at 1e610010 {
+        >>         compatible = "aspeed,ast2600-pwm";
+        >>         reg = <0x1e610010 0x8>;
+        >>         #pwm-cells = <3>;
+        >>         #address-cells = <1>;
+        >>         #size-cells = <0>;
+        >>         pinctrl-names = "default";
+        >>         pinctrl-0 = <&pinctrl_pwm1_default>;
+        >>         clocks = <&syscon ASPEED_CLK_AHB>;
+        >>         resets = <&syscon ASPEED_RESET_PWM>;
+        >>         status = "okay";
 
-        > If you always put 0 isn't this a proof that it's wrong?
+        > BTW, these are not two PWM devices but one. I don't understand why you
+        > changed previous design into something like this, but this is not
+        > representing your hardware.
 
-No, if your PWM controller only has one pwm output, then it should only be configured as 0.
-This is the usage of the pwm-cells property.
-https://github.com/torvalds/linux/blob/master/drivers/pwm/core.c#L129-L158
-https://github.com/torvalds/linux/blob/master/include/linux/pwm.h#LL299C20-L299C20
-All of the pwm driver with npwm = 1 will has the same usage.
-
+The previous design of my patch treated our PWM controller as having 16 PWM channels.
+However, from a hardware perspective, it consists of 16 individual PWM chips, each
+with its own set of two 4-byte control registers. These chips operate independently
+and are not affected by each other.
 -------------- next part --------------
 An HTML attachment was scrubbed...
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20230608/93652b02/attachment-0001.htm>
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20230608/e4ae7379/attachment.htm>
