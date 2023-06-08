@@ -1,74 +1,59 @@
-From: Rob Herring <robh@kernel.org>
-Date: Thu, 8 Jun 2023 09:15:52 -0600
-Subject: [v5 3/5] dt-bindings: mfd: Add aspeed pwm-tach binding
-In-Reply-To: <c28f963e-d13c-6b5c-c389-996e986f81d5@linaro.org>
-References: <20230606094535.5388-1-billy_tsai@aspeedtech.com>
- <20230606094535.5388-4-billy_tsai@aspeedtech.com>
- <35bf0a69-bcf6-ae35-eb3c-e74cfcf9c571@linaro.org>
- <ZH89fXknZlhGmM_H@heinlein.vulture-banana.ts.net>
- <c28f963e-d13c-6b5c-c389-996e986f81d5@linaro.org>
-Message-ID: <20230608151552.GA2637361-robh@kernel.org>
+From: Rob Herring <robh+dt@kernel.org>
+Date: Thu, 8 Jun 2023 14:33:53 -0600
+Subject: [RFC PATCH 0/1] Categorize ARM dts directory
+In-Reply-To: <ZFrPJQdwoxqFpzUO@probook>
+References: <20220328000915.15041-1-ansuelsmth@gmail.com> <85eb14ec-f465-7447-ad77-a3dabc666f47@kernel.org>
+ <YkKRYnN84D9VZhGj@Ansuel-xps.localdomain> <CAL_Jsq+RQQ-ADMxLPUFwk6S6kGmb6oNDy4k52fnU0EtbUvqmSA@mail.gmail.com>
+ <CAMuHMdWNTE48MFy6fqxAsfMWz9b6E7dVNXtXtESP95sxk2PGwA@mail.gmail.com>
+ <CAL_JsqJthKTm8bhRF2B=ae1tvtPeYYXx_Tm76qQtSwLtH5C6VA@mail.gmail.com>
+ <720a2829-b6b5-411c-ac69-9a53e881f48d@app.fastmail.com> <CAL_JsqKCtmkwzKa01gyG65fH8ye6R3KhR41PJbJhOJ4X9j=znA@mail.gmail.com>
+ <ZFrPJQdwoxqFpzUO@probook>
+Message-ID: <CAL_JsqLTj_L-V8HR=TzO6+r9Xew=yivaKG1ngCn+NCjgPZwZzw@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Jun 06, 2023 at 04:23:52PM +0200, Krzysztof Kozlowski wrote:
-> On 06/06/2023 16:06, Patrick Williams wrote:
-> > On Tue, Jun 06, 2023 at 12:49:04PM +0200, Krzysztof Kozlowski wrote:
-> > 
-> > Hi Krzysztof,
-> > 
-> > Thank you for reviewing this from Billy.
-> > 
-> > The Aspeed chip is heavily used by the OpenBMC community and the 2600
-> > has been used in production systems for almost 2 years now.  Many
-> > companies are having to carry previous versions of these as patches, and
-> > some of the APIs changed since the last revision from Billy.  So, I had
-> > asked him to submit the latest patch set with as many revisions as he
-> > understood what to change, since the conversation seemed to have died
-> > since last time he submitted.  
-> > 
-> > I don't believe Billy is intentionally ignoring your feedback and he is
-> > motivated to get this patch set wrapped up into an acceptable state.
-> > 
-> >> On 06/06/2023 11:45, Billy Tsai wrote:
-> >  
-> >> NAK. You got here clear comment. You cannot have simple MFD with
-> >> resources. It is not simple anymore.
-> >>
-> > 
-> > In fairness, Billy asked for clarification from you on this point and didn't
-> > receive it.
-> > 
-> > https://lore.kernel.org/lkml/24DD1FEB-95F3-47BE-BE61-8B0E6FBDE20F at aspeedtech.com/
-> 
-> I gave the instruction what Billy should do:
-> 
-> https://lore.kernel.org/lkml/41500a04-b004-0e2c-20a1-3a3092b90e6d at linaro.org/
-> 
-> What about other ignored comments? About subject, quotes and more? Even
-> if this one was unclear, then why ignoring all the rest?
-> 
-> > 
-> > He felt what he was trying to accomplish met the documented
-> > expectations.  Are there some changes that need to be done in mfd.txt to
-> > further clarify when to use it and when not to?
-> 
-> I think mfd.txt clearly states:
-> "For more complex devices, when the nexus driver has to
-> probe registers to figure out what child devices exist etc, this should
-> not be used. In the latter case the child devices will be determined by
-> the operating system."
-> 
-> Also, repeated many times:
-> https://lore.kernel.org/all/YXhINE00HG6hbQI4 at robh.at.kernel.org/
-> https://lore.kernel.org/all/20220701000959.GA3588170-robh at kernel.org/
-> https://osseu2022.sched.com/event/15z0W
+On Tue, May 9, 2023 at 4:55?PM Jonathan Neusch?fer
+<j.neuschaefer@gmx.net> wrote:
+>
+> On Tue, May 02, 2023 at 02:40:19PM -0500, Rob Herring wrote:
+> [...]
+> > I've dusted off my script and made a branch[1] with the result.
+> > There's just a couple of fixes needed after the script is run (see the
+> > top commit). The cross arch includes are all fixed up by the script.
+> > dtbs_install maintains a flat install. I compared the number of .dtbs
+> > before and after to check the script.
+> >
+> > I think the only issue remaining is finalizing the mapping of
+> > platforms to subdirs. What I have currently is a mixture of SoC
+> > families and vendors. The most notable are all the Freescale/NXP
+> > platforms, pxa, socfpga, and stm32. It's not consistent with arm64
+> > either. Once that's finalized, I still need to go update MAINTAINERS.
+> >
+> > Here's the current mapping:
+> >
+> > vendor_map = {
+> [...]
+> >     'aspeed' : 'aspeed',
+> >     'ast2' : 'aspeed',
+> >     'facebook' : 'aspeed',
+> >     'ibm' : 'aspeed',
+>
+> >     'openbmc' : 'aspeed',
+>
+> The openbmc flash layouts are currently only used by aspeed devicetrees,
+> but they don't really depend on any aspeed details. It would be possible
+> to reuse them in Nuvoton BMC devicetrees in the future, for example.
+>
+> In that sense, I think putting them in a separate "openbmc" directory
+> would be slightly better.
 
-I've probably said this already, but any 'fan controller' needs to 
-define a common fan binding that works for multiple scenarios. There's 
-been some attempts in the last year which seems to have stalled out.
+Could be used on arm64 or riscv too at some point. We do some cross
+arch includes, but IMO it would be better to move to
+include/dt-bindings/ or somewhere outside of arch/. Other common
+things I didn't move. I could do that here too. I prefer to that the
+sub-directories are just chip vendors/families.
 
 Rob
