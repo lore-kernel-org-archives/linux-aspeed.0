@@ -1,78 +1,36 @@
-From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Date: Thu, 8 Jun 2023 08:46:31 +0200
-Subject: [v6 1/4] dt-bindings: pwm: Add ASPEED PWM Control documentation
-In-Reply-To: <20230608021839.12769-2-billy_tsai@aspeedtech.com>
-References: <20230608021839.12769-1-billy_tsai@aspeedtech.com>
- <20230608021839.12769-2-billy_tsai@aspeedtech.com>
-Message-ID: <4dffd320-8e30-fb30-6ded-79519afddc21@linaro.org>
+From: Billy Tsai <billy_tsai@aspeedtech.com>
+Date: Thu, 8 Jun 2023 07:15:49 +0000
+Subject: [v4 1/5] dt-bindings: mfd: Add aspeed pwm-tach binding
+In-Reply-To: <ce99a709-ba4a-eb53-39ac-88a194879000@linaro.org>
+References: <20221123061635.32025-1-billy_tsai@aspeedtech.com>
+ <20221123061635.32025-2-billy_tsai@aspeedtech.com>
+ <c4b188b1-06a4-3cb0-a758-e12942e1f67b@linaro.org>
+ <ce99a709-ba4a-eb53-39ac-88a194879000@linaro.org>
+Message-ID: <SG2PR06MB3365AE9D075601CB62C6E7F78B50A@SG2PR06MB3365.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 08/06/2023 04:18, Billy Tsai wrote:
-> Document the compatible for aspeed,ast2600-pwm device.
-> 
-> Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
-> ---
->  .../bindings/pwm/aspeed,ast2600-pwm.yaml      | 38 +++++++++++++++++++
->  1 file changed, 38 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/pwm/aspeed,ast2600-pwm.yaml
-> 
-> diff --git a/Documentation/devicetree/bindings/pwm/aspeed,ast2600-pwm.yaml b/Documentation/devicetree/bindings/pwm/aspeed,ast2600-pwm.yaml
-> new file mode 100644
-> index 000000000000..a9e040263578
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/pwm/aspeed,ast2600-pwm.yaml
-> @@ -0,0 +1,38 @@
-> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-> +# Copyright (C) 2021 Aspeed, Inc.
-> +%YAML 1.2
-> +---
-> +$id: http://devicetree.org/schemas/pwm/aspeed,ast2600-pwm.yaml#
-> +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> +
-> +title: Aspeed Ast2600 PWM controller
-> +
-> +maintainers:
-> +  - Billy Tsai <billy_tsai@aspeedtech.com>
-> +
-> +description: |
-> +  The Aspeed PWM controller supports up to 1 PWM outputs.
+        On 23/11/2022 09:24, Krzysztof Kozlowski wrote:
+        >> On 23/11/2022 07:16, Billy Tsai wrote:
+        >>> Add device binding for aspeed pwm-tach device which is a multi-function
+        >>> device include pwm and tach function.
+        >>
+        >> Subject: drop second, redundant "bindings".
 
-This does not look right.
+        > Where did you implement this comment in your v6?
 
-> +
-> +allOf:
-> +  - $ref: pwm.yaml#
-> +
-> +properties:
-> +  compatible:
-> +    enum:
-> +      - aspeed,ast2600-pwm
-> +
-> +  "#pwm-cells":
-> +    const: 3
+Sorry, I guess by "Subject: drop second, redundant "bindings"" you meant to remove the second "bindings" string from my subject. So I change the subject from "dt-bindings: hwmon: Add bindings for aspeed tach controller" and "dt-bindings: pwm: Add bindings for aspeed pwm controller" in v4 to "dt-bindings: hwmon: Add ASPEED TACH Control documentation" and "dt-bindings: pwm: Add ASPEED PWM Control documentation" in v6.
+If I have misunderstood your comment, please let me know.
 
-3 cells? For one PWM? What are they?
+        >> Also use proper PATCH prefix.
 
-> +
-> +  clocks:
-> +    maxItems: 1
-> +
-> +  resets:
-> +    maxItems: 1
-> +
-> +required:
-> +  - compatible
-> +  - clocks
-> +  - resets
-> +
-> +additionalProperties: false
+        > Where did you implement this comment in your v6?
 
-Missing examples. All bindings need examples.
+I apologize for forgetting that part of the change.
 
-Best regards,
-Krzysztof
-
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20230608/0e58986b/attachment.htm>
