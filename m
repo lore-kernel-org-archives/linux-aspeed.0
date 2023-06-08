@@ -1,5 +1,5 @@
 From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Date: Thu, 8 Jun 2023 10:36:36 +0200
+Date: Thu, 8 Jun 2023 10:39:41 +0200
 Subject: [v6 1/4] dt-bindings: pwm: Add ASPEED PWM Control documentation
 In-Reply-To: <SG2PR06MB336528007D2685F8D95DF4078B50A@SG2PR06MB3365.apcprd06.prod.outlook.com>
 References: <20230608021839.12769-1-billy_tsai@aspeedtech.com>
@@ -8,7 +8,7 @@ References: <20230608021839.12769-1-billy_tsai@aspeedtech.com>
  <SG2PR06MB3365DD80EA2FD026D400C4A78B50A@SG2PR06MB3365.apcprd06.prod.outlook.com>
  <61278e12-ba39-4503-ca74-a7118b0f6e99@linaro.org>
  <SG2PR06MB336528007D2685F8D95DF4078B50A@SG2PR06MB3365.apcprd06.prod.outlook.com>
-Message-ID: <9f8a9208-62d4-0c96-7d1c-a452d3d7e799@linaro.org>
+Message-ID: <fb3cb26b-61d7-5f57-41de-f419aa50ac0b@linaro.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -38,10 +38,35 @@ On 08/06/2023 10:21, Billy Tsai wrote:
 >         > channel. What do you put then in the channel?
 > 
 > You need to put 0 in the cell of the channel, the example of the dts usage will like following:
+> 
+> pwm0: pwm0 at 1e610000 {
+>         compatible = "aspeed,ast2600-pwm";
+>         reg = <0x1e610000 0x8>;
+>         #pwm-cells = <3>;
+>         #address-cells = <1>;
+>         #size-cells = <0>;
+>         pinctrl-names = "default";
+>         pinctrl-0 = <&pinctrl_pwm0_default>;
+>         clocks = <&syscon ASPEED_CLK_AHB>;
+>         resets = <&syscon ASPEED_RESET_PWM>;
+>         status = "okay";
+> };
+> 
+> pwm1: pwm1 at 1e610010 {
+>         compatible = "aspeed,ast2600-pwm";
+>         reg = <0x1e610010 0x8>;
+>         #pwm-cells = <3>;
+>         #address-cells = <1>;
+>         #size-cells = <0>;
+>         pinctrl-names = "default";
+>         pinctrl-0 = <&pinctrl_pwm1_default>;
+>         clocks = <&syscon ASPEED_CLK_AHB>;
+>         resets = <&syscon ASPEED_RESET_PWM>;
+>         status = "okay";
 
-If you always put 0 isn't this a proof that it's wrong?
-
-
+BTW, these are not two PWM devices but one. I don't understand why you
+changed previous design into something like this, but this is not
+representing your hardware.
 
 Best regards,
 Krzysztof
