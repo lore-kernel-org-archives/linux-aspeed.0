@@ -1,30 +1,34 @@
-From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Date: Fri, 9 Jun 2023 13:29:30 +0200
-Subject: [PATCH v5 2/2] ARM: dts: aspeed: Adding Inventec Starscream BMC
+From: Chen.PJ 陳柏任 TAO <Chen.PJ@inventec.com>
+Date: Fri, 9 Jun 2023 11:52:28 +0000
+Subject: [PATCH v5 1/2] dt-bindings: arm: aspeed: add Inventec starscream-bmc
 In-Reply-To: <b039b1b2673644af84db8f803bc7d156@inventec.com>
 References: <b039b1b2673644af84db8f803bc7d156@inventec.com>
-Message-ID: <bff5ff40-fec2-123e-9896-6f5445289792@linaro.org>
+Message-ID: <c5f1fbb0e6754394af41eb5083f64d89@inventec.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 09/06/2023 07:59, Chen.PJ ??? TAO wrote:
-> Initial introduction of Inventec Starscream x86 family
-> equipped with AST2600 BMC SoC.
-> 
-> Signed-off-by: Chen PJ <Chen.pj@inventec.com>
-> 
-> ---
->  V4 -> V5:
->   - Remove devices not defined in dt-binding yet.
->  V3 -> V4:
->   - Reply with devicetree binding
->     https://lore.kernel.org/all/28f0ce0a82464083ae24f9ef2f598425 at inventec.com/
+Document the new compatibles used on Inventec starscream-bmc
 
-I received only this patch 2/2 and first patch is missing.
+Signed-off-by: Chen PJ <Chen.pj@inventec.com>
+---
+ Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 1 +
+ 1 file changed, 1 insertion(+)
 
-Best regards,
-Krzysztof
+diff --git a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+index 1b585e554791..fb4ce5df2fa0 100644
+--- a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
++++ b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+@@ -82,6 +82,7 @@ properties:
+               - ibm,everest-bmc
+               - ibm,rainier-bmc
+               - ibm,tacoma-bmc
++              - inventec,starscream-bmc
+               - inventec,transformer-bmc
+               - jabil,rbp-bmc
+               - nuvia,dc-scm-bmc
+-- 
+2.25.1
 
