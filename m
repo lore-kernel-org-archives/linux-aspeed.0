@@ -1,19 +1,21 @@
-From: Chen-Yu Tsai <wens@csie.org>
-Date: Sun, 18 Jun 2023 00:51:32 +0800
+From: Doug Anderson <dianders@chromium.org>
+Date: Sat, 17 Jun 2023 10:57:23 -0700
 Subject: patches dropped from drm-misc-next [Was: Re: [PATCH 00/53] drm:
  Convert to platform remove callback returning] void
 In-Reply-To: <20230617161222.wy55pbomnrrlfy5u@pengutronix.de>
 References: <20230507162616.1368908-1-u.kleine-koenig@pengutronix.de>
  <20230601154002.uv2wfatpb7b45duz@pengutronix.de> <CAD=FV=WvP--wJwBQtnSoW_xb57R1Wf9dH0XzWxe+NorczXfeAw@mail.gmail.com>
  <20230617161222.wy55pbomnrrlfy5u@pengutronix.de>
-Message-ID: <CAGb2v676WBuHeN5cLNZEF0FHRu=jsNhVxN50pnZCMbqGFPYmLw@mail.gmail.com>
+Message-ID: <CAD=FV=U5gbMUNteyyFcTvHVBDWzfthM0aDirJC+yXGovDwMOBA@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sun, Jun 18, 2023 at 12:13?AM Uwe Kleine-K?nig
+Hi,
+
+On Sat, Jun 17, 2023 at 9:15?AM Uwe Kleine-K?nig
 <u.kleine-koenig@pengutronix.de> wrote:
 >
 > [expanding recipents by the other affected persons]
@@ -107,9 +109,24 @@ On Sun, Jun 18, 2023 at 12:13?AM Uwe Kleine-K?nig
 > my/these patches? Can c2807ecb5290 please be merged into drm-misc-next
 > again?
 
-AFAIK drm-misc/for-linux-next cuts off at -rc6, at which point any patches
-merged get queued up for -next-next. I think that's what happened to your
-patches?
+Actually, it was probably a mistake that these patches got merged to
+linuxnext during the 4 days that you noticed. However, your patches
+aren't dropped and are still present in drm-misc-next.
 
+drm-misc has a bit of a unique model and it's documented fairly well here:
 
-ChenYu
+https://drm.pages.freedesktop.org/maintainer-tools/drm-misc.html
+
+The key is that committers can commit to drm-misc-next _at any time_
+regardless of the merge window. The drm-misc merge strategy makes this
+OK. Specifically, when it's late in the linux cycle then drm-misc-next
+is supposed to stop merging to linuxnext. Then, shortly after the
+merge window closes, patches will start flowing again.
+
+So basically your patches are landed and should even keep the same git
+hashes when they eventually make it to Linux. They just won't land for
+another release cycle of Linux.
+
+Hope that makes sense!
+
+-Doug
