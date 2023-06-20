@@ -1,32 +1,59 @@
-From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Date: Mon, 19 Jun 2023 10:03:06 +0200
-Subject: [PATCH v5 1/2] dt-bindings: arm: aspeed: add Inventec
- starscream-bmc
-In-Reply-To: <832a9af9c9024ed3b7bee0d36a482837@inventec.com>
-References: <20230619064249.3623-1-chen.pj@inventec.com>
- <2a9e503b-7a5b-3b1e-a912-5d54a23c1ca1@linaro.org>
- <832a9af9c9024ed3b7bee0d36a482837@inventec.com>
-Message-ID: <68262eba-c9b7-5c3c-acb1-1c651931e959@linaro.org>
+From: Joel Stanley <joel@jms.id.au>
+Date: Tue, 20 Jun 2023 13:52:57 +0930
+Subject: [PATCH] ARM: dts: aspeed: Add AST2600 VUARs
+Message-ID: <20230620042257.73665-1-joel@jms.id.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 19/06/2023 09:47, Chen.PJ ??? TAO wrote:
-> Hi Krzysztof,
-> 
-> Sorry for brothering you and thanks for your patience.
-> 
-> I use "git imap send" and can only send two patch separately.
-> After your instruction, we setup the smtp server and now send two patch together.
-> 
-> But it seems still not enough.
-> Did you mean we need to combine two patch that modify the document and dts in "one" patch?
+The AST2600 has two more vuarts, placed between the existing two in the
+memory map.
 
-No, I meant the second part of my message. The long one, explaining in
-details what you should do.
+Signed-off-by: Joel Stanley <joel@jms.id.au>
+---
+ arch/arm/boot/dts/aspeed-g6.dtsi | 20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)
 
-Best regards,
-Krzysztof
+diff --git a/arch/arm/boot/dts/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed-g6.dtsi
+index cc2f8b785917..d1da756690d9 100644
+--- a/arch/arm/boot/dts/aspeed-g6.dtsi
++++ b/arch/arm/boot/dts/aspeed-g6.dtsi
+@@ -716,6 +716,16 @@ vuart1: serial at 1e787000 {
+ 				status = "disabled";
+ 			};
+ 
++			vuart3: serial at 1e787800 {
++				compatible = "aspeed,ast2500-vuart";
++				reg = <0x1e787800 0x40>;
++				reg-shift = <2>;
++				interrupts = <GIC_SPI 180 IRQ_TYPE_LEVEL_HIGH>;
++				clocks = <&syscon ASPEED_CLK_APB2>;
++				no-loopback-test;
++				status = "disabled";
++			};
++
+ 			vuart2: serial at 1e788000 {
+ 				compatible = "aspeed,ast2500-vuart";
+ 				reg = <0x1e788000 0x40>;
+@@ -726,6 +736,16 @@ vuart2: serial at 1e788000 {
+ 				status = "disabled";
+ 			};
+ 
++			vuart4: serial at 1e788800 {
++				compatible = "aspeed,ast2500-vuart";
++				reg = <0x1e788800 0x40>;
++				reg-shift = <2>;
++				interrupts = <GIC_SPI 181 IRQ_TYPE_LEVEL_HIGH>;
++				clocks = <&syscon ASPEED_CLK_APB2>;
++				no-loopback-test;
++				status = "disabled";
++			};
++
+ 			uart2: serial at 1e78d000 {
+ 				compatible = "ns16550a";
+ 				reg = <0x1e78d000 0x20>;
+-- 
+2.39.2
 
