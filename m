@@ -1,199 +1,53 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Mon, 19 Jun 2023 16:20:12 +0200
-Subject: patches dropped from drm-misc-next [Was: Re: [PATCH 00/53] drm:
- Convert to platform remove callback returning] void
-In-Reply-To: <vegkiv4puxederjvonyyqsg4j5swpi2h7ttg7ng6gq2tibk4gy@afa5vexshp7q>
-References: <CAD=FV=WvP--wJwBQtnSoW_xb57R1Wf9dH0XzWxe+NorczXfeAw@mail.gmail.com>
- <20230617161222.wy55pbomnrrlfy5u@pengutronix.de> <CAD=FV=U5gbMUNteyyFcTvHVBDWzfthM0aDirJC+yXGovDwMOBA@mail.gmail.com>
- <20230618123915.hmy66z7e532jhwgk@pengutronix.de> <jlq2xayh4dxfigfsh2fms2kt4hlrqcwxblffmqq7czbhqhhvz7@hsvol72f5i3y>
- <20230618162950.6th2yo66baqay5mv@pengutronix.de> <vxjp5c4wojcvbnp3ghsspwkgrc4mjmskzl56jkuxlgfhcji7kx@m3hg525p7y6a>
- <20230619105342.ugf5gz26gcalcsi6@pengutronix.de> <a6ex232lwyovzzazfh6jfvlwszppr2624czgcc5sa4nthkgecf@asauiw3rf4vi>
- <CAMuHMdWERLXOa4bQvsb7=gx+Q=Hn8v=XJZxahV0j3Vw1xKUYiQ@mail.gmail.com> <vegkiv4puxederjvonyyqsg4j5swpi2h7ttg7ng6gq2tibk4gy@afa5vexshp7q>
-Message-ID: <CAMuHMdXf5Pao+Fjf42iRV_iMFEcb+F=s09NG+mudB-L5wWF_OA@mail.gmail.com>
+From: Lei Yu <yulei.sh@bytedance.com>
+Date: Sun, 25 Jun 2023 11:07:53 +0800
+Subject: [External] Re: [PATCH] usb: gadget: aspeed: fix buffer overflow
+In-Reply-To: <2023062146-stony-lair-b6a3@gregkh>
+References: <HK0PR06MB32022348EA65805C7109B7D080329@HK0PR06MB3202.apcprd06.prod.outlook.com>
+ <CAGm54UExHOBw61DJNqxvW67OSr60fQ+Q247t63RzymiMOmHmFg@mail.gmail.com>
+ <HK0PR06MB320203EF8E3AD14C34359B0580329@HK0PR06MB3202.apcprd06.prod.outlook.com>
+ <Y1ueEYJk2epT/g4J@kroah.com> <HK0PR06MB32024F58191E17DC5ABC99F380329@HK0PR06MB3202.apcprd06.prod.outlook.com>
+ <Y1uyssu84kl1INSR@kroah.com> <CAGm54UGmp=kTKGLhEfENF4SqkvRt_GcpuGH_g5PjtQiBkwtOsA@mail.gmail.com>
+ <TY2PR06MB321303972156248AB08CAB2480EB9@TY2PR06MB3213.apcprd06.prod.outlook.com>
+ <CAGm54UHWhRQsvaBQM7mgfP2A5os=mYDTfKS9qfS0C5_9XkcrSA@mail.gmail.com>
+ <CAGm54UG2uD2jruRc33Xm4izepYpuFNBBcGe594as8_fx1uEWQg@mail.gmail.com> <2023062146-stony-lair-b6a3@gregkh>
+Message-ID: <CAGm54UGarmoR-LT=hosC3ChAXvV2Pt4=GYWc=cxZV6j3yOo=GQ@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Maxime,
-
-On Mon, Jun 19, 2023 at 4:02?PM Maxime Ripard <mripard@kernel.org> wrote:
-> On Mon, Jun 19, 2023 at 03:25:28PM +0200, Geert Uytterhoeven wrote:
-> > On Mon, Jun 19, 2023 at 2:51?PM Maxime Ripard <mripard@kernel.org> wrote:
-> > > On Mon, Jun 19, 2023 at 12:53:42PM +0200, Uwe Kleine-K?nig wrote:
-> > > > On Mon, Jun 19, 2023 at 11:45:37AM +0200, Maxime Ripard wrote:
-> > > > > On Sun, Jun 18, 2023 at 06:29:50PM +0200, Uwe Kleine-K?nig wrote:
-> > > > > > On Sun, Jun 18, 2023 at 04:32:55PM +0200, Maxime Ripard wrote:
-> > > > > > > On Sun, Jun 18, 2023 at 02:39:15PM +0200, Uwe Kleine-K?nig wrote:
-> > > > > > > > On Sat, Jun 17, 2023 at 10:57:23AM -0700, Doug Anderson wrote:
-> > > > > > > > > On Sat, Jun 17, 2023 at 9:15?AM Uwe Kleine-K?nig
-> > > > > > > > > <u.kleine-koenig@pengutronix.de> wrote:
-> > > > > > > > > > Together with the patches that were applied later the topmost commit
-> > > > > > > > > > from this series is c2807ecb5290 ("drm/omap: Convert to platform remove
-> > > > > > > > > > callback returning void"). This commit was part for the following next
-> > > > > > > > > > tags:
-> > > > > > > > > >
-> > > > > > > > > >         $ git tag -l --contains c2807ecb5290
-> > > > > > > > > >         next-20230609
-> > > > > > > > > >         next-20230613
-> > > > > > > > > >         next-20230614
-> > > > > > > > > >         next-20230615
-> > > > > > > > > >
-> > > > > > > > > > However in next-20230616 they are missing. In next-20230616
-> > > > > > > > > > drm-misc/for-linux-next was cf683e8870bd4be0fd6b98639286700a35088660.
-> > > > > > > > > > Compared to c2807ecb5290 this adds 1149 patches but drops 37 (that are
-> > > > > > > > > > also not included with a different commit id). The 37 patches dropped
-> > > > > > > > > > are 13cdd12a9f934158f4ec817cf048fcb4384aa9dc..c2807ecb5290:
-> > > > > > > > > >
-> > > > > > > > > >         $ git shortlog -s 13cdd12a9f934158f4ec817cf048fcb4384aa9dc..c2807ecb5290
-> > > > > > > > > >              1  Christophe JAILLET
-> > > > > > > > > >              2  Jessica Zhang
-> > > > > > > > > >              5  Karol Wachowski
-> > > > > > > > > >              1  Laura Nao
-> > > > > > > > > >             27  Uwe Kleine-K?nig
-> > > > > > > > > >              1  Wang Jianzheng
-> > > > > > > > > >
-> > > > > > > > > >
-> > > > > > > > > > I guess this was done by mistake because nobody told me about dropping
-> > > > > > > > > > my/these patches? Can c2807ecb5290 please be merged into drm-misc-next
-> > > > > > > > > > again?
-> > > > > > > > >
-> > > > > > > > > Actually, it was probably a mistake that these patches got merged to
-> > > > > > > > > linuxnext during the 4 days that you noticed. However, your patches
-> > > > > > > > > aren't dropped and are still present in drm-misc-next.
-> > > > > > > > >
-> > > > > > > > > drm-misc has a bit of a unique model and it's documented fairly well here:
-> > > > > > > > >
-> > > > > > > > > https://drm.pages.freedesktop.org/maintainer-tools/drm-misc.html
-> > > > > > > >
-> > > > > > > > Is there a flaw then in this unique model (or its implementation) when
-> > > > > > > > drm-misc/for-linux-next moves in a non-fast-forward manner? This isn't
-> > > > > > > > expected, is it?
-> > > > > > >
-> > > > > > > There's no expectation afaik. Any tree merged in linux-next can be
-> > > > > > > rebased, drop a patch, amend one, etc. without any concern.
-> > > > > >
-> > > > > > I agree that there are no rules broken for a tree that is included in
-> > > > > > next and a maintainer is free to rewrite their tree independant of the
-> > > > > > tree being included in next.
-> > > > > >
-> > > > > > Still I think that shouldn't be used as an excuse.
-> > > > >
-> > > > > As an excuse for what?
-> > > >
-> > > > Just because the rules for trees in next allow the merged branch to be
-> > > > rewritten, shouldn't be used to justify rewriting the branch.
-> > > >
-> > > > IMHO you still should ensure that only commits make it into any next
-> > > > snapshot via your tree before X-rc1 for some X (e.g. v6.5) that you
-> > > > intend to be included in X-rc1.
-> > >
-> > > That's never been a next rule either. Rust support has been in next for
-> > > almost a year without being sent as a PR for example.
-> >
-> > https://elixir.bootlin.com/linux/latest/source/Documentation/process/2.Process.rst#L297
-> >
-> >    "The linux-next tree is, by design, a snapshot of what the mainline
-> >     is expected to look like after the next merge window closes."
-> >
-> > The general rule for linux-next is that its contents are intended to end
-> > up in the next kernel release, and that it should not contain commits
-> > that are intended for the next-next release, cfr. what Stephen sends
-> > out to new trees:
-> >
-> >    "You will need to ensure that the patches/commits in your tree/series have
-> >     been:
-> >             [...]
-> >          * destined for the current or next Linux merge window."
-> >
-> > and what he requests regularly in his announces, e.g.:
-> >
-> >    "Please do not add any v6.4 related commits to your linux-next included
-> >     branches until after v6.3-rc1 has been released."
+On Thu, Jun 22, 2023 at 12:00?AM Greg Kroah-Hartman
+<gregkh@linuxfoundation.org> wrote:
 >
-> Which is why those patches aren't in next anymore.
-
-So why were they in linux-next before?
-Was this a genuine mistake (things happen), or is there process
-or tooling to improve?
-
-> > AFAIU, the exception to the rule is new, self-contained, and sometimes
-> > controversial development, which may have to cook for a few more cycles,
-> > if it ends up in a PR at all.
-> >
-> > > > > > For me, if a maintainer puts some patch into next that's a statement
-> > > > > > saying (approximately) "I think this patch is fine and I intend to
-> > > > > > send it to Linus during the next merge window.".
+> On Wed, Jun 21, 2023 at 08:02:14PM +0800, Lei Yu wrote:
+> > On Wed, Dec 21, 2022 at 10:26?AM Lei Yu <yulei.sh@bytedance.com> wrote:
+> > >
+> > > On Wed, Dec 21, 2022 at 10:17 AM Neal Liu <neal_liu@aspeedtech.com> wrote:
+> > > > > > > > > Using rndis is able to set MTU to 2000, and the issue can be
+> > > > > reproduced.
 > > > > >
-> > > > > I mean, that's what we're saying and doing?
+> > > > > USB ecm is also tested and it is possible to set MTU to 2000, and could
+> > > > > reproduce the issue.
+> > > > > So I think this patch is needed anyway.
+> > > > >
+> > > > > @Neal Liu Could you kindly help to verify the USB ECM case?
 > > > >
-> > > > No, on 2023-06-09 I assumed that my patches will go into v6.5-rc1 (as it
-> > > > was part of next-20230609). A few days later however the patches were
-> > > > dropped.
-> > > >
-> > > > The two options that would have made the experience smoother for me are:
-> > > >
-> > > >  a) keep c2807ecb5290 in next and send it for v6.5-rc1; or
+> > > > How to set MTU to 2000 on USB ECM case? I remember last time I cannot set by using "ifconfig ..."
+> > > > Regardless ECM or RNDIS, I agree this patch is still needed.
 > > >
-> > > That's not an option. You were simply too late for v6.5-rc1, unless you
-> > > expect us to get rid of timezones and work on week-ends. But surely you
-> > > don't.
+> > > You were able to set MTU to 2000 for RNDIS but not for NCM.
+> > > @Greg Kroah-Hartman indicated that RNDIS should not be used anymore.
+> > > So I tested ECM and verified it could set MTU 2000 and the issue could
+> > > be reproduced.
 > >
-> > I don't think anyone expects you to do that...
+> > This patch fixes the kernel oops in the aspeed-vhub driver for both
+> > USB ECM and RNDIS.
+> > It now has an Acked-by from benh and Reviewed-by from neal_liu
 > >
-> > > >  b) keep c2807ecb5290 in a branch that doesn't result it entering next
-> > > >     before v6.5-rc1.
-> > >
-> > > All the drm-misc committers use dim. If that's a concern for you, feel
-> > > free to send a patch addressing this to dim.
-> >
-> > So you say this is an issue with the tooling? ;-)
-> > If the tooling breaks the rules, perhaps the tooling should be fixed?
+> > Should we merge this patch?
 >
-> We've been using dim for more than 5 years. It doesn't seem to work too bad?
+> Can you please resend it?
 
-I don't know anything about dim, so I cannot commit on that.
-
-> And it does feel like the goalposts are moving there: the discussion
-> started by "you shouldn't rebase a tree" and is now at "patches should
-> never be in a next branch if they can't reach the next merge window,
-> even though it's not apparent yet"
-
-There is no such anti-rebasing rule for linux-next.
-Some branches and some subsystems do have a non-rebasing rule,
-but that's not applicable here, AFAIU.
-
-Besides, won't you have to rebase the remaining commits from
-drm-misc-next on top of v6.5-rc1 anyway later?
-
-> But yeah, I now that complaining about how much drm-misc sucks is fun
-> and all, but it's still not clear to me what a potential solution to
-> this would be?
-
-I'm so glad I'm not the one making personal attacks on drm-misc ;-)
-
-> Knowing that we can't rebase or close drm-misc-next, and that it should
-> be automated in dim somehow, what would that fix be?
-
-Again, I don't know what dim does.
-But I think the solution involves not merging anything in drm-next
-if there is reason to believe it won't make the next merge window
-(in this case: when it is applied to drm-misc-next after the cut-off point).
-
-Personally, I use foo-for-vX.Y branches.  Despite some of my
-foo-for-v6.6 branches already having new commits, I just hold off
-merging any of them in a for-next branch until after v6.5-rc1.
-
-Thanks!
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
--- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert at linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+I just find that the patch is already merged in v6.2
+Thanks.
