@@ -1,36 +1,35 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Fri, 29 Jul 2022 09:44:25 +0930
-Subject: [PATCH 1/6] ARM: refresh defconfig files
-In-Reply-To: <20220721141325.2413920-2-arnd@kernel.org>
-References: <20220721141325.2413920-1-arnd@kernel.org>
- <20220721141325.2413920-2-arnd@kernel.org>
-Message-ID: <833e10d7-ceb1-4859-8028-e724d41421f1@www.fastmail.com>
+From: PJ Chen <chen.pj@inventec.com>
+Date: Mon, 3 Jul 2023 14:02:21 +0800
+Subject: [PATCH v7 1/2] dt-bindings: arm: aspeed: add Inventec starscream-bmc
+Message-ID: <20230703060222.24263-1-chen.pj@inventec.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+From: Chen PJ <Chen.pj@inventec.com>
 
+Document the new compatibles used on Inventec starscream-bmc
 
-On Thu, 21 Jul 2022, at 23:43, Arnd Bergmann wrote:
-> From: Arnd Bergmann <arnd@arndb.de>
->
-> A lot of Kconfig options have changed over the years, and we tend
-> to not do a blind 'make defconfig' to refresh the files, to ensure
-> we catch options that should not have gone away.
->
-> I used some a bit of scripting to only rework the bits where an
-> option moved around in any of the defconfig files, without also
-> dropping any of the other lines, to make it clearer which options
-> we no longer have.
->
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> ---
->  arch/arm/configs/am200epdkit_defconfig    |  26 ++---
->  arch/arm/configs/aspeed_g4_defconfig      |  16 +--
->  arch/arm/configs/aspeed_g5_defconfig      |  16 +--
+Signed-off-by: Chen PJ <Chen.pj@inventec.com>
+Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+---
+ Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 1 +
+ 1 file changed, 1 insertion(+)
 
-For the Aspeed bits:
+diff --git a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+index 1b585e554791..fb4ce5df2fa0 100644
+--- a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
++++ b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+@@ -82,6 +82,7 @@ properties:
+               - ibm,everest-bmc
+               - ibm,rainier-bmc
+               - ibm,tacoma-bmc
++              - inventec,starscream-bmc
+               - inventec,transformer-bmc
+               - jabil,rbp-bmc
+               - nuvia,dc-scm-bmc
+-- 
+2.25.1
 
-Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
