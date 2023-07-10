@@ -1,33 +1,47 @@
-From: Jiasheng Jiang <jiasheng@iscas.ac.cn>
-Date: Fri,  7 Jul 2023 10:16:25 +0800
-Subject: [PATCH] soc: aspeed: socinfo: Add kfree for kstrdup
-Message-ID: <20230707021625.7727-1-jiasheng@iscas.ac.cn>
+From: Joel Stanley <joel@jms.id.au>
+Date: Mon, 10 Jul 2023 04:22:18 +0000
+Subject: [PATCH] soc: aspeed: uart-routing: Use __sysfs_match_string
+In-Reply-To: <20230628083735.19946-2-zev@bewilderbeest.net>
+References: <20230628083735.19946-2-zev@bewilderbeest.net>
+Message-ID: <CACPK8Xei-295TNmkjg53qXyQHwSUf3s+Sj87_o7ZEw1G0+NPpw@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add kfree() in the later error handling in order to avoid memory leak.
+On Wed, 28 Jun 2023 at 08:43, Zev Weiss <zev@bewilderbeest.net> wrote:
+>
+> The existing use of match_string() caused it to reject 'echo foo' due
+> to the implicitly appended newline, which was somewhat ergonomically
+> awkward and inconsistent with typical sysfs behavior.  Using the
+> __sysfs_* variant instead provides more convenient and consistent
+> linefeed-agnostic behavior.
 
-Fixes: e0218dca5787 ("soc: aspeed: Add soc info driver")
-Signed-off-by: Jiasheng Jiang <jiasheng@iscas.ac.cn>
----
- drivers/soc/aspeed/aspeed-socinfo.c | 1 +
- 1 file changed, 1 insertion(+)
+Nice.
 
-diff --git a/drivers/soc/aspeed/aspeed-socinfo.c b/drivers/soc/aspeed/aspeed-socinfo.c
-index 1ca140356a08..3f759121dc00 100644
---- a/drivers/soc/aspeed/aspeed-socinfo.c
-+++ b/drivers/soc/aspeed/aspeed-socinfo.c
-@@ -137,6 +137,7 @@ static int __init aspeed_socinfo_init(void)
- 
- 	soc_dev = soc_device_register(attrs);
- 	if (IS_ERR(soc_dev)) {
-+		kfree(attrs->machine);
- 		kfree(attrs->soc_id);
- 		kfree(attrs->serial_number);
- 		kfree(attrs);
--- 
-2.25.1
+Fixes: c6807970c3bc ("soc: aspeed: Add UART routing support")
+Reviewed-by: Joel Stanley <joel@jms.id.au>
 
+>
+> Signed-off-by: Zev Weiss <zev@bewilderbeest.net>
+> ---
+>  drivers/soc/aspeed/aspeed-uart-routing.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/soc/aspeed/aspeed-uart-routing.c b/drivers/soc/aspeed/aspeed-uart-routing.c
+> index ef8b24fd1851..59123e1f27ac 100644
+> --- a/drivers/soc/aspeed/aspeed-uart-routing.c
+> +++ b/drivers/soc/aspeed/aspeed-uart-routing.c
+> @@ -524,7 +524,7 @@ static ssize_t aspeed_uart_routing_store(struct device *dev,
+>         struct aspeed_uart_routing_selector *sel = to_routing_selector(attr);
+>         int val;
+>
+> -       val = match_string(sel->options, -1, buf);
+> +       val = __sysfs_match_string(sel->options, -1, buf);
+>         if (val < 0) {
+>                 dev_err(dev, "invalid value \"%s\"\n", buf);
+>                 return -EINVAL;
+> --
+> 2.40.0.5.gf6e3b97ba6d2.dirty
+>
