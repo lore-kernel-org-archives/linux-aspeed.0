@@ -1,41 +1,29 @@
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Date: Wed, 12 Jul 2023 12:19:37 +0200
+From: Christian König <christian.koenig@amd.com>
+Date: Wed, 12 Jul 2023 12:46:33 +0200
 Subject: [PATCH RFC v1 00/52] drm/crtc: Rename struct drm_crtc::dev to
  drm_dev
 In-Reply-To: <20230712094702.1770121-1-u.kleine-koenig@pengutronix.de>
 References: <20230712094702.1770121-1-u.kleine-koenig@pengutronix.de>
-Message-ID: <abf26a82-4f17-51f2-5753-785f8516a81a@suse.de>
+Message-ID: <94eb6e4d-9384-152f-351b-ebb217411da9@amd.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi
-
 Am 12.07.23 um 11:46 schrieb Uwe Kleine-K?nig:
 > Hello,
-> 
+>
 > while I debugged an issue in the imx-lcdc driver I was constantly
 > irritated about struct drm_device pointer variables being named "dev"
 > because with that name I usually expect a struct device pointer.
-> 
+>
 > I think there is a big benefit when these are all renamed to "drm_dev".
-
-If you rename drm_crtc.dev, you should also address *all* other data 
-structures.
-
 > I have no strong preference here though, so "drmdev" or "drm" are fine
 > for me, too. Let the bikesheding begin!
-
-We've discussed this to death. IIRC 'drm' would be the prefered choice.
-
-Best regards
-Thomas
-
-> 
+>
 > Some statistics:
-> 
+>
 > $ git grep -ohE 'struct drm_device *\* *[^ (),;]*' v6.5-rc1 | sort | uniq -c | sort -n
 >        1 struct drm_device *adev_to_drm
 >        1 struct drm_device *drm_
@@ -57,12 +45,12 @@ Thomas
 >      234 struct drm_device *drm_dev
 >      611 struct drm_device *drm
 >     4190 struct drm_device *dev
-> 
+>
 > This series starts with renaming struct drm_crtc::dev to drm_dev. If
 > it's not only me and others like the result of this effort it should be
 > followed up by adapting the other structs and the individual usages in
 > the different drivers.
-> 
+>
 > To make this series a bit easier handleable, I first added an alias for
 > drm_crtc::dev, then converted the drivers one after another and the last
 > patch drops the "dev" name. This has the advantage of being easier to
@@ -71,13 +59,31 @@ Thomas
 > in this case the remaining patches can still go in (apart from the last
 > one of course). Maybe it also makes sense to delay applying the last
 > patch by one development cycle?
-> 
+
+When you automatically generate the patch (with cocci for example) I 
+usually prefer a single patch instead.
+
+Background is that this makes merge conflicts easier to handle and detect.
+
+When you have multiple patches and a merge conflict because of some 
+added lines using the old field the build breaks only on the last patch 
+which removes the old field.
+
+In such cases reviewing the patch just means automatically re-generating 
+it and double checking that you don't see anything funky.
+
+Apart from that I honestly absolutely don't care what the name is.
+
+Cheers,
+Christian.
+
+>
 > The series was compile tested for arm, arm64, powerpc and amd64 using an
 > allmodconfig (though I only build drivers/gpu/).
-> 
+>
 > Best regards
 > Uwe
-> 
+>
 > Uwe Kleine-K?nig (52):
 >    drm/crtc: Start renaming struct drm_crtc::dev to drm_dev
 >    drm/core: Use struct drm_crtc::drm_dev instead of struct drm_crtc::dev
@@ -161,7 +167,7 @@ Thomas
 >    drm/xen: Use struct drm_crtc::drm_dev instead of struct drm_crtc::dev
 >    drm/xlnx: Use struct drm_crtc::drm_dev instead of struct drm_crtc::dev
 >    drm/crtc: Complete renaming struct drm_crtc::dev to drm_dev
-> 
+>
 >   drivers/gpu/drm/amd/amdgpu/amdgpu_display.c   |  18 +-
 >   drivers/gpu/drm/amd/amdgpu/amdgpu_kms.c       |   6 +-
 >   drivers/gpu/drm/amd/amdgpu/amdgpu_pll.c       |   6 +-
@@ -357,20 +363,6 @@ Thomas
 >   include/drm/drm_atomic_helper.h               |   2 +-
 >   include/drm/drm_crtc.h                        |   4 +-
 >   194 files changed, 1296 insertions(+), 1264 deletions(-)
-> 
+>
 > base-commit: 06c2afb862f9da8dc5efa4b6076a0e48c3fbaaa5
 
--- 
-Thomas Zimmermann
-Graphics Driver Developer
-SUSE Software Solutions Germany GmbH
-Frankenstrasse 146, 90461 Nuernberg, Germany
-GF: Ivo Totev, Andrew Myers, Andrew McDonald, Boudien Moerman
-HRB 36809 (AG Nuernberg)
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: OpenPGP_signature
-Type: application/pgp-signature
-Size: 840 bytes
-Desc: OpenPGP digital signature
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20230712/ab07816a/attachment-0001.sig>
