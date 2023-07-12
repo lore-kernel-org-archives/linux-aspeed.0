@@ -1,20 +1,18 @@
-From: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Date: Wed, 12 Jul 2023 18:10:25 +0200
-Subject: [PATCH RFC v1 00/52] drm/crtc: Rename struct drm_crtc::dev to
- drm_dev
+From: Sean Paul <seanpaul@chromium.org>
+Date: Wed, 12 Jul 2023 14:31:02 -0400
+Subject: [Freedreno] [PATCH RFC v1 00/52] drm/crtc: Rename struct
+ drm_crtc::dev to drm_dev
 In-Reply-To: <87fs5tgpvv.fsf@intel.com>
-References: <20230712094702.1770121-1-u.kleine-koenig@pengutronix.de>
- <87fs5tgpvv.fsf@intel.com>
-Message-ID: <20230712161025.22op3gtzgujrhytb@pengutronix.de>
+References: <20230712094702.1770121-1-u.kleine-koenig@pengutronix.de> <87fs5tgpvv.fsf@intel.com>
+Message-ID: <CAOw6vbLO_UaXDbTCtAQJgthXOUMPqEV+c2MQhP-1DuK44OhGxw@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello Jani,
-
-On Wed, Jul 12, 2023 at 05:34:28PM +0300, Jani Nikula wrote:
+On Wed, Jul 12, 2023 at 10:52?AM Jani Nikula <jani.nikula@intel.com> wrote:
+>
 > On Wed, 12 Jul 2023, Uwe Kleine-K?nig <u.kleine-koenig@pengutronix.de> wrote:
 > > Hello,
 > >
@@ -54,43 +52,26 @@ On Wed, Jul 12, 2023 at 05:34:28PM +0300, Jani Nikula wrote:
 > > it's not only me and others like the result of this effort it should be
 > > followed up by adapting the other structs and the individual usages in
 > > the different drivers.
-> 
+>
 > I think this is an unnecessary change. In drm, a dev is usually a drm
-> device, i.e. struct drm_device *.
+> device, i.e. struct drm_device *. As shown by the numbers above.
+>
 
-Well, unless it's not. Prominently there is
+I'd really prefer this patch (series or single) is not accepted. This
+will cause problems for everyone cherry-picking patches to a
+downstream kernel (LTS or distro tree). I usually wouldn't expect
+sympathy here, but the questionable benefit does not outweigh the cost
+IM[biased]O.
 
-	struct drm_device {
-		...
-		struct device *dev;
-		...
-	};
-
-which yields quite a few code locations using dev->dev which is
-IMHO unnecessary irritating:
-
-	$ git grep '\<dev->dev' v6.5-rc1 drivers/gpu/drm | wc -l
-	1633
-
-Also the functions that deal with both a struct device and a struct
-drm_device often use "dev" for the struct device and then "ddev" for
-the drm_device (see for example amdgpu_device_get_pcie_replay_count()).
+Sean
 
 > If folks insist on following through with this anyway, I'm firmly in the
 > camp the name should be "drm" and nothing else.
-
-Up to now positive feedback is in the majority.
-
-Best regards
-Uwe
-
--- 
-Pengutronix e.K.                           | Uwe Kleine-K?nig            |
-Industrial Linux Solutions                 | https://www.pengutronix.de/ |
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 488 bytes
-Desc: not available
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20230712/317276cb/attachment-0001.sig>
+>
+>
+> BR,
+> Jani.
+>
+>
+> --
+> Jani Nikula, Intel Open Source Graphics Center
