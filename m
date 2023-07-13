@@ -1,69 +1,105 @@
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-Date: Wed, 12 Jul 2023 12:09:15 +0200
+From: Jammy Huang <jammy_huang@aspeedtech.com>
+Date: Thu, 13 Jul 2023 11:12:33 +0800
 Subject: [PATCH] media: aspeed: Fix memory overwrite if timing is 1600x900
-In-Reply-To: <20230712092606.2508-1-jammy_huang@aspeedtech.com>
+In-Reply-To: <461f3b88-87e6-32f2-3ed8-5764a9a6e162@molgen.mpg.de>
 References: <20230712092606.2508-1-jammy_huang@aspeedtech.com>
-Message-ID: <461f3b88-87e6-32f2-3ed8-5764a9a6e162@molgen.mpg.de>
+ <461f3b88-87e6-32f2-3ed8-5764a9a6e162@molgen.mpg.de>
+Message-ID: <e9a333d2-c633-2619-33fd-dd17816b7da8@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Dear Jammy,
+Hi Paul,
 
 
-Thank you very much for your patch.
+On 2023/7/12 ?? 06:09, Paul Menzel wrote:
+> Dear Jammy,
+>
+>
+> Thank you very much for your patch.
+>
+> Am 12.07.23 um 11:26 schrieb Jammy Huang:
+>> When capturing 1600x900, system could crash when system memory usage is
+>> tight.
+>
+> Please provide part of the trace, and if you have a commend to 
+> reproduce it, please also add it. Is it documented somewhere, that it 
+> needs to be aligned?
 
-Am 12.07.23 um 11:26 schrieb Jammy Huang:
-> When capturing 1600x900, system could crash when system memory usage is
-> tight.
+Sorry, but I didn't find trace when this issue happened.The system just 
+crash and reboot.
 
-Please provide part of the trace, and if you have a commend to reproduce 
-it, please also add it. Is it documented somewhere, that it needs to be 
-aligned?
+It just takes a few minutes to reproduce this issue using the way as below,
 
-> The size of macro block captured is 8x8. Therefore, we should make sure
-> the height of src-buf is 8 aligned to fix this issue.
-> 
-> Signed-off-by: Jammy Huang <jammy_huang@aspeedtech.com>
-> ---
->   drivers/media/platform/aspeed/aspeed-video.c | 4 ++--
->   1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/media/platform/aspeed/aspeed-video.c b/drivers/media/platform/aspeed/aspeed-video.c
-> index 374eb7781936..14594f55a77f 100644
-> --- a/drivers/media/platform/aspeed/aspeed-video.c
-> +++ b/drivers/media/platform/aspeed/aspeed-video.c
-> @@ -1130,7 +1130,7 @@ static void aspeed_video_get_resolution(struct aspeed_video *video)
->   static void aspeed_video_set_resolution(struct aspeed_video *video)
->   {
->   	struct v4l2_bt_timings *act = &video->active_timings;
-> -	unsigned int size = act->width * act->height;
-> +	unsigned int size = act->width * ALIGN(act->height, 8);
->   
->   	/* Set capture/compression frame sizes */
->   	aspeed_video_calc_compressed_size(video, size);
-> @@ -1147,7 +1147,7 @@ static void aspeed_video_set_resolution(struct aspeed_video *video)
->   		u32 width = ALIGN(act->width, 64);
->   
->   		aspeed_video_write(video, VE_CAP_WINDOW, width << 16 | act->height);
-> -		size = width * act->height;
-> +		size = width * ALIGN(act->height, 8);
+1. Use 1600x900 to display on host
 
-Maybe add a comment.
+2. Mount ISO through 'Virtual media' on OpenBMC's web
 
-Excuse my ignorance, but as `width` is already 64 bit aligned, how does 
-aligning the second factor make a difference for `size`? Can you give an 
-example?
+3. Run script as below on host to do sha continuously
 
->   	} else {
->   		aspeed_video_write(video, VE_CAP_WINDOW,
->   				   act->width << 16 | act->height);
-> 
-> base-commit: 2605e80d3438c77190f55b821c6575048c68268e
+#!/bin/bash
+
+while [ [1] ];
+do
+ ??????? find /media -type f -printf '"%h/%f"\n' | xargs sha256sum
+done
+
+4. Open KVM on OpenBMC's web
 
 
-Kind regards,
+I will add above information to next patch.
 
-Paul
+>
+>> The size of macro block captured is 8x8. Therefore, we should make sure
+>> the height of src-buf is 8 aligned to fix this issue.
+>>
+>> Signed-off-by: Jammy Huang <jammy_huang@aspeedtech.com>
+>> ---
+>> ? drivers/media/platform/aspeed/aspeed-video.c | 4 ++--
+>> ? 1 file changed, 2 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/drivers/media/platform/aspeed/aspeed-video.c 
+>> b/drivers/media/platform/aspeed/aspeed-video.c
+>> index 374eb7781936..14594f55a77f 100644
+>> --- a/drivers/media/platform/aspeed/aspeed-video.c
+>> +++ b/drivers/media/platform/aspeed/aspeed-video.c
+>> @@ -1130,7 +1130,7 @@ static void aspeed_video_get_resolution(struct 
+>> aspeed_video *video)
+>> ? static void aspeed_video_set_resolution(struct aspeed_video *video)
+>> ? {
+>> ????? struct v4l2_bt_timings *act = &video->active_timings;
+>> -??? unsigned int size = act->width * act->height;
+>> +??? unsigned int size = act->width * ALIGN(act->height, 8);
+>> ? ????? /* Set capture/compression frame sizes */
+>> ????? aspeed_video_calc_compressed_size(video, size);
+>> @@ -1147,7 +1147,7 @@ static void aspeed_video_set_resolution(struct 
+>> aspeed_video *video)
+>> ????????? u32 width = ALIGN(act->width, 64);
+>> ? ????????? aspeed_video_write(video, VE_CAP_WINDOW, width << 16 | 
+>> act->height);
+>> -??????? size = width * act->height;
+>> +??????? size = width * ALIGN(act->height, 8);
+>
+> Maybe add a comment.
+>
+> Excuse my ignorance, but as `width` is already 64 bit aligned, how 
+> does aligning the second factor make a difference for `size`? Can you 
+> give an example?
+>
+>> ????? } else {
+>> ????????? aspeed_video_write(video, VE_CAP_WINDOW,
+>> ???????????????????? act->width << 16 | act->height);
+>>
+>> base-commit: 2605e80d3438c77190f55b821c6575048c68268e
+>
+>
+> Kind regards,
+>
+> Paul
+
+-- 
+Best Regards
+Jammy
+
