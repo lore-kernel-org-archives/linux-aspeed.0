@@ -1,57 +1,147 @@
-From: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Date: Thu, 13 Jul 2023 17:39:36 +0200
-Subject: [Freedreno] [PATCH RFC v1 00/52] drm/crtc: Rename struct
- drm_crtc::dev to drm_dev
-In-Reply-To: <CAOw6vbKtjyUm+OqO7LSV1hDOMQATwkEWP4GzBbbXib0i5EviUQ@mail.gmail.com>
-References: <20230712094702.1770121-1-u.kleine-koenig@pengutronix.de>
- <87fs5tgpvv.fsf@intel.com>
- <CAOw6vbLO_UaXDbTCtAQJgthXOUMPqEV+c2MQhP-1DuK44OhGxw@mail.gmail.com>
- <20230713130337.fd2l67r23g2irifx@pengutronix.de>
- <CAOw6vbKtjyUm+OqO7LSV1hDOMQATwkEWP4GzBbbXib0i5EviUQ@mail.gmail.com>
-Message-ID: <20230713153936.k2m6aj34vptj5vf7@pengutronix.de>
+From: 蔡承達 <billyking19920205@gmail.com>
+Date: Fri, 14 Jul 2023 15:04:10 +0800
+Subject: [v6 2/4] dt-bindings: hwmon: Add ASPEED TACH Control documentation
+Message-ID: <CAGUgbhCqOJaEPjS96o2au21uW4NhqFScm4Ayd8PzOQvqxQ94SQ@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Jul 13, 2023 at 10:41:45AM -0400, Sean Paul wrote:
-> On Thu, Jul 13, 2023 at 9:04?AM Uwe Kleine-K?nig
-> > But even with the one-patch-per-rename approach I'd consider the
-> > renaming a net win, because ease of understanding code has a big value.
-> > It's value is not so easy measurable as "conflicts when backporting",
-> > but it also matters in say two years from now, while backporting
-> > shouldn't be an issue then any more.
-> 
-> You've rightly identified the conjecture in your statement. I've been
-> on both sides of the argument, having written/maintained drm code
-> upstream and cherry-picked changes to a downstream kernel. Perhaps
-> it's because drm's definition of dev is ingrained in my muscle memory,
-> or maybe it's because I don't do a lot of upstream development these
-> days, but I just have a hard time seeing the benefit here.
+        On 6/7/23 23:21, Billy Tsai wrote:
 
-I see that my change doesn't immediately benefit those who are already
-at home in drivers/gpu/drm. So it's quite understandable that someone in
-a senior role (long time contributor or maintainer) doesn't see a big
-upside.
+        > > >          > The code says:
 
-In contrast I think my change (with its indisputable cost) lowers the
-bar for new contributors to drm. IMHO that's something a maintainer has
-to have on their radar, too, and that's easily undervalued in my
-experience.
+        > > >
 
-Of course in the end it's about weighting the ups and downs. 
+        > > >          > In Aspeed AST2600 SoC features 16 TACH
+controllers, with each
+
+        > > >
+
+        > > >          > controller capable of supporting up to 1 input.
+
+        > > >
+
+        > > >          > which is a bit different. I guess there are no
+examples anymore,
+
+        > > >
+
+        > > >          > but I'd really like to see how this looks like in
+the devicetree file,
+
+        > > >
+
+        > > >          > and how the driver is supposed to
+distinguish/select the 16 inputs.
+
+        > > >
+
+        > > > Hi Roeck,
+
+        > > >
+
+        > > > The node in the devicetree file will looks like following:
+
+        > > >
+
+        > > > tach0: tach0 at 1e610008 {
+
+        > > >
+
+        > > >          compatible = "aspeed,ast2600-tach";
+
+        > > >
+
+        > > >          reg = <0x1e610008 0x8>;
+
+        > > >
+
+        > > >          #address-cells = <1>;
+
+        > > >
+
+        > > >          #size-cells = <0>;
+
+        > > >
+
+        > > >          pinctrl-names = "default";
+
+        > > >
+
+        > > >          pinctrl-0 = <&pinctrl_tach0_default>;
+
+        > > >
+
+        > > >          clocks = <&syscon ASPEED_CLK_AHB>;
+
+        > > >
+
+        > > >          resets = <&syscon ASPEED_RESET_PWM>;
+
+        > > >
+
+        > > >          status = "disabled";
+
+        > > >
+
+        > > > };
+
+        > > >
+
+
+
+        > > Neither reg nor pinctrl is mentioned in the bindings. Maybe
+that is not needed nowadays,
+
+        > > but I find it confusing.
+
+
+
+        > > Either case, it is highly unusual that there would be 16
+instances of this device
+
+        > > instead of one. Why is this done ? It doesn't really make sense
+to me.
+
+
+
+        > Having 16 instances of PWM and Tach is more compatible with our
+hardware design.
+
+        > This is because our register layout for PWM and Tach is not
+continuous.
+
+        > PWM0 used 0x0 0x4, Tach0 used 0x8 0xc
+
+        > PWM1 used 0x10 0x14, Tach1 used 0x18 0x1c
+
+        > ...
+
+        > Each PWM/Tach instance has its own controller register and is not
+dependent on others.
+
+
+
+Hi Guenter,
+
+
+
+Did you receive a response to my previous email?
+
+I would like to inquire if you have any further concerns regarding the PWM
+and Tach with 16 instances.
+
+
 
 Thanks
-Uwe
 
--- 
-Pengutronix e.K.                           | Uwe Kleine-K?nig            |
-Industrial Linux Solutions                 | https://www.pengutronix.de/ |
+
+
+Best Regards,
+
+Billy Tsai
 -------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 488 bytes
-Desc: not available
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20230713/e537c498/attachment-0001.sig>
+An HTML attachment was scrubbed...
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20230714/a77627bb/attachment-0001.htm>
