@@ -1,76 +1,45 @@
 From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Date: Fri, 14 Jul 2023 06:13:17 +0200
-Subject: [PATCH v2 2/2] ARM: dts: aspeed: yosemitev4: add Facebook
- Yosemite V4 BMC
-In-Reply-To: <20230714023502.3225096-3-Delphine_CC_Chiu@wiwynn.com>
-References: <20230712073752.54624-3-Delphine_CC_Chiu@wiwynn.com>
- <20230714023502.3225096-1-Delphine_CC_Chiu@wiwynn.com>
- <20230714023502.3225096-3-Delphine_CC_Chiu@wiwynn.com>
-Message-ID: <0e6e32db-40e1-aa9f-fc05-20f2c5bf544d@linaro.org>
+Date: Fri, 14 Jul 2023 09:13:53 +0200
+Subject: [v6 2/4] dt-bindings: hwmon: Add ASPEED TACH Control
+ documentation
+In-Reply-To: <CAGUgbhCqOJaEPjS96o2au21uW4NhqFScm4Ayd8PzOQvqxQ94SQ@mail.gmail.com>
+References: <CAGUgbhCqOJaEPjS96o2au21uW4NhqFScm4Ayd8PzOQvqxQ94SQ@mail.gmail.com>
+Message-ID: <0b9dd5cf-f4ca-2e6b-624d-0b451bbc2f30@linaro.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 14/07/2023 04:35, Delphine CC Chiu wrote:
-> Add linux device tree entry related to
-> Yosemite V4 specific devices connected to BMC SoC.
+On 14/07/2023 09:04, ??? wrote:
+
+>         > This is because our register layout for PWM and Tach is not
+> continuous.
 > 
-> Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
-> ---
->  arch/arm/boot/dts/Makefile                    |   1 +
->  .../dts/aspeed-bmc-facebook-yosemitev4.dts    | 577 ++++++++++++++++++
->  2 files changed, 578 insertions(+)
->  create mode 100644 arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev4.dts
+>         > PWM0 used 0x0 0x4, Tach0 used 0x8 0xc
 > 
-> diff --git a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
-> index 59829fc90315..871e6d271262 100644
-> --- a/arch/arm/boot/dts/Makefile
-> +++ b/arch/arm/boot/dts/Makefile
-> @@ -1631,6 +1631,7 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
->  	aspeed-bmc-facebook-galaxy100.dtb \
->  	aspeed-bmc-facebook-greatlakes.dtb \
->  	aspeed-bmc-facebook-minipack.dtb \
-> +	aspeed-bmc-facebook-yosemitev4.dtb \
->  	aspeed-bmc-facebook-tiogapass.dtb \
->  	aspeed-bmc-facebook-wedge40.dtb \
->  	aspeed-bmc-facebook-wedge100.dtb \
-> diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev4.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev4.dts
-> new file mode 100644
-> index 000000000000..cfe4838fae5a
-> --- /dev/null
-> +++ b/arch/arm/boot/dts/aspeed-bmc-facebook-yosemitev4.dts
-> @@ -0,0 +1,577 @@
-> +// SPDX-License-Identifier: GPL-2.0-or-later
-> +// Copyright 2022 Facebook Inc.
-> +
-> +/dts-v1/;
-> +#include "aspeed-g6.dtsi"
-> +#include <dt-bindings/gpio/aspeed-gpio.h>
-> +#include <dt-bindings/leds/leds-pca955x.h>
-> +#include <dt-bindings/i2c/i2c.h>
-> +
-> +/ {
-> +	model = "Facebook Yosemite V4 BMC";
-> +	compatible = "facebook,yosemitev4-bmc", "aspeed,ast2600";
-> +
-> +	aliases {
-> +		serial4 = &uart5;
-> +		serial5 = &uart6;
-> +		serial6 = &uart7;
-> +		serial7 = &uart8;
-> +		serial8 = &uart9;
-> +	};
-> +
-> +	chosen {
-> +		bootargs = "console=ttyS4,57600n8";
+>         > PWM1 used 0x10 0x14, Tach1 used 0x18 0x1c
+> 
+>         > ...
+> 
+>         > Each PWM/Tach instance has its own controller register and is not
+> dependent on others.
 
-Nothing improved, so you just ignored entire feedback and resent the same.
+Your email reply quoting style is very difficult to read.
 
-Sorry, that's not how responding to feedback works.
+> 
+> 
+> 
+> Hi Guenter,
+> 
+> 
+> 
+> Did you receive a response to my previous email?
+> 
+> I would like to inquire if you have any further concerns regarding the PWM
+> and Tach with 16 instances.
 
-NAK
+But isn't like this in all PWMs in all SoCs?
 
 Best regards,
 Krzysztof
