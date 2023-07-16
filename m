@@ -1,16 +1,16 @@
-From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Date: Sun, 16 Jul 2023 19:34:43 +0200
+From: Heiko Stuebner <heiko@sntech.de>
+Date: Mon, 17 Jul 2023 00:07:49 +0200
 Subject: [PATCH] clk: Explicitly include correct DT includes
 In-Reply-To: <20230714174342.4052882-1-robh@kernel.org>
 References: <20230714174342.4052882-1-robh@kernel.org>
-Message-ID: <6363b737-d849-83f2-8811-cb497f0222b0@linaro.org>
+Message-ID: <7247786.Sb9uPGUboI@phil>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 14/07/2023 19:43, Rob Herring wrote:
+Am Freitag, 14. Juli 2023, 19:43:29 CEST schrieb Rob Herring:
 > The DT of_device.h and of_platform.h date back to the separate
 > of_platform_bus_type before it as merged into the regular platform bus.
 > As part of that merge prepping Arm DT support 13 years ago, they
@@ -21,10 +21,10 @@ On 14/07/2023 19:43, Rob Herring wrote:
 > explicitly include the correct includes.
 > 
 > Signed-off-by: Rob Herring <robh@kernel.org>
-> ---
 
-Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org> # samsung
+>  drivers/clk/rockchip/clk-rk3568.c                | 2 +-
+>  drivers/clk/rockchip/clk-rv1126.c                | 2 +-
 
-Best regards,
-Krzysztof
+Acked-by: Heiko Stuebner <heiko@sntech.de> #rockchip
+
 
