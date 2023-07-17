@@ -1,12 +1,7 @@
-From: Jammy Huang <jammy_huang@aspeedtech.com>
-Date: Wed, 19 Jul 2023 06:33:18 +0000
-Subject: [PATCH RESEND v2] media: aspeed: Fix memory overwrite if timing is
- 1600x900
-In-Reply-To: <TYZPR06MB6568C3CE08659F86C301787DF139A@TYZPR06MB6568.apcprd06.prod.outlook.com>
-References: <20230717095111.1957-1-jammy_huang@aspeedtech.com>
- <21e13f35-5caf-6d60-c388-3386e3540834@xs4all.nl>
- <TYZPR06MB6568C3CE08659F86C301787DF139A@TYZPR06MB6568.apcprd06.prod.outlook.com>
-Message-ID: <TYZPR06MB6568A36C5201185B4D3F80C0F139A@TYZPR06MB6568.apcprd06.prod.outlook.com>
+From: Jammy Huang <orbit.huang@gmail.com>
+Date: Mon, 17 Jul 2023 17:51:11 +0800
+Subject: [PATCH v2] media: aspeed: Fix memory overwrite if timing is 1600x900
+Message-ID: <20230717095111.1957-1-jammy_huang@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
