@@ -1,40 +1,114 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Date: Mon, 17 Jul 2023 10:34:20 -0700
-Subject: [PATCH] hwmon: Explicitly include correct DT includes
-In-Reply-To: <CAL_JsqJZcxoQEhaGr34Mk1P_8vc8wctcfzswWc8VbRrsv0S7zg@mail.gmail.com>
-References: <20230714174607.4057185-1-robh@kernel.org>
- <e0e1b465-8419-419e-90ae-4b72f5189469@roeck-us.net>
- <CAL_JsqJZcxoQEhaGr34Mk1P_8vc8wctcfzswWc8VbRrsv0S7zg@mail.gmail.com>
-Message-ID: <a4b0115d-7a06-100c-ec77-027493c86206@roeck-us.net>
+From: 蔡承達 <billyking19920205@gmail.com>
+Date: Tue, 18 Jul 2023 12:01:13 +0800
+Subject: [v6 2/4] dt-bindings: hwmon: Add ASPEED TACH Control documentation
+In-Reply-To: <b22b2ccc-6760-0db6-067b-109c3864d2e8@linaro.org>
+References: <CAGUgbhCqOJaEPjS96o2au21uW4NhqFScm4Ayd8PzOQvqxQ94SQ@mail.gmail.com>
+ <0b9dd5cf-f4ca-2e6b-624d-0b451bbc2f30@linaro.org> <0ba3767c-d481-6e2c-2d32-b79af0e1efd8@roeck-us.net>
+ <CAGUgbhC34-pUp4ECULc0ScaN7hUF1L-z69h+ji-TiVrv4gKd3Q@mail.gmail.com>
+ <7b198d57-ddec-3074-314a-3e5e5b8f48f9@roeck-us.net> <CAGUgbhDbFedVe-pc+muD_NtDpjHpGqMDdrS3A73C-QbxeHn4oQ@mail.gmail.com>
+ <cf91edc9-1093-495b-48eb-6b05198c2541@linaro.org> <7a69bda1-5f4c-5b1f-8eb6-6fd58917a9b1@roeck-us.net>
+ <CAGUgbhCTDPGt_vpbfaEreX+iuLJ3WUBqt4kppxyaFZQus9Zf0Q@mail.gmail.com> <b22b2ccc-6760-0db6-067b-109c3864d2e8@linaro.org>
+Message-ID: <CAGUgbhDmXnyxYCL9h9C0P4ByDSTstWnGqW=uFoDVVHeK3BerHA@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 7/17/23 10:24, Rob Herring wrote:
-> On Sat, Jul 15, 2023 at 10:55?AM Guenter Roeck <linux@roeck-us.net> wrote:
->>
->> On Fri, Jul 14, 2023 at 11:46:04AM -0600, Rob Herring wrote:
->>> The DT of_device.h and of_platform.h date back to the separate
->>> of_platform_bus_type before it as merged into the regular platform bus.
->>> As part of that merge prepping Arm DT support 13 years ago, they
->>> "temporarily" include each other. They also include platform_device.h
->>> and of.h. As a result, there's a pretty much random mix of those include
->>> files used throughout the tree. In order to detangle these headers and
->>> replace the implicit includes with struct declarations, users need to
->>> explicitly include the correct includes.
->>>
->>> Signed-off-by: Rob Herring <robh@kernel.org>
->>
->> Applied to hwmon-next.
-> 
-> I found there's a double include of of.h in lm75.c. Can you fix that
-> up or do you want me to send a fix?
-> 
+>
+> On 17/07/2023 11:01, ??? wrote:
+> > Guenter Roeck <linux@roeck-us.net> ? 2023?7?17? ?? ??1:00???
+> >>
+> >> On 7/16/23 09:08, Krzysztof Kozlowski wrote:
+> >>
+> >> [ ... ]
+> >>
+> >>>>
+> >>>> This patch serial doesn't use to binding the fan control h/w. It is
+> >>>> used to binding the two independent h/w blocks.
+> >>>> One is used to provide pwm output and another is used to monitor the
+> >>>> speed of the input.
+> >>>> My patch is used to point out that the pwm and the tach is the
+> >>>> different function and don't need to
+> >>>> bind together. You can not only combine them as the fan usage but also
+> >>>> treat them as the individual module for
+> >>>> use. For example: the pwm can use to be the beeper (pwm-beeper.c), the
+> >>>> tach can be used to monitor the heart beat signal.
+> >>>
+> >>> Isn't this exactly the same as in every other SoC? PWMs can be used in
+> >>> different ways?
+> >>>
+> >>
+> >> ... and in every fan controller. Not that it really makes sense because
+> >> normally the pwm controller part of such chips is tied to the fan input,
+> >> to enable automatic fan control, but it is technically possible.
+> >> In many cases this is also the case in SoCs, for example, in ast2500.
+> >> Apparently this was redesigned in ast2600 where they two blocks are
+> >> only lightly coupled (there are two pwm status bits in the fan status
+> >> register, but I have no idea what those mean). If the blocks are tightly
+> >> coupled, separate drivers don't really make sense.
+> >>
+> >> There are multiple ways to separate the pwm controller part from the
+> >> fan inputs if that is really necessary. One would be to provide a
+> >> sequence of address mappings, the other would be to pass the memory
+> >> region from an mfd driver. It is not necessary to have N instances
+> >> of the fan controller, even if the address space is not continuous.
+> >>
+> >
+> > Hi Guenter,
+> >
+> > May I ask about the meaning of the sequence of address mappings? It appears
+> > to consist of multiple tuples within the 'reg' property, indicating
+> > the usage of PWM/Tach
+> > registers within a single instance. After that I can use the dts like following:
+> >
+> > pwm: pwm at 1e610000 {
+> > ...
+> > reg = <0x1e610000 0x8
+> > 0x1e610010 0x8
+> > 0x1e610020 0x8
+> > 0x1e610030 0x8
+> > 0x1e610040 0x8
+> > 0x1e610050 0x8
+> > 0x1e610060 0x8
+> > 0x1e610070 0x8
+> > 0x1e610080 0x8
+> > 0x1e610090 0x8
+> > 0x1e6100A0 0x8
+> > 0x1e6100B0 0x8
+> > 0x1e6100C0 0x8
+> > 0x1e6100D0 0x8
+> > 0x1e6100E0 0x8
+> > 0x1e6100F0 0x8>;
+>
+>
+> Uh, no... I mean, why? We keep pointing out that this should not be done
+> differently than any other SoC. Open any other SoC PWM controller and
+> tell me why this is different? Why this cannot be one address space?
 
-I fixed it up. Thanks a lot for noticing.
+Hi Krzysztof,
 
-Guenter
+This is because the register layout for PWM and Tach is not continuous.
+Each PWM/Tach instance has its own set of controller registers, and they
+are independent of each other.
 
+For example:
+PWM0 uses registers 0x0 and 0x4, while Tach0 uses registers 0x8 and 0xc.
+PWM1 uses registers 0x10 and 0x14, while Tach1 uses registers 0x18 and 0x1c.
+...
 
+To separate the PWM controller part from the fan inputs, Guenter has
+provided two methods.
+The first method involves passing the memory region from an MFD
+driver, which was the
+initial method I intended to use. However, it seems that this method
+does not make sense to you.
+
+Therefore, I would like to explore the second method suggested by
+Guenter, which involves providing
+a sequence of address mappings.
+
+Thanks
+
+Best Regards,
+Billy Tsai
