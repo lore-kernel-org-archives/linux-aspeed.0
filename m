@@ -1,18 +1,16 @@
-From: Niklas Söderlund <niklas.soderlund@ragnatech.se>
-Date: Wed, 19 Jul 2023 20:45:59 +0200
-Subject: [PATCH v2] media: Explicitly include correct DT includes
-In-Reply-To: <20230718143118.1065743-1-robh@kernel.org>
-References: <20230718143118.1065743-1-robh@kernel.org>
-Message-ID: <ZLgvZ2ao1tgrRlFu@oden.dyn.berto.se>
+From: Dmitry Rokosov <ddrokosov@sberdevices.ru>
+Date: Wed, 19 Jul 2023 21:39:27 +0300
+Subject: [PATCH] clk: Explicitly include correct DT includes
+In-Reply-To: <20230714174342.4052882-1-robh@kernel.org>
+References: <20230714174342.4052882-1-robh@kernel.org>
+Message-ID: <20230719183927.c4ykdjw3iekmugzy@CAB-WSD-L081021>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Rob,
-
-On 2023-07-18 08:31:14 -0600, Rob Herring wrote:
+On Fri, Jul 14, 2023 at 11:43:29AM -0600, Rob Herring wrote:
 > The DT of_device.h and of_platform.h date back to the separate
 > of_platform_bus_type before it as merged into the regular platform bus.
 > As part of that merge prepping Arm DT support 13 years ago, they
@@ -24,14 +22,18 @@ On 2023-07-18 08:31:14 -0600, Rob Herring wrote:
 > 
 > Signed-off-by: Rob Herring <robh@kernel.org>
 > ---
-> v2:
-> - Fix double include of of.h
-> ---
 
-For,
+[...]
 
->  drivers/media/platform/renesas/rcar-isp.c                     | 2 +-
->  drivers/media/platform/renesas/rcar-vin/rcar-core.c           | 1 -
->  drivers/media/platform/renesas/rcar-vin/rcar-csi2.c           | 1 -
+For
 
-Reviewed-by: Niklas S?derlund <niklas.soderlund@ragnatech.se>
+>  drivers/clk/meson/a1-peripherals.c               | 2 +-
+>  drivers/clk/meson/a1-pll.c                       | 2 +-
+
+Reviewed-by: Dmitry Rokosov <ddrokosov@sberdevices.ru>
+
+[...]
+
+-- 
+Thank you,
+Dmitry
