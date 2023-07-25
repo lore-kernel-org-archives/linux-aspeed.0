@@ -1,88 +1,38 @@
-From: Yangtao Li <frank.li@vivo.com>
-Date: Thu, 27 Jul 2023 15:00:22 +0800
-Subject: [PATCH v3 33/62] mmc: sdhci-of-aspeed: Convert to platform remove
-In-Reply-To: <20230727070051.17778-1-frank.li@vivo.com>
-References: <20230727070051.17778-1-frank.li@vivo.com>
-Message-ID: <20230727070051.17778-33-frank.li@vivo.com>
+From: Lakshmi Yadlapati <lakshmiy@us.ibm.com>
+Date: Tue, 25 Jul 2023 09:16:06 -0500
+Subject: [PATCH 1/1] ARM: dts: aspeed: Rainier: Remove TPM device
+In-Reply-To: <20230725141606.1641080-1-lakshmiy@us.ibm.com>
+References: <20230725141606.1641080-1-lakshmiy@us.ibm.com>
+Message-ID: <20230725141606.1641080-2-lakshmiy@us.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The .remove() callback for a platform driver returns an int which makes
-many driver authors wrongly assume it's possible to do error handling by
-returning an error code. However the value returned is (mostly) ignored
-and this typically results in resource leaks. To improve here there is a
-quest to make the remove callback return void. In the first step of this
-quest all drivers are converted to .remove_new() which already returns
-void.
+TPM is disabled in Rainier, remove TPM device.
 
-Trivially convert this driver from always returning zero in the remove
-callback to the void returning variant.
-
-Cc: Uwe Kleine-K?nig <u.kleine-koenig@pengutronix.de>
-Signed-off-by: Yangtao Li <frank.li@vivo.com>
-Acked-by: Adrian Hunter <adrian.hunter@intel.com>
+Signed-off-by: Lakshmi Yadlapati <lakshmiy@us.ibm.com>
 ---
- drivers/mmc/host/sdhci-of-aspeed.c | 12 ++++--------
- 1 file changed, 4 insertions(+), 8 deletions(-)
+ arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-rainier.dts | 5 -----
+ 1 file changed, 5 deletions(-)
 
-diff --git a/drivers/mmc/host/sdhci-of-aspeed.c b/drivers/mmc/host/sdhci-of-aspeed.c
-index b4867bb4a564..42d54532cabe 100644
---- a/drivers/mmc/host/sdhci-of-aspeed.c
-+++ b/drivers/mmc/host/sdhci-of-aspeed.c
-@@ -450,7 +450,7 @@ static int aspeed_sdhci_probe(struct platform_device *pdev)
- 	return ret;
- }
+diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-rainier.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-rainier.dts
+index 7162e65b8115..8dd94cd478fc 100644
+--- a/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-rainier.dts
++++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-rainier.dts
+@@ -2092,11 +2092,6 @@ eeprom at 51 {
+ &i2c12 {
+ 	status = "okay";
  
--static int aspeed_sdhci_remove(struct platform_device *pdev)
-+static void aspeed_sdhci_remove(struct platform_device *pdev)
- {
- 	struct sdhci_pltfm_host *pltfm_host;
- 	struct sdhci_host *host;
-@@ -463,8 +463,6 @@ static int aspeed_sdhci_remove(struct platform_device *pdev)
- 	clk_disable_unprepare(pltfm_host->clk);
- 
- 	sdhci_pltfm_free(pdev);
+-	tpm at 2e {
+-		compatible = "nuvoton,npct75x";
+-		reg = <0x2e>;
+-	};
 -
--	return 0;
- }
- 
- static const struct aspeed_sdhci_pdata ast2400_sdhci_pdata = {
-@@ -520,7 +518,7 @@ static struct platform_driver aspeed_sdhci_driver = {
- 		.of_match_table = aspeed_sdhci_of_match,
- 	},
- 	.probe		= aspeed_sdhci_probe,
--	.remove		= aspeed_sdhci_remove,
-+	.remove_new	= aspeed_sdhci_remove,
- };
- 
- static int aspeed_sdc_probe(struct platform_device *pdev)
-@@ -573,13 +571,11 @@ static int aspeed_sdc_probe(struct platform_device *pdev)
- 	return ret;
- }
- 
--static int aspeed_sdc_remove(struct platform_device *pdev)
-+static void aspeed_sdc_remove(struct platform_device *pdev)
- {
- 	struct aspeed_sdc *sdc = dev_get_drvdata(&pdev->dev);
- 
- 	clk_disable_unprepare(sdc->clk);
--
--	return 0;
- }
- 
- static const struct of_device_id aspeed_sdc_of_match[] = {
-@@ -599,7 +595,7 @@ static struct platform_driver aspeed_sdc_driver = {
- 		.of_match_table = aspeed_sdc_of_match,
- 	},
- 	.probe		= aspeed_sdc_probe,
--	.remove		= aspeed_sdc_remove,
-+	.remove_new	= aspeed_sdc_remove,
- };
- 
- #if defined(CONFIG_MMC_SDHCI_OF_ASPEED_TEST)
+ 	eeprom at 50 {
+ 		compatible = "atmel,24c64";
+ 		reg = <0x50>;
 -- 
-2.39.0
+2.37.2
 
