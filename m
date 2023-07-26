@@ -1,87 +1,66 @@
-From: Yangtao Li <frank.li@vivo.com>
-Date: Wed, 26 Jul 2023 12:00:14 +0800
-Subject: [PATCH v2 34/61] mmc: sdhci-of-aspeed: Convert to platform remove
-In-Reply-To: <20230726040041.26267-1-frank.li@vivo.com>
-References: <20230726040041.26267-1-frank.li@vivo.com>
-Message-ID: <20230726040041.26267-34-frank.li@vivo.com>
+From: Ryan Chen <ryan_chen@aspeedtech.com>
+Date: Wed, 26 Jul 2023 06:19:43 +0000
+Subject: [PATCH v12 2/2] i2c: aspeed: support ast2600 i2c new register
+ mode driver
+In-Reply-To: <SEZPR06MB5269568451406598F0D824F6F234A@SEZPR06MB5269.apcprd06.prod.outlook.com>
+References: <20230714074522.23827-1-ryan_chen@aspeedtech.com>
+ <20230714074522.23827-3-ryan_chen@aspeedtech.com>
+ <eda7789d-a603-d565-c9da-edfe9493a05d@linaro.org>
+ <SEZPR06MB5269EB586319B3333CD96010F234A@SEZPR06MB5269.apcprd06.prod.outlook.com>
+ <674fed6f-36d6-bacb-d075-97bc355177a3@linaro.org>
+ <SEZPR06MB5269568451406598F0D824F6F234A@SEZPR06MB5269.apcprd06.prod.outlook.com>
+Message-ID: <SEZPR06MB52697089D95E3AA9C6FCF496F200A@SEZPR06MB5269.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The .remove() callback for a platform driver returns an int which makes
-many driver authors wrongly assume it's possible to do error handling by
-returning an error code. However the value returned is (mostly) ignored
-and this typically results in resource leaks. To improve here there is a
-quest to make the remove callback return void. In the first step of this
-quest all drivers are converted to .remove_new() which already returns
-void.
+Hello,
+	After do more study about devm_i2c_add_adapter, I will remove i2c_del_adapter in driver remove. Thanks your input.
 
-Trivially convert this driver from always returning zero in the remove
-callback to the void returning variant.
+> 
+> On 14/07/2023 09:45, Ryan Chen wrote:
+>> Add i2c new register mode driver to support AST2600 i2c new register 
+>> mode. AST2600 i2c controller have legacy and new register mode. The 
+>> new register mode have global register support 4 base clock for scl 
+>> clock selection, and new clock divider mode. The i2c new register 
+>> mode have separate register set to control i2c master and slave.
+>>
+>> Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
+>> ---
+> 
+> ...
+> 
+>> +	ret = devm_i2c_add_adapter(dev, &i2c_bus->adap);
+>> +	if (ret)
+>> +		return ret;
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +static int ast2600_i2c_remove(struct platform_device *pdev) {
+>> +	struct ast2600_i2c_bus *i2c_bus = platform_get_drvdata(pdev);
+>> +
+>> +	/* Disable everything. */
+>> +	writel(0, i2c_bus->reg_base + AST2600_I2CC_FUN_CTRL);
+>> +	writel(0, i2c_bus->reg_base + AST2600_I2CM_IER);
+>> +
+>> +	i2c_del_adapter(&i2c_bus->adap);
+> 
+>> I have doubts that you tested this. I think you have here double free/del of the adapter.
+> Sorry, i can't catch your point for double free the adapter.
+> It should use i2c_del_adapter in driver remove function.
+> All the driver doing this
+> https://github.com/torvalds/linux/blob/master/drivers/i2c/busses/i2c-n
+> pcm7xx.c#L2373
+> https://github.com/torvalds/linux/blob/master/drivers/i2c/busses/i2c-a
+> ltera.c#L473
+> 
+> Do you mean it is not necessary? 
 
-Cc: Uwe Kleine-K?nig <u.kleine-koenig@pengutronix.de>
-Signed-off-by: Yangtao Li <frank.li@vivo.com>
----
- drivers/mmc/host/sdhci-of-aspeed.c | 12 ++++--------
- 1 file changed, 4 insertions(+), 8 deletions(-)
+>Instead of giving you the fish, I think much more learning experience is to teach you how to fish. Please unbind your driver (echo the device name to proper unbind file in sysfs). The best if you build your kernel with KASAN.
 
-diff --git a/drivers/mmc/host/sdhci-of-aspeed.c b/drivers/mmc/host/sdhci-of-aspeed.c
-index b4867bb4a564..42d54532cabe 100644
---- a/drivers/mmc/host/sdhci-of-aspeed.c
-+++ b/drivers/mmc/host/sdhci-of-aspeed.c
-@@ -450,7 +450,7 @@ static int aspeed_sdhci_probe(struct platform_device *pdev)
- 	return ret;
- }
- 
--static int aspeed_sdhci_remove(struct platform_device *pdev)
-+static void aspeed_sdhci_remove(struct platform_device *pdev)
- {
- 	struct sdhci_pltfm_host *pltfm_host;
- 	struct sdhci_host *host;
-@@ -463,8 +463,6 @@ static int aspeed_sdhci_remove(struct platform_device *pdev)
- 	clk_disable_unprepare(pltfm_host->clk);
- 
- 	sdhci_pltfm_free(pdev);
--
--	return 0;
- }
- 
- static const struct aspeed_sdhci_pdata ast2400_sdhci_pdata = {
-@@ -520,7 +518,7 @@ static struct platform_driver aspeed_sdhci_driver = {
- 		.of_match_table = aspeed_sdhci_of_match,
- 	},
- 	.probe		= aspeed_sdhci_probe,
--	.remove		= aspeed_sdhci_remove,
-+	.remove_new	= aspeed_sdhci_remove,
- };
- 
- static int aspeed_sdc_probe(struct platform_device *pdev)
-@@ -573,13 +571,11 @@ static int aspeed_sdc_probe(struct platform_device *pdev)
- 	return ret;
- }
- 
--static int aspeed_sdc_remove(struct platform_device *pdev)
-+static void aspeed_sdc_remove(struct platform_device *pdev)
- {
- 	struct aspeed_sdc *sdc = dev_get_drvdata(&pdev->dev);
- 
- 	clk_disable_unprepare(sdc->clk);
--
--	return 0;
- }
- 
- static const struct of_device_id aspeed_sdc_of_match[] = {
-@@ -599,7 +595,7 @@ static struct platform_driver aspeed_sdc_driver = {
- 		.of_match_table = aspeed_sdc_of_match,
- 	},
- 	.probe		= aspeed_sdc_probe,
--	.remove		= aspeed_sdc_remove,
-+	.remove_new	= aspeed_sdc_remove,
- };
- 
- #if defined(CONFIG_MMC_SDHCI_OF_ASPEED_TEST)
--- 
-2.39.0
+Thanks, will do this test with unbind to understand your point. 
+
 
