@@ -1,113 +1,40 @@
-From: Ryan Chen <ryan_chen@aspeedtech.com>
-Date: Wed, 26 Jul 2023 03:38:14 +0000
-Subject: [PATCH v12 2/2] i2c: aspeed: support ast2600 i2c new register
- mode driver
-In-Reply-To: <SEZPR06MB5269568451406598F0D824F6F234A@SEZPR06MB5269.apcprd06.prod.outlook.com>
-References: <20230714074522.23827-1-ryan_chen@aspeedtech.com>
- <20230714074522.23827-3-ryan_chen@aspeedtech.com>
- <eda7789d-a603-d565-c9da-edfe9493a05d@linaro.org>
- <SEZPR06MB5269EB586319B3333CD96010F234A@SEZPR06MB5269.apcprd06.prod.outlook.com>
- <674fed6f-36d6-bacb-d075-97bc355177a3@linaro.org>
- <SEZPR06MB5269568451406598F0D824F6F234A@SEZPR06MB5269.apcprd06.prod.outlook.com>
-Message-ID: <SEZPR06MB5269B31B3ADC4EDEA113BA99F200A@SEZPR06MB5269.apcprd06.prod.outlook.com>
+From: Yangtao Li <frank.li@vivo.com>
+Date: Wed, 26 Jul 2023 12:00:13 +0800
+Subject: [PATCH v2 33/61] mmc: sdhci-of-aspeed: remove unneeded variables
+In-Reply-To: <20230726040041.26267-1-frank.li@vivo.com>
+References: <20230726040041.26267-1-frank.li@vivo.com>
+Message-ID: <20230726040041.26267-33-frank.li@vivo.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello,
-> 
-> On 14/07/2023 09:45, Ryan Chen wrote:
->> Add i2c new register mode driver to support AST2600 i2c new register 
->> mode. AST2600 i2c controller have legacy and new register mode. The 
->> new register mode have global register support 4 base clock for scl 
->> clock selection, and new clock divider mode. The i2c new register 
->> mode have separate register set to control i2c master and slave.
->>
->> Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
->> ---
-> 
-> ...
-> 
->> +	ret = devm_i2c_add_adapter(dev, &i2c_bus->adap);
->> +	if (ret)
->> +		return ret;
->> +
->> +	return 0;
->> +}
->> +
->> +static int ast2600_i2c_remove(struct platform_device *pdev) {
->> +	struct ast2600_i2c_bus *i2c_bus = platform_get_drvdata(pdev);
->> +
->> +	/* Disable everything. */
->> +	writel(0, i2c_bus->reg_base + AST2600_I2CC_FUN_CTRL);
->> +	writel(0, i2c_bus->reg_base + AST2600_I2CM_IER);
->> +
->> +	i2c_del_adapter(&i2c_bus->adap);
-> 
->> I have doubts that you tested this. I think you have here double free/del of the adapter.
-> Sorry, i can't catch your point for double free the adapter.
-> It should use i2c_del_adapter in driver remove function.
-> All the driver doing this
-> https://github.com/torvalds/linux/blob/master/drivers/i2c/busses/i2c-n
-> pcm7xx.c#L2373
-> https://github.com/torvalds/linux/blob/master/drivers/i2c/busses/i2c-a
-> ltera.c#L473
-> 
-> Do you mean it is not necessary? 
+The variable 'dead' is redundant, let's remove it.
 
->Instead of giving you the fish, I think much more learning experience is to teach you how to fish. Please unbind your driver (echo the device name to proper unbind file in sysfs). The best if you build your kernel with KASAN.
+Signed-off-by: Yangtao Li <frank.li@vivo.com>
+---
+ drivers/mmc/host/sdhci-of-aspeed.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
->Thanks, will do this test with unbind to understand your point. 
-I do my the test with enable kernel config KASAN.
-I don't see any error dump. You can see the following. It use i2c-0 bind/unbind.
-Did I miss some test ??
+diff --git a/drivers/mmc/host/sdhci-of-aspeed.c b/drivers/mmc/host/sdhci-of-aspeed.c
+index 25b4073f698b..b4867bb4a564 100644
+--- a/drivers/mmc/host/sdhci-of-aspeed.c
++++ b/drivers/mmc/host/sdhci-of-aspeed.c
+@@ -454,12 +454,11 @@ static int aspeed_sdhci_remove(struct platform_device *pdev)
+ {
+ 	struct sdhci_pltfm_host *pltfm_host;
+ 	struct sdhci_host *host;
+-	int dead = 0;
+ 
+ 	host = platform_get_drvdata(pdev);
+ 	pltfm_host = sdhci_priv(host);
+ 
+-	sdhci_remove_host(host, dead);
++	sdhci_remove_host(host, 0);
+ 
+ 	clk_disable_unprepare(pltfm_host->clk);
+ 
+-- 
+2.39.0
 
-root at ast2600-default:/sys/bus/platform/drivers/i2c_ast2600# i2cdetect -l
-i2c-0   i2c             1e78a080.i2c-bus                        I2C adapter
-i2c-1   i2c             1e78a100.i2c-bus                        I2C adapter
-i2c-2   i2c             1e78a180.i2c-bus                        I2C adapter
-i2c-3   i2c             1e78a200.i2c-bus                        I2C adapter
-i2c-4   i2c             1e78a280.i2c-bus                        I2C adapter
-i2c-5   i2c             1e78a300.i2c-bus                        I2C adapter
-i2c-6   i2c             1e78a380.i2c-bus                        I2C adapter
-i2c-7   i2c             1e78a400.i2c-bus                        I2C adapter
-i2c-8   i2c             1e78a480.i2c-bus                        I2C adapter
-i2c-9   i2c             1e78a500.i2c-bus                        I2C adapter
-i2c-12  i2c             1e78a680.i2c-bus                        I2C adapter
-i2c-13  i2c             1e78a700.i2c-bus                        I2C adapter
-i2c-14  i2c             1e78a780.i2c-bus                        I2C adapter
-i2c-15  i2c             1e78a800.i2c-bus                        I2C adapter
-root at ast2600-default:/sys/bus/platform/drivers/i2c_ast2600# echo 1e78a080.i2c-bus > unbind
-root at ast2600-default:/sys/bus/platform/drivers/i2c_ast2600# i2cdetect -l
-i2c-1   i2c             1e78a100.i2c-bus                        I2C adapter
-i2c-2   i2c             1e78a180.i2c-bus                        I2C adapter
-i2c-3   i2c             1e78a200.i2c-bus                        I2C adapter
-i2c-4   i2c             1e78a280.i2c-bus                        I2C adapter
-i2c-5   i2c             1e78a300.i2c-bus                        I2C adapter
-i2c-6   i2c             1e78a380.i2c-bus                        I2C adapter
-i2c-7   i2c             1e78a400.i2c-bus                        I2C adapter
-i2c-8   i2c             1e78a480.i2c-bus                        I2C adapter
-i2c-9   i2c             1e78a500.i2c-bus                        I2C adapter
-i2c-12  i2c             1e78a680.i2c-bus                        I2C adapter
-i2c-13  i2c             1e78a700.i2c-bus                        I2C adapter
-i2c-14  i2c             1e78a780.i2c-bus                        I2C adapter
-i2c-15  i2c             1e78a800.i2c-bus                        I2C adapter
-root at ast2600-default:/sys/bus/platform/drivers/i2c_ast2600# echo 1e78a080.i2c-bus > bind
-[  388.177413] i2c_ast2600 1e78a080.i2c-bus: i2c-bus [0]: adapter [100 khz] mode [0]
-root at ast2600-default:/sys/bus/platform/drivers/i2c_ast2600# i2cdetect -l
-i2c-0   i2c             1e78a080.i2c-bus                        I2C adapter
-i2c-1   i2c             1e78a100.i2c-bus                        I2C adapter
-i2c-2   i2c             1e78a180.i2c-bus                        I2C adapter
-i2c-3   i2c             1e78a200.i2c-bus                        I2C adapter
-i2c-4   i2c             1e78a280.i2c-bus                        I2C adapter
-i2c-5   i2c             1e78a300.i2c-bus                        I2C adapter
-i2c-6   i2c             1e78a380.i2c-bus                        I2C adapter
-i2c-7   i2c             1e78a400.i2c-bus                        I2C adapter
-i2c-8   i2c             1e78a480.i2c-bus                        I2C adapter
-i2c-9   i2c             1e78a500.i2c-bus                        I2C adapter
-i2c-12  i2c             1e78a680.i2c-bus                        I2C adapter
-i2c-13  i2c             1e78a700.i2c-bus                        I2C adapter
-i2c-14  i2c             1e78a780.i2c-bus                        I2C adapter
-i2c-15  i2c             1e78a800.i2c-bus                        I2C adapter
