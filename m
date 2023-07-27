@@ -1,32 +1,35 @@
 From: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
-Date: Thu, 27 Jul 2023 11:53:48 +0800
-Subject: [PATCH v4 0/2] ARM: dts: Facebook Yosemite V4 platform
-Message-ID: <20230727035354.1906590-1-Delphine_CC_Chiu@wiwynn.com>
+Date: Thu, 27 Jul 2023 11:53:49 +0800
+Subject: [PATCH v4 1/2] dt-bindings: arm: aspeed: add Facebook Yosemite V4 board
+In-Reply-To: <20230727035354.1906590-1-Delphine_CC_Chiu@wiwynn.com>
+References: <20230727035354.1906590-1-Delphine_CC_Chiu@wiwynn.com>
+Message-ID: <20230727035354.1906590-2-Delphine_CC_Chiu@wiwynn.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add linux device tree entry related to
-Yosemite V4 specific devices connected to BMC SoC.
+Document the new compatibles used on Facebook Yosemite V4.
 
-v4 - Resend with cover letter
-v3 - Revise the bootargs to stdout-path
-   - Revise i2c devices
-v2 - Revise the DTS node name
-v1 - Add binding document
+Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
+Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+---
+ Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 1 +
+ 1 file changed, 1 insertion(+)
 
-Delphine CC Chiu (2):
-  dt-bindings: arm: aspeed: add Facebook Yosemite V4 board
-  ARM: dts: aspeed: yosemitev4: add Facebook Yosemite V4 BMC
-
- .../bindings/arm/aspeed/aspeed.yaml           |   1 +
- arch/arm/boot/dts/aspeed/Makefile             |   1 +
- .../aspeed/aspeed-bmc-facebook-yosemitev4.dts | 640 ++++++++++++++++++
- 3 files changed, 642 insertions(+)
- create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemitev4.dts
-
+diff --git a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+index e0eff4c05879..2ef6821e3648 100644
+--- a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
++++ b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+@@ -79,6 +79,7 @@ properties:
+               - facebook,elbert-bmc
+               - facebook,fuji-bmc
+               - facebook,greatlakes-bmc
++              - facebook,yosemitev4-bmc
+               - ibm,everest-bmc
+               - ibm,rainier-bmc
+               - ibm,tacoma-bmc
 -- 
 2.25.1
 
