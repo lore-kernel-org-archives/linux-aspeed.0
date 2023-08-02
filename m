@@ -1,36 +1,46 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Date: Wed, 31 Aug 2022 14:15:04 +0200
-Subject: [PATCH] pinctrl: aspeed: Force to disable the function's signal
-In-Reply-To: <20220818101839.28860-1-billy_tsai@aspeedtech.com>
-References: <20220818101839.28860-1-billy_tsai@aspeedtech.com>
-Message-ID: <CACRpkdZSw9Nn8hp+C3SPw4_EkXn0mkLh8tSO5zhGR8xdv=Jk8g@mail.gmail.com>
+From: Delphine_CC_Chiu/WYHQ/Wiwynn <Delphine_CC_Chiu@wiwynn.com>
+Date: Wed, 2 Aug 2023 02:34:47 +0000
+Subject: [PATCH 1/2] dt-bindings: arm: aspeed: add Facebook Yosemite V4
+ board
+In-Reply-To: <c9062d5c-b536-f89c-b380-8a0c9b858526@linaro.org>
+References: <20230727033926.1904529-1-Delphine_CC_Chiu@wiwynn.com>
+ <c9062d5c-b536-f89c-b380-8a0c9b858526@linaro.org>
+Message-ID: <PS2PR04MB35928B386F03C987061433D2B70BA@PS2PR04MB3592.apcprd04.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Aug 18, 2022 at 12:18 PM Billy Tsai <billy_tsai@aspeedtech.com> wrote:
 
-> When the driver want to disable the signal of the function, it doesn't
-> need to query the state of the mux function's signal on a pin. The
-> condition below will miss the disable of the signal:
-> Ball | Default | P0 Signal | P0 Expression               | Other
-> -----+---------+-----------+-----------------------------+----------
->  E21   GPIOG0    SD2CLK      SCU4B4[16]=1 & SCU450[1]=1    GPIOG0
-> -----+---------+-----------+-----------------------------+----------
->  B22   GPIOG1    SD2CMD      SCU4B4[17]=1 & SCU450[1]=1    GPIOG1
-> -----+---------+-----------+-----------------------------+----------
-> Assume the register status like below:
-> SCU4B4[16] == 1 & SCU4B4[17] == 1 & SCU450[1]==1
-> After the driver set the Ball E21 to the GPIOG0:
-> SCU4B4[16] == 0 & SCU4B4[17] == 1 & SCU450[1]==0
-> When the driver want to set the Ball B22 to the GPIOG1, the condition of
-> the SD2CMD will be false causing SCU4B4[17] not to be cleared.
->
-> Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
 
-Patch applied!
-
-Yours,
-Linus Walleij
+> -----Original Message-----
+> From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+> Sent: Thursday, July 27, 2023 2:49 PM
+> To: Delphine_CC_Chiu/WYHQ/Wiwynn <Delphine_CC_Chiu@wiwynn.com>;
+> patrick at stwcx.xyz; Rob Herring <robh+dt@kernel.org>; Krzysztof Kozlowski
+> <krzysztof.kozlowski+dt@linaro.org>; Conor Dooley <conor+dt@kernel.org>;
+> Joel Stanley <joel@jms.id.au>; Andrew Jeffery <andrew@aj.id.au>
+> Cc: devicetree at vger.kernel.org; linux-arm-kernel at lists.infradead.org;
+> linux-aspeed at lists.ozlabs.org; linux-kernel at vger.kernel.org
+> Subject: Re: [PATCH 1/2] dt-bindings: arm: aspeed: add Facebook Yosemite V4
+> board
+> 
+>   Security Reminder: Please be aware that this email is sent by an external
+> sender.
+> 
+> On 27/07/2023 05:39, Delphine CC Chiu wrote:
+> > Document the new compatibles used on Facebook Yosemite V4.
+> >
+> > Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
+> > ---
+> >  Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 1 +
+> >  1 file changed, 1 insertion(+)
+> 
+> I got the same patch four times...
+It was my oversight to send the same patch multiple times.
+Would you please to tell that should I resend a new version, or these patches has been already under reviewed.
+Thank you.
+> 
+> Best regards,
+> Krzysztof
