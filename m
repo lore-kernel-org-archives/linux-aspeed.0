@@ -1,35 +1,36 @@
 From: Rob Herring <robh@kernel.org>
-Date: Thu, 03 Aug 2023 16:42:46 -0600
-Subject: [PATCH v2 06/23] ARM: hpe: Drop unused includes
+Date: Thu, 03 Aug 2023 16:42:53 -0600
+Subject: [PATCH v2 13/23] ARM: versatile: Drop unused includes
 In-Reply-To: <20230803-dt-header-cleanups-for-soc-v2-0-d8de2cc88bff@kernel.org>
 References: <20230803-dt-header-cleanups-for-soc-v2-0-d8de2cc88bff@kernel.org>
-Message-ID: <20230803-dt-header-cleanups-for-soc-v2-6-d8de2cc88bff@kernel.org>
+Message-ID: <20230803-dt-header-cleanups-for-soc-v2-13-d8de2cc88bff@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-of_platform.h is not needed, so drop it.
+Several includes are not needed, so drop them.
 
-Acked-by: Nick Hawkins <nick.hawkins@hpe.com>
 Signed-off-by: Rob Herring <robh@kernel.org>
 ---
- arch/arm/mach-hpe/gxp.c | 1 -
- 1 file changed, 1 deletion(-)
+ arch/arm/mach-versatile/realview.c | 2 --
+ 1 file changed, 2 deletions(-)
 
-diff --git a/arch/arm/mach-hpe/gxp.c b/arch/arm/mach-hpe/gxp.c
-index ef3341373006..581c8da517b8 100644
---- a/arch/arm/mach-hpe/gxp.c
-+++ b/arch/arm/mach-hpe/gxp.c
-@@ -1,7 +1,6 @@
- // SPDX-License-Identifier: GPL-2.0
- /* Copyright (C) 2022 Hewlett-Packard Enterprise Development Company, L.P. */
- 
+diff --git a/arch/arm/mach-versatile/realview.c b/arch/arm/mach-versatile/realview.c
+index feab66080ba2..a3933e2373d5 100644
+--- a/arch/arm/mach-versatile/realview.c
++++ b/arch/arm/mach-versatile/realview.c
+@@ -4,9 +4,7 @@
+  *
+  * Author: Linus Walleij <linus.walleij@linaro.org>
+  */
 -#include <linux/of_platform.h>
  #include <asm/mach/arch.h>
+-#include <asm/hardware/cache-l2x0.h>
  
- static const char * const gxp_board_dt_compat[] = {
+ static const char *const realview_dt_platform_compat[] __initconst = {
+ 	"arm,realview-eb",
 
 -- 
 2.40.1
