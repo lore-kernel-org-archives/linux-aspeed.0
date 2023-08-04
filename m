@@ -1,17 +1,19 @@
-From: Jernej Škrabec <jernej.skrabec@gmail.com>
-Date: Fri, 04 Aug 2023 16:38:11 +0200
-Subject: [PATCH v2 21/23] soc: sunxi: Explicitly include correct DT includes
-In-Reply-To: <20230803-dt-header-cleanups-for-soc-v2-21-d8de2cc88bff@kernel.org>
+From: Laurentiu Tudor <laurentiu.tudor@nxp.com>
+Date: Fri, 4 Aug 2023 18:11:33 +0300
+Subject: [PATCH v2 16/23] bus: Explicitly include correct DT includes
+In-Reply-To: <20230803-dt-header-cleanups-for-soc-v2-16-d8de2cc88bff@kernel.org>
 References: <20230803-dt-header-cleanups-for-soc-v2-0-d8de2cc88bff@kernel.org>
- <20230803-dt-header-cleanups-for-soc-v2-21-d8de2cc88bff@kernel.org>
-Message-ID: <2690872.mvXUDI8C0e@jernej-laptop>
+ <20230803-dt-header-cleanups-for-soc-v2-16-d8de2cc88bff@kernel.org>
+Message-ID: <485cb11c-3e34-c4a3-bc63-87ac505b7bb0@nxp.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Dne petek, 04. avgust 2023 ob 00:43:01 CEST je Rob Herring napisal(a):
+
+
+On 8/4/2023 1:42 AM, Rob Herring wrote:
 > The DT of_device.h and of_platform.h date back to the separate
 > of_platform_bus_type before it as merged into the regular platform bus.
 > As part of that merge prepping Arm DT support 13 years ago, they
@@ -22,34 +24,20 @@ Dne petek, 04. avgust 2023 ob 00:43:01 CEST je Rob Herring napisal(a):
 > explicitly include the correct includes.
 > 
 > Signed-off-by: Rob Herring <robh@kernel.org>
-
-Acked-by: Jernej Skrabec <jernej.skrabec@gmail.com>
-
-Should I take this through sunxi tree?
-
-Best regards,
-Jernej
-
 > ---
-> v2:
->  - Drop sun20i-ppu.c which moved
-> ---
->  drivers/soc/sunxi/sunxi_sram.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>   drivers/bus/fsl-mc/fsl-mc-bus.c | 1 +
+>   drivers/bus/fsl-mc/fsl-mc-msi.c | 2 --
+>   drivers/bus/hisi_lpc.c          | 2 +-
+>   drivers/bus/omap_l3_smx.c       | 1 -
+>   drivers/bus/simple-pm-bus.c     | 2 ++
+>   drivers/bus/sunxi-rsb.c         | 2 +-
+>   drivers/bus/ti-pwmss.c          | 2 +-
+>   7 files changed, 6 insertions(+), 6 deletions(-)
 > 
-> diff --git a/drivers/soc/sunxi/sunxi_sram.c b/drivers/soc/sunxi/sunxi_sram.c
-> index 4c4864cd2342..4458b2e0562b 100644
-> --- a/drivers/soc/sunxi/sunxi_sram.c
-> +++ b/drivers/soc/sunxi/sunxi_sram.c
-> @@ -15,7 +15,7 @@
->  #include <linux/module.h>
->  #include <linux/of.h>
->  #include <linux/of_address.h>
-> -#include <linux/of_device.h>
-> +#include <linux/of_platform.h>
->  #include <linux/platform_device.h>
->  #include <linux/regmap.h>
 
+For drivers/bus/fsl-mc bits:
 
+Acked-by: Laurentiu Tudor <laurentiu.tudor@nxp.com>
 
-
+---
+Thanks & Best Regards, Laurentiu
